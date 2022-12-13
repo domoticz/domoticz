@@ -703,7 +703,7 @@ T_EEP_CASE_* D20112_CASES [] = {
 
 // TITLE:CMD 1 - Go to Position and Angle
 // DESC :Once the actuator is configured either by the  Set Parameters  command or through manual configuration (using local buttons) the position of the blinds can be controlled with this command.
-T_DATAFIELD D20500_CMD1 [] = {
+T_DATAFIELD D2050X_CMD1 [] = {
 {  1 , 7 ,     0 ,     0 ,     0 ,     0 , "POS"      , "Position"},
 {  9 , 7 ,     0 ,     0 ,     0 ,     0 , "ANG"      , "Angle"},
 { 17 , 3 ,     0 ,     0 ,     0 ,     0 , "REPO"     , "Repositioning"},//Value: 0 = Go directly to POS/ANG 
@@ -720,47 +720,47 @@ T_DATAFIELD D20500_CMD1 [] = {
 {  0 , 0 , 0          , 0           }
 };
 
-T_EEP_CASE_ D20500_CASE1 = { D20500_CMD1,"CMD 1 - Go to Position and Angle","Once the actuator is configured either by the  Set Parameters  command or through manual configuration (using local buttons) the position of the blinds can be controlled with this command." } ;// Index of field
-#define D20500_CMD1_POS        0
-#define D20500_CMD1_ANG        1
-#define D20500_CMD1_REPO       2
-#define D20500_CMD1_LOCK       3
-#define D20500_CMD1_CHN        4
-#define D20500_CMD1_CMD        5
-#define D20500_CMD1_NB_DATA    6
-#define D20500_CMD1_DATA_SIZE  4
+T_EEP_CASE_ D2050X_CASE1 = { D2050X_CMD1,"CMD 1 - Go to Position and Angle","Once the actuator is configured either by the  Set Parameters  command or through manual configuration (using local buttons) the position of the blinds can be controlled with this command." } ;// Index of field
+#define D2050X_CMD1_POS        0
+#define D2050X_CMD1_ANG        1
+#define D2050X_CMD1_REPO       2
+#define D2050X_CMD1_LOCK       3
+#define D2050X_CMD1_CHN        4
+#define D2050X_CMD1_CMD        5
+#define D2050X_CMD1_NB_DATA    6
+#define D2050X_CMD1_DATA_SIZE  4
 
 // TITLE:CMD 2 - Stop
 // DESC :This command immediately stops a running blind motor. It has no effect when the actuator is in  blockage  or  alarm  mode, i.e. it will not stop an eventual  go up  or  go down  alarm action.
-T_DATAFIELD D20500_CMD2 [] = {
+T_DATAFIELD D2050X_CMD2 [] = {
 {  0 , 4 ,     0 ,     0 ,     0 ,     0 , "CHN"      , "Channel"},//Value: 0 = Channel 1 
 {  4 , 4 ,     0 ,     0 ,     0 ,     0 , "CMD"      , "Command ID"},//Value: 2 = Stop command 
 {  0 , 0 , 0          , 0           }
 };
 
-T_EEP_CASE_ D20500_CASE2 = { D20500_CMD2,"CMD 2 - Stop","This command immediately stops a running blind motor. It has no effect when the actuator is in  blockage  or  alarm  mode, i.e. it will not stop an eventual  go up  or  go down  alarm action." } ;// Index of field
-#define D20500_CMD2_CHN        0
-#define D20500_CMD2_CMD        1
-#define D20500_CMD2_NB_DATA    2
-#define D20500_CMD2_DATA_SIZE  1
+T_EEP_CASE_ D2050X_CASE2 = { D2050X_CMD2,"CMD 2 - Stop","This command immediately stops a running blind motor. It has no effect when the actuator is in  blockage  or  alarm  mode, i.e. it will not stop an eventual  go up  or  go down  alarm action." } ;// Index of field
+#define D2050X_CMD2_CHN        0
+#define D2050X_CMD2_CMD        1
+#define D2050X_CMD2_NB_DATA    2
+#define D2050X_CMD2_DATA_SIZE  1
 
 // TITLE:CMD 3 - Query Position and Angle
 // DESC :This command requests the actuator to return a  reply  command.
-T_DATAFIELD D20500_CMD3 [] = {
+T_DATAFIELD D2050X_CMD3 [] = {
 {  0 , 4 ,     0 ,     0 ,     0 ,     0 , "CHN"      , "Channel"},//Value: 0 = Channel 1 
 {  4 , 4 ,     0 ,     0 ,     0 ,     0 , "CMD"      , "Command ID"},//Value: 3 = Query command 
 {  0 , 0 , 0          , 0           }
 };
 
-T_EEP_CASE_ D20500_CASE3 = { D20500_CMD3,"CMD 3 - Query Position and Angle","This command requests the actuator to return a  reply  command." } ;// Index of field
-#define D20500_CMD3_CHN        0
-#define D20500_CMD3_CMD        1
-#define D20500_CMD3_NB_DATA    2
-#define D20500_CMD3_DATA_SIZE  1
+T_EEP_CASE_ D2050X_CASE3 = { D2050X_CMD3,"CMD 3 - Query Position and Angle","This command requests the actuator to return a  reply  command." } ;// Index of field
+#define D2050X_CMD3_CHN        0
+#define D2050X_CMD3_CMD        1
+#define D2050X_CMD3_NB_DATA    2
+#define D2050X_CMD3_DATA_SIZE  1
 
 // TITLE:CMD 4 - Reply Position and Angle
 // DESC :Either upon request ( Query  command) or after an internal trigger (see EEP Properties) the actuator sends this command to inform about its current state.
-T_DATAFIELD D20500_CMD4 [] = {
+T_DATAFIELD D2050X_CMD4 [] = {
 {  1 , 7 ,     0 ,     0 ,     0 ,     0 , "POS"      , "Position"},
 {  9 , 7 ,     0 ,     0 ,     0 ,     0 , "ANG"      , "Angle"},
 { 21 , 3 ,     0 ,     0 ,     0 ,     0 , "LOCK"     , "Locking modes"},//Value: 0 = Normal (no lock) 
@@ -772,18 +772,18 @@ T_DATAFIELD D20500_CMD4 [] = {
 {  0 , 0 , 0          , 0           }
 };
 
-T_EEP_CASE_ D20500_CASE4 = { D20500_CMD4,"CMD 4 - Reply Position and Angle","Either upon request ( Query  command) or after an internal trigger (see EEP Properties) the actuator sends this command to inform about its current state." } ;// Index of field
-#define D20500_CMD4_POS        0
-#define D20500_CMD4_ANG        1
-#define D20500_CMD4_LOCK       2
-#define D20500_CMD4_CHN        3
-#define D20500_CMD4_CMD        4
-#define D20500_CMD4_NB_DATA    5
-#define D20500_CMD4_DATA_SIZE  4
+T_EEP_CASE_ D2050X_CASE4 = { D2050X_CMD4,"CMD 4 - Reply Position and Angle","Either upon request ( Query  command) or after an internal trigger (see EEP Properties) the actuator sends this command to inform about its current state." } ;// Index of field
+#define D2050X_CMD4_POS        0
+#define D2050X_CMD4_ANG        1
+#define D2050X_CMD4_LOCK       2
+#define D2050X_CMD4_CHN        3
+#define D2050X_CMD4_CMD        4
+#define D2050X_CMD4_NB_DATA    5
+#define D2050X_CMD4_DATA_SIZE  4
 
 // TITLE:CMD 5 - Set parameters
 // DESC :This command sets one or multiple configuration parameters of the actuator. When a parameter value is set to  -> no change  this parameter will not be modified. The VERT and ROT parameters describe the duration needed by the motor for a full run of the blind, or for a complete turn of the slats, respectively. They have to be measured on site and assigned to the actuator.
-T_DATAFIELD D20500_CMD5 [] = {
+T_DATAFIELD D2050X_CMD5 [] = {
 {  1 ,15 ,     0 ,     0 ,     0 ,     0 , "VERT"     , "Set vertical"},
 { 16 , 8 ,     0 ,     0 ,     0 ,     0 , "ROT"      , "Set rotation"},
 { 29 , 3 ,     0 ,     0 ,     0 ,     0 , "AA"       , "Set alarm action"},//Value: 0 = No action 
@@ -797,21 +797,21 @@ T_DATAFIELD D20500_CMD5 [] = {
 {  0 , 0 , 0          , 0           }
 };
 
-T_EEP_CASE_ D20500_CASE5 = { D20500_CMD5,"CMD 5 - Set parameters","This command sets one or multiple configuration parameters of the actuator. When a parameter value is set to  -> no change  this parameter will not be modified. The VERT and ROT parameters describe the duration needed by the motor for a full run of the blind, or for a complete turn of the slats, respectively. They have to be measured on site and assigned to the actuator." } ;// Index of field
-#define D20500_CMD5_VERT       0
-#define D20500_CMD5_ROT        1
-#define D20500_CMD5_AA         2
-#define D20500_CMD5_CHN        3
-#define D20500_CMD5_CMD        4
-#define D20500_CMD5_NB_DATA    5
-#define D20500_CMD5_DATA_SIZE  5
+T_EEP_CASE_ D2050X_CASE5 = { D2050X_CMD5,"CMD 5 - Set parameters","This command sets one or multiple configuration parameters of the actuator. When a parameter value is set to  -> no change  this parameter will not be modified. The VERT and ROT parameters describe the duration needed by the motor for a full run of the blind, or for a complete turn of the slats, respectively. They have to be measured on site and assigned to the actuator." } ;// Index of field
+#define D2050X_CMD5_VERT       0
+#define D2050X_CMD5_ROT        1
+#define D2050X_CMD5_AA         2
+#define D2050X_CMD5_CHN        3
+#define D2050X_CMD5_CMD        4
+#define D2050X_CMD5_NB_DATA    5
+#define D2050X_CMD5_DATA_SIZE  5
 
-T_EEP_CASE_* D20500_CASES [] = {
-&D20500_CASE1 ,
-&D20500_CASE2 ,
-&D20500_CASE3 ,
-&D20500_CASE4 ,
-&D20500_CASE5 ,
+T_EEP_CASE_* D2050X_CASES [] = {
+&D2050X_CASE1 ,
+&D2050X_CASE2 ,
+&D2050X_CASE3 ,
+&D2050X_CASE4 ,
+&D2050X_CASE5 ,
 0
 };
 
