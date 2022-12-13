@@ -221,8 +221,12 @@ namespace http {
 
 			int HwdID = atoi(idx.c_str());
 
+			// stype values aligned to ColorSwitch.h enum values in Hardware.html
+			int subtype = std::stoi(stype);
+			if ( (subtype <= 0) || (subtype > 8) ) subtype = 1;
+
 			Arilux Arilux(HwdID);
-			Arilux.InsertUpdateSwitch(sname, (stype == "0") ? sTypeColor_RGB : sTypeColor_RGB_W_Z, sipaddress);
+			Arilux.InsertUpdateSwitch(sname, subtype, sipaddress);
 		}
 	} // namespace server
 } // namespace http
