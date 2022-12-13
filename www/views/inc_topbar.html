@@ -12,7 +12,7 @@
 			<script>WatchLiveSearch();</script>
 		</span> 
 		<span id="tbFiltRooms" ng-show="ctrl.RoomPlans.length > 0">
-			<span id="tbIconRoom" class="tbIcon"><i class="fa fa-map" title="Room"></i> </span>
+			<span id="tbIconRoom" class="tbIcon"><i class="fa fa-house-laptop" title="Room"></i> </span>
 			<!-- <span data-i18n="Room">Room</span>:&nbsp; -->
 			<select id="comboroom" class="combobox ui-corner-all" ng-model="ctrl.roomSelected" ng-options="room.idx as room.name for room in ctrl.RoomPlans" ng-change="ctrl.changeRoom()"></select>
 		</span>		
