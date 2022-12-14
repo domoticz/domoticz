@@ -244,9 +244,9 @@ namespace http
 			/// store map between pages and application functions
 			std::map<std::string, webem_page_function> myPages_w;
 			void CleanSessions();
-			bool sumProxyHeader(const std::string sHeader, const request &req, std::vector<std::string> &vHeaderLines);
-			bool parseProxyHeader(std::vector<std::string> &vHeaderLines, std::vector<std::string> &vHosts);
-			bool parseForwardedProxyHeader(std::vector<std::string> &vHeaderLines, std::vector<std::string> &vHosts);
+			bool sumProxyHeader(const std::string &sHeader, const request &req, std::vector<std::string> &vHeaderLines);
+			bool parseProxyHeader(const std::vector<std::string> &vHeaderLines, std::vector<std::string> &vHosts);
+			bool parseForwardedProxyHeader(const std::vector<std::string> &vHeaderLines, std::vector<std::string> &vHosts);
 			session_store_impl_ptr mySessionStore; /// session store
 			/// request handler specialized to handle webem requests
 			/// Rene: Beware: myRequestHandler should be declared BEFORE myServer

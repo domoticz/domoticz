@@ -1201,45 +1201,37 @@ namespace http {
 			return bStatus;
 		}
 
-		bool cWebem::sumProxyHeader(const std::string sHeader, const request &req, std::vector<std::string> &vHeaderLines)
+		bool cWebem::sumProxyHeader(const std::string &sHeader, const request &req, std::vector<std::string> &vHeaderLines)
 		{
-			uint8_t iFound = 0;
-
 			for (const auto &header : req.headers)
 			{
-				if (sHeader.compare(header.name) == 0)
+				if (header.name.find(sHeader)==0)
 				{
-					iFound++;
 					vHeaderLines.push_back(header.value);
 				}
 			}
 
-			return (iFound > 0);
+			return !vHeaderLines.empty();		// Assuming the function is called with an empty vHeaderLines to begin with
 		}
 
-		bool cWebem::parseProxyHeader(std::vector<std::string> &vHeaderLines, std::vector<std::string> &vHosts)
+		bool cWebem::parseProxyHeader(const std::vector<std::string> &vHeaderLines, std::vector<std::string> &vHosts)
 		{
-			uint8_t iFound = 0;
-
 			for (const auto sLine : vHeaderLines)
 			{
 				std::vector<std::string> vLineParts;
 				StringSplit(sLine, ",", vLineParts);
 				for (std::string sPart : vLineParts)
 				{
-					iFound++;
 					stdstring_trimws(sPart);
 					vHosts.push_back(sPart);
 				}
 			}
 
-			return (iFound > 0);
+			return !vHosts.empty();		// Assuming the function is called with an empty vHosts to begin with
 		}
 
-		bool cWebem::parseForwardedProxyHeader(std::vector<std::string> &vHeaderLines, std::vector<std::string> &vHosts)
+		bool cWebem::parseForwardedProxyHeader(const std::vector<std::string> &vHeaderLines, std::vector<std::string> &vHosts)
 		{
-			uint8_t iFound = 0;
-
 			for (const auto sLine : vHeaderLines)
 			{
 				std::vector<std::string> vLineParts;
@@ -1249,7 +1241,6 @@ namespace http {
 					stdstring_trimws(sPart);
 					if (std::size_t isPos = sPart.find("for=") != std::string::npos)
 					{
-						iFound++;
 						isPos = isPos + 3;
 						std::size_t iePos = sLine.length();
 						if (sPart.find(";", isPos) != std::string::npos)
@@ -1263,7 +1254,7 @@ namespace http {
 				}
 			}
 
-			return (iFound > 0);
+			return !vHosts.empty();		// Assuming the function is called with an empty vHosts to begin with
 		}
 
 		bool cWebem::CheckVHost(const request &req)
