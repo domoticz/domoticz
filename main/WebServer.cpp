@@ -12669,13 +12669,20 @@ namespace http
 			root["title"] = "GetDevicesList";
 			int ii = 0;
 			std::vector<std::vector<std::string>> result;
-			result = m_sql.safe_query("SELECT ID, Name FROM DeviceStatus WHERE (Used == 1) ORDER BY Name COLLATE NOCASE ASC");
+			result = m_sql.safe_query("SELECT ID, Name, Type, SubType FROM DeviceStatus WHERE (Used == 1) ORDER BY Name COLLATE NOCASE ASC");
 			if (!result.empty())
 			{
 				for (const auto& sd : result)
 				{
+					root["result"][ii]["idx"] = sd[0];
 					root["result"][ii]["name"] = sd[1];
-					root["result"][ii]["value"] = sd[0];
+					root["result"][ii]["name_type"] = std_format("%s (%s/%s)",
+						sd[1].c_str(),
+						RFX_Type_Desc(std::stoi(sd[2]), 1),
+						RFX_Type_SubType_Desc(std::stoi(sd[2]), std::stoi(sd[3]))
+					);
+					//root["result"][ii]["Type"] = RFX_Type_Desc(std::stoi(sd[2]), 1);
+					//root["result"][ii]["SubType"] = RFX_Type_SubType_Desc(std::stoi(sd[2]), std::stoi(sd[3]));
 					ii++;
 				}
 			}
