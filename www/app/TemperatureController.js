@@ -104,6 +104,7 @@ define(['app', 'livesocket'], function (app) {
 					}
 				}
 			});
+			RefreshLiveSearch();
 		}
 
 		//We only call this once. After this the widgets are being updated automatically by used of the 'jsonupdate' broadcast event.
@@ -457,6 +458,8 @@ define(['app', 'livesocket'], function (app) {
 			});
 
 			ShowTemps();
+			////WatchLiveSearch();
+
 
 			$("#dialog-edittempdevice").keydown(function (event) {
 				if (event.keyCode == 13) {
@@ -474,26 +477,24 @@ define(['app', 'livesocket'], function (app) {
 
 		};
 
-		ctrl.RoomPlans = [{ idx: 0, name: $.t("All") }];
-		$.ajax({
-			url: "json.htm?type=plans",
-			async: false,
-			dataType: 'json',
-			success: function (data) {
-				if (typeof data.result != 'undefined') {
-					var totalItems = data.result.length;
-					if (totalItems > 0) {
-						$.each(data.result, function (i, item) {
-							ctrl.RoomPlans.push({
-								idx: item.idx,
-								name: item.Name
-							});
-						});
-					}
-				}
+		//handles TopBar Links
+		$scope.tblinks = [
+			{
+				href:"#/Temperature/CustomTempLog", 
+				text:"Custom Graph", 
+				i18n: "Custom Graph", 
+				icon: "area-chart"
+			},
+			{
+				onclick:"ShowForecast", 
+				text:"Forecast", 
+				i18n: "Forecast", 
+				icon: "cloud-sun-rain"
 			}
-		});
+		];
 
+		//handles RoomPlans
+		ctrl.RoomPlans=$rootScope.GetRoomPlans();	
 		var roomPlanId = $routeParams.room || window.myglobals.LastPlanSelected;
 
 		if (typeof roomPlanId != 'undefined') {
@@ -678,6 +679,8 @@ define(['app', 'livesocket'], function (app) {
 					};
 
 					$element.i18n();
+					//WatchLiveSearch();
+					WatchDescriptions();
 
 					if ($scope.ordering == true) {
 						if (permissions.hasPermission("Admin")) {

@@ -1,3 +1,5 @@
+/* @override http://domoticz.lo.lo:8080/css/style.css */
+
 @font-face {
 	font-family: 'Satisfy';
 	font-style: normal;
@@ -1729,6 +1731,166 @@ span.evomobile {
 #timesun {
 	height: 2.60em;
 }
+
+/* Top Bar ------ */
+
+/*#roomselect{
+	white-space: nowrap;
+	margin-bottom: 5px;
+	margin-left: 5px;
+	display: inline-block;
+}*/
+/*
+#forecastdiv{
+	margin-left: 5px;
+}
+*/
+
+
+#topBar{
+	/*margin-top: 5px;*/
+	overflow: hidden;
+	line-height: 38px;
+	padding-bottom: 5px;
+}
+#tbFilters{
+	float: left;
+	margin-right: 10px;
+	vertical-align: middle;
+}
+#tbFilters .tbIcon{
+	margin-right: 5px;
+
+}
+#tbFiltSearch{
+	vertical-align: middle;
+	margin-bottom: 10px;
+	margin-right: 15px;
+	white-space: nowrap;
+	overflow: hidden;
+}
+
+#tbFiltSearch INPUT{
+	width: 140px;
+	padding: 1px 5px;
+	margin-bottom: 4px;
+	font-size: 13px;
+	line-height: 100%;
+	border-color: transparent;
+	border-radius: 7px;
+	-moz-border-radius: 7px;
+	-webkit-border-radius: 7px;
+}
+
+#tbFiltSearch INPUT:focus{
+	background-color: rgb(40, 55, 80);
+	color: #eee;
+	outline: none;
+	border-color: rgba(200, 200, 255,0.3);
+	box-shadow: none;
+	-webkit-box-shadow: none;
+}
+
+#tbFiltRooms{
+	margin-right: 15px;
+	white-space: nowrap;
+	vertical-align: middle;
+}
+#tbFiltRooms SELECT{
+	width: 140px;
+	margin-bottom: 5px;
+	display: inline-block;
+}
+
+#tbTimeSun{
+	float: left;
+	vertical-align: middle;
+	white-space: nowrap;
+}
+#tbTime{
+	margin-right: 5px;
+}
+#tbTimeSun .fa-sun{
+	margin-left: 8px;
+	color: yellow;
+}
+#tbSunGroup{
+	vertical-align: middle;
+	margin-left: 1px;
+	font-size: 10px;
+	color: #ccc;
+}
+
+.tbSun{
+	margin-left: 4px;
+}
+#tbLinks{
+	margin-left: 10px;
+	float: right;
+	white-space: nowrap;
+}
+#tbLinks A{
+	margin-left: 5px;
+	margin-bottom: 10px;
+	white-space: nowrap;
+}
+
+.sep{
+	margin-top: 15px;
+	margin-bottom: 15px;
+}
+
+@media (max-width: 730px) {
+	#tbLinks{
+		display: block;
+		width: 100%;
+		text-align: center;
+		padding-top: 5px;
+	}
+	#tbTimeSun{
+	float: right;
+	}
+}
+
+/* mimic the margins done by the (removed when filtering) 'row' Bootstrap Class */
+.devicesList{
+
+}
+.devicesListFiltered{
+	margin-left: -20px;
+}
+@media (max-width: 767px){
+	.devicesListFiltered{
+		margin-left: 0;
+	}	
+}
+@media (min-width: 768px) and (max-width: 979px){
+	.devicesListFiltered{
+		margin-left: -20px;
+	}	
+}
+@media (min-width: 1200px){
+	.devicesListFiltered{
+		margin-left: -16px;
+	}	
+}
+
+.itemBlock{
+
+}
+.liveSearchShown{
+	float: left;
+}
+
+SECTION.dashCategory{
+	display: block;
+	overflow: hidden;
+}
+SECTION.dashCategory .liveSearchShown{
+	margin: 0;
+}
+
+
 
 .bheader {
 	margin: 0em;

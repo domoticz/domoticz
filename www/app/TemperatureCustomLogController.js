@@ -5,7 +5,15 @@ define(['app'], function (app) {
                 var ctrl = this;
 
                 ctrl.init = function () {
-
+                    $scope.tblinks = [
+                        {
+                            href:"#/Temperature", 
+                            text:"Back", 
+                            i18n: "Back", 
+                            icon: "reply"
+                        }
+                    ];
+        
                     $('#modal').show();
 
                     $('#bannav').i18n();

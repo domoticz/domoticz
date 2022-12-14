@@ -351,20 +351,25 @@
 	<div id="weathercontent"></div>
 
 	<div id="weathertophtm">
+<!--
 		<table class="bannav" id="bannav" border="0" cellpadding="0" cellspacing="0" width="100%">
 			<tr>
 				<td align="left" valign="top" id="timesun"></td>
-				<td ng-show="config.Latitude!=''" style="width: 150px;" align="right">
-					<a id="Forecast" class="btnstyle" onclick="ShowForecast();" data-i18n="Forecast">Forecast</a>
+				<td  align="right">
+					<span ng-show="config.Latitude!=''"  style="width: 150px;" id="forecastdiv"><a id="Forecast" class="btnstyle" onclick="ShowForecast();" data-i18n="Forecast">Forecast</a></span></td>
 				</td>
 			</tr>
 		</table>
+-->
+		<div ng-include="'views/inc_topbar.html'"></div>
+
 	</div>
 
-	<div id="weatherwidgets" class="row divider">
-		<h2 ng-show="ctrl.items.length == 0" data-i18n="No Weather sensors found or added in the system...">No Weather sensors found or added in the system...</h2>
-		<div ng-repeat-start="t in ctrl.items" class="clearfix" ng-if="$index % 3 == 0 && !$first"></div>
-		<dzweatherwidget ng-repeat-end class="span4" id="{{t.idx}}" item="t" tempsign="config.TempSign" windsign="config.WindSign" ordering="config.AllowWidgetOrdering" dragwidget="DragWidget(idx)" dropwidget="DropWidget(idx)"></dzweatherwidget>
+	<div class="devicesList">
+		<div id="weatherwidgets" class="row divider">
+			<h2 ng-show="ctrl.items.length == 0" data-i18n="No Weather sensors found or added in the system...">No Weather sensors found or added in the system...</h2>
+			<div ng-repeat-start="t in ctrl.items" class="clearfix" ng-if="$index % 3 == 0 && !$first"></div>
+			<dzweatherwidget ng-repeat-end class="span4 itemBlock" id="{{t.idx}}" item="t" tempsign="config.TempSign" windsign="config.WindSign" ordering="config.AllowWidgetOrdering" dragwidget="DragWidget(idx)" dropwidget="DropWidget(idx)"></dzweatherwidget>
+		</div>
 	</div>
-
 </div>

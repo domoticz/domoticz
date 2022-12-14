@@ -103,34 +103,16 @@
 <gz-back-to-top></gz-back-to-top>
 	<div id="tempcontent"></div>
 	<div id="temptophtm">
-		<table border="0" cellpadding="0" cellspacing="0" width="100%">
-			<tr>
-				<td align="left" valign="top" id="timesun"></td>
-				<td align="right" valign="top">
-					<div ng-show="ctrl.RoomPlans.length>0">
-						<span data-i18n="Room">Room</span>:
-						<select id="comboroom" style="width:160px" class="combobox ui-corner-all"
-							ng-model="ctrl.roomSelected" ng-options="room.idx as room.name for room in ctrl.RoomPlans"
-							ng-change="ctrl.changeRoom()">
-						</select>
-					</div>
-				</td>
-			</tr>
-		</table>
-		<table ng-show="ctrl.isNotMobile()" class="bannav" border="0" cellpadding="0" cellspacing="0" width="100%">
-			<tr>
-				<td align="left"></td>
-				<td align="right">
-					<a href="#/Temperature/CustomTempLog" class="btnstyle" data-i18n="Custom Graph">Custom Graph</a>
-					<a ng-show="config.Latitude!=''" id="Forecast" class="btnstyle" onclick="ShowForecast();" data-i18n="Forecast">Forecast</a>
-				</td>
-			</tr>
-		</table>
-	</div>
-	<div id="tempwidgets" class="row divider">
-		<h2 ng-show="ctrl.temperatures.length == 0" data-i18n="No Temperature sensors found or added in the system...">No Temperature sensors found or added in the system...</h2>
-		<div ng-repeat-start="t in ctrl.temperatures" class="clearfix" ng-if="$index % 3 == 0 && !$first"></div>
-		<dztemperaturewidget ng-repeat-end class="span4" id="{{t.idx}}" item="t" tempsign="config.TempSign" windsign="config.WindSign" ordering="config.AllowWidgetOrdering" dragwidget="DragWidget(idx)" dropwidget="DropWidget(idx)"></dztemperaturewidget>
-	</div>
+
+		<div ng-include="'views/inc_topbar.html'"></div>
+
+  </div>
+  <div class="devicesList">
+    <div id="tempwidgets" class="row divider">
+      <h2 ng-show="ctrl.temperatures.length == 0" data-i18n="No Temperature sensors found or added in the system...">No Temperature sensors found or added in the system...</h2>
+      <div ng-repeat-start="t in ctrl.temperatures" class="clearfix" ng-if="$index % 3 == 0 && !$first"></div>
+      <dztemperaturewidget ng-repeat-end class="span4 itemBlock" id="{{t.idx}}" item="t" tempsign="config.TempSign" windsign="config.WindSign" ordering="config.AllowWidgetOrdering" dragwidget="DragWidget(idx)" dropwidget="DropWidget(idx)"></dztemperaturewidget>
+    </div>
+  </div>
 </div>
 
