@@ -1167,38 +1167,40 @@ namespace http {
 			// These headers can occur multiple times, so need to be 'squashed' together
 			// And a single line can contain multiple (comma separated) values in order
 
-			bool bStatus = true;
 			std::vector<std::string> headers;
 			std::vector<std::string> hosts;
 
 			if (sumProxyHeader("Forwarded", req, headers))
-			{	// We found one or more Forwarded headers that need to be processed into a list of Hosts
+			{
+				// We found one or more Forwarded headers that need to be processed into a list of Hosts
 				if (!parseForwardedProxyHeader(headers, hosts))
 				{
-					bStatus = false;
+					return false;
 				}
 			}
 			else if (sumProxyHeader("X-Forwarded-For", req, headers))
-			{	// We found one or more X-Forwarded-For headers that need to be processed into a list of Hosts
+			{
+				// We found one or more X-Forwarded-For headers that need to be processed into a list of Hosts
 				if (!parseProxyHeader(headers, hosts))
 				{
-					bStatus = false;
+					return false;
 				}
 			}
 			else if (sumProxyHeader("X-Real-IP", req, headers))
-			{	// We found one or more X-Real-IP headers that need to be processed into a list of Hosts
+			{
+				// We found one or more X-Real-IP headers that need to be processed into a list of Hosts
 				if (!parseProxyHeader(headers, hosts))
 				{
-					bStatus = false;
+					return false;
 				}
 			}
-
-			if (hosts.size() >= 1)
+			else
 			{
-				realhost = hosts[0];	// Even if we found a chain of hosts, we always use the first (= origin)
+				return false;
 			}
 
-			return bStatus;
+			realhost = hosts[0];	// Even if we found a chain of hosts, we always use the first (= origin)
+			return true;
 		}
 
 		bool cWebem::sumProxyHeader(const std::string &sHeader, const request &req, std::vector<std::string> &vHeaderLines)
