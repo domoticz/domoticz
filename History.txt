@@ -11,6 +11,7 @@ Version 2022.xxxx
 - Implemented: The Security realm can be configured using the 'vhostname' option (default domoticz.com)
 - Implemented: Search option in Switches/Scenes/Temperature/Utility and Weather tab
 - Implemented: User device selection now displays type/subtype
+- Changed: The following proxy headers are now properly supported 'Forwarded' (RFC7239), 'X-Forwarder-For' and 'X-Real-IP' (in that order)
 - Changed: All security related setting are now in 1 settings tab
 - Changed: Default 'admin' user is generated with standard password (see Users)
 - Changed: By default prompt for login to only allow secure access

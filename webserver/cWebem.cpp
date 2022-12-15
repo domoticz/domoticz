@@ -1157,6 +1157,108 @@ namespace http {
 			m_session_clean_timer.async_wait([this](auto &&) { CleanSessions(); });
 		}
 
+		bool cWebem::findRealHostBehindProxies(const request &req, std::string &realhost)
+		{
+			// Checking for 3 possible headers (in order of handling)
+			// "Forwarded"	RFC7239  (https://www.rfc-editor.org/rfc/rfc7239)
+			// "X-Forwarded-For" The defacto standard header used by many web/proxy servers (https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/X-Forwarded-For)
+			// "X-Real-IP"	The (old) default header used by NGINX  (http://nginx.org/en/docs/http/ngx_http_realip_module.html#real_ip_header)
+			//
+			// These headers can occur multiple times, so need to be 'squashed' together
+			// And a single line can contain multiple (comma separated) values in order
+
+			std::vector<std::string> headers;
+			std::vector<std::string> hosts;
+
+			if (sumProxyHeader("Forwarded", req, headers))
+			{
+				// We found one or more Forwarded headers that need to be processed into a list of Hosts
+				if (!parseForwardedProxyHeader(headers, hosts))
+				{
+					return false;
+				}
+			}
+			else if (sumProxyHeader("X-Forwarded-For", req, headers))
+			{
+				// We found one or more X-Forwarded-For headers that need to be processed into a list of Hosts
+				if (!parseProxyHeader(headers, hosts))
+				{
+					return false;
+				}
+			}
+			else if (sumProxyHeader("X-Real-IP", req, headers))
+			{
+				// We found one or more X-Real-IP headers that need to be processed into a list of Hosts
+				if (!parseProxyHeader(headers, hosts))
+				{
+					return false;
+				}
+			}
+			else
+			{
+				return false;
+			}
+
+			realhost = hosts[0];	// Even if we found a chain of hosts, we always use the first (= origin)
+			return true;
+		}
+
+		bool cWebem::sumProxyHeader(const std::string &sHeader, const request &req, std::vector<std::string> &vHeaderLines)
+		{
+			for (const auto &header : req.headers)
+			{
+				if (header.name.find(sHeader)==0)
+				{
+					vHeaderLines.push_back(header.value);
+				}
+			}
+
+			return !vHeaderLines.empty();		// Assuming the function is called with an empty vHeaderLines to begin with
+		}
+
+		bool cWebem::parseProxyHeader(const std::vector<std::string> &vHeaderLines, std::vector<std::string> &vHosts)
+		{
+			for (const auto sLine : vHeaderLines)
+			{
+				std::vector<std::string> vLineParts;
+				StringSplit(sLine, ",", vLineParts);
+				for (std::string sPart : vLineParts)
+				{
+					stdstring_trimws(sPart);
+					vHosts.push_back(sPart);
+				}
+			}
+
+			return !vHosts.empty();		// Assuming the function is called with an empty vHosts to begin with
+		}
+
+		bool cWebem::parseForwardedProxyHeader(const std::vector<std::string> &vHeaderLines, std::vector<std::string> &vHosts)
+		{
+			for (const auto sLine : vHeaderLines)
+			{
+				std::vector<std::string> vLineParts;
+				StringSplit(sLine, ",", vLineParts);
+				for (std::string sPart : vLineParts)
+				{
+					stdstring_trimws(sPart);
+					if (std::size_t isPos = sPart.find("for=") != std::string::npos)
+					{
+						isPos = isPos + 3;
+						std::size_t iePos = sLine.length();
+						if (sPart.find(";", isPos) != std::string::npos)
+						{
+							iePos = sPart.find(";", isPos);
+						}
+						std::string sSub = sPart.substr(isPos, (iePos - isPos));
+						stdstring_trimws(sSub);
+						vHosts.push_back(sSub);
+					}
+				}
+			}
+
+			return !vHosts.empty();		// Assuming the function is called with an empty vHosts to begin with
+		}
+
 		bool cWebem::CheckVHost(const request &req)
 		{
 			if (m_settings.vhostname.empty() || !m_settings.is_secure())	// Only do vhost checking for Secure (https) server
@@ -2281,28 +2383,20 @@ namespace http {
 			session.local_host = req.host_local_address;
 			session.local_port = req.host_local_port;
 
-			for (const auto& ittNetwork : myWebem->m_localnetworks)
+			// Let's examine possible proxies, etc.
+			std::string realHost;
+			if(!myWebem->findRealHostBehindProxies(req, realHost))
 			{
-				if (ittNetwork.ip_string.empty())
-					continue;
-				if (session.remote_host == ittNetwork.ip_string)
-				{
-					const char* host_header = request::get_req_header(&req, "X-Forwarded-For");
-					if (host_header != nullptr)
-					{
-						if (strstr(host_header, ",") != nullptr)
-						{
-							//Multiple proxies are used... this is not very common
-							host_header = request::get_req_header(&req, "X-Real-IP"); //try our NGINX header
-							if (!host_header)
-							{
-								_log.Log(LOG_ERROR, "[web:%s]: Multiple proxies are used (Or possible spoofing attempt), ignoring client request (remote address: %s)", myWebem->GetPort().c_str(), session.remote_host.c_str());
-								rep = reply::stock_reply(reply::forbidden);
-								return;
-							}
-						}
-						session.remote_host = host_header;
-					}
+				_log.Log(LOG_ERROR, "[web:%s]: Unable to determine origin due to different proxy headers being used (Or possible spoofing attempt), ignoring client request (remote address: %s)", myWebem->GetPort().c_str(), session.remote_host.c_str());
+				rep = reply::stock_reply(reply::forbidden);
+				return;
+			}
+			else if (!realHost.empty())
+			{
+				if (AreWeInTrustedNetwork(session.remote_host))
+				{	// We only use Proxy header information if the connection Domotic receives comes from a Trusted network
+					session.remote_host = realHost;		// replace the host of the connection with the originating host behind the proxies
+					rep.originHost = realHost;
 				}
 			}
 
@@ -2352,18 +2446,14 @@ namespace http {
 				if(parse_cookie(req, sSID, sAuthToken, szTime, expired))
 				{
 					_log.Debug(DEBUG_WEBSERVER, "[web:%s] Logout : remove session %s", myWebem->GetPort().c_str(), sSID.c_str());
-					auto itt = myWebem->m_sessions.find(sSID);
-					if (itt != myWebem->m_sessions.end())
-					{
-						myWebem->m_sessions.erase(itt);
-					}
+					myWebem->RemoveSession(sSID);
 					removeAuthToken(sSID);
+					send_remove_cookie(rep);
 				}
 				session.username = "";
 				session.rights = -1;
 				session.forcelogin = true;
 				rep = reply::stock_reply(reply::no_content);
-				send_remove_cookie(rep);
 				return;
 			}
 
@@ -2392,13 +2482,13 @@ namespace http {
 			if (isAction)
 			{
 				// Post actions only allowed when authenticated and user has admin rights
-				if (session.rights != 2)
+				if (session.rights != URIGHTS_ADMIN)
 				{
 					rep = reply::stock_reply(reply::forbidden);
 					return;
 				}
 				bHandledAction = myWebem->CheckForAction(session, requestCopy);
-				if (!requestCopy.uri.empty())
+				if (bHandledAction && !requestCopy.uri.empty())
 				{
 					if ((requestCopy.method == "POST") && (requestCopy.uri[0] != '/'))
 					{
@@ -2469,7 +2559,7 @@ namespace http {
 			session.timeout = mytime(nullptr) + SHORT_SESSION_TIMEOUT;
 
 			if ((session.isnew == true) &&
-				(session.rights == 2) &&
+				(session.rights == URIGHTS_ADMIN) &&
 				(req.uri.find("json.htm") != std::string::npos) &&
 				(req.uri.find("logincheck") == std::string::npos)
 				)

@@ -196,6 +196,7 @@ namespace http
 			bool GenerateJwtToken(std::string &jwttoken, const std::string clientid, const std::string clientsecret, const std::string user, const uint32_t exptime, const Json::Value jwtpayload = "");
 			bool FindAuthenticatedUser(std::string &user, const request &req, reply &rep);
 			bool CheckVHost(const request &req);
+			bool findRealHostBehindProxies(const request &req, std::string &realhost);
 
 			void ClearUserPasswords();
 			std::vector<_tWebUserPassword> m_userpasswords;
@@ -243,6 +244,9 @@ namespace http
 			/// store map between pages and application functions
 			std::map<std::string, webem_page_function> myPages_w;
 			void CleanSessions();
+			bool sumProxyHeader(const std::string &sHeader, const request &req, std::vector<std::string> &vHeaderLines);
+			bool parseProxyHeader(const std::vector<std::string> &vHeaderLines, std::vector<std::string> &vHosts);
+			bool parseForwardedProxyHeader(const std::vector<std::string> &vHeaderLines, std::vector<std::string> &vHosts);
 			session_store_impl_ptr mySessionStore; /// session store
 			/// request handler specialized to handle webem requests
 			/// Rene: Beware: myRequestHandler should be declared BEFORE myServer
