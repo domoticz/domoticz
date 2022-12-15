@@ -930,7 +930,7 @@ namespace http {
 		{
 			if (network.empty())
 			{
-				_log.Log(LOG_STATUS, "[web:%s] Empty network string provided! Skipping...", GetPort().c_str());
+				_log.Log(LOG_STATUS, "[web:%s] Empty trusted network string provided! Skipping...", GetPort().c_str());
 				return;
 			}
 
@@ -940,7 +940,7 @@ namespace http {
 			uint8_t iASize = (!ipnetwork.bIsIPv6) ? 4 : 16;
 			int ii;
 
-			_log.Log(LOG_STATUS, "[web:%s] Adding IPv%s network (%s) to list of trusted networks.", GetPort().c_str(), (ipnetwork.bIsIPv6 ? "6" : "4"), network.c_str());
+			_log.Debug(DEBUG_WEBSERVER, "[web:%s] Adding IPv%s network (%s) to list of trusted networks.", GetPort().c_str(), (ipnetwork.bIsIPv6 ? "6" : "4"), network.c_str());
 
 			if (network.find('*') != std::string::npos)
 			{
