@@ -336,7 +336,7 @@ namespace http
 
 				if (m_users.empty())
 				{
-					AddUser(99999, "tmpadmin", "tmpadmin", (_eUserRights)URIGHTS_ADMIN, 63);
+					AddUser(99999, "tmpadmin", "tmpadmin", (_eUserRights)URIGHTS_ADMIN, 0x1F);
 					_log.Debug(DEBUG_AUTH, "[Start server] Added tmpadmin User as no active Users where found!");
 				}
 			}
@@ -3175,27 +3175,30 @@ namespace http
 			root["TempSign"] = m_sql.m_tempsign;
 
 			int bEnableTabDashboard = 1;
-			int bEnableTabFloorplans = 1;
+			int bEnableTabFloorplans = 0;
 			int bEnableTabLight = 1;
 			int bEnableTabScenes = 1;
 			int bEnableTabTemp = 1;
 			int bEnableTabWeather = 1;
 			int bEnableTabUtility = 1;
-			int bEnableTabCustom = 1;
+			int bEnableTabCustom = 0;
 
-			int TabsEnabled = 63;
-			std::vector<std::vector<std::string>> result;
-			result = m_sql.safe_query("SELECT TabsEnabled FROM Users WHERE (ID==%lu)", UserID);
-			if (!result.empty())
-				TabsEnabled = atoi(result[0][0].c_str());
-
-			bEnableTabLight = (TabsEnabled & (1 << 0));
-			bEnableTabScenes = (TabsEnabled & (1 << 1));
-			bEnableTabTemp = (TabsEnabled & (1 << 2));
-			bEnableTabWeather = (TabsEnabled & (1 << 3));
-			bEnableTabUtility = (TabsEnabled & (1 << 4));
-			bEnableTabCustom = (TabsEnabled & (1 << 5));
-			bEnableTabFloorplans = (TabsEnabled & (1 << 6));
+			if (UserID != -1)
+			{
+				std::vector<std::vector<std::string>> result;
+				result = m_sql.safe_query("SELECT TabsEnabled FROM Users WHERE (ID==%lu)", UserID);
+				if (!result.empty())
+				{
+					int TabsEnabled = atoi(result[0][0].c_str());
+					bEnableTabLight = (TabsEnabled & (1 << 0));
+					bEnableTabScenes = (TabsEnabled & (1 << 1));
+					bEnableTabTemp = (TabsEnabled & (1 << 2));
+					bEnableTabWeather = (TabsEnabled & (1 << 3));
+					bEnableTabUtility = (TabsEnabled & (1 << 4));
+					bEnableTabCustom = (TabsEnabled & (1 << 5));
+					bEnableTabFloorplans = (TabsEnabled & (1 << 6));
+				}
+			}
 
 			if (iDashboardType == 3)
 			{
