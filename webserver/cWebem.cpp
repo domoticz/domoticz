@@ -2462,6 +2462,10 @@ namespace http {
 				std::string sAuthToken;
 				std::string szTime;
 				bool expired = false;
+
+				session.username = "";
+				session.rights = -1;
+				rep = reply::stock_reply(reply::no_content);
 				if(parse_cookie(req, sSID, sAuthToken, szTime, expired))
 				{
 					_log.Debug(DEBUG_AUTH, "[web:%s] Logout : remove session %s", myWebem->GetPort().c_str(), sSID.c_str());
@@ -2469,9 +2473,6 @@ namespace http {
 					removeAuthToken(sSID);
 					send_remove_cookie(rep);
 				}
-				session.username = "";
-				session.rights = -1;
-				rep = reply::stock_reply(reply::no_content);
 				return;
 			}
 
