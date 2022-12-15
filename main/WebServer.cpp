@@ -2994,10 +2994,10 @@ namespace http
 			root["title"] = "GetAuth";
 			if (session.rights != -1)
 			{
+				root["user"] = session.username;
+				root["rights"] = session.rights;
 				root["version"] = szAppVersion;
 			}
-			root["user"] = session.username;
-			root["rights"] = session.rights;
 		}
 
 		void CWebServer::Cmd_GetUptime(WebEmSession& session, const request& req, Json::Value& root)
