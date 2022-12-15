@@ -506,7 +506,7 @@ define(['angularAMD', 'app.routes', 'app.constants', 'app.notifications', 'app.p
 				isOnline = true;
 				if (data.status == "OK") {
 					if (data.user !== "") {
-						permissionList.isloggedin = (data.user != "");
+						permissionList.isloggedin = true;
 						permissionList.rights = parseInt(data.rights);
 						permissionList.user = data.user;
 					}
