@@ -18,6 +18,7 @@ Version 2022.xxxx
 - Changed: The secure server (HTTPS) sends proper CORS and Security headers
 - Changed: Menu option for 'Users' moved to main 'Setup' menu list
 - Changed: Lots of security related code cleanup and improvements
+- Fixed: Dashboard, not showing disabled sections (temperature/weather/utility) when a device has multiple properties (for instance temperature + weather)
 - Fixed: Logout now returns 204 instead of 401
 - Fixed: Waterflow sensor custom icon
 - Fixed: Mobile display text objects with long lines
