@@ -1196,7 +1196,7 @@ namespace http {
 			}
 			else
 			{
-				return false;
+				return true;
 			}
 
 			realhost = hosts[0];	// Even if we found a chain of hosts, we always use the first (= origin)
