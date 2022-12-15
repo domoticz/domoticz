@@ -815,36 +815,24 @@ namespace http
 			if (rtype == "command")
 			{
 				std::string cparam = request::findValue(&req, "param");
-				if (cparam.empty())
+				if (!cparam.empty())
 				{
-					cparam = request::findValue(&req, "dparam");
-					if (cparam.empty())
-					{
-						goto exitjson;
-					}
+					_log.Debug(DEBUG_WEBSERVER, "CWebServer::GetJSonPage() :%s :%s ", cparam.c_str(), req.uri.c_str());
+					HandleCommand(cparam, session, req, root);
 				}
-				if (cparam == "dologout")
-				{
-					session.forcelogin = true;
-					root["status"] = "OK";
-					root["title"] = "Logout";
-					goto exitjson;
-				}
-				_log.Debug(DEBUG_WEBSERVER, "CWebServer::GetJSonPage() :%s :%s ", cparam.c_str(), req.uri.c_str());
-				HandleCommand(cparam, session, req, root);
 			} //(rtype=="command")
 			else
 			{
 				HandleRType(rtype, session, req, root);
 			}
-		exitjson:
+
 			std::string jcallback = request::findValue(&req, "jsoncallback");
-			if (jcallback.empty())
+			if (!jcallback.empty())
 			{
-				reply::set_content(&rep, root.toStyledString());
+				reply::set_content(&rep, "var data=" + root.toStyledString() + '\n' + jcallback + "(data);");
 				return;
 			}
-			reply::set_content(&rep, "var data=" + root.toStyledString() + '\n' + jcallback + "(data);");
+			reply::set_content(&rep, root.toStyledString());
 		}
 
 		void CWebServer::Cmd_GetLanguage(WebEmSession& session, const request& req, Json::Value& root)
@@ -3006,10 +2994,10 @@ namespace http
 			root["title"] = "GetAuth";
 			if (session.rights != -1)
 			{
+				root["user"] = session.username;
+				root["rights"] = session.rights;
 				root["version"] = szAppVersion;
 			}
-			root["user"] = session.username;
-			root["rights"] = session.rights;
 		}
 
 		void CWebServer::Cmd_GetUptime(WebEmSession& session, const request& req, Json::Value& root)
@@ -3131,12 +3119,7 @@ namespace http
 
 			int iUser = -1;
 			unsigned long UserID = -1;
-			if (session.username.empty() || (iUser = FindUser(session.username.c_str())) == -1)
-			{
-				root["message"] = "Unable to find a logged-in User!";
-				//return;
-			}
-			else
+			if (!session.username.empty() && (iUser = FindUser(session.username.c_str())) != -1)
 			{
 				UserID = m_users[iUser].ID;
 				root["UserName"] = m_users[iUser].Username;
