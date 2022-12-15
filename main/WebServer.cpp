@@ -3119,12 +3119,7 @@ namespace http
 
 			int iUser = -1;
 			unsigned long UserID = -1;
-			if (session.username.empty() || (iUser = FindUser(session.username.c_str())) == -1)
-			{
-				root["message"] = "Unable to find a logged-in User!";
-				//return;
-			}
-			else
+			if (!session.username.empty() && (iUser = FindUser(session.username.c_str())) != -1)
 			{
 				UserID = m_users[iUser].ID;
 				root["UserName"] = m_users[iUser].Username;
