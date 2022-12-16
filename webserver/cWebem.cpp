@@ -2133,7 +2133,7 @@ namespace http {
 				}
 				else if (_ah.method == "BASIC")
 				{
-					if (req.uri.find("json.htm") != std::string::npos && CheckUserAuthorization(_ah.user, &_ah))	// Exception for the main API endpoint so scripts can execute them with 'just' Basic AUTH
+					if (bTrustedNetwork && req.uri.find("json.htm") != std::string::npos && CheckUserAuthorization(_ah.user, &_ah))	// Exception for the main API endpoint so scripts can execute them with 'just' Basic AUTH
 					{
 						_log.Debug(DEBUG_AUTH, "[Auth Check] Found Basic Authorization for json.htm call: Method %s, Userdata %s, rights %s", _ah.method.c_str(), _ah.user.c_str(), _ah.qop.c_str());
 						session.isnew = false;
