@@ -1863,7 +1863,7 @@ namespace http {
 
 		void cWebemRequestHandler::send_authorization_request(reply& rep)
 		{
-			rep = reply::stock_reply(reply::unauthorized);
+			rep = reply::stock_reply(reply::unauthorized, myWebem->m_settings.is_secure());
 			rep.status = reply::unauthorized;
 			reply::add_cors_headers(&rep);
 			send_remove_cookie(rep);
@@ -2118,7 +2118,7 @@ namespace http {
 				bTrustedNetwork = true;
 			}
 
-			//Check for valid JWT token
+			//Check for valid Authorization headers (JWT Token, Basis Authentication, etc.) and use these offered credentials
 			struct ah _ah;
 			if (parse_auth_header(req, &_ah))
 			{
@@ -2133,14 +2133,24 @@ namespace http {
 				}
 				else if (_ah.method == "BASIC")
 				{
-					if (bTrustedNetwork && req.uri.find("json.htm") != std::string::npos && CheckUserAuthorization(_ah.user, &_ah))	// Exception for the main API endpoint so scripts can execute them with 'just' Basic AUTH
+					if (bTrustedNetwork && req.uri.find("json.htm") != std::string::npos)	// Exception for the main API endpoint so scripts can execute them with 'just' Basic AUTH
 					{
-						_log.Debug(DEBUG_AUTH, "[Auth Check] Found Basic Authorization for json.htm call: Method %s, Userdata %s, rights %s", _ah.method.c_str(), _ah.user.c_str(), _ah.qop.c_str());
-						session.isnew = false;
-						session.rememberme = false;
-						session.username = _ah.user;
-						session.rights = std::atoi(_ah.qop.c_str());
-						return true;
+						if (CheckUserAuthorization(_ah.user, &_ah))
+						{
+							_log.Debug(DEBUG_AUTH, "[Auth Check] Found Basic Authorization for json.htm call: Method %s, Userdata %s, rights %s", _ah.method.c_str(), _ah.user.c_str(), _ah.qop.c_str());
+							session.isnew = false;
+							session.rememberme = false;
+							session.username = _ah.user;
+							session.rights = std::atoi(_ah.qop.c_str());
+							return true;
+						}
+						else
+						{	// Clear the session as we are in Trusted Network AND have invalid Basic Auth
+							_log.Debug(DEBUG_AUTH, "[Auth Check] Invalid Basic Authorization for json.htm call!");
+							session.username = "";
+							session.rights = -1;
+							return false;
+						}
 					}
 				}
 			}
@@ -2193,7 +2203,6 @@ namespace http {
 							myWebem->RemoveSession(sSID);
 							removeAuthToken(sSID);
 						}
-						send_authorization_request(rep);
 						return false;
 					}
 					if (oldSession != nullptr)
@@ -2214,7 +2223,6 @@ namespace http {
 						return true;
 					}
 
-					send_authorization_request(rep);
 					return false;
 
 				}
@@ -2225,7 +2233,6 @@ namespace http {
 						return true;
 
 					// Force login form
-					send_authorization_request(rep);
 					return false;
 				}
 			}
@@ -2251,7 +2258,6 @@ namespace http {
 						rep = reply::stock_reply(reply::service_unavailable);
 						return false;
 					}
-					send_authorization_request(rep);
 					return false;
 				}
 				return true;
@@ -2405,6 +2411,7 @@ namespace http {
 
 			// Let's examine possible proxies, etc.
 			std::string realHost;
+			bool bUseRealHost = false;
 			if(!myWebem->findRealHostBehindProxies(req, realHost))
 			{
 				_log.Log(LOG_ERROR, "[web:%s]: Unable to determine origin due to different proxy headers being used (Or possible spoofing attempt), ignoring client request (remote address: %s)", myWebem->GetPort().c_str(), session.remote_host.c_str());
@@ -2417,6 +2424,7 @@ namespace http {
 				{	// We only use Proxy header information if the connection Domotic receives comes from a Trusted network
 					session.remote_host = realHost;		// replace the host of the connection with the originating host behind the proxies
 					rep.originHost = realHost;
+					bUseRealHost = true;
 				}
 			}
 
@@ -2466,6 +2474,8 @@ namespace http {
 				session.username = "";
 				session.rights = -1;
 				rep = reply::stock_reply(reply::no_content);
+				if(bUseRealHost)
+					rep.originHost = realHost;
 				if(parse_cookie(req, sSID, sAuthToken, szTime, expired))
 				{
 					_log.Debug(DEBUG_AUTH, "[web:%s] Logout : remove session %s", myWebem->GetPort().c_str(), sSID.c_str());
@@ -2490,6 +2500,8 @@ namespace http {
 			{
 				_log.Debug(DEBUG_WEBSERVER, "[web:%s] Did not find suitable Authorization!", myWebem->GetPort().c_str());
 				send_authorization_request(rep);
+				if(bUseRealHost)
+					rep.originHost = realHost;
 				return;
 			}
 			if (isUpgradeRequest)	// And authorized, which has been checked above
