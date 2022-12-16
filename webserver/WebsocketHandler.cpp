@@ -47,6 +47,7 @@ namespace http {
 						session.timeout = nowAnd1Day;
 						session.expires = nowAnd1Day;
 						session.isnew = false;
+						session.forcelogin = false;
 						session.rememberme = false;
 						session.reply_status = 200;
 					}

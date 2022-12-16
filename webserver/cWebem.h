@@ -54,6 +54,7 @@ namespace http
 			int rights = 0;
 			bool rememberme = false;
 			bool isnew = false;
+			bool forcelogin = false;
 		} WebEmSession;
 
 		typedef struct _tIPNetwork
@@ -137,9 +138,7 @@ namespace http
 			/// Websocket methods
 			bool is_upgrade_request(WebEmSession &session, const request &req, reply &rep);
 			std::string compute_accept_header(const std::string &websocket_key);
-			bool CheckAuthByPass(const request& req);
 			bool CheckAuthentication(WebEmSession &session, const request &req, reply &rep);
-			bool CheckUserAuthorization(std::string &user, struct ah *ah);
 			void send_authorization_request(reply &rep);
 			void send_remove_cookie(reply &rep);
 			std::string generateSessionID();

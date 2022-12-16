@@ -930,7 +930,7 @@ namespace http {
 		{
 			if (network.empty())
 			{
-				_log.Log(LOG_STATUS, "[web:%s] Empty trusted network string provided! Skipping...", GetPort().c_str());
+				_log.Log(LOG_STATUS, "[web:%s] Empty network string provided! Skipping...", GetPort().c_str());
 				return;
 			}
 
@@ -940,7 +940,7 @@ namespace http {
 			uint8_t iASize = (!ipnetwork.bIsIPv6) ? 4 : 16;
 			int ii;
 
-			_log.Debug(DEBUG_WEBSERVER, "[web:%s] Adding IPv%s network (%s) to list of trusted networks.", GetPort().c_str(), (ipnetwork.bIsIPv6 ? "6" : "4"), network.c_str());
+			_log.Log(LOG_STATUS, "[web:%s] Adding IPv%s network (%s) to list of trusted networks.", GetPort().c_str(), (ipnetwork.bIsIPv6 ? "6" : "4"), network.c_str());
 
 			if (network.find('*') != std::string::npos)
 			{
@@ -1315,22 +1315,13 @@ namespace http {
 			if(!parse_auth_header(req, &_ah))
 				return false;
 
-			return CheckUserAuthorization(user, &_ah);
-		}
-
-		bool cWebemRequestHandler::CheckUserAuthorization(std::string &user, struct ah *ah)
-		{
 			// Check if valid password has been provided for the user
 			for (const auto &my : myWebem->m_userpasswords)
 			{
-				if (my.Username == ah->user && my.userrights != URIGHTS_CLIENTID)
+				if (my.Username == _ah.user && my.userrights != URIGHTS_CLIENTID)
 				{
-					user = ah->user;	// At least we know it is an existing User
-					if (check_password(ah, my.Password))
-					{
-						ah->qop = std::to_string(my.userrights);
-						return true;
-					}
+					user = _ah.user;	// At least we know it is an existing User
+					return check_password(&_ah, my.Password);
 				}
 			}
 			return false;
@@ -1379,7 +1370,6 @@ namespace http {
 				{
 					return 0;
 				}
-				ah->method = "X509";
 				_log.Debug(DEBUG_AUTH, "[X509] Found a X509 Auth Header (%s)", ah->user.c_str());
 				return 1;
 			}
@@ -1393,7 +1383,6 @@ namespace http {
 					return 0;
 				}
 
-				ah->method = "BASIC";
 				ah->user = decoded.substr(0, npos);
 				ah->response = decoded.substr(npos + 1);
 				_log.Debug(DEBUG_AUTH, "[Basic] Found a Basic Auth Header (%s)", ah->user.c_str());
@@ -1546,9 +1535,7 @@ namespace http {
 			return 0;
 		}
 
-		// Authorize against the internal Userlist. Credentials coming via Authorization header or URL parameters.
-		// Return 1 if authorized.
-		// Only used when webserver Authentication method is set to Auth_Basic.
+		// Authorize against the opened passwords file. Return 1 if authorized.
 		int cWebemRequestHandler::authorize(WebEmSession & session, const request& req, reply& rep)
 		{
 			struct ah _ah;
@@ -2071,32 +2058,10 @@ namespace http {
 			return true;
 		}
 
-		bool cWebemRequestHandler::CheckAuthByPass(const request& req)
-		{
-			//Check if we need to bypass authentication for this request (URL or command)
-			for (const auto &url : myWebem->myWhitelistURLs)
-				if (req.uri.find(url) == 0)
-					return true;
-
-			std::string cmdparam;
-			if (GetURICommandParameter(req.uri, cmdparam))
-			{
-				for (const auto &cmd : myWebem->myWhitelistCommands)
-					if (cmdparam.find(cmd) == 0)
-						return true;
-			}
-
-			return false;
-		}
-
 		bool cWebemRequestHandler::CheckAuthentication(WebEmSession & session, const request& req, reply& rep)
 		{
-			bool bTrustedNetwork = false;
-
 			session.rights = -1; // no rights
 			session.id = "";
-			session.username = "";
-			session.auth_token = "";
 
 			if (myWebem->m_userpasswords.empty())
 			{
@@ -2115,7 +2080,6 @@ namespace http {
 				}
 				if (session.rights == -1)
 					_log.Debug(DEBUG_AUTH, "[Auth Check] Trusted network exception detected, but no Admin User found!");
-				bTrustedNetwork = true;
 			}
 
 			//Check for valid JWT token
@@ -2128,20 +2092,9 @@ namespace http {
 					session.isnew = false;
 					session.rememberme = false;
 					session.username = _ah.user;
+					session.auth_token = _ah.nc;
 					session.rights = std::atoi(_ah.qop.c_str());
 					return true;
-				}
-				else if (_ah.method == "BASIC")
-				{
-					if (bTrustedNetwork && req.uri.find("json.htm") != std::string::npos && CheckUserAuthorization(_ah.user, &_ah))	// Exception for the main API endpoint so scripts can execute them with 'just' Basic AUTH
-					{
-						_log.Debug(DEBUG_AUTH, "[Auth Check] Found Basic Authorization for json.htm call: Method %s, Userdata %s, rights %s", _ah.method.c_str(), _ah.user.c_str(), _ah.qop.c_str());
-						session.isnew = false;
-						session.rememberme = false;
-						session.username = _ah.user;
-						session.rights = std::atoi(_ah.qop.c_str());
-						return true;
-					}
 				}
 			}
 
@@ -2221,8 +2174,16 @@ namespace http {
 				// invalid cookie
 				if (myWebem->m_authmethod != AUTH_BASIC)
 				{
-					if (CheckAuthByPass(req))
-						return true;
+					// Check if we need to bypass authentication (not when using basic-auth)
+					for (const auto &url : myWebem->myWhitelistURLs)
+						if (req.uri.find(url) == 0)
+							return true;
+
+					std::string cmdparam;
+					if (GetURICommandParameter(req.uri, cmdparam))
+						for (const auto &cmd : myWebem->myWhitelistCommands)
+							if (cmdparam.find(cmd) == 0)
+								return true;
 
 					// Force login form
 					send_authorization_request(rep);
@@ -2230,11 +2191,18 @@ namespace http {
 				}
 			}
 
-			// Not sure why this is here? Isn't this the case for all situation where the session ID is empty? Not only with admins
-			if ((session.rights == URIGHTS_ADMIN) && (session.id.empty()))
+			if ((session.rights == 2) && (session.id.empty()))
 			{
 				session.isnew = true;
 				return true;
+			}
+
+			//patch to let always support basic authentication function for script calls
+			if (req.uri.find("json.htm") != std::string::npos)
+			{
+				//Check first if we have a basic auth
+				if (authorize(session, req, rep))
+					return true;
 			}
 
 			if (myWebem->m_authmethod == AUTH_BASIC)
@@ -2255,6 +2223,19 @@ namespace http {
 					return false;
 				}
 				return true;
+			}
+
+			//Check if we need to bypass authentication (not when using basic-auth)
+			for (const auto &url : myWebem->myWhitelistURLs)
+				if (req.uri.find(url) == 0)
+					return true;
+
+			std::string cmdparam;
+			if (GetURICommandParameter(req.uri, cmdparam))
+			{
+				for (const auto &cmd : myWebem->myWhitelistCommands)
+					if (cmdparam.find(cmd) == 0)
+						return true;
 			}
 
 			return false;
@@ -2401,7 +2382,6 @@ namespace http {
 			session.remote_port = req.host_remote_port;
 			session.local_host = req.host_local_address;
 			session.local_port = req.host_local_port;
-			session.rights = -1;
 
 			// Let's examine possible proxies, etc.
 			std::string realHost;
@@ -2435,6 +2415,7 @@ namespace http {
 
 			session.reply_status = reply::ok;
 			session.isnew = false;
+			session.forcelogin = false;
 			session.rememberme = false;
 
 			rep.status = reply::ok;
@@ -2462,31 +2443,27 @@ namespace http {
 				std::string sAuthToken;
 				std::string szTime;
 				bool expired = false;
-
-				session.username = "";
-				session.rights = -1;
-				rep = reply::stock_reply(reply::no_content);
 				if(parse_cookie(req, sSID, sAuthToken, szTime, expired))
 				{
-					_log.Debug(DEBUG_AUTH, "[web:%s] Logout : remove session %s", myWebem->GetPort().c_str(), sSID.c_str());
+					_log.Debug(DEBUG_WEBSERVER, "[web:%s] Logout : remove session %s", myWebem->GetPort().c_str(), sSID.c_str());
 					myWebem->RemoveSession(sSID);
 					removeAuthToken(sSID);
 					send_remove_cookie(rep);
 				}
+				session.username = "";
+				session.rights = -1;
+				session.forcelogin = true;
+				rep = reply::stock_reply(reply::no_content);
 				return;
 			}
 
 			// Check if this is an upgrade request to a websocket connection
 			bool isUpgradeRequest = is_upgrade_request(session, req, rep);
-
-			// Does the request needs to be Authorized?
-			bool needsAuthentication = (!CheckAuthByPass(req));
 			bool isAuthenticated = CheckAuthentication(session, req, rep);
-
-			_log.Debug(DEBUG_AUTH,"[web:%s] isPage %d isAction %d isUpgrade %d needsAuthentication %d isAuthenticated %d (%s)", myWebem->GetPort().c_str(), isPage, isAction, isUpgradeRequest, needsAuthentication, isAuthenticated, session.username.c_str());
+			_log.Debug(DEBUG_AUTH,"[web:%s] isPage %d isAction %d isUpgrade %d isAuthenticated %d (%s)", myWebem->GetPort().c_str(), isPage, isAction, isUpgradeRequest, isAuthenticated, session.username.c_str());
 
 			// Check user authentication on each page or action, if it exists.
-			if ((isPage || isAction || isUpgradeRequest) && needsAuthentication && !isAuthenticated)
+			if ((isPage || isAction || isUpgradeRequest) && !isAuthenticated)
 			{
 				_log.Debug(DEBUG_WEBSERVER, "[web:%s] Did not find suitable Authorization!", myWebem->GetPort().c_str());
 				send_authorization_request(rep);
@@ -2638,6 +2615,18 @@ namespace http {
 				session.isnew = false;
 				myWebem->AddSession(session);
 				send_cookie(rep, session);
+			}
+			else if (session.forcelogin == true)
+			{
+				_log.Debug(DEBUG_WEBSERVER, "[web:%s] Logout : remove session %s", myWebem->GetPort().c_str(), session.id.c_str());
+
+				myWebem->RemoveSession(session.id);
+				removeAuthToken(session.id);
+				if (myWebem->m_authmethod == AUTH_BASIC)
+				{
+					send_authorization_request(rep);
+				}
+
 			}
 			else if (!session.id.empty())
 			{

@@ -505,18 +505,16 @@ define(['angularAMD', 'app.routes', 'app.constants', 'app.notifications', 'app.p
 			success: function (data) {
 				isOnline = true;
 				if (data.status == "OK") {
-					if (data.user !== "") {
-						permissionList.isloggedin = true;
-						permissionList.rights = parseInt(data.rights);
-						permissionList.user = data.user;
-					}
+					permissionList.isloggedin = (data.user != "");
+					permissionList.rights = parseInt(data.rights);
+					permissionList.user = data.user;
+					dashboardType = data.DashboardType;
 				}
 			},
 			error: function () {
 				isOnline = false;
 			}
 		});
-		permissions.setPermissions(permissionList);
 
 		$rootScope.$on("$routeChangeStart", function (scope, next, current) {
 			if (!isOnline) {
@@ -556,6 +554,7 @@ define(['angularAMD', 'app.routes', 'app.constants', 'app.notifications', 'app.p
 				}
 			}
 		});
+		permissions.setPermissions(permissionList);
 
 		Highcharts.setOptions({
 			chart: {
