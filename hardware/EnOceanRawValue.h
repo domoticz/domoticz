@@ -1,6 +1,7 @@
 #ifndef _SetGetRawValue
 #define _SetGetRawValue
 
+#include <stdarg.h>
 #include <stdint.h>
 #include <vector>
 #include <stdio.h>
