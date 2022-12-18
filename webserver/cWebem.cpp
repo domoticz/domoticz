@@ -2089,6 +2089,14 @@ namespace http {
 			return false;
 		}
 
+		bool cWebemRequestHandler::AllowBasicAuth()
+		{
+			if (myWebem->m_settings.is_secure())	// Basic Auth is allowed when used over HTTPS (SSL Encrypted communication)
+				return true;
+
+			return false;
+		}
+
 		bool cWebemRequestHandler::CheckAuthentication(WebEmSession & session, const request& req, reply& rep)
 		{
 			bool bTrustedNetwork = false;
@@ -2133,7 +2141,7 @@ namespace http {
 				}
 				else if (_ah.method == "BASIC")
 				{
-					if (bTrustedNetwork && req.uri.find("json.htm") != std::string::npos)	// Exception for the main API endpoint so scripts can execute them with 'just' Basic AUTH
+					if (req.uri.find("json.htm") != std::string::npos && AllowBasicAuth())	// Exception for the main API endpoint so scripts can execute them with 'just' Basic AUTH
 					{
 						if (CheckUserAuthorization(_ah.user, &_ah))
 						{
