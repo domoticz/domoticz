@@ -46,6 +46,7 @@ namespace http {
 		cWebem::cWebem(const server_settings &settings, const std::string &doc_root)
 			: m_DigistRealm("Domoticz.com")
 			, m_authmethod(AUTH_LOGIN)
+			, m_AllowPlainBasicAuth(false)
 			, m_settings(settings)
 			, mySessionStore(nullptr)
 			, myRequestHandler(doc_root, this)
@@ -128,6 +129,10 @@ namespace http {
 			m_gzipmode = gzmode;
 		}
 
+		void cWebem::SetAllowPlainBasicAuth(const bool bAllow)
+		{
+			m_AllowPlainBasicAuth = bAllow;
+		}
 
 		/**
 
@@ -2091,7 +2096,9 @@ namespace http {
 
 		bool cWebemRequestHandler::AllowBasicAuth()
 		{
-			if (myWebem->m_settings.is_secure())	// Basic Auth is allowed when used over HTTPS (SSL Encrypted communication)
+			if (myWebem->m_settings.is_secure())		// Basic Auth is allowed when used over HTTPS (SSL Encrypted communication)
+				return true;
+			else if (myWebem->m_AllowPlainBasicAuth)	// Allow Basic Auth over non HTTPS
 				return true;
 
 			return false;

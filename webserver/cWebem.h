@@ -207,6 +207,8 @@ namespace http
 			std::vector<_tIPNetwork> m_localnetworks;
 			void SetDigistRealm(const std::string &realm);
 			std::string m_DigistRealm;
+			void SetAllowPlainBasicAuth(const bool bAllow);
+			bool m_AllowPlainBasicAuth;
 			void SetZipPassword(const std::string &password);
 
 			// Session store manager
