@@ -46,6 +46,7 @@ namespace http {
 		cWebem::cWebem(const server_settings &settings, const std::string &doc_root)
 			: m_DigistRealm("Domoticz.com")
 			, m_authmethod(AUTH_LOGIN)
+			, m_AllowPlainBasicAuth(false)
 			, m_settings(settings)
 			, mySessionStore(nullptr)
 			, myRequestHandler(doc_root, this)
@@ -128,6 +129,10 @@ namespace http {
 			m_gzipmode = gzmode;
 		}
 
+		void cWebem::SetAllowPlainBasicAuth(const bool bAllow)
+		{
+			m_AllowPlainBasicAuth = bAllow;
+		}
 
 		/**
 
@@ -2089,6 +2094,16 @@ namespace http {
 			return false;
 		}
 
+		bool cWebemRequestHandler::AllowBasicAuth()
+		{
+			if (myWebem->m_settings.is_secure())		// Basic Auth is allowed when used over HTTPS (SSL Encrypted communication)
+				return true;
+			else if (myWebem->m_AllowPlainBasicAuth)	// Allow Basic Auth over non HTTPS
+				return true;
+
+			return false;
+		}
+
 		bool cWebemRequestHandler::CheckAuthentication(WebEmSession & session, const request& req, reply& rep)
 		{
 			bool bTrustedNetwork = false;
@@ -2133,7 +2148,7 @@ namespace http {
 				}
 				else if (_ah.method == "BASIC")
 				{
-					if (bTrustedNetwork && req.uri.find("json.htm") != std::string::npos)	// Exception for the main API endpoint so scripts can execute them with 'just' Basic AUTH
+					if (req.uri.find("json.htm") != std::string::npos && AllowBasicAuth())	// Exception for the main API endpoint so scripts can execute them with 'just' Basic AUTH
 					{
 						if (CheckUserAuthorization(_ah.user, &_ah))
 						{

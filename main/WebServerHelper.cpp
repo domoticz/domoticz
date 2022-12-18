@@ -62,6 +62,14 @@ namespace http {
 			}
 		}
 
+		void CWebServerHelper::SetAllowPlainBasicAuth(const bool allow)
+		{
+			for (auto &it : serverCollection)
+			{
+				it->SetAllowPlainBasicAuth(allow);
+			}
+		}
+
 		void CWebServerHelper::SetAuthenticationMethod(const _eAuthenticationMethod amethod)
 		{
 			for (auto &it : serverCollection)
