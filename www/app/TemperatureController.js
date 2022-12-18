@@ -460,21 +460,6 @@ define(['app', 'livesocket'], function (app) {
 			ShowTemps();
 			////WatchLiveSearch();
 
-
-			$("#dialog-edittempdevice").keydown(function (event) {
-				if (event.keyCode == 13) {
-					$(this).siblings('.ui-dialog-buttonpane').find('button:eq(0)').trigger("click");
-					return false;
-				}
-			});
-			$("#dialog-edittempdevicesmall").keydown(function (event) {
-				if (event.keyCode == 13) {
-					$(this).siblings('.ui-dialog-buttonpane').find('button:eq(0)').trigger("click");
-					return false;
-				}
-			});
-
-
 		};
 
 		//handles TopBar Links
