@@ -1158,6 +1158,11 @@ bool MainWorker::Start()
 	{
 		m_webservers.SetAuthenticationMethod((http::server::_eAuthenticationMethod)nValue);
 	}
+	nValue = 0;
+	if (m_sql.GetPreferencesVar("AllowPlainBasicAuth", nValue))
+	{
+		m_webservers.SetAllowPlainBasicAuth(static_cast<bool>(nValue));
+	}
 	std::string sValue;
 	if (m_sql.GetPreferencesVar("WebTheme", sValue))
 	{
