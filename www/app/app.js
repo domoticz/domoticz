@@ -378,12 +378,11 @@ define(['angularAMD', 'app.routes', 'app.constants', 'app.notifications', 'app.p
 						$rootScope.config.pythonversion = data.python_version;
 						$rootScope.config.isproxied = data.isproxied;
 						$rootScope.config.versiontooltip = "'Build Hash: <b>" + $rootScope.config.apphash + "</b><br>" + "Build Date: " + $rootScope.config.appdate + "'";
-						$("#appversion").text(data.version);
 						$rootScope.config.HaveUpdate = data.HaveUpdate;
 						$rootScope.config.UseUpdate = data.UseUpdate;
-						if ((data.HaveUpdate == true) && (data.UseUpdate)) {
-							ShowUpdateNotification(data.Revision, data.SystemName, data.DomoticzUpdateURL);
-						}
+						$rootScope.config.Revision = data.Revision;
+						$rootScope.config.SystemName = data.SystemName;
+						$rootScope.config.DomoticzUpdateURL = data.DomoticzUpdateURL;
 
 						$rootScope.config.AllowWidgetOrdering = data.AllowWidgetOrdering;
 						$rootScope.config.FiveMinuteHistoryDays = data.FiveMinuteHistoryDays;
@@ -405,6 +404,7 @@ define(['angularAMD', 'app.routes', 'app.constants', 'app.notifications', 'app.p
 						$rootScope.config.EnableTabUtility = data.result.EnableTabUtility;
 						$rootScope.config.ShowUpdatedEffect = data.result.ShowUpdatedEffect;
 
+						$("#appversion").text(data.version);
 						SetLanguage(data.language);
 
 						//Translate Highcharts (partly)
@@ -683,6 +683,10 @@ define(['angularAMD', 'app.routes', 'app.constants', 'app.notifications', 'app.p
 			if (trend == 3) return "down";
 			return "unk";
 		};
+
+		if (($rootScope.config.HaveUpdate == true) && ($rootScope.config.UseUpdate == true)) {
+			ShowUpdateNotification($rootScope.config.Revision, $rootScope.config.SystemName, $rootScope.config.DomoticzUpdateURL);
+		}
 
 	});
 
