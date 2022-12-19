@@ -2166,11 +2166,9 @@ bool CEnOceanESP3::WriteToHardware(const char *pdata, const unsigned char length
 			m_last_blind_position = 0xFF;
 
 			// Send Stop Command
-			// => ignored by Nodon SIN-2-RS-01 ?!
 			sendVld(m_id_chip, nodeID, D2050X_CMD2, CHN, 2, END_ARG_DATA);
 
 			// Query Position and Angle
-			// => ignored by Nodon SIN-2-RS-01 ?!
 			sendVld(m_id_chip, nodeID, D2050X_CMD3, CHN, 3, END_ARG_DATA);
 			return true;
 
@@ -3749,15 +3747,15 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 							int timeout = 10;
 							do
 								sleep_milliseconds(100);
-							while (!UpdateSwitchType(senderID, STYPE_BlindsPercentageWithStop) && (timeout-- > 0));
+							while (!ConvertToBlindSwitch(senderID, STYPE_BlindsPercentageWithStop) && (timeout-- > 0));
 							if (timeout < 0)
 							{
 								Log(LOG_ERROR, "Node %08X (%s), problem creating channel %u blind control switch ?!?!",
 									senderID, pNode->name.c_str(), nbc);
 								return;
 							}
-							// Make sure blind channel is enabled and in open state
-							sendVld(m_id_chip, senderID, D2050X_CMD1, 0, 127, 0, 7, nbc - 1, 1, END_ARG_DATA);
+							// Make sure blind channel is enabled
+							sendVld(m_id_chip, senderID, D2050X_CMD1, 127, 127, 0, 7, 15, 1, END_ARG_DATA);
 						}
 						return;
 					}
@@ -4464,7 +4462,7 @@ uint32_t CEnOceanESP3::sendVld(unsigned int srcID, unsigned int destID, T_DATAFI
 	return DataSize;
 }
 
-bool CEnOceanESP3::UpdateSwitchType(uint32_t deviceID, _eSwitchType switchType)
+bool CEnOceanESP3::ConvertToBlindSwitch(uint32_t deviceID, _eSwitchType switchType)
 {
 	std::vector<std::vector<std::string>> result;
 
@@ -4472,7 +4470,7 @@ bool CEnOceanESP3::UpdateSwitchType(uint32_t deviceID, _eSwitchType switchType)
 	if (result.empty())
 		return false;
 
-	m_sql.safe_query("UPDATE DeviceStatus SET Used=1, SwitchType=%d WHERE (ID=='%q')", switchType, result[0][0].c_str());
+	m_sql.safe_query("UPDATE DeviceStatus SET Used=1, SwitchType=%d, Options='ReversePosition:dHJ1ZQ==;ReverseState:ZmFsc2U=' WHERE (ID=='%q')", switchType, result[0][0].c_str());
 	return true;
 }
 

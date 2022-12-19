@@ -150,5 +150,5 @@ private:
 	void sendVld(unsigned int sID, unsigned int destID, int channel, int value);
 	void sendVld(unsigned int sID, unsigned int destID, unsigned char *data, int DataLen);
 	uint32_t sendVld(unsigned int unitBaseAddr, unsigned int destID, T_DATAFIELD *OffsetDes, ...);
-	bool UpdateSwitchType(uint32_t deviceID, _eSwitchType switchType);
+	bool ConvertToBlindSwitch(uint32_t deviceID, _eSwitchType switchType);
 };
