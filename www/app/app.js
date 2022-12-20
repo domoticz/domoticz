@@ -378,13 +378,6 @@ define(['angularAMD', 'app.routes', 'app.constants', 'app.notifications', 'app.p
 						$rootScope.config.pythonversion = data.python_version;
 						$rootScope.config.isproxied = data.isproxied;
 						$rootScope.config.versiontooltip = "'Build Hash: <b>" + $rootScope.config.apphash + "</b><br>" + "Build Date: " + $rootScope.config.appdate + "'";
-						$("#appversion").text(data.version);
-						$rootScope.config.HaveUpdate = data.HaveUpdate;
-						$rootScope.config.UseUpdate = data.UseUpdate;
-						if ((data.HaveUpdate == true) && (data.UseUpdate)) {
-							ShowUpdateNotification(data.Revision, data.SystemName, data.DomoticzUpdateURL);
-						}
-
 						$rootScope.config.AllowWidgetOrdering = data.AllowWidgetOrdering;
 						$rootScope.config.FiveMinuteHistoryDays = data.FiveMinuteHistoryDays;
 						$rootScope.config.DashboardType = data.DashboardType;
@@ -488,6 +481,13 @@ define(['angularAMD', 'app.routes', 'app.constants', 'app.notifications', 'app.p
 							$("#custommenu").html(customHTML);
 							$rootScope.config.EnableTabCustom = data.result.EnableTabCustom;
 						}
+						
+						$("#appversion").text(data.version);
+						$rootScope.config.HaveUpdate = data.HaveUpdate;
+						$rootScope.config.UseUpdate = data.UseUpdate;
+						if ((data.HaveUpdate == true) && (data.UseUpdate)) {
+							ShowUpdateNotification(data.Revision, data.SystemName, data.DomoticzUpdateURL);
+						}
 					}
 				},
 				error: function () {
@@ -516,7 +516,6 @@ define(['angularAMD', 'app.routes', 'app.constants', 'app.notifications', 'app.p
 				isOnline = false;
 			}
 		});
-		permissions.setPermissions(permissionList);
 
 		$rootScope.$on("$routeChangeStart", function (scope, next, current) {
 			if (!isOnline) {
@@ -556,6 +555,8 @@ define(['angularAMD', 'app.routes', 'app.constants', 'app.notifications', 'app.p
 				}
 			}
 		});
+
+		permissions.setPermissions(permissionList);
 
 		Highcharts.setOptions({
 			chart: {
