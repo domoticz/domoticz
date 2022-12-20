@@ -128,7 +128,7 @@ uint32_t GetRawValue(uint8_t* data, char* OffsetName, T_DATAFIELD* OffsetDes)
 
 //return the number of byte of data payload
 //0 if rror
-uint32_t SetRawValuesNb(uint8_t* data, T_DATAFIELD* OffsetDes, int NbParameter, va_list value)
+uint32_t SetRawValuesNb(uint8_t* data, T_DATAFIELD* OffsetDes, int NbParameter, char* value)
 {
 	uint32_t total_bits = 0;
 	for (int i = 0; i < NbParameter; i++)
