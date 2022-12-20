@@ -762,6 +762,13 @@ namespace http
 			m_pWebEm->SetWebCompressionMode(gzmode);
 		}
 
+		void CWebServer::SetAllowPlainBasicAuth(const bool allow)
+		{
+			if (m_pWebEm == nullptr)
+				return;
+			m_pWebEm->SetAllowPlainBasicAuth(allow);
+		}
+
 		void CWebServer::SetAuthenticationMethod(const _eAuthenticationMethod amethod)
 		{
 			if (m_pWebEm == nullptr)
@@ -8667,10 +8674,15 @@ namespace http
 				m_pWebEm->SetAuthenticationMethod(amethod);
 				cntSettings++;
 
+				bool AllowPlainBasicAuth = (request::findValue(&req, "AllowPlainBasicAuth") == "on" ? 1 : 0);
+				m_sql.UpdatePreferencesVar("AllowPlainBasicAuth", AllowPlainBasicAuth);
+
+				m_pWebEm->SetAllowPlainBasicAuth(AllowPlainBasicAuth);
+				cntSettings++;
+
 				std::string WebLocalNetworks = CURLEncode::URLDecode(request::findValue(&req, "WebLocalNetworks"));
 				m_sql.UpdatePreferencesVar("WebLocalNetworks", WebLocalNetworks);
 				m_webservers.ReloadTrustedNetworks();
-				cntSettings++;
 				cntSettings++;
 
 				if (session.username.empty())
@@ -13725,6 +13737,10 @@ namespace http
 				else if (Key == "AuthenticationMethod")
 				{
 					root["AuthenticationMethod"] = nValue;
+				}
+				else if (Key == "AllowPlainBasicAuth")
+				{
+					root["AllowPlainBasicAuth"] = nValue;
 				}
 				else if (Key == "ReleaseChannel")
 				{

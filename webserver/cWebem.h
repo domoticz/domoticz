@@ -140,6 +140,7 @@ namespace http
 			bool CheckAuthByPass(const request& req);
 			bool CheckAuthentication(WebEmSession &session, const request &req, reply &rep);
 			bool CheckUserAuthorization(std::string &user, struct ah *ah);
+			bool AllowBasicAuth();
 			void send_authorization_request(reply &rep);
 			void send_remove_cookie(reply &rep);
 			std::string generateSessionID();
@@ -206,6 +207,8 @@ namespace http
 			std::vector<_tIPNetwork> m_localnetworks;
 			void SetDigistRealm(const std::string &realm);
 			std::string m_DigistRealm;
+			void SetAllowPlainBasicAuth(const bool bAllow);
+			bool m_AllowPlainBasicAuth;
 			void SetZipPassword(const std::string &password);
 
 			// Session store manager
