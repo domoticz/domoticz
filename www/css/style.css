@@ -1899,9 +1899,6 @@ span.evomobile {
 	}	
 }
 
-.itemBlock{
-
-}
 .liveSearchShown{
 	float: left;
 }
@@ -1912,6 +1909,13 @@ SECTION.dashCategory{
 }
 SECTION.dashCategory .liveSearchShown{
 	margin: 0;
+}
+
+.itemBlock{
+
+}
+.itemBlock .ui-selectmenu-button{
+	width: 60%;
 }
 
 
