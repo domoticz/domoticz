@@ -1342,7 +1342,7 @@ define(['app', 'livesocket'], function (app) {
 			//Create Selector selectmenu
 			$element.find('.selectorlevels select').selectmenu({
 				//Config
-				width: '75%',
+				width: false,	// prevents inline width
 				value: 0,
 				//Selector selectmenu events
 				create: function (event, ui) {
