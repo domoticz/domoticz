@@ -2,9 +2,7 @@
 #include "EnOceanRawValue.h"
 #include <string>
 #include <string.h>
-
-
-
+#include <stdarg.h>
 
 //return the value at bit offset offset length : size
 //as described in eep profile 
