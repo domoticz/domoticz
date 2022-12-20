@@ -1851,7 +1851,31 @@ span.evomobile {
 	float: right;
 	}
 }
-
+/* fix for phones */
+@media (max-width: 570px) {
+	#tbFilters{
+		margin-right: 0;
+		width: 100%;
+	}
+	#tbFiltSearch{
+		margin-right: 10px;
+	}
+	#tbFiltSearch INPUT{
+		width: 110px;
+	}
+	#tbFiltRooms{
+		margin-right: 0;
+		float: right;
+	}
+	#tbFiltRooms SELECT{
+		width: 130px;
+	}
+	#tbTimeSun{
+		display: block;
+		width: 100%;
+		text-align: center;
+	}
+}
 /* mimic the margins done by the (removed when filtering) 'row' Bootstrap Class */
 .devicesList{
 
