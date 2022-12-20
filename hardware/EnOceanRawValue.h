@@ -70,10 +70,6 @@ bool SetRawValue(uint8_t* data, uint32_t value, char* OffsetName, T_DATAFIELD* O
 
 uint32_t GetRawValue(uint8_t* data, char* OffsetName, T_DATAFIELD* OffsetDes);
 
-uint32_t SetRawValuesNb(uint8_t* data, T_DATAFIELD* OffsetDes, int NbParameter, char* value);
-
-uint32_t SetRawValuesNb(uint8_t* data, T_DATAFIELD* OffsetDes, int NbParameter, ...);
-
 uint32_t SetRawValues(uint8_t* data, T_DATAFIELD* OffsetDes, char* value);
 
 uint32_t SetRawValues(uint8_t* data, T_DATAFIELD* OffsetDes, ...);

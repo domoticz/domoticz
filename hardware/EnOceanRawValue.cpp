@@ -126,9 +126,10 @@ uint32_t GetRawValue(uint8_t* data, char* OffsetName, T_DATAFIELD* OffsetDes)
 		return false;
 }
 
+/*
 //return the number of byte of data payload
 //0 if rror
-uint32_t SetRawValuesNb(uint8_t* data, T_DATAFIELD* OffsetDes, int NbParameter, char* value)
+uint32_t SetRawValuesNb(uint8_t* data, T_DATAFIELD* OffsetDes, int NbParameter, va_list value)
 {
 	uint32_t total_bits = 0;
 	for (int i = 0; i < NbParameter; i++)
@@ -136,7 +137,7 @@ uint32_t SetRawValuesNb(uint8_t* data, T_DATAFIELD* OffsetDes, int NbParameter, 
 		if (OffsetDes->Size == 0)
 			return 0; //erreur
 
-		uint32_t par = va_arg(value, int);       /*   va_arg() donne le paramètre courant    */
+		uint32_t par = va_arg(value, int);       //  va_arg() donne le paramètre courant
 		SetRawValue(data, par, OffsetDes);
 		//compute total bit
 		if (OffsetDes->Offset + OffsetDes->Size > total_bits)
@@ -158,7 +159,7 @@ uint32_t SetRawValuesNb(uint8_t* data, T_DATAFIELD* OffsetDes, int NbParameter, 
 {
 	va_list value;
 
-	/* Initialize the va_list structure */
+	// Initialize the va_list structure
 	va_start(value, NbParameter);
 	uint32_t total_bytes = SetRawValuesNb(data, OffsetDes, NbParameter, value);
 	va_end(value);
@@ -175,6 +176,7 @@ uint32_t GetNbDataFields(T_DATAFIELD* OffsetDes)
 
 	return i;
 }
+*/
 
 uint32_t CopyValues(int* data, int SizeData, va_list value)
 {
