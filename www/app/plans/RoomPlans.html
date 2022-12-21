@@ -1,5 +1,7 @@
 <div class="container">
-	<a class="btnstylerev" back-button>{{:: 'Back'|translate }}</a>
+
+	<div ng-include="'views/inc_topbar.html'" ng-repeat="tb in [{hideFilters:true,hideTimeSun:true}]"></div>
+
 	<page-loading-indicator ng-hide="::$ctrl.plans"></page-loading-indicator>
 
 	<div ng-if="::$ctrl.plans">

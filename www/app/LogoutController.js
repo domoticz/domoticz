@@ -22,8 +22,8 @@ define(['app'], function (app) {
 								if (data.user !== "") {
 									permissionList.isloggedin = true;
 									permissionList.user = data.user;
+									permissionList.rights = parseInt(data.rights);
 								}
-								permissionList.rights = parseInt(data.rights, 10);
 							}
 						}
 					});

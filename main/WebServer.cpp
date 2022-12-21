@@ -336,7 +336,7 @@ namespace http
 
 				if (m_users.empty())
 				{
-					AddUser(99999, "tmpadmin", "tmpadmin", (_eUserRights)URIGHTS_ADMIN, 63);
+					AddUser(99999, "tmpadmin", "tmpadmin", (_eUserRights)URIGHTS_ADMIN, 0x1F);
 					_log.Debug(DEBUG_AUTH, "[Start server] Added tmpadmin User as no active Users where found!");
 				}
 			}
@@ -762,6 +762,13 @@ namespace http
 			m_pWebEm->SetWebCompressionMode(gzmode);
 		}
 
+		void CWebServer::SetAllowPlainBasicAuth(const bool allow)
+		{
+			if (m_pWebEm == nullptr)
+				return;
+			m_pWebEm->SetAllowPlainBasicAuth(allow);
+		}
+
 		void CWebServer::SetAuthenticationMethod(const _eAuthenticationMethod amethod)
 		{
 			if (m_pWebEm == nullptr)
@@ -815,36 +822,24 @@ namespace http
 			if (rtype == "command")
 			{
 				std::string cparam = request::findValue(&req, "param");
-				if (cparam.empty())
+				if (!cparam.empty())
 				{
-					cparam = request::findValue(&req, "dparam");
-					if (cparam.empty())
-					{
-						goto exitjson;
-					}
+					_log.Debug(DEBUG_WEBSERVER, "CWebServer::GetJSonPage() :%s :%s ", cparam.c_str(), req.uri.c_str());
+					HandleCommand(cparam, session, req, root);
 				}
-				if (cparam == "dologout")
-				{
-					session.forcelogin = true;
-					root["status"] = "OK";
-					root["title"] = "Logout";
-					goto exitjson;
-				}
-				_log.Debug(DEBUG_WEBSERVER, "CWebServer::GetJSonPage() :%s :%s ", cparam.c_str(), req.uri.c_str());
-				HandleCommand(cparam, session, req, root);
 			} //(rtype=="command")
 			else
 			{
 				HandleRType(rtype, session, req, root);
 			}
-		exitjson:
+
 			std::string jcallback = request::findValue(&req, "jsoncallback");
-			if (jcallback.empty())
+			if (!jcallback.empty())
 			{
-				reply::set_content(&rep, root.toStyledString());
+				reply::set_content(&rep, "var data=" + root.toStyledString() + '\n' + jcallback + "(data);");
 				return;
 			}
-			reply::set_content(&rep, "var data=" + root.toStyledString() + '\n' + jcallback + "(data);");
+			reply::set_content(&rep, root.toStyledString());
 		}
 
 		void CWebServer::Cmd_GetLanguage(WebEmSession& session, const request& req, Json::Value& root)
@@ -3006,10 +3001,10 @@ namespace http
 			root["title"] = "GetAuth";
 			if (session.rights != -1)
 			{
+				root["user"] = session.username;
+				root["rights"] = session.rights;
 				root["version"] = szAppVersion;
 			}
-			root["user"] = session.username;
-			root["rights"] = session.rights;
 		}
 
 		void CWebServer::Cmd_GetUptime(WebEmSession& session, const request& req, Json::Value& root)
@@ -3131,12 +3126,7 @@ namespace http
 
 			int iUser = -1;
 			unsigned long UserID = -1;
-			if (session.username.empty() || (iUser = FindUser(session.username.c_str())) == -1)
-			{
-				root["message"] = "Unable to find a logged-in User!";
-				//return;
-			}
-			else
+			if (!session.username.empty() && (iUser = FindUser(session.username.c_str())) != -1)
 			{
 				UserID = m_users[iUser].ID;
 				root["UserName"] = m_users[iUser].Username;
@@ -3175,27 +3165,30 @@ namespace http
 			root["TempSign"] = m_sql.m_tempsign;
 
 			int bEnableTabDashboard = 1;
-			int bEnableTabFloorplans = 1;
+			int bEnableTabFloorplans = 0;
 			int bEnableTabLight = 1;
 			int bEnableTabScenes = 1;
 			int bEnableTabTemp = 1;
 			int bEnableTabWeather = 1;
 			int bEnableTabUtility = 1;
-			int bEnableTabCustom = 1;
+			int bEnableTabCustom = 0;
 
-			int TabsEnabled = 63;
-			std::vector<std::vector<std::string>> result;
-			result = m_sql.safe_query("SELECT TabsEnabled FROM Users WHERE (ID==%lu)", UserID);
-			if (!result.empty())
-				TabsEnabled = atoi(result[0][0].c_str());
-
-			bEnableTabLight = (TabsEnabled & (1 << 0));
-			bEnableTabScenes = (TabsEnabled & (1 << 1));
-			bEnableTabTemp = (TabsEnabled & (1 << 2));
-			bEnableTabWeather = (TabsEnabled & (1 << 3));
-			bEnableTabUtility = (TabsEnabled & (1 << 4));
-			bEnableTabCustom = (TabsEnabled & (1 << 5));
-			bEnableTabFloorplans = (TabsEnabled & (1 << 6));
+			if (UserID != -1)
+			{
+				std::vector<std::vector<std::string>> result;
+				result = m_sql.safe_query("SELECT TabsEnabled FROM Users WHERE (ID==%lu)", UserID);
+				if (!result.empty())
+				{
+					int TabsEnabled = atoi(result[0][0].c_str());
+					bEnableTabLight = (TabsEnabled & (1 << 0));
+					bEnableTabScenes = (TabsEnabled & (1 << 1));
+					bEnableTabTemp = (TabsEnabled & (1 << 2));
+					bEnableTabWeather = (TabsEnabled & (1 << 3));
+					bEnableTabUtility = (TabsEnabled & (1 << 4));
+					bEnableTabCustom = (TabsEnabled & (1 << 5));
+					bEnableTabFloorplans = (TabsEnabled & (1 << 6));
+				}
+			}
 
 			if (iDashboardType == 3)
 			{
@@ -8681,10 +8674,15 @@ namespace http
 				m_pWebEm->SetAuthenticationMethod(amethod);
 				cntSettings++;
 
+				bool AllowPlainBasicAuth = (request::findValue(&req, "AllowPlainBasicAuth") == "on" ? 1 : 0);
+				m_sql.UpdatePreferencesVar("AllowPlainBasicAuth", AllowPlainBasicAuth);
+
+				m_pWebEm->SetAllowPlainBasicAuth(AllowPlainBasicAuth);
+				cntSettings++;
+
 				std::string WebLocalNetworks = CURLEncode::URLDecode(request::findValue(&req, "WebLocalNetworks"));
 				m_sql.UpdatePreferencesVar("WebLocalNetworks", WebLocalNetworks);
 				m_webservers.ReloadTrustedNetworks();
-				cntSettings++;
 				cntSettings++;
 
 				if (session.username.empty())
@@ -12669,13 +12667,20 @@ namespace http
 			root["title"] = "GetDevicesList";
 			int ii = 0;
 			std::vector<std::vector<std::string>> result;
-			result = m_sql.safe_query("SELECT ID, Name FROM DeviceStatus WHERE (Used == 1) ORDER BY Name COLLATE NOCASE ASC");
+			result = m_sql.safe_query("SELECT ID, Name, Type, SubType FROM DeviceStatus WHERE (Used == 1) ORDER BY Name COLLATE NOCASE ASC");
 			if (!result.empty())
 			{
 				for (const auto& sd : result)
 				{
+					root["result"][ii]["idx"] = sd[0];
 					root["result"][ii]["name"] = sd[1];
-					root["result"][ii]["value"] = sd[0];
+					root["result"][ii]["name_type"] = std_format("%s (%s/%s)",
+						sd[1].c_str(),
+						RFX_Type_Desc(std::stoi(sd[2]), 1),
+						RFX_Type_SubType_Desc(std::stoi(sd[2]), std::stoi(sd[3]))
+					);
+					//root["result"][ii]["Type"] = RFX_Type_Desc(std::stoi(sd[2]), 1);
+					//root["result"][ii]["SubType"] = RFX_Type_SubType_Desc(std::stoi(sd[2]), std::stoi(sd[3]));
 					ii++;
 				}
 			}
@@ -13732,6 +13737,10 @@ namespace http
 				else if (Key == "AuthenticationMethod")
 				{
 					root["AuthenticationMethod"] = nValue;
+				}
+				else if (Key == "AllowPlainBasicAuth")
+				{
+					root["AllowPlainBasicAuth"] = nValue;
 				}
 				else if (Key == "ReleaseChannel")
 				{

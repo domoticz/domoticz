@@ -1,4 +1,7 @@
-<div id="timerplancontent" class="container">
+<div class="container">
+	<div ng-include="'views/inc_topbar.html'" ng-repeat="tb in [{hideFilters:true,hideTimeSun:true}]"></div>
+
+	<div id="timerplancontent"></div>
 </div>
 
 <div id="dialog-add-edit-timerplan" style="display:none;">
@@ -10,13 +13,7 @@
 	</table>
 </div>
 <div id="timerplanmain" style="display:none;">
-	<table class="bannav" id="bannav" border="0" cellpadding="0" cellspacing="0" width="100%">
-	<tr>
-		<td align="left"></td>
-		<td align="right"><a class="btnstyle" onclick="AddNewTimerPlan();" data-i18n="Add Plan">Add Plan</a></td>
-	</tr>
-	</table>
-	<br>
+
 	<table class="display" id="timerplantable" border="0" cellpadding="0" cellspacing="0" width="100%">
 		<thead>
 			<tr valign="middle">

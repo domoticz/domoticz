@@ -2,148 +2,170 @@
 #include "EnOceanRawValue.h"
 #include <string>
 #include <string.h>
-
-
-
+#include <stdarg.h>
 
 //return the value at bit offset offset length : size
 //as described in eep profile 
 
-uint32_t GetRawValue(uint8_t * data , uint16_t offset, uint8_t size)
+uint32_t GetRawValue(uint8_t* data, uint16_t offset, uint8_t size)
 {
-  uint32_t value =0;
-if (size > 32)
-		return 0 ;
+	uint32_t value = 0;
+	if (size > 32)
+		return 0;
 
-int bitDest = offset+size-1;
-for ( int bitsrc=0; bitsrc<size;bitsrc++)
+	int bitDest = offset + size - 1;
+	for (int bitsrc = 0; bitsrc < size; bitsrc++)
+	{
+		int destByte = bitDest / 8;
+		int DestBit = 7 - bitDest % 8;
+		if (data[destByte] & (1 << DestBit))
+			value |= (1 << bitsrc);
+		bitDest--;
+	}
+	return value;
+}
+
+/*
+T_DATAFIELD::toString()
 {
-    int destByte = bitDest /8 ;
-    int DestBit  = 7 - bitDest %8 ;
-    if(  data[destByte] & (1<<DestBit) ) 
-        value |= (1<<bitsrc);
-    bitDest--;
+	char buf[1024];
+	snprintf(buf, sizeof(buf), "%2d;%2d;%5.2f;%5.2f;%5.2f;%5.2f;%-10s;%s",
+		Offset,
+		Size,
+		RangeMin,
+		RangeMax,
+		ScaleMin,
+		ScaleMax,
+		//			ShortCut ,
+		//			description );
+		ShortCut.c_str(),
+		description.c_str());
+	return buf;
+
 }
-return value;
+
+T_PROFIL_LIST::toString()
+{
+	char buf[1024];
+	snprintf(buf, sizeof(buf), "%06x;%2x;%2x;%2x;%-10s;%s",
+		Profil,
+		Rorg,
+		Func,
+		type,
+		FuncTitle.c_str(),
+		TypeTitle.c_str());
+	return buf;
 }
-
-
-
-
+*/
 
 //copy the value at bit offset offset length : size
 //as described in eep profile 
 //return true if ok
-bool SetRawValue(uint8_t * data , uint32_t value, uint16_t offset, uint8_t size)
+bool SetRawValue(uint8_t* data, uint32_t value, uint16_t offset, uint8_t size)
 {
-if (size > 32)
-		return 0 ;
+	if (size > 32)
+		return 0;
 
-int bitDest = offset+size-1;
-for ( int bitsrc=0; bitsrc<size;bitsrc++)
-{
-    int destByte = bitDest /8 ;
-    int DestBit  = 7 - bitDest %8 ;
-    if (value & (1<<bitsrc) )
-        data[destByte] |= (1<<DestBit);
-    else
-        data[destByte] &= ~(1<<DestBit);
-bitDest--;
-}
-return 1;
-}
-
-
-T_DATAFIELD* GetOffsetFromName( char * OffsetName , T_DATAFIELD * OffsetDes )
-{
-  uint32_t offsetInd = 0 ;
-  while (OffsetDes[offsetInd].Size != 0 )
-  {
-    if (strstr(OffsetDes[offsetInd].ShortCut.c_str(),OffsetName ) != 0 )
-      return &OffsetDes[offsetInd] ;
-    offsetInd++;
-  }
-  return nullptr;
-
-}
-
-bool SetRawValue(uint8_t * data , uint32_t value, T_DATAFIELD* offset )
-{
-  return SetRawValue( data , value, offset->Offset,offset->Size ) ;
-
-}
-
-uint32_t GetRawValue(uint8_t * data ,   T_DATAFIELD* offset )
-{
-  return GetRawValue( data ,  offset->Offset,offset->Size ) ;
-}
-
-uint32_t GetRawValue(uint8_t * data ,  T_DATAFIELD* offset , uint32_t offsetIndex )
-{
-  return GetRawValue( data ,  offset[offsetIndex].Offset,offset[offsetIndex].Size ) ;
+	int bitDest = offset + size - 1;
+	for (int bitsrc = 0; bitsrc < size; bitsrc++)
+	{
+		int destByte = bitDest / 8;
+		int DestBit = 7 - bitDest % 8;
+		if (value & (1 << bitsrc))
+			data[destByte] |= (1 << DestBit);
+		else
+			data[destByte] &= ~(1 << DestBit);
+		bitDest--;
+	}
+	return 1;
 }
 
 
-bool SetRawValue(uint8_t * data , uint32_t value, char *  OffsetName , T_DATAFIELD * OffsetDes )
+T_DATAFIELD* GetOffsetFromName(char* OffsetName, T_DATAFIELD* OffsetDes)
 {
-  T_DATAFIELD* offset =  GetOffsetFromName(  OffsetName ,  OffsetDes ) ;
-  if(offset)
-  return SetRawValue( data , value, offset->Offset, offset->Size ) ;
-  else
-      return false;
+	uint32_t offsetInd = 0;
+	while (OffsetDes[offsetInd].Size != 0)
+	{
+		if (strstr(OffsetDes[offsetInd].ShortCut.c_str(), OffsetName) != 0)
+			return &OffsetDes[offsetInd];
+		offsetInd++;
+	}
+	return nullptr;
 }
 
-uint32_t GetRawValue(uint8_t * data ,  char *  OffsetName , T_DATAFIELD * OffsetDes )
+bool SetRawValue(uint8_t* data, uint32_t value, T_DATAFIELD* offset)
 {
-  T_DATAFIELD* offset =  GetOffsetFromName(  OffsetName ,  OffsetDes ) ;
-  if(offset)
-  return GetRawValue( data ,  offset->Offset, offset->Size ) ;
-  else
-      return false;
+	return SetRawValue(data, value, offset->Offset, offset->Size);
 }
 
+uint32_t GetRawValue(uint8_t* data, T_DATAFIELD* offset)
+{
+	return GetRawValue(data, offset->Offset, offset->Size);
+}
 
-#include <stdarg.h>
+uint32_t GetRawValue(uint8_t* data, T_DATAFIELD* offset, uint32_t offsetIndex)
+{
+	return GetRawValue(data, offset[offsetIndex].Offset, offset[offsetIndex].Size);
+}
+
+bool SetRawValue(uint8_t* data, uint32_t value, char* OffsetName, T_DATAFIELD* OffsetDes)
+{
+	T_DATAFIELD* offset = GetOffsetFromName(OffsetName, OffsetDes);
+	if (offset)
+		return SetRawValue(data, value, offset->Offset, offset->Size);
+	else
+		return false;
+}
+
+uint32_t GetRawValue(uint8_t* data, char* OffsetName, T_DATAFIELD* OffsetDes)
+{
+	T_DATAFIELD* offset = GetOffsetFromName(OffsetName, OffsetDes);
+	if (offset)
+		return GetRawValue(data, offset->Offset, offset->Size);
+	else
+		return false;
+}
+
+/*
 //return the number of byte of data payload
 //0 if rror
-uint32_t SetRawValuesNb(uint8_t * data , T_DATAFIELD * OffsetDes ,int NbParameter , va_list value )
+uint32_t SetRawValuesNb(uint8_t* data, T_DATAFIELD* OffsetDes, int NbParameter, va_list value)
 {
-   uint32_t total_bits  = 0;
-   for ( int i=0;i<NbParameter;i++)
-   {
-      if  ( OffsetDes->Size == 0 )
-        return 0 ; //erreur
+	uint32_t total_bits = 0;
+	for (int i = 0; i < NbParameter; i++)
+	{
+		if (OffsetDes->Size == 0)
+			return 0; //erreur
 
-      uint32_t par = va_arg(value,int);       /*   va_arg() donne le paramètre courant    */
-      SetRawValue( data, par  , OffsetDes ) ;
-        //compute total bit
-        if(OffsetDes->Offset + OffsetDes->Size > total_bits)
-            total_bits = OffsetDes->Offset + OffsetDes->Size;
-      OffsetDes++;
-   }
+		uint32_t par = va_arg(value, int);       //  va_arg() donne le paramètre courant
+		SetRawValue(data, par, OffsetDes);
+		//compute total bit
+		if (OffsetDes->Offset + OffsetDes->Size > total_bits)
+			total_bits = OffsetDes->Offset + OffsetDes->Size;
+		OffsetDes++;
+	}
 
-   //test if all variable are sets
-   if (OffsetDes->Size != 0)
-	   return 0; //erreur
+	//test if all variable are sets
+	if (OffsetDes->Size != 0)
+		return 0; //erreur
 
-   uint32_t total_bytes = (total_bits + 7) / 8;
+	uint32_t total_bytes = (total_bits + 7) / 8;
 
-   return total_bytes ;
+	return total_bytes;
 }
 
 
-uint32_t SetRawValuesNb(uint8_t * data, T_DATAFIELD * OffsetDes, int NbParameter, ...)
+uint32_t SetRawValuesNb(uint8_t* data, T_DATAFIELD* OffsetDes, int NbParameter, ...)
 {
 	va_list value;
 
-	/* Initialize the va_list structure */
+	// Initialize the va_list structure
 	va_start(value, NbParameter);
 	uint32_t total_bytes = SetRawValuesNb(data, OffsetDes, NbParameter, value);
 	va_end(value);
 
 	return total_bytes;
 }
-
 
 uint32_t GetNbDataFields(T_DATAFIELD* OffsetDes)
 {
@@ -154,12 +176,13 @@ uint32_t GetNbDataFields(T_DATAFIELD* OffsetDes)
 
 	return i;
 }
+*/
 
-uint32_t CopyValues(int * data, int SizeData, va_list value)
+uint32_t CopyValues(int* data, int SizeData, va_list value)
 {
 	int i = 0;
 	int par = va_arg(value, int);       /*   va_arg() donne le paramètre courant    */
-	while ( (par != END_ARG_DATA) && (i<SizeData))
+	while ((par != END_ARG_DATA) && (i < SizeData))
 	{
 		data[i] = par;
 		par = va_arg(value, int);       /*   va_arg() donne le paramètre courant    */
@@ -170,17 +193,15 @@ uint32_t CopyValues(int * data, int SizeData, va_list value)
 		return 0;
 
 
-	return i ;
+	return i;
 }
 
 //return the number of byte of data payload
 //0 if error
-
 uint32_t setRawDataValues(uint8_t* data, T_DATAFIELD* OffsetDes, int value[], int NbData)
 {
-
 	int i = 0;
-    uint32_t total_bits =0 ; 
+	uint32_t total_bits = 0;
 	while (OffsetDes->Size != 0)
 	{
 
@@ -189,9 +210,9 @@ uint32_t setRawDataValues(uint8_t* data, T_DATAFIELD* OffsetDes, int value[], in
 		int par = value[i++];
 		//not enough argument
 		SetRawValue(data, par, OffsetDes);
-        //compute total bit
-        if(OffsetDes->Offset + OffsetDes->Size > total_bits)
-            total_bits = OffsetDes->Offset + OffsetDes->Size;
+		//compute total bit
+		if (OffsetDes->Offset + OffsetDes->Size > total_bits)
+			total_bits = OffsetDes->Offset + OffsetDes->Size;
 		OffsetDes++;
 	}
 	if (i != NbData)
@@ -204,50 +225,45 @@ uint32_t setRawDataValues(uint8_t* data, T_DATAFIELD* OffsetDes, int value[], in
 
 uint32_t getRawDataValues(uint8_t* data, T_DATAFIELD* OffsetDes, int value[], int NbData)
 {
-
 	int i = 0;
 	while (OffsetDes->Size != 0)
 	{
 
 		if (i >= NbData)
 			return i;
-        value[i++] = GetRawValue( data ,   OffsetDes  );
+		value[i++] = GetRawValue(data, OffsetDes);
 
 		OffsetDes++;
 	}
-    return i ;
+	return i;
 }
 
-std::string printRawDataValues(uint8_t* data, T_DATAFIELD* OffsetDes )
+std::string printRawDataValues(uint8_t* data, T_DATAFIELD* OffsetDes)
 {
-
-    std::string message ="";
-    char line[256];
+	std::string message = "";
+	char line[256];
 	int i = 0;
 	while (OffsetDes->Size != 0)
 	{
-
-        uint32_t value  = GetRawValue( data ,   OffsetDes  );
-        snprintf(line,sizeof(line)-1, "offset:%2d = %5d (%04X) : %s : %s \n",OffsetDes->Offset, value,value,OffsetDes->ShortCut.c_str(),OffsetDes->description.c_str() );
-        message += line ;
+		uint32_t value = GetRawValue(data, OffsetDes);
+		snprintf(line, sizeof(line) - 1, "offset:%2d = %5d (%04X) : %s : %s \n", OffsetDes->Offset, value, value, OffsetDes->ShortCut.c_str(), OffsetDes->description.c_str());
+		message += line;
 		OffsetDes++;
 	}
-    return message ;
+	return message;
 }
 
-
-uint32_t SetRawValues(uint8_t * data, T_DATAFIELD * OffsetDes,  va_list value)
+uint32_t SetRawValues(uint8_t* data, T_DATAFIELD* OffsetDes, va_list value)
 {
-
 	int Value[256];
 	//get value in arg line ...
-	int nbValue = CopyValues(Value, sizeof(Value)/sizeof(int), value);
+	int nbValue = CopyValues(Value, sizeof(Value) / sizeof(int), value);
 
-	return setRawDataValues( data,  OffsetDes, Value , nbValue ) ;
+	return setRawDataValues(data, OffsetDes, Value, nbValue);
 }
 
 
-uint32_t SetRawValues(uint8_t * data, T_DATAFIELD * OffsetDes,  ...)
+uint32_t SetRawValues(uint8_t* data, T_DATAFIELD* OffsetDes, ...)
 {
 	va_list value;
 
@@ -258,7 +274,7 @@ uint32_t SetRawValues(uint8_t * data, T_DATAFIELD * OffsetDes,  ...)
 
 
 //map
-uint32_t GetRawValue(uint8_t * data, _T_EEP_CASE* offset, uint32_t offsetIndex)
+uint32_t GetRawValue(uint8_t* data, _T_EEP_CASE* offset, uint32_t offsetIndex)
 {
 	if (offsetIndex < offset->size())
 		return GetRawValue(data, offset->at(offsetIndex).Offset, offset->at(offsetIndex).Size);
@@ -267,35 +283,35 @@ uint32_t GetRawValue(uint8_t * data, _T_EEP_CASE* offset, uint32_t offsetIndex)
 }
 
 
-uint32_t SetRawValues(uint8_t * data, _T_EEP_CASE * EEP_case ,  ...)
+uint32_t SetRawValues(uint8_t* data, _T_EEP_CASE* EEP_case, ...)
 {
 	va_list value;
-  uint32_t total_bits =0;
+	uint32_t total_bits = 0;
 
-  T_DATAFIELD * OffsetDes;
+	T_DATAFIELD* OffsetDes;
 
-  /* Initialize the va_list structure */
+	/* Initialize the va_list structure */
 	va_start(value, EEP_case);
 
-  for (uint32_t i=0;i<EEP_case->size();i++)
+	for (uint32_t i = 0; i < EEP_case->size(); i++)
 	{
-        OffsetDes = & (EEP_case->at(i)) ;
+		OffsetDes = &(EEP_case->at(i));
 
 		int par = va_arg(value, int);       /*   va_arg() donne le paramètre courant    */
 		//not enough argument
 		if (par == END_ARG_DATA)
 			return 0;
 		SetRawValue(data, par, OffsetDes);
-        //compute total bit
-        if(OffsetDes->Offset + OffsetDes->Size > total_bits)
-	        total_bits = OffsetDes->Offset + OffsetDes->Size;
+		//compute total bit
+		if (OffsetDes->Offset + OffsetDes->Size > total_bits)
+			total_bits = OffsetDes->Offset + OffsetDes->Size;
 	}
 
-	int par = va_arg(value, int);       
+	int par = va_arg(value, int);
 	if (par != END_ARG_DATA)
 		return 0;
 
-  //last bit offset
+	//last bit offset
 	int total_bytes = (total_bits + 7) / 8;
 
 	va_end(value);
@@ -335,8 +351,6 @@ T_DATAFIELD TEACHIN_UTE[] = {
 { 32  , 8  , 0,0,0,0, "TYPE"    ,"" }, //
 { 40  , 8  , 0,0,0,0, "FUNC"    ,"" }, //
 { 48  , 8  , 0,0,0,0, "RORG"    ,"" }, //
-
-
 { 0  , 0  , 0      , 0,0,0,"",""}  //
 };
 

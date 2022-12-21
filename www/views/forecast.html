@@ -1,15 +1,6 @@
 <div class="container">
 
-	<div id="forecasttophtm">
-		<table class="bannav" id="bannav" border="0" cellpadding="0" cellspacing="0" width="100%">
-			<tr>
-				<td align="left" valign="top" id="timesun"></td>
-				<td ng-show="config.Latitude!=''" style="width: 150px;" align="right">
-					<a id="Back" class="btnstyle" onclick="goBack()" data-i18n="Back">Back</a>
-				</td>
-			</tr>
-		</table>
-	</div>
+	<div ng-include="'views/inc_topbar.html'" ng-repeat="tb in [{hideFilters:true,hideTimeSun:true}]"></div>
 
 	<div id="fallback" align="center" ng-show="showFallback">
 		<h2>No forecast information available. Please check settings.</h2>

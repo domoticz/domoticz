@@ -378,13 +378,6 @@ define(['angularAMD', 'app.routes', 'app.constants', 'app.notifications', 'app.p
 						$rootScope.config.pythonversion = data.python_version;
 						$rootScope.config.isproxied = data.isproxied;
 						$rootScope.config.versiontooltip = "'Build Hash: <b>" + $rootScope.config.apphash + "</b><br>" + "Build Date: " + $rootScope.config.appdate + "'";
-						$("#appversion").text(data.version);
-						$rootScope.config.HaveUpdate = data.HaveUpdate;
-						$rootScope.config.UseUpdate = data.UseUpdate;
-						if ((data.HaveUpdate == true) && (data.UseUpdate)) {
-							ShowUpdateNotification(data.Revision, data.SystemName, data.DomoticzUpdateURL);
-						}
-
 						$rootScope.config.AllowWidgetOrdering = data.AllowWidgetOrdering;
 						$rootScope.config.FiveMinuteHistoryDays = data.FiveMinuteHistoryDays;
 						$rootScope.config.DashboardType = data.DashboardType;
@@ -488,6 +481,13 @@ define(['angularAMD', 'app.routes', 'app.constants', 'app.notifications', 'app.p
 							$("#custommenu").html(customHTML);
 							$rootScope.config.EnableTabCustom = data.result.EnableTabCustom;
 						}
+						
+						$("#appversion").text(data.version);
+						$rootScope.config.HaveUpdate = data.HaveUpdate;
+						$rootScope.config.UseUpdate = data.UseUpdate;
+						if ((data.HaveUpdate == true) && (data.UseUpdate)) {
+							ShowUpdateNotification(data.Revision, data.SystemName, data.DomoticzUpdateURL);
+						}
 					}
 				},
 				error: function () {
@@ -505,10 +505,11 @@ define(['angularAMD', 'app.routes', 'app.constants', 'app.notifications', 'app.p
 			success: function (data) {
 				isOnline = true;
 				if (data.status == "OK") {
-					permissionList.isloggedin = (data.user != "");
-					permissionList.rights = parseInt(data.rights);
-					permissionList.user = data.user;
-					dashboardType = data.DashboardType;
+					if (data.user !== "") {
+						permissionList.isloggedin = true;
+						permissionList.rights = parseInt(data.rights);
+						permissionList.user = data.user;
+					}
 				}
 			},
 			error: function () {
@@ -554,6 +555,7 @@ define(['angularAMD', 'app.routes', 'app.constants', 'app.notifications', 'app.p
 				}
 			}
 		});
+
 		permissions.setPermissions(permissionList);
 
 		Highcharts.setOptions({
@@ -584,21 +586,47 @@ define(['angularAMD', 'app.routes', 'app.constants', 'app.notifications', 'app.p
             }
 		});
 
+		$rootScope.HandleTbLinkClick = function (fn) {
+			window[fn]();
+		};
+		$rootScope.GetRoomPlans  = function(){
+			var RoomPlans={};
+			RoomPlans = [{ idx: 0, name: $.t("All") }];
+			$.ajax({
+				url: "json.htm?type=plans",
+				async: false,
+				dataType: 'json',
+				success: function (data) {
+					if (typeof data.result != 'undefined') {
+						var totalItems = data.result.length;
+						if (totalItems > 0) {
+							$.each(data.result, function (i, item) {
+								RoomPlans.push({
+									idx: item.idx,
+									name: item.Name
+								});
+							});
+						}
+					}
+				}
+			});
+			return RoomPlans;
+
+		}
+
+		/*
+		$rootScope.HandleTbSearch = function () {
+			WatchLiveSearch();
+		};
+		*/
+		
 		// TODO: use <timesun /> component instead
 		$rootScope.SetTimeAndSun = function (sunRise, sunSet, ServerTime) {
-			var month = ServerTime.split(' ')[0];
-			ServerTime = ServerTime.replace(month, $.t(month));
+			var mytime=ServerTime.split(' ')[1];
+			$("#jsTbTime").html(mytime);
+			$("#jsTbSunRise").html(sunRise);
+			$("#jsTbSunSet").html(sunSet);
 
-			var suntext;
-			var bIsMobile = $.myglobals.ismobile;
-			if (bIsMobile == true) {
-				suntext = '<div><font color="yellow">&#9728;</font>' + '&#9650;' + sunRise + ' ' + '&#9660;' + sunSet + '</div>';
-			}
-			else {
-				//$.t('SunRise') + $.t('SunSet')
-				suntext = '<div>' + ServerTime + ' <font color="yellow">&#9728;</font>' + '&#9650;' + sunRise + ' ' + '&#9660;' + sunSet + '</div>';
-			}
-			$("#timesun").html(suntext);
 		}
 
 		$rootScope.RefreshTimeAndSun = function (placeholder) {
