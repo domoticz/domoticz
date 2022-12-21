@@ -344,7 +344,7 @@ bool SatelIntegra::GetInfo()
 					m_data32 = ((buffer[12] & 1) == 1) && (m_modelIndex == 72); // supported and required 256 PLUS
 
 					Log(LOG_STATUS, "ETHM-1 ver. %c.%c%c %c%c%c%c-%c%c-%c%c (32 bytes mode = %s)",
-						buffer[1], buffer[2], buffer[3], buffer[4], buffer[5], buffer[6], buffer[7], buffer[8], buffer[9], buffer[10], buffer[11], m_data32 ? "true" : "false");
+						buffer[1], buffer[2], buffer[3], buffer[4], buffer[5], buffer[6], buffer[7], buffer[8], buffer[9], buffer[10], buffer[11], m_data32 ? "false" : "true");
 					return true;
 				}
 				Log(LOG_ERROR, "unknown version of ETHM-1");
@@ -380,9 +380,9 @@ bool SatelIntegra::ReadZonesState(const bool firstTime)
 	unsigned char buffer[33];
 
 	unsigned int zonesCount = models[m_modelIndex].zones;
-	if ((zonesCount > 128) && (!m_data32))
+	if ((zonesCount > 256) && (!m_data32))
 	{
-		zonesCount = 128;
+		zonesCount = 256;
 	}
 
 	unsigned char cmd[2];
@@ -456,9 +456,9 @@ bool SatelIntegra::ReadTemperatures(const bool firstTime)
 	unsigned char buffer[33];
 
 	unsigned int zonesCount = models[m_modelIndex].zones;
-	if ((zonesCount > 128) && (!m_data32))
+	if ((zonesCount > 256) && (!m_data32))
 	{
-		zonesCount = 128;
+		zonesCount = 256;
 	}
 
 	for (unsigned int index = 0; index < zonesCount; ++index)
@@ -536,9 +536,9 @@ bool SatelIntegra::ReadOutputsState(const bool firstTime)
 		unsigned int bitNumber;
 
 		unsigned int outputsCount = models[m_modelIndex].outputs;
-		if ((outputsCount > 128) && (!m_data32))
+		if ((outputsCount > 256) && (!m_data32))
 		{
-			outputsCount = 128;
+			outputsCount = 256;
 		}
 
 		for (unsigned int index = 0; index < outputsCount; ++index)
