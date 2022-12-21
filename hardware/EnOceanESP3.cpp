@@ -1901,7 +1901,7 @@ bool CEnOceanESP3::WriteToHardware(const char *pdata, const unsigned char length
 		break;
 
 	case pTypeGeneralSwitch:
-		if (xcmd->subtype != sSwitchTypeSelector && xcmd->subtype != sSwitchTypeAC)
+		if (xcmd->subtype != sSwitchTypeSelector && xcmd->subtype != sSwitchGeneralSwitch)
 		{
 			Debug(DEBUG_HARDWARE, "WriteToHardware: general switch subtype %u not supported", xcmd->subtype);
 			return false;
@@ -2153,7 +2153,7 @@ bool CEnOceanESP3::WriteToHardware(const char *pdata, const unsigned char length
 		}
 		uint8_t cmnd = xcmd->cmnd;
 		uint8_t CHN = xcmd->unitcode - 1;
-		uint8_t POS = (cmnd == gswitch_sOpen) ? 0U : ((cmnd == gswitch_sClose) ? 100U : 100U - xcmd->level);	
+		uint8_t POS = (cmnd == gswitch_sOpen) ? 0 : ((cmnd == gswitch_sClose) ? 100 : 100 - xcmd->level);	
 		
 		if (POS == m_last_blind_position)
 			cmnd = gswitch_sStop;
@@ -3687,7 +3687,7 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 					{ // Create devices for D2-01-XX, Electronic Switches and Dimmers with Local Control (except Type 0x0C, Pilotwire)
 						if (num_channel == 0xFF)
 						{ // 0xFF = all supported channels
-							const uint8_t default_num_chanel[] = { 1U, 1U, 1U, 1U, 1U, 1U, 1U, 1U, 1U, 1U, 1U, 1U, 1U, 1U, 1U, 1U, 2U, 2U, 2U, 4U, 8U, 4U, 2U, 1U, };
+							const uint8_t default_num_chanel[] = { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 4, 8, 4, 2, 1, };
 
 							num_channel = (pNode->type <= 0x17) ? default_num_chanel[pNode->type] : 1;
 						}
@@ -3731,15 +3731,15 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 					{ // Create devices for D2-05-XX, Blinds Control for Position and Angle
 						if (num_channel == 0xFF)
 						{ // 0xFF = all supported channels
-							const uint8_t default_num_chanel[] = { 1U, 4U, 1U, 1U, 1U, 1U, };
+							const uint8_t default_num_chanel[] = { 1, 4, 1, 1, 1, 1, };
 
-							num_channel = (pNode->type <= 0x02) ? default_num_chanel[pNode->type] : 1U;
+							num_channel = (pNode->type <= 0x02) ? default_num_chanel[pNode->type] : 1;
 						}
 						for (uint8_t nbc = 1; nbc <= num_channel; nbc++)
 						{
 							Log(LOG_NORM, "Node %08X (%s), creating blind control channel %u switch", senderID, pNode->name.c_str(), nbc);
 
-							SendBlindSwitch(senderID, nbc, STYPE_BlindsPercentageWithStop, true, true, false, gswitch_sOpen, 100U, pNode->name, m_Name, 255, rssi);
+							CreateBlindSwitch(senderID, nbc, STYPE_BlindsPercentageWithStop, true, true, false, gswitch_sOpen, 100, pNode->name, m_Name, 255, rssi);
 
 							// Make sure blind control is enabled
 							sendVld(m_id_chip, senderID, D2050X_CMD1, 127, 127, 0, 7, nbc - 1, 1, END_ARG_DATA);
@@ -3924,7 +3924,7 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 							Debug(DEBUG_HARDWARE, "Node %08X (%s), blind control channel %u reply Open",
 								  senderID, pNode->name.c_str(), CHN);
 
-							SendBlindSwitch(senderID, CHN + 1, gswitch_sOpen, 100U, pNode->name, m_Name, 255, rssi);
+							SendBlindSwitch(senderID, CHN + 1, gswitch_sOpen, 100, pNode->name, m_Name, 255, rssi);
 							return;
 						}
 						if (POS >= 100)
@@ -3932,13 +3932,13 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 							Debug(DEBUG_HARDWARE, "Node %08X (%s), blind control channel %u reply Close",
 								  senderID, pNode->name.c_str(), CHN);
 
-							SendBlindSwitch(senderID, CHN + 1, gswitch_sClose, 0U, pNode->name, m_Name, 255, rssi);
+							SendBlindSwitch(senderID, CHN + 1, gswitch_sClose, 0, pNode->name, m_Name, 255, rssi);
 							return;
 						}
 						Debug(DEBUG_HARDWARE, "Node %08X (%s), blind control channel %u reply position %d%%",
 							  senderID, pNode->name.c_str(), CHN, POS);
 
-						SendBlindSwitch(senderID, CHN + 1, gswitch_sSetLevel, 100U - POS, pNode->name, m_Name, 255, rssi);
+						SendBlindSwitch(senderID, CHN + 1, gswitch_sSetLevel, 100 - POS, pNode->name, m_Name, 255, rssi);
 						return;
 					}
 					Log(LOG_ERROR, "VLD msg: Node %08X (%s), command 0x%01X not supported",

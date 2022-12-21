@@ -1213,7 +1213,7 @@ int CDomoticzHardwareBase::MigrateSelectorSwitch(const int NodeID, const uint8_t
  * @param  {int32_t} batteryLevel    : As normal, 0 (mini) .. 100 (maxi), 255 (not available), -1 (don't set)
  * @param  {uint8_t} rssiLevel       : As normal, 0 (mini) .. 11 (maxi), 12 (not available)
  */
-void CDomoticzHardwareBase::SendBlindSwitch(int NodeID, uint8_t ChildID, _eSwitchType switchtype, bool bDeviceUsed, bool bReversePosition, bool bReverseState, uint8_t cmnd, uint8_t level, const std::string &defaultName, const std::string &userName, int32_t batteryLevel, uint8_t rssiLevel)
+void CDomoticzHardwareBase::CreateBlindSwitch(int NodeID, uint8_t ChildID, _eSwitchType switchtype, bool bDeviceUsed, bool bReversePosition, bool bReverseState, uint8_t cmnd, uint8_t level, const std::string &defaultName, const std::string &userName, int32_t batteryLevel, uint8_t rssiLevel)
 {
 	if (switchtype != STYPE_Blinds && switchtype != STYPE_BlindsPercentage && switchtype != STYPE_VenetianBlindsUS && switchtype != STYPE_VenetianBlindsEU && switchtype != STYPE_BlindsPercentageWithStop)
 	{
@@ -1226,7 +1226,7 @@ void CDomoticzHardwareBase::SendBlindSwitch(int NodeID, uint8_t ChildID, _eSwitc
 
 	xcmd.id = NodeID;
 	xcmd.type = pTypeGeneralSwitch;
-	xcmd.subtype = sSwitchTypeAC;
+	xcmd.subtype = sSwitchGeneralSwitch;
 	xcmd.unitcode = ChildID;
 	xcmd.cmnd = cmnd;
 	xcmd.level = level;
@@ -1266,7 +1266,7 @@ void CDomoticzHardwareBase::SendBlindSwitch(int NodeID, uint8_t ChildID, uint8_t
 	_tGeneralSwitch xcmd;
 
 	xcmd.type = pTypeGeneralSwitch;
-	xcmd.subtype = sSwitchTypeAC;
+	xcmd.subtype = sSwitchGeneralSwitch;
 	xcmd.id = NodeID;
 	xcmd.unitcode = ChildID;
 	xcmd.cmnd = cmnd;
