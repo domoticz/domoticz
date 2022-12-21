@@ -3739,7 +3739,7 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 						{
 							Log(LOG_NORM, "Node %08X (%s), creating blind control channel %u switch", senderID, pNode->name.c_str(), nbc);
 
-							CreateBlindSwitch(senderID, nbc, STYPE_BlindsPercentageWithStop, true, true, false, gswitch_sOpen, 100, pNode->name, m_Name, 255, rssi);
+							CreateBlindSwitch(senderID, nbc, STYPE_BlindsPercentageWithStop, true, false, false, gswitch_sOpen, 100, pNode->name, m_Name, 255, rssi);
 
 							// Make sure blind control is enabled
 							sendVld(m_id_chip, senderID, D2050X_CMD1, 127, 127, 0, 7, nbc - 1, 1, END_ARG_DATA);
