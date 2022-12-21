@@ -1196,7 +1196,7 @@ int CDomoticzHardwareBase::MigrateSelectorSwitch(const int NodeID, const uint8_t
 }
 
 /**
- * SendBlindSwitch
+ * CreateBlindSwitch
  *
  * Helper function to create/update blind control switch & associated widget
  *
