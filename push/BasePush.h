@@ -28,13 +28,14 @@ public:
 		PushType pushType;
 	};
 
-  CBasePush();
+	CBasePush();
 
 	static std::vector<std::string> DropdownOptions(const int devType, const int devSubType);
-  static std::string DropdownOptionsValue(const int devType, const int devSubType, const int pos);
+	static std::string DropdownOptionsValue(const int devType, const int devSubType, const int pos);
+	static std::string ProcessSendValue(const uint64_t DeviceRowIdx, const std::string& rawsendValue, int delpos, int nValue, int includeUnit, int devType, int devSubType, int metertype);
 
 	void ReloadPushLinks(const PushType PType);
-	bool GetPushLink(const uint64_t DeviceRowIdx, _tPushLinks &plink);
+	bool GetPushLink(const uint64_t DeviceRowIdx, _tPushLinks& plink);
 
 protected:
 	PushType m_PushType;
@@ -44,8 +45,7 @@ protected:
 	boost::signals2::connection m_sNotification;
 	boost::signals2::connection m_sSceneChanged;
 
-	std::string ProcessSendValue(const uint64_t DeviceRowIdx, const std::string &rawsendValue, int delpos, int nValue, int includeUnit, int devType, int devSubType, int metertype);
-	std::string getUnit(const int devType, const int devSubType, const int delpos, const int metertypein);
+	static std::string getUnit(const int devType, const int devSubType, const int delpos, const int metertypein);
 
 	static unsigned long get_tzoffset();
 #ifdef WIN32
