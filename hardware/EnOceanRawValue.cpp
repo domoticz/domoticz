@@ -4,10 +4,10 @@
 #include <string.h>
 #include <stdarg.h>
 
-//return the value at bit offset offset length : size
-//as described in eep profile 
+// return the value at bit offset offset length : size
+// as described in eep profile
 
-uint32_t GetRawValue(uint8_t* data, uint16_t offset, uint8_t size)
+uint32_t GetRawValue(uint8_t *data, uint16_t offset, uint8_t size)
 {
 	uint32_t value = 0;
 	if (size > 32)
@@ -25,43 +25,10 @@ uint32_t GetRawValue(uint8_t* data, uint16_t offset, uint8_t size)
 	return value;
 }
 
-/*
-T_DATAFIELD::toString()
-{
-	char buf[1024];
-	snprintf(buf, sizeof(buf), "%2d;%2d;%5.2f;%5.2f;%5.2f;%5.2f;%-10s;%s",
-		Offset,
-		Size,
-		RangeMin,
-		RangeMax,
-		ScaleMin,
-		ScaleMax,
-		//			ShortCut ,
-		//			description );
-		ShortCut.c_str(),
-		description.c_str());
-	return buf;
-
-}
-
-T_PROFIL_LIST::toString()
-{
-	char buf[1024];
-	snprintf(buf, sizeof(buf), "%06x;%2x;%2x;%2x;%-10s;%s",
-		Profil,
-		Rorg,
-		Func,
-		type,
-		FuncTitle.c_str(),
-		TypeTitle.c_str());
-	return buf;
-}
-*/
-
-//copy the value at bit offset offset length : size
-//as described in eep profile 
-//return true if ok
-bool SetRawValue(uint8_t* data, uint32_t value, uint16_t offset, uint8_t size)
+// copy the value at bit offset offset length : size
+// as described in eep profile
+// return true if ok
+bool SetRawValue(uint8_t *data, uint32_t value, uint16_t offset, uint8_t size)
 {
 	if (size > 32)
 		return 0;
@@ -80,8 +47,7 @@ bool SetRawValue(uint8_t* data, uint32_t value, uint16_t offset, uint8_t size)
 	return 1;
 }
 
-
-T_DATAFIELD* GetOffsetFromName(char* OffsetName, T_DATAFIELD* OffsetDes)
+T_DATAFIELD *GetOffsetFromName(char *OffsetName, T_DATAFIELD *OffsetDes)
 {
 	uint32_t offsetInd = 0;
 	while (OffsetDes[offsetInd].Size != 0)
@@ -93,69 +59,67 @@ T_DATAFIELD* GetOffsetFromName(char* OffsetName, T_DATAFIELD* OffsetDes)
 	return nullptr;
 }
 
-bool SetRawValue(uint8_t* data, uint32_t value, T_DATAFIELD* offset)
+bool SetRawValue(uint8_t *data, uint32_t value, T_DATAFIELD *offset)
 {
 	return SetRawValue(data, value, offset->Offset, offset->Size);
 }
 
-uint32_t GetRawValue(uint8_t* data, T_DATAFIELD* offset)
+uint32_t GetRawValue(uint8_t *data, T_DATAFIELD *offset)
 {
 	return GetRawValue(data, offset->Offset, offset->Size);
 }
 
-uint32_t GetRawValue(uint8_t* data, T_DATAFIELD* offset, uint32_t offsetIndex)
+uint32_t GetRawValue(uint8_t *data, T_DATAFIELD *offset, uint32_t offsetIndex)
 {
 	return GetRawValue(data, offset[offsetIndex].Offset, offset[offsetIndex].Size);
 }
 
-bool SetRawValue(uint8_t* data, uint32_t value, char* OffsetName, T_DATAFIELD* OffsetDes)
+bool SetRawValue(uint8_t *data, uint32_t value, char *OffsetName, T_DATAFIELD *OffsetDes)
 {
-	T_DATAFIELD* offset = GetOffsetFromName(OffsetName, OffsetDes);
+	T_DATAFIELD *offset = GetOffsetFromName(OffsetName, OffsetDes);
 	if (offset)
 		return SetRawValue(data, value, offset->Offset, offset->Size);
 	else
 		return false;
 }
 
-uint32_t GetRawValue(uint8_t* data, char* OffsetName, T_DATAFIELD* OffsetDes)
+uint32_t GetRawValue(uint8_t *data, char *OffsetName, T_DATAFIELD *OffsetDes)
 {
-	T_DATAFIELD* offset = GetOffsetFromName(OffsetName, OffsetDes);
+	T_DATAFIELD *offset = GetOffsetFromName(OffsetName, OffsetDes);
 	if (offset)
 		return GetRawValue(data, offset->Offset, offset->Size);
 	else
 		return false;
 }
 
-/*
-//return the number of byte of data payload
-//0 if rror
-uint32_t SetRawValuesNb(uint8_t* data, T_DATAFIELD* OffsetDes, int NbParameter, va_list value)
+// return the number of byte of data payload
+// 0 if rror
+uint32_t SetRawValuesNb(uint8_t *data, T_DATAFIELD *OffsetDes, int NbParameter, va_list value)
 {
 	uint32_t total_bits = 0;
 	for (int i = 0; i < NbParameter; i++)
 	{
 		if (OffsetDes->Size == 0)
-			return 0; //erreur
+			return 0; // erreur
 
-		uint32_t par = va_arg(value, int);       //  va_arg() donne le paramètre courant
+		uint32_t par = va_arg(value, int); // va_arg() gives current parameter
 		SetRawValue(data, par, OffsetDes);
-		//compute total bit
+		// compute total bit
 		if (OffsetDes->Offset + OffsetDes->Size > total_bits)
 			total_bits = OffsetDes->Offset + OffsetDes->Size;
 		OffsetDes++;
 	}
 
-	//test if all variable are sets
+	// test if all variable are sets
 	if (OffsetDes->Size != 0)
-		return 0; //erreur
+		return 0; // erreur
 
 	uint32_t total_bytes = (total_bits + 7) / 8;
 
 	return total_bytes;
 }
 
-
-uint32_t SetRawValuesNb(uint8_t* data, T_DATAFIELD* OffsetDes, int NbParameter, ...)
+uint32_t SetRawValuesNb(uint8_t *data, T_DATAFIELD *OffsetDes, int NbParameter, ...)
 {
 	va_list value;
 
@@ -167,7 +131,7 @@ uint32_t SetRawValuesNb(uint8_t* data, T_DATAFIELD* OffsetDes, int NbParameter, 
 	return total_bytes;
 }
 
-uint32_t GetNbDataFields(T_DATAFIELD* OffsetDes)
+uint32_t GetNbDataFields(T_DATAFIELD *OffsetDes)
 {
 
 	int i = 0;
@@ -176,29 +140,27 @@ uint32_t GetNbDataFields(T_DATAFIELD* OffsetDes)
 
 	return i;
 }
-*/
 
-uint32_t CopyValues(int* data, int SizeData, va_list value)
+uint32_t CopyValues(int *data, int SizeData, va_list value)
 {
 	int i = 0;
-	int par = va_arg(value, int);       /*   va_arg() donne le paramètre courant    */
+	int par = va_arg(value, int); // va_arg() gives current parameter
 	while ((par != END_ARG_DATA) && (i < SizeData))
 	{
 		data[i] = par;
-		par = va_arg(value, int);       /*   va_arg() donne le paramètre courant    */
+		par = va_arg(value, int); // va_arg() gives current parameter
 		i++;
 	}
 
 	if (par != END_ARG_DATA)
 		return 0;
 
-
 	return i;
 }
 
-//return the number of byte of data payload
-//0 if error
-uint32_t setRawDataValues(uint8_t* data, T_DATAFIELD* OffsetDes, int value[], int NbData)
+// return the number of byte of data payload
+// 0 if error
+uint32_t setRawDataValues(uint8_t *data, T_DATAFIELD *OffsetDes, int value[], int NbData)
 {
 	int i = 0;
 	uint32_t total_bits = 0;
@@ -208,9 +170,9 @@ uint32_t setRawDataValues(uint8_t* data, T_DATAFIELD* OffsetDes, int value[], in
 		if (i >= NbData)
 			return 0;
 		int par = value[i++];
-		//not enough argument
+		// not enough argument
 		SetRawValue(data, par, OffsetDes);
-		//compute total bit
+		// compute total bit
 		if (OffsetDes->Offset + OffsetDes->Size > total_bits)
 			total_bits = OffsetDes->Offset + OffsetDes->Size;
 		OffsetDes++;
@@ -223,7 +185,7 @@ uint32_t setRawDataValues(uint8_t* data, T_DATAFIELD* OffsetDes, int value[], in
 	return total_bytes;
 }
 
-uint32_t getRawDataValues(uint8_t* data, T_DATAFIELD* OffsetDes, int value[], int NbData)
+uint32_t getRawDataValues(uint8_t *data, T_DATAFIELD *OffsetDes, int value[], int NbData)
 {
 	int i = 0;
 	while (OffsetDes->Size != 0)
@@ -238,7 +200,7 @@ uint32_t getRawDataValues(uint8_t* data, T_DATAFIELD* OffsetDes, int value[], in
 	return i;
 }
 
-std::string printRawDataValues(uint8_t* data, T_DATAFIELD* OffsetDes)
+std::string printRawDataValues(uint8_t *data, T_DATAFIELD *OffsetDes)
 {
 	std::string message = "";
 	char line[256];
@@ -253,42 +215,39 @@ std::string printRawDataValues(uint8_t* data, T_DATAFIELD* OffsetDes)
 	return message;
 }
 
-uint32_t SetRawValues(uint8_t* data, T_DATAFIELD* OffsetDes, va_list value)
+uint32_t SetRawValues(uint8_t *data, T_DATAFIELD *OffsetDes, va_list value)
 {
 	int Value[256];
-	//get value in arg line ...
+	// get value in arg line ...
 	int nbValue = CopyValues(Value, sizeof(Value) / sizeof(int), value);
 
 	return setRawDataValues(data, OffsetDes, Value, nbValue);
 }
 
-
-uint32_t SetRawValues(uint8_t* data, T_DATAFIELD* OffsetDes, ...)
+uint32_t SetRawValues(uint8_t *data, T_DATAFIELD *OffsetDes, ...)
 {
 	va_list value;
 
 	/* Initialize the va_list structure */
 	va_start(value, OffsetDes);
-	return   SetRawValues(data, OffsetDes, value);
+	return SetRawValues(data, OffsetDes, value);
 }
 
-
-//map
-uint32_t GetRawValue(uint8_t* data, _T_EEP_CASE* offset, uint32_t offsetIndex)
+// map
+uint32_t GetRawValue(uint8_t *data, _T_EEP_CASE *offset, uint32_t offsetIndex)
 {
 	if (offsetIndex < offset->size())
 		return GetRawValue(data, offset->at(offsetIndex).Offset, offset->at(offsetIndex).Size);
-	else
-		return 0;
+
+	return 0;
 }
 
-
-uint32_t SetRawValues(uint8_t* data, _T_EEP_CASE* EEP_case, ...)
+uint32_t SetRawValues(uint8_t *data, _T_EEP_CASE *EEP_case, ...)
 {
 	va_list value;
 	uint32_t total_bits = 0;
 
-	T_DATAFIELD* OffsetDes;
+	T_DATAFIELD *OffsetDes;
 
 	/* Initialize the va_list structure */
 	va_start(value, EEP_case);
@@ -297,12 +256,12 @@ uint32_t SetRawValues(uint8_t* data, _T_EEP_CASE* EEP_case, ...)
 	{
 		OffsetDes = &(EEP_case->at(i));
 
-		int par = va_arg(value, int);       /*   va_arg() donne le paramètre courant    */
-		//not enough argument
+		int par = va_arg(value, int); /*   va_arg() gives current parameter    */
+		// not enough argument
 		if (par == END_ARG_DATA)
 			return 0;
 		SetRawValue(data, par, OffsetDes);
-		//compute total bit
+		// compute total bit
 		if (OffsetDes->Offset + OffsetDes->Size > total_bits)
 			total_bits = OffsetDes->Offset + OffsetDes->Size;
 	}
@@ -311,7 +270,7 @@ uint32_t SetRawValues(uint8_t* data, _T_EEP_CASE* EEP_case, ...)
 	if (par != END_ARG_DATA)
 		return 0;
 
-	//last bit offset
+	// last bit offset
 	int total_bytes = (total_bits + 7) / 8;
 
 	va_end(value);
@@ -319,38 +278,34 @@ uint32_t SetRawValues(uint8_t* data, _T_EEP_CASE* EEP_case, ...)
 	return total_bytes;
 }
 
-
-
-
-//vld D2-03-0A : len=2 offset 0 battery level 1= action : //1 = simple press, 2=double press, 3=long press, 4=press release
+// vld D2-03-0A : len=2 offset 0 battery level 1= action : //1 = simple press, 2=double press, 3=long press, 4=press release
 T_DATAFIELD D2030A[] = {
-{  0  , 8 , 0,0,0,0, "BAT", "battert level" },
-{  8  , 8 , 0,0,0,0, "BUT", "button       " }, //
-{ 0  , 0  , 0      , 0,0,0,"",""              }  //
+	{0, 8, 0, 0, 0, 0, "BAT", "battert level"},
+	{8, 8, 0, 0, 0, 0, "BUT", "button       "}, //
+	{0, 0, 0, 0, 0, 0, "", ""}					//
 };
 
-//TEACHIN_4BS vld
+// TEACHIN_4BS vld
 T_DATAFIELD TEACHIN_4BS[] = {
-{ 0  , 6   , 0,0,0,0, "FUNC","function" },
-{ 6  , 7   , 0,0,0,0, "TYPE","type    " }, //
-{ 13 , 11  , 0,0,0,0, "MANU","manufacturer   " }, //
-{ 24 , 1   , 0,0,0,0, "LRNT","  learn type " }, //  0:WithOut EEP 1: with EEP
-{ 28 , 1   , 0,0,0,0, "LRNB","  learn bite " }, //  0 TeachIn telegram 1 DataLelegram
-{ 0  , 0  , 0      , 0,0,0,"",""}  //
+	{0, 6, 0, 0, 0, 0, "FUNC", "function"},
+	{6, 7, 0, 0, 0, 0, "TYPE", "type    "},			 //
+	{13, 11, 0, 0, 0, 0, "MANU", "manufacturer   "}, //
+	{24, 1, 0, 0, 0, 0, "LRNT", "  learn type "},	 //  0:WithOut EEP 1: with EEP
+	{28, 1, 0, 0, 0, 0, "LRNB", "  learn bite "},	 //  0 TeachIn telegram 1 DataLelegram
+	{0, 0, 0, 0, 0, 0, "", ""}						 //
 };
-
 
 T_DATAFIELD TEACHIN_UTE[] = {
-{ 0  , 1   , 0,0,0,0, "EEPO"    ,"EEP operation" },
-{ 1  , 1   , 0,0,0,0, "EEPTEACH","    " }, //
-{ 2  , 2   , 0,0,0,0, "TEACHREQ","TeachIn request" }, //
-{ 4  , 4   , 0,0,0,0, "CMDID"   ,"Command Identifier" }, //
-{ 8  , 8   , 0,0,0,0, "NBCHAN"  ,"Nimber of channel to be taught in" }, //
-{ 16  , 8  , 0,0,0,0, "MANIDLSB","MAn ID lsb" }, //
-{ 29  , 3  , 0,0,0,0, "MANIFMSB","Man Id Msb" }, //
-{ 32  , 8  , 0,0,0,0, "TYPE"    ,"" }, //
-{ 40  , 8  , 0,0,0,0, "FUNC"    ,"" }, //
-{ 48  , 8  , 0,0,0,0, "RORG"    ,"" }, //
-{ 0  , 0  , 0      , 0,0,0,"",""}  //
-};
+	{0, 1, 0, 0, 0, 0, "EEPO", "EEP operation"},
+	{1, 1, 0, 0, 0, 0, "EEPTEACH", "    "},							   //
+	{2, 2, 0, 0, 0, 0, "TEACHREQ", "TeachIn request"},				   //
+	{4, 4, 0, 0, 0, 0, "CMDID", "Command Identifier"},				   //
+	{8, 8, 0, 0, 0, 0, "NBCHAN", "Nimber of channel to be taught in"}, //
+	{16, 8, 0, 0, 0, 0, "MANIDLSB", "MAn ID lsb"},					   //
+	{29, 3, 0, 0, 0, 0, "MANIFMSB", "Man Id Msb"},					   //
+	{32, 8, 0, 0, 0, 0, "TYPE", ""},								   //
+	{40, 8, 0, 0, 0, 0, "FUNC", ""},								   //
+	{48, 8, 0, 0, 0, 0, "RORG", ""},								   //
 
+	{0, 0, 0, 0, 0, 0, "", ""} //
+};
