@@ -11,7 +11,7 @@
 // 550 bytes buffer is enough for one ESP3 packet, EnOceanLink 1.8.1.0, eoPacket.h
 #define ESP3_PACKET_BUFFER_SIZE 550
 
-class CEnOceanESP3 : public CEnOceanEEP, public AsyncSerial, public CDomoticzHardwareBase
+class CEnOceanESP3 : public enocean::CEnOceanEEP, public AsyncSerial, public CDomoticzHardwareBase
 {
 public:
 	enum TeachinMode : uint8_t
@@ -149,5 +149,5 @@ private:
 	std::string GetDbValue(const char *tableName, const char *fieldName, const char *whereFieldName, const char *whereFielValue);
 	void sendVld(unsigned int sID, unsigned int destID, int channel, int value);
 	void sendVld(unsigned int sID, unsigned int destID, unsigned char *data, int DataLen);
-	uint32_t sendVld(unsigned int unitBaseAddr, unsigned int destID, T_DATAFIELD *OffsetDes, ...);
+	uint32_t sendVld(unsigned int unitBaseAddr, unsigned int destID, enocean::T_DATAFIELD *OffsetDes, ...);
 };

@@ -5599,7 +5599,7 @@ namespace http
 						// Insert virtual ESP3 switch in EnOceanNodes table with EEP F6-02-01
 						// So it will appear in EnOcean hardware setup screen
 
-						pEnoceanHardware->TeachInVirtualNode(rID, RORG_RPS, 0x02, 0x01);
+						pEnoceanHardware->TeachInVirtualNode(rID, enocean::RORG_RPS, 0x02, 0x01);
 					}
 					else if (pBaseHardware->HwdType == HTYPE_USBtinGateway)
 					{

@@ -1048,7 +1048,7 @@ bool CEnOceanESP2::ParseData()
 
 				Log(LOG_NORM, "4BS Teach-in diagram: Node %08X Manufacturer %02X (%s) Profile %02X Type %02X (%s)",
 					nodeID, manID, GetManufacturerName(manID),
-					func, type, GetEEPLabel(RORG_4BS, func, type));
+					func, type, GetEEPLabel(enocean::RORG_4BS, func, type));
 
 				std::vector<std::vector<std::string>> result;
 				result = m_sql.safe_query("SELECT ID FROM EnOceanNodes WHERE (HardwareID==%d) AND (NodeID==%u)", m_HwdID, nodeID);
@@ -1056,7 +1056,7 @@ bool CEnOceanESP2::ParseData()
 				{ // Add it to the database
 					m_sql.safe_query(
 						"INSERT INTO EnOceanNodes (HardwareID, NodeID, ManufacturerID, RORG, Func, Type) VALUES (%d,%u,%u,%u,%u,%u)",
-						m_HwdID, nodeID, manID, RORG_4BS, func, type);
+						m_HwdID, nodeID, manID, enocean::RORG_4BS, func, type);
 				}
 			}
 		}
@@ -1102,7 +1102,7 @@ bool CEnOceanESP2::ParseData()
 				Debug(DEBUG_NORM, "4BS msg: Node %08X CH %u DT %u DIV %u (scaleMax %.3F) MR %u",
 					nodeID, CH, DT, DIV, scaleMax, MR);
 
-				sDecodeRXMessage(this, (const unsigned char *) &tsen.RFXMETER, GetEEPLabel(RORG_4BS, Profile, iType), 255, m_Name.c_str());
+				sDecodeRXMessage(this, (const unsigned char *) &tsen.RFXMETER, GetEEPLabel(enocean::RORG_4BS, Profile, iType), 255, m_Name.c_str());
 			}
 			else if (Profile == 0x12 && iType == 0x01)
 			{ // A5-12-01, Automated Meter Reading, Electricity
@@ -1123,7 +1123,7 @@ bool CEnOceanESP2::ParseData()
 				Debug(DEBUG_NORM, "4BS msg: Node %08X TI %u DT %u DIV %u (scaleMax %.3F) MR %u",
 					nodeID, TI, DT, DIV, scaleMax, MR);
 
-				sDecodeRXMessage(this, (const unsigned char *) &umeter, GetEEPLabel(RORG_4BS, Profile, iType), 255, m_Name.c_str());
+				sDecodeRXMessage(this, (const unsigned char *) &umeter, GetEEPLabel(enocean::RORG_4BS, Profile, iType), 255, m_Name.c_str());
 			}
 			else if (Profile == 0x12 && iType == 0x02)
 			{ // A5-12-02, Automated Meter Reading, Gas
@@ -1149,7 +1149,7 @@ bool CEnOceanESP2::ParseData()
 				Debug(DEBUG_NORM, "4BS msg: Node %08X TI %u DT %u DIV %u (scaleMax %.3F) MR %u",
 					nodeID, TI, DT, DIV, scaleMax, MR);
 
-				sDecodeRXMessage(this, (const unsigned char *) &tsen.RFXMETER, GetEEPLabel(RORG_4BS, Profile, iType), 255, m_Name.c_str());
+				sDecodeRXMessage(this, (const unsigned char *) &tsen.RFXMETER, GetEEPLabel(enocean::RORG_4BS, Profile, iType), 255, m_Name.c_str());
 			}
 			else if (Profile == 0x12 && iType == 0x03)
 			{ // A5-12-03, Automated Meter Reading, Water
@@ -1175,13 +1175,13 @@ bool CEnOceanESP2::ParseData()
 				Debug(DEBUG_NORM, "4BS msg: Node %08X TI %u DT %u DIV %u (scaleMax %.3F) MR %u",
 					nodeID, TI, DT, DIV, scaleMax, MR);
 
-				sDecodeRXMessage(this, (const unsigned char *) &tsen.RFXMETER, GetEEPLabel(RORG_4BS, Profile, iType), 255, m_Name.c_str());
+				sDecodeRXMessage(this, (const unsigned char *) &tsen.RFXMETER, GetEEPLabel(enocean::RORG_4BS, Profile, iType), 255, m_Name.c_str());
 			}
 			else if (Profile == 0x10 && iType <= 0x0D)
 			{ // A5-10-01..0D, Room Operating Panel
 				RBUF tsen;
 
-				if (Manufacturer != ELTAKO)
+				if (Manufacturer != enocean::ELTAKO)
 				{ // General case for A5-10-01..0D
 					// pFrame->DATA_BYTE3 is the fan speed
 					// pFrame->DATA_BYTE2 is the setpoint where 0x00 = min ... 0xFF = max
@@ -1216,7 +1216,7 @@ bool CEnOceanESP2::ParseData()
 
 						Debug(DEBUG_NORM, "4BS msg: Node %08X FAN %u", nodeID, FAN);
 
-						sDecodeRXMessage(this, (const unsigned char *) &tsen.FAN, GetEEPLabel(RORG_4BS, Profile, iType), -1, m_Name.c_str());
+						sDecodeRXMessage(this, (const unsigned char *) &tsen.FAN, GetEEPLabel(enocean::RORG_4BS, Profile, iType), -1, m_Name.c_str());
 					}
 
 					// A5-10-01, A5-10-02, A5-10-03, A5-10-04, A5-10-05, A5-10-06, A5-10-0A have SP information
@@ -1265,7 +1265,7 @@ bool CEnOceanESP2::ParseData()
 
 						Debug(DEBUG_NORM, "4BS msg: Node %08X %s %u (%s)", nodeID, sSW, SW, (SW == 0) ? sSW0 : sSW1);
 
-						sDecodeRXMessage(this, (const unsigned char *) &tsen.LIGHTING2, GetEEPLabel(RORG_4BS, Profile, iType), 255, m_Name.c_str());
+						sDecodeRXMessage(this, (const unsigned char *) &tsen.LIGHTING2, GetEEPLabel(enocean::RORG_4BS, Profile, iType), 255, m_Name.c_str());
 					}
 				}
 				else
@@ -1313,14 +1313,14 @@ bool CEnOceanESP2::ParseData()
 
 				Debug(DEBUG_NORM, "4BS msg: Node %08X TMP %.1F°C", nodeID, TMP);
 
-				sDecodeRXMessage(this, (const unsigned char *) &tsen.TEMP, GetEEPLabel(RORG_4BS, Profile, iType), -1, m_Name.c_str());
+				sDecodeRXMessage(this, (const unsigned char *) &tsen.TEMP, GetEEPLabel(enocean::RORG_4BS, Profile, iType), -1, m_Name.c_str());
 			}
 			else if (Profile == 0x06 && iType == 0x01)
 			{ // A5-06-01, Light Sensor
 				uint8_t RS;
 				float ILL = 0.0F;
 
-				if (Manufacturer != ELTAKO)
+				if (Manufacturer != enocean::ELTAKO)
 				{ // General case for A5-06-01
 					// pFrame->DATA_BYTE3 is the voltage where 0x00 = 0 V ... 0xFF = 5.1 V
 
@@ -1353,7 +1353,7 @@ bool CEnOceanESP2::ParseData()
 
 					Debug(DEBUG_NORM, "4BS msg: Node %08X SVC %.1FmV", nodeID, SVC);
 
-					sDecodeRXMessage(this, (const unsigned char *) &tsen.RFXSENSOR, GetEEPLabel(RORG_4BS, Profile, iType), 255, m_Name.c_str());
+					sDecodeRXMessage(this, (const unsigned char *) &tsen.RFXSENSOR, GetEEPLabel(enocean::RORG_4BS, Profile, iType), 255, m_Name.c_str());
 				}
 				else
 				{ // WARNING : ELTAKO specific implementation
@@ -1378,7 +1378,7 @@ bool CEnOceanESP2::ParseData()
 
 				Debug(DEBUG_NORM, "4BS msg: Node %08X RS %s ILL %.1Flx", nodeID, (RS == 0) ? "ILL1" : "ILL2", ILL);
 
-				sDecodeRXMessage(this, (const unsigned char *) &lmeter, GetEEPLabel(RORG_4BS, Profile, iType), 255, m_Name.c_str());
+				sDecodeRXMessage(this, (const unsigned char *) &lmeter, GetEEPLabel(enocean::RORG_4BS, Profile, iType), 255, m_Name.c_str());
 			}
 			else if (Profile == 0x02 && (iType <= 0x1B || iType == 0x20 || iType == 0x30))
 			{	// A5-02-01..30, Temperature sensor
@@ -1456,7 +1456,7 @@ bool CEnOceanESP2::ParseData()
 
 					Debug(DEBUG_NORM, "4BS msg: Node %08X TMP %.1F°C", nodeID, TMP);
 
-					sDecodeRXMessage(this, (const unsigned char *) &tsen.TEMP, GetEEPLabel(RORG_4BS, Profile, iType), -1, m_Name.c_str());
+					sDecodeRXMessage(this, (const unsigned char *) &tsen.TEMP, GetEEPLabel(enocean::RORG_4BS, Profile, iType), -1, m_Name.c_str());
 				}
 			}
 			else if (Profile == 0x04 && iType <= 0x04)
@@ -1511,7 +1511,7 @@ bool CEnOceanESP2::ParseData()
 
 					Debug(DEBUG_NORM, "4BS msg: Node %08X TMP %.1F°C HUM %d%%", nodeID, TMP, tsen.TEMP_HUM.humidity);
 
-					sDecodeRXMessage(this, (const unsigned char *) &tsen.TEMP_HUM, GetEEPLabel(RORG_4BS, Profile, iType), -1, m_Name.c_str());
+					sDecodeRXMessage(this, (const unsigned char *) &tsen.TEMP_HUM, GetEEPLabel(enocean::RORG_4BS, Profile, iType), -1, m_Name.c_str());
 				}
 				else if (HUM > -1.0F)
 				{ // HUM value has been changed => EEP is managed => update HUM (TMP unavailable)
@@ -1530,7 +1530,7 @@ bool CEnOceanESP2::ParseData()
 
 					Debug(DEBUG_NORM, "4BS msg: Node %08X HUM %d%%", nodeID, tsen.HUM.humidity);
 
-					sDecodeRXMessage(this, (const unsigned char *) &tsen.HUM, GetEEPLabel(RORG_4BS, Profile, iType), -1, m_Name.c_str());
+					sDecodeRXMessage(this, (const unsigned char *) &tsen.HUM, GetEEPLabel(enocean::RORG_4BS, Profile, iType), -1, m_Name.c_str());
 				}
 			}
 			else if (Profile == 0x07 && iType == 0x01)
@@ -1558,7 +1558,7 @@ bool CEnOceanESP2::ParseData()
 
 					Debug(DEBUG_NORM, "4BS msg: Node %08X SVC %.1FmV", nodeID, SVC);
 
-					sDecodeRXMessage(this, (const unsigned char *) &tsen.RFXSENSOR, GetEEPLabel(RORG_4BS, Profile, iType), 255, m_Name.c_str());
+					sDecodeRXMessage(this, (const unsigned char *) &tsen.RFXSENSOR, GetEEPLabel(enocean::RORG_4BS, Profile, iType), 255, m_Name.c_str());
 				}
 				uint8_t PIRS = pFrame->DATA_BYTE1;
 
@@ -1578,7 +1578,7 @@ bool CEnOceanESP2::ParseData()
 
 				Debug(DEBUG_NORM, "4BS msg: Node %08X PIRS %u (%s)", nodeID, PIRS, (PIRS >= 128) ? "On" : "Off");
 
-				sDecodeRXMessage(this, (const unsigned char *) &tsen.LIGHTING2, GetEEPLabel(RORG_4BS, Profile, iType), 255, m_Name.c_str());
+				sDecodeRXMessage(this, (const unsigned char *) &tsen.LIGHTING2, GetEEPLabel(enocean::RORG_4BS, Profile, iType), 255, m_Name.c_str());
 			}
 			else if (Profile == 0x07 && iType == 0x02)
 			{ // A5-07-02, Occupancy sensor with Supply voltage monitor
@@ -1602,7 +1602,7 @@ bool CEnOceanESP2::ParseData()
 
 				Debug(DEBUG_NORM, "4BS msg: Node %08X SVC %.1FmV", nodeID, SVC);
 
-				sDecodeRXMessage(this, (const unsigned char *) &tsen.RFXSENSOR, GetEEPLabel(RORG_4BS, Profile, iType), 255, m_Name.c_str());
+				sDecodeRXMessage(this, (const unsigned char *) &tsen.RFXSENSOR, GetEEPLabel(enocean::RORG_4BS, Profile, iType), 255, m_Name.c_str());
 
 				uint8_t PIRS = bitrange(pFrame->DATA_BYTE0, 7, 0x01);
 
@@ -1623,7 +1623,7 @@ bool CEnOceanESP2::ParseData()
 				Debug(DEBUG_NORM, "4BS msg: Node %08X PIRS %u (%s)",
 					nodeID, PIRS, (PIRS == 1) ? "Motion detected" : "Uncertain of occupancy status");
 
-				sDecodeRXMessage(this, (const unsigned char *) &tsen.LIGHTING2, GetEEPLabel(RORG_4BS, Profile, iType), 255, m_Name.c_str());
+				sDecodeRXMessage(this, (const unsigned char *) &tsen.LIGHTING2, GetEEPLabel(enocean::RORG_4BS, Profile, iType), 255, m_Name.c_str());
 			}
 			else if (Profile == 0x07 && iType == 0x03)
 			{ // A5-07-03, Occupancy sensor with Supply voltage monitor and 10-bit illumination measurement
@@ -1647,7 +1647,7 @@ bool CEnOceanESP2::ParseData()
 
 				Debug(DEBUG_NORM, "4BS msg: Node %08X SVC %.1FmV", nodeID, SVC);
 
-				sDecodeRXMessage(this, (const unsigned char *) &tsen.RFXSENSOR, GetEEPLabel(RORG_4BS, Profile, iType), 255, m_Name.c_str());
+				sDecodeRXMessage(this, (const unsigned char *) &tsen.RFXSENSOR, GetEEPLabel(enocean::RORG_4BS, Profile, iType), 255, m_Name.c_str());
 
 				float ILL = GetDeviceValue((pFrame->DATA_BYTE2 << 2) | bitrange(pFrame->DATA_BYTE1, 6, 0x03), 0, 1000, 0.0F, 1000.0F);
 
@@ -1661,7 +1661,7 @@ bool CEnOceanESP2::ParseData()
 
 				Debug(DEBUG_NORM, "4BS msg: Node %08X ILL %.1Flx", nodeID, ILL);
 
-				sDecodeRXMessage(this, (const unsigned char *) &lmeter, GetEEPLabel(RORG_4BS, Profile, iType), 255, m_Name.c_str());
+				sDecodeRXMessage(this, (const unsigned char *) &lmeter, GetEEPLabel(enocean::RORG_4BS, Profile, iType), 255, m_Name.c_str());
 
 				uint8_t PIRS = bitrange(pFrame->DATA_BYTE0, 7, 0x01);
 
@@ -1682,7 +1682,7 @@ bool CEnOceanESP2::ParseData()
 				Debug(DEBUG_NORM, "4BS msg: Node %08X PIRS %u (%s)",
 					nodeID, PIRS, (PIRS == 1) ? "Motion detected" : "Uncertain of occupancy status");
 
-				sDecodeRXMessage(this, (const unsigned char *) &tsen.LIGHTING2, GetEEPLabel(RORG_4BS, Profile, iType), 255, m_Name.c_str());
+				sDecodeRXMessage(this, (const unsigned char *) &tsen.LIGHTING2, GetEEPLabel(enocean::RORG_4BS, Profile, iType), 255, m_Name.c_str());
 			}
 			else if (Profile == 0x09 && iType == 0x04)
 			{ // A5-09-04, CO2 Gas Sensor with Temp and Humidity
@@ -1710,14 +1710,14 @@ bool CEnOceanESP2::ParseData()
 
 					Debug(DEBUG_NORM, "4BS msg: Node %08X HUM %d%%", nodeID, tsen.HUM.humidity);
 
-					sDecodeRXMessage(this, (const unsigned char *) &tsen.HUM, GetEEPLabel(RORG_4BS, Profile, iType), -1, m_Name.c_str());
+					sDecodeRXMessage(this, (const unsigned char *) &tsen.HUM, GetEEPLabel(enocean::RORG_4BS, Profile, iType), -1, m_Name.c_str());
 				}
 
 				float CONC = GetDeviceValue(pFrame->DATA_BYTE2, 0, 255, 0.0F, 2550.0F);
 
 				Debug(DEBUG_NORM, "4BS msg: Node %08X CO2 %.1Fppm", nodeID, CONC);
 
-				SendAirQualitySensor(pFrame->ID_BYTE2, pFrame->ID_BYTE1, 9, round(CONC), GetEEPLabel(RORG_4BS, Profile, iType));
+				SendAirQualitySensor(pFrame->ID_BYTE2, pFrame->ID_BYTE1, 9, round(CONC), GetEEPLabel(enocean::RORG_4BS, Profile, iType));
 
 				uint8_t TSN = bitrange(pFrame->DATA_BYTE0, 1, 0x01);
 				if (TSN == 1)
@@ -1743,7 +1743,7 @@ bool CEnOceanESP2::ParseData()
 
 					Debug(DEBUG_NORM, "4BS msg: Node %08X TMP %.1F°C", nodeID, TMP);
 
-					sDecodeRXMessage(this, (const unsigned char *) &tsen.TEMP, GetEEPLabel(RORG_4BS, Profile, iType), -1, m_Name.c_str());
+					sDecodeRXMessage(this, (const unsigned char *) &tsen.TEMP, GetEEPLabel(enocean::RORG_4BS, Profile, iType), -1, m_Name.c_str());
 				}
 			}
 		}

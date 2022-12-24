@@ -22,6 +22,8 @@
 #include "EnOceanESP3.h"
 #include "EnOceanEepProfil.h"
 
+using namespace enocean;
+
 // Enable running SP3 protocol tests
 // They tests are launched when ESP3 worker is started
 // Just uncomment the needed ones
