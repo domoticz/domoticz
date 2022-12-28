@@ -118,6 +118,7 @@ private:
 
 	P1EcryptionState m_p1_encryption_state = P1EcryptionState::waitingForStartByte;
 	P1MBusType m_p1_mbus_type = P1MBusType::deviceType_Unknown;
+	uint8_t m_p1_mbus_channel = 0;
 	int m_currentBytePosition = 0;
 	int m_changeToNextStateAt = 0;
 	int m_dataLength = 0;

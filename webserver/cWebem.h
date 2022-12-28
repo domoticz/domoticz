@@ -54,7 +54,6 @@ namespace http
 			int rights = 0;
 			bool rememberme = false;
 			bool isnew = false;
-			bool forcelogin = false;
 		} WebEmSession;
 
 		typedef struct _tIPNetwork
@@ -138,13 +137,16 @@ namespace http
 			/// Websocket methods
 			bool is_upgrade_request(WebEmSession &session, const request &req, reply &rep);
 			std::string compute_accept_header(const std::string &websocket_key);
+			bool CheckAuthByPass(const request& req);
 			bool CheckAuthentication(WebEmSession &session, const request &req, reply &rep);
+			bool CheckUserAuthorization(std::string &user, struct ah *ah);
+			bool AllowBasicAuth();
 			void send_authorization_request(reply &rep);
 			void send_remove_cookie(reply &rep);
 			std::string generateSessionID();
 			void send_cookie(reply &rep, const WebEmSession &session);
 			bool parse_cookie(const request &req, std::string &sSID, std::string &sAuthToken, std::string &szTime, bool &expired);
-			bool AreWeInLocalNetwork(const std::string &sHost);
+			bool AreWeInTrustedNetwork(const std::string &sHost);
 			bool IsIPInRange(const std::string &ip, const _tIPNetwork &ipnetwork, const bool &bIsIPv6);
 			int authorize(WebEmSession &session, const request &req, reply &rep);
 			void Logout();
@@ -196,14 +198,17 @@ namespace http
 			bool GenerateJwtToken(std::string &jwttoken, const std::string clientid, const std::string clientsecret, const std::string user, const uint32_t exptime, const Json::Value jwtpayload = "");
 			bool FindAuthenticatedUser(std::string &user, const request &req, reply &rep);
 			bool CheckVHost(const request &req);
+			bool findRealHostBehindProxies(const request &req, std::string &realhost);
 
 			void ClearUserPasswords();
 			std::vector<_tWebUserPassword> m_userpasswords;
-			void AddLocalNetworks(std::string network);
-			void ClearLocalNetworks();
+			void AddTrustedNetworks(std::string network);
+			void ClearTrustedNetworks();
 			std::vector<_tIPNetwork> m_localnetworks;
 			void SetDigistRealm(const std::string &realm);
 			std::string m_DigistRealm;
+			void SetAllowPlainBasicAuth(const bool bAllow);
+			bool m_AllowPlainBasicAuth;
 			void SetZipPassword(const std::string &password);
 
 			// Session store manager
@@ -243,6 +248,9 @@ namespace http
 			/// store map between pages and application functions
 			std::map<std::string, webem_page_function> myPages_w;
 			void CleanSessions();
+			bool sumProxyHeader(const std::string &sHeader, const request &req, std::vector<std::string> &vHeaderLines);
+			bool parseProxyHeader(const std::vector<std::string> &vHeaderLines, std::vector<std::string> &vHosts);
+			bool parseForwardedProxyHeader(const std::vector<std::string> &vHeaderLines, std::vector<std::string> &vHosts);
 			session_store_impl_ptr mySessionStore; /// session store
 			/// request handler specialized to handle webem requests
 			/// Rene: Beware: myRequestHandler should be declared BEFORE myServer

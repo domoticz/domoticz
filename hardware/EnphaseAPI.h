@@ -27,11 +27,12 @@ private:
 
 	void parseProduction(const Json::Value& root);
 	void parseConsumption(const Json::Value& root);
-	void parseNetConsumption(const Json::Value& root);
 	void parseStorage(const Json::Value& root);
 
+	bool IsItSunny();
 	int getSunRiseSunSetMinutes(bool bGetSunRise);
 
+	bool NeedToken();
 private:
 	int m_poll_interval = 30;
 
@@ -49,8 +50,5 @@ private:
 	bool m_bHaveeNetConsumption = false;
 	bool m_bHaveStorage = false;
 
-	P1Power m_p1power;
-	P1Power m_c1power;
-	P1Power m_c2power;
 	std::shared_ptr<std::thread> m_thread;
 };

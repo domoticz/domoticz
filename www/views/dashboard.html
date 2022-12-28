@@ -1,2 +1,4 @@
-<div id="dashcontent" class="container">
+<div class="container">
+	<div ng-include="'views/inc_topbar.html'" ng-repeat="tb in [{hideSearch:true}]"></div>
+	<div id="dashcontent" class="devicesList"></div>
 </div>

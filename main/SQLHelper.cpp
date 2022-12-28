@@ -18,6 +18,7 @@
 #include <sqlite3.h>
 #include "../hardware/hardwaretypes.h"
 #include "../smtpclient/SMTPClient.h"
+#include "../push/InfluxPush.h"
 #include "WebServerHelper.h"
 #include "../webserver/Base64.h"
 #include "../webserver/cWebem.h"
@@ -40,7 +41,7 @@
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
 
-#define DB_VERSION 157
+#define DB_VERSION 158
 
 #define DEFAULT_ADMINUSER "admin"
 #define DEFAULT_ADMINPWD "domoticz"
@@ -3050,7 +3051,7 @@ bool CSQLHelper::OpenDatabase()
 					if (!WebUserName.empty() && !WebPassword.empty())
 					{
 						// Add this User to the Users table
-						safe_query("INSERT INTO Users (Active, Username, Password, Rights, TabsEnabled) VALUES (1, '%s', '%s', %d, 63)", WebUserName.c_str(), WebPassword.c_str(), http::server::URIGHTS_ADMIN);
+						safe_query("INSERT INTO Users (Active, Username, Password, Rights, TabsEnabled) VALUES (1, '%s', '%s', %d, 0x1F)", WebUserName.c_str(), WebPassword.c_str(), http::server::URIGHTS_ADMIN);
 					}
 				}
 				// Remove these Pref vars as we do not use them anymore
@@ -3063,11 +3064,22 @@ bool CSQLHelper::OpenDatabase()
 				nValue = atoi(result[0][0].c_str());
 				if (nValue == 0)
 				{
-					// Add a default User as no users exist
-					safe_query("INSERT INTO Users (Active, Username, Password, Rights, TabsEnabled) VALUES (1, '%s', '%s', %d, 63)", base64_encode(DEFAULT_ADMINUSER).c_str(), GenerateMD5Hash(DEFAULT_ADMINPWD).c_str(), http::server::URIGHTS_ADMIN);
+					// Add a default Admin User as no admin users exist
+					safe_query("INSERT INTO Users (Active, Username, Password, Rights, TabsEnabled) VALUES (1, '%s', '%s', %d, 0x1F)", base64_encode(DEFAULT_ADMINUSER).c_str(), GenerateMD5Hash(DEFAULT_ADMINPWD).c_str(), http::server::URIGHTS_ADMIN);
 					_log.Log(LOG_STATUS, "A default admin User called 'admin' has been added with a default password!");
 				}
 			}
+		}
+		if (dbversion < 158)
+		{
+			// Remove these Pref vars as we do not use them anymore
+			DeletePreferencesVar("EnableTabLights");
+			DeletePreferencesVar("EnableTabTemp");
+			DeletePreferencesVar("EnableTabWeather");
+			DeletePreferencesVar("EnableTabUtility");
+			DeletePreferencesVar("EnableTabCustom");
+			DeletePreferencesVar("EnableTabScenes");
+			DeletePreferencesVar("EnableTabFloorplans");
 		}
 	}
 	else if (bNewInstall)
@@ -3076,7 +3088,7 @@ bool CSQLHelper::OpenDatabase()
 		query("INSERT INTO Plans (Name) VALUES ('$Hidden Devices')");
 		// Add hardware for internal use
 		safe_query("INSERT INTO Hardware (Name, Enabled, Type, Address, Port, Username, Password, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6) VALUES ('Domoticz Internal',1, %d,'',1,'','',0,0,0,0,0,0)", HTYPE_DomoticzInternal);
-		safe_query("INSERT INTO Users (Active, Username, Password, Rights) VALUES (1, '%s', '%s', %d)", base64_encode(DEFAULT_ADMINUSER).c_str(), GenerateMD5Hash(DEFAULT_ADMINPWD).c_str(), http::server::URIGHTS_ADMIN);
+		safe_query("INSERT INTO Users (Active, Username, Password, Rights, TabsEnabled) VALUES (1, '%s', '%s', %d, 0x1F)", base64_encode(DEFAULT_ADMINUSER).c_str(), GenerateMD5Hash(DEFAULT_ADMINPWD).c_str(), http::server::URIGHTS_ADMIN);
 	}
 	UpdatePreferencesVar("DB_Version", DB_VERSION);
 
@@ -3256,34 +3268,6 @@ bool CSQLHelper::OpenDatabase()
 	if (!GetPreferencesVar("SmartMeterType", nValue))	//0=meter has decimals, 1=meter does not have decimals, need this for the day graph
 	{
 		UpdatePreferencesVar("SmartMeterType", 0);
-	}
-	if (!GetPreferencesVar("EnableTabLights", nValue))
-	{
-		UpdatePreferencesVar("EnableTabLights", 1);
-	}
-	if (!GetPreferencesVar("EnableTabTemp", nValue))
-	{
-		UpdatePreferencesVar("EnableTabTemp", 1);
-	}
-	if (!GetPreferencesVar("EnableTabWeather", nValue))
-	{
-		UpdatePreferencesVar("EnableTabWeather", 1);
-	}
-	if (!GetPreferencesVar("EnableTabUtility", nValue))
-	{
-		UpdatePreferencesVar("EnableTabUtility", 1);
-	}
-	if (!GetPreferencesVar("EnableTabCustom", nValue))
-	{
-		UpdatePreferencesVar("EnableTabCustom", 1);
-	}
-	if (!GetPreferencesVar("EnableTabScenes", nValue))
-	{
-		UpdatePreferencesVar("EnableTabScenes", 1);
-	}
-	if (!GetPreferencesVar("EnableTabFloorplans", nValue))
-	{
-		UpdatePreferencesVar("EnableTabFloorplans", 0);
 	}
 	if (!GetPreferencesVar("NotificationSensorInterval", nValue))
 	{
@@ -7406,6 +7390,8 @@ void CSQLHelper::AddCalendarUpdateMeter()
 						ID,
 						sd[0].c_str()
 					);
+					//also send this to Influx as this can be used as start counter of today()
+					m_influxpush.DoInfluxPush(ID, true);
 				}
 			}
 		}
@@ -8811,7 +8797,7 @@ void CSQLHelper::CheckDeviceTimeout()
 		"SELECT ID, Name, LastUpdate FROM DeviceStatus WHERE (Used!=0 AND LastUpdate<='%04d-%02d-%02d %02d:%02d:%02d' "
 		"AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d "
 		"AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d) "
-		"ORDER BY Name",
+		"ORDER BY Name COLLATE NOCASE ASC",
 		ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, ltime.tm_sec,
 		pTypeLighting1,
 		pTypeLighting2,

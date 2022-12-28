@@ -22,6 +22,8 @@
 #include "EnOceanESP3.h"
 #include "EnOceanEepProfil.h"
 
+using namespace enocean;
+
 // Enable running SP3 protocol tests
 // They tests are launched when ESP3 worker is started
 // Just uncomment the needed ones
@@ -561,7 +563,6 @@ void CEnOceanESP3::TeachInNode(const uint32_t nodeID, const uint16_t manID,
 		Log(LOG_ERROR, "Teach-in Node: problem creating Node %08X in database?!?!", nodeID);
 		return;
 	}
-
 	NodeInfo node;
 
 	node.idx = static_cast<uint32_t>(std::stoul(result[0][0]));
@@ -666,10 +667,13 @@ void CEnOceanESP3::DeleteNode(const uint32_t nodeID)
 
 	// Delete attached devices
 
+	// TODO: compute all devices IDs from node ID and EEP
+
 	std::string deviceID = GetDeviceID(nodeID);
 	std::vector<std::vector<std::string>> result;
 
-	result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q')", m_HwdID, deviceID.c_str());
+	result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID==%d) AND ((DeviceID=='%q') OR (DeviceID=='%08X'))",
+							  m_HwdID, deviceID.c_str(), nodeID);
 	if (!result.empty())
 	{
 		std::string devs2delete;
@@ -1874,23 +1878,44 @@ void CEnOceanESP3::SendESP3PacketQueued(uint8_t packettype, uint8_t *data, uint1
 bool CEnOceanESP3::WriteToHardware(const char *pdata, const unsigned char length)
 {
 	if (m_id_base == 0 || m_id_chip == 0)
+	{
+		Debug(DEBUG_HARDWARE, "WriteToHardware: HwdID %d not started", m_HwdID);
 		return false;
-
+	}
 	if (!isOpen())
+	{
+		Debug(DEBUG_HARDWARE, "WriteToHardware: HwdID %d not opened", m_HwdID);
 		return false;
-
+	}
 	auto tsen = reinterpret_cast<const RBUF *>(pdata);
 	auto xcmd = reinterpret_cast<const _tGeneralSwitch *>(pdata);
 	uint32_t nodeID;
 
-	if (tsen->RAW.packettype == pTypeLighting2)
+	switch (tsen->RAW.packettype)
+	{
+	case pTypeLighting2:
+		if (tsen->LIGHTING2.subtype != sTypeAC)
+		{
+			Debug(DEBUG_HARDWARE, "WriteToHardware: lighting2 switch subtype %u not supported", tsen->LIGHTING2.subtype);
+			return false;
+		}
 		nodeID = GetNodeID(tsen->LIGHTING2.id1, tsen->LIGHTING2.id2, tsen->LIGHTING2.id3, tsen->LIGHTING2.id4);
-	else if (tsen->RAW.packettype == pTypeGeneralSwitch && xcmd->subtype == sSwitchTypeSelector)
-		nodeID = xcmd->id;
-	else
-		return false; // Only allowed to control switches or selectors
+		break;
 
-	NodeInfo* pNode = GetNodeInfo(nodeID);
+	case pTypeGeneralSwitch:
+		if (xcmd->subtype != sSwitchTypeSelector && xcmd->subtype != sSwitchGeneralSwitch)
+		{
+			Debug(DEBUG_HARDWARE, "WriteToHardware: general switch subtype %u not supported", xcmd->subtype);
+			return false;
+		}
+		nodeID = xcmd->id;
+		break;
+
+	default:
+		Debug(DEBUG_HARDWARE, "WriteToHardware: switch type %u not supported", tsen->RAW.packettype);
+		return false;
+	}
+	NodeInfo *pNode = GetNodeInfo(nodeID);
 	if (pNode == nullptr)
 	{ // May happend if database contains invalid devices
 		Log(LOG_ERROR, "Node %08X (%s) can not be used as a switch", nodeID, pNode->name.c_str());
@@ -1950,7 +1975,6 @@ bool CEnOceanESP3::WriteToHardware(const char *pdata, const unsigned char length
 			}
 			cmnd = light2_sSetLevel;
 		}
-
 		uint8_t buf[20];
 
 		if (switchtype == STYPE_OnOff)
@@ -2119,45 +2143,60 @@ bool CEnOceanESP3::WriteToHardware(const char *pdata, const unsigned char length
 		sendVld(m_id_chip, nodeID, D20100_CMD8, 8, PilotWireMode, END_ARG_DATA);
 		return true;
 	}
-	if ((pNode->RORG == RORG_VLD || pNode->RORG == UNKNOWN_RORG) && pNode->func == 0x05)
-	{ // D2-05-0X, Blinds Control for Position and Angle 
+	if ((pNode->RORG == RORG_VLD || pNode->RORG == UNKNOWN_RORG) && pNode->func == 0x05 && pNode->type >= 0x00 && pNode->type <= 0x05)
+	{ // D2-05-XX, Blinds Control for Position and Angle 
 		CheckAndUpdateNodeRORG(pNode, RORG_VLD);
 
-		// Build CMD 1 - Go to Position and Angle
-		int channel = tsen->LIGHTING2.unitcode - 1;
-		int cmd = tsen->LIGHTING2.cmnd;
-		int pos;
-
-		// Don't keep the last position if the request is for a different node!
-		if (m_last_requested_blind_nodeID != nodeID)
+		// Reset last position if the request isn't from the same
+		if (nodeID != m_last_blind_nodeID)
 		{
-			m_last_requested_blind_position = -1;
-			m_last_requested_blind_nodeID = nodeID;
+			m_last_blind_nodeID = nodeID;
+			m_last_blind_position = 0xFF;
 		}
+		uint8_t cmnd = xcmd->cmnd;
+		uint8_t CHN = xcmd->unitcode - 1;
+		uint8_t POS = (cmnd == gswitch_sOpen) ? 0 : ((cmnd == gswitch_sClose) ? 100 : 100 - xcmd->level);	
+		
+		if (POS == m_last_blind_position)
+			cmnd = gswitch_sStop;
 
-		if (cmd != gswitch_sStop)
-			pos = getPositionFromCommandLevel(tsen->LIGHTING2.cmnd, tsen->LIGHTING2.level);
-		else
-			pos = m_last_requested_blind_position;
-
-		if (m_last_requested_blind_position == pos)
-		{ // Send stop command when pressed again
-			Debug(DEBUG_NORM, "Send stop to Blinds Control Node %08X (%s)", nodeID, pNode->name.c_str());
-
-			sendVld(m_id_chip, nodeID, D20500_CMD2, channel, 2, END_ARG_DATA);
-			m_last_requested_blind_position = -1;
-		}
-		else
+		switch (cmnd)
 		{
-			Debug(DEBUG_NORM, "Send position %d%% to Blinds Control Node %08X (%s)", pos, nodeID, pNode->name.c_str());
+		case gswitch_sStop:
+			Debug(DEBUG_NORM, "Node %08X (%s), send Stop to blind control channel %u", nodeID, pNode->name.c_str(), CHN);
 
-			sendVld(m_id_chip, nodeID, D20500_CMD1, pos, 127, 0, 0, channel, 1, END_ARG_DATA);
-			m_last_requested_blind_position = pos;
+			m_last_blind_position = 0xFF;
+
+			// Send Stop Command
+			sendVld(m_id_chip, nodeID, D2050X_CMD2, CHN, 2, END_ARG_DATA);
+
+			// Query Position and Angle
+			sendVld(m_id_chip, nodeID, D2050X_CMD3, CHN, 3, END_ARG_DATA);
+			return true;
+
+		case gswitch_sOpen:
+			Debug(DEBUG_NORM, "Node %08X (%s), send Open to blind control channel %u", nodeID, pNode->name.c_str(), CHN);
+			break;
+
+		case gswitch_sClose:
+			Debug(DEBUG_NORM, "Node %08X (%s), send Close to blind control channel %u", nodeID, pNode->name.c_str(), CHN);
+			break;
+
+		case gswitch_sSetLevel:
+			Debug(DEBUG_NORM, "Node %08X (%s), send Position %u%% to blind control channel %u", nodeID, pNode->name.c_str(), POS, CHN);
+			break;
+
+		default:
+			Debug(DEBUG_HARDWARE, "WriteToHardware: general switch command %u not supported", xcmd->cmnd);
+			return false;
 		}
+		m_last_blind_position = POS;
+
+		sendVld(m_id_chip, nodeID, D2050X_CMD1, POS, 127, 0, 0, CHN, 1, END_ARG_DATA);
 		return true;
 	}
 	Log(LOG_ERROR, "Node %08X (%s) can not be used as a switch", nodeID, pNode->name.c_str());
-	Log(LOG_ERROR, "Create a virtual switch created from HwdID %d ID_Base %08X", m_HwdID, m_id_base);
+	Log(LOG_ERROR, "Create a virtual switch and pair it with this node");
 	return false;
 }
 
@@ -3650,7 +3689,7 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 					{ // Create devices for D2-01-XX, Electronic Switches and Dimmers with Local Control (except Type 0x0C, Pilotwire)
 						if (num_channel == 0xFF)
 						{ // 0xFF = all supported channels
-							const uint8_t default_num_chanel[] = { 1U, 1U, 1U, 1U, 1U, 1U, 1U, 1U, 1U, 1U, 1U, 1U, 1U, 1U, 1U, 1U, 2U, 2U, 2U, 4U, 8U, 4U, 2U, 1U, };
+							const uint8_t default_num_chanel[] = { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 4, 8, 4, 2, 1, };
 
 							num_channel = (pNode->type <= 0x17) ? default_num_chanel[pNode->type] : 1;
 						}
@@ -3690,28 +3729,22 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 						SendKwhMeter(senderID, 1, -1, 0.0, 0.0, pNode->name, rssi);
 						return;
 					}
-					if (pNode->RORG == RORG_VLD && pNode->func == 0x05 && (pNode->type == 0x00 || pNode->type == 0x01))
-					{ // Create for D2-05-0X, Blind Control for Position and Angle, Type 0x00
+					if (pNode->RORG == RORG_VLD && pNode->func == 0x05 && pNode->type >= 0x00 && pNode->type <= 0x05)
+					{ // Create devices for D2-05-XX, Blinds Control for Position and Angle
 						if (num_channel == 0xFF)
 						{ // 0xFF = all supported channels
-							const uint8_t default_num_chanel[] = { 1U, 4U, 1U, };
+							const uint8_t default_num_chanel[] = { 1, 4, 1, 1, 1, 1, };
 
-							num_channel = (pNode->type <= 0x02) ? default_num_chanel[pNode->type] : 1U;
+							num_channel = (pNode->type <= 0x02) ? default_num_chanel[pNode->type] : 1;
 						}
 						for (uint8_t nbc = 1; nbc <= num_channel; nbc++)
 						{
-							Log(LOG_NORM, "Node %08X (%s), creating channel %u blind control switch",
-								senderID, pNode->name.c_str(), nbc);
+							Log(LOG_NORM, "Node %08X (%s), creating blind control channel %u switch", senderID, pNode->name.c_str(), nbc);
 
-							SendSwitch(senderID, nbc, -1, light2_sOff, 0, pNode->name, m_Name, rssi);
+							CreateBlindSwitch(senderID, nbc, STYPE_BlindsPercentageWithStop, true, false, false, gswitch_sOpen, 100, pNode->name, m_Name, 255, rssi);
 
-							// Wait for decive creation
-							int timeout = 10; // 1 second
-							while (updateSwitchType(m_HwdID, GetDeviceID(senderID).c_str(), STYPE_BlindsPercentageWithStop) && (timeout > 0))
-							{
-								sleep_milliseconds(100);
-								timeout--;
-							}
+							// Make sure blind control is enabled
+							sendVld(m_id_chip, senderID, D2050X_CMD1, 127, 127, 0, 7, nbc - 1, 1, END_ARG_DATA);
 						}
 						return;
 					}
@@ -3877,23 +3910,37 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 					SendGeneralSwitch(senderID, BA, BATT, 1, 0, pNode->name, m_Name, rssi);
 					return;
 				}
-				if (pNode->func == 0x05 && (pNode->type == 0x00 || pNode->type == 0x01))
-				{ // D2-05-0X, Blind Control for Position and Angle
-					uint8_t CMD = GetRawValue(&data[1], D20500_CMD1, D20500_CMD1_CMD);
-					int unitcode = GetRawValue(&data[1], D20500_CMD1, D20500_CMD1_CHN);
+				if (pNode->func == 0x05 && pNode->type >= 0x00 && pNode->type <= 0x05)
+				{ // D2-05-XX, Blinds Control for Position and Angle
+					uint8_t CMD = GetRawValue(&data[1], D2050X_CMD4, D2050X_CMD4_CMD);
 
 					if (CMD == 0x4)
 					{ // CMD 0x4 - Reply Position and Angle
-						int POS = GetRawValue(&data[1], D20500_CMD1, D20500_CMD1_POS);
-						bool bon = POS > 0;
+						uint8_t POS = GetRawValue(&data[1], D2050X_CMD4, D2050X_CMD4_POS);
+						uint8_t ANG = GetRawValue(&data[1], D2050X_CMD4, D2050X_CMD4_ANG);
+						uint8_t LOCK = GetRawValue(&data[1], D2050X_CMD4, D2050X_CMD4_LOCK);
+						uint8_t CHN = GetRawValue(&data[1], D2050X_CMD4, D2050X_CMD4_CHN);
 
+						if (POS == 0)
+						{
+							Debug(DEBUG_HARDWARE, "Node %08X (%s), blind control channel %u reply Open",
+								  senderID, pNode->name.c_str(), CHN);
+
+							SendBlindSwitch(senderID, CHN + 1, gswitch_sOpen, 100, pNode->name, m_Name, 255, rssi);
+							return;
+						}
 						if (POS >= 100)
-							POS = 99;
+						{
+							Debug(DEBUG_HARDWARE, "Node %08X (%s), blind control channel %u reply Close",
+								  senderID, pNode->name.c_str(), CHN);
 
-						Debug(DEBUG_HARDWARE, "VLD Node %08X (%s), Blind Reply Position: %d%%",
-							senderID, pNode->name.c_str(), POS);
+							SendBlindSwitch(senderID, CHN + 1, gswitch_sClose, 0, pNode->name, m_Name, 255, rssi);
+							return;
+						}
+						Debug(DEBUG_HARDWARE, "Node %08X (%s), blind control channel %u reply position %d%%",
+							  senderID, pNode->name.c_str(), CHN, POS);
 
-						SendSwitch(senderID, unitcode + 1, -1, bon, POS, pNode->name, m_Name, rssi);
+						SendBlindSwitch(senderID, CHN + 1, gswitch_sSetLevel, 100 - POS, pNode->name, m_Name, 255, rssi);
 						return;
 					}
 					Log(LOG_ERROR, "VLD msg: Node %08X (%s), command 0x%01X not supported",
@@ -4366,23 +4413,30 @@ void CEnOceanESP3::sendVld(unsigned int sID, unsigned int destID, unsigned char 
 	SendESP3PacketQueued(PACKET_RADIO_ERP1, buffer, 6 + DataLen, opt, 7);
 }
 
-//send a VLD datagramm of the command described by descriptor OffsetDes detailed in EEP profile.to device Id sID
-// the argument are variable length
-//it shall correspond to each offset Data detailed in EnOcean_Equipment_Profiles_EEP_v2.x.x_public.
-//the list  parameter shall end with value END_ARG_DATA
-//return is the size of the daya payload in byte
-// or 0 : if an error occured : not enough parameters passed
-//example :
-//sendVld(srcID, D20500_CMD_2, channel, 2, END_ARG_DATA);
-// send a stop command = 2 to channel 9 for EEP : D2-05-00 ; Blinds control
-//sendVld(srcID, D20500_CMD_1, 100, 127, 0, 0, 0 , 1, END_ARG_DATA);
-// send a got position and angle command = 1 to
-// POS=100 %
-// ANG=127 : dont change
-// REPO=0 goto ditectly
-// LOCK=0  dont change  ,
-// channel 0
-// CMD = 1 goto command for EEP : D2-05-00 ; Blinds control
+/**
+ * sendVld
+ *
+ * Helper function to send a VLD datagramm
+ *
+ * @param  {unsigned int} srcID      : node ID sending the VLD telegram
+ * @param  {unsigned int} destID     : node ID receiving the VLD telegram
+ * @param  {T_DATAFIELD *} OffsetDes : command descriptor detailed in EEP profile
+ * @param  {...}                     : variable length parameters for command, ending with value END_ARG_DATA
+ *
+ * return : size of the data payload in byte or 0 : if an error occured (not enough parameters passed)
+ *
+ * Examples, for EEP : D2-05-XX, Blinds Control for Position and Angle :
+ * 
+ * sendVld(nodeID, D2050X_CMD1, 100, 127, 0, 0, 0, 1, END_ARG_DATA);
+ *   send a Goto Position and Angle command to destID channel 0
+ *     POS=100 (open blind)
+ *     ANG=127 (do not change)
+ *     REPO=0 (go directly to POS/ANG)
+ *     LOCK=0 (do not change)
+ * 
+ * sendVld(nodeID, D2050X_CMD2, 0, 2, END_ARG_DATA);
+ *   send a Stop command to destID channel 0
+ */
 uint32_t CEnOceanESP3::sendVld(unsigned int srcID, unsigned int destID, T_DATAFIELD *OffsetDes, ...)
 {
 	uint8_t data[256 + 2];
@@ -4402,47 +4456,6 @@ uint32_t CEnOceanESP3::sendVld(unsigned int srcID, unsigned int destID, T_DATAFI
 	va_end(value);
 
 	return DataSize;
-}
-
-uint32_t CEnOceanESP3::sendDataVld(unsigned int srcID, unsigned int destID, T_DATAFIELD *OffsetDes, int *values, int NbValues)
-{
-	uint8_t data[256 + 2];
-
-	memset(data, 0, sizeof(data));
-
-	uint32_t DataSize = setRawDataValues(data, OffsetDes, values, NbValues);
-	if (DataSize)
-		sendVld(srcID, destID, data, DataSize);
-	else
-		Log(LOG_ERROR, "sendVld: Invalid argument number, cmd %s : %s ", OffsetDes->ShortCut.c_str(), OffsetDes->description.c_str());
-
-	return DataSize;
-}
-
-bool CEnOceanESP3::updateSwitchType(int HardwareID, const char *deviceID, _eSwitchType SwitchType)
-{
-	std::vector<std::vector<std::string>> result;
-
-	result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q')", HardwareID, deviceID);
-	if (!result.empty())
-	{
-		m_sql.safe_query("UPDATE DeviceStatus SET SwitchType=%d WHERE (ID=='%q')", SwitchType, result[0][0].c_str());
-		return false;
-	}
-	return true;
-}
-
-//return position 0..100% from command / level
-int CEnOceanESP3::getPositionFromCommandLevel(int cmnd, int pos)
-{
-	if (cmnd == light2_sOn)
-		pos = 100;
-	else if (cmnd == light2_sOff)
-		pos = 0;
-	else
-		pos = pos * 100 / 15;
-
-	return pos;
 }
 
 // Webserver helpers

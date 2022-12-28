@@ -6,7 +6,7 @@
 
 #define ENOCEAN2_READ_BUFFER_SIZE 40
 
-class CEnOceanESP2 : public CEnOceanEEP, public AsyncSerial, public CDomoticzHardwareBase
+class CEnOceanESP2 : public enocean::CEnOceanEEP, public AsyncSerial, public CDomoticzHardwareBase
 {
 	enum _eEnOcean_Receive_State
 	{

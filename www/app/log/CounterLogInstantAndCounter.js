@@ -81,7 +81,7 @@ define(['app', 'log/Chart', 'log/CounterLogParams', 'log/CounterLogEnergySeriesS
             },
             weekSeriesSuppliers: function (deviceType) {
                 return []
-                    .concat(counterLogEnergySeriesSuppliers.instantAndCounterWeekSeriesSuppliers(deviceType))
+                    //.concat(counterLogEnergySeriesSuppliers.instantAndCounterWeekSeriesSuppliers(deviceType))
                     .concat(counterLogEnergySeriesSuppliers.counterWeekSeriesSuppliers(deviceType));
             },
             monthYearSeriesSuppliers: function (deviceType) {

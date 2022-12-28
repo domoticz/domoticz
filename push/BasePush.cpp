@@ -939,7 +939,7 @@ namespace http {
 			root["status"] = "OK";
 			root["title"] = "GetDevicesListOnOff";
 			std::vector<std::vector<std::string> > result;
-			result = m_sql.safe_query("SELECT ID, Name, Type, SubType FROM DeviceStatus WHERE (Used == 1) ORDER BY Name");
+			result = m_sql.safe_query("SELECT ID, Name, Type, SubType FROM DeviceStatus WHERE (Used == 1) ORDER BY Name COLLATE NOCASE ASC");
 			if (!result.empty())
 			{
 				int ii = 0;

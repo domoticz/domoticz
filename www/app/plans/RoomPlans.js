@@ -503,6 +503,12 @@ define(['app'], function (app) {
 		$ctrl.selectPlan = selectPlan;
 		$ctrl.removeAllDevicesFromPlan = removeAllDevicesFromPlan;
 
+
+		goBack = function () {
+			window.history.back();
+		}
+
+
 		init();
 
 		function init() {
@@ -510,6 +516,17 @@ define(['app'], function (app) {
 			$ctrl.planDevices = [];
 			$ctrl.planAvailableDevices = [];
 			$ctrl.refreshPlans();
+
+			//handles topBar Links
+			$scope.tblinks = [
+				{
+					onclick: "goBack", 
+					text: "Back", 
+					i18n: "Back", 
+					icon: "reply"
+				}
+			];
+
 		}
 
 		function addPlan() {

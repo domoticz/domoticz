@@ -2867,7 +2867,8 @@ void MQTTAutoDiscover::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 			{
 				root["state"] = "OFF";
 			}
-			else root["state"] = "ON";
+			else
+				root["state"] = "ON";
 		}
 
 		if (!root["state"].empty())
@@ -3235,7 +3236,7 @@ bool MQTTAutoDiscover::SendSwitchCommand(const std::string& DeviceID, const std:
 			else
 			{
 				root["brightness"] = slevel;
-				root["state"] = (slevel > 0) ? "ON" : "OFF";
+				//root["state"] = (slevel > 0) ? "ON" : "OFF";
 			}
 
 			szSendValue = JSonToRawString(root);

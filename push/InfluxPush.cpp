@@ -111,14 +111,13 @@ void CInfluxPush::UpdateSettings()
 
 void CInfluxPush::OnDeviceReceived(int m_HwdID, uint64_t DeviceRowIdx, const std::string &DeviceName, const unsigned char *pRXCommand)
 {
-	if (m_bLinkActive)
-	{
-		DoInfluxPush(DeviceRowIdx);
-	}
+	DoInfluxPush(DeviceRowIdx);
 }
 
-void CInfluxPush::DoInfluxPush(const uint64_t DeviceRowIdx)
+void CInfluxPush::DoInfluxPush(const uint64_t DeviceRowIdx, const bool bForced)
 {
+	if (!m_bLinkActive)
+		return;
 	if (!IsLinkInDatabase(DeviceRowIdx))
 		return;
 
@@ -171,7 +170,7 @@ void CInfluxPush::DoInfluxPush(const uint64_t DeviceRowIdx)
 		pItem.stimestamp = atime;
 		pItem.svalue = sendValue;
 
-		if (targetType == 0)
+		if ((targetType == 0) && (!bForced))
 		{
 			// Only send on change
 			auto itt = m_PushedItems.find(szKey);

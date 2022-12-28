@@ -63,6 +63,17 @@ define(['app', 'livesocket'], function (app) {
 				}, 200);
 			}, 600);
 		}
+		
+		AddManualCode = function() {
+			$('#dialog-addmanualactivationdevice #comboswitch').html("");
+			$.each($.LightsAndSwitches, function (i, item) {
+				var option = $('<option />');
+				option.attr('value', item.idx).text(item.name);
+				$('#dialog-addmanualactivationdevice #comboswitch').append(option);
+			});
+			
+			$("#dialog-addmanualactivationdevice").dialog("open");		
+		}
 
 		ClearCodes = function () {
 			var bValid = false;
@@ -811,6 +822,7 @@ define(['app', 'livesocket'], function (app) {
 				if ($scope.config.ShowUpdatedEffect == true) {
 					$(id + " #name").effect("highlight", { color: '#EEFFEE' }, 1000);
 				}
+				RefreshLiveSearch();
 			}
 		}
 
@@ -844,24 +856,6 @@ define(['app', 'livesocket'], function (app) {
 
 			var tophtm = "";
 
-			tophtm +=
-				'\t<table border="0" cellpadding="0" cellspacing="0" width="100%">\n' +
-				'\t<tr>\n' +
-				'\t  <td align="left" valign="top" id="timesun"></td>\n' +
-				'\t</tr>\n' +
-				'\t</table>\n';
-
-			if (permissions.hasPermission("Admin")) {
-				tophtm +=
-					'\t<table id="bannav" class="bannav" border="0" cellpadding="0" cellspacing="0" width="100%">' +
-					'\t<tr>' +
-					'\t  <td align="left">' +
-					'\t    <a class="btnstyle addscenebtn" onclick="AddScene();" data-i18n="Add Scene">Add Scene</a>' +
-					'\t  </td>' +
-					'\t</tr>' +
-					'\t</table>\n';
-			}
-
 			var i = 0;
 			var j = 0;
 
@@ -890,7 +884,7 @@ define(['app', 'livesocket'], function (app) {
 							var backgroundClass = $rootScope.GetItemBackgroundStatus(item);
 							var bAddTimer = true;
 							var xhtm =
-								'\t<div class="item span4 ' + backgroundClass + '" id="' + item.idx + '">\n' +
+								'\t<div class="item span4 itemBlock ' + backgroundClass + '" id="' + item.idx + '">\n' +
 								'\t  <section>\n';
 							if (item.Type == "Scene") {
 								xhtm += '\t    <table id="itemtablenostatus" border="0" cellpadding="0" cellspacing="0">\n';
@@ -900,7 +894,7 @@ define(['app', 'livesocket'], function (app) {
 							}
 							xhtm +=
 								'\t    <tr>\n' +
-								'\t      <td id="name">' + item.Name + '</td>\n' +
+								'\t      <td id="name" class="item-name" data-desc="'+item.Description.replace('"',"'")+'">' + item.Name +'</td>\n' +
 								'\t      <td id="bigtext">';
 							var bigtext = TranslateStatusShort(item.Status);
 							if (item.UsedByCamera == true) {
@@ -967,6 +961,7 @@ define(['app', 'livesocket'], function (app) {
 					}
 				}
 			});
+
 			if (bHaveAddedDevider == true) {
 				//close previous devider
 				htmlcontent += '</div>\n';
@@ -1064,7 +1059,61 @@ define(['app', 'livesocket'], function (app) {
 					$(this).dialog("close");
 				}
 			}).i18n();
+
+			$("#dialog-addmanualactivationdevice").dialog({
+				autoOpen: false,
+				width: 380,
+				height: 200,
+				modal: true,
+				resizable: false,
+				title: $.t("Add Manual Light/Switch Device"),
+				buttons: [{
+					text: $.t("Add Device"),
+					click: function () {
+						var deviceidx = $('#dialog-addmanualactivationdevice #comboswitch').val();
+						if (typeof deviceidx == 'undefined') {
+							bootbox.alert($.t('No Device Selected!'));
+							return;
+						}
+						var Cmd = $('#dialog-addmanualactivationdevice #combocode').val();
+						$.pDialog = $(this);
+						$.ajax({
+							url: "json.htm?type=command&param=addscenecode&sceneidx=" + SceneIdx + "&idx=" + deviceidx + "&cmnd=" + Cmd,
+							async: false,
+							dataType: 'json',
+							success: function (data) {
+								$.pDialog.dialog("close");
+								RefreshActivators();
+							}
+						});
+					}
+				}, {
+					text: $.t("Cancel"),
+					click: function () {
+						$(this).dialog("close");
+					}
+				}],
+				close: function () {
+					$(this).dialog("close");
+				}
+			}).i18n();
+
+
+			//handles TopBar Links
+			$scope.tblinks=[];
+			if (permissions.hasPermission("Admin")) {
+				$scope.tblinks = [
+					{
+						onclick:"AddScene", 
+						text:"Add Scene", 
+						i18n: "Add Scene", 
+						icon: "plus-circle"
+					}
+				];
+			}
+
 			ShowScenes();
+			WatchLiveSearch();
 		};
 
 	});

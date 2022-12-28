@@ -55,6 +55,17 @@ define(['app'], function (app) {
 					$scope.showFallback = true;
 				}
 			});
+
+			$scope.tblinks = [
+				{
+					onclick:"goBack", 
+					text:"Back", 
+					i18n: "Back", 
+					icon: "reply"
+				}
+			];
+
+
 		};
 	}]);
 });

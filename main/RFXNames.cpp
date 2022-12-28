@@ -1878,37 +1878,17 @@ void GetLightStatus(
 			switch (nValue)
 			{
 			case rfy_sUp:
+			case rfy_s05SecUp:
+			case rfy_s2SecUp:
 				lstatus = "Open";
 				break;
 			case rfy_sDown:
+			case rfy_s05SecDown:
+			case rfy_s2SecDown:
 				lstatus = "Close";
 				break;
 			case rfy_sStop:
 				lstatus = "Stop";
-				break;
-			case rfy_s05SecUp:
-				if (switchtype == STYPE_VenetianBlindsUS)
-				{
-					lstatus = "Off";
-				}
-				break;
-			case rfy_s2SecUp:
-				if (switchtype == STYPE_VenetianBlindsEU)
-				{
-					lstatus = "Off";
-				}
-				break;
-			case rfy_s05SecDown:
-				if (switchtype == STYPE_VenetianBlindsUS)
-				{
-					lstatus = "On";
-				}
-				break;
-			case rfy_s2SecDown:
-				if (switchtype == STYPE_VenetianBlindsEU)
-				{
-					lstatus = "On";
-				}
 				break;
 			case rfy_sEnableSunWind:
 				lstatus = "SunWindChange";

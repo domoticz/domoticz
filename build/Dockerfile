@@ -41,7 +41,7 @@ RUN tar xzf cmake-${CMAKE_VERSION}.tar.gz \
  && rm -fr cmake-${CMAKE_VERSION} cmake-${CMAKE_VERSION}.tar.gz
 
 RUN VERSION_=$(echo ${BOOST_VERSION} | tr . _) \
- && wget -nv -O - https://dl.bintray.com/boostorg/release/${BOOST_VERSION}/source/boost_${VERSION_}.tar.gz \
+ && wget -nv -O - https://boostorg.jfrog.io/artifactory/main/release/${BOOST_VERSION}/source/boost_${VERSION_}.tar.gz \
   | tar xfz - \
  && cd boost_${VERSION_} \
  && ./bootstrap.sh \
