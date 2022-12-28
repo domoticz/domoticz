@@ -424,7 +424,7 @@ define(['app', 'RefreshingChart', 'log/factories'], function (app, RefreshingCha
                         },
                         {
                             title: {
-                                text: $.t('Humidity') + ' %'
+                                text: ctrl.device.isVirtualThermostat ? $.t('Power') + ' %' : $.t('Humidity') + ' %'
                             },
                             labels: {
                                 formatter: function () {
