@@ -600,21 +600,33 @@ constexpr auto sqlCreateMobileDevices =
 "[LastUpdate] DATETIME DEFAULT(datetime('now', 'localtime'))"
 ");";
 
-char * TITEM_name[] = {
-	"SWITCHCMD",
-	"EXECUTE_SCRIPT",
-	"EMAIL_CAMERA_SNAPSHOT",
-	"SEND_EMAIL",
-	"SWITCHCMD_EVENT",
-	"SWITCHCMD_SCENE",
-	"GETURL",
-	"SEND_EMAIL_TO",
-	"SET_VARIABLE",
-	"SEND_SMS",
-	"SEND_NOTIFICATION",
-	"SET_SETPOINT",
-	"SEND_IFTTT_TRIGGER",
+static char * TITEM_name[] = {
+    
+"SWITCHCMD",
+"EXECUTE_SCRIPT",
+"EMAIL_CAMERA_SNAPSHOT",
+"SEND_EMAIL",
+"SWITCHCMD_EVENT",
+"SWITCHCMD_SCENE",
+"GETURL",
+"EXECUTESHELLCOMMAND",
+"SEND_EMAIL_TO",
+"SET_VARIABLE",
+"SEND_SMS",
+"SEND_NOTIFICATION",
+"SET_SETPOINT",
+"SEND_IFTTT_TRIGGER",
+"UPDATEDEVICE",
+"CUSTOM_COMMAND",
+"CUSTOM_EVENT"
 };
+static const char* getItemName(_eTaskItemType item)
+{
+    if (item < sizeof(TITEM_name)/sizeof(char*))
+        return TITEM_name[item];
+    else
+        return "UNKNOWN";
+}
 constexpr auto sqlCreateApplications =
 "CREATE TABLE IF NOT EXISTS [Applications]("
 "[ID] INTEGER PRIMARY KEY, "
@@ -4053,7 +4065,7 @@ void CSQLHelper::Do_Work()
 
 		for (const auto &itt : _items2do)
 		{
-			_log.Debug(DEBUG_NORM, "SQLH: Do Task ItemType:%d = %s  Cmd:%s Value:%s ", itt._ItemType, TITEM_name[itt._ItemType], itt._command.c_str(), itt._sValue.c_str());
+			_log.Debug(DEBUG_NORM, "SQLH: Do Task ItemType:%d = %s  Cmd:%s Value:%s ", itt._ItemType, getItemName(itt._ItemType), itt._command.c_str(), itt._sValue.c_str());
 
 			if (itt._ItemType == TITEM_SWITCHCMD)
 			{
