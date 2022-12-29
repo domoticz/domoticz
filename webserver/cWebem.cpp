@@ -1273,8 +1273,8 @@ namespace http {
 				StringSplit(sLine, ",", vLineParts);
 				for (std::string sPart : vLineParts)
 				{
-					stdstring_trimws(sPart);
-					vHosts.push_back(sPart);
+					if(isValidIP(sPart))
+						vHosts.push_back(sPart);
 				}
 			}
 
@@ -1299,8 +1299,8 @@ namespace http {
 							iePos = sPart.find(";", isPos);
 						}
 						std::string sSub = sPart.substr(isPos, (iePos - isPos));
-						stdstring_trimws(sSub);
-						vHosts.push_back(sSub);
+						if(isValidIP(sSub))
+							vHosts.push_back(sSub);
 					}
 				}
 			}
@@ -2442,7 +2442,7 @@ namespace http {
 			bool bUseRealHost = false;
 			if(!myWebem->findRealHostBehindProxies(req, realHost))
 			{
-				_log.Log(LOG_ERROR, "[web:%s]: Unable to determine origin due to different proxy headers being used (Or possible spoofing attempt), ignoring client request (remote address: %s)", myWebem->GetPort().c_str(), session.remote_host.c_str());
+				_log.Log(LOG_ERROR, "[web:%s]: Unable to determine origin due to improper proxy header(s) (values) being used (Possible spoofing attempt!?), dropping client request (remote address: %s)", myWebem->GetPort().c_str(), session.remote_host.c_str());
 				rep = reply::stock_reply(reply::forbidden);
 				return;
 			}
