@@ -2,38 +2,6 @@ define(['app', 'livesocket','app/virtualThermostat.js'], function (app) {
 	app.controller('UtilityController', function ($scope, $rootScope, $location, $http, $interval, $route, $routeParams, deviceApi, permissions, livesocket) {
 		var $element = $('#main-view #utilitycontent').last();
 		
-
-		GetThermostatBigText = function (item) {
-	            var bigtext;
-	            bigtext = item.Data + '\u00B0';
-	            if (typeof item.RoomTemp != 'undefined') {
-	                bigtext += '/' + item.RoomTemp + '\u00B0 ';
-	            }
-	            bigtext += $scope.config.TempSign;
-	            return bigtext;
-	        }
-	    GetThermostatStatus = function (item) {
-	            var status="";
-	            if (typeof item.Power != 'undefined') {
-	                status = "Power:"+item.Power + '%';
-	            }
-	            return status;
-	        }
-
-	    getThermostatImage = function (item) {
-				var image = (item.CustomImage == 0)  ? '"images/override.png"' : '"images/'+ item.Image + '48_On.png"' ;
-	            if (item.isVirtualThermostat) {
-	                if (item.Switch == 1)
-	                    image = '"images/override.png"';
-	                else
-	                    image = '"images/override_off.png"';
-	            }
-	            var undef;
-	            var xhtm = '<img src=' + image + ' class="lcursor" onclick="ShowSetpointPopup(event, ' + item.idx + ',' + item.Protected + ', ' + item.Data + ','+undef+',' + item.ConforTemp + ',' + item.EcoTemp  + ');" height="48" width="48" ></td>\n';
-
-	            return xhtm;
-	        }
-
 		$.strPad = function (i, l, s) {
 			var o = i.toString();
 			if (!s) { s = '0'; }
@@ -463,7 +431,7 @@ define(['app', 'livesocket','app/virtualThermostat.js'], function (app) {
 					bigtext = item.Data;
 				}
 				else if ((item.Type == "Thermostat") && (item.SubType == "SetPoint")) {
-					bigtext = GetThermostatBigText(item);
+					bigtext = GetThermostatBigText(item,$scope.config.TempSign);
 					status = GetThermostatStatus(item);
 					img = getThermostatImage(item);
 
@@ -657,7 +625,7 @@ define(['app', 'livesocket','app/virtualThermostat.js'], function (app) {
 								xhtm += item.Data;
 							}
 							else if (item.Type == "Thermostat") {
-							    xhtm += GetThermostatBigText(item);
+							    xhtm += GetThermostatBigText(item,$scope.config.TempSign);
 							    status = GetThermostatStatus(item);
 							}
 							else if (item.SubType == "Waterflow") {
