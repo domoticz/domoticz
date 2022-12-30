@@ -89,12 +89,6 @@ bool VirtualThermostat::LastValue::AsChanged(int index, double value, double del
     return false;
 }
 
-std::string ToString(double value, const char* format = "%f")
-{
-    char buf[64];
-    snprintf(buf, sizeof(buf) - 2, format, value);
-    return buf;
-}
 //option management
 void getOption(TOptionMap& Option, const char* optionName, int& value)
 {
@@ -119,7 +113,7 @@ void setOption(TOptionMap& Option, const char* optionName, int  value)
 }
 void setOption(TOptionMap& Option, const char* optionName, double  value)
 {
-    Option[optionName] = ToString(value, "%4.1f");;
+    Option[optionName] = std_format( "%4.1f",value);;
 }
 void setOption(TOptionMap& Option, const char* optionName, const char* value)
 {
