@@ -20,30 +20,30 @@ std::string GetDeviceValue(const char* FieldName, const char* Idx)
         return  "";
 }
 
-void CircularBuffer::Clear()
+void VirtualThermostat::CircularBuffer::Clear()
 {
     for (int i = 0; i < Size; i++)Value[i] = 0;
     index = 0;
     Sum = 0;
 }
-CircularBuffer::CircularBuffer(int pSize)
+VirtualThermostat::CircularBuffer::CircularBuffer(int pSize)
 {
     Value = new double[pSize];
     Size = pSize;
     Clear();
 }
-CircularBuffer::~CircularBuffer()
+VirtualThermostat::CircularBuffer::~CircularBuffer()
 {
     delete[] Value;
 }
-int CircularBuffer::GetNext()
+int VirtualThermostat::CircularBuffer::GetNext()
 {
     if (index >= (Size - 1))
         return 0;
     else
         return index + 1;
 }
-double CircularBuffer::Put(double val)
+double VirtualThermostat::CircularBuffer::Put(double val)
 {
     double lastv = Value[index];
     Value[index] = val;
@@ -52,34 +52,34 @@ double CircularBuffer::Put(double val)
     Sum += val;
     return lastv;
 }
-double CircularBuffer::GetLast()
+double VirtualThermostat::CircularBuffer::GetLast()
 {
     //return last recorded value
     return Value[index];
 }
 
-double CircularBuffer::GetSum()
+double VirtualThermostat::CircularBuffer::GetSum()
 {
     return Sum;
 }
 
-LastValue::LastValue(float pdelta)
+VirtualThermostat::LastValue::LastValue(float pdelta)
 {
     Delta = pdelta;
 }
-double LastValue::Get(int index)
+double VirtualThermostat::LastValue::Get(int index)
 {
     return LastValues[index];
 }
-void   LastValue::Put(int index, double value)
+void   VirtualThermostat::LastValue::Put(int index, double value)
 {
     LastValues[index] = value;
 }
-bool LastValue::AsChanged(int index, double value)
+bool VirtualThermostat::LastValue::AsChanged(int index, double value)
 {
     return AsChanged(index, value, Delta);
 }
-bool LastValue::AsChanged(int index, double value, double delta)
+bool VirtualThermostat::LastValue::AsChanged(int index, double value, double delta)
 {
     if (fabs(LastValues[index] - value) > delta)
     {

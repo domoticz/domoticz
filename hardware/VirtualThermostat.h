@@ -20,6 +20,9 @@ enum VirtualThermostatMode {
 
 #define AVALAIBLE_MODE "Eco,Conf,Frost,Off"
 
+class VirtualThermostat : public CThermostatHardware
+{
+private:
 class CircularBuffer {
 public:
 	double * Value;
@@ -54,10 +57,6 @@ public:
 
 };
 
-  typedef std::map<int,  CircularBuffer* > T_Map_CircularBuffer;
-
-class VirtualThermostat : public CThermostatHardware
-{
 public:
 	VirtualThermostat(const int ID);
 	~VirtualThermostat();
@@ -81,6 +80,8 @@ public:
     float getTemperatureFromSValue(const char * sValue);
     double ConvertTemperatureUnit(double tempcelcius);
     bool GetLastValue(  const char* DeviceID, int &nValue, std::string &sValue, struct tm &LastUpdateTime);
+
+	typedef std::map<int,  CircularBuffer* > T_Map_CircularBuffer;
 
 	T_Map_CircularBuffer DeltaTemps;
 
