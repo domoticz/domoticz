@@ -1,9 +1,6 @@
 #pragma once
 
-#include <map>
 #include "ThermostatHardware.h"
-
-typedef std::map<int,  float  > T_Map_LastRoomTemp ;
 
 //duratoiopn of integration window in min
 #define INTEGRAL_DURATION 10
@@ -59,12 +56,9 @@ public:
 
   typedef std::map<int,  CircularBuffer* > T_Map_CircularBuffer;
 
-
 class VirtualThermostat : public CThermostatHardware
 {
 public:
-
-
 	VirtualThermostat(const int ID);
 	~VirtualThermostat();
 	bool WriteToHardware(const char *pdata, const unsigned char length);
@@ -75,8 +69,9 @@ public:
 public:
     int ThermostatGetEcoConfort(const char* devID, int CurrentTargetTemp);
     void	ThermostatToggleEcoConfort (const char * devID , char * setTemp , char * Duration);
-	short	ComputeThermostatOutput ( int Min , int PowerPercent );
+	int	ComputeThermostatOutput ( int Min , int PowerPercent );
     int ComputeThermostatPower(int index, double RoomTemp, double TargetTemp, double ExteriorTemp, double CoefProportional, double CoefIntegral, double CoefDerivated);
+	void getCommand(std::string& Cmd, std::string& OutCmd, int& level);
 	int		GetConfortTempFromTimers  (const char * devID );
 	int		GetEcoTempFromTimers  (const char * devID );
 	std::string GetMode ( float curTemp , float EcoTemp, float ConfTemp );
@@ -87,9 +82,6 @@ public:
     double ConvertTemperatureUnit(double tempcelcius);
     bool GetLastValue(  const char* DeviceID, int &nValue, std::string &sValue, struct tm &LastUpdateTime);
 
-
-
-	T_Map_LastRoomTemp Map_LastRoomTemp ;
 	T_Map_CircularBuffer DeltaTemps;
 
 	//thermostat function
@@ -105,7 +97,6 @@ public:
 	virtual bool SetThermostatState(const std::string &deviceIdx, const int newState);
 	//convert interger state to string state : 0--> OFF 1-->ECO
 
-
   bool StartHardware();
   bool StopHardware();
   void Do_Work();
@@ -113,7 +104,6 @@ public:
   std::shared_ptr<std::thread> m_thread;
   volatile bool m_stoprequested;
   int m_ScheduleLastMinute;
-
 
 };
 

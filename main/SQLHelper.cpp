@@ -5960,7 +5960,7 @@ void CSQLHelper::UpdateTemperatureLog()
 	GetPreferencesVar("SensorTimeout", SensorTimeOut);
 
 	std::vector<std::vector<std::string> > result;
-	result = safe_query("SELECT ID,Type,SubType,nValue,sValue,LastUpdate,Options FROM DeviceStatus WHERE (Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR (Type=%d AND SubType=%d) OR (Type=%d AND SubType=%d) OR (Type=%d AND SubType=%d))",
+	result = safe_query("SELECT ID,Type,SubType,nValue,sValue,LastUpdate,Options,HardwareID FROM DeviceStatus WHERE (Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR (Type=%d AND SubType=%d) OR (Type=%d AND SubType=%d) OR (Type=%d AND SubType=%d))",
 		pTypeTEMP,
 		pTypeHUM,
 		pTypeTEMP_HUM,
@@ -6026,21 +6026,24 @@ void CSQLHelper::UpdateTemperatureLog()
 			case pTypeThermostat:
 				{
 
+					const std::string& HwdId = sd[7];
+					//get virtual thermostat hardware
+					CDomoticzHardwareBase* Hardware = m_mainworker.GetHardwareByIDType( HwdId, HTYPE_VirtualThermostat);
 					//if not a virtual thermostat
-					std::string Options  = sd[6];
-					if (Options.empty() )
+					if (Hardware==nullptr)
 					{
-						temp = static_cast<float>(atof(splitresults[0].c_str()));
+						temp = static_cast<float>(std::stof(splitresults[0].c_str()));
 					}
 					else
 					{
 						//for virtual thermostat record Room Temperature / set point & power level 0..100%
 						//set point temperature record as chill
-						chill = static_cast<float>(atof(splitresults[0].c_str()));
+						std::string Options  = sd[6];
+						chill = static_cast<float>(std::stof(splitresults[0].c_str()));
 						//record power % as humidity
-						humidity = atoi(VirtualThermostatGetOption("Power", Options).c_str());
+						humidity = std::stoi(VirtualThermostatGetOption("Power", Options).c_str());
 						//record room temp 
-						temp = (float)atof(VirtualThermostatGetOption("RoomTemp", Options).c_str());
+						temp = (float)std::stof(VirtualThermostatGetOption("RoomTemp", Options).c_str());
 					}
 				}
 			break;

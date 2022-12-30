@@ -231,7 +231,7 @@
 	                    dataType: 'json',
 	                    success: function (data) {
 	                        if (data.status == 'OK') {
-	                            ShowNotify($.t('Virtua Thermostat Sensor Created, and can be found in the devices tab!'), 2500);
+	                            ShowNotify($.t('Virtual Thermostat Sensor Created, and can be found in the devices tab!'), 2500);
 	                        }
 	                        else {
 	                            ShowNotify($.t('Problem creating Sensor!'), 2500, true);
