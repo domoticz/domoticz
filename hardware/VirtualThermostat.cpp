@@ -249,11 +249,8 @@ int VirtualThermostat::ComputeThermostatOutput(int Min, int PowerPercent)
 }
 
 //return the poqer modulation in function of Room , Exterior and Target Temperature,
-int VirtualThermostat::ComputeThermostatPower(int index, double RoomTemp, double TargetTemp, double ExteriorTemp, double CoefProportional, double CoefIntegral, double CoefDerivated)
+int VirtualThermostat::ComputeThermostatPower(int index, double RoomTemp, double TargetTemp, double CoefProportional, double CoefIntegral)
 {
-    (void)CoefDerivated;
-    (void)ExteriorTemp;
-
     int PowerModulation = 0;
     double DeltaTemp = TargetTemp - RoomTemp;
     CircularBuffer* Delta = DeltaTemps[index];
@@ -403,7 +400,7 @@ void VirtualThermostat::ScheduleThermostat(int Minute)
                 if (GetLastValue(TemperatureId.c_str(), nValue, sValue, LastUpdateTime))
                 {
                     RoomTemperature = getTemperatureFromSValue(sValue.c_str());
-                    PowerModulation = ComputeThermostatPower(ThermostatId, RoomTemperature, ThermostatSetPoint, 0, CoefProportional, CoefIntegral, 0);
+                    PowerModulation = ComputeThermostatPower(ThermostatId, RoomTemperature, ThermostatSetPoint, CoefProportional, CoefIntegral);
 
                     //minute+i : shift  device in time in order to not have all powered together
                     int minute = (int)(double(Minute) + double(i) * scrollDevice);

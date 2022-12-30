@@ -69,7 +69,7 @@ public:
     int ThermostatGetEcoConfort(const char* devID, int CurrentTargetTemp);
     void	ThermostatToggleEcoConfort (const char * devID , char * setTemp , char * Duration);
 	int	ComputeThermostatOutput ( int Min , int PowerPercent );
-    int ComputeThermostatPower(int index, double RoomTemp, double TargetTemp, double ExteriorTemp, double CoefProportional, double CoefIntegral, double CoefDerivated);
+    int ComputeThermostatPower(int index, double RoomTemp, double TargetTemp, double CoefProportional, double CoefIntegral);
 	void getCommand(std::string& Cmd, std::string& OutCmd, int& level);
 	int		GetConfortTempFromTimers  (const char * devID );
 	int		GetEcoTempFromTimers  (const char * devID );
