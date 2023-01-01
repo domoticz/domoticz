@@ -78,7 +78,7 @@ define(['app', 'livesocket'], function (app) {
 				if (olditem.idx == item.idx) {
 					oldarray[oldindex] = item;
 					if ($scope.config.ShowUpdatedEffect == true) {
-						$("#devicesList #weatherwidgets #" + item.idx + " #name").effect("highlight", { color: '#EEFFEE' }, 1000);
+						$("#weatherwidgets #" + item.idx + " #name").effect("highlight", { color: '#EEFFEE' }, 1000);
 					}
 				}
 			});
@@ -134,8 +134,8 @@ define(['app', 'livesocket'], function (app) {
 			$('#modal').hide();
 			$('#weathercontent').html("");
 			$('#weathercontent').i18n();
-			$('#devicesList #weatherwidgets').show();
-			$('#devicesList #weatherwidgets').i18n();
+			$('#weatherwidgets').show();
+			$('#weatherwidgets').i18n();
 			$('#weathertophtm').show();
 			$('#weathertophtm').i18n();
 
@@ -657,7 +657,7 @@ define(['app', 'livesocket'], function (app) {
 				};
 
 				ctrl.ShowLog = function () {
-					$('#devicesList #weatherwidgets').hide(); // TODO delete when multiple views implemented
+					$('#weatherwidgets').hide(); // TODO delete when multiple views implemented
 					$('#weathertophtm').hide();
 					if (typeof item.Barometer != 'undefined') {
 						return ShowBaroLog('#weathercontent', 'ShowWeathers', item.idx, escape(item.Name));
@@ -698,7 +698,7 @@ define(['app', 'livesocket'], function (app) {
 				};
 
 				ctrl.ShowForecast = function () {
-					$('#devicesList #weatherwidgets').hide(); // TODO delete when multiple views implemented
+					$('#weatherwidgets').hide(); // TODO delete when multiple views implemented
 					$('#weathertophtm').hide();
 					return ShowForecast(atob(item.forecast_url), escape(item.Name), escape(item.Description), '#weathercontent', 'ShowWeathers');
 				};
