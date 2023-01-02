@@ -267,7 +267,7 @@ namespace http
 				sRealm += settings.vhostname;
 			else
 				sRealm += (settings.listening_address == "::") ? "domoticz.local" : settings.listening_address;
-			if(settings.listening_port != "80" || settings.listening_port != "443")
+			if (settings.listening_port != "80" || settings.listening_port != "443")
 				sRealm += ":" + settings.listening_port;
 			sRealm += "/";
 
@@ -348,13 +348,13 @@ namespace http
 			m_pWebEm->RegisterIncludeCode("combolanguage", [this](auto&& content_part) { DisplayLanguageCombo(content_part); });
 
 			m_pWebEm->RegisterPageCode(
-				OAUTH2_AUTH_URL, [this](auto &&session, auto &&req, auto &&rep) { GetOauth2AuthCode(session, req, rep); }, true);
+				OAUTH2_AUTH_URL, [this](auto&& session, auto&& req, auto&& rep) { GetOauth2AuthCode(session, req, rep); }, true);
 			m_pWebEm->RegisterPageCode(
-				OAUTH2_TOKEN_URL, [this](auto &&session, auto &&req, auto &&rep) { PostOauth2AccessToken(session, req, rep); }, true);
+				OAUTH2_TOKEN_URL, [this](auto&& session, auto&& req, auto&& rep) { PostOauth2AccessToken(session, req, rep); }, true);
 			m_pWebEm->RegisterPageCode(
-				"/.well-known/openid-configuration", [this](auto &&session, auto &&req, auto &&rep) { GetOpenIDConfiguration(session, req, rep); }, true);
+				"/.well-known/openid-configuration", [this](auto&& session, auto&& req, auto&& rep) { GetOpenIDConfiguration(session, req, rep); }, true);
 
-			m_pWebEm->RegisterPageCode("/json.htm", [this](auto &&session, auto &&req, auto &&rep) { GetJSonPage(session, req, rep); });
+			m_pWebEm->RegisterPageCode("/json.htm", [this](auto&& session, auto&& req, auto&& rep) { GetJSonPage(session, req, rep); });
 			// These 'Pages' should probably be 'moved' to become Command codes handled by the 'json.htm API', so we get all API calls through one entry point
 			// And why .php or .cgi while all these commands are NOT handled by a PHP or CGI processor but by Domoticz ?? Legacy? Rename these?
 			m_pWebEm->RegisterPageCode("/logincheck", [this](auto&& session, auto&& req, auto&& rep) { PostLoginCheck(session, req, rep); }, true);
@@ -400,7 +400,7 @@ namespace http
 			RegisterCommandCode(
 				"gettitle", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetTitle(session, req, root); }, true);
 			RegisterCommandCode(
-				"logincheck", [this](auto &&session, auto &&req, auto &&root) { Cmd_LoginCheck(session, req, root); }, true);
+				"logincheck", [this](auto&& session, auto&& req, auto&& root) { Cmd_LoginCheck(session, req, root); }, true);
 
 			RegisterCommandCode(
 				"getversion", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetVersion(session, req, root); }, true);
@@ -952,7 +952,7 @@ namespace http
 			}
 		}
 
-		void CWebServer::GetOauth2AuthCode(WebEmSession &session, const request &req, reply &rep)
+		void CWebServer::GetOauth2AuthCode(WebEmSession& session, const request& req, reply& rep)
 		{
 			bool bAuthenticated = false;
 			bool bAuthorized = false;
@@ -968,13 +968,13 @@ namespace http
 			std::string code_challenge = request::findValue(&req, "code_challenge");
 			std::string code_challenge_method = request::findValue(&req, "code_challenge_method");
 
-			if (!redirect_uri.empty() && redirect_uri.substr(0,8) == "https://")	// Absolute and (TLS)safe redirect URI expected
+			if (!redirect_uri.empty() && redirect_uri.substr(0, 8) == "https://")	// Absolute and (TLS)safe redirect URI expected
 			{
 				if (req.method == "GET")
 				{
-					if(!response_type.empty() && (response_type.compare("code") == 0 )) // || response_type.compare("token") == 0))
+					if (!response_type.empty() && (response_type.compare("code") == 0)) // || response_type.compare("token") == 0))
 					{
-						if(scope.find_first_of("openid") == std::string::npos)
+						if (scope.find_first_of("openid") == std::string::npos)
 						{
 							_log.Debug(DEBUG_AUTH, "OAuth2 Auth Code: Missing 'openid' in scope (%s)! Not an OpenID Connect request, maybe just OAuth2?", scope.c_str());
 						}
@@ -1017,7 +1017,7 @@ namespace http
 									m_accesscodes[iUser].ExpTime = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count() + 60000;
 									m_accesscodes[iUser].RedirectUri = redirect_uri;
 									m_accesscodes[iUser].Scope = scope;
-									if (!(code_challenge.empty() || code_challenge_method.empty()) && code_challenge_method.compare("S256") == 0 )
+									if (!(code_challenge.empty() || code_challenge_method.empty()) && code_challenge_method.compare("S256") == 0)
 									{
 										m_accesscodes[iUser].CodeChallenge = code_challenge;
 									}
@@ -1061,7 +1061,7 @@ namespace http
 			}
 
 			std::stringstream result;
-			if(redirect_uri.find("?") != std::string::npos)
+			if (redirect_uri.find("?") != std::string::npos)
 				result << redirect_uri << "&";
 			else
 				result << redirect_uri << "?";
@@ -1078,7 +1078,7 @@ namespace http
 			rep.status = reply::moved_temporarily;
 		}
 
-		void CWebServer::PostOauth2AccessToken(WebEmSession &session, const request &req, reply &rep)
+		void CWebServer::PostOauth2AccessToken(WebEmSession& session, const request& req, reply& rep)
 		{
 			Json::Value root;
 			std::string jwttoken;
@@ -1105,9 +1105,9 @@ namespace http
 			if (req.method == "POST")
 			{
 				bool bValidGrantType = false;
-				if(!grant_type.empty())
+				if (!grant_type.empty())
 				{
-					if (grant_type.compare("authorization_code") == 0 )
+					if (grant_type.compare("authorization_code") == 0)
 					{
 						bValidGrantType = true;
 						int iClient = -1;
@@ -1119,7 +1119,7 @@ namespace http
 							{
 								// Let's find the user for this client with the right auth_code, if any
 								iUser = 0;
-								for (const auto &ac : m_accesscodes)
+								for (const auto& ac : m_accesscodes)
 								{
 									if (ac.AuthCode.compare(auth_code.c_str()) == 0)
 									{
@@ -1142,7 +1142,7 @@ namespace http
 
 									// For so-called (registered) 'public' clients, it is not mandatory to send the client_secret as it is never a real secret with public clients
 									// So in those cases, we use the registered secret
-									if(client_secret.empty())
+									if (client_secret.empty())
 									{
 										client_secret = m_users[iClient].Password;
 									}
@@ -1155,12 +1155,12 @@ namespace http
 									m_accesscodes[iUser].ExpTime = 0;
 									m_accesscodes[iUser].CodeChallenge = "";
 
-									if(acRedirectUri.compare(redirect_uri.c_str()) == 0)
+									if (acRedirectUri.compare(redirect_uri.c_str()) == 0)
 									{
 										if (CodeTime > CurTime)
 										{
 											bool bPKCE = false;
-											if(!(code_verifier.empty() || CodeChallenge.empty()))
+											if (!(code_verifier.empty() || CodeChallenge.empty()))
 											{
 												// We have a code_challenge from the Auth request and now also a code_verifier.. let's see if they match
 												_log.Debug(DEBUG_AUTH, "OAuth2 Access Token: Verifiying PKCE Code Challenge (%s) using provided verifyer!", CodeChallenge.c_str());
@@ -1169,7 +1169,7 @@ namespace http
 													bPKCE = true;
 												}
 											}
-											if(code_verifier.empty() || bPKCE)
+											if (code_verifier.empty() || bPKCE)
 											{
 												Json::Value jwtpayload;
 												jwtpayload["auth_time"] = AuthTime;
@@ -1223,13 +1223,13 @@ namespace http
 								}
 							}
 						}
-						if(iUser == -1)
+						if (iUser == -1)
 						{
 							root["error"] = "unauthorized_client";
 							_log.Debug(DEBUG_AUTH, "OAuth2 Access Token: Unauthorized/Unknown client_id (%s)!", client_id.c_str());
 						}
 					} // end 'authorization_code' grant_type
-					if (grant_type.compare("password") == 0 )
+					if (grant_type.compare("password") == 0)
 					{
 						bValidGrantType = true;
 
@@ -1252,7 +1252,7 @@ namespace http
 									_log.Debug(DEBUG_AUTH, "OAuth2 Access Token: Found a Basic Auth Header for User (%s)", user.c_str());
 
 									iUser = FindUser(user.c_str());
-									if(iUser >= 0)
+									if (iUser >= 0)
 									{
 										if (m_users[iUser].userrights != URIGHTS_CLIENTID && GenerateMD5Hash(passwd).compare(m_users[iUser].Password) == 0)
 										{
@@ -1304,7 +1304,7 @@ namespace http
 							_log.Debug(DEBUG_AUTH, "OAuth2 Access Token: Password grant flow failed!");
 						}
 					} // end 'password' grant_type
-					if (grant_type.compare("refresh_token") == 0 )
+					if (grant_type.compare("refresh_token") == 0)
 					{
 						bValidGrantType = true;
 						std::string refresh_token = request::findValue(&req, "refresh_token");
@@ -1314,8 +1314,8 @@ namespace http
 							if (ValidateOAuth2RefreshToken(refresh_token, usernamefromtoken))
 							{
 								std::vector<std::string> strarray;
-								StringSplit(usernamefromtoken,";", strarray);
-								if(strarray.size() == 2)
+								StringSplit(usernamefromtoken, ";", strarray);
+								if (strarray.size() == 2)
 								{
 									int iClient = std::atoi(strarray[0].c_str());
 									int iUser = std::atoi(strarray[1].c_str());
@@ -1364,7 +1364,7 @@ namespace http
 						}
 					} // end 'refresh_token' grant_type
 				}
-				if(!bValidGrantType)
+				if (!bValidGrantType)
 				{
 					root["error"] = "unsupported_grant_type";
 					_log.Debug(DEBUG_AUTH, "OAuth2 Access Token: Invalid/unsupported grant_type (%s)!", grant_type.c_str());
@@ -1379,14 +1379,14 @@ namespace http
 			reply::set_content(&rep, root.toStyledString());
 		}
 
-		void CWebServer::GetOpenIDConfiguration(WebEmSession &session, const request &req, reply &rep)
+		void CWebServer::GetOpenIDConfiguration(WebEmSession& session, const request& req, reply& rep)
 		{
 			Json::Value root, jaRTS(Json::arrayValue), jaTEASAVS(Json::arrayValue), jaGTS(Json::arrayValue), jaCCMS(Json::arrayValue), jaTEAMS(Json::arrayValue);
 
 			reply::add_header_content_type(&rep, "application/json;charset=UTF-8");
 			rep.status = reply::bad_request;
 
-			std::string base_url = m_pWebEm->m_DigistRealm.substr(0, m_pWebEm->m_DigistRealm.size()-1);
+			std::string base_url = m_pWebEm->m_DigistRealm.substr(0, m_pWebEm->m_DigistRealm.size() - 1);
 
 			root["issuer"] = m_pWebEm->m_DigistRealm;
 			root["authorization_endpoint"] = base_url + OAUTH2_AUTH_URL;
@@ -1424,11 +1424,11 @@ namespace http
 			return refreshtoken;
 		}
 
-		bool CWebServer::ValidateOAuth2RefreshToken(const std::string refreshtoken, std::string &username)
+		bool CWebServer::ValidateOAuth2RefreshToken(const std::string refreshtoken, std::string& username)
 		{
 			bool bOk = false;
 			WebEmStoredSession refreshsession = GetSession(GenerateMD5Hash(refreshtoken));
-			if	((!refreshsession.id.empty())
+			if ((!refreshsession.id.empty())
 				&& (refreshsession.auth_token.compare(refreshtoken) == 0)
 				&& (refreshsession.expires > mytime(nullptr))
 				)
@@ -1443,11 +1443,11 @@ namespace http
 		void CWebServer::InvalidateOAuth2RefreshToken(const std::string refreshtoken)
 		{
 			WebEmStoredSession refreshsession = GetSession(GenerateMD5Hash(refreshtoken));
-			if	(!refreshsession.id.empty())
+			if (!refreshsession.id.empty())
 				RemoveSession(refreshsession.id);
 		}
 
-		void CWebServer::Cmd_GetHardwareTypes(WebEmSession &session, const request &req, Json::Value &root)
+		void CWebServer::Cmd_GetHardwareTypes(WebEmSession& session, const request& req, Json::Value& root)
 		{
 			if (session.rights != 2)
 			{
@@ -1834,7 +1834,7 @@ namespace http
 			else if (htype == HTYPE_VirtualThermostat)
 			{
 				// all fine here!
-            }
+			}
 			else
 				return;
 
@@ -2215,7 +2215,7 @@ namespace http
 			else if (htype == HTYPE_VirtualThermostat)
 			{
 				// all fine here!
-            }
+			}
 			else if (htype == HTYPE_RFLINKMQTT)
 			{
 				//all fine here!
@@ -6855,8 +6855,8 @@ namespace http
 				{
 					root["title"] = "AddUser";
 					m_sql.safe_query("INSERT INTO Users (Active, Username, Password, Rights, RemoteSharing, TabsEnabled) VALUES (%d,'%q','%q','%d','%d','%d')",
-							(senabled == "true") ? 1 : 0, sHashedUsername.c_str(), password.c_str(), rights, (sRemoteSharing == "true") ? 1 : 0,
-							atoi(sTabsEnabled.c_str()));
+						(senabled == "true") ? 1 : 0, sHashedUsername.c_str(), password.c_str(), rights, (sRemoteSharing == "true") ? 1 : 0,
+						atoi(sTabsEnabled.c_str()));
 				}
 				else if (cparam == "updateuser")
 				{
@@ -6884,8 +6884,8 @@ namespace http
 							RemoveUsersSessions(sOldUsername, session);
 
 						m_sql.safe_query("UPDATE Users SET Active=%d, Username='%q', Password='%q', Rights=%d, RemoteSharing=%d, TabsEnabled=%d WHERE (ID == '%q')",
-								(senabled == "true") ? 1 : 0, sHashedUsername.c_str(), password.c_str(), rights, (sRemoteSharing == "true") ? 1 : 0, atoi(sTabsEnabled.c_str()),
-								idx.c_str());
+							(senabled == "true") ? 1 : 0, sHashedUsername.c_str(), password.c_str(), rights, (sRemoteSharing == "true") ? 1 : 0, atoi(sTabsEnabled.c_str()),
+							idx.c_str());
 					}
 				}
 				else if (cparam == "deleteuser")
@@ -6921,7 +6921,7 @@ namespace http
 					session.reply_status = reply::forbidden;
 					return; // Only admin user allowed
 				}
-				if 	(cparam == "getapplications")
+				if (cparam == "getapplications")
 				{
 					root["title"] = "GetApplications";
 					std::vector<std::vector<std::string>> result;
@@ -6929,7 +6929,7 @@ namespace http
 					if (!result.empty())
 					{
 						int ii = 0;
-						for (const auto &sd : result)
+						for (const auto& sd : result)
 						{
 							root["result"][ii]["idx"] = sd[0];
 							root["result"][ii]["Enabled"] = (sd[1] == "1") ? "true" : "false";
@@ -6981,7 +6981,7 @@ namespace http
 					{
 						root["title"] = "AddApplication";
 						m_sql.safe_query("INSERT INTO Applications (Active, Public, Applicationname, Secret, Pemfile) VALUES (%d,%d,'%q','%q','%q')",
-								(senabled == "true") ? 1 : 0, (spublic == "true") ? 1 : 0, applicationname.c_str(), secret.c_str(), pemfile.c_str());
+							(senabled == "true") ? 1 : 0, (spublic == "true") ? 1 : 0, applicationname.c_str(), secret.c_str(), pemfile.c_str());
 					}
 					else if (cparam == "updateapplication")
 					{
@@ -6992,7 +6992,7 @@ namespace http
 							return;
 						}
 						m_sql.safe_query("UPDATE Applications SET Active=%d, Public=%d, Applicationname='%q', Secret='%q', Pemfile='%q' WHERE (ID == '%q')",
-								(senabled == "true") ? 1 : 0, (spublic == "true") ? 1 : 0, applicationname.c_str(), secret.c_str(), pemfile.c_str(), idx.c_str());
+							(senabled == "true") ? 1 : 0, (spublic == "true") ? 1 : 0, applicationname.c_str(), secret.c_str(), pemfile.c_str(), idx.c_str());
 					}
 				}
 				else if (cparam == "deleteapplication")
@@ -7015,7 +7015,7 @@ namespace http
 					m_sql.safe_query("DELETE FROM Applications WHERE (ID == '%q')", idx.c_str());
 				}
 				root["status"] = "OK";
-				if 	(cparam != "getapplications")
+				if (cparam != "getapplications")
 					LoadUsers();
 			}
 			else if (cparam == "clearlightlog")
@@ -8337,7 +8337,7 @@ namespace http
 			result = m_sql.safe_query("SELECT ID, Active, Username, Password, Rights, TabsEnabled FROM Users");
 			if (!result.empty())
 			{
-				for (const auto &sd : result)
+				for (const auto& sd : result)
 				{
 					int bIsActive = static_cast<int>(atoi(sd[1].c_str()));
 					if (bIsActive)
@@ -8359,7 +8359,7 @@ namespace http
 			result = m_sql.safe_query("SELECT ID, Active, Public, Applicationname, Secret, Pemfile FROM Applications");
 			if (!result.empty())
 			{
-				for (const auto &sd : result)
+				for (const auto& sd : result)
 				{
 					int bIsActive = static_cast<int>(atoi(sd[1].c_str()));
 					if (bIsActive)
@@ -8377,7 +8377,7 @@ namespace http
 			m_mainworker.LoadSharedUsers();
 		}
 
-		void CWebServer::AddUser(const unsigned long ID, const std::string &username, const std::string &password, const int userrights, const int activetabs, const std::string &pemfile)
+		void CWebServer::AddUser(const unsigned long ID, const std::string& username, const std::string& password, const int userrights, const int activetabs, const std::string& pemfile)
 		{
 			if (m_pWebEm == nullptr)
 				return;
@@ -8396,7 +8396,7 @@ namespace http
 				std::string szTmpFile = szUserDataFolder + pemfile;
 
 				ifs.open(szTmpFile);
-				if(ifs.is_open())
+				if (ifs.is_open())
 				{
 					std::string sLine = "";
 					int i = 0;
@@ -8421,13 +8421,13 @@ namespace http
 							pubkey += sLine;
 						if (sLine.find("-----END PUBLIC KEY") != std::string::npos)
 						{
-							if(bPub)
+							if (bPub)
 								bPubFound = true;
 							bPub = false;
 						}
 						if (sLine.find("-----END PRIVATE KEY") != std::string::npos)
 						{
-							if(bPriv)
+							if (bPriv)
 								bPrivFound = true;
 							bPriv = false;
 						}
@@ -8443,9 +8443,9 @@ namespace http
 				else
 					sErr = "Unable to find/open file";
 
-				if(!sErr.empty())
+				if (!sErr.empty())
 				{
-					_log.Log(LOG_STATUS,"AddUser: Unable to load and process given PEMfile (%s) (%s)!", szTmpFile.c_str(), sErr.c_str());
+					_log.Log(LOG_STATUS, "AddUser: Unable to load and process given PEMfile (%s) (%s)!", szTmpFile.c_str(), sErr.c_str());
 					return;
 				}
 			}
@@ -8464,7 +8464,7 @@ namespace http
 			_tUserAccessCode utmp;
 			utmp.ID = ID;
 			utmp.UserName = username;
-			utmp.clientID = -1	;
+			utmp.clientID = -1;
 			utmp.ExpTime = 0;
 			utmp.AuthCode = "";
 			utmp.Scope = "";
@@ -8502,7 +8502,7 @@ namespace http
 		int CWebServer::CountAdminUsers()
 		{
 			int iAdmins = 0;
-			for (const auto &user : m_users)
+			for (const auto& user : m_users)
 			{
 				if (user.userrights == URIGHTS_ADMIN)
 					iAdmins++;
@@ -11070,7 +11070,7 @@ namespace http
 						{
 							TOptionMap optionsMap = m_sql.BuildDeviceOptions(sOptions);
 							//build option values
-							for (const auto & itt : optionsMap)
+							for (const auto& itt : optionsMap)
 							{
 								std::string optionName = itt.first.c_str();
 								std::string optionValue = itt.second;
@@ -13478,8 +13478,8 @@ namespace http
 
 			if (!devoptions.empty())
 			{
-                uint64_t ullidx = std::stoull(idx);
-                m_sql.SetDeviceOptions(ullidx, m_sql.BuildDeviceOptions(devoptions.c_str(), false));
+				uint64_t ullidx = std::stoull(idx);
+				m_sql.SetDeviceOptions(ullidx, m_sql.BuildDeviceOptions(devoptions.c_str(), false));
 			}
 
 			if (used == 0)
@@ -14277,12 +14277,12 @@ namespace http
 								double tvalue = ConvertTemperature(atof(sd[0].c_str()), tempsign);
 								root["result"][ii]["te"] = tvalue;
 							}
-							if (((dType == pTypeWIND) && (dSubType == sTypeWIND4)) || ((dType == pTypeWIND) && (dSubType == sTypeWINDNoTemp))  || (dType == pTypeThermostat && dSubType == sTypeThermSetpoint && sd[1] != "0.0"  ))
+							if (((dType == pTypeWIND) && (dSubType == sTypeWIND4)) || ((dType == pTypeWIND) && (dSubType == sTypeWINDNoTemp)) || (dType == pTypeThermostat && dSubType == sTypeThermSetpoint && sd[1] != "0.0"))
 							{
 								double tvalue = ConvertTemperature(atof(sd[1].c_str()), tempsign);
 								root["result"][ii]["ch"] = tvalue;
 							}
-							if ((dType == pTypeHUM) || (dType == pTypeTEMP_HUM) || (dType == pTypeTEMP_HUM_BARO) || (dType == pTypeThermostat && dSubType == sTypeThermSetpoint  && sd[1] != "0.0" ) )
+							if ((dType == pTypeHUM) || (dType == pTypeTEMP_HUM) || (dType == pTypeTEMP_HUM_BARO) || (dType == pTypeThermostat && dSubType == sTypeThermSetpoint && sd[1] != "0.0"))
 							{
 								root["result"][ii]["hu"] = sd[2];
 							}

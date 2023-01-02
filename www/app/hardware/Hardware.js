@@ -3944,7 +3944,7 @@ define(['app','app/virtualThermostat.js'], function (app) {
 								HwTypeStr += ' <span class="label label-info lcursor" onclick="CreateDummySensors(' + item.idx + ',\'' + item.Name + '\');">' + $.t("Create Virtual Sensors") + '</span>';
 							}
 							else if (HwTypeStr.indexOf("Virtual Thermostat") == 0) {
-							    HwTypeStr += ' <span class="label label-info lcursor" onclick="Editvirtualthermostatdevice(0,false,0,\'' + $scope.config.TempSign + '\','+item.idx+');"' + '>' + $.t("Create Virtual Thermostat Sensors") + '</span>';
+								HwTypeStr += ' <span class="label label-info lcursor" onclick="Editvirtualthermostatdevice(0,false,0,\'' + $scope.config.TempSign + '\','+item.idx+');"' + '>' + $.t("Create Virtual Thermostat Sensors") + '</span>';
 							}
 							else if (HwTypeStr.indexOf("YeeLight") >= 0) {
 								HwTypeStr += ' <span class="label label-info lcursor" onclick="AddYeeLight(' + item.idx + ',\'' + item.Name + '\');">' + $.t("Add Light") + '</span>';
@@ -4141,7 +4141,7 @@ define(['app','app/virtualThermostat.js'], function (app) {
 							(data["Type"].indexOf("TE923") >= 0) ||
 							(data["Type"].indexOf("Volcraft") >= 0) ||
 							(data["Type"].indexOf("Dummy") >= 0) ||
-				            (data["Type"].indexOf("Virtual Thermostat") == 0) ||
+							(data["Type"].indexOf("Virtual Thermostat") == 0) ||
 							(data["Type"].indexOf("System Alive") >= 0) ||
 							(data["Type"].indexOf("PiFace") >= 0) ||
 							(data["Type"].indexOf("Tellstick") >= 0) ||

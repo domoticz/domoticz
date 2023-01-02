@@ -625,8 +625,8 @@ define(['app', 'livesocket','app/virtualThermostat.js'], function (app) {
 								xhtm += item.Data;
 							}
 							else if (item.Type == "Thermostat") {
-							    xhtm += GetThermostatBigText(item,$scope.config.TempSign);
-							    status = GetThermostatStatus(item);
+								xhtm += GetThermostatBigText(item,$scope.config.TempSign);
+								status = GetThermostatStatus(item);
 							}
 							else if (item.SubType == "Waterflow") {
 								xhtm += item.Data;
@@ -772,7 +772,7 @@ define(['app', 'livesocket','app/virtualThermostat.js'], function (app) {
 								status = "";
 							}
 							else if (((item.Type == "Thermostat") && (item.SubType == "SetPoint")) || (item.Type == "Radiator 1")) {
-							    xhtm+=getThermostatImage(item);
+								xhtm+=getThermostatImage(item);
 								//item.Image = (item.CustomImage == 0)  ? 'override.png' : item.Image + '48_On.png';
 								//xhtm += '<img src="images/' + item.Image + '" class="lcursor" onclick="ShowSetpointPopup(event, ' + item.idx + ', ' + item.Protected + ', ' + item.Data + ');" height="48" width="48" ></td>\n';
 								status = GetThermostatStatus(item);
@@ -908,7 +908,7 @@ define(['app', 'livesocket','app/virtualThermostat.js'], function (app) {
 
 									xhtm += '<a class="btnsmall" href="' + logLink +'" data-i18n="Log">Log</a> ';
 									if (item.isVirtualThermostat)
-									    xhtm += '<a class="btnsmall" onclick="Editvirtualthermostatdevice(' + item.idx + ','  + item.Protected + ',' + 'ShowUtilities,\'' + $scope.config.TempSign + '\',0);" data-i18n="Edit">Edit</a> ';
+										xhtm += '<a class="btnsmall" onclick="Editvirtualthermostatdevice(' + item.idx + ','  + item.Protected + ',' + 'ShowUtilities,\'' + $scope.config.TempSign + '\',0);" data-i18n="Edit">Edit</a> ';
 									else
 									xhtm += '<a class="btnsmall" onclick="EditSetPoint(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\', ' + item.SetPoint + ',' + item.Protected + ', ' + item.CustomImage + ');" data-i18n="Edit">Edit</a> ';
 									if (item.Timers == "true") {
