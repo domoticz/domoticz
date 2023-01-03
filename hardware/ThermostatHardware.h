@@ -29,12 +29,7 @@ public:
 	{
 		std::vector<std::string> ModeStr;
 		StringSplit(AvailableMode, ",", ModeStr);
-
-		for (int i = 0; i < (int)ModeStr.size(); i++)
-			if (strcmp(mode.c_str(), ModeStr[i].c_str()) == 0)
-				return  i;
-		return 0;
-
+		return (std::find(ModeStr.begin(), ModeStr.end(), mode) - ModeStr.begin()) % ModeStr.size();
 	}
 	//convert interger thermostat state to string state : 0--> OFF 1-->ECO
 	std::string   ThermostatModeIntToString(int Mode)
