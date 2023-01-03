@@ -186,7 +186,6 @@ hardware/AnnaThermostat.cpp
 hardware/Arilux.cpp
 hardware/ASyncSerial.cpp
 hardware/ASyncTCP.cpp
-hardware/VirtualThermostat.cpp
 hardware/AtagOne.cpp
 hardware/BleBox.cpp
 hardware/Buienradar.cpp
@@ -323,6 +322,7 @@ hardware/ToonThermostat.cpp
 hardware/TTNMQTT.cpp
 hardware/USBtin.cpp
 hardware/USBtin_MultiblocV8.cpp
+hardware/VirtualThermostat.cpp
 hardware/VolcraftCO20.cpp
 hardware/Winddelen.cpp
 hardware/WOL.cpp

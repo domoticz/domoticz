@@ -13,8 +13,8 @@ public:
 
 	//thermostat function
 	//return the thermostat available mode in string "OFF,ECO,CONFOR,AUTO," separated by comma , and 0=OFF 1=ECO, 2=CONFOR 3=AUTO
-	virtual std::string GetAvailableMode() { return AvailableMode; };
-	virtual void SetAvailableMode(std::string pAvailableMode) { AvailableMode = pAvailableMode; };
+	virtual std::string& GetAvailableMode() { return AvailableMode; };
+	virtual void SetAvailableMode(std::string& pAvailableMode) { AvailableMode = pAvailableMode; };
 	//return the thermostat mode 
 	virtual std::string GetCurrentMode(std::string& devIdx) = 0;
 	//return the thermostat room temperature 
@@ -25,14 +25,14 @@ public:
 	virtual bool SetThermostatState(const std::string& devIdx, const int newState) = 0;
 
 	//convert thermostat string state to int state : OFF-->0  ECO-->1
-	int  ThermostatModeStringToInt(std::string& mode)
+	unsigned int  ThermostatModeStringToInt(std::string& mode)
 	{
 		std::vector<std::string> ModeStr;
 		StringSplit(AvailableMode, ",", ModeStr);
 		return (std::find(ModeStr.begin(), ModeStr.end(), mode) - ModeStr.begin()) % ModeStr.size();
 	}
 	//convert integer thermostat state to string state : 0--> OFF 1-->ECO
-	std::string   ThermostatModeIntToString(int Mode)
+	std::string   ThermostatModeIntToString(unsigned int Mode)
 	{
 		std::vector<std::string> ModeStr;
 		StringSplit(AvailableMode, ",", ModeStr);

@@ -18,8 +18,6 @@ enum VirtualThermostatMode {
 	EndMode
 };
 
-#define AVALAIBLE_MODE "Eco,Conf,Frost,Off"
-
 class VirtualThermostat : public CThermostatHardware
 {
 private:

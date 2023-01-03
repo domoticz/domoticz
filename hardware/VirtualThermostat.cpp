@@ -10,6 +10,9 @@
 #include "../main/mainworker.h"
 #include "../notifications/NotificationHelper.h"
 #include <stdarg.h>     
+#include <algorithm>
+
+std::string AVALAIBLE_MODE = "Eco,Conf,Frost,Off";
 
 std::string GetDeviceValue(const char* FieldName, const char* Idx)
 {
@@ -209,7 +212,8 @@ bool VirtualThermostat::WriteToHardware(const char* pdata, const unsigned char l
 //  number of step in percent %
 #define MODULATION_STEP     10
 
-//guve the output power swicth value in the time from the modulation percent
+//give the output power switch value in the time from the modulation percent
+// 1 : ON 0:OFF
 const int ThermostatOutput[MODULATION_STEP + 1][MODULATION_DURATION] = {
 	//            0 1 2 3 4 5 6 7 8 9    
 	/* 000 % */ { 0,0,0,0,0,0,0,0,0,0 },
@@ -242,7 +246,7 @@ int VirtualThermostat::ComputeThermostatOutput(int Min, int PowerPercent)
 	return switchValue;
 }
 
-//return the poqer modulation in function of Room , Exterior and Target Temperature,
+//return the power modulation in function of Room , Exterior and Target Temperature,
 int VirtualThermostat::ComputeThermostatPower(int index, double RoomTemp, double TargetTemp, double CoefProportional, double CoefIntegral)
 {
 	int PowerModulation = 0;
@@ -264,9 +268,7 @@ int VirtualThermostat::ComputeThermostatPower(int index, double RoomTemp, double
 	}
 	else
 		Delta->Clear(); //clear integral part
-
-	if (PowerModulation > 100) PowerModulation = 100;
-	if (PowerModulation < 0) PowerModulation = 0;
+	PowerModulation = std::clamp(PowerModulation, 0,100);
 	return PowerModulation;
 }
 
