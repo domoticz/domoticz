@@ -14,7 +14,7 @@ public:
 	//thermostat function
 	//return the thermostat available mode in string "OFF,ECO,CONFOR,AUTO," separated by comma , and 0=OFF 1=ECO, 2=CONFOR 3=AUTO
 	virtual std::string GetAvailableMode() { return AvailableMode; };
-	virtual void        SetAvailableMode(std::string  pAvailableMode) { AvailableMode = pAvailableMode; };
+	virtual void SetAvailableMode(std::string pAvailableMode) { AvailableMode = pAvailableMode; };
 	//return the thermostat mode 
 	virtual std::string GetCurrentMode(std::string& devIdx) = 0;
 	//return the thermostat room temperature 
