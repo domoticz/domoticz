@@ -10,7 +10,6 @@
 #include "../main/mainworker.h"
 #include "../notifications/NotificationHelper.h"
 #include <stdarg.h>     
-#include <algorithm>
 
 std::string AVALAIBLE_MODE = "Eco,Conf,Frost,Off";
 
@@ -255,7 +254,8 @@ int VirtualThermostat::ComputeThermostatPower(int index, double RoomTemp, double
 	}
 	else
 		Delta->Clear(); //clear integral part
-	PowerModulation = std::clamp(PowerModulation, 0,100);
+	if (PowerModulation > 100) PowerModulation = 100;
+	if (PowerModulation < 0) PowerModulation = 0;
 	return PowerModulation;
 }
 
