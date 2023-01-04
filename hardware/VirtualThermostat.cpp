@@ -185,17 +185,19 @@ void VirtualThermostat::Do_Work()
 		time_t atime = mytime(NULL);
 		struct tm ltime;
 		localtime_r(&atime, &ltime);
-#if 1
+#ifndef ACCELERATED_TEST 
 		if (ltime.tm_min != m_ScheduleLastMinute)
 		{
 			ScheduleThermostat(ltime.tm_min);
 			m_ScheduleLastMinute = ltime.tm_min;
 		}
 #else
-		//test : call every 6 secconds
-		if (ltime.tm_sec % 6 == 0)
+		#pragma message("warning ACCELERATED_TEST")
+
+		//test : call every 2 secconds
+		if (ltime.tm_sec % 2 == 0)
 		{
-			ScheduleThermostat(ltime.tm_sec / 6);
+			ScheduleThermostat(ltime.tm_sec / 2);
 			m_ScheduleLastMinute = ltime.tm_sec;
 		}
 #endif
@@ -208,27 +210,10 @@ bool VirtualThermostat::WriteToHardware(const char* pdata, const unsigned char l
 }
 
 //time for the power time modulation in minute
-#define MODULATION_DURATION 10
+const int MODULATION_DURATION = 10 ;
+
 //  number of step in percent %
-#define MODULATION_STEP     10
-
-//give the output power switch value in the time from the modulation percent
-// 1 : ON 0:OFF
-const int ThermostatOutput[MODULATION_STEP + 1][MODULATION_DURATION] = {
-	//            0 1 2 3 4 5 6 7 8 9    
-	/* 000 % */ { 0,0,0,0,0,0,0,0,0,0 },
-	/* 010 % */ { 1,0,0,0,0,0,0,0,0,0 },
-	/* 020 % */ { 1,1,0,0,0,0,0,0,0,0 },
-	/* 030 % */ { 1,1,1,0,0,0,0,0,0,0 },
-	/* 040 % */ { 1,1,1,1,0,0,0,0,0,0 },
-	/* 050 % */ { 1,1,1,1,1,0,0,0,0,0 },
-	/* 060 % */ { 1,1,1,1,1,1,0,0,0,0 },
-	/* 070 % */ { 1,1,1,1,1,1,1,0,0,0 },
-	/* 080 % */ { 1,1,1,1,1,1,1,1,0,0 },
-	/* 090 % */ { 1,1,1,1,1,1,1,1,1,0 },
-	/* 100 % */ { 1,1,1,1,1,1,1,1,1,1 },
-
-};
+const int MODULATION_STEP=10 ;
 
 //compute the thermostat output switch value 
 // the output is modulated in a time period of 10 minute
@@ -240,10 +225,12 @@ const int ThermostatOutput[MODULATION_STEP + 1][MODULATION_DURATION] = {
 int VirtualThermostat::ComputeThermostatOutput(int Min, int PowerPercent)
 {
 	if (PowerPercent > 100) PowerPercent = 100;
-	//get row value for ThermostatOutput
 	PowerPercent = (PowerPercent) / MODULATION_STEP;
-	int switchValue = ThermostatOutput[PowerPercent][Min % MODULATION_DURATION];
-	return switchValue;
+	Min = Min % MODULATION_DURATION;
+	if (Min >= PowerPercent )
+		return 0;
+	else
+		return 1;
 }
 
 //return the power modulation in function of Room , Exterior and Target Temperature,
@@ -400,6 +387,7 @@ void VirtualThermostat::ScheduleThermostat(int Minute)
 
 					//minute+i : shift  device in time in order to not have all powered together
 					int minute = (int)(double(Minute) + double(i) * scrollDevice);
+
 					SwitchValue = ComputeThermostatOutput(minute, PowerModulation);
 
 					//force to update state in database else only send RF commande with out database update 
