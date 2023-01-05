@@ -24,44 +24,31 @@ std::string GetDeviceValue(const char* FieldName, const char* Idx)
 
 void VirtualThermostat::CircularBuffer::Clear()
 {
-	for (int i = 0; i < Size; i++)Value[i] = 0;
-	index = 0;
-	Sum = 0;
+	for (int i = 0; i < Value.size(); i++)
+		Value[i] = 0;
 }
 VirtualThermostat::CircularBuffer::CircularBuffer(int pSize)
 {
-	Value = new double[pSize];
-	Size = pSize;
+	// Create a circular buffer with a capacity pSize
+	Value.set_capacity(pSize);
+
 	Clear();
 }
 VirtualThermostat::CircularBuffer::~CircularBuffer()
 {
-	delete[] Value;
 }
-int VirtualThermostat::CircularBuffer::GetNext()
+void VirtualThermostat::CircularBuffer::Put(double val)
 {
-	if (index >= (Size - 1))
-		return 0;
-	else
-		return index + 1;
-}
-double VirtualThermostat::CircularBuffer::Put(double val)
-{
-	double lastv = Value[index];
-	Value[index] = val;
-	index = GetNext();
-	Sum -= lastv;
-	Sum += val;
-	return lastv;
-}
-double VirtualThermostat::CircularBuffer::GetLast()
-{
-	//return last recorded value
-	return Value[index];
+	Value.push_back(val);
 }
 
 double VirtualThermostat::CircularBuffer::GetSum()
 {
+	double  Sum = 0;
+	for (int i = 0; i < Value.size(); i++)
+	{
+		Sum += Value[i];
+	}
 	return Sum;
 }
 
@@ -191,7 +178,7 @@ void VirtualThermostat::Do_Work()
 			m_ScheduleLastMinute = ltime.tm_min;
 		}
 #else
-		#pragma message("warning ACCELERATED_TEST")
+#pragma message("warning ACCELERATED_TEST")
 
 		//test : call every 2 secconds
 		if (ltime.tm_sec % 2 == 0)
@@ -209,10 +196,10 @@ bool VirtualThermostat::WriteToHardware(const char* pdata, const unsigned char l
 }
 
 //time for the power time modulation in minute
-const int MODULATION_DURATION = 10 ;
+constexpr int MODULATION_DURATION = 10;
 
 //  number of step in percent %
-const int MODULATION_STEP=10 ;
+constexpr int MODULATION_STEP = 10;
 
 //compute the thermostat output switch value 
 // the output is modulated in a time period of 10 minute
@@ -226,7 +213,7 @@ int VirtualThermostat::ComputeThermostatOutput(int Min, int PowerPercent)
 	if (PowerPercent > 100) PowerPercent = 100;
 	PowerPercent = (PowerPercent) / MODULATION_STEP;
 	Min = Min % MODULATION_DURATION;
-	if (Min >= PowerPercent )
+	if (Min >= PowerPercent)
 		return 0;
 	else
 		return 1;
@@ -394,7 +381,7 @@ void VirtualThermostat::ScheduleThermostat(int Minute)
 					//if the switch is a HomeEasy protocol with no RF acknoledge , send the RF command each minute with out database DEVICESTATUS table update  
 					auto resSw = m_sql.safe_query("SELECT nValue,Type,SubType,SwitchType,LastLevel,Name FROM DeviceStatus WHERE (ID == %s )", SwitchIdxStr.c_str());
 
-					if (resSw.size())
+					if (!resSw.empty())
 					{
 						//SwitchSubType    = std::stoi(resSw[0][2].c_str());
 						lastSwitchValue = std::stoi(resSw[0][0].c_str());
@@ -447,7 +434,13 @@ void VirtualThermostat::ScheduleThermostat(int Minute)
 
 							//force display refresh
 							SendSetPointSensor((uint8_t)(DeviceID >> 16), (DeviceID >> 8) & 0xFF, (DeviceID) & 0xFF, (float)ThermostatSetPoint, "");
-							Debug(DEBUG_NORM, "VTHER: Mn:%02d  Therm:%-10s(%2d) Room:%4.1f SetPoint:%4.1f Power:%3d%% SwitchName:%s(%2ld):%d Kp:%3.f Ki:%3.f Integr:%3.1f Cmd:%s Level:%d", Minute, ThermostatName, ThermostatId, RoomTemperature, ThermostatSetPoint, PowerModulation, SwitchName.c_str(), SwitchIdx, SwitchValue, CoefProportional, CoefIntegral, DeltaTemps[ThermostatId]->GetSum() / INTEGRAL_DURATION, OutCmd.c_str(), level);
+							Debug(DEBUG_NORM, "VTHER: Mn:%02d  Therm:%-10s(%2d) Room:%4.1f SetPoint:%4.1f Power:%3d%% SwitchName:%s(%2ld):%d Kp:%3.f Ki:%3.f Integr:%3.2f Cmd:%s Level:%d", Minute, ThermostatName, ThermostatId, RoomTemperature, ThermostatSetPoint, PowerModulation, SwitchName.c_str(), SwitchIdx, SwitchValue, CoefProportional, CoefIntegral, DeltaTemps[ThermostatId]->GetSum() / INTEGRAL_DURATION, OutCmd.c_str(), level);
+						}
+						else
+						{
+#ifdef ACCELERATED_TEST 
+							Debug(DEBUG_NORM, "VTHER: Mn:%02d  Therm:%-10s(%2d) Room:%4.1f SetPoint:%4.1f Power:%3d%% SwitchName:%s(%2ld):%d Kp:%3.f Ki:%3.f Integr:%3.2f Cmd:%s Level:%d", Minute, ThermostatName, ThermostatId, RoomTemperature, ThermostatSetPoint, PowerModulation, SwitchName.c_str(), SwitchIdx, SwitchValue, CoefProportional, CoefIntegral, DeltaTemps[ThermostatId]->GetSum() / INTEGRAL_DURATION, OutCmd.c_str(), level);
+#endif
 						}
 						//if ((Minute % 10 )==0)
 						//{

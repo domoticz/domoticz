@@ -1,6 +1,7 @@
 #pragma once
 
 #include "ThermostatHardware.h"
+#include <boost/circular_buffer.hpp>
 
 //duratoiopn of integration window in min
 #define INTEGRAL_DURATION 10
@@ -23,18 +24,12 @@ class VirtualThermostat : public CThermostatHardware
 private:
 	class CircularBuffer {
 	public:
-		double* Value;
-		int Size; //size of buffer'
-		int index; //current record index
-		double Sum;
+		boost::circular_buffer<double> Value ;
 
 		CircularBuffer(int pSize);
 		~CircularBuffer();
-		int GetNext();
 		//store value and return last
-		double Put(double val);
-		//get last value
-		double GetLast();
+		void  Put(double val);
 		void Clear();
 		double GetSum();
 	};
