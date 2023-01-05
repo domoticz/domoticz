@@ -2258,6 +2258,12 @@
     <ClInclude Include="..\hardware\EnOceanRawValue.h">
       <Filter>Devices\EnOcean</Filter>
     </ClInclude>
+    <ClInclude Include="..\hardware\ThermostatHardware.h">
+      <Filter>Devices\VirtualThermostat</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\VirtualThermostat.h">
+      <Filter>Devices\VirtualThermostat</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\webserver\Base64.cpp">

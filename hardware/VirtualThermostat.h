@@ -24,7 +24,7 @@ class VirtualThermostat : public CThermostatHardware
 private:
 	class CircularBuffer {
 	public:
-		boost::circular_buffer<double> Value ;
+		boost::circular_buffer<double> Value;
 
 		CircularBuffer(int pSize);
 		~CircularBuffer();
@@ -34,21 +34,9 @@ private:
 		double GetSum();
 	};
 
-	//
-	class LastValue {
-		typedef std::map<int, double > T_Map_Double_Values;
+	typedef std::map<int, CircularBuffer* > T_Map_CircularBuffer;
 
-		T_Map_Double_Values LastValues;
-		double Delta;
-	public:
-
-		LastValue(float delta = 0);
-		double Get(int index);
-		void   Put(int index, double value);
-		bool AsChanged(int index, double value);
-		bool AsChanged(int index, double value, double delta);
-
-	};
+	T_Map_CircularBuffer m_DeltaTemps;
 
 public:
 	VirtualThermostat(const int ID);
@@ -64,8 +52,8 @@ public:
 	int	ComputeThermostatOutput(int Min, int PowerPercent);
 	int ComputeThermostatPower(int index, double RoomTemp, double TargetTemp, double CoefProportional, double CoefIntegral);
 	void getCommand(std::string& Cmd, std::string& OutCmd, int& level);
-	int		GetConfortTempFromTimers(const char* devID);
-	int		GetEcoTempFromTimers(const char* devID);
+	int	GetConfortTempFromTimers(const char* devID);
+	int	GetEcoTempFromTimers(const char* devID);
 	std::string GetMode(float curTemp, float EcoTemp, float ConfTemp);
 
 	float GetEcoTemp(const char* devID);
@@ -73,10 +61,6 @@ public:
 	float getTemperatureFromSValue(const char* sValue);
 	double ConvertTemperatureUnit(double tempcelcius);
 	bool GetLastValue(const char* DeviceID, int& nValue, std::string& sValue, struct tm& LastUpdateTime);
-
-	typedef std::map<int, CircularBuffer* > T_Map_CircularBuffer;
-
-	T_Map_CircularBuffer DeltaTemps;
 
 	//thermostat function
 

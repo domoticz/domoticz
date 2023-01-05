@@ -5,16 +5,18 @@
 
 class CThermostatHardware : public CDomoticzHardwareBase
 {
-public:
+private:
 
 	//thermostat available mode in string "OFF,ECO,COMFORT,AUTO," separated by comma, 
-	// and in the order from 0 to N and 0 = OFF 1 = ECO, 2 = CONFOR 3 = AUTO
-	std::string AvailableMode;
+	// and in the order from 0 to N and 0 = OFF 1 = ECO, 2 = CONFORT 3 = AUTO
+	std::string m_AvailableMode;
+
+public:
 
 	//thermostat function
-	//return the thermostat available mode in string "OFF,ECO,CONFOR,AUTO," separated by comma , and 0=OFF 1=ECO, 2=CONFOR 3=AUTO
-	virtual std::string& GetAvailableMode() { return AvailableMode; };
-	virtual void SetAvailableMode(std::string& pAvailableMode) { AvailableMode = pAvailableMode; };
+	//return the thermostat available mode in string separated by comma 
+	virtual std::string& GetAvailableMode() { return m_AvailableMode; };
+	virtual void SetAvailableMode(std::string& pAvailableMode) { m_AvailableMode = pAvailableMode; };
 	//return the thermostat mode 
 	virtual std::string GetCurrentMode(std::string& devIdx) = 0;
 	//return the thermostat room temperature 
@@ -28,14 +30,14 @@ public:
 	unsigned int  ThermostatModeStringToInt(std::string& mode)
 	{
 		std::vector<std::string> ModeStr;
-		StringSplit(AvailableMode, ",", ModeStr);
+		StringSplit(m_AvailableMode, ",", ModeStr);
 		return (std::find(ModeStr.begin(), ModeStr.end(), mode) - ModeStr.begin()) % ModeStr.size();
 	}
 	//convert integer thermostat state to string state : 0--> OFF 1-->ECO
 	std::string   ThermostatModeIntToString(unsigned int Mode)
 	{
 		std::vector<std::string> ModeStr;
-		StringSplit(AvailableMode, ",", ModeStr);
+		StringSplit(m_AvailableMode, ",", ModeStr);
 		if (Mode < (int)ModeStr.size())
 			return ModeStr[Mode];
 		else

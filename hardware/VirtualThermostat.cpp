@@ -52,32 +52,6 @@ double VirtualThermostat::CircularBuffer::GetSum()
 	return Sum;
 }
 
-VirtualThermostat::LastValue::LastValue(float pdelta)
-{
-	Delta = pdelta;
-}
-double VirtualThermostat::LastValue::Get(int index)
-{
-	return LastValues[index];
-}
-void   VirtualThermostat::LastValue::Put(int index, double value)
-{
-	LastValues[index] = value;
-}
-bool VirtualThermostat::LastValue::AsChanged(int index, double value)
-{
-	return AsChanged(index, value, Delta);
-}
-bool VirtualThermostat::LastValue::AsChanged(int index, double value, double delta)
-{
-	if (fabs(LastValues[index] - value) > delta)
-	{
-		LastValues[index] = value;
-		return true;
-	}
-	return false;
-}
-
 //option management
 void getOption(TOptionMap& Option, const char* optionName, int& value)
 {
@@ -224,11 +198,11 @@ int VirtualThermostat::ComputeThermostatPower(int index, double RoomTemp, double
 {
 	int PowerModulation = 0;
 	double DeltaTemp = TargetTemp - RoomTemp;
-	CircularBuffer* Delta = DeltaTemps[index];
+	CircularBuffer* Delta = m_DeltaTemps[index];
 	if (Delta == 0)
 	{
 		Delta = new CircularBuffer(INTEGRAL_DURATION);
-		DeltaTemps[index] = Delta;
+		m_DeltaTemps[index] = Delta;
 	}
 	//put last value
 	Delta->Put(DeltaTemp);
@@ -422,7 +396,7 @@ void VirtualThermostat::ScheduleThermostat(int Minute)
 						{
 							m_mainworker.SwitchLight(SwitchIdx, OutCmd, level, _tColor(), false, 0, "VTHER" /*, !SwitchStateAsChanged */);
 							sleep_milliseconds(100);
-							//						Debug(DEBUG_NORM,"VTHER: Mn:%02d  Therm:%-10s(%2d) Room:%4.1f SetPoint:%4.1f Power:%3d%% SwitchName:%s(%2ld):%d Kp:%3.f Ki:%3.f Integr:%3.1f Cmd:%s Level:%d",Minute,ThermostatName, ThermostatId , RoomTemperature,ThermostatSetPoint,PowerModulation,SwitchName.c_str(),SwitchIdx,SwitchValue,CoefProportional,CoefIntegral, DeltaTemps[ThermostatId]->GetSum() /INTEGRAL_DURATION, OutCmd.c_str(),level);
+							//						Debug(DEBUG_NORM,"VTHER: Mn:%02d  Therm:%-10s(%2d) Room:%4.1f SetPoint:%4.1f Power:%3d%% SwitchName:%s(%2ld):%d Kp:%3.f Ki:%3.f Integr:%3.1f Cmd:%s Level:%d",Minute,ThermostatName, ThermostatId , RoomTemperature,ThermostatSetPoint,PowerModulation,SwitchName.c_str(),SwitchIdx,SwitchValue,CoefProportional,CoefIntegral, m_DeltaTemps[ThermostatId]->GetSum() /INTEGRAL_DURATION, OutCmd.c_str(),level);
 							SwitchStateAsChanged = true;
 						}
 						if ((abs(lastPowerModulation - PowerModulation) > 10) || (abs(lastTemp - RoomTemperature) > 0.2) || (SwitchStateAsChanged))
@@ -434,12 +408,12 @@ void VirtualThermostat::ScheduleThermostat(int Minute)
 
 							//force display refresh
 							SendSetPointSensor((uint8_t)(DeviceID >> 16), (DeviceID >> 8) & 0xFF, (DeviceID) & 0xFF, (float)ThermostatSetPoint, "");
-							Debug(DEBUG_NORM, "VTHER: Mn:%02d  Therm:%-10s(%2d) Room:%4.1f SetPoint:%4.1f Power:%3d%% SwitchName:%s(%2ld):%d Kp:%3.f Ki:%3.f Integr:%3.2f Cmd:%s Level:%d", Minute, ThermostatName, ThermostatId, RoomTemperature, ThermostatSetPoint, PowerModulation, SwitchName.c_str(), SwitchIdx, SwitchValue, CoefProportional, CoefIntegral, DeltaTemps[ThermostatId]->GetSum() / INTEGRAL_DURATION, OutCmd.c_str(), level);
+							Debug(DEBUG_NORM, "VTHER: Mn:%02d  Therm:%-10s(%2d) Room:%4.1f SetPoint:%4.1f Power:%3d%% SwitchName:%s(%2ld):%d Kp:%3.f Ki:%3.f Integr:%3.2f Cmd:%s Level:%d", Minute, ThermostatName, ThermostatId, RoomTemperature, ThermostatSetPoint, PowerModulation, SwitchName.c_str(), SwitchIdx, SwitchValue, CoefProportional, CoefIntegral, m_DeltaTemps[ThermostatId]->GetSum() / INTEGRAL_DURATION, OutCmd.c_str(), level);
 						}
 						else
 						{
 #ifdef ACCELERATED_TEST 
-							Debug(DEBUG_NORM, "VTHER: Mn:%02d  Therm:%-10s(%2d) Room:%4.1f SetPoint:%4.1f Power:%3d%% SwitchName:%s(%2ld):%d Kp:%3.f Ki:%3.f Integr:%3.2f Cmd:%s Level:%d", Minute, ThermostatName, ThermostatId, RoomTemperature, ThermostatSetPoint, PowerModulation, SwitchName.c_str(), SwitchIdx, SwitchValue, CoefProportional, CoefIntegral, DeltaTemps[ThermostatId]->GetSum() / INTEGRAL_DURATION, OutCmd.c_str(), level);
+							Debug(DEBUG_NORM, "VTHER: Mn:%02d  Therm:%-10s(%2d) Room:%4.1f SetPoint:%4.1f Power:%3d%% SwitchName:%s(%2ld):%d Kp:%3.f Ki:%3.f Integr:%3.2f Cmd:%s Level:%d", Minute, ThermostatName, ThermostatId, RoomTemperature, ThermostatSetPoint, PowerModulation, SwitchName.c_str(), SwitchIdx, SwitchValue, CoefProportional, CoefIntegral, m_DeltaTemps[ThermostatId]->GetSum() / INTEGRAL_DURATION, OutCmd.c_str(), level);
 #endif
 						}
 						//if ((Minute % 10 )==0)

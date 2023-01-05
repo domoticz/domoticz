@@ -705,10 +705,12 @@
     <ClInclude Include="..\hardware\TelldusFunctions.h" />
     <ClInclude Include="..\hardware\Tellstick.h" />
     <ClInclude Include="..\hardware\Thermosmart.h" />
+    <ClInclude Include="..\hardware\ThermostatHardware.h" />
     <ClInclude Include="..\hardware\ToonThermostat.h" />
     <ClInclude Include="..\hardware\TTNMQTT.h" />
     <ClInclude Include="..\hardware\USBtin.h" />
     <ClInclude Include="..\hardware\USBtin_MultiblocV8.h" />
+    <ClInclude Include="..\hardware\VirtualThermostat.h" />
     <ClInclude Include="..\hardware\VolcraftCO20.h" />
     <ClInclude Include="..\hardware\Winddelen.h" />
     <ClInclude Include="..\hardware\WOL.h" />
