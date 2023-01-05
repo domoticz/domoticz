@@ -24,30 +24,40 @@ std::string GetDeviceValue(const char* FieldName, const char* Idx)
 
 void VirtualThermostat::CircularBuffer::Clear()
 {
-	for (int i = 0; i < Value.size(); i++)
-		Value[i] = 0;
+	for (int i = 0; i < m_Size; i++)m_Value[i] = 0;
+	m_index = 0;
 }
 VirtualThermostat::CircularBuffer::CircularBuffer(int pSize)
 {
-	// Create a circular buffer with a capacity pSize
-	Value.set_capacity(pSize);
-
+	m_Value = new double[pSize];
+	m_Size = pSize;
 	Clear();
 }
 VirtualThermostat::CircularBuffer::~CircularBuffer()
 {
+	delete[] m_Value;
 }
-void VirtualThermostat::CircularBuffer::Put(double val)
+int VirtualThermostat::CircularBuffer::GetNext()
 {
-	Value.push_back(val);
+	if (m_index >= (m_Size - 1))
+		return 0;
+	else
+		return m_index + 1;
+}
+double VirtualThermostat::CircularBuffer::Put(double val)
+{
+	double lastv = m_Value[m_index];
+	m_Value[m_index] = val;
+	m_index = GetNext();
+	return lastv;
 }
 
 double VirtualThermostat::CircularBuffer::GetSum()
 {
 	double  Sum = 0;
-	for (int i = 0; i < Value.size(); i++)
+	for (int i = 0; i < m_Size; i++)
 	{
-		Sum += Value[i];
+		Sum += m_Value[i];
 	}
 	return Sum;
 }
