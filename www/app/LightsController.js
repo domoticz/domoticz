@@ -799,7 +799,7 @@ define(['app', 'livesocket'], function (app) {
 
 							xhtm +=
 								'\t    <tr>\n' +
-								'\t      <td id="name" class="item-name" data-desc="'+item.Description.replace('"',"'")+'">' + item.Name +'</td>\n' +
+								'\t      <td id="name" class="item-name" data-idx="'+item.idx+'" data-desc="'+item.Description.replace('"',"'")+'">' + item.Name +'</td>\n' +
 								'\t      <td id="bigtext">';
 							var bigtext = TranslateStatusShort(item.Status);
 							if (item.SwitchType === "Selector" || item.SubType == "Evohome") {
