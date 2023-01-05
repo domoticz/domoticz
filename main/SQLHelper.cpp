@@ -3026,6 +3026,9 @@ bool CSQLHelper::OpenDatabase()
 		}
 		if (dbversion < 157)
 		{
+			// Step 1: Migrate this 'Admin User' from Preferences to a real User with Admin rights
+			// Either insert a new User or Update an existing User with the same name to Admin or skip
+			// And remove the old Preference variables
 			std::string WebUserName, WebPassword;
 			int nValue;
 			if (GetPreferencesVar("WebUserName", nValue, WebUserName))
@@ -3034,11 +3037,23 @@ bool CSQLHelper::OpenDatabase()
 				{
 					if (!WebUserName.empty() && !WebPassword.empty())
 					{
-						result = safe_query("SELECT ROWID FROM Users WHERE Username='%s'", WebUserName.c_str());
+						result = safe_query("SELECT ROWID, Active, Rights FROM Users WHERE Username='%s'", WebUserName.c_str());
 						if (result.empty())
 						{
 							// Add this User to the Users table as no User with this name exists
 							safe_query("INSERT INTO Users (Active, Username, Password, Rights, TabsEnabled) VALUES (1, '%s', '%s', %d, 0x1F)", WebUserName.c_str(), WebPassword.c_str(), http::server::URIGHTS_ADMIN);
+						}
+						else
+						{
+							nValue = atoi(result[0][0].c_str());	// RowID
+							int iActive = atoi(result[0][1].c_str());
+							int iRights = atoi(result[0][2].c_str());
+							if (iActive != 1 || iRights != http::server::URIGHTS_ADMIN)
+							{
+								// Although there already is a User with the same Username as the WebUserName
+								// this User is not an Admin and/or is not Active so cannot be used if we don't update it
+								safe_query("UPDATE Users SET Password='%s', Active=1, Rights=%d WHERE ROWID=%d", WebPassword.c_str(), http::server::URIGHTS_ADMIN, nValue);
+							}
 						}
 					}
 				}
@@ -3046,6 +3061,9 @@ bool CSQLHelper::OpenDatabase()
 				DeletePreferencesVar("WebPassword");
 				DeletePreferencesVar("WebUserName");
 			}
+			// Step 2: Make sure that there is at least 1 active Admin user otherwise no-one can maintain the User administration
+			// If no User exists with Admin right, a default 'admin' is inserted
+			// and any already existing user called 'admin' is renamed to 'admin_old'
 			result = safe_query("SELECT COUNT(*) FROM Users WHERE Active=1 AND Rights=%d", http::server::URIGHTS_ADMIN);
 			if(!result.empty())
 			{
