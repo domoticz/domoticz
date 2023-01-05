@@ -6867,7 +6867,7 @@ namespace http
 							root["message"] = "Cannot change rights of last Admin user!";
 							return;
 						}
-						if ((senabled.compare("true") != 0) && (CountAdminUsers() <= 1))
+						if ((oldrights == URIGHTS_ADMIN) && (senabled.compare("true") != 0) && (CountAdminUsers() <= 1))
 						{
 							root["message"] = "Cannot disable last Admin user!";
 							return;
