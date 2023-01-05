@@ -148,9 +148,13 @@ bool SolarEdgeAPI::GetSite()
 #ifdef DEBUG_SolarEdgeAPIR_SITE
 	sResult = ReadFile("E:\\SolarEdge_sites.json");
 #else
+
+	std::vector<std::string> ExtraHeaders;
+	ExtraHeaders.push_back("Accept: application/json");
+
 	std::stringstream sURL;
-	sURL << "https://monitoringapi.solaredge.com/sites/list?size=1&api_key=" << m_APIKey << "&format=application/json";
-	if (!HTTPClient::GET(sURL.str(), sResult))
+	sURL << "https://monitoringapi.solaredge.com/sites/list.json?size=1&api_key=" << m_APIKey;
+	if (!HTTPClient::GET(sURL.str(), ExtraHeaders, sResult))
 	{
 		Log(LOG_ERROR, "Error getting http data (Sites)!");
 		return false;
@@ -198,9 +202,13 @@ void SolarEdgeAPI::GetInverters()
 #ifdef DEBUG_SolarEdgeAPIR_INVERTERS
 	sResult = ReadFile("E:\\SolarEdge_inverters.json");
 #else
+
+	std::vector<std::string> ExtraHeaders;
+	ExtraHeaders.push_back("Accept: application/json");
+
 	std::stringstream sURL;
-	sURL << "https://monitoringapi.solaredge.com/equipment/" << m_SiteID << "/list?api_key=" << m_APIKey << "&format=application/json";
-	if (!HTTPClient::GET(sURL.str(), sResult))
+	sURL << "https://monitoringapi.solaredge.com/equipment/" << m_SiteID << "/list.json?api_key=" << m_APIKey;
+	if (!HTTPClient::GET(sURL.str(), ExtraHeaders, sResult))
 	{
 		Log(LOG_ERROR, "Error getting http data (Equipment)!");
 		return;
@@ -295,9 +303,13 @@ void SolarEdgeAPI::GetInverterDetails(const _tInverterSettings* pInverterSetting
 
 	sprintf(szTmp, "%04d-%02d-%02d %02d:%02d:%02d", ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, ltime.tm_sec);
 	std::string endDate = CURLEncode::URLEncode(szTmp);
+
+	std::vector<std::string> ExtraHeaders;
+	ExtraHeaders.push_back("Accept: application/json");
+
 	std::stringstream sURL;
-	sURL << "https://monitoringapi.solaredge.com/equipment/" << m_SiteID << "/" << pInverterSettings->SN << "/data.json?startTime=" << startDate << "&endTime=" << endDate << "&api_key=" << m_APIKey << "&format=application/json";
-	if (!HTTPClient::GET(sURL.str(), sResult))
+	sURL << "https://monitoringapi.solaredge.com/equipment/" << m_SiteID << "/" << pInverterSettings->SN << "/data.json?startTime=" << startDate << "&endTime=" << endDate << "&api_key=" << m_APIKey;
+	if (!HTTPClient::GET(sURL.str(), ExtraHeaders, sResult))
 	{
 		Log(LOG_ERROR, "Error getting http data (Equipment details)!");
 		return;
