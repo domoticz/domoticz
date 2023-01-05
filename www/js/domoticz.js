@@ -6276,16 +6276,21 @@ function fromInstanceOrFunction(functionTemplate = f => f()) {
 		}
 	}
 }
-/* LiveSearch Functions: Filters devices when typing in the INPUT field  */
+
+
+/* LiveSearch Functions: Filters devices when typing in the INPUT field ------------------------------- */
 var _debug_livesearch= false;
+
+/* Triggers LiveSearch change  */
 function RefreshLiveSearch(){
 	if(_debug_livesearch) console.log('LiveSearch: Refreshing...');
 	$('.jsLiveSearch').trigger('change');
 }
 
+/* Watch the LiveSearch INPUT field  */
 function WatchLiveSearch(){
-	/* live search*/
 	if(_debug_livesearch) console.log('LiveSearch : Start Watching ...');
+
 	$('.jsLiveSearch').off().on('keyup change',function(e){
 		if(_debug_livesearch)  console.log('LiveSearch: processing on keyup - "'+$(this).val()+'"');
 		var query=$(this).val().toUpperCase();
@@ -6327,14 +6332,11 @@ function WatchLiveSearch(){
 				}
 			});
 		}
-		//if(_debug_livesearch) console.log('LiveSearch: processing END.');
-
 	});
 
-		
 }
 
-/* Display descriptions when hovering name */
+/* Display descriptions when hovering name ------------------------------------------------------------- */
 function WatchDescriptions(){
 	/* Show description when hovering item's name */
 	$(".item-name").hover(function() {
@@ -6347,4 +6349,3 @@ function WatchDescriptions(){
 		$(this).css('cursor','auto');
 	});
 };
-
