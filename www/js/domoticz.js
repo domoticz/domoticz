@@ -75,17 +75,17 @@ function fnGetSelected(oTableLocal) {
 }
 
 function b64EncodeUnicode(str) {
-	return btoa(encodeURIComponent(str).replace(/%([0-9A-F]{2})/g, function (match, p1) {
-		return String.fromCharCode(parseInt(p1, 16))
-	}))
+    return btoa(encodeURIComponent(str).replace(/%([0-9A-F]{2})/g, function(match, p1) {
+        return String.fromCharCode(parseInt(p1, 16))
+    }))
 }
 function b64DecodeUnicode(str) {
 	try {
-		return decodeURIComponent(Array.prototype.map.call(atob(str), function (c) {
-			return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)
-		}).join(''))
+    return decodeURIComponent(Array.prototype.map.call(atob(str), function(c) {
+        return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)
+    }).join(''))
 	}
-	catch (e) {
+	catch(e) {
 		// Pff fallback
 		return atob(str);
 	}
@@ -139,7 +139,7 @@ function HandleProtection(isprotected, callbackfunction) {
 			//verify password
 			$.ajax({
 				url: "json.htm?type=command&param=verifypasscode" +
-					"&passcode=" + result,
+				"&passcode=" + result,
 				async: false,
 				dataType: 'json',
 				success: function (data) {
@@ -195,9 +195,9 @@ function SendX10Command(idx, switchcmd, passcode) {
 	ShowNotify($.t('Switching') + ' ' + $.t(switchcmd));
 	$.ajax({
 		url: "json.htm?type=command&param=switchlight&idx=" + $.devIdx +
-			"&switchcmd=" + switchcmd +
-			"&level=0" +
-			"&passcode=" + passcode,
+		"&switchcmd=" + switchcmd +
+		"&level=0" +
+		"&passcode=" + passcode,
 		async: false,
 		dataType: 'json',
 		success: function (data) {
@@ -492,10 +492,10 @@ function SwitchLightInt(idx, switchcmd, passcode) {
 
 	$.ajax({
 		url: "json.htm?type=command&param=switchlight" +
-			"&idx=" + idx +
-			"&switchcmd=" + switchcmd +
-			"&level=0" +
-			"&passcode=" + passcode,
+		"&idx=" + idx +
+		"&switchcmd=" + switchcmd +
+		"&level=0" +
+		"&passcode=" + passcode,
 		async: false,
 		dataType: 'json',
 		success: function (data) {
@@ -552,9 +552,9 @@ function SwitchSelectorLevelInt(idx, levelName, levelValue, passcode) {
 
 	$.ajax({
 		url: "json.htm?type=command&param=switchlight" +
-			"&idx=" + idx +
-			"&switchcmd=Set%20Level&level=" + levelValue +
-			"&passcode=" + passcode,
+		"&idx=" + idx +
+		"&switchcmd=Set%20Level&level=" + levelValue +
+		"&passcode=" + passcode,
 		async: false,
 		dataType: 'json',
 		success: function (data) {
@@ -611,8 +611,8 @@ function SwitchSceneInt(idx, switchcmd, passcode) {
 
 	$.ajax({
 		url: "json.htm?type=command&param=switchscene&idx=" + idx +
-			"&switchcmd=" + switchcmd +
-			"&passcode=" + passcode,
+		"&switchcmd=" + switchcmd +
+		"&passcode=" + passcode,
 		async: false,
 		dataType: 'json',
 		success: function (data) {
@@ -709,7 +709,7 @@ function GetUTCFromString(s) {
 	);
 }
 
-function GetLocalDateTimeFromString(s, yearOffset = 0) {
+function GetLocalDateTimeFromString(s, yearOffset=0) {
 	return new Date(
 		parseInt(s.substring(0, 4), 10) + yearOffset,
 		parseInt(s.substring(5, 7), 10) - 1,
@@ -720,7 +720,7 @@ function GetLocalDateTimeFromString(s, yearOffset = 0) {
 	).getTime();
 }
 
-function GetLocalTimestampFromString(s, yearOffset = 0) {
+function GetLocalTimestampFromString(s, yearOffset=0) {
 	return new Date(
 		parseInt(s.substring(0, 4), 10) + yearOffset,
 		parseInt(s.substring(5, 7), 10) - 1,
@@ -742,7 +742,7 @@ function GetUTCFromStringSec(s) {
 	);
 }
 
-function GetLocalDateFromString(s, yearOffset = 0) {
+function GetLocalDateFromString(s, yearOffset=0) {
 	return new Date(
 		parseInt(s.substring(0, 4), 10) + yearOffset,
 		parseInt(s.substring(5, 7), 10) - 1,
@@ -933,7 +933,7 @@ function Get5MinuteHistoryDaysGraphTitle() {
 
 function GenerateCamImageURL(address, port, username, password, imageurl, protocol) {
 	var feedsrc;
-	if (protocol == 0)
+	if (protocol==0)
 		feedsrc = "http://";
 	else
 		feedsrc = "https://";
@@ -1023,7 +1023,7 @@ function rgb2hex(rgb) {
 	if (rgb.search("rgb") == -1) {
 		return rgb.toUpperCase();
 	} else {
-		rgb = rgb.match(/^rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*(\d+(\.\d+)?))?\)$/);
+        rgb = rgb.match(/^rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*(\d+(\.\d+)?))?\)$/);
 		function hex(x) {
 			return ("0" + parseInt(x).toString(16)).slice(-2).toUpperCase();
 		}
@@ -1308,7 +1308,7 @@ function ShowCameraLiveStream(Name, camIdx, AspectRatio) {
 	var windowWidth = $(window).width() - 20;
 	var windowHeight = $(window).height() - 150;
 
-	var AspectSource = (AspectRatio == 0) ? (4 / 3) : (16 / 9);
+	var AspectSource = (AspectRatio == 0) ? (4/3) : (16/9);
 
 	var height = windowHeight;
 	var width = Math.round(height * AspectSource) & ~1;
@@ -1424,7 +1424,7 @@ function ShowMediaRemote(Name, devIdx, HWType) {
 	var vBox = $(svgId).prop("viewBox").baseVal;
 	var svgRatio = (vBox.width - vBox.x) / (vBox.height - vBox.y);
 	var dheight = $(window).height() * 0.85;
-	var dwidth = dheight * svgRatio;
+	var dwidth = dheight * svgRatio ;
 	// for v2.0, if screen is wide enough add room to show media at the side of the remote
 	$(divId).dialog({
 		resizable: false,
@@ -1441,21 +1441,21 @@ function ShowMediaRemote(Name, devIdx, HWType) {
 			$(divId).attr("HardwareType", HWType);
 			$(svgId).css("-ms-overflow-style", "none");
 			$(divId).bind('touchstart', function () { });
-			if (HWType.indexOf('Panasonic') >= 0) {
+			if ( HWType.indexOf('Panasonic') >= 0) {
 				// Here is a little painful because we need to get hardware id  first...
 				$.ajax({
 					url: "json.htm?type=devices&rid=" + devIdx,
 					async: true,
 					dataType: 'json',
-					success: function (data) {
+					success: function (data) { 
 						hwId = data.result[0].HardwareID;
 						$.ajax({
 							url: "json.htm?type=hardware",
 							async: true,
 							dataType: 'json',
-							success: function (data) {
+							success: function (data) { 
 								// Need to iterate over all hardware to find the good one
-								for (var i in data.result) {
+								for(var i in data.result) {
 									var hw = data.result[i];
 									if (hw.idx == hwId) {
 										if (hw.Extra !== null && hw.Extra !== '') {
@@ -1471,10 +1471,10 @@ function ShowMediaRemote(Name, devIdx, HWType) {
 											hw.Extra.split(';').forEach(function (line) {
 												// Add line
 												var vBox = $(svgId).prop("viewBox").baseVal;
-												var bvline = vBox.y + vBox.height + bvspacing;
+												var bvline = vBox.y + vBox.height +  bvspacing;
 												$(svgId).prop("viewBox").baseVal.height = vBox.height + bheight + bvspacing;
 												var buttons = line.split(',');
-												var bwidth = (vBox.width + bspacing) / buttons.length - bspacing;
+												var bwidth = (vBox.width + bspacing) / buttons.length - bspacing; 
 												// Loop buttons
 												buttons.forEach(function (val, index) {
 													var tokens = val.split(':');
@@ -1482,15 +1482,15 @@ function ShowMediaRemote(Name, devIdx, HWType) {
 													var bcommand = tokens[1];
 													var buttonSVG = "";
 													bindex++;
-													bx = $(svgId).prop("viewBox").baseVal.x + index * (bwidth + bspacing);
+													bx = $(svgId).prop("viewBox").baseVal.x + index * (bwidth+bspacing);
 													// Button shadow
-													buttonSVG += '<rect id="toto" class="remoteshadow" x="' + bx + '" y="' + (bvline + 10) + '" width="' + bwidth + '" height="' + bheight + '" rx="50" ry="50"></rect>';
+													buttonSVG += '<rect id="toto" class="remoteshadow" x="'+bx+'" y="'+(bvline+10)+'" width="'+bwidth+'" height="'+bheight+'" rx="50" ry="50"></rect>';
 													// Button 
-													buttonSVG += '<rect class="remotehoverable" fill="url(#grad1)" x="' + bx + '" y="' + (bvline) + '" width="' + bwidth + '" height="' + bheight + '"  rx="50" ry="50" ';
+													buttonSVG += '<rect class="remotehoverable" fill="url(#grad1)" x="'+bx+'" y="'+(bvline)+'" width="'+bwidth+'" height="'+bheight+'"  rx="50" ry="50" ';
 													buttonSVG += 'onclick="javascript: click_media_remote(\'' + bcommand + '\');" ';
 													buttonSVG += '><title id="dialog-media-remote-opt1-title">' + btitle + '</title></rect>';
 													// Button text
-													buttonSVG += '<text text-anchor="middle" x="' + (bx + bwidth / 2) + '" y="' + (bvline + bheight * 0.55) + '" class="remotetext" ';
+													buttonSVG += '<text text-anchor="middle" x="'+(bx+bwidth/2)+'" y="'+(bvline+bheight*0.55)+'" class="remotetext" ';
 													buttonSVG += 'fill="black"  style="font-size: 60px; font-weight: bold;">' + btitle + '</text>';
 													// Add button
 													$("#MediaRemote-custom-buttons").append(buttonSVG);
@@ -1504,8 +1504,8 @@ function ShowMediaRemote(Name, devIdx, HWType) {
 											var svgRatio = (vBox.width - vBox.x) / (vBox.height - vBox.y);
 											var dheight = $(window).height() * 0.85;
 											var dwidth = dheight * svgRatio;
-											$(divId).dialog("option", "width", dwidth);
-											$(divId).dialog("option", "height", dheight);
+											$(divId).dialog( "option", "width", dwidth);
+											$(divId).dialog( "option", "height", dheight);
 										}
 									}
 								}
@@ -5385,7 +5385,7 @@ function isLED(SubType) {
 }
 
 function getLEDType(SubType) {
-	var LEDType = { bIsLED: false, bHasRGB: false, bHasWhite: false, bHasTemperature: false, bHasCustom: false };
+	var LEDType = {bIsLED: false, bHasRGB: false, bHasWhite:false, bHasTemperature:false, bHasCustom:false};
 	LEDType.bIsLED = (SubType.indexOf("RGB") >= 0 || SubType.indexOf("WW") >= 0);
 	LEDType.bHasRGB = (SubType.indexOf("RGB") >= 0);
 	LEDType.bHasWhite = (SubType.indexOf("W") >= 0);
@@ -5406,68 +5406,69 @@ function ShowRGBWPicker(selector, idx, Protected, MaxDimLevel, LevelInt, colorJS
 	try {
 		color = JSON.parse(colorJSON);
 	}
-	catch (e) {
+	catch(e) {
 		// forget about it :)
 	}
 	var colorPickerMode = "color"; // Default
 
 	// TODO: A little bit hackish, maybe extend the wheelColorPicker instead..
-	$(selector + ' #popup_picker')[0].getJSONColor = function () {
+	$(selector + ' #popup_picker')[0].getJSONColor = function() {
 		var colorJSON = ""; // Empty string, intentionally illegal JSON
 		var fcolor = $(this).wheelColorPicker('getColor'); // Colors as floats 0..1
 		if (colorPickerMode == "white") {
-			var color = { m: 1, t: 0, r: 0, g: 0, b: 0, cw: 255, ww: 255 };
+			var color = {m:1, t:0, r:0, g:0, b:0, cw:255, ww:255};
 			colorJSON = JSON.stringify(color);
 		}
 		if (colorPickerMode == "temperature") {
-			var color = { m: 2, t: Math.round(fcolor.t * 255), r: 0, g: 0, b: 0, cw: Math.round((1 - fcolor.t) * 255), ww: Math.round(fcolor.t * 255) };
+			var color = {m:2, t:Math.round(fcolor.t*255), r:0, g:0, b:0, cw:Math.round((1-fcolor.t)*255), ww:Math.round(fcolor.t*255)};
 			colorJSON = JSON.stringify(color);
 		}
 		else if (colorPickerMode == "color") {
 			// Set value to 1 in color mode
 			$(this).wheelColorPicker('setHsv', fcolor.h, fcolor.s, 1);
 			fcolor = $(this).wheelColorPicker('getColor'); // Colors as floats 0..1
-			var color = { m: 3, t: 0, r: Math.round(fcolor.r * 255), g: Math.round(fcolor.g * 255), b: Math.round(fcolor.b * 255), cw: 0, ww: 0 };
+			var color = {m:3, t:0, r:Math.round(fcolor.r*255), g:Math.round(fcolor.g*255), b:Math.round(fcolor.b*255), cw:0, ww:0};
 			colorJSON = JSON.stringify(color);
 		}
 		else if (colorPickerMode == "customw") {
-			var color = { m: 4, t: 0, r: Math.round(fcolor.r * 255), g: Math.round(fcolor.g * 255), b: Math.round(fcolor.b * 255), cw: Math.round(fcolor.w * 255), ww: Math.round(fcolor.w * 255) };
+			var color = {m:4, t:0, r:Math.round(fcolor.r*255), g:Math.round(fcolor.g*255), b:Math.round(fcolor.b*255), cw:Math.round(fcolor.w*255), ww:Math.round(fcolor.w*255)};
 			colorJSON = JSON.stringify(color);
 		}
 		else if (colorPickerMode == "customww") {
-			var color = { m: 4, t: Math.round(fcolor.t * 255), r: Math.round(fcolor.r * 255), g: Math.round(fcolor.g * 255), b: Math.round(fcolor.b * 255), cw: Math.round(fcolor.w * (1 - fcolor.t) * 255), ww: Math.round(fcolor.w * fcolor.t * 255) };
+			var color = {m:4, t:Math.round(fcolor.t*255), r:Math.round(fcolor.r*255), g:Math.round(fcolor.g*255), b:Math.round(fcolor.b*255), cw:Math.round(fcolor.w*(1-fcolor.t)*255), ww:Math.round(fcolor.w*fcolor.t*255)};
 			colorJSON = JSON.stringify(color);
 		}
 		return colorJSON;
 	}
 
-	function UpdateColorPicker(mode) {
+	function UpdateColorPicker(mode)
+	{
 		colorPickerMode = mode;
 		if (mode == "color") {
-			$(selector + ' #popup_picker').wheelColorPicker('setOptions', { sliders: 'wm', preserveWheel: true });
+			$(selector + ' #popup_picker').wheelColorPicker('setOptions', {sliders:'wm', preserveWheel:true});
 		}
 		else if (mode == "color_no_master") {
-			$(selector + ' #popup_picker').wheelColorPicker('setOptions', { sliders: 'w', preserveWheel: true });
+			$(selector + ' #popup_picker').wheelColorPicker('setOptions', {sliders:'w', preserveWheel:true});
 		}
 		else if (mode == "white") {
-			$(selector + ' #popup_picker').wheelColorPicker('setOptions', { sliders: 'm', preserveWheel: true });
+			$(selector + ' #popup_picker').wheelColorPicker('setOptions', {sliders:'m', preserveWheel:true});
 		}
 		else if (mode == "white_no_master") {
 			// TODO: Silly, nothing to show!
-			$(selector + ' #popup_picker').wheelColorPicker('setOptions', { sliders: '', preserveWheel: true });
+			$(selector + ' #popup_picker').wheelColorPicker('setOptions', {sliders:'', preserveWheel:true});
 		}
 		else if (mode == "temperature") {
-			$(selector + ' #popup_picker').wheelColorPicker('setOptions', { sliders: 'xm' });
+			$(selector + ' #popup_picker').wheelColorPicker('setOptions', {sliders:'xm'});
 		}
 		else if (mode == "temperature_no_master") {
 			// TODO: Silly, nothing to show!
-			$(selector + ' #popup_picker').wheelColorPicker('setOptions', { sliders: '' });
+			$(selector + ' #popup_picker').wheelColorPicker('setOptions', {sliders:''});
 		}
 		else if (mode == "customw") {
-			$(selector + ' #popup_picker').wheelColorPicker('setOptions', { sliders: 'wvlm', preserveWheel: false });
+			$(selector + ' #popup_picker').wheelColorPicker('setOptions', {sliders:'wvlm', preserveWheel:false});
 		}
 		else if (mode == "customww") {
-			$(selector + ' #popup_picker').wheelColorPicker('setOptions', { sliders: 'wvklm', preserveWheel: false });
+			$(selector + ' #popup_picker').wheelColorPicker('setOptions', {sliders:'wvklm', preserveWheel:false});
 		}
 
 		$(selector + ' .pickermodergb').hide();
@@ -5478,11 +5479,12 @@ function ShowRGBWPicker(selector, idx, Protected, MaxDimLevel, LevelInt, colorJS
 		// Show buttons for choosing input mode
 		var supportedModes = 0;
 		if (LEDType.bHasRGB) supportedModes++;
-		if (LEDType.bHasWhite && !LEDType.bHasTemperature && DimmerType != "rel") supportedModes++;
+		if (LEDType.bHasWhite && !LEDType.bHasTemperature && DimmerType!="rel") supportedModes++;
 		if (LEDType.bHasTemperature) supportedModes++;
 		if (LEDType.bHasCustom && !LEDType.bHasTemperature) supportedModes++;
 		if (LEDType.bHasCustom && LEDType.bHasTemperature) supportedModes++;
-		if (supportedModes > 1) {
+		if (supportedModes > 1)
+		{
 			if (LEDType.bHasRGB) {
 				if (mode == "color" || mode == "color_no_master") {
 					$(selector + ' .pickermodergb.selected').show();
@@ -5491,7 +5493,7 @@ function ShowRGBWPicker(selector, idx, Protected, MaxDimLevel, LevelInt, colorJS
 					$(selector + ' .pickermodergb.unselected').show();
 				}
 			}
-			if (LEDType.bHasWhite && !LEDType.bHasTemperature && DimmerType != "rel") {
+			if (LEDType.bHasWhite && !LEDType.bHasTemperature && DimmerType!="rel") {
 				if (mode == "white" || mode == "white_no_master") {
 					$(selector + ' .pickermodewhite.selected').show();
 				}
@@ -5499,7 +5501,7 @@ function ShowRGBWPicker(selector, idx, Protected, MaxDimLevel, LevelInt, colorJS
 					$(selector + ' .pickermodewhite.unselected').show();
 				}
 			}
-			if (LEDType.bHasTemperature && DimmerType != "rel") {
+			if (LEDType.bHasTemperature && DimmerType!="rel") {
 				if (mode == "temperature" || mode == "temperature_no_master") {
 					$(selector + ' .pickermodetemp.selected').show();
 				}
@@ -5546,13 +5548,14 @@ function ShowRGBWPicker(selector, idx, Protected, MaxDimLevel, LevelInt, colorJS
 		ColorModeCustom,   // Custom (color + white). Valid fields: r, g, b, cw, ww, depending on device capabilities
 	};*/
 
-	var color_m = (color.m == null) ? 3 : color.m; // Default to 3: ColorModeRGB
+	var color_m = (color.m==null)?3:color.m; // Default to 3: ColorModeRGB
 
 	if (color_m != 1 && color_m != 2 && color_m != 3 && color_m != 4) color_m = 3; // Default to RGB if not valid
 	if (color_m == 4 && !LEDType.bHasCustom) color_m = 3; // Default to RGB if light does not support custom color
 	if (color_m == 1 && !LEDType.bHasWhite) color_m = 3; // Default to RGB if light does not support white
 	if (color_m == 2 && !LEDType.bHasTemperature) color_m = 3; // Default to RGB if light does not support temperature
-	if (color_m == 3 && !LEDType.bHasRGB) {
+	if (color_m == 3 && !LEDType.bHasRGB)
+	{
 		if (LEDType.bHasTemperature) color_m = 2; // Default to temperature if light does not support RGB but does support temperature
 		else color_m = 1;                         // Default to white if light does not support either RGB or temperature (in this case just a dimmer slider should be shown though)
 	}
@@ -5570,63 +5573,63 @@ function ShowRGBWPicker(selector, idx, Protected, MaxDimLevel, LevelInt, colorJS
 	}
 	if (color_m == 2) // White with temperature
 	{
-		color_t = (color.t == null) ? 128 : color.t;
-		color_cw = (color.cw == null) ? 128 : color.cw;
-		color_ww = (color.ww == null) ? 255 - color_cw : color.ww;
+		color_t = (color.t==null)?128:color.t;
+		color_cw = (color.cw==null)?128:color.cw;
+		color_ww = (color.ww==null)?255 - color_cw:color.ww;
 	}
 	if (color_m == 3) // Color
 	{
-		color_r = (color.r == null) ? 255 : color.r;
-		color_g = (color.g == null) ? 255 : color.g;
-		color_b = (color.b == null) ? 255 : color.b;
+		color_r = (color.r==null)?255:color.r;
+		color_g = (color.g==null)?255:color.g;
+		color_b = (color.b==null)?255:color.b;
 	}
 	if (color_m == 4) // Custom
 	{
-		color_t = (color.t == null) ? 128 : color.t;
-		color_cw = (color.cw == null) ? 128 : color.cw;
-		color_ww = (color.ww == null) ? 255 - color_cw : color.ww;
-		color_r = (color.r == null) ? 255 : color.r;
-		color_g = (color.g == null) ? 255 : color.g;
-		color_b = (color.b == null) ? 255 : color.b;
+		color_t = (color.t==null)?128:color.t;
+		color_cw = (color.cw==null)?128:color.cw;
+		color_ww = (color.ww==null)?255 - color_cw:color.ww;
+		color_r = (color.r==null)?255:color.r;
+		color_g = (color.g==null)?255:color.g;
+		color_b = (color.b==null)?255:color.b;
 	}
 
 	// TODO: white_no_master and temperature_no_master are meaningless, remove
 	if (color_m == 1) { // White mode
-		colorPickerMode = DimmerType != "rel" ? "white" : "white_no_master";
+		colorPickerMode = DimmerType!="rel"?"white":"white_no_master";
 	}
 	if (color_m == 2) { // Color temperature mode
-		colorPickerMode = DimmerType != "rel" ? "temperature" : "temperature_no_master";
+		colorPickerMode = DimmerType!="rel"?"temperature":"temperature_no_master";
 	}
-	else if (color_m == 3) { // Color  mode
-		colorPickerMode = DimmerType != "rel" ? "color" : "color_no_master";
+	else if (color_m == 3){ // Color  mode
+		colorPickerMode = DimmerType!="rel"?"color":"color_no_master";
 	}
-	else if (color_m == 4) { // Custom  mode
+	else if (color_m == 4){ // Custom  mode
 		colorPickerMode = "customw";
 		if (LEDType.bHasTemperature) {
 			colorPickerMode = "customww";
 		}
 	}
 
-	$(selector + ' .pickermodergb').off().click(function () {
-		UpdateColorPicker(DimmerType != "rel" ? "color" : "color_no_master");
+	$(selector + ' .pickermodergb').off().click(function(){
+		UpdateColorPicker(DimmerType!="rel"?"color":"color_no_master");
 	});
-	$(selector + ' .pickermodewhite').off().click(function () {
-		UpdateColorPicker(DimmerType != "rel" ? "white" : "white_no_master");
+	$(selector + ' .pickermodewhite').off().click(function(){
+		UpdateColorPicker(DimmerType!="rel"?"white":"white_no_master");
 	});
-	$(selector + ' .pickermodetemp').off().click(function () {
-		UpdateColorPicker(DimmerType != "rel" ? "temperature" : "temperature_no_master");
+	$(selector + ' .pickermodetemp').off().click(function(){
+		UpdateColorPicker(DimmerType!="rel"?"temperature":"temperature_no_master");
 	});
-	$(selector + ' .pickermodecustomw').off().click(function () {
+	$(selector + ' .pickermodecustomw').off().click(function(){
 		UpdateColorPicker("customw");
 	});
-	$(selector + ' .pickermodecustomww').off().click(function () {
+	$(selector + ' .pickermodecustomww').off().click(function(){
 		UpdateColorPicker("customww");
 	});
 
-	$(selector + ' #popup_picker').wheelColorPicker('setTemperature', color_t / 255);
-	$(selector + ' #popup_picker').wheelColorPicker('setWhite', color_cw / 255 + color_ww / 255);
-	$(selector + ' #popup_picker').wheelColorPicker('setRgb', color_r / 255, color_g / 255, color_b / 255);
-	$(selector + ' #popup_picker').wheelColorPicker('setMaster', LevelInt / MaxDimLevel);
+	$(selector + ' #popup_picker').wheelColorPicker('setTemperature', color_t/255);
+	$(selector + ' #popup_picker').wheelColorPicker('setWhite', color_cw/255+color_ww/255);
+	$(selector + ' #popup_picker').wheelColorPicker('setRgb', color_r/255, color_g/255, color_b/255);
+	$(selector + ' #popup_picker').wheelColorPicker('setMaster', LevelInt/MaxDimLevel);
 
 	var rgbhex = $(selector + ' #popup_picker').wheelColorPicker('getValue', 'hex').toUpperCase();
 	$(selector + ' .pickerrgbcolorinput').val(rgbhex);
@@ -5634,12 +5637,12 @@ function ShowRGBWPicker(selector, idx, Protected, MaxDimLevel, LevelInt, colorJS
 	// Update color picker controls
 	UpdateColorPicker(colorPickerMode);
 
-	$(selector + ' #popup_picker').off('slidermove sliderup').on('slidermove sliderup', function () {
+	$(selector + ' #popup_picker').off('slidermove sliderup').on('slidermove sliderup', function() {
 		clearTimeout($.setColValue);
 
 		var color = $(this).wheelColorPicker('getColor');
 		var rgbhex = $(this).wheelColorPicker('getValue', 'hex').toUpperCase();
-		var dimlevel = Math.round((color.m * 99) + 1); // 1..100
+		var dimlevel = Math.round((color.m*99)+1); // 1..100
 		var JSONColor = $(selector + ' #popup_picker')[0].getJSONColor();
 		//TODO: Rate limit instead of debounce
 		$.setColValue = setTimeout(function () {
@@ -5648,7 +5651,7 @@ function ShowRGBWPicker(selector, idx, Protected, MaxDimLevel, LevelInt, colorJS
 		}, 400);
 		$(selector + ' .pickerrgbcolorinput').val(rgbhex);
 	});
-	$(selector + ' .pickerrgbcolorinput').off('input').on('input', function () {
+	$(selector + ' .pickerrgbcolorinput').off('input').on('input', function() {
 		$(selector + ' #popup_picker').wheelColorPicker('setValue', this.value)
 	});
 }
@@ -5669,17 +5672,18 @@ function ShowRGBWPopupInt(mouseX, mouseY, idx, Protected, MaxDimLevel, LevelInt,
 	$('#rgbw_popup #popup_warmer').hide();
 	$('#rgbw_popup #popup_colder').hide();
 
-	if (DimmerType && DimmerType === "rel") {
+	if (DimmerType && DimmerType === "rel")
+	{
 		$('#rgbw_popup #popup_bright_up').show();
 		$('#rgbw_popup #popup_bright_down').show();
-		$('#rgbw_popup #popup_bright_up').off().click(function () {
+		$('#rgbw_popup #popup_bright_up').off().click(function(){
 			$.ajax({
 				url: "json.htm?type=command&param=brightnessup&idx=" + devIdx,
 				async: false,
 				dataType: 'json'
 			});
 		});
-		$('#rgbw_popup #popup_bright_down').off().click(function () {
+		$('#rgbw_popup #popup_bright_down').off().click(function(){
 			$.ajax({
 				url: "json.htm?type=command&param=brightnessdown&idx=" + devIdx,
 				async: false,
@@ -5688,17 +5692,18 @@ function ShowRGBWPopupInt(mouseX, mouseY, idx, Protected, MaxDimLevel, LevelInt,
 		});
 	}
 
-	if (DimmerType && DimmerType === "rel" && ledType.bHasTemperature) {
+	if (DimmerType && DimmerType === "rel" && ledType.bHasTemperature)
+	{
 		$('#rgbw_popup #popup_warmer').show();
 		$('#rgbw_popup #popup_colder').show();
-		$('#rgbw_popup #popup_warmer').off().click(function () {
+		$('#rgbw_popup #popup_warmer').off().click(function(){
 			$.ajax({
 				url: "json.htm?type=command&param=warmer&idx=" + devIdx,
 				async: false,
 				dataType: 'json'
 			});
 		});
-		$('#rgbw_popup #popup_colder').off().click(function () {
+		$('#rgbw_popup #popup_colder').off().click(function(){
 			$.ajax({
 				url: "json.htm?type=command&param=cooler&idx=" + devIdx,
 				async: false,
@@ -5768,8 +5773,8 @@ function CloseTherm3Popup() {
 function ThermUp() {
 	$.ajax({
 		url: "json.htm?type=command&param=switchlight&idx=" + $.devIdx +
-			"&switchcmd=Up" +
-			"&level=0",
+		"&switchcmd=Up" +
+		"&level=0",
 		async: false,
 		dataType: 'json',
 		success: function (data) {
@@ -5788,8 +5793,8 @@ function ThermUp() {
 function ThermDown() {
 	$.ajax({
 		url: "json.htm?type=command&param=switchlight&idx=" + $.devIdx +
-			"&switchcmd=Down" +
-			"&level=0",
+		"&switchcmd=Down" +
+		"&level=0",
 		async: false,
 		dataType: 'json',
 		success: function (data) {
@@ -5808,8 +5813,8 @@ function ThermDown() {
 function ThermUp2() {
 	$.ajax({
 		url: "json.htm?type=command&param=switchlight&idx=" + $.devIdx +
-			"&switchcmd=Run Up" +
-			"&level=0",
+		"&switchcmd=Run Up" +
+		"&level=0",
 		async: false,
 		dataType: 'json',
 		success: function (data) {
@@ -5828,8 +5833,8 @@ function ThermUp2() {
 function ThermDown2() {
 	$.ajax({
 		url: "json.htm?type=command&param=switchlight&idx=" + $.devIdx +
-			"&switchcmd=Run Down" +
-			"&level=0",
+		"&switchcmd=Run Down" +
+		"&level=0",
 		async: false,
 		dataType: 'json',
 		success: function (data) {
@@ -5848,8 +5853,8 @@ function ThermDown2() {
 function ThermStop() {
 	$.ajax({
 		url: "json.htm?type=command&param=switchlight&idx=" + $.devIdx +
-			"&switchcmd=Stop" +
-			"&level=0",
+		"&switchcmd=Stop" +
+		"&level=0",
 		async: false,
 		dataType: 'json',
 		success: function (data) {
@@ -5917,18 +5922,16 @@ function SetEcoTemp() {
 	$('#setpoint_popup #popup_setpoint').val(curValueStr);
 	SetSetpoint();
 }
-
 function SetConforTemp() {
 	var curValueStr = $.confor.toFixed(1);
 	$('#setpoint_popup #popup_setpoint').val(curValueStr);
 	SetSetpoint();
 }
-
 function SetSetpoint() {
 	var curValue = parseFloat($('#setpoint_popup #popup_setpoint').val());
 	$.ajax({
 		url: "json.htm?type=command&param=setsetpoint&idx=" + $.devIdx +
-			"&setpoint=" + curValue,
+		"&setpoint=" + curValue,
 		async: false,
 		dataType: 'json',
 		success: function (data) {
@@ -5972,7 +5975,6 @@ function ShowSetpointPopupInt(mouseX, mouseY, idx, currentvalue, ismobile) {
 		$('#setpoint_popup #confor').show();
 		$('#setpoint_popup #eco').show();
 	}
-
 	if (typeof ismobile == 'undefined') {
 		$("#setpoint_popup").css({
 			"top": mouseY,
@@ -6003,7 +6005,6 @@ function ShowSetpointPopup(event, idx, Protected, currentvalue, ismobile, confor
 	$.Protected = Protected;
 	$.confor = confor;
 	$.eco = eco;
-
 	event = event || window.event;
 	// If pageX/Y aren't available and clientX/Y are,
 	// calculate pageX/Y - logic taken from jQuery.
@@ -6150,8 +6151,8 @@ function ShowIthoPopup(event, idx, Protected, ismobile) {
 
 //Lucci
 function CloseLucciPopup() {
-	$("#lucci_popup").hide();
-	$("#lucci_dc_popup").hide();
+    $("#lucci_popup").hide();
+    $("#lucci_dc_popup").hide();
 }
 
 function LucciSendCommand(lucci_cmnd) {
@@ -6216,57 +6217,57 @@ function ShowLucciPopup(event, idx, Protected, ismobile) {
 }
 
 function ShowLucciDCPopupInt(mouseX, mouseY, idx, ismobile) {
-	$.devIdx = idx;
+    $.devIdx = idx;
 
-	if (typeof ismobile == 'undefined') {
-		$("#lucci_dc_popup").css({
-			"top": mouseY,
-			"left": mouseX + 15,
-			"position": "absolute",
-			"-ms-transform": "none",
-			"-moz-transform": "none",
-			"-webkit-transform": "none",
-			"transform": "none"
-		});
-	}
-	else {
-		$("#lucci_dc_popup").css({
-			"position": "fixed",
-			"left": "50%",
-			"top": "50%",
-			"-ms-transform": "translate(-50%,-50%)",
-			"-moz-transform": "translate(-50%,-50%)",
-			"-webkit-transform": "translate(-50%,-50%)",
-			"transform": "translate(-50%,-50%)"
-		});
-	}
-	$('#lucci_dc_popup').i18n();
-	$("#lucci_dc_popup").show();
+    if (typeof ismobile == 'undefined') {
+        $("#lucci_dc_popup").css({
+            "top": mouseY,
+            "left": mouseX + 15,
+            "position": "absolute",
+            "-ms-transform": "none",
+            "-moz-transform": "none",
+            "-webkit-transform": "none",
+            "transform": "none"
+        });
+    }
+    else {
+        $("#lucci_dc_popup").css({
+            "position": "fixed",
+            "left": "50%",
+            "top": "50%",
+            "-ms-transform": "translate(-50%,-50%)",
+            "-moz-transform": "translate(-50%,-50%)",
+            "-webkit-transform": "translate(-50%,-50%)",
+            "transform": "translate(-50%,-50%)"
+        });
+    }
+    $('#lucci_dc_popup').i18n();
+    $("#lucci_dc_popup").show();
 }
 
 function ShowLucciDCPopup(event, idx, Protected, ismobile) {
-	event = event || window.event;
-	// If pageX/Y aren't available and clientX/Y are,
-	// calculate pageX/Y - logic taken from jQuery.
-	// (This is to support old IE)
-	if (event.pageX == null && event.clientX != null) {
-		eventDoc = (event.target && event.target.ownerDocument) || document;
-		doc = eventDoc.documentElement;
-		body = eventDoc.body;
+    event = event || window.event;
+    // If pageX/Y aren't available and clientX/Y are,
+    // calculate pageX/Y - logic taken from jQuery.
+    // (This is to support old IE)
+    if (event.pageX == null && event.clientX != null) {
+        eventDoc = (event.target && event.target.ownerDocument) || document;
+        doc = eventDoc.documentElement;
+        body = eventDoc.body;
 
-		event.pageX = event.clientX +
+        event.pageX = event.clientX +
 			(doc && doc.scrollLeft || body && body.scrollLeft || 0) -
 			(doc && doc.clientLeft || body && body.clientLeft || 0);
-		event.pageY = event.clientY +
+        event.pageY = event.clientY +
 			(doc && doc.scrollTop || body && body.scrollTop || 0) -
 			(doc && doc.clientTop || body && body.clientTop || 0);
-	}
-	var mouseX = event.pageX;
-	var mouseY = event.pageY;
+    }
+    var mouseX = event.pageX;
+    var mouseY = event.pageY;
 
-	HandleProtection(Protected, function () {
-		ShowLucciDCPopupInt(mouseX, mouseY, idx, ismobile);
-	});
+    HandleProtection(Protected, function () {
+        ShowLucciDCPopupInt(mouseX, mouseY, idx, ismobile);
+    });
 }
 
 function MakeDatatableTranslations() {
@@ -6295,70 +6296,76 @@ function fromInstanceOrFunction(functionTemplate = f => f()) {
 		}
 	}
 }
-/* LiveSearch Functions: Filters devices when typing in the INPUT field  */
-var _debug_livesearch = false;
-function RefreshLiveSearch() {
-	if (_debug_livesearch) console.log('LiveSearch: Refreshing...');
+
+
+/* LiveSearch Functions: Filters devices when typing in the INPUT field ------------------------------- */
+var _debug_livesearch= false;
+
+/* Triggers LiveSearch change  */
+function RefreshLiveSearch(){
+	if(_debug_livesearch) console.log('LiveSearch: Refreshing...');
 	$('.jsLiveSearch').trigger('change');
 }
 
-function WatchLiveSearch() {
-	/* live search*/
-	if (_debug_livesearch) console.log('LiveSearch : Start Watching ...');
-	$('.jsLiveSearch').off().on('keyup change', function (e) {
-		if (_debug_livesearch) console.log('LiveSearch: processing on keyup - "' + $(this).val() + '"');
-		var query = $(this).val().toUpperCase();
-		var div = $('.divider');
-		var cont = $('.devicesList');
-		if (query.length == 0) {
-			cont.removeClass('devicesListFiltered');
-			div.css('display', 'block');
-			div.addClass('row');
-			div.find('.clearfix').show();
-			$('.itemBlock').show().removeClass('liveSearchShown');
+/* Watch the LiveSearch INPUT field  */
+function WatchLiveSearch(){
+	if(_debug_livesearch) console.log('LiveSearch : Start Watching ...');
+
+	$('.jsLiveSearch').off().on('keyup change',function(e){
+		if(_debug_livesearch)  console.log('LiveSearch: processing on keyup - "'+$(this).val()+'"');
+		var query=$(this).val().toUpperCase();
+		var div=$('.divider');
+		var cont=$('.devicesList');
+		if(query.length == 0){
+			if(cont.hasClass('devicesListFiltered')){
+				cont.removeClass('devicesListFiltered');
+				div.css('display','block');
+				div.addClass('row');
+				div.find('.clearfix').show();
+				$('.itemBlock').show().removeClass('liveSearchShown');	
+			}
 		}
-		else {
-			cont.addClass('devicesListFiltered');
-			div.css('display', 'inline');
+		else{
+			if(! cont.hasClass('devicesListFiltered')){
+				cont.addClass('devicesListFiltered');
+				div.css('display','inline');
+			}
 			div.removeClass('row');
 			div.find('.clearfix').hide();  /* only for Wheater and Temperatures */
-			$('.itemBlock').each(function (index) {
-				var name = $(this).find('#name').html().toUpperCase();
-				var desc = $(this).find('#name').attr('data-desc');
-				if (desc === undefined) {
-					desc = '';
-				}
-				desc = desc.toUpperCase();
 
-				var to_hide = $(this);
-				if ((name.indexOf(query) > -1) || desc.indexOf(query) > -1) {
+			$('.itemBlock').each(function(index){
+				var name=$(this).find('#name').html().toUpperCase();
+				var desc=$(this).find('#name').attr('data-desc');
+				if(desc === undefined){
+					desc='';
+				}
+				desc=desc.toUpperCase();
+
+				var to_hide=$(this);
+				if ( (name.indexOf(query) > -1) || desc.indexOf(query) > -1) {
 					to_hide.show();
 					to_hide.addClass('liveSearchShown');
 				}
-				else {
+				else{
 					to_hide.hide();
 					to_hide.removeClass('liveSearchShown');
 				}
 			});
 		}
-		//if(_debug_livesearch) console.log('LiveSearch: processing END.');
-
 	});
-
 
 }
 
-/* Display descriptions when hovering name */
-function WatchDescriptions() {
+/* Display descriptions when hovering name ------------------------------------------------------------- */
+function WatchDescriptions(){
 	/* Show description when hovering item's name */
-	$(".item-name").hover(function () {
-		if (_debug_livesearch) console.log("Hover Description!");
-		var desc = $(this).attr('data-desc');
-		if (desc.length > 0) {
-			$(this).css('cursor', 'pointer').attr('title', desc);
+	$(".item-name").hover(function() {
+		if(_debug_livesearch) console.log("Hover Description!");
+		var desc=$(this).attr('data-desc');
+		if(desc.length > 0){
+			$(this).css('cursor','pointer').attr('title', desc);
 		}
-	}, function () {
-		$(this).css('cursor', 'auto');
+	}, function() {
+		$(this).css('cursor','auto');
 	});
 };
-
