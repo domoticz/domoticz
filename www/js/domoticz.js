@@ -6292,17 +6292,22 @@ function WatchLiveSearch(){
 		var div=$('.divider');
 		var cont=$('.devicesList');
 		if(query.length == 0){
-			cont.removeClass('devicesListFiltered');
-			div.css('display','block');
-			div.addClass('row');
-			div.find('.clearfix').show();
-			$('.itemBlock').show().removeClass('liveSearchShown');
+			if(cont.hasClass('devicesListFiltered')){
+				cont.removeClass('devicesListFiltered');
+				div.css('display','block');
+				div.addClass('row');
+				div.find('.clearfix').show();
+				$('.itemBlock').show().removeClass('liveSearchShown');	
+			}
 		}
 		else{
-			cont.addClass('devicesListFiltered');
-			div.css('display','inline');
+			if(! cont.hasClass('devicesListFiltered')){
+				cont.addClass('devicesListFiltered');
+				div.css('display','inline');
+			}
 			div.removeClass('row');
 			div.find('.clearfix').hide();  /* only for Wheater and Temperatures */
+
 			$('.itemBlock').each(function(index){
 				var name=$(this).find('#name').html().toUpperCase();
 				var desc=$(this).find('#name').attr('data-desc');
