@@ -379,17 +379,13 @@ void SolarEdgeAPI::GetInverterDetails(const _tInverterSettings* pInverterSetting
 	}
 	if (!reading["inverterMode"].empty())
 	{
-		char inverterMode[25];
-		strncpy(inverterMode, reading["inverterMode"].asCString(), 24);
 		sprintf(szTmp, "inverterMode %s", pInverterSettings->name.c_str());
-		SendTextSensor(iInverterNumber, SE_INV_MODE, 255, inverterMode, szTmp);
+		SendTextSensor(iInverterNumber, SE_INV_MODE, 255, reading["inverterMode"].asString(), szTmp);
 	}
 	if (!reading["date"].empty())
 	{
-		char date[20];
-		strncpy(date, reading["date"].asCString(), 19);
 		sprintf(szTmp, "date %s", pInverterSettings->name.c_str());
-		SendTextSensor(iInverterNumber, SE_DATE, 255, date, szTmp);
+		SendTextSensor(iInverterNumber, SE_DATE, 255, reading["date"].asString(), szTmp);
 	}
 	if (!reading["temperature"].empty())
 	{
