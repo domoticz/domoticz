@@ -1649,7 +1649,7 @@ define(['app', 'livesocket'], function (app) {
 								if (($scope.config.DashboardType == 2) || (window.myglobals.ismobile == true)) {
 									xhtm +=
 										'\t    <tr id="scene_' + item.idx + '">\n' +
-										'\t      <td id="name" class="name item-name" data-desc="'+item.Description.replace('"',"'")+'">' + item.Name;
+										'\t      <td id="name" class="name item-name" data-idx="'+item.idx+'" data-desc="'+item.Description.replace('"',"'")+'">' + item.Name;
 									xhtm +=
 										'</td>\n';
 									var status = "";
@@ -1687,7 +1687,7 @@ define(['app', 'livesocket'], function (app) {
 									}
 									xhtm +=
 										'\t    <t>\n' +
-										'\t      <td id="name" class="name item-name" data-desc="'+item.Description.replace('"',"'")+'">' + item.Name + '</td>\n' +
+										'\t      <td id="name" class="name item-name" data-idx="'+item.idx+'" data-desc="'+item.Description.replace('"',"'")+'">' + item.Name + '</td>\n' +
 										'\t      <td id="bigtext" class="bigtext"><span>';
 									var bigtext = TranslateStatusShort(item.Status);
 									if (item.UsedByCamera == true) {
@@ -1796,7 +1796,7 @@ define(['app', 'livesocket'], function (app) {
 								if (($scope.config.DashboardType == 2) || (window.myglobals.ismobile == true)) {
 									xhtm +=
 										'\t    <tr id="light_' + item.idx + '">\n' +
-										'\t      <td id="name" class="name item-name" data-desc="'+item.Description.replace('"',"'")+'">' + item.Name;
+										'\t      <td id="name" class="name item-name" data-idx="'+item.idx+'" data-desc="'+item.Description.replace('"',"'")+'">' + item.Name;
 									xhtm +=
 										'</td>\n';
 									var status = TranslateStatus(item.Status) + " ";
@@ -2171,7 +2171,7 @@ define(['app', 'livesocket'], function (app) {
 									}
 									xhtm +=
 										'\t    <tr>\n' +
-										'\t      <td id="name" class="name item-name" data-desc="'+item.Description.replace('"',"'")+'">' + item.Name + '</td>\n' +
+										'\t      <td id="name" class="name item-name" data-idx="'+item.idx+'" data-desc="'+item.Description.replace('"',"'")+'">' + item.Name + '</td>\n' +
 										'\t      <td id="bigtext" class="bigtext"><span>';
 									var bigtext = TranslateStatusShort(item.Status);
 									if (item.UsedByCamera == true) {
@@ -2541,7 +2541,7 @@ define(['app', 'livesocket'], function (app) {
 
 										xhtm +=
 											'\t    <tr id="temp_' + item.idx + '">\n' +
-											'\t      <td id="name" class="name item-name" data-desc="'+item.Description.replace('"',"'")+'">' + vname + '</td>\n';
+											'\t      <td id="name" class="name item-name" data-idx="'+item.idx+'" data-desc="'+item.Description.replace('"',"'")+'">' + vname + '</td>\n';
 										var status = "";
 										var bHaveBefore = false;
 										if (typeof item.Temp != 'undefined') {
@@ -2585,7 +2585,7 @@ define(['app', 'livesocket'], function (app) {
 										xhtm += '\t  <div id="bstatus" class="item itemBlock ' + backgroundClass + '">\n';
 										xhtm += '\t    <table id="itemtablesmall" class="itemtablesmall" border="0" cellpadding="0" cellspacing="0">\n';
 										xhtm += '\t    <tr>\n';
-										xhtm += '\t      <td id="name" class="name item-name" data-desc="'+item.Description.replace('"',"'")+'">' + item.Name + '</td>\n';
+										xhtm += '\t      <td id="name" class="name item-name" data-idx="'+item.idx+'" data-desc="'+item.Description.replace('"',"'")+'">' + item.Name + '</td>\n';
 										xhtm += '\t      <td id="bigtext" class="bigtext"><span>';
 										var bigtext = "";
 										if (typeof item.Temp != 'undefined') {
@@ -2717,7 +2717,7 @@ define(['app', 'livesocket'], function (app) {
 										}
 										xhtm +=
 											'\t    <tr id="weather_' + item.idx + '">\n' +
-											'\t      <td id="name" class="name item-name" data-desc="'+item.Description.replace('"',"'")+'">' + vname + '</td>\n';
+											'\t      <td id="name" class="name item-name" data-idx="'+item.idx+'" data-desc="'+item.Description.replace('"',"'")+'">' + vname + '</td>\n';
 										var status = "";
 										if (typeof item.Rain != 'undefined') {
 											status += item.Rain + ' mm';
@@ -2768,7 +2768,7 @@ define(['app', 'livesocket'], function (app) {
 										xhtm += '\t  <div id="bstatus" class="item itemBlock ' + backgroundClass + '">\n';
 										xhtm += '\t    <table id="itemtablesmall" class="itemtablesmall" border="0" cellpadding="0" cellspacing="0">\n';
 										xhtm += '\t    <tr>\n';
-										xhtm += '\t      <td id="name" class="name item-name" data-desc="'+item.Description.replace('"',"'")+'">' + item.Name + '</td>\n';
+										xhtm += '\t      <td id="name" class="name item-name" data-idx="'+item.idx+'" data-desc="'+item.Description.replace('"',"'")+'">' + item.Name + '</td>\n';
 										xhtm += '\t      <td id="bigtext" class="bigtext"><span>';
 										if (typeof item.Barometer != 'undefined') {
 											xhtm += item.Barometer + ' hPa';
@@ -2907,7 +2907,7 @@ define(['app', 'livesocket'], function (app) {
 								if (($scope.config.DashboardType == 2) || (window.myglobals.ismobile == true)) {
 									xhtm +=
 										'\t    <tr id="security_' + item.idx + '">\n' +
-										'\t      <td id="name" class="name item-name" data-desc="'+item.Description.replace('"',"'")+'">' + item.Name + '</td>\n';
+										'\t      <td id="name" class="name item-name" data-idx="'+item.idx+'" data-desc="'+item.Description.replace('"',"'")+'">' + item.Name + '</td>\n';
 									var status = TranslateStatus(item.Status);
 
 									xhtm += '\t      <td id="status" class="status">';
@@ -2942,7 +2942,7 @@ define(['app', 'livesocket'], function (app) {
 										xhtm += '\t    <table id="itemtablesmall" class="itemtablesmall" border="0" cellpadding="0" cellspacing="0">\n';
 									}
 									xhtm += '\t    <tr>\n' +
-										'\t      <td id="name" class="name item-name" data-desc="'+item.Description.replace('"',"'")+'">' + item.Name + '</td>\n' +
+										'\t      <td id="name" class="name item-name" data-idx="'+item.idx+'" data-desc="'+item.Description.replace('"',"'")+'">' + item.Name + '</td>\n' +
 										'\t      <td id="bigtext" class="bigtext"><span>' + TranslateStatusShort(item.Status) + '</span></td>\n';
 
 									if (item.SubType == "Security Panel") {
@@ -3356,7 +3356,7 @@ define(['app', 'livesocket'], function (app) {
 										}
 										xhtm +=
 											'\t    <tr id="utility_' + item.idx + '">\n' +
-											'\t      <td id="name" class="name item-name" data-desc="'+item.Description.replace('"',"'")+'">' + vname + '</td>\n' +
+											'\t      <td id="name" class="name item-name" data-idx="'+item.idx+'" data-desc="'+item.Description.replace('"',"'")+'">' + vname + '</td>\n' +
 											'\t      <td id="status" class="status"><span>' + status + '</span></td>\n' +
 											'\t    </tr>\n';
 									}
@@ -3636,7 +3636,7 @@ define(['app', 'livesocket'], function (app) {
 
 										xhtm += '\t    <table id="itemtablesmall" class="itemtablesmall" border="0" cellpadding="0" cellspacing="0">\n';
 										xhtm += '\t    <tr">\n';
-										xhtm += '\t      <td id="name" class="name item-name" data-desc="'+item.Description.replace('"',"'")+'">' + item.Name + '</td>\n';
+										xhtm += '\t      <td id="name" class="name item-name" data-idx="'+item.idx+'" data-desc="'+item.Description.replace('"',"'")+'">' + item.Name + '</td>\n';
 										xhtm += '\t      <td id="bigtext" class="bigtext"><span class="wrapper">' + bigtexthtml + '</span></td>\n';
 										xhtm += '\t      <td id="img" class="img img1">' + imagehtml + '</td>';
 										xhtm += '\t      <td id="status" class="status"><span class="wrapper">' + statushtml + '</span></td>\n' +
