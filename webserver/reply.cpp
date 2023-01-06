@@ -243,19 +243,6 @@ reply reply::stock_reply(reply::status_type status, bool addsecheaders)
 	return rep;
 }
 
-reply reply::stock_reply(reply* rep, reply::status_type status, bool addsecheaders)
-{
-	rep->status = status;
-	rep->content = stock_replies::to_string(status);
-	if (!rep->content.empty()) { // response can be empty (eg. HTTP 304)
-		add_header(rep, "Content-Length", std::to_string(rep->content.size()), true);
-		add_header(rep, "Content-Type", "text/html;charset=UTF-8", true);
-	}
-	if (addsecheaders)
-		add_security_headers(rep);
-	return *rep;
-}
-
 void reply::add_security_headers(reply *rep)
 {
 	add_header(rep, "Strict-Transport-Security", "max-age=31536000; includeSubDomains; preload", true);

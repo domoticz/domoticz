@@ -375,7 +375,7 @@ void request_handler::handle_request(const request &req, reply &rep, modify_info
 		{
 			if (not_modified(full_path, req, rep, mInfo))
 			{
-				rep = reply::stock_reply(&rep, reply::not_modified);
+				rep = reply::stock_reply(reply::not_modified);
 				return;
 			}
 		}
