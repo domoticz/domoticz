@@ -26,10 +26,6 @@
 #define SHORT_SESSION_TIMEOUT 600 // 10 minutes
 #define LONG_SESSION_TIMEOUT (30 * 86400) // 30 days
 
-#ifdef _WIN32
-#define gmtime_r(timep, result) gmtime_s(result, timep)
-#endif
-
 #define websocket_protocol "domoticz"
 
 int m_failcounter = 0;
@@ -1731,37 +1727,6 @@ namespace http {
 
 			return std::any_of(myWebem->m_localnetworks.begin(), myWebem->m_localnetworks.end(),
 					   [&](const _tIPNetwork &my) { return IsIPInRange(sHost, my, bIsIPv6); });
-		}
-
-		constexpr std::array<const char *, 12> months{ "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" };
-		constexpr std::array<const char *, 7> wkdays{ "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat" };
-
-		char *make_web_time(const time_t rawtime)
-		{
-			static char buffer[256];
-			struct tm gmt;
-#ifdef _WIN32
-			if (gmtime_r(&rawtime, &gmt)) //windows returns errno_t, which returns zero when successful
-#else
-			if (gmtime_r(&rawtime, &gmt) == nullptr)
-#endif
-			{
-				strcpy(buffer, "Thu, 1 Jan 1970 00:00:00 GMT");
-			}
-			else
-			{
-				sprintf(buffer, "%s, %02d %s %04d %02d:%02d:%02d GMT",
-					wkdays[gmt.tm_wday],
-					gmt.tm_mday,
-					months[gmt.tm_mon],
-					gmt.tm_year + 1900,
-					gmt.tm_hour,
-					gmt.tm_min,
-					gmt.tm_sec);
-
-
-			}
-			return buffer;
 		}
 
 		std::string cWebemRequestHandler::generateSessionID()

@@ -1518,3 +1518,38 @@ std::string sha256raw(const std::string &input)
     SHA256((const unsigned char *)input.c_str(), input.length(), digest);
 	return std::string((const char *)digest);
 }
+
+#ifdef _WIN32
+#define gmtime_r(timep, result) gmtime_s(result, timep)
+#endif
+
+constexpr std::array<const char*, 12> months{ "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" };
+constexpr std::array<const char*, 7> wkdays{ "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat" };
+
+char* make_web_time(const time_t rawtime)
+{
+	static char buffer[256];
+	struct tm gmt;
+#ifdef _WIN32
+	if (gmtime_r(&rawtime, &gmt)) //windows returns errno_t, which returns zero when successful
+#else
+	if (gmtime_r(&rawtime, &gmt) == nullptr)
+#endif
+	{
+		strcpy(buffer, "Thu, 1 Jan 1970 00:00:00 GMT");
+	}
+	else
+	{
+		sprintf(buffer, "%s, %02d %s %04d %02d:%02d:%02d GMT",
+			wkdays[gmt.tm_wday],
+			gmt.tm_mday,
+			months[gmt.tm_mon],
+			gmt.tm_year + 1900,
+			gmt.tm_hour,
+			gmt.tm_min,
+			gmt.tm_sec);
+
+
+	}
+	return buffer;
+}
