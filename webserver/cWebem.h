@@ -247,6 +247,9 @@ namespace http
 			std::map<std::string, webem_page_function> myPages;
 			/// store map between pages and application functions
 			std::map<std::string, webem_page_function> myPages_w;
+
+			static bool isValidIP(std::string& ip);
+
 			void CleanSessions();
 			bool sumProxyHeader(const std::string &sHeader, const request &req, std::vector<std::string> &vHeaderLines);
 			bool parseProxyHeader(const std::vector<std::string> &vHeaderLines, std::vector<std::string> &vHosts);

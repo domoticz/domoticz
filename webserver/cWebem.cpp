@@ -1158,7 +1158,7 @@ namespace http {
 			m_session_clean_timer.async_wait([this](auto &&) { CleanSessions(); });
 		}
 
-		static bool isValidIP(std::string &ip)
+		bool cWebem::isValidIP(std::string &ip)
 		{
 			if (ip.empty())
 				return false;
