@@ -6317,13 +6317,14 @@ function WatchLiveSearch(){
 				var name=$(this).find('#name').html().toUpperCase();
 				var desc=$(this).find('#name').attr('data-desc');
 				var idx=$(this).find('#name').attr('data-idx');
+				var status=$(this).find('#name').attr('data-status').toUpperCase();
 				if(desc === undefined){
 					desc='';
 				}
 				desc=desc.toUpperCase();
 
 				var to_hide=$(this);
-				if ( (name.indexOf(query) > -1) || desc.indexOf(query) > -1 || idx.indexOf(query) > -1) {
+				if ( name.indexOf(query) > -1 || desc.indexOf(query) > -1 || idx.indexOf(query) > -1 || status.indexOf(query) > -1) {
 					to_hide.show();
 					to_hide.addClass('liveSearchShown');
 				}
