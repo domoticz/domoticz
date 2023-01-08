@@ -6289,7 +6289,7 @@ function RefreshLiveSearch(){
 
 /* Watch the LiveSearch INPUT field  */
 function WatchLiveSearch(){
-	if(_debug_livesearch) console.log('LiveSearch : Start Watching ...');
+	if(_debug_livesearch) console.log('LiveSearch: Start Watching ...');
 
 	$('.jsLiveSearch').off().on('keyup change',function(e){
 		if(_debug_livesearch)  console.log('LiveSearch: processing on keyup - "'+$(this).val()+'"');
@@ -6314,14 +6314,14 @@ function WatchLiveSearch(){
 			div.find('.clearfix').hide();  /* only for Wheater and Temperatures */
 
 			$('.itemBlock').each(function(index){
-				var name=$(this).find('#name').html().toUpperCase();
-				var desc=$(this).find('#name').attr('data-desc');
-				var idx=$(this).find('#name').attr('data-idx');
-				var status=$(this).find('#name').attr('data-status').toUpperCase();
-				if(desc === undefined){
-					desc='';
-				}
-				desc=desc.toUpperCase();
+				var name	=$(this).find('#name').html()				|| '';
+				var desc	=$(this).find('#name').attr('data-desc')	|| '';
+				var idx		=$(this).find('#name').attr('data-idx')		|| '';
+				var status	=$(this).find('#name').attr('data-status')	|| '';
+
+				name	=name.toUpperCase();
+				desc	=desc.toUpperCase();
+				status	=status.toUpperCase();
 
 				var to_hide=$(this);
 				if ( name.indexOf(query) > -1 || desc.indexOf(query) > -1 || idx.indexOf(query) > -1 || status.indexOf(query) > -1) {
