@@ -6290,6 +6290,7 @@ function RefreshLiveSearch(){
 /* Watches the LiveSearch INPUT field -------------------------------- */
 function WatchLiveSearch(){
 	if(_debug_livesearch) console.log('LiveSearch: Start Watching ...');
+	_tbDisplayResults(false,0);
 
 	/* Watches INPUT ++++++++++++++++++++ */
 	$('.jsLiveSearch').off().on('keyup change',function(e){
@@ -6298,9 +6299,12 @@ function WatchLiveSearch(){
 		var div		=$('.divider');
 		var cont	=$('.devicesList');
 		var items	=$('.itemBlock');
-		var cl_shown='liveSearchShown';
+		var cl_shown	='liveSearchShown';
+		var filt_search		=$(this).closest('.jsTbFiltSearch');
+		var cl_withres	='tbFiltSearchWithResults';
 
 		if(query.length == 0){
+			filt_search.removeClass(cl_withres);
 			if(cont.hasClass('devicesListFiltered')){
 				cont.removeClass('devicesListFiltered');
 				div.css('display','block');
@@ -6310,6 +6314,7 @@ function WatchLiveSearch(){
 			}
 		}
 		else{
+			filt_search.addClass(cl_withres);
 			if(! cont.hasClass('devicesListFiltered')){
 				cont.addClass('devicesListFiltered');
 				div.css('display','inline');
@@ -6339,8 +6344,36 @@ function WatchLiveSearch(){
 			});
 		}
 
+		var count   =$('.' + cl_shown).length;
+		if(_debug_livesearch)  console.log('LiveSearch: Found '+ count +' items');
+		_tbDisplayResults(count || query.length, count);
 	});
 
+	/* Watches Close icon ++++++++++++++++++++ */
+	$(".jsTbResultsClose,.jsTbResults").off().on('click',function(e) {
+		e.preventDefault();
+		if(_debug_livesearch)  console.log('LiveSearch: Close Clicked');
+		$('.jsLiveSearch').val('').trigger('change');
+	});
+}
+
+/* Toggle Results display ------------------------------------------ */
+function _tbDisplayResults(on, count){
+	if(on){
+		$('.jsTbSearch').hide();
+		$('.jsTbResults').show();
+		$('.jsTbResultsCount').html(_tbPadCount(count));
+	}
+	else{
+		$('.jsTbSearch').show();
+		$('.jsTbResults').hide();
+		$('.jsTbResultsCount').html('');
+	}
+}
+
+/* Pad Left with spaces ------------------------------------------- */
+function _tbPadCount(txt){
+	return String('xxx' + txt).slice(-4).replace(/x/g, '&nbsp;');
 }
 
 /* Display descriptions when hovering name ################################################################## */

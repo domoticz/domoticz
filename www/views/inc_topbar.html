@@ -1,7 +1,8 @@
 <div id="topBar">
 	<span id="tbFilters" ng-show="tb.hideFilters != true">
-		<span id="tbFiltSearch" ng-show="tb.hideSearch != true">
-			<span id="tbIconSearch" class="tbIcon"><i class="fa fa-search" title="Search"></i> </span>
+		<span id="tbFiltSearch" 	class="jsTbFiltSearch" ng-show="tb.hideSearch != true">
+			<span id="tbSearch"		class="tbIcon jsTbSearch"><i class="fa fa-search"></i> </span>
+			<span id="tbResults"	class="tbIcon jsTbResults" title="Clear Search Results"><i class="fa fa-circle-xmark"></i> <span class="tbResultsCount jsTbResultsCount"></span> </span>
 			<!-- <span data-i18n="Search"></span>&nbsp; -->
 			<input data-i18n="[placeholder]Name, Desc, Idx, Status" placeholder="Name, Desc, Idx, Status" type="search" class="livesearch jsLiveSearch">
 			<!-- 
