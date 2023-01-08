@@ -1158,6 +1158,54 @@ namespace http {
 			m_session_clean_timer.async_wait([this](auto &&) { CleanSessions(); });
 		}
 
+		bool cWebem::isValidIP(std::string &ip)
+		{
+			if (ip.empty())
+				return false;
+
+			std::string cleanIP = stdstring_trimws(ip);
+			bool bIsIPv6 = (cleanIP.find(':') != std::string::npos);
+			if (bIsIPv6)
+			{
+				// IPv6 addresses can be written as quoted strings and between brackets (See RFC5952)
+				if (cleanIP.find('"') != std::string::npos)
+				{
+					cleanIP = cleanIP.substr(1,cleanIP.size()-2);	// Remove quotes from begin and end
+				}
+				if (cleanIP.find('[') != std::string::npos)
+				{
+					cleanIP = cleanIP.substr(1,cleanIP.size()-2);	// Remove brackets from begin and end
+				}
+			}
+		#ifndef WIN32
+			else
+			{
+				// Convert from 'IPv4 numbers-and-dots notation' to 'IPv4 dotted-decimal notation' (or sometimes called: IPv4 dotted-quad notation)
+				struct in_addr addr;
+				if (inet_aton(cleanIP.c_str(), &addr) != 1)
+					return false;
+				char str[INET_ADDRSTRLEN];
+				if (inet_ntop(AF_INET, &addr, str, INET_ADDRSTRLEN) == nullptr)
+					return false;
+				cleanIP.assign(str);
+			}
+		#endif
+			uint8_t uiIP[16] = { 0 };
+			if (inet_pton((!bIsIPv6) ? AF_INET : AF_INET6, cleanIP.c_str(), &uiIP) == 1)
+			{
+				// It seems to be a valid IPv4 or IPv6, let's try to rewrite it to correct presentation format
+				char str[INET6_ADDRSTRLEN];
+				if (inet_ntop((!bIsIPv6) ? AF_INET : AF_INET6, &uiIP, str, INET6_ADDRSTRLEN) != nullptr)
+				{
+					cleanIP.assign(str);
+					ip = cleanIP;
+					return true;	// Valid IPv4 or IPv6 in presentation format
+				}
+			}
+
+			return false;
+		}
+
 		bool cWebem::findRealHostBehindProxies(const request &req, std::string &realhost)
 		{
 			// Checking for 3 possible headers (in order of handling)
@@ -1225,8 +1273,8 @@ namespace http {
 				StringSplit(sLine, ",", vLineParts);
 				for (std::string sPart : vLineParts)
 				{
-					stdstring_trimws(sPart);
-					vHosts.push_back(sPart);
+					if(isValidIP(sPart))
+						vHosts.push_back(sPart);
 				}
 			}
 
@@ -1251,8 +1299,8 @@ namespace http {
 							iePos = sPart.find(";", isPos);
 						}
 						std::string sSub = sPart.substr(isPos, (iePos - isPos));
-						stdstring_trimws(sSub);
-						vHosts.push_back(sSub);
+						if(isValidIP(sSub))
+							vHosts.push_back(sSub);
 					}
 				}
 			}
@@ -2394,7 +2442,7 @@ namespace http {
 			bool bUseRealHost = false;
 			if(!myWebem->findRealHostBehindProxies(req, realHost))
 			{
-				_log.Log(LOG_ERROR, "[web:%s]: Unable to determine origin due to different proxy headers being used (Or possible spoofing attempt), ignoring client request (remote address: %s)", myWebem->GetPort().c_str(), session.remote_host.c_str());
+				_log.Log(LOG_ERROR, "[web:%s]: Unable to determine origin due to improper proxy header(s) (values) being used (Possible spoofing attempt!?), dropping client request (remote address: %s)", myWebem->GetPort().c_str(), session.remote_host.c_str());
 				rep = reply::stock_reply(reply::forbidden);
 				return;
 			}

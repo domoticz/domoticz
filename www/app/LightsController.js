@@ -323,7 +323,7 @@ define(['app', 'livesocket'], function (app) {
 			var img3 = "";
 			var status = "";
 
-			console.log(item);
+			//console.log(item);
 
 			var bigtext = TranslateStatusShort(item.Status);
 			if (item.UsedByCamera == true) {
