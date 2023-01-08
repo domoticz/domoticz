@@ -6278,19 +6278,20 @@ function fromInstanceOrFunction(functionTemplate = f => f()) {
 }
 
 
-/* LiveSearch Functions: Filters devices when typing in the INPUT field ------------------------------- */
+/* LiveSearch Functions: Filters devices when typing in the INPUT field ##################################### */
 var _debug_livesearch= false;
 
-/* Triggers LiveSearch change  */
+/* Triggers LiveSearch change ----------------------------------  */
 function RefreshLiveSearch(){
 	if(_debug_livesearch) console.log('LiveSearch: Refreshing...');
 	$('.jsLiveSearch').trigger('change');
 }
 
-/* Watch the LiveSearch INPUT field  */
+/* Watches the LiveSearch INPUT field -------------------------------- */
 function WatchLiveSearch(){
 	if(_debug_livesearch) console.log('LiveSearch: Start Watching ...');
 
+	/* Watches INPUT ++++++++++++++++++++ */
 	$('.jsLiveSearch').off().on('keyup change',function(e){
 		if(_debug_livesearch)  console.log('LiveSearch: processing on keyup - "'+$(this).val()+'"');
 		var query	=$(this).val();
@@ -6304,7 +6305,7 @@ function WatchLiveSearch(){
 				cont.removeClass('devicesListFiltered');
 				div.css('display','block');
 				div.addClass('row');
-				div.find('.clearfix').show();
+				div.find('.clearfix').show(); /* only for Weather and Temperatures pages */
 				items.show().removeClass('liveSearchShown');	
 			}
 		}
@@ -6314,7 +6315,7 @@ function WatchLiveSearch(){
 				div.css('display','inline');
 			}
 			div.removeClass('row');
-			div.find('.clearfix').hide();  /* only for Wheater and Temperatures */
+			div.find('.clearfix').hide();  /* only for Weather and Temperatures pages */
 
 			items.each(function(index){
 				var name	=$(this).find('#name').html()				|| '';
@@ -6337,11 +6338,12 @@ function WatchLiveSearch(){
 				}
 			});
 		}
+
 	});
 
 }
 
-/* Display descriptions when hovering name ------------------------------------------------------------- */
+/* Display descriptions when hovering name ################################################################## */
 function WatchDescriptions(){
 	/* Show description when hovering item's name */
 	$(".item-name").hover(function() {
