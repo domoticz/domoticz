@@ -1344,8 +1344,8 @@ namespace http {
 
 			if (user.empty())
 			{
-				rep = reply::stock_reply(reply::unauthorized);
-				rep.status = reply::unauthorized;
+				rep = reply::stock_reply(reply::unauthorized, m_settings.is_secure());
+				reply::add_cors_headers(&rep);
 				char szAuthHeader[200];
 				sprintf(szAuthHeader,
 					"Basic "
@@ -1882,7 +1882,6 @@ namespace http {
 		void cWebemRequestHandler::send_authorization_request(reply& rep)
 		{
 			rep = reply::stock_reply(reply::unauthorized, myWebem->m_settings.is_secure());
-			rep.status = reply::unauthorized;
 			reply::add_cors_headers(&rep);
 			send_remove_cookie(rep);
 			if (myWebem->m_authmethod == AUTH_BASIC)
@@ -2255,39 +2254,17 @@ namespace http {
 
 				}
 				// invalid cookie
-				if (myWebem->m_authmethod != AUTH_BASIC)
-				{
-					if (CheckAuthByPass(req))
-						return true;
+				if (CheckAuthByPass(req))
+					return true;
 
-					// Force login form
-					return false;
-				}
+				// Force login form
+				return false;
 			}
 
 			// Not sure why this is here? Isn't this the case for all situation where the session ID is empty? Not only with admins
 			if ((session.rights == URIGHTS_ADMIN) && (session.id.empty()))
 			{
 				session.isnew = true;
-				return true;
-			}
-
-			if (myWebem->m_authmethod == AUTH_BASIC)
-			{
-				if (!authorize(session, req, rep))
-				{
-					if (m_failcounter > 0)
-					{
-						_log.Log(LOG_ERROR, "[web:%s] Failed authentication attempt, ignoring client request (remote address: %s)", myWebem->GetPort().c_str(), session.remote_host.c_str());
-					}
-					if (m_failcounter > 2)
-					{
-						m_failcounter = 0;
-						rep = reply::stock_reply(reply::service_unavailable);
-						return false;
-					}
-					return false;
-				}
 				return true;
 			}
 

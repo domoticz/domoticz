@@ -1154,11 +1154,6 @@ bool MainWorker::Start()
 		}
 	}
 	int nValue = 0;
-	if (m_sql.GetPreferencesVar("AuthenticationMethod", nValue))
-	{
-		m_webservers.SetAuthenticationMethod((http::server::_eAuthenticationMethod)nValue);
-	}
-	nValue = 0;
 	if (m_sql.GetPreferencesVar("AllowPlainBasicAuth", nValue))
 	{
 		m_webservers.SetAllowPlainBasicAuth(static_cast<bool>(nValue));

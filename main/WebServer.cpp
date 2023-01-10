@@ -769,13 +769,6 @@ namespace http
 			m_pWebEm->SetAllowPlainBasicAuth(allow);
 		}
 
-		void CWebServer::SetAuthenticationMethod(const _eAuthenticationMethod amethod)
-		{
-			if (m_pWebEm == nullptr)
-				return;
-			m_pWebEm->SetAuthenticationMethod(amethod);
-		}
-
 		void CWebServer::SetWebTheme(const std::string& themename)
 		{
 			if (m_pWebEm == nullptr)
@@ -8667,13 +8660,6 @@ namespace http
 				}
 				cntSettings++;
 
-				std::string AuthenticationMethod = request::findValue(&req, "AuthenticationMethod");
-				_eAuthenticationMethod amethod = (_eAuthenticationMethod)atoi(AuthenticationMethod.c_str());
-				m_sql.UpdatePreferencesVar("AuthenticationMethod", static_cast<int>(amethod));
-
-				m_pWebEm->SetAuthenticationMethod(amethod);
-				cntSettings++;
-
 				bool AllowPlainBasicAuth = (request::findValue(&req, "AllowPlainBasicAuth") == "on" ? 1 : 0);
 				m_sql.UpdatePreferencesVar("AllowPlainBasicAuth", AllowPlainBasicAuth);
 
@@ -13733,10 +13719,6 @@ namespace http
 				else if (Key == "WeightUnit")
 				{
 					root["WeightUnit"] = nValue;
-				}
-				else if (Key == "AuthenticationMethod")
-				{
-					root["AuthenticationMethod"] = nValue;
 				}
 				else if (Key == "AllowPlainBasicAuth")
 				{

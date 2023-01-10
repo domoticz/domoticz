@@ -40,7 +40,7 @@
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
 
-#define DB_VERSION 158
+#define DB_VERSION 159
 
 #define DEFAULT_ADMINUSER "admin"
 #define DEFAULT_ADMINPWD "domoticz"
@@ -3096,6 +3096,10 @@ bool CSQLHelper::OpenDatabase()
 			DeletePreferencesVar("EnableTabScenes");
 			DeletePreferencesVar("EnableTabFloorplans");
 		}
+		if (dbversion < 159)
+		{
+			DeletePreferencesVar("AuthenticationMethod");
+		}
 	}
 	else if (bNewInstall)
 	{
@@ -3348,11 +3352,6 @@ bool CSQLHelper::OpenDatabase()
 	if (!GetPreferencesVar("SecOnDelay", nValue))
 	{
 		UpdatePreferencesVar("SecOnDelay", 30);
-	}
-
-	if (!GetPreferencesVar("AuthenticationMethod", nValue))
-	{
-		UpdatePreferencesVar("AuthenticationMethod", 0);//AUTH_LOGIN=0, AUTH_BASIC=1
 	}
 	if (!GetPreferencesVar("ReleaseChannel", nValue))
 	{

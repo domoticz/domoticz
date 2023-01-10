@@ -542,9 +542,6 @@ define(['app'], function (app) {
 					document.title = sessionStorage.title;
 					$("#settingscontent #Title").val(sessionStorage.title);
 
-					if (typeof data.AuthenticationMethod != 'undefined') {
-						$("#webtable #comboauthmethod").val(data.AuthenticationMethod);
-					}
 					if (typeof data.AllowPlainBasicAuth != 'undefined') {
 						$("#webtable #AllowPlainBasicAuth").prop('checked', data.AllowPlainBasicAuth == 1);
 					}
