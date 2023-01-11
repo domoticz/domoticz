@@ -6278,66 +6278,105 @@ function fromInstanceOrFunction(functionTemplate = f => f()) {
 }
 
 
-/* LiveSearch Functions: Filters devices when typing in the INPUT field ------------------------------- */
+/* LiveSearch Functions: Filters devices when typing in the INPUT field ##################################### */
 var _debug_livesearch= false;
 
-/* Triggers LiveSearch change  */
+/* Triggers LiveSearch change ----------------------------------  */
 function RefreshLiveSearch(){
 	if(_debug_livesearch) console.log('LiveSearch: Refreshing...');
 	$('.jsLiveSearch').trigger('change');
 }
 
-/* Watch the LiveSearch INPUT field  */
+/* Watches the LiveSearch INPUT field -------------------------------- */
 function WatchLiveSearch(){
-	if(_debug_livesearch) console.log('LiveSearch : Start Watching ...');
+	if(_debug_livesearch) console.log('LiveSearch: Start Watching ...');
+	_tbDisplayResults(false,0);
 
+	/* Watches INPUT ++++++++++++++++++++ */
 	$('.jsLiveSearch').off().on('keyup change',function(e){
 		if(_debug_livesearch)  console.log('LiveSearch: processing on keyup - "'+$(this).val()+'"');
-		var query=$(this).val().toUpperCase();
-		var div=$('.divider');
-		var cont=$('.devicesList');
+		var query	=$(this).val();
+		var div		=$('.divider');
+		var cont	=$('.devicesList');
+		var items	=$('.itemBlock');
+		var cl_shown	='liveSearchShown';
+		var filt_search		=$(this).closest('.jsTbFiltSearch');
+		var cl_withres	='tbFiltSearchWithResults';
+
 		if(query.length == 0){
+			filt_search.removeClass(cl_withres);
 			if(cont.hasClass('devicesListFiltered')){
 				cont.removeClass('devicesListFiltered');
 				div.css('display','block');
 				div.addClass('row');
-				div.find('.clearfix').show();
-				$('.itemBlock').show().removeClass('liveSearchShown');	
+				div.find('.clearfix').show(); /* only for Weather and Temperatures pages */
+				items.show().removeClass('liveSearchShown');	
 			}
 		}
 		else{
+			filt_search.addClass(cl_withres);
 			if(! cont.hasClass('devicesListFiltered')){
 				cont.addClass('devicesListFiltered');
 				div.css('display','inline');
 			}
 			div.removeClass('row');
-			div.find('.clearfix').hide();  /* only for Wheater and Temperatures */
+			div.find('.clearfix').hide();  /* only for Weather and Temperatures pages */
 
-			$('.itemBlock').each(function(index){
-				var name=$(this).find('#name').html().toUpperCase();
-				var desc=$(this).find('#name').attr('data-desc');
-				var idx=$(this).find('#name').attr('data-idx');
-				if(desc === undefined){
-					desc='';
-				}
-				desc=desc.toUpperCase();
+			items.each(function(index){
+				var name	=$(this).find('#name').html()				|| '';
+				var desc	=$(this).find('#name').attr('data-desc')	|| '';
+				var idx		=$(this).find('#name').attr('data-idx')		|| '';
+				var status	=$(this).find('#name').attr('data-status')	|| '';
+
+				var safe_query=query.replace('\\','').replace('[','\\[').replace(']','\\]').replace('.','\\.')
+				var re		= new RegExp(safe_query, "mi");
+				//var re_s	= new RegExp('^'+safe_query, "i");
 
 				var to_hide=$(this);
-				if ( (name.indexOf(query) > -1) || desc.indexOf(query) > -1 || idx.indexOf(query) > -1) {
+				if ( re.test(name) || re.test(desc) || re.test(idx) || re.test(status) ) {
 					to_hide.show();
-					to_hide.addClass('liveSearchShown');
+					to_hide.addClass(cl_shown);
 				}
 				else{
 					to_hide.hide();
-					to_hide.removeClass('liveSearchShown');
+					to_hide.removeClass(cl_shown);
 				}
 			});
 		}
+
+		var count   =$('.' + cl_shown).length;
+		if(_debug_livesearch)  console.log('LiveSearch: Found '+ count +' items');
+		_tbDisplayResults(count || query.length, count);
 	});
 
+	/* Watches Close icon ++++++++++++++++++++ */
+	$(".jsTbResultsClose,.jsTbResults").off().on('click',function(e) {
+		e.preventDefault();
+		if(_debug_livesearch)  console.log('LiveSearch: Close Clicked');
+		$('.jsLiveSearch').val('').trigger('change');
+	});
 }
 
-/* Display descriptions when hovering name ------------------------------------------------------------- */
+/* Toggle Results display ------------------------------------------ */
+function _tbDisplayResults(on, count){
+	if(on){
+		$('.jsTbSearch').hide();
+		$('.jsTbResults').show();
+		$('.jsTbResultsCount').html(_tbPadCount(count));
+	}
+	else{
+		$('.jsTbSearch').show();
+		$('.jsTbResults').hide();
+		$('.jsTbResultsCount').html('');
+	}
+}
+
+/* Pad Left with spaces ------------------------------------------- */
+function _tbPadCount(txt){
+	return String('xxx' + txt).slice(-4).replace(/x/g, '&nbsp;');
+}
+
+/* Display descriptions when hovering name ################################################################## */
 function WatchDescriptions(){
 	/* Show description when hovering item's name */
 	$(".item-name").hover(function() {
