@@ -6330,10 +6330,10 @@ function WatchLiveSearch(){
 
 				var safe_query=query.replace('\\','').replace('[','\\[').replace(']','\\]').replace('.','\\.')
 				var re		= new RegExp(safe_query, "mi");
-				var re_s	= new RegExp('^'+safe_query, "i");
+				//var re_s	= new RegExp('^'+safe_query, "i");
 
 				var to_hide=$(this);
-				if ( re.test(name) || re.test(desc) || re.test(idx) || re_s.test(status) ) {
+				if ( re.test(name) || re.test(desc) || re.test(idx) || re.test(status) ) {
 					to_hide.show();
 					to_hide.addClass(cl_shown);
 				}
