@@ -14373,7 +14373,12 @@ namespace http
 											|| (atime <= lastTime)
 											)
 										{
-											//daylight change happened?, ignoring  for now
+											//daylight change happened, meter changed?, ignoring  for now
+											lastUsage1 = actUsage1;
+											lastUsage2 = actUsage2;
+											lastDeliv1 = actDeliv1;
+											lastDeliv2 = actDeliv2;
+											lastTime = atime;
 											continue;
 										}
 
