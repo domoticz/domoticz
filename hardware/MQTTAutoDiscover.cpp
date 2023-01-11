@@ -1251,16 +1251,19 @@ void MQTTAutoDiscover::handle_auto_discovery_sensor_message(const struct mosquit
 					pSensor->BatteryLevel = root["battery"].asInt();
 				}
 
-				std::string value_template = pSensor->value_template;
-				if (!value_template.empty())
+				if (!pSensor->position_template.empty())
 				{
-					szValue = GetValueFromTemplate(root, value_template);
+					szValue = GetValueFromTemplate(root, pSensor->position_template);
+				}
+				else if (!pSensor->value_template.empty())
+				{
+					szValue = GetValueFromTemplate(root, pSensor->value_template);
 					if (szValue.empty())
 					{
 						// key not found!
 						continue;
 					}
-					if (value_template.find("RSSI") != std::string::npos)
+					if (pSensor->value_template.find("RSSI") != std::string::npos)
 					{
 						pSensor->SignalLevel = (int)round((10.0F / 255.0F) * atof(szValue.c_str()));
 						ApplySignalLevelDevice(pSensor);
