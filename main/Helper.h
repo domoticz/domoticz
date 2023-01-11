@@ -143,3 +143,5 @@ const std::string std_format(const char *szFormat, ...);
 
 std::string sha256hex(const std::string &input);
 std::string sha256raw(const std::string &input);
+
+char* make_web_time(const time_t rawtime);

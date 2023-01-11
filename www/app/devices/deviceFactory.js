@@ -104,7 +104,7 @@ define(function () {
                 var options = [];
                 var step = step || 5;
 
-                for (var i = step; i <= 100; i += step) {
+                for (var i = 0; i <= 100; i += step) {
                     options.push({
                         label: i + '%',
                         value: i

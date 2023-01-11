@@ -1251,16 +1251,19 @@ void MQTTAutoDiscover::handle_auto_discovery_sensor_message(const struct mosquit
 					pSensor->BatteryLevel = root["battery"].asInt();
 				}
 
-				std::string value_template = pSensor->value_template;
-				if (!value_template.empty())
+				if (!pSensor->position_template.empty())
 				{
-					szValue = GetValueFromTemplate(root, value_template);
+					szValue = GetValueFromTemplate(root, pSensor->position_template);
+				}
+				else if (!pSensor->value_template.empty())
+				{
+					szValue = GetValueFromTemplate(root, pSensor->value_template);
 					if (szValue.empty())
 					{
 						// key not found!
 						continue;
 					}
-					if (value_template.find("RSSI") != std::string::npos)
+					if (pSensor->value_template.find("RSSI") != std::string::npos)
 					{
 						pSensor->SignalLevel = (int)round((10.0F / 255.0F) * atof(szValue.c_str()));
 						ApplySignalLevelDevice(pSensor);
@@ -1952,6 +1955,15 @@ void MQTTAutoDiscover::handle_auto_discovery_sensor(_tMQTTASensor* pSensor, cons
 			//it's a standalone sensor, or a configuration option that should not have been specified as a 'sensor'
 			//for now, we assume the later and ignore this
 			return; //else do nothing
+		}
+		else if (
+			(pSensor->object_id.find("dew_point") != std::string::npos)
+			|| (pSensor->state_topic.find("Dew_point") != std::string::npos)
+			)
+		{
+			//this is a dew-point sensor, threat is as stand-alone
+			pHumSensor = nullptr;
+			pBaroSensor = nullptr;
 		}
 		else
 		{

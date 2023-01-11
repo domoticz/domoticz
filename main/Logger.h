@@ -98,6 +98,8 @@ class CLogger
 	std::list<_tLogLineStruct> GetNotificationLogs();
 	bool NotificationLogsEnabled();
 
+    void SetFilter(const std::string& pFilter);
+    bool CheckIfMessageIsFiltered(const char* cbuffer);
       private:
 	uint32_t m_log_flags;
 	uint32_t m_debug_flags;
@@ -116,5 +118,7 @@ class CLogger
 	bool m_bEnableErrorsToNotificationSystem;
 	time_t m_LastLogNotificationsSend;
 	std::stringstream m_sequencestring;
+    std::vector<std::string> FilterStringList; //list of keyword to filter
+    std::vector<std::string> KeepStringList;   //list of keyword to keep
 };
 extern CLogger _log;

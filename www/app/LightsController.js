@@ -323,7 +323,7 @@ define(['app', 'livesocket'], function (app) {
 			var img3 = "";
 			var status = "";
 
-			console.log(item);
+			//console.log(item);
 
 			var bigtext = TranslateStatusShort(item.Status);
 			if (item.UsedByCamera == true) {
@@ -797,14 +797,16 @@ define(['app', 'livesocket'], function (app) {
 								xhtm += '\t    <table id="itemtablenostatus" border="0" cellpadding="0" cellspacing="0">\n';
 							}
 
-							xhtm +=
-								'\t    <tr>\n' +
-								'\t      <td id="name" class="item-name" data-desc="'+item.Description.replace('"',"'")+'">' + item.Name +'</td>\n' +
-								'\t      <td id="bigtext">';
 							var bigtext = TranslateStatusShort(item.Status);
 							if (item.SwitchType === "Selector" || item.SubType == "Evohome") {
 								bigtext = GetLightStatusText(item);
 							}
+
+							xhtm +=
+								'\t    <tr>\n' +
+								'\t      <td id="name" class="item-name" data-idx="'+item.idx+'" data-desc="'+item.Description.replace('"',"'")+'" data-status="'+bigtext+'">' + item.Name +'</td>\n' +
+								'\t      <td id="bigtext">';
+
 							if (item.UsedByCamera == true) {
 								var streamimg = '<img src="images/webcam.png" title="' + $.t('Stream Video') + '" height="16" width="16">';
 								var streamurl = "<a href=\"javascript:ShowCameraLiveStream('" + escape(item.Name) + "'," + item.CameraIdx + "," + item.CameraAspect + ")\">" + streamimg + "</a>";

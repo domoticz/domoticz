@@ -18,7 +18,6 @@ namespace http {
 			void StopServers();
 			void SetWebCompressionMode(_eWebCompressionMode gzmode);
 			void SetAllowPlainBasicAuth(const bool allow);
-			void SetAuthenticationMethod(_eAuthenticationMethod amethod);
 			void SetWebTheme(const std::string &themename);
 			void SetWebRoot(const std::string &webRoot);
 			void LoadUsers();

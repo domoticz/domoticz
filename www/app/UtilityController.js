@@ -572,75 +572,77 @@ define(['app', 'livesocket','app/virtualThermostat.js'], function (app) {
 								'\t    <table id="itemtable" border="0" cellpadding="0" cellspacing="0">\n' +
 								'\t    <tr>\n';
 
-							xhtm += '\t      <td id="name" class="item-name" data-desc="'+item.Description.replace('"',"'")+'">' + item.Name + '</td>\n';
-							xhtm += '\t      <td id="bigtext">';
+							var bigtext='';
+
 							if ((typeof item.Usage != 'undefined') && (typeof item.UsageDeliv == 'undefined')) {
-								xhtm += item.Usage;
+								bigtext += item.Usage;
 							}
 							else if ((typeof item.Usage != 'undefined') && (typeof item.UsageDeliv != 'undefined')) {
 								if ((item.UsageDeliv.charAt(0) == 0) || (parseInt(item.Usage) != 0)) {
-									xhtm += item.Usage;
+									bigtext += item.Usage;
 								}
 								if (item.UsageDeliv.charAt(0) != 0) {
-									xhtm += '-' + item.UsageDeliv;
+									bigtext += '-' + item.UsageDeliv;
 								}
 							}
 							else if ((item.SubType == "Gas") || (item.SubType == "RFXMeter counter") || (item.SubType == "Counter Incremental")) {
-								xhtm += item.CounterToday;
+								bigtext += item.CounterToday;
 							}
 							else if (item.SubType == "Managed Counter") {
-								xhtm += item.Counter;
+								bigtext += item.Counter;
 							}
 							else if (item.Type == "Air Quality") {
-								xhtm += item.Data;
+								bigtext += item.Data;
 							}
 							else if (item.SubType == "Custom Sensor") {
-								xhtm += item.Data;
+								bigtext += item.Data;
 							}
 							else if (item.Type == "Current") {
-								xhtm += item.Data;
+								bigtext += item.Data;
 							}
 							else if (item.SubType == "Percentage") {
-								xhtm += item.Data;
+								bigtext += item.Data;
 							}
 							else if (item.SubType == "Fan") {
-								xhtm += item.Data;
+								bigtext += item.Data;
 							}
 							else if (item.SubType == "Soil Moisture") {
-								xhtm += item.Data;
+								bigtext += item.Data;
 							}
 							else if (item.SubType == "Leaf Wetness") {
-								xhtm += item.Data;
+								bigtext += item.Data;
 							}
 							else if ((item.SubType == "Voltage") || (item.SubType == "Current") || (item.SubType == "Distance") || (item.SubType == "A/D") || (item.SubType == "Pressure") || (item.SubType == "Sound Level")) {
-								xhtm += item.Data;
+								bigtext += item.Data;
 							}
 							else if (item.Type == "Lux") {
-								xhtm += item.Data;
+								bigtext += item.Data;
 							}
 							else if (item.Type == "Weight") {
-								xhtm += item.Data;
+								bigtext += item.Data;
 							}
 							else if (item.Type == "Usage") {
-								xhtm += item.Data;
+								bigtext += item.Data;
 							}
 							else if (item.Type == "Thermostat") {
-								xhtm += GetThermostatBigText(item,$scope.config.TempSign);
+								bigtext += GetThermostatBigText(item,$scope.config.TempSign);
 								status = GetThermostatStatus(item);
 							}
 							else if (item.SubType == "Waterflow") {
-								xhtm += item.Data;
+								bigtext += item.Data;
 							}
 							else if (item.SubType == "Thermostat Mode") {
-								xhtm += item.Data;
+								bigtext += item.Data;
 							}
 							else if (item.SubType == "Thermostat Operating State") {
-								xhtm += item.Data;
+								bigtext += item.Data;
 							}
 							else if (item.SubType == "Thermostat Fan Mode") {
-								xhtm += item.Data;
+								bigtext += item.Data;
 							}
 							
+							xhtm += '\t      <td id="name" class="item-name" data-idx="'+item.idx+'" data-desc="'+item.Description.replace('"',"'")+'" data-status="'+bigtext+'">' + item.Name + '</td>\n';
+							xhtm += '\t      <td id="bigtext">'+bigtext;							
 							xhtm += '</td>\n';
 							xhtm += '\t      <td id="img">';
 							if (typeof item.Counter != 'undefined') {

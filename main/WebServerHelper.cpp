@@ -70,14 +70,6 @@ namespace http {
 			}
 		}
 
-		void CWebServerHelper::SetAuthenticationMethod(const _eAuthenticationMethod amethod)
-		{
-			for (auto &it : serverCollection)
-			{
-				it->SetAuthenticationMethod(amethod);
-			}
-		}
-
 		void CWebServerHelper::SetWebTheme(const std::string &themename)
 		{
 			for (auto &it : serverCollection)

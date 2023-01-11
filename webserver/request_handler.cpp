@@ -25,6 +25,8 @@
 	#include <iowin32.h>
 #endif
 
+#include "../main/appversion.h"
+#include "../main/Helper.h"
 #include "../main/Logger.h"
 
 #define ZIPREADBUFFERSIZE (8192)
@@ -183,7 +185,10 @@ bool request_handler::not_modified(const std::string &full_path, const request &
 	}
 	mInfo.mtime_support = true;
 	// propagate timestamp to browser
-	reply::add_header(&rep, "Last-Modified", convert_to_http_date(mInfo.last_written));
+	reply::add_header(&rep, "Date", make_web_time(mytime(nullptr)), true);
+	reply::add_header(&rep, "ETag", ETAG_VERSION_STRING, true);
+	reply::add_header(&rep, "Last-Modified", make_web_time(mInfo.last_written));
+
 	const char *if_modified = request::get_req_header(&req, "If-Modified-Since");
 	if (nullptr == if_modified)
 	{
@@ -294,6 +299,19 @@ void request_handler::handle_request(const request &req, reply &rep, modify_info
 	// ------------
 	// So we have what seems a valid request and established the extension
 	// Let's try to process it
+
+	const char* if_none_match = request::get_req_header(&req, "If-None-Match");
+	if (if_none_match != nullptr)
+	{
+		//check if etag matches current tag
+		if (strcmp(if_none_match, ETAG_VERSION_STRING) == 0)
+		{
+			//nothing changed
+			rep = reply::stock_reply(reply::not_modified);
+			return;
+		}
+	}
+
 
 	// Determine if the Client (Browser) supports a gzip'ped response body
 	bool bClientHasGZipSupport = false;
@@ -463,7 +481,8 @@ void request_handler::handle_request(const request &req, reply &rep, modify_info
 	else if (mime_types::extension_to_type(extension).find("image/") != std::string::npos)
 	{
 		//Cache images
-		reply::add_header(&rep, "Expires", convert_to_http_date(mytime(nullptr) + 3600 * 24 * 90)); // 3 months
+		//reply::add_header(&rep, "Expires", convert_to_http_date(mytime(nullptr) + 3600 * 24 * 90)); // 3 months
+		reply::add_header(&rep, "Cache-Control", "public,max-age: 3600,s-maxage=604800,must-revalidate");
 	}
 
 	reply::add_header_content_type(&rep, mime_types::extension_to_type(extension));

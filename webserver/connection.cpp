@@ -13,9 +13,9 @@
 #include "connection_manager.hpp"
 #include "request_handler.hpp"
 #include "mime_types.hpp"
+#include "../main/Helper.h"
 #include "../main/localtime_r.h"
 #include "../main/Logger.h"
-#include "../main/Helper.h"
 
 namespace http {
 	namespace server {
@@ -320,8 +320,8 @@ namespace http {
 
 			reply::add_header(&rep, "Cache-Control", "max-age=0, private");
 			reply::add_header(&rep, "Accept-Ranges", "bytes");
-			reply::add_header(&rep, "Date", convert_to_http_date(time(nullptr)));
-			reply::add_header(&rep, "Last-Modified", convert_to_http_date(ftime));
+			reply::add_header(&rep, "Date", make_web_time(time(nullptr)));
+			reply::add_header(&rep, "Last-Modified", make_web_time(ftime));
 			reply::add_header(&rep, "Server", "Apache/2.2.22");
 
 			std::size_t last_dot_pos = filename.find_last_of('.');

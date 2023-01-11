@@ -769,13 +769,6 @@ namespace http
 			m_pWebEm->SetAllowPlainBasicAuth(allow);
 		}
 
-		void CWebServer::SetAuthenticationMethod(const _eAuthenticationMethod amethod)
-		{
-			if (m_pWebEm == nullptr)
-				return;
-			m_pWebEm->SetAuthenticationMethod(amethod);
-		}
-
 		void CWebServer::SetWebTheme(const std::string& themename)
 		{
 			if (m_pWebEm == nullptr)
@@ -6875,7 +6868,7 @@ namespace http
 							root["message"] = "Cannot change rights of last Admin user!";
 							return;
 						}
-						if ((senabled.compare("true") != 0) && (CountAdminUsers() <= 1))
+						if ((oldrights == URIGHTS_ADMIN) && (senabled.compare("true") != 0) && (CountAdminUsers() <= 1))
 						{
 							root["message"] = "Cannot disable last Admin user!";
 							return;
@@ -8673,13 +8666,6 @@ namespace http
 					m_sql.UpdatePreferencesVar("Location", LatLong);
 					m_mainworker.GetSunSettings();
 				}
-				cntSettings++;
-
-				std::string AuthenticationMethod = request::findValue(&req, "AuthenticationMethod");
-				_eAuthenticationMethod amethod = (_eAuthenticationMethod)atoi(AuthenticationMethod.c_str());
-				m_sql.UpdatePreferencesVar("AuthenticationMethod", static_cast<int>(amethod));
-
-				m_pWebEm->SetAuthenticationMethod(amethod);
 				cntSettings++;
 
 				bool AllowPlainBasicAuth = (request::findValue(&req, "AllowPlainBasicAuth") == "on" ? 1 : 0);
@@ -13757,10 +13743,6 @@ namespace http
 				{
 					root["WeightUnit"] = nValue;
 				}
-				else if (Key == "AuthenticationMethod")
-				{
-					root["AuthenticationMethod"] = nValue;
-				}
 				else if (Key == "AllowPlainBasicAuth")
 				{
 					root["AllowPlainBasicAuth"] = nValue;
@@ -14414,7 +14396,12 @@ namespace http
 											|| (atime <= lastTime)
 											)
 										{
-											//daylight change happened?, ignoring  for now
+											//daylight change happened, meter changed?, ignoring  for now
+											lastUsage1 = actUsage1;
+											lastUsage2 = actUsage2;
+											lastDeliv1 = actDeliv1;
+											lastDeliv2 = actDeliv2;
+											lastTime = atime;
 											continue;
 										}
 

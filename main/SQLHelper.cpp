@@ -41,7 +41,7 @@
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
 
-#define DB_VERSION 158
+#define DB_VERSION 159
 
 #define DEFAULT_ADMINUSER "admin"
 #define DEFAULT_ADMINPWD "domoticz"
@@ -3054,6 +3054,9 @@ bool CSQLHelper::OpenDatabase()
 		}
 		if (dbversion < 157)
 		{
+			// Step 1: Migrate this 'Admin User' from Preferences to a real User with Admin rights
+			// Either insert a new User or Update an existing User with the same name to Admin or skip
+			// And remove the old Preference variables
 			std::string WebUserName, WebPassword;
 			int nValue;
 			if (GetPreferencesVar("WebUserName", nValue, WebUserName))
@@ -3062,21 +3065,49 @@ bool CSQLHelper::OpenDatabase()
 				{
 					if (!WebUserName.empty() && !WebPassword.empty())
 					{
-						// Add this User to the Users table
-						safe_query("INSERT INTO Users (Active, Username, Password, Rights, TabsEnabled) VALUES (1, '%s', '%s', %d, 0x1F)", WebUserName.c_str(), WebPassword.c_str(), http::server::URIGHTS_ADMIN);
+						result = safe_query("SELECT ROWID, Active, Rights FROM Users WHERE Username='%s'", WebUserName.c_str());
+						if (result.empty())
+						{
+							// Add this User to the Users table as no User with this name exists
+							safe_query("INSERT INTO Users (Active, Username, Password, Rights, TabsEnabled) VALUES (1, '%s', '%s', %d, 0x1F)", WebUserName.c_str(), WebPassword.c_str(), http::server::URIGHTS_ADMIN);
+						}
+						else
+						{
+							nValue = atoi(result[0][0].c_str());	// RowID
+							int iActive = atoi(result[0][1].c_str());
+							int iRights = atoi(result[0][2].c_str());
+							if (iActive != 1 || iRights != http::server::URIGHTS_ADMIN)
+							{
+								// Although there already is a User with the same Username as the WebUserName
+								// this User is not an Admin and/or is not Active so cannot be used if we don't update it
+								safe_query("UPDATE Users SET Password='%s', Active=1, Rights=%d WHERE ROWID=%d", WebPassword.c_str(), http::server::URIGHTS_ADMIN, nValue);
+							}
+						}
 					}
 				}
 				// Remove these Pref vars as we do not use them anymore
 				DeletePreferencesVar("WebPassword");
-				DeletePreferencesVar("WebUsername");
+				DeletePreferencesVar("WebUserName");
 			}
-			result = safe_query("SELECT COUNT(*) FROM Users WHERE Rights=%d", http::server::URIGHTS_ADMIN);
+			// Step 2: Make sure that there is at least 1 active Admin user otherwise no-one can maintain the User administration
+			// If no User exists with Admin right, a default 'admin' is inserted
+			// and any already existing user called 'admin' is renamed to 'admin_old'
+			result = safe_query("SELECT COUNT(*) FROM Users WHERE Active=1 AND Rights=%d", http::server::URIGHTS_ADMIN);
 			if(!result.empty())
 			{
 				nValue = atoi(result[0][0].c_str());
 				if (nValue == 0)
 				{
-					// Add a default Admin User as no admin users exist
+					result = safe_query("SELECT ROWID FROM Users WHERE Username='%s'", base64_encode(DEFAULT_ADMINUSER).c_str());
+					if (!result.empty())
+					{
+						// There is already a User called Admin but apparently either not Active and/or with Admin privileges
+						nValue = atoi(result[0][0].c_str());
+						std::string oldUserName = DEFAULT_ADMINUSER;
+						oldUserName.append("_old");
+						safe_query("UPDATE Users SET Username='%s' WHERE ROWID='%d'", base64_encode(oldUserName).c_str(), nValue);
+					}
+					// Add a default Admin User as no active users with Admin priviliges exist
 					safe_query("INSERT INTO Users (Active, Username, Password, Rights, TabsEnabled) VALUES (1, '%s', '%s', %d, 0x1F)", base64_encode(DEFAULT_ADMINUSER).c_str(), GenerateMD5Hash(DEFAULT_ADMINPWD).c_str(), http::server::URIGHTS_ADMIN);
 					_log.Log(LOG_STATUS, "A default admin User called 'admin' has been added with a default password!");
 				}
@@ -3092,6 +3123,10 @@ bool CSQLHelper::OpenDatabase()
 			DeletePreferencesVar("EnableTabCustom");
 			DeletePreferencesVar("EnableTabScenes");
 			DeletePreferencesVar("EnableTabFloorplans");
+		}
+		if (dbversion < 159)
+		{
+			DeletePreferencesVar("AuthenticationMethod");
 		}
 	}
 	else if (bNewInstall)
@@ -3345,11 +3380,6 @@ bool CSQLHelper::OpenDatabase()
 	if (!GetPreferencesVar("SecOnDelay", nValue))
 	{
 		UpdatePreferencesVar("SecOnDelay", 30);
-	}
-
-	if (!GetPreferencesVar("AuthenticationMethod", nValue))
-	{
-		UpdatePreferencesVar("AuthenticationMethod", 0);//AUTH_LOGIN=0, AUTH_BASIC=1
 	}
 	if (!GetPreferencesVar("ReleaseChannel", nValue))
 	{

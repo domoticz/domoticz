@@ -1779,6 +1779,9 @@ span.evomobile {
 	-moz-border-radius: 7px;
 	-webkit-border-radius: 7px;
 }
+#tbFiltSearch.tbFiltSearchWithResults INPUT{
+	width:115px;
+}
 
 #tbFiltSearch INPUT:focus{
 	background-color: rgb(40, 55, 80);
@@ -1787,6 +1790,19 @@ span.evomobile {
 	border-color: rgba(200, 200, 255,0.3);
 	box-shadow: none;
 	-webkit-box-shadow: none;
+}
+#tbResults .fa{
+	opacity: 0.5;
+}
+#tbResults:hover .fa{
+	opacity: 1;
+}
+.tbResultsCount{
+	font-family: 'Courier New', Courier, monospace;
+	font-size: 9px;
+	vertical-align: middle;
+	display: inline-block;
+	width: 22px;
 }
 
 #tbFiltRooms{

@@ -258,6 +258,8 @@ void CLogger::Log(const _eLogLevel level, const char *logline, ...)
 	va_start(argList, logline);
 	vsnprintf(cbuffer, sizeof(cbuffer), logline, argList);
 	va_end(argList);
+	if (CheckIfMessageIsFiltered(cbuffer))
+		return;
 
 #ifndef WIN32
 	if (g_bUseSyslog)
@@ -436,7 +438,7 @@ void CLogger::LogSequenceAdd(const char *logline)
 	if (!m_bInSequenceMode)
 		return;
 
-	m_sequencestring << logline << std::endl;
+	m_sequencestring << logline << " ";
 }
 
 void CLogger::LogSequenceAddNoLF(const char *logline)
@@ -503,4 +505,55 @@ std::list<CLogger::_tLogLineStruct> CLogger::GetNotificationLogs()
 bool CLogger::NotificationLogsEnabled()
 {
 	return m_bEnableErrorsToNotificationSystem;
+}
+void CLogger::SetFilter(const std::string  &pFilter)
+{
+	std::vector<std::string> FilterList;
+    _log.Log(LOG_STATUS, "debugfilter:%s", pFilter.c_str());
+	FilterStringList.clear();
+	KeepStringList.clear();
+	StringSplit(pFilter, ";", FilterList);
+	for (size_t i = 0; i < FilterList.size(); i++)
+	{
+		if (FilterList[i][0] == '+')
+			KeepStringList.push_back(FilterList[i].substr(1));
+		else
+			FilterStringList.push_back(FilterList[i]);
+	}
+}
+
+//return true if the log shall be filtered
+//
+bool CLogger::CheckIfMessageIsFiltered(const char *cbuffer)
+{
+	bool filtered = false; //default not filtered
+
+	//search if the log shall be filter
+	for (size_t i = 0; i < FilterStringList.size(); i++)
+	{
+		if ( FilterStringList[i] == "all" )
+		{
+			filtered = true;
+			break;
+		}
+
+		if (strstr(cbuffer, FilterStringList[i].c_str()) != 0)
+		{
+			filtered = true;
+			break;
+		}
+	}
+	//if the log as been filtered , search if it shall be kept
+	if (filtered)
+	{
+		for (size_t i = 0; i < KeepStringList.size(); i++)
+		{
+			if (strstr(cbuffer, KeepStringList[i].c_str()) != 0)
+			{
+				filtered = false;
+				break;
+			}
+		}
+	}
+	return filtered;
 }
