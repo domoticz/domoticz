@@ -46,44 +46,7 @@ BOOL console::IsConsoleVisible()
 		return false;
 	return IsWindowVisible(hWnd);
 }
-void consoleReDim( unsigned width, unsigned height )
-    {
-    SMALL_RECT r;
-    COORD      c;
-    HANDLE                     hConOut;
-    CONSOLE_SCREEN_BUFFER_INFO csbi;
 
-    hConOut = GetStdHandle( STD_OUTPUT_HANDLE );
-    if (!GetConsoleScreenBufferInfo( hConOut, &csbi ))
-		return;
-    r.Left   =
-    r.Top    = 0;
-    r.Right  = width -1;
-    r.Bottom = height -1;
-    
-    c.X = width;
-    c.Y = height*40;
-    SetConsoleScreenBufferSize( hConOut, c );
-
-	SetConsoleWindowInfo( hConOut, TRUE, &r );
-
-/*	CONSOLE_HISTORY_INFO ConsoleHistoryInfo ;
-    ConsoleHistoryInfo.cbSize = sizeof(CONSOLE_HISTORY_INFO);
-
-
-	ConsoleHistoryInfo.HistoryBufferSize=1000;
-	ConsoleHistoryInfo.NumberOfHistoryBuffers=1;
-	ConsoleHistoryInfo.dwFlags=0;
-
-	SetConsoleHistoryInfo(  &ConsoleHistoryInfo	);
-*/
-
-
-	//SetConsoleDisplayMode(hConOut,CONSOLE_WINDOWED_MODE, &c);
-
-    }
-
-  
 BOOL console::SetConsoleWindowSize(const SHORT x, const SHORT y)
 {
 	HANDLE h = GetStdHandle(STD_OUTPUT_HANDLE);
@@ -155,7 +118,7 @@ void console::OpenHideConsole()
 	HWND hwnd = GetConsoleWindow();
 	HMENU hmenu = GetSystemMenu (hwnd, FALSE);
 	//HINSTANCE hinstance = (HINSTANCE) GetWindowLong (hwnd, GWL_HINSTANCE);
-//	while (DeleteMenu (hmenu, 0, MF_BYPOSITION))
+	while (DeleteMenu (hmenu, 0, MF_BYPOSITION))
 		;
 	// redirect std::cout to our console window
 	m_old_cout = std::cout.rdbuf();
@@ -172,31 +135,10 @@ void console::OpenHideConsole()
 	m_in.open("CONIN$");
 	std::cin.rdbuf(m_in.rdbuf());
 	
-	SetConsoleWindowSize(200, 30);
+	SetConsoleWindowSize(140, 30);
 
 	SetConsoleTitle("Domoticz Home Automation System");
-	consoleReDim(1000,100);
-
-    HANDLE hStdin;
-    DWORD fdwSaveOldMode;
-    hStdin = GetStdHandle(STD_INPUT_HANDLE);
-    if (hStdin == INVALID_HANDLE_VALUE)
-        return;
-    // Save the current input mode, to be restored on exit.
-
-    if (! GetConsoleMode(hStdin, &fdwSaveOldMode) )
-        return;
-
-    // Enable the window and mouse input events.
-
-    fdwSaveOldMode |= ENABLE_WINDOW_INPUT | ENABLE_MOUSE_INPUT | ENABLE_QUICK_EDIT_MODE | ENABLE_EXTENDED_FLAGS ;
-    if (! SetConsoleMode(hStdin, fdwSaveOldMode) )
-        return;
-
- HWND  hwin = GetConsoleWindow();
-long dwStyle = GetWindowLong(hwin, GWL_STYLE);
-    dwStyle |=WS_SIZEBOX;
-    SetWindowLong(hwin, GWL_STYLE, dwStyle);}
+}
 
 console myconsole;
 
@@ -303,11 +245,6 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		TrayMessage(NIM_DELETE, NULL);
 		PostQuitMessage(0);
 		break;
-
-  case WM_SIZE:
-            /* hwndEdit is the handle of the edit control window */
-            MoveWindow(hwnd, 0, 0, LOWORD(lParam), HIWORD(lParam), TRUE);
-            return 0;
 	default:
 		return DefWindowProc(hwnd, msg, wParam, lParam);
 	}
@@ -321,7 +258,7 @@ bool InitWindowsHelper(HINSTANCE hInstance, HINSTANCE hPrevInstance, int nShowCm
 
 	//Step 1: Registering the Window Class
 	wc.cbSize        = sizeof(WNDCLASSEX);
-	wc.style         = CS_HREDRAW | CS_VREDRAW;
+	wc.style         = 0;
 	wc.lpfnWndProc   = WndProc;
 	wc.cbClsExtra    = 0;
 	wc.cbWndExtra    = 0;
@@ -341,12 +278,12 @@ bool InitWindowsHelper(HINSTANCE hInstance, HINSTANCE hPrevInstance, int nShowCm
 	}
 
 	// Step 2: Creating the Window
-	g_hWnd = CreateWindow(
-//		WS_EX_CLIENTEDGE,
+	g_hWnd = CreateWindowEx(
+		WS_EX_CLIENTEDGE,
 		g_szClassName,
 		"Domoticz Home Automation",
 		WS_OVERLAPPEDWINDOW,
-		CW_USEDEFAULT, CW_USEDEFAULT, 1200, 600,
+		CW_USEDEFAULT, CW_USEDEFAULT, 340, 20,
 		NULL, NULL, hInstance, NULL);
 
 	if(g_hWnd == NULL)
@@ -366,13 +303,6 @@ bool InitWindowsHelper(HINSTANCE hInstance, HINSTANCE hPrevInstance, int nShowCm
 		ShellExecute(NULL, "open", szURL, NULL, NULL, SW_SHOWNORMAL);
 	}
 #endif
-//SetWindowLong(g_hWnd, GWL_STYLE, WS_SIZEBOX);
-// See remarks on http://msdn.microsoft.com/en-us/library/windows/desktop/ms633545.aspx
-/*
-SetWindowPos(g_hWnd, 0, 
-   0, 0, 0, 0, // Position + Size
-   SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_FRAMECHANGED);
-	 */
 	return true;
 }
 
