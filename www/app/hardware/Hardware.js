@@ -816,7 +816,6 @@ define(['app'], function (app) {
 				(text.indexOf("MySensors Gateway with MQTT") >= 0) ||
 				(text.indexOf("Razberry") >= 0)
 			) {
-				alert("AAA");
 				var address = $("#hardwarecontent #divremote #tcpaddress").val();
 				if (address == "") {
 					ShowNotify($.t('Please enter an Address!'), 2500, true);
