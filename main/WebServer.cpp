@@ -9998,8 +9998,7 @@ namespace http
 						root["result"][ii]["LevelNames"] = base64_encode(levelNames);
 						root["result"][ii]["LevelActions"] = base64_encode(levelActions);
 					}
-					sprintf(szData, "%s", lstatus.c_str());
-					root["result"][ii]["Data"] = szData;
+					root["result"][ii]["Data"] = lstatus;
 				}
 				else if (dType == pTypeSecurity1)
 				{
@@ -10028,8 +10027,7 @@ namespace http
 						root["result"][ii]["TypeImg"] = "smoke";
 						root["result"][ii]["SwitchType"] = Switch_Type_Desc(STYPE_SMOKEDETECTOR);
 					}
-					sprintf(szData, "%s", lstatus.c_str());
-					root["result"][ii]["Data"] = szData;
+					root["result"][ii]["Data"] = lstatus;
 					root["result"][ii]["HaveTimeout"] = false;
 				}
 				else if (dType == pTypeSecurity2)
@@ -10052,8 +10050,7 @@ namespace http
 					root["result"][ii]["StrParam1"] = strParam1;
 					root["result"][ii]["StrParam2"] = strParam2;
 					root["result"][ii]["Protected"] = (iProtected != 0);
-					sprintf(szData, "%s", lstatus.c_str());
-					root["result"][ii]["Data"] = szData;
+					root["result"][ii]["Data"] = lstatus;
 					root["result"][ii]["HaveTimeout"] = false;
 				}
 				else if (dType == pTypeEvohome || dType == pTypeEvohomeRelay)
@@ -10077,8 +10074,7 @@ namespace http
 					root["result"][ii]["StrParam2"] = strParam2;
 					root["result"][ii]["Protected"] = (iProtected != 0);
 
-					sprintf(szData, "%s", lstatus.c_str());
-					root["result"][ii]["Data"] = szData;
+					root["result"][ii]["Data"] = lstatus;
 					root["result"][ii]["HaveTimeout"] = false;
 
 					if (dType == pTypeEvohomeRelay)
