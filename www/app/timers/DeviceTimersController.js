@@ -1,4 +1,4 @@
-define(['app', 'timers/factories', 'timers/components'], function (app) {
+define(['app', 'timers/factories', 'timers/components','timers/planning'], function (app) {
 
     app.controller('DeviceTimersController', function ($scope, $routeParams, deviceApi, deviceLightApi, deviceRegularTimersApi, deviceSetpointTimersApi, deviceTimerOptions, deviceTimerConfigUtils, utils) {
         var vm = this;
@@ -43,7 +43,7 @@ define(['app', 'timers/factories', 'timers/components'], function (app) {
                     ? deviceSetpointTimersApi
                     : deviceRegularTimersApi;
 
-                if (vm.isSelector) {
+                 if (vm.isSelector) {
                     vm.levelOptions = device.getSelectorLevelOptions();
                 }
 
@@ -61,6 +61,12 @@ define(['app', 'timers/factories', 'timers/components'], function (app) {
                     vm.timerSettings.level = vm.levelOptions[0].value;
                 }
 
+
+                if (!vm.isLED) 
+                    $(document).trigger("timersInitialized", [vm, refreshTimers]);//<===Update for Planning
+                else
+                    $('#GridTable').hide()
+
                 refreshTimers();
             });
 
@@ -72,8 +78,15 @@ define(['app', 'timers/factories', 'timers/components'], function (app) {
             vm.selectedTimerIdx = null;
 
             deviceTimers.getTimers(vm.deviceIdx).then(function (items) {
+                $( document ).trigger( "timersLoaded", [items] );//<===Update for Planning
                 vm.timers = items;
+
+                $("[name*='DataTables_Table_0_length']").css({    "background-color": 'white' });
+
+
             });
+
+
         }
 
         function setDeviceColor() {

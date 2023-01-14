@@ -12,6 +12,17 @@
 
     <timesun></timesun>
 
+	<div id="tabs" class="nav">
+        <ul id="GridTable">
+            <li>
+                <a href="#dz-timers-table">{{ ::'Table'|translate}}</a>
+            </li>
+            <li class="clDashboard">
+                <a href="#ts-planning">{{ ::'Grid'|translate }}</a>
+            </li>
+        </ul>
+		<div id="ts-planning" class="ts-planning" style="display: none;"></div>
+		<div id="dz-timers-table">
     <timers-table
             ng-if="::vm.isLoaded"
             timer-settings="vm.timerSettings"
@@ -329,3 +340,5 @@
         </tr>
     </table>
 </script>
+	</div>
+</div>
