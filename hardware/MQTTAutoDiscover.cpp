@@ -1956,7 +1956,8 @@ void MQTTAutoDiscover::handle_auto_discovery_sensor(_tMQTTASensor* pSensor, cons
 			//for now, we assume the later and ignore this
 			return; //else do nothing
 		}
-		else if (
+
+		if (
 			(pSensor->object_id.find("dew_point") != std::string::npos)
 			|| (pSensor->state_topic.find("Dew_point") != std::string::npos)
 			)
