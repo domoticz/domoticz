@@ -1667,7 +1667,7 @@ define(['app', 'livesocket'], function (app) {
 										}
 									}
 									xhtm +=
-										'\t      <td id="status" class="status">' + status + '</td>\n' +
+										'\t      <td id="status" class="status nowrap">' + status + '</td>\n' +
 										'\t    </tr>\n';
 								}
 								else {
@@ -2057,7 +2057,7 @@ define(['app', 'livesocket'], function (app) {
 										}
 									}
 									xhtm +=
-										'\t      <td id="status" class="status">' + status + '</td>\n' +
+										'\t      <td id="status" class="status nowrap">' + status + '</td>\n' +
 										'\t    </tr>\n';
 									if (item.SwitchType == "Dimmer") {
 										xhtm += '<tr>';
