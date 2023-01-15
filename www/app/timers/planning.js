@@ -25,6 +25,8 @@ PlanningTimerSheet = function(options){
 	var bIsSelecting = false;
 	var bAddClass = true;
 	var modeSelected = 0;
+	var startSelId = 0;
+	var endSelId   = 0;
 
 	const MON = 1;
 	const TUE = 2;
@@ -103,16 +105,20 @@ PlanningTimerSheet = function(options){
 		"buttonModeClassSelected": "btnstyle3-sel",
 		"odd_even_week" :false,
 		"modes":
-		[{ "value": 22, "class": "m0", "name": "Comfort"},
+		[{ "value": 20, "class": "m0", "name": "Comfort"},
 		{ "value": 19, "class": "m1", "name": "Economic"},
 		{ "value": 16, "class": "m2", "name": "Nighttime"},
 		{ "value": 4, "class": "m3", "name": "NoFreeze"}],
 		"temperatureModes":true,
 		"hover_activate":true, //to highlight row and column on mouse hover
-		"nbTicksPerHour":2, //6 for 10mins, 4 for 15mins, 2 for 30mins, 1 for 1hour
+		"nbTicksPerHour":1, //6 for 10mins, 4 for 15mins, 2 for 30mins, 1 for 1hour
 		"propValue":"Temperature",
 		"propValueAjax":"tvalue"}, options);
 	//////////////////////////////////////////////////
+    if (typeof options.device.ConforTemp != 'undefined') 
+		defaults.modes[0].value = options.device.ConforTemp ;
+    if (typeof options.device.EcoTemp    != 'undefined') 
+		defaults.modes[2].value = options.device.EcoTemp ;
 
 	Clear = function () {
 		$tbody.find('td').removeClass();
@@ -305,7 +311,7 @@ PlanningTimerSheet = function(options){
 
 		//check if you have to display odd&even week
 		var isOddEven = false;
-		var nbTicks = 2;
+		var nbTicks = 1;
 		$.each(SetPoints, function (ndx) {
 			if (this.Type === ONTIME || this.Type === EVEN || this.Type === ODD){
 				if (this.Type === EVEN || this.Type === ODD){
@@ -679,7 +685,8 @@ PlanningTimerSheet = function(options){
 			var ticks = defaults.nbTicksPerHour;
 			for (var h = 0 ; h < 24; h++) {
 				for (var m = 0; m < ticks; m++) {
-					tds.push("<td h=" + h + " m=" + pad2((m*60)/ticks) + " title='" + $.t(days[d].name) + " " + h + ":" + pad2((m*60)/ticks) + " - " + h + ":" + pad2((((m+1)*60/ticks)-1)) + "'></td>");
+					var id =  (d + 1 + delta) * 100 + (h*ticks+m);
+					tds.push("<td id=\"" + id + "\" h=" + h + " m=" + pad2((m*60)/ticks) + " title='" + $.t(days[d].name) + " " + h + ":" + pad2((m*60)/ticks) + " - " + h + ":" + pad2((((m+1)*60/ticks)-1)) + "'></td>");
 				}
 			}				
 
@@ -733,22 +740,62 @@ PlanningTimerSheet = function(options){
 		if(defaults.buttonClass != undefined)
 			$element.find('.ts-actions>div').addClass(defaults.buttonClass);
 
+		selectRectangle = function () {
+			startRow = Math.floor(startSelId / 100 ) ;
+			startCol = startSelId % 100 ;
+			endRow   = Math.floor(endSelId / 100 );
+			endCol   = endSelId % 100 ;
+			console.log(startSelId + " " + endSelId);
+			if (endRow<startRow){
+				var r = endRow ; endRow = startRow ; startRow = r ;
+			}
+			if (endCol<startCol){
+				var r = endCol ; endCol = startCol ; startCol = r ;
+			}
+			for (var row= startRow ; row<=endRow;row++)
+				for (var col= startCol ; col<=endCol;col++)
+				{
+					var id = row*100 + col ;
+					setSel($("#"+id)) ;
+				}
+		};
 		$table = $element.find('table');
 		$tbody = $table.find('tbody');
 		$thead = $table.find('thead');
 			//////mouse events on tbody
-		$tbody.on("mousedown", "td", function (event) {
+		var mousedown = function (event) {
 			bIsSelecting = true;
 			bAddClass = !$(this).hasClass(getModeClass());
 			setSel(this);
-		});
-		$tbody.on("mouseup", "td", function (event) {
+			startSelId = parseInt(this.id);
+		};
+		var mouseup = function (event) {
 			setSel(this);
 			bIsSelecting = false;
-		});
+			selectRectangle();
+		};
+		if ( $.myglobals.ismobile == false )
+		$tbody.on("mousedown" , "td", mousedown );
+		else
+		$tbody.on("touchstart", "td", mousedown );
+		if ( $.myglobals.ismobile == false )
+			$tbody.on("mouseup", "td", mouseup ) ;
+		else
+			$tbody.on("touchend", "td", mouseup ) ;
+		if ( $.myglobals.ismobile == false )
 		$tbody.on("mouseover", "td", function (event) {
 			if (bIsSelecting)
 				setSel(this);
+			endSelId = parseInt(this.id);
+		});
+		$tbody.on("touchmove", "td", function (event) {
+			X = event.touches[0].clientX;
+			Y = event.touches[0].clientY;
+				elem = document.elementFromPoint(X, Y);
+			if (bIsSelecting)
+				setSel(elem);
+			endSelId = parseInt(elem.id);
+			//		event.preventDefault();
 		});
 		$tbody.on("click", "th", function (event) {
 			setRowSel($(this));
@@ -819,6 +866,9 @@ PlanningTimerSheet = function(options){
 
 	$( document ).on( "timersLoaded", function(event, items){
 		loadPlanning(items);
+		//update show entry background to white
+		var entry = $("select[name*='_length']")
+		$(entry).css({ "background-color": 'white' });
 	});
 
 	$.each(planning_translations, function(idx, res){
@@ -864,7 +914,8 @@ $( document ).on( "timersInitialized", function(event, vm,refreshTimers){
 							 "propValue":"Cmd",
 							 "propValueAjax":"command"});
 	}
-
+	 options.device = vm.device;
 	PlanningTimerSheet(options);
+	$("#copyright").hide();
 });
 ///////////////////////////////////////////

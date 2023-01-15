@@ -21,6 +21,7 @@ define(['app', 'timers/factories', 'timers/components','timers/planning'], funct
             deviceApi.getDeviceInfo(vm.deviceIdx).then(function (device) {
                 vm.isLoaded = true;
                 vm.itemName = device.Name;
+                vm.device   = device     ;
                 vm.colorSettingsType = device.SubType;
                 vm.dimmerType = device.DimmerType;
 
@@ -80,10 +81,6 @@ define(['app', 'timers/factories', 'timers/components','timers/planning'], funct
             deviceTimers.getTimers(vm.deviceIdx).then(function (items) {
                 $( document ).trigger( "timersLoaded", [items] );//<===Update for Planning
                 vm.timers = items;
-
-                $("[name*='DataTables_Table_0_length']").css({    "background-color": 'white' });
-
-
             });
 
 
