@@ -40,6 +40,7 @@ private:
 	std::string m_szSoftwareVersion;
 	std::string m_szToken;
 	std::string m_szIPAddress;
+	std::string m_szInstallerPassword; // derived from serial number
 
 	std::string m_szUsername;
 	std::string m_szPassword;
