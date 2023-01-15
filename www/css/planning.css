@@ -69,12 +69,8 @@ overflow-y:hidden;
     text-align: right;
 }
 
-.ts-planning .m0,
-.red{background-color:red;}
-
-.ts-planning .m1,
-.green {background-color: #00ff21}
-
+.ts-planning .m0,.red{background-color:darkred;}
+.ts-planning .m1,.green {background-color: darkgreen}
 .ts-planning .m2 {background-color: #0094ff}
 .ts-planning .m3 {background-color: #AAAAAA}
 .ts-planning .m4 {background-color: #00ffff}
@@ -101,7 +97,7 @@ overflow-y:hidden;
 .ts-planning div.inputmode{
 	float: right;
 	height: 17px;
-	margin-top: 4px;
+	margin-top: 5px;
 }
 
 .ts-planning .modes {
