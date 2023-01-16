@@ -229,8 +229,7 @@ void HTTPClient::SetUserAgent(const std::string &useragent)
  *									*
  ************************************************************************/
 
-bool HTTPClient::GETBinary(const std::string &url, const std::vector<std::string> &ExtraHeaders, std::vector<unsigned char> &response,
-                           std::vector<std::string> &vHeaderData, const long TimeOut, const std::string &userPwd)
+bool HTTPClient::GETBinary(const std::string &url, const std::vector<std::string> &ExtraHeaders, std::vector<unsigned char> &response, std::vector<std::string> &vHeaderData, const long TimeOut)
 {
 	try
 	{
@@ -244,8 +243,6 @@ bool HTTPClient::GETBinary(const std::string &url, const std::vector<std::string
 		SetGlobalOptions(curl);
 		if (TimeOut != -1)
 			curl_easy_setopt(curl, CURLOPT_TIMEOUT, TimeOut);
-		if(!userPwd.empty())
-			curl_easy_setopt(curl, CURLOPT_USERPWD, userPwd.c_str());
 
 		struct curl_slist *headers = nullptr;
 		if (!ExtraHeaders.empty())
@@ -586,10 +583,10 @@ bool HTTPClient::PatchBinary(const std::string& url, const std::string& putdata,
  *									*
  ************************************************************************/
 
-bool HTTPClient::GETBinary(const std::string &url, const std::vector<std::string> &ExtraHeaders, std::vector<unsigned char> &response, const long TimeOut, const std::string &userPwd)
+bool HTTPClient::GETBinary(const std::string &url, const std::vector<std::string> &ExtraHeaders, std::vector<unsigned char> &response, const long TimeOut)
 {
 	std::vector<std::string> vHeaderData;
-	return GETBinary(url, ExtraHeaders, response, vHeaderData, TimeOut, userPwd);
+	return GETBinary(url, ExtraHeaders, response, vHeaderData, TimeOut);
 }
 
 bool HTTPClient::GETBinarySingleLine(const std::string &url, const std::vector<std::string> &ExtraHeaders, std::vector<unsigned char> &response, const long TimeOut)
@@ -690,11 +687,11 @@ bool HTTPClient::PatchBinary(const std::string& url, const std::string& putdata,
  *									*
  ************************************************************************/
 
-bool HTTPClient::GET(const std::string &url, const std::vector<std::string> &ExtraHeaders, std::string &response, std::vector<std::string> &vHeaderData, const bool bIgnoreNoDataReturned, const std::string &userPwd)
+bool HTTPClient::GET(const std::string &url, const std::vector<std::string> &ExtraHeaders, std::string &response, std::vector<std::string> &vHeaderData, const bool bIgnoreNoDataReturned)
 {
 	response = "";
 	std::vector<unsigned char> vHTTPResponse;
-	bool bOK = GETBinary(url, ExtraHeaders, vHTTPResponse, vHeaderData, -1, userPwd);
+	bool bOK = GETBinary(url, ExtraHeaders, vHTTPResponse, vHeaderData, -1);
 	response.insert(response.begin(), vHTTPResponse.begin(), vHTTPResponse.end());
 	if (!bOK)
 		return false;
@@ -757,10 +754,10 @@ bool HTTPClient::Patch(const std::string& url, const std::string& putdata, const
  *									*
  ************************************************************************/
 
-bool HTTPClient::GET(const std::string &url, const std::vector<std::string> &ExtraHeaders, std::string &response, const bool bIgnoreNoDataReturned, const std::string &userPwd)
+bool HTTPClient::GET(const std::string &url, const std::vector<std::string> &ExtraHeaders, std::string &response, const bool bIgnoreNoDataReturned)
 {
 	std::vector<std::string> vHeaderData;
-	return GET(url, ExtraHeaders, response, vHeaderData, bIgnoreNoDataReturned, userPwd);
+	return GET(url, ExtraHeaders, response, vHeaderData, bIgnoreNoDataReturned);
 }
 
 bool HTTPClient::POST(const std::string &url, const std::string &postdata, const std::vector<std::string> &ExtraHeaders, std::string &response, const bool bFollowRedirect, const bool bIgnoreNoDataReturned)
@@ -788,10 +785,10 @@ bool HTTPClient::Delete(const std::string &url, const std::string &putdata, cons
  *									*
  ************************************************************************/
 
-bool HTTPClient::GET(const std::string &url, std::string &response, const bool bIgnoreNoDataReturned, const std::string &userPwd)
+bool HTTPClient::GET(const std::string &url, std::string &response, const bool bIgnoreNoDataReturned)
 {
 	std::vector<std::string> ExtraHeaders;
-	return GET(url, ExtraHeaders, response, bIgnoreNoDataReturned, userPwd);
+	return GET(url, ExtraHeaders, response, bIgnoreNoDataReturned);
 }
 
 bool HTTPClient::GETSingleLine(const std::string &url, std::string &response, const bool bIgnoreNoDataReturned)

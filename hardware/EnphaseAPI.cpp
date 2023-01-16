@@ -656,13 +656,24 @@ bool EnphaseAPI::getInverterDetails()
 		ExtraHeaders.push_back("Authorization: Bearer " + m_szToken);
 		ExtraHeaders.push_back("Content-Type:application/json");
 	}
-	else
-		sUserPwd = "installer:" + m_szInstallerPassword;
 
-	if (!HTTPClient::GET(sURL.str(), ExtraHeaders, sResult, false, sUserPwd))
+	if (!HTTPClient::GET(sURL.str(), ExtraHeaders, sResult))
 	{
-		Log(LOG_ERROR, "Invalid data received! (inverter details)");
-		return false;
+		if (!NeedToken())
+		{
+			std::stringstream sURLInstallerPwd;
+			sURLInstallerPwd << "http://installer:" << m_szInstallerPassword << "@" << m_szIPAddress << "/api/v1/production/inverters";
+			if (!HTTPClient::GET(sURLInstallerPwd.str(), ExtraHeaders, sResult))
+			{
+				Log(LOG_ERROR, "Invalid data received! (inverter details)");
+				return false;
+			}
+		}
+		else
+		{
+			Log(LOG_ERROR, "Invalid data received! (inverter details)");
+			return false;
+		}
 	}
 #ifdef DEBUG_EnphaseAPI_W
 	SaveString2Disk(sResult, "E:\\EnphaseAPI_inverters.json");
