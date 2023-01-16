@@ -50,6 +50,19 @@ MQTTAutoDiscover::MQTTAutoDiscover(const int ID, const std::string& Name, const 
 	}
 }
 
+bool MQTTAutoDiscover::IsWildcardMatch(std::string st_topic, std::string m_topic)
+{
+	bool result;
+	if(mosquitto_topic_matches_sub(st_topic.c_str(), m_topic.c_str(),&result) == MOSQ_ERR_SUCCESS && result == true)
+	{
+		Debug(DEBUG_HARDWARE, "Wildcard compare of %s and %s matched", st_topic.c_str(), m_topic.c_str());
+		return true;
+	}
+	
+	Debug(DEBUG_HARDWARE, "Wildcard compare of %s and %s did not match", st_topic.c_str(), m_topic.c_str());
+	return false;
+}
+
 void MQTTAutoDiscover::on_message(const struct mosquitto_message* message)
 {
 	std::string topic = message->topic;
@@ -62,11 +75,16 @@ void MQTTAutoDiscover::on_message(const struct mosquitto_message* message)
 		if (qMessage.empty())
 			return;
 
-		if (m_subscribed_topics.find(topic) != m_subscribed_topics.end())
+		bool topicMatch = false;
+		for (auto& itt : m_subscribed_topics)
 		{
-			handle_auto_discovery_sensor_message(message);
-			return;
+			if (itt.first != m_TopicDiscoveryPrefix + "/#" && IsWildcardMatch(itt.first,topic))
+			{
+				handle_auto_discovery_sensor_message(message,itt.first);
+				topicMatch = true;			
+			}
 		}
+		if(topicMatch == true) return;
 
 		if (topic.substr(0, topic.find('/')) == m_TopicDiscoveryPrefix)
 		{
@@ -1212,9 +1230,9 @@ void MQTTAutoDiscover::ApplySignalLevelDevice(const _tMQTTASensor* pSensor)
 	}
 }
 
-void MQTTAutoDiscover::handle_auto_discovery_sensor_message(const struct mosquitto_message* message)
+void MQTTAutoDiscover::handle_auto_discovery_sensor_message(const struct mosquitto_message* message,std::string subscribed_topic)
 {
-	std::string topic = message->topic;
+	std::string topic = subscribed_topic;
 	std::string qMessage = std::string((char*)message->payload, (char*)message->payload + message->payloadlen);
 
 	if (qMessage.empty())
