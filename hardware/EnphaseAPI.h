@@ -24,6 +24,7 @@ private:
 	bool GetAccessToken();
 	bool getProductionDetails(Json::Value& result);
 	bool getInverterDetails();
+	std::string V5_emupwGetMobilePasswd(const std::string &serialNumber, const std::string &userName, const std::string &realm);
 
 	void parseProduction(const Json::Value& root);
 	void parseConsumption(const Json::Value& root);

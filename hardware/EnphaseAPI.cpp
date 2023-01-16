@@ -227,53 +227,46 @@ int EnphaseAPI::getSunRiseSunSetMinutes(const bool bGetSunRise)
 	return 0;
 }
 
-// emupwGetPasswdForSn / emupwGetMobilePasswd taken from https://github.com/sarnau/EnphaseEnergy
-static std::string emupwGetPasswdForSn(const std::string &serialNumber, const std::string &userName, const std::string &realm)
+// emupwGetMobilePasswd taken from https://github.com/sarnau/EnphaseEnergy
+std::string EnphaseAPI::V5_emupwGetMobilePasswd(const std::string &serialNumber, const std::string &userName, const std::string &realm)
 {
-    std::string szMD5 = GenerateMD5Hash(std::string("[e]") + userName + "@" + realm + "#" + serialNumber + " EnPhAsE eNeRgY ");
-
-	return szMD5;
-}
-
-static std::string emupwGetMobilePasswd(const std::string &serialNumber, const std::string &userName, const std::string &realm)
-{
-    auto digest = emupwGetPasswdForSn(serialNumber, userName, realm);
-	if(digest.length() <= 8)
+	std::string digest =  GenerateMD5Hash(std::string("[e]") + userName + "@" + realm + "#" + serialNumber + " EnPhAsE eNeRgY ");
+	if (digest.length() <= 8)
 		return "";
 
-	auto countZero = std::count(digest.begin(), digest.end(), '0');
-	auto countOne = std::count(digest.begin(), digest.end(), '1');
-    std::string szPassword = "";
+	int countZero = std::count(digest.begin(), digest.end(), '0');
+	int countOne = std::count(digest.begin(), digest.end(), '1');
+	std::string szPassword;
 	std::string szRight = digest.substr(digest.length() - 8);
-	for (auto it = szRight.rbegin (); it != szRight.rend (); it++)
+	for (auto it = szRight.rbegin(); it != szRight.rend(); it++)
 	{
-        if(countZero == 3 || countZero == 6 || countZero == 9)
-            countZero--;
-        if(countZero > 20)
-            countZero = 20;
-        if(countZero < 0)
-            countZero = 0;
+		if (countZero == 3 || countZero == 6 || countZero == 9)
+			countZero--;
+		if (countZero > 20)
+			countZero = 20;
+		if (countZero < 0)
+			countZero = 0;
 
-        if(countOne == 9 || countOne == 15)
-            countOne--;
-        if(countOne > 26)
-            countOne = 26;
-        if(countOne < 0)
-            countOne = 0;
-        if(*it == '0')
+		if (countOne == 9 || countOne == 15)
+			countOne--;
+		if (countOne > 26)
+			countOne = 26;
+		if (countOne < 0)
+			countOne = 0;
+		if (*it == '0')
 		{
-            szPassword += 'f' + countZero;
-            countZero = countZero - 1;
+			szPassword += 'f' + countZero;
+			countZero = countZero - 1;
 		}
-        else if(*it == '1')
+		else if (*it == '1')
 		{
-            szPassword += '@' + countOne;
-            countOne = countOne -1;
+			szPassword += '@' + countOne;
+			countOne = countOne - 1;
 		}
-        else
-            szPassword += *it;
+		else
+			szPassword += *it;
 	}
-    return szPassword;
+	return szPassword;
 }
 
 bool EnphaseAPI::GetSerialSoftwareVersion()
@@ -340,7 +333,7 @@ bool EnphaseAPI::GetSerialSoftwareVersion()
 
 	Log(LOG_STATUS, "Connected, serial: %s, software: %s", m_szSerial.c_str(), m_szSoftwareVersion.c_str());
 
-	m_szInstallerPassword = emupwGetMobilePasswd(m_szSerial, "installer", "enphaseenergy.com");
+	m_szInstallerPassword = V5_emupwGetMobilePasswd(m_szSerial, "installer", "enphaseenergy.com");
 
 	if (
 		(m_szSoftwareVersion.size() < 2)
