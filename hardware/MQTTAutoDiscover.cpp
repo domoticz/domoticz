@@ -50,7 +50,7 @@ MQTTAutoDiscover::MQTTAutoDiscover(const int ID, const std::string& Name, const 
 	}
 }
 
-bool MQTTAutoDiscover::IsWildcardMatch(std::string st_topic, std::string m_topic)
+bool MQTTAutoDiscover::IsWildcardMatch(const std::string st_topic,const std::string m_topic)
 {
 	bool result;
 	if(mosquitto_topic_matches_sub(st_topic.c_str(), m_topic.c_str(),&result) == MOSQ_ERR_SUCCESS && result == true)
@@ -1230,7 +1230,7 @@ void MQTTAutoDiscover::ApplySignalLevelDevice(const _tMQTTASensor* pSensor)
 	}
 }
 
-void MQTTAutoDiscover::handle_auto_discovery_sensor_message(const struct mosquitto_message* message,std::string subscribed_topic)
+void MQTTAutoDiscover::handle_auto_discovery_sensor_message(const struct mosquitto_message* message,const std::string subscribed_topic)
 {
 	std::string topic = subscribed_topic;
 	std::string qMessage = std::string((char*)message->payload, (char*)message->payload + message->payloadlen);

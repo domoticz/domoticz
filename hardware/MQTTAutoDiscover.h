@@ -139,7 +139,7 @@ public:
 	void on_disconnect(int rc) override;
 
 private:
-	bool IsWildcardMatch(std::string st_topic, std::string m_topic);
+	bool IsWildcardMatch(const std::string st_topic,const std::string m_topic);
 	void InsertUpdateSwitch(_tMQTTASensor* pSensor);
 
 	void UpdateBlindPosition(_tMQTTASensor* pSensor);
@@ -153,7 +153,7 @@ private:
 	void ApplySignalLevelDevice(const _tMQTTASensor* pSensor);
 
 	void on_auto_discovery_message(const struct mosquitto_message* message);
-	void handle_auto_discovery_sensor_message(const struct mosquitto_message* message,std::string subscribed_topic);
+	void handle_auto_discovery_sensor_message(const struct mosquitto_message* message,const std::string subscribed_topic);
 
 	void handle_auto_discovery_availability(_tMQTTASensor* pSensor, const std::string& payload, const struct mosquitto_message* message);
 	void handle_auto_discovery_sensor(_tMQTTASensor* pSensor, const struct mosquitto_message* message);
