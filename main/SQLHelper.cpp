@@ -5191,7 +5191,8 @@ uint64_t CSQLHelper::UpdateValueInt(
 			{
 				std::vector<std::string> parts, parts2;
 				StringSplit(sValue, ";", parts);
-				if (parts.size() == 11) {
+				if (parts.size() == 11)
+				{
 					// is last part date only, or date with hour with space?
 					StringSplit(parts[10], " ", parts2);
 					bool shortLog = false;
@@ -5217,6 +5218,7 @@ uint64_t CSQLHelper::UpdateValueInt(
 						std::stoll(parts[8]),
 						std::stoll(parts[9])
 					);
+					result = safe_query("UPDATE DeviceStatus SET LastUpdate='%q' WHERE (ID = %" PRIu64 ")", sLastUpdate.c_str(), ulID);
 					return ulID;
 				}
 				if (parts.size() == 7)
@@ -5241,6 +5243,7 @@ uint64_t CSQLHelper::UpdateValueInt(
 						std::stoll(parts[1]),
 						std::stoll(parts[3])
 					);
+					result = safe_query("UPDATE DeviceStatus SET LastUpdate='%q' WHERE (ID = %" PRIu64 ")", sLastUpdate.c_str(), ulID);
 					return ulID;
 				}
 				if (parts.size() == 3)
@@ -5258,6 +5261,7 @@ uint64_t CSQLHelper::UpdateValueInt(
 						std::stoll(parts[0]),
 						std::stoll(parts[1])
 					);
+					result = safe_query("UPDATE DeviceStatus SET LastUpdate='%q' WHERE (ID = %" PRIu64 ")", sLastUpdate.c_str(), ulID);
 					return ulID;
 				}
 			}
