@@ -644,7 +644,6 @@ bool EnphaseAPI::getInverterDetails()
 	sURL << m_szIPAddress << "/api/v1/production/inverters";
 
 	std::vector<std::string> ExtraHeaders;
-	std::string sUserPwd;
 	if (!m_szToken.empty()) {
 		ExtraHeaders.push_back("Authorization: Bearer " + m_szToken);
 		ExtraHeaders.push_back("Content-Type:application/json");
