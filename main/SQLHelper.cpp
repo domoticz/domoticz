@@ -1642,7 +1642,7 @@ bool CSQLHelper::OpenDatabase()
 			result = safe_query("SELECT ID FROM Hardware WHERE (Type==%d)", HTYPE_System);
 			if (result.empty())
 			{
-				m_sql.safe_query("INSERT INTO Hardware (Name, Enabled, Type, Address, Port, Username, Password, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6) VALUES ('Motherboard',1, %d,'',1,'','',0,0,0,0,0,0)", HTYPE_System);
+				safe_query("INSERT INTO Hardware (Name, Enabled, Type, Address, Port, Username, Password, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6) VALUES ('Motherboard',1, %d,'',1,'','',0,0,0,0,0,0)", HTYPE_System);
 			}
 		}
 		if (dbversion < 85)
@@ -1709,7 +1709,7 @@ bool CSQLHelper::OpenDatabase()
 			result = safe_query("SELECT ID FROM Hardware WHERE (Type==%d)", HTYPE_DomoticzInternal);
 			if (result.empty())
 			{
-				m_sql.safe_query("INSERT INTO Hardware (Name, Enabled, Type, Address, Port, Username, Password, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6) VALUES ('Domoticz Internal',1, %d,'',1,'','',0,0,0,0,0,0)", HTYPE_DomoticzInternal);
+				safe_query("INSERT INTO Hardware (Name, Enabled, Type, Address, Port, Username, Password, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6) VALUES ('Domoticz Internal',1, %d,'',1,'','',0,0,0,0,0,0)", HTYPE_DomoticzInternal);
 				result = safe_query("SELECT ID FROM Hardware WHERE (Type==%d)", HTYPE_DomoticzInternal);
 			}
 			if (!result.empty())
@@ -1723,13 +1723,13 @@ bool CSQLHelper::OpenDatabase()
 				result = safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID='%q') AND (Type=%d) AND (SubType=%d)", oldHwdID, securityPanelDeviceID.c_str(), pTypeSecurity1, sTypeDomoticzSecurity);
 				if (!result.empty())
 				{
-					m_sql.safe_query("UPDATE DeviceStatus SET HardwareID=%d WHERE (HardwareID==%d) AND (DeviceID='%q') AND (Type=%d) AND (SubType=%d)", hwdID, oldHwdID, securityPanelDeviceID.c_str(), pTypeSecurity1, sTypeDomoticzSecurity);
+					safe_query("UPDATE DeviceStatus SET HardwareID=%d WHERE (HardwareID==%d) AND (DeviceID='%q') AND (Type=%d) AND (SubType=%d)", hwdID, oldHwdID, securityPanelDeviceID.c_str(), pTypeSecurity1, sTypeDomoticzSecurity);
 				}
 				// Update Name for Security Panel device
 				result = safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID='%q') AND (Type=%d) AND (SubType=%d) AND Name='Unknown'", hwdID, securityPanelDeviceID.c_str(), pTypeSecurity1, sTypeDomoticzSecurity);
 				if (!result.empty())
 				{
-					m_sql.safe_query("UPDATE DeviceStatus SET Name='Domoticz Security Panel' WHERE (HardwareID==%d) AND (DeviceID='%q') AND (Type=%d) AND (SubType=%d) AND Name='Unknown'", hwdID, securityPanelDeviceID.c_str(), pTypeSecurity1, sTypeDomoticzSecurity);
+					safe_query("UPDATE DeviceStatus SET Name='Domoticz Security Panel' WHERE (HardwareID==%d) AND (DeviceID='%q') AND (Type=%d) AND (SubType=%d) AND Name='Unknown'", hwdID, securityPanelDeviceID.c_str(), pTypeSecurity1, sTypeDomoticzSecurity);
 				}
 			}
 		}
@@ -1896,12 +1896,12 @@ bool CSQLHelper::OpenDatabase()
 							if (switchType == MTYPE_COUNTER)
 							{
 								//Add options to existing SwitchType 'Counter'
-								m_sql.SetDeviceOptions(devidx, m_sql.BuildDeviceOptions("ValueQuantity:Count;ValueUnits:", false));
+								SetDeviceOptions(devidx, BuildDeviceOptions("ValueQuantity:Count;ValueUnits:", false));
 							}
 							else if (switchType == MTYPE_TIME)
 							{
 								//Set default options
-								m_sql.SetDeviceOptions(devidx, m_sql.BuildDeviceOptions("ValueQuantity:Time;ValueUnits:Min", false));
+								SetDeviceOptions(devidx, BuildDeviceOptions("ValueQuantity:Time;ValueUnits:Min", false));
 
 								//Convert to Counter
 								szQuery2.clear();
@@ -2227,8 +2227,8 @@ bool CSQLHelper::OpenDatabase()
 							newParams += 2;
 						if (sd[5] == "1")
 							newParams += 4;
-						m_sql.safe_query("UPDATE Hardware SET Mode2=%d, Mode3=%s, Mode4=0, Mode5=0 WHERE ID=%s", newParams, sd[6].c_str(), sd[0].c_str());
-						m_sql.safe_query("UPDATE DeviceStatus SET StrParam1='' WHERE HardwareID=%s", sd[0].c_str());
+						safe_query("UPDATE Hardware SET Mode2=%d, Mode3=%s, Mode4=0, Mode5=0 WHERE ID=%s", newParams, sd[6].c_str(), sd[0].c_str());
+						safe_query("UPDATE DeviceStatus SET StrParam1='' WHERE HardwareID=%s", sd[0].c_str());
 					}
 				}
 			}
@@ -2581,7 +2581,7 @@ bool CSQLHelper::OpenDatabase()
 					if (EnergyMeterMode == "1")
 					{
 						uint64_t ullidx = std::stoull(idx);
-						m_sql.SetDeviceOptions(ullidx, m_sql.BuildDeviceOptions("EnergyMeterMode:" + EnergyMeterMode, false));
+						SetDeviceOptions(ullidx, BuildDeviceOptions("EnergyMeterMode:" + EnergyMeterMode, false));
 					}
 				}
 			}
@@ -2951,7 +2951,7 @@ bool CSQLHelper::OpenDatabase()
 		{ // Populate EnOceanNodes table from EnoceanSensors table
 			std::vector<std::vector<std::string>> result;
 
-			result = m_sql.safe_query("SELECT ID, HardwareID, DeviceID, Manufacturer, Profile, Type FROM EnoceanSensors");
+			result = safe_query("SELECT ID, HardwareID, DeviceID, Manufacturer, Profile, Type FROM EnoceanSensors");
 			if (!result.empty())
 			{
 				for (const auto &sdn : result)
@@ -3000,8 +3000,8 @@ bool CSQLHelper::OpenDatabase()
 			//Merge remote proxy IP's into local networks
 
 			std::string WebLocalNetworks, RemoteProxyIPs;
-			m_sql.GetPreferencesVar("WebLocalNetworks", WebLocalNetworks);
-			m_sql.GetPreferencesVar("WebRemoteProxyIPs", RemoteProxyIPs);
+			GetPreferencesVar("WebLocalNetworks", WebLocalNetworks);
+			GetPreferencesVar("WebRemoteProxyIPs", RemoteProxyIPs);
 
 			std::vector<std::string> strarray;
 			StringSplit(RemoteProxyIPs, ";", strarray);
@@ -3014,7 +3014,7 @@ bool CSQLHelper::OpenDatabase()
 					WebLocalNetworks += str;
 				}
 			}
-			m_sql.UpdatePreferencesVar("WebLocalNetworks", WebLocalNetworks);
+			UpdatePreferencesVar("WebLocalNetworks", WebLocalNetworks);
 			DeletePreferencesVar("WebRemoteProxyIPs");
 		}
 		if (dbversion < 156)
@@ -4336,7 +4336,7 @@ int CSQLHelper::execute_sql(const std::string &sSQL, std::vector<std::string> *p
 
 	if (!sqlStatement.Error())
 	{
-		result = m_sql.safe_query("SELECT changes();");
+		result = safe_query("SELECT changes();");
 	}
 	else
 	{
@@ -4509,7 +4509,7 @@ uint64_t CSQLHelper::CreateDevice(const int HardwareID, const int SensorType, co
 #ifdef ENABLE_PYTHON
 	{
 		std::vector<std::vector<std::string> > result;
-		result = m_sql.safe_query("SELECT Type FROM Hardware WHERE (ID == %d)", HardwareID);
+		result = safe_query("SELECT Type FROM Hardware WHERE (ID == %d)", HardwareID);
 		if (!result.empty())
 		{
 			std::vector<std::string> sd = result[0];
@@ -4684,7 +4684,7 @@ uint64_t CSQLHelper::CreateDevice(const int HardwareID, const int SensorType, co
 				if (DeviceRowIdx != (uint64_t)-1)
 				{
 					//Set the Label
-					m_sql.safe_query("UPDATE DeviceStatus SET Options='%q' WHERE (ID==%" PRIu64 ")", soptions.c_str(), DeviceRowIdx);
+					safe_query("UPDATE DeviceStatus SET Options='%q' WHERE (ID==%" PRIu64 ")", soptions.c_str(), DeviceRowIdx);
 				}
 			}
 			break;
@@ -4726,9 +4726,9 @@ uint64_t CSQLHelper::CreateDevice(const int HardwareID, const int SensorType, co
 			if (DeviceRowIdx != (uint64_t)-1)
 			{
 				//Set switch type to selector
-				m_sql.safe_query("UPDATE DeviceStatus SET SwitchType=%d WHERE (ID==%" PRIu64 ")", STYPE_Selector, DeviceRowIdx);
+				safe_query("UPDATE DeviceStatus SET SwitchType=%d WHERE (ID==%" PRIu64 ")", STYPE_Selector, DeviceRowIdx);
 				//Set default device options
-				m_sql.SetDeviceOptions(DeviceRowIdx, BuildDeviceOptions("SelectorStyle:0;LevelNames:Off|Level1|Level2|Level3", false));
+				SetDeviceOptions(DeviceRowIdx, BuildDeviceOptions("SelectorStyle:0;LevelNames:Off|Level1|Level2|Level3", false));
 			}
 		}
 		break;
@@ -4754,7 +4754,7 @@ uint64_t CSQLHelper::CreateDevice(const int HardwareID, const int SensorType, co
 			if (DeviceRowIdx != (uint64_t)-1)
 			{
 				//Set switch type to dimmer
-				m_sql.safe_query("UPDATE DeviceStatus SET SwitchType=%d WHERE (ID==%" PRIu64 ")", STYPE_Dimmer, DeviceRowIdx);
+				safe_query("UPDATE DeviceStatus SET SwitchType=%d WHERE (ID==%" PRIu64 ")", STYPE_Dimmer, DeviceRowIdx);
 			}
 		}
 		break;
@@ -4765,7 +4765,7 @@ uint64_t CSQLHelper::CreateDevice(const int HardwareID, const int SensorType, co
 
 	if (DeviceRowIdx != (uint64_t)-1)
 	{
-		m_sql.safe_query("UPDATE DeviceStatus SET Used=1 WHERE (ID==%" PRIu64 ")", DeviceRowIdx);
+		safe_query("UPDATE DeviceStatus SET Used=1 WHERE (ID==%" PRIu64 ")", DeviceRowIdx);
 		m_mainworker.m_eventsystem.GetCurrentStates();
 	}
 
@@ -8238,7 +8238,7 @@ void CSQLHelper::CheckSceneStatus(const uint64_t Idx)
 		//Set new Scene status
 		safe_query("UPDATE Scenes SET nValue=%d WHERE (ID == %" PRIu64 ")",
 			int(newValue), Idx);
-		if (m_sql.m_bEnableEventSystem)  // Only when eventSystem is active
+		if (m_bEnableEventSystem)  // Only when eventSystem is active
 			m_mainworker.m_eventsystem.GetCurrentScenesGroups();
 	}
 }
