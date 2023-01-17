@@ -27,6 +27,8 @@ PlanningTimerSheet = function(options){
 	var modeSelected = 0;
 	var startSelId = 0;
 	var endSelId   = 0;
+	var mousedownEvt = 0;
+	var mouseupEvt = 0;
 
 	const MON = 1;
 	const TUE = 2;
@@ -745,7 +747,7 @@ PlanningTimerSheet = function(options){
 			startCol = startSelId % 100 ;
 			endRow   = Math.floor(endSelId / 100 );
 			endCol   = endSelId % 100 ;
-			console.log(startSelId + " " + endSelId);
+//			console.log(startSelId + " " + endSelId);
 			if (endRow<startRow){
 				var r = endRow ; endRow = startRow ; startRow = r ;
 			}
@@ -763,40 +765,50 @@ PlanningTimerSheet = function(options){
 		$tbody = $table.find('tbody');
 		$thead = $table.find('thead');
 			//////mouse events on tbody
-		var mousedown = function (event) {
+
+		if ($.myglobals.ismobile == true) {
+			mousedownEvt = "touchstart";
+			mouseupEvt = "touchend";
+		}
+		else {
+			mousedownEvt = "mousedown";
+			mouseupEvt = "mouseup";
+		}
+		$tbody.on(mousedownEvt, "td", function (event) {
 			bIsSelecting = true;
 			bAddClass = !$(this).hasClass(getModeClass());
 			setSel(this);
 			startSelId = parseInt(this.id);
-		};
-		var mouseup = function (event) {
+			endSelId   = parseInt(this.id);
+//			console.log("start:"+startSelId );
+		});
+		$tbody.on(mouseupEvt, "td", function (event) {
 			setSel(this);
 			bIsSelecting = false;
+//			console.log("stop:" + endSelId);
 			selectRectangle();
-		};
-		if ( $.myglobals.ismobile == false )
-		$tbody.on("mousedown" , "td", mousedown );
-		else
-		$tbody.on("touchstart", "td", mousedown );
-		if ( $.myglobals.ismobile == false )
-			$tbody.on("mouseup", "td", mouseup ) ;
-		else
-			$tbody.on("touchend", "td", mouseup ) ;
-		if ( $.myglobals.ismobile == false )
-		$tbody.on("mouseover", "td", function (event) {
-			if (bIsSelecting)
-				setSel(this);
-			endSelId = parseInt(this.id);
 		});
-		$tbody.on("touchmove", "td", function (event) {
-			X = event.touches[0].clientX;
-			Y = event.touches[0].clientY;
+		if ( $.myglobals.ismobile != true  )
+			$tbody.on("mouseover", "td", function (event) {
+				if (bIsSelecting) {
+					setSel(this);
+					endSelId = parseInt(this.id);
+//					console.log("moves:" + endSelId);
+				}
+			});
+		else 
+			$tbody.on("touchmove", "td", function (event) {
+				X = event.touches[0].clientX;
+				Y = event.touches[0].clientY;
 				elem = document.elementFromPoint(X, Y);
-			if (bIsSelecting)
-				setSel(elem);
-			endSelId = parseInt(elem.id);
-			//		event.preventDefault();
-		});
+				if (bIsSelecting) {
+					setSel(elem);
+					endSelId = parseInt(elem.id);
+//					console.log("movet:" + endSelId);
+				}
+				//		event.preventDefault();
+			});
+
 		$tbody.on("click", "th", function (event) {
 			setRowSel($(this));
 		});
