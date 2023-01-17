@@ -8,7 +8,7 @@ class CThermostatHardware : public CDomoticzHardwareBase
 private:
 
 	//thermostat available mode in string "OFF,ECO,COMFORT,AUTO," separated by comma, 
-	// and in the order from 0 to N and 0 = OFF 1 = ECO, 2 = CONFORT 3 = AUTO
+	// and in the order from 0 to N and 0 = OFF 1 = ECO, 2 = COMFORT 3 = AUTO
 	std::string m_AvailableMode;
 
 public:
