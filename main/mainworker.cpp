@@ -13100,7 +13100,7 @@ bool MainWorker::SetThermostatState(const std::string& idx, const int newState)
 	}
 	else if (pHardware->HwdType == HTYPE_VirtualThermostat)
 	{
-		//virtual thermostat set state confor/eco/off/frozen
+		//virtual thermostat set state comfort/eco/off/frozen
 		return m_VirtualThermostat->SetThermostatState(idx, newState);
 	}
 	if (pHardware->HwdType == HTYPE_AtagOne)
