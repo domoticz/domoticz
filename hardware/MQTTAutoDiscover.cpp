@@ -50,19 +50,6 @@ MQTTAutoDiscover::MQTTAutoDiscover(const int ID, const std::string& Name, const 
 	}
 }
 
-bool MQTTAutoDiscover::IsWildcardMatch(const std::string st_topic,const std::string m_topic)
-{
-	bool result;
-	if(mosquitto_topic_matches_sub(st_topic.c_str(), m_topic.c_str(),&result) == MOSQ_ERR_SUCCESS && result == true)
-	{
-		Debug(DEBUG_HARDWARE, "Wildcard compare of %s and %s matched", st_topic.c_str(), m_topic.c_str());
-		return true;
-	}
-	
-	Debug(DEBUG_HARDWARE, "Wildcard compare of %s and %s did not match", st_topic.c_str(), m_topic.c_str());
-	return false;
-}
-
 void MQTTAutoDiscover::on_message(const struct mosquitto_message* message)
 {
 	std::string topic = message->topic;
@@ -78,7 +65,10 @@ void MQTTAutoDiscover::on_message(const struct mosquitto_message* message)
 		bool topicMatch = false;
 		for (auto& itt : m_subscribed_topics)
 		{
-			if (itt.first != m_TopicDiscoveryPrefix + "/#" && IsWildcardMatch(itt.first,topic))
+			bool result = false;
+			mosquitto_topic_matches_sub(itt.first.c_str(), topic.c_str(),&result);
+
+			if (itt.first != m_TopicDiscoveryPrefix + "/#" && result == true)
 			{
 				handle_auto_discovery_sensor_message(message,itt.first);
 				topicMatch = true;			

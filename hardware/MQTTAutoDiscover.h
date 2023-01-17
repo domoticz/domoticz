@@ -139,7 +139,6 @@ public:
 	void on_disconnect(int rc) override;
 
 private:
-	bool IsWildcardMatch(const std::string st_topic,const std::string m_topic);
 	void InsertUpdateSwitch(_tMQTTASensor* pSensor);
 
 	void UpdateBlindPosition(_tMQTTASensor* pSensor);
