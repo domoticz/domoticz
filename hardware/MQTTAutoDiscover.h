@@ -152,7 +152,7 @@ private:
 	void ApplySignalLevelDevice(const _tMQTTASensor* pSensor);
 
 	void on_auto_discovery_message(const struct mosquitto_message* message);
-	void handle_auto_discovery_sensor_message(const struct mosquitto_message* message);
+	void handle_auto_discovery_sensor_message(const struct mosquitto_message* message,const std::string subscribed_topic);
 
 	void handle_auto_discovery_availability(_tMQTTASensor* pSensor, const std::string& payload, const struct mosquitto_message* message);
 	void handle_auto_discovery_sensor(_tMQTTASensor* pSensor, const struct mosquitto_message* message);
