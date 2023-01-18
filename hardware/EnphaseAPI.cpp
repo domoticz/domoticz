@@ -632,12 +632,36 @@ bool EnphaseAPI::getInverterDetails()
 			return false;
 		std::string szSerialNumber = itt["serialNumber"].asString();
 
-
 		int musage = itt["lastReportWatts"].asInt();
 		int mtotal = itt["maxReportWatts"].asInt();
 
-		SendKwhMeter(m_HwdID, iIndex++, 255, musage, mtotal / 1000.0, szSerialNumber);
+		m_bFirstTimeInvertedDetails = false;
+		if (m_bFirstTimeInvertedDetails)
+		{
+			//We have to set these devices to computed as there is no continues kWh counter
+			std::string DeviceID = std_format("%08X", (unsigned int)(m_HwdID << 8) | iIndex);
+
+			_tGeneralDevice gdevice;
+			gdevice.subtype = sTypeKwh;
+			gdevice.intval1 = (m_HwdID << 8) | iIndex;
+			gdevice.floatval1 = (float)musage;
+			gdevice.floatval2 = (float)(mtotal * 1000.0); //bogus value
+			gdevice.rssi = 12;
+
+			m_mainworker.PushAndWaitRxMessage(this, (const unsigned char*)&gdevice, (std::string("Inv: ") + szSerialNumber).c_str(), 255, m_Name.c_str());
+			auto result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (Type=%d) AND (SubType=%d) AND (DeviceID='%q') ", pTypeGeneral, sTypeKwh, DeviceID.c_str());
+			if (!result.empty())
+			{
+				m_sql.SetDeviceOptions(std::stoull(result[0][0]), m_sql.BuildDeviceOptions("EnergyMeterMode:1", false));
+			}
+		}
+		else
+			SendKwhMeter(m_HwdID, iIndex, 255, musage, mtotal / 1000.0, szSerialNumber);//
+
+		iIndex++;
 	}
+
+	m_bFirstTimeInvertedDetails = false;
 
 	return true;
 }

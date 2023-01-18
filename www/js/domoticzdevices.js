@@ -1204,7 +1204,10 @@ function Sensor(item) {
         
         var sensorType = this.type.replace(/\s/g, '');
 
-        if (sensorType === 'General') {
+        if (
+			(sensorType === 'General')
+			|| (sensorType === 'Lux')
+		) {
             this.LogLink = "window.location.href = '#/Devices/" + this.index + "/Log'";
         } else {
             this.LogLink = this.onClick = "Show" + sensorType + "Log('#" + Device.contentTag + "','" + Device.backFunction + "','" + this.index + "','" + this.name + "', '" + this.switchTypeVal + "');";
