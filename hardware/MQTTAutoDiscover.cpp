@@ -62,13 +62,19 @@ void MQTTAutoDiscover::on_message(const struct mosquitto_message* message)
 		if (qMessage.empty())
 			return;
 
+		if (topic.substr(0, topic.find('/')) == m_TopicDiscoveryPrefix)
+		{
+			on_auto_discovery_message(message);
+			return;
+		}
+
 		bool topicMatch = false;
 		for (auto& itt : m_subscribed_topics)
 		{
 			bool result = false;
 			mosquitto_topic_matches_sub(itt.first.c_str(), topic.c_str(),&result);
 
-			if (itt.first != m_TopicDiscoveryPrefix + "/#" && result == true)
+			if (result == true)
 			{
 				handle_auto_discovery_sensor_message(message,itt.first);
 				topicMatch = true;			
@@ -76,11 +82,6 @@ void MQTTAutoDiscover::on_message(const struct mosquitto_message* message)
 		}
 		if(topicMatch == true) return;
 
-		if (topic.substr(0, topic.find('/')) == m_TopicDiscoveryPrefix)
-		{
-			on_auto_discovery_message(message);
-			return;
-		}
 		return;
 	}
 	catch (const std::exception& e)
