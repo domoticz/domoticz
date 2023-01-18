@@ -316,12 +316,12 @@ struct _tTaskItem
 };
 
 // row result for an sql query : string Vector
-typedef std::vector<std::string> TSqlRowQuery;
+using TSqlRowQuery = std::vector<std::string> ;
 
 // result for an sql query : Vector of TSqlRowQuery
-typedef std::vector<TSqlRowQuery> TSqlQueryResult;
+using TSqlQueryResult = std::vector<TSqlRowQuery> ;
 
-typedef   std::map<std::string, std::string> TOptionMap;
+using TOptionMap = std::map<std::string, std::string> ;
 
 class CSQLStatement
 {
