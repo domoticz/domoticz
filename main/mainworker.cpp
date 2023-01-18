@@ -5940,7 +5940,7 @@ void MainWorker::decode_HomeConfort(const CDomoticzHardwareBase* pHardware, cons
 		single_cmnd = (cmnd == HomeConfort_sGroupOff) ? HomeConfort_sOff : HomeConfort_sOn;
 
 		// We write the GROUP_CMD into the log to differentiate between manual turn off/on and group_off/group_on
-		m_sql.UpdateValueHomeConfortGroupCmd(pHardware->m_HwdID, ID.c_str(), Unit, devType, subType, SignalLevel, -1, cmnd, szTmp, procResult.DeviceName, true, procResult.Username.c_str());
+		m_sql.UpdateValueHomeComfortGroupCmd(pHardware->m_HwdID, ID.c_str(), Unit, devType, subType, SignalLevel, -1, cmnd, szTmp, procResult.DeviceName, true, procResult.Username.c_str());
 
 		//set the status of all lights with the same code to on/off
 		m_sql.HomeConfortGroupCmd(ID, subType, single_cmnd);

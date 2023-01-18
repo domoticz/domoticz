@@ -368,7 +368,7 @@ public:
 		const char* sValue, std::string& devname, const bool bUseOnOffAction, const char* User = nullptr);
 	uint64_t UpdateValueLighting2GroupCmd(int HardwareID, const char* ID, unsigned char unit, unsigned char devType, unsigned char subType, unsigned char signallevel, unsigned char batterylevel,
 		int nValue, const char* sValue, std::string& devname, const bool bUseOnOffAction, const char* User = nullptr);
-	uint64_t UpdateValueHomeConfortGroupCmd(int HardwareID, const char* ID, unsigned char unit, unsigned char devType, unsigned char subType, unsigned char signallevel, unsigned char batterylevel,
+	uint64_t UpdateValueHomeComfortGroupCmd(int HardwareID, const char* ID, unsigned char unit, unsigned char devType, unsigned char subType, unsigned char signallevel, unsigned char batterylevel,
 		int nValue, const char* sValue, std::string& devname, const bool bUseOnOffAction, const char* User = nullptr);
 
 	uint64_t GetDeviceIndex(int HardwareID, const std::string& ID, unsigned char unit, unsigned char devType, unsigned char subType, std::string& devname);

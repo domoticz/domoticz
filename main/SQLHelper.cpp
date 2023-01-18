@@ -8594,7 +8594,7 @@ void CSQLHelper::Lighting2GroupCmd(const std::string& ID, const unsigned char su
 		GroupCmd);
 }
 
-uint64_t CSQLHelper::UpdateValueHomeConfortGroupCmd(const int HardwareID, const char* ID, const unsigned char unit,
+uint64_t CSQLHelper::UpdateValueHomeComfortGroupCmd(const int HardwareID, const char* ID, const unsigned char unit,
 	const unsigned char devType, const unsigned char subType,
 	const unsigned char signallevel, const unsigned char batterylevel,
 	const int nValue, const char* sValue,
