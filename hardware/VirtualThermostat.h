@@ -8,7 +8,7 @@
 // hors gel temperature celcius
 #define TEMPERATURE_HG   8
 // of temperature celcius
-#define TEMPERATURE_OFF  0
+#define TEMPERATURE_OFF  5
 
 enum VirtualThermostatMode {
 	Eco = 0,
