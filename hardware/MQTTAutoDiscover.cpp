@@ -68,20 +68,18 @@ void MQTTAutoDiscover::on_message(const struct mosquitto_message* message)
 			return;
 		}
 
-		bool topicMatch = false;
 		for (auto& itt : m_subscribed_topics)
 		{
 			bool result = false;
-			mosquitto_topic_matches_sub(itt.first.c_str(), topic.c_str(), &result);
-
-			if (result == true)
+			if (mosquitto_topic_matches_sub(itt.first.c_str(), topic.c_str(), &result) == MOSQ_ERR_SUCCESS)
 			{
-				handle_auto_discovery_sensor_message(message, itt.first);
-				topicMatch = true;
+				if (result == true)
+				{
+					handle_auto_discovery_sensor_message(message, itt.first);
+					return;
+				}
 			}
 		}
-		if (topicMatch == true)
-			return;
 
 		return;
 	}
@@ -1221,7 +1219,7 @@ void MQTTAutoDiscover::ApplySignalLevelDevice(const _tMQTTASensor* pSensor)
 	}
 }
 
-void MQTTAutoDiscover::handle_auto_discovery_sensor_message(const struct mosquitto_message* message, const std::string &subscribed_topic)
+void MQTTAutoDiscover::handle_auto_discovery_sensor_message(const struct mosquitto_message* message, const std::string& subscribed_topic)
 {
 	std::string topic = subscribed_topic;
 	std::string qMessage = std::string((char*)message->payload, (char*)message->payload + message->payloadlen);
