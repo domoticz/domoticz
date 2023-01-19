@@ -333,14 +333,20 @@ bool EnphaseAPI::GetSerialSoftwareVersion()
 
 	Log(LOG_STATUS, "Connected, serial: %s, software: %s", m_szSerial.c_str(), m_szSoftwareVersion.c_str());
 
-	m_szInstallerPassword = V5_emupwGetMobilePasswd(m_szSerial, "installer", "enphaseenergy.com");
-
 	if (
 		(m_szSoftwareVersion.size() < 2)
 		|| (m_szSoftwareVersion[0] != 'D')
 		)
 	{
 		Log(LOG_STATUS, "Unsupported software version! Please contact us for support!");
+	}
+	else
+	{
+		if (m_szSoftwareVersion[1] <= '7')
+		{
+			m_szInstallerPassword = V5_emupwGetMobilePasswd(m_szSerial, "installer", "enphaseenergy.com");
+			Log(LOG_STATUS, "Software version is lower than 7, using password generated from SN: %s", m_szInstallerPassword.c_str());
+		}
 	}
 
 	return true;
@@ -651,7 +657,7 @@ bool EnphaseAPI::getInverterDetails()
 
 	if (!HTTPClient::GET(sURL.str(), ExtraHeaders, sResult))
 	{
-		if (!NeedToken())
+		if (!NeedToken() && !m_szInstallerPassword.empty())
 		{
 			std::stringstream sURLInstallerPwd;
 			sURLInstallerPwd << "http://installer:" << m_szInstallerPassword << "@" << m_szIPAddress << "/api/v1/production/inverters";
