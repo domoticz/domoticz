@@ -698,7 +698,6 @@ bool EnphaseAPI::getInverterDetails()
 		int musage = itt["lastReportWatts"].asInt();
 		int mtotal = itt["maxReportWatts"].asInt();
 
-		m_bFirstTimeInvertedDetails = false;
 		if (m_bFirstTimeInvertedDetails)
 		{
 			//We have to set these devices to computed as there is no continues kWh counter
