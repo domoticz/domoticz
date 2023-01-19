@@ -62,17 +62,25 @@ void MQTTAutoDiscover::on_message(const struct mosquitto_message* message)
 		if (qMessage.empty())
 			return;
 
-		if (m_subscribed_topics.find(topic) != m_subscribed_topics.end())
-		{
-			handle_auto_discovery_sensor_message(message);
-			return;
-		}
-
 		if (topic.substr(0, topic.find('/')) == m_TopicDiscoveryPrefix)
 		{
 			on_auto_discovery_message(message);
 			return;
 		}
+
+		for (auto& itt : m_subscribed_topics)
+		{
+			bool result = false;
+			if (mosquitto_topic_matches_sub(itt.first.c_str(), topic.c_str(), &result) == MOSQ_ERR_SUCCESS)
+			{
+				if (result == true)
+				{
+					handle_auto_discovery_sensor_message(message, itt.first);
+					return;
+				}
+			}
+		}
+
 		return;
 	}
 	catch (const std::exception& e)
@@ -430,7 +438,7 @@ void MQTTAutoDiscover::on_auto_discovery_message(const struct mosquitto_message*
 	if (strarray.size() < 3)
 	{
 		//not for us
-		return;
+		goto disovery_invaliddata;
 	}
 
 	component = strarray[0];
@@ -438,7 +446,7 @@ void MQTTAutoDiscover::on_auto_discovery_message(const struct mosquitto_message*
 	if (std::find(allowed_components.begin(), allowed_components.end(), component) == allowed_components.end())
 	{
 		//not for us
-		return;
+		goto disovery_invaliddata;
 	}
 
 	//topic format: <discovery_prefix>/<component>/[<node_id>/]<object_id>/<action>
@@ -1185,7 +1193,6 @@ void MQTTAutoDiscover::on_auto_discovery_message(const struct mosquitto_message*
 			SubscribeTopic(pSensor->position_topic, pSensor->qos);
 			SubscribeTopic(pSensor->brightness_state_topic, pSensor->qos);
 			SubscribeTopic(pSensor->mode_state_topic, pSensor->qos);
-			SubscribeTopic(pSensor->temperature_state_template, pSensor->qos);
 			SubscribeTopic(pSensor->current_temperature_topic, pSensor->qos);
 			SubscribeTopic(pSensor->temperature_state_topic, pSensor->qos);
 			SubscribeTopic(pSensor->rgb_state_topic, pSensor->qos);
@@ -1212,9 +1219,9 @@ void MQTTAutoDiscover::ApplySignalLevelDevice(const _tMQTTASensor* pSensor)
 	}
 }
 
-void MQTTAutoDiscover::handle_auto_discovery_sensor_message(const struct mosquitto_message* message)
+void MQTTAutoDiscover::handle_auto_discovery_sensor_message(const struct mosquitto_message* message, const std::string& subscribed_topic)
 {
-	std::string topic = message->topic;
+	std::string topic = subscribed_topic;
 	std::string qMessage = std::string((char*)message->payload, (char*)message->payload + message->payloadlen);
 
 	if (qMessage.empty())
@@ -1377,57 +1384,6 @@ void MQTTAutoDiscover::GuessSensorTypeValue(const _tMQTTASensor* pSensor, uint8_
 	float AddjMulti = 1.0F;
 
 	if (
-		(szUnit == "°c")
-		|| (szUnit == "\xB0" "c")
-		|| (szUnit == "c")
-		|| (szUnit == "?c")
-		|| (pSensor->value_template.find("temperature") != std::string::npos)
-		|| (pSensor->state_topic.find("temperature") != std::string::npos)
-		)
-	{
-		devType = pTypeTEMP;
-		subType = sTypeTEMP1;
-
-		double temp = static_cast<float>(atof(pSensor->last_value.c_str()));
-
-		if (
-			(szUnit == "°f")
-			|| (szUnit == "\xB0" "f")
-			|| (szUnit == "f")
-			|| (szUnit == "?f")
-			)
-		{
-			temp = ConvertToCelsius(temp);
-		}
-
-		m_sql.GetAddjustment(m_HwdID, pSensor->unique_id.c_str(), pSensor->devUnit, devType, subType, AddjValue, AddjMulti);
-		temp += AddjValue;
-		sValue = std_format("%.1f", temp);
-	}
-	else if (szUnit == "%")
-	{
-		if (
-			(pSensor->object_id.find("humidity") != std::string::npos)
-			|| (pSensor->device_class.find("humidity") != std::string::npos)
-			|| (pSensor->state_topic.find("humidity") != std::string::npos)
-			|| (pSensor->unique_id.find("humidity") != std::string::npos)
-			|| (pSensor->value_template.find("humidity") != std::string::npos)
-			)
-		{
-			devType = pTypeHUM;
-			subType = sTypeHUM2;
-			nValue = atoi(pSensor->last_value.c_str());
-			sValue = std_format("%d", Get_Humidity_Level(pSensor->nValue));
-		}
-		else
-		{
-			devType = pTypeGeneral;
-			subType = sTypePercentage;
-			szOptions = pSensor->unit_of_measurement;
-			sValue = pSensor->last_value;
-		}
-	}
-	else if (
 		(szUnit == "hpa")
 		|| (szUnit == "kpa")
 		|| (pSensor->value_template.find("pressure") != std::string::npos)
@@ -1683,6 +1639,58 @@ void MQTTAutoDiscover::GuessSensorTypeValue(const _tMQTTASensor* pSensor, uint8_
 		subType = sTypeLux;
 		sValue = pSensor->last_value;
 	}
+	else if (
+		(szUnit == "°c")
+		|| (szUnit == "\xB0" "c")
+		|| (szUnit == "c")
+		|| (szUnit == "?c")
+		|| (pSensor->value_template.find("temperature") != std::string::npos)
+		|| (pSensor->state_topic.find("temperature") != std::string::npos)
+		)
+	{
+		devType = pTypeTEMP;
+		subType = sTypeTEMP1;
+
+		double temp = static_cast<float>(atof(pSensor->last_value.c_str()));
+
+		if (
+			(szUnit == "°f")
+			|| (szUnit == "\xB0" "f")
+			|| (szUnit == "f")
+			|| (szUnit == "?f")
+			)
+		{
+			temp = ConvertToCelsius(temp);
+		}
+
+		m_sql.GetAddjustment(m_HwdID, pSensor->unique_id.c_str(), pSensor->devUnit, devType, subType, AddjValue, AddjMulti);
+		temp += AddjValue;
+		sValue = std_format("%.1f", temp);
+	}
+	else if (szUnit == "%")
+	{
+		if (
+			(pSensor->object_id.find("humidity") != std::string::npos)
+			|| (pSensor->device_class.find("humidity") != std::string::npos)
+			|| (pSensor->state_topic.find("humidity") != std::string::npos)
+			|| (pSensor->unique_id.find("humidity") != std::string::npos)
+			|| (pSensor->value_template.find("humidity") != std::string::npos)
+			)
+		{
+			devType = pTypeHUM;
+			subType = sTypeHUM2;
+			nValue = atoi(pSensor->last_value.c_str());
+			sValue = std_format("%d", Get_Humidity_Level(pSensor->nValue));
+		}
+		else
+		{
+			devType = pTypeGeneral;
+			subType = sTypePercentage;
+			szOptions = pSensor->unit_of_measurement;
+			sValue = pSensor->last_value;
+		}
+	}
+
 	/*
 		else if (pSensor->state_class == "total_increasing")
 		{

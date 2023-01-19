@@ -52,5 +52,7 @@ private:
 	bool m_bHaveeNetConsumption = false;
 	bool m_bHaveStorage = false;
 
+	bool m_bFirstTimeInvertedDetails = true;
+
 	std::shared_ptr<std::thread> m_thread;
 };
