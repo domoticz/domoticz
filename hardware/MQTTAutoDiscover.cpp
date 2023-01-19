@@ -438,7 +438,7 @@ void MQTTAutoDiscover::on_auto_discovery_message(const struct mosquitto_message*
 	if (strarray.size() < 3)
 	{
 		//not for us
-		return;
+		goto disovery_invaliddata;
 	}
 
 	component = strarray[0];
@@ -446,7 +446,7 @@ void MQTTAutoDiscover::on_auto_discovery_message(const struct mosquitto_message*
 	if (std::find(allowed_components.begin(), allowed_components.end(), component) == allowed_components.end())
 	{
 		//not for us
-		return;
+		goto disovery_invaliddata;
 	}
 
 	//topic format: <discovery_prefix>/<component>/[<node_id>/]<object_id>/<action>
