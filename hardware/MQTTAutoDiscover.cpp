@@ -433,10 +433,14 @@ void MQTTAutoDiscover::on_auto_discovery_message(const struct mosquitto_message*
 
 	topic = topic.substr(m_TopicDiscoveryPrefix.size() + 1);
 
+	//<discovery_prefix>/<component>/[<node_id>/]<object_id>/config
+
 	std::vector<std::string> strarray;
 	StringSplit(topic, "/", strarray);
 	if (strarray.size() < 3)
 	{
+		if (topic == "status")
+			return;
 		//not for us
 		goto disovery_invaliddata;
 	}
