@@ -450,7 +450,7 @@ void MQTTAutoDiscover::on_auto_discovery_message(const struct mosquitto_message*
 	if (std::find(allowed_components.begin(), allowed_components.end(), component) == allowed_components.end())
 	{
 		//not for us
-		goto disovery_invaliddata;
+		return;
 	}
 
 	//topic format: <discovery_prefix>/<component>/[<node_id>/]<object_id>/<action>
