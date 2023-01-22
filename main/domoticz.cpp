@@ -174,6 +174,8 @@ http::server::server_settings webserver_settings;
 #ifdef WWW_ENABLE_SSL
 http::server::ssl_server_settings secure_webserver_settings;
 #endif
+iamserver::iam_settings iamserver_settings;
+
 bool bStartWebBrowser = true;
 bool g_bUseWatchdog = true;
 
@@ -1101,6 +1103,8 @@ int main(int argc, char**argv)
 			}
 		}
 	}
+
+	m_mainworker.SetIamserverSettings(iamserver_settings);
 
 	if ((g_bRunAsDaemon)||(g_bUseSyslog))
 	{

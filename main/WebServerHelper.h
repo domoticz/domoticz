@@ -11,9 +11,9 @@ namespace http {
 
 			// called from mainworker():
 #ifdef WWW_ENABLE_SSL
-			bool StartServers(server_settings &web_settings, ssl_server_settings &secure_web_settings, const std::string &serverpath, bool bIgnoreUsernamePassword);
+			bool StartServers(server_settings &web_settings, ssl_server_settings &secure_web_settings, iamserver::iam_settings & iam_settings, const std::string &serverpath, bool bIgnoreUsernamePassword);
 #else
-			bool StartServers(server_settings & web_settings, const std::string &serverpath, const bool bIgnoreUsernamePassword);
+			bool StartServers(server_settings & web_settings, iamserver::iam_settings & iam_settings, const std::string &serverpath, const bool bIgnoreUsernamePassword);
 #endif
 			void StopServers();
 			void SetWebCompressionMode(_eWebCompressionMode gzmode);
