@@ -70,12 +70,6 @@
 
 #define round(a) (int)(a + .5)
 
-#define OAUTH2_AUTH_URL "/oauth2/v1/authorize"
-#define OAUTH2_TOKEN_URL "/oauth2/v1/token"
-#define OAUTH2_USERIDX_OFFSET 20000
-#define OAUTH2_AUTHTOKEN_EXPIRETIME 3600
-#define OAUTH2_REFRESHTOKEN_EXPIRETIME 86400
-
 extern std::string szStartupFolder;
 extern std::string szUserDataFolder;
 extern std::string szWWWFolder;
@@ -119,6 +113,7 @@ namespace http
 		{
 			m_pWebEm = nullptr;
 			m_bDoStop = false;
+			m_failcount = 0;
 #ifdef WITH_OPENZWAVE
 			m_ZW_Hwidx = -1;
 #endif
@@ -277,6 +272,7 @@ namespace http
 			bool exception = false;
 
 			_log.Debug(DEBUG_WEBSERVER, "CWebServer::StartServer() : settings : %s", settings.to_string().c_str());
+			_log.Debug(DEBUG_AUTH, "CWebServer::StartServer() : IAM settings : %s", m_iamsettings.to_string().c_str());
 			do
 			{
 				try
@@ -347,12 +343,15 @@ namespace http
 			m_pWebEm->RegisterIncludeCode("timertypes", [this](auto&& content_part) { DisplayTimerTypesCombo(content_part); });
 			m_pWebEm->RegisterIncludeCode("combolanguage", [this](auto&& content_part) { DisplayLanguageCombo(content_part); });
 
-			m_pWebEm->RegisterPageCode(
-				OAUTH2_AUTH_URL, [this](auto &&session, auto &&req, auto &&rep) { GetOauth2AuthCode(session, req, rep); }, true);
-			m_pWebEm->RegisterPageCode(
-				OAUTH2_TOKEN_URL, [this](auto &&session, auto &&req, auto &&rep) { PostOauth2AccessToken(session, req, rep); }, true);
-			m_pWebEm->RegisterPageCode(
-				"/.well-known/openid-configuration", [this](auto &&session, auto &&req, auto &&rep) { GetOpenIDConfiguration(session, req, rep); }, true);
+			if (m_iamsettings.is_enabled())
+			{
+				m_pWebEm->RegisterPageCode(
+					m_iamsettings.auth_url.c_str(), [this](auto &&session, auto &&req, auto &&rep) { GetOauth2AuthCode(session, req, rep); }, true);
+				m_pWebEm->RegisterPageCode(
+					m_iamsettings.token_url.c_str(), [this](auto &&session, auto &&req, auto &&rep) { PostOauth2AccessToken(session, req, rep); }, true);
+				m_pWebEm->RegisterPageCode(
+					m_iamsettings.discovery_url.c_str(), [this](auto &&session, auto &&req, auto &&rep) { GetOpenIDConfiguration(session, req, rep); }, true);
+			}
 
 			m_pWebEm->RegisterPageCode("/json.htm", [this](auto &&session, auto &&req, auto &&rep) { GetJSonPage(session, req, rep); });
 			// These 'Pages' should probably be 'moved' to become Command codes handled by the 'json.htm API', so we get all API calls through one entry point
@@ -783,6 +782,11 @@ namespace http
 			m_pWebEm->SetWebRoot(webRoot);
 		}
 
+		void CWebServer::SetIamSettings(const iamserver::iam_settings &iamsettings)
+		{
+			m_iamsettings = iamsettings;
+		}
+
 		void CWebServer::RegisterCommandCode(const char* idname, const webserver_response_function& ResponseFunction, bool bypassAuthentication)
 		{
 			m_webcommands.insert(std::pair<std::string, webserver_response_function>(std::string(idname), ResponseFunction));
@@ -963,7 +967,7 @@ namespace http
 
 			if (!redirect_uri.empty() && redirect_uri.substr(0,8) == "https://")	// Absolute and (TLS)safe redirect URI expected
 			{
-				if (req.method == "GET")
+				if (req.method == "GET" || req.method == "POST")
 				{
 					if(!response_type.empty() && (response_type.compare("code") == 0 )) // || response_type.compare("token") == 0))
 					{
@@ -976,38 +980,49 @@ namespace http
 						if (!client_id.empty())
 						{
 							iClient = FindUser(client_id.c_str());
-							if (iClient >= 0)
+							if (iClient >= 0 && m_users[iClient].userrights == URIGHTS_CLIENTID)
 							{
 								std::string Username;
 
-								bAuthenticated = m_pWebEm->FindAuthenticatedUser(Username, req, rep);
+								if(req.method != "POST")
+								{	// So a GET request
+									bAuthenticated = m_pWebEm->FindAuthenticatedUser(Username, req, rep);
 
-								if (Username.empty())
-								{
-									_log.Debug(DEBUG_AUTH, "OAuth2 Auth Code: No valid User, present Basic Auth Dialog!");
-									return;
-								}
-
-								_log.Debug(DEBUG_AUTH, "OAuth2 Auth Code: Checking User (%s) if authenticated (%d)!", Username.c_str(), bAuthenticated);
-
-								if (m_users[iClient].userrights == URIGHTS_CLIENTID)	// Found a registered client
-								{
+									if (Username.empty())
+									{
+										_log.Debug(DEBUG_AUTH, "OAuth2 Auth Code: No Authenticated User, present Authentication Dialog!");
+										PresentOauth2LoginDialog(rep, m_users[iClient].Username, "");
+										m_failcount = 0;
+										return;
+									}
 									iUser = FindUser(Username.c_str());
-									if (iUser != -1)
+								}
+								else
+								{	// POST request, so maybe we have the data from the Login form
+									std::string sConsent = request::findValue(&req, "consent");
+									std::string sPWD = request::findValue(&req, "psw");
+									Username = request::findValue(&req, "uname");
+									iUser = FindUser(Username.c_str());
+									bAuthenticated = (iUser > 0 ? (m_users[iUser].Password == GenerateMD5Hash(sPWD)) : false);
+									if (!bAuthenticated)
 									{
-										m_accesscodes[iUser].clientID = iClient;
-									}
-									else
-									{
-										_log.Debug(DEBUG_AUTH, "OAuth2 Auth Code: Could not find an authenticated user for Client (%s)!", client_id.c_str());
+										m_failcount++;
+										if (m_failcount < 3)
+										{
+											_log.Debug(DEBUG_AUTH, "OAuth2 Auth Code: Validating User (%s) failed (%d)!", Username.c_str(), iUser);
+											PresentOauth2LoginDialog(rep, m_users[iClient].Username, "Invalid Credentials!");
+											return;
+										}
 									}
 								}
+
 								if (iUser != -1 && bAuthenticated)
 								{
 									code = GenerateMD5Hash(base64_encode(GenerateUUID()));
 									m_accesscodes[iUser].AuthCode = code;
+									m_accesscodes[iUser].clientID = iClient;
 									m_accesscodes[iUser].AuthTime = std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now().time_since_epoch()).count();
-									m_accesscodes[iUser].ExpTime = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count() + 60000;
+									m_accesscodes[iUser].ExpTime = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count() + (m_iamsettings.code_expire_seconds * 1000);
 									m_accesscodes[iUser].RedirectUri = redirect_uri;
 									m_accesscodes[iUser].Scope = scope;
 									if (!(code_challenge.empty() || code_challenge_method.empty()) && code_challenge_method.compare("S256") == 0 )
@@ -1053,6 +1068,7 @@ namespace http
 				_log.Debug(DEBUG_AUTH, "OAuth2 Auth Code: Wrong/Missing redirect_uri (%s)!", redirect_uri.c_str());
 			}
 
+			// Redirect the User back to origin using the redirect_uri
 			std::stringstream result;
 			if(redirect_uri.find("?") != std::string::npos)
 				result << redirect_uri << "&";
@@ -1075,8 +1091,8 @@ namespace http
 		{
 			Json::Value root;
 			std::string jwttoken;
-			uint32_t exptime = OAUTH2_AUTHTOKEN_EXPIRETIME;			// Token validity time (seconds)
-			uint32_t refreshexptime = OAUTH2_REFRESHTOKEN_EXPIRETIME;	// Refresh token validity time (seconds)
+			uint32_t exptime = m_iamsettings.token_expire_seconds;			// Token validity time (seconds)
+			uint32_t refreshexptime = m_iamsettings.refresh_expire_seconds;	// Refresh token validity time (seconds)
 
 			reply::add_header_content_type(&rep, "application/json;charset=UTF-8");
 			rep.status = reply::bad_request;
@@ -1250,7 +1266,7 @@ namespace http
 										if (m_users[iUser].userrights != URIGHTS_CLIENTID && GenerateMD5Hash(passwd).compare(m_users[iUser].Password) == 0)
 										{
 											iClient = FindUser(client_id.c_str());
-											if (iClient > 0 && m_users[iClient].ID >= OAUTH2_USERIDX_OFFSET && m_users[iClient].userrights == URIGHTS_CLIENTID)
+											if (iClient > 0 && m_users[iClient].ID >= m_iamsettings.getUserIdxOffset() && m_users[iClient].userrights == URIGHTS_CLIENTID)
 											{
 												Json::Value jwtpayload;
 												jwtpayload["preferred_username"] = m_users[iUser].Username;
@@ -1382,8 +1398,8 @@ namespace http
 			std::string base_url = m_pWebEm->m_DigistRealm.substr(0, m_pWebEm->m_DigistRealm.size()-1);
 
 			root["issuer"] = m_pWebEm->m_DigistRealm;
-			root["authorization_endpoint"] = base_url + OAUTH2_AUTH_URL;
-			root["token_endpoint"] = base_url + OAUTH2_TOKEN_URL;
+			root["authorization_endpoint"] = base_url + m_iamsettings.auth_url;
+			root["token_endpoint"] = base_url + m_iamsettings.token_url;
 			jaRTS.append("code");
 			root["response_types_supported"] = jaRTS;
 			jaTEASAVS.append("PS256");
@@ -1403,6 +1419,36 @@ namespace http
 
 			rep.status = reply::ok;
 			reply::set_content(&rep, root.toStyledString());
+		}
+
+		void CWebServer::PresentOauth2LoginDialog(reply &rep, const std::string sApp, const std::string sError)
+		{
+			rep = reply::stock_reply(reply::ok);
+
+			//std::string file_location = szWWWFolder + m_iamsettings.login_page;
+			//_log.Debug(DEBUG_AUTH, "Attempting to load IAM login page (%s)", file_location.c_str());
+			//if (reply::set_content_from_file(&rep, file_location))
+			reply::set_content(&rep, m_iamsettings.getLoginPageContent());
+			{
+				size_t pos = rep.content.find("###REPLACE_APP###");
+				rep.content.replace(pos,17,sApp);
+				pos = rep.content.find("###REPLACE_ERROR###");
+				rep.content.replace(pos,19,sError);
+			}
+			/*
+			else
+			{
+				reply::set_content(&rep, "Failed to load IAM Login page!");
+				rep.status = reply::status_type::not_implemented;
+			}
+			*/
+			if (!sError.empty())
+				rep.status = reply::status_type::unauthorized;
+			reply::add_header(&rep, "Content-Length", std::to_string(rep.content.size()));
+			reply::add_header_content_type(&rep, "text/html");
+			reply::add_header(&rep, "Cache-Control", "no-store");
+			if (m_pWebEm->m_settings.is_secure())
+				reply::add_security_headers(&rep);
 		}
 
 		std::string CWebServer::GenerateOAuth2RefreshToken(const std::string username, const int refreshexptime)
@@ -8349,7 +8395,7 @@ namespace http
 					int bIsActive = static_cast<int>(atoi(sd[1].c_str()));
 					if (bIsActive)
 					{
-						unsigned long ID = OAUTH2_USERIDX_OFFSET + (unsigned long)atol(sd[0].c_str());
+						unsigned long ID = (unsigned long)m_iamsettings.getUserIdxOffset() + (unsigned long)atol(sd[0].c_str());
 						int bPublic = static_cast<int>(atoi(sd[2].c_str()));
 						std::string applicationname = sd[3];
 						std::string secret = sd[4];
