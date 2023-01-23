@@ -7863,6 +7863,8 @@ namespace http
 						std::string applicationname = sd[3];
 						std::string secret = sd[4];
 						std::string pemfile = sd[5];
+						if (bPublic && secret.empty())
+							secret = GenerateMD5Hash(pemfile);
 						AddUser(ID, applicationname, secret, URIGHTS_CLIENTID, bPublic, pemfile);
 					}
 				}
