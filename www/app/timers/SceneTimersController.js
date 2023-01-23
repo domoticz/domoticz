@@ -30,6 +30,7 @@ define(['app', 'timers/factories', 'timers/components', 'scenes/factories'], fun
 
             vm.typeOptions = deviceTimerOptions.timerTypes;
             vm.timerSettings = deviceTimerConfigUtils.getTimerDefaultConfig();
+            $('#GridTable').hide();
         }
 
         function refreshTimers() {
