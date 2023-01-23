@@ -14935,10 +14935,13 @@ namespace http
 						bool bHaveFirstValue = false;
 						bool bHaveFirstRealValue = false;
 						unsigned long long ulFirstValue = 0;
-						std::string szFirstDateTime;
+						unsigned long long ulRealFirstValue = 0;
+						int lastDay = 0;
+						std::string szLastDateTimeHour;
+						std::string szlastDateTime;
 						unsigned long long ulLastValue = 0;
 
-						std::string LastDateTime;
+						int lastHour = 0;
 						time_t lastTime = 0;
 
 						if (bIsManagedCounter)
@@ -14964,17 +14967,27 @@ namespace http
 								if (method == 0)
 								{
 									// bars / hour
-
 									unsigned long long actValue = std::strtoull(sd[0].c_str(), nullptr, 10);
+									szlastDateTime = sd[1].substr(0, 16);
+									szLastDateTimeHour = sd[1].substr(0, 13) + ":00";
 
-									std::string actDateTimeHour = sd[1].substr(0, 13);
-									if (actDateTimeHour != LastDateTime)
+									struct tm ntime;
+									time_t atime;
+									ParseSQLdatetime(atime, ntime, sd[1], -1);
+
+									if (lastHour != ntime.tm_hour)
 									{
+										double usageValue = (double)(actValue - ulRealFirstValue);
+
+										if (lastDay != ntime.tm_mday)
+										{
+											lastDay = ntime.tm_mday;
+											ulRealFirstValue = actValue;
+										}
+
 										if (bHaveFirstValue)
 										{
-											if (LastDateTime.size() == 10)
-												LastDateTime += " 00";
-											root["result"][ii]["d"] = LastDateTime + ":00";
+											root["result"][ii]["d"] = szLastDateTimeHour;
 
 											// float TotalValue = float(actValue - ulFirstValue);
 
@@ -15003,6 +15016,24 @@ namespace http
 													break;
 												}
 												root["result"][ii]["v"] = szTmp;
+
+												switch (metertype)
+												{
+												case MTYPE_ENERGY:
+												case MTYPE_ENERGY_GENERATED:
+													sprintf(szTmp, "%.3f", usageValue / divider);
+													break;
+												case MTYPE_GAS:
+													sprintf(szTmp, "%.3f", usageValue / divider);
+													break;
+												case MTYPE_WATER:
+													sprintf(szTmp, "%g", usageValue);
+													break;
+												case MTYPE_COUNTER:
+													sprintf(szTmp, "%.3f", usageValue / divider);
+													break;
+												}
+												root["result"][ii]["mu"] = szTmp;
 												ii++;
 											}
 										}
@@ -15010,14 +15041,35 @@ namespace http
 										{
 											ulFirstValue = actValue;
 										}
-										LastDateTime = actDateTimeHour;
+										lastHour = ntime.tm_hour;
 									}
 
 									if (!bHaveFirstValue)
 									{
-										ulFirstValue = actValue;
-										LastDateTime = actDateTimeHour;
 										bHaveFirstValue = true;
+										lastHour = ntime.tm_hour;
+										if ((ntime.tm_hour != 0) && (ntime.tm_min != 0))
+										{
+											struct tm ltime;
+											localtime_r(&atime, &tm1);
+											getNoon(atime, ltime, ntime.tm_year + 1900, ntime.tm_mon + 1,
+												ntime.tm_mday - 1); // We're only interested in finding the date
+											int year = ltime.tm_year + 1900;
+											int mon = ltime.tm_mon + 1;
+											int day = ltime.tm_mday;
+											sprintf(szTmp, "%04d-%02d-%02d", year, mon, day);
+											std::vector<std::vector<std::string>> result2;
+											result2 = m_sql.safe_query(
+												"SELECT Counter FROM %s_Calendar WHERE (DeviceRowID==%" PRIu64
+												") AND (Date=='%q')",
+												dbasetable.c_str(), idx, szTmp);
+											if (!result2.empty())
+											{
+												std::vector<std::string> sd = result2[0];
+												ulRealFirstValue = std::strtoll(sd[0].c_str(), nullptr, 10);;
+												lastDay = ntime.tm_mday;
+											}
+										}
 									}
 									ulLastValue = actValue;
 								}
@@ -15081,7 +15133,7 @@ namespace http
 						if ((!bIsManagedCounter) && (bHaveFirstValue) && (method == 0))
 						{
 							// add last value
-							root["result"][ii]["d"] = LastDateTime + ":00";
+							root["result"][ii]["d"] = szLastDateTimeHour;
 
 							unsigned long long ulTotalValue = ulLastValue - ulFirstValue;
 
@@ -15109,6 +15161,26 @@ namespace http
 									break;
 								}
 								root["result"][ii]["v"] = szTmp;
+
+								double usageValue = (double)(ulLastValue - ulRealFirstValue);
+								switch (metertype)
+								{
+								case MTYPE_ENERGY:
+								case MTYPE_ENERGY_GENERATED:
+									sprintf(szTmp, "%.3f", usageValue / divider);
+									break;
+								case MTYPE_GAS:
+									sprintf(szTmp, "%.3f", usageValue / divider);
+									break;
+								case MTYPE_WATER:
+									sprintf(szTmp, "%.3f", usageValue);
+									break;
+								case MTYPE_COUNTER:
+									sprintf(szTmp, "%.3f", usageValue / divider);
+									break;
+								}
+								root["result"][ii]["mu"] = szTmp;
+
 								ii++;
 							}
 						}
