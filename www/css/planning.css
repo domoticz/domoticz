@@ -69,7 +69,7 @@ overflow-y:hidden;
     text-align: right;
 }
 
-.ts-planning .m0,.red{background-color:darkred;}
+.ts-planning .m0,.red{background-color:darkred; }
 .ts-planning .m1,.green {background-color: darkgreen}
 .ts-planning .m2 {background-color: #0094ff}
 .ts-planning .m3 {background-color: #AAAAAA}
@@ -82,7 +82,11 @@ overflow-y:hidden;
 .ts-planning .m9 {background-color: DeepPink}
 .ts-planning .m10 {background-color: Gold}
 
-.ts-planning .deactivate{ opacity: 0.3}
+.ts-planning .selected { border: 2px solid black;}
+
+.ts-planning .deactivate {
+    opacity: 0.3
+}
 
 
 .ts-planning .inputmode {

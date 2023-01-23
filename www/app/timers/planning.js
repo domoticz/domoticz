@@ -742,7 +742,7 @@ PlanningTimerSheet = function(options){
 		if(defaults.buttonClass != undefined)
 			$element.find('.ts-actions>div').addClass(defaults.buttonClass);
 
-		selectRectangle = function () {
+		selectRectangle = function (SelClass, pbAdd ) {
 			startRow = Math.floor(startSelId / 100 ) ;
 			startCol = startSelId % 100 ;
 			endRow   = Math.floor(endSelId / 100 );
@@ -757,8 +757,15 @@ PlanningTimerSheet = function(options){
 			for (var row= startRow ; row<=endRow;row++)
 				for (var col= startCol ; col<=endCol;col++)
 				{
-					var id = row*100 + col ;
-					setSel($("#"+id)) ;
+					var id = row * 100 + col;
+					if (SelClass == 0)
+						$("#" + id).removeClass();
+					else {
+						$("#" + id).removeClass(SelClass);
+						if (pbAdd)
+							$("#" + id).addClass(SelClass);
+					}
+					//setSel($("#"+id)) ;
 				}
 		};
 		$table = $element.find('table');
@@ -783,17 +790,23 @@ PlanningTimerSheet = function(options){
 //			console.log("start:"+startSelId );
 		});
 		$tbody.on(mouseupEvt, "td", function (event) {
-			setSel(this);
 			bIsSelecting = false;
 //			console.log("stop:" + endSelId);
-			selectRectangle();
+			selectRectangle(0,false);
+			selectRectangle(getModeClass(),bAddClass);
 		});
 		if ( $.myglobals.ismobile != true  )
 			$tbody.on("mouseover", "td", function (event) {
+				var elem = this;
 				if (bIsSelecting) {
-					setSel(this);
-					endSelId = parseInt(this.id);
-//					console.log("moves:" + endSelId);
+					var selectClass = 'selected';
+					selectRectangle(0,false);
+
+					endSelId = parseInt(elem.id);
+					console.log("moves:" + endSelId);
+					if (bAddClass)
+						selectClass = 'selected ' + getModeClass() ;
+					selectRectangle(selectClass,true);
 				}
 			});
 		else 
@@ -805,6 +818,7 @@ PlanningTimerSheet = function(options){
 					setSel(elem);
 					endSelId = parseInt(elem.id);
 //					console.log("movet:" + endSelId);
+					selectRectangle('selected');
 				}
 				//		event.preventDefault();
 			});
