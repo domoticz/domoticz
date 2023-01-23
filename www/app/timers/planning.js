@@ -742,9 +742,23 @@ PlanningTimerSheet = function(options){
 		if(defaults.buttonClass != undefined)
 			$element.find('.ts-actions>div').addClass(defaults.buttonClass);
 
-		selectRectangle = function (SelClass, pbAdd ) {
-			startRow = Math.floor(startSelId / 100 ) ;
-			startCol = startSelId % 100 ;
+		GetId = function(row, col)
+		{
+			return ( row * 100 + col );
+		}
+		GetRow = function(pstartSelId)
+		{
+			return  Math.floor(startSelId / 100 ) ;
+		}
+		GetCol = function(pstartSelId)
+		{
+			return  startSelId % 100 ;
+		}
+
+		selectRectangle = function (SelClass, pbAdd, pRemove) {
+			if (typeof pRemove  == 'undefined') pRemove = true;
+			startRow = GetRow(startSelId) ;
+			startCol = GetCol(startSelId) ;
 			endRow   = Math.floor(endSelId / 100 );
 			endCol   = endSelId % 100 ;
 //			console.log(startSelId + " " + endSelId);
@@ -757,17 +771,41 @@ PlanningTimerSheet = function(options){
 			for (var row= startRow ; row<=endRow;row++)
 				for (var col= startCol ; col<=endCol;col++)
 				{
-					var id = row * 100 + col;
-					if (SelClass == 0)
-						$("#" + id).removeClass();
-					else {
-						$("#" + id).removeClass(SelClass);
-						if (pbAdd)
-							$("#" + id).addClass(SelClass);
+					var id = GetId(row, col);
+					if (pRemove) {
+						if (SelClass == 0)
+							$("#" + id).removeClass();
+						else 
+							$("#" + id).removeClass(SelClass);
 					}
-					//setSel($("#"+id)) ;
+					if (pbAdd)
+						$("#" + id).addClass(SelClass);
 				}
 		};
+		selectRectangleBorder = function () {
+			startRow = GetRow(startSelId) ;
+			startCol = GetCol(startSelId) ;
+			endRow   = Math.floor(endSelId / 100 );
+			endCol   = endSelId % 100 ;
+			if (endRow<startRow){
+				var r = endRow ; endRow = startRow ; startRow = r ;
+			}
+			if (endCol<startCol){
+				var r = endCol ; endCol = startCol ; startCol = r ;
+			}
+			for (var row = startRow; row <= endRow; row++) {
+				$("#" + GetId(row,startCol)).addClass('tsleft');
+				$("#" + GetId(row,endCol  )).addClass('tsright');
+			}
+
+			for (var col = startCol; col <= endCol; col++)
+			{
+				$("#" + GetId(startRow,col)).addClass('tstop');
+				$("#" + GetId(endRow  ,col)).addClass('tsbottom');
+			}
+		};
+
+
 		$table = $element.find('table');
 		$tbody = $table.find('tbody');
 		$thead = $table.find('thead');
@@ -792,21 +830,18 @@ PlanningTimerSheet = function(options){
 		$tbody.on(mouseupEvt, "td", function (event) {
 			bIsSelecting = false;
 //			console.log("stop:" + endSelId);
-			selectRectangle(0,false);
-			selectRectangle(getModeClass(),bAddClass);
+			selectRectangle(0,false);//del
+			selectRectangle(getModeClass(),bAddClass);//display
 		});
 		if ( $.myglobals.ismobile != true  )
 			$tbody.on("mouseover", "td", function (event) {
 				var elem = this;
 				if (bIsSelecting) {
-					var selectClass = 'selected';
-					selectRectangle(0,false);
-
+					selectRectangle(0,false);//del
 					endSelId = parseInt(elem.id);
 					console.log("moves:" + endSelId);
-					if (bAddClass)
-						selectClass = 'selected ' + getModeClass() ;
-					selectRectangle(selectClass,true);
+					selectRectangleBorder();
+					selectRectangle(getModeClass(),bAddClass,true);//display
 				}
 			});
 		else 
@@ -815,10 +850,11 @@ PlanningTimerSheet = function(options){
 				Y = event.touches[0].clientY;
 				elem = document.elementFromPoint(X, Y);
 				if (bIsSelecting) {
-					setSel(elem);
+					selectRectangle(0,false);//del
 					endSelId = parseInt(elem.id);
-//					console.log("movet:" + endSelId);
-					selectRectangle('selected');
+					console.log("moves:" + endSelId);
+					selectRectangleBorder();
+					selectRectangle(getModeClass(),bAddClass,true);//display
 				}
 				//		event.preventDefault();
 			});
@@ -885,7 +921,9 @@ PlanningTimerSheet = function(options){
 			}else 
 				$element.find('.ts-wrapper').removeClass('zoom zoom2');
 
-		$element.find('.timeRange option[value="'+ defaults.nbTicksPerHour + '"]').prop('selected',true);
+		$element.find('.timeRange option[value="' + defaults.nbTicksPerHour + '"]').prop('selected', true);
+		if ($.myglobals.ismobile == true)
+			$(".ts-planning tr").css({ "height": '40px' });
 
 //		$element.show();
 	};

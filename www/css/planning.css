@@ -82,7 +82,12 @@ overflow-y:hidden;
 .ts-planning .m9 {background-color: DeepPink}
 .ts-planning .m10 {background-color: Gold}
 
-.ts-planning .selected { border: 2px solid black;}
+
+.ts-planning .tsbottom { border-bottom: 2px solid blue ;}
+.ts-planning .tstop    { border-top   : 2px solid blue ;}
+.ts-planning .tsleft   { border-left  : 2px solid blue ;}
+.ts-planning .tsright  { border-right : 2px solid blue ;}
+.ts-planning .tsnone   { border       : none           ;}
 
 .ts-planning .deactivate {
     opacity: 0.3
