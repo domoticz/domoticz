@@ -3062,6 +3062,28 @@ void MQTTAutoDiscover::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 				}
 			}
 		}
+		else
+		{
+			if (pSensor->component_type == "binary_sensor")
+			{
+				if (szSwitchCmd == pSensor->payload_off)
+					szSwitchCmd = "off";
+				else if (szSwitchCmd == pSensor->payload_on)
+					szSwitchCmd = "on";
+			}
+			else if (pSensor->component_type == "lock")
+			{
+				if ((szSwitchCmd == pSensor->payload_unlock)
+					|| (szSwitchCmd == pSensor->state_unlocked)
+					)
+					szSwitchCmd = "off";
+				else if (
+					(szSwitchCmd == pSensor->payload_lock)
+					|| (szSwitchCmd == pSensor->state_locked)
+					)
+					szSwitchCmd = "on";
+			}
+		}
 	}
 
 	if (level > 100)
