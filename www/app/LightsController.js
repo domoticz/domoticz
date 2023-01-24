@@ -497,6 +497,10 @@ define(['app', 'livesocket'], function (app) {
 			else if (item.SwitchType == "Dimmer") {
 				isdimmer = true;
 				if (item.CustomImage == 0) item.Image = item.TypeImg;
+				if (typeof item.Image == 'undefined') {
+					item.CustomImage = 0;
+					item.Image = item.TypeImg;
+				}
 				item.Image = item.Image.charAt(0).toUpperCase() + item.Image.slice(1);
 				if (
 					(item.Status == 'On') ||
@@ -1004,6 +1008,10 @@ define(['app', 'livesocket'], function (app) {
 							else if (item.SwitchType == "Dimmer") {
 								bIsDimmer = true;
 								if (item.CustomImage == 0) item.Image = item.TypeImg;
+								if (typeof item.Image == 'undefined') {
+									item.CustomImage = 0;
+									item.Image = item.TypeImg;
+								}
 								item.Image = item.Image.charAt(0).toUpperCase() + item.Image.slice(1);
 								if (
 									(item.Status == 'On') ||

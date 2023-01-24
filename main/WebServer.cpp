@@ -9144,13 +9144,18 @@ namespace http
 				root["result"][ii]["BatteryLevel"] = atoi(sd[8].c_str());
 				root["result"][ii]["LastUpdate"] = sLastUpdate;
 
-				root["result"][ii]["CustomImage"] = CustomImage;
 				if (CustomImage != 0)
 				{
 					auto ittIcon = m_custom_light_icons_lookup.find(CustomImage);
 					if (ittIcon != m_custom_light_icons_lookup.end())
 					{
+						root["result"][ii]["CustomImage"] = CustomImage;
 						root["result"][ii]["Image"] = m_custom_light_icons[ittIcon->second].RootFile;
+					}
+					else
+					{
+						//CustomImage = 0;
+						//root["result"][ii]["CustomImage"] = CustomImage;
 					}
 				}
 
