@@ -927,8 +927,15 @@ PlanningTimerSheet = function(options){
 		if ($.myglobals.ismobile == true)
 		{
 			if (defaults.odd_even_week)
-				$(".ts-planning tr").css({ "height": '22px' });
-			else {
+			{
+				$tbody.find("tr").css({ "height": '22px' });
+				if(defaults.nbTicksPerHour==2)
+					$thead.find("tr").css({ "height": '20px' });
+				else if(defaults.nbTicksPerHour==4)
+					$thead.find("tr").css({ "height": '13px' });
+				else if(defaults.nbTicksPerHour>=3)
+					$thead.find("tr").css({ "height": '10px' });
+			}			else {
 //				$(".ts-planning tr").css({ "height": '40px' });
 				$tbody.find("tr").css({ "height": '40px' });
 				if(defaults.nbTicksPerHour==1)
