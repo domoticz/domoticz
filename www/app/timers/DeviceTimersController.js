@@ -17,6 +17,8 @@ define(['app', 'timers/factories', 'timers/components','timers/planning'], funct
         function init() {
             vm.deviceIdx = $routeParams.id;
             vm.selectedTimerIdx = null;
+//          $.myglobals.ismobile = true;
+            vm.ismobile = ($.myglobals.ismobile == true)
 
             deviceApi.getDeviceInfo(vm.deviceIdx).then(function (device) {
                 vm.isLoaded = true;

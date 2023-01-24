@@ -680,7 +680,9 @@ PlanningTimerSheet = function(options){
 
 		for (var d = 0; d < days.length; d++) {
 			if(d === 0 &&  defaults.odd_even_week)
-				tds.push("<tr index=" + (d + 1 + delta) + "><th rowspan=7>"+ $.t( (delta === 0 ? "Odd Week Numbers": "Even Week Numbers")) +"</th><th>" + $.t(days[d].name) + "</th>");
+				tds.push("<tr index=" + (d + 1 + delta) + "><th rowspan=7>" +
+					$.t((delta === 0 ? "Odd Week" : "Even Week"))
+					+ "</th><th>" + $.t(days[d].name) + "</th>");
 			else
 					tds.push("<tr index=" + (d + 1 + delta) + "><th>" + $.t(days[d].name) + "</th>");
 
@@ -923,7 +925,55 @@ PlanningTimerSheet = function(options){
 
 		$element.find('.timeRange option[value="' + defaults.nbTicksPerHour + '"]').prop('selected', true);
 		if ($.myglobals.ismobile == true)
-			$(".ts-planning tr").css({ "height": '40px' });
+		{
+			if (defaults.odd_even_week)
+				$(".ts-planning tr").css({ "height": '22px' });
+			else {
+//				$(".ts-planning tr").css({ "height": '40px' });
+				$tbody.find("tr").css({ "height": '40px' });
+				if(defaults.nbTicksPerHour==1)
+					$thead.find("tr").css({ "height": '40px' });
+				else if(defaults.nbTicksPerHour==2)
+					$thead.find("tr").css({ "height": '20px' });
+				else if(defaults.nbTicksPerHour==4)
+					$thead.find("tr").css({ "height": '13px' });
+				else if(defaults.nbTicksPerHour>=3)
+					$thead.find("tr").css({ "height": '10px' });
+			}
+			$("#deviceTimers").css({ "width": 'auto' });
+
+//			$(".navbar-inner").css({ "display": 'none' });
+			$(".navbar-inner").hide();
+
+			var bannercontentpaddingtop = $(".bannercontent").css("padding-top");
+			var bannercontentpaddingbot = $(".bannercontent").css("padding-bottom");
+
+			$(".bannercontent").css({ "padding-top": '0px' });
+			$(".bannercontent").css({ "padding-bottom": '0px' });
+
+			var containerfluid = [];
+			containerfluid[0] = $(".container-fluid").css("padding-top"    );
+			containerfluid[1] = $(".container-fluid").css("padding-bottom" );
+			containerfluid[2] = $(".container-fluid").css("padding-left"   );
+			containerfluid[3] = $(".container-fluid").css("padding-right"  );
+
+			$(".container-fluid").css({ "padding-top"   : '0px' });
+			$(".container-fluid").css({ "padding-bottom": '0px' });
+			$(".container-fluid").css({ "padding-left"  : '0px' });
+			$(".container-fluid").css({ "padding-right" : '0px' });
+
+			$("#deviceTimers").on("remove", function () {
+				$(".navbar-inner").show();
+				$(".bannercontent").css({ "padding-top": bannercontentpaddingtop });
+				$(".bannercontent").css({ "padding-bottom": bannercontentpaddingbot });
+
+				$(".container-fluid").css({ "padding-top"   : containerfluid[0]  });
+				$(".container-fluid").css({ "padding-bottom": containerfluid[1]  });
+				$(".container-fluid").css({ "padding-left"  : containerfluid[3] });
+				$(".container-fluid").css({ "padding-right" : containerfluid[4] });
+
+			})
+		}
 
 //		$element.show();
 	};
