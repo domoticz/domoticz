@@ -9154,8 +9154,8 @@ namespace http
 					}
 					else
 					{
-						//CustomImage = 0;
-						//root["result"][ii]["CustomImage"] = CustomImage;
+						CustomImage = 0;
+						root["result"][ii]["CustomImage"] = CustomImage;
 					}
 				}
 
