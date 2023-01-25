@@ -8323,6 +8323,12 @@ namespace http
 				m_pWebEm->SetWebTheme(SelectedTheme);
 				cntSettings++;
 
+				std::string AllowDeviceReplaceOnBatteryChanged = request::findValue(&req, "AllowDeviceReplaceOnBatteryChanged");
+				int iAllowDeviceReplaceOnBatteryChanged = (AllowDeviceReplaceOnBatteryChanged == "on" ? 1 : 0);
+				m_sql.UpdatePreferencesVar("AllowDeviceReplaceOnBatteryChanged", iAllowDeviceReplaceOnBatteryChanged);
+				cntSettings++;
+
+
 				/* To wrap up everything */
 				m_notifications.ConfigFromGetvars(req, true);
 				m_notifications.LoadConfig();
@@ -13370,6 +13376,11 @@ namespace http
 				{
 					root["IFTTTAPI"] = sValue;
 				}
+				else if (Key == "AllowDeviceReplaceOnBatteryChanged")
+				{
+					root["AllowDeviceReplaceOnBatteryChanged"] = nValue;
+				}
+
 			}
 		}
 

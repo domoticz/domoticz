@@ -5059,6 +5059,52 @@ uint64_t CSQLHelper::GetDeviceIndex(const int HardwareID, const std::string& ID,
 	return std::stoull(result[0].at(0));
 }
 
+/// @brief check if batery has been changed in a device with a new ID
+//  if a new device is detected with batery level 100% (new batery) 
+//  we seach if a same device type/subtype/Unit already exist with batery low
+// if one is found , we assume that it is the same device that we have replace batery and a new ID as been modified.
+// the old DeviceID is replaced by the new DeviceID
+// to allow this , the settings option  other/"Allow Device Replace On Battery Changed Detected" shall be ON
+//return true if device ID as been replaced 
+bool replace_device_when_changed_baterie_detected(const int HardwareID, const char* deviceID, const unsigned char unit, const unsigned char devType, const unsigned char subType, const unsigned char batterylevel, const char* User)
+{
+    if (!m_sql.m_bAcceptNewHardware)
+			    return false;
+	//if battery not full (replaced)
+    if (batterylevel != 100)
+			    return false;
+
+	 int iAllowDeviceReplaceOnBatteryChanged =0;
+	m_sql.GetPreferencesVar("AllowDeviceReplaceOnBatteryChanged", iAllowDeviceReplaceOnBatteryChanged);
+	if (iAllowDeviceReplaceOnBatteryChanged==0)
+		return false;
+
+//test if device exist : done before
+//    auto result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID=%d AND DeviceID='%q' AND Unit=%d AND Type=%d AND SubType=%d )", HardwareID, deviceID, unit, devType, subType);
+//    if (result.size()>0 )
+//			    return false;
+
+    //search unique device with same type/subtye/channel with low batterie level 
+    auto result = m_sql.safe_query("SELECT ID , DeviceID, Name  FROM DeviceStatus WHERE (HardwareID=%d AND Unit=%d AND Type=%d AND SubType=%d and BatteryLevel >= 0 and BatteryLevel < 100  and Used = 1)", HardwareID, unit, devType, subType);
+
+	//dont exist
+	if (result.empty())
+			return false;
+	//not uniq 
+	if (result.size()>1 )
+			return false;
+	//same device
+	if (result[0][1] == std::string(deviceID ) )
+			return false;
+    _log.Log(LOG_NORM, " Batery of sensor %s old id:%s as been changed : new ID:%s as been updated :  ", result[0][2].c_str(), result[0][1].c_str(), deviceID );
+    result = m_sql.safe_query(
+				"UPDATE DeviceStatus SET DeviceID='%q' "
+				"WHERE (ID = %s)",
+				deviceID,
+				result[0][0].c_str());
+    return true;
+}
+
 uint64_t CSQLHelper::UpdateValueInt(
         const int HardwareID, const char *ID, const unsigned char unit, const unsigned char devType, const unsigned char subType,
         const unsigned char signallevel, const unsigned char batterylevel, const int nValue, const char *sValue, std::string &devname,
@@ -5076,8 +5122,16 @@ uint64_t CSQLHelper::UpdateValueInt(
 	std::string sValueBeforeUpdate;
 	_eSwitchType stype = STYPE_OnOff;
 
-	std::vector<std::vector<std::string> > result;
-	result = safe_query("SELECT ID, Name, Used, SwitchType, nValue, sValue, LastUpdate, Options FROM DeviceStatus WHERE (HardwareID=%d AND DeviceID='%q' AND Unit=%d AND Type=%d AND SubType=%d)", HardwareID, ID, unit, devType, subType);
+	auto result = safe_query("SELECT ID, Name, Used, SwitchType, nValue, sValue, LastUpdate, Options FROM DeviceStatus WHERE (HardwareID=%d AND DeviceID='%q' AND Unit=%d AND Type=%d AND SubType=%d)", HardwareID, ID, unit, devType, subType);
+
+	//if new device , check if the battery as been replaced in an existing device
+	if (result.empty())
+	{
+		bool deviceAsBeenReaplaced = replace_device_when_changed_baterie_detected( HardwareID, ID,  unit,  devType,  subType,  batterylevel, User);
+		if(deviceAsBeenReaplaced)
+			result = safe_query("SELECT ID, Name, Used, SwitchType, nValue, sValue, LastUpdate, Options FROM DeviceStatus WHERE (HardwareID=%d AND DeviceID='%q' AND Unit=%d AND Type=%d AND SubType=%d)", HardwareID, ID, unit, devType, subType);
+	}
+
 	if (result.empty())
 	{
 		//Insert
