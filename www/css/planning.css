@@ -58,8 +58,8 @@ overflow-y:hidden;
     font-size:12px;
 }
 
-.ts-planning thead th:first-child{width:100px;}
-.ts-planning table.odd-even thead th:first-child{width:180px;}
+.ts-planning thead th:first-child{width:80px;}
+.ts-planning table.odd-even thead th:first-child{width:160px;}
 .ts-planning thead tr:nth-child(2){height:10px;}
 .ts-planning thead tr:nth-child(3){height:12px;}
 .ts-planning thead th{border-top: none;border-bottom:none;}
