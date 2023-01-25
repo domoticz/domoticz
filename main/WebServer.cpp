@@ -9144,6 +9144,8 @@ namespace http
 				root["result"][ii]["BatteryLevel"] = atoi(sd[8].c_str());
 				root["result"][ii]["LastUpdate"] = sLastUpdate;
 
+				root["result"][ii]["CustomImage"] = CustomImage;
+
 				if (CustomImage != 0)
 				{
 					auto ittIcon = m_custom_light_icons_lookup.find(CustomImage);
