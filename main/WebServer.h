@@ -4,6 +4,7 @@
 #include "../webserver/cWebem.h"
 #include "../webserver/request.hpp"
 #include "../webserver/session_store.hpp"
+#include "../iamserver/iam_settings.hpp"
 
 struct lua_State;
 struct lua_Debug;
@@ -86,6 +87,8 @@ class CWebServer : public session_store, public std::enable_shared_from_this<CWe
 	void SetAllowPlainBasicAuth(const bool allow);
 	void SetWebTheme(const std::string &themename);
 	void SetWebRoot(const std::string &webRoot);
+	void SetIamSettings(const iamserver::iam_settings &iamsettings);
+
 	std::vector<_tWebUserPassword> m_users;
 	//JSon
 	void GetJSonDevices(Json::Value &root, const std::string &rused, const std::string &rfilter, const std::string &order, const std::string &rowid, const std::string &planID,
@@ -112,6 +115,7 @@ private:
 	std::string GenerateOAuth2RefreshToken(const std::string username, const int refreshexptime);
 	bool ValidateOAuth2RefreshToken(const std::string refreshtoken, std::string &username);
 	void InvalidateOAuth2RefreshToken(const std::string refreshtoken);
+	void PresentOauth2LoginDialog(reply &rep, const std::string sApp, const std::string sError);
 
 	//Commands
 	void Cmd_RFXComGetFirmwarePercentage(WebEmSession & session, const request& req, Json::Value &root);
@@ -418,6 +422,8 @@ private:
 	std::map<int, int> m_custom_light_icons_lookup;
 	bool m_bDoStop;
 	std::string m_server_alias;
+	uint8_t m_failcount;
+	iamserver::iam_settings m_iamsettings;
 
 	struct _tUserAccessCode
 	{

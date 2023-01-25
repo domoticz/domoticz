@@ -13,6 +13,7 @@
 #include "../tcpserver/TCPServer.h"
 #include "concurrent_queue.h"
 #include "../webserver/server_settings.hpp"
+#include "../iamserver/iam_settings.hpp"
 #ifdef ENABLE_PYTHON
 #	include "../hardware/plugins/PluginManager.h"
 #endif
@@ -43,6 +44,7 @@ public:
 	void HeartbeatCheck();
 
 	void SetWebserverSettings(const http::server::server_settings & settings);
+	void SetIamserverSettings(const iamserver::iam_settings& iam_settings);
 	std::string GetWebserverAddress();
 	std::string GetWebserverPort();
 #ifdef WWW_ENABLE_SSL
@@ -165,6 +167,7 @@ private:
 #ifdef WWW_ENABLE_SSL
 	http::server::ssl_server_settings m_secure_webserver_settings;
 #endif
+	iamserver::iam_settings m_iamserver_settings;
 	std::shared_ptr<std::thread> m_thread;
 	std::mutex m_mutex;
 
