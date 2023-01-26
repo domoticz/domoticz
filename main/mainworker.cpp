@@ -570,6 +570,11 @@ void MainWorker::SetWebserverSettings(const http::server::server_settings& setti
 	m_webserver_settings.set(settings);
 }
 
+void MainWorker::SetIamserverSettings(const iamserver::iam_settings& iamsettings)
+{
+	m_iamserver_settings.set(iamsettings);
+}
+
 std::string MainWorker::GetWebserverAddress()
 {
 	return m_webserver_settings.listening_address;
@@ -1146,9 +1151,9 @@ bool MainWorker::Start()
 	{
 		//Start WebServer
 #ifdef WWW_ENABLE_SSL
-		if (!m_webservers.StartServers(m_webserver_settings, m_secure_webserver_settings, szWWWFolder, m_bIgnoreUsernamePassword))
+		if (!m_webservers.StartServers(m_webserver_settings, m_secure_webserver_settings, m_iamserver_settings, szWWWFolder, m_bIgnoreUsernamePassword))
 #else
-		if (!m_webservers.StartServers(m_webserver_settings, szWWWFolder, m_bIgnoreUsernamePassword))
+		if (!m_webservers.StartServers(m_webserver_settings, m_iamserver_settings, szWWWFolder, m_bIgnoreUsernamePassword))
 #endif
 		{
 #ifdef WIN32

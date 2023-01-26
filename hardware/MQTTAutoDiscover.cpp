@@ -62,16 +62,24 @@ void MQTTAutoDiscover::on_message(const struct mosquitto_message* message)
 		if (qMessage.empty())
 			return;
 
-		if (topic.substr(0, topic.find('/')) == m_TopicDiscoveryPrefix)
+		if (
+			(topic.substr(0, topic.find('/')) == m_TopicDiscoveryPrefix)
+			&& (topic.find("/config") != std::string::npos)
+			)
 		{
 			on_auto_discovery_message(message);
 			return;
 		}
 
+		std::string DiscoveryWildcard = m_TopicDiscoveryPrefix + "/#";
+
 		for (auto& itt : m_subscribed_topics)
 		{
 			bool result = false;
-			if (mosquitto_topic_matches_sub(itt.first.c_str(), topic.c_str(), &result) == MOSQ_ERR_SUCCESS)
+			if (
+				(itt.first != DiscoveryWildcard)
+				&& (mosquitto_topic_matches_sub(itt.first.c_str(), topic.c_str(), &result) == MOSQ_ERR_SUCCESS)
+				)
 			{
 				if (result == true)
 				{
@@ -433,12 +441,16 @@ void MQTTAutoDiscover::on_auto_discovery_message(const struct mosquitto_message*
 
 	topic = topic.substr(m_TopicDiscoveryPrefix.size() + 1);
 
+	//<discovery_prefix>/<component>/[<node_id>/]<object_id>/config
+
 	std::vector<std::string> strarray;
 	StringSplit(topic, "/", strarray);
 	if (strarray.size() < 3)
 	{
+		if (topic == "status")
+			return;
 		//not for us
-		return;
+		goto disovery_invaliddata;
 	}
 
 	component = strarray[0];
@@ -3056,6 +3068,28 @@ void MQTTAutoDiscover::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 					if (pSensor->bHave_brightness_scale)
 						level = (int)round((100.0 / pSensor->brightness_scale) * level);
 				}
+			}
+		}
+		else
+		{
+			if (pSensor->component_type == "binary_sensor")
+			{
+				if (szSwitchCmd == pSensor->payload_off)
+					szSwitchCmd = "off";
+				else if (szSwitchCmd == pSensor->payload_on)
+					szSwitchCmd = "on";
+			}
+			else if (pSensor->component_type == "lock")
+			{
+				if ((szSwitchCmd == pSensor->payload_unlock)
+					|| (szSwitchCmd == pSensor->state_unlocked)
+					)
+					szSwitchCmd = "off";
+				else if (
+					(szSwitchCmd == pSensor->payload_lock)
+					|| (szSwitchCmd == pSensor->state_locked)
+					)
+					szSwitchCmd = "on";
 			}
 		}
 	}

@@ -28,6 +28,28 @@ define(['app', 'log/Chart'], function (app) {
 
         function counterSeriesSuppliers(deviceTypeIndex, valueMultiplier, postprocessDataItemValue, dataItemValueDecimals=3) {
             return [
+               {
+                    id: 'MeterUsagedArea',
+                    dataItemKeys: ['mu'],
+                    label: 'A',
+                    template: function (seriesSupplier) {
+                        return {
+							type: 'area',
+							name: $.t('Usage'),
+							tooltip: {
+								valueSuffix: ' '
+									+ (seriesSupplier.dataSupplier.deviceValueUnit !== undefined
+										? seriesSupplier.dataSupplier.deviceValueUnit
+										: deviceTypeValueUnit(deviceTypeIndex, valueMultiplier)),
+								valueDecimals: dataItemValueDecimals
+							},
+							color: 'rgba(225,167,124,0.9)',
+							fillOpacity: 0.2,
+							yAxis: 0,
+							visible: false
+						};
+                    }
+                },
                 {
                     id: 'counter',
                     dataItemKeys: ['v'],

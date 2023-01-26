@@ -1519,11 +1519,11 @@ namespace http {
 						{
 							JWTverifyer.allow_algorithm(jwt::algorithm::hs512{ clientsecret });
 						}
-						if (JWTalgo.compare("RS256") == 0)
+						else if (JWTalgo.compare("RS256") == 0)
 						{
 							JWTverifyer.allow_algorithm(jwt::algorithm::rs256{ clientpubkey });
 						}
-						if (JWTalgo.compare("PS256") == 0)
+						else if (JWTalgo.compare("PS256") == 0)
 						{
 							JWTverifyer.allow_algorithm(jwt::algorithm::ps256{ clientpubkey });
 						}
