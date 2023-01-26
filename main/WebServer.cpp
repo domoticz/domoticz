@@ -14495,8 +14495,6 @@ namespace http
 
 									if (lastHour != ntime.tm_hour)
 									{
-										double usageValue = (double)(actValue - ulRealFirstValue);
-
 										if (lastDay != ntime.tm_mday)
 										{
 											lastDay = ntime.tm_mday;
@@ -14535,23 +14533,28 @@ namespace http
 												}
 												root["result"][ii]["v"] = szTmp;
 
-												switch (metertype)
+												if (!bIsManagedCounter)
 												{
-												case MTYPE_ENERGY:
-												case MTYPE_ENERGY_GENERATED:
-													sprintf(szTmp, "%.3f", usageValue / divider);
-													break;
-												case MTYPE_GAS:
-													sprintf(szTmp, "%.3f", usageValue / divider);
-													break;
-												case MTYPE_WATER:
-													sprintf(szTmp, "%g", usageValue);
-													break;
-												case MTYPE_COUNTER:
-													sprintf(szTmp, "%.3f", usageValue / divider);
-													break;
+													double usageValue = (double)(actValue - ulRealFirstValue);
+
+													switch (metertype)
+													{
+													case MTYPE_ENERGY:
+													case MTYPE_ENERGY_GENERATED:
+														sprintf(szTmp, "%.3f", usageValue / divider);
+														break;
+													case MTYPE_GAS:
+														sprintf(szTmp, "%.3f", usageValue / divider);
+														break;
+													case MTYPE_WATER:
+														sprintf(szTmp, "%g", usageValue);
+														break;
+													case MTYPE_COUNTER:
+														sprintf(szTmp, "%.3f", usageValue / divider);
+														break;
+													}
+													root["result"][ii]["mu"] = szTmp;
 												}
-												root["result"][ii]["mu"] = szTmp;
 												ii++;
 											}
 										}
@@ -14680,25 +14683,27 @@ namespace http
 								}
 								root["result"][ii]["v"] = szTmp;
 
-								double usageValue = (double)(ulLastValue - ulRealFirstValue);
-								switch (metertype)
+								if (!bIsManagedCounter)
 								{
-								case MTYPE_ENERGY:
-								case MTYPE_ENERGY_GENERATED:
-									sprintf(szTmp, "%.3f", usageValue / divider);
-									break;
-								case MTYPE_GAS:
-									sprintf(szTmp, "%.3f", usageValue / divider);
-									break;
-								case MTYPE_WATER:
-									sprintf(szTmp, "%.3f", usageValue);
-									break;
-								case MTYPE_COUNTER:
-									sprintf(szTmp, "%.3f", usageValue / divider);
-									break;
+									double usageValue = (double)(ulLastValue - ulRealFirstValue);
+									switch (metertype)
+									{
+									case MTYPE_ENERGY:
+									case MTYPE_ENERGY_GENERATED:
+										sprintf(szTmp, "%.3f", usageValue / divider);
+										break;
+									case MTYPE_GAS:
+										sprintf(szTmp, "%.3f", usageValue / divider);
+										break;
+									case MTYPE_WATER:
+										sprintf(szTmp, "%.3f", usageValue);
+										break;
+									case MTYPE_COUNTER:
+										sprintf(szTmp, "%.3f", usageValue / divider);
+										break;
+									}
+									root["result"][ii]["mu"] = szTmp;
 								}
-								root["result"][ii]["mu"] = szTmp;
-
 								ii++;
 							}
 						}
