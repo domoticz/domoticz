@@ -3401,6 +3401,8 @@ bool MQTTAutoDiscover::SendSwitchCommand(const std::string& DeviceID, const std:
 					root["color"]["r"] = color.r;
 					root["color"]["g"] = color.g;
 					root["color"]["b"] = color.b;
+					if ((pSensor->bBrightness) && (level > 1))
+						bCouldUseBrightness = true;
 				}
 				if (
 					(pSensor->supported_color_modes.find("rgbw") != pSensor->supported_color_modes.end())
