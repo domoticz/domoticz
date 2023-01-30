@@ -105,6 +105,7 @@ private:
 	bool ValidateOAuth2RefreshToken(const std::string &refreshtoken, std::string &username);
 	void InvalidateOAuth2RefreshToken(const std::string &refreshtoken);
 	void PresentOauth2LoginDialog(reply &rep, const std::string &sApp, const std::string &sError);
+	bool VerifySHA1TOTP(const std::string &code, const std::string &key);
 
 	//Commands
 	void Cmd_RFXComGetFirmwarePercentage(WebEmSession & session, const request& req, Json::Value &root);
