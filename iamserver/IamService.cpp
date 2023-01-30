@@ -515,9 +515,6 @@ namespace http
         {
             rep = reply::stock_reply(reply::ok);
 
-            //std::string file_location = szWWWFolder + m_iamsettings.login_page;
-            //_log.Debug(DEBUG_AUTH, "Attempting to load IAM login page (%s)", file_location.c_str());
-            //if (reply::set_content_from_file(&rep, file_location))
             reply::set_content(&rep, m_iamsettings.getAuthPageContent());
             {
                 size_t pos = rep.content.find("###REPLACE_APP###");
@@ -525,13 +522,6 @@ namespace http
                 pos = rep.content.find("###REPLACE_ERROR###");
                 rep.content.replace(pos,19,sError);
             }
-            /*
-            else
-            {
-                reply::set_content(&rep, "Failed to load IAM Login page!");
-                rep.status = reply::status_type::not_implemented;
-            }
-            */
             if (!sError.empty())
                 rep.status = reply::status_type::unauthorized;
             reply::add_header(&rep, "Content-Length", std::to_string(rep.content.size()));
