@@ -190,6 +190,11 @@ bool helper_tester(const std::string szFunction, std::string &szInput, std::stri
 			bSuccess = true;
 		}
 	}
+	// base32_decode
+	else if (szFunction == "base32_decode")
+	{
+		bSuccess = base32_decode(szInput, szOutput);
+	}
 	else
 	{
 		szOutput = "NOT FOUND!";
