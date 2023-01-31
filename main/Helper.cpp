@@ -1569,3 +1569,47 @@ char* make_web_time(const time_t rawtime)
 	}
 	return buffer;
 }
+
+const std::string base32RFC4648 = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567=";
+bool base32_decode(const std::string &input, std::string &output)
+{
+	if ((input.size() % 8) != 0)
+		return false;
+
+	std::vector<uint8_t> outTotal;
+
+	for(uint16_t j = 0; j < (input.size() / 8); j++)
+	{
+		// pack 8 bytes
+		uint64_t buffer = 0;
+		for(uint8_t i = 0; i < 8; i++)
+		{
+			if(i != 0)
+			{
+				buffer = (buffer << 5);
+			}
+			// input check
+			size_t pos = base32RFC4648.find(input[(j*8) + i]);
+			if(pos == std::string::npos)
+			{
+				return false;
+			}
+			else if (pos == 32)		// '=' is padding sign, we skip it
+			{
+				buffer = buffer | 0;
+			}
+			else
+			{
+				buffer = buffer | base32RFC4648.find(input[(j*8) + i]);
+			}
+		}
+		// output 5 bytes
+		for(int8_t x = 4; x >= 0; x--)
+		{
+			outTotal.push_back((unsigned char)(buffer >> (x * 8)));
+		}
+	}
+
+	output.assign(std::string(outTotal.begin(), outTotal.end()));
+	return true;
+}
