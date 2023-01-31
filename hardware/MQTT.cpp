@@ -103,6 +103,7 @@ void MQTT::StopMQTT()
 
 bool MQTT::StopHardware()
 {
+	on_going_down();
 	StopHeartbeatThread();
 	if (m_thread)
 	{
@@ -579,6 +580,11 @@ void MQTT::on_disconnect(int rc)
 	}
 }
 
+//called when hardware is stopped
+void MQTT::on_going_down()
+{
+}
+
 bool MQTT::ConnectInt()
 {
 	StopMQTT();
@@ -727,6 +733,11 @@ void MQTT::SendHeartbeat()
 
 void MQTT::SendMessage(const std::string &Topic, const std::string &Message)
 {
+	SendMessageEx(Topic, Message, QOS, m_bRetain);
+}
+
+void MQTT::SendMessageEx(const std::string& Topic, const std::string& Message, int qos, bool retain)
+{
 	if (!m_IsConnected)
 	{
 		Log(LOG_STATUS, "Not Connected, failed to send message: %s", Message.c_str());
@@ -736,7 +747,7 @@ void MQTT::SendMessage(const std::string &Topic, const std::string &Message)
 		return;
 	try
 	{
-		publish(nullptr, Topic.c_str(), Message.size(), Message.c_str(), QOS, m_bRetain);
+		publish(nullptr, Topic.c_str(), Message.size(), Message.c_str(), qos, retain);
 	}
 	catch (...)
 	{
