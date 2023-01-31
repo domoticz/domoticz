@@ -14569,7 +14569,11 @@ namespace http
 									{
 										bHaveFirstValue = true;
 										lastHour = ntime.tm_hour;
-										if ((ntime.tm_hour != 0) && (ntime.tm_min != 0))
+										ulFirstValue = actValue;
+										ulRealFirstValue = actValue;
+										lastDay = ntime.tm_mday;
+
+										if (!((ntime.tm_hour == 0) && (ntime.tm_min == 0)))
 										{
 											struct tm ltime;
 											localtime_r(&atime, &tm1);
