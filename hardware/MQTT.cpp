@@ -605,7 +605,7 @@ bool MQTT::ConnectIntEx()
 	Log(LOG_STATUS, "Connecting to %s:%d", m_szIPAddress.c_str(), m_usIPPort);
 
 	int rc;
-	int keepalive = 40;
+	int keepalive = 120;
 
 	if (
 		(bIsSecure)
