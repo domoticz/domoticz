@@ -18,10 +18,10 @@ std::vector<std::string> allowed_components = {
 		"device_automation",
 		"light",
 		"lock",
-//		"number",
-		"select",
-		"sensor",
-		"switch"
+		//		"number",
+				"select",
+				"sensor",
+				"switch"
 };
 
 #define CLIMATE_MODE_UNIT 1
@@ -529,8 +529,8 @@ void MQTTAutoDiscover::on_auto_discovery_message(const struct mosquitto_message*
 	if (component == "sensor")
 	{
 		if (
-			(object_id.std_ends_with("_min"))
-			|| (object_id.std_ends_with("_max"))
+			(std_ends_with(object_id, "_min"))
+			|| (std_ends_with(object_id, "_max"))
 			|| (object_id.find("min_") == 0)
 			|| (object_id.find("max_") == 0)
 			|| (object_id.find("_sensitivity") != std::string::npos)
@@ -1764,8 +1764,8 @@ MQTTAutoDiscover::_tMQTTASensor* MQTTAutoDiscover::get_auto_discovery_sensor_uni
 
 			if (
 				(pTmpDeviceSensor->component_type != "sensor")
-				|| (pTmpDeviceSensor->object_id.std_ends_with("_min"))
-				|| (pTmpDeviceSensor->object_id.std_ends_with("_max"))
+				|| (std_ends_with(pTmpDeviceSensor->object_id, "_min"))
+				|| (std_ends_with(pTmpDeviceSensor->object_id, "_max"))
 				|| (pTmpDeviceSensor->object_id.find("min_") == 0)
 				|| (pTmpDeviceSensor->object_id.find("max_") == 0)
 				|| (pTmpDeviceSensor->object_id.find("sensitivity") != std::string::npos)
@@ -1819,8 +1819,8 @@ MQTTAutoDiscover::_tMQTTASensor* MQTTAutoDiscover::get_auto_discovery_sensor_uni
 
 			if (
 				(pDeviceSensor->component_type != "sensor")
-				|| (pDeviceSensor->object_id.std_ends_with("_min"))
-				|| (pDeviceSensor->object_id.std_ends_with("_max"))
+				|| (std_ends_with(pDeviceSensor->object_id, "_min"))
+				|| (std_ends_with(pDeviceSensor->object_id, "_max"))
 				|| (pDeviceSensor->object_id.find("min_") == 0)
 				|| (pDeviceSensor->object_id.find("max_") == 0)
 				|| (pDeviceSensor->object_id.find("sensitivity") != std::string::npos)
@@ -1951,8 +1951,8 @@ void MQTTAutoDiscover::handle_auto_discovery_sensor(_tMQTTASensor* pSensor, cons
 	}
 
 	if (
-		(pSensor->object_id.std_ends_with("_min"))
-		|| (pSensor->object_id.std_ends_with("_max"))
+		(std_ends_with(pSensor->object_id, "_min"))
+		|| (std_ends_with(pSensor->object_id, "_max"))
 		|| (pSensor->object_id.find("min_") == 0)
 		|| (pSensor->object_id.find("max_") == 0)
 		|| (pSensor->object_id.find("sensitivity") != std::string::npos)
