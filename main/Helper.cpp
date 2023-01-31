@@ -1569,3 +1569,53 @@ char* make_web_time(const time_t rawtime)
 	}
 	return buffer;
 }
+
+const std::string base32RFC4648 = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567=";
+bool base32_decode(const std::string &input, std::string &output)
+{
+	if ((input.size() % 8) != 0)
+		return false;
+
+	uint8_t caSize = ((input.size()/8)*5)+1;
+
+	unsigned char outBuff[5];
+	unsigned char outTotal[caSize];
+	memset(outTotal, 0x00, sizeof(unsigned char) * caSize);
+
+	for(uint16_t j = 0; j < (input.size() / 8); j++)
+	{
+		// pack 8 bytes
+		uint64_t buffer = 0;
+		for(uint8_t i = 0; i < 8; i++)
+		{
+			if(i != 0)
+			{
+				buffer = (buffer << 5);
+			}
+			// input check
+			size_t pos = base32RFC4648.find(input[(j*8) + i]);
+			if(pos == std::string::npos)
+			{
+				return false;
+			}
+			else if (pos == 32)		// '=' is padding sign, we skip it
+			{
+				buffer = buffer | 0;
+			}
+			else
+			{
+				buffer = buffer | base32RFC4648.find(input[(j*8) + i]);
+			}
+		}
+		// output 5 bytes
+		for(int x = 4; x >= 0; x--)
+		{
+			outBuff[4 - x] = (unsigned char)(buffer >> (x * 8));
+		}
+		memmove(&outTotal[j * 5], &outBuff[0], sizeof(unsigned char) * 5);
+	}
+
+	//std::cout << "Out : ." << outTotal << ".\n";
+	output = std_format("%s", outTotal);
+	return true;
+}
