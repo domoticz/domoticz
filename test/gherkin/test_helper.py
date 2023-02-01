@@ -41,6 +41,22 @@ def test_md5hash():
 def test_calculatedewpoint():
     pass
 
+@scenario('helper.feature', 'Test base32_decode function')
+def test_base32decode1():
+    pass
+
+@scenario('helper.feature', 'Test base32_decode padding')
+def test_base32decode2():
+    pass
+
+@scenario('helper.feature', 'Test base32_decode shorter')
+def test_base32decode3():
+    pass
+
+@scenario('helper.feature', 'Test base32_decode failure')
+def test_base32decode4():
+    pass
+
 @given(parsers.parse('I am testing the "{module}" module'))
 def setup_test_module(test_domoticz, module):
     if module == "helper":
@@ -63,11 +79,12 @@ def execute_test(test_domoticz, succeedorfail):
         assert False
     sResult = sOut.stdout.decode("utf-8").split("|")
     if (succeedorfail == "fail" and sOut.returncode != 0):
-        if not (len(sResult) > 1 and sResult[1].find("Failed! ") > 0):
-            assert False
-        sResult = sResult[1].split("! (")
-        sResult = sResult[1]
-        test_domoticz.sTestOutput = sResult[0:sResult.rfind(")")]
+        if (len(sResult) > 1 and sResult[1].find("Failed! ") > 0):
+            sResult = sResult[1].split("! (")
+            sResult = sResult[1]
+            test_domoticz.sTestOutput = sResult[0:sResult.rfind(")")]
+        else:
+            test_domoticz.sTestOutput = ""
     else:
         if not (len(sResult) > 1 and sResult[1].find("Result : ") > 0):
             assert False
