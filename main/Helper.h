@@ -23,6 +23,7 @@ void stdreplace(
 	std::string &inoutstring,
 	const std::string& replaceWhat,
 	const std::string& replaceWithWhat);
+bool std_ends_with(const std::string& str, const std::string& suffix);
 void stdupper(std::string& inoutstring);
 void stdlower(std::string& inoutstring);
 void stdupper(std::wstring& inoutstring);
