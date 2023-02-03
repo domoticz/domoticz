@@ -1374,10 +1374,12 @@ define(['app', 'livesocket'], function (app) {
 									status += '<br>R: T: ' + item.CounterDelivToday;
 									if (bHaveReturnUsage) {
 										status += ", A: ";
-										if (parseInt(item.UsageDeliv) > 0) {
-											status += "-";
+										if (parseInt(item.Usage) > 0) {
+											status += item.Usage;
 										}
-										status += item.UsageDeliv;
+										if (parseInt(item.UsageDeliv) > 0) {
+											status += "-" + item.UsageDeliv;
+										}
 									}
 								}
 							}
@@ -3363,10 +3365,12 @@ define(['app', 'livesocket'], function (app) {
 													status += '<br>R: T: ' + item.CounterDelivToday;
 													if (bHaveReturnUsage) {
 														status += ", A: ";
-														if (parseInt(item.UsageDeliv) > 0) {
-															status += "-";
+														if (parseInt(item.Usage) > 0) {
+															status += item.Usage;
 														}
-														status += item.UsageDeliv;
+														if (parseInt(item.UsageDeliv) > 0) {
+															status += "-" + item.UsageDeliv;
+														}
 													}
 												}
 											}
