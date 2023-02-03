@@ -14,7 +14,7 @@ R"(
     background-image: -ms-linear-gradient(top, #fff, #eee);
     background-image: -o-linear-gradient(top, #fff, #eee);
     background-image: linear-gradient(top, #fff, #eee);  
-    height: 340px;
+    height: 380px;
     width: 300px;
     margin: -300px 0 0 -180px;
     padding: 30px;
@@ -117,6 +117,11 @@ R"(
     background-position: 5px -52px !important;
 }
 
+#2fatotp
+{
+    background-position: 5px -52px !important;
+}
+
 #inputs input[type=text]:focus, input[type=password]:focus
 {
     background-color: #fff;
@@ -125,6 +130,11 @@ R"(
     -moz-box-shadow: 0 0 0 1px #e8c291 inset;
     -webkit-box-shadow: 0 0 0 1px #e8c291 inset;
     box-shadow: 0 0 0 1px #e8c291 inset;
+}
+
+#inputs input[type=text]:disabled, input[type=password]:disabled
+{
+    background-color: #aaa;
 }
 
 #actions
@@ -211,6 +221,7 @@ R"(
   <fieldset id="inputs">
     <input type="text" autocapitalize="none" autocorrect="off" id="username" name="uname" placeholder="Username" autofocus required>
     <input type="password" id="password" name="psw" placeholder="Password" required>
+    <input type="text" id="2fatotp" name="totp" placeholder="One-Time Passcode" ###REPLACE_2FATOTP###>
     <br>
     <input type="checkbox" id="consent" name="consent" required> <label for="consent" id="consentlbl">I hereby grant access on my behalf.</label>
     <br>
