@@ -509,10 +509,10 @@ bool CLogger::NotificationLogsEnabled()
 void CLogger::SetFilter(const std::string  &pFilter)
 {
 	std::vector<std::string> FilterList;
-    _log.Log(LOG_STATUS, "debugfilter:%s", pFilter.c_str());
+	_log.Debug(DEBUG_NORM, "debugfilter:%s", pFilter.c_str());
 	FilterStringList.clear();
 	KeepStringList.clear();
-	StringSplit(pFilter, ";", FilterList);
+	StringSplit(pFilter, ",", FilterList);
 	for (size_t i = 0; i < FilterList.size(); i++)
 	{
 		if (FilterList[i][0] == '+')

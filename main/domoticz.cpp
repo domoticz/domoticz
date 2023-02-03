@@ -92,7 +92,7 @@ namespace
 #endif
 		"\t-loglevel (combination of: all,normal,status,error,debug)\n"
 		"\t-debuglevel (combination of: all,normal,hardware,received,webserver,eventsystem,python,thread_id,sql,auth)\n"
-		"\t-debugfilter word1;+word2;  : filter all the LOG containing word1 and +=  display all the LOG containing word2 all: filter all LOG\n"
+		"\t-debugfilter word1,+word2,  : filter all the LOG containing word1 and +=  display all the LOG containing word2 all: filter all LOG\n"
 		"\t-notimestamps (do not prepend timestamps to logs; useful with syslog, etc.)\n"
 		"\t-php_cgi_path (for example /usr/bin/php-cgi)\n"
 #ifndef WIN32
@@ -691,13 +691,13 @@ int main(int argc, char**argv)
 		{
 			std::string szLevel = cmdLine.GetSafeArgument("-loglevel", 0, "");
 			_log.SetLogFlags(szLevel);
-			_log.Log(LOG_STATUS, "loglevel:%s", szLevel.c_str());
+			_log.Debug(DEBUG_NORM, "loglevel:%s", szLevel.c_str());
 		}
 		if (cmdLine.HasSwitch("-debuglevel"))
 		{
 			std::string szLevel = cmdLine.GetSafeArgument("-debuglevel", 0, "");
 			_log.SetDebugFlags(szLevel);
-			_log.Log(LOG_STATUS, "debuglevel:%s", szLevel.c_str());
+			_log.Debug(DEBUG_NORM, "debuglevel:%s", szLevel.c_str());
 		}
 		if (cmdLine.HasSwitch("-debugfilter")){
             std::string szFilter = cmdLine.GetSafeArgument("-debugfilter", 0, "");

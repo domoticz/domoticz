@@ -98,7 +98,7 @@ class CLogger
 	std::list<_tLogLineStruct> GetNotificationLogs();
 	bool NotificationLogsEnabled();
 
-	void SetFilter(const std::string& pFilter);
+	void SetFilter(const std::string &pFilter);
 	bool CheckIfMessageIsFiltered(const char* cbuffer);
       private:
 	uint32_t m_log_flags;
