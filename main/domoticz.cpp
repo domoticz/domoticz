@@ -700,7 +700,7 @@ int main(int argc, char**argv)
 			_log.Debug(DEBUG_NORM, "debuglevel:%s", szLevel.c_str());
 		}
 		if (cmdLine.HasSwitch("-debugfilter")){
-            std::string szFilter = cmdLine.GetSafeArgument("-debugfilter", 0, "");
+			std::string szFilter = cmdLine.GetSafeArgument("-debugfilter", 0, "");
 			_log.SetFilter(szFilter);
 		}
 		if (cmdLine.HasSwitch("-notimestamps"))
