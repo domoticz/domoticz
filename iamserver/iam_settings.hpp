@@ -29,6 +29,9 @@ public:
 	bool is_enabled() const {
 		return is_enabled_;
 	}
+	bool has_2fatotp() const {
+		return has_2fatotp_;
+	}
 	uint32_t getUserIdxOffset() const {
 		return useridx_offset;
 	}
@@ -89,6 +92,7 @@ public:
 
 private:
 	bool is_enabled_{ false };
+	bool has_2fatotp_{ true };
 	uint32_t useridx_offset = OAUTH2_USERIDX_OFFSET;
 	const char *auth_content =
 	#include "views/iam_auth.html"

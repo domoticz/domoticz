@@ -513,6 +513,12 @@ namespace http
 
         void CWebServer::PresentOauth2LoginDialog(reply &rep, const std::string &sApp, const std::string &sError)
         {
+			std::string sTOTP = "disabled";
+			if (m_iamsettings.has_2fatotp())
+			{
+				sTOTP = "required";
+			}
+
             rep = reply::stock_reply(reply::ok);
 
             reply::set_content(&rep, m_iamsettings.getAuthPageContent());
@@ -521,6 +527,8 @@ namespace http
                 rep.content.replace(pos,17,sApp);
                 pos = rep.content.find("###REPLACE_ERROR###");
                 rep.content.replace(pos,19,sError);
+                pos = rep.content.find("###REPLACE_2FATOTP###");
+                rep.content.replace(pos,21,sTOTP);
             }
             if (!sError.empty())
                 rep.status = reply::status_type::unauthorized;
