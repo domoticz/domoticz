@@ -1368,7 +1368,13 @@ define(['app', 'livesocket'], function (app) {
 							if (item.CounterDeliv != 0) {
 								if ($scope.config.DashboardType == 0) {
 									status += '<br>' + $.t("Return") + ': ' + item.CounterDelivToday;
-									status += '<br>' + $.t("Actual") + ': ' + item.UsageDeliv;
+									status += '<br>' + $.t("Actual") + ': ';
+									if (parseInt(item.Usage) > 0) {
+										status += item.Usage;
+									}
+									if (parseInt(item.UsageDeliv) > 0) {
+										status += "-" + item.UsageDeliv;
+									}
 								}
 								else {
 									status += '<br>R: T: ' + item.CounterDelivToday;
@@ -3359,7 +3365,14 @@ define(['app', 'livesocket'], function (app) {
 											if (item.CounterDeliv != 0) {
 												if ($scope.config.DashboardType == 0) {
 													status += '<br>' + $.t("Return") + ': ' + item.CounterDelivToday;
-													status += '<br>' + $.t("Actual") + ': -' + item.UsageDeliv;
+													status += '<br>' + $.t("Actual") + ': ';
+													if (parseInt(item.Usage) > 0) {
+														status += item.Usage;
+													}
+													if (parseInt(item.UsageDeliv) > 0) {
+														status += "-" + item.UsageDeliv;
+													}
+													
 												}
 												else {
 													status += '<br>R: T: ' + item.CounterDelivToday;
