@@ -103,8 +103,11 @@ define(['app', 'livesocket'], function (app) {
 			var id = "";
 			//Scenes
 			if (
-				(item.Type.indexOf('Scene') == 0) ||
-				(item.Type.indexOf('Group') == 0)
+				($scope.config.EnableTabScenes) &&
+				(
+					(item.Type.indexOf('Scene') == 0) ||
+					(item.Type.indexOf('Group') == 0)
+				)
 			) {
 				id = "#scene_" + item.idx;
 				var obj = $(id);
@@ -177,20 +180,23 @@ define(['app', 'livesocket'], function (app) {
 			//Lights
 			var isdimmer = false;
 			if (
-				(item.Type.indexOf('Light') == 0) ||
-				(item.Type.indexOf('Blind') == 0) ||
-				(item.Type.indexOf('Curtain') == 0) ||
-				(item.Type.indexOf('Thermostat 2') == 0) ||
-				(item.Type.indexOf('Thermostat 3') == 0) ||
-				(item.Type.indexOf('Chime') == 0) ||
-				(item.Type.indexOf('Color Switch') == 0) ||
-				(item.Type.indexOf('RFY') == 0) ||
-				(item.Type.indexOf('ASA') == 0) ||
-				(item.SubType == "Smartwares Mode") ||
-				(item.SubType == "Relay") ||
-				((typeof item.SubType != 'undefined') && (item.SubType.indexOf('Itho') == 0)) ||
-				((typeof item.SubType != 'undefined') && (item.SubType.indexOf('Lucci') == 0)) ||
-				((typeof item.SubType != 'undefined') && (item.SubType.indexOf('Westinghouse') == 0))
+				($scope.config.EnableTabLights) &&
+				(
+					(item.Type.indexOf('Light') == 0) ||
+					(item.Type.indexOf('Blind') == 0) ||
+					(item.Type.indexOf('Curtain') == 0) ||
+					(item.Type.indexOf('Thermostat 2') == 0) ||
+					(item.Type.indexOf('Thermostat 3') == 0) ||
+					(item.Type.indexOf('Chime') == 0) ||
+					(item.Type.indexOf('Color Switch') == 0) ||
+					(item.Type.indexOf('RFY') == 0) ||
+					(item.Type.indexOf('ASA') == 0) ||
+					(item.SubType == "Smartwares Mode") ||
+					(item.SubType == "Relay") ||
+					((typeof item.SubType != 'undefined') && (item.SubType.indexOf('Itho') == 0)) ||
+					((typeof item.SubType != 'undefined') && (item.SubType.indexOf('Lucci') == 0)) ||
+					((typeof item.SubType != 'undefined') && (item.SubType.indexOf('Westinghouse') == 0))
+				)
 			) {
 				id = "#light_" + item.idx;
 				var obj = $(id);
@@ -1362,16 +1368,24 @@ define(['app', 'livesocket'], function (app) {
 							if (item.CounterDeliv != 0) {
 								if ($scope.config.DashboardType == 0) {
 									status += '<br>' + $.t("Return") + ': ' + item.CounterDelivToday;
-									status += '<br>' + $.t("Actual") + ': ' + item.UsageDeliv;
+									status += '<br>' + $.t("Actual") + ': ';
+									if (parseInt(item.Usage) > 0) {
+										status += item.Usage;
+									}
+									if (parseInt(item.UsageDeliv) > 0) {
+										status += "-" + item.UsageDeliv;
+									}
 								}
 								else {
 									status += '<br>R: T: ' + item.CounterDelivToday;
 									if (bHaveReturnUsage) {
 										status += ", A: ";
-										if (parseInt(item.UsageDeliv) > 0) {
-											status += "-";
+										if (parseInt(item.Usage) > 0) {
+											status += item.Usage;
 										}
-										status += item.UsageDeliv;
+										if (parseInt(item.UsageDeliv) > 0) {
+											status += "-" + item.UsageDeliv;
+										}
 									}
 								}
 							}
@@ -1511,7 +1525,7 @@ define(['app', 'livesocket'], function (app) {
 						if (typeof item.CounterDeliv != 'undefined') {
 							if (item.CounterDeliv != 0) {
 								if (item.UsageDeliv.charAt(0) != 0) {
-									bigtext = '-' + item.UsageDeliv;
+									bigtext += '-' + item.UsageDeliv;
 								}
 								status += '<br>';
 								if (($scope.config.DashboardType == 2) || (window.myglobals.ismobile == true)) {
@@ -1630,8 +1644,11 @@ define(['app', 'livesocket'], function (app) {
 						$.each(data.result, function (i, item) {
 							//Scenes/Groups
 							if (
-								(item.Type.indexOf('Scene') == 0) ||
-								(item.Type.indexOf('Group') == 0)
+								($scope.config.EnableTabScenes) &&
+								(
+									(item.Type.indexOf('Scene') == 0) ||
+									(item.Type.indexOf('Group') == 0)
+								)
 							) {
 								totdevices += 1;
 								if (jj == 0) {
@@ -1752,12 +1769,12 @@ define(['app', 'livesocket'], function (app) {
 							htmlcontent += '</section>';
 						}
 
-
 						//light devices
 						jj = 0;
 						bHaveAddedDivider = false;
 						$.each(data.result, function (i, item) {
 							if (
+								($scope.config.EnableTabLights) &&
 								(
 									(item.Type.indexOf('Light') == 0) ||
 									(item.SubType == "Smartwares Mode") ||
@@ -3359,16 +3376,25 @@ define(['app', 'livesocket'], function (app) {
 											if (item.CounterDeliv != 0) {
 												if ($scope.config.DashboardType == 0) {
 													status += '<br>' + $.t("Return") + ': ' + item.CounterDelivToday;
-													status += '<br>' + $.t("Actual") + ': -' + item.UsageDeliv;
+													status += '<br>' + $.t("Actual") + ': ';
+													if (parseInt(item.Usage) > 0) {
+														status += item.Usage;
+													}
+													if (parseInt(item.UsageDeliv) > 0) {
+														status += "-" + item.UsageDeliv;
+													}
+													
 												}
 												else {
 													status += '<br>R: T: ' + item.CounterDelivToday;
 													if (bHaveReturnUsage) {
 														status += ", A: ";
-														if (parseInt(item.UsageDeliv) > 0) {
-															status += "-";
+														if (parseInt(item.Usage) > 0) {
+															status += item.Usage;
 														}
-														status += item.UsageDeliv;
+														if (parseInt(item.UsageDeliv) > 0) {
+															status += "-" + item.UsageDeliv;
+														}
 													}
 												}
 											}
@@ -3410,14 +3436,11 @@ define(['app', 'livesocket'], function (app) {
 											bigtexthtml += item.Usage;
 										}
 										else if ((typeof item.Usage != 'undefined') && (typeof item.UsageDeliv != 'undefined')) {
-											if (parseInt(item.Usage) > 0) {
+											if ((item.UsageDeliv.charAt(0) == 0) || (parseInt(item.Usage) != 0)) {
 												bigtexthtml += item.Usage;
 											}
-											else if (parseInt(item.UsageDeliv) > 0) {
-												bigtexthtml += "-" + item.UsageDeliv;
-											}
-											else {
-												bigtexthtml += item.Usage;
+											if (item.UsageDeliv.charAt(0) != 0) {
+												bigtexthtml += '-' + item.UsageDeliv;
 											}
 										}
 										else if (

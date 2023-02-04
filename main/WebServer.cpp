@@ -8503,8 +8503,8 @@ namespace http
 						{
 							totUserDevices = (unsigned int)std::stoi(result[0][0]);
 						}
-						bShowScenes = (m_users[iUser].ActiveTabs & (1 << 1)) != 0;
 					}
+					bShowScenes = (m_users[iUser].ActiveTabs & (1 << 1)) != 0;
 				}
 			}
 
