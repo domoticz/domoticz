@@ -77,6 +77,7 @@ namespace http
 								{	// POST request, so maybe we have the data from the Login form
 									std::string sConsent = request::findValue(&req, "consent");
 									std::string sPWD = request::findValue(&req, "psw");
+									std::string sTOTP = request::findValue(&req, "totp");
 									Username = request::findValue(&req, "uname");
 									iUser = FindUser(Username.c_str());
 									bAuthenticated = (iUser > 0 ? (m_users[iUser].Password == GenerateMD5Hash(sPWD)) : false);
@@ -88,6 +89,38 @@ namespace http
 											_log.Debug(DEBUG_AUTH, "OAuth2 Auth Code: Validating User (%s) failed (%d)!", Username.c_str(), iUser);
 											PresentOauth2LoginDialog(rep, m_users[iClient].Username, "Invalid Credentials!");
 											return;
+										}
+										error = "User credentials do not match!";
+									}
+									else
+									{
+										// User/pass matches.. now check TOTP if required
+										if (m_iamsettings.has_2fatotp())
+										{
+											std::string sTotpKey = "";
+											bAuthenticated = false;
+											if(base32_decode(m_iamsettings.totpsecret, sTotpKey))
+											{
+												if (VerifySHA1TOTP(sTOTP, sTotpKey))
+												{
+													bAuthenticated = true;
+												}
+												else
+												{
+													m_failcount++;
+													if (m_failcount < 3)
+													{
+														_log.Debug(DEBUG_AUTH, "OAuth2 Auth Code: Validating Time-based On-Time Passcode for User (%s) failed (%s)!", Username.c_str(), sTOTP.c_str());
+														PresentOauth2LoginDialog(rep, m_users[iClient].Username, "Invalid TOTP code!");
+														return;
+													}
+													error = "TOTP Verification for a user has failed!";
+												}
+											}
+											else
+											{
+												error = "TOTP key is not valid base32 encoded!";
+											}
 										}
 									}
 								}
