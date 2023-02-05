@@ -6003,8 +6003,9 @@ function ShowSetpointPopup(event, idx, Protected, currentvalue, ismobile) {
 	}
 	var mouseX = event.pageX;
 	var mouseY = event.pageY;
-
-	ShowSetpointPopupInt(mouseX, mouseY, idx, currentvalue, ismobile);
+	HandleProtection(Protected, function () {
+		ShowSetpointPopupInt(mouseX, mouseY, idx, currentvalue, ismobile);
+	});
 }
 
 function CloseRFYPopup() {
