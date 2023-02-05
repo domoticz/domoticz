@@ -49,19 +49,25 @@ public:
 		code_expire_seconds = get_valid_value(code_expire_seconds, iamsettings.code_expire_seconds);
 		token_expire_seconds = get_valid_value(token_expire_seconds, iamsettings.token_expire_seconds);
 		refresh_expire_seconds = get_valid_value(refresh_expire_seconds, iamsettings.refresh_expire_seconds);
+		totpsecret = get_valid_value(totpsecret, iamsettings.totpsecret);
 		is_enabled_ = false;
 		if (auth_url.compare(OAUTH2_AUTH_URL) == 0 )
 			is_enabled_ = true;
+		has_2fatotp_ = false;
+		if (!totpsecret.empty())
+			has_2fatotp_ = true;
 	}
 
 	virtual std::string to_string() const {
 		return std::string("'iam_settings[is_enabled_=") + (is_enabled_ == true ? "true" : "false") +
+			", has_2fatotp_=" + (has_2fatotp_ == true ? "true" : "false") +
 			", auth_url='" + auth_url + "'" +
 			", token_url='" + token_url + "'" +
 			", discovery_url='" + discovery_url + "'" +
 			", code_expire_seconds='" + std::to_string(code_expire_seconds) + "'" +
 			", token_expire_seconds='" + std::to_string(token_expire_seconds) + "'" +
 			", refresh_expire_seconds='" + std::to_string(refresh_expire_seconds) + "'" +
+			", totpsecret='" + totpsecret + "'" +
 			"]'";
 	}
 
@@ -83,6 +89,7 @@ protected:
 		return old_value;
 	}
 public:
+	std::string totpsecret = "";	// Will be moved to per User level soon
 	std::string auth_url = OAUTH2_AUTH_URL;
 	std::string token_url = OAUTH2_TOKEN_URL;
 	std::string discovery_url = OAUTH2_DISCOVERY_URL;
@@ -92,7 +99,7 @@ public:
 
 private:
 	bool is_enabled_{ false };
-	bool has_2fatotp_{ true };
+	bool has_2fatotp_{ false };
 	uint32_t useridx_offset = OAUTH2_USERIDX_OFFSET;
 	const char *auth_content =
 	#include "views/iam_auth.html"
