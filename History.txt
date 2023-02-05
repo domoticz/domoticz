@@ -19,6 +19,7 @@ Version 2023.1 (February 5th 2023)
 - Changed: All security related setting are now in 1 settings tab
 - Changed: By default prompt for login to only allow secure access
 - Changed: Default 'admin' user is generated with standard password (see Users)
+- Changed: Dimmer, restores to previous Set Level state after Off
 - Changed: Implicit adding local IP to 'trusted networks' has been removed. Needs to be set explicitly for security reasons!
 - Changed: Lots of security related code cleanup and improvements
 - Changed: Menu option for 'Users' moved to main 'Setup' menu list
@@ -34,7 +35,7 @@ Version 2023.1 (February 5th 2023)
 - Fixed: Mobile display text objects with long lines
 - Fixed: Highcharts dropdown menu z-index problem
 - Fixed: Navigation bar display issues on some mobile devices
-- Fixed: Setpoint with protection
+- Fixed: Setpoint popup when using protection
 
 Version 2022.2 (November 5 2022)
 - Implemented: Blockly,	added 'Toggle' set command
