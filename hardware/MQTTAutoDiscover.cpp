@@ -332,6 +332,57 @@ std::string MQTTAutoDiscover::GetValueFromTemplate(Json::Value root, std::string
 	return "";
 }
 
+std::string MQTTAutoDiscover::GetValueFromTemplate(const std::string& szValue, std::string szValueTemplate)
+{
+	try
+	{
+		std::map<std::string, std::string> value_keys;
+
+		stdreplace(szValueTemplate, " ", "");
+		stdreplace(szValueTemplate, "%", "");
+
+		//we only support if/else/endif
+		if (szValueTemplate.find("ifvalue==") != 0)
+			return "";
+		szValueTemplate = szValueTemplate.substr(strlen("ifvalue=="));
+		size_t pos;
+
+		pos = szValueTemplate.find("elseif");
+		if (pos != std::string::npos)
+		{
+			Log(LOG_ERROR, "This template is not (yet) support, please report to us (Template: %s)", szValueTemplate.c_str());
+			return ""; //not supported
+		}
+
+		pos = szValueTemplate.find("else");
+		if (pos == std::string::npos)
+			return "";
+
+		std::string szKey = szValueTemplate.substr(0, pos);
+
+		szValueTemplate = szValueTemplate.substr(pos + strlen("else"));
+		pos = szValueTemplate.find("endif");
+		if (pos == std::string::npos)
+			return "";
+
+		szValueTemplate = szValueTemplate.substr(0, pos);
+
+		std::string szValElse = szValueTemplate;
+
+		if (szKey.find(szValue) == 0)
+		{
+			return szKey.substr(szValue.size());
+		}
+
+		return szValElse;
+	}
+	catch (const std::exception& e)
+	{
+		Log(LOG_ERROR, "Exception (GetValueFromTemplate): %s! (Template: %s)", e.what(), szValueTemplate.c_str());
+	}
+	return "";
+}
+
 //Returns true if value is set in JSon object
 bool MQTTAutoDiscover::SetValueWithTemplate(Json::Value& root, std::string szValueTemplate, std::string szValue)
 {
@@ -2383,20 +2434,41 @@ void MQTTAutoDiscover::handle_auto_discovery_climate(_tMQTTASensor* pSensor, con
 			)
 		{
 			std::string current_mode;
-			if (
-				(!pSensor->mode_state_template.empty())
-				&& (bIsJSON)
-				)
+
+			if (bIsJSON)
 			{
-				current_mode = GetValueFromTemplate(root, pSensor->mode_state_template);
-				if ((pSensor->mode_state_topic == topic) && current_mode.empty())
+				if (!pSensor->mode_state_template.empty())
 				{
-					Log(LOG_ERROR, "Climate device no idea how to interpretate state values (%s)", pSensor->unique_id.c_str());
+					current_mode = GetValueFromTemplate(root, pSensor->mode_state_template);
+					if ((pSensor->mode_state_topic == topic) && current_mode.empty())
+					{
+						Log(LOG_ERROR, "Climate device no idea how to interpretate state values (%s)", pSensor->unique_id.c_str());
+						bValid = false;
+					}
+				}
+				else
+				{
+					//should have a template for a json value!
+					Log(LOG_ERROR, "Climate device no idea how to interpretate state values (no state template!)(%s)", pSensor->unique_id.c_str());
 					bValid = false;
 				}
 			}
 			else
-				current_mode = qMessage;
+			{
+				if (!pSensor->mode_state_template.empty())
+				{
+					current_mode = GetValueFromTemplate(qMessage, pSensor->mode_state_template);
+					if ((pSensor->mode_state_topic == topic) && current_mode.empty())
+					{
+						//silence error for now
+						current_mode = qMessage;
+						//Log(LOG_ERROR, "Climate device no idea how to interpretate state values (%s)", pSensor->unique_id.c_str());
+						//bValid = false;
+					}
+				}
+				else
+					current_mode = qMessage;
+			}
 
 			if (bValid)
 			{
