@@ -11507,6 +11507,14 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string>& sd, std::string 
 		if (result.size() == 1)
 		{
 			level = atoi(result[0][0].c_str());
+			if (
+				(switchcmd == "On")
+				&& (level > 0)
+				&& (switchtype == STYPE_Dimmer)
+				)
+			{
+				switchcmd = "Set Level";
+			}
 		}
 
 		//level here is from 0-100, convert it to device range

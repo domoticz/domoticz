@@ -1,9 +1,13 @@
-Version 2022.xxxx
+Version 2023.1 (February 5th 2023)
 - For a full overview visit: https://www.domoticz.com/wiki/Domoticz_versions_-_Commits for details
 - Implemented: Accept JWT tokens as authentication and Authorization Bearer tokens (either from internal or external IAM service)
+- Implemented: Blinds, added option to schedule 0%
 - Implemented: dzVents, OpenURL PATCH method
-- Implemented: Enphase, Added battery readings
+- Implemented: Enphase, redesign and added battery readings (Supports firmware V7)
 - Implemented: Internal OAuth2/OIDC IAM service supporting 4 different flows (OAuth2 (RFC6749), PKCE extension (RFC7636) and JWT Tokens (RFC7519))
+- Implemented: MQTT, added support for Lock status
+- Implemented: MQTT, added support for wildcards in discovery topics
+- Implemented: MQTT, climate preset mode
 - Implemented: New 'auth' debug flag to see IAM related messages
 - Implemented: Now 'Applications' can be registered to get secure access to Domoticz, see 'setup' menu (standard DomoticzUI app is registered by default)
 - Implemented: SECURITY_SETUP.md describing the new/improved security setup
@@ -12,20 +16,26 @@ Version 2022.xxxx
 - Implemented: The Security realm can be configured using the 'vhostname' option (default domoticz.com)
 - Implemented: Timer, Grid option for selected switches and thermostat. Big thanks to syrhus/labelette91580 and xbeaudouin
 - Implemented: User device selection now displays type/subtype
-- Changed: The following proxy headers are now properly supported 'Forwarded' (RFC7239), 'X-Forwarder-For' and 'X-Real-IP' (in that order)
 - Changed: All security related setting are now in 1 settings tab
-- Changed: Default 'admin' user is generated with standard password (see Users)
 - Changed: By default prompt for login to only allow secure access
+- Changed: Default 'admin' user is generated with standard password (see Users)
+- Changed: Dimmer, restores to previous Set Level state after Off
 - Changed: Implicit adding local IP to 'trusted networks' has been removed. Needs to be set explicitly for security reasons!
-- Changed: The secure server (HTTPS) sends proper CORS and Security headers
-- Changed: Menu option for 'Users' moved to main 'Setup' menu list
 - Changed: Lots of security related code cleanup and improvements
+- Changed: Menu option for 'Users' moved to main 'Setup' menu list
+- Changed: MQTT timeout increased to 2 minutes
+- Changed: The following proxy headers are now properly supported 'Forwarded' (RFC7239), 'X-Forwarder-For' and 'X-Real-IP' (in that order)
+- Changed: The secure server (HTTPS) sends proper CORS and Security headers
+- Fixed: Dashboard, scenes/lights hidden when this was disabled in user settings
+- Fixed: Dashboard, mobile display did not display P1 meter current return value correctly
 - Fixed: Dashboard, not showing disabled sections (temperature/weather/utility) when a device has multiple properties (for instance temperature + weather)
 - Fixed: Logout now returns 204 instead of 401
 - Fixed: Waterflow sensor custom icon
+- Fixed: Making sure Custom icons are valid (when someone manually edits the database)
 - Fixed: Mobile display text objects with long lines
 - Fixed: Highcharts dropdown menu z-index problem
 - Fixed: Navigation bar display issues on some mobile devices
+- Fixed: Setpoint popup when using protection
 
 Version 2022.2 (November 5 2022)
 - Implemented: Blockly,	added 'Toggle' set command

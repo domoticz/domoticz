@@ -11368,7 +11368,7 @@ namespace http
 				return; // Only admin user allowed
 			}
 
-			std::string idx = request::findValue(&req, "idx");
+			std::string idx = CURLEncode::URLDecode(request::findValue(&req, "idx"));
 			if (idx.empty())
 				return;
 
@@ -11424,7 +11424,7 @@ namespace http
 				return; // Only admin user allowed
 			}
 
-			std::string idx = request::findValue(&req, "idx");
+			std::string idx = CURLEncode::URLDecode(request::findValue(&req, "idx"));
 			if (idx.empty())
 				return;
 			root["status"] = "OK";
@@ -12705,7 +12705,7 @@ namespace http
 		void CWebServer::RType_SetSharedUserDevices(WebEmSession& session, const request& req, Json::Value& root)
 		{
 			std::string idx = request::findValue(&req, "idx");
-			std::string userdevices = request::findValue(&req, "devices");
+			std::string userdevices = CURLEncode::URLDecode(request::findValue(&req, "devices"));
 			if (idx.empty())
 				return;
 			root["status"] = "OK";

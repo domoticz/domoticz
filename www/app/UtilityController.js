@@ -474,11 +474,9 @@ define(['app', 'livesocket','app/virtualThermostat.js'], function (app) {
 						status += '<br>' + $.t("Return") + ': ' + $.t("Today") + ': ' + item.CounterDelivToday + ', ' + item.CounterDeliv;
 						if (item.UsageDeliv.charAt(0) != 0) {
 							if (parseInt(item.Usage) != 0) {
-								bigtext += ', -' + item.UsageDeliv;
+								bigtext += ', ';
 							}
-							else {
-								bigtext = '-' + item.UsageDeliv;
-							}
+							bigtext += '-' + item.UsageDeliv;
 						}
 					}
 				}
@@ -582,6 +580,9 @@ define(['app', 'livesocket','app/virtualThermostat.js'], function (app) {
 									bigtext += item.Usage;
 								}
 								if (item.UsageDeliv.charAt(0) != 0) {
+									if (parseInt(item.Usage) > 0) {
+										bigtext += ', ';
+									}
 									bigtext += '-' + item.UsageDeliv;
 								}
 							}

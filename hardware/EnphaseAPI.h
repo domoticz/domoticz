@@ -24,6 +24,7 @@ private:
 	bool GetAccessToken();
 	bool getProductionDetails(Json::Value& result);
 	bool getInverterDetails();
+	std::string V5_emupwGetMobilePasswd(const std::string &serialNumber, const std::string &userName, const std::string &realm);
 
 	void parseProduction(const Json::Value& root);
 	void parseConsumption(const Json::Value& root);
@@ -33,6 +34,9 @@ private:
 	int getSunRiseSunSetMinutes(bool bGetSunRise);
 
 	bool NeedToken();
+
+	uint64_t UpdateValueInt(const char* ID, unsigned char unit, unsigned char devType, unsigned char subType, unsigned char signallevel, unsigned char batterylevel, int nValue,
+		const char* sValue, std::string& devname, bool bUseOnOffAction = true, const std::string& user = "");
 private:
 	int m_poll_interval = 30;
 
@@ -40,6 +44,7 @@ private:
 	std::string m_szSoftwareVersion;
 	std::string m_szToken;
 	std::string m_szIPAddress;
+	std::string m_szInstallerPassword; // derived from serial number
 
 	std::string m_szUsername;
 	std::string m_szPassword;
@@ -49,8 +54,6 @@ private:
 	bool m_bHaveConsumption = false;
 	bool m_bHaveeNetConsumption = false;
 	bool m_bHaveStorage = false;
-
-	bool m_bFirstTimeInvertedDetails = true;
 
 	std::shared_ptr<std::thread> m_thread;
 };
