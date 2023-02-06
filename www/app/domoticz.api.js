@@ -134,14 +134,14 @@ define(['app.permissions', 'livesocket'], function(appPermissionsModule, websock
         function removeDevice(deviceIdx) {
             return domoticzApi.sendRequest({
                 type: 'deletedevice',
-                idx: Array.isArray(deviceIdx) ? deviceIdx.join(';') : deviceIdx
+                idx: Array.isArray(deviceIdx) ? encodeURIComponent(deviceIdx.join(';')) : deviceIdx
             }).then(domoticzApi.errorHandler);
         }
 
         function removeScene(deviceIdx) {
             return domoticzApi.sendRequest({
                 type: 'deletescene',
-                idx: Array.isArray(deviceIdx) ? deviceIdx.join(';') : deviceIdx
+                idx: Array.isArray(deviceIdx) ? encodeURIComponent(deviceIdx.join(';')) : deviceIdx
             }).then(domoticzApi.errorHandler);
         }
 
