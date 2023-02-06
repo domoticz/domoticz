@@ -9,9 +9,9 @@ class MQTT : public MySensorsBase, mosqdz::mosquittodz
 {
 	friend class MQTTAutoDiscover;
 
-      public:
-	MQTT(int ID, const std::string &IPAddress, unsigned short usIPPort, const std::string &Username, const std::string &Password, const std::string &CAfilenameExtra, int TLS_Version,
-	     int PublishScheme, const std::string &MQTTClientID, bool PreventLoop);
+public:
+	MQTT(int ID, const std::string& IPAddress, unsigned short usIPPort, const std::string& Username, const std::string& Password, const std::string& CAfilenameExtra, int TLS_Version,
+		int PublishScheme, const std::string& MQTTClientID, bool PreventLoop);
 	~MQTT() override;
 	bool isConnected()
 	{
@@ -20,22 +20,24 @@ class MQTT : public MySensorsBase, mosqdz::mosquittodz
 
 	void on_connect(int rc) override;
 	void on_disconnect(int rc) override;
-	void on_message(const struct mosquitto_message *message) override;
-	void on_subscribe(int mid, int qos_count, const int *granted_qos) override;
+	void on_message(const struct mosquitto_message* message) override;
+	void on_subscribe(int mid, int qos_count, const int* granted_qos) override;
+	virtual void on_going_down();
 
-	void on_log(int level, const char *str) override;
+	void on_log(int level, const char* str) override;
 	void on_error() override;
 
-	void SendMessage(const std::string &Topic, const std::string &Message);
+	void SendMessage(const std::string& Topic, const std::string& Message);
+	void SendMessageEx(const std::string& Topic, const std::string& Message, int qos = 0, bool retain = false);
 
 	bool m_bDoReconnect;
 	bool m_IsConnected;
 
-      public:
+public:
 	// signals
 	boost::signals2::signal<void()> sDisconnected;
 
-      protected:
+protected:
 	bool StartHardware() override;
 	bool StopHardware() override;
 	enum _ePublishTopics
@@ -56,16 +58,16 @@ class MQTT : public MySensorsBase, mosqdz::mosquittodz
 	std::string m_TopicIn;
 	std::string m_TopicOut;
 
-      private:
+private:
 	bool ConnectInt();
 	bool ConnectIntEx();
-	void SendDeviceInfo(int HwdID, uint64_t DeviceRowIdx, const std::string &DeviceName, const unsigned char *pRXCommand);
-	void SendSceneInfo(uint64_t SceneIdx, const std::string &SceneName);
+	void SendDeviceInfo(int HwdID, uint64_t DeviceRowIdx, const std::string& DeviceName, const unsigned char* pRXCommand);
+	void SendSceneInfo(uint64_t SceneIdx, const std::string& SceneName);
 	void StopMQTT();
 	void Do_Work();
-	void SubscribeTopic(const std::string &szTopic, const int qos = 0);
+	void SubscribeTopic(const std::string& szTopic, const int qos = 0);
 	virtual void SendHeartbeat();
-	void WriteInt(const std::string &sendStr) override;
+	void WriteInt(const std::string& sendStr) override;
 	std::shared_ptr<std::thread> m_thread;
 	boost::signals2::connection m_sDeviceReceivedConnection;
 	boost::signals2::connection m_sSwitchSceneConnection;

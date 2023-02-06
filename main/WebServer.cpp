@@ -8495,8 +8495,8 @@ namespace http
 						{
 							totUserDevices = (unsigned int)std::stoi(result[0][0]);
 						}
-						bShowScenes = (m_users[iUser].ActiveTabs & (1 << 1)) != 0;
 					}
+					bShowScenes = (m_users[iUser].ActiveTabs & (1 << 1)) != 0;
 				}
 			}
 
@@ -14495,8 +14495,6 @@ namespace http
 
 									if (lastHour != ntime.tm_hour)
 									{
-										double usageValue = (double)(actValue - ulRealFirstValue);
-
 										if (lastDay != ntime.tm_mday)
 										{
 											lastDay = ntime.tm_mday;
@@ -14535,23 +14533,28 @@ namespace http
 												}
 												root["result"][ii]["v"] = szTmp;
 
-												switch (metertype)
+												if (!bIsManagedCounter)
 												{
-												case MTYPE_ENERGY:
-												case MTYPE_ENERGY_GENERATED:
-													sprintf(szTmp, "%.3f", usageValue / divider);
-													break;
-												case MTYPE_GAS:
-													sprintf(szTmp, "%.3f", usageValue / divider);
-													break;
-												case MTYPE_WATER:
-													sprintf(szTmp, "%g", usageValue);
-													break;
-												case MTYPE_COUNTER:
-													sprintf(szTmp, "%.3f", usageValue / divider);
-													break;
+													double usageValue = (double)(actValue - ulRealFirstValue);
+
+													switch (metertype)
+													{
+													case MTYPE_ENERGY:
+													case MTYPE_ENERGY_GENERATED:
+														sprintf(szTmp, "%.3f", usageValue / divider);
+														break;
+													case MTYPE_GAS:
+														sprintf(szTmp, "%.3f", usageValue / divider);
+														break;
+													case MTYPE_WATER:
+														sprintf(szTmp, "%g", usageValue);
+														break;
+													case MTYPE_COUNTER:
+														sprintf(szTmp, "%.3f", usageValue / divider);
+														break;
+													}
+													root["result"][ii]["mu"] = szTmp;
 												}
-												root["result"][ii]["mu"] = szTmp;
 												ii++;
 											}
 										}
@@ -14566,7 +14569,11 @@ namespace http
 									{
 										bHaveFirstValue = true;
 										lastHour = ntime.tm_hour;
-										if ((ntime.tm_hour != 0) && (ntime.tm_min != 0))
+										ulFirstValue = actValue;
+										ulRealFirstValue = actValue;
+										lastDay = ntime.tm_mday;
+
+										if (!((ntime.tm_hour == 0) && (ntime.tm_min == 0)))
 										{
 											struct tm ltime;
 											localtime_r(&atime, &tm1);
@@ -14680,25 +14687,27 @@ namespace http
 								}
 								root["result"][ii]["v"] = szTmp;
 
-								double usageValue = (double)(ulLastValue - ulRealFirstValue);
-								switch (metertype)
+								if (!bIsManagedCounter)
 								{
-								case MTYPE_ENERGY:
-								case MTYPE_ENERGY_GENERATED:
-									sprintf(szTmp, "%.3f", usageValue / divider);
-									break;
-								case MTYPE_GAS:
-									sprintf(szTmp, "%.3f", usageValue / divider);
-									break;
-								case MTYPE_WATER:
-									sprintf(szTmp, "%.3f", usageValue);
-									break;
-								case MTYPE_COUNTER:
-									sprintf(szTmp, "%.3f", usageValue / divider);
-									break;
+									double usageValue = (double)(ulLastValue - ulRealFirstValue);
+									switch (metertype)
+									{
+									case MTYPE_ENERGY:
+									case MTYPE_ENERGY_GENERATED:
+										sprintf(szTmp, "%.3f", usageValue / divider);
+										break;
+									case MTYPE_GAS:
+										sprintf(szTmp, "%.3f", usageValue / divider);
+										break;
+									case MTYPE_WATER:
+										sprintf(szTmp, "%.3f", usageValue);
+										break;
+									case MTYPE_COUNTER:
+										sprintf(szTmp, "%.3f", usageValue / divider);
+										break;
+									}
+									root["result"][ii]["mu"] = szTmp;
 								}
-								root["result"][ii]["mu"] = szTmp;
-
 								ii++;
 							}
 						}

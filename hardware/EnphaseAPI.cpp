@@ -9,6 +9,7 @@
 #include "../main/mainworker.h"
 #include "../main/RFXtrx.h"
 #include "../main/SQLHelper.h"
+#include "../notifications/NotificationHelper.h"
 #include "../tinyxpath/tinyxml.h"
 #include "hardwaretypes.h"
 #include <iostream>
@@ -633,6 +634,22 @@ void EnphaseAPI::parseStorage(const Json::Value& root)
 	m_bHaveStorage = true;
 }
 
+uint64_t EnphaseAPI::UpdateValueInt(const char* ID, unsigned char unit, unsigned char devType, unsigned char subType, unsigned char signallevel, unsigned char batterylevel, int nValue,
+	const char* sValue, std::string& devname, bool bUseOnOffAction, const std::string& user)
+{
+	uint64_t DeviceRowIdx = m_sql.UpdateValue(m_HwdID, ID, unit, devType, subType, signallevel, batterylevel, nValue, sValue, devname, bUseOnOffAction, (!user.empty()) ? user.c_str() : m_Name.c_str());
+	if (DeviceRowIdx == (uint64_t)-1)
+		return -1;
+	if (m_bOutputLog)
+	{
+		std::string szLogString = RFX_Type_Desc(devType, 1) + std::string("/") + std::string(RFX_Type_SubType_Desc(devType, subType)) + " (" + devname + ")";
+		Log(LOG_NORM, szLogString);
+	}
+	m_mainworker.sOnDeviceReceived(m_HwdID, DeviceRowIdx, devname, nullptr);
+	m_notifications.CheckAndHandleNotification(DeviceRowIdx, m_HwdID, ID, devname, unit, devType, subType, nValue, sValue);
+	return DeviceRowIdx;
+}
+
 bool EnphaseAPI::getInverterDetails()
 {
 	std::string sResult;
@@ -688,7 +705,6 @@ bool EnphaseAPI::getInverterDetails()
 		return false;
 	}
 
-	int iIndex = 128;
 	for (const auto& itt : root)
 	{
 		if (itt["serialNumber"].empty())
@@ -698,32 +714,37 @@ bool EnphaseAPI::getInverterDetails()
 		int musage = itt["lastReportWatts"].asInt();
 		int mtotal = itt["maxReportWatts"].asInt();
 
-		if (m_bFirstTimeInvertedDetails)
+		std::string szDeviceID = szSerialNumber;
+		std::string sDeviceName = "Inv " + szSerialNumber;
+		int nValue = 0;
+		std::string sValue = std::to_string(musage) + ";" + std::to_string(mtotal);
+		int devType = pTypeGeneral;
+		int subType = sTypeKwh;
+
+		std::vector<std::vector<std::string>> result;
+		result = m_sql.safe_query("SELECT Name,nValue,sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit == %d) AND (Type==%d) AND (Subtype==%d)",
+			m_HwdID, szDeviceID.c_str(), 1, devType, subType);
+		if (result.empty())
 		{
-			//We have to set these devices to computed as there is no continues kWh counter
-			std::string DeviceID = std_format("%08X", (unsigned int)(m_HwdID << 8) | iIndex);
+			// Insert
+			int iUsed = 0;
+			m_sql.safe_query("INSERT INTO DeviceStatus (HardwareID, DeviceID, Unit, Type, SubType, SignalLevel, BatteryLevel, Name, Used, nValue, sValue) "
+				"VALUES (%d, '%q', 1, %d, %d, %d, %d, '%q', %d, %d, '%q')",
+				m_HwdID, szDeviceID.c_str(), devType, subType, 12, 255, sDeviceName.c_str(), iUsed, nValue, sValue.c_str());
 
-			_tGeneralDevice gdevice;
-			gdevice.subtype = sTypeKwh;
-			gdevice.intval1 = (m_HwdID << 8) | iIndex;
-			gdevice.floatval1 = (float)musage;
-			gdevice.floatval2 = (float)(mtotal * 1000.0); //bogus value
-			gdevice.rssi = 12;
-
-			m_mainworker.PushAndWaitRxMessage(this, (const unsigned char*)&gdevice, (std::string("Inv: ") + szSerialNumber).c_str(), 255, m_Name.c_str());
-			auto result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (Type=%d) AND (SubType=%d) AND (DeviceID='%q') ", pTypeGeneral, sTypeKwh, DeviceID.c_str());
+			result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit == %d) AND (Type==%d) AND (Subtype==%d)",
+				m_HwdID, szDeviceID.c_str(), 1, devType, subType);
 			if (!result.empty())
 			{
 				m_sql.SetDeviceOptions(std::stoull(result[0][0]), m_sql.BuildDeviceOptions("EnergyMeterMode:1", false));
 			}
 		}
 		else
-			SendKwhMeter(m_HwdID, iIndex, 255, musage, mtotal / 1000.0, szSerialNumber);//
-
-		iIndex++;
+		{
+			// Update
+			UpdateValueInt(szDeviceID.c_str(), 1, devType, subType, 12, 255, nValue, sValue.c_str(), result[0][0]);
+		}
 	}
-
-	m_bFirstTimeInvertedDetails = false;
 
 	return true;
 }

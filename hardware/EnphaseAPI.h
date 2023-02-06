@@ -34,6 +34,9 @@ private:
 	int getSunRiseSunSetMinutes(bool bGetSunRise);
 
 	bool NeedToken();
+
+	uint64_t UpdateValueInt(const char* ID, unsigned char unit, unsigned char devType, unsigned char subType, unsigned char signallevel, unsigned char batterylevel, int nValue,
+		const char* sValue, std::string& devname, bool bUseOnOffAction = true, const std::string& user = "");
 private:
 	int m_poll_interval = 30;
 
@@ -51,8 +54,6 @@ private:
 	bool m_bHaveConsumption = false;
 	bool m_bHaveeNetConsumption = false;
 	bool m_bHaveStorage = false;
-
-	bool m_bFirstTimeInvertedDetails = true;
 
 	std::shared_ptr<std::thread> m_thread;
 };

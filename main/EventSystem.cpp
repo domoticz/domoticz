@@ -3775,7 +3775,6 @@ bool CEventSystem::ScheduleEvent(int deviceID, const std::string &Action, bool i
 
 std::string CEventSystem::nValueToWording(const uint8_t dType, const uint8_t dSubType, const _eSwitchType switchtype, const int nValue, const std::string &sValue, const std::map<std::string, std::string> & options)
 {
-
 	std::string lstatus;
 	int llevel = 0;
 	bool bHaveDimmer = false;
@@ -3792,7 +3791,11 @@ std::string CEventSystem::nValueToWording(const uint8_t dType, const uint8_t dSu
 
 	if (switchtype == STYPE_Dimmer)
 	{
-		// use default lstatus
+		if (lstatus.find("Set Level") == 0)
+		{
+			// treat 'Set level' as ON
+			lstatus = "On";
+		}
 	}
 	else if (((dType == pTypeGeneral) && (dSubType == sTypeCounterIncremental)) ||
 		(dType == pTypeRFXMeter))
