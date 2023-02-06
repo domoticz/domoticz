@@ -228,6 +228,48 @@ int EnphaseAPI::getSunRiseSunSetMinutes(const bool bGetSunRise)
 	return 0;
 }
 
+// emupwGetMobilePasswd taken from https://github.com/sarnau/EnphaseEnergy
+std::string EnphaseAPI::V5_emupwGetMobilePasswd(const std::string &serialNumber, const std::string &userName, const std::string &realm)
+{
+	std::string digest =  GenerateMD5Hash(std::string("[e]") + userName + "@" + realm + "#" + serialNumber + " EnPhAsE eNeRgY ");
+	if (digest.length() <= 8)
+		return "";
+
+	int countZero = std::count(digest.begin(), digest.end(), '0');
+	int countOne = std::count(digest.begin(), digest.end(), '1');
+	std::string szPassword;
+	std::string szRight = digest.substr(digest.length() - 8);
+	for (auto it = szRight.rbegin(); it != szRight.rend(); it++)
+	{
+		if (countZero == 3 || countZero == 6 || countZero == 9)
+			countZero--;
+		if (countZero > 20)
+			countZero = 20;
+		if (countZero < 0)
+			countZero = 0;
+
+		if (countOne == 9 || countOne == 15)
+			countOne--;
+		if (countOne > 26)
+			countOne = 26;
+		if (countOne < 0)
+			countOne = 0;
+		if (*it == '0')
+		{
+			szPassword += 'f' + countZero;
+			countZero = countZero - 1;
+		}
+		else if (*it == '1')
+		{
+			szPassword += '@' + countOne;
+			countOne = countOne - 1;
+		}
+		else
+			szPassword += *it;
+	}
+	return szPassword;
+}
+
 bool EnphaseAPI::GetSerialSoftwareVersion()
 {
 	std::string sResult;
@@ -298,6 +340,14 @@ bool EnphaseAPI::GetSerialSoftwareVersion()
 		)
 	{
 		Log(LOG_STATUS, "Unsupported software version! Please contact us for support!");
+	}
+	else
+	{
+		if (m_szSoftwareVersion[1] <= '7')
+		{
+			m_szInstallerPassword = V5_emupwGetMobilePasswd(m_szSerial, "installer", "enphaseenergy.com");
+			Log(LOG_STATUS, "Firmware out of date!. Using password generated from SN. Please update your firmware!!");
+		}
 	}
 
 	return true;
@@ -624,8 +674,21 @@ bool EnphaseAPI::getInverterDetails()
 
 	if (!HTTPClient::GET(sURL.str(), ExtraHeaders, sResult))
 	{
-		Log(LOG_ERROR, "Invalid data received! (inverter details)");
-		return false;
+		if (!NeedToken() && !m_szInstallerPassword.empty())
+		{
+			std::stringstream sURLInstallerPwd;
+			sURLInstallerPwd << "http://installer:" << m_szInstallerPassword << "@" << m_szIPAddress << "/api/v1/production/inverters";
+			if (!HTTPClient::GET(sURLInstallerPwd.str(), ExtraHeaders, sResult))
+			{
+				Log(LOG_ERROR, "Invalid data received! (inverter details)");
+				return false;
+			}
+		}
+		else
+		{
+			Log(LOG_ERROR, "Invalid data received! (inverter details)");
+			return false;
+		}
 	}
 #ifdef DEBUG_EnphaseAPI_W
 	SaveString2Disk(sResult, "E:\\EnphaseAPI_inverters.json");

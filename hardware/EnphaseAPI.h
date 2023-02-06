@@ -24,6 +24,7 @@ private:
 	bool GetAccessToken();
 	bool getProductionDetails(Json::Value& result);
 	bool getInverterDetails();
+	std::string V5_emupwGetMobilePasswd(const std::string &serialNumber, const std::string &userName, const std::string &realm);
 
 	void parseProduction(const Json::Value& root);
 	void parseConsumption(const Json::Value& root);
@@ -43,6 +44,7 @@ private:
 	std::string m_szSoftwareVersion;
 	std::string m_szToken;
 	std::string m_szIPAddress;
+	std::string m_szInstallerPassword; // derived from serial number
 
 	std::string m_szUsername;
 	std::string m_szPassword;
