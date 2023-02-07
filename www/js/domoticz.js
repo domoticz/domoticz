@@ -6282,6 +6282,24 @@ function fromInstanceOrFunction(functionTemplate = f => f()) {
 /* LiveSearch Functions: Filters devices when typing in the INPUT field ##################################### */
 var _debug_livesearch= false;
 
+function AddToLiveSearch(current_data, new_value) {
+	if (
+		(typeof new_value == 'undefined') ||
+		(new_value === "")
+	   ) {
+		return current_data;
+	}
+	if (
+		(typeof current_data == 'undefined') ||
+		(current_data === "")
+	) {
+		return new_value;
+	}
+	if (current_data.includes(new_value))
+		return current_data;
+	return current_data + " " +  new_value;
+}
+
 /* Triggers LiveSearch change ----------------------------------  */
 function RefreshLiveSearch(){
 	if(_debug_livesearch) console.log('LiveSearch: Refreshing...');
@@ -6324,17 +6342,18 @@ function WatchLiveSearch(){
 			div.find('.clearfix').hide();  /* only for Weather and Temperatures pages */
 
 			items.each(function(index){
-				var name	=$(this).find('#name').html()				|| '';
-				var desc	=$(this).find('#name').attr('data-desc')	|| '';
-				var idx		=$(this).find('#name').attr('data-idx')		|| '';
-				var status	=$(this).find('#name').attr('data-status')	|| '';
+				var searchText	=$(this).find('#name').attr('data-search')	|| '';
+				var name		=$(this).find('#name').html()				|| '';
+				var desc		=$(this).find('#name').attr('data-desc')	|| '';
+				var idx			=$(this).find('#name').attr('data-idx')		|| '';
+				var status		=$(this).find('#name').attr('data-status')	|| '';
 
 				var safe_query=query.replace('\\','').replace('[','\\[').replace(']','\\]').replace('.','\\.')
 				var re		= new RegExp(safe_query, "mi");
 				//var re_s	= new RegExp('^'+safe_query, "i");
 
 				var to_hide=$(this);
-				if ( re.test(name) || re.test(desc) || re.test(idx) || re.test(status) ) {
+				if ( re.test(searchText) || re.test(name) || re.test(desc) || re.test(idx) || re.test(status) ) {
 					to_hide.show();
 					to_hide.addClass(cl_shown);
 				}

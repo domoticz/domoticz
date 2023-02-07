@@ -307,6 +307,31 @@ define(['app', 'livesocket'], function (app) {
 			htm += '</ul></div>';
 			return htm;
 		}
+		
+		GenerateLiveSearchText = function (item, bigtext) {
+			var searchText = "";
+			
+			if (bigtext !== "") {
+				searchText = AddToLiveSearch(searchText, item.idx);
+				searchText = AddToLiveSearch(searchText, item.Name);
+				searchText = AddToLiveSearch(searchText, item.Description.replace('"',"'"));
+				if (bigtext.includes(' %')) {
+					if (item.SwitchType=="Dimmer") {
+						//treat dimmer percentage as on
+						searchText = AddToLiveSearch(searchText, "On");
+					} else {
+						//possible a blind
+					}
+				}
+				else
+					searchText = AddToLiveSearch(searchText, bigtext);
+				searchText = AddToLiveSearch(searchText, item.Type);
+				searchText = AddToLiveSearch(searchText, item.SubType);
+				if (!item.SwitchType.includes('On'))
+					searchText = AddToLiveSearch(searchText, item.SwitchType);
+			}
+			return searchText;
+		}
 
 		RefreshItem = function (item) {
 			var id = "#lightcontent #" + item.idx;
@@ -693,9 +718,15 @@ define(['app', 'livesocket'], function (app) {
 			if ($(id + " #lastupdate").html() != item.LastUpdate) {
 				$(id + " #lastupdate").html(item.LastUpdate);
 			}
+			
+			var searchText = GenerateLiveSearchText(item, bigtext);
+
+			$(id).find('#name').attr('data-search', searchText);
+			
 			if ($scope.config.ShowUpdatedEffect == true) {
 				$(id + " #name").effect("highlight", { color: '#EEFFEE' }, 1000);
 			}
+			
 			RefreshLiveSearch();
 		}
 
@@ -805,10 +836,12 @@ define(['app', 'livesocket'], function (app) {
 							if (item.SwitchType === "Selector" || item.SubType == "Evohome") {
 								bigtext = GetLightStatusText(item);
 							}
+							
+							var searchText = GenerateLiveSearchText(item, bigtext);
 
 							xhtm +=
 								'\t    <tr>\n' +
-								'\t      <td id="name" class="item-name" data-idx="'+item.idx+'" data-desc="'+item.Description.replace('"',"'")+'" data-status="'+bigtext+'">' + item.Name +'</td>\n' +
+								'\t      <td id="name" class="item-name" data-idx="'+item.idx+'" data-desc="'+item.Description.replace('"',"'")+'" data-status="'+bigtext+'" data-search="'+searchText+'">' + item.Name +'</td>\n' +
 								'\t      <td id="bigtext">';
 
 							if (item.UsedByCamera == true) {
