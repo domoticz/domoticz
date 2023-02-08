@@ -468,6 +468,8 @@ define(['app', 'livesocket'], function (app) {
 						if (item.UsageDeliv.charAt(0) != 0) {
 							if (parseInt(item.Usage) != 0) {
 								bigtext += ', ';
+							} else {
+								bigtext='';
 							}
 							bigtext += '-' + item.UsageDeliv;
 						}
