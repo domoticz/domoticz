@@ -494,8 +494,10 @@ define(['app', 'livesocket'], function (app) {
 						$(id + " #img").html(img);
 					}
 				}
-				if ($scope.config.ShowUpdatedEffect == true) {
-					$(id + " #name").effect("highlight", { color: '#EEFFEE' }, 1000);
+				if (!document.hidden) {
+					if ($scope.config.ShowUpdatedEffect == true) {
+						$(id + " #name").effect("highlight", { color: '#EEFFEE' }, 1000);
+					}
 				}
 				RefreshLiveSearch();
 			}

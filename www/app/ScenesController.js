@@ -819,8 +819,10 @@ define(['app', 'livesocket'], function (app) {
 				if ($(id + " #lastupdate").html() != item.LastUpdate) {
 					$(id + " #lastupdate").html(item.LastUpdate);
 				}
-				if ($scope.config.ShowUpdatedEffect == true) {
-					$(id + " #name").effect("highlight", { color: '#EEFFEE' }, 1000);
+				if (!document.hidden) {
+					if ($scope.config.ShowUpdatedEffect == true) {
+						$(id + " #name").effect("highlight", { color: '#EEFFEE' }, 1000);
+					}
 				}
 				RefreshLiveSearch();
 			}

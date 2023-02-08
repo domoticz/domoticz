@@ -77,8 +77,10 @@ define(['app', 'livesocket'], function (app) {
 			ctrl.items.forEach(function (olditem, oldindex, oldarray) {
 				if (olditem.idx == item.idx) {
 					oldarray[oldindex] = item;
-					if ($scope.config.ShowUpdatedEffect == true) {
-						$("#weatherwidgets #" + item.idx + " #name").effect("highlight", { color: '#EEFFEE' }, 1000);
+					if (!document.hidden) {
+						if ($scope.config.ShowUpdatedEffect == true) {
+							$("#weatherwidgets #" + item.idx + " #name").effect("highlight", { color: '#EEFFEE' }, 1000);
+						}
 					}
 				}
 			});
