@@ -412,6 +412,9 @@ define(['angularAMD', 'app.routes', 'app.constants', 'app.notifications', 'app.p
 									color: '#d0d0d0'
 								}
 							},
+							accessibility: {
+								enabled: false
+							},
 							lang: {
 								noData: $.t('No data to display'),
 								decimalPoint: decimalPoint,
