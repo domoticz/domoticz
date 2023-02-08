@@ -343,7 +343,7 @@ bool EnphaseAPI::GetSerialSoftwareVersion()
 	}
 	else
 	{
-		if (m_szSoftwareVersion[1] <= '7')
+		if (m_szSoftwareVersion[1] < '7')
 		{
 			m_szInstallerPassword = V5_emupwGetMobilePasswd(m_szSerial, "installer", "enphaseenergy.com");
 			Log(LOG_STATUS, "Firmware out of date!. Using password generated from SN. Please update your firmware!!");
