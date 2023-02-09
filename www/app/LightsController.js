@@ -308,31 +308,6 @@ define(['app', 'livesocket'], function (app) {
 			return htm;
 		}
 		
-		GenerateLiveSearchText = function (item, bigtext) {
-			var searchText = "";
-			
-			if (bigtext !== "") {
-				searchText = AddToLiveSearch(searchText, item.idx);
-				searchText = AddToLiveSearch(searchText, item.Name);
-				searchText = AddToLiveSearch(searchText, item.Description.replace('"',"'"));
-				if (bigtext.includes(' %')) {
-					if (item.SwitchType=="Dimmer") {
-						//treat dimmer percentage as on
-						searchText = AddToLiveSearch(searchText, "On");
-					} else {
-						//possible a blind
-					}
-				}
-				else
-					searchText = AddToLiveSearch(searchText, bigtext);
-				searchText = AddToLiveSearch(searchText, item.Type);
-				searchText = AddToLiveSearch(searchText, item.SubType);
-				if (!item.SwitchType.includes('On'))
-					searchText = AddToLiveSearch(searchText, item.SwitchType);
-			}
-			return searchText;
-		}
-
 		RefreshItem = function (item) {
 			var id = "#lightcontent #" + item.idx;
 			if ($(id + " #name").html() === undefined) {
@@ -719,7 +694,7 @@ define(['app', 'livesocket'], function (app) {
 				$(id + " #lastupdate").html(item.LastUpdate);
 			}
 			
-			var searchText = GenerateLiveSearchText(item, bigtext);
+			var searchText = GenerateLiveSearchTextL(item, bigtext);
 
 			$(id).find('#name').attr('data-search', searchText);
 			
@@ -837,7 +812,7 @@ define(['app', 'livesocket'], function (app) {
 								bigtext = GetLightStatusText(item);
 							}
 							
-							var searchText = GenerateLiveSearchText(item, bigtext);
+							var searchText = GenerateLiveSearchTextL(item, bigtext);
 
 							xhtm +=
 								'\t    <tr>\n' +

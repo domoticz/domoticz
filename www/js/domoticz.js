@@ -6300,6 +6300,71 @@ function AddToLiveSearch(current_data, new_value) {
 	return current_data + " " +  new_value;
 }
 
+GenerateLiveSearchTextDefault = function (item) {
+	var searchText = "";
+	searchText = AddToLiveSearch(searchText, item.idx);
+	searchText = AddToLiveSearch(searchText, item.Name);
+	searchText = AddToLiveSearch(searchText, item.Description.replace('"',"'"));
+	searchText = AddToLiveSearch(searchText, item.Type);
+	if (typeof item.SubType != 'undefined') {
+		searchText = AddToLiveSearch(searchText, item.SubType);
+	}
+	return searchText;
+}
+//Lights
+GenerateLiveSearchTextL = function (item, bigtext) {
+	var searchText = GenerateLiveSearchTextDefault(item);
+	if (bigtext !== "") {
+		if (bigtext.includes(' %')) {
+			if (item.SwitchType=="Dimmer") {
+				//treat dimmer percentage as on
+				searchText = AddToLiveSearch(searchText, "On");
+			} else {
+				//possible a blind
+			}
+		}
+		else
+			searchText = AddToLiveSearch(searchText, bigtext);
+	}
+	searchText = AddToLiveSearch(searchText, item.SwitchType);
+	return searchText;
+}
+//Scenes/Groups
+GenerateLiveSearchTextSG = function (item, bigtext) {
+	var searchText = GenerateLiveSearchTextDefault(item);
+	searchText = AddToLiveSearch(searchText, bigtext);
+	return searchText;
+}
+//Temperature (do we need to search for temp/humidity/gust or only name/type?)
+GenerateLiveSearchTextT = function (item) {
+	var searchText = GenerateLiveSearchTextDefault(item);
+	//searchText = AddToLiveSearch(searchText, item.Temp);
+	//searchText = AddToLiveSearch(searchText, item.Humidity);
+	searchText = AddToLiveSearch(searchText, item.HumidityStatus);
+	searchText = AddToLiveSearch(searchText, item.Gust);
+	return searchText;
+}
+
+//Weather (do we need to search for temp/humidity/gust or only name/type?)
+GenerateLiveSearchTextW = function (item) {
+	var searchText = GenerateLiveSearchTextDefault(item);
+	//searchText = AddToLiveSearch(searchText, item.Temp);
+	//searchText = AddToLiveSearch(searchText, item.Humidity);
+	searchText = AddToLiveSearch(searchText, item.HumidityStatus);
+	//searchText = AddToLiveSearch(searchText, item.Gust);
+	//searchText = AddToLiveSearch(searchText, item.Barometer);
+	searchText = AddToLiveSearch(searchText, item.ForecastStr);
+	//searchText = AddToLiveSearch(searchText, item.Rain);
+	//searchText = AddToLiveSearch(searchText, item.Radiation);
+	return searchText;
+}
+GenerateLiveSearchTextU = function (item, bigtext) {
+	var searchText = GenerateLiveSearchTextDefault(item);
+	//searchText = AddToLiveSearch(searchText, bigtext);
+	return searchText;
+}
+
+
 /* Triggers LiveSearch change ----------------------------------  */
 function RefreshLiveSearch(){
 	if(_debug_livesearch) console.log('LiveSearch: Refreshing...');
@@ -6343,17 +6408,13 @@ function WatchLiveSearch(){
 
 			items.each(function(index){
 				var searchText	=$(this).find('#name').attr('data-search')	|| '';
-				var name		=$(this).find('#name').html()				|| '';
-				var desc		=$(this).find('#name').attr('data-desc')	|| '';
-				var idx			=$(this).find('#name').attr('data-idx')		|| '';
-				var status		=$(this).find('#name').attr('data-status')	|| '';
 
 				var safe_query=query.replace('\\','').replace('[','\\[').replace(']','\\]').replace('.','\\.')
 				var re		= new RegExp(safe_query, "mi");
 				//var re_s	= new RegExp('^'+safe_query, "i");
 
 				var to_hide=$(this);
-				if ( re.test(searchText) || re.test(name) || re.test(desc) || re.test(idx) || re.test(status) ) {
+				if (re.test(searchText)) {
 					to_hide.show();
 					to_hide.addClass(cl_shown);
 				}
