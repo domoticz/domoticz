@@ -9165,10 +9165,6 @@ bool CSQLHelper::UpdateUserVariable(const std::string& idx, const std::string& v
 
 bool CSQLHelper::CheckUserVariable(const _eUsrVariableType eVartype, const std::string& varvalue, std::string& errorMessage)
 {
-	if (varvalue.size() > 200) {
-		errorMessage = "String exceeds maximum size";
-		return false;
-	}
 	if (eVartype == USERVARTYPE_INTEGER) {
 		//integer (0)
 		std::istringstream iss(varvalue);
