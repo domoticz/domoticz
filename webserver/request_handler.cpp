@@ -483,15 +483,16 @@ void request_handler::handle_request(const request &req, reply &rep, modify_info
 	if (
 		(req.uri.find("app/") != std::string::npos)
 		|| (req.uri.find("views/") != std::string::npos)
+		|| (req.uri.find("js/domoticz") != std::string::npos)
 		)
 	{
 		//frequently changed files
 		reply::add_header(&rep, "Cache-Control", "no-cache,must-revalidate");
 	}
-	else if (mime_types::extension_to_type(extension).find("image/") != std::string::npos)
+	else
 	{
-		//Cache images
-		reply::add_header(&rep, "Cache-Control", "public,max-age: 3600,s-maxage=604800,must-revalidate");
+		//not frequently changed files, cache for a day
+		reply::add_header(&rep, "Cache-Control", "public,max-age=86400,s-maxage=86400,must-revalidate");
 	}
 
 	reply::add_header_content_type(&rep, mime_types::extension_to_type(extension));
