@@ -3902,6 +3902,9 @@ define(['app'], function (app) {
 									HwTypeStr += ' <a href="#/Hardware/' + item.idx + '" class="label ' + lblStatus + ' btn-link">' + $.t("Setup") + '</a>';
 								}
 							}
+							else if (HwTypeStr.indexOf("Enphase") >= 0) {
+								HwTypeStr += '<br>Version: ' + item.version;
+							}							
 							else if (HwTypeStr.indexOf("EnOcean") >= 0 && HwTypeStr.indexOf("(ESP3)") >= 0) {
 								HwTypeStr += ' ' + hardwareSetupLink;
 							}
