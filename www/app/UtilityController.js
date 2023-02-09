@@ -468,6 +468,8 @@ define(['app', 'livesocket'], function (app) {
 						if (item.UsageDeliv.charAt(0) != 0) {
 							if (parseInt(item.Usage) != 0) {
 								bigtext += ', ';
+							} else {
+								bigtext='';
 							}
 							bigtext += '-' + item.UsageDeliv;
 						}
@@ -496,9 +498,10 @@ define(['app', 'livesocket'], function (app) {
 				var searchText = GenerateLiveSearchTextU(item, bigtext);
 				$(id).find('#name').attr('data-search', searchText);
 				
-				
-				if ($scope.config.ShowUpdatedEffect == true) {
-					$(id + " #name").effect("highlight", { color: '#EEFFEE' }, 1000);
+				if (!document.hidden) {
+					if ($scope.config.ShowUpdatedEffect == true) {
+						$(id + " #name").effect("highlight", { color: '#EEFFEE' }, 1000);
+					}
 				}
 				RefreshLiveSearch();
 			}

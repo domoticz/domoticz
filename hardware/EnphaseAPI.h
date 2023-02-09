@@ -14,7 +14,7 @@ public:
 	EnphaseAPI(int ID, const std::string& IPAddress, unsigned short usIPPort, int PollInterval, const bool bPollInverters, const std::string& szUsername, const std::string& szPassword);
 	~EnphaseAPI() override = default;
 	bool WriteToHardware(const char* pdata, unsigned char length) override;
-
+	std::string m_szSoftwareVersion;
 private:
 	bool StartHardware() override;
 	bool StopHardware() override;
@@ -41,7 +41,6 @@ private:
 	int m_poll_interval = 30;
 
 	std::string m_szSerial;
-	std::string m_szSoftwareVersion;
 	std::string m_szToken;
 	std::string m_szIPAddress;
 	std::string m_szInstallerPassword; // derived from serial number

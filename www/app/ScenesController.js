@@ -823,8 +823,10 @@ define(['app', 'livesocket'], function (app) {
 				var searchText = GenerateLiveSearchTextSG(item, bigtext);
 				$(id).find('#name').attr('data-search', searchText);
 				
-				if ($scope.config.ShowUpdatedEffect == true) {
-					$(id + " #name").effect("highlight", { color: '#EEFFEE' }, 1000);
+				if (!document.hidden) {
+					if ($scope.config.ShowUpdatedEffect == true) {
+						$(id + " #name").effect("highlight", { color: '#EEFFEE' }, 1000);
+					}
 				}
 				RefreshLiveSearch();
 			}
