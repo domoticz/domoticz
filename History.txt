@@ -10,6 +10,7 @@ Version 2022.1 (February xx 2023)
 - Implemented: MQTT, climate preset mode
 - Implemented: New 'auth' debug flag to see IAM related messages
 - Implemented: Now 'Applications' can be registered to get secure access to Domoticz, see 'setup' menu (standard DomoticzUI app is registered by default)
+- Implemented: P1 Meter, added number of (long) power failures, voltage sags/swells
 - Implemented: SECURITY_SETUP.md describing the new/improved security setup
 - Implemented: Support for basic OpenID Connect Discovery ('https://<DOMOTICZURL>/.well-known/openid-configuration')
 - Implemented: Search option in Switches/Scenes/Temperature/Utility and Weather tab
