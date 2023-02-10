@@ -3928,11 +3928,11 @@ bool MQTTAutoDiscover::SetSetpoint(const std::string& DeviceID, float Temp)
 	pSensor->sValue = std_format("%.2f", Temp);
 	std::vector<std::vector<std::string>> result;
 	result = m_sql.safe_query("SELECT Name,nValue,sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit == %d) AND (Type==%d) AND (Subtype==%d)", m_HwdID,
-		pSensor->unique_id.c_str(), 1, pSensor->devType, pSensor->subType);
+		pSensor->unique_id.c_str(), 1, pTypeThermostat, sTypeThermSetpoint);
 	if (result.empty())
 		return false; //?? That's impossible
 	// Update
-	UpdateValueInt(m_HwdID, pSensor->unique_id.c_str(), 1, pSensor->devType, pSensor->subType, pSensor->SignalLevel, pSensor->BatteryLevel,
+	UpdateValueInt(m_HwdID, pSensor->unique_id.c_str(), 1, pTypeThermostat, sTypeThermSetpoint, pSensor->SignalLevel, pSensor->BatteryLevel,
 		pSensor->nValue, pSensor->sValue.c_str(),
 		result[0][0]);
 

@@ -29,11 +29,12 @@ Version 2022.1 (February xx 2023)
 - Fixed: Dashboard, scenes/lights hidden when this was disabled in user settings
 - Fixed: Dashboard, mobile display did not display P1 meter current return value correctly
 - Fixed: Dashboard, not showing disabled sections (temperature/weather/utility) when a device has multiple properties (for instance temperature + weather)
+- Fixed: Highcharts dropdown menu z-index problem
 - Fixed: Logout now returns 204 instead of 401
 - Fixed: Waterflow sensor custom icon
 - Fixed: Making sure Custom icons are valid (when someone manually edits the database)
 - Fixed: Mobile display text objects with long lines
-- Fixed: Highcharts dropdown menu z-index problem
+- Fixed: MQTT-AD Climate, fixed setpoint temperature display
 - Fixed: Navigation bar display issues on some mobile devices
 - Fixed: Setpoint popup when using protection
 
