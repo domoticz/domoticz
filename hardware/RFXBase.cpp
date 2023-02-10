@@ -77,7 +77,7 @@ bool CRFXBase::CheckValidRFXData(const uint8_t *pData)
 	case pTypeLighting6:
 		return (pLen == 0x0B);
 	case pTypeChime:
-		return (pLen == 0x07);
+		return (pLen == 0x08);
 	case pTypeFan:
 		return (pLen == 0x08);
 	case pTypeCurtain:
