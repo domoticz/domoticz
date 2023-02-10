@@ -642,7 +642,7 @@ define(['app', 'livesocket'], function (app) {
 							
 							var searchText = GenerateLiveSearchTextL(item, bigtext);
 							
-							xhtm += '\t      <td id="name" class="item-name" data-idx="'+item.idx+'" data-desc="'+item.Description.replace('"',"'")+'" data-status="'+bigtext+'" data-search="'+searchText+'">' + item.Name + '</td>\n';
+							xhtm += '\t      <td id="name" class="item-name" data-idx="'+item.idx+'" data-desc="'+item.Description.replace('"',"'")+'" data-search="'+searchText+'">' + item.Name + '</td>\n';
 							xhtm += '\t      <td id="bigtext">'+bigtext;							
 							xhtm += '</td>\n';
 							xhtm += '\t      <td id="img">';

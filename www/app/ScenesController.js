@@ -904,7 +904,7 @@ define(['app', 'livesocket'], function (app) {
 							
 							xhtm +=
 								'\t    <tr>\n' +
-								'\t      <td id="name" class="item-name" data-idx="'+item.idx+'" data-desc="'+item.Description.replace('"',"'")+'" data-status="'+bigtext+'" data-search="'+searchText+'">' + item.Name +'</td>\n' +
+								'\t      <td id="name" class="item-name" data-idx="'+item.idx+'" data-desc="'+item.Description.replace('"',"'")+'" data-search="'+searchText+'">' + item.Name +'</td>\n' +
 								'\t      <td id="bigtext">';
 							if (item.UsedByCamera == true) {
 								var streamimg = '<img src="images/webcam.png" title="' + $.t('Stream Video') + '" height="16" width="16">';
