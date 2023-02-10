@@ -494,6 +494,10 @@ define(['app', 'livesocket'], function (app) {
 						$(id + " #img").html(img);
 					}
 				}
+				
+				var searchText = GenerateLiveSearchTextU(item, bigtext);
+				$(id).find('#name').attr('data-search', searchText);
+				
 				if (!document.hidden) {
 					if ($scope.config.ShowUpdatedEffect == true) {
 						$(id + " #name").effect("highlight", { color: '#EEFFEE' }, 1000);
@@ -636,7 +640,9 @@ define(['app', 'livesocket'], function (app) {
 								bigtext += item.Data;
 							}
 							
-							xhtm += '\t      <td id="name" class="item-name" data-idx="'+item.idx+'" data-desc="'+item.Description.replace('"',"'")+'" data-status="'+bigtext+'">' + item.Name + '</td>\n';
+							var searchText = GenerateLiveSearchTextL(item, bigtext);
+							
+							xhtm += '\t      <td id="name" class="item-name" data-idx="'+item.idx+'" data-desc="'+item.Description.replace('"',"'")+'" data-search="'+searchText+'">' + item.Name + '</td>\n';
 							xhtm += '\t      <td id="bigtext">'+bigtext;							
 							xhtm += '</td>\n';
 							xhtm += '\t      <td id="img">';
