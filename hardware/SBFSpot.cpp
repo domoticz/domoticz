@@ -593,8 +593,7 @@ void CSBFSpot::GetMeterDetails()
 		SendPercentageSensor((InvIdx * 10) + 1, 0, 255, percentage, "Efficiency");
 		tmpString = results[24];
 		stdreplace(tmpString, ",", ".");	
-		float frequency;
-		frequency = static_cast<float>(atof(tmpString.c_str()));
+		float frequency = static_cast<float>(atof(tmpString.c_str()));
 //		SendPercentageSensor((InvIdx * 10) + 2, 0, 255, percentage, "Hz");
 		SendCustomSensor((InvIdx * 10) + 2, 0, 255, frequency, "Hz", "Hz");
 		tmpString = results[27];
