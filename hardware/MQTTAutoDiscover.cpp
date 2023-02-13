@@ -1341,7 +1341,22 @@ void MQTTAutoDiscover::handle_auto_discovery_sensor_message(const struct mosquit
 				}
 				if (!root["battery"].empty())
 				{
-					pSensor->BatteryLevel = root["battery"].asInt();
+					if (!root["battery"].isObject())
+						pSensor->BatteryLevel = root["battery"].asInt();
+					else
+					{
+						if (
+							(!pSensor->value_template.empty())
+							&& (pSensor->value_template.find("battery") != std::string::npos)
+							)
+						{
+							szValue = GetValueFromTemplate(root, pSensor->value_template);
+							if (!szValue.empty())
+							{
+								pSensor->BatteryLevel = std::stoi(szValue);
+							}
+						}
+					}
 				}
 
 				if (!pSensor->position_template.empty())
