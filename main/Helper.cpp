@@ -1576,11 +1576,7 @@ bool base32_decode(const std::string &input, std::string &output)
 	if ((input.size() % 8) != 0)
 		return false;
 
-	uint8_t caSize = ((input.size()/8)*5)+1;
-
-	unsigned char outBuff[5];
-	unsigned char outTotal[caSize];
-	memset(outTotal, 0x00, sizeof(unsigned char) * caSize);
+	std::vector<uint8_t> outTotal;
 
 	for(uint16_t j = 0; j < (input.size() / 8); j++)
 	{
@@ -1608,14 +1604,12 @@ bool base32_decode(const std::string &input, std::string &output)
 			}
 		}
 		// output 5 bytes
-		for(int x = 4; x >= 0; x--)
+		for(int8_t x = 4; x >= 0; x--)
 		{
-			outBuff[4 - x] = (unsigned char)(buffer >> (x * 8));
+			outTotal.push_back((unsigned char)(buffer >> (x * 8)));
 		}
-		memmove(&outTotal[j * 5], &outBuff[0], sizeof(unsigned char) * 5);
 	}
 
-	//std::cout << "Out : ." << outTotal << ".\n";
-	output = std_format("%s", outTotal);
+	output.assign(std::string(outTotal.begin(), outTotal.end()));
 	return true;
 }
