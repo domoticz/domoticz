@@ -6323,10 +6323,12 @@ GenerateLiveSearchTextL = function (item, bigtext) {
 				//possible a blind
 			}
 		}
-		else
+		else 
 			searchText = AddToLiveSearch(searchText, bigtext);
 	}
-	searchText = AddToLiveSearch(searchText, item.SwitchType);
+	if (item.SwitchType!=="On/Off") {
+		searchText = AddToLiveSearch(searchText, item.SwitchType);
+	}
 	return searchText;
 }
 //Scenes/Groups
