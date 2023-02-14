@@ -1,4 +1,4 @@
-Version (February xx 2023)
+Version 2023.1 (February 14 2023)
 - For a full overview visit: https://www.domoticz.com/wiki/Domoticz_versions_-_Commits for details
 - Implemented: Accept JWT tokens as authentication and Authorization Bearer tokens (either from internal or external IAM service)
 - Implemented: Blinds, added option to schedule 0%
