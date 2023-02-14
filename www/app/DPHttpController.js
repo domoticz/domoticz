@@ -437,7 +437,7 @@ define(['app'], function (app) {
 					if (typeof data.result != 'undefined') {
 						$.each(data.result, function (i, item) {
 							var option = $('<option />');
-							option.attr('value', item.value).text(item.name);
+							option.attr('value', item.idx).text(item.name);
 							$("#httpmain #devicename").append(option);
 						});
 					}

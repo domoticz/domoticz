@@ -1,0 +1,35 @@
+<div id="topBar">
+	<span id="tbFilters" ng-show="tb.hideFilters != true">
+		<span id="tbFiltSearch" 	class="jsTbFiltSearch" ng-show="tb.hideSearch != true">
+			<span id="tbSearch"		class="tbIcon jsTbSearch"><i class="fa fa-search"></i> </span>
+			<span id="tbResults"	class="tbIcon jsTbResults" title="Clear Search Results"><i class="fa fa-circle-xmark"></i> <span class="tbResultsCount jsTbResultsCount"></span> </span>
+			<!-- <span data-i18n="Search"></span>&nbsp; -->
+			<input data-i18n="[placeholder]Name, Desc, Idx, Status" placeholder="Name, Desc, Idx, Status" type="search" class="livesearch jsLiveSearch">
+			<!-- 
+			This JS call should certainly be moved to the Angular controller, 
+			but because of the 2 different stuctures of Weather and Temperatures, VS Dashboard, Lights, Scenes, Utility pages, 
+			this is the easiest way to get it working in both of theses 2 cases, ATM... 
+			-->
+			<script>WatchLiveSearch();</script>
+		</span> 
+		<span id="tbFiltRooms" ng-show="ctrl.RoomPlans.length > 0">
+			<span id="tbIconRoom" class="tbIcon"><i class="fa fa-house-laptop" title="Room"></i> </span>
+			<!-- <span data-i18n="Room">Room</span>:&nbsp; -->
+			<select id="comboroom" class="combobox ui-corner-all" ng-model="ctrl.roomSelected" ng-options="room.idx as room.name for room in ctrl.RoomPlans" ng-change="ctrl.changeRoom()"></select>
+		</span>		
+	</span>
+	<span id="tbTimeSun" ng-show="tb.hideTimeSun != true">
+		<span id="jsTbTime" class="tbTime"></span>
+		<span id="tbSunGroup">
+			<span id="tbIconSun" class="tbIcon"><i class="fa fa-sun"></i></span>
+			<span id="tbSunRise" class="tbSun"><i class="fa fa-arrow-up"></i> <span id="jsTbSunRise"></span></span>
+			<span id="tbSunSet" class="tbSun"><i class="fa fa-arrow-down"></i> <span id="jsTbSunSet"></span></span>
+		</span>
+	</span>
+	<span id="tbLinks">		
+			<a ng-repeat="link in tblinks" class="btn btn-xs btn-info" href="{{link.href}}" ng-click="link.onclick.length>0 ? HandleTbLinkClick(link.onclick) : null" >
+				<i class="fa fa-{{link.icon}}"></i> <span data-i18n="{{link.i18n}}">{{link.text}}</a></span>
+			</a>
+	</span>
+</div>
+

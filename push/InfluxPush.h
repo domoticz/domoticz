@@ -3,22 +3,20 @@
 
 class CInfluxPush : public CBasePush
 {
+public:
+	CInfluxPush();
+	bool Start();
+	void Stop();
+	void UpdateSettings();
+	void DoInfluxPush(const uint64_t DeviceRowIdx, const bool bForced = false);
+private:
 	struct _tPushItem
 	{
 		std::string skey;
 		time_t stimestamp;
 		std::string svalue;
 	};
-
-      public:
-	CInfluxPush();
-	bool Start();
-	void Stop();
-	void UpdateSettings();
-
-      private:
-	void OnDeviceReceived(int m_HwdID, uint64_t DeviceRowIdx, const std::string &DeviceName, const unsigned char *pRXCommand);
-	void DoInfluxPush(const uint64_t DeviceRowIdx);
+	void OnDeviceReceived(int m_HwdID, uint64_t DeviceRowIdx, const std::string& DeviceName, const unsigned char* pRXCommand);
 
 	std::shared_ptr<std::thread> m_thread;
 	std::mutex m_background_task_mutex;

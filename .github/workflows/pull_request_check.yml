@@ -23,11 +23,12 @@ jobs:
   build:
     # The type of runner that the job will run on
     runs-on: ubuntu-latest
+    #runs-on: ubuntu-20.04
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           fetch-depth: 0
 
@@ -60,16 +61,16 @@ jobs:
       # get CMake
       - name: cmake-compile
         run: |
-          curl -sSL https://github.com/Kitware/CMake/releases/download/v3.24.0/cmake-3.24.0-Linux-x86_64.tar.gz -o cmake.tar.gz;
+          curl -sSL https://github.com/Kitware/CMake/releases/download/v3.24.3/cmake-3.24.3-Linux-x86_64.tar.gz -o cmake.tar.gz;
           sudo tar xf cmake.tar.gz --strip 1 -C /usr/local;
           export PATH=/usr/local/bin:$PATH;
 
       # Boost
       - name: build boost libraries
         run: |
-          wget https://boostorg.jfrog.io/artifactory/main/release/1.79.0/source/boost_1_79_0.tar.gz >> /dev/null 2>&1
-          tar xfz boost_1_79_0.tar.gz
-          cd boost_1_79_0/
+          wget https://boostorg.jfrog.io/artifactory/main/release/1.80.0/source/boost_1_80_0.tar.gz >> /dev/null 2>&1
+          tar xfz boost_1_80_0.tar.gz
+          cd boost_1_80_0/
           ./bootstrap.sh
           ./b2 stage threading=multi link=static --with-thread --with-system --with-chrono >> /dev/null 2>&1
           sudo ./b2 install threading=multi link=static --with-thread --with-system --with-chrono >> /dev/null 2>&1
@@ -123,7 +124,7 @@ jobs:
       # Artifact upload
       - name: Upload artifacts
       # if: ${{ false }}
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: domoticz_linux_x86_64-${{ github.event.pull_request.number }}-${{ github.run_number }}
           path: package/domoticz_linux_x86_64.tgz

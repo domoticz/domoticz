@@ -19,6 +19,12 @@ Some Information
 
 ## Support
 
+By default Domoticz is protected by a username (admin) and password (domoticz).
+
+Please either change the password as soon as possible or create a different admin user and remove the default (admin) user.
+
+More information on securing your Domoticz setup can be found in the [SECURITY SETUP](SECURITY_SETUP.md) documentation.
+
 Your first place for support is the [Domoticz Forum](http://www.domoticz.com/forum)
 
 The Github issue tracker is NOT for end-user support.
@@ -37,6 +43,12 @@ If you like the product or encourage the development, please use the link:
 * Website: http://www.domoticz.com
 * Forum http://www.domoticz.com/forum
 * Wiki http://www.domoticz.com/wiki
+
+<p>
+  <a href="https://www.digitalocean.com/?refcode=323b5500715a&utm_campaign=Referral_Invite&utm_medium=Referral_Program&utm_source=badge">
+    <img src="https://opensource.nyc3.cdn.digitaloceanspaces.com/attribution/assets/PoweredByDO/DO_Powered_by_Badge_blue.svg" width="201px">
+  </a>
+</p>
 
 ### Build Status
 

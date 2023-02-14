@@ -56,17 +56,24 @@ def setup_test_function(test_domoticz,function):
 def setup_test_input(test_domoticz,input):
     test_domoticz.sTestInput = input
 
-@then('I expect the function to succeed')
-def execute_test(test_domoticz):
+@then(parsers.parse('I expect the function to {succeedorfail}'))
+def execute_test(test_domoticz, succeedorfail):
     sOut = subprocess.run([ test_domoticz.sCommand, "-quiet", "-module", test_domoticz.sTestModule, "-function", test_domoticz.sTestFunction, "-input", test_domoticz.sTestInput ], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-    if (sOut.returncode != 0):
+    if (succeedorfail == "succeed" and sOut.returncode != 0):
         assert False
     sResult = sOut.stdout.decode("utf-8").split("|")
-    if not (len(sResult) > 1 and sResult[1].find("Result : ") > 0):
-        assert False
-    sResult = sResult[1].split(": .")
-    sResult = sResult[1]
-    test_domoticz.sTestOutput = sResult[0:sResult.rfind(".")]
+    if (succeedorfail == "fail" and sOut.returncode != 0):
+        if not (len(sResult) > 1 and sResult[1].find("Failed! ") > 0):
+            assert False
+        sResult = sResult[1].split("! (")
+        sResult = sResult[1]
+        test_domoticz.sTestOutput = sResult[0:sResult.rfind(")")]
+    else:
+        if not (len(sResult) > 1 and sResult[1].find("Result : ") > 0):
+            assert False
+        sResult = sResult[1].split(": .")
+        sResult = sResult[1]
+        test_domoticz.sTestOutput = sResult[0:sResult.rfind(".")]
 
 @then(parsers.parse('have the following result "{output}"'))
 def check_test_output(test_domoticz,output):

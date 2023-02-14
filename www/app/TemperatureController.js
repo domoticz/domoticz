@@ -96,14 +96,18 @@ define(['app', 'livesocket'], function (app) {
 		}
 
 		RefreshItem = function (item) {
+			item.searchText = GenerateLiveSearchTextT(item);
 			ctrl.temperatures.forEach(function (olditem, oldindex, oldarray) {
 				if (olditem.idx == item.idx) {
 					oldarray[oldindex] = item;
-					if ($scope.config.ShowUpdatedEffect == true) {
-						$("#tempwidgets #" + item.idx + " #name").effect("highlight", { color: '#EEFFEE' }, 1000);
+					if (!document.hidden) {
+						if ($scope.config.ShowUpdatedEffect == true) {
+							$("#tempwidgets #" + item.idx + " #name").effect("highlight", { color: '#EEFFEE' }, 1000);
+						}
 					}
 				}
 			});
+			RefreshLiveSearch();
 		}
 
 		//We only call this once. After this the widgets are being updated automatically by used of the 'jsonupdate' broadcast event.
@@ -151,6 +155,9 @@ define(['app', 'livesocket'], function (app) {
 						if (typeof data.ActTime != 'undefined') {
 							$.LastUpdateTime = parseInt(data.ActTime);
 						}
+						$.each(data.result, function (i, item) {
+							item.searchText = GenerateLiveSearchTextT(item);
+						});
 						ctrl.temperatures = data.result;
 					} else {
 						ctrl.temperatures = [];
@@ -457,43 +464,28 @@ define(['app', 'livesocket'], function (app) {
 			});
 
 			ShowTemps();
-
-			$("#dialog-edittempdevice").keydown(function (event) {
-				if (event.keyCode == 13) {
-					$(this).siblings('.ui-dialog-buttonpane').find('button:eq(0)').trigger("click");
-					return false;
-				}
-			});
-			$("#dialog-edittempdevicesmall").keydown(function (event) {
-				if (event.keyCode == 13) {
-					$(this).siblings('.ui-dialog-buttonpane').find('button:eq(0)').trigger("click");
-					return false;
-				}
-			});
-
+			////WatchLiveSearch();
 
 		};
 
-		ctrl.RoomPlans = [{ idx: 0, name: $.t("All") }];
-		$.ajax({
-			url: "json.htm?type=plans",
-			async: false,
-			dataType: 'json',
-			success: function (data) {
-				if (typeof data.result != 'undefined') {
-					var totalItems = data.result.length;
-					if (totalItems > 0) {
-						$.each(data.result, function (i, item) {
-							ctrl.RoomPlans.push({
-								idx: item.idx,
-								name: item.Name
-							});
-						});
-					}
-				}
+		//handles TopBar Links
+		$scope.tblinks = [
+			{
+				href:"#/Temperature/CustomTempLog", 
+				text:"Custom Graph", 
+				i18n: "Custom Graph", 
+				icon: "area-chart"
+			},
+			{
+				onclick:"ShowForecast", 
+				text:"Forecast", 
+				i18n: "Forecast", 
+				icon: "cloud-sun-rain"
 			}
-		});
+		];
 
+		//handles RoomPlans
+		ctrl.RoomPlans=$rootScope.GetRoomPlans();	
 		var roomPlanId = $routeParams.room || window.myglobals.LastPlanSelected;
 
 		if (typeof roomPlanId != 'undefined') {
@@ -678,6 +670,8 @@ define(['app', 'livesocket'], function (app) {
 					};
 
 					$element.i18n();
+					//WatchLiveSearch();
+					WatchDescriptions();
 
 					if ($scope.ordering == true) {
 						if (permissions.hasPermission("Admin")) {

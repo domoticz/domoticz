@@ -137,7 +137,7 @@ public:
 	void on_message(const struct mosquitto_message *message) override;
 	void on_connect(int rc) override;
 	void on_disconnect(int rc) override;
-
+	void on_going_down();
 private:
 	void InsertUpdateSwitch(_tMQTTASensor* pSensor);
 
@@ -147,12 +147,13 @@ private:
 	void FixCommandTopicStateTemplate(std::string& command_topic, std::string& state_template);
 	std::string GetValueTemplateKey(const std::string& szValueTemplate);
 	std::string GetValueFromTemplate(Json::Value root, std::string szValueTemplate);
+	std::string GetValueFromTemplate(const std::string &szValue, std::string szValueTemplate);
 	bool SetValueWithTemplate(Json::Value& root, std::string szValueTemplate, std::string szValue);
 	void GuessSensorTypeValue(const _tMQTTASensor* pSensor, uint8_t& devType, uint8_t& subType, std::string& szOptions, int& nValue, std::string& sValue);
 	void ApplySignalLevelDevice(const _tMQTTASensor* pSensor);
 
 	void on_auto_discovery_message(const struct mosquitto_message* message);
-	void handle_auto_discovery_sensor_message(const struct mosquitto_message* message);
+	void handle_auto_discovery_sensor_message(const struct mosquitto_message* message,const std::string &subscribed_topic);
 
 	void handle_auto_discovery_availability(_tMQTTASensor* pSensor, const std::string& payload, const struct mosquitto_message* message);
 	void handle_auto_discovery_sensor(_tMQTTASensor* pSensor, const struct mosquitto_message* message);

@@ -143,7 +143,7 @@ namespace clx {
 		basic_unzip_stream& open(handler_type h) {
 			handler_ = h;
 			if (handler_) {
-				char path[65536];
+				char path[65535];
 				unz_file_info info;
 				unzGetCurrentFileInfo(handler_, &info, path, sizeof(path), NULL, 0, NULL, 0);
 				path_ = path;

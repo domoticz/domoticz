@@ -6003,8 +6003,9 @@ function ShowSetpointPopup(event, idx, Protected, currentvalue, ismobile) {
 	}
 	var mouseX = event.pageX;
 	var mouseY = event.pageY;
-
-	ShowSetpointPopupInt(mouseX, mouseY, idx, currentvalue, ismobile);
+	HandleProtection(Protected, function () {
+		ShowSetpointPopupInt(mouseX, mouseY, idx, currentvalue, ismobile);
+	});
 }
 
 function CloseRFYPopup() {
@@ -6276,3 +6277,198 @@ function fromInstanceOrFunction(functionTemplate = f => f()) {
 		}
 	}
 }
+
+
+/* LiveSearch Functions: Filters devices when typing in the INPUT field ##################################### */
+var _debug_livesearch= false;
+
+function AddToLiveSearch(current_data, new_value) {
+	if (
+		(typeof new_value == 'undefined') ||
+		(new_value === "")
+	   ) {
+		return current_data;
+	}
+	if (
+		(typeof current_data == 'undefined') ||
+		(current_data === "")
+	) {
+		return new_value;
+	}
+	if (current_data.includes(new_value))
+		return current_data;
+	return current_data + " " +  new_value;
+}
+
+GenerateLiveSearchTextDefault = function (item) {
+	var searchText = "";
+	searchText = AddToLiveSearch(searchText, item.idx);
+	searchText = AddToLiveSearch(searchText, item.Name);
+	searchText = AddToLiveSearch(searchText, item.Description.replace('"',"'"));
+	searchText = AddToLiveSearch(searchText, item.Type);
+	if (typeof item.SubType != 'undefined') {
+		searchText = AddToLiveSearch(searchText, item.SubType);
+	}
+	return searchText;
+}
+//Lights
+GenerateLiveSearchTextL = function (item, bigtext) {
+	var searchText = GenerateLiveSearchTextDefault(item);
+	if (bigtext !== "") {
+		if (bigtext.includes(' %')) {
+			if (item.SwitchType=="Dimmer") {
+				//treat dimmer percentage as on
+				searchText = AddToLiveSearch(searchText, "On");
+			} else {
+				//possible a blind
+			}
+		}
+		else 
+			searchText = AddToLiveSearch(searchText, bigtext);
+	}
+	if (item.SwitchType!=="On/Off") {
+		searchText = AddToLiveSearch(searchText, item.SwitchType);
+	}
+	return searchText;
+}
+//Scenes/Groups
+GenerateLiveSearchTextSG = function (item, bigtext) {
+	var searchText = GenerateLiveSearchTextDefault(item);
+	searchText = AddToLiveSearch(searchText, bigtext);
+	return searchText;
+}
+//Temperature (do we need to search for temp/humidity/gust or only name/type?)
+GenerateLiveSearchTextT = function (item) {
+	var searchText = GenerateLiveSearchTextDefault(item);
+	//searchText = AddToLiveSearch(searchText, item.Temp);
+	//searchText = AddToLiveSearch(searchText, item.Humidity);
+	searchText = AddToLiveSearch(searchText, item.HumidityStatus);
+	searchText = AddToLiveSearch(searchText, item.Gust);
+	return searchText;
+}
+
+//Weather (do we need to search for temp/humidity/gust or only name/type?)
+GenerateLiveSearchTextW = function (item) {
+	var searchText = GenerateLiveSearchTextDefault(item);
+	//searchText = AddToLiveSearch(searchText, item.Temp);
+	//searchText = AddToLiveSearch(searchText, item.Humidity);
+	searchText = AddToLiveSearch(searchText, item.HumidityStatus);
+	//searchText = AddToLiveSearch(searchText, item.Gust);
+	//searchText = AddToLiveSearch(searchText, item.Barometer);
+	searchText = AddToLiveSearch(searchText, item.ForecastStr);
+	//searchText = AddToLiveSearch(searchText, item.Rain);
+	//searchText = AddToLiveSearch(searchText, item.Radiation);
+	return searchText;
+}
+GenerateLiveSearchTextU = function (item, bigtext) {
+	var searchText = GenerateLiveSearchTextDefault(item);
+	//searchText = AddToLiveSearch(searchText, bigtext);
+	return searchText;
+}
+
+
+/* Triggers LiveSearch change ----------------------------------  */
+function RefreshLiveSearch(){
+	if(_debug_livesearch) console.log('LiveSearch: Refreshing...');
+	$('.jsLiveSearch').trigger('change');
+}
+
+/* Watches the LiveSearch INPUT field -------------------------------- */
+function WatchLiveSearch(){
+	if(_debug_livesearch) console.log('LiveSearch: Start Watching ...');
+	_tbDisplayResults(false,0);
+
+	/* Watches INPUT ++++++++++++++++++++ */
+	$('.jsLiveSearch').off().on('keyup change',function(e){
+		if(_debug_livesearch)  console.log('LiveSearch: processing on keyup - "'+$(this).val()+'"');
+		var query	=$(this).val();
+		var div		=$('.divider');
+		var cont	=$('.devicesList');
+		var items	=$('.itemBlock');
+		var cl_shown	='liveSearchShown';
+		var filt_search		=$(this).closest('.jsTbFiltSearch');
+		var cl_withres	='tbFiltSearchWithResults';
+
+		if(query.length == 0){
+			filt_search.removeClass(cl_withres);
+			if(cont.hasClass('devicesListFiltered')){
+				cont.removeClass('devicesListFiltered');
+				div.css('display','block');
+				div.addClass('row');
+				div.find('.clearfix').show(); /* only for Weather and Temperatures pages */
+				items.show().removeClass('liveSearchShown');	
+			}
+		}
+		else{
+			filt_search.addClass(cl_withres);
+			if(! cont.hasClass('devicesListFiltered')){
+				cont.addClass('devicesListFiltered');
+				div.css('display','inline');
+			}
+			div.removeClass('row');
+			div.find('.clearfix').hide();  /* only for Weather and Temperatures pages */
+
+			items.each(function(index){
+				var searchText	=$(this).find('#name').attr('data-search')	|| '';
+
+				var safe_query=query.replace('\\','').replace('[','\\[').replace(']','\\]').replace('.','\\.')
+				var re		= new RegExp(safe_query, "mi");
+				//var re_s	= new RegExp('^'+safe_query, "i");
+
+				var to_hide=$(this);
+				if (re.test(searchText)) {
+					to_hide.show();
+					to_hide.addClass(cl_shown);
+				}
+				else{
+					to_hide.hide();
+					to_hide.removeClass(cl_shown);
+				}
+			});
+		}
+
+		var count   =$('.' + cl_shown).length;
+		if(_debug_livesearch)  console.log('LiveSearch: Found '+ count +' items');
+		_tbDisplayResults(count || query.length, count);
+	});
+
+	/* Watches Close icon ++++++++++++++++++++ */
+	$(".jsTbResultsClose,.jsTbResults").off().on('click',function(e) {
+		e.preventDefault();
+		if(_debug_livesearch)  console.log('LiveSearch: Close Clicked');
+		$('.jsLiveSearch').val('').trigger('change');
+	});
+}
+
+/* Toggle Results display ------------------------------------------ */
+function _tbDisplayResults(on, count){
+	if(on){
+		$('.jsTbSearch').hide();
+		$('.jsTbResults').show();
+		$('.jsTbResultsCount').html(_tbPadCount(count));
+	}
+	else{
+		$('.jsTbSearch').show();
+		$('.jsTbResults').hide();
+		$('.jsTbResultsCount').html('');
+	}
+}
+
+/* Pad Left with spaces ------------------------------------------- */
+function _tbPadCount(txt){
+	return String('xxx' + txt).slice(-4).replace(/x/g, '&nbsp;');
+}
+
+/* Display descriptions when hovering name ################################################################## */
+function WatchDescriptions(){
+	/* Show description when hovering item's name */
+	$(".item-name").hover(function() {
+		if(_debug_livesearch) console.log("Hover Description!");
+		var desc=$(this).attr('data-desc');
+		if(desc.length > 0){
+			$(this).css('cursor','pointer').attr('title', desc);
+		}
+	}, function() {
+		$(this).css('cursor','auto');
+	});
+};

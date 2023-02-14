@@ -1,5 +1,9 @@
-<div id="cameracontent" class="container">
+<div class="container">
+	<div ng-include="'views/inc_topbar.html'" ng-repeat="tb in [{hideFilters:true,hideTimeSun:true}]"></div>
+
+	<div id="cameracontent"></div>
 </div>
+
 <div id="dialog-add-edit-camera" style="display:none;">
 	<table border="0" cellpadding="0" cellspacing="20" width="100%">
 		<tr>
@@ -69,13 +73,6 @@
 	</table>
 </div>
 <div id="cameramain" style="display:none;">
-	<table class="bannav" id="bannav" border="0" cellpadding="0" cellspacing="0" width="100%">
-		<tr>
-			<td align="left"></td>
-			<td align="right"><a class="btnstyle" onclick="AddCameraDevice();" data-i18n="Add Camera">Add Camera</a></td>
-		</tr>
-	</table>
-	<br>
 	<table class="display" id="cameratable" border="0" cellpadding="0" cellspacing="0" width="100%">
 		<thead>
 			<tr valign="middle">

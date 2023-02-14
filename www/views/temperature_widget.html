@@ -2,7 +2,7 @@
     <section>
         <table id="itemtablenotype" border="0" cellpadding="0" cellspacing="0">
             <tr>
-                <td id="name" ng-bind="item.Name"></td>
+                <td id="name" ng-bind="item.Name" class="item-name" data-idx="{{item.idx}}" data-desc="{{item.Description}}" data-search="{{item.searchText}}"></td>
                 <td id="bigtext" class="ng-cloak">
 					<img ng-show="ctrl.displayTrend({{item.trend}})" height="12" ng-src="images/arrow_{{ctrl.trendState(item.trend)}}.png">
                     <span ng-show="ctrl.displayTemp()">{{item.Temp}}&#176; {{tempsign}}</span>

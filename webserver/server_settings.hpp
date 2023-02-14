@@ -39,6 +39,7 @@ public:
 		www_root = get_valid_value(listening_address, settings.www_root);
 		listening_address = get_valid_value(listening_address, settings.listening_address);
 		listening_port = get_valid_value(listening_port, settings.listening_port);
+		vhostname = get_valid_value(vhostname, settings.vhostname);
 		php_cgi_path = get_valid_value(php_cgi_path, settings.php_cgi_path);
 		if (listening_port == "0") {
 			listening_port.clear();// server NOT enabled
@@ -50,6 +51,7 @@ public:
 			", www_root='" + www_root + "'" +
 			", listening_address='" + listening_address + "'" +
 			", listening_port='" + listening_port + "'" +
+			", vhostname='" + vhostname + "'" +
 			", php_cgi_path='" + php_cgi_path + "'" +
 			"]'";
 	}
@@ -66,6 +68,7 @@ protected:
 	}
 public:
 	std::string www_root;
+	std::string vhostname;
 	std::string listening_address;
 	std::string listening_port;
 

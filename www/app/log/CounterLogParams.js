@@ -71,6 +71,16 @@ define(['app', 'log/Chart'], function (app) {
                             },
                             tickInterval: 24 * 3600 * 1000
                         },
+                        plotOptions: {
+                            column: {
+                                pointPlacement: 0,
+                                stacking: undefined
+                            },
+                            series: {
+                                // colorByPoint: true
+                                stacking: undefined
+                            }
+                        },
                         tooltip: {
                             shared: false,
                             crosshairs: false

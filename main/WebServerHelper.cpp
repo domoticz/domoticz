@@ -15,27 +15,34 @@ namespace http {
 			StopServers();
 		}
 #ifdef WWW_ENABLE_SSL
-		bool CWebServerHelper::StartServers(server_settings & web_settings, ssl_server_settings & secure_web_settings, const std::string &serverpath, const bool bIgnoreUsernamePassword)
+		bool CWebServerHelper::StartServers(server_settings & web_settings, ssl_server_settings & secure_web_settings, iamserver::iam_settings & iam_settings, const std::string &serverpath, const bool bIgnoreUsernamePassword)
 #else
-		bool CWebServerHelper::StartServers(server_settings & web_settings, const std::string &serverpath, const bool bIgnoreUsernamePassword)
+		bool CWebServerHelper::StartServers(server_settings & web_settings, iamserver::iam_settings & iam_settings, const std::string &serverpath, const bool bIgnoreUsernamePassword)
 #endif
 		{
 			bool bRet = false;
 
 			our_serverpath = serverpath;
 			plainServer_.reset(new CWebServer());
-
-			serverCollection.push_back(plainServer_);
+			if (iam_settings.is_enabled())
+				plainServer_->SetIamSettings(iam_settings);
 			bRet |= plainServer_->StartServer(web_settings, serverpath, bIgnoreUsernamePassword);
-			our_listener_port = web_settings.listening_port;
+			if (bRet) {
+				serverCollection.push_back(plainServer_);
+				our_listener_port = web_settings.listening_port;
+			}
 #ifdef WWW_ENABLE_SSL
 			if (secure_web_settings.is_enabled()) {
 #if (OPENSSL_VERSION_NUMBER < 0x10100000L) || defined(LIBRESSL_VERSION_NUMBER)
 				SSL_library_init();
 #endif
 				secureServer_.reset(new CWebServer());
+				if (iam_settings.is_enabled())
+					secureServer_->SetIamSettings(iam_settings);
 				bRet |= secureServer_->StartServer(secure_web_settings, serverpath, bIgnoreUsernamePassword);
-				serverCollection.push_back(secureServer_);
+				if (bRet) {
+					serverCollection.push_back(secureServer_);
+				}
 			}
 #endif
 			return bRet;
@@ -62,11 +69,11 @@ namespace http {
 			}
 		}
 
-		void CWebServerHelper::SetAuthenticationMethod(const _eAuthenticationMethod amethod)
+		void CWebServerHelper::SetAllowPlainBasicAuth(const bool allow)
 		{
 			for (auto &it : serverCollection)
 			{
-				it->SetAuthenticationMethod(amethod);
+				it->SetAllowPlainBasicAuth(allow);
 			}
 		}
 
@@ -102,23 +109,21 @@ namespace http {
 			}
 		}
 
-		void CWebServerHelper::ReloadLocalNetworks()
+		void CWebServerHelper::ReloadTrustedNetworks()
 		{
-			std::string WebLocalNetworks;
-			m_sql.GetPreferencesVar("WebLocalNetworks", WebLocalNetworks);
+			std::string TrustedNetworks;
+			m_sql.GetPreferencesVar("WebLocalNetworks", TrustedNetworks);
 
 			for (auto &it : serverCollection)
 			{
 				if (it->m_pWebEm == nullptr)
 					continue;
-				it->m_pWebEm->ClearLocalNetworks();
+				it->m_pWebEm->ClearTrustedNetworks();
 
 				std::vector<std::string> strarray;
-				StringSplit(WebLocalNetworks, ";", strarray);
+				StringSplit(TrustedNetworks, ";", strarray);
 				for (const auto &str : strarray)
-					it->m_pWebEm->AddLocalNetworks(str);
-				// add local hostname
-				it->m_pWebEm->AddLocalNetworks("");
+					it->m_pWebEm->AddTrustedNetworks(str);
 			}
 		}
 

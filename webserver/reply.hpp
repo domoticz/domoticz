@@ -53,6 +53,9 @@ struct reply
   std::string content;
   bool bIsGZIP;
 
+  /// The origin of the web request when behind proxies, etc.
+  std::string originHost;
+
   /// Convert the reply into a vector of buffers. The buffers do not own the
   /// underlying memory blocks, therefore the reply object must remain valid and
   /// not be changed until the write operation has completed.
@@ -67,6 +70,8 @@ struct reply
   static bool set_download_file(reply* rep, const std::string& file_path, const std::string& attachment);
   static void add_header_attachment(reply *rep, const std::string & attachment);
   static void add_header_content_type(reply *rep, const std::string & content_type);
+  static void add_security_headers(reply *rep);
+  static void add_cors_headers(reply *rep);
 
   template <class InputIterator>
   static void set_content(reply *rep, InputIterator first, InputIterator last) {
@@ -81,7 +86,7 @@ struct reply
   void reset();
 
   /// Get a stock reply.
-  static reply stock_reply(status_type status);
+  static reply stock_reply(status_type status, bool addsecheaders = false);
 };
 
 } // namespace server

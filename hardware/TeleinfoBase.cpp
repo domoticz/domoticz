@@ -36,7 +36,6 @@ CTeleinfoBase::CTeleinfoBase()
 	m_p1power.ID = 1;
 	m_p2power.ID = 2;
 	m_p3power.ID = 3;
-
 	m_bDisableCRC = false;
 
 	InitTeleinfo();
@@ -46,7 +45,6 @@ void CTeleinfoBase::InitTeleinfo()
 {
 	m_bufferpos = 0;
 	m_teleinfo.CRCmode1 = 255;	 // Guess the CRC mode at first run
-	m_counter = 0;
 }
 
 void CTeleinfoBase::ProcessTeleinfo(Teleinfo& teleinfo)
@@ -425,7 +423,7 @@ void CTeleinfoBase::ProcessTeleinfo(const std::string& name, int rank, Teleinfo&
 		if((teleinfo.STGE & 0x80) != (teleinfo.prevSTGE & 0x80) || teleinfo.prevSTGE == UINT32_MAX)
 		{
 			int iOverload = (teleinfo.STGE >> 7) & 0x1;
-			SendAlertSensor(32 * rank + 12, 255, iOverload, (iOverload == 0)?"Pas de dépssament de la puissance de référence":"Dépassement de la puissance de référence", name + " Dépassement puissance");
+			SendAlertSensor(32 * rank + 12, 255, iOverload, (iOverload == 0)?"Pas de dépassement de la puissance de référence":"Dépassement de la puissance de référence", name + " Dépassement puissance");
 		}
 		if((teleinfo.STGE & 0x100) != (teleinfo.prevSTGE & 0x100) || teleinfo.prevSTGE == UINT32_MAX)
 		{
@@ -574,7 +572,6 @@ void CTeleinfoBase::MatchLine()
 	else if (label == "IINST2") m_teleinfo.IINST2 = value;
 	else if (label == "IINST3") m_teleinfo.IINST3 = value;
 	else if (label == "PPOT")  m_teleinfo.PPOT = value;
-	else if (label == "MOTDETAT") m_counter++;
 
 	// Standard mode
 	else if (label == "EAST") m_teleinfo.BASE = value;
@@ -589,7 +586,22 @@ void CTeleinfoBase::MatchLine()
 		m_teleinfo.IINST2 = value;
 	}
 	else if (label == "IRMS3") m_teleinfo.IINST3 = value;
-	else if (label == "NGTF") m_teleinfo.OPTARIF = stdstring_trim(vString);
+	else if (label == "NGTF") 
+	{
+		std::string ngtfString = stdstring_trim(vString);
+		// Different abonnements existent et ca devient difficile de rester compatible du comportement historique
+		// Je ne sais pas bien si la string NGTF est dépendante ou non du fournisseur...
+		// Exemple chez totalEnergie il y a l'abonnement avec les heures super creuse qui sont sur un 3eme compteur EASF03
+		// Je le met quand même en comportement heure creuse pour l'instant : Il manquera juste les heures super creuses : @TODO
+		if (ngtfString == "H PLEINE/CREUSE" || ngtfString == "H SUPER CREUSES" || ngtfString == "HC SEM ET HC WE")
+			m_teleinfo.OPTARIF = "HC..";
+		else if (ngtfString == "PRODUCTEUR")
+			// Pour avoir un affichage sur les compteurs producteur uniquement
+			m_teleinfo.OPTARIF = "BASE";
+		else
+			// Pour compatibilite mode historique
+			m_teleinfo.OPTARIF = ngtfString;
+	}
 	else if (label == "SINSTS")
 	{
 		m_teleinfo.PAPP = value;
@@ -616,19 +628,11 @@ void CTeleinfoBase::MatchLine()
 	{ // Status register, hexadecimal string (without 0x)
 		m_teleinfo.STGE = strtoul(splitresults[1].c_str(), nullptr, 16);
 	}
-	else if (label == "ADSC")
-	{
-		m_counter++;
-	}
+	else if (label == "ADSC") m_teleinfo.ADCO = vString;
 
-	// at 1200 baud we have roughly one frame per 1,5 second, check more frequently for alerts.
-	if (m_counter >= m_iBaudRate / 600)
-	{
-		m_counter = 0;
-		Debug(DEBUG_HARDWARE, "frame complete, PAPP: %i, PTEC: %s, OPTARIF: %s", m_teleinfo.PAPP, m_teleinfo.PTEC.c_str(), m_teleinfo.OPTARIF.c_str());
-		ProcessTeleinfo(m_teleinfo);
-		mytime(&m_LastHeartbeat);// keep heartbeat happy
-	}
+	Debug(DEBUG_HARDWARE, "frame complete, PAPP: %i, PTEC: %s, OPTARIF: %s", m_teleinfo.PAPP, m_teleinfo.PTEC.c_str(), m_teleinfo.OPTARIF.c_str());
+	ProcessTeleinfo(m_teleinfo);
+	mytime(&m_LastHeartbeat);// keep heartbeat happy
 }
 
 void CTeleinfoBase::ParseTeleinfoData(const char* pData, int Len)

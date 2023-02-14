@@ -4,6 +4,7 @@
 #include "../webserver/cWebem.h"
 #include "../webserver/request.hpp"
 #include "../webserver/session_store.hpp"
+#include "../iamserver/iam_settings.hpp"
 
 struct lua_State;
 struct lua_Debug;
@@ -48,6 +49,10 @@ class CWebServer : public session_store, public std::enable_shared_from_this<CWe
 	void GetDatabaseBackup(WebEmSession & session, const request& req, reply & rep);
 	void Post_UploadCustomIcon(WebEmSession & session, const request& req, reply & rep);
 
+	void GetOauth2AuthCode(WebEmSession &session, const request &req, reply &rep);
+	void PostOauth2AccessToken(WebEmSession &session, const request &req, reply &rep);
+	void GetOpenIDConfiguration(WebEmSession &session, const request &req, reply &rep);
+
 	void PostSettings(WebEmSession& session, const request& req, reply& rep);
 	void PostLoginCheck(WebEmSession& session, const request& req, reply& rep);
 	void SetRFXCOMMode(WebEmSession & session, const request& req, std::string & redirect_uri);
@@ -72,14 +77,18 @@ class CWebServer : public session_store, public std::enable_shared_from_this<CWe
 	void ReloadCustomSwitchIcons();
 
 	void LoadUsers();
-	void AddUser(unsigned long ID, const std::string &username, const std::string &password, int userrights, int activetabs);
+	void AddUser(unsigned long ID, const std::string &username, const std::string &password, int userrights, int activetabs, const std::string &pemfile = "");
 	void ClearUserPasswords();
 	bool FindAdminUser();
+	int CountAdminUsers();
+
 	int FindUser(const char* szUserName);
 	void SetWebCompressionMode(_eWebCompressionMode gzmode);
-	void SetAuthenticationMethod(_eAuthenticationMethod amethod);
+	void SetAllowPlainBasicAuth(const bool allow);
 	void SetWebTheme(const std::string &themename);
 	void SetWebRoot(const std::string &webRoot);
+	void SetIamSettings(const iamserver::iam_settings &iamsettings);
+
 	std::vector<_tWebUserPassword> m_users;
 	//JSon
 	void GetJSonDevices(Json::Value &root, const std::string &rused, const std::string &rfilter, const std::string &order, const std::string &rowid, const std::string &planID,
@@ -101,6 +110,12 @@ private:
     void AddTodayValueToResult(Json::Value &root, const std::string &sgroupby, const std::string &today, const double todayValue, const std::string &formatString);
 
 	bool IsIdxForUser(const WebEmSession *pSession, int Idx);
+
+	//OAuth2/OIDC support functions
+	std::string GenerateOAuth2RefreshToken(const std::string username, const int refreshexptime);
+	bool ValidateOAuth2RefreshToken(const std::string refreshtoken, std::string &username);
+	void InvalidateOAuth2RefreshToken(const std::string refreshtoken);
+	void PresentOauth2LoginDialog(reply &rep, const std::string sApp, const std::string sError);
 
 	//Commands
 	void Cmd_RFXComGetFirmwarePercentage(WebEmSession & session, const request& req, Json::Value &root);
@@ -407,6 +422,24 @@ private:
 	std::map<int, int> m_custom_light_icons_lookup;
 	bool m_bDoStop;
 	std::string m_server_alias;
+	uint8_t m_failcount;
+	iamserver::iam_settings m_iamsettings;
+
+	struct _tUserAccessCode
+	{
+		int ID;
+		int clientID;
+		time_t AuthTime;
+		uint64_t ExpTime;
+		std::string UserName;
+		std::string AuthCode;
+		std::string Scope;
+		std::string RedirectUri;
+		std::string CodeChallenge;
+	};
+
+	std::vector<_tUserAccessCode> m_accesscodes;
+
 };
 
 	} // namespace server

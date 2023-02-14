@@ -11,18 +11,18 @@ namespace http {
 
 			// called from mainworker():
 #ifdef WWW_ENABLE_SSL
-			bool StartServers(server_settings &web_settings, ssl_server_settings &secure_web_settings, const std::string &serverpath, bool bIgnoreUsernamePassword);
+			bool StartServers(server_settings &web_settings, ssl_server_settings &secure_web_settings, iamserver::iam_settings & iam_settings, const std::string &serverpath, bool bIgnoreUsernamePassword);
 #else
-			bool StartServers(server_settings & web_settings, const std::string &serverpath, const bool bIgnoreUsernamePassword);
+			bool StartServers(server_settings & web_settings, iamserver::iam_settings & iam_settings, const std::string &serverpath, const bool bIgnoreUsernamePassword);
 #endif
 			void StopServers();
 			void SetWebCompressionMode(_eWebCompressionMode gzmode);
-			void SetAuthenticationMethod(_eAuthenticationMethod amethod);
+			void SetAllowPlainBasicAuth(const bool allow);
 			void SetWebTheme(const std::string &themename);
 			void SetWebRoot(const std::string &webRoot);
 			void LoadUsers();
 			void ClearUserPasswords();
-			void ReloadLocalNetworks();
+			void ReloadTrustedNetworks();
 			// called from OTGWBase()
 			void GetJSonDevices(Json::Value &root, const std::string &rused, const std::string &rfilter, const std::string &order, const std::string &rowid, const std::string &planID,
 					    const std::string &floorID, bool bDisplayHidden, bool bDisplayDisabled, bool bFetchFavorites, time_t LastUpdate, const std::string &username,

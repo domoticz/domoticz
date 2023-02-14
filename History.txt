@@ -1,3 +1,44 @@
+Version 2023.1 (February 14 2022)
+- For a full overview visit: https://www.domoticz.com/wiki/Domoticz_versions_-_Commits for details
+- Implemented: Accept JWT tokens as authentication and Authorization Bearer tokens (either from internal or external IAM service)
+- Implemented: Blinds, added option to schedule 0%
+- Implemented: dzVents, OpenURL PATCH method
+- Implemented: Enphase, redesign and added battery readings (Supports firmware V7)
+- Implemented: Internal OAuth2/OIDC IAM service supporting 4 different flows (OAuth2 (RFC6749), PKCE extension (RFC7636) and JWT Tokens (RFC7519))
+- Implemented: MQTT, added support for Lock status
+- Implemented: MQTT, added support for wildcards in discovery topics
+- Implemented: MQTT, climate preset mode
+- Implemented: New 'auth' debug flag to see IAM related messages
+- Implemented: Now 'Applications' can be registered to get secure access to Domoticz, see 'setup' menu (standard DomoticzUI app is registered by default)
+- Implemented: P1 Meter, added number of (long) power failures, voltage sags/swells
+- Implemented: SECURITY_SETUP.md describing the new/improved security setup
+- Implemented: Support for basic OpenID Connect Discovery ('https://<DOMOTICZURL>/.well-known/openid-configuration')
+- Implemented: Search option in Switches/Scenes/Temperature/Utility and Weather tab
+- Implemented: The Security realm can be configured using the 'vhostname' option (default domoticz.com)
+- Implemented: Timer, Grid option for selected switches and thermostat. Big thanks to syrhus/labelette91580 and xbeaudouin
+- Implemented: User device selection now displays type/subtype
+- Changed: All security related setting are now in 1 settings tab
+- Changed: By default prompt for login to only allow secure access
+- Changed: Default 'admin' user is generated with standard password (see Users)
+- Changed: Dimmer, restores to previous Set Level state after Off
+- Changed: Implicit adding local IP to 'trusted networks' has been removed. Needs to be set explicitly for security reasons!
+- Changed: Lots of security related code cleanup and improvements
+- Changed: Menu option for 'Users' moved to main 'Setup' menu list
+- Changed: MQTT timeout increased to 2 minutes
+- Changed: The following proxy headers are now properly supported 'Forwarded' (RFC7239), 'X-Forwarder-For' and 'X-Real-IP' (in that order)
+- Changed: The secure server (HTTPS) sends proper CORS and Security headers
+- Fixed: Dashboard, scenes/lights hidden when this was disabled in user settings
+- Fixed: Dashboard, mobile display did not display P1 meter current return value correctly
+- Fixed: Dashboard, not showing disabled sections (temperature/weather/utility) when a device has multiple properties (for instance temperature + weather)
+- Fixed: Highcharts dropdown menu z-index problem
+- Fixed: Logout now returns 204 instead of 401
+- Fixed: Waterflow sensor custom icon
+- Fixed: Making sure Custom icons are valid (when someone manually edits the database)
+- Fixed: Mobile display text objects with long lines
+- Fixed: MQTT-AD Climate, fixed setpoint temperature display
+- Fixed: Navigation bar display issues on some mobile devices
+- Fixed: Setpoint popup when using protection
+
 Version 2022.2 (November 5 2022)
 - Implemented: Blockly,	added 'Toggle' set command
 - Implemented: Camera, camera Aspect Ratio
@@ -41,7 +82,6 @@ Version 2022.2 (November 5 2022)
 - Fixed: WebGUI, making sure status does not wrap in mobile mode
 - Removed: AppCache
 - Deprecated: OpenZWave, please move to MQTT Auto Discovery and ZWave JS UI (Project stopped a long time ago!)
-- For a full detailed overview visit: https://www.domoticz.com/wiki/Domoticz_versions_-_Commits
 
 Version 2022.1 (January 31 2022)
 - Implemented: Added Irrigation icon (also thanks to dbemowsk)
@@ -77,7 +117,6 @@ Version 2022.1 (January 31 2022)
 - Fixed: EvoHome, Fix Web API crash when a new zone wass added
 - Fixed: Notifications, Email notification fix jpeg inline attachment handling for K9 mail
 - Fixed: OpenWeatherMap, Fix to resolve OWM City for default location. Used by OWM based forecast screen
-- For a full detailed overview visit: https://www.domoticz.com/wiki/Domoticz_versions_-_Commits
 
 Version 2021.1 (April 17 2021)
 - Implemented: Added option to set loglevel per hardware device
@@ -154,7 +193,6 @@ Version 2021.1 (April 17 2021)
 - Fixed: User field in device logging for switches, -text-devices and for groups/scenes
 - Fixed: Windows installation respects configured log parameters
 - Fixed: Zwave various issues
-- For a full overview visit: https://www.domoticz.com/wiki/Domoticz_versions_-_Commits for details
 
 Version 2020.2 (April 26th 2020)
 - Implemented: GUI: New Update controller code
@@ -173,7 +211,6 @@ Version 2020.2 (April 26th 2020)
 - Changed: Removed external library dependencies from repository
 - Updated: Translations
 - Updated: TTNMQTT, improved handling CayenneLPP channels
-- For a full overview visit: https://www.domoticz.com/wiki/Domoticz_versions_-_Commits for details
 
 Version 2020.1 (March 22th 2020)
 - Implemented: BuienRadar

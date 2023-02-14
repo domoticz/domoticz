@@ -569,6 +569,11 @@ void MainWorker::SetWebserverSettings(const http::server::server_settings& setti
 	m_webserver_settings.set(settings);
 }
 
+void MainWorker::SetIamserverSettings(const iamserver::iam_settings& iamsettings)
+{
+	m_iamserver_settings.set(iamsettings);
+}
+
 std::string MainWorker::GetWebserverAddress()
 {
 	return m_webserver_settings.listening_address;
@@ -712,7 +717,7 @@ bool MainWorker::AddHardwareFromParams(
 		pHardware = new CRFLinkSerial(ID, SerialPort);
 		break;
 	case HTYPE_RFLINKMQTT:
-		pHardware = new CRFLinkMQTT(ID, Address , Port , Username , Password , Extra, Mode2, Mode1, Mode3 != 0 );
+		pHardware = new CRFLinkMQTT(ID, Address , Port , Username , Password , Extra, Mode2, Mode1, Mode4 != 0 );
 		break;
 	case HTYPE_ZIBLUEUSB:
 		pHardware = new CZiBlueSerial(ID, SerialPort);
@@ -1051,7 +1056,7 @@ bool MainWorker::AddHardwareFromParams(
 		pHardware = new USBtin(ID, SerialPort, Mode1, Mode2);
 		break;
 	case HTYPE_EnphaseAPI:
-		pHardware = new EnphaseAPI(ID, Address, Port);
+		pHardware = new EnphaseAPI(ID, Address, Port, Mode1, Mode2, Username, Password);
 		break;
 	case HTYPE_Comm5SMTCP:
 		pHardware = new Comm5SMTCP(ID, Address, Port);
@@ -1142,9 +1147,9 @@ bool MainWorker::Start()
 	{
 		//Start WebServer
 #ifdef WWW_ENABLE_SSL
-		if (!m_webservers.StartServers(m_webserver_settings, m_secure_webserver_settings, szWWWFolder, m_bIgnoreUsernamePassword))
+		if (!m_webservers.StartServers(m_webserver_settings, m_secure_webserver_settings, m_iamserver_settings, szWWWFolder, m_bIgnoreUsernamePassword))
 #else
-		if (!m_webservers.StartServers(m_webserver_settings, szWWWFolder, m_bIgnoreUsernamePassword))
+		if (!m_webservers.StartServers(m_webserver_settings, m_iamserver_settings, szWWWFolder, m_bIgnoreUsernamePassword))
 #endif
 		{
 #ifdef WIN32
@@ -1154,9 +1159,9 @@ bool MainWorker::Start()
 		}
 	}
 	int nValue = 0;
-	if (m_sql.GetPreferencesVar("AuthenticationMethod", nValue))
+	if (m_sql.GetPreferencesVar("AllowPlainBasicAuth", nValue))
 	{
-		m_webservers.SetAuthenticationMethod((http::server::_eAuthenticationMethod)nValue);
+		m_webservers.SetAllowPlainBasicAuth(static_cast<bool>(nValue));
 	}
 	std::string sValue;
 	if (m_sql.GetPreferencesVar("WebTheme", sValue))
@@ -1688,8 +1693,6 @@ void MainWorker::Do_Work()
 				if (file_exist(szPwdResetFile.c_str()))
 				{
 					m_webservers.ClearUserPasswords();
-					m_sql.UpdatePreferencesVar("WebUserName", "");
-					m_sql.UpdatePreferencesVar("WebPassword", "");
 					std::remove(szPwdResetFile.c_str());
 				}
 				m_notifications.CheckAndHandleLastUpdateNotification();
@@ -11500,6 +11503,14 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string>& sd, std::string 
 		if (result.size() == 1)
 		{
 			level = atoi(result[0][0].c_str());
+			if (
+				(switchcmd == "On")
+				&& (level > 0)
+				&& (switchtype == STYPE_Dimmer)
+				)
+			{
+				switchcmd = "Set Level";
+			}
 		}
 
 		//level here is from 0-100, convert it to device range

@@ -410,11 +410,6 @@ define(['app'], function (app) {
 					if (typeof data.MobileType != 'undefined') {
 						$("#settingscontent #combosmobiletype").val(data.MobileType);
 					}
-					if (typeof data.WebUserName != 'undefined') {
-						$scope.OldAdminUser=data.WebUserName;
-						$("#webtable #WebUserName").val(data.WebUserName);
-					}
-					$("#webtable #WebPassword").val(md5.createHash("bogus"));
 					if (typeof data.SecPassword != 'undefined') {
 						$("#sectable #SecPassword").val(data.SecPassword);
 					}
@@ -523,27 +518,6 @@ define(['app'], function (app) {
 					if (typeof data.SmartMeterType != 'undefined') {
 						$("#p1metertable #comboP1MeterType").val(data.SmartMeterType);
 					}
-					if (typeof data.EnableTabFloorplans != 'undefined') {
-						$("#activemenustable #EnableTabFloorplans").prop('checked', data.EnableTabFloorplans == 1);
-					}
-					if (typeof data.EnableTabLights != 'undefined') {
-						$("#activemenustable #EnableTabLights").prop('checked', data.EnableTabLights == 1);
-					}
-					if (typeof data.EnableTabScenes != 'undefined') {
-						$("#activemenustable #EnableTabScenes").prop('checked', data.EnableTabScenes == 1);
-					}
-					if (typeof data.EnableTabTemp != 'undefined') {
-						$("#activemenustable #EnableTabTemp").prop('checked', data.EnableTabTemp == 1);
-					}
-					if (typeof data.EnableTabWeather != 'undefined') {
-						$("#activemenustable #EnableTabWeather").prop('checked', data.EnableTabWeather == 1);
-					}
-					if (typeof data.EnableTabUtility != 'undefined') {
-						$("#activemenustable #EnableTabUtility").prop('checked', data.EnableTabUtility == 1);
-					}
-					if (typeof data.EnableTabCustom != 'undefined') {
-						$("#activemenustable #EnableTabCustom").prop('checked', data.EnableTabCustom == 1);
-					}
 					if (typeof data.NotificationSensorInterval != 'undefined') {
 						$("#nitable #comboNotificationSensorInterval").val(data.NotificationSensorInterval);
 					}
@@ -568,8 +542,8 @@ define(['app'], function (app) {
 					document.title = sessionStorage.title;
 					$("#settingscontent #Title").val(sessionStorage.title);
 
-					if (typeof data.AuthenticationMethod != 'undefined') {
-						$("#webtable #comboauthmethod").val(data.AuthenticationMethod);
+					if (typeof data.AllowPlainBasicAuth != 'undefined') {
+						$("#webtable #AllowPlainBasicAuth").prop('checked', data.AllowPlainBasicAuth == 1);
 					}
 					if (typeof data.ReleaseChannel != 'undefined') {
 						$("#autoupdatetable #comboReleaseChannel").val(data.ReleaseChannel);
@@ -679,23 +653,6 @@ define(['app'], function (app) {
 				return;
 			}
 			
-			var adminuser = $("#webtable #WebUserName").val();
-			var adminpwd = $("#webtable #WebPassword").val();
-			if (adminpwd == md5.createHash("bogus")) {
-				$("#webtable #WebPassword").val("");
-				adminpwd = "";
-			}
-			if ((adminuser!="")&&($scope.OldAdminUser!=adminuser)) {
-				if (adminpwd=="") {
-					ShowNotify($.t('Please enter a Admin password!'), 2000, true);
-					return;
-				}
-			}
-			if (adminpwd!="") {
-				$("#webtable #WebPassword").val(md5.createHash(adminpwd));
-			}
-						
-
 			var secpanel = $("#sectable #SecPassword").val();
 			var switchprotection = $("#protectiontable #ProtectionPassword").val();
 

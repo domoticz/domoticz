@@ -687,7 +687,10 @@ std::string CBasePush::ProcessSendValue(const uint64_t DeviceRowIdx, const std::
 			strcpy(szData, rawsendValue.c_str());
 		}
 		else
+		{
+			_log.Log(LOG_ERROR, "BasePush: Unhandled type (devIdx: %" PRIu64 ", vType: %s", DeviceRowIdx, vType.c_str());
 			return ""; //unhandled type
+		}
 	}
 	catch (...)
 	{
@@ -707,7 +710,7 @@ std::string CBasePush::ProcessSendValue(const uint64_t DeviceRowIdx, const std::
 		}
 		return sendValue;
 	}
-	_log.Log(LOG_ERROR, "BasePush: Could not determine data push value");
+	_log.Log(LOG_ERROR, "BasePush: Could not determine data push value (devIdx: %" PRIu64 "", DeviceRowIdx);
 	return "";
 }
 
@@ -939,7 +942,7 @@ namespace http {
 			root["status"] = "OK";
 			root["title"] = "GetDevicesListOnOff";
 			std::vector<std::vector<std::string> > result;
-			result = m_sql.safe_query("SELECT ID, Name, Type, SubType FROM DeviceStatus WHERE (Used == 1) ORDER BY Name");
+			result = m_sql.safe_query("SELECT ID, Name, Type, SubType FROM DeviceStatus WHERE (Used == 1) ORDER BY Name COLLATE NOCASE ASC");
 			if (!result.empty())
 			{
 				int ii = 0;

@@ -9,6 +9,10 @@ define(['app'], function (app) {
 						async: false,
 						dataType: 'json',
 						success: function (data) {
+							if (data.status != "OK") {
+								ShowNotify(data.message, 2500, true);
+								return;
+							}
 							RefreshUserTable();
 						},
 						error: function () {
@@ -82,6 +86,10 @@ define(['app'], function (app) {
 				async: false,
 				dataType: 'json',
 				success: function (data) {
+					if (data.status != "OK") {
+						ShowNotify(data.message, 2500, true);
+						return;
+					}
 					RefreshUserTable();
 				},
 				error: function () {
@@ -196,8 +204,11 @@ define(['app'], function (app) {
 							else if (item.Rights == 1) {
 								rightstr = $.t("User");
 							}
-							else {
+							else if (item.Rights == 2) {
 								rightstr = $.t("Admin");
+							}
+							else {
+								rightstr = $.t("-Unknown-");
 							}
 
 							var sharedstr = $.t("No");
@@ -317,7 +328,7 @@ define(['app'], function (app) {
 					if (typeof data.result != 'undefined') {
 						$.each(data.result, function (i, item) {
 							var option = $('<option />');
-							option.attr('value', item.value).text(item.name);
+							option.attr('value', item.idx).text(item.name_type);
 							$("#userdevices #userdevicestable #devices").append(option);
 						});
 					}

@@ -10,28 +10,49 @@ namespace Json
 
 class EnphaseAPI : public CDomoticzHardwareBase
 {
-      public:
-	EnphaseAPI(int ID, const std::string &IPAddress, unsigned short usIPPort);
+public:
+	EnphaseAPI(int ID, const std::string& IPAddress, unsigned short usIPPort, int PollInterval, const bool bPollInverters, const std::string& szUsername, const std::string& szPassword);
 	~EnphaseAPI() override = default;
-	bool WriteToHardware(const char *pdata, unsigned char length) override;
-
-      private:
+	bool WriteToHardware(const char* pdata, unsigned char length) override;
+	std::string m_szSoftwareVersion;
+private:
 	bool StartHardware() override;
 	bool StopHardware() override;
 	void Do_Work();
 
-	bool getProductionDetails(Json::Value &result);
+	bool GetSerialSoftwareVersion();
+	bool GetAccessToken();
+	bool getProductionDetails(Json::Value& result);
+	bool getInverterDetails();
+	std::string V5_emupwGetMobilePasswd(const std::string &serialNumber, const std::string &userName, const std::string &realm);
 
-	void parseProduction(const Json::Value &root);
-	void parseConsumption(const Json::Value &root);
-	void parseNetConsumption(const Json::Value &root);
+	void parseProduction(const Json::Value& root);
+	void parseConsumption(const Json::Value& root);
+	void parseStorage(const Json::Value& root);
 
+	bool IsItSunny();
 	int getSunRiseSunSetMinutes(bool bGetSunRise);
 
-      private:
+	bool NeedToken();
+
+	uint64_t UpdateValueInt(const char* ID, unsigned char unit, unsigned char devType, unsigned char subType, unsigned char signallevel, unsigned char batterylevel, int nValue,
+		const char* sValue, std::string& devname, bool bUseOnOffAction = true, const std::string& user = "");
+private:
+	int m_poll_interval = 30;
+
+	std::string m_szSerial;
+	std::string m_szToken;
 	std::string m_szIPAddress;
-	P1Power m_p1power;
-	P1Power m_c1power;
-	P1Power m_c2power;
+	std::string m_szInstallerPassword; // derived from serial number
+
+	std::string m_szUsername;
+	std::string m_szPassword;
+
+	bool m_bGetInverterDetails;
+
+	bool m_bHaveConsumption = false;
+	bool m_bHaveeNetConsumption = false;
+	bool m_bHaveStorage = false;
+
 	std::shared_ptr<std::thread> m_thread;
 };

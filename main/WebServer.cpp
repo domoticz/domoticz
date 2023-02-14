@@ -12,37 +12,40 @@
 #include "dzVents.h"
 #include "../httpclient/HTTPClient.h"
 #include "../hardware/hardwaretypes.h"
+
 #include "../hardware/1Wire.h"
-#include "../hardware/OTGWBase.h"
-#ifdef WITH_OPENZWAVE
-#include "../hardware/OpenZWave.h"
-#endif
+#include "../hardware/AccuWeather.h"
+#include "../hardware/AirconWithMe.h"
+#include "../hardware/Buienradar.h"
+#include "../hardware/DarkSky.h"
+#include "../hardware/eHouseTCP.h"
 #include "../hardware/EnOceanESP2.h"
 #include "../hardware/EnOceanESP3.h"
-#include "../hardware/Wunderground.h"
-#include "../hardware/DarkSky.h"
-#include "../hardware/AccuWeather.h"
-#include "../hardware/OpenWeatherMap.h"
-#include "../hardware/Buienradar.h"
-#include "../hardware/Meteorologisk.h"
-#include "../hardware/Kodi.h"
-#include "../hardware/Limitless.h"
-#include "../hardware/LogitechMediaServer.h"
-#include "../hardware/MySensorsBase.h"
-#include "../hardware/RFXBase.h"
-#include "../hardware/RFLinkBase.h"
-#include "../hardware/SysfsGpio.h"
-#include "../hardware/HEOS.h"
-#include "../hardware/eHouseTCP.h"
-#include "../hardware/USBtin.h"
-#include "../hardware/USBtin_MultiblocV8.h"
-#include "../hardware/AirconWithMe.h"
-#include "../hardware/ZiBlueBase.h"
+#include "../hardware/EnphaseAPI.h"
 #ifdef WITH_GPIO
 #include "../hardware/Gpio.h"
 #include "../hardware/GpioPin.h"
 #endif // WITH_GPIO
+#include "../hardware/HEOS.h"
+#include "../hardware/Kodi.h"
+#include "../hardware/Limitless.h"
+#include "../hardware/LogitechMediaServer.h"
+#include "../hardware/Meteorologisk.h"
+#include "../hardware/MySensorsBase.h"
+#include "../hardware/OpenWeatherMap.h"
+#ifdef WITH_OPENZWAVE
+#include "../hardware/OpenZWave.h"
+#endif
+#include "../hardware/OTGWBase.h"
+#include "../hardware/RFLinkBase.h"
+#include "../hardware/RFXBase.h"
+#include "../hardware/SysfsGpio.h"
 #include "../hardware/Tellstick.h"
+#include "../hardware/USBtin.h"
+#include "../hardware/USBtin_MultiblocV8.h"
+#include "../hardware/Wunderground.h"
+#include "../hardware/ZiBlueBase.h"
+
 #include "../webserver/Base64.h"
 #include "../smtpclient/SMTPClient.h"
 #include <json/json.h>
@@ -113,6 +116,7 @@ namespace http
 		{
 			m_pWebEm = nullptr;
 			m_bDoStop = false;
+			m_failcount = 0;
 #ifdef WITH_OPENZWAVE
 			m_ZW_Hwidx = -1;
 #endif
@@ -250,10 +254,20 @@ namespace http
 
 		bool CWebServer::StartServer(server_settings& settings, const std::string& serverpath, const bool bIgnoreUsernamePassword)
 		{
-			m_server_alias = (settings.is_secure() == true) ? "SSL" : "HTTP";
-
 			if (!settings.is_enabled())
 				return true;
+
+			m_server_alias = (settings.is_secure() == true) ? "SSL" : "HTTP";
+
+			std::string sRealm = (settings.is_secure() == true) ? "https://" : "http://";
+
+			if (!settings.vhostname.empty())
+				sRealm += settings.vhostname;
+			else
+				sRealm += (settings.listening_address == "::") ? "domoticz.local" : settings.listening_address;
+			if(settings.listening_port != "80" || settings.listening_port != "443")
+				sRealm += ":" + settings.listening_port;
+			sRealm += "/";
 
 			ReloadCustomSwitchIcons();
 
@@ -261,6 +275,7 @@ namespace http
 			bool exception = false;
 
 			_log.Debug(DEBUG_WEBSERVER, "CWebServer::StartServer() : settings : %s", settings.to_string().c_str());
+			_log.Debug(DEBUG_AUTH, "CWebServer::StartServer() : IAM settings : %s", m_iamsettings.to_string().c_str());
 			do
 			{
 				try
@@ -299,23 +314,29 @@ namespace http
 
 			_log.Log(LOG_STATUS, "WebServer(%s) started on address: %s with port %s", m_server_alias.c_str(), settings.listening_address.c_str(), settings.listening_port.c_str());
 
-			m_pWebEm->SetDigistRealm("Domoticz.com");
+			m_pWebEm->SetDigistRealm(sRealm);
 			m_pWebEm->SetSessionStore(this);
 
-			if (!bIgnoreUsernamePassword)
-			{
-				LoadUsers();
+			LoadUsers();
 
-				std::string WebLocalNetworks;
-				int nValue;
-				if (m_sql.GetPreferencesVar("WebLocalNetworks", nValue, WebLocalNetworks))
+			std::string TrustedNetworks;
+			if (m_sql.GetPreferencesVar("WebLocalNetworks", TrustedNetworks))
+			{
+				std::vector<std::string> strarray;
+				StringSplit(TrustedNetworks, ";", strarray);
+				for (const auto& str : strarray)
+					m_pWebEm->AddTrustedNetworks(str);
+			}
+			if (bIgnoreUsernamePassword)
+			{
+				m_pWebEm->AddTrustedNetworks("0.0.0.0/0");	// IPv4
+				m_pWebEm->AddTrustedNetworks("::");	// IPv6
+				_log.Log(LOG_ERROR, "SECURITY RISK! Allowing access without username/password as all incoming traffic is considered trusted! Change admin password asap and restart Domoticz!");
+
+				if (m_users.empty())
 				{
-					std::vector<std::string> strarray;
-					StringSplit(WebLocalNetworks, ";", strarray);
-					for (const auto& str : strarray)
-						m_pWebEm->AddLocalNetworks(str);
-					// add local hostname
-					m_pWebEm->AddLocalNetworks("");
+					AddUser(99999, "tmpadmin", "tmpadmin", (_eUserRights)URIGHTS_ADMIN, 0x1F);
+					_log.Debug(DEBUG_AUTH, "[Start server] Added tmpadmin User as no active Users where found!");
 				}
 			}
 
@@ -325,7 +346,17 @@ namespace http
 			m_pWebEm->RegisterIncludeCode("timertypes", [this](auto&& content_part) { DisplayTimerTypesCombo(content_part); });
 			m_pWebEm->RegisterIncludeCode("combolanguage", [this](auto&& content_part) { DisplayLanguageCombo(content_part); });
 
-			m_pWebEm->RegisterPageCode("/json.htm", [this](auto&& session, auto&& req, auto&& rep) { GetJSonPage(session, req, rep); });
+			if (m_iamsettings.is_enabled())
+			{
+				m_pWebEm->RegisterPageCode(
+					m_iamsettings.auth_url.c_str(), [this](auto &&session, auto &&req, auto &&rep) { GetOauth2AuthCode(session, req, rep); }, true);
+				m_pWebEm->RegisterPageCode(
+					m_iamsettings.token_url.c_str(), [this](auto &&session, auto &&req, auto &&rep) { PostOauth2AccessToken(session, req, rep); }, true);
+				m_pWebEm->RegisterPageCode(
+					m_iamsettings.discovery_url.c_str(), [this](auto &&session, auto &&req, auto &&rep) { GetOpenIDConfiguration(session, req, rep); }, true);
+			}
+
+			m_pWebEm->RegisterPageCode("/json.htm", [this](auto &&session, auto &&req, auto &&rep) { GetJSonPage(session, req, rep); });
 			// These 'Pages' should probably be 'moved' to become Command codes handled by the 'json.htm API', so we get all API calls through one entry point
 			// And why .php or .cgi while all these commands are NOT handled by a PHP or CGI processor but by Domoticz ?? Legacy? Rename these?
 			m_pWebEm->RegisterPageCode("/logincheck", [this](auto&& session, auto&& req, auto&& rep) { PostLoginCheck(session, req, rep); }, true);
@@ -371,7 +402,8 @@ namespace http
 			RegisterCommandCode(
 				"gettitle", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetTitle(session, req, root); }, true);
 			RegisterCommandCode(
-				"logincheck", [this](auto&& session, auto&& req, auto&& root) { Cmd_LoginCheck(session, req, root); }, true);
+				"logincheck", [this](auto &&session, auto &&req, auto &&root) { Cmd_LoginCheck(session, req, root); }, true);
+
 			RegisterCommandCode(
 				"getversion", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetVersion(session, req, root); }, true);
 			RegisterCommandCode(
@@ -732,11 +764,11 @@ namespace http
 			m_pWebEm->SetWebCompressionMode(gzmode);
 		}
 
-		void CWebServer::SetAuthenticationMethod(const _eAuthenticationMethod amethod)
+		void CWebServer::SetAllowPlainBasicAuth(const bool allow)
 		{
 			if (m_pWebEm == nullptr)
 				return;
-			m_pWebEm->SetAuthenticationMethod(amethod);
+			m_pWebEm->SetAllowPlainBasicAuth(allow);
 		}
 
 		void CWebServer::SetWebTheme(const std::string& themename)
@@ -751,6 +783,11 @@ namespace http
 			if (m_pWebEm == nullptr)
 				return;
 			m_pWebEm->SetWebRoot(webRoot);
+		}
+
+		void CWebServer::SetIamSettings(const iamserver::iam_settings &iamsettings)
+		{
+			m_iamsettings = iamsettings;
 		}
 
 		void CWebServer::RegisterCommandCode(const char* idname, const webserver_response_function& ResponseFunction, bool bypassAuthentication)
@@ -785,36 +822,24 @@ namespace http
 			if (rtype == "command")
 			{
 				std::string cparam = request::findValue(&req, "param");
-				if (cparam.empty())
+				if (!cparam.empty())
 				{
-					cparam = request::findValue(&req, "dparam");
-					if (cparam.empty())
-					{
-						goto exitjson;
-					}
+					_log.Debug(DEBUG_WEBSERVER, "CWebServer::GetJSonPage() :%s :%s ", cparam.c_str(), req.uri.c_str());
+					HandleCommand(cparam, session, req, root);
 				}
-				if (cparam == "dologout")
-				{
-					session.forcelogin = true;
-					root["status"] = "OK";
-					root["title"] = "Logout";
-					goto exitjson;
-				}
-				_log.Debug(DEBUG_WEBSERVER, "WEBS GetJSon :%s :%s ", cparam.c_str(), req.uri.c_str());
-				HandleCommand(cparam, session, req, root);
 			} //(rtype=="command")
 			else
 			{
 				HandleRType(rtype, session, req, root);
 			}
-		exitjson:
+
 			std::string jcallback = request::findValue(&req, "jsoncallback");
-			if (jcallback.empty())
+			if (!jcallback.empty())
 			{
-				reply::set_content(&rep, root.toStyledString());
+				reply::set_content(&rep, "var data=" + root.toStyledString() + '\n' + jcallback + "(data);");
 				return;
 			}
-			reply::set_content(&rep, "var data=" + root.toStyledString() + '\n' + jcallback + "(data);");
+			reply::set_content(&rep, root.toStyledString());
 		}
 
 		void CWebServer::Cmd_GetLanguage(WebEmSession& session, const request& req, Json::Value& root)
@@ -908,6 +933,11 @@ namespace http
 						_log.Log(LOG_ERROR, "Failed login attempt from %s for '%s' !", session.remote_host.c_str(), m_users[iUser].Username.c_str());
 						return;
 					}
+					if (m_users[iUser].userrights == URIGHTS_CLIENTID) {
+						// Not a right for users to login with
+						_log.Log(LOG_ERROR, "Failed login attempt from %s for '%s' !", session.remote_host.c_str(), m_users[iUser].Username.c_str());
+						return;
+					}
 					_log.Log(LOG_STATUS, "Login successful from %s for user '%s'", session.remote_host.c_str(), m_users[iUser].Username.c_str());
 					root["status"] = "OK";
 					root["version"] = szAppVersion;
@@ -922,7 +952,7 @@ namespace http
 			}
 		}
 
-		void CWebServer::Cmd_GetHardwareTypes(WebEmSession& session, const request& req, Json::Value& root)
+		void CWebServer::Cmd_GetHardwareTypes(WebEmSession &session, const request &req, Json::Value &root)
 		{
 			if (session.rights != 2)
 			{
@@ -2210,7 +2240,7 @@ namespace http
 				}
 			}
 			// Add Scenes
-			result = m_sql.safe_query("SELECT ID, Name FROM Scenes ORDER BY Name");
+			result = m_sql.safe_query("SELECT ID, Name FROM Scenes ORDER BY Name COLLATE NOCASE ASC");
 			if (!result.empty())
 			{
 				for (const auto& sd : result)
@@ -2457,14 +2487,10 @@ namespace http
 			CdzVents* dzvents = CdzVents::GetInstance();
 			root["dzvents_version"] = dzvents->GetVersion();
 			root["python_version"] = szPyVersion;
+			root["UseUpdate"] = false;
+			root["HaveUpdate"] = false;
 
-			if (session.rights != 2)
-			{
-				// only admin users will receive the update notification
-				root["UseUpdate"] = false;
-				root["HaveUpdate"] = false;
-			}
-			else
+			if (session.rights == URIGHTS_ADMIN)
 			{
 				root["UseUpdate"] = g_bUseUpdater;
 				root["HaveUpdate"] = m_mainworker.IsUpdateAvailable(false);
@@ -2480,10 +2506,10 @@ namespace http
 			root["title"] = "GetAuth";
 			if (session.rights != -1)
 			{
+				root["user"] = session.username;
+				root["rights"] = session.rights;
 				root["version"] = szAppVersion;
 			}
-			root["user"] = session.username;
-			root["rights"] = session.rights;
 		}
 
 		void CWebServer::Cmd_GetUptime(WebEmSession& session, const request& req, Json::Value& root)
@@ -2599,24 +2625,21 @@ namespace http
 
 		void CWebServer::Cmd_GetConfig(WebEmSession& session, const request& req, Json::Value& root)
 		{
-			root["status"] = "OK";
+			Cmd_GetVersion(session, req, root);
+			root["status"] = "ERR";
 			root["title"] = "GetConfig";
 
-			bool bHaveUser = (!session.username.empty());
-			// int urights = 3;
-			unsigned long UserID = 0;
-			if (bHaveUser)
+			int iUser = -1;
+			unsigned long UserID = -1;
+			if (!session.username.empty() && (iUser = FindUser(session.username.c_str())) != -1)
 			{
-				int iUser = FindUser(session.username.c_str());
-				if (iUser != -1)
-				{
-					// urights = static_cast<int>(m_users[iUser].userrights);
-					UserID = m_users[iUser].ID;
-				}
+				UserID = m_users[iUser].ID;
+				root["UserName"] = m_users[iUser].Username;
 			}
 
-			int nValue;
 			std::string sValue;
+			int nValue = 0;
+			int iDashboardType = 0;
 
 			if (m_sql.GetPreferencesVar("Language", sValue))
 			{
@@ -2626,9 +2649,6 @@ namespace http
 			{
 				root["DegreeDaysBaseTemperature"] = atof(sValue.c_str());
 			}
-
-			nValue = 0;
-			int iDashboardType = 0;
 			m_sql.GetPreferencesVar("DashboardType", iDashboardType);
 			root["DashboardType"] = iDashboardType;
 			m_sql.GetPreferencesVar("MobileType", nValue);
@@ -2650,18 +2670,17 @@ namespace http
 			root["TempSign"] = m_sql.m_tempsign;
 
 			int bEnableTabDashboard = 1;
-			int bEnableTabFloorplans = 1;
+			int bEnableTabFloorplans = 0;
 			int bEnableTabLight = 1;
 			int bEnableTabScenes = 1;
 			int bEnableTabTemp = 1;
 			int bEnableTabWeather = 1;
 			int bEnableTabUtility = 1;
-			int bEnableTabCustom = 1;
+			int bEnableTabCustom = 0;
 
-			std::vector<std::vector<std::string>> result;
-
-			if ((UserID != 0) && (UserID != 10000))
+			if (UserID != -1)
 			{
+				std::vector<std::vector<std::string>> result;
 				result = m_sql.safe_query("SELECT TabsEnabled FROM Users WHERE (ID==%lu)", UserID);
 				if (!result.empty())
 				{
@@ -2675,16 +2694,7 @@ namespace http
 					bEnableTabFloorplans = (TabsEnabled & (1 << 6));
 				}
 			}
-			else
-			{
-				m_sql.GetPreferencesVar("EnableTabFloorplans", bEnableTabFloorplans);
-				m_sql.GetPreferencesVar("EnableTabLights", bEnableTabLight);
-				m_sql.GetPreferencesVar("EnableTabScenes", bEnableTabScenes);
-				m_sql.GetPreferencesVar("EnableTabTemp", bEnableTabTemp);
-				m_sql.GetPreferencesVar("EnableTabWeather", bEnableTabWeather);
-				m_sql.GetPreferencesVar("EnableTabUtility", bEnableTabUtility);
-				m_sql.GetPreferencesVar("EnableTabCustom", bEnableTabCustom);
-			}
+
 			if (iDashboardType == 3)
 			{
 				// Floorplan , no need to show a tab floorplan
@@ -2738,6 +2748,7 @@ namespace http
 					closedir(lDir);
 				}
 			}
+			root["status"] = "OK";
 		}
 
 		// Could now be obsolete as only 1 usage was found in Forecast screen, which now uses other command
@@ -2849,7 +2860,7 @@ namespace http
 				}
 				else
 				{
-					_log.Debug(DEBUG_WEBSERVER, "Forecastconfig: Could not find hardware (not active?) for ID %s!", root["Forecasthardware"].asString().c_str());
+					_log.Debug(DEBUG_WEBSERVER, "CWebServer::GetForecastConfig() : Could not find hardware (not active?) for ID %s!", root["Forecasthardware"].asString().c_str());
 					root["Forecasthardware"] = 0; // reset to 0
 				}
 			}
@@ -3879,7 +3890,7 @@ namespace http
 			{
 				root["status"] = "OK";
 				root["title"] = "GetLightSwitches";
-				result = m_sql.safe_query("SELECT ID, Name, Type, SubType, Used, SwitchType, Options FROM DeviceStatus ORDER BY Name");
+				result = m_sql.safe_query("SELECT ID, Name, Type, SubType, Used, SwitchType, Options FROM DeviceStatus ORDER BY Name COLLATE NOCASE ASC");
 				if (!result.empty())
 				{
 					int ii = 0;
@@ -4012,7 +4023,7 @@ namespace http
 				int ii = 0;
 
 				// First List/Switch Devices
-				result = m_sql.safe_query("SELECT ID, Name, Type, SubType, Used FROM DeviceStatus ORDER BY Name");
+				result = m_sql.safe_query("SELECT ID, Name, Type, SubType, Used FROM DeviceStatus ORDER BY Name COLLATE NOCASE ASC");
 				if (!result.empty())
 				{
 					for (const auto& sd : result)
@@ -4070,7 +4081,7 @@ namespace http
 				} // end light/switches
 
 				// Add Scenes
-				result = m_sql.safe_query("SELECT ID, Name FROM Scenes ORDER BY Name");
+				result = m_sql.safe_query("SELECT ID, Name FROM Scenes ORDER BY Name COLLATE NOCASE ASC");
 				if (!result.empty())
 				{
 					for (const auto& sd : result)
@@ -5093,7 +5104,7 @@ namespace http
 						// Insert virtual ESP3 switch in EnOceanNodes table with EEP F6-02-01
 						// So it will appear in EnOcean hardware setup screen
 
-						pEnoceanHardware->TeachInVirtualNode(rID, RORG_RPS, 0x02, 0x01);
+						pEnoceanHardware->TeachInVirtualNode(rID, enocean::RORG_RPS, 0x02, 0x01);
 					}
 					else if (pBaseHardware->HwdType == HTYPE_USBtinGateway)
 					{
@@ -6283,133 +6294,226 @@ namespace http
 
 				m_notifications.RemoveDeviceNotifications(idx);
 			}
-			else if (cparam == "adduser")
-			{
-				if (session.rights < 2)
-				{
-					session.reply_status = reply::forbidden;
-					return; // Only admin user allowed
-				}
-
-				std::string senabled = request::findValue(&req, "enabled");
-				std::string username = request::findValue(&req, "username");
-				std::string password = request::findValue(&req, "password");
-				std::string srights = request::findValue(&req, "rights");
-				std::string sRemoteSharing = request::findValue(&req, "RemoteSharing");
-				std::string sTabsEnabled = request::findValue(&req, "TabsEnabled");
-				if ((senabled.empty()) || (username.empty()) || (password.empty()) || (srights.empty()) || (sRemoteSharing.empty()) || (sTabsEnabled.empty()))
-					return;
-				int rights = atoi(srights.c_str());
-				if (rights != 2)
-				{
-					if (!FindAdminUser())
-					{
-						root["message"] = "Add a Admin user first! (Or enable Settings/Website Protection)";
-						return;
-					}
-				}
-				// Check for duplicate user name
-				result = m_sql.safe_query("SELECT ID FROM Users WHERE (Username == '%q')", base64_encode(username).c_str());
-				if (!result.empty())
-				{
-					root["message"] = "Duplicate Username!";
-					return;
-				}
-				root["status"] = "OK";
-				root["title"] = "AddUser";
-				m_sql.safe_query("INSERT INTO Users (Active, Username, Password, Rights, RemoteSharing, TabsEnabled) VALUES (%d,'%q','%q','%d','%d','%d')",
-					(senabled == "true") ? 1 : 0, base64_encode(username).c_str(), password.c_str(), rights, (sRemoteSharing == "true") ? 1 : 0,
-					atoi(sTabsEnabled.c_str()));
-				LoadUsers();
-			}
-			else if (cparam == "updateuser")
-			{
-				if (session.rights < 2)
+			else if (cparam == "adduser" || cparam == "updateuser" || cparam == "deleteuser")
+			{	// C(R)UD operations for Users. Read is done by RType_Users
+				root["status"] = "ERR";
+				if (session.rights != URIGHTS_ADMIN)
 				{
 					session.reply_status = reply::forbidden;
 					return; // Only admin user allowed
 				}
 
 				std::string idx = request::findValue(&req, "idx");
-				if (idx.empty())
+				if (cparam != "adduser" && idx.empty())
+				{
+					root["message"] = "Missing index of User to modify!";
 					return;
+				}
+
 				std::string senabled = request::findValue(&req, "enabled");
 				std::string username = request::findValue(&req, "username");
 				std::string password = request::findValue(&req, "password");
 				std::string srights = request::findValue(&req, "rights");
 				std::string sRemoteSharing = request::findValue(&req, "RemoteSharing");
 				std::string sTabsEnabled = request::findValue(&req, "TabsEnabled");
-				if ((senabled.empty()) || (username.empty()) || (password.empty()) || (srights.empty()) || (sRemoteSharing.empty()) || (sTabsEnabled.empty()))
-					return;
 				int rights = atoi(srights.c_str());
-				if (rights != 2)
+
+				if (cparam != "deleteuser")
 				{
-					if (!FindAdminUser())
+					if ((senabled.empty()) || (username.empty()) || (password.empty()) || (srights.empty()) || (sRemoteSharing.empty()) || (sTabsEnabled.empty()))
 					{
-						root["message"] = "Add a Admin user first! (Or enable Settings/Website Protection)";
+						root["message"] = "One or more expected values are empty!";
 						return;
 					}
+					if (rights != URIGHTS_ADMIN)
+					{
+						if (!FindAdminUser())
+						{
+							root["message"] = "Add an Admin user first!";
+							return;
+						}
+					}
 				}
+
 				std::string sHashedUsername = base64_encode(username);
 
 				// Check for duplicate user name
-				result = m_sql.safe_query("SELECT ID FROM Users WHERE (Username == '%q')", base64_encode(username).c_str());
+				result = m_sql.safe_query("SELECT ID FROM Users WHERE (Username == '%q')", sHashedUsername.c_str());
 				if (!result.empty())
 				{
-					std::string oidx = result[0][0];
-					if (oidx != idx)
+					if (!(cparam == "updateuser" && result[0][0] == idx))
 					{
 						root["message"] = "Duplicate Username!";
 						return;
 					}
 				}
 
-				// Invalid user's sessions if username or password has changed
-				std::string sOldUsername;
-				std::string sOldPassword;
-				result = m_sql.safe_query("SELECT Username, Password FROM Users WHERE (ID == '%q')", idx.c_str());
-				if (result.size() == 1)
+				if (cparam == "adduser")
 				{
-					sOldUsername = result[0][0];
-					sOldPassword = result[0][1];
+					root["title"] = "AddUser";
+					m_sql.safe_query("INSERT INTO Users (Active, Username, Password, Rights, RemoteSharing, TabsEnabled) VALUES (%d,'%q','%q','%d','%d','%d')",
+							(senabled == "true") ? 1 : 0, sHashedUsername.c_str(), password.c_str(), rights, (sRemoteSharing == "true") ? 1 : 0,
+							atoi(sTabsEnabled.c_str()));
 				}
-				if ((sHashedUsername != sOldUsername) || (password != sOldPassword))
-					RemoveUsersSessions(sOldUsername, session);
+				else if (cparam == "updateuser")
+				{
+					root["title"] = "UpdateUser";
 
-				root["status"] = "OK";
-				root["title"] = "UpdateUser";
-				m_sql.safe_query("UPDATE Users SET Active=%d, Username='%q', Password='%q', Rights=%d, RemoteSharing=%d, TabsEnabled=%d WHERE (ID == '%q')",
-					(senabled == "true") ? 1 : 0, sHashedUsername.c_str(), password.c_str(), rights, (sRemoteSharing == "true") ? 1 : 0, atoi(sTabsEnabled.c_str()),
-					idx.c_str());
+					// Invalidate user's sessions if username or password has changed
+					result = m_sql.safe_query("SELECT Username, Password, Rights FROM Users WHERE (ID == '%q')", idx.c_str());
+					if (result.size() == 1)
+					{
+						std::string sOldUsername = result[0][0];
+						std::string sOldPassword = result[0][1];
+						std::string sOldRights = result[0][2];
+						int oldrights = atoi(sOldRights.c_str());
+						if ((oldrights == URIGHTS_ADMIN) && (rights != URIGHTS_ADMIN) && (CountAdminUsers() <= 1))
+						{
+							root["message"] = "Cannot change rights of last Admin user!";
+							return;
+						}
+						if ((oldrights == URIGHTS_ADMIN) && (senabled.compare("true") != 0) && (CountAdminUsers() <= 1))
+						{
+							root["message"] = "Cannot disable last Admin user!";
+							return;
+						}
+						if ((sHashedUsername != sOldUsername) || (password != sOldPassword) || (oldrights != rights))
+							RemoveUsersSessions(sOldUsername, session);
+
+						m_sql.safe_query("UPDATE Users SET Active=%d, Username='%q', Password='%q', Rights=%d, RemoteSharing=%d, TabsEnabled=%d WHERE (ID == '%q')",
+								(senabled == "true") ? 1 : 0, sHashedUsername.c_str(), password.c_str(), rights, (sRemoteSharing == "true") ? 1 : 0, atoi(sTabsEnabled.c_str()),
+								idx.c_str());
+					}
+				}
+				else if (cparam == "deleteuser")
+				{
+					root["title"] = "DeleteUser";
+
+					// Remove user's sessions
+					result = m_sql.safe_query("SELECT Username, Rights FROM Users WHERE (ID == '%q')", idx.c_str());
+					if (result.size() == 1)
+					{
+						srights = result[0][1];
+						rights = atoi(srights.c_str());
+						if ((CountAdminUsers() <= 1) && (rights == URIGHTS_ADMIN))
+						{
+							root["message"] = "Cannot delete last Admin user!";
+							return;
+						}
+						RemoveUsersSessions(result[0][0], session);
+
+						m_sql.safe_query("DELETE FROM SharedDevices WHERE (SharedUserID == '%q')", idx.c_str());
+
+						m_sql.safe_query("DELETE FROM Users WHERE (ID == '%q')", idx.c_str());
+					}
+				}
 				LoadUsers();
+				root["status"] = "OK";
 			}
-			else if (cparam == "deleteuser")
-			{
+			else if (cparam == "getapplications" || cparam == "addapplication" || cparam == "updateapplication" || cparam == "deleteapplication")
+			{	// CRUD operations for Applications
+				root["title"] = "Applications";
 				if (session.rights < 2)
 				{
 					session.reply_status = reply::forbidden;
 					return; // Only admin user allowed
 				}
-
-				std::string idx = request::findValue(&req, "idx");
-				if (idx.empty())
-					return;
-
-				root["status"] = "OK";
-				root["title"] = "DeleteUser";
-
-				// Remove user's sessions
-				result = m_sql.safe_query("SELECT Username FROM Users WHERE (ID == '%q')", idx.c_str());
-				if (result.size() == 1)
+				if 	(cparam == "getapplications")
 				{
-					RemoveUsersSessions(result[0][0], session);
+					root["title"] = "GetApplications";
+					std::vector<std::vector<std::string>> result;
+					result = m_sql.safe_query("SELECT ID, Active, Public, Applicationname, Secret, Pemfile, LastSeen FROM Applications ORDER BY ID ASC");
+					if (!result.empty())
+					{
+						int ii = 0;
+						for (const auto &sd : result)
+						{
+							root["result"][ii]["idx"] = sd[0];
+							root["result"][ii]["Enabled"] = (sd[1] == "1") ? "true" : "false";
+							root["result"][ii]["Public"] = (sd[2] == "1") ? "true" : "false";
+							root["result"][ii]["Applicationname"] = sd[3];
+							root["result"][ii]["Secret"] = sd[4];
+							root["result"][ii]["Pemfile"] = sd[5];
+							root["result"][ii]["LastSeen"] = sd[6];
+							ii++;
+						}
+					}
 				}
+				else if (cparam == "addapplication" || cparam == "updateapplication")
+				{
+					root["title"] = "AddUpdateApplication";
+					std::string senabled = request::findValue(&req, "enabled");
+					std::string spublic = request::findValue(&req, "public");
+					std::string applicationname = request::findValue(&req, "applicationname");
+					std::string secret = request::findValue(&req, "secret");
+					std::string pemfile = request::findValue(&req, "pemfile");
+					std::string idx = request::findValue(&req, "idx");
+					if (senabled.empty() || applicationname.empty() || spublic.empty())
+					{
+						session.reply_status = reply::bad_request;
+						return;
+					}
+					if ((spublic != "true") && secret.empty())
+					{
+						root["statustext"] = "Secret's can only be empty for Public Clients!";
+						return;
+					}
+					if ((spublic == "true") && pemfile.empty())
+					{
+						root["statustext"] = "A PEM file containing private and public key must be given for Public Clients!";
+						return;
+					}
+					// Check for duplicate application name
+					result = m_sql.safe_query("SELECT ID FROM Applications WHERE (Applicationname == '%q')", applicationname.c_str());
+					if (!result.empty())
+					{
+						std::string oidx = result[0][0];
+						if (cparam == "addapplication" || (!idx.empty() && oidx != idx))
+						{
+							root["statustext"] = "Duplicate Applicationname!";
+							return;
+						}
+					}
+					if (cparam == "addapplication")
+					{
+						root["title"] = "AddApplication";
+						m_sql.safe_query("INSERT INTO Applications (Active, Public, Applicationname, Secret, Pemfile) VALUES (%d,%d,'%q','%q','%q')",
+								(senabled == "true") ? 1 : 0, (spublic == "true") ? 1 : 0, applicationname.c_str(), secret.c_str(), pemfile.c_str());
+					}
+					else if (cparam == "updateapplication")
+					{
+						root["title"] = "UpdateApplication";
+						if (idx.empty())
+						{
+							session.reply_status = reply::bad_request;
+							return;
+						}
+						m_sql.safe_query("UPDATE Applications SET Active=%d, Public=%d, Applicationname='%q', Secret='%q', Pemfile='%q' WHERE (ID == '%q')",
+								(senabled == "true") ? 1 : 0, (spublic == "true") ? 1 : 0, applicationname.c_str(), secret.c_str(), pemfile.c_str(), idx.c_str());
+					}
+				}
+				else if (cparam == "deleteapplication")
+				{
+					root["title"] = "DeleteApplication";
+					std::string idx = request::findValue(&req, "idx");
+					if (idx.empty())
+					{
+						session.reply_status = reply::bad_request;
+						return;
+					}
 
-				m_sql.safe_query("DELETE FROM Users WHERE (ID == '%q')", idx.c_str());
-
-				m_sql.safe_query("DELETE FROM SharedDevices WHERE (SharedUserID == '%q')", idx.c_str());
-
-				LoadUsers();
+					// Remove Application
+					result = m_sql.safe_query("SELECT ID FROM Applications WHERE (ID == '%q')", idx.c_str());
+					if (result.size() != 1)
+					{
+						session.reply_status = reply::bad_request;
+						return;
+					}
+					m_sql.safe_query("DELETE FROM Applications WHERE (ID == '%q')", idx.c_str());
+				}
+				root["status"] = "OK";
+				if 	(cparam != "getapplications")
+					LoadUsers();
 			}
 			else if (cparam == "clearlightlog")
 			{
@@ -6661,7 +6765,7 @@ namespace http
 				if (switchcmd == "Set Level")
 					level = request::findValue(&req, "level");
 				std::string onlyonchange = request::findValue(&req, "ooc"); // No update unless the value changed (check if updated)
-				_log.Debug(DEBUG_WEBSERVER, "WEBS switchlight idx:%s switchcmd:%s level:%s", idx.c_str(), switchcmd.c_str(), level.c_str());
+				_log.Debug(DEBUG_WEBSERVER, "CWebServer::HandleCommand() : switchlight idx:%s switchcmd:%s level:%s", idx.c_str(), switchcmd.c_str(), level.c_str());
 				std::string passcode = request::findValue(&req, "passcode");
 				if ((idx.empty()) || (switchcmd.empty()) || ((switchcmd == "Set Level") && (level.empty())))
 					return;
@@ -7576,7 +7680,7 @@ namespace http
 				root["title"] = "GetUnusedFloorplanPlans";
 				int ii = 0;
 
-				result = m_sql.safe_query("SELECT ID, Name FROM Plans WHERE (FloorplanID==0) ORDER BY Name");
+				result = m_sql.safe_query("SELECT ID, Name FROM Plans WHERE (FloorplanID==0) ORDER BY Name COLLATE NOCASE ASC");
 				if (!result.empty())
 				{
 					for (const auto& sd : result)
@@ -7596,7 +7700,7 @@ namespace http
 				root["status"] = "OK";
 				root["title"] = "GetFloorplanPlans";
 				int ii = 0;
-				result = m_sql.safe_query("SELECT ID, Name, Area FROM Plans WHERE (FloorplanID=='%q') ORDER BY Name", idx.c_str());
+				result = m_sql.safe_query("SELECT ID, Name, Area FROM Plans WHERE (FloorplanID=='%q') ORDER BY Name COLLATE NOCASE ASC", idx.c_str());
 				if (!result.empty())
 				{
 					for (const auto& sd : result)
@@ -7725,46 +7829,54 @@ namespace http
 		void CWebServer::LoadUsers()
 		{
 			ClearUserPasswords();
-			std::string WebUserName, WebPassword;
-			int nValue = 0;
-			if (m_sql.GetPreferencesVar("WebUserName", nValue, WebUserName))
+			// Add Users
+			std::vector<std::vector<std::string>> result;
+			result = m_sql.safe_query("SELECT ID, Active, Username, Password, Rights, TabsEnabled FROM Users");
+			if (!result.empty())
 			{
-				if (m_sql.GetPreferencesVar("WebPassword", nValue, WebPassword))
+				for (const auto &sd : result)
 				{
-					if ((!WebUserName.empty()) && (!WebPassword.empty()))
+					int bIsActive = static_cast<int>(atoi(sd[1].c_str()));
+					if (bIsActive)
 					{
-						WebUserName = base64_decode(WebUserName);
-						// WebPassword = WebPassword;
-						AddUser(10000, WebUserName, WebPassword, URIGHTS_ADMIN, 0xFFFF);
+						unsigned long ID = (unsigned long)atol(sd[0].c_str());
 
-						std::vector<std::vector<std::string>> result;
-						result = m_sql.safe_query("SELECT ID, Active, Username, Password, Rights, TabsEnabled FROM Users");
-						if (!result.empty())
-						{
-							for (const auto& sd : result)
-							{
-								int bIsActive = static_cast<int>(atoi(sd[1].c_str()));
-								if (bIsActive)
-								{
-									unsigned long ID = (unsigned long)atol(sd[0].c_str());
+						std::string username = base64_decode(sd[2]);
+						std::string password = sd[3];
 
-									std::string username = base64_decode(sd[2]);
-									std::string password = sd[3];
+						_eUserRights rights = (_eUserRights)atoi(sd[4].c_str());
+						int activetabs = atoi(sd[5].c_str());
 
-									_eUserRights rights = (_eUserRights)atoi(sd[4].c_str());
-									int activetabs = atoi(sd[5].c_str());
-
-									AddUser(ID, username, password, rights, activetabs);
-								}
-							}
-						}
+						AddUser(ID, username, password, rights, activetabs);
 					}
 				}
 			}
+			// Add 'Applications' as User with special privilege URIGHTS_CLIENTID
+			result.clear();
+			result = m_sql.safe_query("SELECT ID, Active, Public, Applicationname, Secret, Pemfile FROM Applications");
+			if (!result.empty())
+			{
+				for (const auto &sd : result)
+				{
+					int bIsActive = static_cast<int>(atoi(sd[1].c_str()));
+					if (bIsActive)
+					{
+						unsigned long ID = (unsigned long)m_iamsettings.getUserIdxOffset() + (unsigned long)atol(sd[0].c_str());
+						int bPublic = static_cast<int>(atoi(sd[2].c_str()));
+						std::string applicationname = sd[3];
+						std::string secret = sd[4];
+						std::string pemfile = sd[5];
+						if (bPublic && secret.empty())
+							secret = GenerateMD5Hash(pemfile);
+						AddUser(ID, applicationname, secret, URIGHTS_CLIENTID, bPublic, pemfile);
+					}
+				}
+			}
+
 			m_mainworker.LoadSharedUsers();
 		}
 
-		void CWebServer::AddUser(const unsigned long ID, const std::string& username, const std::string& password, const int userrights, const int activetabs)
+		void CWebServer::AddUser(const unsigned long ID, const std::string &username, const std::string &password, const int userrights, const int activetabs, const std::string &pemfile)
 		{
 			if (m_pWebEm == nullptr)
 				return;
@@ -7772,21 +7884,99 @@ namespace http
 			if (result.empty())
 				return;
 
+			// Let's see if we can load the public/private keyfile for this user/client
+			std::string privkey = "";
+			std::string pubkey = "";
+			if (!pemfile.empty())
+			{
+				std::string sErr = "";
+				std::ifstream ifs;
+
+				std::string szTmpFile = szUserDataFolder + pemfile;
+
+				ifs.open(szTmpFile);
+				if(ifs.is_open())
+				{
+					std::string sLine = "";
+					int i = 0;
+					bool bPriv = false;
+					bool bPrivFound = false;
+					bool bPub = false;
+					bool bPubFound = false;
+					while (std::getline(ifs, sLine))
+					{
+						sLine += '\n';	// Newlines need to be added so the SSL library understands the Public/Private keys
+						if (sLine.find("-----BEGIN PUBLIC KEY") != std::string::npos)
+						{
+							bPub = true;
+						}
+						if (sLine.find("-----BEGIN PRIVATE KEY") != std::string::npos)
+						{
+							bPriv = true;
+						}
+						if (bPriv)
+							privkey += sLine;
+						if (bPub)
+							pubkey += sLine;
+						if (sLine.find("-----END PUBLIC KEY") != std::string::npos)
+						{
+							if(bPub)
+								bPubFound = true;
+							bPub = false;
+						}
+						if (sLine.find("-----END PRIVATE KEY") != std::string::npos)
+						{
+							if(bPriv)
+								bPrivFound = true;
+							bPriv = false;
+						}
+						i++;
+					}
+					_log.Debug(DEBUG_AUTH, "Add User: Found PEMfile (%s) for User (%s) with %d lines. PubKey (%d), PrivKey (%d)", szTmpFile.c_str(), username.c_str(), i, bPubFound, bPrivFound);
+					ifs.close();
+					if (!bPubFound)
+						sErr = "Unable to find a Public key within the PEMfile";
+					else if (!bPrivFound)
+						_log.Log(LOG_STATUS, "AddUser: Pemfile (%s) only has a Public key, so only verification is possible. Token generation has to be done external.", szTmpFile.c_str());
+				}
+				else
+					sErr = "Unable to find/open file";
+
+				if(!sErr.empty())
+				{
+					_log.Log(LOG_STATUS,"AddUser: Unable to load and process given PEMfile (%s) (%s)!", szTmpFile.c_str(), sErr.c_str());
+					return;
+				}
+			}
+
 			_tWebUserPassword wtmp;
 			wtmp.ID = ID;
 			wtmp.Username = username;
 			wtmp.Password = password;
+			wtmp.PrivKey = privkey;
+			wtmp.PubKey = pubkey;
 			wtmp.userrights = (_eUserRights)userrights;
 			wtmp.ActiveTabs = activetabs;
 			wtmp.TotSensors = atoi(result[0][0].c_str());
 			m_users.push_back(wtmp);
 
-			m_pWebEm->AddUserPassword(ID, username, password, (_eUserRights)userrights, activetabs);
+			_tUserAccessCode utmp;
+			utmp.ID = ID;
+			utmp.UserName = username;
+			utmp.clientID = -1	;
+			utmp.ExpTime = 0;
+			utmp.AuthCode = "";
+			utmp.Scope = "";
+			utmp.RedirectUri = "";
+			m_accesscodes.push_back(utmp);
+
+			m_pWebEm->AddUserPassword(ID, username, password, (_eUserRights)userrights, activetabs, privkey, pubkey);
 		}
 
 		void CWebServer::ClearUserPasswords()
 		{
 			m_users.clear();
+			m_accesscodes.clear();
 			if (m_pWebEm)
 				m_pWebEm->ClearUserPasswords();
 		}
@@ -7806,6 +7996,17 @@ namespace http
 		bool CWebServer::FindAdminUser()
 		{
 			return std::any_of(m_users.begin(), m_users.end(), [](const _tWebUserPassword& user) { return user.userrights == URIGHTS_ADMIN; });
+		}
+
+		int CWebServer::CountAdminUsers()
+		{
+			int iAdmins = 0;
+			for (const auto &user : m_users)
+			{
+				if (user.userrights == URIGHTS_ADMIN)
+					iAdmins++;
+			}
+			return iAdmins;
 		}
 
 		// Depricated : This 'page' should not be used anymore. Use command instead
@@ -7863,13 +8064,6 @@ namespace http
 
 				m_sql.UpdatePreferencesVar("UseAutoUpdate", (request::findValue(&req, "checkforupdates") == "on" ? 1 : 0)); cntSettings++;
 				m_sql.UpdatePreferencesVar("UseAutoBackup", (request::findValue(&req, "enableautobackup") == "on" ? 1 : 0)); cntSettings++;
-				m_sql.UpdatePreferencesVar("EnableTabFloorplans", (request::findValue(&req, "EnableTabFloorplans") == "on" ? 1 : 0)); cntSettings++;
-				m_sql.UpdatePreferencesVar("EnableTabLights", (request::findValue(&req, "EnableTabLights") == "on" ? 1 : 0)); cntSettings++;
-				m_sql.UpdatePreferencesVar("EnableTabTemp", (request::findValue(&req, "EnableTabTemp") == "on" ? 1 : 0)); cntSettings++;
-				m_sql.UpdatePreferencesVar("EnableTabWeather", (request::findValue(&req, "EnableTabWeather") == "on" ? 1 : 0)); cntSettings++;
-				m_sql.UpdatePreferencesVar("EnableTabUtility", (request::findValue(&req, "EnableTabUtility") == "on" ? 1 : 0)); cntSettings++;
-				m_sql.UpdatePreferencesVar("EnableTabScenes", (request::findValue(&req, "EnableTabScenes") == "on" ? 1 : 0)); cntSettings++;
-				m_sql.UpdatePreferencesVar("EnableTabCustom", (request::findValue(&req, "EnableTabCustom") == "on" ? 1 : 0)); cntSettings++;
 				m_sql.UpdatePreferencesVar("HideDisabledHardwareSensors", (request::findValue(&req, "HideDisabledHardwareSensors") == "on" ? 1 : 0)); cntSettings++;
 				m_sql.UpdatePreferencesVar("ShowUpdateEffect", (request::findValue(&req, "ShowUpdateEffect") == "on" ? 1 : 0)); cntSettings++;
 				m_sql.UpdatePreferencesVar("FloorplanFullscreenMode", (request::findValue(&req, "FloorplanFullscreenMode") == "on" ? 1 : 0)); cntSettings++;
@@ -7980,60 +8174,15 @@ namespace http
 				}
 				cntSettings++;
 
-				std::string AuthenticationMethod = request::findValue(&req, "AuthenticationMethod");
-				_eAuthenticationMethod amethod = (_eAuthenticationMethod)atoi(AuthenticationMethod.c_str());
-				m_sql.UpdatePreferencesVar("AuthenticationMethod", static_cast<int>(amethod));
+				bool AllowPlainBasicAuth = (request::findValue(&req, "AllowPlainBasicAuth") == "on" ? 1 : 0);
+				m_sql.UpdatePreferencesVar("AllowPlainBasicAuth", AllowPlainBasicAuth);
 
-				m_pWebEm->SetAuthenticationMethod(amethod);
-				cntSettings++;
-
-				// Check new and get old username/password
-				std::string WebUserName = base64_encode(CURLEncode::URLDecode(request::findValue(&req, "WebUserName")));
-				std::string WebPassword = CURLEncode::URLDecode(request::findValue(&req, "WebPassword"));
-
-				std::string sOldWebLogin;
-				std::string sOldWebPassword;
-				m_sql.GetPreferencesVar("WebUserName", sOldWebLogin);
-				m_sql.GetPreferencesVar("WebPassword", sOldWebPassword);
-
-				bool bHaveAdminUserPasswordChange = false;
-
-				if ((WebUserName == sOldWebLogin) && (WebPassword.empty()))
-				{
-					// All is OK, no changes
-				}
-				else if (WebUserName.empty() || WebPassword.empty())
-				{
-					// If no Admin User/Password is specified, we clear them
-					if ((!sOldWebLogin.empty()) || (!sOldWebPassword.empty()))
-						bHaveAdminUserPasswordChange = true;
-					WebUserName = "";
-					WebPassword = "";
-				}
-				else
-				{
-					if ((WebUserName != sOldWebLogin) || (WebPassword != sOldWebPassword))
-					{
-						bHaveAdminUserPasswordChange = true;
-					}
-				}
-
-				// Invalid sessions of WebUser when the username or password has been changed
-				if (bHaveAdminUserPasswordChange)
-				{
-					if (!sOldWebLogin.empty())
-						RemoveUsersSessions(sOldWebLogin, session);
-					m_sql.UpdatePreferencesVar("WebUserName", WebUserName);
-					m_sql.UpdatePreferencesVar("WebPassword", WebPassword);
-				}
-				m_webservers.LoadUsers();
-				cntSettings++;
+				m_pWebEm->SetAllowPlainBasicAuth(AllowPlainBasicAuth);
 				cntSettings++;
 
 				std::string WebLocalNetworks = CURLEncode::URLDecode(request::findValue(&req, "WebLocalNetworks"));
 				m_sql.UpdatePreferencesVar("WebLocalNetworks", WebLocalNetworks);
-				m_webservers.ReloadLocalNetworks();
-				cntSettings++;
+				m_webservers.ReloadTrustedNetworks();
 				cntSettings++;
 
 				if (session.username.empty())
@@ -8202,7 +8351,7 @@ namespace http
 				_log.Log(LOG_ERROR, errmsg.str());
 			}
 			std::string msg = "Processed " + std::to_string(cntSettings) + " settings!";
-			root["msg"] = msg;
+			root["message"] = msg;
 		}
 
 		void CWebServer::RestoreDatabase(WebEmSession& session, const request& req, std::string& redirect_uri)
@@ -8349,8 +8498,8 @@ namespace http
 						{
 							totUserDevices = (unsigned int)std::stoi(result[0][0]);
 						}
-						bShowScenes = (m_users[iUser].ActiveTabs & (1 << 1)) != 0;
 					}
+					bShowScenes = (m_users[iUser].ActiveTabs & (1 << 1)) != 0;
 				}
 			}
 
@@ -8999,12 +9148,19 @@ namespace http
 				root["result"][ii]["LastUpdate"] = sLastUpdate;
 
 				root["result"][ii]["CustomImage"] = CustomImage;
+
 				if (CustomImage != 0)
 				{
 					auto ittIcon = m_custom_light_icons_lookup.find(CustomImage);
 					if (ittIcon != m_custom_light_icons_lookup.end())
 					{
+						root["result"][ii]["CustomImage"] = CustomImage;
 						root["result"][ii]["Image"] = m_custom_light_icons[ittIcon->second].RootFile;
+					}
+					else
+					{
+						CustomImage = 0;
+						root["result"][ii]["CustomImage"] = CustomImage;
 					}
 				}
 
@@ -9363,8 +9519,7 @@ namespace http
 						root["result"][ii]["LevelNames"] = base64_encode(levelNames);
 						root["result"][ii]["LevelActions"] = base64_encode(levelActions);
 					}
-					sprintf(szData, "%s", lstatus.c_str());
-					root["result"][ii]["Data"] = szData;
+					root["result"][ii]["Data"] = lstatus;
 				}
 				else if (dType == pTypeSecurity1)
 				{
@@ -9393,8 +9548,7 @@ namespace http
 						root["result"][ii]["TypeImg"] = "smoke";
 						root["result"][ii]["SwitchType"] = Switch_Type_Desc(STYPE_SMOKEDETECTOR);
 					}
-					sprintf(szData, "%s", lstatus.c_str());
-					root["result"][ii]["Data"] = szData;
+					root["result"][ii]["Data"] = lstatus;
 					root["result"][ii]["HaveTimeout"] = false;
 				}
 				else if (dType == pTypeSecurity2)
@@ -9417,8 +9571,7 @@ namespace http
 					root["result"][ii]["StrParam1"] = strParam1;
 					root["result"][ii]["StrParam2"] = strParam2;
 					root["result"][ii]["Protected"] = (iProtected != 0);
-					sprintf(szData, "%s", lstatus.c_str());
-					root["result"][ii]["Data"] = szData;
+					root["result"][ii]["Data"] = lstatus;
 					root["result"][ii]["HaveTimeout"] = false;
 				}
 				else if (dType == pTypeEvohome || dType == pTypeEvohomeRelay)
@@ -9442,8 +9595,7 @@ namespace http
 					root["result"][ii]["StrParam2"] = strParam2;
 					root["result"][ii]["Protected"] = (iProtected != 0);
 
-					sprintf(szData, "%s", lstatus.c_str());
-					root["result"][ii]["Data"] = szData;
+					root["result"][ii]["Data"] = lstatus;
 					root["result"][ii]["HaveTimeout"] = false;
 
 					if (dType == pTypeEvohomeRelay)
@@ -11197,7 +11349,7 @@ namespace http
 				return; // Only admin user allowed
 			}
 
-			std::string idx = request::findValue(&req, "idx");
+			std::string idx = CURLEncode::URLDecode(request::findValue(&req, "idx"));
 			if (idx.empty())
 				return;
 
@@ -11253,7 +11405,7 @@ namespace http
 				return; // Only admin user allowed
 			}
 
-			std::string idx = request::findValue(&req, "idx");
+			std::string idx = CURLEncode::URLDecode(request::findValue(&req, "idx"));
 			if (idx.empty())
 				return;
 			root["status"] = "OK";
@@ -11646,6 +11798,11 @@ namespace http
 							CRFLinkBase* pMyHardware = dynamic_cast<CRFLinkBase*>(pHardware);
 							root["result"][ii]["version"] = pMyHardware->m_Version;
 						}
+						else if (pHardware->HwdType == HTYPE_EnphaseAPI)
+						{
+							EnphaseAPI* pMyHardware = dynamic_cast<EnphaseAPI*>(pHardware);
+							root["result"][ii]["version"] = pMyHardware->m_szSoftwareVersion;
+						}
 #ifdef WITH_OPENZWAVE
 						else if (pHardware->HwdType == HTYPE_OpenZWave)
 						{ // Special case for openzwave (status for nodes queried)
@@ -11699,19 +11856,11 @@ namespace http
 
 		void CWebServer::RType_Users(WebEmSession& session, const request& req, Json::Value& root)
 		{
-			bool bHaveUser = (!session.username.empty());
-			int urights = 3;
-			if (bHaveUser)
-			{
-				int iUser = FindUser(session.username.c_str());
-				if (iUser != -1)
-					urights = static_cast<int>(m_users[iUser].userrights);
-			}
-			if (urights < 2)
-				return;
-
-			root["status"] = "OK";
+			root["status"] = "ERR";
 			root["title"] = "Users";
+
+			if (session.rights != URIGHTS_ADMIN)
+				return;
 
 			std::vector<std::vector<std::string>> result;
 			result = m_sql.safe_query("SELECT ID, Active, Username, Password, Rights, RemoteSharing, TabsEnabled FROM USERS ORDER BY ID ASC");
@@ -11729,27 +11878,20 @@ namespace http
 					root["result"][ii]["TabsEnabled"] = atoi(sd[6].c_str());
 					ii++;
 				}
+				root["status"] = "OK";
 			}
 		}
 
 		void CWebServer::RType_Mobiles(WebEmSession& session, const request& req, Json::Value& root)
 		{
-			bool bHaveUser = (!session.username.empty());
-			int urights = 3;
-			if (bHaveUser)
-			{
-				int iUser = FindUser(session.username.c_str());
-				if (iUser != -1)
-					urights = static_cast<int>(m_users[iUser].userrights);
-			}
-			if (urights < 2)
-				return;
-
-			root["status"] = "OK";
+			root["status"] = "ERR";
 			root["title"] = "Mobiles";
 
+			if (session.rights != URIGHTS_ADMIN)
+				return;
+
 			std::vector<std::vector<std::string>> result;
-			result = m_sql.safe_query("SELECT ID, Active, Name, UUID, LastUpdate, DeviceType FROM MobileDevices ORDER BY Name ASC");
+			result = m_sql.safe_query("SELECT ID, Active, Name, UUID, LastUpdate, DeviceType FROM MobileDevices ORDER BY Name COLLATE NOCASE ASC");
 			if (!result.empty())
 			{
 				int ii = 0;
@@ -11763,6 +11905,7 @@ namespace http
 					root["result"][ii]["DeviceType"] = sd[5];
 					ii++;
 				}
+				root["status"] = "OK";
 			}
 		}
 
@@ -12032,13 +12175,20 @@ namespace http
 			root["title"] = "GetDevicesList";
 			int ii = 0;
 			std::vector<std::vector<std::string>> result;
-			result = m_sql.safe_query("SELECT ID, Name FROM DeviceStatus WHERE (Used == 1) ORDER BY Name");
+			result = m_sql.safe_query("SELECT ID, Name, Type, SubType FROM DeviceStatus WHERE (Used == 1) ORDER BY Name COLLATE NOCASE ASC");
 			if (!result.empty())
 			{
 				for (const auto& sd : result)
 				{
+					root["result"][ii]["idx"] = sd[0];
 					root["result"][ii]["name"] = sd[1];
-					root["result"][ii]["value"] = sd[0];
+					root["result"][ii]["name_type"] = std_format("%s (%s/%s)",
+						sd[1].c_str(),
+						RFX_Type_Desc(std::stoi(sd[2]), 1),
+						RFX_Type_SubType_Desc(std::stoi(sd[2]), std::stoi(sd[3]))
+					);
+					//root["result"][ii]["Type"] = RFX_Type_Desc(std::stoi(sd[2]), 1);
+					//root["result"][ii]["SubType"] = RFX_Type_SubType_Desc(std::stoi(sd[2]), std::stoi(sd[3]));
 					ii++;
 				}
 			}
@@ -12541,7 +12691,7 @@ namespace http
 		void CWebServer::RType_SetSharedUserDevices(WebEmSession& session, const request& req, Json::Value& root)
 		{
 			std::string idx = request::findValue(&req, "idx");
-			std::string userdevices = request::findValue(&req, "devices");
+			std::string userdevices = CURLEncode::URLDecode(request::findValue(&req, "devices"));
 			if (idx.empty())
 				return;
 			root["status"] = "OK";
@@ -12938,14 +13088,6 @@ namespace http
 				{
 					root["ShortLogInterval"] = nValue;
 				}
-				else if (Key == "WebUserName")
-				{
-					root["WebUserName"] = base64_decode(sValue);
-				}
-				// else if (Key == "WebPassword")
-				//{
-				//	root["WebPassword"] = sValue;
-				//}
 				else if (Key == "SecPassword")
 				{
 					root["SecPassword"] = sValue;
@@ -13100,9 +13242,9 @@ namespace http
 				{
 					root["WeightUnit"] = nValue;
 				}
-				else if (Key == "AuthenticationMethod")
+				else if (Key == "AllowPlainBasicAuth")
 				{
-					root["AuthenticationMethod"] = nValue;
+					root["AllowPlainBasicAuth"] = nValue;
 				}
 				else if (Key == "ReleaseChannel")
 				{
@@ -13477,7 +13619,7 @@ namespace http
 			unsigned char dType = atoi(result[0][0].c_str());
 			unsigned char dSubType = atoi(result[0][1].c_str());
 			_eMeterType metertype = (_eMeterType)atoi(result[0][2].c_str());
-			_log.Debug(DEBUG_WEBSERVER, "dType:%02X  dSubType:%02X  metertype:%d", dType, dSubType, int(metertype));
+			_log.Debug(DEBUG_WEBSERVER, "CWebServer::RType_HandleGraph() : dType:%02X  dSubType:%02X  metertype:%d", dType, dSubType, int(metertype));
 			if ((dType == pTypeP1Power) || (dType == pTypeENERGY) || (dType == pTypePOWER) || (dType == pTypeCURRENTENERGY) || ((dType == pTypeGeneral) && (dSubType == sTypeKwh)))
 			{
 				metertype = MTYPE_ENERGY;
@@ -13753,7 +13895,12 @@ namespace http
 											|| (atime <= lastTime)
 											)
 										{
-											//daylight change happened?, ignoring  for now
+											//daylight change happened, meter changed?, ignoring  for now
+											lastUsage1 = actUsage1;
+											lastUsage2 = actUsage2;
+											lastDeliv1 = actDeliv1;
+											lastDeliv2 = actDeliv2;
+											lastTime = atime;
 											continue;
 										}
 
@@ -14314,10 +14461,13 @@ namespace http
 						bool bHaveFirstValue = false;
 						bool bHaveFirstRealValue = false;
 						unsigned long long ulFirstValue = 0;
-						std::string szFirstDateTime;
+						unsigned long long ulRealFirstValue = 0;
+						int lastDay = 0;
+						std::string szLastDateTimeHour;
+						std::string szlastDateTime;
 						unsigned long long ulLastValue = 0;
 
-						std::string LastDateTime;
+						int lastHour = 0;
 						time_t lastTime = 0;
 
 						if (bIsManagedCounter)
@@ -14343,17 +14493,25 @@ namespace http
 								if (method == 0)
 								{
 									// bars / hour
-
 									unsigned long long actValue = std::strtoull(sd[0].c_str(), nullptr, 10);
+									szlastDateTime = sd[1].substr(0, 16);
+									szLastDateTimeHour = sd[1].substr(0, 13) + ":00";
 
-									std::string actDateTimeHour = sd[1].substr(0, 13);
-									if (actDateTimeHour != LastDateTime)
+									struct tm ntime;
+									time_t atime;
+									ParseSQLdatetime(atime, ntime, sd[1], -1);
+
+									if (lastHour != ntime.tm_hour)
 									{
+										if (lastDay != ntime.tm_mday)
+										{
+											lastDay = ntime.tm_mday;
+											ulRealFirstValue = actValue;
+										}
+
 										if (bHaveFirstValue)
 										{
-											if (LastDateTime.size() == 10)
-												LastDateTime += " 00";
-											root["result"][ii]["d"] = LastDateTime + ":00";
+											root["result"][ii]["d"] = szLastDateTimeHour;
 
 											// float TotalValue = float(actValue - ulFirstValue);
 
@@ -14382,6 +14540,29 @@ namespace http
 													break;
 												}
 												root["result"][ii]["v"] = szTmp;
+
+												if (!bIsManagedCounter)
+												{
+													double usageValue = (double)(actValue - ulRealFirstValue);
+
+													switch (metertype)
+													{
+													case MTYPE_ENERGY:
+													case MTYPE_ENERGY_GENERATED:
+														sprintf(szTmp, "%.3f", usageValue / divider);
+														break;
+													case MTYPE_GAS:
+														sprintf(szTmp, "%.3f", usageValue / divider);
+														break;
+													case MTYPE_WATER:
+														sprintf(szTmp, "%g", usageValue);
+														break;
+													case MTYPE_COUNTER:
+														sprintf(szTmp, "%.3f", usageValue / divider);
+														break;
+													}
+													root["result"][ii]["mu"] = szTmp;
+												}
 												ii++;
 											}
 										}
@@ -14389,14 +14570,39 @@ namespace http
 										{
 											ulFirstValue = actValue;
 										}
-										LastDateTime = actDateTimeHour;
+										lastHour = ntime.tm_hour;
 									}
 
 									if (!bHaveFirstValue)
 									{
-										ulFirstValue = actValue;
-										LastDateTime = actDateTimeHour;
 										bHaveFirstValue = true;
+										lastHour = ntime.tm_hour;
+										ulFirstValue = actValue;
+										ulRealFirstValue = actValue;
+										lastDay = ntime.tm_mday;
+
+										if (!((ntime.tm_hour == 0) && (ntime.tm_min == 0)))
+										{
+											struct tm ltime;
+											localtime_r(&atime, &tm1);
+											getNoon(atime, ltime, ntime.tm_year + 1900, ntime.tm_mon + 1,
+												ntime.tm_mday - 1); // We're only interested in finding the date
+											int year = ltime.tm_year + 1900;
+											int mon = ltime.tm_mon + 1;
+											int day = ltime.tm_mday;
+											sprintf(szTmp, "%04d-%02d-%02d", year, mon, day);
+											std::vector<std::vector<std::string>> result2;
+											result2 = m_sql.safe_query(
+												"SELECT Counter FROM %s_Calendar WHERE (DeviceRowID==%" PRIu64
+												") AND (Date=='%q')",
+												dbasetable.c_str(), idx, szTmp);
+											if (!result2.empty())
+											{
+												std::vector<std::string> sd = result2[0];
+												ulRealFirstValue = std::strtoll(sd[0].c_str(), nullptr, 10);;
+												lastDay = ntime.tm_mday;
+											}
+										}
 									}
 									ulLastValue = actValue;
 								}
@@ -14460,7 +14666,7 @@ namespace http
 						if ((!bIsManagedCounter) && (bHaveFirstValue) && (method == 0))
 						{
 							// add last value
-							root["result"][ii]["d"] = LastDateTime + ":00";
+							root["result"][ii]["d"] = szLastDateTimeHour;
 
 							unsigned long long ulTotalValue = ulLastValue - ulFirstValue;
 
@@ -14488,6 +14694,28 @@ namespace http
 									break;
 								}
 								root["result"][ii]["v"] = szTmp;
+
+								if (!bIsManagedCounter)
+								{
+									double usageValue = (double)(ulLastValue - ulRealFirstValue);
+									switch (metertype)
+									{
+									case MTYPE_ENERGY:
+									case MTYPE_ENERGY_GENERATED:
+										sprintf(szTmp, "%.3f", usageValue / divider);
+										break;
+									case MTYPE_GAS:
+										sprintf(szTmp, "%.3f", usageValue / divider);
+										break;
+									case MTYPE_WATER:
+										sprintf(szTmp, "%.3f", usageValue);
+										break;
+									case MTYPE_COUNTER:
+										sprintf(szTmp, "%.3f", usageValue / divider);
+										break;
+									}
+									root["result"][ii]["mu"] = szTmp;
+								}
 								ii++;
 							}
 						}
@@ -17404,40 +17632,6 @@ namespace http
 			} // custom range
 		}
 
-		/**
-		 * Retrieve user session from store, without remote host.
-		 */
-		WebEmStoredSession CWebServer::GetSession(const std::string& sessionId)
-		{
-			//_log.Log(LOG_STATUS, "SessionStore : get...");
-			WebEmStoredSession session;
-
-			if (sessionId.empty())
-			{
-				_log.Log(LOG_ERROR, "SessionStore : cannot get session without id.");
-			}
-			else
-			{
-				std::vector<std::vector<std::string>> result;
-				result = m_sql.safe_query("SELECT SessionID, Username, AuthToken, ExpirationDate FROM UserSessions WHERE SessionID = '%q'", sessionId.c_str());
-				if (!result.empty())
-				{
-					session.id = result[0][0];
-					session.username = base64_decode(result[0][1]);
-					session.auth_token = result[0][2];
-
-					std::string sExpirationDate = result[0][3];
-					// time_t now = mytime(NULL);
-					struct tm tExpirationDate;
-					ParseSQLdatetime(session.expires, tExpirationDate, sExpirationDate);
-					// RemoteHost is not used to restore the session
-					// LastUpdate is not used to restore the session
-				}
-			}
-
-			return session;
-		}
-
 		/*
 		 * Takes root["result"] and groups all items according to sgroupby, summing all values for each category, then creating new items in root["result"]
 		 * for each combination year/category.
@@ -17607,11 +17801,49 @@ namespace http
 		}
 
 		/**
+		 * Retrieve user session from store, without remote host.
+		 */
+		WebEmStoredSession CWebServer::GetSession(const std::string& sessionId)
+		{
+			_log.Debug(DEBUG_AUTH, "SessionStore : get...(%s)", sessionId.c_str());
+			WebEmStoredSession session;
+
+			if (sessionId.empty())
+			{
+				_log.Log(LOG_ERROR, "SessionStore : cannot get session without id.");
+			}
+			else
+			{
+				std::vector<std::vector<std::string>> result;
+				result = m_sql.safe_query("SELECT SessionID, Username, AuthToken, ExpirationDate FROM UserSessions WHERE SessionID = '%q'", sessionId.c_str());
+				if (!result.empty())
+				{
+					session.id = result[0][0];
+					session.username = base64_decode(result[0][1]);
+					session.auth_token = result[0][2];
+
+					std::string sExpirationDate = result[0][3];
+					// time_t now = mytime(NULL);
+					struct tm tExpirationDate;
+					ParseSQLdatetime(session.expires, tExpirationDate, sExpirationDate);
+					// RemoteHost is not used to restore the session
+					// LastUpdate is not used to restore the session
+				}
+				else
+				{
+					_log.Debug(DEBUG_AUTH, "SessionStore : session not Found! (%s)", sessionId.c_str());
+				}
+			}
+
+			return session;
+		}
+
+		/**
 		 * Save user session.
 		 */
 		void CWebServer::StoreSession(const WebEmStoredSession& session)
 		{
-			//_log.Log(LOG_STATUS, "SessionStore : store...");
+			_log.Debug(DEBUG_AUTH, "SessionStore : store...(%s)", session.id.c_str());
 			if (session.id.empty())
 			{
 				_log.Log(LOG_ERROR, "SessionStore : cannot store session without id.");
@@ -17645,7 +17877,7 @@ namespace http
 		 */
 		void CWebServer::RemoveSession(const std::string& sessionId)
 		{
-			//_log.Log(LOG_STATUS, "SessionStore : remove...");
+			_log.Debug(DEBUG_AUTH, "SessionStore : remove... (%s)", sessionId.c_str());
 			if (sessionId.empty())
 			{
 				return;
@@ -17658,21 +17890,21 @@ namespace http
 		 */
 		void CWebServer::CleanSessions()
 		{
-			//_log.Log(LOG_STATUS, "SessionStore : clean...");
+			_log.Debug(DEBUG_AUTH, "SessionStore : clean...");
 			m_sql.safe_query("DELETE FROM UserSessions WHERE ExpirationDate < datetime('now', 'localtime')");
 		}
 
 		/**
 		 * Delete all user's session, except the session used to modify the username or password.
 		 * username must have been hashed
-		 *
-		 * Note : on the WebUserName modification, this method will not delete the session, but the session will be deleted anyway
-		 * because the username will be unknown (see cWebemRequestHandler::checkAuthToken).
 		 */
 		void CWebServer::RemoveUsersSessions(const std::string& username, const WebEmSession& exceptSession)
 		{
+			_log.Debug(DEBUG_AUTH, "SessionStore : remove all sessions for User... (%s)", exceptSession.id.c_str());
 			m_sql.safe_query("DELETE FROM UserSessions WHERE (Username=='%q') and (SessionID!='%q')", username.c_str(), exceptSession.id.c_str());
 		}
 
 	} // namespace server
 } // namespace http
+
+#include "../iamserver/IamService.cpp"

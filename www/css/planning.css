@@ -1,0 +1,142 @@
+/************  timesheet **************/
+
+#deviceTimers .btnstylerev{float:left}
+
+#tabs.ui-widget-content{background-color: transparent}
+#tabs.ui-tabs .ui-tabs-nav li {height:auto}
+
+.ts-planning .ts-wrapper{
+width:100%;
+height:auto;
+}
+
+.ts-planning .ts-wrapper.zoom, .ts-planning .ts-wrapper.zoom2{
+overflow-x:scroll;
+overflow-y:hidden;
+}
+
+.ts-planning table{
+    table-layout: fixed;
+    border-collapse: collapse;
+    font-family: Tahoma;
+    border: solid 1px #AAAAAA;
+    -moz-user-select: none;
+    -webkit-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    -o-user-select: none;
+	width:100%;
+}
+
+.ts-planning .zoom table{
+	width:400%;
+}
+.ts-planning .zoom2 table{
+	width:600%;
+}
+
+.ts-planning tr {
+    height: 20px;
+}
+
+.ts-planning tbody tr {
+    border: solid 1px #FFFFFF;
+}
+
+.ts-planning td {
+    width: 10px;*/
+    background-color: #DDDDDD;
+    cursor: pointer;
+}
+
+.ts-planning th {
+    background-color: #888888;
+    color: white;
+    font-weight: normal;
+    border: solid 1px white;
+    cursor:pointer;
+    font-size:12px;
+}
+
+.ts-planning thead th:first-child{width:80px;}
+.ts-planning table.odd-even thead th:first-child{width:160px;}
+.ts-planning thead tr:nth-child(2){height:10px;}
+.ts-planning thead tr:nth-child(3){height:12px;}
+.ts-planning thead th{border-top: none;border-bottom:none;}
+.ts-planning tbody th {padding: 0 5px;}
+
+.ts-planning tbody th {
+    text-align: right;
+}
+
+.ts-planning .m0,.red{background-color:darkred; }
+.ts-planning .m1,.green {background-color: darkgreen}
+.ts-planning .m2 {background-color: #0094ff}
+.ts-planning .m3 {background-color: #AAAAAA}
+.ts-planning .m4 {background-color: #00ffff}
+.ts-planning .m5 {background-color: pink}
+.ts-planning .m6 {background-color: white}
+
+.ts-planning .m7 {background-color: DarkBlue}
+.ts-planning .m8 {background-color: DarkOrange}
+.ts-planning .m9 {background-color: DeepPink}
+.ts-planning .m10 {background-color: Gold}
+
+
+.ts-planning .tsbottom { border-bottom: 2px solid blue ;}
+.ts-planning .tstop    { border-top   : 2px solid blue ;}
+.ts-planning .tsleft   { border-left  : 2px solid blue ;}
+.ts-planning .tsright  { border-right : 2px solid blue ;}
+.ts-planning .tsnone   { border       : none           ;}
+
+.ts-planning .deactivate {
+    opacity: 0.3
+}
+
+
+.ts-planning .inputmode {
+    width: 2em;
+    text-align: center;
+    border: solid 1px #AAAAAA;
+    margin-left:3px;
+    margin-right:3px;
+    vertical-align: baseline;
+}
+
+.ts-planning div.inputmode{
+	float: right;
+	height: 17px;
+	margin-top: 5px;
+}
+
+.ts-planning .modes {
+    overflow: auto;
+    padding: 5px 0px;
+    float: left;
+}
+
+.ts-planning .timeRangediv{
+  float:right;
+  padding: 5px 0px;
+}
+
+.timeRangediv label{
+margin-right:4px;
+}
+
+
+.ts-planning .mode {
+    margin-right: 5px;
+    cursor: pointer;
+}
+
+.ts-DisableSetPoints, .ts-EnableSetPoints
+{float:right;margin-left: 5px}
+
+.ts-planning .hover{ background-color: yellow !important; opacity: 0.6}
+
+#oew_oddeven{margin-left:20px;}
+
+
+
+/************************************/

@@ -23,6 +23,7 @@ void stdreplace(
 	std::string &inoutstring,
 	const std::string& replaceWhat,
 	const std::string& replaceWithWhat);
+bool std_ends_with(const std::string& str, const std::string& suffix);
 void stdupper(std::string& inoutstring);
 void stdlower(std::string& inoutstring);
 void stdupper(std::wstring& inoutstring);
@@ -135,6 +136,13 @@ bool IsDebuggerPresent();
 #endif
 
 std::string GenerateUUID();
+bool isHexRepresentation(const std::string &input);
+
 double round_digits(double dIn, int totDigits);
 
 const std::string std_format(const char *szFormat, ...);
+
+std::string sha256hex(const std::string &input);
+std::string sha256raw(const std::string &input);
+
+char* make_web_time(const time_t rawtime);

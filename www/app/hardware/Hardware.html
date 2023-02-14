@@ -1289,6 +1289,32 @@
 			</tr>
 		</table>
 	</div>
+	<div id="divenphase">
+		<br>
+		<table class="display" id="hardwareparamsenphase" border="0" cellpadding="0" cellspacing="20">
+			<tr>
+				<td align="right" style="width:110px"><label for="pollinterval"><span data-i18n="Poll Interval"></span>:</label></td>
+				<td>
+					<select id="pollinterval" name="pollinterval" style="width:60px" class="combobox ui-corner-all">
+						<option value="120">120</option>
+						<option value="60">60</option>
+						<option value="30" selected="selected">30</option>
+						<option value="20">20</option>
+						<option value="10">10</option>
+						<option value="5">5</option>
+					</select>&nbsp;<span data-i18n="(Seconds)">(Seconds)</span>
+				</td>
+			</tr>
+			<tr>
+				<td align="right" style="vertical-align:top;"><span data-i18n="Poll Inverters">Poll Inverters</span>:</td>
+				<td>
+					<input type="checkbox" id="readinverters" name="readinverters"><label for="readinverters"></label><br>
+					<span data-i18n="When enabled this will also collect individual inverter details.">When enabled this will also collect individual inverter details.</span>
+				</td>
+			
+			</tr>
+		</table>
+	</div>
 	<div id="divhoneywell">
 		<br>
 		<table class="display" id="hardwareparamshoneywell" border="0" cellpadding="0" cellspacing="20">
@@ -1619,8 +1645,10 @@
 				<td align="right"><label for="lighttype"><span data-i18n="Light Type">Light Type</span>: </label></td>
 				<td>
 					<select id="lighttype" style="width:150px" class="combobox ui-corner-all">
-						<option value="0" data-i18n="Mono">RGB</option>
+						<option value="2" data-i18n="RGB">RGB</option>
 						<option value="1" data-i18n="RGBW">RGBW</option>
+						<option value="3" data-i18n="Mono">Mono</option>
+						<option value="6" data-i18n="RGBWZ">RGBWZ</option>
 					</select>
 				</td>
 			</tr>

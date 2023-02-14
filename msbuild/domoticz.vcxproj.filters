@@ -2231,6 +2231,9 @@
     <ClInclude Include="..\hardware\TeleinfoTCP.h">
       <Filter>Devices\Teleinfo</Filter>
     </ClInclude>
+    <ClInclude Include="..\hardware\EnOceanRawValue.h">
+      <Filter>Devices\EnOcean</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\webserver\Base64.cpp">

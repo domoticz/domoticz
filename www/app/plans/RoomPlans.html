@@ -1,10 +1,12 @@
 <div class="container">
-	<a class="btnstylerev" back-button>{{:: 'Back'|translate }}</a>
+
+	<div ng-include="'views/inc_topbar.html'" ng-repeat="tb in [{hideFilters:true,hideTimeSun:true}]"></div>
+
 	<page-loading-indicator ng-hide="::$ctrl.plans"></page-loading-indicator>
 
 	<div ng-if="::$ctrl.plans">
 		<section>
-			<h2 class="page-header">{{:: 'Room plans'|translate }}</h2>
+			<h2 class="page-header">{{:: 'Room Plans' | translate }}</h2>
 
 			<div class="btn-panel align-right">
 				<button class="btn btn-default" ng-click="$ctrl.addPlan()">{{:: 'Add Plan' | translate }}</button>

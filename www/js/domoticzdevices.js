@@ -856,6 +856,8 @@ Device.create = function (item) {
         type = 'custom';
     } else if ((item.Type === 'Thermostat') && (item.SubType === 'SetPoint')) {
         type = 'setpoint';  // Instead of the TypeImg (which changes when using custom images)
+	} else if ((item.Type === 'General') && (item.SubType === 'Percentage')) {
+		type = 'percentage';
     } else if (
         (item.SwitchType === 'Dusk Sensor') ||
         (item.SwitchType === 'Selector')
@@ -863,10 +865,18 @@ Device.create = function (item) {
         type = item.SwitchType.toLowerCase()
     } else {
         type = item.TypeImg.toLowerCase();
-        if ((item.CustomImage !== 0) && (typeof item.Image !== 'undefined')) {
-            type = item.Image.toLowerCase();
+        if (item.CustomImage !== 0) {
+			if (
+				(item.Type != 'General')
+				&&(item.Type != 'P1 Smart Meter')
+				) {
+				if (typeof item.Image !== 'undefined') {
+					type = item.Image.toLowerCase();
+				}
+			}
         }
     }
+	//alert(item.Name + '-' + type);
     switch (type) {
         case "alert":
             dev = new Alert(item);
@@ -959,6 +969,9 @@ Device.create = function (item) {
         case "speaker":
             dev = new Sound(item);
             break;
+		case "percentage":
+            dev = new Percentage(item);
+			break;
         case "temp":
         case "temperature":
             dev = new Temperature(item);
@@ -1191,7 +1204,10 @@ function Sensor(item) {
         
         var sensorType = this.type.replace(/\s/g, '');
 
-        if (sensorType === 'General') {
+        if (
+			(sensorType === 'General')
+			|| (sensorType === 'Lux')
+		) {
             this.LogLink = "window.location.href = '#/Devices/" + this.index + "/Log'";
         } else {
             this.LogLink = this.onClick = "Show" + sensorType + "Log('#" + Device.contentTag + "','" + Device.backFunction + "','" + this.index + "','" + this.name + "', '" + this.switchTypeVal + "');";
@@ -1237,6 +1253,15 @@ function TemperatureSensor(item) {
     }
 }
 TemperatureSensor.inheritsFrom(VariableSensor);
+
+function PercentageSensor(item) {
+    if (arguments.length != 0) {
+        this.parent.constructor(item);
+        this.image = "images/Percentage48.png";
+        this.LogLink = this.onClick = "window.location.href = '#/Devices/" + this.index + "/Log'";
+    }
+}
+PercentageSensor.inheritsFrom(VariableSensor);
 
 function UtilitySensor(item) {
     if (arguments.length != 0) {
@@ -1579,19 +1604,14 @@ Group.inheritsFrom(Switch);
 function Hardware(item) {
     if (arguments.length != 0) {
         this.parent.constructor(item);
-
-        if (this.subtype === 'General' || this.subtype === 'Percentage') {
+        if (this.subtype === 'General') {
             this.LogLink = "window.location.href = '#/Devices/" + this.index + "/Log'";
         } else {
             this.LogLink = this.onClick = "Show" + this.subtype + "Log('#" + Device.contentTag + "','" + Device.backFunction + "','" + this.index + "','" + this.name + "', '" + this.switchTypeVal + "');";
         }
 
         if (item.CustomImage == 0) {
-            switch (item.SubType.toLowerCase()) {
-                case "percentage":
-                    this.image = "images/Percentage48.png";
-                    break;
-            }
+			//?
         } else {
             this.image = "images/"+ item.Image + "48_On.png";
         }
@@ -1782,6 +1802,15 @@ function Temperature(item) {
     }
 }
 Temperature.inheritsFrom(TemperatureSensor);
+
+function Percentage(item) {
+    if (arguments.length != 0) {
+        this.parent.constructor(item);
+		this.image = "images/Percentage48.png";
+		this.LogLink = this.onClick = "window.location.href = '#/Devices/" + this.index + "/Log'";
+    }
+}
+Percentage.inheritsFrom(PercentageSensor);
 
 function Text(item) {
     if (arguments.length != 0) {

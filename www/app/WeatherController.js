@@ -74,14 +74,18 @@ define(['app', 'livesocket'], function (app) {
 		}
 
 		RefreshItem = function (item) {
+			item.searchText = GenerateLiveSearchTextW(item);
 			ctrl.items.forEach(function (olditem, oldindex, oldarray) {
 				if (olditem.idx == item.idx) {
 					oldarray[oldindex] = item;
-					if ($scope.config.ShowUpdatedEffect == true) {
-						$("#weatherwidgets #" + item.idx + " #name").effect("highlight", { color: '#EEFFEE' }, 1000);
+					if (!document.hidden) {
+						if ($scope.config.ShowUpdatedEffect == true) {
+							$("#weatherwidgets #" + item.idx + " #name").effect("highlight", { color: '#EEFFEE' }, 1000);
+						}
 					}
 				}
 			});
+			RefreshLiveSearch();
 		}
 
 		//We only call this once. After this the widgets are being updated automatically by used of the 'jsonupdate' broadcast event.
@@ -104,7 +108,6 @@ define(['app', 'livesocket'], function (app) {
 					$.each(data.result, function (i, item) {
 						RefreshItem(item);
 					});
-
 				}
 			});
 		}
@@ -125,6 +128,9 @@ define(['app', 'livesocket'], function (app) {
 						if (typeof data.ActTime != 'undefined') {
 							$.LastUpdateTime = parseInt(data.ActTime);
 						}
+						$.each(data.result, function (i, item) {
+							item.searchText = GenerateLiveSearchTextW(item);
+						});
 						ctrl.items = data.result;
 					} else {
 						ctrl.items = [];
@@ -170,6 +176,7 @@ define(['app', 'livesocket'], function (app) {
 			$scope.$on('device_update', function (event, deviceData) {
 				RefreshItem(deviceData);
 			});
+
 
 			//Default weather
 			var dialog_editweatherdevice_buttons = {};
@@ -538,13 +545,24 @@ define(['app', 'livesocket'], function (app) {
 				}
 			}).i18n();
 
+			$scope.tblinks = [
+				{
+					onclick:"ShowForecast", 
+					text:"Forecast", 
+					i18n: "Forecast", 
+					icon: "cloud-sun-rain"
+				}
+			];
+
 			ShowWeathers();
+
 			$("dialog-editweatherdevice").keydown(function (event) {
 				if (event.keyCode == 13) {
 					$(this).siblings('.ui-dialog-buttonpane').find('button:eq(0)').trigger("click");
 					return false;
 				}
 			});
+
 
 		};
 	}).directive('dzweatherwidget', ['$rootScope', '$location', function ($rootScope,$location) {
@@ -692,6 +710,8 @@ define(['app', 'livesocket'], function (app) {
 				};
 
 				$element.i18n();
+				//WatchLiveSearch();
+				WatchDescriptions();
 
 				if ($scope.ordering == true) {
 					if (permissions.hasPermission("Admin")) {

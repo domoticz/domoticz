@@ -19,6 +19,7 @@
 #include "../main/localtime_r.h"
 #include <sstream>
 #include <openssl/evp.h>
+#include <openssl/sha.h>
 #include <chrono>
 #include <limits.h>
 #include <cstring>
@@ -184,6 +185,11 @@ void stdreplace(
 		inoutstring.replace(pos, replaceWhat.size(), replaceWithWhat);
 		pos += replaceWithWhat.size();
 	}
+}
+
+bool std_ends_with(const std::string& str, const std::string& suffix)
+{
+	return str.size() >= suffix.size() && 0 == str.compare(str.size() - suffix.size(), suffix.size(), suffix);
 }
 
 void stdupper(std::string &inoutstring)
@@ -1443,6 +1449,16 @@ std::string GenerateUUID() // DCE/RFC 4122
 	return uuid;
 }
 
+bool isHexRepresentation(const std::string &input)
+{
+	if (input.empty())
+		return false;
+	bool bIsHex = true;
+	for (auto itt = input.begin(); itt != input.end(); ++itt)
+		bIsHex &= (hexCHARS.find(*itt) != std::string::npos);
+	return bIsHex;
+}
+
 double round_digits(double dIn, const int totDigits)
 {
 	std::stringstream sstr;
@@ -1483,3 +1499,62 @@ std::wstring utf8_to_wstring(const std::string& utf8str)
 	return wconv.from_bytes(utf8str);
 }
 
+std::string sha256hex(const std::string &input)
+{
+    unsigned char digest[33] = {0};
+	char hexdigest[65] = {0};
+	size_t idxb, idxh;
+
+    SHA256((const unsigned char *)input.c_str(), input.length(), digest);
+
+	for (idxb = 0, idxh = 0; idxb < 32; idxb++, idxh += 2)
+	{
+		uint8_t bval = digest[idxb] & 0xFF;
+		hexdigest[idxh] = hexCHARS[(bval >> 4) & 0xf];
+		hexdigest[idxh + 1] = hexCHARS[bval & 0xF];
+	}
+	hexdigest[idxh] = 0;
+	return(std::string(hexdigest));
+}
+
+std::string sha256raw(const std::string &input)
+{
+    unsigned char digest[33] = {0};
+    SHA256((const unsigned char *)input.c_str(), input.length(), digest);
+	return std::string((const char *)digest);
+}
+
+#ifdef _WIN32
+#define gmtime_r(timep, result) gmtime_s(result, timep)
+#endif
+
+constexpr std::array<const char*, 12> months{ "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" };
+constexpr std::array<const char*, 7> wkdays{ "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat" };
+
+char* make_web_time(const time_t rawtime)
+{
+	static char buffer[256];
+	struct tm gmt;
+#ifdef _WIN32
+	if (gmtime_r(&rawtime, &gmt)) //windows returns errno_t, which returns zero when successful
+#else
+	if (gmtime_r(&rawtime, &gmt) == nullptr)
+#endif
+	{
+		strcpy(buffer, "Thu, 1 Jan 1970 00:00:00 GMT");
+	}
+	else
+	{
+		sprintf(buffer, "%s, %02d %s %04d %02d:%02d:%02d GMT",
+			wkdays[gmt.tm_wday],
+			gmt.tm_mday,
+			months[gmt.tm_mon],
+			gmt.tm_year + 1900,
+			gmt.tm_hour,
+			gmt.tm_min,
+			gmt.tm_sec);
+
+
+	}
+	return buffer;
+}

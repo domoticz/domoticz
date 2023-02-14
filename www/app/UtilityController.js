@@ -467,11 +467,11 @@ define(['app', 'livesocket'], function (app) {
 						status += '<br>' + $.t("Return") + ': ' + $.t("Today") + ': ' + item.CounterDelivToday + ', ' + item.CounterDeliv;
 						if (item.UsageDeliv.charAt(0) != 0) {
 							if (parseInt(item.Usage) != 0) {
-								bigtext += ', -' + item.UsageDeliv;
+								bigtext += ', ';
+							} else {
+								bigtext='';
 							}
-							else {
-								bigtext = '-' + item.UsageDeliv;
-							}
+							bigtext += '-' + item.UsageDeliv;
 						}
 					}
 				}
@@ -494,9 +494,16 @@ define(['app', 'livesocket'], function (app) {
 						$(id + " #img").html(img);
 					}
 				}
-				if ($scope.config.ShowUpdatedEffect == true) {
-					$(id + " #name").effect("highlight", { color: '#EEFFEE' }, 1000);
+				
+				var searchText = GenerateLiveSearchTextU(item, bigtext);
+				$(id).find('#name').attr('data-search', searchText);
+				
+				if (!document.hidden) {
+					if ($scope.config.ShowUpdatedEffect == true) {
+						$(id + " #name").effect("highlight", { color: '#EEFFEE' }, 1000);
+					}
 				}
+				RefreshLiveSearch();
 			}
 		};
 
@@ -528,58 +535,9 @@ define(['app', 'livesocket'], function (app) {
 			$('#modal').show();
 
 			var htmlcontent = '';
-			var bShowRoomplan = false;
-			$.RoomPlans = [];
-			$.ajax({
-				url: "json.htm?type=plans",
-				async: false,
-				dataType: 'json',
-				success: function (data) {
-					if (typeof data.result != 'undefined') {
-						var totalItems = data.result.length;
-						if (totalItems > 0) {
-							bShowRoomplan = true;
-							//				if (window.myglobals.ismobile==true) {
-							//				bShowRoomplan=false;
-							//		}
-							if (bShowRoomplan == true) {
-								$.each(data.result, function (i, item) {
-									$.RoomPlans.push({
-										idx: item.idx,
-										name: item.Name
-									});
-								});
-							}
-						}
-					}
-				}
-			});
-
 			var bHaveAddedDevider = false;
 
 			var tophtm = "";
-			if ($.RoomPlans.length == 0) {
-				tophtm +=
-					'\t<table border="0" cellpadding="0" cellspacing="0" width="100%">\n' +
-					'\t<tr>\n' +
-					'\t  <td align="left" valign="top" id="timesun"></td>\n' +
-					'\t</tr>\n' +
-					'\t</table>\n';
-			}
-			else {
-				tophtm +=
-					'\t<table border="0" cellpadding="0" cellspacing="0" width="100%">\n' +
-					'\t<tr>\n' +
-					'\t  <td align="left" valign="top" id="timesun"></td>\n' +
-					'<td align="right" valign="top">' +
-					'<span data-i18n="Room">Room</span>:&nbsp;<select id="comboroom" style="width:160px" class="combobox ui-corner-all">' +
-					'<option value="0" data-i18n="All">All</option>' +
-					'</select>' +
-					'</td>' +
-					'\t</tr>\n' +
-					'\t</table>\n';
-			}
-
 			var i = 0;
 			var roomPlanId = $routeParams.room || window.myglobals.LastPlanSelected;
 
@@ -606,79 +564,86 @@ define(['app', 'livesocket'], function (app) {
 							var graphLogLink = '#/Devices/' + item.idx + '/Log';
 
 							var xhtm =
-								'\t<div class="item span4 ' + backgroundClass + '" id="' + item.idx + '">\n' +
+								'\t<div class="item span4 itemBlock ' + backgroundClass + '" id="' + item.idx + '">\n' +
 								'\t  <section>\n' +
 								'\t    <table id="itemtable" border="0" cellpadding="0" cellspacing="0">\n' +
 								'\t    <tr>\n';
 
-							xhtm += '\t      <td id="name">' + item.Name + '</td>\n';
-							xhtm += '\t      <td id="bigtext">';
+							var bigtext='';
+
 							if ((typeof item.Usage != 'undefined') && (typeof item.UsageDeliv == 'undefined')) {
-								xhtm += item.Usage;
+								bigtext += item.Usage;
 							}
 							else if ((typeof item.Usage != 'undefined') && (typeof item.UsageDeliv != 'undefined')) {
 								if ((item.UsageDeliv.charAt(0) == 0) || (parseInt(item.Usage) != 0)) {
-									xhtm += item.Usage;
+									bigtext += item.Usage;
 								}
 								if (item.UsageDeliv.charAt(0) != 0) {
-									xhtm += '-' + item.UsageDeliv;
+									if (parseInt(item.Usage) > 0) {
+										bigtext += ', ';
+									}
+									bigtext += '-' + item.UsageDeliv;
 								}
 							}
 							else if ((item.SubType == "Gas") || (item.SubType == "RFXMeter counter") || (item.SubType == "Counter Incremental")) {
-								xhtm += item.CounterToday;
+								bigtext += item.CounterToday;
 							}
 							else if (item.SubType == "Managed Counter") {
-								xhtm += item.Counter;
+								bigtext += item.Counter;
 							}
 							else if (item.Type == "Air Quality") {
-								xhtm += item.Data;
+								bigtext += item.Data;
 							}
 							else if (item.SubType == "Custom Sensor") {
-								xhtm += item.Data;
+								bigtext += item.Data;
 							}
 							else if (item.Type == "Current") {
-								xhtm += item.Data;
+								bigtext += item.Data;
 							}
 							else if (item.SubType == "Percentage") {
-								xhtm += item.Data;
+								bigtext += item.Data;
 							}
 							else if (item.SubType == "Fan") {
-								xhtm += item.Data;
+								bigtext += item.Data;
 							}
 							else if (item.SubType == "Soil Moisture") {
-								xhtm += item.Data;
+								bigtext += item.Data;
 							}
 							else if (item.SubType == "Leaf Wetness") {
-								xhtm += item.Data;
+								bigtext += item.Data;
 							}
 							else if ((item.SubType == "Voltage") || (item.SubType == "Current") || (item.SubType == "Distance") || (item.SubType == "A/D") || (item.SubType == "Pressure") || (item.SubType == "Sound Level")) {
-								xhtm += item.Data;
+								bigtext += item.Data;
 							}
 							else if (item.Type == "Lux") {
-								xhtm += item.Data;
+								bigtext += item.Data;
 							}
 							else if (item.Type == "Weight") {
-								xhtm += item.Data;
+								bigtext += item.Data;
 							}
 							else if (item.Type == "Usage") {
-								xhtm += item.Data;
+								bigtext += item.Data;
 							}
 							else if (item.Type == "Thermostat") {
-								xhtm += item.Data + '\u00B0 ' + $scope.config.TempSign;
+								bigtext += item.Data + '\u00B0 ' + $scope.config.TempSign;
 							}
 							else if (item.SubType == "Waterflow") {
-								xhtm += item.Data;
+								bigtext += item.Data;
 							}
 							else if (item.SubType == "Thermostat Mode") {
-								xhtm += item.Data;
+								bigtext += item.Data;
 							}
 							else if (item.SubType == "Thermostat Operating State") {
-								xhtm += item.Data;
+								bigtext += item.Data;
 							}
 							else if (item.SubType == "Thermostat Fan Mode") {
-								xhtm += item.Data;
+								bigtext += item.Data;
 							}
 							
+							var searchText = GenerateLiveSearchTextL(item, bigtext);
+							
+							xhtm += '\t      <td id="name" class="item-name" data-idx="'+item.idx+'" data-desc="'+item.Description.replace('"',"'")+'" data-search="'+searchText+'">' + item.Name + '</td>\n';
+							xhtm += '\t      <td id="bigtext">'+bigtext;							
 							xhtm += '</td>\n';
 							xhtm += '\t      <td id="img">';
 							var status = "";
@@ -837,7 +802,8 @@ define(['app', 'livesocket'], function (app) {
 								status = "";
 							}
 							else if (item.SubType == "Waterflow") {
-								xhtm += '<img src="images/moisture48.png" height="48" width="48"></td>\n';
+								item.Image = (item.CustomImage == 0)  ? 'moisture48.png' : item.Image + '48_On.png';
+								xhtm += '<img src="images/' + item.Image + '" height="48" width="48"></td>\n';
 								status = "";
 							}
 							if (typeof item.CounterDeliv != 'undefined') {
@@ -1071,27 +1037,8 @@ define(['app', 'livesocket'], function (app) {
 			$('#modal').hide();
 			$element.html(tophtm + htmlcontent);
 			$element.i18n();
+			WatchDescriptions();
 
-			if (bShowRoomplan == true) {
-				$.each($.RoomPlans, function (i, item) {
-					var option = $('<option />');
-					option.attr('value', item.idx).text(item.name);
-					$element.find("#comboroom").append(option);
-				});
-				if (typeof roomPlanId != 'undefined') {
-					$element.find("#comboroom").val(roomPlanId);
-				}
-				$element.find("#comboroom").change(function () {
-					var idx = $element.find("#comboroom option:selected").val();
-					window.myglobals.LastPlanSelected = idx;
-					
-					$route.updateParams({
-						room: idx > 0 ? idx : undefined
-					});
-					$location.replace();
-					$scope.$apply();
-				});
-			}
 			if ($scope.config.AllowWidgetOrdering == true) {
 				if (permissions.hasPermission("Admin")) {
 					if (window.myglobals.ismobileint == false) {
@@ -1688,8 +1635,31 @@ define(['app', 'livesocket'], function (app) {
 				}
 			});
 
+
+			//handles RoomPlans
+			var ctrl={};
+			ctrl.RoomPlans=$rootScope.GetRoomPlans();	
+			var roomPlanId = $routeParams.room || window.myglobals.LastPlanSelected;
+	
+			if (typeof roomPlanId != 'undefined') {
+				ctrl.roomSelected = roomPlanId;
+			}
+			ctrl.changeRoom = function () {
+				var idx = ctrl.roomSelected;
+				window.myglobals.LastPlanSelected = idx;
+	
+				$route.updateParams({
+						room: idx > 0 ? idx : undefined
+					});
+					$location.replace();
+					$scope.$apply();
+			};
+			$scope.ctrl=ctrl;
+
+
 			LoadCustomIcons();
 			ShowUtilities();
+			//WatchLiveSearch();
 
 			$("#dialog-editutilitydevice").keydown(function (event) {
 				if (event.keyCode == 13) {
