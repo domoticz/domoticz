@@ -74,11 +74,14 @@ define(['app', 'livesocket'], function (app) {
 		}
 
 		RefreshItem = function (item) {
+			item.searchText = GenerateLiveSearchTextW(item);
 			ctrl.items.forEach(function (olditem, oldindex, oldarray) {
 				if (olditem.idx == item.idx) {
 					oldarray[oldindex] = item;
-					if ($scope.config.ShowUpdatedEffect == true) {
-						$("#weatherwidgets #" + item.idx + " #name").effect("highlight", { color: '#EEFFEE' }, 1000);
+					if (!document.hidden) {
+						if ($scope.config.ShowUpdatedEffect == true) {
+							$("#weatherwidgets #" + item.idx + " #name").effect("highlight", { color: '#EEFFEE' }, 1000);
+						}
 					}
 				}
 			});
@@ -125,6 +128,9 @@ define(['app', 'livesocket'], function (app) {
 						if (typeof data.ActTime != 'undefined') {
 							$.LastUpdateTime = parseInt(data.ActTime);
 						}
+						$.each(data.result, function (i, item) {
+							item.searchText = GenerateLiveSearchTextW(item);
+						});
 						ctrl.items = data.result;
 					} else {
 						ctrl.items = [];

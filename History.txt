@@ -1,4 +1,4 @@
-Version 2023.1 (February 5th 2023)
+Version 2023.1 (February 14 2023)
 - For a full overview visit: https://www.domoticz.com/wiki/Domoticz_versions_-_Commits for details
 - Implemented: Accept JWT tokens as authentication and Authorization Bearer tokens (either from internal or external IAM service)
 - Implemented: Blinds, added option to schedule 0%
@@ -10,6 +10,7 @@ Version 2023.1 (February 5th 2023)
 - Implemented: MQTT, climate preset mode
 - Implemented: New 'auth' debug flag to see IAM related messages
 - Implemented: Now 'Applications' can be registered to get secure access to Domoticz, see 'setup' menu (standard DomoticzUI app is registered by default)
+- Implemented: P1 Meter, added number of (long) power failures, voltage sags/swells
 - Implemented: SECURITY_SETUP.md describing the new/improved security setup
 - Implemented: Support for basic OpenID Connect Discovery ('https://<DOMOTICZURL>/.well-known/openid-configuration')
 - Implemented: Search option in Switches/Scenes/Temperature/Utility and Weather tab
@@ -29,11 +30,12 @@ Version 2023.1 (February 5th 2023)
 - Fixed: Dashboard, scenes/lights hidden when this was disabled in user settings
 - Fixed: Dashboard, mobile display did not display P1 meter current return value correctly
 - Fixed: Dashboard, not showing disabled sections (temperature/weather/utility) when a device has multiple properties (for instance temperature + weather)
+- Fixed: Highcharts dropdown menu z-index problem
 - Fixed: Logout now returns 204 instead of 401
 - Fixed: Waterflow sensor custom icon
 - Fixed: Making sure Custom icons are valid (when someone manually edits the database)
 - Fixed: Mobile display text objects with long lines
-- Fixed: Highcharts dropdown menu z-index problem
+- Fixed: MQTT-AD Climate, fixed setpoint temperature display
 - Fixed: Navigation bar display issues on some mobile devices
 - Fixed: Setpoint popup when using protection
 

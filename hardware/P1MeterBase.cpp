@@ -30,8 +30,8 @@ enum class _eP1MatchType {
 	LINE18
 };
 
-#define P1MAXTOTALPOWER 55200       // Define Max total Power possible (80A * 3fase * 230V)
-#define P1MAXPHASEPOWER 18400       // Define Max phase Power possible (80A * 3fase * 230V)
+#define P1MAXTOTALPOWER 55200		// Define Max total Power possible (80A * 3fase * 230V)
+#define P1MAXPHASEPOWER 18400		// Define Max phase Power possible (80A * 3fase * 230V)
 
 #define P1SMID		"/"				// Smart Meter ID. Used to detect start of telegram.
 #define P1VER		"1-3:0.2.8"		// P1 version
@@ -42,18 +42,26 @@ enum class _eP1MatchType {
 #define P1TIP		"0-0:96.14.0"	// tariff indicator power
 #define P1PUC		"1-0:1.7.0"		// current power usage
 #define P1PDC		"1-0:2.7.0"		// current power delivery
+#define P1NOPF		"0-0:96.7.21"	// Number of power failures in any phases
+#define P1NOLPF		"0-0:96.7.9"	// Number of power failures in any phases
+#define P1NOVSGL1	"1-0:32.32.0"	// Number of voltage sags in phase L1
+#define P1NOVSGL2	"1-0:52.32.0"	// Number of voltage sags in phase L2
+#define P1NOVSGL3	"1-0:72.32.0"	// Number of voltage sags in phase L3
+#define P1NOVSWL1	"1-0:32.36.0"	// Number of voltage swells in phase L1
+#define P1NOVSWL2	"1-0:52.36.0"	// Number of voltage swells in phase L2
+#define P1NOVSWL3	"1-0:72.36.0"	// Number of voltage swells in phase L3
 #define P1VOLTL1	"1-0:32.7.0"	// voltage L1 (DSMRv5)
 #define P1VOLTL2	"1-0:52.7.0"	// voltage L2 (DSMRv5)
 #define P1VOLTL3	"1-0:72.7.0"	// voltage L3 (DSMRv5)
 #define P1AMPEREL1	"1-0:31.7.0"	// amperage L1 (DSMRv5)
 #define P1AMPEREL2	"1-0:51.7.0"	// amperage L2 (DSMRv5)
 #define P1AMPEREL3	"1-0:71.7.0"	// amperage L3 (DSMRv5)
-#define P1POWUSL1	"1-0:21.7.0"    // Power used L1 (DSMRv5)
-#define P1POWUSL2	"1-0:41.7.0"    // Power used L2 (DSMRv5)
-#define P1POWUSL3	"1-0:61.7.0"    // Power used L3 (DSMRv5)
-#define P1POWDLL1	"1-0:22.7.0"    // Power delivered L1 (DSMRv5)
-#define P1POWDLL2	"1-0:42.7.0"    // Power delivered L2 (DSMRv5)
-#define P1POWDLL3	"1-0:62.7.0"    // Power delivered L3 (DSMRv5)
+#define P1POWUSL1	"1-0:21.7.0"	// Power used L1 (DSMRv5)
+#define P1POWUSL2	"1-0:41.7.0"	// Power used L2 (DSMRv5)
+#define P1POWUSL3	"1-0:61.7.0"	// Power used L3 (DSMRv5)
+#define P1POWDLL1	"1-0:22.7.0"	// Power delivered L1 (DSMRv5)
+#define P1POWDLL2	"1-0:42.7.0"	// Power delivered L2 (DSMRv5)
+#define P1POWDLL3	"1-0:62.7.0"	// Power delivered L3 (DSMRv5)
 #define P1GTS		"0-n:24.3.0"	// DSMR2 timestamp gas usage sample
 #define P1GUDSMR2	"("				// DSMR2 gas usage sample
 #define P1MUDSMR4	"0-n:24.2."		// DSMR4 mbus value (excluding 'tariff' indicator)
@@ -68,6 +76,14 @@ enum _eP1Type {
 	P1TYPE_POWERDELIV,
 	P1TYPE_USAGECURRENT,
 	P1TYPE_DELIVCURRENT,
+	P1TYPE_NUMPWRFAIL,
+	P1TYPE_NUMLONGPWRFAIL,
+	P1TYPE_NUMVOLTSAGSL1,
+	P1TYPE_NUMVOLTSAGSL2,
+	P1TYPE_NUMVOLTSAGSL3,
+	P1TYPE_NUMVOLTSWELLSL1,
+	P1TYPE_NUMVOLTSWELLSL2,
+	P1TYPE_NUMVOLTSWELLSL3,
 	P1TYPE_VOLTAGEL1,
 	P1TYPE_VOLTAGEL2,
 	P1TYPE_VOLTAGEL3,
@@ -96,7 +112,7 @@ using P1Match = struct
 	uint8_t width;
 };
 
-constexpr std::array<P1Match, 24> p1_matchlist{
+constexpr std::array<P1Match, 32> p1_matchlist{
 	{
 		{ _eP1MatchType::ID, P1TYPE_SMID, P1SMID, "", 0, 0 },
 		{ _eP1MatchType::EXCLMARK, P1TYPE_END, P1EOT, "", 0, 0 },
@@ -106,6 +122,14 @@ constexpr std::array<P1Match, 24> p1_matchlist{
 		{ _eP1MatchType::STD, P1TYPE_POWERDELIV, P1PDLV, "powerdeliv", 10, 9 },
 		{ _eP1MatchType::STD, P1TYPE_USAGECURRENT, P1PUC, "powerusagec", 10, 7 },
 		{ _eP1MatchType::STD, P1TYPE_DELIVCURRENT, P1PDC, "powerdelivc", 10, 7 },
+		{ _eP1MatchType::STD, P1TYPE_NUMPWRFAIL, P1NOPF, "numpwrfail", 12, 5 },
+		{ _eP1MatchType::STD, P1TYPE_NUMLONGPWRFAIL, P1NOLPF, "numlongpwrfail", 11, 5 },
+		{ _eP1MatchType::STD, P1TYPE_NUMVOLTSAGSL1, P1NOVSGL1, "numvoltsagsl1", 12, 5 },
+		{ _eP1MatchType::STD, P1TYPE_NUMVOLTSAGSL2, P1NOVSGL2, "numvoltsagsl1", 12, 5 },
+		{ _eP1MatchType::STD, P1TYPE_NUMVOLTSAGSL3, P1NOVSGL3, "numvoltsagsl1", 12, 5 },
+		{ _eP1MatchType::STD, P1TYPE_NUMVOLTSWELLSL1, P1NOVSWL1, "numvoltswellsl1", 12, 5 },
+		{ _eP1MatchType::STD, P1TYPE_NUMVOLTSWELLSL2, P1NOVSWL2, "numvoltswellsl2", 12, 5 },
+		{ _eP1MatchType::STD, P1TYPE_NUMVOLTSWELLSL3, P1NOVSWL3, "numvoltswellsl3", 12, 5 },
 		{ _eP1MatchType::STD, P1TYPE_VOLTAGEL1, P1VOLTL1, "voltagel1", 11, 5 },
 		{ _eP1MatchType::STD, P1TYPE_VOLTAGEL2, P1VOLTL2, "voltagel2", 11, 5 },
 		{ _eP1MatchType::STD, P1TYPE_VOLTAGEL3, P1VOLTL3, "voltagel3", 11, 5 },
@@ -213,6 +237,45 @@ void P1MeterBase::Init()
 
 	l_exclmarkfound = 0;
 	l_bufferpos = 0;
+
+	m_nbr_pwr_failures = -1;
+	m_nbr_long_pwr_failures = -1;
+	m_nbr_volt_sags_l1 = -1;
+	m_nbr_volt_sags_l2 = -1;
+	m_nbr_volt_sags_l3 = -1;
+	m_nbr_volt_swells_l1 = -1;
+	m_nbr_volt_swells_l2 = -1;
+	m_nbr_volt_swells_l3 = -1;
+
+	bool bExists = false;
+	std::string tmpval;
+	tmpval = GetTextSensorText(0, 7, bExists);
+	if (bExists)
+		m_last_nbr_pwr_failures = std::stoi(tmpval);
+
+	tmpval = GetTextSensorText(0, 8, bExists);
+	if (bExists)
+		m_last_nbr_long_pwr_failures = std::stoi(tmpval);
+
+	tmpval = GetTextSensorText(0, 9, bExists);
+	if (bExists)
+		m_last_nbr_volt_sags_l1 = std::stoi(tmpval);
+	tmpval = GetTextSensorText(0, 10, bExists);
+	if (bExists)
+		m_last_nbr_volt_sags_l2 = std::stoi(tmpval);
+	tmpval = GetTextSensorText(0, 11, bExists);
+	if (bExists)
+		m_last_nbr_volt_sags_l3 = std::stoi(tmpval);
+
+	tmpval = GetTextSensorText(0, 12, bExists);
+	if (bExists)
+		m_last_nbr_volt_swells_l1 = std::stoi(tmpval);
+	tmpval = GetTextSensorText(0, 13, bExists);
+	if (bExists)
+		m_last_nbr_volt_swells_l2 = std::stoi(tmpval);
+	tmpval = GetTextSensorText(0, 14, bExists);
+	if (bExists)
+		m_last_nbr_volt_swells_l3 = std::stoi(tmpval);
 
 	m_voltagel1 = -1;
 	m_voltagel2 = -1;
@@ -424,6 +487,31 @@ bool P1MeterBase::MatchLine()
 					}
 					if (m_powerdell3 != -1) {
 						SendWattMeter(0, 6, 255, m_powerdell3, "Delivery L3");
+					}
+
+					if (m_nbr_pwr_failures != -1) {
+						SendTextSensorWhenDifferent(7, m_nbr_pwr_failures, m_last_nbr_pwr_failures, "# Power failures");
+					}
+					if (m_nbr_long_pwr_failures != -1) {
+						SendTextSensorWhenDifferent(8, m_nbr_long_pwr_failures, m_last_nbr_long_pwr_failures, "# Long power failures");
+					}
+					if (m_nbr_volt_sags_l1 > 0) {
+						SendTextSensorWhenDifferent(9, m_nbr_volt_sags_l1, m_last_nbr_volt_sags_l1, "# Voltage sags L1");
+					}
+					if (m_nbr_volt_sags_l2 > 0) {
+						SendTextSensorWhenDifferent(10, m_nbr_volt_sags_l2, m_last_nbr_volt_sags_l2, "# Voltage sags L2");
+					}
+					if (m_nbr_volt_sags_l3 > 0) {
+						SendTextSensorWhenDifferent(11, m_nbr_volt_sags_l3, m_last_nbr_volt_sags_l3, "# Voltage sags L3");
+					}
+					if (m_nbr_volt_swells_l1 > 0) {
+						SendTextSensorWhenDifferent(12, m_nbr_volt_swells_l1, m_last_nbr_volt_swells_l1, "# Voltage swells L1");
+					}
+					if (m_nbr_volt_swells_l2 > 0) {
+						SendTextSensorWhenDifferent(13, m_nbr_volt_swells_l2, m_last_nbr_volt_swells_l2, "# Voltage swells L2");
+					}
+					if (m_nbr_volt_swells_l3 > 0) {
+						SendTextSensorWhenDifferent(14, m_nbr_volt_swells_l3, m_last_nbr_volt_swells_l3, "# Voltage swells L3");
 					}
 
 					if (
@@ -665,6 +753,30 @@ bool P1MeterBase::MatchLine()
 					if (temp_usage < P1MAXTOTALPOWER) 
 						m_power.delivcurrent = temp_usage;
 					break;
+				case P1TYPE_NUMPWRFAIL:
+					m_nbr_pwr_failures = std::stoi(sValue);
+					break;
+				case P1TYPE_NUMLONGPWRFAIL:
+					m_nbr_long_pwr_failures = std::stoi(sValue);
+					break;
+				case P1TYPE_NUMVOLTSAGSL1:
+					m_nbr_volt_sags_l1 = std::stoi(sValue);
+					break;
+				case P1TYPE_NUMVOLTSAGSL2:
+					m_nbr_volt_sags_l2 = std::stoi(sValue);
+					break;
+				case P1TYPE_NUMVOLTSAGSL3:
+					m_nbr_volt_sags_l3 = std::stoi(sValue);
+					break;
+				case P1TYPE_NUMVOLTSWELLSL1:
+					m_nbr_volt_swells_l1 = std::stoi(sValue);
+					break;
+				case P1TYPE_NUMVOLTSWELLSL2:
+					m_nbr_volt_swells_l2 = std::stoi(sValue);
+					break;
+				case P1TYPE_NUMVOLTSWELLSL3:
+					m_nbr_volt_swells_l3 = std::stoi(sValue);
+					break;
 				case P1TYPE_VOLTAGEL1:
 					temp_volt = std::stof(sValue);
 					if (temp_volt < 300)
@@ -860,6 +972,14 @@ bool P1MeterBase::CheckCRC()
 		Log(LOG_NORM, "Dismiss incoming - CRC failed");
 	}
 	return (crc == m_crc16);
+}
+
+void P1MeterBase::SendTextSensorWhenDifferent(const int ID, const int value, int& cmp_value, const std::string& Name)
+{
+	if (value == cmp_value)
+		return; //no difference
+	cmp_value = value;
+	SendTextSensor(0, ID, 255, std::to_string(value), Name);
 }
 
 

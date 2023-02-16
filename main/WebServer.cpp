@@ -12,37 +12,40 @@
 #include "dzVents.h"
 #include "../httpclient/HTTPClient.h"
 #include "../hardware/hardwaretypes.h"
+
 #include "../hardware/1Wire.h"
-#include "../hardware/OTGWBase.h"
-#ifdef WITH_OPENZWAVE
-#include "../hardware/OpenZWave.h"
-#endif
+#include "../hardware/AccuWeather.h"
+#include "../hardware/AirconWithMe.h"
+#include "../hardware/Buienradar.h"
+#include "../hardware/DarkSky.h"
+#include "../hardware/eHouseTCP.h"
 #include "../hardware/EnOceanESP2.h"
 #include "../hardware/EnOceanESP3.h"
-#include "../hardware/Wunderground.h"
-#include "../hardware/DarkSky.h"
-#include "../hardware/AccuWeather.h"
-#include "../hardware/OpenWeatherMap.h"
-#include "../hardware/Buienradar.h"
-#include "../hardware/Meteorologisk.h"
-#include "../hardware/Kodi.h"
-#include "../hardware/Limitless.h"
-#include "../hardware/LogitechMediaServer.h"
-#include "../hardware/MySensorsBase.h"
-#include "../hardware/RFXBase.h"
-#include "../hardware/RFLinkBase.h"
-#include "../hardware/SysfsGpio.h"
-#include "../hardware/HEOS.h"
-#include "../hardware/eHouseTCP.h"
-#include "../hardware/USBtin.h"
-#include "../hardware/USBtin_MultiblocV8.h"
-#include "../hardware/AirconWithMe.h"
-#include "../hardware/ZiBlueBase.h"
+#include "../hardware/EnphaseAPI.h"
 #ifdef WITH_GPIO
 #include "../hardware/Gpio.h"
 #include "../hardware/GpioPin.h"
 #endif // WITH_GPIO
+#include "../hardware/HEOS.h"
+#include "../hardware/Kodi.h"
+#include "../hardware/Limitless.h"
+#include "../hardware/LogitechMediaServer.h"
+#include "../hardware/Meteorologisk.h"
+#include "../hardware/MySensorsBase.h"
+#include "../hardware/OpenWeatherMap.h"
+#ifdef WITH_OPENZWAVE
+#include "../hardware/OpenZWave.h"
+#endif
+#include "../hardware/OTGWBase.h"
+#include "../hardware/RFLinkBase.h"
+#include "../hardware/RFXBase.h"
+#include "../hardware/SysfsGpio.h"
 #include "../hardware/Tellstick.h"
+#include "../hardware/USBtin.h"
+#include "../hardware/USBtin_MultiblocV8.h"
+#include "../hardware/Wunderground.h"
+#include "../hardware/ZiBlueBase.h"
+
 #include "../webserver/Base64.h"
 #include "../smtpclient/SMTPClient.h"
 #include <json/json.h>
@@ -11816,6 +11819,11 @@ namespace http
 						{
 							CRFLinkBase* pMyHardware = dynamic_cast<CRFLinkBase*>(pHardware);
 							root["result"][ii]["version"] = pMyHardware->m_Version;
+						}
+						else if (pHardware->HwdType == HTYPE_EnphaseAPI)
+						{
+							EnphaseAPI* pMyHardware = dynamic_cast<EnphaseAPI*>(pHardware);
+							root["result"][ii]["version"] = pMyHardware->m_szSoftwareVersion;
 						}
 #ifdef WITH_OPENZWAVE
 						else if (pHardware->HwdType == HTYPE_OpenZWave)

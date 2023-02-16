@@ -25,9 +25,11 @@
 	#include <iowin32.h>
 #endif
 
-#include "../main/appversion.h"
+
 #include "../main/Helper.h"
 #include "../main/Logger.h"
+
+extern std::string szAppVersion;
 
 #define ZIPREADBUFFERSIZE (8192)
 
@@ -186,7 +188,7 @@ bool request_handler::not_modified(const std::string &full_path, const request &
 	mInfo.mtime_support = true;
 	// propagate timestamp to browser
 	reply::add_header(&rep, "Date", make_web_time(mytime(nullptr)), true);
-	reply::add_header(&rep, "ETag", ETAG_VERSION_STRING, true);
+	reply::add_header(&rep, "ETag", szAppVersion, true);
 	reply::add_header(&rep, "Last-Modified", make_web_time(mInfo.last_written));
 
 	const char *if_modified = request::get_req_header(&req, "If-Modified-Since");
@@ -304,7 +306,7 @@ void request_handler::handle_request(const request &req, reply &rep, modify_info
 	if (if_none_match != nullptr)
 	{
 		//check if etag matches current tag
-		if (strcmp(if_none_match, ETAG_VERSION_STRING) == 0)
+		if (strcmp(if_none_match, szAppVersion.c_str()) == 0)
 		{
 			//nothing changed
 			rep = reply::stock_reply(reply::not_modified);
@@ -478,11 +480,19 @@ void request_handler::handle_request(const request &req, reply &rep, modify_info
 	{
 		reply::add_header(&rep, "Content-Encoding", "gzip");
 	}
-	else if (mime_types::extension_to_type(extension).find("image/") != std::string::npos)
+	if (
+		(req.uri.find("app/") != std::string::npos)
+		|| (req.uri.find("views/") != std::string::npos)
+		|| (req.uri.find("js/domoticz") != std::string::npos)
+		)
 	{
-		//Cache images
-		//reply::add_header(&rep, "Expires", convert_to_http_date(mytime(nullptr) + 3600 * 24 * 90)); // 3 months
-		reply::add_header(&rep, "Cache-Control", "public,max-age: 3600,s-maxage=604800,must-revalidate");
+		//frequently changed files
+		reply::add_header(&rep, "Cache-Control", "no-cache,must-revalidate");
+	}
+	else
+	{
+		//not frequently changed files, cache for a day
+		reply::add_header(&rep, "Cache-Control", "public,max-age=86400,s-maxage=86400,must-revalidate");
 	}
 
 	reply::add_header_content_type(&rep, mime_types::extension_to_type(extension));

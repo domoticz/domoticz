@@ -332,6 +332,57 @@ std::string MQTTAutoDiscover::GetValueFromTemplate(Json::Value root, std::string
 	return "";
 }
 
+std::string MQTTAutoDiscover::GetValueFromTemplate(const std::string& szValue, std::string szValueTemplate)
+{
+	try
+	{
+		std::map<std::string, std::string> value_keys;
+
+		stdreplace(szValueTemplate, " ", "");
+		stdreplace(szValueTemplate, "%", "");
+
+		//we only support if/else/endif
+		if (szValueTemplate.find("ifvalue==") != 0)
+			return "";
+		szValueTemplate = szValueTemplate.substr(strlen("ifvalue=="));
+		size_t pos;
+
+		pos = szValueTemplate.find("elseif");
+		if (pos != std::string::npos)
+		{
+			Log(LOG_ERROR, "This template is not (yet) support, please report to us (Template: %s)", szValueTemplate.c_str());
+			return ""; //not supported
+		}
+
+		pos = szValueTemplate.find("else");
+		if (pos == std::string::npos)
+			return "";
+
+		std::string szKey = szValueTemplate.substr(0, pos);
+
+		szValueTemplate = szValueTemplate.substr(pos + strlen("else"));
+		pos = szValueTemplate.find("endif");
+		if (pos == std::string::npos)
+			return "";
+
+		szValueTemplate = szValueTemplate.substr(0, pos);
+
+		std::string szValElse = szValueTemplate;
+
+		if (szKey.find(szValue) == 0)
+		{
+			return szKey.substr(szValue.size());
+		}
+
+		return szValElse;
+	}
+	catch (const std::exception& e)
+	{
+		Log(LOG_ERROR, "Exception (GetValueFromTemplate): %s! (Template: %s)", e.what(), szValueTemplate.c_str());
+	}
+	return "";
+}
+
 //Returns true if value is set in JSon object
 bool MQTTAutoDiscover::SetValueWithTemplate(Json::Value& root, std::string szValueTemplate, std::string szValue)
 {
@@ -1290,7 +1341,22 @@ void MQTTAutoDiscover::handle_auto_discovery_sensor_message(const struct mosquit
 				}
 				if (!root["battery"].empty())
 				{
-					pSensor->BatteryLevel = root["battery"].asInt();
+					if (!root["battery"].isObject())
+						pSensor->BatteryLevel = root["battery"].asInt();
+					else
+					{
+						if (
+							(!pSensor->value_template.empty())
+							&& (pSensor->value_template.find("battery") != std::string::npos)
+							)
+						{
+							szValue = GetValueFromTemplate(root, pSensor->value_template);
+							if (!szValue.empty())
+							{
+								pSensor->BatteryLevel = std::stoi(szValue);
+							}
+						}
+					}
 				}
 
 				if (!pSensor->position_template.empty())
@@ -2383,20 +2449,41 @@ void MQTTAutoDiscover::handle_auto_discovery_climate(_tMQTTASensor* pSensor, con
 			)
 		{
 			std::string current_mode;
-			if (
-				(!pSensor->mode_state_template.empty())
-				&& (bIsJSON)
-				)
+
+			if (bIsJSON)
 			{
-				current_mode = GetValueFromTemplate(root, pSensor->mode_state_template);
-				if ((pSensor->mode_state_topic == topic) && current_mode.empty())
+				if (!pSensor->mode_state_template.empty())
 				{
-					Log(LOG_ERROR, "Climate device no idea how to interpretate state values (%s)", pSensor->unique_id.c_str());
+					current_mode = GetValueFromTemplate(root, pSensor->mode_state_template);
+					if ((pSensor->mode_state_topic == topic) && current_mode.empty())
+					{
+						Log(LOG_ERROR, "Climate device no idea how to interpretate state values (%s)", pSensor->unique_id.c_str());
+						bValid = false;
+					}
+				}
+				else
+				{
+					//should have a template for a json value!
+					Log(LOG_ERROR, "Climate device no idea how to interpretate state values (no state template!)(%s)", pSensor->unique_id.c_str());
 					bValid = false;
 				}
 			}
 			else
-				current_mode = qMessage;
+			{
+				if (!pSensor->mode_state_template.empty())
+				{
+					current_mode = GetValueFromTemplate(qMessage, pSensor->mode_state_template);
+					if ((pSensor->mode_state_topic == topic) && current_mode.empty())
+					{
+						//silence error for now
+						current_mode = qMessage;
+						//Log(LOG_ERROR, "Climate device no idea how to interpretate state values (%s)", pSensor->unique_id.c_str());
+						//bValid = false;
+					}
+				}
+				else
+					current_mode = qMessage;
+			}
 
 			if (bValid)
 			{
@@ -3856,11 +3943,11 @@ bool MQTTAutoDiscover::SetSetpoint(const std::string& DeviceID, float Temp)
 	pSensor->sValue = std_format("%.2f", Temp);
 	std::vector<std::vector<std::string>> result;
 	result = m_sql.safe_query("SELECT Name,nValue,sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit == %d) AND (Type==%d) AND (Subtype==%d)", m_HwdID,
-		pSensor->unique_id.c_str(), 1, pSensor->devType, pSensor->subType);
+		pSensor->unique_id.c_str(), 1, pTypeThermostat, sTypeThermSetpoint);
 	if (result.empty())
 		return false; //?? That's impossible
 	// Update
-	UpdateValueInt(m_HwdID, pSensor->unique_id.c_str(), 1, pSensor->devType, pSensor->subType, pSensor->SignalLevel, pSensor->BatteryLevel,
+	UpdateValueInt(m_HwdID, pSensor->unique_id.c_str(), 1, pTypeThermostat, sTypeThermSetpoint, pSensor->SignalLevel, pSensor->BatteryLevel,
 		pSensor->nValue, pSensor->sValue.c_str(),
 		result[0][0]);
 

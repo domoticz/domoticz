@@ -42,6 +42,7 @@ private:
 	void ParseP1Data(const uint8_t *pDataIn, int LenIn, bool disable_crc, int ratelimit);
 
 	bool CheckCRC();
+	void SendTextSensorWhenDifferent(const int ID, const int value, int &cmp_value, const std::string &Name);
 
 	bool m_bDisableCRC;
 	int m_ratelimit;
@@ -61,6 +62,24 @@ private:
 	unsigned long m_lastgasusage;
 	time_t m_lastSharedSendGas;
 	time_t m_lastUpdateTime;
+
+	int m_nbr_pwr_failures = -1;
+	int m_nbr_long_pwr_failures = -1;
+	int m_nbr_volt_sags_l1 = -1;
+	int m_nbr_volt_sags_l2 = -1;
+	int m_nbr_volt_sags_l3 = -1;
+	int m_nbr_volt_swells_l1 = -1;
+	int m_nbr_volt_swells_l2 = -1;
+	int m_nbr_volt_swells_l3 = -1;
+
+	int m_last_nbr_pwr_failures = -1;
+	int m_last_nbr_long_pwr_failures = -1;
+	int m_last_nbr_volt_sags_l1 = -1;
+	int m_last_nbr_volt_sags_l2 = -1;
+	int m_last_nbr_volt_sags_l3 = -1;
+	int m_last_nbr_volt_swells_l1 = -1;
+	int m_last_nbr_volt_swells_l2 = -1;
+	int m_last_nbr_volt_swells_l3 = -1;
 
 	float m_voltagel1;
 	float m_voltagel2;

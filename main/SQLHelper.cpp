@@ -41,7 +41,7 @@
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
 
-#define DB_VERSION 159
+#define DB_VERSION 160
 
 #define DEFAULT_ADMINUSER "admin"
 #define DEFAULT_ADMINPWD "domoticz"
@@ -521,7 +521,7 @@ constexpr auto sqlCreateUserVariables =
 "[ID] INTEGER PRIMARY KEY, "
 "[Name] VARCHAR(200), "
 "[ValueType] INT NOT NULL, "
-"[Value] VARCHAR(200), "
+"[Value] TEXT, "
 "[LastUpdate] DATETIME DEFAULT(datetime('now', 'localtime')));";
 
 constexpr auto sqlCreateFloorplans =
@@ -3127,6 +3127,17 @@ bool CSQLHelper::OpenDatabase()
 		if (dbversion < 159)
 		{
 			DeletePreferencesVar("AuthenticationMethod");
+		}
+		if (dbversion < 160)
+		{
+			//Change UserVariables Value type to TEXT
+			query("ALTER TABLE UserVariables RENAME TO tmp_UserVariables;");
+			query(sqlCreateUserVariables);
+			query(
+				"INSERT INTO UserVariables ([ID],[Name],[ValueType],[Value],[LastUpdate]) "
+				"SELECT [ID],[Name],[ValueType],[Value],[LastUpdate] "
+				"FROM tmp_UserVariables");
+			query("DROP TABLE tmp_UserVariables;");
 		}
 	}
 	else if (bNewInstall)
@@ -9226,10 +9237,6 @@ bool CSQLHelper::UpdateUserVariable(const std::string& idx, const std::string& v
 
 bool CSQLHelper::CheckUserVariable(const _eUsrVariableType eVartype, const std::string& varvalue, std::string& errorMessage)
 {
-	if (varvalue.size() > 200) {
-		errorMessage = "String exceeds maximum size";
-		return false;
-	}
 	if (eVartype == USERVARTYPE_INTEGER) {
 		//integer (0)
 		std::istringstream iss(varvalue);
