@@ -69,7 +69,7 @@ then
   rm ${archive_file}.sha256sum
 fi
 
-tar -zcf ${archive_file} domoticz History.txt License.txt domoticz.sh server_cert.pem updatebeta updaterelease www/ scripts/ Config/ plugins/ dzVents/
+tar -zcf ${archive_file} domoticz History.txt License.txt domoticz.sh server_cert.pem updatebeta updaterelease www/ scripts/ plugins/ dzVents/
 if [ $? -ne 0 ]
 then
         echo "Error creating archive!...";

@@ -106,7 +106,7 @@ jobs:
         run: |
           cd $GITHUB_WORKSPACE
           mkdir package
-          tar czf package/domoticz_linux_x86_64.tgz domoticz History.txt License.txt domoticz.sh server_cert.pem updatebeta updaterelease www/ scripts/ Config/ dzVents/
+          tar czf package/domoticz_linux_x86_64.tgz domoticz History.txt License.txt domoticz.sh server_cert.pem updatebeta updaterelease www/ scripts/ dzVents/
           shasum -a 256 package/domoticz_linux_x86_64.tgz > package/domoticz_linux_x86_64.tgz.sha256sum
           cp appversion.h.txt package/version_linux_x86_64.h
           cp History.txt package/history_linux_x86_64.txt
