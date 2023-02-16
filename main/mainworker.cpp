@@ -35,9 +35,6 @@
 #include "../hardware/VolcraftCO20.h"
 #endif
 #include "../hardware/Rego6XXSerial.h"
-#ifdef WITH_OPENZWAVE
-#include "../hardware/OpenZWave.h"
-#endif
 #include "../hardware/DavisLoggerSerial.h"
 #include "../hardware/1Wire.h"
 #include "../hardware/I2C.h"
@@ -692,11 +689,6 @@ bool MainWorker::AddHardwareFromParams(
 		break;
 	case HTYPE_KMTronic433:
 		pHardware = new KMTronic433(ID, SerialPort);
-		break;
-	case HTYPE_OpenZWave:
-#ifdef WITH_OPENZWAVE
-		pHardware = new COpenZWave(ID, SerialPort);
-#endif
 		break;
 	case HTYPE_EnOceanESP2:
 		pHardware = new CEnOceanESP2(ID, SerialPort, Mode1);
@@ -1731,21 +1723,6 @@ void MainWorker::Do_Work()
 						m_sql.ScheduleDay();
 					}
 				}
-#ifdef WITH_OPENZWAVE
-				if (ltime.tm_hour == 4)
-				{
-					//Heal the OpenZWave network
-					std::lock_guard<std::mutex> l(m_devicemutex);
-					for (const auto &pHardware : m_hardwaredevices)
-					{
-						if (pHardware->HwdType == HTYPE_OpenZWave)
-						{
-							COpenZWave* pZWave = dynamic_cast<COpenZWave*>(pHardware);
-							pZWave->NightlyNodeHeal();
-						}
-					}
-				}
-#endif
 				HandleAutomaticBackups();
 			}
 		}
@@ -3023,12 +3000,8 @@ void MainWorker::decode_BateryLevel(bool bIsInPercentage, uint8_t level)
 	}
 }
 
-uint8_t MainWorker::get_BateryLevel(const _eHardwareTypes HwdType, bool bIsInPercentage, uint8_t level)
+uint8_t MainWorker::get_BateryLevel(const _eHardwareTypes HwdType, const bool bIsInPercentage, const uint8_t level)
 {
-	if (HwdType == HTYPE_OpenZWave)
-	{
-		bIsInPercentage = true;
-	}
 	uint8_t ret = 0;
 	if (bIsInPercentage)
 	{
@@ -3480,11 +3453,7 @@ void MainWorker::decode_Temp(const CDomoticzHardwareBase* pHardware, const tRBUF
 		BatteryLevel = 100;
 
 	//Override battery level if hardware supports it
-	if (pHardware->HwdType == HTYPE_OpenZWave)
-	{
-		BatteryLevel = pResponse->TEMP.battery_level * 10;
-	}
-	else if ((pHardware->HwdType == HTYPE_EnOceanESP2) || (pHardware->HwdType == HTYPE_EnOceanESP3))
+	if ((pHardware->HwdType == HTYPE_EnOceanESP2) || (pHardware->HwdType == HTYPE_EnOceanESP3))
 	{
 		// WARNING
 		// battery_level & rssi fields fields are used here to transmit ID_BYTE0 value from EnOcean device
@@ -3642,12 +3611,6 @@ void MainWorker::decode_Hum(const CDomoticzHardwareBase* pHardware, const tRBUF*
 		BatteryLevel = 0;
 	else
 		BatteryLevel = 100;
-	//Override battery level if hardware supports it
-	if (pHardware->HwdType == HTYPE_OpenZWave)
-	{
-		BatteryLevel = pResponse->TEMP.battery_level;
-	}
-
 	uint8_t humidity = pResponse->HUM.humidity;
 	if (humidity > 100)
 	{
@@ -3977,11 +3940,6 @@ void MainWorker::decode_TempHumBaro(const CDomoticzHardwareBase* pHardware, cons
 		BatteryLevel = 0;
 	else
 		BatteryLevel = 100;
-	//Override battery level if hardware supports it
-	if (pHardware->HwdType == HTYPE_OpenZWave)
-	{
-		BatteryLevel = pResponse->TEMP.battery_level;
-	}
 
 	float temp;
 	if (!pResponse->TEMP_HUM_BARO.tempsign)
@@ -12483,29 +12441,6 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string>& sd, std::string 
 				}
 			}
 		}
-		else if (
-				(switchtype == STYPE_BlindsPercentage)
-				|| (switchtype == STYPE_BlindsPercentageWithStop)
-				|| (switchtype == STYPE_VenetianBlindsUS)
-				|| (switchtype == STYPE_VenetianBlindsEU)
-				)
-		 {
-			if (
-				(gswitch.cmnd == gswitch_sSetLevel)
-				&& (level == 100)
-				&& (pHardware->HwdType == HTYPE_OpenZWave)
-				)
-			{
-				//For Multilevel switches, 255 (0xFF) means Restore to most recent (non-zero) level,
-				//which is perfect for dimmers, but for blinds (and using the slider), we set it to 99%
-				//this should be done in the openzwave class, but it is deprecated and will be removed soon
-				level = 99;
-				if (gswitch.cmnd == gswitch_sOpen)
-				{
-					gswitch.cmnd = gswitch_sSetLevel;
-				}
-			}
-		}
 
 		gswitch.level = (uint8_t)level;
 		gswitch.rssi = 12;
@@ -12944,140 +12879,6 @@ bool MainWorker::SetSetPointInt(const std::vector<std::string>& sd, const float 
 	//Also put it in the database, not all devices are awake (battery operated nodes)
 	PushAndWaitRxMessage(pHardware, (const uint8_t*)&tmeter, nullptr, -1, nullptr);
 	return true;
-}
-
-bool MainWorker::SetClockInt(const std::vector<std::string>& sd, const std::string& clockstr)
-{
-#ifdef WITH_OPENZWAVE
-	int HardwareID = atoi(sd[0].c_str());
-	int hindex = FindDomoticzHardware(HardwareID);
-	if (hindex == -1)
-		return false;
-
-	unsigned long ID;
-	std::stringstream s_strid;
-	s_strid << std::hex << sd[1];
-	s_strid >> ID;
-	CDomoticzHardwareBase* pHardware = GetHardware(HardwareID);
-	if (pHardware == nullptr)
-		return false;
-	if (pHardware->HwdType == HTYPE_OpenZWave)
-	{
-		std::vector<std::string> splitresults;
-		StringSplit(clockstr, ";", splitresults);
-		if (splitresults.size() != 3)
-			return false;
-		int day = atoi(splitresults[0].c_str());
-		int hour = atoi(splitresults[1].c_str());
-		int minute = atoi(splitresults[2].c_str());
-
-		_tGeneralDevice tmeter;
-		tmeter.subtype = sTypeZWaveClock;
-		tmeter.intval1 = ID;
-		tmeter.intval2 = (day * (24 * 60)) + (hour * 60) + minute;
-		if (!WriteToHardware(HardwareID, (const char*)&tmeter, sizeof(_tGeneralDevice)))
-			return false;
-	}
-#endif
-	return true;
-}
-
-bool MainWorker::SetClock(const std::string& idx, const std::string& clockstr)
-{
-	//Get Device details
-	std::vector<std::vector<std::string> > result;
-	result = m_sql.safe_query(
-		"SELECT HardwareID, DeviceID,Unit,Type,SubType,SwitchType FROM DeviceStatus WHERE (ID == '%q')",
-		idx.c_str());
-	if (result.empty())
-		return false;
-
-	std::vector<std::string> sd = result[0];
-	return SetClockInt(sd, clockstr);
-}
-
-bool MainWorker::SetZWaveThermostatModeInt(const std::vector<std::string>& sd, const int tMode)
-{
-#ifdef WITH_OPENZWAVE
-	int HardwareID = atoi(sd[0].c_str());
-	int hindex = FindDomoticzHardware(HardwareID);
-	if (hindex == -1)
-		return false;
-
-	unsigned long ID;
-	std::stringstream s_strid;
-	s_strid << std::hex << sd[1];
-	s_strid >> ID;
-	CDomoticzHardwareBase* pHardware = GetHardware(HardwareID);
-	if (pHardware == nullptr)
-		return false;
-	if (pHardware->HwdType == HTYPE_OpenZWave)
-	{
-		_tGeneralDevice tmeter;
-		tmeter.subtype = sTypeZWaveThermostatMode;
-		tmeter.intval1 = ID;
-		tmeter.intval2 = tMode;
-		if (!WriteToHardware(HardwareID, (const char*)&tmeter, sizeof(_tGeneralDevice)))
-			return false;
-	}
-#endif
-	return true;
-}
-
-bool MainWorker::SetZWaveThermostatFanModeInt(const std::vector<std::string>& sd, const int fMode)
-{
-#ifdef WITH_OPENZWAVE
-	int HardwareID = atoi(sd[0].c_str());
-	int hindex = FindDomoticzHardware(HardwareID);
-	if (hindex == -1)
-		return false;
-
-	unsigned long ID;
-	std::stringstream s_strid;
-	s_strid << std::hex << sd[1];
-	s_strid >> ID;
-	CDomoticzHardwareBase* pHardware = GetHardware(HardwareID);
-	if (pHardware == nullptr)
-		return false;
-	if (pHardware->HwdType == HTYPE_OpenZWave)
-	{
-		_tGeneralDevice tmeter;
-		tmeter.subtype = sTypeZWaveThermostatFanMode;
-		tmeter.intval1 = ID;
-		tmeter.intval2 = fMode;
-		if (!WriteToHardware(HardwareID, (const char*)&tmeter, sizeof(_tGeneralDevice)))
-			return false;
-	}
-#endif
-	return true;
-}
-
-bool MainWorker::SetZWaveThermostatMode(const std::string& idx, const int tMode)
-{
-	//Get Device details
-	std::vector<std::vector<std::string> > result;
-	result = m_sql.safe_query(
-		"SELECT HardwareID, DeviceID,Unit,Type,SubType,SwitchType FROM DeviceStatus WHERE (ID == '%q')",
-		idx.c_str());
-	if (result.empty())
-		return false;
-
-	std::vector<std::string> sd = result[0];
-	return SetZWaveThermostatModeInt(sd, tMode);
-}
-
-bool MainWorker::SetZWaveThermostatFanMode(const std::string& idx, const int fMode)
-{
-	//Get Device details
-	std::vector<std::vector<std::string> > result;
-	result = m_sql.safe_query(
-		"SELECT HardwareID, DeviceID,Unit,Type,SubType,SwitchType FROM DeviceStatus WHERE (ID == '%q')",
-		idx.c_str());
-	if (result.empty())
-		return false;
-
-	std::vector<std::string> sd = result[0];
-	return SetZWaveThermostatFanModeInt(sd, fMode);
 }
 
 bool MainWorker::SetThermostatState(const std::string& idx, const int newState)
@@ -13905,17 +13706,7 @@ bool MainWorker::UpdateDevice(const int HardwareID, const std::string &DeviceID,
 		// signal connected devices (MQTT, fibaro, http push ... ) about the update
 		sOnDeviceReceived(HardwareID, devidx, devname, nullptr);
 
-		if ((devType == pTypeGeneral) && (subType == sTypeZWaveThermostatMode))
-		{
-			_log.Log(LOG_NORM, "Sending Thermostat Mode to device....");
-			SetZWaveThermostatMode(sidx.str(), nValue);
-		}
-		else if ((devType == pTypeGeneral) && (subType == sTypeZWaveThermostatFanMode))
-		{
-			_log.Log(LOG_NORM, "Sending Thermostat Fan Mode to device....");
-			SetZWaveThermostatFanMode(sidx.str(), nValue);
-		}
-		else if (pHardware)
+		if (pHardware)
 		{
 			// Handle Notification
 			m_notifications.CheckAndHandleNotification(devidx, HardwareID, DeviceID, devname, unit, devType, subType, nValue, sValue);

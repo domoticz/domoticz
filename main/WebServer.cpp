@@ -33,9 +33,6 @@
 #include "../hardware/Meteorologisk.h"
 #include "../hardware/MySensorsBase.h"
 #include "../hardware/OpenWeatherMap.h"
-#ifdef WITH_OPENZWAVE
-#include "../hardware/OpenZWave.h"
-#endif
 #include "../hardware/OTGWBase.h"
 #include "../hardware/RFLinkBase.h"
 #include "../hardware/RFXBase.h"
@@ -117,9 +114,6 @@ namespace http
 			m_pWebEm = nullptr;
 			m_bDoStop = false;
 			m_failcount = 0;
-#ifdef WITH_OPENZWAVE
-			m_ZW_Hwidx = -1;
-#endif
 		}
 
 		CWebServer::~CWebServer()
@@ -651,61 +645,6 @@ namespace http
 			RegisterRType("plans", [this](auto&& session, auto&& req, auto&& root) { RType_Plans(session, req, root); });
 			RegisterRType("floorplans", [this](auto&& session, auto&& req, auto&& root) { RType_FloorPlans(session, req, root); });
 
-#ifdef WITH_OPENZWAVE
-			// ZWave
-			RegisterCommandCode("updatezwavenode", [this](auto&& session, auto&& req, auto&& root) { Cmd_ZWaveUpdateNode(session, req, root); });
-			RegisterCommandCode("deletezwavenode", [this](auto&& session, auto&& req, auto&& root) { Cmd_ZWaveDeleteNode(session, req, root); });
-			RegisterCommandCode("zwaveinclude", [this](auto&& session, auto&& req, auto&& root) { Cmd_ZWaveInclude(session, req, root); });
-			RegisterCommandCode("zwaveexclude", [this](auto&& session, auto&& req, auto&& root) { Cmd_ZWaveExclude(session, req, root); });
-
-			RegisterCommandCode("zwaveisnodeincluded", [this](auto&& session, auto&& req, auto&& root) { Cmd_ZWaveIsNodeIncluded(session, req, root); });
-			RegisterCommandCode("zwaveisnodeexcluded", [this](auto&& session, auto&& req, auto&& root) { Cmd_ZWaveIsNodeExcluded(session, req, root); });
-			RegisterCommandCode("zwaveisnodereplaced", [this](auto&& session, auto&& req, auto&& root) { Cmd_ZWaveIsNodeReplaced(session, req, root); });
-			RegisterCommandCode("zwaveishasnodefaileddone", [this](auto&& session, auto&& req, auto&& root) { Cmd_ZWaveIsHasNodeFailedDone(session, req, root); });
-
-			RegisterCommandCode("zwavesoftreset", [this](auto&& session, auto&& req, auto&& root) { Cmd_ZWaveSoftReset(session, req, root); });
-			RegisterCommandCode("zwavehardreset", [this](auto&& session, auto&& req, auto&& root) { Cmd_ZWaveHardReset(session, req, root); });
-			RegisterCommandCode("zwavenetworkheal", [this](auto&& session, auto&& req, auto&& root) { Cmd_ZWaveNetworkHeal(session, req, root); });
-			RegisterCommandCode("zwavenodeheal", [this](auto&& session, auto&& req, auto&& root) { Cmd_ZWaveNodeHeal(session, req, root); });
-			RegisterCommandCode("zwavenetworkinfo", [this](auto&& session, auto&& req, auto&& root) { Cmd_ZWaveNetworkInfo(session, req, root); });
-			RegisterCommandCode("zwaveremovegroupnode", [this](auto&& session, auto&& req, auto&& root) { Cmd_ZWaveRemoveGroupNode(session, req, root); });
-			RegisterCommandCode("zwaveaddgroupnode", [this](auto&& session, auto&& req, auto&& root) { Cmd_ZWaveAddGroupNode(session, req, root); });
-			RegisterCommandCode("zwavegroupinfo", [this](auto&& session, auto&& req, auto&& root) { Cmd_ZWaveGroupInfo(session, req, root); });
-			RegisterCommandCode("zwavecancel", [this](auto&& session, auto&& req, auto&& root) { Cmd_ZWaveCancel(session, req, root); });
-			RegisterCommandCode("applyzwavenodeconfig", [this](auto&& session, auto&& req, auto&& root) { Cmd_ApplyZWaveNodeConfig(session, req, root); });
-			RegisterCommandCode("zwavehasnodefailed", [this](auto&& session, auto&& req, auto&& root) { Cmd_ZWaveHasNodeFailed(session, req, root); });
-			RegisterCommandCode("zwavereplacefailednode", [this](auto&& session, auto&& req, auto&& root) { Cmd_ZWaveReplaceFailedNode(session, req, root); });
-			RegisterCommandCode("requestzwavenodeconfig", [this](auto&& session, auto&& req, auto&& root) { Cmd_ZWaveRequestNodeConfig(session, req, root); });
-			RegisterCommandCode("requestzwavenodeinfo", [this](auto&& session, auto&& req, auto&& root) { Cmd_ZWaveRequestNodeInfo(session, req, root); });
-			RegisterCommandCode("zwavestatecheck", [this](auto&& session, auto&& req, auto&& root) { Cmd_ZWaveStateCheck(session, req, root); });
-			RegisterCommandCode("zwavereceiveconfigurationfromothercontroller",
-				[this](auto&& session, auto&& req, auto&& root) { Cmd_ZWaveReceiveConfigurationFromOtherController(session, req, root); });
-			RegisterCommandCode("zwavesendconfigurationtosecondcontroller",
-				[this](auto&& session, auto&& req, auto&& root) { Cmd_ZWaveSendConfigurationToSecondaryController(session, req, root); });
-			RegisterCommandCode("zwavetransferprimaryrole", [this](auto&& session, auto&& req, auto&& root) { Cmd_ZWaveTransferPrimaryRole(session, req, root); });
-			RegisterCommandCode("zwavestartusercodeenrollmentmode", [this](auto&& session, auto&& req, auto&& root) { Cmd_ZWaveSetUserCodeEnrollmentMode(session, req, root); });
-			RegisterCommandCode("zwavegetusercodes", [this](auto&& session, auto&& req, auto&& root) { Cmd_ZWaveGetNodeUserCodes(session, req, root); });
-			RegisterCommandCode("zwaveremoveusercode", [this](auto&& session, auto&& req, auto&& root) { Cmd_ZWaveRemoveUserCode(session, req, root); });
-			RegisterCommandCode("zwavegetbatterylevels", [this](auto&& session, auto&& req, auto&& root) { Cmd_ZWaveGetBatteryLevels(session, req, root); });
-
-			m_pWebEm->RegisterPageCode("/zwavegetconfig.php", [this](auto&& session, auto&& req, auto&& rep) { ZWaveGetConfigFile(session, req, rep); });
-
-			m_pWebEm->RegisterPageCode("/ozwcp/poll.xml", [this](auto&& session, auto&& req, auto&& rep) { ZWaveCPPollXml(session, req, rep); });
-			m_pWebEm->RegisterPageCode("/ozwcp/cp.html", [this](auto&& session, auto&& req, auto&& rep) { ZWaveCPIndex(session, req, rep); });
-			m_pWebEm->RegisterPageCode("/ozwcp/confparmpost.html", [this](auto&& session, auto&& req, auto&& rep) { ZWaveCPNodeGetConf(session, req, rep); });
-			m_pWebEm->RegisterPageCode("/ozwcp/refreshpost.html", [this](auto&& session, auto&& req, auto&& rep) { ZWaveCPNodeGetValues(session, req, rep); });
-			m_pWebEm->RegisterPageCode("/ozwcp/valuepost.html", [this](auto&& session, auto&& req, auto&& rep) { ZWaveCPNodeSetValue(session, req, rep); });
-			m_pWebEm->RegisterPageCode("/ozwcp/buttonpost.html", [this](auto&& session, auto&& req, auto&& rep) { ZWaveCPNodeSetButton(session, req, rep); });
-			m_pWebEm->RegisterPageCode("/ozwcp/admpost.html", [this](auto&& session, auto&& req, auto&& rep) { ZWaveCPAdminCommand(session, req, rep); });
-			m_pWebEm->RegisterPageCode("/ozwcp/nodepost.html", [this](auto&& session, auto&& req, auto&& rep) { ZWaveCPNodeChange(session, req, rep); });
-			m_pWebEm->RegisterPageCode("/ozwcp/thpost.html", [this](auto&& session, auto&& req, auto&& rep) { ZWaveCPTestHeal(session, req, rep); });
-			m_pWebEm->RegisterPageCode("/ozwcp/topopost.html", [this](auto&& session, auto&& req, auto&& rep) { ZWaveCPGetTopo(session, req, rep); });
-			m_pWebEm->RegisterPageCode("/ozwcp/statpost.html", [this](auto&& session, auto&& req, auto&& rep) { ZWaveCPGetStats(session, req, rep); });
-			m_pWebEm->RegisterPageCode("/ozwcp/grouppost.html", [this](auto&& session, auto&& req, auto&& rep) { ZWaveCPSetGroup(session, req, rep); });
-			//
-			// pollpost.html
-			RegisterRType("openzwavenodes", [this](auto&& session, auto&& req, auto&& root) { RType_OpenZWaveNodes(session, req, root); });
-#endif
 			// EnOcean helpers cmds
 
 			RegisterCommandCode("enoceangetmanufacturers", [this](auto&& session, auto&& req, auto&& root) { Cmd_EnOceanGetManufacturers(session, req, root); });
@@ -9212,21 +9151,6 @@ namespace http
 					bHasTimers = m_sql.HasTimers(sd[0]);
 
 					bHaveTimeout = false;
-#ifdef WITH_OPENZWAVE
-					if (pHardware != nullptr)
-					{
-						if (pHardware->HwdType == HTYPE_OpenZWave)
-						{
-							COpenZWave* pZWave = dynamic_cast<COpenZWave*>(pHardware);
-							unsigned long ID;
-							std::stringstream s_strid;
-							s_strid << std::hex << sd[1];
-							s_strid >> ID;
-							int nodeID = (ID & 0x0000FF00) >> 8;
-							bHaveTimeout = pZWave->HasNodeFailed(nodeID);
-						}
-					}
-#endif
 					root["result"][ii]["HaveTimeout"] = bHaveTimeout;
 
 					std::string lstatus;
@@ -10807,37 +10731,6 @@ namespace http
 						root["result"][ii]["HaveTimeout"] = bHaveTimeout;
 						std::string modes;
 						// Add supported modes
-#ifdef WITH_OPENZWAVE
-						if (pHardware)
-						{
-							if (pHardware->HwdType == HTYPE_OpenZWave)
-							{
-								COpenZWave* pZWave = dynamic_cast<COpenZWave*>(pHardware);
-								unsigned long ID;
-								std::stringstream s_strid;
-								s_strid << std::hex << sd[1];
-								s_strid >> ID;
-								std::vector<std::string> vmodes = pZWave->GetSupportedThermostatModes(ID);
-								int smode = 0;
-								char szTmp[200];
-								for (const auto& mode : vmodes)
-								{
-									// Value supported
-									sprintf(szTmp, "%d;%s;", smode, mode.c_str());
-									modes += szTmp;
-									smode++;
-								}
-
-								if (!vmodes.empty())
-								{
-									if (nValue < (int)vmodes.size())
-									{
-										sprintf(szData, "%s", vmodes[nValue].c_str());
-									}
-								}
-							}
-						}
-#endif
 						root["result"][ii]["Data"] = szData;
 						root["result"][ii]["Modes"] = modes;
 					}
@@ -10852,21 +10745,6 @@ namespace http
 						bool bAddedSupportedModes = false;
 						std::string modes;
 						// Add supported modes
-#ifdef WITH_OPENZWAVE
-						if (pHardware)
-						{
-							if (pHardware->HwdType == HTYPE_OpenZWave)
-							{
-								COpenZWave* pZWave = dynamic_cast<COpenZWave*>(pHardware);
-								unsigned long ID;
-								std::stringstream s_strid;
-								s_strid << std::hex << sd[1];
-								s_strid >> ID;
-								modes = pZWave->GetSupportedThermostatFanModes(ID);
-								bAddedSupportedModes = !modes.empty();
-							}
-						}
-#endif
 						if (!bAddedSupportedModes)
 						{
 							int smode = 0;
@@ -11723,10 +11601,6 @@ namespace http
 			root["status"] = "OK";
 			root["title"] = "Hardware";
 
-#ifdef WITH_OPENZWAVE
-			m_ZW_Hwidx = -1;
-#endif
-
 			std::vector<std::vector<std::string>> result;
 			result = m_sql.safe_query("SELECT ID, Name, Enabled, Type, Address, Port, SerialPort, Username, Password, Extra, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6, DataTimeout, "
 				"LogLevel FROM Hardware ORDER BY ID ASC");
@@ -11803,14 +11677,6 @@ namespace http
 							EnphaseAPI* pMyHardware = dynamic_cast<EnphaseAPI*>(pHardware);
 							root["result"][ii]["version"] = pMyHardware->m_szSoftwareVersion;
 						}
-#ifdef WITH_OPENZWAVE
-						else if (pHardware->HwdType == HTYPE_OpenZWave)
-						{ // Special case for openzwave (status for nodes queried)
-							COpenZWave* pOZWHardware = dynamic_cast<COpenZWave*>(pHardware);
-							root["result"][ii]["version"] = pOZWHardware->GetVersionLong();
-							root["result"][ii]["NodesQueried"] = (pOZWHardware->m_awakeNodesQueried || pOZWHardware->m_allNodesQueried);
-						}
-#endif
 					}
 					ii++;
 				}
@@ -12744,9 +12610,6 @@ namespace http
 			std::string state = request::findValue(&req, "state");
 			std::string mode = request::findValue(&req, "mode");
 			std::string until = request::findValue(&req, "until");
-			std::string clock = request::findValue(&req, "clock");
-			std::string tmode = request::findValue(&req, "tmode");
-			std::string fmode = request::findValue(&req, "fmode");
 			std::string sCustomImage = request::findValue(&req, "customimage");
 
 			std::string strunit = request::findValue(&req, "unit");
@@ -12852,54 +12715,6 @@ namespace http
 					m_mainworker.SetSetPoint(idx, static_cast<float>(atof(setPoint.c_str())), mode, until);
 				else
 					m_mainworker.SetSetPoint(idx, static_cast<float>(atof(setPoint.c_str())));
-			}
-			else if (!clock.empty())
-			{
-				int urights = 3;
-				if (bHaveUser)
-				{
-					int iUser = FindUser(session.username.c_str());
-					if (iUser != -1)
-					{
-						urights = static_cast<int>(m_users[iUser].userrights);
-						_log.Log(LOG_STATUS, "User: %s initiated a SetClock command", m_users[iUser].Username.c_str());
-					}
-				}
-				if (urights < 1)
-					return;
-				m_mainworker.SetClock(idx, clock);
-			}
-			else if (!tmode.empty())
-			{
-				int urights = 3;
-				if (bHaveUser)
-				{
-					int iUser = FindUser(session.username.c_str());
-					if (iUser != -1)
-					{
-						urights = static_cast<int>(m_users[iUser].userrights);
-						_log.Log(LOG_STATUS, "User: %s initiated a Thermostat Mode command", m_users[iUser].Username.c_str());
-					}
-				}
-				if (urights < 1)
-					return;
-				m_mainworker.SetZWaveThermostatMode(idx, atoi(tmode.c_str()));
-			}
-			else if (!fmode.empty())
-			{
-				int urights = 3;
-				if (bHaveUser)
-				{
-					int iUser = FindUser(session.username.c_str());
-					if (iUser != -1)
-					{
-						urights = static_cast<int>(m_users[iUser].userrights);
-						_log.Log(LOG_STATUS, "User: %s initiated a Thermostat Fan Mode command", m_users[iUser].Username.c_str());
-					}
-				}
-				if (urights < 1)
-					return;
-				m_mainworker.SetZWaveThermostatFanMode(idx, atoi(fmode.c_str()));
 			}
 
 			if (!strunit.empty())

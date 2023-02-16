@@ -7,7 +7,6 @@ define([
     'hardware/setup/PanasonicTV',
     'hardware/setup/Pinger',
     'hardware/setup/WakeOnLan',
-    'hardware/setup/ZWave',
 ], function (app) {
     app.controller('HardwareSetupController', function ($routeParams, domoticzApi) {
         var vm = this;

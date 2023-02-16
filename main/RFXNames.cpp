@@ -175,7 +175,7 @@ static const STR_TABLE_SINGLE HardwareTypeTable[] = {
 	{ HTYPE_OpenThermGateway, "OpenTherm Gateway USB", "OpenTherm" },
 	{ HTYPE_TeleinfoMeter, "Teleinfo EDF", "TeleInfo" },
 	{ HTYPE_OpenThermGatewayTCP, "OpenTherm Gateway with LAN interface", "OpenTherm" },
-	{ HTYPE_OpenZWave, "OpenZWave USB", "OpenZWave" },
+	{ HTYPE_OpenZWave, "OpenZWave (not used!) USB", "OpenZWave" },
 	{ HTYPE_LimitlessLights, "Limitless/AppLamp/Mi Light with LAN/WiFi interface", "Limitless" },
 	{ HTYPE_System, "Motherboard sensors", "HardwareMonitor" },
 	{ HTYPE_EnOceanESP2, "EnOcean USB (ESP2)", "EnOcean" },
