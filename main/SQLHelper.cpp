@@ -47,6 +47,7 @@
 
 extern http::server::CWebServerHelper m_webservers;
 extern std::string szWWWFolder;
+extern std::string szAppVersion;
 
 constexpr auto sqlCreateDeviceStatus =
 "CREATE TABLE IF NOT EXISTS [DeviceStatus] ("
@@ -3584,6 +3585,9 @@ bool CSQLHelper::OpenDatabase()
 	if (nValue < 1)
 		nValue = 6000;
 	m_max_kwh_usage = nValue;
+
+	//Update version in database
+	UpdatePreferencesVar("Domoticz_Version", szAppVersion);
 
 	//Start background thread
 	if (!StartThread())
