@@ -7372,16 +7372,17 @@ void CSQLHelper::AddCalendarUpdateMeter()
 				|| ((devType == pTypeGeneral) && (subType == sTypeKwh))
 				)
 			{
-				result = safe_query("SELECT Value FROM Meter WHERE (DeviceRowID='%" PRIu64 "') ORDER BY ROWID DESC LIMIT 1", ID);
+				result = safe_query("SELECT Value, Usage FROM Meter WHERE (DeviceRowID='%" PRIu64 "') ORDER BY ROWID DESC LIMIT 1", ID);
 				if (!result.empty())
 				{
 					std::vector<std::string> sd = result[0];
 					result = safe_query(
-						"INSERT INTO Meter (DeviceRowID, Value) "
-						"VALUES ('%" PRIu64 "', '%q')",
+						"INSERT INTO Meter (DeviceRowID, Value, Usage) "
+						"VALUES ('%" PRIu64 "', '%q', '%q')",
 						ID,
-						sd[0].c_str()
-					);
+						sd[0].c_str(),
+						sd[1].c_str()
+						);
 					//also send this to Influx as this can be used as start counter of today()
 					m_influxpush.DoInfluxPush(ID, true);
 				}
