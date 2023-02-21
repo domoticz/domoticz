@@ -2,7 +2,7 @@
 
 const CACHE_NAME = 'offline';
 // Customize this with a different URL if needed.
-const OFFLINE_URL = '/views/offline.html';
+const OFFLINE_URL = 'views/offline.html';
 
 self.addEventListener('install', (event) => {
   event.waitUntil((async () => {
@@ -55,7 +55,7 @@ self.addEventListener('fetch', (event) => {
   }
 });
 
-self.importScripts('/js/sw-toolbox.js');
+self.importScripts('js/sw-toolbox.js');
 
 // Turn on debug logging, visible in the Developer Tools' console.
 self.toolbox.options.debug = true;
