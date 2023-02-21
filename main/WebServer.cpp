@@ -14464,6 +14464,7 @@ namespace http
 						unsigned long long ulRealFirstValue = 0;
 						int lastDay = 0;
 						std::string szLastDateTimeHour;
+						std::string szActDateTimeHour;
 						std::string szlastDateTime;
 						unsigned long long ulLastValue = 0;
 
@@ -14488,6 +14489,8 @@ namespace http
 
 						if (!result.empty())
 						{
+							double lastUsageValue = 0;
+
 							for (const auto& sd : result)
 							{
 								if (method == 0)
@@ -14495,7 +14498,7 @@ namespace http
 									// bars / hour
 									unsigned long long actValue = std::strtoull(sd[0].c_str(), nullptr, 10);
 									szlastDateTime = sd[1].substr(0, 16);
-									szLastDateTimeHour = sd[1].substr(0, 13) + ":00";
+									szActDateTimeHour = sd[1].substr(0, 13) + ":00";
 
 									struct tm ntime;
 									time_t atime;
@@ -14543,7 +14546,7 @@ namespace http
 
 												if (!bIsManagedCounter)
 												{
-													double usageValue = (double)(actValue - ulRealFirstValue);
+													double usageValue = lastUsageValue;
 
 													switch (metertype)
 													{
@@ -14604,6 +14607,8 @@ namespace http
 											}
 										}
 									}
+									szLastDateTimeHour = szActDateTimeHour;
+									lastUsageValue = (double)(actValue - ulRealFirstValue);
 									ulLastValue = actValue;
 								}
 								else
