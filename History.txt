@@ -1,6 +1,7 @@
 Version 2023.xx
 - Implemented: LUA: Added name state to devicechanged_ext table
 - Fixed: Counter day charts, better hourly bars and usage
+- Fixed: Chime structure check
 
 Version 2023.1 (February 14 2023)
 - For a full overview visit: https://www.domoticz.com/wiki/Domoticz_versions_-_Commits for details
