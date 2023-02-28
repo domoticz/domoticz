@@ -160,6 +160,8 @@ bool CRFXBase::CheckValidRFXData(const uint8_t *pData)
 		return (pLen == 0x0B);
 	case pTypeLEVELSENSOR:
 		return (pLen == 0x0D);
+	case pTypeLIGHTNING:
+		return (pLen == 0x0C);
 	default:
 		return false;//unknown Type
 	}

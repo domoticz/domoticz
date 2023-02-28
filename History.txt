@@ -1,5 +1,6 @@
 Version 2023.xx
 - Implemented: LUA: Added name state to devicechanged_ext table
+- Implemented: RFXCom, Updated SDK
 - Fixed: Counter day charts, better hourly bars and usage
 - Fixed: Chime structure check
 

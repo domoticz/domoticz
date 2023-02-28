@@ -4737,6 +4737,28 @@ namespace http
 					devid = id;
 					sunitcode = "0";
 				}
+				else if (lighttype == 314)
+				{
+					// Orcon
+					dtype = pTypeFan;
+					subtype = sTypeOrcon;
+					std::string id = request::findValue(&req, "id");
+					if (id.empty())
+						return;
+					devid = id;
+					sunitcode = "0";
+				}
+				else if (lighttype == 315)
+				{
+					// Itho HRU400
+					dtype = pTypeFan;
+					subtype = sTypeIthoHRU400;
+					std::string id = request::findValue(&req, "id");
+					if (id.empty())
+						return;
+					devid = id;
+					sunitcode = "0";
+				}
 				else if (lighttype == 400)
 				{
 					// Openwebnet Bus Blinds

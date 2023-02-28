@@ -663,6 +663,10 @@ int main(int argc, char**argv)
 
 	CCmdLine cmdLine;
 
+	RBUF tsen;
+	memset(&tsen, 0, sizeof(RBUF));
+	int packetlength = sizeof(tsen.LIGHTNING) - 1;
+
 	// parse argc,argv 
 #if defined WIN32
 	cmdLine.SplitLine(__argc, __argv);
