@@ -11313,7 +11313,7 @@ void MainWorker::decode_LightningSensor(const CDomoticzHardwareBase* pHardware, 
 	gdevice.subtype = sTypeDistance;
 	gdevice.intval1 = (pResponse->LEVELSENSOR.id1 * 256) + pResponse->LEVELSENSOR.id2;
 	gdevice.id = (uint8_t)gdevice.intval1;
-	gdevice.floatval1 = float((float(distance) / 63.0F) * 40.0F);
+	gdevice.floatval1 = float(distance);
 	gdevice.rssi = SignalLevel;
 	gdevice.battery_level = BatteryLevel;
 	return decode_General(pHardware, (const tRBUF*)&gdevice, procResult);
