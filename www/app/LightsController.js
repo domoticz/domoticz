@@ -708,7 +708,8 @@ define(['app', 'livesocket'], function (app) {
 
 		//We only call this once. After this the widgets are being updated automatically by used of the 'jsonupdate' broadcast event.
 		RefreshLights = function () {
-			livesocket.getJson("json.htm?type=devices&filter=light&used=true&order=[Order]&lastupdate=" + $.LastUpdateTime + "&plan=" + window.myglobals.LastPlanSelected, function (data) {
+			var roomPlanId = $routeParams.room || window.myglobals.LastPlanSelected;
+			livesocket.getJson("json.htm?type=devices&filter=light&used=true&order=[Order]&lastupdate=" + $.LastUpdateTime + "&plan=" + roomPlanId, function (data) {
 				if (typeof data.ServerTime != 'undefined') {
 					$rootScope.SetTimeAndSun(data.Sunrise, data.Sunset, data.ServerTime);
 				}
@@ -1275,10 +1276,7 @@ define(['app', 'livesocket'], function (app) {
 						$element.find(".span4").droppable({
 							drop: function () {
 								var myid = $(this).attr("id");
-								var roomid = $element.find("#comboroom option:selected").val();
-								if (typeof roomid == 'undefined') {
-									roomid = 0;
-								}
+								var roomid = window.myglobals.LastPlanSelected;
 								$.ajax({
 									url: "json.htm?type=command&param=switchdeviceorder&idx1=" + myid + "&idx2=" + $.devIdx + "&roomid=" + roomid,
 									async: false,
@@ -2364,6 +2362,7 @@ define(['app', 'livesocket'], function (app) {
 	
 			if (typeof roomPlanId != 'undefined') {
 				ctrl.roomSelected = roomPlanId;
+				window.myglobals.LastPlanSelected = roomPlanId;
 			}
 			ctrl.changeRoom = function () {
 				var idx = ctrl.roomSelected;
