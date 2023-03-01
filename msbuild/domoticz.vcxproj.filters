@@ -1446,6 +1446,7 @@
     <None Include="..\www\js\sw-toolbox.js">
       <Filter>www\js</Filter>
     </None>
+    <None Include="..\www\css\planning.css" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\webserver\Base64.h">
