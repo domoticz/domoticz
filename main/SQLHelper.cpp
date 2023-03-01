@@ -3694,7 +3694,6 @@ void CSQLHelper::PerformThreadedAction(const _tTaskItem tItem)
 		bool timeoutOccurred = false;
 
 		// make sure we have unique filenames
-		/* DGA45: fix concurrency issue with scriptoutputindex (#5612) */
 		std::stringstream ss;
 		ss << std::this_thread::get_id();
 		std::string scriptoutputindextext = ss.str();
