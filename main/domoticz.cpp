@@ -75,6 +75,7 @@ namespace
 		"\t-approot file_path (for example /opt/domoticz)\n"
 #endif
 		"\t-webroot additional web root, useful with proxy servers (for example domoticz)\n"
+		"\t-nocache ask browser not to cache pages\n"
 		"\t-startupdelay seconds (default=0)\n"
 		"\t-nowwwpwd (in case you forgot the web server username/password)\n"
 		"\t-wwwcompress mode (on = always compress [default], off = always decompress, static = no processing but try precompressed first)\n"
@@ -126,6 +127,7 @@ std::string szUserDataFolder;
 std::string szWWWFolder;
 std::string szWebRoot;
 std::string dbasefile;
+bool bDoCachePages = true;
 
 /*
 #define VCGENCMDTEMPCOMMAND "vcgencmd measure_temp"
@@ -1053,6 +1055,11 @@ int main(int argc, char**argv)
 		{
 			g_bUseUpdater = false;
 		}
+	}
+
+	if (cmdLine.HasSwitch("-nocache"))
+	{
+		bDoCachePages = false;
 	}
 
 #if defined WIN32
