@@ -3,6 +3,7 @@ Version 2023.xx
 - Implemented: RFXCom, Updated SDK
 - Implemented: -nocache command line option (ask browser not to cache pages)
 - Fixed: Counter day charts, better hourly bars and usage
+- Fixed: Device reordering when a room plan was selected
 - Fixed: Chime structure check
 
 Version 2023.1 (February 14 2023)
