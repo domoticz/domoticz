@@ -502,7 +502,6 @@ class CSQLHelper : public StoppableTask
 	double m_max_kwh_usage;
 
       private:
-	int scriptoutputindex=0;
 	std::mutex m_executeThreadMutex;
 	std::mutex m_sqlQueryMutex;
 	sqlite3 *m_dbase;

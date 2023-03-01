@@ -3694,12 +3694,10 @@ void CSQLHelper::PerformThreadedAction(const _tTaskItem tItem)
 		bool timeoutOccurred = false;
 
 		// make sure we have unique filenames
-		scriptoutputindex++;
-		if (scriptoutputindex > 10000) // should be a big number, to prevent parallel scripts having the same output files. 250 concurrent will probably never be reached
-		{
-			scriptoutputindex = 1;
-		}
-		std::string scriptoutputindextext = std::to_string(scriptoutputindex);
+		/* DGA45: fix concurrency issue with scriptoutputindex (#5612) */
+		std::stringstream ss;
+		ss << std::this_thread::get_id();
+		std::string scriptoutputindextext = ss.str();
 
 		// create filenames for stderr and stdout  ("path+domscript+index+<.out|.err>")
 		filename = path;
