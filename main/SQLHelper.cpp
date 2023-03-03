@@ -5667,17 +5667,14 @@ bool CSQLHelper::GetLastValue(const int HardwareID, const char* DeviceID, const 
 
 std::string  CSQLHelper::GetDeviceValue(const char* FieldName, const std::string& Idx)
 {
-	bool result = false;
-	std::vector<std::vector<std::string> > sqlresult;
-
-    sqlresult = safe_query("SELECT %s FROM DeviceStatus WHERE ( ID= %s )" , FieldName, Idx.c_str() );
+    auto sqlresult = safe_query("SELECT %s FROM DeviceStatus WHERE ( ID= %s )" , FieldName, Idx.c_str() );
 
 	if (!sqlresult.empty())
 	{
 		return sqlresult[0][0] ;
 	}
 
-	return "" ;
+	return std::string("") ;
 }
 
 

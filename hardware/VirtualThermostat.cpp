@@ -13,21 +13,12 @@
 
 std::string AVALAIBLE_MODE = "Eco,Conf,Frost,Off";
 
-std::string GetDeviceValue(const char* FieldName, const char* Idx)
-{
-	auto result = m_sql.safe_query("SELECT %s from DeviceStatus WHERE (ID == %s )", FieldName, Idx);
-	if (!result.empty())
-		return  result[0][0];
-	else
-		return  "";
-}
-
 void VirtualThermostat::CircularBuffer::Clear()
 {
-	for (int i = 0; i < m_Size; i++)m_Value[i] = 0;
+	for (unsigned int i = 0; i < m_Size; i++)m_Value[i] = 0;
 	m_index = 0;
 }
-VirtualThermostat::CircularBuffer::CircularBuffer(int pSize)
+VirtualThermostat::CircularBuffer::CircularBuffer(unsigned int pSize)
 {
 	m_Value = new double[pSize];
 	m_Size = pSize;
@@ -55,7 +46,7 @@ double VirtualThermostat::CircularBuffer::Put(double val)
 double VirtualThermostat::CircularBuffer::GetSum()
 {
 	double  Sum = 0;
-	for (int i = 0; i < m_Size; i++)
+	for (unsigned int i = 0; i < m_Size; i++)
 	{
 		Sum += m_Value[i];
 	}
@@ -65,15 +56,36 @@ double VirtualThermostat::CircularBuffer::GetSum()
 //option management
 void getOption(TOptionMap& Option, const char* optionName, int& value)
 {
-	value = std::stoi(Option[optionName].c_str());
+	try
+	{
+		value = std::stoi(Option[optionName]);
+	}
+	catch (const std::exception&)
+	{
+		value=0 ;
+	}
 }
 void getOption(TOptionMap& Option, const char* optionName, long& value)
 {
-	value = std::stol(Option[optionName].c_str());
+	try
+	{
+	value = std::stol(Option[optionName]);
+	}
+	catch (const std::exception&)
+	{
+		value=0 ;
+	}
 }
 void getOption(TOptionMap& Option, const char* optionName, double& value)
 {
-	value = std::stof(Option[optionName].c_str());
+	try
+	{
+	value = std::stof(Option[optionName]);
+	}
+	catch (const std::exception&)
+	{
+		value=0 ;
+	}
 }
 void getOption(TOptionMap& Option, const char* optionName, std::string& value)
 {
@@ -451,7 +463,7 @@ void VirtualThermostat::ScheduleThermostat(int Minute)
 }
 
 //return the option value from devive id 
-std::string GetOptionFromDeviceId(std::string& devIdx, const char* option)
+std::string GetOptionFromDeviceId(const std::string& devIdx, const char* option)
 {
 	TOptionMap Option = m_sql.GetDeviceOptions(devIdx);
 	return (Option[option]);
@@ -548,7 +560,7 @@ void VirtualThermostat::ThermostatToggleEcoConfort(const char* devID, char* setT
 }
 
 //return true if in confor mode
-std::string VirtualThermostat::GetCurrentMode(std::string& devIdx)
+std::string VirtualThermostat::GetCurrentMode(const std::string& devIdx)
 {
 
 	float EcoTemp = GetEcoTemp(devIdx.c_str());
@@ -565,7 +577,7 @@ std::string VirtualThermostat::GetMode(float curTemp, float EcoTemp, float ConfT
 	else               return ThermostatModeIntToString(Confor);
 }
 
-bool VirtualThermostat::SetThermostatState(const std::string& idx, const int newState)
+bool VirtualThermostat::SetThermostatState(const std::string& idx, const unsigned int newState)
 {
 	VirtualThermostatMode mode = (VirtualThermostatMode)newState;
 	if (mode >= EndMode)
@@ -582,18 +594,18 @@ bool VirtualThermostat::SetThermostatState(const std::string& idx, const int new
 }
 
 //return the thermostat room temperature 
-std::string VirtualThermostat::GetRoomTemperature(std::string& devIdx)
+std::string VirtualThermostat::GetRoomTemperature(const std::string& devIdx)
 {
 	std::string temp = GetOptionFromDeviceId(devIdx, "RoomTemp");
 	return (temp);
 };
 
-std::string VirtualThermostat::GetSetPoint(std::string& devIdx)
+std::string VirtualThermostat::GetSetPoint(const std::string& devIdx)
 {
 	return (m_sql.GetDeviceValue("svalue", devIdx.c_str()).c_str());
 }
 
-float VirtualThermostat::GetSetPointTemperature(std::string& devIdx)
+float VirtualThermostat::GetSetPointTemperature(const std::string& devIdx)
 {
 	return ((float)std::stof(GetSetPoint(devIdx).c_str()));
 };

@@ -1,6 +1,9 @@
 #pragma once
 
-#include <iostream>
+#include <string>
+#include <map>
+#include <algorithm >
+
 #include "DomoticzHardware.h"
 
 class CThermostatHardware : public CDomoticzHardwareBase
@@ -16,18 +19,18 @@ public:
 	//thermostat function
 	//return the thermostat available mode in string separated by comma 
 	virtual std::string& GetAvailableMode() { return m_AvailableMode; };
-	virtual void SetAvailableMode(std::string& pAvailableMode) { m_AvailableMode = pAvailableMode; };
+	virtual void SetAvailableMode(const std::string& pAvailableMode) { m_AvailableMode = pAvailableMode; };
 	//return the thermostat mode 
-	virtual std::string GetCurrentMode(std::string& devIdx) = 0;
+	virtual std::string GetCurrentMode(const std::string& devIdx) = 0;
 	//return the thermostat room temperature 
-	virtual std::string GetRoomTemperature(std::string& devIdx) = 0;
+	virtual std::string GetRoomTemperature(const std::string& devIdx) = 0;
 	//return the thermostat current setpoint 
-	virtual std::string GetSetPoint(std::string& devIdx) = 0;
+	virtual std::string GetSetPoint(const std::string& devIdx) = 0;
 	//set the thermostat mode : newState = integer thermostat mode , in the order in AvailableMode
-	virtual bool SetThermostatState(const std::string& devIdx, const int newState) = 0;
+	virtual bool SetThermostatState(const std::string& devIdx, const unsigned int newState) = 0;
 
 	//convert thermostat string state to int state : OFF-->0  ECO-->1
-	unsigned int  ThermostatModeStringToInt(std::string& mode)
+	unsigned int  ThermostatModeStringToInt(const std::string& mode)
 	{
 		std::vector<std::string> ModeStr;
 		StringSplit(m_AvailableMode, ",", ModeStr);
@@ -38,10 +41,10 @@ public:
 	{
 		std::vector<std::string> ModeStr;
 		StringSplit(m_AvailableMode, ",", ModeStr);
-		if (Mode < (int)ModeStr.size())
+		if (Mode < ModeStr.size())
 			return ModeStr[Mode];
 		else
-			return "UNKNOWN";
+			return std::string("UNKNOWN");
 
 	}
 

@@ -22,12 +22,12 @@ class VirtualThermostat : public CThermostatHardware
 {
 private:
 	class CircularBuffer {
-		double* m_Value;
-		int m_Size; //size of buffer'
-		int m_index; //current record index
+		double*      m_Value;
+		unsigned int m_Size; //size of buffer'
+		unsigned int m_index; //current record index
 
 	public:
-		CircularBuffer(int pSize);
+		CircularBuffer(unsigned int pSize);
 		~CircularBuffer();
 		int GetNext();
 		//store value and return last
@@ -44,11 +44,18 @@ public:
 	VirtualThermostat(const int ID);
 	~VirtualThermostat();
 	bool WriteToHardware(const char* pdata, const unsigned char length);
+	//set the thermostat mode 
+	virtual bool SetThermostatState(const std::string& deviceIdx, const unsigned int newState);
+	//return the thermostat mode 
+	virtual std::string GetCurrentMode(const std::string& devIdx);
+	//return the thermostat room temperature 
+	virtual std::string GetRoomTemperature(const std::string& devIdx);
+	virtual std::string GetSetPoint(const std::string& devIdx);
 
+private:
 	void	ScheduleThermostat(int Minute);
 	int		getPrevThermostatProg(const char* devID, char* CurrentTime, std::string& Time);
 	int		getNextThermostatProg(const char* devID, char* CurrentTime, std::string& Time);
-public:
 	int ThermostatGetEcoConfort(const char* devID, int CurrentTargetTemp);
 	void	ThermostatToggleEcoConfort(const char* devID, char* setTemp, char* Duration);
 	int	ComputeThermostatOutput(int Min, int PowerPercent);
@@ -65,17 +72,7 @@ public:
 	bool GetLastValue(const char* DeviceID, int& nValue, std::string& sValue, struct tm& LastUpdateTime);
 
 	//thermostat function
-
-	//return the thermostat mode 
-	virtual std::string GetCurrentMode(std::string& devIdx);
-	//return the thermostat room temperature 
-	virtual std::string GetRoomTemperature(std::string& devIdx);
-	float GetSetPointTemperature(std::string& devIdx);
-	std::string GetSetPoint(std::string& devIdx);
-
-	//set the thermostat mode 
-	virtual bool SetThermostatState(const std::string& deviceIdx, const int newState);
-	//convert interger state to string state : 0--> OFF 1-->ECO
+	float GetSetPointTemperature(const std::string& devIdx);
 
 	bool StartHardware();
 	bool StopHardware();
