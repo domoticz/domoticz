@@ -2,7 +2,6 @@
 
 #include <string>
 #include <map>
-#include <algorithm >
 
 #include "DomoticzHardware.h"
 
