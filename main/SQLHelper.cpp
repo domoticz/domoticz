@@ -5665,9 +5665,9 @@ bool CSQLHelper::GetLastValue(const int HardwareID, const char* DeviceID, const 
 	return result;
 }
 
-std::string  CSQLHelper::GetDeviceValue(const char* FieldName, const std::string& Idx)
+std::string  CSQLHelper::GetDeviceValue(const std::string FieldName, const std::string& Idx)
 {
-    auto sqlresult = safe_query("SELECT %s FROM DeviceStatus WHERE ( ID= %s )" , FieldName, Idx.c_str() );
+    auto sqlresult = safe_query("SELECT %s FROM DeviceStatus WHERE ( ID= %s )" , FieldName.c_str() , Idx.c_str() );
 
 	if (!sqlresult.empty())
 	{
@@ -6074,18 +6074,18 @@ void CSQLHelper::UpdateTemperatureLog()
 					//if not a virtual thermostat
 					if (Hardware==nullptr)
 					{
-						temp = static_cast<float>(std::stof(splitresults[0].c_str()));
+						temp = std::stof(splitresults[0]);
 					}
 					else
 					{
 						//for virtual thermostat record Room Temperature / set point & power level 0..100%
 						//set point temperature record as chill
 						std::string Options  = sd[6];
-						chill = static_cast<float>(std::stof(splitresults[0].c_str()));
+						chill = std::stof(splitresults[0]);
 						//record power % as humidity
-						humidity = std::stoi(VirtualThermostatGetOption("Power", Options).c_str());
+						humidity = std::stoi(VirtualThermostatGetOption("Power", Options));
 						//record room temp 
-						temp = (float)std::stof(VirtualThermostatGetOption("RoomTemp", Options).c_str());
+						temp = std::stof(VirtualThermostatGetOption("RoomTemp", Options));
 					}
 				}
 			break;

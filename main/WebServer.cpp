@@ -10575,9 +10575,9 @@ namespace http
 							//build option values
 							for (const auto& itt : optionsMap)
 							{
-								std::string optionName = itt.first.c_str();
+								std::string optionName = itt.first;
 								std::string optionValue = itt.second;
-								root["result"][ii][optionName.c_str()] = optionValue.c_str();
+								root["result"][ii][optionName] = optionValue;
 							}
 							root["result"][ii]["nValue"] = nValue;
 							root["result"][ii]["isVirtualThermostat"] = true;
@@ -12987,7 +12987,7 @@ namespace http
 			if (!devoptions.empty())
 			{
 				uint64_t ullidx = std::stoull(idx);
-				m_sql.SetDeviceOptions(ullidx, m_sql.BuildDeviceOptions(devoptions.c_str(), false));
+				m_sql.SetDeviceOptions(ullidx, m_sql.BuildDeviceOptions(devoptions, false));
 			}
 
 			if (used == 0)

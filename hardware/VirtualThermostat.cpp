@@ -327,13 +327,13 @@ void VirtualThermostat::ScheduleThermostat(int Minute)
 			double scrollDevice = double(MODULATION_DURATION) / nbDevices;
 			TSqlRowQuery* row = &result[i];
 			ThermostatName = (*row)[0].c_str();
-			ThermostatId = std::stoi((*row)[1].c_str());
+			ThermostatId = std::stoi((*row)[1]);
 
 			//		SwitchType					= std::stoi((*row)[2].c_str() );
 			//		SwitchSubType				= std::stoi((*row)[3].c_str() );
-			lastSwitchValue = std::stoi((*row)[4].c_str());
-			ThermostatSetPoint = std::stof((*row)[5].c_str());
-			Options = ((*row)[6].c_str());
+			lastSwitchValue = std::stoi((*row)[4]);
+			ThermostatSetPoint = std::stof((*row)[5]);
+			Options = ((*row)[6]);
 			DeviceID = std::stol((*row)[9], 0, 16);
 			sDeviceID = (*row)[9];
 
@@ -360,7 +360,7 @@ void VirtualThermostat::ScheduleThermostat(int Minute)
 			}
 			//retrieve corresponding Temperature device name    
 			//the temperture corresponding device is stored in LightSubDevice table
-			else if (std::stoi(TemperatureId.c_str()) > 0)
+			else if (std::stoi(TemperatureId) > 0)
 			{
 				//get current room temperature  
 				if (GetLastValue(TemperatureId.c_str(), nValue, sValue, LastUpdateTime))
@@ -379,10 +379,10 @@ void VirtualThermostat::ScheduleThermostat(int Minute)
 
 					if (!resSw.empty())
 					{
-						//SwitchSubType    = std::stoi(resSw[0][2].c_str());
-						lastSwitchValue = std::stoi(resSw[0][0].c_str());
-						switchtype = std::stoi(resSw[0][3].c_str());
-						int LastLevel = std::stoi(resSw[0][4].c_str());
+						//SwitchSubType    = std::stoi(resSw[0][2]);
+						lastSwitchValue = std::stoi(resSw[0][0]);
+						switchtype = std::stoi(resSw[0][3]);
+						int LastLevel = std::stoi(resSw[0][4]);
 						std::string SwitchName = resSw[0][5];
 						std::string OutCmd; int level;
 
@@ -476,7 +476,7 @@ int VirtualThermostat::getPrevThermostatProg(const char* devID, char* CurrentTim
 	auto result = m_sql.safe_query("SELECT Time,Temperature FROM SetpointTimers where (DeviceRowID==%s) and ( Time < '%s' ) order by time desc limit 1", devID, CurrentTime);
 	if (!result.empty()) {
 		Time = result[0][0];
-		TargetTemp = std::stoi(result[0][1].c_str());
+		TargetTemp = std::stoi(result[0][1]);
 	}
 	return TargetTemp;
 }
@@ -488,7 +488,7 @@ int VirtualThermostat::getNextThermostatProg(const char* devID, char* CurrentTim
 	auto result = m_sql.safe_query("SELECT Time,Temperature FROM SetpointTimers where (DeviceRowID==%s) and ( Time > '%s' ) order by time asc limit 1", devID, CurrentTime);
 	if (!result.empty()) {
 		Time = result[0][0];
-		TargetTemp = std::stoi(result[0][1].c_str());
+		TargetTemp = std::stoi(result[0][1]);
 	}
 	return TargetTemp;
 }
@@ -506,7 +506,7 @@ int VirtualThermostat::GetEcoTempFromTimers(const char* devID)
 	int MinTemp;
 	//get min temperature  from SetpointTimers
 	auto result = m_sql.safe_query("SELECT MIN(Temperature) FROM SetpointTimers where DeviceRowID==%s", devID);
-	if (!result.empty()) MinTemp = std::stoi(result[0][0].c_str()); else MinTemp = 16;
+	if (!result.empty()) MinTemp = std::stoi(result[0][0]); else MinTemp = 16;
 	return MinTemp;
 }
 
@@ -522,7 +522,7 @@ int VirtualThermostat::GetConfortTempFromTimers(const char* devID)
 	int MaxTemp;
 	//get  max temperature  from SetpointTimers
 	auto result = m_sql.safe_query("SELECT MAX(Temperature) FROM SetpointTimers where DeviceRowID==%s", devID);
-	if (!result.empty()) MaxTemp = std::stoi(result[0][0].c_str()); else MaxTemp = 20;
+	if (!result.empty()) MaxTemp = std::stoi(result[0][0]); else MaxTemp = 20;
 	return MaxTemp;
 }
 
@@ -602,12 +602,12 @@ std::string VirtualThermostat::GetRoomTemperature(const std::string& devIdx)
 
 std::string VirtualThermostat::GetSetPoint(const std::string& devIdx)
 {
-	return (m_sql.GetDeviceValue("svalue", devIdx.c_str()).c_str());
+	return (m_sql.GetDeviceValue("svalue", devIdx ));
 }
 
 float VirtualThermostat::GetSetPointTemperature(const std::string& devIdx)
 {
-	return ((float)std::stof(GetSetPoint(devIdx).c_str()));
+	return std::stof(GetSetPoint(devIdx)) ;
 };
 
 //option is not in base64
@@ -625,7 +625,7 @@ float VirtualThermostat::getTemperatureFromSValue(const char* sValue)
 	if (splitresults.size() < 1)
 		return 0;
 	else
-		return (float)std::stof(splitresults[0].c_str());
+		return std::stof(splitresults[0]);
 }
 //convert from  celcius to farenheit if unit=farenheit
 double  VirtualThermostat::ConvertTemperatureUnit(double tempcelcius)
@@ -653,7 +653,7 @@ bool VirtualThermostat::GetLastValue(const char* DeviceID, int& nValue, std::str
 
 	if (!sqlresult.empty())
 	{
-		nValue = (int)std::stoi(sqlresult[0][0].c_str());
+		nValue = std::stoi(sqlresult[0][0]);
 		sValue = sqlresult[0][1];
 
 		sLastUpdate = sqlresult[0][2];
