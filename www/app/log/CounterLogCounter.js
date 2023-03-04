@@ -60,7 +60,7 @@ define(['app', 'lodash', 'log/Chart', 'log/CounterLogParams', 'log/CounterLogCou
             },
             daySeriesSuppliers: function (deviceTypeIndex) {
                 return []
-                    .concat(counterLogCounterSeriesSuppliers.counterSeriesSuppliers(deviceTypeIndex, chart.valueMultipliers.m1, undefined));
+                    .concat(counterLogCounterSeriesSuppliers.counterSeriesDaySuppliers(deviceTypeIndex, chart.valueMultipliers.m1, undefined));
             },
             weekSeriesSuppliers: function (deviceTypeIndex) {
                 return []
@@ -139,7 +139,7 @@ define(['app', 'lodash', 'log/Chart', 'log/CounterLogParams', 'log/CounterLogCou
             },
             daySeriesSuppliers: function (deviceTypeIndex) {
                 return []
-                    .concat(counterLogCounterSeriesSuppliers.counterSeriesSuppliers(deviceTypeIndex, chart.valueMultipliers.m1));
+                    .concat(counterLogCounterSeriesSuppliers.counterSeriesDaySuppliers(deviceTypeIndex, chart.valueMultipliers.m1));
             },
             weekSeriesSuppliers: function (deviceTypeIndex) {
                 return []
@@ -218,7 +218,7 @@ define(['app', 'lodash', 'log/Chart', 'log/CounterLogParams', 'log/CounterLogCou
             },
             daySeriesSuppliers: function (deviceTypeIndex) {
                 return []
-                    .concat(counterLogCounterSeriesSuppliers.counterSeriesSuppliers(deviceTypeIndex, chart.valueMultipliers.m1, times1000, 0));
+                    .concat(counterLogCounterSeriesSuppliers.counterSeriesDaySuppliers(deviceTypeIndex, chart.valueMultipliers.m1, times1000, 0));
             },
             weekSeriesSuppliers: function (deviceTypeIndex) {
                 return []
@@ -306,7 +306,7 @@ define(['app', 'lodash', 'log/Chart', 'log/CounterLogParams', 'log/CounterLogCou
             },
             daySeriesSuppliers: function (deviceTypeIndex, divider) {
                 return []
-                    .concat(counterLogCounterSeriesSuppliers.counterSeriesSuppliers(deviceTypeIndex, chart.valueMultipliers.m1, undefined, decimalPlacesDiv1(divider)));
+                    .concat(counterLogCounterSeriesSuppliers.counterSeriesDaySuppliers(deviceTypeIndex, chart.valueMultipliers.m1, undefined, decimalPlacesDiv1(divider)));
             },
             weekSeriesSuppliers: function (deviceTypeIndex, divider) {
                 return []
@@ -385,7 +385,7 @@ define(['app', 'lodash', 'log/Chart', 'log/CounterLogParams', 'log/CounterLogCou
             },
             daySeriesSuppliers: function (deviceTypeIndex) {
                 return []
-                    .concat(counterLogCounterSeriesSuppliers.counterSeriesSuppliers(deviceTypeIndex, chart.valueMultipliers.m1, undefined, chart.valueMultipliers.m1000));
+                    .concat(counterLogCounterSeriesSuppliers.counterSeriesDaySuppliers(deviceTypeIndex, chart.valueMultipliers.m1, undefined, chart.valueMultipliers.m1000));
             },
             weekSeriesSuppliers: function (deviceTypeIndex) {
                 return []

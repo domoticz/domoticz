@@ -2905,18 +2905,13 @@ void CEventSystem::EvaluateLuaClassic(lua_State *lua_state, const _tEventQueue &
 			}
 			luaTable.Publish();
 
-			// BEGIN OTO: populate changed info
-			luaTable.InitTable(lua_state, "devicechanged_ext", 3, 0);
+			luaTable.InitTable(lua_state, "devicechanged_ext", 5, 0);
 			luaTable.AddInteger("idx", item.id);
+			luaTable.AddString("name", item.devname);
 			luaTable.AddString("svalue", item.sValue);
 			luaTable.AddInteger("nvalue", item.nValue);
-
-			/* USELESS, WE HAVE THE DEVICE INDEX
-			// replace devicechanged =>
-			luaTable.AddInteger("name", nValue);
-			*/
+			luaTable.AddString("state", item.nValueWording);
 			luaTable.Publish();
-			// END OTO
 		}
 	}
 

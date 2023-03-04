@@ -1455,21 +1455,7 @@
     <None Include="..\www\app\virtualThermostat.js">
       <Filter>www\app</Filter>
     </None>
-    <None Include="..\www\app\timers\components.js">
-      <Filter>www\app\devices\timers</Filter>
-    </None>
-    <None Include="..\www\app\timers\DeviceTimersController.js">
-      <Filter>www\app\devices\timers</Filter>
-    </None>
-    <None Include="..\www\app\timers\factories.js">
-      <Filter>www\app\devices\timers</Filter>
-    </None>
-    <None Include="..\www\app\timers\planning.js">
-      <Filter>www\app\devices\timers</Filter>
-    </None>
-    <None Include="..\www\app\timers\SceneTimersController.js">
-      <Filter>www\app\devices\timers</Filter>
-    </None>
+    <None Include="..\www\css\planning.css" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\webserver\Base64.h">

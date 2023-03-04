@@ -290,6 +290,7 @@ private:
 	void decode_Solar(const CDomoticzHardwareBase *pHardware, const tRBUF* pResponse, _tRxMessageProcessingResult& procResult);
 	void decode_Hunter(const CDomoticzHardwareBase* pHardware, const tRBUF* pResponse, _tRxMessageProcessingResult& procResult);
 	void decode_LevelSensor(const CDomoticzHardwareBase* pHardware, const tRBUF* pResponse, _tRxMessageProcessingResult& procResult);
+	void decode_LightningSensor(const CDomoticzHardwareBase* pHardware, const tRBUF* pResponse, _tRxMessageProcessingResult& procResult);
 };
 
 extern MainWorker m_mainworker;

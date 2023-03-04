@@ -181,6 +181,15 @@ void MQTTAutoDiscover::CleanValueTemplate(std::string& szValueTemplate)
 			}
 		}
 	}
+	else if (szValueTemplate.find("(") == 0)
+	{
+		//strip calculations (until we are going to support it)
+		szValueTemplate = szValueTemplate.substr(1);
+		szValueTemplate = szValueTemplate.substr(0, szValueTemplate.find("/"));
+		szValueTemplate = szValueTemplate.substr(0, szValueTemplate.find("+"));
+		szValueTemplate = szValueTemplate.substr(0, szValueTemplate.find("-"));
+		stdstring_trim(szValueTemplate);
+	}
 }
 
 std::string MQTTAutoDiscover::GetValueTemplateKey(const std::string& szValueTemplate)

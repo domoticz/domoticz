@@ -2640,6 +2640,14 @@ void MainWorker::decode_InterfaceMessage(const CDomoticzHardwareBase* pHardware,
 					strcpy(szTmp, "Pro XL2");
 					NoiseLevel = static_cast<int>(pResponse->IRESPONSE.msg11);
 					break;
+				case FWtypeRFX433:
+					strcpy(szTmp, "RFM69 433");
+					NoiseLevel = static_cast<int>(pResponse->IRESPONSE.msg11);
+					break;
+				case FWtypeRFX868:
+					strcpy(szTmp, "RFM69 868");
+					NoiseLevel = static_cast<int>(pResponse->IRESPONSE.msg11);
+					break;
 				default:
 					strcpy(szTmp, "?");
 					break;
@@ -2812,7 +2820,7 @@ void MainWorker::decode_InterfaceMessage(const CDomoticzHardwareBase* pHardware,
 				if (pResponse->IRESPONSE868.ALECTOenabled)
 					WriteMessage("Alecto ACH2010    enabled");
 
-				if (pResponse->IRESPONSE868.ALECTO5500enabled)
+				if (pResponse->IRESPONSE868.FINEOFFSETenabled)
 					WriteMessage("Alecto WS5500     enabled");
 
 				if (pResponse->IRESPONSE868.LACROSSEenabled)
@@ -3068,9 +3076,15 @@ void MainWorker::decode_Rain(const CDomoticzHardwareBase* pHardware, const tRBUF
 
 	int Rainrate = 0;
 	float TotalRain = 0;
-	if (subType == sTypeRAIN9) {
+	if (subType == sTypeRAIN9)
+	{
 		uint16_t rainCount = (pResponse->RAIN.raintotal2 * 256) + pResponse->RAIN.raintotal3 + 10;
 		TotalRain = roundf(float(rainCount * 2.54F)) / 10.0F;
+	}
+	else if (subType == sTypeRAIN10)
+	{
+		uint16_t rainCount = (pResponse->RAIN.raintotal2 * 256) + pResponse->RAIN.raintotal3 + 10;
+		TotalRain = roundf(float(rainCount * 0.001F)) / 10.0F;
 	}
 	else {
 		Rainrate = (pResponse->RAIN.rainrateh * 256) + pResponse->RAIN.rainratel;
@@ -3193,6 +3207,9 @@ void MainWorker::decode_Rain(const CDomoticzHardwareBase* pHardware, const tRBUF
 			break;
 		case sTypeRAIN9:
 			WriteMessage("subtype       = RAIN9 - TFA 30.3233.01");
+			break;
+		case sTypeRAIN10:
+			WriteMessage("subtype       = RAIN10 - WH5360,WH5360B,WH40");
 			break;
 		case sTypeRAINWU:
 			WriteMessage("subtype       = Weather Underground (Total Rain)");
@@ -5911,6 +5928,12 @@ void MainWorker::decode_Fan(const CDomoticzHardwareBase* pHardware, const tRBUF*
 			break;
 		case sTypeNovy:
 			WriteMessage("subtype       = Novy");
+			break;
+		case sTypeOrcon:
+			WriteMessage("subtype       = Orcon");
+			break;
+		case sTypeIthoHRU400:
+			WriteMessage("subtype       = Itho HRU400");
 			break;
 		default:
 			sprintf(szTmp, "ERROR: Unknown Sub type for Packet type= %02X:%02X", pResponse->LIGHTING6.packettype, pResponse->LIGHTING6.subtype);
@@ -11265,6 +11288,40 @@ void MainWorker::decode_LevelSensor(const CDomoticzHardwareBase* pHardware, cons
 	procResult.bProcessBatteryValue = false;
 }
 
+void MainWorker::decode_LightningSensor(const CDomoticzHardwareBase* pHardware, const tRBUF* pResponse, _tRxMessageProcessingResult& procResult)
+{
+	char szTmp[50];
+
+	uint8_t devType = pTypeLIGHTNING;
+	uint8_t subType = pResponse->LIGHTNING.subtype;
+
+	sprintf(szTmp, "%02X%02X%02X", pResponse->LIGHTNING.id1, pResponse->LIGHTNING.id2, pResponse->LIGHTNING.id3);
+	std::string ID = szTmp;
+	uint8_t Unit = 1;
+
+
+	uint8_t SignalLevel = pResponse->LIGHTNING.rssi;
+	uint8_t BatteryLevel = get_BateryLevel(pHardware->HwdType, false, pResponse->LIGHTNING.battery_level & 0x0F);
+
+	int distance = pResponse->LIGHTNING.distance;
+	if (distance == 63)
+		return; //invalid
+
+	int strike_count = pResponse->LIGHTNING.strike_cnt; //reset daily?
+	//not added to the system yet
+	//CRFXBase* pRFXDevice = (CRFXBase*)pHardware;
+	//pRFXDevice->Sendxx
+
+	//Distance
+	_tGeneralDevice gdevice;
+	gdevice.subtype = sTypeDistance;
+	gdevice.intval1 = (pResponse->LEVELSENSOR.id1 * 256) + pResponse->LEVELSENSOR.id2;
+	gdevice.id = (uint8_t)gdevice.intval1;
+	gdevice.floatval1 = float(distance);
+	gdevice.rssi = SignalLevel;
+	gdevice.battery_level = BatteryLevel;
+	return decode_General(pHardware, (const tRBUF*)&gdevice, procResult);
+}
 
 bool MainWorker::GetSensorData(const uint64_t idx, int& nValue, std::string& sValue)
 {

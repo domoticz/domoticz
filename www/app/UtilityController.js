@@ -517,9 +517,8 @@ define(['app', 'livesocket','app/virtualThermostat.js'], function (app) {
 
 		//We only call this once. After this the widgets are being updated automatically by used of the 'jsonupdate' broadcast event.
 		RefreshUtilities = function () {
-			var id = "";
-
-			livesocket.getJson("json.htm?type=devices&filter=utility&used=true&order=[Order]&lastupdate=" + $.LastUpdateTime + "&plan=" + window.myglobals.LastPlanSelected, function (data) {
+			var roomPlanId = $routeParams.room || window.myglobals.LastPlanSelected;
+			livesocket.getJson("json.htm?type=devices&filter=utility&used=true&order=[Order]&lastupdate=" + $.LastUpdateTime + "&plan=" + roomPlanId, function (data) {
 				if (typeof data.ServerTime != 'undefined') {
 					$rootScope.SetTimeAndSun(data.Sunrise, data.Sunset, data.ServerTime);
 				}
@@ -1065,7 +1064,8 @@ define(['app', 'livesocket','app/virtualThermostat.js'], function (app) {
 						$element.find(".span4").droppable({
 							drop: function () {
 								var myid = $(this).attr("id");
-								var roomid = $element.find("#comboroom option:selected").val();
+								
+								var roomid = window.myglobals.LastPlanSelected;
 								if (typeof roomid == 'undefined') {
 									roomid = 0;
 								}
@@ -1653,9 +1653,10 @@ define(['app', 'livesocket','app/virtualThermostat.js'], function (app) {
 			var ctrl={};
 			ctrl.RoomPlans=$rootScope.GetRoomPlans();	
 			var roomPlanId = $routeParams.room || window.myglobals.LastPlanSelected;
-	
+			
 			if (typeof roomPlanId != 'undefined') {
 				ctrl.roomSelected = roomPlanId;
+				window.myglobals.LastPlanSelected = roomPlanId;
 			}
 			ctrl.changeRoom = function () {
 				var idx = ctrl.roomSelected;
