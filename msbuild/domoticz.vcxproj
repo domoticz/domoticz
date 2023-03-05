@@ -241,6 +241,8 @@
     <None Include="..\www\app\hardware\setup\BleBox.js" />
     <None Include="..\www\app\hardware\setup\Kodi.html" />
     <None Include="..\www\app\hardware\setup\Kodi.js" />
+    <None Include="..\www\app\hardware\setup\MQTT-AD.html" />
+    <None Include="..\www\app\hardware\setup\MQTT-AD.js" />
     <None Include="..\www\app\hardware\setup\MySensors.html" />
     <None Include="..\www\app\hardware\setup\MySensors.js" />
     <None Include="..\www\app\hardware\setup\PanasonicTV.html" />

@@ -87,7 +87,7 @@ define(['app'], function (app) {
                                 "Unit": item.unit,
                                 "0": item.dev_name,
                                 "1": item.name,
-                                "2": item.value,
+                                "2": (item.value!="") ? item.value : "Unknown",
                                 "3": item.unit
                             });
                         });
