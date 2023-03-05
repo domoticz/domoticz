@@ -87,7 +87,7 @@ struct _tTaskItem
 	std::string _relatedEvent;
 	timeval _DelayTimeBegin;
 
-	static _tTaskItem UpdateDevice(const float DelayTime, const uint64_t idx, const int nValue, const std::string& sValue, const int Protected, const bool bEventTrigger, const std::string& User)
+	static _tTaskItem UpdateDevice(const float DelayTime, const uint64_t idx, const int nValue, const std::string &sValue, const int Protected, const bool bEventTrigger, const std::string &User)
 	{
 		_tTaskItem tItem;
 		tItem._ItemType = TITEM_UPDATEDEVICE;
@@ -103,9 +103,9 @@ struct _tTaskItem
 		return tItem;
 	}
 
-	static _tTaskItem SwitchLight(const float DelayTime, const uint64_t idx, const int HardwareID, const char* ID, const unsigned char unit, const unsigned char devType,
-		const unsigned char subType, const int switchtype, const unsigned char signallevel, const unsigned char batterylevel, const int nValue, const char* sValue,
-		const std::string& User)
+	static _tTaskItem SwitchLight(const float DelayTime, const uint64_t idx, const int HardwareID, const char *ID, const unsigned char unit, const unsigned char devType,
+				      const unsigned char subType, const int switchtype, const unsigned char signallevel, const unsigned char batterylevel, const int nValue, const char *sValue,
+				      const std::string &User)
 	{
 		_tTaskItem tItem;
 		tItem._ItemType = TITEM_SWITCHCMD;
@@ -126,7 +126,7 @@ struct _tTaskItem
 			getclock(&tItem._DelayTimeBegin);
 		return tItem;
 	}
-	static _tTaskItem ExecuteScript(const float DelayTime, const std::string& ScriptPath, const std::string& ScriptParams)
+	static _tTaskItem ExecuteScript(const float DelayTime, const std::string &ScriptPath, const std::string &ScriptParams)
 	{
 		_tTaskItem tItem;
 		tItem._ItemType = TITEM_EXECUTE_SCRIPT;
@@ -137,7 +137,7 @@ struct _tTaskItem
 			getclock(&tItem._DelayTimeBegin);
 		return tItem;
 	}
-	static _tTaskItem EmailCameraSnapshot(const float DelayTime, const std::string& CamIdx, const std::string& Subject)
+	static _tTaskItem EmailCameraSnapshot(const float DelayTime, const std::string &CamIdx, const std::string &Subject)
 	{
 		_tTaskItem tItem;
 		tItem._ItemType = TITEM_EMAIL_CAMERA_SNAPSHOT;
@@ -148,7 +148,7 @@ struct _tTaskItem
 			getclock(&tItem._DelayTimeBegin);
 		return tItem;
 	}
-	static _tTaskItem SendEmail(const float DelayTime, const std::string& Subject, const std::string& Body)
+	static _tTaskItem SendEmail(const float DelayTime, const std::string &Subject, const std::string &Body)
 	{
 		_tTaskItem tItem;
 		tItem._ItemType = TITEM_SEND_EMAIL;
@@ -159,7 +159,7 @@ struct _tTaskItem
 			getclock(&tItem._DelayTimeBegin);
 		return tItem;
 	}
-	static _tTaskItem SendEmailTo(const float DelayTime, const std::string& Subject, const std::string& Body, const std::string& To)
+	static _tTaskItem SendEmailTo(const float DelayTime, const std::string &Subject, const std::string &Body, const std::string &To)
 	{
 		_tTaskItem tItem;
 		tItem._ItemType = TITEM_SEND_EMAIL_TO;
@@ -171,7 +171,7 @@ struct _tTaskItem
 			getclock(&tItem._DelayTimeBegin);
 		return tItem;
 	}
-	static _tTaskItem SendSMS(const float DelayTime, const std::string& Subject)
+	static _tTaskItem SendSMS(const float DelayTime, const std::string &Subject)
 	{
 		_tTaskItem tItem;
 		tItem._ItemType = TITEM_SEND_SMS;
@@ -181,7 +181,7 @@ struct _tTaskItem
 			getclock(&tItem._DelayTimeBegin);
 		return tItem;
 	}
-	static _tTaskItem SendIFTTTTrigger(const float DelayTime, const std::string& EventID, const std::string& Value1, const std::string& Value2, const std::string& Value3)
+	static _tTaskItem SendIFTTTTrigger(const float DelayTime, const std::string &EventID, const std::string &Value1, const std::string &Value2, const std::string &Value3)
 	{
 		_tTaskItem tItem;
 		tItem._ItemType = TITEM_SEND_IFTTT_TRIGGER;
@@ -192,8 +192,8 @@ struct _tTaskItem
 			getclock(&tItem._DelayTimeBegin);
 		return tItem;
 	}
-	static _tTaskItem SwitchLightEvent(const float DelayTime, const uint64_t idx, const std::string& Command, const int Level, const _tColor Color, const std::string& eventName,
-		const std::string& User)
+	static _tTaskItem SwitchLightEvent(const float DelayTime, const uint64_t idx, const std::string &Command, const int Level, const _tColor Color, const std::string &eventName,
+					   const std::string &User)
 	{
 		_tTaskItem tItem;
 		tItem._ItemType = TITEM_SWITCHCMD_EVENT;
@@ -208,7 +208,7 @@ struct _tTaskItem
 			getclock(&tItem._DelayTimeBegin);
 		return tItem;
 	}
-	static _tTaskItem SwitchSceneEvent(const float DelayTime, const uint64_t idx, const std::string& Command, const std::string& eventName, const std::string& User)
+	static _tTaskItem SwitchSceneEvent(const float DelayTime, const uint64_t idx, const std::string &Command, const std::string &eventName, const std::string &User)
 	{
 		_tTaskItem tItem;
 		tItem._ItemType = TITEM_SWITCHCMD_SCENE;
@@ -221,25 +221,25 @@ struct _tTaskItem
 			getclock(&tItem._DelayTimeBegin);
 		return tItem;
 	}
-	static _tTaskItem GetHTTPPage(const float DelayTime, const std::string& URL, const std::string& /*eventName*/)
+	static _tTaskItem GetHTTPPage(const float DelayTime, const std::string &URL, const std::string & /*eventName*/)
 	{
 		return GetHTTPPage(DelayTime, URL, "", HTTPClient::HTTP_METHOD_GET, "", "");
 	}
-	static _tTaskItem ExecuteShellCommand(const float DelayTime, const std::string& command, const std::string& trigger, int timeout, const std::string& path)
+	static _tTaskItem ExecuteShellCommand(const float DelayTime, const std::string &command, const std::string &trigger, int timeout, const std::string &path)
 	{
 		_tTaskItem tItem;
 		tItem._ItemType = TITEM_EXECUTESHELLCOMMAND;
 		tItem._DelayTime = DelayTime;
 		tItem._sValue = command;
-		tItem._sUser = path;
-		tItem._nValue = timeout;
+		tItem._sUser= path;
+		tItem._nValue= timeout;
 		tItem._ID = trigger;
 		if (DelayTime)
 			getclock(&tItem._DelayTimeBegin);
 		return tItem;
 	}
-	static _tTaskItem GetHTTPPage(const float DelayTime, const std::string& URL, const std::string& extraHeaders, const HTTPClient::_eHTTPmethod method, const std::string& postData,
-		const std::string& trigger)
+	static _tTaskItem GetHTTPPage(const float DelayTime, const std::string &URL, const std::string &extraHeaders, const HTTPClient::_eHTTPmethod method, const std::string &postData,
+				      const std::string &trigger)
 	{
 		_tTaskItem tItem;
 		tItem._ItemType = TITEM_GETURL;
@@ -253,7 +253,7 @@ struct _tTaskItem
 			getclock(&tItem._DelayTimeBegin);
 		return tItem;
 	}
-	static _tTaskItem SetVariable(const float DelayTime, const uint64_t idx, const std::string& varvalue, const bool eventtrigger)
+	static _tTaskItem SetVariable(const float DelayTime, const uint64_t idx, const std::string &varvalue, const bool eventtrigger)
 	{
 		_tTaskItem tItem;
 		tItem._ItemType = TITEM_SET_VARIABLE;
@@ -265,8 +265,8 @@ struct _tTaskItem
 			getclock(&tItem._DelayTimeBegin);
 		return tItem;
 	}
-	static _tTaskItem SendNotification(const float DelayTime, const std::string& Subject, const std::string& Body, const std::string& ExtraData, const int Priority, const std::string& Sound,
-		const std::string& SubSystem)
+	static _tTaskItem SendNotification(const float DelayTime, const std::string &Subject, const std::string &Body, const std::string &ExtraData, const int Priority, const std::string &Sound,
+					   const std::string &SubSystem)
 	{
 		_tTaskItem tItem;
 		tItem._ItemType = TITEM_SEND_NOTIFICATION;
@@ -277,7 +277,7 @@ struct _tTaskItem
 			getclock(&tItem._DelayTimeBegin);
 		return tItem;
 	}
-	static _tTaskItem SetSetPoint(const float DelayTime, const uint64_t idx, const std::string& varvalue, const std::string& mode = std::string(), const std::string& until = std::string())
+	static _tTaskItem SetSetPoint(const float DelayTime, const uint64_t idx, const std::string &varvalue, const std::string &mode = std::string(), const std::string &until = std::string())
 	{
 		_tTaskItem tItem;
 		tItem._ItemType = TITEM_SET_SETPOINT;
@@ -291,7 +291,7 @@ struct _tTaskItem
 			getclock(&tItem._DelayTimeBegin);
 		return tItem;
 	}
-	static _tTaskItem CustomCommand(const float DelayTime, const uint64_t idx, const std::string& cmdstr)
+	static _tTaskItem CustomCommand(const float DelayTime, const uint64_t idx, const std::string &cmdstr)
 	{
 		_tTaskItem tItem;
 		tItem._ItemType = TITEM_CUSTOM_COMMAND;
@@ -302,7 +302,7 @@ struct _tTaskItem
 			getclock(&tItem._DelayTimeBegin);
 		return tItem;
 	}
-	static _tTaskItem CustomEvent(const float DelayTime, const std::string& namestr, const std::string& parameterstr)
+	static _tTaskItem CustomEvent(const float DelayTime, const std::string &namestr, const std::string &parameterstr)
 	{
 		_tTaskItem tItem;
 		tItem._ItemType = TITEM_CUSTOM_EVENT;
@@ -325,19 +325,19 @@ using TOptionMap = std::map<std::string, std::string> ;
 
 class CSQLStatement
 {
-private:
-	sqlite3* m_DBase;
-	sqlite3_stmt* m_Statement;
+      private:
+	sqlite3 *m_DBase;
+	sqlite3_stmt *m_Statement;
 	int iNextParam;
 	int m_Status;
 	std::string m_ErrorText;
 
-public:
-	CSQLStatement(sqlite3* pDBase, const std::string& pSQL);
-	int AddParameter(std::string& pParam);
+      public:
+	CSQLStatement(sqlite3 *pDBase, const std::string &pSQL);
+	int AddParameter(std::string &pParam);
 	int Execute();
 	bool Error();
-	const char* ErrorText()
+	const char *ErrorText()
 	{
 		return m_ErrorText.c_str();
 	};
@@ -346,142 +346,142 @@ public:
 
 class CSQLHelper : public StoppableTask
 {
-public:
+      public:
 	CSQLHelper();
 	~CSQLHelper();
 
-	void SetDatabaseName(const std::string& DBName);
-	void SetJournalMode(const std::string& mode);
+	void SetDatabaseName(const std::string &DBName);
+	void SetJournalMode(const std::string &mode);
 
 	bool OpenDatabase();
 	void CloseDatabase();
 
-	bool BackupDatabase(const std::string& OutputFile);
-	bool RestoreDatabase(const std::string& dbase);
+	bool BackupDatabase(const std::string &OutputFile);
+	bool RestoreDatabase(const std::string &dbase);
 
 	// Returns DeviceRowID
-	uint64_t UpdateValue(int HardwareID, const char* ID, unsigned char unit, unsigned char devType, unsigned char subType, unsigned char signallevel, unsigned char batterylevel, int nValue,
-		std::string& devname, const bool bUseOnOffAction, const char* User = nullptr);
-	uint64_t UpdateValue(int HardwareID, const char* ID, unsigned char unit, unsigned char devType, unsigned char subType, unsigned char signallevel, unsigned char batterylevel,
-		const char* sValue, std::string& devname, const bool bUseOnOffAction, const char* User = nullptr);
-	uint64_t UpdateValue(int HardwareID, const char* ID, unsigned char unit, unsigned char devType, unsigned char subType, unsigned char signallevel, unsigned char batterylevel, int nValue,
-		const char* sValue, std::string& devname, const bool bUseOnOffAction, const char* User = nullptr);
-	uint64_t UpdateValueLighting2GroupCmd(int HardwareID, const char* ID, unsigned char unit, unsigned char devType, unsigned char subType, unsigned char signallevel, unsigned char batterylevel,
-		int nValue, const char* sValue, std::string& devname, const bool bUseOnOffAction, const char* User = nullptr);
+	uint64_t UpdateValue(int HardwareID, const char *ID, unsigned char unit, unsigned char devType, unsigned char subType, unsigned char signallevel, unsigned char batterylevel, int nValue,
+			     std::string &devname, const bool bUseOnOffAction, const char *User = nullptr);
+	uint64_t UpdateValue(int HardwareID, const char *ID, unsigned char unit, unsigned char devType, unsigned char subType, unsigned char signallevel, unsigned char batterylevel,
+			     const char *sValue, std::string &devname, const bool bUseOnOffAction, const char* User = nullptr);
+	uint64_t UpdateValue(int HardwareID, const char *ID, unsigned char unit, unsigned char devType, unsigned char subType, unsigned char signallevel, unsigned char batterylevel, int nValue,
+			     const char *sValue, std::string &devname, const bool bUseOnOffAction, const char* User = nullptr);
+	uint64_t UpdateValueLighting2GroupCmd(int HardwareID, const char *ID, unsigned char unit, unsigned char devType, unsigned char subType, unsigned char signallevel, unsigned char batterylevel,
+					      int nValue, const char *sValue, std::string &devname, const bool bUseOnOffAction, const char* User = nullptr);
 	uint64_t UpdateValueHomeComfortGroupCmd(int HardwareID, const char* ID, unsigned char unit, unsigned char devType, unsigned char subType, unsigned char signallevel, unsigned char batterylevel,
-		int nValue, const char* sValue, std::string& devname, const bool bUseOnOffAction, const char* User = nullptr);
+						int nValue, const char *sValue, std::string &devname, const bool bUseOnOffAction, const char* User = nullptr);
 
-	uint64_t GetDeviceIndex(int HardwareID, const std::string& ID, unsigned char unit, unsigned char devType, unsigned char subType, std::string& devname);
+	uint64_t GetDeviceIndex(int HardwareID, const std::string &ID, unsigned char unit, unsigned char devType, unsigned char subType, std::string &devname);
 
-	uint64_t InsertDevice(int HardwareID, const char* ID, unsigned char unit, unsigned char devType, unsigned char subType, int switchType, int nValue, const char* sValue,
-		const std::string& devname, unsigned char signallevel = 12, unsigned char batterylevel = 255, int used = 0);
+	uint64_t InsertDevice(int HardwareID, const char *ID, unsigned char unit, unsigned char devType, unsigned char subType, int switchType, int nValue, const char *sValue,
+			      const std::string &devname, unsigned char signallevel = 12, unsigned char batterylevel = 255, int used = 0);
 
-	bool GetLastValue(int HardwareID, const char* DeviceID, unsigned char unit, unsigned char devType, unsigned char subType, int& nvalue, std::string& sValue, struct tm& LastUpdateTime);
+	bool GetLastValue(int HardwareID, const char *DeviceID, unsigned char unit, unsigned char devType, unsigned char subType, int &nvalue, std::string &sValue, struct tm &LastUpdateTime);
 
 	std::string GetDeviceValue(const std::string FieldName, const std::string& Idx);
 
-	void Lighting2GroupCmd(const std::string& ID, unsigned char subType, unsigned char GroupCmd);
-	void HomeConfortGroupCmd(const std::string& ID, unsigned char subType, unsigned char GroupCmd);
-	void GeneralSwitchGroupCmd(const std::string& ID, unsigned char subType, unsigned char GroupCmd);
+	void Lighting2GroupCmd(const std::string &ID, unsigned char subType, unsigned char GroupCmd);
+	void HomeConfortGroupCmd(const std::string &ID, unsigned char subType, unsigned char GroupCmd);
+	void GeneralSwitchGroupCmd(const std::string &ID, unsigned char subType, unsigned char GroupCmd);
 
-	void GetAddjustment(int HardwareID, const char* ID, unsigned char unit, unsigned char devType, unsigned char subType, float& AddjValue, float& AddjMulti);
-	void GetAddjustment2(int HardwareID, const char* ID, unsigned char unit, unsigned char devType, unsigned char subType, float& AddjValue, float& AddjMulti);
+	void GetAddjustment(int HardwareID, const char *ID, unsigned char unit, unsigned char devType, unsigned char subType, float &AddjValue, float &AddjMulti);
+	void GetAddjustment2(int HardwareID, const char *ID, unsigned char unit, unsigned char devType, unsigned char subType, float &AddjValue, float &AddjMulti);
 
-	void GetMeterType(int HardwareID, const char* ID, unsigned char unit, unsigned char devType, unsigned char subType, int& meterType);
+	void GetMeterType(int HardwareID, const char *ID, unsigned char unit, unsigned char devType, unsigned char subType, int &meterType);
 
-	void DeleteDateRange(const char* ID, const std::string& fromDate, const std::string& toDate);
-	void DeleteDataPoint(const char* ID, const std::string& Date);
+	void DeleteDateRange(const char *ID, const std::string &fromDate, const std::string &toDate);
+	void DeleteDataPoint(const char *ID, const std::string &Date);
 
 	void UpdateRFXCOMHardwareDetails(int HardwareID, int msg1, int msg2, int msg3, int msg4, int msg5, int msg6);
 
-	void UpdatePreferencesVar(const std::string& Key, const std::string& sValue);
-	void UpdatePreferencesVar(const std::string& Key, int nValue);
-	void UpdatePreferencesVar(const std::string& Key, int nValue, const std::string& sValue);
-	bool GetPreferencesVar(const std::string& Key, int& nValue, std::string& sValue);
-	bool GetPreferencesVar(const std::string& Key, int& nValue);
-	bool GetPreferencesVar(const std::string& Key, std::string& sValue);
+	void UpdatePreferencesVar(const std::string &Key, const std::string &sValue);
+	void UpdatePreferencesVar(const std::string &Key, int nValue);
+	void UpdatePreferencesVar(const std::string &Key, int nValue, const std::string &sValue);
+	bool GetPreferencesVar(const std::string &Key, int &nValue, std::string &sValue);
+	bool GetPreferencesVar(const std::string &Key, int &nValue);
+	bool GetPreferencesVar(const std::string &Key, std::string &sValue);
 
-	int GetLastBackupNo(const char* Key, int& nValue);
-	void SetLastBackupNo(const char* Key, int nValue);
+	int GetLastBackupNo(const char *Key, int &nValue);
+	void SetLastBackupNo(const char *Key, int nValue);
 
 	bool HasTimers(uint64_t Idx);
-	bool HasTimers(const std::string& Idx);
+	bool HasTimers(const std::string &Idx);
 	bool HasSceneTimers(uint64_t Idx);
-	bool HasSceneTimers(const std::string& Idx);
+	bool HasSceneTimers(const std::string &Idx);
 
 	void CheckSceneStatus(uint64_t Idx);
-	void CheckSceneStatus(const std::string& Idx);
+	void CheckSceneStatus(const std::string &Idx);
 	void CheckSceneStatusWithDevice(uint64_t DevIdx);
-	void CheckSceneStatusWithDevice(const std::string& DevIdx);
+	void CheckSceneStatusWithDevice(const std::string &DevIdx);
 
 	void ScheduleShortlog();
 	void ScheduleDay();
 
 	void ClearShortLog();
 	void VacuumDatabase();
-	void OptimizeDatabase(sqlite3* dbase);
-	void DeleteHardware(const std::string& idx);
+	void OptimizeDatabase(sqlite3 *dbase);
+	void DeleteHardware(const std::string &idx);
 
-	void DeleteCamera(const std::string& idx);
+	void DeleteCamera(const std::string &idx);
 
-	void DeletePlan(const std::string& idx);
+	void DeletePlan(const std::string &idx);
 
-	void DeleteEvent(const std::string& idx);
+	void DeleteEvent(const std::string &idx);
 
-	void DeleteDevices(const std::string& idx);
-	void DeleteScenes(const std::string& idx);
+	void DeleteDevices(const std::string &idx);
+	void DeleteScenes(const std::string &idx);
 
-	void TransferDevice(const std::string& oldidx, const std::string& newidx);
+	void TransferDevice(const std::string &oldidx, const std::string &newidx);
 
-	bool DoesSceneByNameExits(const std::string& SceneName);
+	bool DoesSceneByNameExits(const std::string &SceneName);
 
-	void AddTaskItem(const _tTaskItem& tItem, bool cancelItem = false);
+	void AddTaskItem(const _tTaskItem &tItem, bool cancelItem = false);
 
-	void EventsGetTaskItems(std::vector<_tTaskItem>& currentTasks);
+	void EventsGetTaskItems(std::vector<_tTaskItem> &currentTasks);
 
 	void SetUnitsAndScale();
 
 	void CheckDeviceTimeout();
 	void CheckBatteryLow();
 
-	bool HandleOnOffAction(bool bIsOn, const std::string& OnAction, const std::string& OffAction);
+	bool HandleOnOffAction(bool bIsOn, const std::string &OnAction, const std::string &OffAction);
 
-	int execute_sql(const std::string& sSQL, std::vector<std::string>* pValues, bool bLogError);
-	std::vector<std::vector<std::string>> safe_query(const char* fmt, ...);
-	std::vector<std::vector<std::string>> safe_queryBlob(const char* fmt, ...);
-	void safe_exec_no_return(const char* fmt, ...);
-	bool safe_UpdateBlobInTableWithID(const std::string& Table, const std::string& Column, const std::string& sID, const std::string& BlobData);
-	bool DoesColumnExistsInTable(const std::string& columnname, const std::string& tablename);
+	int execute_sql(const std::string &sSQL, std::vector<std::string> *pValues, bool bLogError);
+	std::vector<std::vector<std::string>> safe_query(const char *fmt, ...);
+	std::vector<std::vector<std::string>> safe_queryBlob(const char *fmt, ...);
+	void safe_exec_no_return(const char *fmt, ...);
+	bool safe_UpdateBlobInTableWithID(const std::string &Table, const std::string &Column, const std::string &sID, const std::string &BlobData);
+	bool DoesColumnExistsInTable(const std::string &columnname, const std::string &tablename);
 
-	bool AddUserVariable(const std::string& varname, _eUsrVariableType eVartype, const std::string& varvalue, std::string& errorMessage);
-	bool UpdateUserVariable(const std::string& idx, const std::string& varname, _eUsrVariableType eVartype, const std::string& varvalue, bool eventtrigger, std::string& errorMessage);
-	void DeleteUserVariable(const std::string& idx);
-	bool GetUserVariable(const std::string& varname, _eUsrVariableType eVartype, std::string& varvalue);
-	bool CheckUserVariable(_eUsrVariableType eVartype, const std::string& varvalue, std::string& errorMessage);
+	bool AddUserVariable(const std::string &varname, _eUsrVariableType eVartype, const std::string &varvalue, std::string &errorMessage);
+	bool UpdateUserVariable(const std::string &idx, const std::string &varname, _eUsrVariableType eVartype, const std::string &varvalue, bool eventtrigger, std::string &errorMessage);
+	void DeleteUserVariable(const std::string &idx);
+	bool GetUserVariable(const std::string &varname, _eUsrVariableType eVartype, std::string &varvalue);
+	bool CheckUserVariable(_eUsrVariableType eVartype, const std::string &varvalue, std::string &errorMessage);
 
-	uint64_t CreateDevice(int HardwareID, int SensorType, int SensorSubType, std::string& devname, unsigned long nid, const std::string& soptions, const std::string& userName);
+	uint64_t CreateDevice(int HardwareID, int SensorType, int SensorSubType, std::string &devname, unsigned long nid, const std::string &soptions, const std::string &userName);
 
-	void UpdateDeviceValue(const char* FieldName, const std::string& Value, const std::string& Idx);
-	void UpdateDeviceValue(const char* FieldName, int Value, const std::string& Idx);
-	void UpdateDeviceValue(const char* FieldName, float Value, const std::string& Idx);
-	void UpdateDeviceName(const std::string& Idx, const std::string& Name);
+	void UpdateDeviceValue(const char *FieldName, const std::string &Value, const std::string &Idx);
+	void UpdateDeviceValue(const char *FieldName, int Value, const std::string &Idx);
+	void UpdateDeviceValue(const char *FieldName, float Value, const std::string &Idx);
+	void UpdateDeviceName(const std::string &Idx, const std::string &Name);
 
-	bool GetPreferencesVar(const std::string& Key, double& Value);
-	void UpdatePreferencesVar(const std::string& Key, double Value);
-	void DeletePreferencesVar(const std::string& Key);
+	bool GetPreferencesVar(const std::string &Key, double &Value);
+	void UpdatePreferencesVar(const std::string &Key, double Value);
+	void DeletePreferencesVar(const std::string &Key);
 	void AllowNewHardwareTimer(int iTotMinutes);
 
-	bool InsertCustomIconFromZip(const std::string& szZip, std::string& ErrorMessage);
-	bool InsertCustomIconFromZipFile(const std::string& szZipFile, std::string& ErrorMessage);
+	bool InsertCustomIconFromZip(const std::string &szZip, std::string &ErrorMessage);
+	bool InsertCustomIconFromZipFile(const std::string &szZipFile, std::string &ErrorMessage);
 
-	std::map<std::string, std::string> BuildDeviceOptions(const std::string& options, bool decode = true);
-	std::map<std::string, std::string> GetDeviceOptions(const std::string& idx);
-	std::string FormatDeviceOptions(const std::map<std::string, std::string>& optionsMap);
-	bool SetDeviceOptions(uint64_t idx, const std::map<std::string, std::string>& options);
+	std::map<std::string, std::string> BuildDeviceOptions(const std::string &options, bool decode = true);
+	std::map<std::string, std::string> GetDeviceOptions(const std::string &idx);
+	std::string FormatDeviceOptions(const std::map<std::string, std::string> &optionsMap);
+	bool SetDeviceOptions(uint64_t idx, const std::map<std::string, std::string> &options);
 
 	float GetCounterDivider(int metertype, int dType, float DefaultValue);
 
-public:
+      public:
 	std::string m_LastSwitchID; // for learning command
 	std::string m_UniqueID;
 	uint64_t m_LastSwitchRowID;
@@ -505,11 +505,10 @@ public:
 	bool m_bDisableDzVentsSystem;
 	double m_max_kwh_usage;
 
-private:
-	int scriptoutputindex = 0;
+      private:
 	std::mutex m_executeThreadMutex;
 	std::mutex m_sqlQueryMutex;
-	sqlite3* m_dbase;
+	sqlite3 *m_dbase;
 	std::string m_dbase_name;
 	std::string m_journal_mode;
 	unsigned char m_sensortimeoutcounter;
@@ -526,22 +525,22 @@ private:
 	void StopThread();
 	void Do_Work();
 #ifndef WIN32
-	void ManageExecuteScriptTimeout(std::string szCommand, int pid, int timeout, bool* stillRunning, bool* timeoutOccurred);
+	void ManageExecuteScriptTimeout(std::string szCommand, int pid, int timeout, bool *stillRunning, bool *timeoutOccurred);
 #endif
 	void PerformThreadedAction(const _tTaskItem tItem);
-	bool SwitchLightFromTasker(const std::string& idx, const std::string& switchcmd, const std::string& level, const std::string& color, const std::string& User);
-	bool SwitchLightFromTasker(uint64_t idx, const std::string& switchcmd, int level, _tColor color, const std::string& User);
+	bool SwitchLightFromTasker(const std::string &idx, const std::string &switchcmd, const std::string &level, const std::string &color, const std::string &User);
+	bool SwitchLightFromTasker(uint64_t idx, const std::string &switchcmd, int level, _tColor color, const std::string &User);
 
-	void FixDaylightSavingTableSimple(const std::string& TableName);
+	void FixDaylightSavingTableSimple(const std::string &TableName);
 	void FixDaylightSaving();
 
 	// Returns DeviceRowID
-	uint64_t UpdateValueInt(int HardwareID, const char* ID, unsigned char unit, unsigned char devType, unsigned char subType, unsigned char signallevel, unsigned char batterylevel, int nValue,
-		const char* sValue, std::string& devname, bool bUseOnOffAction, const char* User = nullptr);
+	uint64_t UpdateValueInt(int HardwareID, const char *ID, unsigned char unit, unsigned char devType, unsigned char subType, unsigned char signallevel, unsigned char batterylevel, int nValue,
+				const char *sValue, std::string &devname, bool bUseOnOffAction, const char* User = nullptr);
 
-	bool UpdateCalendarMeter(int HardwareID, const char* DeviceID, unsigned char unit, unsigned char devType, unsigned char subType, bool shortLog, bool multiMeter, const char* date,
-		long long value1 = 0, long long value2 = 0, long long value3 = 0, long long value4 = 0, long long value5 = 0, long long value6 = 0, long long counter1 = 0,
-		long long counter2 = 0, long long counter3 = 0, long long counter4 = 0);
+	bool UpdateCalendarMeter(int HardwareID, const char *DeviceID, unsigned char unit, unsigned char devType, unsigned char subType, bool shortLog, bool multiMeter, const char *date,
+				 long long value1 = 0, long long value2 = 0, long long value3 = 0, long long value4 = 0, long long value5 = 0, long long value6 = 0, long long counter1 = 0,
+				 long long counter2 = 0, long long counter3 = 0, long long counter4 = 0);
 
 	void CheckAndUpdateDeviceOrder();
 	void CheckAndUpdateSceneDeviceOrder();
@@ -565,14 +564,14 @@ private:
 	void AddCalendarUpdatePercentage();
 	void AddCalendarUpdateFan();
 	void CleanupShortLog();
-	bool CheckDate(const std::string& sDate, int& d, int& m, int& y);
-	bool CheckDateSQL(const std::string& sDate);
-	bool CheckDateTimeSQL(const std::string& sDateTime);
-	bool CheckTime(const std::string& sTime);
+	bool CheckDate(const std::string &sDate, int &d, int &m, int &y);
+	bool CheckDateSQL(const std::string &sDate);
+	bool CheckDateTimeSQL(const std::string &sDateTime);
+	bool CheckTime(const std::string &sTime);
 	void SendUpdateInt(const std::string& Idx);
 
-	std::vector<std::vector<std::string>> query(const std::string& szQuery);
-	std::vector<std::vector<std::string>> queryBlob(const std::string& szQuery);
+	std::vector<std::vector<std::string>> query(const std::string &szQuery);
+	std::vector<std::vector<std::string>> queryBlob(const std::string &szQuery);
 };
 
 extern CSQLHelper m_sql;
