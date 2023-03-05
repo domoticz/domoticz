@@ -651,6 +651,9 @@ namespace http
 			RegisterRType("plans", [this](auto&& session, auto&& req, auto&& root) { RType_Plans(session, req, root); });
 			RegisterRType("floorplans", [this](auto&& session, auto&& req, auto&& root) { RType_FloorPlans(session, req, root); });
 
+			//MQTT-AD
+			RegisterCommandCode("mqttadgetconfig", [this](auto&& session, auto&& req, auto&& root) { Cmd_MQTTAD_GetConfig(session, req, root); });
+			RegisterCommandCode("mqttupdatenumber", [this](auto&& session, auto&& req, auto&& root) { Cmd_MQTTAD_UpdateNumber(session, req, root); });
 #ifdef WITH_OPENZWAVE
 			// ZWave
 			RegisterCommandCode("updatezwavenode", [this](auto&& session, auto&& req, auto&& root) { Cmd_ZWaveUpdateNode(session, req, root); });

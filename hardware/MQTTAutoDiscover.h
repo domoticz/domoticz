@@ -65,6 +65,9 @@ class MQTTAutoDiscover : public MQTT
 		int min_mireds = 153;
 		int max_mireds = 500;
 
+		int number_min = 0;
+		int number_max = 100;
+
 		//Select
 		std::vector<std::string> select_options;
 
@@ -133,6 +136,8 @@ public:
 	bool SendSwitchCommand(const std::string& DeviceID, const std::string& DeviceName, int Unit, std::string command, int level, _tColor color, const std::string& user);
 	bool SetSetpoint(const std::string& DeviceID, const float Temp);
 
+	void GetConfig(Json::Value& root);
+	bool UpdateNumber(const std::string &sName, const int nValue);
 public:
 	void on_message(const struct mosquitto_message *message) override;
 	void on_connect(int rc) override;
@@ -168,12 +173,12 @@ private:
 	void handle_auto_discovery_scene(_tMQTTASensor* pSensor, const struct mosquitto_message* message);
 	void handle_auto_discovery_lock(_tMQTTASensor* pSensor, const struct mosquitto_message* message);
 	void handle_auto_discovery_battery(_tMQTTASensor* pSensor, const struct mosquitto_message* message);
+	void handle_auto_discovery_number(_tMQTTASensor* pSensor, const struct mosquitto_message* message);
 	_tMQTTASensor* get_auto_discovery_sensor_unit(const _tMQTTASensor* pSensor, const std::string& szMeasurementUnit);
 	_tMQTTASensor* get_auto_discovery_sensor_unit(const _tMQTTASensor* pSensor, const uint8_t devType, const int subType = -1, const int devUnit = -1);
 	_tMQTTASensor* get_auto_discovery_sensor_WATT_unit(const _tMQTTASensor* pSensor);
 private:
 	std::string m_TopicDiscoveryPrefix;
-	std::vector<std::string> m_allowed_components;
 
 	std::map<std::string, _tMQTTADevice> m_discovered_devices;
 	std::map<std::string, _tMQTTASensor> m_discovered_sensors;
