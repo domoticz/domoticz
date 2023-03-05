@@ -2160,24 +2160,38 @@ namespace http {
 				}
 				else if (_ah.method == "BASIC")
 				{
-					if (req.uri.find("json.htm") != std::string::npos && AllowBasicAuth())	// Exception for the main API endpoint so scripts can execute them with 'just' Basic AUTH
+					if (req.uri.find("json.htm") != std::string::npos)	// Exception for the main API endpoint so scripts can execute them with 'just' Basic AUTH
 					{
-						if (CheckUserAuthorization(_ah.user, &_ah))
+						if (AllowBasicAuth())	// Check if Basic Auth is allowed either over HTTPS or when explicitly enabled
 						{
-							_log.Debug(DEBUG_AUTH, "[Auth Check] Found Basic Authorization for json.htm call: Method %s, Userdata %s, rights %s", _ah.method.c_str(), _ah.user.c_str(), _ah.qop.c_str());
-							session.isnew = false;
-							session.rememberme = false;
-							session.username = _ah.user;
-							session.rights = std::atoi(_ah.qop.c_str());
-							return true;
+							if (CheckUserAuthorization(_ah.user, &_ah))
+							{
+								_log.Debug(DEBUG_AUTH, "[Auth Check] Found Basic Authorization for API call: Method %s, Userdata %s, rights %s", _ah.method.c_str(), _ah.user.c_str(), _ah.qop.c_str());
+								session.isnew = false;
+								session.rememberme = false;
+								session.username = _ah.user;
+								session.rights = std::atoi(_ah.qop.c_str());
+								return true;
+							}
+							else
+							{	// Clear the session as we could be in a Trusted Network BUT have invalid Basic Auth
+								_log.Debug(DEBUG_AUTH, "[Auth Check] Invalid Basic Authorization for API call!");
+								session.username = "";
+								session.rights = -1;
+								return false;
+							}
 						}
 						else
-						{	// Clear the session as we are in Trusted Network AND have invalid Basic Auth
-							_log.Debug(DEBUG_AUTH, "[Auth Check] Invalid Basic Authorization for json.htm call!");
+						{	// Clear the session as we could be in a Trusted Network BUT rejected Basic Auth
+							_log.Debug(DEBUG_AUTH, "[Auth Check] Basic Authorization rejected as it is not done over HTTPS or not explicitly allowed over HTTP!");
 							session.username = "";
 							session.rights = -1;
 							return false;
 						}
+					}
+					else
+					{
+						_log.Debug(DEBUG_AUTH, "[Auth Check] Basic Authorization ignored as this is not a call to the API!");
 					}
 				}
 			}
