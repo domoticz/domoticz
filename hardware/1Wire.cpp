@@ -304,11 +304,14 @@ void C1Wire::BuildSensorList() {
 		return;
 
 	std::vector<_t1WireDevice> devices;
+	int n1wireVersion=0;
 
 	_log.Debug(DEBUG_HARDWARE, "1-Wire: Searching sensors");
 
 	m_sensors.clear();
 	m_system->GetDevices(devices);
+
+	if (!m_sql.GetPreferencesVar("1-Wire-version",n1wireVersion)) n1wireVersion=0;
 
 	for (const auto &device : devices)
 	{
@@ -323,15 +326,17 @@ void C1Wire::BuildSensorList() {
 		{
 			m_sensors.insert(device);
 
-			// check if we have "old style" temperature devices, matching only two bytes of devid
-			unsigned char deviceIdByteArray[DEVICE_ID_SIZE] = { 0 };
+			if (!n1wireVersion) {
+				// check if we have "old style" temperature devices, matching only two bytes of devid
+				unsigned char deviceIdByteArray[DEVICE_ID_SIZE] = { 0 };
 
-			DeviceIdToByteArray(device.devid, deviceIdByteArray);
-			uint16_t oldID = (deviceIdByteArray[0] << 8) | deviceIdByteArray[1];
-			uint16_t newID = ((deviceIdByteArray[0]^deviceIdByteArray[2]^deviceIdByteArray[4]) << 8) | (deviceIdByteArray[1]^deviceIdByteArray[3]^deviceIdByteArray[5]);
+				DeviceIdToByteArray(device.devid, deviceIdByteArray);
+				uint16_t oldID = (deviceIdByteArray[0] << 8) | deviceIdByteArray[1];
+				uint16_t newID = ((deviceIdByteArray[0]^deviceIdByteArray[2]^deviceIdByteArray[4]) << 8) | (deviceIdByteArray[1]^deviceIdByteArray[3]^deviceIdByteArray[5]);
 
-			m_sql.safe_query("UPDATE DeviceStatus SET DeviceID='%d', Unit='%d', BatteryLevel='100' WHERE (HardwareID=='%d') AND (DeviceID=='%d') AND (Unit=='%d') AND (Type=='%d') AND (SubType=='%d') AND (BatteryLevel=='255')",
-				newID, newID & 0xff, m_HwdID, oldID, oldID & 0xff, pTypeTEMP, sTypeTEMP5);
+				m_sql.safe_query("UPDATE DeviceStatus SET DeviceID='%d', Unit='%d' WHERE (HardwareID=='%d') AND (DeviceID=='%d') AND (Unit=='%d') AND (Type=='%d') AND (SubType=='%d')",
+					newID, newID & 0xff, m_HwdID, oldID, oldID & 0xff, pTypeTEMP, sTypeTEMP5);
+			}
 
 			break;
 		}
@@ -346,6 +351,9 @@ void C1Wire::BuildSensorList() {
 		}
 	}
 	devices.clear();
+
+	m_sql.UpdatePreferencesVar("1-Wire-version",1);
+
 }
 
 void C1Wire::BuildSwitchList() {
@@ -472,7 +480,7 @@ void C1Wire::ReportTemperature(const std::string& deviceId, const float temperat
 	//uint16_t lID = (deviceIdByteArray[0] << 8) | deviceIdByteArray[1];
 	uint16_t lID = ((deviceIdByteArray[0]^deviceIdByteArray[2]^deviceIdByteArray[4]) << 8) | (deviceIdByteArray[1]^deviceIdByteArray[3]^deviceIdByteArray[5]);
 
-	SendTempSensor(lID, 100, temperature, "Temperature");
+	SendTempSensor(lID, 255, temperature, "Temperature");
 }
 
 void C1Wire::ReportHumidity(const std::string& deviceId, const float humidity)
