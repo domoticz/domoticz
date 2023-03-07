@@ -80,7 +80,7 @@ define(['app'], function (app) {
                     if (typeof data.result != 'undefined') {
                         $.each(data.result, function (i, item) {
                             var addId = oTable.fnAddData({
-                                "DT_RowId": i,
+                                "DT_RowId": item.idx,
                                 "Device": item.dev_name,
                                 "Name": item.name,
                                 "Value": item.value,
