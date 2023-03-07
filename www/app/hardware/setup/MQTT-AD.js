@@ -85,6 +85,9 @@ define(['app'], function (app) {
                                 "Name": item.name,
                                 "Value": item.value,
                                 "Unit": item.unit,
+                                "min": item.min,
+                                "max": item.max,
+                                "step": item.step,
                                 "0": item.dev_name,
                                 "1": item.name,
                                 "2": (item.value!="") ? item.value : "Unknown",
@@ -115,8 +118,15 @@ define(['app'], function (app) {
                         var id = data["DT_RowId"];
                         $("#numbervaluetable #numberupdate").attr("href", "javascript:UpdateNumber('" + id + "')");
                         $('#numbervaluetable #numberupdate').attr("class", "btnstyle3");
+
+						var numobj = document.getElementById("numval");
 						
-						$("#numbervaluetable #numval").val(data["2"]);
+						var value = data["2"];
+						if (value == "Unknown") value = "";
+						numobj.value = value;
+						numobj.min = data["min"];
+						numobj.max = data["max"];
+						numobj.step = data["step"];
 						document.getElementById("numunit").innerText = data["3"];
                     }
                 }
