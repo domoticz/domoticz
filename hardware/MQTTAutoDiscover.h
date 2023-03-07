@@ -67,6 +67,7 @@ class MQTTAutoDiscover : public MQTT
 
 		int number_min = 0;
 		int number_max = 100;
+		int number_step = 1;
 
 		//Select
 		std::vector<std::string> select_options;

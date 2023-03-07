@@ -1191,6 +1191,14 @@ void MQTTAutoDiscover::on_auto_discovery_message(const struct mosquitto_message*
 		FixCommandTopicStateTemplate(pSensor->temperature_command_topic, pSensor->temperature_command_template);
 		FixCommandTopicStateTemplate(pSensor->preset_mode_command_topic, pSensor->preset_mode_value_template);
 
+		//number
+		if (!root["min"].empty())
+			pSensor->number_min = std::stoi(root["min"].asString());
+		if (!root["max"].empty())
+			pSensor->number_max = std::stoi(root["max"].asString());
+		if (!root["step"].empty())
+			pSensor->number_step = std::stoi(root["step"].asString());
+
 		if (!root["qos"].empty())
 			pSensor->qos = atoi(root["qos"].asString().c_str());
 
