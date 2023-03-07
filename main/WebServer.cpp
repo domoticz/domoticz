@@ -14773,8 +14773,9 @@ namespace http
 					root["status"] = "OK";
 					root["title"] = "Graph " + sensor + " " + srange;
 
-					int LastHour = -1;
-					float LastTotalPreviousHour = -1;
+					int WorkingHour = -1;
+					std::string WorkingHourDate;
+					float WorkingHourStartValue = -1;
 
 					float LastValue = -1;
 					std::string LastDate;
@@ -14787,36 +14788,47 @@ namespace http
 						{
 							float ActTotal = static_cast<float>(atof(sd[0].c_str()));
 							int Hour = atoi(sd[1].substr(11, 2).c_str());
-							if (Hour != LastHour)
+							if (Hour != WorkingHour)
 							{
-								if (LastHour != -1)
+								if (WorkingHour != -1)
 								{
-									int NextCalculatedHour = (LastHour + 1) % 24;
-									if (Hour != NextCalculatedHour)
-									{
-										// Looks like we have a GAP somewhere, finish the last hour
-										root["result"][ii]["d"] = LastDate;
-										double mmval = ActTotal - LastValue;
-										mmval *= AddjMulti;
-										sprintf(szTmp, "%.1f", mmval);
-										root["result"][ii]["mm"] = szTmp;
-										ii++;
-									}
-									else
-									{
-										root["result"][ii]["d"] = sd[1].substr(0, 16);
-										double mmval = ActTotal - LastTotalPreviousHour;
-										mmval *= AddjMulti;
-										sprintf(szTmp, "%.1f", mmval);
-										root["result"][ii]["mm"] = szTmp;
-										ii++;
-									}
+									//Finish current hour
+									root["result"][ii]["d"] = WorkingHourDate.substr(0, 14) + "00";
+									double mmval = ActTotal - WorkingHourStartValue;
+									mmval *= AddjMulti;
+									sprintf(szTmp, "%.1f", mmval);
+									root["result"][ii]["mm"] = szTmp;
+									ii++;
 								}
-								LastHour = Hour;
-								LastTotalPreviousHour = ActTotal;
+								WorkingHour = Hour;
+								WorkingHourStartValue = ActTotal;
+								WorkingHourDate = sd[1];
 							}
 							LastValue = ActTotal;
 							LastDate = sd[1];
+						}
+						//Add last value
+						result = m_sql.safe_query("SELECT sValue, LastUpdate FROM DeviceStatus WHERE (ID==%" PRIu64 ")", idx);
+						if (!result.empty())
+						{
+							std::string sValue = result[0][0];
+							std::vector<std::string> results;
+							StringSplit(sValue, ";", results);
+							if (results.size() == 2)
+							{
+								float ActTotal = static_cast<float>(atof(results[1].c_str()));
+								if (ActTotal > LastValue)
+									LastValue = ActTotal;
+							}
+						}
+						double mmval = LastValue - WorkingHourStartValue;
+						if (mmval != 0)
+						{
+							root["result"][ii]["d"] = WorkingHourDate.substr(0, 14) + "00";
+							mmval *= AddjMulti;
+							sprintf(szTmp, "%.1f", mmval);
+							root["result"][ii]["mm"] = szTmp;
+							ii++;
 						}
 					}
 				}
