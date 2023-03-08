@@ -6856,6 +6856,7 @@ void CSQLHelper::UpdateMultiMeter()
 				catch (const std::exception &)
 				{
 					_log.Log(LOG_ERROR, "UpdateMultiMeter: Error converting sValue values! (IDX: %s, sValue: '%s', dType: %d, sType: %d)", sd[0].c_str(), sValue.c_str(), dType, dSubType);
+					continue;
 				}
 
 				value1 = powerusage1;
