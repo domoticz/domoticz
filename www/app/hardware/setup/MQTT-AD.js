@@ -49,7 +49,7 @@ define(['app'], function (app) {
                 url: "json.htm?type=command&param=mqttupdatenumber" +
                 "&idx=" + $.devIdx +
                 "&name=" + encodeURIComponent(numid) +
-                "&value=" + parseInt(value),
+                "&value=" + parseFloat(value),
                 async: false,
                 dataType: 'json',
                 success: function (data) {

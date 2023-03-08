@@ -589,7 +589,7 @@ void CHEOS::OnDisconnect()
 
 void CHEOS::OnData(const unsigned char *pData, size_t length)
 {
-	ParseData(pData, length);
+	ParseData(pData, (int)length);
 }
 
 void CHEOS::OnError(const boost::system::error_code& error)

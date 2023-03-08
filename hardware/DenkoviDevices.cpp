@@ -867,7 +867,7 @@ void CDenkoviDevices::GetMeterDetails()
 			{
 				std::vector<std::string> vMeasure;
 				StringSplit(tmpMeasure, " ", vMeasure); 
-				int len = tmpMeasure.length() - tmpMeasure.find_first_of('.', 0) - 2;
+				size_t len = tmpMeasure.length() - tmpMeasure.find_first_of('.', 0) - 2;
 				std::string units = tmpMeasure.substr(tmpMeasure.find_first_of('.',0)+2, len);
 				SendCustomSensor(Idx, 1, 255, static_cast<float>(atof(vMeasure[0].c_str())), "Analog Input Scaled (" + name + ")", units);
 

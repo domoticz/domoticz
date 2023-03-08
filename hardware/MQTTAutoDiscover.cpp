@@ -261,7 +261,14 @@ std::string MQTTAutoDiscover::GetValueFromTemplate(Json::Value root, std::string
 			}
 			if (root.isObject())
 				return "";
-			std::string retVal = root.asString();
+			std::string retVal;
+			if (root.isDouble())
+			{
+				//until we have c++20 where we can use std::format
+				retVal = std_format("%g", root.asDouble());
+			}
+			else
+				retVal = root.asString();
 			if (value_options_.find(retVal) != value_options_.end())
 			{
 				retVal = value_options_[retVal];
@@ -1193,11 +1200,11 @@ void MQTTAutoDiscover::on_auto_discovery_message(const struct mosquitto_message*
 
 		//number
 		if (!root["min"].empty())
-			pSensor->number_min = std::stoi(root["min"].asString());
+			pSensor->number_min = root["min"].asDouble();
 		if (!root["max"].empty())
-			pSensor->number_max = std::stoi(root["max"].asString());
+			pSensor->number_max = root["max"].asDouble();
 		if (!root["step"].empty())
-			pSensor->number_step = std::stoi(root["step"].asString());
+			pSensor->number_step = root["step"].asDouble();
 
 		if (!root["qos"].empty())
 			pSensor->qos = atoi(root["qos"].asString().c_str());
@@ -1878,7 +1885,7 @@ MQTTAutoDiscover::_tMQTTASensor* MQTTAutoDiscover::get_auto_discovery_sensor_uni
 				// Check the "match length" of the UID of the DEVICE with the UID of the SENSOR to get the correct subdevice in case the are multiple
 				auto ittUnID1 = pSensor->unique_id.begin();
 				auto ittUnID2 = pTmpDeviceSensor->unique_id.begin();
-				int iTlen = (int)(pSensor->unique_id.size() < pTmpDeviceSensor->unique_id.size()) ? pSensor->unique_id.size() : pTmpDeviceSensor->unique_id.size();
+				size_t iTlen = (pSensor->unique_id.size() < pTmpDeviceSensor->unique_id.size()) ? pSensor->unique_id.size() : pTmpDeviceSensor->unique_id.size();
 				for (int i = 1; i < iTlen; ++i)
 				{
 					if (*++ittUnID1 != *++ittUnID2)
@@ -4017,20 +4024,45 @@ void MQTTAutoDiscover::GetConfig(Json::Value& root)
 			root["result"][ii]["name"] = itt.second.name;
 			root["result"][ii]["value"] = itt.second.last_value;
 			root["result"][ii]["unit"] = itt.second.unit_of_measurement;
+			root["result"][ii]["min"] = std_format("%g", itt.second.number_min);
+			root["result"][ii]["max"] = std_format("%g", itt.second.number_max);
+			root["result"][ii]["step"] = std_format("%g", itt.second.number_step);
 			ii++;
 		}
 	}
 }
 
-bool MQTTAutoDiscover::UpdateNumber(const std::string& idx, const int nValue)
+bool MQTTAutoDiscover::UpdateNumber(const std::string& idx, const std::string& sValue)
 {
 	for (auto& itt : m_discovered_sensors)
 	{
 		if (itt.first == idx)
 		{
-			if (nValue < itt.second.number_min || nValue > itt.second.number_max)
+			double dValue = atof(sValue.c_str());
+			if (dValue < itt.second.number_min || dValue > itt.second.number_max)
 				return false;
-			SendMessage(itt.second.command_topic, std::to_string(nValue));
+			SendMessage(itt.second.command_topic, sValue);
+/*
+			std::string szSendValue = std::to_string(nValue);
+			if (!itt.second.value_template.empty())
+			{
+				std::string szKey = GetValueTemplateKey(itt.second.value_template);
+				if (!szKey.empty())
+				{
+					Json::Value root;
+					root[szKey] = std::to_string(nValue);
+					szSendValue = JSonToRawString(root);
+				}
+				else
+				{
+					Log(LOG_ERROR, "number device unhandled value_value_template (%s/%s)", itt.second.unique_id.c_str(), itt.second.name.c_str());
+					return false;
+				}
+			}
+			else
+				szSendValue = std::to_string(nValue);
+			SendMessage(itt.second.command_topic, szSendValue);
+*/
 			return true;
 		}
 	}
@@ -4092,7 +4124,7 @@ namespace http {
 			MQTTAutoDiscover* pMQTT = reinterpret_cast<MQTTAutoDiscover*>(pHardware);
 			try
 			{
-				if (pMQTT->UpdateNumber(devid, std::stoi(value)))
+				if (pMQTT->UpdateNumber(devid, value))
 				{
 					root["title"] = "GetMQTTUpdateNumber";
 					root["status"] = "OK";
