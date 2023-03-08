@@ -115,7 +115,7 @@ public :
 
       l_enum = lex_in;
       delete [] cp_value;
-      u_length = strlen (cp_repre);
+      u_length = (unsigned int)strlen (cp_repre);
       cp_value = new char [u_length + 1];
       strcpy (cp_value, cp_repre);
    }

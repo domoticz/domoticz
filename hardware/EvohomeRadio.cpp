@@ -563,7 +563,7 @@ bool CEvohomeRadio::HandleLoopData(const char* data, size_t len)
 		return false;
 	}
 	memcpy(m_buf + m_nBufPtr, data, len);
-	m_nBufPtr += len;
+	m_nBufPtr += (int)len;
 	m_nBufPtr = ProcessBuf(m_buf, m_nBufPtr);
 	return true;
 }
@@ -675,7 +675,7 @@ bool CEvohomeMsg::DecodePacket(const char* rawmsg)
 		}
 		else
 		{
-			int nPos = tkn.find(':');
+			size_t nPos = tkn.find(':');
 			if (nPos != std::string::npos)
 			{
 				if (nid >= 3)
