@@ -4017,6 +4017,9 @@ void MQTTAutoDiscover::GetConfig(Json::Value& root)
 			root["result"][ii]["name"] = itt.second.name;
 			root["result"][ii]["value"] = itt.second.last_value;
 			root["result"][ii]["unit"] = itt.second.unit_of_measurement;
+			root["result"][ii]["min"] = itt.second.number_min;
+			root["result"][ii]["max"] = itt.second.number_max;
+			root["result"][ii]["step"] = itt.second.number_step;
 			ii++;
 		}
 	}
@@ -4031,6 +4034,27 @@ bool MQTTAutoDiscover::UpdateNumber(const std::string& idx, const int nValue)
 			if (nValue < itt.second.number_min || nValue > itt.second.number_max)
 				return false;
 			SendMessage(itt.second.command_topic, std::to_string(nValue));
+/*
+			std::string szSendValue = std::to_string(nValue);
+			if (!itt.second.value_template.empty())
+			{
+				std::string szKey = GetValueTemplateKey(itt.second.value_template);
+				if (!szKey.empty())
+				{
+					Json::Value root;
+					root[szKey] = std::to_string(nValue);
+					szSendValue = JSonToRawString(root);
+				}
+				else
+				{
+					Log(LOG_ERROR, "number device unhandled value_value_template (%s/%s)", itt.second.unique_id.c_str(), itt.second.name.c_str());
+					return false;
+				}
+			}
+			else
+				szSendValue = std::to_string(nValue);
+			SendMessage(itt.second.command_topic, szSendValue);
+*/
 			return true;
 		}
 	}
