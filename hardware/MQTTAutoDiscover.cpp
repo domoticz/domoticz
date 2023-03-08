@@ -261,7 +261,14 @@ std::string MQTTAutoDiscover::GetValueFromTemplate(Json::Value root, std::string
 			}
 			if (root.isObject())
 				return "";
-			std::string retVal = root.asString();
+			std::string retVal;
+			if (root.isDouble())
+			{
+				//until we have c++20 where we can use std::format
+				retVal = std_format("%g", root.asDouble());
+			}
+			else
+				retVal = root.asString();
 			if (value_options_.find(retVal) != value_options_.end())
 			{
 				retVal = value_options_[retVal];
