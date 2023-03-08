@@ -138,7 +138,7 @@ public:
 	bool SetSetpoint(const std::string& DeviceID, const float Temp);
 
 	void GetConfig(Json::Value& root);
-	bool UpdateNumber(const std::string &sName, const int nValue);
+	bool UpdateNumber(const std::string &sName, const std::string &sValue);
 public:
 	void on_message(const struct mosquitto_message *message) override;
 	void on_connect(int rc) override;

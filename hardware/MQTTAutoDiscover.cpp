@@ -4032,15 +4032,16 @@ void MQTTAutoDiscover::GetConfig(Json::Value& root)
 	}
 }
 
-bool MQTTAutoDiscover::UpdateNumber(const std::string& idx, const int nValue)
+bool MQTTAutoDiscover::UpdateNumber(const std::string& idx, const std::string& sValue)
 {
 	for (auto& itt : m_discovered_sensors)
 	{
 		if (itt.first == idx)
 		{
+			int nValue = atoi(sValue.c_str());
 			if (nValue < itt.second.number_min || nValue > itt.second.number_max)
 				return false;
-			SendMessage(itt.second.command_topic, std::to_string(nValue));
+			SendMessage(itt.second.command_topic, sValue);
 /*
 			std::string szSendValue = std::to_string(nValue);
 			if (!itt.second.value_template.empty())
@@ -4123,7 +4124,7 @@ namespace http {
 			MQTTAutoDiscover* pMQTT = reinterpret_cast<MQTTAutoDiscover*>(pHardware);
 			try
 			{
-				if (pMQTT->UpdateNumber(devid, std::stoi(value)))
+				if (pMQTT->UpdateNumber(devid, value))
 				{
 					root["title"] = "GetMQTTUpdateNumber";
 					root["status"] = "OK";
