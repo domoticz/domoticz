@@ -65,9 +65,9 @@ class MQTTAutoDiscover : public MQTT
 		int min_mireds = 153;
 		int max_mireds = 500;
 
-		int number_min = 0;
-		int number_max = 100;
-		int number_step = 1;
+		double number_min = 0;
+		double number_max = 100;
+		double number_step = 1;
 
 		//Select
 		std::vector<std::string> select_options;

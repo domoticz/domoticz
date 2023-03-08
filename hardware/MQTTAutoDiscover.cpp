@@ -1200,11 +1200,11 @@ void MQTTAutoDiscover::on_auto_discovery_message(const struct mosquitto_message*
 
 		//number
 		if (!root["min"].empty())
-			pSensor->number_min = std::stoi(root["min"].asString());
+			pSensor->number_min = root["min"].asDouble();
 		if (!root["max"].empty())
-			pSensor->number_max = std::stoi(root["max"].asString());
+			pSensor->number_max = root["max"].asDouble();
 		if (!root["step"].empty())
-			pSensor->number_step = std::stoi(root["step"].asString());
+			pSensor->number_step = root["step"].asDouble();
 
 		if (!root["qos"].empty())
 			pSensor->qos = atoi(root["qos"].asString().c_str());
@@ -1885,7 +1885,7 @@ MQTTAutoDiscover::_tMQTTASensor* MQTTAutoDiscover::get_auto_discovery_sensor_uni
 				// Check the "match length" of the UID of the DEVICE with the UID of the SENSOR to get the correct subdevice in case the are multiple
 				auto ittUnID1 = pSensor->unique_id.begin();
 				auto ittUnID2 = pTmpDeviceSensor->unique_id.begin();
-				int iTlen = (int)(pSensor->unique_id.size() < pTmpDeviceSensor->unique_id.size()) ? pSensor->unique_id.size() : pTmpDeviceSensor->unique_id.size();
+				size_t iTlen = (pSensor->unique_id.size() < pTmpDeviceSensor->unique_id.size()) ? pSensor->unique_id.size() : pTmpDeviceSensor->unique_id.size();
 				for (int i = 1; i < iTlen; ++i)
 				{
 					if (*++ittUnID1 != *++ittUnID2)
@@ -4024,9 +4024,9 @@ void MQTTAutoDiscover::GetConfig(Json::Value& root)
 			root["result"][ii]["name"] = itt.second.name;
 			root["result"][ii]["value"] = itt.second.last_value;
 			root["result"][ii]["unit"] = itt.second.unit_of_measurement;
-			root["result"][ii]["min"] = itt.second.number_min;
-			root["result"][ii]["max"] = itt.second.number_max;
-			root["result"][ii]["step"] = itt.second.number_step;
+			root["result"][ii]["min"] = std_format("%g", itt.second.number_min);
+			root["result"][ii]["max"] = std_format("%g", itt.second.number_max);
+			root["result"][ii]["step"] = std_format("%g", itt.second.number_step);
 			ii++;
 		}
 	}
@@ -4038,8 +4038,8 @@ bool MQTTAutoDiscover::UpdateNumber(const std::string& idx, const std::string& s
 	{
 		if (itt.first == idx)
 		{
-			int nValue = atoi(sValue.c_str());
-			if (nValue < itt.second.number_min || nValue > itt.second.number_max)
+			double dValue = atof(sValue.c_str());
+			if (dValue < itt.second.number_min || dValue > itt.second.number_max)
 				return false;
 			SendMessage(itt.second.command_topic, sValue);
 /*
