@@ -280,7 +280,7 @@ define(['app'], function (app) {
 			});
 
 			$.ajax({
-				url: "json.htm?type=settings",
+				url: "json.htm?type=command&param=getsettings",
 				async: false,
 				dataType: 'json',
 				success: function (data) {

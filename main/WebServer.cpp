@@ -610,6 +610,7 @@ namespace http
 
 			// Migrated RTypes to regular commands
 			RegisterCommandCode("getusers", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetUsers(session, req, root); });
+			RegisterCommandCode("getsettings", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetSettings(session, req, root); });
 
 			// RType commands (will be replace by regular commands in the future)
 			RegisterRType("graph", [this](auto&& session, auto&& req, auto&& root) { RType_HandleGraph(session, req, root); });
@@ -617,7 +618,7 @@ namespace http
 			RegisterRType("textlog", [this](auto&& session, auto&& req, auto&& root) { RType_TextLog(session, req, root); });
 			RegisterRType("scenelog", [this](auto&& session, auto&& req, auto&& root) { RType_SceneLog(session, req, root); });
 			RegisterRType("rclientslog", [this](auto&& session, auto&& req, auto&& root) { RType_RemoteWebClientsLog(session, req, root); });
-			RegisterRType("settings", [this](auto&& session, auto&& req, auto&& root) { RType_Settings(session, req, root); });
+
 			RegisterRType("events", [this](auto&& session, auto&& req, auto&& root) { RType_Events(session, req, root); });
 
 			RegisterRType("hardware", [this](auto&& session, auto&& req, auto&& root) { RType_Hardware(session, req, root); });
@@ -13200,7 +13201,7 @@ namespace http
 				m_mainworker.m_eventsystem.GetCurrentStates();
 		}
 
-		void CWebServer::RType_Settings(WebEmSession& session, const request& req, Json::Value& root)
+		void CWebServer::Cmd_GetSettings(WebEmSession& session, const request& req, Json::Value& root)
 		{
 			std::vector<std::vector<std::string>> result;
 			char szTmp[100];

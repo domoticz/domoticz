@@ -308,13 +308,13 @@ private:
 
 	//Migrated RTypes
 	void Cmd_GetUsers(WebEmSession & session, const request& req, Json::Value &root);
+	void Cmd_GetSettings(WebEmSession & session, const request& req, Json::Value &root);
 	//RTypes
 	void RType_HandleGraph(WebEmSession & session, const request& req, Json::Value &root);
 	void RType_LightLog(WebEmSession & session, const request& req, Json::Value &root);
 	void RType_TextLog(WebEmSession & session, const request& req, Json::Value &root);
 	void RType_SceneLog(WebEmSession & session, const request& req, Json::Value &root);
 	void RType_RemoteWebClientsLog(WebEmSession& session, const request& req, Json::Value& root);
-	void RType_Settings(WebEmSession & session, const request& req, Json::Value &root);
 	void RType_Events(WebEmSession & session, const request& req, Json::Value &root);
 	void RType_Hardware(WebEmSession & session, const request& req, Json::Value &root);
 	void RType_Devices(WebEmSession & session, const request& req, Json::Value &root);

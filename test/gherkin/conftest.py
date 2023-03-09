@@ -53,7 +53,7 @@ def request_uri(test_domoticz,uri):
 @when(parsers.parse('I request the "{method}"'))
 def request_uri(test_domoticz,method):
     if method == "Configuration Settings":
-        uri = '/json.htm?type=settings'
+        uri = '/json.htm?type=command&param=getsettings'
     elif method == "Version Information":
         uri = '/json.htm?type=command&param=getversion'
     else:
