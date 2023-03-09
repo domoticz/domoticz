@@ -11315,6 +11315,8 @@ void MainWorker::decode_LightningSensor(const CDomoticzHardwareBase* pHardware, 
 	gdevice.intval1 = NodeID;
 	gdevice.id = (uint8_t)gdevice.intval1;
 
+	bool bNewSensor = false;
+
 	//Strikes (resetted daily, or turnover... we need to keep track of this)
 	const int strike_count = pResponse->LIGHTNING.strike_cnt;
 	if (strike_count != 0)
@@ -11337,8 +11339,11 @@ void MainWorker::decode_LightningSensor(const CDomoticzHardwareBase* pHardware, 
 			m_sql.safe_query("UPDATE WOLNodes SET Timeout=%d WHERE (ID == %q)", strike_count, result[0][1].c_str());
 		}
 		else
+		{
+			bNewSensor = true;
 			m_sql.safe_query("INSERT INTO WOLNodes (HardwareID, Name, Timeout) VALUES (%d, '%q', %d)", pHardware->m_HwdID, lookupName.c_str(), strike_count);
-		if ((new_count > 0) || (result.empty()))
+		}
+		if ((new_count > 0) || (bNewSensor))
 		{
 			gdevice.intval2 = new_count;
 			//gdevice.subtype = sTypeTextStatus;
@@ -11351,7 +11356,7 @@ void MainWorker::decode_LightningSensor(const CDomoticzHardwareBase* pHardware, 
 	//Distance (meters)
 	if (distance == 63)
 	{
-		if (!result.empty())
+		if (!bNewSensor)
 			return; //invalid/no strike
 		distance = 0;
 	}
