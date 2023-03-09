@@ -306,6 +306,8 @@ private:
 	void PluginLoadConfig();
 #endif
 
+	//Migrated RTypes
+	void Cmd_GetUsers(WebEmSession & session, const request& req, Json::Value &root);
 	//RTypes
 	void RType_HandleGraph(WebEmSession & session, const request& req, Json::Value &root);
 	void RType_LightLog(WebEmSession & session, const request& req, Json::Value &root);
@@ -318,7 +320,6 @@ private:
 	void RType_Devices(WebEmSession & session, const request& req, Json::Value &root);
 	void RType_Cameras(WebEmSession& session, const request& req, Json::Value& root);
 	void RType_CamerasUser(WebEmSession& session, const request& req, Json::Value& root);
-	void RType_Users(WebEmSession & session, const request& req, Json::Value &root);
 	void RType_Mobiles(WebEmSession & session, const request& req, Json::Value &root);
 	void RType_Timers(WebEmSession & session, const request& req, Json::Value &root);
 	void RType_SceneTimers(WebEmSession & session, const request& req, Json::Value &root);
@@ -419,8 +420,8 @@ private:
     void Cmd_TellstickApplySettings(WebEmSession &session, const request &req, Json::Value &root);
 	std::shared_ptr<std::thread> m_thread;
 
-	std::map < std::string, webserver_response_function > m_webcommands;
-	std::map < std::string, webserver_response_function > m_webrtypes;
+	std::map < std::string, webserver_response_function > m_webcommands;	//Commands
+	std::map < std::string, webserver_response_function > m_webrtypes;		//RTypes (will be removed in the future once RTypes are migrated to Commands)
 	void Do_Work();
 	std::vector<_tCustomIcon> m_custom_light_icons;
 	std::map<int, int> m_custom_light_icons_lookup;

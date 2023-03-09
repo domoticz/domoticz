@@ -201,7 +201,7 @@ define(['app'], function (app) {
 			var oTable = $('#usertable').dataTable();
 			oTable.fnClearTable();
 			$.ajax({
-				url: "json.htm?type=users",
+				url: "json.htm?type=command&param=getusers",
 				async: false,
 				dataType: 'json',
 				success: function (data) {

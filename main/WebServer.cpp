@@ -608,6 +608,10 @@ namespace http
 
 			RegisterCommandCode("tellstickApplySettings", [this](auto&& session, auto&& req, auto&& root) { Cmd_TellstickApplySettings(session, req, root); });
 
+			// Migrated RTypes to regular commands
+			RegisterCommandCode("getusers", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetUsers(session, req, root); });
+
+			// RType commands (will be replace by regular commands in the future)
 			RegisterRType("graph", [this](auto&& session, auto&& req, auto&& root) { RType_HandleGraph(session, req, root); });
 			RegisterRType("lightlog", [this](auto&& session, auto&& req, auto&& root) { RType_LightLog(session, req, root); });
 			RegisterRType("textlog", [this](auto&& session, auto&& req, auto&& root) { RType_TextLog(session, req, root); });
@@ -621,7 +625,6 @@ namespace http
 			RegisterRType("deletedevice", [this](auto&& session, auto&& req, auto&& root) { RType_DeleteDevice(session, req, root); });
 			RegisterRType("cameras", [this](auto&& session, auto&& req, auto&& root) { RType_Cameras(session, req, root); });
 			RegisterRType("cameras_user", [this](auto&& session, auto&& req, auto&& root) { RType_CamerasUser(session, req, root); });
-			RegisterRType("users", [this](auto&& session, auto&& req, auto&& root) { RType_Users(session, req, root); });
 			RegisterRType("mobiles", [this](auto&& session, auto&& req, auto&& root) { RType_Mobiles(session, req, root); });
 
 			RegisterRType("timers", [this](auto&& session, auto&& req, auto&& root) { RType_Timers(session, req, root); });
@@ -11968,7 +11971,7 @@ namespace http
 			GetJSonDevices(root, rused, rfilter, order, rid, planid, floorid, bDisplayHidden, bDisabledDisabled, bFetchFavorites, LastUpdate, session.username, hwidx);
 		}
 
-		void CWebServer::RType_Users(WebEmSession& session, const request& req, Json::Value& root)
+		void CWebServer::Cmd_GetUsers(WebEmSession& session, const request& req, Json::Value& root)
 		{
 			root["status"] = "ERR";
 			root["title"] = "Users";
