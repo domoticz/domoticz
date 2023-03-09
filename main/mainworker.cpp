@@ -11319,38 +11319,35 @@ void MainWorker::decode_LightningSensor(const CDomoticzHardwareBase* pHardware, 
 
 	//Strikes (resetted daily, or turnover... we need to keep track of this)
 	const int strike_count = pResponse->LIGHTNING.strike_cnt;
-	if (strike_count != 0)
+	gdevice.subtype = sTypeCounterIncremental;
+
+	int new_count = strike_count;
+
+	//Get previous send value
+	std::vector<std::vector<std::string> > result;
+	std::string lookupName = "Prev.Lightning_Strikes_" + std::to_string(gdevice.id);
+	result = m_sql.safe_query("SELECT Timeout, ID FROM WOLNodes WHERE (HardwareID==%d) AND (Name=='%q')", pHardware->m_HwdID, lookupName.c_str());
+	if (!result.empty())
 	{
-		gdevice.subtype = sTypeCounterIncremental;
-
-		int new_count = strike_count;
-
-		//Get previous send value
-		std::vector<std::vector<std::string> > result;
-		std::string lookupName = "Prev.Lightning_Strikes_" + std::to_string(gdevice.id);
-		result = m_sql.safe_query("SELECT Timeout, ID FROM WOLNodes WHERE (HardwareID==%d) AND (Name=='%q')", pHardware->m_HwdID, lookupName.c_str());
-		if (!result.empty())
+		int old_count = atoi(result[0][0].c_str());
+		if (old_count < new_count)
 		{
-			int old_count = atoi(result[0][0].c_str());
-			if (old_count < new_count)
-			{
-				new_count = strike_count - old_count;
-			}
-			m_sql.safe_query("UPDATE WOLNodes SET Timeout=%d WHERE (ID == %q)", strike_count, result[0][1].c_str());
+			new_count = strike_count - old_count;
 		}
-		else
-		{
-			bNewSensor = true;
-			m_sql.safe_query("INSERT INTO WOLNodes (HardwareID, Name, Timeout) VALUES (%d, '%q', %d)", pHardware->m_HwdID, lookupName.c_str(), strike_count);
-		}
-		if ((new_count > 0) || (bNewSensor))
-		{
-			gdevice.intval2 = new_count;
-			//gdevice.subtype = sTypeTextStatus;
-			//strcpy_s(gdevice.text, std::to_string(strike_count).c_str());
-			procResult.DeviceName = "Lightning Strike Count";
-			decode_General(pHardware, (const tRBUF*)&gdevice, procResult);
-		}
+		m_sql.safe_query("UPDATE WOLNodes SET Timeout=%d WHERE (ID == %q)", strike_count, result[0][1].c_str());
+	}
+	else
+	{
+		bNewSensor = true;
+		m_sql.safe_query("INSERT INTO WOLNodes (HardwareID, Name, Timeout) VALUES (%d, '%q', %d)", pHardware->m_HwdID, lookupName.c_str(), strike_count);
+	}
+	if ((new_count > 0) || (bNewSensor))
+	{
+		gdevice.intval2 = new_count;
+		//gdevice.subtype = sTypeTextStatus;
+		//strcpy_s(gdevice.text, std::to_string(strike_count).c_str());
+		procResult.DeviceName = "Lightning Strike Count";
+		decode_General(pHardware, (const tRBUF*)&gdevice, procResult);
 	}
 
 	//Distance (meters)
