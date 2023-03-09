@@ -102,8 +102,7 @@ class CWebServer : public session_store, public std::enable_shared_from_this<CWe
 	std::string PluginHardwareDesc(int HwdID);
 
 private:
-	void HandleCommand(const std::string &cparam, WebEmSession & session, const request& req, Json::Value &root);
-	void HandleRType(const std::string &rtype, WebEmSession & session, const request& req, Json::Value &root);
+	void HandleCommandParam(const std::string &cparam, WebEmSession & session, const request& req, Json::Value &root);
     void GroupBy(Json::Value &root, std::string dbasetable, uint64_t idx, std::string sgroupby, std::function<std::string (std::string)> counterExpr, std::function<std::string (std::string)> valueExpr, std::function<std::string (double)> sumToResult);
     void AddTodayValueToResult(Json::Value &root, const std::string &sgroupby, const std::string &today, const double todayValue, const std::string &formatString);
 

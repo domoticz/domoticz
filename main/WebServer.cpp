@@ -808,17 +808,8 @@ namespace http
 		}
 
 		void CWebServer::RegisterRType(const char* idname, const webserver_response_function& ResponseFunction)
-		{
+		{	// TO-DO: remove this function once all RTypes are converted to proper commands
 			m_webrtypes.insert(std::pair<std::string, webserver_response_function>(std::string(idname), ResponseFunction));
-		}
-
-		void CWebServer::HandleRType(const std::string& rtype, WebEmSession& session, const request& req, Json::Value& root)
-		{
-			auto pf = m_webrtypes.find(rtype);
-			if (pf != m_webrtypes.end())
-			{
-				pf->second(session, req, root);
-			}
 		}
 
 		void CWebServer::GetJSonPage(WebEmSession& session, const request& req, reply& rep)
@@ -833,12 +824,26 @@ namespace http
 				if (!cparam.empty())
 				{
 					_log.Debug(DEBUG_WEBSERVER, "CWebServer::GetJSonPage() :%s :%s ", cparam.c_str(), req.uri.c_str());
-					HandleCommand(cparam, session, req, root);
+
+					auto pf = m_webcommands.find(cparam);
+					if (pf != m_webcommands.end())
+					{
+						pf->second(session, req, root);
+					}
+					else
+					{	// See if we still have a Param based version not converted to a proper command
+						// TODO: remove this once all param based code has been converted to proper commands
+						HandleCommandParam(cparam, session, req, root);
+					}
 				}
 			} //(rtype=="command")
 			else
-			{
-				HandleRType(rtype, session, req, root);
+			{	// TODO: remove this once all rtypes are converted to commands
+				auto pf = m_webrtypes.find(rtype);
+				if (pf != m_webrtypes.end())
+				{
+					pf->second(session, req, root);
+				}
 			}
 
 			std::string jcallback = request::findValue(&req, "jsoncallback");
@@ -3388,26 +3393,12 @@ namespace http
 			return (!result.empty());
 		}
 
-		void CWebServer::HandleCommand(const std::string& cparam, WebEmSession& session, const request& req, Json::Value& root)
+		void CWebServer::HandleCommandParam(const std::string& cparam, WebEmSession& session, const request& req, Json::Value& root)
 		{
-			auto pf = m_webcommands.find(cparam);
-			if (pf != m_webcommands.end())
-			{
-				pf->second(session, req, root);
-				return;
-			}
-
 			std::vector<std::vector<std::string>> result;
 			char szTmp[300];
-
 			bool bHaveUser = (!session.username.empty());
-			/*
-						int iUser = -1;
-						if (bHaveUser)
-						{
-							iUser = FindUser(session.username.c_str());
-						}
-			*/
+
 			if (cparam == "deleteallsubdevices")
 			{
 				if (session.rights < 2)
@@ -6401,7 +6392,7 @@ namespace http
 				m_notifications.RemoveDeviceNotifications(idx);
 			}
 			else if (cparam == "adduser" || cparam == "updateuser" || cparam == "deleteuser")
-			{	// C(R)UD operations for Users. Read is done by RType_Users
+			{	// C(R)UD operations for Users. Read is done by Cmd_GetUsers
 				root["status"] = "ERR";
 				if (session.rights != URIGHTS_ADMIN)
 				{
