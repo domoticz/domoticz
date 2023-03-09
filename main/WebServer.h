@@ -54,7 +54,6 @@ class CWebServer : public session_store, public std::enable_shared_from_this<CWe
 	void GetOpenIDConfiguration(WebEmSession &session, const request &req, reply &rep);
 
 	void PostSettings(WebEmSession& session, const request& req, reply& rep);
-	void PostLoginCheck(WebEmSession& session, const request& req, reply& rep);
 	void SetRFXCOMMode(WebEmSession & session, const request& req, std::string & redirect_uri);
 	void RFXComUpgradeFirmware(WebEmSession & session, const request& req, std::string & redirect_uri);
 	void UploadFloorplanImage(WebEmSession & session, const request& req, std::string & redirect_uri);
