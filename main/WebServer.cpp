@@ -345,7 +345,6 @@ namespace http
 			m_pWebEm->RegisterIncludeCode("switchtypes", [this](auto&& content_part) { DisplaySwitchTypesCombo(content_part); });
 			m_pWebEm->RegisterIncludeCode("metertypes", [this](auto&& content_part) { DisplayMeterTypesCombo(content_part); });
 			m_pWebEm->RegisterIncludeCode("timertypes", [this](auto&& content_part) { DisplayTimerTypesCombo(content_part); });
-			m_pWebEm->RegisterIncludeCode("combolanguage", [this](auto&& content_part) { DisplayLanguageCombo(content_part); });
 
 			if (m_iamsettings.is_enabled())
 			{
@@ -7903,22 +7902,6 @@ namespace http
 			for (int ii = 0; ii < MTYPE_END; ii++)
 			{
 				sprintf(szTmp, "<option value=\"%d\">%s</option>\n", ii, Meter_Type_Desc((_eMeterType)ii));
-				content_part += szTmp;
-			}
-		}
-
-		void CWebServer::DisplayLanguageCombo(std::string& content_part)
-		{
-			// return a sorted list
-			std::map<std::string, std::string> _ltypes;
-			char szTmp[200];
-			for (auto& lang : guiLanguage)
-			{
-				_ltypes[lang.second] = lang.first;
-			}
-			for (const auto& type : _ltypes)
-			{
-				sprintf(szTmp, "<option value=\"%s\">%s</option>\n", type.second.c_str(), type.first.c_str());
 				content_part += szTmp;
 			}
 		}
