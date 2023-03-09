@@ -11308,8 +11308,6 @@ void MainWorker::decode_LightningSensor(const CDomoticzHardwareBase* pHardware, 
 	uint8_t BatteryLevel = get_BateryLevel(pHardware->HwdType, false, pResponse->LIGHTNING.battery_level & 0x0F);
 
 	int distance = pResponse->LIGHTNING.distance;
-	if (distance == 63)
-		return; //invalid/no strike
 
 	_tGeneralDevice gdevice;
 	gdevice.rssi = SignalLevel;
@@ -11318,7 +11316,7 @@ void MainWorker::decode_LightningSensor(const CDomoticzHardwareBase* pHardware, 
 	gdevice.id = (uint8_t)gdevice.intval1;
 
 	//Strikes (resetted daily, or turnover... we need to keep track of this)
-	int strike_count = pResponse->LIGHTNING.strike_cnt;
+	const int strike_count = pResponse->LIGHTNING.strike_cnt;
 	if (strike_count != 0)
 	{
 		gdevice.subtype = sTypeCounterIncremental;
@@ -11340,7 +11338,7 @@ void MainWorker::decode_LightningSensor(const CDomoticzHardwareBase* pHardware, 
 		}
 		else
 			m_sql.safe_query("INSERT INTO WOLNodes (HardwareID, Name, Timeout) VALUES (%d, '%q', %d)", pHardware->m_HwdID, lookupName.c_str(), strike_count);
-		if (new_count > 0)
+		if ((new_count > 0) || (result.empty()))
 		{
 			gdevice.intval2 = new_count;
 			//gdevice.subtype = sTypeTextStatus;
@@ -11351,8 +11349,14 @@ void MainWorker::decode_LightningSensor(const CDomoticzHardwareBase* pHardware, 
 	}
 
 	//Distance (meters)
+	if (distance == 63)
+	{
+		if (!result.empty())
+			return; //invalid/no strike
+		distance = 0;
+	}
 	gdevice.subtype = sTypeVisibility;
-	gdevice.floatval1 = float(distance);
+	gdevice.floatval1 = static_cast<float>(distance);
 	procResult.DeviceName = "Lightning Distance";
 	decode_General(pHardware, (const tRBUF*)&gdevice, procResult);
 	procResult.DeviceRowIdx = DevRowIdx;
