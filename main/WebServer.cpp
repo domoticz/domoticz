@@ -190,7 +190,7 @@ namespace http
 							cImage.Title = results[1];
 							cImage.Description = results[2];
 							m_custom_light_icons.push_back(cImage);
-							m_custom_light_icons_lookup[cImage.idx] = m_custom_light_icons.size() - 1;
+							m_custom_light_icons_lookup[cImage.idx] = (int)m_custom_light_icons.size() - 1;
 						}
 					}
 				}
@@ -246,7 +246,7 @@ namespace http
 					}
 
 					m_custom_light_icons.push_back(cImage);
-					m_custom_light_icons_lookup[cImage.idx] = m_custom_light_icons.size() - 1;
+					m_custom_light_icons_lookup[cImage.idx] = (int)m_custom_light_icons.size() - 1;
 					ii++;
 				}
 			}
@@ -13481,7 +13481,7 @@ namespace http
 						if (ii == 0)
 						{
 							bHaveSelector = true;
-							maxDimLevel = selectorStatuses.size();
+							maxDimLevel = (int)selectorStatuses.size();
 						}
 						if (!selectorStatuses.empty())
 						{

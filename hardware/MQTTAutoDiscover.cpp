@@ -1886,7 +1886,7 @@ MQTTAutoDiscover::_tMQTTASensor* MQTTAutoDiscover::get_auto_discovery_sensor_uni
 				auto ittUnID1 = pSensor->unique_id.begin();
 				auto ittUnID2 = pTmpDeviceSensor->unique_id.begin();
 				size_t iTlen = (pSensor->unique_id.size() < pTmpDeviceSensor->unique_id.size()) ? pSensor->unique_id.size() : pTmpDeviceSensor->unique_id.size();
-				for (int i = 1; i < iTlen; ++i)
+				for (int i = 1; i < (int)iTlen; ++i)
 				{
 					if (*++ittUnID1 != *++ittUnID2)
 					{
