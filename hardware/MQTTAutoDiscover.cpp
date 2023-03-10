@@ -1799,7 +1799,7 @@ void MQTTAutoDiscover::GuessSensorTypeValue(const _tMQTTASensor* pSensor, uint8_
 
 		m_sql.GetAddjustment(m_HwdID, pSensor->unique_id.c_str(), pSensor->devUnit, devType, subType, AddjValue, AddjMulti);
 		temp += AddjValue;
-		sValue = std_format("%.1f", temp);
+		sValue = std_format("%.2f", temp);
 	}
 	else if (szUnit == "%")
 	{
@@ -2198,7 +2198,7 @@ void MQTTAutoDiscover::handle_auto_discovery_sensor(_tMQTTASensor* pSensor, cons
 			}
 			else if (pressure >= 1029)
 				nforecast = wsbaroforecast_sunny;
-			sValue = std_format("%.1f;%d;%d;%.1f;%d", temp, humidity, Get_Humidity_Level(humidity), pressure, nforecast);
+			sValue = std_format("%.2f;%d;%d;%.1f;%d", temp, humidity, Get_Humidity_Level(humidity), pressure, nforecast);
 		}
 		else if (pTempSensor && pHumSensor)
 		{
@@ -2211,7 +2211,7 @@ void MQTTAutoDiscover::handle_auto_discovery_sensor(_tMQTTASensor* pSensor, cons
 			devType = pTypeTEMP_HUM;
 			subType = sTypeTH1;
 
-			sValue = std_format("%.1f;%d;%d", temp, humidity, Get_Humidity_Level(humidity));
+			sValue = std_format("%.2f;%d;%d", temp, humidity, Get_Humidity_Level(humidity));
 		}
 		else
 		{
