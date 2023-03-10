@@ -613,7 +613,6 @@
     <ClInclude Include="..\hardware\EvohomeSerial.h" />
     <ClInclude Include="..\hardware\EvohomeTCP.h" />
     <ClInclude Include="..\hardware\EvohomeWeb.h" />
-    <ClInclude Include="..\hardware\GoodweAPI.h" />
     <ClInclude Include="..\hardware\FritzboxTCP.h" />
     <ClInclude Include="..\hardware\Gpio.h" />
     <ClInclude Include="..\hardware\GpioPin.h" />
@@ -919,7 +918,6 @@
     <ClCompile Include="..\hardware\EvohomeTCP.cpp" />
     <ClCompile Include="..\hardware\EvohomeWeb.cpp" />
     <ClCompile Include="..\hardware\FritzboxTCP.cpp" />
-    <ClCompile Include="..\hardware\GoodweAPI.cpp" />
     <ClCompile Include="..\hardware\Gpio.cpp" />
     <ClCompile Include="..\hardware\GpioPin.cpp" />
     <ClCompile Include="..\hardware\Honeywell.cpp" />

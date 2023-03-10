@@ -3,6 +3,7 @@ Version 2023.xx
 - Implemented: RFXCom, Updated SDK
 - Implemented: MQTT-AD, added support for number (config) types
 - Implemented: -nocache command line option (ask browser not to cache pages)
+- Removed: native GoodWe hardware (use the new GoodWe python plugin instead)
 - Fixed: Counter day charts, better hourly bars and usage
 - Fixed: Device reordering when a room plan was selected
 - Fixed: Chime structure check

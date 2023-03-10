@@ -120,7 +120,6 @@
 #include "../hardware/BleBox.h"
 #include "../hardware/Ec3kMeterTCP.h"
 #include "../hardware/OpenWeatherMap.h"
-#include "../hardware/GoodweAPI.h"
 #include "../hardware/Daikin.h"
 #include "../hardware/HEOS.h"
 #include "../hardware/MultiFun.h"
@@ -1019,9 +1018,6 @@ bool MainWorker::AddHardwareFromParams(
 		break;
 	case HTYPE_Ec3kMeterTCP:
 		pHardware = new Ec3kMeterTCP(ID, Address, Port);
-		break;
-	case HTYPE_GoodweAPI:
-		pHardware = new GoodweAPI(ID, Username, Mode1);
 		break;
 	case HTYPE_Yeelight:
 		pHardware = new Yeelight(ID);
