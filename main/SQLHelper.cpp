@@ -6827,6 +6827,7 @@ void CSQLHelper::UpdateMeter()
 			catch (const std::exception&)
 			{
 				_log.Log(LOG_ERROR, "UpdateMeter: Error converting sValue/sUsage! (IDX: %s, sValue: '%s', sUsage: '%s', dType: %d, sType: %d)", sd[0].c_str(), sValue.c_str(), sUsage.c_str(), dType, dSubType);
+				continue;
 			}
 
 			//insert record
@@ -6924,6 +6925,7 @@ void CSQLHelper::UpdateMultiMeter()
 				catch (const std::exception &)
 				{
 					_log.Log(LOG_ERROR, "UpdateMultiMeter: Error converting sValue values! (IDX: %s, sValue: '%s', dType: %d, sType: %d)", sd[0].c_str(), sValue.c_str(), dType, dSubType);
+					continue;
 				}
 
 				value1 = powerusage1;

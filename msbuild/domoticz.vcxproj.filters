@@ -1456,6 +1456,12 @@
       <Filter>www\app</Filter>
     </None>
     <None Include="..\www\css\planning.css" />
+    <None Include="..\www\app\hardware\setup\MQTT-AD.html">
+      <Filter>www\app\hardware\setup</Filter>
+    </None>
+    <None Include="..\www\app\hardware\setup\MQTT-AD.js">
+      <Filter>www\app\hardware\setup</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\webserver\Base64.h">

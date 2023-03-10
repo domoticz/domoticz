@@ -114,7 +114,7 @@ void FritzboxTCP::Do_Work()
 
 void FritzboxTCP::OnData(const unsigned char* pData, size_t length)
 {
-	ParseData(pData, length);
+	ParseData(pData, (int)length);
 }
 
 void FritzboxTCP::OnError(const boost::system::error_code& error)

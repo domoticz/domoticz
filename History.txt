@@ -1,6 +1,7 @@
 Version 2023.xx
 - Implemented: LUA: Added name state to devicechanged_ext table
 - Implemented: RFXCom, Updated SDK
+- Implemented: MQTT-AD, added support for number (config) types
 - Implemented: -nocache command line option (ask browser not to cache pages)
 - Fixed: Counter day charts, better hourly bars and usage
 - Fixed: Device reordering when a room plan was selected

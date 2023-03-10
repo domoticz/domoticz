@@ -3,10 +3,12 @@
 #include "MQTTAutoDiscover.h"
 #include "../main/json_helper.h"
 #include "../main/Helper.h"
+#include "../main/HTMLSanitizer.h"
 #include "../main/localtime_r.h"
 #include "../main/Logger.h"
 #include "../main/mainworker.h"
 #include "../main/SQLHelper.h"
+#include "../main/WebServer.h"
 #include "../notifications/NotificationHelper.h"
 #include <iostream>
 
@@ -18,10 +20,10 @@ std::vector<std::string> allowed_components = {
 		"device_automation",
 		"light",
 		"lock",
-		//		"number",
-				"select",
-				"sensor",
-				"switch"
+		"number",
+		"select",
+		"sensor",
+		"switch"
 };
 
 #define CLIMATE_MODE_UNIT 1
@@ -31,8 +33,6 @@ MQTTAutoDiscover::MQTTAutoDiscover(const int ID, const std::string& Name, const 
 	const std::string& CAfilenameExtra, const int TLS_Version)
 	: MQTT(ID, IPAddress, usIPPort, Username, Password, CAfilenameExtra, TLS_Version, (int)MQTTAutoDiscover::PT_none, std::string("Domoticz-MQTT-AutoDiscover") + GenerateUUID() + std::to_string(ID), true)
 {
-	m_allowed_components = std::vector<std::string>(allowed_components);
-
 	std::vector<std::string> strarray;
 	StringSplit(CAfilenameExtra, ";", strarray);
 	if (!strarray.empty())
@@ -261,7 +261,14 @@ std::string MQTTAutoDiscover::GetValueFromTemplate(Json::Value root, std::string
 			}
 			if (root.isObject())
 				return "";
-			std::string retVal = root.asString();
+			std::string retVal;
+			if (root.isDouble())
+			{
+				//until we have c++20 where we can use std::format
+				retVal = std_format("%g", root.asDouble());
+			}
+			else
+				retVal = root.asString();
 			if (value_options_.find(retVal) != value_options_.end())
 			{
 				retVal = value_options_[retVal];
@@ -1191,6 +1198,14 @@ void MQTTAutoDiscover::on_auto_discovery_message(const struct mosquitto_message*
 		FixCommandTopicStateTemplate(pSensor->temperature_command_topic, pSensor->temperature_command_template);
 		FixCommandTopicStateTemplate(pSensor->preset_mode_command_topic, pSensor->preset_mode_value_template);
 
+		//number
+		if (!root["min"].empty())
+			pSensor->number_min = root["min"].asDouble();
+		if (!root["max"].empty())
+			pSensor->number_max = root["max"].asDouble();
+		if (!root["step"].empty())
+			pSensor->number_step = root["step"].asDouble();
+
 		if (!root["qos"].empty())
 			pSensor->qos = atoi(root["qos"].asString().c_str());
 
@@ -1259,6 +1274,14 @@ void MQTTAutoDiscover::on_auto_discovery_message(const struct mosquitto_message*
 		{
 			handle_auto_discovery_button(pSensor, message);
 		}
+		else if (pSensor->component_type == "number")
+		{
+			if (pSensor->state_topic.empty())
+			{
+				Log(LOG_ERROR, "A number should have a state_topic!");
+				return;
+			}
+		}
 
 
 		//Check if we want to subscribe to this sensor
@@ -1276,6 +1299,7 @@ void MQTTAutoDiscover::on_auto_discovery_message(const struct mosquitto_message*
 				|| (pSensor->component_type == "cover")
 				|| (pSensor->component_type == "climate")
 				|| (pSensor->component_type == "button")
+				|| (pSensor->component_type == "number")
 				);
 
 		if (bDoSubscribe)
@@ -1422,6 +1446,8 @@ void MQTTAutoDiscover::handle_auto_discovery_sensor_message(const struct mosquit
 				handle_auto_discovery_lock(pSensor, message);
 			else if (pSensor->component_type == "button")
 				handle_auto_discovery_button(pSensor, message);
+			else if (pSensor->component_type == "number")
+				handle_auto_discovery_number(pSensor, message);
 		}
 		else if (pSensor->availability_topic == topic)
 		{
@@ -1859,8 +1885,8 @@ MQTTAutoDiscover::_tMQTTASensor* MQTTAutoDiscover::get_auto_discovery_sensor_uni
 				// Check the "match length" of the UID of the DEVICE with the UID of the SENSOR to get the correct subdevice in case the are multiple
 				auto ittUnID1 = pSensor->unique_id.begin();
 				auto ittUnID2 = pTmpDeviceSensor->unique_id.begin();
-				int iTlen = (int)(pSensor->unique_id.size() < pTmpDeviceSensor->unique_id.size()) ? pSensor->unique_id.size() : pTmpDeviceSensor->unique_id.size();
-				for (int i = 1; i < iTlen; ++i)
+				size_t iTlen = (pSensor->unique_id.size() < pTmpDeviceSensor->unique_id.size()) ? pSensor->unique_id.size() : pTmpDeviceSensor->unique_id.size();
+				for (int i = 1; i < (int)iTlen; ++i)
 				{
 					if (*++ittUnID1 != *++ittUnID2)
 					{
@@ -1995,6 +2021,27 @@ void MQTTAutoDiscover::handle_auto_discovery_battery(_tMQTTASensor* pSensor, con
 		if (pDevSensor->device_identifiers == pSensor->device_identifiers)
 		{
 			pDevSensor->BatteryLevel = iLevel;
+		}
+	}
+}
+
+void MQTTAutoDiscover::handle_auto_discovery_number(_tMQTTASensor* pSensor, const struct mosquitto_message* message)
+{
+	if (pSensor->last_value.empty())
+		return;
+	if (!is_number(pSensor->last_value))
+		return;
+
+	return;
+	int iValue = atoi(pSensor->last_value.c_str());
+
+	for (auto& itt : m_discovered_sensors)
+	{
+		_tMQTTASensor* pDevSensor = &itt.second;
+		if (pDevSensor->device_identifiers == pSensor->device_identifiers)
+		{
+			//nothing to be done here
+			//pDevSensor->number_current = iValue;
 		}
 	}
 }
@@ -3963,3 +4010,130 @@ bool MQTTAutoDiscover::SetSetpoint(const std::string& DeviceID, float Temp)
 	return true;
 }
 
+void MQTTAutoDiscover::GetConfig(Json::Value& root)
+{
+	int ii = 0;
+	for (auto& itt : m_discovered_sensors)
+	{
+		if (itt.second.component_type == "number")
+		{
+			root["result"][ii]["idx"] = itt.first;
+
+			_tMQTTADevice* pDevice = &m_discovered_devices[itt.second.device_identifiers];
+			root["result"][ii]["dev_name"] = (pDevice != nullptr) ? pDevice->name : "?";
+			root["result"][ii]["name"] = itt.second.name;
+			root["result"][ii]["value"] = itt.second.last_value;
+			root["result"][ii]["unit"] = itt.second.unit_of_measurement;
+			root["result"][ii]["min"] = std_format("%g", itt.second.number_min);
+			root["result"][ii]["max"] = std_format("%g", itt.second.number_max);
+			root["result"][ii]["step"] = std_format("%g", itt.second.number_step);
+			ii++;
+		}
+	}
+}
+
+bool MQTTAutoDiscover::UpdateNumber(const std::string& idx, const std::string& sValue)
+{
+	for (auto& itt : m_discovered_sensors)
+	{
+		if (itt.first == idx)
+		{
+			double dValue = atof(sValue.c_str());
+			if (dValue < itt.second.number_min || dValue > itt.second.number_max)
+				return false;
+			SendMessage(itt.second.command_topic, sValue);
+/*
+			std::string szSendValue = std::to_string(nValue);
+			if (!itt.second.value_template.empty())
+			{
+				std::string szKey = GetValueTemplateKey(itt.second.value_template);
+				if (!szKey.empty())
+				{
+					Json::Value root;
+					root[szKey] = std::to_string(nValue);
+					szSendValue = JSonToRawString(root);
+				}
+				else
+				{
+					Log(LOG_ERROR, "number device unhandled value_value_template (%s/%s)", itt.second.unique_id.c_str(), itt.second.name.c_str());
+					return false;
+				}
+			}
+			else
+				szSendValue = std::to_string(nValue);
+			SendMessage(itt.second.command_topic, szSendValue);
+*/
+			return true;
+		}
+	}
+	return false;
+}
+
+//Webserver helpers
+namespace http {
+	namespace server {
+		void CWebServer::Cmd_MQTTAD_GetConfig(WebEmSession& session, const request& req, Json::Value& root)
+		{
+			if (session.rights != 2)
+			{
+				session.reply_status = reply::forbidden;
+				return; //Only admin user allowed
+			}
+
+			std::string hwid = request::findValue(&req, "idx");
+			if (hwid.empty())
+				return;
+
+			CDomoticzHardwareBase* pHardware = m_mainworker.GetHardware(std::stoi(hwid));
+			if (pHardware == nullptr)
+				return;
+			if (pHardware->HwdType != HTYPE_MQTTAutoDiscovery)
+				return;
+
+			root["status"] = "OK";
+			root["title"] = "GetMQTTConfig";
+
+			MQTTAutoDiscover* pMQTT = reinterpret_cast<MQTTAutoDiscover*>(pHardware);
+			pMQTT->GetConfig(root);
+		}
+
+		void CWebServer::Cmd_MQTTAD_UpdateNumber(WebEmSession& session, const request& req, Json::Value& root)
+		{
+			if (session.rights != 2)
+			{
+				session.reply_status = reply::forbidden;
+				return; //Only admin user allowed
+			}
+
+			std::string hwid = request::findValue(&req, "idx");
+			std::string devid = HTMLSanitizer::Sanitize(CURLEncode::URLDecode(request::findValue(&req, "name")));
+			std::string value = request::findValue(&req, "value");
+			if (
+				hwid.empty()
+				|| devid.empty()
+				|| value.empty()
+				)
+				return;
+
+			CDomoticzHardwareBase* pHardware = m_mainworker.GetHardware(std::stoi(hwid));
+			if (pHardware == nullptr)
+				return;
+			if (pHardware->HwdType != HTYPE_MQTTAutoDiscovery)
+				return;
+
+			MQTTAutoDiscover* pMQTT = reinterpret_cast<MQTTAutoDiscover*>(pHardware);
+			try
+			{
+				if (pMQTT->UpdateNumber(devid, value))
+				{
+					root["title"] = "GetMQTTUpdateNumber";
+					root["status"] = "OK";
+				}
+			}
+			catch (const std::exception&)
+			{
+
+			}
+		}
+	} // namespace server
+} // namespace http

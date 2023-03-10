@@ -2456,6 +2456,9 @@ void MainWorker::ProcessRXMessage(const CDomoticzHardwareBase *pHardware, const 
 		case pTypeLEVELSENSOR:
 			decode_LevelSensor(pHardware, reinterpret_cast<const tRBUF*>(pRXCommand), procResult);
 			break;
+		case pTypeLIGHTNING:
+			decode_LightningSensor(pHardware, reinterpret_cast<const tRBUF*>(pRXCommand), procResult);
+			break;
 		default:
 			_log.Log(LOG_ERROR, "UNHANDLED PACKET TYPE:      FS20 %02X", pRXCommand[1]);
 			return;
@@ -10327,6 +10330,12 @@ void MainWorker::decode_General(const CDomoticzHardwareBase* pHardware, const tR
 		strcpy(szTmp, pMeter->text);
 		DevRowIdx = m_sql.UpdateValue(pHardware->m_HwdID, ID.c_str(), Unit, devType, subType, SignalLevel, BatteryLevel, szTmp, procResult.DeviceName, true, procResult.Username.c_str());
 	}
+	else if (subType == sTypeCounterIncremental)
+	{
+		sprintf(szTmp, "%d", pMeter->intval2);
+		DevRowIdx = m_sql.UpdateValue(pHardware->m_HwdID, ID.c_str(), Unit, devType, subType, SignalLevel, BatteryLevel, szTmp, procResult.DeviceName, true, procResult.Username.c_str());
+	}
+
 	m_notifications.CheckAndHandleNotification(DevRowIdx, pHardware->m_HwdID, ID, procResult.DeviceName, Unit, devType, subType, cmnd, szTmp);
 
 	if (_log.IsDebugLevelEnabled(DEBUG_RECEIVED))
@@ -11290,37 +11299,74 @@ void MainWorker::decode_LevelSensor(const CDomoticzHardwareBase* pHardware, cons
 
 void MainWorker::decode_LightningSensor(const CDomoticzHardwareBase* pHardware, const tRBUF* pResponse, _tRxMessageProcessingResult& procResult)
 {
-	char szTmp[50];
+	uint64_t DevRowIdx = 0;
 
 	uint8_t devType = pTypeLIGHTNING;
 	uint8_t subType = pResponse->LIGHTNING.subtype;
 
-	sprintf(szTmp, "%02X%02X%02X", pResponse->LIGHTNING.id1, pResponse->LIGHTNING.id2, pResponse->LIGHTNING.id3);
-	std::string ID = szTmp;
-	uint8_t Unit = 1;
+	uint16_t NodeID = (pResponse->LIGHTNING.id2 << 8) | pResponse->LIGHTNING.id3;
+	uint8_t Unit = pResponse->LIGHTNING.id1;
 
 
 	uint8_t SignalLevel = pResponse->LIGHTNING.rssi;
 	uint8_t BatteryLevel = get_BateryLevel(pHardware->HwdType, false, pResponse->LIGHTNING.battery_level & 0x0F);
 
 	int distance = pResponse->LIGHTNING.distance;
-	if (distance == 63)
-		return; //invalid
 
-	int strike_count = pResponse->LIGHTNING.strike_cnt; //reset daily?
-	//not added to the system yet
-	//CRFXBase* pRFXDevice = (CRFXBase*)pHardware;
-	//pRFXDevice->Sendxx
-
-	//Distance
 	_tGeneralDevice gdevice;
-	gdevice.subtype = sTypeDistance;
-	gdevice.intval1 = (pResponse->LEVELSENSOR.id1 * 256) + pResponse->LEVELSENSOR.id2;
-	gdevice.id = (uint8_t)gdevice.intval1;
-	gdevice.floatval1 = float(distance);
 	gdevice.rssi = SignalLevel;
 	gdevice.battery_level = BatteryLevel;
-	return decode_General(pHardware, (const tRBUF*)&gdevice, procResult);
+	gdevice.intval1 = NodeID;
+	gdevice.id = (uint8_t)gdevice.intval1;
+
+	bool bNewSensor = false;
+
+	//Strikes (resetted daily, or turnover... we need to keep track of this)
+	const int strike_count = pResponse->LIGHTNING.strike_cnt;
+	gdevice.subtype = sTypeCounterIncremental;
+
+	int new_count = strike_count;
+
+	//Get previous send value
+	std::vector<std::vector<std::string> > result;
+	std::string lookupName = "Prev.Lightning_Strikes_" + std::to_string(gdevice.id);
+	result = m_sql.safe_query("SELECT Timeout, ID FROM WOLNodes WHERE (HardwareID==%d) AND (Name=='%q')", pHardware->m_HwdID, lookupName.c_str());
+	if (!result.empty())
+	{
+		int old_count = atoi(result[0][0].c_str());
+		if (old_count < new_count)
+		{
+			new_count = strike_count - old_count;
+		}
+		m_sql.safe_query("UPDATE WOLNodes SET Timeout=%d WHERE (ID == %q)", strike_count, result[0][1].c_str());
+	}
+	else
+	{
+		bNewSensor = true;
+		m_sql.safe_query("INSERT INTO WOLNodes (HardwareID, Name, Timeout) VALUES (%d, '%q', %d)", pHardware->m_HwdID, lookupName.c_str(), strike_count);
+	}
+	if ((new_count > 0) || (bNewSensor))
+	{
+		gdevice.intval2 = new_count;
+		//gdevice.subtype = sTypeTextStatus;
+		//strcpy_s(gdevice.text, std::to_string(strike_count).c_str());
+		procResult.DeviceName = "Lightning Strike Count";
+		decode_General(pHardware, (const tRBUF*)&gdevice, procResult);
+	}
+
+	//Distance (meters)
+	if (distance == 63)
+	{
+		if (!bNewSensor)
+			return; //invalid/no strike
+		distance = 0;
+	}
+	gdevice.subtype = sTypeVisibility;
+	gdevice.floatval1 = static_cast<float>(distance);
+	procResult.DeviceName = "Lightning Distance";
+	decode_General(pHardware, (const tRBUF*)&gdevice, procResult);
+	procResult.DeviceRowIdx = DevRowIdx;
+
 }
 
 bool MainWorker::GetSensorData(const uint64_t idx, int& nValue, std::string& sValue)

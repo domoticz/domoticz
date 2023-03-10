@@ -146,7 +146,7 @@ void CEvohomeScript::RunScript(const char* pdata, const unsigned char /*length*/
 #endif
 			std::string scriptparams;
 			//Add parameters
-			int pindex = scriptname.find(' ');
+			size_t pindex = scriptname.find(' ');
 			if (pindex != std::string::npos)
 			{
 				scriptparams = scriptname.substr(pindex + 1);

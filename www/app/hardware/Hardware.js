@@ -3936,6 +3936,9 @@ define(['app','app/virtualThermostat.js'], function (app) {
 							else if (HwTypeStr.indexOf("BleBox") >= 0) {
 								HwTypeStr += ' ' + hardwareSetupLink;
 							}
+							else if (HwTypeStr.indexOf("MQTT Auto") >= 0) {
+								HwTypeStr += ' ' + hardwareSetupLink;
+							}
 							else if (HwTypeStr.indexOf("Logitech Media Server") >= 0) {
 								HwTypeStr += ' <span class="label label-info lcursor" onclick="EditLMS(' + item.idx + ',\'' + item.Name + '\',' + item.Mode1 + ',' + item.Mode2 + ',' + item.Mode3 + ',' + item.Mode4 + ',' + item.Mode5 + ',' + item.Mode6 + ');">' + $.t("Setup") + '</span>';
 							}

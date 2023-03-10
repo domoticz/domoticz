@@ -147,7 +147,7 @@ void KMTronic433::readCallback(const char *data, size_t len)
 		return; //receiving not enabled
 
 	memcpy(m_buffer, data, len);
-	m_bufferpos = len;
+	m_bufferpos = (int)len;
 }
 
 bool KMTronic433::WriteInt(const unsigned char *data, const size_t len, const bool bWaitForReturn)

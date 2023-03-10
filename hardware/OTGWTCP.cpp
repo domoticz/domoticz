@@ -90,7 +90,7 @@ void OTGWTCP::Do_Work()
 
 void OTGWTCP::OnData(const unsigned char *pData, size_t length)
 {
-	ParseData(pData,length);
+	ParseData(pData,(int)length);
 }
 
 void OTGWTCP::OnError(const boost::system::error_code& error)
