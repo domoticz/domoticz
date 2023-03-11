@@ -12651,7 +12651,47 @@ namespace http
 			int devType = std::stoi(result[0].at(3));
 			int subType = std::stoi(result[0].at(4));
 
+			//get last update date from old device
+			result = m_sql.safe_query("SELECT LastUpdate FROM DeviceStatus WHERE (ID == '%q')", sidx.c_str());
+			if (result.empty())
+				return;
+			std::string szLastOldDate = result[0][0];
+
 			m_sql.safe_query("UPDATE DeviceStatus SET HardwareID = %d, DeviceID = '%q', Unit = %d, Type = %d, SubType = %d WHERE ID == '%q'", newHardwareID, newDeviceID.c_str(), newUnit, devType, subType, sidx.c_str());
+
+			//new device could already have some logging, so let's keep this data
+			//Rain
+			m_sql.safe_query("UPDATE Rain SET DeviceRowID='%q' WHERE (DeviceRowID == '%q') AND (Date>'%q')", sidx.c_str(), newidx.c_str(), szLastOldDate.c_str());
+			m_sql.safe_query("UPDATE Rain_Calendar SET DeviceRowID='%q' WHERE (DeviceRowID == '%q') AND (Date>'%q')", sidx.c_str(), newidx.c_str(), szLastOldDate.c_str());
+
+			//Temperature
+			m_sql.safe_query("UPDATE Temperature SET DeviceRowID='%q' WHERE (DeviceRowID == '%q') AND (Date>'%q')", sidx.c_str(), newidx.c_str(), szLastOldDate.c_str());
+			m_sql.safe_query("UPDATE Temperature_Calendar SET DeviceRowID='%q' WHERE (DeviceRowID == '%q') AND (Date>'%q')", sidx.c_str(), newidx.c_str(), szLastOldDate.c_str());
+
+			//UV
+			m_sql.safe_query("UPDATE UV SET DeviceRowID='%q' WHERE (DeviceRowID == '%q') AND (Date>'%q')", sidx.c_str(), newidx.c_str(), szLastOldDate.c_str());
+			m_sql.safe_query("UPDATE UV_Calendar SET DeviceRowID='%q' WHERE (DeviceRowID == '%q') AND (Date>'%q')", sidx.c_str(), newidx.c_str(), szLastOldDate.c_str());
+
+			//Wind
+			m_sql.safe_query("UPDATE Wind SET DeviceRowID='%q' WHERE (DeviceRowID == '%q') AND (Date>'%q')", sidx.c_str(), newidx.c_str(), szLastOldDate.c_str());
+			m_sql.safe_query("UPDATE Wind_Calendar SET DeviceRowID='%q' WHERE (DeviceRowID == '%q') AND (Date>'%q')", sidx.c_str(), newidx.c_str(), szLastOldDate.c_str());
+
+			//Meter
+			m_sql.safe_query("UPDATE Meter SET DeviceRowID='%q' WHERE (DeviceRowID == '%q') AND (Date>'%q')", sidx.c_str(), newidx.c_str(), szLastOldDate.c_str());
+			m_sql.safe_query("UPDATE Meter_Calendar SET DeviceRowID='%q' WHERE (DeviceRowID == '%q') AND (Date>'%q')", sidx.c_str(), newidx.c_str(), szLastOldDate.c_str());
+
+			//Multimeter
+			m_sql.safe_query("UPDATE MultiMeter SET DeviceRowID='%q' WHERE (DeviceRowID == '%q') AND (Date>'%q')", sidx.c_str(), newidx.c_str(), szLastOldDate.c_str());
+			m_sql.safe_query("UPDATE MultiMeter_Calendar SET DeviceRowID='%q' WHERE (DeviceRowID == '%q') AND (Date>'%q')", sidx.c_str(), newidx.c_str(), szLastOldDate.c_str());
+
+			//Fan
+			m_sql.safe_query("UPDATE Fan SET DeviceRowID='%q' WHERE (DeviceRowID == '%q') AND (Date>'%q')", sidx.c_str(), newidx.c_str(), szLastOldDate.c_str());
+			m_sql.safe_query("UPDATE Fan_Calendar SET DeviceRowID='%q' WHERE (DeviceRowID == '%q') AND (Date>'%q')", sidx.c_str(), newidx.c_str(), szLastOldDate.c_str());
+
+			//Percentage
+			m_sql.safe_query("UPDATE Percentage SET DeviceRowID='%q' WHERE (DeviceRowID == '%q') AND (Date>'%q')", sidx.c_str(), newidx.c_str(), szLastOldDate.c_str());
+			m_sql.safe_query("UPDATE Percentage_Calendar SET DeviceRowID='%q' WHERE (DeviceRowID == '%q') AND (Date>'%q')", sidx.c_str(), newidx.c_str(), szLastOldDate.c_str());
+
 			m_sql.DeleteDevices(newidx);
 
 			m_mainworker.m_scheduler.ReloadSchedules();
