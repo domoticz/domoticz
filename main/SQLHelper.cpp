@@ -5379,8 +5379,7 @@ uint64_t CSQLHelper::UpdateValueInt(
 				HWtype = pHardware->HwdType;
 
 			bool bIsBlindsPercentage = (
-				(switchtype == STYPE_Dimmer)
-				|| (switchtype == STYPE_BlindsPercentage)
+				(switchtype == STYPE_BlindsPercentage)
 				|| (switchtype == STYPE_BlindsPercentageWithStop)
 				);
 
