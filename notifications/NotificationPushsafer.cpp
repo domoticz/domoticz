@@ -38,9 +38,10 @@ bool CNotificationPushsafer::SendMessageImplementation(
 
 	std::vector<std::string> splitresults;
 	StringSplit(CURLEncode::URLDecode(Text), "|", splitresults);
-	if (splitresults.size() == 11)
+	if (splitresults.size() == 17)
 	{
-		// [0] private or alias key | [1] deviceid | [2] icon | [3] sound | [4] vibration | [5] title | [6] message | [7] pictureurl | [8] url | [9] urltitle | [10] time2live
+		// [0] private or alias key | [1] deviceid | [2] icon | [3] sound | [4] vibration | [5] title | [6] message | [7] pictureurl | [8] url | [9] urltitle | [10] time2live | [11] retry | [12] expire | [13] confirm | [14] answer | [15] answeroptions | [16] answerforce
+		
 		std::string PS_k = splitresults[0];
 		std::string PS_d = splitresults[1];
 		std::string PS_i = splitresults[2];
@@ -52,6 +53,12 @@ bool CNotificationPushsafer::SendMessageImplementation(
 		std::string PS_u = splitresults[8];
 		std::string PS_ut = splitresults[9];
 		std::string PS_l = splitresults[10];
+		std::string PS_re = splitresults[11];
+		std::string PS_ex = splitresults[12];
+		std::string PS_cr = splitresults[13];
+		std::string PS_a = splitresults[14];
+		std::string PS_ao = splitresults[15];
+		std::string PS_af = splitresults[16];
 
 		if (PS_k.length() >= 15)
 		{
@@ -74,17 +81,17 @@ bool CNotificationPushsafer::SendMessageImplementation(
 			{
 				std::string base64ImageString(camimage.begin(), camimage.end());
 				base64ImageString = base64_encode(base64ImageString);
-				sPostData << "&k=" << _apikey << "&d=" << PS_d << "&i=" << PS_i << "&s=" << PS_s << "&v=" << PS_v << "&t=" << PS_t << "&m=" << PS_m << "&p=data:image/jpeg;base64," << base64ImageString << "&u=" << PS_u << "&ut=" << PS_ut << "&l=" << PS_l << "&pr=" << Priority;
+				sPostData << "&k=" << _apikey << "&d=" << PS_d << "&i=" << PS_i << "&s=" << PS_s << "&v=" << PS_v << "&t=" << PS_t << "&m=" << PS_m << "&p=data:image/jpeg;base64," << base64ImageString << "&u=" << PS_u << "&ut=" << PS_ut << "&l=" << PS_l << "&re=" << PS_re << "&ex=" << PS_ex << "&cr=" << PS_cr << "&a=" << PS_a << "&ao=" << PS_ao << "&af=" << PS_af << "&pr=" << Priority;
 			}
 			else
 			{
 				_log.Log(LOG_ERROR, "Pushsafer: can't download image > wrong url");
-				sPostData << "&k=" << _apikey << "&d=" << PS_d << "&i=" << PS_i << "&s=" << PS_s << "&v=" << PS_v << "&t=" << PS_t << "&m=" << PS_m << "&u=" << PS_u << "&ut=" << PS_ut << "&l=" << PS_l << "&pr=" << Priority;
+				sPostData << "&k=" << _apikey << "&d=" << PS_d << "&i=" << PS_i << "&s=" << PS_s << "&v=" << PS_v << "&t=" << PS_t << "&m=" << PS_m << "&u=" << PS_u << "&ut=" << PS_ut << "&l=" << PS_l << "&re=" << PS_re << "&ex=" << PS_ex << "&cr=" << PS_cr << "&a=" << PS_a << "&ao=" << PS_ao << "&af=" << PS_af << "&pr=" << Priority;
 			}
 		}
 		else
 		{
-			sPostData << "&k=" << _apikey << "&d=" << PS_d << "&i=" << PS_i << "&s=" << PS_s << "&v=" << PS_v << "&t=" << PS_t << "&m=" << PS_m << "&u=" << PS_u << "&ut=" << PS_ut << "&l=" << PS_l << "&pr=" << Priority;
+			sPostData << "&k=" << _apikey << "&d=" << PS_d << "&i=" << PS_i << "&s=" << PS_s << "&v=" << PS_v << "&t=" << PS_t << "&m=" << PS_m << "&u=" << PS_u << "&ut=" << PS_ut << "&l=" << PS_l << "&re=" << PS_re << "&ex=" << PS_ex << "&cr=" << PS_cr << "&a=" << PS_a << "&ao=" << PS_ao << "&af=" << PS_af << "&pr=" << Priority;
 		}
 	}
 	else
