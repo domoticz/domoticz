@@ -823,7 +823,7 @@ namespace http
 				std::string cparam = request::findValue(&req, "param");
 				if (!cparam.empty())
 				{
-					_log.Debug(DEBUG_WEBSERVER, "CWebServer::GetJSonPage() :%s :%s ", cparam.c_str(), req.uri.c_str());
+					_log.Debug(DEBUG_WEBSERVER, "CWebServer::GetJSonPage(command) :%s :%s ", cparam.c_str(), req.uri.c_str());
 
 					auto pf = m_webcommands.find(cparam);
 					if (pf != m_webcommands.end())
@@ -839,10 +839,26 @@ namespace http
 			} //(rtype=="command")
 			else
 			{	// TODO: remove this once all rtypes are converted to commands
+				_log.Debug(DEBUG_WEBSERVER, "CWebServer::GetJSonPage(rtype) :%s :%s ", rtype.c_str(), req.uri.c_str());
+
 				auto pf = m_webrtypes.find(rtype);
 				if (pf != m_webrtypes.end())
 				{
 					pf->second(session, req, root);
+				}
+				else
+				{	// Could be a call to an old style RType, try to handle it and alert the user to update
+					_log.Log(LOG_STATUS, "[WebServer] Depricated type (%s) for API request. Please use correct API Command!", rtype.c_str());
+					if (rtype.compare("settings") == 0)
+					{
+						pf = m_webcommands.find("getsettings");
+						pf->second(session, req, root);
+					}
+					else if (rtype.compare("users") == 0)
+					{
+						pf = m_webcommands.find("getusers");
+						pf->second(session, req, root);
+					}
 				}
 			}
 
