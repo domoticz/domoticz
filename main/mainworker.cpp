@@ -10610,7 +10610,7 @@ void MainWorker::decode_Cartelectronic(const CDomoticzHardwareBase* pHardware, c
 	char szTmp[100];
 	std::string ID;
 
-	sprintf(szTmp, "%llu", ((unsigned long long)(pResponse->TIC.id1) << 32) + (pResponse->TIC.id2 << 24) + (pResponse->TIC.id3 << 16) + (pResponse->TIC.id4 << 8) + (pResponse->TIC.id5));
+	sprintf(szTmp, "%llu", ((uint64_t)(pResponse->TIC.id1) << 32) + (pResponse->TIC.id2 << 24) + (pResponse->TIC.id3 << 16) + (pResponse->TIC.id4 << 8) + (pResponse->TIC.id5));
 	ID = szTmp;
 	//uint8_t Unit = 0;
 	//uint8_t cmnd = 0;
@@ -11427,9 +11427,9 @@ bool MainWorker::GetSensorData(const uint64_t idx, int& nValue, std::string& sVa
 		if (!result2.empty())
 		{
 			std::vector<std::string> sd2 = result2[0];
-			unsigned long long total_min_gas = std::stoull(sd2[0].c_str());
-			unsigned long long gasactual = std::stoull(sValue);
-			unsigned long long total_real_gas = gasactual - total_min_gas;
+			uint64_t total_min_gas = std::stoull(sd2[0].c_str());
+			uint64_t gasactual = std::stoull(sValue);
+			uint64_t total_real_gas = gasactual - total_min_gas;
 			float musage = float(total_real_gas) / GasDivider;
 			sprintf(szTmp, "%.03f", musage);
 		}
@@ -11483,9 +11483,9 @@ bool MainWorker::GetSensorData(const uint64_t idx, int& nValue, std::string& sVa
 		{
 			std::vector<std::string> sd2 = result2[0];
 
-			unsigned long long total_min = std::stoull(sd2[0]);
-			unsigned long long total_max = std::stoull(sd2[1]);
-			unsigned long long total_real = total_max - total_min;
+			uint64_t total_min = std::stoull(sd2[0]);
+			uint64_t total_max = std::stoull(sd2[1]);
+			uint64_t total_real = total_max - total_min;
 			sprintf(szTmp, "%llu", total_real);
 
 			float musage = 0;

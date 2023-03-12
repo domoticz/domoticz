@@ -6329,16 +6329,16 @@ bool CSQLHelper::UpdateCalendarMeter(
 	const bool shortLog,
 	const bool multiMeter,
 	const char* date,
-	const long long value1,
-	const long long value2,
-	const long long value3,
-	const long long value4,
-	const long long value5,
-	const long long value6,
-	const long long counter1,
-	const long long counter2,
-	const long long counter3,
-	const long long counter4)
+	const int64_t value1,
+	const int64_t value2,
+	const int64_t value3,
+	const int64_t value4,
+	const int64_t value5,
+	const int64_t value6,
+	const int64_t counter1,
+	const int64_t counter2,
+	const int64_t counter3,
+	const int64_t counter4)
 {
 	std::vector<std::vector<std::string> > result;
 
@@ -6746,8 +6746,8 @@ void CSQLHelper::UpdateMeter()
 				sValue = szTmp;
 			}
 
-			long long MeterValue = 0;
-			long long MeterUsage = 0;
+			int64_t MeterValue = 0;
+			int64_t MeterUsage = 0;
 
 			try
 			{
@@ -6824,24 +6824,24 @@ void CSQLHelper::UpdateMultiMeter()
 			std::vector<std::string> splitresults;
 			StringSplit(sValue, ";", splitresults);
 
-			unsigned long long value1 = 0;
-			unsigned long long value2 = 0;
-			unsigned long long value3 = 0;
-			unsigned long long value4 = 0;
-			unsigned long long value5 = 0;
-			unsigned long long value6 = 0;
+			uint64_t value1 = 0;
+			uint64_t value2 = 0;
+			uint64_t value3 = 0;
+			uint64_t value4 = 0;
+			uint64_t value5 = 0;
+			uint64_t value6 = 0;
 
 			if (dType == pTypeP1Power)
 			{
 				if (splitresults.size() != 6)
 					continue; //impossible
 
-				unsigned long long powerusage1 = 0;
-				unsigned long long powerusage2 = 0;
-				unsigned long long powerdeliv1 = 0;
-				unsigned long long powerdeliv2 = 0;
-				unsigned long long usagecurrent = 0;
-				unsigned long long delivcurrent = 0;
+				uint64_t powerusage1 = 0;
+				uint64_t powerusage2 = 0;
+				uint64_t powerdeliv1 = 0;
+				uint64_t powerdeliv2 = 0;
+				uint64_t usagecurrent = 0;
+				uint64_t delivcurrent = 0;
 
 				try
 				{
@@ -6882,7 +6882,7 @@ void CSQLHelper::UpdateMultiMeter()
 				value1 = (unsigned long)(atof(splitresults[0].c_str()) * 10.0F);
 				value2 = (unsigned long)(atof(splitresults[1].c_str()) * 10.0F);
 				value3 = (unsigned long)(atof(splitresults[2].c_str()) * 10.0F);
-				value4 = (unsigned long long)(atof(splitresults[3].c_str()) * 1000.0F);
+				value4 = (uint64_t)(atof(splitresults[3].c_str()) * 1000.0F);
 			}
 			else
 				continue;//don't know you (yet)
@@ -8788,9 +8788,9 @@ void CSQLHelper::FixDaylightSaving()
 		std::stringstream sstr;
 		unsigned long ID1;
 		unsigned long ID2;
-		unsigned long long Value1;
-		unsigned long long Value2;
-		unsigned long long ValueDest;
+		uint64_t Value1;
+		uint64_t Value2;
+		uint64_t ValueDest;
 		for (const auto &sd1 : result)
 		{
 			sstr.clear();
@@ -8845,26 +8845,26 @@ void CSQLHelper::FixDaylightSaving()
 		std::stringstream sstr;
 		unsigned long ID1;
 		unsigned long ID2;
-		unsigned long long tValue1;
-		unsigned long long tValue2;
-		unsigned long long tValue3;
-		unsigned long long tValue4;
-		unsigned long long tValue5;
-		unsigned long long tValue6;
+		uint64_t tValue1;
+		uint64_t tValue2;
+		uint64_t tValue3;
+		uint64_t tValue4;
+		uint64_t tValue5;
+		uint64_t tValue6;
 
-		unsigned long long uValue1;
-		unsigned long long uValue2;
-		unsigned long long uValue3;
-		unsigned long long uValue4;
-		unsigned long long uValue5;
-		unsigned long long uValue6;
+		uint64_t uValue1;
+		uint64_t uValue2;
+		uint64_t uValue3;
+		uint64_t uValue4;
+		uint64_t uValue5;
+		uint64_t uValue6;
 
-		unsigned long long ValueDest1;
-		unsigned long long ValueDest2;
-		unsigned long long ValueDest3;
-		unsigned long long ValueDest4;
-		unsigned long long ValueDest5;
-		unsigned long long ValueDest6;
+		uint64_t ValueDest1;
+		uint64_t ValueDest2;
+		uint64_t ValueDest3;
+		uint64_t ValueDest4;
+		uint64_t ValueDest5;
+		uint64_t ValueDest6;
 		for (const auto &sd1 : result)
 		{
 			sstr.clear();

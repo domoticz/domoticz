@@ -267,7 +267,7 @@ namespace Plugins {
 			: PyBorrowedRef() {
 			m_pObject = PyLong_FromLong(value);
 		};
-		PyNewRef(const long long value)
+		PyNewRef(const int64_t value)
 			: PyBorrowedRef() {
 			m_pObject = Py_BuildValue("L", value);
 		};

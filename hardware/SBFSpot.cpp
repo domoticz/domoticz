@@ -172,7 +172,7 @@ void CSBFSpot::SendMeter(const unsigned char ID1,const unsigned char ID2, const 
 
 	tsen.ENERGY.battery_level=9;
 
-	unsigned long long instant=(unsigned long long)(musage*1000.0);
+	uint64_t instant=(uint64_t)(musage*1000.0);
 	tsen.ENERGY.instant1=(unsigned char)(instant/0x1000000);
 	instant-=tsen.ENERGY.instant1*0x1000000;
 	tsen.ENERGY.instant2=(unsigned char)(instant/0x10000);
@@ -310,7 +310,7 @@ void CSBFSpot::ImportOldMonthData(const uint64_t DevID, const int Year, const in
 					szKwhCounter = "0," + szKwhCounter;
 				stdreplace(szKwhCounter, ",", ".");
 				double kWhCounter = atof(szKwhCounter.c_str()) * 1000;
-				unsigned long long ulCounter = (unsigned long long)kWhCounter;
+				uint64_t ulCounter = (uint64_t)kWhCounter;
 
 				//check if this day record does not exists in the database, and insert it
 				std::vector<std::vector<std::string> > result;
@@ -376,7 +376,7 @@ void CSBFSpot::ImportOldMonthData(const uint64_t DevID, const int Year, const in
 						std::string szKwhCounter = results[iInvOff + 1];
 						stdreplace(szKwhCounter, ",", ".");
 						double kWhCounter = atof(szKwhCounter.c_str()) * 1000;
-						unsigned long long ulCounter = (unsigned long long)kWhCounter;
+						uint64_t ulCounter = (uint64_t)kWhCounter;
 
 						//check if this day record does not exists in the database, and insert it
 						std::vector<std::vector<std::string> > result;

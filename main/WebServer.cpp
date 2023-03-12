@@ -3264,12 +3264,12 @@ namespace http
 					if (splitresults.size() != 6)
 						return;
 
-					unsigned long long powerusage1 = std::stoull(splitresults[0]);
-					unsigned long long powerusage2 = std::stoull(splitresults[1]);
-					unsigned long long powerdeliv1 = std::stoull(splitresults[2]);
-					unsigned long long powerdeliv2 = std::stoull(splitresults[3]);
-					// unsigned long long usagecurrent = std::stoull(splitresults[4]);
-					// unsigned long long delivcurrent = std::stoull(splitresults[5]);
+					uint64_t powerusage1 = std::stoull(splitresults[0]);
+					uint64_t powerusage2 = std::stoull(splitresults[1]);
+					uint64_t powerdeliv1 = std::stoull(splitresults[2]);
+					uint64_t powerdeliv2 = std::stoull(splitresults[3]);
+					// uint64_t usagecurrent = std::stoull(splitresults[4]);
+					// uint64_t delivcurrent = std::stoull(splitresults[5]);
 
 					powerdeliv1 = (powerdeliv1 < 10) ? 0 : powerdeliv1;
 					powerdeliv2 = (powerdeliv2 < 10) ? 0 : powerdeliv2;
@@ -10137,9 +10137,9 @@ namespace http
 						{
 							std::vector<std::string> sd2 = result2[0];
 
-							unsigned long long total_min = std::stoull(sd2[0]);
-							unsigned long long total_max = std::stoull(sd2[1]);
-							unsigned long long total_real;
+							uint64_t total_min = std::stoull(sd2[0]);
+							uint64_t total_max = std::stoull(sd2[1]);
+							uint64_t total_real;
 
 							total_real = total_max - total_min;
 							sprintf(szTmp, "%lld", total_real);
@@ -10180,7 +10180,7 @@ namespace http
 						if (splitresults.size() < 2)
 							continue;
 
-						unsigned long long total_actual = std::stoull(splitresults[0]);
+						uint64_t total_actual = std::stoull(splitresults[0]);
 						musage = 0;
 						switch (metertype)
 						{
@@ -10205,7 +10205,7 @@ namespace http
 
 						root["result"][ii]["SwitchTypeVal"] = metertype;
 
-						unsigned long long acounter = std::stoull(sValue);
+						uint64_t acounter = std::stoull(sValue);
 						musage = 0;
 						switch (metertype)
 						{
@@ -10287,18 +10287,18 @@ namespace http
 								EnergyDivider = float(tValue);
 							}
 
-							unsigned long long powerusage1 = std::stoull(splitresults[0]);
-							unsigned long long powerusage2 = std::stoull(splitresults[1]);
-							unsigned long long powerdeliv1 = std::stoull(splitresults[2]);
-							unsigned long long powerdeliv2 = std::stoull(splitresults[3]);
-							unsigned long long usagecurrent = std::stoull(splitresults[4]);
-							unsigned long long delivcurrent = std::stoull(splitresults[5]);
+							uint64_t powerusage1 = std::stoull(splitresults[0]);
+							uint64_t powerusage2 = std::stoull(splitresults[1]);
+							uint64_t powerdeliv1 = std::stoull(splitresults[2]);
+							uint64_t powerdeliv2 = std::stoull(splitresults[3]);
+							uint64_t usagecurrent = std::stoull(splitresults[4]);
+							uint64_t delivcurrent = std::stoull(splitresults[5]);
 
 							powerdeliv1 = (powerdeliv1 < 10) ? 0 : powerdeliv1;
 							powerdeliv2 = (powerdeliv2 < 10) ? 0 : powerdeliv2;
 
-							unsigned long long powerusage = powerusage1 + powerusage2;
-							unsigned long long powerdeliv = powerdeliv1 + powerdeliv2;
+							uint64_t powerusage = powerusage1 + powerusage2;
+							uint64_t powerdeliv = powerdeliv1 + powerdeliv2;
 							if (powerdeliv < 2)
 								powerdeliv = 0;
 
@@ -10339,11 +10339,11 @@ namespace http
 							{
 								std::vector<std::string> sd2 = result2[0];
 
-								unsigned long long total_min_usage_1 = std::stoull(sd2[0]);
-								unsigned long long total_min_deliv_1 = std::stoull(sd2[1]);
-								unsigned long long total_min_usage_2 = std::stoull(sd2[2]);
-								unsigned long long total_min_deliv_2 = std::stoull(sd2[3]);
-								unsigned long long total_real_usage, total_real_deliv;
+								uint64_t total_min_usage_1 = std::stoull(sd2[0]);
+								uint64_t total_min_deliv_1 = std::stoull(sd2[1]);
+								uint64_t total_min_usage_2 = std::stoull(sd2[2]);
+								uint64_t total_min_deliv_2 = std::stoull(sd2[3]);
+								uint64_t total_real_usage, total_real_deliv;
 
 								total_min_deliv_1 = (total_min_deliv_1 < 10) ? 0 : total_min_deliv_1;
 								total_min_deliv_2 = (total_min_deliv_2 < 10) ? 0 : total_min_deliv_2;
@@ -11211,9 +11211,9 @@ namespace http
 							{
 								std::vector<std::string> sd2 = result2[0];
 
-								unsigned long long total_min = std::stoull(sd2[0]);
-								unsigned long long total_max = std::stoull(sd2[1]);
-								unsigned long long total_real;
+								uint64_t total_min = std::stoull(sd2[0]);
+								uint64_t total_max = std::stoull(sd2[1]);
+								uint64_t total_real;
 
 								total_real = total_max - total_min;
 								sprintf(szTmp, "%lld", total_real);
@@ -13921,13 +13921,13 @@ namespace http
 							int ii = 0;
 							bool bHaveDeliverd = false;
 							bool bHaveFirstValue = false;
-							long long lastUsage1, lastUsage2, lastDeliv1, lastDeliv2;
+							int64_t lastUsage1, lastUsage2, lastDeliv1, lastDeliv2;
 							time_t lastTime = 0;
 
-							long long firstUsage1 = 0;
-							long long firstUsage2 = 0;
-							long long firstDeliv1 = 0;
-							long long firstDeliv2 = 0;
+							int64_t firstUsage1 = 0;
+							int64_t firstUsage2 = 0;
+							int64_t firstDeliv1 = 0;
+							int64_t firstDeliv2 = 0;
 
 							int nMeterType = 0;
 							m_sql.GetPreferencesVar("SmartMeterType", nMeterType);
@@ -13938,10 +13938,10 @@ namespace http
 							{
 								if (nMeterType == 0)
 								{
-									long long actUsage1 = std::stoll(sd[0]);
-									long long actUsage2 = std::stoll(sd[4]);
-									long long actDeliv1 = std::stoll(sd[1]);
-									long long actDeliv2 = std::stoll(sd[5]);
+									int64_t actUsage1 = std::stoll(sd[0]);
+									int64_t actUsage2 = std::stoll(sd[4]);
+									int64_t actDeliv1 = std::stoll(sd[1]);
+									int64_t actDeliv2 = std::stoll(sd[5]);
 									actDeliv1 = (actDeliv1 < 10) ? 0 : actDeliv1;
 									actDeliv2 = (actDeliv2 < 10) ? 0 : actDeliv2;
 
@@ -14376,8 +14376,8 @@ namespace http
 						result = m_sql.safe_query("SELECT MIN([Usage]), MAX([Usage]) FROM %s WHERE (DeviceRowID==%" PRIu64 ")", dbasetable.c_str(), idx);
 						if (!result.empty())
 						{
-							long long minValue = std::stoll(result[0][0]);
-							long long maxValue = std::stoll(result[0][1]);
+							int64_t minValue = std::stoll(result[0][0]);
+							int64_t maxValue = std::stoll(result[0][1]);
 
 							if ((minValue == 0) && (maxValue == 0))
 							{
@@ -14412,9 +14412,9 @@ namespace http
 						root["method"] = method;
 						bool bHaveFirstValue = false;
 						bool bHaveFirstRealValue = false;
-						long long ulFirstRealValue = 0;
-						long long ulFirstValue = 0;
-						long long ulLastValue = 0;
+						int64_t ulFirstRealValue = 0;
+						int64_t ulFirstValue = 0;
+						int64_t ulLastValue = 0;
 						std::string LastDateTime;
 
 						if (!result.empty())
@@ -14427,7 +14427,7 @@ namespace http
 								{
 									// bars / hour
 									std::string actDateTimeHour = sd[2].substr(0, 13);
-									long long actValue = std::stoll(sd[0]); // actual energy value
+									int64_t actValue = std::stoll(sd[0]); // actual energy value
 
 									// if (actValue >= ulLastValue) ulLastValue = actValue; //Removed because usage energy may be negative if the production power
 									// is greater than usage power
@@ -14441,7 +14441,7 @@ namespace http
 											//^^ not necessarily bad, but is currently inconsistent with all other day graphs
 											root["result"][ii]["d"] = LastDateTime + ":00";
 
-											long long ulTotalValue = ulLastValue - ulFirstValue;
+											int64_t ulTotalValue = ulLastValue - ulFirstValue;
 											if (ulTotalValue == 0)
 											{
 												// Could be the P1 Gas Meter, only transmits one every 1 a 2 hours
@@ -14489,7 +14489,7 @@ namespace http
 
 								if (method == 1)
 								{
-									long long actValue = std::stoll(sd[1]);
+									int64_t actValue = std::stoll(sd[1]);
 
 									root["result"][ii]["d"] = sd[2].substr(0, 16);
 
@@ -14533,13 +14533,13 @@ namespace http
 
 						bool bHaveFirstValue = false;
 						bool bHaveFirstRealValue = false;
-						long long ulFirstValue = 0;
-						long long ulRealFirstValue = 0;
+						int64_t ulFirstValue = 0;
+						int64_t ulRealFirstValue = 0;
 						int lastDay = 0;
 						std::string szLastDateTimeHour;
 						std::string szActDateTimeHour;
 						std::string szlastDateTime;
-						long long ulLastValue = 0;
+						int64_t ulLastValue = 0;
 
 						int lastHour = 0;
 						time_t lastTime = 0;
@@ -14569,7 +14569,7 @@ namespace http
 								if (method == 0)
 								{
 									// bars / hour
-									long long actValue = std::stoll(sd[0]);
+									int64_t actValue = std::stoll(sd[0]);
 									szlastDateTime = sd[1].substr(0, 16);
 									szActDateTimeHour = sd[1].substr(0, 13) + ":00";
 
@@ -14689,7 +14689,7 @@ namespace http
 								else
 								{
 									// realtime graph
-									long long actValue = std::stoll(sd[0]);
+									int64_t actValue = std::stoll(sd[0]);
 
 									std::string stime = sd[1];
 									struct tm ntime;
@@ -14697,7 +14697,7 @@ namespace http
 									ParseSQLdatetime(atime, ntime, stime, -1);
 									if (bHaveFirstRealValue)
 									{
-										long long curValue = actValue - ulLastValue;
+										int64_t curValue = actValue - ulLastValue;
 
 										float tdiff = static_cast<float>(difftime(atime, lastTime));
 										if (tdiff == 0)
@@ -14748,7 +14748,7 @@ namespace http
 							// add last value
 							root["result"][ii]["d"] = szLastDateTimeHour;
 
-							long long ulTotalValue = ulLastValue - ulFirstValue;
+							int64_t ulTotalValue = ulLastValue - ulFirstValue;
 
 							double TotalValue = double(ulTotalValue);
 
@@ -15338,16 +15338,16 @@ namespace http
 						{
 							std::vector<std::string> sd = result[0];
 
-							unsigned long long total_min_usage_1 = std::stoull(sd[0]);
-							unsigned long long total_max_usage_1 = std::stoull(sd[1]);
-							unsigned long long total_min_usage_2 = std::stoull(sd[4]);
-							unsigned long long total_max_usage_2 = std::stoull(sd[5]);
-							unsigned long long total_real_usage_1, total_real_usage_2;
-							unsigned long long total_min_deliv_1 = std::stoull(sd[2]);
-							unsigned long long total_max_deliv_1 = std::stoull(sd[3]);
-							unsigned long long total_min_deliv_2 = std::stoull(sd[6]);
-							unsigned long long total_max_deliv_2 = std::stoull(sd[7]);
-							unsigned long long total_real_deliv_1, total_real_deliv_2;
+							uint64_t total_min_usage_1 = std::stoull(sd[0]);
+							uint64_t total_max_usage_1 = std::stoull(sd[1]);
+							uint64_t total_min_usage_2 = std::stoull(sd[4]);
+							uint64_t total_max_usage_2 = std::stoull(sd[5]);
+							uint64_t total_real_usage_1, total_real_usage_2;
+							uint64_t total_min_deliv_1 = std::stoull(sd[2]);
+							uint64_t total_max_deliv_1 = std::stoull(sd[3]);
+							uint64_t total_min_deliv_2 = std::stoull(sd[6]);
+							uint64_t total_max_deliv_2 = std::stoull(sd[7]);
+							uint64_t total_real_deliv_1, total_real_deliv_2;
 
 							bool bHaveDeliverd = false;
 
@@ -15394,9 +15394,9 @@ namespace http
 						{
 							std::vector<std::string> sd = result[0];
 
-							long long total_min = std::stoll(sd[0]);
-							long long total_max = total_min;
-							long long total_real;
+							int64_t total_min = std::stoll(sd[0]);
+							int64_t total_max = total_min;
+							int64_t total_real;
 
 							// get the last value of the day
 							result = m_sql.safe_query("SELECT Value FROM Meter WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q') ORDER BY Date DESC LIMIT 1", idx, szDateEnd);
@@ -16723,16 +16723,16 @@ namespace http
 						if (!result.empty())
 						{
 							std::vector<std::string> sd = result[0];
-							unsigned long long total_min_usage_1 = std::stoull(sd[0]);
-							unsigned long long total_max_usage_1 = std::stoull(sd[1]);
-							unsigned long long total_min_usage_2 = std::stoull(sd[4]);
-							unsigned long long total_max_usage_2 = std::stoull(sd[5]);
-							unsigned long long total_real_usage_1, total_real_usage_2;
-							unsigned long long total_min_deliv_1 = std::stoull(sd[2]);
-							unsigned long long total_max_deliv_1 = std::stoull(sd[3]);
-							unsigned long long total_min_deliv_2 = std::stoull(sd[6]);
-							unsigned long long total_max_deliv_2 = std::stoull(sd[7]);
-							unsigned long long total_real_deliv_1, total_real_deliv_2;
+							uint64_t total_min_usage_1 = std::stoull(sd[0]);
+							uint64_t total_max_usage_1 = std::stoull(sd[1]);
+							uint64_t total_min_usage_2 = std::stoull(sd[4]);
+							uint64_t total_max_usage_2 = std::stoull(sd[5]);
+							uint64_t total_real_usage_1, total_real_usage_2;
+							uint64_t total_min_deliv_1 = std::stoull(sd[2]);
+							uint64_t total_max_deliv_1 = std::stoull(sd[3]);
+							uint64_t total_min_deliv_2 = std::stoull(sd[6]);
+							uint64_t total_max_deliv_2 = std::stoull(sd[7]);
+							uint64_t total_real_deliv_1, total_real_deliv_2;
 
 							total_real_usage_1 = total_max_usage_1 - total_min_usage_1;
 							total_real_usage_2 = total_max_usage_2 - total_min_usage_2;
@@ -16915,9 +16915,9 @@ namespace http
 							if (!result.empty())
 							{
 								std::vector<std::string> sd = result[0];
-								long long total_min = std::stoll(sd[0]);
-								long long total_max = total_min;
-								long long total_real;
+								int64_t total_min = std::stoll(sd[0]);
+								int64_t total_max = total_min;
+								int64_t total_real;
 
 								// Get the last value
 								result = m_sql.safe_query("SELECT Value FROM Meter WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q') ORDER BY Date DESC LIMIT 1", idx,
@@ -17562,17 +17562,17 @@ namespace http
 						{
 							std::vector<std::string> sd = result[0];
 
-							unsigned long long total_min_usage_1 = std::stoull(sd[0]);
-							unsigned long long total_max_usage_1 = std::stoull(sd[1]);
-							unsigned long long total_min_usage_2 = std::stoull(sd[4]);
-							unsigned long long total_max_usage_2 = std::stoull(sd[5]);
-							unsigned long long total_real_usage;
+							uint64_t total_min_usage_1 = std::stoull(sd[0]);
+							uint64_t total_max_usage_1 = std::stoull(sd[1]);
+							uint64_t total_min_usage_2 = std::stoull(sd[4]);
+							uint64_t total_max_usage_2 = std::stoull(sd[5]);
+							uint64_t total_real_usage;
 
-							unsigned long long total_min_deliv_1 = std::stoull(sd[2]);
-							unsigned long long total_max_deliv_1 = std::stoull(sd[3]);
-							unsigned long long total_min_deliv_2 = std::stoull(sd[6]);
-							unsigned long long total_max_deliv_2 = std::stoull(sd[7]);
-							unsigned long long total_real_deliv;
+							uint64_t total_min_deliv_1 = std::stoull(sd[2]);
+							uint64_t total_max_deliv_1 = std::stoull(sd[3]);
+							uint64_t total_min_deliv_2 = std::stoull(sd[6]);
+							uint64_t total_max_deliv_2 = std::stoull(sd[7]);
+							uint64_t total_real_deliv;
 
 							total_real_usage = (total_max_usage_1 + total_max_usage_2) - (total_min_usage_1 + total_min_usage_2);
 							total_real_deliv = (total_max_deliv_1 + total_max_deliv_2) - (total_min_deliv_1 + total_min_deliv_2);
@@ -17605,9 +17605,9 @@ namespace http
 						if (!result.empty())
 						{
 							std::vector<std::string> sd = result[0];
-							long long total_min = std::stoll(sd[0]);
-							long long total_max = total_min;
-							long long total_real;
+							int64_t total_min = std::stoll(sd[0]);
+							int64_t total_max = total_min;
+							int64_t total_real;
 
 							// get the last value of the day
 							result = m_sql.safe_query("SELECT Value FROM Meter WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q') ORDER BY Date DESC LIMIT 1", idx,

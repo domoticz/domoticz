@@ -112,13 +112,8 @@ void CHttpPush::DoHttpPush(const uint64_t DeviceRowIdx)
 
 		unsigned long tzoffset = get_tzoffset();
 
-#ifdef WIN32
-		unsigned __int64 localTime = lastUpdate;
-		unsigned __int64 localTimeUtc = lastUpdate - tzoffset;
-#else
-		unsigned long long int localTime = lastUpdate;
-		unsigned long long int localTimeUtc = lastUpdate - tzoffset;
-#endif
+		uint64_t localTime = lastUpdate;
+		uint64_t localTimeUtc = lastUpdate - tzoffset;
 
 		char szLocalTime[21];
 		sprintf(szLocalTime, "%llu", localTime);
