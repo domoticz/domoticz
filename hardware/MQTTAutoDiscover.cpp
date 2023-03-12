@@ -1198,13 +1198,13 @@ void MQTTAutoDiscover::on_auto_discovery_message(const struct mosquitto_message*
 		FixCommandTopicStateTemplate(pSensor->temperature_command_topic, pSensor->temperature_command_template);
 		FixCommandTopicStateTemplate(pSensor->preset_mode_command_topic, pSensor->preset_mode_value_template);
 
-		//number
+		//number (some configs use strings instead of numbers)
 		if (!root["min"].empty())
-			pSensor->number_min = root["min"].asDouble();
+			pSensor->number_min = root["min"].isDouble() ? root["min"].asDouble() : atof(root["min"].asString().c_str());
 		if (!root["max"].empty())
-			pSensor->number_max = root["max"].asDouble();
+			pSensor->number_max = root["max"].isDouble() ? root["max"].asDouble() : atof(root["max"].asString().c_str());
 		if (!root["step"].empty())
-			pSensor->number_step = root["step"].asDouble();
+			pSensor->number_step = root["step"].isDouble() ? root["step"].asDouble() : atof(root["step"].asString().c_str());
 
 		if (!root["qos"].empty())
 			pSensor->qos = atoi(root["qos"].asString().c_str());
