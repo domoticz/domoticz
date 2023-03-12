@@ -10025,14 +10025,14 @@ namespace http
 
 						std::vector<std::vector<std::string>> result2;
 						strcpy(szTmp, "0");
-						result2 = m_sql.safe_query("SELECT MIN(Value) FROM Meter WHERE (DeviceRowID='%q' AND Date>='%q')", sd[0].c_str(), szDate);
+						result2 = m_sql.safe_query("SELECT Value FROM Meter WHERE (DeviceRowID='%q' AND Date>='%q') ORDER BY Date LIMIT 1", sd[0].c_str(), szDate);
 						if (!result2.empty())
 						{
 							std::vector<std::string> sd2 = result2[0];
 
-							uint64_t total_min = std::stoull(sd2[0]);
-							uint64_t total_max = std::stoull(sValue);
-							uint64_t total_real = total_max - total_min;
+							int64_t total_first = std::stoll(sd2[0]);
+							int64_t total_last = std::stoll(sValue);
+							int64_t total_real = total_last - total_first;
 							sprintf(szTmp, "%" PRIu64, total_real);
 
 							double musage = 0.0F;
@@ -10959,9 +10959,9 @@ namespace http
 							{
 								std::vector<std::string> sd2 = result2[0];
 
-								uint64_t total_first = std::stoull(sd2[0]);
-								uint64_t total_last = std::stoull(sValue);
-								uint64_t total_real = total_last - total_first;
+								int64_t total_first = std::stoll(sd2[0]);
+								int64_t total_last = std::stoll(sValue);
+								int64_t total_real = total_last - total_first;
 
 								double musage = 0;
 								switch (metertype)
@@ -14533,13 +14533,13 @@ namespace http
 
 						bool bHaveFirstValue = false;
 						bool bHaveFirstRealValue = false;
-						unsigned long long ulFirstValue = 0;
-						unsigned long long ulRealFirstValue = 0;
+						long long ulFirstValue = 0;
+						long long ulRealFirstValue = 0;
 						int lastDay = 0;
 						std::string szLastDateTimeHour;
 						std::string szActDateTimeHour;
 						std::string szlastDateTime;
-						unsigned long long ulLastValue = 0;
+						long long ulLastValue = 0;
 
 						int lastHour = 0;
 						time_t lastTime = 0;
@@ -14569,7 +14569,7 @@ namespace http
 								if (method == 0)
 								{
 									// bars / hour
-									unsigned long long actValue = std::strtoull(sd[0].c_str(), nullptr, 10);
+									long long actValue = std::strtoll(sd[0].c_str(), nullptr, 10);
 									szlastDateTime = sd[1].substr(0, 16);
 									szActDateTimeHour = sd[1].substr(0, 13) + ":00";
 
@@ -14592,7 +14592,9 @@ namespace http
 											// float TotalValue = float(actValue - ulFirstValue);
 
 											// prevents graph from going crazy if the meter counter resets
-											double TotalValue = (actValue >= ulFirstValue) ? double(actValue - ulFirstValue) : actValue;
+											// removed because it breaks  negative increments
+											double TotalValue=double(actValue - ulFirstValue);
+											//if (actValue < ulFirstValue) TotalValue=actValue;
 
 											// if (TotalValue != 0)
 											{
@@ -14687,7 +14689,7 @@ namespace http
 								else
 								{
 									// realtime graph
-									unsigned long long actValue = std::strtoull(sd[0].c_str(), nullptr, 10);
+									long long actValue = std::strtoll(sd[0].c_str(), nullptr, 10);
 
 									std::string stime = sd[1];
 									struct tm ntime;
@@ -14746,7 +14748,7 @@ namespace http
 							// add last value
 							root["result"][ii]["d"] = szLastDateTimeHour;
 
-							unsigned long long ulTotalValue = ulLastValue - ulFirstValue;
+							long long ulTotalValue = ulLastValue - ulFirstValue;
 
 							double TotalValue = double(ulTotalValue);
 
@@ -15392,9 +15394,9 @@ namespace http
 						{
 							std::vector<std::string> sd = result[0];
 
-							unsigned long long total_min = std::strtoull(sd[0].c_str(), nullptr, 10);
-							unsigned long long total_max = total_min;
-							unsigned long long total_real;
+							long long total_min = std::strtoll(sd[0].c_str(), nullptr, 10);
+							long long total_max = total_min;
+							long long total_real;
 
 							// get the last value of the day
 							result = m_sql.safe_query("SELECT Value FROM Meter WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q') ORDER BY Date DESC LIMIT 1", idx, szDateEnd);
@@ -16913,9 +16915,9 @@ namespace http
 							if (!result.empty())
 							{
 								std::vector<std::string> sd = result[0];
-								unsigned long long total_min = std::strtoull(sd[0].c_str(), nullptr, 10);
-								unsigned long long total_max = total_min;
-								unsigned long long total_real;
+								long long total_min = std::strtoll(sd[0].c_str(), nullptr, 10);
+								long long total_max = total_min;
+								long long total_real;
 
 								// Get the last value
 								result = m_sql.safe_query("SELECT Value FROM Meter WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q') ORDER BY Date DESC LIMIT 1", idx,
@@ -17603,9 +17605,9 @@ namespace http
 						if (!result.empty())
 						{
 							std::vector<std::string> sd = result[0];
-							unsigned long long total_min = std::strtoull(sd[0].c_str(), nullptr, 10);
-							unsigned long long total_max = total_min;
-							unsigned long long total_real;
+							long long total_min = std::strtoll(sd[0].c_str(), nullptr, 10);
+							long long total_max = total_min;
+							long long total_real;
 
 							// get the last value of the day
 							result = m_sql.safe_query("SELECT Value FROM Meter WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q') ORDER BY Date DESC LIMIT 1", idx,

@@ -7273,7 +7273,8 @@ void CSQLHelper::AddCalendarUpdateMeter()
 
 			// if kwh counter => total_min = first value of the day, and total_max = last value of the day
 			// because last value can be lower than first value when consumed energy is negative (e.g. photovoltaic produces more than building usage)
-			if (devType == pTypeGeneral && subType == sTypeKwh) {
+			if (((devType == pTypeGeneral) && ((subType == sTypeKwh) || (subType == sTypeCounterIncremental))) || ((devType == pTypeRFXMeter) && (subType == sTypeRFXMeterCount)))
+			{
 				result = safe_query("SELECT Value FROM Meter WHERE (DeviceRowID='%" PRIu64 "' AND Date>='%q' AND Date<='%q 00:00:00') ORDER BY Date ASC LIMIT 1",
 						ID, szDateStart, szDateEnd );
 				if (!result.empty())
