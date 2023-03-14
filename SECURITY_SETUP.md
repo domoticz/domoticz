@@ -28,14 +28,11 @@ There are a number of 'components'/'functions' involved when it comes to Domotic
 A graphical representation looks like this:
 
 ```mermaid
-  flowchart TB
-  subgraph sUI["User Interface's"]
-    direction LR
-    subgraph UIs
-      DUI[Domoticz Web Interface]
-      OUI(Any Other Web Interface)
-      APP(Any Domoticz capable App)
-    end
+flowchart TD
+  subgraph sUI[User Interfaces]
+    DUI[Domoticz Web Interface]
+    OUI(Any Other Web Interface)
+    APP(Any Domoticz capable App)
   end
   subgraph sCORE[Domoticz Core Services]
     direction LR
