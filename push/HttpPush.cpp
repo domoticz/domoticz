@@ -116,13 +116,13 @@ void CHttpPush::DoHttpPush(const uint64_t DeviceRowIdx)
 		uint64_t localTimeUtc = lastUpdate - tzoffset;
 
 		char szLocalTime[21];
-		sprintf(szLocalTime, "%llu", localTime);
+		sprintf(szLocalTime, "%" PRIu64, localTime);
 		char szLocalTimeUtc[21];
-		sprintf(szLocalTimeUtc, "%llu", localTimeUtc);
+		sprintf(szLocalTimeUtc, "%" PRIu64, localTimeUtc);
 		char szLocalTimeMs[21];
-		sprintf(szLocalTimeMs, "%llu", localTime * 1000);
+		sprintf(szLocalTimeMs, "%" PRIu64, localTime * 1000);
 		char szLocalTimeUtcMs[21];
-		sprintf(szLocalTimeUtcMs, "%llu", localTimeUtc * 1000);
+		sprintf(szLocalTimeUtcMs, "%" PRIu64, localTimeUtc * 1000);
 
 		std::string llastUpdate = get_lastUpdate(localTimeUtc);
 

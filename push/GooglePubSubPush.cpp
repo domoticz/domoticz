@@ -158,9 +158,9 @@ void CGooglePubSubPush::DoGooglePubSubPush(const uint64_t DeviceRowIdx)
 		char szLocalTimeUtc[21];
 		sprintf(szLocalTimeUtc, "%d", localTimeUtc);
 		char szLocalTimeMs[21];
-		sprintf(szLocalTimeMs, "%llu", (uint64_t)(localTime * 1000));
+		sprintf(szLocalTimeMs, "%" PRIu64, (uint64_t)(localTime * 1000));
 		char szLocalTimeUtcMs[21];
-		sprintf(szLocalTimeUtcMs, "%llu", (uint64_t)(localTimeUtc * 1000));
+		sprintf(szLocalTimeUtcMs, "%" PRIu64, (uint64_t)(localTimeUtc * 1000));
 
 		std::string llastUpdate = get_lastUpdate(localTimeUtc);
 

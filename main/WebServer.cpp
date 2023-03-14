@@ -15361,20 +15361,20 @@ namespace http
 
 							root["result"][ii]["d"] = szDateEnd;
 
-							sprintf(szTmp, "%llu", total_real_usage_1);
+							sprintf(szTmp, "%" PRIu64, total_real_usage_1);
 							std::string szValue = szTmp;
 							sprintf(szTmp, "%.3f", atof(szValue.c_str()) / divider);
 							root["result"][ii]["v"] = szTmp;
-							sprintf(szTmp, "%llu", total_real_usage_2);
+							sprintf(szTmp, "%" PRIu64, total_real_usage_2);
 							szValue = szTmp;
 							sprintf(szTmp, "%.3f", atof(szValue.c_str()) / divider);
 							root["result"][ii]["v2"] = szTmp;
 
-							sprintf(szTmp, "%llu", total_real_deliv_1);
+							sprintf(szTmp, "%" PRIu64, total_real_deliv_1);
 							szValue = szTmp;
 							sprintf(szTmp, "%.3f", atof(szValue.c_str()) / divider);
 							root["result"][ii]["r1"] = szTmp;
-							sprintf(szTmp, "%llu", total_real_deliv_2);
+							sprintf(szTmp, "%" PRIu64, total_real_deliv_2);
 							szValue = szTmp;
 							sprintf(szTmp, "%.3f", atof(szValue.c_str()) / divider);
 							root["result"][ii]["r2"] = szTmp;
@@ -17586,7 +17586,7 @@ namespace http
 							std::string szValue = szTmp;
 							sprintf(szTmp, "%.3f", atof(szValue.c_str()) / divider);
 							root["result"][ii]["v"] = szTmp;
-							sprintf(szTmp, "%llu", total_real_deliv);
+							sprintf(szTmp, "%" PRIu64, total_real_deliv);
 							szValue = szTmp;
 							sprintf(szTmp, "%.3f", atof(szValue.c_str()) / divider);
 							root["result"][ii]["v2"] = szTmp;

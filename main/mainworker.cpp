@@ -10610,7 +10610,7 @@ void MainWorker::decode_Cartelectronic(const CDomoticzHardwareBase* pHardware, c
 	char szTmp[100];
 	std::string ID;
 
-	sprintf(szTmp, "%llu", ((uint64_t)(pResponse->TIC.id1) << 32) + (pResponse->TIC.id2 << 24) + (pResponse->TIC.id3 << 16) + (pResponse->TIC.id4 << 8) + (pResponse->TIC.id5));
+	sprintf(szTmp, "%" PRIu64, ((uint64_t)(pResponse->TIC.id1) << 32) + (pResponse->TIC.id2 << 24) + (pResponse->TIC.id3 << 16) + (pResponse->TIC.id4 << 8) + (pResponse->TIC.id5));
 	ID = szTmp;
 	//uint8_t Unit = 0;
 	//uint8_t cmnd = 0;
@@ -11486,7 +11486,7 @@ bool MainWorker::GetSensorData(const uint64_t idx, int& nValue, std::string& sVa
 			uint64_t total_min = std::stoull(sd2[0]);
 			uint64_t total_max = std::stoull(sd2[1]);
 			uint64_t total_real = total_max - total_min;
-			sprintf(szTmp, "%llu", total_real);
+			sprintf(szTmp, "%" PRIu64, total_real);
 
 			float musage = 0;
 			switch (metertype)
@@ -11501,10 +11501,10 @@ bool MainWorker::GetSensorData(const uint64_t idx, int& nValue, std::string& sVa
 				sprintf(szTmp, "%.03f", musage);
 				break;
 			case MTYPE_WATER:
-				sprintf(szTmp, "%llu", total_real);
+				sprintf(szTmp, "%" PRIu64, total_real);
 				break;
 			case MTYPE_COUNTER:
-				sprintf(szTmp, "%llu", total_real);
+				sprintf(szTmp, "%" PRIu64, total_real);
 				break;
 				/*
 				default:
