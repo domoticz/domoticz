@@ -25,19 +25,14 @@ There are a number of 'components'/'functions' involved when it comes to Domotic
   * The Domoticz __'IAM server'__ (Identity & Access Management)
         _(actually part of the core server at the moment)_
 
-<details>
-  <summary>A graphical representation looks like this:</summary>
-  (_Assuming the __Mermaid__ graph is rendered nicely_)
+A graphical representation looks like this:
 
 ```mermaid
-  flowchart TB
-  subgraph sUI["User Interface's"]
-    direction LR
-    subgraph UIs
-      DUI[Domoticz Web Interface]
-      OUI(Any Other Web Interface)
-      APP(Any Domoticz capable App)
-    end
+flowchart TD
+  subgraph sUI[User Interfaces]
+    DUI[Domoticz Web Interface]
+    OUI(Any Other Web Interface)
+    APP(Any Domoticz capable App)
   end
   subgraph sCORE[Domoticz Core Services]
     direction LR
@@ -55,7 +50,6 @@ There are a number of 'components'/'functions' involved when it comes to Domotic
   sUI -. "Could use to request access Token" .-> exIAM
   exIAM -. "Has trust relation with" .- sCORE
 ```
-</details>
 
 ## Isn't Domoticz just 1 Application?
 
