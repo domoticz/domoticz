@@ -56,7 +56,7 @@ namespace http
 						if (!client_id.empty())
 						{
 							iClient = FindUser(client_id.c_str());
-							if (iClient >= 0 && m_users[iClient].userrights == URIGHTS_CLIENTID)
+							if (iClient != -1 && m_users[iClient].userrights == URIGHTS_CLIENTID)
 							{
 								std::string Username;
 
@@ -80,7 +80,7 @@ namespace http
 									std::string sTOTP = request::findValue(&req, "totp");
 									Username = request::findValue(&req, "uname");
 									iUser = FindUser(Username.c_str());
-									bAuthenticated = (iUser > 0 ? (m_users[iUser].Password == GenerateMD5Hash(sPWD)) : false);
+									bAuthenticated = (iUser != -1 ? (m_users[iUser].Password == GenerateMD5Hash(sPWD)) : false);
 									if (!bAuthenticated)
 									{
 										m_failcount++;
@@ -233,7 +233,7 @@ namespace http
 						if (!client_id.empty())
 						{
 							iClient = FindUser(client_id.c_str());
-							if (iClient >= 0 && m_users[iClient].userrights == URIGHTS_CLIENTID)
+							if (iClient != -1 && m_users[iClient].userrights == URIGHTS_CLIENTID)
 							{
 								// Let's find the user for this client with the right auth_code, if any
 								iUser = 0;
@@ -384,12 +384,12 @@ namespace http
 									_log.Debug(DEBUG_AUTH, "OAuth2 Access Token: Found a Basic Auth Header for User (%s)", user.c_str());
 
 									iUser = FindUser(user.c_str());
-									if(iUser >= 0)
+									if(iUser != -1)
 									{
 										if (m_users[iUser].userrights != URIGHTS_CLIENTID && GenerateMD5Hash(passwd).compare(m_users[iUser].Password) == 0)
 										{
 											iClient = FindUser(client_id.c_str());
-											if (iClient > 0 && m_users[iClient].ID >= m_iamsettings.getUserIdxOffset() && m_users[iClient].userrights == URIGHTS_CLIENTID)
+											if (iClient != -1 && m_users[iClient].ID >= m_iamsettings.getUserIdxOffset() && m_users[iClient].userrights == URIGHTS_CLIENTID)
 											{
 												Json::Value jwtpayload;
 												jwtpayload["preferred_username"] = m_users[iUser].Username;
