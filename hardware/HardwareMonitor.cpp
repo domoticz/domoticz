@@ -8,6 +8,9 @@
 #include "../main/SQLHelper.h"
 #include <wchar.h>
 
+#define __STDC_FORMAT_MACROS
+#include <inttypes.h>
+
 //Note, for Windows we use OpenHardware Monitor
 //http://openhardwaremonitor.org/
 
@@ -984,7 +987,7 @@ void CHardwareMonitor::FetchUnixDisk()
 			char suse[30];
 			char smountpoint[300];
 			int64_t numblock, usedblocks, availblocks;
-			int ret = sscanf(ittDF.c_str(), "%s\t%lld\t%lld\t%lld\t%s\t%s\n", dname, &numblock, &usedblocks, &availblocks, suse, smountpoint);
+			int ret = sscanf(ittDF.c_str(), "%s\t%" PRId64 "\t%" PRId64 "\t%" PRId64 "\t%s\t%s\n", dname, &numblock, &usedblocks, &availblocks, suse, smountpoint);
 			if (ret == 6)
 			{
 				auto it = _dmounts_.find(dname);

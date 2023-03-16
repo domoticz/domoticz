@@ -150,17 +150,17 @@ void CGooglePubSubPush::DoGooglePubSubPush(const uint64_t DeviceRowIdx)
 		sendValue = sValue;
 
 		unsigned long tzoffset = get_tzoffset();
-		int localTime = lastUpdate;
-		int localTimeUtc = (int)(lastUpdate - tzoffset);
+		uint64_t localTime = lastUpdate;
+		uint64_t localTimeUtc = localTime - tzoffset;
 
 		char szLocalTime[21];
-		sprintf(szLocalTime, "%d", localTime);
+		sprintf(szLocalTime, "%" PRIu64, localTime);
 		char szLocalTimeUtc[21];
-		sprintf(szLocalTimeUtc, "%d", localTimeUtc);
+		sprintf(szLocalTimeUtc, "%" PRIu64, localTimeUtc);
 		char szLocalTimeMs[21];
-		sprintf(szLocalTimeMs, "%" PRIu64, (uint64_t)(localTime * 1000));
+		sprintf(szLocalTimeMs, "%" PRIu64, localTime * 1000);
 		char szLocalTimeUtcMs[21];
-		sprintf(szLocalTimeUtcMs, "%" PRIu64, (uint64_t)(localTimeUtc * 1000));
+		sprintf(szLocalTimeUtcMs, "%" PRIu64, localTimeUtc * 1000);
 
 		std::string llastUpdate = get_lastUpdate(localTimeUtc);
 
