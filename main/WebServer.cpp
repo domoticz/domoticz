@@ -14433,9 +14433,12 @@ namespace http
 
 									if (ulLastValue < ulFirstValue)
 									{
-										//probably a meter/counter turnover
-										ulFirstValue = ulFirstRealValue = ulLastValue;
-										LastDateTime = actDateTimeHour;
+										if (ulFirstValue - ulLastValue > 20000)
+										{
+											//probably a meter/counter turnover
+											ulFirstValue = ulFirstRealValue = ulLastValue;
+											LastDateTime = actDateTimeHour;
+										}
 									}
 
 									if (actDateTimeHour != LastDateTime || ((method == 1) && (itt + 1 == result.end())))
@@ -14581,6 +14584,16 @@ namespace http
 									struct tm ntime;
 									time_t atime;
 									ParseSQLdatetime(atime, ntime, sd[1], -1);
+
+									if (actValue < ulFirstValue)
+									{
+										if (ulRealFirstValue - actValue > 20000)
+										{
+											//Assume ,eter/counter turnover
+											ulFirstValue = ulRealFirstValue = actValue;
+											lastHour = ntime.tm_hour;
+										}
+									}
 
 									if (lastHour != ntime.tm_hour)
 									{
