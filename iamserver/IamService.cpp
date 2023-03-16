@@ -15,10 +15,11 @@
 #include <inttypes.h>
 #include <iostream>
 #include <json/json.h>
-#include "../webserver/Base64.h"
-#include "../main/WebServer.h"
 #include "../main/Logger.h"
 #include "../main/SQLHelper.h"
+#include "../httpclient/UrlEncode.h"
+#include "../main/WebServer.h"
+#include "../webserver/Base64.h"
 
 namespace http
 {
