@@ -14429,9 +14429,14 @@ namespace http
 									std::string actDateTimeHour = sd[2].substr(0, 13);
 									int64_t actValue = std::stoll(sd[0]); // actual energy value
 
-									// if (actValue >= ulLastValue) ulLastValue = actValue; //Removed because usage energy may be negative if the production power
-									// is greater than usage power
 									ulLastValue = actValue;
+
+									if (ulLastValue < ulFirstValue)
+									{
+										//probably a meter/counter turnover
+										ulFirstValue = ulFirstRealValue = ulLastValue;
+										LastDateTime = actDateTimeHour;
+									}
 
 									if (actDateTimeHour != LastDateTime || ((method == 1) && (itt + 1 == result.end())))
 									{
