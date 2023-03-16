@@ -1,6 +1,6 @@
 # Domoticz Security Setup
 
-_Applies to version: 2022.2 Beta's (14706) and up_
+_Applies to version: 2023.1 and up_
 
 This document describes the security options within Domoticz.
 
@@ -105,7 +105,7 @@ Users coming from a _'trusted network'_ do not need to _identify_ themselves.
 
 But when coming from 'outside' a trusted network, Domoticz will require the user to authenticate.
 
-In 'Setup/Settings' on the _security_ tab, there is a section called _'Local Networks'_ where IP-addresses and IP-ranges (with wild-cards) can be entered. This ; (semicolon) separated list is used by Domoticz to allow requests coming from clients with an IP-address that falls in one of the listed ranges, to access Domoticz without the need to provide valid credentials.
+In 'Setup/Settings' on the _security_ tab, there is a section called _'Trusted Networks'_ where IP-addresses and IP-ranges (with wild-cards) can be entered. This ; (semicolon) separated list is used by Domoticz to allow requests coming from clients with an IP-address that falls in one of the listed ranges, to access Domoticz without the need to provide valid credentials.
 
 __NOTE__: Although this functionality seems very handy for easy access to Domoticz for example for scripting and connectivity reasons, it is easy to overlook the possible risks. It is prefered/safer to make sure that scripts, etc. use valid credentials. This has become easier with the use of tokens, so no need to store user credentials in scripts and pass them over the network with each request.
 
