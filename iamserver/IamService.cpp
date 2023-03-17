@@ -215,8 +215,8 @@ namespace http
 									std::string acScope = m_accesscodes[iUser].Scope;
 									std::string CodeChallenge = m_accesscodes[iUser].CodeChallenge;
 									uint64_t AuthTime = m_accesscodes[iUser].AuthTime;
-									unsigned long long CodeTime = m_accesscodes[iUser].ExpTime;
-									unsigned long long CurTime = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
+									uint64_t CodeTime = m_accesscodes[iUser].ExpTime;
+									uint64_t CurTime = (uint64_t) std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
 
 									m_accesscodes[iUser].AuthCode = "";	// Once used, make sure it cannot be used again
 									m_accesscodes[iUser].RedirectUri = "";
@@ -292,7 +292,7 @@ namespace http
 											}
 											else
 											{
-												_log.Debug(DEBUG_AUTH, "OAuth2 Access Token: Authorization code has expired (%lld) (%lld)!", CodeTime, CurTime);
+												_log.Debug(DEBUG_AUTH, "OAuth2 Access Token: Authorization code has expired (%" PRIu64 ") (%" PRIu64 ")!", CodeTime, CurTime);
 												iUser = -1;
 											}
 										}
