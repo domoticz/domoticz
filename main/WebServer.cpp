@@ -14428,9 +14428,17 @@ namespace http
 									std::string actDateTimeHour = sd[2].substr(0, 13);
 									int64_t actValue = std::stoll(sd[0]); // actual energy value
 
-									// if (actValue >= ulLastValue) ulLastValue = actValue; //Removed because usage energy may be negative if the production power
-									// is greater than usage power
 									ulLastValue = actValue;
+
+									if (ulLastValue < ulFirstValue)
+									{
+										if (ulFirstValue - ulLastValue > 20000)
+										{
+											//probably a meter/counter turnover
+											ulFirstValue = ulFirstRealValue = ulLastValue;
+											LastDateTime = actDateTimeHour;
+										}
+									}
 
 									if (actDateTimeHour != LastDateTime || ((method == 1) && (itt + 1 == result.end())))
 									{
@@ -14575,6 +14583,16 @@ namespace http
 									struct tm ntime;
 									time_t atime;
 									ParseSQLdatetime(atime, ntime, sd[1], -1);
+
+									if (actValue < ulFirstValue)
+									{
+										if (ulRealFirstValue - actValue > 20000)
+										{
+											//Assume ,eter/counter turnover
+											ulFirstValue = ulRealFirstValue = actValue;
+											lastHour = ntime.tm_hour;
+										}
+									}
 
 									if (lastHour != ntime.tm_hour)
 									{
