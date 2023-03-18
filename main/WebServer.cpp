@@ -10033,7 +10033,8 @@ namespace http
 							int64_t total_first = std::stoll(sd2[0]);
 							int64_t total_last = std::stoll(sValue);
 							int64_t total_real = total_last - total_first;
-							sprintf(szTmp, "%" PRIu64, total_real);
+
+							sprintf(szTmp, "%" PRId64, total_real);
 
 							double musage = 0.0F;
 							switch (metertype)
@@ -10139,10 +10140,9 @@ namespace http
 
 							uint64_t total_min = std::stoull(sd2[0]);
 							uint64_t total_max = std::stoull(sd2[1]);
-							uint64_t total_real;
+							uint64_t total_real = total_max - total_min;
 
-							total_real = total_max - total_min;
-							sprintf(szTmp, "%lld", total_real);
+							sprintf(szTmp, "%" PRIu64, total_real);
 
 							musage = 0;
 							switch (metertype)
@@ -10317,9 +10317,9 @@ namespace http
 								usagecurrent = 0;
 								delivcurrent = 0;
 							}
-							sprintf(szTmp, "%llu Watt", usagecurrent);
+							sprintf(szTmp, "%" PRIu64 " Watt", usagecurrent);
 							root["result"][ii]["Usage"] = szTmp;
-							sprintf(szTmp, "%llu Watt", delivcurrent);
+							sprintf(szTmp, "%" PRIu64 " Watt", delivcurrent);
 							root["result"][ii]["UsageDeliv"] = szTmp;
 							root["result"][ii]["Data"] = sValue;
 							root["result"][ii]["HaveTimeout"] = bHaveTimeout;
@@ -11213,10 +11213,9 @@ namespace http
 
 								uint64_t total_min = std::stoull(sd2[0]);
 								uint64_t total_max = std::stoull(sd2[1]);
-								uint64_t total_real;
+								uint64_t total_real = total_max - total_min;
 
-								total_real = total_max - total_min;
-								sprintf(szTmp, "%lld", total_real);
+								sprintf(szTmp, "%" PRIu64, total_real);
 							}
 							root["result"][ii]["SwitchTypeVal"] = MTYPE_COUNTER;
 							root["result"][ii]["Counter"] = sValue;
@@ -15383,6 +15382,7 @@ namespace http
 							std::string szValue = szTmp;
 							sprintf(szTmp, "%.3f", atof(szValue.c_str()) / divider);
 							root["result"][ii]["v"] = szTmp;
+
 							sprintf(szTmp, "%" PRIu64, total_real_usage_2);
 							szValue = szTmp;
 							sprintf(szTmp, "%.3f", atof(szValue.c_str()) / divider);
@@ -15392,6 +15392,7 @@ namespace http
 							szValue = szTmp;
 							sprintf(szTmp, "%.3f", atof(szValue.c_str()) / divider);
 							root["result"][ii]["r1"] = szTmp;
+
 							sprintf(szTmp, "%" PRIu64, total_real_deliv_2);
 							szValue = szTmp;
 							sprintf(szTmp, "%.3f", atof(szValue.c_str()) / divider);
@@ -15425,7 +15426,8 @@ namespace http
 							}
 
 							total_real = total_max - total_min;
-							sprintf(szTmp, "%lld", total_real);
+							sprintf(szTmp, "%" PRId64, total_real);
+
 							std::string szValue = szTmp;
 							switch (metertype)
 							{
@@ -16947,7 +16949,8 @@ namespace http
 								}
 
 								total_real = total_max - total_min;
-								sprintf(szTmp, "%lld", total_real);
+								sprintf(szTmp, "%" PRId64, total_real);
+
 								std::string szValue = szTmp;
 
 								if (!sgroupby.empty())
@@ -17600,14 +17603,16 @@ namespace http
 
 							root["result"][ii]["d"] = szDateEnd;
 
-							sprintf(szTmp, "%lld", total_real_usage);
+							sprintf(szTmp, "%" PRIu64, total_real_usage);
 							std::string szValue = szTmp;
 							sprintf(szTmp, "%.3f", atof(szValue.c_str()) / divider);
 							root["result"][ii]["v"] = szTmp;
+
 							sprintf(szTmp, "%" PRIu64, total_real_deliv);
 							szValue = szTmp;
 							sprintf(szTmp, "%.3f", atof(szValue.c_str()) / divider);
 							root["result"][ii]["v2"] = szTmp;
+							
 							ii++;
 							if (bHaveDeliverd)
 							{
@@ -17637,9 +17642,8 @@ namespace http
 							}
 
 							total_real = total_max - total_min;
-							sprintf(szTmp, "%lld", total_real);
+							sprintf(szTmp, "%" PRId64, total_real);							std::string szValue = szTmp;
 
-							std::string szValue = szTmp;
 							switch (metertype)
 							{
 							case MTYPE_ENERGY:
