@@ -709,7 +709,7 @@ void CEvohomeWeb::DecodeDHWState(temperatureControlSystem* tcs)
 		}
 		else if ((result[0][1] != szId) || (result[0][2] != ndevname))
 		{
-			uint64_t DevRowIdx = (uint64_t) std::stoull(result[0][0]);
+			uint64_t DevRowIdx = std::stoull(result[0][0]);
 			// also wipe StrParam1 - we do not want a double action from the old (python) script when changing the setpoint
 			m_sql.safe_query("UPDATE DeviceStatus SET DeviceID='%q', Name='%q', StrParam1='' WHERE (ID == %" PRIu64 ")", szId.c_str(), ndevname.c_str(), DevRowIdx);
 		}
