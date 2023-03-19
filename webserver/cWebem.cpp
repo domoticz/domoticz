@@ -158,11 +158,6 @@ namespace http {
 
 		*/
 
-		void cWebem::RegisterIncludeCodeW(const char *idname, const webem_include_function_w &fun)
-		{
-			myIncludes_w.insert(std::pair<std::string, webem_include_function_w >(std::string(idname), fun));
-		}
-
 		void cWebem::RegisterPageCode(const char *pageurl, const webem_page_function &fun, bool bypassAuthentication)
 		{
 			myPages.insert(std::pair<std::string, webem_page_function >(std::string(pageurl), fun));
@@ -171,15 +166,6 @@ namespace http {
 				RegisterWhitelistURLString(pageurl);
 			}
 		}
-		void cWebem::RegisterPageCodeW(const char *pageurl, const webem_page_function &fun, bool bypassAuthentication)
-		{
-			myPages_w.insert(std::pair<std::string, webem_page_function >(std::string(pageurl), fun));
-			if (bypassAuthentication)
-			{
-				RegisterWhitelistURLString(pageurl);
-			}
-		}
-
 
 		/**
 
@@ -203,7 +189,13 @@ namespace http {
 		{
 			myWhitelistCommands.push_back(idname);
 		}
-		
+
+		// Show a Debug line with the registered functions, actions, includes, whitelist urls and commands
+		void cWebem::DebugRegistrations()
+		{
+			_log.Debug(DEBUG_WEBSERVER, "cWebEm Registration: %d pages, %d actions, %d includes, %d whitelist urls, %d whitelist commands",
+				(int)myPages.size(), (int)myActions.size(), (int)myIncludes.size(), (int)myWhitelistURLs.size(), (int)myWhitelistCommands.size());
+		}
 
 		/**
 
@@ -259,29 +251,6 @@ namespace http {
 					}
 					reply.insert(p, content_part);
 					res = true;
-				}
-				else
-				{
-					// no function found, look for a wide character fuction
-					auto pf = myIncludes_w.find(code);
-					if (pf != myIncludes_w.end())
-					{
-						// function found
-						// get return string and convert from UTF-16 to UTF-8
-						std::wstring content_part_w;
-						try
-						{
-							pf->second(content_part_w);
-						}
-						catch (...)
-						{
-
-						}
-						cUTF utf(content_part_w.c_str());
-						// insert generated text
-						reply.insert(p, utf.get8());
-						res = true;
-					}
 				}
 
 				// adjust pointer into text for insertion
@@ -474,9 +443,7 @@ namespace http {
 			auto pfun = myPages.find(request_path);
 			if (pfun != myPages.end())
 				return true;
-			//check wchar_t
-			auto pfunW = myPages_w.find(request_path);
-			return pfunW != myPages_w.end();
+			return false;
 		}
 
 		bool cWebem::CheckForPageOverride(WebEmSession & session, request& req, reply& rep)
@@ -719,31 +686,6 @@ namespace http {
 				reply::add_header_content_type(&rep, strMimeType);
 				if (m_settings.is_secure())
 					reply::add_security_headers(&rep);
-				return true;
-			}
-
-			//check wchar_t
-			auto pfunW = myPages_w.find(request_path);
-			if (pfunW != myPages_w.end())
-			{
-				try
-				{
-					pfunW->second(session, req, rep);
-				}
-				catch (...)
-				{
-					_log.Log(LOG_ERROR, "[web:%s] PO unknown exception occurred", GetPort().c_str());
-				}
-
-				rep.status = reply::ok;
-				reply::add_header(&rep, "Content-Length", std::to_string(rep.content.size()));
-				reply::add_header_content_type(&rep, strMimeType);
-				reply::add_header(&rep, "Cache-Control", "no-cache");
-				reply::add_header(&rep, "Pragma", "no-cache");
-				reply::add_cors_headers(&rep);
-				if (m_settings.is_secure())
-					reply::add_security_headers(&rep);
-
 				return true;
 			}
 
