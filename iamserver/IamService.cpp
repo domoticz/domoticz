@@ -4,7 +4,6 @@
  *  Created on: 23 Januari 2023
  *      Author: kiddigital
  * 
- * This file is NOT a separate class but is part of 'main/WebServer.cpp'
  * It contains routines that are part of the WebServer class, but for sourcecode management
  * reasons separated out into its own file so it is easier to maintain the IAM related functions
  * of the WebServer. The definitions of the methods here are still in 'main/Webserver.h'
@@ -12,7 +11,6 @@
 */
 
 #include "stdafx.h"
-#include <inttypes.h>
 #include <iostream>
 #include <json/json.h>
 #include "../main/Logger.h"
@@ -20,6 +18,9 @@
 #include "../httpclient/UrlEncode.h"
 #include "../main/WebServer.h"
 #include "../webserver/Base64.h"
+
+#define __STDC_FORMAT_MACROS
+#include <inttypes.h>
 
 namespace http
 {
