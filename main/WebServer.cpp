@@ -736,6 +736,9 @@ namespace http
 			//Whitelist
 			m_pWebEm->RegisterWhitelistURLString("/images/floorplans/plan");
 
+			_log.Debug(DEBUG_WEBSERVER, "WebServer(%s) started with: %d Commands - %d RTypes", m_server_alias.c_str(), (int)m_webcommands.size(), (int)m_webrtypes.size());
+			m_pWebEm->DebugRegistrations();
+
 			// Start normal worker thread
 			m_bDoStop = false;
 			m_thread = std::make_shared<std::thread>([this] { Do_Work(); });
