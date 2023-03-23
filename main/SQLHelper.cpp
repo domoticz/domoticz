@@ -5412,8 +5412,7 @@ uint64_t CSQLHelper::UpdateValueInt(
 				HWtype = pHardware->HwdType;
 
 			bool bIsBlindsPercentage = (
-				(switchtype == STYPE_Dimmer)
-				|| (switchtype == STYPE_BlindsPercentage)
+				(switchtype == STYPE_BlindsPercentage)
 				|| (switchtype == STYPE_BlindsPercentageWithStop)
 				);
 
@@ -6399,16 +6398,16 @@ bool CSQLHelper::UpdateCalendarMeter(
 	const bool shortLog,
 	const bool multiMeter,
 	const char* date,
-	const long long value1,
-	const long long value2,
-	const long long value3,
-	const long long value4,
-	const long long value5,
-	const long long value6,
-	const long long counter1,
-	const long long counter2,
-	const long long counter3,
-	const long long counter4)
+	const int64_t value1,
+	const int64_t value2,
+	const int64_t value3,
+	const int64_t value4,
+	const int64_t value5,
+	const int64_t value6,
+	const int64_t counter1,
+	const int64_t counter2,
+	const int64_t counter3,
+	const int64_t counter4)
 {
 	std::vector<std::vector<std::string> > result;
 
@@ -6440,7 +6439,7 @@ bool CSQLHelper::UpdateCalendarMeter(
 			{
 				safe_query(
 					"INSERT INTO MultiMeter (DeviceRowID, Value1, Value2, Value3, Value4, Value5, Value6, Date) "
-					"VALUES ('%" PRIu64 "', '%lld', '%lld', '%lld', '%lld', '%lld', '%lld', '%q')",
+					"VALUES ('%" PRIu64 "', '%" PRId64 "', '%" PRId64 "', '%" PRId64 "', '%" PRId64 "', '%" PRId64 "', '%" PRId64 "', '%q')",
 					DeviceRowID,
 					(value1 < 0) ? 0 : value1,
 					(value2 < 0) ? 0 : value2,
@@ -6454,7 +6453,7 @@ bool CSQLHelper::UpdateCalendarMeter(
 			else
 			{
 				safe_query(
-					"UPDATE MultiMeter SET Value1='%lld', Value2='%lld', Value3='%lld', Value4='%lld', Value5='%lld', Value6='%lld' "
+					"UPDATE MultiMeter SET Value1='%" PRId64 "', Value2='%" PRId64 "', Value3='%" PRId64 "', Value4='%" PRId64 "', Value5='%" PRId64 "', Value6='%" PRId64 "' "
 					"WHERE ((DeviceRowID=='%" PRIu64 "') AND (Date=='%q'))",
 					(value1 < 0) ? 0 : value1,
 					(value2 < 0) ? 0 : value2,
@@ -6477,14 +6476,14 @@ bool CSQLHelper::UpdateCalendarMeter(
 			{
 				safe_query(
 					"INSERT INTO Meter (DeviceRowID, Value, Usage, Date) "
-					"VALUES ('%" PRIu64 "','%lld','%lld','%q')",
+					"VALUES ('%" PRIu64 "','%" PRId64 "','%" PRId64 "','%q')",
 					DeviceRowID, (value1 < 0) ? 0 : value1, (value2 < 0) ? 0 : value2, date
 				);
 			}
 			else
 			{
 				safe_query(
-					"UPDATE Meter SET DeviceRowID='%" PRIu64 "', Value='%lld', Usage='%lld', Date='%q' "
+					"UPDATE Meter SET DeviceRowID='%" PRIu64 "', Value='%" PRId64 "', Usage='%" PRId64 "', Date='%q' "
 					"WHERE ((DeviceRowID=='%" PRIu64 "') AND (Date=='%q'))",
 					DeviceRowID, (value1 < 0) ? 0 : value1, (value2 < 0) ? 0 : value2, date,
 					DeviceRowID, date
@@ -6508,7 +6507,7 @@ bool CSQLHelper::UpdateCalendarMeter(
 			{
 				safe_query(
 					"INSERT INTO MultiMeter_Calendar (DeviceRowID, Value1, Value2, Value3, Value4, Value5, Value6, Counter1, Counter2, Counter3, Counter4, Date) "
-					"VALUES ('%" PRIu64 "', '%lld', '%lld', '%lld', '%lld', '%lld', '%lld', '%lld', '%lld', '%lld', '%lld', '%q')",
+					"VALUES ('%" PRIu64 "', '%" PRId64 "', '%" PRId64 "', '%" PRId64 "', '%" PRId64 "', '%" PRId64 "', '%" PRId64 "', '%" PRId64 "', '%" PRId64 "', '%" PRId64 "', '%" PRId64 "', '%q')",
 					DeviceRowID,
 					(value1 < 0) ? 0 : value1,
 					(value2 < 0) ? 0 : value2,
@@ -6526,7 +6525,7 @@ bool CSQLHelper::UpdateCalendarMeter(
 			else
 			{
 				safe_query(
-					"UPDATE MultiMeter_Calendar SET Value1='%lld', Value2='%lld', Value3='%lld', Value4='%lld', Value5='%lld', Value6='%lld' , Counter1='%lld' , Counter2='%lld' , Counter3='%lld' , Counter4='%lld' "
+					"UPDATE MultiMeter_Calendar SET Value1='%" PRId64 "', Value2='%" PRId64 "', Value3='%" PRId64 "', Value4='%" PRId64 "', Value5='%" PRId64 "', Value6='%" PRId64 "' , Counter1='%" PRId64 "' , Counter2='%" PRId64 "' , Counter3='%" PRId64 "' , Counter4='%" PRId64 "' "
 					"WHERE ((DeviceRowID=='%" PRIu64 "') AND (Date=='%q'))",
 					(value1 < 0) ? 0 : value1,
 					(value2 < 0) ? 0 : value2,
@@ -6553,14 +6552,14 @@ bool CSQLHelper::UpdateCalendarMeter(
 			{
 				safe_query(
 					"INSERT INTO Meter_Calendar (DeviceRowID, Counter, Value, Date) "
-					"VALUES ('%" PRIu64 "', '%lld', '%lld', '%q')",
+					"VALUES ('%" PRIu64 "', '%" PRId64 "', '%" PRId64 "', '%q')",
 					DeviceRowID, (value1 < 0) ? 0 : value1, (value2 < 0) ? 0 : value2, date
 				);
 			}
 			else
 			{
 				safe_query(
-					"UPDATE Meter_Calendar SET DeviceRowID='%" PRIu64 "', Counter='%lld', Value='%lld', Date='%q' "
+					"UPDATE Meter_Calendar SET DeviceRowID='%" PRIu64 "', Counter='%" PRId64 "', Value='%" PRId64 "', Date='%q' "
 					"WHERE (DeviceRowID=='%" PRIu64 "') AND (Date=='%q')",
 					DeviceRowID, (value1 < 0) ? 0 : value1, (value2 < 0) ? 0 : value2, date,
 					DeviceRowID, date
@@ -6816,8 +6815,8 @@ void CSQLHelper::UpdateMeter()
 				sValue = szTmp;
 			}
 
-			long long MeterValue = 0;
-			long long MeterUsage = 0;
+			int64_t MeterValue = 0;
+			int64_t MeterUsage = 0;
 
 			try
 			{
@@ -6833,7 +6832,7 @@ void CSQLHelper::UpdateMeter()
 			//insert record
 			safe_query(
 				"INSERT INTO Meter (DeviceRowID, Value, [Usage]) "
-				"VALUES ('%" PRIu64 "', '%lld', '%lld')",
+				"VALUES ('%" PRIu64 "', '%" PRId64 "', '%" PRId64 "')",
 				ID,
 				MeterValue,
 				MeterUsage
@@ -6894,24 +6893,24 @@ void CSQLHelper::UpdateMultiMeter()
 			std::vector<std::string> splitresults;
 			StringSplit(sValue, ";", splitresults);
 
-			unsigned long long value1 = 0;
-			unsigned long long value2 = 0;
-			unsigned long long value3 = 0;
-			unsigned long long value4 = 0;
-			unsigned long long value5 = 0;
-			unsigned long long value6 = 0;
+			uint64_t value1 = 0;
+			uint64_t value2 = 0;
+			uint64_t value3 = 0;
+			uint64_t value4 = 0;
+			uint64_t value5 = 0;
+			uint64_t value6 = 0;
 
 			if (dType == pTypeP1Power)
 			{
 				if (splitresults.size() != 6)
 					continue; //impossible
 
-				unsigned long long powerusage1 = 0;
-				unsigned long long powerusage2 = 0;
-				unsigned long long powerdeliv1 = 0;
-				unsigned long long powerdeliv2 = 0;
-				unsigned long long usagecurrent = 0;
-				unsigned long long delivcurrent = 0;
+				uint64_t powerusage1 = 0;
+				uint64_t powerusage2 = 0;
+				uint64_t powerdeliv1 = 0;
+				uint64_t powerdeliv2 = 0;
+				uint64_t usagecurrent = 0;
+				uint64_t delivcurrent = 0;
 
 				try
 				{
@@ -6952,7 +6951,7 @@ void CSQLHelper::UpdateMultiMeter()
 				value1 = (unsigned long)(atof(splitresults[0].c_str()) * 10.0F);
 				value2 = (unsigned long)(atof(splitresults[1].c_str()) * 10.0F);
 				value3 = (unsigned long)(atof(splitresults[2].c_str()) * 10.0F);
-				value4 = (unsigned long long)(atof(splitresults[3].c_str()) * 1000.0F);
+				value4 = (uint64_t)(atof(splitresults[3].c_str()) * 1000.0F);
 			}
 			else
 				continue;//don't know you (yet)
@@ -6960,7 +6959,7 @@ void CSQLHelper::UpdateMultiMeter()
 			//insert record
 			safe_query(
 				"INSERT INTO MultiMeter (DeviceRowID, Value1, Value2, Value3, Value4, Value5, Value6) "
-				"VALUES ('%" PRIu64 "', '%llu', '%llu', '%llu', '%llu', '%llu', '%llu')",
+				"VALUES ('%" PRIu64 "', '%" PRIu64 "', '%" PRIu64 "', '%" PRIu64 "', '%" PRIu64 "', '%" PRIu64 "', '%" PRIu64 "')",
 				ID,
 				value1,
 				value2,
@@ -7343,7 +7342,8 @@ void CSQLHelper::AddCalendarUpdateMeter()
 
 			// if kwh counter => total_min = first value of the day, and total_max = last value of the day
 			// because last value can be lower than first value when consumed energy is negative (e.g. photovoltaic produces more than building usage)
-			if (devType == pTypeGeneral && subType == sTypeKwh) {
+			if (((devType == pTypeGeneral) && ((subType == sTypeKwh) || (subType == sTypeCounterIncremental))) || ((devType == pTypeRFXMeter) && (subType == sTypeRFXMeterCount)))
+			{
 				result = safe_query("SELECT Value FROM Meter WHERE (DeviceRowID='%" PRIu64 "' AND Date>='%q' AND Date<='%q 00:00:00') ORDER BY Date ASC LIMIT 1",
 						ID, szDateStart, szDateEnd );
 				if (!result.empty())
@@ -8053,123 +8053,6 @@ void CSQLHelper::DeleteScenes(const std::string& idx)
 	m_notifications.ReloadNotifications();
 }
 
-void CSQLHelper::TransferDevice(const std::string& idx, const std::string& newidx)
-{
-	std::vector<std::vector<std::string> > result;
-
-	safe_query("UPDATE LightingLog SET DeviceRowID='%q' WHERE (DeviceRowID == '%q')", newidx.c_str(), idx.c_str());
-	safe_query("UPDATE LightSubDevices SET ParentID='%q' WHERE (ParentID == '%q')", newidx.c_str(), idx.c_str());
-	safe_query("UPDATE LightSubDevices SET DeviceRowID='%q' WHERE (DeviceRowID == '%q')", newidx.c_str(), idx.c_str());
-	safe_query("UPDATE Notifications SET DeviceRowID='%q' WHERE (DeviceRowID == '%q')", newidx.c_str(), idx.c_str());
-	safe_query("UPDATE DeviceToPlansMap SET DeviceRowID='%q' WHERE (DeviceRowID == '%q')", newidx.c_str(), idx.c_str());
-	safe_query("UPDATE SharedDevices SET DeviceRowID='%q' WHERE (DeviceRowID == '%q')", newidx.c_str(), idx.c_str());
-	safe_query("UPDATE Timers SET DeviceRowID='%q' WHERE (DeviceRowID == '%q')", newidx.c_str(), idx.c_str());
-
-	//Rain
-	result = safe_query("SELECT Date FROM Rain WHERE (DeviceRowID == '%q') ORDER BY Date ASC LIMIT 1", newidx.c_str());
-	if (!result.empty())
-		safe_query("UPDATE Rain SET DeviceRowID='%q' WHERE (DeviceRowID == '%q') AND (Date<'%q')", newidx.c_str(), idx.c_str(), result[0][0].c_str());
-	else
-		safe_query("UPDATE Rain SET DeviceRowID='%q' WHERE (DeviceRowID == '%q')", newidx.c_str(), idx.c_str());
-
-	result = safe_query("SELECT Date FROM Rain_Calendar WHERE (DeviceRowID == '%q') ORDER BY Date ASC LIMIT 1", newidx.c_str());
-	if (!result.empty())
-		safe_query("UPDATE Rain_Calendar SET DeviceRowID='%q' WHERE (DeviceRowID == '%q') AND (Date<'%q')", newidx.c_str(), idx.c_str(), result[0][0].c_str());
-	else
-		safe_query("UPDATE Rain_Calendar SET DeviceRowID='%q' WHERE (DeviceRowID == '%q')", newidx.c_str(), idx.c_str());
-
-	//Temperature
-	result = safe_query("SELECT Date FROM Temperature WHERE (DeviceRowID == '%q') ORDER BY Date ASC LIMIT 1", newidx.c_str());
-	if (!result.empty())
-		safe_query("UPDATE Temperature SET DeviceRowID='%q' WHERE (DeviceRowID == '%q') AND (Date<'%q')", newidx.c_str(), idx.c_str(), result[0][0].c_str());
-	else
-		safe_query("UPDATE Temperature SET DeviceRowID='%q' WHERE (DeviceRowID == '%q')", newidx.c_str(), idx.c_str());
-
-	result = safe_query("SELECT Date FROM Temperature_Calendar WHERE (DeviceRowID == '%q') ORDER BY Date ASC LIMIT 1", newidx.c_str());
-	if (!result.empty())
-		safe_query("UPDATE Temperature_Calendar SET DeviceRowID='%q' WHERE (DeviceRowID == '%q') AND (Date<'%q')", newidx.c_str(), idx.c_str(), result[0][0].c_str());
-	else
-		safe_query("UPDATE Temperature_Calendar SET DeviceRowID='%q' WHERE (DeviceRowID == '%q')", newidx.c_str(), idx.c_str());
-
-	//UV
-	result = safe_query("SELECT Date FROM UV WHERE (DeviceRowID == '%q') ORDER BY Date ASC LIMIT 1", newidx.c_str());
-	if (!result.empty())
-		safe_query("UPDATE UV SET DeviceRowID='%q' WHERE (DeviceRowID == '%q') AND (Date<'%q')", newidx.c_str(), idx.c_str(), result[0][0].c_str());
-	else
-		safe_query("UPDATE UV SET DeviceRowID='%q' WHERE (DeviceRowID == '%q')", newidx.c_str(), idx.c_str());
-
-	result = safe_query("SELECT Date FROM UV_Calendar WHERE (DeviceRowID == '%q') ORDER BY Date ASC LIMIT 1", newidx.c_str());
-	if (!result.empty())
-		safe_query("UPDATE UV_Calendar SET DeviceRowID='%q' WHERE (DeviceRowID == '%q') AND (Date<'%q')", newidx.c_str(), idx.c_str(), result[0][0].c_str());
-	else
-		safe_query("UPDATE UV_Calendar SET DeviceRowID='%q' WHERE (DeviceRowID == '%q')", newidx.c_str(), idx.c_str());
-
-	//Wind
-	result = safe_query("SELECT Date FROM Wind WHERE (DeviceRowID == '%q') ORDER BY Date ASC LIMIT 1", newidx.c_str());
-	if (!result.empty())
-		safe_query("UPDATE Wind SET DeviceRowID='%q' WHERE (DeviceRowID == '%q') AND (Date<'%q')", newidx.c_str(), idx.c_str(), result[0][0].c_str());
-	else
-		safe_query("UPDATE Wind SET DeviceRowID='%q' WHERE (DeviceRowID == '%q')", newidx.c_str(), idx.c_str());
-
-	result = safe_query("SELECT Date FROM Wind_Calendar WHERE (DeviceRowID == '%q') ORDER BY Date ASC LIMIT 1", newidx.c_str());
-	if (!result.empty())
-		safe_query("UPDATE Wind_Calendar SET DeviceRowID='%q' WHERE (DeviceRowID == '%q') AND (Date<'%q')", newidx.c_str(), idx.c_str(), result[0][0].c_str());
-	else
-		safe_query("UPDATE Wind_Calendar SET DeviceRowID='%q' WHERE (DeviceRowID == '%q')", newidx.c_str(), idx.c_str());
-
-	//Meter
-	result = safe_query("SELECT Date FROM Meter WHERE (DeviceRowID == '%q') ORDER BY Date ASC LIMIT 1", newidx.c_str());
-	if (!result.empty())
-		safe_query("UPDATE Meter SET DeviceRowID='%q' WHERE (DeviceRowID == '%q') AND (Date<'%q')", newidx.c_str(), idx.c_str(), result[0][0].c_str());
-	else
-		safe_query("UPDATE Meter SET DeviceRowID='%q' WHERE (DeviceRowID == '%q')", newidx.c_str(), idx.c_str());
-
-	result = safe_query("SELECT Date FROM Meter_Calendar WHERE (DeviceRowID == '%q') ORDER BY Date ASC LIMIT 1", newidx.c_str());
-	if (!result.empty())
-		safe_query("UPDATE Meter_Calendar SET DeviceRowID='%q' WHERE (DeviceRowID == '%q') AND (Date<'%q')", newidx.c_str(), idx.c_str(), result[0][0].c_str());
-	else
-		safe_query("UPDATE Meter_Calendar SET DeviceRowID='%q' WHERE (DeviceRowID == '%q')", newidx.c_str(), idx.c_str());
-
-	//Multimeter
-	result = safe_query("SELECT Date FROM MultiMeter WHERE (DeviceRowID == '%q') ORDER BY Date ASC LIMIT 1", newidx.c_str());
-	if (!result.empty())
-		safe_query("UPDATE MultiMeter SET DeviceRowID='%q' WHERE (DeviceRowID == '%q') AND (Date<'%q')", newidx.c_str(), idx.c_str(), result[0][0].c_str());
-	else
-		safe_query("UPDATE MultiMeter SET DeviceRowID='%q' WHERE (DeviceRowID == '%q')", newidx.c_str(), idx.c_str());
-
-	result = safe_query("SELECT Date FROM MultiMeter_Calendar WHERE (DeviceRowID == '%q') ORDER BY Date ASC LIMIT 1", newidx.c_str());
-	if (!result.empty())
-		safe_query("UPDATE MultiMeter_Calendar SET DeviceRowID='%q' WHERE (DeviceRowID == '%q') AND (Date<'%q')", newidx.c_str(), idx.c_str(), result[0][0].c_str());
-	else
-		safe_query("UPDATE MultiMeter_Calendar SET DeviceRowID='%q' WHERE (DeviceRowID == '%q')", newidx.c_str(), idx.c_str());
-
-	//Fan
-	result = safe_query("SELECT Date FROM Fan WHERE (DeviceRowID == '%q') ORDER BY Date ASC LIMIT 1", newidx.c_str());
-	if (!result.empty())
-		safe_query("UPDATE Fan SET DeviceRowID='%q' WHERE (DeviceRowID == '%q') AND (Date<'%q')", newidx.c_str(), idx.c_str(), result[0][0].c_str());
-	else
-		safe_query("UPDATE Fan SET DeviceRowID='%q' WHERE (DeviceRowID == '%q')", newidx.c_str(), idx.c_str());
-
-	result = safe_query("SELECT Date FROM Fan_Calendar WHERE (DeviceRowID == '%q') ORDER BY Date ASC LIMIT 1", newidx.c_str());
-	if (!result.empty())
-		safe_query("UPDATE Fan_Calendar SET DeviceRowID='%q' WHERE (DeviceRowID == '%q') AND (Date<'%q')", newidx.c_str(), idx.c_str(), result[0][0].c_str());
-	else
-		safe_query("UPDATE Fan_Calendar SET DeviceRowID='%q' WHERE (DeviceRowID == '%q')", newidx.c_str(), idx.c_str());
-
-	//Percentage
-	result = safe_query("SELECT Date FROM Percentage WHERE (DeviceRowID == '%q') ORDER BY Date ASC LIMIT 1", newidx.c_str());
-	if (!result.empty())
-		safe_query("UPDATE Percentage SET DeviceRowID='%q' WHERE (DeviceRowID == '%q') AND (Date<'%q')", newidx.c_str(), idx.c_str(), result[0][0].c_str());
-	else
-		safe_query("UPDATE Percentage SET DeviceRowID='%q' WHERE (DeviceRowID == '%q')", newidx.c_str(), idx.c_str());
-
-	result = safe_query("SELECT Date FROM Percentage_Calendar WHERE (DeviceRowID == '%q') ORDER BY Date ASC LIMIT 1", newidx.c_str());
-	if (!result.empty())
-		safe_query("UPDATE Percentage_Calendar SET DeviceRowID='%q' WHERE (DeviceRowID == '%q') AND (Date<'%q')", newidx.c_str(), idx.c_str(), result[0][0].c_str());
-	else
-		safe_query("UPDATE Percentage_Calendar SET DeviceRowID='%q' WHERE (DeviceRowID == '%q')", newidx.c_str(), idx.c_str());
-}
-
 void CSQLHelper::CheckAndUpdateDeviceOrder()
 {
 	std::vector<std::vector<std::string> > result;
@@ -8385,7 +8268,7 @@ void CSQLHelper::AddTaskItem(const _tTaskItem& tItem, const bool cancelItem)
 		auto itt = m_background_task_queue.begin();
 		while (itt != m_background_task_queue.end())
 		{
-			_log.Debug(DEBUG_NORM, "SQLH AddTask: Comparing with item in queue: idx=%" PRId64 ", DelayTime=%f, Command='%s', Level=%d, Color='%s', RelatedEvent='%s'", itt->_idx, itt->_DelayTime, itt->_command.c_str(), itt->_level, itt->_Color.toString().c_str(), itt->_relatedEvent.c_str());
+			_log.Debug(DEBUG_NORM, "SQLH AddTask: Comparing with item in queue: idx=%" PRIu64 ", DelayTime=%f, Command='%s', Level=%d, Color='%s', RelatedEvent='%s'", itt->_idx, itt->_DelayTime, itt->_command.c_str(), itt->_level, itt->_Color.toString().c_str(), itt->_relatedEvent.c_str());
 			if (itt->_idx == tItem._idx && itt->_ItemType == tItem._ItemType)
 			{
 				float iDelayDiff = tItem._DelayTime - itt->_DelayTime;
@@ -8974,9 +8857,9 @@ void CSQLHelper::FixDaylightSaving()
 		std::stringstream sstr;
 		unsigned long ID1;
 		unsigned long ID2;
-		unsigned long long Value1;
-		unsigned long long Value2;
-		unsigned long long ValueDest;
+		uint64_t Value1;
+		uint64_t Value2;
+		uint64_t ValueDest;
 		for (const auto &sd1 : result)
 		{
 			sstr.clear();
@@ -9018,7 +8901,7 @@ void CSQLHelper::FixDaylightSaving()
 				else
 				{
 					//Update row with new Date
-					safe_query("UPDATE Meter_Calendar SET Date='%q', Value=%llu WHERE (RowID=='%q')", szDateNew.c_str(), ValueDest, sd1[1].c_str());
+					safe_query("UPDATE Meter_Calendar SET Date='%q', Value=%" PRIu64 " WHERE (RowID=='%q')", szDateNew.c_str(), ValueDest, sd1[1].c_str());
 				}
 			}
 		}
@@ -9031,26 +8914,26 @@ void CSQLHelper::FixDaylightSaving()
 		std::stringstream sstr;
 		unsigned long ID1;
 		unsigned long ID2;
-		unsigned long long tValue1;
-		unsigned long long tValue2;
-		unsigned long long tValue3;
-		unsigned long long tValue4;
-		unsigned long long tValue5;
-		unsigned long long tValue6;
+		uint64_t tValue1;
+		uint64_t tValue2;
+		uint64_t tValue3;
+		uint64_t tValue4;
+		uint64_t tValue5;
+		uint64_t tValue6;
 
-		unsigned long long uValue1;
-		unsigned long long uValue2;
-		unsigned long long uValue3;
-		unsigned long long uValue4;
-		unsigned long long uValue5;
-		unsigned long long uValue6;
+		uint64_t uValue1;
+		uint64_t uValue2;
+		uint64_t uValue3;
+		uint64_t uValue4;
+		uint64_t uValue5;
+		uint64_t uValue6;
 
-		unsigned long long ValueDest1;
-		unsigned long long ValueDest2;
-		unsigned long long ValueDest3;
-		unsigned long long ValueDest4;
-		unsigned long long ValueDest5;
-		unsigned long long ValueDest6;
+		uint64_t ValueDest1;
+		uint64_t ValueDest2;
+		uint64_t ValueDest3;
+		uint64_t ValueDest4;
+		uint64_t ValueDest5;
+		uint64_t ValueDest6;
 		for (const auto &sd1 : result)
 		{
 			sstr.clear();
@@ -9155,7 +9038,7 @@ void CSQLHelper::FixDaylightSaving()
 				else
 				{
 					//Update row with new Date
-					safe_query("UPDATE MultiMeter_Calendar SET Date='%q', Value1=%llu, Value2=%llu, Value3=%llu, Value4=%llu, Value5=%llu, Value6=%llu WHERE (RowID=='%q')",
+					safe_query("UPDATE MultiMeter_Calendar SET Date='%q', Value1=%" PRIu64 ", Value2=%" PRIu64 ", Value3=%" PRIu64 ", Value4=%" PRIu64 ", Value5=%" PRIu64 ", Value6=%" PRIu64 " WHERE (RowID=='%q')",
 						szDateNew.c_str(), ValueDest1, ValueDest2, ValueDest3, ValueDest4, ValueDest5, ValueDest6, sd1[1].c_str());
 				}
 			}

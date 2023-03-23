@@ -48,11 +48,7 @@ protected:
 	static std::string getUnit(const int devType, const int devSubType, const int delpos, const int metertypein);
 
 	static unsigned long get_tzoffset();
-#ifdef WIN32
-	static std::string get_lastUpdate(unsigned __int64);
-#else
-	static std::string get_lastUpdate(unsigned long long int);
-#endif
+	static std::string get_lastUpdate(uint64_t);
 
 	static void replaceAll(std::string& context, const std::string& from, const std::string& to);
 

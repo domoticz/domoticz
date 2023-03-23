@@ -3106,7 +3106,7 @@ void MainWorker::decode_Rain(const CDomoticzHardwareBase* pHardware, const tRBUF
 			"SELECT ID FROM DeviceStatus WHERE (HardwareID=%d AND DeviceID='%q' AND Unit=%d AND Type=%d AND SubType=%d)", pHardware->m_HwdID, ID.c_str(), Unit, devType, subType);
 		if (!result.empty())
 		{
-			uint64_t ulID = std::strtoull(result[0][0].c_str(), nullptr, 10);
+			uint64_t ulID = std::stoull(result[0][0]);
 
 			time_t now = mytime(nullptr);
 			struct tm ltime;
@@ -3152,7 +3152,7 @@ void MainWorker::decode_Rain(const CDomoticzHardwareBase* pHardware, const tRBUF
 			"SELECT ID FROM DeviceStatus WHERE (HardwareID=%d AND DeviceID='%q' AND Unit=%d AND Type=%d AND SubType=%d)", pHardware->m_HwdID, ID.c_str(), Unit, devType, subType);
 		if (!result.empty())
 		{
-			uint64_t ulID = std::strtoull(result[0][0].c_str(), nullptr, 10);
+			uint64_t ulID = std::stoull(result[0][0]);
 
 			//Get Counter from one Hour ago
 			time_t now = mytime(nullptr);
@@ -6061,7 +6061,7 @@ void MainWorker::decode_ColorSwitch(const CDomoticzHardwareBase* pHardware, cons
 			pHardware->m_HwdID, ID.c_str(), Unit, devType, subType);
 		if (!result.empty())
 		{
-			uint64_t ulID = std::strtoull(result[0][0].c_str(), nullptr, 10);
+			uint64_t ulID = std::stoull(result[0][0]);
 
 			//store light level
 			m_sql.safe_query(
@@ -6080,7 +6080,7 @@ void MainWorker::decode_ColorSwitch(const CDomoticzHardwareBase* pHardware, cons
 			pHardware->m_HwdID, ID.c_str(), Unit, devType, subType);
 		if (!result.empty())
 		{
-			uint64_t ulID = std::strtoull(result[0][0].c_str(), nullptr, 10);
+			uint64_t ulID = std::stoull(result[0][0]);
 
 			//store color in database
 			m_sql.safe_query(
@@ -10614,7 +10614,7 @@ void MainWorker::decode_Cartelectronic(const CDomoticzHardwareBase* pHardware, c
 	char szTmp[100];
 	std::string ID;
 
-	sprintf(szTmp, "%llu", ((unsigned long long)(pResponse->TIC.id1) << 32) + (pResponse->TIC.id2 << 24) + (pResponse->TIC.id3 << 16) + (pResponse->TIC.id4 << 8) + (pResponse->TIC.id5));
+	sprintf(szTmp, "%" PRIu64, ((uint64_t)(pResponse->TIC.id1) << 32) + (pResponse->TIC.id2 << 24) + (pResponse->TIC.id3 << 16) + (pResponse->TIC.id4 << 8) + (pResponse->TIC.id5));
 	ID = szTmp;
 	//uint8_t Unit = 0;
 	//uint8_t cmnd = 0;
@@ -11431,9 +11431,9 @@ bool MainWorker::GetSensorData(const uint64_t idx, int& nValue, std::string& sVa
 		if (!result2.empty())
 		{
 			std::vector<std::string> sd2 = result2[0];
-			unsigned long long total_min_gas = std::strtoull(sd2[0].c_str(), nullptr, 10);
-			unsigned long long gasactual = std::strtoull(sValue.c_str(), nullptr, 10);
-			unsigned long long total_real_gas = gasactual - total_min_gas;
+			uint64_t total_min_gas = std::stoull(sd2[0].c_str());
+			uint64_t gasactual = std::stoull(sValue);
+			uint64_t total_real_gas = gasactual - total_min_gas;
 			float musage = float(total_real_gas) / GasDivider;
 			sprintf(szTmp, "%.03f", musage);
 		}
@@ -11487,10 +11487,10 @@ bool MainWorker::GetSensorData(const uint64_t idx, int& nValue, std::string& sVa
 		{
 			std::vector<std::string> sd2 = result2[0];
 
-			unsigned long long total_min = std::strtoull(sd2[0].c_str(), nullptr, 10);
-			unsigned long long total_max = std::strtoull(sd2[1].c_str(), nullptr, 10);
-			unsigned long long total_real = total_max - total_min;
-			sprintf(szTmp, "%llu", total_real);
+			uint64_t total_min = std::stoull(sd2[0]);
+			uint64_t total_max = std::stoull(sd2[1]);
+			uint64_t total_real = total_max - total_min;
+			sprintf(szTmp, "%" PRIu64, total_real);
 
 			float musage = 0;
 			switch (metertype)
@@ -11505,10 +11505,10 @@ bool MainWorker::GetSensorData(const uint64_t idx, int& nValue, std::string& sVa
 				sprintf(szTmp, "%.03f", musage);
 				break;
 			case MTYPE_WATER:
-				sprintf(szTmp, "%llu", total_real);
+				sprintf(szTmp, "%" PRIu64, total_real);
 				break;
 			case MTYPE_COUNTER:
-				sprintf(szTmp, "%llu", total_real);
+				sprintf(szTmp, "%" PRIu64, total_real);
 				break;
 				/*
 				default:
@@ -12705,7 +12705,7 @@ bool MainWorker::SwitchEvoModal(const std::string& idx, const std::string& statu
 
 bool MainWorker::SwitchLight(const std::string& idx, const std::string& switchcmd, const std::string& level, const std::string& color, const std::string& ooc, const int ExtraDelay, const std::string& User)
 {
-	uint64_t ID = std::strtoull(idx.c_str(), nullptr, 10);
+	uint64_t ID = std::stoull(idx);
 	int ilevel = -1;
 	if (!level.empty())
 		ilevel = atoi(level.c_str());
@@ -12716,7 +12716,7 @@ bool MainWorker::SwitchLight(const std::string& idx, const std::string& switchcm
 bool MainWorker::SwitchLight(const uint64_t idx, const std::string& switchcmd, const int level, _tColor color, const bool ooc, const int ExtraDelay, const std::string& User)
 {
 	//Get Device details
-	_log.Debug(DEBUG_NORM, "MAIN SwitchLight idx:%" PRId64 " cmd:%s lvl:%d ", idx, switchcmd.c_str(), level);
+	_log.Debug(DEBUG_NORM, "MAIN SwitchLight idx:%" PRIu64 " cmd:%s lvl:%d ", idx, switchcmd.c_str(), level);
 	std::vector<std::vector<std::string> > result;
 	result = m_sql.safe_query(
 		"SELECT HardwareID,DeviceID,Unit,Type,SubType,SwitchType,AddjValue2,nValue,sValue,Name,Options FROM DeviceStatus WHERE (ID == %" PRIu64 ")",
@@ -13293,7 +13293,7 @@ bool MainWorker::DoesDeviceActiveAScene(const uint64_t DevRowIdx, const int Cmnd
 					sCode = arrayCode[1];
 				}
 
-				uint64_t aID = std::strtoull(sID.c_str(), nullptr, 10);
+				uint64_t aID = std::stoull(sID);
 				if (aID == DevRowIdx)
 				{
 					if ((SceneType == SGTYPE_GROUP) || (sCode.empty()))
@@ -13310,7 +13310,7 @@ bool MainWorker::DoesDeviceActiveAScene(const uint64_t DevRowIdx, const int Cmnd
 
 bool MainWorker::SwitchScene(const std::string& idx, const std::string& switchcmd, const std::string& User)
 {
-	uint64_t ID = std::strtoull(idx.c_str(), nullptr, 10);
+	uint64_t ID = std::stoull(idx);
 
 	return SwitchScene(ID, switchcmd, User);
 }
@@ -13430,7 +13430,7 @@ bool MainWorker::SwitchScene(const uint64_t idx, std::string switchcmd, const st
 			_eSwitchType switchtype = (_eSwitchType)atoi(sd2[5].c_str());
 
 			//Check if this device will not activate a scene
-			uint64_t dID = std::strtoull(sd[0].c_str(), nullptr, 10);
+			uint64_t dID = std::stoull(sd[0]);
 			if (DoesDeviceActiveAScene(dID, cmd))
 			{
 				_log.Log(LOG_ERROR, "Skipping sensor '%s' because this triggers another scene!", DeviceName.c_str());
@@ -13537,10 +13537,10 @@ void MainWorker::CheckSceneCode(const uint64_t DevRowIdx, const uint8_t dType, c
 					sCode = arrayCode[1];
 				}
 
-				uint64_t aID = std::strtoull(sID.c_str(), nullptr, 10);
+				uint64_t aID = std::stoull(sID);
 				if (aID == DevRowIdx)
 				{
-					uint64_t ID = std::strtoull(sd[0].c_str(), nullptr, 10);
+					uint64_t ID = std::stoull(sd[0]);
 					int scenetype = atoi(sd[2].c_str());
 					int rnValue = nValue;
 
@@ -13591,7 +13591,7 @@ void MainWorker::LoadSharedUsers()
 			{
 				for (const auto &sd2 : result2)
 				{
-					uint64_t ID = std::strtoull(sd2[0].c_str(), nullptr, 10);
+					uint64_t ID = std::stoull(sd2[0]);
 					suser.Devices.push_back(ID);
 				}
 			}

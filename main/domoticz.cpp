@@ -1177,15 +1177,16 @@ int main(int argc, char**argv)
 #endif
 	}
 
+	if (!m_mainworker.Start())
+	{
+		return 1;
+	}
+
 	// start Watchdog thread after daemonization
 	m_LastHeartbeat = mytime(nullptr);
 	std::thread thread_watchdog(Do_Watchdog_Work);
 	SetThreadName(thread_watchdog.native_handle(), "Watchdog");
 
-	if (!m_mainworker.Start())
-	{
-		return 1;
-	}
 	m_StartTime = time(nullptr);
 
 	/* now, lets get into an infinite loop of doing nothing. */

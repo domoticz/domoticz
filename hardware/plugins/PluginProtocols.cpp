@@ -2460,7 +2460,7 @@ namespace Plugins {
 				return CPluginProtocolHTTP::ProcessOutbound(WriteMessage);
 			}
 			int iOpCode = 0;
-			long long llMaskingKey = 0;
+			int64_t llMaskingKey = 0;
 			long lPayloadLength = 0;
 			byte bMaskBit = 0x00;
 

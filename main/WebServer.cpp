@@ -2990,7 +2990,7 @@ namespace http
 			int devType = atoi(dtype.c_str());
 			int subType = atoi(dsubtype.c_str());
 
-			// uint64_t ulIdx = std::strtoull(idx.c_str(), nullptr, 10);
+			// uint64_t ulIdx = std::stoull(idx);
 
 			int invalue = atoi(nvalue.c_str());
 
@@ -3272,12 +3272,12 @@ namespace http
 					if (splitresults.size() != 6)
 						return;
 
-					unsigned long long powerusage1 = std::strtoull(splitresults[0].c_str(), nullptr, 10);
-					unsigned long long powerusage2 = std::strtoull(splitresults[1].c_str(), nullptr, 10);
-					unsigned long long powerdeliv1 = std::strtoull(splitresults[2].c_str(), nullptr, 10);
-					unsigned long long powerdeliv2 = std::strtoull(splitresults[3].c_str(), nullptr, 10);
-					// unsigned long long usagecurrent = std::strtoull(splitresults[4].c_str(), nullptr, 10);
-					// unsigned long long delivcurrent = std::strtoull(splitresults[5].c_str(), nullptr, 10);
+					uint64_t powerusage1 = std::stoull(splitresults[0]);
+					uint64_t powerusage2 = std::stoull(splitresults[1]);
+					uint64_t powerdeliv1 = std::stoull(splitresults[2]);
+					uint64_t powerdeliv2 = std::stoull(splitresults[3]);
+					// uint64_t usagecurrent = std::stoull(splitresults[4]);
+					// uint64_t delivcurrent = std::stoull(splitresults[5]);
 
 					powerdeliv1 = (powerdeliv1 < 10) ? 0 : powerdeliv1;
 					powerdeliv2 = (powerdeliv2 < 10) ? 0 : powerdeliv2;
@@ -7024,7 +7024,7 @@ namespace http
 				{
 					return;
 				}
-				uint64_t ID = std::strtoull(idx.c_str(), nullptr, 10);
+				uint64_t ID = std::stoull(idx);
 				_tColor color;
 
 				std::string json = request::findValue(&req, "color");
@@ -7161,7 +7161,7 @@ namespace http
 					return;
 				}
 
-				uint64_t ID = std::strtoull(idx.c_str(), nullptr, 10);
+				uint64_t ID = std::stoull(idx);
 
 				std::string kelvin = request::findValue(&req, "kelvin");
 				double ival = atof(kelvin.c_str());
@@ -7195,7 +7195,7 @@ namespace http
 					return;
 				}
 
-				uint64_t ID = std::strtoull(idx.c_str(), nullptr, 10);
+				uint64_t ID = std::stoull(idx);
 				std::string szSwitchUser = Username + " (IP: " + session.remote_host + ")";
 				m_mainworker.SwitchLight(ID, "Bright Up", 0, NoColor, false, 0, szSwitchUser);
 			}
@@ -7221,7 +7221,7 @@ namespace http
 					return;
 				}
 
-				uint64_t ID = std::strtoull(idx.c_str(), nullptr, 10);
+				uint64_t ID = std::stoull(idx);
 				std::string szSwitchUser = Username + " (IP: " + session.remote_host + ")";
 				m_mainworker.SwitchLight(ID, "Bright Down", 0, NoColor, false, 0, szSwitchUser);
 			}
@@ -7247,7 +7247,7 @@ namespace http
 					return;
 				}
 
-				uint64_t ID = std::strtoull(idx.c_str(), nullptr, 10);
+				uint64_t ID = std::stoull(idx);
 				std::string szSwitchUser = Username + " (IP: " + session.remote_host + ")";
 				m_mainworker.SwitchLight(ID, "Disco Mode", 0, NoColor, false, 0, szSwitchUser);
 			}
@@ -7273,7 +7273,7 @@ namespace http
 					return;
 				}
 
-				uint64_t ID = std::strtoull(idx.c_str(), nullptr, 10);
+				uint64_t ID = std::stoull(idx);
 				char szTmp[40];
 				sprintf(szTmp, "Disco Mode %s", cparam.substr(12).c_str());
 				std::string szSwitchUser = Username + " (IP: " + session.remote_host + ")";
@@ -7301,7 +7301,7 @@ namespace http
 					return;
 				}
 
-				uint64_t ID = std::strtoull(idx.c_str(), nullptr, 10);
+				uint64_t ID = std::stoull(idx);
 				std::string szSwitchUser = Username + " (IP: " + session.remote_host + ")";
 				m_mainworker.SwitchLight(ID, "Disco Up", 0, NoColor, false, 0, szSwitchUser);
 			}
@@ -7327,7 +7327,7 @@ namespace http
 					return;
 				}
 
-				uint64_t ID = std::strtoull(idx.c_str(), nullptr, 10);
+				uint64_t ID = std::stoull(idx);
 				std::string szSwitchUser = Username + " (IP: " + session.remote_host + ")";
 				m_mainworker.SwitchLight(ID, "Disco Down", 0, NoColor, false, 0, szSwitchUser);
 			}
@@ -7353,7 +7353,7 @@ namespace http
 					return;
 				}
 
-				uint64_t ID = std::strtoull(idx.c_str(), nullptr, 10);
+				uint64_t ID = std::stoull(idx);
 				std::string szSwitchUser = Username + " (IP: " + session.remote_host + ")";
 				m_mainworker.SwitchLight(ID, "Speed Up", 0, NoColor, false, 0, szSwitchUser);
 			}
@@ -7379,7 +7379,7 @@ namespace http
 					return;
 				}
 
-				uint64_t ID = std::strtoull(idx.c_str(), nullptr, 10);
+				uint64_t ID = std::stoull(idx);
 				std::string szSwitchUser = Username + " (IP: " + session.remote_host + ")";
 				m_mainworker.SwitchLight(ID, "Speed Up Long", 0, NoColor, false, 0, szSwitchUser);
 			}
@@ -7405,7 +7405,7 @@ namespace http
 					return;
 				}
 
-				uint64_t ID = std::strtoull(idx.c_str(), nullptr, 10);
+				uint64_t ID = std::stoull(idx);
 				std::string szSwitchUser = Username + " (IP: " + session.remote_host + ")";
 				m_mainworker.SwitchLight(ID, "Speed Down", 0, NoColor, false, 0, szSwitchUser);
 			}
@@ -7431,7 +7431,7 @@ namespace http
 					return;
 				}
 
-				uint64_t ID = std::strtoull(idx.c_str(), nullptr, 10);
+				uint64_t ID = std::stoull(idx);
 				std::string szSwitchUser = Username + " (IP: " + session.remote_host + ")";
 				m_mainworker.SwitchLight(ID, "Speed Minimal", 0, NoColor, false, 0, szSwitchUser);
 			}
@@ -7457,7 +7457,7 @@ namespace http
 					return;
 				}
 
-				uint64_t ID = std::strtoull(idx.c_str(), nullptr, 10);
+				uint64_t ID = std::stoull(idx);
 				std::string szSwitchUser = Username + " (IP: " + session.remote_host + ")";
 				m_mainworker.SwitchLight(ID, "Speed Maximal", 0, NoColor, false, 0, szSwitchUser);
 			}
@@ -7483,7 +7483,7 @@ namespace http
 					return;
 				}
 
-				uint64_t ID = std::strtoull(idx.c_str(), nullptr, 10);
+				uint64_t ID = std::stoull(idx);
 				std::string szSwitchUser = Username + " (IP: " + session.remote_host + ")";
 				m_mainworker.SwitchLight(ID, "Warmer", 0, NoColor, false, 0, szSwitchUser);
 			}
@@ -7509,7 +7509,7 @@ namespace http
 					return;
 				}
 
-				uint64_t ID = std::strtoull(idx.c_str(), nullptr, 10);
+				uint64_t ID = std::stoull(idx);
 				std::string szSwitchUser = Username + " (IP: " + session.remote_host + ")";
 				m_mainworker.SwitchLight(ID, "Cooler", 0, NoColor, false, 0, szSwitchUser);
 			}
@@ -7535,7 +7535,7 @@ namespace http
 					return;
 				}
 
-				uint64_t ID = std::strtoull(idx.c_str(), nullptr, 10);
+				uint64_t ID = std::stoull(idx);
 				std::string szSwitchUser = Username + " (IP: " + session.remote_host + ")";
 				m_mainworker.SwitchLight(ID, "Set Full", 0, NoColor, false, 0, szSwitchUser);
 			}
@@ -7561,7 +7561,7 @@ namespace http
 					return;
 				}
 
-				uint64_t ID = std::strtoull(idx.c_str(), nullptr, 10);
+				uint64_t ID = std::stoull(idx);
 				std::string szSwitchUser = Username + " (IP: " + session.remote_host + ")";
 				m_mainworker.SwitchLight(ID, "Set Night", 0, NoColor, false, 0, szSwitchUser);
 			}
@@ -7587,7 +7587,7 @@ namespace http
 					return;
 				}
 
-				uint64_t ID = std::strtoull(idx.c_str(), nullptr, 10);
+				uint64_t ID = std::stoull(idx);
 				// TODO: Change to color with mode=ColorModeWhite and level=100?
 				std::string szSwitchUser = Username + " (IP: " + session.remote_host + ")";
 				m_mainworker.SwitchLight(ID, "Set White", 0, NoColor, false, 0, szSwitchUser);
@@ -10033,15 +10033,16 @@ namespace http
 
 						std::vector<std::vector<std::string>> result2;
 						strcpy(szTmp, "0");
-						result2 = m_sql.safe_query("SELECT MIN(Value) FROM Meter WHERE (DeviceRowID='%q' AND Date>='%q')", sd[0].c_str(), szDate);
+						result2 = m_sql.safe_query("SELECT Value FROM Meter WHERE (DeviceRowID='%q' AND Date>='%q') ORDER BY Date LIMIT 1", sd[0].c_str(), szDate);
 						if (!result2.empty())
 						{
 							std::vector<std::string> sd2 = result2[0];
 
-							uint64_t total_min = std::stoull(sd2[0]);
-							uint64_t total_max = std::stoull(sValue);
-							uint64_t total_real = total_max - total_min;
-							sprintf(szTmp, "%" PRIu64, total_real);
+							int64_t total_first = std::stoll(sd2[0]);
+							int64_t total_last = std::stoll(sValue);
+							int64_t total_real = total_last - total_first;
+
+							sprintf(szTmp, "%" PRId64, total_real);
 
 							double musage = 0.0F;
 							switch (metertype)
@@ -10145,12 +10146,11 @@ namespace http
 						{
 							std::vector<std::string> sd2 = result2[0];
 
-							unsigned long long total_min = std::strtoull(sd2[0].c_str(), nullptr, 10);
-							unsigned long long total_max = std::strtoull(sd2[1].c_str(), nullptr, 10);
-							unsigned long long total_real;
+							uint64_t total_min = std::stoull(sd2[0]);
+							uint64_t total_max = std::stoull(sd2[1]);
+							uint64_t total_real = total_max - total_min;
 
-							total_real = total_max - total_min;
-							sprintf(szTmp, "%lld", total_real);
+							sprintf(szTmp, "%" PRIu64, total_real);
 
 							musage = 0;
 							switch (metertype)
@@ -10188,7 +10188,7 @@ namespace http
 						if (splitresults.size() < 2)
 							continue;
 
-						unsigned long long total_actual = std::strtoull(splitresults[0].c_str(), nullptr, 10);
+						uint64_t total_actual = std::stoull(splitresults[0]);
 						musage = 0;
 						switch (metertype)
 						{
@@ -10213,7 +10213,7 @@ namespace http
 
 						root["result"][ii]["SwitchTypeVal"] = metertype;
 
-						unsigned long long acounter = std::strtoull(sValue.c_str(), nullptr, 10);
+						uint64_t acounter = std::stoull(sValue);
 						musage = 0;
 						switch (metertype)
 						{
@@ -10295,18 +10295,18 @@ namespace http
 								EnergyDivider = float(tValue);
 							}
 
-							unsigned long long powerusage1 = std::strtoull(splitresults[0].c_str(), nullptr, 10);
-							unsigned long long powerusage2 = std::strtoull(splitresults[1].c_str(), nullptr, 10);
-							unsigned long long powerdeliv1 = std::strtoull(splitresults[2].c_str(), nullptr, 10);
-							unsigned long long powerdeliv2 = std::strtoull(splitresults[3].c_str(), nullptr, 10);
-							unsigned long long usagecurrent = std::strtoull(splitresults[4].c_str(), nullptr, 10);
-							unsigned long long delivcurrent = std::strtoull(splitresults[5].c_str(), nullptr, 10);
+							uint64_t powerusage1 = std::stoull(splitresults[0]);
+							uint64_t powerusage2 = std::stoull(splitresults[1]);
+							uint64_t powerdeliv1 = std::stoull(splitresults[2]);
+							uint64_t powerdeliv2 = std::stoull(splitresults[3]);
+							uint64_t usagecurrent = std::stoull(splitresults[4]);
+							uint64_t delivcurrent = std::stoull(splitresults[5]);
 
 							powerdeliv1 = (powerdeliv1 < 10) ? 0 : powerdeliv1;
 							powerdeliv2 = (powerdeliv2 < 10) ? 0 : powerdeliv2;
 
-							unsigned long long powerusage = powerusage1 + powerusage2;
-							unsigned long long powerdeliv = powerdeliv1 + powerdeliv2;
+							uint64_t powerusage = powerusage1 + powerusage2;
+							uint64_t powerdeliv = powerdeliv1 + powerdeliv2;
 							if (powerdeliv < 2)
 								powerdeliv = 0;
 
@@ -10325,9 +10325,9 @@ namespace http
 								usagecurrent = 0;
 								delivcurrent = 0;
 							}
-							sprintf(szTmp, "%llu Watt", usagecurrent);
+							sprintf(szTmp, "%" PRIu64 " Watt", usagecurrent);
 							root["result"][ii]["Usage"] = szTmp;
-							sprintf(szTmp, "%llu Watt", delivcurrent);
+							sprintf(szTmp, "%" PRIu64 " Watt", delivcurrent);
 							root["result"][ii]["UsageDeliv"] = szTmp;
 							root["result"][ii]["Data"] = sValue;
 							root["result"][ii]["HaveTimeout"] = bHaveTimeout;
@@ -10347,11 +10347,11 @@ namespace http
 							{
 								std::vector<std::string> sd2 = result2[0];
 
-								unsigned long long total_min_usage_1 = std::strtoull(sd2[0].c_str(), nullptr, 10);
-								unsigned long long total_min_deliv_1 = std::strtoull(sd2[1].c_str(), nullptr, 10);
-								unsigned long long total_min_usage_2 = std::strtoull(sd2[2].c_str(), nullptr, 10);
-								unsigned long long total_min_deliv_2 = std::strtoull(sd2[3].c_str(), nullptr, 10);
-								unsigned long long total_real_usage, total_real_deliv;
+								uint64_t total_min_usage_1 = std::stoull(sd2[0]);
+								uint64_t total_min_deliv_1 = std::stoull(sd2[1]);
+								uint64_t total_min_usage_2 = std::stoull(sd2[2]);
+								uint64_t total_min_deliv_2 = std::stoull(sd2[3]);
+								uint64_t total_real_usage, total_real_deliv;
 
 								total_min_deliv_1 = (total_min_deliv_1 < 10) ? 0 : total_min_deliv_1;
 								total_min_deliv_2 = (total_min_deliv_2 < 10) ? 0 : total_min_deliv_2;
@@ -10981,9 +10981,9 @@ namespace http
 							{
 								std::vector<std::string> sd2 = result2[0];
 
-								uint64_t total_first = std::stoull(sd2[0]);
-								uint64_t total_last = std::stoull(sValue);
-								uint64_t total_real = total_last - total_first;
+								int64_t total_first = std::stoll(sd2[0]);
+								int64_t total_last = std::stoll(sValue);
+								int64_t total_real = total_last - total_first;
 
 								double musage = 0;
 								switch (metertype)
@@ -11233,12 +11233,11 @@ namespace http
 							{
 								std::vector<std::string> sd2 = result2[0];
 
-								unsigned long long total_min = std::strtoull(sd2[0].c_str(), nullptr, 10);
-								unsigned long long total_max = std::strtoull(sd2[1].c_str(), nullptr, 10);
-								unsigned long long total_real;
+								uint64_t total_min = std::stoull(sd2[0]);
+								uint64_t total_max = std::stoull(sd2[1]);
+								uint64_t total_real = total_max - total_min;
 
-								total_real = total_max - total_min;
-								sprintf(szTmp, "%lld", total_real);
+								sprintf(szTmp, "%" PRIu64, total_real);
 							}
 							root["result"][ii]["SwitchTypeVal"] = MTYPE_COUNTER;
 							root["result"][ii]["Counter"] = sValue;
@@ -11502,7 +11501,7 @@ namespace http
 			root["title"] = "UpdateScene";
 			m_sql.safe_query("UPDATE Scenes SET Name='%q', Description='%q', SceneType=%d, Protected=%d, OnAction='%q', OffAction='%q' WHERE (ID == '%q')", name.c_str(),
 				description.c_str(), atoi(stype.c_str()), iProtected, onaction.c_str(), offaction.c_str(), idx.c_str());
-			uint64_t ullidx = std::strtoull(idx.c_str(), nullptr, 10);
+			uint64_t ullidx = std::stoull(idx);
 			m_mainworker.m_eventsystem.WWWUpdateSingleState(ullidx, name, m_mainworker.m_eventsystem.REASON_SCENEGROUP);
 		}
 
@@ -12050,7 +12049,7 @@ namespace http
 							int maxDimLevel = 0;
 							GetLightStatus(devType, subType, switchtype, nValue, sValue, lstatus, llevel, bHaveDimmer, maxDimLevel, bHaveGroupCmd);
 						}
-						uint64_t dID = std::strtoull(sID.c_str(), nullptr, 10);
+						uint64_t dID = std::stoull(sID);
 						root["result"][ii]["idx"] = Json::Value::UInt64(dID);
 						root["result"][ii]["name"] = sd[0];
 						root["result"][ii]["code"] = sCode;
@@ -12382,7 +12381,7 @@ namespace http
 			root["title"] = "RenameDevice";
 
 			m_sql.safe_query("UPDATE DeviceStatus SET Name='%q' WHERE (ID == %d)", sname.c_str(), idx);
-			uint64_t ullidx = std::strtoull(sidx.c_str(), nullptr, 10);
+			uint64_t ullidx = std::stoull(sidx);
 			m_mainworker.m_eventsystem.WWWUpdateSingleState(ullidx, sname, m_mainworker.m_eventsystem.REASON_DEVICE);
 
 #ifdef ENABLE_PYTHON
@@ -12408,7 +12407,7 @@ namespace http
 			root["title"] = "RenameScene";
 
 			m_sql.safe_query("UPDATE Scenes SET Name='%q' WHERE (ID == %d)", sname.c_str(), idx);
-			uint64_t ullidx = std::strtoull(sidx.c_str(), nullptr, 10);
+			uint64_t ullidx = std::stoull(sidx);
 			m_mainworker.m_eventsystem.WWWUpdateSingleState(ullidx, sname, m_mainworker.m_eventsystem.REASON_SCENEGROUP);
 		}
 
@@ -12573,7 +12572,7 @@ namespace http
 
 			if ((sidx.empty()) || (enabled.empty()) || (name.empty()))
 				return;
-			uint64_t idx = std::strtoull(sidx.c_str(), nullptr, 10);
+			uint64_t idx = std::stoull(sidx);
 
 			m_sql.safe_query("UPDATE MobileDevices SET Name='%q', Active=%d WHERE (ID==%" PRIu64 ")", name.c_str(), (enabled == "true") ? 1 : 0, idx);
 
@@ -12608,7 +12607,7 @@ namespace http
 			uint64_t idx = 0;
 			if (!request::findValue(&req, "idx").empty())
 			{
-				idx = std::strtoull(request::findValue(&req, "idx").c_str(), nullptr, 10);
+				idx = std::stoull(request::findValue(&req, "idx"));
 			}
 
 			std::vector<std::vector<std::string>> result;
@@ -12673,7 +12672,47 @@ namespace http
 			int devType = std::stoi(result[0].at(3));
 			int subType = std::stoi(result[0].at(4));
 
+			//get last update date from old device
+			result = m_sql.safe_query("SELECT LastUpdate FROM DeviceStatus WHERE (ID == '%q')", sidx.c_str());
+			if (result.empty())
+				return;
+			std::string szLastOldDate = result[0][0];
+
 			m_sql.safe_query("UPDATE DeviceStatus SET HardwareID = %d, DeviceID = '%q', Unit = %d, Type = %d, SubType = %d WHERE ID == '%q'", newHardwareID, newDeviceID.c_str(), newUnit, devType, subType, sidx.c_str());
+
+			//new device could already have some logging, so let's keep this data
+			//Rain
+			m_sql.safe_query("UPDATE Rain SET DeviceRowID='%q' WHERE (DeviceRowID == '%q') AND (Date>'%q')", sidx.c_str(), newidx.c_str(), szLastOldDate.c_str());
+			m_sql.safe_query("UPDATE Rain_Calendar SET DeviceRowID='%q' WHERE (DeviceRowID == '%q') AND (Date>'%q')", sidx.c_str(), newidx.c_str(), szLastOldDate.c_str());
+
+			//Temperature
+			m_sql.safe_query("UPDATE Temperature SET DeviceRowID='%q' WHERE (DeviceRowID == '%q') AND (Date>'%q')", sidx.c_str(), newidx.c_str(), szLastOldDate.c_str());
+			m_sql.safe_query("UPDATE Temperature_Calendar SET DeviceRowID='%q' WHERE (DeviceRowID == '%q') AND (Date>'%q')", sidx.c_str(), newidx.c_str(), szLastOldDate.c_str());
+
+			//UV
+			m_sql.safe_query("UPDATE UV SET DeviceRowID='%q' WHERE (DeviceRowID == '%q') AND (Date>'%q')", sidx.c_str(), newidx.c_str(), szLastOldDate.c_str());
+			m_sql.safe_query("UPDATE UV_Calendar SET DeviceRowID='%q' WHERE (DeviceRowID == '%q') AND (Date>'%q')", sidx.c_str(), newidx.c_str(), szLastOldDate.c_str());
+
+			//Wind
+			m_sql.safe_query("UPDATE Wind SET DeviceRowID='%q' WHERE (DeviceRowID == '%q') AND (Date>'%q')", sidx.c_str(), newidx.c_str(), szLastOldDate.c_str());
+			m_sql.safe_query("UPDATE Wind_Calendar SET DeviceRowID='%q' WHERE (DeviceRowID == '%q') AND (Date>'%q')", sidx.c_str(), newidx.c_str(), szLastOldDate.c_str());
+
+			//Meter
+			m_sql.safe_query("UPDATE Meter SET DeviceRowID='%q' WHERE (DeviceRowID == '%q') AND (Date>'%q')", sidx.c_str(), newidx.c_str(), szLastOldDate.c_str());
+			m_sql.safe_query("UPDATE Meter_Calendar SET DeviceRowID='%q' WHERE (DeviceRowID == '%q') AND (Date>'%q')", sidx.c_str(), newidx.c_str(), szLastOldDate.c_str());
+
+			//Multimeter
+			m_sql.safe_query("UPDATE MultiMeter SET DeviceRowID='%q' WHERE (DeviceRowID == '%q') AND (Date>'%q')", sidx.c_str(), newidx.c_str(), szLastOldDate.c_str());
+			m_sql.safe_query("UPDATE MultiMeter_Calendar SET DeviceRowID='%q' WHERE (DeviceRowID == '%q') AND (Date>'%q')", sidx.c_str(), newidx.c_str(), szLastOldDate.c_str());
+
+			//Fan
+			m_sql.safe_query("UPDATE Fan SET DeviceRowID='%q' WHERE (DeviceRowID == '%q') AND (Date>'%q')", sidx.c_str(), newidx.c_str(), szLastOldDate.c_str());
+			m_sql.safe_query("UPDATE Fan_Calendar SET DeviceRowID='%q' WHERE (DeviceRowID == '%q') AND (Date>'%q')", sidx.c_str(), newidx.c_str(), szLastOldDate.c_str());
+
+			//Percentage
+			m_sql.safe_query("UPDATE Percentage SET DeviceRowID='%q' WHERE (DeviceRowID == '%q') AND (Date>'%q')", sidx.c_str(), newidx.c_str(), szLastOldDate.c_str());
+			m_sql.safe_query("UPDATE Percentage_Calendar SET DeviceRowID='%q' WHERE (DeviceRowID == '%q') AND (Date>'%q')", sidx.c_str(), newidx.c_str(), szLastOldDate.c_str());
+
 			m_sql.DeleteDevices(newidx);
 
 			m_mainworker.m_scheduler.ReloadSchedules();
@@ -12697,7 +12736,7 @@ namespace http
 			uint64_t idx = 0;
 			if (!request::findValue(&req, "idx").empty())
 			{
-				idx = std::strtoull(request::findValue(&req, "idx").c_str(), nullptr, 10);
+				idx = std::stoull(request::findValue(&req, "idx"));
 			}
 			std::vector<_tNotification> notifications = m_notifications.GetNotifications(idx);
 			if (!notifications.empty())
@@ -13040,7 +13079,7 @@ namespace http
 			// Save device options
 			if (!sOptions.empty())
 			{
-				uint64_t ullidx = std::strtoull(idx.c_str(), nullptr, 10);
+				uint64_t ullidx = std::stoull(idx);
 				m_sql.SetDeviceOptions(ullidx, m_sql.BuildDeviceOptions(sOptions, false));
 			}
 
@@ -13442,7 +13481,7 @@ namespace http
 			uint64_t idx = 0;
 			if (!request::findValue(&req, "idx").empty())
 			{
-				idx = std::strtoull(request::findValue(&req, "idx").c_str(), nullptr, 10);
+				idx = std::stoull(request::findValue(&req, "idx"));
 			}
 			std::vector<std::vector<std::string>> result;
 			// First get Device Type/SubType
@@ -13563,7 +13602,7 @@ namespace http
 			uint64_t idx = 0;
 			if (!request::findValue(&req, "idx").empty())
 			{
-				idx = std::strtoull(request::findValue(&req, "idx").c_str(), nullptr, 10);
+				idx = std::stoull(request::findValue(&req, "idx"));
 			}
 			std::vector<std::vector<std::string>> result;
 
@@ -13590,7 +13629,7 @@ namespace http
 			uint64_t idx = 0;
 			if (!request::findValue(&req, "idx").empty())
 			{
-				idx = std::strtoull(request::findValue(&req, "idx").c_str(), nullptr, 10);
+				idx = std::stoull(request::findValue(&req, "idx"));
 			}
 			std::vector<std::vector<std::string>> result;
 
@@ -13649,7 +13688,7 @@ namespace http
 			uint64_t idx = 0;
 			if (!request::findValue(&req, "idx").empty())
 			{
-				idx = std::strtoull(request::findValue(&req, "idx").c_str(), nullptr, 10);
+				idx = std::stoull(request::findValue(&req, "idx"));
 			}
 
 			std::vector<std::vector<std::string>> result;
@@ -13904,13 +13943,13 @@ namespace http
 							int ii = 0;
 							bool bHaveDeliverd = false;
 							bool bHaveFirstValue = false;
-							long long lastUsage1, lastUsage2, lastDeliv1, lastDeliv2;
+							int64_t lastUsage1, lastUsage2, lastDeliv1, lastDeliv2;
 							time_t lastTime = 0;
 
-							long long firstUsage1 = 0;
-							long long firstUsage2 = 0;
-							long long firstDeliv1 = 0;
-							long long firstDeliv2 = 0;
+							int64_t firstUsage1 = 0;
+							int64_t firstUsage2 = 0;
+							int64_t firstDeliv1 = 0;
+							int64_t firstDeliv2 = 0;
 
 							int nMeterType = 0;
 							m_sql.GetPreferencesVar("SmartMeterType", nMeterType);
@@ -13921,10 +13960,10 @@ namespace http
 							{
 								if (nMeterType == 0)
 								{
-									long long actUsage1 = std::strtoll(sd[0].c_str(), nullptr, 10);
-									long long actUsage2 = std::strtoll(sd[4].c_str(), nullptr, 10);
-									long long actDeliv1 = std::strtoll(sd[1].c_str(), nullptr, 10);
-									long long actDeliv2 = std::strtoll(sd[5].c_str(), nullptr, 10);
+									int64_t actUsage1 = std::stoll(sd[0]);
+									int64_t actUsage2 = std::stoll(sd[4]);
+									int64_t actDeliv1 = std::stoll(sd[1]);
+									int64_t actDeliv2 = std::stoll(sd[5]);
 									actDeliv1 = (actDeliv1 < 10) ? 0 : actDeliv1;
 									actDeliv2 = (actDeliv2 < 10) ? 0 : actDeliv2;
 
@@ -14033,10 +14072,10 @@ namespace http
 											if (!result2.empty())
 											{
 												std::vector<std::string> sd = result2[0];
-												firstUsage1 = std::strtoll(sd[0].c_str(), nullptr, 10);
-												firstDeliv1 = std::strtoll(sd[1].c_str(), nullptr, 10);
-												firstUsage2 = std::strtoll(sd[2].c_str(), nullptr, 10);
-												firstDeliv2 = std::strtoll(sd[3].c_str(), nullptr, 10);
+												firstUsage1 = std::stoll(sd[0]);
+												firstDeliv1 = std::stoll(sd[1]);
+												firstUsage2 = std::stoll(sd[2]);
+												firstDeliv2 = std::stoll(sd[3]);
 												lastDay = ntime.tm_mday;
 											}
 										}
@@ -14359,8 +14398,8 @@ namespace http
 						result = m_sql.safe_query("SELECT MIN([Usage]), MAX([Usage]) FROM %s WHERE (DeviceRowID==%" PRIu64 ")", dbasetable.c_str(), idx);
 						if (!result.empty())
 						{
-							long long minValue = std::strtoll(result[0][0].c_str(), nullptr, 10);
-							long long maxValue = std::strtoll(result[0][1].c_str(), nullptr, 10);
+							int64_t minValue = std::stoll(result[0][0]);
+							int64_t maxValue = std::stoll(result[0][1]);
 
 							if ((minValue == 0) && (maxValue == 0))
 							{
@@ -14395,9 +14434,9 @@ namespace http
 						root["method"] = method;
 						bool bHaveFirstValue = false;
 						bool bHaveFirstRealValue = false;
-						long long ulFirstRealValue = 0;
-						long long ulFirstValue = 0;
-						long long ulLastValue = 0;
+						int64_t ulFirstRealValue = 0;
+						int64_t ulFirstValue = 0;
+						int64_t ulLastValue = 0;
 						std::string LastDateTime;
 
 						if (!result.empty())
@@ -14410,11 +14449,19 @@ namespace http
 								{
 									// bars / hour
 									std::string actDateTimeHour = sd[2].substr(0, 13);
-									long long actValue = std::strtoll(sd[0].c_str(), nullptr, 10); // actual energy value
+									int64_t actValue = std::stoll(sd[0]); // actual energy value
 
-									// if (actValue >= ulLastValue) ulLastValue = actValue; //Removed because usage energy may be negative if the production power
-									// is greater than usage power
 									ulLastValue = actValue;
+
+									if (ulLastValue < ulFirstValue)
+									{
+										if (ulFirstValue - ulLastValue > 20000)
+										{
+											//probably a meter/counter turnover
+											ulFirstValue = ulFirstRealValue = ulLastValue;
+											LastDateTime = actDateTimeHour;
+										}
+									}
 
 									if (actDateTimeHour != LastDateTime || ((method == 1) && (itt + 1 == result.end())))
 									{
@@ -14424,7 +14471,7 @@ namespace http
 											//^^ not necessarily bad, but is currently inconsistent with all other day graphs
 											root["result"][ii]["d"] = LastDateTime + ":00";
 
-											long long ulTotalValue = ulLastValue - ulFirstValue;
+											int64_t ulTotalValue = ulLastValue - ulFirstValue;
 											if (ulTotalValue == 0)
 											{
 												// Could be the P1 Gas Meter, only transmits one every 1 a 2 hours
@@ -14472,7 +14519,7 @@ namespace http
 
 								if (method == 1)
 								{
-									long long actValue = std::strtoll(sd[1].c_str(), nullptr, 10);
+									int64_t actValue = std::stoll(sd[1]);
 
 									root["result"][ii]["d"] = sd[2].substr(0, 16);
 
@@ -14516,13 +14563,13 @@ namespace http
 
 						bool bHaveFirstValue = false;
 						bool bHaveFirstRealValue = false;
-						unsigned long long ulFirstValue = 0;
-						unsigned long long ulRealFirstValue = 0;
+						int64_t ulFirstValue = 0;
+						int64_t ulRealFirstValue = 0;
 						int lastDay = 0;
 						std::string szLastDateTimeHour;
 						std::string szActDateTimeHour;
 						std::string szlastDateTime;
-						unsigned long long ulLastValue = 0;
+						int64_t ulLastValue = 0;
 
 						int lastHour = 0;
 						time_t lastTime = 0;
@@ -14552,13 +14599,23 @@ namespace http
 								if (method == 0)
 								{
 									// bars / hour
-									unsigned long long actValue = std::strtoull(sd[0].c_str(), nullptr, 10);
+									int64_t actValue = std::stoll(sd[0]);
 									szlastDateTime = sd[1].substr(0, 16);
 									szActDateTimeHour = sd[1].substr(0, 13) + ":00";
 
 									struct tm ntime;
 									time_t atime;
 									ParseSQLdatetime(atime, ntime, sd[1], -1);
+
+									if (actValue < ulFirstValue)
+									{
+										if (ulRealFirstValue - actValue > 20000)
+										{
+											//Assume ,eter/counter turnover
+											ulFirstValue = ulRealFirstValue = actValue;
+											lastHour = ntime.tm_hour;
+										}
+									}
 
 									if (lastHour != ntime.tm_hour)
 									{
@@ -14575,7 +14632,9 @@ namespace http
 											// float TotalValue = float(actValue - ulFirstValue);
 
 											// prevents graph from going crazy if the meter counter resets
-											double TotalValue = (actValue >= ulFirstValue) ? double(actValue - ulFirstValue) : actValue;
+											// removed because it breaks  negative increments
+											double TotalValue=double(actValue - ulFirstValue);
+											//if (actValue < ulFirstValue) TotalValue=actValue;
 
 											// if (TotalValue != 0)
 											{
@@ -14658,7 +14717,7 @@ namespace http
 											if (!result2.empty())
 											{
 												std::vector<std::string> sd = result2[0];
-												ulRealFirstValue = std::strtoll(sd[0].c_str(), nullptr, 10);;
+												ulRealFirstValue = std::stoll(sd[0]);
 												lastDay = ntime.tm_mday;
 											}
 										}
@@ -14670,7 +14729,7 @@ namespace http
 								else
 								{
 									// realtime graph
-									unsigned long long actValue = std::strtoull(sd[0].c_str(), nullptr, 10);
+									int64_t actValue = std::stoll(sd[0]);
 
 									std::string stime = sd[1];
 									struct tm ntime;
@@ -14678,7 +14737,7 @@ namespace http
 									ParseSQLdatetime(atime, ntime, stime, -1);
 									if (bHaveFirstRealValue)
 									{
-										long long curValue = actValue - ulLastValue;
+										int64_t curValue = actValue - ulLastValue;
 
 										float tdiff = static_cast<float>(difftime(atime, lastTime));
 										if (tdiff == 0)
@@ -14729,7 +14788,7 @@ namespace http
 							// add last value
 							root["result"][ii]["d"] = szLastDateTimeHour;
 
-							unsigned long long ulTotalValue = ulLastValue - ulFirstValue;
+							int64_t ulTotalValue = ulLastValue - ulFirstValue;
 
 							double TotalValue = double(ulTotalValue);
 
@@ -15319,16 +15378,16 @@ namespace http
 						{
 							std::vector<std::string> sd = result[0];
 
-							unsigned long long total_min_usage_1 = std::strtoull(sd[0].c_str(), nullptr, 10);
-							unsigned long long total_max_usage_1 = std::strtoull(sd[1].c_str(), nullptr, 10);
-							unsigned long long total_min_usage_2 = std::strtoull(sd[4].c_str(), nullptr, 10);
-							unsigned long long total_max_usage_2 = std::strtoull(sd[5].c_str(), nullptr, 10);
-							unsigned long long total_real_usage_1, total_real_usage_2;
-							unsigned long long total_min_deliv_1 = std::strtoull(sd[2].c_str(), nullptr, 10);
-							unsigned long long total_max_deliv_1 = std::strtoull(sd[3].c_str(), nullptr, 10);
-							unsigned long long total_min_deliv_2 = std::strtoull(sd[6].c_str(), nullptr, 10);
-							unsigned long long total_max_deliv_2 = std::strtoull(sd[7].c_str(), nullptr, 10);
-							unsigned long long total_real_deliv_1, total_real_deliv_2;
+							uint64_t total_min_usage_1 = std::stoull(sd[0]);
+							uint64_t total_max_usage_1 = std::stoull(sd[1]);
+							uint64_t total_min_usage_2 = std::stoull(sd[4]);
+							uint64_t total_max_usage_2 = std::stoull(sd[5]);
+							uint64_t total_real_usage_1, total_real_usage_2;
+							uint64_t total_min_deliv_1 = std::stoull(sd[2]);
+							uint64_t total_max_deliv_1 = std::stoull(sd[3]);
+							uint64_t total_min_deliv_2 = std::stoull(sd[6]);
+							uint64_t total_max_deliv_2 = std::stoull(sd[7]);
+							uint64_t total_real_deliv_1, total_real_deliv_2;
 
 							bool bHaveDeliverd = false;
 
@@ -15342,20 +15401,22 @@ namespace http
 
 							root["result"][ii]["d"] = szDateEnd;
 
-							sprintf(szTmp, "%llu", total_real_usage_1);
+							sprintf(szTmp, "%" PRIu64, total_real_usage_1);
 							std::string szValue = szTmp;
 							sprintf(szTmp, "%.3f", atof(szValue.c_str()) / divider);
 							root["result"][ii]["v"] = szTmp;
-							sprintf(szTmp, "%llu", total_real_usage_2);
+
+							sprintf(szTmp, "%" PRIu64, total_real_usage_2);
 							szValue = szTmp;
 							sprintf(szTmp, "%.3f", atof(szValue.c_str()) / divider);
 							root["result"][ii]["v2"] = szTmp;
 
-							sprintf(szTmp, "%llu", total_real_deliv_1);
+							sprintf(szTmp, "%" PRIu64, total_real_deliv_1);
 							szValue = szTmp;
 							sprintf(szTmp, "%.3f", atof(szValue.c_str()) / divider);
 							root["result"][ii]["r1"] = szTmp;
-							sprintf(szTmp, "%llu", total_real_deliv_2);
+
+							sprintf(szTmp, "%" PRIu64, total_real_deliv_2);
 							szValue = szTmp;
 							sprintf(szTmp, "%.3f", atof(szValue.c_str()) / divider);
 							root["result"][ii]["r2"] = szTmp;
@@ -15375,20 +15436,21 @@ namespace http
 						{
 							std::vector<std::string> sd = result[0];
 
-							unsigned long long total_min = std::strtoull(sd[0].c_str(), nullptr, 10);
-							unsigned long long total_max = total_min;
-							unsigned long long total_real;
+							int64_t total_min = std::stoll(sd[0]);
+							int64_t total_max = total_min;
+							int64_t total_real;
 
 							// get the last value of the day
 							result = m_sql.safe_query("SELECT Value FROM Meter WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q') ORDER BY Date DESC LIMIT 1", idx, szDateEnd);
 							if (!result.empty())
 							{
 								std::vector<std::string> sd = result[0];
-								total_max = std::strtoull(sd[0].c_str(), nullptr, 10);
+								total_max = std::stoull(sd[0].c_str());
 							}
 
 							total_real = total_max - total_min;
-							sprintf(szTmp, "%lld", total_real);
+							sprintf(szTmp, "%" PRId64, total_real);
+
 							std::string szValue = szTmp;
 							switch (metertype)
 							{
@@ -16704,16 +16766,16 @@ namespace http
 						if (!result.empty())
 						{
 							std::vector<std::string> sd = result[0];
-							unsigned long long total_min_usage_1 = std::strtoull(sd[0].c_str(), nullptr, 10);
-							unsigned long long total_max_usage_1 = std::strtoull(sd[1].c_str(), nullptr, 10);
-							unsigned long long total_min_usage_2 = std::strtoull(sd[4].c_str(), nullptr, 10);
-							unsigned long long total_max_usage_2 = std::strtoull(sd[5].c_str(), nullptr, 10);
-							unsigned long long total_real_usage_1, total_real_usage_2;
-							unsigned long long total_min_deliv_1 = std::strtoull(sd[2].c_str(), nullptr, 10);
-							unsigned long long total_max_deliv_1 = std::strtoull(sd[3].c_str(), nullptr, 10);
-							unsigned long long total_min_deliv_2 = std::strtoull(sd[6].c_str(), nullptr, 10);
-							unsigned long long total_max_deliv_2 = std::strtoull(sd[7].c_str(), nullptr, 10);
-							unsigned long long total_real_deliv_1, total_real_deliv_2;
+							uint64_t total_min_usage_1 = std::stoull(sd[0]);
+							uint64_t total_max_usage_1 = std::stoull(sd[1]);
+							uint64_t total_min_usage_2 = std::stoull(sd[4]);
+							uint64_t total_max_usage_2 = std::stoull(sd[5]);
+							uint64_t total_real_usage_1, total_real_usage_2;
+							uint64_t total_min_deliv_1 = std::stoull(sd[2]);
+							uint64_t total_max_deliv_1 = std::stoull(sd[3]);
+							uint64_t total_min_deliv_2 = std::stoull(sd[6]);
+							uint64_t total_max_deliv_2 = std::stoull(sd[7]);
+							uint64_t total_real_deliv_1, total_real_deliv_2;
 
 							total_real_usage_1 = total_max_usage_1 - total_min_usage_1;
 							total_real_usage_2 = total_max_usage_2 - total_min_usage_2;
@@ -16896,9 +16958,9 @@ namespace http
 							if (!result.empty())
 							{
 								std::vector<std::string> sd = result[0];
-								unsigned long long total_min = std::strtoull(sd[0].c_str(), nullptr, 10);
-								unsigned long long total_max = total_min;
-								unsigned long long total_real;
+								int64_t total_min = std::stoll(sd[0]);
+								int64_t total_max = total_min;
+								int64_t total_real;
 
 								// Get the last value
 								result = m_sql.safe_query("SELECT Value FROM Meter WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q') ORDER BY Date DESC LIMIT 1", idx,
@@ -16906,11 +16968,12 @@ namespace http
 								if (!result.empty())
 								{
 									std::vector<std::string> sd = result[0];
-									total_max = std::strtoull(sd[0].c_str(), nullptr, 10);
+									total_max = std::stoull(sd[0]);
 								}
 
 								total_real = total_max - total_min;
-								sprintf(szTmp, "%lld", total_real);
+								sprintf(szTmp, "%" PRId64, total_real);
+
 								std::string szValue = szTmp;
 
 								if (!sgroupby.empty())
@@ -17543,17 +17606,17 @@ namespace http
 						{
 							std::vector<std::string> sd = result[0];
 
-							unsigned long long total_min_usage_1 = std::strtoull(sd[0].c_str(), nullptr, 10);
-							unsigned long long total_max_usage_1 = std::strtoull(sd[1].c_str(), nullptr, 10);
-							unsigned long long total_min_usage_2 = std::strtoull(sd[4].c_str(), nullptr, 10);
-							unsigned long long total_max_usage_2 = std::strtoull(sd[5].c_str(), nullptr, 10);
-							unsigned long long total_real_usage;
+							uint64_t total_min_usage_1 = std::stoull(sd[0]);
+							uint64_t total_max_usage_1 = std::stoull(sd[1]);
+							uint64_t total_min_usage_2 = std::stoull(sd[4]);
+							uint64_t total_max_usage_2 = std::stoull(sd[5]);
+							uint64_t total_real_usage;
 
-							unsigned long long total_min_deliv_1 = std::strtoull(sd[2].c_str(), nullptr, 10);
-							unsigned long long total_max_deliv_1 = std::strtoull(sd[3].c_str(), nullptr, 10);
-							unsigned long long total_min_deliv_2 = std::strtoull(sd[6].c_str(), nullptr, 10);
-							unsigned long long total_max_deliv_2 = std::strtoull(sd[7].c_str(), nullptr, 10);
-							unsigned long long total_real_deliv;
+							uint64_t total_min_deliv_1 = std::stoull(sd[2]);
+							uint64_t total_max_deliv_1 = std::stoull(sd[3]);
+							uint64_t total_min_deliv_2 = std::stoull(sd[6]);
+							uint64_t total_max_deliv_2 = std::stoull(sd[7]);
+							uint64_t total_real_deliv;
 
 							total_real_usage = (total_max_usage_1 + total_max_usage_2) - (total_min_usage_1 + total_min_usage_2);
 							total_real_deliv = (total_max_deliv_1 + total_max_deliv_2) - (total_min_deliv_1 + total_min_deliv_2);
@@ -17563,14 +17626,16 @@ namespace http
 
 							root["result"][ii]["d"] = szDateEnd;
 
-							sprintf(szTmp, "%lld", total_real_usage);
+							sprintf(szTmp, "%" PRIu64, total_real_usage);
 							std::string szValue = szTmp;
 							sprintf(szTmp, "%.3f", atof(szValue.c_str()) / divider);
 							root["result"][ii]["v"] = szTmp;
-							sprintf(szTmp, "%llu", total_real_deliv);
+
+							sprintf(szTmp, "%" PRIu64, total_real_deliv);
 							szValue = szTmp;
 							sprintf(szTmp, "%.3f", atof(szValue.c_str()) / divider);
 							root["result"][ii]["v2"] = szTmp;
+							
 							ii++;
 							if (bHaveDeliverd)
 							{
@@ -17586,9 +17651,9 @@ namespace http
 						if (!result.empty())
 						{
 							std::vector<std::string> sd = result[0];
-							unsigned long long total_min = std::strtoull(sd[0].c_str(), nullptr, 10);
-							unsigned long long total_max = total_min;
-							unsigned long long total_real;
+							int64_t total_min = std::stoll(sd[0]);
+							int64_t total_max = total_min;
+							int64_t total_real;
 
 							// get the last value of the day
 							result = m_sql.safe_query("SELECT Value FROM Meter WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q') ORDER BY Date DESC LIMIT 1", idx,
@@ -17596,13 +17661,12 @@ namespace http
 							if (!result.empty())
 							{
 								std::vector<std::string> sd = result[0];
-								total_max = std::strtoull(sd[0].c_str(), nullptr, 10);
+								total_max = std::stoull(sd[0]);
 							}
 
 							total_real = total_max - total_min;
-							sprintf(szTmp, "%lld", total_real);
+							sprintf(szTmp, "%" PRId64, total_real);							std::string szValue = szTmp;
 
-							std::string szValue = szTmp;
 							switch (metertype)
 							{
 							case MTYPE_ENERGY:

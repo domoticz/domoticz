@@ -3,12 +3,6 @@
 #include <string>
 #include "WebsocketHandler.h"
 
-#ifdef WIN32
-#define size_t_t __int64
-#else
-#define size_t_t long long
-#endif
-
 namespace http
 {
 	namespace server

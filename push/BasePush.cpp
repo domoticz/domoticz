@@ -15,12 +15,12 @@
 typedef struct _STR_TABLE_ID1_ID2 {
 	unsigned long    id1;
 	unsigned long    id2;
-	const char   *str1;
+	const char* str1;
 } STR_TABLE_ID1_ID2;
 
-extern const char *findTableID1ID2(const _STR_TABLE_ID1_ID2 *t, unsigned long id1, unsigned long id2);
+extern const char* findTableID1ID2(const _STR_TABLE_ID1_ID2* t, unsigned long id1, unsigned long id2);
 
-const char *RFX_Type_SubType_Values(const unsigned char dType, const unsigned char sType)
+const char* RFX_Type_SubType_Values(const unsigned char dType, const unsigned char sType)
 {
 	static const STR_TABLE_ID1_ID2 Table[] = {
 		{ pTypeTEMP, sTypeTEMP1, "Temperature" },
@@ -397,15 +397,12 @@ unsigned long CBasePush::get_tzoffset()
 {
 	// Compute tz
 	boost::posix_time::time_duration uoffset = get_utc_offset();
+	//Giz: double->int->unsigned long? And maybe we should use chrono ?
 	unsigned long tzoffset = (int)((double)(uoffset.ticks() / 3600000000LL) * 3600);
 	return tzoffset;
 }
 
-#ifdef WIN32
-std::string CBasePush::get_lastUpdate(unsigned __int64 localTimeUtc)
-#else
-std::string CBasePush::get_lastUpdate(unsigned long long int localTimeUtc)
-#endif
+std::string CBasePush::get_lastUpdate(uint64_t localTimeUtc)
 {
 	// RFC3339 time format
 	time_t tmpT = localTimeUtc;
@@ -454,20 +451,28 @@ std::string CBasePush::DropdownOptionsValue(const int devType, const int devSubT
 	return "???";
 }
 
-std::string CBasePush::ProcessSendValue(const uint64_t DeviceRowIdx, const std::string &rawsendValue, const int delpos, const int nValue, const int includeUnit, const int devType, const int devSubType,
-					const int metertypein)
+std::string CBasePush::ProcessSendValue(
+	const uint64_t DeviceRowIdx,
+	const std::string& rawsendValue,
+	const int delpos,
+	const int nValue,
+	const int includeUnit,
+	const int devType,
+	const int devSubType,
+	const int metertypein
+)
 {
 	char szData[100];
 	szData[0] = 0;
 	try
 	{
 		std::string vType = DropdownOptionsValue(devType, devSubType, delpos);
-		if (vType  == "???")
+		if (vType == "???")
 			return ""; // unhandled type
 
 		unsigned char tempsign = m_sql.m_tempsign[0];
 		_eMeterType metertype = (_eMeterType)metertypein;
-		
+
 		if ((vType == "Temperature") || (vType == "Temperature 1") || (vType == "Temperature 2") || (vType == "Set point"))
 		{
 			sprintf(szData, "%g", ConvertTemperature(std::stod(rawsendValue), tempsign));
@@ -556,7 +561,7 @@ std::string CBasePush::ProcessSendValue(const uint64_t DeviceRowIdx, const std::
 		{
 			strcpy(szData, rawsendValue.c_str());
 		}
-		else if (vType == "Counter" || vType == "Counter Incremental" )
+		else if (vType == "Counter" || vType == "Counter Incremental")
 		{
 			strcpy(szData, rawsendValue.c_str());
 		}
@@ -897,10 +902,10 @@ void CBasePush::ReloadPushLinks(const PushType PType)
 	m_pushlinks.clear();
 	std::vector<std::vector<std::string>> result;
 	result = m_sql.safe_query("SELECT A.DeviceRowID, A.DelimitedValue, B.ID, B.Name, B.Type, B.SubType, B.SwitchType "
-				  "FROM PushLink as A, DeviceStatus as B "
-				  "WHERE (A.PushType==%d AND A.Enabled==1 AND A.DeviceRowID == B.ID)",
-				  PType);
-	for (const auto &sd : result)
+		"FROM PushLink as A, DeviceStatus as B "
+		"WHERE (A.PushType==%d AND A.Enabled==1 AND A.DeviceRowID == B.ID)",
+		PType);
+	for (const auto& sd : result)
 	{
 		_tPushLinks tlink;
 		tlink.DeviceRowIdx = std::stoull(sd[0]);
@@ -916,13 +921,13 @@ void CBasePush::ReloadPushLinks(const PushType PType)
 bool CBasePush::IsLinkInDatabase(const uint64_t DeviceRowIdx)
 {
 	std::lock_guard<std::mutex> l(m_link_mutex);
-	return std::any_of(m_pushlinks.begin(), m_pushlinks.end(), [&](const _tPushLinks &val) { return DeviceRowIdx == val.DeviceRowIdx; });
+	return std::any_of(m_pushlinks.begin(), m_pushlinks.end(), [&](const _tPushLinks& val) { return DeviceRowIdx == val.DeviceRowIdx; });
 }
 
-bool CBasePush::GetPushLink(const uint64_t DeviceRowIdx, _tPushLinks &plink)
+bool CBasePush::GetPushLink(const uint64_t DeviceRowIdx, _tPushLinks& plink)
 {
 	std::lock_guard<std::mutex> l(m_link_mutex);
-	for (const auto &itt : m_pushlinks)
+	for (const auto& itt : m_pushlinks)
 	{
 		if (itt.DeviceRowIdx == DeviceRowIdx)
 		{
@@ -938,7 +943,7 @@ bool CBasePush::GetPushLink(const uint64_t DeviceRowIdx, _tPushLinks &plink)
 //Webserver helpers
 namespace http {
 	namespace server {
-		void CWebServer::Cmd_GetDevicesListOnOff(WebEmSession & session, const request& req, Json::Value &root)
+		void CWebServer::Cmd_GetDevicesListOnOff(WebEmSession& session, const request& req, Json::Value& root)
 		{
 			root["status"] = "OK";
 			root["title"] = "GetDevicesListOnOff";
@@ -947,7 +952,7 @@ namespace http {
 			if (!result.empty())
 			{
 				int ii = 0;
-				for (const auto &sd : result)
+				for (const auto& sd : result)
 				{
 					int dType = atoi(sd[2].c_str());
 					int dSubType = atoi(sd[3].c_str());

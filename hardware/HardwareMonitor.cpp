@@ -8,6 +8,9 @@
 #include "../main/SQLHelper.h"
 #include <wchar.h>
 
+#define __STDC_FORMAT_MACROS
+#include <inttypes.h>
+
 //Note, for Windows we use OpenHardware Monitor
 //http://openhardwaremonitor.org/
 
@@ -932,7 +935,7 @@ void CHardwareMonitor::FetchUnixCPU()
 		}
 		else
 		{
-			long long t = (loads[CP_USER] + loads[CP_NICE] + loads[CP_SYS])-m_lastloadcpu;
+			int64_t t = (loads[CP_USER] + loads[CP_NICE] + loads[CP_SYS])-m_lastloadcpu;
 			double cpuper=((double(t) / (difftime(acttime,m_lastquerytime) * HZ)) * 100);///double(m_totcpu);
 			if (cpuper>0)
 			{
@@ -954,7 +957,7 @@ void CHardwareMonitor::FetchUnixCPU()
 			fclose(fIn);
 			if (ret==4)
 			{
-				long long t = (actload1+actload2+actload3)-m_lastloadcpu;
+				int64_t t = (actload1+actload2+actload3)-m_lastloadcpu;
 				double cpuper=((t / (difftime(acttime,m_lastquerytime) * HZ)) * 100)/double(m_totcpu);
 				if (cpuper>0)
 				{
@@ -983,8 +986,8 @@ void CHardwareMonitor::FetchUnixDisk()
 			char dname[200];
 			char suse[30];
 			char smountpoint[300];
-			long long numblock, usedblocks, availblocks;
-			int ret = sscanf(ittDF.c_str(), "%s\t%lld\t%lld\t%lld\t%s\t%s\n", dname, &numblock, &usedblocks, &availblocks, suse, smountpoint);
+			int64_t numblock, usedblocks, availblocks;
+			int ret = sscanf(ittDF.c_str(), "%s\t%" PRId64 "\t%" PRId64 "\t%" PRId64 "\t%s\t%s\n", dname, &numblock, &usedblocks, &availblocks, suse, smountpoint);
 			if (ret == 6)
 			{
 				auto it = _dmounts_.find(dname);

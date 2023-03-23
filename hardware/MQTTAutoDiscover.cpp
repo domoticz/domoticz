@@ -57,7 +57,7 @@ void MQTTAutoDiscover::on_message(const struct mosquitto_message* message)
 
 	try
 	{
-		Debug(DEBUG_HARDWARE, "Topic: %s, Message: %s", topic.c_str(), qMessage.c_str());
+		Debug(DEBUG_HARDWARE, "topic: %s, message: %s", topic.c_str(), qMessage.c_str());
 
 		if (qMessage.empty())
 			return;
@@ -93,7 +93,7 @@ void MQTTAutoDiscover::on_message(const struct mosquitto_message* message)
 	}
 	catch (const std::exception& e)
 	{
-		Log(LOG_ERROR, "Exception (on_message): %s! (topic: %s/message: %s)", e.what(), topic.c_str(), qMessage.c_str());
+		Log(LOG_ERROR, "Exception (on_message): %s! (topic: %s, message: %s)", e.what(), topic.c_str(), qMessage.c_str());
 		return;
 	}
 }
@@ -1198,13 +1198,13 @@ void MQTTAutoDiscover::on_auto_discovery_message(const struct mosquitto_message*
 		FixCommandTopicStateTemplate(pSensor->temperature_command_topic, pSensor->temperature_command_template);
 		FixCommandTopicStateTemplate(pSensor->preset_mode_command_topic, pSensor->preset_mode_value_template);
 
-		//number
+		//number (some configs use strings instead of numbers)
 		if (!root["min"].empty())
-			pSensor->number_min = root["min"].asDouble();
+			pSensor->number_min = root["min"].isDouble() ? root["min"].asDouble() : atof(root["min"].asString().c_str());
 		if (!root["max"].empty())
-			pSensor->number_max = root["max"].asDouble();
+			pSensor->number_max = root["max"].isDouble() ? root["max"].asDouble() : atof(root["max"].asString().c_str());
 		if (!root["step"].empty())
-			pSensor->number_step = root["step"].asDouble();
+			pSensor->number_step = root["step"].isDouble() ? root["step"].asDouble() : atof(root["step"].asString().c_str());
 
 		if (!root["qos"].empty())
 			pSensor->qos = atoi(root["qos"].asString().c_str());
@@ -1316,11 +1316,11 @@ void MQTTAutoDiscover::on_auto_discovery_message(const struct mosquitto_message*
 	}
 	catch (const std::exception& e)
 	{
-		Log(LOG_ERROR, "MQTT_Discovery (on_auto_discovery_message): Error: %s! (topic: %s/message: %s", e.what(), org_topic.c_str(), qMessage.c_str());
+		Log(LOG_ERROR, "MQTT_Discovery (on_auto_discovery_message): Error: %s! (topic: %s, message: %s", e.what(), org_topic.c_str(), qMessage.c_str());
 	}
 	return;
 disovery_invaliddata:
-	Log(LOG_ERROR, "MQTT_Discovery: Invalid/Unhandled data received! (Topic: %s, Message: %s)", org_topic.c_str(), qMessage.c_str());
+	Log(LOG_ERROR, "MQTT_Discovery: Invalid/Unhandled data received! (topic: %s, message: %s)", org_topic.c_str(), qMessage.c_str());
 }
 
 void MQTTAutoDiscover::ApplySignalLevelDevice(const _tMQTTASensor* pSensor)
@@ -1799,7 +1799,7 @@ void MQTTAutoDiscover::GuessSensorTypeValue(const _tMQTTASensor* pSensor, uint8_
 
 		m_sql.GetAddjustment(m_HwdID, pSensor->unique_id.c_str(), pSensor->devUnit, devType, subType, AddjValue, AddjMulti);
 		temp += AddjValue;
-		sValue = std_format("%.1f", temp);
+		sValue = std_format("%.2f", temp);
 	}
 	else if (szUnit == "%")
 	{
@@ -2198,7 +2198,7 @@ void MQTTAutoDiscover::handle_auto_discovery_sensor(_tMQTTASensor* pSensor, cons
 			}
 			else if (pressure >= 1029)
 				nforecast = wsbaroforecast_sunny;
-			sValue = std_format("%.1f;%d;%d;%.1f;%d", temp, humidity, Get_Humidity_Level(humidity), pressure, nforecast);
+			sValue = std_format("%.2f;%d;%d;%.1f;%d", temp, humidity, Get_Humidity_Level(humidity), pressure, nforecast);
 		}
 		else if (pTempSensor && pHumSensor)
 		{
@@ -2211,7 +2211,7 @@ void MQTTAutoDiscover::handle_auto_discovery_sensor(_tMQTTASensor* pSensor, cons
 			devType = pTypeTEMP_HUM;
 			subType = sTypeTH1;
 
-			sValue = std_format("%.1f;%d;%d", temp, humidity, Get_Humidity_Level(humidity));
+			sValue = std_format("%.2f;%d;%d", temp, humidity, Get_Humidity_Level(humidity));
 		}
 		else
 		{

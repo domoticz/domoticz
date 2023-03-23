@@ -1947,7 +1947,7 @@ void CEventSystem::EvaluateDatabaseEvents(const _tEventQueue &item)
 		lua_close(lua_state);
 }
 
-static inline long long GetIndexFromDevice(std::string devline)
+static inline int64_t GetIndexFromDevice(std::string devline)
 {
 	size_t fpos = devline.find('[');
 	if (fpos == std::string::npos)
@@ -1963,7 +1963,7 @@ static inline long long GetIndexFromDevice(std::string devline)
 std::string CEventSystem::ProcessVariableArgument(const std::string &Argument)
 {
 	std::string ret = Argument;
-	long long dindex = GetIndexFromDevice(Argument);
+	int64_t dindex = GetIndexFromDevice(Argument);
 	if (dindex == -1)
 		return ret;
 
