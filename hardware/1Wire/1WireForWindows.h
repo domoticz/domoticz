@@ -10,7 +10,7 @@ namespace Json
 class C1WireForWindows : public I_1WireSystem
 {
 public:
-   C1WireForWindows();
+   C1WireForWindows(C1Wire *C1WireBase);
    virtual ~C1WireForWindows();
 
    // I_1WireSystem implementation
