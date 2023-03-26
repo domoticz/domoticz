@@ -308,6 +308,7 @@ private:
 	//Migrated RTypes
 	void Cmd_GetUsers(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_GetSettings(WebEmSession & session, const request& req, Json::Value &root);
+	void Cmd_GetDevices(WebEmSession & session, const request& req, Json::Value &root);
 	//RTypes
 	void RType_HandleGraph(WebEmSession & session, const request& req, Json::Value &root);
 	void RType_LightLog(WebEmSession & session, const request& req, Json::Value &root);
@@ -316,7 +317,6 @@ private:
 	void RType_RemoteWebClientsLog(WebEmSession& session, const request& req, Json::Value& root);
 	void RType_Events(WebEmSession & session, const request& req, Json::Value &root);
 	void RType_Hardware(WebEmSession & session, const request& req, Json::Value &root);
-	void RType_Devices(WebEmSession & session, const request& req, Json::Value &root);
 	void RType_Cameras(WebEmSession& session, const request& req, Json::Value& root);
 	void RType_CamerasUser(WebEmSession& session, const request& req, Json::Value& root);
 	void RType_Mobiles(WebEmSession & session, const request& req, Json::Value &root);

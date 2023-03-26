@@ -92,7 +92,7 @@ define(['app', 'livesocket'], function (app) {
 		RefreshWeathers = function () {
 			var id = "";
 
-			livesocket.getJson("json.htm?type=devices&filter=weather&used=true&order=[Order]&lastupdate=" + $.LastUpdateTime + "&plan=" + window.myglobals.LastPlanSelected, function (data) {
+			livesocket.getJson("json.htm?type=command&param=getdevices&filter=weather&used=true&order=[Order]&lastupdate=" + $.LastUpdateTime + "&plan=" + window.myglobals.LastPlanSelected, function (data) {
 				if (typeof data.ServerTime != 'undefined') {
 					$rootScope.SetTimeAndSun(data.Sunrise, data.Sunset, data.ServerTime);
 				}
@@ -120,7 +120,7 @@ define(['app', 'livesocket'], function (app) {
 			$('#modal').show();
 
 			$.ajax({
-				url: "json.htm?type=devices&filter=weather&used=true&order=[Order]",
+				url: "json.htm?type=command&param=getdevices&filter=weather&used=true&order=[Order]",
 				async: false,
 				dataType: 'json',
 				success: function (data) {

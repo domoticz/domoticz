@@ -1444,7 +1444,7 @@ function ShowMediaRemote(Name, devIdx, HWType) {
 			if ( HWType.indexOf('Panasonic') >= 0) {
 				// Here is a little painful because we need to get hardware id  first...
 				$.ajax({
-					url: "json.htm?type=devices&rid=" + devIdx,
+					url: "json.htm?type=command&param=getdevices&rid=" + devIdx,
 					async: true,
 					dataType: 'json',
 					success: function (data) { 

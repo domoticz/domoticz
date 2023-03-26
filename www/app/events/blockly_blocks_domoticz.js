@@ -29,7 +29,7 @@ define(['blockly', 'blockly-blocks', 'blockly-msg-en', 'app/events/blockly_messa
     var zwavealarms = [];
 
     $.ajax({
-        url: "json.htm?type=devices&filter=light&used=true&order=Name&displayhidden=1",
+        url: "json.htm?type=command&param=getdevices&filter=light&used=true&order=Name&displayhidden=1",
         async: false,
         dataType: 'json',
         success: function (data) {
@@ -59,7 +59,7 @@ define(['blockly', 'blockly-blocks', 'blockly-msg-en', 'app/events/blockly_messa
     if (switchesSZ.length === 0) { switchesSZ.push(["No devices found", '0']); }
 
     $.ajax({
-        url: "json.htm?type=devices&filter=temp&used=true&order=Name&displayhidden=1",
+        url: "json.htm?type=command&param=getdevices&filter=temp&used=true&order=Name&displayhidden=1",
         async: false,
         dataType: 'json',
         success: function (data) {
@@ -86,7 +86,7 @@ define(['blockly', 'blockly-blocks', 'blockly-msg-en', 'app/events/blockly_messa
     });
 
     $.ajax({
-        url: "json.htm?type=devices&filter=weather&used=true&order=Name&displayhidden=1",
+        url: "json.htm?type=command&param=getdevices&filter=weather&used=true&order=Name&displayhidden=1",
         async: false,
         dataType: 'json',
         success: function (data) {
@@ -99,7 +99,7 @@ define(['blockly', 'blockly-blocks', 'blockly-msg-en', 'app/events/blockly_messa
     });
 
     $.ajax({
-        url: "json.htm?type=devices&filter=utility&used=true&order=Name&displayhidden=1",
+        url: "json.htm?type=command&param=getdevices&filter=utility&used=true&order=Name&displayhidden=1",
         async: false,
         dataType: 'json',
         success: function (data) {
@@ -140,7 +140,7 @@ define(['blockly', 'blockly-blocks', 'blockly-msg-en', 'app/events/blockly_messa
 
 
     $.ajax({
-        url: "json.htm?type=devices&filter=zwavealarms&used=true&order=Name&displayhidden=1",
+        url: "json.htm?type=command&param=getdevices&filter=zwavealarms&used=true&order=Name&displayhidden=1",
         async: false,
         dataType: 'json',
         success: function (data) {

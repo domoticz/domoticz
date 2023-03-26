@@ -113,7 +113,7 @@ define(['app', 'livesocket'], function (app) {
 		//We only call this once. After this the widgets are being updated automatically by used of the 'jsonupdate' broadcast event.
 		RefreshTemps = function () {
 			var roomPlanId = $routeParams.room || window.myglobals.LastPlanSelected;
-			livesocket.getJson("json.htm?type=devices&filter=temp&used=true&order=[Order]&lastupdate=" + $.LastUpdateTime + "&plan=" + roomPlanId, function (data) {
+			livesocket.getJson("json.htm?type=command&param=getdevices&filter=temp&used=true&order=[Order]&lastupdate=" + $.LastUpdateTime + "&plan=" + roomPlanId, function (data) {
 				if (typeof data.ServerTime != 'undefined') {
 					$rootScope.SetTimeAndSun(data.Sunrise, data.Sunset, data.ServerTime);
 				}
@@ -148,7 +148,7 @@ define(['app', 'livesocket'], function (app) {
 			var roomPlanId = $routeParams.room || window.myglobals.LastPlanSelected;
 
 			$.ajax({
-				url: "json.htm?type=devices&filter=temp&used=true&order=[Order]&plan=" + roomPlanId,
+				url: "json.htm?type=command&param=getdevices&filter=temp&used=true&order=[Order]&plan=" + roomPlanId,
 				async: false,
 				dataType: 'json',
 				success: function (data) {

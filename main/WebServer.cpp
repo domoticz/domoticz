@@ -611,6 +611,7 @@ namespace http
 			// Migrated RTypes to regular commands
 			RegisterCommandCode("getusers", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetUsers(session, req, root); });
 			RegisterCommandCode("getsettings", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetSettings(session, req, root); });
+			RegisterCommandCode("getdevices", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetDevices(session, req, root); });
 
 			// RType commands (will be replace by regular commands in the future)
 			RegisterRType("graph", [this](auto&& session, auto&& req, auto&& root) { RType_HandleGraph(session, req, root); });
@@ -622,7 +623,6 @@ namespace http
 			RegisterRType("events", [this](auto&& session, auto&& req, auto&& root) { RType_Events(session, req, root); });
 
 			RegisterRType("hardware", [this](auto&& session, auto&& req, auto&& root) { RType_Hardware(session, req, root); });
-			RegisterRType("devices", [this](auto&& session, auto&& req, auto&& root) { RType_Devices(session, req, root); });
 			RegisterRType("deletedevice", [this](auto&& session, auto&& req, auto&& root) { RType_DeleteDevice(session, req, root); });
 			RegisterRType("cameras", [this](auto&& session, auto&& req, auto&& root) { RType_Cameras(session, req, root); });
 			RegisterRType("cameras_user", [this](auto&& session, auto&& req, auto&& root) { RType_CamerasUser(session, req, root); });
@@ -860,6 +860,11 @@ namespace http
 					else if (rtype.compare("users") == 0)
 					{
 						pf = m_webcommands.find("getusers");
+						pf->second(session, req, root);
+					}
+					else if (rtype.compare("devices") == 0)
+					{
+						pf = m_webcommands.find("getdevices");
 						pf->second(session, req, root);
 					}
 				}
@@ -11945,7 +11950,7 @@ namespace http
 			}
 		}
 
-		void CWebServer::RType_Devices(WebEmSession& session, const request& req, Json::Value& root)
+		void CWebServer::Cmd_GetDevices(WebEmSession& session, const request& req, Json::Value& root)
 		{
 			std::string rfilter = request::findValue(&req, "filter");
 			std::string order = request::findValue(&req, "order");

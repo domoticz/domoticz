@@ -156,7 +156,7 @@ define(['app'], function (app) {
                     }
 
                     $.ajax({
-                        url: "json.htm?type=devices&filter=temp&used=true&order=Name",
+                        url: "json.htm?type=command&param=getdevices&filter=temp&used=true&order=Name",
                         async: false,
                         dataType: 'json',
                         success: function (data) {
