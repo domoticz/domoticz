@@ -873,12 +873,6 @@ namespace http
 				}
 			}
 
-			std::string jcallback = request::findValue(&req, "jsoncallback");
-			if (!jcallback.empty())
-			{
-				reply::set_content(&rep, "var data=" + root.toStyledString() + '\n' + jcallback + "(data);");
-				return;
-			}
 			reply::set_content(&rep, root.toStyledString());
 		}
 
@@ -8142,13 +8136,7 @@ namespace http
 			Json::Value root;
 			Cmd_PostSettings(session, req, root);
 
-			std::string jcallback = request::findValue(&req, "jsoncallback");
-			if (jcallback.empty())
-			{
-				reply::set_content(&rep, root.toStyledString());
-				return;
-			}
-			reply::set_content(&rep, "var data=" + root.toStyledString() + '\n' + jcallback + "(data);");
+			reply::set_content(&rep, root.toStyledString());
 		}
 
 		// PostSettings
@@ -12370,13 +12358,7 @@ namespace http
 					root["error"] = ErrorMessage;
 				}
 			}
-			std::string jcallback = request::findValue(&req, "jsoncallback");
-			if (jcallback.empty())
-			{
-				reply::set_content(&rep, root.toStyledString());
-				return;
-			}
-			reply::set_content(&rep, "var data=" + root.toStyledString() + '\n' + jcallback + "(data);");
+			reply::set_content(&rep, root.toStyledString());
 		}
 
 		void CWebServer::Cmd_GetCustomIconSet(WebEmSession& session, const request& req, Json::Value& root)
