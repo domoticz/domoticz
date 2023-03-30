@@ -118,7 +118,7 @@ VirtualThermostat::VirtualThermostat(const int ID)
 	m_VirtualThermostat = this;
 	//thermostat mode string
 	SetAvailableMode(AVALAIBLE_MODE);
-
+	m_bOutputLog=false;
 }
 
 VirtualThermostat::~VirtualThermostat()
@@ -138,6 +138,7 @@ bool VirtualThermostat::StartHardware()
 
 	sOnConnected(this);
 	m_bIsStarted = true;
+	m_ScheduleLastMinute=0;
 	return (m_thread != NULL);
 }
 bool VirtualThermostat::StopHardware()
@@ -179,8 +180,10 @@ void VirtualThermostat::Do_Work()
 		//test : call every 2 secconds
 		if (ltime.tm_sec % 2 == 0)
 		{
-			ScheduleThermostat(ltime.tm_sec / 2);
-			m_ScheduleLastMinute = ltime.tm_sec;
+			ScheduleThermostat(m_ScheduleLastMinute);
+			m_ScheduleLastMinute ++;
+			m_ScheduleLastMinute%=60;
+
 		}
 #endif
 	}
@@ -242,46 +245,13 @@ int VirtualThermostat::ComputeThermostatPower(int index, double RoomTemp, double
 	return PowerModulation;
 }
 
-//return the output command & level from cmd value
-//cmd ='On;Off;Set Level XX "
-void VirtualThermostat::getCommand(std::string& Cmd, std::string& OutCmd, int& level)
-{
-	OutCmd = Cmd; level = 0;
-
-	if (Cmd == "Off") {
-		level = 0;
-	}
-	else if (Cmd == "On") {
-		level = 100;
-	}
-	else {
-		std::vector<std::string> results;
-		StringSplit(Cmd, " ", results);
-		if (results.size() == 3) {
-			if ((results[0] == "Set") && (results[1] == "Level")) {
-				OutCmd = "Set Level";
-				try {
-					level = std::stoi(results[2]);
-				}
-				catch (...) {
-					Log(LOG_ERROR, "Invalid Switch command : %s ", Cmd.c_str());
-				}
-			}
-			else
-				Log(LOG_ERROR, "Invalid Switch command : %s ", Cmd.c_str());
-		}
-		else
-			Log(LOG_ERROR, "Invalid Switch command : %s ", Cmd.c_str());
-	}
-}
-
 //get level from imput cmd : selectof value 
 int translateCmd(std::string& Cmd, TOptionMap& options)
 {
 	int Level = -1;
 	Level = GetSelectorSwitchLevel(options, Cmd);
 	if (Level >= 0) {
-		Cmd = "Set Level " + std::to_string(Level);
+		Cmd = "Set Level" ;
 	}
 	return Level;
 }
@@ -317,7 +287,7 @@ void VirtualThermostat::ScheduleThermostat(int Minute)
 	try
 	{
 		//select all the Virtuan device
-		auto result = m_sql.safe_query("SELECT A.Name,A.ID,A.Type,A.SubType,A.nValue,A.sValue, A.Options, A.HardwareID , B.Type,A.DeviceID     FROM DeviceStatus as A LEFT OUTER JOIN Hardware as B ON (B.ID==A.HardwareID) where (B.type == %d )", HTYPE_VirtualThermostat);
+		auto result = m_sql.safe_query("SELECT A.Name,A.ID,A.Type,A.SubType,A.nValue,A.sValue, A.Options, A.HardwareID , B.Type,A.DeviceID     FROM DeviceStatus as A LEFT OUTER JOIN Hardware as B ON (B.ID==A.HardwareID) where (B.type == %d ) AND (A.used == 1 )", HTYPE_VirtualThermostat);
 
 		//for all the thermostat switch
 		unsigned int nbDevices = result.size();
@@ -375,7 +345,7 @@ void VirtualThermostat::ScheduleThermostat(int Minute)
 
 					//force to update state in database else only send RF commande with out database update 
 					//if the switch is a HomeEasy protocol with no RF acknoledge , send the RF command each minute with out database DEVICESTATUS table update  
-					auto resSw = m_sql.safe_query("SELECT nValue,Type,SubType,SwitchType,LastLevel,Name FROM DeviceStatus WHERE (ID == %s )", SwitchIdxStr.c_str());
+					auto resSw = m_sql.safe_query("SELECT nValue,Type,SubType,SwitchType,sValue,Name FROM DeviceStatus WHERE (ID == %s )", SwitchIdxStr.c_str());
 
 					if (!resSw.empty())
 					{
@@ -384,41 +354,35 @@ void VirtualThermostat::ScheduleThermostat(int Minute)
 						switchtype = std::stoi(resSw[0][3]);
 						int LastLevel = std::stoi(resSw[0][4]);
 						std::string SwitchName = resSw[0][5];
-						std::string OutCmd; int level;
+						std::string OutCmd; int level=0;
 
+						bool SwitchStateAsChanged = false;
+
+						if (SwitchValue == 1)
+							OutCmd = OnCmd;
+						else
+							OutCmd = OffCmd;
 						if (switchtype == STYPE_Selector)
 						{
 							//gey device option of switch
 							TOptionMap options = m_sql.GetDeviceOptions(SwitchIdxStr);
-							translateCmd(OnCmd, options);
-							translateCmd(OffCmd, options);
+							level = translateCmd(OutCmd, options);
+							//check if command switch state as changed
+							if (level != LastLevel )
+								SwitchStateAsChanged = true;
 						}
-						if (SwitchValue == 1)
-							getCommand(OnCmd, OutCmd, level);
 						else
-							getCommand(OffCmd, OutCmd, level);
-
-						bool SwitchStateAsChanged = false;
-
-						//check if command switch state as changed
-						if ((level == 0) && (lastSwitchValue > 0))
-							SwitchStateAsChanged = true;
-						if ((level == 100) && (lastSwitchValue != 1))
-							SwitchStateAsChanged = true;
-						if ((lastSwitchValue == 2)) {
-							if (LastLevel != level)
+						{
+							if ( (OutCmd == "Off") && (lastSwitchValue != 0 ) )
+								SwitchStateAsChanged = true;
+							if ( (OutCmd == "On") && (lastSwitchValue == 0 ) )
 								SwitchStateAsChanged = true;
 						}
-						if ((lastSwitchValue == 0)) {
-							if (level > 0)
-								SwitchStateAsChanged = true;
-						}
-
 						if ((minute % 10) == 0 || (SwitchStateAsChanged))
 						{
 							m_mainworker.SwitchLight(SwitchIdx, OutCmd, level, _tColor(), false, 0, "VTHER" /*, !SwitchStateAsChanged */);
 							sleep_milliseconds(100);
-							//						Debug(DEBUG_NORM,"VTHER: Mn:%02d  Therm:%-10s(%2d) Room:%4.1f SetPoint:%4.1f Power:%3d%% SwitchName:%s(%2ld):%d Kp:%3.f Ki:%3.f Integr:%3.1f Cmd:%s Level:%d",Minute,ThermostatName, ThermostatId , RoomTemperature,ThermostatSetPoint,PowerModulation,SwitchName.c_str(),SwitchIdx,SwitchValue,CoefProportional,CoefIntegral, m_DeltaTemps[ThermostatId]->GetSum() /INTEGRAL_DURATION, OutCmd.c_str(),level);
+							//Debug(DEBUG_NORM,"VTHER: Mn:%02d  Therm:%-10s(%2d) Room:%4.1f SetPoint:%4.1f Power:%3d%% SwitchName:%s(%2ld):%d Kp:%3.f Ki:%3.f Integr:%3.1f Cmd:%s Level:%d",Minute,ThermostatName, ThermostatId , RoomTemperature,ThermostatSetPoint,PowerModulation,SwitchName.c_str(),SwitchIdx,SwitchValue,CoefProportional,CoefIntegral, m_DeltaTemps[ThermostatId]->GetSum() /INTEGRAL_DURATION, OutCmd.c_str(),level);
 							SwitchStateAsChanged = true;
 						}
 						if ((abs(lastPowerModulation - PowerModulation) > 10) || (abs(lastTemp - RoomTemperature) > 0.2) || (SwitchStateAsChanged))

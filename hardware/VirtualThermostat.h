@@ -60,7 +60,6 @@ private:
 	void	ThermostatToggleEcoConfort(const char* devID, char* setTemp, char* Duration);
 	int	ComputeThermostatOutput(int Min, int PowerPercent);
 	int ComputeThermostatPower(int index, double RoomTemp, double TargetTemp, double CoefProportional, double CoefIntegral);
-	void getCommand(std::string& Cmd, std::string& OutCmd, int& level);
 	int	GetConfortTempFromTimers(const char* devID);
 	int	GetEcoTempFromTimers(const char* devID);
 	std::string GetMode(float curTemp, float EcoTemp, float ConfTemp);
