@@ -168,6 +168,7 @@ static const STR_TABLE_SINGLE HardwareTypeTable[] = {
 	{ HTYPE_RaspberryBMP085, "I2C sensor BMP085/180 Temp+Baro", "I2C BM" },
 	{ HTYPE_Wunderground, "Weather Underground", "WU" },
 	{ HTYPE_DarkSky, "DarkSky (Weather Lookup)", "Darksky" },
+	{ HTYPE_VisualCrossing, "Visual Crossing (Weather Lookup)", "Visual Crossing" },
 	{ HTYPE_Dummy, "Dummy (Does nothing, use for virtual switches only)", "Dummy" },
 	{ HTYPE_Tellstick, "Tellstick", "Tellstick" },
 	{ HTYPE_PiFace, "PiFace - Raspberry Pi IO expansion board", "PiFace" },

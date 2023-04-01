@@ -43,6 +43,7 @@
 #include "../hardware/I2C.h"
 #include "../hardware/Wunderground.h"
 #include "../hardware/DarkSky.h"
+#include "../hardware/VisualCrossing.h"
 #include "../hardware/HardwareMonitor.h"
 #include "../hardware/Dummy.h"
 #include "../hardware/Tellstick.h"
@@ -909,6 +910,9 @@ bool MainWorker::AddHardwareFromParams(
 		break;
 	case HTYPE_DarkSky:
 		pHardware = new CDarkSky(ID, Username, Password);
+		break;
+	case HTYPE_VisualCrossing:
+		pHardware = new CVisualCrossing(ID, Username, Password);
 		break;
 	case HTYPE_AccuWeather:
 		pHardware = new CAccuWeather(ID, Username, Password);

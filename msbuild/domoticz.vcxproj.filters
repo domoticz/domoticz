@@ -507,6 +507,9 @@
     <Filter Include="Plugin Framework">
       <UniqueIdentifier>{343e8e43-c7ac-4839-a9a2-6b5f78f95b6d}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Devices\VisualCrossing">
+      <UniqueIdentifier>{acc9f1eb-04a5-4798-81c9-a91e4b031514}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\CMakeLists.txt">
@@ -2241,6 +2244,9 @@
     <ClInclude Include="..\hardware\EnOceanRawValue.h">
       <Filter>Devices\EnOcean</Filter>
     </ClInclude>
+    <ClInclude Include="..\hardware\VisualCrossing.h">
+      <Filter>Devices\VisualCrossing</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\webserver\Base64.cpp">
@@ -3001,6 +3007,9 @@
     </ClCompile>
     <ClCompile Include="..\hardware\TeleinfoTCP.cpp">
       <Filter>Devices\Teleinfo</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\VisualCrossing.cpp">
+      <Filter>Devices\VisualCrossing</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
