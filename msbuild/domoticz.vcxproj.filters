@@ -219,9 +219,6 @@
     <Filter Include="Devices\Nefit-Easy">
       <UniqueIdentifier>{eda6c8ec-7cdc-4897-9d23-c502aedbee4b}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Devices\GoodweAPI">
-      <UniqueIdentifier>{064616bb-7223-4daf-9cad-0d7d9eb478a0}</UniqueIdentifier>
-    </Filter>
     <Filter Include="www">
       <UniqueIdentifier>{86db03ef-13cf-48f9-8cfd-9c490e22c5d2}</UniqueIdentifier>
     </Filter>
@@ -1746,9 +1743,6 @@
     <ClInclude Include="..\hardware\ETH8020.h">
       <Filter>Devices\ETH8020</Filter>
     </ClInclude>
-    <ClInclude Include="..\hardware\GoodweAPI.h">
-      <Filter>Devices\GoodweAPI</Filter>
-    </ClInclude>
     <ClInclude Include="..\notifications\NotificationBase.h">
       <Filter>Notifications</Filter>
     </ClInclude>
@@ -2497,9 +2491,6 @@
     </ClCompile>
     <ClCompile Include="..\hardware\ETH8020.cpp">
       <Filter>Devices\ETH8020</Filter>
-    </ClCompile>
-    <ClCompile Include="..\hardware\GoodweAPI.cpp">
-      <Filter>Devices\GoodweAPI</Filter>
     </ClCompile>
     <ClCompile Include="..\notifications\NotificationBase.cpp">
       <Filter>Notifications</Filter>

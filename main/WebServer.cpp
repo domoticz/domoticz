@@ -1006,7 +1006,11 @@ namespace http
 					bDoAdd = false;
 
 				if (bDoAdd)
-					_htypes[Hardware_Type_Desc(ii)] = ii;
+				{
+					std::string description = Hardware_Type_Desc(ii);
+					if (!description.empty())
+						_htypes[description] = ii;
+				}
 			}
 
 			// return a sorted hardware list
@@ -1301,11 +1305,6 @@ namespace http
 			else if (htype == HTYPE_Daikin)
 			{
 				// All fine here
-			}
-			else if (htype == HTYPE_GoodweAPI)
-			{
-				if (username.empty())
-					return;
 			}
 			else if (htype == HTYPE_PythonPlugin)
 			{
@@ -1684,13 +1683,6 @@ namespace http
 			else if (htype == HTYPE_PythonPlugin)
 			{
 				// All fine here
-			}
-			else if (htype == HTYPE_GoodweAPI)
-			{
-				if (username.empty())
-				{
-					return;
-				}
 			}
 			else if (htype == HTYPE_RaspberryPCF8574)
 			{
