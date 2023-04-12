@@ -1,3 +1,8 @@
+/**
+* Website: https://www.visualcrossing.com/
+* API Docs: https://www.visualcrossing.com/resources/documentation/weather-api/weather-api-documentation/
+**/
+
 #include "stdafx.h"
 #include "VisualCrossing.h"
 #include "../main/Helper.h"
