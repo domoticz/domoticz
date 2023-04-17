@@ -1617,7 +1617,7 @@ namespace http
 			{
 				// All fine here
 			}
-			else if ((htype == HTYPE_Wunderground) || (htype == HTYPE_DarkSky) || (htype == HTYPE_AccuWeather) || (htype == HTYPE_OpenWeatherMap) || (htype == HTYPE_ICYTHERMOSTAT) ||
+			else if ((htype == HTYPE_Wunderground) || (htype == HTYPE_DarkSky) || (htype == HTYPE_VisualCrossing) || (htype == HTYPE_AccuWeather) || (htype == HTYPE_OpenWeatherMap) || (htype == HTYPE_ICYTHERMOSTAT) ||
 				(htype == HTYPE_TOONTHERMOSTAT) || (htype == HTYPE_AtagOne) || (htype == HTYPE_PVOUTPUT_INPUT) || (htype == HTYPE_NEST) || (htype == HTYPE_ANNATHERMOSTAT) ||
 				(htype == HTYPE_THERMOSMART) || (htype == HTYPE_Tado) || (htype == HTYPE_Tesla) || (htype == HTYPE_Mercedes) || (htype == HTYPE_Netatmo))
 			{
