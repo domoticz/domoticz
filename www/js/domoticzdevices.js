@@ -1891,7 +1891,8 @@ function Selector(item) {
 
         // Device attributes
         this.data = this.levelName;
-        this.status = '';
+        //this.status = '';
+	this.status = this.levelName;
         this.smallStatus = this.status;
         if (item.CustomImage !== 0) {
             this.image = (this.levelName === "Off") ? "images/" + item.Image + "48_Off.png" : "images/" + item.Image + "48_On.png";
