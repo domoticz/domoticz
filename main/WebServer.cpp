@@ -18,6 +18,7 @@
 #include "../hardware/AirconWithMe.h"
 #include "../hardware/Buienradar.h"
 #include "../hardware/DarkSky.h"
+#include "../hardware/VisualCrossing.h"
 #include "../hardware/eHouseTCP.h"
 #include "../hardware/EnOceanESP2.h"
 #include "../hardware/EnOceanESP3.h"
@@ -1244,7 +1245,7 @@ namespace http
 			{
 				// All fine here
 			}
-			else if ((htype == HTYPE_Wunderground) || (htype == HTYPE_DarkSky) || (htype == HTYPE_AccuWeather) || (htype == HTYPE_OpenWeatherMap) || (htype == HTYPE_ICYTHERMOSTAT) ||
+			else if ((htype == HTYPE_Wunderground) || (htype == HTYPE_DarkSky) || (htype == HTYPE_VisualCrossing) || (htype == HTYPE_AccuWeather) || (htype == HTYPE_OpenWeatherMap) || (htype == HTYPE_ICYTHERMOSTAT) ||
 				(htype == HTYPE_TOONTHERMOSTAT) || (htype == HTYPE_AtagOne) || (htype == HTYPE_PVOUTPUT_INPUT) || (htype == HTYPE_NEST) || (htype == HTYPE_ANNATHERMOSTAT) ||
 				(htype == HTYPE_THERMOSMART) || (htype == HTYPE_Tado) || (htype == HTYPE_Tesla) || (htype == HTYPE_Mercedes) || (htype == HTYPE_Netatmo))
 			{
@@ -9085,6 +9086,15 @@ namespace http
 						else if (pHardware->HwdType == HTYPE_DarkSky)
 						{
 							CDarkSky* pWHardware = dynamic_cast<CDarkSky*>(pHardware);
+							std::string forecast_url = pWHardware->GetForecastURL();
+							if (!forecast_url.empty())
+							{
+								root["result"][ii]["forecast_url"] = base64_encode(forecast_url);
+							}
+						}
+						else if (pHardware->HwdType == HTYPE_VisualCrossing)
+						{
+							CVisualCrossing* pWHardware = dynamic_cast<CVisualCrossing*>(pHardware);
 							std::string forecast_url = pWHardware->GetForecastURL();
 							if (!forecast_url.empty())
 							{

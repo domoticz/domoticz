@@ -1011,7 +1011,7 @@ define(['app'], function (app) {
 					}
 				});
 			}
-			else if ((text.indexOf("Underground") >= 0) || (text.indexOf("DarkSky") >= 0) || (text.indexOf("AccuWeather") >= 0)) {
+			else if ((text.indexOf("Underground") >= 0) || (text.indexOf("DarkSky") >= 0) || (text.indexOf("Visual Crossing") >= 0) || (text.indexOf("AccuWeather") >= 0)) {
 				var apikey = $("#hardwarecontent #divunderground #apikey").val();
 				if (apikey == "") {
 					ShowNotify($.t('Please enter an API Key!'), 2500, true);
@@ -2384,7 +2384,8 @@ define(['app'], function (app) {
 			else if (
 					(text.indexOf("Underground") >= 0) ||
 					(text.indexOf("DarkSky") >= 0) ||
-					(text.indexOf("AccuWeather") >= 0)
+					(text.indexOf("AccuWeather") >= 0) ||
+					(text.indexOf("Visual Crossing") >= 0)
 					) {
 				var apikey = $("#hardwarecontent #divunderground #apikey").val();
 				if (apikey == "") {
@@ -4261,7 +4262,7 @@ define(['app'], function (app) {
 								}
 							}
 						}
-						else if ((data["Type"].indexOf("Underground") >= 0) || (data["Type"].indexOf("DarkSky") >= 0) || (data["Type"].indexOf("AccuWeather") >= 0)) {
+						else if ((data["Type"].indexOf("Underground") >= 0) || (data["Type"].indexOf("DarkSky") >= 0) || (data["Type"].indexOf("Visual Crossing") >= 0) || (data["Type"].indexOf("AccuWeather") >= 0)) {
 							$("#hardwarecontent #hardwareparamsunderground #apikey").val(data["Username"]);
 							$("#hardwarecontent #hardwareparamsunderground #location").val(data["Password"]);
 						}
@@ -4860,7 +4861,7 @@ define(['app'], function (app) {
 					$("#hardwarecontent #hardwareparamshttp #divpostdatatextarea").show();
 				}
 			}
-			else if ((text.indexOf("Underground") >= 0) || (text.indexOf("DarkSky") >= 0) || (text.indexOf("AccuWeather") >= 0)) {
+			else if ((text.indexOf("Underground") >= 0) || (text.indexOf("DarkSky") >= 0) || (text.indexOf("Visual Crossing") >= 0) || (text.indexOf("AccuWeather") >= 0)) {
 				$("#hardwarecontent #divunderground").show();
 			}
 			else if(text.indexOf("Meteorologisk") >= 0){
