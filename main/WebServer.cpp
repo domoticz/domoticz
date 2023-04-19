@@ -2849,6 +2849,16 @@ namespace http
 							sFURL = forecast_url;
 						}
 					}
+					else if (pHardware->HwdType == HTYPE_VisualCrossing)
+					{
+						root["Forecasthardwaretype"] = HTYPE_VisualCrossing;
+						CVisualCrossing* pWHardware = dynamic_cast<CVisualCrossing*>(pHardware);
+						forecast_url = pWHardware->GetForecastURL();
+						if (!forecast_url.empty())
+						{
+							sFURL = forecast_url;
+						}
+					}
 					else
 					{
 						root["Forecasthardware"] = 0; // reset to 0

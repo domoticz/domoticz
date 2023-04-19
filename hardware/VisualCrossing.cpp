@@ -5,15 +5,14 @@
 
 #include "stdafx.h"
 #include "VisualCrossing.h"
-#include "../main/Helper.h"
-#include "../main/Logger.h"
-#include "../httpclient/UrlEncode.h"
 #include "hardwaretypes.h"
-#include "../main/localtime_r.h"
 #include "../httpclient/HTTPClient.h"
+#include "../httpclient/UrlEncode.h"
+#include "../main/Helper.h"
 #include "../main/json_helper.h"
-#include "../main/RFXtrx.h"
-#include "../main/mainworker.h"
+#include "../main/localtime_r.h"
+#include "../main/Logger.h"
+#include "../main/SQLHelper.h"
 
 #define round(a) ( int ) ( a + .5 )
 
@@ -161,6 +160,8 @@ void CVisualCrossing::GetMeterDetails()
 		Log(LOG_ERROR,"Invalid data received, or unknown location!");
 		return;
 	}
+
+	m_sql.UpdatePreferencesVar("ForecastHardwareID", m_HwdID);
 
 	float temp;
 	int humidity = 0;
