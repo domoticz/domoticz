@@ -161,12 +161,6 @@ void CVisualCrossing::GetMeterDetails()
 		Log(LOG_ERROR,"Invalid data received, or unknown location!");
 		return;
 	}
-	/*
-	std::string tmpstr2 = root.toStyledString();
-	FILE *fOut = fopen("E:\\VisualCrossing.json", "wb+");
-	fwrite(tmpstr2.c_str(), 1, tmpstr2.size(), fOut);
-	fclose(fOut);
-	*/
 
 	float temp;
 	int humidity = 0;
@@ -275,55 +269,7 @@ void CVisualCrossing::GetMeterDetails()
 	}
 	if (wind_degrees != -1)
 	{
-		RBUF tsen;
-		memset(&tsen,0,sizeof(RBUF));
-		tsen.WIND.packetlength = sizeof(tsen.WIND)-1;
-		tsen.WIND.packettype = pTypeWIND;
-		tsen.WIND.subtype = sTypeWIND4;
-		tsen.WIND.battery_level = 9;
-		tsen.WIND.rssi = 12;
-		tsen.WIND.id1 = 0;
-		tsen.WIND.id2 = 1;
-
-		float winddir = float(wind_degrees);
-		int aw = round(winddir);
-		tsen.WIND.directionh = (BYTE)(aw/256);
-		aw -= (tsen.WIND.directionh*256);
-		tsen.WIND.directionl = (BYTE)(aw);
-
-		tsen.WIND.av_speedh = 0;
-		tsen.WIND.av_speedl = 0;
-		int sw = round(windspeed_ms * 10.0F);
-		tsen.WIND.av_speedh = (BYTE)(sw/256);
-		sw -= (tsen.WIND.av_speedh*256);
-		tsen.WIND.av_speedl = (BYTE)(sw);
-
-		tsen.WIND.gusth = 0;
-		tsen.WIND.gustl = 0;
-		int gw = round(windgust_ms * 10.0F);
-		tsen.WIND.gusth = (BYTE)(gw/256);
-		gw -= (tsen.WIND.gusth*256);
-		tsen.WIND.gustl = (BYTE)(gw);
-
-		//this is not correct, why no wind temperature? and only chill?
-		tsen.WIND.chillh = 0;
-		tsen.WIND.chilll = 0;
-		tsen.WIND.temperatureh = 0;
-		tsen.WIND.temperaturel = 0;
-
-		tsen.WIND.tempsign = (wind_temp >= 0)?0:1;
-		int at10 = round(std::abs(wind_temp * 10.0F));
-		tsen.WIND.temperatureh = (BYTE)(at10/256);
-		at10 -= (tsen.WIND.temperatureh*256);
-		tsen.WIND.temperaturel = (BYTE)(at10);
-
-		tsen.WIND.chillsign = (wind_chill >= 0)?0:1;
-		at10 = round(std::abs(wind_chill * 10.0F));
-		tsen.WIND.chillh = (BYTE)(at10/256);
-		at10 -= (tsen.WIND.chillh*256);
-		tsen.WIND.chilll = (BYTE)(at10);
-
-		sDecodeRXMessage(this, (const unsigned char *)&tsen.WIND, "Wind", 255, nullptr);
+		SendWind(1, 255, wind_degrees, windspeed_ms, windgust_ms, wind_temp, wind_chill, true, true, "Wind");
 	}
 
 	//UV
