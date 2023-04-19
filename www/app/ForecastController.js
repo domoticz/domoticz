@@ -40,7 +40,7 @@ define(['app'], function (app) {
 						htmlcontent = fallbackhtml;
 						if (typeof data.Forecasturl != 'undefined' && data.Forecasturl != '') {
 							if (data.Forecasturl.substr(0,4) == 'http') {
-								htmlcontent = '<iframe class="cIFrame" id="IMain" src="' + data.Forecasturl + '"></iframe>';
+								htmlcontent = '<iframe style="height: calc(100% - 140px);" class="cIFrame" id="IMain" src="' + data.Forecasturl + '"></iframe>';
 							} else {
 								htmlcontent = data.Forecasturl;
 							}
