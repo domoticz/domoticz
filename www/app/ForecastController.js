@@ -17,8 +17,8 @@ define(['app'], function (app) {
 				var htmlcontent = '<b>Error loading config or incorrect config data!</b>';
 
 				if (typeof data.status != 'undefined' && data.status == 'OK') {
-					var fallbackurl = "//forecast.io/embed/#lat=" + data.Latitude + "&lon=" + data.Longitude + "&units=ca&color=#00aaff";
-					var fallbackhtml = '<iframe style="background: #fff; height:245px;" class="cIFrame" id="IMain" src="' + fallbackurl + '"></iframe>';
+					var fallbackurl = "//www.visualcrossing.com/weather-history/" + data.Latitude + "," + data.Longitude + "/metric/next7days";
+					var fallbackhtml = '<iframe style="background: #fff; height: calc(100% - 140px);" class="cIFrame" id="IMain" src="' + fallbackurl + '"></iframe>';
 					if (typeof data.Forecastdata != 'undefined' ) {
 						if (data.Forecasthardwaretype == 83) { // OpenWeatherMap
 							htmlcontent = '<div id="openweathermap-widget-21"></div>';
