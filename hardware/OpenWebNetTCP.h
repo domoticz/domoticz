@@ -24,15 +24,26 @@ class COpenWebNetTCP : public CDomoticzHardwareBase
 		MAX_WHERE_AREA = 11
 	};
 
-	enum _eWhereEnergy
+	enum _eWhereEnergyCentralUnit
 	{
-		WHERE_ENERGY_1 = 51,
-		WHERE_ENERGY_2 = 52,
-		WHERE_ENERGY_3 = 53,
-		WHERE_ENERGY_4 = 54,
-		WHERE_ENERGY_5 = 55,
-		WHERE_ENERGY_6 = 56,
-		MAX_WHERE_ENERGY = 57
+		WHERE_ENERGY_CU_1 = 51,
+		WHERE_ENERGY_CU_2 = 52,
+		WHERE_ENERGY_CU_3 = 53,
+		WHERE_ENERGY_CU_4 = 54,
+		WHERE_ENERGY_CU_5 = 55,
+		WHERE_ENERGY_CU_6 = 56,
+		MAX_WHERE_ENERGY_CU = 57
+	};
+
+	enum _eWhereEnergyActuators
+	{
+		WHERE_ENERGY_A_1 = 71,
+		WHERE_ENERGY_A_2 = 72,
+		WHERE_ENERGY_A_3 = 73,
+		WHERE_ENERGY_A_4 = 74,
+		WHERE_ENERGY_A_5 = 75,
+		WHERE_ENERGY_A_6 = 76,
+		MAX_WHERE_ENERGY_A = 77
 	};
 
       public:
