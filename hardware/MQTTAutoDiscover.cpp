@@ -911,9 +911,9 @@ void MQTTAutoDiscover::on_auto_discovery_message(const struct mosquitto_message*
 		else if (!root["pl_on"].empty())
 			pSensor->payload_on = root["pl_on"].asString();
 		if (!root["payload"].empty())
-			pSensor->payload_on = root["payload_on"].asString();
+			pSensor->payload_on = root["payload"].asString();
 		if (!root["pl"].empty())
-			pSensor->payload_on = root["payload_on"].asString();
+			pSensor->payload_on = root["pl"].asString();
 		if (!root["payload_off"].empty())
 			pSensor->payload_off = root["payload_off"].asString();
 		else if (!root["pl_off"].empty())
