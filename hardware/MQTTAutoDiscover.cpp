@@ -17,7 +17,7 @@ std::vector<std::string> allowed_components = {
 		"button",
 		"climate",
 		"cover",
-		"device_automation",
+		//"device_automation",
 		"light",
 		"lock",
 		"number",
@@ -823,6 +823,8 @@ void MQTTAutoDiscover::on_auto_discovery_message(const struct mosquitto_message*
 			pSensor->state_topic = root["stat_t"].asString();
 		else if (!root["json_attributes_topic"].empty())
 			pSensor->state_topic = root["json_attributes_topic"].asString();
+		else if (!root["topic"].empty())
+			pSensor->state_topic = root["topic"].asString();
 
 		if (!root["command_topic"].empty())
 			pSensor->command_topic = root["command_topic"].asString();
@@ -1282,6 +1284,15 @@ void MQTTAutoDiscover::on_auto_discovery_message(const struct mosquitto_message*
 				return;
 			}
 		}
+		else if (pSensor->component_type == "device_automation")
+		{
+			if (pSensor->state_topic.empty())
+			{
+				Log(LOG_ERROR, "device_automation should have a topic!");
+				return;
+			}
+		}
+		
 
 
 		//Check if we want to subscribe to this sensor
@@ -1300,6 +1311,7 @@ void MQTTAutoDiscover::on_auto_discovery_message(const struct mosquitto_message*
 				|| (pSensor->component_type == "climate")
 				|| (pSensor->component_type == "button")
 				|| (pSensor->component_type == "number")
+				|| (pSensor->component_type == "device_automation")
 				);
 
 		if (bDoSubscribe)
