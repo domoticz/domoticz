@@ -3002,7 +3002,7 @@ void MQTTAutoDiscover::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 		}
 		else {
 			//Assume action trigger
-			pSensor->devUnit = Crc8(0, (uint8_t*)pSensor->last_value.c_str(), pSensor->last_value.size());
+			pSensor->devUnit = Crc8_strMQ(0, (uint8_t*)pSensor->last_value.c_str(), pSensor->last_value.size());
 			switchType = STYPE_PushOn;
 		}
 		szSensorName += "_" + pSensor->last_value;
