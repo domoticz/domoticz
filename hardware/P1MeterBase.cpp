@@ -489,6 +489,10 @@ bool P1MeterBase::MatchLine()
 						SendWattMeter(0, 6, 255, m_powerdell3, "Delivery L3");
 					}
 
+					// create calculated usage/delivery Watt sensors
+					SendWattMeter(0, 7, 255, m_powerusel1 + m_powerusel2 + m_powerusel3, "Actual Usage (L1 + L2 + L3)");
+					SendWattMeter(0, 8, 255, m_powerdell1 + m_powerdell3 + m_powerdell3, "Actual Delivery (L1 + L2 + L3)");
+
 					if (m_nbr_pwr_failures != -1) {
 						SendTextSensorWhenDifferent(7, m_nbr_pwr_failures, m_last_nbr_pwr_failures, "# Power failures");
 					}

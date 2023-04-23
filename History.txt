@@ -2,6 +2,7 @@ Version 2023.xx
 - Implemented: LUA: Added name state to devicechanged_ext table
 - Implemented: RFXCom, Updated SDK
 - Implemented: MQTT-AD, added support for number (config) types
+- Implemented: P1 Meter, added Actual Usage/Delivery (total of L1 + L2 + L3)
 - Implemented: -nocache command line option (ask browser not to cache pages)
 - Implemented: Visual Crossing (replacement for Darksky/Forecast)
 - Fixed: Chime structure check
