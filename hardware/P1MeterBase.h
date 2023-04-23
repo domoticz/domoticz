@@ -98,6 +98,27 @@ private:
 	float m_powerusel2;
 	float m_powerusel3;
 
+
+	double m_l1_usage_cntr = 0;
+	double m_l2_usage_cntr = 0;
+	double m_l3_usage_cntr = 0;
+	double m_l1_usage_total = 0;
+	double m_l2_usage_total = 0;
+	double m_l3_usage_total = 0;
+	uint8_t m_l1_usage_values = 0;
+	uint8_t m_l2_usage_values = 0;
+	uint8_t m_l3_usage_values = 0;
+
+	double m_l1_delivery_cntr = 0;
+	double m_l2_delivery_cntr = 0;
+	double m_l3_delivery_cntr = 0;
+	double m_l1_delivery_total = 0;
+	double m_l2_delivery_total = 0;
+	double m_l3_delivery_total = 0;
+	uint8_t m_l1_delivery_values = 0;
+	uint8_t m_l2_delivery_values = 0;
+	uint8_t m_l3_delivery_values = 0;
+
 	uint8_t m_gasmbuschannel;
 	std::string m_gasprefix;
 	std::string m_gastimestamp;
