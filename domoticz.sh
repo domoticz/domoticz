@@ -69,7 +69,7 @@ do_start()
 		# Wait a maximum of 30 seconds until sync file is generated indicating successful time sync
 		printf "Waiting for time synchronization before starting Domoticz"
 		count=30
-			while [ ! -f "/run/systemd/timesync/synchronized" ]
+		while [ ! -f "/run/systemd/timesync/synchronized" ]
 		do
 		    count=$((count-1))
 		    if [ $((count)) -lt 1 ]
@@ -88,8 +88,6 @@ do_start()
 		    printf "\nTime synchronization successful, starting Domoticz...\n"
 		fi
 	    fi
-	else
-	    # printf "INFO: systemd-timesyncd is not enabled or running\nINFO: Starting Domoticz without waiting for time synchronization...\n"
 	fi
 
 	# Return
