@@ -308,7 +308,7 @@ unsigned long C1WireByOWFS::GetCounter(const _t1WireDevice& device,int unit) con
    if (readValue.empty())
       readValue=readRawData(std::string(device.filename+"/counters.").append(1,'A'+(char)unit));
    if (readValue.empty())
-	   return 0;
+	   return -1;  // NULL read.
    return (unsigned long)atol(readValue.c_str());
 }
 
