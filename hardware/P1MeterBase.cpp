@@ -233,7 +233,8 @@ void P1MeterBase::Init()
 	m_lastgasusage = 0;
 	m_lastSharedSendGas = 0;
 	m_lastSendMBusDevice = 0;
-	m_lastUpdateTime = 0;
+	m_lastUpdateTime = mytime(nullptr);
+	m_lastSendCalculated = mytime(nullptr);
 
 	l_exclmarkfound = 0;
 	l_bufferpos = 0;
@@ -294,27 +295,14 @@ void P1MeterBase::Init()
 	m_powerdell2 = -1;
 	m_powerdell3 = -1;
 
-	m_l1_usage_cntr = GetKwhMeter(0, 1, bExists);
-	m_l2_usage_cntr = GetKwhMeter(0, 2, bExists);
-	m_l3_usage_cntr = GetKwhMeter(0, 3, bExists);
+	for (int ii = 0; ii < 3; ii++)
+	{
+		m_avr_rate_limit[ii].Init();
+		m_avr_calculated[ii].Init();
 
-	m_l1_delivery_cntr = GetKwhMeter(0, 4, bExists);
-	m_l2_delivery_cntr = GetKwhMeter(0, 5, bExists);
-	m_l3_delivery_cntr = GetKwhMeter(0, 6, bExists);
-
-	m_l1_usage_total = 0;
-	m_l2_usage_total = 0;
-	m_l3_usage_total = 0;
-	m_l1_usage_values = 0;
-	m_l2_usage_values = 0;
-	m_l3_usage_values = 0;
-
-	m_l1_delivery_total = 0;
-	m_l2_delivery_total = 0;
-	m_l3_delivery_total = 0;
-	m_l1_delivery_values = 0;
-	m_l2_delivery_values = 0;
-	m_l3_delivery_values = 0;
+		m_avr_calculated[ii].usage_cntr = GetKwhMeter(0, 1 + ii, bExists);
+		m_avr_calculated[ii].delivery_cntr = GetKwhMeter(0, 4 + ii, bExists);
+	}
 
 	memset(&m_buffer, 0, sizeof(m_buffer));
 	memset(&l_buffer, 0, sizeof(l_buffer));
@@ -472,18 +460,19 @@ bool P1MeterBase::MatchLine()
 
 			if (l_exclmarkfound)
 			{
-				m_l1_usage_total += m_powerusel1;
-				m_l2_usage_total += m_powerusel2;
-				m_l3_usage_total += m_powerusel3;
-				m_l1_delivery_total += m_powerdell1;
-				m_l2_delivery_total += m_powerdell2;
-				m_l3_delivery_total += m_powerdell3;
-				m_l1_usage_values++;
-				m_l2_usage_values++;
-				m_l3_usage_values++;
-				m_l1_delivery_values++;
-				m_l2_delivery_values++;
-				m_l3_delivery_values++;
+				m_avr_rate_limit[0].Add_Usage(m_powerusel1);
+				m_avr_rate_limit[1].Add_Usage(m_powerusel2);
+				m_avr_rate_limit[2].Add_Usage(m_powerusel3);
+				m_avr_rate_limit[0].Add_Delivery(m_powerdell1);
+				m_avr_rate_limit[1].Add_Delivery(m_powerdell2);
+				m_avr_rate_limit[2].Add_Delivery(m_powerdell3);
+
+				m_avr_calculated[0].Add_Usage(m_powerusel1);
+				m_avr_calculated[1].Add_Usage(m_powerusel2);
+				m_avr_calculated[2].Add_Usage(m_powerusel3);
+				m_avr_calculated[0].Add_Delivery(m_powerdell1);
+				m_avr_calculated[1].Add_Delivery(m_powerdell2);
+				m_avr_calculated[2].Add_Delivery(m_powerdell3);
 
 				if (m_p1version == 0)
 				{
@@ -493,6 +482,7 @@ bool P1MeterBase::MatchLine()
 				time_t atime = mytime(nullptr);
 				if (difftime(atime, m_lastUpdateTime) >= m_ratelimit)
 				{
+					m_lastUpdateTime = atime;
 					sDecodeRXMessage(this, (const unsigned char*)&m_power, "Power", 255, nullptr);
 					if (m_voltagel1 != -1) {
 						SendVoltageSensor(0, 1, 255, m_voltagel1, "Voltage L1");
@@ -503,74 +493,35 @@ bool P1MeterBase::MatchLine()
 					if (m_voltagel3 != -1) {
 						SendVoltageSensor(0, 3, 255, m_voltagel3, "Voltage L3");
 					}
-					if (m_powerusel1 != -1) {
-						SendWattMeter(0, 1, 255, m_powerusel1, "Usage L1");
-					}
-					if (m_powerusel2 != -1) {
-						SendWattMeter(0, 2, 255, m_powerusel2, "Usage L2");
-					}
-					if (m_powerusel3 != -1) {
-						SendWattMeter(0, 3, 255, m_powerusel3, "Usage L3");
-					}
 
-					if (m_powerdell1 != -1) {
-						SendWattMeter(0, 4, 255, m_powerdell1, "Delivery L1");
-					}
-					if (m_powerdell2 != -1) {
-						SendWattMeter(0, 5, 255, m_powerdell2, "Delivery L2");
-					}
-					if (m_powerdell3 != -1) {
-						SendWattMeter(0, 6, 255, m_powerdell3, "Delivery L3");
+					float avr_usage[3];
+					float avr_deliv[3];
+					float calculated_usage = 0;
+					float calculated_deliv = 0;
+					bool bHaveDelivery = false;
+
+					for (int iif = 0; iif < 3; iif++)
+					{
+						avr_usage[iif] = m_avr_rate_limit[iif].Get_Usage_Avr();
+						avr_deliv[iif] = m_avr_rate_limit[iif].Get_Delivery_Avr();
+
+						m_avr_rate_limit[iif].ResetTotals();
+
+						if (avr_usage[iif] != -1) {
+							calculated_usage += avr_usage[iif];
+							SendWattMeter(0, 1 + iif, 255, round(avr_usage[iif]), std_format("Usage L%d", 1 + iif));
+						}
+						if (avr_deliv[iif] != -1) {
+							bHaveDelivery = true;
+							calculated_deliv += avr_deliv[iif];
+							SendWattMeter(0, 4 + iif, 255, round(avr_deliv[iif]), std_format("Delivery L%d", 1 + iif));
+						}
 					}
 
 					// create calculated usage/delivery Watt sensors
-					SendWattMeter(0, 7, 255, m_powerusel1 + m_powerusel2 + m_powerusel3, "Actual Usage (L1 + L2 + L3)");
-					SendWattMeter(0, 8, 255, m_powerdell1 + m_powerdell3 + m_powerdell3, "Actual Delivery (L1 + L2 + L3)");
-
-					if (m_l1_usage_values > 0)
-					{
-#define kWh_Update_Interval 10
-						if (difftime(atime, m_lastUpdateTime) >= kWh_Update_Interval)
-						{
-							double avg_usage_l1 = m_l1_usage_total / double(m_l1_usage_values);
-							double avg_usage_l2 = m_l2_usage_total / double(m_l2_usage_values);
-							double avg_usage_l3 = m_l3_usage_total / double(m_l3_usage_values);
-							double avg_delivery_l1 = m_l1_delivery_total / double(m_l1_delivery_values);
-							double avg_delivery_l2 = m_l2_delivery_total / double(m_l2_delivery_values);
-							double avg_delivery_l3 = m_l3_delivery_total / double(m_l3_delivery_values);
-							m_l1_usage_total = 0;
-							m_l2_usage_total = 0;
-							m_l3_usage_total = 0;
-							m_l1_delivery_total = 0;
-							m_l2_delivery_total = 0;
-							m_l3_delivery_total = 0;
-
-							m_l1_usage_values = 0;
-							m_l2_usage_values = 0;
-							m_l3_usage_values = 0;
-							m_l1_delivery_values = 0;
-							m_l2_delivery_values = 0;
-							m_l3_delivery_values = 0;
-
-							m_l1_usage_cntr += (avg_usage_l1 * kWh_Update_Interval / 3600.0);
-							m_l2_usage_cntr += (avg_usage_l2 * kWh_Update_Interval / 3600.0);
-							m_l3_usage_cntr += (avg_usage_l3 * kWh_Update_Interval / 3600.0);
-
-							m_l1_delivery_cntr += (avg_delivery_l1 * kWh_Update_Interval / 3600.0);
-							m_l2_delivery_cntr += (avg_delivery_l2 * kWh_Update_Interval / 3600.0);
-							m_l3_delivery_cntr += (avg_delivery_l3 * kWh_Update_Interval / 3600.0);
-						}
-						//we use m_powerusel1 instead of avg_usage_l1 to not cause user questions.
-						//when m_ratelimit > 1, the average is not the same as the last value received and avg_usage_l1
-						//is much more accurate
-						SendKwhMeter(0, 1, 255, m_powerusel1, m_l1_usage_cntr * 0.001, "kWh Usage L1 (Calculated)");
-						SendKwhMeter(0, 2, 255, m_powerusel2, m_l2_usage_cntr * 0.001, "kWh Usage L2 (Calculated)");
-						SendKwhMeter(0, 3, 255, m_powerusel3, m_l3_usage_cntr * 0.001, "kWh Usage L3 (Calculated)");
-
-						SendKwhMeter(0, 4, 255, m_powerdell1, m_l1_delivery_cntr * 0.001, "kWh Delivery L1 (Calculated)");
-						SendKwhMeter(0, 5, 255, m_powerdell2, m_l2_delivery_cntr * 0.001, "kWh Delivery L2 (Calculated)");
-						SendKwhMeter(0, 6, 255, m_powerdell3, m_l3_delivery_cntr * 0.001, "kWh Delivery L3 (Calculated)");
-					}
+					SendWattMeter(0, 7, 255, round(calculated_usage), "Actual Usage (L1 + L2 + L3)");
+					if (bHaveDelivery)
+						SendWattMeter(0, 8, 255, round(calculated_deliv), "Actual Delivery (L1 + L2 + L3)");
 
 					if (m_nbr_pwr_failures != -1) {
 						SendTextSensorWhenDifferent(7, m_nbr_pwr_failures, m_last_nbr_pwr_failures, "# Power failures");
@@ -605,17 +556,17 @@ bool P1MeterBase::MatchLine()
 					{
 						// The ampere is rounded to whole numbers and therefor not accurate enough
 						// Therefor we calculate this ourselfs I=P/U, I1=(m_power.m_powerusel1/m_voltagel1)
-						float I1 = m_powerusel1 / m_voltagel1;
-						float I2 = m_powerusel2 / m_voltagel2;
-						float I3 = m_powerusel3 / m_voltagel3;
+						float I1 = avr_usage[0] / m_voltagel1;
+						float I2 = avr_usage[1] / m_voltagel2;
+						float I3 = avr_usage[2] / m_voltagel3;
 						SendCurrentSensor(0, 255, I1, I2, I3, "Current L1/L2/L3");
 
 						//Do the same for delivered
 						if (m_powerdell1 || m_powerdell2 || m_powerdell3)
 						{
-							I1 = m_powerdell1 / m_voltagel1;
-							I2 = m_powerdell2 / m_voltagel2;
-							I3 = m_powerdell3 / m_voltagel3;
+							I1 = avr_deliv[0] / m_voltagel1;
+							I2 = avr_deliv[1] / m_voltagel2;
+							I3 = avr_deliv[2] / m_voltagel3;
 							SendCurrentSensor(1, 255, I1, I2, I3, "Delivery Current L1/L2/L3");
 						}
 					}
@@ -683,8 +634,34 @@ bool P1MeterBase::MatchLine()
 							m_lastSendMBusDevice = atime;
 						} //water
 					}
-					m_lastUpdateTime = atime;
 				} //if (difftime(atime, m_lastUpdateTime) >= m_ratelimit)
+
+#define kWh_Update_Interval 10
+				if (difftime(atime, m_lastSendCalculated) >= kWh_Update_Interval)
+				{
+					m_lastSendCalculated = atime;
+
+					for (int iif = 0; iif < 3; iif++)
+					{
+						float avr_usage = m_avr_calculated[iif].Get_Usage_Avr();
+						float avr_deliv = m_avr_calculated[iif].Get_Delivery_Avr();
+						m_avr_calculated[iif].ResetTotals();
+
+						if (avr_usage != -1)
+						{
+							m_avr_calculated[iif].usage_cntr += (avr_usage * kWh_Update_Interval / 3600.0);
+							if (m_avr_calculated[iif].usage_cntr > 0)
+								SendKwhMeter(0, 1 + iif, 255, round(avr_usage), m_avr_calculated[iif].usage_cntr * 0.001, std_format("kWh Usage L%d (Calculated)", 1 + iif));
+						}
+						if (avr_deliv != -1)
+						{
+							m_avr_calculated[iif].delivery_cntr += (avr_deliv * kWh_Update_Interval / 3600.0);
+							if (m_avr_calculated[iif].delivery_cntr > 0)
+								SendKwhMeter(0, 4 + iif, 255, round(avr_deliv), m_avr_calculated[iif].delivery_cntr * 0.001, std_format("kWh Delivery L%d (Calculated)", 1 + iif));
+						}
+					}
+				} //if (difftime(atime, m_lastSendCalculated) >= kWh_Update_Interval)
+
 				m_linecount = 0;
 				l_exclmarkfound = 0;
 			}
