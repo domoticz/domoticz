@@ -1119,6 +1119,10 @@ void MQTTAutoDiscover::on_auto_discovery_message(const struct mosquitto_message*
 			pSensor->mode_command_topic = root["mode_command_topic"].asString();
 		if (!root["mode_cmd_t"].empty())
 			pSensor->mode_command_topic = root["mode_cmd_t"].asString();
+		if (!root["mode_command_template"].empty())
+			pSensor->mode_command_template = root["mode_command_template"].asString();
+		if (!root["mode_cmd_tpl"].empty())
+			pSensor->mode_command_template = root["mode_cmd_tpl"].asString();
 		if (!root["mode_state_topic"].empty())
 			pSensor->mode_state_topic = root["mode_state_topic"].asString();
 		if (!root["mode_stat_t"].empty())
@@ -3674,7 +3678,9 @@ bool MQTTAutoDiscover::SendSwitchCommand(const std::string& DeviceID, const std:
 				if (iLevel < (int)pSensor->climate_modes.size())
 					newState = pSensor->climate_modes.at(iLevel);
 				szCommandTopic = pSensor->mode_command_topic;
-				if (!pSensor->mode_state_template.empty())
+				if (!pSensor->mode_command_template.empty())
+					state_template = pSensor->mode_command_template;
+				else if (!pSensor->mode_state_template.empty())
 					state_template = pSensor->mode_state_template;
 			}
 			else if ((!pSensor->preset_modes.empty()) && (Unit == 2))
