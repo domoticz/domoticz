@@ -1196,9 +1196,11 @@ void MQTTAutoDiscover::on_auto_discovery_message(const struct mosquitto_message*
 			pSensor->preset_mode_value_template = root["pr_mode_val_tpl"].asString();
 
 		CleanValueTemplate(pSensor->mode_state_template);
+		CleanValueTemplate(pSensor->mode_command_template);
 		CleanValueTemplate(pSensor->temperature_state_template);
 		CleanValueTemplate(pSensor->current_temperature_template);
 		CleanValueTemplate(pSensor->preset_mode_value_template);
+		CleanValueTemplate(pSensor->preset_mode_command_template);
 
 		FixCommandTopicStateTemplate(pSensor->mode_command_topic, pSensor->mode_state_template);
 		FixCommandTopicStateTemplate(pSensor->temperature_command_topic, pSensor->temperature_command_template);
