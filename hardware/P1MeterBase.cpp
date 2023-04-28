@@ -7,12 +7,6 @@
 
 #include <openssl/bio.h>
 #include <openssl/evp.h>
-/*
-#include <cryptopp/aes.h>
-#include <cryptopp/gcm.h>
-#include <cryptopp/modes.h>
-#include <cryptopp/filters.h>
-*/
 
 #define CRC16_ARC	0x8005
 #define CRC16_ARC_REFL	0xA001
