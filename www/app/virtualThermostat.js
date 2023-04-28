@@ -184,6 +184,32 @@ ButtonActionvirtualthermostatDialog = function (hwidx, devIdx) {
 			ShowNotify($.t('Please select a switch device!'), 2500, true);
 			return;
 		}
+		if ($("#dialog-virtualthermostatdevice  #OnCmd").val() == null) {
+			ShowNotify($.t('Please select the switch On Command!'), 2500, true);
+			return;
+		}
+		if ($("#dialog-virtualthermostatdevice  #OffCmd").val() == null) {
+			ShowNotify($.t('Please select the switch OffCmd Command!'), 2500, true);
+			return;
+		}
+		
+		if ($("#dialog-virtualthermostatdevice  #Eco").val() == "") {
+			ShowNotify($.t('Please enter Eco Temperature!'), 2500, true);
+			return;
+		}
+		if ($("#dialog-virtualthermostatdevice  #Confor").val() == "") {
+			ShowNotify($.t('Please enter Comfort Temperature!'), 2500, true);
+			return;
+		}
+		if ($("#dialog-virtualthermostatdevice  #CoefProp").val() == "") {
+			ShowNotify($.t('Please enter proprotional Coeficient !'), 2500, true);
+			return;
+		}
+		if ($("#dialog-virtualthermostatdevice  #CoefInteg").val() == "") {
+			ShowNotify($.t('Please enter integral Coeficient !'), 2500, true);
+			return;
+		}
+		
 
 		$("#dialog-virtualthermostatdevice").dialog("close");
 
