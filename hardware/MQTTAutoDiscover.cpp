@@ -2990,26 +2990,31 @@ void MQTTAutoDiscover::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 		{
 			pSensor->devUnit = 1;
 			switchType = STYPE_PushOn;
+			szSwitchCmd = "on";
 		}
 		else if (pSensor->last_value == "off")
 		{
 			pSensor->devUnit = 2;
 			switchType = STYPE_PushOff;
+			szSwitchCmd = "off";
 		}
 		else if (pSensor->last_value == "brightness_up")
 		{
 			pSensor->devUnit = 3;
 			switchType = STYPE_PushOn;
+			szSwitchCmd = "on";
 		}
 		else if (pSensor->last_value == "brightness_down")
 		{
 			pSensor->devUnit = 4;
 			switchType = STYPE_PushOff;
+			szSwitchCmd = "off";
 		}
 		else {
 			//Assume action trigger
 			pSensor->devUnit = Crc8_strMQ(0, (uint8_t*)pSensor->last_value.c_str(), pSensor->last_value.size());
 			switchType = STYPE_PushOn;
+			szSwitchCmd = "on";
 		}
 		szSensorName += "_" + pSensor->last_value;
 	}
