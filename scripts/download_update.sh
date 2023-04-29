@@ -8,7 +8,8 @@ lowercase(){
 OS=`lowercase \`uname -s\``
 # KERNEL=`uname -r`
 MACH=`uname -m`
-if [ ${MACH} = "armv6l" ]
+ARCH=`dpkg --print-architecture`
+if [ ${MACH} = "armv6l" ] || [ ${ARCH} = "armhf" ]
 then
  MACH="armv7l"
 fi

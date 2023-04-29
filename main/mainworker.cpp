@@ -1258,7 +1258,7 @@ bool MainWorker::IsUpdateAvailable(const bool bIsForced)
 		return false;
 
 	std::string machine = my_uname.machine;
-	if (machine == "armv6l")
+	if (machine == "armv6l" || (machine == "aarch64" && sizeof(void*) == 4))
 	{
 		//Seems like old arm systems can also use the new arm build
 		machine = "armv7l";
