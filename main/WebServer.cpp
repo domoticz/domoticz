@@ -2576,7 +2576,7 @@ namespace http
 			std::string machine = my_uname.machine;
 			std::transform(systemname.begin(), systemname.end(), systemname.begin(), ::tolower);
 
-			if (machine == "armv6l")
+			if (machine == "armv6l" || (machine == "aarch64" && sizeof(void*) == 4))
 			{
 				// Seems like old arm systems can also use the new arm build
 				machine = "armv7l";
