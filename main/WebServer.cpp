@@ -12995,8 +12995,7 @@ namespace http
 				result = m_sql.safe_query("SELECT Type FROM Hardware WHERE (ID == %d)", HwdID);
 				if (!result.empty())
 				{
-					std::vector<std::string> sd = result[0];
-					_eHardwareTypes Type = (_eHardwareTypes)dType;
+					_eHardwareTypes Type = (_eHardwareTypes)std::stoi(result[0][0]);
 					if (Type == HTYPE_PythonPlugin)
 					{
 						bUpdateUnit = false;
