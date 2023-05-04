@@ -626,8 +626,13 @@ define(['app'], function (app) {
 				});
 			}
 			else if (
-				(text.indexOf("LAN") >= 0 && ((text.indexOf("YouLess") >= 0) || (text.indexOf("Denkovi") >= 0))) ||
-				(text.indexOf("Relay-Net") >= 0) || (text.indexOf("Satel Integra") >= 0) || (text.indexOf("eHouse") >= 0) || (text.indexOf("Harmony") >= 0) || (text.indexOf("Xiaomi Gateway") >= 0) || (text.indexOf("MyHome OpenWebNet with LAN interface") >= 0)
+				(text.indexOf("LAN") >= 0 && ((text.indexOf("YouLess") >= 0) || (text.indexOf("Denkovi") >= 0)))
+				|| (text.indexOf("Relay-Net") >= 0)
+				|| (text.indexOf("Satel Integra") >= 0)
+				|| (text.indexOf("eHouse") >= 0)
+				|| (text.indexOf("Harmony") >= 0)
+				|| (text.indexOf("Xiaomi Gateway") >= 0)
+				|| (text.indexOf("MyHome OpenWebNet with LAN interface") >= 0)
 			) {
 				var address = $("#hardwarecontent #divremote #tcpaddress").val();
 				if (text.indexOf("eHouse") >= 0) {
@@ -699,30 +704,6 @@ define(['app'], function (app) {
 					Mode4 = "0";
 					Mode5 = "0";
 					Mode6 = "0";
-
-				/*$.ajax({
-					url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype +
-					"&loglevel=" + logLevel +
-					"&port=" + refresh +
-					"&username=" + encodeURIComponent(username) +
-					"&password=" + encodeURIComponent(password) +
-					"&name=" + encodeURIComponent(name) +
-					"&enabled=" + bEnabled +
-					"&idx=" + idx +
-					"&datatimeout=" + datatimeout +
-					"&address=" + encodeURIComponent(url) +
-					"&Mode1=" + Mode1 + "&Mode2=" + Mode2 + "&Mode3=" + Mode3 + "&Mode4=" + Mode4 + "&Mode5=" + Mode5 + "&Mode6=" + Mode6 +
-					"&extra=" + extra,
-					async: false,
-					dataType: 'json',
-					success: function (data) {
-						RefreshHardwareTable();
-					},
-					error: function () {
-						ShowNotify($.t('Problem updating hardware!'), 2500, true);
-					}
-				});*/
-
 				}
 				else if (text.indexOf("Relay-Net") >= 0) {
 					Mode1 = $('#hardwarecontent #hardwareparamsrelaynet #relaynetpollinputs').prop("checked") ? 1 : 0;
@@ -750,25 +731,18 @@ define(['app'], function (app) {
 					Mode4 = inputcount;
 					Mode5 = relaycount;
 				}
-				var password = encodeURIComponent($("#hardwarecontent #divlogin #password").val());
+				var password = $("#hardwarecontent #divlogin #password").val();
 				if (text.indexOf("eHouse") >= 0) {
 					if (password == "") {
-								ShowNotify($.t('Please enter ASCI password - 6 characters'), 2500, true);
-								}
+						ShowNotify($.t('Please enter ASCII password - 6 characters'), 2500, true);
 					}
+				}
                 if (text.indexOf("MyHome OpenWebNet with LAN interface") >= 0) {
                     if (password != "") {
-
                         if ((password.length < 5) || (password.length > 16)) {
                             ShowNotify($.t('Please enter a password between 5 and 16 characters!'), 2500, true);
                             return;
                         }
-
-                        //var intRegex = /^[a-zA-Z0-9]*$/; 
-                        //if (!intRegex.test(password)) {
-                        //    ShowNotify($.t('Please enter a numeric or alphanumeric (for HMAC) password'), 2500, true);
-                        //    return;
-                        //}
                     }
 
                     var ratelimitp1 = $("#hardwarecontent #hardwareparamsratelimitp1 #ratelimitp1").val();
@@ -2104,9 +2078,13 @@ define(['app'], function (app) {
 				});
 			}
 			else if (
-				(text.indexOf("LAN") >= 0 && ((text.indexOf("YouLess") >= 0) || (text.indexOf("Denkovi") >= 0))) ||
-				(text.indexOf("Relay-Net") >= 0) || (text.indexOf("Satel Integra") >= 0) || (text.indexOf("eHouse") >= 0) || (text.indexOf("Harmony") >= 0) || (text.indexOf("Xiaomi Gateway") >= 0) ||
-				(text.indexOf("MyHome OpenWebNet with LAN interface") >= 0)
+				(text.indexOf("LAN") >= 0 && ((text.indexOf("YouLess") >= 0) || (text.indexOf("Denkovi") >= 0)))
+				|| (text.indexOf("Relay-Net") >= 0)
+				|| (text.indexOf("Satel Integra") >= 0)
+				|| (text.indexOf("eHouse") >= 0)
+				|| (text.indexOf("Harmony") >= 0)
+				|| (text.indexOf("Xiaomi Gateway") >= 0)
+				|| (text.indexOf("MyHome OpenWebNet with LAN interface") >= 0)
 			) {
 				Mode1 = 0;
 				Mode2 = 0;
@@ -2198,19 +2176,18 @@ define(['app'], function (app) {
 					Mode4 = inputcount;
 					Mode5 = relaycount;
 				}
-				var password = encodeURIComponent($("#hardwarecontent #divlogin #password").val());
-				if (text.indexOf("MyHome OpenWebNet with LAN interface") >= 0) {
+				var password = $("#hardwarecontent #divlogin #password").val();
+				if (text.indexOf("eHouse") >= 0) {
+					if (password == "") {
+						ShowNotify($.t('Please enter ASCII password - 6 characters'), 2500, true);
+					}
+				}
+				else if (text.indexOf("MyHome OpenWebNet with LAN interface") >= 0) {
                     if (password != "") {
                         if ((password.length < 5) || (password.length > 16)) {
                             ShowNotify($.t('Please enter a password between 5 and 16 characters!'), 2500, true);
                             return;
                         }
-
-                        //var intRegex = /^[a-zA-Z0-9]*$/; 
-                        //if (!intRegex.test(password)) {
-                        //    ShowNotify($.t('Please enter a numeric or alphanumeric (for HMAC) password'), 2500, true);
-                        //    return;
-                        //}
                     }
                     var ratelimitp1 = $("#hardwarecontent #hardwareparamsratelimitp1 #ratelimitp1").val();
                     if ((ratelimitp1 == "") || (isNaN(ratelimitp1))) {
