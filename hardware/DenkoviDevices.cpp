@@ -723,13 +723,13 @@ void CDenkoviDevices::GetMeterDetails()
 
 	if (m_iModel == DDEV_DAEnet_IP2 || m_iModel == DDEV_DAEnet_IP2_8_RELAYS) {
 		std::string sPass = m_Password;
-		if (sPass.find("%3A") == std::string::npos) {
+		/*if (sPass.find("%3A") == std::string::npos) {
 			if (m_iModel == DDEV_DAEnet_IP2)
 				Log(LOG_ERROR, "%s: Please enter username and password in format username:password. Example admin:admin!",szDenkoviHardwareNames[m_iModel]);
 			else if (m_iModel == DDEV_DAEnet_IP2_8_RELAYS)
 				Log(LOG_ERROR, "%s: Please enter username and password in format username:password. Example admin:admin!",szDenkoviHardwareNames[m_iModel]);
 			return;
-		}
+		}*/
 		sPass.replace(sPass.find("%3A"), 3, ":");
 		szURL << "http://" << sPass << "@" << m_szIPAddress << ":" << m_usIPPort << "/ioreg.js";
 	}
