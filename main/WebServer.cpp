@@ -8855,7 +8855,7 @@ namespace http
 					}
 					else
 					{
-						sprintf(szOrderBy, "A.[Order],A.%%s ASC");
+						sprintf(szOrderBy, "A.[Order],A.%s ASC", order.c_str());
 					}
 					// _log.Log(LOG_STATUS, "Getting all devices for user %lu", m_users[iUser].ID);
 					szQuery = ("SELECT A.ID, A.DeviceID, A.Unit, A.Name, A.Used,"
