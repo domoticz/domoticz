@@ -40,7 +40,7 @@
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
 
-#define DB_VERSION 161
+#define DB_VERSION 162
 
 #define DEFAULT_ADMINUSER "admin"
 #define DEFAULT_ADMINPWD "domoticz"
@@ -419,7 +419,14 @@ constexpr auto sqlCreateSharedDevices =
 "[ID] INTEGER PRIMARY KEY,  "
 "[SharedUserID] BIGINT NOT NULL, "
 "[DeviceRowID] BIGINT NOT NULL, "
-"[Favorite] INTEGER DEFAULT 0);";
+"[Favorite] INTEGER DEFAULT 0, "
+"[Order] INTEGER BIGINT(10) default 0);";
+
+constexpr auto sqlCreateSharedDevicesTrigger =
+"CREATE TRIGGER IF NOT EXISTS shareddevicesupdate AFTER INSERT ON SharedDevices\n"
+"BEGIN\n"
+"	UPDATE SharedDevices SET [Order] = (SELECT MAX([Order]) FROM SharedDevices)+1 WHERE SharedDevices.ID = NEW.ID;\n"
+"END;\n";
 
 constexpr auto sqlCreateEventMaster =
 "CREATE TABLE IF NOT EXISTS [EventMaster] ("
@@ -775,6 +782,7 @@ bool CSQLHelper::OpenDatabase()
 	query(sqlCreateTimerPlans);
 	query(sqlCreateSceneTimers);
 	query(sqlCreateSharedDevices);
+	query(sqlCreateSharedDevicesTrigger);
 	query(sqlCreateEventMaster);
 	query(sqlCreateEventRules);
 	query(sqlCreateZWaveNodes);
@@ -3125,7 +3133,21 @@ bool CSQLHelper::OpenDatabase()
 					DeleteHardware(sd[0]);
 				}
 			}
-
+		}
+		if (dbversion < 162)
+		{
+			//add Order column to SharedDevices
+			query("ALTER TABLE SharedDevices ADD COLUMN [Order] INTEGER BIGINT(10) default 0");
+			query(sqlCreateSharedDevicesTrigger);
+			std::vector<std::vector<std::string> > result;
+			result = safe_query("SELECT A.[Order], B.ID FROM DeviceStatus as A, SharedDevices as B WHERE (B.[Order] == 0) AND (A.ID == B.DeviceRowID)");
+			if (!result.empty())
+			{
+				for (const auto& sd : result)
+				{
+					safe_query("UPDATE SharedDevices SET [Order] = %s WHERE (ROWID == '%q')", sd[0].c_str(), sd[1].c_str());
+				}
+			}
 		}
 	}
 	else if (bNewInstall)

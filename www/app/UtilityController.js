@@ -1039,7 +1039,7 @@ define(['app', 'livesocket'], function (app) {
 			WatchDescriptions();
 
 			if ($scope.config.AllowWidgetOrdering == true) {
-				if (permissions.hasPermission("Admin")) {
+				if (permissions.hasPermission("User")) {
 					if (window.myglobals.ismobileint == false) {
 						$element.find(".span4").draggable({
 							drag: function () {

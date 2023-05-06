@@ -673,7 +673,7 @@ define(['app', 'livesocket'], function (app) {
 					WatchDescriptions();
 
 					if ($scope.ordering == true) {
-						if (permissions.hasPermission("Admin")) {
+						if (permissions.hasPermission("User")) {
 							if (window.myglobals.ismobileint == false) {
 								$element.draggable({
 									drag: function () {

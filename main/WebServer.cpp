@@ -6191,10 +6191,10 @@ namespace http
 			}
 			else if (cparam == "switchdeviceorder")
 			{
-				if (session.rights < 2)
+				if (session.rights < 1)
 				{
 					session.reply_status = reply::forbidden;
-					return; // Only admin user allowed
+					return; // Only admin and user allowed
 				}
 
 				std::string idx1 = request::findValue(&req, "idx1");
@@ -6207,31 +6207,82 @@ namespace http
 				std::string Order1, Order2;
 				if (roomid == 0)
 				{
-					// get device order 1
-					result = m_sql.safe_query("SELECT [Order] FROM DeviceStatus WHERE (ID == '%q')", idx1.c_str());
-					if (result.empty())
-						return;
-					Order1 = result[0][0];
-
-					// get device order 2
-					result = m_sql.safe_query("SELECT [Order] FROM DeviceStatus WHERE (ID == '%q')", idx2.c_str());
-					if (result.empty())
-						return;
-					Order2 = result[0][0];
-
-					root["status"] = "OK";
-					root["title"] = "SwitchDeviceOrder";
-
-					if (atoi(Order1.c_str()) < atoi(Order2.c_str()))
+					const int iUser = FindUser(session.username.c_str());
+					bool bIsUser = false;
+					if (iUser != -1)
 					{
-						m_sql.safe_query("UPDATE DeviceStatus SET [Order] = [Order]+1 WHERE ([Order] >= '%q' AND [Order] < '%q')", Order1.c_str(), Order2.c_str());
+						if (m_users[iUser].userrights != URIGHTS_ADMIN)
+							bIsUser = true;
+						else
+							bIsUser = (m_users[iUser].TotSensors > 0); //admin users with devices are also allowed
 					}
-					else
+					if (bIsUser)
 					{
-						m_sql.safe_query("UPDATE DeviceStatus SET [Order] = [Order]-1 WHERE ([Order] > '%q' AND [Order] <= '%q')", Order2.c_str(), Order1.c_str());
-					}
+						unsigned long userID = m_users[iUser].ID;
+						//First get ID's in SharedDevices table
+						auto result1 = m_sql.safe_query("SELECT ID FROM SharedDevices WHERE (SharedUserID == '%lu') AND (DeviceRowID == '%q')", userID, idx1.c_str());
+						auto result2 = m_sql.safe_query("SELECT ID FROM SharedDevices WHERE (SharedUserID == '%lu') AND (DeviceRowID == '%q')", userID, idx2.c_str());
+						if (result1.empty() || result2.empty())
+						{
+							session.reply_status = reply::internal_server_error;
+							return;
+						}
+						idx1 = result1[0][0];
+						idx2 = result2[0][0];
 
-					m_sql.safe_query("UPDATE DeviceStatus SET [Order] = '%q' WHERE (ID == '%q')", Order1.c_str(), idx2.c_str());
+						// get device order 1
+						result = m_sql.safe_query("SELECT [Order] FROM SharedDevices WHERE (ID == '%q')", idx1.c_str());
+						if (result.empty())
+							return;
+						Order1 = result[0][0];
+
+						// get device order 2
+						result = m_sql.safe_query("SELECT [Order] FROM SharedDevices WHERE (ID == '%q')", idx2.c_str());
+						if (result.empty())
+							return;
+						Order2 = result[0][0];
+
+						root["status"] = "OK";
+						root["title"] = "SwitchDeviceOrder";
+
+						if (atoi(Order1.c_str()) < atoi(Order2.c_str()))
+						{
+							m_sql.safe_query("UPDATE SharedDevices SET [Order] = [Order]+1 WHERE ([Order] >= '%q' AND [Order] < '%q')", Order1.c_str(), Order2.c_str());
+						}
+						else
+						{
+							m_sql.safe_query("UPDATE SharedDevices SET [Order] = [Order]-1 WHERE ([Order] > '%q' AND [Order] <= '%q')", Order2.c_str(), Order1.c_str());
+						}
+
+						m_sql.safe_query("UPDATE SharedDevices SET [Order] = '%q' WHERE (ID == '%q')", Order1.c_str(), idx2.c_str());
+					}
+					else {
+						// get device order 1
+						result = m_sql.safe_query("SELECT [Order] FROM DeviceStatus WHERE (ID == '%q')", idx1.c_str());
+						if (result.empty())
+							return;
+						Order1 = result[0][0];
+
+						// get device order 2
+						result = m_sql.safe_query("SELECT [Order] FROM DeviceStatus WHERE (ID == '%q')", idx2.c_str());
+						if (result.empty())
+							return;
+						Order2 = result[0][0];
+
+						root["status"] = "OK";
+						root["title"] = "SwitchDeviceOrder";
+
+						if (atoi(Order1.c_str()) < atoi(Order2.c_str()))
+						{
+							m_sql.safe_query("UPDATE DeviceStatus SET [Order] = [Order]+1 WHERE ([Order] >= '%q' AND [Order] < '%q')", Order1.c_str(), Order2.c_str());
+						}
+						else
+						{
+							m_sql.safe_query("UPDATE DeviceStatus SET [Order] = [Order]-1 WHERE ([Order] > '%q' AND [Order] <= '%q')", Order2.c_str(), Order1.c_str());
+						}
+
+						m_sql.safe_query("UPDATE DeviceStatus SET [Order] = '%q' WHERE (ID == '%q')", Order1.c_str(), idx2.c_str());
+					}
 				}
 				else
 				{
@@ -6649,7 +6700,6 @@ namespace http
 				const int iUser = FindUser(session.username.c_str());
 				if (iUser != -1)
 				{
-					const _eUserRights urights = m_users[iUser].userrights;
 					if (m_users[iUser].ID != 0xFFFF)
 					{
 						m_sql.safe_query("UPDATE SharedDevices SET Favorite=%d WHERE (DeviceRowID == '%q') AND (SharedUserID == %d)", isfavorite, idx.c_str(),
@@ -8518,8 +8568,7 @@ namespace http
 				iUser = FindUser(username.c_str());
 				if (iUser != -1)
 				{
-					_eUserRights urights = m_users[iUser].userrights;
-					if (urights != URIGHTS_ADMIN)
+					if (m_users[iUser].TotSensors > 0)
 					{
 						result = m_sql.safe_query("SELECT COUNT(*) FROM SharedDevices WHERE (SharedUserID == %lu)", m_users[iUser].ID);
 						if (!result.empty())
@@ -8851,11 +8900,11 @@ namespace http
 
 					if (order.empty() || (!isAlpha))
 					{
-						strcpy(szOrderBy, "A.[Order],A.LastUpdate DESC");
+						strcpy(szOrderBy, "B.[Order],A.LastUpdate DESC");
 					}
 					else
 					{
-						sprintf(szOrderBy, "A.[Order],A.%s ASC", order.c_str());
+						sprintf(szOrderBy, "B.[Order],A.%s ASC", order.c_str());
 					}
 					// _log.Log(LOG_STATUS, "Getting all devices for user %lu", m_users[iUser].ID);
 					szQuery = ("SELECT A.ID, A.DeviceID, A.Unit, A.Name, A.Used,"

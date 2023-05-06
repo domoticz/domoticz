@@ -1,10 +1,12 @@
 Version 2023.xx
+- Implemented: Device reordering for Users with devices
 - Implemented: LUA: Added name state to devicechanged_ext table
 - Implemented: RFXCom, Updated SDK
 - Implemented: MQTT-AD, added support for number (config) types
 - Implemented: P1 Meter, added Actual Usage/Delivery (total of L1 + L2 + L3)
 - Implemented: P1 Meter, Added calculated kWh devices per phase for usage and delivery
 - Implemented: -nocache command line option (ask browser not to cache pages)
+- Implemented: Users with admin rights and selected devices will now see only those devices
 - Implemented: Visual Crossing (replacement for Darksky/Forecast)
 - Fixed: Chime structure check
 - Fixed: Counter day charts, better hourly bars and usage
