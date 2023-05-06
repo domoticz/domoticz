@@ -6635,7 +6635,7 @@ namespace http
 				if (session.rights < 1)
 				{
 					session.reply_status = reply::forbidden;
-					return; // Only admin user allowed
+					return; // Only admin/user allowed
 				}
 				std::string idx = request::findValue(&req, "idx");
 				std::string sisfavorite = request::findValue(&req, "isfavorite");
@@ -6650,7 +6650,7 @@ namespace http
 				if (iUser != -1)
 				{
 					const _eUserRights urights = m_users[iUser].userrights;
-					if ((urights != URIGHTS_ADMIN) && (m_users[iUser].ID != 0xFFFF))
+					if (m_users[iUser].ID != 0xFFFF)
 					{
 						m_sql.safe_query("UPDATE SharedDevices SET Favorite=%d WHERE (DeviceRowID == '%q') AND (SharedUserID == %d)", isfavorite, idx.c_str(),
 							m_users[iUser].ID);
