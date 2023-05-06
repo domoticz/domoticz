@@ -6698,14 +6698,19 @@ namespace http
 				root["title"] = "MakeFavorite";
 
 				const int iUser = FindUser(session.username.c_str());
+				bool bIsUser = false;
 				if (iUser != -1)
 				{
-					if (m_users[iUser].ID != 0xFFFF)
-					{
-						m_sql.safe_query("UPDATE SharedDevices SET Favorite=%d WHERE (DeviceRowID == '%q') AND (SharedUserID == %d)", isfavorite, idx.c_str(),
-							m_users[iUser].ID);
-						return;
-					}
+					if (m_users[iUser].userrights != URIGHTS_ADMIN)
+						bIsUser = true;
+					else
+						bIsUser = (m_users[iUser].TotSensors > 0); //admin users with devices are also allowed
+				}
+				if ((bIsUser) && (m_users[iUser].ID != 0xFFFF))
+				{
+					m_sql.safe_query("UPDATE SharedDevices SET Favorite=%d WHERE (DeviceRowID == '%q') AND (SharedUserID == %d)", isfavorite, idx.c_str(),
+						m_users[iUser].ID);
+					return;
 				}
 				m_sql.safe_query("UPDATE DeviceStatus SET Favorite=%d WHERE (ID == '%q')", isfavorite, idx.c_str());
 			} // makefavorite
