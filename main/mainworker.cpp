@@ -11330,7 +11330,7 @@ void MainWorker::decode_LightningSensor(const CDomoticzHardwareBase* pHardware, 
 	if (!result.empty())
 	{
 		int old_count = atoi(result[0][0].c_str());
-		if (old_count < new_count)
+		if (old_count <= new_count)
 		{
 			new_count = strike_count - old_count;
 		}
