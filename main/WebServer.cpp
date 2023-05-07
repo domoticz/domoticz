@@ -8153,7 +8153,7 @@ namespace http
 				m_sql.UpdatePreferencesVar("FloorplanAnimateZoom", (request::findValue(&req, "FloorplanAnimateZoom") == "on" ? 1 : 0)); cntSettings++;
 				m_sql.UpdatePreferencesVar("FloorplanShowSensorValues", (request::findValue(&req, "FloorplanShowSensorValues") == "on" ? 1 : 0)); cntSettings++;
 				m_sql.UpdatePreferencesVar("FloorplanShowSwitchValues", (request::findValue(&req, "FloorplanShowSwitchValues") == "on" ? 1 : 0)); cntSettings++;
-				m_sql.UpdatePreferencesVar("FloorplanShowSceneNames", (request::findValue(&req, "FloorplanShowSwitchValues") == "on" ? 1 : 0)); cntSettings++;
+				m_sql.UpdatePreferencesVar("FloorplanShowSceneNames", (request::findValue(&req, "FloorplanShowSceneNames") == "on" ? 1 : 0)); cntSettings++;
 				m_sql.UpdatePreferencesVar("IFTTTEnabled", (request::findValue(&req, "IFTTTEnabled") == "on" ? 1 : 0)); cntSettings++;
 
 				m_sql.UpdatePreferencesVar("Language", request::findValue(&req, "Language")); cntSettings++;
