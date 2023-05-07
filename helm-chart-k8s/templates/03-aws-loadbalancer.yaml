@@ -1,0 +1,40 @@
+{{- if eq .Values.service.loadBalancer "aws" }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: svc-pub-domoticz-{{ .Values.general.name }}
+  labels:
+    app: domoticz
+    environment: {{ .Values.general.environment }}
+    client: {{ .Values.general.name }}
+  annotations:
+    prometheus.io/scrape: 'true'
+    filter.by.port.name: 'true'
+    app: domoticz
+    app.business.client: {{ .Values.general.name }}
+    app.owner: 'Domoticz'
+    app.helm-chart: 'https://hub.docker.com/repository/docker/jpradoar/'
+    app.imageregistry: 'https://hub.docker.com/r/domoticz/domoticz/'   
+    service.beta.kubernetes.io/aws-load-balancer-additional-resource-tags: "product=Domoticz"
+    service.beta.kubernetes.io/aws-load-balancer-cross-zone-load-balancing-enabled: "true"
+    service.beta.kubernetes.io/aws-load-balancer-type: nlb # (AWS NLB)
+    service.beta.kubernetes.io/aws-load-balancer-healthcheck-healthy-threshold: "3"
+    service.beta.kubernetes.io/aws-load-balancer-healthcheck-unhealthy-threshold: "3"
+    service.beta.kubernetes.io/aws-load-balancer-healthcheck-interval: "10"
+    service.beta.kubernetes.io/aws-load-balancer-healthcheck-timeout: "10"
+    service.beta.kubernetes.io/aws-load-balancer-healthcheck-protocol: "TCP"
+spec:
+  type: LoadBalancer
+  ports:
+  - name: http
+    port: 8080
+    targetPort: 8080
+  - name: https
+    port: 8443
+    targetPort: 443    
+  selector:
+    app: domoticz
+    environment: {{ .Values.general.environment }}
+    client: {{ .Values.general.name }}    
+{{- end }}

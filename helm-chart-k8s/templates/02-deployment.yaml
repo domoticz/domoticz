@@ -1,0 +1,70 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: domoticz-{{ .Values.general.name }}
+#----------------------------------  
+  labels:
+    app: domoticz
+    environment: {{ .Values.general.environment }}
+    client: {{ .Values.general.name }}
+  annotations:
+    prometheus.io/scrape: 'true'
+    filter.by.port.name: 'true'
+    app: domoticz
+    app.business.client: {{ .Values.general.name }}
+    app.owner: 'Domoticz'
+    app.helm-chart: 'https://hub.docker.com/repository/docker/jpradoar/'
+    app.imageregistry: 'https://hub.docker.com/r/domoticz/domoticz/' 
+spec:
+#----------------------------------
+  replicas: {{ .Values.replicaCount }}
+  strategy: 
+    type: RollingUpdate    
+    rollingUpdate:      
+       maxSurge: 50%          
+       maxUnavailable: 0  
+#-----------------------------------------        
+  selector:
+    matchLabels:
+      app: domoticz
+      environment: {{ .Values.general.environment }}
+      client: {{ .Values.general.name }}      
+  template:
+    metadata:
+      labels:
+        app: domoticz
+        environment: {{ .Values.general.environment }}
+        client: {{ .Values.general.name }}        
+      annotations:
+        prometheus.io/scrape: 'true'
+        app: domoticz
+        app.business.client: {{ .Values.general.name }}
+        app.owner: 'Domoticz'
+        app.helm-chart: 'https://hub.docker.com/repository/docker/jpradoar/'
+        app.imageregistry: 'https://hub.docker.com/r/domoticz/domoticz/'  
+    spec:
+      containers:
+      - name: domoticz-{{ .Values.general.name }}
+        image: domoticz/domoticz:stable
+        imagePullPolicy: {{ .Values.image.imagePullPolicy }}
+        ports:
+         - containerPort: {{ .Values.service.port }}
+        env:
+        - name: TZ
+          value: {{ .Values.general.tz }}            
+#-----------------------------------------         
+        livenessProbe:
+          httpGet:
+            path: {{ .Values.service.path }}
+            port: {{ .Values.service.port }}
+          initialDelaySeconds: 3
+          periodSeconds: 3
+#-----------------------------------------          
+        readinessProbe:
+          httpGet:
+            path: {{ .Values.service.path }}
+            port: {{ .Values.service.port }}
+          initialDelaySeconds: 3
+          periodSeconds: 3
+

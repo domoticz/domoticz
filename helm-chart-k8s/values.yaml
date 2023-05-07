@@ -1,0 +1,25 @@
+
+general:
+  name: client01  # Siempre en minuscula 
+  tz: Europe/Amsterdam
+  environment: development
+
+image:
+  #repository: domoticz/domoticz
+  imagePullPolicy: Always
+  #tag: "stable"
+
+service:
+  type: ClusterIP
+  port: 8080
+  https_port: 8443
+  path: /
+  loadBalancer: aws # none/aws
+
+resources:
+  limits:
+   cpu: 100m
+   memory: 128Mi
+  requests:
+   cpu: 100m
+   memory: 128Mi
