@@ -13,6 +13,7 @@ Version 2023.xx
 - Fixed: Device reordering when a room plan was selected
 - Fixed: Forecast button now displays a working forecast
 - Fixed: Install and update fixed for Raspberry Pi 4 with 32bit (armhf) userland
+- Fixed: Settings/Floorplan, Scene Names value was not saved
 - Changed: MQTT-AD, better Unit calculation for scene/action devices
 - Removed: native GoodWe hardware (use the new GoodWe python plugin instead)
 
