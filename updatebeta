@@ -3,6 +3,9 @@
 # This script can be used to upgrade to the latest beta version
 # To skip making a backup, use -nobackup as commandline argument
 
+# To update if default servercert.pem change someday...
+MD5_DEFAULT_SERVERCERT="7671292113c501d9b432c825c09b693a"
+
 lowercase(){
     echo "$1" | sed "y/ABCDEFGHIJKLMNOPQRSTUVWXYZ/abcdefghijklmnopqrstuvwxyz/"
 }
@@ -44,9 +47,24 @@ then
  sudo service domoticz.sh start
  exit 1
 fi
+if [ -f server_cert.pem ]; then
+  md5sum_cert=$(md5sum < server_cert.pem)
+  md5sum_cert=${MD5_DEFAULT_SERVERCERT%\ *}
+  if [ $md5sum_cert != MD5_DEFAULT_SERVERCERT ]; then
+    echo "Backup non-default server_cert.pem"
+    mv -f server_cert.pem server_cert.pem.sav
+  fi
+fi
 echo "Installing new version..."
 tar xfz domoticz_beta.tgz --checkpoint=.100
+echo "\n"
 rm domoticz_beta.tgz
-echo "\nStarting Domoticz... (please standby...)"
+if [ -f server_cert.pem.sav ]; then
+  echo "Restore non-default server_cert.pem"
+  [ -f server_cert.pem ] && mv -f server_cert.pem server_cert.pem.org || echo "WARNING: No servercert.pem in downloaded archive!!!"
+  mv -f server_cert.pem.sav server_cert.pem
+  rm -f server_cert.pem.sav
+fi
+echo "Starting Domoticz... (please standby...)"
 sudo service domoticz.sh start
 echo "Done..."
