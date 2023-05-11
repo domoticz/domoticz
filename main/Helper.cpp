@@ -117,6 +117,16 @@ unsigned int Crc32(unsigned int crc, const uint8_t* buf, size_t size)
 	return crc ^ ~0U;
 }
 
+uint8_t Crc8_strMQ(uint8_t crc, const uint8_t* buf, size_t size)
+{
+	crc = 0xff;
+	if (buf == NULL)
+		return crc;
+	while (size--)
+		crc += *buf++;
+	return crc;
+}
+
 void StringSplit(std::string str, const std::string &delim, std::vector<std::string> &results)
 {
 	results.clear();

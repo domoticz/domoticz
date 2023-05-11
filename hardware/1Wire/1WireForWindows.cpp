@@ -188,11 +188,12 @@ bool C1WireForWindows::IsAvailable()
 #endif
 }
 
-C1WireForWindows::C1WireForWindows()
+C1WireForWindows::C1WireForWindows(C1Wire *C1WireBase)
 {
 	// Connect to service
+	m_p1WireBase = C1WireBase;
 	m_Socket = ConnectToService();
-	_log.Log(LOG_STATUS, "Using 1-Wire support (Windows)...");
+	m_p1WireBase->Log(LOG_STATUS, "Using 1-Wire support (Windows)...");
 }
 
 C1WireForWindows::~C1WireForWindows()

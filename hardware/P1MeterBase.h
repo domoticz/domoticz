@@ -9,6 +9,57 @@ class P1MeterBase : public CDomoticzHardwareBase
 	friend class P1MeterTCP;
 	friend class CRFXBase;
 
+	struct _tAvrKwh
+	{
+		double usage_cntr;
+		double usage_total;
+		uint8_t usage_values;
+
+		double delivery_cntr;
+		double delivery_total;
+		uint8_t delivery_values;
+
+		void Init()
+		{
+			usage_cntr = 0;
+			delivery_cntr = 0;
+			ResetTotals();
+		}
+
+		void ResetTotals()
+		{
+			usage_total = 0;
+			usage_values = 0;
+
+			delivery_total = 0;
+			delivery_values = 0;
+		}
+
+		void Add_Usage(const float usage)
+		{
+			usage_total += usage;
+			usage_values++;
+		}
+		void Add_Delivery(const float usage)
+		{
+			delivery_total += usage;
+			delivery_values++;
+		}
+
+		float Get_Usage_Avr()
+		{
+			if (usage_values < 1)
+				return 0.F;
+			return static_cast<float>(usage_total / double(usage_values));
+		}
+		float Get_Delivery_Avr()
+		{
+			if (delivery_values < 1)
+				return 0.F;
+			return static_cast<float>(delivery_total / double(delivery_values));
+		}
+	};
+
 public:
 	P1MeterBase();
 	~P1MeterBase() override;
@@ -62,6 +113,7 @@ private:
 	unsigned long m_lastgasusage;
 	time_t m_lastSharedSendGas;
 	time_t m_lastUpdateTime;
+	time_t m_lastSendCalculated;
 
 	int m_nbr_pwr_failures = -1;
 	int m_nbr_long_pwr_failures = -1;
@@ -97,6 +149,9 @@ private:
 	float m_powerusel1;
 	float m_powerusel2;
 	float m_powerusel3;
+
+	_tAvrKwh m_avr_rate_limit[3];
+	_tAvrKwh m_avr_calculated[3];
 
 	uint8_t m_gasmbuschannel;
 	std::string m_gasprefix;

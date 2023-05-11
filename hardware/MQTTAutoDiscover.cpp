@@ -17,7 +17,7 @@ std::vector<std::string> allowed_components = {
 		"button",
 		"climate",
 		"cover",
-		"device_automation",
+		//"device_automation",
 		"light",
 		"lock",
 		"number",
@@ -823,6 +823,8 @@ void MQTTAutoDiscover::on_auto_discovery_message(const struct mosquitto_message*
 			pSensor->state_topic = root["stat_t"].asString();
 		else if (!root["json_attributes_topic"].empty())
 			pSensor->state_topic = root["json_attributes_topic"].asString();
+		else if (!root["topic"].empty())
+			pSensor->state_topic = root["topic"].asString();
 
 		if (!root["command_topic"].empty())
 			pSensor->command_topic = root["command_topic"].asString();
@@ -911,9 +913,9 @@ void MQTTAutoDiscover::on_auto_discovery_message(const struct mosquitto_message*
 		else if (!root["pl_on"].empty())
 			pSensor->payload_on = root["pl_on"].asString();
 		if (!root["payload"].empty())
-			pSensor->payload_on = root["payload_on"].asString();
+			pSensor->payload_on = root["payload"].asString();
 		if (!root["pl"].empty())
-			pSensor->payload_on = root["payload_on"].asString();
+			pSensor->payload_on = root["pl"].asString();
 		if (!root["payload_off"].empty())
 			pSensor->payload_off = root["payload_off"].asString();
 		else if (!root["pl_off"].empty())
@@ -1117,6 +1119,10 @@ void MQTTAutoDiscover::on_auto_discovery_message(const struct mosquitto_message*
 			pSensor->mode_command_topic = root["mode_command_topic"].asString();
 		if (!root["mode_cmd_t"].empty())
 			pSensor->mode_command_topic = root["mode_cmd_t"].asString();
+		if (!root["mode_command_template"].empty())
+			pSensor->mode_command_template = root["mode_command_template"].asString();
+		if (!root["mode_cmd_tpl"].empty())
+			pSensor->mode_command_template = root["mode_cmd_tpl"].asString();
 		if (!root["mode_state_topic"].empty())
 			pSensor->mode_state_topic = root["mode_state_topic"].asString();
 		if (!root["mode_stat_t"].empty())
@@ -1190,9 +1196,11 @@ void MQTTAutoDiscover::on_auto_discovery_message(const struct mosquitto_message*
 			pSensor->preset_mode_value_template = root["pr_mode_val_tpl"].asString();
 
 		CleanValueTemplate(pSensor->mode_state_template);
+		CleanValueTemplate(pSensor->mode_command_template);
 		CleanValueTemplate(pSensor->temperature_state_template);
 		CleanValueTemplate(pSensor->current_temperature_template);
 		CleanValueTemplate(pSensor->preset_mode_value_template);
+		CleanValueTemplate(pSensor->preset_mode_command_template);
 
 		FixCommandTopicStateTemplate(pSensor->mode_command_topic, pSensor->mode_state_template);
 		FixCommandTopicStateTemplate(pSensor->temperature_command_topic, pSensor->temperature_command_template);
@@ -1282,6 +1290,15 @@ void MQTTAutoDiscover::on_auto_discovery_message(const struct mosquitto_message*
 				return;
 			}
 		}
+		else if (pSensor->component_type == "device_automation")
+		{
+			if (pSensor->state_topic.empty())
+			{
+				Log(LOG_ERROR, "device_automation should have a topic!");
+				return;
+			}
+		}
+		
 
 
 		//Check if we want to subscribe to this sensor
@@ -1300,6 +1317,7 @@ void MQTTAutoDiscover::on_auto_discovery_message(const struct mosquitto_message*
 				|| (pSensor->component_type == "climate")
 				|| (pSensor->component_type == "button")
 				|| (pSensor->component_type == "number")
+				|| (pSensor->component_type == "device_automation")
 				);
 
 		if (bDoSubscribe)
@@ -2972,26 +2990,31 @@ void MQTTAutoDiscover::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 		{
 			pSensor->devUnit = 1;
 			switchType = STYPE_PushOn;
+			szSwitchCmd = "on";
 		}
 		else if (pSensor->last_value == "off")
 		{
 			pSensor->devUnit = 2;
 			switchType = STYPE_PushOff;
+			szSwitchCmd = "off";
 		}
 		else if (pSensor->last_value == "brightness_up")
 		{
 			pSensor->devUnit = 3;
 			switchType = STYPE_PushOn;
+			szSwitchCmd = "on";
 		}
 		else if (pSensor->last_value == "brightness_down")
 		{
 			pSensor->devUnit = 4;
 			switchType = STYPE_PushOff;
+			szSwitchCmd = "off";
 		}
 		else {
 			//Assume action trigger
-			pSensor->devUnit = Crc8(0, (uint8_t*)pSensor->last_value.c_str(), pSensor->last_value.size());
+			pSensor->devUnit = Crc8_strMQ(0, (uint8_t*)pSensor->last_value.c_str(), pSensor->last_value.size());
 			switchType = STYPE_PushOn;
+			szSwitchCmd = "on";
 		}
 		szSensorName += "_" + pSensor->last_value;
 	}
@@ -3662,7 +3685,9 @@ bool MQTTAutoDiscover::SendSwitchCommand(const std::string& DeviceID, const std:
 				if (iLevel < (int)pSensor->climate_modes.size())
 					newState = pSensor->climate_modes.at(iLevel);
 				szCommandTopic = pSensor->mode_command_topic;
-				if (!pSensor->mode_state_template.empty())
+				if (!pSensor->mode_command_template.empty())
+					state_template = pSensor->mode_command_template;
+				else if (!pSensor->mode_state_template.empty())
 					state_template = pSensor->mode_state_template;
 			}
 			else if ((!pSensor->preset_modes.empty()) && (Unit == 2))

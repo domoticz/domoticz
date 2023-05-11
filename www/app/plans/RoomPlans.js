@@ -245,7 +245,7 @@ define(['app'], function (app) {
 				table.on('click', '.js-remove', function () {
 					var plan = table.api().row($(this).closest('tr')).data();
 
-					bootbox.confirm('Are you sure you want to delete this Plan?')
+					bootbox.confirm($.t("Are you sure you want to delete this Plan?"))
 						.then(function () {
 							return dzRoomPlanApi.removePlan(plan.idx);
 						})
@@ -350,7 +350,7 @@ define(['app'], function (app) {
 				table.on('click', '.js-remove', function () {
 					var device = table.api().row($(this).closest('tr')).data();
 
-					bootbox.confirm('Are you sure to delete this Active Device?\n\nThis action can not be undone...?')
+					bootbox.confirm($.t("Are you sure to delete this Active Device?\n\nThis action can not be undone...?"))
 						.then(function () {
 							return dzRoomPlanApi.removeDeviceFromPlan(device.idx);
 						})
@@ -571,7 +571,7 @@ define(['app'], function (app) {
 		}
 
 		function removeAllDevicesFromPlan() {
-			bootbox.confirm('Are you sure to delete ALL Active Devices?\n\nThis action can not be undone!!')
+			bootbox.confirm($.t("Are you sure to delete ALL Active Devices?\n\nThis action can not be undone!!"))
 				.then(function () {
 					return dzRoomPlanApi.removeAllDevicesFromPlan($ctrl.selectedPlan.idx);
 				})

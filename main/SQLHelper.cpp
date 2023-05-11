@@ -41,7 +41,7 @@
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
 
-#define DB_VERSION 160
+#define DB_VERSION 161
 
 #define DEFAULT_ADMINUSER "admin"
 #define DEFAULT_ADMINPWD "domoticz"
@@ -1971,6 +1971,7 @@ bool CSQLHelper::OpenDatabase()
 				<< "([Type] = " << HTYPE_TOONTHERMOSTAT << ") OR "
 				<< "([Type] = " << HTYPE_Wunderground << ") OR "
 				<< "([Type] = " << HTYPE_DarkSky << ") OR "
+				<< "([Type] = " << HTYPE_VisualCrossing << ") OR "
 				<< "([Type] = " << HTYPE_AccuWeather << ") OR "
 				<< "([Type] = " << HTYPE_OpenZWave << ")"
 				<< ")";
@@ -3139,6 +3140,20 @@ bool CSQLHelper::OpenDatabase()
 				"SELECT [ID],[Name],[ValueType],[Value],[LastUpdate] "
 				"FROM tmp_UserVariables");
 			query("DROP TABLE tmp_UserVariables;");
+		}
+		if (dbversion < 161)
+		{
+			//delete Goodwe inverter hardware as it's not working for quite some time
+			//and there is a python plugin for it
+			auto result = safe_query("SELECT ID FROM Hardware WHERE ([Type]==84)");
+			if (!result.empty())
+			{
+				for (const auto& sd : result)
+				{
+					DeleteHardware(sd[0]);
+				}
+			}
+
 		}
 	}
 	else if (bNewInstall)

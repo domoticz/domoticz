@@ -47,16 +47,16 @@ void C1Wire::DetectSystem()
 	// see http://owfs.org/index.php?page=w1-project.
 	if (m_path.length() != 0)
 	{
-		m_system = new C1WireByOWFS(m_path);
+		m_system = new C1WireByOWFS(m_path, this);
 	}
 	else
 	{
 #ifdef WIN32
 		if (C1WireForWindows::IsAvailable())
-			m_system = new C1WireForWindows();
+			m_system = new C1WireForWindows(this);
 #else // WIN32
 		if (C1WireByKernel::IsAvailable())
-			m_system = new C1WireByKernel();
+			m_system = new C1WireByKernel(this);
 #endif // WIN32
 	}
 }
@@ -306,7 +306,7 @@ void C1Wire::BuildSensorList() {
 	std::vector<_t1WireDevice> devices;
 	int n1wireVersion = 0;
 
-	_log.Debug(DEBUG_HARDWARE, "1-Wire: Searching sensors");
+	Debug(DEBUG_HARDWARE, "1-Wire: Searching sensors");
 
 	m_sensors.clear();
 	m_system->GetDevices(devices);
@@ -362,7 +362,7 @@ void C1Wire::BuildSwitchList() {
 
 	std::vector<_t1WireDevice> devices;
 
-	_log.Debug(DEBUG_HARDWARE, "1-Wire: Searching switches");
+	Debug(DEBUG_HARDWARE, "1-Wire: Searching switches");
 
 	m_switches.clear();
 	m_system->GetDevices(devices);
@@ -529,6 +529,9 @@ void C1Wire::ReportLightState(const std::string& deviceId, const uint8_t unit, c
 
 void C1Wire::ReportCounter(const std::string& deviceId, const int unit, const unsigned long counter)
 {
+	if (counter < 0)	//Detect NULL reads of DS2423 counter.
+		return;
+	
 	unsigned char deviceIdByteArray[DEVICE_ID_SIZE] = { 0 };
 	DeviceIdToByteArray(deviceId, deviceIdByteArray);
 

@@ -43,6 +43,7 @@
 #include "../hardware/I2C.h"
 #include "../hardware/Wunderground.h"
 #include "../hardware/DarkSky.h"
+#include "../hardware/VisualCrossing.h"
 #include "../hardware/HardwareMonitor.h"
 #include "../hardware/Dummy.h"
 #include "../hardware/Tellstick.h"
@@ -120,7 +121,6 @@
 #include "../hardware/BleBox.h"
 #include "../hardware/Ec3kMeterTCP.h"
 #include "../hardware/OpenWeatherMap.h"
-#include "../hardware/GoodweAPI.h"
 #include "../hardware/Daikin.h"
 #include "../hardware/HEOS.h"
 #include "../hardware/MultiFun.h"
@@ -914,6 +914,9 @@ bool MainWorker::AddHardwareFromParams(
 	case HTYPE_DarkSky:
 		pHardware = new CDarkSky(ID, Username, Password);
 		break;
+	case HTYPE_VisualCrossing:
+		pHardware = new CVisualCrossing(ID, Username, Password);
+		break;
 	case HTYPE_AccuWeather:
 		pHardware = new CAccuWeather(ID, Username, Password);
 		break;
@@ -1023,9 +1026,6 @@ bool MainWorker::AddHardwareFromParams(
 		break;
 	case HTYPE_Ec3kMeterTCP:
 		pHardware = new Ec3kMeterTCP(ID, Address, Port);
-		break;
-	case HTYPE_GoodweAPI:
-		pHardware = new GoodweAPI(ID, Username, Mode1);
 		break;
 	case HTYPE_Yeelight:
 		pHardware = new Yeelight(ID);
@@ -1262,7 +1262,7 @@ bool MainWorker::IsUpdateAvailable(const bool bIsForced)
 		return false;
 
 	std::string machine = my_uname.machine;
-	if (machine == "armv6l")
+	if (machine == "armv6l" || (machine == "aarch64" && sizeof(void*) == 4))
 	{
 		//Seems like old arm systems can also use the new arm build
 		machine = "armv7l";

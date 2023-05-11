@@ -74,6 +74,7 @@ class MQTTAutoDiscover : public MQTT
 
 		//Climate
 		std::string mode_command_topic;
+		std::string mode_command_template;
 		std::string mode_state_topic;
 		std::string mode_state_template;
 		std::vector<std::string> climate_modes;

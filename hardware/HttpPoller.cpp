@@ -48,7 +48,7 @@ void CHttpPoller::Init()
 
 bool CHttpPoller::WriteToHardware(const char* /*pdata*/, const unsigned char /*length*/)
 {
-	return false;
+	return true;
 }
 
 bool CHttpPoller::StartHardware()

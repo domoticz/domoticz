@@ -18,6 +18,7 @@
 #include "../hardware/AirconWithMe.h"
 #include "../hardware/Buienradar.h"
 #include "../hardware/DarkSky.h"
+#include "../hardware/VisualCrossing.h"
 #include "../hardware/eHouseTCP.h"
 #include "../hardware/EnOceanESP2.h"
 #include "../hardware/EnOceanESP3.h"
@@ -1006,7 +1007,11 @@ namespace http
 					bDoAdd = false;
 
 				if (bDoAdd)
-					_htypes[Hardware_Type_Desc(ii)] = ii;
+				{
+					std::string description = Hardware_Type_Desc(ii);
+					if (!description.empty())
+						_htypes[description] = ii;
+				}
 			}
 
 			// return a sorted hardware list
@@ -1240,7 +1245,7 @@ namespace http
 			{
 				// All fine here
 			}
-			else if ((htype == HTYPE_Wunderground) || (htype == HTYPE_DarkSky) || (htype == HTYPE_AccuWeather) || (htype == HTYPE_OpenWeatherMap) || (htype == HTYPE_ICYTHERMOSTAT) ||
+			else if ((htype == HTYPE_Wunderground) || (htype == HTYPE_DarkSky) || (htype == HTYPE_VisualCrossing) || (htype == HTYPE_AccuWeather) || (htype == HTYPE_OpenWeatherMap) || (htype == HTYPE_ICYTHERMOSTAT) ||
 				(htype == HTYPE_TOONTHERMOSTAT) || (htype == HTYPE_AtagOne) || (htype == HTYPE_PVOUTPUT_INPUT) || (htype == HTYPE_NEST) || (htype == HTYPE_ANNATHERMOSTAT) ||
 				(htype == HTYPE_THERMOSMART) || (htype == HTYPE_Tado) || (htype == HTYPE_Tesla) || (htype == HTYPE_Mercedes) || (htype == HTYPE_Netatmo))
 			{
@@ -1301,11 +1306,6 @@ namespace http
 			else if (htype == HTYPE_Daikin)
 			{
 				// All fine here
-			}
-			else if (htype == HTYPE_GoodweAPI)
-			{
-				if (username.empty())
-					return;
 			}
 			else if (htype == HTYPE_PythonPlugin)
 			{
@@ -1621,7 +1621,7 @@ namespace http
 			{
 				// All fine here
 			}
-			else if ((htype == HTYPE_Wunderground) || (htype == HTYPE_DarkSky) || (htype == HTYPE_AccuWeather) || (htype == HTYPE_OpenWeatherMap) || (htype == HTYPE_ICYTHERMOSTAT) ||
+			else if ((htype == HTYPE_Wunderground) || (htype == HTYPE_DarkSky) || (htype == HTYPE_VisualCrossing) || (htype == HTYPE_AccuWeather) || (htype == HTYPE_OpenWeatherMap) || (htype == HTYPE_ICYTHERMOSTAT) ||
 				(htype == HTYPE_TOONTHERMOSTAT) || (htype == HTYPE_AtagOne) || (htype == HTYPE_PVOUTPUT_INPUT) || (htype == HTYPE_NEST) || (htype == HTYPE_ANNATHERMOSTAT) ||
 				(htype == HTYPE_THERMOSMART) || (htype == HTYPE_Tado) || (htype == HTYPE_Tesla) || (htype == HTYPE_Mercedes) || (htype == HTYPE_Netatmo))
 			{
@@ -1688,13 +1688,6 @@ namespace http
 			else if (htype == HTYPE_PythonPlugin)
 			{
 				// All fine here
-			}
-			else if (htype == HTYPE_GoodweAPI)
-			{
-				if (username.empty())
-				{
-					return;
-				}
 			}
 			else if (htype == HTYPE_RaspberryPCF8574)
 			{
@@ -2591,7 +2584,7 @@ namespace http
 			std::string machine = my_uname.machine;
 			std::transform(systemname.begin(), systemname.end(), systemname.begin(), ::tolower);
 
-			if (machine == "armv6l")
+			if (machine == "armv6l" || (machine == "aarch64" && sizeof(void*) == 4))
 			{
 				// Seems like old arm systems can also use the new arm build
 				machine = "armv7l";
@@ -2858,6 +2851,16 @@ namespace http
 					{
 						root["Forecasthardwaretype"] = HTYPE_BuienRadar;
 						CBuienRadar* pWHardware = dynamic_cast<CBuienRadar*>(pHardware);
+						forecast_url = pWHardware->GetForecastURL();
+						if (!forecast_url.empty())
+						{
+							sFURL = forecast_url;
+						}
+					}
+					else if (pHardware->HwdType == HTYPE_VisualCrossing)
+					{
+						root["Forecasthardwaretype"] = HTYPE_VisualCrossing;
+						CVisualCrossing* pWHardware = dynamic_cast<CVisualCrossing*>(pHardware);
 						forecast_url = pWHardware->GetForecastURL();
 						if (!forecast_url.empty())
 						{
@@ -9107,6 +9110,15 @@ namespace http
 								root["result"][ii]["forecast_url"] = base64_encode(forecast_url);
 							}
 						}
+						else if (pHardware->HwdType == HTYPE_VisualCrossing)
+						{
+							CVisualCrossing* pWHardware = dynamic_cast<CVisualCrossing*>(pHardware);
+							std::string forecast_url = pWHardware->GetForecastURL();
+							if (!forecast_url.empty())
+							{
+								root["result"][ii]["forecast_url"] = base64_encode(forecast_url);
+							}
+						}
 						else if (pHardware->HwdType == HTYPE_AccuWeather)
 						{
 							CAccuWeather* pWHardware = dynamic_cast<CAccuWeather*>(pHardware);
@@ -13005,8 +13017,7 @@ namespace http
 				result = m_sql.safe_query("SELECT Type FROM Hardware WHERE (ID == %d)", HwdID);
 				if (!result.empty())
 				{
-					std::vector<std::string> sd = result[0];
-					_eHardwareTypes Type = (_eHardwareTypes)dType;
+					_eHardwareTypes Type = (_eHardwareTypes)std::stoi(result[0][0]);
 					if (Type == HTYPE_PythonPlugin)
 					{
 						bUpdateUnit = false;

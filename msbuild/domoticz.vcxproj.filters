@@ -219,9 +219,6 @@
     <Filter Include="Devices\Nefit-Easy">
       <UniqueIdentifier>{eda6c8ec-7cdc-4897-9d23-c502aedbee4b}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Devices\GoodweAPI">
-      <UniqueIdentifier>{064616bb-7223-4daf-9cad-0d7d9eb478a0}</UniqueIdentifier>
-    </Filter>
     <Filter Include="www">
       <UniqueIdentifier>{86db03ef-13cf-48f9-8cfd-9c490e22c5d2}</UniqueIdentifier>
     </Filter>
@@ -507,11 +504,11 @@
     <Filter Include="Plugin Framework">
       <UniqueIdentifier>{343e8e43-c7ac-4839-a9a2-6b5f78f95b6d}</UniqueIdentifier>
     </Filter>
-    <Filter Include="www\app\devices\timers">
-      <UniqueIdentifier>{5d3e919c-7f5d-4c5c-a4dc-19c03c0d7dbc}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Devices\VirtualThermostat">
       <UniqueIdentifier>{b74016ba-539e-40a2-adcb-4c53c99a0f0f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Devices\VisualCrossing">
+      <UniqueIdentifier>{acc9f1eb-04a5-4798-81c9-a91e4b031514}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -1462,6 +1459,11 @@
     <None Include="..\www\app\hardware\setup\MQTT-AD.js">
       <Filter>www\app\hardware\setup</Filter>
     </None>
+    <None Include="..\www\app\timers\components.js" />
+    <None Include="..\www\app\timers\DeviceTimersController.js" />
+    <None Include="..\www\app\timers\factories.js" />
+    <None Include="..\www\app\timers\planning.js" />
+    <None Include="..\www\app\timers\SceneTimersController.js" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\webserver\Base64.h">
@@ -1754,9 +1756,6 @@
     </ClInclude>
     <ClInclude Include="..\hardware\ETH8020.h">
       <Filter>Devices\ETH8020</Filter>
-    </ClInclude>
-    <ClInclude Include="..\hardware\GoodweAPI.h">
-      <Filter>Devices\GoodweAPI</Filter>
     </ClInclude>
     <ClInclude Include="..\notifications\NotificationBase.h">
       <Filter>Notifications</Filter>
@@ -2256,6 +2255,9 @@
     <ClInclude Include="..\hardware\VirtualThermostat.h">
       <Filter>Devices\VirtualThermostat</Filter>
     </ClInclude>
+    <ClInclude Include="..\hardware\VisualCrossing.h">
+      <Filter>Devices\VisualCrossing</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\webserver\Base64.cpp">
@@ -2512,9 +2514,6 @@
     </ClCompile>
     <ClCompile Include="..\hardware\ETH8020.cpp">
       <Filter>Devices\ETH8020</Filter>
-    </ClCompile>
-    <ClCompile Include="..\hardware\GoodweAPI.cpp">
-      <Filter>Devices\GoodweAPI</Filter>
     </ClCompile>
     <ClCompile Include="..\notifications\NotificationBase.cpp">
       <Filter>Notifications</Filter>
@@ -3019,6 +3018,9 @@
     </ClCompile>
     <ClCompile Include="..\hardware\VirtualThermostat.cpp">
       <Filter>Devices\VirtualThermostat</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\VisualCrossing.cpp">
+      <Filter>Devices\VisualCrossing</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

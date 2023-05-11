@@ -14,16 +14,17 @@
 
 #include "../../main/Helper.h"
 
-C1WireByOWFS::C1WireByOWFS(const std::string& path):
+C1WireByOWFS::C1WireByOWFS(const std::string& path, C1Wire *C1WireBase):
 	m_path(path)
 {
+   m_p1WireBase = C1WireBase;
 	if (m_path.empty())
 		m_path = "/mnt/1wire";
 
 	m_simultaneousTemperaturePath = m_path;
 	m_simultaneousTemperaturePath.append("/simultaneous/temperature");
 
-   _log.Log(LOG_STATUS,"Using 1-Wire support (OWFS)...");
+   m_p1WireBase->Log(LOG_STATUS,"Using 1-Wire support (OWFS)...");
 }
 
 bool C1WireByOWFS::FindDevice(const std::string &sID, /*out*/_t1WireDevice& device) const
@@ -93,7 +94,7 @@ void C1WireByOWFS::GetDevices(const std::string &inDir, /*out*/std::vector<_t1Wi
 		    GetDevice(inDir, de->d_name, device);
 
 		    // Add device to list
-		    _log.Debug(DEBUG_HARDWARE, "1Wire (OWFS): Add device %s", device.filename.c_str());
+		    m_p1WireBase->Debug(DEBUG_HARDWARE, "1Wire (OWFS): Add device %s", device.filename.c_str());
 		    devices.push_back(device);
 
 		    // If device is a hub, scan for all hub connected devices (recursively)
@@ -194,7 +195,7 @@ float C1WireByOWFS::GetTemperature(const _t1WireDevice& device) const
 {
    std::string readValue=readRawData(std::string(device.filename+"/temperature"));
 
-   _log.Debug(DEBUG_HARDWARE, "1Wire (OWFS): Get Temperature from %s = %s", device.filename.c_str(), readValue.c_str());
+   m_p1WireBase->Debug(DEBUG_HARDWARE, "1Wire (OWFS): Get Temperature from %s = %s", device.filename.c_str(), readValue.c_str());
 
    if (readValue.empty())
       return -1000.0;
@@ -205,7 +206,7 @@ float C1WireByOWFS::GetHumidity(const _t1WireDevice& device) const
 {
    std::string readValue=readRawData(std::string(device.filename+"/humidity"));
 
-   _log.Debug(DEBUG_HARDWARE, "1Wire (OWFS): Get Humidity from %s = %s", device.filename.c_str(), readValue.c_str());
+   m_p1WireBase->Debug(DEBUG_HARDWARE, "1Wire (OWFS): Get Humidity from %s = %s", device.filename.c_str(), readValue.c_str());
 
    if (readValue.empty())
 	   return -1000.0;
@@ -307,7 +308,7 @@ unsigned long C1WireByOWFS::GetCounter(const _t1WireDevice& device,int unit) con
    if (readValue.empty())
       readValue=readRawData(std::string(device.filename+"/counters.").append(1,'A'+(char)unit));
    if (readValue.empty())
-	   return 0;
+	   return -1;  // NULL read.
    return (unsigned long)atol(readValue.c_str());
 }
 
@@ -359,14 +360,14 @@ int C1WireByOWFS::GetWiper(const _t1WireDevice& device) const
 
 void C1WireByOWFS::StartSimultaneousTemperatureRead()
 {
-	_log.Debug(DEBUG_HARDWARE, "1Wire (OWFS): Initiating simultaneous temperature read");
+	m_p1WireBase->Debug(DEBUG_HARDWARE, "1Wire (OWFS): Initiating simultaneous temperature read");
 	std::ofstream file;
 	file.open(m_simultaneousTemperaturePath.c_str());
 	if (file.is_open())
 	{
 		file << "1";
 		file.close();
-		_log.Debug(DEBUG_HARDWARE, "1Wire (OWFS): Simultaneous temperature read successful");
+		m_p1WireBase->Debug(DEBUG_HARDWARE, "1Wire (OWFS): Simultaneous temperature read successful");
 		sleep_milliseconds(800);
 	}
 }

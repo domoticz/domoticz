@@ -1219,7 +1219,7 @@ namespace http {
 			std::vector<std::string> headers;
 			std::vector<std::string> hosts;
 
-			if (sumProxyHeader("Forwarded", req, headers))
+			if (sumProxyHeader("forwarded", req, headers))
 			{
 				// We found one or more Forwarded headers that need to be processed into a list of Hosts
 				if (!parseForwardedProxyHeader(headers, hosts))
@@ -1227,7 +1227,7 @@ namespace http {
 					return false;
 				}
 			}
-			else if (sumProxyHeader("X-Forwarded-For", req, headers))
+			else if (sumProxyHeader("x-forwarded-for", req, headers))
 			{
 				// We found one or more X-Forwarded-For headers that need to be processed into a list of Hosts
 				if (!parseProxyHeader(headers, hosts))
@@ -1235,7 +1235,7 @@ namespace http {
 					return false;
 				}
 			}
-			else if (sumProxyHeader("X-Real-IP", req, headers))
+			else if (sumProxyHeader("x-real-ip", req, headers))
 			{
 				// We found one or more X-Real-IP headers that need to be processed into a list of Hosts
 				if (!parseProxyHeader(headers, hosts))
@@ -1254,9 +1254,12 @@ namespace http {
 
 		bool cWebem::sumProxyHeader(const std::string &sHeader, const request &req, std::vector<std::string> &vHeaderLines)
 		{
+			std::string sHeaderName;
 			for (const auto &header : req.headers)
 			{
-				if (header.name.find(sHeader)==0)
+				sHeaderName = header.name;
+				std::transform(sHeaderName.begin(), sHeaderName.end(), sHeaderName.begin(), ::tolower);
+				if (sHeaderName.find(sHeader)==0)
 				{
 					vHeaderLines.push_back(header.value);
 				}

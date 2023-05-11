@@ -619,7 +619,6 @@
     <ClInclude Include="..\hardware\EvohomeSerial.h" />
     <ClInclude Include="..\hardware\EvohomeTCP.h" />
     <ClInclude Include="..\hardware\EvohomeWeb.h" />
-    <ClInclude Include="..\hardware\GoodweAPI.h" />
     <ClInclude Include="..\hardware\FritzboxTCP.h" />
     <ClInclude Include="..\hardware\Gpio.h" />
     <ClInclude Include="..\hardware\GpioPin.h" />
@@ -715,6 +714,7 @@
     <ClInclude Include="..\hardware\USBtin.h" />
     <ClInclude Include="..\hardware\USBtin_MultiblocV8.h" />
     <ClInclude Include="..\hardware\VirtualThermostat.h" />
+    <ClInclude Include="..\hardware\VisualCrossing.h" />
     <ClInclude Include="..\hardware\VolcraftCO20.h" />
     <ClInclude Include="..\hardware\Winddelen.h" />
     <ClInclude Include="..\hardware\WOL.h" />
@@ -927,7 +927,6 @@
     <ClCompile Include="..\hardware\EvohomeTCP.cpp" />
     <ClCompile Include="..\hardware\EvohomeWeb.cpp" />
     <ClCompile Include="..\hardware\FritzboxTCP.cpp" />
-    <ClCompile Include="..\hardware\GoodweAPI.cpp" />
     <ClCompile Include="..\hardware\Gpio.cpp" />
     <ClCompile Include="..\hardware\GpioPin.cpp" />
     <ClCompile Include="..\hardware\Honeywell.cpp" />
@@ -1025,6 +1024,7 @@
     <ClCompile Include="..\hardware\USBtin.cpp" />
     <ClCompile Include="..\hardware\USBtin_MultiblocV8.cpp" />
     <ClCompile Include="..\hardware\VirtualThermostat.cpp" />
+    <ClCompile Include="..\hardware\VisualCrossing.cpp" />
     <ClCompile Include="..\hardware\VolcraftCO20.cpp" />
     <ClCompile Include="..\hardware\Winddelen.cpp" />
     <ClCompile Include="..\hardware\WOL.cpp" />
