@@ -1165,13 +1165,14 @@ namespace http {
 
 			std::string cleanIP = stdstring_trimws(ip);
 			bool bIsIPv6 = (cleanIP.find(':') != std::string::npos);
+			// IPv6 and IPv4 addresses can be written as quoted strings
+			if (cleanIP.find('"') != std::string::npos)
+			{
+				cleanIP = cleanIP.substr(1,cleanIP.size()-2);	// Remove quotes from begin and end
+			}
 			if (bIsIPv6)
 			{
 				// IPv6 addresses can be written as quoted strings and between brackets (See RFC5952)
-				if (cleanIP.find('"') != std::string::npos)
-				{
-					cleanIP = cleanIP.substr(1,cleanIP.size()-2);	// Remove quotes from begin and end
-				}
 				if (cleanIP.find('[') != std::string::npos)
 				{
 					cleanIP = cleanIP.substr(1,cleanIP.size()-2);	// Remove brackets from begin and end
