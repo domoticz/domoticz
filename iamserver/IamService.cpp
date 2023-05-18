@@ -617,36 +617,35 @@ namespace http
 			 * Also checks big/litte-endian to ensure proper functioning on different systems
 			 * Should work with (mobile) Authenticators like FreeOTP or Google's Authenticator
 			 */
-			if (code.size() != 6 || key.size() != 20)
+			if (code.size() != 6 || key.size() != 20) {
 				return false;
+			}
 
-			unsigned long long intCounter = time(nullptr)/30;
+			unsigned long long intCounter = time(nullptr) / 30;
 			unsigned long long endianness = 0xdeadbeef;
-			if ((*(const uint8_t *)&endianness) == 0xef)
-			{
-				intCounter = ((intCounter & 0x00000000ffffffff) << 32) | ((intCounter & 0xffffffff00000000) >> 32);
-				intCounter = ((intCounter & 0x0000ffff0000ffff) << 16) | ((intCounter & 0xffff0000ffff0000) >> 16);
-				intCounter = ((intCounter & 0x00ff00ff00ff00ff) <<  8) | ((intCounter & 0xff00ff00ff00ff00) >>  8);
-			};
+			if ((*(const uint8_t *)&endianness) == 0xef) {
+				std::reverse((uint8_t*)&intCounter, (uint8_t*)&intCounter + sizeof(intCounter));
+			}
+
 			char md[20];
 			unsigned int mdLen;
 			HMAC(EVP_sha1(), key.c_str(), key.size(), (const unsigned char*)&intCounter, sizeof(intCounter), (unsigned char*)&md, &mdLen);
+
 			int offset = md[19] & 0x0f;
 			int bin_code = (md[offset] & 0x7f) << 24
 				| (md[offset+1] & 0xff) << 16
 				| (md[offset+2] & 0xff) << 8
 				| (md[offset+3] & 0xff);
 			bin_code = bin_code % 1000000;
+
 			char calcCode[7];
-			snprintf((char*)&calcCode, 7,"%06d", bin_code);
+			snprintf(calcCode, sizeof(calcCode), "%06d", bin_code);
+
 			std::string sCalcCode(calcCode);
 
-			_log.Debug(DEBUG_AUTH,"VerifySHA1TOTP: Code given .%s. -> calculated .%s. (%s)", code.c_str(), sCalcCode.c_str(), sha256hex(key).c_str());
+			_log.Debug(DEBUG_AUTH, "VerifySHA1TOTP: Code given .%s. -> calculated .%s. (%s)", code.c_str(), sCalcCode.c_str(), sha256hex(key).c_str());
 
-			if (sCalcCode.compare(code) == 0)
-				return true;
-
-			return false;
+			return (sCalcCode.compare(code) == 0);
 		}
 
 	} // namespace server
