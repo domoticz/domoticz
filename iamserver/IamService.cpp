@@ -97,11 +97,11 @@ namespace http
 									else
 									{
 										// User/pass matches.. now check TOTP if required
-										if (m_iamsettings.has_2fatotp())
+										if (m_iamsettings.has_2fatotp() && !m_users[iUser].Mfatoken.empty())
 										{
 											std::string sTotpKey = "";
 											bAuthenticated = false;
-											if(base32_decode(m_iamsettings.totpsecret, sTotpKey))
+											if(base32_decode(m_users[iUser].Mfatoken, sTotpKey))
 											{
 												if (VerifySHA1TOTP(sTOTP, sTotpKey))
 												{

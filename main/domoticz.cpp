@@ -735,18 +735,9 @@ int main(int argc, char**argv)
 				FixFolderEnding(szStartupFolder);
 			}
 		}
-		if (cmdLine.HasSwitch("-totp"))
+		if (cmdLine.HasSwitch("-enable2fa"))
 		{
-			if (cmdLine.GetArgumentCount("-totp") != 1)
-			{
-				_log.Log(LOG_ERROR, "Please specify a TOTP secret (base32 encoded)");
-				return 1;
-			}
-			std::string szsecret = cmdLine.GetSafeArgument("-totp", 0, "");
-			if (!szsecret.empty())
-			{
-				iamserver_settings.totpsecret = szsecret;
-			}
+				iamserver_settings.enable2fa = true;
 		}
 	}
 
