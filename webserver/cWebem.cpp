@@ -778,12 +778,13 @@ namespace http {
 			return false;
 		}
 
-		void cWebem::AddUserPassword(const unsigned long ID, const std::string &username, const std::string &password, const _eUserRights userrights, const int activetabs, const std::string &privkey, const std::string &pubkey)
+		void cWebem::AddUserPassword(const unsigned long ID, const std::string &username, const std::string &password, const std::string &mfatoken, const _eUserRights userrights, const int activetabs, const std::string &privkey, const std::string &pubkey)
 		{
 			_tWebUserPassword wtmp;
 			wtmp.ID = ID;
 			wtmp.Username = username;
 			wtmp.Password = password;
+			wtmp.Mfatoken = mfatoken;
 			wtmp.PrivKey = privkey;
 			wtmp.PubKey = pubkey;
 			wtmp.userrights = userrights;

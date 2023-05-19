@@ -330,13 +330,14 @@ namespace http
 			}
 			if (bIgnoreUsernamePassword)
 			{
+				// TO-DO : Disable 2FA
 				m_pWebEm->AddTrustedNetworks("0.0.0.0/0");	// IPv4
 				m_pWebEm->AddTrustedNetworks("::");	// IPv6
 				_log.Log(LOG_ERROR, "SECURITY RISK! Allowing access without username/password as all incoming traffic is considered trusted! Change admin password asap and restart Domoticz!");
 
 				if (m_users.empty())
 				{
-					AddUser(99999, "tmpadmin", "tmpadmin", (_eUserRights)URIGHTS_ADMIN, 0x1F);
+					AddUser(99999, "tmpadmin", "tmpadmin", "ORWXAYLENVUW4===", (_eUserRights)URIGHTS_ADMIN, 0x1F);
 					_log.Debug(DEBUG_AUTH, "[Start server] Added tmpadmin User as no active Users where found!");
 				}
 			}
@@ -3449,7 +3450,7 @@ namespace http
 			ClearUserPasswords();
 			// Add Users
 			std::vector<std::vector<std::string>> result;
-			result = m_sql.safe_query("SELECT ID, Active, Username, Password, Rights, TabsEnabled FROM Users");
+			result = m_sql.safe_query("SELECT ID, Active, Username, Password, MFAsecret, Rights, TabsEnabled FROM Users");
 			if (!result.empty())
 			{
 				for (const auto& sd : result)
@@ -3461,11 +3462,12 @@ namespace http
 
 						std::string username = base64_decode(sd[2]);
 						std::string password = sd[3];
+						std::string mfatoken = sd[4];
 
-						_eUserRights rights = (_eUserRights)atoi(sd[4].c_str());
-						int activetabs = atoi(sd[5].c_str());
+						_eUserRights rights = (_eUserRights)atoi(sd[5].c_str());
+						int activetabs = atoi(sd[6].c_str());
 
-						AddUser(ID, username, password, rights, activetabs);
+						AddUser(ID, username, password, mfatoken, rights, activetabs);
 					}
 				}
 			}
@@ -3486,7 +3488,7 @@ namespace http
 						std::string pemfile = sd[5];
 						if (bPublic && secret.empty())
 							secret = GenerateMD5Hash(pemfile);
-						AddUser(ID, applicationname, secret, URIGHTS_CLIENTID, bPublic, pemfile);
+						AddUser(ID, applicationname, secret, "", URIGHTS_CLIENTID, bPublic, pemfile);
 					}
 				}
 			}
@@ -3494,7 +3496,7 @@ namespace http
 			m_mainworker.LoadSharedUsers();
 		}
 
-		void CWebServer::AddUser(const unsigned long ID, const std::string& username, const std::string& password, const int userrights, const int activetabs, const std::string& pemfile)
+		void CWebServer::AddUser(const unsigned long ID, const std::string& username, const std::string& password, const std::string& mfatoken, const int userrights, const int activetabs, const std::string& pemfile)
 		{
 			if (m_pWebEm == nullptr)
 				return;
@@ -3571,6 +3573,7 @@ namespace http
 			wtmp.ID = ID;
 			wtmp.Username = username;
 			wtmp.Password = password;
+			wtmp.Mfatoken = mfatoken;
 			wtmp.PrivKey = privkey;
 			wtmp.PubKey = pubkey;
 			wtmp.userrights = (_eUserRights)userrights;
@@ -3588,7 +3591,7 @@ namespace http
 			utmp.RedirectUri = "";
 			m_accesscodes.push_back(utmp);
 
-			m_pWebEm->AddUserPassword(ID, username, password, (_eUserRights)userrights, activetabs, privkey, pubkey);
+			m_pWebEm->AddUserPassword(ID, username, password, mfatoken, (_eUserRights)userrights, activetabs, privkey, pubkey);
 		}
 
 		void CWebServer::ClearUserPasswords()
