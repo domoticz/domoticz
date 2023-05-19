@@ -879,7 +879,7 @@ void CScheduler::CheckSchedules()
 								)
 							{
 								// 19-05-2023 A.S.: reversed Blinds timer fix
-								if (item.Level > 0 && item.Level < maxLevel) // set position to value between 1 and 99 %
+								if (item.Level > 0 && item.Level < maxDimLevel) // set position to value between 1 and 99 %
 								{
 									switchcmd = "Set Level";
 									float fLevel = (maxDimLevel / 100.0F) * item.Level;
