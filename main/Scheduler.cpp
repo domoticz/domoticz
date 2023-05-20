@@ -878,7 +878,8 @@ void CScheduler::CheckSchedules()
 								|| (switchtype == STYPE_BlindsPercentageWithStop)
 								)
 							{
-								if (item.timerCmd == TCMD_ON)
+								// 19-05-2023 A.S.: reversed Blinds timer fix
+								if (item.Level > 0 && item.Level < maxDimLevel) // set position to value between 1 and 99 %
 								{
 									switchcmd = "Set Level";
 									float fLevel = (maxDimLevel / 100.0F) * item.Level;
@@ -886,7 +887,12 @@ void CScheduler::CheckSchedules()
 										fLevel = 100;
 									ilevel = int(fLevel);
 								}
-								else if (item.timerCmd == TCMD_OFF)
+								else if (item.timerCmd == TCMD_ON) // no percentage set (0 or 100)
+								{
+									switchcmd = "Open";
+									ilevel = 100;
+								}
+								else if (item.timerCmd == TCMD_OFF) // no percentage set (0 or 100)
 								{
 									switchcmd = "Close";
 									ilevel = 0;
