@@ -9,7 +9,7 @@
     background-image: -ms-linear-gradient(top, #fff, #eee);
     background-image: -o-linear-gradient(top, #fff, #eee);
     background-image: linear-gradient(top, #fff, #eee);  
-    height: 240px;
+    //height: 240px;
     width: 300px;
     margin: -150px 0 0 -180px;
     padding: 30px;
@@ -112,6 +112,11 @@
     background-position: 5px -52px !important;
 }
 
+#totp
+{
+    background-position: 5px -52px !important;
+}
+
 #inputs input[type=text]:focus, input[type=password]:focus
 {
     background-color: #fff;
@@ -199,6 +204,7 @@
     <fieldset id="inputs">
         <input type="text" autocapitalize="none" autocorrect="off" id="username" name="username" placeholder="Username" autofocus ng-required>
         <input type="password" id="password" name="password" placeholder="Password" ng-required>
+        <input type="text" id="totp" name="totp" autocomplete="off" placeholder="One-Time Passcode">
         <br>
         <input type="checkbox" id="rememberme"> <label for="rememberme" id="remembermelbl"></label><br>
         <br>

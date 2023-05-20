@@ -513,6 +513,9 @@ define(['angularAMD', 'app.routes', 'app.constants', 'app.notifications', 'app.p
 						permissionList.rights = parseInt(data.rights);
 						permissionList.user = data.user;
 					}
+					if (data.enable2fa == "true") {
+						$rootScope.config.enable2fa = true;
+					}
 				}
 			},
 			error: function () {
