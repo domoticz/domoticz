@@ -14,6 +14,8 @@
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
 
+#define round(a) ( int ) ( a + .5 )
+
 CScheduler::CScheduler()
 {
 	m_tSunRise = 0;
@@ -878,14 +880,14 @@ void CScheduler::CheckSchedules()
 								|| (switchtype == STYPE_BlindsPercentageWithStop)
 								)
 							{
-								// 19-05-2023 A.S.: reversed Blinds timer fix
-								if (item.Level > 0 && item.Level < maxDimLevel) // set position to value between 1 and 99 %
+								if (item.Level > 0)
 								{
+									// set position to value between 1 and 99 %
 									switchcmd = "Set Level";
 									float fLevel = (maxDimLevel / 100.0F) * item.Level;
-									if (fLevel > 100)
-										fLevel = 100;
-									ilevel = int(fLevel);
+									if (fLevel > maxDimLevel)
+										fLevel = maxDimLevel;
+									ilevel = round(fLevel);
 								}
 								else if (item.timerCmd == TCMD_ON) // no percentage set (0 or 100)
 								{
