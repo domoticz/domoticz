@@ -12,6 +12,9 @@ define(['app'], function (app) {
 			fd.append('username', musername);
 			fd.append('password', mpassword);
 			fd.append('rememberme', bRememberMe);
+			if ($rootScope.config.enable2fa == true) {
+				fd.append('2fatotp', $('#totp').val());
+			}
 			$http.post('json.htm?type=command&param=logincheck', fd, {
 				transformRequest: angular.identity,
 				headers: { 'Content-Type': undefined }
@@ -87,6 +90,9 @@ define(['app'], function (app) {
 				}
 			});
 			$("#remembermelbl").text($.t("Remember me"));
+
+			if ($rootScope.config.enable2fa != true)
+				$("#totp").hide();
 		};
 	}]);
 });
