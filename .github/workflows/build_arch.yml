@@ -116,12 +116,12 @@ jobs:
               cd ..;
               ;;
             esac
-          wget --no-check-certificate https://boostorg.jfrog.io/artifactory/main/release/"${{ env.Vboost }}"/source/boost_"${{ env.Vboost_ }}".tar.gz
+          wget --no-check-certificate https://boostorg.jfrog.io/artifactory/main/release/"${{ env.Vboost }}"/source/boost_"${{ env.Vboost_ }}".tar.gz >> /dev/null 2>&1
           tar xfz boost_"${{ env.Vboost_ }}".tar.gz
           cd boost_"${{ env.Vboost_ }}"/
           ./bootstrap.sh
-          ./b2 stage threading=multi link=static --with-thread --with-system --with-chrono
-          ./b2 install threading=multi link=static --with-thread --with-system --with-chrono
+          ./b2 stage threading=multi link=static --with-thread --with-system --with-chrono >> /dev/null 2>&1
+          ./b2 install threading=multi link=static --with-thread --with-system --with-chrono >> /dev/null 2>&1
         run: |
           echo "System built successfully"
 
@@ -158,12 +158,12 @@ jobs:
               cd ..;
               ;;
             esac
-          wget --no-check-certificate https://boostorg.jfrog.io/artifactory/main/release/"${{ env.Vboost }}"/source/boost_"${{ env.Vboost_ }}".tar.gz
+          wget --no-check-certificate https://boostorg.jfrog.io/artifactory/main/release/"${{ env.Vboost }}"/source/boost_"${{ env.Vboost_ }}".tar.gz >> /dev/null 2>&1
           tar xfz boost_"${{ env.Vboost_ }}".tar.gz
           cd boost_"${{ env.Vboost_ }}"/
           ./bootstrap.sh
-          ./b2 stage threading=multi link=static --with-thread --with-system --with-chrono
-          ./b2 install threading=multi link=static --with-thread --with-system --with-chrono
+          ./b2 stage threading=multi link=static --with-thread --with-system --with-chrono >> /dev/null 2>&1
+          ./b2 install threading=multi link=static --with-thread --with-system --with-chrono >> /dev/null 2>&1
         run: |
           export PATH=/usr/local/bin:$PATH;
           cd /build/src
@@ -205,12 +205,12 @@ jobs:
               cd ..;
               ;;
             esac
-          wget --no-check-certificate https://boostorg.jfrog.io/artifactory/main/release/"${{ env.Vboost }}"/source/boost_"${{ env.Vboost_ }}".tar.gz
+          wget --no-check-certificate https://boostorg.jfrog.io/artifactory/main/release/"${{ env.Vboost }}"/source/boost_"${{ env.Vboost_ }}".tar.gz >> /dev/null 2>&1
           tar xfz boost_"${{ env.Vboost_ }}".tar.gz
           cd boost_"${{ env.Vboost_ }}"/
           ./bootstrap.sh
-          ./b2 stage threading=multi link=static --with-thread --with-system --with-chrono
-          ./b2 install threading=multi link=static --with-thread --with-system --with-chrono
+          ./b2 stage threading=multi link=static --with-thread --with-system --with-chrono >> /dev/null 2>&1
+          ./b2 install threading=multi link=static --with-thread --with-system --with-chrono >> /dev/null 2>&1
         run: |
           export PATH=/usr/local/bin:$PATH;
           cd /build/src
@@ -251,12 +251,12 @@ jobs:
               cd ..;
               ;;
             esac
-          wget --no-check-certificate https://boostorg.jfrog.io/artifactory/main/release/"${{ env.Vboost }}"/source/boost_"${{ env.Vboost_ }}".tar.gz
+          wget --no-check-certificate https://boostorg.jfrog.io/artifactory/main/release/"${{ env.Vboost }}"/source/boost_"${{ env.Vboost_ }}".tar.gz >> /dev/null 2>&1
           tar xfz boost_"${{ env.Vboost_ }}".tar.gz
           cd boost_"${{ env.Vboost_ }}"/
           ./bootstrap.sh
-          ./b2 stage threading=multi link=static --with-thread --with-system --with-chrono
-          ./b2 install threading=multi link=static --with-thread --with-system --with-chrono
+          ./b2 stage threading=multi link=static --with-thread --with-system --with-chrono >> /dev/null 2>&1
+          ./b2 install threading=multi link=static --with-thread --with-system --with-chrono >> /dev/null 2>&1
         run: |
           cd /build/src
           ln -s ../test/gherkin/resources/testwebcontent www/test
