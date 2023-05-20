@@ -636,7 +636,7 @@ namespace http
 			RegisterRType("schedules", [this](auto&& session, auto&& req, auto&& root) { RType_Schedules(session, req, root); });
 			RegisterRType("getshareduserdevices", [this](auto&& session, auto&& req, auto&& root) { RType_GetSharedUserDevices(session, req, root); });
 			RegisterRType("setshareduserdevices", [this](auto&& session, auto&& req, auto&& root) { RType_SetSharedUserDevices(session, req, root); });
-			RegisterCommandCode("clearuserdevicesnodes", [this](auto&& session, auto&& req, auto&& root) { Cmd_ClearUserDevices(session, req, root); });
+			RegisterCommandCode("clearuserdevices", [this](auto&& session, auto&& req, auto&& root) { Cmd_ClearUserDevices(session, req, root); });
 
 			RegisterRType("setused", [this](auto&& session, auto&& req, auto&& root) { RType_SetUsed(session, req, root); });
 			RegisterRType("scenes", [this](auto&& session, auto&& req, auto&& root) { RType_Scenes(session, req, root); });
@@ -12839,6 +12839,11 @@ namespace http
 
 		void CWebServer::RType_SetSharedUserDevices(WebEmSession& session, const request& req, Json::Value& root)
 		{
+			if (session.rights != 2)
+			{
+				session.reply_status = reply::forbidden;
+				return; // Only admin user allowed
+			}
 			std::string idx = request::findValue(&req, "idx");
 			std::string userdevices = CURLEncode::URLDecode(request::findValue(&req, "devices"));
 			if (idx.empty())
@@ -12865,6 +12870,11 @@ namespace http
 
 		void CWebServer::Cmd_ClearUserDevices(WebEmSession& session, const request& req, Json::Value& root)
 		{
+			if (session.rights != 2)
+			{
+				session.reply_status = reply::forbidden;
+				return; // Only admin user allowed
+			}
 			std::string idx = request::findValue(&req, "idx");
 			if (idx.empty())
 				return;
