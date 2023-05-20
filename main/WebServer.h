@@ -331,6 +331,7 @@ private:
 	void RType_Schedules(WebEmSession & session, const request& req, Json::Value &root);
 	void RType_GetSharedUserDevices(WebEmSession & session, const request& req, Json::Value &root);
 	void RType_SetSharedUserDevices(WebEmSession & session, const request& req, Json::Value &root);
+	void Cmd_ClearUserDevices(WebEmSession& session, const request& req, Json::Value& root);
 	void RType_SetUsed(WebEmSession & session, const request& req, Json::Value &root);
 	void RType_DeleteDevice(WebEmSession & session, const request& req, Json::Value &root);
 	void RType_AddScene(WebEmSession & session, const request& req, Json::Value &root);

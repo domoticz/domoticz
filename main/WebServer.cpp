@@ -636,6 +636,8 @@ namespace http
 			RegisterRType("schedules", [this](auto&& session, auto&& req, auto&& root) { RType_Schedules(session, req, root); });
 			RegisterRType("getshareduserdevices", [this](auto&& session, auto&& req, auto&& root) { RType_GetSharedUserDevices(session, req, root); });
 			RegisterRType("setshareduserdevices", [this](auto&& session, auto&& req, auto&& root) { RType_SetSharedUserDevices(session, req, root); });
+			RegisterCommandCode("clearuserdevicesnodes", [this](auto&& session, auto&& req, auto&& root) { Cmd_ClearUserDevices(session, req, root); });
+
 			RegisterRType("setused", [this](auto&& session, auto&& req, auto&& root) { RType_SetUsed(session, req, root); });
 			RegisterRType("scenes", [this](auto&& session, auto&& req, auto&& root) { RType_Scenes(session, req, root); });
 			RegisterRType("addscene", [this](auto&& session, auto&& req, auto&& root) { RType_AddScene(session, req, root); });
@@ -8573,12 +8575,21 @@ namespace http
 				iUser = FindUser(username.c_str());
 				if (iUser != -1)
 				{
+					
 					if (m_users[iUser].TotSensors > 0)
 					{
-						result = m_sql.safe_query("SELECT COUNT(*) FROM SharedDevices WHERE (SharedUserID == %lu)", m_users[iUser].ID);
-						if (!result.empty())
+						bool bSkipSelectedDevices = false;
+						if (m_users[iUser].userrights == URIGHTS_ADMIN)
 						{
-							totUserDevices = (unsigned int)std::stoi(result[0][0]);
+							bSkipSelectedDevices = (rused == "all");
+						}
+						if (!bSkipSelectedDevices)
+						{
+							result = m_sql.safe_query("SELECT COUNT(*) FROM SharedDevices WHERE (SharedUserID == %lu)", m_users[iUser].ID);
+							if (!result.empty())
+							{
+								totUserDevices = (unsigned int)std::stoi(result[0][0]);
+							}
 						}
 					}
 					bShowScenes = (m_users[iUser].ActiveTabs & (1 << 1)) != 0;
@@ -12849,6 +12860,17 @@ namespace http
 					idx.c_str());
 			}
 			m_sql.safe_query("DELETE FROM SharedDevices WHERE SharedUserID == 0");
+			LoadUsers();
+		}
+
+		void CWebServer::Cmd_ClearUserDevices(WebEmSession& session, const request& req, Json::Value& root)
+		{
+			std::string idx = request::findValue(&req, "idx");
+			if (idx.empty())
+				return;
+			root["status"] = "OK";
+			root["title"] = "ClearUserDevices";
+			m_sql.safe_query("DELETE FROM SharedDevices WHERE SharedUserID == '%q'", idx.c_str());
 			LoadUsers();
 		}
 

@@ -8,6 +8,7 @@ Version 2023.xx
 - Implemented: P1 Meter, Added calculated kWh devices per phase for usage and delivery
 - Implemented: -nocache command line option (ask browser not to cache pages)
 - Implemented: Users with admin rights and selected devices will now see only those devices
+- Implemented: Users devices editor, option to remove all nodes/devices
 - Implemented: Visual Crossing (replacement for Darksky/Forecast)
 - Fixed: Blinds percentage timers
 - Fixed: Chime structure check

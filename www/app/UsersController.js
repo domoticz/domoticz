@@ -113,6 +113,21 @@ define(['app'], function (app) {
 			});
 		}
 
+		ClearUserDevices = function () {
+            bootbox.confirm($.t("Are you sure to delete ALL Nodes?\n\nThis action can not be undone!"), function (result) {
+				$.ajax({
+					url: "json.htm?type=command&param=clearuserdevoces&idx=" + $.devIdx,
+					async: false,
+					dataType: 'json',
+					success: function (data) {
+						ShowUsers();
+					},
+					error: function () {
+					}
+				});
+			});
+		}
+
 		EditSharedDevices = function (idx, name) {
 			$.devIdx = idx;
 			cursordefault();
