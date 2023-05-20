@@ -986,6 +986,26 @@ namespace http
 						_log.Log(LOG_ERROR, "Failed login attempt from %s for '%s' !", session.remote_host.c_str(), m_users[iUser].Username.c_str());
 						return;
 					}
+					if (m_iamsettings.enable2fa && !m_users[iUser].Mfatoken.empty())
+					{
+						// 2FA enabled for this user
+						std::string tmp2fa = request::findValue(&req, "2fatotp");
+						std::string sTotpKey = "";
+						if(!base32_decode(m_users[iUser].Mfatoken, sTotpKey))
+						{
+							// Unable to decode the 2FA token
+							_log.Log(LOG_ERROR, "Failed login attempt from %s for '%s' !", session.remote_host.c_str(), m_users[iUser].Username.c_str());
+							_log.Debug(DEBUG_AUTH, "Failed to base32_decode the Users 2FA token: %s", m_users[iUser].Mfatoken.c_str());
+							return;
+						}
+						if (!VerifySHA1TOTP(tmp2fa, sTotpKey))
+						{
+							// Not a match for the given 2FA token
+							_log.Log(LOG_ERROR, "Failed login attempt from %s for '%s' !", session.remote_host.c_str(), m_users[iUser].Username.c_str());
+							_log.Debug(DEBUG_AUTH, "Failed login attempt with 2FA token: %s", tmp2fa.c_str());
+							return;
+						}
+					}
 					_log.Log(LOG_STATUS, "Login successful from %s for user '%s'", session.remote_host.c_str(), m_users[iUser].Username.c_str());
 					root["status"] = "OK";
 					root["version"] = szAppVersion;
@@ -2549,6 +2569,10 @@ namespace http
 				root["user"] = session.username;
 				root["rights"] = session.rights;
 				root["version"] = szAppVersion;
+			}
+			else if (m_iamsettings.enable2fa == true)
+			{
+				root["enable2fa"] = "true";
 			}
 		}
 
