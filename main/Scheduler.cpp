@@ -880,14 +880,14 @@ void CScheduler::CheckSchedules()
 								|| (switchtype == STYPE_BlindsPercentageWithStop)
 								)
 							{
-								if ((item.Level > 0) && (item.Level < maxDimLevel))
+								if ((item.Level > 0) && (item.Level < 100))
 								{
 									// set position to value between 1 and 99 %
 									switchcmd = "Set Level";
 									float fLevel = (maxDimLevel / 100.0F) * item.Level;
-									if (fLevel > maxDimLevel)
-										fLevel = (float)maxDimLevel;
 									ilevel = round(fLevel);
+									if (ilevel > maxDimLevel)
+										ilevel = maxDimLevel;
 								}
 								else if (item.timerCmd == TCMD_ON) // no percentage set (0 or 100)
 								{
@@ -906,9 +906,9 @@ void CScheduler::CheckSchedules()
 								{
 									switchcmd = "Set Level";
 									float fLevel = (maxDimLevel / 100.0F) * item.Level;
-									if (fLevel > 100)
-										fLevel = 100;
-									ilevel = int(fLevel);
+									ilevel = round(fLevel);
+									if (ilevel > maxDimLevel)
+										ilevel = maxDimLevel;
 								}
 							} else if (switchtype == STYPE_Selector) {
 								if (item.timerCmd == TCMD_ON)
