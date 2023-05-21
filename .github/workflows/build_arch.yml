@@ -19,7 +19,7 @@ env:
 jobs:
   build:
     #runs-on: ubuntu-latest   # Per Dec 2022 latest = 22.04 with GCC 11, OpenSSL3.0 and this breaks building OpenZwave
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
 
     strategy:
       fail-fast: false
@@ -78,7 +78,7 @@ jobs:
       uses: uraimo/run-on-arch-action@v2.5.0
       with:
         arch: ${{ matrix.qemu_arch }}
-        distro: ubuntu20.04
+        distro: ubuntu_latest
         env: |
           ARCHITECTURE: ${{ matrix.appimage_arch }}
         githubToken: ${{ github.token }}
@@ -120,7 +120,7 @@ jobs:
       uses: uraimo/run-on-arch-action@v2.5.0
       with:
         arch: ${{ matrix.qemu_arch }}
-        distro: ubuntu20.04
+        distro: ubuntu_latest
         env: |
           ARCHITECTURE: ${{ matrix.appimage_arch }}
         githubToken: ${{ github.token }}
@@ -166,7 +166,7 @@ jobs:
       uses: uraimo/run-on-arch-action@v2.5.0
       with:
         arch: ${{ matrix.qemu_arch }}
-        distro: ubuntu20.04
+        distro: ubuntu_latest
         env: |
           ARCHITECTURE: ${{ matrix.appimage_arch }}
         githubToken: ${{ github.token }}
