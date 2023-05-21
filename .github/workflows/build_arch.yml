@@ -285,6 +285,6 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ github.event.release.upload_url }} 
-        asset_name: domoticz_linux_${{ matrix.appimage_arch }}-${{github.ref_name}}.tgz
+        asset_name: domoticz_linux_${{github.ref_name}}_${{ matrix.appimage_arch }}.tgz
         asset_path: src/package/domoticz_linux_${{ matrix.appimage_arch }}.tgz
         asset_content_type: application/octet-stream
