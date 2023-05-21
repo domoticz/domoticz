@@ -344,7 +344,6 @@ namespace http
 			// register callbacks
 			m_pWebEm->RegisterIncludeCode("switchtypes", [this](auto&& content_part) { DisplaySwitchTypesCombo(content_part); });
 			m_pWebEm->RegisterIncludeCode("metertypes", [this](auto&& content_part) { DisplayMeterTypesCombo(content_part); });
-			m_pWebEm->RegisterIncludeCode("timertypes", [this](auto&& content_part) { DisplayTimerTypesCombo(content_part); });
 
 			if (m_iamsettings.is_enabled())
 			{
@@ -389,6 +388,8 @@ namespace http
 			m_pWebEm->RegisterActionCode("event_create", [this](auto&& session, auto&& req, auto&& redirect_uri) { EventCreate(session, req, redirect_uri); });
 
 			// Commands that do NOT require authentication
+			RegisterCommandCode(
+				"gettimertypes", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetTimerTypes(session, req, root); }, true);
 			RegisterCommandCode(
 				"getlanguages", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetLanguages(session, req, root); }, true);
 			RegisterCommandCode(
@@ -876,6 +877,17 @@ namespace http
 			}
 
 			reply::set_content(&rep, root.toStyledString());
+		}
+
+		void CWebServer::Cmd_GetTimerTypes(WebEmSession& session, const request& req, Json::Value& root)
+		{
+			root["title"] = "GetTimerTypes";
+			for (int ii = 0; ii < TTYPE_END; ii++)
+			{
+				std::string sTimerTypeDesc = Timer_Type_Desc(_eTimerType(ii));
+				root["result"][ii] = sTimerTypeDesc;
+			}
+			root["status"] = "OK";
 		}
 
 		void CWebServer::Cmd_GetLanguages(WebEmSession& session, const request& req, Json::Value& root)
@@ -7927,16 +7939,6 @@ namespace http
 			for (int ii = 0; ii < MTYPE_END; ii++)
 			{
 				sprintf(szTmp, "<option value=\"%d\">%s</option>\n", ii, Meter_Type_Desc((_eMeterType)ii));
-				content_part += szTmp;
-			}
-		}
-
-		void CWebServer::DisplayTimerTypesCombo(std::string& content_part)
-		{
-			char szTmp[200];
-			for (int ii = 0; ii < TTYPE_END; ii++)
-			{
-				sprintf(szTmp, "<option data-i18n=\"%s\" value=\"%d\">%s</option>\n", Timer_Type_Desc(ii), ii, Timer_Type_Desc(ii));
 				content_part += szTmp;
 			}
 		}

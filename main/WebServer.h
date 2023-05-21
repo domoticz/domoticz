@@ -39,7 +39,6 @@ class CWebServer : public session_store, public std::enable_shared_from_this<CWe
 
 	void DisplaySwitchTypesCombo(std::string & content_part);
 	void DisplayMeterTypesCombo(std::string & content_part);
-	void DisplayTimerTypesCombo(std::string & content_part);
 	void GetJSonPage(WebEmSession & session, const request& req, reply & rep);
 	void GetCameraSnapshot(WebEmSession & session, const request& req, reply & rep);
 	void GetInternalCameraSnapshot(WebEmSession & session, const request& req, reply & rep);
@@ -116,6 +115,7 @@ private:
 
 	//Commands
 	void Cmd_RFXComGetFirmwarePercentage(WebEmSession & session, const request& req, Json::Value &root);
+	void Cmd_GetTimerTypes(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_GetLanguages(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_GetThemes(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_GetTitle(WebEmSession & session, const request& req, Json::Value &root);
