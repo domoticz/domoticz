@@ -620,6 +620,8 @@ namespace http
 			RegisterCommandCode("getscenelog", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetSceneLog(session, req, root); });
 			RegisterCommandCode("getscenes", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetScenes(session, req, root); });
 			RegisterCommandCode("getmobiles", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetMobiles(session, req, root); });
+			RegisterCommandCode("getcameras", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetCameras(session, req, root); });
+			RegisterCommandCode("getcameras_user", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetCamerasUser(session, req, root); });
 
 			// RType commands (will be replace by regular commands in the future)
 			RegisterRType("graph", [this](auto&& session, auto&& req, auto&& root) { RType_HandleGraph(session, req, root); });
@@ -630,8 +632,6 @@ namespace http
 			RegisterRType("events", [this](auto&& session, auto&& req, auto&& root) { RType_Events(session, req, root); });
 
 			RegisterRType("deletedevice", [this](auto&& session, auto&& req, auto&& root) { RType_DeleteDevice(session, req, root); });
-			RegisterRType("cameras", [this](auto&& session, auto&& req, auto&& root) { RType_Cameras(session, req, root); });
-			RegisterRType("cameras_user", [this](auto&& session, auto&& req, auto&& root) { RType_CamerasUser(session, req, root); });
 
 			RegisterRType("timers", [this](auto&& session, auto&& req, auto&& root) { RType_Timers(session, req, root); });
 			RegisterRType("scenetimers", [this](auto&& session, auto&& req, auto&& root) { RType_SceneTimers(session, req, root); });
