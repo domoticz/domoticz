@@ -619,6 +619,8 @@ namespace http
 
 			RegisterCommandCode("getscenelog", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetSceneLog(session, req, root); });
 			RegisterCommandCode("getscenes", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetScenes(session, req, root); });
+			RegisterCommandCode("getmobiles", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetMobiles(session, req, root); });
+
 			// RType commands (will be replace by regular commands in the future)
 			RegisterRType("graph", [this](auto&& session, auto&& req, auto&& root) { RType_HandleGraph(session, req, root); });
 			RegisterRType("lightlog", [this](auto&& session, auto&& req, auto&& root) { RType_LightLog(session, req, root); });
@@ -630,7 +632,6 @@ namespace http
 			RegisterRType("deletedevice", [this](auto&& session, auto&& req, auto&& root) { RType_DeleteDevice(session, req, root); });
 			RegisterRType("cameras", [this](auto&& session, auto&& req, auto&& root) { RType_Cameras(session, req, root); });
 			RegisterRType("cameras_user", [this](auto&& session, auto&& req, auto&& root) { RType_CamerasUser(session, req, root); });
-			RegisterRType("mobiles", [this](auto&& session, auto&& req, auto&& root) { RType_Mobiles(session, req, root); });
 
 			RegisterRType("timers", [this](auto&& session, auto&& req, auto&& root) { RType_Timers(session, req, root); });
 			RegisterRType("scenetimers", [this](auto&& session, auto&& req, auto&& root) { RType_SceneTimers(session, req, root); });
@@ -12022,7 +12023,7 @@ namespace http
 			}
 		}
 
-		void CWebServer::RType_Mobiles(WebEmSession& session, const request& req, Json::Value& root)
+		void CWebServer::Cmd_GetMobiles(WebEmSession& session, const request& req, Json::Value& root)
 		{
 			root["status"] = "ERR";
 			root["title"] = "Mobiles";
@@ -12045,8 +12046,8 @@ namespace http
 					root["result"][ii]["DeviceType"] = sd[5];
 					ii++;
 				}
-				root["status"] = "OK";
 			}
+			root["status"] = "OK";
 		}
 
 		void CWebServer::Cmd_SetSetpoint(WebEmSession& session, const request& req, Json::Value& root)

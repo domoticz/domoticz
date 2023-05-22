@@ -311,6 +311,7 @@ private:
 	void Cmd_GetSceneLog(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_GetScenes(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_GetHardware(WebEmSession & session, const request& req, Json::Value &root);
+	void Cmd_GetMobiles(WebEmSession & session, const request& req, Json::Value &root);
 	//RTypes
 	void RType_HandleGraph(WebEmSession & session, const request& req, Json::Value &root);
 	void RType_LightLog(WebEmSession & session, const request& req, Json::Value &root);
@@ -319,7 +320,6 @@ private:
 	void RType_Events(WebEmSession & session, const request& req, Json::Value &root);
 	void RType_Cameras(WebEmSession& session, const request& req, Json::Value& root);
 	void RType_CamerasUser(WebEmSession& session, const request& req, Json::Value& root);
-	void RType_Mobiles(WebEmSession & session, const request& req, Json::Value &root);
 	void RType_Timers(WebEmSession & session, const request& req, Json::Value &root);
 	void RType_SceneTimers(WebEmSession & session, const request& req, Json::Value &root);
 	void RType_SetpointTimers(WebEmSession & session, const request& req, Json::Value &root);
