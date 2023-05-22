@@ -614,8 +614,7 @@ define(['app', 'livesocket'], function(app) {
         }
 
         function refreshDevices() {
-            domoticzApi.sendRequest({
-                type: 'devices',
+            domoticzApi.sendCommand('getdevices',{
                 displayhidden: 1,
                 displaydisabled: 1,
                 filter: 'all',

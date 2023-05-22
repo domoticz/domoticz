@@ -108,7 +108,7 @@ define(['app.permissions', 'livesocket'], function(appPermissionsModule, websock
         }
 
         function getDeviceInfo(deviceIdx) {
-            return domoticzApi.sendRequest({ type: 'devices', rid: deviceIdx })
+            return domoticzApi.sendCommand('getdevices',{ rid: deviceIdx })
                 .then(function(data) {
                     dzTimeAndSun.updateData(data);
 
