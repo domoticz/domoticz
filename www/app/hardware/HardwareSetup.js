@@ -17,7 +17,7 @@ define([
         function init() {
             vm.hardwareId = $routeParams.id;
 
-            domoticzApi.sendRequest({ type: 'hardware' })
+            domoticzApi.sendCommand('gethardware', {})
                 .then(domoticzApi.errorHandler)
                 .then(function (response) {
                     vm.hardware = response.result.find(function (item) {

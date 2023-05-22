@@ -3743,7 +3743,7 @@ define(['app'], function (app) {
 			oTable.fnClearTable();
 
 			$.ajax({
-				url: "json.htm?type=hardware",
+				url: "json.htm?type=command&param=gethardware",
 				async: false,
 				dataType: 'json',
 				success: function (data) {

@@ -1450,7 +1450,7 @@ function ShowMediaRemote(Name, devIdx, HWType) {
 					success: function (data) { 
 						hwId = data.result[0].HardwareID;
 						$.ajax({
-							url: "json.htm?type=hardware",
+							url: "json.htm?type=command&param=gethardware",
 							async: true,
 							dataType: 'json',
 							success: function (data) { 
