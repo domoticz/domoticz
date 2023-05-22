@@ -615,6 +615,7 @@ namespace http
 			RegisterCommandCode("getusers", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetUsers(session, req, root); });
 			RegisterCommandCode("getsettings", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetSettings(session, req, root); });
 			RegisterCommandCode("getdevices", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetDevices(session, req, root); });
+			RegisterCommandCode("gethardware", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetHardware(session, req, root); });
 
 			RegisterCommandCode("getscenelog", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetSceneLog(session, req, root); });
 			RegisterCommandCode("getscenes", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetScenes(session, req, root); });
@@ -626,7 +627,6 @@ namespace http
 
 			RegisterRType("events", [this](auto&& session, auto&& req, auto&& root) { RType_Events(session, req, root); });
 
-			RegisterRType("hardware", [this](auto&& session, auto&& req, auto&& root) { RType_Hardware(session, req, root); });
 			RegisterRType("deletedevice", [this](auto&& session, auto&& req, auto&& root) { RType_DeleteDevice(session, req, root); });
 			RegisterRType("cameras", [this](auto&& session, auto&& req, auto&& root) { RType_Cameras(session, req, root); });
 			RegisterRType("cameras_user", [this](auto&& session, auto&& req, auto&& root) { RType_CamerasUser(session, req, root); });
@@ -871,6 +871,11 @@ namespace http
 					else if (rtype.compare("devices") == 0)
 					{
 						pf = m_webcommands.find("getdevices");
+						pf->second(session, req, root);
+					}
+					else if (rtype.compare("hardware") == 0)
+					{
+						pf = m_webcommands.find("gethardware");
 						pf->second(session, req, root);
 					}
 				}
@@ -11853,10 +11858,9 @@ namespace http
 			}
 		}
 
-		void CWebServer::RType_Hardware(WebEmSession& session, const request& req, Json::Value& root)
+		void CWebServer::Cmd_GetHardware(WebEmSession& session, const request& req, Json::Value& root)
 		{
-			root["status"] = "OK";
-			root["title"] = "Hardware";
+			root["title"] = "gethardware";
 
 #ifdef WITH_OPENZWAVE
 			m_ZW_Hwidx = -1;
@@ -11950,6 +11954,7 @@ namespace http
 					ii++;
 				}
 			}
+			root["status"] = "OK";
 		}
 
 		void CWebServer::Cmd_GetDevices(WebEmSession& session, const request& req, Json::Value& root)
