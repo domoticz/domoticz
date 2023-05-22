@@ -2188,7 +2188,7 @@ namespace http {
 			WebEmStoredSession storedSession = sstore->GetSession(session.id);
 			if (storedSession.id.empty())
 			{
-				_log.Debug(DEBUG_WEBSERVER, "[web:%s] CheckAuthToken(%s_%s) : session id not found", myWebem->GetPort().c_str(), session.id.c_str(), session.auth_token.c_str());
+				_log.Debug(DEBUG_AUTH, "[web:%s] CheckAuthToken(%s_%s) : session id not found", myWebem->GetPort().c_str(), session.id.c_str(), session.auth_token.c_str());
 				return false;
 			}
 			if (storedSession.auth_token != GenerateMD5Hash(session.auth_token))
@@ -2198,7 +2198,7 @@ namespace http {
 				return false;
 			}
 
-			_log.Debug(DEBUG_WEBSERVER, "[web:%s] CheckAuthToken(%s_%s_%s) : user authenticated", myWebem->GetPort().c_str(), session.id.c_str(), session.auth_token.c_str(), session.username.c_str());
+			_log.Debug(DEBUG_AUTH, "[web:%s] CheckAuthToken(%s_%s_%s) : user authenticated", myWebem->GetPort().c_str(), session.id.c_str(), session.auth_token.c_str(), session.username.c_str());
 
 			if (session.rights == 2)
 			{
@@ -2237,7 +2237,7 @@ namespace http {
 
 				if (!userExists || sessionExpires)
 				{
-					_log.Debug(DEBUG_WEBSERVER, "[web:%s] CheckAuthToken(%s_%s) : cannot restore session, user not found or session expired", myWebem->GetPort().c_str(), session.id.c_str(), session.auth_token.c_str());
+					_log.Debug(DEBUG_AUTH, "[web:%s] CheckAuthToken(%s_%s) : cannot restore session, user not found or session expired", myWebem->GetPort().c_str(), session.id.c_str(), session.auth_token.c_str());
 					removeAuthToken(session.id);
 					return false;
 				}
@@ -2245,7 +2245,7 @@ namespace http {
 				WebEmSession* oldSession = myWebem->GetSession(session.id);
 				if (oldSession == nullptr)
 				{
-					_log.Debug(DEBUG_WEBSERVER, "[web:%s] CheckAuthToken(%s_%s_%s) : restore session", myWebem->GetPort().c_str(), session.id.c_str(), session.auth_token.c_str(), session.username.c_str());
+					_log.Debug(DEBUG_AUTH, "[web:%s] CheckAuthToken(%s_%s_%s) : restore session", myWebem->GetPort().c_str(), session.id.c_str(), session.auth_token.c_str(), session.username.c_str());
 					myWebem->AddSession(session);
 				}
 			}
