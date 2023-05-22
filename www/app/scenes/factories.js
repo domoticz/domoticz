@@ -9,7 +9,7 @@ define(['app'], function (app) {
 
         function getScenes() {
             return domoticzApi
-                .sendRequest({type: 'scenes'})
+                .sendCommand('getscenes',{})
                 .then(function (data) {
                     dzTimeAndSun.updateData(data);
 
@@ -32,9 +32,9 @@ define(['app'], function (app) {
         }
 
         function getSceneLog(idx) {
-            return domoticzApi.sendRequest({
-                type: 'scenelog',
-                idx: idx
+            return domoticzApi
+                    .sendCommand('getscenelog', {
+                        idx: idx
             }).then(function (response) {
                 return response && response.status !== 'OK'
                     ? $q.reject(response)

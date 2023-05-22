@@ -154,7 +154,7 @@ define(['blockly', 'blockly-blocks', 'blockly-msg-en', 'app/events/blockly_messa
     if (zwavealarms.length === 0) { zwavealarms.push(["No ZWave Alarms found", '0']); }
 
     $.ajax({
-        url: "json.htm?type=scenes&order=Name&displayhidden=1",
+        url: "json.htm?type=command&param=getscenes&order=Name&displayhidden=1",
         async: false,
         dataType: 'json',
         success: function (data) {

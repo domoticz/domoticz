@@ -834,7 +834,7 @@ define(['app', 'livesocket'], function (app) {
 
 		//We only call this once. After this the widgets are being updated automatically by used of the websocket broadcast event.
 		RefreshScenes = function () {
-			livesocket.getJson("json.htm?type=scenes&lastupdate=" + $.LastUpdateTime, function (data) {
+			livesocket.getJson("json.htm?type=command&param=getscenes&lastupdate=" + $.LastUpdateTime, function (data) {
 				if (typeof data.ServerTime != 'undefined') {
 					$rootScope.SetTimeAndSun(data.Sunrise, data.Sunset, data.ServerTime);
 				}
@@ -866,7 +866,7 @@ define(['app', 'livesocket'], function (app) {
 			var j = 0;
 
 			$.ajax({
-				url: "json.htm?type=scenes",
+				url: "json.htm?type=command&param=getscenes",
 				async: false,
 				dataType: 'json',
 				success: function (data) {
