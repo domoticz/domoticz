@@ -308,11 +308,12 @@ private:
 	void Cmd_GetUsers(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_GetSettings(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_GetDevices(WebEmSession & session, const request& req, Json::Value &root);
+	void Cmd_GetSceneLog(WebEmSession & session, const request& req, Json::Value &root);
+	void Cmd_GetScenes(WebEmSession & session, const request& req, Json::Value &root);
 	//RTypes
 	void RType_HandleGraph(WebEmSession & session, const request& req, Json::Value &root);
 	void RType_LightLog(WebEmSession & session, const request& req, Json::Value &root);
 	void RType_TextLog(WebEmSession & session, const request& req, Json::Value &root);
-	void RType_SceneLog(WebEmSession & session, const request& req, Json::Value &root);
 	void RType_RemoteWebClientsLog(WebEmSession& session, const request& req, Json::Value& root);
 	void RType_Events(WebEmSession & session, const request& req, Json::Value &root);
 	void RType_Hardware(WebEmSession & session, const request& req, Json::Value &root);
@@ -339,7 +340,6 @@ private:
 	void RType_CustomLightIcons(WebEmSession & session, const request& req, Json::Value &root);
 	void RType_Plans(WebEmSession & session, const request& req, Json::Value &root);
 	void RType_FloorPlans(WebEmSession & session, const request& req, Json::Value &root);
-	void RType_Scenes(WebEmSession & session, const request& req, Json::Value &root);
 	void RType_CreateEvohomeSensor(WebEmSession & session, const request& req, Json::Value &root);
 	void RType_BindEvohome(WebEmSession & session, const request& req, Json::Value &root);
 	void RType_CreateRFLinkDevice(WebEmSession & session, const request& req, Json::Value &root);

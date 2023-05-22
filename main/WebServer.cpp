@@ -616,11 +616,12 @@ namespace http
 			RegisterCommandCode("getsettings", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetSettings(session, req, root); });
 			RegisterCommandCode("getdevices", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetDevices(session, req, root); });
 
+			RegisterCommandCode("getscenelog", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetSceneLog(session, req, root); });
+			RegisterCommandCode("getscenes", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetScenes(session, req, root); });
 			// RType commands (will be replace by regular commands in the future)
 			RegisterRType("graph", [this](auto&& session, auto&& req, auto&& root) { RType_HandleGraph(session, req, root); });
 			RegisterRType("lightlog", [this](auto&& session, auto&& req, auto&& root) { RType_LightLog(session, req, root); });
 			RegisterRType("textlog", [this](auto&& session, auto&& req, auto&& root) { RType_TextLog(session, req, root); });
-			RegisterRType("scenelog", [this](auto&& session, auto&& req, auto&& root) { RType_SceneLog(session, req, root); });
 			RegisterRType("rclientslog", [this](auto&& session, auto&& req, auto&& root) { RType_RemoteWebClientsLog(session, req, root); });
 
 			RegisterRType("events", [this](auto&& session, auto&& req, auto&& root) { RType_Events(session, req, root); });
@@ -644,7 +645,6 @@ namespace http
 			RegisterCommandCode("clearuserdevices", [this](auto&& session, auto&& req, auto&& root) { Cmd_ClearUserDevices(session, req, root); });
 
 			RegisterRType("setused", [this](auto&& session, auto&& req, auto&& root) { RType_SetUsed(session, req, root); });
-			RegisterRType("scenes", [this](auto&& session, auto&& req, auto&& root) { RType_Scenes(session, req, root); });
 			RegisterRType("addscene", [this](auto&& session, auto&& req, auto&& root) { RType_AddScene(session, req, root); });
 			RegisterRType("deletescene", [this](auto&& session, auto&& req, auto&& root) { RType_DeleteScene(session, req, root); });
 			RegisterRType("updatescene", [this](auto&& session, auto&& req, auto&& root) { RType_UpdateScene(session, req, root); });
@@ -11731,10 +11731,10 @@ namespace http
 			}
 		}
 
-		void CWebServer::RType_Scenes(WebEmSession& session, const request& req, Json::Value& root)
+		void CWebServer::Cmd_GetScenes(WebEmSession& session, const request& req, Json::Value& root)
 		{
 			root["status"] = "OK";
-			root["title"] = "Scenes";
+			root["title"] = "getscenes";
 			root["AllowWidgetOrdering"] = m_sql.m_bAllowWidgetOrdering;
 
 			std::string sDisplayHidden = request::findValue(&req, "displayhidden");
@@ -13718,7 +13718,7 @@ namespace http
 			}
 		}
 
-		void CWebServer::RType_SceneLog(WebEmSession& session, const request& req, Json::Value& root)
+		void CWebServer::Cmd_GetSceneLog(WebEmSession& session, const request& req, Json::Value& root)
 		{
 			uint64_t idx = 0;
 			if (!request::findValue(&req, "idx").empty())
@@ -13728,7 +13728,7 @@ namespace http
 			std::vector<std::vector<std::string>> result;
 
 			root["status"] = "OK";
-			root["title"] = "SceneLog";
+			root["title"] = "getscenelog";
 
 			result = m_sql.safe_query("SELECT ROWID, nValue, User, Date FROM SceneLog WHERE (SceneRowID==%" PRIu64 ") ORDER BY Date DESC", idx);
 			if (!result.empty())
