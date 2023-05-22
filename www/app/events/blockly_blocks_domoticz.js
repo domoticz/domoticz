@@ -172,7 +172,7 @@ define(['blockly', 'blockly-blocks', 'blockly-msg-en', 'app/events/blockly_messa
     });
 
     $.ajax({
-        url: "json.htm?type=cameras&order=Name&displayhidden=1",
+        url: "json.htm?type=command&param=getcameras&order=Name&displayhidden=1",
         async: false,
         dataType: 'json',
         success: function (data) {
