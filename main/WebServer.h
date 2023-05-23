@@ -329,6 +329,8 @@ private:
 	void Cmd_CreateRFLinkDevice(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_CreateMappedSensor(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_CreateDevice(WebEmSession & session, const request& req, Json::Value &root);
+	void Cmd_CreateEvohomeSensor(WebEmSession & session, const request& req, Json::Value &root);
+	void Cmd_BindEvohome(WebEmSession & session, const request& req, Json::Value &root);
 	//RTypes
 	void RType_HandleGraph(WebEmSession & session, const request& req, Json::Value &root);
 	void RType_RemoteWebClientsLog(WebEmSession& session, const request& req, Json::Value& root);
@@ -340,8 +342,6 @@ private:
 	void RType_DeleteScene(WebEmSession & session, const request& req, Json::Value &root);
 	void RType_UpdateScene(WebEmSession & session, const request& req, Json::Value &root);
 	void RType_CustomLightIcons(WebEmSession & session, const request& req, Json::Value &root);
-	void RType_CreateEvohomeSensor(WebEmSession & session, const request& req, Json::Value &root);
-	void RType_BindEvohome(WebEmSession & session, const request& req, Json::Value &root);
 
 	void Cmd_ClearUserDevices(WebEmSession& session, const request& req, Json::Value& root);
 

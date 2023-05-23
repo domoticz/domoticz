@@ -626,6 +626,8 @@ namespace http
 			RegisterCommandCode("gettransfers", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetTransfers(session, req, root); });
 			RegisterCommandCode("dotransferdevice", [this](auto&& session, auto&& req, auto&& root) { Cmd_DoTransferDevice(session, req, root); });
 			RegisterCommandCode("createrflinkdevice", [this](auto&& session, auto&& req, auto&& root) { Cmd_CreateRFLinkDevice(session, req, root); });
+			RegisterCommandCode("createevohomesensor", [this](auto&& session, auto&& req, auto&& root) { Cmd_CreateEvohomeSensor(session, req, root); });
+			RegisterCommandCode("bindevohome", [this](auto&& session, auto&& req, auto&& root) { Cmd_BindEvohome(session, req, root); });
 
 			// RType commands (will be replace by regular commands in the future)
 			RegisterRType("graph", [this](auto&& session, auto&& req, auto&& root) { RType_HandleGraph(session, req, root); });
@@ -641,9 +643,6 @@ namespace http
 			RegisterRType("addscene", [this](auto&& session, auto&& req, auto&& root) { RType_AddScene(session, req, root); });
 			RegisterRType("deletescene", [this](auto&& session, auto&& req, auto&& root) { RType_DeleteScene(session, req, root); });
 			RegisterRType("updatescene", [this](auto&& session, auto&& req, auto&& root) { RType_UpdateScene(session, req, root); });
-
-			RegisterRType("createevohomesensor", [this](auto&& session, auto&& req, auto&& root) { RType_CreateEvohomeSensor(session, req, root); });
-			RegisterRType("bindevohome", [this](auto&& session, auto&& req, auto&& root) { RType_BindEvohome(session, req, root); });
 
 			RegisterRType("custom_light_icons", [this](auto&& session, auto&& req, auto&& root) { RType_CustomLightIcons(session, req, root); });
 

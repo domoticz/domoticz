@@ -3341,7 +3341,7 @@ define(['app'], function (app) {
 				var Name = "";
 
 				$.ajax({
-					url: "json.htm?type=bindevohome&idx=" + $.devIdx + "&devtype=" + devtype,
+					url: "json.htm?type=command&param=bindevohome&idx=" + $.devIdx + "&devtype=" + devtype,
 					async: false,
 					dataType: 'json',
 					success: function (data) {
@@ -3395,7 +3395,7 @@ define(['app'], function (app) {
 							return;
 						}
 						$.ajax({
-							url: "json.htm?type=createevohomesensor&idx=" + $.devIdx +
+							url: "json.htm?type=command&param=createevohomesensor&idx=" + $.devIdx +
 							"&sensortype=" + SensorType,
 							async: false,
 							dataType: 'json',
