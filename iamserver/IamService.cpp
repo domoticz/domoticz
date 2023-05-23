@@ -4,14 +4,22 @@
  *  Created on: 23 Januari 2023
  *      Author: kiddigital
  * 
- * This file is NOT a separate class but is directly included into 'main/WebServer.cpp'
- * So it contains routines that are part of the WebServer class, but for sourcecode management
+ * This file is NOT a separate class but is part of 'main/WebServer.cpp'
+ * It contains routines that are part of the WebServer class, but for sourcecode management
  * reasons separated out into its own file so it is easier to maintain the IAM related functions
  * of the WebServer. The definitions of the methods here are still in 'main/Webserver.h'
  *  
 */
 
+#include "stdafx.h"
+#include <inttypes.h>
+#include <iostream>
+#include <json/json.h>
+#include "localtime_r.h"
+#include "../webserver/Base64.h"
 #include "../main/WebServer.h"
+#include "../main/Logger.h"
+#include "../main/SQLHelper.h"
 
 namespace http
 {

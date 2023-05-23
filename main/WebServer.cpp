@@ -388,31 +388,20 @@ namespace http
 			m_pWebEm->RegisterActionCode("event_create", [this](auto&& session, auto&& req, auto&& redirect_uri) { EventCreate(session, req, redirect_uri); });
 
 			// Commands that do NOT require authentication
-			RegisterCommandCode(
-				"gettimertypes", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetTimerTypes(session, req, root); }, true);
-			RegisterCommandCode(
-				"getlanguages", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetLanguages(session, req, root); }, true);
-			RegisterCommandCode(
-				"getthemes", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetThemes(session, req, root); }, true);
-			RegisterCommandCode(
-				"gettitle", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetTitle(session, req, root); }, true);
-			RegisterCommandCode(
-				"logincheck", [this](auto&& session, auto&& req, auto&& root) { Cmd_LoginCheck(session, req, root); }, true);
+			RegisterCommandCode("gettimertypes", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetTimerTypes(session, req, root); }, true);
+			RegisterCommandCode("getlanguages", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetLanguages(session, req, root); }, true);
+			RegisterCommandCode("getthemes", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetThemes(session, req, root); }, true);
+			RegisterCommandCode("gettitle", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetTitle(session, req, root); }, true);
+			RegisterCommandCode("logincheck", [this](auto&& session, auto&& req, auto&& root) { Cmd_LoginCheck(session, req, root); }, true);
 
-			RegisterCommandCode(
-				"getversion", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetVersion(session, req, root); }, true);
-			RegisterCommandCode(
-				"getauth", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetAuth(session, req, root); }, true);
-			RegisterCommandCode(
-				"getuptime", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetUptime(session, req, root); }, true);
-			RegisterCommandCode(
-				"getconfig", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetConfig(session, req, root); }, true);
+			RegisterCommandCode("getversion", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetVersion(session, req, root); }, true);
+			RegisterCommandCode("getauth", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetAuth(session, req, root); }, true);
+			RegisterCommandCode("getuptime", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetUptime(session, req, root); }, true);
+			RegisterCommandCode("getconfig", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetConfig(session, req, root); }, true);
 
 			// WHY do these 2 commands not need Authentication??
-			RegisterCommandCode(
-				"rfxfirmwaregetpercentage", [this](auto&& session, auto&& req, auto&& root) { Cmd_RFXComGetFirmwarePercentage(session, req, root); }, true);
-			RegisterCommandCode(
-				"sendopenthermcommand", [this](auto&& session, auto&& req, auto&& root) { Cmd_SendOpenThermCommand(session, req, root); }, true);
+			RegisterCommandCode("rfxfirmwaregetpercentage", [this](auto&& session, auto&& req, auto&& root) { Cmd_RFXComGetFirmwarePercentage(session, req, root); }, true);
+			RegisterCommandCode("sendopenthermcommand", [this](auto&& session, auto&& req, auto&& root) { Cmd_SendOpenThermCommand(session, req, root); }, true);
 
 			RegisterCommandCode("storesettings", [this](auto&& session, auto&& req, auto&& root) { Cmd_PostSettings(session, req, root); });
 			RegisterCommandCode("getlog", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetLog(session, req, root); });
@@ -7665,256 +7654,228 @@ namespace http
 				std::string szSwitchUser = Username + " (IP: " + session.remote_host + ")";
 				m_mainworker.SwitchLight(ID, "Cooler", 0, NoColor, false, 0, szSwitchUser);
 			}
-			else if (cparam == "fulllight")
-			{
-				if (session.rights < 1)
-				{
-					session.reply_status = reply::forbidden;
-					return false; // Only user/admin allowed
-				}
-
-				std::string Username = "Admin";
-				if (!session.username.empty())
-					Username = session.username;
-
-				root["status"] = "OK";
-				root["title"] = "Set Full!";
-
-				std::string idx = request::findValue(&req, "idx");
-
-				if (idx.empty())
-				{
-					return false;
-				}
-
-				uint64_t ID = std::stoull(idx);
-				std::string szSwitchUser = Username + " (IP: " + session.remote_host + ")";
-				m_mainworker.SwitchLight(ID, "Set Full", 0, NoColor, false, 0, szSwitchUser);
-			}
-			else if (cparam == "nightlight")
-			{
-				if (session.rights < 1)
-				{
-					session.reply_status = reply::forbidden;
-					return false; // Only user/admin allowed
-				}
-
-				std::string Username = "Admin";
-				if (!session.username.empty())
-					Username = session.username;
-
-				root["status"] = "OK";
-				root["title"] = "Set to nightlight!";
-
-				std::string idx = request::findValue(&req, "idx");
-
-				if (idx.empty())
-				{
-					return false;
-				}
-
-				uint64_t ID = std::stoull(idx);
-				std::string szSwitchUser = Username + " (IP: " + session.remote_host + ")";
-				m_mainworker.SwitchLight(ID, "Set Night", 0, NoColor, false, 0, szSwitchUser);
-			}
-			else if (cparam == "whitelight")
-			{
-				if (session.rights < 1)
-				{
-					session.reply_status = reply::forbidden;
-					return false; // Only user/admin allowed
-				}
-
-				std::string Username = "Admin";
-				if (!session.username.empty())
-					Username = session.username;
-
-				root["status"] = "OK";
-				root["title"] = "Set to clear white!";
-
-				std::string idx = request::findValue(&req, "idx");
-
-				if (idx.empty())
-				{
-					return false;
-				}
-
-				uint64_t ID = std::stoull(idx);
-				// TODO: Change to color with mode=ColorModeWhite and level=100?
-				std::string szSwitchUser = Username + " (IP: " + session.remote_host + ")";
-				m_mainworker.SwitchLight(ID, "Set White", 0, NoColor, false, 0, szSwitchUser);
-			}
-			else if (cparam == "updatefloorplan")
-			{
-				if (session.rights < 2)
-				{
-					session.reply_status = reply::forbidden;
-					return false; // Only admin user allowed
-				}
-
-				std::string idx = request::findValue(&req, "idx");
-				if (idx.empty())
-					return false;
-				std::string name = HTMLSanitizer::Sanitize(request::findValue(&req, "name"));
-				std::string scalefactor = request::findValue(&req, "scalefactor");
-				if ((name.empty()) || (scalefactor.empty()))
-					return false;
-
-				root["status"] = "OK";
-				root["title"] = "UpdateFloorplan";
-
-				m_sql.safe_query("UPDATE Floorplans SET Name='%q',ScaleFactor='%q' WHERE (ID == '%q')", name.c_str(), scalefactor.c_str(), idx.c_str());
-			}
-			else if (cparam == "deletefloorplan")
-			{
-				if (session.rights < 2)
-				{
-					session.reply_status = reply::forbidden;
-					return false; // Only admin user allowed
-				}
-
-				std::string idx = request::findValue(&req, "idx");
-				if (idx.empty())
-					return false;
-				root["status"] = "OK";
-				root["title"] = "DeleteFloorplan";
-				m_sql.safe_query("UPDATE DeviceToPlansMap SET XOffset=0,YOffset=0 WHERE (PlanID IN (SELECT ID from Plans WHERE (FloorplanID == '%q')))", idx.c_str());
-				m_sql.safe_query("UPDATE Plans SET FloorplanID=0,Area='' WHERE (FloorplanID == '%q')", idx.c_str());
-				m_sql.safe_query("DELETE FROM Floorplans WHERE (ID == '%q')", idx.c_str());
-			}
-			else if (cparam == "changefloorplanorder")
-			{
-				if (session.rights < 2)
-				{
-					session.reply_status = reply::forbidden;
-					return false; // Only admin user allowed
-				}
-
-				std::string idx = request::findValue(&req, "idx");
-				if (idx.empty())
-					return false;
-				std::string sway = request::findValue(&req, "way");
-				if (sway.empty())
-					return false;
-				bool bGoUp = (sway == "0");
-
-				std::string aOrder, oID, oOrder;
-
-				result = m_sql.safe_query("SELECT [Order] FROM Floorplans WHERE (ID=='%q')", idx.c_str());
-				if (result.empty())
-					return false;
-				aOrder = result[0][0];
-
-				if (!bGoUp)
-				{
-					// Get next device order
-					result = m_sql.safe_query("SELECT ID, [Order] FROM Floorplans WHERE ([Order]>'%q') ORDER BY [Order] ASC", aOrder.c_str());
-					if (result.empty())
-						return false;
-					oID = result[0][0];
-					oOrder = result[0][1];
-				}
-				else
-				{
-					// Get previous device order
-					result = m_sql.safe_query("SELECT ID, [Order] FROM Floorplans WHERE ([Order]<'%q') ORDER BY [Order] DESC", aOrder.c_str());
-					if (result.empty())
-						return false;
-					oID = result[0][0];
-					oOrder = result[0][1];
-				}
-				// Swap them
-				root["status"] = "OK";
-				root["title"] = "ChangeFloorPlanOrder";
-
-				m_sql.safe_query("UPDATE Floorplans SET [Order] = '%q' WHERE (ID='%q')", oOrder.c_str(), idx.c_str());
-				m_sql.safe_query("UPDATE Floorplans SET [Order] = '%q' WHERE (ID='%q')", aOrder.c_str(), oID.c_str());
-			}
-			else if (cparam == "getunusedfloorplanplans")
-			{
-				if (session.rights < 2)
-				{
-					session.reply_status = reply::forbidden;
-					return false; // Only admin user allowed
-				}
-
-				root["status"] = "OK";
-				root["title"] = "GetUnusedFloorplanPlans";
-				int ii = 0;
-
-				result = m_sql.safe_query("SELECT ID, Name FROM Plans WHERE (FloorplanID==0) ORDER BY Name COLLATE NOCASE ASC");
-				if (!result.empty())
-				{
-					for (const auto& sd : result)
-					{
-						root["result"][ii]["type"] = 0;
-						root["result"][ii]["idx"] = sd[0];
-						root["result"][ii]["Name"] = sd[1];
-						ii++;
-					}
-				}
-			}
-			else if (cparam == "addfloorplanplan")
-			{
-				if (session.rights < 2)
-				{
-					session.reply_status = reply::forbidden;
-					return false; // Only admin user allowed
-				}
-
-				std::string idx = request::findValue(&req, "idx");
-				std::string planidx = request::findValue(&req, "planidx");
-				if ((idx.empty()) || (planidx.empty()))
-					return false;
-				root["status"] = "OK";
-				root["title"] = "AddFloorplanPlan";
-
-				m_sql.safe_query("UPDATE Plans SET FloorplanID='%q' WHERE (ID == '%q')", idx.c_str(), planidx.c_str());
-				_log.Log(LOG_STATUS, "(Floorplan) Plan '%s' added to floorplan '%s'.", planidx.c_str(), idx.c_str());
-			}
-			else if (cparam == "updatefloorplanplan")
-			{
-				if (session.rights < 2)
-				{
-					session.reply_status = reply::forbidden;
-					return false; // Only admin user allowed
-				}
-
-				std::string planidx = request::findValue(&req, "planidx");
-				std::string planarea = request::findValue(&req, "area");
-				if (planidx.empty())
-					return false;
-				root["status"] = "OK";
-				root["title"] = "UpdateFloorplanPlan";
-
-				m_sql.safe_query("UPDATE Plans SET Area='%q' WHERE (ID == '%q')", planarea.c_str(), planidx.c_str());
-				_log.Log(LOG_STATUS, "(Floorplan) Plan '%s' floor area updated to '%s'.", planidx.c_str(), planarea.c_str());
-			}
-			else if (cparam == "deletefloorplanplan")
-			{
-				if (session.rights < 2)
-				{
-					session.reply_status = reply::forbidden;
-					return false; // Only admin user allowed
-				}
-
-				std::string idx = request::findValue(&req, "idx");
-				if (idx.empty())
-					return false;
-				root["status"] = "OK";
-				root["title"] = "DeleteFloorplanPlan";
-				m_sql.safe_query("UPDATE DeviceToPlansMap SET XOffset=0,YOffset=0 WHERE (PlanID == '%q')", idx.c_str());
-				_log.Log(LOG_STATUS, "(Floorplan) Device coordinates reset for plan '%s'.", idx.c_str());
-				m_sql.safe_query("UPDATE Plans SET FloorplanID=0,Area='' WHERE (ID == '%q')", idx.c_str());
-				_log.Log(LOG_STATUS, "(Floorplan) Plan '%s' floorplan data reset.", idx.c_str());
-			}
 			else
 			{
-				_log.Log(LOG_NORM, "Invalid API command received! (%s)", cparam.c_str());
-				return false;
+				// add script to background worker
+				m_sql.AddTaskItem(_tTaskItem::ExecuteScript(0.2F, scriptname, strparm));
+			}
+			root["title"] = "ExecuteScript";
+			root["status"] = "OK";
+		}
+
+		// Only for Unix systems
+		void CWebServer::Cmd_UpdateApplication(WebEmSession& session, const request& req, Json::Value& root)
+		{
+			if (session.rights != 2)
+			{
+				session.reply_status = reply::forbidden;
+				return; // Only admin user allowed
+			}
+#ifdef WIN32
+#ifndef _DEBUG
+			return;
+#endif
+#endif
+			int nValue;
+			m_sql.GetPreferencesVar("ReleaseChannel", nValue);
+			bool bIsBetaChannel = (nValue != 0);
+
+			std::string scriptname(szStartupFolder);
+			scriptname += (bIsBetaChannel) ? "updatebeta" : "updaterelease";
+			// run script in background
+			std::string lscript = scriptname + " &";
+			int ret = system(lscript.c_str());
+			root["title"] = "UpdateApplication";
+			root["status"] = "OK";
+		}
+
+		void CWebServer::Cmd_GetCosts(WebEmSession& session, const request& req, Json::Value& root)
+		{
+			int nValue = 0;
+			m_sql.GetPreferencesVar("CostEnergy", nValue);
+			root["CostEnergy"] = nValue;
+			m_sql.GetPreferencesVar("CostEnergyT2", nValue);
+			root["CostEnergyT2"] = nValue;
+			m_sql.GetPreferencesVar("CostEnergyR1", nValue);
+			root["CostEnergyR1"] = nValue;
+			m_sql.GetPreferencesVar("CostEnergyR2", nValue);
+			root["CostEnergyR2"] = nValue;
+			m_sql.GetPreferencesVar("CostGas", nValue);
+			root["CostGas"] = nValue;
+			m_sql.GetPreferencesVar("CostWater", nValue);
+			root["CostWater"] = nValue;
+
+			int tValue = 1000;
+			if (m_sql.GetPreferencesVar("MeterDividerWater", tValue))
+			{
+				root["DividerWater"] = float(tValue);
+			}
+			float EnergyDivider = 1000.0F;
+			if (m_sql.GetPreferencesVar("MeterDividerEnergy", tValue))
+			{
+				EnergyDivider = float(tValue);
+				root["DividerEnergy"] = EnergyDivider;
 			}
 
-			return true;
+			std::string idx = request::findValue(&req, "idx");
+			if (idx.empty())
+				return;
+
+			char szTmp[100];
+			std::vector<std::vector<std::string>> result;
+			result = m_sql.safe_query("SELECT Type, SubType, nValue, sValue FROM DeviceStatus WHERE (ID=='%q')", idx.c_str());
+			if (!result.empty())
+			{
+				root["status"] = "OK";
+				root["title"] = "GetCosts";
+
+				std::vector<std::string> sd = result[0];
+				unsigned char dType = atoi(sd[0].c_str());
+				// unsigned char subType = atoi(sd[1].c_str());
+				// nValue = (unsigned char)atoi(sd[2].c_str());
+				std::string sValue = sd[3];
+
+				if (dType == pTypeP1Power)
+				{
+					// also provide the counter values
+
+					std::vector<std::string> splitresults;
+					StringSplit(sValue, ";", splitresults);
+					if (splitresults.size() != 6)
+						return;
+
+					uint64_t powerusage1 = std::stoull(splitresults[0]);
+					uint64_t powerusage2 = std::stoull(splitresults[1]);
+					uint64_t powerdeliv1 = std::stoull(splitresults[2]);
+					uint64_t powerdeliv2 = std::stoull(splitresults[3]);
+					// uint64_t usagecurrent = std::stoull(splitresults[4]);
+					// uint64_t delivcurrent = std::stoull(splitresults[5]);
+
+					powerdeliv1 = (powerdeliv1 < 10) ? 0 : powerdeliv1;
+					powerdeliv2 = (powerdeliv2 < 10) ? 0 : powerdeliv2;
+
+					sprintf(szTmp, "%.03f", float(powerusage1) / EnergyDivider);
+					root["CounterT1"] = szTmp;
+					sprintf(szTmp, "%.03f", float(powerusage2) / EnergyDivider);
+					root["CounterT2"] = szTmp;
+					sprintf(szTmp, "%.03f", float(powerdeliv1) / EnergyDivider);
+					root["CounterR1"] = szTmp;
+					sprintf(szTmp, "%.03f", float(powerdeliv2) / EnergyDivider);
+					root["CounterR2"] = szTmp;
+				}
+			}
+		}
+
+		void CWebServer::Cmd_CheckForUpdate(WebEmSession& session, const request& req, Json::Value& root)
+		{
+			bool bHaveUser = (!session.username.empty());
+			int urights = 3;
+			if (bHaveUser)
+			{
+				int iUser = FindUser(session.username.c_str());
+				if (iUser != -1)
+					urights = static_cast<int>(m_users[iUser].userrights);
+			}
+			root["statuscode"] = urights;
+
+			root["status"] = "OK";
+			root["title"] = "CheckForUpdate";
+			root["HaveUpdate"] = false;
+			root["Revision"] = m_mainworker.m_iRevision;
+
+			if (session.rights != 2)
+			{
+				session.reply_status = reply::forbidden;
+				return; // Only admin users may update
+			}
+
+			bool bIsForced = (request::findValue(&req, "forced") == "true");
+
+			if (!bIsForced)
+			{
+				int nValue = 0;
+				m_sql.GetPreferencesVar("UseAutoUpdate", nValue);
+				if (nValue != 1)
+				{
+					return;
+				}
+			}
+
+			root["HaveUpdate"] = m_mainworker.IsUpdateAvailable(bIsForced);
+			root["DomoticzUpdateURL"] = m_mainworker.m_szDomoticzUpdateURL;
+			root["SystemName"] = m_mainworker.m_szSystemName;
+			root["Revision"] = m_mainworker.m_iRevision;
+		}
+
+		void CWebServer::Cmd_DownloadUpdate(WebEmSession& session, const request& req, Json::Value& root)
+		{
+			if (!m_mainworker.StartDownloadUpdate())
+				return;
+			root["status"] = "OK";
+			root["title"] = "DownloadUpdate";
+		}
+
+		void CWebServer::Cmd_DownloadReady(WebEmSession& session, const request& req, Json::Value& root)
+		{
+			if (!m_mainworker.m_bHaveDownloadedDomoticzUpdate)
+				return;
+			root["status"] = "OK";
+			root["title"] = "DownloadReady";
+			root["downloadok"] = (m_mainworker.m_bHaveDownloadedDomoticzUpdateSuccessFull) ? true : false;
+		}
+
+		void CWebServer::Cmd_DeleteDateRange(WebEmSession& session, const request& req, Json::Value& root)
+		{
+			if (session.rights != 2)
+			{
+				session.reply_status = reply::forbidden;
+				return; // Only admin user allowed
+			}
+			const std::string idx = request::findValue(&req, "idx");
+			const std::string fromDate = request::findValue(&req, "fromdate");
+			const std::string toDate = request::findValue(&req, "todate");
+			if ((idx.empty()) || (fromDate.empty() || toDate.empty()))
+				return;
+			root["status"] = "OK";
+			root["title"] = "deletedaterange";
+			m_sql.DeleteDateRange(idx.c_str(), fromDate, toDate);
+		}
+
+		void CWebServer::Cmd_DeleteDataPoint(WebEmSession& session, const request& req, Json::Value& root)
+		{
+			if (session.rights != 2)
+			{
+				session.reply_status = reply::forbidden;
+				return; // Only admin user allowed
+			}
+			const std::string idx = request::findValue(&req, "idx");
+			const std::string Date = request::findValue(&req, "date");
+
+			if ((idx.empty()) || (Date.empty()))
+				return;
+
+			root["status"] = "OK";
+			root["title"] = "deletedatapoint";
+			m_sql.DeleteDataPoint(idx.c_str(), Date);
+		}
+
+		bool CWebServer::IsIdxForUser(const WebEmSession* pSession, const int Idx)
+		{
+			if (pSession->rights == 2)
+				return true;
+			if (pSession->rights == 0)
+				return false; // viewer
+			// User
+			int iUser = FindUser(pSession->username.c_str());
+			if ((iUser < 0) || (iUser >= (int)m_users.size()))
+				return false;
+
+			if (m_users[iUser].TotSensors == 0)
+				return true; // all sensors
+
+			std::vector<std::vector<std::string>> result =
+				m_sql.safe_query("SELECT DeviceRowID FROM SharedDevices WHERE (SharedUserID == '%d') AND (DeviceRowID == '%d')", m_users[iUser].ID, Idx);
+			return (!result.empty());
 		}
 
 		void CWebServer::DisplaySwitchTypesCombo(std::string& content_part)
@@ -18143,5 +18104,3 @@ namespace http
 
 	} // namespace server
 } // namespace http
-
-#include "../iamserver/IamService.cpp"
