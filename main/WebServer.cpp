@@ -607,6 +607,8 @@ namespace http
 			RegisterCommandCode("gethardware", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetHardware(session, req, root); });
 			RegisterCommandCode("events", [this](auto&& session, auto&& req, auto&& root) { Cmd_Events(session, req, root); });
 			RegisterCommandCode("getnotifications", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetNotifications(session, req, root); });
+			RegisterCommandCode("createvirtualsensor", [this](auto&& session, auto&& req, auto&& root) { Cmd_CreateMappedSensor(session, req, root); });
+			RegisterCommandCode("createdevice", [this](auto&& session, auto&& req, auto&& root) { Cmd_CreateDevice(session, req, root); });
 
 			RegisterCommandCode("getscenelog", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetSceneLog(session, req, root); });
 			RegisterCommandCode("getscenes", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetScenes(session, req, root); });
@@ -639,8 +641,6 @@ namespace http
 			RegisterRType("addscene", [this](auto&& session, auto&& req, auto&& root) { RType_AddScene(session, req, root); });
 			RegisterRType("deletescene", [this](auto&& session, auto&& req, auto&& root) { RType_DeleteScene(session, req, root); });
 			RegisterRType("updatescene", [this](auto&& session, auto&& req, auto&& root) { RType_UpdateScene(session, req, root); });
-			RegisterRType("createvirtualsensor", [this](auto&& session, auto&& req, auto&& root) { RType_CreateMappedSensor(session, req, root); });
-			RegisterRType("createdevice", [this](auto&& session, auto&& req, auto&& root) { RType_CreateDevice(session, req, root); });
 
 			RegisterRType("createevohomesensor", [this](auto&& session, auto&& req, auto&& root) { RType_CreateEvohomeSensor(session, req, root); });
 			RegisterRType("bindevohome", [this](auto&& session, auto&& req, auto&& root) { RType_BindEvohome(session, req, root); });
@@ -866,6 +866,16 @@ namespace http
 					else if (rtype.compare("events") == 0)
 					{
 						pf = m_webcommands.find("events");
+						pf->second(session, req, root);
+					}
+					else if (rtype.compare("notifications") == 0)
+					{
+						pf = m_webcommands.find("getnotifications");
+						pf->second(session, req, root);
+					}
+					else if (rtype.compare("createdevice") == 0)
+					{
+						pf = m_webcommands.find("createdevice");
 						pf->second(session, req, root);
 					}
 				}
