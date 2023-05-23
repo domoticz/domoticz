@@ -721,9 +721,7 @@ namespace http
 
 			RegisterCommandCode("esp3updatenode", [this](auto&& session, auto&& req, auto&& root) { Cmd_EnOceanESP3UpdateNode(session, req, root); });
 			RegisterCommandCode("esp3deletenode", [this](auto&& session, auto&& req, auto&& root) { Cmd_EnOceanESP3DeleteNode(session, req, root); });
-
-			// EnOcean ESP3 Rtypes
-			RegisterRType("esp3getnodes", [this](auto&& session, auto&& req, auto&& root) { RType_EnOceanESP3GetNodes(session, req, root); });
+			RegisterCommandCode("esp3getnodes", [this](auto&& session, auto&& req, auto&& root) { Cmd_EnOceanESP3GetNodes(session, req, root); });
 
 			//Whitelist
 			m_pWebEm->RegisterWhitelistURLString("/images/floorplans/plan");

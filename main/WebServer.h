@@ -331,7 +331,6 @@ private:
 	void RType_Notifications(WebEmSession & session, const request& req, Json::Value &root);
 	void RType_GetSharedUserDevices(WebEmSession & session, const request& req, Json::Value &root);
 	void RType_SetSharedUserDevices(WebEmSession & session, const request& req, Json::Value &root);
-	void Cmd_ClearUserDevices(WebEmSession& session, const request& req, Json::Value& root);
 	void RType_SetUsed(WebEmSession & session, const request& req, Json::Value &root);
 	void RType_DeleteDevice(WebEmSession & session, const request& req, Json::Value &root);
 	void RType_AddScene(WebEmSession & session, const request& req, Json::Value &root);
@@ -343,6 +342,8 @@ private:
 	void RType_CreateEvohomeSensor(WebEmSession & session, const request& req, Json::Value &root);
 	void RType_BindEvohome(WebEmSession & session, const request& req, Json::Value &root);
 	void RType_CreateRFLinkDevice(WebEmSession & session, const request& req, Json::Value &root);
+
+	void Cmd_ClearUserDevices(WebEmSession& session, const request& req, Json::Value& root);
 
 	//MQTT-AD
 	void Cmd_MQTTAD_GetConfig(WebEmSession& session, const request& req, Json::Value& root);
@@ -411,9 +412,7 @@ private:
 
 	void Cmd_EnOceanESP3UpdateNode(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_EnOceanESP3DeleteNode(WebEmSession & session, const request& req, Json::Value &root);
-
-	//EnOcean ESP3 Rtypes
-	void RType_EnOceanESP3GetNodes(WebEmSession & session, const request& req, Json::Value &root);
+	void Cmd_EnOceanESP3GetNodes(WebEmSession & session, const request& req, Json::Value &root);
 
     void Cmd_TellstickApplySettings(WebEmSession &session, const request &req, Json::Value &root);
 	std::shared_ptr<std::thread> m_thread;

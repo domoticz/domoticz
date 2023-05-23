@@ -4679,7 +4679,7 @@ namespace http
 			root["title"] = "EnOceanESP3DeleteNode";
 		}
 
-		void CWebServer::RType_EnOceanESP3GetNodes(WebEmSession &session, const request &req, Json::Value &root)
+		void CWebServer::Cmd_EnOceanESP3GetNodes(WebEmSession &session, const request &req, Json::Value &root)
 		{
 			std::string hwdIDStr = request::findValue(&req, "hwdid");
 			if (hwdIDStr.empty())
@@ -4695,7 +4695,7 @@ namespace http
 
 			auto pESP3Hardware = dynamic_cast<CEnOceanESP3 *>(pHardware);
 
-			pESP3Hardware->Debug(DEBUG_NORM, "RType_EnOceanESP3GetNodes");
+			pESP3Hardware->Debug(DEBUG_NORM, "Cmd_EnOceanESP3GetNodes");
 
 			pESP3Hardware->GetNodesJSON(root);
 
