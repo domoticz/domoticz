@@ -336,11 +336,11 @@ private:
 	void Cmd_CreateEvohomeSensor(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_BindEvohome(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_CustomLightIcons(WebEmSession & session, const request& req, Json::Value &root);
+	void Cmd_GetSharedUserDevices(WebEmSession & session, const request& req, Json::Value &root);
+	void Cmd_SetSharedUserDevices(WebEmSession & session, const request& req, Json::Value &root);
 	//RTypes
 	void RType_HandleGraph(WebEmSession & session, const request& req, Json::Value &root);
 	void RType_RemoteWebClientsLog(WebEmSession& session, const request& req, Json::Value& root);
-	void RType_GetSharedUserDevices(WebEmSession & session, const request& req, Json::Value &root);
-	void RType_SetSharedUserDevices(WebEmSession & session, const request& req, Json::Value &root);
 	void RType_SetUsed(WebEmSession & session, const request& req, Json::Value &root);
 
 	void Cmd_ClearUserDevices(WebEmSession& session, const request& req, Json::Value& root);

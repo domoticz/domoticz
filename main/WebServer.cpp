@@ -633,12 +633,12 @@ namespace http
 			RegisterCommandCode("bindevohome", [this](auto&& session, auto&& req, auto&& root) { Cmd_BindEvohome(session, req, root); });
 			RegisterCommandCode("custom_light_icons", [this](auto&& session, auto&& req, auto&& root) { Cmd_CustomLightIcons(session, req, root); });
 			RegisterCommandCode("deletedevice", [this](auto&& session, auto&& req, auto&& root) { Cmd_DeleteDevice(session, req, root); });
+			RegisterCommandCode("getshareduserdevices", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetSharedUserDevices(session, req, root); });
+			RegisterCommandCode("setshareduserdevices", [this](auto&& session, auto&& req, auto&& root) { Cmd_SetSharedUserDevices(session, req, root); });
 
 			// RType commands (will be replace by regular commands in the future)
 			RegisterRType("graph", [this](auto&& session, auto&& req, auto&& root) { RType_HandleGraph(session, req, root); });
 			RegisterRType("rclientslog", [this](auto&& session, auto&& req, auto&& root) { RType_RemoteWebClientsLog(session, req, root); });
-			RegisterRType("getshareduserdevices", [this](auto&& session, auto&& req, auto&& root) { RType_GetSharedUserDevices(session, req, root); });
-			RegisterRType("setshareduserdevices", [this](auto&& session, auto&& req, auto&& root) { RType_SetSharedUserDevices(session, req, root); });
 			RegisterRType("setused", [this](auto&& session, auto&& req, auto&& root) { RType_SetUsed(session, req, root); });
 
 			RegisterCommandCode("clearuserdevices", [this](auto&& session, auto&& req, auto&& root) { Cmd_ClearUserDevices(session, req, root); });
@@ -12810,12 +12810,11 @@ namespace http
 			}
 		}
 
-		void CWebServer::RType_GetSharedUserDevices(WebEmSession& session, const request& req, Json::Value& root)
+		void CWebServer::Cmd_GetSharedUserDevices(WebEmSession& session, const request& req, Json::Value& root)
 		{
 			std::string idx = request::findValue(&req, "idx");
 			if (idx.empty())
 				return;
-			root["status"] = "OK";
 			root["title"] = "GetSharedUserDevices";
 
 			std::vector<std::vector<std::string>> result;
@@ -12829,9 +12828,10 @@ namespace http
 					ii++;
 				}
 			}
+			root["status"] = "OK";
 		}
 
-		void CWebServer::RType_SetSharedUserDevices(WebEmSession& session, const request& req, Json::Value& root)
+		void CWebServer::Cmd_SetSharedUserDevices(WebEmSession& session, const request& req, Json::Value& root)
 		{
 			if (session.rights != 2)
 			{
@@ -12842,7 +12842,6 @@ namespace http
 			std::string userdevices = CURLEncode::URLDecode(request::findValue(&req, "devices"));
 			if (idx.empty())
 				return;
-			root["status"] = "OK";
 			root["title"] = "SetSharedUserDevices";
 			std::vector<std::string> strarray;
 			StringSplit(userdevices, ";", strarray);
@@ -12860,6 +12859,7 @@ namespace http
 			}
 			m_sql.safe_query("DELETE FROM SharedDevices WHERE SharedUserID == 0");
 			LoadUsers();
+			root["status"] = "OK";
 		}
 
 		void CWebServer::Cmd_ClearUserDevices(WebEmSession& session, const request& req, Json::Value& root)
