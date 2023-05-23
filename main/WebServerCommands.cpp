@@ -55,7 +55,27 @@ namespace http
 		{
 			std::vector<std::vector<std::string>> result;
 			char szTmp[300];
-			bool bHaveUser = (!session.username.empty());
+
+			/* Possible rewrite for readability
+			switch (hash(cparam.c_str()))
+			{
+				case "getsubdevices"_hash:
+				{
+					...
+				    break;
+				}
+				case "getscenedevices"_hash:
+				{
+					...
+				    break;
+				}
+				default:
+					_log.Log(LOG_NORM, "Invalid API command received! (%s)", cparam.c_str());
+					return false;
+			}
+
+			return true;
+			*/
 
 			if (1 == 2)
 			{
@@ -3553,15 +3573,11 @@ namespace http
 			else if (cparam == "switchmodal")
 			{
 				int urights = 3;
-				if (bHaveUser)
+				const int iUser = FindUser(session.username.c_str());
+				if (iUser != -1)
 				{
-					int iUser = -1;
-					iUser = FindUser(session.username.c_str());
-					if (iUser != -1)
-					{
-						urights = (int)m_users[iUser].userrights;
-						_log.Log(LOG_STATUS, "User: %s initiated a modal command", m_users[iUser].Username.c_str());
-					}
+					urights = (int)m_users[iUser].userrights;
+					_log.Log(LOG_STATUS, "User: %s initiated a modal command", m_users[iUser].Username.c_str());
 				}
 				if (urights < 1)
 					return false;
