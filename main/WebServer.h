@@ -322,12 +322,12 @@ private:
 	void Cmd_GetFloorPlans(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_GetLightLog(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_GetTextLog(WebEmSession & session, const request& req, Json::Value &root);
+	void Cmd_GetTransfers(WebEmSession & session, const request& req, Json::Value &root);
+	void Cmd_DoTransferDevice(WebEmSession & session, const request& req, Json::Value &root);
 	//RTypes
 	void RType_HandleGraph(WebEmSession & session, const request& req, Json::Value &root);
 	void RType_RemoteWebClientsLog(WebEmSession& session, const request& req, Json::Value& root);
 	void RType_Events(WebEmSession & session, const request& req, Json::Value &root);
-	void RType_GetTransfers(WebEmSession & session, const request& req, Json::Value &root);
-	void RType_TransferDevice(WebEmSession & session, const request& req, Json::Value &root);
 	void RType_Notifications(WebEmSession & session, const request& req, Json::Value &root);
 	void RType_GetSharedUserDevices(WebEmSession & session, const request& req, Json::Value &root);
 	void RType_SetSharedUserDevices(WebEmSession & session, const request& req, Json::Value &root);

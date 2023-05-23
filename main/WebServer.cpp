@@ -619,6 +619,8 @@ namespace http
 			RegisterCommandCode("getfloorplans", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetFloorPlans(session, req, root); });
 			RegisterCommandCode("getlightlog", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetLightLog(session, req, root); });
 			RegisterCommandCode("gettextlog", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetTextLog(session, req, root); });
+			RegisterCommandCode("gettransfers", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetTransfers(session, req, root); });
+			RegisterCommandCode("dotransferdevice", [this](auto&& session, auto&& req, auto&& root) { Cmd_DoTransferDevice(session, req, root); });
 
 			// RType commands (will be replace by regular commands in the future)
 			RegisterRType("graph", [this](auto&& session, auto&& req, auto&& root) { RType_HandleGraph(session, req, root); });
@@ -628,8 +630,6 @@ namespace http
 
 			RegisterRType("deletedevice", [this](auto&& session, auto&& req, auto&& root) { RType_DeleteDevice(session, req, root); });
 
-			RegisterRType("gettransfers", [this](auto&& session, auto&& req, auto&& root) { RType_GetTransfers(session, req, root); });
-			RegisterRType("transferdevice", [this](auto&& session, auto&& req, auto&& root) { RType_TransferDevice(session, req, root); });
 			RegisterRType("notifications", [this](auto&& session, auto&& req, auto&& root) { RType_Notifications(session, req, root); });
 			RegisterRType("getshareduserdevices", [this](auto&& session, auto&& req, auto&& root) { RType_GetSharedUserDevices(session, req, root); });
 			RegisterRType("setshareduserdevices", [this](auto&& session, auto&& req, auto&& root) { RType_SetSharedUserDevices(session, req, root); });
@@ -12640,7 +12640,7 @@ namespace http
 			root["title"] = "DeleteMobileDevice";
 		}
 
-		void CWebServer::RType_GetTransfers(WebEmSession& session, const request& req, Json::Value& root)
+		void CWebServer::Cmd_GetTransfers(WebEmSession& session, const request& req, Json::Value& root)
 		{
 			root["status"] = "OK";
 			root["title"] = "GetTransfers";
@@ -12688,7 +12688,7 @@ namespace http
 		// Will transfer Newest sensor log to OLD sensor,
 		// then set the HardwareID/DeviceID/Unit/Name/Type/Subtype/Unit for the OLD sensor to the NEW sensor ID/Type/Subtype/Unit
 		// then delete the NEW sensor
-		void CWebServer::RType_TransferDevice(WebEmSession& session, const request& req, Json::Value& root)
+		void CWebServer::Cmd_DoTransferDevice(WebEmSession& session, const request& req, Json::Value& root)
 		{
 			std::string sidx = request::findValue(&req, "idx");
 			if (sidx.empty())
@@ -12701,7 +12701,7 @@ namespace http
 			std::vector<std::vector<std::string>> result;
 
 			root["status"] = "OK";
-			root["title"] = "TransferDevice";
+			root["title"] = "DoTransferDevice";
 
 			result = m_sql.safe_query("SELECT HardwareID, DeviceID, Unit, Type, SubType FROM DeviceStatus WHERE (ID == '%q')", newidx.c_str());
 			if (result.empty())
