@@ -11,8 +11,7 @@ define(['app'], function (app) {
         };
 
         function fetchCurrentStates() {
-            return domoticzApi.sendRequest({
-                type: 'events',
+            return domoticzApi.sendCommand('events', {
                 param: 'currentstates'
             }).then(function (response) {
                 return response && response.status !== 'OK'
@@ -22,8 +21,7 @@ define(['app'], function (app) {
         }
 
         function fetchEvents() {
-            return domoticzApi.sendRequest({
-                type: 'events',
+            return domoticzApi.sendCommand('events', {
                 param: 'list'
             }).then(function (data) {
                 return {
@@ -34,8 +32,7 @@ define(['app'], function (app) {
         }
 
         function fetchEvent(eventId) {
-            return domoticzApi.sendRequest({
-                type: 'events',
+            return domoticzApi.sendCommand('events', {
                 param: 'load',
                 event: eventId
             }).then(function (data) {
@@ -80,8 +77,7 @@ define(['app'], function (app) {
         }
 
         function getTemplate(interpreter, eventType) {
-            return domoticzApi.sendRequest({
-                type: 'events',
+            return domoticzApi.sendCommand('events', {
                 param: 'new',
                 interpreter: interpreter,
                 eventtype: eventType || 'All'

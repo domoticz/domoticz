@@ -871,7 +871,7 @@ define(['app'], function (app) {
 			oTable.fnClearTable();
 
 			$http({
-				url: "json.htm?type=openzwavenodes&idx=" + $.devIdx,
+				url: "json.htm?type=command&param=getopenzwavenodes&idx=" + $.devIdx,
 				async: true,
 				dataType: 'json'
 			}).then(function successCallback(response) {
