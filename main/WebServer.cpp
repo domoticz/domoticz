@@ -615,6 +615,8 @@ namespace http
 			RegisterCommandCode("gettimers", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetTimers(session, req, root); });
 			RegisterCommandCode("getscenetimers", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetSceneTimers(session, req, root); });
 			RegisterCommandCode("getsetpointtimers", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetSetpointTimers(session, req, root); });
+			RegisterCommandCode("getplans", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetPlans(session, req, root); });
+			RegisterCommandCode("getfloorplans", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetFloorPlans(session, req, root); });
 
 			// RType commands (will be replace by regular commands in the future)
 			RegisterRType("graph", [this](auto&& session, auto&& req, auto&& root) { RType_HandleGraph(session, req, root); });
@@ -645,8 +647,6 @@ namespace http
 			RegisterRType("createrflinkdevice", [this](auto&& session, auto&& req, auto&& root) { RType_CreateRFLinkDevice(session, req, root); });
 
 			RegisterRType("custom_light_icons", [this](auto&& session, auto&& req, auto&& root) { RType_CustomLightIcons(session, req, root); });
-			RegisterRType("plans", [this](auto&& session, auto&& req, auto&& root) { RType_Plans(session, req, root); });
-			RegisterRType("floorplans", [this](auto&& session, auto&& req, auto&& root) { RType_FloorPlans(session, req, root); });
 
 			//MQTT-AD
 			RegisterCommandCode("mqttadgetconfig", [this](auto&& session, auto&& req, auto&& root) { Cmd_MQTTAD_GetConfig(session, req, root); });
@@ -11576,10 +11576,10 @@ namespace http
 			root["status"] = "OK";
 		}
 
-		void CWebServer::RType_Plans(WebEmSession& session, const request& req, Json::Value& root)
+		void CWebServer::Cmd_GetPlans(WebEmSession& session, const request& req, Json::Value& root)
 		{
 			root["status"] = "OK";
-			root["title"] = "Plans";
+			root["title"] = "getplans";
 
 			std::string sDisplayHidden = request::findValue(&req, "displayhidden");
 			bool bDisplayHidden = (sDisplayHidden == "1");
@@ -11615,10 +11615,10 @@ namespace http
 			}
 		}
 
-		void CWebServer::RType_FloorPlans(WebEmSession& session, const request& req, Json::Value& root)
+		void CWebServer::Cmd_GetFloorPlans(WebEmSession& session, const request& req, Json::Value& root)
 		{
 			root["status"] = "OK";
-			root["title"] = "Floorplans";
+			root["title"] = "getfloorplans";
 
 			std::vector<std::vector<std::string>> result, result2, result3;
 
