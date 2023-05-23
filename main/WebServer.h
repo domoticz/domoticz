@@ -308,6 +308,7 @@ private:
 	void Cmd_GetUsers(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_GetSettings(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_GetDevices(WebEmSession & session, const request& req, Json::Value &root);
+	void Cmd_DeleteDevice(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_GetSceneLog(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_GetScenes(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_AddScene(WebEmSession & session, const request& req, Json::Value &root);
@@ -341,7 +342,6 @@ private:
 	void RType_GetSharedUserDevices(WebEmSession & session, const request& req, Json::Value &root);
 	void RType_SetSharedUserDevices(WebEmSession & session, const request& req, Json::Value &root);
 	void RType_SetUsed(WebEmSession & session, const request& req, Json::Value &root);
-	void RType_DeleteDevice(WebEmSession & session, const request& req, Json::Value &root);
 
 	void Cmd_ClearUserDevices(WebEmSession& session, const request& req, Json::Value& root);
 
