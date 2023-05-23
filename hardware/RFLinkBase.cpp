@@ -1164,7 +1164,7 @@ bool CRFLinkBase::ParseLine(const std::string &sLine)
 //Webserver helpers
 namespace http {
 	namespace server {
-		void CWebServer::RType_CreateRFLinkDevice(WebEmSession & session, const request& req, Json::Value &root)
+		void CWebServer::Cmd_CreateRFLinkDevice(WebEmSession & session, const request& req, Json::Value &root)
 		{
 			if (session.rights != 2)
 			{
@@ -1173,7 +1173,7 @@ namespace http {
 			}
 
 			std::string idx = request::findValue(&req, "idx");
-			std::string scommand = request::findValue(&req, "command");
+			std::string scommand = request::findValue(&req, "rflcommand");
 			if (idx.empty() || scommand.empty())
 			{
 				return;

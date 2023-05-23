@@ -623,6 +623,7 @@ namespace http
 			RegisterCommandCode("gettextlog", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetTextLog(session, req, root); });
 			RegisterCommandCode("gettransfers", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetTransfers(session, req, root); });
 			RegisterCommandCode("dotransferdevice", [this](auto&& session, auto&& req, auto&& root) { Cmd_DoTransferDevice(session, req, root); });
+			RegisterCommandCode("createrflinkdevice", [this](auto&& session, auto&& req, auto&& root) { Cmd_CreateRFLinkDevice(session, req, root); });
 
 			// RType commands (will be replace by regular commands in the future)
 			RegisterRType("graph", [this](auto&& session, auto&& req, auto&& root) { RType_HandleGraph(session, req, root); });
@@ -643,7 +644,6 @@ namespace http
 
 			RegisterRType("createevohomesensor", [this](auto&& session, auto&& req, auto&& root) { RType_CreateEvohomeSensor(session, req, root); });
 			RegisterRType("bindevohome", [this](auto&& session, auto&& req, auto&& root) { RType_BindEvohome(session, req, root); });
-			RegisterRType("createrflinkdevice", [this](auto&& session, auto&& req, auto&& root) { RType_CreateRFLinkDevice(session, req, root); });
 
 			RegisterRType("custom_light_icons", [this](auto&& session, auto&& req, auto&& root) { RType_CustomLightIcons(session, req, root); });
 

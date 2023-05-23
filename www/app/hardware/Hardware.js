@@ -3446,8 +3446,8 @@ define(['app'], function (app) {
 							return;
 						}
 						$.ajax({
-							url: "json.htm?type=createrflinkdevice&idx=" + $.devIdx +
-							"&command=" + SensorName,
+							url: "json.htm?type=command&param=createrflinkdevice&idx=" + $.devIdx +
+							"&rflcommand=" + SensorName,
 							async: false,
 							dataType: 'json',
 							success: function (data) {
