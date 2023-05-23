@@ -324,10 +324,10 @@ private:
 	void Cmd_GetTextLog(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_GetTransfers(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_DoTransferDevice(WebEmSession & session, const request& req, Json::Value &root);
+	void Cmd_Events(WebEmSession & session, const request& req, Json::Value &root);
 	//RTypes
 	void RType_HandleGraph(WebEmSession & session, const request& req, Json::Value &root);
 	void RType_RemoteWebClientsLog(WebEmSession& session, const request& req, Json::Value& root);
-	void RType_Events(WebEmSession & session, const request& req, Json::Value &root);
 	void RType_Notifications(WebEmSession & session, const request& req, Json::Value &root);
 	void RType_GetSharedUserDevices(WebEmSession & session, const request& req, Json::Value &root);
 	void RType_SetSharedUserDevices(WebEmSession & session, const request& req, Json::Value &root);
@@ -394,8 +394,7 @@ private:
 	void Cmd_ZWaveRemoveUserCode(WebEmSession & session, const request& req, Json::Value &root);
 	void ZWaveCPTestHeal(WebEmSession & session, const request& req, reply & rep);
 	void Cmd_ZWaveGetBatteryLevels(WebEmSession& session, const request& req, Json::Value& root);
-	//RTypes
-	void RType_OpenZWaveNodes(WebEmSession & session, const request& req, Json::Value &root);
+	void Cmd_GetOpenZWaveNodes(WebEmSession & session, const request& req, Json::Value &root);
 	int m_ZW_Hwidx;
 #endif
 	//EnOcean helpers cmds

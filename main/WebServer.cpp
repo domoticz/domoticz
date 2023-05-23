@@ -605,6 +605,7 @@ namespace http
 			RegisterCommandCode("getsettings", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetSettings(session, req, root); });
 			RegisterCommandCode("getdevices", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetDevices(session, req, root); });
 			RegisterCommandCode("gethardware", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetHardware(session, req, root); });
+			RegisterCommandCode("events", [this](auto&& session, auto&& req, auto&& root) { Cmd_Events(session, req, root); });
 
 			RegisterCommandCode("getscenelog", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetSceneLog(session, req, root); });
 			RegisterCommandCode("getscenes", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetScenes(session, req, root); });
@@ -625,8 +626,6 @@ namespace http
 			// RType commands (will be replace by regular commands in the future)
 			RegisterRType("graph", [this](auto&& session, auto&& req, auto&& root) { RType_HandleGraph(session, req, root); });
 			RegisterRType("rclientslog", [this](auto&& session, auto&& req, auto&& root) { RType_RemoteWebClientsLog(session, req, root); });
-
-			RegisterRType("events", [this](auto&& session, auto&& req, auto&& root) { RType_Events(session, req, root); });
 
 			RegisterRType("deletedevice", [this](auto&& session, auto&& req, auto&& root) { RType_DeleteDevice(session, req, root); });
 
@@ -703,8 +702,7 @@ namespace http
 			m_pWebEm->RegisterPageCode("/ozwcp/statpost.html", [this](auto&& session, auto&& req, auto&& rep) { ZWaveCPGetStats(session, req, rep); });
 			m_pWebEm->RegisterPageCode("/ozwcp/grouppost.html", [this](auto&& session, auto&& req, auto&& rep) { ZWaveCPSetGroup(session, req, rep); });
 			//
-			// pollpost.html
-			RegisterRType("openzwavenodes", [this](auto&& session, auto&& req, auto&& root) { RType_OpenZWaveNodes(session, req, root); });
+			RegisterCommandCode("getopenzwavenodes", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetOpenZWaveNodes(session, req, root); });
 #endif
 			// EnOcean helpers cmds
 
@@ -863,6 +861,11 @@ namespace http
 					else if (rtype.compare("hardware") == 0)
 					{
 						pf = m_webcommands.find("gethardware");
+						pf->second(session, req, root);
+					}
+					else if (rtype.compare("events") == 0)
+					{
+						pf = m_webcommands.find("events");
 						pf->second(session, req, root);
 					}
 				}
