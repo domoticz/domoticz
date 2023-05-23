@@ -1005,12 +1005,12 @@ void CScheduler::DeleteExpiredTimers()
 //Webserver helpers
 namespace http {
 	namespace server {
-		void CWebServer::RType_Schedules(WebEmSession & session, const request& req, Json::Value &root)
+		void CWebServer::Cmd_GetSchedules(WebEmSession & session, const request& req, Json::Value &root)
 		{
 			std::string rfilter = request::findValue(&req, "filter");
 
 			root["status"] = "OK";
-			root["title"] = "Schedules";
+			root["title"] = "getschedules";
 
 			std::vector<std::vector<std::string> > tot_result;
 			std::vector<std::vector<std::string> > tmp_result;
@@ -1138,7 +1138,7 @@ namespace http {
 				}
 			}
 		}
-		void CWebServer::RType_Timers(WebEmSession & session, const request& req, Json::Value &root)
+		void CWebServer::Cmd_GetTimers(WebEmSession & session, const request& req, Json::Value &root)
 		{
 			uint64_t idx = 0;
 			if (!request::findValue(&req, "idx").empty())
@@ -1148,7 +1148,7 @@ namespace http {
 			if (idx == 0)
 				return;
 			root["status"] = "OK";
-			root["title"] = "Timers";
+			root["title"] = "gettimers";
 
 			std::vector<std::vector<std::string> > result;
 
@@ -1515,7 +1515,7 @@ namespace http {
 			m_mainworker.m_scheduler.ReloadSchedules();
 		}
 
-		void CWebServer::RType_SetpointTimers(WebEmSession & session, const request& req, Json::Value &root)
+		void CWebServer::Cmd_GetSetpointTimers(WebEmSession & session, const request& req, Json::Value &root)
 		{
 			uint64_t idx = 0;
 			if (!request::findValue(&req, "idx").empty())
@@ -1525,7 +1525,7 @@ namespace http {
 			if (idx == 0)
 				return;
 			root["status"] = "OK";
-			root["title"] = "SetpointTimers";
+			root["title"] = "getsetpointtimers";
 			char szTmp[50];
 
 			std::vector<std::vector<std::string> > result;
@@ -1826,7 +1826,7 @@ namespace http {
 			m_mainworker.m_scheduler.ReloadSchedules();
 		}
 
-		void CWebServer::RType_SceneTimers(WebEmSession & session, const request& req, Json::Value &root)
+		void CWebServer::Cmd_GetSceneTimers(WebEmSession & session, const request& req, Json::Value &root)
 		{
 			uint64_t idx = 0;
 			if (!request::findValue(&req, "idx").empty())
@@ -1836,7 +1836,7 @@ namespace http {
 			if (idx == 0)
 				return;
 			root["status"] = "OK";
-			root["title"] = "SceneTimers";
+			root["title"] = "getscenetimers";
 
 			char szTmp[40];
 

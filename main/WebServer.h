@@ -314,19 +314,19 @@ private:
 	void Cmd_GetMobiles(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_GetCameras(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_GetCamerasUser(WebEmSession & session, const request& req, Json::Value &root);
+	void Cmd_GetSchedules(WebEmSession & session, const request& req, Json::Value &root);
+	void Cmd_GetTimers(WebEmSession & session, const request& req, Json::Value &root);
+	void Cmd_GetSceneTimers(WebEmSession & session, const request& req, Json::Value &root);
+	void Cmd_GetSetpointTimers(WebEmSession & session, const request& req, Json::Value &root);
 	//RTypes
 	void RType_HandleGraph(WebEmSession & session, const request& req, Json::Value &root);
 	void RType_LightLog(WebEmSession & session, const request& req, Json::Value &root);
 	void RType_TextLog(WebEmSession & session, const request& req, Json::Value &root);
 	void RType_RemoteWebClientsLog(WebEmSession& session, const request& req, Json::Value& root);
 	void RType_Events(WebEmSession & session, const request& req, Json::Value &root);
-	void RType_Timers(WebEmSession & session, const request& req, Json::Value &root);
-	void RType_SceneTimers(WebEmSession & session, const request& req, Json::Value &root);
-	void RType_SetpointTimers(WebEmSession & session, const request& req, Json::Value &root);
 	void RType_GetTransfers(WebEmSession & session, const request& req, Json::Value &root);
 	void RType_TransferDevice(WebEmSession & session, const request& req, Json::Value &root);
 	void RType_Notifications(WebEmSession & session, const request& req, Json::Value &root);
-	void RType_Schedules(WebEmSession & session, const request& req, Json::Value &root);
 	void RType_GetSharedUserDevices(WebEmSession & session, const request& req, Json::Value &root);
 	void RType_SetSharedUserDevices(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_ClearUserDevices(WebEmSession& session, const request& req, Json::Value& root);

@@ -611,6 +611,10 @@ namespace http
 			RegisterCommandCode("getmobiles", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetMobiles(session, req, root); });
 			RegisterCommandCode("getcameras", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetCameras(session, req, root); });
 			RegisterCommandCode("getcameras_user", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetCamerasUser(session, req, root); });
+			RegisterCommandCode("getschedules", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetSchedules(session, req, root); });
+			RegisterCommandCode("gettimers", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetTimers(session, req, root); });
+			RegisterCommandCode("getscenetimers", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetSceneTimers(session, req, root); });
+			RegisterCommandCode("getsetpointtimers", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetSetpointTimers(session, req, root); });
 
 			// RType commands (will be replace by regular commands in the future)
 			RegisterRType("graph", [this](auto&& session, auto&& req, auto&& root) { RType_HandleGraph(session, req, root); });
@@ -622,14 +626,9 @@ namespace http
 
 			RegisterRType("deletedevice", [this](auto&& session, auto&& req, auto&& root) { RType_DeleteDevice(session, req, root); });
 
-			RegisterRType("timers", [this](auto&& session, auto&& req, auto&& root) { RType_Timers(session, req, root); });
-			RegisterRType("scenetimers", [this](auto&& session, auto&& req, auto&& root) { RType_SceneTimers(session, req, root); });
-			RegisterRType("setpointtimers", [this](auto&& session, auto&& req, auto&& root) { RType_SetpointTimers(session, req, root); });
-
 			RegisterRType("gettransfers", [this](auto&& session, auto&& req, auto&& root) { RType_GetTransfers(session, req, root); });
 			RegisterRType("transferdevice", [this](auto&& session, auto&& req, auto&& root) { RType_TransferDevice(session, req, root); });
 			RegisterRType("notifications", [this](auto&& session, auto&& req, auto&& root) { RType_Notifications(session, req, root); });
-			RegisterRType("schedules", [this](auto&& session, auto&& req, auto&& root) { RType_Schedules(session, req, root); });
 			RegisterRType("getshareduserdevices", [this](auto&& session, auto&& req, auto&& root) { RType_GetSharedUserDevices(session, req, root); });
 			RegisterRType("setshareduserdevices", [this](auto&& session, auto&& req, auto&& root) { RType_SetSharedUserDevices(session, req, root); });
 			RegisterCommandCode("clearuserdevices", [this](auto&& session, auto&& req, auto&& root) { Cmd_ClearUserDevices(session, req, root); });
