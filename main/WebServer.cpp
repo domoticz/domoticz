@@ -636,9 +636,9 @@ namespace http
 			RegisterCommandCode("getshareduserdevices", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetSharedUserDevices(session, req, root); });
 			RegisterCommandCode("setshareduserdevices", [this](auto&& session, auto&& req, auto&& root) { Cmd_SetSharedUserDevices(session, req, root); });
 			RegisterCommandCode("graph", [this](auto&& session, auto&& req, auto&& root) { Cmd_HandleGraph(session, req, root); });
+			RegisterCommandCode("rclientslog", [this](auto&& session, auto&& req, auto&& root) { Cmd_RemoteWebClientsLog(session, req, root); });
 
 			// RType commands (will be replace by regular commands in the future)
-			RegisterRType("rclientslog", [this](auto&& session, auto&& req, auto&& root) { RType_RemoteWebClientsLog(session, req, root); });
 			RegisterRType("setused", [this](auto&& session, auto&& req, auto&& root) { RType_SetUsed(session, req, root); });
 
 			RegisterCommandCode("clearuserdevices", [this](auto&& session, auto&& req, auto&& root) { Cmd_ClearUserDevices(session, req, root); });
@@ -13722,7 +13722,7 @@ namespace http
 
 		extern std::map<std::string, http::server::connection::_tRemoteClients> m_remote_web_clients;
 
-		void CWebServer::RType_RemoteWebClientsLog(WebEmSession& session, const request& req, Json::Value& root)
+		void CWebServer::Cmd_RemoteWebClientsLog(WebEmSession& session, const request& req, Json::Value& root)
 		{
 			if (session.rights != 2)
 			{
@@ -13730,10 +13730,8 @@ namespace http
 				return; // Only admin user allowed
 			}
 
-			root["status"] = "OK";
-			root["title"] = "RemoteWebClientsLog";
-
 			int ii = 0;
+			root["title"] = "rclientslog";
 			for (const auto& itt_rc : m_remote_web_clients)
 			{
 				char timestring[128];
@@ -13749,6 +13747,7 @@ namespace http
 				root["result"][ii]["req"] = itt_rc.second.host_last_request_uri_;
 				ii++;
 			}
+			root["status"] = "OK";
 		}
 
 		void CWebServer::Cmd_HandleGraph(WebEmSession& session, const request& req, Json::Value& root)
