@@ -7,8 +7,7 @@ define(['app', 'report/helpers'], function (app, reportHelpers) {
         function fetch(deviceIdx, year, month) {
             var costs = domoticzApi.sendCommand('getcosts', { idx: deviceIdx });
 
-            var stats = domoticzApi.sendRequest({
-                type: 'graph',
+            var stats = domoticzApi.sendCommand('graph', {
                 sensor: 'counter',
                 range: 'year',
                 idx: deviceIdx,

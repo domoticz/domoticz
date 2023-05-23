@@ -298,7 +298,8 @@ define(['lodash', 'Base', 'DomoticzBase', 'DataLoader', 'ChartLoader', 'ChartZoo
 
             function createDataRequest() {
                 return self.extendDataRequest({
-                    type: 'graph',
+                    type: 'command',
+                    param: 'graph',
                     sensor: self.sensorType,
                     range: self.range,
                     idx: self.device.idx

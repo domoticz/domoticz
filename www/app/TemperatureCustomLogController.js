@@ -172,7 +172,7 @@ define(['app'], function (app) {
                 AddDeviceToGraph = function (cb) {
                     if (cb.checked == true) {
                         $.ajax({
-                            url: "json.htm?type=graph&sensor=temp&idx=" + cb.id + "&range=" + $("#customlog #graphfrom").val() + "T" + $("#customlog #graphto").val() + "&graphtype=" + $("#customlog #combocustomgraphtype").val() +
+                            url: "json.htm?type=command&param=graph&sensor=temp&idx=" + cb.id + "&range=" + $("#customlog #graphfrom").val() + "T" + $("#customlog #graphto").val() + "&graphtype=" + $("#customlog #combocustomgraphtype").val() +
                             "&graphTemp=" + $("#customlog #graphTemp").prop("checked") + "&graphChill=" + $("#customlog #graphChill").prop("checked") + "&graphHum=" + $("#customlog #graphHum").prop("checked") + "&graphBaro=" + $("#customlog #graphBaro").prop("checked") + "&graphDew=" + $("#customlog #graphDew").prop("checked") + "&graphSet=" + $("#customlog #graphSet").prop("checked"),
                             async: false,
                             dataType: 'json',
@@ -199,7 +199,7 @@ define(['app'], function (app) {
                     $('div[id="devicecontainer"] input:checkbox:checked').each(function () {
                         ctrl.RemoveMultipleDataFromTempChart($.CustomChart.highcharts(), $(this).attr('id'));
                         $.ajax({
-                            url: "json.htm?type=graph&sensor=temp&idx=" + $(this).attr('id') + "&range=" + $("#customlog #graphfrom").val() + "T" + $("#customlog #graphto").val() + "&graphtype=" + $("#customlog #combocustomgraphtype").val() +
+                            url: "json.htm?type=command&param=graph&sensor=temp&idx=" + $(this).attr('id') + "&range=" + $("#customlog #graphfrom").val() + "T" + $("#customlog #graphto").val() + "&graphtype=" + $("#customlog #combocustomgraphtype").val() +
                             "&graphTemp=" + $("#customlog #graphTemp").prop("checked") + "&graphChill=" + $("#customlog #graphChill").prop("checked") + "&graphHum=" + $("#customlog #graphHum").prop("checked") + "&graphBaro=" + $("#customlog #graphBaro").prop("checked") + "&graphDew=" + $("#customlog #graphDew").prop("checked") + "&graphSet=" + $("#customlog #graphSet").prop("checked"),
                             async: false,
                             dataType: 'json',
