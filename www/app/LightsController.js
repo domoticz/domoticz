@@ -2233,7 +2233,7 @@ define(['app', 'livesocket'], function (app) {
 						if (bValid) {
 							$(this).dialog("close");
 							$.ajax({
-								url: "json.htm?type=setused&idx=" + $.devIdx + '&name=' + encodeURIComponent($("#dialog-addlightdevice #devicename").val()) + '&switchtype=' + $("#dialog-addlightdevice #comboswitchtype").val() + '&used=true&maindeviceidx=' + MainDeviceIdx,
+								url: "json.htm?type=command&param=setused&idx=" + $.devIdx + '&name=' + encodeURIComponent($("#dialog-addlightdevice #devicename").val()) + '&switchtype=' + $("#dialog-addlightdevice #comboswitchtype").val() + '&used=true&maindeviceidx=' + MainDeviceIdx,
 								async: false,
 								dataType: 'json',
 								success: function (data) {

@@ -558,10 +558,11 @@ define(['app', 'components/rgbw-picker/RgbwPicker'], function (app) {
                 options.push('ReverseState:' + vm.device.ReverseState);
                 options.push('ReversePosition:' + vm.device.ReversePosition);
 			}
-			console.log("options: ");
-			console.log(options);
+			//console.log("options: ");
+			//console.log(options);
             var params = {
-                type: 'setused',
+                type: 'command',
+                param: 'setused',
                 name: vm.device.Name,
                 description: vm.device.Description,
                 strparam1: b64EncodeUnicode(vm.device.StrParam1),

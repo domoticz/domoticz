@@ -223,7 +223,7 @@ define(['app', 'livesocket'], function (app) {
 					$(this).dialog("close");
 					var aValue = $("#dialog-edittempdevice #edittable #adjustment").val();
 					$.ajax({
-						url: "json.htm?type=setused&idx=" + $.devIdx +
+						url: "json.htm?type=command&param=setused&idx=" + $.devIdx +
 						'&name=' + encodeURIComponent($("#dialog-edittempdevice #devicename").val()) +
 						'&description=' + encodeURIComponent($("#dialog-edittempdevice #devicedescription").val()) +
 						'&addjvalue=' + aValue +
@@ -242,7 +242,7 @@ define(['app', 'livesocket'], function (app) {
 				bootbox.confirm($.t("Are you sure to remove this Device?"), function (result) {
 					if (result == true) {
 						$.ajax({
-							url: "json.htm?type=setused&idx=" + $.devIdx +
+							url: "json.htm?type=command&param=setused&idx=" + $.devIdx +
 							'&name=' + encodeURIComponent($("#dialog-edittempdevicesmall #devicename").val()) +
 							'&description=' + encodeURIComponent($("#dialog-edittempdevicesmall #devicedescription").val()) +
 							'&used=false',
@@ -298,7 +298,7 @@ define(['app', 'livesocket'], function (app) {
 					$(this).dialog("close");
 
 					$.ajax({
-						url: "json.htm?type=setused&idx=" + $.devIdx +
+						url: "json.htm?type=command&param=setused&idx=" + $.devIdx +
 						'&name=' + encodeURIComponent($("#dialog-editsetpoint #devicename").val()) +
 						'&description=' + encodeURIComponent($("#dialog-editsetpoint #devicedescription").val()) +
 						'&setpoint=' + setpoint +
@@ -323,7 +323,7 @@ define(['app', 'livesocket'], function (app) {
 					if (aValue < 5) aValue = 5;//These values will display but the controller will update back the currently scheduled setpoint in due course
 					if (aValue > 35) aValue = 35;//These values will display but the controller will update back the currently scheduled setpoint in due course
 					$.ajax({
-						url: "json.htm?type=setused&idx=" + $.devIdx +
+						url: "json.htm?type=command&param=setused&idx=" + $.devIdx +
 						'&name=' + encodeURIComponent($("#dialog-editsetpoint #devicename").val()) +
 						'&description=' + encodeURIComponent($("#dialog-editsetpoint #devicedescription").val()) +
 						'&setpoint=' + aValue +
@@ -368,7 +368,7 @@ define(['app', 'livesocket'], function (app) {
 					if ($("#dialog-editstate #edittable #until_state").val() != "")
 						tUntil = $("#dialog-editstate #edittable #until_state").datetimepicker('getDate').toISOString();
 					$.ajax({
-						url: "json.htm?type=setused&idx=" + $.devIdx +
+						url: "json.htm?type=command&param=setused&idx=" + $.devIdx +
 						'&name=' + encodeURIComponent($("#dialog-editstate #devicename").val()) +
 						'&description=' + encodeURIComponent($("#dialog-editstate #devicedescription").val()) +
 						'&state=' + aValue +
@@ -410,7 +410,7 @@ define(['app', 'livesocket'], function (app) {
 				if (bValid) {
 					$(this).dialog("close");
 					$.ajax({
-						url: "json.htm?type=setused&idx=" + $.devIdx +
+						url: "json.htm?type=command&param=setused&idx=" + $.devIdx +
 						'&name=' + encodeURIComponent($("#dialog-edittempdevicesmall #devicename").val()) +
 						'&description=' + encodeURIComponent($("#dialog-edittempdevicesmall #devicedescription").val()) +
 						'&used=true',
@@ -428,7 +428,7 @@ define(['app', 'livesocket'], function (app) {
 				bootbox.confirm($.t("Are you sure to remove this Device?"), function (result) {
 					if (result == true) {
 						$.ajax({
-							url: "json.htm?type=setused&idx=" + $.devIdx +
+							url: "json.htm?type=command&param=setused&idx=" + $.devIdx +
 							'&name=' + encodeURIComponent($("#dialog-edittempdevicesmall #devicename").val()) +
 							'&description=' + encodeURIComponent($("#dialog-edittempdevicesmall #devicedescription").val()) +
 							'&used=false',
