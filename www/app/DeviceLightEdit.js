@@ -37,8 +37,7 @@ define(['app', 'components/rgbw-picker/RgbwPicker'], function (app) {
 
             vm.$onInit = function () {
                 // TODO: Add caching mechanism for this request
-                domoticzApi.sendRequest({
-                    type: 'custom_light_icons'
+                domoticzApi.sendCommand('custom_light_icons', {
                 }).then(function (data) {
                     switch_icons = (data.result || [])
                         .filter(function (item) {

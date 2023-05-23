@@ -28,7 +28,7 @@ define(['app', 'livesocket'], function (app) {
 			
 			//Get Custom icons
 			$.ajax({
-				url: "json.htm?type=custom_light_icons",
+				url: "json.htm?type=command&param=custom_light_icons",
 				async: false,
 				dataType: 'json',
 				success: function (data) {

@@ -628,6 +628,7 @@ namespace http
 			RegisterCommandCode("createrflinkdevice", [this](auto&& session, auto&& req, auto&& root) { Cmd_CreateRFLinkDevice(session, req, root); });
 			RegisterCommandCode("createevohomesensor", [this](auto&& session, auto&& req, auto&& root) { Cmd_CreateEvohomeSensor(session, req, root); });
 			RegisterCommandCode("bindevohome", [this](auto&& session, auto&& req, auto&& root) { Cmd_BindEvohome(session, req, root); });
+			RegisterCommandCode("custom_light_icons", [this](auto&& session, auto&& req, auto&& root) { Cmd_CustomLightIcons(session, req, root); });
 
 			// RType commands (will be replace by regular commands in the future)
 			RegisterRType("graph", [this](auto&& session, auto&& req, auto&& root) { RType_HandleGraph(session, req, root); });
@@ -637,14 +638,14 @@ namespace http
 
 			RegisterRType("getshareduserdevices", [this](auto&& session, auto&& req, auto&& root) { RType_GetSharedUserDevices(session, req, root); });
 			RegisterRType("setshareduserdevices", [this](auto&& session, auto&& req, auto&& root) { RType_SetSharedUserDevices(session, req, root); });
-			RegisterCommandCode("clearuserdevices", [this](auto&& session, auto&& req, auto&& root) { Cmd_ClearUserDevices(session, req, root); });
 
 			RegisterRType("setused", [this](auto&& session, auto&& req, auto&& root) { RType_SetUsed(session, req, root); });
 			RegisterRType("addscene", [this](auto&& session, auto&& req, auto&& root) { RType_AddScene(session, req, root); });
 			RegisterRType("deletescene", [this](auto&& session, auto&& req, auto&& root) { RType_DeleteScene(session, req, root); });
 			RegisterRType("updatescene", [this](auto&& session, auto&& req, auto&& root) { RType_UpdateScene(session, req, root); });
 
-			RegisterRType("custom_light_icons", [this](auto&& session, auto&& req, auto&& root) { RType_CustomLightIcons(session, req, root); });
+
+			RegisterCommandCode("clearuserdevices", [this](auto&& session, auto&& req, auto&& root) { Cmd_ClearUserDevices(session, req, root); });
 
 			//MQTT-AD
 			RegisterCommandCode("mqttadgetconfig", [this](auto&& session, auto&& req, auto&& root) { Cmd_MQTTAD_GetConfig(session, req, root); });
@@ -11567,7 +11568,7 @@ namespace http
 			return a.Title < b.Title;
 		}
 
-		void CWebServer::RType_CustomLightIcons(WebEmSession& session, const request& req, Json::Value& root)
+		void CWebServer::Cmd_CustomLightIcons(WebEmSession& session, const request& req, Json::Value& root)
 		{
 			int ii = 0;
 
@@ -11575,6 +11576,7 @@ namespace http
 			// Sort by name
 			std::sort(temp_custom_light_icons.begin(), temp_custom_light_icons.end(), compareIconsByName);
 
+			root["title"] = "CustomLightIcons";
 			for (const auto& icon : temp_custom_light_icons)
 			{
 				root["result"][ii]["idx"] = icon.idx;
