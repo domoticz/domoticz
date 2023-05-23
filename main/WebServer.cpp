@@ -606,6 +606,7 @@ namespace http
 			RegisterCommandCode("getdevices", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetDevices(session, req, root); });
 			RegisterCommandCode("gethardware", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetHardware(session, req, root); });
 			RegisterCommandCode("events", [this](auto&& session, auto&& req, auto&& root) { Cmd_Events(session, req, root); });
+			RegisterCommandCode("getnotifications", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetNotifications(session, req, root); });
 
 			RegisterCommandCode("getscenelog", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetSceneLog(session, req, root); });
 			RegisterCommandCode("getscenes", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetScenes(session, req, root); });
@@ -629,7 +630,6 @@ namespace http
 
 			RegisterRType("deletedevice", [this](auto&& session, auto&& req, auto&& root) { RType_DeleteDevice(session, req, root); });
 
-			RegisterRType("notifications", [this](auto&& session, auto&& req, auto&& root) { RType_Notifications(session, req, root); });
 			RegisterRType("getshareduserdevices", [this](auto&& session, auto&& req, auto&& root) { RType_GetSharedUserDevices(session, req, root); });
 			RegisterRType("setshareduserdevices", [this](auto&& session, auto&& req, auto&& root) { RType_SetSharedUserDevices(session, req, root); });
 			RegisterCommandCode("clearuserdevices", [this](auto&& session, auto&& req, auto&& root) { Cmd_ClearUserDevices(session, req, root); });
@@ -12760,10 +12760,10 @@ namespace http
 			m_mainworker.m_scheduler.ReloadSchedules();
 		}
 
-		void CWebServer::RType_Notifications(WebEmSession& session, const request& req, Json::Value& root)
+		void CWebServer::Cmd_GetNotifications(WebEmSession& session, const request& req, Json::Value& root)
 		{
 			root["status"] = "OK";
-			root["title"] = "Notifications";
+			root["title"] = "getnotifications";
 
 			int ii = 0;
 

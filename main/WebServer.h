@@ -325,10 +325,10 @@ private:
 	void Cmd_GetTransfers(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_DoTransferDevice(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_Events(WebEmSession & session, const request& req, Json::Value &root);
+	void Cmd_GetNotifications(WebEmSession & session, const request& req, Json::Value &root);
 	//RTypes
 	void RType_HandleGraph(WebEmSession & session, const request& req, Json::Value &root);
 	void RType_RemoteWebClientsLog(WebEmSession& session, const request& req, Json::Value& root);
-	void RType_Notifications(WebEmSession & session, const request& req, Json::Value &root);
 	void RType_GetSharedUserDevices(WebEmSession & session, const request& req, Json::Value &root);
 	void RType_SetSharedUserDevices(WebEmSession & session, const request& req, Json::Value &root);
 	void RType_SetUsed(WebEmSession & session, const request& req, Json::Value &root);
