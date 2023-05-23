@@ -320,10 +320,10 @@ private:
 	void Cmd_GetSetpointTimers(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_GetPlans(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_GetFloorPlans(WebEmSession & session, const request& req, Json::Value &root);
+	void Cmd_GetLightLog(WebEmSession & session, const request& req, Json::Value &root);
+	void Cmd_GetTextLog(WebEmSession & session, const request& req, Json::Value &root);
 	//RTypes
 	void RType_HandleGraph(WebEmSession & session, const request& req, Json::Value &root);
-	void RType_LightLog(WebEmSession & session, const request& req, Json::Value &root);
-	void RType_TextLog(WebEmSession & session, const request& req, Json::Value &root);
 	void RType_RemoteWebClientsLog(WebEmSession& session, const request& req, Json::Value& root);
 	void RType_Events(WebEmSession & session, const request& req, Json::Value &root);
 	void RType_GetTransfers(WebEmSession & session, const request& req, Json::Value &root);

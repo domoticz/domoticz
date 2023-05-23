@@ -617,11 +617,11 @@ namespace http
 			RegisterCommandCode("getsetpointtimers", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetSetpointTimers(session, req, root); });
 			RegisterCommandCode("getplans", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetPlans(session, req, root); });
 			RegisterCommandCode("getfloorplans", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetFloorPlans(session, req, root); });
+			RegisterCommandCode("getlightlog", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetLightLog(session, req, root); });
+			RegisterCommandCode("gettextlog", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetTextLog(session, req, root); });
 
 			// RType commands (will be replace by regular commands in the future)
 			RegisterRType("graph", [this](auto&& session, auto&& req, auto&& root) { RType_HandleGraph(session, req, root); });
-			RegisterRType("lightlog", [this](auto&& session, auto&& req, auto&& root) { RType_LightLog(session, req, root); });
-			RegisterRType("textlog", [this](auto&& session, auto&& req, auto&& root) { RType_TextLog(session, req, root); });
 			RegisterRType("rclientslog", [this](auto&& session, auto&& req, auto&& root) { RType_RemoteWebClientsLog(session, req, root); });
 
 			RegisterRType("events", [this](auto&& session, auto&& req, auto&& root) { RType_Events(session, req, root); });
@@ -13536,7 +13536,7 @@ namespace http
 			}
 		}
 
-		void CWebServer::RType_LightLog(WebEmSession& session, const request& req, Json::Value& root)
+		void CWebServer::Cmd_GetLightLog(WebEmSession& session, const request& req, Json::Value& root)
 		{
 			uint64_t idx = 0;
 			if (!request::findValue(&req, "idx").empty())
@@ -13562,7 +13562,7 @@ namespace http
 				return; // no light device! we should not be here!
 
 			root["status"] = "OK";
-			root["title"] = "LightLog";
+			root["title"] = "getlightlog";
 
 			result = m_sql.safe_query("SELECT ROWID, nValue, sValue, User, Date FROM LightingLog WHERE (DeviceRowID==%" PRIu64 ") ORDER BY Date DESC", idx);
 			if (!result.empty())
@@ -13657,7 +13657,7 @@ namespace http
 			}
 		}
 
-		void CWebServer::RType_TextLog(WebEmSession& session, const request& req, Json::Value& root)
+		void CWebServer::Cmd_GetTextLog(WebEmSession& session, const request& req, Json::Value& root)
 		{
 			uint64_t idx = 0;
 			if (!request::findValue(&req, "idx").empty())
@@ -13667,7 +13667,7 @@ namespace http
 			std::vector<std::vector<std::string>> result;
 
 			root["status"] = "OK";
-			root["title"] = "TextLog";
+			root["title"] = "gettextlog";
 
 			result = m_sql.safe_query("SELECT ROWID, sValue, User, Date FROM LightingLog WHERE (DeviceRowID==%" PRIu64 ") ORDER BY Date DESC", idx);
 			if (!result.empty())
