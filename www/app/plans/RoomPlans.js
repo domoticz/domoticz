@@ -41,8 +41,7 @@ define(['app'], function (app) {
 		}
 
 		function getPlans() {
-			return domoticzApi.sendRequest({
-				type: 'plans',
+			return domoticzApi.sendCommand('getplans',{
 				displayhidden: '1'
 			})
 				.then(domoticzApi.errorHandler)
@@ -52,9 +51,7 @@ define(['app'], function (app) {
 		}
 
 		function getPlanDevices(planId) {
-			return domoticzApi.sendRequest({
-				type: 'command',
-				param: 'getplandevices',
+			return domoticzApi.sendCommand('getplandevices',{
 				idx: planId
 			})
 				.then(domoticzApi.errorHandler)
@@ -64,10 +61,8 @@ define(['app'], function (app) {
 		}
 
 		function getPlanAvailableDevices() {
-			return domoticzApi.sendRequest({
-				type: 'command',
-				param: 'getunusedplandevices',
-				unique: 'false',
+			return domoticzApi.sendCommand('getunusedplandevices', {
+				unique: 'false'
 			})
 				.then(domoticzApi.errorHandler)
 				.then(function(response) {

@@ -420,7 +420,7 @@ define(['app', 'livesocket'], function (app) {
 
 			//Get initial floorplans
 			$http({
-				url: "json.htm?type=floorplans", async: false
+				url: "json.htm?type=command&param=getfloorplans", async: false
 			}).then(function successCallback(response) {
 				var data = response.data;
 				if (typeof data.result != 'undefined') {

@@ -303,7 +303,7 @@ define(['app'], function (app) {
 			oTable.fnClearTable();
 
 			$.ajax({
-				url: "json.htm?type=floorplans",
+				url: "json.htm?type=command&param=getfloorplans",
 				async: false,
 				dataType: 'json',
 				success: function (data) {

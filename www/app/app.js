@@ -596,7 +596,7 @@ define(['angularAMD', 'app.routes', 'app.constants', 'app.notifications', 'app.p
 			var RoomPlans={};
 			RoomPlans = [{ idx: 0, name: $.t("All") }];
 			$.ajax({
-				url: "json.htm?type=plans",
+				url: "json.htm?type=command&param=getplans",
 				async: false,
 				dataType: 'json',
 				success: function (data) {
