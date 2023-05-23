@@ -310,6 +310,9 @@ private:
 	void Cmd_GetDevices(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_GetSceneLog(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_GetScenes(WebEmSession & session, const request& req, Json::Value &root);
+	void Cmd_AddScene(WebEmSession & session, const request& req, Json::Value &root);
+	void Cmd_DeleteScene(WebEmSession & session, const request& req, Json::Value &root);
+	void Cmd_UpdateScene(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_GetHardware(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_GetMobiles(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_GetCameras(WebEmSession & session, const request& req, Json::Value &root);
@@ -339,9 +342,6 @@ private:
 	void RType_SetSharedUserDevices(WebEmSession & session, const request& req, Json::Value &root);
 	void RType_SetUsed(WebEmSession & session, const request& req, Json::Value &root);
 	void RType_DeleteDevice(WebEmSession & session, const request& req, Json::Value &root);
-	void RType_AddScene(WebEmSession & session, const request& req, Json::Value &root);
-	void RType_DeleteScene(WebEmSession & session, const request& req, Json::Value &root);
-	void RType_UpdateScene(WebEmSession & session, const request& req, Json::Value &root);
 
 	void Cmd_ClearUserDevices(WebEmSession& session, const request& req, Json::Value& root);
 

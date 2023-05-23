@@ -139,8 +139,7 @@ define(['app.permissions', 'livesocket'], function(appPermissionsModule, websock
         }
 
         function removeScene(deviceIdx) {
-            return domoticzApi.sendRequest({
-                type: 'deletescene',
+            return domoticzApi.sendCommand('deletescene', {
                 idx: Array.isArray(deviceIdx) ? encodeURIComponent(deviceIdx.join(';')) : deviceIdx
             }).then(domoticzApi.errorHandler);
         }

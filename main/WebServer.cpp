@@ -612,6 +612,9 @@ namespace http
 
 			RegisterCommandCode("getscenelog", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetSceneLog(session, req, root); });
 			RegisterCommandCode("getscenes", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetScenes(session, req, root); });
+			RegisterCommandCode("addscene", [this](auto&& session, auto&& req, auto&& root) { Cmd_AddScene(session, req, root); });
+			RegisterCommandCode("deletescene", [this](auto&& session, auto&& req, auto&& root) { Cmd_DeleteScene(session, req, root); });
+			RegisterCommandCode("updatescene", [this](auto&& session, auto&& req, auto&& root) { Cmd_UpdateScene(session, req, root); });
 			RegisterCommandCode("getmobiles", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetMobiles(session, req, root); });
 			RegisterCommandCode("getcameras", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetCameras(session, req, root); });
 			RegisterCommandCode("getcameras_user", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetCamerasUser(session, req, root); });
@@ -640,9 +643,6 @@ namespace http
 			RegisterRType("setshareduserdevices", [this](auto&& session, auto&& req, auto&& root) { RType_SetSharedUserDevices(session, req, root); });
 
 			RegisterRType("setused", [this](auto&& session, auto&& req, auto&& root) { RType_SetUsed(session, req, root); });
-			RegisterRType("addscene", [this](auto&& session, auto&& req, auto&& root) { RType_AddScene(session, req, root); });
-			RegisterRType("deletescene", [this](auto&& session, auto&& req, auto&& root) { RType_DeleteScene(session, req, root); });
-			RegisterRType("updatescene", [this](auto&& session, auto&& req, auto&& root) { RType_UpdateScene(session, req, root); });
 
 
 			RegisterCommandCode("clearuserdevices", [this](auto&& session, auto&& req, auto&& root) { Cmd_ClearUserDevices(session, req, root); });
@@ -11471,7 +11471,7 @@ namespace http
 			m_mainworker.m_scheduler.ReloadSchedules();
 		}
 
-		void CWebServer::RType_AddScene(WebEmSession& session, const request& req, Json::Value& root)
+		void CWebServer::Cmd_AddScene(WebEmSession& session, const request& req, Json::Value& root)
 		{
 			if (session.rights != 2)
 			{
@@ -11509,7 +11509,7 @@ namespace http
 			}
 		}
 
-		void CWebServer::RType_DeleteScene(WebEmSession& session, const request& req, Json::Value& root)
+		void CWebServer::Cmd_DeleteScene(WebEmSession& session, const request& req, Json::Value& root)
 		{
 			if (session.rights != 2)
 			{
@@ -11525,7 +11525,7 @@ namespace http
 			m_sql.DeleteScenes(idx);
 		}
 
-		void CWebServer::RType_UpdateScene(WebEmSession& session, const request& req, Json::Value& root)
+		void CWebServer::Cmd_UpdateScene(WebEmSession& session, const request& req, Json::Value& root)
 		{
 			if (session.rights != 2)
 			{
