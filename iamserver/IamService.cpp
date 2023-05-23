@@ -15,7 +15,6 @@
 #include <inttypes.h>
 #include <iostream>
 #include <json/json.h>
-#include "localtime_r.h"
 #include "../webserver/Base64.h"
 #include "../main/WebServer.h"
 #include "../main/Logger.h"
