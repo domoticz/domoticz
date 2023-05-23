@@ -637,9 +637,7 @@ namespace http
 			RegisterCommandCode("setshareduserdevices", [this](auto&& session, auto&& req, auto&& root) { Cmd_SetSharedUserDevices(session, req, root); });
 			RegisterCommandCode("graph", [this](auto&& session, auto&& req, auto&& root) { Cmd_HandleGraph(session, req, root); });
 			RegisterCommandCode("rclientslog", [this](auto&& session, auto&& req, auto&& root) { Cmd_RemoteWebClientsLog(session, req, root); });
-
-			// RType commands (will be replace by regular commands in the future)
-			RegisterRType("setused", [this](auto&& session, auto&& req, auto&& root) { RType_SetUsed(session, req, root); });
+			RegisterCommandCode("setused", [this](auto&& session, auto&& req, auto&& root) { Cmd_SetUsed(session, req, root); });
 
 			RegisterCommandCode("clearuserdevices", [this](auto&& session, auto&& req, auto&& root) { Cmd_ClearUserDevices(session, req, root); });
 
@@ -12878,7 +12876,7 @@ namespace http
 			LoadUsers();
 		}
 
-		void CWebServer::RType_SetUsed(WebEmSession& session, const request& req, Json::Value& root)
+		void CWebServer::Cmd_SetUsed(WebEmSession& session, const request& req, Json::Value& root)
 		{
 			if (session.rights != 2)
 			{
@@ -13079,7 +13077,7 @@ namespace http
 					if (Type == HTYPE_PythonPlugin)
 					{
 						bUpdateUnit = false;
-						_log.Log(LOG_ERROR, "CWebServer::RType_SetUsed: Not allowed to change unit of device owned by plugin %u!", HwdID);
+						_log.Log(LOG_ERROR, "CWebServer::Cmd_SetUsed: Not allowed to change unit of device owned by plugin %u!", HwdID);
 					}
 				}
 #endif

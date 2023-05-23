@@ -340,8 +340,7 @@ private:
 	void Cmd_SetSharedUserDevices(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_HandleGraph(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_RemoteWebClientsLog(WebEmSession& session, const request& req, Json::Value& root);
-	//RTypes
-	void RType_SetUsed(WebEmSession & session, const request& req, Json::Value &root);
+	void Cmd_SetUsed(WebEmSession & session, const request& req, Json::Value &root);
 
 	void Cmd_ClearUserDevices(WebEmSession& session, const request& req, Json::Value& root);
 
