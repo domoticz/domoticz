@@ -718,7 +718,7 @@ namespace http
 			//Whitelist
 			m_pWebEm->RegisterWhitelistURLString("/images/floorplans/plan");
 
-			_log.Debug(DEBUG_WEBSERVER, "WebServer(%s) started with: %d Commands - %d RTypes", m_server_alias.c_str(), (int)m_webcommands.size(), (int)m_webrtypes.size());
+			_log.Debug(DEBUG_WEBSERVER, "WebServer(%s) started with %d Registered Commands", m_server_alias.c_str(), (int)m_webcommands.size());
 			m_pWebEm->DebugRegistrations();
 
 			// Start normal worker thread
@@ -792,11 +792,6 @@ namespace http
 			}
 		}
 
-		void CWebServer::RegisterRType(const char* idname, const webserver_response_function& ResponseFunction)
-		{	// TO-DO: remove this function once all RTypes are converted to proper commands
-			m_webrtypes.insert(std::pair<std::string, webserver_response_function>(std::string(idname), ResponseFunction));
-		}
-
 		void CWebServer::GetJSonPage(WebEmSession& session, const request& req, reply& rep)
 		{
 			Json::Value root;
@@ -808,7 +803,7 @@ namespace http
 				std::string cparam = request::findValue(&req, "param");
 				if (!cparam.empty())
 				{
-					_log.Debug(DEBUG_WEBSERVER, "CWebServer::GetJSonPage(command) :%s :%s ", cparam.c_str(), req.uri.c_str());
+					_log.Debug(DEBUG_WEBSERVER, "CWebServer::GetJSonPage :%s :%s ", cparam.c_str(), req.uri.c_str());
 
 					auto pf = m_webcommands.find(cparam);
 					if (pf != m_webcommands.end())
@@ -820,56 +815,53 @@ namespace http
 						// TODO: remove this once all param based code has been converted to proper commands
 						if (!HandleCommandParam(cparam, session, req, root))
 						{
-							_log.Debug(DEBUG_WEBSERVER, "CWebServer::GetJSonPage(command)(%s) returned an error!", cparam.c_str());
+							_log.Debug(DEBUG_WEBSERVER, "CWebServer::GetJSonPage(param)(%s) returned an error!", cparam.c_str());
 						}
 					}
 				}
 			} //(rtype=="command")
 			else
-			{	// TODO: remove this once all rtypes are converted to commands
+			{	// TODO: remove this after next stable
 				_log.Debug(DEBUG_WEBSERVER, "CWebServer::GetJSonPage(rtype) :%s :%s ", rtype.c_str(), req.uri.c_str());
 
-				auto pf = m_webrtypes.find(rtype);
-				if (pf != m_webrtypes.end())
+				// Could be a call to an old style RType, try to handle it and alert the user to update
+				_log.Log(LOG_STATUS, "[WebServer] Depricated RType (%s) for API request. Please use correct API Command!", rtype.c_str());
+
+				std::string altrtype;
+				if (rtype.compare("settings") == 0)
 				{
-					pf->second(session, req, root);
+					altrtype = "getsettings";
 				}
-				else
-				{	// Could be a call to an old style RType, try to handle it and alert the user to update
-					_log.Log(LOG_STATUS, "[WebServer] Depricated type (%s) for API request. Please use correct API Command!", rtype.c_str());
-					if (rtype.compare("settings") == 0)
+				else if (rtype.compare("users") == 0)
+				{
+					altrtype = "getusers";
+				}
+				else if (rtype.compare("devices") == 0)
+				{
+					altrtype = "getdevices";
+				}
+				else if (rtype.compare("hardware") == 0)
+				{
+					altrtype = "gethardware";
+				}
+				else if (rtype.compare("events") == 0)
+				{
+					altrtype = "events";
+				}
+				else if (rtype.compare("notifications") == 0)
+				{
+					altrtype = "getnotifications";
+				}
+				else if (rtype.compare("createdevice") == 0)
+				{
+					altrtype = "createdevice";
+				}
+
+				if (!altrtype.empty())
+				{
+					auto pf = m_webcommands.find(altrtype);
+					if (pf != m_webcommands.end())
 					{
-						pf = m_webcommands.find("getsettings");
-						pf->second(session, req, root);
-					}
-					else if (rtype.compare("users") == 0)
-					{
-						pf = m_webcommands.find("getusers");
-						pf->second(session, req, root);
-					}
-					else if (rtype.compare("devices") == 0)
-					{
-						pf = m_webcommands.find("getdevices");
-						pf->second(session, req, root);
-					}
-					else if (rtype.compare("hardware") == 0)
-					{
-						pf = m_webcommands.find("gethardware");
-						pf->second(session, req, root);
-					}
-					else if (rtype.compare("events") == 0)
-					{
-						pf = m_webcommands.find("events");
-						pf->second(session, req, root);
-					}
-					else if (rtype.compare("notifications") == 0)
-					{
-						pf = m_webcommands.find("getnotifications");
-						pf->second(session, req, root);
-					}
-					else if (rtype.compare("createdevice") == 0)
-					{
-						pf = m_webcommands.find("createdevice");
 						pf->second(session, req, root);
 					}
 				}

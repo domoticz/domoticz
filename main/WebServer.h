@@ -416,7 +416,6 @@ private:
 	std::shared_ptr<std::thread> m_thread;
 
 	std::map < std::string, webserver_response_function > m_webcommands;	//Commands
-	std::map < std::string, webserver_response_function > m_webrtypes;		//RTypes (will be removed in the future once RTypes are migrated to Commands)
 	void Do_Work();
 	std::vector<_tCustomIcon> m_custom_light_icons;
 	std::map<int, int> m_custom_light_icons_lookup;
