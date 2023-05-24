@@ -117,6 +117,7 @@ private:
 	void Cmd_RFXComGetFirmwarePercentage(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_GetTimerTypes(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_GetLanguages(WebEmSession & session, const request& req, Json::Value &root);
+	void Cmd_GetSwitchTypes(WebEmSession& session, const request& req, Json::Value& root);
 	void Cmd_GetThemes(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_GetTitle(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_LoginCheck(WebEmSession & session, const request& req, Json::Value &root);
