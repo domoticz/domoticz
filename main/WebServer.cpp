@@ -342,7 +342,6 @@ namespace http
 			}
 
 			// register callbacks
-			m_pWebEm->RegisterIncludeCode("switchtypes", [this](auto&& content_part) { DisplaySwitchTypesCombo(content_part); });
 			m_pWebEm->RegisterIncludeCode("metertypes", [this](auto&& content_part) { DisplayMeterTypesCombo(content_part); });
 
 			if (m_iamsettings.is_enabled())
