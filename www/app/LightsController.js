@@ -2203,6 +2203,27 @@ define(['app', 'livesocket'], function (app) {
 				$.myglobals.WeekdayStr.push($(this).text());
 			});
 
+			//Get SwitchTypes
+			$.ajax({
+				url: "json.htm?type=command&param=getswitchtypes",
+				async: false,
+				dataType: 'json',
+				success: function (data) {
+					if (typeof data.result != 'undefined') {
+						$("#dialog-addlightdevice #comboswitchtype").html("");
+						$("#dialog-addmanuallightdevice #comboswitchtype").html("");
+						$.each(data.result, function (stcode, stdesc) {
+							if (stdesc != null) {
+								var option = $('<option />');
+								option.attr('value', stcode).text(stdesc);
+								$("#dialog-addlightdevice #comboswitchtype").append(option);
+								$("#dialog-addmanuallightdevice #comboswitchtype").append(option);
+							}
+						});
+					}
+				}
+			});
+
 			$scope.$on('device_update', function (event, deviceData) {
 				RefreshItem(deviceData);
 			});

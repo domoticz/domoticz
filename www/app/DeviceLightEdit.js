@@ -506,9 +506,33 @@ define(['app', 'components/rgbw-picker/RgbwPicker'], function (app) {
 
         init();
 
+        function populatedevicetypes() {
+            domoticzApi.sendCommand('getswitchtypes', {})
+                .then(function (data) {
+                    if ( data.status === 'OK' ) {
+						$("#switch-types-template").html("");
+						$.each(data.result, function (stcode, stdesc) {
+							if (stdesc != null) {
+								var option = $('<option />');
+								option.attr('value', stcode).text(stdesc);
+								$("#switch-types-template").append(option);
+							}
+						});
+                    }
+                    $element.find('#switch-types-template > option').each(function () {
+                        vm.switchTypeOptions.push({
+                            label: $(this).text(),
+                            value: parseInt($(this).val())
+                        });
+                    });
+                });
+        }
+
         function init() {
             vm.deviceIdx = $routeParams.id;
             vm.switchTypeOptions = [];
+
+            populatedevicetypes();
 
             deviceApi.getDeviceInfo(vm.deviceIdx).then(function (device) {
                 vm.device = device;
@@ -529,12 +553,6 @@ define(['app', 'components/rgbw-picker/RgbwPicker'], function (app) {
                 });
             });
 
-            $element.find('#switch-types-template > option').each(function () {
-                vm.switchTypeOptions.push({
-                    label: $(this).text(),
-                    value: parseInt($(this).val())
-                });
-            });
         }
 
         function updateDevice() {
