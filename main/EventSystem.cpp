@@ -4208,7 +4208,7 @@ namespace http {
 			//root["status"]="OK";
 			root["title"] = "Events";
 
-			std::string cparam = request::findValue(&req, "param");
+			std::string cparam = request::findValue(&req, "evparam");
 			if (cparam.empty())
 			{
 				return;

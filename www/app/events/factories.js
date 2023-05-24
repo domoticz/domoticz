@@ -12,7 +12,7 @@ define(['app'], function (app) {
 
         function fetchCurrentStates() {
             return domoticzApi.sendCommand('events', {
-                param: 'currentstates'
+                evparam: 'currentstates'
             }).then(function (response) {
                 return response && response.status !== 'OK'
                     ? $q.reject(response)
@@ -22,7 +22,7 @@ define(['app'], function (app) {
 
         function fetchEvents() {
             return domoticzApi.sendCommand('events', {
-                param: 'list'
+                evparam: 'list'
             }).then(function (data) {
                 return {
                     events: data.result || [],
@@ -33,7 +33,7 @@ define(['app'], function (app) {
 
         function fetchEvent(eventId) {
             return domoticzApi.sendCommand('events', {
-                param: 'load',
+                evparam: 'load',
                 event: eventId
             }).then(function (data) {
                 return data.result[0];
@@ -78,7 +78,7 @@ define(['app'], function (app) {
 
         function getTemplate(interpreter, eventType) {
             return domoticzApi.sendCommand('events', {
-                param: 'new',
+                evparam: 'new',
                 interpreter: interpreter,
                 eventtype: eventType || 'All'
             }).then(function (response) {
