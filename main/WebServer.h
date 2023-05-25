@@ -247,6 +247,7 @@ private:
 	void Cmd_PhilipsHueGroupAddLight(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_PhilipsHueGroupRemoveLight(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_GetCustomIconSet(WebEmSession & session, const request& req, Json::Value &root);
+	void Cmd_UploadCustomIcon(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_DeleteCustomIcon(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_UpdateCustomIcon(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_RenameDevice(WebEmSession & session, const request& req, Json::Value &root);

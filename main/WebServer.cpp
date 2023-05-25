@@ -578,6 +578,7 @@ namespace http
 			RegisterCommandCode("registerhue", [this](auto&& session, auto&& req, auto&& root) { Cmd_PhilipsHueRegister(session, req, root); });
 
 			RegisterCommandCode("getcustomiconset", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetCustomIconSet(session, req, root); });
+			RegisterCommandCode("uploadcustomicon", [this](auto&& session, auto&& req, auto&& root) { Cmd_UploadCustomIcon(session, req, root); });
 			RegisterCommandCode("deletecustomicon", [this](auto&& session, auto&& req, auto&& root) { Cmd_DeleteCustomIcon(session, req, root); });
 			RegisterCommandCode("updatecustomicon", [this](auto&& session, auto&& req, auto&& root) { Cmd_UpdateCustomIcon(session, req, root); });
 
@@ -7849,6 +7850,31 @@ namespace http
 				}
 			}
 			reply::set_content(&rep, root.toStyledString());
+		}
+
+		void CWebServer::Cmd_UploadCustomIcon(WebEmSession& session, const request& req, Json::Value& root)
+		{
+			root["title"] = "UploadCustomIcon";
+			// Only admin user allowed
+			if (session.rights != 2)
+			{
+				session.reply_status = reply::forbidden;
+				return; // Only admin user allowed
+			}
+			std::string zipfile = request::findValue(&req, "file");
+			if (!zipfile.empty())
+			{
+				std::string ErrorMessage;
+				bool bOK = m_sql.InsertCustomIconFromZip(zipfile, ErrorMessage);
+				if (bOK)
+				{
+					root["status"] = "OK";
+				}
+				else
+				{
+					root["error"] = ErrorMessage;
+				}
+			}
 		}
 
 		void CWebServer::Cmd_GetCustomIconSet(WebEmSession& session, const request& req, Json::Value& root)
