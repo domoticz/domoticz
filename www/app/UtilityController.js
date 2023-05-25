@@ -1,5 +1,5 @@
 define(['app', 'livesocket'], function (app) {
-	app.controller('UtilityController', function ($scope, $rootScope, $location, $http, $interval, $route, $routeParams, deviceApi, permissions, livesocket) {
+	app.controller('UtilityController', function ($scope, $rootScope, $location, $http, $interval, $route, $routeParams, deviceApi, domoticzApi, permissions, livesocket) {
 		var $element = $('#main-view #utilitycontent').last();
 		
 		$.strPad = function (i, l, s) {
@@ -1074,6 +1074,22 @@ define(['app', 'livesocket'], function (app) {
 			return false;
 		}
 
+		function populatemetertypes() {
+            domoticzApi.sendCommand('getmetertypes', {})
+                .then(function (data) {
+                    if ( data.status === 'OK' ) {
+						$("#dialog-editmeterdevice #combometertype").html("");
+						$.each(data.result, function (stcode, stdesc) {
+							if (stdesc != null) {
+								var option = $('<option />');
+								option.attr('value', stcode).text(stdesc);
+								$("#dialog-editmeterdevice #combometertype").append(option);
+							}
+						});
+                    }
+                });
+        }
+
 		init();
 
 		function init() {
@@ -1103,6 +1119,8 @@ define(['app', 'livesocket'], function (app) {
 			$('#timerparamstable #weekdays > option').each(function () {
 				$.myglobals.WeekdayStr.push($(this).text());
 			});
+
+			populatemetertypes();
 
 			$scope.$on('device_update', function (event, deviceData) {
 				RefreshItem(deviceData);
