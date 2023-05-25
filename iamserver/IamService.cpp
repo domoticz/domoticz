@@ -504,7 +504,7 @@ namespace http
 			reply::set_content(&rep, root.toStyledString());
 		}
 
-        void CWebServer::PresentOauth2LoginDialog(reply &rep, const std::string sApp, const std::string sError)
+        void CWebServer::PresentOauth2LoginDialog(reply &rep, const std::string &sApp, const std::string &sError)
         {
             rep = reply::stock_reply(reply::ok);
 
@@ -534,7 +534,7 @@ namespace http
                 reply::add_security_headers(&rep);
         }
 
-        std::string CWebServer::GenerateOAuth2RefreshToken(const std::string username, const int refreshexptime)
+        std::string CWebServer::GenerateOAuth2RefreshToken(const std::string &username, const int refreshexptime)
         {
             std::string refreshtoken = base64url_encode(sha256raw(GenerateUUID()));
             WebEmStoredSession refreshsession;
@@ -546,7 +546,7 @@ namespace http
             return refreshtoken;
         }
 
-        bool CWebServer::ValidateOAuth2RefreshToken(const std::string refreshtoken, std::string &username)
+        bool CWebServer::ValidateOAuth2RefreshToken(const std::string &refreshtoken, std::string &username)
         {
             bool bOk = false;
             WebEmStoredSession refreshsession = GetSession(GenerateMD5Hash(refreshtoken));
@@ -562,7 +562,7 @@ namespace http
             return bOk;
         }
 
-        void CWebServer::InvalidateOAuth2RefreshToken(const std::string refreshtoken)
+        void CWebServer::InvalidateOAuth2RefreshToken(const std::string &refreshtoken)
         {
             WebEmStoredSession refreshsession = GetSession(GenerateMD5Hash(refreshtoken));
             if	(!refreshsession.id.empty())

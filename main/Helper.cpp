@@ -1394,6 +1394,7 @@ int SetThreadName(const std::thread::native_handle_type &thread, const char *nam
 	pthread_set_name_np(thread, name_trunc);
 	return 0;
 #endif
+	return 0;
 }
 #endif
 

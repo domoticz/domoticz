@@ -67,25 +67,25 @@ enum _eTaskItemType
 struct _tTaskItem
 {
 	_eTaskItemType _ItemType;
-	float _DelayTime;
-	int _HardwareID;
-	uint64_t _idx;
+	float _DelayTime = 0.F;
+	int _HardwareID = 0;
+	uint64_t _idx = 0;
 	std::string _ID;
-	unsigned char _unit;
-	unsigned char _devType;
-	unsigned char _subType;
-	unsigned char _signallevel;
-	unsigned char _batterylevel;
-	int _switchtype;
-	int _nValue;
+	unsigned char _unit = 0;
+	unsigned char _devType = 0;
+	unsigned char _subType = 0;
+	unsigned char _signallevel = 0;
+	unsigned char _batterylevel = 0;
+	int _switchtype = 0;
+	int _nValue = 0;
 	std::string _sValue;
 	std::string _command;
 	std::string _sUntil;
 	std::string _sUser;
-	int _level;
+	int _level = 0;
 	_tColor _Color;
 	std::string _relatedEvent;
-	timeval _DelayTimeBegin;
+	timeval _DelayTimeBegin = { 0 };
 
 	static _tTaskItem UpdateDevice(const float DelayTime, const uint64_t idx, const int nValue, const std::string &sValue, const int Protected, const bool bEventTrigger, const std::string &User)
 	{
@@ -521,7 +521,7 @@ class CSQLHelper : public StoppableTask
 #ifndef WIN32
 	void ManageExecuteScriptTimeout(std::string szCommand, int pid, int timeout, bool *stillRunning, bool *timeoutOccurred);
 #endif
-	void PerformThreadedAction(const _tTaskItem tItem);
+	void PerformThreadedAction(const _tTaskItem &tItem);
 	bool SwitchLightFromTasker(const std::string &idx, const std::string &switchcmd, const std::string &level, const std::string &color, const std::string &User);
 	bool SwitchLightFromTasker(uint64_t idx, const std::string &switchcmd, int level, _tColor color, const std::string &User);
 

@@ -1862,9 +1862,13 @@ void GetLightStatus(
 			switch (nValue)
 			{
 			case rfy_sUp:
+			case rfy_s05SecUp:
+			case rfy_s2SecUp:
 				lstatus = "On";
 				break;
 			case rfy_sDown:
+			case rfy_s05SecDown:
+			case rfy_s2SecDown:
 				lstatus = "Off";
 				break;
 			case rfy_sStop:

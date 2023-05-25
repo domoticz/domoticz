@@ -3706,7 +3706,7 @@ void CSQLHelper::ManageExecuteScriptTimeout(std::string szCommand, int pid, int 
 }
 #endif
 
-void CSQLHelper::PerformThreadedAction(const _tTaskItem tItem)
+void CSQLHelper::PerformThreadedAction(const _tTaskItem &tItem)
 {
 	if (tItem._ItemType == TITEM_EXECUTESHELLCOMMAND)
 	{

@@ -113,19 +113,18 @@ public:
 	static void makeValuesFromPostContent(const request *preq, std::multimap<std::string, std::string> &values)
 	{
 		values.clear();
-		std::string name;
-		std::string value;
 
 		std::string uri = preq->content;
 		size_t q = 0;
 		size_t p = q;
 		int flag_done = 0;
 		while (!flag_done) {
+			std::string value;
 			q = uri.find('=', p);
 			if (q == std::string::npos) {
 				return;
 			}
-			name = uri.substr(p, q - p);
+			std::string name = uri.substr(p, q - p);
 			p = q + 1;
 			q = uri.find('&', p);
 			if (q != std::string::npos) {

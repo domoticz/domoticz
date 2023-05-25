@@ -1670,7 +1670,7 @@ namespace http {
 			return 0;
 		}
 
-		bool cWebem::GenerateJwtToken(std::string &jwttoken, const std::string clientid, const std::string clientsecret, const std::string user, const uint32_t exptime, const Json::Value jwtpayload)
+		bool cWebem::GenerateJwtToken(std::string &jwttoken, const std::string &clientid, const std::string &clientsecret, const std::string &user, const uint32_t exptime, const Json::Value jwtpayload)
 		{
 			bool bOk = false;
 			// Did we get a 'plain' clientsecret or an already MD5Hashed one?

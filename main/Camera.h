@@ -51,7 +51,7 @@ public:
   std::string GetCameraURL(const std::string &CamID);
   std::string GetCameraURL(const uint64_t CamID);
   int GetCameraAspectRatio(const std::string& CamIdx);
-  int GetCameraAspectRatio(const uint64_t CamID);
+  int GetCameraAspectRatio(const uint64_t &CamID);
 
 private:
 	void ReloadCameraActiveDevices(const std::string &CamID);

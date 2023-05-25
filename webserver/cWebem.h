@@ -195,7 +195,7 @@ namespace http
 			std::string ExtractRequestPath(const std::string &original_request_path);
 			bool IsBadRequestPath(const std::string &original_request_path);
 
-			bool GenerateJwtToken(std::string &jwttoken, const std::string clientid, const std::string clientsecret, const std::string user, const uint32_t exptime, const Json::Value jwtpayload = "");
+			bool GenerateJwtToken(std::string &jwttoken, const std::string &clientid, const std::string &clientsecret, const std::string &user, const uint32_t exptime, const Json::Value jwtpayload = "");
 			bool FindAuthenticatedUser(std::string &user, const request &req, reply &rep);
 			bool CheckVHost(const request &req);
 			bool findRealHostBehindProxies(const request &req, std::string &realhost);

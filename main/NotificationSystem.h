@@ -43,7 +43,7 @@ private:
 	void QueueThread();
 	void UnlockNotificationQueueThread();
 
-	volatile bool m_stoprequested;
+	volatile bool m_stoprequested = false;
 	std::mutex m_mutex;
 	std::vector<CNotificationObserver*> m_notifiers;
 	concurrent_queue<_tNotificationQueue> m_notificationqueue;
