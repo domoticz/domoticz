@@ -342,8 +342,6 @@ namespace http
 			}
 
 			// register callbacks
-			m_pWebEm->RegisterIncludeCode("metertypes", [this](auto&& content_part) { DisplayMeterTypesCombo(content_part); });
-
 			if (m_iamsettings.is_enabled())
 			{
 				m_pWebEm->RegisterPageCode(
@@ -917,38 +915,6 @@ namespace http
 				root["result"][type.second] = type.first;
 			}
 			root["status"] = "OK";
-		}
-
-		void CWebServer::DisplaySwitchTypesCombo(std::string& content_part)
-		{
-			char szTmp[200];
-
-			std::map<std::string, int> _switchtypes;
-
-			for (int ii = 0; ii < STYPE_END; ii++)
-			{
-				std::string sTypeName = Switch_Type_Desc((_eSwitchType)ii);
-				if (sTypeName != "Unknown")
-				{
-					_switchtypes[sTypeName] = ii;
-				}
-			}
-			// return a sorted list
-			for (const auto& type : _switchtypes)
-			{
-				sprintf(szTmp, "<option value=\"%d\">%s</option>\n", type.second, type.first.c_str());
-				content_part += szTmp;
-			}
-		}
-
-		void CWebServer::DisplayMeterTypesCombo(std::string& content_part)
-		{
-			char szTmp[200];
-			for (int ii = 0; ii < MTYPE_END; ii++)
-			{
-				sprintf(szTmp, "<option value=\"%d\">%s</option>\n", ii, Meter_Type_Desc((_eMeterType)ii));
-				content_part += szTmp;
-			}
 		}
 
 		void CWebServer::Cmd_GetMeterTypes(WebEmSession& session, const request& req, Json::Value& root)
