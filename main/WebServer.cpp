@@ -390,6 +390,7 @@ namespace http
 			RegisterCommandCode("gettimertypes", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetTimerTypes(session, req, root); }, true);
 			RegisterCommandCode("getlanguages", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetLanguages(session, req, root); }, true);
 			RegisterCommandCode("getswitchtypes", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetSwitchTypes(session, req, root); }, true);
+			RegisterCommandCode("getmetertypes", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetMeterTypes(session, req, root); }, true);
 			RegisterCommandCode("getthemes", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetThemes(session, req, root); }, true);
 			RegisterCommandCode("gettitle", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetTitle(session, req, root); }, true);
 			RegisterCommandCode("logincheck", [this](auto&& session, auto&& req, auto&& root) { Cmd_LoginCheck(session, req, root); }, true);
@@ -948,6 +949,18 @@ namespace http
 				sprintf(szTmp, "<option value=\"%d\">%s</option>\n", ii, Meter_Type_Desc((_eMeterType)ii));
 				content_part += szTmp;
 			}
+		}
+
+		void CWebServer::Cmd_GetMeterTypes(WebEmSession& session, const request& req, Json::Value& root)
+		{
+			root["title"] = "GetMeterTypes";
+
+			for (int ii = 0; ii < MTYPE_END; ii++)
+			{
+				std::string sTypeName = Meter_Type_Desc((_eMeterType)ii);
+				root["result"][ii] = sTypeName;
+			}
+			root["status"] = "OK";
 		}
 
 		void CWebServer::Cmd_GetThemes(WebEmSession& session, const request& req, Json::Value& root)
