@@ -155,7 +155,7 @@ int CCameraHandler::GetCameraAspectRatio(const std::string& CamIdx)
 
 int CCameraHandler::GetCameraAspectRatio(const uint64_t &CamID)
 {
-	for (auto& m : m_cameradevices)
+	for (const auto& m : m_cameradevices)
 	{
 		if (m.ID == CamID)
 			return m.AspectRatio;

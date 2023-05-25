@@ -424,7 +424,7 @@ void CLogger::LogSequenceEnd(const _eLogLevel level)
 	std::string message = m_sequencestring.str();
 	if (strhasEnding(message, "\n"))
 	{
-		message = message.substr(0, message.size() - 1);
+		message.resize(message.size() - 1);
 	}
 
 	Log(level, message);
@@ -460,7 +460,7 @@ bool CLogger::IsLogTimestampsEnabled()
 	return (m_bEnableLogTimestamps && !g_bUseSyslog);
 }
 
-bool compareLogByTime(const CLogger::_tLogLineStruct &a, CLogger::_tLogLineStruct &b)
+bool compareLogByTime(const CLogger::_tLogLineStruct &a, const CLogger::_tLogLineStruct &b)
 {
 	return a.logtime < b.logtime;
 }
