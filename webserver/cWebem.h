@@ -167,7 +167,9 @@ namespace http
 			void Run();
 			void Stop();
 
-			void RegisterIncludeCode(const char *idname, const webem_include_function &fun);
+			// 20230525 No longer in Use! Will be removed soon!
+			//void RegisterIncludeCode(const char *idname, const webem_include_function &fun);
+			//bool Include(std::string &reply);
 
 			void RegisterPageCode(const char *pageurl, const webem_page_function &fun, bool bypassAuthentication = false);
 
@@ -177,8 +179,6 @@ namespace http
 			void RegisterWhitelistCommandsString(const char *idname);
 
 			void DebugRegistrations();
-
-			bool Include(std::string &reply);
 
 			bool IsAction(const request &req);
 			bool CheckForAction(WebEmSession &session, request &req);
@@ -235,8 +235,8 @@ namespace http
 			_eWebCompressionMode m_gzipmode;
 
 		      private:
-			/// store map between include codes and application functions
-			std::map<std::string, webem_include_function> myIncludes;
+			/// store map between include codes and application functions (20230525 No longer in use! Will be removed soon!)
+			// std::map<std::string, webem_include_function> myIncludes;
 			/// store map between action codes and application functions
 			std::map<std::string, webem_action_function> myActions;
 			/// store name walue pairs for form submit action

@@ -141,11 +141,14 @@ namespace http {
 		@param[in] fun pointer to function which calculates the string to be displayed
 
 		*/
+		/* 20230525 No Longer in Use! Will be removed Soon!
 
 		void cWebem::RegisterIncludeCode(const char *idname, const webem_include_function &fun)
 		{
 			myIncludes.insert(std::pair<std::string, webem_include_function >(std::string(idname), fun));
 		}
+		*/
+
 		/**
 
 		Create a link between a string ID and a function to calculate the dynamic content of the string
@@ -193,8 +196,8 @@ namespace http {
 		// Show a Debug line with the registered functions, actions, includes, whitelist urls and commands
 		void cWebem::DebugRegistrations()
 		{
-			_log.Debug(DEBUG_WEBSERVER, "cWebEm Registration: %d pages, %d actions, %d includes, %d whitelist urls, %d whitelist commands",
-				(int)myPages.size(), (int)myActions.size(), (int)myIncludes.size(), (int)myWhitelistURLs.size(), (int)myWhitelistCommands.size());
+			_log.Debug(DEBUG_WEBSERVER, "cWebEm Registration: %d pages, %d actions, %d whitelist urls, %d whitelist commands",
+				(int)myPages.size(), (int)myActions.size(), (int)myWhitelistURLs.size(), (int)myWhitelistCommands.size());
 		}
 
 		/**
@@ -213,6 +216,7 @@ namespace http {
 
 
 		*/
+		/* 20230525 No longer in Use! Will be removed soon!
 		bool cWebem::Include(std::string& reply)
 		{
 			bool res = false;
@@ -258,6 +262,7 @@ namespace http {
 			}
 			return res;
 		}
+		*/
 
 		std::istream & safeGetline(std::istream & is, std::string & line)
 		{
