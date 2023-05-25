@@ -12340,7 +12340,9 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string>& sd, std::string 
 				return false;
 		}
 
-		if (lcmd.RFY.subtype == sTypeRFY2)
+		bool bIsRFY2 = (lcmd.RFY.subtype == sTypeRFY2);
+
+		if (bIsRFY2)
 		{
 			//Special case for protocol version 2
 			lcmd.RFY.subtype = sTypeRFY;
@@ -12356,6 +12358,8 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string>& sd, std::string 
 		if (!WriteToHardware(HardwareID, (const char*)&lcmd, sizeof(lcmd.RFY)))
 			return false;
 		if (!IsTesting) {
+			if (bIsRFY2)
+				lcmd.RFY.subtype = sTypeRFY2;
 			//send to internal for now (later we use the ACK)
 			PushAndWaitRxMessage(m_hardwaredevices[hindex], (const uint8_t *)&lcmd, nullptr, -1, User.c_str());
 		}
