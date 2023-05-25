@@ -609,7 +609,7 @@ namespace http
                 RemoveSession(refreshsession.id);
         }
 
-		bool CWebServer::VerifySHA1TOTP(const std::string code, const std::string key)
+		bool CWebServer::VerifySHA1TOTP(const std::string &code, const std::string &key)
 		{
 			/*
 			 * Time-based One-Time Password algorithm verification method
