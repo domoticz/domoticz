@@ -11,6 +11,7 @@ on:
       - '**.md'
       - '**.txt'
 
+#used for both X86 and qemu, require to rebuild the github packages via a manual workflow_dispatch
 env:
   Vcmake: 3.26.3
   Vboost: 1.81.0
@@ -18,7 +19,6 @@ env:
 
 jobs:
   build:
-    #runs-on: ubuntu-latest   # Per Dec 2022 latest = 22.04 with GCC 11, OpenSSL3.0 and this breaks building OpenZwave
     runs-on: ubuntu-latest
 
     strategy:
@@ -73,6 +73,8 @@ jobs:
         sudo kill -s TERM `sudo cat /var/run/domoticz.pid`
       continue-on-error: false
 
+#Build a package in github with all required dependencies to build domoticz
+#The install parameter need to be exactly the same in all qemu steps
     - name : Build system (qemu)
       if: ${{ !contains(matrix.qemu_arch, 'x86') }}
       uses: uraimo/run-on-arch-action@v2.5.0
