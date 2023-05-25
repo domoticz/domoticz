@@ -104,13 +104,6 @@ public:
 		std::vector<uint64_t> memberID;
 	};
 
-	struct _tHardwareListInt {
-		std::string Name;
-		int HardwareTypeVal;
-		std::string HardwareType;
-		bool Enabled;
-	} tHardwareList;
-
 	CEventSystem();
 	~CEventSystem();
 
