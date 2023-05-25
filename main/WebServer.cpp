@@ -355,7 +355,6 @@ namespace http
 			m_pWebEm->RegisterPageCode("/json.htm", [this](auto&& session, auto&& req, auto&& rep) { GetJSonPage(session, req, rep); });
 			// These 'Pages' should probably be 'moved' to become Command codes handled by the 'json.htm API', so we get all API calls through one entry point
 			// And why .php or .cgi while all these commands are NOT handled by a PHP or CGI processor but by Domoticz ?? Legacy? Rename these?
-			m_pWebEm->RegisterPageCode("/uploadcustomicon", [this](auto&& session, auto&& req, auto&& rep) { Post_UploadCustomIcon(session, req, rep); });
 			m_pWebEm->RegisterPageCode("/backupdatabase.php", [this](auto&& session, auto&& req, auto&& rep) { GetDatabaseBackup(session, req, rep); });
 			m_pWebEm->RegisterPageCode("/camsnapshot.jpg", [this](auto&& session, auto&& req, auto&& rep) { GetCameraSnapshot(session, req, rep); });
 			m_pWebEm->RegisterPageCode("/raspberry.cgi", [this](auto&& session, auto&& req, auto&& rep) { GetInternalCameraSnapshot(session, req, rep); });
@@ -7820,36 +7819,6 @@ namespace http
 					ii++;
 				}
 			}
-		}
-
-		void CWebServer::Post_UploadCustomIcon(WebEmSession& session, const request& req, reply& rep)
-		{
-			Json::Value root;
-			root["title"] = "UploadCustomIcon";
-			root["status"] = "ERROR";
-			root["error"] = "Invalid";
-			// Only admin user allowed
-			if (session.rights != 2)
-			{
-				session.reply_status = reply::forbidden;
-				return; // Only admin user allowed
-			}
-			std::string zipfile = request::findValue(&req, "file");
-			if (!zipfile.empty())
-			{
-				std::string ErrorMessage;
-				bool bOK = m_sql.InsertCustomIconFromZip(zipfile, ErrorMessage);
-				if (bOK)
-				{
-					root["status"] = "OK";
-				}
-				else
-				{
-					root["status"] = "ERROR";
-					root["error"] = ErrorMessage;
-				}
-			}
-			reply::set_content(&rep, root.toStyledString());
 		}
 
 		void CWebServer::Cmd_UploadCustomIcon(WebEmSession& session, const request& req, Json::Value& root)

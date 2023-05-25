@@ -45,7 +45,6 @@ class CWebServer : public session_store, public std::enable_shared_from_this<CWe
 	void GetFloorplanImage(WebEmSession& session, const request& req, reply& rep);
 	void GetServiceWorker(WebEmSession& session, const request& req, reply& rep);
 	void GetDatabaseBackup(WebEmSession & session, const request& req, reply & rep);
-	void Post_UploadCustomIcon(WebEmSession & session, const request& req, reply & rep);
 
 	void GetOauth2AuthCode(WebEmSession &session, const request &req, reply &rep);
 	void PostOauth2AccessToken(WebEmSession &session, const request &req, reply &rep);
