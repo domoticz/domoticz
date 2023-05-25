@@ -356,7 +356,6 @@ namespace http
 			// These 'Pages' should probably be 'moved' to become Command codes handled by the 'json.htm API', so we get all API calls through one entry point
 			// And why .php or .cgi while all these commands are NOT handled by a PHP or CGI processor but by Domoticz ?? Legacy? Rename these?
 			m_pWebEm->RegisterPageCode("/uploadcustomicon", [this](auto&& session, auto&& req, auto&& rep) { Post_UploadCustomIcon(session, req, rep); });
-			m_pWebEm->RegisterPageCode("/storesettings", [this](auto&& session, auto&& req, auto&& rep) { PostSettings(session, req, rep); });
 			m_pWebEm->RegisterPageCode("/backupdatabase.php", [this](auto&& session, auto&& req, auto&& rep) { GetDatabaseBackup(session, req, rep); });
 			m_pWebEm->RegisterPageCode("/camsnapshot.jpg", [this](auto&& session, auto&& req, auto&& rep) { GetCameraSnapshot(session, req, rep); });
 			m_pWebEm->RegisterPageCode("/raspberry.cgi", [this](auto&& session, auto&& req, auto&& rep) { GetInternalCameraSnapshot(session, req, rep); });
@@ -3627,17 +3626,6 @@ namespace http
 					iAdmins++;
 			}
 			return iAdmins;
-		}
-
-		// Depricated : This 'page' should not be used anymore. Use command instead
-		void CWebServer::PostSettings(WebEmSession& session, const request& req, reply& rep)
-		{
-			_log.Log(LOG_NORM, "Depricated: Page StoreSettings! Use command instead!");
-
-			Json::Value root;
-			Cmd_PostSettings(session, req, root);
-
-			reply::set_content(&rep, root.toStyledString());
 		}
 
 		// PostSettings
