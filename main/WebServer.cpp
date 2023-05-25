@@ -4581,6 +4581,26 @@ namespace http
 						return;
 					devid = id;
 				}
+				else if (lighttype == 226)
+				{
+					dtype = pTypeGeneralSwitch;
+					subtype = sSwitchTypeEurodomest;
+					std::string id = request::findValue(&req, "id");
+					sunitcode = request::findValue(&req, "unitcode");
+					if ((id.empty()) || (sunitcode.empty()))
+						return;
+					devid = id;
+				}
+				else if (lighttype == 250)
+				{
+					dtype = pTypeGeneralSwitch;
+					subtype = sSwitchTypeEV1527;
+					std::string id = request::findValue(&req, "id");
+					sunitcode = request::findValue(&req, "unitcode");
+					if ((id.empty()) || (sunitcode.empty()))
+						return;
+					devid = id;
+				}
 				else if ((lighttype >= 200) && (lighttype < 300))
 				{
 					dtype = pTypeBlinds;
@@ -5270,6 +5290,26 @@ namespace http
 					// RFY2
 					dtype = pTypeRFY;
 					subtype = sTypeRFY2;
+					std::string id = request::findValue(&req, "id");
+					sunitcode = request::findValue(&req, "unitcode");
+					if ((id.empty()) || (sunitcode.empty()))
+						return;
+					devid = id;
+				}
+				else if (lighttype == 226)
+				{
+					dtype = pTypeGeneralSwitch;
+					subtype = sSwitchTypeEurodomest;
+					std::string id = request::findValue(&req, "id");
+					sunitcode = request::findValue(&req, "unitcode");
+					if ((id.empty()) || (sunitcode.empty()))
+						return;
+					devid = id;
+				}
+				else if (lighttype == 250)
+				{
+					dtype = pTypeGeneralSwitch;
+					subtype = sSwitchTypeEV1527;
 					std::string id = request::findValue(&req, "id");
 					sunitcode = request::findValue(&req, "unitcode");
 					if ((id.empty()) || (sunitcode.empty()))
