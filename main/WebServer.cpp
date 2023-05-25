@@ -8508,7 +8508,7 @@ namespace http
 			bool Enabled;
 			std::string Mode1; // Used to flag DimmerType as relative for some old LimitLessLight type bulbs
 			std::string Mode2; // Used to flag DimmerType as relative for some old LimitLessLight type bulbs
-		} tHardwareList;
+		};
 
 		void CWebServer::GetJSonDevices(Json::Value& root, const std::string& rused, const std::string& rfilter, const std::string& order, const std::string& rowid, const std::string& planID,
 			const std::string& floorID, const bool bDisplayHidden, const bool bDisplayDisabled, const bool bFetchFavorites, const time_t LastUpdate,
