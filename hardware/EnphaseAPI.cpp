@@ -139,6 +139,8 @@ void EnphaseAPI::Do_Work()
 					)
 				{
 					//no need to poll outside sun hours
+					m_sql.safe_query(
+						"UPDATE DeviceStatus SET LastUpdate='%s' WHERE (HardwareID==%d)", TimeToString(nullptr, TF_DateTime).c_str(), m_HwdID);
 					continue;
 				}
 			}
@@ -562,7 +564,11 @@ bool EnphaseAPI::getProductionDetails(Json::Value& result)
 void EnphaseAPI::parseProduction(const Json::Value& root)
 {
 	if (!IsItSunny())
+	{
+		m_sql.safe_query(
+			"UPDATE DeviceStatus SET LastUpdate='%s' WHERE (HardwareID==%d)", TimeToString(nullptr, TF_DateTime).c_str(), m_HwdID);
 		return;
+	}
 	if (root["production"].empty() == true)
 	{
 		//No production details available
