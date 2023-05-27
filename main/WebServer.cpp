@@ -396,9 +396,10 @@ namespace http
 			RegisterCommandCode("getuptime", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetUptime(session, req, root); }, true);
 			RegisterCommandCode("getconfig", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetConfig(session, req, root); }, true);
 
-			// WHY do these 2 commands not need Authentication??
 			RegisterCommandCode("rfxfirmwaregetpercentage", [this](auto&& session, auto&& req, auto&& root) { Cmd_RFXComGetFirmwarePercentage(session, req, root); }, true);
-			RegisterCommandCode("sendopenthermcommand", [this](auto&& session, auto&& req, auto&& root) { Cmd_SendOpenThermCommand(session, req, root); }, true);
+
+			// Commands that require authentication
+			RegisterCommandCode("sendopenthermcommand", [this](auto&& session, auto&& req, auto&& root) { Cmd_SendOpenThermCommand(session, req, root); });
 
 			RegisterCommandCode("storesettings", [this](auto&& session, auto&& req, auto&& root) { Cmd_PostSettings(session, req, root); });
 			RegisterCommandCode("getlog", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetLog(session, req, root); });
