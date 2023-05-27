@@ -22,7 +22,7 @@
 				<td>
                     <input type="text" id="TotpSecret" autocomplete="off" name="TotpSecret" ng-model="myprofile.totpsecret" style="width: 350px;" class="text ui-widget-content ui-corner-all">
                 </td>
-                <td><a href="https://stefansundin.github.io/2fa-qr/" target="_blank">QR-code</a></td>
+                <td><div id="qrcode">QR-code</div></td>
 			</tr>
             <tr ng-hide="useMFA()">
                 <td colspan="3"><span>&nbsp;</span></td>

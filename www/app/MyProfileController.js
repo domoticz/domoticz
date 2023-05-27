@@ -9,6 +9,15 @@ define(['app'], function (app) {
 			vfypwd: ''
 		};
 
+		$scope.updateQR = function (qrdata) {
+			var typeNumber = 4;
+			var errorCorrectionLevel = 'L';
+			var qr = qrcode(typeNumber, errorCorrectionLevel);
+			qr.addData(qrdata);
+			qr.make();
+			document.getElementById('qrcode').innerHTML = qr.createImgTag(4);
+		}
+
 		$scope.init = function () {
 			$('#profiletable').hide();
 			$('#passwdtable').hide();
@@ -18,6 +27,7 @@ define(['app'], function (app) {
 					$scope.myprofile.enableMFA = (data.rights == 2);
 					$('#profiletable').show();
 					$('#passwdtable').show();
+					$scope.updateQR('Hello there!');
 				})
 				.catch(function () {
 					ShowNotify($.t('Problem retrieving Profile!'), 2500, true);
