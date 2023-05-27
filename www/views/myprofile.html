@@ -1,0 +1,96 @@
+<div id="myprofilecontent" class="container">
+	<div class="page-header-small">
+		<h1 data-i18n="My Profile">My Profile</h1><span><i><b>({{ config.userName }})</b></i></span>
+	</div>
+
+    <div>
+    <form name="myProfileForm" ng-submit="updateMyProfile()">
+        <table class="display table-details" id="profiletable">
+            <tr>
+                <td colspan="3"><h3>MFA</h3></td>
+            </tr>
+			<tr>
+                <td></td>
+				<td colsspan="2">
+                    <input type="checkbox" id="EnableMFA" name="EnableMFA" ng-model="myprofile.enableMFA"> <label for="EnableMFA" data-i18n="EnableMFA">EnableMFA</label>
+                </td>
+			</tr>
+			<tr ng-show="useMFA()">
+				<td>
+                    <label for="TotpSecretLabel" data-i18n="TotpSecretLabel">TOTP secret:</label>
+                </td>
+				<td>
+                    <input type="text" id="TotpSecret" autocomplete="off" name="TotpSecret" ng-model="myprofile.totpsecret" style="width: 350px;" class="text ui-widget-content ui-corner-all">
+                </td>
+                <td><a href="https://stefansundin.github.io/2fa-qr/" target="_blank">QR-code</a></td>
+			</tr>
+            <tr ng-hide="useMFA()">
+                <td colspan="3"><span>&nbsp;</span></td>
+            </tr>
+            <tr>
+                <td colspan="3">&nbsp;</td>
+            </tr>
+            <tr>
+                <td></td>
+                <td>
+                    <button type="submit" class="btnstyle3">
+                        {{ :: 'Update' | translate}}
+                    </button>
+                    <button type="button" class="btnstyle3" ng-click="btnCancel()">
+                        {{ :: 'Cancel' | translate}}
+                    </button>
+                </td>
+                <td></td>
+            </tr>
+        </table>
+    </form>
+    </div>
+    <p></p>
+    <div>
+    <form name="myPasswdForm" ng-submit="updateMyPasswd()">
+        <table class="display table-details" id="passwdtable">
+            <tr>
+                <td colspan="3"><h3>Change Password</h3></td>
+            </tr>
+			<tr>
+				<td>
+                    <label for="OldPwdLabel" data-i18n="OldPwdLabel">Old Password:</label>
+                </td>
+				<td>
+                    <input type="password" id="OldPwd" autocomplete="current-password" name="OldPwd" required style="width: 350px; padding: .2em;" class="text ui-widget-content ui-corner-all" ng-model="myprofile.oldpwd">
+                </td>
+			</tr>
+			<tr>
+				<td>
+                    <label for="NewPwdLabel" data-i18n="NewPwdLabel">New Password:</label>
+                </td>
+				<td>
+                    <input type="password" id="NewPwd" autocomplete="new-password" name="NewPwd" required style="width: 350px; padding: .2em;" class="text ui-widget-content ui-corner-all" ng-model="myprofile.newpwd">
+                </td>
+			</tr>
+			<tr>
+				<td>
+                    <label for="VfyPwdLabel" data-i18n="VfyPwdLabel">Verify Password:</label>
+                </td>
+				<td>
+                    <input type="password" id="VfyPwd" autocomplete="new-password" name="VfyPwd" required style="width: 350px; padding: .2em;" class="text ui-widget-content ui-corner-all" ng-model="myprofile.vfypwd">
+                </td>
+			</tr>
+            <tr>
+                <td colspan="2">&nbsp;</td>
+            </tr>
+            <tr>
+                <td></td>
+                <td>
+                    <button type="submit" class="btnstyle3">
+                        {{ :: 'Update' | translate}}
+                    </button>
+                    <button type="button" class="btnstyle3" ng-click="btnCancel()">
+                        {{ :: 'Cancel' | translate}}
+                    </button>
+                </td>
+            </tr>
+        </table>
+    </form>
+    </div>
+</div>
