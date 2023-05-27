@@ -889,7 +889,7 @@ namespace http
 			}
 			for (auto& lang : guiLanguage)
 			{
-				root["result"][lang.first] = lang.second;
+				root["result"][lang.second] = lang.first;
 			}
 			root["status"] = "OK";
 		}

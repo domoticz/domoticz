@@ -253,7 +253,7 @@ define(['app'], function (app) {
 				success: function (data) {
 					if (typeof data.result != 'undefined') {
 						$("#settingscontent #combolanguages").html("");
-						$.each(data.result, function (langcode, language) {
+						$.each(data.result, function (language, langcode) {
 							var option = $('<option />');
 							option.attr('value', langcode).text(language);
 							$("#settingscontent #combolanguages").append(option);
