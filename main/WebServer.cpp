@@ -523,6 +523,10 @@ namespace http
 			RegisterCommandCode("getactualhistory", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetActualHistory(session, req, root); });
 			RegisterCommandCode("getnewhistory", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetNewHistory(session, req, root); });
 
+			RegisterCommandCode("getmyprofile", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetMyProfile(session, req, root); });
+			RegisterCommandCode("updatemyprofile", [this](auto&& session, auto&& req, auto&& root) { Cmd_UpdateMyProfile(session, req, root); });
+
+			RegisterCommandCode("getconfig", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetConfig(session, req, root); }, true);
 			RegisterCommandCode("getlocation", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetLocation(session, req, root); });
 			RegisterCommandCode("getforecastconfig", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetForecastConfig(session, req, root); });
 			RegisterCommandCode("sendnotification", [this](auto&& session, auto&& req, auto&& root) { Cmd_SendNotification(session, req, root); });
@@ -2573,6 +2577,69 @@ namespace http
 			else if (m_iamsettings.enable2fa == true)
 			{
 				root["enable2fa"] = "true";
+			}
+		}
+
+		void CWebServer::Cmd_GetMyProfile(WebEmSession& session, const request& req, Json::Value& root)
+		{
+			root["status"] = "ERR";
+			root["title"] = "GetMyProfile";
+			if (session.rights > 0)	// Viewer cannot change his profile
+			{
+				int iUser = FindUser(session.username.c_str());
+				if (iUser != -1)
+				{
+					root["user"] = session.username;
+					root["rights"] = session.rights;
+					if (m_iamsettings.enable2fa == true)
+					{
+						root["enable2fa"] = "true";
+						if (!m_users[iUser].Mfatoken.empty()) {
+							root["mfasecret"] = m_users[iUser].Mfatoken;
+						}
+					}
+					root["status"] = "OK";
+				}
+			}
+		}
+
+		void CWebServer::Cmd_UpdateMyProfile(WebEmSession& session, const request& req, Json::Value& root)
+		{
+			root["status"] = "ERR";
+			root["title"] = "UpdateMyProfile";
+			if (req.method == "POST" && session.rights > 0)	// Viewer cannot change his profile
+			{
+				std::string sUsername = request::findValue(&req, "username");
+				int iUser = FindUser(session.username.c_str());
+				if (iUser == -1)
+				{
+					root["error"] = "User not found!";
+					return;
+				}
+				if (m_users[iUser].Username != sUsername)
+				{
+					root["error"] = "User mismatch!";
+					return;
+				}
+
+				if (m_iamsettings.enable2fa == true)
+				{
+					std::string sTotpsecret = request::findValue(&req, "totpsecret");
+					bool bEnablemfa = (request::findValue(&req, "enablemfa") == "true" ? true : false);
+					if (bEnablemfa && sTotpsecret.empty())
+					{
+						root["error"] = "Not a valid TOTP secret!";
+						return;
+					}
+					// Update the User Profile
+					if (!bEnablemfa)
+					{
+						sTotpsecret = "";
+					}
+					m_users[iUser].Mfatoken = sTotpsecret;
+					m_sql.safe_query("UPDATE Users SET MFAsecret='%q' WHERE (ID=%d)", sTotpsecret.c_str(), m_users[iUser].ID);
+				}
+				root["status"] = "OK";
 			}
 		}
 
