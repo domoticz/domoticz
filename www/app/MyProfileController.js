@@ -6,32 +6,45 @@ define(['app'], function (app) {
 			totpsecret: '',
 			oldpwd: '',
 			newpwd: '',
-			vfypwd: ''
+			vfypwd: '',
+			qruri: 'otpauth://totp/domoticz?algorithm=SHA1&digits=6&secret='
 		};
 
 		$scope.updateQR = function (qrdata) {
-			var typeNumber = 4;
-			var errorCorrectionLevel = 'L';
+			var typeNumber = 6;		// Large enough to contain the otpauth URI data
+			var errorCorrectionLevel = 'M';	// Higher error correction (then L)
 			var qr = qrcode(typeNumber, errorCorrectionLevel);
 			qr.addData(qrdata);
 			qr.make();
-			document.getElementById('qrcode').innerHTML = qr.createImgTag(4);
+			$('#qrcode').html(qr.createImgTag(4));
 		}
 
 		$scope.init = function () {
 			$('#profiletable').hide();
 			$('#passwdtable').hide();
 			$scope.MakeGlobalConfig();
-			domoticzApi.sendCommand('getauth', {
+			domoticzApi.sendCommand('getmyprofile', {
+				'username': $scope.config.userName
 				}).then(function (data) {
-					$scope.myprofile.enableMFA = (data.rights == 2);
-					$('#profiletable').show();
+					if (typeof data.enable2fa != 'undefined' && data.enable2fa == 'true') {
+						if (typeof data.mfasecret != 'undefined' && data.mfasecret != '') {
+							$scope.myprofile.enableMFA = true;
+							$scope.myprofile.totpsecret = data.mfasecret;
+						}
+						$('#profiletable').show();
+						$scope.updateQR($scope.myprofile.qruri + $scope.myprofile.totpsecret);
+					}
 					$('#passwdtable').show();
-					$scope.updateQR('Hello there!');
 				})
 				.catch(function () {
 					ShowNotify($.t('Problem retrieving Profile!'), 2500, true);
 				});
+		}
+
+		$scope.changeTOTP = function () {
+			if ($scope.myprofile.enableMFA == true) {
+				$scope.updateQR($scope.myprofile.qruri + $scope.myprofile.totpsecret);
+			}
 		}
 
 		$scope.btnCancel = function () {
@@ -50,7 +63,7 @@ define(['app'], function (app) {
 			if ($scope.myprofile.enableMFA == true) {
 				fd.append('totpsecret', $scope.myprofile.totpsecret);
 			}
-			$http.post('json.htm?type=command&param=logincheck', fd, {
+			$http.post('json.htm?type=command&param=updatemyprofile', fd, {
 				transformRequest: angular.identity,
 				headers: { 'Content-Type': undefined }
 			}).then(function successCallback(response) {
