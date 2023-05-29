@@ -37,8 +37,6 @@ class CWebServer : public session_store, public std::enable_shared_from_this<CWe
 	void RegisterCommandCode(const char *idname, const webserver_response_function &ResponseFunction, bool bypassAuthentication = false);
 	void RegisterRType(const char *idname, const webserver_response_function &ResponseFunction);
 
-	void DisplaySwitchTypesCombo(std::string & content_part);
-	void DisplayMeterTypesCombo(std::string & content_part);
 	void GetJSonPage(WebEmSession & session, const request& req, reply & rep);
 	void GetCameraSnapshot(WebEmSession & session, const request& req, reply & rep);
 	void GetInternalCameraSnapshot(WebEmSession & session, const request& req, reply & rep);
