@@ -187,6 +187,7 @@ private:
 	void Cmd_GetAuth(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_GetMyProfile(WebEmSession& session, const request& req, Json::Value& root);
 	void Cmd_UpdateMyProfile(WebEmSession& session, const request& req, Json::Value& root);
+	void Cmd_UpdateMyPasswd(WebEmSession& session, const request& req, Json::Value& root);
 	void Cmd_GetUptime(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_GetActualHistory(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_GetNewHistory(WebEmSession & session, const request& req, Json::Value &root);

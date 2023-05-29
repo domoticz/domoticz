@@ -525,6 +525,7 @@ namespace http
 
 			RegisterCommandCode("getmyprofile", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetMyProfile(session, req, root); });
 			RegisterCommandCode("updatemyprofile", [this](auto&& session, auto&& req, auto&& root) { Cmd_UpdateMyProfile(session, req, root); });
+			RegisterCommandCode("updatemypasswd", [this](auto&& session, auto&& req, auto&& root) { Cmd_UpdateMyPasswd(session, req, root); });
 
 			RegisterCommandCode("getconfig", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetConfig(session, req, root); }, true);
 			RegisterCommandCode("getlocation", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetLocation(session, req, root); });
@@ -2622,6 +2623,7 @@ namespace http
 					return;
 				}
 
+				// MFA updates but only if 2FA is enabled on the server
 				if (m_iamsettings.enable2fa == true)
 				{
 					std::string sTotpsecret = request::findValue(&req, "totpsecret");
@@ -2639,7 +2641,49 @@ namespace http
 					m_users[iUser].Mfatoken = sTotpsecret;
 					m_sql.safe_query("UPDATE Users SET MFAsecret='%q' WHERE (ID=%d)", sTotpsecret.c_str(), m_users[iUser].ID);
 				}
+				// any other Profile updates will go here
+
+				// Maybe a Profile icon/image :) ?
+
+				// Reload the User information and return OK
+				LoadUsers();
 				root["status"] = "OK";
+			}
+		}
+
+		void CWebServer::Cmd_UpdateMyPasswd(WebEmSession& session, const request& req, Json::Value& root)
+		{
+			root["status"] = "ERR";
+			root["title"] = "UpdateMyPassword";
+			if (req.method == "POST" && session.rights > 0)	// Viewer cannot change his profile
+			{
+				std::string sUsername = request::findValue(&req, "username");
+				int iUser = FindUser(session.username.c_str());
+				if (iUser == -1)
+				{
+					root["error"] = "User not found!";
+					return;
+				}
+				if (m_users[iUser].Username != sUsername)
+				{
+					root["error"] = "User mismatch!";
+					return;
+				}
+
+				std::string sOldPwd = request::findValue(&req, "oldpwd");
+				std::string sNewPwd = request::findValue(&req, "newpwd");
+				if (m_users[iUser].Password == sOldPwd)
+				{
+					m_users[iUser].Password = sNewPwd;
+					m_sql.safe_query("UPDATE Users SET Password='%q' WHERE (ID=%d)", sNewPwd.c_str(), m_users[iUser].ID);
+					LoadUsers();	// Make sure the new password is loaded in memory
+					root["status"] = "OK";
+				}
+				else
+				{
+					root["error"] = "Old password mismatch!";
+					return;
+				}
 			}
 		}
 
