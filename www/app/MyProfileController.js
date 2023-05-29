@@ -91,9 +91,10 @@ define(['app'], function (app) {
 			var fd = new FormData();
 			var sOldPwd = encodeURIComponent(md5.createHash($scope.myprofile.oldpwd));
 			var sNewPwd = encodeURIComponent(md5.createHash($scope.myprofile.newpwd));
+			fd.append('username', $scope.config.userName);
 			fd.append('oldpwd', sOldPwd);
 			fd.append('newpwd', sNewPwd);
-			$http.post('json.htm?type=command&param=logincheck', fd, {
+			$http.post('json.htm?type=command&param=updatemypasswd', fd, {
 				transformRequest: angular.identity,
 				headers: { 'Content-Type': undefined }
 			}).then(function successCallback(response) {
