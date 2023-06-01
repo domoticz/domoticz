@@ -15,6 +15,7 @@
 #ifdef ENABLE_PYTHON
 #	include "../hardware/plugins/PluginManager.h"
 #endif
+#include <mdns_cpp/mdns.hpp>
 
 class MainWorker : public StoppableTask
 {
@@ -177,6 +178,8 @@ private:
 	iamserver::iam_settings m_iamserver_settings;
 	std::shared_ptr<std::thread> m_thread;
 	std::mutex m_mutex;
+
+	mdns_cpp::mDNS m_mdns;
 
 	time_t m_LastUpdateCheck;
 

@@ -31,6 +31,7 @@ option(USE_PYTHON "Use Python for Plugins and Event-Scripts" YES)
 option(INCLUDE_LINUX_I2C "Include I2C support" YES)
 option(INCLUDE_SPI "Include SPI support" YES)
 option(WITH_LIBUSB "Enable libusb support" YES)
+option(USE_MDNS "Enable mDNS support" YES)
 
 # Link static or shared, external dependencies
 option(USE_LUA_STATIC "Link LUA static" YES)
@@ -135,6 +136,9 @@ IF(USE_BUILTIN_SQLITE AND NOT EXISTS "${PROJECT_SOURCE_DIR}/extern/sqlite-amalga
   message(FATAL_ERROR "The submodules were not downloaded! GIT_SUBMODULE was turned off or failed. Please update submodules and try again.")
 ENDIF()
 IF(USE_BUILTIN_JWTCPP AND NOT EXISTS "${PROJECT_SOURCE_DIR}/extern/jwtcpp/CMakeLists.txt")
+  message(FATAL_ERROR "The submodules were not downloaded! GIT_SUBMODULE was turned off or failed. Please update submodules and try again.")
+ENDIF()
+IF(USE_MDNS AND NOT EXISTS "${PROJECT_SOURCE_DIR}/extern/mdnscpp/CMakeLists.txt")
   message(FATAL_ERROR "The submodules were not downloaded! GIT_SUBMODULE was turned off or failed. Please update submodules and try again.")
 ENDIF()
 
@@ -633,6 +637,17 @@ IF(USE_BUILTIN_JWTCPP)
   MESSAGE(STATUS "Using builtin jwt-cpp library")
   target_include_directories(domoticz PRIVATE ${CMAKE_SOURCE_DIR}/extern/jwtcpp/include)
 ENDIF(USE_BUILTIN_JWTCPP)
+
+#
+# mDNS support (RFC6762)
+#
+IF(USE_MDNS)
+  #add_subdirectory (extern/mdnscpp)
+  #target_link_libraries(domoticz mdnscpp)
+  INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/extern/mdnscpp)
+  target_include_directories(domoticz PRIVATE ${CMAKE_SOURCE_DIR}/extern/mdnscpp/include)
+  message(STATUS "mDNS support enabled")
+ENDIF(USE_MDNS)
 
 #
 # Find MD5/RMD160/SHA library
