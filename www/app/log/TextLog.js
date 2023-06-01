@@ -27,8 +27,7 @@ define(['app', 'log/components/DeviceTextLogTable'], function(app) {
         }
 
         function refreshLog() {
-            domoticzApi.sendRequest({
-                type: 'textlog',
+            domoticzApi.sendCommand('gettextlog', {
                 idx: vm.deviceIdx
             }).then(function(data) {
                 if (typeof data.result !== 'undefined') {

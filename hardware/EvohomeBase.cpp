@@ -264,7 +264,7 @@ void CEvohomeBase::Log(bool bDebug, int nLogLevel, const char* format, ... )
 //Webserver helpers
 namespace http {
 	namespace server {
-		void CWebServer::RType_CreateEvohomeSensor(WebEmSession & session, const request& req, Json::Value &root)
+		void CWebServer::Cmd_CreateEvohomeSensor(WebEmSession & session, const request& req, Json::Value &root)
 		{
 			std::string Username = "Admin";
 			if (!session.username.empty())

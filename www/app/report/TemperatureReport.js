@@ -5,8 +5,7 @@ define(['app', 'report/helpers'], function (app, reportHelpers) {
         };
 
         function fetch(deviceIdx, year, month) {
-            return domoticzApi.sendRequest({
-                type: 'graph',
+            return domoticzApi.sendCommand('graph', {
                 sensor: 'temp',
                 range: 'year',
                 idx: deviceIdx,

@@ -2321,6 +2321,12 @@
     <ClCompile Include="..\main\WebServer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\main\WebServerCommands.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\iamserver\IamService.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="WindowsHelper.cpp">
       <Filter>Windows</Filter>
     </ClCompile>

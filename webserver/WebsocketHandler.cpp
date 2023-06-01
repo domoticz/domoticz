@@ -176,7 +176,7 @@ namespace http {
 		{
 			try
 			{
-				std::string query = "type=devices&rid=" + std::to_string(DeviceRowIdx);
+				std::string query = "type=command&param=getdevices&rid=" + std::to_string(DeviceRowIdx);
 				Json::Value request;
 				request["event"] = "device_request";
 				request["requestid"] = -1;
@@ -194,7 +194,7 @@ namespace http {
 		{
 			try
 			{
-				std::string query = "type=scenes&rid=" + std::to_string(SceneRowIdx);
+				std::string query = "type=command&param=getscenes&rid=" + std::to_string(SceneRowIdx);
 				Json::Value request;
 				request["event"] = "scene_request";
 				request["requestid"] = -1;

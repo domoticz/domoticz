@@ -113,8 +113,8 @@ namespace http {
 		} };
 
 		//TODO: Is this function called from anywhere, or can it be removed?
-		void CWebServer::RType_CreateMappedSensor(WebEmSession & session, const request& req, Json::Value &root)
-		{ // deprecated (for dzVents). Use RType_CreateDevice
+		void CWebServer::Cmd_CreateMappedSensor(WebEmSession & session, const request& req, Json::Value &root)
+		{ // deprecated (for dzVents). Use Cmd_CreateDevice
 			std::string Username = "Admin";
 			if (!session.username.empty())
 				Username = session.username;
@@ -178,7 +178,7 @@ namespace http {
 			}
 		}
 
-		void CWebServer::RType_CreateDevice(WebEmSession & session, const request& req, Json::Value &root)
+		void CWebServer::Cmd_CreateDevice(WebEmSession & session, const request& req, Json::Value &root)
 		{
 			std::string Username = "Admin";
 			if (!session.username.empty())

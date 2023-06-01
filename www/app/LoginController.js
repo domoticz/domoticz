@@ -62,7 +62,7 @@ define(['app'], function (app) {
 
 		function init() {
 			$.ajax({
-				url: "json.htm?type=command&param=getlanguage",
+				url: "json.htm?type=command&param=getlanguages",
 				async: false,
 				dataType: 'json',
 				success: function (data) {

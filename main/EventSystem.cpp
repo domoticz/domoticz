@@ -4203,12 +4203,12 @@ namespace http {
 			redirect_uri = root.toStyledString();
 		}
 
-		void CWebServer::RType_Events(WebEmSession & session, const request& req, Json::Value &root)
+		void CWebServer::Cmd_Events(WebEmSession & session, const request& req, Json::Value &root)
 		{
 			//root["status"]="OK";
 			root["title"] = "Events";
 
-			std::string cparam = request::findValue(&req, "param");
+			std::string cparam = request::findValue(&req, "evparam");
 			if (cparam.empty())
 			{
 				return;

@@ -90,7 +90,7 @@ define(['app'], function (app) {
 			var oTable = $('#mobiletable').dataTable();
 			oTable.fnClearTable();
 			$.ajax({
-				url: "json.htm?type=mobiles",
+				url: "json.htm?type=command&param=getmobiles",
 				async: false,
 				dataType: 'json',
 				success: function (data) {

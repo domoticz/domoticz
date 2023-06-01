@@ -241,7 +241,7 @@ define(['app'], function (app) {
         };
 
         function getTimers(deviceIdx) {
-            return domoticzApi.sendRequest({type: timerType + 's', idx: deviceIdx})
+            return domoticzApi.sendCommand('get' + timerType + 's', {idx: deviceIdx})
                 .then(function (data) {
                     return data.status === 'OK'
                         ? data.result || []

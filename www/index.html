@@ -222,7 +222,7 @@ function CheckForUpdate(showdialog) {
 function ReplaceDevice(idx,backfunction)
 {
 	$.ajax({
-		 url: "json.htm?type=gettransfers&idx=" + idx,
+		 url: "json.htm?type=command&param=gettransfers&idx=" + idx,
 		 async: false,
 		 dataType: 'json',
 		 success: function(data) {
@@ -356,7 +356,7 @@ $(document).ready(function() {
 			return ;
 		}
 		$.ajax({
-			 url: "json.htm?type=transferdevice&idx=" + $.devIdx + "&newidx=" + NewDeviceIdx,
+			 url: "json.htm?type=command&param=dotransferdevice&idx=" + $.devIdx + "&newidx=" + NewDeviceIdx,
 			 async: false,
 			 dataType: 'json',
 			 success: function(data) {

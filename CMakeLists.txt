@@ -165,8 +165,10 @@ main/SQLHelper.cpp
 main/SunRiseSet.cpp
 main/TrendCalculator.cpp
 main/WebServer.cpp
+main/WebServerCommands.cpp
 main/WebServerHelper.cpp
 main/WindCalculation.cpp
+iamserver/IamService.cpp
 push/BasePush.cpp
 push/FibaroPush.cpp
 push/GooglePubSubPush.cpp

@@ -2144,7 +2144,7 @@ void CEvohomeRadio::Idle_Work()
 //Webserver helpers
 namespace http {
 	namespace server {
-		void CWebServer::RType_BindEvohome(WebEmSession& session, const request& req, Json::Value& root)
+		void CWebServer::Cmd_BindEvohome(WebEmSession& session, const request& req, Json::Value& root)
 		{
 			if (session.rights != 2)
 			{

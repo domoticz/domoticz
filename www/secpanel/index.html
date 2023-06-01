@@ -134,7 +134,7 @@
 		function ArmDelay() {
 			var secondelay=0;
 			$.ajax({
-				url: "../json.htm?type=settings",
+				url: "../json.htm?type=command&param=getsettings",
 				async: false,
 				dataType: 'json',
 				success: function(data) {
@@ -270,7 +270,7 @@
 		}
 		$(document).ready(function() {
 			$.ajax({
-				 url: "../json.htm?type=command&param=getlanguage",
+				 url: "../json.htm?type=command&param=getlanguages",
 				 async: false,
 				 dataType: 'json',
 				 success: function(data) {

@@ -159,7 +159,7 @@ define(['app.notifications', 'angular-websocket'], function (appNotificationsMod
 	/*
 	var oAjax = $.ajax;
 	$.ajax = function (settings) {
-		if (settings.url.substr(0, 9) == "json.htm?" && settings.url.match(/type=devices/)) {
+		if (settings.url.substr(0, 9) == "json.htm?" && settings.url.match(/param=getdevices/)) {
 			if (typeof settings.context === 'undefined') settings.context = settings;
 			return websocket.SendAsync(settings);
 		}

@@ -3272,7 +3272,7 @@ define(['app'], function (app) {
 
 			//Get Temperature Sensors
 			$.ajax({
-				url: "json.htm?type=devices&filter=temp&used=true&order=Name",
+				url: "json.htm?type=command&param=getdevices&filter=temp&used=true&order=Name",
 				async: false,
 				dataType: 'json',
 				success: function (data) {
@@ -3341,7 +3341,7 @@ define(['app'], function (app) {
 				var Name = "";
 
 				$.ajax({
-					url: "json.htm?type=bindevohome&idx=" + $.devIdx + "&devtype=" + devtype,
+					url: "json.htm?type=command&param=bindevohome&idx=" + $.devIdx + "&devtype=" + devtype,
 					async: false,
 					dataType: 'json',
 					success: function (data) {
@@ -3395,7 +3395,7 @@ define(['app'], function (app) {
 							return;
 						}
 						$.ajax({
-							url: "json.htm?type=createevohomesensor&idx=" + $.devIdx +
+							url: "json.htm?type=command&param=createevohomesensor&idx=" + $.devIdx +
 							"&sensortype=" + SensorType,
 							async: false,
 							dataType: 'json',
@@ -3446,8 +3446,8 @@ define(['app'], function (app) {
 							return;
 						}
 						$.ajax({
-							url: "json.htm?type=createrflinkdevice&idx=" + $.devIdx +
-							"&command=" + SensorName,
+							url: "json.htm?type=command&param=createrflinkdevice&idx=" + $.devIdx +
+							"&rflcommand=" + SensorName,
 							async: false,
 							dataType: 'json',
 							success: function (data) {
@@ -3528,7 +3528,7 @@ define(['app'], function (app) {
 							extraSendData = "&sensoroptions=1;" + encodeURIComponent(AxisLabel);
 						}
 						$.ajax({
-							url: "json.htm?type=createdevice&idx=" + $.devIdx +
+							url: "json.htm?type=command&param=createdevice&idx=" + $.devIdx +
 							"&sensorname=" + encodeURIComponent(SensorName) +
 							"&sensormappedtype=" + SensorType +
 							extraSendData,
@@ -3743,7 +3743,7 @@ define(['app'], function (app) {
 			oTable.fnClearTable();
 
 			$.ajax({
-				url: "json.htm?type=hardware",
+				url: "json.htm?type=command&param=gethardware",
 				async: false,
 				dataType: 'json',
 				success: function (data) {
