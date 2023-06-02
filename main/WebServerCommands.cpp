@@ -3958,7 +3958,7 @@ namespace http
 				double ival = atof(kelvin.c_str());
 				ival = std::max(ival, 0.0);
 				ival = std::min(ival, 100.0);
-				_tColor color = _tColor(round(ival * 255.0F / 100.0F), ColorModeTemp);
+				_tColor color = _tColor((int)round(ival * 255.0F / 100.0F), ColorModeTemp);
 				_log.Log(LOG_STATUS, "setkelvinlevel: t: %f, color: '%s'", ival, color.toString().c_str());
 
 				std::string szSwitchUser = Username + " (IP: " + session.remote_host + ")";
