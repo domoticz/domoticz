@@ -5,10 +5,8 @@
 
     <div>
     <form name="myProfileForm" ng-submit="updateMyProfile()">
+        <h3>MFA</h3>
         <table class="display table-details" id="profiletable">
-            <tr>
-                <td colspan="3"><h3>MFA</h3></td>
-            </tr>
 			<tr>
                 <td></td>
 				<td colsspan="2">
@@ -17,7 +15,7 @@
 			</tr>
 			<tr ng-show="useMFA()">
 				<td>
-                    <label for="TotpSecretLabel" data-i18n="TotpSecretLabel">TOTP secret:</label>
+                    <label for="TotpSecret"><span data-i18n="TOTP secret">TOTP secret</span>:</label>
                 </td>
 				<td>
                     <input type="text" id="TotpSecret" autocomplete="off" name="TotpSecret" ng-model="myprofile.totpsecret" ng-change="changeTOTP();" style="width: 350px;" class="text ui-widget-content ui-corner-all">
@@ -48,13 +46,11 @@
     <p></p>
     <div>
     <form name="myPasswdForm" ng-submit="updateMyPasswd()">
+		<h3>Change Password</h3>
         <table class="display table-details" id="passwdtable">
-            <tr>
-                <td colspan="3"><h3>Change Password</h3></td>
-            </tr>
 			<tr>
 				<td>
-                    <label for="OldPwdLabel" data-i18n="OldPwdLabel">Old Password:</label>
+                    <label for="OldPwd"><span data-i18n="Old Password"></span>:</label>
                 </td>
 				<td>
                     <input type="password" id="OldPwd" autocomplete="current-password" name="OldPwd" required style="width: 350px; padding: .2em;" class="text ui-widget-content ui-corner-all" ng-model="myprofile.oldpwd">
@@ -62,7 +58,7 @@
 			</tr>
 			<tr>
 				<td>
-                    <label for="NewPwdLabel" data-i18n="NewPwdLabel">New Password:</label>
+                    <label for="NewPwd"><span data-i18n="New Password"></span>:</label>
                 </td>
 				<td>
                     <input type="password" id="NewPwd" autocomplete="new-password" name="NewPwd" required style="width: 350px; padding: .2em;" class="text ui-widget-content ui-corner-all" ng-model="myprofile.newpwd">
@@ -70,7 +66,7 @@
 			</tr>
 			<tr>
 				<td>
-                    <label for="VfyPwdLabel" data-i18n="VfyPwdLabel">Verify Password:</label>
+                    <label for="VfyPwd"><span data-i18n="Confirm Password"></span>:</label>
                 </td>
 				<td>
                     <input type="password" id="VfyPwd" autocomplete="new-password" name="VfyPwd" required style="width: 350px; padding: .2em;" class="text ui-widget-content ui-corner-all" ng-model="myprofile.vfypwd">
