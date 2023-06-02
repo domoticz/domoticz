@@ -91,7 +91,7 @@ public:
 	uint32_t code_expire_seconds = OAUTH2_AUTHCODE_EXPIRETIME;
 	uint32_t token_expire_seconds = OAUTH2_AUTHTOKEN_EXPIRETIME;
 	uint32_t refresh_expire_seconds = OAUTH2_REFRESHTOKEN_EXPIRETIME;
-	bool enable2fa{ false };
+	bool enable2fa{ true };
 
 private:
 	bool is_enabled_{ false };
