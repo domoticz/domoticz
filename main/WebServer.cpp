@@ -1003,6 +1003,14 @@ namespace http
 							_log.Debug(DEBUG_AUTH, "Failed to base32_decode the Users 2FA token: %s", m_users[iUser].Mfatoken.c_str());
 							return;
 						}
+						if (tmp2fa.empty())
+						{
+							// No 2FA token given (yet), request one
+							root["status"] = "OK";
+							root["title"] = "logincheck";
+							root["require2fa"] = "true";
+							return;
+						}
 						if (!VerifySHA1TOTP(tmp2fa, sTotpKey))
 						{
 							// Not a match for the given 2FA token
