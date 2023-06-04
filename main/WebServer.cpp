@@ -990,7 +990,7 @@ namespace http
 						_log.Log(LOG_ERROR, "Failed login attempt from %s for '%s' !", session.remote_host.c_str(), m_users[iUser].Username.c_str());
 						return;
 					}
-					if (m_iamsettings.enable2fa && !m_users[iUser].Mfatoken.empty())
+					if (!m_users[iUser].Mfatoken.empty())
 					{
 						// 2FA enabled for this user
 						std::string tmp2fa = request::findValue(&req, "2fatotp");
@@ -2582,10 +2582,6 @@ namespace http
 				root["rights"] = session.rights;
 				root["version"] = szAppVersion;
 			}
-			else if (m_iamsettings.enable2fa == true)
-			{
-				root["enable2fa"] = "true";
-			}
 		}
 
 		void CWebServer::Cmd_GetMyProfile(WebEmSession& session, const request& req, Json::Value& root)
@@ -2599,13 +2595,8 @@ namespace http
 				{
 					root["user"] = session.username;
 					root["rights"] = session.rights;
-					if (m_iamsettings.enable2fa == true)
-					{
-						root["enable2fa"] = "true";
-						if (!m_users[iUser].Mfatoken.empty()) {
-							root["mfasecret"] = m_users[iUser].Mfatoken;
-						}
-					}
+					if (!m_users[iUser].Mfatoken.empty())
+						root["mfasecret"] = m_users[iUser].Mfatoken;
 					root["status"] = "OK";
 				}
 			}
@@ -2649,41 +2640,37 @@ namespace http
 					}
 				}
 
-				// MFA updates but only if 2FA is enabled on the server
-				if (m_iamsettings.enable2fa == true)
+				std::string sTotpsecret = request::findValue(&req, "totpsecret");
+				std::string sTotpCode = request::findValue(&req, "totpcode");
+				bool bEnablemfa = (request::findValue(&req, "enablemfa") == "true" ? true : false);
+				if (bEnablemfa && sTotpsecret.empty())
 				{
-					std::string sTotpsecret = request::findValue(&req, "totpsecret");
-					std::string sTotpCode = request::findValue(&req, "totpcode");
-					bool bEnablemfa = (request::findValue(&req, "enablemfa") == "true" ? true : false);
-					if (bEnablemfa && sTotpsecret.empty())
+					root["error"] = "Not a valid TOTP secret!";
+					return;
+				}
+				// Update the User Profile
+				if (!bEnablemfa)
+				{
+					sTotpsecret = "";
+				}
+				else
+				{
+					//verify code
+					if (!sTotpCode.empty())
 					{
-						root["error"] = "Not a valid TOTP secret!";
-						return;
-					}
-					// Update the User Profile
-					if (!bEnablemfa)
-					{
-						sTotpsecret = "";
-					}
-					else
-					{
-						//verify code
-						if (!sTotpCode.empty())
+						std::string sTotpKey = "";
+						if (base32_decode(sTotpsecret, sTotpKey))
 						{
-							std::string sTotpKey = "";
-							if (base32_decode(sTotpsecret, sTotpKey))
+							if (!VerifySHA1TOTP(sTotpCode, sTotpKey))
 							{
-								if (!VerifySHA1TOTP(sTotpCode, sTotpKey))
-								{
-									root["error"] = "Incorrect/expired 6 digit code!";
-									return;
-								}
+								root["error"] = "Incorrect/expired 6 digit code!";
+								return;
 							}
 						}
 					}
-					m_users[iUser].Mfatoken = sTotpsecret;
-					m_sql.safe_query("UPDATE Users SET MFAsecret='%q' WHERE (ID=%d)", sTotpsecret.c_str(), m_users[iUser].ID);
 				}
+				m_users[iUser].Mfatoken = sTotpsecret;
+				m_sql.safe_query("UPDATE Users SET MFAsecret='%q' WHERE (ID=%d)", sTotpsecret.c_str(), m_users[iUser].ID);
 
 				LoadUsers();
 				root["status"] = "OK";

@@ -76,7 +76,6 @@ namespace
 #endif
 		"\t-webroot additional web root, useful with proxy servers (for example domoticz)\n"
 		"\t-nocache ask browser not to cache pages\n"
-		"\t-disable2fa disable the TOTP 2fa option entirely\n"
 		"\t-startupdelay seconds (default=0)\n"
 		"\t-nowwwpwd (in case you forgot the web server username/password)\n"
 		"\t-wwwcompress mode (on = always compress [default], off = always decompress, static = no processing but try precompressed first)\n"
@@ -735,10 +734,6 @@ int main(int argc, char**argv)
 				szStartupFolder = szroot;
 				FixFolderEnding(szStartupFolder);
 			}
-		}
-		if (cmdLine.HasSwitch("-disable2fa"))
-		{
-				iamserver_settings.enable2fa = false;
 		}
 	}
 

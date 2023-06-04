@@ -97,7 +97,7 @@ namespace http
 									else
 									{
 										// User/pass matches.. now check TOTP if required
-										if (m_iamsettings.has_2fatotp() && !m_users[iUser].Mfatoken.empty())
+										if (!m_users[iUser].Mfatoken.empty())
 										{
 											std::string sTotpKey = "";
 											bAuthenticated = false;
@@ -548,23 +548,16 @@ namespace http
 
         void CWebServer::PresentOauth2LoginDialog(reply &rep, const std::string &sApp, const std::string &sError)
         {
-			std::string sTOTP = "disabled";
-			if (m_iamsettings.has_2fatotp())
-			{
-				sTOTP = "required";
-			}
+			std::string sTOTP = "required";
 
-            rep = reply::stock_reply(reply::ok);
+			rep = reply::stock_reply(reply::ok);
 
             reply::set_content(&rep, m_iamsettings.getAuthPageContent());
-            {
-                size_t pos = rep.content.find("###REPLACE_APP###");
-                rep.content.replace(pos,17,sApp);
-                pos = rep.content.find("###REPLACE_ERROR###");
-                rep.content.replace(pos,19,sError);
-                pos = rep.content.find("###REPLACE_2FATOTP###");
-                rep.content.replace(pos,21,sTOTP);
-            }
+
+			stdreplace(rep.content, "###REPLACE_APP###", sApp);
+			stdreplace(rep.content, "###REPLACE_ERROR###", sError);
+			stdreplace(rep.content, "###REPLACE_2FATOTP###", sTOTP);
+
             if (!sError.empty())
                 rep.status = reply::status_type::unauthorized;
             reply::add_header(&rep, "Content-Length", std::to_string(rep.content.size()));

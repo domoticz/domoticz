@@ -150,9 +150,6 @@ define(['app'], function (app) {
 				}
 			});
 			$("#remembermelbl").text($.t("Remember me"));
-
-			//if ($rootScope.config.enable2fa != true)
-			//	$("#mfa").hide();
 		};
 	}]);
 });
