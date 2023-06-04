@@ -57,6 +57,10 @@ def test_base32decode3():
 def test_base32decode4():
     pass
 
+@scenario('helper.feature', 'Test base32_encode function')
+def test_base32encode1():
+    pass
+
 @given(parsers.parse('I am testing the "{module}" module'))
 def setup_test_module(test_domoticz, module):
     if module == "helper":

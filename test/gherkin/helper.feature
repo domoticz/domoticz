@@ -103,3 +103,10 @@ Feature: Helper routines
         When I test the function "base32_decode"
         And I provide the following input "THIS!sN0TB@se32Input"
         Then I expect the function to fail
+
+    Scenario: Test base32_encode function
+        Given I am testing the "helper" module
+        When I test the function "base32_encode"
+        And I provide the following input "MySuperSecret1234567"
+        Then I expect the function to succeed
+        And have the following result "JV4VG5LQMVZFGZLDOJSXIMJSGM2DKNRX"
