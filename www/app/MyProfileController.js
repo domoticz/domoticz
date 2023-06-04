@@ -37,15 +37,13 @@ define(['app'], function (app) {
 			domoticzApi.sendCommand('getmyprofile', {
 				'username': $scope.config.userName
 				}).then(function (data) {
-					if (typeof data.enable2fa != 'undefined' && data.enable2fa == 'true') {
-						if (typeof data.mfasecret != 'undefined' && data.mfasecret != '') {
-							$scope.myprofile.enableMFA = true;
-							$scope.wasMFAEnabled = true;
-							$scope.myprofile.totpsecret = data.mfasecret;
-						}
-						$('#profiletable').show();
-						$scope.updateQR($scope.myprofile.qruri + $scope.myprofile.totpsecret);
+					if (typeof data.mfasecret != 'undefined' && data.mfasecret != '') {
+						$scope.myprofile.enableMFA = true;
+						$scope.wasMFAEnabled = true;
+						$scope.myprofile.totpsecret = data.mfasecret;
 					}
+					$('#profiletable').show();
+					$scope.updateQR($scope.myprofile.qruri + $scope.myprofile.totpsecret);
 					$('#passwdtable').show();
 				})
 				.catch(function () {

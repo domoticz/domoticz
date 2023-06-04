@@ -29,9 +29,6 @@ public:
 	bool is_enabled() const {
 		return is_enabled_;
 	}
-	bool has_2fatotp() const {
-		return enable2fa;
-	}
 	uint32_t getUserIdxOffset() const {
 		return useridx_offset;
 	}
@@ -49,7 +46,6 @@ public:
 		code_expire_seconds = get_valid_value(code_expire_seconds, iamsettings.code_expire_seconds);
 		token_expire_seconds = get_valid_value(token_expire_seconds, iamsettings.token_expire_seconds);
 		refresh_expire_seconds = get_valid_value(refresh_expire_seconds, iamsettings.refresh_expire_seconds);
-		enable2fa = iamsettings.enable2fa;
 		is_enabled_ = false;
 		if (auth_url.compare(OAUTH2_AUTH_URL) == 0 )
 			is_enabled_ = true;
@@ -57,7 +53,6 @@ public:
 
 	virtual std::string to_string() const {
 		return std::string("'iam_settings[is_enabled_=") + (is_enabled_ == true ? "true" : "false") +
-			", enable2fa=" + (enable2fa == true ? "true" : "false") +
 			", auth_url='" + auth_url + "'" +
 			", token_url='" + token_url + "'" +
 			", discovery_url='" + discovery_url + "'" +
@@ -91,8 +86,6 @@ public:
 	uint32_t code_expire_seconds = OAUTH2_AUTHCODE_EXPIRETIME;
 	uint32_t token_expire_seconds = OAUTH2_AUTHTOKEN_EXPIRETIME;
 	uint32_t refresh_expire_seconds = OAUTH2_REFRESHTOKEN_EXPIRETIME;
-	bool enable2fa{ true };
-
 private:
 	bool is_enabled_{ false };
 	uint32_t useridx_offset = OAUTH2_USERIDX_OFFSET;
