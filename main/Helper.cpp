@@ -1613,3 +1613,33 @@ bool base32_decode(const std::string &input, std::string &output)
 	output.assign(std::string(outTotal.begin(), outTotal.end()));
 	return true;
 }
+
+bool base32_encode(const std::string &input, std::string &output)
+{
+	if (input.empty())
+		return false;
+
+	std::vector<uint8_t> outTotal;
+
+	for(uint16_t j = 0; j < (input.size() / 5); j++)
+	{
+		// pack 5 bytes
+		uint64_t buffer = 0;
+		for(uint8_t i = 0; i < 5; i++)
+		{
+			if(i != 0)
+			{
+				buffer = (buffer << 8);
+			}
+			buffer = buffer | input[(j*5) + i];
+		}
+		// output 8 bytes
+		for(int8_t x = 7; x >= 0; x--)
+		{
+			outTotal.push_back(base32RFC4648[(buffer >> (x * 5)) & 0x1F]);
+		}
+	}
+
+	output.assign(std::string(outTotal.begin(), outTotal.end()));
+	return true;
+}

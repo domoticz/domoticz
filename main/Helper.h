@@ -149,3 +149,4 @@ std::string sha256raw(const std::string &input);
 char* make_web_time(const time_t rawtime);
 
 bool base32_decode(const std::string &input, std::string &output);
+bool base32_encode(const std::string &input, std::string &output);
