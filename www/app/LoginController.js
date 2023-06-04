@@ -17,9 +17,10 @@ define(['app'], function (app) {
 				headers: { 'Content-Type': undefined }
 			}).then(function successCallback(response) {
 			    var data = response.data;
-				if (data.require2fa != "undefined" && data.require2fa == "true") {
+				if (typeof data.require2fa != "undefined" && data.require2fa == "true") {
 					$("#mfa").show();
 					$("#login").hide();
+					$("#totp").focus();
 					return;
 				}
 			    if (data.status != "OK") {
@@ -104,6 +105,9 @@ define(['app'], function (app) {
 
 					$rootScope.GetGlobalConfig();
 
+					$("#login").show();
+					$("#mfa").hide();
+
 					$location.path('/Dashboard');
 					return;
 				}
@@ -150,6 +154,7 @@ define(['app'], function (app) {
 				}
 			});
 			$("#remembermelbl").text($.t("Remember me"));
+			$("#username").focus();
 		};
 	}]);
 });
