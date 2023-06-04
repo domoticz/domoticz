@@ -330,14 +330,13 @@ namespace http
 			}
 			if (bIgnoreUsernamePassword)
 			{
-				// TO-DO : Disable 2FA
 				m_pWebEm->AddTrustedNetworks("0.0.0.0/0");	// IPv4
 				m_pWebEm->AddTrustedNetworks("::");	// IPv6
 				_log.Log(LOG_ERROR, "SECURITY RISK! Allowing access without username/password as all incoming traffic is considered trusted! Change admin password asap and restart Domoticz!");
 
 				if (m_users.empty())
 				{
-					AddUser(99999, "tmpadmin", "tmpadmin", "ORWXAYLENVUW4===", (_eUserRights)URIGHTS_ADMIN, 0x1F);
+					AddUser(99999, "tmpadmin", "tmpadmin", "", (_eUserRights)URIGHTS_ADMIN, 0x1F);
 					_log.Debug(DEBUG_AUTH, "[Start server] Added tmpadmin User as no active Users where found!");
 				}
 			}
