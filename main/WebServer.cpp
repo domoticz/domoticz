@@ -2552,22 +2552,25 @@ namespace http
 		{
 			root["status"] = "OK";
 			root["title"] = "GetVersion";
-			root["version"] = szAppVersion;
-			root["hash"] = szAppHash;
-			root["build_time"] = szAppDate;
-			CdzVents* dzvents = CdzVents::GetInstance();
-			root["dzvents_version"] = dzvents->GetVersion();
-			root["python_version"] = szPyVersion;
-			root["UseUpdate"] = false;
-			root["HaveUpdate"] = false;
-
-			if (session.rights == URIGHTS_ADMIN)
+			if (session.rights != -1 )
 			{
-				root["UseUpdate"] = g_bUseUpdater;
-				root["HaveUpdate"] = m_mainworker.IsUpdateAvailable(false);
-				root["DomoticzUpdateURL"] = m_mainworker.m_szDomoticzUpdateURL;
-				root["SystemName"] = m_mainworker.m_szSystemName;
-				root["Revision"] = m_mainworker.m_iRevision;
+				root["version"] = szAppVersion;
+				root["hash"] = szAppHash;
+				root["build_time"] = szAppDate;
+				CdzVents* dzvents = CdzVents::GetInstance();
+				root["dzvents_version"] = dzvents->GetVersion();
+				root["python_version"] = szPyVersion;
+				root["UseUpdate"] = false;
+				root["HaveUpdate"] = false;
+
+				if (session.rights == URIGHTS_ADMIN)
+				{
+					root["UseUpdate"] = g_bUseUpdater;
+					root["HaveUpdate"] = m_mainworker.IsUpdateAvailable(false);
+					root["DomoticzUpdateURL"] = m_mainworker.m_szDomoticzUpdateURL;
+					root["SystemName"] = m_mainworker.m_szSystemName;
+					root["Revision"] = m_mainworker.m_iRevision;
+				}
 			}
 		}
 
