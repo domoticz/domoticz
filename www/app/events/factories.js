@@ -50,8 +50,6 @@ define(['app'], function (app) {
 				xml: event.xmlstatement,
 				logicarray: event.logicarray,
 				eventstatus: event.eventstatus
-			}).then(function (data) {
-                return domoticzApi.errorHandler(response.data)
 			});
         }
 
@@ -64,8 +62,8 @@ define(['app'], function (app) {
         }
 
         function deleteEvent(eventId) {
-            return domoticzApi.sendCommand('delete', {
-                type: 'events',
+            return domoticzApi.sendCommand('events', {
+				evparam: 'delete',
                 event: eventId
             });
         }
