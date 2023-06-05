@@ -56,10 +56,10 @@
 			</tr>
 			<tr ng-show="myprofile.enableMFA">
 				<td>
-					<label for="TotpCode"><span data-i18n="6 digit code">6 digit code</span>:</label>
+					<label for="TotpCode"><span data-i18n="Code">Code</span>:</label>
 				</td>
 				<td>
-					<input type="text" id="TotpCode" autocomplete="off" name="TotpCode" ng-model="myprofile.totpcode" style="width: 60px;" class="text ui-widget-content ui-corner-all">
+					<input type="text" id="TotpCode" autocomplete="off" name="TotpCode" ng-model="myprofile.totpcode" maxlength="6" style="width: 100px;" class="text ui-widget-content ui-corner-all digit6">
 				</td>
 			</tr>
 		</table>
