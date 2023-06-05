@@ -2561,12 +2561,11 @@ namespace http
 				root["dzvents_version"] = dzvents->GetVersion();
 				root["python_version"] = szPyVersion;
 				root["UseUpdate"] = false;
-				root["HaveUpdate"] = false;
+				root["HaveUpdate"] = m_mainworker.IsUpdateAvailable(false);
 
 				if (session.rights == URIGHTS_ADMIN)
 				{
 					root["UseUpdate"] = g_bUseUpdater;
-					root["HaveUpdate"] = m_mainworker.IsUpdateAvailable(false);
 					root["DomoticzUpdateURL"] = m_mainworker.m_szDomoticzUpdateURL;
 					root["SystemName"] = m_mainworker.m_szSystemName;
 					root["Revision"] = m_mainworker.m_iRevision;
@@ -2796,14 +2795,6 @@ namespace http
 			root["status"] = "ERR";
 			root["title"] = "GetConfig";
 
-			int iUser = -1;
-			unsigned long UserID = -1;
-			if (!session.username.empty() && (iUser = FindUser(session.username.c_str())) != -1)
-			{
-				UserID = m_users[iUser].ID;
-				root["UserName"] = m_users[iUser].Username;
-			}
-
 			std::string sValue;
 			int nValue = 0;
 			int iDashboardType = 0;
@@ -2836,17 +2827,21 @@ namespace http
 			root["TempScale"] = m_sql.m_tempscale;
 			root["TempSign"] = m_sql.m_tempsign;
 
-			int bEnableTabDashboard = 1;
-			int bEnableTabFloorplans = 0;
-			int bEnableTabLight = 1;
-			int bEnableTabScenes = 1;
-			int bEnableTabTemp = 1;
-			int bEnableTabWeather = 1;
-			int bEnableTabUtility = 1;
-			int bEnableTabCustom = 0;
-
-			if (UserID != -1)
+			int iUser = -1;
+			if (!session.username.empty() && (iUser = FindUser(session.username.c_str())) != -1)
 			{
+				unsigned long UserID = m_users[iUser].ID;
+				root["UserName"] = m_users[iUser].Username;
+
+				int bEnableTabDashboard = 1;
+				int bEnableTabFloorplans = 0;
+				int bEnableTabLight = 1;
+				int bEnableTabScenes = 1;
+				int bEnableTabTemp = 1;
+				int bEnableTabWeather = 1;
+				int bEnableTabUtility = 1;
+				int bEnableTabCustom = 0;
+
 				std::vector<std::vector<std::string>> result;
 				result = m_sql.safe_query("SELECT TabsEnabled FROM Users WHERE (ID==%lu)", UserID);
 				if (!result.empty())
@@ -2860,59 +2855,59 @@ namespace http
 					bEnableTabCustom = (TabsEnabled & (1 << 5));
 					bEnableTabFloorplans = (TabsEnabled & (1 << 6));
 				}
-			}
 
-			if (iDashboardType == 3)
-			{
-				// Floorplan , no need to show a tab floorplan
-				bEnableTabFloorplans = 0;
-			}
-			root["result"]["EnableTabDashboard"] = bEnableTabDashboard != 0;
-			root["result"]["EnableTabFloorplans"] = bEnableTabFloorplans != 0;
-			root["result"]["EnableTabLights"] = bEnableTabLight != 0;
-			root["result"]["EnableTabScenes"] = bEnableTabScenes != 0;
-			root["result"]["EnableTabTemp"] = bEnableTabTemp != 0;
-			root["result"]["EnableTabWeather"] = bEnableTabWeather != 0;
-			root["result"]["EnableTabUtility"] = bEnableTabUtility != 0;
-			root["result"]["EnableTabCustom"] = bEnableTabCustom != 0;
-
-			if (bEnableTabCustom)
-			{
-				// Add custom templates
-				DIR* lDir;
-				struct dirent* ent;
-				std::string templatesFolder = szWWWFolder + "/templates";
-				int iFile = 0;
-				if ((lDir = opendir(templatesFolder.c_str())) != nullptr)
+				if (iDashboardType == 3)
 				{
-					while ((ent = readdir(lDir)) != nullptr)
+					// Floorplan , no need to show a tab floorplan
+					bEnableTabFloorplans = 0;
+				}
+				root["result"]["EnableTabDashboard"] = bEnableTabDashboard != 0;
+				root["result"]["EnableTabFloorplans"] = bEnableTabFloorplans != 0;
+				root["result"]["EnableTabLights"] = bEnableTabLight != 0;
+				root["result"]["EnableTabScenes"] = bEnableTabScenes != 0;
+				root["result"]["EnableTabTemp"] = bEnableTabTemp != 0;
+				root["result"]["EnableTabWeather"] = bEnableTabWeather != 0;
+				root["result"]["EnableTabUtility"] = bEnableTabUtility != 0;
+				root["result"]["EnableTabCustom"] = bEnableTabCustom != 0;
+
+				if (bEnableTabCustom)
+				{
+					// Add custom templates
+					DIR* lDir;
+					struct dirent* ent;
+					std::string templatesFolder = szWWWFolder + "/templates";
+					int iFile = 0;
+					if ((lDir = opendir(templatesFolder.c_str())) != nullptr)
 					{
-						std::string filename = ent->d_name;
-						size_t pos = filename.find(".htm");
-						if (pos != std::string::npos)
+						while ((ent = readdir(lDir)) != nullptr)
 						{
-							std::string shortfile = filename.substr(0, pos);
-							root["result"]["templates"][iFile++] = shortfile;
-						}
-						// Same thing for URLs
-						pos = filename.find(".url");
-						if (pos != std::string::npos)
-						{
-							std::string url;
-							std::string shortfile = filename.substr(0, pos);
-							// First get the URL from the file
-							std::ifstream urlfile;
-							urlfile.open((templatesFolder + "/" + filename).c_str());
-							if (urlfile.is_open())
+							std::string filename = ent->d_name;
+							size_t pos = filename.find(".htm");
+							if (pos != std::string::npos)
 							{
-								getline(urlfile, url);
-								urlfile.close();
-								// Pass URL in results
-								root["result"]["urls"][shortfile] = url;
+								std::string shortfile = filename.substr(0, pos);
+								root["result"]["templates"][iFile++] = shortfile;
+							}
+							// Same thing for URLs
+							pos = filename.find(".url");
+							if (pos != std::string::npos)
+							{
+								std::string url;
+								std::string shortfile = filename.substr(0, pos);
+								// First get the URL from the file
+								std::ifstream urlfile;
+								urlfile.open((templatesFolder + "/" + filename).c_str());
+								if (urlfile.is_open())
+								{
+									getline(urlfile, url);
+									urlfile.close();
+									// Pass URL in results
+									root["result"]["urls"][shortfile] = url;
+								}
 							}
 						}
+						closedir(lDir);
 					}
-					closedir(lDir);
 				}
 			}
 			root["status"] = "OK";
