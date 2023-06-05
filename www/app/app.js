@@ -646,6 +646,8 @@ define(['angularAMD', 'app.routes', 'app.constants', 'app.notifications', 'app.p
                         dzTimeAndSun.updateData(response.data);
 						$rootScope.SetTimeAndSun(data.Sunrise, data.Sunset, data.ServerTime);
 					}
+				}, function errorCallback(response) {
+					return;
 				});
 			}
 		};
