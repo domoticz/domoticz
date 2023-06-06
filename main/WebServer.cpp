@@ -336,7 +336,7 @@ namespace http
 
 				if (m_users.empty())
 				{
-					AddUser(99999, "tmpadmin", "tmpadmin", (_eUserRights)URIGHTS_ADMIN, 0x1F);
+					AddUser(99999, "tmpadmin", "tmpadmin", "", (_eUserRights)URIGHTS_ADMIN, 0x1F);
 					_log.Debug(DEBUG_AUTH, "[Start server] Added tmpadmin User as no active Users where found!");
 				}
 			}
@@ -522,6 +522,10 @@ namespace http
 			RegisterCommandCode("getactualhistory", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetActualHistory(session, req, root); });
 			RegisterCommandCode("getnewhistory", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetNewHistory(session, req, root); });
 
+			RegisterCommandCode("getmyprofile", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetMyProfile(session, req, root); });
+			RegisterCommandCode("updatemyprofile", [this](auto&& session, auto&& req, auto&& root) { Cmd_UpdateMyProfile(session, req, root); });
+
+			RegisterCommandCode("getconfig", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetConfig(session, req, root); }, true);
 			RegisterCommandCode("getlocation", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetLocation(session, req, root); });
 			RegisterCommandCode("getforecastconfig", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetForecastConfig(session, req, root); });
 			RegisterCommandCode("sendnotification", [this](auto&& session, auto&& req, auto&& root) { Cmd_SendNotification(session, req, root); });
@@ -984,6 +988,34 @@ namespace http
 						// Not a right for users to login with
 						_log.Log(LOG_ERROR, "Failed login attempt from %s for '%s' !", session.remote_host.c_str(), m_users[iUser].Username.c_str());
 						return;
+					}
+					if (!m_users[iUser].Mfatoken.empty())
+					{
+						// 2FA enabled for this user
+						std::string tmp2fa = request::findValue(&req, "2fatotp");
+						std::string sTotpKey = "";
+						if(!base32_decode(m_users[iUser].Mfatoken, sTotpKey))
+						{
+							// Unable to decode the 2FA token
+							_log.Log(LOG_ERROR, "Failed login attempt from %s for '%s' !", session.remote_host.c_str(), m_users[iUser].Username.c_str());
+							_log.Debug(DEBUG_AUTH, "Failed to base32_decode the Users 2FA token: %s", m_users[iUser].Mfatoken.c_str());
+							return;
+						}
+						if (tmp2fa.empty())
+						{
+							// No 2FA token given (yet), request one
+							root["status"] = "OK";
+							root["title"] = "logincheck";
+							root["require2fa"] = "true";
+							return;
+						}
+						if (!VerifySHA1TOTP(tmp2fa, sTotpKey))
+						{
+							// Not a match for the given 2FA token
+							_log.Log(LOG_ERROR, "Failed login attempt from %s for '%s' !", session.remote_host.c_str(), m_users[iUser].Username.c_str());
+							_log.Debug(DEBUG_AUTH, "Failed login attempt with 2FA token: %s", tmp2fa.c_str());
+							return;
+						}
 					}
 					_log.Log(LOG_STATUS, "Login successful from %s for user '%s'", session.remote_host.c_str(), m_users[iUser].Username.c_str());
 					root["status"] = "OK";
@@ -2551,6 +2583,99 @@ namespace http
 			}
 		}
 
+		void CWebServer::Cmd_GetMyProfile(WebEmSession& session, const request& req, Json::Value& root)
+		{
+			root["status"] = "ERR";
+			root["title"] = "GetMyProfile";
+			if (session.rights > 0)	// Viewer cannot change his profile
+			{
+				int iUser = FindUser(session.username.c_str());
+				if (iUser != -1)
+				{
+					root["user"] = session.username;
+					root["rights"] = session.rights;
+					if (!m_users[iUser].Mfatoken.empty())
+						root["mfasecret"] = m_users[iUser].Mfatoken;
+					root["status"] = "OK";
+				}
+			}
+		}
+
+		void CWebServer::Cmd_UpdateMyProfile(WebEmSession& session, const request& req, Json::Value& root)
+		{
+			root["status"] = "ERR";
+			root["title"] = "UpdateMyProfile";
+
+			if (req.method == "POST" && session.rights > 0)	// Viewer cannot change his profile
+			{
+				std::string sUsername = request::findValue(&req, "username");
+				int iUser = FindUser(session.username.c_str());
+				if (iUser == -1)
+				{
+					root["error"] = "User not found!";
+					return;
+				}
+				if (m_users[iUser].Username != sUsername)
+				{
+					root["error"] = "User mismatch!";
+					return;
+				}
+
+				std::string sOldPwd = request::findValue(&req, "oldpwd");
+				std::string sNewPwd = request::findValue(&req, "newpwd");
+				if (!sOldPwd.empty() && !sNewPwd.empty())
+				{
+					if (m_users[iUser].Password == sOldPwd)
+					{
+						m_users[iUser].Password = sNewPwd;
+						m_sql.safe_query("UPDATE Users SET Password='%q' WHERE (ID=%d)", sNewPwd.c_str(), m_users[iUser].ID);
+						LoadUsers();	// Make sure the new password is loaded in memory
+						root["status"] = "OK";
+					}
+					else
+					{
+						root["error"] = "Old password mismatch!";
+						return;
+					}
+				}
+
+				std::string sTotpsecret = request::findValue(&req, "totpsecret");
+				std::string sTotpCode = request::findValue(&req, "totpcode");
+				bool bEnablemfa = (request::findValue(&req, "enablemfa") == "true" ? true : false);
+				if (bEnablemfa && sTotpsecret.empty())
+				{
+					root["error"] = "Not a valid TOTP secret!";
+					return;
+				}
+				// Update the User Profile
+				if (!bEnablemfa)
+				{
+					sTotpsecret = "";
+				}
+				else
+				{
+					//verify code
+					if (!sTotpCode.empty())
+					{
+						std::string sTotpKey = "";
+						if (base32_decode(sTotpsecret, sTotpKey))
+						{
+							if (!VerifySHA1TOTP(sTotpCode, sTotpKey))
+							{
+								root["error"] = "Incorrect/expired 6 digit code!";
+								return;
+							}
+						}
+					}
+				}
+				m_users[iUser].Mfatoken = sTotpsecret;
+				m_sql.safe_query("UPDATE Users SET MFAsecret='%q' WHERE (ID=%d)", sTotpsecret.c_str(), m_users[iUser].ID);
+
+				LoadUsers();
+				root["status"] = "OK";
+			}
+		}
+
 		void CWebServer::Cmd_GetUptime(WebEmSession& session, const request& req, Json::Value& root)
 		{
 			// this is used in the about page, we are going to round the seconds a bit to display nicer
@@ -3449,7 +3574,7 @@ namespace http
 			ClearUserPasswords();
 			// Add Users
 			std::vector<std::vector<std::string>> result;
-			result = m_sql.safe_query("SELECT ID, Active, Username, Password, Rights, TabsEnabled FROM Users");
+			result = m_sql.safe_query("SELECT ID, Active, Username, Password, MFAsecret, Rights, TabsEnabled FROM Users");
 			if (!result.empty())
 			{
 				for (const auto& sd : result)
@@ -3461,11 +3586,12 @@ namespace http
 
 						std::string username = base64_decode(sd[2]);
 						std::string password = sd[3];
+						std::string mfatoken = sd[4];
 
-						_eUserRights rights = (_eUserRights)atoi(sd[4].c_str());
-						int activetabs = atoi(sd[5].c_str());
+						_eUserRights rights = (_eUserRights)atoi(sd[5].c_str());
+						int activetabs = atoi(sd[6].c_str());
 
-						AddUser(ID, username, password, rights, activetabs);
+						AddUser(ID, username, password, mfatoken, rights, activetabs);
 					}
 				}
 			}
@@ -3486,7 +3612,7 @@ namespace http
 						std::string pemfile = sd[5];
 						if (bPublic && secret.empty())
 							secret = GenerateMD5Hash(pemfile);
-						AddUser(ID, applicationname, secret, URIGHTS_CLIENTID, bPublic, pemfile);
+						AddUser(ID, applicationname, secret, "", URIGHTS_CLIENTID, bPublic, pemfile);
 					}
 				}
 			}
@@ -3494,7 +3620,7 @@ namespace http
 			m_mainworker.LoadSharedUsers();
 		}
 
-		void CWebServer::AddUser(const unsigned long ID, const std::string& username, const std::string& password, const int userrights, const int activetabs, const std::string& pemfile)
+		void CWebServer::AddUser(const unsigned long ID, const std::string& username, const std::string& password, const std::string& mfatoken, const int userrights, const int activetabs, const std::string& pemfile)
 		{
 			if (m_pWebEm == nullptr)
 				return;
@@ -3571,6 +3697,7 @@ namespace http
 			wtmp.ID = ID;
 			wtmp.Username = username;
 			wtmp.Password = password;
+			wtmp.Mfatoken = mfatoken;
 			wtmp.PrivKey = privkey;
 			wtmp.PubKey = pubkey;
 			wtmp.userrights = (_eUserRights)userrights;
@@ -3588,7 +3715,7 @@ namespace http
 			utmp.RedirectUri = "";
 			m_accesscodes.push_back(utmp);
 
-			m_pWebEm->AddUserPassword(ID, username, password, (_eUserRights)userrights, activetabs, privkey, pubkey);
+			m_pWebEm->AddUserPassword(ID, username, password, mfatoken, (_eUserRights)userrights, activetabs, privkey, pubkey);
 		}
 
 		void CWebServer::ClearUserPasswords()

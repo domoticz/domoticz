@@ -1,5 +1,5 @@
 <style>
-#login
+.login
 {
     background-color: #fff;
     color: #000;
@@ -22,7 +22,7 @@
     border-radius: 3px;  
 }
 
-#login:before
+.login:before
 {
     content: '';
     position: absolute;
@@ -37,7 +37,7 @@
     box-shadow: 0 0 0 1px #fff;
 }
 
-#login h1
+.login h1
 {
     text-transform: uppercase;
     text-align: center;
@@ -48,7 +48,17 @@
     position: relative;
 }
 
-#login h1:after, #login h1:before
+.login h2
+{
+    text-align: center;
+    color: #666;
+    margin: 0 0 30px 0;
+    letter-spacing: 2px;
+    font: normal 14px/1 Verdana, Helvetica;
+    position: relative;
+}
+
+.login h1:after, .login h1:before
 {
     background-color: #777;
     content: "";
@@ -58,7 +68,7 @@
     width: 60px;   
 }
 
-#login h1:after
+.login h1:after
 { 
     background-image: -webkit-gradient(linear, left top, right top, from(#777), to(#fff));
     background-image: -webkit-linear-gradient(left, #777, #fff);
@@ -69,7 +79,7 @@
     right: 0;
 }
 
-#login h1:before
+.login h1:before
 {
     background-image: -webkit-gradient(linear, right top, left top, from(#777), to(#fff));
     background-image: -webkit-linear-gradient(right, #777, #fff);
@@ -80,7 +90,7 @@
     left: 0;
 }
 
-#login fieldset
+.login fieldset
 {
     border: 0;
     padding: 0;
@@ -108,6 +118,11 @@
 }
 
 #password
+{
+    background-position: 5px -52px !important;
+}
+
+#totp
 {
     background-position: 5px -52px !important;
 }
@@ -193,7 +208,7 @@
     margin-left: 10px;
 }
 </style>
-<div id="login">
+<div id="login" class="login">
 <form name="login-form" ng-submit="DoLogin()" form-autofill-fix>
     <h1>Domoticz</h1>
     <fieldset id="inputs">
@@ -201,6 +216,21 @@
         <input type="password" id="password" name="password" placeholder="Password" ng-required>
         <br>
         <input type="checkbox" id="rememberme"> <label for="rememberme" id="remembermelbl"></label><br>
+    </fieldset>
+    <fieldset id="actions">
+		<input type="submit" id="submit" value="Login">
+        <a href="http://www.domoticz.com">www.domoticz.com</a>
+    </fieldset>
+</form>
+</div>
+<div id="mfa" class="login" hidden>
+<form name="mfa-form" ng-submit="DoMfaLogin()" form-autofill-fix>
+    <h1>Domoticz</h1>
+    <h2>Enter the 6 digit 2FA code</h2>
+    <fieldset id="inputs">
+        <input type="text" id="totp" name="totp" autocomplete="off" placeholder="One-Time Passcode" maxlength="6" class="digit6" ng-required>
+        <br>
+        <br>
         <br>
     </fieldset>
     <fieldset id="actions">

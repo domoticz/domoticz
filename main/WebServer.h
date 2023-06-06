@@ -67,7 +67,7 @@ class CWebServer : public session_store, public std::enable_shared_from_this<CWe
 	void ReloadCustomSwitchIcons();
 
 	void LoadUsers();
-	void AddUser(unsigned long ID, const std::string &username, const std::string &password, int userrights, int activetabs, const std::string &pemfile = "");
+	void AddUser(unsigned long ID, const std::string &username, const std::string &password, const std::string& mfatoken, int userrights, int activetabs, const std::string &pemfile = "");
 	void ClearUserPasswords();
 	bool FindAdminUser();
 	int CountAdminUsers();
@@ -105,6 +105,7 @@ private:
 	bool ValidateOAuth2RefreshToken(const std::string &refreshtoken, std::string &username);
 	void InvalidateOAuth2RefreshToken(const std::string &refreshtoken);
 	void PresentOauth2LoginDialog(reply &rep, const std::string &sApp, const std::string &sError);
+	bool VerifySHA1TOTP(const std::string &code, const std::string &key);
 
 	//Commands
 	void Cmd_RFXComGetFirmwarePercentage(WebEmSession & session, const request& req, Json::Value &root);
@@ -184,6 +185,8 @@ private:
 	void Cmd_ChangePlanDeviceOrder(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_GetVersion(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_GetAuth(WebEmSession & session, const request& req, Json::Value &root);
+	void Cmd_GetMyProfile(WebEmSession& session, const request& req, Json::Value& root);
+	void Cmd_UpdateMyProfile(WebEmSession& session, const request& req, Json::Value& root);
 	void Cmd_GetUptime(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_GetActualHistory(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_GetNewHistory(WebEmSession & session, const request& req, Json::Value &root);

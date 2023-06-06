@@ -238,6 +238,10 @@ define(['angularAMD', 'angular', 'angular-route'], function (angularAMD) {
                 controller: 'MobileNotificationsController',
                 permission: 'Admin'
             }))
+            .when('/MyProfile', angularAMD.route({
+                templateUrl: 'views/myprofile.html',
+                controller: 'MyProfileController'
+            }))
             .when('/About', angularAMD.route({
                 templateUrl: 'views/about.html',
                 controller: 'AboutController'
