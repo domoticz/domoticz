@@ -371,13 +371,6 @@ define(['angularAMD', 'app.routes', 'app.constants', 'app.notifications', 'app.p
 				success: function (data) {
 					isOnline = true;
 					if (data.status == "OK") {
-						$rootScope.config.appversion = data.version;
-						$rootScope.config.apphash = data.hash;
-						$rootScope.config.appdate = data.build_time;
-						$rootScope.config.dzventsversion = data.dzvents_version;
-						$rootScope.config.pythonversion = data.python_version;
-						$rootScope.config.isproxied = data.isproxied;
-						$rootScope.config.versiontooltip = "'Build Hash: <b>" + $rootScope.config.apphash + "</b><br>" + "Build Date: " + $rootScope.config.appdate + "'";
 						$rootScope.config.AllowWidgetOrdering = data.AllowWidgetOrdering;
 						$rootScope.config.FiveMinuteHistoryDays = data.FiveMinuteHistoryDays;
 						$rootScope.config.DashboardType = data.DashboardType;
@@ -388,7 +381,6 @@ define(['angularAMD', 'app.routes', 'app.constants', 'app.notifications', 'app.p
 						$rootScope.config.WindSign = data.WindSign;
 						$rootScope.config.language = data.language;
 						$rootScope.config.DegreeDaysBaseTemperature = data.DegreeDaysBaseTemperature;
-						$rootScope.config.userName = data.UserName;
 						$rootScope.config.EnableTabDashboard = data.result.EnableTabDashboard,
 						$rootScope.config.EnableTabFloorplans = data.result.EnableTabFloorplans;
 						$rootScope.config.EnableTabLights = data.result.EnableTabLights;
@@ -397,6 +389,16 @@ define(['angularAMD', 'app.routes', 'app.constants', 'app.notifications', 'app.p
 						$rootScope.config.EnableTabWeather = data.result.EnableTabWeather;
 						$rootScope.config.EnableTabUtility = data.result.EnableTabUtility;
 						$rootScope.config.ShowUpdatedEffect = data.result.ShowUpdatedEffect;
+						if (typeof data.UserName != 'undefined') {
+							$rootScope.config.userName = data.UserName;
+							$rootScope.config.appversion = data.version;
+							$rootScope.config.apphash = data.hash;
+							$rootScope.config.appdate = data.build_time;
+							$rootScope.config.dzventsversion = data.dzvents_version;
+							$rootScope.config.pythonversion = data.python_version;
+							$rootScope.config.isproxied = data.isproxied;
+							$rootScope.config.versiontooltip = "'Build Hash: <b>" + $rootScope.config.apphash + "</b><br>" + "Build Date: " + $rootScope.config.appdate + "'";
+						}
 
 						SetLanguage(data.language);
 
@@ -644,6 +646,8 @@ define(['angularAMD', 'app.routes', 'app.constants', 'app.notifications', 'app.p
                         dzTimeAndSun.updateData(response.data);
 						$rootScope.SetTimeAndSun(data.Sunrise, data.Sunset, data.ServerTime);
 					}
+				}, function errorCallback(response) {
+					return;
 				});
 			}
 		};
