@@ -24,8 +24,8 @@ def check_domoticz_port(test_domoticz,port):
     if oResult.status_code == 200:
         test_domoticz.iPort = port
         test_domoticz.sBaseURI += ":" + str(port)
-        oJSON = oResult.json()
-        test_domoticz.sVersion = oJSON["version"]
+        #oJSON = oResult.json()
+        #test_domoticz.sVersion = oJSON["version"]
     assert oResult.status_code == 200
 
 @given(parsers.parse('Command {command} is available'))
