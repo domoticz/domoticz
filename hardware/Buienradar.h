@@ -16,7 +16,7 @@ class CBuienRadar : public CDomoticzHardwareBase
 	bool StopHardware() override;
 	void Do_Work();
 	bool GetStationDetails();
-	void GetMeterDetails();
+	void ParseMeterDetails(const Json::Value &root);
 	void GetRainPrediction();
 
       private:
