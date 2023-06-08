@@ -26,8 +26,8 @@
 #define RAINSHOWER_MAX_MMH 6
 
 #ifdef _DEBUG
- #define DEBUG_BUIENRADARR
- #define DEBUG_BUIENRADARW
+ //#define DEBUG_BUIENRADARR
+ //#define DEBUG_BUIENRADARW
 #endif
 
 #ifdef DEBUG_BUIENRADARW
@@ -161,7 +161,6 @@ void CBuienRadar::Do_Work()
 {
 #ifdef DEBUG_BUIENRADARR
 	GetMeterDetails();
-	GetRainPrediction();
 #endif
 	int sec_counter = 593;
 	Log(LOG_STATUS, "Worker started...");
