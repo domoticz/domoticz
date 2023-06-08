@@ -42,6 +42,8 @@ PASSED test/gherkin/test_webserver.py::test_decompressedout
 ================================================================================================ 3 passed in 0.14 seconds =================================================================================================
 ```
 
+You have to make sure that domoticz is running already (use `./domoticz -www 8080 -sslwww 0`)
+
 ### Prepare some testfiles
 
 Some tests need specific testfiles to be present in the Domoticz environment. So run the following:
@@ -53,3 +55,11 @@ ln -s ../test/gherkin/resources/testwebcontent www/test
 It will add a symbolic link to the Domoticz www directory called test pointing to some _test web content_ used by the tests for validation purposes.
 
 NOTE: This symbolic link can be removed after testing ofcourse.
+
+### Run everything in one go
+
+You can run the full functional testsuite by executing the following (bash) script:
+
+```bash
+./test/runtests.sh
+```
