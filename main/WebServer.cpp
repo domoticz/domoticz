@@ -827,10 +827,8 @@ namespace http
 			} //(rtype=="command")
 			else
 			{	// TODO: remove this after next stable
-				_log.Debug(DEBUG_WEBSERVER, "CWebServer::GetJSonPage(rtype) :%s :%s ", rtype.c_str(), req.uri.c_str());
-
 				// Could be a call to an old style RType, try to handle it and alert the user to update
-				_log.Log(LOG_STATUS, "[WebServer] Depricated RType (%s) for API request. Please use correct API Command!", rtype.c_str());
+				_log.Debug(DEBUG_WEBSERVER, "CWebServer::GetJSonPage(rtype) :%s :%s ", rtype.c_str(), req.uri.c_str());
 
 				std::string altrtype;
 				if (rtype.compare("settings") == 0)
@@ -849,9 +847,17 @@ namespace http
 				{
 					altrtype = "gethardware";
 				}
-				else if (rtype.compare("events") == 0)
+				else if (rtype.compare("scenes") == 0)
 				{
-					altrtype = "events";
+					altrtype = "getscenes";
+				}
+				else if (rtype.compare("plans") == 0)
+				{
+					altrtype = "getplans";
+				}
+				else if (rtype.compare("graph") == 0)
+				{
+					altrtype = "graph";
 				}
 				else if (rtype.compare("notifications") == 0)
 				{
@@ -869,7 +875,13 @@ namespace http
 					{
 						pf->second(session, req, root);
 					}
+					_log.Log(LOG_STATUS, "[WebServer] Depricated RType (%s) for API request. Handled via fallback (%s), please use correct API Command! (%s)", rtype.c_str(), altrtype.c_str(), req.host_remote_address.c_str());
 				}
+				else
+				{
+					_log.Log(LOG_STATUS, "[WebServer] Depricated RType (%s) for API request. Call ignored, please use correct API Command! (%s)", rtype.c_str(), req.host_remote_address.c_str());
+				}
+
 			}
 
 			reply::set_content(&rep, root.toStyledString());
