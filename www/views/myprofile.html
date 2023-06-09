@@ -38,12 +38,12 @@
 		</form>
     </div>
 	<div>
-		<h3>Two way authentication</h3>
+		<h3 data-i18n="Two way authentication"></h3>
 		<table class="display table-details" id="profiletable">
 			<tr>
 				<td></td>
 				<td colsspan="2">
-					<input type="checkbox" id="EnableMFA" name="EnableMFA" ng-model="myprofile.enableMFA" ng-change="onMFAChange()"> <label for="EnableMFA" data-i18n="Enable2FA">Enable2FA</label>
+					<input type="checkbox" id="EnableMFA" name="EnableMFA" ng-model="myprofile.enableMFA" ng-change="onMFAChange()"> <label for="EnableMFA" data-i18n="Enabled">Enabled</label>
 				</td>
 			</tr>
 			<tr ng-show="myprofile.enableMFA">
