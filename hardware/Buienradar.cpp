@@ -54,16 +54,25 @@ std::string ReadFile(std::string filename)
 }
 #endif
 
-CBuienRadar::CBuienRadar(const int ID, const int iForecast, const int iThreshold, const std::string& Location)
+CBuienRadar::CBuienRadar(const int ID, const int iForecast, const int iThreshold, const std::string& Location):
+	m_szLocation(Location)
 {
 	m_HwdID = ID;
 	m_iForecast = (iForecast >= 5) ? iForecast : 15;
 	m_iThreshold = (iThreshold > 0) ? iThreshold : 25;
+}
 
-	if (!Location.empty())
+void CBuienRadar::Init()
+{
+	struct tm ltime;
+	time_t now = mytime(nullptr);
+	localtime_r(&now, &ltime);
+	m_itIsRaining = false;
+
+	if (!m_szLocation.empty())
 	{
 		std::vector<std::string> strarray;
-		StringSplit(Location, ",", strarray);
+		StringSplit(m_szLocation, ",", strarray);
 		if (strarray.size() == 1)
 		{
 			if (strarray[0] != "undefined")
@@ -75,33 +84,13 @@ CBuienRadar::CBuienRadar(const int ID, const int iForecast, const int iThreshold
 						if (m_iStationID == 0)
 						{
 							// No station ID provided
-							int nValue;
-							std::string sValue;
-							if (!m_sql.GetPreferencesVar("Location", nValue, sValue))
-							{
-								Log(LOG_ERROR, "Invalid Location found in Settings! (Check your Latitude/Longitude!)");
+							if (!GetLatLongFromSystem())
 								return;
-							}
-							std::vector<std::string> strarray;
-							StringSplit(sValue, ";", strarray);
-
-							if (strarray.size() != 2)
-								return;
-
-							std::string Latitude = strarray[0];
-							std::string Longitude = strarray[1];
-
-							if ((Latitude == "1") && (Longitude == "1"))
-							{
-								Log(LOG_ERROR, "Invalid Location found in Settings! (Check your Latitude/Longitude!)");
-								return;
-							}
-							m_szMyLatitude = Latitude;
-							m_szMyLongitude = Longitude;
-							Log(LOG_STATUS, "using Domoticz location settings (%s,%s)", Latitude.c_str(), Longitude.c_str());
 						}
 						else
+						{
 							m_stationidprovided = true;
+						}
 					}
 					catch (const std::exception& e) {
 						Log(LOG_ERROR, "Bad Station ID provided: %s (%s), please recheck hardware setup.", strarray[0].c_str(), e.what());
@@ -120,14 +109,11 @@ CBuienRadar::CBuienRadar(const int ID, const int iForecast, const int iThreshold
 			Log(LOG_ERROR, "Location config Invalid! (Use either Station_ID or Latitude,Lontitude)");
 		}
 	}
-}
-
-void CBuienRadar::Init()
-{
-	struct tm ltime;
-	time_t now = mytime(nullptr);
-	localtime_r(&now, &ltime);
-	m_itIsRaining = false;
+	else
+	{
+		//no parameters provided, try to get lat/long from system
+		GetLatLongFromSystem();
+	}
 }
 
 bool CBuienRadar::StartHardware()
@@ -205,8 +191,40 @@ std::string CBuienRadar::GetForecastURL()
 	return szURL;
 }
 
+bool CBuienRadar::GetLatLongFromSystem()
+{
+	int nValue;
+	std::string sValue;
+	if (!m_sql.GetPreferencesVar("Location", nValue, sValue))
+	{
+		Log(LOG_ERROR, "Invalid Location found in Settings! (Check your Latitude/Longitude!)");
+		return false;
+	}
+	std::vector<std::string> strarray;
+	StringSplit(sValue, ";", strarray);
+
+	if (strarray.size() != 2)
+		return false;
+
+	std::string Latitude = strarray[0];
+	std::string Longitude = strarray[1];
+
+	if ((Latitude == "1") && (Longitude == "1"))
+	{
+		Log(LOG_ERROR, "Invalid Location found in Settings! (Check your Latitude/Longitude!)");
+		return false;
+	}
+	m_szMyLatitude = Latitude;
+	m_szMyLongitude = Longitude;
+	Log(LOG_STATUS, "using Domoticz location settings (%s,%s)", Latitude.c_str(), Longitude.c_str());
+	return true;
+}
+
 bool CBuienRadar::GetStationDetails()
 {
+	if (m_szMyLatitude.empty() || m_szMyLongitude.empty() || std::stoi(m_szMyLatitude) < 1 || std::stoi(m_szMyLongitude) < 1)
+		return false;
+
 	std::string sResult;
 
 #ifdef DEBUG_BUIENRADARR
@@ -242,15 +260,13 @@ bool CBuienRadar::GetStationDetails()
 		return false;
 	}
 
+	double MyLatitude = std::stod(m_szMyLatitude);
+	double MyLongitude = std::stod(m_szMyLongitude);
+
 	if (m_iStationID == 0)
 	{
 		std::string Latitude = "1";
 		std::string Longitude = "1";
-		double MyLatitude;
-		double MyLongitude;
-
-		MyLatitude = std::stod(m_szMyLatitude);
-		MyLongitude = std::stod(m_szMyLongitude);
 
 		double shortest_distance_km = 200.0;//start with 200 km
 		double shortest_station_lat = 0;
@@ -305,7 +321,7 @@ bool CBuienRadar::GetStationDetails()
 				m_sStationRegion = measurement["regio"].asString();
 				m_szMyLatitude = std::to_string(measurement["lat"].asDouble());
 				m_szMyLongitude = std::to_string(measurement["lon"].asDouble());
-				Log(LOG_STATUS, "Using Station: %s (%s), ID: %d, Lat/Lon: %g,%g", m_sStationName.c_str(), m_sStationRegion.c_str(), m_iStationID, std::stod(m_szMyLatitude), std::stod(m_szMyLongitude));
+				Log(LOG_STATUS, "Using Station: %s (%s), ID: %d, Lat/Lon: %g,%g", m_sStationName.c_str(), m_sStationRegion.c_str(), m_iStationID, MyLatitude, MyLongitude);
 			}
 			ParseMeterDetails(measurement);
 			return true;
