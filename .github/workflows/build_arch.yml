@@ -1,0 +1,235 @@
+name: build last version
+
+on:
+  workflow_dispatch:
+  release:
+    types: [created]
+    paths-ignore:
+      - 'msbuild/**'
+      - '.github/**'
+      - 'tools/**'
+      - '**.md'
+      - '**.txt'
+
+#used for both X86 and qemu, require to rebuild the github packages via a manual workflow_dispatch
+env:
+  Vcmake: 3.26.3
+  Vboost: 1.81.0
+  Vboost_ : 1_81_0
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+        - { qemu_arch: x86_64,  appimage_arch: x86_64 }
+        - { qemu_arch: armv7,   appimage_arch: armhf }
+        - { qemu_arch: aarch64, appimage_arch: aarch64 }
+
+    steps:
+    - name : Checkout
+      if: ${{ github.event_name != 'workflow_dispatch' }}
+      uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+        submodules: true
+        path: 'src'
+
+    - name : Build system (x86_64)
+      if: ${{ ( contains(matrix.qemu_arch, 'x86') && github.event_name != 'workflow_dispatch' ) }}
+      run: |
+        sudo timedatectl set-timezone Europe/Amsterdam
+        sudo apt-get update && sudo apt-get --autoremove upgrade
+        sudo apt-get install make gcc g++ libssl-dev git libcurl4-gnutls-dev libusb-dev python3-dev zlib1g-dev libcereal-dev liblua5.3-dev uthash-dev python3-pytest python3-pytest-bdd lua5.3 luarocks
+        sudo luarocks install busted
+        sudo luarocks install luacov
+        curl -sSL https://github.com/Kitware/CMake/releases/download/v${Vcmake}/cmake-${Vcmake}-linux-x86_64.tar.gz -o cmake.tar.gz;
+        sudo tar xf cmake.tar.gz --strip 1 -C /usr/local;
+        export PATH=/usr/local/bin:$PATH;
+        wget https://boostorg.jfrog.io/artifactory/main/release/${Vboost}/source/boost_${Vboost_}.tar.gz >> /dev/null 2>&1
+        tar xfz boost_${Vboost_}.tar.gz
+        cd boost_${Vboost_}/
+        ./bootstrap.sh
+        ./b2 stage threading=multi link=static --with-thread --with-system --with-chrono >> /dev/null 2>&1
+        sudo ./b2 install threading=multi link=static --with-thread --with-system --with-chrono >> /dev/null 2>&1
+
+    - name : Build domoticz (x86_64)
+      if: ${{ ( contains(matrix.qemu_arch, 'x86') && github.event_name != 'workflow_dispatch' ) }}
+      run: |
+        cd $GITHUB_WORKSPACE/src
+        cmake -DCMAKE_BUILD_TYPE=Release CMakeLists.txt
+        make
+
+    - name: functional-tests domoticz (x86_64)
+      if: ${{ ( contains(matrix.qemu_arch, 'x86') && github.event_name != 'workflow_dispatch' ) }}
+      run: |
+        cd $GITHUB_WORKSPACE/src
+        ln -s ../test/gherkin/resources/testwebcontent www/test
+        sudo ./domoticz -sslwww 0 -wwwroot www -pidfile /var/run/domoticz.pid -daemon
+        pytest-3 -rA --tb=no test/gherkin/
+        sudo kill -s TERM `sudo cat /var/run/domoticz.pid`
+      continue-on-error: false
+
+#Build a package in github with all required dependencies to build domoticz
+#The install parameter need to be exactly the same in all qemu steps
+    - name : Build system (qemu)
+      if: ${{ !contains(matrix.qemu_arch, 'x86') }}
+      uses: uraimo/run-on-arch-action@v2.5.0
+      with:
+        arch: ${{ matrix.qemu_arch }}
+        distro: ubuntu_latest
+        env: |
+          ARCHITECTURE: ${{ matrix.appimage_arch }}
+        githubToken: ${{ github.token }}
+        dockerRunArgs: |
+          --volume "${GITHUB_WORKSPACE}/:/build"
+        install: |
+          apt-get update && apt-get install -y --no-install-recommends apt-utils && apt-get -y --autoremove upgrade
+          apt-get -y install tar wget curl make gcc g++ libssl-dev git libcurl4-gnutls-dev libusb-dev python3-dev zlib1g-dev libcereal-dev liblua5.3-dev uthash-dev libsqlite3-dev python3-pytest python3-pytest-bdd lua5.3 luarocks python3-pip
+          luarocks install busted
+          luarocks install luacov
+          python3 -m pip install requests
+          case "${{ matrix.qemu_arch }}" in 
+            aarch64)
+              curl -sSL https://github.com/Kitware/CMake/releases/download/v"${{ env.Vcmake }}"/cmake-"${{ env.Vcmake }}"-linux-aarch64.tar.gz -o cmake.tar.gz;
+              tar xf cmake.tar.gz --strip 1 -C /usr/local;
+              export PATH=/usr/local/bin:$PATH;
+              ;;
+            armv7)
+              curl -sSL https://github.com/Kitware/CMake/releases/download/v"${{ env.Vcmake }}"/cmake-"${{ env.Vcmake }}".tar.gz -o cmake.tar.gz;
+              tar xf cmake.tar.gz;
+              cd cmake-"${{ env.Vcmake }}";
+              ./configure;
+              make install  >> /dev/null 2>&1;
+              export PATH=/usr/local/bin:$PATH;
+              cd ..;
+              ;;
+            esac
+          wget --no-check-certificate https://boostorg.jfrog.io/artifactory/main/release/"${{ env.Vboost }}"/source/boost_"${{ env.Vboost_ }}".tar.gz >> /dev/null 2>&1
+          tar xfz boost_"${{ env.Vboost_ }}".tar.gz
+          cd boost_"${{ env.Vboost_ }}"/
+          ./bootstrap.sh
+          ./b2 stage threading=multi link=static --with-thread --with-system --with-chrono >> /dev/null 2>&1
+          ./b2 install threading=multi link=static --with-thread --with-system --with-chrono >> /dev/null 2>&1
+        run: |
+          echo "System built successfully"
+
+    - name: Build domoticz (qemu)
+      if: ${{ ( !contains(matrix.qemu_arch, 'x86') && github.event_name != 'workflow_dispatch' ) }}
+      uses: uraimo/run-on-arch-action@v2.5.0
+      with:
+        arch: ${{ matrix.qemu_arch }}
+        distro: ubuntu_latest
+        env: |
+          ARCHITECTURE: ${{ matrix.appimage_arch }}
+        githubToken: ${{ github.token }}
+        dockerRunArgs: |
+          --volume "${GITHUB_WORKSPACE}/:/build"
+        install: |
+          apt-get update && apt-get install -y --no-install-recommends apt-utils && apt-get -y --autoremove upgrade
+          apt-get -y install tar wget curl make gcc g++ libssl-dev git libcurl4-gnutls-dev libusb-dev python3-dev zlib1g-dev libcereal-dev liblua5.3-dev uthash-dev libsqlite3-dev python3-pytest python3-pytest-bdd lua5.3 luarocks python3-pip
+          luarocks install busted
+          luarocks install luacov
+          python3 -m pip install requests
+          case "${{ matrix.qemu_arch }}" in 
+            aarch64)
+              curl -sSL https://github.com/Kitware/CMake/releases/download/v"${{ env.Vcmake }}"/cmake-"${{ env.Vcmake }}"-linux-aarch64.tar.gz -o cmake.tar.gz;
+              tar xf cmake.tar.gz --strip 1 -C /usr/local;
+              export PATH=/usr/local/bin:$PATH;
+              ;;
+            armv7)
+              curl -sSL https://github.com/Kitware/CMake/releases/download/v"${{ env.Vcmake }}"/cmake-"${{ env.Vcmake }}".tar.gz -o cmake.tar.gz;
+              tar xf cmake.tar.gz;
+              cd cmake-"${{ env.Vcmake }}";
+              ./configure;
+              make install  >> /dev/null 2>&1;
+              export PATH=/usr/local/bin:$PATH;
+              cd ..;
+              ;;
+            esac
+          wget --no-check-certificate https://boostorg.jfrog.io/artifactory/main/release/"${{ env.Vboost }}"/source/boost_"${{ env.Vboost_ }}".tar.gz >> /dev/null 2>&1
+          tar xfz boost_"${{ env.Vboost_ }}".tar.gz
+          cd boost_"${{ env.Vboost_ }}"/
+          ./bootstrap.sh
+          ./b2 stage threading=multi link=static --with-thread --with-system --with-chrono >> /dev/null 2>&1
+          ./b2 install threading=multi link=static --with-thread --with-system --with-chrono >> /dev/null 2>&1
+        run: |
+          export PATH=/usr/local/bin:$PATH;
+          cd /build/src
+          chown -R $(whoami): /build/src
+          cmake -DCMAKE_BUILD_TYPE=Release CMakeLists.txt
+          make
+
+    - name: functional-tests domoticz (qemu)
+      if: ${{ ( !contains(matrix.qemu_arch, 'x86') && github.event_name != 'workflow_dispatch' ) }}
+      uses: uraimo/run-on-arch-action@v2.5.0
+      with:
+        arch: ${{ matrix.qemu_arch }}
+        distro: ubuntu_latest
+        env: |
+          ARCHITECTURE: ${{ matrix.appimage_arch }}
+        githubToken: ${{ github.token }}
+        dockerRunArgs: |
+          --volume "${GITHUB_WORKSPACE}/:/build"
+        install: |
+          apt-get update && apt-get install -y --no-install-recommends apt-utils && apt-get -y --autoremove upgrade
+          apt-get -y install tar wget curl make gcc g++ libssl-dev git libcurl4-gnutls-dev libusb-dev python3-dev zlib1g-dev libcereal-dev liblua5.3-dev uthash-dev libsqlite3-dev python3-pytest python3-pytest-bdd lua5.3 luarocks python3-pip
+          luarocks install busted
+          luarocks install luacov
+          python3 -m pip install requests
+          case "${{ matrix.qemu_arch }}" in 
+            aarch64)
+              curl -sSL https://github.com/Kitware/CMake/releases/download/v"${{ env.Vcmake }}"/cmake-"${{ env.Vcmake }}"-linux-aarch64.tar.gz -o cmake.tar.gz;
+              tar xf cmake.tar.gz --strip 1 -C /usr/local;
+              export PATH=/usr/local/bin:$PATH;
+              ;;
+            armv7)
+              curl -sSL https://github.com/Kitware/CMake/releases/download/v"${{ env.Vcmake }}"/cmake-"${{ env.Vcmake }}".tar.gz -o cmake.tar.gz;
+              tar xf cmake.tar.gz;
+              cd cmake-"${{ env.Vcmake }}";
+              ./configure;
+              make install  >> /dev/null 2>&1;
+              export PATH=/usr/local/bin:$PATH;
+              cd ..;
+              ;;
+            esac
+          wget --no-check-certificate https://boostorg.jfrog.io/artifactory/main/release/"${{ env.Vboost }}"/source/boost_"${{ env.Vboost_ }}".tar.gz >> /dev/null 2>&1
+          tar xfz boost_"${{ env.Vboost_ }}".tar.gz
+          cd boost_"${{ env.Vboost_ }}"/
+          ./bootstrap.sh
+          ./b2 stage threading=multi link=static --with-thread --with-system --with-chrono >> /dev/null 2>&1
+          ./b2 install threading=multi link=static --with-thread --with-system --with-chrono >> /dev/null 2>&1
+        run: |
+          cd /build/src
+          ln -s ../test/gherkin/resources/testwebcontent www/test
+          ./domoticz -sslwww 0 -wwwroot www -pidfile /var/run/domoticz.pid -daemon
+          pytest-3 -rA --tb=no test/gherkin/
+          kill -s TERM `cat /var/run/domoticz.pid`
+          ls -la
+      continue-on-error: false
+
+    # Packaging
+    - name: package domoticz
+      if: ${{ ( github.event_name != 'workflow_dispatch' ) }}
+      run: |
+        cd $GITHUB_WORKSPACE
+        sudo chown -R $(whoami): ./src
+        cd src
+        mkdir package
+        tar czf package/domoticz_linux_${{ matrix.appimage_arch }}.tgz domoticz History.txt License.txt domoticz.sh server_cert.pem updatebeta updaterelease www/ scripts/ dzVents/
+        shasum -a 256 package/domoticz_linux_${{ matrix.appimage_arch }}.tgz > package/domoticz_linux_${{ matrix.appimage_arch }}.tgz.sha256sum
+
+      # Artifact upload
+    - name: Upload asset
+      if: ${{ github.event_name != 'workflow_dispatch' }}
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ github.event.release.upload_url }} 
+        asset_name: domoticz_linux_${{github.ref_name}}_${{ matrix.appimage_arch }}.tgz
+        asset_path: src/package/domoticz_linux_${{ matrix.appimage_arch }}.tgz
+        asset_content_type: application/octet-stream
