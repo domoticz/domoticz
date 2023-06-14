@@ -276,23 +276,6 @@ define(['app', 'log/Chart', 'log/CounterLogSeriesSupplier'], function (app) {
         function p1WeekSeriesSuppliers(deviceType) {
             return [
                 {
-                    id: 'p1EnergyUsedArea',
-                    dataItemKeys: ['eu'],
-                    valueDecimals: 3,
-                    label: 'N',
-                    template: {
-                        type: 'area',
-                        name: $.t('Energy Usage'),
-                        tooltip: {
-                            valueSuffix: ' ' + chart.valueUnits.energy(chart.valueMultipliers.m1000)
-                        },
-                        color: 'rgba(120,150,220,0.9)',
-                        fillOpacity: 0.2,
-                        yAxis: 0,
-                        visible: false
-                    }
-                },
-                {
                     id: 'p1EnergyGeneratedArea',
                     dataItemKeys: ['eg'],
                     valueDecimals: 3,
@@ -393,6 +376,12 @@ define(['app', 'log/Chart', 'log/CounterLogSeriesSupplier'], function (app) {
                     id: 'powerReturned1',
                     dataItemKeys: ['r1'],
                     dataIsValid: function (data) {
+						//make all values negative for the graph
+						for (var i = 0; i < data.result.length; i++) {
+							if (data.result[i]['r1'] !== 'undefined') {
+								data.result[i]['r1']= -data.result[i]['r1'];
+							}
+						}
                         return data.delivered === true;
                     },
                     valueDecimals: 3,
@@ -405,14 +394,20 @@ define(['app', 'log/Chart', 'log/CounterLogSeriesSupplier'], function (app) {
                             valueSuffix: ' ' + chart.valueUnits.energy(chart.valueMultipliers.m1000)
                         },
                         color: 'rgba(30,242,110,0.8)',
-                        stack: 'sreturn',
-                        yAxis: 0
+                        stack: 'susage',
+                        yAxis: 0,
                     }
                 },
                 {
                     id: 'powerReturned2',
                     dataItemKeys: ['r2'],
                     dataIsValid: function (data) {
+						//make all values negative for the graph
+						for (var i = 0; i < data.result.length; i++) {
+							if (data.result[i]['r2'] !== 'undefined') {
+								data.result[i]['r2']= -data.result[i]['r2'];
+							}
+						}
                         return data.delivered === true;
                     },
                     valueDecimals: 3,
@@ -425,7 +420,7 @@ define(['app', 'log/Chart', 'log/CounterLogSeriesSupplier'], function (app) {
                             valueSuffix: ' ' + chart.valueUnits.energy(chart.valueMultipliers.m1000)
                         },
                         color: 'rgba(3,252,190,0.8)',
-                        stack: 'sreturn',
+                        stack: 'susage',
                         yAxis: 0
                     }
                 }
@@ -437,6 +432,12 @@ define(['app', 'log/Chart', 'log/CounterLogSeriesSupplier'], function (app) {
                 counterLogSeriesSupplier.summingSeriesSupplier({
                     id: 'powerReturnedTotal',
                     dataIsValid: function (data) {
+						//make all values negative for the graph
+						for (var i = 0; i < data.result.length; i++) {
+							if (data.result[i]['r1'] !== 'undefined') {
+								data.result[i]['r1']= -data.result[i]['r1'];
+							}
+						}
                         return data.delivered === true;
                     },
                     dataItemKeys: ['r1', 'r2'],
@@ -458,6 +459,12 @@ define(['app', 'log/Chart', 'log/CounterLogSeriesSupplier'], function (app) {
                 counterLogSeriesSupplier.summingSeriesSupplier({
                     id: 'powerReturnedTotalTrendline',
                     dataIsValid: function (data) {
+						//make all values negative for the graph
+						for (var i = 0; i < data.result.length; i++) {
+							if (data.result[i]['r2'] !== 'undefined') {
+								data.result[i]['r2']= -data.result[i]['r2'];
+							}
+						}
                         return data.delivered === true;
                     },
                     dataItemKeys: ['r1', 'r2'],

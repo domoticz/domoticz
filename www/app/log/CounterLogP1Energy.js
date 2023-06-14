@@ -25,15 +25,29 @@ define(['app', 'log/Chart', 'log/CounterLogParams', 'log/CounterLogEnergySeriesS
                         }
                     },
                     tooltip: {
-                        pointFormat: '{series.name}: <b>{point.y:,.f}</b> ( {point.percentage:.0f}% )<br>',
-                        footerFormat: 'Total: {point.total:,.f} {series.tooltipOptions.valueSuffix}'
+						headerFormat: '{point.x:%A, %B %d, %Y}<br/>',
+                        pointFormat: '<span style="color: {point.color}">●</span> {series.name}: <b>{abs3 point.y} {point.series.tooltipOptions.valueSuffix}</b> ( {point.percentage:.0f}% )<br>',
+                        footerFormat: '<span style="color: #aaa">●</span> Usage Total: {point.total:,.f} {series.tooltipOptions.valueSuffix}',
+						crosshairs: true,
+                        shared: true
                     }
                 }
             },
             chartParamsMonthYearTemplate: {
                 highchartTemplate: {
+                    plotOptions: {
+                        column: {
+                            stacking: 'normal',
+                            dataLabels: {
+                                enabled: false
+                            }
+                        }
+                    },
                     tooltip: {
-                        shared: false
+						headerFormat: '{point.x:%A, %B %d}<br/>',
+						crosshairs: true,
+                        shared: true,
+						pointFormat: '<span style="color: {point.color}">●</span> {series.name}: <b>{abs3 point.y} {point.series.tooltipOptions.valueSuffix}</b><br>',
                     }
                 }
             },
@@ -70,7 +84,6 @@ define(['app', 'log/Chart', 'log/CounterLogParams', 'log/CounterLogEnergySeriesS
                         title: {
                             text: $.t('Energy') + ' (' + chart.valueUnits.energy(chart.valueMultipliers.m1) + ')'
                         },
-                        min: 0
                     },
                     {
                         title: {
@@ -88,7 +101,6 @@ define(['app', 'log/Chart', 'log/CounterLogParams', 'log/CounterLogEnergySeriesS
                         title: {
                             text: $.t('Energy') + ' (' + chart.valueUnits.energy(chart.valueMultipliers.m1000) + ')'
                         },
-                        min: 0
                     }
                 ];
             },
@@ -98,7 +110,6 @@ define(['app', 'log/Chart', 'log/CounterLogParams', 'log/CounterLogEnergySeriesS
                         title: {
                             text: $.t('Energy') + ' (' + chart.valueUnits.energy(chart.valueMultipliers.m1000) + ')'
                         },
-                        min: 0
                     }
                 ];
             },
