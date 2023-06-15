@@ -156,6 +156,7 @@ define(['lodash', 'Base', 'DomoticzBase', 'DataLoader', 'ChartLoader', 'ChartZoo
                         outside: true,
                         crosshairs: true,
                         shared: true,
+						//useHTML: true,
                         valueSuffix: self.dataSupplier.valueSuffix
                     },
                     plotOptions: {

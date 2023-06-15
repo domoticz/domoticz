@@ -28,8 +28,10 @@ define(['app', 'log/Chart', 'log/CounterLogParams', 'log/CounterLogEnergySeriesS
 						headerFormat: '{point.x:%A, %B %d, %Y}<br/>',
                         pointFormat: '<span style="color: {point.color}">●</span> {series.name}: <b>{abs3 point.y} {point.series.tooltipOptions.valueSuffix}</b> ( {point.percentage:.0f}% )<br>',
                         footerFormat: '<span style="color: #aaa">●</span> Usage Total: {point.total:,.f} {series.tooltipOptions.valueSuffix}',
+                        outside: true,
 						crosshairs: true,
-                        shared: true
+						shared: true,
+						//useHTML: true
                     }
                 }
             },
@@ -45,9 +47,11 @@ define(['app', 'log/Chart', 'log/CounterLogParams', 'log/CounterLogEnergySeriesS
                     },
                     tooltip: {
 						headerFormat: '{point.x:%A, %B %d}<br/>',
+						pointFormat: '<span style="color: {point.color}">●</span> {series.name}: <b>{abs3 point.y} {point.series.tooltipOptions.valueSuffix}</b><br>',
+                        outside: true,
 						crosshairs: true,
                         shared: true,
-						pointFormat: '<span style="color: {point.color}">●</span> {series.name}: <b>{abs3 point.y} {point.series.tooltipOptions.valueSuffix}</b><br>',
+						//useHTML: true
                     }
                 }
             },

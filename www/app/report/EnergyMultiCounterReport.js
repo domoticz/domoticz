@@ -294,6 +294,9 @@ define(['app', 'report/helpers'], function (app, reportHelpers) {
                 name: hasUsage2 ? $.t('Usage') + ' 1' : $.t('Usage'),
                 color: hasUsage2 ? 'rgba(60,130,252,0.8)' : 'rgba(3,190,252,0.8)',
                 stack: 'susage',
+				tooltip: {
+					valueSuffix: 'kWh'
+				},
                 yAxis: 0,
                 data: data.items.map(function (item) {
                     return {
@@ -308,6 +311,9 @@ define(['app', 'report/helpers'], function (app, reportHelpers) {
                     name: $.t('Usage') + ' 2',
                     color: 'rgba(3,190,252,0.8)',
                     stack: 'susage',
+					tooltip: {
+						valueSuffix: 'kWh'
+					},
                     yAxis: 0,
                     data: data.items.map(function (item) {
                         return {
@@ -322,12 +328,15 @@ define(['app', 'report/helpers'], function (app, reportHelpers) {
                 series.push({
                     name: $.t('Return') + ' 1',
                     color: 'rgba(30,242,110,0.8)',
-                    stack: 'sreturn',
+                    stack: 'susage',
+					tooltip: {
+						valueSuffix: 'kWh'
+					},
                     yAxis: 0,
                     data: data.items.map(function (item) {
                         return {
                             x: +(new Date(item.date)),
-                            y: item.return1.usage
+                            y: -item.return1.usage
                         }
                     })
                 });
@@ -337,12 +346,15 @@ define(['app', 'report/helpers'], function (app, reportHelpers) {
                 series.push({
                     name: $.t('Return') + ' 2',
                     color: 'rgba(3,252,190,0.8)',
-                    stack: 'sreturn',
+                    stack: 'susage',
+					tooltip: {
+						valueSuffix: 'kWh'
+					},
                     yAxis: 0,
                     data: data.items.map(function (item) {
                         return {
                             x: +(new Date(item.date)),
-                            y: item.return2.usage
+                            y: -item.return2.usage
                         }
                     })
                 });
@@ -364,12 +376,15 @@ define(['app', 'report/helpers'], function (app, reportHelpers) {
                         text: $.t('Energy') + ' (' + vm.unit + ')'
                     },
                     maxPadding: 0.2,
-                    min: 0
                 },
                 tooltip: {
-					formatter: function () {
-						return $.t(Highcharts.dateFormat('%A', this.x)) + ' ' + Highcharts.dateFormat('%Y-%m-%d', this.x) + '<br/>' + $.t(this.series.name) + ': ' + Highcharts.numberFormat(this.y,3) + ' ' + vm.unit + '<br/>Total: ' + this.point.stackTotal + ' ' + vm.unit;
-					}
+					headerFormat: '{point.x:%A, %B %d, %Y}<br/>',
+					pointFormat: '<span style="color: {point.color}">●</span> {series.name}: <b>{abs3 point.y} {point.series.tooltipOptions.valueSuffix}</b> ( {point.percentage:.0f}% )<br>',
+					footerFormat: '<span style="color: #aaa">●</span> Usage Total: {point.total:,.f} {series.tooltipOptions.valueSuffix}',
+					outside: true,
+					crosshairs: true,
+					shared: true,
+					//useHTML: true
                 },
                 plotOptions: {
                     column: {
