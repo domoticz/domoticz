@@ -487,6 +487,15 @@ define(['app', 'log/Chart', 'log/CounterLogSeriesSupplier'], function (app) {
                 counterLogSeriesSupplier.summingSeriesSupplier({
                     id: 'powerReturnedTotalPrevious',
                     dataIsValid: function (data) {
+						//make all values negative for the graph
+						for (var i = 0; i < data.resultprev.length; i++) {
+							if (data.resultprev[i]['r1'] !== 'undefined') {
+								data.resultprev[i]['r1']= -data.resultprev[i]['r1'];
+							}
+							if (data.resultprev[i]['r2'] !== 'undefined') {
+								data.resultprev[i]['r2']= -data.resultprev[i]['r2'];
+							}
+						}
                         return data.delivered === true;
                     },
                     dataItemKeys: ['r1', 'r2'],
