@@ -412,6 +412,73 @@ namespace http {
 					}
 					return true;
 				}
+				else if (strstr(pContent_Type, "application/x-www-form-urlencoded") != nullptr)
+				{
+					std::string params = req.content;
+					std::string name;
+					std::string value;
+
+					size_t q = 0;
+					size_t p = q;
+					int flag_done = 0;
+					const std::string& uri = params;
+					while (!flag_done)
+					{
+						q = uri.find('=', p);
+						if (q == std::string::npos)
+						{
+							break;
+						}
+						name = uri.substr(p, q - p);
+						p = q + 1;
+						q = uri.find('&', p);
+						if (q != std::string::npos)
+							value = uri.substr(p, q - p);
+						else
+						{
+							value = uri.substr(p);
+							flag_done = 1;
+						}
+						// the browser sends blanks as +
+						while (true)
+						{
+							size_t p = value.find('+');
+							if (p == std::string::npos)
+								break;
+							value.replace(p, 1, " ");
+						}
+
+						// now, url-decode only the value
+						std::string decoded;
+						request_handler::url_decode(value, decoded);
+						req.parameters.insert(std::pair< std::string, std::string >(name, decoded));
+						p = q + 1;
+					}
+					//we should have at least one value
+					if (req.parameters.empty())
+						return false;
+					// call the function
+					try
+					{
+						pfun->second(session, req, req.uri);
+					}
+					catch (...)
+					{
+						return false;
+					}
+					if ((req.uri[0] == '/') && (m_webRoot.length() > 0))
+					{
+						// possible incorrect root reference
+						size_t q = req.uri.find(m_webRoot);
+						if (q != 0)
+						{
+							std::string olduri = req.uri;
+							req.uri = m_webRoot + olduri;
+						}
+					}
+					return true;
+				}
+
 				if ((strstr(pContent_Type, "text/plain") != nullptr) || (strstr(pContent_Type, "application/json") != nullptr) ||
 					(strstr(pContent_Type, "application/xml") != nullptr))
 				{
