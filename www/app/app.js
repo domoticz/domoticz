@@ -470,8 +470,8 @@ define(['angularAMD', 'app.routes', 'app.constants', 'app.notifications', 'app.p
 						var customHTML = "";
 						if (typeof data.result.templates != 'undefined')  {
 							$.each(data.result.templates, function (i, item) {
-								var cFile = item;
-								var cName = cFile.charAt(0).toUpperCase() + cFile.slice(1);
+								var cFile = item.file;
+								var cName = item.name;
 								var cURL = "templates/" + cFile;
 								customHTML += '<li><a href="javascript:SwitchLayout(\'' + cURL + '\')">' + cName + '</a></li>';
 							});

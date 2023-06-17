@@ -2902,7 +2902,11 @@ namespace http
 							if (pos != std::string::npos)
 							{
 								std::string shortfile = filename.substr(0, pos);
-								root["result"]["templates"][iFile++] = shortfile;
+								root["result"]["templates"][iFile]["file"] = shortfile;
+								stdreplace(shortfile, "_", " ");
+								root["result"]["templates"][iFile]["name"] = shortfile;
+								iFile++;
+								continue;
 							}
 							// Same thing for URLs
 							pos = filename.find(".url");
@@ -2918,6 +2922,7 @@ namespace http
 									getline(urlfile, url);
 									urlfile.close();
 									// Pass URL in results
+									stdreplace(shortfile, "_", " ");
 									root["result"]["urls"][shortfile] = url;
 								}
 							}
