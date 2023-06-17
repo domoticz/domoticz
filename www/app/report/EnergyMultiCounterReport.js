@@ -372,6 +372,11 @@ define(['app', 'report/helpers'], function (app, reportHelpers) {
                     minTickInterval: vm.isMonthView ? 24 * 3600 * 1000 : 28 * 24 * 3600 * 1000
                 },
                 yAxis: {
+					labels: {
+						formatter: function () {
+							return Math.abs(Highcharts.numberFormat(this.value, 0));
+						}
+					},
                     title: {
                         text: $.t('Energy') + ' (' + vm.unit + ')'
                     },

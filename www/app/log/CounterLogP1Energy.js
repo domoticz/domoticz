@@ -102,6 +102,11 @@ define(['app', 'log/Chart', 'log/CounterLogParams', 'log/CounterLogEnergySeriesS
                 return [
                     {
                         maxPadding: 0.2,
+						labels: {
+							formatter: function () {
+								return Math.abs(Highcharts.numberFormat(this.value, 0));
+							}
+						},
                         title: {
                             text: $.t('Energy') + ' (' + chart.valueUnits.energy(chart.valueMultipliers.m1000) + ')'
                         },
@@ -111,6 +116,11 @@ define(['app', 'log/Chart', 'log/CounterLogParams', 'log/CounterLogEnergySeriesS
             yAxesMonthYear: function (deviceType) {
                 return [
                     {
+						labels: {
+							formatter: function () {
+								return Math.abs(Highcharts.numberFormat(this.value, 0));
+							}
+						},
                         title: {
                             text: $.t('Energy') + ' (' + chart.valueUnits.energy(chart.valueMultipliers.m1000) + ')'
                         },
