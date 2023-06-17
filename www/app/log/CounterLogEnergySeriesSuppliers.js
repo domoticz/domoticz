@@ -320,9 +320,7 @@ define(['app', 'log/Chart', 'log/CounterLogSeriesSupplier'], function (app) {
                     dataIsValid: function (data) {
 						//make all values negative for the graph
 						for (var i = 0; i < data.result.length; i++) {
-							if (data.result[i]['r1'] !== 'undefined') {
-								data.result[i]['r1']= -data.result[i]['r1'];
-							}
+							data.result[i]['r1']= -data.result[i]['r1'];
 						}
                         return data.delivered === true;
                     },
@@ -346,9 +344,7 @@ define(['app', 'log/Chart', 'log/CounterLogSeriesSupplier'], function (app) {
                     dataIsValid: function (data) {
 						//make all values negative for the graph
 						for (var i = 0; i < data.result.length; i++) {
-							if (data.result[i]['r2'] !== 'undefined') {
-								data.result[i]['r2']= -data.result[i]['r2'];
-							}
+							data.result[i]['r2']= -data.result[i]['r2'];
 						}
                         return data.delivered === true;
                     },
@@ -371,7 +367,6 @@ define(['app', 'log/Chart', 'log/CounterLogSeriesSupplier'], function (app) {
 
 		//Month/Year
         function counterMonthYearSeriesSuppliers(deviceType) {
-			console.log(chart);
             return [
                 counterLogSeriesSupplier.summingSeriesSupplier({
                     id: 'counterEnergyUsedOrGeneratedTotal',
@@ -437,12 +432,8 @@ define(['app', 'log/Chart', 'log/CounterLogSeriesSupplier'], function (app) {
                     dataIsValid: function (data) {
 						//make all values negative for the graph
 						for (var i = 0; i < data.result.length; i++) {
-							if (data.result[i]['r1'] !== 'undefined') {
-								data.result[i]['r1']= -data.result[i]['r1'];
-							}
-							if (data.result[i]['r2'] !== 'undefined') {
-								data.result[i]['r2']= -data.result[i]['r2'];
-							}
+							data.result[i]['r1']= -data.result[i]['r1'];
+							data.result[i]['r2']= -data.result[i]['r2'];
 						}
                         return data.delivered === true;
                     },
@@ -488,14 +479,10 @@ define(['app', 'log/Chart', 'log/CounterLogSeriesSupplier'], function (app) {
                     id: 'powerReturnedTotalPrevious',
                     dataIsValid: function (data) {
 						//make all values negative for the graph
-						if (data.resultprev !== 'undefined') {
+						if (typeof data.resultprev != 'undefined') {
 							for (var i = 0; i < data.resultprev.length; i++) {
-								if (data.resultprev[i]['r1'] !== 'undefined') {
-									data.resultprev[i]['r1']= -data.resultprev[i]['r1'];
-								}
-								if (data.resultprev[i]['r2'] !== 'undefined') {
-									data.resultprev[i]['r2']= -data.resultprev[i]['r2'];
-								}
+								data.resultprev[i]['r1']= -data.resultprev[i]['r1'];
+								data.resultprev[i]['r2']= -data.resultprev[i]['r2'];
 							}
 						}
                         return data.delivered === true;
