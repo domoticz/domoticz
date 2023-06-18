@@ -181,6 +181,8 @@ namespace http
 
 			void DebugRegistrations();
 
+			bool ExtractPostData(request &req, const char *pContent_Type);
+
 			bool IsAction(const request &req);
 			bool CheckForAction(WebEmSession &session, request &req);
 
