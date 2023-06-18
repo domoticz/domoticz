@@ -855,17 +855,69 @@ namespace http
 				{
 					altrtype = "getplans";
 				}
-				else if (rtype.compare("graph") == 0)
-				{
-					altrtype = "graph";
-				}
 				else if (rtype.compare("notifications") == 0)
 				{
 					altrtype = "getnotifications";
 				}
+				else if (rtype.compare("scenelog") == 0)
+				{
+					altrtype = "getscenelog";
+				}
+				else if (rtype.compare("mobiles") == 0)
+				{
+					altrtype = "getmobiles";
+				}
+				else if (rtype.compare("cameras") == 0)
+				{
+					altrtype = "getcameras";
+				}
+				else if (rtype.compare("cameras_user") == 0)
+				{
+					altrtype = "getcameras_user";
+				}
+				else if (rtype.compare("schedules") == 0)
+				{
+					altrtype = "getschedules";
+				}
+				else if (rtype.compare("timers") == 0)
+				{
+					altrtype = "gettimers";
+				}
+				else if (rtype.compare("scenetimers") == 0)
+				{
+					altrtype = "getscenetimers";
+				}
+				else if (rtype.compare("setpointtimers") == 0)
+				{
+					altrtype = "getsetpointtimers";
+				}
+				else if (rtype.compare("plans") == 0)
+				{
+					altrtype = "getplans";
+				}
+				else if (rtype.compare("floorplans") == 0)
+				{
+					altrtype = "getfloorplans";
+				}
+				else if (rtype.compare("lightlog") == 0)
+				{
+					altrtype = "getlightlog";
+				}
+				else if (rtype.compare("textlog") == 0)
+				{
+					altrtype = "gettextlog";
+				}
+				else if (rtype.compare("graph") == 0)
+				{
+					altrtype = "graph";
+				}
 				else if (rtype.compare("createdevice") == 0)
 				{
 					altrtype = "createdevice";
+				}
+				else if (rtype.compare("setused") == 0)
+				{
+					altrtype = "setused";
 				}
 
 				if (!altrtype.empty())
@@ -875,11 +927,11 @@ namespace http
 					{
 						pf->second(session, req, root);
 					}
-					_log.Log(LOG_STATUS, "[WebServer] Depricated RType (%s) for API request. Handled via fallback (%s), please use correct API Command! (%s)", rtype.c_str(), altrtype.c_str(), req.host_remote_address.c_str());
+					_log.Log(LOG_STATUS, "[WebServer] Deprecated RType (%s) for API request. Handled via fallback (%s), please use correct API Command! (%s)", rtype.c_str(), altrtype.c_str(), req.host_remote_address.c_str());
 				}
 				else
 				{
-					_log.Log(LOG_STATUS, "[WebServer] Depricated RType (%s) for API request. Call ignored, please use correct API Command! (%s)", rtype.c_str(), req.host_remote_address.c_str());
+					_log.Log(LOG_STATUS, "[WebServer] Deprecated RType (%s) for API request. Call ignored, please use correct API Command! (%s)", rtype.c_str(), req.host_remote_address.c_str());
 				}
 
 			}
