@@ -250,7 +250,8 @@ define(['angularAMD', 'angular', 'angular-route'], function (angularAMD) {
                     templateUrl: function (params) {
                         return 'templates/' + params.custompage + '.html';
                     },
-                    controller: 'DummyController'
+                    controller: 'DummyController',
+					permission: 'Viewer'
                 })
             )
             .otherwise({
