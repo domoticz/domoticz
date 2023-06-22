@@ -1101,18 +1101,18 @@ define(['app', 'livesocket'], function (app) {
 							}
 							else if (item.SubType.indexOf("Itho") == 0) {
 								bAddTimer = false;
-								xhtm += '\t      <td id="img"><img src="images/Fan48_On.png" height="48" width="48" class="lcursor" onclick="ShowIthoPopup(event, ' + item.idx + ', ShowLights, ' + item.Protected + ');"></td>\n';
+								xhtm += '\t      <td id="img"><img src="images/Fan48_On.png" height="48" width="48" class="lcursor" onclick="ShowIthoPopup(event, ' + item.idx + ', ' + item.Protected + ', ' + window.myglobals.ismobile + ');"></td>\n';
 							}
 							else if (item.SubType.indexOf("Lucci Air DC") == 0) {
 								bAddTimer = false;
-								xhtm += '\t      <td id="img"><img src="images/Fan48_On.png" height="48" width="48" class="lcursor" onclick="ShowLucciDCPopup(event, ' + item.idx + ', ShowLights, ' + item.Protected + ');"></td>\n';
+								xhtm += '\t      <td id="img"><img src="images/Fan48_On.png" height="48" width="48" class="lcursor" onclick="ShowLucciDCPopup(event, ' + item.idx + ', ' + item.Protected + ', ' + window.myglobals.ismobile + ');"></td>\n';
 							}
 							else if (
 								(item.SubType.indexOf("Lucci") == 0) ||
 								(item.SubType.indexOf("Westinghouse") == 0)
 							) {
 								bAddTimer = false;
-								xhtm += '\t      <td id="img"><img src="images/Fan48_On.png" height="48" width="48" class="lcursor" onclick="ShowLucciPopup(event, ' + item.idx + ', ShowLights, ' + item.Protected + ');"></td>\n';
+								xhtm += '\t      <td id="img"><img src="images/Fan48_On.png" height="48" width="48" class="lcursor" onclick="ShowLucciPopup(event, ' + item.idx + ', ' + item.Protected + ', ' + window.myglobals.ismobile + ');"></td>\n';
 							}
 							else {
 								if (
