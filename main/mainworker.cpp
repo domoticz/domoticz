@@ -6703,6 +6703,14 @@ void MainWorker::decode_RFY(const CDomoticzHardwareBase* pHardware, const tRBUF*
 
 void MainWorker::decode_evohome1(const CDomoticzHardwareBase* pHardware, const tRBUF* pResponse, _tRxMessageProcessingResult& procResult)
 {
+	if (
+		pHardware->HwdType != HTYPE_EVOHOME_SERIAL
+		&& pHardware->HwdType != HTYPE_EVOHOME_SCRIPT
+		&& pHardware->HwdType != HTYPE_EVOHOME_WEB
+		&& pHardware->HwdType != HTYPE_EVOHOME_TCP
+		)
+		return; //not for us!
+
 	char szTmp[100];
 	const _tEVOHOME1* pEvo = reinterpret_cast<const _tEVOHOME1*>(pResponse);
 	uint8_t devType = pTypeEvohome;
@@ -6789,6 +6797,14 @@ void MainWorker::decode_evohome1(const CDomoticzHardwareBase* pHardware, const t
 
 void MainWorker::decode_evohome2(const CDomoticzHardwareBase* pHardware, const tRBUF* pResponse, _tRxMessageProcessingResult& procResult)
 {
+	if (
+		pHardware->HwdType != HTYPE_EVOHOME_SERIAL
+		&& pHardware->HwdType != HTYPE_EVOHOME_SCRIPT
+		&& pHardware->HwdType != HTYPE_EVOHOME_WEB
+		&& pHardware->HwdType != HTYPE_EVOHOME_TCP
+		)
+		return; //not for us!
+
 	char szTmp[100];
 	const _tEVOHOME2* pEvo = reinterpret_cast<const _tEVOHOME2*>(pResponse);
 	uint8_t cmnd = 0;
