@@ -335,8 +335,8 @@ local function DomoticzTestTools(port, debug, webroot)
 	end
 
 	function self.updateSwitch(idx, name, description, switchType)
-		--http://localhost:8080/json.htm?type=setused&idx=1&name=vdSwitch&description=des&strparam1=&strparam2=&protected=false&switchtype=0&customimage=0&used=true&addjvalue=0&addjvalue2=0&options=
-		local url = "type=setused&idx=" ..
+		--http://localhost:8080/json.htm?type=command&param=setused&idx=1&name=vdSwitch&description=des&strparam1=&strparam2=&protected=false&switchtype=0&customimage=0&used=true&addjvalue=0&addjvalue2=0&options=
+		local url = "type=command&param=setused&idx=" ..
 				tostring(idx) ..
 				"&name=" .. name ..
 				"&description=" .. description ..
@@ -448,7 +448,7 @@ local function DomoticzTestTools(port, debug, webroot)
 	end
 
 	function self.addSecurityPanel(idx)
-		local url = "type=setused&idx=" .. tostring(idx) .. "&name=secPanel&used=true&maindeviceidx="
+		local url = "type=command&param=setused&idx=" .. tostring(idx) .. "&name=secPanel&used=true&maindeviceidx="
 		local ok, json, result, respcode, respheaders, respstatus = self.doAPICall(url)
 		return ok
 	end

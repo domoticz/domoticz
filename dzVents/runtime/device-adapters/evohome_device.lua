@@ -40,7 +40,7 @@ return {
 					mode = mode .. "&until=" .. untilDate
 				 end
 				local url = domoticz.settings['Domoticz url'] ..
-					"/json.htm?type=setused&idx=" .. device.id ..
+					"/json.htm?type=command&param=setused&idx=" .. device.id ..
 					"&setpoint=&state=" .. state ..
 					"&mode=" .. mode ..
 					"&used=true"
