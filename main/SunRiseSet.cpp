@@ -2,7 +2,6 @@
 #include "SunRiseSet.h"
 
 #include <math.h>
-#include "localtime_r.h"
 
 
 #ifndef PI

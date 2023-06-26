@@ -16,7 +16,6 @@
 #include "../main/WebServer.h"
 #include "../main/HTMLSanitizer.h"
 #include "../main/mainworker.h"
-#include "../main/localtime_r.h"
 
 #include "hardwaretypes.h"
 #include "EnOceanESP3.h"

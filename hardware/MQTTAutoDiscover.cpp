@@ -4,7 +4,6 @@
 #include "../main/json_helper.h"
 #include "../main/Helper.h"
 #include "../main/HTMLSanitizer.h"
-#include "../main/localtime_r.h"
 #include "../main/Logger.h"
 #include "../main/mainworker.h"
 #include "../main/SQLHelper.h"

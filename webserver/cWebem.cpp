@@ -17,7 +17,6 @@
 #include <sstream>
 #include <cstdlib>
 #include "../main/Helper.h"
-#include "../main/localtime_r.h"
 #include "../main/Logger.h"
 
 #define JWT_DISABLE_BASE64

@@ -6,8 +6,6 @@
 #include "../httpclient/HTTPClient.h"
 
 #include "LuaCommon.h"
-#include "concurrent_queue.h"
-#include "StoppableTask.h"
 #include "NotificationObserver.h"
 
 class CEventSystem : public CLuaCommon, StoppableTask, CNotificationObserver

@@ -26,7 +26,6 @@
 
 #include "mainworker.h"
 #include "Helper.h"
-#include "localtime_r.h"
 #include "EventSystem.h"
 #include "HTMLSanitizer.h"
 #include "json_helper.h"

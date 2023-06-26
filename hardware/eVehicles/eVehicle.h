@@ -16,7 +16,6 @@ License: Public domain
 
 #include "../DomoticzHardware.h"
 #include "VehicleApi.h"
-#include "../../main/concurrent_queue.h"
 
 class CeVehicle : public CDomoticzHardwareBase
 {

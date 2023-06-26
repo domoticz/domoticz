@@ -1,7 +1,6 @@
 #include "stdafx.h"
 #include <iostream>
 #include "Scheduler.h"
-#include "localtime_r.h"
 #include "Logger.h"
 #include "Helper.h"
 #include "SQLHelper.h"

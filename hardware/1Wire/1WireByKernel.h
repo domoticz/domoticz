@@ -2,7 +2,6 @@
 #include "1WireSystem.h"
 #include <condition_variable>
 #include <list>
-#include "../../main/StoppableTask.h"
 
 class C1WireByKernel : public I_1WireSystem, StoppableTask
 {

@@ -4,7 +4,6 @@
 #include "../main/Logger.h"
 #include "../httpclient/HTTPClient.h"
 #include "../httpclient/UrlEncode.h"
-#include "../main/localtime_r.h"
 #include "../main/json_helper.h"
 #include "../main/mainworker.h"
 #include "../main/RFXtrx.h"

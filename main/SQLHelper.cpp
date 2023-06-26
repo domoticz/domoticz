@@ -11,7 +11,6 @@
 #include <iomanip>
 #include "RFXtrx.h"
 #include "RFXNames.h"
-#include "localtime_r.h"
 #include "Logger.h"
 #include "mainworker.h"
 #include "../main/json_helper.h"
