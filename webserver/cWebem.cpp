@@ -305,7 +305,7 @@ namespace http {
 					szVariable = szContent.substr(0, pos);
 					szContent = szContent.substr(pos + 2);
 					if (szVariable.find("Content-Disposition") != 0)
-						return true;
+						return false;
 					pos = szVariable.find("name=\"");
 					if (pos == std::string::npos)
 						return false;
@@ -323,6 +323,8 @@ namespace http {
 					if (
 						(szContentType.find("application/octet-stream") != std::string::npos) ||
 						(szContentType.find("application/json") != std::string::npos) ||
+						(szContentType.find("application/x-zip") != std::string::npos) ||
+						(szContentType.find("application/zip") != std::string::npos) ||
 						(szContentType.find("Content-Type: text/xml") != std::string::npos) ||
 						(szContentType.find("Content-Type: text/x-hex") != std::string::npos) ||
 						(szContentType.find("Content-Type: image/") != std::string::npos)
@@ -405,6 +407,7 @@ namespace http {
 			else
 			{
 				//Unknown content type
+				_log.Debug(DEBUG_WEBSERVER, "[web:%s] Unable to process POST Data, unknown content type: %s", GetPort().c_str(), pContent_Type);
 				return false;
 			}
 			return true;
