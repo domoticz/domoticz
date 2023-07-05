@@ -584,7 +584,10 @@ void EnphaseAPI::parseProduction(const Json::Value& root)
 	int musage = reading["wNow"].asInt();
 	int mtotal = reading["whLifetime"].asInt();
 
-	SendKwhMeter(m_HwdID, 1, 255, musage, mtotal / 1000.0, "Enphase kWh Production");
+	if (mtotal != 0)
+	{
+		SendKwhMeter(m_HwdID, 1, 255, musage, mtotal / 1000.0, "Enphase kWh Production");
+	}
 }
 
 void EnphaseAPI::parseConsumption(const Json::Value& root)
@@ -606,8 +609,10 @@ void EnphaseAPI::parseConsumption(const Json::Value& root)
 		std::string szName = "Enphase " + itt["measurementType"].asString();
 		int musage = itt["wNow"].asInt();
 		int mtotal = itt["whLifetime"].asInt();
-
-		SendKwhMeter(m_HwdID, iIndex++, 255, musage, mtotal / 1000.0, szName);
+		if (mtotal != 0)
+		{
+			SendKwhMeter(m_HwdID, iIndex++, 255, musage, mtotal / 1000.0, szName);
+		}
 	}
 }
 
