@@ -1,4 +1,5 @@
 Version 2023.xx
+- Implemented: Alfen Eve Charger
 - Implemented: Device reordering for Users with devices
 - Implemented: LUA: Added name state to devicechanged_ext table
 - Implemented: RFXCom, Updated SDK

@@ -149,6 +149,7 @@
 #include "../hardware/OctoPrintMQTT.h"
 #include "../hardware/Meteorologisk.h"
 #include "../hardware/AirconWithMe.h"
+#include "../hardware/AlfenEve.h"
 
 // load notifications configuration
 #include "../notifications/NotificationHelper.h"
@@ -1084,6 +1085,9 @@ bool MainWorker::AddHardwareFromParams(
 		break;
 	case HTYPE_MQTTAutoDiscovery:
 		pHardware = new MQTTAutoDiscover(ID, Name, Address, Port, Username, Password, Extra, Mode2);
+		break;
+	case HTYPE_AlfenEveCharger:
+		pHardware = new AlfenEve(ID, Address, 443, 30, Username, Password);
 		break;
 	}
 

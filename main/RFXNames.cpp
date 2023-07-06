@@ -242,7 +242,7 @@ static const STR_TABLE_SINGLE HardwareTypeTable[] = {
 	{ HTYPE_BleBox, "BleBox devices", "BleBox" },
 	{ HTYPE_Ec3kMeterTCP, "Energy Count 3000/ NETBSEM4/ La Crosse RT-10 LAN", "Ec3kMeter" },
 	{ HTYPE_OpenWeatherMap, "Open Weather Map", "OpenWeatherMap" },
-	{ HTYPE_RESERVED_FOR_YOU_1, "", "" },
+	{ HTYPE_AlfenEveCharger, "Alfen Eve Charger LAN", "Alfen" },
 	{ HTYPE_RaspberryTSL2561, "I2C sensor TSL2561 Illuminance", "I2C TSL2561" },
 	{ HTYPE_Daikin, "Daikin Airconditioning with LAN (HTTP) interface", "Daikin" },
 	{ HTYPE_HEOS, "HEOS by DENON", "HEOS" },
@@ -3985,6 +3985,7 @@ bool IsNetworkDevice(const _eHardwareTypes htype)
 	case HTYPE_OctoPrint:
 	case HTYPE_TeleinfoMeterTCP:
 	case HTYPE_MQTTAutoDiscovery:
+	case HTYPE_AlfenEveCharger:
 		return true;
 	default:
 		return false;

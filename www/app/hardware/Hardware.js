@@ -596,6 +596,18 @@ define(['app'], function (app) {
 					username = $("#hardwarecontent #divlogin #username").val();
 					password = $("#hardwarecontent #divlogin #password").val();
 				}
+				else if (text.indexOf("Alfen") >= 0) {
+					username = $("#hardwarecontent #divlogin #username").val();
+					password = $("#hardwarecontent #divlogin #password").val();
+					
+					if (username == '') {
+						username = 'admin';
+					}
+					if (password == '') {
+						ShowNotify($.t('Please enter a Password!'), 2500, true);
+						return;
+					}
+				}
 
 				$.ajax({
 					url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype +
@@ -1767,6 +1779,17 @@ define(['app'], function (app) {
 						Mode2 = 1;
 					username = $("#hardwarecontent #divlogin #username").val();
 					password = $("#hardwarecontent #divlogin #password").val();
+				}
+				else if (text.indexOf("Alfen") >= 0) {
+					username = $("#hardwarecontent #divlogin #username").val();
+					if (username == '') {
+						username = 'admin';
+					}
+					password = $("#hardwarecontent #divlogin #password").val();
+					if (password == '') {
+						ShowNotify($.t('Please enter a Password!'), 2500, true);
+						return;
+					}
 				}
 				
 				$.ajax({
@@ -4415,6 +4438,7 @@ define(['app'], function (app) {
 							(data["Type"].indexOf("PVOutput") >= 0) ||
 							(data["Type"].indexOf("ETH8020") >= 0) ||
 							(data["Type"].indexOf("Daikin") >= 0) ||
+							(data["Type"].indexOf("Alfen") >= 0) ||
 							(data["Type"].indexOf("Sterbox") >= 0) ||
 							(data["Type"].indexOf("Anna") >= 0) ||
 							(data["Type"].indexOf("KMTronic") >= 0) ||
@@ -4435,7 +4459,7 @@ define(['app'], function (app) {
 							$("#hardwarecontent #hardwareparamslogin #username").val(data["Username"]);
 							$("#hardwarecontent #hardwareparamslogin #password").val(data["Password"]);
 						}
-						if (data["Type"].indexOf("Evohome via Web") >= 0) {
+						else if (data["Type"].indexOf("Evohome via Web") >= 0) {
 							$("#hardwarecontent #hardwareparamslogin #username").val(data["Username"]);
 							$("#hardwarecontent #hardwareparamslogin #password").val(data["Password"]);
 
@@ -4724,6 +4748,11 @@ define(['app'], function (app) {
 					else if (text.indexOf("Enphase") >= 0) {
 						$("#hardwarecontent #divenphase").show();
 						$("#hardwarecontent #divlogin").show();
+					}
+					else if (text.indexOf("Alfen") >= 0) {
+						$("#hardwarecontent #divlogin").show();
+						$("#hardwarecontent #hardwareparamsremote #tcpport").val(443);
+						$("#hardwarecontent #username").val("admin");
 					}
 			}
 			else if (
