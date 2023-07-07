@@ -141,16 +141,28 @@ void AlfenEve::Do_Work()
 			try
 			{
 				std::lock_guard<std::mutex> l(m_mutex);
-				if (DoLogin())
+				//we keep the line open here, if it fails we will relogin
+				int totRetries = 0;
+				bool bSuccess = false;
+
+				while (!bSuccess && totRetries < 2)
 				{
-					Json::Value root;
-					if (GetProperties(root))
+					if (DoLogin())
 					{
-						parseProperties(root);
-						DoLogout();
+						Json::Value root;
+						bSuccess = GetProperties(root);
+						if (bSuccess)
+						{
+							parseProperties(root);
+							bHaveRunOnce = true;
+							break;
+						}
 					}
+					DoLogout();
+					if (bHaveRunOnce == false)
+						break; //probably wrong password
+					totRetries++;
 				}
-				bHaveRunOnce = true;
 			}
 			catch (const std::exception& e)
 			{
@@ -159,6 +171,7 @@ void AlfenEve::Do_Work()
 		}
 	}
 	Log(LOG_STATUS, "Worker stopped...");
+	DoLogout();
 }
 
 bool AlfenEve::WriteToHardware(const char* /*pdata*/, const unsigned char /*length*/)
@@ -183,6 +196,9 @@ size_t write_alfen_curl_data(void* contents, size_t size, size_t nmemb, void* us
 
 bool AlfenEve::DoLogin()
 {
+	if (m_curl != nullptr)
+		return true; //already logged in
+
 #ifdef DEBUG_AlfenEve_R
 	return true;
 #endif
@@ -253,36 +269,43 @@ bool AlfenEve::SendCommand(const std::string& command)
 {
 	std::lock_guard<std::mutex> l(m_mutex);
 
-	if (!DoLogin())
-		return false;
-
 	//examples:
 	//reboot
 
-	m_vHTTPResponse.clear();
-	std::string szURL = BuildURL("cmd");
+	int totRetries = 0;
+	bool bSuccess = false;
 
-	curl_easy_setopt(m_curl, CURLOPT_CUSTOMREQUEST, "POST");
-	curl_easy_setopt(m_curl, CURLOPT_URL, szURL.c_str());
-
-	std::string szCmd = std::string("{ \"command\": \"") + command + std::string("\" }");
-	const char* data = szCmd.c_str();
-	curl_easy_setopt(m_curl, CURLOPT_POSTFIELDS, data);
-	CURLcode res = curl_easy_perform(m_curl);
-	if (res != CURLE_OK)
+	while (!bSuccess && totRetries < 2)
 	{
-		Log(LOG_ERROR, "Problem sending command!");
-		curl_easy_cleanup(m_curl);
-		m_curl = nullptr;
-		return false;
+		if (DoLogin())
+		{
+			m_vHTTPResponse.clear();
+			std::string szURL = BuildURL("cmd");
+
+			curl_easy_setopt(m_curl, CURLOPT_CUSTOMREQUEST, "POST");
+			curl_easy_setopt(m_curl, CURLOPT_URL, szURL.c_str());
+
+			std::string szCmd = std::string("{ \"command\": \"") + command + std::string("\" }");
+			const char* data = szCmd.c_str();
+			curl_easy_setopt(m_curl, CURLOPT_POSTFIELDS, data);
+			CURLcode res = curl_easy_perform(m_curl);
+			if (res != CURLE_OK)
+			{
+				Log(LOG_ERROR, "Problem sending command!");
+			}
+			else
+			{
+				long http_code = 0;
+				curl_easy_getinfo(m_curl, CURLINFO_RESPONSE_CODE, &http_code);
+				bool bOK = ((http_code) && (http_code < 400));
+				if (bOK)
+					return true;
+			}
+		}
+		DoLogout();
+		totRetries++;
 	}
-	long http_code = 0;
-	curl_easy_getinfo(m_curl, CURLINFO_RESPONSE_CODE, &http_code);
-	bool bOK = ((http_code) && (http_code < 400));
-
-	DoLogout();
-
-	return bOK;
+	return false;
 }
 
 bool AlfenEve::GetProperties(Json::Value& result)
@@ -325,13 +348,11 @@ bool AlfenEve::GetProperties(Json::Value& result)
 	if ((!ret) || (!result.isObject()))
 	{
 		Log(LOG_ERROR, "Invalid data received! (properties/json)");
-		DoLogout();
 		return false;
 	}
 	if (result["properties"].empty())
 	{
 		Log(LOG_ERROR, "Invalid (no) data received (production, objects not found)");
-		DoLogout();
 		return false;
 	}
 	return true;
