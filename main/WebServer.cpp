@@ -4141,6 +4141,15 @@ namespace http
 				m_pWebEm->SetWebTheme(SelectedTheme);
 				cntSettings++;
 
+				//Update the Max kWh value
+				rnvalue = 6000;
+				if (m_sql.GetPreferencesVar("MaxElectricPower", rnvalue))
+				{
+					if (rnvalue < 1)
+						rnvalue = 6000;
+					m_sql.m_max_kwh_usage = rnvalue;
+				}
+
 				/* To wrap up everything */
 				m_notifications.ConfigFromGetvars(req, true);
 				m_notifications.LoadConfig();
