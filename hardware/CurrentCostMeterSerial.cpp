@@ -118,6 +118,13 @@ namespace http {
 		void CWebServer::SetCurrentCostUSBType(WebEmSession & session, const request& req, std::string & redirect_uri)
 		{
 			redirect_uri = "/index.html";
+			Json::Value root;
+			Cmd_SetCurrentCostUSBType(session, req, root);
+		}
+
+		void CWebServer::Cmd_SetCurrentCostUSBType(WebEmSession & session, const request& req, Json::Value& root)
+		{
+			root["title"] = "SetCurrentCostUSBType";
 			if (session.rights != 2)
 			{
 				session.reply_status = reply::forbidden;
@@ -145,6 +152,7 @@ namespace http {
 			m_sql.UpdateRFXCOMHardwareDetails(atoi(idx.c_str()), Mode1, Mode2, Mode3, Mode4, Mode5, Mode6);
 
 			m_mainworker.RestartHardware(idx);
+			root["status"] = "OK";
 		}
 	} // namespace server
 } // namespace http
