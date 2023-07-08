@@ -639,6 +639,9 @@ namespace http
 			RegisterCommandCode("rclientslog", [this](auto&& session, auto&& req, auto&& root) { Cmd_RemoteWebClientsLog(session, req, root); });
 			RegisterCommandCode("setused", [this](auto&& session, auto&& req, auto&& root) { Cmd_SetUsed(session, req, root); });
 
+			// Migrated ActionCodes to regular commands
+			RegisterCommandCode("setccmetertype", [this](auto&& session, auto&& req, auto&& root) { Cmd_SetCurrentCostUSBType(session, req, root); });
+
 			RegisterCommandCode("clearuserdevices", [this](auto&& session, auto&& req, auto&& root) { Cmd_ClearUserDevices(session, req, root); });
 
 			//MQTT-AD

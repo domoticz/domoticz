@@ -341,6 +341,9 @@ private:
 	void Cmd_RemoteWebClientsLog(WebEmSession& session, const request& req, Json::Value& root);
 	void Cmd_SetUsed(WebEmSession & session, const request& req, Json::Value &root);
 
+	//Migrated ActionCodes
+	void Cmd_SetCurrentCostUSBType(WebEmSession& session, const request& req, Json::Value& root);
+
 	void Cmd_ClearUserDevices(WebEmSession& session, const request& req, Json::Value& root);
 
 	//MQTT-AD
