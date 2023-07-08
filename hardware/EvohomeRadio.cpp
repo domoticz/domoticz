@@ -701,7 +701,7 @@ bool CEvohomeMsg::DecodePacket(const char* rawmsg)
 void CEvohomeRadio::ProcessMsg(const char* rawmsg)
 {
 	CEvohomeMsg msg(rawmsg);
-	Debug(DEBUG_HARDWARE, rawmsg);
+	Debug(DEBUG_HARDWARE, "RawMsg: .%s.", rawmsg);
 	if (msg.IsValid())
 	{
 		if (GetControllerID() == 0xFFFFFF) // If we still have a dummy controller update the controller DeviceID list
