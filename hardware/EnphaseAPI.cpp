@@ -11,6 +11,7 @@
 #include "../main/SQLHelper.h"
 #include "../notifications/NotificationHelper.h"
 #include "../tinyxpath/tinyxml.h"
+#include "../webserver/Base64.h"
 #include "hardwaretypes.h"
 #include <iostream>
 
@@ -18,7 +19,7 @@
 
 #ifdef _DEBUG
 //#define DEBUG_EnphaseAPI_R
-//#define DEBUG_EnphaseAPI_W
+#define DEBUG_EnphaseAPI_W
 #endif
 
 /*
@@ -36,6 +37,22 @@ void SaveString2Disk(std::string str, std::string filename)
 		fclose(fOut);
 	}
 }
+
+void SaveString2DiskHeaders(std::vector<std::string> headers, std::string filename)
+{
+	FILE* fOut = fopen(filename.c_str(), "wb+");
+	if (fOut)
+	{
+		for (const auto &itt : headers)
+		{
+			std::string str = itt + "\r\n";
+			fwrite(str.c_str(), 1, str.size(), fOut);
+		}
+		fclose(fOut);
+	}
+}
+
+
 #endif
 
 #ifdef DEBUG_EnphaseAPI_R
@@ -57,12 +74,13 @@ std::string ReadFile(std::string filename)
 }
 #endif
 
-EnphaseAPI::EnphaseAPI(const int ID, const std::string& IPAddress, const unsigned short usIPPort, int PollInterval, const bool bPollInverters, const std::string& szUsername, const std::string& szPassword) :
+EnphaseAPI::EnphaseAPI(const int ID, const std::string& IPAddress, const unsigned short usIPPort, int PollInterval, const bool bPollInverters, const std::string& szUsername, const std::string& szPassword, const bool bUseEnvoyTokenMethod) :
 	m_szIPAddress(IPAddress),
 	m_szUsername(szUsername),
 	m_szPassword(CURLEncode::URLEncode(szPassword))
 {
 	m_bGetInverterDetails = bPollInverters;
+	m_bUseEnvoyTokenMethod = bUseEnvoyTokenMethod;
 
 	m_HwdID = ID;
 
@@ -134,7 +152,7 @@ void EnphaseAPI::Do_Work()
 			{
 				if (
 					(!m_bHaveConsumption)
-					&& (!m_bHaveeNetConsumption)
+					&& (!m_bHaveNetConsumption)
 					&& (!m_bHaveStorage)
 					)
 				{
@@ -153,6 +171,26 @@ void EnphaseAPI::Do_Work()
 						continue;
 				}
 
+				if (NeedToken())
+				{
+					if (m_szToken.empty())
+					{
+						//We need a access token
+						if (!m_bUseEnvoyTokenMethod)
+						{
+							if (!GetAccessTokenEnlighten())
+								continue;
+						}
+						else
+						{
+							if (!GetAccessTokenEnvoy())
+								continue;
+						}
+						if (m_szToken.empty())
+							continue;
+					}
+				}
+
 				Json::Value result;
 				if (getProductionDetails(result))
 				{
@@ -163,6 +201,15 @@ void EnphaseAPI::Do_Work()
 				if (m_bGetInverterDetails)
 				{
 					getInverterDetails();
+				}
+				if (m_bUseEnvoyTokenMethod)
+				{
+					//only works with Envoy token
+					result.clear();
+					if (getPowerStatus(result))
+					{
+						parsePowerStatus(result);
+					}
 				}
 				bHaveRunOnce = true;
 			}
@@ -175,8 +222,24 @@ void EnphaseAPI::Do_Work()
 	Log(LOG_STATUS, "Worker stopped...");
 }
 
-bool EnphaseAPI::WriteToHardware(const char* /*pdata*/, const unsigned char /*length*/)
+bool EnphaseAPI::WriteToHardware(const char* pdata, const unsigned char length)
 {
+	const tRBUF* pSen = reinterpret_cast<const tRBUF*>(pdata);
+
+	if (pSen->LIGHTING2.packettype != pTypeLighting2)
+		return false;
+
+	uint8_t Unit = pSen->LIGHTING2.unitcode;
+
+	uint8_t command = pSen->LIGHTING2.cmnd;
+
+	if (Unit == 1)
+	{
+		//Power on/off
+		SetPowerActive(command == light2_sOn);
+		return true;
+	}
+
 	return false;
 }
 
@@ -355,7 +418,7 @@ bool EnphaseAPI::GetSerialSoftwareVersion()
 	return true;
 }
 
-bool EnphaseAPI::GetAccessToken()
+bool EnphaseAPI::GetAccessTokenEnlighten()
 {
 	m_szToken.clear();
 
@@ -472,6 +535,105 @@ bool EnphaseAPI::GetAccessToken()
 	return true;
 }
 
+//returns a 40 character random string
+std::string GenerateCodeVerifier()
+{
+	std::string szChars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+	std::string szCodeVerifier;
+	for (int i = 0; i < 40; i++)
+	{
+		szCodeVerifier += szChars[rand() % szChars.size()];
+	}
+	return szCodeVerifier;
+}
+
+std::string GenrateCodeChallenge(const std::string& szCodeVerifier)
+{
+	std::string sha256str = sha256raw(szCodeVerifier);
+	std::string szCodeChallenge = base64_encode(sha256str);
+
+	stdreplace(szCodeChallenge, "+", "-");  //  + will be -
+	stdreplace(szCodeChallenge, "/", "_");  //  / will be _
+	stdreplace(szCodeChallenge, "=", "");  // remove = chars
+
+	return szCodeChallenge;
+}
+
+/*
+* or
+* https://entrez.enphaseenergy.com/entrez_tokens
+* 
+* with
+* uncommissioned=on&Site=urlencoded site id as shown in enlighten&serialNum=1234567899
+* serialnum can be found in enlighten->devices->gateway->serial number
+* 
+*/
+
+bool EnphaseAPI::GetAccessTokenEnvoy()
+{
+	m_szToken.clear();
+
+	std::string sResult;
+
+	if (
+		(m_szUsername.empty())
+		|| (m_szPassword.empty())
+		)
+	{
+		Log(LOG_ERROR, "You need to supply a username/password!");
+		return false;
+	}
+
+	std::string code_verifier = GenerateCodeVerifier();
+	std::string code_challenge = GenrateCodeChallenge(code_verifier);
+
+	std::string redirect_url = CURLEncode::URLEncode("https://127.0.0.1/auth/callback");
+
+	std::stringstream sstr;
+	sstr
+		<< "username=" << CURLEncode::URLEncode(m_szUsername)
+		<< "&password=" << m_szPassword //password is already encoded in contructor
+		<< "&codeChallenge=" << code_challenge
+		<< "&redirectUri=\"" << redirect_url << "\""
+		<< "&client = \"envoy-ui\""
+		<< "&clientId = \"envoy-ui-client\""
+		<< "&authFlow = \"oauth\""
+		<< "&serialNum = " << m_szSerial
+		<< "&granttype = \"authorize\""
+		<< "&state = \"\""
+		<< "&invalidSerialNum = \"\"";
+	std::string szPostdata = sstr.str();
+
+	std::string sURL = "https://entrez.enphaseenergy.com/login";
+
+	std::vector<std::string> ExtraHeaders;
+
+	std::vector<std::string> vReturnHeaderData;
+
+	if (!HTTPClient::POST(sURL, szPostdata, ExtraHeaders, sResult, vReturnHeaderData, false, true))
+	{
+		Log(LOG_ERROR, "Error getting http data! (login)");
+		return false;
+	}
+#ifdef DEBUG_EnphaseAPI_W
+	SaveString2Disk(sResult, "E:\\EnphaseAPI_login_ex.json");
+	SaveString2DiskHeaders(vReturnHeaderData, "E:\\EnphaseAPI_login_ex_headers.txt");
+#endif
+
+	Debug(DEBUG_RECEIVED, "login: %s", sResult.c_str());
+	/*
+		Json::Value root;
+		bool ret = ParseJSon(sResult, root);
+		if ((!ret) || (!root.isObject()))
+		{
+			Log(LOG_ERROR, "Invalid data received! (login/json)");
+			return false;
+		}
+	*/
+
+	return false;
+}
+
 bool EnphaseAPI::NeedToken()
 {
 	if (m_szSoftwareVersion.empty())
@@ -482,24 +644,13 @@ bool EnphaseAPI::NeedToken()
 
 bool EnphaseAPI::getProductionDetails(Json::Value& result)
 {
-	if (NeedToken())
-	{
-		if (m_szToken.empty())
-		{
-			//We need a access token
-			if (!GetAccessToken())
-				return false;
-			if (m_szToken.empty())
-				return false;
-		}
-	}
-
 	std::string sResult;
 
 #ifdef DEBUG_EnphaseAPI_R
 	sResult = ReadFile("E:\\EnphaseAPI_production.json");
 #else
 	std::stringstream sURL;
+	//sURL << "https://" << m_szIPAddress << "/api/v1/production";
 	sURL << "http://" << m_szIPAddress << "/production.json?details=1";
 
 	std::vector<std::string> ExtraHeaders;
@@ -512,23 +663,7 @@ bool EnphaseAPI::getProductionDetails(Json::Value& result)
 	{
 		if (!m_szToken.empty())
 		{
-			//We might need a new access token
-			if (!GetAccessToken())
-				return false;
-			if (m_szToken.empty())
-				return false;
-
-			if (!HTTPClient::GET(sURL.str(), ExtraHeaders, sResult))
-			{
-				if (sResult.find("401") != std::string::npos)
-				{
-					Log(LOG_ERROR, "Error getting http data (production/Unauthorized!)");
-					m_szToken.clear();
-				}
-				else
-					Log(LOG_ERROR, "Error getting http data! (production)");
-				return false;
-			}
+			return false;
 		}
 		else
 		{
@@ -638,6 +773,197 @@ void EnphaseAPI::parseStorage(const Json::Value& root)
 	SendTextSensor(m_HwdID, 1, 255, szState, "Enphase Storage State");
 
 	m_bHaveStorage = true;
+}
+
+bool EnphaseAPI::getGridStatus(Json::Value& result)
+{
+	std::string sResult;
+
+#ifdef DEBUG_EnphaseAPI_R
+	sResult = ReadFile("E:\\EnphaseAPI_home.json");
+#else
+	std::stringstream sURL;
+	sURL << "http://" << m_szIPAddress << "/home.json";
+
+	std::vector<std::string> ExtraHeaders;
+	if (!m_szToken.empty()) {
+		ExtraHeaders.push_back("Authorization: Bearer " + m_szToken);
+		ExtraHeaders.push_back("Content-Type:application/json");
+	}
+
+	if (!HTTPClient::GET(sURL.str(), ExtraHeaders, sResult))
+	{
+		if (!m_szToken.empty())
+		{
+			return false;
+		}
+		else
+		{
+			Log(LOG_ERROR, "Error getting http data! (gridstatus)");
+			return false;
+		}
+	}
+#ifdef DEBUG_EnphaseAPI_W
+	SaveString2Disk(sResult, "E:\\EnphaseAPI_home.json");
+#endif
+#endif
+	Debug(DEBUG_RECEIVED, "gridstatus/home: %s", sResult.c_str());
+
+	bool ret = ParseJSon(sResult, result);
+	if ((!ret) || (!result.isObject()))
+	{
+		m_szToken.clear();
+		Log(LOG_ERROR, "Invalid data received! (gridstatus/json)");
+		return false;
+	}
+	if (result["enpower"].empty())
+	{
+		m_szToken.clear();
+		Log(LOG_ERROR, "Invalid (no) data received (gridstatus, objects not found)");
+		return false;
+	}
+	return true;
+}
+
+void EnphaseAPI::parseGridStatus(const Json::Value& root)
+{
+	if (!IsItSunny())
+	{
+		m_sql.safe_query(
+			"UPDATE DeviceStatus SET LastUpdate='%s' WHERE (HardwareID==%d)", TimeToString(nullptr, TF_DateTime).c_str(), m_HwdID);
+		return;
+	}
+	if (root["enpower"].empty() == true)
+	{
+		//No production details available
+		return;
+	}
+
+}
+
+//this can only be called when we have a valid Envoy token (with GetAccessTokenEnvoy)
+bool EnphaseAPI::getPowerStatus(Json::Value& result)
+{
+	std::string sResult;
+
+#ifdef DEBUG_EnphaseAPI_R
+	sResult = ReadFile("E:\\EnphaseAPI_power.json");
+#else
+	std::stringstream sURL;
+	sURL << "http://" << m_szIPAddress << "/ivp/mod/603980032/mode/power";
+
+	std::vector<std::string> ExtraHeaders;
+	if (!m_szToken.empty()) {
+		ExtraHeaders.push_back("Authorization: Bearer " + m_szToken);
+		ExtraHeaders.push_back("Accept: application/json");
+	}
+
+	if (!HTTPClient::GET(sURL.str(), ExtraHeaders, sResult))
+	{
+		Log(LOG_ERROR, "Error getting http data! (power)");
+		return false;
+	}
+#ifdef DEBUG_EnphaseAPI_W
+	SaveString2Disk(sResult, "E:\\EnphaseAPI_power.json");
+#endif
+#endif
+	Debug(DEBUG_RECEIVED, "power: %s", sResult.c_str());
+
+	bool ret = ParseJSon(sResult, result);
+	if ((!ret) || (!result.isObject()))
+	{
+		m_szToken.clear();
+		Log(LOG_ERROR, "Invalid data received! (power/json)");
+		return false;
+	}
+	if (result["powerForcedOff"].empty())
+	{
+		m_szToken.clear();
+		Log(LOG_ERROR, "Invalid (no) data received (power, objects not found)");
+		return false;
+	}
+	return true;
+}
+
+void EnphaseAPI::parsePowerStatus(const Json::Value& root)
+{
+	if (root["powerForcedOff"].empty() == true)
+	{
+		//No production details available
+		return;
+	}
+	bool bPowerForcedOff = root["powerForcedOff"].asBool();
+	SendSwitch(1, 1, 255, !bPowerForcedOff, 0, "Power Active", "EnphaseAPI");
+}
+
+bool EnphaseAPI::SetPowerActive(const bool bActive)
+{
+	if (NeedToken())
+	{
+		if (m_szToken.empty())
+		{
+			//We need a access token
+			if (!m_bUseEnvoyTokenMethod)
+				GetAccessTokenEnlighten();
+			else
+				GetAccessTokenEnvoy();
+		}
+	}
+	if (m_szToken.empty())
+	{
+		Log(LOG_ERROR, "Problem with (no) token! Could not execute command! (power)");
+		return false;
+	}
+
+	std::string sResult;
+
+	//First verify token
+
+	std::vector<std::string> ExtraHeaders;
+	ExtraHeaders.push_back("Content-type: application/json");
+
+	std::string szURL = "http://" + m_szIPAddress + "/auth/check_jwt";
+
+	if (!HTTPClient::GET(szURL, ExtraHeaders, sResult))
+	{
+		Log(LOG_ERROR, "Error getting http data! (check_jwt)");
+		return false;
+	}
+
+	std::stringstream sURL;
+	sURL << "http://" << m_szIPAddress << "/ivp/mod/603980032/mode/power";
+
+	ExtraHeaders.clear();
+	ExtraHeaders.push_back("Accept: application/json");
+	if (!m_szToken.empty()) {
+		ExtraHeaders.push_back("Authorization: Bearer " + m_szToken);
+	}
+	ExtraHeaders.push_back("Content-Type: application/x-www-form-urlencoded");
+
+	//{"length":1,"arr":[0]}: 
+	std::stringstream sstr;
+	sstr
+		<< "{\"length\":1,\"arr\":["
+		//<< (bActive ? "0" : "1")
+		<< (!bActive ? "0" : "1")
+		<< "]}";
+	std::string szPutdata = sstr.str();
+
+	szPutdata = "{\"length\":1,\"arr\":[0]}";
+
+	if (!HTTPClient::PUT(sURL.str(), szPutdata, ExtraHeaders, sResult))
+	{
+		Log(LOG_ERROR, "Error getting http data! (set power)");
+		return false;
+	}
+
+#ifdef DEBUG_EnphaseAPI_W
+	SaveString2Disk(sResult, "E:\\EnphaseAPI_setpower.json");
+#endif
+
+	Debug(DEBUG_RECEIVED, "set_power: %s", sResult.c_str());
+
+	return true;
 }
 
 uint64_t EnphaseAPI::UpdateValueInt(const char* ID, unsigned char unit, unsigned char devType, unsigned char subType, unsigned char signallevel, unsigned char batterylevel, int nValue,
