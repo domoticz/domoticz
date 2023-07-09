@@ -2,7 +2,6 @@
 #include "DenkoviUSBDevices.h"
 #include "../main/Logger.h"
 #include "../main/Helper.h"
-#include "../main/localtime_r.h"
 #include "../main/mainworker.h"
 
 #define MAX_POLL_INTERVAL 3600*1000

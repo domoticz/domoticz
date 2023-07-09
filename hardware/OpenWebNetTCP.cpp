@@ -20,7 +20,6 @@ License: Public domain
 #include "../main/Logger.h"
 #include "../main/Helper.h"
 #include "../main/SQLHelper.h"
-#include "../main/localtime_r.h"
 #include "csocket.h"
 
 #include <string.h>

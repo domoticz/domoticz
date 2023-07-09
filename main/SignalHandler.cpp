@@ -4,7 +4,6 @@
 #include <signal.h>
 #include "Logger.h"
 #include "Helper.h"
-#include "localtime_r.h"
 
 #if defined WIN32
 //	#include "../msbuild/WindowsHelper.h"

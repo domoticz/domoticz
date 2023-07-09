@@ -23,7 +23,6 @@
 #include "../main/Logger.h"
 #include "hardwaretypes.h"
 #include "../main/SQLHelper.h"
-#include "../main/localtime_r.h"
 #include "../main/WebServer.h"
 #include <json/json.h>
 

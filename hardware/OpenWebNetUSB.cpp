@@ -12,7 +12,6 @@ License: Public domain
 #include "../main/Helper.h"
 #include "../main/Logger.h"
 #include "../main/RFXtrx.h"
-#include "../main/localtime_r.h"
 #include "P1MeterBase.h"
 #include "hardwaretypes.h"
 #include "../main/SQLHelper.h"

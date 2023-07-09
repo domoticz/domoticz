@@ -4,7 +4,6 @@
 #include <stdarg.h>
 #include <time.h>
 #include <algorithm>
-#include "localtime_r.h"
 #include "Helper.h"
 #include "mainworker.h"
 

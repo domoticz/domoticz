@@ -8,7 +8,6 @@
 #include "../main/Logger.h"
 #include "../hardware/DomoticzTCP.h"
 #include "../main/mainworker.h"
-#include "../main/localtime_r.h"
 #include <boost/asio.hpp>
 #include <algorithm>
 

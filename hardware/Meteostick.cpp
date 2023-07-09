@@ -9,7 +9,6 @@
 #include <string>
 #include <algorithm>
 #include <iostream>
-#include "../main/localtime_r.h"
 #include "../main/mainworker.h"
 
 #include <ctime>

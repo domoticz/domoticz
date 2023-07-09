@@ -4,7 +4,6 @@
 #include "../main/Logger.h"
 #include "../httpclient/HTTPClient.h"
 #include "../httpclient/UrlEncode.h"
-#include "../main/localtime_r.h"
 #include "../main/json_helper.h"
 #include "../main/mainworker.h"
 #include "../main/RFXtrx.h"
@@ -709,13 +708,21 @@ void EnphaseAPI::parseProduction(const Json::Value& root)
 		//No production details available
 		return;
 	}
-
-	Json::Value reading = root["production"][0];
+	size_t sproduction = root["production"].size();
+	bool bIsMeteredVersion = (sproduction > 1);
+	if (bIsMeteredVersion)
+	{
+		bIsMeteredVersion = root["production"][1]["whLifetime"].asInt() != 0;
+	}
+	Json::Value reading = (bIsMeteredVersion) ? root["production"][1] : root["production"][0];
 
 	int musage = reading["wNow"].asInt();
 	int mtotal = reading["whLifetime"].asInt();
 
-	SendKwhMeter(m_HwdID, 1, 255, musage, mtotal / 1000.0, "Enphase kWh Production");
+	if (mtotal != 0)
+	{
+		SendKwhMeter(m_HwdID, 1, 255, musage, mtotal / 1000.0, "Enphase kWh Production");
+	}
 }
 
 void EnphaseAPI::parseConsumption(const Json::Value& root)
@@ -737,8 +744,10 @@ void EnphaseAPI::parseConsumption(const Json::Value& root)
 		std::string szName = "Enphase " + itt["measurementType"].asString();
 		int musage = itt["wNow"].asInt();
 		int mtotal = itt["whLifetime"].asInt();
-
-		SendKwhMeter(m_HwdID, iIndex++, 255, musage, mtotal / 1000.0, szName);
+		if (mtotal != 0)
+		{
+			SendKwhMeter(m_HwdID, iIndex++, 255, musage, mtotal / 1000.0, szName);
+		}
 	}
 }
 

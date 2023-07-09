@@ -2,7 +2,6 @@
 #include <iostream>
 #include "Camera.h"
 #include "HTMLSanitizer.h"
-#include "localtime_r.h"
 #include "Logger.h"
 #include "Helper.h"
 #include "mainworker.h"

@@ -1,7 +1,6 @@
 #pragma once
 
 #include "DomoticzHardware.h"
-#include "../main/concurrent_queue.h"
 
 class MySensorsBase : public CDomoticzHardwareBase
 {

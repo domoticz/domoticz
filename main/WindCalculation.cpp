@@ -1,7 +1,6 @@
 #include "stdafx.h"
 #include "WindCalculation.h"
 #include <time.h>
-#include "../main/localtime_r.h"
 #include <string.h>
 #include <math.h>
 

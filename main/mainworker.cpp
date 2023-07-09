@@ -2,7 +2,6 @@
 #include "mainworker.h"
 #include "Helper.h"
 #include "SunRiseSet.h"
-#include "localtime_r.h"
 #include "Logger.h"
 #include "WebServerHelper.h"
 #include "SQLHelper.h"

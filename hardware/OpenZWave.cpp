@@ -22,7 +22,6 @@
 #include "../main/mainworker.h"
 
 #include <json/json.h>
-#include "../main/localtime_r.h"
 
 //OpenZWave includes
 #include <Options.h>

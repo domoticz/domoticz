@@ -5,7 +5,6 @@
 #include "../main/Helper.h"
 #include "../main/RFXtrx.h"
 #include "hardwaretypes.h"
-#include "../main/localtime_r.h"
 
 #include "../main/mainworker.h"
 #include "../main/WebServer.h"

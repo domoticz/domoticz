@@ -4,7 +4,6 @@
 //see www.bticino.it; www.myhome-bticino.it
 #include "stdafx.h"
 #include "bt_openwebnet.h"
-#include "../../main/localtime_r.h"
 
 // private methods ......
 

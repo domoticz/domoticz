@@ -5,7 +5,6 @@
 #include "../main/HTMLSanitizer.h"
 #include "../main/RFXtrx.h"
 #include "../main/SQLHelper.h"
-#include "../main/localtime_r.h"
 #include "../main/WebServer.h"
 #include "../main/mainworker.h"
 #include "hardwaretypes.h"

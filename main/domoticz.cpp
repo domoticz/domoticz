@@ -30,7 +30,6 @@
 #include "SQLHelper.h"
 #include "../notifications/NotificationHelper.h"
 #include "appversion.h"
-#include "localtime_r.h"
 #include "SignalHandler.h"
 
 #if defined WIN32
