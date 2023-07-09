@@ -1614,7 +1614,7 @@ bool MQTTAutoDiscover::GuessSensorTypeValue(const _tMQTTASensor* pSensor, uint8_
 		float fUsage = 0;
 		float fkWh = static_cast<float>(atof(pSensor->last_value.c_str())) * 1000.0F;
 
-		if (fUsage < -1000000)
+		if (fkWh < -1000000)
 		{
 			//Way to negative, probably a bug in the sensor
 			return false;
