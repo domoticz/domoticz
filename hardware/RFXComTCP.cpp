@@ -2,7 +2,6 @@
 #include "RFXComTCP.h"
 #include "../main/Logger.h"
 #include "../main/Helper.h"
-#include "../main/localtime_r.h"
 #include "../main/mainworker.h"
 
 #define RETRY_DELAY 30

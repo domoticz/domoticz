@@ -4,7 +4,6 @@
 #include "../main/Helper.h"
 #include "../main/RFXtrx.h"
 #include "../main/SQLHelper.h"
-#include "../main/localtime_r.h"
 #include "hardwaretypes.h"
 #include <string>
 #include <sstream>

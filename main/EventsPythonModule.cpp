@@ -5,7 +5,6 @@
 #include "EventsPythonDevice.h"
 #include "EventSystem.h"
 #include "mainworker.h"
-#include "localtime_r.h"
 #include "../hardware/plugins/Plugins.h"
 
 #include <fstream>

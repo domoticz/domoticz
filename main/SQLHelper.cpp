@@ -11,7 +11,6 @@
 #include <iomanip>
 #include "RFXtrx.h"
 #include "RFXNames.h"
-#include "localtime_r.h"
 #include "Logger.h"
 #include "mainworker.h"
 #include "../main/json_helper.h"
@@ -8216,8 +8215,7 @@ void CSQLHelper::DeleteDateRange(const char *ID, const std::string &fromDate, co
 
 void CSQLHelper::DeleteDataPoint(const char* ID, const std::string& Date)
 {
-
-	char szDateEnd[100];
+	std::string sDataEnd = Date;
 	if (Date.find(':') != std::string::npos)
 	{
 		time_t now = mytime(nullptr);
@@ -8227,12 +8225,9 @@ void CSQLHelper::DeleteDataPoint(const char* ID, const std::string& Date)
 		time_t cEndTime;
 		ParseSQLdatetime(cEndTime, tLastUpdate, Date, tLastUpdate.tm_isdst);
 		tLastUpdate.tm_min += 2;
-		sprintf(szDateEnd, "%04d-%02d-%02d %02d:%02d:%02d", tLastUpdate.tm_year + 1900, tLastUpdate.tm_mon + 1, tLastUpdate.tm_mday, tLastUpdate.tm_hour, tLastUpdate.tm_min, tLastUpdate.tm_sec);
-
-		DeleteDateRange(ID, Date.c_str(), szDateEnd);
+		sDataEnd = std_format("%04d-%02d-%02d %02d:%02d:%02d", tLastUpdate.tm_year + 1900, tLastUpdate.tm_mon + 1, tLastUpdate.tm_mday, tLastUpdate.tm_hour, tLastUpdate.tm_min, tLastUpdate.tm_sec);
 	}
-	else
-		DeleteDateRange(ID, Date.c_str(), Date.c_str() );
+	DeleteDateRange(ID, Date, sDataEnd);
 }
 
 void CSQLHelper::AddTaskItem(const _tTaskItem& tItem, const bool cancelItem)

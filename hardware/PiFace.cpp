@@ -55,7 +55,6 @@
 #include <functional>
 #include <cctype>
 #include <locale>
-#include "../main/localtime_r.h"
 #include "../main/WebServer.h"
 #include "../main/mainworker.h"
 

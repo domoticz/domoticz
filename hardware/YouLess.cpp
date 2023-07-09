@@ -5,7 +5,6 @@
 #include "../httpclient/HTTPClient.h"
 #include "../httpclient/UrlEncode.h"
 #include "hardwaretypes.h"
-#include "../main/localtime_r.h"
 #include "../main/mainworker.h"
 #include "../main/json_helper.h"
 

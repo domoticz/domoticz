@@ -1,7 +1,6 @@
 #include "stdafx.h"
 #include "P1MeterSerial.h"
 #include "../main/Logger.h"
-#include "../main/localtime_r.h"
 #include "../main/Helper.h"
 #include "../main/SQLHelper.h"
 #include "../main/mainworker.h"

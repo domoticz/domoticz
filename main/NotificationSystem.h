@@ -3,9 +3,7 @@
 #include <string>
 #include <mutex>
 
-#include "concurrent_queue.h"
 #include "NotificationObserver.h"
-#include "StoppableTask.h"
 
 class CNotificationSystem: public StoppableTask
 {

@@ -2,7 +2,6 @@
 #include "CurrentCostMeterTCP.h"
 #include "../main/Logger.h"
 #include "../main/Helper.h"
-#include "../main/localtime_r.h"
 #include <iostream>
 
 #define RETRY_DELAY 30

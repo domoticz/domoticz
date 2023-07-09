@@ -6,7 +6,6 @@
 #include "Helper.h"
 #include "../httpclient/UrlEncode.h"
 #include "../httpclient/HTTPClient.h"
-#include "StoppableTask.h"
 
 #define timer_resolution_hz 25
 

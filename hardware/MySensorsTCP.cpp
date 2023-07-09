@@ -3,7 +3,6 @@
 #include "../main/Logger.h"
 #include "../main/Helper.h"
 #include <iostream>
-#include "../main/localtime_r.h"
 #include "../main/mainworker.h"
 
 #define RETRY_DELAY 30

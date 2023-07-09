@@ -17,7 +17,6 @@
 #include "../../main/Logger.h"
 #include "../../main/SQLHelper.h"
 #include "../../main/mainworker.h"
-#include "../../main/localtime_r.h"
 #include "../../tinyxpath/tinyxml.h"
 
 #include "../../notifications/NotificationHelper.h"

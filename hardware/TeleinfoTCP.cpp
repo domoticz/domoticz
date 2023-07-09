@@ -2,7 +2,6 @@
 #include "TeleinfoTCP.h"
 #include "../main/Logger.h"
 #include "../main/Helper.h"
-#include "../main/localtime_r.h"
 
 CTeleinfoTCP::CTeleinfoTCP(const int ID, const std::string &IPAddress, const unsigned short usIPPort, int datatimeout, const bool disable_crc, const int ratelimit):
 	m_szIPAddress(IPAddress),
