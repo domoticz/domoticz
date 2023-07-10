@@ -11,7 +11,7 @@ namespace Json
 class EnphaseAPI : public CDomoticzHardwareBase
 {
 public:
-	EnphaseAPI(int ID, const std::string& IPAddress, unsigned short usIPPort, int PollInterval, const bool bPollInverters, const std::string& szUsername, const std::string& szPassword, const bool bUseEnvoyTokenMethod);
+	EnphaseAPI(int ID, const std::string& IPAddress, unsigned short usIPPort, int PollInterval, const bool bPollInverters, const std::string& szUsername, const std::string& szPassword, const std::string &szSiteID);
 	~EnphaseAPI() override = default;
 	bool WriteToHardware(const char* pdata, unsigned char length) override;
 	std::string m_szSoftwareVersion;
@@ -21,11 +21,11 @@ private:
 	void Do_Work();
 
 	bool GetSerialSoftwareVersion();
-	bool GetAccessTokenEnlighten();
-	bool GetAccessTokenEnvoy();
+	bool GetOwnerToken();
+	bool GetInstallerToken();
 	bool getProductionDetails(Json::Value& result);
 	bool getGridStatus(Json::Value& result);
-	bool getPowerStatus(Json::Value& result);
+	bool getPowerStatus();
 	bool getInverterDetails();
 	std::string V5_emupwGetMobilePasswd(const std::string &serialNumber, const std::string &userName, const std::string &realm);
 
@@ -33,7 +33,6 @@ private:
 	void parseConsumption(const Json::Value& root);
 	void parseStorage(const Json::Value& root);
 	void parseGridStatus(const Json::Value& root);
-	void parsePowerStatus(const Json::Value& root);
 	bool SetPowerActive(const bool bActive);
 
 	bool IsItSunny();
@@ -48,15 +47,15 @@ private:
 
 	std::string m_szSerial;
 	std::string m_szToken;
+	std::string m_szTokenInstaller;
 	std::string m_szIPAddress;
 	std::string m_szInstallerPassword; // derived from serial number
 
 	std::string m_szUsername;
 	std::string m_szPassword;
+	std::string m_szSiteID;
 
 	bool m_bGetInverterDetails = false;
-	bool m_bUseEnvoyTokenMethod = false;
-
 
 	bool m_bHaveConsumption = false;
 	bool m_bHaveNetConsumption = false;
