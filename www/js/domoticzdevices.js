@@ -1260,7 +1260,12 @@ TemperatureSensor.inheritsFrom(VariableSensor);
 function PercentageSensor(item) {
     if (arguments.length != 0) {
         this.parent.constructor(item);
-        this.image = "images/Percentage48.png";
+		this.image = "images/";
+		if (item.CustomImage == 0)  {
+			this.image += 'Percentage48.png';
+		} else {
+			this.image += item.Image + '48_On.png';
+		}
         this.LogLink = this.onClick = "window.location.href = '#/Devices/" + this.index + "/Log'";
     }
 }
@@ -1820,7 +1825,12 @@ Temperature.inheritsFrom(TemperatureSensor);
 function Percentage(item) {
     if (arguments.length != 0) {
         this.parent.constructor(item);
-		this.image = "images/" + (item.CustomImage == 0)  ? 'Percentage48.png' : item.Image + '48_On.png';
+		this.image = "images/";
+		if (item.CustomImage == 0)  {
+			this.image += 'Percentage48.png';
+		} else {
+			this.image += item.Image + '48_On.png';
+		}
 		this.LogLink = this.onClick = "window.location.href = '#/Devices/" + this.index + "/Log'";
     }
 }
