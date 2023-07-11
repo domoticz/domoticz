@@ -35,6 +35,8 @@ private:
 	void parseGridStatus(const Json::Value& root);
 	bool SetPowerActive(const bool bActive);
 
+	bool CheckAuthJWT(const std::string& szToken);
+
 	bool IsItSunny();
 	int getSunRiseSunSetMinutes(bool bGetSunRise);
 

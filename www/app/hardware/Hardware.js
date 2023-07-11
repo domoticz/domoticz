@@ -595,6 +595,7 @@ define(['app'], function (app) {
 						Mode2 = 1;
 					username = $("#hardwarecontent #divlogin #username").val();
 					password = $("#hardwarecontent #divlogin #password").val();
+					extra = $("#hardwarecontent #divenphase #siteid").val();
 				}
 				else if (text.indexOf("Alfen") >= 0) {
 					username = $("#hardwarecontent #divlogin #username").val();
@@ -1779,6 +1780,7 @@ define(['app'], function (app) {
 						Mode2 = 1;
 					username = $("#hardwarecontent #divlogin #username").val();
 					password = $("#hardwarecontent #divlogin #password").val();
+					extra = $("#hardwarecontent #divenphase #siteid").val();
 				}
 				else if (text.indexOf("Alfen") >= 0) {
 					username = $("#hardwarecontent #divlogin #username").val();
@@ -4196,6 +4198,7 @@ define(['app'], function (app) {
 									pollInterval=120;
 								$("#hardwarecontent #divenphase #pollinterval").val(pollInterval);
 								$("#hardwarecontent #divenphase #readinverters").prop('checked', parseInt(data["Mode2"]) != 0);
+								$("#hardwarecontent #divenphase #siteid").val(data["Extra"]);
 							}
 						}
 						else if (

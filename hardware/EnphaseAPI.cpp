@@ -121,7 +121,6 @@ EnphaseAPI::EnphaseAPI(const int ID, const std::string& IPAddress, const unsigne
 	if (!result.empty())
 	{
 		m_szTokenInstaller = result[0][1];
-		m_szToken = m_szTokenInstaller;
 	}
 	//(We can probably not use them both at the same time)
 }
@@ -364,7 +363,7 @@ bool EnphaseAPI::GetSerialSoftwareVersion()
 	sResult = ReadFile("E:\\EnphaseAPI_info.xml");
 #else
 	std::stringstream sURL;
-	sURL << "http://" << m_szIPAddress << "/info.xml";
+	sURL << "https://" << m_szIPAddress << "/info.xml";
 
 	if (!HTTPClient::GET(sURL.str(), sResult))
 	{
@@ -436,6 +435,37 @@ bool EnphaseAPI::GetSerialSoftwareVersion()
 		}
 	}
 
+	return true;
+}
+
+bool EnphaseAPI::CheckAuthJWT(const std::string& szToken)
+{
+#ifdef DEBUG_EnphaseAPI_R
+	sResult = ReadFile("E:\\EnphaseAPI_check_jwt.json");
+#else
+	//Validate token on IQ Gateway
+	std::vector<std::string> ExtraHeaders;
+	ExtraHeaders.push_back("Accept: application/json");
+	ExtraHeaders.push_back("Authorization: Bearer " + szToken);
+
+	std::string sURL = "https://" + m_szIPAddress + "/auth/check_jwt";
+
+	std::string sResult;
+	if (!HTTPClient::GET(sURL, ExtraHeaders, sResult, false, true))
+	{
+		Log(LOG_ERROR, "Error getting http data! (check_jwt)");
+		return false;
+	}
+#ifdef DEBUG_EnphaseAPI_W
+	SaveString2Disk(sResult, "E:\\EnphaseAPI_check_jwt.json");
+#endif
+#endif
+
+	if (sResult.find("Valid token") == std::string::npos)
+	{
+		Log(LOG_ERROR, "Error getting http data! (invalid token!)");
+		return false;
+	}
 	return true;
 }
 
@@ -535,62 +565,8 @@ bool EnphaseAPI::GetOwnerToken()
 	char buffer[80];
 	strftime(buffer, 80, "%Y-%m-%d %H:%M:%S", timeinfo);
 	Log(LOG_STATUS, "Token expires at: %s", buffer);
-	/*
-	#ifdef DEBUG_EnphaseAPI_R
-		sResult = ReadFile("E:\\EnphaseAPI_token.json");
-	#else
-		Json::Value reqRoot;
-		reqRoot["session_id"] = session_id;
-		reqRoot["serial_num"] = m_szSerial;
-		reqRoot["username"] = m_szUsername;
-
-
-		szPostdata = JSonToRawString(reqRoot);
-
-		ExtraHeaders.push_back("Content-type: application/json");
-
-		sURL = "https://entrez.enphaseenergy.com/tokens";
-
-		if (!HTTPClient::POST(sURL, szPostdata, ExtraHeaders, sResult))
-		{
-			Log(LOG_ERROR, "Error getting http data! (get token)");
-			return false;
-		}
-	#ifdef DEBUG_EnphaseAPI_W
-		SaveString2Disk(sResult, "E:\\EnphaseAPI_token.json");
-	#endif
-	#endif
-		if (sResult.find("Failed") != std::string::npos)
-		{
-			Log(LOG_ERROR, "Error getting http data! (token returned)");
-			return false;
-		}
-
-		m_szToken = sResult;
-	*/
-#ifdef DEBUG_EnphaseAPI_R
-	sResult = ReadFile("E:\\EnphaseAPI_check_jwt.json");
-#else
-	//Validate token on IQ Gateway
-	ExtraHeaders.push_back("Authorization: Bearer " + m_szToken);
-
-	sURL = "http://" + m_szIPAddress + "/auth/check_jwt";
-
-	if (!HTTPClient::GET(sURL, ExtraHeaders, sResult))
-	{
-		Log(LOG_ERROR, "Error getting http data! (check_jwt)");
+	if (!CheckAuthJWT(m_szToken))
 		return false;
-	}
-#ifdef DEBUG_EnphaseAPI_W
-	SaveString2Disk(sResult, "E:\\EnphaseAPI_check_jwt.json");
-#endif
-#endif
-
-	if (sResult.find("Valid token") == std::string::npos)
-	{
-		Log(LOG_ERROR, "Error getting http data! (invalid token!)");
-		return false;
-	}
 
 	//Store token for later usage
 	std::string szName = "EnphaseToken_" + std::to_string(m_HwdID);
@@ -690,31 +666,8 @@ bool EnphaseAPI::GetInstallerToken()
 
 	m_szTokenInstaller = sResult;
 
-#ifdef DEBUG_EnphaseAPI_R
-	sResult = ReadFile("E:\\EnphaseAPI_check_jwt_ex.json");
-#else
-	//Validate token on IQ Gateway
-	ExtraHeaders.clear();
-	ExtraHeaders.push_back("Authorization: Bearer " + m_szTokenInstaller);
-
-	sURL = "http://" + m_szIPAddress + "/auth/check_jwt";
-
-	if (!HTTPClient::GET(sURL, ExtraHeaders, sResult))
-	{
-		m_szTokenInstaller.clear();
-		Log(LOG_ERROR, "Error getting http data! (check_jwt)");
+	if (!CheckAuthJWT(m_szTokenInstaller))
 		return false;
-	}
-#ifdef DEBUG_EnphaseAPI_W
-	SaveString2Disk(sResult, "E:\\EnphaseAPI_check_jwt_ex.json");
-#endif
-#endif
-	if (sResult.find("Valid token") == std::string::npos)
-	{
-		m_szTokenInstaller.clear();
-		Log(LOG_ERROR, "Error getting http data! (invalid token!)");
-		return false;
-	}
 
 	//Store token for later usage
 	std::string szName = "EnphaseToken_" + std::to_string(m_HwdID) + "_ex";
@@ -735,12 +688,15 @@ bool EnphaseAPI::getProductionDetails(Json::Value& result)
 {
 	std::string sResult;
 
+	if (!CheckAuthJWT(m_szToken))
+		return false;
+
 #ifdef DEBUG_EnphaseAPI_R
 	sResult = ReadFile("E:\\EnphaseAPI_production.json");
 #else
 	std::stringstream sURL;
 	//sURL << "https://" << m_szIPAddress << "/api/v1/production";
-	sURL << "http://" << m_szIPAddress << "/production.json?details=1";
+	sURL << "https://" << m_szIPAddress << "/production.json?details=1";
 
 	std::vector<std::string> ExtraHeaders;
 	if (!m_szToken.empty()) {
@@ -882,7 +838,7 @@ bool EnphaseAPI::getGridStatus(Json::Value& result)
 	sResult = ReadFile("E:\\EnphaseAPI_home.json");
 #else
 	std::stringstream sURL;
-	sURL << "http://" << m_szIPAddress << "/home.json";
+	sURL << "https://" << m_szIPAddress << "/home.json";
 
 	std::vector<std::string> ExtraHeaders;
 	if (!m_szToken.empty()) {
@@ -945,20 +901,23 @@ bool EnphaseAPI::getPowerStatus()
 {
 	if (m_szTokenInstaller.empty())
 		return false;
+
+	if (!CheckAuthJWT(m_szTokenInstaller))
+		return false;
+
 	std::string sResult;
 
 #ifdef DEBUG_EnphaseAPI_R
 	sResult = ReadFile("E:\\EnphaseAPI_power.json");
 #else
 
-	std::stringstream sURL;
-	sURL << "http://" << m_szIPAddress << "/ivp/mod/603980032/mode/power";
+	std::string szURL = "https://" + m_szIPAddress + "/ivp/mod/603980032/mode/power";
 
 	std::vector<std::string> ExtraHeaders;
 	ExtraHeaders.push_back("Authorization: Bearer " + m_szTokenInstaller);
 	ExtraHeaders.push_back("Accept: application/json");
 
-	if (!HTTPClient::GET(sURL.str(), ExtraHeaders, sResult))
+	if (!HTTPClient::GET(szURL, ExtraHeaders, sResult))
 	{
 		Log(LOG_ERROR, "Error getting http data! (power)");
 		return false;
@@ -1004,52 +963,33 @@ bool EnphaseAPI::SetPowerActive(const bool bActive)
 		return false;
 	}
 
+	if (!CheckAuthJWT(m_szTokenInstaller))
+		return false;
+
 	std::string sResult;
 
-	//First verify token
+	std::stringstream sURL;
+	sURL << "https://" << m_szIPAddress << "/ivp/mod/603980032/mode/power";
 
 	std::vector<std::string> ExtraHeaders;
-	ExtraHeaders.push_back("Content-type: application/json");
-	ExtraHeaders.push_back("Authorization: Bearer " + m_szTokenInstaller);
-
-	std::string szURL = "http://" + m_szIPAddress + "/auth/check_jwt";
-
-	if (!HTTPClient::GET(szURL, ExtraHeaders, sResult))
-	{
-		Log(LOG_ERROR, "Error getting http data! (check_jwt)");
-		return false;
-	}
-
-	std::stringstream sURL;
-	sURL << "http://" << m_szIPAddress << "/ivp/mod/603980032/mode/power";
-
-	ExtraHeaders.clear();
 	ExtraHeaders.push_back("Accept: application/json");
 	ExtraHeaders.push_back("Authorization: Bearer " + m_szTokenInstaller);
-
 	ExtraHeaders.push_back("Content-Type: application/x-www-form-urlencoded");
 
 	//{"length":1,"arr":[0]}: 
 	std::stringstream sstr;
 	sstr
 		<< "{\"length\":1,\"arr\":["
-		//<< (bActive ? "0" : "1")
-		<< (!bActive ? "0" : "1")
+		<< (bActive ? "0" : "1")
 		<< "]}";
 	std::string szPutdata = sstr.str();
 
-	if (!HTTPClient::PUT(sURL.str(), szPutdata, ExtraHeaders, sResult))
+	if (!HTTPClient::PUT(sURL.str(), szPutdata, ExtraHeaders, sResult, true))
 	{
 		Log(LOG_ERROR, "Error getting http data! (set power)");
 		return false;
 	}
-
-#ifdef DEBUG_EnphaseAPI_W
-	SaveString2Disk(sResult, "E:\\EnphaseAPI_setpower.json");
-#endif
-
-	Debug(DEBUG_RECEIVED, "set_power: %s", sResult.c_str());
-
+	//there is no return
 	return true;
 }
 
@@ -1076,7 +1016,7 @@ bool EnphaseAPI::getInverterDetails()
 	sResult = ReadFile("E:\\EnphaseAPI_inverters.json");
 #else
 	std::stringstream sURL;
-	sURL << "http://";
+	sURL << "https://";
 
 	if (!NeedToken())
 	{
@@ -1096,7 +1036,7 @@ bool EnphaseAPI::getInverterDetails()
 		if (!NeedToken() && !m_szInstallerPassword.empty())
 		{
 			std::stringstream sURLInstallerPwd;
-			sURLInstallerPwd << "http://installer:" << m_szInstallerPassword << "@" << m_szIPAddress << "/api/v1/production/inverters";
+			sURLInstallerPwd << "https://installer:" << m_szInstallerPassword << "@" << m_szIPAddress << "/api/v1/production/inverters";
 			if (!HTTPClient::GET(sURLInstallerPwd.str(), ExtraHeaders, sResult))
 			{
 				Log(LOG_ERROR, "Invalid data received! (inverter details)");
