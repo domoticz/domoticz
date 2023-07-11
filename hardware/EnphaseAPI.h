@@ -24,15 +24,13 @@ private:
 	bool GetOwnerToken();
 	bool GetInstallerToken();
 	bool getProductionDetails(Json::Value& result);
-	bool getGridStatus(Json::Value& result);
+	bool getGridStatus();
 	bool getPowerStatus();
 	bool getInverterDetails();
-	std::string V5_emupwGetMobilePasswd(const std::string &serialNumber, const std::string &userName, const std::string &realm);
 
 	void parseProduction(const Json::Value& root);
 	void parseConsumption(const Json::Value& root);
 	void parseStorage(const Json::Value& root);
-	void parseGridStatus(const Json::Value& root);
 	bool SetPowerActive(const bool bActive);
 
 	bool CheckAuthJWT(const std::string& szToken);

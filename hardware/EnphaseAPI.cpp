@@ -230,6 +230,10 @@ void EnphaseAPI::Do_Work()
 					{
 						m_szTokenInstaller.clear(); //force new installer token
 					}
+					else
+					{
+						//getGridStatus();
+					}
 				}
 				bHaveRunOnce = true;
 			}
@@ -314,7 +318,7 @@ int EnphaseAPI::getSunRiseSunSetMinutes(const bool bGetSunRise)
 }
 
 // emupwGetMobilePasswd taken from https://github.com/sarnau/EnphaseEnergy
-std::string EnphaseAPI::V5_emupwGetMobilePasswd(const std::string& serialNumber, const std::string& userName, const std::string& realm)
+std::string V5_emupwGetMobilePasswd(const std::string& serialNumber, const std::string& userName, const std::string& realm)
 {
 	std::string digest = GenerateMD5Hash(std::string("[e]") + userName + "@" + realm + "#" + serialNumber + " EnPhAsE eNeRgY ");
 	if (digest.length() <= 8)
@@ -830,7 +834,7 @@ void EnphaseAPI::parseStorage(const Json::Value& root)
 	m_bHaveStorage = true;
 }
 
-bool EnphaseAPI::getGridStatus(Json::Value& result)
+bool EnphaseAPI::getGridStatus()
 {
 	std::string sResult;
 
@@ -842,7 +846,7 @@ bool EnphaseAPI::getGridStatus(Json::Value& result)
 
 	std::vector<std::string> ExtraHeaders;
 	if (!m_szToken.empty()) {
-		ExtraHeaders.push_back("Authorization: Bearer " + m_szToken);
+		ExtraHeaders.push_back("Authorization: Bearer " + m_szTokenInstaller);
 		ExtraHeaders.push_back("Content-Type:application/json");
 	}
 
@@ -864,6 +868,7 @@ bool EnphaseAPI::getGridStatus(Json::Value& result)
 #endif
 	Debug(DEBUG_RECEIVED, "gridstatus/home: %s", sResult.c_str());
 
+	Json::Value result;
 	bool ret = ParseJSon(sResult, result);
 	if ((!ret) || (!result.isObject()))
 	{
@@ -871,29 +876,21 @@ bool EnphaseAPI::getGridStatus(Json::Value& result)
 		Log(LOG_ERROR, "Invalid data received! (gridstatus/json)");
 		return false;
 	}
-	if (result["enpower"].empty())
+	if (result["network"].empty())
 	{
-		m_szToken.clear();
-		Log(LOG_ERROR, "Invalid (no) data received (gridstatus, objects not found)");
+		Log(LOG_ERROR, "Invalid data received! (gridstatus/json)");
 		return false;
 	}
+	if (result["enpower"].empty())
+		return true; //no gridstatus available (no battery)
+	if (result["enpower"]["grid_status"].empty())
+		return true;
+	
+	std::string szGridStatus = result["enpower"]["grid_status"].asString();
+	bool bIsOnGrid = (szGridStatus == "closed");
+	SendSwitch(1, 2, 255, bIsOnGrid, 0, "On Grid", "EnphaseAPI");
+
 	return true;
-}
-
-void EnphaseAPI::parseGridStatus(const Json::Value& root)
-{
-	if (!IsItSunny())
-	{
-		m_sql.safe_query(
-			"UPDATE DeviceStatus SET LastUpdate='%s' WHERE (HardwareID==%d)", TimeToString(nullptr, TF_DateTime).c_str(), m_HwdID);
-		return;
-	}
-	if (root["enpower"].empty() == true)
-	{
-		//No production details available
-		return;
-	}
-
 }
 
 //this can only be called when we have a valid Envoy token (with GetInstallerToken)
