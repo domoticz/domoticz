@@ -673,7 +673,7 @@ bool EnphaseAPI::GetInstallerToken()
 	std::string szName = "EnphaseToken_" + std::to_string(m_HwdID) + "_ex";
 	m_sql.safe_query("UPDATE UserVariables SET Value='%q', LastUpdate='%s' WHERE (Name=='%q')", m_szTokenInstaller.c_str(), TimeToString(nullptr, TF_DateTime).c_str(), szName.c_str());
 
-	return false;
+	return true;
 }
 
 bool EnphaseAPI::NeedToken()
