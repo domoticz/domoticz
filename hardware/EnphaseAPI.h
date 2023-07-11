@@ -40,6 +40,8 @@ private:
 
 	bool NeedToken();
 
+	std::string MakeURL(const char* szPath);
+
 	uint64_t UpdateValueInt(const char* ID, unsigned char unit, unsigned char devType, unsigned char subType, unsigned char signallevel, unsigned char batterylevel, int nValue,
 		const char* sValue, std::string& devname, bool bUseOnOffAction = true, const std::string& user = "");
 private:

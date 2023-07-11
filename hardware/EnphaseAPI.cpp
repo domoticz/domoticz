@@ -28,6 +28,15 @@ Example
 {"production":[{"type":"inverters","activeCount":9,"readingTime":1568991780,"wNow":712,"whLifetime":1448651},{"type":"eim","activeCount":1,"measurementType":"production","readingTime":1568991966,"wNow":624.315,"whLifetime":1455843.527,"varhLeadLifetime":0.001,"varhLagLifetime":311039.158,"vahLifetime":1619431.681,"rmsCurrent":2.803,"rmsVoltage":233.289,"reactPwr":137.092,"apprntPwr":654.245,"pwrFactor":0.95,"whToday":4295.527,"whLastSevenDays":74561.527,"vahToday":5854.681,"varhLeadToday":0.001,"varhLagToday":2350.158}],"consumption":[{"type":"eim","activeCount":1,"measurementType":"total-consumption","readingTime":1568991966,"wNow":1260.785,"whLifetime":2743860.336,"varhLeadLifetime":132372.858,"varhLagLifetime":273043.125,"vahLifetime":3033001.948,"rmsCurrent":5.995,"rmsVoltage":233.464,"reactPwr":437.269,"apprntPwr":1399.886,"pwrFactor":0.9,"whToday":11109.336,"whLastSevenDays":129007.336,"vahToday":13323.948,"varhLeadToday":895.858,"varhLagToday":3700.125},{"type":"eim","activeCount":1,"measurementType":"net-consumption","readingTime":1568991966,"wNow":636.47,"whLifetime":0.0,"varhLeadLifetime":132372.857,"varhLagLifetime":-37996.033,"vahLifetime":3033001.948,"rmsCurrent":3.191,"rmsVoltage":233.376,"reactPwr":574.361,"apprntPwr":744.807,"pwrFactor":0.85,"whToday":0,"whLastSevenDays":0,"vahToday":0,"varhLeadToday":0,"varhLagToday":0}],"storage":[{"type":"acb","activeCount":0,"readingTime":0,"wNow":0,"whNow":0,"state":"idle"}]}
 */
 
+#define ENPHASE_API_INFO "https://{ip}/info.xml"
+#define ENPHASE_API_HOME "https://{ip}/home.json"
+#define ENPHASE_API_CHECK_JWT "https://{ip}/auth/check_jwt"
+#define ENPHASE_API_PRODUCTION "https://{ip}/production.json?details=1"
+#define ENPHASE_API_PRODUCTION_V1 "https://{ip}/api/v1/production"
+#define ENPHASE_API_PRODUCTION_INVERTERS "https://{ip}/api/v1/production/inverters"
+#define ENPHASE_API_POWER_GET "https://{ip}/ivp/mod/603980032/mode/power"
+#define ENPHASE_API_POWER_SET "https://{ip}/ivp/mod/603980032/mode/power"
+
 #ifdef DEBUG_EnphaseAPI_W
 void SaveString2Disk(std::string str, std::string filename)
 {
@@ -359,6 +368,13 @@ std::string V5_emupwGetMobilePasswd(const std::string& serialNumber, const std::
 	return szPassword;
 }
 
+std::string EnphaseAPI::MakeURL(const char* szPath)
+{
+	std::string sPath(szPath);
+	stdreplace(sPath, "{ip}", m_szIPAddress);
+	return sPath;
+}
+
 bool EnphaseAPI::GetSerialSoftwareVersion()
 {
 	std::string sResult;
@@ -366,10 +382,7 @@ bool EnphaseAPI::GetSerialSoftwareVersion()
 #ifdef DEBUG_EnphaseAPI_R
 	sResult = ReadFile("E:\\EnphaseAPI_info.xml");
 #else
-	std::stringstream sURL;
-	sURL << "https://" << m_szIPAddress << "/info.xml";
-
-	if (!HTTPClient::GET(sURL.str(), sResult))
+	if (!HTTPClient::GET(MakeURL(ENPHASE_API_INFO), sResult))
 	{
 		Log(LOG_ERROR, "Error getting http data! (info)");
 		return false;
@@ -452,10 +465,8 @@ bool EnphaseAPI::CheckAuthJWT(const std::string& szToken)
 	ExtraHeaders.push_back("Accept: application/json");
 	ExtraHeaders.push_back("Authorization: Bearer " + szToken);
 
-	std::string sURL = "https://" + m_szIPAddress + "/auth/check_jwt";
-
 	std::string sResult;
-	if (!HTTPClient::GET(sURL, ExtraHeaders, sResult, false, true))
+	if (!HTTPClient::GET(MakeURL(ENPHASE_API_CHECK_JWT), ExtraHeaders, sResult, false, true))
 	{
 		Log(LOG_ERROR, "Error getting http data! (check_jwt)");
 		return false;
@@ -698,17 +709,13 @@ bool EnphaseAPI::getProductionDetails(Json::Value& result)
 #ifdef DEBUG_EnphaseAPI_R
 	sResult = ReadFile("E:\\EnphaseAPI_production.json");
 #else
-	std::stringstream sURL;
-	//sURL << "https://" << m_szIPAddress << "/api/v1/production";
-	sURL << "https://" << m_szIPAddress << "/production.json?details=1";
-
 	std::vector<std::string> ExtraHeaders;
 	if (!m_szToken.empty()) {
 		ExtraHeaders.push_back("Authorization: Bearer " + m_szToken);
 		ExtraHeaders.push_back("Content-Type:application/json");
 	}
 
-	if (!HTTPClient::GET(sURL.str(), ExtraHeaders, sResult))
+	if (!HTTPClient::GET(MakeURL(ENPHASE_API_PRODUCTION), ExtraHeaders, sResult))
 	{
 		if (!m_szToken.empty())
 		{
@@ -841,8 +848,6 @@ bool EnphaseAPI::getGridStatus()
 #ifdef DEBUG_EnphaseAPI_R
 	sResult = ReadFile("E:\\EnphaseAPI_home.json");
 #else
-	std::stringstream sURL;
-	sURL << "https://" << m_szIPAddress << "/home.json";
 
 	std::vector<std::string> ExtraHeaders;
 	if (!m_szToken.empty()) {
@@ -850,7 +855,7 @@ bool EnphaseAPI::getGridStatus()
 		ExtraHeaders.push_back("Content-Type:application/json");
 	}
 
-	if (!HTTPClient::GET(sURL.str(), ExtraHeaders, sResult))
+	if (!HTTPClient::GET(MakeURL(ENPHASE_API_HOME), ExtraHeaders, sResult))
 	{
 		if (!m_szToken.empty())
 		{
@@ -885,7 +890,7 @@ bool EnphaseAPI::getGridStatus()
 		return true; //no gridstatus available (no battery)
 	if (result["enpower"]["grid_status"].empty())
 		return true;
-	
+
 	std::string szGridStatus = result["enpower"]["grid_status"].asString();
 	bool bIsOnGrid = (szGridStatus == "closed");
 	SendSwitch(1, 2, 255, bIsOnGrid, 0, "On Grid", "EnphaseAPI");
@@ -907,14 +912,11 @@ bool EnphaseAPI::getPowerStatus()
 #ifdef DEBUG_EnphaseAPI_R
 	sResult = ReadFile("E:\\EnphaseAPI_power.json");
 #else
-
-	std::string szURL = "https://" + m_szIPAddress + "/ivp/mod/603980032/mode/power";
-
 	std::vector<std::string> ExtraHeaders;
 	ExtraHeaders.push_back("Authorization: Bearer " + m_szTokenInstaller);
 	ExtraHeaders.push_back("Accept: application/json");
 
-	if (!HTTPClient::GET(szURL, ExtraHeaders, sResult))
+	if (!HTTPClient::GET(MakeURL(ENPHASE_API_POWER_GET), ExtraHeaders, sResult))
 	{
 		Log(LOG_ERROR, "Error getting http data! (power)");
 		return false;
@@ -965,9 +967,6 @@ bool EnphaseAPI::SetPowerActive(const bool bActive)
 
 	std::string sResult;
 
-	std::stringstream sURL;
-	sURL << "https://" << m_szIPAddress << "/ivp/mod/603980032/mode/power";
-
 	std::vector<std::string> ExtraHeaders;
 	ExtraHeaders.push_back("Accept: application/json");
 	ExtraHeaders.push_back("Authorization: Bearer " + m_szTokenInstaller);
@@ -981,7 +980,7 @@ bool EnphaseAPI::SetPowerActive(const bool bActive)
 		<< "]}";
 	std::string szPutdata = sstr.str();
 
-	if (!HTTPClient::PUT(sURL.str(), szPutdata, ExtraHeaders, sResult, true))
+	if (!HTTPClient::PUT(MakeURL(ENPHASE_API_POWER_SET), szPutdata, ExtraHeaders, sResult, true))
 	{
 		Log(LOG_ERROR, "Error getting http data! (set power)");
 		return false;
@@ -1012,15 +1011,17 @@ bool EnphaseAPI::getInverterDetails()
 #ifdef DEBUG_EnphaseAPI_R
 	sResult = ReadFile("E:\\EnphaseAPI_inverters.json");
 #else
-	std::stringstream sURL;
-	sURL << "https://";
+	std::string szURL;
 
 	if (!NeedToken())
 	{
 		//Firmware version lower than V7
-		sURL << "envoy:" << m_szSerial.substr(m_szSerial.size() - 6) << "@";
+		szURL = "https://envoy:" + m_szSerial.substr(m_szSerial.size() - 6) + "@" + m_szIPAddress + "/api/v1/production/inverters";
 	}
-	sURL << m_szIPAddress << "/api/v1/production/inverters";
+	else
+	{
+		szURL = MakeURL(ENPHASE_API_PRODUCTION_INVERTERS);
+	}
 
 	std::vector<std::string> ExtraHeaders;
 	if (!m_szToken.empty()) {
@@ -1028,7 +1029,7 @@ bool EnphaseAPI::getInverterDetails()
 		ExtraHeaders.push_back("Content-Type:application/json");
 	}
 
-	if (!HTTPClient::GET(sURL.str(), ExtraHeaders, sResult))
+	if (!HTTPClient::GET(szURL, ExtraHeaders, sResult))
 	{
 		if (!NeedToken() && !m_szInstallerPassword.empty())
 		{
