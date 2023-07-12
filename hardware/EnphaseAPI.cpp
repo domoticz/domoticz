@@ -707,14 +707,14 @@ bool EnphaseAPI::getProductionDetails(Json::Value& result)
 {
 	std::string sResult;
 
-	if (!CheckAuthJWT(m_szToken))
-		return false;
-
 #ifdef DEBUG_EnphaseAPI_R
 	sResult = ReadFile("E:\\EnphaseAPI_production.json");
 #else
 	std::vector<std::string> ExtraHeaders;
 	if (!m_szToken.empty()) {
+		if (!CheckAuthJWT(m_szToken))
+			return false;
+
 		ExtraHeaders.push_back("Authorization: Bearer " + m_szToken);
 		ExtraHeaders.push_back("Content-Type:application/json");
 	}
