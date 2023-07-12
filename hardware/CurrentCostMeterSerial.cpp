@@ -115,12 +115,6 @@ void CurrentCostMeterSerial::Do_Work()
 //Webserver helpers
 namespace http {
 	namespace server {
-		void CWebServer::SetCurrentCostUSBType(WebEmSession & session, const request& req, std::string & redirect_uri)
-		{
-			redirect_uri = "/index.html";
-			Json::Value root;
-			Cmd_SetCurrentCostUSBType(session, req, root);
-		}
 
 		void CWebServer::Cmd_SetCurrentCostUSBType(WebEmSession & session, const request& req, Json::Value& root)
 		{
