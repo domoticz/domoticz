@@ -22,6 +22,7 @@
 #include "../hardware/EnOceanESP2.h"
 #include "../hardware/EnOceanESP3.h"
 #include "../hardware/EnphaseAPI.h"
+#include "../hardware/AlfenEve.h"
 #ifdef WITH_GPIO
 #include "../hardware/Gpio.h"
 #include "../hardware/GpioPin.h"
@@ -7653,6 +7654,11 @@ namespace http
 						else if (pHardware->HwdType == HTYPE_EnphaseAPI)
 						{
 							EnphaseAPI* pMyHardware = dynamic_cast<EnphaseAPI*>(pHardware);
+							root["result"][ii]["version"] = pMyHardware->m_szSoftwareVersion;
+						}
+						else if (pHardware->HwdType == HTYPE_AlfenEveCharger)
+						{
+							AlfenEve* pMyHardware = dynamic_cast<AlfenEve*>(pHardware);
 							root["result"][ii]["version"] = pMyHardware->m_szSoftwareVersion;
 						}
 #ifdef WITH_OPENZWAVE

@@ -3856,6 +3856,9 @@ define(['app'], function (app) {
 							else if (HwTypeStr.indexOf("Enphase") >= 0) {
 								HwTypeStr += '<br>Version: ' + item.version;
 							}							
+							else if (HwTypeStr.indexOf("Alfen") >= 0) {
+								HwTypeStr += '<br>Version: ' + item.version;
+							}							
 							else if (HwTypeStr.indexOf("EnOcean") >= 0 && HwTypeStr.indexOf("(ESP3)") >= 0) {
 								HwTypeStr += ' ' + hardwareSetupLink;
 							}

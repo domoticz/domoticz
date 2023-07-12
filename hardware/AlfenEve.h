@@ -17,6 +17,7 @@ public:
 	~AlfenEve() override = default;
 	bool WriteToHardware(const char* pdata, unsigned char length) override;
 	std::string m_szSoftwareVersion;
+	bool SetChargeCurrent(const int current);
 private:
 	bool StartHardware() override;
 	bool StopHardware() override;
@@ -24,14 +25,16 @@ private:
 
 	bool DoLogin();
 	bool GetProperties(Json::Value& result);
+	bool GetInfo();
 	void DoLogout();
 
-	uint64_t UpdateValueInt(const char* ID, unsigned char unit, unsigned char devType, unsigned char subType, unsigned char signallevel, unsigned char batterylevel, int nValue,
-		const char* sValue, std::string& devname, bool bUseOnOffAction = true, const std::string& user = "");
+	void SetGETHeaders();
+	void SetPOSTHeaders();
 private:
 	std::string BuildURL(const std::string& path);
 	void parseProperties(const Json::Value& root);
 	bool SendCommand(const std::string& command);
+	bool SetProperty(const std::string& szName, const int Value);
 	int m_poll_interval = 30;
 
 	std::string m_szIPAddress;

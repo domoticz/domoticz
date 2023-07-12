@@ -25,7 +25,7 @@
 
 #ifdef _DEBUG
 //#define DEBUG_AlfenEve_R
-//#define DEBUG_AlfenEve_W
+#define DEBUG_AlfenEve_W
 #endif
 
 #ifdef DEBUG_AlfenEve_W
@@ -126,8 +126,6 @@ void AlfenEve::Do_Work()
 	Log(LOG_STATUS, "Worker started...");
 	int sec_counter = m_poll_interval - 4;
 
-	bool bHaveRunOnce = false;
-
 	while (!IsStopRequested(1000))
 	{
 		sec_counter++;
@@ -149,19 +147,21 @@ void AlfenEve::Do_Work()
 				{
 					if (DoLogin())
 					{
-						Json::Value root;
-						bSuccess = GetProperties(root);
-						if (bSuccess)
+						if (GetInfo())
 						{
-							parseProperties(root);
-							bHaveRunOnce = true;
-							break;
+							Json::Value root;
+							bSuccess = GetProperties(root);
+							if (bSuccess)
+							{
+								parseProperties(root);
+								break; //all ok, break out of loop and keep connection open
+							}
 						}
+						if (IsStopRequested(10))
+							break;
+						DoLogout();
+						totRetries++;
 					}
-					DoLogout();
-					if (bHaveRunOnce == false)
-						break; //probably wrong password
-					totRetries++;
 				}
 			}
 			catch (const std::exception& e)
@@ -194,6 +194,21 @@ size_t write_alfen_curl_data(void* contents, size_t size, size_t nmemb, void* us
 	return realsize;
 }
 
+void AlfenEve::SetGETHeaders()
+{
+	struct curl_slist* headers = NULL;
+	headers = curl_slist_append(headers, "Content-Type: alfen/json; charset=utf-8");
+	curl_easy_setopt(m_curl, CURLOPT_HTTPHEADER, headers);
+}
+
+void AlfenEve::SetPOSTHeaders()
+{
+	struct curl_slist* headers = NULL;
+	headers = curl_slist_append(headers, "Content-Type: application/json");
+	curl_easy_setopt(m_curl, CURLOPT_HTTPHEADER, headers);
+}
+
+
 bool AlfenEve::DoLogin()
 {
 	if (m_curl != nullptr)
@@ -217,17 +232,15 @@ bool AlfenEve::DoLogin()
 	curl_easy_setopt(m_curl, CURLOPT_FOLLOWLOCATION, 1L);
 	curl_easy_setopt(m_curl, CURLOPT_SSL_VERIFYPEER, 0);
 	curl_easy_setopt(m_curl, CURLOPT_SSL_VERIFYHOST, 0); //allow self signed certificates
-	int m_iConnectionTimeout = 5; //5 seconds timeout
-	curl_easy_setopt(m_curl, CURLOPT_CONNECTTIMEOUT, m_iConnectionTimeout);
-
-	struct curl_slist* headers = NULL;
-	headers = curl_slist_append(headers, "Content-Type: application/json; charset=utf-8");
-	headers = curl_slist_append(headers, "Accept: application/json");
-	curl_easy_setopt(m_curl, CURLOPT_HTTPHEADER, headers);
+	int _iConnectionTimeout = 5; //5 seconds timeout
+	curl_easy_setopt(m_curl, CURLOPT_CONNECTTIMEOUT, _iConnectionTimeout);
+	curl_easy_setopt(m_curl, CURLOPT_TIMEOUT, _iConnectionTimeout);
 
 	//Login
 	m_vHTTPResponse.clear();
 	std::string szURL = BuildURL("login");
+
+	SetPOSTHeaders();
 
 	curl_easy_setopt(m_curl, CURLOPT_CUSTOMREQUEST, "POST");
 	curl_easy_setopt(m_curl, CURLOPT_URL, szURL.c_str());
@@ -255,6 +268,9 @@ void AlfenEve::DoLogout()
 	{
 		m_vHTTPResponse.clear();
 		std::string szURL = BuildURL("logout");
+
+		SetPOSTHeaders();
+
 		curl_easy_setopt(m_curl, CURLOPT_CUSTOMREQUEST, "POST");
 		curl_easy_setopt(m_curl, CURLOPT_URL, szURL.c_str());
 		curl_easy_perform(m_curl);
@@ -262,49 +278,6 @@ void AlfenEve::DoLogout()
 		curl_easy_cleanup(m_curl);
 		m_curl = nullptr;
 	}
-}
-
-bool AlfenEve::SendCommand(const std::string& command)
-{
-	std::lock_guard<std::mutex> l(m_mutex);
-
-	//examples:
-	//reboot
-
-	int totRetries = 0;
-	bool bSuccess = false;
-
-	while (!bSuccess && totRetries < 2)
-	{
-		if (DoLogin())
-		{
-			m_vHTTPResponse.clear();
-			std::string szURL = BuildURL("cmd");
-
-			curl_easy_setopt(m_curl, CURLOPT_CUSTOMREQUEST, "POST");
-			curl_easy_setopt(m_curl, CURLOPT_URL, szURL.c_str());
-
-			std::string szCmd = std::string("{ \"command\": \"") + command + std::string("\" }");
-			const char* data = szCmd.c_str();
-			curl_easy_setopt(m_curl, CURLOPT_POSTFIELDS, data);
-			CURLcode res = curl_easy_perform(m_curl);
-			if (res != CURLE_OK)
-			{
-				Log(LOG_ERROR, "Problem sending command!");
-			}
-			else
-			{
-				long http_code = 0;
-				curl_easy_getinfo(m_curl, CURLINFO_RESPONSE_CODE, &http_code);
-				bool bOK = ((http_code) && (http_code < 400));
-				if (bOK)
-					return true;
-			}
-		}
-		DoLogout();
-		totRetries++;
-	}
-	return false;
 }
 
 bool AlfenEve::GetProperties(Json::Value& result)
@@ -318,7 +291,9 @@ bool AlfenEve::GetProperties(Json::Value& result)
 		return false;
 
 	m_vHTTPResponse.clear();
-	std::string szURL = BuildURL("prop?ids=2060_0,2056_0,2221_3,2221_4,2221_5,2221_A,2221_B,2221_C,2221_16,2201_0,2501_2,2221_22");
+	std::string szURL = BuildURL("prop?ids=2060_0,2056_0,2221_3,2221_4,2221_5,2221_A,2221_B,2221_C,2221_16,2201_0,2501_2,2221_22,2129_0");
+
+	SetGETHeaders();
 
 	curl_easy_setopt(m_curl, CURLOPT_CUSTOMREQUEST, "GET");
 	curl_easy_setopt(m_curl, CURLOPT_URL, szURL.c_str());
@@ -354,6 +329,62 @@ bool AlfenEve::GetProperties(Json::Value& result)
 		Log(LOG_ERROR, "Invalid (no) data received (production, objects not found)");
 		return false;
 	}
+	return true;
+}
+
+bool AlfenEve::GetInfo()
+{
+	std::string sResult;
+
+#ifdef DEBUG_AlfenEve_R
+	sResult = ReadFile("E:\\AlfenEve_info.json");
+#else
+	if (m_curl == nullptr)
+		return false;
+
+	m_vHTTPResponse.clear();
+	std::string szURL = BuildURL("info");
+
+	SetGETHeaders();
+
+	curl_easy_setopt(m_curl, CURLOPT_CUSTOMREQUEST, "GET");
+	curl_easy_setopt(m_curl, CURLOPT_URL, szURL.c_str());
+	CURLcode res = curl_easy_perform(m_curl);
+	if (!res == CURLE_OK)
+	{
+		curl_easy_cleanup(m_curl);
+		m_curl = nullptr;
+		return false;
+	}
+	long http_code = 0;
+	curl_easy_getinfo(m_curl, CURLINFO_RESPONSE_CODE, &http_code);
+	bool bOK = ((http_code) && (http_code < 400));
+	if (!bOK)
+		return false;
+
+	sResult.insert(sResult.begin(), m_vHTTPResponse.begin(), m_vHTTPResponse.end());
+#ifdef DEBUG_AlfenEve_W
+	if (!sResult.empty())
+	{
+		SaveString2Disk(sResult, "E:\\AlfenEve_info.json");
+	}
+#endif
+#endif
+	Json::Value result;
+	bool ret = ParseJSon(sResult, result);
+	if ((!ret) || (!result.isObject()))
+	{
+		Log(LOG_ERROR, "Invalid data received! (properties/json)");
+		return false;
+	}
+	if (result["Model"].empty())
+	{
+		Log(LOG_ERROR, "Invalid (no) data received (production, objects not found)");
+		return false;
+	}
+
+	m_szSoftwareVersion = result["FWVersion"].asString();
+
 	return true;
 }
 
@@ -966,6 +997,11 @@ void AlfenEve::parseProperties(const Json::Value& root)
 			SendTextSensor(1, 2, 255, szSocket1_Status(socket1_StateLeds), "Socket 1 State");
 			//shall we also retreive status for possible second socket?
 		}
+		else if (id == "2129_0")
+		{
+			int maxCurrent = itt["value"].asInt();
+			SendTextSensor(1, 3, 255, std::to_string(maxCurrent), "Max Charge Current (A)");
+		}
 	}
 	SendCurrentSensor(1, 255, CurrentL1, CurrentL2, CurrentL3, "Current L1/L2/L3");
 	/*
@@ -975,9 +1011,109 @@ void AlfenEve::parseProperties(const Json::Value& root)
 
 		float musage_total = musageL1 + musageL2 + musageL3;
 	*/
-	if (meter1_energyRealDeliveredSum != 0)
-	{
-		SendKwhMeter(m_HwdID, 1, 255, meter1_powerRealSum, meter1_energyRealDeliveredSum / 1000.0, "Energie Delivered");
-	}
+	SendKwhMeter(m_HwdID, 1, 255, meter1_powerRealSum, meter1_energyRealDeliveredSum / 1000.0, "Energie Delivered");
+}
 
+bool AlfenEve::SendCommand(const std::string& command)
+{
+	std::lock_guard<std::mutex> l(m_mutex);
+
+	//examples:
+	//reboot
+
+	int totRetries = 0;
+	bool bSuccess = false;
+
+	while (!bSuccess && totRetries < 2)
+	{
+		if (DoLogin())
+		{
+			m_vHTTPResponse.clear();
+			std::string szURL = BuildURL("cmd");
+
+			SetPOSTHeaders();
+
+			curl_easy_setopt(m_curl, CURLOPT_CUSTOMREQUEST, "POST");
+			curl_easy_setopt(m_curl, CURLOPT_URL, szURL.c_str());
+
+			std::string szCmd = std::string("{ \"command\": \"") + command + std::string("\" }");
+			const char* data = szCmd.c_str();
+			curl_easy_setopt(m_curl, CURLOPT_POSTFIELDS, data);
+			CURLcode res = curl_easy_perform(m_curl);
+
+			if (res != CURLE_OK)
+			{
+				Log(LOG_ERROR, "Problem sending command!");
+			}
+			else
+			{
+				long http_code = 0;
+				curl_easy_getinfo(m_curl, CURLINFO_RESPONSE_CODE, &http_code);
+				bool bOK = ((http_code) && (http_code < 400));
+				if (bOK)
+					return true;
+			}
+		}
+		DoLogout();
+		totRetries++;
+	}
+	return false;
+}
+
+//Below returns Error 400 for some reason!?, 2129_0 has access:0,maybe that is the reason
+bool AlfenEve::SetProperty(const std::string& szName, const int Value)
+{
+	if (szName.empty())
+		return false;
+
+	std::lock_guard<std::mutex> l(m_mutex);
+
+	std::stringstream sstr;
+	sstr << "{'" << szName << "': {'id': '" << szName << "', 'value': " << Value << "}}";
+
+	std::string send_data = sstr.str();
+
+
+	int totRetries = 0;
+	bool bSuccess = false;
+
+	while (!bSuccess && totRetries < 2)
+	{
+		if (DoLogin())
+		{
+			m_vHTTPResponse.clear();
+			std::string szURL = BuildURL("prop");
+
+			SetPOSTHeaders();
+
+			curl_easy_setopt(m_curl, CURLOPT_CUSTOMREQUEST, "POST");
+			curl_easy_setopt(m_curl, CURLOPT_URL, szURL.c_str());
+
+			curl_easy_setopt(m_curl, CURLOPT_POSTFIELDS, send_data);
+			CURLcode res = curl_easy_perform(m_curl);
+			if (res != CURLE_OK)
+			{
+				Log(LOG_ERROR, "Problem setting property!!");
+			}
+			else
+			{
+				std::string sResult;
+				sResult.insert(sResult.begin(), m_vHTTPResponse.begin(), m_vHTTPResponse.end());
+
+				long http_code = 0;
+				curl_easy_getinfo(m_curl, CURLINFO_RESPONSE_CODE, &http_code);
+				bool bOK = ((http_code) && (http_code < 400));
+				if (bOK)
+					return true;
+			}
+		}
+		DoLogout();
+		totRetries++;
+	}
+	return false;
+}
+
+bool AlfenEve::SetChargeCurrent(const int current)
+{
+	return SetProperty("2129_0", current);
 }
