@@ -28,14 +28,14 @@ Example
 {"production":[{"type":"inverters","activeCount":9,"readingTime":1568991780,"wNow":712,"whLifetime":1448651},{"type":"eim","activeCount":1,"measurementType":"production","readingTime":1568991966,"wNow":624.315,"whLifetime":1455843.527,"varhLeadLifetime":0.001,"varhLagLifetime":311039.158,"vahLifetime":1619431.681,"rmsCurrent":2.803,"rmsVoltage":233.289,"reactPwr":137.092,"apprntPwr":654.245,"pwrFactor":0.95,"whToday":4295.527,"whLastSevenDays":74561.527,"vahToday":5854.681,"varhLeadToday":0.001,"varhLagToday":2350.158}],"consumption":[{"type":"eim","activeCount":1,"measurementType":"total-consumption","readingTime":1568991966,"wNow":1260.785,"whLifetime":2743860.336,"varhLeadLifetime":132372.858,"varhLagLifetime":273043.125,"vahLifetime":3033001.948,"rmsCurrent":5.995,"rmsVoltage":233.464,"reactPwr":437.269,"apprntPwr":1399.886,"pwrFactor":0.9,"whToday":11109.336,"whLastSevenDays":129007.336,"vahToday":13323.948,"varhLeadToday":895.858,"varhLagToday":3700.125},{"type":"eim","activeCount":1,"measurementType":"net-consumption","readingTime":1568991966,"wNow":636.47,"whLifetime":0.0,"varhLeadLifetime":132372.857,"varhLagLifetime":-37996.033,"vahLifetime":3033001.948,"rmsCurrent":3.191,"rmsVoltage":233.376,"reactPwr":574.361,"apprntPwr":744.807,"pwrFactor":0.85,"whToday":0,"whLastSevenDays":0,"vahToday":0,"varhLeadToday":0,"varhLagToday":0}],"storage":[{"type":"acb","activeCount":0,"readingTime":0,"wNow":0,"whNow":0,"state":"idle"}]}
 */
 
-#define ENPHASE_API_INFO "http://{ip}/info.xml"
-#define ENPHASE_API_HOME "https://{ip}/home.json"
-#define ENPHASE_API_CHECK_JWT "https://{ip}/auth/check_jwt"
-#define ENPHASE_API_PRODUCTION "https://{ip}/production.json?details=1"
-#define ENPHASE_API_PRODUCTION_V1 "https://{ip}/api/v1/production"
-#define ENPHASE_API_PRODUCTION_INVERTERS "https://{ip}/api/v1/production/inverters"
-#define ENPHASE_API_POWER_GET "https://{ip}/ivp/mod/603980032/mode/power"
-#define ENPHASE_API_POWER_SET "https://{ip}/ivp/mod/603980032/mode/power"
+#define ENPHASE_API_INFO "http://{ip}/info.xml" //needs to be http
+#define ENPHASE_API_HOME "{ip}/home.json"
+#define ENPHASE_API_CHECK_JWT "{ip}/auth/check_jwt"
+#define ENPHASE_API_PRODUCTION "{ip}/production.json?details=1"
+#define ENPHASE_API_PRODUCTION_V1 "{ip}/api/v1/production"
+#define ENPHASE_API_PRODUCTION_INVERTERS "{ip}/api/v1/production/inverters"
+#define ENPHASE_API_POWER_GET "{ip}/ivp/mod/603980032/mode/power"
+#define ENPHASE_API_POWER_SET "{ip}/ivp/mod/603980032/mode/power"
 
 #ifdef DEBUG_EnphaseAPI_W
 void SaveString2Disk(std::string str, std::string filename)
@@ -372,8 +372,10 @@ std::string EnphaseAPI::MakeURL(const char* szPath)
 {
 	std::string sPath(szPath);
 	stdreplace(sPath, "{ip}", m_szIPAddress);
-	//std::string sScheme = (m_bOldFirmware) ? "http" : "https";
-	return sPath;
+	if (sPath.find("http") != std::string::npos)
+		return sPath;
+	std::string sScheme = (m_bOldFirmware) ? "http" : "https";
+	return sScheme + "://" + sPath;
 }
 
 bool EnphaseAPI::GetSerialSoftwareVersion()
