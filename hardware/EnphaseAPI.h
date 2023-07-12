@@ -62,6 +62,7 @@ private:
 	bool m_bHaveConsumption = false;
 	bool m_bHaveNetConsumption = false;
 	bool m_bHaveStorage = false;
+	bool m_bOldFirmware = false;
 
 	std::shared_ptr<std::thread> m_thread;
 };
