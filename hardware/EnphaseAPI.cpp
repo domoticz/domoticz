@@ -1020,7 +1020,7 @@ bool EnphaseAPI::getInverterDetails()
 	if (!NeedToken())
 	{
 		//Firmware version lower than V7
-		szURL = "https://envoy:" + m_szSerial.substr(m_szSerial.size() - 6) + "@" + m_szIPAddress + "/api/v1/production/inverters";
+		szURL = "https://installer:" + m_szInstallerPassword + "@" + m_szIPAddress + "/api/v1/production/inverters";
 	}
 	else
 	{
@@ -1035,21 +1035,8 @@ bool EnphaseAPI::getInverterDetails()
 
 	if (!HTTPClient::GET(szURL, ExtraHeaders, sResult))
 	{
-		if (!NeedToken() && !m_szInstallerPassword.empty())
-		{
-			std::stringstream sURLInstallerPwd;
-			sURLInstallerPwd << "https://installer:" << m_szInstallerPassword << "@" << m_szIPAddress << "/api/v1/production/inverters";
-			if (!HTTPClient::GET(sURLInstallerPwd.str(), ExtraHeaders, sResult))
-			{
-				Log(LOG_ERROR, "Invalid data received! (inverter details)");
-				return false;
-			}
-		}
-		else
-		{
-			Log(LOG_ERROR, "Invalid data received! (inverter details)");
-			return false;
-		}
+		Log(LOG_ERROR, "Error getting inverter details!");
+		return false;
 	}
 #ifdef DEBUG_EnphaseAPI_W
 	SaveString2Disk(sResult, "E:\\EnphaseAPI_inverters.json");
