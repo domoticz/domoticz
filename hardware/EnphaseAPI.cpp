@@ -1020,7 +1020,7 @@ bool EnphaseAPI::getInverterDetails()
 	if (!NeedToken())
 	{
 		//Firmware version lower than V7
-		szURL = "https://installer:" + m_szInstallerPassword + "@" + m_szIPAddress + "/api/v1/production/inverters";
+		szURL = "http://installer:" + m_szInstallerPassword + "@" + m_szIPAddress + "/api/v1/production/inverters";
 	}
 	else
 	{
