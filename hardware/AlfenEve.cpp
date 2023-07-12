@@ -215,7 +215,6 @@ bool AlfenEve::DoLogin()
 	curl_easy_setopt(m_curl, CURLOPT_UNRESTRICTED_AUTH, 1L);
 	curl_easy_setopt(m_curl, CURLOPT_NOSIGNAL, 1);
 	curl_easy_setopt(m_curl, CURLOPT_FOLLOWLOCATION, 1L);
-	curl_easy_setopt(m_curl, CURLOPT_DEFAULT_PROTOCOL, "https");
 	curl_easy_setopt(m_curl, CURLOPT_SSL_VERIFYPEER, 0);
 	curl_easy_setopt(m_curl, CURLOPT_SSL_VERIFYHOST, 0); //allow self signed certificates
 	int m_iConnectionTimeout = 5; //5 seconds timeout
