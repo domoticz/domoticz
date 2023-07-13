@@ -262,7 +262,7 @@ static const STR_TABLE_SINGLE HardwareTypeTable[] = {
 	{ HTYPE_SysfsGpio, "Generic sysfs GPIO", "sysfs" },
 	{ HTYPE_Rtl433, "Rtl433 RTL-SDR receiver", "RTL433" },
 	{ HTYPE_OnkyoAVTCP, "Onkyo AV Receiver (LAN)", "Onkyo AV" },
-	{ HTYPE_RESERVED_FOR_YOU_2, "", "" },
+	{ HTYPE_EneverPriceFeeds, "Enever Dutch Electricity/Gas Price Feed", "Enever" },
 	{ HTYPE_USBtinGateway, "USBtin Can Gateway", "USBtin" },
 	{ HTYPE_EnphaseAPI, "Enphase Envoy with LAN (HTTP) interface", "Enphase" },
 	{ HTYPE_RaspberryMCP23017, "I2C sensor GPIO 16bit expander MCP23017", "I2C GPIO" },

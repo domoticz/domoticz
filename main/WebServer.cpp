@@ -1486,6 +1486,10 @@ namespace http
 			{
 				// all fine here!
 			}
+			else if (htype == HTYPE_EneverPriceFeeds)
+			{
+				// All fine here
+			}
 			else
 				return;
 
@@ -1871,6 +1875,10 @@ namespace http
 			else if (htype == HTYPE_RFLINKMQTT)
 			{
 				//all fine here!
+			}
+			else if (htype == HTYPE_EneverPriceFeeds)
+			{
+				// all fine here!
 			}
 			else
 				return;

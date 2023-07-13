@@ -199,7 +199,7 @@ enum _eHardwareTypes {
 	HTYPE_SysfsGpio,			//102
 	HTYPE_Rtl433,				//103
 	HTYPE_OnkyoAVTCP,			//104
-	HTYPE_RESERVED_FOR_YOU_2,	//105
+	HTYPE_EneverPriceFeeds,		//105
 	HTYPE_EVOHOME_TCP,			//106
 	HTYPE_USBtinGateway,		//107
 	HTYPE_EnphaseAPI,			//108

@@ -149,6 +149,7 @@
 #include "../hardware/Meteorologisk.h"
 #include "../hardware/AirconWithMe.h"
 #include "../hardware/AlfenEve.h"
+#include "../hardware/Enever.h"
 
 // load notifications configuration
 #include "../notifications/NotificationHelper.h"
@@ -1087,6 +1088,9 @@ bool MainWorker::AddHardwareFromParams(
 		break;
 	case HTYPE_AlfenEveCharger:
 		pHardware = new AlfenEve(ID, Address, 443, 30, Username, Password);
+		break;
+	case HTYPE_EneverPriceFeeds:
+		pHardware = new Enever(ID, Username, Extra);
 		break;
 	}
 
