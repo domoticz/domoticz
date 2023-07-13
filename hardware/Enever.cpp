@@ -348,14 +348,15 @@ void Enever::parseElectricity()
 
 		std::string sValue = std::to_string(iRate) + ";" + std::to_string(iRate) + ";" + szTime;
 
-		idx = UpdateValueInt("0001", 1, pTypeGeneral, sTypeManagedCounter, 12, 255, 0, sValue.c_str(), std::string("Electricity Price"), false, "Enever");
+		std::string szDeviceName = "Electricity Price";
+		idx = UpdateValueInt("0001", 1, pTypeGeneral, sTypeManagedCounter, 12, 255, 0, sValue.c_str(), szDeviceName, false, "Enever");
 		if (!bDoesMeterExitstInSystem)
 		{
 			//Set right units
 			m_sql.safe_query("UPDATE DeviceStatus SET SwitchType=3, AddjValue2=10000, Options='%q' WHERE (ID==%" PRIu64 ")", "ValueQuantity:RXVybyAvIGtXaA==;ValueUnits:4oKs", idx);
 
 			//Seems like a bug in Domoticz, when a device is not in the system, it will not be created when inserting for the first time (needs to be checked!)
-			idx = UpdateValueInt("0001", 1, pTypeGeneral, sTypeManagedCounter, 12, 255, 0, sValue.c_str(), std::string("Electricity Price"), false, "Enever");
+			idx = UpdateValueInt("0001", 1, pTypeGeneral, sTypeManagedCounter, 12, 255, 0, sValue.c_str(), szDeviceName, false, "Enever");
 		}
 
 		if (lltime.tm_hour == act_hour)
@@ -510,14 +511,15 @@ void Enever::parseGas()
 
 	std::string sValue = std::to_string(iRate) + ";" + std::to_string(iRate) + ";" + szTime;
 
-	uint64_t idx = UpdateValueInt("0001", 2, pTypeGeneral, sTypeManagedCounter, 12, 255, 0, sValue.c_str(), std::string("Gas Price"), false, "Enever");
+	std::string szDeviceName = "Gas Price";
+	uint64_t idx = UpdateValueInt("0001", 2, pTypeGeneral, sTypeManagedCounter, 12, 255, 0, sValue.c_str(), szDeviceName, false, "Enever");
 	if (!bDoesMeterExitstInSystem)
 	{
 		//Set right units
 		m_sql.safe_query("UPDATE DeviceStatus SET SwitchType=3, AddjValue2=10000, Options='%q' WHERE (ID==%" PRIu64 ")", "ValueQuantity:RXVybyAvIG0z;ValueUnits:4oKs", idx);
 
 		//Seems like a bug in Domoticz, when a device is not in the system, it will not be created when inserting for the first time (needs to be checked!)
-		idx = UpdateValueInt("0001", 2, pTypeGeneral, sTypeManagedCounter, 12, 255, 0, sValue.c_str(), std::string("Gas Price"), false, "Enever");
+		idx = UpdateValueInt("0001", 2, pTypeGeneral, sTypeManagedCounter, 12, 255, 0, sValue.c_str(), szDeviceName, false, "Enever");
 	}
 	if (idx != -1)
 	{
