@@ -1362,6 +1362,37 @@ define(['app'], function (app) {
 					}
 				});
 			}
+			else if (text.indexOf("Enever") >= 0) {
+				var access_token = $("#hardwarecontent #divenever #AccessToken").val();
+				var provider = $("#hardwarecontent #divenever #provider").find("option:selected").val()
+				if (access_token == "") {
+					ShowNotify($.t('Please enter an Access Token!'), 2500, true);
+					return;
+				}
+				if (provider == "") {
+					ShowNotify($.t('Please enter an Provider!'), 2500, true);
+					return;
+				}
+				$.ajax({
+					url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype +
+					"&loglevel=" + logLevel +
+					"&name=" + encodeURIComponent(name) +
+					"&username=" + encodeURIComponent(access_token) +
+					"&extra=" + encodeURIComponent(provider) +
+					"&enabled=" + bEnabled +
+					"&idx=" + idx +
+					"&datatimeout=" + datatimeout +
+					"&Mode2=" + Mode2 + "&Mode3=" + Mode3 + "&Mode4=" + Mode4 + "&Mode5=" + Mode5 + "&Mode6=" + Mode6,
+					async: false,
+					dataType: 'json',
+					success: function (data) {
+						RefreshHardwareTable();
+					},
+					error: function () {
+						ShowNotify($.t('Problem updating hardware!'), 2500, true);
+					}
+				});
+			}
 			else if (text.indexOf("Honeywell") >= 0) {
 				var apiKey = $("#hardwarecontent #divhoneywell #hwApiKey").val();
 				var apiSecret = $("#hardwarecontent #divhoneywell #hwApiSecret").val();
@@ -2579,6 +2610,35 @@ define(['app'], function (app) {
 					"&address=" + encodeURIComponent(mill_name) +
 					"&port=" + encodeURIComponent(nrofwinddelen) +
 					"&Mode1=" + encodeURIComponent(mill_id) +
+					"&enabled=" + bEnabled +
+					"&datatimeout=" + datatimeout,
+					async: false,
+					dataType: 'json',
+					success: function (data) {
+						RefreshHardwareTable();
+					},
+					error: function () {
+						ShowNotify($.t('Problem adding hardware!'), 2500, true);
+					}
+				});
+			}
+			else if (text.indexOf("Enever") >= 0) {
+				var access_token = $("#hardwarecontent #divenever #AccessToken").val();
+				var provider = $("#hardwarecontent #divenever #provider").find("option:selected").val()
+				if (access_token == "") {
+					ShowNotify($.t('Please enter an Access Token!'), 2500, true);
+					return;
+				}
+				if (provider == "") {
+					ShowNotify($.t('Please enter an Provider!'), 2500, true);
+					return;
+				}
+				$.ajax({
+					url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype +
+					"&loglevel=" + logLevel +
+					"&name=" + encodeURIComponent(name) +
+					"&username=" + encodeURIComponent(access_token) +
+					"&extra=" + encodeURIComponent(provider) +
 					"&enabled=" + bEnabled +
 					"&datatimeout=" + datatimeout,
 					async: false,
@@ -4384,6 +4444,10 @@ define(['app'], function (app) {
 							$("#hardwarecontent #hardwareparamswinddelen #combomillselect").val(data["Mode1"]);
 							$("#hardwarecontent #hardwareparamswinddelen #nrofwinddelen").val(data["Port"]);
 						}
+						else if (data["Type"].indexOf("Enever") >= 0) {
+							$("#hardwarecontent #divenever #AccessToken").val(data["Username"]);
+							$("#hardwarecontent #divenever #provider").val(data["Extra"]);
+						}
 						else if (data["Type"].indexOf("Honeywell") >= 0) {
 							$("#hardwarecontent #hardwareparamshoneywell #hwAccessToken").val(data["Username"]);
 							$("#hardwarecontent #hardwareparamshoneywell #hwRefreshToken").val(data["Password"]);
@@ -4622,6 +4686,7 @@ define(['app'], function (app) {
 			$("#hardwarecontent #divphilipshue").hide();
 			$("#hardwarecontent #divwinddelen").hide();
 			$("#hardwarecontent #divenphase").hide();
+			$("#hardwarecontent #divenever").hide();
 			$("#hardwarecontent #divhoneywell").hide();
 			$("#hardwarecontent #divmqtt").hide();
 			$("#hardwarecontent #divmysensorsmqtt").hide();
@@ -4945,6 +5010,9 @@ define(['app'], function (app) {
 			}
 			if (text.indexOf("MySensors Gateway with MQTT") >= 0) {
 				$("#hardwarecontent #divmysensorsmqtt").show();
+			}
+			else if (text.indexOf("Enever") >= 0) {
+				$("#hardwarecontent #divenever").show();
 			}
 			else if (text.indexOf("MQTT") >= 0) {
 			    $("#hardwarecontent #divmqtt").show();

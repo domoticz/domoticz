@@ -1486,6 +1486,10 @@ namespace http
 			{
 				// all fine here!
 			}
+			else if (htype == HTYPE_EneverPriceFeeds)
+			{
+				// All fine here
+			}
 			else
 				return;
 
@@ -1871,6 +1875,10 @@ namespace http
 			else if (htype == HTYPE_RFLINKMQTT)
 			{
 				//all fine here!
+			}
+			else if (htype == HTYPE_EneverPriceFeeds)
+			{
+				// all fine here!
 			}
 			else
 				return;
@@ -6885,8 +6893,6 @@ namespace http
 									dvalue = static_cast<double>(atof(splitresults[0].c_str()));
 								}
 							}
-							root["result"][ii]["Data"] = root["result"][ii]["Counter"];
-
 							root["result"][ii]["SwitchTypeVal"] = metertype;
 							root["result"][ii]["HaveTimeout"] = bHaveTimeout;
 							root["result"][ii]["TypeImg"] = "counter";

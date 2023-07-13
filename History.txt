@@ -1,5 +1,6 @@
 Version 2023.xx
 - Implemented: Alfen Eve Charger
+- Implemented: Enphase, (V7 firmware) added support for enabling/disabling power production
 - Implemented: Device reordering for Users with devices
 - Implemented: LUA: Added name state to devicechanged_ext table
 - Implemented: RFXCom, Updated SDK
@@ -11,12 +12,14 @@ Version 2023.xx
 - Implemented: Users with admin rights and selected devices will now see only those devices
 - Implemented: Users devices editor, option to remove all nodes/devices
 - Implemented: Visual Crossing (replacement for Darksky/Forecast)
+- Implemented: 2FA/TOTP (Time-based One-Time Password) and HOTP (HMAC-based One-Time Password)
 - Fixed: Blinds percentage timers
 - Fixed: Chime structure check
 - Fixed: Counter day charts, better hourly bars and usage
 - Fixed: Device reordering when a room plan was selected
 - Fixed: Forecast button now displays a working forecast
 - Fixed: Install and update fixed for Raspberry Pi 4 with 32bit (armhf) userland
+- Fixed: Floorplan Percentage icon with custom icon
 - Fixed: Settings/Floorplan, Scene Names value was not saved
 - Changed: MQTT-AD, better Unit calculation for scene/action devices
 - Removed: native GoodWe hardware (use the new GoodWe python plugin instead)

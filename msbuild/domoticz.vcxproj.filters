@@ -510,6 +510,9 @@
     <Filter Include="Devices\AlfenEve">
       <UniqueIdentifier>{ad705b95-9376-4a12-adc3-b85fba7cf9f8}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Devices\Enever">
+      <UniqueIdentifier>{10536bc9-7284-4bae-9c04-448ec48cf184}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\CMakeLists.txt">
@@ -2250,6 +2253,9 @@
     <ClInclude Include="..\hardware\AlfenEve.h">
       <Filter>Devices\AlfenEve</Filter>
     </ClInclude>
+    <ClInclude Include="..\hardware\Enever.h">
+      <Filter>Devices\Enever</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\webserver\Base64.cpp">
@@ -3019,6 +3025,9 @@
     </ClCompile>
     <ClCompile Include="..\hardware\AlfenEve.cpp">
       <Filter>Devices\AlfenEve</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\Enever.cpp">
+      <Filter>Devices\Enever</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
