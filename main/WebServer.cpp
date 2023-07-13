@@ -6893,8 +6893,6 @@ namespace http
 									dvalue = static_cast<double>(atof(splitresults[0].c_str()));
 								}
 							}
-							root["result"][ii]["Data"] = root["result"][ii]["Counter"];
-
 							root["result"][ii]["SwitchTypeVal"] = metertype;
 							root["result"][ii]["HaveTimeout"] = bHaveTimeout;
 							root["result"][ii]["TypeImg"] = "counter";

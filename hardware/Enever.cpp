@@ -13,6 +13,8 @@
 #include "../webserver/Base64.h"
 #include "hardwaretypes.h"
 #include <iostream>
+#define __STDC_FORMAT_MACROS
+#include <inttypes.h>
 
 //See https://enever.nl/prijzenfeeds
 //We are able to do 5 requests per day, so we need to cache the results!
@@ -145,7 +147,10 @@ void Enever::Do_Work()
 		time_t atime = mytime(nullptr);
 		struct tm* ltime = localtime(&atime);
 
-		if (ltime->tm_min == 1)
+		if (
+			(ltime->tm_min == 1)
+			|| (last_hour == -1)
+			)
 		{
 			//give it some slack
 			if (ltime->tm_hour != last_hour)
@@ -178,6 +183,23 @@ std::string Enever::MakeURL(const std::string& sURL)
 	stdreplace(szResult, "{token}", m_szToken);
 	return szResult;
 }
+
+uint64_t Enever::UpdateValueInt(const char* ID, unsigned char unit, unsigned char devType, unsigned char subType, unsigned char signallevel, unsigned char batterylevel, int nValue,
+	const char* sValue, std::string& devname, bool bUseOnOffAction, const std::string& user)
+{
+	uint64_t DeviceRowIdx = m_sql.UpdateValue(m_HwdID, ID, unit, devType, subType, signallevel, batterylevel, nValue, sValue, devname, bUseOnOffAction, (!user.empty()) ? user.c_str() : m_Name.c_str());
+	if (DeviceRowIdx == (uint64_t)-1)
+		return -1;
+	if (m_bOutputLog)
+	{
+		std::string szLogString = RFX_Type_Desc(devType, 1) + std::string("/") + std::string(RFX_Type_SubType_Desc(devType, subType)) + " (" + devname + ")";
+		Log(LOG_NORM, szLogString);
+	}
+	m_mainworker.sOnDeviceReceived(m_HwdID, DeviceRowIdx, devname, nullptr);
+	m_notifications.CheckAndHandleNotification(DeviceRowIdx, m_HwdID, ID, devname, unit, devType, subType, nValue, sValue);
+	return DeviceRowIdx;
+}
+
 
 bool Enever::GetPriceElectricity()
 {
@@ -286,12 +308,22 @@ void Enever::parseElectricity()
 
 	int act_hour = ltime->tm_hour;
 
+	uint64_t iActRate = 0;
+	uint64_t idx = -1;
+
+	bool bDoesMeterExitstInSystem = false;
+	auto result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (Type==%d) AND (SubType==%d) AND (Unit==%d) AND (HardwareID==%d)", pTypeGeneral, sTypeManagedCounter, 1, m_HwdID);
+	if (!result.empty())
+	{
+		bDoesMeterExitstInSystem = true;
+	}
+
 	for (const auto& itt : root["data"])
 	{
 		std::string szDate = itt["datum"].asString();
 		std::string szPrice = itt["prijs"].asString();
 
-		time_t rtime;
+		time_t rtime = 0;
 		struct tm lltime;
 		if (!ParseSQLdatetime(rtime, lltime, szDate))
 		{
@@ -306,11 +338,35 @@ void Enever::parseElectricity()
 		std::string szProviderPrice = itt[szProviderPriceName].asString();
 		float fProviderPrice = std::stof(szProviderPrice);
 
+
+		time_t timeplus1 = rtime + 3600 ;
+		struct tm* dbtime = localtime(&timeplus1);
+
+		std::string szTime = std_format("%04d-%02d-%02d %02d:%02d:%02d", dbtime->tm_year + 1900, dbtime->tm_mon + 1, dbtime->tm_mday, dbtime->tm_hour, 0, 0);
+
+		uint64_t iRate = (uint64_t)round(fProviderPrice * 10000); //4 digts after comma!
+
+		std::string sValue = std::to_string(iRate) + ";" + std::to_string(iRate) + ";" + szTime;
+
+		idx = UpdateValueInt("0001", 1, pTypeGeneral, sTypeManagedCounter, 12, 255, 0, sValue.c_str(), std::string("Electricity Price"), false, "Enever");
+		if (!bDoesMeterExitstInSystem)
+		{
+			//Set right units
+			m_sql.safe_query("UPDATE DeviceStatus SET SwitchType=3, AddjValue2=10000, Options='%q' WHERE (ID==%" PRIu64 ")", "ValueQuantity:RXVybyAvIGtXaA==;ValueUnits:4oKs", idx);
+
+			//Seems like a bug in Domoticz, when a device is not in the system, it will not be created when inserting for the first time (needs to be checked!)
+			idx = UpdateValueInt("0001", 1, pTypeGeneral, sTypeManagedCounter, 12, 255, 0, sValue.c_str(), std::string("Electricity Price"), false, "Enever");
+		}
+
 		if (lltime.tm_hour == act_hour)
 		{
+			iActRate = iRate;
 			SendCustomSensor(1, 1, 255, fProviderPrice, "Actual Electricity Price", "Euro / kWh");
 		}
-		while (1 == 0);
+	}
+	if (idx != -1)
+	{
+		m_sql.safe_query("UPDATE DeviceStatus SET sValue='%q;%q' WHERE (ID==%" PRIu64 ")", std::to_string(iActRate).c_str(), std::to_string(iActRate).c_str(), idx);
 	}
 }
 
@@ -418,6 +474,13 @@ void Enever::parseGas()
 		return;
 	}
 
+	bool bDoesMeterExitstInSystem = false;
+	auto result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (Type==%d) AND (SubType==%d) AND (Unit==%d) AND (HardwareID==%d)", pTypeGeneral, sTypeManagedCounter, 2, m_HwdID);
+	if (!result.empty())
+	{
+		bDoesMeterExitstInSystem = true;
+	}
+
 	time_t atime = mytime(nullptr);
 	struct tm* ltime = localtime(&atime);
 
@@ -440,4 +503,25 @@ void Enever::parseGas()
 	float fProviderPrice = std::stof(szProviderPrice);
 
 	SendCustomSensor(1, 2, 255, fProviderPrice, "Actual Gas Price", "Euro / m3");
+
+	std::string szTime = std_format("%04d-%02d-%02d", ltime->tm_year + 1900, ltime->tm_mon + 1, ltime->tm_mday);
+
+	uint64_t iRate = (uint64_t)round(fProviderPrice * 10000); //4 digts after comma!
+
+	std::string sValue = std::to_string(iRate) + ";" + std::to_string(iRate) + ";" + szTime;
+
+	uint64_t idx = UpdateValueInt("0001", 2, pTypeGeneral, sTypeManagedCounter, 12, 255, 0, sValue.c_str(), std::string("Gas Price"), false, "Enever");
+	if (!bDoesMeterExitstInSystem)
+	{
+		//Set right units
+		m_sql.safe_query("UPDATE DeviceStatus SET SwitchType=3, AddjValue2=10000, Options='%q' WHERE (ID==%" PRIu64 ")", "ValueQuantity:RXVybyAvIG0z;ValueUnits:4oKs", idx);
+
+		//Seems like a bug in Domoticz, when a device is not in the system, it will not be created when inserting for the first time (needs to be checked!)
+		idx = UpdateValueInt("0001", 2, pTypeGeneral, sTypeManagedCounter, 12, 255, 0, sValue.c_str(), std::string("Gas Price"), false, "Enever");
+	}
+	if (idx != -1)
+	{
+		m_sql.safe_query("UPDATE DeviceStatus SET sValue='%q;%q' WHERE (ID==%" PRIu64 ")", std::to_string(iRate).c_str(), std::to_string(iRate).c_str(), idx);
+	}
+
 }
