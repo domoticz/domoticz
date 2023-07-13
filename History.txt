@@ -1,5 +1,6 @@
 Version 2023.xx
-- Implemented: Alfen Eve Charger
+- Implemented: Alfen Eve Charger hardware
+- Implemented: Enever hardware (Live Dutch Gas/Electricity prices for various providers)
 - Implemented: Enphase, (V7 firmware) added support for enabling/disabling power production
 - Implemented: Device reordering for Users with devices
 - Implemented: LUA: Added name state to devicechanged_ext table
