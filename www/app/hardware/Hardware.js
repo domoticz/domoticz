@@ -1362,6 +1362,37 @@ define(['app'], function (app) {
 					}
 				});
 			}
+			else if (text.indexOf("Enever") >= 0) {
+				var access_token = $("#hardwarecontent #divenever #AccessToken").val();
+				var provider = $("#hardwarecontent #divenever #provider").find("option:selected").val()
+				if (access_token == "") {
+					ShowNotify($.t('Please enter an Access Token!'), 2500, true);
+					return;
+				}
+				if (provider == "") {
+					ShowNotify($.t('Please enter an Provider!'), 2500, true);
+					return;
+				}
+				$.ajax({
+					url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype +
+					"&loglevel=" + logLevel +
+					"&name=" + encodeURIComponent(name) +
+					"&username=" + encodeURIComponent(access_token) +
+					"&extra=" + encodeURIComponent(provider) +
+					"&enabled=" + bEnabled +
+					"&idx=" + idx +
+					"&datatimeout=" + datatimeout +
+					"&Mode2=" + Mode2 + "&Mode3=" + Mode3 + "&Mode4=" + Mode4 + "&Mode5=" + Mode5 + "&Mode6=" + Mode6,
+					async: false,
+					dataType: 'json',
+					success: function (data) {
+						RefreshHardwareTable();
+					},
+					error: function () {
+						ShowNotify($.t('Problem updating hardware!'), 2500, true);
+					}
+				});
+			}
 			else if (text.indexOf("Honeywell") >= 0) {
 				var apiKey = $("#hardwarecontent #divhoneywell #hwApiKey").val();
 				var apiSecret = $("#hardwarecontent #divhoneywell #hwApiSecret").val();
@@ -2593,7 +2624,7 @@ define(['app'], function (app) {
 			}
 			else if (text.indexOf("Enever") >= 0) {
 				var access_token = $("#hardwarecontent #divenever #AccessToken").val();
-				var provider = $("#hardwarecontent #divenever #provider").find("option:selected").text()
+				var provider = $("#hardwarecontent #divenever #provider").find("option:selected").val()
 				if (access_token == "") {
 					ShowNotify($.t('Please enter an Access Token!'), 2500, true);
 					return;
@@ -4412,6 +4443,10 @@ define(['app'], function (app) {
 						else if (data["Type"].indexOf("Winddelen") >= 0) {
 							$("#hardwarecontent #hardwareparamswinddelen #combomillselect").val(data["Mode1"]);
 							$("#hardwarecontent #hardwareparamswinddelen #nrofwinddelen").val(data["Port"]);
+						}
+						else if (data["Type"].indexOf("Enever") >= 0) {
+							$("#hardwarecontent #divenever #AccessToken").val(data["Username"]);
+							$("#hardwarecontent #divenever #provider").val(data["Extra"]);
 						}
 						else if (data["Type"].indexOf("Honeywell") >= 0) {
 							$("#hardwarecontent #hardwareparamshoneywell #hwAccessToken").val(data["Username"]);

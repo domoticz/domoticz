@@ -21,13 +21,13 @@
 
 
 #ifdef _DEBUG
-#define DEBUG_Enever_R
-#define DEBUG_Enever_W
+//#define DEBUG_Enever_R
+//#define DEBUG_Enever_W
 #endif
 
-#define ENEVER_FEED_ELEC_TODAY "https://enever.nl/api/gasprijs_vandaag.php?token={token}"
-#define ENEVER_FEED_GAS_TODAY "https://enever.nl/api/stroomprijs_vandaag.php?token={token}"
-#define ENEVER_FEED_ELEC_TOMORROW "https://enever.nl/api/gasprijs_morgen.php?token={token}"
+#define ENEVER_FEED_ELEC_TODAY "https://enever.nl/api/stroomprijs_vandaag.php?token={token}"
+#define ENEVER_FEED_ELEC_TOMORROW "https://enever.nl/api/stroomprijs_morgen.php?token={token}"
+#define ENEVER_FEED_GAS_TODAY "https://enever.nl/api/gasprijs_vandaag.php?token={token}"
 
 #ifdef DEBUG_Enever_W
 void SaveString2Disk(std::string str, std::string filename)
@@ -220,7 +220,7 @@ bool Enever::GetPriceElectricity(Json::Value& result)
 	if (bNeedUpdate)
 	{
 #ifdef DEBUG_Enever_R
-		sResult = ReadFile("E:\\enever_stroom.json.json");
+		sResult = ReadFile("E:\\enever_stroom.json");
 #else
 		std::vector<std::string> ExtraHeaders;
 		if (m_szToken.empty()) {
@@ -235,29 +235,28 @@ bool Enever::GetPriceElectricity(Json::Value& result)
 			}
 			else
 			{
-				Log(LOG_ERROR, "Error getting http data! (production)");
+				Log(LOG_ERROR, "Error getting http data! (electricity)");
 				return false;
 			}
 		}
 #ifdef DEBUG_Enever_W
-		SaveString2Disk(sResult, "E:\\enever_stroom.json.json");
+		SaveString2Disk(sResult, "E:\\enever_stroom.json");
 #endif
 #endif
 		Debug(DEBUG_RECEIVED, "electricity_prices: %s", sResult.c_str());
 
+		//Store token for later usage
+		std::string szName = "Enever_Electricity_" + std::to_string(m_HwdID);
+		m_sql.safe_query("UPDATE UserVariables SET Value='%q', LastUpdate='%s' WHERE (Name=='%q')", sResult.c_str(), TimeToString(nullptr, TF_DateTime).c_str(), szName.c_str());
+
 		m_szCurrentElectricityPrices = sResult;
 	}
-
-	//Store token for later usage
-	std::string szName = "Enever_Electricity_" + std::to_string(m_HwdID);
-	m_sql.safe_query("UPDATE UserVariables SET Value='%q', LastUpdate='%s' WHERE (Name=='%q')", sResult.c_str(), TimeToString(nullptr, TF_DateTime).c_str(), szName.c_str());
-
 
 	bool ret = ParseJSon(sResult, result);
 	if ((!ret) || (!result.isObject()))
 	{
 		m_szToken.clear();
-		Log(LOG_ERROR, "Invalid data received! (production/json)");
+		Log(LOG_ERROR, "Invalid data received! (electricity/json)");
 		return false;
 	}
 	if (result["data"].empty())
@@ -276,23 +275,156 @@ void Enever::parseElectricity(const Json::Value& root)
 		//No date details available
 		return;
 	}
-	for (const auto& itt : root["date"])
+
+	time_t atime = mytime(nullptr);
+	struct tm* ltime = localtime(&atime);
+
+	int act_hour = ltime->tm_hour;
+
+	for (const auto& itt : root["data"])
 	{
 		std::string szDate = itt["datum"].asString();
 		std::string szPrice = itt["prijs"].asString();
+
+		time_t rtime;
+		struct tm lltime;
+		if (!ParseSQLdatetime(rtime, lltime, szDate))
+		{
+			Log(LOG_ERROR, "Invalid date received (electricity prices)");
+			return; //invalid date!
+		}
 
 		std::string szProviderPriceName = "prijs" + m_szProvider;
 		if (itt[szProviderPriceName].empty())
 			return; //no price for this provider
 
+		std::string szProviderPrice = itt[szProviderPriceName].asString();
+		float fProviderPrice = std::stof(szProviderPrice);
+
+		if (lltime.tm_hour == act_hour)
+		{
+			SendCustomSensor(1, 1, 255, fProviderPrice, "Actual Electricity Price", "Euro / kWh");
+		}
+		while (1 == 0);
 	}
 }
 
 bool Enever::GetPriceGas(Json::Value& result)
 {
-	return false;
+	std::string sResult;
+
+	time_t atime = mytime(nullptr);
+	struct tm* ltime = localtime(&atime);
+
+	bool bNeedUpdate = true;
+	if (!m_szCurrentGasPrices.empty())
+	{
+		//check if we need to update (data is not from today)
+		Json::Value jsonCurrent;
+		Json::Reader reader;
+		if (reader.parse(m_szCurrentGasPrices, jsonCurrent))
+		{
+			if (jsonCurrent.isMember("data"))
+			{
+				Json::Value firstRecord = jsonCurrent["data"][0];
+				std::string szDate = firstRecord["datum"].asString();
+				time_t rtime;
+				struct tm lltime;
+				if (ParseSQLdatetime(rtime, lltime, szDate))
+				{
+					if (
+						(lltime.tm_year == ltime->tm_year)
+						|| (lltime.tm_mon == ltime->tm_mon)
+						|| (lltime.tm_mday == ltime->tm_mday)
+						)
+					{
+						bNeedUpdate = false;
+						sResult = m_szCurrentGasPrices;
+					}
+				}
+			}
+		}
+	}
+	if (bNeedUpdate)
+	{
+#ifdef DEBUG_Enever_R
+		sResult = ReadFile("E:\\enever_gas.json");
+#else
+		std::vector<std::string> ExtraHeaders;
+		if (m_szToken.empty()) {
+			return false;
+		}
+
+		if (!HTTPClient::GET(MakeURL(ENEVER_FEED_GAS_TODAY), ExtraHeaders, sResult))
+		{
+			if (!m_szToken.empty())
+			{
+				return false;
+			}
+			else
+			{
+				Log(LOG_ERROR, "Error getting http data! (gas)");
+				return false;
+			}
+		}
+#ifdef DEBUG_Enever_W
+		SaveString2Disk(sResult, "E:\\enever_gas.json");
+#endif
+#endif
+		Debug(DEBUG_RECEIVED, "gas_prices: %s", sResult.c_str());
+
+		//Store token for later usage
+		std::string szName = "Enever_Gas_" + std::to_string(m_HwdID);
+		m_sql.safe_query("UPDATE UserVariables SET Value='%q', LastUpdate='%s' WHERE (Name=='%q')", sResult.c_str(), TimeToString(nullptr, TF_DateTime).c_str(), szName.c_str());
+
+		m_szCurrentGasPrices = sResult;
+	}
+
+	bool ret = ParseJSon(sResult, result);
+	if ((!ret) || (!result.isObject()))
+	{
+		m_szToken.clear();
+		Log(LOG_ERROR, "Invalid data received! (gas/json)");
+		return false;
+	}
+	if (result["data"].empty())
+	{
+		m_szToken.clear();
+		Log(LOG_ERROR, "Invalid (no) data received (gas prices, date object not found)");
+		return false;
+	}
+	return true;
 }
 
+//Gas prices are for the entire day
 void Enever::parseGas(const Json::Value& root)
 {
+	if (root["data"].empty() == true)
+	{
+		//No date details available
+		return;
+	}
+
+	time_t atime = mytime(nullptr);
+	struct tm* ltime = localtime(&atime);
+
+	std::string szDate = root["data"][0]["datum"].asString();
+	std::string szPrice = root["data"][0]["prijs"].asString();
+
+	time_t rtime;
+	struct tm lltime;
+	if (!ParseSQLdatetime(rtime, lltime, szDate))
+	{
+		Log(LOG_ERROR, "Invalid date received (gas prices)");
+		return; //invalid date!
+	}
+
+	std::string szProviderPriceName = "prijs" + m_szProvider;
+	if (root["data"][0][szProviderPriceName].empty())
+		return; //no price for this provider
+
+	std::string szProviderPrice = root["data"][0][szProviderPriceName].asString();
+	float fProviderPrice = std::stof(szProviderPrice);
+
+	SendCustomSensor(1, 2, 255, fProviderPrice, "Actual Gas Price", "Euro / m3");
 }
