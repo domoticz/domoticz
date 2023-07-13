@@ -22,11 +22,11 @@ private:
 
 	std::string MakeURL(const std::string& sURL);
 
-	bool GetPriceElectricity(Json::Value& root);
-	bool GetPriceGas(Json::Value& root);
+	bool GetPriceElectricity();
+	bool GetPriceGas();
 
-	void parseElectricity(const Json::Value& root);
-	void parseGas(const Json::Value& root);
+	void parseElectricity();
+	void parseGas();
 
 	uint64_t UpdateValueInt(const char* ID, unsigned char unit, unsigned char devType, unsigned char subType, unsigned char signallevel, unsigned char batterylevel, int nValue,
 		const char* sValue, std::string& devname, bool bUseOnOffAction = true, const std::string& user = "");

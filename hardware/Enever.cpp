@@ -145,25 +145,23 @@ void Enever::Do_Work()
 		time_t atime = mytime(nullptr);
 		struct tm* ltime = localtime(&atime);
 
-		if (ltime->tm_hour != last_hour)
+		if (ltime->tm_min == 1)
 		{
-			Json::Value restult;
-			if ((ltime->tm_hour == 16) || (last_hour==-1))
+			//give it some slack
+			if (ltime->tm_hour != last_hour)
 			{
-				if (GetPriceElectricity(restult))
+				if ((ltime->tm_hour == 0) || (ltime->tm_hour == 16) || (last_hour == -1))
 				{
-					parseElectricity(restult);
+					GetPriceElectricity();
 				}
-			}
-			if ((ltime->tm_hour == 7) || (last_hour == -1))
-			{
-				restult.clear();
-				if (GetPriceGas(restult))
+				if ((ltime->tm_hour == 7) || (last_hour == -1))
 				{
-					parseGas(restult);
+					GetPriceGas();
 				}
+				parseElectricity();
+				parseGas();
+				last_hour = ltime->tm_hour;
 			}
-			last_hour = ltime->tm_hour;
 		}
 	}
 	Log(LOG_STATUS, "Worker stopped...");
@@ -181,7 +179,7 @@ std::string Enever::MakeURL(const std::string& sURL)
 	return szResult;
 }
 
-bool Enever::GetPriceElectricity(Json::Value& result)
+bool Enever::GetPriceElectricity()
 {
 	std::string sResult;
 
@@ -193,8 +191,7 @@ bool Enever::GetPriceElectricity(Json::Value& result)
 	{
 		//check if we need to update (data is not from today)
 		Json::Value jsonCurrent;
-		Json::Reader reader;
-		if (reader.parse(m_szCurrentElectricityPrices, jsonCurrent))
+		if (ParseJSon(m_szCurrentElectricityPrices, jsonCurrent))
 		{
 			if (jsonCurrent.isMember("data"))
 			{
@@ -219,6 +216,7 @@ bool Enever::GetPriceElectricity(Json::Value& result)
 	}
 	if (bNeedUpdate)
 	{
+		m_szCurrentElectricityPrices.clear();
 #ifdef DEBUG_Enever_R
 		sResult = ReadFile("E:\\enever_stroom.json");
 #else
@@ -251,7 +249,7 @@ bool Enever::GetPriceElectricity(Json::Value& result)
 
 		m_szCurrentElectricityPrices = sResult;
 	}
-
+	Json::Value result;
 	bool ret = ParseJSon(sResult, result);
 	if ((!ret) || (!result.isObject()))
 	{
@@ -268,8 +266,15 @@ bool Enever::GetPriceElectricity(Json::Value& result)
 	return true;
 }
 
-void Enever::parseElectricity(const Json::Value& root)
+void Enever::parseElectricity()
 {
+	if (m_szCurrentElectricityPrices.empty())
+		return;
+
+	Json::Value root;
+	if (!ParseJSon(m_szCurrentElectricityPrices, root))
+		return;
+
 	if (root["data"].empty() == true)
 	{
 		//No date details available
@@ -309,7 +314,7 @@ void Enever::parseElectricity(const Json::Value& root)
 	}
 }
 
-bool Enever::GetPriceGas(Json::Value& result)
+bool Enever::GetPriceGas()
 {
 	std::string sResult;
 
@@ -321,8 +326,7 @@ bool Enever::GetPriceGas(Json::Value& result)
 	{
 		//check if we need to update (data is not from today)
 		Json::Value jsonCurrent;
-		Json::Reader reader;
-		if (reader.parse(m_szCurrentGasPrices, jsonCurrent))
+		if (ParseJSon(m_szCurrentGasPrices, jsonCurrent))
 		{
 			if (jsonCurrent.isMember("data"))
 			{
@@ -347,6 +351,7 @@ bool Enever::GetPriceGas(Json::Value& result)
 	}
 	if (bNeedUpdate)
 	{
+		m_szCurrentGasPrices.clear();
 #ifdef DEBUG_Enever_R
 		sResult = ReadFile("E:\\enever_gas.json");
 #else
@@ -380,6 +385,7 @@ bool Enever::GetPriceGas(Json::Value& result)
 		m_szCurrentGasPrices = sResult;
 	}
 
+	Json::Value result;
 	bool ret = ParseJSon(sResult, result);
 	if ((!ret) || (!result.isObject()))
 	{
@@ -397,8 +403,15 @@ bool Enever::GetPriceGas(Json::Value& result)
 }
 
 //Gas prices are for the entire day
-void Enever::parseGas(const Json::Value& root)
+void Enever::parseGas()
 {
+	if (m_szCurrentGasPrices.empty())
+		return;
+
+	Json::Value root;
+	if (!ParseJSon(m_szCurrentGasPrices, root))
+		return;
+
 	if (root["data"].empty() == true)
 	{
 		//No date details available
