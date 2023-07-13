@@ -25,7 +25,7 @@
 
 #ifdef _DEBUG
 //#define DEBUG_AlfenEve_R
-#define DEBUG_AlfenEve_W
+//#define DEBUG_AlfenEve_W
 #endif
 
 #ifdef DEBUG_AlfenEve_W
