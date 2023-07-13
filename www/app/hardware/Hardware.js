@@ -13,7 +13,7 @@ define(['app'], function (app) {
 		'RFLink Gateway MQTT': ['MQTTParams', 4],
 	};
 	
-	app.controller('HardwareController', function ($scope, $rootScope, $timeout) {
+	app.controller('HardwareController', function ($scope, $rootScope, $timeout, $http) {
 
 		$scope.SerialPortStr = [];
 		$scope.calledFetch = 0;
@@ -3088,8 +3088,16 @@ define(['app'], function (app) {
 		}
 
 		SetCCUSBType = function () {
-			$.post("setcurrentcostmetertype.webem", $("#hardwarecontent #ccusbtype").serialize(), function (data) {
+			$http({
+				url: "json.htm?type=command&param=setccmetertype&idx=" + $('#hardwarecontent #ccusbtype #idx').val() + "&CCBaudrate=" + $('#hardwarecontent #ccusbtype #CCBaudrate').val()
+			}).then(function successCallback(response) {
+				var data = response.data;
+				if (data.status != "OK") {
+					ShowNotify($.t(data.error), 2500, true);
+					return;
+				}
 				ShowHardware();
+				return;
 			});
 		}
 
@@ -3997,7 +4005,7 @@ define(['app'], function (app) {
 								HwTypeStr += ' <span class="label label-info lcursor" onclick="EditRego6XXType(' + item.idx + ',\'' + item.Name + '\',' + item.Mode1 + ',' + item.Mode2 + ',' + item.Mode3 + ',' + item.Mode4 + ',' + item.Mode5 + ',' + item.Mode6 + ');">Change Type</span>';
 							}
 							else if (HwTypeStr.indexOf("CurrentCost Meter USB") >= 0) {
-								HwTypeStr += ' <span class="label label-info lcursor" onclick="EditCCUSB(' + item.idx + ',\'' + item.Name + '\',\'' + item.Address + '\');">' + $.t("Set Mode") + '</span>';
+								HwTypeStr += ' <span class="label label-info lcursor" onclick="EditCCUSB(' + item.idx + ',\'' + item.Name + '\',\'' + item.Mode1 + '\');">' + $.t("Set Mode") + '</span>';
 							}
 							else if (HwTypeStr.indexOf("Tellstick") >= 0) {
 								HwTypeStr += ' <span class="label label-info lcursor" onclick="TellstickSettings(' + item.idx + ',\'' + item.Name + '\',' + item.Mode1 + ',' + item.Mode2 + ');">' + $.t("Settings") + '</span>';
