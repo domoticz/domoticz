@@ -7,6 +7,8 @@
 #include <openssl/bio.h>
 #include <openssl/evp.h>
 
+#define DEFAULT_RATE_LIMIT_P1 5
+
 #define CRC16_ARC	0x8005
 #define CRC16_ARC_REFL	0xA001
 
@@ -207,7 +209,7 @@ constexpr std::array<uint16_t, 256> p1_crc_16{
 P1MeterBase::P1MeterBase()
 {
 	m_bDisableCRC = true;
-	m_ratelimit = 0;
+	m_ratelimit = DEFAULT_RATE_LIMIT_P1;
 	Init();
 }
 
@@ -218,6 +220,8 @@ P1MeterBase::~P1MeterBase()
 
 void P1MeterBase::Init()
 {
+	if (m_ratelimit == 0)
+		m_ratelimit = DEFAULT_RATE_LIMIT_P1;
 	m_p1version = 0;
 	m_linecount = 0;
 	m_exclmarkfound = 0;

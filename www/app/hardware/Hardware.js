@@ -566,7 +566,7 @@ define(['app'], function (app) {
 					Mode2 = $("#hardwarecontent #divcrcp1 #disablecrcp1").prop("checked") ? 0 : 1;
 					var ratelimitp1 = $("#hardwarecontent #hardwareparamsratelimitp1 #ratelimitp1").val();
 					if (ratelimitp1 == "") {
-						ratelimitp1 = "0";
+						ratelimitp1 = "5";
 					}
 					Mode3 = ratelimitp1;
 					var decryptionkey = $("#hardwarecontent #divkeyp1p1 #decryptionkey").val();
@@ -1782,7 +1782,7 @@ define(['app'], function (app) {
 					Mode2 = $("#hardwarecontent #divcrcp1 #disablecrcp1").prop("checked") ? 0 : 1;
 					var ratelimitp1 = $("#hardwarecontent #hardwareparamsratelimitp1 #ratelimitp1").val();
 					if (ratelimitp1 == "") {
-						ratelimitp1 = "0";
+						ratelimitp1 = "5";
 					}
 					Mode3 = ratelimitp1;
 					var decryptionkey = $("#hardwarecontent #divkeyp1p1 #decryptionkey").val();
@@ -2014,7 +2014,7 @@ define(['app'], function (app) {
 					Mode2 = $("#hardwarecontent #divcrcp1 #disablecrcp1").prop("checked") ? 0 : 1;
 					var ratelimitp1 = $("#hardwarecontent #hardwareparamsratelimitp1 #ratelimitp1").val();
 					if (ratelimitp1 == "") {
-						ratelimitp1 = "0";
+						ratelimitp1 = "5";
 					}
 					Mode3 = ratelimitp1;
 					var decryptionkey = $("#hardwarecontent #divkeyp1p1 #decryptionkey").val();
@@ -4209,7 +4209,10 @@ define(['app'], function (app) {
 							if (data["Type"].indexOf("P1 Smart Meter") >= 0) {
 								$("#hardwarecontent #divbaudratep1 #combobaudratep1").val(data["Mode1"]);
 								$("#hardwarecontent #divcrcp1 #disablecrcp1").prop("checked", data["Mode2"] == 0);
-								$("#hardwarecontent #hardwareparamsratelimitp1 #ratelimitp1").val(data["Mode3"]);
+								var pollInterval = parseInt(data["Mode3"]);
+								if (pollInterval==0)
+									pollInterval=5;
+								$("#hardwarecontent #hardwareparamsratelimitp1 #ratelimitp1").val(pollInterval);
 								$("#hardwarecontent #divkeyp1p1 #decryptionkey").val(data["Password"]);
 								if (data["Mode1"] == 0) {
 									$("#hardwarecontent #divcrcp1").hide();
@@ -4247,7 +4250,10 @@ define(['app'], function (app) {
 							$("#hardwarecontent #hardwareparamsremote #tcpport").val(data["Port"]);
 							if (data["Type"].indexOf("P1 Smart Meter") >= 0) {
 								$("#hardwarecontent #divcrcp1 #disablecrcp1").prop("checked", data["Mode2"] == 0);
-								$("#hardwarecontent #hardwareparamsratelimitp1 #ratelimitp1").val(data["Mode3"]);
+								var pollInterval = parseInt(data["Mode3"]);
+								if (pollInterval==0)
+									pollInterval=5;
+								$("#hardwarecontent #hardwareparamsratelimitp1 #ratelimitp1").val(pollInterval);
 								$("#hardwarecontent #divkeyp1p1 #decryptionkey").val(data["Password"]);
 							}
 							else if (data["Type"].indexOf("Teleinfo EDF") >= 0 ) {
@@ -4773,6 +4779,7 @@ define(['app'], function (app) {
 					$("#hardwarecontent #divbaudratemysensors").show();
 				}
 				if (text.indexOf("P1 Smart Meter") >= 0) {
+					$("#hardwarecontent #hardwareparamsratelimitp1 #ratelimitp1").val(5);
 					$("#hardwarecontent #divbaudratep1").show();
 					$("#hardwarecontent #divratelimitp1").show();
 					$("#hardwarecontent #divkeyp1p1").show();
@@ -4810,6 +4817,7 @@ define(['app'], function (app) {
 						$("#hardwarecontent #divlogin").show();
 					}
 					else if (text.indexOf("P1 Smart Meter") >= 0) {
+						$("#hardwarecontent #hardwareparamsratelimitp1 #ratelimitp1").val(5);
 						$("#hardwarecontent #divratelimitp1").show();
 						$("#hardwarecontent #divcrcp1").show();
 						$("#hardwarecontent #divkeyp1p1").show();
