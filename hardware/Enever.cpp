@@ -225,8 +225,8 @@ bool Enever::GetPriceElectricity()
 				{
 					if (
 						(lltime.tm_year == ltime->tm_year)
-						|| (lltime.tm_mon == ltime->tm_mon)
-						|| (lltime.tm_mday == ltime->tm_mday)
+						&& (lltime.tm_mon == ltime->tm_mon)
+						&& (lltime.tm_mday == ltime->tm_mday)
 						)
 					{
 						bNeedUpdate = false;
@@ -395,8 +395,8 @@ bool Enever::GetPriceGas()
 				{
 					if (
 						(lltime.tm_year == ltime->tm_year)
-						|| (lltime.tm_mon == ltime->tm_mon)
-						|| (lltime.tm_mday == ltime->tm_mday)
+						&& (lltime.tm_mon == ltime->tm_mon)
+						&& (lltime.tm_mday == ltime->tm_mday)
 						)
 					{
 						bNeedUpdate = false;
