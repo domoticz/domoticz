@@ -155,7 +155,7 @@ void Enever::Do_Work()
 			//give it some slack
 			if (ltime->tm_hour != last_hour)
 			{
-				if ((ltime->tm_hour == 0) || (ltime->tm_hour == 16) || (last_hour == -1))
+				if ((ltime->tm_hour == 0) || (last_hour == -1))
 				{
 					GetPriceElectricity();
 				}
