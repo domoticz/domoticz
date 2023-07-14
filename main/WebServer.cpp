@@ -10394,21 +10394,22 @@ namespace http
 						int lastHour = 0;
 						time_t lastTime = 0;
 
+						int method = 0;
+						std::string sMethod = request::findValue(&req, "method");
+						if (!sMethod.empty())
+							method = atoi(sMethod.c_str());
+
 						if (bIsManagedCounter)
 						{
 							result = m_sql.safe_query("SELECT Usage, Date FROM %s WHERE (DeviceRowID==%" PRIu64 ") ORDER BY Date ASC", dbasetable.c_str(), idx);
 							bHaveFirstValue = true;
 							bHaveFirstRealValue = true;
+							method = 1;
 						}
 						else
 						{
 							result = m_sql.safe_query("SELECT Value, Date FROM %s WHERE (DeviceRowID==%" PRIu64 ") ORDER BY Date ASC", dbasetable.c_str(), idx);
 						}
-
-						int method = 0;
-						std::string sMethod = request::findValue(&req, "method");
-						if (!sMethod.empty())
-							method = atoi(sMethod.c_str());
 
 						if (!result.empty())
 						{
@@ -10557,12 +10558,23 @@ namespace http
 									ParseSQLdatetime(atime, ntime, stime, -1);
 									if (bHaveFirstRealValue)
 									{
-										int64_t curValue = actValue - ulLastValue;
+										int64_t curValue;
+										float tlaps = 1;
 
-										float tdiff = static_cast<float>(difftime(atime, lastTime));
-										if (tdiff == 0)
-											tdiff = 1;
-										float tlaps = 3600.0F / tdiff;
+										if (!bIsManagedCounter)
+										{
+											curValue = actValue - ulLastValue;
+											float tdiff;
+											tdiff = static_cast<float>(difftime(atime, lastTime));
+											if (tdiff == 0)
+												tdiff = 1;
+											tlaps = 3600.0F / tdiff;
+										}
+										else
+										{
+											curValue = actValue;
+										}
+										
 										curValue *= int(tlaps);
 
 										root["result"][ii]["d"] = sd[1].substr(0, 16);

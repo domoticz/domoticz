@@ -5124,6 +5124,115 @@ uint64_t CSQLHelper::GetDeviceIndex(const int HardwareID, const std::string& ID,
 	return std::stoull(result[0].at(0));
 }
 
+uint64_t CSQLHelper::UpdateManagedValueInt(
+	const int HardwareID, const char* ID, const unsigned char unit, const unsigned char devType, const unsigned char subType,
+	const unsigned char signallevel, const unsigned char batterylevel, const int nValue, const char* sValue, std::string& devname,
+	const bool bUseOnOffAction,
+	const char* User
+)
+{
+	uint64_t ulID = 0;
+
+	std::vector<std::vector<std::string> > result;
+	result = safe_query("SELECT ID, Name, Used, SwitchType, nValue, sValue, LastUpdate, Options FROM DeviceStatus WHERE (HardwareID=%d AND DeviceID='%q' AND Unit=%d AND Type=%d AND SubType=%d)", HardwareID, ID, unit, devType, subType);
+	if (result.empty())
+	{
+		//Device not found, create it
+		ulID = InsertDevice(HardwareID, ID, unit, devType, subType, 0, nValue, sValue, devname, signallevel, batterylevel);
+
+		if (ulID == (uint64_t)-1)
+		{
+			return -1;
+		}
+	}
+	else
+	{
+		ulID = std::stoull(result[0][0]);
+		devname = result[0][1];
+	}
+
+	std::string sLastUpdate = TimeToString(nullptr, TF_DateTime);
+
+	bool bOK = false;
+
+	std::vector<std::string> parts, parts2;
+	StringSplit(sValue, ";", parts);
+	if (parts.size() == 11)
+	{
+		// is last part date only, or date with hour with space?
+		StringSplit(parts[10], " ", parts2);
+		bool shortLog = false;
+		if (parts2.size() > 1) {
+			shortLog = true;
+		}
+		// second part is date only, or date with hour with space
+		// In DeviceStatus table, index 0 = Usage 1,  1 = Usage 2, 2 = Delivery 1,  3 = Delivery 2, 4 = Usage current, 5 = Delivery current
+		// In MultiMeter table, index 0 = Usage 1, 1 = Delivery 1, 2 = Usage current, 3 = Delivery current, 4 = Usage 2, 5 = Delivery 2
+		// In MultiMeter_Calendar table, same as Multimeter table + counter1, counter2, counter3 and counter4 when shortlog is False
+		UpdateCalendarMeter(HardwareID, ID, unit, devType, subType,
+			shortLog,
+			true,
+			parts[10].c_str(),
+			std::stoll(parts[0]),
+			std::stoll(parts[2]),
+			std::stoll(parts[4]),
+			std::stoll(parts[5]),
+			std::stoll(parts[1]),
+			std::stoll(parts[3]),
+			std::stoll(parts[6]),
+			std::stoll(parts[7]),
+			std::stoll(parts[8]),
+			std::stoll(parts[9])
+		);
+		bOK = true;
+	}
+	if (parts.size() == 7)
+	{
+		// is last part date only, or date with hour with space?
+		StringSplit(parts[6], " ", parts2);
+		bool shortLog = false;
+		if (parts2.size() > 1) {
+			shortLog = true;
+		}
+		// In DeviceStatus table, index 0 = Usage 1,  1 = Usage 2, 2 = Delivery 1,  3 = Delivery 2, 4 = Usage current, 5 = Delivery current
+		// In MultiMeter table, index 0 = Usage 1, 1 = Delivery 1, 2 = Usage current, 3 = Delivery current, 4 = Usage 2, 5 = Delivery 2
+		// In MultiMeter_Calendar table, same as Multimeter table + counter1, counter2, counter3 and counter4 when shortlog is False
+		UpdateCalendarMeter(HardwareID, ID, unit, devType, subType,
+			shortLog,
+			true,
+			parts[6].c_str(),
+			std::stoll(parts[0]),
+			std::stoll(parts[2]),
+			std::stoll(parts[4]),
+			std::stoll(parts[5]),
+			std::stoll(parts[1]),
+			std::stoll(parts[3])
+		);
+		bOK = true;
+	}
+	if (parts.size() == 3)
+	{
+		StringSplit(parts[2], " ", parts2);
+		// second part is date only, or date with hour with space
+		bool shortLog = false;
+		if (parts2.size() > 1) {
+			shortLog = true;
+		}
+		UpdateCalendarMeter(HardwareID, ID, unit, devType, subType,
+			shortLog,
+			false,
+			parts[2].c_str(),
+			std::stoll(parts[0]),
+			std::stoll(parts[1])
+		);
+		bOK = true;
+	}
+	if (!bOK)
+		return -1;
+	safe_query("UPDATE DeviceStatus SET LastUpdate='%q', sValue='%q' WHERE (ID = %" PRIu64 ")", sLastUpdate.c_str(), sValue, ulID);
+	return ulID;
+}
+
 uint64_t CSQLHelper::UpdateValueInt(
         const int HardwareID, const char *ID, const unsigned char unit, const unsigned char devType, const unsigned char subType,
         const unsigned char signallevel, const unsigned char batterylevel, const int nValue, const char *sValue, std::string &devname,
@@ -5135,14 +5244,34 @@ uint64_t CSQLHelper::UpdateValueInt(
 		return -1;
 
 	uint64_t ulID = 0;
+	std::string sOption;
+	std::map<std::string, std::string> options;
+
+	bool bIsManagedCounter = (devType == pTypeGeneral && subType == sTypeManagedCounter);
+
+	std::vector<std::vector<std::string> > result;
+	result = safe_query("SELECT ID, Name, Used, SwitchType, nValue, sValue, LastUpdate, Options FROM DeviceStatus WHERE (HardwareID=%d AND DeviceID='%q' AND Unit=%d AND Type=%d AND SubType=%d)", HardwareID, ID, unit, devType, subType);
+
+	if (!result.empty())
+	{
+		sOption = result[0][7];
+		options = BuildDeviceOptions(sOption);
+
+		if (options["AddDBLogEntry"] == "true")
+		{
+			bIsManagedCounter = true;
+		}
+	}
+	if (bIsManagedCounter)
+		return UpdateManagedValueInt(HardwareID, ID, unit, devType, subType, signallevel, batterylevel, nValue, sValue, devname, bUseOnOffAction, User);
+
+
 	bool bDeviceUsed = false;
 	bool bSameDeviceStatusValue = false;
 	int nValueBeforeUpdate = -1;
 	std::string sValueBeforeUpdate;
 	_eSwitchType stype = STYPE_OnOff;
 
-	std::vector<std::vector<std::string> > result;
-	result = safe_query("SELECT ID, Name, Used, SwitchType, nValue, sValue, LastUpdate, Options FROM DeviceStatus WHERE (HardwareID=%d AND DeviceID='%q' AND Unit=%d AND Type=%d AND SubType=%d)", HardwareID, ID, unit, devType, subType);
 	if (result.empty())
 	{
 		//Insert
@@ -5168,8 +5297,6 @@ uint64_t CSQLHelper::UpdateValueInt(
 	{
 		//Update
 		ulID = std::stoull(result[0][0]);
-		std::string sOption = result[0][7];
-		auto options = BuildDeviceOptions(sOption);
 		devname = result[0][1];
 		bDeviceUsed = atoi(result[0][2].c_str()) != 0;
 		stype = (_eSwitchType)atoi(result[0][3].c_str());
@@ -5250,85 +5377,6 @@ uint64_t CSQLHelper::UpdateValueInt(
 					(nValue == nValueBeforeUpdate) &&
 					(sValue == sValueBeforeUpdate)
 					);
-			}
-
-			if ((devType == pTypeGeneral && subType == sTypeManagedCounter) || (options["AddDBLogEntry"] == "true"))
-			{
-				std::vector<std::string> parts, parts2;
-				StringSplit(sValue, ";", parts);
-				if (parts.size() == 11)
-				{
-					// is last part date only, or date with hour with space?
-					StringSplit(parts[10], " ", parts2);
-					bool shortLog = false;
-					if (parts2.size() > 1) {
-						shortLog = true;
-					}
-					// second part is date only, or date with hour with space
-					// In DeviceStatus table, index 0 = Usage 1,  1 = Usage 2, 2 = Delivery 1,  3 = Delivery 2, 4 = Usage current, 5 = Delivery current
-					// In MultiMeter table, index 0 = Usage 1, 1 = Delivery 1, 2 = Usage current, 3 = Delivery current, 4 = Usage 2, 5 = Delivery 2
-					// In MultiMeter_Calendar table, same as Multimeter table + counter1, counter2, counter3 and counter4 when shortlog is False
-					UpdateCalendarMeter(HardwareID, ID, unit, devType, subType,
-						shortLog,
-						true,
-						parts[10].c_str(),
-						std::stoll(parts[0]),
-						std::stoll(parts[2]),
-						std::stoll(parts[4]),
-						std::stoll(parts[5]),
-						std::stoll(parts[1]),
-						std::stoll(parts[3]),
-						std::stoll(parts[6]),
-						std::stoll(parts[7]),
-						std::stoll(parts[8]),
-						std::stoll(parts[9])
-					);
-					result = safe_query("UPDATE DeviceStatus SET LastUpdate='%q' WHERE (ID = %" PRIu64 ")", sLastUpdate.c_str(), ulID);
-					return ulID;
-				}
-				if (parts.size() == 7)
-				{
-					// is last part date only, or date with hour with space?
-					StringSplit(parts[6], " ", parts2);
-					bool shortLog = false;
-					if (parts2.size() > 1) {
-						shortLog = true;
-					}
-					// In DeviceStatus table, index 0 = Usage 1,  1 = Usage 2, 2 = Delivery 1,  3 = Delivery 2, 4 = Usage current, 5 = Delivery current
-					// In MultiMeter table, index 0 = Usage 1, 1 = Delivery 1, 2 = Usage current, 3 = Delivery current, 4 = Usage 2, 5 = Delivery 2
-					// In MultiMeter_Calendar table, same as Multimeter table + counter1, counter2, counter3 and counter4 when shortlog is False
-					UpdateCalendarMeter(HardwareID, ID, unit, devType, subType,
-						shortLog,
-						true,
-						parts[6].c_str(),
-						std::stoll(parts[0]),
-						std::stoll(parts[2]),
-						std::stoll(parts[4]),
-						std::stoll(parts[5]),
-						std::stoll(parts[1]),
-						std::stoll(parts[3])
-					);
-					result = safe_query("UPDATE DeviceStatus SET LastUpdate='%q' WHERE (ID = %" PRIu64 ")", sLastUpdate.c_str(), ulID);
-					return ulID;
-				}
-				if (parts.size() == 3)
-				{
-					StringSplit(parts[2], " ", parts2);
-					// second part is date only, or date with hour with space
-					bool shortLog = false;
-					if (parts2.size() > 1) {
-						shortLog = true;
-					}
-					UpdateCalendarMeter(HardwareID, ID, unit, devType, subType,
-						shortLog,
-						false,
-						parts[2].c_str(),
-						std::stoll(parts[0]),
-						std::stoll(parts[1])
-					);
-					result = safe_query("UPDATE DeviceStatus SET LastUpdate='%q' WHERE (ID = %" PRIu64 ")", sLastUpdate.c_str(), ulID);
-					return ulID;
-				}
 			}
 
 			result = safe_query(
