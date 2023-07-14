@@ -311,6 +311,11 @@ void Enever::parseElectricity()
 	uint64_t iActRate = 0;
 	uint64_t idx = -1;
 
+	uint64_t totalPrice = 0;
+	int totalValues = 0;
+
+	std::string szDeviceName = "Electricity Price";
+
 	bool bDoesMeterExitstInSystem = false;
 	auto result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (Type==%d) AND (SubType==%d) AND (Unit==%d) AND (HardwareID==%d)", pTypeGeneral, sTypeManagedCounter, 1, m_HwdID);
 	if (!result.empty())
@@ -339,24 +344,20 @@ void Enever::parseElectricity()
 		float fProviderPrice = std::stof(szProviderPrice);
 
 
-		time_t timeplus1 = rtime + 3600 ;
-		struct tm* dbtime = localtime(&timeplus1);
-
-		std::string szTime = std_format("%04d-%02d-%02d %02d:%02d:%02d", dbtime->tm_year + 1900, dbtime->tm_mon + 1, dbtime->tm_mday, dbtime->tm_hour, 0, 0);
+		std::string szTime = std_format("%04d-%02d-%02d %02d:%02d:%02d", lltime.tm_year + 1900, lltime.tm_mon + 1, lltime.tm_mday, lltime.tm_hour, 0, 0);
 
 		uint64_t iRate = (uint64_t)round(fProviderPrice * 10000); //4 digts after comma!
 
+		totalPrice+= iRate;
+		totalValues++;
+
 		std::string sValue = std::to_string(iRate) + ";" + std::to_string(iRate) + ";" + szTime;
 
-		std::string szDeviceName = "Electricity Price";
 		idx = UpdateValueInt("0001", 1, pTypeGeneral, sTypeManagedCounter, 12, 255, 0, sValue.c_str(), szDeviceName, false, "Enever");
 		if (!bDoesMeterExitstInSystem)
 		{
 			//Set right units
 			m_sql.safe_query("UPDATE DeviceStatus SET SwitchType=3, AddjValue2=10000, Options='%q' WHERE (ID==%" PRIu64 ")", "ValueQuantity:RXVybyAvIGtXaA==;ValueUnits:4oKs", idx);
-
-			//Seems like a bug in Domoticz, when a device is not in the system, it will not be created when inserting for the first time (needs to be checked!)
-			idx = UpdateValueInt("0001", 1, pTypeGeneral, sTypeManagedCounter, 12, 255, 0, sValue.c_str(), szDeviceName, false, "Enever");
 		}
 
 		if (lltime.tm_hour == act_hour)
@@ -367,7 +368,14 @@ void Enever::parseElectricity()
 	}
 	if (idx != -1)
 	{
-		m_sql.safe_query("UPDATE DeviceStatus SET sValue='%q;%q' WHERE (ID==%" PRIu64 ")", std::to_string(iActRate).c_str(), std::to_string(iActRate).c_str(), idx);
+		if (totalValues != 0)
+		{
+			//Set average day price
+			uint64_t avgPrice = totalPrice / totalValues;
+			std::string szTime = std_format("%04d-%02d-%02d", ltime->tm_year + 1900, ltime->tm_mon + 1, ltime->tm_mday);
+			std::string sValue = std::to_string(avgPrice) + ";" + std::to_string(avgPrice) + ";" + szTime;
+			UpdateValueInt("0001", 1, pTypeGeneral, sTypeManagedCounter, 12, 255, 0, sValue.c_str(), szDeviceName, false, "Enever");
+		}
 	}
 }
 
@@ -517,13 +525,5 @@ void Enever::parseGas()
 	{
 		//Set right units
 		m_sql.safe_query("UPDATE DeviceStatus SET SwitchType=3, AddjValue2=10000, Options='%q' WHERE (ID==%" PRIu64 ")", "ValueQuantity:RXVybyAvIG0z;ValueUnits:4oKs", idx);
-
-		//Seems like a bug in Domoticz, when a device is not in the system, it will not be created when inserting for the first time (needs to be checked!)
-		idx = UpdateValueInt("0001", 2, pTypeGeneral, sTypeManagedCounter, 12, 255, 0, sValue.c_str(), szDeviceName, false, "Enever");
 	}
-	if (idx != -1)
-	{
-		m_sql.safe_query("UPDATE DeviceStatus SET sValue='%q;%q' WHERE (ID==%" PRIu64 ")", std::to_string(iRate).c_str(), std::to_string(iRate).c_str(), idx);
-	}
-
 }
