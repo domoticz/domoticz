@@ -548,7 +548,7 @@ namespace http
 
         void CWebServer::PresentOauth2LoginDialog(reply &rep, const std::string &sApp, const std::string &sError)
         {
-			std::string sTOTP = "required";
+			std::string sTOTP = "";	// required
 
 			rep = reply::stock_reply(reply::ok);
 

@@ -853,10 +853,6 @@ namespace http
 				{
 					altrtype = "getscenes";
 				}
-				else if (rtype.compare("plans") == 0)
-				{
-					altrtype = "getplans";
-				}
 				else if (rtype.compare("notifications") == 0)
 				{
 					altrtype = "getnotifications";
@@ -927,9 +923,9 @@ namespace http
 					auto pf = m_webcommands.find(altrtype);
 					if (pf != m_webcommands.end())
 					{
+						_log.Log(LOG_NORM, "[WebServer] Deprecated RType (%s) for API request. Handled via fallback (%s), please use correct API Command! (%s)", rtype.c_str(), altrtype.c_str(), req.host_remote_address.c_str());
 						pf->second(session, req, root);
 					}
-					_log.Log(LOG_STATUS, "[WebServer] Deprecated RType (%s) for API request. Handled via fallback (%s), please use correct API Command! (%s)", rtype.c_str(), altrtype.c_str(), req.host_remote_address.c_str());
 				}
 				else
 				{

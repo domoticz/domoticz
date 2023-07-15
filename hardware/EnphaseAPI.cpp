@@ -805,6 +805,12 @@ void EnphaseAPI::parseConsumption(const Json::Value& root)
 		std::string szName = "Enphase " + itt["measurementType"].asString();
 		int musage = itt["wNow"].asInt();
 		int mtotal = itt["whLifetime"].asInt();
+
+		if (szName == "Enphase net-consumption")
+		{
+			musage = abs(musage);
+			mtotal = abs(mtotal);
+		}
 		if (mtotal != 0)
 		{
 			SendKwhMeter(m_HwdID, iIndex++, 255, musage, mtotal / 1000.0, szName);

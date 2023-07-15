@@ -155,7 +155,7 @@ void Enever::Do_Work()
 			//give it some slack
 			if (ltime->tm_hour != last_hour)
 			{
-				if ((ltime->tm_hour == 0) || (ltime->tm_hour == 16) || (last_hour == -1))
+				if ((ltime->tm_hour == 0) || (last_hour == -1))
 				{
 					GetPriceElectricity();
 				}
@@ -314,7 +314,7 @@ void Enever::parseElectricity()
 	uint64_t totalPrice = 0;
 	int totalValues = 0;
 
-	std::string szDeviceName = "Electricity Price";
+	std::string szDeviceName = "Daily Electricity Price";
 
 	bool bDoesMeterExitstInSystem = false;
 	auto result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (Type==%d) AND (SubType==%d) AND (Unit==%d) AND (HardwareID==%d)", pTypeGeneral, sTypeManagedCounter, 1, m_HwdID);
@@ -519,11 +519,17 @@ void Enever::parseGas()
 
 	std::string sValue = std::to_string(iRate) + ";" + std::to_string(iRate) + ";" + szTime;
 
-	std::string szDeviceName = "Gas Price";
+	std::string szDeviceName = "Daily Gas Price";
 	uint64_t idx = UpdateValueInt("0001", 2, pTypeGeneral, sTypeManagedCounter, 12, 255, 0, sValue.c_str(), szDeviceName, false, "Enever");
 	if (!bDoesMeterExitstInSystem)
 	{
 		//Set right units
 		m_sql.safe_query("UPDATE DeviceStatus SET SwitchType=3, AddjValue2=10000, Options='%q' WHERE (ID==%" PRIu64 ")", "ValueQuantity:RXVybyAvIG0z;ValueUnits:4oKs", idx);
 	}
+
+	//Short log value
+	szTime = std_format("%04d-%02d-%02d %02d:%02d:%02d", lltime.tm_year + 1900, lltime.tm_mon + 1, lltime.tm_mday, lltime.tm_hour, 0, 0);
+	sValue = std::to_string(iRate) + ";" + std::to_string(iRate) + ";" + szTime;
+	idx = UpdateValueInt("0001", 2, pTypeGeneral, sTypeManagedCounter, 12, 255, 0, sValue.c_str(), szDeviceName, false, "Enever");
+
 }
