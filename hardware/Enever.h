@@ -23,9 +23,10 @@ private:
 	std::string MakeURL(const std::string& sURL);
 
 	bool GetPriceElectricity();
-	bool GetPriceGas();
+	bool GetPriceElectricity_Tomorrow();
+	bool GetPriceGas(const bool bForce);
 
-	void parseElectricity();
+	void parseElectricity(const std::string &szElectricityData, const bool bIsToday);
 	void parseGas();
 
 	uint64_t UpdateValueInt(const char* ID, unsigned char unit, unsigned char devType, unsigned char subType, unsigned char signallevel, unsigned char batterylevel, int nValue,
@@ -35,6 +36,7 @@ private:
 	std::string m_szProvider;
 
 	std::string m_szCurrentElectricityPrices;
+	std::string m_szCurrentElectricityPrices_Tomorrow;
 	std::string m_szCurrentGasPrices;
 
 	std::shared_ptr<std::thread> m_thread;
