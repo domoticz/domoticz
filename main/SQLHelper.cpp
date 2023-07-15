@@ -7326,13 +7326,6 @@ void CSQLHelper::AddCalendarUpdateMeter()
 			continue;
 		std::vector<std::string> sd = result[0];
 
-		std::string sOptions = sd[7];
-		std::map<std::string, std::string> options = BuildDeviceOptions(sOptions);
-		// We don't want to update meter if externally managed
-		if (options["DisableLogAutoUpdate"] == "true")
-		{
-			continue;
-		}
 		std::string devname = sd[0];
 		//int hardwareID= atoi(sd[1].c_str());
 		//std::string DeviceID=sd[2];
@@ -7341,6 +7334,19 @@ void CSQLHelper::AddCalendarUpdateMeter()
 		unsigned char subType = atoi(sd[5].c_str());
 		_eSwitchType switchtype = (_eSwitchType)atoi(sd[6].c_str());
 		_eMeterType metertype = (_eMeterType)switchtype;
+		std::string sOptions = sd[7];
+		std::map<std::string, std::string> options = BuildDeviceOptions(sOptions);
+
+		bool bIsManagedCounter = (devType == pTypeGeneral && subType == sTypeManagedCounter);
+
+		// We don't want to update meter if externally managed
+		if (
+			(bIsManagedCounter)
+			|| (options["DisableLogAutoUpdate"] == "true")
+			)
+		{
+			continue;
+		}
 
 		float tGasDivider = GasDivider;
 
@@ -7538,14 +7544,6 @@ void CSQLHelper::AddCalendarUpdateMultiMeter()
 			continue;
 		std::vector<std::string> sd = result[0];
 
-		std::string sOptions = sd[7];
-		std::map<std::string, std::string> options = BuildDeviceOptions(sOptions);
-		// We don't want to update meter if externally managed
-		if (options["DisableLogAutoUpdate"] == "true")
-		{
-			continue;
-		}
-
 		std::string devname = sd[0];
 		//int hardwareID= atoi(sd[1].c_str());
 		//std::string DeviceID=sd[2];
@@ -7554,6 +7552,19 @@ void CSQLHelper::AddCalendarUpdateMultiMeter()
 		unsigned char subType = atoi(sd[5].c_str());
 		//_eSwitchType switchtype=(_eSwitchType) atoi(sd[6].c_str());
 		//_eMeterType metertype=(_eMeterType)switchtype;
+
+		std::string sOptions = sd[7];
+		std::map<std::string, std::string> options = BuildDeviceOptions(sOptions);
+
+		bool bIsManagedCounter = (devType == pTypeGeneral && subType == sTypeManagedCounter);
+		// We don't want to update meter if externally managed
+		if (
+			(bIsManagedCounter)
+			|| (options["DisableLogAutoUpdate"] == "true")
+			)
+		{
+			continue;
+		}
 
 		result = safe_query(
 			"SELECT MIN(Value1), MAX(Value1), MIN(Value2), MAX(Value2), MIN(Value3), MAX(Value3), MIN(Value4), MAX(Value4), MIN(Value5), MAX(Value5), MIN(Value6), MAX(Value6) FROM MultiMeter WHERE (DeviceRowID='%" PRIu64 "' AND Date>='%q' AND Date<='%q 00:00:00')",
