@@ -87,6 +87,7 @@ class CHardwareMonitor : public CDomoticzHardwareBase
 	bool InitWMI();
 	void ExitWMI();
 	bool IsHMRunning();
+	int GetRunningHM(std::string & hmNamespace);
 	void RunWMIQuery(const char *qTable, const std::string &qType);
 	IWbemLocator *m_pLocator;
 	IWbemServices *m_pServicesHM;

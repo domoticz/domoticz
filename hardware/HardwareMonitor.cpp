@@ -16,6 +16,14 @@
 
 #ifdef WIN32
 	#include <comdef.h>
+
+constexpr std::array<std::pair<const char*, const char*>, 2> hardwareMonitors {
+	{
+		{ "LibreHardwareMonitor.exe", "root\\LibreHardwareMonitor" },
+		{ "OpenHardwareMonitor.exe", "root\\OpenHardwareMonitor" },
+	}
+};
+
 #elif defined(__linux__) || defined(__CYGWIN32__) || defined(__FreeBSD__) || defined (__OpenBSD__)
 #if !defined ( __FreeBSD__) && !defined(__OpenBSD__)
 	#include <sys/sysinfo.h>
@@ -566,19 +574,22 @@ bool CHardwareMonitor::InitWMI()
 	hr = CoCreateInstance(CLSID_WbemAdministrativeLocator, nullptr, CLSCTX_INPROC_SERVER, IID_IWbemLocator, (LPVOID *)&m_pLocator);
 	if (FAILED(hr))
 		return false;
-	hr = m_pLocator->ConnectServer(L"root\\LibreHardwareMonitor", nullptr, nullptr, nullptr, 0, nullptr, nullptr, &m_pServicesHM);
-	if (FAILED(hr))
-	{
-		hr = m_pLocator->ConnectServer(L"root\\OpenHardwareMonitor", nullptr, nullptr, nullptr, 0, nullptr, nullptr, &m_pServicesHM);
-		if (FAILED(hr))
-		{
-			Log(LOG_STATUS, "Hardware Monitor: Warning, neither Libre Hardware Monitor nor Open Hardware Monitor are installed on this system. (https://github.com/LibreHardwareMonitor/LibreHardwareMonitor, http://openhardwaremonitor.org)");
-			return false;
-		}
-	}
+
 	hr = m_pLocator->ConnectServer(L"root\\CIMV2", nullptr, nullptr, nullptr, 0, nullptr, nullptr, &m_pServicesSystem);
 	if (FAILED(hr))
 		return false;
+
+	std::string hmNamespace;
+	int procId = GetRunningHM(hmNamespace);
+	if (procId > 0)
+	{
+		hr = m_pLocator->ConnectServer(bstr_t(hmNamespace.c_str()), nullptr, nullptr, nullptr, 0, nullptr, nullptr, &m_pServicesHM);
+	}
+	if (0 == procId || FAILED(hr))
+	{
+		Log(LOG_STATUS, "Hardware Monitor: Warning, neither Libre Hardware Monitor nor Open Hardware Monitor are installed on this system. (https://github.com/LibreHardwareMonitor/LibreHardwareMonitor, http://openhardwaremonitor.org)");
+		return false;
+	}
 /*
 	// Set security levels on the proxy
 	hr = CoSetProxyBlanket(
@@ -592,11 +603,6 @@ bool CHardwareMonitor::InitWMI()
 		EOAC_NONE                    // proxy capabilities
 		);
 */
-	if (!IsHMRunning())
-	{
-		Log(LOG_STATUS, "Hardware Monitor: Warning, neither Libre Hardware Monitor nor Open Hardware Monitor are installed on this system. (https://github.com/LibreHardwareMonitor/LibreHardwareMonitor, http://openhardwaremonitor.org)");
-		return false;
-	}
 	return true;
 }
 
@@ -615,39 +621,48 @@ void CHardwareMonitor::ExitWMI()
 
 bool CHardwareMonitor::IsHMRunning()
 {
-	if ((m_pServicesHM == nullptr) || (m_pServicesSystem == nullptr))
+	if (m_pServicesHM == nullptr)
 		return false;
-	bool bHMRunning = false;
-	IEnumWbemClassObject *pEnumerator = nullptr;
+	std::string dummy;
+	int procId = GetRunningHM(dummy);
+	return procId > 0;
+}
+
+int CHardwareMonitor::GetRunningHM(std::string &hmNamespace)
+{
+	int procId = 0;
+	if (m_pServicesSystem == nullptr)
+		return procId;
+	IEnumWbemClassObject* pEnumerator = nullptr;
 	HRESULT hr;
-	hr = m_pServicesSystem->ExecQuery(L"WQL", L"Select * from win32_Process WHERE Name='LibreHardwareMonitor.exe'",
-		WBEM_FLAG_FORWARD_ONLY | WBEM_FLAG_RETURN_IMMEDIATELY, nullptr, &pEnumerator);
-	if (FAILED(hr))
+	for (const auto& hardwareMonitor : hardwareMonitors)
 	{
-		hr = m_pServicesSystem->ExecQuery(L"WQL", L"Select * from win32_Process WHERE Name='OpenHardwareMonitor.exe'",
-			WBEM_FLAG_FORWARD_ONLY | WBEM_FLAG_RETURN_IMMEDIATELY, nullptr, &pEnumerator);
-	}
-	if (SUCCEEDED(hr))
-	{
-		IWbemClassObject *pclsObj = nullptr;
-		ULONG uReturn = 0;
-		hr = pEnumerator->Next(WBEM_INFINITE, 1,  &pclsObj, &uReturn);
-		if ((FAILED(hr)) || (0 == uReturn))
+		const char* exeName = hardwareMonitor.first;
+		const char* wmiNamespace = hardwareMonitor.second;
+
+		std::string query = std_format("Select * from win32_Process WHERE Name='%s'", exeName);
+		hr = m_pServicesSystem->ExecQuery(L"WQL", bstr_t(query.c_str()), WBEM_FLAG_FORWARD_ONLY | WBEM_FLAG_RETURN_IMMEDIATELY, nullptr, &pEnumerator);
+		if (SUCCEEDED(hr))
 		{
+			IWbemClassObject* pclsObj = nullptr;
+			ULONG uReturn = 0;
+			hr = pEnumerator->Next(WBEM_INFINITE, 1, &pclsObj, &uReturn);
+			if ((SUCCEEDED(hr)) && (0 != uReturn))
+			{
+				VARIANT vtProp;
+				VariantInit(&vtProp);
+				hr = pclsObj->Get(L"ProcessId", 0, &vtProp, nullptr, nullptr);
+				procId = static_cast<int>(vtProp.iVal);
+				hmNamespace = wmiNamespace;
+				pclsObj->Release();
+			}
 			pEnumerator->Release();
-			return false;
 		}
-		VARIANT vtProp;
-		VariantInit(&vtProp);
-		hr = pclsObj->Get(L"ProcessId", 0, &vtProp, 0, 0);
-		int procId = static_cast<int>(vtProp.iVal);
-		if (procId) {
-			bHMRunning = true;
-		}
-		pclsObj->Release();
-		pEnumerator->Release();
+
+		if (procId > 0)
+			break;
 	}
-	return bHMRunning;
+	return procId;
 }
 
 void CHardwareMonitor::RunWMIQuery(const char* qTable, const std::string &qType)
