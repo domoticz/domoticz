@@ -86,10 +86,10 @@ class CHardwareMonitor : public CDomoticzHardwareBase
 #ifdef WIN32
 	bool InitWMI();
 	void ExitWMI();
-	bool IsOHMRunning();
+	bool IsHMRunning();
 	void RunWMIQuery(const char *qTable, const std::string &qType);
 	IWbemLocator *m_pLocator;
-	IWbemServices *m_pServicesOHM;
+	IWbemServices *m_pServicesHM;
 	IWbemServices *m_pServicesSystem;
 #elif defined(__linux__) || defined(__CYGWIN32__) || defined(__FreeBSD__) || defined(__OpenBSD__)
 	void FetchUnixCPU();
