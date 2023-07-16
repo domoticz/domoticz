@@ -29,6 +29,7 @@ Version 2023.xx
 - Fixed: Settings/Floorplan, Scene Names value was not saved
 - Changed: API: Old RType calls have been replaced with normal calls
 - Changed: MQTT-AD, better Unit calculation for scene/action devices
+- Changed: Debuglogging: setting debugflags automatically sets loglevel DEBUG
 - Updated: Plugin manager: ready for Python 3.11
 - Removed: native GoodWe hardware (use the new GoodWe python plugin instead)
 
