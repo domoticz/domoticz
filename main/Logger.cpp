@@ -132,13 +132,13 @@ bool CLogger::SetDebugFlags(const std::string &sFlags)
 			continue; // invalid flag, skip but continue processing the other flags
 	}
 	SetDebugFlags(iFlags);
-	if(IsDebugLevelEnabled(DEBUG_WEBSERVER))
-		SetACLFlogFlags(LOG_ACLF_ENABLED);
 	if (iFlags && !IsLogLevelEnabled(LOG_DEBUG_INT))
 	{
 		m_log_flags |= LOG_DEBUG_INT;
 		Log(LOG_STATUS, "Enabling Debug logging!");
 	}
+	if(IsDebugLevelEnabled(DEBUG_WEBSERVER))
+		SetACLFlogFlags(LOG_ACLF_ENABLED);
 	return true;
 }
 
