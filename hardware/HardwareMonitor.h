@@ -91,6 +91,7 @@ class CHardwareMonitor : public CDomoticzHardwareBase
 	IWbemLocator *m_pLocator;
 	IWbemServices *m_pServicesHM;
 	IWbemServices *m_pServicesSystem;
+	bool m_bIsLibreHardwareMonitor = false;
 #elif defined(__linux__) || defined(__CYGWIN32__) || defined(__FreeBSD__) || defined(__OpenBSD__)
 	void FetchUnixCPU();
 	void FetchUnixMemory();
