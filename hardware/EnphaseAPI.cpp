@@ -36,6 +36,7 @@ Example
 #define ENPHASE_API_PRODUCTION_INVERTERS "{ip}/api/v1/production/inverters"
 #define ENPHASE_API_POWER_GET "{ip}/ivp/mod/603980032/mode/power"
 #define ENPHASE_API_POWER_SET "{ip}/ivp/mod/603980032/mode/power"
+#define ENPHASE_API_INST_DETAILS "{ip}ivp/peb/devstatus"
 
 #ifdef DEBUG_EnphaseAPI_W
 void SaveString2Disk(std::string str, std::string filename)
@@ -459,7 +460,7 @@ bool EnphaseAPI::GetSerialSoftwareVersion()
 	return true;
 }
 
-bool EnphaseAPI::CheckAuthJWT(const std::string& szToken)
+bool EnphaseAPI::CheckAuthJWT(const std::string& szToken, const bool bDisplayErrors)
 {
 #ifdef DEBUG_EnphaseAPI_R
 	sResult = ReadFile("E:\\EnphaseAPI_check_jwt.json");
@@ -472,7 +473,11 @@ bool EnphaseAPI::CheckAuthJWT(const std::string& szToken)
 	std::string sResult;
 	if (!HTTPClient::GET(MakeURL(ENPHASE_API_CHECK_JWT), ExtraHeaders, sResult, false, true))
 	{
-		Log(LOG_ERROR, "Error getting http data! (check_jwt)");
+		//If the token is expired, we will get a 401 error
+		if (bDisplayErrors)
+		{
+			Log(LOG_ERROR, "Error getting http data! (check_jwt)");
+		}
 		return false;
 	}
 #ifdef DEBUG_EnphaseAPI_W
@@ -482,7 +487,10 @@ bool EnphaseAPI::CheckAuthJWT(const std::string& szToken)
 
 	if (sResult.find("Valid token") == std::string::npos)
 	{
-		Log(LOG_ERROR, "Error getting http data! (invalid token!)");
+		if (bDisplayErrors)
+		{
+			Log(LOG_ERROR, "Error getting http data! (invalid token!)");
+		}
 		return false;
 	}
 	return true;
@@ -584,7 +592,7 @@ bool EnphaseAPI::GetOwnerToken()
 	char buffer[80];
 	strftime(buffer, 80, "%Y-%m-%d %H:%M:%S", timeinfo);
 	Log(LOG_STATUS, "Token expires at: %s", buffer);
-	if (!CheckAuthJWT(m_szToken))
+	if (!CheckAuthJWT(m_szToken, true))
 		return false;
 
 	//Store token for later usage
@@ -685,7 +693,7 @@ bool EnphaseAPI::GetInstallerToken()
 
 	m_szTokenInstaller = sResult;
 
-	if (!CheckAuthJWT(m_szTokenInstaller))
+	if (!CheckAuthJWT(m_szTokenInstaller, true))
 		return false;
 
 	//Store token for later usage
@@ -711,9 +719,18 @@ bool EnphaseAPI::getProductionDetails(Json::Value& result)
 	sResult = ReadFile("E:\\EnphaseAPI_production.json");
 #else
 	std::vector<std::string> ExtraHeaders;
-	if (!m_szToken.empty()) {
-		if (!CheckAuthJWT(m_szToken))
-			return false;
+	if (!m_szToken.empty())
+	{
+		if (!CheckAuthJWT(m_szToken, false))
+		{
+			//we probably need to get a new token
+			if (!GetOwnerToken())
+				return false;
+			if (!CheckAuthJWT(m_szToken, true))
+			{
+				return false;
+			}
+		}
 
 		ExtraHeaders.push_back("Authorization: Bearer " + m_szToken);
 		ExtraHeaders.push_back("Content-Type:application/json");
@@ -912,8 +929,16 @@ bool EnphaseAPI::getPowerStatus()
 	if (m_szTokenInstaller.empty())
 		return false;
 
-	if (!CheckAuthJWT(m_szTokenInstaller))
-		return false;
+	if (!CheckAuthJWT(m_szTokenInstaller, false))
+	{
+		//we probably need to get a new token
+		if (!GetInstallerToken())
+			return false;
+		if (!CheckAuthJWT(m_szTokenInstaller, true))
+		{
+			return false;
+		}
+	}
 
 	std::string sResult;
 
@@ -957,12 +982,9 @@ bool EnphaseAPI::getPowerStatus()
 
 bool EnphaseAPI::SetPowerActive(const bool bActive)
 {
-	if (NeedToken())
+	if (m_szTokenInstaller.empty())
 	{
-		if (m_szTokenInstaller.empty())
-		{
-			GetInstallerToken();
-		}
+		GetInstallerToken();
 	}
 	if (m_szTokenInstaller.empty())
 	{
@@ -970,8 +992,16 @@ bool EnphaseAPI::SetPowerActive(const bool bActive)
 		return false;
 	}
 
-	if (!CheckAuthJWT(m_szTokenInstaller))
-		return false;
+	if (!CheckAuthJWT(m_szTokenInstaller, false))
+	{
+		//we probably need to get a new token
+		if (!GetInstallerToken())
+			return false;
+		if (!CheckAuthJWT(m_szTokenInstaller, true))
+		{
+			return false;
+		}
+	}
 
 	std::string sResult;
 

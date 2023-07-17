@@ -33,7 +33,7 @@ private:
 	void parseStorage(const Json::Value& root);
 	bool SetPowerActive(const bool bActive);
 
-	bool CheckAuthJWT(const std::string& szToken);
+	bool CheckAuthJWT(const std::string& szToken, const bool bDisplayErrors);
 
 	bool IsItSunny();
 	int getSunRiseSunSetMinutes(bool bGetSunRise);
