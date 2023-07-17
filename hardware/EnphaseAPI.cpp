@@ -778,6 +778,10 @@ void EnphaseAPI::parseProduction(const Json::Value& root)
 	Json::Value reading = (bIsMeteredVersion) ? root["production"][1] : root["production"][0];
 
 	int musage = reading["wNow"].asInt();
+
+	if (musage < 0)
+		musage = 0; //seems sometimes the production value is negative??
+
 	int mtotal = reading["whLifetime"].asInt();
 
 	if (mtotal != 0)
@@ -805,12 +809,6 @@ void EnphaseAPI::parseConsumption(const Json::Value& root)
 		std::string szName = "Enphase " + itt["measurementType"].asString();
 		int musage = itt["wNow"].asInt();
 		int mtotal = itt["whLifetime"].asInt();
-
-		if (szName == "Enphase net-consumption")
-		{
-			musage = abs(musage);
-			mtotal = abs(mtotal);
-		}
 		if (mtotal != 0)
 		{
 			SendKwhMeter(m_HwdID, iIndex++, 255, musage, mtotal / 1000.0, szName);
