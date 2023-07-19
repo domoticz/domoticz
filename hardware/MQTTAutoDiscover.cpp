@@ -3517,7 +3517,7 @@ bool MQTTAutoDiscover::SendSwitchCommand(const std::string& DeviceID, const std:
 			else
 			{
 				root["brightness"] = slevel;
-				//root["state"] = (slevel > 0) ? "ON" : "OFF";
+				root["state"] = (slevel > 0) ? "ON" : "OFF";
 			}
 
 			szSendValue = JSonToRawString(root);
