@@ -3,7 +3,7 @@ name: build last version
 on:
   workflow_dispatch:
   schedule:
-  - cron:  '30 0 * * *'
+  - cron:  '0 23 * * *'
   release:
     types: [created]
     paths-ignore:
