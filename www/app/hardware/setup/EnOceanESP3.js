@@ -129,7 +129,7 @@ define(['app'], function (app) {
 			var oTable = $("#nodestable").dataTable();
 			oTable.fnClearTable();
 			$.ajax({
-				url: "json.htm?type=esp3getnodes&hwdid=" + $.esp3hwdid,
+				url: "json.htm?type=command&param=esp3getnodes&hwdid=" + $.esp3hwdid,
 				async: false,
 				dataType: "json",
 				success: function (data, status) {

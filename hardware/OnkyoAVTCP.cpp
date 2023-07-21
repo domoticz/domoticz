@@ -4,7 +4,6 @@
 #include "../main/Helper.h"
 #include "../main/SQLHelper.h"
 #include <iostream>
-#include "../main/localtime_r.h"
 #include "../main/mainworker.h"
 #include "../hardware/hardwaretypes.h"
 #include <json/json.h>

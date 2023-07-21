@@ -1,7 +1,6 @@
 #include "stdafx.h"
 #include "BaroForecastCalculator.h"
 #include "../hardware/hardwaretypes.h"
-#include "localtime_r.h"
 
 //http://www.freescale.com/files/sensors/doc/app_note/AN3914.pdf
 

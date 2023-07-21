@@ -3,7 +3,6 @@
 #include "../main/Logger.h"
 #include "../main/Helper.h"
 #include <iostream>
-#include "../main/localtime_r.h"
 #include "../main/mainworker.h"
 
 #include "../main/SQLHelper.h"
@@ -114,7 +113,7 @@ void FritzboxTCP::Do_Work()
 
 void FritzboxTCP::OnData(const unsigned char* pData, size_t length)
 {
-	ParseData(pData, length);
+	ParseData(pData, (int)length);
 }
 
 void FritzboxTCP::OnError(const boost::system::error_code& error)

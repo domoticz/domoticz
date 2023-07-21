@@ -26,7 +26,7 @@ return {
 			258, -- id
 		},
 
-		-- timer riggers
+		-- timer triggers
 		timer = {
 			-- timer triggers.. if one matches with the current time then the script is executed
 			'at 13:45',

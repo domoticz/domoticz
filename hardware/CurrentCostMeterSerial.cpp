@@ -1,7 +1,6 @@
 #include "stdafx.h"
 #include "CurrentCostMeterSerial.h"
 #include "../main/Logger.h"
-#include "../main/localtime_r.h"
 #include "../main/Helper.h"
 #include "../main/SQLHelper.h"
 #include "../main/mainworker.h"
@@ -116,9 +115,10 @@ void CurrentCostMeterSerial::Do_Work()
 //Webserver helpers
 namespace http {
 	namespace server {
-		void CWebServer::SetCurrentCostUSBType(WebEmSession & session, const request& req, std::string & redirect_uri)
+
+		void CWebServer::Cmd_SetCurrentCostUSBType(WebEmSession & session, const request& req, Json::Value& root)
 		{
-			redirect_uri = "/index.html";
+			root["title"] = "SetCurrentCostUSBType";
 			if (session.rights != 2)
 			{
 				session.reply_status = reply::forbidden;
@@ -146,6 +146,7 @@ namespace http {
 			m_sql.UpdateRFXCOMHardwareDetails(atoi(idx.c_str()), Mode1, Mode2, Mode3, Mode4, Mode5, Mode6);
 
 			m_mainworker.RestartHardware(idx);
+			root["status"] = "OK";
 		}
 	} // namespace server
 } // namespace http

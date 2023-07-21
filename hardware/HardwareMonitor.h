@@ -60,12 +60,12 @@ class CHardwareMonitor : public CDomoticzHardwareBase
 	struct _tDUsageStruct
 	{
 		std::string MountPoint;
-		long long TotalBlocks;
-		long long UsedBlocks;
-		long long AvailBlocks;
+		int64_t TotalBlocks;
+		int64_t UsedBlocks;
+		int64_t AvailBlocks;
 	};
 
-	long long m_lastloadcpu;
+	int64_t m_lastloadcpu;
 	int m_totcpu;
 	std::string m_dfcommand;
 
@@ -86,11 +86,12 @@ class CHardwareMonitor : public CDomoticzHardwareBase
 #ifdef WIN32
 	bool InitWMI();
 	void ExitWMI();
-	bool IsOHMRunning();
+	bool IsHMRunning();
 	void RunWMIQuery(const char *qTable, const std::string &qType);
 	IWbemLocator *m_pLocator;
-	IWbemServices *m_pServicesOHM;
+	IWbemServices *m_pServicesHM;
 	IWbemServices *m_pServicesSystem;
+	bool m_bIsLibreHardwareMonitor = false;
 #elif defined(__linux__) || defined(__CYGWIN32__) || defined(__FreeBSD__) || defined(__OpenBSD__)
 	void FetchUnixCPU();
 	void FetchUnixMemory();

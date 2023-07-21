@@ -15,6 +15,7 @@ const std::string WHITESPACE = " \n\r\t\f\v";
 
 uint8_t Crc8(uint8_t crc, const uint8_t* buf, size_t size);
 unsigned int Crc32(unsigned int crc, const uint8_t* buf, size_t size);
+uint8_t Crc8_strMQ(uint8_t crc, const uint8_t* buf, size_t size);
 void StringSplit(std::string str, const std::string &delim, std::vector<std::string> &results);
 uint64_t hexstrtoui64(const std::string &str);
 std::string ToHexString(const uint8_t *pSource, size_t length);
@@ -146,3 +147,6 @@ std::string sha256hex(const std::string &input);
 std::string sha256raw(const std::string &input);
 
 char* make_web_time(const time_t rawtime);
+
+bool base32_decode(const std::string &input, std::string &output);
+bool base32_encode(const std::string &input, std::string &output);

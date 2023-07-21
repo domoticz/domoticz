@@ -3,7 +3,6 @@
 #include "../main/Helper.h"
 #include "../main/Logger.h"
 #include "hardwaretypes.h"
-#include "../main/localtime_r.h"
 #include <json/json.h>
 #include "../main/RFXtrx.h"
 #include "../main/SQLHelper.h"
@@ -85,15 +84,34 @@ void CPVOutputInput::GetMeterDetails()
 	if (m_KEY.empty())
 		return;
 
+	bool success = false;
+	int connectTries = 3;
+
 	std::string sResult;
 
 	std::stringstream sstr;
 	sstr << "https://pvoutput.org/service/r2/getstatus.jsp?sid=" << m_SID << "&key=" << m_KEY;
-	if (!HTTPClient::GET(sstr.str(), sResult))
+
+	for (int i = 0; i < connectTries; i++)
 	{
-		Log(LOG_ERROR, "Error login!");
-		return;
+		if (!HTTPClient::GET(sstr.str(), sResult))
+		{
+			Log(LOG_ERROR, "GetStatus failed: %s", sResult.c_str());
+			sleep_milliseconds(400);
+		}
+		else
+		{
+			success = true;
+			if (i > 0) {
+				Log(LOG_STATUS, "GetStatus succeeded after %d tries", i + 1);
+			}
+			break;
+		}
 	}
+
+	if (!success)
+		return;
+
 	std::vector<std::string> splitresult;
 	StringSplit(sResult, ",", splitresult);
 	if (splitresult.size() < 9)

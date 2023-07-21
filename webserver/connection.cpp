@@ -14,7 +14,6 @@
 #include "request_handler.hpp"
 #include "mime_types.hpp"
 #include "../main/Helper.h"
-#include "../main/localtime_r.h"
 #include "../main/Logger.h"
 
 namespace http {

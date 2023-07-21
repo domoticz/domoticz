@@ -152,7 +152,7 @@ define(['app', 'notifications/constants', 'notifications/factories'], function (
                     vm.notification = {
                         type: params[0],
                         condition: params[1],
-                        level: parseInt(params[2]),
+                        level: parseFloat(params[2]),
                         priority: notification.Priority,
                         customMessage: notification.CustomMessage,
                         customAction: decodeURIComponent(notification.CustomAction),

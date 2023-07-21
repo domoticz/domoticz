@@ -4,7 +4,6 @@
 #include "../main/Helper.h"
 #include "../main/RFXtrx.h"
 #include "../main/SQLHelper.h"
-#include "../main/localtime_r.h"
 #include "../main/mainworker.h"
 #include "../main/WebServer.h"
 #include "../webserver/cWebem.h"
@@ -193,7 +192,7 @@ void S0MeterBase::SendMeter(unsigned char ID, double musage, double mtotal)
 
 		tsen.ENERGY.battery_level = 9;
 
-		unsigned long long instant = (unsigned long long)(musage * 1000.0);
+		uint64_t instant = (uint64_t)(musage * 1000.0);
 		tsen.ENERGY.instant1 = (unsigned char)(instant / 0x1000000);
 		instant -= tsen.ENERGY.instant1 * 0x1000000;
 		tsen.ENERGY.instant2 = (unsigned char)(instant / 0x10000);

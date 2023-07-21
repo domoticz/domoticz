@@ -6,7 +6,6 @@
 #include "Helper.h"
 #include "../httpclient/UrlEncode.h"
 #include "../httpclient/HTTPClient.h"
-#include "StoppableTask.h"
 
 #define timer_resolution_hz 25
 
@@ -67,25 +66,25 @@ enum _eTaskItemType
 struct _tTaskItem
 {
 	_eTaskItemType _ItemType;
-	float _DelayTime;
-	int _HardwareID;
-	uint64_t _idx;
+	float _DelayTime = 0.F;
+	int _HardwareID = 0;
+	uint64_t _idx = 0;
 	std::string _ID;
-	unsigned char _unit;
-	unsigned char _devType;
-	unsigned char _subType;
-	unsigned char _signallevel;
-	unsigned char _batterylevel;
-	int _switchtype;
-	int _nValue;
+	unsigned char _unit = 0;
+	unsigned char _devType = 0;
+	unsigned char _subType = 0;
+	unsigned char _signallevel = 0;
+	unsigned char _batterylevel = 0;
+	int _switchtype = 0;
+	int _nValue = 0;
 	std::string _sValue;
 	std::string _command;
 	std::string _sUntil;
 	std::string _sUser;
-	int _level;
+	int _level = 0;
 	_tColor _Color;
 	std::string _relatedEvent;
-	timeval _DelayTimeBegin;
+	timeval _DelayTimeBegin = { 0 };
 
 	static _tTaskItem UpdateDevice(const float DelayTime, const uint64_t idx, const int nValue, const std::string &sValue, const int Protected, const bool bEventTrigger, const std::string &User)
 	{
@@ -427,8 +426,6 @@ class CSQLHelper : public StoppableTask
 	void DeleteDevices(const std::string &idx);
 	void DeleteScenes(const std::string &idx);
 
-	void TransferDevice(const std::string &oldidx, const std::string &newidx);
-
 	bool DoesSceneByNameExits(const std::string &SceneName);
 
 	void AddTaskItem(const _tTaskItem &tItem, bool cancelItem = false);
@@ -502,7 +499,6 @@ class CSQLHelper : public StoppableTask
 	double m_max_kwh_usage;
 
       private:
-	int scriptoutputindex=0;
 	std::mutex m_executeThreadMutex;
 	std::mutex m_sqlQueryMutex;
 	sqlite3 *m_dbase;
@@ -524,7 +520,7 @@ class CSQLHelper : public StoppableTask
 #ifndef WIN32
 	void ManageExecuteScriptTimeout(std::string szCommand, int pid, int timeout, bool *stillRunning, bool *timeoutOccurred);
 #endif
-	void PerformThreadedAction(const _tTaskItem tItem);
+	void PerformThreadedAction(const _tTaskItem &tItem);
 	bool SwitchLightFromTasker(const std::string &idx, const std::string &switchcmd, const std::string &level, const std::string &color, const std::string &User);
 	bool SwitchLightFromTasker(uint64_t idx, const std::string &switchcmd, int level, _tColor color, const std::string &User);
 
@@ -535,9 +531,12 @@ class CSQLHelper : public StoppableTask
 	uint64_t UpdateValueInt(int HardwareID, const char *ID, unsigned char unit, unsigned char devType, unsigned char subType, unsigned char signallevel, unsigned char batterylevel, int nValue,
 				const char *sValue, std::string &devname, bool bUseOnOffAction, const char* User = nullptr);
 
+	uint64_t UpdateManagedValueInt(int HardwareID, const char* ID, unsigned char unit, unsigned char devType, unsigned char subType, unsigned char signallevel, unsigned char batterylevel, int nValue,
+		const char* sValue, std::string& devname, bool bUseOnOffAction, const char* User = nullptr);
+
 	bool UpdateCalendarMeter(int HardwareID, const char *DeviceID, unsigned char unit, unsigned char devType, unsigned char subType, bool shortLog, bool multiMeter, const char *date,
-				 long long value1 = 0, long long value2 = 0, long long value3 = 0, long long value4 = 0, long long value5 = 0, long long value6 = 0, long long counter1 = 0,
-				 long long counter2 = 0, long long counter3 = 0, long long counter4 = 0);
+				 int64_t value1 = 0, int64_t value2 = 0, int64_t value3 = 0, int64_t value4 = 0, int64_t value5 = 0, int64_t value6 = 0, int64_t counter1 = 0,
+				 int64_t counter2 = 0, int64_t counter3 = 0, int64_t counter4 = 0);
 
 	void CheckAndUpdateDeviceOrder();
 	void CheckAndUpdateSceneDeviceOrder();

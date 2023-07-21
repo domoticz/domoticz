@@ -4,14 +4,23 @@
  *  Created on: 23 Januari 2023
  *      Author: kiddigital
  * 
- * This file is NOT a separate class but is directly included into 'main/WebServer.cpp'
- * So it contains routines that are part of the WebServer class, but for sourcecode management
+ * It contains routines that are part of the WebServer class, but for sourcecode management
  * reasons separated out into its own file so it is easier to maintain the IAM related functions
  * of the WebServer. The definitions of the methods here are still in 'main/Webserver.h'
  *  
 */
 
+#include "stdafx.h"
+#include <iostream>
+#include <json/json.h>
+#include "../main/Logger.h"
+#include "../main/SQLHelper.h"
+#include "../httpclient/UrlEncode.h"
 #include "../main/WebServer.h"
+#include "../webserver/Base64.h"
+
+#define __STDC_FORMAT_MACROS
+#include <inttypes.h>
 
 namespace http
 {
@@ -49,7 +58,7 @@ namespace http
 						if (!client_id.empty())
 						{
 							iClient = FindUser(client_id.c_str());
-							if (iClient >= 0 && m_users[iClient].userrights == URIGHTS_CLIENTID)
+							if (iClient != -1 && m_users[iClient].userrights == URIGHTS_CLIENTID)
 							{
 								std::string Username;
 
@@ -70,9 +79,10 @@ namespace http
 								{	// POST request, so maybe we have the data from the Login form
 									std::string sConsent = request::findValue(&req, "consent");
 									std::string sPWD = request::findValue(&req, "psw");
+									std::string sTOTP = request::findValue(&req, "totp");
 									Username = request::findValue(&req, "uname");
 									iUser = FindUser(Username.c_str());
-									bAuthenticated = (iUser > 0 ? (m_users[iUser].Password == GenerateMD5Hash(sPWD)) : false);
+									bAuthenticated = (iUser != -1 ? (m_users[iUser].Password == GenerateMD5Hash(sPWD)) : false);
 									if (!bAuthenticated)
 									{
 										m_failcount++;
@@ -81,6 +91,38 @@ namespace http
 											_log.Debug(DEBUG_AUTH, "OAuth2 Auth Code: Validating User (%s) failed (%d)!", Username.c_str(), iUser);
 											PresentOauth2LoginDialog(rep, m_users[iClient].Username, "Invalid Credentials!");
 											return;
+										}
+										error = "User credentials do not match!";
+									}
+									else
+									{
+										// User/pass matches.. now check TOTP if required
+										if (!m_users[iUser].Mfatoken.empty())
+										{
+											std::string sTotpKey = "";
+											bAuthenticated = false;
+											if(base32_decode(m_users[iUser].Mfatoken, sTotpKey))
+											{
+												if (VerifySHA1TOTP(sTOTP, sTotpKey))
+												{
+													bAuthenticated = true;
+												}
+												else
+												{
+													m_failcount++;
+													if (m_failcount < 3)
+													{
+														_log.Debug(DEBUG_AUTH, "OAuth2 Auth Code: Validating Time-based On-Time Passcode for User (%s) failed (%s)!", Username.c_str(), sTOTP.c_str());
+														PresentOauth2LoginDialog(rep, m_users[iClient].Username, "Invalid TOTP code!");
+														return;
+													}
+													error = "TOTP Verification for a user has failed!";
+												}
+											}
+											else
+											{
+												error = "TOTP key is not valid base32 encoded!";
+											}
 										}
 									}
 								}
@@ -193,7 +235,7 @@ namespace http
 						if (!client_id.empty())
 						{
 							iClient = FindUser(client_id.c_str());
-							if (iClient >= 0 && m_users[iClient].userrights == URIGHTS_CLIENTID)
+							if (iClient != -1 && m_users[iClient].userrights == URIGHTS_CLIENTID)
 							{
 								// Let's find the user for this client with the right auth_code, if any
 								iUser = 0;
@@ -215,8 +257,8 @@ namespace http
 									std::string acScope = m_accesscodes[iUser].Scope;
 									std::string CodeChallenge = m_accesscodes[iUser].CodeChallenge;
 									uint64_t AuthTime = m_accesscodes[iUser].AuthTime;
-									unsigned long long CodeTime = m_accesscodes[iUser].ExpTime;
-									unsigned long long CurTime = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
+									uint64_t CodeTime = m_accesscodes[iUser].ExpTime;
+									uint64_t CurTime = (uint64_t) std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
 
 									m_accesscodes[iUser].AuthCode = "";	// Once used, make sure it cannot be used again
 									m_accesscodes[iUser].RedirectUri = "";
@@ -292,7 +334,7 @@ namespace http
 											}
 											else
 											{
-												_log.Debug(DEBUG_AUTH, "OAuth2 Access Token: Authorization code has expired (%lld) (%lld)!", CodeTime, CurTime);
+												_log.Debug(DEBUG_AUTH, "OAuth2 Access Token: Authorization code has expired (%" PRIu64 ") (%" PRIu64 ")!", CodeTime, CurTime);
 												iUser = -1;
 											}
 										}
@@ -344,12 +386,12 @@ namespace http
 									_log.Debug(DEBUG_AUTH, "OAuth2 Access Token: Found a Basic Auth Header for User (%s)", user.c_str());
 
 									iUser = FindUser(user.c_str());
-									if(iUser >= 0)
+									if(iUser != -1)
 									{
 										if (m_users[iUser].userrights != URIGHTS_CLIENTID && GenerateMD5Hash(passwd).compare(m_users[iUser].Password) == 0)
 										{
 											iClient = FindUser(client_id.c_str());
-											if (iClient > 0 && m_users[iClient].ID >= m_iamsettings.getUserIdxOffset() && m_users[iClient].userrights == URIGHTS_CLIENTID)
+											if (iClient != -1 && m_users[iClient].ID >= m_iamsettings.getUserIdxOffset() && m_users[iClient].userrights == URIGHTS_CLIENTID)
 											{
 												Json::Value jwtpayload;
 												jwtpayload["preferred_username"] = m_users[iUser].Username;
@@ -504,27 +546,18 @@ namespace http
 			reply::set_content(&rep, root.toStyledString());
 		}
 
-        void CWebServer::PresentOauth2LoginDialog(reply &rep, const std::string sApp, const std::string sError)
+        void CWebServer::PresentOauth2LoginDialog(reply &rep, const std::string &sApp, const std::string &sError)
         {
-            rep = reply::stock_reply(reply::ok);
+			std::string sTOTP = "";	// required
 
-            //std::string file_location = szWWWFolder + m_iamsettings.login_page;
-            //_log.Debug(DEBUG_AUTH, "Attempting to load IAM login page (%s)", file_location.c_str());
-            //if (reply::set_content_from_file(&rep, file_location))
+			rep = reply::stock_reply(reply::ok);
+
             reply::set_content(&rep, m_iamsettings.getAuthPageContent());
-            {
-                size_t pos = rep.content.find("###REPLACE_APP###");
-                rep.content.replace(pos,17,sApp);
-                pos = rep.content.find("###REPLACE_ERROR###");
-                rep.content.replace(pos,19,sError);
-            }
-            /*
-            else
-            {
-                reply::set_content(&rep, "Failed to load IAM Login page!");
-                rep.status = reply::status_type::not_implemented;
-            }
-            */
+
+			stdreplace(rep.content, "###REPLACE_APP###", sApp);
+			stdreplace(rep.content, "###REPLACE_ERROR###", sError);
+			stdreplace(rep.content, "###REPLACE_2FATOTP###", sTOTP);
+
             if (!sError.empty())
                 rep.status = reply::status_type::unauthorized;
             reply::add_header(&rep, "Content-Length", std::to_string(rep.content.size()));
@@ -534,7 +567,7 @@ namespace http
                 reply::add_security_headers(&rep);
         }
 
-        std::string CWebServer::GenerateOAuth2RefreshToken(const std::string username, const int refreshexptime)
+        std::string CWebServer::GenerateOAuth2RefreshToken(const std::string &username, const int refreshexptime)
         {
             std::string refreshtoken = base64url_encode(sha256raw(GenerateUUID()));
             WebEmStoredSession refreshsession;
@@ -546,7 +579,7 @@ namespace http
             return refreshtoken;
         }
 
-        bool CWebServer::ValidateOAuth2RefreshToken(const std::string refreshtoken, std::string &username)
+        bool CWebServer::ValidateOAuth2RefreshToken(const std::string &refreshtoken, std::string &username)
         {
             bool bOk = false;
             WebEmStoredSession refreshsession = GetSession(GenerateMD5Hash(refreshtoken));
@@ -562,12 +595,51 @@ namespace http
             return bOk;
         }
 
-        void CWebServer::InvalidateOAuth2RefreshToken(const std::string refreshtoken)
+        void CWebServer::InvalidateOAuth2RefreshToken(const std::string &refreshtoken)
         {
             WebEmStoredSession refreshsession = GetSession(GenerateMD5Hash(refreshtoken));
             if	(!refreshsession.id.empty())
                 RemoveSession(refreshsession.id);
         }
+
+		bool CWebServer::VerifySHA1TOTP(const std::string &code, const std::string &key)
+		{
+			/*
+			 * Time-based One-Time Password algorithm verification method
+			 * Using SHA1 and 30 seconds time-intervals (RFC6238)
+			 * Also checks big/litte-endian to ensure proper functioning on different systems
+			 * Should work with (mobile) Authenticators like FreeOTP or Google's Authenticator
+			 */
+			if (code.size() != 6 || key.size() != 20) {
+				return false;
+			}
+
+			unsigned long long intCounter = time(nullptr) / 30;
+			unsigned long long endianness = 0xdeadbeef;
+			if ((*(const uint8_t *)&endianness) == 0xef) {
+				std::reverse((uint8_t*)&intCounter, (uint8_t*)&intCounter + sizeof(intCounter));
+			}
+
+			char md[20];
+			unsigned int mdLen;
+			HMAC(EVP_sha1(), key.c_str(), key.size(), (const unsigned char*)&intCounter, sizeof(intCounter), (unsigned char*)&md, &mdLen);
+
+			int offset = md[19] & 0x0f;
+			int bin_code = (md[offset] & 0x7f) << 24
+				| (md[offset+1] & 0xff) << 16
+				| (md[offset+2] & 0xff) << 8
+				| (md[offset+3] & 0xff);
+			bin_code = bin_code % 1000000;
+
+			char calcCode[7];
+			snprintf(calcCode, sizeof(calcCode), "%06d", bin_code);
+
+			std::string sCalcCode(calcCode);
+
+			_log.Debug(DEBUG_AUTH, "VerifySHA1TOTP: Code given .%s. -> calculated .%s. (%s)", code.c_str(), sCalcCode.c_str(), sha256hex(key).c_str());
+
+			return (sCalcCode.compare(code) == 0);
+		}
 
 	} // namespace server
 } // namespace http

@@ -37,7 +37,7 @@ return {
 
 			if (device.deviceSubType == 'RGBWW') or (device.deviceSubType == 'WW') or (device.deviceSubType == 'White') then
 				local url = domoticz.settings['Domoticz url'] ..
-						'/json.htm?param=setkelvinlevel&type=command&idx=' .. device.id .. '&kelvin=' .. tonumber(kelvin)
+						'/json.htm?type=command&param=setkelvinlevel&idx=' .. device.id .. '&kelvin=' .. tonumber(kelvin)
 				return domoticz.openURL(url)
 			else
 				methodNotAvailableMessage(device, 'setKelvin')
@@ -47,7 +47,7 @@ return {
 
 		function device.setWhiteMode()
 			local url = domoticz.settings['Domoticz url'] ..
-					'/json.htm?param=whitelight&type=command&idx=' .. device.id
+					'/json.htm?type=command&param=whitelight&idx=' .. device.id
 			return domoticz.openURL(url)
 		end
 
@@ -55,7 +55,7 @@ return {
 			-- API will be removed; kept here until then to get user reports (if any)
 			if false and device.hardwareType and device.hardwareType == 'YeeLight LED' then
 				local url = domoticz.settings['Domoticz url'] ..
-						'/json.htm?param=brightnessup&type=command&idx=' .. device.id
+						'/json.htm?type=command&param=brightnessup&idx=' .. device.id
 				return domoticz.openURL(url)
 			else
 				methodNotAvailableMessage(device, 'increaseBrightness')
@@ -66,7 +66,7 @@ return {
 			-- API will be removed; kept here until then to get user reports (if any)
 			if false and device.hardwareType and device.hardwareType == 'YeeLight LED' then
 				local url = domoticz.settings['Domoticz url'] ..
-						'/json.htm?param=brightnessdown&type=command&idx=' .. device.id
+						'/json.htm?type=command&param=brightnessdown&idx=' .. device.id
 				return domoticz.openURL(url)
 			else
 				methodNotAvailableMessage(device, 'decreaseBrightness')
@@ -75,7 +75,7 @@ return {
 
 		function device.setNightMode()
 			local url = domoticz.settings['Domoticz url'] ..
-					'/json.htm?param=nightlight&type=command&idx=' .. device.id
+					'/json.htm?type=command&param=nightlight&idx=' .. device.id
 			return domoticz.openURL(url)
 		end
 
@@ -85,7 +85,7 @@ return {
 					domoticz.log('Mode number needs to be a number from 1-9', utils.LOG_ERROR)
 				end
 				local url = domoticz.settings['Domoticz url'] ..
-						'/json.htm?param=discomodenum' .. tonumber(modeNum) .. '&type=command&idx=' .. device.id
+						'/json.htm?type=command&param=discomodenum' .. tonumber(modeNum) .. '&idx=' .. device.id
 				return domoticz.openURL(url)
 			else
 				methodNotAvailableMessage(device, 'setDiscoMode')
@@ -115,7 +115,7 @@ return {
 			if not(validRGB(r, g, b)) then RGBError() return false end
 			local h, s, b, isWhite = domoticz.utils.rgbToHSB(r, g, b)
 			local url = domoticz.settings['Domoticz url'] ..
-						'/json.htm?param=setcolbrightnessvalue&type=command'  ..
+						'/json.htm?type=command&param=setcolbrightnessvalue'  ..
 						'&idx=' .. device.id ..
 						'&hue=' .. math.floor(tonumber(h) + 0.5) ..
 						'&brightness=' .. math.floor(tonumber(b) + 0.5) ..

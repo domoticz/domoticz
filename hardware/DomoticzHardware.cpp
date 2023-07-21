@@ -2,7 +2,6 @@
 #include <iostream>
 #include "DomoticzHardware.h"
 #include "../main/Logger.h"
-#include "../main/localtime_r.h"
 #include "../main/Helper.h"
 #include "../main/RFXtrx.h"
 #include "../main/SQLHelper.h"
@@ -566,20 +565,21 @@ double CDomoticzHardwareBase::GetKwhMeter(const int NodeID, const int ChildID, b
 	std::string sTmp = std_format("%08X", dID);
 
 	std::vector<std::vector<std::string> > result;
-	result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Type==%d) AND (Subtype==%d)", m_HwdID, sTmp.c_str(), int(pTypeGeneral), int(sTypeKwh));
+	result = m_sql.safe_query("SELECT sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Type==%d) AND (Subtype==%d)", m_HwdID, sTmp.c_str(), int(pTypeGeneral), int(sTypeKwh));
 	if (result.empty())
 	{
 		bExists = false;
 		return 0;
 	}
-	result = m_sql.safe_query("SELECT MAX(Counter) FROM Meter_Calendar WHERE (DeviceRowID=='%q')", result[0][0].c_str());
-	if (result.empty())
+	std::vector<std::string> splitresults;
+	StringSplit(result[0][0], ";", splitresults);
+	if (splitresults.size() != 2)
 	{
 		bExists = false;
 		return 0.0F;
 	}
 	bExists = true;
-	return (float)atof(result[0][0].c_str());
+	return atof(splitresults[1].c_str());
 }
 
 void CDomoticzHardwareBase::SendMeterSensor(const int NodeID, const int ChildID, const int BatteryLevel, const float metervalue, const std::string& defaultname, const int RssiLevel /* =12 */)

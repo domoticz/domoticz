@@ -18,17 +18,17 @@ public:
 	// string labels
 	void AddString(std::string Label, std::string Value);
 	void AddBool(std::string Label, bool Value);
-	void AddInteger(std::string Label, long long Value);
+	void AddInteger(std::string Label, int64_t Value);
 	void AddNumber(std::string Label, long double Value);
 
 	// index labels
-	void AddString(long long Index, std::string Value);
-	void AddBool(long long Index, bool Value);
-	void AddInteger(long long Index, long long Value);
-	void AddNumber(long long Index, long double Value);
+	void AddString(int64_t Index, std::string Value);
+	void AddBool(int64_t Index, bool Value);
+	void AddInteger(int64_t Index, int64_t Value);
+	void AddNumber(int64_t Index, long double Value);
 
 	// sub tables
-	void OpenSubTableEntry(long long Index, int NrCols, int NrRows);
+	void OpenSubTableEntry(int64_t Index, int NrCols, int NrRows);
 	void OpenSubTableEntry(std::string Name, int NrCols, int NrRows);
 	void CloseSubTableEntry();
 
@@ -55,15 +55,15 @@ public:
 
 	struct _tEntry
 	{
-		_eLabelType label_type;
-		_eValueType value_type;
+		_eLabelType label_type = TYPE_TABLE;
+		_eValueType value_type = TYPE_STRING;
 		std::string label;
-		long long index;
-		int nrCols;
-		int nrRows;
-		bool bValue;
-		long long iValue;
-		long double dValue;
+		int64_t index = 0;
+		int nrCols = 0;
+		int nrRows = 0;
+		bool bValue = false;
+		int64_t iValue = 0;
+		long double dValue = 0;
 		std::string sValue;
 	};
 

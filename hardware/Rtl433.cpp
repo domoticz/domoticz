@@ -3,7 +3,6 @@
 #include "../main/Logger.h"
 #include "../main/RFXtrx.h"
 #include "../main/Helper.h"
-#include "../main/localtime_r.h"
 #include "../main/mainworker.h"
 #include "../main/SQLHelper.h"
 #include "../main/json_helper.h"
@@ -27,16 +26,16 @@ CRtl433::CRtl433(const int ID, const std::string& cmdline) :
 	// Basic protection from malicious command line
 	removeCharsFromString(m_cmdline, ";/$()`<>|&");
 	m_HwdID = ID;
-	/*
+/*
 		#ifdef _DEBUG
-			std::string line = "{\"time\" : \"2020-05-21 12:24:06.740469\", \"protocol\" : 12, \"model\" : \"Oregon-UVR128\", \"id\" : 155, \"uv\" : 5, \"battery_ok\" : 1, \"mod\" : \"ASK\", \"freq\" : 433.864, \"rssi\" : -0.100, \"snr\" : 15.669, \"noise\" : -15.769}";
+			std::string line = "{\"time\" : \"2023-05-17 15:26:52\", \"model\" : \"Flowis\", \"id\" : 240259236, \"type\" : 1, \"volume_m3\" : 759.420, \"device_time\" : \"2055-05-17T15:19:32\", \"alarm\" : 0, \"backflow\" : 64, \"mic\" : \"CRC\", \"mod\" : \"FSK\", \"freq1\" : 867.960, \"freq2\" : 868.050, \"rssi\" : -0.129, \"snr\" : 26.218, \"noise\" : -26.346}";
 			if (!ParseJsonLine(line))
 			{
 				// this is also logged when parsed data is invalid
 				Log(LOG_STATUS, "Unhandled sensor reading, please report: (%s)", line.c_str());
 			}
 		#endif
-	*/
+*/
 }
 
 bool CRtl433::StartHardware()
@@ -67,7 +66,7 @@ bool CRtl433::StopHardware()
 
 bool CRtl433::ParseJsonLine(const std::string& sLine)
 {
-	std::map<std::string, std::string> _Field;
+	std::map<std::string, std::string> _Fields;
 	Json::Value root;
 
 	std::string errstr;
@@ -83,10 +82,10 @@ bool CRtl433::ParseJsonLine(const std::string& sLine)
 			{
 				std::string vname = root.getMemberNames()[ii];
 				std::string vvalue = root[root.getMemberNames()[ii]].asString();
-				_Field[vname] = vvalue;
+				_Fields[vname] = vvalue;
 			}
 		}
-		return ParseData(_Field);
+		return ParseData(_Fields);
 	}
 	return false;
 }
@@ -153,6 +152,9 @@ bool CRtl433::ParseData(std::map<std::string, std::string>& data)
 
 	bool haveLux = false;
 	float lux = 0;
+
+	bool haveMeter = false;
+	float meter = 0;
 
 	int snr = 12;  // Set to show "-" if no snr is received. rtl_433 uses automatic gain, better to use SNR instead of RSSI to report received RF Signal quality
 
@@ -290,6 +292,11 @@ bool CRtl433::ParseData(std::map<std::string, std::string>& data)
 	{
 		lux = (float)atof(data["light_lux"].c_str());
 		haveLux = true;
+	}
+	if (FindField(data, "volume_m3"))
+	{
+		meter = (float)atof(data["volume_m3"].c_str());
+		haveMeter = true;
 	}
 	if (FindField(data, "snr"))
 	{
@@ -448,6 +455,11 @@ bool CRtl433::ParseData(std::map<std::string, std::string>& data)
 	if (haveLux)
 	{
 		SendLuxSensor((uint8_t)sensoridx, (uint8_t)unit, batterylevel, lux, model);
+		bHandled = true;
+	}
+	if (haveMeter)
+	{
+		SendMeterSensor((uint8_t)sensoridx, (uint8_t)unit, batterylevel, meter, model);
 		bHandled = true;
 	}
 

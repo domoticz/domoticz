@@ -156,6 +156,7 @@ namespace Plugins {
 			shared_lib_ = nullptr;
 			if (!shared_lib_) {
 #ifdef WIN32
+				if (!shared_lib_) shared_lib_ = LoadLibrary("python311.dll");
 				if (!shared_lib_) shared_lib_ = LoadLibrary("python310.dll");
 				if (!shared_lib_) shared_lib_ = LoadLibrary("python39.dll");
 				if (!shared_lib_) shared_lib_ = LoadLibrary("python38.dll");
@@ -164,6 +165,7 @@ namespace Plugins {
 				if (!shared_lib_) shared_lib_ = LoadLibrary("python35.dll");
 				if (!shared_lib_) shared_lib_ = LoadLibrary("python34.dll");
 #else
+				if (!shared_lib_) FindLibrary("python3.11", true);
 				if (!shared_lib_) FindLibrary("python3.10", true);
 				if (!shared_lib_) FindLibrary("python3.9", true);
 				if (!shared_lib_) FindLibrary("python3.8", true);

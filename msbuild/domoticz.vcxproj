@@ -79,11 +79,12 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <PreBuildEventUseInBuild>true</PreBuildEventUseInBuild>
-    <IncludePath>$(IncludePath)</IncludePath>
+    <IncludePath>S:\boost\include;$(IncludePath)</IncludePath>
     <CodeAnalysisRuleSet>C:\Program Files (x86)\Microsoft Visual Studio\2017\Professional\Team Tools\Static Analysis Tools\Rule Sets\NativeRecommendedRules.ruleset</CodeAnalysisRuleSet>
     <RunCodeAnalysis>false</RunCodeAnalysis>
     <LinkIncremental>true</LinkIncremental>
     <IntDir>$(Platform)\$(Configuration)_Build\</IntDir>
+    <LibraryPath>S:\boost\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
@@ -241,6 +242,8 @@
     <None Include="..\www\app\hardware\setup\BleBox.js" />
     <None Include="..\www\app\hardware\setup\Kodi.html" />
     <None Include="..\www\app\hardware\setup\Kodi.js" />
+    <None Include="..\www\app\hardware\setup\MQTT-AD.html" />
+    <None Include="..\www\app\hardware\setup\MQTT-AD.js" />
     <None Include="..\www\app\hardware\setup\MySensors.html" />
     <None Include="..\www\app\hardware\setup\MySensors.js" />
     <None Include="..\www\app\hardware\setup\PanasonicTV.html" />
@@ -553,6 +556,7 @@
     </ClInclude>
     <ClInclude Include="..\hardware\AccuWeather.h" />
     <ClInclude Include="..\hardware\AirconWithMe.h" />
+    <ClInclude Include="..\hardware\AlfenEve.h" />
     <ClInclude Include="..\hardware\AnnaThermostat.h" />
     <ClInclude Include="..\hardware\Arilux.h" />
     <ClInclude Include="..\hardware\ASyncTCP.h" />
@@ -593,6 +597,7 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
     </ClInclude>
+    <ClInclude Include="..\hardware\Enever.h" />
     <ClInclude Include="..\hardware\EnOceanEEP.h" />
     <ClInclude Include="..\hardware\EnOceanESP2.h" />
     <ClInclude Include="..\hardware\EnOceanESP3.h" />
@@ -610,7 +615,6 @@
     <ClInclude Include="..\hardware\EvohomeSerial.h" />
     <ClInclude Include="..\hardware\EvohomeTCP.h" />
     <ClInclude Include="..\hardware\EvohomeWeb.h" />
-    <ClInclude Include="..\hardware\GoodweAPI.h" />
     <ClInclude Include="..\hardware\FritzboxTCP.h" />
     <ClInclude Include="..\hardware\Gpio.h" />
     <ClInclude Include="..\hardware\GpioPin.h" />
@@ -704,6 +708,7 @@
     <ClInclude Include="..\hardware\TTNMQTT.h" />
     <ClInclude Include="..\hardware\USBtin.h" />
     <ClInclude Include="..\hardware\USBtin_MultiblocV8.h" />
+    <ClInclude Include="..\hardware\VisualCrossing.h" />
     <ClInclude Include="..\hardware\VolcraftCO20.h" />
     <ClInclude Include="..\hardware\Winddelen.h" />
     <ClInclude Include="..\hardware\WOL.h" />
@@ -716,6 +721,7 @@
     <ClInclude Include="..\hardware\ZWaveBase.h" />
     <ClInclude Include="..\hardware\ZWaveCommands.h" />
     <ClInclude Include="..\httpclient\HTTPClient.h" />
+    <ClInclude Include="..\iamserver\iam_settings.hpp" />
     <ClInclude Include="..\main\appversion.h" />
     <ClInclude Include="..\hardware\ASyncSerial.h" />
     <ClInclude Include="..\main\BaroForecastCalculator.h" />
@@ -846,6 +852,7 @@
     </ClCompile>
     <ClCompile Include="..\hardware\AccuWeather.cpp" />
     <ClCompile Include="..\hardware\AirconWithMe.cpp" />
+    <ClCompile Include="..\hardware\AlfenEve.cpp" />
     <ClCompile Include="..\hardware\AnnaThermostat.cpp" />
     <ClCompile Include="..\hardware\Arilux.cpp" />
     <ClCompile Include="..\hardware\ASyncSerial.cpp" />
@@ -899,6 +906,7 @@
       </LanguageStandard>
     </ClCompile>
     <ClCompile Include="..\hardware\EcoDevices.cpp" />
+    <ClCompile Include="..\hardware\Enever.cpp" />
     <ClCompile Include="..\hardware\EnOceanEEP.cpp" />
     <ClCompile Include="..\hardware\EnOceanESP2.cpp" />
     <ClCompile Include="..\hardware\EnOceanESP3.cpp" />
@@ -916,7 +924,6 @@
     <ClCompile Include="..\hardware\EvohomeTCP.cpp" />
     <ClCompile Include="..\hardware\EvohomeWeb.cpp" />
     <ClCompile Include="..\hardware\FritzboxTCP.cpp" />
-    <ClCompile Include="..\hardware\GoodweAPI.cpp" />
     <ClCompile Include="..\hardware\Gpio.cpp" />
     <ClCompile Include="..\hardware\GpioPin.cpp" />
     <ClCompile Include="..\hardware\Honeywell.cpp" />
@@ -1013,6 +1020,7 @@
     <ClCompile Include="..\hardware\TTNMQTT.cpp" />
     <ClCompile Include="..\hardware\USBtin.cpp" />
     <ClCompile Include="..\hardware\USBtin_MultiblocV8.cpp" />
+    <ClCompile Include="..\hardware\VisualCrossing.cpp" />
     <ClCompile Include="..\hardware\VolcraftCO20.cpp" />
     <ClCompile Include="..\hardware\Winddelen.cpp" />
     <ClCompile Include="..\hardware\WOL.cpp" />
@@ -1023,6 +1031,7 @@
     <ClCompile Include="..\hardware\ZiBlueTCP.cpp" />
     <ClCompile Include="..\hardware\ZWaveBase.cpp" />
     <ClCompile Include="..\httpclient\HTTPClient.cpp" />
+    <ClCompile Include="..\iamserver\IamService.cpp" />
     <ClCompile Include="..\main\BaroForecastCalculator.cpp" />
     <ClCompile Include="..\main\Camera.cpp" />
     <ClCompile Include="..\hardware\Rego6XXSerial.cpp" />
@@ -1093,6 +1102,7 @@
     <ClCompile Include="..\tcpserver\TCPServer.cpp" />
     <ClCompile Include="..\httpclient\UrlEncode.cpp" />
     <ClCompile Include="..\main\WebServer.cpp" />
+    <ClCompile Include="..\main\WebServerCommands.cpp" />
     <ClCompile Include="..\tinyxpath\action_store.cpp" />
     <ClCompile Include="..\tinyxpath\htmlutil.cpp" />
     <ClCompile Include="..\tinyxpath\lex_util.cpp" />

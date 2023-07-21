@@ -6,7 +6,6 @@
 #include <stdarg.h>
 #include "mainworker.h"
 #include "Helper.h"
-#include "localtime_r.h"
 #include "EventSystem.h"
 #include "HTMLSanitizer.h"
 #include "dzVents.h"
@@ -18,10 +17,12 @@
 #include "../hardware/AirconWithMe.h"
 #include "../hardware/Buienradar.h"
 #include "../hardware/DarkSky.h"
+#include "../hardware/VisualCrossing.h"
 #include "../hardware/eHouseTCP.h"
 #include "../hardware/EnOceanESP2.h"
 #include "../hardware/EnOceanESP3.h"
 #include "../hardware/EnphaseAPI.h"
+#include "../hardware/AlfenEve.h"
 #ifdef WITH_GPIO
 #include "../hardware/Gpio.h"
 #include "../hardware/GpioPin.h"
@@ -96,13 +97,13 @@ struct _tGuiLanguage
 namespace
 {
 	constexpr std::array<std::pair<const char*, const char*>, 36> guiLanguage{ {
-		{ "en", "English" },   { "sq", "Albanian" },   { "ar", "Arabic" },   { "bs", "Bosnian" },      { "bg", "Bulgarian" }, { "ca", "Catalan" },
-		{ "zh", "Chinese" },   { "cs", "Czech" },      { "da", "Danish" },   { "nl", "Dutch" },	       { "et", "Estonian" },  { "de", "German" },
-		{ "el", "Greek" },     { "fr", "French" },     { "fi", "Finnish" },  { "he", "Hebrew" },       { "hu", "Hungarian" }, { "is", "Icelandic" },
-		{ "it", "Italian" },   { "lt", "Lithuanian" }, { "lv", "Latvian" },  { "mk", "Macedonian" },   { "no", "Norwegian" }, { "fa", "Persian" },
-		{ "pl", "Polish" },    { "pt", "Portuguese" }, { "ro", "Romanian" }, { "ru", "Russian" },      { "sr", "Serbian" },   { "sk", "Slovak" },
-		{ "sl", "Slovenian" }, { "es", "Spanish" },    { "sv", "Swedish" },  { "zh_TW", "Taiwanese" }, { "tr", "Turkish" },   { "uk", "Ukrainian" },
-	} };
+		{ "en", "English" }, { "sq", "Albanian" }, { "ar", "Arabic" }, { "bs", "Bosnian" }, { "bg", "Bulgarian" }, { "ca", "Catalan" },
+		{ "zh", "Chinese" }, { "cs", "Czech" }, { "da", "Danish" }, { "nl", "Dutch" }, { "et", "Estonian" }, { "de", "German" },
+		{ "el", "Greek" }, { "fr", "French" }, { "fi", "Finnish" }, { "he", "Hebrew" }, { "hu", "Hungarian" }, { "is", "Icelandic" },
+		{ "it", "Italian" }, { "lt", "Lithuanian" }, { "lv", "Latvian" }, { "mk", "Macedonian" }, { "no", "Norwegian" }, { "fa", "Persian" },
+		{ "pl", "Polish" }, { "pt", "Portuguese" }, { "ro", "Romanian" }, { "ru", "Russian" }, { "sr", "Serbian" }, { "sk", "Slovak" },
+		{ "sl", "Slovenian" }, { "es", "Spanish" }, { "sv", "Swedish" }, { "zh_TW", "Taiwanese" }, { "tr", "Turkish" }, { "uk", "Ukrainian" },
+		} };
 } // namespace
 
 extern http::server::CWebServerHelper m_webservers;
@@ -190,7 +191,7 @@ namespace http
 							cImage.Title = results[1];
 							cImage.Description = results[2];
 							m_custom_light_icons.push_back(cImage);
-							m_custom_light_icons_lookup[cImage.idx] = m_custom_light_icons.size() - 1;
+							m_custom_light_icons_lookup[cImage.idx] = (int)m_custom_light_icons.size() - 1;
 						}
 					}
 				}
@@ -246,7 +247,7 @@ namespace http
 					}
 
 					m_custom_light_icons.push_back(cImage);
-					m_custom_light_icons_lookup[cImage.idx] = m_custom_light_icons.size() - 1;
+					m_custom_light_icons_lookup[cImage.idx] = (int)m_custom_light_icons.size() - 1;
 					ii++;
 				}
 			}
@@ -265,7 +266,7 @@ namespace http
 				sRealm += settings.vhostname;
 			else
 				sRealm += (settings.listening_address == "::") ? "domoticz.local" : settings.listening_address;
-			if(settings.listening_port != "80" || settings.listening_port != "443")
+			if (settings.listening_port != "80" || settings.listening_port != "443")
 				sRealm += ":" + settings.listening_port;
 			sRealm += "/";
 
@@ -335,33 +336,25 @@ namespace http
 
 				if (m_users.empty())
 				{
-					AddUser(99999, "tmpadmin", "tmpadmin", (_eUserRights)URIGHTS_ADMIN, 0x1F);
+					AddUser(99999, "tmpadmin", "tmpadmin", "", (_eUserRights)URIGHTS_ADMIN, 0x1F);
 					_log.Debug(DEBUG_AUTH, "[Start server] Added tmpadmin User as no active Users where found!");
 				}
 			}
 
 			// register callbacks
-			m_pWebEm->RegisterIncludeCode("switchtypes", [this](auto&& content_part) { DisplaySwitchTypesCombo(content_part); });
-			m_pWebEm->RegisterIncludeCode("metertypes", [this](auto&& content_part) { DisplayMeterTypesCombo(content_part); });
-			m_pWebEm->RegisterIncludeCode("timertypes", [this](auto&& content_part) { DisplayTimerTypesCombo(content_part); });
-			m_pWebEm->RegisterIncludeCode("combolanguage", [this](auto&& content_part) { DisplayLanguageCombo(content_part); });
-
 			if (m_iamsettings.is_enabled())
 			{
 				m_pWebEm->RegisterPageCode(
-					m_iamsettings.auth_url.c_str(), [this](auto &&session, auto &&req, auto &&rep) { GetOauth2AuthCode(session, req, rep); }, true);
+					m_iamsettings.auth_url.c_str(), [this](auto&& session, auto&& req, auto&& rep) { GetOauth2AuthCode(session, req, rep); }, true);
 				m_pWebEm->RegisterPageCode(
-					m_iamsettings.token_url.c_str(), [this](auto &&session, auto &&req, auto &&rep) { PostOauth2AccessToken(session, req, rep); }, true);
+					m_iamsettings.token_url.c_str(), [this](auto&& session, auto&& req, auto&& rep) { PostOauth2AccessToken(session, req, rep); }, true);
 				m_pWebEm->RegisterPageCode(
-					m_iamsettings.discovery_url.c_str(), [this](auto &&session, auto &&req, auto &&rep) { GetOpenIDConfiguration(session, req, rep); }, true);
+					m_iamsettings.discovery_url.c_str(), [this](auto&& session, auto&& req, auto&& rep) { GetOpenIDConfiguration(session, req, rep); }, true);
 			}
 
-			m_pWebEm->RegisterPageCode("/json.htm", [this](auto &&session, auto &&req, auto &&rep) { GetJSonPage(session, req, rep); });
+			m_pWebEm->RegisterPageCode("/json.htm", [this](auto&& session, auto&& req, auto&& rep) { GetJSonPage(session, req, rep); });
 			// These 'Pages' should probably be 'moved' to become Command codes handled by the 'json.htm API', so we get all API calls through one entry point
 			// And why .php or .cgi while all these commands are NOT handled by a PHP or CGI processor but by Domoticz ?? Legacy? Rename these?
-			m_pWebEm->RegisterPageCode("/logincheck", [this](auto&& session, auto&& req, auto&& rep) { PostLoginCheck(session, req, rep); }, true);
-			m_pWebEm->RegisterPageCode("/uploadcustomicon", [this](auto&& session, auto&& req, auto&& rep) { Post_UploadCustomIcon(session, req, rep); });
-			m_pWebEm->RegisterPageCode("/storesettings", [this](auto&& session, auto&& req, auto&& rep) { PostSettings(session, req, rep); });
 			m_pWebEm->RegisterPageCode("/backupdatabase.php", [this](auto&& session, auto&& req, auto&& rep) { GetDatabaseBackup(session, req, rep); });
 			m_pWebEm->RegisterPageCode("/camsnapshot.jpg", [this](auto&& session, auto&& req, auto&& rep) { GetCameraSnapshot(session, req, rep); });
 			m_pWebEm->RegisterPageCode("/raspberry.cgi", [this](auto&& session, auto&& req, auto&& rep) { GetInternalCameraSnapshot(session, req, rep); });
@@ -374,8 +367,6 @@ namespace http
 
 			m_pWebEm->RegisterActionCode("setrfxcommode", [this](auto&& session, auto&& req, auto&& redirect_uri) { SetRFXCOMMode(session, req, redirect_uri); });
 			m_pWebEm->RegisterActionCode("rfxupgradefirmware", [this](auto&& session, auto&& req, auto&& redirect_uri) { RFXComUpgradeFirmware(session, req, redirect_uri); });
-			RegisterCommandCode(
-				"rfxfirmwaregetpercentage", [this](auto&& session, auto&& req, auto&& root) { Cmd_RFXComGetFirmwarePercentage(session, req, root); }, true);
 			m_pWebEm->RegisterActionCode("setrego6xxtype", [this](auto&& session, auto&& req, auto&& redirect_uri) { SetRego6XXType(session, req, redirect_uri); });
 			m_pWebEm->RegisterActionCode("sets0metertype", [this](auto&& session, auto&& req, auto&& redirect_uri) { SetS0MeterType(session, req, redirect_uri); });
 			m_pWebEm->RegisterActionCode("setlimitlesstype", [this](auto&& session, auto&& req, auto&& redirect_uri) { SetLimitlessType(session, req, redirect_uri); });
@@ -383,33 +374,29 @@ namespace http
 			m_pWebEm->RegisterActionCode("uploadfloorplanimage", [this](auto&& session, auto&& req, auto&& redirect_uri) { UploadFloorplanImage(session, req, redirect_uri); });
 
 			m_pWebEm->RegisterActionCode("setopenthermsettings", [this](auto&& session, auto&& req, auto&& redirect_uri) { SetOpenThermSettings(session, req, redirect_uri); });
-			RegisterCommandCode(
-				"sendopenthermcommand", [this](auto&& session, auto&& req, auto&& root) { Cmd_SendOpenThermCommand(session, req, root); }, true);
 
 			m_pWebEm->RegisterActionCode("reloadpiface", [this](auto&& session, auto&& req, auto&& redirect_uri) { ReloadPiFace(session, req, redirect_uri); });
-			m_pWebEm->RegisterActionCode("setcurrentcostmetertype", [this](auto&& session, auto&& req, auto&& redirect_uri) { SetCurrentCostUSBType(session, req, redirect_uri); });
 			m_pWebEm->RegisterActionCode("restoredatabase", [this](auto&& session, auto&& req, auto&& redirect_uri) { RestoreDatabase(session, req, redirect_uri); });
 			m_pWebEm->RegisterActionCode("sbfspotimportolddata", [this](auto&& session, auto&& req, auto&& redirect_uri) { SBFSpotImportOldData(session, req, redirect_uri); });
 
-			m_pWebEm->RegisterActionCode("event_create", [this](auto&& session, auto&& req, auto&& redirect_uri) { EventCreate(session, req, redirect_uri); });
+			// Commands that do NOT require authentication
+			RegisterCommandCode("gettimertypes", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetTimerTypes(session, req, root); }, true);
+			RegisterCommandCode("getlanguages", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetLanguages(session, req, root); }, true);
+			RegisterCommandCode("getswitchtypes", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetSwitchTypes(session, req, root); }, true);
+			RegisterCommandCode("getmetertypes", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetMeterTypes(session, req, root); }, true);
+			RegisterCommandCode("getthemes", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetThemes(session, req, root); }, true);
+			RegisterCommandCode("gettitle", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetTitle(session, req, root); }, true);
+			RegisterCommandCode("logincheck", [this](auto&& session, auto&& req, auto&& root) { Cmd_LoginCheck(session, req, root); }, true);
 
-			RegisterCommandCode(
-				"getlanguage", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetLanguage(session, req, root); }, true);
-			RegisterCommandCode(
-				"getlanguages", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetLanguages(session, req, root); }, true);
-			RegisterCommandCode(
-				"getthemes", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetThemes(session, req, root); }, true);
-			RegisterCommandCode(
-				"gettitle", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetTitle(session, req, root); }, true);
-			RegisterCommandCode(
-				"logincheck", [this](auto &&session, auto &&req, auto &&root) { Cmd_LoginCheck(session, req, root); }, true);
+			RegisterCommandCode("getversion", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetVersion(session, req, root); }, true);
+			RegisterCommandCode("getauth", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetAuth(session, req, root); }, true);
+			RegisterCommandCode("getuptime", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetUptime(session, req, root); }, true);
+			RegisterCommandCode("getconfig", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetConfig(session, req, root); }, true);
 
-			RegisterCommandCode(
-				"getversion", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetVersion(session, req, root); }, true);
-			RegisterCommandCode(
-				"getauth", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetAuth(session, req, root); }, true);
-			RegisterCommandCode(
-				"getuptime", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetUptime(session, req, root); }, true);
+			RegisterCommandCode("rfxfirmwaregetpercentage", [this](auto&& session, auto&& req, auto&& root) { Cmd_RFXComGetFirmwarePercentage(session, req, root); }, true);
+
+			// Commands that require authentication
+			RegisterCommandCode("sendopenthermcommand", [this](auto&& session, auto&& req, auto&& root) { Cmd_SendOpenThermCommand(session, req, root); });
 
 			RegisterCommandCode("storesettings", [this](auto&& session, auto&& req, auto&& root) { Cmd_PostSettings(session, req, root); });
 			RegisterCommandCode("getlog", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetLog(session, req, root); });
@@ -534,7 +521,9 @@ namespace http
 			RegisterCommandCode("getactualhistory", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetActualHistory(session, req, root); });
 			RegisterCommandCode("getnewhistory", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetNewHistory(session, req, root); });
 
-			RegisterCommandCode("getconfig", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetConfig(session, req, root); }, true);
+			RegisterCommandCode("getmyprofile", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetMyProfile(session, req, root); });
+			RegisterCommandCode("updatemyprofile", [this](auto&& session, auto&& req, auto&& root) { Cmd_UpdateMyProfile(session, req, root); });
+
 			RegisterCommandCode("getlocation", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetLocation(session, req, root); });
 			RegisterCommandCode("getforecastconfig", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetForecastConfig(session, req, root); });
 			RegisterCommandCode("sendnotification", [this](auto&& session, auto&& req, auto&& root) { Cmd_SendNotification(session, req, root); });
@@ -589,6 +578,7 @@ namespace http
 			RegisterCommandCode("registerhue", [this](auto&& session, auto&& req, auto&& root) { Cmd_PhilipsHueRegister(session, req, root); });
 
 			RegisterCommandCode("getcustomiconset", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetCustomIconSet(session, req, root); });
+			RegisterCommandCode("uploadcustomicon", [this](auto&& session, auto&& req, auto&& root) { Cmd_UploadCustomIcon(session, req, root); });
 			RegisterCommandCode("deletecustomicon", [this](auto&& session, auto&& req, auto&& root) { Cmd_DeleteCustomIcon(session, req, root); });
 			RegisterCommandCode("updatecustomicon", [this](auto&& session, auto&& req, auto&& root) { Cmd_UpdateCustomIcon(session, req, root); });
 
@@ -609,48 +599,53 @@ namespace http
 
 			RegisterCommandCode("tellstickApplySettings", [this](auto&& session, auto&& req, auto&& root) { Cmd_TellstickApplySettings(session, req, root); });
 
-			RegisterRType("graph", [this](auto&& session, auto&& req, auto&& root) { RType_HandleGraph(session, req, root); });
-			RegisterRType("lightlog", [this](auto&& session, auto&& req, auto&& root) { RType_LightLog(session, req, root); });
-			RegisterRType("textlog", [this](auto&& session, auto&& req, auto&& root) { RType_TextLog(session, req, root); });
-			RegisterRType("scenelog", [this](auto&& session, auto&& req, auto&& root) { RType_SceneLog(session, req, root); });
-			RegisterRType("rclientslog", [this](auto&& session, auto&& req, auto&& root) { RType_RemoteWebClientsLog(session, req, root); });
-			RegisterRType("settings", [this](auto&& session, auto&& req, auto&& root) { RType_Settings(session, req, root); });
-			RegisterRType("events", [this](auto&& session, auto&& req, auto&& root) { RType_Events(session, req, root); });
+			// Migrated RTypes to regular commands
+			RegisterCommandCode("getusers", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetUsers(session, req, root); });
+			RegisterCommandCode("getsettings", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetSettings(session, req, root); });
+			RegisterCommandCode("getdevices", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetDevices(session, req, root); });
+			RegisterCommandCode("gethardware", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetHardware(session, req, root); });
+			RegisterCommandCode("events", [this](auto&& session, auto&& req, auto&& root) { Cmd_Events(session, req, root); });
+			RegisterCommandCode("getnotifications", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetNotifications(session, req, root); });
+			RegisterCommandCode("createvirtualsensor", [this](auto&& session, auto&& req, auto&& root) { Cmd_CreateMappedSensor(session, req, root); });
+			RegisterCommandCode("createdevice", [this](auto&& session, auto&& req, auto&& root) { Cmd_CreateDevice(session, req, root); });
 
-			RegisterRType("hardware", [this](auto&& session, auto&& req, auto&& root) { RType_Hardware(session, req, root); });
-			RegisterRType("devices", [this](auto&& session, auto&& req, auto&& root) { RType_Devices(session, req, root); });
-			RegisterRType("deletedevice", [this](auto&& session, auto&& req, auto&& root) { RType_DeleteDevice(session, req, root); });
-			RegisterRType("cameras", [this](auto&& session, auto&& req, auto&& root) { RType_Cameras(session, req, root); });
-			RegisterRType("cameras_user", [this](auto&& session, auto&& req, auto&& root) { RType_CamerasUser(session, req, root); });
-			RegisterRType("users", [this](auto&& session, auto&& req, auto&& root) { RType_Users(session, req, root); });
-			RegisterRType("mobiles", [this](auto&& session, auto&& req, auto&& root) { RType_Mobiles(session, req, root); });
+			RegisterCommandCode("getscenelog", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetSceneLog(session, req, root); });
+			RegisterCommandCode("getscenes", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetScenes(session, req, root); });
+			RegisterCommandCode("addscene", [this](auto&& session, auto&& req, auto&& root) { Cmd_AddScene(session, req, root); });
+			RegisterCommandCode("deletescene", [this](auto&& session, auto&& req, auto&& root) { Cmd_DeleteScene(session, req, root); });
+			RegisterCommandCode("updatescene", [this](auto&& session, auto&& req, auto&& root) { Cmd_UpdateScene(session, req, root); });
+			RegisterCommandCode("getmobiles", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetMobiles(session, req, root); });
+			RegisterCommandCode("getcameras", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetCameras(session, req, root); });
+			RegisterCommandCode("getcameras_user", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetCamerasUser(session, req, root); });
+			RegisterCommandCode("getschedules", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetSchedules(session, req, root); });
+			RegisterCommandCode("gettimers", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetTimers(session, req, root); });
+			RegisterCommandCode("getscenetimers", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetSceneTimers(session, req, root); });
+			RegisterCommandCode("getsetpointtimers", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetSetpointTimers(session, req, root); });
+			RegisterCommandCode("getplans", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetPlans(session, req, root); });
+			RegisterCommandCode("getfloorplans", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetFloorPlans(session, req, root); });
+			RegisterCommandCode("getlightlog", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetLightLog(session, req, root); });
+			RegisterCommandCode("gettextlog", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetTextLog(session, req, root); });
+			RegisterCommandCode("gettransfers", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetTransfers(session, req, root); });
+			RegisterCommandCode("dotransferdevice", [this](auto&& session, auto&& req, auto&& root) { Cmd_DoTransferDevice(session, req, root); });
+			RegisterCommandCode("createrflinkdevice", [this](auto&& session, auto&& req, auto&& root) { Cmd_CreateRFLinkDevice(session, req, root); });
+			RegisterCommandCode("createevohomesensor", [this](auto&& session, auto&& req, auto&& root) { Cmd_CreateEvohomeSensor(session, req, root); });
+			RegisterCommandCode("bindevohome", [this](auto&& session, auto&& req, auto&& root) { Cmd_BindEvohome(session, req, root); });
+			RegisterCommandCode("custom_light_icons", [this](auto&& session, auto&& req, auto&& root) { Cmd_CustomLightIcons(session, req, root); });
+			RegisterCommandCode("deletedevice", [this](auto&& session, auto&& req, auto&& root) { Cmd_DeleteDevice(session, req, root); });
+			RegisterCommandCode("getshareduserdevices", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetSharedUserDevices(session, req, root); });
+			RegisterCommandCode("setshareduserdevices", [this](auto&& session, auto&& req, auto&& root) { Cmd_SetSharedUserDevices(session, req, root); });
+			RegisterCommandCode("graph", [this](auto&& session, auto&& req, auto&& root) { Cmd_HandleGraph(session, req, root); });
+			RegisterCommandCode("rclientslog", [this](auto&& session, auto&& req, auto&& root) { Cmd_RemoteWebClientsLog(session, req, root); });
+			RegisterCommandCode("setused", [this](auto&& session, auto&& req, auto&& root) { Cmd_SetUsed(session, req, root); });
 
-			RegisterRType("timers", [this](auto&& session, auto&& req, auto&& root) { RType_Timers(session, req, root); });
-			RegisterRType("scenetimers", [this](auto&& session, auto&& req, auto&& root) { RType_SceneTimers(session, req, root); });
-			RegisterRType("setpointtimers", [this](auto&& session, auto&& req, auto&& root) { RType_SetpointTimers(session, req, root); });
+			// Migrated ActionCodes to regular commands
+			RegisterCommandCode("setccmetertype", [this](auto&& session, auto&& req, auto&& root) { Cmd_SetCurrentCostUSBType(session, req, root); });
 
-			RegisterRType("gettransfers", [this](auto&& session, auto&& req, auto&& root) { RType_GetTransfers(session, req, root); });
-			RegisterRType("transferdevice", [this](auto&& session, auto&& req, auto&& root) { RType_TransferDevice(session, req, root); });
-			RegisterRType("notifications", [this](auto&& session, auto&& req, auto&& root) { RType_Notifications(session, req, root); });
-			RegisterRType("schedules", [this](auto&& session, auto&& req, auto&& root) { RType_Schedules(session, req, root); });
-			RegisterRType("getshareduserdevices", [this](auto&& session, auto&& req, auto&& root) { RType_GetSharedUserDevices(session, req, root); });
-			RegisterRType("setshareduserdevices", [this](auto&& session, auto&& req, auto&& root) { RType_SetSharedUserDevices(session, req, root); });
-			RegisterRType("setused", [this](auto&& session, auto&& req, auto&& root) { RType_SetUsed(session, req, root); });
-			RegisterRType("scenes", [this](auto&& session, auto&& req, auto&& root) { RType_Scenes(session, req, root); });
-			RegisterRType("addscene", [this](auto&& session, auto&& req, auto&& root) { RType_AddScene(session, req, root); });
-			RegisterRType("deletescene", [this](auto&& session, auto&& req, auto&& root) { RType_DeleteScene(session, req, root); });
-			RegisterRType("updatescene", [this](auto&& session, auto&& req, auto&& root) { RType_UpdateScene(session, req, root); });
-			RegisterRType("createvirtualsensor", [this](auto&& session, auto&& req, auto&& root) { RType_CreateMappedSensor(session, req, root); });
-			RegisterRType("createdevice", [this](auto&& session, auto&& req, auto&& root) { RType_CreateDevice(session, req, root); });
+			RegisterCommandCode("clearuserdevices", [this](auto&& session, auto&& req, auto&& root) { Cmd_ClearUserDevices(session, req, root); });
 
-			RegisterRType("createevohomesensor", [this](auto&& session, auto&& req, auto&& root) { RType_CreateEvohomeSensor(session, req, root); });
-			RegisterRType("bindevohome", [this](auto&& session, auto&& req, auto&& root) { RType_BindEvohome(session, req, root); });
-			RegisterRType("createrflinkdevice", [this](auto&& session, auto&& req, auto&& root) { RType_CreateRFLinkDevice(session, req, root); });
-
-			RegisterRType("custom_light_icons", [this](auto&& session, auto&& req, auto&& root) { RType_CustomLightIcons(session, req, root); });
-			RegisterRType("plans", [this](auto&& session, auto&& req, auto&& root) { RType_Plans(session, req, root); });
-			RegisterRType("floorplans", [this](auto&& session, auto&& req, auto&& root) { RType_FloorPlans(session, req, root); });
-
+			//MQTT-AD
+			RegisterCommandCode("mqttadgetconfig", [this](auto&& session, auto&& req, auto&& root) { Cmd_MQTTAD_GetConfig(session, req, root); });
+			RegisterCommandCode("mqttupdatenumber", [this](auto&& session, auto&& req, auto&& root) { Cmd_MQTTAD_UpdateNumber(session, req, root); });
 #ifdef WITH_OPENZWAVE
 			// ZWave
 			RegisterCommandCode("updatezwavenode", [this](auto&& session, auto&& req, auto&& root) { Cmd_ZWaveUpdateNode(session, req, root); });
@@ -703,8 +698,7 @@ namespace http
 			m_pWebEm->RegisterPageCode("/ozwcp/statpost.html", [this](auto&& session, auto&& req, auto&& rep) { ZWaveCPGetStats(session, req, rep); });
 			m_pWebEm->RegisterPageCode("/ozwcp/grouppost.html", [this](auto&& session, auto&& req, auto&& rep) { ZWaveCPSetGroup(session, req, rep); });
 			//
-			// pollpost.html
-			RegisterRType("openzwavenodes", [this](auto&& session, auto&& req, auto&& root) { RType_OpenZWaveNodes(session, req, root); });
+			RegisterCommandCode("getopenzwavenodes", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetOpenZWaveNodes(session, req, root); });
 #endif
 			// EnOcean helpers cmds
 
@@ -721,12 +715,13 @@ namespace http
 
 			RegisterCommandCode("esp3updatenode", [this](auto&& session, auto&& req, auto&& root) { Cmd_EnOceanESP3UpdateNode(session, req, root); });
 			RegisterCommandCode("esp3deletenode", [this](auto&& session, auto&& req, auto&& root) { Cmd_EnOceanESP3DeleteNode(session, req, root); });
-
-			// EnOcean ESP3 Rtypes
-			RegisterRType("esp3getnodes", [this](auto&& session, auto&& req, auto&& root) { RType_EnOceanESP3GetNodes(session, req, root); });
+			RegisterCommandCode("esp3getnodes", [this](auto&& session, auto&& req, auto&& root) { Cmd_EnOceanESP3GetNodes(session, req, root); });
 
 			//Whitelist
 			m_pWebEm->RegisterWhitelistURLString("/images/floorplans/plan");
+
+			_log.Debug(DEBUG_WEBSERVER, "WebServer(%s) started with %d Registered Commands", m_server_alias.c_str(), (int)m_webcommands.size());
+			m_pWebEm->DebugRegistrations();
 
 			// Start normal worker thread
 			m_bDoStop = false;
@@ -785,31 +780,22 @@ namespace http
 			m_pWebEm->SetWebRoot(webRoot);
 		}
 
-		void CWebServer::SetIamSettings(const iamserver::iam_settings &iamsettings)
+		void CWebServer::SetIamSettings(const iamserver::iam_settings& iamsettings)
 		{
 			m_iamsettings = iamsettings;
 		}
 
 		void CWebServer::RegisterCommandCode(const char* idname, const webserver_response_function& ResponseFunction, bool bypassAuthentication)
 		{
+			if (m_webcommands.find(idname) != m_webcommands.end())
+			{
+				_log.Debug(DEBUG_WEBSERVER, "CWebServer::RegisterCommandCode :%s already registered", idname);
+				return;
+			}
 			m_webcommands.insert(std::pair<std::string, webserver_response_function>(std::string(idname), ResponseFunction));
 			if (bypassAuthentication)
 			{
 				m_pWebEm->RegisterWhitelistCommandsString(idname);
-			}
-		}
-
-		void CWebServer::RegisterRType(const char* idname, const webserver_response_function& ResponseFunction)
-		{
-			m_webrtypes.insert(std::pair<std::string, webserver_response_function>(std::string(idname), ResponseFunction));
-		}
-
-		void CWebServer::HandleRType(const std::string& rtype, WebEmSession& session, const request& req, Json::Value& root)
-		{
-			auto pf = m_webrtypes.find(rtype);
-			if (pf != m_webrtypes.end())
-			{
-				pf->second(session, req, root);
 			}
 		}
 
@@ -824,41 +810,189 @@ namespace http
 				std::string cparam = request::findValue(&req, "param");
 				if (!cparam.empty())
 				{
-					_log.Debug(DEBUG_WEBSERVER, "CWebServer::GetJSonPage() :%s :%s ", cparam.c_str(), req.uri.c_str());
-					HandleCommand(cparam, session, req, root);
+					_log.Debug(DEBUG_WEBSERVER, "CWebServer::GetJSonPage :%s :%s ", cparam.c_str(), req.uri.c_str());
+
+					auto pf = m_webcommands.find(cparam);
+					if (pf != m_webcommands.end())
+					{
+						pf->second(session, req, root);
+					}
+					else
+					{	// See if we still have a Param based version not converted to a proper command
+						// TODO: remove this once all param based code has been converted to proper commands
+						if (!HandleCommandParam(cparam, session, req, root))
+						{
+							_log.Debug(DEBUG_WEBSERVER, "CWebServer::GetJSonPage(param)(%s) returned an error!", cparam.c_str());
+						}
+					}
 				}
 			} //(rtype=="command")
 			else
-			{
-				HandleRType(rtype, session, req, root);
+			{	// TODO: remove this after next stable
+				// Could be a call to an old style RType, try to handle it and alert the user to update
+				_log.Debug(DEBUG_WEBSERVER, "CWebServer::GetJSonPage(rtype) :%s :%s ", rtype.c_str(), req.uri.c_str());
+
+				std::string altrtype;
+				if (rtype.compare("settings") == 0)
+				{
+					altrtype = "getsettings";
+				}
+				else if (rtype.compare("users") == 0)
+				{
+					altrtype = "getusers";
+				}
+				else if (rtype.compare("devices") == 0)
+				{
+					altrtype = "getdevices";
+				}
+				else if (rtype.compare("hardware") == 0)
+				{
+					altrtype = "gethardware";
+				}
+				else if (rtype.compare("scenes") == 0)
+				{
+					altrtype = "getscenes";
+				}
+				else if (rtype.compare("notifications") == 0)
+				{
+					altrtype = "getnotifications";
+				}
+				else if (rtype.compare("scenelog") == 0)
+				{
+					altrtype = "getscenelog";
+				}
+				else if (rtype.compare("mobiles") == 0)
+				{
+					altrtype = "getmobiles";
+				}
+				else if (rtype.compare("cameras") == 0)
+				{
+					altrtype = "getcameras";
+				}
+				else if (rtype.compare("cameras_user") == 0)
+				{
+					altrtype = "getcameras_user";
+				}
+				else if (rtype.compare("schedules") == 0)
+				{
+					altrtype = "getschedules";
+				}
+				else if (rtype.compare("timers") == 0)
+				{
+					altrtype = "gettimers";
+				}
+				else if (rtype.compare("scenetimers") == 0)
+				{
+					altrtype = "getscenetimers";
+				}
+				else if (rtype.compare("setpointtimers") == 0)
+				{
+					altrtype = "getsetpointtimers";
+				}
+				else if (rtype.compare("plans") == 0)
+				{
+					altrtype = "getplans";
+				}
+				else if (rtype.compare("floorplans") == 0)
+				{
+					altrtype = "getfloorplans";
+				}
+				else if (rtype.compare("lightlog") == 0)
+				{
+					altrtype = "getlightlog";
+				}
+				else if (rtype.compare("textlog") == 0)
+				{
+					altrtype = "gettextlog";
+				}
+				else if (rtype.compare("graph") == 0)
+				{
+					altrtype = "graph";
+				}
+				else if (rtype.compare("createdevice") == 0)
+				{
+					altrtype = "createdevice";
+				}
+				else if (rtype.compare("setused") == 0)
+				{
+					altrtype = "setused";
+				}
+
+				if (!altrtype.empty())
+				{
+					auto pf = m_webcommands.find(altrtype);
+					if (pf != m_webcommands.end())
+					{
+						_log.Log(LOG_NORM, "[WebServer] Deprecated RType (%s) for API request. Handled via fallback (%s), please use correct API Command! (%s)", rtype.c_str(), altrtype.c_str(), req.host_remote_address.c_str());
+						pf->second(session, req, root);
+					}
+				}
+				else
+				{
+					_log.Log(LOG_STATUS, "[WebServer] Deprecated RType (%s) for API request. Call ignored, please use correct API Command! (%s)", rtype.c_str(), req.host_remote_address.c_str());
+				}
+
 			}
 
-			std::string jcallback = request::findValue(&req, "jsoncallback");
-			if (!jcallback.empty())
-			{
-				reply::set_content(&rep, "var data=" + root.toStyledString() + '\n' + jcallback + "(data);");
-				return;
-			}
 			reply::set_content(&rep, root.toStyledString());
 		}
 
-		void CWebServer::Cmd_GetLanguage(WebEmSession& session, const request& req, Json::Value& root)
+		void CWebServer::Cmd_GetTimerTypes(WebEmSession& session, const request& req, Json::Value& root)
 		{
-			std::string sValue;
-			if (m_sql.GetPreferencesVar("Language", sValue))
+			root["title"] = "GetTimerTypes";
+			for (int ii = 0; ii < TTYPE_END; ii++)
 			{
-				root["status"] = "OK";
-				root["title"] = "GetLanguage";
-				root["language"] = sValue;
+				std::string sTimerTypeDesc = Timer_Type_Desc(_eTimerType(ii));
+				root["result"][ii] = sTimerTypeDesc;
 			}
+			root["status"] = "OK";
 		}
 
 		void CWebServer::Cmd_GetLanguages(WebEmSession& session, const request& req, Json::Value& root)
 		{
 			root["title"] = "GetLanguages";
+			std::string sValue;
+			if (m_sql.GetPreferencesVar("Language", sValue))
+			{
+				root["language"] = sValue;
+			}
 			for (auto& lang : guiLanguage)
 			{
-				root["result"][lang.first] = lang.second;
+				root["result"][lang.second] = lang.first;
+			}
+			root["status"] = "OK";
+		}
+
+		void CWebServer::Cmd_GetSwitchTypes(WebEmSession& session, const request& req, Json::Value& root)
+		{
+			root["title"] = "GetSwitchTypes";
+
+			std::map<std::string, int> _switchtypes;
+
+			for (int ii = 0; ii < STYPE_END; ii++)
+			{
+				std::string sTypeName = Switch_Type_Desc((_eSwitchType)ii);
+				if (sTypeName != "Unknown")
+				{
+					_switchtypes[sTypeName] = ii;
+				}
+			}
+			// return a sorted list
+			for (const auto& type : _switchtypes)
+			{
+				root["result"][type.second] = type.first;
+			}
+			root["status"] = "OK";
+		}
+
+		void CWebServer::Cmd_GetMeterTypes(WebEmSession& session, const request& req, Json::Value& root)
+		{
+			root["title"] = "GetMeterTypes";
+
+			for (int ii = 0; ii < MTYPE_END; ii++)
+			{
+				std::string sTypeName = Meter_Type_Desc((_eMeterType)ii);
+				root["result"][ii] = sTypeName;
 			}
 			root["status"] = "OK";
 		}
@@ -885,23 +1019,6 @@ namespace http
 				root["Title"] = sValue;
 			else
 				root["Title"] = "Domoticz";
-		}
-
-		// Depricated : This 'page' should not be used anymore. Use command instead
-		void CWebServer::PostLoginCheck(WebEmSession& session, const request& req, reply& rep)
-		{
-			_log.Log(LOG_NORM, "Depricated: Page LoginCheck! Use command instead!");
-
-			Json::Value root;
-			Cmd_LoginCheck(session, req, root);
-
-			std::string jcallback = request::findValue(&req, "jsoncallback");
-			if (jcallback.empty())
-			{
-				reply::set_content(&rep, root.toStyledString());
-				return;
-			}
-			reply::set_content(&rep, "var data=" + root.toStyledString() + '\n' + jcallback + "(data);");
 		}
 
 		void CWebServer::Cmd_LoginCheck(WebEmSession& session, const request& req, Json::Value& root)
@@ -938,6 +1055,34 @@ namespace http
 						_log.Log(LOG_ERROR, "Failed login attempt from %s for '%s' !", session.remote_host.c_str(), m_users[iUser].Username.c_str());
 						return;
 					}
+					if (!m_users[iUser].Mfatoken.empty())
+					{
+						// 2FA enabled for this user
+						std::string tmp2fa = request::findValue(&req, "2fatotp");
+						std::string sTotpKey = "";
+						if(!base32_decode(m_users[iUser].Mfatoken, sTotpKey))
+						{
+							// Unable to decode the 2FA token
+							_log.Log(LOG_ERROR, "Failed login attempt from %s for '%s' !", session.remote_host.c_str(), m_users[iUser].Username.c_str());
+							_log.Debug(DEBUG_AUTH, "Failed to base32_decode the Users 2FA token: %s", m_users[iUser].Mfatoken.c_str());
+							return;
+						}
+						if (tmp2fa.empty())
+						{
+							// No 2FA token given (yet), request one
+							root["status"] = "OK";
+							root["title"] = "logincheck";
+							root["require2fa"] = "true";
+							return;
+						}
+						if (!VerifySHA1TOTP(tmp2fa, sTotpKey))
+						{
+							// Not a match for the given 2FA token
+							_log.Log(LOG_ERROR, "Failed login attempt from %s for '%s' !", session.remote_host.c_str(), m_users[iUser].Username.c_str());
+							_log.Debug(DEBUG_AUTH, "Failed login attempt with 2FA token: %s", tmp2fa.c_str());
+							return;
+						}
+					}
 					_log.Log(LOG_STATUS, "Login successful from %s for user '%s'", session.remote_host.c_str(), m_users[iUser].Username.c_str());
 					root["status"] = "OK";
 					root["version"] = szAppVersion;
@@ -952,7 +1097,7 @@ namespace http
 			}
 		}
 
-		void CWebServer::Cmd_GetHardwareTypes(WebEmSession &session, const request &req, Json::Value &root)
+		void CWebServer::Cmd_GetHardwareTypes(WebEmSession& session, const request& req, Json::Value& root)
 		{
 			if (session.rights != 2)
 			{
@@ -1003,7 +1148,11 @@ namespace http
 					bDoAdd = false;
 
 				if (bDoAdd)
-					_htypes[Hardware_Type_Desc(ii)] = ii;
+				{
+					std::string description = Hardware_Type_Desc(ii);
+					if (!description.empty())
+						_htypes[description] = ii;
+				}
 			}
 
 			// return a sorted hardware list
@@ -1110,12 +1259,16 @@ namespace http
 						mode1 = atoi(modeqStr.c_str());
 					}
 				}
-
-				if (htype == HTYPE_ECODEVICES || htype == HTYPE_TeleinfoMeterTCP)
+				else if (htype == HTYPE_ECODEVICES || htype == HTYPE_TeleinfoMeterTCP)
 				{
 					// EcoDevices and Teleinfo always have decimals. Chances to have a P1 and a EcoDevice/Teleinfo
 					//  device on the same Domoticz instance are very low as both are national standards (NL and FR)
 					m_sql.UpdatePreferencesVar("SmartMeterType", 0);
+				}
+				else if (htype == HTYPE_AlfenEveCharger)
+				{
+					if ((password.empty()))
+						return;
 				}
 			}
 			else if (htype == HTYPE_DomoticzInternal)
@@ -1237,7 +1390,7 @@ namespace http
 			{
 				// All fine here
 			}
-			else if ((htype == HTYPE_Wunderground) || (htype == HTYPE_DarkSky) || (htype == HTYPE_AccuWeather) || (htype == HTYPE_OpenWeatherMap) || (htype == HTYPE_ICYTHERMOSTAT) ||
+			else if ((htype == HTYPE_Wunderground) || (htype == HTYPE_DarkSky) || (htype == HTYPE_VisualCrossing) || (htype == HTYPE_AccuWeather) || (htype == HTYPE_OpenWeatherMap) || (htype == HTYPE_ICYTHERMOSTAT) ||
 				(htype == HTYPE_TOONTHERMOSTAT) || (htype == HTYPE_AtagOne) || (htype == HTYPE_PVOUTPUT_INPUT) || (htype == HTYPE_NEST) || (htype == HTYPE_ANNATHERMOSTAT) ||
 				(htype == HTYPE_THERMOSMART) || (htype == HTYPE_Tado) || (htype == HTYPE_Tesla) || (htype == HTYPE_Mercedes) || (htype == HTYPE_Netatmo))
 			{
@@ -1299,11 +1452,6 @@ namespace http
 			{
 				// All fine here
 			}
-			else if (htype == HTYPE_GoodweAPI)
-			{
-				if (username.empty())
-					return;
-			}
 			else if (htype == HTYPE_PythonPlugin)
 			{
 				// All fine here
@@ -1335,6 +1483,10 @@ namespace http
 			else if (htype == HTYPE_AirconWithMe)
 			{
 				// all fine here!
+			}
+			else if (htype == HTYPE_EneverPriceFeeds)
+			{
+				// All fine here
 			}
 			else
 				return;
@@ -1484,19 +1636,31 @@ namespace http
 						return; // need to have a serial port
 				}
 			}
-			else if ((htype == HTYPE_RFXLAN) || (htype == HTYPE_P1SmartMeterLAN) || (htype == HTYPE_YouLess) || (htype == HTYPE_OpenThermGatewayTCP) || (htype == HTYPE_LimitlessLights) ||
-				(htype == HTYPE_SolarEdgeTCP) || (htype == HTYPE_WOL) || (htype == HTYPE_S0SmartMeterTCP) || (htype == HTYPE_ECODEVICES) || (htype == HTYPE_Mochad) ||
-				(htype == HTYPE_MySensorsTCP) || (htype == HTYPE_MySensorsMQTT) || (htype == HTYPE_MQTT) || (htype == HTYPE_MQTTAutoDiscovery) || (htype == HTYPE_TTN_MQTT) || (htype == HTYPE_FRITZBOX) ||
-				(htype == HTYPE_ETH8020) || (htype == HTYPE_Sterbox) || (htype == HTYPE_KMTronicTCP) || (htype == HTYPE_KMTronicUDP) || (htype == HTYPE_SOLARMAXTCP) ||
-				(htype == HTYPE_RelayNet) || (htype == HTYPE_SatelIntegra) || (htype == HTYPE_eHouseTCP) || (htype == HTYPE_RFLINKTCP) ||
-				(htype == HTYPE_Comm5TCP || (htype == HTYPE_Comm5SMTCP) || (htype == HTYPE_CurrentCostMeterLAN)) || (htype == HTYPE_NefitEastLAN) ||
-				(htype == HTYPE_DenkoviHTTPDevices) || (htype == HTYPE_DenkoviTCPDevices) || (htype == HTYPE_Ec3kMeterTCP) || (htype == HTYPE_MultiFun) ||
-				(htype == HTYPE_ZIBLUETCP) || (htype == HTYPE_OnkyoAVTCP) || (htype == HTYPE_OctoPrint) || (htype == HTYPE_TeleinfoMeterTCP) ||
-				(htype == HTYPE_RFLINKMQTT))
+			else if (IsNetworkDevice(htype))
 			{
 				// Lan
 				if (address.empty())
 					return;
+
+				if (htype == HTYPE_MySensorsMQTT || htype == HTYPE_MQTT || htype == HTYPE_MQTTAutoDiscovery)
+				{
+					std::string modeqStr = request::findValue(&req, "mode1");
+					if (!modeqStr.empty())
+					{
+						mode1 = atoi(modeqStr.c_str());
+					}
+				}
+				else if (htype == HTYPE_ECODEVICES || htype == HTYPE_TeleinfoMeterTCP)
+				{
+					// EcoDevices and Teleinfo always have decimals. Chances to have a P1 and a EcoDevice/Teleinfo
+					//  device on the same Domoticz instance are very low as both are national standards (NL and FR)
+					m_sql.UpdatePreferencesVar("SmartMeterType", 0);
+				}
+				else if (htype == HTYPE_AlfenEveCharger)
+				{
+					if ((password.empty()))
+						return;
+				}
 			}
 			else if (htype == HTYPE_DomoticzInternal)
 			{
@@ -1614,7 +1778,7 @@ namespace http
 			{
 				// All fine here
 			}
-			else if ((htype == HTYPE_Wunderground) || (htype == HTYPE_DarkSky) || (htype == HTYPE_AccuWeather) || (htype == HTYPE_OpenWeatherMap) || (htype == HTYPE_ICYTHERMOSTAT) ||
+			else if ((htype == HTYPE_Wunderground) || (htype == HTYPE_DarkSky) || (htype == HTYPE_VisualCrossing) || (htype == HTYPE_AccuWeather) || (htype == HTYPE_OpenWeatherMap) || (htype == HTYPE_ICYTHERMOSTAT) ||
 				(htype == HTYPE_TOONTHERMOSTAT) || (htype == HTYPE_AtagOne) || (htype == HTYPE_PVOUTPUT_INPUT) || (htype == HTYPE_NEST) || (htype == HTYPE_ANNATHERMOSTAT) ||
 				(htype == HTYPE_THERMOSMART) || (htype == HTYPE_Tado) || (htype == HTYPE_Tesla) || (htype == HTYPE_Mercedes) || (htype == HTYPE_Netatmo))
 			{
@@ -1682,13 +1846,6 @@ namespace http
 			{
 				// All fine here
 			}
-			else if (htype == HTYPE_GoodweAPI)
-			{
-				if (username.empty())
-				{
-					return;
-				}
-			}
 			else if (htype == HTYPE_RaspberryPCF8574)
 			{
 				// All fine here
@@ -1716,6 +1873,10 @@ namespace http
 			else if (htype == HTYPE_RFLINKMQTT)
 			{
 				//all fine here!
+			}
+			else if (htype == HTYPE_EneverPriceFeeds)
+			{
+				// all fine here!
 			}
 			else
 				return;
@@ -2209,15 +2370,20 @@ namespace http
 			root["status"] = "OK";
 			root["title"] = "GetUnusedPlanDevices";
 			std::string sunique = request::findValue(&req, "unique");
-			if (sunique.empty())
+			std::string sactplan = request::findValue(&req, "actplan");
+			if (
+				sunique.empty()
+				|| sactplan.empty()
+				)
 				return;
-			int iUnique = (sunique == "true") ? 1 : 0;
+			const int iActPlan = atoi(sactplan.c_str());
+			const bool iUnique = (sunique == "true") ? true : false;
 			int ii = 0;
 
 			std::vector<std::vector<std::string>> result;
 			std::vector<std::vector<std::string>> result2;
-			result = m_sql.safe_query("SELECT T1.[ID], T1.[Name], T1.[Type], T1.[SubType], T2.[Name] AS HardwareName FROM DeviceStatus as T1, Hardware as T2 WHERE (T1.[Used]==1) AND "
-				"(T2.[ID]==T1.[HardwareID]) ORDER BY T2.[Name], T1.[Name]");
+			result = m_sql.safe_query("SELECT T1.[ID], T1.[Name], T1.[Type], T1.[SubType], T2.[Name] AS HardwareName FROM DeviceStatus as T1, Hardware as T2 "
+				"WHERE (T1.[Used]==1) AND (T2.[ID]==T1.[HardwareID]) ORDER BY T2.[Name], T1.[Name]");
 			if (!result.empty())
 			{
 				for (const auto& sd : result)
@@ -2225,8 +2391,8 @@ namespace http
 					bool bDoAdd = true;
 					if (iUnique)
 					{
-						result2 = m_sql.safe_query("SELECT ID FROM DeviceToPlansMap WHERE (DeviceRowID=='%q') AND (DevSceneType==0)", sd[0].c_str());
-						bDoAdd = (result2.empty());
+						result2 = m_sql.safe_query("SELECT ID FROM DeviceToPlansMap WHERE (DeviceRowID=='%q') AND (DevSceneType==0) AND (PlanID==%d)", sd[0].c_str(), iActPlan);
+						bDoAdd = result2.empty();
 					}
 					if (bDoAdd)
 					{
@@ -2248,7 +2414,7 @@ namespace http
 					bool bDoAdd = true;
 					if (iUnique)
 					{
-						result2 = m_sql.safe_query("SELECT ID FROM DeviceToPlansMap WHERE (DeviceRowID=='%q') AND (DevSceneType==1)", sd[0].c_str());
+						result2 = m_sql.safe_query("SELECT ID FROM DeviceToPlansMap WHERE (DeviceRowID=='%q') AND (DevSceneType==1) AND (PlanID==%d)", sd[0].c_str(), iActPlan);
 						bDoAdd = (result2.empty());
 					}
 					if (bDoAdd)
@@ -2481,22 +2647,24 @@ namespace http
 		{
 			root["status"] = "OK";
 			root["title"] = "GetVersion";
-			root["version"] = szAppVersion;
-			root["hash"] = szAppHash;
-			root["build_time"] = szAppDate;
-			CdzVents* dzvents = CdzVents::GetInstance();
-			root["dzvents_version"] = dzvents->GetVersion();
-			root["python_version"] = szPyVersion;
-			root["UseUpdate"] = false;
-			root["HaveUpdate"] = false;
-
-			if (session.rights == URIGHTS_ADMIN)
+			if (session.rights != -1 )
 			{
-				root["UseUpdate"] = g_bUseUpdater;
+				root["version"] = szAppVersion;
+				root["hash"] = szAppHash;
+				root["build_time"] = szAppDate;
+				CdzVents* dzvents = CdzVents::GetInstance();
+				root["dzvents_version"] = dzvents->GetVersion();
+				root["python_version"] = szPyVersion;
+				root["UseUpdate"] = false;
 				root["HaveUpdate"] = m_mainworker.IsUpdateAvailable(false);
-				root["DomoticzUpdateURL"] = m_mainworker.m_szDomoticzUpdateURL;
-				root["SystemName"] = m_mainworker.m_szSystemName;
-				root["Revision"] = m_mainworker.m_iRevision;
+
+				if (session.rights == URIGHTS_ADMIN)
+				{
+					root["UseUpdate"] = g_bUseUpdater;
+					root["DomoticzUpdateURL"] = m_mainworker.m_szDomoticzUpdateURL;
+					root["SystemName"] = m_mainworker.m_szSystemName;
+					root["Revision"] = m_mainworker.m_iRevision;
+				}
 			}
 		}
 
@@ -2509,6 +2677,99 @@ namespace http
 				root["user"] = session.username;
 				root["rights"] = session.rights;
 				root["version"] = szAppVersion;
+			}
+		}
+
+		void CWebServer::Cmd_GetMyProfile(WebEmSession& session, const request& req, Json::Value& root)
+		{
+			root["status"] = "ERR";
+			root["title"] = "GetMyProfile";
+			if (session.rights > 0)	// Viewer cannot change his profile
+			{
+				int iUser = FindUser(session.username.c_str());
+				if (iUser != -1)
+				{
+					root["user"] = session.username;
+					root["rights"] = session.rights;
+					if (!m_users[iUser].Mfatoken.empty())
+						root["mfasecret"] = m_users[iUser].Mfatoken;
+					root["status"] = "OK";
+				}
+			}
+		}
+
+		void CWebServer::Cmd_UpdateMyProfile(WebEmSession& session, const request& req, Json::Value& root)
+		{
+			root["status"] = "ERR";
+			root["title"] = "UpdateMyProfile";
+
+			if (req.method == "POST" && session.rights > 0)	// Viewer cannot change his profile
+			{
+				std::string sUsername = request::findValue(&req, "username");
+				int iUser = FindUser(session.username.c_str());
+				if (iUser == -1)
+				{
+					root["error"] = "User not found!";
+					return;
+				}
+				if (m_users[iUser].Username != sUsername)
+				{
+					root["error"] = "User mismatch!";
+					return;
+				}
+
+				std::string sOldPwd = request::findValue(&req, "oldpwd");
+				std::string sNewPwd = request::findValue(&req, "newpwd");
+				if (!sOldPwd.empty() && !sNewPwd.empty())
+				{
+					if (m_users[iUser].Password == sOldPwd)
+					{
+						m_users[iUser].Password = sNewPwd;
+						m_sql.safe_query("UPDATE Users SET Password='%q' WHERE (ID=%d)", sNewPwd.c_str(), m_users[iUser].ID);
+						LoadUsers();	// Make sure the new password is loaded in memory
+						root["status"] = "OK";
+					}
+					else
+					{
+						root["error"] = "Old password mismatch!";
+						return;
+					}
+				}
+
+				std::string sTotpsecret = request::findValue(&req, "totpsecret");
+				std::string sTotpCode = request::findValue(&req, "totpcode");
+				bool bEnablemfa = (request::findValue(&req, "enablemfa") == "true" ? true : false);
+				if (bEnablemfa && sTotpsecret.empty())
+				{
+					root["error"] = "Not a valid TOTP secret!";
+					return;
+				}
+				// Update the User Profile
+				if (!bEnablemfa)
+				{
+					sTotpsecret = "";
+				}
+				else
+				{
+					//verify code
+					if (!sTotpCode.empty())
+					{
+						std::string sTotpKey = "";
+						if (base32_decode(sTotpsecret, sTotpKey))
+						{
+							if (!VerifySHA1TOTP(sTotpCode, sTotpKey))
+							{
+								root["error"] = "Incorrect/expired 6 digit code!";
+								return;
+							}
+						}
+					}
+				}
+				m_users[iUser].Mfatoken = sTotpsecret;
+				m_sql.safe_query("UPDATE Users SET MFAsecret='%q' WHERE (ID=%d)", sTotpsecret.c_str(), m_users[iUser].ID);
+
+				LoadUsers();
+				root["status"] = "OK";
 			}
 		}
 
@@ -2580,7 +2841,7 @@ namespace http
 			std::string machine = my_uname.machine;
 			std::transform(systemname.begin(), systemname.end(), systemname.begin(), ::tolower);
 
-			if (machine == "armv6l")
+			if (machine == "armv6l" || (machine == "aarch64" && sizeof(void*) == 4))
 			{
 				// Seems like old arm systems can also use the new arm build
 				machine = "armv7l";
@@ -2629,14 +2890,6 @@ namespace http
 			root["status"] = "ERR";
 			root["title"] = "GetConfig";
 
-			int iUser = -1;
-			unsigned long UserID = -1;
-			if (!session.username.empty() && (iUser = FindUser(session.username.c_str())) != -1)
-			{
-				UserID = m_users[iUser].ID;
-				root["UserName"] = m_users[iUser].Username;
-			}
-
 			std::string sValue;
 			int nValue = 0;
 			int iDashboardType = 0;
@@ -2669,17 +2922,21 @@ namespace http
 			root["TempScale"] = m_sql.m_tempscale;
 			root["TempSign"] = m_sql.m_tempsign;
 
-			int bEnableTabDashboard = 1;
-			int bEnableTabFloorplans = 0;
-			int bEnableTabLight = 1;
-			int bEnableTabScenes = 1;
-			int bEnableTabTemp = 1;
-			int bEnableTabWeather = 1;
-			int bEnableTabUtility = 1;
-			int bEnableTabCustom = 0;
-
-			if (UserID != -1)
+			int iUser = -1;
+			if (!session.username.empty() && (iUser = FindUser(session.username.c_str())) != -1)
 			{
+				unsigned long UserID = m_users[iUser].ID;
+				root["UserName"] = m_users[iUser].Username;
+
+				int bEnableTabDashboard = 1;
+				int bEnableTabFloorplans = 0;
+				int bEnableTabLight = 1;
+				int bEnableTabScenes = 1;
+				int bEnableTabTemp = 1;
+				int bEnableTabWeather = 1;
+				int bEnableTabUtility = 1;
+				int bEnableTabCustom = 0;
+
 				std::vector<std::vector<std::string>> result;
 				result = m_sql.safe_query("SELECT TabsEnabled FROM Users WHERE (ID==%lu)", UserID);
 				if (!result.empty())
@@ -2693,59 +2950,64 @@ namespace http
 					bEnableTabCustom = (TabsEnabled & (1 << 5));
 					bEnableTabFloorplans = (TabsEnabled & (1 << 6));
 				}
-			}
 
-			if (iDashboardType == 3)
-			{
-				// Floorplan , no need to show a tab floorplan
-				bEnableTabFloorplans = 0;
-			}
-			root["result"]["EnableTabDashboard"] = bEnableTabDashboard != 0;
-			root["result"]["EnableTabFloorplans"] = bEnableTabFloorplans != 0;
-			root["result"]["EnableTabLights"] = bEnableTabLight != 0;
-			root["result"]["EnableTabScenes"] = bEnableTabScenes != 0;
-			root["result"]["EnableTabTemp"] = bEnableTabTemp != 0;
-			root["result"]["EnableTabWeather"] = bEnableTabWeather != 0;
-			root["result"]["EnableTabUtility"] = bEnableTabUtility != 0;
-			root["result"]["EnableTabCustom"] = bEnableTabCustom != 0;
-
-			if (bEnableTabCustom)
-			{
-				// Add custom templates
-				DIR* lDir;
-				struct dirent* ent;
-				std::string templatesFolder = szWWWFolder + "/templates";
-				int iFile = 0;
-				if ((lDir = opendir(templatesFolder.c_str())) != nullptr)
+				if (iDashboardType == 3)
 				{
-					while ((ent = readdir(lDir)) != nullptr)
+					// Floorplan , no need to show a tab floorplan
+					bEnableTabFloorplans = 0;
+				}
+				root["result"]["EnableTabDashboard"] = bEnableTabDashboard != 0;
+				root["result"]["EnableTabFloorplans"] = bEnableTabFloorplans != 0;
+				root["result"]["EnableTabLights"] = bEnableTabLight != 0;
+				root["result"]["EnableTabScenes"] = bEnableTabScenes != 0;
+				root["result"]["EnableTabTemp"] = bEnableTabTemp != 0;
+				root["result"]["EnableTabWeather"] = bEnableTabWeather != 0;
+				root["result"]["EnableTabUtility"] = bEnableTabUtility != 0;
+				root["result"]["EnableTabCustom"] = bEnableTabCustom != 0;
+
+				if (bEnableTabCustom)
+				{
+					// Add custom templates
+					DIR* lDir;
+					struct dirent* ent;
+					std::string templatesFolder = szWWWFolder + "/templates";
+					int iFile = 0;
+					if ((lDir = opendir(templatesFolder.c_str())) != nullptr)
 					{
-						std::string filename = ent->d_name;
-						size_t pos = filename.find(".htm");
-						if (pos != std::string::npos)
+						while ((ent = readdir(lDir)) != nullptr)
 						{
-							std::string shortfile = filename.substr(0, pos);
-							root["result"]["templates"][iFile++] = shortfile;
-						}
-						// Same thing for URLs
-						pos = filename.find(".url");
-						if (pos != std::string::npos)
-						{
-							std::string url;
-							std::string shortfile = filename.substr(0, pos);
-							// First get the URL from the file
-							std::ifstream urlfile;
-							urlfile.open((templatesFolder + "/" + filename).c_str());
-							if (urlfile.is_open())
+							std::string filename = ent->d_name;
+							size_t pos = filename.find(".htm");
+							if (pos != std::string::npos)
 							{
-								getline(urlfile, url);
-								urlfile.close();
-								// Pass URL in results
-								root["result"]["urls"][shortfile] = url;
+								std::string shortfile = filename.substr(0, pos);
+								root["result"]["templates"][iFile]["file"] = shortfile;
+								stdreplace(shortfile, "_", " ");
+								root["result"]["templates"][iFile]["name"] = shortfile;
+								iFile++;
+								continue;
+							}
+							// Same thing for URLs
+							pos = filename.find(".url");
+							if (pos != std::string::npos)
+							{
+								std::string url;
+								std::string shortfile = filename.substr(0, pos);
+								// First get the URL from the file
+								std::ifstream urlfile;
+								urlfile.open((templatesFolder + "/" + filename).c_str());
+								if (urlfile.is_open())
+								{
+									getline(urlfile, url);
+									urlfile.close();
+									// Pass URL in results
+									stdreplace(shortfile, "_", " ");
+									root["result"]["urls"][shortfile] = url;
+								}
 							}
 						}
+						closedir(lDir);
 					}
-					closedir(lDir);
 				}
 			}
 			root["status"] = "OK";
@@ -2847,6 +3109,16 @@ namespace http
 					{
 						root["Forecasthardwaretype"] = HTYPE_BuienRadar;
 						CBuienRadar* pWHardware = dynamic_cast<CBuienRadar*>(pHardware);
+						forecast_url = pWHardware->GetForecastURL();
+						if (!forecast_url.empty())
+						{
+							sFURL = forecast_url;
+						}
+					}
+					else if (pHardware->HwdType == HTYPE_VisualCrossing)
+					{
+						root["Forecasthardwaretype"] = HTYPE_VisualCrossing;
+						CVisualCrossing* pWHardware = dynamic_cast<CVisualCrossing*>(pHardware);
 						forecast_url = pWHardware->GetForecastURL();
 						if (!forecast_url.empty())
 						{
@@ -2979,7 +3251,7 @@ namespace http
 			int devType = atoi(dtype.c_str());
 			int subType = atoi(dsubtype.c_str());
 
-			// uint64_t ulIdx = std::strtoull(idx.c_str(), nullptr, 10);
+			// uint64_t ulIdx = std::stoull(idx);
 
 			int invalue = atoi(nvalue.c_str());
 
@@ -3261,12 +3533,12 @@ namespace http
 					if (splitresults.size() != 6)
 						return;
 
-					unsigned long long powerusage1 = std::strtoull(splitresults[0].c_str(), nullptr, 10);
-					unsigned long long powerusage2 = std::strtoull(splitresults[1].c_str(), nullptr, 10);
-					unsigned long long powerdeliv1 = std::strtoull(splitresults[2].c_str(), nullptr, 10);
-					unsigned long long powerdeliv2 = std::strtoull(splitresults[3].c_str(), nullptr, 10);
-					// unsigned long long usagecurrent = std::strtoull(splitresults[4].c_str(), nullptr, 10);
-					// unsigned long long delivcurrent = std::strtoull(splitresults[5].c_str(), nullptr, 10);
+					uint64_t powerusage1 = std::stoull(splitresults[0]);
+					uint64_t powerusage2 = std::stoull(splitresults[1]);
+					uint64_t powerdeliv1 = std::stoull(splitresults[2]);
+					uint64_t powerdeliv2 = std::stoull(splitresults[3]);
+					// uint64_t usagecurrent = std::stoull(splitresults[4]);
+					// uint64_t delivcurrent = std::stoull(splitresults[5]);
 
 					powerdeliv1 = (powerdeliv1 < 10) ? 0 : powerdeliv1;
 					powerdeliv2 = (powerdeliv2 < 10) ? 0 : powerdeliv2;
@@ -3395,4446 +3667,15 @@ namespace http
 			return (!result.empty());
 		}
 
-		void CWebServer::HandleCommand(const std::string& cparam, WebEmSession& session, const request& req, Json::Value& root)
-		{
-			auto pf = m_webcommands.find(cparam);
-			if (pf != m_webcommands.end())
-			{
-				pf->second(session, req, root);
-				return;
-			}
-
-			std::vector<std::vector<std::string>> result;
-			char szTmp[300];
-
-			bool bHaveUser = (!session.username.empty());
-			/*
-						int iUser = -1;
-						if (bHaveUser)
-						{
-							iUser = FindUser(session.username.c_str());
-						}
-			*/
-			if (cparam == "deleteallsubdevices")
-			{
-				if (session.rights < 2)
-				{
-					session.reply_status = reply::forbidden;
-					return; // Only admin user allowed
-				}
-
-				std::string idx = request::findValue(&req, "idx");
-				if (idx.empty())
-					return;
-				root["status"] = "OK";
-				root["title"] = "DeleteAllSubDevices";
-				result = m_sql.safe_query("DELETE FROM LightSubDevices WHERE (ParentID == '%q')", idx.c_str());
-			}
-			else if (cparam == "deletesubdevice")
-			{
-				if (session.rights < 2)
-				{
-					session.reply_status = reply::forbidden;
-					return; // Only admin user allowed
-				}
-
-				std::string idx = request::findValue(&req, "idx");
-				if (idx.empty())
-					return;
-				root["status"] = "OK";
-				root["title"] = "DeleteSubDevice";
-				result = m_sql.safe_query("DELETE FROM LightSubDevices WHERE (ID == '%q')", idx.c_str());
-			}
-			else if (cparam == "addsubdevice")
-			{
-				if (session.rights < 2)
-				{
-					session.reply_status = reply::forbidden;
-					return; // Only admin user allowed
-				}
-
-				std::string idx = request::findValue(&req, "idx");
-				std::string subidx = request::findValue(&req, "subidx");
-				if ((idx.empty()) || (subidx.empty()))
-					return;
-				if (idx == subidx)
-					return;
-
-				// first check if it is not already a sub device
-				result = m_sql.safe_query("SELECT ID FROM LightSubDevices WHERE (DeviceRowID=='%q') AND (ParentID =='%q')", subidx.c_str(), idx.c_str());
-				if (result.empty())
-				{
-					root["status"] = "OK";
-					root["title"] = "AddSubDevice";
-					// no it is not, add it
-					result = m_sql.safe_query("INSERT INTO LightSubDevices (DeviceRowID, ParentID) VALUES ('%q','%q')", subidx.c_str(), idx.c_str());
-				}
-			}
-			else if (cparam == "addscenedevice")
-			{
-				if (session.rights < 2)
-				{
-					session.reply_status = reply::forbidden;
-					return; // Only admin user allowed
-				}
-
-				std::string idx = request::findValue(&req, "idx");
-				std::string devidx = request::findValue(&req, "devidx");
-				std::string isscene = request::findValue(&req, "isscene");
-				std::string scommand = request::findValue(&req, "command");
-				int ondelay = atoi(request::findValue(&req, "ondelay").c_str());
-				int offdelay = atoi(request::findValue(&req, "offdelay").c_str());
-
-				if ((idx.empty()) || (devidx.empty()) || (isscene.empty()))
-					return;
-				int level = -1;
-				if (request::hasValue(&req, "level"))
-					level = atoi(request::findValue(&req, "level").c_str());
-				std::string color = _tColor(request::findValue(&req, "color")).toJSONString(); // Parse the color to detect incorrectly formatted color data
-
-				unsigned char command = 0;
-				result = m_sql.safe_query("SELECT HardwareID, DeviceID, Unit, Type, SubType, SwitchType, Options FROM DeviceStatus WHERE (ID=='%q')", devidx.c_str());
-				if (!result.empty())
-				{
-					int dType = atoi(result[0][3].c_str());
-					int sType = atoi(result[0][4].c_str());
-					_eSwitchType switchtype = (_eSwitchType)atoi(result[0][5].c_str());
-					std::map<std::string, std::string> options = m_sql.BuildDeviceOptions(result[0][6]);
-					GetLightCommand(dType, sType, switchtype, scommand, command, options);
-				}
-
-				// first check if this device is not the scene code!
-				result = m_sql.safe_query("SELECT Activators, SceneType FROM Scenes WHERE (ID=='%q')", idx.c_str());
-				if (!result.empty())
-				{
-					// int SceneType = atoi(result[0][1].c_str());
-
-					std::vector<std::string> arrayActivators;
-					StringSplit(result[0][0], ";", arrayActivators);
-					for (const auto& sCodeCmd : arrayActivators)
-					{
-						std::vector<std::string> arrayCode;
-						StringSplit(sCodeCmd, ":", arrayCode);
-
-						std::string sID = arrayCode[0];
-						std::string sCode;
-						if (arrayCode.size() == 2)
-						{
-							sCode = arrayCode[1];
-						}
-
-						if (sID == devidx)
-						{
-							return; // Group does not work with separate codes, so already there
-						}
-					}
-				}
-				// first check if it is not already a part of this scene/group (with the same OnDelay)
-				if (isscene == "true")
-				{
-					result = m_sql.safe_query(
-						"SELECT ID FROM SceneDevices WHERE (DeviceRowID=='%q') AND (SceneRowID =='%q') AND (OnDelay == %d) AND (OffDelay == %d) AND (Cmd == %d)",
-						devidx.c_str(), idx.c_str(), ondelay, offdelay, command);
-				}
-				else
-				{
-					result = m_sql.safe_query("SELECT ID FROM SceneDevices WHERE (DeviceRowID=='%q') AND (SceneRowID =='%q') AND (OnDelay == %d)", devidx.c_str(), idx.c_str(),
-						ondelay);
-				}
-				if (result.empty())
-				{
-					root["status"] = "OK";
-					root["title"] = "AddSceneDevice";
-					// no it is not, add it
-					if (isscene == "true")
-					{
-						m_sql.safe_query("INSERT INTO SceneDevices (DeviceRowID, SceneRowID, Cmd, Level, Color, OnDelay, OffDelay) VALUES ('%q','%q',%d,%d,'%q',%d,%d)",
-							devidx.c_str(), idx.c_str(), command, level, color.c_str(), ondelay, offdelay);
-					}
-					else
-					{
-						m_sql.safe_query("INSERT INTO SceneDevices (DeviceRowID, SceneRowID, Level, Color, OnDelay, OffDelay) VALUES ('%q','%q',%d,'%q',%d,%d)", devidx.c_str(),
-							idx.c_str(), level, color.c_str(), ondelay, offdelay);
-					}
-					if (m_sql.m_bEnableEventSystem)
-						m_mainworker.m_eventsystem.GetCurrentScenesGroups();
-				}
-			}
-			else if (cparam == "updatescenedevice")
-			{
-				if (session.rights < 2)
-				{
-					session.reply_status = reply::forbidden;
-					return; // Only admin user allowed
-				}
-
-				std::string idx = request::findValue(&req, "idx");
-				std::string devidx = request::findValue(&req, "devidx");
-				std::string scommand = request::findValue(&req, "command");
-				int ondelay = atoi(request::findValue(&req, "ondelay").c_str());
-				int offdelay = atoi(request::findValue(&req, "offdelay").c_str());
-
-				if ((idx.empty()) || (devidx.empty()))
-					return;
-
-				unsigned char command = 0;
-
-				result = m_sql.safe_query("SELECT HardwareID, DeviceID, Unit, Type, SubType, SwitchType, Options FROM DeviceStatus WHERE (ID=='%q')", devidx.c_str());
-				if (!result.empty())
-				{
-					int dType = atoi(result[0][3].c_str());
-					int sType = atoi(result[0][4].c_str());
-					_eSwitchType switchtype = (_eSwitchType)atoi(result[0][5].c_str());
-					std::map<std::string, std::string> options = m_sql.BuildDeviceOptions(result[0][6]);
-					GetLightCommand(dType, sType, switchtype, scommand, command, options);
-				}
-				int level = -1;
-				if (request::hasValue(&req, "level"))
-					level = atoi(request::findValue(&req, "level").c_str());
-				std::string color = _tColor(request::findValue(&req, "color")).toJSONString(); // Parse the color to detect incorrectly formatted color data
-				root["status"] = "OK";
-				root["title"] = "UpdateSceneDevice";
-				result = m_sql.safe_query("UPDATE SceneDevices SET Cmd=%d, Level=%d, Color='%q', OnDelay=%d, OffDelay=%d  WHERE (ID == '%q')", command, level, color.c_str(), ondelay,
-					offdelay, idx.c_str());
-			}
-			else if (cparam == "deletescenedevice")
-			{
-				if (session.rights < 2)
-				{
-					session.reply_status = reply::forbidden;
-					return; // Only admin user allowed
-				}
-
-				std::string idx = request::findValue(&req, "idx");
-				if (idx.empty())
-					return;
-				root["status"] = "OK";
-				root["title"] = "DeleteSceneDevice";
-				m_sql.safe_query("DELETE FROM SceneDevices WHERE (ID == '%q')", idx.c_str());
-				m_sql.safe_query("DELETE FROM CamerasActiveDevices WHERE (DevSceneType==1) AND (DevSceneRowID == '%q')", idx.c_str());
-				if (m_sql.m_bEnableEventSystem)
-					m_mainworker.m_eventsystem.GetCurrentScenesGroups();
-			}
-			else if (cparam == "getsubdevices")
-			{
-				std::string idx = request::findValue(&req, "idx");
-				if (idx.empty())
-					return;
-
-				root["status"] = "OK";
-				root["title"] = "GetSubDevices";
-				result = m_sql.safe_query("SELECT a.ID, b.Name FROM LightSubDevices a, DeviceStatus b WHERE (a.ParentID=='%q') AND (b.ID == a.DeviceRowID)", idx.c_str());
-				if (!result.empty())
-				{
-					int ii = 0;
-					for (const auto& sd : result)
-					{
-						root["result"][ii]["ID"] = sd[0];
-						root["result"][ii]["Name"] = sd[1];
-						ii++;
-					}
-				}
-			}
-			else if (cparam == "getscenedevices")
-			{
-				std::string idx = request::findValue(&req, "idx");
-				std::string isscene = request::findValue(&req, "isscene");
-
-				if ((idx.empty()) || (isscene.empty()))
-					return;
-
-				root["status"] = "OK";
-				root["title"] = "GetSceneDevices";
-
-				result = m_sql.safe_query("SELECT a.ID, b.Name, a.DeviceRowID, b.Type, b.SubType, b.nValue, b.sValue, a.Cmd, a.Level, b.ID, a.[Order], a.Color, a.OnDelay, a.OffDelay, "
-					"b.SwitchType FROM SceneDevices a, DeviceStatus b WHERE (a.SceneRowID=='%q') AND (b.ID == a.DeviceRowID) ORDER BY a.[Order]",
-					idx.c_str());
-				if (!result.empty())
-				{
-					int ii = 0;
-					for (const auto& sd : result)
-					{
-						root["result"][ii]["ID"] = sd[0];
-						root["result"][ii]["Name"] = sd[1];
-						root["result"][ii]["DevID"] = sd[2];
-						root["result"][ii]["DevRealIdx"] = sd[9];
-						root["result"][ii]["Order"] = atoi(sd[10].c_str());
-						root["result"][ii]["OnDelay"] = atoi(sd[12].c_str());
-						root["result"][ii]["OffDelay"] = atoi(sd[13].c_str());
-
-						_eSwitchType switchtype = (_eSwitchType)atoi(sd[14].c_str());
-
-						unsigned char devType = atoi(sd[3].c_str());
-
-						bool bIsBlinds = (
-							switchtype == STYPE_Blinds
-							|| switchtype == STYPE_BlindsPercentage
-							|| switchtype == STYPE_BlindsPercentageWithStop
-							|| switchtype == STYPE_VenetianBlindsEU
-							|| switchtype == STYPE_VenetianBlindsUS
-							);
-
-						// switchtype seemed not to be used down with the GetLightStatus command,
-						// causing RFY to go wrong, fixing here
-						if (devType != pTypeRFY)
-							switchtype = STYPE_OnOff;
-
-						unsigned char subType = atoi(sd[4].c_str());
-						// unsigned char nValue = (unsigned char)atoi(sd[5].c_str());
-						std::string sValue = sd[6];
-						int command = atoi(sd[7].c_str());
-						int level = atoi(sd[8].c_str());
-
-						std::string lstatus;
-						int llevel = 0;
-						bool bHaveDimmer = false;
-						bool bHaveGroupCmd = false;
-						int maxDimLevel = 0;
-						GetLightStatus(devType, subType, switchtype, command, sValue, lstatus, llevel, bHaveDimmer, maxDimLevel, bHaveGroupCmd);
-						if (bIsBlinds)
-						{
-							if (lstatus == "On")
-								lstatus = "Open";
-							else if (lstatus == "Off")
-								lstatus = "Close";
-						}
-
-						root["result"][ii]["Command"] = lstatus;
-						root["result"][ii]["Level"] = level;
-						root["result"][ii]["Color"] = _tColor(sd[11]).toJSONString();
-						root["result"][ii]["Type"] = RFX_Type_Desc(devType, 1);
-						root["result"][ii]["SubType"] = RFX_Type_SubType_Desc(devType, subType);
-						ii++;
-					}
-				}
-			}
-			else if (cparam == "changescenedeviceorder")
-			{
-				if (session.rights < 2)
-				{
-					session.reply_status = reply::forbidden;
-					return; // Only admin user allowed
-				}
-
-				std::string idx = request::findValue(&req, "idx");
-				if (idx.empty())
-					return;
-				std::string sway = request::findValue(&req, "way");
-				if (sway.empty())
-					return;
-				bool bGoUp = (sway == "0");
-
-				std::string aScene, aOrder, oID, oOrder;
-
-				// Get actual device order
-				result = m_sql.safe_query("SELECT SceneRowID, [Order] FROM SceneDevices WHERE (ID=='%q')", idx.c_str());
-				if (result.empty())
-					return;
-				aScene = result[0][0];
-				aOrder = result[0][1];
-
-				if (!bGoUp)
-				{
-					// Get next device order
-					result =
-						m_sql.safe_query("SELECT ID, [Order] FROM SceneDevices WHERE (SceneRowID=='%q' AND [Order]>'%q') ORDER BY [Order] ASC", aScene.c_str(), aOrder.c_str());
-					if (result.empty())
-						return;
-					oID = result[0][0];
-					oOrder = result[0][1];
-				}
-				else
-				{
-					// Get previous device order
-					result = m_sql.safe_query("SELECT ID, [Order] FROM SceneDevices WHERE (SceneRowID=='%q' AND [Order]<'%q') ORDER BY [Order] DESC", aScene.c_str(),
-						aOrder.c_str());
-					if (result.empty())
-						return;
-					oID = result[0][0];
-					oOrder = result[0][1];
-				}
-				// Swap them
-				root["status"] = "OK";
-				root["title"] = "ChangeSceneDeviceOrder";
-
-				result = m_sql.safe_query("UPDATE SceneDevices SET [Order] = '%q' WHERE (ID='%q')", oOrder.c_str(), idx.c_str());
-				result = m_sql.safe_query("UPDATE SceneDevices SET [Order] = '%q' WHERE (ID='%q')", aOrder.c_str(), oID.c_str());
-			}
-			else if (cparam == "deleteallscenedevices")
-			{
-				if (session.rights < 2)
-				{
-					session.reply_status = reply::forbidden;
-					return; // Only admin user allowed
-				}
-
-				std::string idx = request::findValue(&req, "idx");
-				if (idx.empty())
-					return;
-				root["status"] = "OK";
-				root["title"] = "DeleteAllSceneDevices";
-				result = m_sql.safe_query("DELETE FROM SceneDevices WHERE (SceneRowID == %q)", idx.c_str());
-			}
-			else if (cparam == "getmanualhardware")
-			{
-				// used by Add Manual Light/Switch dialog
-				root["status"] = "OK";
-				root["title"] = "GetManualHardware";
-				result = m_sql.safe_query("SELECT ID, Name, Type, Enabled FROM Hardware ORDER BY ID ASC");
-				if (!result.empty())
-				{
-					int ii = 0;
-					for (const auto& sd : result)
-					{
-						int ID = atoi(sd[0].c_str());
-						std::string Name = sd[1];
-						_eHardwareTypes Type = (_eHardwareTypes)atoi(sd[2].c_str());
-						bool isEnabled = atoi(sd[3].c_str());
-
-						bool supportsManual = ((Type == HTYPE_RFXLAN) || (Type == HTYPE_RFXtrx315) || (Type == HTYPE_RFXtrx433) || (Type == HTYPE_RFXtrx868) || (Type == HTYPE_EnOceanESP2) ||
-							(Type == HTYPE_EnOceanESP3) || (Type == HTYPE_Dummy) || (Type == HTYPE_Tellstick) || (Type == HTYPE_EVOHOME_SCRIPT) ||
-							(Type == HTYPE_EVOHOME_SERIAL) || (Type == HTYPE_EVOHOME_WEB) || (Type == HTYPE_EVOHOME_TCP) || (Type == HTYPE_RaspberryGPIO) ||
-							(Type == HTYPE_RFLINKUSB) || (Type == HTYPE_RFLINKTCP) || (Type == HTYPE_ZIBLUEUSB) || (Type == HTYPE_ZIBLUETCP) || (Type == HTYPE_OpenWebNetTCP) ||
-							(Type == HTYPE_OpenWebNetUSB) || (Type == HTYPE_SysfsGpio) || (Type == HTYPE_USBtinGateway));
-
-						if (isEnabled)
-						{
-							CDomoticzHardwareBase* pBaseHardware = dynamic_cast<CDomoticzHardwareBase*>(m_mainworker.GetHardware(ID));
-							if (pBaseHardware != nullptr)
-							{
-								std::string jsonConfiguration;
-								jsonConfiguration = pBaseHardware->GetManualSwitchesJsonConfiguration();
-								if (!jsonConfiguration.empty())
-								{
-									Json::Value proot;
-									if (ParseJSon(jsonConfiguration, proot))
-									{
-										root["result"][ii]["config"] = proot;
-										supportsManual = true;
-									}
-								}
-							}
-							else
-							{
-								_log.Log(LOG_ERROR, "CWebServer::HandleCommand getmanualhardware: Could not find running hardware thread for %s (%d)", Name.c_str(), Type);
-							}
-						}
-						if (supportsManual)
-						{
-							root["result"][ii]["idx"] = ID;
-							root["result"][ii]["Name"] = Name;
-							ii++;
-						}
-					}
-				}
-			}
-			else if (cparam == "getgpio")
-			{
-				// used by Add Manual Light/Switch dialog
-				root["title"] = "GetGpio";
-#ifdef WITH_GPIO
-				std::vector<CGpioPin> pins = CGpio::GetPinList();
-				if (pins.empty())
-				{
-					root["status"] = "ERROR";
-					root["result"][0]["idx"] = 0;
-					root["result"][0]["Name"] = "GPIO INIT ERROR";
-				}
-				else
-				{
-					int ii = 0;
-					for (auto& pin : pins)
-					{
-						root["status"] = "OK";
-						root["result"][ii]["idx"] = pin.GetPin();
-						root["result"][ii]["Name"] = pin.ToString();
-						ii++;
-					}
-				}
-#else
-				root["status"] = "OK";
-				root["result"][0]["idx"] = 0;
-				root["result"][0]["Name"] = "N/A";
-#endif
-			}
-			else if (cparam == "getsysfsgpio")
-			{
-				// used by Add Manual Light/Switch dialog
-				root["title"] = "GetSysfsGpio";
-#ifdef WITH_GPIO
-				std::vector<int> gpio_ids = CSysfsGpio::GetGpioIds();
-				std::vector<std::string> gpio_names = CSysfsGpio::GetGpioNames();
-
-				if (gpio_ids.empty())
-				{
-					root["status"] = "ERROR";
-					root["result"][0]["idx"] = 0;
-					root["result"][0]["Name"] = "No sysfs-gpio exports";
-				}
-				else
-				{
-					for (int ii = 0; ii < gpio_ids.size(); ii++)
-					{
-						root["status"] = "OK";
-						root["result"][ii]["idx"] = gpio_ids[ii];
-						root["result"][ii]["Name"] = gpio_names[ii];
-					}
-				}
-#else
-				root["status"] = "OK";
-				root["result"][0]["idx"] = 0;
-				root["result"][0]["Name"] = "N/A";
-#endif
-			}
-			else if (cparam == "getlightswitches")
-			{
-				root["status"] = "OK";
-				root["title"] = "GetLightSwitches";
-				result = m_sql.safe_query("SELECT ID, Name, Type, SubType, Used, SwitchType, Options FROM DeviceStatus ORDER BY Name COLLATE NOCASE ASC");
-				if (!result.empty())
-				{
-					int ii = 0;
-					for (const auto& sd : result)
-					{
-						std::string ID = sd[0];
-						std::string Name = sd[1];
-						int Type = atoi(sd[2].c_str());
-						int SubType = atoi(sd[3].c_str());
-						int used = atoi(sd[4].c_str());
-						_eSwitchType switchtype = (_eSwitchType)atoi(sd[5].c_str());
-						std::map<std::string, std::string> options = m_sql.BuildDeviceOptions(sd[6]);
-						bool bdoAdd = false;
-						switch (Type)
-						{
-						case pTypeLighting1:
-						case pTypeLighting2:
-						case pTypeLighting3:
-						case pTypeLighting4:
-						case pTypeLighting5:
-						case pTypeLighting6:
-						case pTypeFan:
-						case pTypeColorSwitch:
-						case pTypeSecurity1:
-						case pTypeSecurity2:
-						case pTypeEvohome:
-						case pTypeEvohomeRelay:
-						case pTypeCurtain:
-						case pTypeBlinds:
-						case pTypeRFY:
-						case pTypeChime:
-						case pTypeThermostat2:
-						case pTypeThermostat3:
-						case pTypeThermostat4:
-						case pTypeRemote:
-						case pTypeRadiator1:
-						case pTypeGeneralSwitch:
-						case pTypeHomeConfort:
-						case pTypeFS20:
-						case pTypeHunter:
-							bdoAdd = true;
-							if (!used)
-							{
-								bdoAdd = false;
-								// bool bIsSubDevice = false;
-								std::vector<std::vector<std::string>> resultSD;
-								resultSD = m_sql.safe_query("SELECT ID FROM LightSubDevices WHERE (DeviceRowID=='%q')", sd[0].c_str());
-								if (!resultSD.empty())
-									bdoAdd = true;
-							}
-							if ((Type == pTypeRadiator1) && (SubType != sTypeSmartwaresSwitchRadiator))
-								bdoAdd = false;
-							if (bdoAdd)
-							{
-								int idx = atoi(ID.c_str());
-								if (!IsIdxForUser(&session, idx))
-									continue;
-								root["result"][ii]["idx"] = ID;
-								root["result"][ii]["Name"] = Name;
-								root["result"][ii]["Type"] = RFX_Type_Desc(Type, 1);
-								root["result"][ii]["SubType"] = RFX_Type_SubType_Desc(Type, SubType);
-								bool bIsDimmer = (
-									(switchtype == STYPE_Dimmer)
-									|| (switchtype == STYPE_BlindsPercentage)
-									|| (switchtype == STYPE_BlindsPercentageWithStop)
-									|| (switchtype == STYPE_Selector)
-									);
-								root["result"][ii]["IsDimmer"] = bIsDimmer;
-
-								std::string dimmerLevels = "none";
-
-								if (bIsDimmer)
-								{
-									std::stringstream ss;
-
-									if (switchtype == STYPE_Selector)
-									{
-										std::map<std::string, std::string> selectorStatuses;
-										GetSelectorSwitchStatuses(options, selectorStatuses);
-										bool levelOffHidden = (options["LevelOffHidden"] == "true");
-										for (int i = 0; i < (int)selectorStatuses.size(); i++)
-										{
-											if (levelOffHidden && (i == 0))
-											{
-												continue;
-											}
-											if ((levelOffHidden && (i > 1)) || (i > 0))
-											{
-												ss << ",";
-											}
-											ss << i * 10;
-										}
-									}
-									else
-									{
-										int nValue = 0;
-										std::string sValue;
-										std::string lstatus;
-										int llevel = 0;
-										bool bHaveDimmer = false;
-										int maxDimLevel = 0;
-										bool bHaveGroupCmd = false;
-
-										GetLightStatus(Type, SubType, switchtype, nValue, sValue, lstatus, llevel, bHaveDimmer, maxDimLevel,
-											bHaveGroupCmd);
-
-										for (int i = 0; i <= maxDimLevel; i++)
-										{
-											if (i != 0)
-											{
-												ss << ",";
-											}
-											ss << (int)float((100.0F / float(maxDimLevel)) * i);
-										}
-									}
-									dimmerLevels = ss.str();
-								}
-								root["result"][ii]["DimmerLevels"] = dimmerLevels;
-								ii++;
-							}
-							break;
-						}
-					}
-				}
-			}
-			else if (cparam == "getlightswitchesscenes")
-			{
-				root["status"] = "OK";
-				root["title"] = "GetLightSwitchesScenes";
-				int ii = 0;
-
-				// First List/Switch Devices
-				result = m_sql.safe_query("SELECT ID, Name, Type, SubType, Used FROM DeviceStatus ORDER BY Name COLLATE NOCASE ASC");
-				if (!result.empty())
-				{
-					for (const auto& sd : result)
-					{
-						std::string ID = sd[0];
-						std::string Name = sd[1];
-						int Type = atoi(sd[2].c_str());
-						int SubType = atoi(sd[3].c_str());
-						int used = atoi(sd[4].c_str());
-						if (used)
-						{
-							switch (Type)
-							{
-							case pTypeLighting1:
-							case pTypeLighting2:
-							case pTypeLighting3:
-							case pTypeLighting4:
-							case pTypeLighting5:
-							case pTypeLighting6:
-							case pTypeFan:
-							case pTypeColorSwitch:
-							case pTypeSecurity1:
-							case pTypeSecurity2:
-							case pTypeEvohome:
-							case pTypeEvohomeRelay:
-							case pTypeCurtain:
-							case pTypeBlinds:
-							case pTypeRFY:
-							case pTypeChime:
-							case pTypeThermostat2:
-							case pTypeThermostat3:
-							case pTypeThermostat4:
-							case pTypeRemote:
-							case pTypeGeneralSwitch:
-							case pTypeHomeConfort:
-							case pTypeFS20:
-							case pTypeHunter:
-								root["result"][ii]["type"] = 0;
-								root["result"][ii]["idx"] = ID;
-								root["result"][ii]["Name"] = "[Light/Switch] " + Name;
-								ii++;
-								break;
-							case pTypeRadiator1:
-								if (SubType == sTypeSmartwaresSwitchRadiator)
-								{
-									root["result"][ii]["type"] = 0;
-									root["result"][ii]["idx"] = ID;
-									root["result"][ii]["Name"] = "[Light/Switch] " + Name;
-									ii++;
-								}
-								break;
-							}
-						}
-					}
-				} // end light/switches
-
-				// Add Scenes
-				result = m_sql.safe_query("SELECT ID, Name FROM Scenes ORDER BY Name COLLATE NOCASE ASC");
-				if (!result.empty())
-				{
-					for (const auto& sd : result)
-					{
-						std::string ID = sd[0];
-						std::string Name = sd[1];
-
-						root["result"][ii]["type"] = 1;
-						root["result"][ii]["idx"] = ID;
-						root["result"][ii]["Name"] = "[Scene] " + Name;
-						ii++;
-					}
-				} // end light/switches
-			}
-			else if (cparam == "getcamactivedevices")
-			{
-				std::string idx = request::findValue(&req, "idx");
-				if (idx.empty())
-					return;
-				root["status"] = "OK";
-				root["title"] = "GetCameraActiveDevices";
-				// First List/Switch Devices
-				result = m_sql.safe_query("SELECT ID, DevSceneType, DevSceneRowID, DevSceneWhen, DevSceneDelay FROM CamerasActiveDevices WHERE (CameraRowID=='%q') ORDER BY ID",
-					idx.c_str());
-				if (!result.empty())
-				{
-					int ii = 0;
-					for (const auto& sd : result)
-					{
-						std::string ID = sd[0];
-						int DevSceneType = atoi(sd[1].c_str());
-						std::string DevSceneRowID = sd[2];
-						int DevSceneWhen = atoi(sd[3].c_str());
-						int DevSceneDelay = atoi(sd[4].c_str());
-
-						std::string Name;
-						if (DevSceneType == 0)
-						{
-							std::vector<std::vector<std::string>> result2;
-							result2 = m_sql.safe_query("SELECT Name FROM DeviceStatus WHERE (ID=='%q')", DevSceneRowID.c_str());
-							if (!result2.empty())
-							{
-								Name = "[Light/Switches] " + result2[0][0];
-							}
-						}
-						else
-						{
-							std::vector<std::vector<std::string>> result2;
-							result2 = m_sql.safe_query("SELECT Name FROM Scenes WHERE (ID=='%q')", DevSceneRowID.c_str());
-							if (!result2.empty())
-							{
-								Name = "[Scene] " + result2[0][0];
-							}
-						}
-						if (!Name.empty())
-						{
-							root["result"][ii]["idx"] = ID;
-							root["result"][ii]["type"] = DevSceneType;
-							root["result"][ii]["DevSceneRowID"] = DevSceneRowID;
-							root["result"][ii]["when"] = DevSceneWhen;
-							root["result"][ii]["delay"] = DevSceneDelay;
-							root["result"][ii]["Name"] = Name;
-							ii++;
-						}
-					}
-				}
-			}
-			else if (cparam == "addcamactivedevice")
-			{
-				if (session.rights < 2)
-				{
-					session.reply_status = reply::forbidden;
-					return; // Only admin user allowed
-				}
-
-				std::string idx = request::findValue(&req, "idx");
-				std::string activeidx = request::findValue(&req, "activeidx");
-				std::string sactivetype = request::findValue(&req, "activetype");
-				std::string sactivewhen = request::findValue(&req, "activewhen");
-				std::string sactivedelay = request::findValue(&req, "activedelay");
-
-				if ((idx.empty()) || (activeidx.empty()) || (sactivetype.empty()) || (sactivewhen.empty()) || (sactivedelay.empty()))
-				{
-					return;
-				}
-
-				int activetype = atoi(sactivetype.c_str());
-				int activewhen = atoi(sactivewhen.c_str());
-				int activedelay = atoi(sactivedelay.c_str());
-
-				// first check if it is not already a Active Device
-				result = m_sql.safe_query("SELECT ID FROM CamerasActiveDevices WHERE (CameraRowID=='%q')"
-					" AND (DevSceneType==%d) AND (DevSceneRowID=='%q')"
-					" AND (DevSceneWhen==%d)",
-					idx.c_str(), activetype, activeidx.c_str(), activewhen);
-				if (result.empty())
-				{
-					root["status"] = "OK";
-					root["title"] = "AddCameraActiveDevice";
-					// no it is not, add it
-					result =
-						m_sql.safe_query("INSERT INTO CamerasActiveDevices (CameraRowID, DevSceneType, DevSceneRowID, DevSceneWhen, DevSceneDelay) VALUES ('%q',%d,'%q',%d,%d)",
-							idx.c_str(), activetype, activeidx.c_str(), activewhen, activedelay);
-					m_mainworker.m_cameras.ReloadCameras();
-				}
-			}
-			else if (cparam == "deleteamactivedevice")
-			{
-				if (session.rights < 2)
-				{
-					session.reply_status = reply::forbidden;
-					return; // Only admin user allowed
-				}
-
-				std::string idx = request::findValue(&req, "idx");
-				if (idx.empty())
-					return;
-				root["status"] = "OK";
-				root["title"] = "DeleteCameraActiveDevice";
-				result = m_sql.safe_query("DELETE FROM CamerasActiveDevices WHERE (ID == '%q')", idx.c_str());
-				m_mainworker.m_cameras.ReloadCameras();
-			}
-			else if (cparam == "deleteallactivecamdevices")
-			{
-				if (session.rights < 2)
-				{
-					session.reply_status = reply::forbidden;
-					return; // Only admin user allowed
-				}
-
-				std::string idx = request::findValue(&req, "idx");
-				if (idx.empty())
-					return;
-				root["status"] = "OK";
-				root["title"] = "DeleteAllCameraActiveDevices";
-				result = m_sql.safe_query("DELETE FROM CamerasActiveDevices WHERE (CameraRowID == '%q')", idx.c_str());
-				m_mainworker.m_cameras.ReloadCameras();
-			}
-			else if (cparam == "testnotification")
-			{
-				if (session.rights < 2)
-				{
-					session.reply_status = reply::forbidden;
-					return; // Only admin user allowed
-				}
-
-				std::string notification_Title = "Domoticz test";
-				std::string notification_Message = "Domoticz test message!";
-				std::string subsystem = request::findValue(&req, "subsystem");
-				std::string extraData = request::findValue(&req, "extradata");
-
-				std::string scustomaction = base64_decode(request::findValue(&req, "taction"));
-
-				m_notifications.ConfigFromGetvars(req, false);
-				if (m_notifications.SendMessage(0, std::string(""), subsystem, scustomaction, notification_Title, notification_Message, extraData, 1, std::string(""), false))
-				{
-					root["status"] = "OK";
-				}
-				/* we need to reload the config, because the values that were set were only for testing */
-				m_notifications.LoadConfig();
-			}
-			else if (cparam == "testswitch")
-			{
-				std::string Username = "Admin";
-				if (!session.username.empty())
-					Username = session.username;
-				if (session.rights < 2)
-				{
-					session.reply_status = reply::forbidden;
-					return; // Only admin user allowed
-				}
-
-				std::string hwdid = request::findValue(&req, "hwdid");
-				std::string sswitchtype = request::findValue(&req, "switchtype");
-				std::string slighttype = request::findValue(&req, "lighttype");
-
-				if ((hwdid.empty()) || (sswitchtype.empty()) || (slighttype.empty()))
-					return;
-				_eSwitchType switchtype = (_eSwitchType)atoi(sswitchtype.c_str());
-				int lighttype = atoi(slighttype.c_str());
-				int dtype;
-				int subtype = 0;
-				std::string sunitcode;
-				std::string devid;
-
-				CDomoticzHardwareBase* pBaseHardware = m_mainworker.GetHardware(atoi(hwdid.c_str()));
-				if (pBaseHardware != nullptr && !pBaseHardware->GetManualSwitchesJsonConfiguration().empty())
-				{
-					pBaseHardware->GetManualSwitchParameters(req.parameters, switchtype, lighttype, dtype, subtype, devid, sunitcode);
-				}
-				else if (lighttype < 20)
-				{
-					dtype = pTypeLighting1;
-					subtype = lighttype;
-					std::string shousecode = request::findValue(&req, "housecode");
-					sunitcode = request::findValue(&req, "unitcode");
-					if ((shousecode.empty()) || (sunitcode.empty()))
-						return;
-					devid = shousecode;
-				}
-				else if (lighttype < 30)
-				{
-					dtype = pTypeLighting2;
-					subtype = lighttype - 20;
-					std::string id = request::findValue(&req, "id");
-					sunitcode = request::findValue(&req, "unitcode");
-					if ((id.empty()) || (sunitcode.empty()))
-						return;
-					devid = id;
-				}
-				else if (lighttype < 68)
-				{
-					dtype = pTypeLighting5;
-					subtype = lighttype - 50;
-					if (lighttype == 59)
-						subtype = sTypeIT;
-					std::string id = request::findValue(&req, "id");
-					sunitcode = request::findValue(&req, "unitcode");
-					if ((id.empty()) || (sunitcode.empty()))
-						return;
-					if ((subtype != sTypeEMW100) && (subtype != sTypeLivolo) && (subtype != sTypeLivolo1to10) && (subtype != sTypeRGB432W) && (subtype != sTypeIT))
-						devid = "00" + id;
-					else
-						devid = id;
-				}
-				else if (lighttype == 68)
-				{
-#ifdef WITH_GPIO
-					dtype = pTypeLighting1;
-					subtype = sTypeIMPULS;
-					devid = "0";
-					sunitcode = request::findValue(&req, "unitcode"); // Unit code = GPIO number
-
-					if (sunitcode.empty())
-					{
-						root["status"] = "ERROR";
-						root["message"] = "No GPIO number given";
-						return;
-					}
-					CGpio* pGpio = dynamic_cast<CGpio*>(m_mainworker.GetHardware(atoi(hwdid.c_str())));
-					if (pGpio == nullptr)
-					{
-						root["status"] = "ERROR";
-						root["message"] = "Could not retrieve GPIO hardware pointer";
-						return;
-					}
-					if (pGpio->HwdType != HTYPE_RaspberryGPIO)
-					{
-						root["status"] = "ERROR";
-						root["message"] = "Given hardware is not GPIO";
-						return;
-					}
-					CGpioPin* pPin = CGpio::GetPPinById(atoi(sunitcode.c_str()));
-					if (pPin == nullptr)
-					{
-						root["status"] = "ERROR";
-						root["message"] = "Given pin does not exist on this GPIO hardware";
-						return;
-					}
-					if (pPin->GetIsInput())
-					{
-						root["status"] = "ERROR";
-						root["message"] = "Given pin is not configured for output";
-						return;
-					}
-#else
-					root["status"] = "ERROR";
-					root["message"] = "GPIO support is disabled";
-					return;
-#endif
-				}
-				else if (lighttype == 69)
-				{
-#ifdef WITH_GPIO
-
-					sunitcode = request::findValue(&req, "unitcode"); // sysfs-gpio number
-					int unitcode = atoi(sunitcode.c_str());
-					dtype = pTypeLighting2;
-					subtype = sTypeAC;
-					std::string sswitchtype = request::findValue(&req, "switchtype");
-					_eSwitchType switchtype = (_eSwitchType)atoi(sswitchtype.c_str());
-
-					std::string id = request::findValue(&req, "id");
-					if ((id.empty()) || (sunitcode.empty()))
-					{
-						return;
-					}
-					devid = id;
-
-					if (sunitcode.empty())
-					{
-						root["status"] = "ERROR";
-						root["message"] = "No GPIO number given";
-						return;
-					}
-
-					CSysfsGpio* pSysfsGpio = dynamic_cast<CSysfsGpio*>(m_mainworker.GetHardware(atoi(hwdid.c_str())));
-					if (pSysfsGpio == nullptr)
-					{
-						root["status"] = "ERROR";
-						root["message"] = "Could not retrieve SysfsGpio hardware pointer";
-						return;
-					}
-
-					if (pSysfsGpio->HwdType != HTYPE_SysfsGpio)
-					{
-						root["status"] = "ERROR";
-						root["message"] = "Given hardware is not SysfsGpio";
-						return;
-					}
-#else
-					root["status"] = "ERROR";
-					root["message"] = "GPIO support is disabled";
-					return;
-#endif
-				}
-				else if (lighttype == 70)
-				{
-					// EnOcean (Lighting2 with Base_ID offset)
-					dtype = pTypeLighting2;
-					subtype = sTypeAC;
-					sunitcode = request::findValue(&req, "unitcode");
-					std::string sgroupcode = request::findValue(&req, "groupcode");
-
-					if (sunitcode.empty() || sgroupcode.empty())
-						return;
-
-					int iUnitTest = stoi(sunitcode);
-
-					// Using only First Rocker_ID, gives us 128 devices we can control, should be enough!
-					if (iUnitTest < 1 || iUnitTest > 128)
-						return;
-
-					sunitcode = sgroupcode; // Button A or B
-
-					if (pBaseHardware == nullptr)
-						return;
-
-					unsigned long rID = 0;
-					if (pBaseHardware->HwdType == HTYPE_EnOceanESP2)
-					{
-						CEnOceanESP2* pEnoceanHardware = dynamic_cast<CEnOceanESP2*>(pBaseHardware);
-						rID = pEnoceanHardware->m_id_base + iUnitTest;
-					}
-					else if (pBaseHardware->HwdType == HTYPE_EnOceanESP3)
-					{
-						CEnOceanESP3* pEnoceanHardware = dynamic_cast<CEnOceanESP3*>(pBaseHardware);
-						rID = pEnoceanHardware->m_id_base + iUnitTest;
-					}
-					else if (pBaseHardware->HwdType == HTYPE_USBtinGateway) // Like EnOcean (Lighting2 with Base_ID offset)
-					{
-						USBtin* pUSBtinHardware = dynamic_cast<USBtin*>(pBaseHardware);
-						// base ID calculate in the USBtinharwade dependant of the CAN Layer !
-						// for exemple see MultiblocV8 layer...
-						rID = pUSBtinHardware->switch_id_base;
-						std::stringstream ssunitcode;
-						ssunitcode << iUnitTest;
-						sunitcode = ssunitcode.str();
-					}
-					else
-						return;
-					// convert to hex, and we have our ID
-					std::stringstream s_strid;
-					s_strid << std::hex << std::uppercase << rID;
-					devid = s_strid.str();
-				}
-				else if (lighttype == 100)
-				{
-					// Chime/ByronSX
-					dtype = pTypeChime;
-					subtype = sTypeByronSX;
-					std::string id = request::findValue(&req, "id");
-					sunitcode = request::findValue(&req, "unitcode");
-					if ((id.empty()) || (sunitcode.empty()))
-						return;
-					int iUnitCode = atoi(sunitcode.c_str()) - 1;
-					switch (iUnitCode)
-					{
-					case 0:
-						iUnitCode = chime_sound0;
-						break;
-					case 1:
-						iUnitCode = chime_sound1;
-						break;
-					case 2:
-						iUnitCode = chime_sound2;
-						break;
-					case 3:
-						iUnitCode = chime_sound3;
-						break;
-					case 4:
-						iUnitCode = chime_sound4;
-						break;
-					case 5:
-						iUnitCode = chime_sound5;
-						break;
-					case 6:
-						iUnitCode = chime_sound6;
-						break;
-					case 7:
-						iUnitCode = chime_sound7;
-						break;
-					}
-					sprintf(szTmp, "%d", iUnitCode);
-					sunitcode = szTmp;
-					devid = id;
-				}
-				else if (lighttype == 101)
-				{
-					// Curtain Harrison
-					dtype = pTypeCurtain;
-					subtype = sTypeHarrison;
-					std::string shousecode = request::findValue(&req, "housecode");
-					sunitcode = request::findValue(&req, "unitcode");
-					if ((shousecode.empty()) || (sunitcode.empty()))
-						return;
-					devid = shousecode;
-				}
-				else if (lighttype == 102)
-				{
-					// RFY
-					dtype = pTypeRFY;
-					subtype = sTypeRFY;
-					std::string id = request::findValue(&req, "id");
-					sunitcode = request::findValue(&req, "unitcode");
-					if ((id.empty()) || (sunitcode.empty()))
-						return;
-					devid = id;
-				}
-				else if (lighttype == 103)
-				{
-					// Meiantech
-					dtype = pTypeSecurity1;
-					subtype = sTypeMeiantech;
-					std::string id = request::findValue(&req, "id");
-					if ((id.empty()))
-						return;
-					devid = id;
-					sunitcode = "0";
-				}
-				else if (lighttype == 104)
-				{
-					// HE105
-					dtype = pTypeThermostat2;
-					subtype = sTypeHE105;
-					sunitcode = request::findValue(&req, "unitcode");
-					if (sunitcode.empty())
-						return;
-					// convert to hex, and we have our Unit Code
-					std::stringstream s_strid;
-					s_strid << std::hex << std::uppercase << sunitcode;
-					int iUnitCode;
-					s_strid >> iUnitCode;
-					sprintf(szTmp, "%d", iUnitCode);
-					sunitcode = szTmp;
-					devid = "1";
-				}
-				else if (lighttype == 105)
-				{
-					// ASA
-					dtype = pTypeRFY;
-					subtype = sTypeASA;
-					std::string id = request::findValue(&req, "id");
-					sunitcode = request::findValue(&req, "unitcode");
-					if ((id.empty()) || (sunitcode.empty()))
-						return;
-					devid = id;
-				}
-				else if (lighttype == 106)
-				{
-					// Blyss
-					dtype = pTypeLighting6;
-					subtype = sTypeBlyss;
-					std::string sgroupcode = request::findValue(&req, "groupcode");
-					sunitcode = request::findValue(&req, "unitcode");
-					std::string id = request::findValue(&req, "id");
-					if ((sgroupcode.empty()) || (sunitcode.empty()) || (id.empty()))
-						return;
-					devid = id + sgroupcode;
-				}
-				else if (lighttype == 107)
-				{
-					// RFY2
-					dtype = pTypeRFY;
-					subtype = sTypeRFY2;
-					std::string id = request::findValue(&req, "id");
-					sunitcode = request::findValue(&req, "unitcode");
-					if ((id.empty()) || (sunitcode.empty()))
-						return;
-					devid = id;
-				}
-				else if ((lighttype >= 200) && (lighttype < 300))
-				{
-					dtype = pTypeBlinds;
-					subtype = lighttype - 200;
-					std::string id = request::findValue(&req, "id");
-					sunitcode = request::findValue(&req, "unitcode");
-					if ((id.empty()) || (sunitcode.empty()))
-						return;
-					int iUnitCode = atoi(sunitcode.c_str());
-					sprintf(szTmp, "%d", iUnitCode);
-					sunitcode = szTmp;
-					devid = id;
-				}
-				else if (lighttype == 301)
-				{
-					// Smartwares Radiator
-					dtype = pTypeRadiator1;
-					subtype = sTypeSmartwaresSwitchRadiator;
-					std::string id = request::findValue(&req, "id");
-					sunitcode = request::findValue(&req, "unitcode");
-					if ((id.empty()) || (sunitcode.empty()))
-						return;
-					devid = id;
-				}
-				else if (lighttype == 302)
-				{
-					// Home Confort
-					dtype = pTypeHomeConfort;
-					subtype = sTypeHomeConfortTEL010;
-					std::string id = request::findValue(&req, "id");
-
-					std::string shousecode = request::findValue(&req, "housecode");
-					sunitcode = request::findValue(&req, "unitcode");
-					if ((id.empty()) || (shousecode.empty()) || (sunitcode.empty()))
-						return;
-
-					int iUnitCode = atoi(sunitcode.c_str());
-					sprintf(szTmp, "%d", iUnitCode);
-					sunitcode = szTmp;
-					sprintf(szTmp, "%02X", atoi(shousecode.c_str()));
-					shousecode = szTmp;
-					devid = id + shousecode;
-				}
-				else if (lighttype == 303)
-				{
-					// Selector Switch
-					dtype = pTypeGeneralSwitch;
-					subtype = sSwitchTypeSelector;
-					std::string id = request::findValue(&req, "id");
-					sunitcode = request::findValue(&req, "unitcode");
-					if ((id.empty()) || (sunitcode.empty()))
-						return;
-					devid = id;
-				}
-				else if (lighttype == 304)
-				{
-					// Itho CVE RFT
-					dtype = pTypeFan;
-					subtype = sTypeItho;
-					std::string id = request::findValue(&req, "id");
-					if (id.empty())
-						return;
-					devid = id;
-					sunitcode = "0";
-				}
-				else if (lighttype == 305)
-				{
-					// Lucci Air/DC
-					dtype = pTypeFan;
-					subtype = sTypeLucciAir;
-					std::string id = request::findValue(&req, "id");
-					if (id.empty())
-						return;
-					devid = id;
-					sunitcode = "0";
-				}
-				else if (lighttype == 306)
-				{
-					// Lucci Air DC
-					dtype = pTypeFan;
-					subtype = sTypeLucciAirDC;
-					std::string id = request::findValue(&req, "id");
-					if (id.empty())
-						return;
-					devid = id;
-					sunitcode = "0";
-				}
-				else if (lighttype == 307)
-				{
-					// Westinghouse
-					dtype = pTypeFan;
-					subtype = sTypeWestinghouse;
-					std::string id = request::findValue(&req, "id");
-					if (id.empty())
-						return;
-					devid = id;
-					sunitcode = "0";
-				}
-				else if (lighttype == 308)
-				{
-					// Casafan
-					dtype = pTypeFan;
-					subtype = sTypeCasafan;
-					std::string id = request::findValue(&req, "id");
-					if (id.empty())
-						return;
-					devid = id;
-					sunitcode = "0";
-				}
-				else if (lighttype == 309)
-				{
-					// FT1211R
-					dtype = pTypeFan;
-					subtype = sTypeFT1211R;
-					std::string id = request::findValue(&req, "id");
-					if (id.empty())
-						return;
-					devid = id;
-					sunitcode = "0";
-				}
-				else if (lighttype == 310)
-				{
-					// Falmec
-					dtype = pTypeFan;
-					subtype = sTypeFalmec;
-					std::string id = request::findValue(&req, "id");
-					if (id.empty())
-						return;
-					devid = id;
-					sunitcode = "0";
-				}
-				else if (lighttype == 311)
-				{
-					// Lucci Air DC II
-					dtype = pTypeFan;
-					subtype = sTypeLucciAirDCII;
-					std::string id = request::findValue(&req, "id");
-					if (id.empty())
-						return;
-					devid = id;
-					sunitcode = "0";
-				}
-				else if (lighttype == 312)
-				{
-					// Itho ECO
-					dtype = pTypeFan;
-					subtype = sTypeIthoECO;
-					std::string id = request::findValue(&req, "id");
-					if (id.empty())
-						return;
-					devid = id;
-					sunitcode = "0";
-				}
-				else if (lighttype == 313)
-				{
-					// Novy
-					dtype = pTypeFan;
-					subtype = sTypeNovy;
-					std::string id = request::findValue(&req, "id");
-					if (id.empty())
-						return;
-					devid = id;
-					sunitcode = "0";
-				}
-				else if (lighttype == 400)
-				{
-					// Openwebnet Bus Blinds
-					dtype = pTypeGeneralSwitch;
-					subtype = sSwitchTypeAC;
-					devid = request::findValue(&req, "id");
-					sunitcode = request::findValue(&req, "unitcode");
-					if ((devid.empty()) || (sunitcode.empty()))
-						return;
-				}
-				else if (lighttype == 401)
-				{
-					// Openwebnet Bus Lights
-					dtype = pTypeGeneralSwitch;
-					subtype = sSwitchTypeAC;
-					devid = request::findValue(&req, "id");
-					sunitcode = request::findValue(&req, "unitcode");
-					if ((devid.empty()) || (sunitcode.empty()))
-						return;
-				}
-				else if (lighttype == 402)
-				{
-					// Openwebnet Bus Auxiliary
-					dtype = pTypeGeneralSwitch;
-					subtype = sSwitchTypeAC;
-					devid = request::findValue(&req, "id");
-					sunitcode = request::findValue(&req, "unitcode");
-					if ((devid.empty()) || (sunitcode.empty()))
-						return;
-				}
-				else if (lighttype == 403)
-				{
-					// Openwebnet Zigbee Blinds
-					dtype = pTypeGeneralSwitch;
-					subtype = sSwitchBlindsT2;
-					devid = request::findValue(&req, "id");
-					sunitcode = request::findValue(&req, "unitcode");
-					if ((devid.empty()) || (sunitcode.empty()))
-						return;
-				}
-				else if (lighttype == 404)
-				{
-					// Light Openwebnet Zigbee
-					dtype = pTypeGeneralSwitch;
-					subtype = sSwitchLightT2;
-					devid = request::findValue(&req, "id");
-					sunitcode = request::findValue(&req, "unitcode");
-					if ((devid.empty()) || (sunitcode.empty()))
-						return;
-				}
-				else if ((lighttype == 405) || (lighttype == 406))
-				{
-					// Openwebnet Dry Contact / IR Detection
-					dtype = pTypeGeneralSwitch;
-					subtype = sSwitchContactT1;
-					devid = request::findValue(&req, "id");
-					sunitcode = request::findValue(&req, "unitcode");
-					if ((devid.empty()) || (sunitcode.empty()))
-						return;
-				}
-				else if (lighttype == 407)
-				{
-					// Openwebnet Bus Custom
-					dtype = pTypeGeneralSwitch;
-					subtype = sSwitchTypeAC;
-					devid = request::findValue(&req, "id");
-					sunitcode = request::findValue(&req, "unitcode");
-					std::string StrParam1 = request::findValue(&req, "StrParam1");
-					if ((devid.empty()) || (sunitcode.empty()) || (StrParam1.empty()))
-					{
-						root["message"] = "Some field empty or not valid.";
-						return;
-					}
-				}
-				// ----------- If needed convert to GeneralSwitch type (for o.a. RFlink) -----------
-				if (pBaseHardware != nullptr)
-				{
-					if ((pBaseHardware->HwdType == HTYPE_RFLINKUSB) || (pBaseHardware->HwdType == HTYPE_RFLINKTCP))
-					{
-						ConvertToGeneralSwitchType(devid, dtype, subtype);
-					}
-				}
-				// -----------------------------------------------
-
-				root["status"] = "OK";
-				root["message"] = "OK";
-				root["title"] = "TestSwitch";
-				std::vector<std::string> sd;
-
-				sd.push_back(hwdid);
-				sd.push_back(devid);
-				sd.push_back(sunitcode);
-				sprintf(szTmp, "%d", dtype);
-				sd.push_back(szTmp);
-				sprintf(szTmp, "%d", subtype);
-				sd.push_back(szTmp);
-				sprintf(szTmp, "%d", switchtype);
-				sd.push_back(szTmp);
-				sd.push_back(""); // AddjValue2
-				sd.push_back(""); // nValue
-				sd.push_back(""); // sValue
-				sd.push_back(""); // Name
-				sd.push_back(""); // Options
-
-				std::string switchcmd = "On";
-				int level = 0;
-				if (lighttype == 70)
-				{
-					// Special EnOcean case, if it is a dimmer, set a dim value
-					if (switchtype == STYPE_Dimmer)
-						level = 5;
-				}
-				std::string szSwitchUser = Username + " (IP: " + session.remote_host + ")";
-				m_mainworker.SwitchLightInt(sd, switchcmd, level, NoColor, true, Username);
-			}
-			else if (cparam == "addswitch")
-			{
-				std::string Username = "Admin";
-				if (!session.username.empty())
-					Username = session.username;
-				std::string szSwitchUser = Username + " (IP: " + session.remote_host + ")";
-
-				if (session.rights < 2)
-				{
-					session.reply_status = reply::forbidden;
-					return; // Only admin user allowed
-				}
-
-				std::string hwdid = request::findValue(&req, "hwdid");
-				std::string name = HTMLSanitizer::Sanitize(request::findValue(&req, "name"));
-				std::string sswitchtype = request::findValue(&req, "switchtype");
-				std::string slighttype = request::findValue(&req, "lighttype");
-				std::string maindeviceidx = request::findValue(&req, "maindeviceidx");
-				std::string deviceoptions;
-
-				if ((hwdid.empty()) || (sswitchtype.empty()) || (slighttype.empty()) || (name.empty()))
-					return;
-				_eSwitchType switchtype = (_eSwitchType)atoi(sswitchtype.c_str());
-				int lighttype = atoi(slighttype.c_str());
-				int dtype = 0;
-				int subtype = 0;
-				std::string sunitcode;
-				std::string devid;
-				std::string StrParam1;
-
-				CDomoticzHardwareBase* pBaseHardware = m_mainworker.GetHardware(atoi(hwdid.c_str()));
-				if ((pBaseHardware != nullptr) && (!pBaseHardware->GetManualSwitchesJsonConfiguration().empty()))
-				{
-					pBaseHardware->GetManualSwitchParameters(req.parameters, switchtype, lighttype, dtype, subtype, devid, sunitcode);
-					// check if switch is unique
-					result = m_sql.safe_query("SELECT Name FROM DeviceStatus WHERE (HardwareID=='%q' AND DeviceID=='%q' AND Unit=='%q' AND Type==%d AND SubType==%d)",
-						hwdid.c_str(), devid.c_str(), sunitcode.c_str(), dtype, subtype);
-					if (!result.empty())
-					{
-						root["message"] = "Switch already exists!";
-						return;
-					}
-
-					bool bActEnabledState = m_sql.m_bAcceptNewHardware;
-					m_sql.m_bAcceptNewHardware = true;
-					std::string devname;
-					m_sql.UpdateValue(atoi(hwdid.c_str()), devid.c_str(), atoi(sunitcode.c_str()), dtype, subtype, 0, -1, 0, devname, true, szSwitchUser.c_str());
-					m_sql.m_bAcceptNewHardware = bActEnabledState;
-
-					// set name and switchtype
-					result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID=='%q' AND DeviceID=='%q' AND Unit=='%q' AND Type==%d AND SubType==%d)", hwdid.c_str(),
-						devid.c_str(), sunitcode.c_str(), dtype, subtype);
-					if (result.empty())
-					{
-						root["message"] = "Error finding switch in Database!?!?";
-						return;
-					}
-					std::string ID = result[0][0];
-
-					m_sql.safe_query("UPDATE DeviceStatus SET Used=1, Name='%q', SwitchType=%d WHERE (ID == '%q')", name.c_str(), switchtype, ID.c_str());
-
-					if (lighttype == 407)
-					{
-						// Openwebnet Bus Custom
-						m_sql.safe_query("UPDATE DeviceStatus SET StrParam1='%s' WHERE (ID == '%q')", StrParam1.c_str(), ID.c_str());
-					}
-
-					m_mainworker.m_eventsystem.GetCurrentStates();
-
-					// Set device options
-					m_sql.SetDeviceOptions(atoi(ID.c_str()), m_sql.BuildDeviceOptions(deviceoptions, false));
-
-					if (!maindeviceidx.empty())
-					{
-						if (maindeviceidx != ID)
-						{
-							// this is a sub device for another light/switch
-							// first check if it is not already a sub device
-							result = m_sql.safe_query("SELECT ID FROM LightSubDevices WHERE (DeviceRowID=='%q') AND (ParentID =='%q')", ID.c_str(), maindeviceidx.c_str());
-							if (result.empty())
-							{
-								// no it is not, add it
-								result = m_sql.safe_query("INSERT INTO LightSubDevices (DeviceRowID, ParentID) VALUES ('%q','%q')", ID.c_str(), maindeviceidx.c_str());
-							}
-						}
-					}
-
-					root["status"] = "OK";
-					root["title"] = "AddSwitch";
-					return;
-				}
-#ifdef ENABLE_PYTHON
-				// check if HW is plugin
-				{
-					result = m_sql.safe_query("SELECT Type FROM Hardware WHERE (ID == '%q')", hwdid.c_str());
-					if (!result.empty())
-					{
-						std::vector<std::string> sd = result[0];
-						_eHardwareTypes Type = (_eHardwareTypes)atoi(sd[0].c_str());
-						if (Type == HTYPE_PythonPlugin)
-						{
-							// Not allowed to add device to plugin HW (plugin framework does not use key column "ID" but instead uses column "unit" as key)
-							_log.Log(LOG_ERROR, "CWebServer::HandleCommand addswitch: Not allowed to add device owned by plugin %u!", atoi(hwdid.c_str()));
-							root["message"] = "Not allowed to add switch to plugin HW!";
-							return;
-						}
-					}
-				}
-#endif
-
-				if (lighttype < 20)
-				{
-					dtype = pTypeLighting1;
-					subtype = lighttype;
-					std::string shousecode = request::findValue(&req, "housecode");
-					sunitcode = request::findValue(&req, "unitcode");
-					if ((shousecode.empty()) || (sunitcode.empty()))
-						return;
-					devid = shousecode;
-				}
-				else if (lighttype < 30)
-				{
-					dtype = pTypeLighting2;
-					subtype = lighttype - 20;
-					std::string id = request::findValue(&req, "id");
-					sunitcode = request::findValue(&req, "unitcode");
-					if ((id.empty()) || (sunitcode.empty()))
-						return;
-					devid = id;
-				}
-				else if (lighttype < 68)
-				{
-					dtype = pTypeLighting5;
-					subtype = lighttype - 50;
-					if (lighttype == 59)
-						subtype = sTypeIT;
-					std::string id = request::findValue(&req, "id");
-					sunitcode = request::findValue(&req, "unitcode");
-					if ((id.empty()) || (sunitcode.empty()))
-						return;
-					if ((subtype != sTypeEMW100) && (subtype != sTypeLivolo) && (subtype != sTypeLivolo1to10) && (subtype != sTypeRGB432W) && (subtype != sTypeLightwaveRF) &&
-						(subtype != sTypeIT))
-						devid = "00" + id;
-					else
-						devid = id;
-				}
-				else if (lighttype == 68)
-				{
-#ifdef WITH_GPIO
-					dtype = pTypeLighting1;
-					subtype = sTypeIMPULS;
-					devid = "0";
-					sunitcode = request::findValue(&req, "unitcode"); // Unit code = GPIO number
-
-					if (sunitcode.empty())
-					{
-						return;
-					}
-					CGpio* pGpio = dynamic_cast<CGpio*>(m_mainworker.GetHardware(atoi(hwdid.c_str())));
-					if (pGpio == nullptr)
-					{
-						return;
-					}
-					if (pGpio->HwdType != HTYPE_RaspberryGPIO)
-					{
-						return;
-					}
-					CGpioPin* pPin = CGpio::GetPPinById(atoi(sunitcode.c_str()));
-					if (pPin == nullptr)
-					{
-						return;
-					}
-#else
-					return;
-#endif
-				}
-				else if (lighttype == 69)
-				{
-#ifdef WITH_GPIO
-					dtype = pTypeLighting2;
-					subtype = sTypeAC;
-					devid = "0";
-					sunitcode = request::findValue(&req, "unitcode"); // sysfs-gpio number
-					int unitcode = atoi(sunitcode.c_str());
-					std::string sswitchtype = request::findValue(&req, "switchtype");
-					_eSwitchType switchtype = (_eSwitchType)atoi(sswitchtype.c_str());
-					std::string id = request::findValue(&req, "id");
-					CSysfsGpio::RequestDbUpdate(unitcode);
-
-					if ((id.empty()) || (sunitcode.empty()))
-					{
-						return;
-					}
-					devid = id;
-
-					CSysfsGpio* pSysfsGpio = dynamic_cast<CSysfsGpio*>(m_mainworker.GetHardware(atoi(hwdid.c_str())));
-					if ((pSysfsGpio == nullptr) || (pSysfsGpio->HwdType != HTYPE_SysfsGpio))
-					{
-						return;
-					}
-#else
-					return;
-#endif
-				}
-				else if (lighttype == 70)
-				{
-					// EnOcean (Lighting2 with Base_ID offset)
-					dtype = pTypeLighting2;
-					subtype = sTypeAC;
-					sunitcode = request::findValue(&req, "unitcode");
-					std::string sgroupcode = request::findValue(&req, "groupcode");
-
-					if (sunitcode.empty() || sgroupcode.empty())
-						return;
-
-					int iUnitTest = stoi(sunitcode);
-
-					// Only First Rocker_ID, gives us 128 devices we can control, should be enough!
-					if (iUnitTest < 1 || iUnitTest > 128)
-						return;
-
-					sunitcode = sgroupcode; // Button A/B
-
-					if (pBaseHardware == nullptr)
-						return;
-
-					unsigned long rID = 0;
-					if (pBaseHardware->HwdType == HTYPE_EnOceanESP2)
-					{
-						CEnOceanESP2* pEnoceanHardware = dynamic_cast<CEnOceanESP2*>(pBaseHardware);
-						if (pEnoceanHardware->m_id_base == 0)
-						{
-							sprintf(szTmp, "%s: BaseID not found, is the hardware running?", pEnoceanHardware->m_Name.c_str());
-							root["message"] = szTmp;
-							return;
-						}
-						rID = pEnoceanHardware->m_id_base + iUnitTest;
-					}
-					else if (pBaseHardware->HwdType == HTYPE_EnOceanESP3)
-					{
-						CEnOceanESP3* pEnoceanHardware = dynamic_cast<CEnOceanESP3*>(pBaseHardware);
-						if (pEnoceanHardware->m_id_base == 0)
-						{
-							sprintf(szTmp, "%s: BaseID not found, is the hardware running?", pEnoceanHardware->m_Name.c_str());
-							root["message"] = szTmp;
-							return;
-						}
-						rID = pEnoceanHardware->m_id_base + iUnitTest;
-
-						// Insert virtual ESP3 switch in EnOceanNodes table with EEP F6-02-01
-						// So it will appear in EnOcean hardware setup screen
-
-						pEnoceanHardware->TeachInVirtualNode(rID, enocean::RORG_RPS, 0x02, 0x01);
-					}
-					else if (pBaseHardware->HwdType == HTYPE_USBtinGateway)
-					{
-						USBtin* pUSBtinHardware = dynamic_cast<USBtin*>(pBaseHardware);
-						rID = pUSBtinHardware->switch_id_base;
-						std::stringstream ssunitcode;
-						ssunitcode << iUnitTest;
-						sunitcode = ssunitcode.str();
-					}
-					else
-						return;
-					// convert to hex, and we have our ID
-					std::stringstream s_strid;
-					s_strid << std::hex << std::uppercase << rID;
-					devid = s_strid.str();
-				}
-				else if (lighttype == 100)
-				{
-					// Chime/ByronSX
-					dtype = pTypeChime;
-					subtype = sTypeByronSX;
-					std::string id = request::findValue(&req, "id");
-					sunitcode = request::findValue(&req, "unitcode");
-					if ((id.empty()) || (sunitcode.empty()))
-						return;
-					int iUnitCode = atoi(sunitcode.c_str()) - 1;
-					switch (iUnitCode)
-					{
-					case 0:
-						iUnitCode = chime_sound0;
-						break;
-					case 1:
-						iUnitCode = chime_sound1;
-						break;
-					case 2:
-						iUnitCode = chime_sound2;
-						break;
-					case 3:
-						iUnitCode = chime_sound3;
-						break;
-					case 4:
-						iUnitCode = chime_sound4;
-						break;
-					case 5:
-						iUnitCode = chime_sound5;
-						break;
-					case 6:
-						iUnitCode = chime_sound6;
-						break;
-					case 7:
-						iUnitCode = chime_sound7;
-						break;
-					}
-					sprintf(szTmp, "%d", iUnitCode);
-					sunitcode = szTmp;
-					devid = id;
-				}
-				else if (lighttype == 101)
-				{
-					// Curtain Harrison
-					dtype = pTypeCurtain;
-					subtype = sTypeHarrison;
-					std::string shousecode = request::findValue(&req, "housecode");
-					sunitcode = request::findValue(&req, "unitcode");
-					if ((shousecode.empty()) || (sunitcode.empty()))
-						return;
-					devid = shousecode;
-				}
-				else if (lighttype == 102)
-				{
-					// RFY
-					dtype = pTypeRFY;
-					subtype = sTypeRFY;
-					std::string id = request::findValue(&req, "id");
-					sunitcode = request::findValue(&req, "unitcode");
-					if ((id.empty()) || (sunitcode.empty()))
-						return;
-					devid = id;
-				}
-				else if (lighttype == 103)
-				{
-					// Meiantech
-					dtype = pTypeSecurity1;
-					subtype = sTypeMeiantech;
-					std::string id = request::findValue(&req, "id");
-					if ((id.empty()))
-						return;
-					devid = id;
-					sunitcode = "0";
-				}
-				else if (lighttype == 104)
-				{
-					// HE105
-					dtype = pTypeThermostat2;
-					subtype = sTypeHE105;
-					sunitcode = request::findValue(&req, "unitcode");
-					if (sunitcode.empty())
-						return;
-					// convert to hex, and we have our Unit Code
-					std::stringstream s_strid;
-					s_strid << std::hex << std::uppercase << sunitcode;
-					int iUnitCode;
-					s_strid >> iUnitCode;
-					sprintf(szTmp, "%d", iUnitCode);
-					sunitcode = szTmp;
-					devid = "1";
-				}
-				else if (lighttype == 105)
-				{
-					// ASA
-					dtype = pTypeRFY;
-					subtype = sTypeASA;
-					std::string id = request::findValue(&req, "id");
-					sunitcode = request::findValue(&req, "unitcode");
-					if ((id.empty()) || (sunitcode.empty()))
-						return;
-					devid = id;
-				}
-				else if (lighttype == 106)
-				{
-					// Blyss
-					dtype = pTypeLighting6;
-					subtype = sTypeBlyss;
-					std::string sgroupcode = request::findValue(&req, "groupcode");
-					sunitcode = request::findValue(&req, "unitcode");
-					std::string id = request::findValue(&req, "id");
-					if ((sgroupcode.empty()) || (sunitcode.empty()) || (id.empty()))
-						return;
-					devid = id + sgroupcode;
-				}
-				else if (lighttype == 107)
-				{
-					// RFY2
-					dtype = pTypeRFY;
-					subtype = sTypeRFY2;
-					std::string id = request::findValue(&req, "id");
-					sunitcode = request::findValue(&req, "unitcode");
-					if ((id.empty()) || (sunitcode.empty()))
-						return;
-					devid = id;
-				}
-				else if ((lighttype >= 200) && (lighttype < 300))
-				{
-					dtype = pTypeBlinds;
-					subtype = lighttype - 200;
-					std::string id = request::findValue(&req, "id");
-					sunitcode = request::findValue(&req, "unitcode");
-					if ((id.empty()) || (sunitcode.empty()))
-						return;
-					int iUnitCode = atoi(sunitcode.c_str());
-					sprintf(szTmp, "%d", iUnitCode);
-					sunitcode = szTmp;
-					devid = id;
-				}
-				else if (lighttype == 301)
-				{
-					// Smartwares Radiator
-					std::string id = request::findValue(&req, "id");
-					sunitcode = request::findValue(&req, "unitcode");
-					if ((id.empty()) || (sunitcode.empty()))
-						return;
-					devid = id;
-
-					// For this device, we will also need to add a Radiator type, do that first
-					dtype = pTypeRadiator1;
-					subtype = sTypeSmartwares;
-
-					// check if switch is unique
-					result = m_sql.safe_query("SELECT Name FROM DeviceStatus WHERE (HardwareID=='%q' AND DeviceID=='%q' AND Unit=='%q' AND Type==%d AND SubType==%d)",
-						hwdid.c_str(), devid.c_str(), sunitcode.c_str(), dtype, subtype);
-					if (!result.empty())
-					{
-						root["message"] = "Switch already exists!";
-						return;
-					}
-					bool bActEnabledState = m_sql.m_bAcceptNewHardware;
-					m_sql.m_bAcceptNewHardware = true;
-					std::string devname;
-					m_sql.UpdateValue(atoi(hwdid.c_str()), devid.c_str(), atoi(sunitcode.c_str()), dtype, subtype, 0, -1, 0, "20.5", devname, true, szSwitchUser.c_str());
-					m_sql.m_bAcceptNewHardware = bActEnabledState;
-
-					// set name and switchtype
-					result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID=='%q' AND DeviceID=='%q' AND Unit=='%q' AND Type==%d AND SubType==%d)",
-						hwdid.c_str(), devid.c_str(), sunitcode.c_str(), dtype, subtype);
-					if (result.empty())
-					{
-						root["message"] = "Error finding switch in Database!?!?";
-						return;
-					}
-					std::string ID = result[0][0];
-
-					m_sql.safe_query("UPDATE DeviceStatus SET Used=1, Name='%q', SwitchType=%d WHERE (ID == '%q')", name.c_str(), switchtype, ID.c_str());
-
-					// Now continue to insert the switch
-					dtype = pTypeRadiator1;
-					subtype = sTypeSmartwaresSwitchRadiator;
-				}
-				else if (lighttype == 302)
-				{
-					// Home Confort
-					dtype = pTypeHomeConfort;
-					subtype = sTypeHomeConfortTEL010;
-					std::string id = request::findValue(&req, "id");
-
-					std::string shousecode = request::findValue(&req, "housecode");
-					sunitcode = request::findValue(&req, "unitcode");
-					if ((id.empty()) || (shousecode.empty()) || (sunitcode.empty()))
-						return;
-
-					int iUnitCode = atoi(sunitcode.c_str());
-					sprintf(szTmp, "%d", iUnitCode);
-					sunitcode = szTmp;
-					sprintf(szTmp, "%02X", atoi(shousecode.c_str()));
-					shousecode = szTmp;
-					devid = id + shousecode;
-				}
-				else if (lighttype == 303)
-				{
-					// Selector Switch
-					dtype = pTypeGeneralSwitch;
-					subtype = sSwitchTypeSelector;
-					std::string id = request::findValue(&req, "id");
-					sunitcode = request::findValue(&req, "unitcode");
-					if ((id.empty()) || (sunitcode.empty()))
-						return;
-					devid = "0" + id;
-					switchtype = STYPE_Selector;
-					if (!deviceoptions.empty())
-					{
-						deviceoptions.append(";");
-					}
-					deviceoptions.append("SelectorStyle:0;LevelNames:Off|Level1|Level2|Level3");
-				}
-				else if (lighttype == 304)
-				{
-					// Itho CVE RFT
-					dtype = pTypeFan;
-					subtype = sTypeItho;
-					std::string id = request::findValue(&req, "id");
-					if (id.empty())
-						return;
-					devid = id;
-					sunitcode = "0";
-				}
-				else if (lighttype == 305)
-				{
-					// Lucci Air
-					dtype = pTypeFan;
-					subtype = sTypeLucciAir;
-					std::string id = request::findValue(&req, "id");
-					if (id.empty())
-						return;
-					devid = id;
-					sunitcode = "0";
-				}
-				else if (lighttype == 306)
-				{
-					// Lucci Air DC
-					dtype = pTypeFan;
-					subtype = sTypeLucciAirDC;
-					std::string id = request::findValue(&req, "id");
-					if (id.empty())
-						return;
-					devid = id;
-					sunitcode = "0";
-				}
-				else if (lighttype == 307)
-				{
-					// Westinghouse
-					dtype = pTypeFan;
-					subtype = sTypeWestinghouse;
-					std::string id = request::findValue(&req, "id");
-					if (id.empty())
-						return;
-					devid = id;
-					sunitcode = "0";
-				}
-				else if (lighttype == 308)
-				{
-					// Casafan
-					dtype = pTypeFan;
-					subtype = sTypeCasafan;
-					std::string id = request::findValue(&req, "id");
-					if (id.empty())
-						return;
-					devid = id;
-					sunitcode = "0";
-				}
-				else if (lighttype == 309)
-				{
-					// FT1211R
-					dtype = pTypeFan;
-					subtype = sTypeFT1211R;
-					std::string id = request::findValue(&req, "id");
-					if (id.empty())
-						return;
-					devid = id;
-					sunitcode = "0";
-				}
-				else if (lighttype == 310)
-				{
-					// Falmec
-					dtype = pTypeFan;
-					subtype = sTypeFalmec;
-					std::string id = request::findValue(&req, "id");
-					if (id.empty())
-						return;
-					devid = id;
-					sunitcode = "0";
-				}
-				else if (lighttype == 311)
-				{
-					// Lucci Air DC II
-					dtype = pTypeFan;
-					subtype = sTypeLucciAirDCII;
-					std::string id = request::findValue(&req, "id");
-					if (id.empty())
-						return;
-					devid = id;
-					sunitcode = "0";
-				}
-				else if (lighttype == 312)
-				{
-					// Itho ECO
-					dtype = pTypeFan;
-					subtype = sTypeIthoECO;
-					std::string id = request::findValue(&req, "id");
-					if (id.empty())
-						return;
-					devid = id;
-					sunitcode = "0";
-				}
-				else if (lighttype == 313)
-				{
-					// Novy
-					dtype = pTypeFan;
-					subtype = sTypeNovy;
-					std::string id = request::findValue(&req, "id");
-					if (id.empty())
-						return;
-					devid = id;
-					sunitcode = "0";
-				}
-				else if (lighttype == 400)
-				{
-					// Openwebnet Bus Blinds
-					dtype = pTypeGeneralSwitch;
-					subtype = sSwitchTypeAC;
-					devid = request::findValue(&req, "id");
-					sunitcode = request::findValue(&req, "unitcode");
-					if ((devid.empty()) || (sunitcode.empty()))
-						return;
-				}
-				else if (lighttype == 401)
-				{
-					// Openwebnet Bus Lights
-					dtype = pTypeGeneralSwitch;
-					subtype = sSwitchTypeAC;
-					devid = request::findValue(&req, "id");
-					sunitcode = request::findValue(&req, "unitcode");
-					if ((devid.empty()) || (sunitcode.empty()))
-						return;
-				}
-				else if (lighttype == 402)
-				{
-					// Openwebnet Bus Auxiliary
-					dtype = pTypeGeneralSwitch;
-					subtype = sSwitchTypeAC;
-					devid = request::findValue(&req, "id");
-					sunitcode = request::findValue(&req, "unitcode");
-					if ((devid.empty()) || (sunitcode.empty()))
-						return;
-				}
-				else if (lighttype == 403)
-				{
-					// Openwebnet Zigbee Blinds
-					dtype = pTypeGeneralSwitch;
-					subtype = sSwitchBlindsT2;
-					devid = request::findValue(&req, "id");
-					sunitcode = request::findValue(&req, "unitcode");
-					if ((devid.empty()) || (sunitcode.empty()))
-						return;
-				}
-				else if (lighttype == 404)
-				{
-					// Openwebnet Zigbee Lights
-					dtype = pTypeGeneralSwitch;
-					subtype = sSwitchLightT2;
-					devid = request::findValue(&req, "id");
-					sunitcode = request::findValue(&req, "unitcode");
-					if ((devid.empty()) || (sunitcode.empty()))
-						return;
-				}
-				else if ((lighttype == 405) || (lighttype == 406))
-				{
-					// Openwebnet Dry Contact / IR Detection
-					dtype = pTypeGeneralSwitch;
-					subtype = sSwitchContactT1;
-					devid = request::findValue(&req, "id");
-					sunitcode = request::findValue(&req, "unitcode");
-					if ((devid.empty()) || (sunitcode.empty()))
-						return;
-				}
-				else if (lighttype == 407)
-				{
-					// Openwebnet Bus Custom
-					dtype = pTypeGeneralSwitch;
-					subtype = sSwitchTypeAC;
-					devid = request::findValue(&req, "id");
-					sunitcode = request::findValue(&req, "unitcode");
-					StrParam1 = request::findValue(&req, "StrParam1");
-					_log.Log(LOG_STATUS, "COpenWebNetTCP: custom command: '%s'", StrParam1.c_str());
-					if ((devid.empty()) || (sunitcode.empty()) || (StrParam1.empty()))
-					{
-						root["message"] = "Some field empty or not valid.";
-						return;
-					}
-				}
-				// Check if switch is unique
-				result = m_sql.safe_query("SELECT Name FROM DeviceStatus WHERE (HardwareID=='%q' AND DeviceID=='%q' AND Unit=='%q' AND Type==%d AND SubType==%d)", hwdid.c_str(),
-					devid.c_str(), sunitcode.c_str(), dtype, subtype);
-				if (!result.empty())
-				{
-					root["message"] = "Switch already exists!";
-					return;
-				}
-
-				// ----------- If needed convert to GeneralSwitch type (for o.a. RFlink) -----------
-				if (pBaseHardware != nullptr)
-				{
-					if ((pBaseHardware->HwdType == HTYPE_RFLINKUSB) || (pBaseHardware->HwdType == HTYPE_RFLINKTCP))
-					{
-						ConvertToGeneralSwitchType(devid, dtype, subtype);
-					}
-				}
-				// -----------------------------------------------
-
-				bool bActEnabledState = m_sql.m_bAcceptNewHardware;
-				m_sql.m_bAcceptNewHardware = true;
-				std::string devname;
-				m_sql.UpdateValue(atoi(hwdid.c_str()), devid.c_str(), atoi(sunitcode.c_str()), dtype, subtype, 0, -1, 0, devname, true, szSwitchUser.c_str());
-				m_sql.m_bAcceptNewHardware = bActEnabledState;
-
-				// set name and switchtype
-				result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID=='%q' AND DeviceID=='%q' AND Unit=='%q' AND Type==%d AND SubType==%d)", hwdid.c_str(),
-					devid.c_str(), sunitcode.c_str(), dtype, subtype);
-				if (result.empty())
-				{
-					root["message"] = "Error finding switch in Database!?!?";
-					return;
-				}
-				std::string ID = result[0][0];
-
-				m_sql.safe_query("UPDATE DeviceStatus SET Used=1, Name='%q', SwitchType=%d WHERE (ID == '%q')", name.c_str(), switchtype, ID.c_str());
-
-				if (lighttype == 407)
-				{
-					// Openwebnet Bus Custom
-					m_sql.safe_query("UPDATE DeviceStatus SET StrParam1='%s' WHERE (ID == '%q')", StrParam1.c_str(), ID.c_str());
-				}
-
-				m_mainworker.m_eventsystem.GetCurrentStates();
-
-				// Set device options
-				m_sql.SetDeviceOptions(atoi(ID.c_str()), m_sql.BuildDeviceOptions(deviceoptions, false));
-
-				if (!maindeviceidx.empty())
-				{
-					if (maindeviceidx != ID)
-					{
-						// this is a sub device for another light/switch
-						// first check if it is not already a sub device
-						result = m_sql.safe_query("SELECT ID FROM LightSubDevices WHERE (DeviceRowID=='%q') AND (ParentID =='%q')", ID.c_str(), maindeviceidx.c_str());
-						if (result.empty())
-						{
-							// no it is not, add it
-							result = m_sql.safe_query("INSERT INTO LightSubDevices (DeviceRowID, ParentID) VALUES ('%q','%q')", ID.c_str(), maindeviceidx.c_str());
-						}
-					}
-				}
-
-				root["status"] = "OK";
-				root["title"] = "AddSwitch";
-			}
-			else if (cparam == "getnotificationtypes")
-			{
-				if (session.rights < 2)
-				{
-					session.reply_status = reply::forbidden;
-					return; // Only admin user allowed
-				}
-
-				std::string idx = request::findValue(&req, "idx");
-				if (idx.empty())
-					return;
-				// First get Device Type/SubType
-				result = m_sql.safe_query("SELECT Type, SubType, SwitchType FROM DeviceStatus WHERE (ID == '%q')", idx.c_str());
-				if (result.empty())
-					return;
-
-				root["status"] = "OK";
-				root["title"] = "GetNotificationTypes";
-				unsigned char dType = atoi(result[0][0].c_str());
-				unsigned char dSubType = atoi(result[0][1].c_str());
-				unsigned char switchtype = atoi(result[0][2].c_str());
-
-				int ii = 0;
-				if ((dType == pTypeLighting1) || (dType == pTypeLighting2) || (dType == pTypeLighting3) || (dType == pTypeLighting4) || (dType == pTypeLighting5) ||
-					(dType == pTypeLighting6) || (dType == pTypeColorSwitch) || (dType == pTypeSecurity1) || (dType == pTypeSecurity2) || (dType == pTypeEvohome) ||
-					(dType == pTypeEvohomeRelay) || (dType == pTypeCurtain) || (dType == pTypeBlinds) || (dType == pTypeRFY) || (dType == pTypeChime) || (dType == pTypeThermostat2) ||
-					(dType == pTypeThermostat3) || (dType == pTypeThermostat4) || (dType == pTypeRemote) || (dType == pTypeGeneralSwitch) || (dType == pTypeHomeConfort) ||
-					(dType == pTypeFS20) || ((dType == pTypeRadiator1) && (dSubType == sTypeSmartwaresSwitchRadiator)))
-				{
-					if (switchtype != STYPE_PushOff)
-					{
-						root["result"][ii]["val"] = NTYPE_SWITCH_ON;
-						root["result"][ii]["text"] = Notification_Type_Desc(NTYPE_SWITCH_ON, 0);
-						root["result"][ii]["ptag"] = Notification_Type_Desc(NTYPE_SWITCH_ON, 1);
-						ii++;
-					}
-					if (switchtype != STYPE_PushOn)
-					{
-						root["result"][ii]["val"] = NTYPE_SWITCH_OFF;
-						root["result"][ii]["text"] = Notification_Type_Desc(NTYPE_SWITCH_OFF, 0);
-						root["result"][ii]["ptag"] = Notification_Type_Desc(NTYPE_SWITCH_OFF, 1);
-						ii++;
-					}
-					if (switchtype == STYPE_Media)
-					{
-						std::string idx = request::findValue(&req, "idx");
-
-						result = m_sql.safe_query("SELECT HardwareID FROM DeviceStatus WHERE (ID=='%q')", idx.c_str());
-						if (!result.empty())
-						{
-							std::string hdwid = result[0][0];
-							CDomoticzHardwareBase* pBaseHardware = dynamic_cast<CDomoticzHardwareBase*>(m_mainworker.GetHardware(atoi(hdwid.c_str())));
-							if (pBaseHardware != nullptr)
-							{
-								_eHardwareTypes type = pBaseHardware->HwdType;
-								root["result"][ii]["val"] = NTYPE_PAUSED;
-								root["result"][ii]["text"] = Notification_Type_Desc(NTYPE_PAUSED, 0);
-								root["result"][ii]["ptag"] = Notification_Type_Desc(NTYPE_PAUSED, 1);
-								ii++;
-								if (type == HTYPE_Kodi)
-								{
-									root["result"][ii]["val"] = NTYPE_AUDIO;
-									root["result"][ii]["text"] = Notification_Type_Desc(NTYPE_AUDIO, 0);
-									root["result"][ii]["ptag"] = Notification_Type_Desc(NTYPE_AUDIO, 1);
-									ii++;
-									root["result"][ii]["val"] = NTYPE_VIDEO;
-									root["result"][ii]["text"] = Notification_Type_Desc(NTYPE_VIDEO, 0);
-									root["result"][ii]["ptag"] = Notification_Type_Desc(NTYPE_VIDEO, 1);
-									ii++;
-									root["result"][ii]["val"] = NTYPE_PHOTO;
-									root["result"][ii]["text"] = Notification_Type_Desc(NTYPE_PHOTO, 0);
-									root["result"][ii]["ptag"] = Notification_Type_Desc(NTYPE_PHOTO, 1);
-									ii++;
-								}
-								if (type == HTYPE_LogitechMediaServer)
-								{
-									root["result"][ii]["val"] = NTYPE_PLAYING;
-									root["result"][ii]["text"] = Notification_Type_Desc(NTYPE_PLAYING, 0);
-									root["result"][ii]["ptag"] = Notification_Type_Desc(NTYPE_PLAYING, 1);
-									ii++;
-									root["result"][ii]["val"] = NTYPE_STOPPED;
-									root["result"][ii]["text"] = Notification_Type_Desc(NTYPE_STOPPED, 0);
-									root["result"][ii]["ptag"] = Notification_Type_Desc(NTYPE_STOPPED, 1);
-									ii++;
-								}
-								if (type == HTYPE_HEOS)
-								{
-									root["result"][ii]["val"] = NTYPE_PLAYING;
-									root["result"][ii]["text"] = Notification_Type_Desc(NTYPE_PLAYING, 0);
-									root["result"][ii]["ptag"] = Notification_Type_Desc(NTYPE_PLAYING, 1);
-									ii++;
-									root["result"][ii]["val"] = NTYPE_STOPPED;
-									root["result"][ii]["text"] = Notification_Type_Desc(NTYPE_STOPPED, 0);
-									root["result"][ii]["ptag"] = Notification_Type_Desc(NTYPE_STOPPED, 1);
-									ii++;
-								}
-							}
-						}
-					}
-				}
-				if (((dType == pTypeTEMP) || (dType == pTypeTEMP_HUM) || (dType == pTypeTEMP_HUM_BARO) || (dType == pTypeTEMP_BARO) || (dType == pTypeEvohomeZone) ||
-					(dType == pTypeEvohomeWater) || (dType == pTypeThermostat1) || (dType == pTypeRego6XXTemp) || ((dType == pTypeRFXSensor) && (dSubType == sTypeRFXSensorTemp))) ||
-					((dType == pTypeUV) && (dSubType == sTypeUV3)) || ((dType == pTypeWIND) && (dSubType == sTypeWIND4)) || ((dType == pTypeWIND) && (dSubType == sTypeWINDNoTemp)) ||
-					((dType == pTypeGeneral) && (dSubType == sTypeSystemTemp)))
-				{
-					root["result"][ii]["val"] = NTYPE_TEMPERATURE;
-					root["result"][ii]["text"] = Notification_Type_Desc(NTYPE_TEMPERATURE, 0);
-					root["result"][ii]["ptag"] = Notification_Type_Desc(NTYPE_TEMPERATURE, 1);
-					ii++;
-				}
-				if ((dType == pTypeHUM) || (dType == pTypeTEMP_HUM) || (dType == pTypeTEMP_HUM_BARO))
-				{
-					root["result"][ii]["val"] = NTYPE_HUMIDITY;
-					root["result"][ii]["text"] = Notification_Type_Desc(NTYPE_HUMIDITY, 0);
-					root["result"][ii]["ptag"] = Notification_Type_Desc(NTYPE_HUMIDITY, 1);
-					ii++;
-				}
-				if ((dType == pTypeTEMP_HUM) || (dType == pTypeTEMP_HUM_BARO))
-				{
-					root["result"][ii]["val"] = NTYPE_DEWPOINT;
-					root["result"][ii]["text"] = Notification_Type_Desc(NTYPE_DEWPOINT, 0);
-					root["result"][ii]["ptag"] = Notification_Type_Desc(NTYPE_DEWPOINT, 1);
-					ii++;
-				}
-				if (dType == pTypeRAIN)
-				{
-					root["result"][ii]["val"] = NTYPE_RAIN;
-					root["result"][ii]["text"] = Notification_Type_Desc(NTYPE_RAIN, 0);
-					root["result"][ii]["ptag"] = Notification_Type_Desc(NTYPE_RAIN, 1);
-					ii++;
-				}
-				if (dType == pTypeWIND)
-				{
-					root["result"][ii]["val"] = NTYPE_WIND;
-					root["result"][ii]["text"] = Notification_Type_Desc(NTYPE_WIND, 0);
-					root["result"][ii]["ptag"] = Notification_Type_Desc(NTYPE_WIND, 1);
-					ii++;
-				}
-				if (dType == pTypeUV)
-				{
-					root["result"][ii]["val"] = NTYPE_UV;
-					root["result"][ii]["text"] = Notification_Type_Desc(NTYPE_UV, 0);
-					root["result"][ii]["ptag"] = Notification_Type_Desc(NTYPE_UV, 1);
-					ii++;
-				}
-				if ((dType == pTypeTEMP_HUM_BARO) || (dType == pTypeBARO) || (dType == pTypeTEMP_BARO))
-				{
-					root["result"][ii]["val"] = NTYPE_BARO;
-					root["result"][ii]["text"] = Notification_Type_Desc(NTYPE_BARO, 0);
-					root["result"][ii]["ptag"] = Notification_Type_Desc(NTYPE_BARO, 1);
-					ii++;
-				}
-				if (((dType == pTypeRFXMeter) && (dSubType == sTypeRFXMeterCount)) || ((dType == pTypeGeneral) && (dSubType == sTypeCounterIncremental)) || (dType == pTypeYouLess) ||
-					((dType == pTypeRego6XXValue) && (dSubType == sTypeRego6XXCounter)))
-				{
-					if ((switchtype == MTYPE_ENERGY) || (switchtype == MTYPE_ENERGY_GENERATED))
-					{
-						root["result"][ii]["val"] = NTYPE_TODAYENERGY;
-						root["result"][ii]["text"] = Notification_Type_Desc(NTYPE_TODAYENERGY, 0);
-						root["result"][ii]["ptag"] = Notification_Type_Desc(NTYPE_TODAYENERGY, 1);
-					}
-					else if (switchtype == MTYPE_GAS)
-					{
-						root["result"][ii]["val"] = NTYPE_TODAYGAS;
-						root["result"][ii]["text"] = Notification_Type_Desc(NTYPE_TODAYGAS, 0);
-						root["result"][ii]["ptag"] = Notification_Type_Desc(NTYPE_TODAYGAS, 1);
-					}
-					else if (switchtype == MTYPE_COUNTER)
-					{
-						root["result"][ii]["val"] = NTYPE_TODAYCOUNTER;
-						root["result"][ii]["text"] = Notification_Type_Desc(NTYPE_TODAYCOUNTER, 0);
-						root["result"][ii]["ptag"] = Notification_Type_Desc(NTYPE_TODAYCOUNTER, 1);
-					}
-					else
-					{
-						// water (same as gas)
-						root["result"][ii]["val"] = NTYPE_TODAYGAS;
-						root["result"][ii]["text"] = Notification_Type_Desc(NTYPE_TODAYGAS, 0);
-						root["result"][ii]["ptag"] = Notification_Type_Desc(NTYPE_TODAYGAS, 1);
-					}
-					ii++;
-				}
-				if (dType == pTypeYouLess)
-				{
-					root["result"][ii]["val"] = NTYPE_USAGE;
-					root["result"][ii]["text"] = Notification_Type_Desc(NTYPE_USAGE, 0);
-					root["result"][ii]["ptag"] = Notification_Type_Desc(NTYPE_USAGE, 1);
-					ii++;
-				}
-				if (dType == pTypeAirQuality)
-				{
-					root["result"][ii]["val"] = NTYPE_USAGE;
-					root["result"][ii]["text"] = Notification_Type_Desc(NTYPE_USAGE, 0);
-					root["result"][ii]["ptag"] = Notification_Type_Desc(NTYPE_USAGE, 1);
-					ii++;
-				}
-				else if ((dType == pTypeGeneral) && ((dSubType == sTypeSoilMoisture) || (dSubType == sTypeLeafWetness)))
-				{
-					root["result"][ii]["val"] = NTYPE_USAGE;
-					root["result"][ii]["text"] = Notification_Type_Desc(NTYPE_USAGE, 0);
-					root["result"][ii]["ptag"] = Notification_Type_Desc(NTYPE_USAGE, 1);
-					ii++;
-				}
-				if ((dType == pTypeGeneral) && (dSubType == sTypeVisibility))
-				{
-					root["result"][ii]["val"] = NTYPE_USAGE;
-					root["result"][ii]["text"] = Notification_Type_Desc(NTYPE_USAGE, 0);
-					root["result"][ii]["ptag"] = Notification_Type_Desc(NTYPE_USAGE, 1);
-					ii++;
-				}
-				if ((dType == pTypeGeneral) && (dSubType == sTypeDistance))
-				{
-					root["result"][ii]["val"] = NTYPE_USAGE;
-					root["result"][ii]["text"] = Notification_Type_Desc(NTYPE_USAGE, 0);
-					root["result"][ii]["ptag"] = Notification_Type_Desc(NTYPE_USAGE, 1);
-					ii++;
-				}
-				if ((dType == pTypeGeneral) && (dSubType == sTypeSolarRadiation))
-				{
-					root["result"][ii]["val"] = NTYPE_USAGE;
-					root["result"][ii]["text"] = Notification_Type_Desc(NTYPE_USAGE, 0);
-					root["result"][ii]["ptag"] = Notification_Type_Desc(NTYPE_USAGE, 1);
-					ii++;
-				}
-				if ((dType == pTypeGeneral) && (dSubType == sTypeVoltage))
-				{
-					root["result"][ii]["val"] = NTYPE_USAGE;
-					root["result"][ii]["text"] = Notification_Type_Desc(NTYPE_USAGE, 0);
-					root["result"][ii]["ptag"] = Notification_Type_Desc(NTYPE_USAGE, 1);
-					ii++;
-				}
-				if ((dType == pTypeGeneral) && (dSubType == sTypeCurrent))
-				{
-					root["result"][ii]["val"] = NTYPE_USAGE;
-					root["result"][ii]["text"] = Notification_Type_Desc(NTYPE_USAGE, 0);
-					root["result"][ii]["ptag"] = Notification_Type_Desc(NTYPE_USAGE, 1);
-					ii++;
-				}
-				if ((dType == pTypeGeneral) && (dSubType == sTypePressure))
-				{
-					root["result"][ii]["val"] = NTYPE_USAGE;
-					root["result"][ii]["text"] = Notification_Type_Desc(NTYPE_USAGE, 0);
-					root["result"][ii]["ptag"] = Notification_Type_Desc(NTYPE_USAGE, 1);
-					ii++;
-				}
-				if ((dType == pTypeGeneral) && (dSubType == sTypeBaro))
-				{
-					root["result"][ii]["val"] = NTYPE_USAGE;
-					root["result"][ii]["text"] = Notification_Type_Desc(NTYPE_USAGE, 0);
-					root["result"][ii]["ptag"] = Notification_Type_Desc(NTYPE_USAGE, 1);
-					ii++;
-				}
-				if (dType == pTypeLux)
-				{
-					root["result"][ii]["val"] = NTYPE_USAGE;
-					root["result"][ii]["text"] = Notification_Type_Desc(NTYPE_USAGE, 0);
-					root["result"][ii]["ptag"] = Notification_Type_Desc(NTYPE_USAGE, 1);
-					ii++;
-				}
-				if ((dType == pTypeGeneral) && (dSubType == sTypeSoundLevel))
-				{
-					root["result"][ii]["val"] = NTYPE_USAGE;
-					root["result"][ii]["text"] = Notification_Type_Desc(NTYPE_USAGE, 0);
-					root["result"][ii]["ptag"] = Notification_Type_Desc(NTYPE_USAGE, 1);
-					ii++;
-				}
-				if (dType == pTypeWEIGHT)
-				{
-					root["result"][ii]["val"] = NTYPE_USAGE;
-					root["result"][ii]["text"] = Notification_Type_Desc(NTYPE_USAGE, 0);
-					root["result"][ii]["ptag"] = Notification_Type_Desc(NTYPE_USAGE, 1);
-					ii++;
-				}
-				if (dType == pTypeUsage)
-				{
-					root["result"][ii]["val"] = NTYPE_USAGE;
-					root["result"][ii]["text"] = Notification_Type_Desc(NTYPE_USAGE, 0);
-					root["result"][ii]["ptag"] = Notification_Type_Desc(NTYPE_USAGE, 1);
-					ii++;
-				}
-				if ((dType == pTypeENERGY) || ((dType == pTypeGeneral) && (dSubType == sTypeKwh)))
-				{
-					root["result"][ii]["val"] = NTYPE_USAGE;
-					root["result"][ii]["text"] = Notification_Type_Desc(NTYPE_USAGE, 0);
-					root["result"][ii]["ptag"] = Notification_Type_Desc(NTYPE_USAGE, 1);
-					ii++;
-				}
-				if (dType == pTypePOWER)
-				{
-					root["result"][ii]["val"] = NTYPE_USAGE;
-					root["result"][ii]["text"] = Notification_Type_Desc(NTYPE_USAGE, 0);
-					root["result"][ii]["ptag"] = Notification_Type_Desc(NTYPE_USAGE, 1);
-					ii++;
-				}
-				if ((dType == pTypeCURRENT) && (dSubType == sTypeELEC1))
-				{
-					root["result"][ii]["val"] = NTYPE_AMPERE1;
-					root["result"][ii]["text"] = Notification_Type_Desc(NTYPE_AMPERE1, 0);
-					root["result"][ii]["ptag"] = Notification_Type_Desc(NTYPE_AMPERE1, 1);
-					ii++;
-					root["result"][ii]["val"] = NTYPE_AMPERE2;
-					root["result"][ii]["text"] = Notification_Type_Desc(NTYPE_AMPERE2, 0);
-					root["result"][ii]["ptag"] = Notification_Type_Desc(NTYPE_AMPERE2, 1);
-					ii++;
-					root["result"][ii]["val"] = NTYPE_AMPERE3;
-					root["result"][ii]["text"] = Notification_Type_Desc(NTYPE_AMPERE3, 0);
-					root["result"][ii]["ptag"] = Notification_Type_Desc(NTYPE_AMPERE3, 1);
-					ii++;
-				}
-				if ((dType == pTypeCURRENTENERGY) && (dSubType == sTypeELEC4))
-				{
-					root["result"][ii]["val"] = NTYPE_AMPERE1;
-					root["result"][ii]["text"] = Notification_Type_Desc(NTYPE_AMPERE1, 0);
-					root["result"][ii]["ptag"] = Notification_Type_Desc(NTYPE_AMPERE1, 1);
-					ii++;
-					root["result"][ii]["val"] = NTYPE_AMPERE2;
-					root["result"][ii]["text"] = Notification_Type_Desc(NTYPE_AMPERE2, 0);
-					root["result"][ii]["ptag"] = Notification_Type_Desc(NTYPE_AMPERE2, 1);
-					ii++;
-					root["result"][ii]["val"] = NTYPE_AMPERE3;
-					root["result"][ii]["text"] = Notification_Type_Desc(NTYPE_AMPERE3, 0);
-					root["result"][ii]["ptag"] = Notification_Type_Desc(NTYPE_AMPERE3, 1);
-					ii++;
-				}
-				if (dType == pTypeP1Power)
-				{
-					root["result"][ii]["val"] = NTYPE_USAGE;
-					root["result"][ii]["text"] = Notification_Type_Desc(NTYPE_USAGE, 0);
-					root["result"][ii]["ptag"] = Notification_Type_Desc(NTYPE_USAGE, 1);
-					ii++;
-					root["result"][ii]["val"] = NTYPE_TODAYENERGY;
-					root["result"][ii]["text"] = Notification_Type_Desc(NTYPE_TODAYENERGY, 0);
-					root["result"][ii]["ptag"] = Notification_Type_Desc(NTYPE_TODAYENERGY, 1);
-					ii++;
-				}
-				if (dType == pTypeP1Gas)
-				{
-					root["result"][ii]["val"] = NTYPE_TODAYGAS;
-					root["result"][ii]["text"] = Notification_Type_Desc(NTYPE_TODAYGAS, 0);
-					root["result"][ii]["ptag"] = Notification_Type_Desc(NTYPE_TODAYGAS, 1);
-					ii++;
-				}
-				if ((dType == pTypeThermostat) && (dSubType == sTypeThermSetpoint))
-				{
-					root["result"][ii]["val"] = NTYPE_TEMPERATURE;
-					root["result"][ii]["text"] = Notification_Type_Desc(NTYPE_TEMPERATURE, 0);
-					root["result"][ii]["ptag"] = Notification_Type_Desc(NTYPE_TEMPERATURE, 1);
-					ii++;
-				}
-				if (dType == pTypeEvohomeZone)
-				{
-					root["result"][ii]["val"] = NTYPE_TEMPERATURE;
-					root["result"][ii]["text"] = Notification_Type_Desc(NTYPE_SETPOINT, 0); // FIXME NTYPE_SETPOINT implementation?
-					root["result"][ii]["ptag"] = Notification_Type_Desc(NTYPE_SETPOINT, 1);
-					ii++;
-				}
-				if ((dType == pTypeRFXSensor) && ((dSubType == sTypeRFXSensorAD) || (dSubType == sTypeRFXSensorVolt)))
-				{
-					root["result"][ii]["val"] = NTYPE_USAGE;
-					root["result"][ii]["text"] = Notification_Type_Desc(NTYPE_USAGE, 0);
-					root["result"][ii]["ptag"] = Notification_Type_Desc(NTYPE_USAGE, 1);
-					ii++;
-				}
-				if ((dType == pTypeGeneral) && (dSubType == sTypePercentage))
-				{
-					root["result"][ii]["val"] = NTYPE_PERCENTAGE;
-					root["result"][ii]["text"] = Notification_Type_Desc(NTYPE_PERCENTAGE, 0);
-					root["result"][ii]["ptag"] = Notification_Type_Desc(NTYPE_PERCENTAGE, 1);
-					ii++;
-				}
-				if ((dType == pTypeGeneral) && (dSubType == sTypeWaterflow))
-				{
-					root["result"][ii]["val"] = NTYPE_USAGE;
-					root["result"][ii]["text"] = Notification_Type_Desc(NTYPE_USAGE, 0);
-					root["result"][ii]["ptag"] = Notification_Type_Desc(NTYPE_USAGE, 1);
-					ii++;
-				}
-				if ((dType == pTypeGeneral) && (dSubType == sTypeCustom))
-				{
-					root["result"][ii]["val"] = NTYPE_USAGE;
-					root["result"][ii]["text"] = Notification_Type_Desc(NTYPE_USAGE, 0);
-					root["result"][ii]["ptag"] = Notification_Type_Desc(NTYPE_USAGE, 1);
-					ii++;
-				}
-				if ((dType == pTypeGeneral) && (dSubType == sTypeFan))
-				{
-					root["result"][ii]["val"] = NTYPE_RPM;
-					root["result"][ii]["text"] = Notification_Type_Desc(NTYPE_RPM, 0);
-					root["result"][ii]["ptag"] = Notification_Type_Desc(NTYPE_RPM, 1);
-					ii++;
-				}
-				if ((dType == pTypeGeneral) && (dSubType == sTypeAlert))
-				{
-					root["result"][ii]["val"] = NTYPE_USAGE;
-					root["result"][ii]["text"] = Notification_Type_Desc(NTYPE_USAGE, 0);
-					root["result"][ii]["ptag"] = Notification_Type_Desc(NTYPE_USAGE, 1);
-					ii++;
-				}
-				if ((dType == pTypeGeneral) && (dSubType == sTypeZWaveAlarm))
-				{
-					root["result"][ii]["val"] = NTYPE_VALUE;
-					root["result"][ii]["text"] = Notification_Type_Desc(NTYPE_VALUE, 0);
-					root["result"][ii]["ptag"] = Notification_Type_Desc(NTYPE_VALUE, 1);
-					ii++;
-				}
-				if ((dType == pTypeRego6XXValue) && (dSubType == sTypeRego6XXStatus))
-				{
-					root["result"][ii]["val"] = NTYPE_SWITCH_ON;
-					root["result"][ii]["text"] = Notification_Type_Desc(NTYPE_SWITCH_ON, 0);
-					root["result"][ii]["ptag"] = Notification_Type_Desc(NTYPE_SWITCH_ON, 1);
-					ii++;
-					root["result"][ii]["val"] = NTYPE_SWITCH_OFF;
-					root["result"][ii]["text"] = Notification_Type_Desc(NTYPE_SWITCH_OFF, 0);
-					root["result"][ii]["ptag"] = Notification_Type_Desc(NTYPE_SWITCH_OFF, 1);
-					ii++;
-				}
-				if (!IsLightOrSwitch(dType, dSubType))
-				{
-					root["result"][ii]["val"] = NTYPE_LASTUPDATE;
-					root["result"][ii]["text"] = Notification_Type_Desc(NTYPE_LASTUPDATE, 0);
-					root["result"][ii]["ptag"] = Notification_Type_Desc(NTYPE_LASTUPDATE, 1);
-					ii++;
-				}
-			}
-			else if (cparam == "addnotification")
-			{
-				if (session.rights < 2)
-				{
-					session.reply_status = reply::forbidden;
-					return; // Only admin user allowed
-				}
-
-				std::string idx = request::findValue(&req, "idx");
-				if (idx.empty())
-					return;
-
-				std::string stype = request::findValue(&req, "ttype");
-				std::string swhen = request::findValue(&req, "twhen");
-				std::string svalue = request::findValue(&req, "tvalue");
-				std::string scustommessage = request::findValue(&req, "tmsg");
-				std::string scustomaction = CURLEncode::URLDecode(request::findValue(&req, "taction"));
-				std::string sactivesystems = request::findValue(&req, "tsystems");
-				std::string spriority = request::findValue(&req, "tpriority");
-				std::string ssendalways = request::findValue(&req, "tsendalways");
-				std::string srecovery = (request::findValue(&req, "trecovery") == "true") ? "1" : "0";
-
-				if ((stype.empty()) || (swhen.empty()) || (svalue.empty()) || (spriority.empty()) || (ssendalways.empty()) || (srecovery.empty()))
-					return;
-
-				_eNotificationTypes ntype = (_eNotificationTypes)atoi(stype.c_str());
-				std::string ttype = Notification_Type_Desc(ntype, 1);
-				if ((ntype == NTYPE_SWITCH_ON) || (ntype == NTYPE_SWITCH_OFF) || (ntype == NTYPE_DEWPOINT))
-				{
-					if ((ntype == NTYPE_SWITCH_ON) && (swhen == "2"))
-					{ // '='
-						unsigned char twhen = '=';
-						sprintf(szTmp, "%s;%c;%s", ttype.c_str(), twhen, svalue.c_str());
-					}
-					else
-						strcpy(szTmp, ttype.c_str());
-				}
-				else
-				{
-					std::string twhen;
-					if (swhen == "0")
-						twhen = ">";
-					else if (swhen == "1")
-						twhen = ">=";
-					else if (swhen == "2")
-						twhen = "=";
-					else if (swhen == "3")
-						twhen = "!=";
-					else if (swhen == "4")
-						twhen = "<=";
-					else
-						twhen = "<";
-					sprintf(szTmp, "%s;%s;%s;%s", ttype.c_str(), twhen.c_str(), svalue.c_str(), srecovery.c_str());
-				}
-				int priority = atoi(spriority.c_str());
-				bool bOK = m_notifications.AddNotification(idx, szTmp, scustommessage, scustomaction, sactivesystems, priority, (ssendalways == "true") ? true : false);
-				if (bOK)
-				{
-					root["status"] = "OK";
-					root["title"] = "AddNotification";
-				}
-			}
-			else if (cparam == "updatenotification")
-			{
-				if (session.rights < 2)
-				{
-					session.reply_status = reply::forbidden;
-					return; // Only admin user allowed
-				}
-
-				std::string idx = request::findValue(&req, "idx");
-				std::string devidx = request::findValue(&req, "devidx");
-				if ((idx.empty()) || (devidx.empty()))
-					return;
-
-				std::string stype = request::findValue(&req, "ttype");
-				std::string swhen = request::findValue(&req, "twhen");
-				std::string svalue = request::findValue(&req, "tvalue");
-				std::string scustommessage = request::findValue(&req, "tmsg");
-				std::string scustomaction = CURLEncode::URLDecode(request::findValue(&req, "taction"));
-				std::string sactivesystems = request::findValue(&req, "tsystems");
-				std::string spriority = request::findValue(&req, "tpriority");
-				std::string ssendalways = request::findValue(&req, "tsendalways");
-				std::string srecovery = (request::findValue(&req, "trecovery") == "true") ? "1" : "0";
-
-				if ((stype.empty()) || (swhen.empty()) || (svalue.empty()) || (spriority.empty()) || (ssendalways.empty()) || srecovery.empty())
-					return;
-				root["status"] = "OK";
-				root["title"] = "UpdateNotification";
-
-				std::string recoverymsg;
-				if ((srecovery == "1") && (m_notifications.CustomRecoveryMessage(strtoull(idx.c_str(), nullptr, 0), recoverymsg, true)))
-				{
-					scustommessage.append(";;");
-					scustommessage.append(recoverymsg);
-				}
-				// delete old record
-				m_notifications.RemoveNotification(idx);
-
-				_eNotificationTypes ntype = (_eNotificationTypes)atoi(stype.c_str());
-				std::string ttype = Notification_Type_Desc(ntype, 1);
-				if ((ntype == NTYPE_SWITCH_ON) || (ntype == NTYPE_SWITCH_OFF) || (ntype == NTYPE_DEWPOINT))
-				{
-					if ((ntype == NTYPE_SWITCH_ON) && (swhen == "2"))
-					{ // '='
-						unsigned char twhen = '=';
-						sprintf(szTmp, "%s;%c;%s", ttype.c_str(), twhen, svalue.c_str());
-					}
-					else
-						strcpy(szTmp, ttype.c_str());
-				}
-				else
-				{
-					std::string twhen;
-					if (swhen == "0")
-						twhen = ">";
-					else if (swhen == "1")
-						twhen = ">=";
-					else if (swhen == "2")
-						twhen = "=";
-					else if (swhen == "3")
-						twhen = "!=";
-					else if (swhen == "4")
-						twhen = "<=";
-					else
-						twhen = "<";
-					sprintf(szTmp, "%s;%s;%s;%s", ttype.c_str(), twhen.c_str(), svalue.c_str(), srecovery.c_str());
-				}
-				int priority = atoi(spriority.c_str());
-				m_notifications.AddNotification(devidx, szTmp, scustommessage, scustomaction, sactivesystems, priority, (ssendalways == "true") ? true : false);
-			}
-			else if (cparam == "deletenotification")
-			{
-				if (session.rights < 2)
-				{
-					session.reply_status = reply::forbidden;
-					return; // Only admin user allowed
-				}
-
-				std::string idx = request::findValue(&req, "idx");
-				if (idx.empty())
-					return;
-
-				root["status"] = "OK";
-				root["title"] = "DeleteNotification";
-
-				m_notifications.RemoveNotification(idx);
-			}
-			else if (cparam == "switchdeviceorder")
-			{
-				if (session.rights < 2)
-				{
-					session.reply_status = reply::forbidden;
-					return; // Only admin user allowed
-				}
-
-				std::string idx1 = request::findValue(&req, "idx1");
-				std::string idx2 = request::findValue(&req, "idx2");
-				if ((idx1.empty()) || (idx2.empty()))
-					return;
-				std::string sroomid = request::findValue(&req, "roomid");
-				int roomid = atoi(sroomid.c_str());
-
-				std::string Order1, Order2;
-				if (roomid == 0)
-				{
-					// get device order 1
-					result = m_sql.safe_query("SELECT [Order] FROM DeviceStatus WHERE (ID == '%q')", idx1.c_str());
-					if (result.empty())
-						return;
-					Order1 = result[0][0];
-
-					// get device order 2
-					result = m_sql.safe_query("SELECT [Order] FROM DeviceStatus WHERE (ID == '%q')", idx2.c_str());
-					if (result.empty())
-						return;
-					Order2 = result[0][0];
-
-					root["status"] = "OK";
-					root["title"] = "SwitchDeviceOrder";
-
-					if (atoi(Order1.c_str()) < atoi(Order2.c_str()))
-					{
-						m_sql.safe_query("UPDATE DeviceStatus SET [Order] = [Order]+1 WHERE ([Order] >= '%q' AND [Order] < '%q')", Order1.c_str(), Order2.c_str());
-					}
-					else
-					{
-						m_sql.safe_query("UPDATE DeviceStatus SET [Order] = [Order]-1 WHERE ([Order] > '%q' AND [Order] <= '%q')", Order2.c_str(), Order1.c_str());
-					}
-
-					m_sql.safe_query("UPDATE DeviceStatus SET [Order] = '%q' WHERE (ID == '%q')", Order1.c_str(), idx2.c_str());
-				}
-				else
-				{
-					// change order in a room
-					// get device order 1
-					result = m_sql.safe_query("SELECT [Order] FROM DeviceToPlansMap WHERE (DeviceRowID == '%q') AND (PlanID==%d)", idx1.c_str(), roomid);
-					if (result.empty())
-						return;
-					Order1 = result[0][0];
-
-					// get device order 2
-					result = m_sql.safe_query("SELECT [Order] FROM DeviceToPlansMap WHERE (DeviceRowID == '%q') AND (PlanID==%d)", idx2.c_str(), roomid);
-					if (result.empty())
-						return;
-					Order2 = result[0][0];
-
-					root["status"] = "OK";
-					root["title"] = "SwitchDeviceOrder";
-
-					if (atoi(Order1.c_str()) < atoi(Order2.c_str()))
-					{
-						m_sql.safe_query("UPDATE DeviceToPlansMap SET [Order] = [Order]+1 WHERE ([Order] >= '%q' AND [Order] < '%q') AND (PlanID==%d)", Order1.c_str(),
-							Order2.c_str(), roomid);
-					}
-					else
-					{
-						m_sql.safe_query("UPDATE DeviceToPlansMap SET [Order] = [Order]-1 WHERE ([Order] > '%q' AND [Order] <= '%q') AND (PlanID==%d)", Order2.c_str(),
-							Order1.c_str(), roomid);
-					}
-
-					m_sql.safe_query("UPDATE DeviceToPlansMap SET [Order] = '%q' WHERE (DeviceRowID == '%q') AND (PlanID==%d)", Order1.c_str(), idx2.c_str(), roomid);
-				}
-			}
-			else if (cparam == "switchsceneorder")
-			{
-				if (session.rights < 2)
-				{
-					session.reply_status = reply::forbidden;
-					return; // Only admin user allowed
-				}
-
-				std::string idx1 = request::findValue(&req, "idx1");
-				std::string idx2 = request::findValue(&req, "idx2");
-				if ((idx1.empty()) || (idx2.empty()))
-					return;
-
-				std::string Order1, Order2;
-				// get device order 1
-				result = m_sql.safe_query("SELECT [Order] FROM Scenes WHERE (ID == '%q')", idx1.c_str());
-				if (result.empty())
-					return;
-				Order1 = result[0][0];
-
-				// get device order 2
-				result = m_sql.safe_query("SELECT [Order] FROM Scenes WHERE (ID == '%q')", idx2.c_str());
-				if (result.empty())
-					return;
-				Order2 = result[0][0];
-
-				root["status"] = "OK";
-				root["title"] = "SwitchSceneOrder";
-
-				if (atoi(Order1.c_str()) < atoi(Order2.c_str()))
-				{
-					m_sql.safe_query("UPDATE Scenes SET [Order] = [Order]+1 WHERE ([Order] >= '%q' AND [Order] < '%q')", Order1.c_str(), Order2.c_str());
-				}
-				else
-				{
-					m_sql.safe_query("UPDATE Scenes SET [Order] = [Order]-1 WHERE ([Order] > '%q' AND [Order] <= '%q')", Order2.c_str(), Order1.c_str());
-				}
-
-				m_sql.safe_query("UPDATE Scenes SET [Order] = '%q' WHERE (ID == '%q')", Order1.c_str(), idx2.c_str());
-			}
-			else if (cparam == "clearnotifications")
-			{
-				if (session.rights < 2)
-				{
-					session.reply_status = reply::forbidden;
-					return; // Only admin user allowed
-				}
-
-				std::string idx = request::findValue(&req, "idx");
-				if (idx.empty())
-					return;
-
-				root["status"] = "OK";
-				root["title"] = "ClearNotification";
-
-				m_notifications.RemoveDeviceNotifications(idx);
-			}
-			else if (cparam == "adduser" || cparam == "updateuser" || cparam == "deleteuser")
-			{	// C(R)UD operations for Users. Read is done by RType_Users
-				root["status"] = "ERR";
-				if (session.rights != URIGHTS_ADMIN)
-				{
-					session.reply_status = reply::forbidden;
-					return; // Only admin user allowed
-				}
-
-				std::string idx = request::findValue(&req, "idx");
-				if (cparam != "adduser" && idx.empty())
-				{
-					root["message"] = "Missing index of User to modify!";
-					return;
-				}
-
-				std::string senabled = request::findValue(&req, "enabled");
-				std::string username = request::findValue(&req, "username");
-				std::string password = request::findValue(&req, "password");
-				std::string srights = request::findValue(&req, "rights");
-				std::string sRemoteSharing = request::findValue(&req, "RemoteSharing");
-				std::string sTabsEnabled = request::findValue(&req, "TabsEnabled");
-				int rights = atoi(srights.c_str());
-
-				if (cparam != "deleteuser")
-				{
-					if ((senabled.empty()) || (username.empty()) || (password.empty()) || (srights.empty()) || (sRemoteSharing.empty()) || (sTabsEnabled.empty()))
-					{
-						root["message"] = "One or more expected values are empty!";
-						return;
-					}
-					if (rights != URIGHTS_ADMIN)
-					{
-						if (!FindAdminUser())
-						{
-							root["message"] = "Add an Admin user first!";
-							return;
-						}
-					}
-				}
-
-				std::string sHashedUsername = base64_encode(username);
-
-				// Check for duplicate user name
-				result = m_sql.safe_query("SELECT ID FROM Users WHERE (Username == '%q')", sHashedUsername.c_str());
-				if (!result.empty())
-				{
-					if (!(cparam == "updateuser" && result[0][0] == idx))
-					{
-						root["message"] = "Duplicate Username!";
-						return;
-					}
-				}
-
-				if (cparam == "adduser")
-				{
-					root["title"] = "AddUser";
-					m_sql.safe_query("INSERT INTO Users (Active, Username, Password, Rights, RemoteSharing, TabsEnabled) VALUES (%d,'%q','%q','%d','%d','%d')",
-							(senabled == "true") ? 1 : 0, sHashedUsername.c_str(), password.c_str(), rights, (sRemoteSharing == "true") ? 1 : 0,
-							atoi(sTabsEnabled.c_str()));
-				}
-				else if (cparam == "updateuser")
-				{
-					root["title"] = "UpdateUser";
-
-					// Invalidate user's sessions if username or password has changed
-					result = m_sql.safe_query("SELECT Username, Password, Rights FROM Users WHERE (ID == '%q')", idx.c_str());
-					if (result.size() == 1)
-					{
-						std::string sOldUsername = result[0][0];
-						std::string sOldPassword = result[0][1];
-						std::string sOldRights = result[0][2];
-						int oldrights = atoi(sOldRights.c_str());
-						if ((oldrights == URIGHTS_ADMIN) && (rights != URIGHTS_ADMIN) && (CountAdminUsers() <= 1))
-						{
-							root["message"] = "Cannot change rights of last Admin user!";
-							return;
-						}
-						if ((oldrights == URIGHTS_ADMIN) && (senabled.compare("true") != 0) && (CountAdminUsers() <= 1))
-						{
-							root["message"] = "Cannot disable last Admin user!";
-							return;
-						}
-						if ((sHashedUsername != sOldUsername) || (password != sOldPassword) || (oldrights != rights))
-							RemoveUsersSessions(sOldUsername, session);
-
-						m_sql.safe_query("UPDATE Users SET Active=%d, Username='%q', Password='%q', Rights=%d, RemoteSharing=%d, TabsEnabled=%d WHERE (ID == '%q')",
-								(senabled == "true") ? 1 : 0, sHashedUsername.c_str(), password.c_str(), rights, (sRemoteSharing == "true") ? 1 : 0, atoi(sTabsEnabled.c_str()),
-								idx.c_str());
-					}
-				}
-				else if (cparam == "deleteuser")
-				{
-					root["title"] = "DeleteUser";
-
-					// Remove user's sessions
-					result = m_sql.safe_query("SELECT Username, Rights FROM Users WHERE (ID == '%q')", idx.c_str());
-					if (result.size() == 1)
-					{
-						srights = result[0][1];
-						rights = atoi(srights.c_str());
-						if ((CountAdminUsers() <= 1) && (rights == URIGHTS_ADMIN))
-						{
-							root["message"] = "Cannot delete last Admin user!";
-							return;
-						}
-						RemoveUsersSessions(result[0][0], session);
-
-						m_sql.safe_query("DELETE FROM SharedDevices WHERE (SharedUserID == '%q')", idx.c_str());
-
-						m_sql.safe_query("DELETE FROM Users WHERE (ID == '%q')", idx.c_str());
-					}
-				}
-				LoadUsers();
-				root["status"] = "OK";
-			}
-			else if (cparam == "getapplications" || cparam == "addapplication" || cparam == "updateapplication" || cparam == "deleteapplication")
-			{	// CRUD operations for Applications
-				root["title"] = "Applications";
-				if (session.rights < 2)
-				{
-					session.reply_status = reply::forbidden;
-					return; // Only admin user allowed
-				}
-				if 	(cparam == "getapplications")
-				{
-					root["title"] = "GetApplications";
-					std::vector<std::vector<std::string>> result;
-					result = m_sql.safe_query("SELECT ID, Active, Public, Applicationname, Secret, Pemfile, LastSeen FROM Applications ORDER BY ID ASC");
-					if (!result.empty())
-					{
-						int ii = 0;
-						for (const auto &sd : result)
-						{
-							root["result"][ii]["idx"] = sd[0];
-							root["result"][ii]["Enabled"] = (sd[1] == "1") ? "true" : "false";
-							root["result"][ii]["Public"] = (sd[2] == "1") ? "true" : "false";
-							root["result"][ii]["Applicationname"] = sd[3];
-							root["result"][ii]["Secret"] = sd[4];
-							root["result"][ii]["Pemfile"] = sd[5];
-							root["result"][ii]["LastSeen"] = sd[6];
-							ii++;
-						}
-					}
-				}
-				else if (cparam == "addapplication" || cparam == "updateapplication")
-				{
-					root["title"] = "AddUpdateApplication";
-					std::string senabled = request::findValue(&req, "enabled");
-					std::string spublic = request::findValue(&req, "public");
-					std::string applicationname = request::findValue(&req, "applicationname");
-					std::string secret = request::findValue(&req, "secret");
-					std::string pemfile = request::findValue(&req, "pemfile");
-					std::string idx = request::findValue(&req, "idx");
-					if (senabled.empty() || applicationname.empty() || spublic.empty())
-					{
-						session.reply_status = reply::bad_request;
-						return;
-					}
-					if ((spublic != "true") && secret.empty())
-					{
-						root["statustext"] = "Secret's can only be empty for Public Clients!";
-						return;
-					}
-					if ((spublic == "true") && pemfile.empty())
-					{
-						root["statustext"] = "A PEM file containing private and public key must be given for Public Clients!";
-						return;
-					}
-					// Check for duplicate application name
-					result = m_sql.safe_query("SELECT ID FROM Applications WHERE (Applicationname == '%q')", applicationname.c_str());
-					if (!result.empty())
-					{
-						std::string oidx = result[0][0];
-						if (cparam == "addapplication" || (!idx.empty() && oidx != idx))
-						{
-							root["statustext"] = "Duplicate Applicationname!";
-							return;
-						}
-					}
-					if (cparam == "addapplication")
-					{
-						root["title"] = "AddApplication";
-						m_sql.safe_query("INSERT INTO Applications (Active, Public, Applicationname, Secret, Pemfile) VALUES (%d,%d,'%q','%q','%q')",
-								(senabled == "true") ? 1 : 0, (spublic == "true") ? 1 : 0, applicationname.c_str(), secret.c_str(), pemfile.c_str());
-					}
-					else if (cparam == "updateapplication")
-					{
-						root["title"] = "UpdateApplication";
-						if (idx.empty())
-						{
-							session.reply_status = reply::bad_request;
-							return;
-						}
-						m_sql.safe_query("UPDATE Applications SET Active=%d, Public=%d, Applicationname='%q', Secret='%q', Pemfile='%q' WHERE (ID == '%q')",
-								(senabled == "true") ? 1 : 0, (spublic == "true") ? 1 : 0, applicationname.c_str(), secret.c_str(), pemfile.c_str(), idx.c_str());
-					}
-				}
-				else if (cparam == "deleteapplication")
-				{
-					root["title"] = "DeleteApplication";
-					std::string idx = request::findValue(&req, "idx");
-					if (idx.empty())
-					{
-						session.reply_status = reply::bad_request;
-						return;
-					}
-
-					// Remove Application
-					result = m_sql.safe_query("SELECT ID FROM Applications WHERE (ID == '%q')", idx.c_str());
-					if (result.size() != 1)
-					{
-						session.reply_status = reply::bad_request;
-						return;
-					}
-					m_sql.safe_query("DELETE FROM Applications WHERE (ID == '%q')", idx.c_str());
-				}
-				root["status"] = "OK";
-				if 	(cparam != "getapplications")
-					LoadUsers();
-			}
-			else if (cparam == "clearlightlog")
-			{
-				if (session.rights < 2)
-				{
-					session.reply_status = reply::forbidden;
-					return; // Only admin user allowed
-				}
-
-				std::string idx = request::findValue(&req, "idx");
-				if (idx.empty())
-					return;
-				// First get Device Type/SubType
-				result = m_sql.safe_query("SELECT Type, SubType FROM DeviceStatus WHERE (ID == '%q')", idx.c_str());
-				if (result.empty())
-					return;
-
-				unsigned char dType = atoi(result[0][0].c_str());
-				unsigned char dSubType = atoi(result[0][1].c_str());
-
-				if ((dType != pTypeLighting1) && (dType != pTypeLighting2) && (dType != pTypeLighting3) && (dType != pTypeLighting4) && (dType != pTypeLighting5) &&
-					(dType != pTypeLighting6) && (dType != pTypeFan) && (dType != pTypeColorSwitch) && (dType != pTypeSecurity1) && (dType != pTypeSecurity2) &&
-					(dType != pTypeEvohome) && (dType != pTypeEvohomeRelay) && (dType != pTypeCurtain) && (dType != pTypeBlinds) && (dType != pTypeRFY) && (dType != pTypeChime) &&
-					(dType != pTypeThermostat2) && (dType != pTypeThermostat3) && (dType != pTypeThermostat4) && (dType != pTypeRemote) && (dType != pTypeGeneralSwitch) &&
-					(dType != pTypeHomeConfort) && (dType != pTypeFS20) && (!((dType == pTypeRadiator1) && (dSubType == sTypeSmartwaresSwitchRadiator))) &&
-					(!((dType == pTypeGeneral) && (dSubType == sTypeTextStatus))) && (!((dType == pTypeGeneral) && (dSubType == sTypeAlert))) && (dType != pTypeHunter))
-					return; // no light device! we should not be here!
-
-				root["status"] = "OK";
-				root["title"] = "ClearLightLog";
-
-				result = m_sql.safe_query("DELETE FROM LightingLog WHERE (DeviceRowID=='%q')", idx.c_str());
-			}
-			else if (cparam == "clearscenelog")
-			{
-				if (session.rights < 2)
-				{
-					session.reply_status = reply::forbidden;
-					return; // Only admin user allowed
-				}
-
-				std::string idx = request::findValue(&req, "idx");
-				if (idx.empty())
-					return;
-				root["status"] = "OK";
-				root["title"] = "ClearSceneLog";
-
-				result = m_sql.safe_query("DELETE FROM SceneLog WHERE (SceneRowID=='%q')", idx.c_str());
-			}
-			else if (cparam == "learnsw")
-			{
-				if (session.rights < 2)
-				{
-					session.reply_status = reply::forbidden;
-					return; // Only admin user allowed
-				}
-
-				m_sql.AllowNewHardwareTimer(5);
-				m_sql.m_LastSwitchID = "";
-				bool bReceivedSwitch = false;
-				unsigned char cntr = 0;
-				while ((!bReceivedSwitch) && (cntr < 50)) // wait for max. 5 seconds
-				{
-					if (!m_sql.m_LastSwitchID.empty())
-					{
-						bReceivedSwitch = true;
-						break;
-					}
-					// sleep 100ms
-					sleep_milliseconds(100);
-					cntr++;
-				}
-				if (bReceivedSwitch)
-				{
-					// check if used
-					result = m_sql.safe_query("SELECT Name, Used, nValue FROM DeviceStatus WHERE (ID==%" PRIu64 ")", m_sql.m_LastSwitchRowID);
-					if (!result.empty())
-					{
-						root["status"] = "OK";
-						root["title"] = "LearnSW";
-						root["ID"] = m_sql.m_LastSwitchID;
-						root["idx"] = Json::Value::UInt64(m_sql.m_LastSwitchRowID);
-						root["Name"] = result[0][0];
-						root["Used"] = atoi(result[0][1].c_str());
-						root["Cmd"] = atoi(result[0][2].c_str());
-					}
-				}
-			} // learnsw
-			else if (cparam == "makefavorite")
-			{
-				if (session.rights < 1)
-				{
-					session.reply_status = reply::forbidden;
-					return; // Only admin user allowed
-				}
-				std::string idx = request::findValue(&req, "idx");
-				std::string sisfavorite = request::findValue(&req, "isfavorite");
-				if ((idx.empty()) || (sisfavorite.empty()))
-					return;
-				int isfavorite = atoi(sisfavorite.c_str());
-
-				root["status"] = "OK";
-				root["title"] = "MakeFavorite";
-
-				const int iUser = FindUser(session.username.c_str());
-				if (iUser != -1)
-				{
-					const _eUserRights urights = m_users[iUser].userrights;
-					if ((urights != URIGHTS_ADMIN) && (m_users[iUser].ID != 0xFFFF))
-					{
-						m_sql.safe_query("UPDATE SharedDevices SET Favorite=%d WHERE (DeviceRowID == '%q') AND (SharedUserID == %d)", isfavorite, idx.c_str(),
-							m_users[iUser].ID);
-						return;
-					}
-				}
-				m_sql.safe_query("UPDATE DeviceStatus SET Favorite=%d WHERE (ID == '%q')", isfavorite, idx.c_str());
-			} // makefavorite
-			else if (cparam == "makescenefavorite")
-			{
-				if (session.rights < 2)
-				{
-					session.reply_status = reply::forbidden;
-					return; // Only admin user allowed
-				}
-
-				std::string idx = request::findValue(&req, "idx");
-				std::string sisfavorite = request::findValue(&req, "isfavorite");
-				if ((idx.empty()) || (sisfavorite.empty()))
-					return;
-				int isfavorite = atoi(sisfavorite.c_str());
-				m_sql.safe_query("UPDATE Scenes SET Favorite=%d WHERE (ID == '%q')", isfavorite, idx.c_str());
-				root["status"] = "OK";
-				root["title"] = "MakeSceneFavorite";
-			} // makescenefavorite
-			else if (cparam == "resetsecuritystatus")
-			{
-				std::string idx = request::findValue(&req, "idx");
-				std::string switchcmd = request::findValue(&req, "switchcmd");
-
-				if ((idx.empty()) || (switchcmd.empty()))
-					return;
-
-				root["status"] = "OK";
-				root["title"] = "ResetSecurityStatus";
-
-				int nValue = -1;
-
-				// Change to generic *Security_Status_Desc lookup...
-
-				if (switchcmd == "Panic End")
-				{
-					nValue = 7;
-				}
-				else if (switchcmd == "Normal")
-				{
-					nValue = 0;
-				}
-
-				if (nValue >= 0)
-				{
-					m_sql.safe_query("UPDATE DeviceStatus SET nValue=%d WHERE (ID == '%q')", nValue, idx.c_str());
-					root["status"] = "OK";
-					root["title"] = "SwitchLight";
-				}
-			}
-			else if (cparam == "verifypasscode")
-			{
-				std::string passcode = request::findValue(&req, "passcode");
-				if (passcode.empty())
-					return;
-				// Check if passcode is correct
-				passcode = GenerateMD5Hash(passcode);
-				std::string rpassword;
-				int nValue = 1;
-				m_sql.GetPreferencesVar("ProtectionPassword", nValue, rpassword);
-				if (passcode == rpassword)
-				{
-					root["title"] = "VerifyPasscode";
-					root["status"] = "OK";
-					return;
-				}
-			}
-			else if (cparam == "switchmodal")
-			{
-				int urights = 3;
-				if (bHaveUser)
-				{
-					int iUser = -1;
-					iUser = FindUser(session.username.c_str());
-					if (iUser != -1)
-					{
-						urights = (int)m_users[iUser].userrights;
-						_log.Log(LOG_STATUS, "User: %s initiated a modal command", m_users[iUser].Username.c_str());
-					}
-				}
-				if (urights < 1)
-					return;
-
-				std::string idx = request::findValue(&req, "idx");
-				std::string switchcmd = request::findValue(&req, "status");
-				std::string until = request::findValue(&req, "until");	    // optional until date / time as applicable
-				std::string action = request::findValue(&req, "action");    // Run action or not (update status only)
-				std::string onlyonchange = request::findValue(&req, "ooc"); // No update unless the value changed (check if updated)
-				// The on action is used to call a script to update the real device so we only want to use it when altering the status in the Domoticz Web Client
-				// If we're posting the status from the real device to domoticz we don't want to run the on action script ("action"!=1) to avoid loops and contention
-				//""... we only want to log a change (and trigger an event) when the status has actually changed ("ooc"==1) i.e. suppress non transient updates
-				if ((idx.empty()) || (switchcmd.empty()))
-					return;
-
-				std::string passcode = request::findValue(&req, "passcode");
-				if (!passcode.empty())
-				{
-					// Check if passcode is correct
-					passcode = GenerateMD5Hash(passcode);
-					std::string rpassword;
-					int nValue = 1;
-					m_sql.GetPreferencesVar("ProtectionPassword", nValue, rpassword);
-					if (passcode != rpassword)
-					{
-						root["title"] = "Modal";
-						root["status"] = "ERROR";
-						root["message"] = "WRONG CODE";
-						return;
-					}
-				}
-
-				if (m_mainworker.SwitchEvoModal(idx, switchcmd, action, onlyonchange, until) ==
-					true) // FIXME we need to return a status of already set / no update if ooc=="1" and no status update was performed
-				{
-					root["status"] = "OK";
-					root["title"] = "Modal";
-				}
-			}
-			else if (cparam == "switchlight")
-			{
-				if (session.rights < 1)
-				{
-					session.reply_status = reply::forbidden;
-					return; // Only user/admin allowed
-				}
-				std::string Username = "Admin";
-				if (!session.username.empty())
-					Username = session.username;
-
-				std::string idx = request::findValue(&req, "idx");
-
-				std::string switchcmd = request::findValue(&req, "switchcmd");
-				std::string level = "-1";
-				if (switchcmd == "Set Level")
-					level = request::findValue(&req, "level");
-				std::string onlyonchange = request::findValue(&req, "ooc"); // No update unless the value changed (check if updated)
-				_log.Debug(DEBUG_WEBSERVER, "CWebServer::HandleCommand() : switchlight idx:%s switchcmd:%s level:%s", idx.c_str(), switchcmd.c_str(), level.c_str());
-				std::string passcode = request::findValue(&req, "passcode");
-				if ((idx.empty()) || (switchcmd.empty()) || ((switchcmd == "Set Level") && (level.empty())))
-					return;
-
-				result = m_sql.safe_query("SELECT [Protected],[Name] FROM DeviceStatus WHERE (ID = '%q')", idx.c_str());
-				if (result.empty())
-				{
-					// Switch not found!
-					_log.Log(LOG_ERROR, "User: %s, switch not found (idx=%s)!", Username.c_str(), idx.c_str());
-					return;
-				}
-				bool bIsProtected = atoi(result[0][0].c_str()) != 0;
-				std::string sSwitchName = result[0][1];
-				if (session.rights == 1)
-				{
-					if (!IsIdxForUser(&session, atoi(idx.c_str())))
-					{
-						_log.Log(LOG_ERROR, "User: %s initiated a Unauthorized switch command!", Username.c_str());
-						session.reply_status = reply::forbidden;
-						return;
-					}
-				}
-
-				std::string szSwitchUser = Username + " (IP: " + session.remote_host + ")";
-
-				if (bIsProtected)
-				{
-					if (passcode.empty())
-					{
-						// Switch is protected, but no passcode has been
-						root["title"] = "SwitchLight";
-						root["status"] = "ERROR";
-						root["message"] = "WRONG CODE";
-						return;
-					}
-					// Check if passcode is correct
-					passcode = GenerateMD5Hash(passcode);
-					std::string rpassword;
-					int nValue = 1;
-					m_sql.GetPreferencesVar("ProtectionPassword", nValue, rpassword);
-					if (passcode != rpassword)
-					{
-						_log.Log(LOG_ERROR, "User: %s initiated a switch command (Wrong code!)", szSwitchUser.c_str());
-						root["title"] = "SwitchLight";
-						root["status"] = "ERROR";
-						root["message"] = "WRONG CODE";
-						return;
-					}
-				}
-
-				_log.Log(LOG_STATUS, "User: %s initiated a switch command (%s/%s/%s)", szSwitchUser.c_str(), idx.c_str(), sSwitchName.c_str(), switchcmd.c_str());
-
-				root["title"] = "SwitchLight";
-				if (m_mainworker.SwitchLight(idx, switchcmd, level, "-1", onlyonchange, 0, szSwitchUser) == true)
-				{
-					root["status"] = "OK";
-				}
-				else
-				{
-					root["status"] = "ERROR";
-					root["message"] = "Error sending switch command, check device/hardware (idx=" + idx + ") !";
-				}
-			} //(rtype=="switchlight")
-			else if (cparam == "switchscene")
-			{
-				if (session.rights < 1)
-				{
-					session.reply_status = reply::forbidden;
-					return; // Only user/admin allowed
-				}
-				std::string Username = "Admin";
-				if (!session.username.empty())
-					Username = session.username;
-
-				std::string szSwitchUser = Username + " (IP: " + session.remote_host + ")";
-
-				std::string idx = request::findValue(&req, "idx");
-				std::string switchcmd = request::findValue(&req, "switchcmd");
-				std::string passcode = request::findValue(&req, "passcode");
-				if ((idx.empty()) || (switchcmd.empty()))
-					return;
-
-				result = m_sql.safe_query("SELECT [Protected] FROM Scenes WHERE (ID = '%q')", idx.c_str());
-				if (result.empty())
-				{
-					// Scene/Group not found!
-					_log.Log(LOG_ERROR, "User: %s, scene not found (idx=%s)!", szSwitchUser.c_str(), idx.c_str());
-					return;
-				}
-				bool bIsProtected = atoi(result[0][0].c_str()) != 0;
-				if (bIsProtected)
-				{
-					if (passcode.empty())
-					{
-						root["title"] = "SwitchScene";
-						root["status"] = "ERROR";
-						root["message"] = "WRONG CODE";
-						return;
-					}
-					// Check if passcode is correct
-					passcode = GenerateMD5Hash(passcode);
-					std::string rpassword;
-					int nValue = 1;
-					m_sql.GetPreferencesVar("ProtectionPassword", nValue, rpassword);
-					if (passcode != rpassword)
-					{
-						root["title"] = "SwitchScene";
-						root["status"] = "ERROR";
-						root["message"] = "WRONG CODE";
-						_log.Log(LOG_ERROR, "User: %s initiated a scene/group command (Wrong code!)", szSwitchUser.c_str());
-						return;
-					}
-				}
-				_log.Log(LOG_STATUS, "User: %s initiated a scene/group command", szSwitchUser.c_str());
-
-				if (m_mainworker.SwitchScene(idx, switchcmd, szSwitchUser) == true)
-				{
-					root["status"] = "OK";
-					root["title"] = "SwitchScene";
-				}
-			} //(rtype=="switchscene")
-			else if (cparam == "getSunRiseSet")
-			{
-				if (!m_mainworker.m_LastSunriseSet.empty())
-				{
-					std::vector<std::string> strarray;
-					StringSplit(m_mainworker.m_LastSunriseSet, ";", strarray);
-					if (strarray.size() == 10)
-					{
-						struct tm loctime;
-						time_t now = mytime(nullptr);
-
-						localtime_r(&now, &loctime);
-						// strftime(szTmp, 80, "%b %d %Y %X", &loctime);
-						strftime(szTmp, 80, "%Y-%m-%d %X", &loctime);
-
-						root["status"] = "OK";
-						root["title"] = "getSunRiseSet";
-						root["ServerTime"] = szTmp;
-						root["Sunrise"] = strarray[0];
-						root["Sunset"] = strarray[1];
-						root["SunAtSouth"] = strarray[2];
-						root["CivTwilightStart"] = strarray[3];
-						root["CivTwilightEnd"] = strarray[4];
-						root["NautTwilightStart"] = strarray[5];
-						root["NautTwilightEnd"] = strarray[6];
-						root["AstrTwilightStart"] = strarray[7];
-						root["AstrTwilightEnd"] = strarray[8];
-						root["DayLength"] = strarray[9];
-					}
-				}
-			}
-			else if (cparam == "getServerTime")
-			{
-
-				struct tm loctime;
-				time_t now = mytime(nullptr);
-
-				localtime_r(&now, &loctime);
-				// strftime(szTmp, 80, "%b %d %Y %X", &loctime);
-				strftime(szTmp, 80, "%Y-%m-%d %X", &loctime);
-
-				root["status"] = "OK";
-				root["title"] = "getServerTime";
-				root["ServerTime"] = szTmp;
-			}
-			else if (cparam == "getsecstatus")
-			{
-				root["status"] = "OK";
-				root["title"] = "GetSecStatus";
-
-				int secstatus = 0;
-				m_sql.GetPreferencesVar("SecStatus", secstatus);
-				root["secstatus"] = secstatus;
-
-				int secondelay = 30;
-				m_sql.GetPreferencesVar("SecOnDelay", secondelay);
-				root["secondelay"] = secondelay;
-			}
-			else if (cparam == "setsecstatus")
-			{
-				std::string Username = "Admin";
-				if (!session.username.empty())
-					Username = session.username;
-				std::string szSwitchUser = Username + " (IP: " + session.remote_host + ")";
-
-				std::string ssecstatus = request::findValue(&req, "secstatus");
-				std::string seccode = request::findValue(&req, "seccode");
-				if ((ssecstatus.empty()) || (seccode.empty()))
-				{
-					root["message"] = "WRONG CODE";
-					return;
-				}
-				root["title"] = "SetSecStatus";
-				std::string rpassword;
-				int nValue = 1;
-				m_sql.GetPreferencesVar("SecPassword", nValue, rpassword);
-				if (seccode != rpassword)
-				{
-					root["status"] = "ERROR";
-					root["message"] = "WRONG CODE";
-					return;
-				}
-				root["status"] = "OK";
-				int iSecStatus = atoi(ssecstatus.c_str());
-				m_mainworker.UpdateDomoticzSecurityStatus(iSecStatus, szSwitchUser);
-			}
-			else if (cparam == "setcolbrightnessvalue")
-			{
-				if (session.rights < 1)
-				{
-					session.reply_status = reply::forbidden;
-					return; // Only user/admin allowed
-				}
-
-				std::string Username = "Admin";
-				if (!session.username.empty())
-					Username = session.username;
-
-				std::string idx = request::findValue(&req, "idx");
-
-				if (idx.empty())
-				{
-					return;
-				}
-				uint64_t ID = std::strtoull(idx.c_str(), nullptr, 10);
-				_tColor color;
-
-				std::string json = request::findValue(&req, "color");
-				std::string hex = request::findValue(&req, "hex");
-				std::string hue = request::findValue(&req, "hue");
-				std::string sat = request::findValue(&req, "sat");
-				std::string brightness = request::findValue(&req, "brightness");
-				std::string iswhite = request::findValue(&req, "iswhite");
-
-				int ival = 100;
-				float brightnessAdj = 1.0F;
-
-				if (!json.empty())
-				{
-					color = _tColor(json);
-					if (color.mode == ColorModeRGB)
-					{
-						// Normalize RGB to full brightness
-						float hsb[3];
-						int r, g, b;
-						rgb2hsb(color.r, color.g, color.b, hsb);
-						hsb2rgb(hsb[0] * 360.0F, hsb[1], 1.0F, r, g, b, 255);
-						color.r = r;
-						color.g = g;
-						color.b = b;
-						brightnessAdj = hsb[2];
-					}
-
-					//_log.Debug(DEBUG_WEBSERVER, "setcolbrightnessvalue: json: %s, color: '%s', bri: '%s'", json.c_str(), color.toString().c_str(), brightness.c_str());
-				}
-				else if (!hex.empty())
-				{
-					uint64_t ihex = hexstrtoui64(hex);
-					//_log.Debug(DEBUG_WEBSERVER, "setcolbrightnessvalue: hex: '%s', ihex: %" PRIx64 ", bri: '%s', iswhite: '%s'", hex.c_str(), ihex, brightness.c_str(),
-					//iswhite.c_str());
-					uint8_t r = 0;
-					uint8_t g = 0;
-					uint8_t b = 0;
-					uint8_t cw = 0;
-					uint8_t ww = 0;
-					switch (hex.length())
-					{
-					case 6: // RGB
-						r = (uint8_t)((ihex & 0x0000FF0000) >> 16);
-						g = (uint8_t)((ihex & 0x000000FF00) >> 8);
-						b = (uint8_t)ihex & 0xFF;
-						float hsb[3];
-						int tr, tg, tb; // tmp of 'int' type so can be passed as references to hsb2rgb
-						rgb2hsb(r, g, b, hsb);
-						// Normalize RGB to full brightness
-						hsb2rgb(hsb[0] * 360.0F, hsb[1], 1.0F, tr, tg, tb, 255);
-						r = tr;
-						g = tg;
-						b = tb;
-						brightnessAdj = hsb[2];
-						// Backwards compatibility: set iswhite for unsaturated colors
-						iswhite = (hsb[1] < (20.0 / 255.0)) ? "true" : "false";
-						color = _tColor(r, g, b, cw, ww, ColorModeRGB);
-						break;
-					case 8: // RGB_WW
-						r = (uint8_t)((ihex & 0x00FF000000) >> 24);
-						g = (uint8_t)((ihex & 0x0000FF0000) >> 16);
-						b = (uint8_t)((ihex & 0x000000FF00) >> 8);
-						ww = (uint8_t)ihex & 0xFF;
-						color = _tColor(r, g, b, cw, ww, ColorModeCustom);
-						break;
-					case 10: // RGB_CW_WW
-						r = (uint8_t)((ihex & 0xFF00000000) >> 32);
-						g = (uint8_t)((ihex & 0x00FF000000) >> 24);
-						b = (uint8_t)((ihex & 0x0000FF0000) >> 16);
-						cw = (uint8_t)((ihex & 0x000000FF00) >> 8);
-						ww = (uint8_t)ihex & 0xFF;
-						color = _tColor(r, g, b, cw, ww, ColorModeCustom);
-						break;
-					}
-					if (iswhite == "true")
-						color.mode = ColorModeWhite;
-					//_log.Debug(DEBUG_WEBSERVER, "setcolbrightnessvalue: rgbww: %02x%02x%02x%02x%02x, color: '%s'", r, g, b, cw, ww, color.toString().c_str());
-				}
-				else if (!hue.empty())
-				{
-					int r, g, b;
-
-					// convert hue to RGB
-					float iHue = float(atof(hue.c_str()));
-					float iSat = 100.0F;
-					if (!sat.empty())
-						iSat = float(atof(sat.c_str()));
-					hsb2rgb(iHue, iSat / 100.0F, 1.0F, r, g, b, 255);
-
-					color = _tColor(r, g, b, 0, 0, ColorModeRGB);
-					if (iswhite == "true")
-						color.mode = ColorModeWhite;
-					//_log.Debug(DEBUG_WEBSERVER, "setcolbrightnessvalue2: hue: %f, rgb: %02x%02x%02x, color: '%s'", iHue, r, g, b, color.toString().c_str());
-				}
-
-				if (color.mode == ColorModeNone)
-				{
-					return;
-				}
-
-				if (!brightness.empty())
-					ival = atoi(brightness.c_str());
-				ival = int(ival * brightnessAdj);
-				ival = std::max(ival, 0);
-				ival = std::min(ival, 100);
-
-				_log.Log(LOG_STATUS, "setcolbrightnessvalue: ID: %" PRIx64 ", bri: %d, color: '%s'", ID, ival, color.toString().c_str());
-				std::string szSwitchUser = Username + " (IP: " + session.remote_host + ")";
-				m_mainworker.SwitchLight(ID, "Set Color", (unsigned char)ival, color, false, 0, szSwitchUser);
-
-				root["status"] = "OK";
-				root["title"] = "SetColBrightnessValue";
-			}
-			else if (cparam.find("setkelvinlevel") == 0)
-			{
-				if (session.rights < 1)
-				{
-					session.reply_status = reply::forbidden;
-					return; // Only user/admin allowed
-				}
-
-				std::string Username = "Admin";
-				if (!session.username.empty())
-					Username = session.username;
-
-				root["status"] = "OK";
-				root["title"] = "Set Kelvin Level";
-
-				std::string idx = request::findValue(&req, "idx");
-
-				if (idx.empty())
-				{
-					return;
-				}
-
-				uint64_t ID = std::strtoull(idx.c_str(), nullptr, 10);
-
-				std::string kelvin = request::findValue(&req, "kelvin");
-				double ival = atof(kelvin.c_str());
-				ival = std::max(ival, 0.0);
-				ival = std::min(ival, 100.0);
-				_tColor color = _tColor(round(ival * 255.0F / 100.0F), ColorModeTemp);
-				_log.Log(LOG_STATUS, "setkelvinlevel: t: %f, color: '%s'", ival, color.toString().c_str());
-
-				std::string szSwitchUser = Username + " (IP: " + session.remote_host + ")";
-				m_mainworker.SwitchLight(ID, "Set Color", -1, color, false, 0, szSwitchUser);
-			}
-			else if (cparam == "brightnessup")
-			{
-				if (session.rights < 1)
-				{
-					session.reply_status = reply::forbidden;
-					return; // Only user/admin allowed
-				}
-
-				std::string Username = "Admin";
-				if (!session.username.empty())
-					Username = session.username;
-
-				root["status"] = "OK";
-				root["title"] = "Set brightness up!";
-
-				std::string idx = request::findValue(&req, "idx");
-
-				if (idx.empty())
-				{
-					return;
-				}
-
-				uint64_t ID = std::strtoull(idx.c_str(), nullptr, 10);
-				std::string szSwitchUser = Username + " (IP: " + session.remote_host + ")";
-				m_mainworker.SwitchLight(ID, "Bright Up", 0, NoColor, false, 0, szSwitchUser);
-			}
-			else if (cparam == "brightnessdown")
-			{
-				if (session.rights < 1)
-				{
-					session.reply_status = reply::forbidden;
-					return; // Only user/admin allowed
-				}
-
-				std::string Username = "Admin";
-				if (!session.username.empty())
-					Username = session.username;
-
-				root["status"] = "OK";
-				root["title"] = "Set brightness down!";
-
-				std::string idx = request::findValue(&req, "idx");
-
-				if (idx.empty())
-				{
-					return;
-				}
-
-				uint64_t ID = std::strtoull(idx.c_str(), nullptr, 10);
-				std::string szSwitchUser = Username + " (IP: " + session.remote_host + ")";
-				m_mainworker.SwitchLight(ID, "Bright Down", 0, NoColor, false, 0, szSwitchUser);
-			}
-			else if (cparam == "discomode")
-			{
-				if (session.rights < 1)
-				{
-					session.reply_status = reply::forbidden;
-					return; // Only user/admin allowed
-				}
-
-				std::string Username = "Admin";
-				if (!session.username.empty())
-					Username = session.username;
-
-				root["status"] = "OK";
-				root["title"] = "Set to last known disco mode!";
-
-				std::string idx = request::findValue(&req, "idx");
-
-				if (idx.empty())
-				{
-					return;
-				}
-
-				uint64_t ID = std::strtoull(idx.c_str(), nullptr, 10);
-				std::string szSwitchUser = Username + " (IP: " + session.remote_host + ")";
-				m_mainworker.SwitchLight(ID, "Disco Mode", 0, NoColor, false, 0, szSwitchUser);
-			}
-			else if (cparam.find("discomodenum") == 0 && cparam != "discomode" && cparam.size() == 13)
-			{
-				if (session.rights < 1)
-				{
-					session.reply_status = reply::forbidden;
-					return; // Only user/admin allowed
-				}
-
-				std::string Username = "Admin";
-				if (!session.username.empty())
-					Username = session.username;
-
-				root["status"] = "OK";
-				root["title"] = "Set to disco mode!";
-
-				std::string idx = request::findValue(&req, "idx");
-
-				if (idx.empty())
-				{
-					return;
-				}
-
-				uint64_t ID = std::strtoull(idx.c_str(), nullptr, 10);
-				char szTmp[40];
-				sprintf(szTmp, "Disco Mode %s", cparam.substr(12).c_str());
-				std::string szSwitchUser = Username + " (IP: " + session.remote_host + ")";
-				m_mainworker.SwitchLight(ID, szTmp, 0, NoColor, false, 0, szSwitchUser);
-			}
-			else if (cparam == "discoup")
-			{
-				if (session.rights < 1)
-				{
-					session.reply_status = reply::forbidden;
-					return; // Only user/admin allowed
-				}
-
-				std::string Username = "Admin";
-				if (!session.username.empty())
-					Username = session.username;
-
-				root["status"] = "OK";
-				root["title"] = "Set to next disco mode!";
-
-				std::string idx = request::findValue(&req, "idx");
-
-				if (idx.empty())
-				{
-					return;
-				}
-
-				uint64_t ID = std::strtoull(idx.c_str(), nullptr, 10);
-				std::string szSwitchUser = Username + " (IP: " + session.remote_host + ")";
-				m_mainworker.SwitchLight(ID, "Disco Up", 0, NoColor, false, 0, szSwitchUser);
-			}
-			else if (cparam == "discodown")
-			{
-				if (session.rights < 1)
-				{
-					session.reply_status = reply::forbidden;
-					return; // Only user/admin allowed
-				}
-
-				std::string Username = "Admin";
-				if (!session.username.empty())
-					Username = session.username;
-
-				root["status"] = "OK";
-				root["title"] = "Set to previous disco mode!";
-
-				std::string idx = request::findValue(&req, "idx");
-
-				if (idx.empty())
-				{
-					return;
-				}
-
-				uint64_t ID = std::strtoull(idx.c_str(), nullptr, 10);
-				std::string szSwitchUser = Username + " (IP: " + session.remote_host + ")";
-				m_mainworker.SwitchLight(ID, "Disco Down", 0, NoColor, false, 0, szSwitchUser);
-			}
-			else if (cparam == "speedup")
-			{
-				if (session.rights < 1)
-				{
-					session.reply_status = reply::forbidden;
-					return; // Only user/admin allowed
-				}
-
-				std::string Username = "Admin";
-				if (!session.username.empty())
-					Username = session.username;
-
-				root["status"] = "OK";
-				root["title"] = "Set disco speed up!";
-
-				std::string idx = request::findValue(&req, "idx");
-
-				if (idx.empty())
-				{
-					return;
-				}
-
-				uint64_t ID = std::strtoull(idx.c_str(), nullptr, 10);
-				std::string szSwitchUser = Username + " (IP: " + session.remote_host + ")";
-				m_mainworker.SwitchLight(ID, "Speed Up", 0, NoColor, false, 0, szSwitchUser);
-			}
-			else if (cparam == "speeduplong")
-			{
-				if (session.rights < 1)
-				{
-					session.reply_status = reply::forbidden;
-					return; // Only user/admin allowed
-				}
-
-				std::string Username = "Admin";
-				if (!session.username.empty())
-					Username = session.username;
-
-				root["status"] = "OK";
-				root["title"] = "Set speed long!";
-
-				std::string idx = request::findValue(&req, "idx");
-
-				if (idx.empty())
-				{
-					return;
-				}
-
-				uint64_t ID = std::strtoull(idx.c_str(), nullptr, 10);
-				std::string szSwitchUser = Username + " (IP: " + session.remote_host + ")";
-				m_mainworker.SwitchLight(ID, "Speed Up Long", 0, NoColor, false, 0, szSwitchUser);
-			}
-			else if (cparam == "speeddown")
-			{
-				if (session.rights < 1)
-				{
-					session.reply_status = reply::forbidden;
-					return; // Only user/admin allowed
-				}
-
-				std::string Username = "Admin";
-				if (!session.username.empty())
-					Username = session.username;
-
-				root["status"] = "OK";
-				root["title"] = "Set disco speed down!";
-
-				std::string idx = request::findValue(&req, "idx");
-
-				if (idx.empty())
-				{
-					return;
-				}
-
-				uint64_t ID = std::strtoull(idx.c_str(), nullptr, 10);
-				std::string szSwitchUser = Username + " (IP: " + session.remote_host + ")";
-				m_mainworker.SwitchLight(ID, "Speed Down", 0, NoColor, false, 0, szSwitchUser);
-			}
-			else if (cparam == "speedmin")
-			{
-				if (session.rights < 1)
-				{
-					session.reply_status = reply::forbidden;
-					return; // Only user/admin allowed
-				}
-
-				std::string Username = "Admin";
-				if (!session.username.empty())
-					Username = session.username;
-
-				root["status"] = "OK";
-				root["title"] = "Set disco speed minimal!";
-
-				std::string idx = request::findValue(&req, "idx");
-
-				if (idx.empty())
-				{
-					return;
-				}
-
-				uint64_t ID = std::strtoull(idx.c_str(), nullptr, 10);
-				std::string szSwitchUser = Username + " (IP: " + session.remote_host + ")";
-				m_mainworker.SwitchLight(ID, "Speed Minimal", 0, NoColor, false, 0, szSwitchUser);
-			}
-			else if (cparam == "speedmax")
-			{
-				if (session.rights < 1)
-				{
-					session.reply_status = reply::forbidden;
-					return; // Only user/admin allowed
-				}
-
-				std::string Username = "Admin";
-				if (!session.username.empty())
-					Username = session.username;
-
-				root["status"] = "OK";
-				root["title"] = "Set disco speed maximal!";
-
-				std::string idx = request::findValue(&req, "idx");
-
-				if (idx.empty())
-				{
-					return;
-				}
-
-				uint64_t ID = std::strtoull(idx.c_str(), nullptr, 10);
-				std::string szSwitchUser = Username + " (IP: " + session.remote_host + ")";
-				m_mainworker.SwitchLight(ID, "Speed Maximal", 0, NoColor, false, 0, szSwitchUser);
-			}
-			else if (cparam == "warmer")
-			{
-				if (session.rights < 1)
-				{
-					session.reply_status = reply::forbidden;
-					return; // Only user/admin allowed
-				}
-
-				std::string Username = "Admin";
-				if (!session.username.empty())
-					Username = session.username;
-
-				root["status"] = "OK";
-				root["title"] = "Set Kelvin up!";
-
-				std::string idx = request::findValue(&req, "idx");
-
-				if (idx.empty())
-				{
-					return;
-				}
-
-				uint64_t ID = std::strtoull(idx.c_str(), nullptr, 10);
-				std::string szSwitchUser = Username + " (IP: " + session.remote_host + ")";
-				m_mainworker.SwitchLight(ID, "Warmer", 0, NoColor, false, 0, szSwitchUser);
-			}
-			else if (cparam == "cooler")
-			{
-				if (session.rights < 1)
-				{
-					session.reply_status = reply::forbidden;
-					return; // Only user/admin allowed
-				}
-
-				std::string Username = "Admin";
-				if (!session.username.empty())
-					Username = session.username;
-
-				root["status"] = "OK";
-				root["title"] = "Set Kelvin down!";
-
-				std::string idx = request::findValue(&req, "idx");
-
-				if (idx.empty())
-				{
-					return;
-				}
-
-				uint64_t ID = std::strtoull(idx.c_str(), nullptr, 10);
-				std::string szSwitchUser = Username + " (IP: " + session.remote_host + ")";
-				m_mainworker.SwitchLight(ID, "Cooler", 0, NoColor, false, 0, szSwitchUser);
-			}
-			else if (cparam == "fulllight")
-			{
-				if (session.rights < 1)
-				{
-					session.reply_status = reply::forbidden;
-					return; // Only user/admin allowed
-				}
-
-				std::string Username = "Admin";
-				if (!session.username.empty())
-					Username = session.username;
-
-				root["status"] = "OK";
-				root["title"] = "Set Full!";
-
-				std::string idx = request::findValue(&req, "idx");
-
-				if (idx.empty())
-				{
-					return;
-				}
-
-				uint64_t ID = std::strtoull(idx.c_str(), nullptr, 10);
-				std::string szSwitchUser = Username + " (IP: " + session.remote_host + ")";
-				m_mainworker.SwitchLight(ID, "Set Full", 0, NoColor, false, 0, szSwitchUser);
-			}
-			else if (cparam == "nightlight")
-			{
-				if (session.rights < 1)
-				{
-					session.reply_status = reply::forbidden;
-					return; // Only user/admin allowed
-				}
-
-				std::string Username = "Admin";
-				if (!session.username.empty())
-					Username = session.username;
-
-				root["status"] = "OK";
-				root["title"] = "Set to nightlight!";
-
-				std::string idx = request::findValue(&req, "idx");
-
-				if (idx.empty())
-				{
-					return;
-				}
-
-				uint64_t ID = std::strtoull(idx.c_str(), nullptr, 10);
-				std::string szSwitchUser = Username + " (IP: " + session.remote_host + ")";
-				m_mainworker.SwitchLight(ID, "Set Night", 0, NoColor, false, 0, szSwitchUser);
-			}
-			else if (cparam == "whitelight")
-			{
-				if (session.rights < 1)
-				{
-					session.reply_status = reply::forbidden;
-					return; // Only user/admin allowed
-				}
-
-				std::string Username = "Admin";
-				if (!session.username.empty())
-					Username = session.username;
-
-				root["status"] = "OK";
-				root["title"] = "Set to clear white!";
-
-				std::string idx = request::findValue(&req, "idx");
-
-				if (idx.empty())
-				{
-					return;
-				}
-
-				uint64_t ID = std::strtoull(idx.c_str(), nullptr, 10);
-				// TODO: Change to color with mode=ColorModeWhite and level=100?
-				std::string szSwitchUser = Username + " (IP: " + session.remote_host + ")";
-				m_mainworker.SwitchLight(ID, "Set White", 0, NoColor, false, 0, szSwitchUser);
-			}
-			else if (cparam == "getfloorplanimages")
-			{
-				root["status"] = "OK";
-				root["title"] = "GetFloorplanImages";
-
-				bool bReturnUnused = atoi(request::findValue(&req, "unused").c_str()) != 0;
-
-				if (!bReturnUnused)
-					result = m_sql.safe_query("SELECT ID, Name, ScaleFactor FROM Floorplans ORDER BY [Name]");
-				else
-					result = m_sql.safe_query("SELECT ID, Name, ScaleFactor FROM Floorplans WHERE ID NOT IN(SELECT FloorplanID FROM Plans)");
-				if (!result.empty())
-				{
-					int ii = 0;
-					for (const auto& sd : result)
-					{
-						root["result"][ii]["idx"] = sd[0];
-						root["result"][ii]["name"] = sd[1];
-						root["result"][ii]["scalefactor"] = sd[2];
-						ii++;
-					}
-				}
-			}
-			else if (cparam == "updatefloorplan")
-			{
-				if (session.rights < 2)
-				{
-					session.reply_status = reply::forbidden;
-					return; // Only admin user allowed
-				}
-
-				std::string idx = request::findValue(&req, "idx");
-				if (idx.empty())
-					return;
-				std::string name = HTMLSanitizer::Sanitize(request::findValue(&req, "name"));
-				std::string scalefactor = request::findValue(&req, "scalefactor");
-				if ((name.empty()) || (scalefactor.empty()))
-					return;
-
-				root["status"] = "OK";
-				root["title"] = "UpdateFloorplan";
-
-				m_sql.safe_query("UPDATE Floorplans SET Name='%q',ScaleFactor='%q' WHERE (ID == '%q')", name.c_str(), scalefactor.c_str(), idx.c_str());
-			}
-			else if (cparam == "deletefloorplan")
-			{
-				if (session.rights < 2)
-				{
-					session.reply_status = reply::forbidden;
-					return; // Only admin user allowed
-				}
-
-				std::string idx = request::findValue(&req, "idx");
-				if (idx.empty())
-					return;
-				root["status"] = "OK";
-				root["title"] = "DeleteFloorplan";
-				m_sql.safe_query("UPDATE DeviceToPlansMap SET XOffset=0,YOffset=0 WHERE (PlanID IN (SELECT ID from Plans WHERE (FloorplanID == '%q')))", idx.c_str());
-				m_sql.safe_query("UPDATE Plans SET FloorplanID=0,Area='' WHERE (FloorplanID == '%q')", idx.c_str());
-				m_sql.safe_query("DELETE FROM Floorplans WHERE (ID == '%q')", idx.c_str());
-			}
-			else if (cparam == "changefloorplanorder")
-			{
-				if (session.rights < 2)
-				{
-					session.reply_status = reply::forbidden;
-					return; // Only admin user allowed
-				}
-
-				std::string idx = request::findValue(&req, "idx");
-				if (idx.empty())
-					return;
-				std::string sway = request::findValue(&req, "way");
-				if (sway.empty())
-					return;
-				bool bGoUp = (sway == "0");
-
-				std::string aOrder, oID, oOrder;
-
-				result = m_sql.safe_query("SELECT [Order] FROM Floorplans WHERE (ID=='%q')", idx.c_str());
-				if (result.empty())
-					return;
-				aOrder = result[0][0];
-
-				if (!bGoUp)
-				{
-					// Get next device order
-					result = m_sql.safe_query("SELECT ID, [Order] FROM Floorplans WHERE ([Order]>'%q') ORDER BY [Order] ASC", aOrder.c_str());
-					if (result.empty())
-						return;
-					oID = result[0][0];
-					oOrder = result[0][1];
-				}
-				else
-				{
-					// Get previous device order
-					result = m_sql.safe_query("SELECT ID, [Order] FROM Floorplans WHERE ([Order]<'%q') ORDER BY [Order] DESC", aOrder.c_str());
-					if (result.empty())
-						return;
-					oID = result[0][0];
-					oOrder = result[0][1];
-				}
-				// Swap them
-				root["status"] = "OK";
-				root["title"] = "ChangeFloorPlanOrder";
-
-				m_sql.safe_query("UPDATE Floorplans SET [Order] = '%q' WHERE (ID='%q')", oOrder.c_str(), idx.c_str());
-				m_sql.safe_query("UPDATE Floorplans SET [Order] = '%q' WHERE (ID='%q')", aOrder.c_str(), oID.c_str());
-			}
-			else if (cparam == "getunusedfloorplanplans")
-			{
-				if (session.rights < 2)
-				{
-					session.reply_status = reply::forbidden;
-					return; // Only admin user allowed
-				}
-
-				root["status"] = "OK";
-				root["title"] = "GetUnusedFloorplanPlans";
-				int ii = 0;
-
-				result = m_sql.safe_query("SELECT ID, Name FROM Plans WHERE (FloorplanID==0) ORDER BY Name COLLATE NOCASE ASC");
-				if (!result.empty())
-				{
-					for (const auto& sd : result)
-					{
-						root["result"][ii]["type"] = 0;
-						root["result"][ii]["idx"] = sd[0];
-						root["result"][ii]["Name"] = sd[1];
-						ii++;
-					}
-				}
-			}
-			else if (cparam == "getfloorplanplans")
-			{
-				std::string idx = request::findValue(&req, "idx");
-				if (idx.empty())
-					return;
-				root["status"] = "OK";
-				root["title"] = "GetFloorplanPlans";
-				int ii = 0;
-				result = m_sql.safe_query("SELECT ID, Name, Area FROM Plans WHERE (FloorplanID=='%q') ORDER BY Name COLLATE NOCASE ASC", idx.c_str());
-				if (!result.empty())
-				{
-					for (const auto& sd : result)
-					{
-						root["result"][ii]["idx"] = sd[0];
-						root["result"][ii]["Name"] = sd[1];
-						root["result"][ii]["Area"] = sd[2];
-						ii++;
-					}
-				}
-			}
-			else if (cparam == "addfloorplanplan")
-			{
-				if (session.rights < 2)
-				{
-					session.reply_status = reply::forbidden;
-					return; // Only admin user allowed
-				}
-
-				std::string idx = request::findValue(&req, "idx");
-				std::string planidx = request::findValue(&req, "planidx");
-				if ((idx.empty()) || (planidx.empty()))
-					return;
-				root["status"] = "OK";
-				root["title"] = "AddFloorplanPlan";
-
-				m_sql.safe_query("UPDATE Plans SET FloorplanID='%q' WHERE (ID == '%q')", idx.c_str(), planidx.c_str());
-				_log.Log(LOG_STATUS, "(Floorplan) Plan '%s' added to floorplan '%s'.", planidx.c_str(), idx.c_str());
-			}
-			else if (cparam == "updatefloorplanplan")
-			{
-				if (session.rights < 2)
-				{
-					session.reply_status = reply::forbidden;
-					return; // Only admin user allowed
-				}
-
-				std::string planidx = request::findValue(&req, "planidx");
-				std::string planarea = request::findValue(&req, "area");
-				if (planidx.empty())
-					return;
-				root["status"] = "OK";
-				root["title"] = "UpdateFloorplanPlan";
-
-				m_sql.safe_query("UPDATE Plans SET Area='%q' WHERE (ID == '%q')", planarea.c_str(), planidx.c_str());
-				_log.Log(LOG_STATUS, "(Floorplan) Plan '%s' floor area updated to '%s'.", planidx.c_str(), planarea.c_str());
-			}
-			else if (cparam == "deletefloorplanplan")
-			{
-				if (session.rights < 2)
-				{
-					session.reply_status = reply::forbidden;
-					return; // Only admin user allowed
-				}
-
-				std::string idx = request::findValue(&req, "idx");
-				if (idx.empty())
-					return;
-				root["status"] = "OK";
-				root["title"] = "DeleteFloorplanPlan";
-				m_sql.safe_query("UPDATE DeviceToPlansMap SET XOffset=0,YOffset=0 WHERE (PlanID == '%q')", idx.c_str());
-				_log.Log(LOG_STATUS, "(Floorplan) Device coordinates reset for plan '%s'.", idx.c_str());
-				m_sql.safe_query("UPDATE Plans SET FloorplanID=0,Area='' WHERE (ID == '%q')", idx.c_str());
-				_log.Log(LOG_STATUS, "(Floorplan) Plan '%s' floorplan data reset.", idx.c_str());
-			}
-		}
-
-		void CWebServer::DisplaySwitchTypesCombo(std::string& content_part)
-		{
-			char szTmp[200];
-
-			std::map<std::string, int> _switchtypes;
-
-			for (int ii = 0; ii < STYPE_END; ii++)
-			{
-				std::string sTypeName = Switch_Type_Desc((_eSwitchType)ii);
-				if (sTypeName != "Unknown")
-				{
-					_switchtypes[sTypeName] = ii;
-				}
-			}
-			// return a sorted list
-			for (const auto& type : _switchtypes)
-			{
-				sprintf(szTmp, "<option value=\"%d\">%s</option>\n", type.second, type.first.c_str());
-				content_part += szTmp;
-			}
-		}
-
-		void CWebServer::DisplayMeterTypesCombo(std::string& content_part)
-		{
-			char szTmp[200];
-			for (int ii = 0; ii < MTYPE_END; ii++)
-			{
-				sprintf(szTmp, "<option value=\"%d\">%s</option>\n", ii, Meter_Type_Desc((_eMeterType)ii));
-				content_part += szTmp;
-			}
-		}
-
-		void CWebServer::DisplayLanguageCombo(std::string& content_part)
-		{
-			// return a sorted list
-			std::map<std::string, std::string> _ltypes;
-			char szTmp[200];
-			for (auto& lang : guiLanguage)
-			{
-				_ltypes[lang.second] = lang.first;
-			}
-			for (const auto& type : _ltypes)
-			{
-				sprintf(szTmp, "<option value=\"%s\">%s</option>\n", type.second.c_str(), type.first.c_str());
-				content_part += szTmp;
-			}
-		}
-
-		void CWebServer::DisplayTimerTypesCombo(std::string& content_part)
-		{
-			char szTmp[200];
-			for (int ii = 0; ii < TTYPE_END; ii++)
-			{
-				sprintf(szTmp, "<option data-i18n=\"%s\" value=\"%d\">%s</option>\n", Timer_Type_Desc(ii), ii, Timer_Type_Desc(ii));
-				content_part += szTmp;
-			}
-		}
-
 		void CWebServer::LoadUsers()
 		{
 			ClearUserPasswords();
 			// Add Users
 			std::vector<std::vector<std::string>> result;
-			result = m_sql.safe_query("SELECT ID, Active, Username, Password, Rights, TabsEnabled FROM Users");
+			result = m_sql.safe_query("SELECT ID, Active, Username, Password, MFAsecret, Rights, TabsEnabled FROM Users");
 			if (!result.empty())
 			{
-				for (const auto &sd : result)
+				for (const auto& sd : result)
 				{
 					int bIsActive = static_cast<int>(atoi(sd[1].c_str()));
 					if (bIsActive)
@@ -7843,11 +3684,12 @@ namespace http
 
 						std::string username = base64_decode(sd[2]);
 						std::string password = sd[3];
+						std::string mfatoken = sd[4];
 
-						_eUserRights rights = (_eUserRights)atoi(sd[4].c_str());
-						int activetabs = atoi(sd[5].c_str());
+						_eUserRights rights = (_eUserRights)atoi(sd[5].c_str());
+						int activetabs = atoi(sd[6].c_str());
 
-						AddUser(ID, username, password, rights, activetabs);
+						AddUser(ID, username, password, mfatoken, rights, activetabs);
 					}
 				}
 			}
@@ -7856,7 +3698,7 @@ namespace http
 			result = m_sql.safe_query("SELECT ID, Active, Public, Applicationname, Secret, Pemfile FROM Applications");
 			if (!result.empty())
 			{
-				for (const auto &sd : result)
+				for (const auto& sd : result)
 				{
 					int bIsActive = static_cast<int>(atoi(sd[1].c_str()));
 					if (bIsActive)
@@ -7868,7 +3710,7 @@ namespace http
 						std::string pemfile = sd[5];
 						if (bPublic && secret.empty())
 							secret = GenerateMD5Hash(pemfile);
-						AddUser(ID, applicationname, secret, URIGHTS_CLIENTID, bPublic, pemfile);
+						AddUser(ID, applicationname, secret, "", URIGHTS_CLIENTID, bPublic, pemfile);
 					}
 				}
 			}
@@ -7876,7 +3718,7 @@ namespace http
 			m_mainworker.LoadSharedUsers();
 		}
 
-		void CWebServer::AddUser(const unsigned long ID, const std::string &username, const std::string &password, const int userrights, const int activetabs, const std::string &pemfile)
+		void CWebServer::AddUser(const unsigned long ID, const std::string& username, const std::string& password, const std::string& mfatoken, const int userrights, const int activetabs, const std::string& pemfile)
 		{
 			if (m_pWebEm == nullptr)
 				return;
@@ -7895,7 +3737,7 @@ namespace http
 				std::string szTmpFile = szUserDataFolder + pemfile;
 
 				ifs.open(szTmpFile);
-				if(ifs.is_open())
+				if (ifs.is_open())
 				{
 					std::string sLine = "";
 					int i = 0;
@@ -7920,13 +3762,13 @@ namespace http
 							pubkey += sLine;
 						if (sLine.find("-----END PUBLIC KEY") != std::string::npos)
 						{
-							if(bPub)
+							if (bPub)
 								bPubFound = true;
 							bPub = false;
 						}
 						if (sLine.find("-----END PRIVATE KEY") != std::string::npos)
 						{
-							if(bPriv)
+							if (bPriv)
 								bPrivFound = true;
 							bPriv = false;
 						}
@@ -7942,9 +3784,9 @@ namespace http
 				else
 					sErr = "Unable to find/open file";
 
-				if(!sErr.empty())
+				if (!sErr.empty())
 				{
-					_log.Log(LOG_STATUS,"AddUser: Unable to load and process given PEMfile (%s) (%s)!", szTmpFile.c_str(), sErr.c_str());
+					_log.Log(LOG_STATUS, "AddUser: Unable to load and process given PEMfile (%s) (%s)!", szTmpFile.c_str(), sErr.c_str());
 					return;
 				}
 			}
@@ -7953,6 +3795,7 @@ namespace http
 			wtmp.ID = ID;
 			wtmp.Username = username;
 			wtmp.Password = password;
+			wtmp.Mfatoken = mfatoken;
 			wtmp.PrivKey = privkey;
 			wtmp.PubKey = pubkey;
 			wtmp.userrights = (_eUserRights)userrights;
@@ -7963,14 +3806,14 @@ namespace http
 			_tUserAccessCode utmp;
 			utmp.ID = ID;
 			utmp.UserName = username;
-			utmp.clientID = -1	;
+			utmp.clientID = -1;
 			utmp.ExpTime = 0;
 			utmp.AuthCode = "";
 			utmp.Scope = "";
 			utmp.RedirectUri = "";
 			m_accesscodes.push_back(utmp);
 
-			m_pWebEm->AddUserPassword(ID, username, password, (_eUserRights)userrights, activetabs, privkey, pubkey);
+			m_pWebEm->AddUserPassword(ID, username, password, mfatoken, (_eUserRights)userrights, activetabs, privkey, pubkey);
 		}
 
 		void CWebServer::ClearUserPasswords()
@@ -8001,29 +3844,12 @@ namespace http
 		int CWebServer::CountAdminUsers()
 		{
 			int iAdmins = 0;
-			for (const auto &user : m_users)
+			for (const auto& user : m_users)
 			{
 				if (user.userrights == URIGHTS_ADMIN)
 					iAdmins++;
 			}
 			return iAdmins;
-		}
-
-		// Depricated : This 'page' should not be used anymore. Use command instead
-		void CWebServer::PostSettings(WebEmSession& session, const request& req, reply& rep)
-		{
-			_log.Log(LOG_NORM, "Depricated: Page StoreSettings! Use command instead!");
-
-			Json::Value root;
-			Cmd_PostSettings(session, req, root);
-
-			std::string jcallback = request::findValue(&req, "jsoncallback");
-			if (jcallback.empty())
-			{
-				reply::set_content(&rep, root.toStyledString());
-				return;
-			}
-			reply::set_content(&rep, "var data=" + root.toStyledString() + '\n' + jcallback + "(data);");
 		}
 
 		// PostSettings
@@ -8070,7 +3896,7 @@ namespace http
 				m_sql.UpdatePreferencesVar("FloorplanAnimateZoom", (request::findValue(&req, "FloorplanAnimateZoom") == "on" ? 1 : 0)); cntSettings++;
 				m_sql.UpdatePreferencesVar("FloorplanShowSensorValues", (request::findValue(&req, "FloorplanShowSensorValues") == "on" ? 1 : 0)); cntSettings++;
 				m_sql.UpdatePreferencesVar("FloorplanShowSwitchValues", (request::findValue(&req, "FloorplanShowSwitchValues") == "on" ? 1 : 0)); cntSettings++;
-				m_sql.UpdatePreferencesVar("FloorplanShowSceneNames", (request::findValue(&req, "FloorplanShowSwitchValues") == "on" ? 1 : 0)); cntSettings++;
+				m_sql.UpdatePreferencesVar("FloorplanShowSceneNames", (request::findValue(&req, "FloorplanShowSceneNames") == "on" ? 1 : 0)); cntSettings++;
 				m_sql.UpdatePreferencesVar("IFTTTEnabled", (request::findValue(&req, "IFTTTEnabled") == "on" ? 1 : 0)); cntSettings++;
 
 				m_sql.UpdatePreferencesVar("Language", request::findValue(&req, "Language")); cntSettings++;
@@ -8326,6 +4152,15 @@ namespace http
 				m_pWebEm->SetWebTheme(SelectedTheme);
 				cntSettings++;
 
+				//Update the Max kWh value
+				rnvalue = 6000;
+				if (m_sql.GetPreferencesVar("MaxElectricPower", rnvalue))
+				{
+					if (rnvalue < 1)
+						rnvalue = 6000;
+					m_sql.m_max_kwh_usage = rnvalue;
+				}
+
 				/* To wrap up everything */
 				m_notifications.ConfigFromGetvars(req, true);
 				m_notifications.LoadConfig();
@@ -8383,7 +4218,7 @@ namespace http
 			bool Enabled;
 			std::string Mode1; // Used to flag DimmerType as relative for some old LimitLessLight type bulbs
 			std::string Mode2; // Used to flag DimmerType as relative for some old LimitLessLight type bulbs
-		} tHardwareList;
+		};
 
 		void CWebServer::GetJSonDevices(Json::Value& root, const std::string& rused, const std::string& rfilter, const std::string& order, const std::string& rowid, const std::string& planID,
 			const std::string& floorID, const bool bDisplayHidden, const bool bDisplayDisabled, const bool bFetchFavorites, const time_t LastUpdate,
@@ -8490,13 +4325,21 @@ namespace http
 				iUser = FindUser(username.c_str());
 				if (iUser != -1)
 				{
-					_eUserRights urights = m_users[iUser].userrights;
-					if (urights != URIGHTS_ADMIN)
+					
+					if (m_users[iUser].TotSensors > 0)
 					{
-						result = m_sql.safe_query("SELECT COUNT(*) FROM SharedDevices WHERE (SharedUserID == %lu)", m_users[iUser].ID);
-						if (!result.empty())
+						bool bSkipSelectedDevices = false;
+						if (m_users[iUser].userrights == URIGHTS_ADMIN)
 						{
-							totUserDevices = (unsigned int)std::stoi(result[0][0]);
+							bSkipSelectedDevices = (rused == "all");
+						}
+						if (!bSkipSelectedDevices)
+						{
+							result = m_sql.safe_query("SELECT COUNT(*) FROM SharedDevices WHERE (SharedUserID == %lu)", m_users[iUser].ID);
+							if (!result.empty())
+							{
+								totUserDevices = (unsigned int)std::stoi(result[0][0]);
+							}
 						}
 					}
 					bShowScenes = (m_users[iUser].ActiveTabs & (1 << 1)) != 0;
@@ -8823,11 +4666,11 @@ namespace http
 
 					if (order.empty() || (!isAlpha))
 					{
-						strcpy(szOrderBy, "A.[Order],A.LastUpdate DESC");
+						strcpy(szOrderBy, "B.[Order],A.LastUpdate DESC");
 					}
 					else
 					{
-						sprintf(szOrderBy, "A.[Order],A.%%s ASC");
+						sprintf(szOrderBy, "B.[Order],A.%s ASC", order.c_str());
 					}
 					// _log.Log(LOG_STATUS, "Getting all devices for user %lu", m_users[iUser].ID);
 					szQuery = ("SELECT A.ID, A.DeviceID, A.Unit, A.Name, A.Used,"
@@ -8853,888 +4696,832 @@ namespace http
 
 			for (const auto& sd : result)
 			{
-				unsigned char favorite = atoi(sd[12].c_str());
-				bool bIsInPlan = !planID.empty() && (planID != "0");
-
-				// Check if we only want favorite devices
-				if (!bIsInPlan)
+				try
 				{
-					if ((bFetchFavorites) && (!favorite))
+					unsigned char favorite = atoi(sd[12].c_str());
+					bool bIsInPlan = !planID.empty() && (planID != "0");
+
+					// Check if we only want favorite devices
+					if (!bIsInPlan)
+					{
+						if ((bFetchFavorites) && (!favorite))
+							continue;
+					}
+
+					std::string sDeviceName = sd[3];
+
+					if (!bDisplayHidden)
+					{
+						if (_HiddenDevices.find(sd[0]) != _HiddenDevices.end())
+							continue;
+						if (sDeviceName[0] == '$')
+						{
+							if (bAllowDeviceToBeHidden)
+								continue;
+							if (!planID.empty())
+								sDeviceName = sDeviceName.substr(1);
+						}
+					}
+					int hardwareID = atoi(sd[14].c_str());
+					auto hItt = _hardwareNames.find(hardwareID);
+					bool bIsHardwareDisabled = true;
+					if (hItt != _hardwareNames.end())
+					{
+						// ignore sensors where the hardware is disabled
+						if ((!bDisplayDisabled) && (!(*hItt).second.Enabled))
+							continue;
+						bIsHardwareDisabled = !(*hItt).second.Enabled;
+					}
+
+					unsigned int dType = atoi(sd[5].c_str());
+					unsigned int dSubType = atoi(sd[6].c_str());
+					unsigned int used = atoi(sd[4].c_str());
+					int nValue = atoi(sd[9].c_str());
+					std::string sValue = sd[10];
+					std::string sLastUpdate = sd[11];
+					if (sLastUpdate.size() > 19)
+						sLastUpdate = sLastUpdate.substr(0, 19);
+
+					if (iLastUpdate != 0)
+					{
+						time_t cLastUpdate;
+						ParseSQLdatetime(cLastUpdate, tLastUpdate, sLastUpdate, tm1.tm_isdst);
+						if (cLastUpdate <= iLastUpdate)
+							continue;
+					}
+
+					_eSwitchType switchtype = (_eSwitchType)atoi(sd[13].c_str());
+					_eMeterType metertype = (_eMeterType)switchtype;
+					double AddjValue = atof(sd[15].c_str());
+					double AddjMulti = atof(sd[16].c_str());
+					double AddjValue2 = atof(sd[17].c_str());
+					double AddjMulti2 = atof(sd[18].c_str());
+					int LastLevel = atoi(sd[19].c_str());
+					int CustomImage = atoi(sd[20].c_str());
+					std::string strParam1 = base64_encode(sd[21]);
+					std::string strParam2 = base64_encode(sd[22]);
+					int iProtected = atoi(sd[23].c_str());
+
+					std::string Description = sd[27];
+					std::string sOptions = sd[28];
+					std::string sColor = sd[29];
+					std::map<std::string, std::string> options = m_sql.BuildDeviceOptions(sOptions);
+
+					struct tm ntime;
+					time_t checktime;
+					ParseSQLdatetime(checktime, ntime, sLastUpdate, tm1.tm_isdst);
+					bool bHaveTimeout = (now - checktime >= SensorTimeOut * 60);
+
+					if (dType == pTypeTEMP_RAIN)
+						continue; // dont want you for now
+
+					if ((rused == "true") && (!used))
 						continue;
-				}
 
-				std::string sDeviceName = sd[3];
-
-				if (!bDisplayHidden)
-				{
-					if (_HiddenDevices.find(sd[0]) != _HiddenDevices.end())
+					if ((rused == "false") && (used))
 						continue;
-					if (sDeviceName[0] == '$')
+					if (!rfilter.empty())
 					{
-						if (bAllowDeviceToBeHidden)
-							continue;
-						if (!planID.empty())
-							sDeviceName = sDeviceName.substr(1);
-					}
-				}
-				int hardwareID = atoi(sd[14].c_str());
-				auto hItt = _hardwareNames.find(hardwareID);
-				bool bIsHardwareDisabled = true;
-				if (hItt != _hardwareNames.end())
-				{
-					// ignore sensors where the hardware is disabled
-					if ((!bDisplayDisabled) && (!(*hItt).second.Enabled))
-						continue;
-					bIsHardwareDisabled = !(*hItt).second.Enabled;
-				}
-
-				unsigned int dType = atoi(sd[5].c_str());
-				unsigned int dSubType = atoi(sd[6].c_str());
-				unsigned int used = atoi(sd[4].c_str());
-				int nValue = atoi(sd[9].c_str());
-				std::string sValue = sd[10];
-				std::string sLastUpdate = sd[11];
-				if (sLastUpdate.size() > 19)
-					sLastUpdate = sLastUpdate.substr(0, 19);
-
-				if (iLastUpdate != 0)
-				{
-					time_t cLastUpdate;
-					ParseSQLdatetime(cLastUpdate, tLastUpdate, sLastUpdate, tm1.tm_isdst);
-					if (cLastUpdate <= iLastUpdate)
-						continue;
-				}
-
-				_eSwitchType switchtype = (_eSwitchType)atoi(sd[13].c_str());
-				_eMeterType metertype = (_eMeterType)switchtype;
-				double AddjValue = atof(sd[15].c_str());
-				double AddjMulti = atof(sd[16].c_str());
-				double AddjValue2 = atof(sd[17].c_str());
-				double AddjMulti2 = atof(sd[18].c_str());
-				int LastLevel = atoi(sd[19].c_str());
-				int CustomImage = atoi(sd[20].c_str());
-				std::string strParam1 = base64_encode(sd[21]);
-				std::string strParam2 = base64_encode(sd[22]);
-				int iProtected = atoi(sd[23].c_str());
-
-				std::string Description = sd[27];
-				std::string sOptions = sd[28];
-				std::string sColor = sd[29];
-				std::map<std::string, std::string> options = m_sql.BuildDeviceOptions(sOptions);
-
-				struct tm ntime;
-				time_t checktime;
-				ParseSQLdatetime(checktime, ntime, sLastUpdate, tm1.tm_isdst);
-				bool bHaveTimeout = (now - checktime >= SensorTimeOut * 60);
-
-				if (dType == pTypeTEMP_RAIN)
-					continue; // dont want you for now
-
-				if ((rused == "true") && (!used))
-					continue;
-
-				if ((rused == "false") && (used))
-					continue;
-				if (!rfilter.empty())
-				{
-					if (rfilter == "light")
-					{
-						if ((dType != pTypeLighting1) && (dType != pTypeLighting2) && (dType != pTypeLighting3) && (dType != pTypeLighting4) &&
-							(dType != pTypeLighting5) && (dType != pTypeLighting6) && (dType != pTypeFan) && (dType != pTypeColorSwitch) && (dType != pTypeSecurity1) &&
-							(dType != pTypeSecurity2) && (dType != pTypeEvohome) && (dType != pTypeEvohomeRelay) && (dType != pTypeCurtain) && (dType != pTypeBlinds) &&
-							(dType != pTypeRFY) && (dType != pTypeChime) && (dType != pTypeThermostat2) && (dType != pTypeThermostat3) && (dType != pTypeThermostat4) &&
-							(dType != pTypeRemote) && (dType != pTypeGeneralSwitch) && (dType != pTypeHomeConfort) && (dType != pTypeChime) && (dType != pTypeFS20) &&
-							(!((dType == pTypeRego6XXValue) && (dSubType == sTypeRego6XXStatus))) &&
-							(!((dType == pTypeRadiator1) && (dSubType == sTypeSmartwaresSwitchRadiator))) && (dType != pTypeHunter))
-							continue;
-					}
-					else if (rfilter == "temp")
-					{
-						if ((dType != pTypeTEMP) && (dType != pTypeHUM) && (dType != pTypeTEMP_HUM) && (dType != pTypeTEMP_HUM_BARO) && (dType != pTypeTEMP_BARO) &&
-							(dType != pTypeEvohomeZone) && (dType != pTypeEvohomeWater) && (!((dType == pTypeWIND) && (dSubType == sTypeWIND4))) &&
-							(!((dType == pTypeUV) && (dSubType == sTypeUV3))) && (!((dType == pTypeGeneral) && (dSubType == sTypeSystemTemp))) &&
-							(dType != pTypeThermostat1) && (!((dType == pTypeRFXSensor) && (dSubType == sTypeRFXSensorTemp))) && (dType != pTypeRego6XXTemp))
-							continue;
-					}
-					else if (rfilter == "weather")
-					{
-						if ((dType != pTypeWIND) && (dType != pTypeRAIN) && (dType != pTypeTEMP_HUM_BARO) && (dType != pTypeTEMP_BARO) && (dType != pTypeUV) &&
-							(!((dType == pTypeGeneral) && (dSubType == sTypeVisibility))) && (!((dType == pTypeGeneral) && (dSubType == sTypeBaro))) &&
-							(!((dType == pTypeGeneral) && (dSubType == sTypeSolarRadiation))))
-							continue;
-					}
-					else if (rfilter == "utility")
-					{
-						if ((dType != pTypeRFXMeter) && (!((dType == pTypeRFXSensor) && (dSubType == sTypeRFXSensorAD))) &&
-							(!((dType == pTypeRFXSensor) && (dSubType == sTypeRFXSensorVolt))) && (!((dType == pTypeGeneral) && (dSubType == sTypeVoltage))) &&
-							(!((dType == pTypeGeneral) && (dSubType == sTypeCurrent))) && (!((dType == pTypeGeneral) && (dSubType == sTypeTextStatus))) &&
-							(!((dType == pTypeGeneral) && (dSubType == sTypeAlert))) && (!((dType == pTypeGeneral) && (dSubType == sTypePressure))) &&
-							(!((dType == pTypeGeneral) && (dSubType == sTypeSoilMoisture))) && (!((dType == pTypeGeneral) && (dSubType == sTypeLeafWetness))) &&
-							(!((dType == pTypeGeneral) && (dSubType == sTypePercentage))) && (!((dType == pTypeGeneral) && (dSubType == sTypeWaterflow))) &&
-							(!((dType == pTypeGeneral) && (dSubType == sTypeCustom))) && (!((dType == pTypeGeneral) && (dSubType == sTypeFan))) &&
-							(!((dType == pTypeGeneral) && (dSubType == sTypeSoundLevel))) && (!((dType == pTypeGeneral) && (dSubType == sTypeZWaveClock))) &&
-							(!((dType == pTypeGeneral) && (dSubType == sTypeZWaveThermostatMode))) &&
-							(!((dType == pTypeGeneral) && (dSubType == sTypeZWaveThermostatFanMode))) &&
-							(!((dType == pTypeGeneral) && (dSubType == sTypeZWaveThermostatOperatingState))) &&
-							(!((dType == pTypeGeneral) && (dSubType == sTypeDistance))) && (!((dType == pTypeGeneral) && (dSubType == sTypeCounterIncremental))) &&
-							(!((dType == pTypeGeneral) && (dSubType == sTypeManagedCounter))) && (!((dType == pTypeGeneral) && (dSubType == sTypeKwh))) &&
-							(dType != pTypeCURRENT) && (dType != pTypeCURRENTENERGY) && (dType != pTypeENERGY) && (dType != pTypePOWER) && (dType != pTypeP1Power) &&
-							(dType != pTypeP1Gas) && (dType != pTypeYouLess) && (dType != pTypeAirQuality) && (dType != pTypeLux) && (dType != pTypeUsage) &&
-							(!((dType == pTypeRego6XXValue) && (dSubType == sTypeRego6XXCounter))) &&
-							(!((dType == pTypeThermostat) && (dSubType == sTypeThermSetpoint))) && (dType != pTypeWEIGHT) &&
-							(!((dType == pTypeRadiator1) && (dSubType == sTypeSmartwares))))
-							continue;
-					}
-					else if (rfilter == "wind")
-					{
-						if ((dType != pTypeWIND))
-							continue;
-					}
-					else if (rfilter == "rain")
-					{
-						if ((dType != pTypeRAIN))
-							continue;
-					}
-					else if (rfilter == "uv")
-					{
-						if ((dType != pTypeUV))
-							continue;
-					}
-					else if (rfilter == "baro")
-					{
-						if ((dType != pTypeTEMP_HUM_BARO) && (dType != pTypeTEMP_BARO))
-							continue;
-					}
-					else if (rfilter == "zwavealarms")
-					{
-						if (!((dType == pTypeGeneral) && (dSubType == sTypeZWaveAlarm)))
-							continue;
-					}
-				}
-
-				// has this device already been seen, now with different plan?
-				// assume results are ordered such that same device is adjacent
-				// if the idx and the Type are equal (type to prevent matching against Scene with same idx)
-				std::string thisIdx = sd[0];
-				const int devIdx = atoi(thisIdx.c_str());
-
-				if ((ii > 0) && thisIdx == root["result"][ii - 1]["idx"].asString())
-				{
-					std::string typeOfThisOne = RFX_Type_Desc(dType, 1);
-					if (typeOfThisOne == root["result"][ii - 1]["Type"].asString())
-					{
-						root["result"][ii - 1]["PlanIDs"].append(atoi(sd[26].c_str()));
-						continue;
-					}
-				}
-
-				root["result"][ii]["HardwareID"] = hardwareID;
-				if (_hardwareNames.find(hardwareID) == _hardwareNames.end())
-				{
-					root["result"][ii]["HardwareName"] = "Unknown?";
-					root["result"][ii]["HardwareTypeVal"] = 0;
-					root["result"][ii]["HardwareType"] = "Unknown?";
-				}
-				else
-				{
-					root["result"][ii]["HardwareName"] = _hardwareNames[hardwareID].Name;
-					root["result"][ii]["HardwareTypeVal"] = _hardwareNames[hardwareID].HardwareTypeVal;
-					root["result"][ii]["HardwareType"] = _hardwareNames[hardwareID].HardwareType;
-				}
-				root["result"][ii]["HardwareDisabled"] = bIsHardwareDisabled;
-
-				root["result"][ii]["idx"] = sd[0];
-				root["result"][ii]["Protected"] = (iProtected != 0);
-
-				CDomoticzHardwareBase* pHardware = m_mainworker.GetHardware(hardwareID);
-				if (pHardware != nullptr)
-				{
-					if (pHardware->HwdType == HTYPE_SolarEdgeAPI)
-					{
-						int seSensorTimeOut = 60 * 24 * 60;
-						bHaveTimeout = (now - checktime >= seSensorTimeOut * 60);
-					}
-					else if (pHardware->HwdType == HTYPE_Wunderground)
-					{
-						CWunderground* pWHardware = dynamic_cast<CWunderground*>(pHardware);
-						std::string forecast_url = pWHardware->GetForecastURL();
-						if (!forecast_url.empty())
+						if (rfilter == "light")
 						{
-							root["result"][ii]["forecast_url"] = base64_encode(forecast_url);
+							if ((dType != pTypeLighting1) && (dType != pTypeLighting2) && (dType != pTypeLighting3) && (dType != pTypeLighting4) &&
+								(dType != pTypeLighting5) && (dType != pTypeLighting6) && (dType != pTypeFan) && (dType != pTypeColorSwitch) && (dType != pTypeSecurity1) &&
+								(dType != pTypeSecurity2) && (dType != pTypeEvohome) && (dType != pTypeEvohomeRelay) && (dType != pTypeCurtain) && (dType != pTypeBlinds) &&
+								(dType != pTypeRFY) && (dType != pTypeChime) && (dType != pTypeThermostat2) && (dType != pTypeThermostat3) && (dType != pTypeThermostat4) &&
+								(dType != pTypeRemote) && (dType != pTypeGeneralSwitch) && (dType != pTypeHomeConfort) && (dType != pTypeChime) && (dType != pTypeFS20) &&
+								(!((dType == pTypeRego6XXValue) && (dSubType == sTypeRego6XXStatus))) &&
+								(!((dType == pTypeRadiator1) && (dSubType == sTypeSmartwaresSwitchRadiator))) && (dType != pTypeHunter))
+								continue;
+						}
+						else if (rfilter == "temp")
+						{
+							if ((dType != pTypeTEMP) && (dType != pTypeHUM) && (dType != pTypeTEMP_HUM) && (dType != pTypeTEMP_HUM_BARO) && (dType != pTypeTEMP_BARO) &&
+								(dType != pTypeEvohomeZone) && (dType != pTypeEvohomeWater) && (!((dType == pTypeWIND) && (dSubType == sTypeWIND4))) &&
+								(!((dType == pTypeUV) && (dSubType == sTypeUV3))) && (!((dType == pTypeGeneral) && (dSubType == sTypeSystemTemp))) &&
+								(dType != pTypeThermostat1) && (!((dType == pTypeRFXSensor) && (dSubType == sTypeRFXSensorTemp))) && (dType != pTypeRego6XXTemp))
+								continue;
+						}
+						else if (rfilter == "weather")
+						{
+							if ((dType != pTypeWIND) && (dType != pTypeRAIN) && (dType != pTypeTEMP_HUM_BARO) && (dType != pTypeTEMP_BARO) && (dType != pTypeUV) &&
+								(!((dType == pTypeGeneral) && (dSubType == sTypeVisibility))) && (!((dType == pTypeGeneral) && (dSubType == sTypeBaro))) &&
+								(!((dType == pTypeGeneral) && (dSubType == sTypeSolarRadiation))))
+								continue;
+						}
+						else if (rfilter == "utility")
+						{
+							if ((dType != pTypeRFXMeter) && (!((dType == pTypeRFXSensor) && (dSubType == sTypeRFXSensorAD))) &&
+								(!((dType == pTypeRFXSensor) && (dSubType == sTypeRFXSensorVolt))) && (!((dType == pTypeGeneral) && (dSubType == sTypeVoltage))) &&
+								(!((dType == pTypeGeneral) && (dSubType == sTypeCurrent))) && (!((dType == pTypeGeneral) && (dSubType == sTypeTextStatus))) &&
+								(!((dType == pTypeGeneral) && (dSubType == sTypeAlert))) && (!((dType == pTypeGeneral) && (dSubType == sTypePressure))) &&
+								(!((dType == pTypeGeneral) && (dSubType == sTypeSoilMoisture))) && (!((dType == pTypeGeneral) && (dSubType == sTypeLeafWetness))) &&
+								(!((dType == pTypeGeneral) && (dSubType == sTypePercentage))) && (!((dType == pTypeGeneral) && (dSubType == sTypeWaterflow))) &&
+								(!((dType == pTypeGeneral) && (dSubType == sTypeCustom))) && (!((dType == pTypeGeneral) && (dSubType == sTypeFan))) &&
+								(!((dType == pTypeGeneral) && (dSubType == sTypeSoundLevel))) && (!((dType == pTypeGeneral) && (dSubType == sTypeZWaveClock))) &&
+								(!((dType == pTypeGeneral) && (dSubType == sTypeZWaveThermostatMode))) &&
+								(!((dType == pTypeGeneral) && (dSubType == sTypeZWaveThermostatFanMode))) &&
+								(!((dType == pTypeGeneral) && (dSubType == sTypeZWaveThermostatOperatingState))) &&
+								(!((dType == pTypeGeneral) && (dSubType == sTypeDistance))) && (!((dType == pTypeGeneral) && (dSubType == sTypeCounterIncremental))) &&
+								(!((dType == pTypeGeneral) && (dSubType == sTypeManagedCounter))) && (!((dType == pTypeGeneral) && (dSubType == sTypeKwh))) &&
+								(dType != pTypeCURRENT) && (dType != pTypeCURRENTENERGY) && (dType != pTypeENERGY) && (dType != pTypePOWER) && (dType != pTypeP1Power) &&
+								(dType != pTypeP1Gas) && (dType != pTypeYouLess) && (dType != pTypeAirQuality) && (dType != pTypeLux) && (dType != pTypeUsage) &&
+								(!((dType == pTypeRego6XXValue) && (dSubType == sTypeRego6XXCounter))) &&
+								(!((dType == pTypeThermostat) && (dSubType == sTypeThermSetpoint))) && (dType != pTypeWEIGHT) &&
+								(!((dType == pTypeRadiator1) && (dSubType == sTypeSmartwares))))
+								continue;
+						}
+						else if (rfilter == "wind")
+						{
+							if ((dType != pTypeWIND))
+								continue;
+						}
+						else if (rfilter == "rain")
+						{
+							if ((dType != pTypeRAIN))
+								continue;
+						}
+						else if (rfilter == "uv")
+						{
+							if ((dType != pTypeUV))
+								continue;
+						}
+						else if (rfilter == "baro")
+						{
+							if ((dType != pTypeTEMP_HUM_BARO) && (dType != pTypeTEMP_BARO))
+								continue;
+						}
+						else if (rfilter == "zwavealarms")
+						{
+							if (!((dType == pTypeGeneral) && (dSubType == sTypeZWaveAlarm)))
+								continue;
 						}
 					}
-					else if (pHardware->HwdType == HTYPE_DarkSky)
-					{
-						CDarkSky* pWHardware = dynamic_cast<CDarkSky*>(pHardware);
-						std::string forecast_url = pWHardware->GetForecastURL();
-						if (!forecast_url.empty())
-						{
-							root["result"][ii]["forecast_url"] = base64_encode(forecast_url);
-						}
-					}
-					else if (pHardware->HwdType == HTYPE_AccuWeather)
-					{
-						CAccuWeather* pWHardware = dynamic_cast<CAccuWeather*>(pHardware);
-						std::string forecast_url = pWHardware->GetForecastURL();
-						if (!forecast_url.empty())
-						{
-							root["result"][ii]["forecast_url"] = base64_encode(forecast_url);
-						}
-					}
-					else if (pHardware->HwdType == HTYPE_OpenWeatherMap)
-					{
-						COpenWeatherMap* pWHardware = dynamic_cast<COpenWeatherMap*>(pHardware);
-						std::string forecast_url = pWHardware->GetForecastURL();
-						if (!forecast_url.empty())
-						{
-							root["result"][ii]["forecast_url"] = base64_encode(forecast_url);
-						}
-					}
-					else if (pHardware->HwdType == HTYPE_BuienRadar)
-					{
-						CBuienRadar* pWHardware = dynamic_cast<CBuienRadar*>(pHardware);
-						std::string forecast_url = pWHardware->GetForecastURL();
-						if (!forecast_url.empty())
-						{
-							root["result"][ii]["forecast_url"] = base64_encode(forecast_url);
-						}
-					}
-					else if (pHardware->HwdType == HTYPE_Meteorologisk)
-					{
-						CMeteorologisk* pWHardware = dynamic_cast<CMeteorologisk*>(pHardware);
-						std::string forecast_url = pWHardware->GetForecastURL();
-						if (!forecast_url.empty())
-						{
-							root["result"][ii]["forecast_url"] = base64_encode(forecast_url);
-						}
-					}
-				}
 
-				if ((pHardware != nullptr) && (pHardware->HwdType == HTYPE_PythonPlugin))
-				{
-					// Device ID special formatting should not be applied to Python plugins
-					root["result"][ii]["ID"] = sd[1];
-				}
-				else
-				{
-					if ((dType == pTypeTEMP) || (dType == pTypeTEMP_BARO) || (dType == pTypeTEMP_HUM) || (dType == pTypeTEMP_HUM_BARO) || (dType == pTypeBARO) ||
-						(dType == pTypeHUM) || (dType == pTypeWIND) || (dType == pTypeRAIN) || (dType == pTypeUV) || (dType == pTypeCURRENT) ||
-						(dType == pTypeCURRENTENERGY) || (dType == pTypeENERGY) || (dType == pTypeRFXMeter) || (dType == pTypeAirQuality) || (dType == pTypeRFXSensor) ||
-						(dType == pTypeP1Power) || (dType == pTypeP1Gas))
+					// has this device already been seen, now with different plan?
+					// assume results are ordered such that same device is adjacent
+					// if the idx and the Type are equal (type to prevent matching against Scene with same idx)
+					std::string thisIdx = sd[0];
+					const int devIdx = atoi(thisIdx.c_str());
+
+					if ((ii > 0) && thisIdx == root["result"][ii - 1]["idx"].asString())
 					{
-						root["result"][ii]["ID"] = is_number(sd[1]) ? std_format("%04X", (unsigned int)atoi(sd[1].c_str())) : sd[1];
+						std::string typeOfThisOne = RFX_Type_Desc(dType, 1);
+						if (typeOfThisOne == root["result"][ii - 1]["Type"].asString())
+						{
+							root["result"][ii - 1]["PlanIDs"].append(atoi(sd[26].c_str()));
+							continue;
+						}
+					}
+
+					root["result"][ii]["HardwareID"] = hardwareID;
+					if (_hardwareNames.find(hardwareID) == _hardwareNames.end())
+					{
+						root["result"][ii]["HardwareName"] = "Unknown?";
+						root["result"][ii]["HardwareTypeVal"] = 0;
+						root["result"][ii]["HardwareType"] = "Unknown?";
 					}
 					else
 					{
-						root["result"][ii]["ID"] = sd[1];
+						root["result"][ii]["HardwareName"] = _hardwareNames[hardwareID].Name;
+						root["result"][ii]["HardwareTypeVal"] = _hardwareNames[hardwareID].HardwareTypeVal;
+						root["result"][ii]["HardwareType"] = _hardwareNames[hardwareID].HardwareType;
 					}
-				}
+					root["result"][ii]["HardwareDisabled"] = bIsHardwareDisabled;
 
-				root["result"][ii]["Unit"] = atoi(sd[2].c_str());
-				root["result"][ii]["Type"] = RFX_Type_Desc(dType, 1);
-				root["result"][ii]["SubType"] = RFX_Type_SubType_Desc(dType, dSubType);
-				root["result"][ii]["TypeImg"] = RFX_Type_Desc(dType, 2);
-				root["result"][ii]["Name"] = sDeviceName;
-				root["result"][ii]["Description"] = Description;
-				root["result"][ii]["Used"] = used;
-				root["result"][ii]["Favorite"] = favorite;
+					root["result"][ii]["idx"] = sd[0];
+					root["result"][ii]["Protected"] = (iProtected != 0);
 
-				int iSignalLevel = atoi(sd[7].c_str());
-				if (iSignalLevel < 12)
-					root["result"][ii]["SignalLevel"] = iSignalLevel;
-				else
-					root["result"][ii]["SignalLevel"] = "-";
-				root["result"][ii]["BatteryLevel"] = atoi(sd[8].c_str());
-				root["result"][ii]["LastUpdate"] = sLastUpdate;
-
-				root["result"][ii]["CustomImage"] = CustomImage;
-
-				if (CustomImage != 0)
-				{
-					auto ittIcon = m_custom_light_icons_lookup.find(CustomImage);
-					if (ittIcon != m_custom_light_icons_lookup.end())
-					{
-						root["result"][ii]["CustomImage"] = CustomImage;
-						root["result"][ii]["Image"] = m_custom_light_icons[ittIcon->second].RootFile;
-					}
-					else
-					{
-						CustomImage = 0;
-						root["result"][ii]["CustomImage"] = CustomImage;
-					}
-				}
-
-				root["result"][ii]["XOffset"] = sd[24].c_str();
-				root["result"][ii]["YOffset"] = sd[25].c_str();
-				root["result"][ii]["PlanID"] = sd[26].c_str();
-				Json::Value jsonArray;
-				jsonArray.append(atoi(sd[26].c_str()));
-				root["result"][ii]["PlanIDs"] = jsonArray;
-				root["result"][ii]["AddjValue"] = AddjValue;
-				root["result"][ii]["AddjMulti"] = AddjMulti;
-				root["result"][ii]["AddjValue2"] = AddjValue2;
-				root["result"][ii]["AddjMulti2"] = AddjMulti2;
-
-				std::stringstream s_data;
-				s_data << int(nValue) << ", " << sValue;
-				root["result"][ii]["Data"] = s_data.str();
-
-				root["result"][ii]["Notifications"] = (m_notifications.HasNotifications(sd[0]) == true) ? "true" : "false";
-				root["result"][ii]["ShowNotifications"] = true;
-
-				bool bHasTimers = false;
-
-				if (
-					(dType == pTypeLighting1)
-					|| (dType == pTypeLighting2)
-					|| (dType == pTypeLighting3)
-					|| (dType == pTypeLighting4)
-					|| (dType == pTypeLighting5)
-					|| (dType == pTypeLighting6)
-					|| (dType == pTypeFan)
-					|| (dType == pTypeColorSwitch)
-					|| (dType == pTypeCurtain)
-					|| (dType == pTypeBlinds)
-					|| (dType == pTypeRFY)
-					|| (dType == pTypeChime)
-					|| (dType == pTypeThermostat2)
-					|| (dType == pTypeThermostat3)
-					|| (dType == pTypeThermostat4)
-					|| (dType == pTypeRemote)
-					|| (dType == pTypeGeneralSwitch)
-					|| (dType == pTypeHomeConfort)
-					|| (dType == pTypeFS20)
-					|| ((dType == pTypeRadiator1) && (dSubType == sTypeSmartwaresSwitchRadiator))
-					|| ((dType == pTypeRego6XXValue) && (dSubType == sTypeRego6XXStatus))
-					|| (dType == pTypeHunter))
-				{
-					// add light details
-					bHasTimers = m_sql.HasTimers(sd[0]);
-
-					bHaveTimeout = false;
-#ifdef WITH_OPENZWAVE
+					CDomoticzHardwareBase* pHardware = m_mainworker.GetHardware(hardwareID);
 					if (pHardware != nullptr)
 					{
-						if (pHardware->HwdType == HTYPE_OpenZWave)
+						if (pHardware->HwdType == HTYPE_SolarEdgeAPI)
 						{
-							COpenZWave* pZWave = dynamic_cast<COpenZWave*>(pHardware);
-							unsigned long ID;
-							std::stringstream s_strid;
-							s_strid << std::hex << sd[1];
-							s_strid >> ID;
-							int nodeID = (ID & 0x0000FF00) >> 8;
-							bHaveTimeout = pZWave->HasNodeFailed(nodeID);
+							int seSensorTimeOut = 60 * 24 * 60;
+							bHaveTimeout = (now - checktime >= seSensorTimeOut * 60);
 						}
-					}
-#endif
-					root["result"][ii]["HaveTimeout"] = bHaveTimeout;
-
-					std::string lstatus;
-					int llevel = 0;
-					bool bHaveDimmer = false;
-					bool bHaveGroupCmd = false;
-					int maxDimLevel = 0;
-
-					GetLightStatus(dType, dSubType, switchtype, nValue, sValue, lstatus, llevel, bHaveDimmer, maxDimLevel, bHaveGroupCmd);
-
-					root["result"][ii]["Status"] = lstatus;
-					root["result"][ii]["StrParam1"] = strParam1;
-					root["result"][ii]["StrParam2"] = strParam2;
-
-					if (!CustomImage)
-						root["result"][ii]["Image"] = "Light";
-
-					if (switchtype == STYPE_Dimmer)
-					{
-						root["result"][ii]["Level"] = LastLevel;
-						int iLevel = round((float(maxDimLevel) / 100.0F) * LastLevel);
-						root["result"][ii]["LevelInt"] = iLevel;
-						if ((dType == pTypeColorSwitch) || (dType == pTypeLighting5 && dSubType == sTypeTRC02) ||
-							(dType == pTypeLighting5 && dSubType == sTypeTRC02_2) || (dType == pTypeGeneralSwitch && dSubType == sSwitchTypeTRC02) ||
-							(dType == pTypeGeneralSwitch && dSubType == sSwitchTypeTRC02_2))
+						else if (pHardware->HwdType == HTYPE_Wunderground)
 						{
-							_tColor color(sColor);
-							std::string jsonColor = color.toJSONString();
-							root["result"][ii]["Color"] = jsonColor;
-							llevel = LastLevel;
-							if (lstatus == "Set Level" || lstatus == "Set Color")
+							CWunderground* pWHardware = dynamic_cast<CWunderground*>(pHardware);
+							std::string forecast_url = pWHardware->GetForecastURL();
+							if (!forecast_url.empty())
 							{
-								sprintf(szTmp, "Set Level: %d %%", LastLevel);
-								root["result"][ii]["Status"] = szTmp;
+								root["result"][ii]["forecast_url"] = base64_encode(forecast_url);
 							}
 						}
+						else if (pHardware->HwdType == HTYPE_DarkSky)
+						{
+							CDarkSky* pWHardware = dynamic_cast<CDarkSky*>(pHardware);
+							std::string forecast_url = pWHardware->GetForecastURL();
+							if (!forecast_url.empty())
+							{
+								root["result"][ii]["forecast_url"] = base64_encode(forecast_url);
+							}
+						}
+						else if (pHardware->HwdType == HTYPE_VisualCrossing)
+						{
+							CVisualCrossing* pWHardware = dynamic_cast<CVisualCrossing*>(pHardware);
+							std::string forecast_url = pWHardware->GetForecastURL();
+							if (!forecast_url.empty())
+							{
+								root["result"][ii]["forecast_url"] = base64_encode(forecast_url);
+							}
+						}
+						else if (pHardware->HwdType == HTYPE_AccuWeather)
+						{
+							CAccuWeather* pWHardware = dynamic_cast<CAccuWeather*>(pHardware);
+							std::string forecast_url = pWHardware->GetForecastURL();
+							if (!forecast_url.empty())
+							{
+								root["result"][ii]["forecast_url"] = base64_encode(forecast_url);
+							}
+						}
+						else if (pHardware->HwdType == HTYPE_OpenWeatherMap)
+						{
+							COpenWeatherMap* pWHardware = dynamic_cast<COpenWeatherMap*>(pHardware);
+							std::string forecast_url = pWHardware->GetForecastURL();
+							if (!forecast_url.empty())
+							{
+								root["result"][ii]["forecast_url"] = base64_encode(forecast_url);
+							}
+						}
+						else if (pHardware->HwdType == HTYPE_BuienRadar)
+						{
+							CBuienRadar* pWHardware = dynamic_cast<CBuienRadar*>(pHardware);
+							std::string forecast_url = pWHardware->GetForecastURL();
+							if (!forecast_url.empty())
+							{
+								root["result"][ii]["forecast_url"] = base64_encode(forecast_url);
+							}
+						}
+						else if (pHardware->HwdType == HTYPE_Meteorologisk)
+						{
+							CMeteorologisk* pWHardware = dynamic_cast<CMeteorologisk*>(pHardware);
+							std::string forecast_url = pWHardware->GetForecastURL();
+							if (!forecast_url.empty())
+							{
+								root["result"][ii]["forecast_url"] = base64_encode(forecast_url);
+							}
+						}
+					}
+
+					if ((pHardware != nullptr) && (pHardware->HwdType == HTYPE_PythonPlugin))
+					{
+						// Device ID special formatting should not be applied to Python plugins
+						root["result"][ii]["ID"] = sd[1];
 					}
 					else
 					{
-						root["result"][ii]["Level"] = llevel;
-						root["result"][ii]["LevelInt"] = atoi(sValue.c_str());
-					}
-					root["result"][ii]["HaveDimmer"] = bHaveDimmer;
-					std::string DimmerType = "none";
-					if (switchtype == STYPE_Dimmer)
-					{
-						DimmerType = "abs";
-						if (_hardwareNames.find(hardwareID) != _hardwareNames.end())
+						if ((dType == pTypeTEMP) || (dType == pTypeTEMP_BARO) || (dType == pTypeTEMP_HUM) || (dType == pTypeTEMP_HUM_BARO) || (dType == pTypeBARO) ||
+							(dType == pTypeHUM) || (dType == pTypeWIND) || (dType == pTypeRAIN) || (dType == pTypeUV) || (dType == pTypeCURRENT) ||
+							(dType == pTypeCURRENTENERGY) || (dType == pTypeENERGY) || (dType == pTypeRFXMeter) || (dType == pTypeAirQuality) || (dType == pTypeRFXSensor) ||
+							(dType == pTypeP1Power) || (dType == pTypeP1Gas))
 						{
-							// Milight V4/V5 bridges do not support absolute dimming for RGB or CW_WW lights
-							if (_hardwareNames[hardwareID].HardwareTypeVal == HTYPE_LimitlessLights &&
-								atoi(_hardwareNames[hardwareID].Mode2.c_str()) != CLimitLess::LBTYPE_V6 &&
-								(atoi(_hardwareNames[hardwareID].Mode1.c_str()) == sTypeColor_RGB ||
-									atoi(_hardwareNames[hardwareID].Mode1.c_str()) == sTypeColor_White ||
-									atoi(_hardwareNames[hardwareID].Mode1.c_str()) == sTypeColor_CW_WW))
+							root["result"][ii]["ID"] = is_number(sd[1]) ? std_format("%04X", (unsigned int)atoi(sd[1].c_str())) : sd[1];
+						}
+						else
+						{
+							root["result"][ii]["ID"] = sd[1];
+						}
+					}
+
+					root["result"][ii]["Unit"] = atoi(sd[2].c_str());
+					root["result"][ii]["Type"] = RFX_Type_Desc(dType, 1);
+					root["result"][ii]["SubType"] = RFX_Type_SubType_Desc(dType, dSubType);
+					root["result"][ii]["TypeImg"] = RFX_Type_Desc(dType, 2);
+					root["result"][ii]["Name"] = sDeviceName;
+					root["result"][ii]["Description"] = Description;
+					root["result"][ii]["Used"] = used;
+					root["result"][ii]["Favorite"] = favorite;
+
+					int iSignalLevel = atoi(sd[7].c_str());
+					if (iSignalLevel < 12)
+						root["result"][ii]["SignalLevel"] = iSignalLevel;
+					else
+						root["result"][ii]["SignalLevel"] = "-";
+					root["result"][ii]["BatteryLevel"] = atoi(sd[8].c_str());
+					root["result"][ii]["LastUpdate"] = sLastUpdate;
+
+					root["result"][ii]["CustomImage"] = CustomImage;
+
+					if (CustomImage != 0)
+					{
+						auto ittIcon = m_custom_light_icons_lookup.find(CustomImage);
+						if (ittIcon != m_custom_light_icons_lookup.end())
+						{
+							root["result"][ii]["CustomImage"] = CustomImage;
+							root["result"][ii]["Image"] = m_custom_light_icons[ittIcon->second].RootFile;
+						}
+						else
+						{
+							CustomImage = 0;
+							root["result"][ii]["CustomImage"] = CustomImage;
+						}
+					}
+
+					root["result"][ii]["XOffset"] = sd[24].c_str();
+					root["result"][ii]["YOffset"] = sd[25].c_str();
+					root["result"][ii]["PlanID"] = sd[26].c_str();
+					Json::Value jsonArray;
+					jsonArray.append(atoi(sd[26].c_str()));
+					root["result"][ii]["PlanIDs"] = jsonArray;
+					root["result"][ii]["AddjValue"] = AddjValue;
+					root["result"][ii]["AddjMulti"] = AddjMulti;
+					root["result"][ii]["AddjValue2"] = AddjValue2;
+					root["result"][ii]["AddjMulti2"] = AddjMulti2;
+
+					std::stringstream s_data;
+					s_data << int(nValue) << ", " << sValue;
+					root["result"][ii]["Data"] = s_data.str();
+
+					root["result"][ii]["Notifications"] = (m_notifications.HasNotifications(sd[0]) == true) ? "true" : "false";
+					root["result"][ii]["ShowNotifications"] = true;
+
+					bool bHasTimers = false;
+
+					if (
+						(dType == pTypeLighting1)
+						|| (dType == pTypeLighting2)
+						|| (dType == pTypeLighting3)
+						|| (dType == pTypeLighting4)
+						|| (dType == pTypeLighting5)
+						|| (dType == pTypeLighting6)
+						|| (dType == pTypeFan)
+						|| (dType == pTypeColorSwitch)
+						|| (dType == pTypeCurtain)
+						|| (dType == pTypeBlinds)
+						|| (dType == pTypeRFY)
+						|| (dType == pTypeChime)
+						|| (dType == pTypeThermostat2)
+						|| (dType == pTypeThermostat3)
+						|| (dType == pTypeThermostat4)
+						|| (dType == pTypeRemote)
+						|| (dType == pTypeGeneralSwitch)
+						|| (dType == pTypeHomeConfort)
+						|| (dType == pTypeFS20)
+						|| ((dType == pTypeRadiator1) && (dSubType == sTypeSmartwaresSwitchRadiator))
+						|| ((dType == pTypeRego6XXValue) && (dSubType == sTypeRego6XXStatus))
+						|| (dType == pTypeHunter))
+					{
+						// add light details
+						bHasTimers = m_sql.HasTimers(sd[0]);
+
+						bHaveTimeout = false;
+#ifdef WITH_OPENZWAVE
+						if (pHardware != nullptr)
+						{
+							if (pHardware->HwdType == HTYPE_OpenZWave)
 							{
-								DimmerType = "rel";
+								COpenZWave* pZWave = dynamic_cast<COpenZWave*>(pHardware);
+								unsigned long ID;
+								std::stringstream s_strid;
+								s_strid << std::hex << sd[1];
+								s_strid >> ID;
+								int nodeID = (ID & 0x0000FF00) >> 8;
+								bHaveTimeout = pZWave->HasNodeFailed(nodeID);
 							}
 						}
-					}
-					root["result"][ii]["DimmerType"] = DimmerType;
-					root["result"][ii]["MaxDimLevel"] = maxDimLevel;
-					root["result"][ii]["HaveGroupCmd"] = bHaveGroupCmd;
-					root["result"][ii]["SwitchType"] = Switch_Type_Desc(switchtype);
-					root["result"][ii]["SwitchTypeVal"] = switchtype;
-					uint64_t camIDX = m_mainworker.m_cameras.IsDevSceneInCamera(0, sd[0]);
-					root["result"][ii]["UsedByCamera"] = (camIDX != 0) ? true : false;
-					if (camIDX != 0)
-					{
-						std::stringstream scidx;
-						scidx << camIDX;
-						root["result"][ii]["CameraIdx"] = scidx.str();
-						root["result"][ii]["CameraAspect"] = m_mainworker.m_cameras.GetCameraAspectRatio(scidx.str());
-					}
-
-					bool bIsSubDevice = false;
-					std::vector<std::vector<std::string>> resultSD;
-					resultSD = m_sql.safe_query("SELECT ID FROM LightSubDevices WHERE (DeviceRowID=='%q')", sd[0].c_str());
-					bIsSubDevice = (!resultSD.empty());
-
-					root["result"][ii]["IsSubDevice"] = bIsSubDevice;
-
-					std::string openStatus = "Open";
-					std::string closedStatus = "Closed";
-					if (switchtype == STYPE_Doorbell)
-					{
-						root["result"][ii]["TypeImg"] = "doorbell";
-						root["result"][ii]["Status"] = ""; //"Pressed";
-					}
-					else if (switchtype == STYPE_DoorContact)
-					{
-						if (!CustomImage)
-							root["result"][ii]["Image"] = "Door";
-						root["result"][ii]["TypeImg"] = "door";
-						bool bIsOn = IsLightSwitchOn(lstatus);
-						root["result"][ii]["InternalState"] = (bIsOn == true) ? "Open" : "Closed";
-						if (bIsOn)
-						{
-							lstatus = "Open";
-						}
-						else
-						{
-							lstatus = "Closed";
-						}
-						root["result"][ii]["Status"] = lstatus;
-					}
-					else if (switchtype == STYPE_DoorLock)
-					{
-						if (!CustomImage)
-							root["result"][ii]["Image"] = "Door";
-						root["result"][ii]["TypeImg"] = "door";
-						bool bIsOn = IsLightSwitchOn(lstatus);
-						root["result"][ii]["InternalState"] = (bIsOn == true) ? "Locked" : "Unlocked";
-						if (bIsOn)
-						{
-							lstatus = "Locked";
-						}
-						else
-						{
-							lstatus = "Unlocked";
-						}
-						root["result"][ii]["Status"] = lstatus;
-					}
-					else if (switchtype == STYPE_DoorLockInverted)
-					{
-						if (!CustomImage)
-							root["result"][ii]["Image"] = "Door";
-						root["result"][ii]["TypeImg"] = "door";
-						bool bIsOn = IsLightSwitchOn(lstatus);
-						root["result"][ii]["InternalState"] = (bIsOn == true) ? "Unlocked" : "Locked";
-						if (bIsOn)
-						{
-							lstatus = "Unlocked";
-						}
-						else
-						{
-							lstatus = "Locked";
-						}
-						root["result"][ii]["Status"] = lstatus;
-					}
-					else if (switchtype == STYPE_PushOn)
-					{
-						if (!CustomImage)
-							root["result"][ii]["Image"] = "Push";
-						root["result"][ii]["TypeImg"] = "push";
-						root["result"][ii]["Status"] = "";
-						root["result"][ii]["InternalState"] = (IsLightSwitchOn(lstatus) == true) ? "On" : "Off";
-					}
-					else if (switchtype == STYPE_PushOff)
-					{
-						if (!CustomImage)
-							root["result"][ii]["Image"] = "Push";
-						root["result"][ii]["TypeImg"] = "push";
-						root["result"][ii]["Status"] = "";
-						root["result"][ii]["TypeImg"] = "pushoff";
-					}
-					else if (switchtype == STYPE_X10Siren)
-						root["result"][ii]["TypeImg"] = "siren";
-					else if (switchtype == STYPE_SMOKEDETECTOR)
-					{
-						root["result"][ii]["TypeImg"] = "smoke";
-						root["result"][ii]["SwitchTypeVal"] = STYPE_SMOKEDETECTOR;
-						root["result"][ii]["SwitchType"] = Switch_Type_Desc(STYPE_SMOKEDETECTOR);
-					}
-					else if (switchtype == STYPE_Contact)
-					{
-						if (!CustomImage)
-							root["result"][ii]["Image"] = "Contact";
-						root["result"][ii]["TypeImg"] = "contact";
-						bool bIsOn = IsLightSwitchOn(lstatus);
-						if (bIsOn)
-						{
-							lstatus = "Open";
-						}
-						else
-						{
-							lstatus = "Closed";
-						}
-						root["result"][ii]["Status"] = lstatus;
-					}
-					else if (switchtype == STYPE_Media)
-					{
-						if ((pHardware != nullptr) && (pHardware->HwdType == HTYPE_LogitechMediaServer))
-							root["result"][ii]["TypeImg"] = "LogitechMediaServer";
-						else
-							root["result"][ii]["TypeImg"] = "Media";
-						root["result"][ii]["Status"] = Media_Player_States((_eMediaStatus)nValue);
-						lstatus = sValue;
-					}
-					else if (
-						(switchtype == STYPE_Blinds)
-						|| (switchtype == STYPE_BlindsPercentage)
-						|| (switchtype == STYPE_BlindsPercentageWithStop)
-						|| (switchtype == STYPE_VenetianBlindsUS)
-						|| (switchtype == STYPE_VenetianBlindsEU)
-						)
-					{
-						root["result"][ii]["Image"] = "blinds";
-						root["result"][ii]["TypeImg"] = "blinds";
-
-						if (lstatus == "Close inline relay")
-						{
-							lstatus = "Close";
-						}
-						else if (lstatus == "Open inline relay")
-						{
-							lstatus = "Open";
-						}
-						else if (lstatus == "Stop inline relay")
-						{
-							lstatus = "Stop";
-						}
-
-						bool bReverseState = false;
-						bool bReversePosition = false;
-
-						auto itt = options.find("ReverseState");
-						if (itt != options.end())
-							bReverseState = (itt->second == "true");
-						itt = options.find("ReversePosition");
-						if (itt != options.end())
-							bReversePosition = (itt->second == "true");
-
-						if (bReversePosition)
-						{
-							LastLevel = 100 - LastLevel;
-							if (lstatus.find("Set Level") == 0)
-								lstatus = std_format("Set Level: %d %%", LastLevel);
-						}
-
-						if (bReverseState)
-						{
-							if (lstatus == "Open")
-								lstatus = "Close";
-							else if (lstatus == "Close")
-								lstatus = "Open";
-						}
-
-
-						if (lstatus == "Close")
-						{
-							lstatus = closedStatus;
-						}
-						else if (lstatus == "Open")
-						{
-							lstatus = openStatus;
-						}
-						else if (lstatus == "Stop")
-						{
-							lstatus = "Stopped";
-						}
-						root["result"][ii]["Status"] = lstatus;
-
-						root["result"][ii]["Level"] = LastLevel;
-						int iLevel = round((float(maxDimLevel) / 100.0F) * LastLevel);
-						root["result"][ii]["LevelInt"] = iLevel;
-
-						root["result"][ii]["ReverseState"] = bReverseState;
-						root["result"][ii]["ReversePosition"] = bReversePosition;
-					}
-					else if (switchtype == STYPE_Dimmer)
-					{
-						root["result"][ii]["TypeImg"] = "dimmer";
-					}
-					else if (switchtype == STYPE_Motion)
-					{
-						root["result"][ii]["TypeImg"] = "motion";
-					}
-					else if (switchtype == STYPE_Selector)
-					{
-						std::string selectorStyle = options["SelectorStyle"];
-						std::string levelOffHidden = options["LevelOffHidden"];
-						std::string levelNames = options["LevelNames"];
-						std::string levelActions = options["LevelActions"];
-						if (selectorStyle.empty())
-						{
-							selectorStyle.assign("0"); // default is 'button set'
-						}
-						if (levelOffHidden.empty())
-						{
-							levelOffHidden.assign("false"); // default is 'not hidden'
-						}
-						if (levelNames.empty())
-						{
-							levelNames.assign("Off"); // default is Off only
-						}
-						root["result"][ii]["TypeImg"] = "Light";
-						root["result"][ii]["SelectorStyle"] = atoi(selectorStyle.c_str());
-						root["result"][ii]["LevelOffHidden"] = (levelOffHidden == "true");
-						root["result"][ii]["LevelNames"] = base64_encode(levelNames);
-						root["result"][ii]["LevelActions"] = base64_encode(levelActions);
-					}
-					root["result"][ii]["Data"] = lstatus;
-				}
-				else if (dType == pTypeSecurity1)
-				{
-					std::string lstatus;
-					int llevel = 0;
-					bool bHaveDimmer = false;
-					bool bHaveGroupCmd = false;
-					int maxDimLevel = 0;
-
-					GetLightStatus(dType, dSubType, switchtype, nValue, sValue, lstatus, llevel, bHaveDimmer, maxDimLevel, bHaveGroupCmd);
-
-					root["result"][ii]["Status"] = lstatus;
-					root["result"][ii]["HaveDimmer"] = bHaveDimmer;
-					root["result"][ii]["MaxDimLevel"] = maxDimLevel;
-					root["result"][ii]["HaveGroupCmd"] = bHaveGroupCmd;
-					root["result"][ii]["SwitchType"] = "Security";
-					root["result"][ii]["SwitchTypeVal"] = switchtype; // was 0?;
-					root["result"][ii]["TypeImg"] = "security";
-					root["result"][ii]["StrParam1"] = strParam1;
-					root["result"][ii]["StrParam2"] = strParam2;
-					root["result"][ii]["Protected"] = (iProtected != 0);
-
-					if ((dSubType == sTypeKD101) || (dSubType == sTypeSA30) || (dSubType == sTypeRM174RF) || (switchtype == STYPE_SMOKEDETECTOR))
-					{
-						root["result"][ii]["SwitchTypeVal"] = STYPE_SMOKEDETECTOR;
-						root["result"][ii]["TypeImg"] = "smoke";
-						root["result"][ii]["SwitchType"] = Switch_Type_Desc(STYPE_SMOKEDETECTOR);
-					}
-					root["result"][ii]["Data"] = lstatus;
-					root["result"][ii]["HaveTimeout"] = false;
-				}
-				else if (dType == pTypeSecurity2)
-				{
-					std::string lstatus;
-					int llevel = 0;
-					bool bHaveDimmer = false;
-					bool bHaveGroupCmd = false;
-					int maxDimLevel = 0;
-
-					GetLightStatus(dType, dSubType, switchtype, nValue, sValue, lstatus, llevel, bHaveDimmer, maxDimLevel, bHaveGroupCmd);
-
-					root["result"][ii]["Status"] = lstatus;
-					root["result"][ii]["HaveDimmer"] = bHaveDimmer;
-					root["result"][ii]["MaxDimLevel"] = maxDimLevel;
-					root["result"][ii]["HaveGroupCmd"] = bHaveGroupCmd;
-					root["result"][ii]["SwitchType"] = "Security";
-					root["result"][ii]["SwitchTypeVal"] = switchtype; // was 0?;
-					root["result"][ii]["TypeImg"] = "security";
-					root["result"][ii]["StrParam1"] = strParam1;
-					root["result"][ii]["StrParam2"] = strParam2;
-					root["result"][ii]["Protected"] = (iProtected != 0);
-					root["result"][ii]["Data"] = lstatus;
-					root["result"][ii]["HaveTimeout"] = false;
-				}
-				else if (dType == pTypeEvohome || dType == pTypeEvohomeRelay)
-				{
-					std::string lstatus;
-					int llevel = 0;
-					bool bHaveDimmer = false;
-					bool bHaveGroupCmd = false;
-					int maxDimLevel = 0;
-
-					GetLightStatus(dType, dSubType, switchtype, nValue, sValue, lstatus, llevel, bHaveDimmer, maxDimLevel, bHaveGroupCmd);
-
-					root["result"][ii]["Status"] = lstatus;
-					root["result"][ii]["HaveDimmer"] = bHaveDimmer;
-					root["result"][ii]["MaxDimLevel"] = maxDimLevel;
-					root["result"][ii]["HaveGroupCmd"] = bHaveGroupCmd;
-					root["result"][ii]["SwitchType"] = "evohome";
-					root["result"][ii]["SwitchTypeVal"] = switchtype; // was 0?;
-					root["result"][ii]["TypeImg"] = "override_mini";
-					root["result"][ii]["StrParam1"] = strParam1;
-					root["result"][ii]["StrParam2"] = strParam2;
-					root["result"][ii]["Protected"] = (iProtected != 0);
-
-					root["result"][ii]["Data"] = lstatus;
-					root["result"][ii]["HaveTimeout"] = false;
-
-					if (dType == pTypeEvohomeRelay)
-					{
-						root["result"][ii]["SwitchType"] = "TPI";
-						root["result"][ii]["Level"] = llevel;
-						root["result"][ii]["LevelInt"] = atoi(sValue.c_str());
-						if (root["result"][ii]["Unit"].asInt() > 100)
-							root["result"][ii]["Protected"] = true;
-
-						sprintf(szData, "%s: %d", lstatus.c_str(), atoi(sValue.c_str()));
-						root["result"][ii]["Data"] = szData;
-					}
-				}
-				else if ((dType == pTypeEvohomeZone) || (dType == pTypeEvohomeWater))
-				{
-					root["result"][ii]["HaveTimeout"] = bHaveTimeout;
-					root["result"][ii]["TypeImg"] = "override_mini";
-
-					std::vector<std::string> strarray;
-					StringSplit(sValue, ";", strarray);
-					if (strarray.size() >= 3)
-					{
-						int i = 0;
-						double tempCelcius = atof(strarray[i++].c_str());
-						double temp = ConvertTemperature(tempCelcius, tempsign);
-						double tempSetPoint;
-						root["result"][ii]["Temp"] = temp;
-						if (dType == pTypeEvohomeWater && (strarray[i] == "Off" || strarray[i] == "On"))
-						{
-							root["result"][ii]["State"] = strarray[i++];
-						}
-						else
-						{
-							tempCelcius = atof(strarray[i++].c_str());
-							tempSetPoint = ConvertTemperature(tempCelcius, tempsign);
-							root["result"][ii]["SetPoint"] = tempSetPoint;
-						}
-
-						std::string strstatus = strarray[i++];
-						root["result"][ii]["Status"] = strstatus;
-
-						if ((dType == pTypeEvohomeZone || dType == pTypeEvohomeWater) && strarray.size() >= 4)
-						{
-							root["result"][ii]["Until"] = strarray[i++];
-						}
-						if (dType == pTypeEvohomeZone)
-						{
-							if (tempCelcius == 325.1)
-								sprintf(szTmp, "Off");
-							else
-								sprintf(szTmp, "%.1f %c", tempSetPoint, tempsign);
-							if (strarray.size() >= 4)
-								sprintf(szData, "%.1f %c, (%s), %s until %s", temp, tempsign, szTmp, strstatus.c_str(), strarray[3].c_str());
-							else
-								sprintf(szData, "%.1f %c, (%s), %s", temp, tempsign, szTmp, strstatus.c_str());
-						}
-						else if (strarray.size() >= 4)
-							sprintf(szData, "%.1f %c, %s, %s until %s", temp, tempsign, strarray[1].c_str(), strstatus.c_str(), strarray[3].c_str());
-						else
-							sprintf(szData, "%.1f %c, %s, %s", temp, tempsign, strarray[1].c_str(), strstatus.c_str());
-						root["result"][ii]["Data"] = szData;
+#endif
 						root["result"][ii]["HaveTimeout"] = bHaveTimeout;
-					}
-				}
-				else if ((dType == pTypeTEMP) || (dType == pTypeRego6XXTemp))
-				{
-					double tvalue = ConvertTemperature(atof(sValue.c_str()), tempsign);
-					root["result"][ii]["Temp"] = tvalue;
-					sprintf(szData, "%.1f %c", tvalue, tempsign);
-					root["result"][ii]["Data"] = szData;
-					root["result"][ii]["HaveTimeout"] = bHaveTimeout;
 
-					_tTrendCalculator::_eTendencyType tstate = _tTrendCalculator::_eTendencyType::TENDENCY_UNKNOWN;
-					uint64_t tID = ((uint64_t)(hardwareID & 0x7FFFFFFF) << 32) | (devIdx & 0x7FFFFFFF);
-					if (m_mainworker.m_trend_calculator.find(tID) != m_mainworker.m_trend_calculator.end())
-					{
-						tstate = m_mainworker.m_trend_calculator[tID].m_state;
+						std::string lstatus;
+						int llevel = 0;
+						bool bHaveDimmer = false;
+						bool bHaveGroupCmd = false;
+						int maxDimLevel = 0;
+
+						GetLightStatus(dType, dSubType, switchtype, nValue, sValue, lstatus, llevel, bHaveDimmer, maxDimLevel, bHaveGroupCmd);
+
+						root["result"][ii]["Status"] = lstatus;
+						root["result"][ii]["StrParam1"] = strParam1;
+						root["result"][ii]["StrParam2"] = strParam2;
+
+						if (!CustomImage)
+							root["result"][ii]["Image"] = "Light";
+
+						if (switchtype == STYPE_Dimmer)
+						{
+							root["result"][ii]["Level"] = LastLevel;
+							int iLevel = round((float(maxDimLevel) / 100.0F) * LastLevel);
+							root["result"][ii]["LevelInt"] = iLevel;
+							if ((dType == pTypeColorSwitch) || (dType == pTypeLighting5 && dSubType == sTypeTRC02) ||
+								(dType == pTypeLighting5 && dSubType == sTypeTRC02_2) || (dType == pTypeGeneralSwitch && dSubType == sSwitchTypeTRC02) ||
+								(dType == pTypeGeneralSwitch && dSubType == sSwitchTypeTRC02_2))
+							{
+								_tColor color(sColor);
+								std::string jsonColor = color.toJSONString();
+								root["result"][ii]["Color"] = jsonColor;
+								llevel = LastLevel;
+								if (lstatus == "Set Level" || lstatus == "Set Color")
+								{
+									sprintf(szTmp, "Set Level: %d %%", LastLevel);
+									root["result"][ii]["Status"] = szTmp;
+								}
+							}
+						}
+						else
+						{
+							root["result"][ii]["Level"] = llevel;
+							root["result"][ii]["LevelInt"] = atoi(sValue.c_str());
+						}
+						root["result"][ii]["HaveDimmer"] = bHaveDimmer;
+						std::string DimmerType = "none";
+						if (switchtype == STYPE_Dimmer)
+						{
+							DimmerType = "abs";
+							if (_hardwareNames.find(hardwareID) != _hardwareNames.end())
+							{
+								// Milight V4/V5 bridges do not support absolute dimming for RGB or CW_WW lights
+								if (_hardwareNames[hardwareID].HardwareTypeVal == HTYPE_LimitlessLights &&
+									atoi(_hardwareNames[hardwareID].Mode2.c_str()) != CLimitLess::LBTYPE_V6 &&
+									(atoi(_hardwareNames[hardwareID].Mode1.c_str()) == sTypeColor_RGB ||
+										atoi(_hardwareNames[hardwareID].Mode1.c_str()) == sTypeColor_White ||
+										atoi(_hardwareNames[hardwareID].Mode1.c_str()) == sTypeColor_CW_WW))
+								{
+									DimmerType = "rel";
+								}
+							}
+						}
+						root["result"][ii]["DimmerType"] = DimmerType;
+						root["result"][ii]["MaxDimLevel"] = maxDimLevel;
+						root["result"][ii]["HaveGroupCmd"] = bHaveGroupCmd;
+						root["result"][ii]["SwitchType"] = Switch_Type_Desc(switchtype);
+						root["result"][ii]["SwitchTypeVal"] = switchtype;
+						uint64_t camIDX = m_mainworker.m_cameras.IsDevSceneInCamera(0, sd[0]);
+						root["result"][ii]["UsedByCamera"] = (camIDX != 0) ? true : false;
+						if (camIDX != 0)
+						{
+							std::stringstream scidx;
+							scidx << camIDX;
+							root["result"][ii]["CameraIdx"] = scidx.str();
+							root["result"][ii]["CameraAspect"] = m_mainworker.m_cameras.GetCameraAspectRatio(scidx.str());
+						}
+
+						bool bIsSubDevice = false;
+						std::vector<std::vector<std::string>> resultSD;
+						resultSD = m_sql.safe_query("SELECT ID FROM LightSubDevices WHERE (DeviceRowID=='%q')", sd[0].c_str());
+						bIsSubDevice = (!resultSD.empty());
+
+						root["result"][ii]["IsSubDevice"] = bIsSubDevice;
+
+						std::string openStatus = "Open";
+						std::string closedStatus = "Closed";
+						if (switchtype == STYPE_Doorbell)
+						{
+							root["result"][ii]["TypeImg"] = "doorbell";
+							root["result"][ii]["Status"] = ""; //"Pressed";
+						}
+						else if (switchtype == STYPE_DoorContact)
+						{
+							if (!CustomImage)
+								root["result"][ii]["Image"] = "Door";
+							root["result"][ii]["TypeImg"] = "door";
+							bool bIsOn = IsLightSwitchOn(lstatus);
+							root["result"][ii]["InternalState"] = (bIsOn == true) ? "Open" : "Closed";
+							if (bIsOn)
+							{
+								lstatus = "Open";
+							}
+							else
+							{
+								lstatus = "Closed";
+							}
+							root["result"][ii]["Status"] = lstatus;
+						}
+						else if (switchtype == STYPE_DoorLock)
+						{
+							if (!CustomImage)
+								root["result"][ii]["Image"] = "Door";
+							root["result"][ii]["TypeImg"] = "door";
+							bool bIsOn = IsLightSwitchOn(lstatus);
+							root["result"][ii]["InternalState"] = (bIsOn == true) ? "Locked" : "Unlocked";
+							if (bIsOn)
+							{
+								lstatus = "Locked";
+							}
+							else
+							{
+								lstatus = "Unlocked";
+							}
+							root["result"][ii]["Status"] = lstatus;
+						}
+						else if (switchtype == STYPE_DoorLockInverted)
+						{
+							if (!CustomImage)
+								root["result"][ii]["Image"] = "Door";
+							root["result"][ii]["TypeImg"] = "door";
+							bool bIsOn = IsLightSwitchOn(lstatus);
+							root["result"][ii]["InternalState"] = (bIsOn == true) ? "Unlocked" : "Locked";
+							if (bIsOn)
+							{
+								lstatus = "Unlocked";
+							}
+							else
+							{
+								lstatus = "Locked";
+							}
+							root["result"][ii]["Status"] = lstatus;
+						}
+						else if (switchtype == STYPE_PushOn)
+						{
+							if (!CustomImage)
+								root["result"][ii]["Image"] = "Push";
+							root["result"][ii]["TypeImg"] = "push";
+							root["result"][ii]["Status"] = "";
+							root["result"][ii]["InternalState"] = (IsLightSwitchOn(lstatus) == true) ? "On" : "Off";
+						}
+						else if (switchtype == STYPE_PushOff)
+						{
+							if (!CustomImage)
+								root["result"][ii]["Image"] = "Push";
+							root["result"][ii]["TypeImg"] = "push";
+							root["result"][ii]["Status"] = "";
+							root["result"][ii]["TypeImg"] = "pushoff";
+						}
+						else if (switchtype == STYPE_X10Siren)
+							root["result"][ii]["TypeImg"] = "siren";
+						else if (switchtype == STYPE_SMOKEDETECTOR)
+						{
+							root["result"][ii]["TypeImg"] = "smoke";
+							root["result"][ii]["SwitchTypeVal"] = STYPE_SMOKEDETECTOR;
+							root["result"][ii]["SwitchType"] = Switch_Type_Desc(STYPE_SMOKEDETECTOR);
+						}
+						else if (switchtype == STYPE_Contact)
+						{
+							if (!CustomImage)
+								root["result"][ii]["Image"] = "Contact";
+							root["result"][ii]["TypeImg"] = "contact";
+							bool bIsOn = IsLightSwitchOn(lstatus);
+							if (bIsOn)
+							{
+								lstatus = "Open";
+							}
+							else
+							{
+								lstatus = "Closed";
+							}
+							root["result"][ii]["Status"] = lstatus;
+						}
+						else if (switchtype == STYPE_Media)
+						{
+							if ((pHardware != nullptr) && (pHardware->HwdType == HTYPE_LogitechMediaServer))
+								root["result"][ii]["TypeImg"] = "LogitechMediaServer";
+							else
+								root["result"][ii]["TypeImg"] = "Media";
+							root["result"][ii]["Status"] = Media_Player_States((_eMediaStatus)nValue);
+							lstatus = sValue;
+						}
+						else if (
+							(switchtype == STYPE_Blinds)
+							|| (switchtype == STYPE_BlindsPercentage)
+							|| (switchtype == STYPE_BlindsPercentageWithStop)
+							|| (switchtype == STYPE_VenetianBlindsUS)
+							|| (switchtype == STYPE_VenetianBlindsEU)
+							)
+						{
+							root["result"][ii]["Image"] = "blinds";
+							root["result"][ii]["TypeImg"] = "blinds";
+
+							if (lstatus == "Close inline relay")
+							{
+								lstatus = "Close";
+							}
+							else if (lstatus == "Open inline relay")
+							{
+								lstatus = "Open";
+							}
+							else if (lstatus == "Stop inline relay")
+							{
+								lstatus = "Stop";
+							}
+
+							bool bReverseState = false;
+							bool bReversePosition = false;
+
+							auto itt = options.find("ReverseState");
+							if (itt != options.end())
+								bReverseState = (itt->second == "true");
+							itt = options.find("ReversePosition");
+							if (itt != options.end())
+								bReversePosition = (itt->second == "true");
+
+							if (bReversePosition)
+							{
+								LastLevel = 100 - LastLevel;
+								if (lstatus.find("Set Level") == 0)
+									lstatus = std_format("Set Level: %d %%", LastLevel);
+							}
+
+							if (bReverseState)
+							{
+								if (lstatus == "Open")
+									lstatus = "Close";
+								else if (lstatus == "Close")
+									lstatus = "Open";
+							}
+
+
+							if (lstatus == "Close")
+							{
+								lstatus = closedStatus;
+							}
+							else if (lstatus == "Open")
+							{
+								lstatus = openStatus;
+							}
+							else if (lstatus == "Stop")
+							{
+								lstatus = "Stopped";
+							}
+							root["result"][ii]["Status"] = lstatus;
+
+							root["result"][ii]["Level"] = LastLevel;
+							int iLevel = round((float(maxDimLevel) / 100.0F) * LastLevel);
+							root["result"][ii]["LevelInt"] = iLevel;
+
+							root["result"][ii]["ReverseState"] = bReverseState;
+							root["result"][ii]["ReversePosition"] = bReversePosition;
+						}
+						else if (switchtype == STYPE_Dimmer)
+						{
+							root["result"][ii]["TypeImg"] = "dimmer";
+						}
+						else if (switchtype == STYPE_Motion)
+						{
+							root["result"][ii]["TypeImg"] = "motion";
+						}
+						else if (switchtype == STYPE_Selector)
+						{
+							std::string selectorStyle = options["SelectorStyle"];
+							std::string levelOffHidden = options["LevelOffHidden"];
+							std::string levelNames = options["LevelNames"];
+							std::string levelActions = options["LevelActions"];
+							if (selectorStyle.empty())
+							{
+								selectorStyle.assign("0"); // default is 'button set'
+							}
+							if (levelOffHidden.empty())
+							{
+								levelOffHidden.assign("false"); // default is 'not hidden'
+							}
+							if (levelNames.empty())
+							{
+								levelNames.assign("Off"); // default is Off only
+							}
+							root["result"][ii]["TypeImg"] = "Light";
+							root["result"][ii]["SelectorStyle"] = atoi(selectorStyle.c_str());
+							root["result"][ii]["LevelOffHidden"] = (levelOffHidden == "true");
+							root["result"][ii]["LevelNames"] = base64_encode(levelNames);
+							root["result"][ii]["LevelActions"] = base64_encode(levelActions);
+						}
+						root["result"][ii]["Data"] = lstatus;
 					}
-					root["result"][ii]["trend"] = (int)tstate;
-				}
-				else if (dType == pTypeThermostat1)
-				{
-					std::vector<std::string> strarray;
-					StringSplit(sValue, ";", strarray);
-					if (strarray.size() == 4)
+					else if (dType == pTypeSecurity1)
 					{
-						double tvalue = ConvertTemperature(atof(strarray[0].c_str()), tempsign);
+						std::string lstatus;
+						int llevel = 0;
+						bool bHaveDimmer = false;
+						bool bHaveGroupCmd = false;
+						int maxDimLevel = 0;
+
+						GetLightStatus(dType, dSubType, switchtype, nValue, sValue, lstatus, llevel, bHaveDimmer, maxDimLevel, bHaveGroupCmd);
+
+						root["result"][ii]["Status"] = lstatus;
+						root["result"][ii]["HaveDimmer"] = bHaveDimmer;
+						root["result"][ii]["MaxDimLevel"] = maxDimLevel;
+						root["result"][ii]["HaveGroupCmd"] = bHaveGroupCmd;
+						root["result"][ii]["SwitchType"] = "Security";
+						root["result"][ii]["SwitchTypeVal"] = switchtype; // was 0?;
+						root["result"][ii]["TypeImg"] = "security";
+						root["result"][ii]["StrParam1"] = strParam1;
+						root["result"][ii]["StrParam2"] = strParam2;
+						root["result"][ii]["Protected"] = (iProtected != 0);
+
+						if ((dSubType == sTypeKD101) || (dSubType == sTypeSA30) || (dSubType == sTypeRM174RF) || (switchtype == STYPE_SMOKEDETECTOR))
+						{
+							root["result"][ii]["SwitchTypeVal"] = STYPE_SMOKEDETECTOR;
+							root["result"][ii]["TypeImg"] = "smoke";
+							root["result"][ii]["SwitchType"] = Switch_Type_Desc(STYPE_SMOKEDETECTOR);
+						}
+						root["result"][ii]["Data"] = lstatus;
+						root["result"][ii]["HaveTimeout"] = false;
+					}
+					else if (dType == pTypeSecurity2)
+					{
+						std::string lstatus;
+						int llevel = 0;
+						bool bHaveDimmer = false;
+						bool bHaveGroupCmd = false;
+						int maxDimLevel = 0;
+
+						GetLightStatus(dType, dSubType, switchtype, nValue, sValue, lstatus, llevel, bHaveDimmer, maxDimLevel, bHaveGroupCmd);
+
+						root["result"][ii]["Status"] = lstatus;
+						root["result"][ii]["HaveDimmer"] = bHaveDimmer;
+						root["result"][ii]["MaxDimLevel"] = maxDimLevel;
+						root["result"][ii]["HaveGroupCmd"] = bHaveGroupCmd;
+						root["result"][ii]["SwitchType"] = "Security";
+						root["result"][ii]["SwitchTypeVal"] = switchtype; // was 0?;
+						root["result"][ii]["TypeImg"] = "security";
+						root["result"][ii]["StrParam1"] = strParam1;
+						root["result"][ii]["StrParam2"] = strParam2;
+						root["result"][ii]["Protected"] = (iProtected != 0);
+						root["result"][ii]["Data"] = lstatus;
+						root["result"][ii]["HaveTimeout"] = false;
+					}
+					else if (dType == pTypeEvohome || dType == pTypeEvohomeRelay)
+					{
+						std::string lstatus;
+						int llevel = 0;
+						bool bHaveDimmer = false;
+						bool bHaveGroupCmd = false;
+						int maxDimLevel = 0;
+
+						GetLightStatus(dType, dSubType, switchtype, nValue, sValue, lstatus, llevel, bHaveDimmer, maxDimLevel, bHaveGroupCmd);
+
+						root["result"][ii]["Status"] = lstatus;
+						root["result"][ii]["HaveDimmer"] = bHaveDimmer;
+						root["result"][ii]["MaxDimLevel"] = maxDimLevel;
+						root["result"][ii]["HaveGroupCmd"] = bHaveGroupCmd;
+						root["result"][ii]["SwitchType"] = "evohome";
+						root["result"][ii]["SwitchTypeVal"] = switchtype; // was 0?;
+						root["result"][ii]["TypeImg"] = "override_mini";
+						root["result"][ii]["StrParam1"] = strParam1;
+						root["result"][ii]["StrParam2"] = strParam2;
+						root["result"][ii]["Protected"] = (iProtected != 0);
+
+						root["result"][ii]["Data"] = lstatus;
+						root["result"][ii]["HaveTimeout"] = false;
+
+						if (dType == pTypeEvohomeRelay)
+						{
+							root["result"][ii]["SwitchType"] = "TPI";
+							root["result"][ii]["Level"] = llevel;
+							root["result"][ii]["LevelInt"] = atoi(sValue.c_str());
+							if (root["result"][ii]["Unit"].asInt() > 100)
+								root["result"][ii]["Protected"] = true;
+
+							sprintf(szData, "%s: %d", lstatus.c_str(), atoi(sValue.c_str()));
+							root["result"][ii]["Data"] = szData;
+						}
+					}
+					else if ((dType == pTypeEvohomeZone) || (dType == pTypeEvohomeWater))
+					{
+						root["result"][ii]["HaveTimeout"] = bHaveTimeout;
+						root["result"][ii]["TypeImg"] = "override_mini";
+
+						std::vector<std::string> strarray;
+						StringSplit(sValue, ";", strarray);
+						if (strarray.size() >= 3)
+						{
+							int i = 0;
+							double tempCelcius = atof(strarray[i++].c_str());
+							double temp = ConvertTemperature(tempCelcius, tempsign);
+							double tempSetPoint;
+							root["result"][ii]["Temp"] = temp;
+							if (dType == pTypeEvohomeWater && (strarray[i] == "Off" || strarray[i] == "On"))
+							{
+								root["result"][ii]["State"] = strarray[i++];
+							}
+							else
+							{
+								tempCelcius = atof(strarray[i++].c_str());
+								tempSetPoint = ConvertTemperature(tempCelcius, tempsign);
+								root["result"][ii]["SetPoint"] = tempSetPoint;
+							}
+
+							std::string strstatus = strarray[i++];
+							root["result"][ii]["Status"] = strstatus;
+
+							if ((dType == pTypeEvohomeZone || dType == pTypeEvohomeWater) && strarray.size() >= 4)
+							{
+								root["result"][ii]["Until"] = strarray[i++];
+							}
+							if (dType == pTypeEvohomeZone)
+							{
+								if (tempCelcius == 325.1)
+									sprintf(szTmp, "Off");
+								else
+									sprintf(szTmp, "%.1f %c", tempSetPoint, tempsign);
+								if (strarray.size() >= 4)
+									sprintf(szData, "%.1f %c, (%s), %s until %s", temp, tempsign, szTmp, strstatus.c_str(), strarray[3].c_str());
+								else
+									sprintf(szData, "%.1f %c, (%s), %s", temp, tempsign, szTmp, strstatus.c_str());
+							}
+							else if (strarray.size() >= 4)
+								sprintf(szData, "%.1f %c, %s, %s until %s", temp, tempsign, strarray[1].c_str(), strstatus.c_str(), strarray[3].c_str());
+							else
+								sprintf(szData, "%.1f %c, %s, %s", temp, tempsign, strarray[1].c_str(), strstatus.c_str());
+							root["result"][ii]["Data"] = szData;
+							root["result"][ii]["HaveTimeout"] = bHaveTimeout;
+						}
+					}
+					else if ((dType == pTypeTEMP) || (dType == pTypeRego6XXTemp))
+					{
+						double tvalue = ConvertTemperature(atof(sValue.c_str()), tempsign);
 						root["result"][ii]["Temp"] = tvalue;
 						sprintf(szData, "%.1f %c", tvalue, tempsign);
 						root["result"][ii]["Data"] = szData;
 						root["result"][ii]["HaveTimeout"] = bHaveTimeout;
-					}
-				}
-				else if ((dType == pTypeRFXSensor) && (dSubType == sTypeRFXSensorTemp))
-				{
-					double tvalue = ConvertTemperature(atof(sValue.c_str()), tempsign);
-					root["result"][ii]["Temp"] = tvalue;
-					sprintf(szData, "%.1f %c", tvalue, tempsign);
-					root["result"][ii]["Data"] = szData;
-					root["result"][ii]["TypeImg"] = "temperature";
-					root["result"][ii]["HaveTimeout"] = bHaveTimeout;
-					_tTrendCalculator::_eTendencyType tstate = _tTrendCalculator::_eTendencyType::TENDENCY_UNKNOWN;
-					uint64_t tID = ((uint64_t)(hardwareID & 0x7FFFFFFF) << 32) | (devIdx & 0x7FFFFFFF);
-					if (m_mainworker.m_trend_calculator.find(tID) != m_mainworker.m_trend_calculator.end())
-					{
-						tstate = m_mainworker.m_trend_calculator[tID].m_state;
-					}
-					root["result"][ii]["trend"] = (int)tstate;
-				}
-				else if (dType == pTypeHUM)
-				{
-					root["result"][ii]["Humidity"] = nValue;
-					root["result"][ii]["HumidityStatus"] = RFX_Humidity_Status_Desc(atoi(sValue.c_str()));
-					sprintf(szData, "Humidity %d %%", nValue);
-					root["result"][ii]["Data"] = szData;
-					root["result"][ii]["HaveTimeout"] = bHaveTimeout;
-				}
-				else if (dType == pTypeTEMP_HUM)
-				{
-					std::vector<std::string> strarray;
-					StringSplit(sValue, ";", strarray);
-					if (strarray.size() == 3)
-					{
-						double tempCelcius = atof(strarray[0].c_str());
-						double temp = ConvertTemperature(tempCelcius, tempsign);
-						int humidity = atoi(strarray[1].c_str());
-
-						root["result"][ii]["Temp"] = temp;
-						root["result"][ii]["Humidity"] = humidity;
-						root["result"][ii]["HumidityStatus"] = RFX_Humidity_Status_Desc(atoi(strarray[2].c_str()));
-						sprintf(szData, "%.1f %c, %d %%", temp, tempsign, atoi(strarray[1].c_str()));
-						root["result"][ii]["Data"] = szData;
-						root["result"][ii]["HaveTimeout"] = bHaveTimeout;
-
-						// Calculate dew point
-
-						sprintf(szTmp, "%.2f", ConvertTemperature(CalculateDewPoint(tempCelcius, humidity), tempsign));
-						root["result"][ii]["DewPoint"] = szTmp;
 
 						_tTrendCalculator::_eTendencyType tstate = _tTrendCalculator::_eTendencyType::TENDENCY_UNKNOWN;
 						uint64_t tID = ((uint64_t)(hardwareID & 0x7FFFFFFF) << 32) | (devIdx & 0x7FFFFFFF);
@@ -9744,159 +5531,64 @@ namespace http
 						}
 						root["result"][ii]["trend"] = (int)tstate;
 					}
-				}
-				else if (dType == pTypeTEMP_HUM_BARO)
-				{
-					std::vector<std::string> strarray;
-					StringSplit(sValue, ";", strarray);
-					if (strarray.size() == 5)
+					else if (dType == pTypeThermostat1)
 					{
-						double tempCelcius = atof(strarray[0].c_str());
-						double temp = ConvertTemperature(tempCelcius, tempsign);
-						int humidity = atoi(strarray[1].c_str());
-
-						root["result"][ii]["Temp"] = temp;
-						root["result"][ii]["Humidity"] = humidity;
-						root["result"][ii]["HumidityStatus"] = RFX_Humidity_Status_Desc(atoi(strarray[2].c_str()));
-						root["result"][ii]["Forecast"] = atoi(strarray[4].c_str());
-
-						sprintf(szTmp, "%.2f", ConvertTemperature(CalculateDewPoint(tempCelcius, humidity), tempsign));
-						root["result"][ii]["DewPoint"] = szTmp;
-
-						if (dSubType == sTypeTHBFloat)
+						std::vector<std::string> strarray;
+						StringSplit(sValue, ";", strarray);
+						if (strarray.size() == 4)
 						{
-							root["result"][ii]["Barometer"] = atof(strarray[3].c_str());
-							root["result"][ii]["ForecastStr"] = RFX_WSForecast_Desc(atoi(strarray[4].c_str()));
-						}
-						else
-						{
-							root["result"][ii]["Barometer"] = atoi(strarray[3].c_str());
-							root["result"][ii]["ForecastStr"] = RFX_Forecast_Desc(atoi(strarray[4].c_str()));
-						}
-						if (dSubType == sTypeTHBFloat)
-						{
-							sprintf(szData, "%.1f %c, %d %%, %.1f hPa", temp, tempsign, atoi(strarray[1].c_str()), atof(strarray[3].c_str()));
-						}
-						else
-						{
-							sprintf(szData, "%.1f %c, %d %%, %d hPa", temp, tempsign, atoi(strarray[1].c_str()), atoi(strarray[3].c_str()));
-						}
-						root["result"][ii]["Data"] = szData;
-						root["result"][ii]["HaveTimeout"] = bHaveTimeout;
-
-						_tTrendCalculator::_eTendencyType tstate = _tTrendCalculator::_eTendencyType::TENDENCY_UNKNOWN;
-						uint64_t tID = ((uint64_t)(hardwareID & 0x7FFFFFFF) << 32) | (devIdx & 0x7FFFFFFF);
-						if (m_mainworker.m_trend_calculator.find(tID) != m_mainworker.m_trend_calculator.end())
-						{
-							tstate = m_mainworker.m_trend_calculator[tID].m_state;
-						}
-						root["result"][ii]["trend"] = (int)tstate;
-					}
-				}
-				else if (dType == pTypeTEMP_BARO)
-				{
-					std::vector<std::string> strarray;
-					StringSplit(sValue, ";", strarray);
-					if (strarray.size() >= 3)
-					{
-						double tvalue = ConvertTemperature(atof(strarray[0].c_str()), tempsign);
-						root["result"][ii]["Temp"] = tvalue;
-						int forecast = atoi(strarray[2].c_str());
-						root["result"][ii]["Forecast"] = forecast;
-						root["result"][ii]["ForecastStr"] = BMP_Forecast_Desc(forecast);
-						root["result"][ii]["Barometer"] = atof(strarray[1].c_str());
-
-						sprintf(szData, "%.1f %c, %.1f hPa", tvalue, tempsign, atof(strarray[1].c_str()));
-						root["result"][ii]["Data"] = szData;
-						root["result"][ii]["HaveTimeout"] = bHaveTimeout;
-
-						_tTrendCalculator::_eTendencyType tstate = _tTrendCalculator::_eTendencyType::TENDENCY_UNKNOWN;
-						uint64_t tID = ((uint64_t)(hardwareID & 0x7FFFFFFF) << 32) | (devIdx & 0x7FFFFFFF);
-						if (m_mainworker.m_trend_calculator.find(tID) != m_mainworker.m_trend_calculator.end())
-						{
-							tstate = m_mainworker.m_trend_calculator[tID].m_state;
-						}
-						root["result"][ii]["trend"] = (int)tstate;
-					}
-				}
-				else if (dType == pTypeUV)
-				{
-					std::vector<std::string> strarray;
-					StringSplit(sValue, ";", strarray);
-					if (strarray.size() == 2)
-					{
-						float UVI = static_cast<float>(atof(strarray[0].c_str()));
-						root["result"][ii]["UVI"] = strarray[0];
-						if (dSubType == sTypeUV3)
-						{
-							double tvalue = ConvertTemperature(atof(strarray[1].c_str()), tempsign);
-
+							double tvalue = ConvertTemperature(atof(strarray[0].c_str()), tempsign);
 							root["result"][ii]["Temp"] = tvalue;
-							sprintf(szData, "%.1f UVI, %.1f&deg; %c", UVI, tvalue, tempsign);
-
-							_tTrendCalculator::_eTendencyType tstate = _tTrendCalculator::_eTendencyType::TENDENCY_UNKNOWN;
-							uint64_t tID = ((uint64_t)(hardwareID & 0x7FFFFFFF) << 32) | (devIdx & 0x7FFFFFFF);
-							if (m_mainworker.m_trend_calculator.find(tID) != m_mainworker.m_trend_calculator.end())
-							{
-								tstate = m_mainworker.m_trend_calculator[tID].m_state;
-							}
-							root["result"][ii]["trend"] = (int)tstate;
+							sprintf(szData, "%.1f %c", tvalue, tempsign);
+							root["result"][ii]["Data"] = szData;
+							root["result"][ii]["HaveTimeout"] = bHaveTimeout;
 						}
-						else
+					}
+					else if ((dType == pTypeRFXSensor) && (dSubType == sTypeRFXSensorTemp))
+					{
+						double tvalue = ConvertTemperature(atof(sValue.c_str()), tempsign);
+						root["result"][ii]["Temp"] = tvalue;
+						sprintf(szData, "%.1f %c", tvalue, tempsign);
+						root["result"][ii]["Data"] = szData;
+						root["result"][ii]["TypeImg"] = "temperature";
+						root["result"][ii]["HaveTimeout"] = bHaveTimeout;
+						_tTrendCalculator::_eTendencyType tstate = _tTrendCalculator::_eTendencyType::TENDENCY_UNKNOWN;
+						uint64_t tID = ((uint64_t)(hardwareID & 0x7FFFFFFF) << 32) | (devIdx & 0x7FFFFFFF);
+						if (m_mainworker.m_trend_calculator.find(tID) != m_mainworker.m_trend_calculator.end())
 						{
-							sprintf(szData, "%.1f UVI", UVI);
+							tstate = m_mainworker.m_trend_calculator[tID].m_state;
 						}
+						root["result"][ii]["trend"] = (int)tstate;
+					}
+					else if (dType == pTypeHUM)
+					{
+						root["result"][ii]["Humidity"] = nValue;
+						root["result"][ii]["HumidityStatus"] = RFX_Humidity_Status_Desc(atoi(sValue.c_str()));
+						sprintf(szData, "Humidity %d %%", nValue);
 						root["result"][ii]["Data"] = szData;
 						root["result"][ii]["HaveTimeout"] = bHaveTimeout;
 					}
-				}
-				else if (dType == pTypeWIND)
-				{
-					std::vector<std::string> strarray;
-					StringSplit(sValue, ";", strarray);
-					if (strarray.size() == 6)
+					else if (dType == pTypeTEMP_HUM)
 					{
-						root["result"][ii]["Direction"] = atof(strarray[0].c_str());
-						root["result"][ii]["DirectionStr"] = strarray[1];
+						std::vector<std::string> strarray;
+						StringSplit(sValue, ";", strarray);
+						if (strarray.size() == 3)
+						{
+							double tempCelcius = atof(strarray[0].c_str());
+							double temp = ConvertTemperature(tempCelcius, tempsign);
+							int humidity = atoi(strarray[1].c_str());
 
-						if (dSubType != sTypeWIND5)
-						{
-							int intSpeed = atoi(strarray[2].c_str());
-							if (m_sql.m_windunit != WINDUNIT_Beaufort)
-							{
-								sprintf(szTmp, "%.1f", float(intSpeed) * m_sql.m_windscale);
-							}
-							else
-							{
-								float windms = float(intSpeed) * 0.1F;
-								sprintf(szTmp, "%d", MStoBeaufort(windms));
-							}
-							root["result"][ii]["Speed"] = szTmp;
-						}
+							root["result"][ii]["Temp"] = temp;
+							root["result"][ii]["Humidity"] = humidity;
+							root["result"][ii]["HumidityStatus"] = RFX_Humidity_Status_Desc(atoi(strarray[2].c_str()));
+							sprintf(szData, "%.1f %c, %d %%", temp, tempsign, atoi(strarray[1].c_str()));
+							root["result"][ii]["Data"] = szData;
+							root["result"][ii]["HaveTimeout"] = bHaveTimeout;
 
-						// if (dSubType!=sTypeWIND6) //problem in RFXCOM firmware? gust=speed?
-						{
-							int intGust = atoi(strarray[3].c_str());
-							if (m_sql.m_windunit != WINDUNIT_Beaufort)
-							{
-								sprintf(szTmp, "%.1f", float(intGust) * m_sql.m_windscale);
-							}
-							else
-							{
-								float gustms = float(intGust) * 0.1F;
-								sprintf(szTmp, "%d", MStoBeaufort(gustms));
-							}
-							root["result"][ii]["Gust"] = szTmp;
-						}
-						if ((dSubType == sTypeWIND4) || (dSubType == sTypeWINDNoTemp))
-						{
-							if (dSubType == sTypeWIND4)
-							{
-								double tvalue = ConvertTemperature(atof(strarray[4].c_str()), tempsign);
-								root["result"][ii]["Temp"] = tvalue;
-							}
-							double tvalue = ConvertTemperature(atof(strarray[5].c_str()), tempsign);
-							root["result"][ii]["Chill"] = tvalue;
+							// Calculate dew point
+
+							sprintf(szTmp, "%.2f", ConvertTemperature(CalculateDewPoint(tempCelcius, humidity), tempsign));
+							root["result"][ii]["DewPoint"] = szTmp;
 
 							_tTrendCalculator::_eTendencyType tstate = _tTrendCalculator::_eTendencyType::TENDENCY_UNKNOWN;
 							uint64_t tID = ((uint64_t)(hardwareID & 0x7FFFFFFF) << 32) | (devIdx & 0x7FFFFFFF);
@@ -9906,396 +5598,250 @@ namespace http
 							}
 							root["result"][ii]["trend"] = (int)tstate;
 						}
-						root["result"][ii]["Data"] = sValue;
-						root["result"][ii]["HaveTimeout"] = bHaveTimeout;
 					}
-				}
-				else if (dType == pTypeRAIN)
-				{
-					std::vector<std::string> strarray;
-					StringSplit(sValue, ";", strarray);
-					if (strarray.size() == 2)
+					else if (dType == pTypeTEMP_HUM_BARO)
 					{
-						// get lowest value of today, and max rate
-						time_t now = mytime(nullptr);
-						struct tm ltime;
-						localtime_r(&now, &ltime);
-						char szDate[40];
-						sprintf(szDate, "%04d-%02d-%02d", ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday);
-
-						std::vector<std::vector<std::string>> result2;
-
-						if (dSubType == sTypeRAINWU || dSubType == sTypeRAINByRate)
+						std::vector<std::string> strarray;
+						StringSplit(sValue, ";", strarray);
+						if (strarray.size() == 5)
 						{
-							result2 = m_sql.safe_query("SELECT Total, Rate FROM Rain WHERE (DeviceRowID='%q' AND Date>='%q') ORDER BY ROWID DESC LIMIT 1",
-								sd[0].c_str(), szDate);
-						}
-						else
-						{
-							result2 = m_sql.safe_query("SELECT MIN(Total), MAX(Total) FROM Rain WHERE (DeviceRowID='%q' AND Date>='%q')", sd[0].c_str(), szDate);
-						}
+							double tempCelcius = atof(strarray[0].c_str());
+							double temp = ConvertTemperature(tempCelcius, tempsign);
+							int humidity = atoi(strarray[1].c_str());
 
-						if (!result2.empty())
-						{
-							double total_real = 0;
-							float rate = 0;
-							std::vector<std::string> sd2 = result2[0];
+							root["result"][ii]["Temp"] = temp;
+							root["result"][ii]["Humidity"] = humidity;
+							root["result"][ii]["HumidityStatus"] = RFX_Humidity_Status_Desc(atoi(strarray[2].c_str()));
+							root["result"][ii]["Forecast"] = atoi(strarray[4].c_str());
 
-							if (dSubType == sTypeRAINWU || dSubType == sTypeRAINByRate)
+							sprintf(szTmp, "%.2f", ConvertTemperature(CalculateDewPoint(tempCelcius, humidity), tempsign));
+							root["result"][ii]["DewPoint"] = szTmp;
+
+							if (dSubType == sTypeTHBFloat)
 							{
-								total_real = atof(sd2[0].c_str());
+								root["result"][ii]["Barometer"] = atof(strarray[3].c_str());
+								root["result"][ii]["ForecastStr"] = RFX_WSForecast_Desc(atoi(strarray[4].c_str()));
 							}
 							else
 							{
-								double total_min = atof(sd2[0].c_str());
-								double total_max = atof(strarray[1].c_str());
-								total_real = total_max - total_min;
+								root["result"][ii]["Barometer"] = atoi(strarray[3].c_str());
+								root["result"][ii]["ForecastStr"] = RFX_Forecast_Desc(atoi(strarray[4].c_str()));
 							}
-
-							total_real *= AddjMulti;
-							if (dSubType == sTypeRAINByRate)
+							if (dSubType == sTypeTHBFloat)
 							{
-								rate = static_cast<float>(atof(sd2[1].c_str()) / 10000.0F);
+								sprintf(szData, "%.1f %c, %d %%, %.1f hPa", temp, tempsign, atoi(strarray[1].c_str()), atof(strarray[3].c_str()));
 							}
 							else
 							{
-								rate = (static_cast<float>(atof(strarray[0].c_str())) / 100.0F) * float(AddjMulti);
+								sprintf(szData, "%.1f %c, %d %%, %d hPa", temp, tempsign, atoi(strarray[1].c_str()), atoi(strarray[3].c_str()));
+							}
+							root["result"][ii]["Data"] = szData;
+							root["result"][ii]["HaveTimeout"] = bHaveTimeout;
+
+							_tTrendCalculator::_eTendencyType tstate = _tTrendCalculator::_eTendencyType::TENDENCY_UNKNOWN;
+							uint64_t tID = ((uint64_t)(hardwareID & 0x7FFFFFFF) << 32) | (devIdx & 0x7FFFFFFF);
+							if (m_mainworker.m_trend_calculator.find(tID) != m_mainworker.m_trend_calculator.end())
+							{
+								tstate = m_mainworker.m_trend_calculator[tID].m_state;
+							}
+							root["result"][ii]["trend"] = (int)tstate;
+						}
+					}
+					else if (dType == pTypeTEMP_BARO)
+					{
+						std::vector<std::string> strarray;
+						StringSplit(sValue, ";", strarray);
+						if (strarray.size() >= 3)
+						{
+							double tvalue = ConvertTemperature(atof(strarray[0].c_str()), tempsign);
+							root["result"][ii]["Temp"] = tvalue;
+							int forecast = atoi(strarray[2].c_str());
+							root["result"][ii]["Forecast"] = forecast;
+							root["result"][ii]["ForecastStr"] = BMP_Forecast_Desc(forecast);
+							root["result"][ii]["Barometer"] = atof(strarray[1].c_str());
+
+							sprintf(szData, "%.1f %c, %.1f hPa", tvalue, tempsign, atof(strarray[1].c_str()));
+							root["result"][ii]["Data"] = szData;
+							root["result"][ii]["HaveTimeout"] = bHaveTimeout;
+
+							_tTrendCalculator::_eTendencyType tstate = _tTrendCalculator::_eTendencyType::TENDENCY_UNKNOWN;
+							uint64_t tID = ((uint64_t)(hardwareID & 0x7FFFFFFF) << 32) | (devIdx & 0x7FFFFFFF);
+							if (m_mainworker.m_trend_calculator.find(tID) != m_mainworker.m_trend_calculator.end())
+							{
+								tstate = m_mainworker.m_trend_calculator[tID].m_state;
+							}
+							root["result"][ii]["trend"] = (int)tstate;
+						}
+					}
+					else if (dType == pTypeUV)
+					{
+						std::vector<std::string> strarray;
+						StringSplit(sValue, ";", strarray);
+						if (strarray.size() == 2)
+						{
+							float UVI = static_cast<float>(atof(strarray[0].c_str()));
+							root["result"][ii]["UVI"] = strarray[0];
+							if (dSubType == sTypeUV3)
+							{
+								double tvalue = ConvertTemperature(atof(strarray[1].c_str()), tempsign);
+
+								root["result"][ii]["Temp"] = tvalue;
+								sprintf(szData, "%.1f UVI, %.1f&deg; %c", UVI, tvalue, tempsign);
+
+								_tTrendCalculator::_eTendencyType tstate = _tTrendCalculator::_eTendencyType::TENDENCY_UNKNOWN;
+								uint64_t tID = ((uint64_t)(hardwareID & 0x7FFFFFFF) << 32) | (devIdx & 0x7FFFFFFF);
+								if (m_mainworker.m_trend_calculator.find(tID) != m_mainworker.m_trend_calculator.end())
+								{
+									tstate = m_mainworker.m_trend_calculator[tID].m_state;
+								}
+								root["result"][ii]["trend"] = (int)tstate;
+							}
+							else
+							{
+								sprintf(szData, "%.1f UVI", UVI);
+							}
+							root["result"][ii]["Data"] = szData;
+							root["result"][ii]["HaveTimeout"] = bHaveTimeout;
+						}
+					}
+					else if (dType == pTypeWIND)
+					{
+						std::vector<std::string> strarray;
+						StringSplit(sValue, ";", strarray);
+						if (strarray.size() == 6)
+						{
+							root["result"][ii]["Direction"] = atof(strarray[0].c_str());
+							root["result"][ii]["DirectionStr"] = strarray[1];
+
+							if (dSubType != sTypeWIND5)
+							{
+								int intSpeed = atoi(strarray[2].c_str());
+								if (m_sql.m_windunit != WINDUNIT_Beaufort)
+								{
+									sprintf(szTmp, "%.1f", float(intSpeed) * m_sql.m_windscale);
+								}
+								else
+								{
+									float windms = float(intSpeed) * 0.1F;
+									sprintf(szTmp, "%d", MStoBeaufort(windms));
+								}
+								root["result"][ii]["Speed"] = szTmp;
 							}
 
-							sprintf(szTmp, "%.1f", total_real);
-							root["result"][ii]["Rain"] = szTmp;
-							sprintf(szTmp, "%g", rate);
-							root["result"][ii]["RainRate"] = szTmp;
+							// if (dSubType!=sTypeWIND6) //problem in RFXCOM firmware? gust=speed?
+							{
+								int intGust = atoi(strarray[3].c_str());
+								if (m_sql.m_windunit != WINDUNIT_Beaufort)
+								{
+									sprintf(szTmp, "%.1f", float(intGust) * m_sql.m_windscale);
+								}
+								else
+								{
+									float gustms = float(intGust) * 0.1F;
+									sprintf(szTmp, "%d", MStoBeaufort(gustms));
+								}
+								root["result"][ii]["Gust"] = szTmp;
+							}
+							if ((dSubType == sTypeWIND4) || (dSubType == sTypeWINDNoTemp))
+							{
+								if (dSubType == sTypeWIND4)
+								{
+									double tvalue = ConvertTemperature(atof(strarray[4].c_str()), tempsign);
+									root["result"][ii]["Temp"] = tvalue;
+								}
+								double tvalue = ConvertTemperature(atof(strarray[5].c_str()), tempsign);
+								root["result"][ii]["Chill"] = tvalue;
+
+								_tTrendCalculator::_eTendencyType tstate = _tTrendCalculator::_eTendencyType::TENDENCY_UNKNOWN;
+								uint64_t tID = ((uint64_t)(hardwareID & 0x7FFFFFFF) << 32) | (devIdx & 0x7FFFFFFF);
+								if (m_mainworker.m_trend_calculator.find(tID) != m_mainworker.m_trend_calculator.end())
+								{
+									tstate = m_mainworker.m_trend_calculator[tID].m_state;
+								}
+								root["result"][ii]["trend"] = (int)tstate;
+							}
 							root["result"][ii]["Data"] = sValue;
 							root["result"][ii]["HaveTimeout"] = bHaveTimeout;
 						}
-						else
-						{
-							root["result"][ii]["Rain"] = "0";
-							root["result"][ii]["RainRate"] = "0";
-							root["result"][ii]["Data"] = "0";
-							root["result"][ii]["HaveTimeout"] = bHaveTimeout;
-						}
 					}
-				}
-				else if (dType == pTypeRFXMeter)
-				{
-					std::string ValueQuantity = options["ValueQuantity"];
-					std::string ValueUnits = options["ValueUnits"];
-					float divider = m_sql.GetCounterDivider(int(metertype), int(dType), float(AddjValue2));
-
-					if (ValueQuantity.empty())
+					else if (dType == pTypeRAIN)
 					{
-						ValueQuantity = "Custom";
-					}
-
-					// get value of today
-					time_t now = mytime(nullptr);
-					struct tm ltime;
-					localtime_r(&now, &ltime);
-					char szDate[40];
-					sprintf(szDate, "%04d-%02d-%02d", ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday);
-
-					std::vector<std::vector<std::string>> result2;
-					strcpy(szTmp, "0");
-					result2 = m_sql.safe_query("SELECT MIN(Value) FROM Meter WHERE (DeviceRowID='%q' AND Date>='%q')", sd[0].c_str(), szDate);
-					if (!result2.empty())
-					{
-						std::vector<std::string> sd2 = result2[0];
-
-						uint64_t total_min = std::stoull(sd2[0]);
-						uint64_t total_max = std::stoull(sValue);
-						uint64_t total_real = total_max - total_min;
-						sprintf(szTmp, "%" PRIu64, total_real);
-
-						double musage = 0.0F;
-						switch (metertype)
+						std::vector<std::string> strarray;
+						StringSplit(sValue, ";", strarray);
+						if (strarray.size() == 2)
 						{
-						case MTYPE_ENERGY:
-						case MTYPE_ENERGY_GENERATED:
-							musage = double(total_real) / divider;
-							sprintf(szTmp, "%.3f kWh", musage);
-							break;
-						case MTYPE_GAS:
-							musage = double(total_real) / divider;
-							sprintf(szTmp, "%.3f m3", musage);
-							break;
-						case MTYPE_WATER:
-							musage = double(total_real) / (divider / 1000.0F);
-							sprintf(szTmp, "%d Liter", round(musage));
-							break;
-						case MTYPE_COUNTER:
-							musage = double(total_real) / divider;
-							sprintf(szTmp, "%.10g", musage);
-							if (!ValueUnits.empty())
+							// get lowest value of today, and max rate
+							time_t now = mytime(nullptr);
+							struct tm ltime;
+							localtime_r(&now, &ltime);
+							char szDate[40];
+							sprintf(szDate, "%04d-%02d-%02d", ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday);
+
+							std::vector<std::vector<std::string>> result2;
+
+							if (dSubType == sTypeRAINWU || dSubType == sTypeRAINByRate)
 							{
-								strcat(szTmp, " ");
-								strcat(szTmp, ValueUnits.c_str());
+								result2 = m_sql.safe_query("SELECT Total, Rate FROM Rain WHERE (DeviceRowID='%q' AND Date>='%q') ORDER BY ROWID DESC LIMIT 1",
+									sd[0].c_str(), szDate);
 							}
-							break;
-						default:
-							strcpy(szTmp, "?");
-							break;
-						}
-					}
-					root["result"][ii]["CounterToday"] = szTmp;
-
-					root["result"][ii]["SwitchTypeVal"] = metertype;
-					root["result"][ii]["HaveTimeout"] = bHaveTimeout;
-					root["result"][ii]["ValueQuantity"] = ValueQuantity;
-					root["result"][ii]["ValueUnits"] = ValueUnits;
-					root["result"][ii]["Divider"] = divider;
-
-					double meteroffset = AddjValue;
-
-					double dvalue = static_cast<double>(atof(sValue.c_str()));
-
-					switch (metertype)
-					{
-					case MTYPE_ENERGY:
-					case MTYPE_ENERGY_GENERATED:
-						sprintf(szTmp, "%.3f kWh", meteroffset + (dvalue / divider));
-						root["result"][ii]["Data"] = szTmp;
-						root["result"][ii]["Counter"] = szTmp;
-						break;
-					case MTYPE_GAS:
-						sprintf(szTmp, "%.3f m3", meteroffset + (dvalue / divider));
-						root["result"][ii]["Data"] = szTmp;
-						root["result"][ii]["Counter"] = szTmp;
-						break;
-					case MTYPE_WATER:
-						sprintf(szTmp, "%.3f m3", meteroffset + (dvalue / divider));
-						root["result"][ii]["Data"] = szTmp;
-						root["result"][ii]["Counter"] = szTmp;
-						break;
-					case MTYPE_COUNTER:
-						sprintf(szTmp, "%.10g", meteroffset + (dvalue / divider));
-						if (!ValueUnits.empty())
-						{
-							strcat(szTmp, " ");
-							strcat(szTmp, ValueUnits.c_str());
-						}
-						root["result"][ii]["Data"] = szTmp;
-						root["result"][ii]["Counter"] = szTmp;
-						break;
-					default:
-						root["result"][ii]["Data"] = "?";
-						root["result"][ii]["Counter"] = "?";
-						break;
-					}
-				}
-				else if (dType == pTypeYouLess)
-				{
-					std::string ValueQuantity = options["ValueQuantity"];
-					std::string ValueUnits = options["ValueUnits"];
-					if (ValueQuantity.empty())
-					{
-						ValueQuantity = "Custom";
-					}
-
-					double musage = 0;
-					double divider = m_sql.GetCounterDivider(int(metertype), int(dType), float(AddjValue2));
-
-					// get value of today
-					time_t now = mytime(nullptr);
-					struct tm ltime;
-					localtime_r(&now, &ltime);
-					char szDate[40];
-					sprintf(szDate, "%04d-%02d-%02d", ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday);
-
-					std::vector<std::vector<std::string>> result2;
-					strcpy(szTmp, "0");
-					result2 = m_sql.safe_query("SELECT MIN(Value), MAX(Value) FROM Meter WHERE (DeviceRowID='%q' AND Date>='%q')", sd[0].c_str(), szDate);
-					if (!result2.empty())
-					{
-						std::vector<std::string> sd2 = result2[0];
-
-						unsigned long long total_min = std::strtoull(sd2[0].c_str(), nullptr, 10);
-						unsigned long long total_max = std::strtoull(sd2[1].c_str(), nullptr, 10);
-						unsigned long long total_real;
-
-						total_real = total_max - total_min;
-						sprintf(szTmp, "%lld", total_real);
-
-						musage = 0;
-						switch (metertype)
-						{
-						case MTYPE_ENERGY:
-						case MTYPE_ENERGY_GENERATED:
-							musage = double(total_real) / divider;
-							sprintf(szTmp, "%.3f kWh", musage);
-							break;
-						case MTYPE_GAS:
-							musage = double(total_real) / divider;
-							sprintf(szTmp, "%.3f m3", musage);
-							break;
-						case MTYPE_WATER:
-							musage = double(total_real) / divider;
-							sprintf(szTmp, "%.3f m3", musage);
-							break;
-						case MTYPE_COUNTER:
-							sprintf(szTmp, "%.10g", double(total_real) / divider);
-							if (!ValueUnits.empty())
+							else
 							{
-								strcat(szTmp, " ");
-								strcat(szTmp, ValueUnits.c_str());
+								result2 = m_sql.safe_query("SELECT MIN(Total), MAX(Total) FROM Rain WHERE (DeviceRowID='%q' AND Date>='%q')", sd[0].c_str(), szDate);
 							}
-							break;
-						default:
-							strcpy(szTmp, "0");
-							break;
+
+							if (!result2.empty())
+							{
+								double total_real = 0;
+								float rate = 0;
+								std::vector<std::string> sd2 = result2[0];
+
+								if (dSubType == sTypeRAINWU || dSubType == sTypeRAINByRate)
+								{
+									total_real = atof(sd2[0].c_str());
+								}
+								else
+								{
+									double total_min = atof(sd2[0].c_str());
+									double total_max = atof(strarray[1].c_str());
+									total_real = total_max - total_min;
+								}
+
+								total_real *= AddjMulti;
+								if (dSubType == sTypeRAINByRate)
+								{
+									rate = static_cast<float>(atof(sd2[1].c_str()) / 10000.0F);
+								}
+								else
+								{
+									rate = (static_cast<float>(atof(strarray[0].c_str())) / 100.0F) * float(AddjMulti);
+								}
+
+								sprintf(szTmp, "%.1f", total_real);
+								root["result"][ii]["Rain"] = szTmp;
+								sprintf(szTmp, "%g", rate);
+								root["result"][ii]["RainRate"] = szTmp;
+								root["result"][ii]["Data"] = sValue;
+								root["result"][ii]["HaveTimeout"] = bHaveTimeout;
+							}
+							else
+							{
+								root["result"][ii]["Rain"] = "0";
+								root["result"][ii]["RainRate"] = "0";
+								root["result"][ii]["Data"] = "0";
+								root["result"][ii]["HaveTimeout"] = bHaveTimeout;
+							}
 						}
 					}
-					root["result"][ii]["CounterToday"] = szTmp;
-
-					std::vector<std::string> splitresults;
-					StringSplit(sValue, ";", splitresults);
-					if (splitresults.size() < 2)
-						continue;
-
-					unsigned long long total_actual = std::strtoull(splitresults[0].c_str(), nullptr, 10);
-					musage = 0;
-					switch (metertype)
+					else if (dType == pTypeRFXMeter)
 					{
-					case MTYPE_ENERGY:
-					case MTYPE_ENERGY_GENERATED:
-						musage = double(total_actual) / divider;
-						sprintf(szTmp, "%.03f", musage);
-						break;
-					case MTYPE_GAS:
-					case MTYPE_WATER:
-						musage = double(total_actual) / divider;
-						sprintf(szTmp, "%.03f", musage);
-						break;
-					case MTYPE_COUNTER:
-						sprintf(szTmp, "%.10g", double(total_actual) / divider);
-						break;
-					default:
-						strcpy(szTmp, "0");
-						break;
-					}
-					root["result"][ii]["Counter"] = szTmp;
+						std::string ValueQuantity = options["ValueQuantity"];
+						std::string ValueUnits = options["ValueUnits"];
+						float divider = m_sql.GetCounterDivider(int(metertype), int(dType), float(AddjValue2));
 
-					root["result"][ii]["SwitchTypeVal"] = metertype;
-
-					unsigned long long acounter = std::strtoull(sValue.c_str(), nullptr, 10);
-					musage = 0;
-					switch (metertype)
-					{
-					case MTYPE_ENERGY:
-					case MTYPE_ENERGY_GENERATED:
-						musage = double(acounter) / divider;
-						sprintf(szTmp, "%.3f kWh %s Watt", musage, splitresults[1].c_str());
-						break;
-					case MTYPE_GAS:
-						musage = double(acounter) / divider;
-						sprintf(szTmp, "%.3f m3", musage);
-						break;
-					case MTYPE_WATER:
-						musage = double(acounter) / divider;
-						sprintf(szTmp, "%.3f m3", musage);
-						break;
-					case MTYPE_COUNTER:
-						sprintf(szTmp, "%.10g", double(acounter) / divider);
-						if (!ValueUnits.empty())
+						if (ValueQuantity.empty())
 						{
-							strcat(szTmp, " ");
-							strcat(szTmp, ValueUnits.c_str());
+							ValueQuantity = "Custom";
 						}
-						break;
-					default:
-						strcpy(szTmp, "0");
-						break;
-					}
-					root["result"][ii]["Data"] = szTmp;
-					root["result"][ii]["ValueQuantity"] = ValueQuantity;
-					root["result"][ii]["ValueUnits"] = ValueUnits;
-					root["result"][ii]["Divider"] = divider;
-
-					switch (metertype)
-					{
-					case MTYPE_ENERGY:
-					case MTYPE_ENERGY_GENERATED:
-						sprintf(szTmp, "%s Watt", splitresults[1].c_str());
-						break;
-					case MTYPE_GAS:
-						sprintf(szTmp, "%s m3", splitresults[1].c_str());
-						break;
-					case MTYPE_WATER:
-						sprintf(szTmp, "%s m3", splitresults[1].c_str());
-						break;
-					case MTYPE_COUNTER:
-						sprintf(szTmp, "%s", splitresults[1].c_str());
-						break;
-					default:
-						strcpy(szTmp, "0");
-						break;
-					}
-
-					root["result"][ii]["Usage"] = szTmp;
-					root["result"][ii]["HaveTimeout"] = bHaveTimeout;
-				}
-				else if (dType == pTypeP1Power)
-				{
-					std::vector<std::string> splitresults;
-					StringSplit(sValue, ";", splitresults);
-					if (splitresults.size() != 6)
-					{
-						root["result"][ii]["SwitchTypeVal"] = MTYPE_ENERGY;
-						root["result"][ii]["Counter"] = "0";
-						root["result"][ii]["CounterDeliv"] = "0";
-						root["result"][ii]["Usage"] = "Invalid";
-						root["result"][ii]["UsageDeliv"] = "Invalid";
-						root["result"][ii]["Data"] = "Invalid!: " + sValue;
-						root["result"][ii]["HaveTimeout"] = true;
-						root["result"][ii]["CounterToday"] = "Invalid";
-						root["result"][ii]["CounterDelivToday"] = "Invalid";
-					}
-					else
-					{
-						float EnergyDivider = 1000.0F;
-						int tValue;
-						if (m_sql.GetPreferencesVar("MeterDividerEnergy", tValue))
-						{
-							EnergyDivider = float(tValue);
-						}
-
-						unsigned long long powerusage1 = std::strtoull(splitresults[0].c_str(), nullptr, 10);
-						unsigned long long powerusage2 = std::strtoull(splitresults[1].c_str(), nullptr, 10);
-						unsigned long long powerdeliv1 = std::strtoull(splitresults[2].c_str(), nullptr, 10);
-						unsigned long long powerdeliv2 = std::strtoull(splitresults[3].c_str(), nullptr, 10);
-						unsigned long long usagecurrent = std::strtoull(splitresults[4].c_str(), nullptr, 10);
-						unsigned long long delivcurrent = std::strtoull(splitresults[5].c_str(), nullptr, 10);
-
-						powerdeliv1 = (powerdeliv1 < 10) ? 0 : powerdeliv1;
-						powerdeliv2 = (powerdeliv2 < 10) ? 0 : powerdeliv2;
-
-						unsigned long long powerusage = powerusage1 + powerusage2;
-						unsigned long long powerdeliv = powerdeliv1 + powerdeliv2;
-						if (powerdeliv < 2)
-							powerdeliv = 0;
-
-						double musage = 0;
-
-						root["result"][ii]["SwitchTypeVal"] = MTYPE_ENERGY;
-						musage = double(powerusage) / EnergyDivider;
-						sprintf(szTmp, "%.03f", musage);
-						root["result"][ii]["Counter"] = szTmp;
-						musage = double(powerdeliv) / EnergyDivider;
-						sprintf(szTmp, "%.03f", musage);
-						root["result"][ii]["CounterDeliv"] = szTmp;
-
-						if (bHaveTimeout)
-						{
-							usagecurrent = 0;
-							delivcurrent = 0;
-						}
-						sprintf(szTmp, "%llu Watt", usagecurrent);
-						root["result"][ii]["Usage"] = szTmp;
-						sprintf(szTmp, "%llu Watt", delivcurrent);
-						root["result"][ii]["UsageDeliv"] = szTmp;
-						root["result"][ii]["Data"] = sValue;
-						root["result"][ii]["HaveTimeout"] = bHaveTimeout;
 
 						// get value of today
 						time_t now = mytime(nullptr);
@@ -10306,608 +5852,94 @@ namespace http
 
 						std::vector<std::vector<std::string>> result2;
 						strcpy(szTmp, "0");
-						result2 = m_sql.safe_query("SELECT MIN(Value1), MIN(Value2), MIN(Value5), MIN(Value6) FROM MultiMeter WHERE (DeviceRowID='%q' AND Date>='%q')",
-							sd[0].c_str(), szDate);
-						if (!result2.empty())
-						{
-							std::vector<std::string> sd2 = result2[0];
-
-							unsigned long long total_min_usage_1 = std::strtoull(sd2[0].c_str(), nullptr, 10);
-							unsigned long long total_min_deliv_1 = std::strtoull(sd2[1].c_str(), nullptr, 10);
-							unsigned long long total_min_usage_2 = std::strtoull(sd2[2].c_str(), nullptr, 10);
-							unsigned long long total_min_deliv_2 = std::strtoull(sd2[3].c_str(), nullptr, 10);
-							unsigned long long total_real_usage, total_real_deliv;
-
-							total_min_deliv_1 = (total_min_deliv_1 < 10) ? 0 : total_min_deliv_1;
-							total_min_deliv_2 = (total_min_deliv_2 < 10) ? 0 : total_min_deliv_2;
-
-							total_real_usage = powerusage - (total_min_usage_1 + total_min_usage_2);
-							total_real_deliv = powerdeliv - (total_min_deliv_1 + total_min_deliv_2);
-
-							if (total_real_deliv < 2)
-								total_real_deliv = 0;
-
-							musage = double(total_real_usage) / EnergyDivider;
-							sprintf(szTmp, "%.3f kWh", musage);
-							root["result"][ii]["CounterToday"] = szTmp;
-							musage = double(total_real_deliv) / EnergyDivider;
-							sprintf(szTmp, "%.3f kWh", musage);
-							root["result"][ii]["CounterDelivToday"] = szTmp;
-						}
-						else
-						{
-							sprintf(szTmp, "%.3f kWh", 0.0F);
-							root["result"][ii]["CounterToday"] = szTmp;
-							root["result"][ii]["CounterDelivToday"] = szTmp;
-						}
-					}
-				}
-				else if (dType == pTypeP1Gas)
-				{
-					root["result"][ii]["SwitchTypeVal"] = MTYPE_GAS;
-
-					// get lowest value of today
-					time_t now = mytime(nullptr);
-					struct tm ltime;
-					localtime_r(&now, &ltime);
-					char szDate[40];
-					sprintf(szDate, "%04d-%02d-%02d", ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday);
-
-					std::vector<std::vector<std::string>> result2;
-
-					float divider = m_sql.GetCounterDivider(int(metertype), int(dType), float(AddjValue2));
-
-					strcpy(szTmp, "0");
-					result2 = m_sql.safe_query("SELECT MIN(Value) FROM Meter WHERE (DeviceRowID='%q' AND Date>='%q')", sd[0].c_str(), szDate);
-					if (!result2.empty())
-					{
-						std::vector<std::string> sd2 = result2[0];
-
-						uint64_t total_min_gas = std::stoull(sd2[0]);
-						uint64_t gasactual;
-						try
-						{
-							gasactual = std::stoull(sValue);
-						}
-						catch (std::invalid_argument e)
-						{
-							_log.Log(LOG_ERROR, "Gas - invalid value: '%s'", sValue.c_str());
-							continue;
-						}
-						uint64_t total_real_gas = gasactual - total_min_gas;
-
-						double musage = double(gasactual) / divider;
-						sprintf(szTmp, "%.03f", musage);
-						root["result"][ii]["Counter"] = szTmp;
-						musage = double(total_real_gas) / divider;
-						sprintf(szTmp, "%.03f m3", musage);
-						root["result"][ii]["CounterToday"] = szTmp;
-						root["result"][ii]["HaveTimeout"] = bHaveTimeout;
-						sprintf(szTmp, "%.03f", atof(sValue.c_str()) / divider);
-						root["result"][ii]["Data"] = szTmp;
-					}
-					else
-					{
-						sprintf(szTmp, "%.03f", 0.0F);
-						root["result"][ii]["Counter"] = szTmp;
-						sprintf(szTmp, "%.03f m3", 0.0F);
-						root["result"][ii]["CounterToday"] = szTmp;
-						sprintf(szTmp, "%.03f", atof(sValue.c_str()) / divider);
-						root["result"][ii]["Data"] = szTmp;
-						root["result"][ii]["HaveTimeout"] = bHaveTimeout;
-					}
-				}
-				else if (dType == pTypeCURRENT)
-				{
-					std::vector<std::string> strarray;
-					StringSplit(sValue, ";", strarray);
-					if (strarray.size() == 3)
-					{
-						// CM113
-						int displaytype = 0;
-						int voltage = 230;
-						m_sql.GetPreferencesVar("CM113DisplayType", displaytype);
-						m_sql.GetPreferencesVar("ElectricVoltage", voltage);
-
-						double val1 = atof(strarray[0].c_str());
-						double val2 = atof(strarray[1].c_str());
-						double val3 = atof(strarray[2].c_str());
-
-						if (displaytype == 0)
-						{
-							if ((val2 == 0) && (val3 == 0))
-								sprintf(szData, "%.1f A", val1);
-							else
-								sprintf(szData, "%.1f A, %.1f A, %.1f A", val1, val2, val3);
-						}
-						else
-						{
-							if ((val2 == 0) && (val3 == 0))
-								sprintf(szData, "%d Watt", int(val1 * voltage));
-							else
-								sprintf(szData, "%d Watt, %d Watt, %d Watt", int(val1 * voltage), int(val2 * voltage), int(val3 * voltage));
-						}
-						root["result"][ii]["Data"] = szData;
-						root["result"][ii]["displaytype"] = displaytype;
-						root["result"][ii]["HaveTimeout"] = bHaveTimeout;
-					}
-				}
-				else if (dType == pTypeCURRENTENERGY)
-				{
-					std::vector<std::string> strarray;
-					StringSplit(sValue, ";", strarray);
-					if (strarray.size() == 4)
-					{
-						// CM180i
-						int displaytype = 0;
-						int voltage = 230;
-						m_sql.GetPreferencesVar("CM113DisplayType", displaytype);
-						m_sql.GetPreferencesVar("ElectricVoltage", voltage);
-
-						double total = atof(strarray[3].c_str());
-						if (displaytype == 0)
-						{
-							sprintf(szData, "%.1f A, %.1f A, %.1f A", atof(strarray[0].c_str()), atof(strarray[1].c_str()), atof(strarray[2].c_str()));
-						}
-						else
-						{
-							sprintf(szData, "%d Watt, %d Watt, %d Watt", int(atof(strarray[0].c_str()) * voltage), int(atof(strarray[1].c_str()) * voltage),
-								int(atof(strarray[2].c_str()) * voltage));
-						}
-						if (total > 0)
-						{
-							sprintf(szTmp, ", Total: %.3f kWh", total / 1000.0F);
-							strcat(szData, szTmp);
-						}
-						root["result"][ii]["Data"] = szData;
-						root["result"][ii]["displaytype"] = displaytype;
-						root["result"][ii]["HaveTimeout"] = bHaveTimeout;
-					}
-				}
-				else if (((dType == pTypeENERGY) || (dType == pTypePOWER)) || ((dType == pTypeGeneral) && (dSubType == sTypeKwh)))
-				{
-					std::vector<std::string> strarray;
-					StringSplit(sValue, ";", strarray);
-					if (strarray.size() == 2)
-					{
-						double total = atof(strarray[1].c_str()) / 1000;
-
-						time_t now = mytime(nullptr);
-						struct tm ltime;
-						localtime_r(&now, &ltime);
-						char szDate[40];
-						sprintf(szDate, "%04d-%02d-%02d", ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday);
-
-						std::vector<std::vector<std::string>> result2;
-						strcpy(szTmp, "0");
-						// get the first value of the day instead of the minimum value, because counter can also decrease
-						// result2 = m_sql.safe_query("SELECT MIN(Value) FROM Meter WHERE (DeviceRowID='%q' AND Date>='%q')",
 						result2 = m_sql.safe_query("SELECT Value FROM Meter WHERE (DeviceRowID='%q' AND Date>='%q') ORDER BY Date LIMIT 1", sd[0].c_str(), szDate);
 						if (!result2.empty())
 						{
-							float divider = m_sql.GetCounterDivider(int(metertype), int(dType), float(AddjValue2));
-
 							std::vector<std::string> sd2 = result2[0];
-							double minimum = atof(sd2[0].c_str()) / divider;
 
-							sprintf(szData, "%.3f kWh", total);
-							root["result"][ii]["Data"] = szData;
-							if ((dType == pTypeENERGY) || (dType == pTypePOWER))
+							int64_t total_first = std::stoll(sd2[0]);
+							int64_t total_last = std::stoll(sValue);
+							int64_t total_real = total_last - total_first;
+
+							sprintf(szTmp, "%" PRId64, total_real);
+
+							double musage = 0.0F;
+							switch (metertype)
 							{
-								sprintf(szData, "%ld Watt", atol(strarray[0].c_str()));
-							}
-							else
-							{
-								sprintf(szData, "%g Watt", atof(strarray[0].c_str()));
-							}
-							root["result"][ii]["Usage"] = szData;
-							root["result"][ii]["HaveTimeout"] = bHaveTimeout;
-							sprintf(szTmp, "%.3f kWh", total - minimum);
-							root["result"][ii]["CounterToday"] = szTmp;
-						}
-						else
-						{
-							sprintf(szData, "%.3f kWh", total);
-							root["result"][ii]["Data"] = szData;
-							if ((dType == pTypeENERGY) || (dType == pTypePOWER))
-							{
-								sprintf(szData, "%ld Watt", atol(strarray[0].c_str()));
-							}
-							else
-							{
-								sprintf(szData, "%g Watt", atof(strarray[0].c_str()));
-							}
-							root["result"][ii]["Usage"] = szData;
-							root["result"][ii]["HaveTimeout"] = bHaveTimeout;
-							sprintf(szTmp, "%d kWh", 0);
-							root["result"][ii]["CounterToday"] = szTmp;
-						}
-					}
-					root["result"][ii]["TypeImg"] = "current";
-					root["result"][ii]["SwitchTypeVal"] = switchtype;		    // MTYPE_ENERGY
-					root["result"][ii]["EnergyMeterMode"] = options["EnergyMeterMode"]; // for alternate Energy Reading
-				}
-				else if (dType == pTypeAirQuality)
-				{
-					if (bHaveTimeout)
-						nValue = 0;
-					sprintf(szTmp, "%d ppm", nValue);
-					root["result"][ii]["Data"] = szTmp;
-					root["result"][ii]["HaveTimeout"] = bHaveTimeout;
-					int airquality = nValue;
-					if (airquality < 700)
-						root["result"][ii]["Quality"] = "Excellent";
-					else if (airquality < 900)
-						root["result"][ii]["Quality"] = "Good";
-					else if (airquality < 1100)
-						root["result"][ii]["Quality"] = "Fair";
-					else if (airquality < 1600)
-						root["result"][ii]["Quality"] = "Mediocre";
-					else
-						root["result"][ii]["Quality"] = "Bad";
-				}
-				else if (dType == pTypeThermostat)
-				{
-					if (dSubType == sTypeThermSetpoint)
-					{
-						bHasTimers = m_sql.HasTimers(sd[0]);
-
-						double tempCelcius = atof(sValue.c_str());
-						double temp = ConvertTemperature(tempCelcius, tempsign);
-
-						sprintf(szTmp, "%.1f", temp);
-						root["result"][ii]["Data"] = szTmp;
-						root["result"][ii]["SetPoint"] = szTmp;
-						root["result"][ii]["HaveTimeout"] = bHaveTimeout;
-						root["result"][ii]["TypeImg"] = "override_mini";
-					}
-				}
-				else if (dType == pTypeRadiator1)
-				{
-					if (dSubType == sTypeSmartwares)
-					{
-						bHasTimers = m_sql.HasTimers(sd[0]);
-
-						double tempCelcius = atof(sValue.c_str());
-						double temp = ConvertTemperature(tempCelcius, tempsign);
-
-						sprintf(szTmp, "%.1f", temp);
-						root["result"][ii]["Data"] = szTmp;
-						root["result"][ii]["SetPoint"] = szTmp;
-						root["result"][ii]["HaveTimeout"] = false; // this device does not provide feedback, so no timeout!
-						root["result"][ii]["TypeImg"] = "override_mini";
-					}
-				}
-				else if (dType == pTypeGeneral)
-				{
-					if (dSubType == sTypeVisibility)
-					{
-						float vis = static_cast<float>(atof(sValue.c_str()));
-						if (metertype == 0)
-						{
-							// km
-							sprintf(szTmp, "%.1f km", vis);
-						}
-						else
-						{
-							// miles
-							sprintf(szTmp, "%.1f mi", vis * 0.6214F);
-						}
-						root["result"][ii]["Data"] = szTmp;
-						root["result"][ii]["Visibility"] = atof(sValue.c_str());
-						root["result"][ii]["HaveTimeout"] = bHaveTimeout;
-						root["result"][ii]["TypeImg"] = "visibility";
-						root["result"][ii]["SwitchTypeVal"] = metertype;
-					}
-					else if (dSubType == sTypeDistance)
-					{
-						float vis = static_cast<float>(atof(sValue.c_str()));
-						if (metertype == 0)
-						{
-							// Metric
-							sprintf(szTmp, "%.1f cm", vis);
-						}
-						else
-						{
-							// Imperial
-							sprintf(szTmp, "%.1f in", vis * 0.3937007874015748F);
-						}
-						root["result"][ii]["Data"] = szTmp;
-						root["result"][ii]["HaveTimeout"] = bHaveTimeout;
-						root["result"][ii]["TypeImg"] = "visibility";
-						root["result"][ii]["SwitchTypeVal"] = metertype;
-					}
-					else if (dSubType == sTypeSolarRadiation)
-					{
-						float radiation = static_cast<float>(atof(sValue.c_str()));
-						sprintf(szTmp, "%.1f Watt/m2", radiation);
-						root["result"][ii]["Data"] = szTmp;
-						root["result"][ii]["Radiation"] = atof(sValue.c_str());
-						root["result"][ii]["HaveTimeout"] = bHaveTimeout;
-						root["result"][ii]["TypeImg"] = "radiation";
-						root["result"][ii]["SwitchTypeVal"] = metertype;
-					}
-					else if (dSubType == sTypeSoilMoisture)
-					{
-						sprintf(szTmp, "%d cb", nValue);
-						root["result"][ii]["Data"] = szTmp;
-						root["result"][ii]["Desc"] = Get_Moisture_Desc(nValue);
-						root["result"][ii]["TypeImg"] = "moisture";
-						root["result"][ii]["HaveTimeout"] = bHaveTimeout;
-						root["result"][ii]["SwitchTypeVal"] = metertype;
-					}
-					else if (dSubType == sTypeLeafWetness)
-					{
-						sprintf(szTmp, "%d", nValue);
-						root["result"][ii]["Data"] = szTmp;
-						root["result"][ii]["TypeImg"] = "leaf";
-						root["result"][ii]["HaveTimeout"] = bHaveTimeout;
-						root["result"][ii]["SwitchTypeVal"] = metertype;
-					}
-					else if (dSubType == sTypeSystemTemp)
-					{
-						double tvalue = ConvertTemperature(atof(sValue.c_str()), tempsign);
-						root["result"][ii]["Temp"] = tvalue;
-						sprintf(szData, "%.1f %c", tvalue, tempsign);
-						root["result"][ii]["Data"] = szData;
-						root["result"][ii]["HaveTimeout"] = bHaveTimeout;
-						if (!CustomImage)
-							root["result"][ii]["Image"] = "Computer";
-						root["result"][ii]["TypeImg"] = "temperature";
-						root["result"][ii]["Type"] = "temperature";
-						_tTrendCalculator::_eTendencyType tstate = _tTrendCalculator::_eTendencyType::TENDENCY_UNKNOWN;
-						uint64_t tID = ((uint64_t)(hardwareID & 0x7FFFFFFF) << 32) | (devIdx & 0x7FFFFFFF);
-						if (m_mainworker.m_trend_calculator.find(tID) != m_mainworker.m_trend_calculator.end())
-						{
-							tstate = m_mainworker.m_trend_calculator[tID].m_state;
-						}
-						root["result"][ii]["trend"] = (int)tstate;
-					}
-					else if (dSubType == sTypePercentage)
-					{
-						sprintf(szData, "%g%%", atof(sValue.c_str()));
-						root["result"][ii]["Data"] = szData;
-						root["result"][ii]["HaveTimeout"] = bHaveTimeout;
-						root["result"][ii]["TypeImg"] = "hardware";
-					}
-					else if (dSubType == sTypeWaterflow)
-					{
-						sprintf(szData, "%g l/min", atof(sValue.c_str()));
-						root["result"][ii]["Data"] = szData;
-						root["result"][ii]["HaveTimeout"] = bHaveTimeout;
-						if (!CustomImage)
-							root["result"][ii]["Image"] = "Moisture";
-						root["result"][ii]["TypeImg"] = "moisture";
-					}
-					else if (dSubType == sTypeCustom)
-					{
-						std::string szAxesLabel;
-						int SensorType = 1;
-						std::vector<std::string> sResults;
-						StringSplit(sOptions, ";", sResults);
-
-						if (sResults.size() == 2)
-						{
-							SensorType = atoi(sResults[0].c_str());
-							szAxesLabel = sResults[1];
-						}
-						sprintf(szData, "%g %s", atof(sValue.c_str()), szAxesLabel.c_str());
-						root["result"][ii]["Data"] = szData;
-						root["result"][ii]["SensorType"] = SensorType;
-						root["result"][ii]["SensorUnit"] = szAxesLabel;
-						root["result"][ii]["HaveTimeout"] = bHaveTimeout;
-
-						if (!CustomImage)
-							root["result"][ii]["Image"] = "Custom";
-						root["result"][ii]["TypeImg"] = "Custom";
-					}
-					else if (dSubType == sTypeFan)
-					{
-						sprintf(szData, "%d RPM", atoi(sValue.c_str()));
-						root["result"][ii]["Data"] = szData;
-						root["result"][ii]["HaveTimeout"] = bHaveTimeout;
-						if (!CustomImage)
-							root["result"][ii]["Image"] = "Fan";
-						root["result"][ii]["TypeImg"] = "Fan";
-					}
-					else if (dSubType == sTypeSoundLevel)
-					{
-						sprintf(szData, "%d dB", atoi(sValue.c_str()));
-						root["result"][ii]["Data"] = szData;
-						root["result"][ii]["TypeImg"] = "Speaker";
-						root["result"][ii]["HaveTimeout"] = bHaveTimeout;
-					}
-					else if (dSubType == sTypeVoltage)
-					{
-						sprintf(szData, "%g V", atof(sValue.c_str()));
-						root["result"][ii]["Data"] = szData;
-						root["result"][ii]["TypeImg"] = "current";
-						root["result"][ii]["HaveTimeout"] = bHaveTimeout;
-						root["result"][ii]["Voltage"] = atof(sValue.c_str());
-					}
-					else if (dSubType == sTypeCurrent)
-					{
-						sprintf(szData, "%g A", atof(sValue.c_str()));
-						root["result"][ii]["Data"] = szData;
-						root["result"][ii]["TypeImg"] = "current";
-						root["result"][ii]["HaveTimeout"] = bHaveTimeout;
-						root["result"][ii]["Current"] = atof(sValue.c_str());
-					}
-					else if (dSubType == sTypeTextStatus)
-					{
-						root["result"][ii]["Data"] = sValue;
-						root["result"][ii]["TypeImg"] = "text";
-						root["result"][ii]["HaveTimeout"] = false;
-						root["result"][ii]["ShowNotifications"] = false;
-					}
-					else if (dSubType == sTypeAlert)
-					{
-						if (nValue > 4)
-							nValue = 4;
-						sprintf(szData, "Level: %d", nValue);
-						root["result"][ii]["Data"] = szData;
-						if (!sValue.empty())
-							root["result"][ii]["Data"] = sValue;
-						else
-							root["result"][ii]["Data"] = Get_Alert_Desc(nValue);
-						root["result"][ii]["TypeImg"] = "Alert";
-						root["result"][ii]["Level"] = nValue;
-						root["result"][ii]["HaveTimeout"] = false;
-					}
-					else if (dSubType == sTypePressure)
-					{
-						sprintf(szData, "%.1f Bar", atof(sValue.c_str()));
-						root["result"][ii]["Data"] = szData;
-						root["result"][ii]["TypeImg"] = "gauge";
-						root["result"][ii]["HaveTimeout"] = bHaveTimeout;
-						root["result"][ii]["Pressure"] = atof(sValue.c_str());
-					}
-					else if (dSubType == sTypeBaro)
-					{
-						std::vector<std::string> tstrarray;
-						StringSplit(sValue, ";", tstrarray);
-						if (tstrarray.empty())
-							continue;
-						sprintf(szData, "%g hPa", atof(tstrarray[0].c_str()));
-						root["result"][ii]["Data"] = szData;
-						root["result"][ii]["TypeImg"] = "gauge";
-						root["result"][ii]["HaveTimeout"] = bHaveTimeout;
-						if (tstrarray.size() > 1)
-						{
-							root["result"][ii]["Barometer"] = atof(tstrarray[0].c_str());
-							int forecast = atoi(tstrarray[1].c_str());
-							root["result"][ii]["Forecast"] = forecast;
-							root["result"][ii]["ForecastStr"] = BMP_Forecast_Desc(forecast);
-						}
-					}
-					else if (dSubType == sTypeZWaveClock)
-					{
-						std::vector<std::string> tstrarray;
-						StringSplit(sValue, ";", tstrarray);
-						int day = 0;
-						int hour = 0;
-						int minute = 0;
-						if (tstrarray.size() == 3)
-						{
-							day = atoi(tstrarray[0].c_str());
-							hour = atoi(tstrarray[1].c_str());
-							minute = atoi(tstrarray[2].c_str());
-						}
-						sprintf(szData, "%s %02d:%02d", ZWave_Clock_Days(day), hour, minute);
-						root["result"][ii]["DayTime"] = sValue;
-						root["result"][ii]["Data"] = szData;
-						root["result"][ii]["HaveTimeout"] = bHaveTimeout;
-						root["result"][ii]["TypeImg"] = "clock";
-					}
-					else if (dSubType == sTypeZWaveThermostatMode)
-					{
-						strcpy(szData, "");
-						root["result"][ii]["Mode"] = nValue;
-						root["result"][ii]["TypeImg"] = "mode";
-						root["result"][ii]["HaveTimeout"] = bHaveTimeout;
-						std::string modes;
-						// Add supported modes
-#ifdef WITH_OPENZWAVE
-						if (pHardware)
-						{
-							if (pHardware->HwdType == HTYPE_OpenZWave)
-							{
-								COpenZWave* pZWave = dynamic_cast<COpenZWave*>(pHardware);
-								unsigned long ID;
-								std::stringstream s_strid;
-								s_strid << std::hex << sd[1];
-								s_strid >> ID;
-								std::vector<std::string> vmodes = pZWave->GetSupportedThermostatModes(ID);
-								int smode = 0;
-								char szTmp[200];
-								for (const auto& mode : vmodes)
+							case MTYPE_ENERGY:
+							case MTYPE_ENERGY_GENERATED:
+								musage = double(total_real) / divider;
+								sprintf(szTmp, "%.3f kWh", musage);
+								break;
+							case MTYPE_GAS:
+								musage = double(total_real) / divider;
+								sprintf(szTmp, "%.3f m3", musage);
+								break;
+							case MTYPE_WATER:
+								musage = double(total_real) / (divider / 1000.0F);
+								sprintf(szTmp, "%d Liter", round(musage));
+								break;
+							case MTYPE_COUNTER:
+								musage = double(total_real) / divider;
+								sprintf(szTmp, "%.10g", musage);
+								if (!ValueUnits.empty())
 								{
-									// Value supported
-									sprintf(szTmp, "%d;%s;", smode, mode.c_str());
-									modes += szTmp;
-									smode++;
+									strcat(szTmp, " ");
+									strcat(szTmp, ValueUnits.c_str());
 								}
+								break;
+							default:
+								strcpy(szTmp, "?");
+								break;
+							}
+						}
+						root["result"][ii]["CounterToday"] = szTmp;
 
-								if (!vmodes.empty())
-								{
-									if (nValue < (int)vmodes.size())
-									{
-										sprintf(szData, "%s", vmodes[nValue].c_str());
-									}
-								}
-							}
-						}
-#endif
-						root["result"][ii]["Data"] = szData;
-						root["result"][ii]["Modes"] = modes;
-					}
-					else if (dSubType == sTypeZWaveThermostatFanMode)
-					{
-						sprintf(szData, "%s", ZWave_Thermostat_Fan_Modes[nValue]);
-						root["result"][ii]["Data"] = szData;
-						root["result"][ii]["Mode"] = nValue;
-						root["result"][ii]["TypeImg"] = "mode";
+						root["result"][ii]["SwitchTypeVal"] = metertype;
 						root["result"][ii]["HaveTimeout"] = bHaveTimeout;
-						// Add supported modes (add all for now)
-						bool bAddedSupportedModes = false;
-						std::string modes;
-						// Add supported modes
-#ifdef WITH_OPENZWAVE
-						if (pHardware)
+						root["result"][ii]["ValueQuantity"] = ValueQuantity;
+						root["result"][ii]["ValueUnits"] = ValueUnits;
+						root["result"][ii]["Divider"] = divider;
+
+						double meteroffset = AddjValue;
+
+						double dvalue = static_cast<double>(atof(sValue.c_str()));
+
+						switch (metertype)
 						{
-							if (pHardware->HwdType == HTYPE_OpenZWave)
+						case MTYPE_ENERGY:
+						case MTYPE_ENERGY_GENERATED:
+							sprintf(szTmp, "%.3f kWh", meteroffset + (dvalue / divider));
+							root["result"][ii]["Data"] = szTmp;
+							root["result"][ii]["Counter"] = szTmp;
+							break;
+						case MTYPE_GAS:
+							sprintf(szTmp, "%.3f m3", meteroffset + (dvalue / divider));
+							root["result"][ii]["Data"] = szTmp;
+							root["result"][ii]["Counter"] = szTmp;
+							break;
+						case MTYPE_WATER:
+							sprintf(szTmp, "%.3f m3", meteroffset + (dvalue / divider));
+							root["result"][ii]["Data"] = szTmp;
+							root["result"][ii]["Counter"] = szTmp;
+							break;
+						case MTYPE_COUNTER:
+							sprintf(szTmp, "%.10g", meteroffset + (dvalue / divider));
+							if (!ValueUnits.empty())
 							{
-								COpenZWave* pZWave = dynamic_cast<COpenZWave*>(pHardware);
-								unsigned long ID;
-								std::stringstream s_strid;
-								s_strid << std::hex << sd[1];
-								s_strid >> ID;
-								modes = pZWave->GetSupportedThermostatFanModes(ID);
-								bAddedSupportedModes = !modes.empty();
+								strcat(szTmp, " ");
+								strcat(szTmp, ValueUnits.c_str());
 							}
+							root["result"][ii]["Data"] = szTmp;
+							root["result"][ii]["Counter"] = szTmp;
+							break;
+						default:
+							root["result"][ii]["Data"] = "?";
+							root["result"][ii]["Counter"] = "?";
+							break;
 						}
-#endif
-						if (!bAddedSupportedModes)
-						{
-							int smode = 0;
-							while (ZWave_Thermostat_Fan_Modes[smode] != nullptr)
-							{
-								sprintf(szTmp, "%d;%s;", smode, ZWave_Thermostat_Fan_Modes[smode]);
-								modes += szTmp;
-								smode++;
-							}
-						}
-						root["result"][ii]["Modes"] = modes;
 					}
-					else if (dSubType == sTypeZWaveThermostatOperatingState)
-					{
-						strcpy(szData, "");
-						root["result"][ii]["State"] = nValue;
-						root["result"][ii]["TypeImg"] = "Fan";
-						root["result"][ii]["HaveTimeout"] = bHaveTimeout;
-						if (nValue == 1)
-						{
-							sprintf(szData, "%s", "Cooling");
-						}
-						else if (nValue == 2)
-						{
-							sprintf(szData, "%s", "Heating");
-						}
-						else
-						{
-							sprintf(szData, "%s", "Idle");
-						}
-						root["result"][ii]["Data"] = szData;
-					}
-					else if (dSubType == sTypeZWaveAlarm)
-					{
-						sprintf(szData, "Event: 0x%02X (%d)", nValue, nValue);
-						root["result"][ii]["Data"] = szData;
-						root["result"][ii]["TypeImg"] = "Alert";
-						root["result"][ii]["Level"] = nValue;
-						root["result"][ii]["HaveTimeout"] = false;
-					}
-					else if (dSubType == sTypeCounterIncremental)
+					else if (dType == pTypeYouLess)
 					{
 						std::string ValueQuantity = options["ValueQuantity"];
 						std::string ValueUnits = options["ValueUnits"];
@@ -10916,6 +5948,7 @@ namespace http
 							ValueQuantity = "Custom";
 						}
 
+						double musage = 0;
 						double divider = m_sql.GetCounterDivider(int(metertype), int(dType), float(AddjValue2));
 
 						// get value of today
@@ -10927,16 +5960,18 @@ namespace http
 
 						std::vector<std::vector<std::string>> result2;
 						strcpy(szTmp, "0");
-						result2 = m_sql.safe_query("SELECT Value FROM Meter WHERE (DeviceRowID='%q' AND Date>='%q') ORDER BY Date LIMIT 1", sd[0].c_str(), szDate);
+						result2 = m_sql.safe_query("SELECT MIN(Value), MAX(Value) FROM Meter WHERE (DeviceRowID='%q' AND Date>='%q')", sd[0].c_str(), szDate);
 						if (!result2.empty())
 						{
 							std::vector<std::string> sd2 = result2[0];
 
-							uint64_t total_first = std::stoull(sd2[0]);
-							uint64_t total_last = std::stoull(sValue);
-							uint64_t total_real = total_last - total_first;
+							uint64_t total_min = std::stoull(sd2[0]);
+							uint64_t total_max = std::stoull(sd2[1]);
+							uint64_t total_real = total_max - total_min;
 
-							double musage = 0;
+							sprintf(szTmp, "%" PRIu64, total_real);
+
+							musage = 0;
 							switch (metertype)
 							{
 							case MTYPE_ENERGY:
@@ -10965,212 +6000,207 @@ namespace http
 								break;
 							}
 						}
-						root["result"][ii]["Counter"] = sValue;
 						root["result"][ii]["CounterToday"] = szTmp;
-						root["result"][ii]["SwitchTypeVal"] = metertype;
-						root["result"][ii]["HaveTimeout"] = bHaveTimeout;
-						root["result"][ii]["TypeImg"] = "counter";
-						root["result"][ii]["ValueQuantity"] = ValueQuantity;
-						root["result"][ii]["ValueUnits"] = ValueUnits;
-						root["result"][ii]["Divider"] = divider;
-
-						double dvalue = static_cast<double>(atof(sValue.c_str()));
-						double meteroffset = AddjValue;
-
-						switch (metertype)
-						{
-						case MTYPE_ENERGY:
-						case MTYPE_ENERGY_GENERATED:
-							sprintf(szTmp, "%.3f kWh", meteroffset + (dvalue / divider));
-							root["result"][ii]["Data"] = szTmp;
-							root["result"][ii]["Counter"] = szTmp;
-							break;
-						case MTYPE_GAS:
-							sprintf(szTmp, "%.3f m3", meteroffset + (dvalue / divider));
-							root["result"][ii]["Data"] = szTmp;
-							root["result"][ii]["Counter"] = szTmp;
-							break;
-						case MTYPE_WATER:
-							sprintf(szTmp, "%.3f m3", meteroffset + (dvalue / divider));
-							root["result"][ii]["Data"] = szTmp;
-							root["result"][ii]["Counter"] = szTmp;
-							break;
-						case MTYPE_COUNTER:
-							sprintf(szTmp, "%.10g", meteroffset + (dvalue / divider));
-							if (!ValueUnits.empty())
-							{
-								strcat(szTmp, " ");
-								strcat(szTmp, ValueUnits.c_str());
-							}
-							root["result"][ii]["Data"] = szTmp;
-							root["result"][ii]["Counter"] = szTmp;
-							break;
-						default:
-							root["result"][ii]["Data"] = "?";
-							root["result"][ii]["Counter"] = "?";
-							break;
-						}
-					}
-					else if (dSubType == sTypeManagedCounter)
-					{
-						std::string ValueQuantity = options["ValueQuantity"];
-						std::string ValueUnits = options["ValueUnits"];
-						if (ValueQuantity.empty())
-						{
-							ValueQuantity = "Custom";
-						}
-
-						float divider = m_sql.GetCounterDivider(int(metertype), int(dType), float(AddjValue2));
 
 						std::vector<std::string> splitresults;
 						StringSplit(sValue, ";", splitresults);
-						double dvalue;
 						if (splitresults.size() < 2)
-						{
-							dvalue = static_cast<double>(atof(sValue.c_str()));
-						}
-						else
-						{
-							dvalue = static_cast<double>(atof(splitresults[1].c_str()));
-							if (dvalue < 0.0)
-							{
-								dvalue = static_cast<double>(atof(splitresults[0].c_str()));
-							}
-						}
-						root["result"][ii]["Data"] = root["result"][ii]["Counter"];
+							continue;
 
-						root["result"][ii]["SwitchTypeVal"] = metertype;
-						root["result"][ii]["HaveTimeout"] = bHaveTimeout;
-						root["result"][ii]["TypeImg"] = "counter";
-						root["result"][ii]["ValueQuantity"] = ValueQuantity;
-						root["result"][ii]["ValueUnits"] = ValueUnits;
-						root["result"][ii]["Divider"] = divider;
-						root["result"][ii]["ShowNotifications"] = false;
-						double meteroffset = AddjValue;
-
+						uint64_t total_actual = std::stoull(splitresults[0]);
+						musage = 0;
 						switch (metertype)
 						{
 						case MTYPE_ENERGY:
 						case MTYPE_ENERGY_GENERATED:
-							sprintf(szTmp, "%.3f kWh", meteroffset + (dvalue / divider));
-							root["result"][ii]["Data"] = szTmp;
-							root["result"][ii]["Counter"] = szTmp;
+							musage = double(total_actual) / divider;
+							sprintf(szTmp, "%.03f", musage);
 							break;
 						case MTYPE_GAS:
-							sprintf(szTmp, "%.3f m3", meteroffset + (dvalue / divider));
-							root["result"][ii]["Data"] = szTmp;
-							root["result"][ii]["Counter"] = szTmp;
-							break;
 						case MTYPE_WATER:
-							sprintf(szTmp, "%.3f m3", meteroffset + (dvalue / divider));
-							root["result"][ii]["Data"] = szTmp;
-							root["result"][ii]["Counter"] = szTmp;
+							musage = double(total_actual) / divider;
+							sprintf(szTmp, "%.03f", musage);
 							break;
 						case MTYPE_COUNTER:
-							sprintf(szTmp, "%.10g", meteroffset + (dvalue / divider));
+							sprintf(szTmp, "%.10g", double(total_actual) / divider);
+							break;
+						default:
+							strcpy(szTmp, "0");
+							break;
+						}
+						root["result"][ii]["Counter"] = szTmp;
+
+						root["result"][ii]["SwitchTypeVal"] = metertype;
+
+						uint64_t acounter = std::stoull(sValue);
+						musage = 0;
+						switch (metertype)
+						{
+						case MTYPE_ENERGY:
+						case MTYPE_ENERGY_GENERATED:
+							musage = double(acounter) / divider;
+							sprintf(szTmp, "%.3f kWh %s Watt", musage, splitresults[1].c_str());
+							break;
+						case MTYPE_GAS:
+							musage = double(acounter) / divider;
+							sprintf(szTmp, "%.3f m3", musage);
+							break;
+						case MTYPE_WATER:
+							musage = double(acounter) / divider;
+							sprintf(szTmp, "%.3f m3", musage);
+							break;
+						case MTYPE_COUNTER:
+							sprintf(szTmp, "%.10g", double(acounter) / divider);
 							if (!ValueUnits.empty())
 							{
 								strcat(szTmp, " ");
 								strcat(szTmp, ValueUnits.c_str());
 							}
-							root["result"][ii]["Data"] = szTmp;
-							root["result"][ii]["Counter"] = szTmp;
 							break;
 						default:
-							root["result"][ii]["Data"] = "?";
-							root["result"][ii]["Counter"] = "?";
+							strcpy(szTmp, "0");
 							break;
 						}
-					}
-				}
-				else if (dType == pTypeLux)
-				{
-					sprintf(szTmp, "%.0f Lux", atof(sValue.c_str()));
-					root["result"][ii]["Data"] = szTmp;
-					root["result"][ii]["HaveTimeout"] = bHaveTimeout;
-				}
-				else if (dType == pTypeWEIGHT)
-				{
-					sprintf(szTmp, "%g %s", m_sql.m_weightscale * atof(sValue.c_str()), m_sql.m_weightsign.c_str());
-					root["result"][ii]["Data"] = szTmp;
-					root["result"][ii]["HaveTimeout"] = false;
-					root["result"][ii]["SwitchTypeVal"] = (m_sql.m_weightsign == "kg") ? 0 : 1;
-				}
-				else if (dType == pTypeUsage)
-				{
-					if (dSubType == sTypeElectric)
-					{
-						sprintf(szData, "%g Watt", atof(sValue.c_str()));
-						root["result"][ii]["Data"] = szData;
-					}
-					else
-					{
-						root["result"][ii]["Data"] = sValue;
-					}
-					root["result"][ii]["HaveTimeout"] = bHaveTimeout;
-				}
-				else if (dType == pTypeRFXSensor)
-				{
-					switch (dSubType)
-					{
-					case sTypeRFXSensorAD:
-						sprintf(szData, "%d mV", atoi(sValue.c_str()));
-						root["result"][ii]["TypeImg"] = "current";
-						break;
-					case sTypeRFXSensorVolt:
-						sprintf(szData, "%d mV", atoi(sValue.c_str()));
-						root["result"][ii]["TypeImg"] = "current";
-						break;
-					}
-					root["result"][ii]["Data"] = szData;
-					root["result"][ii]["HaveTimeout"] = bHaveTimeout;
-				}
-				else if (dType == pTypeRego6XXValue)
-				{
-					switch (dSubType)
-					{
-					case sTypeRego6XXStatus:
-					{
-						std::string lstatus = "On";
+						root["result"][ii]["Data"] = szTmp;
+						root["result"][ii]["ValueQuantity"] = ValueQuantity;
+						root["result"][ii]["ValueUnits"] = ValueUnits;
+						root["result"][ii]["Divider"] = divider;
 
-						if (atoi(sValue.c_str()) == 0)
+						switch (metertype)
 						{
-							lstatus = "Off";
+						case MTYPE_ENERGY:
+						case MTYPE_ENERGY_GENERATED:
+							sprintf(szTmp, "%s Watt", splitresults[1].c_str());
+							break;
+						case MTYPE_GAS:
+							sprintf(szTmp, "%s m3", splitresults[1].c_str());
+							break;
+						case MTYPE_WATER:
+							sprintf(szTmp, "%s m3", splitresults[1].c_str());
+							break;
+						case MTYPE_COUNTER:
+							sprintf(szTmp, "%s", splitresults[1].c_str());
+							break;
+						default:
+							strcpy(szTmp, "0");
+							break;
 						}
-						root["result"][ii]["Status"] = lstatus;
-						root["result"][ii]["HaveDimmer"] = false;
-						root["result"][ii]["MaxDimLevel"] = 0;
-						root["result"][ii]["HaveGroupCmd"] = false;
-						root["result"][ii]["SwitchTypeVal"] = STYPE_OnOff;
-						root["result"][ii]["SwitchType"] = Switch_Type_Desc(STYPE_OnOff);
-						sprintf(szData, "%d", atoi(sValue.c_str()));
-						root["result"][ii]["Data"] = szData;
+
+						root["result"][ii]["Usage"] = szTmp;
 						root["result"][ii]["HaveTimeout"] = bHaveTimeout;
-						root["result"][ii]["StrParam1"] = strParam1;
-						root["result"][ii]["StrParam2"] = strParam2;
-						root["result"][ii]["Protected"] = (iProtected != 0);
-
-						if (!CustomImage)
-							root["result"][ii]["Image"] = "Light";
-						root["result"][ii]["TypeImg"] = "utility";
-
-						uint64_t camIDX = m_mainworker.m_cameras.IsDevSceneInCamera(0, sd[0]);
-						root["result"][ii]["UsedByCamera"] = (camIDX != 0) ? true : false;
-						if (camIDX != 0)
-						{
-							std::stringstream scidx;
-							scidx << camIDX;
-							root["result"][ii]["CameraIdx"] = scidx.str();
-							root["result"][ii]["CameraAspect"] = m_mainworker.m_cameras.GetCameraAspectRatio(scidx.str());
-						}
-
-						root["result"][ii]["Level"] = 0;
-						root["result"][ii]["LevelInt"] = atoi(sValue.c_str());
 					}
-					break;
-					case sTypeRego6XXCounter:
+					else if (dType == pTypeP1Power)
 					{
-						// get value of today
+						std::vector<std::string> splitresults;
+						StringSplit(sValue, ";", splitresults);
+						if (splitresults.size() != 6)
+						{
+							root["result"][ii]["SwitchTypeVal"] = MTYPE_ENERGY;
+							root["result"][ii]["Counter"] = "0";
+							root["result"][ii]["CounterDeliv"] = "0";
+							root["result"][ii]["Usage"] = "Invalid";
+							root["result"][ii]["UsageDeliv"] = "Invalid";
+							root["result"][ii]["Data"] = "Invalid!: " + sValue;
+							root["result"][ii]["HaveTimeout"] = true;
+							root["result"][ii]["CounterToday"] = "Invalid";
+							root["result"][ii]["CounterDelivToday"] = "Invalid";
+						}
+						else
+						{
+							float EnergyDivider = 1000.0F;
+							int tValue;
+							if (m_sql.GetPreferencesVar("MeterDividerEnergy", tValue))
+							{
+								EnergyDivider = float(tValue);
+							}
+
+							uint64_t powerusage1 = std::stoull(splitresults[0]);
+							uint64_t powerusage2 = std::stoull(splitresults[1]);
+							uint64_t powerdeliv1 = std::stoull(splitresults[2]);
+							uint64_t powerdeliv2 = std::stoull(splitresults[3]);
+							uint64_t usagecurrent = std::stoull(splitresults[4]);
+							uint64_t delivcurrent = std::stoull(splitresults[5]);
+
+							powerdeliv1 = (powerdeliv1 < 10) ? 0 : powerdeliv1;
+							powerdeliv2 = (powerdeliv2 < 10) ? 0 : powerdeliv2;
+
+							uint64_t powerusage = powerusage1 + powerusage2;
+							uint64_t powerdeliv = powerdeliv1 + powerdeliv2;
+							if (powerdeliv < 2)
+								powerdeliv = 0;
+
+							double musage = 0;
+
+							root["result"][ii]["SwitchTypeVal"] = MTYPE_ENERGY;
+							musage = double(powerusage) / EnergyDivider;
+							sprintf(szTmp, "%.03f", musage);
+							root["result"][ii]["Counter"] = szTmp;
+							musage = double(powerdeliv) / EnergyDivider;
+							sprintf(szTmp, "%.03f", musage);
+							root["result"][ii]["CounterDeliv"] = szTmp;
+
+							if (bHaveTimeout)
+							{
+								usagecurrent = 0;
+								delivcurrent = 0;
+							}
+							sprintf(szTmp, "%" PRIu64 " Watt", usagecurrent);
+							root["result"][ii]["Usage"] = szTmp;
+							sprintf(szTmp, "%" PRIu64 " Watt", delivcurrent);
+							root["result"][ii]["UsageDeliv"] = szTmp;
+							root["result"][ii]["Data"] = sValue;
+							root["result"][ii]["HaveTimeout"] = bHaveTimeout;
+
+							// get value of today
+							time_t now = mytime(nullptr);
+							struct tm ltime;
+							localtime_r(&now, &ltime);
+							char szDate[40];
+							sprintf(szDate, "%04d-%02d-%02d", ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday);
+
+							std::vector<std::vector<std::string>> result2;
+							strcpy(szTmp, "0");
+							result2 = m_sql.safe_query("SELECT MIN(Value1), MIN(Value2), MIN(Value5), MIN(Value6) FROM MultiMeter WHERE (DeviceRowID='%q' AND Date>='%q')",
+								sd[0].c_str(), szDate);
+							if (!result2.empty())
+							{
+								std::vector<std::string> sd2 = result2[0];
+
+								uint64_t total_min_usage_1 = std::stoull(sd2[0]);
+								uint64_t total_min_deliv_1 = std::stoull(sd2[1]);
+								uint64_t total_min_usage_2 = std::stoull(sd2[2]);
+								uint64_t total_min_deliv_2 = std::stoull(sd2[3]);
+								uint64_t total_real_usage, total_real_deliv;
+
+								total_min_deliv_1 = (total_min_deliv_1 < 10) ? 0 : total_min_deliv_1;
+								total_min_deliv_2 = (total_min_deliv_2 < 10) ? 0 : total_min_deliv_2;
+
+								total_real_usage = powerusage - (total_min_usage_1 + total_min_usage_2);
+								total_real_deliv = powerdeliv - (total_min_deliv_1 + total_min_deliv_2);
+
+								if (total_real_deliv < 2)
+									total_real_deliv = 0;
+
+								musage = double(total_real_usage) / EnergyDivider;
+								sprintf(szTmp, "%.3f kWh", musage);
+								root["result"][ii]["CounterToday"] = szTmp;
+								musage = double(total_real_deliv) / EnergyDivider;
+								sprintf(szTmp, "%.3f kWh", musage);
+								root["result"][ii]["CounterDelivToday"] = szTmp;
+							}
+							else
+							{
+								sprintf(szTmp, "%.3f kWh", 0.0F);
+								root["result"][ii]["CounterToday"] = szTmp;
+								root["result"][ii]["CounterDelivToday"] = szTmp;
+							}
+						}
+					}
+					else if (dType == pTypeP1Gas)
+					{
+						root["result"][ii]["SwitchTypeVal"] = MTYPE_GAS;
+
+						// get lowest value of today
 						time_t now = mytime(nullptr);
 						struct tm ltime;
 						localtime_r(&now, &ltime);
@@ -11178,41 +6208,868 @@ namespace http
 						sprintf(szDate, "%04d-%02d-%02d", ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday);
 
 						std::vector<std::vector<std::string>> result2;
+
+						float divider = m_sql.GetCounterDivider(int(metertype), int(dType), float(AddjValue2));
+
 						strcpy(szTmp, "0");
-						result2 = m_sql.safe_query("SELECT MIN(Value), MAX(Value) FROM Meter WHERE (DeviceRowID='%q' AND Date>='%q')", sd[0].c_str(), szDate);
+						result2 = m_sql.safe_query("SELECT MIN(Value) FROM Meter WHERE (DeviceRowID='%q' AND Date>='%q')", sd[0].c_str(), szDate);
 						if (!result2.empty())
 						{
 							std::vector<std::string> sd2 = result2[0];
 
-							unsigned long long total_min = std::strtoull(sd2[0].c_str(), nullptr, 10);
-							unsigned long long total_max = std::strtoull(sd2[1].c_str(), nullptr, 10);
-							unsigned long long total_real;
+							uint64_t total_min_gas = std::stoull(sd2[0]);
+							uint64_t gasactual;
+							try
+							{
+								gasactual = std::stoull(sValue);
+							}
+							catch (std::invalid_argument e)
+							{
+								_log.Log(LOG_ERROR, "Gas - invalid value: '%s'", sValue.c_str());
+								continue;
+							}
+							uint64_t total_real_gas = gasactual - total_min_gas;
 
-							total_real = total_max - total_min;
-							sprintf(szTmp, "%lld", total_real);
+							double musage = double(gasactual) / divider;
+							sprintf(szTmp, "%.03f", musage);
+							root["result"][ii]["Counter"] = szTmp;
+							musage = double(total_real_gas) / divider;
+							sprintf(szTmp, "%.03f m3", musage);
+							root["result"][ii]["CounterToday"] = szTmp;
+							root["result"][ii]["HaveTimeout"] = bHaveTimeout;
+							sprintf(szTmp, "%.03f", atof(sValue.c_str()) / divider);
+							root["result"][ii]["Data"] = szTmp;
 						}
-						root["result"][ii]["SwitchTypeVal"] = MTYPE_COUNTER;
-						root["result"][ii]["Counter"] = sValue;
-						root["result"][ii]["CounterToday"] = szTmp;
-						root["result"][ii]["Data"] = sValue;
-						root["result"][ii]["HaveTimeout"] = bHaveTimeout;
+						else
+						{
+							sprintf(szTmp, "%.03f", 0.0F);
+							root["result"][ii]["Counter"] = szTmp;
+							sprintf(szTmp, "%.03f m3", 0.0F);
+							root["result"][ii]["CounterToday"] = szTmp;
+							sprintf(szTmp, "%.03f", atof(sValue.c_str()) / divider);
+							root["result"][ii]["Data"] = szTmp;
+							root["result"][ii]["HaveTimeout"] = bHaveTimeout;
+						}
 					}
-					break;
-					}
-				}
-#ifdef ENABLE_PYTHON
-				if (pHardware != nullptr)
-				{
-					if (pHardware->HwdType == HTYPE_PythonPlugin)
+					else if (dType == pTypeCURRENT)
 					{
-						Plugins::CPlugin* pPlugin = (Plugins::CPlugin*)pHardware;
-						bHaveTimeout = pPlugin->HasNodeFailed(sd[1].c_str(), atoi(sd[2].c_str()));
+						std::vector<std::string> strarray;
+						StringSplit(sValue, ";", strarray);
+						if (strarray.size() == 3)
+						{
+							// CM113
+							int displaytype = 0;
+							int voltage = 230;
+							m_sql.GetPreferencesVar("CM113DisplayType", displaytype);
+							m_sql.GetPreferencesVar("ElectricVoltage", voltage);
+
+							double val1 = atof(strarray[0].c_str());
+							double val2 = atof(strarray[1].c_str());
+							double val3 = atof(strarray[2].c_str());
+
+							if (displaytype == 0)
+							{
+								if ((val2 == 0) && (val3 == 0))
+									sprintf(szData, "%.1f A", val1);
+								else
+									sprintf(szData, "%.1f A, %.1f A, %.1f A", val1, val2, val3);
+							}
+							else
+							{
+								if ((val2 == 0) && (val3 == 0))
+									sprintf(szData, "%d Watt", int(val1 * voltage));
+								else
+									sprintf(szData, "%d Watt, %d Watt, %d Watt", int(val1 * voltage), int(val2 * voltage), int(val3 * voltage));
+							}
+							root["result"][ii]["Data"] = szData;
+							root["result"][ii]["displaytype"] = displaytype;
+							root["result"][ii]["HaveTimeout"] = bHaveTimeout;
+						}
+					}
+					else if (dType == pTypeCURRENTENERGY)
+					{
+						std::vector<std::string> strarray;
+						StringSplit(sValue, ";", strarray);
+						if (strarray.size() == 4)
+						{
+							// CM180i
+							int displaytype = 0;
+							int voltage = 230;
+							m_sql.GetPreferencesVar("CM113DisplayType", displaytype);
+							m_sql.GetPreferencesVar("ElectricVoltage", voltage);
+
+							double total = atof(strarray[3].c_str());
+							if (displaytype == 0)
+							{
+								sprintf(szData, "%.1f A, %.1f A, %.1f A", atof(strarray[0].c_str()), atof(strarray[1].c_str()), atof(strarray[2].c_str()));
+							}
+							else
+							{
+								sprintf(szData, "%d Watt, %d Watt, %d Watt", int(atof(strarray[0].c_str()) * voltage), int(atof(strarray[1].c_str()) * voltage),
+									int(atof(strarray[2].c_str()) * voltage));
+							}
+							if (total > 0)
+							{
+								sprintf(szTmp, ", Total: %.3f kWh", total / 1000.0F);
+								strcat(szData, szTmp);
+							}
+							root["result"][ii]["Data"] = szData;
+							root["result"][ii]["displaytype"] = displaytype;
+							root["result"][ii]["HaveTimeout"] = bHaveTimeout;
+						}
+					}
+					else if (((dType == pTypeENERGY) || (dType == pTypePOWER)) || ((dType == pTypeGeneral) && (dSubType == sTypeKwh)))
+					{
+						std::vector<std::string> strarray;
+						StringSplit(sValue, ";", strarray);
+						if (strarray.size() == 2)
+						{
+							double total = atof(strarray[1].c_str()) / 1000;
+
+							time_t now = mytime(nullptr);
+							struct tm ltime;
+							localtime_r(&now, &ltime);
+							char szDate[40];
+							sprintf(szDate, "%04d-%02d-%02d", ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday);
+
+							std::vector<std::vector<std::string>> result2;
+							strcpy(szTmp, "0");
+							// get the first value of the day instead of the minimum value, because counter can also decrease
+							// result2 = m_sql.safe_query("SELECT MIN(Value) FROM Meter WHERE (DeviceRowID='%q' AND Date>='%q')",
+							result2 = m_sql.safe_query("SELECT Value FROM Meter WHERE (DeviceRowID='%q' AND Date>='%q') ORDER BY Date LIMIT 1", sd[0].c_str(), szDate);
+							if (!result2.empty())
+							{
+								float divider = m_sql.GetCounterDivider(int(metertype), int(dType), float(AddjValue2));
+
+								std::vector<std::string> sd2 = result2[0];
+								double minimum = atof(sd2[0].c_str()) / divider;
+
+								sprintf(szData, "%.3f kWh", total);
+								root["result"][ii]["Data"] = szData;
+								if ((dType == pTypeENERGY) || (dType == pTypePOWER))
+								{
+									sprintf(szData, "%ld Watt", atol(strarray[0].c_str()));
+								}
+								else
+								{
+									sprintf(szData, "%g Watt", atof(strarray[0].c_str()));
+								}
+								root["result"][ii]["Usage"] = szData;
+								root["result"][ii]["HaveTimeout"] = bHaveTimeout;
+								sprintf(szTmp, "%.3f kWh", total - minimum);
+								root["result"][ii]["CounterToday"] = szTmp;
+							}
+							else
+							{
+								sprintf(szData, "%.3f kWh", total);
+								root["result"][ii]["Data"] = szData;
+								if ((dType == pTypeENERGY) || (dType == pTypePOWER))
+								{
+									sprintf(szData, "%ld Watt", atol(strarray[0].c_str()));
+								}
+								else
+								{
+									sprintf(szData, "%g Watt", atof(strarray[0].c_str()));
+								}
+								root["result"][ii]["Usage"] = szData;
+								root["result"][ii]["HaveTimeout"] = bHaveTimeout;
+								sprintf(szTmp, "%d kWh", 0);
+								root["result"][ii]["CounterToday"] = szTmp;
+							}
+						}
+						root["result"][ii]["TypeImg"] = "current";
+						root["result"][ii]["SwitchTypeVal"] = switchtype;		    // MTYPE_ENERGY
+						root["result"][ii]["EnergyMeterMode"] = options["EnergyMeterMode"]; // for alternate Energy Reading
+					}
+					else if (dType == pTypeAirQuality)
+					{
+						if (bHaveTimeout)
+							nValue = 0;
+						sprintf(szTmp, "%d ppm", nValue);
+						root["result"][ii]["Data"] = szTmp;
+						root["result"][ii]["HaveTimeout"] = bHaveTimeout;
+						int airquality = nValue;
+						if (airquality < 700)
+							root["result"][ii]["Quality"] = "Excellent";
+						else if (airquality < 900)
+							root["result"][ii]["Quality"] = "Good";
+						else if (airquality < 1100)
+							root["result"][ii]["Quality"] = "Fair";
+						else if (airquality < 1600)
+							root["result"][ii]["Quality"] = "Mediocre";
+						else
+							root["result"][ii]["Quality"] = "Bad";
+					}
+					else if (dType == pTypeThermostat)
+					{
+						if (dSubType == sTypeThermSetpoint)
+						{
+							bHasTimers = m_sql.HasTimers(sd[0]);
+
+							double tempCelcius = atof(sValue.c_str());
+							double temp = ConvertTemperature(tempCelcius, tempsign);
+
+							sprintf(szTmp, "%.1f", temp);
+							root["result"][ii]["Data"] = szTmp;
+							root["result"][ii]["SetPoint"] = szTmp;
+							root["result"][ii]["HaveTimeout"] = bHaveTimeout;
+							root["result"][ii]["TypeImg"] = "override_mini";
+						}
+					}
+					else if (dType == pTypeRadiator1)
+					{
+						if (dSubType == sTypeSmartwares)
+						{
+							bHasTimers = m_sql.HasTimers(sd[0]);
+
+							double tempCelcius = atof(sValue.c_str());
+							double temp = ConvertTemperature(tempCelcius, tempsign);
+
+							sprintf(szTmp, "%.1f", temp);
+							root["result"][ii]["Data"] = szTmp;
+							root["result"][ii]["SetPoint"] = szTmp;
+							root["result"][ii]["HaveTimeout"] = false; // this device does not provide feedback, so no timeout!
+							root["result"][ii]["TypeImg"] = "override_mini";
+						}
+					}
+					else if (dType == pTypeGeneral)
+					{
+						if (dSubType == sTypeVisibility)
+						{
+							float vis = static_cast<float>(atof(sValue.c_str()));
+							if (metertype == 0)
+							{
+								// km
+								sprintf(szTmp, "%.1f km", vis);
+							}
+							else
+							{
+								// miles
+								sprintf(szTmp, "%.1f mi", vis * 0.6214F);
+							}
+							root["result"][ii]["Data"] = szTmp;
+							root["result"][ii]["Visibility"] = atof(sValue.c_str());
+							root["result"][ii]["HaveTimeout"] = bHaveTimeout;
+							root["result"][ii]["TypeImg"] = "visibility";
+							root["result"][ii]["SwitchTypeVal"] = metertype;
+						}
+						else if (dSubType == sTypeDistance)
+						{
+							float vis = static_cast<float>(atof(sValue.c_str()));
+							if (metertype == 0)
+							{
+								// Metric
+								sprintf(szTmp, "%.1f cm", vis);
+							}
+							else
+							{
+								// Imperial
+								sprintf(szTmp, "%.1f in", vis * 0.3937007874015748F);
+							}
+							root["result"][ii]["Data"] = szTmp;
+							root["result"][ii]["HaveTimeout"] = bHaveTimeout;
+							root["result"][ii]["TypeImg"] = "visibility";
+							root["result"][ii]["SwitchTypeVal"] = metertype;
+						}
+						else if (dSubType == sTypeSolarRadiation)
+						{
+							float radiation = static_cast<float>(atof(sValue.c_str()));
+							sprintf(szTmp, "%.1f Watt/m2", radiation);
+							root["result"][ii]["Data"] = szTmp;
+							root["result"][ii]["Radiation"] = atof(sValue.c_str());
+							root["result"][ii]["HaveTimeout"] = bHaveTimeout;
+							root["result"][ii]["TypeImg"] = "radiation";
+							root["result"][ii]["SwitchTypeVal"] = metertype;
+						}
+						else if (dSubType == sTypeSoilMoisture)
+						{
+							sprintf(szTmp, "%d cb", nValue);
+							root["result"][ii]["Data"] = szTmp;
+							root["result"][ii]["Desc"] = Get_Moisture_Desc(nValue);
+							root["result"][ii]["TypeImg"] = "moisture";
+							root["result"][ii]["HaveTimeout"] = bHaveTimeout;
+							root["result"][ii]["SwitchTypeVal"] = metertype;
+						}
+						else if (dSubType == sTypeLeafWetness)
+						{
+							sprintf(szTmp, "%d", nValue);
+							root["result"][ii]["Data"] = szTmp;
+							root["result"][ii]["TypeImg"] = "leaf";
+							root["result"][ii]["HaveTimeout"] = bHaveTimeout;
+							root["result"][ii]["SwitchTypeVal"] = metertype;
+						}
+						else if (dSubType == sTypeSystemTemp)
+						{
+							double tvalue = ConvertTemperature(atof(sValue.c_str()), tempsign);
+							root["result"][ii]["Temp"] = tvalue;
+							sprintf(szData, "%.1f %c", tvalue, tempsign);
+							root["result"][ii]["Data"] = szData;
+							root["result"][ii]["HaveTimeout"] = bHaveTimeout;
+							if (!CustomImage)
+								root["result"][ii]["Image"] = "Computer";
+							root["result"][ii]["TypeImg"] = "temperature";
+							root["result"][ii]["Type"] = "temperature";
+							_tTrendCalculator::_eTendencyType tstate = _tTrendCalculator::_eTendencyType::TENDENCY_UNKNOWN;
+							uint64_t tID = ((uint64_t)(hardwareID & 0x7FFFFFFF) << 32) | (devIdx & 0x7FFFFFFF);
+							if (m_mainworker.m_trend_calculator.find(tID) != m_mainworker.m_trend_calculator.end())
+							{
+								tstate = m_mainworker.m_trend_calculator[tID].m_state;
+							}
+							root["result"][ii]["trend"] = (int)tstate;
+						}
+						else if (dSubType == sTypePercentage)
+						{
+							sprintf(szData, "%g%%", atof(sValue.c_str()));
+							root["result"][ii]["Data"] = szData;
+							root["result"][ii]["HaveTimeout"] = bHaveTimeout;
+							root["result"][ii]["TypeImg"] = "hardware";
+						}
+						else if (dSubType == sTypeWaterflow)
+						{
+							sprintf(szData, "%g l/min", atof(sValue.c_str()));
+							root["result"][ii]["Data"] = szData;
+							root["result"][ii]["HaveTimeout"] = bHaveTimeout;
+							if (!CustomImage)
+								root["result"][ii]["Image"] = "Moisture";
+							root["result"][ii]["TypeImg"] = "moisture";
+						}
+						else if (dSubType == sTypeCustom)
+						{
+							std::string szAxesLabel;
+							int SensorType = 1;
+							std::vector<std::string> sResults;
+							StringSplit(sOptions, ";", sResults);
+
+							if (sResults.size() == 2)
+							{
+								SensorType = atoi(sResults[0].c_str());
+								szAxesLabel = sResults[1];
+							}
+							sprintf(szData, "%g %s", atof(sValue.c_str()), szAxesLabel.c_str());
+							root["result"][ii]["Data"] = szData;
+							root["result"][ii]["SensorType"] = SensorType;
+							root["result"][ii]["SensorUnit"] = szAxesLabel;
+							root["result"][ii]["HaveTimeout"] = bHaveTimeout;
+
+							if (!CustomImage)
+								root["result"][ii]["Image"] = "Custom";
+							root["result"][ii]["TypeImg"] = "Custom";
+						}
+						else if (dSubType == sTypeFan)
+						{
+							sprintf(szData, "%d RPM", atoi(sValue.c_str()));
+							root["result"][ii]["Data"] = szData;
+							root["result"][ii]["HaveTimeout"] = bHaveTimeout;
+							if (!CustomImage)
+								root["result"][ii]["Image"] = "Fan";
+							root["result"][ii]["TypeImg"] = "Fan";
+						}
+						else if (dSubType == sTypeSoundLevel)
+						{
+							sprintf(szData, "%d dB", atoi(sValue.c_str()));
+							root["result"][ii]["Data"] = szData;
+							root["result"][ii]["TypeImg"] = "Speaker";
+							root["result"][ii]["HaveTimeout"] = bHaveTimeout;
+						}
+						else if (dSubType == sTypeVoltage)
+						{
+							sprintf(szData, "%g V", atof(sValue.c_str()));
+							root["result"][ii]["Data"] = szData;
+							root["result"][ii]["TypeImg"] = "current";
+							root["result"][ii]["HaveTimeout"] = bHaveTimeout;
+							root["result"][ii]["Voltage"] = atof(sValue.c_str());
+						}
+						else if (dSubType == sTypeCurrent)
+						{
+							sprintf(szData, "%g A", atof(sValue.c_str()));
+							root["result"][ii]["Data"] = szData;
+							root["result"][ii]["TypeImg"] = "current";
+							root["result"][ii]["HaveTimeout"] = bHaveTimeout;
+							root["result"][ii]["Current"] = atof(sValue.c_str());
+						}
+						else if (dSubType == sTypeTextStatus)
+						{
+							root["result"][ii]["Data"] = sValue;
+							root["result"][ii]["TypeImg"] = "text";
+							root["result"][ii]["HaveTimeout"] = false;
+							root["result"][ii]["ShowNotifications"] = false;
+						}
+						else if (dSubType == sTypeAlert)
+						{
+							if (nValue > 4)
+								nValue = 4;
+							sprintf(szData, "Level: %d", nValue);
+							root["result"][ii]["Data"] = szData;
+							if (!sValue.empty())
+								root["result"][ii]["Data"] = sValue;
+							else
+								root["result"][ii]["Data"] = Get_Alert_Desc(nValue);
+							root["result"][ii]["TypeImg"] = "Alert";
+							root["result"][ii]["Level"] = nValue;
+							root["result"][ii]["HaveTimeout"] = false;
+						}
+						else if (dSubType == sTypePressure)
+						{
+							sprintf(szData, "%.1f Bar", atof(sValue.c_str()));
+							root["result"][ii]["Data"] = szData;
+							root["result"][ii]["TypeImg"] = "gauge";
+							root["result"][ii]["HaveTimeout"] = bHaveTimeout;
+							root["result"][ii]["Pressure"] = atof(sValue.c_str());
+						}
+						else if (dSubType == sTypeBaro)
+						{
+							std::vector<std::string> tstrarray;
+							StringSplit(sValue, ";", tstrarray);
+							if (tstrarray.empty())
+								continue;
+							sprintf(szData, "%g hPa", atof(tstrarray[0].c_str()));
+							root["result"][ii]["Data"] = szData;
+							root["result"][ii]["TypeImg"] = "gauge";
+							root["result"][ii]["HaveTimeout"] = bHaveTimeout;
+							if (tstrarray.size() > 1)
+							{
+								root["result"][ii]["Barometer"] = atof(tstrarray[0].c_str());
+								int forecast = atoi(tstrarray[1].c_str());
+								root["result"][ii]["Forecast"] = forecast;
+								root["result"][ii]["ForecastStr"] = BMP_Forecast_Desc(forecast);
+							}
+						}
+						else if (dSubType == sTypeZWaveClock)
+						{
+							std::vector<std::string> tstrarray;
+							StringSplit(sValue, ";", tstrarray);
+							int day = 0;
+							int hour = 0;
+							int minute = 0;
+							if (tstrarray.size() == 3)
+							{
+								day = atoi(tstrarray[0].c_str());
+								hour = atoi(tstrarray[1].c_str());
+								minute = atoi(tstrarray[2].c_str());
+							}
+							sprintf(szData, "%s %02d:%02d", ZWave_Clock_Days(day), hour, minute);
+							root["result"][ii]["DayTime"] = sValue;
+							root["result"][ii]["Data"] = szData;
+							root["result"][ii]["HaveTimeout"] = bHaveTimeout;
+							root["result"][ii]["TypeImg"] = "clock";
+						}
+						else if (dSubType == sTypeZWaveThermostatMode)
+						{
+							strcpy(szData, "");
+							root["result"][ii]["Mode"] = nValue;
+							root["result"][ii]["TypeImg"] = "mode";
+							root["result"][ii]["HaveTimeout"] = bHaveTimeout;
+							std::string modes;
+							// Add supported modes
+#ifdef WITH_OPENZWAVE
+							if (pHardware)
+							{
+								if (pHardware->HwdType == HTYPE_OpenZWave)
+								{
+									COpenZWave* pZWave = dynamic_cast<COpenZWave*>(pHardware);
+									unsigned long ID;
+									std::stringstream s_strid;
+									s_strid << std::hex << sd[1];
+									s_strid >> ID;
+									std::vector<std::string> vmodes = pZWave->GetSupportedThermostatModes(ID);
+									int smode = 0;
+									char szTmp[200];
+									for (const auto& mode : vmodes)
+									{
+										// Value supported
+										sprintf(szTmp, "%d;%s;", smode, mode.c_str());
+										modes += szTmp;
+										smode++;
+									}
+
+									if (!vmodes.empty())
+									{
+										if (nValue < (int)vmodes.size())
+										{
+											sprintf(szData, "%s", vmodes[nValue].c_str());
+										}
+									}
+								}
+							}
+#endif
+							root["result"][ii]["Data"] = szData;
+							root["result"][ii]["Modes"] = modes;
+						}
+						else if (dSubType == sTypeZWaveThermostatFanMode)
+						{
+							sprintf(szData, "%s", ZWave_Thermostat_Fan_Modes[nValue]);
+							root["result"][ii]["Data"] = szData;
+							root["result"][ii]["Mode"] = nValue;
+							root["result"][ii]["TypeImg"] = "mode";
+							root["result"][ii]["HaveTimeout"] = bHaveTimeout;
+							// Add supported modes (add all for now)
+							bool bAddedSupportedModes = false;
+							std::string modes;
+							// Add supported modes
+#ifdef WITH_OPENZWAVE
+							if (pHardware)
+							{
+								if (pHardware->HwdType == HTYPE_OpenZWave)
+								{
+									COpenZWave* pZWave = dynamic_cast<COpenZWave*>(pHardware);
+									unsigned long ID;
+									std::stringstream s_strid;
+									s_strid << std::hex << sd[1];
+									s_strid >> ID;
+									modes = pZWave->GetSupportedThermostatFanModes(ID);
+									bAddedSupportedModes = !modes.empty();
+								}
+							}
+#endif
+							if (!bAddedSupportedModes)
+							{
+								int smode = 0;
+								while (ZWave_Thermostat_Fan_Modes[smode] != nullptr)
+								{
+									sprintf(szTmp, "%d;%s;", smode, ZWave_Thermostat_Fan_Modes[smode]);
+									modes += szTmp;
+									smode++;
+								}
+							}
+							root["result"][ii]["Modes"] = modes;
+						}
+						else if (dSubType == sTypeZWaveThermostatOperatingState)
+						{
+							strcpy(szData, "");
+							root["result"][ii]["State"] = nValue;
+							root["result"][ii]["TypeImg"] = "Fan";
+							root["result"][ii]["HaveTimeout"] = bHaveTimeout;
+							if (nValue == 1)
+							{
+								sprintf(szData, "%s", "Cooling");
+							}
+							else if (nValue == 2)
+							{
+								sprintf(szData, "%s", "Heating");
+							}
+							else
+							{
+								sprintf(szData, "%s", "Idle");
+							}
+							root["result"][ii]["Data"] = szData;
+						}
+						else if (dSubType == sTypeZWaveAlarm)
+						{
+							sprintf(szData, "Event: 0x%02X (%d)", nValue, nValue);
+							root["result"][ii]["Data"] = szData;
+							root["result"][ii]["TypeImg"] = "Alert";
+							root["result"][ii]["Level"] = nValue;
+							root["result"][ii]["HaveTimeout"] = false;
+						}
+						else if (dSubType == sTypeCounterIncremental)
+						{
+							std::string ValueQuantity = options["ValueQuantity"];
+							std::string ValueUnits = options["ValueUnits"];
+							if (ValueQuantity.empty())
+							{
+								ValueQuantity = "Custom";
+							}
+
+							double divider = m_sql.GetCounterDivider(int(metertype), int(dType), float(AddjValue2));
+
+							// get value of today
+							time_t now = mytime(nullptr);
+							struct tm ltime;
+							localtime_r(&now, &ltime);
+							char szDate[40];
+							sprintf(szDate, "%04d-%02d-%02d", ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday);
+
+							std::vector<std::vector<std::string>> result2;
+							strcpy(szTmp, "0");
+							result2 = m_sql.safe_query("SELECT Value FROM Meter WHERE (DeviceRowID='%q' AND Date>='%q') ORDER BY Date LIMIT 1", sd[0].c_str(), szDate);
+							if (!result2.empty())
+							{
+								std::vector<std::string> sd2 = result2[0];
+
+								int64_t total_first = std::stoll(sd2[0]);
+								int64_t total_last = std::stoll(sValue);
+								int64_t total_real = total_last - total_first;
+
+								double musage = 0;
+								switch (metertype)
+								{
+								case MTYPE_ENERGY:
+								case MTYPE_ENERGY_GENERATED:
+									musage = double(total_real) / divider;
+									sprintf(szTmp, "%.3f kWh", musage);
+									break;
+								case MTYPE_GAS:
+									musage = double(total_real) / divider;
+									sprintf(szTmp, "%.3f m3", musage);
+									break;
+								case MTYPE_WATER:
+									musage = double(total_real) / divider;
+									sprintf(szTmp, "%.3f m3", musage);
+									break;
+								case MTYPE_COUNTER:
+									sprintf(szTmp, "%.10g", double(total_real) / divider);
+									if (!ValueUnits.empty())
+									{
+										strcat(szTmp, " ");
+										strcat(szTmp, ValueUnits.c_str());
+									}
+									break;
+								default:
+									strcpy(szTmp, "0");
+									break;
+								}
+							}
+							root["result"][ii]["Counter"] = sValue;
+							root["result"][ii]["CounterToday"] = szTmp;
+							root["result"][ii]["SwitchTypeVal"] = metertype;
+							root["result"][ii]["HaveTimeout"] = bHaveTimeout;
+							root["result"][ii]["TypeImg"] = "counter";
+							root["result"][ii]["ValueQuantity"] = ValueQuantity;
+							root["result"][ii]["ValueUnits"] = ValueUnits;
+							root["result"][ii]["Divider"] = divider;
+
+							double dvalue = static_cast<double>(atof(sValue.c_str()));
+							double meteroffset = AddjValue;
+
+							switch (metertype)
+							{
+							case MTYPE_ENERGY:
+							case MTYPE_ENERGY_GENERATED:
+								sprintf(szTmp, "%.3f kWh", meteroffset + (dvalue / divider));
+								root["result"][ii]["Data"] = szTmp;
+								root["result"][ii]["Counter"] = szTmp;
+								break;
+							case MTYPE_GAS:
+								sprintf(szTmp, "%.3f m3", meteroffset + (dvalue / divider));
+								root["result"][ii]["Data"] = szTmp;
+								root["result"][ii]["Counter"] = szTmp;
+								break;
+							case MTYPE_WATER:
+								sprintf(szTmp, "%.3f m3", meteroffset + (dvalue / divider));
+								root["result"][ii]["Data"] = szTmp;
+								root["result"][ii]["Counter"] = szTmp;
+								break;
+							case MTYPE_COUNTER:
+								sprintf(szTmp, "%.10g", meteroffset + (dvalue / divider));
+								if (!ValueUnits.empty())
+								{
+									strcat(szTmp, " ");
+									strcat(szTmp, ValueUnits.c_str());
+								}
+								root["result"][ii]["Data"] = szTmp;
+								root["result"][ii]["Counter"] = szTmp;
+								break;
+							default:
+								root["result"][ii]["Data"] = "?";
+								root["result"][ii]["Counter"] = "?";
+								break;
+							}
+						}
+						else if (dSubType == sTypeManagedCounter)
+						{
+							std::string ValueQuantity = options["ValueQuantity"];
+							std::string ValueUnits = options["ValueUnits"];
+							if (ValueQuantity.empty())
+							{
+								ValueQuantity = "Custom";
+							}
+
+							float divider = m_sql.GetCounterDivider(int(metertype), int(dType), float(AddjValue2));
+
+							std::vector<std::string> splitresults;
+							StringSplit(sValue, ";", splitresults);
+							double dvalue;
+							if (splitresults.size() < 2)
+							{
+								dvalue = static_cast<double>(atof(sValue.c_str()));
+							}
+							else
+							{
+								dvalue = static_cast<double>(atof(splitresults[1].c_str()));
+								if (dvalue < 0.0)
+								{
+									dvalue = static_cast<double>(atof(splitresults[0].c_str()));
+								}
+							}
+							root["result"][ii]["SwitchTypeVal"] = metertype;
+							root["result"][ii]["HaveTimeout"] = bHaveTimeout;
+							root["result"][ii]["TypeImg"] = "counter";
+							root["result"][ii]["ValueQuantity"] = ValueQuantity;
+							root["result"][ii]["ValueUnits"] = ValueUnits;
+							root["result"][ii]["Divider"] = divider;
+							root["result"][ii]["ShowNotifications"] = false;
+							double meteroffset = AddjValue;
+
+							switch (metertype)
+							{
+							case MTYPE_ENERGY:
+							case MTYPE_ENERGY_GENERATED:
+								sprintf(szTmp, "%.3f kWh", meteroffset + (dvalue / divider));
+								root["result"][ii]["Data"] = szTmp;
+								root["result"][ii]["Counter"] = szTmp;
+								break;
+							case MTYPE_GAS:
+								sprintf(szTmp, "%.3f m3", meteroffset + (dvalue / divider));
+								root["result"][ii]["Data"] = szTmp;
+								root["result"][ii]["Counter"] = szTmp;
+								break;
+							case MTYPE_WATER:
+								sprintf(szTmp, "%.3f m3", meteroffset + (dvalue / divider));
+								root["result"][ii]["Data"] = szTmp;
+								root["result"][ii]["Counter"] = szTmp;
+								break;
+							case MTYPE_COUNTER:
+								sprintf(szTmp, "%.10g", meteroffset + (dvalue / divider));
+								if (!ValueUnits.empty())
+								{
+									strcat(szTmp, " ");
+									strcat(szTmp, ValueUnits.c_str());
+								}
+								root["result"][ii]["Data"] = szTmp;
+								root["result"][ii]["Counter"] = szTmp;
+								break;
+							default:
+								root["result"][ii]["Data"] = "?";
+								root["result"][ii]["Counter"] = "?";
+								break;
+							}
+						}
+					}
+					else if (dType == pTypeLux)
+					{
+						sprintf(szTmp, "%.0f Lux", atof(sValue.c_str()));
+						root["result"][ii]["Data"] = szTmp;
 						root["result"][ii]["HaveTimeout"] = bHaveTimeout;
 					}
-				}
+					else if (dType == pTypeWEIGHT)
+					{
+						sprintf(szTmp, "%g %s", m_sql.m_weightscale * atof(sValue.c_str()), m_sql.m_weightsign.c_str());
+						root["result"][ii]["Data"] = szTmp;
+						root["result"][ii]["HaveTimeout"] = false;
+						root["result"][ii]["SwitchTypeVal"] = (m_sql.m_weightsign == "kg") ? 0 : 1;
+					}
+					else if (dType == pTypeUsage)
+					{
+						if (dSubType == sTypeElectric)
+						{
+							sprintf(szData, "%g Watt", atof(sValue.c_str()));
+							root["result"][ii]["Data"] = szData;
+						}
+						else
+						{
+							root["result"][ii]["Data"] = sValue;
+						}
+						root["result"][ii]["HaveTimeout"] = bHaveTimeout;
+					}
+					else if (dType == pTypeRFXSensor)
+					{
+						switch (dSubType)
+						{
+						case sTypeRFXSensorAD:
+							sprintf(szData, "%d mV", atoi(sValue.c_str()));
+							root["result"][ii]["TypeImg"] = "current";
+							break;
+						case sTypeRFXSensorVolt:
+							sprintf(szData, "%d mV", atoi(sValue.c_str()));
+							root["result"][ii]["TypeImg"] = "current";
+							break;
+						}
+						root["result"][ii]["Data"] = szData;
+						root["result"][ii]["HaveTimeout"] = bHaveTimeout;
+					}
+					else if (dType == pTypeRego6XXValue)
+					{
+						switch (dSubType)
+						{
+						case sTypeRego6XXStatus:
+						{
+							std::string lstatus = "On";
+
+							if (atoi(sValue.c_str()) == 0)
+							{
+								lstatus = "Off";
+							}
+							root["result"][ii]["Status"] = lstatus;
+							root["result"][ii]["HaveDimmer"] = false;
+							root["result"][ii]["MaxDimLevel"] = 0;
+							root["result"][ii]["HaveGroupCmd"] = false;
+							root["result"][ii]["SwitchTypeVal"] = STYPE_OnOff;
+							root["result"][ii]["SwitchType"] = Switch_Type_Desc(STYPE_OnOff);
+							sprintf(szData, "%d", atoi(sValue.c_str()));
+							root["result"][ii]["Data"] = szData;
+							root["result"][ii]["HaveTimeout"] = bHaveTimeout;
+							root["result"][ii]["StrParam1"] = strParam1;
+							root["result"][ii]["StrParam2"] = strParam2;
+							root["result"][ii]["Protected"] = (iProtected != 0);
+
+							if (!CustomImage)
+								root["result"][ii]["Image"] = "Light";
+							root["result"][ii]["TypeImg"] = "utility";
+
+							uint64_t camIDX = m_mainworker.m_cameras.IsDevSceneInCamera(0, sd[0]);
+							root["result"][ii]["UsedByCamera"] = (camIDX != 0) ? true : false;
+							if (camIDX != 0)
+							{
+								std::stringstream scidx;
+								scidx << camIDX;
+								root["result"][ii]["CameraIdx"] = scidx.str();
+								root["result"][ii]["CameraAspect"] = m_mainworker.m_cameras.GetCameraAspectRatio(scidx.str());
+							}
+
+							root["result"][ii]["Level"] = 0;
+							root["result"][ii]["LevelInt"] = atoi(sValue.c_str());
+						}
+						break;
+						case sTypeRego6XXCounter:
+						{
+							// get value of today
+							time_t now = mytime(nullptr);
+							struct tm ltime;
+							localtime_r(&now, &ltime);
+							char szDate[40];
+							sprintf(szDate, "%04d-%02d-%02d", ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday);
+
+							std::vector<std::vector<std::string>> result2;
+							strcpy(szTmp, "0");
+							result2 = m_sql.safe_query("SELECT MIN(Value), MAX(Value) FROM Meter WHERE (DeviceRowID='%q' AND Date>='%q')", sd[0].c_str(), szDate);
+							if (!result2.empty())
+							{
+								std::vector<std::string> sd2 = result2[0];
+
+								uint64_t total_min = std::stoull(sd2[0]);
+								uint64_t total_max = std::stoull(sd2[1]);
+								uint64_t total_real = total_max - total_min;
+
+								sprintf(szTmp, "%" PRIu64, total_real);
+							}
+							root["result"][ii]["SwitchTypeVal"] = MTYPE_COUNTER;
+							root["result"][ii]["Counter"] = sValue;
+							root["result"][ii]["CounterToday"] = szTmp;
+							root["result"][ii]["Data"] = sValue;
+							root["result"][ii]["HaveTimeout"] = bHaveTimeout;
+						}
+						break;
+						}
+					}
+#ifdef ENABLE_PYTHON
+					if (pHardware != nullptr)
+					{
+						if (pHardware->HwdType == HTYPE_PythonPlugin)
+						{
+							Plugins::CPlugin* pPlugin = (Plugins::CPlugin*)pHardware;
+							bHaveTimeout = pPlugin->HasNodeFailed(sd[1].c_str(), atoi(sd[2].c_str()));
+							root["result"][ii]["HaveTimeout"] = bHaveTimeout;
+						}
+					}
 #endif
-				root["result"][ii]["Timers"] = (bHasTimers == true) ? "true" : "false";
-				ii++;
+					root["result"][ii]["Timers"] = (bHasTimers == true) ? "true" : "false";
+					ii++;
+				}
+				catch (const std::exception& e)
+				{
+					_log.Log(LOG_ERROR, "GetJSonDevices: exception occurred : '%s'", e.what());
+					continue;
+				}
 			}
 		}
 
@@ -11341,7 +7198,7 @@ namespace http
 			}
 		}
 
-		void CWebServer::RType_DeleteDevice(WebEmSession& session, const request& req, Json::Value& root)
+		void CWebServer::Cmd_DeleteDevice(WebEmSession& session, const request& req, Json::Value& root)
 		{
 			if (session.rights != 2)
 			{
@@ -11359,7 +7216,7 @@ namespace http
 			m_mainworker.m_scheduler.ReloadSchedules();
 		}
 
-		void CWebServer::RType_AddScene(WebEmSession& session, const request& req, Json::Value& root)
+		void CWebServer::Cmd_AddScene(WebEmSession& session, const request& req, Json::Value& root)
 		{
 			if (session.rights != 2)
 			{
@@ -11397,7 +7254,7 @@ namespace http
 			}
 		}
 
-		void CWebServer::RType_DeleteScene(WebEmSession& session, const request& req, Json::Value& root)
+		void CWebServer::Cmd_DeleteScene(WebEmSession& session, const request& req, Json::Value& root)
 		{
 			if (session.rights != 2)
 			{
@@ -11413,7 +7270,7 @@ namespace http
 			m_sql.DeleteScenes(idx);
 		}
 
-		void CWebServer::RType_UpdateScene(WebEmSession& session, const request& req, Json::Value& root)
+		void CWebServer::Cmd_UpdateScene(WebEmSession& session, const request& req, Json::Value& root)
 		{
 			if (session.rights != 2)
 			{
@@ -11447,7 +7304,7 @@ namespace http
 			root["title"] = "UpdateScene";
 			m_sql.safe_query("UPDATE Scenes SET Name='%q', Description='%q', SceneType=%d, Protected=%d, OnAction='%q', OffAction='%q' WHERE (ID == '%q')", name.c_str(),
 				description.c_str(), atoi(stype.c_str()), iProtected, onaction.c_str(), offaction.c_str(), idx.c_str());
-			uint64_t ullidx = std::strtoull(idx.c_str(), nullptr, 10);
+			uint64_t ullidx = std::stoull(idx);
 			m_mainworker.m_eventsystem.WWWUpdateSingleState(ullidx, name, m_mainworker.m_eventsystem.REASON_SCENEGROUP);
 		}
 
@@ -11456,7 +7313,7 @@ namespace http
 			return a.Title < b.Title;
 		}
 
-		void CWebServer::RType_CustomLightIcons(WebEmSession& session, const request& req, Json::Value& root)
+		void CWebServer::Cmd_CustomLightIcons(WebEmSession& session, const request& req, Json::Value& root)
 		{
 			int ii = 0;
 
@@ -11464,6 +7321,7 @@ namespace http
 			// Sort by name
 			std::sort(temp_custom_light_icons.begin(), temp_custom_light_icons.end(), compareIconsByName);
 
+			root["title"] = "CustomLightIcons";
 			for (const auto& icon : temp_custom_light_icons)
 			{
 				root["result"][ii]["idx"] = icon.idx;
@@ -11475,10 +7333,10 @@ namespace http
 			root["status"] = "OK";
 		}
 
-		void CWebServer::RType_Plans(WebEmSession& session, const request& req, Json::Value& root)
+		void CWebServer::Cmd_GetPlans(WebEmSession& session, const request& req, Json::Value& root)
 		{
 			root["status"] = "OK";
-			root["title"] = "Plans";
+			root["title"] = "getplans";
 
 			std::string sDisplayHidden = request::findValue(&req, "displayhidden");
 			bool bDisplayHidden = (sDisplayHidden == "1");
@@ -11514,10 +7372,10 @@ namespace http
 			}
 		}
 
-		void CWebServer::RType_FloorPlans(WebEmSession& session, const request& req, Json::Value& root)
+		void CWebServer::Cmd_GetFloorPlans(WebEmSession& session, const request& req, Json::Value& root)
 		{
 			root["status"] = "OK";
-			root["title"] = "Floorplans";
+			root["title"] = "getfloorplans";
 
 			std::vector<std::vector<std::string>> result, result2, result3;
 
@@ -11596,10 +7454,10 @@ namespace http
 			}
 		}
 
-		void CWebServer::RType_Scenes(WebEmSession& session, const request& req, Json::Value& root)
+		void CWebServer::Cmd_GetScenes(WebEmSession& session, const request& req, Json::Value& root)
 		{
 			root["status"] = "OK";
-			root["title"] = "Scenes";
+			root["title"] = "getscenes";
 			root["AllowWidgetOrdering"] = m_sql.m_bAllowWidgetOrdering;
 
 			std::string sDisplayHidden = request::findValue(&req, "displayhidden");
@@ -11718,10 +7576,9 @@ namespace http
 			}
 		}
 
-		void CWebServer::RType_Hardware(WebEmSession& session, const request& req, Json::Value& root)
+		void CWebServer::Cmd_GetHardware(WebEmSession& session, const request& req, Json::Value& root)
 		{
-			root["status"] = "OK";
-			root["title"] = "Hardware";
+			root["title"] = "gethardware";
 
 #ifdef WITH_OPENZWAVE
 			m_ZW_Hwidx = -1;
@@ -11803,6 +7660,11 @@ namespace http
 							EnphaseAPI* pMyHardware = dynamic_cast<EnphaseAPI*>(pHardware);
 							root["result"][ii]["version"] = pMyHardware->m_szSoftwareVersion;
 						}
+						else if (pHardware->HwdType == HTYPE_AlfenEveCharger)
+						{
+							AlfenEve* pMyHardware = dynamic_cast<AlfenEve*>(pHardware);
+							root["result"][ii]["version"] = pMyHardware->m_szSoftwareVersion;
+						}
 #ifdef WITH_OPENZWAVE
 						else if (pHardware->HwdType == HTYPE_OpenZWave)
 						{ // Special case for openzwave (status for nodes queried)
@@ -11815,9 +7677,10 @@ namespace http
 					ii++;
 				}
 			}
+			root["status"] = "OK";
 		}
 
-		void CWebServer::RType_Devices(WebEmSession& session, const request& req, Json::Value& root)
+		void CWebServer::Cmd_GetDevices(WebEmSession& session, const request& req, Json::Value& root)
 		{
 			std::string rfilter = request::findValue(&req, "filter");
 			std::string order = request::findValue(&req, "order");
@@ -11854,7 +7717,7 @@ namespace http
 			GetJSonDevices(root, rused, rfilter, order, rid, planid, floorid, bDisplayHidden, bDisabledDisabled, bFetchFavorites, LastUpdate, session.username, hwidx);
 		}
 
-		void CWebServer::RType_Users(WebEmSession& session, const request& req, Json::Value& root)
+		void CWebServer::Cmd_GetUsers(WebEmSession& session, const request& req, Json::Value& root)
 		{
 			root["status"] = "ERR";
 			root["title"] = "Users";
@@ -11882,7 +7745,7 @@ namespace http
 			}
 		}
 
-		void CWebServer::RType_Mobiles(WebEmSession& session, const request& req, Json::Value& root)
+		void CWebServer::Cmd_GetMobiles(WebEmSession& session, const request& req, Json::Value& root)
 		{
 			root["status"] = "ERR";
 			root["title"] = "Mobiles";
@@ -11905,8 +7768,8 @@ namespace http
 					root["result"][ii]["DeviceType"] = sd[5];
 					ii++;
 				}
-				root["status"] = "OK";
 			}
+			root["status"] = "OK";
 		}
 
 		void CWebServer::Cmd_SetSetpoint(WebEmSession& session, const request& req, Json::Value& root)
@@ -11995,7 +7858,7 @@ namespace http
 							int maxDimLevel = 0;
 							GetLightStatus(devType, subType, switchtype, nValue, sValue, lstatus, llevel, bHaveDimmer, maxDimLevel, bHaveGroupCmd);
 						}
-						uint64_t dID = std::strtoull(sID.c_str(), nullptr, 10);
+						uint64_t dID = std::stoull(sID);
 						root["result"][ii]["idx"] = Json::Value::UInt64(dID);
 						root["result"][ii]["name"] = sd[0];
 						root["result"][ii]["code"] = sCode;
@@ -12194,12 +8057,9 @@ namespace http
 			}
 		}
 
-		void CWebServer::Post_UploadCustomIcon(WebEmSession& session, const request& req, reply& rep)
+		void CWebServer::Cmd_UploadCustomIcon(WebEmSession& session, const request& req, Json::Value& root)
 		{
-			Json::Value root;
 			root["title"] = "UploadCustomIcon";
-			root["status"] = "ERROR";
-			root["error"] = "Invalid";
 			// Only admin user allowed
 			if (session.rights != 2)
 			{
@@ -12217,17 +8077,9 @@ namespace http
 				}
 				else
 				{
-					root["status"] = "ERROR";
 					root["error"] = ErrorMessage;
 				}
 			}
-			std::string jcallback = request::findValue(&req, "jsoncallback");
-			if (jcallback.empty())
-			{
-				reply::set_content(&rep, root.toStyledString());
-				return;
-			}
-			reply::set_content(&rep, "var data=" + root.toStyledString() + '\n' + jcallback + "(data);");
 		}
 
 		void CWebServer::Cmd_GetCustomIconSet(WebEmSession& session, const request& req, Json::Value& root)
@@ -12327,7 +8179,7 @@ namespace http
 			root["title"] = "RenameDevice";
 
 			m_sql.safe_query("UPDATE DeviceStatus SET Name='%q' WHERE (ID == %d)", sname.c_str(), idx);
-			uint64_t ullidx = std::strtoull(sidx.c_str(), nullptr, 10);
+			uint64_t ullidx = std::stoull(sidx);
 			m_mainworker.m_eventsystem.WWWUpdateSingleState(ullidx, sname, m_mainworker.m_eventsystem.REASON_DEVICE);
 
 #ifdef ENABLE_PYTHON
@@ -12353,7 +8205,7 @@ namespace http
 			root["title"] = "RenameScene";
 
 			m_sql.safe_query("UPDATE Scenes SET Name='%q' WHERE (ID == %d)", sname.c_str(), idx);
-			uint64_t ullidx = std::strtoull(sidx.c_str(), nullptr, 10);
+			uint64_t ullidx = std::stoull(sidx);
 			m_mainworker.m_eventsystem.WWWUpdateSingleState(ullidx, sname, m_mainworker.m_eventsystem.REASON_SCENEGROUP);
 		}
 
@@ -12518,7 +8370,7 @@ namespace http
 
 			if ((sidx.empty()) || (enabled.empty()) || (name.empty()))
 				return;
-			uint64_t idx = std::strtoull(sidx.c_str(), nullptr, 10);
+			uint64_t idx = std::stoull(sidx);
 
 			m_sql.safe_query("UPDATE MobileDevices SET Name='%q', Active=%d WHERE (ID==%" PRIu64 ")", name.c_str(), (enabled == "true") ? 1 : 0, idx);
 
@@ -12545,7 +8397,7 @@ namespace http
 			root["title"] = "DeleteMobileDevice";
 		}
 
-		void CWebServer::RType_GetTransfers(WebEmSession& session, const request& req, Json::Value& root)
+		void CWebServer::Cmd_GetTransfers(WebEmSession& session, const request& req, Json::Value& root)
 		{
 			root["status"] = "OK";
 			root["title"] = "GetTransfers";
@@ -12553,7 +8405,7 @@ namespace http
 			uint64_t idx = 0;
 			if (!request::findValue(&req, "idx").empty())
 			{
-				idx = std::strtoull(request::findValue(&req, "idx").c_str(), nullptr, 10);
+				idx = std::stoull(request::findValue(&req, "idx"));
 			}
 
 			std::vector<std::vector<std::string>> result;
@@ -12593,7 +8445,7 @@ namespace http
 		// Will transfer Newest sensor log to OLD sensor,
 		// then set the HardwareID/DeviceID/Unit/Name/Type/Subtype/Unit for the OLD sensor to the NEW sensor ID/Type/Subtype/Unit
 		// then delete the NEW sensor
-		void CWebServer::RType_TransferDevice(WebEmSession& session, const request& req, Json::Value& root)
+		void CWebServer::Cmd_DoTransferDevice(WebEmSession& session, const request& req, Json::Value& root)
 		{
 			std::string sidx = request::findValue(&req, "idx");
 			if (sidx.empty())
@@ -12606,7 +8458,7 @@ namespace http
 			std::vector<std::vector<std::string>> result;
 
 			root["status"] = "OK";
-			root["title"] = "TransferDevice";
+			root["title"] = "DoTransferDevice";
 
 			result = m_sql.safe_query("SELECT HardwareID, DeviceID, Unit, Type, SubType FROM DeviceStatus WHERE (ID == '%q')", newidx.c_str());
 			if (result.empty())
@@ -12618,16 +8470,56 @@ namespace http
 			int devType = std::stoi(result[0].at(3));
 			int subType = std::stoi(result[0].at(4));
 
+			//get last update date from old device
+			result = m_sql.safe_query("SELECT LastUpdate FROM DeviceStatus WHERE (ID == '%q')", sidx.c_str());
+			if (result.empty())
+				return;
+			std::string szLastOldDate = result[0][0];
+
 			m_sql.safe_query("UPDATE DeviceStatus SET HardwareID = %d, DeviceID = '%q', Unit = %d, Type = %d, SubType = %d WHERE ID == '%q'", newHardwareID, newDeviceID.c_str(), newUnit, devType, subType, sidx.c_str());
+
+			//new device could already have some logging, so let's keep this data
+			//Rain
+			m_sql.safe_query("UPDATE Rain SET DeviceRowID='%q' WHERE (DeviceRowID == '%q') AND (Date>'%q')", sidx.c_str(), newidx.c_str(), szLastOldDate.c_str());
+			m_sql.safe_query("UPDATE Rain_Calendar SET DeviceRowID='%q' WHERE (DeviceRowID == '%q') AND (Date>'%q')", sidx.c_str(), newidx.c_str(), szLastOldDate.c_str());
+
+			//Temperature
+			m_sql.safe_query("UPDATE Temperature SET DeviceRowID='%q' WHERE (DeviceRowID == '%q') AND (Date>'%q')", sidx.c_str(), newidx.c_str(), szLastOldDate.c_str());
+			m_sql.safe_query("UPDATE Temperature_Calendar SET DeviceRowID='%q' WHERE (DeviceRowID == '%q') AND (Date>'%q')", sidx.c_str(), newidx.c_str(), szLastOldDate.c_str());
+
+			//UV
+			m_sql.safe_query("UPDATE UV SET DeviceRowID='%q' WHERE (DeviceRowID == '%q') AND (Date>'%q')", sidx.c_str(), newidx.c_str(), szLastOldDate.c_str());
+			m_sql.safe_query("UPDATE UV_Calendar SET DeviceRowID='%q' WHERE (DeviceRowID == '%q') AND (Date>'%q')", sidx.c_str(), newidx.c_str(), szLastOldDate.c_str());
+
+			//Wind
+			m_sql.safe_query("UPDATE Wind SET DeviceRowID='%q' WHERE (DeviceRowID == '%q') AND (Date>'%q')", sidx.c_str(), newidx.c_str(), szLastOldDate.c_str());
+			m_sql.safe_query("UPDATE Wind_Calendar SET DeviceRowID='%q' WHERE (DeviceRowID == '%q') AND (Date>'%q')", sidx.c_str(), newidx.c_str(), szLastOldDate.c_str());
+
+			//Meter
+			m_sql.safe_query("UPDATE Meter SET DeviceRowID='%q' WHERE (DeviceRowID == '%q') AND (Date>'%q')", sidx.c_str(), newidx.c_str(), szLastOldDate.c_str());
+			m_sql.safe_query("UPDATE Meter_Calendar SET DeviceRowID='%q' WHERE (DeviceRowID == '%q') AND (Date>'%q')", sidx.c_str(), newidx.c_str(), szLastOldDate.c_str());
+
+			//Multimeter
+			m_sql.safe_query("UPDATE MultiMeter SET DeviceRowID='%q' WHERE (DeviceRowID == '%q') AND (Date>'%q')", sidx.c_str(), newidx.c_str(), szLastOldDate.c_str());
+			m_sql.safe_query("UPDATE MultiMeter_Calendar SET DeviceRowID='%q' WHERE (DeviceRowID == '%q') AND (Date>'%q')", sidx.c_str(), newidx.c_str(), szLastOldDate.c_str());
+
+			//Fan
+			m_sql.safe_query("UPDATE Fan SET DeviceRowID='%q' WHERE (DeviceRowID == '%q') AND (Date>'%q')", sidx.c_str(), newidx.c_str(), szLastOldDate.c_str());
+			m_sql.safe_query("UPDATE Fan_Calendar SET DeviceRowID='%q' WHERE (DeviceRowID == '%q') AND (Date>'%q')", sidx.c_str(), newidx.c_str(), szLastOldDate.c_str());
+
+			//Percentage
+			m_sql.safe_query("UPDATE Percentage SET DeviceRowID='%q' WHERE (DeviceRowID == '%q') AND (Date>'%q')", sidx.c_str(), newidx.c_str(), szLastOldDate.c_str());
+			m_sql.safe_query("UPDATE Percentage_Calendar SET DeviceRowID='%q' WHERE (DeviceRowID == '%q') AND (Date>'%q')", sidx.c_str(), newidx.c_str(), szLastOldDate.c_str());
+
 			m_sql.DeleteDevices(newidx);
 
 			m_mainworker.m_scheduler.ReloadSchedules();
 		}
 
-		void CWebServer::RType_Notifications(WebEmSession& session, const request& req, Json::Value& root)
+		void CWebServer::Cmd_GetNotifications(WebEmSession& session, const request& req, Json::Value& root)
 		{
 			root["status"] = "OK";
-			root["title"] = "Notifications";
+			root["title"] = "getnotifications";
 
 			int ii = 0;
 
@@ -12642,7 +8534,7 @@ namespace http
 			uint64_t idx = 0;
 			if (!request::findValue(&req, "idx").empty())
 			{
-				idx = std::strtoull(request::findValue(&req, "idx").c_str(), nullptr, 10);
+				idx = std::stoull(request::findValue(&req, "idx"));
 			}
 			std::vector<_tNotification> notifications = m_notifications.GetNotifications(idx);
 			if (!notifications.empty())
@@ -12667,12 +8559,11 @@ namespace http
 			}
 		}
 
-		void CWebServer::RType_GetSharedUserDevices(WebEmSession& session, const request& req, Json::Value& root)
+		void CWebServer::Cmd_GetSharedUserDevices(WebEmSession& session, const request& req, Json::Value& root)
 		{
 			std::string idx = request::findValue(&req, "idx");
 			if (idx.empty())
 				return;
-			root["status"] = "OK";
 			root["title"] = "GetSharedUserDevices";
 
 			std::vector<std::vector<std::string>> result;
@@ -12686,15 +8577,20 @@ namespace http
 					ii++;
 				}
 			}
+			root["status"] = "OK";
 		}
 
-		void CWebServer::RType_SetSharedUserDevices(WebEmSession& session, const request& req, Json::Value& root)
+		void CWebServer::Cmd_SetSharedUserDevices(WebEmSession& session, const request& req, Json::Value& root)
 		{
+			if (session.rights != 2)
+			{
+				session.reply_status = reply::forbidden;
+				return; // Only admin user allowed
+			}
 			std::string idx = request::findValue(&req, "idx");
 			std::string userdevices = CURLEncode::URLDecode(request::findValue(&req, "devices"));
 			if (idx.empty())
 				return;
-			root["status"] = "OK";
 			root["title"] = "SetSharedUserDevices";
 			std::vector<std::string> strarray;
 			StringSplit(userdevices, ";", strarray);
@@ -12712,9 +8608,26 @@ namespace http
 			}
 			m_sql.safe_query("DELETE FROM SharedDevices WHERE SharedUserID == 0");
 			LoadUsers();
+			root["status"] = "OK";
 		}
 
-		void CWebServer::RType_SetUsed(WebEmSession& session, const request& req, Json::Value& root)
+		void CWebServer::Cmd_ClearUserDevices(WebEmSession& session, const request& req, Json::Value& root)
+		{
+			if (session.rights != 2)
+			{
+				session.reply_status = reply::forbidden;
+				return; // Only admin user allowed
+			}
+			std::string idx = request::findValue(&req, "idx");
+			if (idx.empty())
+				return;
+			root["status"] = "OK";
+			root["title"] = "ClearUserDevices";
+			m_sql.safe_query("DELETE FROM SharedDevices WHERE SharedUserID == '%q'", idx.c_str());
+			LoadUsers();
+		}
+
+		void CWebServer::Cmd_SetUsed(WebEmSession& session, const request& req, Json::Value& root)
 		{
 			if (session.rights != 2)
 			{
@@ -12911,12 +8824,11 @@ namespace http
 				result = m_sql.safe_query("SELECT Type FROM Hardware WHERE (ID == %d)", HwdID);
 				if (!result.empty())
 				{
-					std::vector<std::string> sd = result[0];
-					_eHardwareTypes Type = (_eHardwareTypes)dType;
+					_eHardwareTypes Type = (_eHardwareTypes)std::stoi(result[0][0]);
 					if (Type == HTYPE_PythonPlugin)
 					{
 						bUpdateUnit = false;
-						_log.Log(LOG_ERROR, "CWebServer::RType_SetUsed: Not allowed to change unit of device owned by plugin %u!", HwdID);
+						_log.Log(LOG_ERROR, "CWebServer::Cmd_SetUsed: Not allowed to change unit of device owned by plugin %u!", HwdID);
 					}
 				}
 #endif
@@ -12984,7 +8896,7 @@ namespace http
 			// Save device options
 			if (!sOptions.empty())
 			{
-				uint64_t ullidx = std::strtoull(idx.c_str(), nullptr, 10);
+				uint64_t ullidx = std::stoull(idx);
 				m_sql.SetDeviceOptions(ullidx, m_sql.BuildDeviceOptions(sOptions, false));
 			}
 
@@ -13023,7 +8935,7 @@ namespace http
 				m_mainworker.m_eventsystem.GetCurrentStates();
 		}
 
-		void CWebServer::RType_Settings(WebEmSession& session, const request& req, Json::Value& root)
+		void CWebServer::Cmd_GetSettings(WebEmSession& session, const request& req, Json::Value& root)
 		{
 			std::vector<std::vector<std::string>> result;
 			char szTmp[100];
@@ -13381,12 +9293,12 @@ namespace http
 			}
 		}
 
-		void CWebServer::RType_LightLog(WebEmSession& session, const request& req, Json::Value& root)
+		void CWebServer::Cmd_GetLightLog(WebEmSession& session, const request& req, Json::Value& root)
 		{
 			uint64_t idx = 0;
 			if (!request::findValue(&req, "idx").empty())
 			{
-				idx = std::strtoull(request::findValue(&req, "idx").c_str(), nullptr, 10);
+				idx = std::stoull(request::findValue(&req, "idx"));
 			}
 			std::vector<std::vector<std::string>> result;
 			// First get Device Type/SubType
@@ -13407,7 +9319,7 @@ namespace http
 				return; // no light device! we should not be here!
 
 			root["status"] = "OK";
-			root["title"] = "LightLog";
+			root["title"] = "getlightlog";
 
 			result = m_sql.safe_query("SELECT ROWID, nValue, sValue, User, Date FROM LightingLog WHERE (DeviceRowID==%" PRIu64 ") ORDER BY Date DESC", idx);
 			if (!result.empty())
@@ -13448,7 +9360,7 @@ namespace http
 						if (ii == 0)
 						{
 							bHaveSelector = true;
-							maxDimLevel = selectorStatuses.size();
+							maxDimLevel = (int)selectorStatuses.size();
 						}
 						if (!selectorStatuses.empty())
 						{
@@ -13502,17 +9414,17 @@ namespace http
 			}
 		}
 
-		void CWebServer::RType_TextLog(WebEmSession& session, const request& req, Json::Value& root)
+		void CWebServer::Cmd_GetTextLog(WebEmSession& session, const request& req, Json::Value& root)
 		{
 			uint64_t idx = 0;
 			if (!request::findValue(&req, "idx").empty())
 			{
-				idx = std::strtoull(request::findValue(&req, "idx").c_str(), nullptr, 10);
+				idx = std::stoull(request::findValue(&req, "idx"));
 			}
 			std::vector<std::vector<std::string>> result;
 
 			root["status"] = "OK";
-			root["title"] = "TextLog";
+			root["title"] = "gettextlog";
 
 			result = m_sql.safe_query("SELECT ROWID, sValue, User, Date FROM LightingLog WHERE (DeviceRowID==%" PRIu64 ") ORDER BY Date DESC", idx);
 			if (!result.empty())
@@ -13529,17 +9441,17 @@ namespace http
 			}
 		}
 
-		void CWebServer::RType_SceneLog(WebEmSession& session, const request& req, Json::Value& root)
+		void CWebServer::Cmd_GetSceneLog(WebEmSession& session, const request& req, Json::Value& root)
 		{
 			uint64_t idx = 0;
 			if (!request::findValue(&req, "idx").empty())
 			{
-				idx = std::strtoull(request::findValue(&req, "idx").c_str(), nullptr, 10);
+				idx = std::stoull(request::findValue(&req, "idx"));
 			}
 			std::vector<std::vector<std::string>> result;
 
 			root["status"] = "OK";
-			root["title"] = "SceneLog";
+			root["title"] = "getscenelog";
 
 			result = m_sql.safe_query("SELECT ROWID, nValue, User, Date FROM SceneLog WHERE (SceneRowID==%" PRIu64 ") ORDER BY Date DESC", idx);
 			if (!result.empty())
@@ -13559,7 +9471,7 @@ namespace http
 
 		extern std::map<std::string, http::server::connection::_tRemoteClients> m_remote_web_clients;
 
-		void CWebServer::RType_RemoteWebClientsLog(WebEmSession& session, const request& req, Json::Value& root)
+		void CWebServer::Cmd_RemoteWebClientsLog(WebEmSession& session, const request& req, Json::Value& root)
 		{
 			if (session.rights != 2)
 			{
@@ -13567,10 +9479,8 @@ namespace http
 				return; // Only admin user allowed
 			}
 
-			root["status"] = "OK";
-			root["title"] = "RemoteWebClientsLog";
-
 			int ii = 0;
+			root["title"] = "rclientslog";
 			for (const auto& itt_rc : m_remote_web_clients)
 			{
 				char timestring[128];
@@ -13586,14 +9496,15 @@ namespace http
 				root["result"][ii]["req"] = itt_rc.second.host_last_request_uri_;
 				ii++;
 			}
+			root["status"] = "OK";
 		}
 
-		void CWebServer::RType_HandleGraph(WebEmSession& session, const request& req, Json::Value& root)
+		void CWebServer::Cmd_HandleGraph(WebEmSession& session, const request& req, Json::Value& root)
 		{
 			uint64_t idx = 0;
 			if (!request::findValue(&req, "idx").empty())
 			{
-				idx = std::strtoull(request::findValue(&req, "idx").c_str(), nullptr, 10);
+				idx = std::stoull(request::findValue(&req, "idx"));
 			}
 
 			std::vector<std::vector<std::string>> result;
@@ -13619,7 +9530,7 @@ namespace http
 			unsigned char dType = atoi(result[0][0].c_str());
 			unsigned char dSubType = atoi(result[0][1].c_str());
 			_eMeterType metertype = (_eMeterType)atoi(result[0][2].c_str());
-			_log.Debug(DEBUG_WEBSERVER, "CWebServer::RType_HandleGraph() : dType:%02X  dSubType:%02X  metertype:%d", dType, dSubType, int(metertype));
+			_log.Debug(DEBUG_WEBSERVER, "CWebServer::Cmd_HandleGraph() : dType:%02X  dSubType:%02X  metertype:%d", dType, dSubType, int(metertype));
 			if ((dType == pTypeP1Power) || (dType == pTypeENERGY) || (dType == pTypePOWER) || (dType == pTypeCURRENTENERGY) || ((dType == pTypeGeneral) && (dSubType == sTypeKwh)))
 			{
 				metertype = MTYPE_ENERGY;
@@ -13848,13 +9759,13 @@ namespace http
 							int ii = 0;
 							bool bHaveDeliverd = false;
 							bool bHaveFirstValue = false;
-							long long lastUsage1, lastUsage2, lastDeliv1, lastDeliv2;
+							int64_t lastUsage1, lastUsage2, lastDeliv1, lastDeliv2;
 							time_t lastTime = 0;
 
-							long long firstUsage1 = 0;
-							long long firstUsage2 = 0;
-							long long firstDeliv1 = 0;
-							long long firstDeliv2 = 0;
+							int64_t firstUsage1 = 0;
+							int64_t firstUsage2 = 0;
+							int64_t firstDeliv1 = 0;
+							int64_t firstDeliv2 = 0;
 
 							int nMeterType = 0;
 							m_sql.GetPreferencesVar("SmartMeterType", nMeterType);
@@ -13865,10 +9776,10 @@ namespace http
 							{
 								if (nMeterType == 0)
 								{
-									long long actUsage1 = std::strtoll(sd[0].c_str(), nullptr, 10);
-									long long actUsage2 = std::strtoll(sd[4].c_str(), nullptr, 10);
-									long long actDeliv1 = std::strtoll(sd[1].c_str(), nullptr, 10);
-									long long actDeliv2 = std::strtoll(sd[5].c_str(), nullptr, 10);
+									int64_t actUsage1 = std::stoll(sd[0]);
+									int64_t actUsage2 = std::stoll(sd[4]);
+									int64_t actDeliv1 = std::stoll(sd[1]);
+									int64_t actDeliv2 = std::stoll(sd[5]);
 									actDeliv1 = (actDeliv1 < 10) ? 0 : actDeliv1;
 									actDeliv2 = (actDeliv2 < 10) ? 0 : actDeliv2;
 
@@ -13977,10 +9888,10 @@ namespace http
 											if (!result2.empty())
 											{
 												std::vector<std::string> sd = result2[0];
-												firstUsage1 = std::strtoll(sd[0].c_str(), nullptr, 10);
-												firstDeliv1 = std::strtoll(sd[1].c_str(), nullptr, 10);
-												firstUsage2 = std::strtoll(sd[2].c_str(), nullptr, 10);
-												firstDeliv2 = std::strtoll(sd[3].c_str(), nullptr, 10);
+												firstUsage1 = std::stoll(sd[0]);
+												firstDeliv1 = std::stoll(sd[1]);
+												firstUsage2 = std::stoll(sd[2]);
+												firstDeliv2 = std::stoll(sd[3]);
 												lastDay = ntime.tm_mday;
 											}
 										}
@@ -14303,8 +10214,8 @@ namespace http
 						result = m_sql.safe_query("SELECT MIN([Usage]), MAX([Usage]) FROM %s WHERE (DeviceRowID==%" PRIu64 ")", dbasetable.c_str(), idx);
 						if (!result.empty())
 						{
-							long long minValue = std::strtoll(result[0][0].c_str(), nullptr, 10);
-							long long maxValue = std::strtoll(result[0][1].c_str(), nullptr, 10);
+							int64_t minValue = std::stoll(result[0][0]);
+							int64_t maxValue = std::stoll(result[0][1]);
 
 							if ((minValue == 0) && (maxValue == 0))
 							{
@@ -14339,9 +10250,9 @@ namespace http
 						root["method"] = method;
 						bool bHaveFirstValue = false;
 						bool bHaveFirstRealValue = false;
-						long long ulFirstRealValue = 0;
-						long long ulFirstValue = 0;
-						long long ulLastValue = 0;
+						int64_t ulFirstRealValue = 0;
+						int64_t ulFirstValue = 0;
+						int64_t ulLastValue = 0;
 						std::string LastDateTime;
 
 						if (!result.empty())
@@ -14354,11 +10265,19 @@ namespace http
 								{
 									// bars / hour
 									std::string actDateTimeHour = sd[2].substr(0, 13);
-									long long actValue = std::strtoll(sd[0].c_str(), nullptr, 10); // actual energy value
+									int64_t actValue = std::stoll(sd[0]); // actual energy value
 
-									// if (actValue >= ulLastValue) ulLastValue = actValue; //Removed because usage energy may be negative if the production power
-									// is greater than usage power
 									ulLastValue = actValue;
+
+									if (ulLastValue < ulFirstValue)
+									{
+										if (ulFirstValue - ulLastValue > 20000)
+										{
+											//probably a meter/counter turnover
+											ulFirstValue = ulFirstRealValue = ulLastValue;
+											LastDateTime = actDateTimeHour;
+										}
+									}
 
 									if (actDateTimeHour != LastDateTime || ((method == 1) && (itt + 1 == result.end())))
 									{
@@ -14368,7 +10287,7 @@ namespace http
 											//^^ not necessarily bad, but is currently inconsistent with all other day graphs
 											root["result"][ii]["d"] = LastDateTime + ":00";
 
-											long long ulTotalValue = ulLastValue - ulFirstValue;
+											int64_t ulTotalValue = ulLastValue - ulFirstValue;
 											if (ulTotalValue == 0)
 											{
 												// Could be the P1 Gas Meter, only transmits one every 1 a 2 hours
@@ -14416,7 +10335,7 @@ namespace http
 
 								if (method == 1)
 								{
-									long long actValue = std::strtoll(sd[1].c_str(), nullptr, 10);
+									int64_t actValue = std::stoll(sd[1]);
 
 									root["result"][ii]["d"] = sd[2].substr(0, 16);
 
@@ -14460,46 +10379,60 @@ namespace http
 
 						bool bHaveFirstValue = false;
 						bool bHaveFirstRealValue = false;
-						unsigned long long ulFirstValue = 0;
-						unsigned long long ulRealFirstValue = 0;
+						int64_t ulFirstValue = 0;
+						int64_t ulRealFirstValue = 0;
 						int lastDay = 0;
 						std::string szLastDateTimeHour;
+						std::string szActDateTimeHour;
 						std::string szlastDateTime;
-						unsigned long long ulLastValue = 0;
+						int64_t ulLastValue = 0;
 
 						int lastHour = 0;
 						time_t lastTime = 0;
-
-						if (bIsManagedCounter)
-						{
-							result = m_sql.safe_query("SELECT Usage, Date FROM %s WHERE (DeviceRowID==%" PRIu64 ") ORDER BY Date ASC", dbasetable.c_str(), idx);
-							bHaveFirstValue = true;
-							bHaveFirstRealValue = true;
-						}
-						else
-						{
-							result = m_sql.safe_query("SELECT Value, Date FROM %s WHERE (DeviceRowID==%" PRIu64 ") ORDER BY Date ASC", dbasetable.c_str(), idx);
-						}
 
 						int method = 0;
 						std::string sMethod = request::findValue(&req, "method");
 						if (!sMethod.empty())
 							method = atoi(sMethod.c_str());
 
+						if (bIsManagedCounter)
+						{
+							result = m_sql.safe_query("SELECT Usage, Date FROM %s WHERE (DeviceRowID==%" PRIu64 ") ORDER BY Date ASC", dbasetable.c_str(), idx);
+							bHaveFirstValue = true;
+							bHaveFirstRealValue = true;
+							method = 1;
+						}
+						else
+						{
+							result = m_sql.safe_query("SELECT Value, Date FROM %s WHERE (DeviceRowID==%" PRIu64 ") ORDER BY Date ASC", dbasetable.c_str(), idx);
+						}
+
 						if (!result.empty())
 						{
+							double lastUsageValue = 0;
+
 							for (const auto& sd : result)
 							{
 								if (method == 0)
 								{
 									// bars / hour
-									unsigned long long actValue = std::strtoull(sd[0].c_str(), nullptr, 10);
+									int64_t actValue = std::stoll(sd[0]);
 									szlastDateTime = sd[1].substr(0, 16);
-									szLastDateTimeHour = sd[1].substr(0, 13) + ":00";
+									szActDateTimeHour = sd[1].substr(0, 13) + ":00";
 
 									struct tm ntime;
 									time_t atime;
 									ParseSQLdatetime(atime, ntime, sd[1], -1);
+
+									if (actValue < ulFirstValue)
+									{
+										if (ulRealFirstValue - actValue > 20000)
+										{
+											//Assume ,eter/counter turnover
+											ulFirstValue = ulRealFirstValue = actValue;
+											lastHour = ntime.tm_hour;
+										}
+									}
 
 									if (lastHour != ntime.tm_hour)
 									{
@@ -14516,7 +10449,9 @@ namespace http
 											// float TotalValue = float(actValue - ulFirstValue);
 
 											// prevents graph from going crazy if the meter counter resets
-											double TotalValue = (actValue >= ulFirstValue) ? double(actValue - ulFirstValue) : actValue;
+											// removed because it breaks  negative increments
+											double TotalValue=double(actValue - ulFirstValue);
+											//if (actValue < ulFirstValue) TotalValue=actValue;
 
 											// if (TotalValue != 0)
 											{
@@ -14543,7 +10478,7 @@ namespace http
 
 												if (!bIsManagedCounter)
 												{
-													double usageValue = (double)(actValue - ulRealFirstValue);
+													double usageValue = lastUsageValue;
 
 													switch (metertype)
 													{
@@ -14599,17 +10534,19 @@ namespace http
 											if (!result2.empty())
 											{
 												std::vector<std::string> sd = result2[0];
-												ulRealFirstValue = std::strtoll(sd[0].c_str(), nullptr, 10);;
+												ulRealFirstValue = std::stoll(sd[0]);
 												lastDay = ntime.tm_mday;
 											}
 										}
 									}
+									szLastDateTimeHour = szActDateTimeHour;
+									lastUsageValue = (double)(actValue - ulRealFirstValue);
 									ulLastValue = actValue;
 								}
 								else
 								{
 									// realtime graph
-									unsigned long long actValue = std::strtoull(sd[0].c_str(), nullptr, 10);
+									int64_t actValue = std::stoll(sd[0]);
 
 									std::string stime = sd[1];
 									struct tm ntime;
@@ -14617,12 +10554,23 @@ namespace http
 									ParseSQLdatetime(atime, ntime, stime, -1);
 									if (bHaveFirstRealValue)
 									{
-										long long curValue = actValue - ulLastValue;
+										int64_t curValue;
+										float tlaps = 1;
 
-										float tdiff = static_cast<float>(difftime(atime, lastTime));
-										if (tdiff == 0)
-											tdiff = 1;
-										float tlaps = 3600.0F / tdiff;
+										if (!bIsManagedCounter)
+										{
+											curValue = actValue - ulLastValue;
+											float tdiff;
+											tdiff = static_cast<float>(difftime(atime, lastTime));
+											if (tdiff == 0)
+												tdiff = 1;
+											tlaps = 3600.0F / tdiff;
+										}
+										else
+										{
+											curValue = actValue;
+										}
+										
 										curValue *= int(tlaps);
 
 										root["result"][ii]["d"] = sd[1].substr(0, 16);
@@ -14668,7 +10616,7 @@ namespace http
 							// add last value
 							root["result"][ii]["d"] = szLastDateTimeHour;
 
-							unsigned long long ulTotalValue = ulLastValue - ulFirstValue;
+							int64_t ulTotalValue = ulLastValue - ulFirstValue;
 
 							double TotalValue = double(ulTotalValue);
 
@@ -14743,8 +10691,9 @@ namespace http
 					root["status"] = "OK";
 					root["title"] = "Graph " + sensor + " " + srange;
 
-					int LastHour = -1;
-					float LastTotalPreviousHour = -1;
+					int WorkingHour = -1;
+					std::string WorkingHourDate;
+					float WorkingHourStartValue = -1;
 
 					float LastValue = -1;
 					std::string LastDate;
@@ -14757,36 +10706,47 @@ namespace http
 						{
 							float ActTotal = static_cast<float>(atof(sd[0].c_str()));
 							int Hour = atoi(sd[1].substr(11, 2).c_str());
-							if (Hour != LastHour)
+							if (Hour != WorkingHour)
 							{
-								if (LastHour != -1)
+								if (WorkingHour != -1)
 								{
-									int NextCalculatedHour = (LastHour + 1) % 24;
-									if (Hour != NextCalculatedHour)
-									{
-										// Looks like we have a GAP somewhere, finish the last hour
-										root["result"][ii]["d"] = LastDate;
-										double mmval = ActTotal - LastValue;
-										mmval *= AddjMulti;
-										sprintf(szTmp, "%.1f", mmval);
-										root["result"][ii]["mm"] = szTmp;
-										ii++;
-									}
-									else
-									{
-										root["result"][ii]["d"] = sd[1].substr(0, 16);
-										double mmval = ActTotal - LastTotalPreviousHour;
-										mmval *= AddjMulti;
-										sprintf(szTmp, "%.1f", mmval);
-										root["result"][ii]["mm"] = szTmp;
-										ii++;
-									}
+									//Finish current hour
+									root["result"][ii]["d"] = WorkingHourDate.substr(0, 14) + "00";
+									double mmval = ActTotal - WorkingHourStartValue;
+									mmval *= AddjMulti;
+									sprintf(szTmp, "%.1f", mmval);
+									root["result"][ii]["mm"] = szTmp;
+									ii++;
 								}
-								LastHour = Hour;
-								LastTotalPreviousHour = ActTotal;
+								WorkingHour = Hour;
+								WorkingHourStartValue = ActTotal;
+								WorkingHourDate = sd[1];
 							}
 							LastValue = ActTotal;
 							LastDate = sd[1];
+						}
+						//Add last value
+						result = m_sql.safe_query("SELECT sValue, LastUpdate FROM DeviceStatus WHERE (ID==%" PRIu64 ")", idx);
+						if (!result.empty())
+						{
+							std::string sValue = result[0][0];
+							std::vector<std::string> results;
+							StringSplit(sValue, ";", results);
+							if (results.size() == 2)
+							{
+								float ActTotal = static_cast<float>(atof(results[1].c_str()));
+								if (ActTotal > LastValue)
+									LastValue = ActTotal;
+							}
+						}
+						double mmval = LastValue - WorkingHourStartValue;
+						if (mmval != 0)
+						{
+							root["result"][ii]["d"] = WorkingHourDate.substr(0, 14) + "00";
+							mmval *= AddjMulti;
+							sprintf(szTmp, "%.1f", mmval);
+							root["result"][ii]["mm"] = szTmp;
+							ii++;
 						}
 					}
 				}
@@ -15246,16 +11206,16 @@ namespace http
 						{
 							std::vector<std::string> sd = result[0];
 
-							unsigned long long total_min_usage_1 = std::strtoull(sd[0].c_str(), nullptr, 10);
-							unsigned long long total_max_usage_1 = std::strtoull(sd[1].c_str(), nullptr, 10);
-							unsigned long long total_min_usage_2 = std::strtoull(sd[4].c_str(), nullptr, 10);
-							unsigned long long total_max_usage_2 = std::strtoull(sd[5].c_str(), nullptr, 10);
-							unsigned long long total_real_usage_1, total_real_usage_2;
-							unsigned long long total_min_deliv_1 = std::strtoull(sd[2].c_str(), nullptr, 10);
-							unsigned long long total_max_deliv_1 = std::strtoull(sd[3].c_str(), nullptr, 10);
-							unsigned long long total_min_deliv_2 = std::strtoull(sd[6].c_str(), nullptr, 10);
-							unsigned long long total_max_deliv_2 = std::strtoull(sd[7].c_str(), nullptr, 10);
-							unsigned long long total_real_deliv_1, total_real_deliv_2;
+							uint64_t total_min_usage_1 = std::stoull(sd[0]);
+							uint64_t total_max_usage_1 = std::stoull(sd[1]);
+							uint64_t total_min_usage_2 = std::stoull(sd[4]);
+							uint64_t total_max_usage_2 = std::stoull(sd[5]);
+							uint64_t total_real_usage_1, total_real_usage_2;
+							uint64_t total_min_deliv_1 = std::stoull(sd[2]);
+							uint64_t total_max_deliv_1 = std::stoull(sd[3]);
+							uint64_t total_min_deliv_2 = std::stoull(sd[6]);
+							uint64_t total_max_deliv_2 = std::stoull(sd[7]);
+							uint64_t total_real_deliv_1, total_real_deliv_2;
 
 							bool bHaveDeliverd = false;
 
@@ -15269,20 +11229,22 @@ namespace http
 
 							root["result"][ii]["d"] = szDateEnd;
 
-							sprintf(szTmp, "%llu", total_real_usage_1);
+							sprintf(szTmp, "%" PRIu64, total_real_usage_1);
 							std::string szValue = szTmp;
 							sprintf(szTmp, "%.3f", atof(szValue.c_str()) / divider);
 							root["result"][ii]["v"] = szTmp;
-							sprintf(szTmp, "%llu", total_real_usage_2);
+
+							sprintf(szTmp, "%" PRIu64, total_real_usage_2);
 							szValue = szTmp;
 							sprintf(szTmp, "%.3f", atof(szValue.c_str()) / divider);
 							root["result"][ii]["v2"] = szTmp;
 
-							sprintf(szTmp, "%llu", total_real_deliv_1);
+							sprintf(szTmp, "%" PRIu64, total_real_deliv_1);
 							szValue = szTmp;
 							sprintf(szTmp, "%.3f", atof(szValue.c_str()) / divider);
 							root["result"][ii]["r1"] = szTmp;
-							sprintf(szTmp, "%llu", total_real_deliv_2);
+
+							sprintf(szTmp, "%" PRIu64, total_real_deliv_2);
 							szValue = szTmp;
 							sprintf(szTmp, "%.3f", atof(szValue.c_str()) / divider);
 							root["result"][ii]["r2"] = szTmp;
@@ -15302,20 +11264,21 @@ namespace http
 						{
 							std::vector<std::string> sd = result[0];
 
-							unsigned long long total_min = std::strtoull(sd[0].c_str(), nullptr, 10);
-							unsigned long long total_max = total_min;
-							unsigned long long total_real;
+							int64_t total_min = std::stoll(sd[0]);
+							int64_t total_max = total_min;
+							int64_t total_real;
 
 							// get the last value of the day
 							result = m_sql.safe_query("SELECT Value FROM Meter WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q') ORDER BY Date DESC LIMIT 1", idx, szDateEnd);
 							if (!result.empty())
 							{
 								std::vector<std::string> sd = result[0];
-								total_max = std::strtoull(sd[0].c_str(), nullptr, 10);
+								total_max = std::stoull(sd[0].c_str());
 							}
 
 							total_real = total_max - total_min;
-							sprintf(szTmp, "%lld", total_real);
+							sprintf(szTmp, "%" PRId64, total_real);
+
 							std::string szValue = szTmp;
 							switch (metertype)
 							{
@@ -16631,16 +12594,16 @@ namespace http
 						if (!result.empty())
 						{
 							std::vector<std::string> sd = result[0];
-							unsigned long long total_min_usage_1 = std::strtoull(sd[0].c_str(), nullptr, 10);
-							unsigned long long total_max_usage_1 = std::strtoull(sd[1].c_str(), nullptr, 10);
-							unsigned long long total_min_usage_2 = std::strtoull(sd[4].c_str(), nullptr, 10);
-							unsigned long long total_max_usage_2 = std::strtoull(sd[5].c_str(), nullptr, 10);
-							unsigned long long total_real_usage_1, total_real_usage_2;
-							unsigned long long total_min_deliv_1 = std::strtoull(sd[2].c_str(), nullptr, 10);
-							unsigned long long total_max_deliv_1 = std::strtoull(sd[3].c_str(), nullptr, 10);
-							unsigned long long total_min_deliv_2 = std::strtoull(sd[6].c_str(), nullptr, 10);
-							unsigned long long total_max_deliv_2 = std::strtoull(sd[7].c_str(), nullptr, 10);
-							unsigned long long total_real_deliv_1, total_real_deliv_2;
+							uint64_t total_min_usage_1 = std::stoull(sd[0]);
+							uint64_t total_max_usage_1 = std::stoull(sd[1]);
+							uint64_t total_min_usage_2 = std::stoull(sd[4]);
+							uint64_t total_max_usage_2 = std::stoull(sd[5]);
+							uint64_t total_real_usage_1, total_real_usage_2;
+							uint64_t total_min_deliv_1 = std::stoull(sd[2]);
+							uint64_t total_max_deliv_1 = std::stoull(sd[3]);
+							uint64_t total_min_deliv_2 = std::stoull(sd[6]);
+							uint64_t total_max_deliv_2 = std::stoull(sd[7]);
+							uint64_t total_real_deliv_1, total_real_deliv_2;
 
 							total_real_usage_1 = total_max_usage_1 - total_min_usage_1;
 							total_real_usage_2 = total_max_usage_2 - total_min_usage_2;
@@ -16823,9 +12786,9 @@ namespace http
 							if (!result.empty())
 							{
 								std::vector<std::string> sd = result[0];
-								unsigned long long total_min = std::strtoull(sd[0].c_str(), nullptr, 10);
-								unsigned long long total_max = total_min;
-								unsigned long long total_real;
+								int64_t total_min = std::stoll(sd[0]);
+								int64_t total_max = total_min;
+								int64_t total_real;
 
 								// Get the last value
 								result = m_sql.safe_query("SELECT Value FROM Meter WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q') ORDER BY Date DESC LIMIT 1", idx,
@@ -16833,11 +12796,12 @@ namespace http
 								if (!result.empty())
 								{
 									std::vector<std::string> sd = result[0];
-									total_max = std::strtoull(sd[0].c_str(), nullptr, 10);
+									total_max = std::stoull(sd[0]);
 								}
 
 								total_real = total_max - total_min;
-								sprintf(szTmp, "%lld", total_real);
+								sprintf(szTmp, "%" PRId64, total_real);
+
 								std::string szValue = szTmp;
 
 								if (!sgroupby.empty())
@@ -17470,17 +13434,17 @@ namespace http
 						{
 							std::vector<std::string> sd = result[0];
 
-							unsigned long long total_min_usage_1 = std::strtoull(sd[0].c_str(), nullptr, 10);
-							unsigned long long total_max_usage_1 = std::strtoull(sd[1].c_str(), nullptr, 10);
-							unsigned long long total_min_usage_2 = std::strtoull(sd[4].c_str(), nullptr, 10);
-							unsigned long long total_max_usage_2 = std::strtoull(sd[5].c_str(), nullptr, 10);
-							unsigned long long total_real_usage;
+							uint64_t total_min_usage_1 = std::stoull(sd[0]);
+							uint64_t total_max_usage_1 = std::stoull(sd[1]);
+							uint64_t total_min_usage_2 = std::stoull(sd[4]);
+							uint64_t total_max_usage_2 = std::stoull(sd[5]);
+							uint64_t total_real_usage;
 
-							unsigned long long total_min_deliv_1 = std::strtoull(sd[2].c_str(), nullptr, 10);
-							unsigned long long total_max_deliv_1 = std::strtoull(sd[3].c_str(), nullptr, 10);
-							unsigned long long total_min_deliv_2 = std::strtoull(sd[6].c_str(), nullptr, 10);
-							unsigned long long total_max_deliv_2 = std::strtoull(sd[7].c_str(), nullptr, 10);
-							unsigned long long total_real_deliv;
+							uint64_t total_min_deliv_1 = std::stoull(sd[2]);
+							uint64_t total_max_deliv_1 = std::stoull(sd[3]);
+							uint64_t total_min_deliv_2 = std::stoull(sd[6]);
+							uint64_t total_max_deliv_2 = std::stoull(sd[7]);
+							uint64_t total_real_deliv;
 
 							total_real_usage = (total_max_usage_1 + total_max_usage_2) - (total_min_usage_1 + total_min_usage_2);
 							total_real_deliv = (total_max_deliv_1 + total_max_deliv_2) - (total_min_deliv_1 + total_min_deliv_2);
@@ -17490,14 +13454,16 @@ namespace http
 
 							root["result"][ii]["d"] = szDateEnd;
 
-							sprintf(szTmp, "%lld", total_real_usage);
+							sprintf(szTmp, "%" PRIu64, total_real_usage);
 							std::string szValue = szTmp;
 							sprintf(szTmp, "%.3f", atof(szValue.c_str()) / divider);
 							root["result"][ii]["v"] = szTmp;
-							sprintf(szTmp, "%llu", total_real_deliv);
+
+							sprintf(szTmp, "%" PRIu64, total_real_deliv);
 							szValue = szTmp;
 							sprintf(szTmp, "%.3f", atof(szValue.c_str()) / divider);
 							root["result"][ii]["v2"] = szTmp;
+							
 							ii++;
 							if (bHaveDeliverd)
 							{
@@ -17513,9 +13479,9 @@ namespace http
 						if (!result.empty())
 						{
 							std::vector<std::string> sd = result[0];
-							unsigned long long total_min = std::strtoull(sd[0].c_str(), nullptr, 10);
-							unsigned long long total_max = total_min;
-							unsigned long long total_real;
+							int64_t total_min = std::stoll(sd[0]);
+							int64_t total_max = total_min;
+							int64_t total_real;
 
 							// get the last value of the day
 							result = m_sql.safe_query("SELECT Value FROM Meter WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q') ORDER BY Date DESC LIMIT 1", idx,
@@ -17523,13 +13489,12 @@ namespace http
 							if (!result.empty())
 							{
 								std::vector<std::string> sd = result[0];
-								total_max = std::strtoull(sd[0].c_str(), nullptr, 10);
+								total_max = std::stoull(sd[0]);
 							}
 
 							total_real = total_max - total_min;
-							sprintf(szTmp, "%lld", total_real);
+							sprintf(szTmp, "%" PRId64, total_real);							std::string szValue = szTmp;
 
-							std::string szValue = szTmp;
 							switch (metertype)
 							{
 							case MTYPE_ENERGY:
@@ -17906,5 +13871,3 @@ namespace http
 
 	} // namespace server
 } // namespace http
-
-#include "../iamserver/IamService.cpp"

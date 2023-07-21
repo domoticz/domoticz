@@ -48,7 +48,7 @@ return {
 		end
 
 		function scene.setDescription(newDescription)
-			local url = domoticz.settings['Domoticz url'] .. '/json.htm?type=updatescene&scenetype=0' ..
+			local url = domoticz.settings['Domoticz url'] .. '/json.htm?type=command&param=updatescene&scenetype=0' ..
 						'&idx=' .. scene.id ..
 						'&name='.. utils.urlEncode(scene.name) ..
 						'&description=' .. utils.urlEncode(newDescription) 
@@ -56,7 +56,7 @@ return {
 		end
 
 		function scene.rename(newName)
-			local url = domoticz.settings['Domoticz url'] .. '/json.htm?type=updatescene&scenetype=0' ..
+			local url = domoticz.settings['Domoticz url'] .. '/json.htm?type=command&param=updatescene&scenetype=0' ..
 						'&idx=' .. scene.id ..
 						'&name='.. utils.urlEncode(newName) ..
 						'&description=' .. utils.urlEncode(scene.description) 
@@ -64,7 +64,7 @@ return {
 		end
 
 		function scene.protectionOn()
-			local url = domoticz.settings['Domoticz url'] .. '/json.htm?type=updatescene&scenetype=0&protected=true' ..
+			local url = domoticz.settings['Domoticz url'] .. '/json.htm?type=command&param=updatescene&scenetype=0&protected=true' ..
 						'&idx=' .. scene.id ..
 						'&name='.. utils.urlEncode(scene.name) ..
 						'&description=' .. utils.urlEncode(scene.description) 
@@ -72,7 +72,7 @@ return {
 		end
 
 		function scene.protectionOff()
-			local url = domoticz.settings['Domoticz url'] .. '/json.htm?type=updatescene&scenetype=0&protected=false' ..
+			local url = domoticz.settings['Domoticz url'] .. '/json.htm?type=command&param=updatescene&scenetype=0&protected=false' ..
 						'&idx=' .. scene.id ..
 						'&name='.. utils.urlEncode(scene.name) ..
 						'&description=' .. utils.urlEncode(scene.description) 

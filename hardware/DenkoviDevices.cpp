@@ -4,7 +4,6 @@
 #include "../main/Logger.h"
 #include "../httpclient/HTTPClient.h"
 #include "hardwaretypes.h"
-#include "../main/localtime_r.h"
 #include "../main/mainworker.h"
 #include "../main/SQLHelper.h"
 #include <sstream>
@@ -723,13 +722,13 @@ void CDenkoviDevices::GetMeterDetails()
 
 	if (m_iModel == DDEV_DAEnet_IP2 || m_iModel == DDEV_DAEnet_IP2_8_RELAYS) {
 		std::string sPass = m_Password;
-		if (sPass.find("%3A") == std::string::npos) {
+		/*if (sPass.find("%3A") == std::string::npos) {
 			if (m_iModel == DDEV_DAEnet_IP2)
 				Log(LOG_ERROR, "%s: Please enter username and password in format username:password. Example admin:admin!",szDenkoviHardwareNames[m_iModel]);
 			else if (m_iModel == DDEV_DAEnet_IP2_8_RELAYS)
 				Log(LOG_ERROR, "%s: Please enter username and password in format username:password. Example admin:admin!",szDenkoviHardwareNames[m_iModel]);
 			return;
-		}
+		}*/
 		sPass.replace(sPass.find("%3A"), 3, ":");
 		szURL << "http://" << sPass << "@" << m_szIPAddress << ":" << m_usIPPort << "/ioreg.js";
 	}
@@ -867,7 +866,7 @@ void CDenkoviDevices::GetMeterDetails()
 			{
 				std::vector<std::string> vMeasure;
 				StringSplit(tmpMeasure, " ", vMeasure); 
-				int len = tmpMeasure.length() - tmpMeasure.find_first_of('.', 0) - 2;
+				size_t len = tmpMeasure.length() - tmpMeasure.find_first_of('.', 0) - 2;
 				std::string units = tmpMeasure.substr(tmpMeasure.find_first_of('.',0)+2, len);
 				SendCustomSensor(Idx, 1, 255, static_cast<float>(atof(vMeasure[0].c_str())), "Analog Input Scaled (" + name + ")", units);
 

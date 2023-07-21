@@ -1,7 +1,6 @@
 #include "stdafx.h"
 #include <iostream>
 #include "Scheduler.h"
-#include "localtime_r.h"
 #include "Logger.h"
 #include "Helper.h"
 #include "SQLHelper.h"
@@ -13,6 +12,8 @@
 #include "boost/date_time/gregorian/gregorian.hpp"
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
+
+#define round(a) ( int ) ( a + .5 )
 
 CScheduler::CScheduler()
 {
@@ -878,15 +879,21 @@ void CScheduler::CheckSchedules()
 								|| (switchtype == STYPE_BlindsPercentageWithStop)
 								)
 							{
-								if (item.timerCmd == TCMD_ON)
+								if ((item.Level > 0) && (item.Level < 100))
 								{
+									// set position to value between 1 and 99 %
 									switchcmd = "Set Level";
 									float fLevel = (maxDimLevel / 100.0F) * item.Level;
-									if (fLevel > 100)
-										fLevel = 100;
-									ilevel = int(fLevel);
+									ilevel = round(fLevel);
+									if (ilevel > maxDimLevel)
+										ilevel = maxDimLevel;
 								}
-								else if (item.timerCmd == TCMD_OFF)
+								else if (item.timerCmd == TCMD_ON) // no percentage set (0 or 100)
+								{
+									switchcmd = "Open";
+									ilevel = 100;
+								}
+								else if (item.timerCmd == TCMD_OFF) // no percentage set (0 or 100)
 								{
 									switchcmd = "Close";
 									ilevel = 0;
@@ -898,9 +905,9 @@ void CScheduler::CheckSchedules()
 								{
 									switchcmd = "Set Level";
 									float fLevel = (maxDimLevel / 100.0F) * item.Level;
-									if (fLevel > 100)
-										fLevel = 100;
-									ilevel = int(fLevel);
+									ilevel = round(fLevel);
+									if (ilevel > maxDimLevel)
+										ilevel = maxDimLevel;
 								}
 							} else if (switchtype == STYPE_Selector) {
 								if (item.timerCmd == TCMD_ON)
@@ -997,12 +1004,12 @@ void CScheduler::DeleteExpiredTimers()
 //Webserver helpers
 namespace http {
 	namespace server {
-		void CWebServer::RType_Schedules(WebEmSession & session, const request& req, Json::Value &root)
+		void CWebServer::Cmd_GetSchedules(WebEmSession & session, const request& req, Json::Value &root)
 		{
 			std::string rfilter = request::findValue(&req, "filter");
 
 			root["status"] = "OK";
-			root["title"] = "Schedules";
+			root["title"] = "getschedules";
 
 			std::vector<std::vector<std::string> > tot_result;
 			std::vector<std::vector<std::string> > tmp_result;
@@ -1130,17 +1137,17 @@ namespace http {
 				}
 			}
 		}
-		void CWebServer::RType_Timers(WebEmSession & session, const request& req, Json::Value &root)
+		void CWebServer::Cmd_GetTimers(WebEmSession & session, const request& req, Json::Value &root)
 		{
 			uint64_t idx = 0;
 			if (!request::findValue(&req, "idx").empty())
 			{
-				idx = std::strtoull(request::findValue(&req, "idx").c_str(), nullptr, 10);
+				idx = std::stoull(request::findValue(&req, "idx"));
 			}
 			if (idx == 0)
 				return;
 			root["status"] = "OK";
-			root["title"] = "Timers";
+			root["title"] = "gettimers";
 
 			std::vector<std::vector<std::string> > result;
 
@@ -1507,17 +1514,17 @@ namespace http {
 			m_mainworker.m_scheduler.ReloadSchedules();
 		}
 
-		void CWebServer::RType_SetpointTimers(WebEmSession & session, const request& req, Json::Value &root)
+		void CWebServer::Cmd_GetSetpointTimers(WebEmSession & session, const request& req, Json::Value &root)
 		{
 			uint64_t idx = 0;
 			if (!request::findValue(&req, "idx").empty())
 			{
-				idx = std::strtoull(request::findValue(&req, "idx").c_str(), nullptr, 10);
+				idx = std::stoull(request::findValue(&req, "idx"));
 			}
 			if (idx == 0)
 				return;
 			root["status"] = "OK";
-			root["title"] = "SetpointTimers";
+			root["title"] = "getsetpointtimers";
 			char szTmp[50];
 
 			std::vector<std::vector<std::string> > result;
@@ -1818,17 +1825,17 @@ namespace http {
 			m_mainworker.m_scheduler.ReloadSchedules();
 		}
 
-		void CWebServer::RType_SceneTimers(WebEmSession & session, const request& req, Json::Value &root)
+		void CWebServer::Cmd_GetSceneTimers(WebEmSession & session, const request& req, Json::Value &root)
 		{
 			uint64_t idx = 0;
 			if (!request::findValue(&req, "idx").empty())
 			{
-				idx = std::strtoull(request::findValue(&req, "idx").c_str(), nullptr, 10);
+				idx = std::stoull(request::findValue(&req, "idx"));
 			}
 			if (idx == 0)
 				return;
 			root["status"] = "OK";
-			root["title"] = "SceneTimers";
+			root["title"] = "getscenetimers";
 
 			char szTmp[40];
 

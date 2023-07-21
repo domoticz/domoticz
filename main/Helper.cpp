@@ -16,7 +16,6 @@
 #include <fstream>
 #include <math.h>
 #include <algorithm>
-#include "../main/localtime_r.h"
 #include <sstream>
 #include <openssl/evp.h>
 #include <openssl/sha.h>
@@ -115,6 +114,16 @@ unsigned int Crc32(unsigned int crc, const uint8_t* buf, size_t size)
 	while (size--)
 		crc = crc32_tab[(crc ^ *p++) & 0xFF] ^ (crc >> 8);
 	return crc ^ ~0U;
+}
+
+uint8_t Crc8_strMQ(uint8_t crc, const uint8_t* buf, size_t size)
+{
+	crc = 0xff;
+	if (buf == NULL)
+		return crc;
+	while (size--)
+		crc += *buf++;
+	return crc;
 }
 
 void StringSplit(std::string str, const std::string &delim, std::vector<std::string> &results)
@@ -751,8 +760,8 @@ double ConvertToFahrenheit(const double Celsius)
 
 double RoundDouble(const long double invalue, const short numberOfPrecisions)
 {
-	long long p = (long long) pow(10.0L, numberOfPrecisions);
-	double ret= (long long)(invalue * p + 0.5L) / (double)p;
+	int64_t p = (int64_t) pow(10.0L, numberOfPrecisions);
+	double ret= (int64_t)(invalue * p + 0.5L) / (double)p;
 	return ret;
 }
 
@@ -1384,6 +1393,7 @@ int SetThreadName(const std::thread::native_handle_type &thread, const char *nam
 	pthread_set_name_np(thread, name_trunc);
 	return 0;
 #endif
+	return 0;
 }
 #endif
 
@@ -1557,4 +1567,78 @@ char* make_web_time(const time_t rawtime)
 
 	}
 	return buffer;
+}
+
+const std::string base32RFC4648 = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567=";
+bool base32_decode(const std::string &input, std::string &output)
+{
+	if ((input.size() % 8) != 0)
+		return false;
+
+	std::vector<uint8_t> outTotal;
+
+	for(uint16_t j = 0; j < (input.size() / 8); j++)
+	{
+		// pack 8 bytes
+		uint64_t buffer = 0;
+		for(uint8_t i = 0; i < 8; i++)
+		{
+			if(i != 0)
+			{
+				buffer = (buffer << 5);
+			}
+			// input check
+			size_t pos = base32RFC4648.find(input[(j*8) + i]);
+			if(pos == std::string::npos)
+			{
+				return false;
+			}
+			else if (pos == 32)		// '=' is padding sign, we skip it
+			{
+				buffer = buffer | 0;
+			}
+			else
+			{
+				buffer = buffer | base32RFC4648.find(input[(j*8) + i]);
+			}
+		}
+		// output 5 bytes
+		for(int8_t x = 4; x >= 0; x--)
+		{
+			outTotal.push_back((unsigned char)(buffer >> (x * 8)));
+		}
+	}
+
+	output.assign(std::string(outTotal.begin(), outTotal.end()));
+	return true;
+}
+
+bool base32_encode(const std::string &input, std::string &output)
+{
+	if (input.empty())
+		return false;
+
+	std::vector<uint8_t> outTotal;
+
+	for(uint16_t j = 0; j < (input.size() / 5); j++)
+	{
+		// pack 5 bytes
+		uint64_t buffer = 0;
+		for(uint8_t i = 0; i < 5; i++)
+		{
+			if(i != 0)
+			{
+				buffer = (buffer << 8);
+			}
+			buffer = buffer | input[(j*5) + i];
+		}
+		// output 8 bytes
+		for(int8_t x = 7; x >= 0; x--)
+		{
+			outTotal.push_back(base32RFC4648[(buffer >> (x * 5)) & 0x1F]);
+		}
+	}
+
+	output.assign(std::string(outTotal.begin(), outTotal.end()));
+	return true;
 }

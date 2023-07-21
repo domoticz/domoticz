@@ -9,9 +9,7 @@
 #include <deque>
 #include "WindCalculation.h"
 #include "TrendCalculator.h"
-#include "StoppableTask.h"
 #include "../tcpserver/TCPServer.h"
-#include "concurrent_queue.h"
 #include "../webserver/server_settings.hpp"
 #include "../iamserver/iam_settings.hpp"
 #ifdef ENABLE_PYTHON
@@ -290,6 +288,7 @@ private:
 	void decode_Solar(const CDomoticzHardwareBase *pHardware, const tRBUF* pResponse, _tRxMessageProcessingResult& procResult);
 	void decode_Hunter(const CDomoticzHardwareBase* pHardware, const tRBUF* pResponse, _tRxMessageProcessingResult& procResult);
 	void decode_LevelSensor(const CDomoticzHardwareBase* pHardware, const tRBUF* pResponse, _tRxMessageProcessingResult& procResult);
+	void decode_LightningSensor(const CDomoticzHardwareBase* pHardware, const tRBUF* pResponse, _tRxMessageProcessingResult& procResult);
 };
 
 extern MainWorker m_mainworker;

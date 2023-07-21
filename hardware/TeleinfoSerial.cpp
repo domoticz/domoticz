@@ -25,7 +25,6 @@ History :
 #include "stdafx.h"
 #include "TeleinfoSerial.h"
 #include "hardwaretypes.h"
-#include "../main/localtime_r.h"
 #include "../main/Logger.h"
 
 #include <boost/exception/diagnostic_information.hpp>

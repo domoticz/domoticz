@@ -50,7 +50,7 @@ public :
    /// constructor
    byte_stream (const char * cp_in)
    {
-      u_length = strlen (cp_in) + 1;
+      u_length = (unsigned int)strlen (cp_in) + 1;
       bp_in = new _byte_ [u_length] ;
       memcpy (bp_in, cp_in, u_length);
       bp_current = bp_in;

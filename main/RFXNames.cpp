@@ -168,6 +168,7 @@ static const STR_TABLE_SINGLE HardwareTypeTable[] = {
 	{ HTYPE_RaspberryBMP085, "I2C sensor BMP085/180 Temp+Baro", "I2C BM" },
 	{ HTYPE_Wunderground, "Weather Underground", "WU" },
 	{ HTYPE_DarkSky, "DarkSky (Weather Lookup)", "Darksky" },
+	{ HTYPE_VisualCrossing, "Visual Crossing (Weather Lookup)", "Visual Crossing" },
 	{ HTYPE_Dummy, "Dummy (Does nothing, use for virtual switches only)", "Dummy" },
 	{ HTYPE_Tellstick, "Tellstick", "Tellstick" },
 	{ HTYPE_PiFace, "PiFace - Raspberry Pi IO expansion board", "PiFace" },
@@ -241,7 +242,7 @@ static const STR_TABLE_SINGLE HardwareTypeTable[] = {
 	{ HTYPE_BleBox, "BleBox devices", "BleBox" },
 	{ HTYPE_Ec3kMeterTCP, "Energy Count 3000/ NETBSEM4/ La Crosse RT-10 LAN", "Ec3kMeter" },
 	{ HTYPE_OpenWeatherMap, "Open Weather Map", "OpenWeatherMap" },
-	{ HTYPE_GoodweAPI, "Goodwe solar inverter via Web API", "Goodwe" },
+	{ HTYPE_AlfenEveCharger, "Alfen Eve Charger LAN", "Alfen" },
 	{ HTYPE_RaspberryTSL2561, "I2C sensor TSL2561 Illuminance", "I2C TSL2561" },
 	{ HTYPE_Daikin, "Daikin Airconditioning with LAN (HTTP) interface", "Daikin" },
 	{ HTYPE_HEOS, "HEOS by DENON", "HEOS" },
@@ -261,7 +262,7 @@ static const STR_TABLE_SINGLE HardwareTypeTable[] = {
 	{ HTYPE_SysfsGpio, "Generic sysfs GPIO", "sysfs" },
 	{ HTYPE_Rtl433, "Rtl433 RTL-SDR receiver", "RTL433" },
 	{ HTYPE_OnkyoAVTCP, "Onkyo AV Receiver (LAN)", "Onkyo AV" },
-	{ HTYPE_RESERVED_FOR_YOU_2, "", "" },
+	{ HTYPE_EneverPriceFeeds, "Enever Dutch Electricity/Gas Price Feed", "Enever" },
 	{ HTYPE_USBtinGateway, "USBtin Can Gateway", "USBtin" },
 	{ HTYPE_EnphaseAPI, "Enphase Envoy with LAN (HTTP) interface", "Enphase" },
 	{ HTYPE_RaspberryMCP23017, "I2C sensor GPIO 16bit expander MCP23017", "I2C GPIO" },
@@ -598,6 +599,7 @@ const char* RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 		{ pTypeRAIN, sTypeRAIN7, "Alecto" },
 		{ pTypeRAIN, sTypeRAIN8, "Davis" },
 		{ pTypeRAIN, sTypeRAIN9, "TFA 30.3233.01" },
+		{ pTypeRAIN, sTypeRAIN10, "FineOffset WH5360, EcoWitt WH40" },
 		{ pTypeRAIN, sTypeRAINWU, "WWW" },
 		{ pTypeRAIN, sTypeRAINByRate, "RainByRate" },
 
@@ -615,6 +617,7 @@ const char* RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 		{ pTypeUV, sTypeUV2, "UVN800" },
 		{ pTypeUV, sTypeUV3, "TFA" },
 
+		{ pTypeWEATHER, sTypeWEATHER0, "Ecowitt WS90" },
 		{ pTypeWEATHER, sTypeWEATHER1, "Alecto ACH2010" },
 		{ pTypeWEATHER, sTypeWEATHER2, "Alecto WS5500" },
 
@@ -816,6 +819,8 @@ const char* RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 		{ pTypeFan, sTypeLucciAirDCII, "Lucci Air DC II" },
 		{ pTypeFan, sTypeIthoECO, "Itho ECO" },
 		{ pTypeFan, sTypeNovy, "Novy" },
+		{ pTypeFan, sTypeOrcon, "Orcon" },
+		{ pTypeFan, sTypeIthoHRU400, "Itho HRU400" },
 
 		{ pTypeTEMP_RAIN, sTypeTR1, "Alecto WS1200" },
 
@@ -845,11 +850,6 @@ const char* RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 		{ pTypeFS20, sTypeFS20, "FS20" },
 		{ pTypeFS20, sTypeFHT8V, "FHT 8V valve" },
 		{ pTypeFS20, sTypeFHT80, "FHT80 door/window sensor" },
-
-		{ pTypeWEATHER, sTypeWEATHER1, "Alecto ACH2010" },
-		{ pTypeWEATHER, sTypeWEATHER2, "Alecto WS5500" },
-
-		{ pTypeSOLAR, sTypeSOLAR1, "Davis" },
 
 		{ pTypeGeneralSwitch, sSwitchTypeX10, "X10" },
 		{ pTypeGeneralSwitch, sSwitchTypeARC, "ARC" },
@@ -1862,9 +1862,13 @@ void GetLightStatus(
 			switch (nValue)
 			{
 			case rfy_sUp:
+			case rfy_s05SecUp:
+			case rfy_s2SecUp:
 				lstatus = "On";
 				break;
 			case rfy_sDown:
+			case rfy_s05SecDown:
+			case rfy_s2SecDown:
 				lstatus = "Off";
 				break;
 			case rfy_sStop:
@@ -3981,6 +3985,7 @@ bool IsNetworkDevice(const _eHardwareTypes htype)
 	case HTYPE_OctoPrint:
 	case HTYPE_TeleinfoMeterTCP:
 	case HTYPE_MQTTAutoDiscovery:
+	case HTYPE_AlfenEveCharger:
 		return true;
 	default:
 		return false;

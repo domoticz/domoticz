@@ -3,7 +3,6 @@
 #include "../main/Logger.h"
 #include "../main/Helper.h"
 #include <iostream>
-#include "../main/localtime_r.h"
 
 #define RETRY_DELAY 30
 
@@ -90,7 +89,7 @@ void OTGWTCP::Do_Work()
 
 void OTGWTCP::OnData(const unsigned char *pData, size_t length)
 {
-	ParseData(pData,length);
+	ParseData(pData,(int)length);
 }
 
 void OTGWTCP::OnError(const boost::system::error_code& error)

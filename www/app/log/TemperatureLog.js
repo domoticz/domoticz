@@ -143,7 +143,6 @@ define(['app', 'RefreshingChart', 'log/factories'], function (app, RefreshingCha
                 zIndex: 1,
                 tooltip: {
                     valueSuffix: ' ' + degreeSuffix,
-                    valueDecimals: 1
                 }
             }
         };
@@ -180,7 +179,6 @@ define(['app', 'RefreshingChart', 'log/factories'], function (app, RefreshingCha
                 step: deviceType === 'Thermostat' ? 'left' : undefined,
                 tooltip: {
                     valueSuffix: ' ' + degreeSuffix,
-                    valueDecimals: 1
                 }
             }
         };
@@ -202,7 +200,6 @@ define(['app', 'RefreshingChart', 'log/factories'], function (app, RefreshingCha
                 zIndex: 1,
                 tooltip: {
                     valueSuffix: ' ' + degreeSuffix,
-                    valueDecimals: 1
                 },
                 yAxis: 0
             }
@@ -317,7 +314,6 @@ define(['app', 'RefreshingChart', 'log/factories'], function (app, RefreshingCha
                 yAxis: 0,
                 tooltip: {
                     valueSuffix: ' ' + degreeSuffix,
-                    valueDecimals: 1
                 }
             }
         };
@@ -365,7 +361,6 @@ define(['app', 'RefreshingChart', 'log/factories'], function (app, RefreshingCha
                 zIndex: 1,
                 tooltip: {
                     valueSuffix: ' ' + degreeSuffix,
-                    valueDecimals: 1
                 },
                 color: 'rgba(255,3,3,0.8)',
                 dashStyle: 'LongDash',

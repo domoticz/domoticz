@@ -203,7 +203,7 @@ a:hover { text-decoration: none; color: #003366; }
 function RefreshData()
 {
 	clearInterval($.refreshTimer);
-	var jurl=$.domoticzurl+"/json.htm?type=devices&plan="+$.roomplan+"&jsoncallback=?";
+	var jurl=$.domoticzurl+"/json.htm?type=command&param=getdevices&plan="+$.roomplan;
 	$.getJSON(jurl,
 	{
 		format: "json"

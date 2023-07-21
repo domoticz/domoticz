@@ -3,12 +3,15 @@
 #include "../main/Helper.h"
 #include "../main/Logger.h"
 #include "hardwaretypes.h"
-#include "../main/localtime_r.h"
 #include "../main/mainworker.h"
 #include "../main/SQLHelper.h"
 #include <wchar.h>
 
-//Note, for Windows we use OpenHardware Monitor
+#define __STDC_FORMAT_MACROS
+#include <inttypes.h>
+
+//Note, for Windows we use Libre Hardware Monitor or Open Hardware Monitor
+//https://github.com/LibreHardwareMonitor/LibreHardwareMonitor
 //http://openhardwaremonitor.org/
 
 #ifdef WIN32
@@ -67,7 +70,7 @@ CHardwareMonitor::CHardwareMonitor(const int ID)
 	m_lastloadcpu = 0;
 #ifdef WIN32
 	m_pLocator = nullptr;
-	m_pServicesOHM = nullptr;
+	m_pServicesHM = nullptr;
 	m_pServicesSystem = nullptr;
 #endif
 }
@@ -523,7 +526,7 @@ void CHardwareMonitor::FetchMemory()
 void CHardwareMonitor::FetchData()
 {
 #ifdef WIN32
-	if (IsOHMRunning()) {
+	if (IsHMRunning()) {
 		Debug(DEBUG_NORM,"Fetching Windows sensor data (System sensors)");
 		RunWMIQuery("Sensor","Temperature");
 		RunWMIQuery("Sensor","Load");
@@ -563,34 +566,46 @@ bool CHardwareMonitor::InitWMI()
 	hr = CoCreateInstance(CLSID_WbemAdministrativeLocator, nullptr, CLSCTX_INPROC_SERVER, IID_IWbemLocator, (LPVOID *)&m_pLocator);
 	if (FAILED(hr))
 		return false;
-	hr = m_pLocator->ConnectServer(L"root\\OpenHardwareMonitor", nullptr, nullptr, nullptr, 0, nullptr, nullptr, &m_pServicesOHM);
-	if (FAILED(hr))
+
+	//First try Libre Hardware Monitor
+	hr = m_pLocator->ConnectServer(L"root\\LibreHardwareMonitor", nullptr, nullptr, nullptr, 0, nullptr, nullptr, &m_pServicesHM);
+	if (SUCCEEDED(hr))
 	{
-		Log(LOG_STATUS, "Hardware Monitor: Warning, OpenHardware Monitor is not installed on this system. (http://openhardwaremonitor.org)");
-		return false;
+		hr = m_pLocator->ConnectServer(L"root\\CIMV2", nullptr, nullptr, nullptr, 0, nullptr, nullptr, &m_pServicesSystem);
+		if (SUCCEEDED(hr))
+		{
+			m_bIsLibreHardwareMonitor = true;
+			if (IsHMRunning())
+			{
+				return true;
+			}
+			m_bIsLibreHardwareMonitor = false;
+			m_pServicesSystem->Release();
+			m_pServicesSystem = nullptr;
+		}
+		m_pServicesHM->Release();
+		m_pServicesHM = nullptr;
 	}
-	hr = m_pLocator->ConnectServer(L"root\\CIMV2", nullptr, nullptr, nullptr, 0, nullptr, nullptr, &m_pServicesSystem);
-	if (FAILED(hr))
-		return false;
-/*
-	// Set security levels on the proxy
-	hr = CoSetProxyBlanket(
-		m_pServicesSystem,                        // Indicates the proxy to set
-		RPC_C_AUTHN_WINNT,           // RPC_C_AUTHN_xxx
-		RPC_C_AUTHZ_NONE,            // RPC_C_AUTHZ_xxx
-		NULL,                        // Server principal name
-		RPC_C_AUTHN_LEVEL_CALL,      // RPC_C_AUTHN_LEVEL_xxx
-		RPC_C_IMP_LEVEL_IMPERSONATE, // RPC_C_IMP_LEVEL_xxx
-		NULL,                        // client identity
-		EOAC_NONE                    // proxy capabilities
-		);
-*/
-	if (!IsOHMRunning())
+
+	//Try Open Hardware Monitor
+	hr = m_pLocator->ConnectServer(L"root\\OpenHardwareMonitor", nullptr, nullptr, nullptr, 0, nullptr, nullptr, &m_pServicesHM);
+	if (SUCCEEDED(hr))
 	{
-		Log(LOG_STATUS, "Hardware Monitor: Warning, OpenHardware Monitor is not installed on this system. (http://openhardwaremonitor.org)");
-		return false;
+		hr = m_pLocator->ConnectServer(L"root\\CIMV2", nullptr, nullptr, nullptr, 0, nullptr, nullptr, &m_pServicesSystem);
+		if (SUCCEEDED(hr))
+		{
+			if (IsHMRunning())
+			{
+				return true;
+			}
+			m_pServicesSystem->Release();
+			m_pServicesSystem = nullptr;
+		}
+		m_pServicesHM->Release();
+		m_pServicesHM = nullptr;
 	}
-	return true;
+	Log(LOG_STATUS, "Hardware Monitor: Warning, neither Libre Hardware Monitor nor Open Hardware Monitor are installed on this system. (https://github.com/LibreHardwareMonitor/LibreHardwareMonitor , http://openhardwaremonitor.org)");
+	return false;
 }
 
 void CHardwareMonitor::ExitWMI()
@@ -598,49 +613,61 @@ void CHardwareMonitor::ExitWMI()
 	if (m_pServicesSystem != nullptr)
 		m_pServicesSystem->Release();
 	m_pServicesSystem = nullptr;
-	if (m_pServicesOHM != nullptr)
-		m_pServicesOHM->Release();
-	m_pServicesOHM = nullptr;
+	if (m_pServicesHM != nullptr)
+		m_pServicesHM->Release();
+	m_pServicesHM = nullptr;
 	if (m_pLocator != nullptr)
 		m_pLocator->Release();
 	m_pLocator = nullptr;
 }
 
-bool CHardwareMonitor::IsOHMRunning()
+bool CHardwareMonitor::IsHMRunning()
 {
-	if ((m_pServicesOHM == nullptr) || (m_pServicesSystem == nullptr))
+	if ((m_pServicesHM == nullptr) || (m_pServicesSystem == nullptr))
 		return false;
-	bool bOHMRunning = false;
-	IEnumWbemClassObject *pEnumerator = nullptr;
+	bool bHMRunning = false;
+	IEnumWbemClassObject* pEnumerator = nullptr;
 	HRESULT hr;
-	hr = m_pServicesSystem->ExecQuery(L"WQL", L"Select * from win32_Process WHERE Name='OpenHardwareMonitor.exe'",
-					  WBEM_FLAG_FORWARD_ONLY | WBEM_FLAG_RETURN_IMMEDIATELY, nullptr, &pEnumerator);
+	if (m_bIsLibreHardwareMonitor)
+	{
+		hr = m_pServicesSystem->ExecQuery(L"WQL", L"Select * from win32_Process WHERE Name='LibreHardwareMonitor.exe'",
+			WBEM_FLAG_FORWARD_ONLY | WBEM_FLAG_RETURN_IMMEDIATELY, nullptr, &pEnumerator);
+	}
+	else
+	{
+		hr = m_pServicesSystem->ExecQuery(L"WQL", L"Select * from win32_Process WHERE Name='OpenHardwareMonitor.exe'",
+			WBEM_FLAG_FORWARD_ONLY | WBEM_FLAG_RETURN_IMMEDIATELY, nullptr, &pEnumerator);
+	}
+	if (FAILED(hr))
+		return false;
+	IWbemClassObject* pclsObj = nullptr;
+	ULONG uReturn = 0;
+	hr = pEnumerator->Next(WBEM_INFINITE, 1, &pclsObj, &uReturn);
+	if ((FAILED(hr)) || (0 == uReturn))
+	{
+		pEnumerator->Release();
+		return false;
+	}
+	VARIANT vtProp;
+	VariantInit(&vtProp);
+	hr = pclsObj->Get(L"ProcessId", 0, &vtProp, 0, 0);
 	if (SUCCEEDED(hr))
 	{
-		IWbemClassObject *pclsObj = nullptr;
-		ULONG uReturn = 0;
-		hr = pEnumerator->Next(WBEM_INFINITE, 1,  &pclsObj, &uReturn);
-		if ((FAILED(hr)) || (0 == uReturn))
-		{
-			pEnumerator->Release();
-			return false;
-		}
-		VARIANT vtProp;
-		VariantInit(&vtProp);
-		hr = pclsObj->Get(L"ProcessId", 0, &vtProp, 0, 0);
 		int procId = static_cast<int>(vtProp.iVal);
 		if (procId) {
-			bOHMRunning = true;
+			bHMRunning = true;
 		}
-		pclsObj->Release();
-		pEnumerator->Release();
+		VariantClear(&vtProp);
 	}
-	return bOHMRunning;
+	pclsObj->Release();
+	pEnumerator->Release();
+
+	return bHMRunning;
 }
 
 void CHardwareMonitor::RunWMIQuery(const char* qTable, const std::string &qType)
 {
-	if ((m_pServicesOHM == nullptr) || (m_pServicesSystem == nullptr))
+	if ((m_pServicesHM == nullptr) || (m_pServicesSystem == nullptr))
 		return;
 	HRESULT hr;
 	std::string query = "SELECT * FROM ";
@@ -649,7 +676,7 @@ void CHardwareMonitor::RunWMIQuery(const char* qTable, const std::string &qType)
 	query.append(qType);
 	query.append("'");
 	IEnumWbemClassObject *pEnumerator = nullptr;
-	hr = m_pServicesOHM->ExecQuery(L"WQL", bstr_t(query.c_str()), WBEM_FLAG_FORWARD_ONLY | WBEM_FLAG_RETURN_IMMEDIATELY, nullptr,
+	hr = m_pServicesHM->ExecQuery(L"WQL", bstr_t(query.c_str()), WBEM_FLAG_FORWARD_ONLY | WBEM_FLAG_RETURN_IMMEDIATELY, nullptr,
 				       &pEnumerator);
 	if (!FAILED(hr))
 	{
@@ -932,7 +959,7 @@ void CHardwareMonitor::FetchUnixCPU()
 		}
 		else
 		{
-			long long t = (loads[CP_USER] + loads[CP_NICE] + loads[CP_SYS])-m_lastloadcpu;
+			int64_t t = (loads[CP_USER] + loads[CP_NICE] + loads[CP_SYS])-m_lastloadcpu;
 			double cpuper=((double(t) / (difftime(acttime,m_lastquerytime) * HZ)) * 100);///double(m_totcpu);
 			if (cpuper>0)
 			{
@@ -954,7 +981,7 @@ void CHardwareMonitor::FetchUnixCPU()
 			fclose(fIn);
 			if (ret==4)
 			{
-				long long t = (actload1+actload2+actload3)-m_lastloadcpu;
+				int64_t t = (actload1+actload2+actload3)-m_lastloadcpu;
 				double cpuper=((t / (difftime(acttime,m_lastquerytime) * HZ)) * 100)/double(m_totcpu);
 				if (cpuper>0)
 				{
@@ -983,8 +1010,8 @@ void CHardwareMonitor::FetchUnixDisk()
 			char dname[200];
 			char suse[30];
 			char smountpoint[300];
-			long long numblock, usedblocks, availblocks;
-			int ret = sscanf(ittDF.c_str(), "%s\t%lld\t%lld\t%lld\t%s\t%s\n", dname, &numblock, &usedblocks, &availblocks, suse, smountpoint);
+			int64_t numblock, usedblocks, availblocks;
+			int ret = sscanf(ittDF.c_str(), "%s\t%" PRId64 "\t%" PRId64 "\t%" PRId64 "\t%s\t%s\n", dname, &numblock, &usedblocks, &availblocks, suse, smountpoint);
 			if (ret == 6)
 			{
 				auto it = _dmounts_.find(dname);
@@ -1073,7 +1100,7 @@ void CHardwareMonitor::CheckForOnboardSensors()
 	Debug(DEBUG_NORM,"Checking for onboard sensors");
 
 #ifdef WIN32
-	Debug(DEBUG_NORM, "Detecting onboard sensors on Windows not supported this way! (But through openhardwaremonitor.org and WMI)");
+	Debug(DEBUG_NORM, "Detecting onboard sensors on Windows not supported this way! (But through Libre Hardware Monitor or Open Hardware Monitor and WMI)");
 	return;
 #endif
 

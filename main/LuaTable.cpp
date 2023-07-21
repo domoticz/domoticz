@@ -65,7 +65,7 @@ void CLuaTable::AddNumber(std::string Label, long double Value)
 	m_luatable.push_back(tableEntry);
 }
 
-void CLuaTable::AddInteger(std::string Label, long long Value)
+void CLuaTable::AddInteger(std::string Label, int64_t Value)
 {
 	_tEntry tableEntry;
 	tableEntry.label_type = TYPE_VALUE_LABEL;
@@ -75,7 +75,7 @@ void CLuaTable::AddInteger(std::string Label, long long Value)
 	m_luatable.push_back(tableEntry);
 }
 
-void CLuaTable::AddInteger(long long Index, long long Value)
+void CLuaTable::AddInteger(int64_t Index, int64_t Value)
 {
 	_tEntry tableEntry;
 	tableEntry.label_type = TYPE_VALUE_INDEX;
@@ -86,7 +86,7 @@ void CLuaTable::AddInteger(long long Index, long long Value)
 	m_luatable.push_back(tableEntry);
 }
 
-void CLuaTable::AddString(long long Index, std::string Value)
+void CLuaTable::AddString(int64_t Index, std::string Value)
 {
 	_tEntry tableEntry;
 	tableEntry.label_type = TYPE_VALUE_INDEX;
@@ -97,7 +97,7 @@ void CLuaTable::AddString(long long Index, std::string Value)
 	m_luatable.push_back(tableEntry);
 }
 
-void CLuaTable::AddNumber(long long Index, long double Value)
+void CLuaTable::AddNumber(int64_t Index, long double Value)
 {
 	_tEntry tableEntry;
 	tableEntry.label_type = TYPE_VALUE_INDEX;
@@ -108,7 +108,7 @@ void CLuaTable::AddNumber(long long Index, long double Value)
 	m_luatable.push_back(tableEntry);
 }
 
-void CLuaTable::AddBool(long long Index, bool Value)
+void CLuaTable::AddBool(int64_t Index, bool Value)
 {
 	_tEntry tableEntry;
 	tableEntry.label_type = TYPE_VALUE_INDEX;
@@ -119,7 +119,7 @@ void CLuaTable::AddBool(long long Index, bool Value)
 	m_luatable.push_back(tableEntry);
 }
 
-void CLuaTable::OpenSubTableEntry(long long Index, int NrCols, int NrRows)
+void CLuaTable::OpenSubTableEntry(int64_t Index, int NrCols, int NrRows)
 {
 	_tEntry tableEntry;
 	tableEntry.label_type = TYPE_SUBTABLE_OPEN_INDEX;

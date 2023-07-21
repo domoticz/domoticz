@@ -40,24 +40,26 @@ return {
 					mode = mode .. "&until=" .. untilDate
 				 end
 				local url = domoticz.settings['Domoticz url'] ..
-					"/json.htm?type=setused&idx=" .. device.id ..
+					"/json.htm?type=command&param=setused&idx=" .. device.id ..
 					"&setpoint=&state=" .. state ..
 					"&mode=" .. mode ..
 					"&used=true"
 				return domoticz.openURL(url)
 			end
 		elseif device.deviceSubType == "Relay" then
-			device.state = device._state == 'Off' and 'Off' or 'On'
-			if device.state == 'Off' then
-				device.level = 0
-			else
-				device.level = device._state:match('%d+') or 100
-			end
-			device.active = device.state ~= 'Off'
+			device.state = device._state == 0 and 'Off' or 'On'
+			device.level = device._state / 2
+			device.active = device.state ~= 'Off'		
 		else
 			if device.deviceType == 'Heating' and device.deviceSubType == 'Evohome' then
-				device._state = data.data._state
-				device.mode = data.data._state
+				if data.data._state == nil then
+					device.state = device.rawData[2]
+					device.mode = tostring(device.rawData[3])
+				else
+					device._state = data.data._state
+					device.mode = data.data._state
+				
+				end
 			else
 				device.state = device.rawData[2]
 				device.mode = tostring(device.rawData[3])

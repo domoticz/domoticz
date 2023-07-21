@@ -3,10 +3,11 @@
 #include "MQTTAutoDiscover.h"
 #include "../main/json_helper.h"
 #include "../main/Helper.h"
-#include "../main/localtime_r.h"
+#include "../main/HTMLSanitizer.h"
 #include "../main/Logger.h"
 #include "../main/mainworker.h"
 #include "../main/SQLHelper.h"
+#include "../main/WebServer.h"
 #include "../notifications/NotificationHelper.h"
 #include <iostream>
 
@@ -15,13 +16,13 @@ std::vector<std::string> allowed_components = {
 		"button",
 		"climate",
 		"cover",
-		"device_automation",
+		//"device_automation",
 		"light",
 		"lock",
-		//		"number",
-				"select",
-				"sensor",
-				"switch"
+		"number",
+		"select",
+		"sensor",
+		"switch"
 };
 
 #define CLIMATE_MODE_UNIT 1
@@ -31,8 +32,6 @@ MQTTAutoDiscover::MQTTAutoDiscover(const int ID, const std::string& Name, const 
 	const std::string& CAfilenameExtra, const int TLS_Version)
 	: MQTT(ID, IPAddress, usIPPort, Username, Password, CAfilenameExtra, TLS_Version, (int)MQTTAutoDiscover::PT_none, std::string("Domoticz-MQTT-AutoDiscover") + GenerateUUID() + std::to_string(ID), true)
 {
-	m_allowed_components = std::vector<std::string>(allowed_components);
-
 	std::vector<std::string> strarray;
 	StringSplit(CAfilenameExtra, ";", strarray);
 	if (!strarray.empty())
@@ -57,7 +56,7 @@ void MQTTAutoDiscover::on_message(const struct mosquitto_message* message)
 
 	try
 	{
-		Debug(DEBUG_HARDWARE, "Topic: %s, Message: %s", topic.c_str(), qMessage.c_str());
+		Debug(DEBUG_HARDWARE, "topic: %s, message: %s", topic.c_str(), qMessage.c_str());
 
 		if (qMessage.empty())
 			return;
@@ -93,7 +92,7 @@ void MQTTAutoDiscover::on_message(const struct mosquitto_message* message)
 	}
 	catch (const std::exception& e)
 	{
-		Log(LOG_ERROR, "Exception (on_message): %s! (topic: %s/message: %s)", e.what(), topic.c_str(), qMessage.c_str());
+		Log(LOG_ERROR, "Exception (on_message): %s! (topic: %s, message: %s)", e.what(), topic.c_str(), qMessage.c_str());
 		return;
 	}
 }
@@ -181,6 +180,15 @@ void MQTTAutoDiscover::CleanValueTemplate(std::string& szValueTemplate)
 			}
 		}
 	}
+	else if (szValueTemplate.find("(") == 0)
+	{
+		//strip calculations (until we are going to support it)
+		szValueTemplate = szValueTemplate.substr(1);
+		szValueTemplate = szValueTemplate.substr(0, szValueTemplate.find("/"));
+		szValueTemplate = szValueTemplate.substr(0, szValueTemplate.find("+"));
+		szValueTemplate = szValueTemplate.substr(0, szValueTemplate.find("-"));
+		stdstring_trim(szValueTemplate);
+	}
 }
 
 std::string MQTTAutoDiscover::GetValueTemplateKey(const std::string& szValueTemplate)
@@ -252,7 +260,14 @@ std::string MQTTAutoDiscover::GetValueFromTemplate(Json::Value root, std::string
 			}
 			if (root.isObject())
 				return "";
-			std::string retVal = root.asString();
+			std::string retVal;
+			if (root.isDouble())
+			{
+				//until we have c++20 where we can use std::format
+				retVal = std_format("%g", root.asDouble());
+			}
+			else
+				retVal = root.asString();
 			if (value_options_.find(retVal) != value_options_.end())
 			{
 				retVal = value_options_[retVal];
@@ -807,6 +822,8 @@ void MQTTAutoDiscover::on_auto_discovery_message(const struct mosquitto_message*
 			pSensor->state_topic = root["stat_t"].asString();
 		else if (!root["json_attributes_topic"].empty())
 			pSensor->state_topic = root["json_attributes_topic"].asString();
+		else if (!root["topic"].empty())
+			pSensor->state_topic = root["topic"].asString();
 
 		if (!root["command_topic"].empty())
 			pSensor->command_topic = root["command_topic"].asString();
@@ -895,9 +912,9 @@ void MQTTAutoDiscover::on_auto_discovery_message(const struct mosquitto_message*
 		else if (!root["pl_on"].empty())
 			pSensor->payload_on = root["pl_on"].asString();
 		if (!root["payload"].empty())
-			pSensor->payload_on = root["payload_on"].asString();
+			pSensor->payload_on = root["payload"].asString();
 		if (!root["pl"].empty())
-			pSensor->payload_on = root["payload_on"].asString();
+			pSensor->payload_on = root["pl"].asString();
 		if (!root["payload_off"].empty())
 			pSensor->payload_off = root["payload_off"].asString();
 		else if (!root["pl_off"].empty())
@@ -1101,6 +1118,10 @@ void MQTTAutoDiscover::on_auto_discovery_message(const struct mosquitto_message*
 			pSensor->mode_command_topic = root["mode_command_topic"].asString();
 		if (!root["mode_cmd_t"].empty())
 			pSensor->mode_command_topic = root["mode_cmd_t"].asString();
+		if (!root["mode_command_template"].empty())
+			pSensor->mode_command_template = root["mode_command_template"].asString();
+		if (!root["mode_cmd_tpl"].empty())
+			pSensor->mode_command_template = root["mode_cmd_tpl"].asString();
 		if (!root["mode_state_topic"].empty())
 			pSensor->mode_state_topic = root["mode_state_topic"].asString();
 		if (!root["mode_stat_t"].empty())
@@ -1174,13 +1195,23 @@ void MQTTAutoDiscover::on_auto_discovery_message(const struct mosquitto_message*
 			pSensor->preset_mode_value_template = root["pr_mode_val_tpl"].asString();
 
 		CleanValueTemplate(pSensor->mode_state_template);
+		CleanValueTemplate(pSensor->mode_command_template);
 		CleanValueTemplate(pSensor->temperature_state_template);
 		CleanValueTemplate(pSensor->current_temperature_template);
 		CleanValueTemplate(pSensor->preset_mode_value_template);
+		CleanValueTemplate(pSensor->preset_mode_command_template);
 
 		FixCommandTopicStateTemplate(pSensor->mode_command_topic, pSensor->mode_state_template);
 		FixCommandTopicStateTemplate(pSensor->temperature_command_topic, pSensor->temperature_command_template);
 		FixCommandTopicStateTemplate(pSensor->preset_mode_command_topic, pSensor->preset_mode_value_template);
+
+		//number (some configs use strings instead of numbers)
+		if (!root["min"].empty())
+			pSensor->number_min = root["min"].isDouble() ? root["min"].asDouble() : atof(root["min"].asString().c_str());
+		if (!root["max"].empty())
+			pSensor->number_max = root["max"].isDouble() ? root["max"].asDouble() : atof(root["max"].asString().c_str());
+		if (!root["step"].empty())
+			pSensor->number_step = root["step"].isDouble() ? root["step"].asDouble() : atof(root["step"].asString().c_str());
 
 		if (!root["qos"].empty())
 			pSensor->qos = atoi(root["qos"].asString().c_str());
@@ -1250,6 +1281,23 @@ void MQTTAutoDiscover::on_auto_discovery_message(const struct mosquitto_message*
 		{
 			handle_auto_discovery_button(pSensor, message);
 		}
+		else if (pSensor->component_type == "number")
+		{
+			if (pSensor->state_topic.empty())
+			{
+				Log(LOG_ERROR, "A number should have a state_topic!");
+				return;
+			}
+		}
+		else if (pSensor->component_type == "device_automation")
+		{
+			if (pSensor->state_topic.empty())
+			{
+				Log(LOG_ERROR, "device_automation should have a topic!");
+				return;
+			}
+		}
+		
 
 
 		//Check if we want to subscribe to this sensor
@@ -1267,6 +1315,8 @@ void MQTTAutoDiscover::on_auto_discovery_message(const struct mosquitto_message*
 				|| (pSensor->component_type == "cover")
 				|| (pSensor->component_type == "climate")
 				|| (pSensor->component_type == "button")
+				|| (pSensor->component_type == "number")
+				|| (pSensor->component_type == "device_automation")
 				);
 
 		if (bDoSubscribe)
@@ -1283,11 +1333,11 @@ void MQTTAutoDiscover::on_auto_discovery_message(const struct mosquitto_message*
 	}
 	catch (const std::exception& e)
 	{
-		Log(LOG_ERROR, "MQTT_Discovery (on_auto_discovery_message): Error: %s! (topic: %s/message: %s", e.what(), org_topic.c_str(), qMessage.c_str());
+		Log(LOG_ERROR, "MQTT_Discovery (on_auto_discovery_message): Error: %s! (topic: %s, message: %s", e.what(), org_topic.c_str(), qMessage.c_str());
 	}
 	return;
 disovery_invaliddata:
-	Log(LOG_ERROR, "MQTT_Discovery: Invalid/Unhandled data received! (Topic: %s, Message: %s)", org_topic.c_str(), qMessage.c_str());
+	Log(LOG_ERROR, "MQTT_Discovery: Invalid/Unhandled data received! (topic: %s, message: %s)", org_topic.c_str(), qMessage.c_str());
 }
 
 void MQTTAutoDiscover::ApplySignalLevelDevice(const _tMQTTASensor* pSensor)
@@ -1413,6 +1463,8 @@ void MQTTAutoDiscover::handle_auto_discovery_sensor_message(const struct mosquit
 				handle_auto_discovery_lock(pSensor, message);
 			else if (pSensor->component_type == "button")
 				handle_auto_discovery_button(pSensor, message);
+			else if (pSensor->component_type == "number")
+				handle_auto_discovery_number(pSensor, message);
 		}
 		else if (pSensor->availability_topic == topic)
 		{
@@ -1457,7 +1509,7 @@ void MQTTAutoDiscover::handle_auto_discovery_availability(_tMQTTASensor* pSensor
 	}
 }
 
-void MQTTAutoDiscover::GuessSensorTypeValue(const _tMQTTASensor* pSensor, uint8_t& devType, uint8_t& subType, std::string& szOptions, int& nValue, std::string& sValue)
+bool MQTTAutoDiscover::GuessSensorTypeValue(const _tMQTTASensor* pSensor, uint8_t& devType, uint8_t& subType, std::string& szOptions, int& nValue, std::string& sValue)
 {
 	devType = pTypeGeneral;
 	subType = sTypeCustom;
@@ -1531,6 +1583,13 @@ void MQTTAutoDiscover::GuessSensorTypeValue(const _tMQTTASensor* pSensor, uint8_
 		subType = sTypeElectric;
 
 		float fUsage = static_cast<float>(atof(pSensor->last_value.c_str()));
+
+		if (fUsage < -1000000)
+		{
+			//Way to negative, probably a bug in the sensor
+			return false;
+		}
+
 		_tMQTTASensor* pkWhSensor = get_auto_discovery_sensor_unit(pSensor, "kwh");
 		if (pkWhSensor)
 		{
@@ -1553,6 +1612,13 @@ void MQTTAutoDiscover::GuessSensorTypeValue(const _tMQTTASensor* pSensor, uint8_
 
 		float fUsage = 0;
 		float fkWh = static_cast<float>(atof(pSensor->last_value.c_str())) * 1000.0F;
+
+		if (fkWh < -1000000)
+		{
+			//Way to negative, probably a bug in the sensor
+			return false;
+		}
+
 		if (fkWh == 0)
 		{
 			//could be the first every value received.
@@ -1568,7 +1634,6 @@ void MQTTAutoDiscover::GuessSensorTypeValue(const _tMQTTASensor* pSensor, uint8_
 					fkWh = static_cast<float>(atof(strarray[1].c_str()));
 				}
 			}
-
 		}
 
 		_tMQTTASensor* pWattSensor = get_auto_discovery_sensor_WATT_unit(pSensor);
@@ -1722,7 +1787,6 @@ void MQTTAutoDiscover::GuessSensorTypeValue(const _tMQTTASensor* pSensor, uint8_
 				pRainSensor->sValue = std_format("%d;%.1f", Rainrate, TotalRain * 1000.0F);
 				mosquitto_message xmessage;
 				xmessage.retain = false;
-				// Trigger extra update for the kWh sensor with the new W value
 				handle_auto_discovery_sensor(pRainSensor, &xmessage);
 			}
 		}
@@ -1764,7 +1828,7 @@ void MQTTAutoDiscover::GuessSensorTypeValue(const _tMQTTASensor* pSensor, uint8_
 
 		m_sql.GetAddjustment(m_HwdID, pSensor->unique_id.c_str(), pSensor->devUnit, devType, subType, AddjValue, AddjMulti);
 		temp += AddjValue;
-		sValue = std_format("%.1f", temp);
+		sValue = std_format("%.2f", temp);
 	}
 	else if (szUnit == "%")
 	{
@@ -1808,7 +1872,7 @@ void MQTTAutoDiscover::GuessSensorTypeValue(const _tMQTTASensor* pSensor, uint8_
 
 	if ((devType == pTypeGeneral) && (subType == sTypeCustom) && pSensor->szOptions.empty())
 		szOptions = "??";
-
+	return true;
 }
 
 MQTTAutoDiscover::_tMQTTASensor* MQTTAutoDiscover::get_auto_discovery_sensor_unit(const _tMQTTASensor* pSensor, const std::string& szMeasurementUnit)
@@ -1850,8 +1914,8 @@ MQTTAutoDiscover::_tMQTTASensor* MQTTAutoDiscover::get_auto_discovery_sensor_uni
 				// Check the "match length" of the UID of the DEVICE with the UID of the SENSOR to get the correct subdevice in case the are multiple
 				auto ittUnID1 = pSensor->unique_id.begin();
 				auto ittUnID2 = pTmpDeviceSensor->unique_id.begin();
-				int iTlen = (int)(pSensor->unique_id.size() < pTmpDeviceSensor->unique_id.size()) ? pSensor->unique_id.size() : pTmpDeviceSensor->unique_id.size();
-				for (int i = 1; i < iTlen; ++i)
+				size_t iTlen = (pSensor->unique_id.size() < pTmpDeviceSensor->unique_id.size()) ? pSensor->unique_id.size() : pTmpDeviceSensor->unique_id.size();
+				for (int i = 1; i < (int)iTlen; ++i)
 				{
 					if (*++ittUnID1 != *++ittUnID2)
 					{
@@ -1899,7 +1963,8 @@ MQTTAutoDiscover::_tMQTTASensor* MQTTAutoDiscover::get_auto_discovery_sensor_uni
 			int nValue = 0;
 			std::string sValue;
 
-			GuessSensorTypeValue(pDeviceSensor, devsensor_devType, devsensor_subType, szOptions, nValue, sValue);
+			if (!GuessSensorTypeValue(pDeviceSensor, devsensor_devType, devsensor_subType, szOptions, nValue, sValue))
+				return nullptr;
 
 			if (devsensor_devType == devType)
 			{
@@ -1990,6 +2055,27 @@ void MQTTAutoDiscover::handle_auto_discovery_battery(_tMQTTASensor* pSensor, con
 	}
 }
 
+void MQTTAutoDiscover::handle_auto_discovery_number(_tMQTTASensor* pSensor, const struct mosquitto_message* message)
+{
+	if (pSensor->last_value.empty())
+		return;
+	if (!is_number(pSensor->last_value))
+		return;
+
+	return;
+	int iValue = atoi(pSensor->last_value.c_str());
+
+	for (auto& itt : m_discovered_sensors)
+	{
+		_tMQTTASensor* pDevSensor = &itt.second;
+		if (pDevSensor->device_identifiers == pSensor->device_identifiers)
+		{
+			//nothing to be done here
+			//pDevSensor->number_current = iValue;
+		}
+	}
+}
+
 void MQTTAutoDiscover::handle_auto_discovery_sensor(_tMQTTASensor* pSensor, const struct mosquitto_message* message)
 {
 	if (
@@ -2041,7 +2127,8 @@ void MQTTAutoDiscover::handle_auto_discovery_sensor(_tMQTTASensor* pSensor, cons
 	bool bIsHum = false;
 	bool bIsBaro = false;
 
-	GuessSensorTypeValue(pSensor, pSensor->devType, pSensor->subType, pSensor->szOptions, pSensor->nValue, pSensor->sValue);
+	if (!GuessSensorTypeValue(pSensor, pSensor->devType, pSensor->subType, pSensor->szOptions, pSensor->nValue, pSensor->sValue))
+		return;
 
 	if (
 		(pSensor->devType == pTypeTEMP)
@@ -2142,7 +2229,7 @@ void MQTTAutoDiscover::handle_auto_discovery_sensor(_tMQTTASensor* pSensor, cons
 			}
 			else if (pressure >= 1029)
 				nforecast = wsbaroforecast_sunny;
-			sValue = std_format("%.1f;%d;%d;%.1f;%d", temp, humidity, Get_Humidity_Level(humidity), pressure, nforecast);
+			sValue = std_format("%.2f;%d;%d;%.1f;%d", temp, humidity, Get_Humidity_Level(humidity), pressure, nforecast);
 		}
 		else if (pTempSensor && pHumSensor)
 		{
@@ -2155,7 +2242,7 @@ void MQTTAutoDiscover::handle_auto_discovery_sensor(_tMQTTASensor* pSensor, cons
 			devType = pTypeTEMP_HUM;
 			subType = sTypeTH1;
 
-			sValue = std_format("%.1f;%d;%d", temp, humidity, Get_Humidity_Level(humidity));
+			sValue = std_format("%.2f;%d;%d", temp, humidity, Get_Humidity_Level(humidity));
 		}
 		else
 		{
@@ -2916,26 +3003,31 @@ void MQTTAutoDiscover::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 		{
 			pSensor->devUnit = 1;
 			switchType = STYPE_PushOn;
+			szSwitchCmd = "on";
 		}
 		else if (pSensor->last_value == "off")
 		{
 			pSensor->devUnit = 2;
 			switchType = STYPE_PushOff;
+			szSwitchCmd = "off";
 		}
 		else if (pSensor->last_value == "brightness_up")
 		{
 			pSensor->devUnit = 3;
 			switchType = STYPE_PushOn;
+			szSwitchCmd = "on";
 		}
 		else if (pSensor->last_value == "brightness_down")
 		{
 			pSensor->devUnit = 4;
 			switchType = STYPE_PushOff;
+			szSwitchCmd = "off";
 		}
 		else {
 			//Assume action trigger
-			pSensor->devUnit = Crc8(0, (uint8_t*)pSensor->last_value.c_str(), pSensor->last_value.size());
+			pSensor->devUnit = Crc8_strMQ(0, (uint8_t*)pSensor->last_value.c_str(), pSensor->last_value.size());
 			switchType = STYPE_PushOn;
+			szSwitchCmd = "on";
 		}
 		szSensorName += "_" + pSensor->last_value;
 	}
@@ -3477,8 +3569,8 @@ bool MQTTAutoDiscover::SendSwitchCommand(const std::string& DeviceID, const std:
 					}
 					else
 					{
-						root["color"]["h"] = hsb[0];
-						root["color"]["s"] = hsb[1];
+						root["color"]["h"] = hsb[0] * 360.0F;
+						root["color"]["s"] = hsb[1] * 100.0F;
 						root["brightness"] = hsb[2] * pSensor->brightness_scale;
 					}
 				}
@@ -3606,7 +3698,9 @@ bool MQTTAutoDiscover::SendSwitchCommand(const std::string& DeviceID, const std:
 				if (iLevel < (int)pSensor->climate_modes.size())
 					newState = pSensor->climate_modes.at(iLevel);
 				szCommandTopic = pSensor->mode_command_topic;
-				if (!pSensor->mode_state_template.empty())
+				if (!pSensor->mode_command_template.empty())
+					state_template = pSensor->mode_command_template;
+				else if (!pSensor->mode_state_template.empty())
 					state_template = pSensor->mode_state_template;
 			}
 			else if ((!pSensor->preset_modes.empty()) && (Unit == 2))
@@ -3954,3 +4048,130 @@ bool MQTTAutoDiscover::SetSetpoint(const std::string& DeviceID, float Temp)
 	return true;
 }
 
+void MQTTAutoDiscover::GetConfig(Json::Value& root)
+{
+	int ii = 0;
+	for (auto& itt : m_discovered_sensors)
+	{
+		if (itt.second.component_type == "number")
+		{
+			root["result"][ii]["idx"] = itt.first;
+
+			_tMQTTADevice* pDevice = &m_discovered_devices[itt.second.device_identifiers];
+			root["result"][ii]["dev_name"] = (pDevice != nullptr) ? pDevice->name : "?";
+			root["result"][ii]["name"] = itt.second.name;
+			root["result"][ii]["value"] = itt.second.last_value;
+			root["result"][ii]["unit"] = itt.second.unit_of_measurement;
+			root["result"][ii]["min"] = std_format("%g", itt.second.number_min);
+			root["result"][ii]["max"] = std_format("%g", itt.second.number_max);
+			root["result"][ii]["step"] = std_format("%g", itt.second.number_step);
+			ii++;
+		}
+	}
+}
+
+bool MQTTAutoDiscover::UpdateNumber(const std::string& idx, const std::string& sValue)
+{
+	for (auto& itt : m_discovered_sensors)
+	{
+		if (itt.first == idx)
+		{
+			double dValue = atof(sValue.c_str());
+			if (dValue < itt.second.number_min || dValue > itt.second.number_max)
+				return false;
+			SendMessage(itt.second.command_topic, sValue);
+/*
+			std::string szSendValue = std::to_string(nValue);
+			if (!itt.second.value_template.empty())
+			{
+				std::string szKey = GetValueTemplateKey(itt.second.value_template);
+				if (!szKey.empty())
+				{
+					Json::Value root;
+					root[szKey] = std::to_string(nValue);
+					szSendValue = JSonToRawString(root);
+				}
+				else
+				{
+					Log(LOG_ERROR, "number device unhandled value_value_template (%s/%s)", itt.second.unique_id.c_str(), itt.second.name.c_str());
+					return false;
+				}
+			}
+			else
+				szSendValue = std::to_string(nValue);
+			SendMessage(itt.second.command_topic, szSendValue);
+*/
+			return true;
+		}
+	}
+	return false;
+}
+
+//Webserver helpers
+namespace http {
+	namespace server {
+		void CWebServer::Cmd_MQTTAD_GetConfig(WebEmSession& session, const request& req, Json::Value& root)
+		{
+			if (session.rights != 2)
+			{
+				session.reply_status = reply::forbidden;
+				return; //Only admin user allowed
+			}
+
+			std::string hwid = request::findValue(&req, "idx");
+			if (hwid.empty())
+				return;
+
+			CDomoticzHardwareBase* pHardware = m_mainworker.GetHardware(std::stoi(hwid));
+			if (pHardware == nullptr)
+				return;
+			if (pHardware->HwdType != HTYPE_MQTTAutoDiscovery)
+				return;
+
+			root["status"] = "OK";
+			root["title"] = "GetMQTTConfig";
+
+			MQTTAutoDiscover* pMQTT = reinterpret_cast<MQTTAutoDiscover*>(pHardware);
+			pMQTT->GetConfig(root);
+		}
+
+		void CWebServer::Cmd_MQTTAD_UpdateNumber(WebEmSession& session, const request& req, Json::Value& root)
+		{
+			if (session.rights != 2)
+			{
+				session.reply_status = reply::forbidden;
+				return; //Only admin user allowed
+			}
+
+			std::string hwid = request::findValue(&req, "idx");
+			std::string devid = HTMLSanitizer::Sanitize(CURLEncode::URLDecode(request::findValue(&req, "name")));
+			std::string value = request::findValue(&req, "value");
+			if (
+				hwid.empty()
+				|| devid.empty()
+				|| value.empty()
+				)
+				return;
+
+			CDomoticzHardwareBase* pHardware = m_mainworker.GetHardware(std::stoi(hwid));
+			if (pHardware == nullptr)
+				return;
+			if (pHardware->HwdType != HTYPE_MQTTAutoDiscovery)
+				return;
+
+			MQTTAutoDiscover* pMQTT = reinterpret_cast<MQTTAutoDiscover*>(pHardware);
+			try
+			{
+				if (pMQTT->UpdateNumber(devid, value))
+				{
+					root["title"] = "GetMQTTUpdateNumber";
+					root["status"] = "OK";
+				}
+			}
+			catch (const std::exception&)
+			{
+
+			}
+		}
+	} // namespace server
+} // namespace http

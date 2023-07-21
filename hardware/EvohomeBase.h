@@ -775,15 +775,10 @@ class CEvohomeBase : public CDomoticzHardwareBase
 	static const char *GetControllerModeName(uint8_t nControllerMode);
 	static const char *GetWebAPIModeName(uint8_t nControllerMode);
 	static const char *GetZoneModeName(uint8_t nZoneMode);
-
-	static void LogDate();
-	static void Log(bool bDebug, int nLogLevel, const char *format, ...)
 #ifdef __GNUC__
 		__attribute__((format(printf, 3, 4)))
 #endif
 		;
-	static void Log(const char *szMsg, CEvohomeMsg &msg);
-
       private:
 	void SetControllerID(unsigned int nID);
 	void SetGatewayID(unsigned int nID);

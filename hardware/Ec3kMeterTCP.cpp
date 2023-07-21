@@ -3,7 +3,6 @@
 #include "../main/Logger.h"
 #include "../main/Helper.h"
 #include <iostream>
-#include "../main/localtime_r.h"
 //#include "../main/mainworker.h"
 #include "../hardware/hardwaretypes.h"
 #include "../main/json_helper.h"
@@ -14,22 +13,22 @@
   Extract readings from the json messages posted by the
   Energy count 3000/ NETPBSEM4 / La crosse energy meters
   collected by the EC3K software originally from
-        https://github.com/avian2/ec3k
+		https://github.com/avian2/ec3k
   The required server is added to the fork at:
 	https://github.com/llagendijk/ec3k
   The server version of this software sends json messages
   with the following contents:
 
   {
-    "data": {
-      "energy": 52810582,
-      "power_current": 34.4,
-      "reset_counter": 1,
-      "time_total": 1356705,
-      "time_on": 1356613,
-      "power_max": 42.2
-    },
-    "id": "e1a2"
+	"data": {
+	  "energy": 52810582,
+	  "power_current": 34.4,
+	  "reset_counter": 1,
+	  "time_total": 1356705,
+	  "time_on": 1356613,
+	  "power_max": 42.2
+	},
+	"id": "e1a2"
   }
 */
 
@@ -43,11 +42,11 @@
 #define TIME_TOTAL "time_total"
 #define RESET_COUNT "reset_counter"
 
-Ec3kMeterTCP::Ec3kMeterTCP(const int ID, const std::string &IPAddress, const unsigned short usIPPort) :
+Ec3kMeterTCP::Ec3kMeterTCP(const int ID, const std::string& IPAddress, const unsigned short usIPPort) :
 	m_szIPAddress(IPAddress)
 {
-	m_HwdID=ID;
-	m_usIPPort=usIPPort;
+	m_HwdID = ID;
+	m_usIPPort = usIPPort;
 	m_retrycntr = RETRY_DELAY;
 	m_limiter = new(Ec3kLimiter);
 }
@@ -57,8 +56,8 @@ bool Ec3kMeterTCP::StartHardware()
 	RequestStart();
 
 	//force connect the next first time
-	m_retrycntr=RETRY_DELAY;
-	m_bIsStarted=true;
+	m_retrycntr = RETRY_DELAY;
+	m_bIsStarted = true;
 
 	//Start worker thread
 	m_thread = std::make_shared<std::thread>([this] { Do_Work(); });
@@ -80,43 +79,43 @@ bool Ec3kMeterTCP::StopHardware()
 	{
 		//Don't throw from a Stop command
 	}
-	m_bIsStarted=false;
+	m_bIsStarted = false;
 	return true;
 }
 
 void Ec3kMeterTCP::OnConnect()
 {
-	Log(LOG_STATUS,"connected to: %s:%d", m_szIPAddress.c_str(), m_usIPPort);
-	m_bIsStarted=true;
+	Log(LOG_STATUS, "connected to: %s:%d", m_szIPAddress.c_str(), m_usIPPort);
+	m_bIsStarted = true;
 
 	sOnConnected(this);
 }
 
 void Ec3kMeterTCP::OnDisconnect()
 {
-	Log(LOG_STATUS,"disconnected");
+	Log(LOG_STATUS, "disconnected");
 }
 
 void Ec3kMeterTCP::Do_Work()
 {
 	int sec_counter = 0;
-	connect(m_szIPAddress,m_usIPPort);
+	connect(m_szIPAddress, m_usIPPort);
 	while (!IsStopRequested(1000))
 	{
 		sec_counter++;
 
-		if (sec_counter  % 12 == 0) {
+		if (sec_counter % 12 == 0) {
 			m_LastHeartbeat = mytime(nullptr);
 		}
 	}
 	terminate();
 
-	Log(LOG_STATUS,"TCP/IP Worker stopped...");
+	Log(LOG_STATUS, "TCP/IP Worker stopped...");
 }
 
-void Ec3kMeterTCP::OnData(const unsigned char *pData, size_t length)
+void Ec3kMeterTCP::OnData(const unsigned char* pData, size_t length)
 {
-	ParseData(pData,length);
+	ParseData(pData, (int)length);
 }
 
 void Ec3kMeterTCP::OnError(const boost::system::error_code& error)
@@ -152,10 +151,10 @@ bool Ec3kMeterTCP::WriteToHardware(const char* /*pdata*/, const unsigned char /*
 }
 
 
-void Ec3kMeterTCP::ParseData(const unsigned char *pData, int Len)
+void Ec3kMeterTCP::ParseData(const unsigned char* pData, int Len)
 {
 	std::string buffer;
-	buffer.assign((char *)pData, Len);
+	buffer.assign((char*)pData, Len);
 
 	// Validty check on the received json
 

@@ -3,9 +3,7 @@
 #include <string>
 #include <mutex>
 
-#include "concurrent_queue.h"
 #include "NotificationObserver.h"
-#include "StoppableTask.h"
 
 class CNotificationSystem: public StoppableTask
 {
@@ -43,7 +41,7 @@ private:
 	void QueueThread();
 	void UnlockNotificationQueueThread();
 
-	volatile bool m_stoprequested;
+	volatile bool m_stoprequested = false;
 	std::mutex m_mutex;
 	std::vector<CNotificationObserver*> m_notifiers;
 	concurrent_queue<_tNotificationQueue> m_notificationqueue;

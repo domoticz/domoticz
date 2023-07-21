@@ -9,8 +9,8 @@
 #include "../main/Logger.h"
 #include "../main/RFXtrx.h"
 #include "../main/Helper.h"
-#include "../main/localtime_r.h"
 #include "../main/mainworker.h"
+#include "../main/SQLHelper.h"
 
 #include <set>
 #include <cmath>
@@ -20,7 +20,7 @@
 
 #define round(a) ( int ) ( a + .5 )
 
-C1Wire::C1Wire(const int ID, const int sensorThreadPeriod, const int switchThreadPeriod, const std::string &path)
+C1Wire::C1Wire(const int ID, const int sensorThreadPeriod, const int switchThreadPeriod, const std::string& path)
 	: m_system(nullptr)
 	, m_sensorThreadPeriod(sensorThreadPeriod)
 	, m_switchThreadPeriod(switchThreadPeriod)
@@ -46,16 +46,16 @@ void C1Wire::DetectSystem()
 	// see http://owfs.org/index.php?page=w1-project.
 	if (m_path.length() != 0)
 	{
-		m_system = new C1WireByOWFS(m_path);
+		m_system = new C1WireByOWFS(m_path, this);
 	}
 	else
 	{
 #ifdef WIN32
 		if (C1WireForWindows::IsAvailable())
-			m_system = new C1WireForWindows();
+			m_system = new C1WireForWindows(this);
 #else // WIN32
 		if (C1WireByKernel::IsAvailable())
-			m_system = new C1WireByKernel();
+			m_system = new C1WireByKernel(this);
 #endif // WIN32
 	}
 }
@@ -141,13 +141,13 @@ void C1Wire::SensorThread()
 	if (m_sensors.empty())
 		return; // quit if no sensors
 
-	pollPeriod = m_sensorThreadPeriod / m_sensors.size();
+	pollPeriod = (int)(m_sensorThreadPeriod / m_sensors.size());
 
 	if (pollPeriod > 1000)
 	{
 		pollIterations = pollPeriod / 1000;
 		pollPeriod = 1000;
-		afterIterations = (m_sensorThreadPeriod / 1000) - (pollIterations*m_sensors.size());
+		afterIterations = (int)((m_sensorThreadPeriod / 1000) - (pollIterations * m_sensors.size()));
 	}
 
 	// initial small delay
@@ -161,7 +161,7 @@ void C1Wire::SensorThread()
 		}
 
 		// Parse our devices
-		for (const auto &device : m_sensors)
+		for (const auto& device : m_sensors)
 		{
 			if (IsStopRequested(0))
 				break;
@@ -276,9 +276,9 @@ void C1Wire::SwitchThread()
 }
 
 
-bool C1Wire::WriteToHardware(const char *pdata, const unsigned char /*length*/)
+bool C1Wire::WriteToHardware(const char* pdata, const unsigned char /*length*/)
 {
-	const tRBUF *pSen = reinterpret_cast<const tRBUF*>(pdata);
+	const tRBUF* pSen = reinterpret_cast<const tRBUF*>(pdata);
 
 	if (!m_system)
 		return false;//no 1-wire support
@@ -303,13 +303,16 @@ void C1Wire::BuildSensorList() {
 		return;
 
 	std::vector<_t1WireDevice> devices;
+	int n1wireVersion = 0;
 
-	_log.Debug(DEBUG_HARDWARE, "1-Wire: Searching sensors");
+	Debug(DEBUG_HARDWARE, "1-Wire: Searching sensors");
 
 	m_sensors.clear();
 	m_system->GetDevices(devices);
 
-	for (const auto &device : devices)
+	if (!m_sql.GetPreferencesVar("1-Wire-version", n1wireVersion)) n1wireVersion = 0;
+
+	for (const auto& device : devices)
 	{
 		switch (device.family)
 		{
@@ -319,6 +322,23 @@ void C1Wire::BuildSensorList() {
 		case Temperature_memory:
 		case programmable_resolution_digital_thermometer:
 		case Temperature_IO:
+		{
+			m_sensors.insert(device);
+
+			if (!n1wireVersion) {
+				// check if we have "old style" temperature devices, matching only two bytes of devid
+				unsigned char deviceIdByteArray[DEVICE_ID_SIZE] = { 0 };
+
+				DeviceIdToByteArray(device.devid, deviceIdByteArray);
+				uint16_t oldID = (deviceIdByteArray[0] << 8) | deviceIdByteArray[1];
+				uint16_t newID = ((deviceIdByteArray[0] ^ deviceIdByteArray[2] ^ deviceIdByteArray[4]) << 8) | (deviceIdByteArray[1] ^ deviceIdByteArray[3] ^ deviceIdByteArray[5]);
+
+				m_sql.safe_query("UPDATE DeviceStatus SET DeviceID='%d', Unit='%d' WHERE (HardwareID=='%d') AND (DeviceID=='%d') AND (Unit=='%d') AND (Type=='%d') AND (SubType=='%d')",
+					newID, newID & 0xff, m_HwdID, oldID, oldID & 0xff, pTypeTEMP, sTypeTEMP5);
+			}
+
+			break;
+		}
 		case Environmental_Monitors:
 		case _4k_ram_with_counter:
 		case quad_ad_converter:
@@ -330,6 +350,9 @@ void C1Wire::BuildSensorList() {
 		}
 	}
 	devices.clear();
+
+	m_sql.UpdatePreferencesVar("1-Wire-version", 1);
+
 }
 
 void C1Wire::BuildSwitchList() {
@@ -338,12 +361,12 @@ void C1Wire::BuildSwitchList() {
 
 	std::vector<_t1WireDevice> devices;
 
-	_log.Debug(DEBUG_HARDWARE, "1-Wire: Searching switches");
+	Debug(DEBUG_HARDWARE, "1-Wire: Searching switches");
 
 	m_switches.clear();
 	m_system->GetDevices(devices);
 
-	for (const auto &device : devices)
+	for (const auto& device : devices)
 	{
 		switch (device.family)
 		{
@@ -371,7 +394,7 @@ void C1Wire::PollSwitches()
 		return;
 
 	// Parse our devices (have to test if m_TaskSwitches.IsStopRequested because it can take some time in case of big networks)
-	for (const auto &device : m_switches)
+	for (const auto& device : m_switches)
 	{
 		// Manage families specificities
 		switch (device.family)
@@ -449,10 +472,12 @@ void C1Wire::ReportTemperature(const std::string& deviceId, const float temperat
 	if (temperature == -1000.0)
 		return;
 
-
 	unsigned char deviceIdByteArray[DEVICE_ID_SIZE] = { 0 };
 	DeviceIdToByteArray(deviceId, deviceIdByteArray);
-	uint16_t lID = (deviceIdByteArray[0] << 8) | deviceIdByteArray[1];
+
+	//XOR all bytes to ID instead of last two
+	//uint16_t lID = (deviceIdByteArray[0] << 8) | deviceIdByteArray[1];
+	uint16_t lID = ((deviceIdByteArray[0] ^ deviceIdByteArray[2] ^ deviceIdByteArray[4]) << 8) | (deviceIdByteArray[1] ^ deviceIdByteArray[3] ^ deviceIdByteArray[5]);
 
 	SendTempSensor(lID, 255, temperature, "Temperature");
 }
@@ -503,6 +528,9 @@ void C1Wire::ReportLightState(const std::string& deviceId, const uint8_t unit, c
 
 void C1Wire::ReportCounter(const std::string& deviceId, const int unit, const unsigned long counter)
 {
+	if (counter < 0)	//Detect NULL reads of DS2423 counter.
+		return;
+	
 	unsigned char deviceIdByteArray[DEVICE_ID_SIZE] = { 0 };
 	DeviceIdToByteArray(deviceId, deviceIdByteArray);
 
@@ -525,7 +553,7 @@ void C1Wire::ReportVoltage(const std::string& /*deviceId*/, const int unit, cons
 
 	tsen.RFXSENSOR.msg1 = (BYTE)(voltage / 256);
 	tsen.RFXSENSOR.msg2 = (BYTE)(voltage - (tsen.RFXSENSOR.msg1 * 256));
-	sDecodeRXMessage(this, (const unsigned char *)&tsen.RFXSENSOR, nullptr, 255, nullptr);
+	sDecodeRXMessage(this, (const unsigned char*)&tsen.RFXSENSOR, nullptr, 255, nullptr);
 }
 
 void C1Wire::ReportIlluminance(const std::string& deviceId, const float illuminescence)

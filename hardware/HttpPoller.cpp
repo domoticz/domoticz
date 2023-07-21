@@ -3,7 +3,6 @@
 #include "../main/Helper.h"
 #include "../main/Logger.h"
 #include "../main/SQLHelper.h"
-#include "../main/localtime_r.h"
 #include "../main/RFXtrx.h"
 #include "hardwaretypes.h"
 #include "../httpclient/HTTPClient.h"
@@ -48,7 +47,7 @@ void CHttpPoller::Init()
 
 bool CHttpPoller::WriteToHardware(const char* /*pdata*/, const unsigned char /*length*/)
 {
-	return false;
+	return true;
 }
 
 bool CHttpPoller::StartHardware()

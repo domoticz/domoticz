@@ -30,6 +30,7 @@
 #include "../main/Logger.h"
 
 extern std::string szAppVersion;
+extern bool bDoCachePages;
 
 #define ZIPREADBUFFERSIZE (8192)
 
@@ -188,8 +189,11 @@ bool request_handler::not_modified(const std::string &full_path, const request &
 	mInfo.mtime_support = true;
 	// propagate timestamp to browser
 	reply::add_header(&rep, "Date", make_web_time(mytime(nullptr)), true);
-	reply::add_header(&rep, "ETag", szAppVersion, true);
-	reply::add_header(&rep, "Last-Modified", make_web_time(mInfo.last_written));
+	if (bDoCachePages)
+	{
+		reply::add_header(&rep, "ETag", szAppVersion, true);
+		reply::add_header(&rep, "Last-Modified", make_web_time(mInfo.last_written));
+	}
 
 	const char *if_modified = request::get_req_header(&req, "If-Modified-Since");
 	if (nullptr == if_modified)
@@ -400,6 +404,7 @@ void request_handler::handle_request(const request &req, reply &rep, modify_info
 				rep.content.append((std::istreambuf_iterator<char>(is)), (std::istreambuf_iterator<char>()));
 				rep.bIsGZIP = (bClientHasGZipSupport && bHaveLoadedgzip);
 			}
+			/* 20230525 No Longer in Use! Will be removed soon!
 			if (bIsCompressibleType && (!bHaveLoadedgzip))
 			{
 				// Find and include any special cWebem strings
@@ -408,6 +413,7 @@ void request_handler::handle_request(const request &req, reply &rep, modify_info
 					_log.Debug(DEBUG_WEBSERVER,"[web:%s] Added some include in non-zipped file", request_path.c_str());
 				}
 			}
+			*/
 			if (bClientHasGZipSupport && bIsCompressibleType && (!bHaveLoadedgzip))
 			{
 				// The sourcefile is not compressed, but the client supports receiving compressed content
@@ -484,6 +490,7 @@ void request_handler::handle_request(const request &req, reply &rep, modify_info
 		(req.uri.find("app/") != std::string::npos)
 		|| (req.uri.find("views/") != std::string::npos)
 		|| (req.uri.find("js/domoticz") != std::string::npos)
+		|| (!bDoCachePages)
 		)
 	{
 		//frequently changed files

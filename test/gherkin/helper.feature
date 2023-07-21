@@ -76,3 +76,37 @@ Feature: Helper routines
         And I provide the following input "25|#|70"
         Then I expect the function to succeed
         And have the following result "19.15"
+
+    Scenario: Test base32_decode function
+        Given I am testing the "helper" module
+        When I test the function "base32_decode"
+        And I provide the following input "JV4VG5LQMVZFGZLDOJSXIMJSGM2DKNRX"
+        Then I expect the function to succeed
+        And have the following result "MySuperSecret1234567"
+
+    Scenario: Test base32_decode padding
+        Given I am testing the "helper" module
+        When I test the function "base32_decode"
+        And I provide the following input "JV4VG5LQMVZFGZLDOJSXIMJSGM2A===="
+        Then I expect the function to succeed
+        And have the following result "MySuperSecret1234"
+
+    Scenario: Test base32_decode shorter
+        Given I am testing the "helper" module
+        When I test the function "base32_decode"
+        And I provide the following input "GBGUOIKJORLUA4TLOM======"
+        Then I expect the function to succeed
+        And have the following result "0MG!ItW@rks"
+
+    Scenario: Test base32_decode failure
+        Given I am testing the "helper" module
+        When I test the function "base32_decode"
+        And I provide the following input "THIS!sN0TB@se32Input"
+        Then I expect the function to fail
+
+    Scenario: Test base32_encode function
+        Given I am testing the "helper" module
+        When I test the function "base32_encode"
+        And I provide the following input "MySuperSecret1234567"
+        Then I expect the function to succeed
+        And have the following result "JV4VG5LQMVZFGZLDOJSXIMJSGM2DKNRX"

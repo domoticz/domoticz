@@ -20,7 +20,6 @@ License: Public domain
 #include "../main/Logger.h"
 #include "../main/Helper.h"
 #include "../main/SQLHelper.h"
-#include "../main/localtime_r.h"
 #include "csocket.h"
 
 #include <string.h>
@@ -2195,10 +2194,21 @@ void COpenWebNetTCP::requestEnergyTotalizer()
 	whoStr << WHO_ENERGY_MANAGEMENT;
 	dimensionStr << ENERGY_MANAGEMENT_DIMENSION_ENERGY_TOTALIZER;
 
-	for (int where = WHERE_ENERGY_1; where < MAX_WHERE_ENERGY; where++)
+	/** request for the energy totalizer of the central units **/
+	for (int where = WHERE_ENERGY_CU_1; where < MAX_WHERE_ENERGY_CU; where++)
 	{
 		std::stringstream whereStr;
 		whereStr << where;
+		request.CreateDimensionMsgOpen(whoStr.str(), whereStr.str(), dimensionStr.str());
+		sendCommand(request, responses, 0, true);
+	}
+	
+	/** request for the energy totalizer of the actuators **/
+	for (int where = WHERE_ENERGY_A_1; where < MAX_WHERE_ENERGY_A; where++)
+	{
+		std::stringstream whereStr;
+		whereStr << where;
+		whereStr << "#0";
 		request.CreateDimensionMsgOpen(whoStr.str(), whereStr.str(), dimensionStr.str());
 		sendCommand(request, responses, 0, true);
 	}
@@ -2223,10 +2233,21 @@ void COpenWebNetTCP::requestAutomaticUpdatePower(int time)
 	appStr << time;
 	value.push_back(appStr.str());
 
-	for (int where = WHERE_ENERGY_1; where < MAX_WHERE_ENERGY; where++)
+	/** request for the automatic update power of the central units **/
+	for (int where = WHERE_ENERGY_CU_1; where < MAX_WHERE_ENERGY_CU; where++)
 	{
 		std::stringstream whereStr;
 		whereStr << where;
+		request.CreateWrDimensionMsgOpen2(whoStr.str(), whereStr.str(), dimensionStr.str(), value);
+		sendCommand(request, responses, 0, true);
+	}
+
+	/** request for the automatic update power of the actuators **/
+	for (int where = WHERE_ENERGY_A_1; where < MAX_WHERE_ENERGY_A; where++)
+	{
+		std::stringstream whereStr;
+		whereStr << where;
+		whereStr << "#0";
 		request.CreateWrDimensionMsgOpen2(whoStr.str(), whereStr.str(), dimensionStr.str(), value);
 		sendCommand(request, responses, 0, true);
 	}

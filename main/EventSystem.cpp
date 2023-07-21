@@ -13,7 +13,6 @@
 #include "../hardware/MySensorsBase.h"
 #include <iostream>
 #include "../httpclient/UrlEncode.h"
-#include "localtime_r.h"
 #include "SQLHelper.h"
 #include "../notifications/NotificationHelper.h"
 #include "WebServer.h"
@@ -210,6 +209,18 @@ void CEventSystem::LoadEvents()
 	dzvents->m_scriptsDir = szUserDataFolder + "scripts/dzVents/scripts/";
 	dzvents->m_runtimeDir = szStartupFolder + "dzVents/runtime/";
 #endif
+	if (!mkdir_deep(m_lua_Dir.c_str(), 0755))
+	{
+		_log.Log(LOG_NORM, "%s: Created directory %s", __func__, m_lua_Dir.c_str());
+	}
+	if (!mkdir_deep(dzv_Dir.c_str(), 0755))
+	{
+		_log.Log(LOG_NORM, "%s: Created directory %s", __func__, dzv_Dir.c_str());
+	}
+	if (!mkdir_deep(dzvents->m_scriptsDir.c_str(), 0755))
+	{
+		_log.Log(LOG_NORM, "%s: Created directory %s", __func__, dzvents->m_scriptsDir.c_str());
+	}
 
 	boost::unique_lock<boost::shared_mutex> eventsMutexLock(m_eventsMutex);
 	_log.Log(LOG_STATUS, "EventSystem: reset all events...");
@@ -452,19 +463,18 @@ void CEventSystem::GetCurrentStates()
 			{
 				//special case for incremental counter, need to calculate the actual count value
 
-				uint64_t total_min, total_max, total_real;
 				std::vector<std::vector<std::string> > result2;
 
 				result2 = m_sql.safe_query("SELECT sValue FROM DeviceStatus WHERE (ID=%" PRIu64 ")", sitem.ID);
-				total_max = std::stoull(result2[0][0]);
+				uint64_t total_max = std::stoull(result2[0][0]);
 
 				//get value of today
 				std::string szDate = TimeToString(nullptr, TF_Date);
 				result2 = m_sql.safe_query("SELECT MIN(Value) FROM Meter WHERE (DeviceRowID=%" PRIu64 " AND Date>='%q')", sitem.ID, szDate.c_str());
 				if (!result2.empty())
 				{
-					total_min = std::stoull(result2[0][0]);
-					total_real = total_max - total_min;
+					uint64_t total_min = std::stoull(result2[0][0]);
+					uint64_t total_real = total_max - total_min;
 
 					sd[4] = std::to_string(total_real); //sitem.sValue = l_sValue.assign(sd[4]);
 				}
@@ -872,11 +882,10 @@ void CEventSystem::GetCurrentMeasurementStates()
 
 					float divider = m_sql.GetCounterDivider(int(metertype), int(sitem.devType), float(sitem.AddjValue2));
 
-					uint64_t total_min, total_max, total_real;
 					std::vector<std::vector<std::string> > result2;
 
 					result2 = m_sql.safe_query("SELECT sValue FROM DeviceStatus WHERE (ID=%" PRIu64 ")", sitem.ID);
-					total_max = std::stoull(result2[0][0]);
+					uint64_t total_max = std::stoull(result2[0][0]);
 
 					//get value of today
 					std::string szDate = TimeToString(nullptr, TF_Date);
@@ -884,8 +893,8 @@ void CEventSystem::GetCurrentMeasurementStates()
 						sitem.ID, szDate.c_str());
 					if (!result2.empty())
 					{
-						total_min = std::stoull(result2[0][0]);
-						total_real = total_max - total_min;
+						uint64_t total_min = std::stoull(result2[0][0]);
+						uint64_t total_real = total_max - total_min;
 
 						utilityval = float(total_real) / divider;
 						isUtility = true;
@@ -1519,7 +1528,6 @@ void CEventSystem::EvaluateEvent(const std::vector<_tEventQueue> &items)
 		return;
 
 	std::vector<std::string> FileEntries;
-	std::string filename;
 #ifdef ENABLE_PYTHON
 	std::vector<std::string> FileEntriesPython;
 	DirectoryListing(FileEntriesPython, m_python_Dir, false, true);
@@ -1935,7 +1943,7 @@ void CEventSystem::EvaluateDatabaseEvents(const _tEventQueue &item)
 		lua_close(lua_state);
 }
 
-static inline long long GetIndexFromDevice(std::string devline)
+static inline int64_t GetIndexFromDevice(std::string devline)
 {
 	size_t fpos = devline.find('[');
 	if (fpos == std::string::npos)
@@ -1951,7 +1959,7 @@ static inline long long GetIndexFromDevice(std::string devline)
 std::string CEventSystem::ProcessVariableArgument(const std::string &Argument)
 {
 	std::string ret = Argument;
-	long long dindex = GetIndexFromDevice(Argument);
+	int64_t dindex = GetIndexFromDevice(Argument);
 	if (dindex == -1)
 		return ret;
 
@@ -2905,18 +2913,13 @@ void CEventSystem::EvaluateLuaClassic(lua_State *lua_state, const _tEventQueue &
 			}
 			luaTable.Publish();
 
-			// BEGIN OTO: populate changed info
-			luaTable.InitTable(lua_state, "devicechanged_ext", 3, 0);
+			luaTable.InitTable(lua_state, "devicechanged_ext", 5, 0);
 			luaTable.AddInteger("idx", item.id);
+			luaTable.AddString("name", item.devname);
 			luaTable.AddString("svalue", item.sValue);
 			luaTable.AddInteger("nvalue", item.nValue);
-
-			/* USELESS, WE HAVE THE DEVICE INDEX
-			// replace devicechanged =>
-			luaTable.AddInteger("name", nValue);
-			*/
+			luaTable.AddString("state", item.nValueWording);
 			luaTable.Publish();
-			// END OTO
 		}
 	}
 
@@ -3961,7 +3964,6 @@ void CEventSystem::reportMissingDevice(const int deviceID, const _tEventItem &it
 	{
 		_log.Log(LOG_ERROR, "EventSystem: Device no. '%d' used in event '%s' no longer exists, disabling event!", deviceID, item.Name.c_str());
 
-		std::vector<std::vector<std::string> > result;
 		result = m_sql.safe_query("SELECT EventMaster.ID FROM EventMaster INNER JOIN EventRules ON EventRules.EMID=EventMaster.ID WHERE (EventRules.ID == '%" PRIu64 "')",
 			item.ID);
 		if (!result.empty())
@@ -4085,127 +4087,12 @@ namespace http {
 			std::string eventstatus;
 		};
 
-		void CWebServer::EventCreate(WebEmSession & session, const request& req, std::string & redirect_uri)
-		{
-			Json::Value root;
-			root["title"] = "CreateEvent";
-			root["status"] = "ERR";
-
-			redirect_uri = root.toStyledString();
-			if (session.rights != 2)
-			{
-				session.reply_status = reply::forbidden;
-				return; //Only admin user allowed
-			}
-
-			std::string eventname = HTMLSanitizer::Sanitize(CURLEncode::URLDecode(request::findValue(&req, "name")));
-			if (eventname.empty())
-				return;
-
-			std::string interpreter = CURLEncode::URLDecode(request::findValue(&req, "interpreter"));
-			if (interpreter.empty())
-				return;
-
-			std::string eventtype = CURLEncode::URLDecode(request::findValue(&req, "eventtype"));
-			if (eventtype.empty())
-				return;
-
-			std::string eventxml = CURLEncode::URLDecode(request::findValue(&req, "xml"));
-			if (eventxml.empty())
-				return;
-
-			std::string eventactive = CURLEncode::URLDecode(request::findValue(&req, "eventstatus"));
-			if (eventactive.empty())
-				return;
-
-			std::string eventid = CURLEncode::URLDecode(request::findValue(&req, "eventid"));
-
-			std::string eventlogic = CURLEncode::URLDecode(request::findValue(&req, "logicarray"));
-			if ((interpreter == "Blockly") && (eventlogic.empty()))
-				return;
-
-			int eventStatus = atoi(eventactive.c_str());
-
-			bool parsingSuccessful = eventxml.length() > 0;
-			Json::Value jsonRoot;
-			if (interpreter == "Blockly") {
-				parsingSuccessful = ParseJSon(eventlogic, jsonRoot);
-			}
-
-			if (!parsingSuccessful)
-			{
-				_log.Log(LOG_ERROR, "Webserver event parser: Invalid data received!");
-			}
-			else {
-				if (eventid.empty())
-				{
-					std::vector<std::vector<std::string> > result;
-					m_sql.safe_query("INSERT INTO EventMaster (Name, Interpreter, Type, XMLStatement, Status) VALUES ('%q','%q','%q','%q','%d')",
-						eventname.c_str(), interpreter.c_str(), eventtype.c_str(), eventxml.c_str(), eventStatus);
-					result = m_sql.safe_query("SELECT ID FROM EventMaster WHERE (Name == '%q')",
-						eventname.c_str());
-					if (!result.empty())
-					{
-						std::vector<std::string> sd = result[0];
-						eventid = sd[0];
-					}
-				}
-				else {
-					m_sql.safe_query("UPDATE EventMaster SET Name='%q', Interpreter='%q', Type='%q', XMLStatement ='%q', Status ='%d' WHERE (ID == '%q')",
-						eventname.c_str(), interpreter.c_str(), eventtype.c_str(), eventxml.c_str(), eventStatus, eventid.c_str());
-					m_sql.safe_query("DELETE FROM EventRules WHERE (EMID == '%q')",
-						eventid.c_str());
-				}
-
-				if (eventid.empty())
-				{
-					//eventid should now never be empty!
-					_log.Log(LOG_ERROR, "Error writing event actions to database!");
-				}
-				else {
-					std::string sNewEditorTheme = CURLEncode::URLDecode(request::findValue(&req, "editortheme"));
-					std::string sOldEditorTheme = "ace/theme/xcode";
-					m_sql.GetPreferencesVar("ScriptEditorTheme", sOldEditorTheme);
-					if (sNewEditorTheme.length() && (sNewEditorTheme != sOldEditorTheme))
-					{
-						m_sql.UpdatePreferencesVar("ScriptEditorTheme", sNewEditorTheme);
-					}
-
-					if (interpreter == "Blockly") {
-						const Json::Value array = jsonRoot["eventlogic"];
-						for (int index = 0; index < (int)array.size(); ++index)
-						{
-							std::string conditions = array[index].get("conditions", "").asString();
-							std::string actions = array[index].get("actions", "").asString();
-
-							if (
-								(actions.find("SendNotification") != std::string::npos) ||
-								(actions.find("SendEmail") != std::string::npos) ||
-								(actions.find("SendSMS") != std::string::npos) ||
-								(actions.find("TriggerIFTTT") != std::string::npos)
-								)
-							{
-								stdreplace(actions, "$", "#");
-							}
-							int sequenceNo = index + 1;
-							m_sql.safe_query("INSERT INTO EventRules (EMID, Conditions, Actions, SequenceNo) VALUES ('%q','%q','%q','%d')",
-								eventid.c_str(), conditions.c_str(), actions.c_str(), sequenceNo);
-						}
-					}
-
-					m_mainworker.m_eventsystem.LoadEvents();
-					root["status"] = "OK";
-				}
-			}
-			redirect_uri = root.toStyledString();
-		}
-
-		void CWebServer::RType_Events(WebEmSession & session, const request& req, Json::Value &root)
+		void CWebServer::Cmd_Events(WebEmSession & session, const request& req, Json::Value &root)
 		{
 			//root["status"]="OK";
 			root["title"] = "Events";
 
-			std::string cparam = request::findValue(&req, "param");
+			std::string cparam = request::findValue(&req, "evparam");
 			if (cparam.empty())
 			{
 				return;
@@ -4223,10 +4110,10 @@ namespace http {
 				root["interpreters"] = "Blockly:Lua:dzVents";
 #endif
 
-				std::map<std::string, _tSortedEventsInt> _levents;
 				result = m_sql.safe_query("SELECT ID, Name, XMLStatement, Status FROM EventMaster ORDER BY ID ASC");
 				if (!result.empty())
 				{
+					std::map<std::string, _tSortedEventsInt> _levents;
 					for (const auto &sd : result)
 					{
 						std::string ID = sd[0];
@@ -4292,8 +4179,6 @@ namespace http {
 				if (idx.empty())
 					return;
 
-				int ii = 0;
-
 				std::string sEditorTheme = "ace/theme/xcode";
 				m_sql.GetPreferencesVar("ScriptEditorTheme", sEditorTheme);
 				root["editortheme"] = sEditorTheme;
@@ -4302,6 +4187,7 @@ namespace http {
 					idx.c_str());
 				if (!result.empty())
 				{
+					int ii = 0;
 					for (const auto &sd : result)
 					{
 						std::string ID = sd[0];
@@ -4338,7 +4224,6 @@ namespace http {
 			}
 			else if (cparam == "create")
 			{
-
 				root["title"] = "AddEvent";
 
 				std::string eventname = HTMLSanitizer::Sanitize(request::findValue(&req, "name"));
@@ -4362,6 +4247,8 @@ namespace http {
 					return;
 
 				std::string eventid = request::findValue(&req, "eventid");
+				if (eventid == "undefined")
+					eventid = "";
 
 				std::string eventlogic = request::findValue(&req, "logicarray");
 				if ((interpreter == "Blockly") && (eventlogic.empty()))

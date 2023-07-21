@@ -6,8 +6,6 @@
 #include "../httpclient/HTTPClient.h"
 
 #include "LuaCommon.h"
-#include "concurrent_queue.h"
-#include "StoppableTask.h"
 #include "NotificationObserver.h"
 
 class CEventSystem : public CLuaCommon, StoppableTask, CNotificationObserver
@@ -103,13 +101,6 @@ public:
 		std::string description;
 		std::vector<uint64_t> memberID;
 	};
-
-	struct _tHardwareListInt {
-		std::string Name;
-		int HardwareTypeVal;
-		std::string HardwareType;
-		bool Enabled;
-	} tHardwareList;
 
 	CEventSystem();
 	~CEventSystem();

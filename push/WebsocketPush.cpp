@@ -49,7 +49,7 @@ void CWebSocketPush::Stop()
 	ClearListenTable();
 }
 
-void CWebSocketPush::ListenTo(const unsigned long long DeviceRowIdx)
+void CWebSocketPush::ListenTo(const uint64_t DeviceRowIdx)
 {
 	std::unique_lock<std::mutex> lock(listenMutex);
 	bool bExists = std::find(listenIdxs.begin(), listenIdxs.end(), DeviceRowIdx) != listenIdxs.end();
@@ -58,7 +58,7 @@ void CWebSocketPush::ListenTo(const unsigned long long DeviceRowIdx)
 	}
 }
 
-void CWebSocketPush::UnlistenTo(const unsigned long long DeviceRowIdx)
+void CWebSocketPush::UnlistenTo(const uint64_t DeviceRowIdx)
 {
 	std::unique_lock<std::mutex> lock(listenMutex);
 	listenIdxs.erase(std::remove(listenIdxs.begin(), listenIdxs.end(), DeviceRowIdx), listenIdxs.end());
@@ -104,13 +104,13 @@ void CWebSocketPush::onDeviceTableChanged()
 	}
 }
 
-bool CWebSocketPush::WeListenTo(const unsigned long long DeviceRowIdx)
+bool CWebSocketPush::WeListenTo(const uint64_t DeviceRowIdx)
 {
 	std::unique_lock<std::mutex> lock(listenMutex);
 	return std::find(listenIdxs.begin(), listenIdxs.end(), DeviceRowIdx) != listenIdxs.end();
 }
 
-void CWebSocketPush::OnDeviceReceived(const int m_HwdID, const unsigned long long DeviceRowIdx, const std::string &DeviceName, const unsigned char *pRXCommand)
+void CWebSocketPush::OnDeviceReceived(const int m_HwdID, const uint64_t DeviceRowIdx, const std::string &DeviceName, const unsigned char *pRXCommand)
 {
 	std::unique_lock<std::mutex> lock(handlerMutex);
 	if (!isStarted) {
@@ -123,7 +123,7 @@ void CWebSocketPush::OnDeviceReceived(const int m_HwdID, const unsigned long lon
 	}
 }
 
-void CWebSocketPush::OnDeviceUpdate(const int m_HwdID, const unsigned long long DeviceRowIdx)
+void CWebSocketPush::OnDeviceUpdate(const int m_HwdID, const uint64_t DeviceRowIdx)
 {
 	std::unique_lock<std::mutex> lock(handlerMutex);
 	if (!isStarted) {
@@ -136,7 +136,7 @@ void CWebSocketPush::OnDeviceUpdate(const int m_HwdID, const unsigned long long 
 	}
 }
 
-void CWebSocketPush::OnSceneChange(const unsigned long long SceneRowIdx, const std::string& SceneName)
+void CWebSocketPush::OnSceneChange(const uint64_t SceneRowIdx, const std::string& SceneName)
 {
 	std::unique_lock<std::mutex> lock(handlerMutex);
 	if (!isStarted) {

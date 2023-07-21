@@ -2,7 +2,6 @@
 #include <iostream>
 #include "Camera.h"
 #include "HTMLSanitizer.h"
-#include "localtime_r.h"
 #include "Logger.h"
 #include "Helper.h"
 #include "mainworker.h"
@@ -153,9 +152,9 @@ int CCameraHandler::GetCameraAspectRatio(const std::string& CamIdx)
 	return GetCameraAspectRatio(std::stoull(CamIdx));
 }
 
-int CCameraHandler::GetCameraAspectRatio(const uint64_t CamID)
+int CCameraHandler::GetCameraAspectRatio(const uint64_t &CamID)
 {
-	for (auto& m : m_cameradevices)
+	for (const auto& m : m_cameradevices)
 	{
 		if (m.ID == CamID)
 			return m.AspectRatio;
@@ -384,7 +383,7 @@ bool CCameraHandler::EmailCameraSnapshot(const std::string &CamIdx, const std::s
 //Webserver helpers
 namespace http {
 	namespace server {
-		void CWebServer::RType_Cameras(WebEmSession & session, const request& req, Json::Value &root)
+		void CWebServer::Cmd_GetCameras(WebEmSession & session, const request& req, Json::Value &root)
 		{
 			if (session.rights < 2)
 			{
@@ -395,7 +394,7 @@ namespace http {
 			std::string rused = request::findValue(&req, "used");
 
 			root["status"] = "OK";
-			root["title"] = "Cameras";
+			root["title"] = "getcameras";
 
 			std::vector<std::vector<std::string> > result;
 			if (rused == "true") {
@@ -423,10 +422,10 @@ namespace http {
 				}
 			}
 		}
-		void CWebServer::RType_CamerasUser(WebEmSession& session, const request& req, Json::Value& root)
+		void CWebServer::Cmd_GetCamerasUser(WebEmSession& session, const request& req, Json::Value& root)
 		{
 			root["status"] = "OK";
-			root["title"] = "Cameras";
+			root["title"] = "getcameras_user";
 
 			std::vector<std::vector<std::string> > result;
 			result = m_sql.safe_query("SELECT ID, Name FROM Cameras WHERE (Enabled=='1') ORDER BY ID ASC");

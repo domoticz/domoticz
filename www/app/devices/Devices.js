@@ -118,7 +118,7 @@ define(['app', 'livesocket'], function(app) {
                 table.on('click', '.js-include-device', function() {
                     var row = table.api().row($(this).closest('tr')).data();
                     var scope = $scope.$new(true);
-                    scope.device = row;
+                    scope.device = Object.assign({}, row);
 
                     $uibModal
                         .open(Object.assign({ scope: scope }, addDeviceModal)).result
@@ -534,9 +534,8 @@ define(['app', 'livesocket'], function(app) {
             }
 
             function loadRooms() {
-                return domoticzApi.sendRequest({
-                    type: 'plans',
-                    displayhidden: 0,
+                return domoticzApi.sendCommand('getplans', {
+                    displayhidden: 0
                 })
                     .then(domoticzApi.errorHandler)
                     .then(function(response) {
@@ -614,8 +613,7 @@ define(['app', 'livesocket'], function(app) {
         }
 
         function refreshDevices() {
-            domoticzApi.sendRequest({
-                type: 'devices',
+            domoticzApi.sendCommand('getdevices',{
                 displayhidden: 1,
                 displaydisabled: 1,
                 filter: 'all',

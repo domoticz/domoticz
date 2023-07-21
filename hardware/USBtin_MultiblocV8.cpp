@@ -41,7 +41,6 @@ History :
 #include "USBtin_MultiblocV8.h"
 #include "hardwaretypes.h"
 #include "../main/Logger.h"
-#include "../main/localtime_r.h"
 #include "../main/RFXtrx.h"
 #include "../main/Helper.h"
 #include "../main/SQLHelper.h"
@@ -1188,9 +1187,9 @@ bool USBtin_MultiblocV8::WriteToHardware(const char *pdata, const unsigned char 
 					Command = 0;
 				}
 
-				unsigned long LongDataToSend = (OutputNumber << 24) + (Command << 16) + (Reserve << 8) + iLevel;
+				int tDataToSend = (OutputNumber << 24) + (Command << 16) + (Reserve << 8) + iLevel;
 
-				sprintf(DataToSend, "%08X", (unsigned int)LongDataToSend);
+				sprintf(DataToSend, "%08X", tDataToSend);
 				std::string szTrameToSend = "T"; //
 				szTrameToSend += szDeviceID;
 				szTrameToSend += "4";

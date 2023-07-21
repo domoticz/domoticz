@@ -32,6 +32,7 @@ namespace http
 			unsigned long ID;
 			std::string Username;
 			std::string Password;
+			std::string Mfatoken;
 			std::string PrivKey;
 			std::string PubKey;
 			_eUserRights userrights = URIGHTS_VIEWER;
@@ -105,7 +106,6 @@ namespace http
 		*/
 		class cWebem;
 		typedef std::function<void(std::string &content_part)> webem_include_function;
-		typedef std::function<void(std::wstring &content_part_w)> webem_include_function_w;
 		typedef std::function<void(WebEmSession &session, const request &req, std::string &redirecturi)> webem_action_function;
 		typedef std::function<void(WebEmSession &session, const request &req, reply &rep)> webem_page_function;
 
@@ -168,19 +168,20 @@ namespace http
 			void Run();
 			void Stop();
 
-			void RegisterIncludeCode(const char *idname, const webem_include_function &fun);
-
-			void RegisterIncludeCodeW(const char *idname, const webem_include_function_w &fun);
+			// 20230525 No longer in Use! Will be removed soon!
+			//void RegisterIncludeCode(const char *idname, const webem_include_function &fun);
+			//bool Include(std::string &reply);
 
 			void RegisterPageCode(const char *pageurl, const webem_page_function &fun, bool bypassAuthentication = false);
-			void RegisterPageCodeW(const char *pageurl, const webem_page_function &fun, bool bypassAuthentication = false);
-
-			bool Include(std::string &reply);
 
 			void RegisterActionCode(const char *idname, const webem_action_function &fun);
 
 			void RegisterWhitelistURLString(const char *idname);
 			void RegisterWhitelistCommandsString(const char *idname);
+
+			void DebugRegistrations();
+
+			bool ExtractPostData(request &req, const char *pContent_Type);
 
 			bool IsAction(const request &req);
 			bool CheckForAction(WebEmSession &session, request &req);
@@ -191,11 +192,11 @@ namespace http
 			void SetAuthenticationMethod(_eAuthenticationMethod amethod);
 			void SetWebTheme(const std::string &themename);
 			void SetWebRoot(const std::string &webRoot);
-			void AddUserPassword(unsigned long ID, const std::string &username, const std::string &password, _eUserRights userrights, int activetabs, const std::string &privkey = "", const std::string &pubkey = "");
+			void AddUserPassword(unsigned long ID, const std::string &username, const std::string &password, const std::string &mfatoken, _eUserRights userrights, int activetabs, const std::string &privkey = "", const std::string &pubkey = "");
 			std::string ExtractRequestPath(const std::string &original_request_path);
 			bool IsBadRequestPath(const std::string &original_request_path);
 
-			bool GenerateJwtToken(std::string &jwttoken, const std::string clientid, const std::string clientsecret, const std::string user, const uint32_t exptime, const Json::Value jwtpayload = "");
+			bool GenerateJwtToken(std::string &jwttoken, const std::string &clientid, const std::string &clientsecret, const std::string &user, const uint32_t exptime, const Json::Value jwtpayload = "");
 			bool FindAuthenticatedUser(std::string &user, const request &req, reply &rep);
 			bool CheckVHost(const request &req);
 			bool findRealHostBehindProxies(const request &req, std::string &realhost);
@@ -237,16 +238,12 @@ namespace http
 			_eWebCompressionMode m_gzipmode;
 
 		      private:
-			/// store map between include codes and application functions
-			std::map<std::string, webem_include_function> myIncludes;
-			/// store map between include codes and application functions returning UTF-16 strings
-			std::map<std::string, webem_include_function_w> myIncludes_w;
+			/// store map between include codes and application functions (20230525 No longer in use! Will be removed soon!)
+			// std::map<std::string, webem_include_function> myIncludes;
 			/// store map between action codes and application functions
 			std::map<std::string, webem_action_function> myActions;
 			/// store name walue pairs for form submit action
 			std::map<std::string, webem_page_function> myPages;
-			/// store map between pages and application functions
-			std::map<std::string, webem_page_function> myPages_w;
 
 			static bool isValidIP(std::string& ip);
 

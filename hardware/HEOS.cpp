@@ -8,7 +8,6 @@
 #include "../notifications/NotificationHelper.h"
 #include "../main/WebServer.h"
 #include "../main/mainworker.h"
-#include "../main/localtime_r.h"
 #include "../main/EventSystem.h"
 #include "../webserver/cWebem.h"
 
@@ -589,7 +588,7 @@ void CHEOS::OnDisconnect()
 
 void CHEOS::OnData(const unsigned char *pData, size_t length)
 {
-	ParseData(pData, length);
+	ParseData(pData, (int)length);
 }
 
 void CHEOS::OnError(const boost::system::error_code& error)
