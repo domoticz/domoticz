@@ -34,7 +34,7 @@ jobs:
 
     steps:
     - name : Checkout
-      if: ${{ github.event_name = 'release' }}
+      if: ${{ github.event_name == 'release' }}
       uses: actions/checkout@v3
       with:
         fetch-depth: 0
@@ -42,7 +42,7 @@ jobs:
         path: 'src'
 
     - name : Build system (x86_64)
-      if: ${{ ( contains(matrix.qemu_arch, 'x86') && github.event_name = 'release' ) }}
+      if: ${{ ( contains(matrix.qemu_arch, 'x86') && github.event_name == 'release' ) }}
       run: |
         sudo timedatectl set-timezone Europe/Amsterdam
         sudo apt-get update && sudo apt-get --autoremove upgrade
@@ -60,14 +60,14 @@ jobs:
         sudo ./b2 install threading=multi link=static --with-thread --with-system --with-chrono >> /dev/null 2>&1
 
     - name : Build domoticz (x86_64)
-      if: ${{ ( contains(matrix.qemu_arch, 'x86') && github.event_name = 'release' ) }}
+      if: ${{ ( contains(matrix.qemu_arch, 'x86') && github.event_name == 'release' ) }}
       run: |
         cd $GITHUB_WORKSPACE/src
         cmake -DCMAKE_BUILD_TYPE=Release CMakeLists.txt
         make
 
     - name: functional-tests domoticz (x86_64)
-      if: ${{ ( contains(matrix.qemu_arch, 'x86') && github.event_name = 'release' ) }}
+      if: ${{ ( contains(matrix.qemu_arch, 'x86') && github.event_name == 'release' ) }}
       run: |
         cd $GITHUB_WORKSPACE/src
         ln -s ../test/gherkin/resources/testwebcontent www/test
@@ -121,7 +121,7 @@ jobs:
           echo "System built successfully"
 
     - name: Build domoticz (qemu)
-      if: ${{ ( !contains(matrix.qemu_arch, 'x86') && github.event_name = 'release' ) }}
+      if: ${{ ( !contains(matrix.qemu_arch, 'x86') && github.event_name == 'release' ) }}
       uses: uraimo/run-on-arch-action@v2.5.0
       with:
         arch: ${{ matrix.qemu_arch }}
@@ -167,7 +167,7 @@ jobs:
           make
 
     - name: functional-tests domoticz (qemu)
-      if: ${{ ( !contains(matrix.qemu_arch, 'x86') && github.event_name = 'release' ) }}
+      if: ${{ ( !contains(matrix.qemu_arch, 'x86') && github.event_name == 'release' ) }}
       uses: uraimo/run-on-arch-action@v2.5.0
       with:
         arch: ${{ matrix.qemu_arch }}
@@ -216,7 +216,7 @@ jobs:
 
     # Packaging
     - name: package domoticz
-      if: ${{ ( github.event_name = 'release' ) }}
+      if: ${{ ( github.event_name == 'release' ) }}
       run: |
         cd $GITHUB_WORKSPACE
         sudo chown -R $(whoami): ./src
@@ -227,7 +227,7 @@ jobs:
 
       # Artifact upload
     - name: Upload asset
-      if: ${{ github.event_name = 'release' }}
+      if: ${{ github.event_name == 'release' }}
       uses: actions/upload-release-asset@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
