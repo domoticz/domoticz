@@ -232,7 +232,6 @@ hardware/EvohomeTCP.cpp
 hardware/EvohomeWeb.cpp
 hardware/ETH8020.cpp
 hardware/FritzboxTCP.cpp
-hardware/GoodweAPI.cpp
 hardware/Gpio.cpp
 hardware/GpioPin.cpp
 hardware/HardwareMonitor.cpp
@@ -322,6 +321,7 @@ hardware/ToonThermostat.cpp
 hardware/TTNMQTT.cpp
 hardware/USBtin.cpp
 hardware/USBtin_MultiblocV8.cpp
+hardware/VisualCrossing.cpp
 hardware/VolcraftCO20.cpp
 hardware/Winddelen.cpp
 hardware/WOL.cpp

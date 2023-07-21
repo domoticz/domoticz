@@ -259,9 +259,9 @@ void ssl_server::init_connection() {
 		std::ifstream ifs(settings_.tmp_dh_file_path.c_str());
 		std::string content((std::istreambuf_iterator<char>(ifs)),
 				(std::istreambuf_iterator<char>()));
-		if (content.find("BEGIN DH PARAMETERS") != std::string::npos) {
+		if (content.find("DH PARAMETERS") != std::string::npos) {
 			context_.use_tmp_dh_file(settings_.tmp_dh_file_path);
-			_log.Debug(DEBUG_WEBSERVER, "[web:%s] 'BEGIN DH PARAMETERS' found in file %s", settings_.listening_port.c_str(), settings_.tmp_dh_file_path.c_str());
+			_log.Debug(DEBUG_WEBSERVER, "[web:%s] 'DH PARAMETERS' found in file %s", settings_.listening_port.c_str(), settings_.tmp_dh_file_path.c_str());
 		} else {
 			_log.Log(LOG_ERROR, "[web:%s] missing SSL DH parameters from file %s", settings_.listening_port.c_str(), settings_.tmp_dh_file_path.c_str());
 		}
@@ -299,7 +299,7 @@ void ssl_server::reinit_connection()
 		std::ifstream ifs(settings_.tmp_dh_file_path.c_str());
 		std::string content((std::istreambuf_iterator<char>(ifs)),
 				(std::istreambuf_iterator<char>()));
-		if (content.find("BEGIN DH PARAMETERS") != std::string::npos) {
+		if (content.find("DH PARAMETERS") != std::string::npos) {
 			_log.Log(LOG_STATUS, "[web:%s] Reloading SSL DH parameters", settings_.listening_port.c_str());
 			context_.use_tmp_dh_file(settings_.tmp_dh_file_path);
 		} else {

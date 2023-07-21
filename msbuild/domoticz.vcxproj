@@ -79,11 +79,12 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <PreBuildEventUseInBuild>true</PreBuildEventUseInBuild>
-    <IncludePath>$(IncludePath)</IncludePath>
+    <IncludePath>S:\boost\include;$(IncludePath)</IncludePath>
     <CodeAnalysisRuleSet>C:\Program Files (x86)\Microsoft Visual Studio\2017\Professional\Team Tools\Static Analysis Tools\Rule Sets\NativeRecommendedRules.ruleset</CodeAnalysisRuleSet>
     <RunCodeAnalysis>false</RunCodeAnalysis>
     <LinkIncremental>true</LinkIncremental>
     <IntDir>$(Platform)\$(Configuration)_Build\</IntDir>
+    <LibraryPath>S:\boost\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
@@ -241,6 +242,8 @@
     <None Include="..\www\app\hardware\setup\BleBox.js" />
     <None Include="..\www\app\hardware\setup\Kodi.html" />
     <None Include="..\www\app\hardware\setup\Kodi.js" />
+    <None Include="..\www\app\hardware\setup\MQTT-AD.html" />
+    <None Include="..\www\app\hardware\setup\MQTT-AD.js" />
     <None Include="..\www\app\hardware\setup\MySensors.html" />
     <None Include="..\www\app\hardware\setup\MySensors.js" />
     <None Include="..\www\app\hardware\setup\PanasonicTV.html" />
@@ -610,7 +613,6 @@
     <ClInclude Include="..\hardware\EvohomeSerial.h" />
     <ClInclude Include="..\hardware\EvohomeTCP.h" />
     <ClInclude Include="..\hardware\EvohomeWeb.h" />
-    <ClInclude Include="..\hardware\GoodweAPI.h" />
     <ClInclude Include="..\hardware\FritzboxTCP.h" />
     <ClInclude Include="..\hardware\Gpio.h" />
     <ClInclude Include="..\hardware\GpioPin.h" />
@@ -704,6 +706,7 @@
     <ClInclude Include="..\hardware\TTNMQTT.h" />
     <ClInclude Include="..\hardware\USBtin.h" />
     <ClInclude Include="..\hardware\USBtin_MultiblocV8.h" />
+    <ClInclude Include="..\hardware\VisualCrossing.h" />
     <ClInclude Include="..\hardware\VolcraftCO20.h" />
     <ClInclude Include="..\hardware\Winddelen.h" />
     <ClInclude Include="..\hardware\WOL.h" />
@@ -916,7 +919,6 @@
     <ClCompile Include="..\hardware\EvohomeTCP.cpp" />
     <ClCompile Include="..\hardware\EvohomeWeb.cpp" />
     <ClCompile Include="..\hardware\FritzboxTCP.cpp" />
-    <ClCompile Include="..\hardware\GoodweAPI.cpp" />
     <ClCompile Include="..\hardware\Gpio.cpp" />
     <ClCompile Include="..\hardware\GpioPin.cpp" />
     <ClCompile Include="..\hardware\Honeywell.cpp" />
@@ -1013,6 +1015,7 @@
     <ClCompile Include="..\hardware\TTNMQTT.cpp" />
     <ClCompile Include="..\hardware\USBtin.cpp" />
     <ClCompile Include="..\hardware\USBtin_MultiblocV8.cpp" />
+    <ClCompile Include="..\hardware\VisualCrossing.cpp" />
     <ClCompile Include="..\hardware\VolcraftCO20.cpp" />
     <ClCompile Include="..\hardware\Winddelen.cpp" />
     <ClCompile Include="..\hardware\WOL.cpp" />

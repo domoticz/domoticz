@@ -27,6 +27,7 @@ define(['app', 'log/components/DeviceLevelChart', 'log/components/DeviceOnOffCha
         }
 
         function refreshLog() {
+			vm.log = [];
             domoticzApi
                 .sendRequest({
                     type: 'lightlog',

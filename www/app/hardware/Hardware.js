@@ -626,8 +626,13 @@ define(['app'], function (app) {
 				});
 			}
 			else if (
-				(text.indexOf("LAN") >= 0 && ((text.indexOf("YouLess") >= 0) || (text.indexOf("Denkovi") >= 0))) ||
-				(text.indexOf("Relay-Net") >= 0) || (text.indexOf("Satel Integra") >= 0) || (text.indexOf("eHouse") >= 0) || (text.indexOf("Harmony") >= 0) || (text.indexOf("Xiaomi Gateway") >= 0) || (text.indexOf("MyHome OpenWebNet with LAN interface") >= 0)
+				(text.indexOf("LAN") >= 0 && ((text.indexOf("YouLess") >= 0) || (text.indexOf("Denkovi") >= 0)))
+				|| (text.indexOf("Relay-Net") >= 0)
+				|| (text.indexOf("Satel Integra") >= 0)
+				|| (text.indexOf("eHouse") >= 0)
+				|| (text.indexOf("Harmony") >= 0)
+				|| (text.indexOf("Xiaomi Gateway") >= 0)
+				|| (text.indexOf("MyHome OpenWebNet with LAN interface") >= 0)
 			) {
 				var address = $("#hardwarecontent #divremote #tcpaddress").val();
 				if (text.indexOf("eHouse") >= 0) {
@@ -699,30 +704,6 @@ define(['app'], function (app) {
 					Mode4 = "0";
 					Mode5 = "0";
 					Mode6 = "0";
-
-				/*$.ajax({
-					url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype +
-					"&loglevel=" + logLevel +
-					"&port=" + refresh +
-					"&username=" + encodeURIComponent(username) +
-					"&password=" + encodeURIComponent(password) +
-					"&name=" + encodeURIComponent(name) +
-					"&enabled=" + bEnabled +
-					"&idx=" + idx +
-					"&datatimeout=" + datatimeout +
-					"&address=" + encodeURIComponent(url) +
-					"&Mode1=" + Mode1 + "&Mode2=" + Mode2 + "&Mode3=" + Mode3 + "&Mode4=" + Mode4 + "&Mode5=" + Mode5 + "&Mode6=" + Mode6 +
-					"&extra=" + extra,
-					async: false,
-					dataType: 'json',
-					success: function (data) {
-						RefreshHardwareTable();
-					},
-					error: function () {
-						ShowNotify($.t('Problem updating hardware!'), 2500, true);
-					}
-				});*/
-
 				}
 				else if (text.indexOf("Relay-Net") >= 0) {
 					Mode1 = $('#hardwarecontent #hardwareparamsrelaynet #relaynetpollinputs').prop("checked") ? 1 : 0;
@@ -750,25 +731,18 @@ define(['app'], function (app) {
 					Mode4 = inputcount;
 					Mode5 = relaycount;
 				}
-				var password = encodeURIComponent($("#hardwarecontent #divlogin #password").val());
+				var password = $("#hardwarecontent #divlogin #password").val();
 				if (text.indexOf("eHouse") >= 0) {
 					if (password == "") {
-								ShowNotify($.t('Please enter ASCI password - 6 characters'), 2500, true);
-								}
+						ShowNotify($.t('Please enter ASCII password - 6 characters'), 2500, true);
 					}
+				}
                 if (text.indexOf("MyHome OpenWebNet with LAN interface") >= 0) {
                     if (password != "") {
-
                         if ((password.length < 5) || (password.length > 16)) {
                             ShowNotify($.t('Please enter a password between 5 and 16 characters!'), 2500, true);
                             return;
                         }
-
-                        //var intRegex = /^[a-zA-Z0-9]*$/; 
-                        //if (!intRegex.test(password)) {
-                        //    ShowNotify($.t('Please enter a numeric or alphanumeric (for HMAC) password'), 2500, true);
-                        //    return;
-                        //}
                     }
 
                     var ratelimitp1 = $("#hardwarecontent #hardwareparamsratelimitp1 #ratelimitp1").val();
@@ -1011,7 +985,7 @@ define(['app'], function (app) {
 					}
 				});
 			}
-			else if ((text.indexOf("Underground") >= 0) || (text.indexOf("DarkSky") >= 0) || (text.indexOf("AccuWeather") >= 0)) {
+			else if ((text.indexOf("Underground") >= 0) || (text.indexOf("DarkSky") >= 0) || (text.indexOf("Visual Crossing") >= 0) || (text.indexOf("AccuWeather") >= 0)) {
 				var apikey = $("#hardwarecontent #divunderground #apikey").val();
 				if (apikey == "") {
 					ShowNotify($.t('Please enter an API Key!'), 2500, true);
@@ -1471,33 +1445,6 @@ define(['app'], function (app) {
 					"&port=" + port +
 					"&username=" + encodeURIComponent(username) +
 					"&password=" + encodeURIComponent(password) +
-					"&name=" + encodeURIComponent(name) +
-					"&enabled=" + bEnabled +
-					"&idx=" + idx +
-					"&datatimeout=" + datatimeout +
-					"&Mode1=" + Mode1 + "&Mode2=" + Mode2 + "&Mode3=" + Mode3 + "&Mode4=" + Mode4 + "&Mode5=" + Mode5 + "&Mode6=" + Mode6,
-					async: false,
-					dataType: 'json',
-					success: function (data) {
-						RefreshHardwareTable();
-					},
-					error: function () {
-						ShowNotify($.t('Problem updating hardware!'), 2500, true);
-					}
-				});
-			}
-			else if (text.indexOf("Goodwe solar inverter via Web") >= 0) {
-				var username = $("#hardwarecontent #divgoodweweb #username").val();
-				if (username == "") {
-					ShowNotify($.t('Please enter your Goodwe username!'), 2500, true);
-					return;
-				}
-				Mode1 = $("#hardwarecontent #divgoodweweb #comboserverselect").val();
-
-				$.ajax({
-					url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype +
-					"&loglevel=" + logLevel +
-					"&username=" + encodeURIComponent(username) +
 					"&name=" + encodeURIComponent(name) +
 					"&enabled=" + bEnabled +
 					"&idx=" + idx +
@@ -2131,9 +2078,13 @@ define(['app'], function (app) {
 				});
 			}
 			else if (
-				(text.indexOf("LAN") >= 0 && ((text.indexOf("YouLess") >= 0) || (text.indexOf("Denkovi") >= 0))) ||
-				(text.indexOf("Relay-Net") >= 0) || (text.indexOf("Satel Integra") >= 0) || (text.indexOf("eHouse") >= 0) || (text.indexOf("Harmony") >= 0) || (text.indexOf("Xiaomi Gateway") >= 0) ||
-				(text.indexOf("MyHome OpenWebNet with LAN interface") >= 0)
+				(text.indexOf("LAN") >= 0 && ((text.indexOf("YouLess") >= 0) || (text.indexOf("Denkovi") >= 0)))
+				|| (text.indexOf("Relay-Net") >= 0)
+				|| (text.indexOf("Satel Integra") >= 0)
+				|| (text.indexOf("eHouse") >= 0)
+				|| (text.indexOf("Harmony") >= 0)
+				|| (text.indexOf("Xiaomi Gateway") >= 0)
+				|| (text.indexOf("MyHome OpenWebNet with LAN interface") >= 0)
 			) {
 				Mode1 = 0;
 				Mode2 = 0;
@@ -2225,19 +2176,18 @@ define(['app'], function (app) {
 					Mode4 = inputcount;
 					Mode5 = relaycount;
 				}
-				var password = encodeURIComponent($("#hardwarecontent #divlogin #password").val());
-				if (text.indexOf("MyHome OpenWebNet with LAN interface") >= 0) {
+				var password = $("#hardwarecontent #divlogin #password").val();
+				if (text.indexOf("eHouse") >= 0) {
+					if (password == "") {
+						ShowNotify($.t('Please enter ASCII password - 6 characters'), 2500, true);
+					}
+				}
+				else if (text.indexOf("MyHome OpenWebNet with LAN interface") >= 0) {
                     if (password != "") {
                         if ((password.length < 5) || (password.length > 16)) {
                             ShowNotify($.t('Please enter a password between 5 and 16 characters!'), 2500, true);
                             return;
                         }
-
-                        //var intRegex = /^[a-zA-Z0-9]*$/; 
-                        //if (!intRegex.test(password)) {
-                        //    ShowNotify($.t('Please enter a numeric or alphanumeric (for HMAC) password'), 2500, true);
-                        //    return;
-                        //}
                     }
                     var ratelimitp1 = $("#hardwarecontent #hardwareparamsratelimitp1 #ratelimitp1").val();
                     if ((ratelimitp1 == "") || (isNaN(ratelimitp1))) {
@@ -2411,7 +2361,8 @@ define(['app'], function (app) {
 			else if (
 					(text.indexOf("Underground") >= 0) ||
 					(text.indexOf("DarkSky") >= 0) ||
-					(text.indexOf("AccuWeather") >= 0)
+					(text.indexOf("AccuWeather") >= 0) ||
+					(text.indexOf("Visual Crossing") >= 0)
 					) {
 				var apikey = $("#hardwarecontent #divunderground #apikey").val();
 				if (apikey == "") {
@@ -2815,31 +2766,6 @@ define(['app'], function (app) {
 					"&name=" + encodeURIComponent(name) +
 					"&enabled=" + bEnabled +
 					"&datatimeout=" + datatimeout,
-					async: false,
-					dataType: 'json',
-					success: function (data) {
-						RefreshHardwareTable();
-					},
-					error: function () {
-						ShowNotify($.t('Problem adding hardware!'), 2500, true);
-					}
-				});
-			}
-			else if (text.indexOf("Goodwe solar inverter via Web") >= 0) {
-				var username = $("#hardwarecontent #divgoodweweb #username").val();
-
-				if (username == "") {
-					ShowNotify($.t('Please enter your Goodwe username!'), 2500, true);
-					return;
-				}
-				Mode1 = $("#hardwarecontent #divgoodweweb #comboserverselect").val();
-
-				$.ajax({
-					url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype +
-					"&loglevel=" + logLevel +
-					"&username=" + encodeURIComponent(username) +
-					"&name=" + encodeURIComponent(name) + "&enabled=" + bEnabled + "&datatimeout=" + datatimeout +
-					"&Mode1=" + Mode1,
 					async: false,
 					dataType: 'json',
 					success: function (data) {
@@ -3934,6 +3860,9 @@ define(['app'], function (app) {
 							else if (HwTypeStr.indexOf("BleBox") >= 0) {
 								HwTypeStr += ' ' + hardwareSetupLink;
 							}
+							else if (HwTypeStr.indexOf("MQTT Auto") >= 0) {
+								HwTypeStr += ' ' + hardwareSetupLink;
+							}
 							else if (HwTypeStr.indexOf("Logitech Media Server") >= 0) {
 								HwTypeStr += ' <span class="label label-info lcursor" onclick="EditLMS(' + item.idx + ',\'' + item.Name + '\',' + item.Mode1 + ',' + item.Mode2 + ',' + item.Mode3 + ',' + item.Mode4 + ',' + item.Mode5 + ',' + item.Mode6 + ');">' + $.t("Setup") + '</span>';
 							}
@@ -4310,7 +4239,7 @@ define(['app'], function (app) {
 								}
 							}
 						}
-						else if ((data["Type"].indexOf("Underground") >= 0) || (data["Type"].indexOf("DarkSky") >= 0) || (data["Type"].indexOf("AccuWeather") >= 0)) {
+						else if ((data["Type"].indexOf("Underground") >= 0) || (data["Type"].indexOf("DarkSky") >= 0) || (data["Type"].indexOf("Visual Crossing") >= 0) || (data["Type"].indexOf("AccuWeather") >= 0)) {
 							$("#hardwarecontent #hardwareparamsunderground #apikey").val(data["Username"]);
 							$("#hardwarecontent #hardwareparamsunderground #location").val(data["Password"]);
 						}
@@ -4435,10 +4364,6 @@ define(['app'], function (app) {
 								$("#hardwarecontent #hardwareparamshoneywell #hwApiKey").val(atob(tmparray[0]));
 								$("#hardwarecontent #hardwareparamshoneywell #hwApiSecret").val(atob(tmparray[1]));
 							}
-						}
-						else if (data["Type"].indexOf("Goodwe solar inverter via Web") >= 0) {
-							$("#hardwarecontent #hardwareparamsgoodweweb #comboserverselect").val(data["Mode1"]);
-							$("#hardwarecontent #hardwareparamsgoodweweb #username").val(data["Username"]);
 						}
 						if (data["Type"].indexOf("MySensors Gateway with MQTT") >= 0) {
 
@@ -4676,7 +4601,6 @@ define(['app'], function (app) {
 			$("#hardwarecontent #divtesla").hide();
 			$("#hardwarecontent #divmercedes").hide();
 			$("#hardwarecontent #div1wire").hide();
-			$("#hardwarecontent #divgoodweweb").hide();
 			$("#hardwarecontent #divi2clocal").hide();
 			$("#hardwarecontent #divi2caddress").hide();
 			$("#hardwarecontent #divi2cinvert").hide();
@@ -4914,7 +4838,7 @@ define(['app'], function (app) {
 					$("#hardwarecontent #hardwareparamshttp #divpostdatatextarea").show();
 				}
 			}
-			else if ((text.indexOf("Underground") >= 0) || (text.indexOf("DarkSky") >= 0) || (text.indexOf("AccuWeather") >= 0)) {
+			else if ((text.indexOf("Underground") >= 0) || (text.indexOf("DarkSky") >= 0) || (text.indexOf("Visual Crossing") >= 0) || (text.indexOf("AccuWeather") >= 0)) {
 				$("#hardwarecontent #divunderground").show();
 			}
 			else if(text.indexOf("Meteorologisk") >= 0){
@@ -4956,9 +4880,6 @@ define(['app'], function (app) {
 			}
 			else if (text.indexOf("1-Wire") >= 0) {
 				$("#hardwarecontent #div1wire").show();
-			}
-			else if (text.indexOf("Goodwe solar inverter via Web") >= 0) {
-				$("#hardwarecontent #divgoodweweb").show();
 			}
 			else if (text.indexOf("Evohome via Web") >= 0) {
 				$("#hardwarecontent #divevohomeweb").show();

@@ -960,6 +960,9 @@ Device.create = function (item) {
         case "scene":
             dev = new Scene(item);
             break;
+        case "security":
+            dev = new SecurityPanel(item);
+            break;
         case "siren":
             dev = new Siren(item);
             break;
@@ -1735,6 +1738,17 @@ function Scene(item) {
 }
 Scene.inheritsFrom(Pushon);
 
+function SecurityPanel(item) {
+    if (arguments.length != 0) {
+        this.parent.constructor(item);
+        this.image = "images/security48.png";
+        this.LogLink = "window.location.href = '#/Devices/" + this.index + "/Log'";
+        this.imagetext = "Security Panel";
+        this.onClick = "window.location.href = 'secpanel/'";
+    }
+}
+SecurityPanel.inheritsFrom(Sensor);
+
 function SetPoint(item) {
     if (arguments.length != 0) {
         this.parent.constructor(item);
@@ -1877,7 +1891,8 @@ function Selector(item) {
 
         // Device attributes
         this.data = this.levelName;
-        this.status = '';
+        //this.status = '';
+	this.status = this.levelName;
         this.smallStatus = this.status;
         if (item.CustomImage !== 0) {
             this.image = (this.levelName === "Off") ? "images/" + item.Image + "48_Off.png" : "images/" + item.Image + "48_On.png";

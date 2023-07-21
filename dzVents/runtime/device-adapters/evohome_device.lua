@@ -47,13 +47,9 @@ return {
 				return domoticz.openURL(url)
 			end
 		elseif device.deviceSubType == "Relay" then
-			device.state = device._state == 'Off' and 'Off' or 'On'
-			if device.state == 'Off' then
-				device.level = 0
-			else
-				device.level = device._state:match('%d+') or 100
-			end
-			device.active = device.state ~= 'Off'
+			device.state = device._state == 0 and 'Off' or 'On'
+			device.level = device._state / 2
+			device.active = device.state ~= 'Off'		
 		else
 			if device.deviceType == 'Heating' and device.deviceSubType == 'Evohome' then
 				device._state = data.data._state

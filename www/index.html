@@ -1267,6 +1267,8 @@ $(document).ready(function() {
 							<li class="dropdown-submenu">
 								<a id="cMoreOptions" tabindex="-1" data-i18n="More options">More options</a>
 								<ul class="dropdown-menu pull-left">
+									<li ng-class="{'current_page_item':getClass('/Events')}" id="mEvents"><a id="cEvents" href="#Events"><img src="images/events.png"> <span data-i18n="Events">Events</span></a></li>
+									<li class="divider"></li>
 									<li class="dropdown-submenu">
 										<a id="cPlans" tabindex="-1"><img src="images/house.png"> <span data-i18n="Plans">Plans</span></a>
 										<ul class="dropdown-menu pull-right">
@@ -1275,25 +1277,26 @@ $(document).ready(function() {
 											<li ng-class="{'current_page_item':getClass('/Timerplan')}" id="mTimerplan"><a id="cTimerplan" href="#Timerplan"> <span data-i18n="Timerplan">Timerplan</span></a></li>
 										</ul>
 									</li>
-									<li ng-class="{'current_page_item':getClass('/Cam')}" id="mCam"><a id="cCam" href="#Cam"><img src="images/camera-web.png"> <span data-i18n="Cameras">Cameras</span></a></li>
-									<li ng-class="{'current_page_item':getClass('/Events')}" id="mEvents"><a id="cEvents" href="#Events"><img src="images/events.png"> <span data-i18n="Events">Events</span></a></li>
+									<li class="divider"></li>
 									<li ng-class="{'current_page_item':getClass('/CustomIcons')}" id="mCustomIcons"><a id="cCustomIcons" href="#CustomIcons"><img src="images/customicons.png"> <span data-i18n="Custom Icons">Custom Icons</span></a></li>
 									<li ng-class="{'current_page_item':getClass('/UserVariables')}" id="mUserVariables"><a id="cUserVariables" href="#UserVariables"><img src="images/variables.png"> <span data-i18n="User variables">User variables</span></a></li>
+									<li class="divider"></li>
+									<li class="dropdown-submenu">
+										<a id="cDataPush" tabindex="-1"><img src="images/contact.png"> <span data-i18n="Data push">Data push</span></a>
+										<ul class="dropdown-menu pull-right">
+											<li ng-class="{'current_page_item':getClass('/DPInflux')}" id="mDPInflux"><a id="cDPInflux" href="#DPInflux"> <span>InfluxDB</span></a></li>
+											<li ng-class="{'current_page_item':getClass('/DPFibaro')}" id="mDPFibaro"><a id="cDPFibaro" href="#DPFibaro"> <span data-i18n="FibaroLink">FibaroLink</span></a></li>
+											<li ng-class="{'current_page_item':getClass('/DPHttp')}" id="mDPHttp"><a id="cDPHttp" href="#DPHttp"> <span data-i18n="HTTP">HTTP</span></a></li>
+											<li ng-class="{'current_page_item':getClass('/DPGooglePubSub')}" id="mDPGooglePubSub"><a id="cDPGooglePubSub" href="#DPGooglePubSub"> <span data-i18n="GooglePubSub">Google PubSub</span></a></li>
+										</ul>
+									</li>
+									<li class="divider"></li>
+									<li ng-class="{'current_page_item':getClass('/Cam')}" id="mCam"><a id="cCam" href="#Cam"><img src="images/camera-web.png"> <span data-i18n="Cameras">Cameras</span></a></li>
 									<li id="mSecurity"><a id="cSecurity" href="secpanel/index.html#{{config.language}}"><img src="images/security.png"> <span data-i18n="SecurityPanel">Security Panel</span></a></li>
 									<li ng-class="{'current_page_item':getClass('/Notification')}" id="mNotification"><a id="cNotification" href="#Notification"><img src="images/notification.png"> <span data-i18n="Send Notification">Send Notification</span></a></li>
 									<li class="divider"></li>
 									<li ng-class="{'current_page_item':getClass('/Applications')}" id="mApplications"><a id="cApplications" href="#Applications"><img src="images/customicons.png"> <span data-i18n="Applications">Applications</span></a></li>
 									<li ng-class="{'current_page_item':getClass('/Mobile')}" id="mMobile"><a id="cMobile" href="#Mobile"><img src="images/customicons.png"> <span data-i18n="Mobile Devices">Mobile Devices</span></a></li>
-									<li class="divider"></li>
-									<li class="dropdown-submenu">
-										<a id="cDataPush" tabindex="-1"><img src="images/contact.png"> <span data-i18n="Data push">Data push</span></a>
-										<ul class="dropdown-menu pull-right">
-											<li ng-class="{'current_page_item':getClass('/DPFibaro')}" id="mDPFibaro"><a id="cDPFibaro" href="#DPFibaro"> <span data-i18n="FibaroLink">FibaroLink</span></a></li>
-											<li ng-class="{'current_page_item':getClass('/DPHttp')}" id="mDPHttp"><a id="cDPHttp" href="#DPHttp"> <span data-i18n="HTTP">HTTP</span></a></li>
-											<li ng-class="{'current_page_item':getClass('/DPGooglePubSub')}" id="mDPGooglePubSub"><a id="cDPGooglePubSub" href="#DPGooglePubSub"> <span data-i18n="GooglePubSub">Google PubSub</span></a></li>
-											<li ng-class="{'current_page_item':getClass('/DPInflux')}" id="mDPInflux"><a id="cDPInflux" href="#DPInflux"> <span>InfluxDB</span></a></li>
-										</ul>
-									</li>
 									<li class="divider"></li>
 									<li id="mRestart"><a id="cRestart" href="javascript:SwitchLayout('Restart')"><img src="images/restart.png"> <span data-i18n="Restart System">Restart System</span></a></li>
 									<li id="mShutdown"><a id="cShutdown" href="javascript:SwitchLayout('Shutdown')"><img src="images/shutdown.png"> <span data-i18n="Shutdown System">Shutdown System</span></a></li>

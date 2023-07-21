@@ -148,7 +148,7 @@ void KMTronicSerial::readCallback(const char *data, size_t len)
 		return; //receiving not enabled
 
 	memcpy(m_buffer, data, len);
-	m_bufferpos = len;
+	m_bufferpos = (int)len;
 }
 
 bool KMTronicSerial::WriteInt(const unsigned char *data, const size_t len, const bool bWaitForReturn)

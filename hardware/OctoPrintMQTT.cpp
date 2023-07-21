@@ -276,7 +276,7 @@ void COctoPrintMQTT::SendMessage(const std::string &Topic, const std::string &Me
 			Log(LOG_STATUS, "Not Connected, failed to send message: %s", Message.c_str());
 			return;
 		}
-		publish(nullptr, Topic.c_str(), Message.size(), Message.c_str());
+		publish(nullptr, Topic.c_str(), (int)Message.size(), Message.c_str());
 	}
 	catch (...)
 	{

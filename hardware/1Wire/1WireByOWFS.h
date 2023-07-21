@@ -15,7 +15,7 @@ private:
 	std::string m_simultaneousTemperaturePath; // OWFS mountpoint + "/simultaneous/temperature"
 
 public:
-   explicit C1WireByOWFS(const std::string& path);
+   explicit C1WireByOWFS(const std::string& path, C1Wire *C1WareBase);
    ~C1WireByOWFS() override = default;
 
    // I_1WireSystem implementation

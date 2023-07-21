@@ -8,7 +8,7 @@
 
 #define RETRY_DELAY 30
 
-MySensorsTCP::MySensorsTCP(const int ID, const std::string &IPAddress, const unsigned short usIPPort)
+MySensorsTCP::MySensorsTCP(const int ID, const std::string& IPAddress, const unsigned short usIPPort)
 	: m_retrycntr(RETRY_DELAY)
 	, m_szIPAddress(IPAddress)
 	, m_usIPPort(usIPPort)
@@ -94,9 +94,9 @@ void MySensorsTCP::Do_Work()
 	Log(LOG_STATUS, "TCP/IP Worker stopped...");
 }
 
-void MySensorsTCP::OnData(const unsigned char *pData, size_t length)
+void MySensorsTCP::OnData(const unsigned char* pData, size_t length)
 {
-	ParseData(pData, length);
+	ParseData(pData, (int)length);
 }
 
 void MySensorsTCP::OnError(const boost::system::error_code& error)
@@ -122,7 +122,7 @@ void MySensorsTCP::OnError(const boost::system::error_code& error)
 		Log(LOG_ERROR, "%s", error.message().c_str());
 }
 
-void MySensorsTCP::WriteInt(const std::string &sendStr)
+void MySensorsTCP::WriteInt(const std::string& sendStr)
 {
 	if (!isConnected())
 	{

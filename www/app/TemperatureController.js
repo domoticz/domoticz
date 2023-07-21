@@ -112,7 +112,8 @@ define(['app', 'livesocket'], function (app) {
 
 		//We only call this once. After this the widgets are being updated automatically by used of the 'jsonupdate' broadcast event.
 		RefreshTemps = function () {
-			livesocket.getJson("json.htm?type=devices&filter=temp&used=true&order=[Order]&lastupdate=" + $.LastUpdateTime + "&plan=" + window.myglobals.LastPlanSelected, function (data) {
+			var roomPlanId = $routeParams.room || window.myglobals.LastPlanSelected;
+			livesocket.getJson("json.htm?type=devices&filter=temp&used=true&order=[Order]&lastupdate=" + $.LastUpdateTime + "&plan=" + roomPlanId, function (data) {
 				if (typeof data.ServerTime != 'undefined') {
 					$rootScope.SetTimeAndSun(data.Sunrise, data.Sunset, data.ServerTime);
 				}
@@ -182,10 +183,7 @@ define(['app', 'livesocket'], function (app) {
 		};
 		$scope.DropWidget = function (idx) {
 			var myid = idx;
-			var roomid = ctrl.roomSelected;
-			if (typeof roomid == 'undefined') {
-				roomid = 0;
-			}
+			var roomid = window.myglobals.LastPlanSelected;
 			$.ajax({
 				url: "json.htm?type=command&param=switchdeviceorder&idx1=" + myid + "&idx2=" + $.devIdx + "&roomid=" + roomid,
 				async: false,
@@ -490,6 +488,7 @@ define(['app', 'livesocket'], function (app) {
 
 		if (typeof roomPlanId != 'undefined') {
 			ctrl.roomSelected = roomPlanId;
+			window.myglobals.LastPlanSelected = roomPlanId;
 		}
 		ctrl.changeRoom = function () {
 			var idx = ctrl.roomSelected;
@@ -674,7 +673,7 @@ define(['app', 'livesocket'], function (app) {
 					WatchDescriptions();
 
 					if ($scope.ordering == true) {
-						if (permissions.hasPermission("Admin")) {
+						if (permissions.hasPermission("User")) {
 							if (window.myglobals.ismobileint == false) {
 								$element.draggable({
 									drag: function () {

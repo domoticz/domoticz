@@ -1,6 +1,7 @@
 #pragma once
 
 #include "1WireCommon.h"
+#include "../1Wire.h"
 
 // 1Wire system interface. Represent the mean used to access to the 1Wire bus.
 // Implementation can be C1WireByKernel, C1WireByOWFS or C1WireForWindows
@@ -24,4 +25,6 @@ public:
   virtual int GetWiper(const _t1WireDevice &device) const = 0;
   virtual void StartSimultaneousTemperatureRead() = 0;
   virtual void PrepareDevices() = 0;
+
+	C1Wire *m_p1WireBase = nullptr;
 };

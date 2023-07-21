@@ -345,6 +345,11 @@ private:
 	void RType_CreateEvohomeSensor(WebEmSession & session, const request& req, Json::Value &root);
 	void RType_BindEvohome(WebEmSession & session, const request& req, Json::Value &root);
 	void RType_CreateRFLinkDevice(WebEmSession & session, const request& req, Json::Value &root);
+
+	//MQTT-AD
+	void Cmd_MQTTAD_GetConfig(WebEmSession& session, const request& req, Json::Value& root);
+	void Cmd_MQTTAD_UpdateNumber(WebEmSession& session, const request& req, Json::Value& root);
+
 #ifdef WITH_OPENZWAVE
 	//ZWave
 	void Cmd_ZWaveUpdateNode(WebEmSession & session, const request& req, Json::Value &root);

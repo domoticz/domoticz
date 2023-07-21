@@ -2,6 +2,7 @@ define(['app', 'log/Chart'], function (app) {
 
     app.factory('counterLogCounterSeriesSuppliers', function (chart) {
         return {
+            counterSeriesDaySuppliers: counterSeriesDaySuppliers,
             counterSeriesSuppliers: counterSeriesSuppliers,
             counterTrendlineSeriesSuppliers: counterTrendlineSeriesSuppliers,
             counterPreviousSeriesSupplier: counterPreviousSeriesSupplier
@@ -26,7 +27,7 @@ define(['app', 'log/Chart'], function (app) {
             return undefined;
         }
 
-        function counterSeriesSuppliers(deviceTypeIndex, valueMultiplier, postprocessDataItemValue, dataItemValueDecimals=3) {
+        function counterSeriesDaySuppliers(deviceTypeIndex, valueMultiplier, postprocessDataItemValue, dataItemValueDecimals=3) {
             return [
                {
                     id: 'MeterUsagedArea',
@@ -50,6 +51,42 @@ define(['app', 'log/Chart'], function (app) {
 						};
                     }
                 },
+                {
+                    id: 'counter',
+                    dataItemKeys: ['v'],
+                    convertZeroToNull: true,
+                    postprocessDataItemValue: postprocessDataItemValue,
+                    postprocessYaxis: function (yAxis) {
+                        if (this.dataSupplier.deviceCounterName !== undefined) {
+                            yAxis.options.title.text = this.dataSupplier.deviceCounterName;
+                        }
+                    },
+                    label: '1',
+                    template: function (seriesSupplier) {
+                        return {
+                            type: 'column',
+                            name:
+                                seriesSupplier.dataSupplier.deviceCounterName !== undefined
+                                    ? seriesSupplier.dataSupplier.deviceCounterName
+                                    : deviceTypeCounterName(deviceTypeIndex),
+                            zIndex: 2,
+                            tooltip: {
+                                valueSuffix: ' '
+                                    + (seriesSupplier.dataSupplier.deviceValueUnit !== undefined
+                                        ? seriesSupplier.dataSupplier.deviceValueUnit
+                                        : deviceTypeValueUnit(deviceTypeIndex, valueMultiplier)),
+                                valueDecimals: dataItemValueDecimals
+                            },
+                            color: 'rgba(3,190,252,0.8)',
+                            yAxis: 0
+                        };
+                    }
+                }
+            ];
+        }
+
+        function counterSeriesSuppliers(deviceTypeIndex, valueMultiplier, postprocessDataItemValue, dataItemValueDecimals=3) {
+            return [
                 {
                     id: 'counter',
                     dataItemKeys: ['v'],

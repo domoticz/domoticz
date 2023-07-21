@@ -14,6 +14,8 @@
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
 
+#define round(a) ( int ) ( a + .5 )
+
 CScheduler::CScheduler()
 {
 	m_tSunRise = 0;
@@ -878,15 +880,21 @@ void CScheduler::CheckSchedules()
 								|| (switchtype == STYPE_BlindsPercentageWithStop)
 								)
 							{
-								if (item.timerCmd == TCMD_ON)
+								if (item.Level > 0)
 								{
+									// set position to value between 1 and 99 %
 									switchcmd = "Set Level";
 									float fLevel = (maxDimLevel / 100.0F) * item.Level;
-									if (fLevel > 100)
-										fLevel = 100;
-									ilevel = int(fLevel);
+									if (fLevel > maxDimLevel)
+										fLevel = maxDimLevel;
+									ilevel = round(fLevel);
 								}
-								else if (item.timerCmd == TCMD_OFF)
+								else if (item.timerCmd == TCMD_ON) // no percentage set (0 or 100)
+								{
+									switchcmd = "Open";
+									ilevel = 100;
+								}
+								else if (item.timerCmd == TCMD_OFF) // no percentage set (0 or 100)
 								{
 									switchcmd = "Close";
 									ilevel = 0;
@@ -1135,7 +1143,7 @@ namespace http {
 			uint64_t idx = 0;
 			if (!request::findValue(&req, "idx").empty())
 			{
-				idx = std::strtoull(request::findValue(&req, "idx").c_str(), nullptr, 10);
+				idx = std::stoull(request::findValue(&req, "idx"));
 			}
 			if (idx == 0)
 				return;
@@ -1512,7 +1520,7 @@ namespace http {
 			uint64_t idx = 0;
 			if (!request::findValue(&req, "idx").empty())
 			{
-				idx = std::strtoull(request::findValue(&req, "idx").c_str(), nullptr, 10);
+				idx = std::stoull(request::findValue(&req, "idx"));
 			}
 			if (idx == 0)
 				return;
@@ -1823,7 +1831,7 @@ namespace http {
 			uint64_t idx = 0;
 			if (!request::findValue(&req, "idx").empty())
 			{
-				idx = std::strtoull(request::findValue(&req, "idx").c_str(), nullptr, 10);
+				idx = std::stoull(request::findValue(&req, "idx"));
 			}
 			if (idx == 0)
 				return;

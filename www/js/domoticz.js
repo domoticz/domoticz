@@ -6314,17 +6314,19 @@ GenerateLiveSearchTextDefault = function (item) {
 //Lights
 GenerateLiveSearchTextL = function (item, bigtext) {
 	var searchText = GenerateLiveSearchTextDefault(item);
-	if (bigtext !== "") {
-		if (bigtext.includes(' %')) {
-			if (item.SwitchType=="Dimmer") {
-				//treat dimmer percentage as on
-				searchText = AddToLiveSearch(searchText, "On");
-			} else {
-				//possible a blind
+	if (typeof (bigtext) !== 'undefined') {
+		if (bigtext !== "") {
+			if (bigtext.includes(' %')) {
+				if (item.SwitchType=="Dimmer") {
+					//treat dimmer percentage as on
+					searchText = AddToLiveSearch(searchText, "On");
+				} else {
+					//possible a blind
+				}
 			}
+			else 
+				searchText = AddToLiveSearch(searchText, bigtext);
 		}
-		else 
-			searchText = AddToLiveSearch(searchText, bigtext);
 	}
 	if (item.SwitchType!=="On/Off") {
 		searchText = AddToLiveSearch(searchText, item.SwitchType);

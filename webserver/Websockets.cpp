@@ -35,7 +35,7 @@ namespace http {
 
 		std::string CWebsocketFrame::Create(opcodes opcode, const std::string &payload, bool domasking)
 		{
-			size_t_t payloadlen = payload.length();
+			size_t payloadlen = payload.length();
 			std::string res;
 			// byte 0
 			res += ((uint8_t)opcode | FIN_MASK);

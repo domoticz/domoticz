@@ -1165,14 +1165,15 @@ namespace http {
 
 			std::string cleanIP = stdstring_trimws(ip);
 			bool bIsIPv6 = (cleanIP.find(':') != std::string::npos);
+			// IPv6 and IPv4 addresses can be written as quoted strings
+			if (cleanIP.front() == '"' && cleanIP.back() == '"')
+			{
+				cleanIP = cleanIP.substr(1,cleanIP.size()-2);	// Remove quotes from begin and end
+			}
 			if (bIsIPv6)
 			{
 				// IPv6 addresses can be written as quoted strings and between brackets (See RFC5952)
-				if (cleanIP.find('"') != std::string::npos)
-				{
-					cleanIP = cleanIP.substr(1,cleanIP.size()-2);	// Remove quotes from begin and end
-				}
-				if (cleanIP.find('[') != std::string::npos)
+				if (cleanIP.front() == '[' && cleanIP.back() == ']')
 				{
 					cleanIP = cleanIP.substr(1,cleanIP.size()-2);	// Remove brackets from begin and end
 				}
@@ -1219,7 +1220,7 @@ namespace http {
 			std::vector<std::string> headers;
 			std::vector<std::string> hosts;
 
-			if (sumProxyHeader("Forwarded", req, headers))
+			if (sumProxyHeader("forwarded", req, headers))
 			{
 				// We found one or more Forwarded headers that need to be processed into a list of Hosts
 				if (!parseForwardedProxyHeader(headers, hosts))
@@ -1227,7 +1228,7 @@ namespace http {
 					return false;
 				}
 			}
-			else if (sumProxyHeader("X-Forwarded-For", req, headers))
+			else if (sumProxyHeader("x-forwarded-for", req, headers))
 			{
 				// We found one or more X-Forwarded-For headers that need to be processed into a list of Hosts
 				if (!parseProxyHeader(headers, hosts))
@@ -1235,7 +1236,7 @@ namespace http {
 					return false;
 				}
 			}
-			else if (sumProxyHeader("X-Real-IP", req, headers))
+			else if (sumProxyHeader("x-real-ip", req, headers))
 			{
 				// We found one or more X-Real-IP headers that need to be processed into a list of Hosts
 				if (!parseProxyHeader(headers, hosts))
@@ -1254,9 +1255,12 @@ namespace http {
 
 		bool cWebem::sumProxyHeader(const std::string &sHeader, const request &req, std::vector<std::string> &vHeaderLines)
 		{
+			std::string sHeaderName;
 			for (const auto &header : req.headers)
 			{
-				if (header.name.find(sHeader)==0)
+				sHeaderName = header.name;
+				std::transform(sHeaderName.begin(), sHeaderName.end(), sHeaderName.begin(), ::tolower);
+				if (sHeaderName.find(sHeader)==0)
 				{
 					vHeaderLines.push_back(header.value);
 				}
@@ -2160,24 +2164,38 @@ namespace http {
 				}
 				else if (_ah.method == "BASIC")
 				{
-					if (req.uri.find("json.htm") != std::string::npos && AllowBasicAuth())	// Exception for the main API endpoint so scripts can execute them with 'just' Basic AUTH
+					if (req.uri.find("json.htm") != std::string::npos)	// Exception for the main API endpoint so scripts can execute them with 'just' Basic AUTH
 					{
-						if (CheckUserAuthorization(_ah.user, &_ah))
+						if (AllowBasicAuth())	// Check if Basic Auth is allowed either over HTTPS or when explicitly enabled
 						{
-							_log.Debug(DEBUG_AUTH, "[Auth Check] Found Basic Authorization for json.htm call: Method %s, Userdata %s, rights %s", _ah.method.c_str(), _ah.user.c_str(), _ah.qop.c_str());
-							session.isnew = false;
-							session.rememberme = false;
-							session.username = _ah.user;
-							session.rights = std::atoi(_ah.qop.c_str());
-							return true;
+							if (CheckUserAuthorization(_ah.user, &_ah))
+							{
+								_log.Debug(DEBUG_AUTH, "[Auth Check] Found Basic Authorization for API call: Method %s, Userdata %s, rights %s", _ah.method.c_str(), _ah.user.c_str(), _ah.qop.c_str());
+								session.isnew = false;
+								session.rememberme = false;
+								session.username = _ah.user;
+								session.rights = std::atoi(_ah.qop.c_str());
+								return true;
+							}
+							else
+							{	// Clear the session as we could be in a Trusted Network BUT have invalid Basic Auth
+								_log.Debug(DEBUG_AUTH, "[Auth Check] Invalid Basic Authorization for API call!");
+								session.username = "";
+								session.rights = -1;
+								return false;
+							}
 						}
 						else
-						{	// Clear the session as we are in Trusted Network AND have invalid Basic Auth
-							_log.Debug(DEBUG_AUTH, "[Auth Check] Invalid Basic Authorization for json.htm call!");
+						{	// Clear the session as we could be in a Trusted Network BUT rejected Basic Auth
+							_log.Debug(DEBUG_AUTH, "[Auth Check] Basic Authorization rejected as it is not done over HTTPS or not explicitly allowed over HTTP!");
 							session.username = "";
 							session.rights = -1;
 							return false;
 						}
+					}
+					else
+					{
+						_log.Debug(DEBUG_AUTH, "[Auth Check] Basic Authorization ignored as this is not a call to the API!");
 					}
 				}
 			}

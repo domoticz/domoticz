@@ -60,12 +60,12 @@ class CHardwareMonitor : public CDomoticzHardwareBase
 	struct _tDUsageStruct
 	{
 		std::string MountPoint;
-		long long TotalBlocks;
-		long long UsedBlocks;
-		long long AvailBlocks;
+		int64_t TotalBlocks;
+		int64_t UsedBlocks;
+		int64_t AvailBlocks;
 	};
 
-	long long m_lastloadcpu;
+	int64_t m_lastloadcpu;
 	int m_totcpu;
 	std::string m_dfcommand;
 

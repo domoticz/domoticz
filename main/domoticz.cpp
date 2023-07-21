@@ -75,6 +75,7 @@ namespace
 		"\t-approot file_path (for example /opt/domoticz)\n"
 #endif
 		"\t-webroot additional web root, useful with proxy servers (for example domoticz)\n"
+		"\t-nocache ask browser not to cache pages\n"
 		"\t-startupdelay seconds (default=0)\n"
 		"\t-nowwwpwd (in case you forgot the web server username/password)\n"
 		"\t-wwwcompress mode (on = always compress [default], off = always decompress, static = no processing but try precompressed first)\n"
@@ -126,6 +127,7 @@ std::string szUserDataFolder;
 std::string szWWWFolder;
 std::string szWebRoot;
 std::string dbasefile;
+bool bDoCachePages = true;
 
 /*
 #define VCGENCMDTEMPCOMMAND "vcgencmd measure_temp"
@@ -663,6 +665,10 @@ int main(int argc, char**argv)
 
 	CCmdLine cmdLine;
 
+	RBUF tsen;
+	memset(&tsen, 0, sizeof(RBUF));
+	int packetlength = sizeof(tsen.LIGHTNING) - 1;
+
 	// parse argc,argv 
 #if defined WIN32
 	cmdLine.SplitLine(__argc, __argv);
@@ -1051,6 +1057,11 @@ int main(int argc, char**argv)
 		}
 	}
 
+	if (cmdLine.HasSwitch("-nocache"))
+	{
+		bDoCachePages = false;
+	}
+
 #if defined WIN32
 	if (!bUseConfigFile) {
 		if (cmdLine.HasSwitch("-nobrowser"))
@@ -1166,15 +1177,16 @@ int main(int argc, char**argv)
 #endif
 	}
 
+	if (!m_mainworker.Start())
+	{
+		return 1;
+	}
+
 	// start Watchdog thread after daemonization
 	m_LastHeartbeat = mytime(nullptr);
 	std::thread thread_watchdog(Do_Watchdog_Work);
 	SetThreadName(thread_watchdog.native_handle(), "Watchdog");
 
-	if (!m_mainworker.Start())
-	{
-		return 1;
-	}
 	m_StartTime = time(nullptr);
 
 	/* now, lets get into an infinite loop of doing nothing. */

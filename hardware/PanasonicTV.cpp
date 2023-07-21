@@ -90,7 +90,7 @@ class CPanasonicNode : public StoppableTask
 		_eNotificationTypes	NotificationType();
 		std::string		StatusText() { return Media_Player_States(m_nStatus); };
 		void			Status(_eMediaStatus pStatus) { m_nStatus = pStatus; };
-		void			Status(const std::string &pStatus) { m_sStatus = pStatus; };
+		void			Status(const std::string& pStatus) { m_sStatus = pStatus; };
 		void			LastOK(time_t pLastOK) { m_tLastOK = pLastOK; };
 		std::string		LastOK() { std::string sRetVal;  tm ltime; localtime_r(&m_tLastOK, &ltime); char szLastUpdate[40]; sprintf(szLastUpdate, "%04d-%02d-%02d %02d:%02d:%02d", ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, ltime.tm_sec); sRetVal = szLastUpdate; return sRetVal; };
 		void			Clear();
@@ -111,20 +111,20 @@ class CPanasonicNode : public StoppableTask
 	};
 
 public:
-  CPanasonicNode(const int pHwdID, const int PollIntervalsec, const int pTimeoutMs,
-	const std::string& pID, const std::string& pName, const std::string& pIP, const std::string& pPort);
-  ~CPanasonicNode();
-  void Do_Work();
-  void SendCommand(const std::string &command);
-  void SendCommand(const std::string &command, int iValue);
-  void SetExecuteCommand(const std::string &command);
-  bool SendShutdown();
-  void StopThread();
-  bool StartThread();
-  bool IsBusy()
-  {
-	  return m_Busy;
-  };
+	CPanasonicNode(const int pHwdID, const int PollIntervalsec, const int pTimeoutMs,
+		const std::string& pID, const std::string& pName, const std::string& pIP, const std::string& pPort);
+	~CPanasonicNode();
+	void Do_Work();
+	void SendCommand(const std::string& command);
+	void SendCommand(const std::string& command, int iValue);
+	void SetExecuteCommand(const std::string& command);
+	bool SendShutdown();
+	void StopThread();
+	bool StartThread();
+	bool IsBusy()
+	{
+		return m_Busy;
+	};
 	bool			IsOn() { return (m_CurrentStatus.Status() == MSTAT_ON); };
 
 	int				m_ID;
@@ -137,43 +137,43 @@ protected:
 	bool			m_Stoppable;
 
 private:
-  bool handleConnect(boost::asio::ip::tcp::socket &socket, const boost::asio::ip::tcp::endpoint &endpoint, boost::system::error_code &ec);
-  std::string handleWriteAndRead(const std::string &pMessageToSend);
-  int handleMessage(const std::string &pMessage);
-  std::string buildXMLStringRendCtl(const std::string &action, const std::string &command);
-  std::string buildXMLStringRendCtl(const std::string &action, const std::string &command, const std::string &value);
-  std::string buildXMLStringNetCtl(const std::string &command);
-  std::string buildXMLStringAppCtl(const std::string &productId);
+	bool handleConnect(boost::asio::ip::tcp::socket& socket, const boost::asio::ip::tcp::endpoint& endpoint, boost::system::error_code& ec);
+	std::string handleWriteAndRead(const std::string& pMessageToSend);
+	int handleMessage(const std::string& pMessage);
+	std::string buildXMLStringRendCtl(const std::string& action, const std::string& command);
+	std::string buildXMLStringRendCtl(const std::string& action, const std::string& command, const std::string& value);
+	std::string buildXMLStringNetCtl(const std::string& command);
+	std::string buildXMLStringAppCtl(const std::string& productId);
 
-  int m_HwdID;
-  char m_szDevID[40];
-  std::string m_IP;
-  std::string m_Port;
-  bool m_PowerOnSupported;
+	int m_HwdID;
+	char m_szDevID[40];
+	std::string m_IP;
+	std::string m_Port;
+	bool m_PowerOnSupported;
 
-  CPanasonicStatus m_PreviousStatus;
-  CPanasonicStatus m_CurrentStatus;
-  // void			UpdateStatus();
-  void UpdateStatus(bool force = false);
+	CPanasonicStatus m_PreviousStatus;
+	CPanasonicStatus m_CurrentStatus;
+	// void			UpdateStatus();
+	void UpdateStatus(bool force = false);
 
-  std::string m_ExecuteCommand;
+	std::string m_ExecuteCommand;
 
-  std::string m_RetainedData;
+	std::string m_RetainedData;
 
-  int m_iTimeoutCnt;
-  int m_iPollIntSec;
-  int m_iMissedPongs;
-  std::string m_sLastMessage;
-  inline bool isInteger(const std::string &s)
-  {
-	  if (s.empty() || ((!isdigit(s[0])) && (s[0] != '-') && (s[0] != '+')))
-		  return false;
+	int m_iTimeoutCnt;
+	int m_iPollIntSec;
+	int m_iMissedPongs;
+	std::string m_sLastMessage;
+	inline bool isInteger(const std::string& s)
+	{
+		if (s.empty() || ((!isdigit(s[0])) && (s[0] != '-') && (s[0] != '+')))
+			return false;
 
-	  char *p;
-	  strtol(s.c_str(), &p, 10);
+		char* p;
+		strtol(s.c_str(), &p, 10);
 
-	  return (*p == 0);
-  }
+		return (*p == 0);
+	}
 };
 
 
@@ -323,7 +323,7 @@ void CPanasonicNode::UpdateStatus(bool forceupdate)
 	m_PreviousStatus = m_CurrentStatus;
 }
 
-bool CPanasonicNode::handleConnect(boost::asio::ip::tcp::socket &socket, const boost::asio::ip::tcp::endpoint &endpoint, boost::system::error_code &ec)
+bool CPanasonicNode::handleConnect(boost::asio::ip::tcp::socket& socket, const boost::asio::ip::tcp::endpoint& endpoint, boost::system::error_code& ec)
 {
 	try
 	{
@@ -336,11 +336,11 @@ bool CPanasonicNode::handleConnect(boost::asio::ip::tcp::socket &socket, const b
 				return true;
 			}
 			if (((ec.value() != 113) && (ec.value() != 111) && (ec.value() != 10060) && (ec.value() != 10061) && (ec.value() != 10064)))
-			// && (ec.value() != 10061)
-			// Connection failed due to no response, no route or active refusal
+				// && (ec.value() != 10061)
+				// Connection failed due to no response, no route or active refusal
 			{
 				_log.Debug(DEBUG_HARDWARE, "Panasonic Plugin: (%s) Connect to '%s:%s' failed: (%d) %s", m_Name.c_str(), m_IP.c_str(),
-					   (m_Port[0] != '-' ? m_Port.c_str() : m_Port.substr(1).c_str()), ec.value(), ec.message().c_str());
+					(m_Port[0] != '-' ? m_Port.c_str() : m_Port.substr(1).c_str()), ec.value(), ec.message().c_str());
 			}
 		}
 	}
@@ -354,7 +354,7 @@ bool CPanasonicNode::handleConnect(boost::asio::ip::tcp::socket &socket, const b
 
 }
 
-std::string CPanasonicNode::handleWriteAndRead(const std::string &pMessageToSend)
+std::string CPanasonicNode::handleWriteAndRead(const std::string& pMessageToSend)
 {
 
 	_log.Debug(DEBUG_HARDWARE, "Panasonic Plugin: (%s) Handling message: '%s'.", m_Name.c_str(), pMessageToSend.c_str());
@@ -408,10 +408,10 @@ std::string CPanasonicNode::handleWriteAndRead(const std::string &pMessageToSend
 	}
 }
 
-int CPanasonicNode::handleMessage(const std::string &pMessage)
+int CPanasonicNode::handleMessage(const std::string& pMessage)
 {
-	int iPosBegin = 0;
-	int iPosEnd = 0;
+	size_t iPosBegin = 0;
+	size_t iPosEnd = 0;
 	std::string begin(">");
 	std::string end("<");
 	std::string ResponseOK("HTTP/1.1 200");
@@ -468,15 +468,14 @@ int CPanasonicNode::handleMessage(const std::string &pMessage)
 	return -1;
 }
 
-std::string CPanasonicNode::buildXMLStringRendCtl(const std::string &action, const std::string &command)
+std::string CPanasonicNode::buildXMLStringRendCtl(const std::string& action, const std::string& command)
 {
 	return buildXMLStringRendCtl(action, command, "");
 }
 
-std::string CPanasonicNode::buildXMLStringRendCtl(const std::string &action, const std::string &command, const std::string &value)
+std::string CPanasonicNode::buildXMLStringRendCtl(const std::string& action, const std::string& command, const std::string& value)
 {
 	std::string head, body;
-	int size;
 
 	body = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n";
 	body += "<s:Envelope s:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\" xmlns:s=\"http://schemas.xmlsoap.org/soap/envelope/\">\r\n";
@@ -489,7 +488,7 @@ std::string CPanasonicNode::buildXMLStringRendCtl(const std::string &action, con
 	body += "</s:Body>\r\n";
 	body += "</s:Envelope>\r\n";
 
-	size = body.length();
+	size_t size = body.length();
 
 	head = "POST /dmr/control_0 HTTP/1.1\r\n";
 	head += "Host: " + m_IP + ":" + m_Port + "\r\n";
@@ -501,10 +500,9 @@ std::string CPanasonicNode::buildXMLStringRendCtl(const std::string &action, con
 
 }
 
-std::string CPanasonicNode::buildXMLStringNetCtl(const std::string &command)
+std::string CPanasonicNode::buildXMLStringNetCtl(const std::string& command)
 {
 	std::string head, body;
-	int size;
 
 	body = R"(<?xml version="1.0" encoding="utf-8"?>)";
 	body += R"(<s:Envelope s:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" xmlns:s="http://schemas.xmlsoap.org/soap/envelope/">)";
@@ -515,7 +513,7 @@ std::string CPanasonicNode::buildXMLStringNetCtl(const std::string &command)
 	body += "</s:Body>";
 	body += "</s:Envelope>";
 
-	size = body.length();
+	size_t size = body.length();
 
 	head += "POST /nrc/control_0 HTTP/1.1\r\n";
 	head += "Host: " + m_IP + ":" + m_Port + "\r\n";
@@ -528,22 +526,21 @@ std::string CPanasonicNode::buildXMLStringNetCtl(const std::string &command)
 
 }
 
-std::string CPanasonicNode::buildXMLStringAppCtl(const std::string &productId)
+std::string CPanasonicNode::buildXMLStringAppCtl(const std::string& productId)
 {
 	std::string head, body;
-	int size;
 
 	body = R"(<?xml version="1.0" encoding="utf-8"?>)";
 	body += R"(<s:Envelope s:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" xmlns:s="http://schemas.xmlsoap.org/soap/envelope/">)";
 	body += "<s:Body>";
 	body += "<u:X_LaunchApp xmlns:u=\"urn:panasonic-com:service:p00NetworkControl:1\">";
-    body += "<X_AppType>vc_app</X_AppType>";
-    body += "<X_LaunchKeyword>product_id=" + productId + "</X_LaunchKeyword>";
-    body += "</u:X_LaunchApp>";
+	body += "<X_AppType>vc_app</X_AppType>";
+	body += "<X_LaunchKeyword>product_id=" + productId + "</X_LaunchKeyword>";
+	body += "</u:X_LaunchApp>";
 	body += "</s:Body>";
 	body += "</s:Envelope>";
 
-	size = body.length();
+	size_t size = body.length();
 
 	head += "POST /nrc/control_0 HTTP/1.1\r\n";
 	head += "Host: " + m_IP + ":" + m_Port + "\r\n";
@@ -611,21 +608,22 @@ void CPanasonicNode::Do_Work()
 	m_Busy = false;
 }
 
-void CPanasonicNode::SendCommand(const std::string &command)
+void CPanasonicNode::SendCommand(const std::string& command)
 {
 	std::string sPanasonicCall;
 
 	if (m_CurrentStatus.Status() == MSTAT_OFF && !m_PowerOnSupported)
 	{
-		CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardware(m_HwdID);
+		CDomoticzHardwareBase* pBaseHardware = m_mainworker.GetHardware(m_HwdID);
 		if (pBaseHardware == nullptr)
 			return;
 		if (pBaseHardware->HwdType != HTYPE_PanasonicTV)
 			return;
-		CPanasonic *pHardware = dynamic_cast<CPanasonic*>(pBaseHardware);
+		CPanasonic* pHardware = dynamic_cast<CPanasonic*>(pBaseHardware);
 		if (pHardware->m_bTryIfOff) {
 			_log.Log(LOG_STATUS, "Panasonic Plugin: (%s) Device is Off, but with TryIfOff option, so trying anyway.", m_Name.c_str());
-		} else {
+		}
+		else {
 			// no point trying to send a command if we know the device is off
 			// if we get a 400 response when TV is off then Power toggle can be sent
 			_log.Log(LOG_ERROR, "Panasonic Plugin: (%s) Device is Off, cannot send command.", m_Name.c_str());
@@ -751,7 +749,7 @@ void CPanasonicNode::SendCommand(const std::string &command)
 	else if (command == "TouchConnect")	sPanasonicCall = buildXMLStringAppCtl("0387878700000038");
 	else if (command == "Weather")	sPanasonicCall = buildXMLStringAppCtl("0070000900000001");
 	else if (command == "YouTube2")	sPanasonicCall = buildXMLStringAppCtl("0070000200000001");
-	
+
 	else if (command == "On" || command == "on")
 	{
 		if (m_PowerOnSupported)
@@ -766,29 +764,31 @@ void CPanasonicNode::SendCommand(const std::string &command)
 		}
 	}
 	else {
-		CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardware(m_HwdID);
+		CDomoticzHardwareBase* pBaseHardware = m_mainworker.GetHardware(m_HwdID);
 		if (pBaseHardware == nullptr)
 			return;
 		if (pBaseHardware->HwdType != HTYPE_PanasonicTV)
 			return;
-		CPanasonic *pHardware = dynamic_cast<CPanasonic*>(pBaseHardware);
+		CPanasonic* pHardware = dynamic_cast<CPanasonic*>(pBaseHardware);
 		if (pHardware->m_bUnknownCommandAllowed) {
 			// Sanitize command : keep only alphanumeric characters
 			std::string sanityze = command;
 			sanityze.erase(
 				std::remove_if(
-					sanityze.begin(), 
-					sanityze.end(), 
-					[]( char const& c ) -> bool { return ! (std::isalnum(c) || (std::string("_-+.:=").find(c) != std::string::npos)); } 
-				), sanityze.end());
+					sanityze.begin(),
+					sanityze.end(),
+					[](char const& c) -> bool { return !(std::isalnum(c) || (std::string("_-+.:=").find(c) != std::string::npos)); }
+			), sanityze.end());
 			_log.Log(LOG_STATUS, "Panasonic Plugin: (%s) Unknown command: '%s'. Trying anyway.", m_Name.c_str(), sanityze.c_str());
-			if (sanityze.rfind("app",0) == 0) {
-				sanityze.erase(0,3);
+			if (sanityze.rfind("app", 0) == 0) {
+				sanityze.erase(0, 3);
 				sPanasonicCall = buildXMLStringAppCtl(sanityze);
-			} else {
+			}
+			else {
 				sPanasonicCall = buildXMLStringNetCtl(sanityze);
 			}
-		} else {
+		}
+		else {
 			_log.Log(LOG_ERROR, "Panasonic Plugin: (%s) Unknown command: '%s'. ", m_Name.c_str(), command.c_str());
 		}
 	}
@@ -803,7 +803,7 @@ void CPanasonicNode::SendCommand(const std::string &command)
 
 }
 
-void CPanasonicNode::SendCommand(const std::string &command, const int iValue)
+void CPanasonicNode::SendCommand(const std::string& command, const int iValue)
 {
 	std::string	sPanasonicCall;
 	if (command == "setvolume")
@@ -832,7 +832,7 @@ bool CPanasonicNode::SendShutdown()
 	return false;
 }
 
-void CPanasonicNode::SetExecuteCommand(const std::string &command)
+void CPanasonicNode::SetExecuteCommand(const std::string& command)
 {
 	_log.Log(LOG_ERROR, "Panasonic Plugin: (%s) SetExecuteCommand called with: '%s.", m_Name.c_str(), command.c_str());
 }
@@ -903,7 +903,7 @@ void CPanasonic::Do_Work()
 
 			scounter = 0;
 			bool bWorkToDo = false;
-			for (const auto &pnode : m_pNodes)
+			for (const auto& pnode : m_pNodes)
 			{
 				if (!pnode->IsBusy())
 				{
@@ -932,13 +932,13 @@ void CPanasonic::SetSettings(const int PollIntervalsec, const int PingTimeoutms,
 	if ((PingTimeoutms / 1000 < m_iPollInterval) && (PingTimeoutms != 0))
 		m_iPingTimeoutms = PingTimeoutms;
 
-	m_bUnknownCommandAllowed =  ( iMode3 & 1 ) ? true : false;
-	m_bTryIfOff =  (iMode3 & 2) ? true : false;
+	m_bUnknownCommandAllowed = (iMode3 & 1) ? true : false;
+	m_bTryIfOff = (iMode3 & 2) ? true : false;
 }
 
-bool CPanasonic::WriteToHardware(const char *pdata, const unsigned char /*length*/)
+bool CPanasonic::WriteToHardware(const char* pdata, const unsigned char /*length*/)
 {
-	const tRBUF *pSen = reinterpret_cast<const tRBUF*>(pdata);
+	const tRBUF* pSen = reinterpret_cast<const tRBUF*>(pdata);
 
 	unsigned char packettype = pSen->ICMND.packettype;
 
@@ -947,7 +947,7 @@ bool CPanasonic::WriteToHardware(const char *pdata, const unsigned char /*length
 
 	long	DevID = (pSen->LIGHTING2.id3 << 8) | pSen->LIGHTING2.id4;
 
-	for (const auto &pnode : m_pNodes)
+	for (const auto& pnode : m_pNodes)
 	{
 		if (pnode->m_DevID == DevID)
 		{
@@ -990,7 +990,7 @@ bool CPanasonic::WriteToHardware(const char *pdata, const unsigned char /*length
 	return false;
 }
 
-void CPanasonic::AddNode(const std::string &Name, const std::string &IPAddress, const int Port)
+void CPanasonic::AddNode(const std::string& Name, const std::string& IPAddress, const int Port)
 {
 	std::vector<std::vector<std::string> > result;
 
@@ -1015,7 +1015,7 @@ void CPanasonic::AddNode(const std::string &Name, const std::string &IPAddress, 
 	ReloadNodes();
 }
 
-bool CPanasonic::UpdateNode(const int ID, const std::string &Name, const std::string &IPAddress, const int Port)
+bool CPanasonic::UpdateNode(const int ID, const std::string& Name, const std::string& IPAddress, const int Port)
 {
 	std::vector<std::vector<std::string> > result;
 
@@ -1071,13 +1071,13 @@ void CPanasonic::ReloadNodes()
 		std::lock_guard<std::mutex> l(m_mutex);
 
 		// create a vector to hold the nodes
-		for (const auto &sd : result)
+		for (const auto& sd : result)
 		{
 			auto pNode = std::make_shared<CPanasonicNode>(m_HwdID, m_iPollInterval, m_iPingTimeoutms, sd[0], sd[1], sd[2], sd[3]);
 			m_pNodes.push_back(pNode);
 		}
 		// start the threads to control each Panasonic TV
-		for (const auto &m_pNode : m_pNodes)
+		for (const auto& m_pNode : m_pNodes)
 		{
 			_log.Log(LOG_STATUS, "Panasonic Plugin: (%s) Starting thread.", m_pNode->m_Name.c_str());
 			m_pNode->StartThread();
@@ -1110,9 +1110,9 @@ void CPanasonic::UnloadNodes()
 	m_pNodes.clear();
 }
 
-void CPanasonic::SendCommand(const int ID, const std::string &command)
+void CPanasonic::SendCommand(const int ID, const std::string& command)
 {
-	for (const auto &pnode : m_pNodes)
+	for (const auto& pnode : m_pNodes)
 	{
 		if (pnode->m_ID == ID)
 		{
@@ -1125,9 +1125,9 @@ void CPanasonic::SendCommand(const int ID, const std::string &command)
 }
 
 
-bool CPanasonic::SetExecuteCommand(const int ID, const std::string &command)
+bool CPanasonic::SetExecuteCommand(const int ID, const std::string& command)
 {
-	for (const auto &pnode : m_pNodes)
+	for (const auto& pnode : m_pNodes)
 	{
 		if (pnode->m_ID == ID)
 		{
@@ -1141,7 +1141,7 @@ bool CPanasonic::SetExecuteCommand(const int ID, const std::string &command)
 //Webserver helpers
 namespace http {
 	namespace server {
-		void CWebServer::Cmd_PanasonicGetNodes(WebEmSession & session, const request& req, Json::Value &root)
+		void CWebServer::Cmd_PanasonicGetNodes(WebEmSession& session, const request& req, Json::Value& root)
 		{
 			if (session.rights != 2)
 			{
@@ -1152,7 +1152,7 @@ namespace http {
 			if (hwid.empty())
 				return;
 			int iHardwareID = atoi(hwid.c_str());
-			CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(iHardwareID);
+			CDomoticzHardwareBase* pHardware = m_mainworker.GetHardware(iHardwareID);
 			if (pHardware == nullptr)
 				return;
 			if (pHardware->HwdType != HTYPE_PanasonicTV)
@@ -1166,7 +1166,7 @@ namespace http {
 			if (!result.empty())
 			{
 				int ii = 0;
-				for (const auto &sd : result)
+				for (const auto& sd : result)
 				{
 					root["result"][ii]["idx"] = sd[0];
 					root["result"][ii]["Name"] = sd[1];
@@ -1178,7 +1178,7 @@ namespace http {
 		}
 
 
-		void CWebServer::Cmd_PanasonicSetMode(WebEmSession & session, const request& req, Json::Value &root)
+		void CWebServer::Cmd_PanasonicSetMode(WebEmSession& session, const request& req, Json::Value& root)
 		{
 			if (session.rights != 2)
 			{
@@ -1193,12 +1193,12 @@ namespace http {
 			if ((hwid.empty()) || (mode1.empty()) || (mode2.empty()))
 				return;
 			int iHardwareID = atoi(hwid.c_str());
-			CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardware(iHardwareID);
+			CDomoticzHardwareBase* pBaseHardware = m_mainworker.GetHardware(iHardwareID);
 			if (pBaseHardware == nullptr)
 				return;
 			if (pBaseHardware->HwdType != HTYPE_PanasonicTV)
 				return;
-			CPanasonic *pHardware = dynamic_cast<CPanasonic*>(pBaseHardware);
+			CPanasonic* pHardware = dynamic_cast<CPanasonic*>(pBaseHardware);
 
 			root["status"] = "OK";
 			root["title"] = "PanasonicSetMode";
@@ -1214,7 +1214,7 @@ namespace http {
 		}
 
 
-		void CWebServer::Cmd_PanasonicAddNode(WebEmSession & session, const request& req, Json::Value &root)
+		void CWebServer::Cmd_PanasonicAddNode(WebEmSession& session, const request& req, Json::Value& root)
 		{
 			if (session.rights != 2)
 			{
@@ -1229,19 +1229,19 @@ namespace http {
 			if ((hwid.empty()) || (name.empty()) || (ip.empty()) || (Port == 0))
 				return;
 			int iHardwareID = atoi(hwid.c_str());
-			CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardware(iHardwareID);
+			CDomoticzHardwareBase* pBaseHardware = m_mainworker.GetHardware(iHardwareID);
 			if (pBaseHardware == nullptr)
 				return;
 			if (pBaseHardware->HwdType != HTYPE_PanasonicTV)
 				return;
-			CPanasonic *pHardware = dynamic_cast<CPanasonic*>(pBaseHardware);
+			CPanasonic* pHardware = dynamic_cast<CPanasonic*>(pBaseHardware);
 
 			root["status"] = "OK";
 			root["title"] = "PanasonicAddNode";
 			pHardware->AddNode(name, ip, Port);
 		}
 
-		void CWebServer::Cmd_PanasonicUpdateNode(WebEmSession & session, const request& req, Json::Value &root)
+		void CWebServer::Cmd_PanasonicUpdateNode(WebEmSession& session, const request& req, Json::Value& root)
 		{
 			if (session.rights != 2)
 			{
@@ -1257,12 +1257,12 @@ namespace http {
 			if ((hwid.empty()) || (nodeid.empty()) || (name.empty()) || (ip.empty()) || (Port == 0))
 				return;
 			int iHardwareID = atoi(hwid.c_str());
-			CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardware(iHardwareID);
+			CDomoticzHardwareBase* pBaseHardware = m_mainworker.GetHardware(iHardwareID);
 			if (pBaseHardware == nullptr)
 				return;
 			if (pBaseHardware->HwdType != HTYPE_PanasonicTV)
 				return;
-			CPanasonic *pHardware = dynamic_cast<CPanasonic*>(pBaseHardware);
+			CPanasonic* pHardware = dynamic_cast<CPanasonic*>(pBaseHardware);
 
 			int NodeID = atoi(nodeid.c_str());
 			root["status"] = "OK";
@@ -1270,7 +1270,7 @@ namespace http {
 			pHardware->UpdateNode(NodeID, name, ip, Port);
 		}
 
-		void CWebServer::Cmd_PanasonicRemoveNode(WebEmSession & session, const request& req, Json::Value &root)
+		void CWebServer::Cmd_PanasonicRemoveNode(WebEmSession& session, const request& req, Json::Value& root)
 		{
 			if (session.rights != 2)
 			{
@@ -1283,12 +1283,12 @@ namespace http {
 			if ((hwid.empty()) || (nodeid.empty()))
 				return;
 			int iHardwareID = atoi(hwid.c_str());
-			CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardware(iHardwareID);
+			CDomoticzHardwareBase* pBaseHardware = m_mainworker.GetHardware(iHardwareID);
 			if (pBaseHardware == nullptr)
 				return;
 			if (pBaseHardware->HwdType != HTYPE_PanasonicTV)
 				return;
-			CPanasonic *pHardware = dynamic_cast<CPanasonic*>(pBaseHardware);
+			CPanasonic* pHardware = dynamic_cast<CPanasonic*>(pBaseHardware);
 
 			int NodeID = atoi(nodeid.c_str());
 			root["status"] = "OK";
@@ -1296,7 +1296,7 @@ namespace http {
 			pHardware->RemoveNode(NodeID);
 		}
 
-		void CWebServer::Cmd_PanasonicClearNodes(WebEmSession & session, const request& req, Json::Value &root)
+		void CWebServer::Cmd_PanasonicClearNodes(WebEmSession& session, const request& req, Json::Value& root)
 		{
 			if (session.rights != 2)
 			{
@@ -1308,19 +1308,19 @@ namespace http {
 			if (hwid.empty())
 				return;
 			int iHardwareID = atoi(hwid.c_str());
-			CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardware(iHardwareID);
+			CDomoticzHardwareBase* pBaseHardware = m_mainworker.GetHardware(iHardwareID);
 			if (pBaseHardware == nullptr)
 				return;
 			if (pBaseHardware->HwdType != HTYPE_PanasonicTV)
 				return;
-			CPanasonic *pHardware = dynamic_cast<CPanasonic*>(pBaseHardware);
+			CPanasonic* pHardware = dynamic_cast<CPanasonic*>(pBaseHardware);
 
 			root["status"] = "OK";
 			root["title"] = "PanasonicClearNodes";
 			pHardware->RemoveAllNodes();
 		}
 
-		void CWebServer::Cmd_PanasonicMediaCommand(WebEmSession & /*session*/, const request& req, Json::Value &root)
+		void CWebServer::Cmd_PanasonicMediaCommand(WebEmSession& /*session*/, const request& req, Json::Value& root)
 		{
 			std::string sIdx = request::findValue(&req, "idx");
 			std::string sAction = request::findValue(&req, "action");

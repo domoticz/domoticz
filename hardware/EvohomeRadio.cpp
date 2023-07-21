@@ -563,7 +563,7 @@ bool CEvohomeRadio::HandleLoopData(const char* data, size_t len)
 		return false;
 	}
 	memcpy(m_buf + m_nBufPtr, data, len);
-	m_nBufPtr += len;
+	m_nBufPtr += (int)len;
 	m_nBufPtr = ProcessBuf(m_buf, m_nBufPtr);
 	return true;
 }
@@ -675,7 +675,7 @@ bool CEvohomeMsg::DecodePacket(const char* rawmsg)
 		}
 		else
 		{
-			int nPos = tkn.find(':');
+			size_t nPos = tkn.find(':');
 			if (nPos != std::string::npos)
 			{
 				if (nid >= 3)
@@ -1844,7 +1844,7 @@ bool CEvohomeRadio::DecodeDeviceInfo(CEvohomeMsg& msg)
 	char sFaultType[15], sFaultCode[20], sDevType[15], sFaultDateTime[21];
 
 	msg.Get(nFaultType, 1).Get(nFaultCode, 4);
-	nFaultDateTime = static_cast<long long>(msg.payload[10]) << 32 | static_cast<long long>(msg.payload[11]) << 24 | msg.payload[12] << 16 | msg.payload[13] << 8 | msg.payload[14];
+	nFaultDateTime = static_cast<int64_t>(msg.payload[10]) << 32 | static_cast<int64_t>(msg.payload[11]) << 24 | msg.payload[12] << 16 | msg.payload[13] << 8 | msg.payload[14];
 
 	nFaultYear = static_cast<uint8_t>((nFaultDateTime >> 24) & 127);
 	nFaultMonth = static_cast<uint8_t>((nFaultDateTime >> 36) & 15);
