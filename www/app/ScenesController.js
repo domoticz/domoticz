@@ -99,7 +99,7 @@ define(['app', 'livesocket'], function (app) {
 			bootbox.confirm($.t("Are you sure to remove this Scene?"), function (result) {
 				if (result == true) {
 					$.ajax({
-						url: "json.htm?type=deletescene&idx=" + SceneIdx,
+						url: "json.htm?type=command&param=deletescene&idx=" + SceneIdx,
 						async: false,
 						dataType: 'json',
 						success: function (data) {
@@ -156,7 +156,7 @@ define(['app', 'livesocket'], function (app) {
 				var SceneType = $element.find("#combotype").val();
 				var bIsProtected = $element.find('#protected').is(":checked");
 				$.ajax({
-					url: "json.htm?type=updatescene&idx=" + SceneIdx +
+					url: "json.htm?type=command&param=updatescene&idx=" + SceneIdx +
 					"&scenetype=" + SceneType +
 					"&name=" + encodeURIComponent($element.find("#devicename").val()) +
 					"&description=" + encodeURIComponent($element.find("#devicedescription").val()) +
@@ -834,7 +834,7 @@ define(['app', 'livesocket'], function (app) {
 
 		//We only call this once. After this the widgets are being updated automatically by used of the websocket broadcast event.
 		RefreshScenes = function () {
-			livesocket.getJson("json.htm?type=scenes&lastupdate=" + $.LastUpdateTime, function (data) {
+			livesocket.getJson("json.htm?type=command&param=getscenes&lastupdate=" + $.LastUpdateTime, function (data) {
 				if (typeof data.ServerTime != 'undefined') {
 					$rootScope.SetTimeAndSun(data.Sunrise, data.Sunset, data.ServerTime);
 				}
@@ -866,7 +866,7 @@ define(['app', 'livesocket'], function (app) {
 			var j = 0;
 
 			$.ajax({
-				url: "json.htm?type=scenes",
+				url: "json.htm?type=command&param=getscenes",
 				async: false,
 				dataType: 'json',
 				success: function (data) {
@@ -1040,7 +1040,7 @@ define(['app', 'livesocket'], function (app) {
 							var SceneName = encodeURIComponent($("#dialog-addscene #scenename").val());
 							var SceneType = $("#dialog-addscene #combotype").val();
 							$.ajax({
-								url: "json.htm?type=addscene&name=" + SceneName + "&scenetype=" + SceneType,
+								url: "json.htm?type=command&param=addscene&name=" + SceneName + "&scenetype=" + SceneType,
 								async: false,
 								dataType: 'json',
 								success: function (data) {

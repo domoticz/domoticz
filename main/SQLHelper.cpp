@@ -11,7 +11,6 @@
 #include <iomanip>
 #include "RFXtrx.h"
 #include "RFXNames.h"
-#include "localtime_r.h"
 #include "Logger.h"
 #include "mainworker.h"
 #include "../main/json_helper.h"
@@ -40,7 +39,7 @@
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
 
-#define DB_VERSION 162
+#define DB_VERSION 163
 
 #define DEFAULT_ADMINUSER "admin"
 #define DEFAULT_ADMINPWD "domoticz"
@@ -262,6 +261,7 @@ constexpr auto sqlCreateUsers =
 "[Active] INTEGER NOT NULL DEFAULT 0, "
 "[Username] VARCHAR(200) NOT NULL, "
 "[Password] VARCHAR(200) NOT NULL, "
+"[MFAsecret] VARCHAR(200) NULL, "
 "[Rights] INTEGER DEFAULT 255, "
 "[TabsEnabled] INTEGER DEFAULT 255, "
 "[RemoteSharing] INTEGER DEFAULT 0);";
@@ -3149,6 +3149,20 @@ bool CSQLHelper::OpenDatabase()
 				}
 			}
 		}
+		if (dbversion < 163)
+		{
+			// Add MFA secret column to Users table
+			query("ALTER TABLE Users ADD COLUMN [MFAsecret] VARCHAR(200) NULL");
+
+			// Make sure the default Applications are there (domoticzUI (enabled) and domoticzMobileApp (disabled))
+			result = safe_query("SELECT ID, Active, Applicationname FROM Applications WHERE Applicationname IN ('domoticzUI', 'domoticzMobileApp') order by Applicationname desc");
+			if (result.empty())
+			{
+				// None of the default Applications exist, so add them
+				safe_query("INSERT INTO Applications (Active, Public, Applicationname) VALUES (1, 1, 'domoticzUI')");
+				safe_query("INSERT INTO Applications (Active, Public, Applicationname) VALUES (0, 0, 'domoticzMobileApp')");
+			}
+		}
 	}
 	else if (bNewInstall)
 	{
@@ -3157,6 +3171,8 @@ bool CSQLHelper::OpenDatabase()
 		// Add hardware for internal use
 		safe_query("INSERT INTO Hardware (Name, Enabled, Type, Address, Port, Username, Password, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6) VALUES ('Domoticz Internal',1, %d,'',1,'','',0,0,0,0,0,0)", HTYPE_DomoticzInternal);
 		safe_query("INSERT INTO Users (Active, Username, Password, Rights, TabsEnabled) VALUES (1, '%s', '%s', %d, 0x1F)", base64_encode(DEFAULT_ADMINUSER).c_str(), GenerateMD5Hash(DEFAULT_ADMINPWD).c_str(), http::server::URIGHTS_ADMIN);
+		safe_query("INSERT INTO Applications (Active, Public, Applicationname) VALUES (1, 1, 'domoticzUI')");
+		safe_query("INSERT INTO Applications (Active, Public, Applicationname) VALUES (0, 0, 'domoticzMobileApp')");
 	}
 	UpdatePreferencesVar("DB_Version", DB_VERSION);
 
@@ -3706,7 +3722,7 @@ void CSQLHelper::ManageExecuteScriptTimeout(std::string szCommand, int pid, int 
 }
 #endif
 
-void CSQLHelper::PerformThreadedAction(const _tTaskItem tItem)
+void CSQLHelper::PerformThreadedAction(const _tTaskItem &tItem)
 {
 	if (tItem._ItemType == TITEM_EXECUTESHELLCOMMAND)
 	{
@@ -5108,6 +5124,115 @@ uint64_t CSQLHelper::GetDeviceIndex(const int HardwareID, const std::string& ID,
 	return std::stoull(result[0].at(0));
 }
 
+uint64_t CSQLHelper::UpdateManagedValueInt(
+	const int HardwareID, const char* ID, const unsigned char unit, const unsigned char devType, const unsigned char subType,
+	const unsigned char signallevel, const unsigned char batterylevel, const int nValue, const char* sValue, std::string& devname,
+	const bool bUseOnOffAction,
+	const char* User
+)
+{
+	uint64_t ulID = 0;
+
+	std::vector<std::vector<std::string> > result;
+	result = safe_query("SELECT ID, Name, Used, SwitchType, nValue, sValue, LastUpdate, Options FROM DeviceStatus WHERE (HardwareID=%d AND DeviceID='%q' AND Unit=%d AND Type=%d AND SubType=%d)", HardwareID, ID, unit, devType, subType);
+	if (result.empty())
+	{
+		//Device not found, create it
+		ulID = InsertDevice(HardwareID, ID, unit, devType, subType, 0, nValue, sValue, devname, signallevel, batterylevel);
+
+		if (ulID == (uint64_t)-1)
+		{
+			return -1;
+		}
+	}
+	else
+	{
+		ulID = std::stoull(result[0][0]);
+		devname = result[0][1];
+	}
+
+	std::string sLastUpdate = TimeToString(nullptr, TF_DateTime);
+
+	bool bOK = false;
+
+	std::vector<std::string> parts, parts2;
+	StringSplit(sValue, ";", parts);
+	if (parts.size() == 11)
+	{
+		// is last part date only, or date with hour with space?
+		StringSplit(parts[10], " ", parts2);
+		bool shortLog = false;
+		if (parts2.size() > 1) {
+			shortLog = true;
+		}
+		// second part is date only, or date with hour with space
+		// In DeviceStatus table, index 0 = Usage 1,  1 = Usage 2, 2 = Delivery 1,  3 = Delivery 2, 4 = Usage current, 5 = Delivery current
+		// In MultiMeter table, index 0 = Usage 1, 1 = Delivery 1, 2 = Usage current, 3 = Delivery current, 4 = Usage 2, 5 = Delivery 2
+		// In MultiMeter_Calendar table, same as Multimeter table + counter1, counter2, counter3 and counter4 when shortlog is False
+		UpdateCalendarMeter(HardwareID, ID, unit, devType, subType,
+			shortLog,
+			true,
+			parts[10].c_str(),
+			std::stoll(parts[0]),
+			std::stoll(parts[2]),
+			std::stoll(parts[4]),
+			std::stoll(parts[5]),
+			std::stoll(parts[1]),
+			std::stoll(parts[3]),
+			std::stoll(parts[6]),
+			std::stoll(parts[7]),
+			std::stoll(parts[8]),
+			std::stoll(parts[9])
+		);
+		bOK = true;
+	}
+	if (parts.size() == 7)
+	{
+		// is last part date only, or date with hour with space?
+		StringSplit(parts[6], " ", parts2);
+		bool shortLog = false;
+		if (parts2.size() > 1) {
+			shortLog = true;
+		}
+		// In DeviceStatus table, index 0 = Usage 1,  1 = Usage 2, 2 = Delivery 1,  3 = Delivery 2, 4 = Usage current, 5 = Delivery current
+		// In MultiMeter table, index 0 = Usage 1, 1 = Delivery 1, 2 = Usage current, 3 = Delivery current, 4 = Usage 2, 5 = Delivery 2
+		// In MultiMeter_Calendar table, same as Multimeter table + counter1, counter2, counter3 and counter4 when shortlog is False
+		UpdateCalendarMeter(HardwareID, ID, unit, devType, subType,
+			shortLog,
+			true,
+			parts[6].c_str(),
+			std::stoll(parts[0]),
+			std::stoll(parts[2]),
+			std::stoll(parts[4]),
+			std::stoll(parts[5]),
+			std::stoll(parts[1]),
+			std::stoll(parts[3])
+		);
+		bOK = true;
+	}
+	if (parts.size() == 3)
+	{
+		StringSplit(parts[2], " ", parts2);
+		// second part is date only, or date with hour with space
+		bool shortLog = false;
+		if (parts2.size() > 1) {
+			shortLog = true;
+		}
+		UpdateCalendarMeter(HardwareID, ID, unit, devType, subType,
+			shortLog,
+			false,
+			parts[2].c_str(),
+			std::stoll(parts[0]),
+			std::stoll(parts[1])
+		);
+		bOK = true;
+	}
+	if (!bOK)
+		return -1;
+	safe_query("UPDATE DeviceStatus SET LastUpdate='%q', sValue='%q' WHERE (ID = %" PRIu64 ")", sLastUpdate.c_str(), sValue, ulID);
+	return ulID;
+}
+
 uint64_t CSQLHelper::UpdateValueInt(
         const int HardwareID, const char *ID, const unsigned char unit, const unsigned char devType, const unsigned char subType,
         const unsigned char signallevel, const unsigned char batterylevel, const int nValue, const char *sValue, std::string &devname,
@@ -5119,14 +5244,34 @@ uint64_t CSQLHelper::UpdateValueInt(
 		return -1;
 
 	uint64_t ulID = 0;
+	std::string sOption;
+	std::map<std::string, std::string> options;
+
+	bool bIsManagedCounter = (devType == pTypeGeneral && subType == sTypeManagedCounter);
+
+	std::vector<std::vector<std::string> > result;
+	result = safe_query("SELECT ID, Name, Used, SwitchType, nValue, sValue, LastUpdate, Options FROM DeviceStatus WHERE (HardwareID=%d AND DeviceID='%q' AND Unit=%d AND Type=%d AND SubType=%d)", HardwareID, ID, unit, devType, subType);
+
+	if (!result.empty())
+	{
+		sOption = result[0][7];
+		options = BuildDeviceOptions(sOption);
+
+		if (options["AddDBLogEntry"] == "true")
+		{
+			bIsManagedCounter = true;
+		}
+	}
+	if (bIsManagedCounter)
+		return UpdateManagedValueInt(HardwareID, ID, unit, devType, subType, signallevel, batterylevel, nValue, sValue, devname, bUseOnOffAction, User);
+
+
 	bool bDeviceUsed = false;
 	bool bSameDeviceStatusValue = false;
 	int nValueBeforeUpdate = -1;
 	std::string sValueBeforeUpdate;
 	_eSwitchType stype = STYPE_OnOff;
 
-	std::vector<std::vector<std::string> > result;
-	result = safe_query("SELECT ID, Name, Used, SwitchType, nValue, sValue, LastUpdate, Options FROM DeviceStatus WHERE (HardwareID=%d AND DeviceID='%q' AND Unit=%d AND Type=%d AND SubType=%d)", HardwareID, ID, unit, devType, subType);
 	if (result.empty())
 	{
 		//Insert
@@ -5152,8 +5297,6 @@ uint64_t CSQLHelper::UpdateValueInt(
 	{
 		//Update
 		ulID = std::stoull(result[0][0]);
-		std::string sOption = result[0][7];
-		auto options = BuildDeviceOptions(sOption);
 		devname = result[0][1];
 		bDeviceUsed = atoi(result[0][2].c_str()) != 0;
 		stype = (_eSwitchType)atoi(result[0][3].c_str());
@@ -5234,85 +5377,6 @@ uint64_t CSQLHelper::UpdateValueInt(
 					(nValue == nValueBeforeUpdate) &&
 					(sValue == sValueBeforeUpdate)
 					);
-			}
-
-			if ((devType == pTypeGeneral && subType == sTypeManagedCounter) || (options["AddDBLogEntry"] == "true"))
-			{
-				std::vector<std::string> parts, parts2;
-				StringSplit(sValue, ";", parts);
-				if (parts.size() == 11)
-				{
-					// is last part date only, or date with hour with space?
-					StringSplit(parts[10], " ", parts2);
-					bool shortLog = false;
-					if (parts2.size() > 1) {
-						shortLog = true;
-					}
-					// second part is date only, or date with hour with space
-					// In DeviceStatus table, index 0 = Usage 1,  1 = Usage 2, 2 = Delivery 1,  3 = Delivery 2, 4 = Usage current, 5 = Delivery current
-					// In MultiMeter table, index 0 = Usage 1, 1 = Delivery 1, 2 = Usage current, 3 = Delivery current, 4 = Usage 2, 5 = Delivery 2
-					// In MultiMeter_Calendar table, same as Multimeter table + counter1, counter2, counter3 and counter4 when shortlog is False
-					UpdateCalendarMeter(HardwareID, ID, unit, devType, subType,
-						shortLog,
-						true,
-						parts[10].c_str(),
-						std::stoll(parts[0]),
-						std::stoll(parts[2]),
-						std::stoll(parts[4]),
-						std::stoll(parts[5]),
-						std::stoll(parts[1]),
-						std::stoll(parts[3]),
-						std::stoll(parts[6]),
-						std::stoll(parts[7]),
-						std::stoll(parts[8]),
-						std::stoll(parts[9])
-					);
-					result = safe_query("UPDATE DeviceStatus SET LastUpdate='%q' WHERE (ID = %" PRIu64 ")", sLastUpdate.c_str(), ulID);
-					return ulID;
-				}
-				if (parts.size() == 7)
-				{
-					// is last part date only, or date with hour with space?
-					StringSplit(parts[6], " ", parts2);
-					bool shortLog = false;
-					if (parts2.size() > 1) {
-						shortLog = true;
-					}
-					// In DeviceStatus table, index 0 = Usage 1,  1 = Usage 2, 2 = Delivery 1,  3 = Delivery 2, 4 = Usage current, 5 = Delivery current
-					// In MultiMeter table, index 0 = Usage 1, 1 = Delivery 1, 2 = Usage current, 3 = Delivery current, 4 = Usage 2, 5 = Delivery 2
-					// In MultiMeter_Calendar table, same as Multimeter table + counter1, counter2, counter3 and counter4 when shortlog is False
-					UpdateCalendarMeter(HardwareID, ID, unit, devType, subType,
-						shortLog,
-						true,
-						parts[6].c_str(),
-						std::stoll(parts[0]),
-						std::stoll(parts[2]),
-						std::stoll(parts[4]),
-						std::stoll(parts[5]),
-						std::stoll(parts[1]),
-						std::stoll(parts[3])
-					);
-					result = safe_query("UPDATE DeviceStatus SET LastUpdate='%q' WHERE (ID = %" PRIu64 ")", sLastUpdate.c_str(), ulID);
-					return ulID;
-				}
-				if (parts.size() == 3)
-				{
-					StringSplit(parts[2], " ", parts2);
-					// second part is date only, or date with hour with space
-					bool shortLog = false;
-					if (parts2.size() > 1) {
-						shortLog = true;
-					}
-					UpdateCalendarMeter(HardwareID, ID, unit, devType, subType,
-						shortLog,
-						false,
-						parts[2].c_str(),
-						std::stoll(parts[0]),
-						std::stoll(parts[1])
-					);
-					result = safe_query("UPDATE DeviceStatus SET LastUpdate='%q' WHERE (ID = %" PRIu64 ")", sLastUpdate.c_str(), ulID);
-					return ulID;
-				}
 			}
 
 			result = safe_query(
@@ -7262,13 +7326,6 @@ void CSQLHelper::AddCalendarUpdateMeter()
 			continue;
 		std::vector<std::string> sd = result[0];
 
-		std::string sOptions = sd[7];
-		std::map<std::string, std::string> options = BuildDeviceOptions(sOptions);
-		// We don't want to update meter if externally managed
-		if (options["DisableLogAutoUpdate"] == "true")
-		{
-			continue;
-		}
 		std::string devname = sd[0];
 		//int hardwareID= atoi(sd[1].c_str());
 		//std::string DeviceID=sd[2];
@@ -7277,6 +7334,19 @@ void CSQLHelper::AddCalendarUpdateMeter()
 		unsigned char subType = atoi(sd[5].c_str());
 		_eSwitchType switchtype = (_eSwitchType)atoi(sd[6].c_str());
 		_eMeterType metertype = (_eMeterType)switchtype;
+		std::string sOptions = sd[7];
+		std::map<std::string, std::string> options = BuildDeviceOptions(sOptions);
+
+		bool bIsManagedCounter = (devType == pTypeGeneral && subType == sTypeManagedCounter);
+
+		// We don't want to update meter if externally managed
+		if (
+			(bIsManagedCounter)
+			|| (options["DisableLogAutoUpdate"] == "true")
+			)
+		{
+			continue;
+		}
 
 		float tGasDivider = GasDivider;
 
@@ -7474,14 +7544,6 @@ void CSQLHelper::AddCalendarUpdateMultiMeter()
 			continue;
 		std::vector<std::string> sd = result[0];
 
-		std::string sOptions = sd[7];
-		std::map<std::string, std::string> options = BuildDeviceOptions(sOptions);
-		// We don't want to update meter if externally managed
-		if (options["DisableLogAutoUpdate"] == "true")
-		{
-			continue;
-		}
-
 		std::string devname = sd[0];
 		//int hardwareID= atoi(sd[1].c_str());
 		//std::string DeviceID=sd[2];
@@ -7490,6 +7552,19 @@ void CSQLHelper::AddCalendarUpdateMultiMeter()
 		unsigned char subType = atoi(sd[5].c_str());
 		//_eSwitchType switchtype=(_eSwitchType) atoi(sd[6].c_str());
 		//_eMeterType metertype=(_eMeterType)switchtype;
+
+		std::string sOptions = sd[7];
+		std::map<std::string, std::string> options = BuildDeviceOptions(sOptions);
+
+		bool bIsManagedCounter = (devType == pTypeGeneral && subType == sTypeManagedCounter);
+		// We don't want to update meter if externally managed
+		if (
+			(bIsManagedCounter)
+			|| (options["DisableLogAutoUpdate"] == "true")
+			)
+		{
+			continue;
+		}
 
 		result = safe_query(
 			"SELECT MIN(Value1), MAX(Value1), MIN(Value2), MAX(Value2), MIN(Value3), MAX(Value3), MIN(Value4), MAX(Value4), MIN(Value5), MAX(Value5), MIN(Value6), MAX(Value6) FROM MultiMeter WHERE (DeviceRowID='%" PRIu64 "' AND Date>='%q' AND Date<='%q 00:00:00')",
@@ -8199,8 +8274,7 @@ void CSQLHelper::DeleteDateRange(const char *ID, const std::string &fromDate, co
 
 void CSQLHelper::DeleteDataPoint(const char* ID, const std::string& Date)
 {
-
-	char szDateEnd[100];
+	std::string sDataEnd = Date;
 	if (Date.find(':') != std::string::npos)
 	{
 		time_t now = mytime(nullptr);
@@ -8210,12 +8284,9 @@ void CSQLHelper::DeleteDataPoint(const char* ID, const std::string& Date)
 		time_t cEndTime;
 		ParseSQLdatetime(cEndTime, tLastUpdate, Date, tLastUpdate.tm_isdst);
 		tLastUpdate.tm_min += 2;
-		sprintf(szDateEnd, "%04d-%02d-%02d %02d:%02d:%02d", tLastUpdate.tm_year + 1900, tLastUpdate.tm_mon + 1, tLastUpdate.tm_mday, tLastUpdate.tm_hour, tLastUpdate.tm_min, tLastUpdate.tm_sec);
-
-		DeleteDateRange(ID, Date.c_str(), szDateEnd);
+		sDataEnd = std_format("%04d-%02d-%02d %02d:%02d:%02d", tLastUpdate.tm_year + 1900, tLastUpdate.tm_mon + 1, tLastUpdate.tm_mday, tLastUpdate.tm_hour, tLastUpdate.tm_min, tLastUpdate.tm_sec);
 	}
-	else
-		DeleteDateRange(ID, Date.c_str(), Date.c_str() );
+	DeleteDateRange(ID, Date, sDataEnd);
 }
 
 void CSQLHelper::AddTaskItem(const _tTaskItem& tItem, const bool cancelItem)

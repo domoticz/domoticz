@@ -4,10 +4,10 @@ define(['app'], function (app) {
 		$scope.iconset = [];
 		$scope.selectedIcon = [];
 
-		$scope.uploadFileToUrl = function (file, uploadUrl) {
+		$scope.uploadIcon = function (file) {
 			var fd = new FormData();
 			fd.append('file', file);
-			$http.post(uploadUrl, fd, {
+			$http.post('/json.htm?type=command&param=uploadcustomicon', fd, {
 				transformRequest: angular.identity,
 				headers: { 'Content-Type': undefined }
 			}).then(function successCallback(response) {
@@ -30,7 +30,7 @@ define(['app'], function (app) {
 				ShowNotify($.t('Choose a File first!'), 2500, true);
 				return;
 			}
-			$scope.uploadFileToUrl(file, "uploadcustomicon");
+			$scope.uploadIcon(file);
 		}
 
 		$scope.RefreshIconList = function () {

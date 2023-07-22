@@ -1,0 +1,83 @@
+<div id="myprofilecontent" class="container">
+	<div class="page-header-small">
+		<h1 data-i18n="My Profile">My Profile</h1><span><i><b>({{ config.userName }})</b></i></span>
+	</div>
+    <div>
+    <div>
+		<form name="myPasswdForm" ng-submit="updateMyPasswd()">
+			<h3>Change Password</h3>
+			<table class="display table-details" id="passwdtable">
+				<tr>
+					<td>
+						<label for="OldPwd"><span data-i18n="Old Password"></span>:</label>
+					</td>
+					<td>
+						<input type="password" id="OldPwd" autocomplete="current-password" name="OldPwd" required style="width: 350px; padding: .2em;" class="text ui-widget-content ui-corner-all" ng-model="myprofile.oldpwd">
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<label for="NewPwd"><span data-i18n="New Password"></span>:</label>
+					</td>
+					<td>
+						<input type="password" id="NewPwd" autocomplete="new-password" name="NewPwd" required style="width: 350px; padding: .2em;" class="text ui-widget-content ui-corner-all" ng-model="myprofile.newpwd">
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<label for="VfyPwd"><span data-i18n="Confirm Password"></span>:</label>
+					</td>
+					<td>
+						<input type="password" id="VfyPwd" autocomplete="new-password" name="VfyPwd" required style="width: 350px; padding: .2em;" class="text ui-widget-content ui-corner-all" ng-model="myprofile.vfypwd">
+					</td>
+				</tr>
+				<tr>
+					<td colspan="2">&nbsp;</td>
+				</tr>
+			</table>
+		</form>
+    </div>
+	<div>
+		<h3 data-i18n="Two way authentication"></h3>
+		<table class="display table-details" id="profiletable">
+			<tr>
+				<td></td>
+				<td colsspan="2">
+					<input type="checkbox" id="EnableMFA" name="EnableMFA" ng-model="myprofile.enableMFA" ng-change="onMFAChange()"> <label for="EnableMFA" data-i18n="Enabled">Enabled</label>
+				</td>
+			</tr>
+			<tr ng-show="myprofile.enableMFA">
+				<td></td>
+				<td>
+					<div id="qrcode">QR-code</div>
+					<input type="hidden" id="TotpSecret" autocomplete="off" name="TotpSecret" ng-model="myprofile.totpsecret" ng-change="changeTOTP();" style="width: 350px;" class="text ui-widget-content ui-corner-all"><br />
+					Using an authenticator app like <b>Google Authenticator</b> or <b>Authy</b>, scan the QR code. It will display a 6 digit code which you need to enter below.
+				</td>
+			</tr>
+			<tr ng-show="myprofile.enableMFA">
+				<td>
+					<label for="TotpCode"><span data-i18n="Code">Code</span>:</label>
+				</td>
+				<td>
+					<input type="text" id="TotpCode" autocomplete="off" name="TotpCode" ng-model="myprofile.totpcode" maxlength="6" style="width: 100px;" class="text ui-widget-content ui-corner-all digit6">
+				</td>
+			</tr>
+		</table>
+	</div>
+	<p></p>
+	<div>
+		<table class="display table-details" id="profiletable">
+			<tr>
+				<td></td>
+				<td>
+					<button type="button" class="btnstyle3" ng-click="updateMyProfile()">
+						{{ :: 'Update' | translate}}
+					</button>
+					<button type="button" class="btnstyle3" ng-click="btnCancel()">
+						{{ :: 'Cancel' | translate}}
+					</button>
+				</td>
+			</tr>
+		</table>
+	</div>
+</div>

@@ -2,7 +2,6 @@
 #include <iostream>
 #include "DomoticzHardware.h"
 #include "../main/Logger.h"
-#include "../main/localtime_r.h"
 #include "../main/Helper.h"
 #include "../main/RFXtrx.h"
 #include "../main/SQLHelper.h"

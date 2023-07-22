@@ -9,9 +9,7 @@
 #include <deque>
 #include "WindCalculation.h"
 #include "TrendCalculator.h"
-#include "StoppableTask.h"
 #include "../tcpserver/TCPServer.h"
-#include "concurrent_queue.h"
 #include "../webserver/server_settings.hpp"
 #include "../iamserver/iam_settings.hpp"
 #ifdef ENABLE_PYTHON

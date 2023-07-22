@@ -1,7 +1,6 @@
 #include "stdafx.h"
 #include "mainworker.h"
 #include "SQLHelper.h"
-#include "localtime_r.h"
 #include "../hardware/hardwaretypes.h"
 #include "../main/Logger.h"
 #include "../main/RFXNames.h"

@@ -242,7 +242,7 @@ static const STR_TABLE_SINGLE HardwareTypeTable[] = {
 	{ HTYPE_BleBox, "BleBox devices", "BleBox" },
 	{ HTYPE_Ec3kMeterTCP, "Energy Count 3000/ NETBSEM4/ La Crosse RT-10 LAN", "Ec3kMeter" },
 	{ HTYPE_OpenWeatherMap, "Open Weather Map", "OpenWeatherMap" },
-	{ HTYPE_RESERVED_FOR_YOU_1, "", "" },
+	{ HTYPE_AlfenEveCharger, "Alfen Eve Charger LAN", "Alfen" },
 	{ HTYPE_RaspberryTSL2561, "I2C sensor TSL2561 Illuminance", "I2C TSL2561" },
 	{ HTYPE_Daikin, "Daikin Airconditioning with LAN (HTTP) interface", "Daikin" },
 	{ HTYPE_HEOS, "HEOS by DENON", "HEOS" },
@@ -262,7 +262,7 @@ static const STR_TABLE_SINGLE HardwareTypeTable[] = {
 	{ HTYPE_SysfsGpio, "Generic sysfs GPIO", "sysfs" },
 	{ HTYPE_Rtl433, "Rtl433 RTL-SDR receiver", "RTL433" },
 	{ HTYPE_OnkyoAVTCP, "Onkyo AV Receiver (LAN)", "Onkyo AV" },
-	{ HTYPE_RESERVED_FOR_YOU_2, "", "" },
+	{ HTYPE_EneverPriceFeeds, "Enever Dutch Electricity/Gas Price Feed", "Enever" },
 	{ HTYPE_USBtinGateway, "USBtin Can Gateway", "USBtin" },
 	{ HTYPE_EnphaseAPI, "Enphase Envoy with LAN (HTTP) interface", "Enphase" },
 	{ HTYPE_RaspberryMCP23017, "I2C sensor GPIO 16bit expander MCP23017", "I2C GPIO" },
@@ -1862,9 +1862,13 @@ void GetLightStatus(
 			switch (nValue)
 			{
 			case rfy_sUp:
+			case rfy_s05SecUp:
+			case rfy_s2SecUp:
 				lstatus = "On";
 				break;
 			case rfy_sDown:
+			case rfy_s05SecDown:
+			case rfy_s2SecDown:
 				lstatus = "Off";
 				break;
 			case rfy_sStop:
@@ -3981,6 +3985,7 @@ bool IsNetworkDevice(const _eHardwareTypes htype)
 	case HTYPE_OctoPrint:
 	case HTYPE_TeleinfoMeterTCP:
 	case HTYPE_MQTTAutoDiscovery:
+	case HTYPE_AlfenEveCharger:
 		return true;
 	default:
 		return false;

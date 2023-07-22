@@ -2,7 +2,6 @@
 #include "AtagOne.h"
 #include "../main/Helper.h"
 #include "hardwaretypes.h"
-#include "../main/localtime_r.h"
 #include "../main/Logger.h"
 #include "../main/WebServerHelper.h"
 #include "../main/RFXtrx.h"

@@ -41,8 +41,7 @@ define(['app'], function (app) {
 		}
 
 		function getPlans() {
-			return domoticzApi.sendRequest({
-				type: 'plans',
+			return domoticzApi.sendCommand('getplans',{
 				displayhidden: '1'
 			})
 				.then(domoticzApi.errorHandler)
@@ -52,9 +51,7 @@ define(['app'], function (app) {
 		}
 
 		function getPlanDevices(planId) {
-			return domoticzApi.sendRequest({
-				type: 'command',
-				param: 'getplandevices',
+			return domoticzApi.sendCommand('getplandevices',{
 				idx: planId
 			})
 				.then(domoticzApi.errorHandler)
@@ -63,11 +60,10 @@ define(['app'], function (app) {
 				})
 		}
 
-		function getPlanAvailableDevices() {
-			return domoticzApi.sendRequest({
-				type: 'command',
-				param: 'getunusedplandevices',
-				unique: 'false',
+		function getPlanAvailableDevices(planId) {
+			return domoticzApi.sendCommand('getunusedplandevices', {
+				actplan: planId,
+				unique: 'true'
 			})
 				.then(domoticzApi.errorHandler)
 				.then(function(response) {
@@ -171,7 +167,7 @@ define(['app'], function (app) {
 			}
 
 			function refreshPlanAvailableDevices() {
-				dzRoomPlanApi.getPlanAvailableDevices().then(function(devices) {
+				dzRoomPlanApi.getPlanAvailableDevices(dzRoomPlanApi.selectedPlan).then(function(devices) {
 					var regex = new RegExp('^\\[(.*)\] (.*)$');
 
 					$ctrl.devices = devices.map(function (device) {
@@ -539,6 +535,7 @@ define(['app'], function (app) {
 
 		function addDeviceToPlan() {
 			var scope = $scope.$new(true);
+			dzRoomPlanApi.selectedPlan = $ctrl.selectedPlan.idx;
 
 			$uibModal
 				.open(Object.assign({ scope: scope }, selectDeviceModal)).result

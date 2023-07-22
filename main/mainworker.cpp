@@ -2,7 +2,6 @@
 #include "mainworker.h"
 #include "Helper.h"
 #include "SunRiseSet.h"
-#include "localtime_r.h"
 #include "Logger.h"
 #include "WebServerHelper.h"
 #include "SQLHelper.h"
@@ -149,6 +148,8 @@
 #include "../hardware/OctoPrintMQTT.h"
 #include "../hardware/Meteorologisk.h"
 #include "../hardware/AirconWithMe.h"
+#include "../hardware/AlfenEve.h"
+#include "../hardware/Enever.h"
 
 // load notifications configuration
 #include "../notifications/NotificationHelper.h"
@@ -1056,7 +1057,7 @@ bool MainWorker::AddHardwareFromParams(
 		pHardware = new USBtin(ID, SerialPort, Mode1, Mode2);
 		break;
 	case HTYPE_EnphaseAPI:
-		pHardware = new EnphaseAPI(ID, Address, Port, Mode1, Mode2, Username, Password);
+		pHardware = new EnphaseAPI(ID, Address, Port, Mode1, Mode2, Username, Password, Extra);
 		break;
 	case HTYPE_Comm5SMTCP:
 		pHardware = new Comm5SMTCP(ID, Address, Port);
@@ -1084,6 +1085,12 @@ bool MainWorker::AddHardwareFromParams(
 		break;
 	case HTYPE_MQTTAutoDiscovery:
 		pHardware = new MQTTAutoDiscover(ID, Name, Address, Port, Username, Password, Extra, Mode2);
+		break;
+	case HTYPE_AlfenEveCharger:
+		pHardware = new AlfenEve(ID, Address, 443, 30, Username, Password);
+		break;
+	case HTYPE_EneverPriceFeeds:
+		pHardware = new Enever(ID, Username, Extra);
 		break;
 	}
 
@@ -6703,6 +6710,14 @@ void MainWorker::decode_RFY(const CDomoticzHardwareBase* pHardware, const tRBUF*
 
 void MainWorker::decode_evohome1(const CDomoticzHardwareBase* pHardware, const tRBUF* pResponse, _tRxMessageProcessingResult& procResult)
 {
+	if (
+		pHardware->HwdType != HTYPE_EVOHOME_SERIAL
+		&& pHardware->HwdType != HTYPE_EVOHOME_SCRIPT
+		&& pHardware->HwdType != HTYPE_EVOHOME_WEB
+		&& pHardware->HwdType != HTYPE_EVOHOME_TCP
+		)
+		return; //not for us!
+
 	char szTmp[100];
 	const _tEVOHOME1* pEvo = reinterpret_cast<const _tEVOHOME1*>(pResponse);
 	uint8_t devType = pTypeEvohome;
@@ -6789,6 +6804,14 @@ void MainWorker::decode_evohome1(const CDomoticzHardwareBase* pHardware, const t
 
 void MainWorker::decode_evohome2(const CDomoticzHardwareBase* pHardware, const tRBUF* pResponse, _tRxMessageProcessingResult& procResult)
 {
+	if (
+		pHardware->HwdType != HTYPE_EVOHOME_SERIAL
+		&& pHardware->HwdType != HTYPE_EVOHOME_SCRIPT
+		&& pHardware->HwdType != HTYPE_EVOHOME_WEB
+		&& pHardware->HwdType != HTYPE_EVOHOME_TCP
+		)
+		return; //not for us!
+
 	char szTmp[100];
 	const _tEVOHOME2* pEvo = reinterpret_cast<const _tEVOHOME2*>(pResponse);
 	uint8_t cmnd = 0;
@@ -12340,7 +12363,9 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string>& sd, std::string 
 				return false;
 		}
 
-		if (lcmd.RFY.subtype == sTypeRFY2)
+		bool bIsRFY2 = (lcmd.RFY.subtype == sTypeRFY2);
+
+		if (bIsRFY2)
 		{
 			//Special case for protocol version 2
 			lcmd.RFY.subtype = sTypeRFY;
@@ -12356,6 +12381,8 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string>& sd, std::string 
 		if (!WriteToHardware(HardwareID, (const char*)&lcmd, sizeof(lcmd.RFY)))
 			return false;
 		if (!IsTesting) {
+			if (bIsRFY2)
+				lcmd.RFY.subtype = sTypeRFY2;
 			//send to internal for now (later we use the ACK)
 			PushAndWaitRxMessage(m_hardwaredevices[hindex], (const uint8_t *)&lcmd, nullptr, -1, User.c_str());
 		}

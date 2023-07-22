@@ -4,22 +4,24 @@
 
 class CBuienRadar : public CDomoticzHardwareBase
 {
-      public:
+public:
 	CBuienRadar(int ID, int iForecast, int iThreshold, const std::string &Location);
 	~CBuienRadar() override = default;
 	bool WriteToHardware(const char *pdata, unsigned char length) override;
 	std::string GetForecastURL();
 
-      private:
+private:
 	void Init();
 	bool StartHardware() override;
 	bool StopHardware() override;
 	void Do_Work();
 	bool GetStationDetails();
-	void GetMeterDetails();
+	void ParseMeterDetails(const Json::Value &root);
 	void GetRainPrediction();
+	bool GetLatLongFromSystem();
 
-      private:
+private:
+	std::string m_szLocation;
 	std::string m_szMyLatitude;
 	std::string m_szMyLongitude;
 	std::string m_sStationName;

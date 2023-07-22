@@ -13,11 +13,11 @@ class P1MeterBase : public CDomoticzHardwareBase
 	{
 		double usage_cntr;
 		double usage_total;
-		uint8_t usage_values;
+		uint16_t usage_values;
 
 		double delivery_cntr;
 		double delivery_total;
-		uint8_t delivery_values;
+		uint16_t delivery_values;
 
 		void Init()
 		{

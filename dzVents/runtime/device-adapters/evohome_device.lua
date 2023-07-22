@@ -40,7 +40,7 @@ return {
 					mode = mode .. "&until=" .. untilDate
 				 end
 				local url = domoticz.settings['Domoticz url'] ..
-					"/json.htm?type=setused&idx=" .. device.id ..
+					"/json.htm?type=command&param=setused&idx=" .. device.id ..
 					"&setpoint=&state=" .. state ..
 					"&mode=" .. mode ..
 					"&used=true"
@@ -52,8 +52,14 @@ return {
 			device.active = device.state ~= 'Off'		
 		else
 			if device.deviceType == 'Heating' and device.deviceSubType == 'Evohome' then
-				device._state = data.data._state
-				device.mode = data.data._state
+				if data.data._state == nil then
+					device.state = device.rawData[2]
+					device.mode = tostring(device.rawData[3])
+				else
+					device._state = data.data._state
+					device.mode = data.data._state
+				
+				end
 			else
 				device.state = device.rawData[2]
 				device.mode = tostring(device.rawData[3])

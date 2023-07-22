@@ -24,8 +24,8 @@ def check_domoticz_port(test_domoticz,port):
     if oResult.status_code == 200:
         test_domoticz.iPort = port
         test_domoticz.sBaseURI += ":" + str(port)
-        oJSON = oResult.json()
-        test_domoticz.sVersion = oJSON["version"]
+        #oJSON = oResult.json()
+        #test_domoticz.sVersion = oJSON["version"]
     assert oResult.status_code == 200
 
 @given(parsers.parse('Command {command} is available'))
@@ -53,7 +53,7 @@ def request_uri(test_domoticz,uri):
 @when(parsers.parse('I request the "{method}"'))
 def request_uri(test_domoticz,method):
     if method == "Configuration Settings":
-        uri = '/json.htm?type=settings'
+        uri = '/json.htm?type=command&param=getsettings'
     elif method == "Version Information":
         uri = '/json.htm?type=command&param=getversion'
     else:

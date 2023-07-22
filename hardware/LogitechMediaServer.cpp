@@ -3,7 +3,6 @@
 #include "../hardware/hardwaretypes.h"
 #include "../main/json_helper.h"
 #include "../main/Helper.h"
-#include "../main/localtime_r.h"
 #include "../main/Logger.h"
 #include "../main/mainworker.h"
 #include "../main/SQLHelper.h"

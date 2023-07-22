@@ -55,15 +55,15 @@ public:
 
 	struct _tEntry
 	{
-		_eLabelType label_type;
-		_eValueType value_type;
+		_eLabelType label_type = TYPE_TABLE;
+		_eValueType value_type = TYPE_STRING;
 		std::string label;
-		int64_t index;
-		int nrCols;
-		int nrRows;
-		bool bValue;
-		int64_t iValue;
-		long double dValue;
+		int64_t index = 0;
+		int nrCols = 0;
+		int nrRows = 0;
+		bool bValue = false;
+		int64_t iValue = 0;
+		long double dValue = 0;
 		std::string sValue;
 	};
 

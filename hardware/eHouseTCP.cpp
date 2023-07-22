@@ -55,7 +55,6 @@ h l O nr
 #include "../main/Helper.h"
 #include "../main/Logger.h"
 #include "../main/RFXtrx.h"
-#include "../main/localtime_r.h"
 #include "../main/SQLHelper.h"
 //#include <vector>
 //#include <thread>

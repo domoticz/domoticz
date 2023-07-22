@@ -30,7 +30,6 @@
 #include "SQLHelper.h"
 #include "../notifications/NotificationHelper.h"
 #include "appversion.h"
-#include "localtime_r.h"
 #include "SignalHandler.h"
 
 #if defined WIN32
@@ -1115,8 +1114,6 @@ int main(int argc, char**argv)
 		}
 	}
 
-	m_mainworker.SetIamserverSettings(iamserver_settings);
-
 	if ((g_bRunAsDaemon)||(g_bUseSyslog))
 	{
 		int logfacility = 0;
@@ -1152,6 +1149,8 @@ int main(int argc, char**argv)
 		syslog(LOG_INFO, "Domoticz running...");
 	}
 #endif
+
+	m_mainworker.SetIamserverSettings(iamserver_settings);
 
 	if (!g_bRunAsDaemon)
 	{

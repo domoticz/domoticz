@@ -303,7 +303,7 @@ define(['app'], function (app) {
 			oTable.fnClearTable();
 
 			$.ajax({
-				url: "json.htm?type=floorplans",
+				url: "json.htm?type=command&param=getfloorplans",
 				async: false,
 				dataType: 'json',
 				success: function (data) {
@@ -732,7 +732,7 @@ define(['app'], function (app) {
 				if ($("#floorplangroup")[0].getAttribute("planidx") != "") {
 					Device.useSVGtags = true;
 					$http({
-						url: "json.htm?type=devices&filter=all&used=true&order=Name&plan=" + $("#floorplangroup")[0].getAttribute("planidx") + "&lastupdate=" + window.myglobals.LastUpdate
+						url: "json.htm?type=command&param=getdevices&filter=all&used=true&order=Name&plan=" + $("#floorplangroup")[0].getAttribute("planidx") + "&lastupdate=" + window.myglobals.LastUpdate
 					}).then(function successCallback(response) {
 						var data = response.data;
 						if (typeof data.ActTime != 'undefined') {

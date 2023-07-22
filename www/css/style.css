@@ -2493,3 +2493,7 @@ table.display thead th.sorting_disabled div.DataTables_sort_wrapper {
 .dd-selected-text, .dd-option-text {
 	color: black !important;
 }
+
+.digit6 {
+	font-size: 200% !important;
+}

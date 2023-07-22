@@ -507,6 +507,12 @@
     <Filter Include="Devices\VisualCrossing">
       <UniqueIdentifier>{acc9f1eb-04a5-4798-81c9-a91e4b031514}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Devices\AlfenEve">
+      <UniqueIdentifier>{ad705b95-9376-4a12-adc3-b85fba7cf9f8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Devices\Enever">
+      <UniqueIdentifier>{10536bc9-7284-4bae-9c04-448ec48cf184}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\CMakeLists.txt">
@@ -2241,6 +2247,15 @@
     <ClInclude Include="..\hardware\VisualCrossing.h">
       <Filter>Devices\VisualCrossing</Filter>
     </ClInclude>
+    <ClInclude Include="..\iamserver\iam_settings.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\AlfenEve.h">
+      <Filter>Devices\AlfenEve</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\Enever.h">
+      <Filter>Devices\Enever</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\webserver\Base64.cpp">
@@ -2319,6 +2334,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\main\WebServer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\main\WebServerCommands.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\iamserver\IamService.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="WindowsHelper.cpp">
@@ -3001,6 +3022,12 @@
     </ClCompile>
     <ClCompile Include="..\hardware\VisualCrossing.cpp">
       <Filter>Devices\VisualCrossing</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\AlfenEve.cpp">
+      <Filter>Devices\AlfenEve</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\Enever.cpp">
+      <Filter>Devices\Enever</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

@@ -53,7 +53,7 @@ return {
 
 		function group.setDescription(newDescription)
 			local url = domoticz.settings['Domoticz url'] .. 
-						'/json.htm?type=updatescene&scenetype=1' ..
+						'/json.htm?type=command&param=updatescene&scenetype=1' ..
 						'&idx=' .. group.id ..
 						'&name='.. utils.urlEncode(group.name) ..
 						'&description=' .. utils.urlEncode(newDescription) 
@@ -61,7 +61,7 @@ return {
 		end
 
 		function group.rename(newName)
-			local url = domoticz.settings['Domoticz url'] .. '/json.htm?type=updatescene&scenetype=1' ..
+			local url = domoticz.settings['Domoticz url'] .. '/json.htm?type=command&param=updatescene&scenetype=1' ..
 						'&idx=' .. group.id ..
 						'&name='.. utils.urlEncode(newName) ..
 						'&description=' .. utils.urlEncode(group.description) 
@@ -69,7 +69,7 @@ return {
 		end
 
 		function group.protectionOn()
-			local url = domoticz.settings['Domoticz url'] .. '/json.htm?type=updatescene&scenetype=1&protected=true' ..
+			local url = domoticz.settings['Domoticz url'] .. '/json.htm?type=command&param=updatescene&scenetype=1&protected=true' ..
 						'&idx=' .. group.id ..
 						'&name='.. utils.urlEncode(group.name) ..
 						'&description=' .. utils.urlEncode(group.description) 
@@ -77,7 +77,7 @@ return {
 		end
 
 		function group.protectionOff()
-			local url = domoticz.settings['Domoticz url'] .. '/json.htm?type=updatescene&scenetype=1&protected=false' ..
+			local url = domoticz.settings['Domoticz url'] .. '/json.htm?type=command&param=updatescene&scenetype=1&protected=false' ..
 						'&idx=' .. group.id ..
 						'&name='.. utils.urlEncode(group.name) ..
 						'&description=' .. utils.urlEncode(group.description) 

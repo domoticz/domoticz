@@ -2,7 +2,6 @@
 #include "RFLinkSerial.h"
 #include "../main/Logger.h"
 #include "../main/Helper.h"
-#include "../main/localtime_r.h"
 #include <boost/exception/diagnostic_information.hpp>
 
 CRFLinkSerial::CRFLinkSerial(const int ID, const std::string& devname) :

@@ -709,7 +709,7 @@ define(['app', 'livesocket'], function (app) {
 		//We only call this once. After this the widgets are being updated automatically by used of the 'jsonupdate' broadcast event.
 		RefreshLights = function () {
 			var roomPlanId = $routeParams.room || window.myglobals.LastPlanSelected;
-			livesocket.getJson("json.htm?type=devices&filter=light&used=true&order=[Order]&lastupdate=" + $.LastUpdateTime + "&plan=" + roomPlanId, function (data) {
+			livesocket.getJson("json.htm?type=command&param=getdevices&filter=light&used=true&order=[Order]&lastupdate=" + $.LastUpdateTime + "&plan=" + roomPlanId, function (data) {
 				if (typeof data.ServerTime != 'undefined') {
 					$rootScope.SetTimeAndSun(data.Sunrise, data.Sunset, data.ServerTime);
 				}
@@ -744,7 +744,7 @@ define(['app', 'livesocket'], function (app) {
 			var roomPlanId = $routeParams.room || window.myglobals.LastPlanSelected;
 
 			$.ajax({
-				url: "json.htm?type=devices&filter=light&used=true&order=[Order]&plan=" + roomPlanId,
+				url: "json.htm?type=command&param=getdevices&filter=light&used=true&order=[Order]&plan=" + roomPlanId,
 				async: false,
 				dataType: 'json',
 				success: function (data) {
@@ -1101,18 +1101,18 @@ define(['app', 'livesocket'], function (app) {
 							}
 							else if (item.SubType.indexOf("Itho") == 0) {
 								bAddTimer = false;
-								xhtm += '\t      <td id="img"><img src="images/Fan48_On.png" height="48" width="48" class="lcursor" onclick="ShowIthoPopup(event, ' + item.idx + ', ShowLights, ' + item.Protected + ');"></td>\n';
+								xhtm += '\t      <td id="img"><img src="images/Fan48_On.png" height="48" width="48" class="lcursor" onclick="ShowIthoPopup(event, ' + item.idx + ', ' + item.Protected + ', ' + window.myglobals.ismobile + ');"></td>\n';
 							}
 							else if (item.SubType.indexOf("Lucci Air DC") == 0) {
 								bAddTimer = false;
-								xhtm += '\t      <td id="img"><img src="images/Fan48_On.png" height="48" width="48" class="lcursor" onclick="ShowLucciDCPopup(event, ' + item.idx + ', ShowLights, ' + item.Protected + ');"></td>\n';
+								xhtm += '\t      <td id="img"><img src="images/Fan48_On.png" height="48" width="48" class="lcursor" onclick="ShowLucciDCPopup(event, ' + item.idx + ', ' + item.Protected + ', ' + window.myglobals.ismobile + ');"></td>\n';
 							}
 							else if (
 								(item.SubType.indexOf("Lucci") == 0) ||
 								(item.SubType.indexOf("Westinghouse") == 0)
 							) {
 								bAddTimer = false;
-								xhtm += '\t      <td id="img"><img src="images/Fan48_On.png" height="48" width="48" class="lcursor" onclick="ShowLucciPopup(event, ' + item.idx + ', ShowLights, ' + item.Protected + ');"></td>\n';
+								xhtm += '\t      <td id="img"><img src="images/Fan48_On.png" height="48" width="48" class="lcursor" onclick="ShowLucciPopup(event, ' + item.idx + ', ' + item.Protected + ', ' + window.myglobals.ismobile + ');"></td>\n';
 							}
 							else {
 								if (
@@ -2203,6 +2203,27 @@ define(['app', 'livesocket'], function (app) {
 				$.myglobals.WeekdayStr.push($(this).text());
 			});
 
+			//Get SwitchTypes
+			$.ajax({
+				url: "json.htm?type=command&param=getswitchtypes",
+				async: false,
+				dataType: 'json',
+				success: function (data) {
+					if (typeof data.result != 'undefined') {
+						$("#dialog-addlightdevice #comboswitchtype").html("");
+						$("#dialog-addmanuallightdevice #comboswitchtype").html("");
+						$.each(data.result, function (stcode, stdesc) {
+							if (stdesc != null) {
+								var option = $('<option />');
+								option.attr('value', stcode).text(stdesc);
+								$("#dialog-addlightdevice #comboswitchtype").append(option);
+								$("#dialog-addmanuallightdevice #comboswitchtype").append(option);
+							}
+						});
+					}
+				}
+			});
+
 			$scope.$on('device_update', function (event, deviceData) {
 				RefreshItem(deviceData);
 			});
@@ -2233,7 +2254,7 @@ define(['app', 'livesocket'], function (app) {
 						if (bValid) {
 							$(this).dialog("close");
 							$.ajax({
-								url: "json.htm?type=setused&idx=" + $.devIdx + '&name=' + encodeURIComponent($("#dialog-addlightdevice #devicename").val()) + '&switchtype=' + $("#dialog-addlightdevice #comboswitchtype").val() + '&used=true&maindeviceidx=' + MainDeviceIdx,
+								url: "json.htm?type=command&param=setused&idx=" + $.devIdx + '&name=' + encodeURIComponent($("#dialog-addlightdevice #devicename").val()) + '&switchtype=' + $("#dialog-addlightdevice #comboswitchtype").val() + '&used=true&maindeviceidx=' + MainDeviceIdx,
 								async: false,
 								dataType: 'json',
 								success: function (data) {

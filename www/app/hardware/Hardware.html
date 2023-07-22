@@ -842,7 +842,7 @@
 			<tr valign="top">
 				<td align="right" style="width:110px"><label for="ratelimitp1"><span data-i18n="Rate Limit">Rate Limit</span>: </label></td>
 				<td>
-					<input type="text" id="ratelimitp1" style="width: 50px; padding: .2em;" class="text ui-widget-content ui-corner-all">&nbsp;<span data-i18n="(Seconds) 0 = Disabled">Seconds</span>
+					<input type="text" id="ratelimitp1" style="width: 50px; padding: .2em;" class="text ui-widget-content ui-corner-all">&nbsp;Seconds&nbsp;<span data-i18n="(0 = Application default)"></span>
 					<br>
 					<span data-i18n="This limits the amount of meter updates.">This limits the amount of meter updates.</span><br>
 					<strong><font class="warning-text"><span data-i18n="A high update rate could result in performance loss">A high update rate could result in performance loss</span>.</font></strong>
@@ -1313,6 +1313,43 @@
 					<span data-i18n="When enabled this will also collect individual inverter details.">When enabled this will also collect individual inverter details.</span>
 				</td>
 			
+			</tr>
+			<tr>
+				<td align="right" style="width:110px">
+					<label><span data-i18n="Site ID">Site ID</span>: </label>
+				</td>
+				<td>
+					<input type="text" id="siteid" style="width: 250px; padding: .2em;" class="text ui-widget-content ui-corner-all"><br>
+					<span data-i18n="ONLY enter this when using a Installer account. This is needed to check/set Power state. Otherwise leave empty!">ONLY enter this when using a Installer account. This is needed to check/set Power state. Otherwise leave empty!</span>.<br>
+				</td>
+			</tr>
+		</table>
+	</div>
+	<div id="divenever">
+		<br>
+		<table class="display" id="hardwareparamsenever" border="0" cellpadding="0" cellspacing="20">
+			<tr>
+				<td align="right" style="width:140px"><label><span data-i18n="Access token">Access token</span>:</label></td>
+				<td><input type="text" id="AccessToken" style="width: 300px; padding: .2em;" class="text ui-widget-content ui-corner-all"></td>
+			</tr>
+			<tr>
+				<td align="right" <label><span data-i18n="Provider"></span>:</label></td>
+				<td>
+					<select id="provider" name="provider" style="width:200px" class="combobox ui-corner-all">
+						<option value="AIP">All in power</option>
+						<option value="ANWB" selected="selected">ANWB Energie</option>
+						<option value="EE">EasyEnergy</option>
+						<option value="EZ">Energy Zero</option>
+						<option value="FR">Frank Energie</option>
+						<option value="GSL">Groenestroom Lokaal</option>
+						<option value="MDE">Mijndomein Energie</option>
+						<option value="NE">NextEnergy</option>
+						<option value="TI">Tibber</option>
+						<option value="VON">Vrij op naam</option>
+						<option value="ZG">ZonderGas</option>
+						<option value="ZP">Zonneplan</option>
+					</select>
+				</td>
 			</tr>
 		</table>
 	</div>

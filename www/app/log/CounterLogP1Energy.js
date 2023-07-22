@@ -25,15 +25,33 @@ define(['app', 'log/Chart', 'log/CounterLogParams', 'log/CounterLogEnergySeriesS
                         }
                     },
                     tooltip: {
-                        pointFormat: '{series.name}: <b>{point.y:,.f}</b> ( {point.percentage:.0f}% )<br>',
-                        footerFormat: 'Total: {point.total:,.f} {series.tooltipOptions.valueSuffix}'
+						headerFormat: '{point.x:%A, %B %d, %Y}<br/>',
+                        pointFormat: '<span style="color: {point.color}">●</span> {series.name}: <b>{abs3 point.y} {point.series.tooltipOptions.valueSuffix}</b> ( {point.percentage:.0f}% )<br>',
+                        footerFormat: '<span style="color: #aaa">●</span> Usage Total: {point.total:,.f} {series.tooltipOptions.valueSuffix}',
+                        outside: true,
+						crosshairs: true,
+						shared: true,
+						//useHTML: true
                     }
                 }
             },
             chartParamsMonthYearTemplate: {
                 highchartTemplate: {
+                    plotOptions: {
+                        column: {
+                            stacking: 'normal',
+                            dataLabels: {
+                                enabled: false
+                            }
+                        }
+                    },
                     tooltip: {
-                        shared: false
+						headerFormat: '{point.x:%A, %B %d}<br/>',
+						pointFormat: '<span style="color: {point.color}">●</span> {series.name}: <b>{abs3 point.y} {point.series.tooltipOptions.valueSuffix}</b><br>',
+                        outside: true,
+						crosshairs: true,
+                        shared: true,
+						//useHTML: true
                     }
                 }
             },
@@ -70,7 +88,6 @@ define(['app', 'log/Chart', 'log/CounterLogParams', 'log/CounterLogEnergySeriesS
                         title: {
                             text: $.t('Energy') + ' (' + chart.valueUnits.energy(chart.valueMultipliers.m1) + ')'
                         },
-                        min: 0
                     },
                     {
                         title: {
@@ -85,20 +102,28 @@ define(['app', 'log/Chart', 'log/CounterLogParams', 'log/CounterLogEnergySeriesS
                 return [
                     {
                         maxPadding: 0.2,
+						labels: {
+							formatter: function () {
+								return Math.abs(Highcharts.numberFormat(this.value, 0));
+							}
+						},
                         title: {
                             text: $.t('Energy') + ' (' + chart.valueUnits.energy(chart.valueMultipliers.m1000) + ')'
                         },
-                        min: 0
                     }
                 ];
             },
             yAxesMonthYear: function (deviceType) {
                 return [
                     {
+						labels: {
+							formatter: function () {
+								return Math.abs(Highcharts.numberFormat(this.value, 0));
+							}
+						},
                         title: {
                             text: $.t('Energy') + ' (' + chart.valueUnits.energy(chart.valueMultipliers.m1000) + ')'
                         },
-                        min: 0
                     }
                 ];
             },

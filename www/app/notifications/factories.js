@@ -10,8 +10,7 @@ define(['app'], function (app) {
         };
 
         function getNotifications(deviceIdx) {
-            return domoticzApi.sendRequest({
-                type: 'notifications',
+            return domoticzApi.sendCommand('getnotifications', {
                 idx: deviceIdx
             }).then(function (response) {
                 return response && response.status !== 'OK'

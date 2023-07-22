@@ -23,7 +23,6 @@
 #include "../main/Logger.h"
 #include "hardwaretypes.h"
 #include "../main/SQLHelper.h"
-#include "../main/localtime_r.h"
 #include "../main/WebServer.h"
 #include <json/json.h>
 
@@ -211,60 +210,10 @@ void CEvohomeBase::SetOpenThermBridgeID(unsigned int nID)
 }
 
 
-void CEvohomeBase::LogDate()
-{
-        char szTmp[256];
-	time_t atime = mytime(nullptr);
-	struct tm ltime;
-	localtime_r(&atime, &ltime);
-
-	strftime(szTmp, 256, "%Y-%m-%d %H:%M:%S ", &ltime);
-	*m_pEvoLog << szTmp;
-}
-
-
-void CEvohomeBase::Log(const char *szMsg, CEvohomeMsg &msg)
-{
-	if(m_bDebug && m_pEvoLog)
-	{
-		LogDate();
-		*m_pEvoLog << szMsg;
-		*m_pEvoLog << " (";
-		for(int i=0;i<msg.payloadsize;i++)
-		{
-			unsigned char c = msg.payload[i];
-			if (c < 0x20 || c > 0x7E) c = '.';
-			*m_pEvoLog << c;
-		}
-		*m_pEvoLog << ")";
-		*m_pEvoLog << std::endl;
-	}
-}
-
-
-void CEvohomeBase::Log(bool bDebug, int nLogLevel, const char* format, ... )
-{
-        va_list argList;
-        char cbuffer[1024];
-        va_start(argList, format);
-        vsnprintf(cbuffer, 1024, format, argList);
-        va_end(argList);
-
-	if(!bDebug || m_bDebug)
-		_log.Log(static_cast<_eLogLevel>(nLogLevel), "%s", cbuffer);
-	if(m_bDebug && m_pEvoLog)
-	{
-		LogDate();
-		*m_pEvoLog << cbuffer;
-		*m_pEvoLog << std::endl;
-	}
-}
-
-
 //Webserver helpers
 namespace http {
 	namespace server {
-		void CWebServer::RType_CreateEvohomeSensor(WebEmSession & session, const request& req, Json::Value &root)
+		void CWebServer::Cmd_CreateEvohomeSensor(WebEmSession & session, const request& req, Json::Value &root)
 		{
 			std::string Username = "Admin";
 			if (!session.username.empty())

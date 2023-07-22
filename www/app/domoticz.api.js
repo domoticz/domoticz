@@ -108,7 +108,7 @@ define(['app.permissions', 'livesocket'], function(appPermissionsModule, websock
         }
 
         function getDeviceInfo(deviceIdx) {
-            return domoticzApi.sendRequest({ type: 'devices', rid: deviceIdx })
+            return domoticzApi.sendCommand('getdevices',{ rid: deviceIdx })
                 .then(function(data) {
                     dzTimeAndSun.updateData(data);
 
@@ -132,15 +132,13 @@ define(['app.permissions', 'livesocket'], function(appPermissionsModule, websock
         }
 
         function removeDevice(deviceIdx) {
-            return domoticzApi.sendRequest({
-                type: 'deletedevice',
+            return domoticzApi.sendCommand('deletedevice', {
                 idx: Array.isArray(deviceIdx) ? encodeURIComponent(deviceIdx.join(';')) : deviceIdx
             }).then(domoticzApi.errorHandler);
         }
 
         function removeScene(deviceIdx) {
-            return domoticzApi.sendRequest({
-                type: 'deletescene',
+            return domoticzApi.sendCommand('deletescene', {
                 idx: Array.isArray(deviceIdx) ? encodeURIComponent(deviceIdx.join(';')) : deviceIdx
             }).then(domoticzApi.errorHandler);
         }

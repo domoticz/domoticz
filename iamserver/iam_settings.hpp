@@ -86,7 +86,6 @@ public:
 	uint32_t code_expire_seconds = OAUTH2_AUTHCODE_EXPIRETIME;
 	uint32_t token_expire_seconds = OAUTH2_AUTHTOKEN_EXPIRETIME;
 	uint32_t refresh_expire_seconds = OAUTH2_REFRESHTOKEN_EXPIRETIME;
-
 private:
 	bool is_enabled_{ false };
 	uint32_t useridx_offset = OAUTH2_USERIDX_OFFSET;

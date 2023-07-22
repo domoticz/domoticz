@@ -3,7 +3,6 @@
 #include "../smtpclient/SMTPClient.h"
 #include "../main/Helper.h"
 #include "../main/Logger.h"
-#include "../main/localtime_r.h"
 
 const static char *szHTMLMail =
 "<html>\n"

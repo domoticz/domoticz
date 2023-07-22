@@ -5,7 +5,6 @@
 #include "../main/RFXtrx.h"
 #include "P1MeterBase.h"
 #include "hardwaretypes.h"
-#include "../main/localtime_r.h"
 
 #include <algorithm>
 #include <boost/exception/diagnostic_information.hpp>

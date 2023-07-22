@@ -13,7 +13,7 @@ define(['app'], function (app) {
 		'RFLink Gateway MQTT': ['MQTTParams', 4],
 	};
 	
-	app.controller('HardwareController', function ($scope, $rootScope, $timeout) {
+	app.controller('HardwareController', function ($scope, $rootScope, $timeout, $http) {
 
 		$scope.SerialPortStr = [];
 		$scope.calledFetch = 0;
@@ -566,7 +566,7 @@ define(['app'], function (app) {
 					Mode2 = $("#hardwarecontent #divcrcp1 #disablecrcp1").prop("checked") ? 0 : 1;
 					var ratelimitp1 = $("#hardwarecontent #hardwareparamsratelimitp1 #ratelimitp1").val();
 					if (ratelimitp1 == "") {
-						ratelimitp1 = "0";
+						ratelimitp1 = "5";
 					}
 					Mode3 = ratelimitp1;
 					var decryptionkey = $("#hardwarecontent #divkeyp1p1 #decryptionkey").val();
@@ -595,6 +595,19 @@ define(['app'], function (app) {
 						Mode2 = 1;
 					username = $("#hardwarecontent #divlogin #username").val();
 					password = $("#hardwarecontent #divlogin #password").val();
+					extra = $("#hardwarecontent #divenphase #siteid").val();
+				}
+				else if (text.indexOf("Alfen") >= 0) {
+					username = $("#hardwarecontent #divlogin #username").val();
+					password = $("#hardwarecontent #divlogin #password").val();
+					
+					if (username == '') {
+						username = 'admin';
+					}
+					if (password == '') {
+						ShowNotify($.t('Please enter a Password!'), 2500, true);
+						return;
+					}
 				}
 
 				$.ajax({
@@ -1349,6 +1362,37 @@ define(['app'], function (app) {
 					}
 				});
 			}
+			else if (text.indexOf("Enever") >= 0) {
+				var access_token = $("#hardwarecontent #divenever #AccessToken").val();
+				var provider = $("#hardwarecontent #divenever #provider").find("option:selected").val()
+				if (access_token == "") {
+					ShowNotify($.t('Please enter an Access Token!'), 2500, true);
+					return;
+				}
+				if (provider == "") {
+					ShowNotify($.t('Please enter an Provider!'), 2500, true);
+					return;
+				}
+				$.ajax({
+					url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype +
+					"&loglevel=" + logLevel +
+					"&name=" + encodeURIComponent(name) +
+					"&username=" + encodeURIComponent(access_token) +
+					"&extra=" + encodeURIComponent(provider) +
+					"&enabled=" + bEnabled +
+					"&idx=" + idx +
+					"&datatimeout=" + datatimeout +
+					"&Mode2=" + Mode2 + "&Mode3=" + Mode3 + "&Mode4=" + Mode4 + "&Mode5=" + Mode5 + "&Mode6=" + Mode6,
+					async: false,
+					dataType: 'json',
+					success: function (data) {
+						RefreshHardwareTable();
+					},
+					error: function () {
+						ShowNotify($.t('Problem updating hardware!'), 2500, true);
+					}
+				});
+			}
 			else if (text.indexOf("Honeywell") >= 0) {
 				var apiKey = $("#hardwarecontent #divhoneywell #hwApiKey").val();
 				var apiSecret = $("#hardwarecontent #divhoneywell #hwApiSecret").val();
@@ -1738,7 +1782,7 @@ define(['app'], function (app) {
 					Mode2 = $("#hardwarecontent #divcrcp1 #disablecrcp1").prop("checked") ? 0 : 1;
 					var ratelimitp1 = $("#hardwarecontent #hardwareparamsratelimitp1 #ratelimitp1").val();
 					if (ratelimitp1 == "") {
-						ratelimitp1 = "0";
+						ratelimitp1 = "5";
 					}
 					Mode3 = ratelimitp1;
 					var decryptionkey = $("#hardwarecontent #divkeyp1p1 #decryptionkey").val();
@@ -1767,6 +1811,18 @@ define(['app'], function (app) {
 						Mode2 = 1;
 					username = $("#hardwarecontent #divlogin #username").val();
 					password = $("#hardwarecontent #divlogin #password").val();
+					extra = $("#hardwarecontent #divenphase #siteid").val();
+				}
+				else if (text.indexOf("Alfen") >= 0) {
+					username = $("#hardwarecontent #divlogin #username").val();
+					if (username == '') {
+						username = 'admin';
+					}
+					password = $("#hardwarecontent #divlogin #password").val();
+					if (password == '') {
+						ShowNotify($.t('Please enter a Password!'), 2500, true);
+						return;
+					}
 				}
 				
 				$.ajax({
@@ -1958,7 +2014,7 @@ define(['app'], function (app) {
 					Mode2 = $("#hardwarecontent #divcrcp1 #disablecrcp1").prop("checked") ? 0 : 1;
 					var ratelimitp1 = $("#hardwarecontent #hardwareparamsratelimitp1 #ratelimitp1").val();
 					if (ratelimitp1 == "") {
-						ratelimitp1 = "0";
+						ratelimitp1 = "5";
 					}
 					Mode3 = ratelimitp1;
 					var decryptionkey = $("#hardwarecontent #divkeyp1p1 #decryptionkey").val();
@@ -2566,6 +2622,35 @@ define(['app'], function (app) {
 					}
 				});
 			}
+			else if (text.indexOf("Enever") >= 0) {
+				var access_token = $("#hardwarecontent #divenever #AccessToken").val();
+				var provider = $("#hardwarecontent #divenever #provider").find("option:selected").val()
+				if (access_token == "") {
+					ShowNotify($.t('Please enter an Access Token!'), 2500, true);
+					return;
+				}
+				if (provider == "") {
+					ShowNotify($.t('Please enter an Provider!'), 2500, true);
+					return;
+				}
+				$.ajax({
+					url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype +
+					"&loglevel=" + logLevel +
+					"&name=" + encodeURIComponent(name) +
+					"&username=" + encodeURIComponent(access_token) +
+					"&extra=" + encodeURIComponent(provider) +
+					"&enabled=" + bEnabled +
+					"&datatimeout=" + datatimeout,
+					async: false,
+					dataType: 'json',
+					success: function (data) {
+						RefreshHardwareTable();
+					},
+					error: function () {
+						ShowNotify($.t('Problem adding hardware!'), 2500, true);
+					}
+				});
+			}
 			else if (text.indexOf("Honeywell") >= 0) {
 				var apiKey = $("#hardwarecontent #divhoneywell #hwApiKey").val();
 				var apiSecret = $("#hardwarecontent #divhoneywell #hwApiSecret").val();
@@ -3003,8 +3088,16 @@ define(['app'], function (app) {
 		}
 
 		SetCCUSBType = function () {
-			$.post("setcurrentcostmetertype.webem", $("#hardwarecontent #ccusbtype").serialize(), function (data) {
+			$http({
+				url: "json.htm?type=command&param=setccmetertype&idx=" + $('#hardwarecontent #ccusbtype #idx').val() + "&CCBaudrate=" + $('#hardwarecontent #ccusbtype #CCBaudrate').val()
+			}).then(function successCallback(response) {
+				var data = response.data;
+				if (data.status != "OK") {
+					ShowNotify($.t(data.error), 2500, true);
+					return;
+				}
 				ShowHardware();
+				return;
 			});
 		}
 
@@ -3272,7 +3365,7 @@ define(['app'], function (app) {
 
 			//Get Temperature Sensors
 			$.ajax({
-				url: "json.htm?type=devices&filter=temp&used=true&order=Name",
+				url: "json.htm?type=command&param=getdevices&filter=temp&used=true&order=Name",
 				async: false,
 				dataType: 'json',
 				success: function (data) {
@@ -3341,7 +3434,7 @@ define(['app'], function (app) {
 				var Name = "";
 
 				$.ajax({
-					url: "json.htm?type=bindevohome&idx=" + $.devIdx + "&devtype=" + devtype,
+					url: "json.htm?type=command&param=bindevohome&idx=" + $.devIdx + "&devtype=" + devtype,
 					async: false,
 					dataType: 'json',
 					success: function (data) {
@@ -3395,7 +3488,7 @@ define(['app'], function (app) {
 							return;
 						}
 						$.ajax({
-							url: "json.htm?type=createevohomesensor&idx=" + $.devIdx +
+							url: "json.htm?type=command&param=createevohomesensor&idx=" + $.devIdx +
 							"&sensortype=" + SensorType,
 							async: false,
 							dataType: 'json',
@@ -3446,8 +3539,8 @@ define(['app'], function (app) {
 							return;
 						}
 						$.ajax({
-							url: "json.htm?type=createrflinkdevice&idx=" + $.devIdx +
-							"&command=" + SensorName,
+							url: "json.htm?type=command&param=createrflinkdevice&idx=" + $.devIdx +
+							"&rflcommand=" + SensorName,
 							async: false,
 							dataType: 'json',
 							success: function (data) {
@@ -3528,7 +3621,7 @@ define(['app'], function (app) {
 							extraSendData = "&sensoroptions=1;" + encodeURIComponent(AxisLabel);
 						}
 						$.ajax({
-							url: "json.htm?type=createdevice&idx=" + $.devIdx +
+							url: "json.htm?type=command&param=createdevice&idx=" + $.devIdx +
 							"&sensorname=" + encodeURIComponent(SensorName) +
 							"&sensormappedtype=" + SensorType +
 							extraSendData,
@@ -3743,7 +3836,7 @@ define(['app'], function (app) {
 			oTable.fnClearTable();
 
 			$.ajax({
-				url: "json.htm?type=hardware",
+				url: "json.htm?type=command&param=gethardware",
 				async: false,
 				dataType: 'json',
 				success: function (data) {
@@ -3831,6 +3924,9 @@ define(['app'], function (app) {
 							else if (HwTypeStr.indexOf("Enphase") >= 0) {
 								HwTypeStr += '<br>Version: ' + item.version;
 							}							
+							else if (HwTypeStr.indexOf("Alfen") >= 0) {
+								HwTypeStr += '<br>Version: ' + item.version;
+							}							
 							else if (HwTypeStr.indexOf("EnOcean") >= 0 && HwTypeStr.indexOf("(ESP3)") >= 0) {
 								HwTypeStr += ' ' + hardwareSetupLink;
 							}
@@ -3909,7 +4005,7 @@ define(['app'], function (app) {
 								HwTypeStr += ' <span class="label label-info lcursor" onclick="EditRego6XXType(' + item.idx + ',\'' + item.Name + '\',' + item.Mode1 + ',' + item.Mode2 + ',' + item.Mode3 + ',' + item.Mode4 + ',' + item.Mode5 + ',' + item.Mode6 + ');">Change Type</span>';
 							}
 							else if (HwTypeStr.indexOf("CurrentCost Meter USB") >= 0) {
-								HwTypeStr += ' <span class="label label-info lcursor" onclick="EditCCUSB(' + item.idx + ',\'' + item.Name + '\',\'' + item.Address + '\');">' + $.t("Set Mode") + '</span>';
+								HwTypeStr += ' <span class="label label-info lcursor" onclick="EditCCUSB(' + item.idx + ',\'' + item.Name + '\',\'' + item.Mode1 + '\');">' + $.t("Set Mode") + '</span>';
 							}
 							else if (HwTypeStr.indexOf("Tellstick") >= 0) {
 								HwTypeStr += ' <span class="label label-info lcursor" onclick="TellstickSettings(' + item.idx + ',\'' + item.Name + '\',' + item.Mode1 + ',' + item.Mode2 + ');">' + $.t("Settings") + '</span>';
@@ -4113,7 +4209,10 @@ define(['app'], function (app) {
 							if (data["Type"].indexOf("P1 Smart Meter") >= 0) {
 								$("#hardwarecontent #divbaudratep1 #combobaudratep1").val(data["Mode1"]);
 								$("#hardwarecontent #divcrcp1 #disablecrcp1").prop("checked", data["Mode2"] == 0);
-								$("#hardwarecontent #hardwareparamsratelimitp1 #ratelimitp1").val(data["Mode3"]);
+								var pollInterval = parseInt(data["Mode3"]);
+								if (pollInterval==0)
+									pollInterval=5;
+								$("#hardwarecontent #hardwareparamsratelimitp1 #ratelimitp1").val(pollInterval);
 								$("#hardwarecontent #divkeyp1p1 #decryptionkey").val(data["Password"]);
 								if (data["Mode1"] == 0) {
 									$("#hardwarecontent #divcrcp1").hide();
@@ -4151,7 +4250,10 @@ define(['app'], function (app) {
 							$("#hardwarecontent #hardwareparamsremote #tcpport").val(data["Port"]);
 							if (data["Type"].indexOf("P1 Smart Meter") >= 0) {
 								$("#hardwarecontent #divcrcp1 #disablecrcp1").prop("checked", data["Mode2"] == 0);
-								$("#hardwarecontent #hardwareparamsratelimitp1 #ratelimitp1").val(data["Mode3"]);
+								var pollInterval = parseInt(data["Mode3"]);
+								if (pollInterval==0)
+									pollInterval=5;
+								$("#hardwarecontent #hardwareparamsratelimitp1 #ratelimitp1").val(pollInterval);
 								$("#hardwarecontent #divkeyp1p1 #decryptionkey").val(data["Password"]);
 							}
 							else if (data["Type"].indexOf("Teleinfo EDF") >= 0 ) {
@@ -4173,6 +4275,7 @@ define(['app'], function (app) {
 									pollInterval=120;
 								$("#hardwarecontent #divenphase #pollinterval").val(pollInterval);
 								$("#hardwarecontent #divenphase #readinverters").prop('checked', parseInt(data["Mode2"]) != 0);
+								$("#hardwarecontent #divenphase #siteid").val(data["Extra"]);
 							}
 						}
 						else if (
@@ -4355,6 +4458,10 @@ define(['app'], function (app) {
 							$("#hardwarecontent #hardwareparamswinddelen #combomillselect").val(data["Mode1"]);
 							$("#hardwarecontent #hardwareparamswinddelen #nrofwinddelen").val(data["Port"]);
 						}
+						else if (data["Type"].indexOf("Enever") >= 0) {
+							$("#hardwarecontent #divenever #AccessToken").val(data["Username"]);
+							$("#hardwarecontent #divenever #provider").val(data["Extra"]);
+						}
 						else if (data["Type"].indexOf("Honeywell") >= 0) {
 							$("#hardwarecontent #hardwareparamshoneywell #hwAccessToken").val(data["Username"]);
 							$("#hardwarecontent #hardwareparamshoneywell #hwRefreshToken").val(data["Password"]);
@@ -4415,6 +4522,7 @@ define(['app'], function (app) {
 							(data["Type"].indexOf("PVOutput") >= 0) ||
 							(data["Type"].indexOf("ETH8020") >= 0) ||
 							(data["Type"].indexOf("Daikin") >= 0) ||
+							(data["Type"].indexOf("Alfen") >= 0) ||
 							(data["Type"].indexOf("Sterbox") >= 0) ||
 							(data["Type"].indexOf("Anna") >= 0) ||
 							(data["Type"].indexOf("KMTronic") >= 0) ||
@@ -4435,7 +4543,7 @@ define(['app'], function (app) {
 							$("#hardwarecontent #hardwareparamslogin #username").val(data["Username"]);
 							$("#hardwarecontent #hardwareparamslogin #password").val(data["Password"]);
 						}
-						if (data["Type"].indexOf("Evohome via Web") >= 0) {
+						else if (data["Type"].indexOf("Evohome via Web") >= 0) {
 							$("#hardwarecontent #hardwareparamslogin #username").val(data["Username"]);
 							$("#hardwarecontent #hardwareparamslogin #password").val(data["Password"]);
 
@@ -4592,6 +4700,7 @@ define(['app'], function (app) {
 			$("#hardwarecontent #divphilipshue").hide();
 			$("#hardwarecontent #divwinddelen").hide();
 			$("#hardwarecontent #divenphase").hide();
+			$("#hardwarecontent #divenever").hide();
 			$("#hardwarecontent #divhoneywell").hide();
 			$("#hardwarecontent #divmqtt").hide();
 			$("#hardwarecontent #divmysensorsmqtt").hide();
@@ -4670,6 +4779,7 @@ define(['app'], function (app) {
 					$("#hardwarecontent #divbaudratemysensors").show();
 				}
 				if (text.indexOf("P1 Smart Meter") >= 0) {
+					$("#hardwarecontent #hardwareparamsratelimitp1 #ratelimitp1").val(5);
 					$("#hardwarecontent #divbaudratep1").show();
 					$("#hardwarecontent #divratelimitp1").show();
 					$("#hardwarecontent #divkeyp1p1").show();
@@ -4707,6 +4817,7 @@ define(['app'], function (app) {
 						$("#hardwarecontent #divlogin").show();
 					}
 					else if (text.indexOf("P1 Smart Meter") >= 0) {
+						$("#hardwarecontent #hardwareparamsratelimitp1 #ratelimitp1").val(5);
 						$("#hardwarecontent #divratelimitp1").show();
 						$("#hardwarecontent #divcrcp1").show();
 						$("#hardwarecontent #divkeyp1p1").show();
@@ -4724,6 +4835,11 @@ define(['app'], function (app) {
 					else if (text.indexOf("Enphase") >= 0) {
 						$("#hardwarecontent #divenphase").show();
 						$("#hardwarecontent #divlogin").show();
+					}
+					else if (text.indexOf("Alfen") >= 0) {
+						$("#hardwarecontent #divlogin").show();
+						$("#hardwarecontent #hardwareparamsremote #tcpport").val(443);
+						$("#hardwarecontent #username").val("admin");
 					}
 			}
 			else if (
@@ -4910,6 +5026,9 @@ define(['app'], function (app) {
 			}
 			if (text.indexOf("MySensors Gateway with MQTT") >= 0) {
 				$("#hardwarecontent #divmysensorsmqtt").show();
+			}
+			else if (text.indexOf("Enever") >= 0) {
+				$("#hardwarecontent #divenever").show();
 			}
 			else if (text.indexOf("MQTT") >= 0) {
 			    $("#hardwarecontent #divmqtt").show();

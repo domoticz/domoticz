@@ -11,9 +11,8 @@ define(['app'], function (app) {
         };
 
         function fetchCurrentStates() {
-            return domoticzApi.sendRequest({
-                type: 'events',
-                param: 'currentstates'
+            return domoticzApi.sendCommand('events', {
+                evparam: 'currentstates'
             }).then(function (response) {
                 return response && response.status !== 'OK'
                     ? $q.reject(response)
@@ -22,9 +21,8 @@ define(['app'], function (app) {
         }
 
         function fetchEvents() {
-            return domoticzApi.sendRequest({
-                type: 'events',
-                param: 'list'
+            return domoticzApi.sendCommand('events', {
+                evparam: 'list'
             }).then(function (data) {
                 return {
                     events: data.result || [],
@@ -34,9 +32,8 @@ define(['app'], function (app) {
         }
 
         function fetchEvent(eventId) {
-            return domoticzApi.sendRequest({
-                type: 'events',
-                param: 'load',
+            return domoticzApi.sendCommand('events', {
+                evparam: 'load',
                 event: eventId
             }).then(function (data) {
                 return data.result[0];
@@ -44,24 +41,16 @@ define(['app'], function (app) {
         }
 
         function updateEvent(event) {
-            return $http({
-                method: 'POST',
-                url: 'event_create.webem',
-                data: $httpParamSerializer({
-                    eventid: event.id,
-                    name: event.name,
-                    interpreter: event.interpreter,
-                    eventtype: event.type,
-                    xml: event.xmlstatement,
-                    logicarray: event.logicarray,
-                    eventstatus: event.eventstatus
-                }),
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded'
-                }
-            }).then(function (response) {
-                return domoticzApi.errorHandler(response.data)
-            });
+			return domoticzApi.sendCommand('events', {
+				evparam: 'create',
+				eventid: event.id,
+				name: event.name,
+				interpreter: event.interpreter,
+				eventtype: event.type,
+				xml: event.xmlstatement,
+				logicarray: event.logicarray,
+				eventstatus: event.eventstatus
+			});
         }
 
         function updateEventState(eventId, isEnabled) {
@@ -73,16 +62,15 @@ define(['app'], function (app) {
         }
 
         function deleteEvent(eventId) {
-            return domoticzApi.sendCommand('delete', {
-                type: 'events',
+            return domoticzApi.sendCommand('events', {
+				evparam: 'delete',
                 event: eventId
             });
         }
 
         function getTemplate(interpreter, eventType) {
-            return domoticzApi.sendRequest({
-                type: 'events',
-                param: 'new',
+            return domoticzApi.sendCommand('events', {
+                evparam: 'new',
                 interpreter: interpreter,
                 eventtype: eventType || 'All'
             }).then(function (response) {

@@ -141,16 +141,16 @@ return {
 
 		function device.setDescription(description)
 			local url = domoticz.settings['Domoticz url'] ..
-				'/json.htm?description=' .. utils.urlEncode(description) ..
+				'/json.htm?type=command&param=setused&description=' .. utils.urlEncode(description) ..
 				'&idx=' .. device.id ..
 				'&name='.. utils.urlEncode(device.name) ..
-				'&type=setused&used=true'
+				'&used=true'
 			return domoticz.openURL(url)
 		end
 
 		function device.setIcon(iconNumber)
 			local url = domoticz.settings['Domoticz url'] ..
-				'/json.htm?type=setused&used=true&name=' ..
+				'/json.htm?type=command&param=setused&used=true&name=' ..
 				 utils.urlEncode(device.name) ..
 				'&description=' .. utils.urlEncode(device.description) ..
 				'&idx=' .. device.id ..
@@ -169,14 +169,14 @@ return {
 
 		function device.protectionOn()
 			local url = domoticz.settings['Domoticz url'] ..
-						'/json.htm?type=setused&used=true&protected=true' ..
+						'/json.htm?type=command&param=setused&used=true&protected=true' ..
 						'&idx=' .. device.idx
 			return domoticz.openURL(url)
 		end
 
 		function device.protectionOff()
 			local url = domoticz.settings['Domoticz url'] ..
-						'/json.htm?type=setused&used=true&protected=false' ..
+						'/json.htm?type=command&param=setused&used=true&protected=false' ..
 						'&idx=' .. device.idx
 			return domoticz.openURL(url)
 		end

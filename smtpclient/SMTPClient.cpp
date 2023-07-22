@@ -5,7 +5,6 @@
 #include <string.h>
 
 #include "../main/Logger.h"
-#include "../main/localtime_r.h"
 #include "../webserver/Base64.h"
 
 // Part of the Message Construction is taken from jwSMTP library

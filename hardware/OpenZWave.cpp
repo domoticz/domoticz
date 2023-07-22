@@ -22,7 +22,6 @@
 #include "../main/mainworker.h"
 
 #include <json/json.h>
-#include "../main/localtime_r.h"
 
 //OpenZWave includes
 #include <Options.h>
@@ -5435,7 +5434,7 @@ void COpenZWave::ForceUpdateForNodeDevices(const unsigned int homeID, const int 
 //Webserver helpers
 namespace http {
 	namespace server {
-		void CWebServer::RType_OpenZWaveNodes(WebEmSession& /*session*/, const request& req, Json::Value& root)
+		void CWebServer::Cmd_GetOpenZWaveNodes(WebEmSession& /*session*/, const request& req, Json::Value& root)
 		{
 			std::string hwid = request::findValue(&req, "idx");
 			if (hwid.empty())
@@ -5450,7 +5449,7 @@ namespace http {
 			COpenZWave* pOZWHardware = (COpenZWave*)pHardware;
 
 			root["status"] = "OK";
-			root["title"] = "OpenZWaveNodes";
+			root["title"] = "GetOpenZWaveNodes";
 
 			root["NodesQueried"] = (pOZWHardware->m_awakeNodesQueried) || (pOZWHardware->m_allNodesQueried);
 			root["ownNodeId"] = pOZWHardware->m_controllerNodeId;

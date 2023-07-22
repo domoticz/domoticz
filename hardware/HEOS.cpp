@@ -8,7 +8,6 @@
 #include "../notifications/NotificationHelper.h"
 #include "../main/WebServer.h"
 #include "../main/mainworker.h"
-#include "../main/localtime_r.h"
 #include "../main/EventSystem.h"
 #include "../webserver/cWebem.h"
 

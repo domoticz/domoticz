@@ -68,10 +68,10 @@
     <div class="modal-body">
         <form class="form-horizontal" name="modalForm">
             <div class="control-group">
-                <label class="control-label" for="light-device-name">{{:: 'Name' | translate }}:</label>
+                <label class="control-label" for="device-name">{{:: 'Name' | translate }}:</label>
                 <div class="controls">
                     <input type="text"
-                           id="light-device-name"
+                           id="device-name"
                            class="form-control"
                            required
                            minlength="2"
@@ -80,7 +80,7 @@
                 </div>
             </div>
             <div class="control-group" ng-if="::$ctrl.isLightDevice">
-                <label class="control-label" for="light-device-name">{{:: 'As' | translate }}:</label>
+                <label class="control-label">{{:: 'As' | translate }}:</label>
                 <div class="controls">
                     <label class="radio inline">
                         <input type="radio" name="isMainDevice" ng-value="true" ng-model="$ctrl.isMainDevice">

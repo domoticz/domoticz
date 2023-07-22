@@ -125,6 +125,7 @@
 		<script charset="utf-8" src="js/highcharts/modules/xrange.js"></script>
 		<script charset="utf-8" src="js/highcharts/themes/dark-unica.js"></script>
 		<script src="js/base64.min.js"></script>
+		<script src="js/qrcode.js"></script>
 		<script charset="utf-8" src="js/domoticz.js"></script>
 		<script charset="utf-8" src="js/domoticzdevices.js"></script>
 		<script charset="utf-8" src="js/jquery-ui-timepicker-addon.js"></script>
@@ -222,7 +223,7 @@ function CheckForUpdate(showdialog) {
 function ReplaceDevice(idx,backfunction)
 {
 	$.ajax({
-		 url: "json.htm?type=gettransfers&idx=" + idx,
+		 url: "json.htm?type=command&param=gettransfers&idx=" + idx,
 		 async: false,
 		 dataType: 'json',
 		 success: function(data) {
@@ -356,7 +357,7 @@ $(document).ready(function() {
 			return ;
 		}
 		$.ajax({
-			 url: "json.htm?type=transferdevice&idx=" + $.devIdx + "&newidx=" + NewDeviceIdx,
+			 url: "json.htm?type=command&param=dotransferdevice&idx=" + $.devIdx + "&newidx=" + NewDeviceIdx,
 			 async: false,
 			 dataType: 'json',
 			 success: function(data) {
@@ -1305,13 +1306,22 @@ $(document).ready(function() {
 							<li class="divider"></li>
 							<li ng-class="{'current_page_item':getClass('/Log')}" id="mLog"><a id="cLog" href="#Log"><img src="images/log.png"> <span data-i18n="Log">Log</span></a></li>
 							<li class="divider"></li>
+							<li ng-class="{'current_page_item':getClass('/MyProfile')}" id="mProfile"><a id="cProfile" href="#MyProfile"><img src="images/users.png"> <span data-i18n="My Profile">My Profile</span></a></li>
 							<li ng-class="{'current_page_item':getClass('/About')}" id="mAbout"><a id="cAbout" href="#About"><img src="images/about.png"> <span data-i18n="About">About</span></a></li>
 							<li id="dLogoutSetup" class="divider" style="display: none;" has-Login=true></li>
 							<li id="mLogoutSetup" style="display: none;" has-Login=true><a id="cLogout" href="#Logout"><img src="images/logout.png"> <span data-i18n="Logout">Logout</span></a></li>
 						</ul>
 					</li>
 					<li id="dLogout" class="divider-vertical" style="display: none;" has-Login-No-Admin=true></li>
-					<li id="mLogout" style="display: none;" has-Login-No-Admin=true><a id="cLogout" href="#Logout"><img src="images/logout.png"> <span class="hidden-phone hidden-tablet" data-i18n="Logout">Logout</span></a></li>
+					<li id="mLogout" style="display: none;" has-Login-No-Admin=true>
+						<a class="dropdown-toggle lcursor" data-toggle="dropdown"><img src="images/users.png"> <span class="hidden-phone hidden-tablet" data-i18n="Profile">Profile</span> <b class="caret hidden-phone hidden-tablet"></b></a>
+						<ul class="dropdown-menu pull-right">
+							<li ng-class="{'current_page_item':getClass('/MyProfile')}" id="mProfile"><a id="cProfile" href="#MyProfile"><img src="images/users.png"> <span data-i18n="My Profile">My Profile</span></a></li>
+							<li ng-class="{'current_page_item':getClass('/About')}" id="mAbout"><a id="cAbout" href="#About"><img src="images/about.png"> <span data-i18n="About">About</span></a></li>
+							<li id="dLogoutSetup" class="divider" style="display: none;" has-Login=true></li>
+							<li id="mLogoutSetup" style="display: none;" has-Login=true><a id="cLogout" href="#Logout"><img src="images/logout.png"> <span data-i18n="Logout">Logout</span></a></li>
+						</ul>
+					</li>
 				</ul>
 			</div>
 		</div>

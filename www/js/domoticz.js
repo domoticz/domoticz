@@ -1444,13 +1444,13 @@ function ShowMediaRemote(Name, devIdx, HWType) {
 			if ( HWType.indexOf('Panasonic') >= 0) {
 				// Here is a little painful because we need to get hardware id  first...
 				$.ajax({
-					url: "json.htm?type=devices&rid=" + devIdx,
+					url: "json.htm?type=command&param=getdevices&rid=" + devIdx,
 					async: true,
 					dataType: 'json',
 					success: function (data) { 
 						hwId = data.result[0].HardwareID;
 						$.ajax({
-							url: "json.htm?type=hardware",
+							url: "json.htm?type=command&param=gethardware",
 							async: true,
 							dataType: 'json',
 							success: function (data) { 
@@ -1836,7 +1836,7 @@ function ShowCurrentLog(contentdiv, backfunction, id, name, switchtype) {
 			},
 			events: {
 				load: function () {
-					$.getJSON("json.htm?type=graph&sensor=counter&idx=" + id + "&range=day", function (data) {
+					$.getJSON("json.htm?type=command&param=graph&sensor=counter&idx=" + id + "&range=day", function (data) {
 						if (typeof data.result != 'undefined') {
 							AddDataToCurrentChart(data, $.DayChart.highcharts(), switchtype, 1);
 							$.DayChart.highcharts().redraw();
@@ -1910,7 +1910,7 @@ function ShowCurrentLog(contentdiv, backfunction, id, name, switchtype) {
 			},
 			events: {
 				load: function () {
-					$.getJSON("json.htm?type=graph&sensor=counter&idx=" + id + "&range=month", function (data) {
+					$.getJSON("json.htm?type=command&param=graph&sensor=counter&idx=" + id + "&range=month", function (data) {
 						if (typeof data.result != 'undefined') {
 							AddDataToCurrentChart(data, $.MonthChart.highcharts(), switchtype, 0);
 							$.MonthChart.highcharts().redraw();
@@ -1985,7 +1985,7 @@ function ShowCurrentLog(contentdiv, backfunction, id, name, switchtype) {
 			events: {
 				load: function () {
 
-					$.getJSON("json.htm?type=graph&sensor=counter&idx=" + id + "&range=year", function (data) {
+					$.getJSON("json.htm?type=command&param=graph&sensor=counter&idx=" + id + "&range=year", function (data) {
 						if (typeof data.result != 'undefined') {
 							AddDataToCurrentChart(data, $.YearChart.highcharts(), switchtype, 0);
 							$.YearChart.highcharts().redraw();
@@ -2074,7 +2074,7 @@ function ShowUVLog(contentdiv, backfunction, id, name) {
 			marginRight: 10,
 			events: {
 				load: function () {
-					$.getJSON("json.htm?type=graph&sensor=uv&idx=" + id + "&range=day", function (data) {
+					$.getJSON("json.htm?type=command&param=graph&sensor=uv&idx=" + id + "&range=day", function (data) {
 						if (typeof data.result != 'undefined') {
 							var series = $.DayChart.highcharts().series[0];
 							var datatable = [];
@@ -2165,7 +2165,7 @@ function ShowUVLog(contentdiv, backfunction, id, name) {
 			events: {
 				load: function () {
 
-					$.getJSON("json.htm?type=graph&sensor=uv&idx=" + id + "&range=month", function (data) {
+					$.getJSON("json.htm?type=command&param=graph&sensor=uv&idx=" + id + "&range=month", function (data) {
 						if (typeof data.result != 'undefined') {
 							var series = $.MonthChart.highcharts().series[0];
 							var datatable = [];
@@ -2280,7 +2280,7 @@ function ShowUVLog(contentdiv, backfunction, id, name) {
 			events: {
 				load: function () {
 
-					$.getJSON("json.htm?type=graph&sensor=uv&idx=" + id + "&range=year", function (data) {
+					$.getJSON("json.htm?type=command&param=graph&sensor=uv&idx=" + id + "&range=year", function (data) {
 						if (typeof data.result != 'undefined') {
 							var series = $.YearChart.highcharts().series[0];
 							var datatable = [];
@@ -2445,7 +2445,7 @@ function ShowWindLog(contentdiv, backfunction, id, name) {
 			marginRight: 10,
 			events: {
 				load: function () {
-					$.getJSON("json.htm?type=graph&sensor=wind&idx=" + id + "&range=day", function (data) {
+					$.getJSON("json.htm?type=command&param=graph&sensor=wind&idx=" + id + "&range=day", function (data) {
 						if (typeof data.result != 'undefined') {
 							var seriessp = $.DayChart.highcharts().series[0];
 							var seriesgu = $.DayChart.highcharts().series[1];
@@ -2664,7 +2664,7 @@ function ShowWindLog(contentdiv, backfunction, id, name) {
 			type: 'column',
 			events: {
 				load: function () {
-					$.getJSON("json.htm?type=graph&sensor=winddir&idx=" + id + "&range=day", function (data) {
+					$.getJSON("json.htm?type=command&param=graph&sensor=winddir&idx=" + id + "&range=day", function (data) {
 						if (typeof data.result_speed != 'undefined') {
 							$.each(data.result_speed, function (i, item) {
 								//make the series
@@ -2753,7 +2753,7 @@ function ShowWindLog(contentdiv, backfunction, id, name) {
 			marginRight: 10,
 			events: {
 				load: function () {
-					$.getJSON("json.htm?type=graph&sensor=wind&idx=" + id + "&range=month", function (data) {
+					$.getJSON("json.htm?type=command&param=graph&sensor=wind&idx=" + id + "&range=month", function (data) {
 						if (typeof data.result != 'undefined') {
 							var seriessp = $.MonthChart.highcharts().series[0];
 							var seriesgu = $.MonthChart.highcharts().series[1];
@@ -3031,7 +3031,7 @@ function ShowWindLog(contentdiv, backfunction, id, name) {
 			events: {
 				load: function () {
 
-					$.getJSON("json.htm?type=graph&sensor=wind&idx=" + id + "&range=year", function (data) {
+					$.getJSON("json.htm?type=command&param=graph&sensor=wind&idx=" + id + "&range=year", function (data) {
 						if (typeof data.result != 'undefined') {
 							var seriessp = $.YearChart.highcharts().series[0];
 							var seriesgu = $.YearChart.highcharts().series[1];
@@ -3373,7 +3373,7 @@ function ShowMonthReportRain(actMonth, actYear) {
 	var highest_pos = 0;
 	var highest_date = {};
 
-	$.getJSON("json.htm?type=graph&sensor=rain&idx=" + $.devIdx + "&range=year&actmonth=" + actMonth + "&actyear=" + actYear,
+	$.getJSON("json.htm?type=command&param=graph&sensor=rain&idx=" + $.devIdx + "&range=year&actmonth=" + actMonth + "&actyear=" + actYear,
 		function (data) {
 			var lastTotal = -1;
 			$.each(data.result, function (i, item) {
@@ -3587,7 +3587,7 @@ function ShowYearReportRain(actYear) {
 	var highest_val = -1;
 	var highest_date = {};
 
-	$.getJSON("json.htm?type=graph&sensor=rain&idx=" + $.devIdx + "&range=year&actyear=" + actYear,
+	$.getJSON("json.htm?type=command&param=graph&sensor=rain&idx=" + $.devIdx + "&range=year&actyear=" + actYear,
 		function (data) {
 			var lastTotal = -1;
 			var lastMonth = -1;
@@ -3720,7 +3720,7 @@ function ShowRainLog(contentdiv, backfunction, id, name) {
 			type: 'column',
 			events: {
 				load: function () {
-					$.getJSON("json.htm?type=graph&sensor=rain&idx=" + id + "&range=day", function (data) {
+					$.getJSON("json.htm?type=command&param=graph&sensor=rain&idx=" + id + "&range=day", function (data) {
 						if (typeof data.result != 'undefined') {
 							var series = $.DayChart.highcharts().series[0];
 							var datatable = [];
@@ -3781,7 +3781,7 @@ function ShowRainLog(contentdiv, backfunction, id, name) {
 			type: 'column',
 			events: {
 				load: function () {
-					$.getJSON("json.htm?type=graph&sensor=rain&idx=" + id + "&range=week", function (data) {
+					$.getJSON("json.htm?type=command&param=graph&sensor=rain&idx=" + id + "&range=week", function (data) {
 						if (typeof data.result != 'undefined') {
 							var series = $.WeekChart.highcharts().series[0];
 							var datatable = [];
@@ -3853,7 +3853,7 @@ function ShowRainLog(contentdiv, backfunction, id, name) {
 			},
 			events: {
 				load: function () {
-					$.getJSON("json.htm?type=graph&sensor=rain&idx=" + id + "&range=month", function (data) {
+					$.getJSON("json.htm?type=command&param=graph&sensor=rain&idx=" + id + "&range=month", function (data) {
 						if (typeof data.result != 'undefined') {
 							var series = $.MonthChart.highcharts().series[0];
 							var datatable = [];
@@ -3966,7 +3966,7 @@ function ShowRainLog(contentdiv, backfunction, id, name) {
 			events: {
 				load: function () {
 
-					$.getJSON("json.htm?type=graph&sensor=rain&idx=" + id + "&range=year", function (data) {
+					$.getJSON("json.htm?type=command&param=graph&sensor=rain&idx=" + id + "&range=year", function (data) {
 						if (typeof data.result != 'undefined') {
 							var series = $.YearChart.highcharts().series[0];
 							var datatable = [];
@@ -4096,7 +4096,7 @@ function ShowBaroLog(contentdiv, backfunction, id, name) {
 			marginRight: 10,
 			events: {
 				load: function () {
-					$.getJSON("json.htm?type=graph&sensor=temp&idx=" + id + "&range=day", function (data) {
+					$.getJSON("json.htm?type=command&param=graph&sensor=temp&idx=" + id + "&range=day", function (data) {
 						if (typeof data.result != 'undefined') {
 							var series = $.DayChart.highcharts().series[0];
 							var datatable = [];
@@ -4190,7 +4190,7 @@ function ShowBaroLog(contentdiv, backfunction, id, name) {
 			marginRight: 10,
 			events: {
 				load: function () {
-					$.getJSON("json.htm?type=graph&sensor=temp&idx=" + id + "&range=month", function (data) {
+					$.getJSON("json.htm?type=command&param=graph&sensor=temp&idx=" + id + "&range=month", function (data) {
 						if (typeof data.result != 'undefined') {
 							var series = $.MonthChart.highcharts().series[0];
 							var datatable = [];
@@ -4311,7 +4311,7 @@ function ShowBaroLog(contentdiv, backfunction, id, name) {
 			marginRight: 10,
 			events: {
 				load: function () {
-					$.getJSON("json.htm?type=graph&sensor=temp&idx=" + id + "&range=year", function (data) {
+					$.getJSON("json.htm?type=command&param=graph&sensor=temp&idx=" + id + "&range=year", function (data) {
 						if (typeof data.result != 'undefined') {
 							var series = $.YearChart.highcharts().series[0];
 							var datatable = [];
@@ -4450,7 +4450,7 @@ function ShowAirQualityLog(contentdiv, backfunction, id, name) {
 			marginRight: 10,
 			events: {
 				load: function () {
-					$.getJSON("json.htm?type=graph&sensor=counter&idx=" + id + "&range=day", function (data) {
+					$.getJSON("json.htm?type=command&param=graph&sensor=counter&idx=" + id + "&range=day", function (data) {
 						if (typeof data.result != 'undefined') {
 							var series = $.DayChart.highcharts().series[0];
 							var datatable = [];
@@ -4593,7 +4593,7 @@ function ShowAirQualityLog(contentdiv, backfunction, id, name) {
 			marginRight: 10,
 			events: {
 				load: function () {
-					$.getJSON("json.htm?type=graph&sensor=counter&idx=" + id + "&range=month", function (data) {
+					$.getJSON("json.htm?type=command&param=graph&sensor=counter&idx=" + id + "&range=month", function (data) {
 						if (typeof data.result != 'undefined') {
 							var datatable1 = [];
 							var datatable2 = [];
@@ -4802,7 +4802,7 @@ function ShowAirQualityLog(contentdiv, backfunction, id, name) {
 			marginRight: 10,
 			events: {
 				load: function () {
-					$.getJSON("json.htm?type=graph&sensor=counter&idx=" + id + "&range=year", function (data) {
+					$.getJSON("json.htm?type=command&param=graph&sensor=counter&idx=" + id + "&range=year", function (data) {
 						if (typeof data.result != 'undefined') {
 							var datatable1 = [];
 							var datatable2 = [];
@@ -5030,7 +5030,7 @@ function ShowFanLog(contentdiv, backfunction, id, name, sensor) {
 			marginRight: 10,
 			events: {
 				load: function () {
-					$.getJSON("json.htm?type=graph&sensor=fan&idx=" + id + "&range=day", function (data) {
+					$.getJSON("json.htm?type=command&param=graph&sensor=fan&idx=" + id + "&range=day", function (data) {
 						if (typeof data.result != 'undefined') {
 							var series = $.DayChart.highcharts().series[0];
 							var datatable = [];
@@ -5125,7 +5125,7 @@ function ShowFanLog(contentdiv, backfunction, id, name, sensor) {
 			marginRight: 10,
 			events: {
 				load: function () {
-					$.getJSON("json.htm?type=graph&sensor=fan&idx=" + id + "&range=month", function (data) {
+					$.getJSON("json.htm?type=command&param=graph&sensor=fan&idx=" + id + "&range=month", function (data) {
 						if (typeof data.result != 'undefined') {
 							var datatable1 = [];
 							var datatable2 = [];
@@ -5234,7 +5234,7 @@ function ShowFanLog(contentdiv, backfunction, id, name, sensor) {
 			marginRight: 10,
 			events: {
 				load: function () {
-					$.getJSON("json.htm?type=graph&sensor=fan&idx=" + id + "&range=year", function (data) {
+					$.getJSON("json.htm?type=command&param=graph&sensor=fan&idx=" + id + "&range=year", function (data) {
 						if (typeof data.result != 'undefined') {
 							var datatable1 = [];
 							var datatable2 = [];

@@ -165,8 +165,10 @@ main/SQLHelper.cpp
 main/SunRiseSet.cpp
 main/TrendCalculator.cpp
 main/WebServer.cpp
+main/WebServerCommands.cpp
 main/WebServerHelper.cpp
 main/WindCalculation.cpp
+iamserver/IamService.cpp
 push/BasePush.cpp
 push/FibaroPush.cpp
 push/GooglePubSubPush.cpp
@@ -182,6 +184,7 @@ hardware/1Wire/1WireCommon.cpp
 hardware/1Wire/1WireForWindows.cpp
 hardware/AccuWeather.cpp
 hardware/AirconWithMe.cpp
+hardware/AlfenEve.cpp
 hardware/AnnaThermostat.cpp
 hardware/Arilux.cpp
 hardware/ASyncSerial.cpp
@@ -214,6 +217,7 @@ hardware/eHouseTCP.cpp
 hardware/eHouse/EhouseEvents.cpp
 hardware/eHouse/EhouseTcpClient.cpp
 hardware/eHouse/EhouseUdpListener.cpp
+hardware/Enever.cpp
 hardware/EnOceanEEP.cpp
 hardware/EnOceanESP2.cpp
 hardware/EnOceanESP3.cpp

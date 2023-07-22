@@ -92,7 +92,7 @@ define(['app', 'livesocket'], function (app) {
 		RefreshWeathers = function () {
 			var id = "";
 
-			livesocket.getJson("json.htm?type=devices&filter=weather&used=true&order=[Order]&lastupdate=" + $.LastUpdateTime + "&plan=" + window.myglobals.LastPlanSelected, function (data) {
+			livesocket.getJson("json.htm?type=command&param=getdevices&filter=weather&used=true&order=[Order]&lastupdate=" + $.LastUpdateTime + "&plan=" + window.myglobals.LastPlanSelected, function (data) {
 				if (typeof data.ServerTime != 'undefined') {
 					$rootScope.SetTimeAndSun(data.Sunrise, data.Sunset, data.ServerTime);
 				}
@@ -120,7 +120,7 @@ define(['app', 'livesocket'], function (app) {
 			$('#modal').show();
 
 			$.ajax({
-				url: "json.htm?type=devices&filter=weather&used=true&order=[Order]",
+				url: "json.htm?type=command&param=getdevices&filter=weather&used=true&order=[Order]",
 				async: false,
 				dataType: 'json',
 				success: function (data) {
@@ -186,7 +186,7 @@ define(['app', 'livesocket'], function (app) {
 				if (bValid) {
 					$(this).dialog("close");
 					$.ajax({
-						url: "json.htm?type=setused&idx=" + $.devIdx +
+						url: "json.htm?type=command&param=setused&idx=" + $.devIdx +
 						'&name=' + encodeURIComponent($("#dialog-editweatherdevice #devicename").val()) +
 						'&description=' + encodeURIComponent($("#dialog-editweatherdevice #devicedescription").val()) +
 						'&used=true',
@@ -204,7 +204,7 @@ define(['app', 'livesocket'], function (app) {
 				bootbox.confirm($.t("Are you sure to remove this Device?"), function (result) {
 					if (result == true) {
 						$.ajax({
-							url: "json.htm?type=setused&idx=" + $.devIdx +
+							url: "json.htm?type=command&param=setused&idx=" + $.devIdx +
 							'&name=' + encodeURIComponent($("#dialog-editweatherdevice #devicename").val()) +
 							'&description=' + encodeURIComponent($("#dialog-editweatherdevice #devicedescription").val()) +
 							'&used=false',
@@ -246,7 +246,7 @@ define(['app', 'livesocket'], function (app) {
 				if (bValid) {
 					$(this).dialog("close");
 					$.ajax({
-						url: "json.htm?type=setused&idx=" + $.devIdx +
+						url: "json.htm?type=command&param=setused&idx=" + $.devIdx +
 						'&name=' + encodeURIComponent($("#dialog-editwinddevice #devicename").val()) +
 						'&description=' + encodeURIComponent($("#dialog-editwinddevice #devicedescription").val()) +
 						'&addjvalue2=' + $("#dialog-editwinddevice #edittable #arotation").val() +
@@ -266,7 +266,7 @@ define(['app', 'livesocket'], function (app) {
 				bootbox.confirm($.t("Are you sure to remove this Device?"), function (result) {
 					if (result == true) {
 						$.ajax({
-							url: "json.htm?type=setused&idx=" + $.devIdx +
+							url: "json.htm?type=command&param=setused&idx=" + $.devIdx +
 							'&name=' + encodeURIComponent($("#dialog-editwinddevice #devicename").val()) +
 							'&description=' + encodeURIComponent($("#dialog-editwinddevice #devicedescription").val()) +
 							'&used=false',
@@ -309,7 +309,7 @@ define(['app', 'livesocket'], function (app) {
 				if (bValid) {
 					$(this).dialog("close");
 					$.ajax({
-						url: "json.htm?type=setused&idx=" + $.devIdx +
+						url: "json.htm?type=command&param=setused&idx=" + $.devIdx +
 						'&name=' + encodeURIComponent($("#dialog-editraindevice #devicename").val()) +
 						'&description=' + encodeURIComponent($("#dialog-editraindevice #devicedescription").val()) +
 						'&addjmulti=' + $("#dialog-editraindevice #edittable #multiply").val() +
@@ -328,7 +328,7 @@ define(['app', 'livesocket'], function (app) {
 				bootbox.confirm($.t("Are you sure to remove this Device?"), function (result) {
 					if (result == true) {
 						$.ajax({
-							url: "json.htm?type=setused&idx=" + $.devIdx +
+							url: "json.htm?type=command&param=setused&idx=" + $.devIdx +
 							'&name=' + encodeURIComponent($("#dialog-editraindevice #devicename").val()) +
 							'&description=' + encodeURIComponent($("#dialog-editraindevice #devicedescription").val()) +
 							'&used=false',
@@ -371,7 +371,7 @@ define(['app', 'livesocket'], function (app) {
 					$(this).dialog("close");
 					var aValue = $("#dialog-editbarodevice #edittable #adjustment").val();
 					$.ajax({
-						url: "json.htm?type=setused&idx=" + $.devIdx +
+						url: "json.htm?type=command&param=setused&idx=" + $.devIdx +
 						'&name=' + encodeURIComponent($("#dialog-editbarodevice #devicename").val()) +
 						'&description=' + encodeURIComponent($("#dialog-editbarodevice #devicedescription").val()) +
 						'&addjvalue2=' + aValue +
@@ -390,7 +390,7 @@ define(['app', 'livesocket'], function (app) {
 				bootbox.confirm($.t("Are you sure to remove this Device?"), function (result) {
 					if (result == true) {
 						$.ajax({
-							url: "json.htm?type=setused&idx=" + $.devIdx +
+							url: "json.htm?type=command&param=setused&idx=" + $.devIdx +
 							'&name=' + encodeURIComponent($("#dialog-editbarodevice #devicename").val()) +
 							'&description=' + encodeURIComponent($("#dialog-editbarodevice #devicedescription").val()) +
 							'&used=false',
@@ -430,7 +430,7 @@ define(['app', 'livesocket'], function (app) {
 				if (bValid) {
 					$(this).dialog("close");
 					$.ajax({
-						url: "json.htm?type=setused&idx=" + $.devIdx +
+						url: "json.htm?type=command&param=setused&idx=" + $.devIdx +
 						'&name=' + encodeURIComponent($("#dialog-editvisibilitydevice #devicename").val()) +
 						'&description=' + encodeURIComponent($("#dialog-editvisibilitydevice #devicedescription").val()) +
 						'&switchtype=' + $("#dialog-editvisibilitydevice #combometertype").val() +
@@ -449,7 +449,7 @@ define(['app', 'livesocket'], function (app) {
 				bootbox.confirm($.t("Are you sure to remove this Device?"), function (result) {
 					if (result == true) {
 						$.ajax({
-							url: "json.htm?type=setused&idx=" + $.devIdx +
+							url: "json.htm?type=command&param=setused&idx=" + $.devIdx +
 							'&name=' + encodeURIComponent($("#dialog-editvisibilitydevice #devicename").val()) +
 							'&description=' + encodeURIComponent($("#dialog-editvisibilitydevice #devicedescription").val()) +
 							'&used=false',
@@ -492,7 +492,7 @@ define(['app', 'livesocket'], function (app) {
 				if (bValid) {
 					$(this).dialog("close");
 					$.ajax({
-						url: "json.htm?type=setused&idx=" + $.devIdx +
+						url: "json.htm?type=command&param=setused&idx=" + $.devIdx +
 						'&name=' + encodeURIComponent($("#dialog-edituvidevice #devicename").val()) +
 						'&description=' + encodeURIComponent($("#dialog-edituvidevice #devicedescription").val()) +
 						'&addjmulti2=' + $("#dialog-edituvidevice #edittable #multiply").val() +
@@ -511,7 +511,7 @@ define(['app', 'livesocket'], function (app) {
 				bootbox.confirm($.t("Are you sure to remove this Device?"), function (result) {
 					if (result == true) {
 						$.ajax({
-							url: "json.htm?type=setused&idx=" + $.devIdx +
+							url: "json.htm?type=command&param=setused&idx=" + $.devIdx +
 							'&name=' + encodeURIComponent($("#dialog-edituvidevice #devicename").val()) +
 							'&description=' + encodeURIComponent($("#dialog-edituvidevice #devicedescription").val()) +
 							'&used=false',

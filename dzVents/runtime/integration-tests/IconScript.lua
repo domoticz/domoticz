@@ -9,7 +9,7 @@ return {
 		iconSwitch = dz.devices('vdSetIconSwitch')
 		
 		local function getCustomImage()
-			local url = dz.settings['Domoticz url'] ..  '/json.htm?type=devices&rid=' .. item.id
+			local url = dz.settings['Domoticz url'] ..  '/json.htm?type=command&param=getdevices&rid=' .. item.id
 			dz.openURL  ({
 				url = url,
 				method = 'GET',

@@ -102,7 +102,7 @@ local function DomoticzTestTools(port, debug, webroot)
 	end
 
 	function self.createManagedCounter(name)
-		local url = "type=createdevice&idx=" .. DUMMY_HW_ID .."&sensorname=" .. name .. "&sensormappedtype=0xF321"
+		local url = "type=command&param=createdevice&idx=" .. DUMMY_HW_ID .."&sensorname=" .. name .. "&sensormappedtype=0xF321"
 		local ok, json, result, respcode, respheaders, respstatus = self.doAPICall(url)
 		return ok, json, result, respcode, respheaders, respstatus
 	end
@@ -116,9 +116,9 @@ local function DomoticzTestTools(port, debug, webroot)
 
 	function self.createVirtualDevice(hw, name, type, options)
 
-		local url = "type=createvirtualsensor&idx=" .. tostring(hw) .."&sensorname=" .. name .. "&sensortype=" .. tostring(type)
+		local url = "type=command&param=createvirtualsensor&idx=" .. tostring(hw) .."&sensorname=" .. name .. "&sensortype=" .. tostring(type)
 		if tostring(type) == "33" then
-			url = "type=createdevice&idx=" .. tostring(hw) .."&sensorname=" .. name .. "&sensormappedtype=0xF321"
+			url = "type=command&param=createdevice&idx=" .. tostring(hw) .."&sensorname=" .. name .. "&sensormappedtype=0xF321"
 		end
 
 		if (options) then
@@ -133,7 +133,7 @@ local function DomoticzTestTools(port, debug, webroot)
 
 	function self.createScene(name)
 		-- type=addscene&name=myScene&scenetype=0
-		local url = "type=addscene&name=" .. name .. "&scenetype=0"
+		local url = "type=command&param=addscene&name=" .. name .. "&scenetype=0"
 
 		local ok, json, result, respcode, respheaders, respstatus = self.doAPICall(url)
 		return ok, json, result, respcode, respheaders, respstatus
@@ -141,7 +141,7 @@ local function DomoticzTestTools(port, debug, webroot)
 
 	function self.createGroup(name)
 		-- type=addscene&name=myGroup&scenetype=1
-		local url = "type=addscene&name=" .. name .. "&scenetype=1"
+		local url = "type=command&param=addscene&name=" .. name .. "&scenetype=1"
 
 		local ok, json, result, respcode, respheaders, respstatus = self.doAPICall(url)
 		local idx = json.idx
@@ -163,21 +163,21 @@ local function DomoticzTestTools(port, debug, webroot)
 
 	function self.deleteDevice(idx)
 		-- type=deletedevice&idx=2;1;...
-		local url = "type=deletedevice&idx=" .. tostring(idx)
+		local url = "type=command&param=deletedevice&idx=" .. tostring(idx)
 		local ok, json, result, respcode, respheaders, respstatus = self.doAPICall(url)
 		return ok, json
 	end
 
 	function self.deleteGroupScene(idx)
 		-- type=deletescene&idx=1
-		local url = "type=deletescene&idx=" .. tostring(idx)
+		local url = "type=command&param=deletescene&idx=" .. tostring(idx)
 		local ok, json, result, respcode, respheaders, respstatus = self.doAPICall(url)
 		return ok, json
 	end
 
 	function self.getDevice(idx)
 		--type=devices&rid=15
-		local url = "type=devices&rid=" .. idx
+		local url = "type=command&param=getdevices&rid=" .. idx
 		local ok, json, result, respcode, respheaders, respstatus = self.doAPICall(url)
 		if (ok and json.result ~= nil and _.size(json.result) == 1) then
 			return ok, json.result[1]
@@ -187,7 +187,7 @@ local function DomoticzTestTools(port, debug, webroot)
 
 	function self.getAllDevices()
 		-- type=devices&displayhidden=1&displaydisabled=1&filter=all&used=all
-		local url = "type=devices&displayhidden=1&displaydisabled=1&filter=all&used=all"
+		local url = "type=command&param=getdevices&displayhidden=1&displaydisabled=1&filter=all&used=all"
 		local ok, json, result, respcode, respheaders, respstatus = self.doAPICall(url)
 		return ok, json, result
 	end
@@ -254,7 +254,7 @@ local function DomoticzTestTools(port, debug, webroot)
 	end
 
 	function self.deleteAllCameras()
-		local url = "type=cameras"
+		local url = "type=command&param=getcameras"
 		local ok, json, result, respcode, respheaders, respstatus = self.doAPICall(url)
 		local res = true
 		if (ok) then
@@ -283,7 +283,7 @@ local function DomoticzTestTools(port, debug, webroot)
 
 	function self.deleteAllHardware()
 		-- http://localhost:8080/json.htm?type=hardware
-		local url = "type=hardware"
+		local url = "type=command&param=gethardware"
 		local ok, json, result, respcode, respheaders, respstatus = self.doAPICall(url)
 		local res = true
 		if (ok) then
@@ -304,14 +304,14 @@ local function DomoticzTestTools(port, debug, webroot)
 
 	function self.deleteScript(idx)
 		--type=events&param=delete&event=1
-		local url = "param=delete&type=events&event=" .. tostring(idx)
+		local url = "evparam=delete&type=command&param=events&event=" .. tostring(idx)
 		local ok, json, result, respcode, respheaders, respstatus = self.doAPICall(url)
 		return ok, json
 	end
 
 	function self.deleteAllScripts()
 		-- type=events&param=list
-		local url = "param=list&type=events"
+		local url = "evparam=list&type=command&param=events"
 		local ok, json, result, respcode, respheaders, respstatus = self.doAPICall(url)
 		local res = true
 		if (ok) then
@@ -335,8 +335,8 @@ local function DomoticzTestTools(port, debug, webroot)
 	end
 
 	function self.updateSwitch(idx, name, description, switchType)
-		--http://localhost:8080/json.htm?type=setused&idx=1&name=vdSwitch&description=des&strparam1=&strparam2=&protected=false&switchtype=0&customimage=0&used=true&addjvalue=0&addjvalue2=0&options=
-		local url = "type=setused&idx=" ..
+		--http://localhost:8080/json.htm?type=command&param=setused&idx=1&name=vdSwitch&description=des&strparam1=&strparam2=&protected=false&switchtype=0&customimage=0&used=true&addjvalue=0&addjvalue2=0&options=
+		local url = "type=command&param=setused&idx=" ..
 				tostring(idx) ..
 				"&name=" .. name ..
 				"&description=" .. description ..
@@ -448,7 +448,7 @@ local function DomoticzTestTools(port, debug, webroot)
 	end
 
 	function self.addSecurityPanel(idx)
-		local url = "type=setused&idx=" .. tostring(idx) .. "&name=secPanel&used=true&maindeviceidx="
+		local url = "type=command&param=setused&idx=" .. tostring(idx) .. "&name=secPanel&used=true&maindeviceidx="
 		local ok, json, result, respcode, respheaders, respstatus = self.doAPICall(url)
 		return ok
 	end

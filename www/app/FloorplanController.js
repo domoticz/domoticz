@@ -295,7 +295,7 @@ define(['app', 'livesocket'], function (app) {
 				$scope.mytimer = undefined;
 			}
 
-			livesocket.getJson("json.htm?type=devices&filter=all&used=true&order=Name&lastupdate=" + $.LastUpdateTime, function (data) {
+			livesocket.getJson("json.htm?type=command&param=getdevices&filter=all&used=true&order=Name&lastupdate=" + $.LastUpdateTime, function (data) {
 				if (typeof data.ServerTime != 'undefined') {
 					$rootScope.SetTimeAndSun(data.Sunrise, data.Sunset, data.ServerTime);
 				}
@@ -318,7 +318,7 @@ define(['app', 'livesocket'], function (app) {
 		$scope.ShowFPDevices = function (floorIdx) {
 
 			$http({
-				url: "json.htm?type=devices&filter=all&used=true&order=Name&floor=" + $scope.floorPlans[floorIdx].idx
+				url: "json.htm?type=command&param=getdevices&filter=all&used=true&order=Name&floor=" + $scope.floorPlans[floorIdx].idx
 			}).then(function successCallback(response) {
 				var data = response.data;
 				if ((typeof data.ActTime != 'undefined') && ($scope.lastUpdateTime == 0)) {
@@ -420,7 +420,7 @@ define(['app', 'livesocket'], function (app) {
 
 			//Get initial floorplans
 			$http({
-				url: "json.htm?type=floorplans", async: false
+				url: "json.htm?type=command&param=getfloorplans", async: false
 			}).then(function successCallback(response) {
 				var data = response.data;
 				if (typeof data.result != 'undefined') {

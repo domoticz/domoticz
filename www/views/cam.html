@@ -385,7 +385,7 @@
 		var oTable = $('#cameratable').dataTable();
 		oTable.fnClearTable();
 		$.ajax({
-			url: "json.htm?type=cameras",
+			url: "json.htm?type=command&param=getcameras",
 			async: false,
 			dataType: 'json',
 			success: function (data) {

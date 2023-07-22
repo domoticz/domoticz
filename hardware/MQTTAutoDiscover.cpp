@@ -4,7 +4,6 @@
 #include "../main/json_helper.h"
 #include "../main/Helper.h"
 #include "../main/HTMLSanitizer.h"
-#include "../main/localtime_r.h"
 #include "../main/Logger.h"
 #include "../main/mainworker.h"
 #include "../main/SQLHelper.h"
@@ -1510,7 +1509,7 @@ void MQTTAutoDiscover::handle_auto_discovery_availability(_tMQTTASensor* pSensor
 	}
 }
 
-void MQTTAutoDiscover::GuessSensorTypeValue(const _tMQTTASensor* pSensor, uint8_t& devType, uint8_t& subType, std::string& szOptions, int& nValue, std::string& sValue)
+bool MQTTAutoDiscover::GuessSensorTypeValue(const _tMQTTASensor* pSensor, uint8_t& devType, uint8_t& subType, std::string& szOptions, int& nValue, std::string& sValue)
 {
 	devType = pTypeGeneral;
 	subType = sTypeCustom;
@@ -1584,6 +1583,13 @@ void MQTTAutoDiscover::GuessSensorTypeValue(const _tMQTTASensor* pSensor, uint8_
 		subType = sTypeElectric;
 
 		float fUsage = static_cast<float>(atof(pSensor->last_value.c_str()));
+
+		if (fUsage < -1000000)
+		{
+			//Way to negative, probably a bug in the sensor
+			return false;
+		}
+
 		_tMQTTASensor* pkWhSensor = get_auto_discovery_sensor_unit(pSensor, "kwh");
 		if (pkWhSensor)
 		{
@@ -1606,6 +1612,13 @@ void MQTTAutoDiscover::GuessSensorTypeValue(const _tMQTTASensor* pSensor, uint8_
 
 		float fUsage = 0;
 		float fkWh = static_cast<float>(atof(pSensor->last_value.c_str())) * 1000.0F;
+
+		if (fkWh < -1000000)
+		{
+			//Way to negative, probably a bug in the sensor
+			return false;
+		}
+
 		if (fkWh == 0)
 		{
 			//could be the first every value received.
@@ -1621,7 +1634,6 @@ void MQTTAutoDiscover::GuessSensorTypeValue(const _tMQTTASensor* pSensor, uint8_
 					fkWh = static_cast<float>(atof(strarray[1].c_str()));
 				}
 			}
-
 		}
 
 		_tMQTTASensor* pWattSensor = get_auto_discovery_sensor_WATT_unit(pSensor);
@@ -1775,7 +1787,6 @@ void MQTTAutoDiscover::GuessSensorTypeValue(const _tMQTTASensor* pSensor, uint8_
 				pRainSensor->sValue = std_format("%d;%.1f", Rainrate, TotalRain * 1000.0F);
 				mosquitto_message xmessage;
 				xmessage.retain = false;
-				// Trigger extra update for the kWh sensor with the new W value
 				handle_auto_discovery_sensor(pRainSensor, &xmessage);
 			}
 		}
@@ -1861,7 +1872,7 @@ void MQTTAutoDiscover::GuessSensorTypeValue(const _tMQTTASensor* pSensor, uint8_
 
 	if ((devType == pTypeGeneral) && (subType == sTypeCustom) && pSensor->szOptions.empty())
 		szOptions = "??";
-
+	return true;
 }
 
 MQTTAutoDiscover::_tMQTTASensor* MQTTAutoDiscover::get_auto_discovery_sensor_unit(const _tMQTTASensor* pSensor, const std::string& szMeasurementUnit)
@@ -1952,7 +1963,8 @@ MQTTAutoDiscover::_tMQTTASensor* MQTTAutoDiscover::get_auto_discovery_sensor_uni
 			int nValue = 0;
 			std::string sValue;
 
-			GuessSensorTypeValue(pDeviceSensor, devsensor_devType, devsensor_subType, szOptions, nValue, sValue);
+			if (!GuessSensorTypeValue(pDeviceSensor, devsensor_devType, devsensor_subType, szOptions, nValue, sValue))
+				return nullptr;
 
 			if (devsensor_devType == devType)
 			{
@@ -2115,7 +2127,8 @@ void MQTTAutoDiscover::handle_auto_discovery_sensor(_tMQTTASensor* pSensor, cons
 	bool bIsHum = false;
 	bool bIsBaro = false;
 
-	GuessSensorTypeValue(pSensor, pSensor->devType, pSensor->subType, pSensor->szOptions, pSensor->nValue, pSensor->sValue);
+	if (!GuessSensorTypeValue(pSensor, pSensor->devType, pSensor->subType, pSensor->szOptions, pSensor->nValue, pSensor->sValue))
+		return;
 
 	if (
 		(pSensor->devType == pTypeTEMP)
@@ -3556,8 +3569,8 @@ bool MQTTAutoDiscover::SendSwitchCommand(const std::string& DeviceID, const std:
 					}
 					else
 					{
-						root["color"]["h"] = hsb[0];
-						root["color"]["s"] = hsb[1];
+						root["color"]["h"] = hsb[0] * 360.0F;
+						root["color"]["s"] = hsb[1] * 100.0F;
 						root["brightness"] = hsb[2] * pSensor->brightness_scale;
 					}
 				}

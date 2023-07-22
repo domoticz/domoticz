@@ -17,7 +17,6 @@
 #include <sstream>
 #include <cstdlib>
 #include "../main/Helper.h"
-#include "../main/localtime_r.h"
 #include "../main/Logger.h"
 
 #define JWT_DISABLE_BASE64
@@ -141,11 +140,14 @@ namespace http {
 		@param[in] fun pointer to function which calculates the string to be displayed
 
 		*/
+		/* 20230525 No Longer in Use! Will be removed Soon!
 
 		void cWebem::RegisterIncludeCode(const char *idname, const webem_include_function &fun)
 		{
 			myIncludes.insert(std::pair<std::string, webem_include_function >(std::string(idname), fun));
 		}
+		*/
+
 		/**
 
 		Create a link between a string ID and a function to calculate the dynamic content of the string
@@ -158,11 +160,6 @@ namespace http {
 
 		*/
 
-		void cWebem::RegisterIncludeCodeW(const char *idname, const webem_include_function_w &fun)
-		{
-			myIncludes_w.insert(std::pair<std::string, webem_include_function_w >(std::string(idname), fun));
-		}
-
 		void cWebem::RegisterPageCode(const char *pageurl, const webem_page_function &fun, bool bypassAuthentication)
 		{
 			myPages.insert(std::pair<std::string, webem_page_function >(std::string(pageurl), fun));
@@ -171,15 +168,6 @@ namespace http {
 				RegisterWhitelistURLString(pageurl);
 			}
 		}
-		void cWebem::RegisterPageCodeW(const char *pageurl, const webem_page_function &fun, bool bypassAuthentication)
-		{
-			myPages_w.insert(std::pair<std::string, webem_page_function >(std::string(pageurl), fun));
-			if (bypassAuthentication)
-			{
-				RegisterWhitelistURLString(pageurl);
-			}
-		}
-
 
 		/**
 
@@ -203,7 +191,13 @@ namespace http {
 		{
 			myWhitelistCommands.push_back(idname);
 		}
-		
+
+		// Show a Debug line with the registered functions, actions, includes, whitelist urls and commands
+		void cWebem::DebugRegistrations()
+		{
+			_log.Debug(DEBUG_WEBSERVER, "cWebEm Registration: %d pages, %d actions, %d whitelist urls, %d whitelist commands",
+				(int)myPages.size(), (int)myActions.size(), (int)myWhitelistURLs.size(), (int)myWhitelistCommands.size());
+		}
 
 		/**
 
@@ -221,6 +215,7 @@ namespace http {
 
 
 		*/
+		/* 20230525 No longer in Use! Will be removed soon!
 		bool cWebem::Include(std::string& reply)
 		{
 			bool res = false;
@@ -260,35 +255,13 @@ namespace http {
 					reply.insert(p, content_part);
 					res = true;
 				}
-				else
-				{
-					// no function found, look for a wide character fuction
-					auto pf = myIncludes_w.find(code);
-					if (pf != myIncludes_w.end())
-					{
-						// function found
-						// get return string and convert from UTF-16 to UTF-8
-						std::wstring content_part_w;
-						try
-						{
-							pf->second(content_part_w);
-						}
-						catch (...)
-						{
-
-						}
-						cUTF utf(content_part_w.c_str());
-						// insert generated text
-						reply.insert(p, utf.get8());
-						res = true;
-					}
-				}
 
 				// adjust pointer into text for insertion
 				p = q + reply.length() - reply_len;
 			}
 			return res;
 		}
+		*/
 
 		std::istream & safeGetline(std::istream & is, std::string & line)
 		{
@@ -307,14 +280,146 @@ namespace http {
 			return is;
 		}
 
+		bool cWebem::ExtractPostData(request &req, const char *pContent_Type)
+		{
+			if (strstr(pContent_Type, "multipart/form-data") != nullptr)
+			{
+				std::string szContent = req.content;
+				size_t pos;
+				std::string szVariable, szContentType, szValue;
+
+				//first line is our boundary
+				pos = szContent.find("\r\n");
+				if (pos == std::string::npos)
+					return false;
+				std::string szBoundary = szContent.substr(0, pos);
+				szContent = szContent.substr(pos + 2);
+
+				while (!szContent.empty())
+				{
+					//Next line will contain our variable name
+					pos = szContent.find("\r\n");
+					if (pos == std::string::npos)
+						return false;
+					szVariable = szContent.substr(0, pos);
+					szContent = szContent.substr(pos + 2);
+					if (szVariable.find("Content-Disposition") != 0)
+						return false;
+					pos = szVariable.find("name=\"");
+					if (pos == std::string::npos)
+						return false;
+					szVariable = szVariable.substr(pos + 6);
+					pos = szVariable.find('"');
+					if (pos == std::string::npos)
+						return false;
+					szVariable = szVariable.substr(0, pos);
+					//Next line could be empty, or a Content-Type, if its empty, it is just a string
+					pos = szContent.find("\r\n");
+					if (pos == std::string::npos)
+						return false;
+					szContentType = szContent.substr(0, pos);
+					szContent = szContent.substr(pos + 2);
+					if (
+						(szContentType.find("application/octet-stream") != std::string::npos) ||
+						(szContentType.find("application/json") != std::string::npos) ||
+						(szContentType.find("application/x-zip") != std::string::npos) ||
+						(szContentType.find("application/zip") != std::string::npos) ||
+						(szContentType.find("Content-Type: text/xml") != std::string::npos) ||
+						(szContentType.find("Content-Type: text/x-hex") != std::string::npos) ||
+						(szContentType.find("Content-Type: image/") != std::string::npos)
+						)
+					{
+						//Its a file/stream, next line should be empty
+						pos = szContent.find("\r\n");
+						if (pos == std::string::npos)
+							return false;
+						szContent = szContent.substr(pos + 2);
+					}
+					else
+					{
+						//next line should be empty
+						if (!szContentType.empty())
+							return false;//dont know this one
+					}
+					pos = szContent.find(szBoundary);
+					if (pos == std::string::npos)
+						return false;
+					szValue = szContent.substr(0, pos - 2);
+					req.parameters.insert(std::pair< std::string, std::string >(szVariable, szValue));
+
+					szContent = szContent.substr(pos + szBoundary.size());
+					pos = szContent.find("\r\n");
+					if (pos == std::string::npos)
+						return false;
+					szContent = szContent.substr(pos + 2);
+				}
+			}
+			else if (strstr(pContent_Type, "application/x-www-form-urlencoded") != nullptr)
+			{
+				std::string params = req.content;
+				std::string name;
+				std::string value;
+
+				size_t q = 0;
+				size_t p = q;
+				int flag_done = 0;
+				const std::string& uri = params;
+				while (!flag_done)
+				{
+					q = uri.find('=', p);
+					if (q == std::string::npos)
+					{
+						break;
+					}
+					name = uri.substr(p, q - p);
+					p = q + 1;
+					q = uri.find('&', p);
+					if (q != std::string::npos)
+						value = uri.substr(p, q - p);
+					else
+					{
+						value = uri.substr(p);
+						flag_done = 1;
+					}
+					// the browser sends blanks as +
+					while (true)
+					{
+						size_t p = value.find('+');
+						if (p == std::string::npos)
+							break;
+						value.replace(p, 1, " ");
+					}
+
+					// now, url-decode only the value
+					std::string decoded;
+					request_handler::url_decode(value, decoded);
+					req.parameters.insert(std::pair< std::string, std::string >(name, decoded));
+					p = q + 1;
+				}
+			}
+			else if ((strstr(pContent_Type, "text/plain") != nullptr) || (strstr(pContent_Type, "application/json") != nullptr) ||
+				(strstr(pContent_Type, "application/xml") != nullptr))
+			{
+				//Raw data
+				req.parameters.insert(std::pair< std::string, std::string >("data", req.content));
+			}
+			else
+			{
+				//Unknown content type
+				_log.Debug(DEBUG_WEBSERVER, "[web:%s] Unable to process POST Data, unknown content type: %s", GetPort().c_str(), pContent_Type);
+				return false;
+			}
+			return true;
+		}
+
 		bool cWebem::IsAction(const request& req)
 		{
 			// look for cWebem form action request
 			std::string uri = req.uri;
 			size_t q = uri.find(".webem");
-			if (q == std::string::npos)
-				return false;
-			return true;
+			if (q != std::string::npos && req.method == "POST")
+				return true;
+			return false;
 		}
 
 		/**
@@ -330,8 +435,6 @@ namespace http {
 			if (!IsAction(req))
 				return false;
 
-			req.parameters.clear();
-
 			std::string uri = ExtractRequestPath(req.uri);
 
 			// find function matching action code
@@ -342,184 +445,41 @@ namespace http {
 				return false;
 
 			// decode the values
-
-			if (req.method == "POST")
+			const char *pContent_Type = request::get_req_header(&req, "Content-Type");
+			if (pContent_Type)
 			{
-				const char *pContent_Type = request::get_req_header(&req, "Content-Type");
-				if (pContent_Type)
+				req.parameters.clear();
+
+				bool bExtracted = ExtractPostData(req, pContent_Type);
+
+				// parameters have been extracted, so now execute
+				// we should have at least one value
+				if (bExtracted && !req.parameters.empty())
 				{
-					if (strstr(pContent_Type, "multipart/form-data") != nullptr)
+					// call the function
+					try
 					{
-						std::string szContent = req.content;
-						size_t pos;
-						std::string szVariable, szContentType, szValue;
-
-						//first line is our boundary
-						pos = szContent.find("\r\n");
-						if (pos == std::string::npos)
-							return false;
-						std::string szBoundary = szContent.substr(0, pos);
-						szContent = szContent.substr(pos + 2);
-
-						while (!szContent.empty())
-						{
-							//Next line will contain our variable name
-							pos = szContent.find("\r\n");
-							if (pos == std::string::npos)
-								return false;
-							szVariable = szContent.substr(0, pos);
-							szContent = szContent.substr(pos + 2);
-							if (szVariable.find("Content-Disposition") != 0)
-								return true;
-							pos = szVariable.find("name=\"");
-							if (pos == std::string::npos)
-								return false;
-							szVariable = szVariable.substr(pos + 6);
-							pos = szVariable.find('"');
-							if (pos == std::string::npos)
-								return false;
-							szVariable = szVariable.substr(0, pos);
-							//Next line could be empty, or a Content-Type, if its empty, it is just a string
-							pos = szContent.find("\r\n");
-							if (pos == std::string::npos)
-								return false;
-							szContentType = szContent.substr(0, pos);
-							szContent = szContent.substr(pos + 2);
-							if (
-								(szContentType.find("application/octet-stream") != std::string::npos) ||
-								(szContentType.find("application/json") != std::string::npos) ||
-								(szContentType.find("Content-Type: text/xml") != std::string::npos) ||
-								(szContentType.find("Content-Type: text/x-hex") != std::string::npos) ||
-								(szContentType.find("Content-Type: image/") != std::string::npos)
-								)
-							{
-								//Its a file/stream, next line should be empty
-								pos = szContent.find("\r\n");
-								if (pos == std::string::npos)
-									return false;
-								szContent = szContent.substr(pos + 2);
-							}
-							else
-							{
-								//next line should be empty
-								if (!szContentType.empty())
-									return false;//dont know this one
-							}
-							pos = szContent.find(szBoundary);
-							if (pos == std::string::npos)
-								return false;
-							szValue = szContent.substr(0, pos - 2);
-							req.parameters.insert(std::pair< std::string, std::string >(szVariable, szValue));
-
-							szContent = szContent.substr(pos + szBoundary.size());
-							pos = szContent.find("\r\n");
-							if (pos == std::string::npos)
-								return false;
-							szContent = szContent.substr(pos + 2);
-						}
-						//we should have at least one value
-						if (req.parameters.empty())
-							return false;
-						// call the function
-						try
-						{
-							pfun->second(session, req, req.uri);
-						}
-						catch (...)
-						{
-
-						}
-						if ((req.uri[0] == '/') && (m_webRoot.length() > 0))
-						{
-							// possible incorrect root reference
-							size_t q = req.uri.find(m_webRoot);
-							if (q != 0)
-							{
-								std::string olduri = req.uri;
-								req.uri = m_webRoot + olduri;
-							}
-						}
-						return true;
+						pfun->second(session, req, req.uri);
 					}
-					if ((strstr(pContent_Type, "text/plain") != nullptr) || (strstr(pContent_Type, "application/json") != nullptr) ||
-					    (strstr(pContent_Type, "application/xml") != nullptr))
+					catch (...)
 					{
-						//Raw data
-						req.parameters.insert(std::pair< std::string, std::string >("data", req.content));
-						// call the function
-						try
-						{
-							pfun->second(session, req, req.uri);
-						}
-						catch (...)
-						{
-
-						}
-						return true;
+						return false;
 					}
-				}
-				uri = req.content;
-				q = 0;
-			}
-			else
-			{
-				q += 7;
-			}
-
-			std::string name;
-			std::string value;
-
-			size_t p = q;
-			int flag_done = 0;
-			while (!flag_done)
-			{
-				q = uri.find('=', p);
-				if (q == std::string::npos)
-					return false;
-				name = uri.substr(p, q - p);
-				p = q + 1;
-				q = uri.find('&', p);
-				if (q != std::string::npos)
-					value = uri.substr(p, q - p);
-				else
-				{
-					value = uri.substr(p);
-					flag_done = 1;
-				}
-				// the browser sends blanks as +
-				while (true)
-				{
-					size_t p = value.find('+');
-					if (p == std::string::npos)
-						break;
-					value.replace(p, 1, " ");
-				}
-
-				req.parameters.insert(std::pair< std::string, std::string >(name, value));
-				p = q + 1;
-			}
-
-			// call the function
-			try
-			{
-				pfun->second(session, req, req.uri);
-			}
-			catch (...)
-			{
-
-			}
-			if ((req.uri[0] == '/') && (m_webRoot.length() > 0))
-			{
-				// possible incorrect root reference
-				size_t q = req.uri.find(m_webRoot);
-				if (q != 0)
-				{
-					std::string olduri = req.uri;
-					req.uri = m_webRoot + olduri;
+					if ((req.uri[0] == '/') && (m_webRoot.length() > 0))
+					{
+						// possible incorrect root reference
+						size_t q = req.uri.find(m_webRoot);
+						if (q != 0)
+						{
+							std::string olduri = req.uri;
+							req.uri = m_webRoot + olduri;
+						}
+					}
+					return true;
 				}
 			}
 
-			return true;
+			return false;
 		}
 
 		bool cWebem::IsPageOverride(const request& req, reply& rep)
@@ -537,9 +497,7 @@ namespace http {
 			auto pfun = myPages.find(request_path);
 			if (pfun != myPages.end())
 				return true;
-			//check wchar_t
-			auto pfunW = myPages_w.find(request_path);
-			return pfunW != myPages_w.end();
+			return false;
 		}
 
 		bool cWebem::CheckForPageOverride(WebEmSession & session, request& req, reply& rep)
@@ -600,122 +558,8 @@ namespace http {
 				const char *pContent_Type = request::get_req_header(&req, "Content-Type");
 				if (pContent_Type)
 				{
-					if (strstr(pContent_Type, "multipart/form-data") != nullptr)
-					{
-						std::string szContent = req.content;
-						size_t pos;
-						std::string szVariable, szContentType, szValue;
-
-						//first line is our boundary
-						pos = szContent.find("\r\n");
-						if (pos == std::string::npos)
-							return true;
-						std::string szBoundary = szContent.substr(0, pos);
-						szContent = szContent.substr(pos + 2);
-
-						while (!szContent.empty())
-						{
-							//Next line will contain our variable name
-							pos = szContent.find("\r\n");
-							if (pos == std::string::npos)
-								return true;
-							szVariable = szContent.substr(0, pos);
-							szContent = szContent.substr(pos + 2);
-							if (szVariable.find("Content-Disposition") != 0)
-								return true;
-							pos = szVariable.find("name=\"");
-							if (pos == std::string::npos)
-								return true;
-							szVariable = szVariable.substr(pos + 6);
-							pos = szVariable.find('"');
-							if (pos == std::string::npos)
-								return true;
-							szVariable = szVariable.substr(0, pos);
-							//Next line could be empty, or a Content-Type, if its empty, it is just a string
-							pos = szContent.find("\r\n");
-							if (pos == std::string::npos)
-								return true;
-							szContentType = szContent.substr(0, pos);
-							szContent = szContent.substr(pos + 2);
-							if (
-								(szContentType.find("application/octet-stream") != std::string::npos)
-								|| (szContentType.find("application/json") != std::string::npos)
-								|| (szContentType.find("application/x-zip") != std::string::npos)
-								|| (szContentType.find("application/zip") != std::string::npos)
-								|| (szContentType.find("Content-Type: text/xml") != std::string::npos)
-								)
-							{
-								//Its a file/stream, next line should be empty
-								pos = szContent.find("\r\n");
-								if (pos == std::string::npos)
-									return true;
-								szContent = szContent.substr(pos + 2);
-							}
-							else
-							{
-								//next line should be empty
-								if (!szContentType.empty())
-									return true;//dont know this one
-							}
-							pos = szContent.find(szBoundary);
-							if (pos == std::string::npos)
-								return true;
-							szValue = szContent.substr(0, pos - 2);
-							req.parameters.insert(std::pair< std::string, std::string >(szVariable, szValue));
-
-							szContent = szContent.substr(pos + szBoundary.size());
-							pos = szContent.find("\r\n");
-							if (pos == std::string::npos)
-								return true;
-							szContent = szContent.substr(pos + 2);
-						}
-						//we should have at least one value
-						if (req.parameters.empty())
-							return true;
-					} // if (strstr(pContent_Type, "multipart/form-data") != NULL)
-					else if (strstr(pContent_Type, "application/x-www-form-urlencoded") != nullptr)
-					{
-						std::string params = req.content;
-						std::string name;
-						std::string value;
-
-						size_t q = 0;
-						size_t p = q;
-						int flag_done = 0;
-						const std::string &uri = params;
-						while (!flag_done)
-						{
-							q = uri.find('=', p);
-							if (q == std::string::npos)
-							{
-								break;
-							}
-							name = uri.substr(p, q - p);
-							p = q + 1;
-							q = uri.find('&', p);
-							if (q != std::string::npos)
-								value = uri.substr(p, q - p);
-							else
-							{
-								value = uri.substr(p);
-								flag_done = 1;
-							}
-							// the browser sends blanks as +
-							while (true)
-							{
-								size_t p = value.find('+');
-								if (p == std::string::npos)
-									break;
-								value.replace(p, 1, " ");
-							}
-
-							// now, url-decode only the value
-							std::string decoded;
-							request_handler::url_decode(value, decoded);
-							req.parameters.insert(std::pair< std::string, std::string >(name, decoded));
-							p = q + 1;
-						}
-					}
+					// Extract the POST data into the parameters
+					bool bExtracted = ExtractPostData(req, pContent_Type);
 				}
 			}
 
@@ -782,31 +626,6 @@ namespace http {
 				reply::add_header_content_type(&rep, strMimeType);
 				if (m_settings.is_secure())
 					reply::add_security_headers(&rep);
-				return true;
-			}
-
-			//check wchar_t
-			auto pfunW = myPages_w.find(request_path);
-			if (pfunW != myPages_w.end())
-			{
-				try
-				{
-					pfunW->second(session, req, rep);
-				}
-				catch (...)
-				{
-					_log.Log(LOG_ERROR, "[web:%s] PO unknown exception occurred", GetPort().c_str());
-				}
-
-				rep.status = reply::ok;
-				reply::add_header(&rep, "Content-Length", std::to_string(rep.content.size()));
-				reply::add_header_content_type(&rep, strMimeType);
-				reply::add_header(&rep, "Cache-Control", "no-cache");
-				reply::add_header(&rep, "Pragma", "no-cache");
-				reply::add_cors_headers(&rep);
-				if (m_settings.is_secure())
-					reply::add_security_headers(&rep);
-
 				return true;
 			}
 
@@ -894,12 +713,13 @@ namespace http {
 			return false;
 		}
 
-		void cWebem::AddUserPassword(const unsigned long ID, const std::string &username, const std::string &password, const _eUserRights userrights, const int activetabs, const std::string &privkey, const std::string &pubkey)
+		void cWebem::AddUserPassword(const unsigned long ID, const std::string &username, const std::string &password, const std::string &mfatoken, const _eUserRights userrights, const int activetabs, const std::string &privkey, const std::string &pubkey)
 		{
 			_tWebUserPassword wtmp;
 			wtmp.ID = ID;
 			wtmp.Username = username;
 			wtmp.Password = password;
+			wtmp.Mfatoken = mfatoken;
 			wtmp.PrivKey = privkey;
 			wtmp.PubKey = pubkey;
 			wtmp.userrights = userrights;
@@ -1670,7 +1490,7 @@ namespace http {
 			return 0;
 		}
 
-		bool cWebem::GenerateJwtToken(std::string &jwttoken, const std::string clientid, const std::string clientsecret, const std::string user, const uint32_t exptime, const Json::Value jwtpayload)
+		bool cWebem::GenerateJwtToken(std::string &jwttoken, const std::string &clientid, const std::string &clientsecret, const std::string &user, const uint32_t exptime, const Json::Value jwtpayload)
 		{
 			bool bOk = false;
 			// Did we get a 'plain' clientsecret or an already MD5Hashed one?
@@ -2309,7 +2129,7 @@ namespace http {
 			WebEmStoredSession storedSession = sstore->GetSession(session.id);
 			if (storedSession.id.empty())
 			{
-				_log.Debug(DEBUG_WEBSERVER, "[web:%s] CheckAuthToken(%s_%s) : session id not found", myWebem->GetPort().c_str(), session.id.c_str(), session.auth_token.c_str());
+				_log.Debug(DEBUG_AUTH, "[web:%s] CheckAuthToken(%s_%s) : session id not found", myWebem->GetPort().c_str(), session.id.c_str(), session.auth_token.c_str());
 				return false;
 			}
 			if (storedSession.auth_token != GenerateMD5Hash(session.auth_token))
@@ -2319,7 +2139,7 @@ namespace http {
 				return false;
 			}
 
-			_log.Debug(DEBUG_WEBSERVER, "[web:%s] CheckAuthToken(%s_%s_%s) : user authenticated", myWebem->GetPort().c_str(), session.id.c_str(), session.auth_token.c_str(), session.username.c_str());
+			_log.Debug(DEBUG_AUTH, "[web:%s] CheckAuthToken(%s_%s_%s) : user authenticated", myWebem->GetPort().c_str(), session.id.c_str(), session.auth_token.c_str(), session.username.c_str());
 
 			if (session.rights == 2)
 			{
@@ -2358,7 +2178,7 @@ namespace http {
 
 				if (!userExists || sessionExpires)
 				{
-					_log.Debug(DEBUG_WEBSERVER, "[web:%s] CheckAuthToken(%s_%s) : cannot restore session, user not found or session expired", myWebem->GetPort().c_str(), session.id.c_str(), session.auth_token.c_str());
+					_log.Debug(DEBUG_AUTH, "[web:%s] CheckAuthToken(%s_%s) : cannot restore session, user not found or session expired", myWebem->GetPort().c_str(), session.id.c_str(), session.auth_token.c_str());
 					removeAuthToken(session.id);
 					return false;
 				}
@@ -2366,7 +2186,7 @@ namespace http {
 				WebEmSession* oldSession = myWebem->GetSession(session.id);
 				if (oldSession == nullptr)
 				{
-					_log.Debug(DEBUG_WEBSERVER, "[web:%s] CheckAuthToken(%s_%s_%s) : restore session", myWebem->GetPort().c_str(), session.id.c_str(), session.auth_token.c_str(), session.username.c_str());
+					_log.Debug(DEBUG_AUTH, "[web:%s] CheckAuthToken(%s_%s_%s) : restore session", myWebem->GetPort().c_str(), session.id.c_str(), session.auth_token.c_str(), session.username.c_str());
 					myWebem->AddSession(session);
 				}
 			}
@@ -2484,7 +2304,7 @@ namespace http {
 			}
 
 			bool isPage = myWebem->IsPageOverride(req, rep);
-			bool isAction = myWebem->IsAction(req);		// This isn't used as far as known (no .webem 'pages' in this project)
+			bool isAction = myWebem->IsAction(req);		// This is used but will be removed in the future and replaced by the JSON API commands
 
 			if (isPage && (req.uri.find("dologout") != std::string::npos))
 			{
@@ -2536,7 +2356,7 @@ namespace http {
 			request requestCopy = req;
 
 			bool bHandledAction = false;
-			// Run action if exists (not used at the moment, see above)
+			// Run action if exists
 			if (isAction)
 			{
 				// Post actions only allowed when authenticated and user has admin rights
@@ -2560,7 +2380,7 @@ namespace http {
 					}
 				}
 			}
-			// So we always move in here
+
 			if (!bHandledAction)
 			{
 				if (myWebem->CheckForPageOverride(session, requestCopy, rep))
