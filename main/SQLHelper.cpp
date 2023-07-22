@@ -446,16 +446,6 @@ constexpr auto sqlCreateEventRules =
 "[SequenceNo] INTEGER NOT NULL, "
 "FOREIGN KEY (EMID) REFERENCES EventMaster(ID));";
 
-constexpr auto sqlCreateZWaveNodes =
-"CREATE TABLE IF NOT EXISTS [ZWaveNodes] ("
-"[ID] INTEGER PRIMARY KEY, "
-"[HardwareID] INTEGER NOT NULL, "
-"[HomeID] INTEGER NOT NULL, "
-"[NodeID] INTEGER NOT NULL, "
-"[Name] VARCHAR(100) DEFAULT Unknown, "
-"[ProductDescription] VARCHAR(100) DEFAULT Unknown, "
-"[PollTime] INTEGER DEFAULT 0);";
-
 constexpr auto sqlCreateWOLNodes =
 "CREATE TABLE IF NOT EXISTS [WOLNodes] ("
 "[ID] INTEGER PRIMARY KEY, "
@@ -785,7 +775,6 @@ bool CSQLHelper::OpenDatabase()
 	query(sqlCreateSharedDevicesTrigger);
 	query(sqlCreateEventMaster);
 	query(sqlCreateEventRules);
-	query(sqlCreateZWaveNodes);
 	query(sqlCreateWOLNodes);
 	query(sqlCreatePercentage);
 	query(sqlCreatePercentage_Calendar);
@@ -1952,8 +1941,7 @@ bool CSQLHelper::OpenDatabase()
 				<< "([Type] = " << HTYPE_Wunderground << ") OR "
 				<< "([Type] = " << HTYPE_DarkSky << ") OR "
 				<< "([Type] = " << HTYPE_VisualCrossing << ") OR "
-				<< "([Type] = " << HTYPE_AccuWeather << ") OR "
-				<< "([Type] = " << HTYPE_OpenZWave << ")"
+				<< "([Type] = " << HTYPE_AccuWeather << ") "
 				<< ")";
 			result = query(szQuery.str());
 			if (!result.empty())
@@ -1974,8 +1962,7 @@ bool CSQLHelper::OpenDatabase()
 			std::vector<std::vector<std::string> > result;
 			szQuery << "SELECT ID FROM Hardware WHERE ( "
 				<< "([Type] = " << HTYPE_DavisVantage << ") OR "
-				<< "([Type] = " << HTYPE_TE923 << ") OR "
-				<< "([Type] = " << HTYPE_OpenZWave << ")"
+				<< "([Type] = " << HTYPE_TE923 << ") "
 				<< ")";
 			result = query(szQuery.str());
 			if (!result.empty())
@@ -2431,31 +2418,6 @@ bool CSQLHelper::OpenDatabase()
 					query(szQuery2.str());
 				}
 			}
-
-			//Patch for ZWave, change device type from sTypeColor_RGB_W to sTypeColor_RGB_W_Z
-			szQuery2.clear();
-			szQuery2.str("");
-			szQuery2 << "SELECT ID FROM Hardware WHERE ([Type]==" << HTYPE_OpenZWave << ")";
-			result = query(szQuery2.str());
-			if (!result.empty())
-			{
-				for (const auto &sd : result)
-				{
-					szQuery2.clear();
-					szQuery2.str("");
-					szQuery2 << "SELECT ID FROM DeviceStatus WHERE ([Type]=" << (int)pTypeColorSwitch << ") AND (SubType=" << (int)sTypeColor_RGB_W << ") AND (HardwareID=" << sd[0] << ")";
-					result2 = query(szQuery2.str());
-
-					for (const auto &sd : result2)
-					{
-						//Change device type
-						szQuery2.clear();
-						szQuery2.str("");
-						szQuery2 << "UPDATE DeviceStatus SET SubType=" << (int)sTypeColor_RGB_W_Z << " WHERE (ID=" << sd[0] << ")";
-						query(szQuery2.str());
-					}
-				}
-			}
 		}
 		if (dbversion < 125)
 		{
@@ -2641,17 +2603,6 @@ bool CSQLHelper::OpenDatabase()
 		}
 		if (dbversion < 135)
 		{
-			//OpenZWave COMMAND_CLASS_METER new index, need to delete the cache!
-			std::vector<std::string> root_files_;
-			DirectoryListing(root_files_, szUserDataFolder + "Config", false, true);
-			for (const auto &file : root_files_)
-			{
-				if (file.find("ozwcache_0x") != std::string::npos)
-				{
-					std::string dfile = szUserDataFolder + "Config/" + file;
-					std::remove(dfile.c_str());
-				}
-			}
 		}
 		if (dbversion < 136)
 		{
@@ -3442,32 +3393,7 @@ bool CSQLHelper::OpenDatabase()
 		nValue = 1;
 	}
 	m_bAcceptNewHardware = (nValue == 1);
-	if ((!GetPreferencesVar("ZWavePollInterval", nValue)) || (nValue == 0))
-	{
-		UpdatePreferencesVar("ZWavePollInterval", 60);
-	}
-	if (!GetPreferencesVar("ZWaveEnableDebug", nValue))
-	{
-		UpdatePreferencesVar("ZWaveEnableDebug", 0);
-	}
-	if ((!GetPreferencesVar("ZWaveNetworkKey", sValue)) || (sValue.empty()))
-	{
-		sValue = "0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F, 0x10";
-		UpdatePreferencesVar("ZWaveNetworkKey", sValue);
-	}
-	//Double check network_key
-	std::vector<std::string> splitresults;
-	StringSplit(sValue, ",", splitresults);
-	if (splitresults.size() != 16)
-	{
-		sValue = "0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F, 0x10";
-		UpdatePreferencesVar("ZWaveNetworkKey", sValue);
-	}
 
-	if (!GetPreferencesVar("ZWaveEnableNightlyNetworkHeal", nValue))
-	{
-		UpdatePreferencesVar("ZWaveEnableNightlyNetworkHeal", 0);
-	}
 	if (!GetPreferencesVar("BatteryLowNotification", nValue))
 	{
 		UpdatePreferencesVar("BatteryLowNotification", 0); //default disabled
@@ -7950,7 +7876,6 @@ void CSQLHelper::DeleteHardware(const std::string& idx)
 		DeleteDevices(devs2delete);
 	}
 	//also delete all records in other tables
-	safe_query("DELETE FROM ZWaveNodes WHERE (HardwareID=='%q')", idx.c_str());
 	safe_query("DELETE FROM EnOceanNodes WHERE (HardwareID=='%q')", idx.c_str());
 	safe_query("DELETE FROM MySensors WHERE (HardwareID=='%q')", idx.c_str());
 	safe_query("DELETE FROM WOLNodes WHERE (HardwareID=='%q')", idx.c_str());

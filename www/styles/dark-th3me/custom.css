@@ -936,7 +936,7 @@ body table#itemtablenostatus tr td:first-child + td + td + td + td + td + td {
   background: #B94A48 !important;
   color: #d0d0d0 !important;
 }
-/*button for Zwave initialization*/
+
 .label-important {
   background-color: #b94a48;
   text-transform: uppercase;

@@ -9,7 +9,6 @@ services:
                 CMAKE_VERSION: ${CMAKE_VERSION:-3.24.2}
                 BOOST_VERSION: ${BOOST_VERSION:-1.80.0}
         volumes:
-            - ../../open-zwave:/opt/open-zwave-read-only
             - ..:/opt/dev-domoticz
             - build:/opt/build
         ports:
@@ -31,7 +30,6 @@ services:
 
             USE_LUA_STATIC: ${USE_LUA_STATIC:-}
             USE_OPENSSL_STATIC: ${USE_OPENSSL_STATIC:-}
-            USE_STATIC_OPENZWAVE: ${USE_STATIC_OPENZWAVE:-}
 
             USE_PRECOMPILED_HEADER: ${USE_PRECOMPILED_HEADER:-}
             GIT_SUBMODULE: ${GIT_SUBMODULE:-}

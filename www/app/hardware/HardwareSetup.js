@@ -8,7 +8,6 @@ define([
     'hardware/setup/Pinger',
     'hardware/setup/WakeOnLan',
     'hardware/setup/MQTT-AD',
-    'hardware/setup/ZWave',
 ], function (app) {
     app.controller('HardwareSetupController', function ($routeParams, domoticzApi) {
         var vm = this;

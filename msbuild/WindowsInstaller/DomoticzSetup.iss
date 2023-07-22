@@ -53,7 +53,6 @@ Source: "..\..\www\*"; DestDir: "{app}\www"; Flags: recursesubdirs createallsubd
 Source: "..\..\Config\*"; DestDir: "{app}\Config"; Flags: recursesubdirs createallsubdirs ignoreversion
 Source: "..\..\scripts\*"; DestDir: "{app}\scripts"; Flags: recursesubdirs createallsubdirs ignoreversion
 Source: "..\..\dzVents\*"; DestDir: "{app}\dzVents"; Flags: recursesubdirs createallsubdirs ignoreversion
-Source: "..\Windows Libraries\openzwave\OpenZWave.dll"; DestDir: {app}; Flags: ignoreversion;
 Source: "..\..\History.txt"; DestDir: "{app}"; Flags: ignoreversion
 Source: ".\WinSI.exe"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\..\server_cert.pem"; DestDir: "{app}"; Flags: onlyifdoesntexist uninsneveruninstall

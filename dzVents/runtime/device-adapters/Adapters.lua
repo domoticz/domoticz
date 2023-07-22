@@ -52,7 +52,6 @@ local deviceAdapters = {
 	'wind_device',
 	'youless_device',
 	'zone_heating_device',
-	'zwave_mode_type_device',
 }
 
 local function DeviceAdapters(dummyLogger)

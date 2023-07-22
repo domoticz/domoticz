@@ -79,7 +79,6 @@ define(['blockly'], function() {
     Blockly.DOMOTICZ_LOGIC_WRITETOLOG_TOOLTIP = 'Use this block with a text, uservariable or device block to write a text or value into the Domoticz log.';
     Blockly.DOMOTICZ_LOGIC_CAMERA_TOOLTIP = 'Use this block in a "Do" statement to send a Camera snapshot after a specified number of seconds.\n E.g. if you want to send a snapshot after 10 seconds.';
     Blockly.DOMOTICZ_LOGIC_SETPOINT_TOOLTIP = 'Use this block in a "Do" statement to set a Setpoint value.';
-    Blockly.DOMOTICZVARIABLES_ZWAVEALARMS_TOOLTIP = 'This is a ZWave Alarm Type device. Use it in an IF statement to check its value,\ni.e. "if Burglar Alarm (0x07) value == 1". Cannot be used in Set blocks.';
     Blockly.DOMOTICZCONTROLS_MSG_IF = 'If';
     Blockly.DOMOTICZCONTROLS_MSG_ELSEIF = 'Else if';
     Blockly.DOMOTICZCONTROLS_MSG_DO = 'Do';
@@ -107,6 +106,5 @@ define(['blockly'], function() {
     Blockly.DOMOTICZCONTROLS_MSG_SETSETPOINT = 'Set SetPoint';
     Blockly.DOMOTICZCONTROLS_MSG_WITHSUBJECT = 'with subject';
     Blockly.DOMOTICZCONTROLS_MSG_DEGREES = 'Degrees';
-    Blockly.DOMOTICZCONTROLS_MSG_ZWAVEALARMS = 'Value';
 });
 

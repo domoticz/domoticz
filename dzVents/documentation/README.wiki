@@ -2314,47 +2314,6 @@ Some remarks about the response header <code>Content-Type</code>. If a service i
         end
     end
 }</source>
-=== Fetching data from Domoticz itself ===
-
-Most of the things you need to do in your dzVents script is already exposed somewhere in the dzVents object hierarchy. Sometimes however you need some data that is not available in dzVents. Just to give an example, let’s assume you have some zwave hardware and you want to know the <code>last seen</code> information of zwave devices or the status. This information is available in the node overview on the hardware page in Domoticz GUI. So, here is an example of how you can get that information into dzVents:
-
-<source lang="lua">return {
-    on = {
-        timer = { 'every hour' },
-        httpResponses = {
-            'zwaveInfo'
-        }
-    },
-    execute = function(domoticz, item)
-
-        if (item.isTimer) then
-            -- check the index of your zwave hardware in the GUI
-            -- in this example it is 2
-            -- we assume you can access your Domoticz using the 127.0.0.1 ip
-            -- on port 8080
-            domoticz.openURL({
-                url = 'http://127.0.0.1:8080/json.htm?type=openzwavenodes&idx=2',
-                method = 'GET',
-                callback = 'zwaveInfo',
-            })
-        end
-
-        if (item.isHTTPResponse and item.ok) then
-            local Time = require('Time')
-            local results = item.json.result
-            -- loop through the nodes and print some info
-            for i, node in pairs(results) do
-                -- convert the time stamp in the raw data into a
-                -- dzVents Time object
-                local lastUpdate = Time(node.LastUpdate)
-                print(node.Name)
-                print('Hours ago: ' .. lastUpdate.hoursAgo)
-                print('State: ' .. node.State')
-            end
-        end
-    end
-}
-</source>
 = Asynchronous shell command execution =
 
 dzVents allows you to make asynchronous shell commands and handle the results. Asynchronous means that you don’t block the system while waiting for the response. Earlier you had to use functions like <code>utils.osCommand()</code> or <code>os.Execute()</code> and some magic to make sure that you didn’t block the system for too long after which Domoticz comes with a message that the script took more than 10 seconds.
