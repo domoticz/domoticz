@@ -394,7 +394,7 @@ void request_handler::handle_request(const request &req, reply &rep, modify_info
 				// We found an already compressed source file, but the client does not seem to support to received it compressed. So we decompress it first.
 				std::string gzcontent((std::istreambuf_iterator<char>(is)), (std::istreambuf_iterator<char>()));
 
-				CGZIP2AT<> decompress((LPGZIP)gzcontent.c_str(), gzcontent.size());
+				CGZIP2AT<> decompress((LPGZIP)gzcontent.c_str(), static_cast<int>(gzcontent.size()));
 				rep.content.append(decompress.psz, decompress.Length);
 				_log.Debug(DEBUG_WEBSERVER, "[web:%s] decompressed content from %s before sending.", request_path.c_str(), full_path.c_str());
 			}

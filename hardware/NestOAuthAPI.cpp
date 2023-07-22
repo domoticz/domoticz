@@ -504,8 +504,8 @@ void CNestOAuthAPI::GetMeterDetails()
 		return;
 	}
 
-	size_t iThermostat = 0;
-	size_t iStructure = 0;
+	int iThermostat = 0;
+	int iStructure = 0;
 	for (auto nstructure : structureRoot)
 	{
 		// Get general structure information
@@ -616,7 +616,7 @@ void CNestOAuthAPI::SetSetpoint(const int idx, const float temp)
 			return;
 	}
 
-	size_t iThermostat = (idx - 1) / 3;
+	int iThermostat = (idx - 1) / 3;
 	if (iThermostat > m_thermostats.size())
 		return;
 
@@ -736,7 +736,7 @@ bool CNestOAuthAPI::PushToNestApi(const std::string & /*sMethod*/, const std::st
 
 bool CNestOAuthAPI::SetAway(const unsigned char Idx, const bool bIsAway)
 {
-	size_t iStructure = (Idx - 3) / 3;
+	int iStructure = (Idx - 3) / 3;
 	if (iStructure > m_structures.size())
 		return false;
 
