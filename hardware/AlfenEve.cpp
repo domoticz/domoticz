@@ -298,7 +298,7 @@ bool AlfenEve::GetProperties(Json::Value& result)
 	curl_easy_setopt(m_curl, CURLOPT_CUSTOMREQUEST, "GET");
 	curl_easy_setopt(m_curl, CURLOPT_URL, szURL.c_str());
 	CURLcode res = curl_easy_perform(m_curl);
-	if (!res == CURLE_OK)
+	if (res != CURLE_OK)
 	{
 		curl_easy_cleanup(m_curl);
 		m_curl = nullptr;
@@ -350,7 +350,7 @@ bool AlfenEve::GetInfo()
 	curl_easy_setopt(m_curl, CURLOPT_CUSTOMREQUEST, "GET");
 	curl_easy_setopt(m_curl, CURLOPT_URL, szURL.c_str());
 	CURLcode res = curl_easy_perform(m_curl);
-	if (!res == CURLE_OK)
+	if (res != CURLE_OK)
 	{
 		curl_easy_cleanup(m_curl);
 		m_curl = nullptr;
@@ -1089,7 +1089,8 @@ bool AlfenEve::SetProperty(const std::string& szName, const int Value)
 			curl_easy_setopt(m_curl, CURLOPT_CUSTOMREQUEST, "POST");
 			curl_easy_setopt(m_curl, CURLOPT_URL, szURL.c_str());
 
-			curl_easy_setopt(m_curl, CURLOPT_POSTFIELDS, send_data);
+			const char* data = send_data.c_str();
+			curl_easy_setopt(m_curl, CURLOPT_POSTFIELDS, data);
 			CURLcode res = curl_easy_perform(m_curl);
 			if (res != CURLE_OK)
 			{
