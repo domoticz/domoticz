@@ -997,6 +997,12 @@ namespace http {
 				{
 					cleanIP = cleanIP.substr(1,cleanIP.size()-2);	// Remove brackets from begin and end
 				}
+				// Link-local IPv6 addresses could have a 'zone-index' identifiyng which interface is used
+				// on a machine which has multiple interface. Can be discarded for checking
+				if ((cleanIP.find("fe80::") == 0) && (cleanIP.find('%') != std::string::npos))
+				{
+					cleanIP = cleanIP.substr(0,cleanIP.find('%'));
+				}
 			}
 		#ifndef WIN32
 			else
