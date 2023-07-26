@@ -1595,16 +1595,15 @@ namespace http {
 				return false;
 
 			//Is the given 'host' a valid IP address?
-			bool bIsIPv6 = (sHost.find(':') != std::string::npos);
-			uint8_t IP[16] = { 0 };
-			if ( (sHost.size() < 3) || (inet_pton((!bIsIPv6) ? AF_INET : AF_INET6, sHost.c_str(), &IP) != 1) )
-			{
+			std::string sCleanHost = sHost;
+			if (!cWebem::isValidIP(sCleanHost))			{
 				_log.Log(LOG_STATUS,"[web:%s] Given host (%s) is not a valid Ipv4 or IPv6 address! Unable to check if in Trusted Network!", myWebem->GetPort().c_str() ,sHost.c_str());
 				return false;	// The IP address is not a valid IPv4 or IPv6 address
 			}
+			bool bIsIPv6 = (sCleanHost.find(':') != std::string::npos);
 
 			return std::any_of(myWebem->m_localnetworks.begin(), myWebem->m_localnetworks.end(),
-					   [&](const _tIPNetwork &my) { return IsIPInRange(sHost, my, bIsIPv6); });
+					   [&](const _tIPNetwork &my) { return IsIPInRange(sCleanHost, my, bIsIPv6); });
 		}
 
 		std::string cWebemRequestHandler::generateSessionID()
