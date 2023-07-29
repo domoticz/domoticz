@@ -142,7 +142,7 @@ std::vector<char> ExecuteCommandAndReturnRaw(const std::string &szCommand)
 				const size_t oldSize = myData.size();
 				myData.resize(myData.size() + BufferSize);        
 
-				const unsigned bytesRead = fread(&myData[oldSize], 1, BufferSize,fp);
+				const size_t bytesRead = fread(&myData[oldSize], 1, BufferSize,fp);
 				myData.resize(oldSize + bytesRead);
 
 				if (bytesRead == 0) {

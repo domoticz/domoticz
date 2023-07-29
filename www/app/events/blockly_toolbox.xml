@@ -88,8 +88,5 @@
         <category name="SetPoints">
             <block type="setpointvariables"></block>
         </category>
-        <category name="ZWave Alarms">
-            <block type="zwavealarms"></block>
-        </category>
     </category>
 </xml>

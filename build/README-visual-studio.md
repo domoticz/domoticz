@@ -4,7 +4,7 @@
 - The project file for Visual Studio can be found inside the "msbuild" folder
 - You need to download `WindowsLibraries.7z` from https://github.com/domoticz/win32-libraries	- For the Initial setup, Launch Visual Studio and from the 'Tools' menu choose 'Visual Studio Command Prompt'
   and unpack the archive inside the "msbuild" folder.
-  This is for the OpenZWave headers and to build a release in InnoSetup
+  This is to build a release in InnoSetup
   For building in debug mode, please remove the 'include' and 'lib' folder!
 - For the Initial setup, Launch Visual Studio and from the 'Tools' menu choose 'Visual Studio Command Prompt'
 - Domoticz is using the excelent VCPKG C++ Library Manager, and you need to install the required packages that are in the file msbuild/packages.txt

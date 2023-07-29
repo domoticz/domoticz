@@ -140,7 +140,7 @@ int csocket::connect( const char* remoteHost, const unsigned int remotePort )
 		timeval tv;
 		tv.tv_sec = 5;
 		tv.tv_usec = 0;
-		int rc = select(m_socket + 1, &fdw, &fdr, &fde, &tv);
+		int rc = select(static_cast<int>(m_socket + 1), &fdw, &fdr, &fde, &tv);
 
 		if (rc <= 0) // 0 = timeout; less than zero is error
 			return FAILURE;
@@ -225,7 +225,7 @@ int csocket::canRead( bool* readyToRead, float waitTime )
 		timeout.tv_usec = static_cast<int>((1000000.0F * (waitTime - (float)timeout.tv_sec)));
 	}
 
-	int n = select(m_socket + 1, &fds, nullptr, nullptr, &timeout);
+	int n = select(static_cast<int>(m_socket + 1), &fds, nullptr, nullptr, &timeout);
 	if (n < 0)
 	{
 		m_socketState = ERRORED;

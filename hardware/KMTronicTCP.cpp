@@ -226,7 +226,7 @@ void KMTronicTCP::ParseRelays(const std::string &sResult)
 			{
 				bool bIsOn = (tmpstr[jj] != '0');
 				std::stringstream sstr;
-				int iRelay = (jj + 1);
+				int iRelay = static_cast<int>(jj + 1);
 				sstr << "Relay " << iRelay;
 				SendSwitch(iRelay, 1, 255, bIsOn, 0, sstr.str(), m_Name);
 				if (iRelay > m_TotRelais)

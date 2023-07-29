@@ -19,7 +19,7 @@ jobs:
   # This workflow contains a single job called "build"
   build:
     # The type of runner that the job will run on
-    #runs-on: ubuntu-latest   # Per Dec 2022 latest = 22.04 with GCC 11, OpenSSL3.0 and this breaks building OpenZwave
+    #runs-on: ubuntu-latest   # Per Dec 2022 latest = 22.04 with GCC 11, OpenSSL3.0
     runs-on: ubuntu-20.04
 
     # Steps represent a sequence of tasks that will be executed as part of the job
@@ -68,21 +68,11 @@ jobs:
           ./b2 stage threading=multi link=static --with-thread --with-system --with-chrono >> /dev/null 2>&1
           sudo ./b2 install threading=multi link=static --with-thread --with-system --with-chrono >> /dev/null 2>&1
 
-      # OpenZWave
-      - name: openzwave
-        run: |
-          cd $GITHUB_WORKSPACE
-          cd ..
-          git clone https://github.com/domoticz/open-zwave.git open-zwave-read-only
-          cd open-zwave-read-only
-          make
-          sudo make install >> /dev/null 2>&1
-
       # Domoticz
       - name: build domoticz
         run: |
           cd $GITHUB_WORKSPACE
-          cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_LIBRARY_PATH=open-zwave-read-only CMakeLists.txt
+          cmake -DCMAKE_BUILD_TYPE=Release CMakeLists.txt
           make
 
       # Run automated tests (disabled March 2022)
@@ -108,7 +98,7 @@ jobs:
         run: |
           cd $GITHUB_WORKSPACE
           mkdir package
-          tar czf package/domoticz_linux_x86_64-${{ env.BUILDNR }}.tgz domoticz History.txt License.txt domoticz.sh server_cert.pem updatebeta updaterelease www/ scripts/ Config/ dzVents/
+          tar czf package/domoticz_linux_x86_64-${{ env.BUILDNR }}.tgz domoticz History.txt License.txt domoticz.sh server_cert.pem updatebeta updaterelease www/ scripts/ dzVents/
           shasum -a 256 package/domoticz_linux_x86_64-${{ env.BUILDNR }}.tgz > package/domoticz_linux_x86_64-${{ env.BUILDNR }}.tgz.sha256sum
 
       # Artifact upload

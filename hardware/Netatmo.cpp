@@ -1062,7 +1062,7 @@ bool CNetatmo::ParseStationData(const std::string& sResult, const bool bIsThermo
 				if (*ittNM == id)
 				{
 					nDevice = *ittND;
-					iDevIndex = (ittND - _netatmo_devices.begin());
+					iDevIndex = static_cast<int>(ittND - _netatmo_devices.begin());
 					bHaveFoundND = true;
 					break;
 				}

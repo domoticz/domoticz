@@ -633,7 +633,7 @@ void CKodiNode::handleRead(const boost::system::error_code& e, std::size_t bytes
 		//do something with the data
 		std::string sData(m_Buffer.data(), bytes_transferred);
 		sData = m_RetainedData + sData;  // if there was some data left over from last time add it back in
-		int iPos = 1;
+		size_t iPos = 1;
 		while (iPos) {
 			iPos = sData.find("}{", 0) + 1;		//  Look for message separater in case there is more than one
 			if (!iPos) // no, just one or part of one

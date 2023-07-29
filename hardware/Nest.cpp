@@ -528,7 +528,7 @@ void CNest::GetMeterDetails()
 		return;
 	}
 
-	size_t iThermostat = 0;
+	int iThermostat = 0;
 	for (auto ittStructure = root["structure"].begin(); ittStructure != root["structure"].end(); ++ittStructure)
 	{
 		Json::Value nstructure = *ittStructure;

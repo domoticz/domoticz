@@ -458,8 +458,6 @@ bool CNotificationHelper::CheckAndHandleNotification(const uint64_t DevRowIdx, c
 						return CheckAndHandleNotification(DevRowIdx, sName, cType, cSubType, NTYPE_USAGE, fValue2);
 					}
 					break;
-				case sTypeZWaveAlarm:
-					return CheckAndHandleValueNotification(DevRowIdx, sName, nValue);
 				case sTypePercentage:
 					return CheckAndHandleNotification(DevRowIdx, sName, cType, cSubType, NTYPE_PERCENTAGE, fValue);
 				case sTypeSoilMoisture:

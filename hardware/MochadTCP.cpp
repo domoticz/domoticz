@@ -127,7 +127,7 @@ void MochadTCP::OnDisconnect()
 
 void MochadTCP::OnData(const unsigned char *pData, size_t length)
 {
-	ParseData(pData, length);
+	ParseData(pData, static_cast<int>(length));
 }
 
 void MochadTCP::Do_Work()

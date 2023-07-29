@@ -26,16 +26,16 @@ CRtl433::CRtl433(const int ID, const std::string& cmdline) :
 	// Basic protection from malicious command line
 	removeCharsFromString(m_cmdline, ";/$()`<>|&");
 	m_HwdID = ID;
-/*
-		#ifdef _DEBUG
-			std::string line = "{\"time\" : \"2023-05-17 15:26:52\", \"model\" : \"Flowis\", \"id\" : 240259236, \"type\" : 1, \"volume_m3\" : 759.420, \"device_time\" : \"2055-05-17T15:19:32\", \"alarm\" : 0, \"backflow\" : 64, \"mic\" : \"CRC\", \"mod\" : \"FSK\", \"freq1\" : 867.960, \"freq2\" : 868.050, \"rssi\" : -0.129, \"snr\" : 26.218, \"noise\" : -26.346}";
-			if (!ParseJsonLine(line))
-			{
-				// this is also logged when parsed data is invalid
-				Log(LOG_STATUS, "Unhandled sensor reading, please report: (%s)", line.c_str());
-			}
-		#endif
-*/
+	/*
+			#ifdef _DEBUG
+				std::string line = "{\"time\" : \"2023-05-17 15:26:52\", \"model\" : \"Flowis\", \"id\" : 240259236, \"type\" : 1, \"volume_m3\" : 759.420, \"device_time\" : \"2055-05-17T15:19:32\", \"alarm\" : 0, \"backflow\" : 64, \"mic\" : \"CRC\", \"mod\" : \"FSK\", \"freq1\" : 867.960, \"freq2\" : 868.050, \"rssi\" : -0.129, \"snr\" : 26.218, \"noise\" : -26.346}";
+				if (!ParseJsonLine(line))
+				{
+					// this is also logged when parsed data is invalid
+					Log(LOG_STATUS, "Unhandled sensor reading, please report: (%s)", line.c_str());
+				}
+			#endif
+	*/
 }
 
 bool CRtl433::StartHardware()
@@ -285,7 +285,7 @@ bool CRtl433::ParseData(std::map<std::string, std::string>& data)
 	}
 	if (FindField(data, "light_klx"))
 	{
-		lux = ( (float)atof(data["light_klx"].c_str()) ) * 1000;
+		lux = ((float)atof(data["light_klx"].c_str())) * 1000;
 		haveLux = true;
 	}
 	if (FindField(data, "light_lux"))
@@ -659,7 +659,7 @@ void CRtl433::Do_Work()
 			}
 #else
 			line[line_offset] = 0;
-			if (fgets(line + line_offset, sizeof(line) - 1 - line_offset, _hPipe) != nullptr)
+			if (fgets(line + line_offset, static_cast<int>(sizeof(line) - 1 - line_offset), _hPipe) != nullptr)
 			{
 				if ((line[strlen(line) - 1] != '\n') && (line[strlen(line) - 1] != '\r'))
 				{

@@ -261,7 +261,7 @@ void CWinddelen::GetMeterDetails()
 		return;
 	}
 
-	int fpos;
+	size_t fpos;
 	std::string pusage = stdstring_trim(results[7]);
 	fpos = pusage.find_first_of(' ');
 	if (fpos != std::string::npos)

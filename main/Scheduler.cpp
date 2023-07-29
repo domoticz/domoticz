@@ -974,7 +974,7 @@ void CScheduler::DeleteExpiredTimers()
 			szDate,
 			szTime
 			);
-		iExpiredTimers += result.size();
+		iExpiredTimers += static_cast<int>(result.size());
 	}
 
 	// Check SceneTimers
@@ -991,7 +991,7 @@ void CScheduler::DeleteExpiredTimers()
 			szDate,
 			szTime
 			);
-		iExpiredTimers += result.size();
+		iExpiredTimers += static_cast<int>(result.size());
 	}
 
 	if (iExpiredTimers > 0) {

@@ -75,9 +75,6 @@
     <Filter Include="Devices\OpenTherm-Gateway">
       <UniqueIdentifier>{9b834e19-65cb-442c-bfd7-c39e44279cb7}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Devices\ZWave">
-      <UniqueIdentifier>{8541fa16-1ca3-4b1c-8658-7075b91f73a8}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Devices\LimitlessLed">
       <UniqueIdentifier>{80714ac8-8783-4ef2-8836-3bb5b15adbb0}</UniqueIdentifier>
     </Filter>
@@ -405,9 +402,6 @@
     <Filter Include="Devices\InComfort">
       <UniqueIdentifier>{bbff9485-9778-469f-9659-e3575b33a348}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Devices\ZWave\Control Panel">
-      <UniqueIdentifier>{2467c1b1-dd49-4842-9931-bb5a12d729e2}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Pushers\InfluxDB">
       <UniqueIdentifier>{2c9db333-1435-4a52-970c-2a53298e2689}</UniqueIdentifier>
     </Filter>
@@ -524,9 +518,6 @@
     <None Include="domoticz.ico">
       <Filter>Windows</Filter>
     </None>
-    <None Include="..\www\zwavetopology.html">
-      <Filter>www</Filter>
-    </None>
     <None Include="..\www\eventsframe.html">
       <Filter>www</Filter>
     </None>
@@ -606,9 +597,6 @@
       <Filter>www\app</Filter>
     </None>
     <None Include="..\www\app\WeatherController.js">
-      <Filter>www\app</Filter>
-    </None>
-    <None Include="..\www\app\ZWaveTopologyController.js">
       <Filter>www\app</Filter>
     </None>
     <None Include="..\www\app\AboutController.js">
@@ -1394,12 +1382,6 @@
     <None Include="..\www\app\hardware\setup\WakeOnLan.js">
       <Filter>www\app\hardware\setup</Filter>
     </None>
-    <None Include="..\www\app\hardware\setup\ZWave.html">
-      <Filter>www\app\hardware\setup</Filter>
-    </None>
-    <None Include="..\www\app\hardware\setup\ZWave.js">
-      <Filter>www\app\hardware\setup</Filter>
-    </None>
     <None Include="..\www\app\livesocket.js">
       <Filter>www\app</Filter>
     </None>
@@ -1626,12 +1608,6 @@
     <ClInclude Include="..\hardware\OTGWTCP.h">
       <Filter>Devices\OpenTherm-Gateway</Filter>
     </ClInclude>
-    <ClInclude Include="..\hardware\ZWaveBase.h">
-      <Filter>Devices\ZWave</Filter>
-    </ClInclude>
-    <ClInclude Include="..\hardware\ZWaveCommands.h">
-      <Filter>Devices\ZWave</Filter>
-    </ClInclude>
     <ClInclude Include="..\hardware\1Wire\1WireForWindows.h">
       <Filter>Devices\1-Wire</Filter>
     </ClInclude>
@@ -1715,9 +1691,6 @@
     </ClInclude>
     <ClInclude Include="..\hardware\PhilipsHue\PhilipsHueSensors.h">
       <Filter>Devices\Philips Hue</Filter>
-    </ClInclude>
-    <ClInclude Include="..\hardware\openzwave\control_panel\ozwcp.h">
-      <Filter>Devices\ZWave\Control Panel</Filter>
     </ClInclude>
     <ClInclude Include="..\hardware\EvohomeBase.h">
       <Filter>Devices\EvoHome</Filter>
@@ -1991,9 +1964,6 @@
     </ClInclude>
     <ClInclude Include="..\hardware\InComfort.h">
       <Filter>Devices\InComfort</Filter>
-    </ClInclude>
-    <ClInclude Include="..\hardware\OpenZWave.h">
-      <Filter>Devices\ZWave</Filter>
     </ClInclude>
     <ClInclude Include="..\push\InfluxPush.h">
       <Filter>Pushers\InfluxDB</Filter>
@@ -2399,9 +2369,6 @@
     <ClCompile Include="..\hardware\OTGWTCP.cpp">
       <Filter>Devices\OpenTherm-Gateway</Filter>
     </ClCompile>
-    <ClCompile Include="..\hardware\ZWaveBase.cpp">
-      <Filter>Devices\ZWave</Filter>
-    </ClCompile>
     <ClCompile Include="..\hardware\1Wire\1WireForWindows.cpp">
       <Filter>Devices\1-Wire</Filter>
     </ClCompile>
@@ -2482,9 +2449,6 @@
     </ClCompile>
     <ClCompile Include="..\hardware\PhilipsHue\PhilipsHueSensors.cpp">
       <Filter>Devices\Philips Hue</Filter>
-    </ClCompile>
-    <ClCompile Include="..\hardware\openzwave\control_panel\ozwcp.cpp">
-      <Filter>Devices\ZWave\Control Panel</Filter>
     </ClCompile>
     <ClCompile Include="..\hardware\EvohomeBase.cpp">
       <Filter>Devices\EvoHome</Filter>
@@ -2623,9 +2587,6 @@
     </ClCompile>
     <ClCompile Include="..\notifications\NotificationLogitechMediaServer.cpp">
       <Filter>Notifications</Filter>
-    </ClCompile>
-    <ClCompile Include="..\hardware\openzwave\control_panel\zwavelib.cpp">
-      <Filter>Devices\ZWave\Control Panel</Filter>
     </ClCompile>
     <ClCompile Include="..\hardware\RFLinkSerial.cpp">
       <Filter>Devices\RFLink</Filter>
@@ -2803,9 +2764,6 @@
     </ClCompile>
     <ClCompile Include="..\hardware\InComfort.cpp">
       <Filter>Devices\InComfort</Filter>
-    </ClCompile>
-    <ClCompile Include="..\hardware\OpenZWave.cpp">
-      <Filter>Devices\ZWave</Filter>
     </ClCompile>
     <ClCompile Include="..\push\InfluxPush.cpp">
       <Filter>Pushers\InfluxDB</Filter>

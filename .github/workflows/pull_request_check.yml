@@ -76,21 +76,11 @@ jobs:
           ./b2 stage threading=multi link=static --with-thread --with-system --with-chrono >> /dev/null 2>&1
           sudo ./b2 install threading=multi link=static --with-thread --with-system --with-chrono >> /dev/null 2>&1
 
-      # OpenZWave
-      - name: openzwave
-        run: |
-          cd $GITHUB_WORKSPACE
-          cd ..
-          git clone https://github.com/domoticz/open-zwave.git open-zwave-read-only
-          cd open-zwave-read-only
-          make
-          sudo make install >> /dev/null 2>&1
-
       # Domoticz
       - name: build domoticz
         run: |
           cd $GITHUB_WORKSPACE
-          cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_LIBRARY_PATH=open-zwave-read-only CMakeLists.txt
+          cmake -DCMAKE_BUILD_TYPE=Release CMakeLists.txt
           make
 
       # Run automated tests (disabled March 2022)
@@ -117,7 +107,7 @@ jobs:
         run: |
           cd $GITHUB_WORKSPACE
           mkdir package
-          tar czf package/domoticz_linux_x86_64.tgz domoticz History.txt License.txt domoticz.sh server_cert.pem updatebeta updaterelease www/ scripts/ Config/ dzVents/
+          tar czf package/domoticz_linux_x86_64.tgz domoticz History.txt License.txt domoticz.sh server_cert.pem updatebeta updaterelease www/ scripts/ dzVents/
           shasum -a 256 package/domoticz_linux_x86_64.tgz > package/domoticz_linux_x86_64.tgz.sha256sum
           cp appversion.h.txt package/version_linux_x86_64.h
           cp History.txt package/history_linux_x86_64.txt

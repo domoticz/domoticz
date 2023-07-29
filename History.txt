@@ -1,4 +1,7 @@
 Version 2023.2 (July 21 2023)
+- Removed: OpenZWave (Move to ZWaveJS-UI in combination with MQTT Auto Discovery)
+
+Version 2023.2 (July 21 2023)
 - Implemented: 2FA/TOTP (Time-based One-Time Password) and HOTP (HMAC-based One-Time Password)
 - Implemented: Alfen Eve Charger hardware
 - Implemented: Allow a 'user' with shared devices to set it's own favorite devices

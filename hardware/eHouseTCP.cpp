@@ -459,7 +459,7 @@ eHouseTCP::eHouseTCP(const int ID, const std::string &IPAddress, const unsigned 
 	}
 
 	_log.Debug(DEBUG_HARDWARE, "[eHouse] Opts: %x,%x\r\n", m_eHOptA, m_eHOptB);
-	int len = userCode.length();
+	size_t len = userCode.length();
 	if (len > 6)
 		len = 6;
 	userCode.copy(m_PassWord, len);
@@ -567,7 +567,7 @@ bool eHouseTCP::StopHardware()
 	return true;
 }
 ///////////////////////////////////////////////////////////////////////////////////
-int eHouseTCP::ConnectTCP(unsigned int IP)
+SOCKET eHouseTCP::ConnectTCP(unsigned int IP)
 {
 	unsigned char challange[30];
 #ifndef WIN32
@@ -588,7 +588,7 @@ int eHouseTCP::ConnectTCP(unsigned int IP)
 
 	struct sockaddr_in server;
 	struct sockaddr_in saddr;
-	int TCPSocket = -1;
+	SOCKET TCPSocket = INVALID_SOCKET;
 	saddr.sin_family = AF_INET; // initialization of protocol & socket
 	if (IP > 0)
 		saddr.sin_addr.s_addr = IP;

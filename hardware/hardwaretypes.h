@@ -60,10 +60,7 @@
 #define sTypePressure 0x09
 #define sTypeSetPoint 0x10
 #define sTypeTemperature 0x11
-#define sTypeZWaveClock 0x12
 #define sTypeTextStatus 0x13
-#define sTypeZWaveThermostatMode 0x14
-#define sTypeZWaveThermostatFanMode 0x15
 #define sTypeAlert 0x16
 #define sTypeCurrent 0x17
 #define sTypeSoundLevel 0x18
@@ -74,9 +71,7 @@
 #define sTypeKwh 0x1D
 #define sTypeWaterflow 0x1E
 #define sTypeCustom 0x1F
-#define sTypeZWaveAlarm 0x20
 #define sTypeManagedCounter 0x21
-#define sTypeZWaveThermostatOperatingState 0x23
 
 // General Switch
 #define pTypeGeneralSwitch 0xF4

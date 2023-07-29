@@ -21,7 +21,7 @@ class eHouseTCP : public CDomoticzHardwareBase
 	bool WriteToHardware(const char *pdata, unsigned char length) override;
 
       private:
-	int ConnectTCP(unsigned int ip);
+	SOCKET ConnectTCP(unsigned int ip);
 	void AddTextEvents(unsigned char *ev, int size);		       // Add hex coded string with eHouse events/codes
 	signed int AddToLocalEvent(unsigned char *Even, unsigned char offset); // Add binary coded event from buffer
 	struct CtrlADCT *(m_adcs[MAX_AURA_DEVS]);
@@ -152,7 +152,7 @@ class eHouseTCP : public CDomoticzHardwareBase
 	unsigned char m_EHOUSE_PRO_HIGH;    // default eHouse Pro Server IP addr h
 	unsigned char m_EHOUSE_PRO_LOW;	    // default eHouse Pro Server IP addr l
 	char m_VendorCode[6];
-	int m_TCPSocket;
+	SOCKET m_TCPSocket;
 	unsigned char m_DEBUG_TCPCLIENT;
 	unsigned char m_EHOUSE_TCP_CLIENT_TIMEOUT;   // Tcp Client operation timeout Connect/send/receive
 	unsigned int m_EHOUSE_TCP_CLIENT_TIMEOUT_US; // Tcp Client operation timeout Connect/send/receive
@@ -171,7 +171,7 @@ class eHouseTCP : public CDomoticzHardwareBase
 	int m_modelIndex;
 	bool m_data32;
 	sockaddr_in m_addr;
-	int m_socket;
+	SOCKET m_socket;
 	const unsigned short m_IPPort; // 9876;    default port
 	const std::string m_IPAddress; // "192.168.0.200"; - default eHouse PRO srv address
 	int m_pollInterval;
@@ -186,7 +186,7 @@ class eHouseTCP : public CDomoticzHardwareBase
 	bool m_alarmLast;
 	char m_ViaTCP;	       // Statuses via TCP/IP connection
 	int m_HwID;	       // Domoticz Hardware ID
-	int m_eHouseUDPSocket; // UDP socket handler
+	SOCKET m_eHouseUDPSocket; // UDP socket handler
 	int m_UDP_PORT;	       // Default UDP PORT
 	unsigned char m_nr_of_ch;
 	char m_DEBUG_AURA;		   // Debug Aura
@@ -216,7 +216,7 @@ class eHouseTCP : public CDomoticzHardwareBase
 	unsigned char m_eHWiFiStatusReceived;	// eHouse WiFi status received flag (count of status from reset this flag)
 	typedef struct TcpClientConT
 	{
-		int Socket;		    // TCP Client Sockets for paralel operations
+		SOCKET Socket;		    // TCP Client Sockets for paralel operations
 		unsigned char Events[255U]; // Event buffer for current socket
 		// unsigned char TimeOut;                //TimeOut for current client connection in 0.1s require external thread or non blocking socket
 		// Active connections to Ehouse Controllers to avoid multiple connection to the same device

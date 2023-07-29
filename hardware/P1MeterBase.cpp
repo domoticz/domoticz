@@ -1198,7 +1198,7 @@ void P1MeterBase::ParseP1Data(const uint8_t* pDataIn, const int LenIn, const boo
 					if (ctx == nullptr)
 						return;
 					EVP_DecryptInit_ex(ctx, EVP_aes_128_gcm(), nullptr, nullptr, nullptr);
-					EVP_CIPHER_CTX_ctrl(ctx, EVP_CTRL_AEAD_SET_IVLEN, iv.size(), nullptr);
+					EVP_CIPHER_CTX_ctrl(ctx, EVP_CTRL_AEAD_SET_IVLEN, static_cast<int>(iv.size()), nullptr);
 
 					EVP_DecryptInit_ex(ctx, nullptr, nullptr, (const unsigned char*)m_szHexKey.data(),
 						(const unsigned char*)iv.c_str());
@@ -1207,7 +1207,7 @@ void P1MeterBase::ParseP1Data(const uint8_t* pDataIn, const int LenIn, const boo
 					// std::vector<char> m_szDecodeAdd = HexToBytes(_szDecodeAdd);
 					// EVP_DecryptUpdate(ctx, nullptr, &outlen, (const uint8_t*)m_szDecodeAdd.data(),
 					// m_szDecodeAdd.size());
-					EVP_DecryptUpdate(ctx, (uint8_t*)m_pDecryptBuffer, &outlen, (uint8_t*)cipherText.c_str(), cipherText.size());
+					EVP_DecryptUpdate(ctx, (uint8_t*)m_pDecryptBuffer, &outlen, (uint8_t*)cipherText.c_str(), static_cast<int>(cipherText.size()));
 					EVP_CIPHER_CTX_free(ctx);
 					if (outlen <= 0)
 						return;

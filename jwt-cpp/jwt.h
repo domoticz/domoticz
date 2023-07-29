@@ -1147,7 +1147,7 @@ namespace jwt {
 			std::string der_to_p1363_signature(const std::string& der_signature, std::error_code& ec) const {
 				const unsigned char* possl_signature = reinterpret_cast<const unsigned char*>(der_signature.data());
 				std::unique_ptr<ECDSA_SIG, decltype(&ECDSA_SIG_free)> sig(
-					d2i_ECDSA_SIG(nullptr, &possl_signature, der_signature.length()), ECDSA_SIG_free);
+					d2i_ECDSA_SIG(nullptr, &possl_signature, static_cast<long>(der_signature.length())), ECDSA_SIG_free);
 				if (!sig) {
 					ec = error::signature_generation_error::signature_decoding_failed;
 					return {};
