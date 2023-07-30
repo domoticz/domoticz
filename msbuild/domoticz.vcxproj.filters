@@ -1434,12 +1434,14 @@
     <None Include="..\www\js\sw-toolbox.js">
       <Filter>www\js</Filter>
     </None>
-    <None Include="..\www\css\planning.css" />
     <None Include="..\www\app\hardware\setup\MQTT-AD.html">
       <Filter>www\app\hardware\setup</Filter>
     </None>
     <None Include="..\www\app\hardware\setup\MQTT-AD.js">
       <Filter>www\app\hardware\setup</Filter>
+    </None>
+    <None Include="..\www\css\planning.css">
+      <Filter>www\css</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
