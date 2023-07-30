@@ -5079,8 +5079,6 @@ uint64_t CSQLHelper::UpdateManagedValueInt(
 
 	std::string sLastUpdate = TimeToString(nullptr, TF_DateTime);
 
-	bool bOK = false;
-
 	std::vector<std::string> parts, parts2;
 	StringSplit(sValue, ";", parts);
 	if (parts.size() == 11)
@@ -5110,9 +5108,8 @@ uint64_t CSQLHelper::UpdateManagedValueInt(
 			std::stoll(parts[8]),
 			std::stoll(parts[9])
 		);
-		bOK = true;
 	}
-	if (parts.size() == 7)
+	else if (parts.size() == 7)
 	{
 		// is last part date only, or date with hour with space?
 		StringSplit(parts[6], " ", parts2);
@@ -5134,9 +5131,8 @@ uint64_t CSQLHelper::UpdateManagedValueInt(
 			std::stoll(parts[1]),
 			std::stoll(parts[3])
 		);
-		bOK = true;
 	}
-	if (parts.size() == 3)
+	else if (parts.size() == 3)
 	{
 		StringSplit(parts[2], " ", parts2);
 		// second part is date only, or date with hour with space
@@ -5151,10 +5147,10 @@ uint64_t CSQLHelper::UpdateManagedValueInt(
 			std::stoll(parts[0]),
 			std::stoll(parts[1])
 		);
-		bOK = true;
 	}
-	if (!bOK)
+	else
 		return -1;
+
 	safe_query("UPDATE DeviceStatus SET LastUpdate='%q', sValue='%q' WHERE (ID = %" PRIu64 ")", sLastUpdate.c_str(), sValue, ulID);
 	return ulID;
 }
