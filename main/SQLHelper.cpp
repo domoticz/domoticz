@@ -5170,7 +5170,6 @@ uint64_t CSQLHelper::UpdateValueInt(
 		return -1;
 
 	uint64_t ulID = 0;
-	std::string sOption;
 	std::map<std::string, std::string> options;
 
 	bool bIsManagedCounter = (devType == pTypeGeneral && subType == sTypeManagedCounter);
@@ -5180,7 +5179,7 @@ uint64_t CSQLHelper::UpdateValueInt(
 
 	if (!result.empty())
 	{
-		sOption = result[0][7];
+		std::string sOption = result[0][7];
 		options = BuildDeviceOptions(sOption);
 
 		if (options["AddDBLogEntry"] == "true")
