@@ -5079,11 +5079,12 @@ uint64_t CSQLHelper::UpdateManagedValueInt(
 
 	std::string sLastUpdate = TimeToString(nullptr, TF_DateTime);
 
-	std::vector<std::string> parts, parts2;
+	std::vector<std::string> parts;
 	StringSplit(sValue, ";", parts);
 	if (parts.size() == 11)
 	{
 		// is last part date only, or date with hour with space?
+		std::vector<std::string> parts2;
 		StringSplit(parts[10], " ", parts2);
 		bool shortLog = false;
 		if (parts2.size() > 1) {
@@ -5112,6 +5113,7 @@ uint64_t CSQLHelper::UpdateManagedValueInt(
 	else if (parts.size() == 7)
 	{
 		// is last part date only, or date with hour with space?
+		std::vector<std::string> parts2;
 		StringSplit(parts[6], " ", parts2);
 		bool shortLog = false;
 		if (parts2.size() > 1) {
@@ -5134,8 +5136,9 @@ uint64_t CSQLHelper::UpdateManagedValueInt(
 	}
 	else if (parts.size() == 3)
 	{
+		// is last part date only, or date with hour with space?
+		std::vector<std::string> parts2;
 		StringSplit(parts[2], " ", parts2);
-		// second part is date only, or date with hour with space
 		bool shortLog = false;
 		if (parts2.size() > 1) {
 			shortLog = true;
@@ -5151,7 +5154,10 @@ uint64_t CSQLHelper::UpdateManagedValueInt(
 	else
 		return -1;
 
-	safe_query("UPDATE DeviceStatus SET LastUpdate='%q', sValue='%q' WHERE (ID = %" PRIu64 ")", sLastUpdate.c_str(), sValue, ulID);
+	parts.pop_back();
+	std::string nSValue = vector_2_string(parts, ";");
+
+	safe_query("UPDATE DeviceStatus SET LastUpdate='%q', sValue='%q' WHERE (ID = %" PRIu64 ")", sLastUpdate.c_str(), nSValue.c_str(), ulID);
 	return ulID;
 }
 
