@@ -1642,3 +1642,16 @@ bool base32_encode(const std::string &input, std::string &output)
 	output.assign(std::string(outTotal.begin(), outTotal.end()));
 	return true;
 }
+
+std::string vector_2_string(std::vector<std::string> const& strings, const std::string &delim)
+{
+	std::stringstream ss;
+	for (const auto& itt : strings)
+	{
+		if (!ss.str().empty())
+			ss << delim;
+		ss << itt;
+	}
+	return ss.str();
+}
+
