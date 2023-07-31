@@ -30,7 +30,7 @@ private:
 	void parseGas();
 
 	uint64_t UpdateValueInt(const char* ID, unsigned char unit, unsigned char devType, unsigned char subType, unsigned char signallevel, unsigned char batterylevel, int nValue,
-		const char* sValue, std::string& devname, bool bUseOnOffAction = true, const std::string& user = "");
+		const char* sValue, std::string& devname, bool bUseOnOffAction = true, const std::string& user = "", const bool bUseEventSystem = true);
 private:
 	std::string m_szToken;
 	std::string m_szProvider;
