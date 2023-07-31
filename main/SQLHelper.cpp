@@ -5109,6 +5109,7 @@ uint64_t CSQLHelper::UpdateManagedValueInt(
 			std::stoll(parts[8]),
 			std::stoll(parts[9])
 		);
+		return ulID;
 	}
 	else if (parts.size() == 7)
 	{
@@ -5133,6 +5134,7 @@ uint64_t CSQLHelper::UpdateManagedValueInt(
 			std::stoll(parts[1]),
 			std::stoll(parts[3])
 		);
+		return ulID;
 	}
 	else if (parts.size() == 3)
 	{
@@ -5150,14 +5152,10 @@ uint64_t CSQLHelper::UpdateManagedValueInt(
 			std::stoll(parts[0]),
 			std::stoll(parts[1])
 		);
+		return ulID;
 	}
-	else
-		return -1;
 
-	parts.pop_back();
-	std::string nSValue = vector_2_string(parts, ";");
-
-	safe_query("UPDATE DeviceStatus SET LastUpdate='%q', sValue='%q' WHERE (ID = %" PRIu64 ")", sLastUpdate.c_str(), nSValue.c_str(), ulID);
+	safe_query("UPDATE DeviceStatus SET LastUpdate='%q', sValue='%q' WHERE (ID = %" PRIu64 ")", sLastUpdate.c_str(), sValue, ulID);
 	return ulID;
 }
 
