@@ -62,7 +62,7 @@ std::string ReadFile(std::string filename)
 AlfenEve::AlfenEve(const int ID, const std::string& IPAddress, const uint16_t usIPPort, int PollInterval, const std::string& szUsername, const std::string& szPassword) :
 	m_szIPAddress(IPAddress),
 	m_szUsername(szUsername),
-	m_szPassword(CURLEncode::URLEncode(szPassword))
+	m_szPassword(szPassword)
 {
 	m_HwdID = ID;
 
