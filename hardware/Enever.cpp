@@ -219,7 +219,10 @@ bool Enever::GetPriceElectricity()
 		Json::Value jsonCurrent;
 		if (ParseJSon(m_szCurrentElectricityPrices, jsonCurrent))
 		{
-			if (jsonCurrent.isMember("data"))
+			if (
+				(jsonCurrent.isMember("data"))
+				&& (jsonCurrent["data"].isArray())
+				)
 			{
 				Json::Value firstRecord = jsonCurrent["data"][0];
 				std::string szDate = firstRecord["datum"].asString();
@@ -304,9 +307,12 @@ bool Enever::GetPriceElectricity()
 		Log(LOG_ERROR, "Invalid data received! (electricity/json)");
 		return false;
 	}
-	if (result["data"].empty())
+	if (
+		(result["data"].empty())
+		|| (!result["data"].isArray())
+		)
 	{
-		Log(LOG_ERROR, "Invalid (no) data received (electricity prices, date object not found)");
+		Log(LOG_ERROR, "Invalid (no) data received (electricity prices, date object not found). Check Token!");
 		return false;
 	}
 	m_szCurrentElectricityPrices = sResult;
@@ -326,7 +332,10 @@ bool Enever::GetPriceElectricity_Tomorrow()
 		Json::Value jsonCurrent;
 		if (ParseJSon(m_szCurrentElectricityPrices_Tomorrow, jsonCurrent))
 		{
-			if (jsonCurrent.isMember("data"))
+			if (
+				(jsonCurrent.isMember("data"))
+				&& (jsonCurrent["data"].isArray())
+				)
 			{
 				Json::Value firstRecord = jsonCurrent["data"][0];
 				std::string szDate = firstRecord["datum"].asString();
@@ -376,9 +385,12 @@ bool Enever::GetPriceElectricity_Tomorrow()
 		Log(LOG_ERROR, "Invalid data received! (electricity_tomorrow/json)");
 		return false;
 	}
-	if (result["data"].empty())
+	if (
+		(result["data"].empty())
+		|| (!result["data"].isArray())
+		)
 	{
-		Log(LOG_ERROR, "Invalid (no) data received (electricity prices tomorrow, data object not found)");
+		Log(LOG_ERROR, "Invalid (no) data received (electricity prices tomorrow, data object not found). Check Token!");
 		return false;
 	}
 	m_szCurrentElectricityPrices_Tomorrow = sResult;
@@ -495,7 +507,10 @@ bool Enever::GetPriceGas(const bool bForce)
 		Json::Value jsonCurrent;
 		if (ParseJSon(m_szCurrentGasPrices, jsonCurrent))
 		{
-			if (jsonCurrent.isMember("data"))
+			if (
+				(jsonCurrent.isMember("data"))
+				&& (jsonCurrent["data"].isArray())
+				)
 			{
 				Json::Value firstRecord = jsonCurrent["data"][0];
 				std::string szDate = firstRecord["datum"].asString();
@@ -546,9 +561,12 @@ bool Enever::GetPriceGas(const bool bForce)
 		Log(LOG_ERROR, "Invalid data received! (gas/json)");
 		return false;
 	}
-	if (result["data"].empty())
+	if (
+		(result["data"].empty())
+		|| (!result["data"].isArray())
+		)
 	{
-		Log(LOG_ERROR, "Invalid (no) data received (gas prices, date object not found)");
+		Log(LOG_ERROR, "Invalid (no) data received (gas prices, date object not found). Check Token!");
 		return false;
 	}
 	m_szCurrentGasPrices = sResult;
