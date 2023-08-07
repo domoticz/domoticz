@@ -976,8 +976,8 @@ void MQTTAutoDiscover::on_auto_discovery_message(const struct mosquitto_message*
 			pSensor->state_unlocked = root["stat_unlocked"].asString();
 		if (!root["payload_press"].empty())
 			pSensor->payload_press = root["payload_press"].asString();
-                else if (!root["pl_prs"].empty()) 
-        		pSensor->payload_press = root["pl_prs"].asString();
+		else if (!root["pl_prs"].empty())
+			pSensor->payload_press = root["pl_prs"].asString();
 
 		if (!root["brightness"].empty())
 		{
@@ -2992,7 +2992,11 @@ void MQTTAutoDiscover::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 		switchType = STYPE_DoorContact;
 	else if (pSensor->object_id == "door_state")
 		switchType = STYPE_DoorContact;
-	else if (pSensor->object_id == "lock")
+	else if (pSensor->component_type == "binary_sensor" && !pSensor->device_class.empty() && pSensor->device_class == "door")
+		switchType = STYPE_DoorContact;
+	else if (pSensor->component_type == "binary_sensor" && !pSensor->device_class.empty() && pSensor->device_class == "motion")
+		switchType = STYPE_Motion;
+	else if (pSensor->component_type == "lock")
 		switchType = STYPE_DoorLock;
 	else if (
 		(pSensor->value_template == "action")
@@ -3051,8 +3055,8 @@ void MQTTAutoDiscover::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 	{
 		switchType = STYPE_PushOn;
 		if (!pSensor->payload_press.empty())
-                	szSwitchCmd = pSensor->payload_press;
-                else 
+			szSwitchCmd = pSensor->payload_press;
+		else
 			szSwitchCmd = "on";
 	}
 
@@ -3283,9 +3287,9 @@ void MQTTAutoDiscover::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 				szSwitchCmd = "off";
 			else if (pSensor->component_type == "binary_sensor" && szSwitchCmd == pSensor->payload_on)
 				szSwitchCmd = "on";
-			else if (pSensor->component_type == "lock" && szSwitchCmd == pSensor->payload_unlock)
+			else if (pSensor->component_type == "lock" && szSwitchCmd == pSensor->state_unlocked)
 				szSwitchCmd = "off";
-			else if (pSensor->component_type == "lock" && szSwitchCmd == pSensor->payload_lock)
+			else if (pSensor->component_type == "lock" && szSwitchCmd == pSensor->state_locked)
 				szSwitchCmd = "on";
 			else
 			{
@@ -3309,14 +3313,9 @@ void MQTTAutoDiscover::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 			}
 			else if (pSensor->component_type == "lock")
 			{
-				if ((szSwitchCmd == pSensor->payload_unlock)
-					|| (szSwitchCmd == pSensor->state_unlocked)
-					)
+				if (szSwitchCmd == pSensor->state_unlocked)
 					szSwitchCmd = "off";
-				else if (
-					(szSwitchCmd == pSensor->payload_lock)
-					|| (szSwitchCmd == pSensor->state_locked)
-					)
+				else if (szSwitchCmd == pSensor->state_locked)
 					szSwitchCmd = "on";
 			}
 		}
@@ -3467,10 +3466,10 @@ bool MQTTAutoDiscover::SendSwitchCommand(const std::string& DeviceID, const std:
 	}
 
 	if (pSensor->component_type == "button")
-        {       
-        	szSendValue = pSensor->payload_press;
-        }               
-        else if (pSensor->component_type == "lock")
+	{
+		szSendValue = pSensor->payload_press;
+	}
+	else if (pSensor->component_type == "lock")
 	{
 		if (command == "On")
 			szSendValue = pSensor->payload_lock;
