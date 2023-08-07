@@ -3765,12 +3765,24 @@ namespace http
 				m_pWebEm->ClearUserPasswords();
 		}
 
+		int CWebServer::FindClient(const char* szClientName)
+		{
+			int iClient = 0;
+			for (const auto& user : m_users)
+			{
+				if ((user.Username == szClientName) && (user.userrights == URIGHTS_CLIENTID))
+					return iClient;
+				iClient++;
+			}
+			return -1;
+		}
+
 		int CWebServer::FindUser(const char* szUserName)
 		{
 			int iUser = 0;
 			for (const auto& user : m_users)
 			{
-				if (user.Username == szUserName)
+				if ((user.Username == szUserName) && (user.userrights != URIGHTS_CLIENTID))
 					return iUser;
 				iUser++;
 			}
