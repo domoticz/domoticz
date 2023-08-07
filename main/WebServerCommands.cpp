@@ -3363,6 +3363,9 @@ namespace http
 			else if (cparam == "getapplications" || cparam == "addapplication" || cparam == "updateapplication" || cparam == "deleteapplication")
 			{	// CRUD operations for Applications
 				root["title"] = "Applications";
+				root["statustext"] = "Oeps.. we shouldn't have come here (old unused code)!";
+				return false;
+
 				if (session.rights < 2)
 				{
 					session.reply_status = reply::forbidden;

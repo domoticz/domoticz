@@ -404,6 +404,11 @@ namespace http
 			RegisterCommandCode("updatecamera", [this](auto&& session, auto&& req, auto&& root) { Cmd_UpdateCamera(session, req, root); });
 			RegisterCommandCode("deletecamera", [this](auto&& session, auto&& req, auto&& root) { Cmd_DeleteCamera(session, req, root); });
 
+			RegisterCommandCode("getapplications", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetApplications(session, req, root); });
+			RegisterCommandCode("addapplication", [this](auto&& session, auto&& req, auto&& root) { Cmd_AddApplication(session, req, root); });
+			RegisterCommandCode("updateapplication", [this](auto&& session, auto&& req, auto&& root) { Cmd_UpdateApplication(session, req, root); });
+			RegisterCommandCode("deleteapplication", [this](auto&& session, auto&& req, auto&& root) { Cmd_DeleteApplication(session, req, root); });
+
 			RegisterCommandCode("wolgetnodes", [this](auto&& session, auto&& req, auto&& root) { Cmd_WOLGetNodes(session, req, root); });
 			RegisterCommandCode("woladdnode", [this](auto&& session, auto&& req, auto&& root) { Cmd_WOLAddNode(session, req, root); });
 			RegisterCommandCode("wolupdatenode", [this](auto&& session, auto&& req, auto&& root) { Cmd_WOLUpdateNode(session, req, root); });
@@ -532,7 +537,7 @@ namespace http
 			RegisterCommandCode("checkforupdate", [this](auto&& session, auto&& req, auto&& root) { Cmd_CheckForUpdate(session, req, root); });
 			RegisterCommandCode("downloadupdate", [this](auto&& session, auto&& req, auto&& root) { Cmd_DownloadUpdate(session, req, root); });
 			RegisterCommandCode("downloadready", [this](auto&& session, auto&& req, auto&& root) { Cmd_DownloadReady(session, req, root); });
-			RegisterCommandCode("update_application", [this](auto&& session, auto&& req, auto&& root) { Cmd_UpdateApplication(session, req, root); });
+			RegisterCommandCode("update_application", [this](auto&& session, auto&& req, auto&& root) { Cmd_ApplicationUpdate(session, req, root); });
 			RegisterCommandCode("deletedatapoint", [this](auto&& session, auto&& req, auto&& root) { Cmd_DeleteDataPoint(session, req, root); });
 			RegisterCommandCode("deletedaterange", [this](auto&& session, auto&& req, auto&& root) { Cmd_DeleteDateRange(session, req, root); });
 			RegisterCommandCode("customevent", [this](auto&& session, auto&& req, auto&& root) { Cmd_CustomEvent(session, req, root); });
@@ -3389,7 +3394,7 @@ namespace http
 		}
 
 		// Only for Unix systems
-		void CWebServer::Cmd_UpdateApplication(WebEmSession& session, const request& req, Json::Value& root)
+		void CWebServer::Cmd_ApplicationUpdate(WebEmSession& session, const request& req, Json::Value& root)
 		{
 			if (session.rights != 2)
 			{
@@ -7514,6 +7519,169 @@ namespace http
 					root["result"][ii]["TabsEnabled"] = atoi(sd[6].c_str());
 					ii++;
 				}
+				root["status"] = "OK";
+			}
+		}
+
+		void CWebServer::Cmd_GetApplications(WebEmSession & session, const request& req, Json::Value &root)
+		{
+			root["title"] = "GetApplications";
+			if (session.rights < URIGHTS_ADMIN)
+			{
+				session.reply_status = reply::forbidden;
+			}
+			else
+			{
+				std::vector<std::vector<std::string>> result;
+				result = m_sql.safe_query("SELECT ID, Active, Public, Applicationname, Secret, Pemfile, LastSeen FROM Applications ORDER BY ID ASC");
+				if (!result.empty())
+				{
+					int ii = 0;
+					for (const auto& sd : result)
+					{
+						root["result"][ii]["idx"] = sd[0];
+						root["result"][ii]["Enabled"] = (sd[1] == "1") ? "true" : "false";
+						root["result"][ii]["Public"] = (sd[2] == "1") ? "true" : "false";
+						root["result"][ii]["Applicationname"] = sd[3];
+						root["result"][ii]["Secret"] = sd[4];
+						root["result"][ii]["Pemfile"] = sd[5];
+						root["result"][ii]["LastSeen"] = sd[6];
+						ii++;
+					}
+				}
+				root["status"] = "OK";
+			}
+		}
+
+		void CWebServer::Cmd_AddApplication(WebEmSession & session, const request& req, Json::Value &root)
+		{
+			root["title"] = "AddApplication";
+			if (session.rights < URIGHTS_ADMIN)
+			{
+				session.reply_status = reply::forbidden;
+			}
+			else
+			{
+				std::string senabled = request::findValue(&req, "enabled");
+				std::string spublic = request::findValue(&req, "public");
+				std::string applicationname = request::findValue(&req, "applicationname");
+				std::string secret = request::findValue(&req, "secret");
+				std::string pemfile = request::findValue(&req, "pemfile");
+				if (senabled.empty() || applicationname.empty() || spublic.empty())
+				{
+					session.reply_status = reply::bad_request;
+					return;
+				}
+				if ((spublic != "true") && secret.empty())
+				{
+					root["statustext"] = "Secret's can only be empty for Public Clients!";
+					return;
+				}
+				if ((spublic == "true") && pemfile.empty())
+				{
+					root["statustext"] = "A PEM file containing private and public key must be given for Public Clients!";
+					return;
+				}
+				// Check for duplicate application name
+				std::vector<std::vector<std::string>> result;
+				result = m_sql.safe_query("SELECT ID FROM Applications WHERE (Applicationname == '%q')", applicationname.c_str());
+				if (!result.empty())
+				{
+					root["statustext"] = "Duplicate Applicationname!";
+					return;
+				}
+
+				// Insert the new application
+				m_sql.safe_query("INSERT INTO Applications (Active, Public, Applicationname, Secret, Pemfile) VALUES (%d,%d,'%q','%q','%q')",
+					(senabled == "true") ? 1 : 0, (spublic == "true") ? 1 : 0, applicationname.c_str(), secret.c_str(), pemfile.c_str());
+
+				// Reload the applications (and users)
+				LoadUsers();
+				root["status"] = "OK";
+			}
+		}
+
+		void CWebServer::Cmd_UpdateApplication(WebEmSession & session, const request& req, Json::Value &root)
+		{
+			root["title"] = "UpdateApplication";
+			if (session.rights < URIGHTS_ADMIN)
+			{
+				session.reply_status = reply::forbidden;
+			}
+			else
+			{
+				std::string senabled = request::findValue(&req, "enabled");
+				std::string spublic = request::findValue(&req, "public");
+				std::string applicationname = request::findValue(&req, "applicationname");
+				std::string secret = request::findValue(&req, "secret");
+				std::string pemfile = request::findValue(&req, "pemfile");
+				std::string idx = request::findValue(&req, "idx");
+				if (idx.empty() || senabled.empty() || applicationname.empty() || spublic.empty())
+				{
+					session.reply_status = reply::bad_request;
+					return;
+				}
+				if ((spublic != "true") && secret.empty())
+				{
+					root["statustext"] = "Secret's can only be empty for Public Clients!";
+					return;
+				}
+				if ((spublic == "true") && pemfile.empty())
+				{
+					root["statustext"] = "A PEM file containing private and public key must be given for Public Clients!";
+					return;
+				}
+				// Check for duplicate application name
+				std::vector<std::vector<std::string>> result;
+				result = m_sql.safe_query("SELECT ID FROM Applications WHERE (Applicationname == '%q')", applicationname.c_str());
+				if (!result.empty())
+				{
+					std::string oidx = result[0][0];
+					if (oidx != idx)
+					{
+						root["statustext"] = "Duplicate Applicationname!";
+						return;
+					}
+				}
+
+				// Update the application
+				m_sql.safe_query("UPDATE Applications SET Active=%d, Public=%d, Applicationname='%q', Secret='%q', Pemfile='%q' WHERE (ID == '%q')",
+					(senabled == "true") ? 1 : 0, (spublic == "true") ? 1 : 0, applicationname.c_str(), secret.c_str(), pemfile.c_str(), idx.c_str());
+
+				// Reload the applications (and users)
+				LoadUsers();
+				root["status"] = "OK";
+			}
+		}
+
+		void CWebServer::Cmd_DeleteApplication(WebEmSession & session, const request& req, Json::Value &root)
+		{
+			root["title"] = "DeleteApplication";
+			if (session.rights < URIGHTS_ADMIN)
+			{
+				session.reply_status = reply::forbidden;
+			}
+			else
+			{
+				std::string idx = request::findValue(&req, "idx");
+				if (idx.empty())
+				{
+					session.reply_status = reply::bad_request;
+					return;
+				}
+
+				// Remove Application
+				std::vector<std::vector<std::string>> result;
+				result = m_sql.safe_query("SELECT ID FROM Applications WHERE (ID == '%q')", idx.c_str());
+				if (result.size() != 1)
+				{
+					session.reply_status = reply::bad_request;
+					return;
+				}
+				m_sql.safe_query("DELETE FROM Applications WHERE (ID == '%q')", idx.c_str());
+
+				// Reload the applications (and users)
+				LoadUsers();
 				root["status"] = "OK";
 			}
 		}

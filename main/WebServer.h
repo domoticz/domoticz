@@ -200,7 +200,7 @@ private:
 	void Cmd_SystemShutdown(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_SystemReboot(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_ExcecuteScript(WebEmSession & session, const request& req, Json::Value &root);
-	void Cmd_UpdateApplication(WebEmSession& session, const request& req, Json::Value& root);
+	void Cmd_ApplicationUpdate(WebEmSession& session, const request& req, Json::Value& root);
 	void Cmd_GetCosts(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_CheckForUpdate(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_CustomEvent(WebEmSession& session, const request& req, Json::Value& root);
@@ -294,6 +294,11 @@ private:
 	void Cmd_AddCamera(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_UpdateCamera(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_DeleteCamera(WebEmSession & session, const request& req, Json::Value &root);
+
+	void Cmd_GetApplications(WebEmSession & session, const request& req, Json::Value &root);
+	void Cmd_AddApplication(WebEmSession & session, const request& req, Json::Value &root);
+	void Cmd_UpdateApplication(WebEmSession & session, const request& req, Json::Value &root);
+	void Cmd_DeleteApplication(WebEmSession & session, const request& req, Json::Value &root);
 
 	// Plugin functions
 	void Cmd_PluginCommand(WebEmSession & session, const request& req, Json::Value &root);
