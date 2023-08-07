@@ -165,6 +165,7 @@ main/SunRiseSet.cpp
 main/TrendCalculator.cpp
 main/WebServer.cpp
 main/WebServerCommands.cpp
+main/WebServerHandleGraph.cpp
 main/WebServerHelper.cpp
 main/WindCalculation.cpp
 iamserver/IamService.cpp
