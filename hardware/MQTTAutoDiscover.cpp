@@ -974,6 +974,10 @@ void MQTTAutoDiscover::on_auto_discovery_message(const struct mosquitto_message*
 			pSensor->state_unlocked = root["state_unlocked"].asString();
 		else if (!root["stat_unlocked"].empty())
 			pSensor->state_unlocked = root["stat_unlocked"].asString();
+		if (!root["payload_press"].empty())
+			pSensor->payload_press = root["payload_press"].asString();
+                else if (!root["pl_prs"].empty()) 
+        		pSensor->payload_press = root["pl_prs"].asString();
 
 		if (!root["brightness"].empty())
 		{
@@ -3046,7 +3050,10 @@ void MQTTAutoDiscover::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 	else if (pSensor->component_type == "button")
 	{
 		switchType = STYPE_PushOn;
-		szSwitchCmd = "on";
+		if (!pSensor->payload_press.empty())
+                	szSwitchCmd = pSensor->payload_press;
+                else 
+			szSwitchCmd = "on";
 	}
 
 	std::vector<std::vector<std::string>> result;
@@ -3459,7 +3466,11 @@ bool MQTTAutoDiscover::SendSwitchCommand(const std::string& DeviceID, const std:
 		}
 	}
 
-	if (pSensor->component_type == "lock")
+	if (pSensor->component_type == "button")
+        {       
+        	szSendValue = pSensor->payload_press;
+        }               
+        else if (pSensor->component_type == "lock")
 	{
 		if (command == "On")
 			szSendValue = pSensor->payload_lock;
