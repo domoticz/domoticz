@@ -2,7 +2,6 @@
  * WebServerCommands.cpp
  *
  *  Created on: 23 May 2023
- *      Author: kiddigital
  * 
  * !! DEPRICATED !! No modifications should be made to this file, it is only here as it
  * contains some code that is still used by the WebServer class, but has not been moved to
