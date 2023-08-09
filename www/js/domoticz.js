@@ -6461,6 +6461,13 @@ function _tbPadCount(txt){
 	return String('xxx' + txt).slice(-4).replace(/x/g, '&nbsp;');
 }
 
+function truncateString(str, num) {
+  if (str.length <= num) {
+    return str
+  }
+  return str.slice(0, num) + '...'
+}
+
 /* Display descriptions when hovering name ################################################################## */
 function WatchDescriptions(){
 	/* Show description when hovering item's name */
