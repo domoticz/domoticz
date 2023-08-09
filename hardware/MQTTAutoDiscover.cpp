@@ -22,7 +22,8 @@ std::vector<std::string> allowed_components = {
 		"number",
 		"select",
 		"sensor",
-		"switch"
+		"switch",
+		"fan"
 };
 
 #define CLIMATE_MODE_UNIT 1
@@ -874,7 +875,6 @@ void MQTTAutoDiscover::on_auto_discovery_message(const struct mosquitto_message*
 			pSensor->brightness_value_template = root["bri_val_tpl"].asString();
 		CleanValueTemplate(pSensor->brightness_value_template);
 
-
 		if (!root["unit_of_measurement"].empty())
 			pSensor->unit_of_measurement = root["unit_of_measurement"].asString();
 		else if (!root["unit_of_meas"].empty())
@@ -978,6 +978,26 @@ void MQTTAutoDiscover::on_auto_discovery_message(const struct mosquitto_message*
 			pSensor->payload_press = root["payload_press"].asString();
 		else if (!root["pl_prs"].empty())
 			pSensor->payload_press = root["pl_prs"].asString();
+
+		if (!root["percentage_command_topic"].empty())
+			pSensor->percentage_command_topic = root["percentage_command_topic"].asString();
+		if (!root["pct_cmd_t"].empty())
+			pSensor->percentage_command_topic = root["pct_cmd_t"].asString();
+		if (!root["percentage_command_template"].empty())
+			pSensor->percentage_command_template = root["percentage_command_template"].asString();
+		if (!root["pct_cmd_tpl"].empty())
+			pSensor->percentage_command_template = root["pct_cmd_tpl"].asString();
+		CleanValueTemplate(pSensor->percentage_command_template);
+
+		if (!root["percentage_state_topic"].empty())
+			pSensor->percentage_state_topic = root["percentage_state_topic"].asString();
+		if (!root["pct_stat_t"].empty())
+			pSensor->percentage_state_topic = root["pct_stat_t"].asString();
+		if (!root["percentage_value_template"].empty())
+			pSensor->percentage_value_template = root["percentage_value_template"].asString();
+		if (!root["pct_val_tpl"].empty())
+			pSensor->percentage_value_template = root["pct_val_tpl"].asString();
+		CleanValueTemplate(pSensor->percentage_value_template);
 
 		if (!root["brightness"].empty())
 		{
@@ -1301,8 +1321,15 @@ void MQTTAutoDiscover::on_auto_discovery_message(const struct mosquitto_message*
 				return;
 			}
 		}
-		
-
+		else if (pSensor->component_type == "fan")
+		{
+			if (pSensor->percentage_command_topic.empty())
+			{
+				Log(LOG_ERROR, "A fan should have a percentage_command_topic!");
+				return;
+			}
+			handle_auto_discovery_fan(pSensor, message);
+		}
 
 		//Check if we want to subscribe to this sensor
 		bool bDoSubscribe = false;
@@ -1321,6 +1348,7 @@ void MQTTAutoDiscover::on_auto_discovery_message(const struct mosquitto_message*
 				|| (pSensor->component_type == "button")
 				|| (pSensor->component_type == "number")
 				|| (pSensor->component_type == "device_automation")
+				|| (pSensor->component_type == "fan")
 				);
 
 		if (bDoSubscribe)
@@ -1333,6 +1361,7 @@ void MQTTAutoDiscover::on_auto_discovery_message(const struct mosquitto_message*
 			SubscribeTopic(pSensor->current_temperature_topic, pSensor->qos);
 			SubscribeTopic(pSensor->temperature_state_topic, pSensor->qos);
 			SubscribeTopic(pSensor->rgb_state_topic, pSensor->qos);
+			SubscribeTopic(pSensor->percentage_state_topic, pSensor->qos);
 		}
 	}
 	catch (const std::exception& e)
@@ -1384,6 +1413,7 @@ void MQTTAutoDiscover::handle_auto_discovery_sensor_message(const struct mosquit
 			|| (pSensor->mode_state_topic == topic)
 			|| (pSensor->temperature_state_topic == topic)
 			|| (pSensor->current_temperature_topic == topic)
+			|| (pSensor->percentage_state_topic == topic)
 			)
 		{
 			std::string szValue;
@@ -1469,6 +1499,8 @@ void MQTTAutoDiscover::handle_auto_discovery_sensor_message(const struct mosquit
 				handle_auto_discovery_button(pSensor, message);
 			else if (pSensor->component_type == "number")
 				handle_auto_discovery_number(pSensor, message);
+			else if (pSensor->component_type == "fan")
+				handle_auto_discovery_fan(pSensor, message);
 		}
 		else if (pSensor->availability_topic == topic)
 		{
@@ -2334,6 +2366,12 @@ void MQTTAutoDiscover::handle_auto_discovery_button(_tMQTTASensor* pSensor, cons
 	InsertUpdateSwitch(pSensor);
 }
 
+void MQTTAutoDiscover::handle_auto_discovery_fan(_tMQTTASensor* pSensor, const struct mosquitto_message* message)
+{
+	//handle it as a switch/drimmer
+	InsertUpdateSwitch(pSensor);
+}
+
 void MQTTAutoDiscover::handle_auto_discovery_light(_tMQTTASensor* pSensor, const struct mosquitto_message* message)
 {
 	InsertUpdateSwitch(pSensor);
@@ -2968,6 +3006,10 @@ void MQTTAutoDiscover::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 	{
 		switchType = STYPE_Dimmer;
 	}
+	else if (!pSensor->percentage_command_topic.empty())
+	{
+		switchType = STYPE_Dimmer;
+	}
 	else if (pSensor->component_type == "binary_sensor")
 	{
 		if (
@@ -3299,6 +3341,10 @@ void MQTTAutoDiscover::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 					szSwitchCmd = "Set Level";
 					if (pSensor->bHave_brightness_scale)
 						level = (int)round((100.0 / pSensor->brightness_scale) * level);
+					else if (!pSensor->percentage_value_template.empty())
+					{
+						level = (int)round((100.0 / 255) * level);
+					}
 				}
 			}
 		}
@@ -3423,6 +3469,7 @@ bool MQTTAutoDiscover::SendSwitchCommand(const std::string& DeviceID, const std:
 		&& (pSensor->component_type != "select")
 		&& (pSensor->component_type != "lock")
 		&& (pSensor->component_type != "button")
+		&& (pSensor->component_type != "fan")
 		)
 	{
 		Log(LOG_ERROR, "sending switch commands for switch type '%s' is not supported (yet...) (%s/%s)", pSensor->component_type.c_str(), DeviceID.c_str(), DeviceName.c_str());
@@ -3436,6 +3483,7 @@ bool MQTTAutoDiscover::SendSwitchCommand(const std::string& DeviceID, const std:
 		(pSensor->component_type != "climate")
 		&& (pSensor->component_type != "select")
 		&& (pSensor->component_type != "lock")
+		&& (pSensor->component_type != "fan")
 		)
 	{
 		if (command == "On")
@@ -3760,6 +3808,21 @@ bool MQTTAutoDiscover::SendSwitchCommand(const std::string& DeviceID, const std:
 		{
 			Log(LOG_ERROR, "%s device does not have mode_command_topic (%s/%s)", pSensor->component_type.c_str(), DeviceID.c_str(), DeviceName.c_str());
 			return false;
+		}
+	}
+	else if (pSensor->component_type == "fan")
+	{
+		if (command == "On")
+			szSendValue = "50";
+		else if (command == "Off")
+			szSendValue = "0";
+		else if (command == "Set Level")
+		{
+			if (level > 100)
+				level = 100;
+			int slevel = (int)round((255 / 100.0F) * level);
+			szSendValue = std::to_string(slevel);
+			command_topic = pSensor->percentage_command_topic;
 		}
 	}
 

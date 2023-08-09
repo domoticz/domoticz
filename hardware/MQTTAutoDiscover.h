@@ -27,6 +27,11 @@ class MQTTAutoDiscover : public MQTT
 		std::string rgb_command_topic;
 		std::string rgb_state_topic;
 
+		std::string percentage_command_topic;
+		std::string percentage_command_template;
+		std::string percentage_state_topic;
+		std::string percentage_value_template;
+
 		std::string unit_of_measurement;
 
 		std::string state_value_template;
@@ -177,6 +182,7 @@ private:
 	void handle_auto_discovery_lock(_tMQTTASensor* pSensor, const struct mosquitto_message* message);
 	void handle_auto_discovery_battery(_tMQTTASensor* pSensor, const struct mosquitto_message* message);
 	void handle_auto_discovery_number(_tMQTTASensor* pSensor, const struct mosquitto_message* message);
+	void handle_auto_discovery_fan(_tMQTTASensor* pSensor, const struct mosquitto_message* message);
 	_tMQTTASensor* get_auto_discovery_sensor_unit(const _tMQTTASensor* pSensor, const std::string& szMeasurementUnit);
 	_tMQTTASensor* get_auto_discovery_sensor_unit(const _tMQTTASensor* pSensor, const uint8_t devType, const int subType = -1, const int devUnit = -1);
 	_tMQTTASensor* get_auto_discovery_sensor_WATT_unit(const _tMQTTASensor* pSensor);
