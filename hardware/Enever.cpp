@@ -63,10 +63,24 @@ std::string ReadFile(std::string filename)
 #endif
 
 Enever::Enever(int ID, const std::string& szToken, const std::string& szProvider) :
-	m_szToken(szToken),
-	m_szProvider(szProvider)
+	m_szToken(szToken)
 {
 	m_HwdID = ID;
+
+	std::vector<std::string> strarray;
+	StringSplit(szProvider, ";", strarray);
+	if (!strarray.empty())
+	{
+		m_szProviderElectricity = strarray[0];
+		if (strarray.size() == 1)
+		{
+			m_szProviderGas = strarray[0];
+		}
+		else
+		{
+			m_szProviderGas = strarray[1];
+		}
+	}
 
 	std::vector<std::vector<std::string> > result;
 
@@ -444,7 +458,7 @@ void Enever::parseElectricity(const std::string& szElectricityData, const bool b
 			return; //invalid date!
 		}
 
-		std::string szProviderPriceName = "prijs" + m_szProvider;
+		std::string szProviderPriceName = "prijs" + m_szProviderElectricity;
 		if (itt[szProviderPriceName].empty())
 			return; //no price for this provider
 
@@ -537,7 +551,7 @@ bool Enever::GetPriceGas(const bool bForce)
 	std::vector<std::string> ExtraHeaders;
 	if (m_szToken.empty()) {
 		return false;
-}
+	}
 
 	if (!HTTPClient::GET(MakeURL(ENEVER_FEED_GAS_TODAY), ExtraHeaders, sResult))
 	{
@@ -610,7 +624,7 @@ void Enever::parseGas()
 		return; //invalid date!
 	}
 
-	std::string szProviderPriceName = "prijs" + m_szProvider;
+	std::string szProviderPriceName = "prijs" + m_szProviderGas;
 	if (root["data"][0][szProviderPriceName].empty())
 		return; //no price for this provider
 
@@ -637,7 +651,7 @@ void Enever::parseGas()
 	//Short log value
 	szTime = std_format("%04d-%02d-%02d %02d:%02d:%02d", lltime.tm_year + 1900, lltime.tm_mon + 1, lltime.tm_mday, lltime.tm_hour, 0, 0);
 	std::string sValue = std::to_string(iRate) + ";" + std::to_string(iRate);
-	sValueDTime = sValue +";" + szTime;
+	sValueDTime = sValue + ";" + szTime;
 	UpdateValueInt("0001", 2, pTypeGeneral, sTypeManagedCounter, 12, 255, 0, sValueDTime.c_str(), szDeviceName, false, "Enever", false);
 
 	//Current state

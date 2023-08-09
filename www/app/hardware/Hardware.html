@@ -1333,9 +1333,28 @@
 				<td><input type="text" id="AccessToken" style="width: 300px; padding: .2em;" class="text ui-widget-content ui-corner-all"></td>
 			</tr>
 			<tr>
-				<td align="right" <label><span data-i18n="Provider"></span>:</label></td>
+				<td align="right" <label><span data-i18n="Provider Electricity"></span>:</label></td>
 				<td>
-					<select id="provider" name="provider" style="width:200px" class="combobox ui-corner-all">
+					<select id="providerAC" name="providerAC" style="width:200px" class="combobox ui-corner-all">
+						<option value="AIP">All in power</option>
+						<option value="ANWB" selected="selected">ANWB Energie</option>
+						<option value="EE">EasyEnergy</option>
+						<option value="EZ">Energy Zero</option>
+						<option value="FR">Frank Energie</option>
+						<option value="GSL">Groenestroom Lokaal</option>
+						<option value="MDE">Mijndomein Energie</option>
+						<option value="NE">NextEnergy</option>
+						<option value="TI">Tibber</option>
+						<option value="VON">Vrij op naam</option>
+						<option value="ZG">ZonderGas</option>
+						<option value="ZP">Zonneplan</option>
+					</select>
+				</td>
+			</tr>
+			<tr>
+				<td align="right" <label><span data-i18n="Provider Gas"></span>:</label></td>
+				<td>
+					<select id="providerGas" name="providerGas" style="width:200px" class="combobox ui-corner-all">
 						<option value="AIP">All in power</option>
 						<option value="ANWB" selected="selected">ANWB Energie</option>
 						<option value="EE">EasyEnergy</option>

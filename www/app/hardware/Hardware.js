@@ -1364,15 +1364,21 @@ define(['app'], function (app) {
 			}
 			else if (text.indexOf("Enever") >= 0) {
 				var access_token = $("#hardwarecontent #divenever #AccessToken").val();
-				var provider = $("#hardwarecontent #divenever #provider").find("option:selected").val()
 				if (access_token == "") {
 					ShowNotify($.t('Please enter an Access Token!'), 2500, true);
 					return;
 				}
-				if (provider == "") {
-					ShowNotify($.t('Please enter an Provider!'), 2500, true);
+				var providerAC = $("#hardwarecontent #divenever #providerAC").find("option:selected").val()
+				if (providerAC == "") {
+					ShowNotify($.t('Please enter a Electricity Provider!'), 2500, true);
 					return;
 				}
+				var providerGas = $("#hardwarecontent #divenever #providerGas").find("option:selected").val()
+				if (providerGas == "") {
+					ShowNotify($.t('Please enter a Gas Provider!'), 2500, true);
+					return;
+				}
+				var provider = providerAC + ";" + providerGas;
 				$.ajax({
 					url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype +
 					"&loglevel=" + logLevel +
@@ -2624,15 +2630,21 @@ define(['app'], function (app) {
 			}
 			else if (text.indexOf("Enever") >= 0) {
 				var access_token = $("#hardwarecontent #divenever #AccessToken").val();
-				var provider = $("#hardwarecontent #divenever #provider").find("option:selected").val()
 				if (access_token == "") {
 					ShowNotify($.t('Please enter an Access Token!'), 2500, true);
 					return;
 				}
-				if (provider == "") {
-					ShowNotify($.t('Please enter an Provider!'), 2500, true);
+				var providerAC = $("#hardwarecontent #divenever #providerAC").find("option:selected").val()
+				if (providerAC == "") {
+					ShowNotify($.t('Please enter a Electricity Provider!'), 2500, true);
 					return;
 				}
+				var providerGas = $("#hardwarecontent #divenever #providerGas").find("option:selected").val()
+				if (providerGas == "") {
+					ShowNotify($.t('Please enter a Gas Provider!'), 2500, true);
+					return;
+				}
+				var provider = providerAC + ";" + providerGas;
 				$.ajax({
 					url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype +
 					"&loglevel=" + logLevel +
@@ -4449,7 +4461,15 @@ define(['app'], function (app) {
 						}
 						else if (data["Type"].indexOf("Enever") >= 0) {
 							$("#hardwarecontent #divenever #AccessToken").val(data["Username"]);
-							$("#hardwarecontent #divenever #provider").val(data["Extra"]);
+							var ProviderParts = data["Extra"].split(";");
+							if (ProviderParts.length == 1) {
+								$("#hardwarecontent #divenever #providerAC").val(ProviderParts[0]);
+								$("#hardwarecontent #divenever #providerGas").val(ProviderParts[0]);
+							}
+							else if (ProviderParts.length == 2) {
+								$("#hardwarecontent #divenever #providerAC").val(ProviderParts[0]);
+								$("#hardwarecontent #divenever #providerGas").val(ProviderParts[1]);
+							}
 						}
 						else if (data["Type"].indexOf("Honeywell") >= 0) {
 							$("#hardwarecontent #hardwareparamshoneywell #hwAccessToken").val(data["Username"]);
