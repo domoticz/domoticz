@@ -1091,6 +1091,7 @@
     <ClCompile Include="..\httpclient\UrlEncode.cpp" />
     <ClCompile Include="..\main\WebServer.cpp" />
     <ClCompile Include="..\main\WebServerCommands.cpp" />
+    <ClCompile Include="..\main\WebServerHandleGraph.cpp" />
     <ClCompile Include="..\tinyxpath\action_store.cpp" />
     <ClCompile Include="..\tinyxpath\htmlutil.cpp" />
     <ClCompile Include="..\tinyxpath\lex_util.cpp" />
