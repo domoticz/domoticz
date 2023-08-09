@@ -1330,6 +1330,9 @@ void MQTTAutoDiscover::on_auto_discovery_message(const struct mosquitto_message*
 				return;
 			}
 			handle_auto_discovery_fan(pSensor, message, "");
+
+			//Should below not be done for climate as well?
+			SubscribeTopic(pSensor->preset_mode_state_topic, pSensor->qos);
 		}
 
 		//Check if we want to subscribe to this sensor
@@ -1363,7 +1366,6 @@ void MQTTAutoDiscover::on_auto_discovery_message(const struct mosquitto_message*
 			SubscribeTopic(pSensor->temperature_state_topic, pSensor->qos);
 			SubscribeTopic(pSensor->rgb_state_topic, pSensor->qos);
 			SubscribeTopic(pSensor->percentage_state_topic, pSensor->qos);
-			SubscribeTopic(pSensor->preset_mode_state_topic, pSensor->qos);
 		}
 	}
 	catch (const std::exception& e)
