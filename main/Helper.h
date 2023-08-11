@@ -104,7 +104,10 @@ void rgb2hsb(int r, int g, int b, float hsbvals[3]);
 bool is_number(const std::string& s);
 void padLeft(std::string &str, size_t num, char paddingChar = '0');
 
-bool IsLightOrSwitch(int devType, int subType);
+bool IsLightOrSwitch(int dType, int dSubType);
+bool IsTemp(int dType, int dSubType);
+bool IsWeather(int dType, int dSubType);
+bool IsUtility(int dType, int dSubType);
 
 int MStoBeaufort(float ms);
 

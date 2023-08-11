@@ -4737,48 +4737,29 @@ namespace http
 					{
 						if (rfilter == "light")
 						{
-							if ((dType != pTypeLighting1) && (dType != pTypeLighting2) && (dType != pTypeLighting3) && (dType != pTypeLighting4) &&
-								(dType != pTypeLighting5) && (dType != pTypeLighting6) && (dType != pTypeFan) && (dType != pTypeColorSwitch) && (dType != pTypeSecurity1) &&
-								(dType != pTypeSecurity2) && (dType != pTypeEvohome) && (dType != pTypeEvohomeRelay) && (dType != pTypeCurtain) && (dType != pTypeBlinds) &&
-								(dType != pTypeRFY) && (dType != pTypeChime) && (dType != pTypeThermostat2) && (dType != pTypeThermostat3) && (dType != pTypeThermostat4) &&
-								(dType != pTypeRemote) && (dType != pTypeGeneralSwitch) && (dType != pTypeHomeConfort) && (dType != pTypeChime) && (dType != pTypeFS20) &&
-								(!((dType == pTypeRego6XXValue) && (dSubType == sTypeRego6XXStatus))) &&
-								(!((dType == pTypeRadiator1) && (dSubType == sTypeSmartwaresSwitchRadiator))) && (dType != pTypeHunter))
+							if (!
+								(
+								IsLightOrSwitch(dType, dSubType)
+								|| (dType == pTypeEvohome)
+								|| (dType == pTypeEvohomeRelay)
+								|| ((dType == pTypeRego6XXValue) && (dSubType == sTypeRego6XXStatus))
+								)
+								)
 								continue;
 						}
 						else if (rfilter == "temp")
 						{
-							if ((dType != pTypeTEMP) && (dType != pTypeHUM) && (dType != pTypeTEMP_HUM) && (dType != pTypeTEMP_HUM_BARO) && (dType != pTypeTEMP_BARO) &&
-								(dType != pTypeEvohomeZone) && (dType != pTypeEvohomeWater) && (!((dType == pTypeWIND) && (dSubType == sTypeWIND4))) &&
-								(!((dType == pTypeUV) && (dSubType == sTypeUV3))) && (!((dType == pTypeGeneral) && (dSubType == sTypeSystemTemp))) &&
-								(dType != pTypeThermostat1) && (!((dType == pTypeRFXSensor) && (dSubType == sTypeRFXSensorTemp))) && (dType != pTypeRego6XXTemp))
+							if (!IsTemp(dType, dSubType))
 								continue;
 						}
 						else if (rfilter == "weather")
 						{
-							if ((dType != pTypeWIND) && (dType != pTypeRAIN) && (dType != pTypeTEMP_HUM_BARO) && (dType != pTypeTEMP_BARO) && (dType != pTypeUV) &&
-								(!((dType == pTypeGeneral) && (dSubType == sTypeVisibility))) && (!((dType == pTypeGeneral) && (dSubType == sTypeBaro))) &&
-								(!((dType == pTypeGeneral) && (dSubType == sTypeSolarRadiation))))
+							if (!IsWeather(dType, dSubType))
 								continue;
 						}
 						else if (rfilter == "utility")
 						{
-							if ((dType != pTypeRFXMeter) && (!((dType == pTypeRFXSensor) && (dSubType == sTypeRFXSensorAD))) &&
-								(!((dType == pTypeRFXSensor) && (dSubType == sTypeRFXSensorVolt))) && (!((dType == pTypeGeneral) && (dSubType == sTypeVoltage))) &&
-								(!((dType == pTypeGeneral) && (dSubType == sTypeCurrent))) && (!((dType == pTypeGeneral) && (dSubType == sTypeTextStatus))) &&
-								(!((dType == pTypeGeneral) && (dSubType == sTypeAlert))) && (!((dType == pTypeGeneral) && (dSubType == sTypePressure))) &&
-								(!((dType == pTypeGeneral) && (dSubType == sTypeSoilMoisture))) && (!((dType == pTypeGeneral) && (dSubType == sTypeLeafWetness))) &&
-								(!((dType == pTypeGeneral) && (dSubType == sTypePercentage))) && (!((dType == pTypeGeneral) && (dSubType == sTypeWaterflow))) &&
-								(!((dType == pTypeGeneral) && (dSubType == sTypeCustom))) && (!((dType == pTypeGeneral) && (dSubType == sTypeFan))) &&
-								(!((dType == pTypeGeneral) && (dSubType == sTypeDistance))) && (!((dType == pTypeGeneral) && (dSubType == sTypeCounterIncremental))) &&
-								(!((dType == pTypeGeneral) && (dSubType == sTypeManagedCounter))) && (!((dType == pTypeGeneral) && (dSubType == sTypeKwh))) &&
-								(dType != pTypeCURRENT) && (dType != pTypeCURRENTENERGY) && (dType != pTypeENERGY) && (dType != pTypePOWER) && (dType != pTypeP1Power) &&
-								(dType != pTypeP1Gas) && (dType != pTypeYouLess) && (dType != pTypeAirQuality) && (dType != pTypeLux) && (dType != pTypeUsage) &&
-								(!((dType == pTypeRego6XXValue) && (dSubType == sTypeRego6XXCounter))) &&
-								(!((dType == pTypeThermostat) && (dSubType == sTypeThermSetpoint))) && (dType != pTypeWEIGHT) &&
-								(!((dType == pTypeRadiator1) && (dSubType == sTypeSmartwares))) &&
-								(!((dType == pTypeGeneral) && (dSubType == sTypeSoundLevel)))
-								)
+							if (!IsUtility(dType, dSubType))
 								continue;
 						}
 						else if (rfilter == "wind")

@@ -1004,10 +1004,10 @@ void padLeft(std::string &str, const size_t num, const char paddingChar)
 		str.insert(0, num - str.size(), paddingChar);
 }
 
-bool IsLightOrSwitch(const int devType, const int subType)
+bool IsLightOrSwitch(const int dType, const int dSubType)
 {
 	bool bIsLightSwitch = false;
-	switch (devType)
+	switch (dType)
 	{
 	case pTypeLighting1:
 	case pTypeLighting2:
@@ -1021,6 +1021,7 @@ bool IsLightOrSwitch(const int devType, const int subType)
 	case pTypeSecurity2:
 	case pTypeCurtain:
 	case pTypeBlinds:
+	case pTypeChime:
 	case pTypeRFY:
 	case pTypeThermostat2:
 	case pTypeThermostat3:
@@ -1033,10 +1034,82 @@ bool IsLightOrSwitch(const int devType, const int subType)
 		bIsLightSwitch = true;
 		break;
 	case pTypeRadiator1:
-		bIsLightSwitch = (subType == sTypeSmartwaresSwitchRadiator);
+		bIsLightSwitch = (dSubType == sTypeSmartwaresSwitchRadiator);
 		break;
 	}
 	return bIsLightSwitch;
+}
+
+bool IsTemp(const int dType, const int dSubType)
+{
+	return (
+		(dType == pTypeTEMP_HUM)
+		|| (dType == pTypeTEMP_HUM_BARO)
+		|| (dType == pTypeTEMP)
+		|| (dType == pTypeHUM)
+		|| (dType == pTypeTEMP_BARO)
+		|| (dType == pTypeEvohomeZone)
+		|| (dType == pTypeEvohomeWater)
+		|| ((dType == pTypeWIND) && (dSubType == sTypeWIND4))
+		|| ((dType == pTypeUV) && (dSubType == sTypeUV3))
+		|| ((dType == pTypeGeneral) && (dSubType == sTypeSystemTemp))
+		|| (dType == pTypeThermostat1)
+		|| ((dType == pTypeRFXSensor) && (dSubType == sTypeRFXSensorTemp))
+		|| (dType == pTypeRego6XXTemp)
+		);
+}
+
+bool IsWeather(const int dType, const int dSubType)
+{
+	return (
+		(dType == pTypeWIND)
+		|| (dType == pTypeRAIN)
+		|| (dType == pTypeTEMP_HUM_BARO)
+		|| (dType == pTypeTEMP_BARO)
+		|| (dType == pTypeUV)
+		|| ((dType == pTypeGeneral) && (dSubType == sTypeVisibility))
+		|| ((dType == pTypeGeneral) && (dSubType == sTypeBaro))
+		|| ((dType == pTypeGeneral) && (dSubType == sTypeSolarRadiation))
+		);
+};
+
+bool IsUtility(const int dType, const int dSubType)
+{
+	return (
+		(dType == pTypeP1Power)
+		|| (dType == pTypeP1Gas)
+		|| ((dType == pTypeGeneral) && (dSubType == sTypeKwh))
+		|| ((dType == pTypeGeneral) && (dSubType == sTypeVoltage))
+		|| ((dType == pTypeGeneral) && (dSubType == sTypeCurrent))
+		|| ((dType == pTypeGeneral) && (dSubType == sTypeTextStatus))
+		|| ((dType == pTypeGeneral) && (dSubType == sTypePercentage))
+		|| ((dType == pTypeGeneral) && (dSubType == sTypeCounterIncremental))
+		|| ((dType == pTypeGeneral) && (dSubType == sTypeManagedCounter))
+		|| ((dType == pTypeRFXSensor) && (dSubType == sTypeRFXSensorVolt))
+		|| ((dType == pTypeGeneral) && (dSubType == sTypeWaterflow))
+		|| ((dType == pTypeGeneral) && (dSubType == sTypeCustom))
+		|| ((dType == pTypeThermostat) && (dSubType == sTypeThermSetpoint))
+		|| ((dType == pTypeRFXSensor) && (dSubType == sTypeRFXSensorAD))
+		|| ((dType == pTypeGeneral) && (dSubType == sTypeAlert))
+		|| ((dType == pTypeGeneral) && (dSubType == sTypePressure))
+		|| ((dType == pTypeGeneral) && (dSubType == sTypeSoilMoisture))
+		|| ((dType == pTypeGeneral) && (dSubType == sTypeLeafWetness))
+		|| ((dType == pTypeGeneral) && (dSubType == sTypeSoundLevel))
+		|| ((dType == pTypeGeneral) && (dSubType == sTypeFan))
+		|| ((dType == pTypeGeneral) && (dSubType == sTypeDistance))
+		|| (dType == pTypeLux)
+		|| (dType == pTypeCURRENT)
+		|| (dType == pTypeCURRENTENERGY)
+		|| (dType == pTypeENERGY)
+		|| (dType == pTypePOWER)
+		|| (dType == pTypeYouLess)
+		|| (dType == pTypeAirQuality)
+		|| (dType == pTypeUsage)
+		|| (dType == pTypeWEIGHT)
+		|| (dType == pTypeRFXMeter)
+		|| ((dType == pTypeRego6XXValue) && (dSubType == sTypeRego6XXCounter))
+		|| ((dType == pTypeRadiator1) && (dSubType == sTypeSmartwares))
+		);
 }
 
 int MStoBeaufort(const float ms)
