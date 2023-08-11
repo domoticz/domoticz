@@ -4776,7 +4776,9 @@ namespace http
 								(dType != pTypeP1Gas) && (dType != pTypeYouLess) && (dType != pTypeAirQuality) && (dType != pTypeLux) && (dType != pTypeUsage) &&
 								(!((dType == pTypeRego6XXValue) && (dSubType == sTypeRego6XXCounter))) &&
 								(!((dType == pTypeThermostat) && (dSubType == sTypeThermSetpoint))) && (dType != pTypeWEIGHT) &&
-								(!((dType == pTypeRadiator1) && (dSubType == sTypeSmartwares))))
+								(!((dType == pTypeRadiator1) && (dSubType == sTypeSmartwares))) &&
+								(!((dType == pTypeGeneral) && (dSubType == sTypeSoundLevel)))
+								)
 								continue;
 						}
 						else if (rfilter == "wind")
