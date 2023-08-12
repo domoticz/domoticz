@@ -2308,6 +2308,9 @@
     <ClCompile Include="..\main\WebServer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\main\WebServerCmds.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="..\main\WebServerCommands.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
