@@ -1090,6 +1090,7 @@
     <ClCompile Include="..\tcpserver\TCPServer.cpp" />
     <ClCompile Include="..\httpclient\UrlEncode.cpp" />
     <ClCompile Include="..\main\WebServer.cpp" />
+    <ClCompile Include="..\main\WebServerCmds.cpp" />
     <ClCompile Include="..\main\WebServerCommands.cpp" />
     <ClCompile Include="..\main\WebServerHandleGraph.cpp" />
     <ClCompile Include="..\tinyxpath\action_store.cpp" />

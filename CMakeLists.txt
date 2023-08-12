@@ -164,6 +164,7 @@ main/SQLHelper.cpp
 main/SunRiseSet.cpp
 main/TrendCalculator.cpp
 main/WebServer.cpp
+main/WebServerCmds.cpp
 main/WebServerCommands.cpp
 main/WebServerHandleGraph.cpp
 main/WebServerHelper.cpp
