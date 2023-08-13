@@ -3882,6 +3882,7 @@ bool IsSerialDevice(const _eHardwareTypes htype)
 bool IsNetworkDevice(const _eHardwareTypes htype)
 {
 	switch (htype) {
+	case HTYPE_Domoticz:
 	case HTYPE_RFXLAN:
 	case HTYPE_P1SmartMeterLAN:
 	case HTYPE_YouLess:
@@ -3920,6 +3921,8 @@ bool IsNetworkDevice(const _eHardwareTypes htype)
 	case HTYPE_OctoPrint:
 	case HTYPE_TeleinfoMeterTCP:
 	case HTYPE_MQTTAutoDiscovery:
+	case HTYPE_HARMONY_HUB:
+	case HTYPE_Philips_Hue:
 	case HTYPE_AlfenEveCharger:
 	case HTYPE_MitsubishiWF:
 		return true;
