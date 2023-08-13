@@ -507,6 +507,9 @@
     <Filter Include="Devices\Enever">
       <UniqueIdentifier>{10536bc9-7284-4bae-9c04-448ec48cf184}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Devices\Mitsubishi_WF_RAC">
+      <UniqueIdentifier>{3ed60fed-bd93-4dae-aca5-13d7ccd3c6d4}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\CMakeLists.txt">
@@ -2228,6 +2231,9 @@
     <ClInclude Include="..\hardware\Enever.h">
       <Filter>Devices\Enever</Filter>
     </ClInclude>
+    <ClInclude Include="..\hardware\MitsubishiWF.h">
+      <Filter>Devices\Mitsubishi_WF_RAC</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\webserver\Base64.cpp">
@@ -2994,6 +3000,9 @@
     </ClCompile>
     <ClCompile Include="..\hardware\Enever.cpp">
       <Filter>Devices\Enever</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\MitsubishiWF.cpp">
+      <Filter>Devices\Mitsubishi_WF_RAC</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
