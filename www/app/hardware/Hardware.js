@@ -4850,6 +4850,10 @@ define(['app'], function (app) {
 						$("#hardwarecontent #hardwareparamsremote #tcpport").val(443);
 						$("#hardwarecontent #username").val("admin");
 					}
+					else if (text.indexOf("Mitsubishi WF") >= 0) {
+						$("#hardwarecontent #hardwareparamsremote #tcpport").val(51443);
+					}
+					
 			}
 			else if (
 					(text.indexOf("LAN") >= 0 || text.indexOf("MySensors Gateway with MQTT") >= 0) &&
