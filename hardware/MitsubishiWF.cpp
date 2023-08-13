@@ -205,7 +205,7 @@ bool MitsubishiWF::Execute_Command(const std::string& sCommand, const Json::Valu
 	post_data["command"] = sCommand;
 	post_data["deviceId"] = m_device_id;
 	post_data["operatorId"] = m_operator_id;
-	post_data["timestamp"] = time(nullptr);
+	post_data["timestamp"] = (int)time(nullptr);
 
 	if (!contents.empty())
 	{

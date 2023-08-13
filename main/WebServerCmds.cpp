@@ -650,10 +650,6 @@ namespace http
 			{
 				// All fine here
 			}
-			else if (htype == HTYPE_MitsubishiWF)
-			{
-				// All fine here
-			}
 			else
 				return;
 
@@ -1043,10 +1039,6 @@ namespace http
 			else if (htype == HTYPE_EneverPriceFeeds)
 			{
 				// all fine here!
-			}
-			else if (htype == HTYPE_MitsubishiWF)
-			{
-				// All fine here
 			}
 			else
 				return;

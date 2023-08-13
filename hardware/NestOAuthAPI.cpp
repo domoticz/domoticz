@@ -616,7 +616,7 @@ void CNestOAuthAPI::SetSetpoint(const int idx, const float temp)
 			return;
 	}
 
-	int iThermostat = (idx - 1) / 3;
+	size_t iThermostat = (idx - 1) / 3;
 	if (iThermostat > m_thermostats.size())
 		return;
 
@@ -736,7 +736,7 @@ bool CNestOAuthAPI::PushToNestApi(const std::string & /*sMethod*/, const std::st
 
 bool CNestOAuthAPI::SetAway(const unsigned char Idx, const bool bIsAway)
 {
-	int iStructure = (Idx - 3) / 3;
+	size_t iStructure = (Idx - 3) / 3;
 	if (iStructure > m_structures.size())
 		return false;
 

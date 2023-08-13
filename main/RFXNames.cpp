@@ -3921,6 +3921,7 @@ bool IsNetworkDevice(const _eHardwareTypes htype)
 	case HTYPE_TeleinfoMeterTCP:
 	case HTYPE_MQTTAutoDiscovery:
 	case HTYPE_AlfenEveCharger:
+	case HTYPE_MitsubishiWF:
 		return true;
 	default:
 		return false;
