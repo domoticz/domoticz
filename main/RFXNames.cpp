@@ -277,7 +277,8 @@ static const STR_TABLE_SINGLE HardwareTypeTable[] = {
 	{ HTYPE_AirconWithMe, "AirconWithMe Wifi Airco module", "AirconWithMe" },
 	{ HTYPE_TeleinfoMeterTCP, "Teleinfo EDF with LAN interface", "TeleInfo" },
 	{ HTYPE_MQTTAutoDiscovery, "MQTT Auto Discovery Client Gateway with LAN interface", "MQTT-AD" },
-	{ HTYPE_RFLINKMQTT, "RFLink Gateway MQTT",	"RFLink" },
+	{ HTYPE_RFLINKMQTT, "RFLink Gateway MQTT", "RFLink" },
+	{ HTYPE_MitsubishiWF, "Mitsubishi WF RAC Airco with LAN (HTTP) interface", "MitsubishiWF" },
 	{ 0, nullptr, nullptr },
 };
 

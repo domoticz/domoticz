@@ -147,6 +147,7 @@
 #include "../hardware/AirconWithMe.h"
 #include "../hardware/AlfenEve.h"
 #include "../hardware/Enever.h"
+#include "../hardware/MitsubishiWF.h"
 
 // load notifications configuration
 #include "../notifications/NotificationHelper.h"
@@ -1084,6 +1085,10 @@ bool MainWorker::AddHardwareFromParams(
 	case HTYPE_EneverPriceFeeds:
 		pHardware = new Enever(ID, Username, Extra);
 		break;
+	case HTYPE_MitsubishiWF:
+		pHardware = new MitsubishiWF(ID, Address);
+		break;
+
 	}
 
 	if (pHardware)

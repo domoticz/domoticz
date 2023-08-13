@@ -617,6 +617,7 @@
     <ClInclude Include="..\hardware\HardwareCereal.h" />
     <ClInclude Include="..\hardware\Honeywell.h" />
     <ClInclude Include="..\hardware\Meteorologisk.h" />
+    <ClInclude Include="..\hardware\MitsubishiWF.h" />
     <ClInclude Include="..\hardware\MQTTAutoDiscover.h" />
     <ClInclude Include="..\hardware\NestOAuthAPI.h" />
     <ClInclude Include="..\hardware\OctoPrintMQTT.h" />
@@ -920,6 +921,7 @@
     <ClCompile Include="..\hardware\GpioPin.cpp" />
     <ClCompile Include="..\hardware\Honeywell.cpp" />
     <ClCompile Include="..\hardware\Meteorologisk.cpp" />
+    <ClCompile Include="..\hardware\MitsubishiWF.cpp" />
     <ClCompile Include="..\hardware\MQTTAutoDiscover.cpp" />
     <ClCompile Include="..\hardware\NestOAuthAPI.cpp" />
     <ClCompile Include="..\hardware\OctoPrintMQTT.cpp" />

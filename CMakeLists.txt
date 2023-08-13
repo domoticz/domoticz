@@ -256,6 +256,7 @@ hardware/Limitless.cpp
 hardware/LogitechMediaServer.cpp
 hardware/Meteorologisk.cpp
 hardware/Meteostick.cpp
+hardware/MitsubishiWF.cpp
 hardware/MochadTCP.cpp
 hardware/MQTT.cpp
 hardware/MQTTAutoDiscover.cpp
