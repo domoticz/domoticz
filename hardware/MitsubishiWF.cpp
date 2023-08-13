@@ -27,10 +27,8 @@ Example
 
 /*
 Based on the work of:
-- Mitsubishi M-Air application
-- https://community.home-assistant.io/t/mitsubishi-wifi-module-wf-rac-smart-m-air/411025/2
 - https://github.com/jeatheak/Mitsubishi-WF-RAC-Integration
-- https://github.com/theawesomestrob/mitsubishi-wf-rac/blob/main/aircon.py
+- Mitsubishi M-Air application
 */
 
 #ifdef DEBUG_MitsubishiWF_W
