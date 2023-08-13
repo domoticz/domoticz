@@ -4,8 +4,8 @@
  *  Created on: 12 August 2023
  *
  * This file is NOT a separate class but is part of 'main/WebServer.cpp'
- * It contains the code from non-hardware specific 'CommandCodes' functions that are part of the WebServer class, 
- * but for sourcecode management reasons separated out into its own file. 
+ * It contains the code from non-hardware specific 'CommandCodes' functions that are part of the WebServer class,
+ * but for sourcecode management reasons separated out into its own file.
  * The definitions of the methods here are still in 'main/Webserver.h'
 */
 
@@ -332,6 +332,126 @@ namespace http
 #endif
 		}
 
+		static bool ValidateHardware(const _eHardwareTypes &htype, const std::string &sport, const std::string &address, const int port, const std::string &username, const std::string &password,
+									const std::string &smode1, const std::string &smode2, const std::string &smode3, const std::string &smode4, const std::string &smode5, const std::string &smode6,
+									const std::string &extra, const std::string idx = "")
+		{
+			int mode1 = !smode1.empty() ? atoi(smode1.c_str()) : -1;
+			int mode2 = !smode2.empty() ? atoi(smode2.c_str()) : -1;
+			int mode3 = !smode3.empty() ? atoi(smode3.c_str()) : -1;
+			int mode4 = !smode4.empty() ? atoi(smode4.c_str()) : -1;
+			int mode5 = !smode5.empty() ? atoi(smode5.c_str()) : -1;
+			int mode6 = !smode6.empty() ? atoi(smode6.c_str()) : -1;
+
+			if (htype == HTYPE_DomoticzInternal)
+			{
+				// DomoticzInternal cannot be added manually
+				return false;
+			}
+			else if (IsSerialDevice(htype))
+			{
+				// USB/System
+				if (sport.empty())
+					return false; // need to have a serial port
+
+				if (htype == HTYPE_TeleinfoMeter)
+				{
+					// Teleinfo always has decimals. Chances to have a P1 and a Teleinfo device on the same
+					// Domoticz instance are very low as both are national standards (NL and FR)
+					m_sql.UpdatePreferencesVar("SmartMeterType", 0);
+				}
+			}
+			else if (IsNetworkDevice(htype))
+			{
+				// Lan
+				if (address.empty())
+					return false;
+
+				if ((htype == HTYPE_Domoticz) || (htype == HTYPE_HARMONY_HUB))
+				{
+					if (port == 0)
+						return false;
+				}
+				else if ((htype == HTYPE_MySensorsMQTT) || (htype == HTYPE_MQTT) || (htype == HTYPE_MQTTAutoDiscovery))
+				{
+					if (smode1.empty())
+						return false;
+				}
+				else if ((htype == HTYPE_ECODEVICES) || (htype == HTYPE_TeleinfoMeterTCP))
+				{
+					// EcoDevices and Teleinfo always have decimals. Chances to have a P1 and a EcoDevice/Teleinfo
+					//  device on the same Domoticz instance are very low as both are national standards (NL and FR)
+					m_sql.UpdatePreferencesVar("SmartMeterType", 0);
+				}
+				else if (htype == HTYPE_AlfenEveCharger)
+				{
+					if ((password.empty()))
+						return false;
+				}
+				else if (htype == HTYPE_Philips_Hue)
+				{
+					if ((username.empty()) || port == 0)
+						return false;
+				}
+			}
+			else if (htype == HTYPE_System)
+			{
+				// There should be only one
+				std::vector<std::vector<std::string>> result;
+				result = m_sql.safe_query("SELECT ID FROM Hardware WHERE (Type==%d)", HTYPE_System);
+				if (!result.empty() && (idx.empty() || (!idx.empty() && idx != result[0][0])))
+					return false;
+			}
+			else if ((htype == HTYPE_Wunderground) || (htype == HTYPE_DarkSky) || (htype == HTYPE_VisualCrossing) || (htype == HTYPE_AccuWeather) || (htype == HTYPE_OpenWeatherMap) || (htype == HTYPE_ICYTHERMOSTAT) ||
+				(htype == HTYPE_TOONTHERMOSTAT) || (htype == HTYPE_AtagOne) || (htype == HTYPE_PVOUTPUT_INPUT) || (htype == HTYPE_NEST) || (htype == HTYPE_ANNATHERMOSTAT) ||
+				(htype == HTYPE_THERMOSMART) || (htype == HTYPE_Tado) || (htype == HTYPE_Tesla) || (htype == HTYPE_Mercedes) || (htype == HTYPE_Netatmo))
+			{
+				if ((username.empty()) || (password.empty()))
+					return false;
+			}
+			else if (htype == HTYPE_SolarEdgeAPI)
+			{
+				if ((username.empty()))
+					return false;
+			}
+			else if (htype == HTYPE_Nest_OAuthAPI)
+			{
+				if ((username.empty()) && (extra == "||"))
+					return false;
+			}
+			else if (htype == HTYPE_SBFSpot)
+			{
+				if (username.empty())
+					return false;
+			}
+			else if (htype == HTYPE_WINDDELEN)
+			{
+				// sPort here is neither a Network Port or a Serial Port but a variable that should have been passed as mode parameter
+				if ((smode1.empty()) || (sport.empty()))
+					return false;
+			}
+			// Below Hardware Types do not have any input checks at the moment
+			else if ( (htype == HTYPE_TE923) || (htype == HTYPE_VOLCRAFTCO20) ||  (htype == HTYPE_1WIRE) || (htype == HTYPE_Rtl433) || (htype == HTYPE_Pinger) || (htype == HTYPE_Kodi)
+					|| (htype == HTYPE_PanasonicTV) || (htype == HTYPE_LogitechMediaServer) || (htype == HTYPE_RaspberryBMP085) || (htype == HTYPE_RaspberryHTU21D) || (htype == HTYPE_RaspberryTSL2561)
+					|| (htype == HTYPE_RaspberryBME280) || (htype == HTYPE_RaspberryMCP23017) || (htype == HTYPE_Dummy) || (htype == HTYPE_Tellstick)
+					|| (htype == HTYPE_EVOHOME_SCRIPT) || (htype == HTYPE_EVOHOME_SERIAL) || (htype == HTYPE_EVOHOME_WEB) || (htype == HTYPE_EVOHOME_TCP)
+					|| (htype == HTYPE_PiFace) || (htype == HTYPE_HTTPPOLLER) || (htype == HTYPE_BleBox) || (htype == HTYPE_HEOS) || (htype == HTYPE_Yeelight) || (htype == HTYPE_XiaomiGateway)
+					|| (htype == HTYPE_Arilux) || (htype == HTYPE_USBtinGateway) || (htype == HTYPE_BuienRadar) || (htype == HTYPE_Honeywell) ||(htype == HTYPE_RaspberryGPIO)
+					|| (htype == HTYPE_SysfsGpio) || (htype == HTYPE_OpenWebNetTCP) || (htype == HTYPE_Daikin) || (htype == HTYPE_PythonPlugin) || (htype == HTYPE_RaspberryPCF8574)
+					|| (htype == HTYPE_OpenWebNetUSB) || (htype == HTYPE_IntergasInComfortLAN2RF) || (htype == HTYPE_EnphaseAPI) || (htype == HTYPE_EcoCompteur) || (htype == HTYPE_Meteorologisk)
+					|| (htype == HTYPE_AirconWithMe) || (htype == HTYPE_EneverPriceFeeds) )
+			{
+				return true;
+			}
+			else
+			{
+				_log.Debug(DEBUG_HARDWARE, "ValidateHardware: No checks for Hardware type (%d)", htype);
+				return false;
+			}
+
+			return true;
+		}
+
 		void CWebServer::Cmd_AddHardware(WebEmSession& session, const request& req, Json::Value& root)
 		{
 			if (session.rights != 2)
@@ -394,6 +514,10 @@ namespace http
 				mode6 = atoi(mode6Str.c_str());
 			}
 
+			if (!ValidateHardware(htype, sport, address, port, username, password, mode1Str, mode2Str, mode3Str, mode4Str, mode5Str, mode6Str, extra))
+				return;
+
+			/*
 			if (IsSerialDevice(htype))
 			{
 				// USB/System
@@ -652,6 +776,7 @@ namespace http
 			}
 			else
 				return;
+			*/
 
 			root["status"] = "OK";
 			root["title"] = "AddHardware";
@@ -771,12 +896,19 @@ namespace http
 			if ((name.empty()) || (senabled.empty()) || (shtype.empty()))
 				return;
 
-			int mode1 = atoi(request::findValue(&req, "Mode1").c_str());
-			int mode2 = atoi(request::findValue(&req, "Mode2").c_str());
-			int mode3 = atoi(request::findValue(&req, "Mode3").c_str());
-			int mode4 = atoi(request::findValue(&req, "Mode4").c_str());
-			int mode5 = atoi(request::findValue(&req, "Mode5").c_str());
-			int mode6 = atoi(request::findValue(&req, "Mode6").c_str());
+			std::string mode1Str = request::findValue(&req, "Mode1");
+			std::string mode2Str = request::findValue(&req, "Mode2");
+			std::string mode3Str = request::findValue(&req, "Mode3");
+			std::string mode4Str = request::findValue(&req, "Mode4");
+			std::string mode5Str = request::findValue(&req, "Mode5");
+			std::string mode6Str = request::findValue(&req, "Mode6");
+
+			int mode1 = atoi(mode1Str.c_str());
+			int mode2 = atoi(mode2Str.c_str());
+			int mode3 = atoi(mode3Str.c_str());
+			int mode4 = atoi(mode4Str.c_str());
+			int mode5 = atoi(mode5Str.c_str());
+			int mode6 = atoi(mode6Str.c_str());
 
 			bool bEnabled = (senabled == "true") ? true : false;
 
@@ -788,6 +920,10 @@ namespace http
 
 			bool bIsSerial = false;
 
+			if (!ValidateHardware(htype, sport, address, port, username, password, mode1Str, mode2Str, mode3Str, mode4Str, mode5Str, mode6Str, extra, idx))
+				return;
+
+			/*
 			if (IsSerialDevice(htype))
 			{
 				// USB/System
@@ -1042,13 +1178,7 @@ namespace http
 			}
 			else
 				return;
-
-			std::string mode1Str;
-			std::string mode2Str;
-			std::string mode3Str;
-			std::string mode4Str;
-			std::string mode5Str;
-			std::string mode6Str;
+			*/
 
 			root["status"] = "OK";
 			root["title"] = "UpdateHardware";
@@ -1077,12 +1207,6 @@ namespace http
 				}
 				else if (htype == HTYPE_PythonPlugin)
 				{
-					mode1Str = request::findValue(&req, "Mode1");
-					mode2Str = request::findValue(&req, "Mode2");
-					mode3Str = request::findValue(&req, "Mode3");
-					mode4Str = request::findValue(&req, "Mode4");
-					mode5Str = request::findValue(&req, "Mode5");
-					mode6Str = request::findValue(&req, "Mode6");
 					sport = request::findValue(&req, "serialport");
 					m_sql.safe_query("UPDATE Hardware SET Name='%q', Enabled=%d, Type=%d, LogLevel=%d, Address='%q', Port=%d, SerialPort='%q', Username='%q', Password='%q', "
 						"Extra='%q', Mode1='%q', Mode2='%q', Mode3='%q', Mode4='%q', Mode5='%q', Mode6='%q', DataTimeout=%d WHERE (ID == '%q')",
