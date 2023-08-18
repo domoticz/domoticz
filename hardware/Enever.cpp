@@ -392,6 +392,10 @@ bool Enever::GetPriceElectricity_Tomorrow()
 #endif
 	Debug(DEBUG_RECEIVED, "electricity_prices_tomorrow: %s", sResult.c_str());
 
+	//Store for later usage
+	std::string szName = "Enever_Electricity_" + std::to_string(m_HwdID);
+	m_sql.safe_query("UPDATE UserVariables SET Value='%q', LastUpdate='%s' WHERE (Name=='%q')", sResult.c_str(), TimeToString(nullptr, TF_DateTime).c_str(), szName.c_str());
+
 	Json::Value result;
 	bool ret = ParseJSon(sResult, result);
 	if ((!ret) || (!result.isObject()))
