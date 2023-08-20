@@ -16,7 +16,7 @@ public:
   bool processLuaCommand(lua_State *lua_state, const std::string &filename, const int tIndex);
   void EvaluateDzVents(lua_State *lua_state, const std::vector<CEventSystem::_tEventQueue> &items, const int secStatus);
 
-  std::string m_scriptsDir, m_runtimeDir;
+  std::string m_scriptsDir, m_dataDir, m_runtimeDir;
   bool m_bdzVentsExist;
 
 private:

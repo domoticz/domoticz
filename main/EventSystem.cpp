@@ -202,11 +202,13 @@ void CEventSystem::LoadEvents()
 	m_lua_Dir = szUserDataFolder + "scripts\\lua\\";
 	dzv_Dir = szUserDataFolder + "scripts\\dzVents\\generated_scripts\\";
 	dzvents->m_scriptsDir = szUserDataFolder + "scripts\\dzVents\\scripts\\";
+	dzvents->m_dataDir = szUserDataFolder + "scripts\\dzVents\\data\\";
 	dzvents->m_runtimeDir = szStartupFolder + "dzVents\\runtime\\";
 #else
 	m_lua_Dir = szUserDataFolder + "scripts/lua/";
 	dzv_Dir = szUserDataFolder + "scripts/dzVents/generated_scripts/";
 	dzvents->m_scriptsDir = szUserDataFolder + "scripts/dzVents/scripts/";
+	dzvents->m_dataDir = szUserDataFolder + "scripts/dzVents/data/";
 	dzvents->m_runtimeDir = szStartupFolder + "dzVents/runtime/";
 #endif
 	if (!mkdir_deep(m_lua_Dir.c_str(), 0755))
@@ -220,6 +222,10 @@ void CEventSystem::LoadEvents()
 	if (!mkdir_deep(dzvents->m_scriptsDir.c_str(), 0755))
 	{
 		_log.Log(LOG_NORM, "%s: Created directory %s", __func__, dzvents->m_scriptsDir.c_str());
+	}
+	if (!mkdir_deep(dzvents->m_dataDir.c_str(), 0755))
+	{
+		_log.Log(LOG_NORM, "%s: Created directory %s", __func__, dzvents->m_dataDir.c_str());
 	}
 
 	boost::unique_lock<boost::shared_mutex> eventsMutexLock(m_eventsMutex);
