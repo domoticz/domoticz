@@ -967,13 +967,14 @@ bool MainWorker::AddHardwareFromParams(
 	case HTYPE_Dummy:
 		pHardware = new CDummy(ID);
 		break;
-	case HTYPE_Tellstick: {
-		CTellstick* tellstick;
-		if (CTellstick::Create(&tellstick, ID, Mode1, Mode2)) {
-			pHardware = tellstick;
+	case HTYPE_Tellstick:
+		{
+			CTellstick* tellstick;
+			if (CTellstick::Create(&tellstick, ID, Mode1, Mode2)) {
+				pHardware = tellstick;
+			}
 		}
-	}
-						break;
+		break;
 	case HTYPE_EVOHOME_SCRIPT:
 		pHardware = new CEvohomeScript(ID);
 		break;
