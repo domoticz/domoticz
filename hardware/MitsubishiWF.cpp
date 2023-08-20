@@ -895,7 +895,7 @@ void MitsubishiWF::TranslateAirconStat(const std::string& szStat, _tAircoStatus&
 		}
 		else if (vals[i] == -108 && vals[i + 1] == 16)
 		{
-			uint16_t usVal = (vals[i + 2] << 8) | vals[i + 3];
+			uint16_t usVal = (vals[i + 3] << 8) | vals[i + 2];
 			aircoStatus.Electric_kWh_Used = (double)(usVal) * 0.25;
 			aircoStatus.bHaveElectric = true;
 		}
@@ -978,12 +978,11 @@ void MitsubishiWF::ParseAirconStat(const _tAircoStatus& aircoStatus)
 	{
 		SendTempSensor(2, 255, static_cast<float>(aircoStatus.IndoorTemp), "Inside temperature");
 	}
-	/*
-		if (aircoStatus.bHaveElectric)
-		{
-			std::cout << std_format("electric_usage: %.3f kWh\n", aircoStatus.Electric_kWh_Used);
-		}
-	*/
+	
+	if (aircoStatus.bHaveElectric)
+	{
+		SendKwhMeter(1, 1, 255, 0, aircoStatus.Electric_kWh_Used, "Electricity used");
+	}
 }
 
 uint64_t MitsubishiWF::UpdateValueInt(const char* ID, unsigned char unit, unsigned char devType, unsigned char subType, unsigned char signallevel, unsigned char batterylevel, int nValue,
