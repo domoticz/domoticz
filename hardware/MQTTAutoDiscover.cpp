@@ -3451,6 +3451,10 @@ void MQTTAutoDiscover::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 				szSwitchCmd = "off";
 			else if (pSensor->component_type == "lock" && szSwitchCmd == pSensor->state_locked)
 				szSwitchCmd = "on";
+			else if (pSensor->component_type == "lock" && !pSensor->value_template.empty())
+				// ignore states defined in the value template until valu_telplate support is built in
+				return;
+
 			else
 			{
 				if (level == 0)
