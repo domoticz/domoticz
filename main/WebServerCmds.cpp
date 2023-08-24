@@ -454,7 +454,7 @@ namespace http
 
 		void CWebServer::Cmd_AddHardware(WebEmSession& session, const request& req, Json::Value& root)
 		{
-			if (session.rights != 2)
+			if (session.rights != URIGHTS_ADMIN)
 			{
 				session.reply_status = reply::forbidden;
 				return; // Only admin user allowed
@@ -612,7 +612,7 @@ namespace http
 
 		void CWebServer::Cmd_UpdateHardware(WebEmSession& session, const request& req, Json::Value& root)
 		{
-			if (session.rights != 2)
+			if (session.rights != URIGHTS_ADMIN)
 			{
 				session.reply_status = reply::forbidden;
 				return; // Only admin user allowed
