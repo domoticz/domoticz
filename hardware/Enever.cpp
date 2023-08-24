@@ -142,9 +142,7 @@ void Enever::Do_Work()
 {
 	Log(LOG_STATUS, "Worker started...");
 
-	int last_min = -1;
 	int last_hour = -1;
-	int last_day = -1;
 
 	int sec_counter = 0;
 
