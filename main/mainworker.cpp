@@ -941,7 +941,7 @@ bool MainWorker::AddHardwareFromParams(
 		pHardware = new CAnnaThermostat(ID, Address, Port, Username, Password);
 		break;
 	case HTYPE_THERMOSMART:
-		pHardware = new CThermosmart(ID, Username, Password, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6);
+		pHardware = new CThermosmart(ID, Username, Password, Mode1);
 		break;
 	case HTYPE_Tado:
 		pHardware = new CTado(ID, Username, Password);
