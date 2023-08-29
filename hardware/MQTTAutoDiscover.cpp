@@ -256,9 +256,32 @@ std::string MQTTAutoDiscover::GetValueFromTemplate(Json::Value root, std::string
 			for (const auto itt : strarray)
 			{
 				szKey = itt;
-				if (root[szKey].empty())
-					return ""; //key not found!
-				root = root[szKey];
+
+				if (szKey.find('[') == std::string::npos)
+				{
+					if (root[szKey].empty())
+						return ""; //key not found!
+					root = root[szKey];
+				}
+				else
+				{
+					//we have an array, so we need to get the index
+					if (szKey.find(']') == std::string::npos)
+						return ""; //no index?
+
+					std::string szIndex = szKey.substr(szKey.find('[') + 1);
+					szIndex = szIndex.substr(0, szIndex.find(']'));
+					if (szIndex.size() == 0)
+						return ""; //no index?
+
+					szKey= szKey.substr(0, szKey.find('['));
+					size_t iIndex = std::stoi(szIndex);
+					if (root[szKey].empty())
+						return ""; //key not found!
+					if (root[szKey].size() <= iIndex)
+						return ""; //index out of range!
+					root = root[szKey][iIndex];
+				}
 			}
 			if (root.isObject())
 				return "";
