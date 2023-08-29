@@ -275,10 +275,10 @@ std::string MQTTAutoDiscover::GetValueFromTemplate(Json::Value root, std::string
 						return ""; //no index?
 
 					szKey= szKey.substr(0, szKey.find('['));
-					size_t iIndex = std::stoi(szIndex);
+					int iIndex = std::stoi(szIndex);
 					if (root[szKey].empty())
 						return ""; //key not found!
-					if (root[szKey].size() <= iIndex)
+					if (static_cast<int>(root[szKey].size()) <= iIndex)
 						return ""; //index out of range!
 					root = root[szKey][iIndex];
 				}
