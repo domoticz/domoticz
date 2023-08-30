@@ -27,10 +27,12 @@ private:
 	bool getGridStatus();
 	bool getPowerStatus();
 	bool getInverterDetails();
+	bool getInventoryDetails(Json::Value& result);
 
 	void parseProduction(const Json::Value& root);
 	void parseConsumption(const Json::Value& root);
 	void parseStorage(const Json::Value& root);
+	void parseInventory(const Json::Value& root);
 	bool SetPowerActive(const bool bActive);
 
 	bool CheckAuthJWT(const std::string& szToken, const bool bDisplayErrors);
@@ -62,7 +64,11 @@ private:
 	bool m_bHaveConsumption = false;
 	bool m_bHaveNetConsumption = false;
 	bool m_bHaveStorage = false;
+
 	bool m_bOldFirmware = false;
+
+	bool m_bCheckedInventory = false;
+	bool m_bHaveInventory = false;
 
 	std::shared_ptr<std::thread> m_thread;
 };

@@ -37,6 +37,7 @@ Example
 #define ENPHASE_API_POWER_GET "{ip}/ivp/mod/603980032/mode/power"
 #define ENPHASE_API_POWER_SET "{ip}/ivp/mod/603980032/mode/power"
 #define ENPHASE_API_INST_DETAILS "{ip}ivp/peb/devstatus"
+#define ENPAHSE_API_INVENTORY_DETAILS "{ip}/ivp/ensemble/inventory"
 
 #ifdef DEBUG_EnphaseAPI_W
 void SaveString2Disk(std::string str, std::string filename)
@@ -233,6 +234,7 @@ void EnphaseAPI::Do_Work()
 				{
 					m_szToken.clear(); //for new owner token
 				}
+
 				if (!m_szTokenInstaller.empty())
 				{
 					//only works with Installer token
@@ -244,6 +246,20 @@ void EnphaseAPI::Do_Work()
 					{
 						//getGridStatus();
 					}
+
+					if (
+						(!m_bCheckedInventory)
+						|| (m_bHaveInventory)
+						)
+					{
+						m_bCheckedInventory = true;
+						Json::Value inventory_result;
+						if (getInventoryDetails(inventory_result))
+						{
+							parseInventory(inventory_result);
+						}
+					}
+
 				}
 				bHaveRunOnce = true;
 			}
@@ -462,6 +478,7 @@ bool EnphaseAPI::GetSerialSoftwareVersion()
 
 bool EnphaseAPI::CheckAuthJWT(const std::string& szToken, const bool bDisplayErrors)
 {
+	std::string sResult;
 #ifdef DEBUG_EnphaseAPI_R
 	sResult = ReadFile("E:\\EnphaseAPI_check_jwt.json");
 #else
@@ -470,7 +487,6 @@ bool EnphaseAPI::CheckAuthJWT(const std::string& szToken, const bool bDisplayErr
 	ExtraHeaders.push_back("Accept: application/json");
 	ExtraHeaders.push_back("Authorization: Bearer " + szToken);
 
-	std::string sResult;
 	if (!HTTPClient::GET(MakeURL(ENPHASE_API_CHECK_JWT), ExtraHeaders, sResult, false, true))
 	{
 		//If the token is expired, we will get a 401 error
@@ -866,31 +882,161 @@ void EnphaseAPI::parseStorage(const Json::Value& root)
 	m_bHaveStorage = true;
 }
 
+bool EnphaseAPI::getInventoryDetails(Json::Value& result)
+{
+	std::string sResult;
+
+#ifdef DEBUG_EnphaseAPI_R
+	sResult = ReadFile("E:\\EnphaseAPI_inventory.json");
+#else
+	if (m_szTokenInstaller.empty())
+		return false;
+
+	if (!CheckAuthJWT(m_szTokenInstaller, false))
+	{
+		//we probably need to get a new token
+		if (!GetInstallerToken())
+			return false;
+		if (!CheckAuthJWT(m_szTokenInstaller, true))
+		{
+			return false;
+		}
+	}
+
+	std::vector<std::string> ExtraHeaders;
+	ExtraHeaders.push_back("Authorization: Bearer " + m_szTokenInstaller);
+	ExtraHeaders.push_back("Content-Type:application/json");
+
+	if (!HTTPClient::GET(MakeURL(ENPAHSE_API_INVENTORY_DETAILS), ExtraHeaders, sResult))
+	{
+		Log(LOG_ERROR, "Error getting http data! (inventory)");
+		return false;
+	}
+#ifdef DEBUG_EnphaseAPI_W
+	SaveString2Disk(sResult, "E:\\EnphaseAPI_inventory.json");
+#endif
+#endif
+	Debug(DEBUG_RECEIVED, "inventory: %s", sResult.c_str());
+
+	bool ret = ParseJSon(sResult, result);
+	if ((!ret) || (!result.isArray()))
+	{
+		m_szToken.clear();
+		Log(LOG_ERROR, "Invalid data received! (inventory/json)");
+		return false;
+	}
+	if (result.size() < 1)
+		return false;
+
+	if (
+		(result[0]["type"].empty())
+		&& (result[0]["devices"].empty())
+		)
+	{
+		if (m_bHaveInventory)
+		{
+			m_szToken.clear();
+			Log(LOG_ERROR, "Invalid (no) data received (inventory, objects not found)");
+}
+		return false;
+	}
+	m_bHaveInventory = true;
+	return true;
+}
+
+void EnphaseAPI::parseInventory(const Json::Value& root)
+{
+	int iInventoryIndex = 0;
+	for (const auto& inventory : root)
+	{
+		int iDeviceIndex = 0;
+		if (
+			(inventory["type"].empty())
+			&& (inventory["devices"].empty())
+			)
+		{
+			return;
+		}
+		std::string szType = inventory["type"].asString();
+		if (szType == "ENCHARGE")
+		{
+			for (const auto& itt : inventory["devices"])
+			{
+				std::string serial_num = itt["serial_num"].asString();
+				std::string admin_state = itt["admin_state"].asString();
+				std::string admin_state_str = itt["admin_state_str"].asString();
+				std::string percentFull = itt["percentFull"].asString();
+				std::string temperature = itt["temperature"].asString();
+				std::string encharge_capacity = itt["encharge_capacity"].asString();
+				std::string led_status = itt["led_status"].asString();
+				std::string sleep_enabled = itt["sleep_enabled"].asString(); //boolean
+				std::string dc_switch_off = itt["dc_switch_off"].asString(); //boolean
+
+				double dCurrentCapacity = (std::stod(encharge_capacity) / 100.0) * std::stod(percentFull);
+
+				std::string real_power_w = ""; //The current power charging/discharging the battery, in watts. Positive values indicate charging, negative values indicate discharging.
+				if (!itt["real_power_w"].empty())
+					real_power_w = itt["real_power_w"].asString();
+
+				std::string szName;
+
+				int NodeID = 100 + (iInventoryIndex * 50);
+
+				szName = "Encharge " + serial_num + " Percent Full";
+				SendPercentageSensor(NodeID + iDeviceIndex, 1, 255, static_cast<float>(std::stod(percentFull)), szName);
+
+				szName = "Encharge " + serial_num + " Current Capacity";
+				SendWattMeter(NodeID, iDeviceIndex + 1, 255, static_cast<float>(dCurrentCapacity), szName);
+
+				szName = "Encharge " + serial_num + " Led Status";
+				SendTextSensor((NodeID * 2) + (iDeviceIndex * 30) + 1, 1, 255, led_status, szName);
+
+				szName = "Encharge " + serial_num + " admin_state";
+				SendTextSensor((NodeID * 2) + (iDeviceIndex * 30) + 2, 1, 255, admin_state, szName);
+
+				szName = "Encharge " + serial_num + " admin_state_str";
+				SendTextSensor((NodeID * 2) + (iDeviceIndex * 30) + 3, 1, 255, admin_state_str, szName);
+
+				iDeviceIndex++;
+			}
+		}
+		else if (szType == "ENPOWER")
+		{
+			for (const auto& itt : inventory["devices"])
+			{
+				std::string serial_num = itt["serial_num"].asString();
+				std::string admin_state = itt["admin_state"].asString();
+				std::string admin_state_str = itt["admin_state_str"].asString();
+				std::string temperature = itt["temperature"].asString();
+
+				iDeviceIndex++;
+			}
+		}
+		else
+		{
+			//unknown type
+		}
+		iInventoryIndex++;
+	}
+}
+
 bool EnphaseAPI::getGridStatus()
 {
+	if (m_szTokenInstaller.empty())
+		return false;
 	std::string sResult;
 
 #ifdef DEBUG_EnphaseAPI_R
 	sResult = ReadFile("E:\\EnphaseAPI_home.json");
 #else
-
 	std::vector<std::string> ExtraHeaders;
-	if (!m_szToken.empty()) {
-		ExtraHeaders.push_back("Authorization: Bearer " + m_szTokenInstaller);
-		ExtraHeaders.push_back("Content-Type:application/json");
-	}
+	ExtraHeaders.push_back("Authorization: Bearer " + m_szTokenInstaller);
+	ExtraHeaders.push_back("Content-Type:application/json");
 
 	if (!HTTPClient::GET(MakeURL(ENPHASE_API_HOME), ExtraHeaders, sResult))
 	{
-		if (!m_szToken.empty())
-		{
-			return false;
-		}
-		else
-		{
-			Log(LOG_ERROR, "Error getting http data! (gridstatus)");
-			return false;
-		}
+		Log(LOG_ERROR, "Error getting http data! (gridstatus)");
+		return false;
 	}
 #ifdef DEBUG_EnphaseAPI_W
 	SaveString2Disk(sResult, "E:\\EnphaseAPI_home.json");
@@ -1126,7 +1272,7 @@ bool EnphaseAPI::getInverterDetails()
 			// Update
 			UpdateValueInt(szDeviceID.c_str(), 1, devType, subType, 12, 255, nValue, sValue.c_str(), result[0][0]);
 		}
-	}
+}
 
 	return true;
 }
