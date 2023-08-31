@@ -364,6 +364,8 @@ const char* RFX_Type_SubType_Values(const unsigned char dType, const unsigned ch
 		{ pTypeGeneralSwitch, sSwitchTypeNice, "Status,Level" },
 		{ pTypeGeneralSwitch, sSwitchTypeForest, "Status,Level" },
 
+		{ pTypeDDxxxx, sTypeDDxxxx, "Status,Level" },
+
 		{ 0, 0, nullptr },
 	};
 	return findTableID1ID2(Table, dType, sType);

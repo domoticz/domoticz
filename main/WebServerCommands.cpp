@@ -329,6 +329,7 @@ namespace http
 						case pTypeHomeConfort:
 						case pTypeFS20:
 						case pTypeHunter:
+						case pTypeDDxxxx:
 							bdoAdd = true;
 							if (!used)
 							{
@@ -459,6 +460,7 @@ namespace http
 							case pTypeHomeConfort:
 							case pTypeFS20:
 							case pTypeHunter:
+							case pTypeDDxxxx:
 								root["result"][ii]["type"] = 0;
 								root["result"][ii]["idx"] = ID;
 								root["result"][ii]["Name"] = "[Light/Switch] " + Name;
@@ -1622,6 +1624,18 @@ namespace http
 					devid = id;
 					sunitcode = "0";
 				}
+				else if (lighttype == 316)
+				{
+					// DDxxxx Brel
+					dtype = pTypeDDxxxx;
+					subtype = sTypeDDxxxx;
+					std::string id = request::findValue(&req, "id");
+					sunitcode = request::findValue(&req, "unitcode");
+					if (id.empty() || sunitcode.empty())
+						return false;
+					switchtype = STYPE_BlindsPercentageWithStop;
+					devid = "0" + id;
+				}
 				else if (lighttype == 400)
 				{
 					// Openwebnet Bus Blinds
@@ -2353,6 +2367,40 @@ namespace http
 					devid = id;
 					sunitcode = "0";
 				}
+				else if (lighttype == 314)
+				{
+					// Orcon
+					dtype = pTypeFan;
+					subtype = sTypeOrcon;
+					std::string id = request::findValue(&req, "id");
+					if (id.empty())
+						return false;
+					devid = id;
+					sunitcode = "0";
+				}
+				else if (lighttype == 315)
+				{
+					// Itho HRU400
+					dtype = pTypeFan;
+					subtype = sTypeIthoHRU400;
+					std::string id = request::findValue(&req, "id");
+					if (id.empty())
+						return false;
+					devid = id;
+					sunitcode = "0";
+				}
+				else if (lighttype == 316)
+				{
+					// DDxxxx Brel
+					dtype = pTypeDDxxxx;
+					subtype = sTypeDDxxxx;
+					std::string id = request::findValue(&req, "id");
+					sunitcode = request::findValue(&req, "unitcode");
+					if (id.empty() || sunitcode.empty())
+						return false;
+					switchtype = STYPE_BlindsPercentageWithStop;
+					devid = "0" + id;
+				}
 				else if (lighttype == 400)
 				{
 					// Openwebnet Bus Blinds
@@ -2517,11 +2565,13 @@ namespace http
 				unsigned char switchtype = atoi(result[0][2].c_str());
 
 				int ii = 0;
-				if ((dType == pTypeLighting1) || (dType == pTypeLighting2) || (dType == pTypeLighting3) || (dType == pTypeLighting4) || (dType == pTypeLighting5) ||
+				if (
+					(dType == pTypeLighting1) || (dType == pTypeLighting2) || (dType == pTypeLighting3) || (dType == pTypeLighting4) || (dType == pTypeLighting5) ||
 					(dType == pTypeLighting6) || (dType == pTypeColorSwitch) || (dType == pTypeSecurity1) || (dType == pTypeSecurity2) || (dType == pTypeEvohome) ||
 					(dType == pTypeEvohomeRelay) || (dType == pTypeCurtain) || (dType == pTypeBlinds) || (dType == pTypeRFY) || (dType == pTypeChime) || (dType == pTypeThermostat2) ||
 					(dType == pTypeThermostat3) || (dType == pTypeThermostat4) || (dType == pTypeRemote) || (dType == pTypeGeneralSwitch) || (dType == pTypeHomeConfort) ||
-					(dType == pTypeFS20) || ((dType == pTypeRadiator1) && (dSubType == sTypeSmartwaresSwitchRadiator)))
+					(dType == pTypeFS20) || ((dType == pTypeRadiator1) && (dSubType == sTypeSmartwaresSwitchRadiator)) || (dType == pTypeDDxxxx)
+					)
 				{
 					if (switchtype != STYPE_PushOff)
 					{
@@ -3378,12 +3428,14 @@ namespace http
 				unsigned char dType = atoi(result[0][0].c_str());
 				unsigned char dSubType = atoi(result[0][1].c_str());
 
-				if ((dType != pTypeLighting1) && (dType != pTypeLighting2) && (dType != pTypeLighting3) && (dType != pTypeLighting4) && (dType != pTypeLighting5) &&
+				if (
+					(dType != pTypeLighting1) && (dType != pTypeLighting2) && (dType != pTypeLighting3) && (dType != pTypeLighting4) && (dType != pTypeLighting5) &&
 					(dType != pTypeLighting6) && (dType != pTypeFan) && (dType != pTypeColorSwitch) && (dType != pTypeSecurity1) && (dType != pTypeSecurity2) &&
 					(dType != pTypeEvohome) && (dType != pTypeEvohomeRelay) && (dType != pTypeCurtain) && (dType != pTypeBlinds) && (dType != pTypeRFY) && (dType != pTypeChime) &&
 					(dType != pTypeThermostat2) && (dType != pTypeThermostat3) && (dType != pTypeThermostat4) && (dType != pTypeRemote) && (dType != pTypeGeneralSwitch) &&
 					(dType != pTypeHomeConfort) && (dType != pTypeFS20) && (!((dType == pTypeRadiator1) && (dSubType == sTypeSmartwaresSwitchRadiator))) &&
-					(!((dType == pTypeGeneral) && (dSubType == sTypeTextStatus))) && (!((dType == pTypeGeneral) && (dSubType == sTypeAlert))) && (dType != pTypeHunter))
+					(!((dType == pTypeGeneral) && (dSubType == sTypeTextStatus))) && (!((dType == pTypeGeneral) && (dSubType == sTypeAlert))) && (dType != pTypeHunter) && (dType != pTypeDDxxxx)
+					)
 					return false; // no light device! we should not be here!
 
 				root["status"] = "OK";

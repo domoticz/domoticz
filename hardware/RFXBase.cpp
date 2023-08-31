@@ -162,6 +162,8 @@ bool CRFXBase::CheckValidRFXData(const uint8_t *pData)
 		return (pLen == 0x0D);
 	case pTypeLIGHTNING:
 		return (pLen == 0x0C);
+	case pTypeDDxxxx:
+		return (pLen == 0x0C);
 	default:
 		return false;//unknown Type
 	}

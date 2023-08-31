@@ -543,6 +543,7 @@ const char* RFX_Type_Desc(const unsigned char i, const unsigned char snum)
 		{ pTypeWEATHER, "Weather", "weather" },
 		{ pTypeSOLAR, "Solar", "solar" },
 		{ pTypeHunter, "Hunter", "Hunter" },
+		{ pTypeDDxxxx, "Brel", "blinds" },
 		{ 0, nullptr, nullptr },
 	};
 	if (snum == 1)
@@ -2236,6 +2237,41 @@ void GetLightStatus(
 		break;
 		}
 		break;
+	case pTypeDDxxxx:
+		bHaveDimmer = true;
+		maxDimLevel = 100;
+		llevel = (int)float((100.0F / float(maxDimLevel)) * atof(sValue.c_str()));
+
+		switch (nValue)
+		{
+		case DDxxxx_Up:
+			lstatus = "Open";
+			break;
+		case DDxxxx_Down:
+			lstatus = "Close";
+			break;
+		case DDxxxx_Stop:
+			lstatus = "Stop";
+			break;
+		case DDxxxx_P2:
+			lstatus = "Pair";
+			break;
+		case DDxxxx_Percent:
+			if (llevel == 0)
+				lstatus = "Close";
+			else if (llevel == 100)
+				lstatus = "Open";
+			else
+			{
+				sprintf(szTmp, "Set Level: %d %%", llevel);
+				lstatus = szTmp;
+			}
+			break;
+		case DDxxxx_HoldStopDown:
+			lstatus = "unknown/unsupported!";
+			break;
+		}
+		break;
 	}
 
 	const bool bIsBlinds = (switchtype == STYPE_Blinds
@@ -3792,6 +3828,33 @@ bool GetLightCommand(
 		break;
 	}
 	break;
+	case pTypeDDxxxx:
+		if (switchcmd == "Open")
+		{
+			cmd = DDxxxx_Up;
+			return true;
+		}
+		else if (switchcmd == "Close")
+		{
+			cmd = DDxxxx_Down;
+			return true;
+		}
+		else if (switchcmd == "Stop")
+		{
+			cmd = DDxxxx_Stop;
+			return true;
+		}
+		else if (switchcmd == "Pair")
+		{
+			cmd = DDxxxx_P2;
+			return true;
+		}
+		else if (switchcmd == "Set Level")
+		{
+			cmd = DDxxxx_Percent;
+			return true;
+		}
+		break;
 	}
 	//unknown command
 	return false;

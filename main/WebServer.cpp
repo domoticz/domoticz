@@ -1648,7 +1648,9 @@ namespace http
 						|| (dType == pTypeFS20)
 						|| ((dType == pTypeRadiator1) && (dSubType == sTypeSmartwaresSwitchRadiator))
 						|| ((dType == pTypeRego6XXValue) && (dSubType == sTypeRego6XXStatus))
-						|| (dType == pTypeHunter))
+						|| (dType == pTypeHunter)
+						|| (dType == pTypeDDxxxx)
+						)
 					{
 						// add light details
 						bHasTimers = m_sql.HasTimers(sd[0]);
