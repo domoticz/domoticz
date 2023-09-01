@@ -85,6 +85,8 @@ Enever::Enever(int ID, const std::string& szToken, const std::string& szProvider
 	std::vector<std::vector<std::string> > result;
 
 	//Retreive current prices backup
+
+	//Electricity Today
 	std::string szName = "Enever_Electricity_" + std::to_string(m_HwdID);
 	result = m_sql.safe_query("SELECT ID, Value FROM UserVariables WHERE (Name=='%q')", szName.c_str());
 	if (result.empty())
@@ -97,6 +99,21 @@ Enever::Enever(int ID, const std::string& szToken, const std::string& szProvider
 	if (!result.empty())
 	{
 		m_szCurrentElectricityPrices = result[0][1];
+	}
+
+	//Electricity Tomorrow
+	szName = "Enever_Electricity_tomorrow_" + std::to_string(m_HwdID);
+	result = m_sql.safe_query("SELECT ID, Value FROM UserVariables WHERE (Name=='%q')", szName.c_str());
+	if (result.empty())
+	{
+		m_sql.safe_query("INSERT INTO UserVariables (Name, ValueType, Value) VALUES ('%q',%d,'%q')", szName.c_str(), USERVARTYPE_STRING, "");
+		result = m_sql.safe_query("SELECT ID, Value FROM UserVariables WHERE (Name=='%q')", szName.c_str());
+		if (result.empty())
+			return;
+	}
+	if (!result.empty())
+	{
+		m_szCurrentElectricityPrices_Tomorrow = result[0][1];
 	}
 
 	szName = "Enever_Gas_" + std::to_string(m_HwdID);
@@ -391,7 +408,7 @@ bool Enever::GetPriceElectricity_Tomorrow()
 	Debug(DEBUG_RECEIVED, "electricity_prices_tomorrow: %s", sResult.c_str());
 
 	//Store for later usage
-	std::string szName = "Enever_Electricity_" + std::to_string(m_HwdID);
+	std::string szName = "Enever_Electricity_tomorrow_" + std::to_string(m_HwdID);
 	m_sql.safe_query("UPDATE UserVariables SET Value='%q', LastUpdate='%s' WHERE (Name=='%q')", sResult.c_str(), TimeToString(nullptr, TF_DateTime).c_str(), szName.c_str());
 
 	Json::Value result;
@@ -511,15 +528,22 @@ void Enever::parseElectricity(const std::string& szElectricityData, const bool b
 	}
 }
 
+//Gas price is valid from 06:00am today till 06:00am tomorrow
 bool Enever::GetPriceGas(const bool bForce)
 {
 	std::string sResult;
 
-	if ((!m_szCurrentGasPrices.empty()) && (!bForce))
+	if (
+		(!m_szCurrentGasPrices.empty())
+		&& (!bForce)
+		)
+		return true; //we still have current data
+
+	if (!m_szCurrentGasPrices.empty())
 	{
+		//check if we need to update (data is not from today)
 		time_t atime = mytime(nullptr);
 		struct tm* ltime = localtime(&atime);
-		//check if we need to update (data is not from today)
 		Json::Value jsonCurrent;
 		if (ParseJSon(m_szCurrentGasPrices, jsonCurrent))
 		{

@@ -457,36 +457,12 @@ const char* RFX_Type_Desc(const unsigned char i, const unsigned char snum)
 		{ pTypeInterfaceMessage, "Interface Message", "unknown" },
 		{ pTypeRecXmitMessage, "Receiver/Transmitter Message", "unknown" },
 		{ pTypeUndecoded, "Undecoded RF Message", "unknown" },
-		{
-			pTypeLighting1,
-			"Lighting 1",
-			"lightbulb",
-		},
-		{
-			pTypeLighting2,
-			"Lighting 2",
-			"lightbulb",
-		},
-		{
-			pTypeLighting3,
-			"Lighting 3",
-			"lightbulb",
-		},
-		{
-			pTypeLighting4,
-			"Lighting 4",
-			"lightbulb",
-		},
-		{
-			pTypeLighting5,
-			"Lighting 5",
-			"lightbulb",
-		},
-		{
-			pTypeLighting6,
-			"Lighting 6",
-			"lightbulb",
-		},
+		{ pTypeLighting1, "Lighting 1", "lightbulb" },
+		{ pTypeLighting2, "Lighting 2", "lightbulb" },
+		{ pTypeLighting3, "Lighting 3", "lightbulb" },
+		{ pTypeLighting4, "Lighting 4", "lightbulb"	},
+		{ pTypeLighting5, "Lighting 5", "lightbulb" },
+		{ pTypeLighting6, "Lighting 6", "lightbulb" },
 		{ pTypeHomeConfort, "Home Confort", "lightbulb" },
 		{ pTypeColorSwitch, "Color Switch", "lightbulb" },
 		{ pTypeCurtain, "Curtain", "blinds" },
@@ -543,7 +519,7 @@ const char* RFX_Type_Desc(const unsigned char i, const unsigned char snum)
 		{ pTypeWEATHER, "Weather", "weather" },
 		{ pTypeSOLAR, "Solar", "solar" },
 		{ pTypeHunter, "Hunter", "Hunter" },
-		{ pTypeDDxxxx, "Brel", "blinds" },
+		{ pTypeDDxxxx, "Blinds", "blinds" },
 		{ 0, nullptr, nullptr },
 	};
 	if (snum == 1)
