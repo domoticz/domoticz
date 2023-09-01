@@ -11316,8 +11316,6 @@ void MainWorker::decode_DDxxxx(const CDomoticzHardwareBase* pHardware, const tRB
 
 	std::string ID = szTmp;
 	uint8_t Unit = pResponse->DDXXXX.unitcode;
-	if (Unit != 16)
-		Unit += 1;
 	uint8_t cmnd = pResponse->DDXXXX.cmnd;
 	uint8_t SignalLevel = pResponse->DDXXXX.rssi;
 
@@ -11348,7 +11346,7 @@ void MainWorker::decode_DDxxxx(const CDomoticzHardwareBase* pHardware, const tRB
 		sprintf(szTmp, "id1-4         = %02X%02X%02X%02X", pResponse->DDXXXX.id1, pResponse->DDXXXX.id2, pResponse->DDXXXX.id3, pResponse->DDXXXX.id4);
 		WriteMessage(szTmp);
 
-		if (pResponse->DDXXXX.unitcode == 16)
+		if (pResponse->DDXXXX.unitcode == 0)
 			WriteMessage("Unit          = All");
 		else
 			sprintf(szTmp, "Unit          = %d", pResponse->DDXXXX.unitcode + 1);
@@ -12419,8 +12417,6 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string>& sd, std::string 
 		lcmd.DDXXXX.id2 = ID2;
 		lcmd.DDXXXX.id3 = ID3;
 		lcmd.DDXXXX.id4 = ID4;
-		if (Unit != 16)
-			Unit--; //this blind starts from 0
 		lcmd.DDXXXX.unitcode = Unit;
 		if (!GetLightCommand(dType, dSubType, switchtype, switchcmd, lcmd.DDXXXX.cmnd, options))
 			return false;
