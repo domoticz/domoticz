@@ -170,7 +170,7 @@
 #include <inttypes.h>
 
 #ifdef _DEBUG
-#define PARSE_RFXCOM_DEVICE_LOG
+//#define PARSE_RFXCOM_DEVICE_LOG
 //#define DEBUG_DOWNLOAD
 //#define DEBUG_RXQUEUE
 #endif
