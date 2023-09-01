@@ -963,8 +963,8 @@ void EnphaseAPI::parseInventory(const Json::Value& root)
 			for (const auto& itt : inventory["devices"])
 			{
 				std::string serial_num = itt["serial_num"].asString();
-				std::string admin_state = itt["admin_state"].asString();
-				std::string admin_state_str = itt["admin_state_str"].asString();
+				//std::string admin_state = itt["admin_state"].asString();
+				//std::string admin_state_str = itt["admin_state_str"].asString();
 				std::string percentFull = itt["percentFull"].asString();
 				std::string temperature = itt["temperature"].asString();
 				std::string encharge_capacity = itt["encharge_capacity"].asString();
@@ -991,11 +991,33 @@ void EnphaseAPI::parseInventory(const Json::Value& root)
 				szName = "Encharge " + serial_num + " Led Status";
 				SendTextSensor((NodeID * 2) + (iDeviceIndex * 30) + 1, 1, 255, led_status, szName);
 
-				szName = "Encharge " + serial_num + " admin_state";
-				SendTextSensor((NodeID * 2) + (iDeviceIndex * 30) + 2, 1, 255, admin_state, szName);
+				//szName = "Encharge " + serial_num + " admin_state";
+				//SendTextSensor((NodeID * 2) + (iDeviceIndex * 30) + 2, 1, 255, admin_state, szName);
+				//szName = "Encharge " + serial_num + " admin_state_str";
+				//SendTextSensor((NodeID * 2) + (iDeviceIndex * 30) + 3, 1, 255, admin_state_str, szName);
 
-				szName = "Encharge " + serial_num + " admin_state_str";
-				SendTextSensor((NodeID * 2) + (iDeviceIndex * 30) + 3, 1, 255, admin_state_str, szName);
+				std::string szStatus = "Unknown";
+				int iLedStatus = atoi(led_status.c_str());
+				switch (iLedStatus)
+				{
+				case 12: //Charging
+					szStatus = "Charging";
+					break;
+				case 13: //Discharging
+					szStatus = "Discharging";
+					break;
+				case 14: //Charged
+					szStatus = "Charged";
+					break;
+				case 17: //Idle Charging between 5 and 25%
+					szStatus = "Idle capacity between 5-25%";
+					break;
+				default:
+					szStatus = "Unknown (" + led_status + ")";
+					break;
+				}
+				szName = "Encharge " + serial_num + " Status";
+				SendTextSensor((NodeID * 2) + (iDeviceIndex * 30) + 4, 1, 255, szStatus, szName);
 
 				iDeviceIndex++;
 			}
