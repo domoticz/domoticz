@@ -5162,6 +5162,9 @@ uint64_t CSQLHelper::UpdateManagedValueInt(
 	}
 
 	safe_query("UPDATE DeviceStatus SET LastUpdate='%q', sValue='%q' WHERE (ID = %" PRIu64 ")", sLastUpdate.c_str(), sValue, ulID);
+	
+	m_mainworker.m_eventsystem.ProcessDevice(HardwareID, ulID, unit, devType, subType, signallevel, batterylevel, nValue, sValue);
+
 	return ulID;
 }
 

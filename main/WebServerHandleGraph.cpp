@@ -2362,7 +2362,7 @@ namespace http
 								return sensorareaExpr(expr.c_str(), "1", "5", "2", "6");
 							};
 							GroupBy(
-								root, dbasetable, idx, sgroupby,
+								root, dbasetable, idx, sgroupby, bIsManagedCounter,
 								[counterExpr, tableColumn](std::string table) {
 									return counterExpr(tableColumn(table, "Counter%s") + "+" + tableColumn(table, "Counter%s"));
 								},
@@ -2964,31 +2964,32 @@ namespace http
 						if (!sgroupby.empty())
 						{
 							GroupBy(
-								root, dbasetable, idx, sgroupby, [tableColumn](std::string table) { return tableColumn(table, "Counter"); },
+								root, dbasetable, idx, sgroupby, bIsManagedCounter, [tableColumn](std::string table) { return tableColumn(table, "Counter"); },
 								[tableColumn](std::string table) { return tableColumn(table, "Value"); },
 								[metertype, AddjValue, divider, this](double sum) {
-									if (sum == 0)
-									{
-										return std::string("0");
-									}
-									switch (metertype)
-									{
-									case MTYPE_ENERGY:
-									case MTYPE_ENERGY_GENERATED:
-										return std_format("%.3f", sum / divider);
-									case MTYPE_GAS:
-										return std_format("%.2f", sum / divider);
-									case MTYPE_WATER:
-										return std_format("%.3f", sum / divider);
-									case MTYPE_COUNTER:
-										return std_format("%.10g", sum / divider);
-									}
-									return std::string("");
-								});
+								if (sum == 0)
+								{
+									return std::string("0");
+								}
+								switch (metertype)
+								{
+								case MTYPE_ENERGY:
+								case MTYPE_ENERGY_GENERATED:
+									return std_format("%.3f", sum / divider);
+								case MTYPE_GAS:
+									return std_format("%.2f", sum / divider);
+								case MTYPE_WATER:
+									return std_format("%.3f", sum / divider);
+								case MTYPE_COUNTER:
+									return std_format("%.10g", sum / divider);
+								}
+								return std::string("");
+							});
 							ii = root["result"].size();
 						}
 						else
 						{
+
 							// Actual Year
 							result =
 								m_sql.safe_query("SELECT Value, Date, Counter FROM %s WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q' AND Date<='%q') ORDER BY Date ASC",
@@ -3084,7 +3085,6 @@ namespace http
 						}
 					}
 					// add today (have to calculate it)
-
 					if ((!sactmonth.empty()) || (!sactyear.empty()))
 					{
 						struct tm loctime;
