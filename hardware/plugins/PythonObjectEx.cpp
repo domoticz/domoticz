@@ -812,7 +812,7 @@ namespace Plugins {
 				}
 			}
 
-			// Need to look up current nValue and sValue and only do triggers if one has changed
+			// Get On/Off actions
 			std::vector<std::vector<std::string>> result;
 
 			result = m_sql.safe_query("SELECT ID, StrParam1, StrParam2 FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%s') AND (Unit==%d)", pModState->pPlugin->m_HwdID, sDeviceID.c_str(), self->Unit);
