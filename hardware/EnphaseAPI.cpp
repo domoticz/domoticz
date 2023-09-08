@@ -836,7 +836,7 @@ void EnphaseAPI::parseProduction(const Json::Value& root)
 			m_nProductionCounterOffset = m_nLastProductionCounterValue;
 
 			std::string szName = "EnphaseOffset_Production";
-			m_sql.safe_query("UPDATE UserVariables SET Value='%q', LastUpdate='%s' WHERE (Name=='%q')", std::to_string(m_nProductionCounterOffset), TimeToString(nullptr, TF_DateTime).c_str(), szName.c_str());
+			m_sql.safe_query("UPDATE UserVariables SET Value='%q', LastUpdate='%s' WHERE (Name=='%q')", std::to_string(m_nProductionCounterOffset).c_str(), TimeToString(nullptr, TF_DateTime).c_str(), szName.c_str());
 
 			rTotal = m_nProductionCounterOffset + mtotal;
 		}
