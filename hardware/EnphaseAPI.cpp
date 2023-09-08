@@ -111,8 +111,6 @@ EnphaseAPI::EnphaseAPI(const int ID, const std::string& IPAddress, const unsigne
 	{
 		m_sql.safe_query("INSERT INTO UserVariables (Name, ValueType, Value) VALUES ('%q',%d,'%q')", szName.c_str(), USERVARTYPE_STRING, "");
 		result = m_sql.safe_query("SELECT ID, Value FROM UserVariables WHERE (Name=='%q')", szName.c_str());
-		if (result.empty())
-			return;
 	}
 	if (!result.empty())
 	{
@@ -126,14 +124,25 @@ EnphaseAPI::EnphaseAPI(const int ID, const std::string& IPAddress, const unsigne
 	{
 		m_sql.safe_query("INSERT INTO UserVariables (Name, ValueType, Value) VALUES ('%q',%d,'%q')", szName.c_str(), USERVARTYPE_STRING, "");
 		result = m_sql.safe_query("SELECT ID, Value FROM UserVariables WHERE (Name=='%q')", szName.c_str());
-		if (result.empty())
-			return;
 	}
 	if (!result.empty())
 	{
 		m_szTokenInstaller = result[0][1];
 	}
 	//(We can probably not use them both at the same time)
+
+	//Retreive production counter offer
+	szName = "EnphaseOffset_Production";
+	result = m_sql.safe_query("SELECT ID, Value FROM UserVariables WHERE (Name=='%q')", szName.c_str());
+	if (result.empty())
+	{
+		m_sql.safe_query("INSERT INTO UserVariables (Name, ValueType, Value) VALUES ('%q',%d,'%q')", szName.c_str(), USERVARTYPE_STRING, "0");
+		result = m_sql.safe_query("SELECT ID, Value FROM UserVariables WHERE (Name=='%q')", szName.c_str());
+	}
+	if (!result.empty())
+	{
+		m_nProductionCounterOffset = std::stoull(result[0][1]);
+	}
 }
 
 bool EnphaseAPI::StartHardware()
@@ -563,7 +572,7 @@ bool EnphaseAPI::GetOwnerToken()
 	{
 		Log(LOG_ERROR, "Invalid data received! (no session_id)");
 		return false;
-	}
+}
 
 	std::string session_id = root["session_id"].asString();
 
@@ -654,7 +663,7 @@ bool EnphaseAPI::GetInstallerToken()
 	{
 		Log(LOG_ERROR, "Error getting http data! (login)");
 		return false;
-	}
+}
 #ifdef DEBUG_EnphaseAPI_W
 	SaveString2Disk(sResult, "E:\\EnphaseAPI_login_entrez.json");
 #endif
@@ -815,11 +824,24 @@ void EnphaseAPI::parseProduction(const Json::Value& root)
 	if (musage < 0)
 		musage = 0; //seems sometimes the production value is negative??
 
-	int mtotal = reading["whLifetime"].asInt();
-
+	uint64_t mtotal = reading["whLifetime"].asUInt64();
 	if (mtotal != 0)
 	{
-		SendKwhMeter(m_HwdID, 1, 255, musage, mtotal / 1000.0, "Enphase kWh Production");
+		uint64_t rTotal = m_nProductionCounterOffset + mtotal;
+		if (
+			(rTotal < m_nLastProductionCounterValue)
+			&& (m_nLastProductionCounterValue != 0)
+			)
+		{
+			m_nProductionCounterOffset = m_nLastProductionCounterValue;
+
+			std::string szName = "EnphaseOffset_Production";
+			m_sql.safe_query("UPDATE UserVariables SET Value='%q', LastUpdate='%s' WHERE (Name=='%q')", std::to_string(m_nProductionCounterOffset), TimeToString(nullptr, TF_DateTime).c_str(), szName.c_str());
+
+			rTotal = m_nProductionCounterOffset + mtotal;
+		}
+		SendKwhMeter(m_HwdID, 1, 255, musage, static_cast<double>(rTotal) / 1000.0, "Enphase kWh Production");
+		m_nLastProductionCounterValue = rTotal;
 	}
 }
 
@@ -937,7 +959,7 @@ bool EnphaseAPI::getInventoryDetails(Json::Value& result)
 		{
 			m_szToken.clear();
 			Log(LOG_ERROR, "Invalid (no) data received (inventory, objects not found)");
-}
+		}
 		return false;
 	}
 	m_bHaveInventory = true;
@@ -1032,8 +1054,8 @@ void EnphaseAPI::parseInventory(const Json::Value& root)
 				std::string temperature = itt["temperature"].asString();
 
 				iDeviceIndex++;
-			}
 		}
+	}
 		else
 		{
 			//unknown type
@@ -1294,7 +1316,6 @@ bool EnphaseAPI::getInverterDetails()
 			// Update
 			UpdateValueInt(szDeviceID.c_str(), 1, devType, subType, 12, 255, nValue, sValue.c_str(), result[0][0]);
 		}
-}
-
+	}
 	return true;
 }
