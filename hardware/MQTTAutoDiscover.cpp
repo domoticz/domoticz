@@ -1667,7 +1667,7 @@ bool MQTTAutoDiscover::GuessSensorTypeValue(const _tMQTTASensor* pSensor, uint8_
 			{
 				pkWhSensor = get_auto_discovery_sensor_unit(pSensor, "wm");
 				if (pkWhSensor)
-					fkWh = static_cast<float>(atof(pkWhSensor->last_value.c_str())) / 60000.0F;
+					fkWh = static_cast<float>(atof(pkWhSensor->last_value.c_str())) / 60.0F;
 			}
 		}
 		if (pkWhSensor)
@@ -1698,7 +1698,7 @@ bool MQTTAutoDiscover::GuessSensorTypeValue(const _tMQTTASensor* pSensor, uint8_
 		if (szUnit == "wh")
 			multiply = 1.0F;
 		else if (szUnit == "wm")
-			multiply = 1.0F / 60000.0F;
+			multiply = 1.0F / 60.0F;
 
 		float fkWh = static_cast<float>(atof(pSensor->last_value.c_str())) * multiply;
 
