@@ -474,6 +474,8 @@ namespace http
 				return;
 			_eHardwareTypes htype = (_eHardwareTypes)atoi(shtype.c_str());
 
+			stdstring_trim(username);
+			stdstring_trim(password);
 			int iDataTimeout = atoi(sdatatimeout.c_str());
 			int mode1 = 0;
 			int mode2 = 0;
@@ -634,6 +636,9 @@ namespace http
 
 			if ((name.empty()) || (senabled.empty()) || (shtype.empty()))
 				return;
+
+			stdstring_trim(username);
+			stdstring_trim(password);
 
 			std::string mode1Str = request::findValue(&req, "Mode1");
 			std::string mode2Str = request::findValue(&req, "Mode2");
