@@ -56,29 +56,14 @@ std::string ReadFile(std::string filename)
 }
 #endif
 
-CThermosmart::CThermosmart(const int ID, const std::string &Username, const std::string &Password, const int Mode1, const int Mode2, const int Mode3, const int Mode4, const int Mode5, const int Mode6)
+CThermosmart::CThermosmart(const int ID, const std::string &Username, const std::string &Password, const int Mode1)
 {
-	if ((Password == "secret")|| (Password.empty()))
-	{
-		Log(LOG_ERROR, "Please update your username/password!...");
-	}
-	else
-	{
-		m_UserName = Username;
-		m_Password = Password;
-		stdstring_trim(m_UserName);
-		stdstring_trim(m_Password);
-	}
+	m_UserName = Username;
+	m_Password = Password;
 	m_HwdID=ID;
-	m_OutsideTemperatureIdx = 0; //use build in
+	m_OutsideTemperatureIdx = Mode1;	// 0 is build in, else idx of outside temperature sensor
 	m_LastMinute = -1;
-	SetModes(Mode1, Mode2, Mode3, Mode4, Mode5, Mode6);
 	Init();
-}
-
-void CThermosmart::SetModes(const int Mode1, const int Mode2, const int Mode3, const int Mode4, const int Mode5, const int Mode6)
-{
-	m_OutsideTemperatureIdx = Mode1;
 }
 
 void CThermosmart::Init()
@@ -303,7 +288,6 @@ void CThermosmart::Logout()
 	m_bDoLogin = true;
 }
 
-
 bool CThermosmart::WriteToHardware(const char *pdata, const unsigned char length)
 {
 	const tRBUF *pCmd = reinterpret_cast<const tRBUF *>(pdata);
@@ -476,4 +460,3 @@ void CThermosmart::SetOutsideTemp(const float temp)
 		return;
 	}
 }
-
