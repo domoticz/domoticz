@@ -10,6 +10,10 @@
 
 #define round(a) ( int ) ( a + .5 )
 
+#define NETATMO_OAUTH2_TOKEN_URI "https://api.netatmo.net/oauth2/token"
+#define NETATMO_SCOPES "read_station read_thermostat write_thermostat read_homecoach read_smokedetector read_presence read_camera"
+#define NETATMO_REDIRECT_URI "http://localhost/netatmo"
+
 #ifdef _DEBUG
 //#define DEBUG_NetatmoWeatherStationR
 #endif
@@ -54,11 +58,25 @@ struct _tNetatmoDevice
 };
 
 CNetatmo::CNetatmo(const int ID, const std::string& username, const std::string& password)
-	: m_clientId("5588029e485a88af28f4a3c4")
-	, m_clientSecret("6vIpQVjNsL2A74Bd8tINscklLw2LKv7NhE9uW2")
-	, m_username(CURLEncode::URLEncode(username))
-	, m_password(CURLEncode::URLEncode(password))
+	: m_username(CURLEncode::URLDecode(username))
+	, m_password(CURLEncode::URLDecode(password))
 {
+	m_scopes = NETATMO_SCOPES;
+	m_redirectUri = NETATMO_REDIRECT_URI;
+	m_authCode = m_password;
+
+	size_t pos = m_username.find(":");
+	if (pos != std::string::npos)
+	{
+		m_clientId = m_username.substr(0, pos);
+		m_clientSecret = m_username.substr(pos + 1);
+	}
+	else
+	{
+		Log(LOG_ERROR, "The username does not contain the client_id:client_secret!");
+		Debug(DEBUG_HARDWARE,"The username does not contain the client_id:client_secret! (%s)", m_username.c_str());
+	}
+
 	m_nextRefreshTs = mytime(nullptr);
 	m_isLogged = false;
 	m_energyType = NETYPE_WEATHER_STATION;
@@ -207,12 +225,12 @@ bool CNetatmo::Login()
 
 	//Loggin on the API
 	std::stringstream sstr;
-	sstr << "grant_type=password&";
+	sstr << "grant_type=authorization_code&";
 	sstr << "client_id=" << m_clientId << "&";
 	sstr << "client_secret=" << m_clientSecret << "&";
-	sstr << "username=" << m_username << "&";
-	sstr << "password=" << m_password << "&";
-	sstr << "scope=read_station read_thermostat write_thermostat read_homecoach";
+	sstr << "code=" << m_authCode << "&";
+	sstr << "redirect_uri=" << m_redirectUri << "&";
+	sstr << "scope=" << m_scopes;
 
 	std::string httpData = sstr.str();
 	std::vector<std::string> ExtraHeaders;
@@ -220,7 +238,7 @@ bool CNetatmo::Login()
 	ExtraHeaders.push_back("Host: api.netatmo.net");
 	ExtraHeaders.push_back("Content-Type: application/x-www-form-urlencoded;charset=UTF-8");
 
-	std::string httpUrl("https://api.netatmo.net/oauth2/token");
+	std::string httpUrl(NETATMO_OAUTH2_TOKEN_URI);
 	std::string sResult;
 	bool ret = HTTPClient::POST(httpUrl, httpData, ExtraHeaders, sResult);
 
@@ -242,7 +260,8 @@ bool CNetatmo::Login()
 	//Check if access was granted
 	if (root["access_token"].empty() || root["expires_in"].empty() || root["refresh_token"].empty())
 	{
-		Log(LOG_ERROR, "No access granted, check username/password...");
+		Log(LOG_ERROR, "No access granted, check credentials...");
+		Debug(DEBUG_HARDWARE, "No access granted, check credentials...(%s)(%s)", httpData.c_str(), root.toStyledString().c_str());
 		return false;
 	}
 
@@ -296,7 +315,7 @@ bool CNetatmo::RefreshToken(const bool bForce)
 	ExtraHeaders.push_back("Host: api.netatmo.net");
 	ExtraHeaders.push_back("Content-Type: application/x-www-form-urlencoded;charset=UTF-8");
 
-	std::string httpUrl("https://api.netatmo.net/oauth2/token");
+	std::string httpUrl(NETATMO_OAUTH2_TOKEN_URI);
 	std::string sResult;
 	bool ret = HTTPClient::POST(httpUrl, httpData, ExtraHeaders, sResult);
 
