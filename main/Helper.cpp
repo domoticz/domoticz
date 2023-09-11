@@ -1110,6 +1110,7 @@ bool IsUtility(const int dType, const int dSubType)
 		|| (dType == pTypeRFXMeter)
 		|| ((dType == pTypeRego6XXValue) && (dSubType == sTypeRego6XXCounter))
 		|| ((dType == pTypeRadiator1) && (dSubType == sTypeSmartwares))
+		|| ((dType == pTypeSetpoint) && (dSubType == sTypeSetpoint))
 		);
 }
 
