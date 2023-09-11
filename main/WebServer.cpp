@@ -3525,7 +3525,7 @@ namespace http
 		 * Takes root["result"] and groups all items according to sgroupby, summing all values for each category, then creating new items in root["result"]
 		 * for each combination year/category.
 		 */
-		void CWebServer::GroupBy(Json::Value& root, std::string dbasetable, uint64_t idx, std::string sgroupby, bool bUseValues, std::function<std::string(std::string)> counter,
+		void CWebServer::GroupBy(Json::Value& root, std::string dbasetable, uint64_t idx, std::string sgroupby, bool bUseValuesOrCounter, std::function<std::string(std::string)> counter,
 			std::function<std::string(std::string)> value, std::function<std::string(double)> sumToResult)
 		{
 			/*
@@ -3540,6 +3540,22 @@ namespace http
 			 *   Plus it seems that the value is not always the same as the difference between the counters. Counters are more often reliable.
 			 */
 			std::string queryString;
+			std::vector<std::vector<std::string>> result;
+			bool bUseValues = false;
+
+			/* if bUseValuesOrCounter is true, then find out if there are any Counter values in the table, if not: use Value instead of Counter */
+			if (bUseValuesOrCounter)
+			{
+				queryString = "select count(*) from " + dbasetable + " where DeviceRowID = " + std::to_string(idx) + " and " + counter("") + " != 0 ";
+				result = m_sql.safe_query(queryString.c_str(), idx, idx, idx, idx, idx);
+				if (atoi(result[0][0].c_str()) == 0)
+				{
+					bUseValues = true;
+				}
+			}
+
+			/* get the data */
+			queryString = "";
 			queryString.append(" select");
 			queryString.append("  strftime('%%Y',Date) as Year,");
 
@@ -3619,7 +3635,7 @@ namespace http
 			{
 				queryString.append(",strftime('%%m',Date)");
 			}
-			std::vector<std::vector<std::string>> result = m_sql.safe_query(queryString.c_str(), idx, idx, idx, idx, idx);
+			result = m_sql.safe_query(queryString.c_str(), idx, idx, idx, idx, idx);
 			if (!result.empty())
 			{
 				int firstYearCounting = 0;
