@@ -174,9 +174,42 @@ void AlfenEve::Do_Work()
 	DoLogout();
 }
 
-bool AlfenEve::WriteToHardware(const char* /*pdata*/, const unsigned char /*length*/)
+bool AlfenEve::WriteToHardware(const char* pdata, const unsigned char /*length*/)
 {
+	const tRBUF* pCmd = reinterpret_cast<const tRBUF*>(pdata);
+	unsigned char dev_type = pCmd->ICMND.packettype;
+	unsigned char sub_type = pCmd->ICMND.subtype;
+	if (
+		(dev_type == pTypeGeneralSwitch)
+		&& (sub_type == sSwitchTypeSelector)
+		)
+	{
+		const _tGeneralSwitch *pSwitch = reinterpret_cast<const _tGeneralSwitch*>(pdata);
+		if (pSwitch->unitcode == 1)
+		{
+			//Solar Charging mode
+			int iMode = (pSwitch->level / 10);
+			SetProperty("3280_1", iMode);
+			return true;
+		}
+	}
 	return false;
+}
+
+void AlfenEve::SetSetpoint(const int idx, const float value)
+{
+	int iValue = static_cast<int>(value);
+	switch (idx)
+	{
+	case 1:
+		//Solar Green share (%)
+		SetProperty("3280_2", iValue);
+		break;
+	case 2:
+		//Solar Comfort Level
+		SetProperty("3280_3", iValue);
+		break;
+	}
 }
 
 std::string AlfenEve::BuildURL(const std::string& path)
@@ -204,7 +237,7 @@ void AlfenEve::SetGETHeaders()
 void AlfenEve::SetPOSTHeaders()
 {
 	struct curl_slist* headers = NULL;
-	headers = curl_slist_append(headers, "Content-Type: application/json");
+	headers = curl_slist_append(headers, "Content-Type: application/json; charset=utf-8");
 	curl_easy_setopt(m_curl, CURLOPT_HTTPHEADER, headers);
 }
 
@@ -291,7 +324,7 @@ bool AlfenEve::GetProperties(Json::Value& result)
 		return false;
 
 	m_vHTTPResponse.clear();
-	std::string szURL = BuildURL("prop?ids=2060_0,2056_0,2221_3,2221_4,2221_5,2221_A,2221_B,2221_C,2221_16,2201_0,2501_2,2221_22,2129_0");
+	std::string szURL = BuildURL("prop?ids=2060_0,2056_0,2221_3,2221_4,2221_5,2221_A,2221_B,2221_C,2221_16,2201_0,2501_2,2221_22,2129_0,3280_1,3280_2,3280_3");
 
 	SetGETHeaders();
 
@@ -781,6 +814,9 @@ ALFEN_PROPERTY_ID_MAPPING = {
 	'3262_2': 'Pricing-StartPrice',
 	'3262_3': 'Pricing-EnergyPrice',
 	'3262_5': 'Pricing-ShowDisclaimer',
+	'3280_1': 'Solar Charging mode',
+	'3280_2': 'Solar green share %',
+	'3280_3': 'Solar comfort level',
 	'3600_1': 'ocpp_bootNotificationState',
 	'3600_2': 'ocpp_bootNotificationLastSendTime',
 	'3600_3': 'ocpp_bootNotificationAcceptTime',
@@ -1002,6 +1038,26 @@ void AlfenEve::parseProperties(const Json::Value& root)
 			int maxCurrent = itt["value"].asInt();
 			SendTextSensor(1, 3, 255, std::to_string(maxCurrent), "Max Charge Current (A)");
 		}
+		else if (id == "3280_1")
+		{
+			//Solar charging mode (0=Off, 1=Comfort, 2=Green)
+			int iActLevel = itt["value"].asInt() * 10;
+
+			const std::string Charging_Mode_Names = "Off|Comfort|Green";
+			const std::string Charging_Mode_Actions = "00|10|20";
+
+			SendSelectorSwitch(1, 1, std::to_string(iActLevel), "Solar charging mode", 0, false, Charging_Mode_Names, Charging_Mode_Actions, false, m_Name);
+		}
+		else if (id == "3280_2")
+		{
+			//Green share (%)
+			SendSetPointSensor(1, 1, 1, static_cast<float>(itt["value"].asInt()), "Solar Green Share %");
+		}
+		else if (id == "3280_3")
+		{
+			//Comfort Level
+			SendSetPointSensor(1, 1, 2, static_cast<float>(itt["value"].asInt()), "Solar Comfort Level Watt");
+		}
 	}
 	SendCurrentSensor(1, 255, CurrentL1, CurrentL2, CurrentL3, "Current L1/L2/L3");
 	/*
@@ -1069,7 +1125,7 @@ bool AlfenEve::SetProperty(const std::string& szName, const int Value)
 	std::lock_guard<std::mutex> l(m_mutex);
 
 	std::stringstream sstr;
-	sstr << "{'" << szName << "': {'id': '" << szName << "', 'value': " << Value << "}}";
+	sstr << "{\"" << szName << "\":{\"id\":\"" << szName << "\",\"value\":" << Value << "}}";
 
 	std::string send_data = sstr.str();
 
