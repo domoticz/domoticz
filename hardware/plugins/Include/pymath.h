@@ -37,7 +37,7 @@ extern double pow(double, double);
 #endif /* __STDC__ */
 #endif /* _MSC_VER */
 
-/* High precision defintion of pi and e (Euler)
+/* High precision definition of pi and e (Euler)
  * The values are taken from libc6's math.h.
  */
 #ifndef Py_MATH_PIl
@@ -54,6 +54,12 @@ extern double pow(double, double);
 #ifndef Py_MATH_E
 #define Py_MATH_E 2.7182818284590452354
 #endif
+
+/* Tau (2pi) to 40 digits, taken from tauday.com/tau-digits. */
+#ifndef Py_MATH_TAU
+#define Py_MATH_TAU 6.2831853071795864769252867665590057683943L
+#endif
+
 
 /* On x86, Py_FORCE_DOUBLE forces a floating-point number out of an x87 FPU
    register and into a 64-bit memory location, rounding from extended
@@ -119,7 +125,7 @@ PyAPI_FUNC(void) _Py_set_387controlword(unsigned short);
 
 /* Py_IS_FINITE(X)
  * Return 1 if float or double arg is neither infinite nor NAN, else 0.
- * Some compilers (e.g. VisualStudio) have intrisics for this, so a special
+ * Some compilers (e.g. VisualStudio) have intrinsics for this, so a special
  * macro for this particular test is useful
  * Note: PC/pyconfig.h defines Py_IS_FINITE as _finite
  */
@@ -169,7 +175,7 @@ PyAPI_FUNC(void) _Py_set_387controlword(unsigned short);
         #pragma float_control (pop)
         #define Py_NAN __icc_nan()
     #else /* ICC_NAN_RELAXED as default for Intel Compiler */
-        static union { unsigned char buf[8]; double __icc_nan; } __nan_store = {0,0,0,0,0,0,0xf8,0x7f};
+        static const union { unsigned char buf[8]; double __icc_nan; } __nan_store = {0,0,0,0,0,0,0xf8,0x7f};
         #define Py_NAN (__nan_store.__icc_nan)
     #endif /* ICC_NAN_STRICT */
 #endif /* __INTEL_COMPILER */
@@ -181,14 +187,14 @@ PyAPI_FUNC(void) _Py_set_387controlword(unsigned short);
  * result.
  * Caution:
  *    This isn't reliable.  C99 no longer requires libm to set errno under
- *	  any exceptional condition, but does require +- HUGE_VAL return
- *	  values on overflow.  A 754 box *probably* maps HUGE_VAL to a
- *	  double infinity, and we're cool if that's so, unless the input
- *	  was an infinity and an infinity is the expected result.  A C89
- *	  system sets errno to ERANGE, so we check for that too.  We're
- *	  out of luck if a C99 754 box doesn't map HUGE_VAL to +Inf, or
- *	  if the returned result is a NaN, or if a C89 box returns HUGE_VAL
- *	  in non-overflow cases.
+ *        any exceptional condition, but does require +- HUGE_VAL return
+ *        values on overflow.  A 754 box *probably* maps HUGE_VAL to a
+ *        double infinity, and we're cool if that's so, unless the input
+ *        was an infinity and an infinity is the expected result.  A C89
+ *        system sets errno to ERANGE, so we check for that too.  We're
+ *        out of luck if a C99 754 box doesn't map HUGE_VAL to +Inf, or
+ *        if the returned result is a NaN, or if a C89 box returns HUGE_VAL
+ *        in non-overflow cases.
  *    X is evaluated more than once.
  * Some platforms have better way to spell this, so expect some #ifdef'ery.
  *
@@ -205,8 +211,20 @@ PyAPI_FUNC(void) _Py_set_387controlword(unsigned short);
 #define Py_OVERFLOWED(X) isinf(X)
 #else
 #define Py_OVERFLOWED(X) ((X) != 0.0 && (errno == ERANGE ||    \
-					 (X) == Py_HUGE_VAL || \
-					 (X) == -Py_HUGE_VAL))
+                                         (X) == Py_HUGE_VAL || \
+                                         (X) == -Py_HUGE_VAL))
 #endif
+
+/* Return whether integral type *type* is signed or not. */
+#define _Py_IntegralTypeSigned(type) ((type)(-1) < 0)
+/* Return the maximum value of integral type *type*. */
+#define _Py_IntegralTypeMax(type) ((_Py_IntegralTypeSigned(type)) ? (((((type)1 << (sizeof(type)*CHAR_BIT - 2)) - 1) << 1) + 1) : ~(type)0)
+/* Return the minimum value of integral type *type*. */
+#define _Py_IntegralTypeMin(type) ((_Py_IntegralTypeSigned(type)) ? -_Py_IntegralTypeMax(type) - 1 : 0)
+/* Check whether *v* is in the range of integral type *type*. This is most
+ * useful if *v* is floating-point, since demoting a floating-point *v* to an
+ * integral type that cannot represent *v*'s integral part is undefined
+ * behavior. */
+#define _Py_InIntegralTypeRange(type, v) (_Py_IntegralTypeMin(type) <= v && v <= _Py_IntegralTypeMax(type))
 
 #endif /* Py_PYMATH_H */

@@ -951,15 +951,15 @@ bool eHouseTCP::WriteToHardware(const char *pdata, const unsigned char /*length*
 		id = getrealRMpgm(ID, level);
 	}
 
-	if ((output->ICMND.packettype == pTypeThermostat) && (output->ICMND.subtype == sTypeThermSetpoint))
+	if ((output->ICMND.packettype == pTypeSetpoint) && (output->ICMND.subtype == sTypeSetpoint))
 	{
-		const _tThermostat *therm = reinterpret_cast<const _tThermostat *>(pdata);
+		const _tSetpoint*therm = reinterpret_cast<const _tSetpoint*>(pdata);
 		AddrH = therm->id1;
 		AddrL = therm->id2;
 		cmd = therm->id3;
 		nr = therm->id4;
 
-		float temp = therm->temp;
+		float temp = therm->value;
 		int ttemp = (int)(temp * 10);
 
 		ev[0] = AddrH;

@@ -181,19 +181,19 @@ const char* RFX_Type_SubType_Values(const unsigned char dType, const unsigned ch
 		{ pTypeRemote, sTypePCremote, "Status" },
 		{ pTypeRemote, sTypeATIrw2, "Status" },
 
-		{ pTypeThermostat1, sTypeDigimax, "Temperature,Set point,Mode,Status" },
-		{ pTypeThermostat1, sTypeDigimaxShort, "Temperature,Set point,Mode,Status" },
+		{ pTypeSetpoint1, sTypeDigimax, "Temperature,Set point,Mode,Status" },
+		{ pTypeSetpoint1, sTypeDigimaxShort, "Temperature,Set point,Mode,Status" },
 
-		{ pTypeThermostat2, sTypeHE105, "Status" },
-		{ pTypeThermostat2, sTypeRTS10, "Status" },
+		{ pTypeSetpoint2, sTypeHE105, "Status" },
+		{ pTypeSetpoint2, sTypeRTS10, "Status" },
 
-		{ pTypeThermostat3, sTypeMertikG6RH4T1, "Status" },
-		{ pTypeThermostat3, sTypeMertikG6RH4TB, "Status" },
-		{ pTypeThermostat3, sTypeMertikG6RH4TD, "Status" },
+		{ pTypeSetpoint3, sTypeMertikG6RH4T1, "Status" },
+		{ pTypeSetpoint3, sTypeMertikG6RH4TB, "Status" },
+		{ pTypeSetpoint3, sTypeMertikG6RH4TD, "Status" },
 
-		{ pTypeThermostat4, sTypeMCZ1, "Status,Mode" },
-		{ pTypeThermostat4, sTypeMCZ2, "Status,Mode" },
-		{ pTypeThermostat4, sTypeMCZ3, "Status,Mode" },
+		{ pTypeSetpoint4, sTypeMCZ1, "Status,Mode" },
+		{ pTypeSetpoint4, sTypeMCZ2, "Status,Mode" },
+		{ pTypeSetpoint4, sTypeMCZ3, "Status,Mode" },
 
 		{ pTypeRadiator1, sTypeSmartwares, "Status" },
 		{ pTypeRadiator1, sTypeSmartwaresSwitchRadiator, "Status" },
@@ -257,8 +257,8 @@ const char* RFX_Type_SubType_Values(const unsigned char dType, const unsigned ch
 		{ pTypeGeneral, sTypeCustom, "Percentage" },
 		{ pTypeGeneral, sTypeManagedCounter, "Counter" },
 
-		{ pTypeThermostat, sTypeThermSetpoint, "Temperature" },
-		{ pTypeThermostat, sTypeThermTemperature, "Temperature" },
+		{ pTypeSetpoint, sTypeSetpoint, "Temperature" },
+		{ pTypeSetpoint, sTypeThermTemperature, "Temperature" },
 
 		{ pTypeChime, sTypeByronSX, "Status" },
 		{ pTypeChime, sTypeByronMP001, "Status" },

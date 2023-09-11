@@ -1639,9 +1639,9 @@ namespace http
 						|| (dType == pTypeBlinds)
 						|| (dType == pTypeRFY)
 						|| (dType == pTypeChime)
-						|| (dType == pTypeThermostat2)
-						|| (dType == pTypeThermostat3)
-						|| (dType == pTypeThermostat4)
+						|| (dType == pTypeSetpoint2)
+						|| (dType == pTypeSetpoint3)
+						|| (dType == pTypeSetpoint4)
 						|| (dType == pTypeRemote)
 						|| (dType == pTypeGeneralSwitch)
 						|| (dType == pTypeHomeConfort)
@@ -2106,7 +2106,7 @@ namespace http
 						}
 						root["result"][ii]["trend"] = (int)tstate;
 					}
-					else if (dType == pTypeThermostat1)
+					else if (dType == pTypeSetpoint1)
 					{
 						std::vector<std::string> strarray;
 						StringSplit(sValue, ";", strarray);
@@ -2975,9 +2975,9 @@ namespace http
 						else
 							root["result"][ii]["Quality"] = "Bad";
 					}
-					else if (dType == pTypeThermostat)
+					else if (dType == pTypeSetpoint)
 					{
-						if (dSubType == sTypeThermSetpoint)
+						if (dSubType == sTypeSetpoint)
 						{
 							bHasTimers = m_sql.HasTimers(sd[0]);
 

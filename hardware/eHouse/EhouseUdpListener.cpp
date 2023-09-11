@@ -1606,7 +1606,7 @@ void eHouseTCP::GetUDPNamesRS485(unsigned char *data, int nbytes)
 				UpdateSQLState(data[1], data[2], EH_RS485, pTypeTEMP, sTypeTEMP5, 0, VISUAL_LM335_IN, i + 1, 1, 0, "0", Name, (char *)&m_GetLine, true, 100, m_PlanID);
 			else
 				UpdateSQLState(data[1], data[2], EH_RS485, pTypeTEMP, sTypeTEMP5, 0, VISUAL_INVERTED_PERCENT_IN, i + 1, 1, 0, "0", Name, (char *)&m_GetLine, true, 100, m_PlanID);
-			//        UpdateSQLState(data[1], data[2], EH_RS485, pTypeThermostat, sTypeThermSetpoint, 0, VISUAL_LM335_PRESET, i, 1, 0, "20.5", Name, (char *) &GetLine, true, 100);
+			//        UpdateSQLState(data[1], data[2], EH_RS485, pTypeSetpoint, sTypeSetpoint, 0, VISUAL_LM335_PRESET, i, 1, 0, "20.5", Name, (char *) &GetLine, true, 100);
 		}
 		else
 			UpdateSQLState(data[1], data[2], EH_RS485, pTypeTEMP, sTypeTEMP5, 0, VISUAL_LM335_IN, i + 1, 0, 0, "0", Name, (char *)&m_GetLine, true, 100, m_PlanID);
@@ -1756,7 +1756,7 @@ void eHouseTCP::GetUDPNamesLAN(unsigned char *data, int nbytes)
 		GetStr(data);
 		strncpy((char *)&m_eHEn[nr]->ADCs[i], (char *)&m_GetLine, sizeof(m_eHEn[nr]->ADCs[i]));
 		UpdateSQLState(data[1], data[2], EH_LAN, pTypeTEMP, sTypeTEMP5, 0, VISUAL_MCP9700_IN, i, 1, 0, "0", Name, (char *)&m_GetLine, true, 100, m_PlanID);
-		UpdateSQLState(data[1], data[2], EH_LAN, pTypeThermostat, sTypeThermSetpoint, 0, VISUAL_MCP9700_PRESET, i, 1, 0, "20.5", Name, (char *)&m_GetLine, true, 100, m_PlanID);
+		UpdateSQLState(data[1], data[2], EH_LAN, pTypeSetpoint, sTypeSetpoint, 0, VISUAL_MCP9700_PRESET, i, 1, 0, "20.5", Name, (char *)&m_GetLine, true, 100, m_PlanID);
 	}
 
 	GetStr(data);								     // #ADC CFG;
@@ -1906,7 +1906,7 @@ void eHouseTCP::GetUDPNamesCM(unsigned char *data, int nbytes)
 		GetStr(data);
 		strncpy((char *)&m_ECMn->ADCs[i], (char *)&m_GetLine, sizeof(m_ECMn->ADCs[i]));
 		UpdateSQLState(data[1], data[2], EH_LAN, pTypeTEMP, sTypeTEMP5, 0, VISUAL_MCP9700_IN, i, 1, 0, "0", Name, (char *)&m_GetLine, true, 100, m_PlanID);
-		UpdateSQLState(data[1], data[2], EH_LAN, pTypeThermostat, sTypeThermSetpoint, 0, VISUAL_MCP9700_PRESET, i, 1, 0, "20.5", Name, (char *)&m_GetLine, true, 100, m_PlanID);
+		UpdateSQLState(data[1], data[2], EH_LAN, pTypeSetpoint, sTypeSetpoint, 0, VISUAL_MCP9700_PRESET, i, 1, 0, "20.5", Name, (char *)&m_GetLine, true, 100, m_PlanID);
 	}
 
 	GetStr(data);							     // #ADC CFG;
@@ -2057,7 +2057,7 @@ void eHouseTCP::GetUDPNamesPRO(unsigned char *data, int nbytes)
 		{
 			// eAURAaloc(i, 0x81, i + 1);
 			UpdateSQLState(0x81, i + 1, EH_AURA, pTypeTEMP, sTypeTEMP5, 0, VISUAL_AURA_IN, 1, 1, 0, "0", Name, (char *)&m_GetLine, true, 100, m_PlanID);
-			UpdateSQLState(0x81, i + 1, EH_AURA, pTypeThermostat, sTypeThermSetpoint, 0, VISUAL_AURA_PRESET, 1, 1, 0, "20.5", Name, (char *)&m_GetLine, true, 100, m_PlanID);
+			UpdateSQLState(0x81, i + 1, EH_AURA, pTypeSetpoint, sTypeSetpoint, 0, VISUAL_AURA_PRESET, 1, 1, 0, "20.5", Name, (char *)&m_GetLine, true, 100, m_PlanID);
 			if (strlen((char *)&m_AuraN[i]) > 0)
 			{
 				m_AuraDevPrv[i]->Addr = 0;
@@ -2275,7 +2275,7 @@ void eHouseTCP::GetUDPNamesWiFi(unsigned char *data, int nbytes)
 		GetStr(data);
 		strncpy((char *)&m_eHWIFIn[nr]->ADCs[i], (char *)&m_GetLine, sizeof(m_eHWIFIn[nr]->ADCs[i]));
 		UpdateSQLState(data[1], data[2], EH_WIFI, pTypeTEMP, sTypeTEMP5, 0, VISUAL_MCP9700_IN, i + 1, 1, 0, "0", Name, (char *)&m_GetLine, true, 100, m_PlanID);
-		UpdateSQLState(data[1], data[2], EH_WIFI, pTypeThermostat, sTypeThermSetpoint, 0, VISUAL_MCP9700_PRESET, i + 1, 1, 0, "20.5", Name, (char *)&m_GetLine, true, 100, m_PlanID);
+		UpdateSQLState(data[1], data[2], EH_WIFI, pTypeSetpoint, sTypeSetpoint, 0, VISUAL_MCP9700_PRESET, i + 1, 1, 0, "20.5", Name, (char *)&m_GetLine, true, 100, m_PlanID);
 	}
 
 	GetStr(data);									   // #ADC CFG;

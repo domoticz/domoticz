@@ -660,7 +660,7 @@ void CEventSystem::GetCurrentMeasurementStates()
 				isTemp = true;
 			}
 			break;
-		case pTypeThermostat:
+		case pTypeSetpoint:
 			if (sitem.subType == sTypeThermTemperature)
 			{
 				if (!splitresults.empty())
@@ -678,7 +678,7 @@ void CEventSystem::GetCurrentMeasurementStates()
 				}
 			}
 			break;
-		case pTypeThermostat1:
+		case pTypeSetpoint1:
 			if (!splitresults.empty())
 			{
 				temp = static_cast<float>(atof(splitresults[0].c_str()));

@@ -1893,24 +1893,24 @@ uint64_t MainWorker::PerformRealActionFromDomoticzClient(const uint8_t* pRXComma
 		ID = szTmp;
 		Unit = pResponse->CHIME.sound;
 		break;
-	case pTypeThermostat:
+	case pTypeSetpoint:
 	{
-		const _tThermostat* pMeter = reinterpret_cast<const _tThermostat*>(pResponse);
+		const _tSetpoint* pMeter = reinterpret_cast<const _tSetpoint*>(pResponse);
 		sprintf(szTmp, "%X%02X%02X%02X", pMeter->id1, pMeter->id2, pMeter->id3, pMeter->id4);
 		ID = szTmp;
 		Unit = pMeter->dunit;
 	}
 	break;
-	case pTypeThermostat2:
+	case pTypeSetpoint2:
 		ID = "1";
 		Unit = pResponse->THERMOSTAT2.unitcode;
 		break;
-	case pTypeThermostat3:
+	case pTypeSetpoint3:
 		sprintf(szTmp, "%02X%02X%02X", pResponse->THERMOSTAT3.unitcode1, pResponse->THERMOSTAT3.unitcode2, pResponse->THERMOSTAT3.unitcode3);
 		ID = szTmp;
 		Unit = 0;
 		break;
-	case pTypeThermostat4:
+	case pTypeSetpoint4:
 		sprintf(szTmp, "%02X%02X%02X", pResponse->THERMOSTAT4.unitcode1, pResponse->THERMOSTAT4.unitcode2, pResponse->THERMOSTAT4.unitcode3);
 		ID = szTmp;
 		Unit = 0;
@@ -2209,10 +2209,10 @@ void MainWorker::ProcessRXMessage(const CDomoticzHardwareBase* pHardware, const 
 			case pTypeSecurity1:
 			case pTypeSecurity2:
 			case pTypeChime:
-			case pTypeThermostat:
-			case pTypeThermostat2:
-			case pTypeThermostat3:
-			case pTypeThermostat4:
+			case pTypeSetpoint:
+			case pTypeSetpoint2:
+			case pTypeSetpoint3:
+			case pTypeSetpoint4:
 			case pTypeRadiator1:
 			case pTypeGeneralSwitch:
 			case pTypeHomeConfort:
@@ -2309,19 +2309,19 @@ void MainWorker::ProcessRXMessage(const CDomoticzHardwareBase* pHardware, const 
 		case pTypeRemote:
 			decode_Remote(pHardware, reinterpret_cast<const tRBUF*>(pRXCommand), procResult);
 			break;
-		case pTypeThermostat: //own type
+		case pTypeSetpoint: //own type
 			decode_Thermostat(pHardware, reinterpret_cast<const tRBUF*>(pRXCommand), procResult);
 			break;
-		case pTypeThermostat1:
+		case pTypeSetpoint1:
 			decode_Thermostat1(pHardware, reinterpret_cast<const tRBUF*>(pRXCommand), procResult);
 			break;
-		case pTypeThermostat2:
+		case pTypeSetpoint2:
 			decode_Thermostat2(pHardware, reinterpret_cast<const tRBUF*>(pRXCommand), procResult);
 			break;
-		case pTypeThermostat3:
+		case pTypeSetpoint3:
 			decode_Thermostat3(pHardware, reinterpret_cast<const tRBUF*>(pRXCommand), procResult);
 			break;
-		case pTypeThermostat4:
+		case pTypeSetpoint4:
 			decode_Thermostat4(pHardware, reinterpret_cast<const tRBUF*>(pRXCommand), procResult);
 			break;
 		case pTypeRadiator1:
@@ -8443,7 +8443,7 @@ void MainWorker::decode_Remote(const CDomoticzHardwareBase* pHardware, const tRB
 void MainWorker::decode_Thermostat1(const CDomoticzHardwareBase* pHardware, const tRBUF* pResponse, _tRxMessageProcessingResult& procResult)
 {
 	char szTmp[100];
-	uint8_t devType = pTypeThermostat1;
+	uint8_t devType = pTypeSetpoint1;
 	uint8_t subType = pResponse->THERMOSTAT1.subtype;
 	std::string ID;
 	sprintf(szTmp, "%d", (pResponse->THERMOSTAT1.id1 * 256) + pResponse->THERMOSTAT1.id2);
@@ -8524,7 +8524,7 @@ void MainWorker::decode_Thermostat1(const CDomoticzHardwareBase* pHardware, cons
 void MainWorker::decode_Thermostat2(const CDomoticzHardwareBase* pHardware, const tRBUF* pResponse, _tRxMessageProcessingResult& procResult)
 {
 	char szTmp[100];
-	uint8_t devType = pTypeThermostat2;
+	uint8_t devType = pTypeSetpoint2;
 	uint8_t subType = pResponse->THERMOSTAT2.subtype;
 	std::string ID;
 	ID = "1";
@@ -8584,7 +8584,7 @@ void MainWorker::decode_Thermostat2(const CDomoticzHardwareBase* pHardware, cons
 void MainWorker::decode_Thermostat3(const CDomoticzHardwareBase* pHardware, const tRBUF* pResponse, _tRxMessageProcessingResult& procResult)
 {
 	char szTmp[100];
-	uint8_t devType = pTypeThermostat3;
+	uint8_t devType = pTypeSetpoint3;
 	uint8_t subType = pResponse->THERMOSTAT3.subtype;
 	std::string ID;
 	sprintf(szTmp, "%02X%02X%02X", pResponse->THERMOSTAT3.unitcode1, pResponse->THERMOSTAT3.unitcode2, pResponse->THERMOSTAT3.unitcode3);
@@ -8674,7 +8674,7 @@ void MainWorker::decode_Thermostat3(const CDomoticzHardwareBase* pHardware, cons
 void MainWorker::decode_Thermostat4(const CDomoticzHardwareBase* pHardware, const tRBUF* pResponse, _tRxMessageProcessingResult& procResult)
 {
 	char szTmp[100];
-	uint8_t devType = pTypeThermostat4;
+	uint8_t devType = pTypeSetpoint4;
 	uint8_t subType = pResponse->THERMOSTAT4.subtype;
 	std::string ID;
 	sprintf(szTmp, "%02X%02X%02X", pResponse->THERMOSTAT4.unitcode1, pResponse->THERMOSTAT4.unitcode2, pResponse->THERMOSTAT4.unitcode3);
@@ -10094,7 +10094,7 @@ void MainWorker::decode_Lux(const CDomoticzHardwareBase* pHardware, const tRBUF*
 void MainWorker::decode_Thermostat(const CDomoticzHardwareBase* pHardware, const tRBUF* pResponse, _tRxMessageProcessingResult& procResult)
 {
 	char szTmp[200];
-	const _tThermostat* pMeter = reinterpret_cast<const _tThermostat*>(pResponse);
+	const _tSetpoint* pMeter = reinterpret_cast<const _tSetpoint*>(pResponse);
 	uint8_t devType = pMeter->type;
 	uint8_t subType = pMeter->subtype;
 	sprintf(szTmp, "%X%02X%02X%02X", pMeter->id1, pMeter->id2, pMeter->id3, pMeter->id4);
@@ -10106,8 +10106,8 @@ void MainWorker::decode_Thermostat(const CDomoticzHardwareBase* pHardware, const
 
 	switch (pMeter->subtype)
 	{
-	case sTypeThermSetpoint:
-		sprintf(szTmp, "%.2f", pMeter->temp);
+	case sTypeSetpoint:
+		sprintf(szTmp, "%.2f", pMeter->value);
 		break;
 	default:
 		sprintf(szTmp, "ERROR: Unknown Sub type for Packet type= %02X:%02X", pMeter->type, pMeter->subtype);
@@ -10119,15 +10119,15 @@ void MainWorker::decode_Thermostat(const CDomoticzHardwareBase* pHardware, const
 	if (DevRowIdx == (uint64_t)-1)
 		return;
 
-	m_notifications.CheckAndHandleNotification(DevRowIdx, pHardware->m_HwdID, ID, procResult.DeviceName, Unit, devType, subType, pMeter->temp);
+	m_notifications.CheckAndHandleNotification(DevRowIdx, pHardware->m_HwdID, ID, procResult.DeviceName, Unit, devType, subType, pMeter->value);
 
 	if (_log.IsDebugLevelEnabled(DEBUG_RECEIVED))
 	{
 		WriteMessageStart();
-		double tvalue = ConvertTemperature(pMeter->temp, m_sql.m_tempsign[0]);
+		double tvalue = ConvertTemperature(pMeter->value, m_sql.m_tempsign[0]);
 		switch (pMeter->subtype)
 		{
-		case sTypeThermSetpoint:
+		case sTypeSetpoint:
 			WriteMessage("subtype       = SetPoint");
 			sprintf(szTmp, "Temp = %.2f", tvalue);
 			WriteMessage(szTmp);
@@ -12477,7 +12477,7 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string>& sd, std::string 
 		return true;
 	}
 	break;
-	case pTypeThermostat2:
+	case pTypeSetpoint2:
 	{
 		tRBUF lcmd;
 		lcmd.THERMOSTAT2.packetlength = sizeof(lcmd.REMOTE) - 1;
@@ -12501,7 +12501,7 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string>& sd, std::string 
 		return true;
 	}
 	break;
-	case pTypeThermostat3:
+	case pTypeSetpoint3:
 	{
 		tRBUF lcmd;
 		lcmd.THERMOSTAT3.packetlength = sizeof(lcmd.THERMOSTAT3) - 1;
@@ -12525,7 +12525,7 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string>& sd, std::string 
 		return true;
 	}
 	break;
-	case pTypeThermostat4:
+	case pTypeSetpoint4:
 	{
 		_log.Log(LOG_ERROR, "Thermostat 4 not implemented yet!");
 		/*
@@ -12949,14 +12949,14 @@ bool MainWorker::SetSetPointInt(const std::vector<std::string>& sd, const float 
 	uint8_t dSubType = atoi(sd[4].c_str());
 	//_eSwitchType switchtype = (_eSwitchType)atoi(sd[5].c_str());
 
-	_tThermostat tmeter;
-	tmeter.subtype = sTypeThermSetpoint;
+	_tSetpoint tmeter;
+	tmeter.subtype = sTypeSetpoint;
 	tmeter.id1 = ID1;
 	tmeter.id2 = ID2;
 	tmeter.id3 = ID3;
 	tmeter.id4 = ID4;
 	tmeter.dunit = Unit;
-	tmeter.temp = (m_sql.m_tempsign[0] != 'F') ? TempValue : static_cast<float>(ConvertToCelsius(TempValue));
+	tmeter.value = (m_sql.m_tempsign[0] != 'F') ? TempValue : static_cast<float>(ConvertToCelsius(TempValue));
 
 	if (pHardware->HwdType == HTYPE_PythonPlugin)
 	{
@@ -13105,7 +13105,7 @@ bool MainWorker::SetSetPointInt(const std::vector<std::string>& sd, const float 
 		}
 		else
 		{
-			if (!WriteToHardware(HardwareID, (const char*)&tmeter, sizeof(_tThermostat)))
+			if (!WriteToHardware(HardwareID, (const char*)&tmeter, sizeof(_tSetpoint)))
 				return false;
 		}
 	}
@@ -13787,7 +13787,7 @@ bool MainWorker::UpdateDevice(const int HardwareID, const std::string& DeviceID,
 		std::stringstream sidx;
 		sidx << devidx;
 
-		if (((devType == pTypeThermostat) && (subType == sTypeThermSetpoint)) || ((devType == pTypeRadiator1) && (subType == sTypeSmartwares)))
+		if (((devType == pTypeSetpoint) && (subType == sTypeSetpoint)) || ((devType == pTypeRadiator1) && (subType == sTypeSmartwares)))
 		{
 			_log.Log(LOG_NORM, "Sending SetPoint to device....");
 			SetSetPoint(sidx.str(), static_cast<float>(atof(sValue.c_str())));

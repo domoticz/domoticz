@@ -535,8 +535,8 @@ namespace Plugins {
 		}
 		else if (sTypeName == "Set Point" || sTypeName == "Setpoint" || sTypeName == "Thermostat")
 		{
-			Type = pTypeThermostat;
-			SubType = sTypeThermSetpoint;
+			Type = pTypeSetpoint;
+			SubType = sTypeSetpoint;
 		}
 	}
 

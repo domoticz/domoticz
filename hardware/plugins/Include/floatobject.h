@@ -21,7 +21,7 @@ typedef struct {
 PyAPI_DATA(PyTypeObject) PyFloat_Type;
 
 #define PyFloat_Check(op) PyObject_TypeCheck(op, &PyFloat_Type)
-#define PyFloat_CheckExact(op) (Py_TYPE(op) == &PyFloat_Type)
+#define PyFloat_CheckExact(op) Py_IS_TYPE(op, &PyFloat_Type)
 
 #ifdef Py_NAN
 #define Py_RETURN_NAN return PyFloat_FromDouble(Py_NAN)
@@ -74,9 +74,9 @@ PyAPI_FUNC(double) PyFloat_AsDouble(PyObject *);
  * happens in such cases is partly accidental (alas).
  */
 
-/* The pack routines write 4 or 8 bytes, starting at p.  le is a bool
+/* The pack routines write 2, 4 or 8 bytes, starting at p.  le is a bool
  * argument, true if you want the string in little-endian format (exponent
- * last, at p+3 or p+7), false if you want big-endian format (exponent
+ * last, at p+1, p+3 or p+7), false if you want big-endian format (exponent
  * first, at p).
  * Return value:  0 if all is OK, -1 if error (and an exception is
  * set, most likely OverflowError).
@@ -84,31 +84,21 @@ PyAPI_FUNC(double) PyFloat_AsDouble(PyObject *);
  * 1):  What this does is undefined if x is a NaN or infinity.
  * 2):  -0.0 and +0.0 produce the same string.
  */
+PyAPI_FUNC(int) _PyFloat_Pack2(double x, unsigned char *p, int le);
 PyAPI_FUNC(int) _PyFloat_Pack4(double x, unsigned char *p, int le);
 PyAPI_FUNC(int) _PyFloat_Pack8(double x, unsigned char *p, int le);
 
-/* Needed for the old way for marshal to store a floating point number.
-   Returns the string length copied into p, -1 on error.
- */
-PyAPI_FUNC(int) _PyFloat_Repr(double x, char *p, size_t len);
-
-/* Used to get the important decimal digits of a double */
-PyAPI_FUNC(int) _PyFloat_Digits(char *buf, double v, int *signum);
-PyAPI_FUNC(void) _PyFloat_DigitsInit(void);
-
-/* The unpack routines read 4 or 8 bytes, starting at p.  le is a bool
+/* The unpack routines read 2, 4 or 8 bytes, starting at p.  le is a bool
  * argument, true if the string is in little-endian format (exponent
- * last, at p+3 or p+7), false if big-endian (exponent first, at p).
+ * last, at p+1, p+3 or p+7), false if big-endian (exponent first, at p).
  * Return value:  The unpacked double.  On error, this is -1.0 and
  * PyErr_Occurred() is true (and an exception is set, most likely
  * OverflowError).  Note that on a non-IEEE platform this will refuse
  * to unpack a string that represents a NaN or infinity.
  */
+PyAPI_FUNC(double) _PyFloat_Unpack2(const unsigned char *p, int le);
 PyAPI_FUNC(double) _PyFloat_Unpack4(const unsigned char *p, int le);
 PyAPI_FUNC(double) _PyFloat_Unpack8(const unsigned char *p, int le);
-
-/* free list api */
-PyAPI_FUNC(int) PyFloat_ClearFreeList(void);
 
 PyAPI_FUNC(void) _PyFloat_DebugMallocStats(FILE* out);
 

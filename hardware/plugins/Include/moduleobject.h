@@ -10,22 +10,27 @@ extern "C" {
 PyAPI_DATA(PyTypeObject) PyModule_Type;
 
 #define PyModule_Check(op) PyObject_TypeCheck(op, &PyModule_Type)
-#define PyModule_CheckExact(op) (Py_TYPE(op) == &PyModule_Type)
+#define PyModule_CheckExact(op) Py_IS_TYPE(op, &PyModule_Type)
 
+#if !defined(Py_LIMITED_API) || Py_LIMITED_API+0 >= 0x03030000
 PyAPI_FUNC(PyObject *) PyModule_NewObject(
     PyObject *name
     );
+#endif
 PyAPI_FUNC(PyObject *) PyModule_New(
     const char *name            /* UTF-8 encoded string */
     );
 PyAPI_FUNC(PyObject *) PyModule_GetDict(PyObject *);
+#if !defined(Py_LIMITED_API) || Py_LIMITED_API+0 >= 0x03030000
 PyAPI_FUNC(PyObject *) PyModule_GetNameObject(PyObject *);
+#endif
 PyAPI_FUNC(const char *) PyModule_GetName(PyObject *);
-PyAPI_FUNC(const char *) PyModule_GetFilename(PyObject *);
+Py_DEPRECATED(3.2) PyAPI_FUNC(const char *) PyModule_GetFilename(PyObject *);
 PyAPI_FUNC(PyObject *) PyModule_GetFilenameObject(PyObject *);
 #ifndef Py_LIMITED_API
 PyAPI_FUNC(void) _PyModule_Clear(PyObject *);
 PyAPI_FUNC(void) _PyModule_ClearDict(PyObject *);
+PyAPI_FUNC(int) _PyModuleSpec_IsInitializing(PyObject *);
 #endif
 PyAPI_FUNC(struct PyModuleDef*) PyModule_GetDef(PyObject*);
 PyAPI_FUNC(void*) PyModule_GetState(PyObject*);
@@ -77,7 +82,13 @@ typedef struct PyModuleDef{
   traverseproc m_traverse;
   inquiry m_clear;
   freefunc m_free;
-}PyModuleDef;
+} PyModuleDef;
+
+
+// Internal C API
+#ifdef Py_BUILD_CORE
+extern int _PyModule_IsExtension(PyObject *obj);
+#endif
 
 #ifdef __cplusplus
 }

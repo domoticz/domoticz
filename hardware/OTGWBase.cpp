@@ -143,15 +143,14 @@ void OTGWBase::UpdateSwitch(const unsigned char Idx, const bool bOn, const std::
 
 void OTGWBase::UpdateSetPointSensor(const unsigned char Idx, const float Temp, const std::string &defaultname)
 {
-	_tThermostat thermos;
-	thermos.subtype=sTypeThermSetpoint;
+	_tSetpoint thermos;
+	thermos.subtype=sTypeSetpoint;
 	thermos.id1=0;
 	thermos.id2=0;
 	thermos.id3=0;
 	thermos.id4=Idx;
 	thermos.dunit=0;
-	thermos.temp=Temp;
-
+	thermos.value=Temp;
 	sDecodeRXMessage(this, (const unsigned char *)&thermos, defaultname.c_str(), 255, nullptr);
 }
 
@@ -245,10 +244,10 @@ bool OTGWBase::WriteToHardware(const char *pdata, const unsigned char /*length*/
 		}
 		SwitchLight(nodeID, LCmd, svalue);
 	}
-	else if ((packettype == pTypeThermostat) && (subtype == sTypeThermSetpoint))
+	else if ((packettype == pTypeSetpoint) && (subtype == sTypeSetpoint))
 	{
-		const _tThermostat *pMeter = reinterpret_cast<const _tThermostat *>(pdata);
-		float temp = pMeter->temp;
+		const _tSetpoint* pMeter = reinterpret_cast<const _tSetpoint*>(pdata);
+		float temp = pMeter->value;
 		unsigned char idx = pMeter->id4;
 		SetSetpoint(idx, temp);
 	}

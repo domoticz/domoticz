@@ -4558,7 +4558,7 @@ uint64_t CSQLHelper::CreateDevice(const int HardwareID, const int SensorType, co
 		//Current/Ampere
 		DeviceRowIdx = UpdateValue(HardwareID, ID, 1, SensorType, SensorSubType, 12, 255, 0, "0.0;0.0;0.0", devname, true, userName.c_str());
 		break;
-	case pTypeThermostat: //Thermostat Setpoint
+	case pTypeSetpoint: //Thermostat Setpoint
 	{
 		unsigned char ID1 = (unsigned char)((nid & 0xFF000000) >> 24);
 		unsigned char ID2 = (unsigned char)((nid & 0x00FF0000) >> 16);
@@ -4872,13 +4872,13 @@ uint64_t CSQLHelper::UpdateValue(const int HardwareID, const char* ID, const uns
 					case pTypeRFY:
 						newnValue = rfy_sUp;
 						break;
-					case pTypeThermostat2:
+					case pTypeSetpoint2:
 						newnValue = thermostat2_sOff;
 						break;
-					case pTypeThermostat3:
+					case pTypeSetpoint3:
 						newnValue = thermostat3_sOff;
 						break;
-					case pTypeThermostat4:
+					case pTypeSetpoint4:
 						newnValue = thermostat4_sOff;
 						break;
 					case pTypeRadiator1:
@@ -4964,13 +4964,13 @@ uint64_t CSQLHelper::UpdateValue(const int HardwareID, const char* ID, const uns
 			case pTypeRFY:
 				newnValue = rfy_sUp;
 				break;
-			case pTypeThermostat2:
+			case pTypeSetpoint2:
 				newnValue = thermostat2_sOff;
 				break;
-			case pTypeThermostat3:
+			case pTypeSetpoint3:
 				newnValue = thermostat3_sOff;
 				break;
-			case pTypeThermostat4:
+			case pTypeSetpoint4:
 				newnValue = thermostat4_sOff;
 				break;
 			case pTypeRadiator1:
@@ -5351,9 +5351,9 @@ uint64_t CSQLHelper::UpdateValueInt(
 	case pTypeFan:
 	case pTypeRFY:
 	case pTypeChime:
-	case pTypeThermostat2:
-	case pTypeThermostat3:
-	case pTypeThermostat4:
+	case pTypeSetpoint2:
+	case pTypeSetpoint3:
+	case pTypeSetpoint4:
 	case pTypeRemote:
 	case pTypeGeneralSwitch:
 	case pTypeHomeConfort:
@@ -5997,14 +5997,14 @@ void CSQLHelper::UpdateTemperatureLog()
 		pTypeTEMP_BARO,
 		pTypeUV,
 		pTypeWIND,
-		pTypeThermostat1,
+		pTypeSetpoint1,
 		pTypeRFXSensor,
 		pTypeRego6XXTemp,
 		pTypeEvohomeZone,
 		pTypeEvohomeWater,
 		pTypeRadiator1,
 		pTypeGeneral, sTypeSystemTemp,
-		pTypeThermostat, sTypeThermSetpoint,
+		pTypeSetpoint, sTypeSetpoint,
 		pTypeGeneral, sTypeBaro
 	);
 	if (!result.empty())
@@ -6050,10 +6050,10 @@ void CSQLHelper::UpdateTemperatureLog()
 			{
 			case pTypeRego6XXTemp:
 			case pTypeTEMP:
-			case pTypeThermostat:
+			case pTypeSetpoint:
 				temp = static_cast<float>(atof(splitresults[0].c_str()));
 				break;
-			case pTypeThermostat1:
+			case pTypeSetpoint1:
 				temp = static_cast<float>(atof(splitresults[0].c_str()));
 				break;
 			case pTypeRadiator1:
@@ -8727,9 +8727,9 @@ void CSQLHelper::CheckDeviceTimeout()
 		pTypeBlinds,
 		pTypeRFY,
 		pTypeChime,
-		pTypeThermostat2,
-		pTypeThermostat3,
-		pTypeThermostat4,
+		pTypeSetpoint2,
+		pTypeSetpoint3,
+		pTypeSetpoint4,
 		pTypeRemote,
 		pTypeGeneralSwitch,
 		pTypeHomeConfort,

@@ -2972,8 +2972,8 @@ void MQTTAutoDiscover::handle_auto_discovery_climate(_tMQTTASensor* pSensor, con
 
 			pSensor->nValue = 0;
 			pSensor->sValue = std_format("%.2f", temp_setpoint);
-			pSensor->devType = pTypeThermostat;
-			pSensor->subType = sTypeThermSetpoint;
+			pSensor->devType = pTypeSetpoint;
+			pSensor->subType = sTypeSetpoint;
 			std::vector<std::vector<std::string>> result;
 			result = m_sql.safe_query("SELECT Name,nValue,sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit == %d) AND (Type==%d) AND (Subtype==%d)", m_HwdID,
 				pSensor->unique_id.c_str(), 1, pSensor->devType, pSensor->subType);
@@ -3041,7 +3041,7 @@ void MQTTAutoDiscover::handle_auto_discovery_climate(_tMQTTASensor* pSensor, con
 			temp_current += AddjValue;
 			pSensor->sValue = std_format("%.1f", temp_current);
 
-			pSensor->subType = sTypeThermSetpoint;
+			pSensor->subType = sTypeSetpoint;
 			std::vector<std::vector<std::string>> result;
 			result = m_sql.safe_query("SELECT Name,nValue,sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit == %d) AND (Type==%d) AND (Subtype==%d)", m_HwdID,
 				pSensor->unique_id.c_str(), 1, pSensor->devType, pSensor->subType);
@@ -4322,11 +4322,11 @@ bool MQTTAutoDiscover::SetSetpoint(const std::string& DeviceID, float Temp)
 	pSensor->sValue = std_format("%.2f", Temp);
 	std::vector<std::vector<std::string>> result;
 	result = m_sql.safe_query("SELECT Name,nValue,sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit == %d) AND (Type==%d) AND (Subtype==%d)", m_HwdID,
-		pSensor->unique_id.c_str(), 1, pTypeThermostat, sTypeThermSetpoint);
+		pSensor->unique_id.c_str(), 1, pTypeSetpoint, sTypeSetpoint);
 	if (result.empty())
 		return false; //?? That's impossible
 	// Update
-	UpdateValueInt(m_HwdID, pSensor->unique_id.c_str(), 1, pTypeThermostat, sTypeThermSetpoint, pSensor->SignalLevel, pSensor->BatteryLevel,
+	UpdateValueInt(m_HwdID, pSensor->unique_id.c_str(), 1, pTypeSetpoint, sTypeSetpoint, pSensor->SignalLevel, pSensor->BatteryLevel,
 		pSensor->nValue, pSensor->sValue.c_str(),
 		result[0][0]);
 

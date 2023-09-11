@@ -1023,9 +1023,9 @@ bool IsLightOrSwitch(const int dType, const int dSubType)
 	case pTypeBlinds:
 	case pTypeChime:
 	case pTypeRFY:
-	case pTypeThermostat2:
-	case pTypeThermostat3:
-	case pTypeThermostat4:
+	case pTypeSetpoint2:
+	case pTypeSetpoint3:
+	case pTypeSetpoint4:
 	case pTypeRemote:
 	case pTypeGeneralSwitch:
 	case pTypeHomeConfort:
@@ -1054,7 +1054,7 @@ bool IsTemp(const int dType, const int dSubType)
 		|| ((dType == pTypeWIND) && (dSubType == sTypeWIND4))
 		|| ((dType == pTypeUV) && (dSubType == sTypeUV3))
 		|| ((dType == pTypeGeneral) && (dSubType == sTypeSystemTemp))
-		|| (dType == pTypeThermostat1)
+		|| (dType == pTypeSetpoint1)
 		|| ((dType == pTypeRFXSensor) && (dSubType == sTypeRFXSensorTemp))
 		|| (dType == pTypeRego6XXTemp)
 		);
@@ -1089,7 +1089,7 @@ bool IsUtility(const int dType, const int dSubType)
 		|| ((dType == pTypeRFXSensor) && (dSubType == sTypeRFXSensorVolt))
 		|| ((dType == pTypeGeneral) && (dSubType == sTypeWaterflow))
 		|| ((dType == pTypeGeneral) && (dSubType == sTypeCustom))
-		|| ((dType == pTypeThermostat) && (dSubType == sTypeThermSetpoint))
+		|| ((dType == pTypeSetpoint) && (dSubType == sTypeSetpoint))
 		|| ((dType == pTypeRFXSensor) && (dSubType == sTypeRFXSensorAD))
 		|| ((dType == pTypeGeneral) && (dSubType == sTypeAlert))
 		|| ((dType == pTypeGeneral) && (dSubType == sTypePressure))

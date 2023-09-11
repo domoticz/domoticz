@@ -302,9 +302,9 @@ bool CNotificationHelper::CheckAndHandleNotification(const uint64_t DevRowIdx, c
 					break;
 			}
 			break;
-		case pTypeThermostat:
+		case pTypeSetpoint:
 			switch(cSubType) {
-				case sTypeThermSetpoint:
+				case sTypeSetpoint:
 					return CheckAndHandleTempHumidityNotification(DevRowIdx, sName, fValue, 0, true, false);
 				default:
 					break;

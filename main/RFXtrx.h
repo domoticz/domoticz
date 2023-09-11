@@ -1201,7 +1201,7 @@ SDK version 4.9
 #define DDxxxx_HoldStopDown 0xB //not yet used
 
 //types for Thermostat
-#define pTypeThermostat1 0x40
+#define pTypeSetpoint1 0x40
 #define sTypeDigimax 0x0		//Digimax
 #define sTypeDigimaxShort 0x1	//Digimax with short format
 #define thermostat1_sNoStatus 0x0
@@ -1209,14 +1209,14 @@ SDK version 4.9
 #define thermostat1_sNoDemand 0x2
 #define thermostat1_sInitializing 0x3
 
-#define pTypeThermostat2 0x41
+#define pTypeSetpoint2 0x41
 #define sTypeHE105 0x0
 #define sTypeRTS10 0x1
 #define thermostat2_sOff 0x0
 #define thermostat2_sOn 0x1
 #define thermostat2_sProgram 0x2
 
-#define pTypeThermostat3 0x42
+#define pTypeSetpoint3 0x42
 #define sTypeMertikG6RH4T1 0x0	//Mertik G6R-H4T1
 #define sTypeMertikG6RH4TB 0x1	//Mertik G6R-H4TB
 #define sTypeMertikG6RH4TD 0x2	//Mertik G6R-H4TD
@@ -1231,7 +1231,7 @@ SDK version 4.9
 #define thermostat3_On2nd 0x5
 #define thermostat3_sStop 0x6
 
-#define pTypeThermostat4 0x43
+#define pTypeSetpoint4 0x43
 #define sTypeMCZ1 0x0	//MCZ 1 fan model
 #define sTypeMCZ2 0x1	//MCZ 2 fan model
 #define sTypeMCZ3 0x2	//MCZ 3 fan model
@@ -1240,7 +1240,7 @@ SDK version 4.9
 #define thermostat4_sAuto 0x2
 #define thermostat4_sEco 0x3
 
-#define pTypeThermostat5 0x44
+#define pTypeSetpoint5 0x44
 #define sTypeGazco 0x0
 #define thermostat5_sOff 0x0
 #define thermostat5_sOn 0x1

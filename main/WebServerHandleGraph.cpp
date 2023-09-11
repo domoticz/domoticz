@@ -188,12 +188,12 @@ namespace http
 								|| dType == pTypeTEMP_BARO
 								|| dType == pTypeWIND && dSubType == sTypeWIND4
 								|| dType == pTypeUV && dSubType == sTypeUV3
-								|| dType == pTypeThermostat1
+								|| dType == pTypeSetpoint1
 								|| dType == pTypeRadiator1
 								|| dType == pTypeRFXSensor && dSubType == sTypeRFXSensorTemp
 								|| dType == pTypeGeneral && dSubType == sTypeSystemTemp
 								|| dType == pTypeGeneral && dSubType == sTypeBaro
-								|| dType == pTypeThermostat && dSubType == sTypeThermSetpoint
+								|| dType == pTypeSetpoint && dSubType == sTypeSetpoint
 								|| dType == pTypeEvohomeZone
 								|| dType == pTypeEvohomeWater
 								)
@@ -1920,9 +1920,9 @@ namespace http
 							root["result"][ii]["d"] = sd[7].substr(0, 16);
 
 							if ((dType == pTypeRego6XXTemp) || (dType == pTypeTEMP) || (dType == pTypeTEMP_HUM) || (dType == pTypeTEMP_HUM_BARO) ||
-								(dType == pTypeTEMP_BARO) || (dType == pTypeWIND) || (dType == pTypeThermostat1) || (dType == pTypeRadiator1) ||
+								(dType == pTypeTEMP_BARO) || (dType == pTypeWIND) || (dType == pTypeSetpoint1) || (dType == pTypeRadiator1) ||
 								((dType == pTypeRFXSensor) && (dSubType == sTypeRFXSensorTemp)) || ((dType == pTypeUV) && (dSubType == sTypeUV3)) ||
-								((dType == pTypeGeneral) && (dSubType == sTypeSystemTemp)) || ((dType == pTypeThermostat) && (dSubType == sTypeThermSetpoint)) ||
+								((dType == pTypeGeneral) && (dSubType == sTypeSystemTemp)) || ((dType == pTypeSetpoint) && (dSubType == sTypeSetpoint)) ||
 								(dType == pTypeEvohomeZone) || (dType == pTypeEvohomeWater) || ((dType == pTypeGeneral) && (dSubType == sTypeBaro)))
 							{
 								bool bOK = true;
@@ -2000,7 +2000,7 @@ namespace http
 
 						root["result"][ii]["d"] = szDateEnd;
 						if (((dType == pTypeRego6XXTemp) || (dType == pTypeTEMP) || (dType == pTypeTEMP_HUM) || (dType == pTypeTEMP_HUM_BARO) || (dType == pTypeTEMP_BARO) ||
-							(dType == pTypeWIND) || (dType == pTypeThermostat1) || (dType == pTypeRadiator1)) ||
+							(dType == pTypeWIND) || (dType == pTypeSetpoint1) || (dType == pTypeRadiator1)) ||
 							((dType == pTypeUV) && (dSubType == sTypeUV3)) || ((dType == pTypeWIND) && (dSubType == sTypeWIND4)) || (dType == pTypeEvohomeZone) ||
 							(dType == pTypeEvohomeWater))
 						{
@@ -2072,9 +2072,9 @@ namespace http
 							root["resultprev"][iPrev]["d"] = sd[7].substr(0, 16);
 
 							if ((dType == pTypeRego6XXTemp) || (dType == pTypeTEMP) || (dType == pTypeTEMP_HUM) || (dType == pTypeTEMP_HUM_BARO) ||
-								(dType == pTypeTEMP_BARO) || (dType == pTypeWIND) || (dType == pTypeThermostat1) || (dType == pTypeRadiator1) ||
+								(dType == pTypeTEMP_BARO) || (dType == pTypeWIND) || (dType == pTypeSetpoint1) || (dType == pTypeRadiator1) ||
 								((dType == pTypeRFXSensor) && (dSubType == sTypeRFXSensorTemp)) || ((dType == pTypeUV) && (dSubType == sTypeUV3)) ||
-								((dType == pTypeGeneral) && (dSubType == sTypeSystemTemp)) || ((dType == pTypeThermostat) && (dSubType == sTypeThermSetpoint)) ||
+								((dType == pTypeGeneral) && (dSubType == sTypeSystemTemp)) || ((dType == pTypeSetpoint) && (dSubType == sTypeSetpoint)) ||
 								(dType == pTypeEvohomeZone) || (dType == pTypeEvohomeWater))
 							{
 								bool bOK = true;
@@ -3541,9 +3541,9 @@ namespace http
 
 					if ((sgraphTemp == "true") &&
 						((dType == pTypeRego6XXTemp) || (dType == pTypeTEMP) || (dType == pTypeTEMP_HUM) || (dType == pTypeTEMP_HUM_BARO) || (dType == pTypeTEMP_BARO) ||
-							(dType == pTypeWIND) || (dType == pTypeThermostat1) || (dType == pTypeRadiator1) || ((dType == pTypeUV) && (dSubType == sTypeUV3)) ||
+							(dType == pTypeWIND) || (dType == pTypeSetpoint1) || (dType == pTypeRadiator1) || ((dType == pTypeUV) && (dSubType == sTypeUV3)) ||
 							((dType == pTypeWIND) && (dSubType == sTypeWIND4)) || ((dType == pTypeRFXSensor) && (dSubType == sTypeRFXSensorTemp)) ||
-							((dType == pTypeThermostat) && (dSubType == sTypeThermSetpoint)) || (dType == pTypeEvohomeZone) || (dType == pTypeEvohomeWater)))
+							((dType == pTypeSetpoint) && (dSubType == sTypeSetpoint)) || (dType == pTypeEvohomeZone) || (dType == pTypeEvohomeWater)))
 					{
 						sendTemp = true;
 					}
