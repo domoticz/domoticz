@@ -203,15 +203,17 @@ define(['app', 'livesocket'], function (app) {
 			$("#dialog-editenergydevice").dialog("open");
 		}
 
-		EditSetPoint = function (idx, name, description, setpoint, isprotected, customimage) {
+		EditSetPoint = function (idx, name, description, unit, step, min, max, isprotected, customimage) {
 			HandleProtection(isprotected, function () {
 				$.devIdx = idx;
 				$("#dialog-editsetpointdevice #deviceidx").text(idx);
 				$("#dialog-editsetpointdevice #devicename").val(unescape(name));
 				$("#dialog-editsetpointdevice #devicedescription").val(unescape(description));
 				$('#dialog-editsetpointdevice #protected').prop('checked', (isprotected == true));
-				$("#dialog-editsetpointdevice #setpoint").val(setpoint);
-				$("#dialog-editsetpointdevice #tempunit").html($scope.config.TempSign);
+				$("#dialog-editsetpointdevice #unit").val(unescape(unit));
+				$("#dialog-editsetpointdevice #step").val(step);
+				$("#dialog-editsetpointdevice #min").val(min);
+				$("#dialog-editsetpointdevice #max").val(max);
 				$('#dialog-editsetpointdevice #combosensoricon').ddslick({
 					data: $.ddData,
 					width: 260,
@@ -909,7 +911,7 @@ define(['app', 'livesocket'], function (app) {
 									var logLink = '#/Devices/'+item.idx+'/Log';
 
 									xhtm += '<a class="btnsmall" href="' + logLink +'" data-i18n="Log">Log</a> ';
-									xhtm += '<a class="btnsmall" onclick="EditSetPoint(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\', ' + item.SetPoint + ',' + item.Protected + ', ' + item.CustomImage + ');" data-i18n="Edit">Edit</a> ';
+									xhtm += '<a class="btnsmall" onclick="EditSetPoint(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\', \'' + escape(item.vunit) + '\',' + item.step + ',' + item.min + ',' + item.max + ',' + item.Protected + ', ' + item.CustomImage + ');" data-i18n="Edit">Edit</a> ';
 									if (item.Timers == "true") {
 										xhtm += '<a class="btnsmall-sel" href="' + timerLink + '" data-i18n="Timers">Timers</a> ';
 									}
@@ -1471,11 +1473,27 @@ define(['app', 'livesocket'], function (app) {
 					var cval = $('#dialog-editsetpointdevice #combosensoricon').data('ddslick').selectedIndex;
 					var CustomImage = $.ddData[cval].value;
 					$(this).dialog("close");
+					
+					var devOptions = [];
+					var devOptionsParam = [];
+					devOptions.push("ValueStep:");
+					devOptions.push($("#dialog-editsetpointdevice #step").val());
+					devOptions.push(";");
+					devOptions.push("ValueMin:");
+					devOptions.push($("#dialog-editsetpointdevice #min").val());
+					devOptions.push(";");
+					devOptions.push("ValueMax:");
+					devOptions.push($("#dialog-editsetpointdevice #max").val());
+					devOptions.push(";");
+					devOptions.push("ValueUnit:");
+					devOptions.push($("#dialog-editsetpointdevice #unit").val());
+					devOptions.push(";");
+					devOptionsParam.push(devOptions.join(''));
 					$.ajax({
 						url: "json.htm?type=command&param=setused&idx=" + $.devIdx +
 						'&name=' + encodeURIComponent($("#dialog-editsetpointdevice #devicename").val()) +
 						'&description=' + encodeURIComponent($("#dialog-editsetpointdevice #devicedescription").val()) +
-						'&setpoint=' + $("#dialog-editsetpointdevice #setpoint").val() +
+						'&options=' + b64EncodeUnicode(devOptions.join('')) +
 						'&protected=' + $('#dialog-editsetpointdevice #protected').is(":checked") +
 						'&customimage=' + CustomImage +
 						'&used=true',
