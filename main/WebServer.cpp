@@ -2981,13 +2981,43 @@ namespace http
 						{
 							bHasTimers = m_sql.HasTimers(sd[0]);
 
-							double tempCelcius = atof(sValue.c_str());
-							double temp = ConvertTemperature(tempCelcius, tempsign);
+							std::string value_step = options["ValueStep"];
+							std::string value_min = options["ValueMin"];
+							std::string value_max = options["ValueMax"];
+							std::string value_unit = options["ValueUnit"];
 
-							sprintf(szTmp, "%.1f", temp);
+							double valuestep = (!value_step.empty()) ? atof(value_step.c_str()) : 0.1;
+							double valuemin = (!value_min.empty()) ? atof(value_min.c_str()) : -200.0F;
+							double valuemax = (!value_max.empty()) ? atof(value_max.c_str()) : 200.0F;
+
+							double value = atof(sValue.c_str());
+
+							if (
+								(value_unit.empty())
+								|| (value_unit == "°C")
+								|| (value_unit == "°F")
+								)
+							{
+								if (tempsign == 'C')
+									value_unit = "°C";
+								else
+									value_unit = "°F";
+
+								double tempCelcius = value;
+								double temp = ConvertTemperature(tempCelcius, tempsign);
+
+								sprintf(szTmp, "%.1f", temp);
+							}
+							else
+								sprintf(szTmp, "%g", value);
+
 							root["result"][ii]["Data"] = szTmp;
 							root["result"][ii]["SetPoint"] = szTmp;
 							root["result"][ii]["HaveTimeout"] = bHaveTimeout;
+							root["result"][ii]["step"] = valuestep;
+							root["result"][ii]["min"] = valuemin;
+							root["result"][ii]["max"] = valuemax;
+							root["result"][ii]["unit"] = value_unit;
 							root["result"][ii]["TypeImg"] = "override_mini";
 						}
 					}

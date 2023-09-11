@@ -504,7 +504,7 @@ const char* RFX_Type_Desc(const unsigned char i, const unsigned char snum)
 		{ pTypeTEMP_BARO, "Temp + Baro", "temperature" },
 		{ pTypeLux, "Lux", "lux" },
 		{ pTypeGeneral, "General", "General" },
-		{ pTypeSetpoint, "Thermostat", "thermostat" },
+		{ pTypeSetpoint, "Setpoint", "setpoint" },
 		{ pTypeTEMP_RAIN, "Temp + Rain", "Temp + Rain" },
 		{ pTypeChime, "Chime", "doorbell" },
 		{ pTypeFan, "Fan", "fan" },

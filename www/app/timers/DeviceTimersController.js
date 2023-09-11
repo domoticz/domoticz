@@ -36,7 +36,7 @@ define(['app', 'timers/factories', 'timers/components','timers/planning'], funct
 				if ((device.CustomImage !== 0) && (typeof device.Image !== 'undefined')) {
 					type = device.Image.toLowerCase();
 				}
-                vm.isSetpointTimers = (device.Type === 'Thermostat' && device.SubType == 'SetPoint') || (device.Type === 'Radiator 1');
+                vm.isSetpointTimers = (device.Type === 'Setpoint' && device.SubType == 'SetPoint') || (device.Type === 'Radiator 1');
 				vm.isBlind = (type == 'blinds');
 				//vm.isBlind = [3, 13, 14, 15, 21].includes(device.SwitchTypeVal);
 

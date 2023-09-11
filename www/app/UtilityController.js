@@ -430,7 +430,7 @@ define(['app', 'livesocket'], function (app) {
 					status = "";
 					bigtext = item.Data;
 				}
-				else if ((item.Type == "Thermostat") && (item.SubType == "SetPoint")) {
+				else if ((item.Type == "Setpoint") && (item.SubType == "SetPoint")) {
 					status = "";
 					bigtext = item.Data + '\u00B0 ' + $scope.config.TempSign;
 					$(id + " #img").attr('onclick', 'ShowSetpointPopup(event, ' + item.idx + ', ' + item.Protected + ', ' + item.Data + ')');
@@ -623,7 +623,7 @@ define(['app', 'livesocket'], function (app) {
 							else if (item.Type == "Usage") {
 								bigtext += item.Data;
 							}
-							else if (item.Type == "Thermostat") {
+							else if (item.Type == "Setpoint") {
 								bigtext += item.Data + '\u00B0 ' + $scope.config.TempSign;
 							}
 							else if (item.SubType == "Waterflow") {
@@ -774,7 +774,7 @@ define(['app', 'livesocket'], function (app) {
 								xhtm += '<img src="images/' + item.Image + '" height="48" width="48"></td>\n';
 								status = "";
 							}
-							else if (((item.Type == "Thermostat") && (item.SubType == "SetPoint")) || (item.Type == "Radiator 1")) {
+							else if (((item.Type == "Setpoint") && (item.SubType == "SetPoint")) || (item.Type == "Radiator 1")) {
 								item.Image = (item.CustomImage == 0)  ? 'override.png' : item.Image + '48_On.png';
 								xhtm += '<img src="images/' + item.Image + '" class="lcursor" onclick="ShowSetpointPopup(event, ' + item.idx + ', ' + item.Protected + ', ' + item.Data + ');" height="48" width="48" ></td>\n';
 								status = "";
@@ -903,7 +903,7 @@ define(['app', 'livesocket'], function (app) {
 									xhtm += '<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\', ' + item.CustomImage + ');" data-i18n="Edit">Edit</a> ';
 								}
 							}
-							else if ((item.Type == "Thermostat") && (item.SubType == "SetPoint")) {
+							else if ((item.Type == "Setpoint") && (item.SubType == "SetPoint")) {
 								if (permissions.hasPermission("Admin")) {
 									var timerLink = '#/Devices/'+item.idx+'/Timers';
 									var logLink = '#/Devices/'+item.idx+'/Log';

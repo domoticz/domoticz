@@ -854,7 +854,7 @@ Device.create = function (item) {
         type = 'baro';
     } else if ((item.Type === 'General') && (item.SubType === 'Custom Sensor')) {
         type = 'custom';
-    } else if ((item.Type === 'Thermostat') && (item.SubType === 'SetPoint')) {
+    } else if ((item.Type === 'Setpoint') && (item.SubType === 'SetPoint')) {
         type = 'setpoint';  // Instead of the TypeImg (which changes when using custom images)
 	} else if ((item.Type === 'General') && (item.SubType === 'Percentage')) {
 		type = 'percentage';

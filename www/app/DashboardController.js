@@ -1257,7 +1257,7 @@ define(['app', 'livesocket'], function (app) {
 					(item.Type == "Weight") ||
 					(item.Type == "Usage") ||
 					(item.SubType == "Percentage") ||
-					((item.Type == "Thermostat") && (item.SubType == "SetPoint")) ||
+					((item.Type == "Setpoint") && (item.SubType == "SetPoint")) ||
 					(item.SubType == "kWh") ||
 					(item.SubType == "Soil Moisture") ||
 					(item.SubType == "Leaf Wetness") ||
@@ -1343,7 +1343,7 @@ define(['app', 'livesocket'], function (app) {
 						else if (item.SubType == "Text") {
 							status = item.Data.replace(/([^>\r\n]?)(\r\n|\n\r|\r|\n)/g, '$1<br />$2');
 						}
-						else if ((item.Type == "Thermostat") && (item.SubType == "SetPoint")) {
+						else if ((item.Type == "Setpoint") && (item.SubType == "SetPoint")) {
 							status = '<button class="btn btn-mini btn-info" type="button" onclick="ShowSetpointPopup(event, ' + item.idx + ', ' + item.Protected + ', ' + item.Data + ',true);">' + item.Data + '\u00B0 ' + $scope.config.TempSign + '</button> ';
 						}
 						else if (item.SubType == "Smartwares") {
@@ -1483,7 +1483,7 @@ define(['app', 'livesocket'], function (app) {
 							status = "";
 							bigtext = item.Data;
 						}
-						else if ((item.Type == "Thermostat") && (item.SubType == "SetPoint")) {
+						else if ((item.Type == "Setpoint") && (item.SubType == "SetPoint")) {
 							status = "";
 							bigtext = item.Data + '\u00B0 ' + $scope.config.TempSign;
 							$(id + " #img").attr('onclick', 'ShowSetpointPopup(event, ' + item.idx + ', ' + item.Protected + ', ' + item.Data + ')');
@@ -3077,7 +3077,7 @@ define(['app', 'livesocket'], function (app) {
 										(item.Type == "Weight") ||
 										(item.Type == "Usage") ||
 										(item.SubType == "Percentage") ||
-										((item.Type == "Thermostat") && (item.SubType == "SetPoint")) ||
+										((item.Type == "Setpoint") && (item.SubType == "SetPoint")) ||
 										(item.SubType == "Soil Moisture") ||
 										(item.SubType == "Leaf Wetness") ||
 										(item.SubType == "Voltage") ||
@@ -3171,7 +3171,7 @@ define(['app', 'livesocket'], function (app) {
 										else if (item.SubType == "Pressure") {
 											vname = '<a href="#/Devices/' + item.idx + '/Log"><img src="images/next.png" height="16" width="16"></a>' + " " + item.Name;
 										}
-										else if ((item.Type == "Thermostat") && (item.SubType == "SetPoint")) {
+										else if ((item.Type == "Setpoint") && (item.SubType == "SetPoint")) {
 											vname = '<a href="#/Devices/' + item.idx + '/Log"><img src="images/next.png" height="16" width="16"></a>' + " " + item.Name;
 										}
 										else if (item.SubType == "Smartwares") {
@@ -3247,7 +3247,7 @@ define(['app', 'livesocket'], function (app) {
 										else if (item.SubType == "Text") {
 											status = item.Data.replace(/([^>\r\n]?)(\r\n|\n\r|\r|\n)/g, '$1<br />$2');
 										}
-										else if ((item.Type == "Thermostat") && (item.SubType == "SetPoint")) {
+										else if ((item.Type == "Setpoint") && (item.SubType == "SetPoint")) {
 											status = '<button class="btn btn-mini btn-info" type="button" onclick="ShowSetpointPopup(event, ' + item.idx + ', ' + item.Protected + ', ' + item.Data + ',true);">' + item.Data + '\u00B0 ' + $scope.config.TempSign + '</button> ';
 										}
 										else if (item.SubType == "Smartwares") {
@@ -3392,7 +3392,7 @@ define(['app', 'livesocket'], function (app) {
 										) {
 											bigtexthtml += item.Data;
 										}
-										else if ((item.Type == "Thermostat") && (item.SubType == "SetPoint")) {
+										else if ((item.Type == "Setpoint") && (item.SubType == "SetPoint")) {
 											bigtexthtml += item.Data + '\u00B0 ' + $scope.config.TempSign;
 										}
 										else if (item.SubType == "Smartwares") {
@@ -3541,7 +3541,7 @@ define(['app', 'livesocket'], function (app) {
 											imagehtml = '<a href="#/Devices/' + item.idx + '/Log"><img src="images/' + item.Image + '" class="lcursor" height="40" width="40"></a></td>\n';
 											statushtml = "";
 										}
-										else if ((item.Type == "Thermostat") && (item.SubType == "SetPoint")) {
+										else if ((item.Type == "Setpoint") && (item.SubType == "SetPoint")) {
 											imagehtml += 'override.png" class="lcursor" onclick="ShowSetpointPopup(event, ' + item.idx + ', ' + item.Protected + ', ' + item.Data + ');" height="40" width="40"></td>\n';
 											statushtml = "";
 										}
