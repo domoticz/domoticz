@@ -1344,7 +1344,7 @@ define(['app', 'livesocket'], function (app) {
 							status = item.Data.replace(/([^>\r\n]?)(\r\n|\n\r|\r|\n)/g, '$1<br />$2');
 						}
 						else if ((item.Type == "Setpoint") && (item.SubType == "SetPoint")) {
-							status = '<button class="btn btn-mini btn-info" type="button" onclick="ShowSetpointPopup(event, ' + item.idx + ', ' + item.Protected + ', ' + item.Data + ',true);">' + item.Data + '\u00B0 ' + $scope.config.TempSign + '</button> ';
+							status = '<button class="btn btn-mini btn-info" type="button" onclick="ShowSetpointPopup(event, ' + item.idx + ', ' + item.Protected + ', ' + item.Data + ',true, ' + item.step + ', ' + item.min + ', ' + item.max +');">' + item.Data + ' ' + item.vunit + '</button> ';
 						}
 						else if (item.SubType == "Smartwares") {
 							status += item.Data + '\u00B0 ' + $scope.config.TempSign;
@@ -1485,8 +1485,8 @@ define(['app', 'livesocket'], function (app) {
 						}
 						else if ((item.Type == "Setpoint") && (item.SubType == "SetPoint")) {
 							status = "";
-							bigtext = item.Data + '\u00B0 ' + $scope.config.TempSign;
-							$(id + " #img").attr('onclick', 'ShowSetpointPopup(event, ' + item.idx + ', ' + item.Protected + ', ' + item.Data + ')');
+							bigtext = item.Data + ' ' + item.vunit;
+							$(id + " #img").attr('onclick', 'ShowSetpointPopup(event, ' + item.idx + ', ' + item.Protected + ', ' + item.Data + ', false, ' + item.step + ', ' + item.min + ', ' + item.max + ')');
 						}
 						else if (item.SubType == "Smartwares") {
 							status = item.Data + '\u00B0 ' + $scope.config.TempSign;
@@ -3248,11 +3248,11 @@ define(['app', 'livesocket'], function (app) {
 											status = item.Data.replace(/([^>\r\n]?)(\r\n|\n\r|\r|\n)/g, '$1<br />$2');
 										}
 										else if ((item.Type == "Setpoint") && (item.SubType == "SetPoint")) {
-											status = '<button class="btn btn-mini btn-info" type="button" onclick="ShowSetpointPopup(event, ' + item.idx + ', ' + item.Protected + ', ' + item.Data + ',true);">' + item.Data + '\u00B0 ' + $scope.config.TempSign + '</button> ';
+											status = '<button class="btn btn-mini btn-info" type="button" onclick="ShowSetpointPopup(event, ' + item.idx + ', ' + item.Protected + ', ' + item.Data + ',true, ' + item.step + ', ' + item.min + ', ' + item.max + ');">' + item.Data + ' ' + item.vunit + '</button> ';
 										}
 										else if (item.SubType == "Smartwares") {
 											status = item.Data + '\u00B0 ' + $scope.config.TempSign;
-											status += '<button class="btn btn-mini btn-info" type="button" onclick="ShowSetpointPopup(event, ' + item.idx + ', ' + item.Protected + ', ' + item.Data + ',true);">' + $.t("Set") + '</button> ';
+											status += '<button class="btn btn-mini btn-info" type="button" onclick="ShowSetpointPopup(event, ' + item.idx + ', ' + item.Protected + ', ' + item.Data + ',true, ' + item.step + ', ' + item.min + ', ' + item.max + ');">' + $.t("Set") + '</button> ';
 										}
 										else if ((item.SubType == "Thermostat Mode") || (item.SubType == "Thermostat Fan Mode")) {
 											status = item.Data;
@@ -3393,7 +3393,7 @@ define(['app', 'livesocket'], function (app) {
 											bigtexthtml += item.Data;
 										}
 										else if ((item.Type == "Setpoint") && (item.SubType == "SetPoint")) {
-											bigtexthtml += item.Data + '\u00B0 ' + $scope.config.TempSign;
+											bigtexthtml += item.Data + ' ' + item.vunit;
 										}
 										else if (item.SubType == "Smartwares") {
 											bigtexthtml += item.Data + '\u00B0 ' + $scope.config.TempSign;
@@ -3542,11 +3542,11 @@ define(['app', 'livesocket'], function (app) {
 											statushtml = "";
 										}
 										else if ((item.Type == "Setpoint") && (item.SubType == "SetPoint")) {
-											imagehtml += 'override.png" class="lcursor" onclick="ShowSetpointPopup(event, ' + item.idx + ', ' + item.Protected + ', ' + item.Data + ');" height="40" width="40"></td>\n';
+											imagehtml += 'override.png" class="lcursor" onclick="ShowSetpointPopup(event, ' + item.idx + ', ' + item.Protected + ', ' + item.Data + ', false, ' + item.step + ', ' + item.min + ', ' + item.max + ');" height="40" width="40"></td>\n';
 											statushtml = "";
 										}
 										else if (item.SubType == "Smartwares") {
-											imagehtml += 'override.png" class="lcursor" onclick="ShowSetpointPopup(event, ' + item.idx + ', ' + item.Protected + ', ' + item.Data + ');" height="40" width="40"></td>\n';
+											imagehtml += 'override.png" class="lcursor" onclick="ShowSetpointPopup(event, ' + item.idx + ', ' + item.Protected + ', ' + item.Data + ', false, ' + item.step + ', ' + item.min + ', ' + item.max + ');" height="40" width="40"></td>\n';
 											statushtml = item.Data + '\u00B0 ' + $scope.config.TempSign;
 										}
 										else if ((item.SubType == "Thermostat Mode") || (item.SubType == "Thermostat Fan Mode")) {

@@ -2994,14 +2994,14 @@ namespace http
 
 							if (
 								(value_unit.empty())
-								|| (value_unit == "캜")
-								|| (value_unit == "캟")
+								|| (value_unit == "째C")
+								|| (value_unit == "째f")
 								)
 							{
 								if (tempsign == 'C')
-									value_unit = "캜";
+									value_unit = "째C";
 								else
-									value_unit = "캟";
+									value_unit = "째f";
 
 								double tempCelcius = value;
 								double temp = ConvertTemperature(tempCelcius, tempsign);

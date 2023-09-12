@@ -434,8 +434,8 @@ define(['app', 'livesocket'], function (app) {
 				}
 				else if ((item.Type == "Setpoint") && (item.SubType == "SetPoint")) {
 					status = "";
-					bigtext = item.Data + '\u00B0 ' + $scope.config.TempSign;
-					$(id + " #img").attr('onclick', 'ShowSetpointPopup(event, ' + item.idx + ', ' + item.Protected + ', ' + item.Data + ')');
+					bigtext = item.Data + ' ' + item.vunit;
+					$(id + " #img").attr('onclick', 'ShowSetpointPopup(event, ' + item.idx + ', ' + item.Protected + ', ' + item.Data + ',false, ' + item.step + ', ' + item.min + ', ' + item.max + ')');
 				}
 				else if (item.Type == "Radiator 1") {
 					status = item.Data + '\u00B0 ' + $scope.config.TempSign;
@@ -626,7 +626,7 @@ define(['app', 'livesocket'], function (app) {
 								bigtext += item.Data;
 							}
 							else if (item.Type == "Setpoint") {
-								bigtext += item.Data + '\u00B0 ' + $scope.config.TempSign;
+								bigtext += item.Data + ' ' + item.vunit;
 							}
 							else if (item.SubType == "Waterflow") {
 								bigtext += item.Data;
@@ -778,7 +778,7 @@ define(['app', 'livesocket'], function (app) {
 							}
 							else if (((item.Type == "Setpoint") && (item.SubType == "SetPoint")) || (item.Type == "Radiator 1")) {
 								item.Image = (item.CustomImage == 0)  ? 'override.png' : item.Image + '48_On.png';
-								xhtm += '<img src="images/' + item.Image + '" class="lcursor" onclick="ShowSetpointPopup(event, ' + item.idx + ', ' + item.Protected + ', ' + item.Data + ');" height="48" width="48" ></td>\n';
+								xhtm += '<img src="images/' + item.Image + '" class="lcursor" onclick="ShowSetpointPopup(event, ' + item.idx + ', ' + item.Protected + ', ' + item.Data + ',false, ' + item.step + ', ' + item.min + ', ' + item.max + ');" height="48" width="48" ></td>\n';
 								status = "";
 							}
 							else if (item.SubType == "Thermostat Clock") {
@@ -926,7 +926,7 @@ define(['app', 'livesocket'], function (app) {
 									var logLink = '#/Devices/'+item.idx+'/Log';
 
 									xhtm += '<a class="btnsmall" href="' + logLink +'" data-i18n="Log">Log</a> ';
-									xhtm += '<a class="btnsmall" onclick="EditSetPoint(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\', ' + item.SetPoint + ',' + item.Protected + ', ' + item.CustomImage + ');" data-i18n="Edit">Edit</a> ';
+									xhtm += '<a class="btnsmall" onclick="EditSetPoint(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\', \'' + escape(item.vunit) + '\',' + item.step + ',' + item.min + ',' + item.max + ',' + item.Protected + ', ' + item.CustomImage + ');" data-i18n="Edit">Edit</a> ';
 									if (item.Timers == "true") {
 										xhtm += '<a class="btnsmall-sel" href="' + timerLink + '" data-i18n="Timers">Timers</a> ';
 									}
