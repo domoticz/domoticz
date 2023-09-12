@@ -313,7 +313,7 @@ typedef struct _tSetpoint
 		ar &cereal::make_nvp("id4", id4);
 		ar &cereal::make_nvp("dunit", dunit);
 		ar &cereal::make_nvp("battery_level", battery_level);
-		ar &cereal::make_nvp("value", temp);
+		ar &cereal::make_nvp("value", value);
 	}
 
 	_tSetpoint()
