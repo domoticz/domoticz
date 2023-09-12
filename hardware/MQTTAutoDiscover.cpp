@@ -1654,12 +1654,26 @@ bool MQTTAutoDiscover::GuessSensorTypeValue(const _tMQTTASensor* pSensor, uint8_
 			return false;
 		}
 
+		float fkWh = 0.0F;
 		_tMQTTASensor* pkWhSensor = get_auto_discovery_sensor_unit(pSensor, "kwh");
+		if (pkWhSensor)
+			fkWh = static_cast<float>(atof(pkWhSensor->last_value.c_str())) * 1000.0F;
+		else
+		{
+			pkWhSensor = get_auto_discovery_sensor_unit(pSensor, "wh");
+			if (pkWhSensor)
+				fkWh = static_cast<float>(atof(pkWhSensor->last_value.c_str()));
+			else
+			{
+				pkWhSensor = get_auto_discovery_sensor_unit(pSensor, "wm");
+				if (pkWhSensor)
+					fkWh = static_cast<float>(atof(pkWhSensor->last_value.c_str())) / 60.0F;
+			}
+		}
 		if (pkWhSensor)
 		{
 			if (pkWhSensor->last_received != 0)
 			{
-				float fkWh = static_cast<float>(atof(pkWhSensor->last_value.c_str())) * 1000.0F;
 				pkWhSensor->sValue = std_format("%.3f;%.3f", fUsage, fkWh);
 				mosquitto_message xmessage;
 				xmessage.retain = false;
@@ -1669,13 +1683,24 @@ bool MQTTAutoDiscover::GuessSensorTypeValue(const _tMQTTASensor* pSensor, uint8_
 		}
 		sValue = std_format("%.3f", fUsage);
 	}
-	else if (szUnit == "kwh")
+	else if (
+		(szUnit == "kwh")
+		|| (szUnit == "wh")
+		|| (szUnit == "wm")
+		)
 	{
 		devType = pTypeGeneral;
 		subType = sTypeKwh;
 
 		float fUsage = 0;
-		float fkWh = static_cast<float>(atof(pSensor->last_value.c_str())) * 1000.0F;
+		float multiply = 1000.0F;
+
+		if (szUnit == "wh")
+			multiply = 1.0F;
+		else if (szUnit == "wm")
+			multiply = 1.0F / 60.0F;
+
+		float fkWh = static_cast<float>(atof(pSensor->last_value.c_str())) * multiply;
 
 		if (fkWh < -1000000)
 		{

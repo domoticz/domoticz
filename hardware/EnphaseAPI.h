@@ -70,5 +70,8 @@ private:
 	bool m_bCheckedInventory = false;
 	bool m_bHaveInventory = false;
 
+	uint64_t m_nLastProductionCounterValue = 0;
+	uint64_t m_nProductionCounterOffset = 0;
+
 	std::shared_ptr<std::thread> m_thread;
 };

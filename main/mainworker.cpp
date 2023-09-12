@@ -941,7 +941,7 @@ bool MainWorker::AddHardwareFromParams(
 		pHardware = new CAnnaThermostat(ID, Address, Port, Username, Password);
 		break;
 	case HTYPE_THERMOSMART:
-		pHardware = new CThermosmart(ID, Username, Password, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6);
+		pHardware = new CThermosmart(ID, Username, Password, Mode1);
 		break;
 	case HTYPE_Tado:
 		pHardware = new CTado(ID, Username, Password);
@@ -12966,26 +12966,27 @@ bool MainWorker::SetSetPointInt(const std::vector<std::string>& sd, const float 
 #endif
 	}
 	else if (
-		(pHardware->HwdType == HTYPE_OpenThermGateway) ||
-		(pHardware->HwdType == HTYPE_OpenThermGatewayTCP) ||
-		(pHardware->HwdType == HTYPE_ICYTHERMOSTAT) ||
-		(pHardware->HwdType == HTYPE_TOONTHERMOSTAT) ||
-		(pHardware->HwdType == HTYPE_AtagOne) ||
-		(pHardware->HwdType == HTYPE_NEST) ||
-		(pHardware->HwdType == HTYPE_Nest_OAuthAPI) ||
-		(pHardware->HwdType == HTYPE_ANNATHERMOSTAT) ||
-		(pHardware->HwdType == HTYPE_THERMOSMART) ||
-		(pHardware->HwdType == HTYPE_Tado) ||
-		(pHardware->HwdType == HTYPE_EVOHOME_SCRIPT) ||
-		(pHardware->HwdType == HTYPE_EVOHOME_SERIAL) ||
-		(pHardware->HwdType == HTYPE_EVOHOME_TCP) ||
-		(pHardware->HwdType == HTYPE_EVOHOME_WEB) ||
-		(pHardware->HwdType == HTYPE_Netatmo) ||
-		(pHardware->HwdType == HTYPE_NefitEastLAN) ||
-		(pHardware->HwdType == HTYPE_IntergasInComfortLAN2RF) ||
-		(pHardware->HwdType == HTYPE_OpenWebNetTCP) ||
-		(pHardware->HwdType == HTYPE_MQTT) ||
-		(pHardware->HwdType == HTYPE_MQTTAutoDiscovery)
+		(pHardware->HwdType == HTYPE_OpenThermGateway)
+		|| (pHardware->HwdType == HTYPE_OpenThermGatewayTCP)
+		|| (pHardware->HwdType == HTYPE_ICYTHERMOSTAT)
+		|| (pHardware->HwdType == HTYPE_TOONTHERMOSTAT)
+		|| (pHardware->HwdType == HTYPE_AtagOne)
+		|| (pHardware->HwdType == HTYPE_NEST)
+		|| (pHardware->HwdType == HTYPE_Nest_OAuthAPI)
+		|| (pHardware->HwdType == HTYPE_ANNATHERMOSTAT)
+		|| (pHardware->HwdType == HTYPE_THERMOSMART)
+		|| (pHardware->HwdType == HTYPE_Tado)
+		|| (pHardware->HwdType == HTYPE_EVOHOME_SCRIPT)
+		|| (pHardware->HwdType == HTYPE_EVOHOME_SERIAL)
+		|| (pHardware->HwdType == HTYPE_EVOHOME_TCP)
+		|| (pHardware->HwdType == HTYPE_EVOHOME_WEB)
+		|| (pHardware->HwdType == HTYPE_Netatmo)
+		|| (pHardware->HwdType == HTYPE_NefitEastLAN)
+		|| (pHardware->HwdType == HTYPE_IntergasInComfortLAN2RF)
+		|| (pHardware->HwdType == HTYPE_OpenWebNetTCP)
+		|| (pHardware->HwdType == HTYPE_MQTT)
+		|| (pHardware->HwdType == HTYPE_MQTTAutoDiscovery)
+		|| (pHardware->HwdType == HTYPE_AlfenEveCharger)
 		)
 	{
 		if (pHardware->HwdType == HTYPE_OpenThermGateway)
@@ -13066,6 +13067,11 @@ bool MainWorker::SetSetPointInt(const std::vector<std::string>& sd, const float 
 		{
 			MQTTAutoDiscover* pGateway = dynamic_cast<MQTTAutoDiscover*>(pHardware);
 			return pGateway->SetSetpoint(sd[1], TempValue);
+		}
+		else if (pHardware->HwdType == HTYPE_AlfenEveCharger)
+		{
+			AlfenEve* pGateway = dynamic_cast<AlfenEve*>(pHardware);
+			pGateway->SetSetpoint(ID4, TempValue);
 		}
 	}
 	else

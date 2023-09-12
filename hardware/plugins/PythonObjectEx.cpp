@@ -785,6 +785,8 @@ namespace Plugins {
 				sValue = stdsValue;
 			}
 
+			//Begin GizMoCuz modification to test using m_sql.UpdateValue
+/*
 			// Options provided, assume change
 			std::string sOptionValue;
 			if (pOptionsDict && pOptionsDict.IsDict())
@@ -811,8 +813,91 @@ namespace Plugins {
 					}
 				}
 			}
+*/
+			uint64_t DevRowIdx = -1;
 
-			// Need to look up current nValue and sValue and only do triggers if one has changed
+			Py_BEGIN_ALLOW_THREADS
+			std::string devname = sName.c_str();
+
+			DevRowIdx = m_sql.UpdateValue(
+				pModState->pPlugin->m_HwdID,
+				sDeviceID.c_str(),
+				self->Unit,
+				iType,
+				iSubType,
+				self->SignalLevel,
+				self->BatteryLevel,
+				nValue,
+				sValue.c_str(),
+				devname,
+				true,
+				pModState->pPlugin->m_Name.c_str()
+			);
+			Py_END_ALLOW_THREADS
+
+			if (DevRowIdx == (uint64_t)-1)
+			{
+				pModState->pPlugin->Log(LOG_ERROR, "Update to 'UnitEx' failed to update any DeviceStatus records for key %d/%s/%d", pModState->pPlugin->m_HwdID, sDeviceID.c_str(), self->Unit);
+				Py_RETURN_NONE;
+			}
+
+			m_mainworker.sOnDeviceReceived(pModState->pPlugin->m_HwdID, self->ID, pModState->pPlugin->m_Name, NULL);
+
+			// Only trigger notifications if a used value is changed
+			if (self->Used)
+			{
+				// if this is an internal Security Panel then there are some extra updates required if state has changed
+				if ((self->Type == pTypeSecurity1) && (self->SubType == sTypeDomoticzSecurity) && (self->nValue != nValue))
+				{
+					Py_BEGIN_ALLOW_THREADS
+						switch (nValue)
+						{
+						case sStatusArmHome:
+						case sStatusArmHomeDelayed:
+							m_sql.UpdatePreferencesVar("SecStatus", SECSTATUS_ARMEDHOME);
+							m_mainworker.UpdateDomoticzSecurityStatus(SECSTATUS_ARMEDHOME, "Python");
+							break;
+						case sStatusArmAway:
+						case sStatusArmAwayDelayed:
+							m_sql.UpdatePreferencesVar("SecStatus", SECSTATUS_ARMEDAWAY);
+							m_mainworker.UpdateDomoticzSecurityStatus(SECSTATUS_ARMEDAWAY, "Python");
+							break;
+						case sStatusDisarm:
+						case sStatusNormal:
+						case sStatusNormalDelayed:
+						case sStatusNormalTamper:
+						case sStatusNormalDelayedTamper:
+							m_sql.UpdatePreferencesVar("SecStatus", SECSTATUS_DISARMED);
+							m_mainworker.UpdateDomoticzSecurityStatus(SECSTATUS_DISARMED, "Python");
+							break;
+						}
+					Py_END_ALLOW_THREADS
+				}
+
+				// Notifications
+				if (!IsLightOrSwitch(iType, iSubType))
+				{
+					m_notifications.CheckAndHandleNotification(DevRowIdx, pModState->pPlugin->m_HwdID, sDeviceID, sName, self->Unit, iType, iSubType, nValue, sValue);
+				}
+				else
+				{
+					std::string lstatus;
+					int llevel;
+					bool bHaveDimmer;
+					int maxDimLevel;
+					bool bHaveGroupCmd;
+					GetLightStatus(iType, iSubType, (_eSwitchType)iSwitchType, nValue, sValue, lstatus, llevel, bHaveDimmer, maxDimLevel, bHaveGroupCmd);
+					if (self->SwitchType == STYPE_Selector)
+						m_notifications.CheckAndHandleSwitchNotification(DevRowIdx, sName, (IsLightSwitchOn(lstatus)) ? NTYPE_SWITCH_ON : NTYPE_SWITCH_OFF, llevel);
+					else
+						m_notifications.CheckAndHandleSwitchNotification(DevRowIdx, sName, (IsLightSwitchOn(lstatus)) ? NTYPE_SWITCH_ON : NTYPE_SWITCH_OFF);
+				}
+
+			}
+
+			//End GizMoCuz modification
+/*
+			// Get On/Off actions
 			std::vector<std::vector<std::string>> result;
 
 			result = m_sql.safe_query("SELECT ID, StrParam1, StrParam2 FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%s') AND (Unit==%d)", pModState->pPlugin->m_HwdID, sDeviceID.c_str(), self->Unit);
@@ -948,7 +1033,7 @@ namespace Plugins {
 				}
 				Py_END_ALLOW_THREADS
 			}
-
+*/
 			PyNewRef	pRetVal = CUnitEx_refresh(self);
 		}
 		else
