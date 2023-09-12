@@ -1,4 +1,4 @@
-define(['app', 'log/Chart', 'log/TextLog', 'log/TemperatureLog', 'log/LightLog', 'log/GraphLog', 'log/CounterLog', 'log/CounterLogCounter', 'log/CounterLogInstantAndCounter', 'log/CounterLogP1Energy'], function (app) {
+define(['app', 'log/Chart', 'log/TextLog', 'log/TemperatureLog', 'log/LightLog', 'log/GraphLog', 'log/CounterLog', 'log/CounterLogCounter', 'log/CounterLogInstantAndCounter', 'log/CounterLogP1Energy', 'log/SetpointLog'], function (app) {
     app.controller('DeviceLogController', function ($location, $routeParams, domoticzApi, deviceApi, chart) {
         var vm = this;
 
@@ -6,6 +6,7 @@ define(['app', 'log/Chart', 'log/TextLog', 'log/TemperatureLog', 'log/LightLog',
         vm.isLightLog = isLightLog;
         vm.isGraphLog = isGraphLog;
         vm.isTemperatureLog = isTemperatureLog;
+        vm.isSetpointLog = isSetpointLog;
         vm.isReportAvailable = isReportAvailable;
         vm.isInstantAndCounterLog = isInstantAndCounterLog;
         vm.isP1EnergyLog = isP1EnergyLog;
@@ -73,11 +74,17 @@ define(['app', 'log/Chart', 'log/TextLog', 'log/TemperatureLog', 'log/LightLog',
             if (vm.device.Type === 'Heating') {
                 return ((vm.device.SubType === 'Zone') || (vm.device.SubType === 'Hot Water'));
             }
-
             //This goes wrong (when we also use this log call from the weather tab), for wind sensors
             //as this is placed in weather and temperature, we might have to set a parameter in the url
             //for now, we assume it is a temperature
             return (/Temp|Thermostat|Humidity|RFXSensor|Radiator|Wind/i).test(vm.device.Type)
+        }
+
+        function isSetpointLog() {
+            if (!vm.device) {
+                return undefined;
+            }
+            return (/Setpoint/i).test(vm.device.Type)
         }
 
         function isGraphLog() {

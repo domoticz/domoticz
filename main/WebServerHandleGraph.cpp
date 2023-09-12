@@ -164,6 +164,7 @@ namespace http
 					return;
 			}
 			unsigned char tempsign = m_sql.m_tempsign[0];
+
 			int iPrev;
 
 			if (srange == "day")
@@ -193,7 +194,6 @@ namespace http
 								|| dType == pTypeRFXSensor && dSubType == sTypeRFXSensorTemp
 								|| dType == pTypeGeneral && dSubType == sTypeSystemTemp
 								|| dType == pTypeGeneral && dSubType == sTypeBaro
-								|| dType == pTypeSetpoint && dSubType == sTypeSetpoint
 								|| dType == pTypeEvohomeZone
 								|| dType == pTypeEvohomeWater
 								)
@@ -238,7 +238,21 @@ namespace http
 								double se = ConvertTemperature(atof(sd[5].c_str()), tempsign);
 								root["result"][ii]["se"] = se;
 							}
-
+							if (dType == pTypeSetpoint && dSubType == sTypeSetpoint)
+							{
+								std::string value_unit = options["ValueUnit"];
+								if (
+									(value_unit.empty())
+									|| (value_unit == "°C")
+									|| (value_unit == "°F")
+									)
+								{
+									double se = ConvertTemperature(atof(sd[0].c_str()), tempsign);
+									root["result"][ii]["te"] = se;
+								}
+								else
+									root["result"][ii]["te"] = atof(sd[0].c_str());
+							}
 							ii++;
 						}
 					}
@@ -1919,11 +1933,22 @@ namespace http
 						{
 							root["result"][ii]["d"] = sd[7].substr(0, 16);
 
-							if ((dType == pTypeRego6XXTemp) || (dType == pTypeTEMP) || (dType == pTypeTEMP_HUM) || (dType == pTypeTEMP_HUM_BARO) ||
-								(dType == pTypeTEMP_BARO) || (dType == pTypeWIND) || (dType == pTypeSetpoint1) || (dType == pTypeRadiator1) ||
-								((dType == pTypeRFXSensor) && (dSubType == sTypeRFXSensorTemp)) || ((dType == pTypeUV) && (dSubType == sTypeUV3)) ||
-								((dType == pTypeGeneral) && (dSubType == sTypeSystemTemp)) || ((dType == pTypeSetpoint) && (dSubType == sTypeSetpoint)) ||
-								(dType == pTypeEvohomeZone) || (dType == pTypeEvohomeWater) || ((dType == pTypeGeneral) && (dSubType == sTypeBaro)))
+							if (
+								(dType == pTypeRego6XXTemp)
+								|| (dType == pTypeTEMP)
+								|| (dType == pTypeTEMP_HUM)
+								|| (dType == pTypeTEMP_HUM_BARO)
+								|| (dType == pTypeTEMP_BARO)
+								|| (dType == pTypeWIND)
+								|| (dType == pTypeSetpoint1)
+								|| (dType == pTypeRadiator1)
+								|| ((dType == pTypeRFXSensor) && (dSubType == sTypeRFXSensorTemp))
+								|| ((dType == pTypeUV) && (dSubType == sTypeUV3))
+								|| ((dType == pTypeGeneral) && (dSubType == sTypeSystemTemp))
+								|| (dType == pTypeEvohomeZone)
+								|| (dType == pTypeEvohomeWater)
+								|| ((dType == pTypeGeneral) && (dSubType == sTypeBaro))
+								)
 							{
 								bool bOK = true;
 								if (dType == pTypeWIND)
@@ -1983,6 +2008,30 @@ namespace http
 								root["result"][ii]["se"] = se;
 								root["result"][ii]["sx"] = sx;
 							}
+							if ((dType == pTypeSetpoint) && (dSubType == sTypeSetpoint))
+							{
+								std::string value_unit = options["ValueUnit"];
+								if (
+									(value_unit.empty())
+									|| (value_unit == "°C")
+									|| (value_unit == "°F")
+									)
+								{
+									double te = ConvertTemperature(atof(sd[1].c_str()), tempsign);
+									double tm = ConvertTemperature(atof(sd[0].c_str()), tempsign);
+									double ta = ConvertTemperature(atof(sd[6].c_str()), tempsign);
+									root["result"][ii]["te"] = te;
+									root["result"][ii]["tm"] = tm;
+									root["result"][ii]["ta"] = ta;
+								}
+								else
+								{
+									root["result"][ii]["te"] = atof(sd[1].c_str());
+									root["result"][ii]["tm"] = atof(sd[0].c_str());
+									root["result"][ii]["ta"] = atof(sd[6].c_str());
+								}
+							}
+
 							ii++;
 						}
 					}
@@ -1999,15 +2048,24 @@ namespace http
 						std::vector<std::string> sd = result[0];
 
 						root["result"][ii]["d"] = szDateEnd;
-						if (((dType == pTypeRego6XXTemp) || (dType == pTypeTEMP) || (dType == pTypeTEMP_HUM) || (dType == pTypeTEMP_HUM_BARO) || (dType == pTypeTEMP_BARO) ||
-							(dType == pTypeWIND) || (dType == pTypeSetpoint1) || (dType == pTypeRadiator1)) ||
-							((dType == pTypeUV) && (dSubType == sTypeUV3)) || ((dType == pTypeWIND) && (dSubType == sTypeWIND4)) || (dType == pTypeEvohomeZone) ||
-							(dType == pTypeEvohomeWater))
+						if (
+							(dType == pTypeRego6XXTemp)
+							|| (dType == pTypeTEMP)
+							|| (dType == pTypeTEMP_HUM)
+							|| (dType == pTypeTEMP_HUM_BARO)
+							|| (dType == pTypeTEMP_BARO)
+							|| (dType == pTypeWIND)
+							|| (dType == pTypeSetpoint1)
+							|| (dType == pTypeRadiator1)
+							|| ((dType == pTypeUV) && (dSubType == sTypeUV3))
+							|| ((dType == pTypeWIND) && (dSubType == sTypeWIND4))
+							|| (dType == pTypeEvohomeZone)
+							|| (dType == pTypeEvohomeWater)
+							)
 						{
 							double te = ConvertTemperature(atof(sd[1].c_str()), tempsign);
 							double tm = ConvertTemperature(atof(sd[0].c_str()), tempsign);
 							double ta = ConvertTemperature(atof(sd[6].c_str()), tempsign);
-
 							root["result"][ii]["te"] = te;
 							root["result"][ii]["tm"] = tm;
 							root["result"][ii]["ta"] = ta;
@@ -2055,6 +2113,29 @@ namespace http
 							root["result"][ii]["sm"] = sm;
 							root["result"][ii]["sx"] = sx;
 						}
+						if ((dType == pTypeSetpoint) && (dSubType == sTypeSetpoint))
+						{
+							std::string value_unit = options["ValueUnit"];
+							if (
+								(value_unit.empty())
+								|| (value_unit == "°C")
+								|| (value_unit == "°F")
+								)
+							{
+								double te = ConvertTemperature(atof(sd[1].c_str()), tempsign);
+								double tm = ConvertTemperature(atof(sd[0].c_str()), tempsign);
+								double ta = ConvertTemperature(atof(sd[6].c_str()), tempsign);
+								root["result"][ii]["te"] = te;
+								root["result"][ii]["tm"] = tm;
+								root["result"][ii]["ta"] = ta;
+							}
+							else
+							{
+								root["result"][ii]["te"] = atof(sd[1].c_str());
+								root["result"][ii]["tm"] = atof(sd[0].c_str());
+								root["result"][ii]["ta"] = atof(sd[6].c_str());
+							}
+						}
 						ii++;
 					}
 					// Previous Year
@@ -2071,11 +2152,21 @@ namespace http
 						{
 							root["resultprev"][iPrev]["d"] = sd[7].substr(0, 16);
 
-							if ((dType == pTypeRego6XXTemp) || (dType == pTypeTEMP) || (dType == pTypeTEMP_HUM) || (dType == pTypeTEMP_HUM_BARO) ||
-								(dType == pTypeTEMP_BARO) || (dType == pTypeWIND) || (dType == pTypeSetpoint1) || (dType == pTypeRadiator1) ||
-								((dType == pTypeRFXSensor) && (dSubType == sTypeRFXSensorTemp)) || ((dType == pTypeUV) && (dSubType == sTypeUV3)) ||
-								((dType == pTypeGeneral) && (dSubType == sTypeSystemTemp)) || ((dType == pTypeSetpoint) && (dSubType == sTypeSetpoint)) ||
-								(dType == pTypeEvohomeZone) || (dType == pTypeEvohomeWater))
+							if (
+								(dType == pTypeRego6XXTemp)
+								|| (dType == pTypeTEMP)
+								|| (dType == pTypeTEMP_HUM)
+								|| (dType == pTypeTEMP_HUM_BARO)
+								|| (dType == pTypeTEMP_BARO)
+								|| (dType == pTypeWIND)
+								|| (dType == pTypeSetpoint1)
+								|| (dType == pTypeRadiator1)
+								|| ((dType == pTypeRFXSensor) && (dSubType == sTypeRFXSensorTemp))
+								|| ((dType == pTypeUV) && (dSubType == sTypeUV3))
+								|| ((dType == pTypeGeneral) && (dSubType == sTypeSystemTemp))
+								|| (dType == pTypeEvohomeZone)
+								|| (dType == pTypeEvohomeWater)
+								)
 							{
 								bool bOK = true;
 								if (dType == pTypeWIND)
@@ -2135,6 +2226,30 @@ namespace http
 								root["resultprev"][iPrev]["sm"] = sm;
 								root["resultprev"][iPrev]["sx"] = sx;
 							}
+							if ((dType == pTypeSetpoint) && (dSubType == sTypeSetpoint))
+							{
+								std::string value_unit = options["ValueUnit"];
+								if (
+									(value_unit.empty())
+									|| (value_unit == "°C")
+									|| (value_unit == "°F")
+									)
+								{
+									double te = ConvertTemperature(atof(sd[1].c_str()), tempsign);
+									double tm = ConvertTemperature(atof(sd[0].c_str()), tempsign);
+									double ta = ConvertTemperature(atof(sd[6].c_str()), tempsign);
+									root["resultprev"][iPrev]["te"] = te;
+									root["resultprev"][iPrev]["tm"] = tm;
+									root["resultprev"][iPrev]["ta"] = ta;
+								}
+								else
+								{
+									root["resultprev"][iPrev]["te"] = atof(sd[1].c_str());
+									root["resultprev"][iPrev]["tm"] = atof(sd[0].c_str());
+									root["resultprev"][iPrev]["ta"] = atof(sd[6].c_str());
+								}
+							}
+
 							iPrev++;
 						}
 					}
