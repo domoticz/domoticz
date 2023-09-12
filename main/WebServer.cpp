@@ -2995,13 +2995,13 @@ namespace http
 							if (
 								(value_unit.empty())
 								|| (value_unit == "°C")
-								|| (value_unit == "°f")
+								|| (value_unit == "°F")
 								)
 							{
 								if (tempsign == 'C')
 									value_unit = "°C";
 								else
-									value_unit = "°f";
+									value_unit = "°F";
 
 								double tempCelcius = value;
 								double temp = ConvertTemperature(tempCelcius, tempsign);
