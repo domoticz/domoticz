@@ -1023,9 +1023,9 @@ bool IsLightOrSwitch(const int dType, const int dSubType)
 	case pTypeBlinds:
 	case pTypeChime:
 	case pTypeRFY:
-	case pTypeSetpoint2:
-	case pTypeSetpoint3:
-	case pTypeSetpoint4:
+	case pTypeThermostat2:
+	case pTypeThermostat3:
+	case pTypeThermostat4:
 	case pTypeRemote:
 	case pTypeGeneralSwitch:
 	case pTypeHomeConfort:
@@ -1054,7 +1054,7 @@ bool IsTemp(const int dType, const int dSubType)
 		|| ((dType == pTypeWIND) && (dSubType == sTypeWIND4))
 		|| ((dType == pTypeUV) && (dSubType == sTypeUV3))
 		|| ((dType == pTypeGeneral) && (dSubType == sTypeSystemTemp))
-		|| (dType == pTypeSetpoint1)
+		|| (dType == pTypeThermostat1)
 		|| ((dType == pTypeRFXSensor) && (dSubType == sTypeRFXSensorTemp))
 		|| (dType == pTypeRego6XXTemp)
 		);

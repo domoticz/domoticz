@@ -189,7 +189,7 @@ namespace http
 								|| dType == pTypeTEMP_BARO
 								|| dType == pTypeWIND && dSubType == sTypeWIND4
 								|| dType == pTypeUV && dSubType == sTypeUV3
-								|| dType == pTypeSetpoint1
+								|| dType == pTypeThermostat1
 								|| dType == pTypeRadiator1
 								|| dType == pTypeRFXSensor && dSubType == sTypeRFXSensorTemp
 								|| dType == pTypeGeneral && dSubType == sTypeSystemTemp
@@ -1940,7 +1940,7 @@ namespace http
 								|| (dType == pTypeTEMP_HUM_BARO)
 								|| (dType == pTypeTEMP_BARO)
 								|| (dType == pTypeWIND)
-								|| (dType == pTypeSetpoint1)
+								|| (dType == pTypeThermostat1)
 								|| (dType == pTypeRadiator1)
 								|| ((dType == pTypeRFXSensor) && (dSubType == sTypeRFXSensorTemp))
 								|| ((dType == pTypeUV) && (dSubType == sTypeUV3))
@@ -2055,7 +2055,7 @@ namespace http
 							|| (dType == pTypeTEMP_HUM_BARO)
 							|| (dType == pTypeTEMP_BARO)
 							|| (dType == pTypeWIND)
-							|| (dType == pTypeSetpoint1)
+							|| (dType == pTypeThermostat1)
 							|| (dType == pTypeRadiator1)
 							|| ((dType == pTypeUV) && (dSubType == sTypeUV3))
 							|| ((dType == pTypeWIND) && (dSubType == sTypeWIND4))
@@ -2159,7 +2159,7 @@ namespace http
 								|| (dType == pTypeTEMP_HUM_BARO)
 								|| (dType == pTypeTEMP_BARO)
 								|| (dType == pTypeWIND)
-								|| (dType == pTypeSetpoint1)
+								|| (dType == pTypeThermostat1)
 								|| (dType == pTypeRadiator1)
 								|| ((dType == pTypeRFXSensor) && (dSubType == sTypeRFXSensorTemp))
 								|| ((dType == pTypeUV) && (dSubType == sTypeUV3))
@@ -3656,7 +3656,7 @@ namespace http
 
 					if ((sgraphTemp == "true") &&
 						((dType == pTypeRego6XXTemp) || (dType == pTypeTEMP) || (dType == pTypeTEMP_HUM) || (dType == pTypeTEMP_HUM_BARO) || (dType == pTypeTEMP_BARO) ||
-							(dType == pTypeWIND) || (dType == pTypeSetpoint1) || (dType == pTypeRadiator1) || ((dType == pTypeUV) && (dSubType == sTypeUV3)) ||
+							(dType == pTypeWIND) || (dType == pTypeThermostat1) || (dType == pTypeRadiator1) || ((dType == pTypeUV) && (dSubType == sTypeUV3)) ||
 							((dType == pTypeWIND) && (dSubType == sTypeWIND4)) || ((dType == pTypeRFXSensor) && (dSubType == sTypeRFXSensorTemp)) ||
 							((dType == pTypeSetpoint) && (dSubType == sTypeSetpoint)) || (dType == pTypeEvohomeZone) || (dType == pTypeEvohomeWater)))
 					{

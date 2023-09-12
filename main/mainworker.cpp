@@ -1901,16 +1901,16 @@ uint64_t MainWorker::PerformRealActionFromDomoticzClient(const uint8_t* pRXComma
 		Unit = pMeter->dunit;
 	}
 	break;
-	case pTypeSetpoint2:
+	case pTypeThermostat2:
 		ID = "1";
 		Unit = pResponse->THERMOSTAT2.unitcode;
 		break;
-	case pTypeSetpoint3:
+	case pTypeThermostat3:
 		sprintf(szTmp, "%02X%02X%02X", pResponse->THERMOSTAT3.unitcode1, pResponse->THERMOSTAT3.unitcode2, pResponse->THERMOSTAT3.unitcode3);
 		ID = szTmp;
 		Unit = 0;
 		break;
-	case pTypeSetpoint4:
+	case pTypeThermostat4:
 		sprintf(szTmp, "%02X%02X%02X", pResponse->THERMOSTAT4.unitcode1, pResponse->THERMOSTAT4.unitcode2, pResponse->THERMOSTAT4.unitcode3);
 		ID = szTmp;
 		Unit = 0;
@@ -2210,9 +2210,9 @@ void MainWorker::ProcessRXMessage(const CDomoticzHardwareBase* pHardware, const 
 			case pTypeSecurity2:
 			case pTypeChime:
 			case pTypeSetpoint:
-			case pTypeSetpoint2:
-			case pTypeSetpoint3:
-			case pTypeSetpoint4:
+			case pTypeThermostat2:
+			case pTypeThermostat3:
+			case pTypeThermostat4:
 			case pTypeRadiator1:
 			case pTypeGeneralSwitch:
 			case pTypeHomeConfort:
@@ -2312,16 +2312,16 @@ void MainWorker::ProcessRXMessage(const CDomoticzHardwareBase* pHardware, const 
 		case pTypeSetpoint: //own type
 			decode_Thermostat(pHardware, reinterpret_cast<const tRBUF*>(pRXCommand), procResult);
 			break;
-		case pTypeSetpoint1:
+		case pTypeThermostat1:
 			decode_Thermostat1(pHardware, reinterpret_cast<const tRBUF*>(pRXCommand), procResult);
 			break;
-		case pTypeSetpoint2:
+		case pTypeThermostat2:
 			decode_Thermostat2(pHardware, reinterpret_cast<const tRBUF*>(pRXCommand), procResult);
 			break;
-		case pTypeSetpoint3:
+		case pTypeThermostat3:
 			decode_Thermostat3(pHardware, reinterpret_cast<const tRBUF*>(pRXCommand), procResult);
 			break;
-		case pTypeSetpoint4:
+		case pTypeThermostat4:
 			decode_Thermostat4(pHardware, reinterpret_cast<const tRBUF*>(pRXCommand), procResult);
 			break;
 		case pTypeRadiator1:
@@ -8443,7 +8443,7 @@ void MainWorker::decode_Remote(const CDomoticzHardwareBase* pHardware, const tRB
 void MainWorker::decode_Thermostat1(const CDomoticzHardwareBase* pHardware, const tRBUF* pResponse, _tRxMessageProcessingResult& procResult)
 {
 	char szTmp[100];
-	uint8_t devType = pTypeSetpoint1;
+	uint8_t devType = pTypeThermostat1;
 	uint8_t subType = pResponse->THERMOSTAT1.subtype;
 	std::string ID;
 	sprintf(szTmp, "%d", (pResponse->THERMOSTAT1.id1 * 256) + pResponse->THERMOSTAT1.id2);
@@ -8524,7 +8524,7 @@ void MainWorker::decode_Thermostat1(const CDomoticzHardwareBase* pHardware, cons
 void MainWorker::decode_Thermostat2(const CDomoticzHardwareBase* pHardware, const tRBUF* pResponse, _tRxMessageProcessingResult& procResult)
 {
 	char szTmp[100];
-	uint8_t devType = pTypeSetpoint2;
+	uint8_t devType = pTypeThermostat2;
 	uint8_t subType = pResponse->THERMOSTAT2.subtype;
 	std::string ID;
 	ID = "1";
@@ -8584,7 +8584,7 @@ void MainWorker::decode_Thermostat2(const CDomoticzHardwareBase* pHardware, cons
 void MainWorker::decode_Thermostat3(const CDomoticzHardwareBase* pHardware, const tRBUF* pResponse, _tRxMessageProcessingResult& procResult)
 {
 	char szTmp[100];
-	uint8_t devType = pTypeSetpoint3;
+	uint8_t devType = pTypeThermostat3;
 	uint8_t subType = pResponse->THERMOSTAT3.subtype;
 	std::string ID;
 	sprintf(szTmp, "%02X%02X%02X", pResponse->THERMOSTAT3.unitcode1, pResponse->THERMOSTAT3.unitcode2, pResponse->THERMOSTAT3.unitcode3);
@@ -8674,7 +8674,7 @@ void MainWorker::decode_Thermostat3(const CDomoticzHardwareBase* pHardware, cons
 void MainWorker::decode_Thermostat4(const CDomoticzHardwareBase* pHardware, const tRBUF* pResponse, _tRxMessageProcessingResult& procResult)
 {
 	char szTmp[100];
-	uint8_t devType = pTypeSetpoint4;
+	uint8_t devType = pTypeThermostat4;
 	uint8_t subType = pResponse->THERMOSTAT4.subtype;
 	std::string ID;
 	sprintf(szTmp, "%02X%02X%02X", pResponse->THERMOSTAT4.unitcode1, pResponse->THERMOSTAT4.unitcode2, pResponse->THERMOSTAT4.unitcode3);
@@ -12477,7 +12477,7 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string>& sd, std::string 
 		return true;
 	}
 	break;
-	case pTypeSetpoint2:
+	case pTypeThermostat2:
 	{
 		tRBUF lcmd;
 		lcmd.THERMOSTAT2.packetlength = sizeof(lcmd.REMOTE) - 1;
@@ -12501,7 +12501,7 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string>& sd, std::string 
 		return true;
 	}
 	break;
-	case pTypeSetpoint3:
+	case pTypeThermostat3:
 	{
 		tRBUF lcmd;
 		lcmd.THERMOSTAT3.packetlength = sizeof(lcmd.THERMOSTAT3) - 1;
@@ -12525,7 +12525,7 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string>& sd, std::string 
 		return true;
 	}
 	break;
-	case pTypeSetpoint4:
+	case pTypeThermostat4:
 	{
 		_log.Log(LOG_ERROR, "Thermostat 4 not implemented yet!");
 		/*

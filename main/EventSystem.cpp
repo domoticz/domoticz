@@ -678,7 +678,7 @@ void CEventSystem::GetCurrentMeasurementStates()
 				}
 			}
 			break;
-		case pTypeSetpoint1:
+		case pTypeThermostat1:
 			if (!splitresults.empty())
 			{
 				temp = static_cast<float>(atof(splitresults[0].c_str()));

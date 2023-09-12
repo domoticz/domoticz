@@ -4872,13 +4872,13 @@ uint64_t CSQLHelper::UpdateValue(const int HardwareID, const char* ID, const uns
 					case pTypeRFY:
 						newnValue = rfy_sUp;
 						break;
-					case pTypeSetpoint2:
+					case pTypeThermostat2:
 						newnValue = thermostat2_sOff;
 						break;
-					case pTypeSetpoint3:
+					case pTypeThermostat3:
 						newnValue = thermostat3_sOff;
 						break;
-					case pTypeSetpoint4:
+					case pTypeThermostat4:
 						newnValue = thermostat4_sOff;
 						break;
 					case pTypeRadiator1:
@@ -4964,13 +4964,13 @@ uint64_t CSQLHelper::UpdateValue(const int HardwareID, const char* ID, const uns
 			case pTypeRFY:
 				newnValue = rfy_sUp;
 				break;
-			case pTypeSetpoint2:
+			case pTypeThermostat2:
 				newnValue = thermostat2_sOff;
 				break;
-			case pTypeSetpoint3:
+			case pTypeThermostat3:
 				newnValue = thermostat3_sOff;
 				break;
-			case pTypeSetpoint4:
+			case pTypeThermostat4:
 				newnValue = thermostat4_sOff;
 				break;
 			case pTypeRadiator1:
@@ -5351,9 +5351,9 @@ uint64_t CSQLHelper::UpdateValueInt(
 	case pTypeFan:
 	case pTypeRFY:
 	case pTypeChime:
-	case pTypeSetpoint2:
-	case pTypeSetpoint3:
-	case pTypeSetpoint4:
+	case pTypeThermostat2:
+	case pTypeThermostat3:
+	case pTypeThermostat4:
 	case pTypeRemote:
 	case pTypeGeneralSwitch:
 	case pTypeHomeConfort:
@@ -5997,7 +5997,7 @@ void CSQLHelper::UpdateTemperatureLog()
 		pTypeTEMP_BARO,
 		pTypeUV,
 		pTypeWIND,
-		pTypeSetpoint1,
+		pTypeThermostat1,
 		pTypeRFXSensor,
 		pTypeRego6XXTemp,
 		pTypeEvohomeZone,
@@ -6053,7 +6053,7 @@ void CSQLHelper::UpdateTemperatureLog()
 			case pTypeSetpoint:
 				temp = static_cast<float>(atof(splitresults[0].c_str()));
 				break;
-			case pTypeSetpoint1:
+			case pTypeThermostat1:
 				temp = static_cast<float>(atof(splitresults[0].c_str()));
 				break;
 			case pTypeRadiator1:
@@ -8727,9 +8727,9 @@ void CSQLHelper::CheckDeviceTimeout()
 		pTypeBlinds,
 		pTypeRFY,
 		pTypeChime,
-		pTypeSetpoint2,
-		pTypeSetpoint3,
-		pTypeSetpoint4,
+		pTypeThermostat2,
+		pTypeThermostat3,
+		pTypeThermostat4,
 		pTypeRemote,
 		pTypeGeneralSwitch,
 		pTypeHomeConfort,

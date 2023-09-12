@@ -471,10 +471,10 @@ const char* RFX_Type_Desc(const unsigned char i, const unsigned char snum)
 		{ pTypeSecurity2, "Security", "security" },
 		{ pTypeCamera, "Camera", "unknown" },
 		{ pTypeRemote, "Remote & IR", "unknown" },
-		{ pTypeSetpoint1, "Thermostat 1", "temperature" },
-		{ pTypeSetpoint2, "Thermostat 2", "temperature" },
-		{ pTypeSetpoint3, "Thermostat 3", "temperature" },
-		{ pTypeSetpoint4, "Thermostat 4", "temperature" },
+		{ pTypeThermostat1, "Thermostat 1", "temperature" },
+		{ pTypeThermostat2, "Thermostat 2", "temperature" },
+		{ pTypeThermostat3, "Thermostat 3", "temperature" },
+		{ pTypeThermostat4, "Thermostat 4", "temperature" },
 		{ pTypeRadiator1, "Radiator 1", "temperature" },
 		{ pTypeTEMP, "Temp", "temperature" },
 		{ pTypeHUM, "Humidity", "temperature" },
@@ -692,20 +692,20 @@ const char* RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 		{ pTypeRemote, sTypePCremote, "PC Remote" },
 		{ pTypeRemote, sTypeATIrw2, "ATI Remote Wonder II" },
 
-		{ pTypeSetpoint1, sTypeDigimax, "Digimax" },
-		{ pTypeSetpoint1, sTypeDigimaxShort, "Digimax short" },
+		{ pTypeThermostat1, sTypeDigimax, "Digimax" },
+		{ pTypeThermostat1, sTypeDigimaxShort, "Digimax short" },
 
-		{ pTypeSetpoint2, sTypeHE105, "HE105" },
-		{ pTypeSetpoint2, sTypeRTS10, "RTS10" },
+		{ pTypeThermostat2, sTypeHE105, "HE105" },
+		{ pTypeThermostat2, sTypeRTS10, "RTS10" },
 
-		{ pTypeSetpoint3, sTypeMertikG6RH4T1, "Mertik G6R-H4T1" },
-		{ pTypeSetpoint3, sTypeMertikG6RH4TB, "Mertik G6R-H4TB" },
-		{ pTypeSetpoint3, sTypeMertikG6RH4TD, "Mertik G6R-H4TD" },
-		{ pTypeSetpoint3, sTypeMertikG6RH4S, "Mertik G6R-H4S" },
+		{ pTypeThermostat3, sTypeMertikG6RH4T1, "Mertik G6R-H4T1" },
+		{ pTypeThermostat3, sTypeMertikG6RH4TB, "Mertik G6R-H4TB" },
+		{ pTypeThermostat3, sTypeMertikG6RH4TD, "Mertik G6R-H4TD" },
+		{ pTypeThermostat3, sTypeMertikG6RH4S, "Mertik G6R-H4S" },
 
-		{ pTypeSetpoint4, sTypeMCZ1, "MCZ 1 fan model" },
-		{ pTypeSetpoint4, sTypeMCZ2, "MCZ 2 fan model" },
-		{ pTypeSetpoint4, sTypeMCZ3, "MCZ 3 fan model" },
+		{ pTypeThermostat4, sTypeMCZ1, "MCZ 1 fan model" },
+		{ pTypeThermostat4, sTypeMCZ2, "MCZ 2 fan model" },
+		{ pTypeThermostat4, sTypeMCZ3, "MCZ 3 fan model" },
 
 		{ pTypeRadiator1, sTypeSmartwares, "Smartwares" },
 		{ pTypeRadiator1, sTypeSmartwaresSwitchRadiator, "Smartwares Mode" },
@@ -1821,7 +1821,7 @@ void GetLightStatus(
 	case pTypeRemote:
 		lstatus = "On";
 		break;
-	case pTypeSetpoint2:
+	case pTypeThermostat2:
 		switch (nValue)
 		{
 		case thermostat2_sOff:
@@ -1832,7 +1832,7 @@ void GetLightStatus(
 			break;
 		}
 		break;
-	case pTypeSetpoint3:
+	case pTypeThermostat3:
 		switch (nValue)
 		{
 		case thermostat3_sOff:
@@ -1864,7 +1864,7 @@ void GetLightStatus(
 			break;
 		}
 		break;
-	case pTypeSetpoint4:
+	case pTypeThermostat4:
 		switch (nValue)
 		{
 		case thermostat4_sOff:
@@ -3463,7 +3463,7 @@ bool GetLightCommand(
 	case pTypeRemote:
 		cmd = light2_sOn;
 		break;
-	case pTypeSetpoint2:
+	case pTypeThermostat2:
 	{
 		if (switchcmd == "On")
 		{
@@ -3480,7 +3480,7 @@ bool GetLightCommand(
 		return true;
 	}
 	break;
-	case pTypeSetpoint3:
+	case pTypeThermostat3:
 	{
 		if (switchcmd == "On")
 		{
@@ -3517,7 +3517,7 @@ bool GetLightCommand(
 		return true;
 	}
 	break;
-	case pTypeSetpoint4:
+	case pTypeThermostat4:
 	{
 		if (switchcmd == "Off")
 		{

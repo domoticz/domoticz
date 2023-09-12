@@ -1639,9 +1639,9 @@ namespace http
 						|| (dType == pTypeBlinds)
 						|| (dType == pTypeRFY)
 						|| (dType == pTypeChime)
-						|| (dType == pTypeSetpoint2)
-						|| (dType == pTypeSetpoint3)
-						|| (dType == pTypeSetpoint4)
+						|| (dType == pTypeThermostat2)
+						|| (dType == pTypeThermostat3)
+						|| (dType == pTypeThermostat4)
 						|| (dType == pTypeRemote)
 						|| (dType == pTypeGeneralSwitch)
 						|| (dType == pTypeHomeConfort)
@@ -2106,7 +2106,7 @@ namespace http
 						}
 						root["result"][ii]["trend"] = (int)tstate;
 					}
-					else if (dType == pTypeSetpoint1)
+					else if (dType == pTypeThermostat1)
 					{
 						std::vector<std::string> strarray;
 						StringSplit(sValue, ";", strarray);

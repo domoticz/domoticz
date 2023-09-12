@@ -320,9 +320,9 @@ namespace http
 						case pTypeBlinds:
 						case pTypeRFY:
 						case pTypeChime:
-						case pTypeSetpoint2:
-						case pTypeSetpoint3:
-						case pTypeSetpoint4:
+						case pTypeThermostat2:
+						case pTypeThermostat3:
+						case pTypeThermostat4:
 						case pTypeRemote:
 						case pTypeRadiator1:
 						case pTypeGeneralSwitch:
@@ -452,9 +452,9 @@ namespace http
 							case pTypeBlinds:
 							case pTypeRFY:
 							case pTypeChime:
-							case pTypeSetpoint2:
-							case pTypeSetpoint3:
-							case pTypeSetpoint4:
+							case pTypeThermostat2:
+							case pTypeThermostat3:
+							case pTypeThermostat4:
 							case pTypeRemote:
 							case pTypeGeneralSwitch:
 							case pTypeHomeConfort:
@@ -1370,7 +1370,7 @@ namespace http
 				else if (lighttype == 104)
 				{
 					// HE105
-					dtype = pTypeSetpoint2;
+					dtype = pTypeThermostat2;
 					subtype = sTypeHE105;
 					sunitcode = request::findValue(&req, "unitcode");
 					if (sunitcode.empty())
@@ -2097,7 +2097,7 @@ namespace http
 				else if (lighttype == 104)
 				{
 					// HE105
-					dtype = pTypeSetpoint2;
+					dtype = pTypeThermostat2;
 					subtype = sTypeHE105;
 					sunitcode = request::findValue(&req, "unitcode");
 					if (sunitcode.empty())
@@ -2568,8 +2568,8 @@ namespace http
 				if (
 					(dType == pTypeLighting1) || (dType == pTypeLighting2) || (dType == pTypeLighting3) || (dType == pTypeLighting4) || (dType == pTypeLighting5) ||
 					(dType == pTypeLighting6) || (dType == pTypeColorSwitch) || (dType == pTypeSecurity1) || (dType == pTypeSecurity2) || (dType == pTypeEvohome) ||
-					(dType == pTypeEvohomeRelay) || (dType == pTypeCurtain) || (dType == pTypeBlinds) || (dType == pTypeRFY) || (dType == pTypeChime) || (dType == pTypeSetpoint2) ||
-					(dType == pTypeSetpoint3) || (dType == pTypeSetpoint4) || (dType == pTypeRemote) || (dType == pTypeGeneralSwitch) || (dType == pTypeHomeConfort) ||
+					(dType == pTypeEvohomeRelay) || (dType == pTypeCurtain) || (dType == pTypeBlinds) || (dType == pTypeRFY) || (dType == pTypeChime) || (dType == pTypeThermostat2) ||
+					(dType == pTypeThermostat3) || (dType == pTypeThermostat4) || (dType == pTypeRemote) || (dType == pTypeGeneralSwitch) || (dType == pTypeHomeConfort) ||
 					(dType == pTypeFS20) || ((dType == pTypeRadiator1) && (dSubType == sTypeSmartwaresSwitchRadiator)) || (dType == pTypeDDxxxx)
 					)
 				{
@@ -2645,7 +2645,7 @@ namespace http
 					}
 				}
 				if (((dType == pTypeTEMP) || (dType == pTypeTEMP_HUM) || (dType == pTypeTEMP_HUM_BARO) || (dType == pTypeTEMP_BARO) || (dType == pTypeEvohomeZone) ||
-					(dType == pTypeEvohomeWater) || (dType == pTypeSetpoint1) || (dType == pTypeRego6XXTemp) || ((dType == pTypeRFXSensor) && (dSubType == sTypeRFXSensorTemp))) ||
+					(dType == pTypeEvohomeWater) || (dType == pTypeThermostat1) || (dType == pTypeRego6XXTemp) || ((dType == pTypeRFXSensor) && (dSubType == sTypeRFXSensorTemp))) ||
 					((dType == pTypeUV) && (dSubType == sTypeUV3)) || ((dType == pTypeWIND) && (dSubType == sTypeWIND4)) || ((dType == pTypeWIND) && (dSubType == sTypeWINDNoTemp)) ||
 					((dType == pTypeGeneral) && (dSubType == sTypeSystemTemp)))
 				{
@@ -3432,7 +3432,7 @@ namespace http
 					(dType != pTypeLighting1) && (dType != pTypeLighting2) && (dType != pTypeLighting3) && (dType != pTypeLighting4) && (dType != pTypeLighting5) &&
 					(dType != pTypeLighting6) && (dType != pTypeFan) && (dType != pTypeColorSwitch) && (dType != pTypeSecurity1) && (dType != pTypeSecurity2) &&
 					(dType != pTypeEvohome) && (dType != pTypeEvohomeRelay) && (dType != pTypeCurtain) && (dType != pTypeBlinds) && (dType != pTypeRFY) && (dType != pTypeChime) &&
-					(dType != pTypeSetpoint2) && (dType != pTypeSetpoint3) && (dType != pTypeSetpoint4) && (dType != pTypeRemote) && (dType != pTypeGeneralSwitch) &&
+					(dType != pTypeThermostat2) && (dType != pTypeThermostat4) && (dType != pTypeThermostat4) && (dType != pTypeRemote) && (dType != pTypeGeneralSwitch) &&
 					(dType != pTypeHomeConfort) && (dType != pTypeFS20) && (!((dType == pTypeRadiator1) && (dSubType == sTypeSmartwaresSwitchRadiator))) &&
 					(!((dType == pTypeGeneral) && (dSubType == sTypeTextStatus))) && (!((dType == pTypeGeneral) && (dSubType == sTypeAlert))) && (dType != pTypeHunter) && (dType != pTypeDDxxxx)
 					)
