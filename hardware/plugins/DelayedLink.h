@@ -529,16 +529,6 @@ static inline void py3__Py_INCREF(PyObject* op)
 	op->ob_refcnt++;
 }
 
-#ifndef _Py_DEC_REFTOTAL
-/* _Py_DEC_REFTOTAL macro has been removed from Python 3.9 by:
-  https://github.com/python/cpython/commit/49932fec62c616ec88da52642339d83ae719e924 */
-#  ifdef Py_REF_DEBUG
-#    define _Py_DEC_REFTOTAL _Py_RefTotal--
-#  else
-#    define _Py_DEC_REFTOTAL
-#  endif
-#endif
-
 #undef Py_INCREF
 #define Py_INCREF(op) py3__Py_INCREF(_PyObject_CAST(op))
 

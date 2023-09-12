@@ -8,18 +8,18 @@ extern "C" {
 #endif
 
 typedef struct PyStructSequence_Field {
-    const char *name;
-    const char *doc;
+    char *name;
+    char *doc;
 } PyStructSequence_Field;
 
 typedef struct PyStructSequence_Desc {
-    const char *name;
-    const char *doc;
+    char *name;
+    char *doc;
     struct PyStructSequence_Field *fields;
     int n_in_sequence;
 } PyStructSequence_Desc;
 
-extern const char * const PyStructSequence_UnnamedField;
+extern char* PyStructSequence_UnnamedField;
 
 #ifndef Py_LIMITED_API
 PyAPI_FUNC(void) PyStructSequence_InitType(PyTypeObject *type,

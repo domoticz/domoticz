@@ -10,13 +10,12 @@ extern "C" {
 
 /* There are three kinds of entries in the table:
 
-1. Unused:  key == NULL and hash == 0
-2. Dummy:   key == dummy and hash == -1
-3. Active:  key != NULL and key != dummy and hash != -1
+1. Unused:  key == NULL
+2. Active:  key != NULL and key != dummy
+3. Dummy:   key == dummy
 
-The hash field of Unused slots is always zero.
-
-The hash field of Dummy slots are set to -1
+The hash field of Unused slots have no meaning.
+The hash field of Dummny slots are set to -1
 meaning that dummy entries can be detected by
 either entry->key==dummy or by entry->hash==-1.
 */
@@ -64,12 +63,13 @@ typedef struct {
     PyObject *weakreflist;      /* List of weak references */
 } PySetObject;
 
-#define PySet_GET_SIZE(so) (assert(PyAnySet_Check(so)),(((PySetObject *)(so))->used))
+#define PySet_GET_SIZE(so) (((PySetObject *)(so))->used)
 
 PyAPI_DATA(PyObject *) _PySet_Dummy;
 
 PyAPI_FUNC(int) _PySet_NextEntry(PyObject *set, Py_ssize_t *pos, PyObject **key, Py_hash_t *hash);
 PyAPI_FUNC(int) _PySet_Update(PyObject *set, PyObject *iterable);
+PyAPI_FUNC(int) PySet_ClearFreeList(void);
 
 #endif /* Section excluded by Py_LIMITED_API */
 
@@ -87,22 +87,19 @@ PyAPI_FUNC(int) PySet_Discard(PyObject *set, PyObject *key);
 PyAPI_FUNC(PyObject *) PySet_Pop(PyObject *set);
 PyAPI_FUNC(Py_ssize_t) PySet_Size(PyObject *anyset);
 
-#define PyFrozenSet_CheckExact(ob) Py_IS_TYPE(ob, &PyFrozenSet_Type)
-#define PyFrozenSet_Check(ob) \
-    (Py_IS_TYPE(ob, &PyFrozenSet_Type) || \
-      PyType_IsSubtype(Py_TYPE(ob), &PyFrozenSet_Type))
-
+#define PyFrozenSet_CheckExact(ob) (Py_TYPE(ob) == &PyFrozenSet_Type)
 #define PyAnySet_CheckExact(ob) \
-    (Py_IS_TYPE(ob, &PySet_Type) || Py_IS_TYPE(ob, &PyFrozenSet_Type))
+    (Py_TYPE(ob) == &PySet_Type || Py_TYPE(ob) == &PyFrozenSet_Type)
 #define PyAnySet_Check(ob) \
-    (Py_IS_TYPE(ob, &PySet_Type) || Py_IS_TYPE(ob, &PyFrozenSet_Type) || \
+    (Py_TYPE(ob) == &PySet_Type || Py_TYPE(ob) == &PyFrozenSet_Type || \
       PyType_IsSubtype(Py_TYPE(ob), &PySet_Type) || \
       PyType_IsSubtype(Py_TYPE(ob), &PyFrozenSet_Type))
-
-#define PySet_CheckExact(op) Py_IS_TYPE(op, &PySet_Type)
 #define PySet_Check(ob) \
-    (Py_IS_TYPE(ob, &PySet_Type) || \
+    (Py_TYPE(ob) == &PySet_Type || \
     PyType_IsSubtype(Py_TYPE(ob), &PySet_Type))
+#define   PyFrozenSet_Check(ob) \
+    (Py_TYPE(ob) == &PyFrozenSet_Type || \
+      PyType_IsSubtype(Py_TYPE(ob), &PyFrozenSet_Type))
 
 #ifdef __cplusplus
 }

@@ -9,10 +9,10 @@ typedef PyObject *(*getter)(PyObject *, void *);
 typedef int (*setter)(PyObject *, PyObject *, void *);
 
 typedef struct PyGetSetDef {
-    const char *name;
+    char *name;
     getter get;
     setter set;
-    const char *doc;
+    char *doc;
     void *closure;
 } PyGetSetDef;
 
@@ -24,11 +24,11 @@ typedef PyObject *(*wrapperfunc_kwds)(PyObject *self, PyObject *args,
                                       void *wrapped, PyObject *kwds);
 
 struct wrapperbase {
-    const char *name;
+    char *name;
     int offset;
     void *function;
     wrapperfunc wrapper;
-    const char *doc;
+    char *doc;
     int flags;
     PyObject *name_strobj;
 };
@@ -53,7 +53,6 @@ typedef struct {
 typedef struct {
     PyDescr_COMMON;
     PyMethodDef *d_method;
-    vectorcallfunc vectorcall;
 } PyMethodDescrObject;
 
 typedef struct {
@@ -79,9 +78,7 @@ PyAPI_DATA(PyTypeObject) PyMemberDescr_Type;
 PyAPI_DATA(PyTypeObject) PyMethodDescr_Type;
 PyAPI_DATA(PyTypeObject) PyWrapperDescr_Type;
 PyAPI_DATA(PyTypeObject) PyDictProxy_Type;
-#ifndef Py_LIMITED_API
 PyAPI_DATA(PyTypeObject) _PyMethodWrapper_Type;
-#endif /* Py_LIMITED_API */
 
 PyAPI_FUNC(PyObject *) PyDescr_NewMethod(PyTypeObject *, PyMethodDef *);
 PyAPI_FUNC(PyObject *) PyDescr_NewClassMethod(PyTypeObject *, PyMethodDef *);
@@ -93,7 +90,7 @@ PyAPI_FUNC(PyObject *) PyDescr_NewGetSet(PyTypeObject *,
 #ifndef Py_LIMITED_API
 PyAPI_FUNC(PyObject *) PyDescr_NewWrapper(PyTypeObject *,
                                                 struct wrapperbase *, void *);
-PyAPI_FUNC(int) PyDescr_IsData(PyObject *);
+#define PyDescr_IsData(d) (Py_TYPE(d)->tp_descr_set != NULL)
 #endif
 
 PyAPI_FUNC(PyObject *) PyDictProxy_New(PyObject *);
