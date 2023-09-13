@@ -429,7 +429,7 @@ describe('device', function()
 
 			local device = getDevice(domoticz, {
 				['name'] = 'myDevice',
-				['type'] = 'Thermostat',
+				['type'] = 'Setpoint',
 				['hardwareTypeValue'] = 15,
 				['subType'] = 'SetPoint',
 				['rawData'] = { [1] = 12.5 }
@@ -446,7 +446,7 @@ describe('device', function()
 
 			local device = getDevice(domoticz, {
 				['name'] = 'myDevice',
-				['type'] = 'Thermostat',
+				['type'] = 'Setpoint',
 				['subType'] = 'Text',
 				['rawData'] = { [1] = 'dzVents rocks' }
 			})
@@ -760,7 +760,7 @@ describe('device', function()
 
 			local device = getDevice(domoticz, {
 				['name'] = 'myDevice',
-				['type'] = 'Thermostat',
+				['type'] = 'Heating',
 				['subType'] = 'Zone',
 				['hardwareTypeValue'] = 39,
 				['rawData'] = { [1] = 12.5;
@@ -781,7 +781,7 @@ describe('device', function()
 
 			local device = getDevice(domoticz, {
 				['name'] = 'myDevice',
-				['type'] = 'Thermostat',
+				['type'] = 'Heating',
 				['subType'] = 'Hot Water',
 				['hardwareTypeValue'] = 39,
 				['rawData'] = {
@@ -836,7 +836,7 @@ describe('device', function()
 
 			local device = getDevice(domoticz, {
 				['name'] = 'myDevice',
-				['type'] = 'Thermostat',
+				['type'] = 'Setpoint',
 				['hardwareTypeValue'] = 20,
 				['subType'] = 'SetPoint',
 				['rawData'] = { [1] = 12.5 }
