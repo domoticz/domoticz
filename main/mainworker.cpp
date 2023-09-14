@@ -12837,7 +12837,7 @@ bool MainWorker::SetSetPoint(const std::string& idx, const float TempValue, cons
 	//Get Device details
 	std::vector<std::vector<std::string> > result;
 	result = m_sql.safe_query(
-		"SELECT HardwareID, DeviceID,Unit,Type,SubType,SwitchType,StrParam1,ID FROM DeviceStatus WHERE (ID == '%q')",
+		"SELECT HardwareID, DeviceID,Unit,Type,SubType,SwitchType,StrParam1,ID,Options FROM DeviceStatus WHERE (ID == '%q')",
 		idx.c_str());
 	if (result.empty())
 		return false;
@@ -12913,7 +12913,7 @@ bool MainWorker::SetSetPoint(const std::string& idx, const float TempValue)
 	//Get Device details
 	std::vector<std::vector<std::string> > result;
 	result = m_sql.safe_query(
-		"SELECT HardwareID, DeviceID,Unit,Type,SubType,SwitchType,StrParam1,ID FROM DeviceStatus WHERE (ID == '%q')",
+		"SELECT HardwareID, DeviceID,Unit,Type,SubType,SwitchType,StrParam1,ID,Options FROM DeviceStatus WHERE (ID == '%q')",
 		idx.c_str());
 	if (result.empty())
 		return false;
@@ -12956,7 +12956,29 @@ bool MainWorker::SetSetPointInt(const std::vector<std::string>& sd, const float 
 	tmeter.id3 = ID3;
 	tmeter.id4 = ID4;
 	tmeter.dunit = Unit;
-	tmeter.value = (m_sql.m_tempsign[0] != 'F') ? TempValue : static_cast<float>(ConvertToCelsius(TempValue));
+
+	if ((dType == pTypeSetpoint) && (dSubType == sTypeSetpoint))
+	{
+		std::string sOptions = sd[8].c_str();
+		std::map<std::string, std::string> options = m_sql.BuildDeviceOptions(sOptions);
+		std::string value_unit = options["ValueUnit"];
+
+		if (
+			(value_unit.empty())
+			|| (value_unit == "°C")
+			|| (value_unit == "°F")
+			)
+		{
+			tmeter.value = (m_sql.m_tempsign[0] != 'F') ? TempValue : static_cast<float>(ConvertToCelsius(TempValue));
+		}
+		else
+			tmeter.value = TempValue;
+	}
+	else
+	{
+		tmeter.value = (m_sql.m_tempsign[0] != 'F') ? TempValue : static_cast<float>(ConvertToCelsius(TempValue));
+	}
+
 
 	if (pHardware->HwdType == HTYPE_PythonPlugin)
 	{
