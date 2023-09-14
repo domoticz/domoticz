@@ -258,7 +258,7 @@ define(['app', 'components/rgbw-picker/RgbwPicker', 'timers/factories'], functio
                 var command = timer.Cmd === 1 ? txtOff : txtOn;
 
                 if (vm.isSetpointTimers) {
-                    return $.t('Temperature') + ', ' + timer.Temperature;
+                    return $.t('Set point') + ', ' + timer.Temperature;
                 } else if (command === txtOn && vm.levelOptions.length > 0) {
                     var levelName = deviceTimerOptions.getLabelForValue(vm.levelOptions, timer.Level);
                     return $.t(command) + " (" + levelName + ")";

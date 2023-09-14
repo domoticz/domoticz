@@ -18,7 +18,10 @@ define(['app', 'timers/factories', 'timers/components','timers/planning'], funct
             vm.deviceIdx = $routeParams.id;
             vm.selectedTimerIdx = null;
 //          $.myglobals.ismobile = true;
-            vm.ismobile = ($.myglobals.ismobile == true)
+            vm.ismobile = ($.myglobals.ismobile == true);
+			
+            vm.typeOptions = deviceTimerOptions.timerTypes;
+			vm.timerSettings = deviceTimerConfigUtils.getTimerDefaultConfig();
 
             deviceApi.getDeviceInfo(vm.deviceIdx).then(function (device) {
                 vm.isLoaded = true;
@@ -70,11 +73,12 @@ define(['app', 'timers/factories', 'timers/components','timers/planning'], funct
                 else
                     $('#GridTable').hide()
 
+				if (typeof device.vunit !== 'undefined') {
+					vm.timerSettings.vunit=device.vunit;
+				}
+
                 refreshTimers();
             });
-
-            vm.typeOptions = deviceTimerOptions.timerTypes;
-            vm.timerSettings = deviceTimerConfigUtils.getTimerDefaultConfig();
         }
 
         function refreshTimers() {
