@@ -2888,15 +2888,15 @@ namespace http
 				}
 				if ((dType == pTypeSetpoint) && (dSubType == sTypeSetpoint))
 				{
-					root["result"][ii]["val"] = NTYPE_TEMPERATURE;
-					root["result"][ii]["text"] = Notification_Type_Desc(NTYPE_TEMPERATURE, 0);
-					root["result"][ii]["ptag"] = Notification_Type_Desc(NTYPE_TEMPERATURE, 1);
+					root["result"][ii]["val"] = NTYPE_SETPOINT;
+					root["result"][ii]["text"] = Notification_Type_Desc(NTYPE_SETPOINT, 0);
+					root["result"][ii]["ptag"] = Notification_Type_Desc(NTYPE_SETPOINT, 1);
 					ii++;
 				}
 				if (dType == pTypeEvohomeZone)
 				{
-					root["result"][ii]["val"] = NTYPE_TEMPERATURE;
-					root["result"][ii]["text"] = Notification_Type_Desc(NTYPE_SETPOINT, 0); // FIXME NTYPE_SETPOINT implementation?
+					root["result"][ii]["val"] = NTYPE_SETPOINT;
+					root["result"][ii]["text"] = Notification_Type_Desc(NTYPE_SETPOINT, 0);
 					root["result"][ii]["ptag"] = Notification_Type_Desc(NTYPE_SETPOINT, 1);
 					ii++;
 				}

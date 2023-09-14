@@ -394,7 +394,7 @@ const char* Notification_Type_Label(const int nType)
 		{ NTYPE_PERCENTAGE, "%" },
 		{ NTYPE_RPM, "RPM" },
 		{ NTYPE_DEWPOINT, "degrees" },
-		{ NTYPE_SETPOINT, "degrees" },
+		{ NTYPE_SETPOINT, "" },
 		{ NTYPE_VIDEO, "" },
 		{ NTYPE_AUDIO, "" },
 		{ NTYPE_PHOTO, "" },

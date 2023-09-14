@@ -305,7 +305,7 @@ bool CNotificationHelper::CheckAndHandleNotification(const uint64_t DevRowIdx, c
 		case pTypeSetpoint:
 			switch(cSubType) {
 				case sTypeSetpoint:
-					return CheckAndHandleTempHumidityNotification(DevRowIdx, sName, fValue, 0, true, false);
+					return CheckAndHandleNotification(DevRowIdx, sName, cType, cSubType, NTYPE_SETPOINT, fValue);
 				default:
 					break;
 			}

@@ -8440,6 +8440,57 @@ void MainWorker::decode_Remote(const CDomoticzHardwareBase* pHardware, const tRB
 	procResult.DeviceRowIdx = DevRowIdx;
 }
 
+void MainWorker::decode_Thermostat(const CDomoticzHardwareBase* pHardware, const tRBUF* pResponse, _tRxMessageProcessingResult& procResult)
+{
+	char szTmp[200];
+	const _tSetpoint* pMeter = reinterpret_cast<const _tSetpoint*>(pResponse);
+	uint8_t devType = pMeter->type;
+	uint8_t subType = pMeter->subtype;
+	sprintf(szTmp, "%X%02X%02X%02X", pMeter->id1, pMeter->id2, pMeter->id3, pMeter->id4);
+	std::string ID = szTmp;
+	uint8_t Unit = pMeter->dunit;
+	uint8_t cmnd = 0;
+	uint8_t SignalLevel = 12;
+	uint8_t BatteryLevel = pMeter->battery_level;
+
+	switch (pMeter->subtype)
+	{
+	case sTypeSetpoint:
+		sprintf(szTmp, "%.2f", pMeter->value);
+		break;
+	default:
+		sprintf(szTmp, "ERROR: Unknown Sub type for Packet type= %02X:%02X", pMeter->type, pMeter->subtype);
+		WriteMessage(szTmp);
+		return;
+	}
+
+	uint64_t DevRowIdx = m_sql.UpdateValue(pHardware->m_HwdID, ID.c_str(), Unit, devType, subType, SignalLevel, BatteryLevel, cmnd, szTmp, procResult.DeviceName, true, procResult.Username.c_str());
+	if (DevRowIdx == (uint64_t)-1)
+		return;
+
+	m_notifications.CheckAndHandleNotification(DevRowIdx, pHardware->m_HwdID, ID, procResult.DeviceName, Unit, devType, subType, pMeter->value);
+
+	if (_log.IsDebugLevelEnabled(DEBUG_RECEIVED))
+	{
+		WriteMessageStart();
+		double tvalue = ConvertTemperature(pMeter->value, m_sql.m_tempsign[0]);
+		switch (pMeter->subtype)
+		{
+		case sTypeSetpoint:
+			WriteMessage("subtype       = SetPoint");
+			sprintf(szTmp, "Temp = %.2f", tvalue);
+			WriteMessage(szTmp);
+			break;
+		default:
+			sprintf(szTmp, "ERROR: Unknown Sub type for Packet type= %02X:%02X", pMeter->type, pMeter->subtype);
+			WriteMessage(szTmp);
+			break;
+		}
+		WriteMessageEnd();
+	}
+	procResult.DeviceRowIdx = DevRowIdx;
+}
+
 void MainWorker::decode_Thermostat1(const CDomoticzHardwareBase* pHardware, const tRBUF* pResponse, _tRxMessageProcessingResult& procResult)
 {
 	char szTmp[100];
@@ -10079,57 +10130,6 @@ void MainWorker::decode_Lux(const CDomoticzHardwareBase* pHardware, const tRBUF*
 			WriteMessage("subtype       = Lux");
 
 			sprintf(szTmp, "Lux = %.1f W", pMeter->fLux);
-			WriteMessage(szTmp);
-			break;
-		default:
-			sprintf(szTmp, "ERROR: Unknown Sub type for Packet type= %02X:%02X", pMeter->type, pMeter->subtype);
-			WriteMessage(szTmp);
-			break;
-		}
-		WriteMessageEnd();
-	}
-	procResult.DeviceRowIdx = DevRowIdx;
-}
-
-void MainWorker::decode_Thermostat(const CDomoticzHardwareBase* pHardware, const tRBUF* pResponse, _tRxMessageProcessingResult& procResult)
-{
-	char szTmp[200];
-	const _tSetpoint* pMeter = reinterpret_cast<const _tSetpoint*>(pResponse);
-	uint8_t devType = pMeter->type;
-	uint8_t subType = pMeter->subtype;
-	sprintf(szTmp, "%X%02X%02X%02X", pMeter->id1, pMeter->id2, pMeter->id3, pMeter->id4);
-	std::string ID = szTmp;
-	uint8_t Unit = pMeter->dunit;
-	uint8_t cmnd = 0;
-	uint8_t SignalLevel = 12;
-	uint8_t BatteryLevel = pMeter->battery_level;
-
-	switch (pMeter->subtype)
-	{
-	case sTypeSetpoint:
-		sprintf(szTmp, "%.2f", pMeter->value);
-		break;
-	default:
-		sprintf(szTmp, "ERROR: Unknown Sub type for Packet type= %02X:%02X", pMeter->type, pMeter->subtype);
-		WriteMessage(szTmp);
-		return;
-	}
-
-	uint64_t DevRowIdx = m_sql.UpdateValue(pHardware->m_HwdID, ID.c_str(), Unit, devType, subType, SignalLevel, BatteryLevel, cmnd, szTmp, procResult.DeviceName, true, procResult.Username.c_str());
-	if (DevRowIdx == (uint64_t)-1)
-		return;
-
-	m_notifications.CheckAndHandleNotification(DevRowIdx, pHardware->m_HwdID, ID, procResult.DeviceName, Unit, devType, subType, pMeter->value);
-
-	if (_log.IsDebugLevelEnabled(DEBUG_RECEIVED))
-	{
-		WriteMessageStart();
-		double tvalue = ConvertTemperature(pMeter->value, m_sql.m_tempsign[0]);
-		switch (pMeter->subtype)
-		{
-		case sTypeSetpoint:
-			WriteMessage("subtype       = SetPoint");
-			sprintf(szTmp, "Temp = %.2f", tvalue);
 			WriteMessage(szTmp);
 			break;
 		default:
@@ -13787,14 +13787,19 @@ bool MainWorker::UpdateDevice(const int HardwareID, const std::string& DeviceID,
 		std::stringstream sidx;
 		sidx << devidx;
 
-		if (((devType == pTypeSetpoint) && (subType == sTypeSetpoint)) || ((devType == pTypeRadiator1) && (subType == sTypeSmartwares)))
+		if (
+			((devType == pTypeSetpoint) && (subType == sTypeSetpoint))
+			|| ((devType == pTypeRadiator1) && (subType == sTypeSmartwares))
+			)
 		{
-			_log.Log(LOG_NORM, "Sending SetPoint to device....");
+			_log.Log(LOG_NORM, "Updating SetPoint device....");
 			SetSetPoint(sidx.str(), static_cast<float>(atof(sValue.c_str())));
+
 #ifdef ENABLE_PYTHON
 			// notify plugin
 			m_pluginsystem.DeviceModified(devidx);
 #endif
+			m_notifications.CheckAndHandleNotification(devidx, HardwareID, DeviceID, devname, unit, devType, subType, nValue, sValue);
 
 			// signal connected devices (MQTT, fibaro, http push ... ) about the update
 			// sOnDeviceReceived(HardwareID, devidx, devname, nullptr);
