@@ -760,7 +760,7 @@ describe('device', function()
 
 			local device = getDevice(domoticz, {
 				['name'] = 'myDevice',
-				['type'] = 'Heating',
+				['type'] = 'Setpoint',
 				['subType'] = 'Zone',
 				['hardwareTypeValue'] = 39,
 				['rawData'] = { [1] = 12.5;
