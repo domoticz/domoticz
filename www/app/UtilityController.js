@@ -444,18 +444,6 @@ define(['app', 'livesocket'], function (app) {
 				else if (item.SubType == "Thermostat Clock") {
 					status = "";
 				}
-				else if (item.SubType == "Thermostat Mode") {
-					status = "";
-					bigtext = item.Data;
-				}
-				else if (item.SubType == "Thermostat Operating State") {
-					status = "";
-					bigtext = item.Data;
-				}
-				else if (item.SubType == "Thermostat Fan Mode") {
-					status = "";
-					bigtext = item.Data;
-				}
 				else if (item.SubType == "Waterflow") {
 					status = "";
 					bigtext = item.Data;
@@ -631,15 +619,6 @@ define(['app', 'livesocket'], function (app) {
 							else if (item.SubType == "Waterflow") {
 								bigtext += item.Data;
 							}
-							else if (item.SubType == "Thermostat Mode") {
-								bigtext += item.Data;
-							}
-							else if (item.SubType == "Thermostat Operating State") {
-								bigtext += item.Data;
-							}
-							else if (item.SubType == "Thermostat Fan Mode") {
-								bigtext += item.Data;
-							}
 							
 							var searchText = GenerateLiveSearchTextL(item, bigtext);
 							
@@ -783,18 +762,6 @@ define(['app', 'livesocket'], function (app) {
 							}
 							else if (item.SubType == "Thermostat Clock") {
 								xhtm += '<img src="images/clock48.png" height="48" width="48"></td>\n';
-								status = "";
-							}
-							else if (item.SubType == "Thermostat Mode") {
-								xhtm += '<img src="images/mode48.png" height="48" width="48"></td>\n';
-								status = "";
-							}
-							else if (item.SubType == "Thermostat Operating State") {
-								xhtm += '<img src="images/mode48.png" height="48" width="48"></td>\n';
-								status = "";
-							}
-							else if (item.SubType == "Thermostat Fan Mode") {
-								xhtm += '<img src="images/mode48.png" height="48" width="48"></td>\n';
 								status = "";
 							}
 							else if (item.SubType == "Sound Level") {
@@ -946,16 +913,6 @@ define(['app', 'livesocket'], function (app) {
 							else if (item.SubType == "Thermostat Clock") {
 								if (permissions.hasPermission("Admin")) {
 									xhtm += '<a class="btnsmall" onclick="EditThermostatClock(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\', \'' + item.DayTime + '\',' + item.Protected + ', ' + item.CustomImage + ');" data-i18n="Edit">Edit</a> ';
-								}
-							}
-							else if (item.SubType == "Thermostat Mode") {
-								if (permissions.hasPermission("Admin")) {
-									xhtm += '<a class="btnsmall" onclick="EditThermostatMode(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\', \'' + item.Mode + '\', \'' + item.Modes + '\',' + item.Protected + ', ' + item.CustomImage + ');" data-i18n="Edit">Edit</a> ';
-								}
-							}
-							else if (item.SubType == "Thermostat Fan Mode") {
-								if (permissions.hasPermission("Admin")) {
-									xhtm += '<a class="btnsmall" onclick="EditThermostatFanMode(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\', \'' + item.Mode + '\', \'' + item.Modes + '\',' + item.Protected + ', ' + item.CustomImage + ');" data-i18n="Edit">Edit</a> ';
 								}
 							}
 							else if ((item.Type == "General") && (item.SubType == "Voltage")) {

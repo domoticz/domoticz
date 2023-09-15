@@ -855,32 +855,6 @@ describe('device', function()
 			assert.is_same('http://127.0.0.1:8080/json.htm?param=udevice&type=command&idx=1&nvalue=0&svalue=14', res)
 		end)
 
-		it('should detect a Z-Wave Thermostat mode device', function()
-
-			local device = getDevice(domoticz, {
-				['name'] = 'myDevice',
-				['subType'] = 'Thermostat Mode',
-				['additionalDataData'] = {
-					["modes"] = "0;Off;1;Heat;2;Heat Econ;",
-					["mode"] = 2;
-				}
-			})
-
-			assert.is_same({'Off', 'Heat', 'Heat Econ'}, device.modes)
-			assert.is_same(2, device.mode)
-			assert.is_same('Heat Econ', device.modeString)
-
-			device.updateMode('Heat')
-			assert.is_same({ { ["UpdateDevice"] ={idx=1, nValue=1, sValue="Heat", _trigger=true} } }, commandArray)
-			commandArray = {}
-			device.updateMode('Off')
-			assert.is_same({ { ["UpdateDevice"] = {idx=1, nValue=0, sValue="Off", _trigger=true} } }, commandArray)
-			commandArray = {}
-			device.updateMode('Heat Econ')
-			assert.is_same({ { ["UpdateDevice"] = {idx=1, nValue=2, sValue="Heat Econ", _trigger=true} } }, commandArray)
-
-		end)
-
 		it('should detect a Thermostat type 3 device', function()
 
 			local device = getDevice(domoticz, {

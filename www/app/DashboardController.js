@@ -1268,8 +1268,6 @@ define(['app', 'livesocket'], function (app) {
 					(item.SubType == "Alert") ||
 					(item.SubType == "Pressure") ||
 					(item.SubType == "A/D") ||
-					(item.SubType == "Thermostat Mode") ||
-					(item.SubType == "Thermostat Fan Mode") ||
 					(item.SubType == "Fan") ||
 					(item.SubType == "Smartwares") ||
 					(item.SubType == "Waterflow") ||
@@ -1491,10 +1489,6 @@ define(['app', 'livesocket'], function (app) {
 						else if (item.SubType == "Smartwares") {
 							status = item.Data + '\u00B0 ' + $scope.config.TempSign;
 							bigtext = item.Data + '\u00B0 ' + $scope.config.TempSign;
-						}
-						else if ((item.SubType == "Thermostat Mode") || (item.SubType == "Thermostat Fan Mode")) {
-							status = "";
-							bigtext = item.Data;
 						}
 						else if (item.SubType == "Waterflow") {
 							status = "";
@@ -3087,8 +3081,6 @@ define(['app', 'livesocket'], function (app) {
 										(item.SubType == "Alert") ||
 										(item.SubType == "Pressure") ||
 										(item.SubType == "A/D") ||
-										(item.SubType == "Thermostat Mode") ||
-										(item.SubType == "Thermostat Fan Mode") ||
 										(item.SubType == "Fan") ||
 										(item.SubType == "Smartwares") ||
 										(item.SubType == "Waterflow") ||
@@ -3253,9 +3245,6 @@ define(['app', 'livesocket'], function (app) {
 										else if (item.SubType == "Smartwares") {
 											status = item.Data + '\u00B0 ' + $scope.config.TempSign;
 											status += '<button class="btn btn-mini btn-info" type="button" onclick="ShowSetpointPopup(event, ' + item.idx + ', ' + item.Protected + ', ' + item.Data + ',true, ' + item.step + ', ' + item.min + ', ' + item.max + ');">' + $.t("Set") + '</button> ';
-										}
-										else if ((item.SubType == "Thermostat Mode") || (item.SubType == "Thermostat Fan Mode")) {
-											status = item.Data;
 										}
 
 										var bHaveReturnUsage = false;
@@ -3548,10 +3537,6 @@ define(['app', 'livesocket'], function (app) {
 										else if (item.SubType == "Smartwares") {
 											imagehtml += 'override.png" class="lcursor" onclick="ShowSetpointPopup(event, ' + item.idx + ', ' + item.Protected + ', ' + item.Data + ', false, ' + item.step + ', ' + item.min + ', ' + item.max + ');" height="40" width="40"></td>\n';
 											statushtml = item.Data + '\u00B0 ' + $scope.config.TempSign;
-										}
-										else if ((item.SubType == "Thermostat Mode") || (item.SubType == "Thermostat Fan Mode")) {
-											imagehtml += 'mode48.png" height="40" width="40"></td>\n';
-											statushtml = "";
 										}
 										else if (item.SubType == "Sound Level") {
 											item.Image = (item.CustomImage == 0) ? 'Speaker48_On.png' : item.Image + '48_On.png';
