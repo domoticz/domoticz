@@ -2996,6 +2996,8 @@ namespace http
 								(value_unit.empty())
 								|| (value_unit == "°C")
 								|| (value_unit == "°F")
+								|| (value_unit == "C")
+								|| (value_unit == "F")
 								)
 							{
 								if (tempsign == 'C')

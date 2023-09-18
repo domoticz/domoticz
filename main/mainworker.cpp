@@ -12967,6 +12967,8 @@ bool MainWorker::SetSetPointInt(const std::vector<std::string>& sd, const float 
 			(value_unit.empty())
 			|| (value_unit == "°C")
 			|| (value_unit == "°F")
+			|| (value_unit == "C")
+			|| (value_unit == "F")
 			)
 		{
 			tmeter.value = (m_sql.m_tempsign[0] != 'F') ? TempValue : static_cast<float>(ConvertToCelsius(TempValue));

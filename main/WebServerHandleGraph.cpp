@@ -245,6 +245,8 @@ namespace http
 									(value_unit.empty())
 									|| (value_unit == "°C")
 									|| (value_unit == "°F")
+									|| (value_unit == "C")
+									|| (value_unit == "F")
 									)
 								{
 									double se = ConvertTemperature(atof(sd[0].c_str()), tempsign);
@@ -2015,6 +2017,8 @@ namespace http
 									(value_unit.empty())
 									|| (value_unit == "°C")
 									|| (value_unit == "°F")
+									|| (value_unit == "C")
+									|| (value_unit == "F")
 									)
 								{
 									double te = ConvertTemperature(atof(sd[1].c_str()), tempsign);
@@ -2120,6 +2124,8 @@ namespace http
 								(value_unit.empty())
 								|| (value_unit == "°C")
 								|| (value_unit == "°F")
+								|| (value_unit == "C")
+								|| (value_unit == "F")
 								)
 							{
 								double te = ConvertTemperature(atof(sd[1].c_str()), tempsign);
@@ -2233,6 +2239,8 @@ namespace http
 									(value_unit.empty())
 									|| (value_unit == "°C")
 									|| (value_unit == "°F")
+									|| (value_unit == "C")
+									|| (value_unit == "F")
 									)
 								{
 									double te = ConvertTemperature(atof(sd[1].c_str()), tempsign);
