@@ -176,7 +176,7 @@ define(['app', 'RefreshingChart', 'log/factories'], function (app, RefreshingCha
                 name: $.t('Temperature'),
                 color: 'yellow',
                 yAxis: 0,
-                step: deviceType === 'Thermostat' ? 'left' : undefined,
+                step: deviceType === 'Setpoint' ? 'left' : undefined,
                 tooltip: {
                     valueSuffix: ' ' + degreeSuffix,
                 }
@@ -395,7 +395,7 @@ define(['app', 'RefreshingChart', 'log/factories'], function (app, RefreshingCha
         return {
             highchartTemplate: {
                 chart: {
-                    type: ctrl.device.Type === 'Thermostat' ? 'line' : undefined
+                    type: ctrl.device.Type === 'Setpoint' ? 'line' : undefined
                 }
             },
             ctrl: ctrl,

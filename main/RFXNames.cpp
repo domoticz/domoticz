@@ -394,7 +394,7 @@ const char* Notification_Type_Label(const int nType)
 		{ NTYPE_PERCENTAGE, "%" },
 		{ NTYPE_RPM, "RPM" },
 		{ NTYPE_DEWPOINT, "degrees" },
-		{ NTYPE_SETPOINT, "degrees" },
+		{ NTYPE_SETPOINT, "" },
 		{ NTYPE_VIDEO, "" },
 		{ NTYPE_AUDIO, "" },
 		{ NTYPE_PHOTO, "" },
@@ -504,7 +504,7 @@ const char* RFX_Type_Desc(const unsigned char i, const unsigned char snum)
 		{ pTypeTEMP_BARO, "Temp + Baro", "temperature" },
 		{ pTypeLux, "Lux", "lux" },
 		{ pTypeGeneral, "General", "General" },
-		{ pTypeThermostat, "Thermostat", "thermostat" },
+		{ pTypeSetpoint, "Setpoint", "setpoint" },
 		{ pTypeTEMP_RAIN, "Temp + Rain", "Temp + Rain" },
 		{ pTypeChime, "Chime", "doorbell" },
 		{ pTypeFan, "Fan", "fan" },
@@ -769,8 +769,8 @@ const char* RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 		{ pTypeGeneral, sTypeCustom, "Custom Sensor" },
 		{ pTypeGeneral, sTypeManagedCounter, "Managed Counter" },
 
-		{ pTypeThermostat, sTypeThermSetpoint, "SetPoint" },
-		{ pTypeThermostat, sTypeThermTemperature, "Temperature" },
+		{ pTypeSetpoint, sTypeSetpoint, "SetPoint" },
+		{ pTypeSetpoint, sTypeThermTemperature, "Temperature" },
 
 		{ pTypeChime, sTypeByronSX, "Byron SX" },
 		{ pTypeChime, sTypeByronMP001, "Byron MP001" },

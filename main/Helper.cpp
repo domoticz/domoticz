@@ -1089,7 +1089,7 @@ bool IsUtility(const int dType, const int dSubType)
 		|| ((dType == pTypeRFXSensor) && (dSubType == sTypeRFXSensorVolt))
 		|| ((dType == pTypeGeneral) && (dSubType == sTypeWaterflow))
 		|| ((dType == pTypeGeneral) && (dSubType == sTypeCustom))
-		|| ((dType == pTypeThermostat) && (dSubType == sTypeThermSetpoint))
+		|| ((dType == pTypeSetpoint) && (dSubType == sTypeSetpoint))
 		|| ((dType == pTypeRFXSensor) && (dSubType == sTypeRFXSensorAD))
 		|| ((dType == pTypeGeneral) && (dSubType == sTypeAlert))
 		|| ((dType == pTypeGeneral) && (dSubType == sTypePressure))
@@ -1110,6 +1110,7 @@ bool IsUtility(const int dType, const int dSubType)
 		|| (dType == pTypeRFXMeter)
 		|| ((dType == pTypeRego6XXValue) && (dSubType == sTypeRego6XXCounter))
 		|| ((dType == pTypeRadiator1) && (dSubType == sTypeSmartwares))
+		|| ((dType == pTypeSetpoint) && (dSubType == sTypeSetpoint))
 		);
 }
 

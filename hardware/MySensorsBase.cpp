@@ -1555,10 +1555,10 @@ bool MySensorsBase::WriteToHardware(const char* pdata, const unsigned char /*len
 			return false;
 		}
 	}
-	else if ((packettype == pTypeThermostat) && (subtype == sTypeThermSetpoint))
+	else if ((packettype == pTypeSetpoint) && (subtype == sTypeSetpoint))
 	{
 		//Set Point
-		const _tThermostat* pMeter = reinterpret_cast<const _tThermostat*>(pCmd);
+		const _tSetpoint* pMeter = reinterpret_cast<const _tSetpoint*>(pCmd);
 
 		int node_id = pMeter->id2;
 		int child_sensor_id = pMeter->id3;
@@ -1574,7 +1574,7 @@ bool MySensorsBase::WriteToHardware(const char* pdata, const unsigned char /*len
 			}
 
 			char szTmp[10];
-			sprintf(szTmp, "%.1f", pMeter->temp);
+			sprintf(szTmp, "%.1f", pMeter->value);
 			return SendNodeSetCommand(node_id, child_sensor_id, MT_Set, vtype_id, szTmp, pChild->useAck, pChild->ackTimeout);
 		}
 		Log(LOG_ERROR, "Blinds/Window command received for unknown node_id: %d", node_id);

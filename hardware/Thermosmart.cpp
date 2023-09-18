@@ -146,14 +146,14 @@ bool CThermosmart::GetOutsideTemperatureFromDomoticz(float &tvalue)
 
 void CThermosmart::SendSetPointSensor(const unsigned char Idx, const float Temp, const std::string &defaultname)
 {
-	_tThermostat thermos;
-	thermos.subtype=sTypeThermSetpoint;
+	_tSetpoint thermos;
+	thermos.subtype=sTypeSetpoint;
 	thermos.id1=0;
 	thermos.id2=0;
 	thermos.id3=0;
 	thermos.id4=Idx;
 	thermos.dunit=0;
-	thermos.temp=Temp;
+	thermos.value=Temp;
 	sDecodeRXMessage(this, (const unsigned char *)&thermos, "Setpoint", 255, nullptr);
 }
 

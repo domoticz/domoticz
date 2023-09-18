@@ -417,16 +417,14 @@ void CTado::SendSetPointSensor(const int Idx, const float Temp, const std::strin
 	int ZoneIdx = (Idx % 1000) / 100;
 	int ServiceIdx = (Idx % 1000) % 100;
 
-	_tThermostat thermos;
-	thermos.subtype = sTypeThermSetpoint;
+	_tSetpoint thermos;
+	thermos.subtype = sTypeSetpoint;
 	thermos.id1 = 0;
 	thermos.id2 = HomeIdx;
 	thermos.id3 = ZoneIdx;
 	thermos.id4 = ServiceIdx;
 	thermos.dunit = 0;
-
-	thermos.temp = Temp;
-
+	thermos.value = Temp;
 	sDecodeRXMessage(this, (const unsigned char *)&thermos, defaultname.c_str(), 255, nullptr);
 }
 

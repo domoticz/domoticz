@@ -854,8 +854,8 @@ Device.create = function (item) {
         type = 'baro';
     } else if ((item.Type === 'General') && (item.SubType === 'Custom Sensor')) {
         type = 'custom';
-    } else if ((item.Type === 'Thermostat') && (item.SubType === 'SetPoint')) {
-        type = 'setpoint';  // Instead of the TypeImg (which changes when using custom images)
+    } else if ((item.Type === 'Setpoint') && (item.SubType === 'SetPoint')) {
+        type = 'setpoint';
 	} else if ((item.Type === 'General') && (item.SubType === 'Percentage')) {
 		type = 'percentage';
     } else if (
@@ -1762,14 +1762,15 @@ function SetPoint(item) {
         } else {
             this.image = "images/override.png";
         }
-        if ($.isNumeric(this.data)) this.data += '\u00B0' + $.myglobals.tempsign;
-        if ($.isNumeric(this.status)) this.status += '\u00B0' + $.myglobals.tempsign;
-        var pattern = new RegExp('\\d\\s' + $.myglobals.tempsign + '\\b');
-        while (this.data.search(pattern) > 0) this.data = this.data.setCharAt(this.data.search(pattern) + 1, '\u00B0');
-        while (this.status.search(pattern) > 0) this.status = this.status.setCharAt(this.status.search(pattern) + 1, '\u00B0');
-        this.imagetext = "Set Temp";
+		this.setstep = item.step;
+		this.setmin = item.min;
+		this.setmax = item.max;
+
+        if ($.isNumeric(this.data)) this.data += ' ' + item.vunit;
+		this.status = '';
+        this.imagetext = "Set Value";
         this.controlable = true;
-        this.onClick = 'ShowSetpointPopup(' + event + ', ' + this.index + ', ' + this.protected + ' , "' + this.data + '");';
+        this.onClick = 'ShowSetpointPopup(' + event + ', ' + this.index + ', ' + this.protected + ' , "' + this.data + '", false, ' + item.step + ', ' + item.min + ', ' + item.max + ');';
     }
 }
 SetPoint.inheritsFrom(TemperatureSensor);

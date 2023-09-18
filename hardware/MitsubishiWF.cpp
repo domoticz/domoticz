@@ -174,13 +174,13 @@ bool MitsubishiWF::WriteToHardware(const char* pdata, const unsigned char length
 			break;
 		}
 	}
-	else if ((packettype == pTypeThermostat) && (subtype == sTypeThermSetpoint))
+	else if ((packettype == pTypeSetpoint) && (subtype == sTypeSetpoint))
 	{
 		// Set Point
-		const _tThermostat* pMeter = reinterpret_cast<const _tThermostat*>(pCmd);
+		const _tSetpoint* pMeter = reinterpret_cast<const _tSetpoint*>(pCmd);
 		int node_id = pMeter->id2;
 		// int child_sensor_id = pMeter->id3;
-		result = SetSetpoint(node_id, pMeter->temp);
+		result = SetSetpoint(node_id, pMeter->value);
 	}
 
 	return result;

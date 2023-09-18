@@ -54,7 +54,8 @@ define(['app'], function (app) {
                 randomness: false,
                 command: 0,
                 level: null,
-                tvalue: '',
+                tvalue: '123',
+				vunit: '',
                 days: 0x80,
                 color: '', // Empty string, intentionally illegal JSON
                 mday: 1,

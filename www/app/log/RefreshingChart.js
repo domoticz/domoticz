@@ -474,7 +474,7 @@ define(['lodash', 'Base', 'DomoticzBase', 'DataLoader', 'ChartLoader', 'ChartZoo
                     let axisMin, axisMax;
                     const t = self.device.Type;
                     const s = self.device.SubType;
-                    if (['Percentage'].includes(s) || ['Temp', 'Thermostat', 'Humidity', 'Heating'].includes(t)) {
+                    if (['Percentage'].includes(s) || ['Temp', 'Setpoint', 'Humidity', 'Heating'].includes(t)) {
                         axisMin = 0;
                         axisMax = 100;
                     } else if (['Visibility'].includes(s)) {

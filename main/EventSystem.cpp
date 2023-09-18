@@ -660,7 +660,7 @@ void CEventSystem::GetCurrentMeasurementStates()
 				isTemp = true;
 			}
 			break;
-		case pTypeThermostat:
+		case pTypeSetpoint:
 			if (sitem.subType == sTypeThermTemperature)
 			{
 				if (!splitresults.empty())

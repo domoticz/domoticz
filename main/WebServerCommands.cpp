@@ -2886,17 +2886,17 @@ namespace http
 					root["result"][ii]["ptag"] = Notification_Type_Desc(NTYPE_TODAYGAS, 1);
 					ii++;
 				}
-				if ((dType == pTypeThermostat) && (dSubType == sTypeThermSetpoint))
+				if ((dType == pTypeSetpoint) && (dSubType == sTypeSetpoint))
 				{
-					root["result"][ii]["val"] = NTYPE_TEMPERATURE;
-					root["result"][ii]["text"] = Notification_Type_Desc(NTYPE_TEMPERATURE, 0);
-					root["result"][ii]["ptag"] = Notification_Type_Desc(NTYPE_TEMPERATURE, 1);
+					root["result"][ii]["val"] = NTYPE_SETPOINT;
+					root["result"][ii]["text"] = Notification_Type_Desc(NTYPE_SETPOINT, 0);
+					root["result"][ii]["ptag"] = Notification_Type_Desc(NTYPE_SETPOINT, 1);
 					ii++;
 				}
 				if (dType == pTypeEvohomeZone)
 				{
-					root["result"][ii]["val"] = NTYPE_TEMPERATURE;
-					root["result"][ii]["text"] = Notification_Type_Desc(NTYPE_SETPOINT, 0); // FIXME NTYPE_SETPOINT implementation?
+					root["result"][ii]["val"] = NTYPE_SETPOINT;
+					root["result"][ii]["text"] = Notification_Type_Desc(NTYPE_SETPOINT, 0);
 					root["result"][ii]["ptag"] = Notification_Type_Desc(NTYPE_SETPOINT, 1);
 					ii++;
 				}
@@ -3432,7 +3432,7 @@ namespace http
 					(dType != pTypeLighting1) && (dType != pTypeLighting2) && (dType != pTypeLighting3) && (dType != pTypeLighting4) && (dType != pTypeLighting5) &&
 					(dType != pTypeLighting6) && (dType != pTypeFan) && (dType != pTypeColorSwitch) && (dType != pTypeSecurity1) && (dType != pTypeSecurity2) &&
 					(dType != pTypeEvohome) && (dType != pTypeEvohomeRelay) && (dType != pTypeCurtain) && (dType != pTypeBlinds) && (dType != pTypeRFY) && (dType != pTypeChime) &&
-					(dType != pTypeThermostat2) && (dType != pTypeThermostat3) && (dType != pTypeThermostat4) && (dType != pTypeRemote) && (dType != pTypeGeneralSwitch) &&
+					(dType != pTypeThermostat2) && (dType != pTypeThermostat4) && (dType != pTypeThermostat4) && (dType != pTypeRemote) && (dType != pTypeGeneralSwitch) &&
 					(dType != pTypeHomeConfort) && (dType != pTypeFS20) && (!((dType == pTypeRadiator1) && (dSubType == sTypeSmartwaresSwitchRadiator))) &&
 					(!((dType == pTypeGeneral) && (dSubType == sTypeTextStatus))) && (!((dType == pTypeGeneral) && (dSubType == sTypeAlert))) && (dType != pTypeHunter) && (dType != pTypeDDxxxx)
 					)

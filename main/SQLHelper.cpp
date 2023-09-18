@@ -39,7 +39,7 @@
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
 
-#define DB_VERSION 163
+#define DB_VERSION 164
 
 #define DEFAULT_ADMINUSER "admin"
 #define DEFAULT_ADMINPWD "domoticz"
@@ -3114,6 +3114,29 @@ bool CSQLHelper::OpenDatabase()
 				safe_query("INSERT INTO Applications (Active, Public, Applicationname) VALUES (0, 0, 'domoticzMobileApp')");
 			}
 		}
+		if (dbversion < 164)
+		{
+			result = safe_query("SELECT ID FROM DeviceStatus WHERE (Type=%d) AND (SubType=%d)", pTypeSetpoint, sTypeSetpoint);
+			if (!result.empty())
+			{
+				for (const auto& sd : result)
+				{
+					std::string idx = sd[0];
+
+					auto result2 = safe_query("SELECT ID, Params FROM Notifications WHERE (DeviceRowID=%q)", idx.c_str());
+					for (const auto& sd2 : result2)
+					{
+						std::string idx2 = sd2[0];
+						std::string szParams = sd2[1];
+						if (szParams[0] == Notification_Type_Desc(NTYPE_TEMPERATURE, 1)[0])
+						{
+							szParams[0] = Notification_Type_Desc(NTYPE_SETPOINT, 1)[0];
+							safe_query("UPDATE Notifications SET Params='%q' WHERE (ID=%q)", szParams.c_str(), idx2.c_str());
+						}
+					}
+				}
+			}
+		}
 	}
 	else if (bNewInstall)
 	{
@@ -4558,7 +4581,7 @@ uint64_t CSQLHelper::CreateDevice(const int HardwareID, const int SensorType, co
 		//Current/Ampere
 		DeviceRowIdx = UpdateValue(HardwareID, ID, 1, SensorType, SensorSubType, 12, 255, 0, "0.0;0.0;0.0", devname, true, userName.c_str());
 		break;
-	case pTypeThermostat: //Thermostat Setpoint
+	case pTypeSetpoint: //Thermostat Setpoint
 	{
 		unsigned char ID1 = (unsigned char)((nid & 0xFF000000) >> 24);
 		unsigned char ID2 = (unsigned char)((nid & 0x00FF0000) >> 16);
@@ -6004,7 +6027,7 @@ void CSQLHelper::UpdateTemperatureLog()
 		pTypeEvohomeWater,
 		pTypeRadiator1,
 		pTypeGeneral, sTypeSystemTemp,
-		pTypeThermostat, sTypeThermSetpoint,
+		pTypeSetpoint, sTypeSetpoint,
 		pTypeGeneral, sTypeBaro
 	);
 	if (!result.empty())
@@ -6050,7 +6073,7 @@ void CSQLHelper::UpdateTemperatureLog()
 			{
 			case pTypeRego6XXTemp:
 			case pTypeTEMP:
-			case pTypeThermostat:
+			case pTypeSetpoint:
 				temp = static_cast<float>(atof(splitresults[0].c_str()));
 				break;
 			case pTypeThermostat1:
