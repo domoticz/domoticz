@@ -176,6 +176,8 @@ displayFinalMessage() {
 
 HTTP:	${IPv4_address%/*}:${HTTP_port%/*}
 HTTPS:	${IPv4_address%/*}:${HTTPS_port}
+User/Password:   admin/domoticz 
+Modify password asap in menu Setup - MyProfile
 
 Wiki:  https://www.domoticz.com/wiki
 Forum: https://www.domoticz.com/forum
