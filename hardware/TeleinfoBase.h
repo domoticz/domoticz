@@ -85,6 +85,7 @@ class CTeleinfoBase : public CDomoticzHardwareBase
 		bool triphase;
 		bool withPAPP; // For meters with no PAPP
 		int CRCmode1;  // really a bool, but with a special "un-initialized state"
+		bool waitingFirstBlock;
 		_tTeleinfo()
 		{
 			ISOUSC = 0;
@@ -131,6 +132,7 @@ class CTeleinfoBase : public CDomoticzHardwareBase
 			triphase = false;
 			withPAPP = false;
 			CRCmode1 = 255; // means "bool not initialized yet", will be when running CRC Check for the first time
+			waitingFirstBlock = true;
 		}
 	} Teleinfo;
 	void ProcessTeleinfo(Teleinfo &teleinfo);

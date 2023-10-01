@@ -44,6 +44,7 @@ void CTeleinfoBase::InitTeleinfo()
 {
 	m_bufferpos = 0;
 	m_teleinfo.CRCmode1 = 255;	 // Guess the CRC mode at first run
+	m_teleinfo.waitingFirstBlock = true; 
 }
 
 void CTeleinfoBase::ProcessTeleinfo(Teleinfo& teleinfo)
@@ -545,7 +546,18 @@ void CTeleinfoBase::MatchLine()
 	value = atoi(splitresults[1].c_str());
 
 	// Historic mode
-	if (label == "ADCO") m_teleinfo.ADCO = vString;
+	if (label == "ADCO" || label == "ADSC") 
+	{
+		m_teleinfo.ADCO = vString;
+		// waiting a complete Block received to have m_teleinfo structure completely filled before processing anything => avoid strange behavior at init
+		if (m_teleinfo.waitingFirstBlock)
+			m_teleinfo.waitingFirstBlock = false;
+		else
+		{
+			Debug(DEBUG_HARDWARE, "frame complete, PAPP: %i, PTEC: %s, OPTARIF: %s", m_teleinfo.PAPP, m_teleinfo.PTEC.c_str(), m_teleinfo.OPTARIF.c_str());
+			ProcessTeleinfo(m_teleinfo);
+		}
+	}
 	else if (label == "OPTARIF") m_teleinfo.OPTARIF = vString;
 	else if (label == "ISOUSC") m_teleinfo.ISOUSC = value;
 	else if (label == "PAPP")
@@ -574,8 +586,26 @@ void CTeleinfoBase::MatchLine()
 
 	// Standard mode
 	else if (label == "EAST") m_teleinfo.BASE = value;
-	else if (label == "EASF01") m_teleinfo.HCHC = value;
-	else if (label == "EASF02") m_teleinfo.HCHP = value;
+	else if (label == "EASF01") 
+	{
+		// Si option tempo alors ce sont les Heures Creuses Jour Bleu
+		if (m_teleinfo.OPTARIF == "BBR")
+			m_teleinfo.BBRHCJB = value;
+		else
+			m_teleinfo.HCHC = value;
+	}
+	else if (label == "EASF02") 
+	{
+		// Si option tempo alors ce sont les Heures Pleines Jour Bleu
+		if (m_teleinfo.OPTARIF == "BBR")
+			m_teleinfo.BBRHPJB = value;
+		else
+			m_teleinfo.HCHP = value;
+	}
+	else if (label == "EASF03") m_teleinfo.BBRHCJW = value;
+	else if (label == "EASF04") m_teleinfo.BBRHPJW = value;
+	else if (label == "EASF05") m_teleinfo.BBRHCJR = value;
+	else if (label == "EASF06") m_teleinfo.BBRHPJR = value;
 	else if (label == "PREF") m_teleinfo.PREF = value;
 	else if (label == "IRMS1") m_teleinfo.IINST = value;
 	else if (label == "IRMS2")
@@ -594,6 +624,9 @@ void CTeleinfoBase::MatchLine()
 		// Je le met quand même en comportement heure creuse pour l'instant : Il manquera juste les heures super creuses : @TODO
 		if (ngtfString == "H PLEINE/CREUSE" || ngtfString == "H SUPER CREUSES" || ngtfString == "HC SEM ET HC WE")
 			m_teleinfo.OPTARIF = "HC..";
+		else if (ngtfString == "TEMPO")
+			// Dans le mode standard, BBR est devenu TEMPO (Uniquement EDF)
+			m_teleinfo.OPTARIF = "BBR";
 		else if (ngtfString == "PRODUCTEUR")
 			// Pour avoir un affichage sur les compteurs producteur uniquement
 			m_teleinfo.OPTARIF = "BASE";
@@ -612,10 +645,23 @@ void CTeleinfoBase::MatchLine()
 	else if (label == "URMS1") m_teleinfo.URMS1 = value;
 	else if (label == "URMS2") m_teleinfo.URMS2 = value;
 	else if (label == "URMS3") m_teleinfo.URMS3 = value;
-	else if (label == "NTARF")
+	else if (label == "NTARF" && m_teleinfo.OPTARIF != "")
 	{
-		if (value == 1 && m_teleinfo.OPTARIF == "BASE")
-			m_teleinfo.PTEC = "TH..";
+		// Option BASE
+		if (m_teleinfo.OPTARIF == "BASE") m_teleinfo.PTEC = "TH..";
+		// Option TEMPO
+		else if (m_teleinfo.OPTARIF == "BBR")
+			switch (value)
+			{
+			case 1: m_teleinfo.PTEC = "HC B"; break;
+			case 2: m_teleinfo.PTEC = "HP B"; break;
+			case 3: m_teleinfo.PTEC = "HC W"; break;
+			case 4: m_teleinfo.PTEC = "HP W"; break;
+			case 5: m_teleinfo.PTEC = "HC R"; break;
+			case 6: m_teleinfo.PTEC = "HP R"; break;
+			default: break;
+			}
+		// Autres options HP / HC				
 		else if (value == 1)
 			m_teleinfo.PTEC = "HC..";
 		else if (value == 2)
@@ -624,14 +670,25 @@ void CTeleinfoBase::MatchLine()
 	else if (label == "EAIT") m_teleinfo.EAIT = value;
 	else if (label == "SINSTI") m_teleinfo.SINSTI = value;
 	else if (label == "STGE")
-	{ // Status register, hexadecimal string (without 0x)
+	{  // Status register, hexadecimal string (without 0x)
 		m_teleinfo.STGE = strtoul(splitresults[1].c_str(), nullptr, 16);
-	}
-	else if (label == "ADSC") m_teleinfo.ADCO = vString;
 
-	Debug(DEBUG_HARDWARE, "frame complete, PAPP: %i, PTEC: %s, OPTARIF: %s", m_teleinfo.PAPP, m_teleinfo.PTEC.c_str(), m_teleinfo.OPTARIF.c_str());
-	ProcessTeleinfo(m_teleinfo);
-	mytime(&m_LastHeartbeat);// keep heartbeat happy
+		// Color of tomorow
+		int tomorow = ( m_teleinfo.STGE & 0x0C000000 ) >> 26;
+
+		// If 0 then tomorow color is identical to today's color 
+		if ( tomorow == 0 ) tomorow = ( m_teleinfo.STGE & 0x03000000 ) >> 24;
+
+		switch (tomorow)
+		{
+			case 1: m_teleinfo.DEMAIN = "BLEU"; break;
+			case 2: m_teleinfo.DEMAIN = "BLAN"; break;
+			case 3: m_teleinfo.DEMAIN = "ROUG"; break;		
+			default: break;
+		}
+	}
+	
+	mytime(&m_LastHeartbeat); // keep heartbeat happy
 }
 
 void CTeleinfoBase::ParseTeleinfoData(const char* pData, int Len)
