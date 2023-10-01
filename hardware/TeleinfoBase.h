@@ -5,9 +5,8 @@ Author : Blaise Thauvin
 Version : 1.5
 Description : This class is used by various Teleinfo hardware decoders to process and display data
 		  It is currently used by EcoDevices, TeleinfoSerial
-		  Detailed information on the Teleinfo protocol can be found at (version 5, 16/03/2015)
-		  http://www.enedis.fr/sites/default/files/Enedis-NOI-CPT_02E.pdf
-		  Detailed information for Linky: https://www.enedis.fr/media/2035/download
+		  Detailed information on the Teleinfo protocol (Enedis-NOI-CPT_54E) can be found at (version 3, 01/06/2018)
+		  https://www.enedis.fr/media/2035/download
 
 History :
 0.1 2017-03-03 : Creation

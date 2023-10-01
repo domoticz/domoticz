@@ -5,8 +5,8 @@ Author : Blaise Thauvin
 Version : 1.6
 Description : This class is used by various Teleinfo hardware decoders to process and display data
 		  It is currently used by EcoDevices, TeleinfoSerial
-		  Detailed information on the Teleinfo protocol can be found at (version 5, 16/03/2015)
-			  http://www.enedis.fr/sites/default/files/Enedis-NOI-CPT_02E.pdf
+		  Detailed information on the Teleinfo protocol (Enedis-NOI-CPT_54E) can be found at (version 3, 01/06/2018)
+		  https://www.enedis.fr/media/2035/download
 
 History :
 0.1 2017-03-03 : Creation
@@ -588,7 +588,7 @@ void CTeleinfoBase::MatchLine()
 	else if (label == "EAST") m_teleinfo.BASE = value;
 	else if (label == "EASF01") 
 	{
-		// Si option tempo alors ce sont les Heures Creuses Jour Bleu
+		// With the TEMPO subscription (= BBR : Blue White Red) this counter is for peak Blue hours
 		if (m_teleinfo.OPTARIF == "BBR")
 			m_teleinfo.BBRHCJB = value;
 		else
@@ -596,16 +596,16 @@ void CTeleinfoBase::MatchLine()
 	}
 	else if (label == "EASF02") 
 	{
-		// Si option tempo alors ce sont les Heures Pleines Jour Bleu
+		// With the TEMPO subscription (= BBR : Blue White Red) this counter is for off-peak Blue hours
 		if (m_teleinfo.OPTARIF == "BBR")
 			m_teleinfo.BBRHPJB = value;
 		else
 			m_teleinfo.HCHP = value;
 	}
-	else if (label == "EASF03") m_teleinfo.BBRHCJW = value;
-	else if (label == "EASF04") m_teleinfo.BBRHPJW = value;
-	else if (label == "EASF05") m_teleinfo.BBRHCJR = value;
-	else if (label == "EASF06") m_teleinfo.BBRHPJR = value;
+	else if (label == "EASF03") m_teleinfo.BBRHCJW = value; // TEMPO peak White hours
+	else if (label == "EASF04") m_teleinfo.BBRHPJW = value; // TEMPO off-peak White hours
+	else if (label == "EASF05") m_teleinfo.BBRHCJR = value; // TEMPO peak Red hours
+	else if (label == "EASF06") m_teleinfo.BBRHPJR = value; // TEMPO off-peak Red hours
 	else if (label == "PREF") m_teleinfo.PREF = value;
 	else if (label == "IRMS1") m_teleinfo.IINST = value;
 	else if (label == "IRMS2")
@@ -618,20 +618,21 @@ void CTeleinfoBase::MatchLine()
 	else if (label == "NGTF") 
 	{
 		std::string ngtfString = stdstring_trim(vString);
-		// Different abonnements existent et ca devient difficile de rester compatible du comportement historique
-		// Je ne sais pas bien si la string NGTF est dépendante ou non du fournisseur...
-		// Exemple chez totalEnergie il y a l'abonnement avec les heures super creuse qui sont sur un 3eme compteur EASF03
-		// Je le met quand même en comportement heure creuse pour l'instant : Il manquera juste les heures super creuses : @TODO
+		// Different subscriptions exist and it becomes difficult to remain compatible with historical behavior
+		// The NGTF string is vendor dependent...
+		// Example : At the seller TotalEnergie there is a subscription with super off-peak hours which are on the 3rd meter EASF03
+		// I still put it in off-peak behavior for the moment: It will just miss super off-peak hours: @TODO
 		if (ngtfString == "H PLEINE/CREUSE" || ngtfString == "H SUPER CREUSES" || ngtfString == "HC SEM ET HC WE")
 			m_teleinfo.OPTARIF = "HC..";
 		else if (ngtfString == "TEMPO")
-			// Dans le mode standard, BBR est devenu TEMPO (Uniquement EDF)
+			// In standard mode, TEMPO string is identical to BBR in historical mode (EDF only)
 			m_teleinfo.OPTARIF = "BBR";
 		else if (ngtfString == "PRODUCTEUR")
-			// Pour avoir un affichage sur les compteurs producteur uniquement
+			// subscription for electricity production only
+			// OPTARIF must be set to BASE to have a display on producer meters
 			m_teleinfo.OPTARIF = "BASE";
 		else
-			// Pour compatibilite mode historique
+			// For historic mode compatibility
 			m_teleinfo.OPTARIF = ngtfString;
 	}
 	else if (label == "SINSTS")
@@ -647,9 +648,9 @@ void CTeleinfoBase::MatchLine()
 	else if (label == "URMS3") m_teleinfo.URMS3 = value;
 	else if (label == "NTARF" && m_teleinfo.OPTARIF != "")
 	{
-		// Option BASE
+		// BASE subscription 
 		if (m_teleinfo.OPTARIF == "BASE") m_teleinfo.PTEC = "TH..";
-		// Option TEMPO
+		// TEMPO subscription 
 		else if (m_teleinfo.OPTARIF == "BBR")
 			switch (value)
 			{
@@ -661,7 +662,7 @@ void CTeleinfoBase::MatchLine()
 			case 6: m_teleinfo.PTEC = "HP R"; break;
 			default: break;
 			}
-		// Autres options HP / HC				
+		// Others subscription like (HP / HC) 
 		else if (value == 1)
 			m_teleinfo.PTEC = "HC..";
 		else if (value == 2)
@@ -710,7 +711,7 @@ void CTeleinfoBase::ParseTeleinfoData(const char* pData, int Len)
 			// discard newline, close string, parse line and clear it.
 			m_buffer[m_bufferpos] = 0;
 
-			//We process the line only if the checksum is ok and user did not request to bypass CRC verification
+			// process the line only if the checksum is ok and user did not request to bypass CRC verification
 			if ((m_bDisableCRC) || isCheckSumOk(std::string(m_buffer), m_teleinfo.CRCmode1))
 			{
 				MatchLine();
@@ -724,4 +725,3 @@ void CTeleinfoBase::ParseTeleinfoData(const char* pData, int Len)
 		ii++;
 	}
 }
-
