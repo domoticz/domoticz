@@ -1214,24 +1214,27 @@ namespace http {
 				return; //Only admin user allowed
 			}
 
+			root["title"] = "SetActiveTimerPlan";
 			int rnOldvalue = 0;
 			int rnvalue = 0;
+			std::string sValue = request::findValue(&req, "ActiveTimerPlan");
 			m_sql.GetPreferencesVar("ActiveTimerPlan", rnOldvalue);
-			rnvalue = atoi(request::findValue(&req, "ActiveTimerPlan").c_str());
+			rnvalue = (!sValue.empty() ? atoi(sValue.c_str()) : rnOldvalue);
 			if (rnOldvalue != rnvalue)
 			{
 				std::vector<std::vector<std::string> > result;
 				result = m_sql.safe_query("SELECT Name FROM TimerPlans WHERE (ID == %d)", rnvalue);
 				if (result.empty())
+				{
+					_log.Debug(DEBUG_HARDWARE, "Scheduler Timerplan not found! (%d)", rnvalue);
 					return; //timerplan not found!
+				}
 				_log.Log(LOG_STATUS, "Scheduler Timerplan changed (%d - %s)", rnvalue, result[0][0].c_str());
 				m_sql.UpdatePreferencesVar("ActiveTimerPlan", rnvalue);
 				m_sql.m_ActiveTimerPlan = rnvalue;
 				m_mainworker.m_scheduler.ReloadSchedules();
+				root["status"] = "OK";
 			}
-
-			root["status"] = "OK";
-			root["title"] = "SetActiveTimerPlan";
 		}
 
 		void CWebServer::Cmd_AddTimer(WebEmSession & session, const request& req, Json::Value &root)
