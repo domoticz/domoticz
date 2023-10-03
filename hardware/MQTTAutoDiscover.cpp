@@ -3799,7 +3799,7 @@ bool MQTTAutoDiscover::SendSwitchCommand(const std::string& DeviceID, const std:
 					{
 						root["color"]["h"] = hsb[0] * 360.0F;
 						root["color"]["s"] = hsb[1] * 100.0F;
-						root["brightness"] = hsb[2] * pSensor->brightness_scale;
+						bCouldUseBrightness = true;
 					}
 				}
 				else if (
