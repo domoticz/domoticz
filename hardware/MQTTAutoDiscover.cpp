@@ -1498,6 +1498,11 @@ void MQTTAutoDiscover::handle_auto_discovery_sensor_message(const struct mosquit
 			}
 			pSensor->last_value = szValue;
 			pSensor->last_received = mytime(nullptr);
+			pSensor->bIsJSON = bIsJSON;
+			if (bIsJSON)
+			{
+				pSensor->last_json_value = qMessage;
+			}
 #ifdef _DEBUG
 			std::string szLogMessage = std_format("%s (value: %s", pSensor->name.c_str(), pSensor->last_value.c_str());
 			if (!pSensor->unit_of_measurement.empty())
@@ -3301,10 +3306,13 @@ void MQTTAutoDiscover::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 
 	bool bIsJSON = false;
 	Json::Value root;
-	bool ret = ParseJSon(pSensor->last_value, root);
-	if (ret)
+	if (pSensor->bIsJSON)
 	{
-		bIsJSON = root.isObject();
+		bool ret = ParseJSon(pSensor->last_json_value, root);
+		if (ret)
+		{
+			bIsJSON = root.isObject();
+		}
 	}
 
 	_tColor color_old;
@@ -3388,7 +3396,12 @@ void MQTTAutoDiscover::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 				(szSwitchCmd != pSensor->payload_on)
 				&& (szSwitchCmd != pSensor->payload_off))
 			{
-				szSwitchCmd = (level > 0) ? pSensor->payload_on : pSensor->payload_off;
+				if (level == 0)
+					szSwitchCmd = pSensor->payload_off;
+				else if (level == 100)
+					szSwitchCmd = pSensor->payload_on;
+				else
+					szSwitchCmd = "Set Level";
 			}
 			else if ((szSwitchCmd == pSensor->payload_on) && (level > 0) && (level < 100))
 			{
