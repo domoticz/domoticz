@@ -43,12 +43,15 @@ jobs:
       # install dependencies
       - name: dependencies
         run: |
+          sudo echo PURGE | debconf-communicate grub-common
+          sudo echo PURGE | debconf-communicate grub-pc
+          sudo dpkg --configure -a        
           sudo apt-get update && sudo apt-get --autoremove upgrade
           sudo apt-get install make gcc g++ libssl-dev git libcurl4-gnutls-dev libusb-dev python3-dev zlib1g-dev libcereal-dev liblua5.3-dev uthash-dev
           sudo apt-get install python3-pytest python3-pytest-bdd
-          sudo apt-get install lua5.3 luarocks
-          sudo luarocks install busted
-          sudo luarocks install luacov
+      #   sudo apt-get install lua5.3 luarocks
+      #   sudo luarocks install busted
+      #   sudo luarocks install luacov
       # Disabled March 2022 - sudo luarocks install lodash
 
       # get CMake
