@@ -57,7 +57,7 @@ jobs:
       # get CMake
       - name: cmake-compile
         run: |
-          curl -sSL https://github.com/Kitware/CMake/releases/download/v3.25.1/cmake-3.25.1-Linux-x86_64.tar.gz -o cmake.tar.gz;
+          curl -sSL https://github.com/Kitware/CMake/releases/download/v3.27.6/cmake-3.27.6-Linux-x86_64.tar.gz -o cmake.tar.gz;
           sudo tar xf cmake.tar.gz --strip 1 -C /usr/local;
           export PATH=/usr/local/bin:$PATH;
 
