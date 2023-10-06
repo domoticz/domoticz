@@ -58,6 +58,7 @@ private:
 	
 	bool m_BOOL_DebugInMultiblocV8;
 	bool m_BOOL_TaskAGo;
+	bool m_BOOL_TaskRqEtorGo;
 	bool m_BOOL_TaskRqStorGo;
 	bool m_BOOL_GlobalBlinkOutputs;
 	char m_CHAR_CommandBlocToSend;

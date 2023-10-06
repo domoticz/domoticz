@@ -35,6 +35,9 @@ History :
 * Add support of IBS Frame from Bloc 9 (Intelligent Battery Sensor) up to 6 sensors by bloc (IBS1 to 6) (Bloc 9 must be configured before use)
 * With IBS: management of a "time left before charge/discharge" for each IBS detected
 
+- 2023-10 : V4.00 Update  :
+* Add  support of Bloc 7 (Bloc with 6 analog input + IBS + Supply voltage)
+
 */
 
 #include "stdafx.h"
@@ -54,7 +57,7 @@ History :
 
 #define round(a) (int)(a + .5)
 
-#define MULTIBLOC_V8_VERSION "02.00.00"
+#define MULTIBLOC_V8_VERSION "04.00.00"
 
 #define TIME_1sec 1000
 #define TIME_500ms 500
@@ -166,6 +169,7 @@ History :
 // xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 #define BLOC_DOMOTICZ 0x01
 
+#define BLOC_7 0x0B
 #define BLOC_9 0x0D
 #define BLOC_SFSP_M 0x14
 #define BLOC_SFSP_E 0x15
@@ -349,6 +353,7 @@ void USBtin_MultiblocV8::Do_Work()
 				// each 5 minutes
 				m_V8minCounterBase = (60 * 5);
 				m_BOOL_TaskAGo = true;
+				m_BOOL_TaskRqEtorGo = true;
 			}
 
 			if (m_V8minCounter1 == 0)
@@ -589,6 +594,24 @@ void USBtin_MultiblocV8::BlocList_GetInfo(const unsigned int RefBloc, const char
 				// checking if we must send request, to refresh the hardware in domoticz devices :
 				switch (RefBloc)
 				{
+					case BLOC_7:
+						Rqid = (type_E_ANA_1_TO_4 << SHIFT_TYPE_TRAME) + m_BlocList_CAN[i].BlocID;
+						SendRequest(Rqid);
+						Rqid = (type_E_ANA_5_TO_8 << SHIFT_TYPE_TRAME) + m_BlocList_CAN[i].BlocID;
+						SendRequest(Rqid);
+						Rqid = (type_E_TOR << SHIFT_TYPE_TRAME) + m_BlocList_CAN[i].BlocID;
+						SendRequest(Rqid);
+						Rqid = (type_STATE_S_TOR_1_TO_2 << SHIFT_TYPE_TRAME) + m_BlocList_CAN[i].BlocID;
+						SendRequest(Rqid);
+						// send IBS request...
+						if (m_BOOL_DebugInMultiblocV8 == true)
+						{
+							Log(LOG_NORM, "MultiblocV8: Send IBS request to: %s", GetCompleteBlocNameSource(RefBloc, Codage, Ssreseau).c_str());
+						}
+						Rqid = (type_IBS << SHIFT_TYPE_TRAME) + m_BlocList_CAN[i].BlocID;
+						SendRequest(Rqid);
+						break;
+
 					case BLOC_9:
 						// send IBS request...
 						if (m_BOOL_DebugInMultiblocV8 == true)
@@ -693,6 +716,27 @@ void USBtin_MultiblocV8::BlocList_CheckBloc()
 				// Log(LOG_NORM,"MultiblocV8: BlocAlive with ref #%d# ",RefBloc);
 				switch (RefBloc)
 				{
+					case BLOC_7:
+						if (m_BOOL_TaskAGo == true)
+						{
+							Rqid = (type_E_ANA_1_TO_4 << SHIFT_TYPE_TRAME) + m_BlocList_CAN[i].BlocID;
+							SendRequest(Rqid);
+							Rqid = (type_E_ANA_5_TO_8 << SHIFT_TYPE_TRAME) + m_BlocList_CAN[i].BlocID;
+							SendRequest(Rqid);
+						}
+						if (m_BOOL_TaskRqEtorGo == true)
+						{
+							Rqid = (type_E_TOR_1_TO_64 << SHIFT_TYPE_TRAME) + m_BlocList_CAN[i].BlocID;
+							SendRequest(Rqid);
+						}
+						if (m_BOOL_TaskRqStorGo == true)
+						{
+							m_BlocList_CAN[i].ForceUpdateSTOR[0] = true;
+							m_BlocList_CAN[i].ForceUpdateSTOR[1] = true;
+							Rqid = (type_STATE_S_TOR_1_TO_2 << SHIFT_TYPE_TRAME) + m_BlocList_CAN[i].BlocID;
+							SendRequest(Rqid);
+						}
+						break;
 					case BLOC_SFSP_M:
 					case BLOC_SFSP_E:
 					case BLOC_9:
@@ -1097,6 +1141,24 @@ void USBtin_MultiblocV8::Traitement_E_ANA_Recu(const unsigned int FrameType, con
 
 	switch (RefBloc)
 	{
+		case BLOC_7:
+			if( FrameType == type_E_ANA_1_TO_4 ){
+				//we have receive analog input 1 to 4 :
+				for(uint8_t i=0;i<4;i++){
+					int index = i * 2;
+					int value = ( bufferdata[index] <<8 ) + bufferdata[index+1];
+
+
+					SendCustomSensor
+				}
+			}
+			else if( FrameType == type_E_ANA_5_TO_8 ){
+				//we have receivee eanalog input 5 to 6 and supply voltage on 7
+
+			}
+			break;
+
+		//analog information is only on D0+D1 for this bloc: (supply voltage in 1/10Volt)
 		case BLOC_SFSP_M:
 		case BLOC_SFSP_E:
 		case BLOC_9:
