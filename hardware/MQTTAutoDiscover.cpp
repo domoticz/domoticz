@@ -3359,7 +3359,9 @@ void MQTTAutoDiscover::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 		}
 
 		if (!root["state"].empty())
+		{
 			szSwitchCmd = root["state"].asString();
+		}
 		else if (!root["value"].empty())
 		{
 			szSwitchCmd = root["value"].asString();
@@ -3379,16 +3381,7 @@ void MQTTAutoDiscover::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 					szSwitchCmd = "Set Level";
 			}
 		}
-		else
-		{
-			if (root["brightness"].empty())
-			{
-#ifdef _DEBUG
-				_log.Debug(DEBUG_NORM, "ERROR: Last Payload is missing state field (%s/%s)", pSensor->unique_id.c_str(), szDeviceName.c_str());
-#endif
-				return;
-			}
-		}
+
 		if (!root["brightness"].empty())
 		{
 			float dLevel = (100.F / pSensor->brightness_scale) * root["brightness"].asInt();
