@@ -1644,12 +1644,27 @@ namespace http {
 			int occurence = atoi(soccurence.c_str());
 			root["status"] = "OK";
 			root["title"] = "AddSetpointTimer";
+
+			std::string szDate = std_format("%04d-%02d-%02d", Year, Month, Day);
+			std::string szTime = std_format("%02d:%02d", hour, min);
+
+			//Check for duplicate
+			auto result = m_sql.safe_query("SELECT ID FROM SetpointTimers WHERE (DeviceRowID==%s) AND ([Date]=='%q') AND (Time=='%q') AND (Type==%d) AND (TimerPlan==%d)",
+				idx.c_str(),
+				szDate.c_str(),
+				szTime.c_str(),
+				iTimerType,
+				m_sql.m_ActiveTimerPlan
+			);
+			if (!result.empty())
+				return; //duplicate!
+
 			m_sql.safe_query(
-				"INSERT INTO SetpointTimers (Active, DeviceRowID, [Date], Time, Type, Temperature, Days, MDay, Month, Occurence, TimerPlan) VALUES (%d,'%q','%04d-%02d-%02d','%02d:%02d',%d,%.1f,%d,%d,%d,%d,%d)",
+				"INSERT INTO SetpointTimers (Active, DeviceRowID, [Date], Time, Type, Temperature, Days, MDay, Month, Occurence, TimerPlan) VALUES (%d,'%q','%q','%q',%d,%.1f,%d,%d,%d,%d,%d)",
 				(active == "true") ? 1 : 0,
 				idx.c_str(),
-				Year, Month, Day,
-				hour, min,
+				szDate.c_str(),
+				szTime.c_str(),
 				iTimerType,
 				temperature,
 				days,
