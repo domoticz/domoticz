@@ -18,7 +18,11 @@ class MQTTAutoDiscover : public MQTT
 		std::string device_class;
 
 		std::string availability_topic;
+
 		std::string state_topic;
+		std::string state_on;
+		std::string state_off;
+
 		std::string command_topic;
 		std::string position_topic;
 		std::string set_position_topic;
@@ -56,8 +60,6 @@ class MQTTAutoDiscover : public MQTT
 
 		std::string payload_available;
 		std::string payload_not_available;
-		std::string state_on;
-		std::string state_off;
 
 		bool bBrightness = false;
 		bool bHave_brightness_scale = false;
@@ -110,6 +112,7 @@ class MQTTAutoDiscover : public MQTT
 		bool bOnline = false;
 		time_t last_received = 0;
 		std::string last_value;
+		std::string last_topic;
 		bool bIsJSON = false;
 		std::string last_json_value;
 		uint8_t devType = 0;

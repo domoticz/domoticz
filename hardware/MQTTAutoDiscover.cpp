@@ -849,6 +849,14 @@ void MQTTAutoDiscover::on_auto_discovery_message(const struct mosquitto_message*
 			pSensor->state_topic = root["json_attributes_topic"].asString();
 		else if (!root["topic"].empty())
 			pSensor->state_topic = root["topic"].asString();
+		if (!root["state_on"].empty())
+			pSensor->state_on = root["state_on"].asString();
+		else if (!root["stat_on"].empty())
+			pSensor->state_on = root["stat_on"].asString();
+		if (!root["state_off"].empty())
+			pSensor->state_off = root["state_off"].asString();
+		else if (!root["stat_off"].empty())
+			pSensor->state_off = root["stat_off"].asString();
 
 		if (!root["command_topic"].empty())
 			pSensor->command_topic = root["command_topic"].asString();
@@ -974,14 +982,6 @@ void MQTTAutoDiscover::on_auto_discovery_message(const struct mosquitto_message*
 			pSensor->payload_not_available = root["payload_not_available"].asString();
 		else if (!root["pl_not_avail"].empty())
 			pSensor->payload_not_available = root["pl_not_avail"].asString();
-		if (!root["state_on"].empty())
-			pSensor->state_on = root["state_on"].asString();
-		else if (!root["stat_on"].empty())
-			pSensor->state_on = root["stat_on"].asString();
-		if (!root["state_off"].empty())
-			pSensor->state_on = root["state_off"].asString();
-		else if (!root["stat_off"].empty())
-			pSensor->state_on = root["stat_off"].asString();
 
 		if (!root["payload_lock"].empty())
 			pSensor->payload_lock = root["payload_lock"].asString();
@@ -1499,6 +1499,7 @@ void MQTTAutoDiscover::handle_auto_discovery_sensor_message(const struct mosquit
 			}
 			pSensor->last_value = szValue;
 			pSensor->last_received = mytime(nullptr);
+			pSensor->last_topic = topic;
 			pSensor->bIsJSON = bIsJSON;
 			if (bIsJSON)
 			{
@@ -3356,6 +3357,20 @@ void MQTTAutoDiscover::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 			}
 			else
 				root["state"] = "ON";
+		}
+
+		if (!pSensor->state_value_template.empty())
+		{
+			if (pSensor->state_topic == pSensor->last_topic)
+			{
+				std::string szValue = GetValueFromTemplate(root, pSensor->state_value_template);
+				if (szValue == pSensor->state_on)
+					szSwitchCmd = pSensor->payload_on;
+				else if (szValue == pSensor->state_off)
+					szSwitchCmd = pSensor->payload_off;
+				else
+					szSwitchCmd = szValue;
+			}
 		}
 
 		if (!root["state"].empty())
