@@ -774,6 +774,7 @@ void USBtin_MultiblocV8::BlocList_CheckBloc()
 	}
 	m_BOOL_TaskAGo = false;
 	m_BOOL_TaskRqStorGo = false;
+	m_BOOL_TaskRqEtorGo = false;
 }
 
 // traitement sur réception trame de vie / Life frame treatment :
