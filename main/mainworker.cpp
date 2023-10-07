@@ -968,13 +968,13 @@ bool MainWorker::AddHardwareFromParams(
 		pHardware = new CDummy(ID);
 		break;
 	case HTYPE_Tellstick:
-		{
-			CTellstick* tellstick;
-			if (CTellstick::Create(&tellstick, ID, Mode1, Mode2)) {
-				pHardware = tellstick;
-			}
+	{
+		CTellstick* tellstick;
+		if (CTellstick::Create(&tellstick, ID, Mode1, Mode2)) {
+			pHardware = tellstick;
 		}
-		break;
+	}
+	break;
 	case HTYPE_EVOHOME_SCRIPT:
 		pHardware = new CEvohomeScript(ID);
 		break;
@@ -12626,6 +12626,7 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string>& sd, std::string 
 		}
 		return true;
 	}
+	break;
 	case pTypeGeneralSwitch:
 	{
 		tRBUF lcmd;
@@ -12658,15 +12659,15 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string>& sd, std::string 
 			if ((switchcmd == "Set Level") || (switchcmd == "Set Group Level")) {
 				std::map<std::string, std::string> statuses;
 				GetSelectorSwitchStatuses(options, statuses);
-				int maxLevel = static_cast<int>(statuses.size()) * 10;
+				int maxLevel = static_cast<int>(statuses.size() - 1) * 10;
 
-				level = (level < 0) ? 0 : level;
-				level = (level > maxLevel) ? maxLevel : level;
-
-				std::stringstream sslevel;
-				sslevel << level;
-				if (statuses[sslevel.str()].empty()) {
+				if (
+					(level < 0)
+					|| (level > maxLevel)
+					)
+				{
 					_log.Log(LOG_ERROR, "Setting a wrong level value %d to Selector device %lu", level, ID);
+					return false;
 				}
 			}
 		}
@@ -12682,8 +12683,9 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string>& sd, std::string 
 			//send to internal for now (later we use the ACK)
 			PushAndWaitRxMessage(m_hardwaredevices[hindex], (const uint8_t*)&gswitch, nullptr, -1, User.c_str());
 		}
+		return true;
 	}
-	return true;
+	break;
 	}
 	return false;
 }
@@ -13284,7 +13286,7 @@ bool MainWorker::SwitchScene(const uint64_t idx, std::string switchcmd, const st
 
 		if (scenetype == SGTYPE_GROUP)
 		{
-			std::vector<std::string> validCmdArray {"On", "Off", "Toggle", "Group On", "Chime", "All On"};
+			std::vector<std::string> validCmdArray{ "On", "Off", "Toggle", "Group On", "Chime", "All On" };
 			if (std::find(validCmdArray.begin(), validCmdArray.end(), switchcmd) == validCmdArray.end())
 				return false;
 			//when asking for Toggle, just switch to the opposite value
