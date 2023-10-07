@@ -179,7 +179,7 @@ define(function () {
                     'Voltage', 'Current', 'Pressure', 'Custom Sensor', 'kWh',
                     'Sound Level', 'Solar Radiation', 'Visibility', 'Distance',
                     'Soil Moisture', 'Leaf Wetness', 'Waterflow', 'Lux', 'Percentage',
-                    'Text', 'Alert', 'Temperature'
+                    'Text', 'Alert', 'Temperature', 'SetPoint'
                 ];
 
                 if (deviceTypes.some(function(item) {

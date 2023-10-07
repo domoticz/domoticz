@@ -499,7 +499,6 @@ PlanningTimerSheet = function(options){
 				"&date=" + tsettings.Date +
 				"&hour=" + tsettings.Hour +
 				"&min=" + tsettings.Min +
-
 				"&days=" + tsettings.Days +
 				"&mday=" + tsettings.MDay +
 				"&month=" + tsettings.Month +

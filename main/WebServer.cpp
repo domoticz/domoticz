@@ -3557,7 +3557,7 @@ namespace http
 		 * Takes root["result"] and groups all items according to sgroupby, summing all values for each category, then creating new items in root["result"]
 		 * for each combination year/category.
 		 */
-		void CWebServer::GroupBy(Json::Value& root, std::string dbasetable, uint64_t idx, std::string sgroupby, std::function<std::string(std::string)> counter,
+		void CWebServer::GroupBy(Json::Value& root, std::string dbasetable, uint64_t idx, std::string sgroupby, bool bUseValuesOrCounter, std::function<std::string(std::string)> counter,
 			std::function<std::string(std::string)> value, std::function<std::string(double)> sumToResult)
 		{
 			/*
@@ -3572,9 +3572,34 @@ namespace http
 			 *   Plus it seems that the value is not always the same as the difference between the counters. Counters are more often reliable.
 			 */
 			std::string queryString;
+			std::vector<std::vector<std::string>> result;
+			bool bUseValues = false;
+
+			/* if bUseValuesOrCounter is true, then find out if there are any Counter values in the table, if not: use Value instead of Counter */
+			if (bUseValuesOrCounter)
+			{
+				queryString = "select count(*) from " + dbasetable + " where DeviceRowID = " + std::to_string(idx) + " and " + counter("") + " != 0 ";
+				result = m_sql.safe_query(queryString.c_str(), idx, idx, idx, idx, idx);
+				if (atoi(result[0][0].c_str()) == 0)
+				{
+					bUseValues = true;
+				}
+			}
+
+			/* get the data */
+			queryString = "";
 			queryString.append(" select");
 			queryString.append("  strftime('%%Y',Date) as Year,");
-			queryString.append("  sum(Difference) as Sum");
+
+			if (!bUseValues)
+			{
+				queryString.append("  sum(Difference) as Sum");
+			}
+			else
+			{
+				queryString.append("  sum(Value) as Sum");
+			}
+
 			if (sgroupby == "quarter")
 			{
 				queryString.append(",case");
@@ -3588,37 +3613,46 @@ namespace http
 			{
 				queryString.append(",strftime('%%m',Date) as Month");
 			}
-			queryString.append(" from (");
-			queryString.append(" 	select");
-			queryString.append("         mc0.DeviceRowID,");
-			queryString.append("         date(mc0.Date) as Date,");
-			queryString.append("         case");
-			queryString.append("            when (" + counter("mc1") + ") <= (" + counter("mc0") + ")");
-			queryString.append("            then (" + counter("mc0") + ") - (" + counter("mc1") + ")");
-			queryString.append("            else (" + value("mc0") + ")");
-			queryString.append("         end as Difference");
-			queryString.append(" 	from " + dbasetable + " mc0");
-			queryString.append(" 	inner join " + dbasetable + " mc1 on mc1.DeviceRowID = mc0.DeviceRowID");
-			queryString.append("         and mc1.Date = (");
-			queryString.append("             select max(mcm.Date)");
-			queryString.append("             from " + dbasetable + " mcm");
-			queryString.append("             where mcm.DeviceRowID = mc0.DeviceRowID and mcm.Date < mc0.Date and (" + counter("mcm") + ") > 0");
-			queryString.append("         )");
-			queryString.append(" 	where");
-			queryString.append("         mc0.DeviceRowID = %" PRIu64 "");
-			queryString.append("         and (" + counter("mc0") + ") > 0");
-			queryString.append("         and (select min(Date) from " + dbasetable + " where DeviceRowID = %" PRIu64 " and (" + counter("") + ") > 0) <= mc1.Date");
-			queryString.append("         and mc0.Date <= (select max(Date) from " + dbasetable + " where DeviceRowID = %" PRIu64 " and (" + counter("") + ") > 0)");
-			queryString.append("    union all");
-			queryString.append("    select");
-			queryString.append("         DeviceRowID,");
-			queryString.append("         date(Date) as Date,");
-			queryString.append("         " + value(""));
+
+			if (!bUseValues)
+			{
+				queryString.append(" from (");
+				queryString.append(" 	select");
+				queryString.append("         mc0.DeviceRowID,");
+				queryString.append("         date(mc0.Date) as Date,");
+				queryString.append("         case");
+				queryString.append("            when (" + counter("mc1") + ") <= (" + counter("mc0") + ")");
+				queryString.append("            then (" + counter("mc0") + ") - (" + counter("mc1") + ")");
+				queryString.append("            else (" + value("mc0") + ")");
+				queryString.append("         end as Difference");
+				queryString.append(" 	from " + dbasetable + " mc0");
+				queryString.append(" 	inner join " + dbasetable + " mc1 on mc1.DeviceRowID = mc0.DeviceRowID");
+				queryString.append("         and mc1.Date = (");
+				queryString.append("             select max(mcm.Date)");
+				queryString.append("             from " + dbasetable + " mcm");
+				queryString.append("             where mcm.DeviceRowID = mc0.DeviceRowID and mcm.Date < mc0.Date and (" + counter("mcm") + ") > 0");
+				queryString.append("         )");
+				queryString.append(" 	where");
+				queryString.append("         mc0.DeviceRowID = %" PRIu64 "");
+				queryString.append("         and (" + counter("mc0") + ") > 0");
+				queryString.append("         and (select min(Date) from " + dbasetable + " where DeviceRowID = %" PRIu64 " and (" + counter("") + ") > 0) <= mc1.Date");
+				queryString.append("         and mc0.Date <= (select max(Date) from " + dbasetable + " where DeviceRowID = %" PRIu64 " and (" + counter("") + ") > 0)");
+				queryString.append("    union all");
+				queryString.append("    select");
+				queryString.append("         DeviceRowID,");
+				queryString.append("         date(Date) as Date,");
+				queryString.append("         " + value(""));
+			}
+
 			queryString.append(" 	from " + dbasetable);
 			queryString.append(" 	where");
 			queryString.append("         DeviceRowID = %" PRIu64 "");
-			queryString.append("         and (select min(Date) from " + dbasetable + " where DeviceRowID = %" PRIu64 " and (" + counter("") + ") > 0) = Date");
-			queryString.append(" )");
+			if (!bUseValues)
+			{
+				queryString.append("         and (select min(Date) from " + dbasetable + " where DeviceRowID = %" PRIu64 " and (" + counter("") + ") > 0) = Date");
+				queryString.append(" )");
+			}
+			
 			queryString.append(" group by strftime('%%Y',Date)");
 			if (sgroupby == "quarter")
 			{
@@ -3633,7 +3667,7 @@ namespace http
 			{
 				queryString.append(",strftime('%%m',Date)");
 			}
-			std::vector<std::vector<std::string>> result = m_sql.safe_query(queryString.c_str(), idx, idx, idx, idx, idx);
+			result = m_sql.safe_query(queryString.c_str(), idx, idx, idx, idx, idx);
 			if (!result.empty())
 			{
 				int firstYearCounting = 0;

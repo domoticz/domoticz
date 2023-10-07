@@ -849,6 +849,14 @@ void MQTTAutoDiscover::on_auto_discovery_message(const struct mosquitto_message*
 			pSensor->state_topic = root["json_attributes_topic"].asString();
 		else if (!root["topic"].empty())
 			pSensor->state_topic = root["topic"].asString();
+		if (!root["state_on"].empty())
+			pSensor->state_on = root["state_on"].asString();
+		else if (!root["stat_on"].empty())
+			pSensor->state_on = root["stat_on"].asString();
+		if (!root["state_off"].empty())
+			pSensor->state_off = root["state_off"].asString();
+		else if (!root["stat_off"].empty())
+			pSensor->state_off = root["stat_off"].asString();
 
 		if (!root["command_topic"].empty())
 			pSensor->command_topic = root["command_topic"].asString();
@@ -915,6 +923,7 @@ void MQTTAutoDiscover::on_auto_discovery_message(const struct mosquitto_message*
 			pSensor->state_value_template = root["state_value_template"].asString();
 		else if (!root["stat_val_tpl"].empty())
 			pSensor->state_value_template = root["stat_val_tpl"].asString();
+		CleanValueTemplate(pSensor->state_value_template);
 
 		if (!root["icon"].empty())
 			pSensor->icon = root["icon"].asString();
@@ -973,14 +982,6 @@ void MQTTAutoDiscover::on_auto_discovery_message(const struct mosquitto_message*
 			pSensor->payload_not_available = root["payload_not_available"].asString();
 		else if (!root["pl_not_avail"].empty())
 			pSensor->payload_not_available = root["pl_not_avail"].asString();
-		if (!root["state_on"].empty())
-			pSensor->state_on = root["state_on"].asString();
-		else if (!root["stat_on"].empty())
-			pSensor->state_on = root["stat_on"].asString();
-		if (!root["state_off"].empty())
-			pSensor->state_on = root["state_off"].asString();
-		else if (!root["stat_off"].empty())
-			pSensor->state_on = root["stat_off"].asString();
 
 		if (!root["payload_lock"].empty())
 			pSensor->payload_lock = root["payload_lock"].asString();
@@ -1498,6 +1499,12 @@ void MQTTAutoDiscover::handle_auto_discovery_sensor_message(const struct mosquit
 			}
 			pSensor->last_value = szValue;
 			pSensor->last_received = mytime(nullptr);
+			pSensor->last_topic = topic;
+			pSensor->bIsJSON = bIsJSON;
+			if (bIsJSON)
+			{
+				pSensor->last_json_value = qMessage;
+			}
 #ifdef _DEBUG
 			std::string szLogMessage = std_format("%s (value: %s", pSensor->name.c_str(), pSensor->last_value.c_str());
 			if (!pSensor->unit_of_measurement.empty())
@@ -3301,10 +3308,13 @@ void MQTTAutoDiscover::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 
 	bool bIsJSON = false;
 	Json::Value root;
-	bool ret = ParseJSon(pSensor->last_value, root);
-	if (ret)
+	if (pSensor->bIsJSON)
 	{
-		bIsJSON = root.isObject();
+		bool ret = ParseJSon(pSensor->last_json_value, root);
+		if (ret)
+		{
+			bIsJSON = root.isObject();
+		}
 	}
 
 	_tColor color_old;
@@ -3349,8 +3359,24 @@ void MQTTAutoDiscover::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 				root["state"] = "ON";
 		}
 
+		if (!pSensor->state_value_template.empty())
+		{
+			if (pSensor->state_topic == pSensor->last_topic)
+			{
+				std::string szValue = GetValueFromTemplate(root, pSensor->state_value_template);
+				if (szValue == pSensor->state_on)
+					szSwitchCmd = pSensor->payload_on;
+				else if (szValue == pSensor->state_off)
+					szSwitchCmd = pSensor->payload_off;
+				else
+					szSwitchCmd = szValue;
+			}
+		}
+
 		if (!root["state"].empty())
+		{
 			szSwitchCmd = root["state"].asString();
+		}
 		else if (!root["value"].empty())
 		{
 			szSwitchCmd = root["value"].asString();
@@ -3370,16 +3396,7 @@ void MQTTAutoDiscover::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 					szSwitchCmd = "Set Level";
 			}
 		}
-		else
-		{
-			if (root["brightness"].empty())
-			{
-#ifdef _DEBUG
-				_log.Debug(DEBUG_NORM, "ERROR: Last Payload is missing state field (%s/%s)", pSensor->unique_id.c_str(), szDeviceName.c_str());
-#endif
-				return;
-			}
-		}
+
 		if (!root["brightness"].empty())
 		{
 			float dLevel = (100.F / pSensor->brightness_scale) * root["brightness"].asInt();
@@ -3388,7 +3405,12 @@ void MQTTAutoDiscover::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 				(szSwitchCmd != pSensor->payload_on)
 				&& (szSwitchCmd != pSensor->payload_off))
 			{
-				szSwitchCmd = (level > 0) ? pSensor->payload_on : pSensor->payload_off;
+				if (level == 0)
+					szSwitchCmd = pSensor->payload_off;
+				else if (level == 100)
+					szSwitchCmd = pSensor->payload_on;
+				else
+					szSwitchCmd = "Set Level";
 			}
 			else if ((szSwitchCmd == pSensor->payload_on) && (level > 0) && (level < 100))
 			{
@@ -3799,7 +3821,7 @@ bool MQTTAutoDiscover::SendSwitchCommand(const std::string& DeviceID, const std:
 					{
 						root["color"]["h"] = hsb[0] * 360.0F;
 						root["color"]["s"] = hsb[1] * 100.0F;
-						root["brightness"] = hsb[2] * pSensor->brightness_scale;
+						bCouldUseBrightness = true;
 					}
 				}
 				else if (
