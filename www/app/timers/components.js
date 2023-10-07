@@ -194,7 +194,7 @@ define(['app', 'components/rgbw-picker/RgbwPicker', 'timers/factories'], functio
                 var columns = [
                     {title: $.t('Active'), data: 'Active', render: activeRenderer},
                     {title: $.t('Type'), data: 'Type', render: timerTypeRenderer},
-                    {title: $.t('Date'), data: 'Date', type: 'date-us'},
+                    {title: $.t('Date'), data: 'Date', type: 'date-us', width: 100 },
                     {title: $.t('Time'), data: 'Time'},
                     {title: $.t('Randomness'), data: 'Randomness', render: activeRenderer},
                     {title: $.t('Command'), data: 'idx', render: commandRenderer},

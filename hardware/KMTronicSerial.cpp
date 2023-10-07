@@ -174,9 +174,9 @@ void KMTronicSerial::GetRelayStates()
 	SendBuf[1] = 0x09;
 	SendBuf[2] = 0x00;
 
-	//Check if we have the 485 boards (max 6)
+	//Check if we have the 485 boards (max 15)
 	bool bIs485 = false;
-	for (int iBoard = 0; iBoard < 6; iBoard++)
+	for (int iBoard = 0; iBoard < 15; iBoard++)
 	{
 		SendBuf[1] = (uint8_t)(0xA1 + iBoard);
 		if (WriteInt(SendBuf, 3, true))
@@ -208,8 +208,9 @@ void KMTronicSerial::GetRelayStates()
 	if (bIs485)
 	{
 		//It could be that maybe one of the boards is turned off for various reasons,
-		//for this, we assume we have all 6 boards available
-		m_TotRelais = 48;
+		//for this, we assume we have at-least 6 boards available
+		if (m_TotRelais < 48)
+			m_TotRelais = 48;
 		return;
 	}
 

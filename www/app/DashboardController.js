@@ -3531,7 +3531,8 @@ define(['app', 'livesocket'], function (app) {
 											statushtml = "";
 										}
 										else if ((item.Type == "Setpoint") && (item.SubType == "SetPoint")) {
-											imagehtml += 'override.png" class="lcursor" onclick="ShowSetpointPopup(event, ' + item.idx + ', ' + item.Protected + ', ' + item.Data + ', false, ' + item.step + ', ' + item.min + ', ' + item.max + ');" height="40" width="40"></td>\n';
+											imagehtml += (item.CustomImage == 0)  ? 'override.png' : item.Image + '48_On.png';
+											imagehtml += '" class="lcursor" onclick="ShowSetpointPopup(event, ' + item.idx + ', ' + item.Protected + ', ' + item.Data + ', false, ' + item.step + ', ' + item.min + ', ' + item.max + ');" height="40" width="40"></td>\n';
 											statushtml = "";
 										}
 										else if (item.SubType == "Smartwares") {

@@ -196,18 +196,26 @@ bool AlfenEve::WriteToHardware(const char* pdata, const unsigned char /*length*/
 	return false;
 }
 
+#define SP_SOLAR_GREEN_SHARE 1
+#define SP_SOLAR_COMFORT_LEVEL 2
+#define SP_MAX_CHARGE_CURRENT 3
+
 void AlfenEve::SetSetpoint(const int idx, const float value)
 {
 	int iValue = static_cast<int>(value);
 	switch (idx)
 	{
-	case 1:
+	case SP_SOLAR_GREEN_SHARE:
 		//Solar Green share (%)
 		SetProperty("3280_2", iValue);
 		break;
-	case 2:
+	case SP_SOLAR_COMFORT_LEVEL:
 		//Solar Comfort Level
 		SetProperty("3280_3", iValue);
+		break;
+	case SP_MAX_CHARGE_CURRENT:
+		//Max Charge current (OD_mainNormalMaxCurrent)
+		SetProperty("2129_0", iValue);
 		break;
 	}
 }
@@ -1036,7 +1044,7 @@ void AlfenEve::parseProperties(const Json::Value& root)
 		else if (id == "2129_0")
 		{
 			int maxCurrent = itt["value"].asInt();
-			SendTextSensor(1, 3, 255, std::to_string(maxCurrent), "Max Charge Current (A)");
+			SendSetPointSensor(1, 1, SP_MAX_CHARGE_CURRENT, static_cast<float>(maxCurrent), "Max Charge Current (A)");
 		}
 		else if (id == "3280_1")
 		{
@@ -1051,12 +1059,12 @@ void AlfenEve::parseProperties(const Json::Value& root)
 		else if (id == "3280_2")
 		{
 			//Green share (%)
-			SendSetPointSensor(1, 1, 1, static_cast<float>(itt["value"].asInt()), "Solar Green Share %");
+			SendSetPointSensor(1, 1, SP_SOLAR_GREEN_SHARE, static_cast<float>(itt["value"].asInt()), "Solar Green Share %");
 		}
 		else if (id == "3280_3")
 		{
 			//Comfort Level
-			SendSetPointSensor(1, 1, 2, static_cast<float>(itt["value"].asInt()), "Solar Comfort Level Watt");
+			SendSetPointSensor(1, 1, SP_SOLAR_COMFORT_LEVEL, static_cast<float>(itt["value"].asInt()), "Solar Comfort Level Watt");
 		}
 	}
 	SendCurrentSensor(1, 255, CurrentL1, CurrentL2, CurrentL3, "Current L1/L2/L3");
@@ -1116,7 +1124,6 @@ bool AlfenEve::SendCommand(const std::string& command)
 	return false;
 }
 
-//Below returns Error 400 for some reason!?, 2129_0 has access:0,maybe that is the reason
 bool AlfenEve::SetProperty(const std::string& szName, const int Value)
 {
 	if (szName.empty())
@@ -1128,7 +1135,6 @@ bool AlfenEve::SetProperty(const std::string& szName, const int Value)
 	sstr << "{\"" << szName << "\":{\"id\":\"" << szName << "\",\"value\":" << Value << "}}";
 
 	std::string send_data = sstr.str();
-
 
 	int totRetries = 0;
 	bool bSuccess = false;

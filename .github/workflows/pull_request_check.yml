@@ -51,12 +51,14 @@ jobs:
       - name: dependencies
         run: |
           echo 'APT::Get::Always-Include-Phased-Updates "false";' | sudo tee /etc/apt/apt.conf.d/99-phased-updates
-          sudo apt-get update && sudo apt-get --autoremove upgrade
+          sudo apt-mark hold grub-efi-amd64-signed
+          sudo apt-get update --fix-missing
+          sudo apt-get upgrade
           sudo apt-get install make gcc g++ libssl-dev git libcurl4-gnutls-dev libusb-dev python3-dev zlib1g-dev libcereal-dev liblua5.3-dev uthash-dev
           sudo apt-get install python3-pytest python3-pytest-bdd
-          sudo apt-get install lua5.3 luarocks
-          sudo luarocks install busted
-          sudo luarocks install luacov
+      #    sudo apt-get install lua5.3 luarocks
+      #    sudo luarocks install busted
+      #    sudo luarocks install luacov
       # Disabled March 2022 - sudo luarocks install lodash
 
       # get CMake
@@ -69,9 +71,9 @@ jobs:
       # Boost
       - name: build boost libraries
         run: |
-          wget https://boostorg.jfrog.io/artifactory/main/release/1.81.0/source/boost_1_81_0.tar.gz >> /dev/null 2>&1
-          tar xfz boost_1_81_0.tar.gz
-          cd boost_1_81_0/
+          wget https://boostorg.jfrog.io/artifactory/main/release/1.83.0/source/boost_1_83_0.tar.gz >> /dev/null 2>&1
+          tar xfz boost_1_83_0.tar.gz
+          cd boost_1_83_0/
           ./bootstrap.sh
           ./b2 stage threading=multi link=static --with-thread --with-system --with-chrono >> /dev/null 2>&1
           sudo ./b2 install threading=multi link=static --with-thread --with-system --with-chrono >> /dev/null 2>&1

@@ -2875,10 +2875,13 @@ bool GetLightCommand(
 				// Not a managed command
 				return false;
 			}
-			int level = GetSelectorSwitchLevel(options, switchcmd);
-			if (level > 0) { // not Off but a level name
-							 // switchcmd cannot be a level name
-				return false;
+			if ((switchcmd != "On") && (switchcmd != "Off"))
+			{
+				int level = GetSelectorSwitchLevel(options, switchcmd);
+				if (level > 0) {
+					// switchcmd cannot be a level name
+					return false;
+				}
 			}
 		}
 
