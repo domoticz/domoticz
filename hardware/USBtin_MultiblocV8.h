@@ -55,9 +55,12 @@ private:
 	float TimeLeftInMinutes(float current,int DischargeableAh, int lastavailableAh );
 	float GetInformationFromId(int NodeId,int sType);
 	void ComputeTimeLeft(const unsigned int RefBloc, const char Codage, const char Ssreseau, const int ibsindex, const std::string& defaultname);
-	
+	void StoreSupplyVoltage(int sID, int VoltageLevel, std::string defaultname );
+	void Traitement_E_TOR_Recu(unsigned int FrameType, unsigned int RefBloc, char Codage, char Ssreseau, unsigned int bufferdata[8]);
+
 	bool m_BOOL_DebugInMultiblocV8;
 	bool m_BOOL_TaskAGo;
+	bool m_BOOL_TaskRqEtorGo;
 	bool m_BOOL_TaskRqStorGo;
 	bool m_BOOL_GlobalBlinkOutputs;
 	char m_CHAR_CommandBlocToSend;
