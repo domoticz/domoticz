@@ -667,7 +667,13 @@ void MQTTAutoDiscover::on_auto_discovery_message(const struct mosquitto_message*
 		if (root["name"].empty())
 		{
 			//Yes it's optional... but this should be required.. wierd
-			root["name"] = sensor_unique_id;
+			if (!root["device"].empty())
+			{
+				if (!root["device"]["name"].empty())
+					root["name"] = root["device"]["name"].asString();
+			}
+			if (root["name"].empty())
+				root["name"] = sensor_unique_id;
 		}
 
 		std::string device_identifiers;
@@ -3380,20 +3386,26 @@ void MQTTAutoDiscover::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 		else if (!root["value"].empty())
 		{
 			szSwitchCmd = root["value"].asString();
-			if (is_number(szSwitchCmd))
+			if (
+				(szSwitchCmd != pSensor->payload_on)
+				&& (szSwitchCmd != pSensor->payload_off)
+				)
 			{
-				//must be a level
-				level = atoi(szSwitchCmd.c_str());
+				if (is_number(szSwitchCmd))
+				{
+					//must be a level
+					level = atoi(szSwitchCmd.c_str());
 
-				if (pSensor->bHave_brightness_scale)
-					level = (int)round((100.0 / pSensor->brightness_scale) * level);
+					if (pSensor->bHave_brightness_scale)
+						level = (int)round((100.0 / pSensor->brightness_scale) * level);
 
-				if (level == 0)
-					szSwitchCmd = "off";
-				else if (level == 100)
-					szSwitchCmd = "on";
-				else
-					szSwitchCmd = "Set Level";
+					if (level == 0)
+						szSwitchCmd = "off";
+					else if (level == 100)
+						szSwitchCmd = "on";
+					else
+						szSwitchCmd = "Set Level";
+				}
 			}
 		}
 
