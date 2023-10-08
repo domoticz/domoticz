@@ -667,7 +667,13 @@ void MQTTAutoDiscover::on_auto_discovery_message(const struct mosquitto_message*
 		if (root["name"].empty())
 		{
 			//Yes it's optional... but this should be required.. wierd
-			root["name"] = sensor_unique_id;
+			if (!root["device"].empty())
+			{
+				if (!root["device"]["name"].empty())
+					root["name"] = root["device"]["name"].asString();
+			}
+			if (root["name"].empty())
+				root["name"] = sensor_unique_id;
 		}
 
 		std::string device_identifiers;
