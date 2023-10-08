@@ -35,6 +35,12 @@ History :
 * Add support of IBS Frame from Bloc 9 (Intelligent Battery Sensor) up to 6 sensors by bloc (IBS1 to 6) (Bloc 9 must be configured before use)
 * With IBS: management of a "time left before charge/discharge" for each IBS detected
 
+- 2023-10-07 : V4.00 Update  :
+* Add support of Bloc 7 (Bloc with 6 analog input + 6xIBS + Supply voltage, fully configurable)
+* Add digital input processing for frame receive by bloc 7 (and future used)
+* So input must be set before use with configuration tool.
+* Fixed bad sID write for supply voltage receive by bloc 9/sfsp (so old id used were incorrect )
+
 */
 
 #include "stdafx.h"
@@ -54,7 +60,7 @@ History :
 
 #define round(a) (int)(a + .5)
 
-#define MULTIBLOC_V8_VERSION "02.00.00"
+#define MULTIBLOC_V8_VERSION "04.00.00"
 
 #define TIME_1sec 1000
 #define TIME_500ms 500
@@ -166,6 +172,7 @@ History :
 // xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 #define BLOC_DOMOTICZ 0x01
 
+#define BLOC_7 0x0B
 #define BLOC_9 0x0D
 #define BLOC_SFSP_M 0x14
 #define BLOC_SFSP_E 0x15
@@ -346,14 +353,15 @@ void USBtin_MultiblocV8::Do_Work()
 
 			if (m_V8minCounterBase == 0)
 			{
-				// each 5 minutes
+				// each 5 minutes the analog and etor of all blocs are requested to update data
 				m_V8minCounterBase = (60 * 5);
 				m_BOOL_TaskAGo = true;
+				m_BOOL_TaskRqEtorGo = true;
 			}
 
 			if (m_V8minCounter1 == 0)
 			{
-				// each 6 hours...
+				// each 6 hours the ouputs states of all blocs are requested
 				m_V8minCounter1 = (3600 * 6);
 				m_BOOL_TaskRqStorGo = true;
 			}
@@ -362,7 +370,7 @@ void USBtin_MultiblocV8::Do_Work()
 			if (m_V8secCounter1 >= 3)
 			{
 				m_V8secCounter1 = 0;
-				// each 3 seconds
+				// each 3 seconds check the state of all blocs (alive or not)
 				BlocList_CheckBloc();
 			}
 		}
@@ -400,6 +408,7 @@ void USBtin_MultiblocV8::FillBufferSFSP_toSend(int Sid, char KeyCode)
 	}
 }
 
+/* this methods used to send request RTR on Can bus */
 void USBtin_MultiblocV8::SendRequest(int sID)
 {
 	char szDeviceID[10];
@@ -450,7 +459,9 @@ void USBtin_MultiblocV8::Traitement_MultiblocV8(int IDhexNumber, unsigned int rx
 			case type_E_ANA_5_TO_8:
 				Traitement_E_ANA_Recu(FrameType, RefBloc, Codage, SsReseau, Buffer_Octets);
 				break;
-
+			case type_E_TOR:
+				Traitement_E_TOR_Recu(FrameType, RefBloc, Codage, SsReseau, Buffer_Octets);
+				break;
 			case type_SFSP_SWITCH:
 				if (rxDLC == 5)
 					Traitement_SFSP_Switch_Recu(FrameType, RefBloc, Codage, SsReseau, Buffer_Octets);
@@ -589,6 +600,24 @@ void USBtin_MultiblocV8::BlocList_GetInfo(const unsigned int RefBloc, const char
 				// checking if we must send request, to refresh the hardware in domoticz devices :
 				switch (RefBloc)
 				{
+					case BLOC_7:
+						Rqid = (type_E_ANA_1_TO_4 << SHIFT_TYPE_TRAME) + m_BlocList_CAN[i].BlocID;
+						SendRequest(Rqid);
+						Rqid = (type_E_ANA_5_TO_8 << SHIFT_TYPE_TRAME) + m_BlocList_CAN[i].BlocID;
+						SendRequest(Rqid);
+						Rqid = (type_E_TOR << SHIFT_TYPE_TRAME) + m_BlocList_CAN[i].BlocID;
+						SendRequest(Rqid);
+						Rqid = (type_STATE_S_TOR_1_TO_2 << SHIFT_TYPE_TRAME) + m_BlocList_CAN[i].BlocID;
+						SendRequest(Rqid);
+						// send IBS request...
+						if (m_BOOL_DebugInMultiblocV8 == true)
+						{
+							Log(LOG_NORM, "MultiblocV8: Send IBS request to: %s", GetCompleteBlocNameSource(RefBloc, Codage, Ssreseau).c_str());
+						}
+						Rqid = (type_IBS << SHIFT_TYPE_TRAME) + m_BlocList_CAN[i].BlocID;
+						SendRequest(Rqid);
+						break;
+
 					case BLOC_9:
 						// send IBS request...
 						if (m_BOOL_DebugInMultiblocV8 == true)
@@ -693,6 +722,27 @@ void USBtin_MultiblocV8::BlocList_CheckBloc()
 				// Log(LOG_NORM,"MultiblocV8: BlocAlive with ref #%d# ",RefBloc);
 				switch (RefBloc)
 				{
+					case BLOC_7:
+						if (m_BOOL_TaskAGo == true)
+						{
+							Rqid = (type_E_ANA_1_TO_4 << SHIFT_TYPE_TRAME) + m_BlocList_CAN[i].BlocID;
+							SendRequest(Rqid);
+							Rqid = (type_E_ANA_5_TO_8 << SHIFT_TYPE_TRAME) + m_BlocList_CAN[i].BlocID;
+							SendRequest(Rqid);
+						}
+						if (m_BOOL_TaskRqEtorGo == true)
+						{
+							Rqid = (type_E_TOR_1_TO_64 << SHIFT_TYPE_TRAME) + m_BlocList_CAN[i].BlocID;
+							SendRequest(Rqid);
+						}
+						if (m_BOOL_TaskRqStorGo == true)
+						{
+							m_BlocList_CAN[i].ForceUpdateSTOR[0] = true;
+							m_BlocList_CAN[i].ForceUpdateSTOR[1] = true;
+							Rqid = (type_STATE_S_TOR_1_TO_2 << SHIFT_TYPE_TRAME) + m_BlocList_CAN[i].BlocID;
+							SendRequest(Rqid);
+						}
+						break;
 					case BLOC_SFSP_M:
 					case BLOC_SFSP_E:
 					case BLOC_9:
@@ -724,6 +774,7 @@ void USBtin_MultiblocV8::BlocList_CheckBloc()
 	}
 	m_BOOL_TaskAGo = false;
 	m_BOOL_TaskRqStorGo = false;
+	m_BOOL_TaskRqEtorGo = false;
 }
 
 // traitement sur réception trame de vie / Life frame treatment :
@@ -1090,13 +1141,61 @@ void USBtin_MultiblocV8::SetOutputBlinkInDomoticz(unsigned long sID, int OutputN
 	}
 }
 
+/*
+ * Voltage is in 1/10 volt receive from Can
+ *
+ */
+void USBtin_MultiblocV8::StoreSupplyVoltage(int sID, int VoltageLevel, std::string defaultname ){
+	int percent = ((VoltageLevel * 100) / 125);
+	float voltage = (float)VoltageLevel / 10;
+	// defaultname will contain the bloc adress source (ex: BLOC_9@1_0 for BLOC_9 coding 1 in the subnetwork 0 (base))
+	defaultname += " Supply";
+	SendVoltageSensor(sID, 1, percent, voltage, defaultname);
+}
+
 // traitement d'une trame info analogique reçue
 void USBtin_MultiblocV8::Traitement_E_ANA_Recu(const unsigned int FrameType, const unsigned int RefBloc, const char Codage, const char Ssreseau, unsigned int bufferdata[8])
 {
-	unsigned long sID = (RefBloc << SHIFT_INDEX_MODULE) + (Codage << SHIFT_CODAGE_MODULE) + Ssreseau;
+	unsigned int sID = (RefBloc << SHIFT_INDEX_MODULE) + (Codage << SHIFT_CODAGE_MODULE) + Ssreseau;
 
 	switch (RefBloc)
 	{
+		case BLOC_7:
+			if( FrameType == type_E_ANA_1_TO_4 ){
+				//we have receive analog input 1 to 4 :
+				for(uint8_t i=0;i<4;i++){
+					int index = i * 2;
+					int value = ( bufferdata[index] <<8 ) + bufferdata[index+1];
+
+					// defaultname will contain the bloc adress source (ex: BLOC_9@1_0 for BLOC_9 coding 1 in the subnetwork 0 (base))
+					std::string defaultname = GetCompleteBlocNameSource(RefBloc, Codage, Ssreseau);
+					defaultname += " Eana";
+					defaultname += std::to_string(i+1);
+					SendCustomSensor(sID,i,255,value,defaultname,"",12);
+				}
+			}
+			else if( FrameType == type_E_ANA_5_TO_8 ){
+				//we have receivee eanalog input 5 to 6 and supply voltage on 7
+				for(uint8_t i=0;i<2;i++){
+					int index = i * 2;
+					int value = ( bufferdata[index] <<8 ) + bufferdata[index+1];
+
+					// defaultname will contain the bloc adress source (ex: BLOC_9@1_0 for BLOC_9 coding 1 in the subnetwork 0 (base))
+					std::string defaultname = GetCompleteBlocNameSource(RefBloc, Codage, Ssreseau);
+					defaultname += " Eana";
+					defaultname += std::to_string(i+5);
+					SendCustomSensor(sID,(i+5),255,value,defaultname,"",12);
+				}
+
+				int VoltageLevel = bufferdata[4];
+				VoltageLevel <<= 8;
+				VoltageLevel += bufferdata[5];
+				std::string defaultname = GetCompleteBlocNameSource(RefBloc, Codage, Ssreseau);
+				StoreSupplyVoltage(sID,VoltageLevel,defaultname);
+			}
+			break;
+
+		//analog information is only on D0+D1 for this bloc: (supply voltage in 1/10Volt)
 		case BLOC_SFSP_M:
 		case BLOC_SFSP_E:
 		case BLOC_9:
@@ -1108,20 +1207,49 @@ void USBtin_MultiblocV8::Traitement_E_ANA_Recu(const unsigned int FrameType, con
 			VoltageLevel <<= 8;
 			VoltageLevel += bufferdata[1];
 			// Log(LOG_NORM,"MultiblocV8: receive ANA1 (alimentation) sfsp: #%d# ",VoltageLevel);
-			int percent = ((VoltageLevel * 100) / 125);
-			float voltage = (float)VoltageLevel / 10;
-
-			// defaultname will contain the bloc adress source (ex: BLOC_9@1_0 for BLOC_9 coding 1 in the subnetwork 0 (base))
 			std::string defaultname = GetCompleteBlocNameSource(RefBloc, Codage, Ssreseau);
-			defaultname += " Voltage";
-
-			SendVoltageSensor(((sID >> 8) & 0xffff), (sID & 0xff), percent, voltage, defaultname);
+			StoreSupplyVoltage(sID,VoltageLevel,defaultname);
 			break;
+	}
+}
+
+void USBtin_MultiblocV8::Traitement_E_TOR_Recu(const unsigned int FrameType, const unsigned int RefBloc, const char Codage, const char Ssreseau, unsigned int bufferdata[8])
+{
+	unsigned int sID = (RefBloc << SHIFT_INDEX_MODULE) + (Codage << SHIFT_CODAGE_MODULE) + Ssreseau;
+
+	switch (RefBloc)
+	{
+		case BLOC_7: //Bloc 7 is abble to send itss 3 digital input states
+			//only the first byte contains informations
+			std::string sourcename = GetCompleteBlocNameSource(RefBloc, Codage, Ssreseau);
+			sourcename += " E";
+			uint8_t State = bufferdata[0]&0x01;
+			uint8_t level = 0;
+			if( State > 0 ) level = 100;
+			std::string defaultname = sourcename + "1";
+			SendGeneralSwitch(sID,1,100,State,level,defaultname,"",12);
+
+			State = (bufferdata[0]>>1&0x01);
+			level = 0;
+			if( State > 0 ) level = 100;
+			defaultname = sourcename + "2";
+			SendGeneralSwitch(sID,2,100,State,level,defaultname,"",12);
+
+			State = (bufferdata[0]>>2&0x01);
+			level = 0;
+			if( State > 0 ) level = 100;
+			defaultname = sourcename + "3";
+			SendGeneralSwitch(sID,3,100,State,level,defaultname,"",12);
+
+
+			break;
+
 	}
 }
 
 // Envoi d'une trame suite à une commande dans domoticz...
 // sending Frame in response to a domoticz action :
+// frame sent to drive standard stor outputs only for supported bloc (like bloc sfsp, bllloc 9, bloc 7)
 bool USBtin_MultiblocV8::WriteToHardware(const char *pdata, const unsigned char length)
 {
 	const tRBUF *pSen = reinterpret_cast<const tRBUF *>(pdata);
@@ -1275,6 +1403,9 @@ bool USBtin_MultiblocV8::WriteToHardware(const char *pdata, const unsigned char 
 	return false;
 }
 
+/* methods to generate an sfsp switch action on the Can BUS
+ * Used by virtual sitches created by manual add on this hardware, type On/Off EnOcean
+ */
 void USBtin_MultiblocV8::USBtin_MultiblocV8_Send_SFSPSwitch_OnCAN(long sID_ToSend, char CodeTouche)
 {
 	char szDeviceID[10];
@@ -1314,6 +1445,7 @@ void USBtin_MultiblocV8::USBtin_MultiblocV8_Send_CommandBlocState_OnCAN(long sID
 	writeFrame(szTrameToSend);
 }
 
+/* to send a Learn command to a bloc that support SFSP protocol */
 void USBtin_MultiblocV8::USBtin_MultiblocV8_Send_SFSP_LearnCommand_OnCAN(long baseID_ToSend, char Commande)
 {
 	char szDeviceID[10];
@@ -1374,7 +1506,7 @@ const char *USBtin_MultiblocV8::getBlocnameFromIndex(int indexreference)
 	}
 }
 
-// traitement d'une trame info analogique reçue
+// processing of information frame IBS informations
 void USBtin_MultiblocV8::Traitement_IBS(const unsigned int FrameType, const unsigned int RefBloc, const char Codage, const char Ssreseau, unsigned int bufferdata[8])
 {
 	uint32_t sID = (FrameType << SHIFT_TYPE_TRAME) + (RefBloc << SHIFT_INDEX_MODULE) + (Codage << SHIFT_CODAGE_MODULE) + Ssreseau;
