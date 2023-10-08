@@ -3380,20 +3380,26 @@ void MQTTAutoDiscover::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 		else if (!root["value"].empty())
 		{
 			szSwitchCmd = root["value"].asString();
-			if (is_number(szSwitchCmd))
+			if (
+				(szSwitchCmd != pSensor->payload_on)
+				&& (szSwitchCmd != pSensor->payload_off)
+				)
 			{
-				//must be a level
-				level = atoi(szSwitchCmd.c_str());
+				if (is_number(szSwitchCmd))
+				{
+					//must be a level
+					level = atoi(szSwitchCmd.c_str());
 
-				if (pSensor->bHave_brightness_scale)
-					level = (int)round((100.0 / pSensor->brightness_scale) * level);
+					if (pSensor->bHave_brightness_scale)
+						level = (int)round((100.0 / pSensor->brightness_scale) * level);
 
-				if (level == 0)
-					szSwitchCmd = "off";
-				else if (level == 100)
-					szSwitchCmd = "on";
-				else
-					szSwitchCmd = "Set Level";
+					if (level == 0)
+						szSwitchCmd = "off";
+					else if (level == 100)
+						szSwitchCmd = "on";
+					else
+						szSwitchCmd = "Set Level";
+				}
 			}
 		}
 
