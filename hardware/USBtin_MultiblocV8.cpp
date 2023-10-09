@@ -1171,7 +1171,7 @@ void USBtin_MultiblocV8::Traitement_E_ANA_Recu(const unsigned int FrameType, con
 					std::string defaultname = GetCompleteBlocNameSource(RefBloc, Codage, Ssreseau);
 					defaultname += " Eana";
 					defaultname += std::to_string(i+1);
-					SendCustomSensor(sID,i,255,value,defaultname,"",12);
+					SendCustomSensor(sID,i,255, static_cast<float>(value),defaultname,"",12);
 				}
 			}
 			else if( FrameType == type_E_ANA_5_TO_8 ){
@@ -1184,7 +1184,7 @@ void USBtin_MultiblocV8::Traitement_E_ANA_Recu(const unsigned int FrameType, con
 					std::string defaultname = GetCompleteBlocNameSource(RefBloc, Codage, Ssreseau);
 					defaultname += " Eana";
 					defaultname += std::to_string(i+5);
-					SendCustomSensor(sID,(i+5),255,value,defaultname,"",12);
+					SendCustomSensor(sID,(i+5),255, static_cast<float>(value),defaultname,"",12);
 				}
 
 				int VoltageLevel = bufferdata[4];
