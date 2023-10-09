@@ -1103,15 +1103,18 @@ namespace http {
 				StringSplit(sLine, ",", vLineParts);
 				for (std::string sPart : vLineParts)
 				{
-					std::string::difference_type n = std::count(sPart.begin(), sPart.end(), ':');
-					if (n == 1)
-					{
-						//it is a IP and source port
-						sPart = sPart.substr(0, sPart.find(':'));
-					}
-
-					if(isValidIP(sPart))
+					if (isValidIP(sPart))
 						vHosts.push_back(sPart);
+					else {
+						size_t dpos = sPart.find_last_of(':');
+						if (dpos != std::string::npos)
+						{
+							//Strip off the port number
+							sPart = sPart.substr(0, dpos);
+							if (isValidIP(sPart))
+								vHosts.push_back(sPart);
+						}
+					}
 				}
 			}
 
