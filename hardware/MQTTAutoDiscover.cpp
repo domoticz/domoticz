@@ -3761,8 +3761,21 @@ bool MQTTAutoDiscover::SendSwitchCommand(const std::string& DeviceID, const std:
 					// just send the plain percentage as HA does for value in template
 					root = slevel;
 				else if (!szKey.empty())
+				{
 					// in case another key was requested
 					root[szKey] = slevel;
+					if (pSensor->command_topic == pSensor->brightness_command_topic)
+					{
+						std::string szOnPayload = pSensor->payload_on;
+						CleanValueTemplate(szOnPayload);
+						std::vector<std::string> strarray;
+						StringSplit(szOnPayload, ":", strarray);
+						if (strarray.size() == 2)
+						{
+							root[strarray[0]] = strarray[1];
+						}
+					}
+				}
 				else
 				{
 					Log(LOG_ERROR, "light device unhandled brightness_value_template (%s/%s)", DeviceID.c_str(), DeviceName.c_str());
