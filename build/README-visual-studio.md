@@ -1,41 +1,50 @@
 # Building Domoticz with Visual Studio
 
-- You need Visual Studio 2019 (Community Edition is perfect and is free)
-- The project file for Visual Studio can be found inside the "msbuild" folder
-- You need to download `WindowsLibraries.7z` from https://github.com/domoticz/win32-libraries	- For the Initial setup, Launch Visual Studio and from the 'Tools' menu choose 'Visual Studio Command Prompt'
-  and unpack the archive inside the "msbuild" folder.
-  This is to build a release in InnoSetup
-  For building in debug mode, please remove the 'include' and 'lib' folder!
-- For the Initial setup, Launch Visual Studio and from the 'Tools' menu choose 'Visual Studio Command Prompt'
-- Domoticz is using the excelent VCPKG C++ Library Manager, and you need to install the required packages that are in the file msbuild/packages.txt
+### Environment configuration
 
-  First you need to get VCPKG and build it with:
-```
-  git clone https://github.com/microsoft/vcpkg.git
-  cd vcpkg
-  call bootstrap-vcpkg.bat -disableMetrics
-```
-  Now we are going to get/build all Domoticz dependencies
-```
-  set VCPKG_DEFAULT_TRIPLET=x86-windows
-```  
-  Copy/past the content of msbuild/vcpkg-packages.txt after the command below
-```  
-  vcpkg install <PASTE CONTENT HERE>
-```  
-  (For example vcpkg install boost cereal curl jsoncpp lua minizip mosquitto openssl pthreads sqlite3 zlib)
+#### Requirements
+- Visual Studio 2019 (Community Edition is perfect and is free)
+- Download `WindowsLibraries.7z` from https://github.com/domoticz/win32-libraries
+- Domoticz reposioty cloned locally
 
-  Integrate VCPKG system wide with:
-```  
-  vcpkg.exe integrate install
-```
+#### Dependencies configuration
+1. Navigate to `path_to_domoticz/msbuild`
+2. From `WindowsLibraries.7z` unpack `Windows Libraries` directory into `msbuild` folder
+    - For building in debug mode: remove the `Windows Libraries/include` and `Windows Libraries/lib` folder.
+3. Open Domoticz project file for Visual Studio `msbuild/domoticz.sln` - Visual Studio will launch
+4. Open: `Visual Studio Command Prompt`
+    - VS 2019: `Tools`:`Visual Studio Command Prompt`
+    - VS 2022: `Tools`:`Command Line`:`Developer Command Prompt`
+    > Guide is not written for `Developer PowerShell`
+5. Get VCPKG and build it with following commands:
+    ```shell
+    # Clone vcpkg
+    git clone https://github.com/microsoft/vcpkg.git
+    # Enter the vcpkg directory
+    cd vcpkg
+    call bootstrap-vcpkg.bat -disableMetrics
+    ```
+    or use one liner:
+    ```shell
+    git clone https://github.com/microsoft/vcpkg.git && cd vcpkg && call bootstrap-vcpkg.bat -disableMetrics
+    ```
 
-- To compile Domoticz with Visual Studio choose Win32 configuration (Debug or Release)
-- Set the projects configuration properties for Debugging/Working Directory. 
-`Solution Explorer` -> `domoticz` -> `Properties` -> `Debugging` -> `Working Directory` should be set to 
-```
-"$(ProjectDir)/.."
-```
-- Optional: Python support
-  - Install Python version x32 downloaded from the official web: www.python.org
-  - Add path to the project: `Solution Explorer` -> `domoticz` -> `Properties` -> `Linker` -> `General` -> `Additional Library Directories` -> add `{path_to_python_install_dir}\libs`
+6. Build all Domoticz dependencies
+    ```shell
+    # Set target environment and install all modules from ../vcpkg-packages.txt
+    set VCPKG_DEFAULT_TRIPLET=x86-windows && vcpkg install "@../vcpkg-packages.txt"
+    ```
+7. Integrate VCPKG system wide with:
+    ```shell
+    vcpkg.exe integrate install
+    ```
+#### Visual Studio configuration
+
+1. Select `Win32` configuration (Debug or Release) if not `Win32` configuration is available restart VS
+2. Set the project's configuration properties for Debugging/Working Directory:
+    - select `Solution Explorer` -> `domoticz` -> `Properties` -> `Debugging` -> `Working Directory`
+    - set the value to `"$(ProjectDir)/.."`
+
+3. Optional: Python support
+    - Install Python version x32 downloaded from the official web: www.python.org
+    - Add path to the project: `Solution Explorer` -> `domoticz` -> `Properties` -> `Linker` -> `General` -> `Additional Library Directories` -> add `{path_to_python_install_dir}\libs`
