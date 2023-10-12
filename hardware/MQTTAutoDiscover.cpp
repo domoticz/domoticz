@@ -10,8 +10,9 @@
 #include "../main/WebServer.h"
 #include "../notifications/NotificationHelper.h"
 #include <iostream>
+#include <set>
 
-std::vector<std::string> allowed_components = {
+std::set<std::string> allowed_components = {
 		"binary_sensor",
 		"button",
 		"climate",
@@ -24,6 +25,16 @@ std::vector<std::string> allowed_components = {
 		"sensor",
 		"switch",
 		"fan"
+};
+
+enum SwitchCommands {
+	COMMAND_UNKNOWN = -1,
+	COMMAND_ON,
+	COMMAND_OFF,
+	COMMAND_OPEN,
+	COMMAND_STOP,
+	COMMAND_SET_LVL,
+	COMMAND_SET_COL,
 };
 
 #define CLIMATE_MODE_UNIT 1
@@ -551,7 +562,7 @@ void MQTTAutoDiscover::on_auto_discovery_message(const struct mosquitto_message*
 
 	component = strarray[0];
 
-	if (std::find(allowed_components.begin(), allowed_components.end(), component) == allowed_components.end())
+	if (allowed_components.find(component) == allowed_components.end())
 	{
 		//not for us
 		return;
@@ -3675,6 +3686,7 @@ bool MQTTAutoDiscover::SendSwitchCommand(const std::string& DeviceID, const std:
 
 	std::string szSendValue;
 	std::string command_topic = pSensor->command_topic;
+	SwitchCommands eCommand = SwitchCommands::COMMAND_UNKNOWN;
 
 	if (
 		(pSensor->component_type != "climate")
@@ -3684,15 +3696,26 @@ bool MQTTAutoDiscover::SendSwitchCommand(const std::string& DeviceID, const std:
 		)
 	{
 		if (command == "On")
+		{
+			eCommand = SwitchCommands::COMMAND_ON;
 			szSendValue = pSensor->payload_on;
+		}
 		else if (command == "Off")
+		{
+			eCommand = SwitchCommands::COMMAND_OFF;
 			szSendValue = pSensor->payload_off;
+		}
 		else if (command == "Stop")
+		{
+			eCommand = SwitchCommands::COMMAND_STOP;
 			szSendValue = pSensor->payload_stop;
+		}
 		else if (command == "Set Level")
 		{
+			eCommand = SwitchCommands::COMMAND_SET_LVL;
 			if (level == 0)
 			{
+				eCommand = SwitchCommands::COMMAND_OFF;
 				command = "Off";
 				szSendValue = pSensor->payload_off;
 			}
@@ -3702,6 +3725,7 @@ bool MQTTAutoDiscover::SendSwitchCommand(const std::string& DeviceID, const std:
 		else if ((command == "Set Color") && (pSensor->component_type == "light"))
 		{
 			// That's valid
+			eCommand = SwitchCommands::COMMAND_SET_COL;
 		}
 		else
 		{
@@ -3725,7 +3749,8 @@ bool MQTTAutoDiscover::SendSwitchCommand(const std::string& DeviceID, const std:
 	{
 		Json::Value root;
 
-		if ((command == "On") || (command == "Off"))
+		if (eCommand == SwitchCommands::COMMAND_ON || 
+			eCommand == SwitchCommands::COMMAND_OFF)
 		{
 			if (!pSensor->brightness_value_template.empty())
 			{
@@ -3746,7 +3771,8 @@ bool MQTTAutoDiscover::SendSwitchCommand(const std::string& DeviceID, const std:
 				}
 			}
 		}
-		else if (command == "Set Level")
+		if (eCommand == SwitchCommands::COMMAND_SET_LVL || 
+			eCommand == SwitchCommands::COMMAND_SET_COL)
 		{
 			//root["state"] = pSensor->payload_on;
 			int slevel = level;
@@ -3794,11 +3820,23 @@ bool MQTTAutoDiscover::SendSwitchCommand(const std::string& DeviceID, const std:
 				szTopic = pSensor->brightness_command_topic;
 			else if (!pSensor->set_position_topic.empty())
 				szTopic = pSensor->set_position_topic;
+
 			SendMessage(szTopic, szSendValue);
-			return true;
+			if (eCommand == SwitchCommands::COMMAND_SET_LVL)
+			{
+				// Set only level
+				return true;
+			}
 		}
-		else if (command == "Set Color")
+		if (eCommand == SwitchCommands::COMMAND_SET_COL)
 		{
+			if (root.type() != Json::nullValue)
+			{
+				// Impossible to change type of the Json::Value root thus create new instead.
+				Json::Value nullNewRoot;
+				root = nullNewRoot;
+			}
+
 			root["state"] = pSensor->payload_on;
 
 			bool bCouldUseBrightness = false;
@@ -3929,11 +3967,6 @@ bool MQTTAutoDiscover::SendSwitchCommand(const std::string& DeviceID, const std:
 				else
 					root["brightness"] = slevel;
 			}
-		}
-		else
-		{
-			Log(LOG_ERROR, "Switch command not supported (%s - %s/%s)", command.c_str(), DeviceID.c_str(), DeviceName.c_str());
-			return false;
 		}
 
 		szSendValue = JSonToRawString(root);
