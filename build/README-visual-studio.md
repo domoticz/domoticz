@@ -1,23 +1,30 @@
 # Building Domoticz with Visual Studio
 
-### Environment configuration
+## Environment configuration
 
-#### Requirements
+### Requirements
 - Visual Studio 2019 (Community Edition is perfect and is free)
 - Download `WindowsLibraries.7z` from https://github.com/domoticz/win32-libraries
 - Domoticz reposioty cloned locally
 
-#### Dependencies configuration
+### Dependencies configuration
 1. Navigate to `path_to_domoticz/msbuild`
 2. From `WindowsLibraries.7z` unpack `Windows Libraries` directory into `msbuild` folder
-    - For building in debug mode: remove the `Windows Libraries/include` and `Windows Libraries/lib` folder.
 3. Open Domoticz project file for Visual Studio `msbuild/domoticz.sln` - Visual Studio will launch
-4. Open: `Visual Studio Command Prompt`
+
+#### Optional: VCPKG Configuration
+1. Remove following directories from `msbuild/Windows Libraries/`:
+   - `msbuild/Windows Libraries/include`
+   - `msbuild/Windows Libraries/lib`
+2. Launch or focus Visual Studio
+3. Open: `Visual Studio Command Prompt`
     - VS 2019: `Tools`:`Visual Studio Command Prompt`
     - VS 2022: `Tools`:`Command Line`:`Developer Command Prompt`
     > Guide is not written for `Developer PowerShell`
-5. Get VCPKG and build it with following commands:
+4. Get VCPKG and build it with following commands:
     ```shell
+    # Select target drive letter for vcpkg install
+    c:
     # Clone vcpkg
     git clone https://github.com/microsoft/vcpkg.git
     # Enter the vcpkg directory
@@ -26,21 +33,22 @@
     ```
     or use one liner:
     ```shell
-    git clone https://github.com/microsoft/vcpkg.git && cd vcpkg && call bootstrap-vcpkg.bat -disableMetrics
+    c: && git clone https://github.com/microsoft/vcpkg.git && cd vcpkg && call bootstrap-vcpkg.bat -disableMetrics
     ```
 
-6. Build all Domoticz dependencies
+5. Build all Domoticz dependencies
     ```shell
     # Set target environment and install all modules from ../vcpkg-packages.txt
     set VCPKG_DEFAULT_TRIPLET=x86-windows && vcpkg install "@../vcpkg-packages.txt"
     ```
-7. Integrate VCPKG system wide with:
+6. Integrate VCPKG system wide with:
     ```shell
-    vcpkg.exe integrate install
+    vcpkg integrate install
     ```
-#### Visual Studio configuration
+### Visual Studio configuration
 
-1. Select `Win32` configuration (Debug or Release) if not `Win32` configuration is available restart VS
+1. Select `Win32` build configuration (Debug or Release).
+    - If `Win32` build configuration is not available restart VS
 2. Set the project's configuration properties for Debugging/Working Directory:
     - select `Solution Explorer` -> `domoticz` -> `Properties` -> `Debugging` -> `Working Directory`
     - set the value to `"$(ProjectDir)/.."`
