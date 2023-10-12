@@ -3767,12 +3767,21 @@ bool MQTTAutoDiscover::SendSwitchCommand(const std::string& DeviceID, const std:
 					if (pSensor->command_topic == pSensor->brightness_command_topic)
 					{
 						std::string szOnPayload = pSensor->payload_on;
-						CleanValueTemplate(szOnPayload);
-						std::vector<std::string> strarray;
-						StringSplit(szOnPayload, ":", strarray);
-						if (strarray.size() == 2)
+						if (szOnPayload.find(':') != std::string::npos)
 						{
-							root[strarray[0]] = strarray[1];
+							//Assume json payload
+							CleanValueTemplate(szOnPayload);
+							std::vector<std::string> jsonPayloads;
+							StringSplit(szOnPayload, ",", jsonPayloads);
+							for (const auto& itt : jsonPayloads)
+							{
+								std::vector<std::string> strarray;
+								StringSplit(itt, ":", strarray);
+								if (strarray.size() == 2)
+								{
+									root[strarray[0]] = strarray[1];
+								}
+							}
 						}
 					}
 				}
