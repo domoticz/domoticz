@@ -556,9 +556,6 @@ bool MainWorker::GetSunSettings()
 
 		if (!bFirstTime)
 			m_eventsystem.LoadEvents();
-
-		// FixMe: only reload schedules relative to sunset/sunrise to prevent race conditions
-		// m_scheduler.ReloadSchedules(); // force reload of all schedules to adjust for changed sunrise/sunset values
 	}
 	return true;
 }
