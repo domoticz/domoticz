@@ -33,8 +33,8 @@ enum SwitchCommands {
 	COMMAND_OFF,
 	COMMAND_OPEN,
 	COMMAND_STOP,
-	COMMAND_SET_LVL,
-	COMMAND_SET_COL,
+	COMMAND_SET_LEVEL,
+	COMMAND_SET_COLOR,
 };
 
 #define CLIMATE_MODE_UNIT 1
@@ -3712,7 +3712,7 @@ bool MQTTAutoDiscover::SendSwitchCommand(const std::string& DeviceID, const std:
 		}
 		else if (command == "Set Level")
 		{
-			eCommand = SwitchCommands::COMMAND_SET_LVL;
+			eCommand = SwitchCommands::COMMAND_SET_LEVEL;
 			if (level == 0)
 			{
 				eCommand = SwitchCommands::COMMAND_OFF;
@@ -3725,7 +3725,7 @@ bool MQTTAutoDiscover::SendSwitchCommand(const std::string& DeviceID, const std:
 		else if ((command == "Set Color") && (pSensor->component_type == "light"))
 		{
 			// That's valid
-			eCommand = SwitchCommands::COMMAND_SET_COL;
+			eCommand = SwitchCommands::COMMAND_SET_COLOR;
 		}
 		else
 		{
@@ -3771,8 +3771,8 @@ bool MQTTAutoDiscover::SendSwitchCommand(const std::string& DeviceID, const std:
 				}
 			}
 		}
-		if (eCommand == SwitchCommands::COMMAND_SET_LVL || 
-			eCommand == SwitchCommands::COMMAND_SET_COL)
+		if (eCommand == SwitchCommands::COMMAND_SET_LEVEL || 
+			eCommand == SwitchCommands::COMMAND_SET_COLOR)
 		{
 			//root["state"] = pSensor->payload_on;
 			int slevel = level;
@@ -3822,13 +3822,13 @@ bool MQTTAutoDiscover::SendSwitchCommand(const std::string& DeviceID, const std:
 				szTopic = pSensor->set_position_topic;
 
 			SendMessage(szTopic, szSendValue);
-			if (eCommand == SwitchCommands::COMMAND_SET_LVL)
+			if (eCommand == SwitchCommands::COMMAND_SET_LEVEL)
 			{
 				// Set only level
 				return true;
 			}
 		}
-		if (eCommand == SwitchCommands::COMMAND_SET_COL)
+		if (eCommand == SwitchCommands::COMMAND_SET_COLOR)
 		{
 			if (root.type() != Json::nullValue)
 			{
