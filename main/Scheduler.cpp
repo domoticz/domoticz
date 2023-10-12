@@ -147,6 +147,7 @@ void CScheduler::ReloadSchedules()
 				}
 				titem.Days = atoi(sd[5].c_str());
 				titem.DeviceName = sd[6];
+
 				if (AdjustScheduleItem(&titem, false) == true)
 					m_scheduleitems.push_back(titem);
 			}
@@ -332,9 +333,10 @@ void CScheduler::ReloadSchedules()
 	}
 }
 
-void CScheduler::SetSunRiseSetTimers(const std::string& sSunRise, const std::string& sSunSet, const std::string& sSunAtSouth, const std::string& sCivTwStart, const std::string& sCivTwEnd, const std::string& sNautTwStart, const std::string& sNautTwEnd, const std::string& sAstTwStart, const std::string& sAstTwEnd)
+void CScheduler::SetSunRiseSetTimes(const std::string& sSunRise, const std::string& sSunSet, const std::string& sSunAtSouth, const std::string& sCivTwStart, const std::string& sCivTwEnd, const std::string& sNautTwStart, const std::string& sNautTwEnd, const std::string& sAstTwStart, const std::string& sAstTwEnd)
 {
 	bool bReloadSchedules = false;
+	bool bReloadSunRiseSet = false;
 
 	{	//needed private scope for the lock
 		std::lock_guard<std::mutex> l(m_mutex);
@@ -360,12 +362,45 @@ void CScheduler::SetSunRiseSetTimers(const std::string& sSunRise, const std::str
 				if (*allTimes[a] == 0)
 					bReloadSchedules = true;
 				*allTimes[a] = temptime;
+				bReloadSunRiseSet = true;
 			}
 		}
 	}
 
 	if (bReloadSchedules)
 		ReloadSchedules();
+	else if (bReloadSunRiseSet)
+		AdjustSunRiseSetSchedules();
+}
+
+void CScheduler::AdjustSunRiseSetSchedules()
+{
+	for (auto &itt : m_scheduleitems)
+	{
+		if ((itt.timerType == TTYPE_BEFORESUNRISE) ||
+			(itt.timerType == TTYPE_AFTERSUNRISE) ||
+			(itt.timerType == TTYPE_BEFORESUNSET) ||
+			(itt.timerType == TTYPE_AFTERSUNSET) ||
+
+			(itt.timerType == TTYPE_BEFORESUNATSOUTH) ||
+			(itt.timerType == TTYPE_AFTERSUNATSOUTH) ||
+			(itt.timerType == TTYPE_BEFORECIVTWSTART) ||
+			(itt.timerType == TTYPE_AFTERCIVTWSTART) ||
+			(itt.timerType == TTYPE_BEFORECIVTWEND) ||
+			(itt.timerType == TTYPE_AFTERCIVTWEND) ||
+			(itt.timerType == TTYPE_BEFORENAUTTWSTART) ||
+			(itt.timerType == TTYPE_AFTERNAUTTWSTART) ||
+			(itt.timerType == TTYPE_BEFORENAUTTWEND) ||
+			(itt.timerType == TTYPE_AFTERNAUTTWEND) ||
+			(itt.timerType == TTYPE_BEFOREASTTWSTART) ||
+			(itt.timerType == TTYPE_AFTERASTTWSTART) ||
+			(itt.timerType == TTYPE_BEFOREASTTWEND) ||
+			(itt.timerType == TTYPE_AFTERASTTWEND)
+			)
+		{
+			AdjustScheduleItem(&itt, false);
+		}
+	}
 }
 
 bool CScheduler::AdjustScheduleItem(tScheduleItem* pItem, bool bForceAddDay)

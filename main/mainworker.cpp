@@ -509,7 +509,7 @@ bool MainWorker::GetSunSettings()
 	std::string asttwstart = std_format("%02d:%02d:00", sresult.AstronomicalTwilightStartHour, sresult.AstronomicalTwilightStartMin);
 	std::string asttwend = std_format("%02d:%02d:00", sresult.AstronomicalTwilightEndHour, sresult.AstronomicalTwilightEndMin);
 
-	m_scheduler.SetSunRiseSetTimers(sunrise, sunset, sunatsouth, civtwstart, civtwend, nauttwstart, nauttwend, asttwstart, asttwend); // Do not change the order
+	m_scheduler.SetSunRiseSetTimes(sunrise, sunset, sunatsouth, civtwstart, civtwend, nauttwstart, nauttwend, asttwstart, asttwend); // Do not change the order
 
 	bool bFirstTime = m_LastSunriseSet.empty();
 
@@ -556,9 +556,6 @@ bool MainWorker::GetSunSettings()
 
 		if (!bFirstTime)
 			m_eventsystem.LoadEvents();
-
-		// FixMe: only reload schedules relative to sunset/sunrise to prevent race conditions
-		// m_scheduler.ReloadSchedules(); // force reload of all schedules to adjust for changed sunrise/sunset values
 	}
 	return true;
 }
