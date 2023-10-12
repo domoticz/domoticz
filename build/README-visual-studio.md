@@ -4,8 +4,8 @@
 
 ### Requirements
 - Visual Studio 2019 (Community Edition is perfect and is free)
-- Download `WindowsLibraries.7z` from https://github.com/domoticz/win32-libraries
-- Domoticz reposioty cloned locally
+- Download `WindowsLibraries.7z` from [domoticz/win32-libraries](https://github.com/domoticz/win32-libraries)
+- Locally cloned Domoticz repository
 
 ### Dependencies configuration
 1. Navigate to `path_to_domoticz/msbuild`
