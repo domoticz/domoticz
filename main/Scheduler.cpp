@@ -332,7 +332,7 @@ void CScheduler::ReloadSchedules()
 	}
 }
 
-void CScheduler::SetSunRiseSetTimers(const std::string& sSunRise, const std::string& sSunSet, const std::string& sSunAtSouth, const std::string& sCivTwStart, const std::string& sCivTwEnd, const std::string& sNautTwStart, const std::string& sNautTwEnd, const std::string& sAstTwStart, const std::string& sAstTwEnd)
+void CScheduler::SetSunRiseSetTimes(const std::string& sSunRise, const std::string& sSunSet, const std::string& sSunAtSouth, const std::string& sCivTwStart, const std::string& sCivTwEnd, const std::string& sNautTwStart, const std::string& sNautTwEnd, const std::string& sAstTwStart, const std::string& sAstTwEnd)
 {
 	bool bReloadSchedules = false;
 

@@ -51,7 +51,7 @@ public:
 
   void ReloadSchedules();
 
-  void SetSunRiseSetTimers(const std::string &sSunRise, const std::string &sSunSet, const std::string &sSunAtSouth, const std::string &sCivTwStart, const std::string &sCivTwEnd,
+  void SetSunRiseSetTimes(const std::string &sSunRise, const std::string &sSunSet, const std::string &sSunAtSouth, const std::string &sCivTwStart, const std::string &sCivTwEnd,
 			   const std::string &sNautTwStart, const std::string &sNauTtwEnd, const std::string &sAstTwStart, const std::string &sAstTwEnd);
 
   std::vector<tScheduleItem> GetScheduleItems();
