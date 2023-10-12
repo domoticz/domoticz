@@ -4279,19 +4279,34 @@ bool MQTTAutoDiscover::SendCoverCommand(_tMQTTASensor* pSensor, const std::strin
 			}
 			else
 			{
-				std::string szKey = GetValueTemplateKey(pSensor->set_position_template);
-				if (szKey.empty())
+				if (pSensor->set_position_template.find("%d") != std::string::npos)
 				{
-					Log(LOG_ERROR, "Cover device unhandled set_position_template (%s/%s)", pSensor->unique_id.c_str(), DeviceName.c_str());
-					return false;
-				}
-				if (is_number(szValue))
-				{
-					root[szKey] = (int)iValue;
+					// Some Shelly devices use commands like 'pos,64'
+					try
+					{
+						szSendValue = std_format(pSensor->set_position_template.c_str(), iValue);
+					}
+					catch (const std::exception&)
+					{
+						return false;
+					}
 				}
 				else
-					root[szKey] = szValue;
-				szSendValue = JSonToRawString(root);
+				{
+					std::string szKey = GetValueTemplateKey(pSensor->set_position_template);
+					if (szKey.empty())
+					{
+						Log(LOG_ERROR, "Cover device unhandled set_position_template (%s/%s)", pSensor->unique_id.c_str(), DeviceName.c_str());
+						return false;
+					}
+					if (is_number(szValue))
+					{
+						root[szKey] = (int)iValue;
+					}
+					else
+						root[szKey] = szValue;
+					szSendValue = JSonToRawString(root);
+				}
 			}
 			SendMessage(pSensor->set_position_topic, szSendValue);
 		}
