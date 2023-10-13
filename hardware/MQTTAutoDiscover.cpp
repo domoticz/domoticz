@@ -35,6 +35,7 @@ enum SwitchCommands {
 	COMMAND_STOP,
 	COMMAND_SET_LEVEL,
 	COMMAND_SET_COLOR,
+	COMMAND_SET_LEVEL_AND_COLOR
 };
 
 #define CLIMATE_MODE_UNIT 1
@@ -285,7 +286,7 @@ std::string MQTTAutoDiscover::GetValueFromTemplate(Json::Value root, std::string
 					if (szIndex.size() == 0)
 						return ""; //no index?
 
-					szKey= szKey.substr(0, szKey.find('['));
+					szKey = szKey.substr(0, szKey.find('['));
 					int iIndex = std::stoi(szIndex);
 					if (root[szKey].empty())
 						return ""; //key not found!
@@ -3724,8 +3725,14 @@ bool MQTTAutoDiscover::SendSwitchCommand(const std::string& DeviceID, const std:
 		}
 		else if ((command == "Set Color") && (pSensor->component_type == "light"))
 		{
-			// That's valid
-			eCommand = SwitchCommands::COMMAND_SET_COLOR;
+			if (pSensor->rgb_command_topic != pSensor->brightness_command_topic)
+			{
+				eCommand = SwitchCommands::COMMAND_SET_LEVEL_AND_COLOR;
+			}
+			else
+			{
+				eCommand = SwitchCommands::COMMAND_SET_COLOR;
+			}
 		}
 		else
 		{
@@ -3749,7 +3756,7 @@ bool MQTTAutoDiscover::SendSwitchCommand(const std::string& DeviceID, const std:
 	{
 		Json::Value root;
 
-		if (eCommand == SwitchCommands::COMMAND_ON || 
+		if (eCommand == SwitchCommands::COMMAND_ON ||
 			eCommand == SwitchCommands::COMMAND_OFF)
 		{
 			if (!pSensor->brightness_value_template.empty())
@@ -3771,15 +3778,19 @@ bool MQTTAutoDiscover::SendSwitchCommand(const std::string& DeviceID, const std:
 				}
 			}
 		}
-		if (eCommand == SwitchCommands::COMMAND_SET_LEVEL || 
-			eCommand == SwitchCommands::COMMAND_SET_COLOR)
+		if (eCommand == SwitchCommands::COMMAND_SET_LEVEL ||
+			eCommand == SwitchCommands::COMMAND_SET_LEVEL_AND_COLOR)
 		{
-			//root["state"] = pSensor->payload_on;
 			int slevel = level;
 			if (pSensor->bHave_brightness_scale)
 				slevel = (int)round((pSensor->brightness_scale / 100.F) * level);
 
-			if (!pSensor->brightness_value_template.empty())
+			if (pSensor->brightness_value_template.empty())
+			{
+				root["brightness"] = slevel;
+				root["state"] = (slevel > 0) ? "ON" : "OFF";
+			}
+			else
 			{
 				std::string szKey = GetValueTemplateKey(pSensor->brightness_value_template);
 
@@ -3808,11 +3819,6 @@ bool MQTTAutoDiscover::SendSwitchCommand(const std::string& DeviceID, const std:
 					return false;
 				}
 			}
-			else
-			{
-				root["brightness"] = slevel;
-				root["state"] = (slevel > 0) ? "ON" : "OFF";
-			}
 
 			szSendValue = JSonToRawString(root);
 			std::string szTopic = pSensor->command_topic;
@@ -3828,11 +3834,12 @@ bool MQTTAutoDiscover::SendSwitchCommand(const std::string& DeviceID, const std:
 				return true;
 			}
 		}
-		if (eCommand == SwitchCommands::COMMAND_SET_COLOR)
+		if (eCommand == SwitchCommands::COMMAND_SET_COLOR ||
+			eCommand == SwitchCommands::COMMAND_SET_LEVEL_AND_COLOR)
 		{
-			if (root.type() != Json::nullValue)
+			if (root.type() != Json::objectValue)
 			{
-				// Impossible to change type of the Json::Value root thus create new instead.
+				// Impossible to change type of the Json::Value thus create new instead.
 				Json::Value nullNewRoot;
 				root = nullNewRoot;
 			}
@@ -3841,10 +3848,8 @@ bool MQTTAutoDiscover::SendSwitchCommand(const std::string& DeviceID, const std:
 
 			bool bCouldUseBrightness = false;
 
-			if (
-				(color.mode == ColorModeRGB)
-				|| (color.mode == ColorModeCustom)
-				)
+			if (color.mode == ColorModeRGB || 
+				color.mode == ColorModeCustom)
 			{
 				if (pSensor->supported_color_modes.find("xy") != pSensor->supported_color_modes.end())
 				{
@@ -3910,18 +3915,15 @@ bool MQTTAutoDiscover::SendSwitchCommand(const std::string& DeviceID, const std:
 					//	"rgb_value_template": "{{ value_json.value.red }},{{ value_json.value.green }},{{ value_json.value.blue }}",
 					//  -> variables are red, green and blue, but white is missing entirely, so the template can't be used as is.
 					Json::Value colorDef;
+					colorDef["red"] = root["color"]["r"];
+					colorDef["green"] = root["color"]["g"];
+					colorDef["blue"] = root["color"]["b"];
+					colorDef["warmWhite"] = root["color"]["c"];		// In Domoticz cw is used for RGB_W dimmers, but Zwavejs requires warmWhite
 					root["value"] = colorDef;
-					root["value"]["red"] = root["color"]["r"];
-					root["value"]["green"] = root["color"]["g"];
-					root["value"]["blue"] = root["color"]["b"];
-					root["value"]["warmWhite"] = root["color"]["c"];		// In Domoticz cw is used for RGB_W dimmers, but Zwavejs requires warmWhite
 					root.removeMember("color");
 				}
 			}
-			else if (
-				(color.mode == ColorModeTemp)
-				|| (color.mode == ColorModeCustom)
-				)
+			else if (color.mode == ColorModeTemp)
 			{
 				if (pSensor->supported_color_modes.find("color_temp") != pSensor->supported_color_modes.end())
 				{
@@ -3947,7 +3949,7 @@ bool MQTTAutoDiscover::SendSwitchCommand(const std::string& DeviceID, const std:
 			if (!pSensor->rgb_command_topic.empty())
 				command_topic = pSensor->rgb_command_topic;
 
-			if ((bCouldUseBrightness) && (pSensor->bBrightness))
+			if (bCouldUseBrightness && pSensor->bBrightness)
 			{
 				int slevel = (int)round((pSensor->brightness_scale / 100.0F) * level);
 
