@@ -617,7 +617,7 @@ void CDomoticzHardwareBase::SendAirQualitySensor(const uint8_t NodeID, const uin
 	_tAirQualityMeter meter;
 	meter.len = sizeof(_tAirQualityMeter) - 1;
 	meter.type = pTypeAirQuality;
-	meter.subtype = sTypeVoltcraft;
+	meter.subtype = sTypeVoc;
 	meter.airquality = AirQuality;
 	meter.id1 = NodeID;
 	meter.id2 = ChildID;

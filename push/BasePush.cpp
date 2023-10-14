@@ -225,7 +225,7 @@ const char* RFX_Type_SubType_Values(const unsigned char dType, const unsigned ch
 		{ pTypeRego6XXValue, sTypeRego6XXStatus, "Value" },
 		{ pTypeRego6XXValue, sTypeRego6XXCounter, "Counter" },
 
-		{ pTypeAirQuality, sTypeVoltcraft, "Concentration" },
+		{ pTypeAirQuality, sTypeVoc, "Concentration" },
 
 		{ pTypeUsage, sTypeElectric, "Usage" },
 

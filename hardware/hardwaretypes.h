@@ -249,7 +249,7 @@
 #define sTypeElectric 0x01
 
 #define pTypeAirQuality 0xF9
-#define sTypeVoltcraft 0x01
+#define sTypeVoc 0x01
 
 #define pTypeP1Power 0xFA
 #define sTypeP1Power 0x01
@@ -390,7 +390,7 @@ typedef struct _tAirQualityMeter
 	{
 		len = sizeof(_tAirQualityMeter) - 1;
 		type = pTypeAirQuality;
-		subtype = sTypeVoltcraft;
+		subtype = sTypeVoc;
 		id1 = 0;
 		id2 = 1;
 		airquality = 0;

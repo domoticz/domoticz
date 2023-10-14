@@ -1189,7 +1189,7 @@ void CHardwareMonitor::CheckForOnboardSensors()
 		}
 		else if (file_exist("/sys/devices/virtual/thermal/thermal_zone0/temp"))
 		{
-			Log(LOG_STATUS,"System: ODroid");
+			Log(LOG_STATUS,"System: ODroid/Raspberry");
 			szInternalTemperatureCommand = R"(cat /sys/devices/virtual/thermal/thermal_zone0/temp | awk '{ if ($1 < 100) printf("temp=%d\n",$1); else printf ("temp=%0.2f\n",$1/1000); }')";
 			bHasInternalTemperature = true;
 		}

@@ -1626,7 +1626,7 @@ bool MQTTAutoDiscover::GuessSensorTypeValue(const _tMQTTASensor* pSensor, uint8_
 	else if (szUnit == "ppm")
 	{
 		devType = pTypeAirQuality;
-		subType = sTypeVoltcraft;
+		subType = sTypeVoc;
 		nValue = atoi(pSensor->last_value.c_str());
 	}
 	else if (szUnit == "v")
@@ -1959,10 +1959,20 @@ bool MQTTAutoDiscover::GuessSensorTypeValue(const _tMQTTASensor* pSensor, uint8_
 	*/
 	else
 	{
-		devType = pTypeGeneral;
-		subType = sTypeCustom;
-		szOptions = pSensor->unit_of_measurement;
-		sValue = pSensor->last_value;
+		//Unknown unit, try to guess the type
+		if (pSensor->unique_id.find("voc") != std::string::npos)
+		{
+			devType = pTypeAirQuality;
+			subType = sTypeVoc;
+			nValue = atoi(pSensor->last_value.c_str());
+		}
+		else
+		{
+			devType = pTypeGeneral;
+			subType = sTypeCustom;
+			szOptions = pSensor->unit_of_measurement;
+			sValue = pSensor->last_value;
+		}
 	}
 
 	if ((devType == pTypeGeneral) && (subType == sTypeCustom) && pSensor->szOptions.empty())

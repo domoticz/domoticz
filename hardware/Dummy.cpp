@@ -70,7 +70,7 @@ namespace http {
 		};
 
 		constexpr std::array<_mappedsensorname, 40> mappedsensorname{ {
-			{ 249, pTypeAirQuality, sTypeVoltcraft },	   // Air Quality
+			{ 249, pTypeAirQuality, sTypeVoc },	   // Air Quality
 			{ 7, pTypeGeneral, sTypeAlert },		   // Alert
 			{ 9, pTypeCURRENT, sTypeELEC1 },		   // Ampere (3 Phase)
 			{ 19, pTypeGeneral, sTypeCurrent },		   // Ampere (1 Phase)

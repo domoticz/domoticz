@@ -1,5 +1,6 @@
 Version 2023.xxxxx (xxxxx 2023)
 - Implemented: Mitsubishi WF RAC Airco
+- Implemented: MQTT-AD, added support for number voc type
 - Removed: OpenZWave (Move to ZWaveJS-UI in combination with MQTT Auto Discovery)
 
 Version 2023.2 (July 21 2023)

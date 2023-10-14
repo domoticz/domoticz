@@ -10028,8 +10028,8 @@ void MainWorker::decode_AirQuality(const CDomoticzHardwareBase* pHardware, const
 		WriteMessageStart();
 		switch (pMeter->subtype)
 		{
-		case sTypeVoltcraft:
-			WriteMessage("subtype       = Voltcraft CO-20");
+		case sTypeVoc:
+			WriteMessage("subtype       = Voc");
 
 			sprintf(szTmp, "CO2 = %d ppm", pMeter->airquality);
 			WriteMessage(szTmp);

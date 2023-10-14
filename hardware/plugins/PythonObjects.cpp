@@ -458,7 +458,7 @@ namespace Plugins {
 		else if (sTypeName == "Air Quality")
 		{
 			Type = pTypeAirQuality;
-			SubType = sTypeVoltcraft;
+			SubType = sTypeVoc;
 		}
 		else if (sTypeName == "Usage")
 		{
