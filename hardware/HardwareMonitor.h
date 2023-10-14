@@ -10,7 +10,7 @@
 
 class CHardwareMonitor : public CDomoticzHardwareBase
 {
-      public:
+public:
 	enum nOSType
 	{
 		OStype_Unknown = 0,
@@ -26,14 +26,14 @@ class CHardwareMonitor : public CDomoticzHardwareBase
 
 	explicit CHardwareMonitor(int ID);
 	~CHardwareMonitor() override;
-	bool WriteToHardware(const char * /*pdata*/, const unsigned char /*length*/) override
+	bool WriteToHardware(const char* /*pdata*/, const unsigned char /*length*/) override
 	{
 		return false;
 	};
-	bool GetOSType(nOSType &OStype);
+	bool GetOSType(nOSType& OStype);
 	std::string TranslateOSTypeToString(nOSType);
 
-      private:
+private:
 	bool StartHardware() override;
 	bool StopHardware() override;
 	double m_lastquerytime;
@@ -46,15 +46,11 @@ class CHardwareMonitor : public CDomoticzHardwareBase
 	void FetchMemory();
 	void FetchDisk();
 	void GetInternalTemperature();
-	void FetchClockSpeeds();
-	void GetInternalARMClockSpeed();
-	void GetInternalV3DClockSpeed();
-	void GetInternalCoreClockSpeed();
 	void GetInternalVoltage();
 	void GetInternalCurrent();
 	void CheckForOnboardSensors();
-	void UpdateSystemSensor(const std::string &qType, int dindex, const std::string &devName, const std::string &devValue);
-	void SendCurrent(unsigned long Idx, float Curr, const std::string &defaultname);
+	void UpdateSystemSensor(const std::string& qType, int dindex, const std::string& devName, const std::string& devValue);
+	void SendCurrent(unsigned long Idx, float Curr, const std::string& defaultname);
 	bool IsWSL();
 
 	struct _tDUsageStruct
@@ -69,28 +65,23 @@ class CHardwareMonitor : public CDomoticzHardwareBase
 	int m_totcpu;
 	std::string m_dfcommand;
 
-	bool bHasInternalTemperature;
-	std::string szInternalTemperatureCommand;
+	bool m_bHasInternalTemperature;
+	std::string m_szInternalTemperatureCommand;
 
-	bool bHasInternalClockSpeeds;
-	std::string szInternalARMSpeedCommand;
-	std::string szInternalV3DSpeedCommand;
-	std::string szInternalCoreSpeedCommand;
+	bool m_bHasInternalVoltage;
+	std::string m_szInternalVoltageCommand;
 
-	bool bHasInternalVoltage;
-	std::string szInternalVoltageCommand;
-
-	bool bHasInternalCurrent;
-	std::string szInternalCurrentCommand;
+	bool m_bHasInternalCurrent;
+	std::string m_szInternalCurrentCommand;
 
 #ifdef WIN32
 	bool InitWMI();
 	void ExitWMI();
 	bool IsHMRunning();
-	void RunWMIQuery(const char *qTable, const std::string &qType);
-	IWbemLocator *m_pLocator;
-	IWbemServices *m_pServicesHM;
-	IWbemServices *m_pServicesSystem;
+	void RunWMIQuery(const char* qTable, const std::string& qType);
+	IWbemLocator* m_pLocator;
+	IWbemServices* m_pServicesHM;
+	IWbemServices* m_pServicesSystem;
 	bool m_bIsLibreHardwareMonitor = false;
 #elif defined(__linux__) || defined(__CYGWIN32__) || defined(__FreeBSD__) || defined(__OpenBSD__)
 	void FetchUnixCPU();

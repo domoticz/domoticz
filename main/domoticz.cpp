@@ -128,27 +128,6 @@ std::string szWebRoot;
 std::string dbasefile;
 bool bDoCachePages = true;
 
-/*
-#define VCGENCMDTEMPCOMMAND "vcgencmd measure_temp"
-#define VCGENCMDARMSPEEDCOMMAND "vcgencmd measure_clock arm"
-#define VCGENCMDV3DSPEEDCOMMAND "vcgencmd measure_clock v3d"
-#define VCGENCMDCORESPEEDCOMMAND "vcgencmd measure_clock core"
-
-bool bHasInternalTemperature=false;
-std::string szInternalTemperatureCommand = "";
-
-bool bHasInternalClockSpeeds=false;
-std::string szInternalARMSpeedCommand = "";
-std::string szInternalV3DSpeedCommand = "";
-std::string szInternalCoreSpeedCommand = "";
-
-bool bHasInternalVoltage=false;
-std::string szInternalVoltageCommand = "";
-
-bool bHasInternalCurrent=false;
-std::string szInternalCurrentCommand = "";
-*/
-
 std::string szAppVersion="???";
 int iAppRevision=0;
 std::string szAppHash="???";
