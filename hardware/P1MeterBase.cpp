@@ -526,22 +526,22 @@ bool P1MeterBase::MatchLine()
 					if (m_nbr_long_pwr_failures != -1) {
 						SendTextSensorWhenDifferent(8, m_nbr_long_pwr_failures, m_last_nbr_long_pwr_failures, "# Long power failures");
 					}
-					if (m_nbr_volt_sags_l1 > 0) {
+					if (m_nbr_volt_sags_l1 != -1) {
 						SendTextSensorWhenDifferent(9, m_nbr_volt_sags_l1, m_last_nbr_volt_sags_l1, "# Voltage sags L1");
 					}
-					if (m_nbr_volt_sags_l2 > 0) {
+					if (m_nbr_volt_sags_l2 != -1) {
 						SendTextSensorWhenDifferent(10, m_nbr_volt_sags_l2, m_last_nbr_volt_sags_l2, "# Voltage sags L2");
 					}
-					if (m_nbr_volt_sags_l3 > 0) {
+					if (m_nbr_volt_sags_l3 != -1) {
 						SendTextSensorWhenDifferent(11, m_nbr_volt_sags_l3, m_last_nbr_volt_sags_l3, "# Voltage sags L3");
 					}
-					if (m_nbr_volt_swells_l1 > 0) {
+					if (m_nbr_volt_swells_l1 != -1) {
 						SendTextSensorWhenDifferent(12, m_nbr_volt_swells_l1, m_last_nbr_volt_swells_l1, "# Voltage swells L1");
 					}
-					if (m_nbr_volt_swells_l2 > 0) {
+					if (m_nbr_volt_swells_l2 != -1) {
 						SendTextSensorWhenDifferent(13, m_nbr_volt_swells_l2, m_last_nbr_volt_swells_l2, "# Voltage swells L2");
 					}
-					if (m_nbr_volt_swells_l3 > 0) {
+					if (m_nbr_volt_swells_l3 != -1) {
 						SendTextSensorWhenDifferent(14, m_nbr_volt_swells_l3, m_last_nbr_volt_swells_l3, "# Voltage swells L3");
 					}
 
