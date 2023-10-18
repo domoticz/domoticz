@@ -895,8 +895,9 @@ void MitsubishiWF::TranslateAirconStat(const std::string& szStat, _tAircoStatus&
 		}
 		else if (vals[i] == -108 && vals[i + 1] == 16)
 		{
-			uint16_t usVal = (vals[i + 3] << 8) | vals[i + 2];
-			aircoStatus.Electric_kWh_Used = (double)(usVal) * 0.25;
+			float Electric_kWh_Used = static_cast<float>(((vals[i + 2] + 256) % 256) + ((vals[i + 3] + 256) % 256) * 256);
+			Electric_kWh_Used *= 0.25;
+			aircoStatus.Electric_kWh_Used = Electric_kWh_Used;
 			aircoStatus.bHaveElectric = true;
 		}
 	}
