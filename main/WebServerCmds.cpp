@@ -4127,14 +4127,8 @@ namespace http
 				int dType = atoi(result[0][0].c_str());
 				if ((dType == pTypeTEMP) || (dType == pTypeTEMP_HUM) || (dType == pTypeTEMP_HUM_BARO))
 				{
-					//Allow a old Temperature device to be replaced by a new Temp+Hum or Temp+Hum+Baro
-					//Or a Temp+Hum to a Temp+Hum or Temp+Hum+Baro
-					if (dType == pTypeTEMP)
-						result = m_sql.safe_query("SELECT ID, Name, Type FROM DeviceStatus WHERE (Type=='%d') || (Type=='%d') || (Type=='%d') AND (ID!=%" PRIu64 ")", pTypeTEMP, pTypeTEMP_HUM, pTypeTEMP_HUM_BARO, idx);
-					else if (dType == pTypeTEMP_HUM)
-						result = m_sql.safe_query("SELECT ID, Name, Type FROM DeviceStatus WHERE (Type=='%d') || (Type=='%d') AND (ID!=%" PRIu64 ")", pTypeTEMP_HUM, pTypeTEMP_HUM_BARO, idx);
-					else
-						result = m_sql.safe_query("SELECT ID, Name, Type FROM DeviceStatus WHERE (Type=='%q') AND (ID!=%" PRIu64 ")", result[0][0].c_str(), idx);
+					//Allow old Temp or Temp+Hum or Temp+Hum+Baro devices to be replaced by new Temp or Temp+Hum or Temp+Hum+Baro
+					result = m_sql.safe_query("SELECT ID, Name, Type FROM DeviceStatus WHERE (Type=='%d') || (Type=='%d') || (Type=='%d') AND (ID!=%" PRIu64 ")", pTypeTEMP, pTypeTEMP_HUM, pTypeTEMP_HUM_BARO, idx);
 				}
 				else
 				{
