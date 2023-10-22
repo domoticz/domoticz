@@ -612,20 +612,31 @@ bool MQTT::ConnectIntEx()
 		)
 	{
 		rc = tls_opts_set(SSL_VERIFY_NONE, szTLSVersions[m_TLS_Version], nullptr);
+		if (rc != MOSQ_ERR_SUCCESS)
+		{
+			Log(LOG_ERROR, "Failed enabling TLS mode (tls_opts_set(%d, %s), return code: %d)", SSL_VERIFY_NONE, szTLSVersions[m_TLS_Version], rc);
+			return false;
+		}
+		const char* ca_path;
 		if (!m_CAFilename.empty())
 		{
-			rc = tls_set(m_CAFilename.c_str());
+			ca_path = m_CAFilename.c_str();
 		}
 		else
 		{
 			//Use our servers certificate
-			rc = tls_set("./server_cert.pem");
+			ca_path = "./server_cert.pem";
+		}
+		rc = tls_set(ca_path);
+		if (rc != MOSQ_ERR_SUCCESS) {
+			Log(LOG_ERROR, "Failed enabling TLS mode (tls_set(%s), return code: %d)", ca_path, rc);
+			return false;
 		}
 		rc = tls_insecure_set(true);
 
 		if (rc != MOSQ_ERR_SUCCESS)
 		{
-			Log(LOG_ERROR, "Failed enabling TLS mode, return code: %d (CA certificate: '%s')", rc, m_CAFilename.c_str());
+			Log(LOG_ERROR, "Failed enabling TLS mode, (tls_insecure_set(%s), return code: %d)", "true", rc);
 			return false;
 		}
 		Log(LOG_STATUS, "enabled TLS mode");
