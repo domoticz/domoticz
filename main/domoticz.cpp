@@ -126,6 +126,7 @@ std::string szUserDataFolder;
 std::string szWWWFolder;
 std::string szWebRoot;
 std::string dbasefile;
+std::string szCertFile = "./server_cert.pem";
 bool bDoCachePages = true;
 
 std::string szAppVersion="???";
@@ -896,8 +897,9 @@ int main(int argc, char**argv)
 				_log.Log(LOG_ERROR, "Please specify a file path for your server certificate file");
 				return 1;
 			}
-			secure_webserver_settings.cert_file_path = cmdLine.GetSafeArgument("-sslcert", 0, "");
-			secure_webserver_settings.private_key_file_path = secure_webserver_settings.cert_file_path;
+			szCertFile = cmdLine.GetSafeArgument("-sslcert", 0, "");
+			secure_webserver_settings.cert_file_path = szCertFile;
+			secure_webserver_settings.private_key_file_path = szCertFile;
 		}
 		if (cmdLine.HasSwitch("-sslkey"))
 		{

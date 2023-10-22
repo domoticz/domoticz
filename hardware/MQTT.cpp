@@ -18,6 +18,8 @@
 #define QOS 1
 #define RETAIN_BIT 0x80
 
+extern std::string szCertFile;
+
 namespace
 {
 	constexpr std::array<const char *, 3> szTLSVersions{
@@ -617,17 +619,8 @@ bool MQTT::ConnectIntEx()
 			Log(LOG_ERROR, "Failed enabling TLS mode (tls_opts_set(%d, %s), return code: %d)", SSL_VERIFY_NONE, szTLSVersions[m_TLS_Version], rc);
 			return false;
 		}
-		const char* ca_path;
-		if (!m_CAFilename.empty())
-		{
-			ca_path = m_CAFilename.c_str();
-		}
-		else
-		{
-			//Use our servers certificate
-			ca_path = "./server_cert.pem";
-		}
-		rc = tls_set(ca_path);
+		std::string ca_path = (!m_CAFilename.empty()) ? m_CAFilename : szCertFile;
+		rc = tls_set(ca_path.c_str());
 		if (rc != MOSQ_ERR_SUCCESS) {
 			Log(LOG_ERROR, "Failed enabling TLS mode (tls_set(%s), return code: %d)", ca_path, rc);
 			return false;

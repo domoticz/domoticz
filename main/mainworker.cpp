@@ -186,6 +186,7 @@ extern std::string szStartupFolder;
 extern std::string szUserDataFolder;
 extern std::string szWWWFolder;
 extern std::string szAppVersion;
+extern std::string szCertFile;
 extern int iAppRevision;
 extern std::string szWebRoot;
 extern bool g_bUseUpdater;
@@ -219,7 +220,7 @@ MainWorker::MainWorker()
 	m_secure_webserver_settings.listening_address = "::"; // listen to all network interfaces
 	m_secure_webserver_settings.listening_port = "443";
 	m_secure_webserver_settings.ssl_method = "tls";
-	m_secure_webserver_settings.certificate_chain_file_path = "./server_cert.pem";
+	m_secure_webserver_settings.certificate_chain_file_path = szCertFile;
 	m_secure_webserver_settings.ca_cert_file_path = m_secure_webserver_settings.certificate_chain_file_path; // not used
 	m_secure_webserver_settings.cert_file_path = m_secure_webserver_settings.certificate_chain_file_path;
 	m_secure_webserver_settings.private_key_file_path = m_secure_webserver_settings.certificate_chain_file_path;
