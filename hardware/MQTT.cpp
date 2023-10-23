@@ -622,7 +622,7 @@ bool MQTT::ConnectIntEx()
 		std::string ca_path = (!m_CAFilename.empty()) ? m_CAFilename : szCertFile;
 		rc = tls_set(ca_path.c_str());
 		if (rc != MOSQ_ERR_SUCCESS) {
-			Log(LOG_ERROR, "Failed enabling TLS mode (tls_set(%s), return code: %d)", ca_path, rc);
+			Log(LOG_ERROR, "Failed enabling TLS mode (tls_set(%s), return code: %d)", ca_path.c_str(), rc);
 			return false;
 		}
 		rc = tls_insecure_set(true);
