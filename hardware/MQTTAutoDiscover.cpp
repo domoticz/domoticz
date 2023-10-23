@@ -813,7 +813,7 @@ void MQTTAutoDiscover::on_auto_discovery_message(const struct mosquitto_message*
 		pSensor->config = qMessage;
 		pSensor->component_type = component;
 		pSensor->device_identifiers = device_identifiers;
-		pSensor->name = root["name"].asString();
+		pSensor->name = pDevice->name;
 
 		if (!root["enabled_by_default"].empty())
 			pSensor->bEnabled_by_default = root["enabled_by_default"].asBool();
