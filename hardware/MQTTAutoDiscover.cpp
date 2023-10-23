@@ -3798,7 +3798,10 @@ bool MQTTAutoDiscover::SendSwitchCommand(const std::string& DeviceID, const std:
 			if (pSensor->brightness_value_template.empty())
 			{
 				root["brightness"] = slevel;
-				root["state"] = (slevel > 0) ? "ON" : "OFF";
+
+				//This seems to cause issues for Tuya 2 gang dimmers... not sure why
+				//not sure if this is needed for other devices
+				//root["state"] = (slevel > 0) ? "ON" : "OFF";
 			}
 			else
 			{
