@@ -3599,7 +3599,7 @@ bool CSQLHelper::OpenDatabase()
 
 void CSQLHelper::CloseDatabase()
 {
-	std::lock_guard<std::mutex> l(m_sqlQueryMutex);
+	std::lock_guard<std::recursive_mutex> l(m_sqlQueryMutex);
 	if (m_dbase != nullptr)
 	{
 		OptimizeDatabase(m_dbase);
@@ -4307,7 +4307,7 @@ bool CSQLHelper::safe_UpdateBlobInTableWithID(const std::string& Table, const st
 	if (!m_dbase)
 		return false;
 
-	std::lock_guard<std::mutex> l(m_sqlQueryMutex);
+	std::lock_guard<std::recursive_mutex> l(m_sqlQueryMutex);
 
 	sqlite3_stmt *stmt = nullptr;
 	char* zQuery = sqlite3_mprintf("UPDATE %q SET %q = ? WHERE ID=%q", Table.c_str(), Column.c_str(), sID.c_str());
@@ -4336,6 +4336,7 @@ bool CSQLHelper::safe_UpdateBlobInTableWithID(const std::string& Table, const st
 
 int CSQLHelper::execute_sql(const std::string &sSQL, std::vector<std::string> *pValues, bool bLogError)
 {
+	std::lock_guard<std::recursive_mutex> l(m_sqlQueryMutex);
 	CSQLStatement sqlStatement(m_dbase, sSQL);
 	std::vector<std::vector<std::string>> result;
 	for (unsigned int i = 0; (i < pValues->size()) && (!sqlStatement.Error()); i++)
@@ -4404,7 +4405,7 @@ std::vector<std::vector<std::string> > CSQLHelper::query(const std::string& szQu
 		std::vector<std::vector<std::string> > results;
 		return results;
 	}
-	std::lock_guard<std::mutex> l(m_sqlQueryMutex);
+	std::lock_guard<std::recursive_mutex> l(m_sqlQueryMutex);
 
 	sqlite3_stmt* statement;
 	std::vector<std::vector<std::string> > results;
@@ -4471,7 +4472,7 @@ std::vector<std::vector<std::string> > CSQLHelper::queryBlob(const std::string& 
 		std::vector<std::vector<std::string> > results;
 		return results;
 	}
-	std::lock_guard<std::mutex> l(m_sqlQueryMutex);
+	std::lock_guard<std::recursive_mutex> l(m_sqlQueryMutex);
 
 	sqlite3_stmt* statement;
 	std::vector<std::vector<std::string> > results;
@@ -7960,7 +7961,7 @@ void CSQLHelper::DeleteDevices(const std::string& idx)
 #endif
 	{
 		//Avoid mutex deadlock here
-		std::lock_guard<std::mutex> l(m_sqlQueryMutex);
+		std::lock_guard<std::recursive_mutex> l(m_sqlQueryMutex);
 
 		char* errorMessage;
 		sqlite3_exec(m_dbase, "BEGIN TRANSACTION", nullptr, nullptr, &errorMessage);
@@ -8032,7 +8033,7 @@ void CSQLHelper::DeleteScenes(const std::string& idx)
 		return;
 	{
 		//Avoid mutex deadlock here
-		std::lock_guard<std::mutex> l(m_sqlQueryMutex);
+		std::lock_guard<std::recursive_mutex> l(m_sqlQueryMutex);
 
 		char* errorMessage;
 		sqlite3_exec(m_dbase, "BEGIN TRANSACTION", nullptr, nullptr, &errorMessage);
@@ -8395,7 +8396,7 @@ bool CSQLHelper::BackupDatabase(const std::string& OutputFile)
 	OptimizeDatabase(m_dbase);
 	VacuumDatabase();
 
-	std::lock_guard<std::mutex> l(m_sqlQueryMutex);
+	std::lock_guard<std::recursive_mutex> l(m_sqlQueryMutex);
 
 	int rc;					 // Function return code
 	sqlite3* pFile;			 // Database connection opened on zFilename
@@ -9351,8 +9352,9 @@ bool CSQLHelper::InsertCustomIconFromZipFile(const std::string& szZipFile, std::
 	}
 
 	int iTotalAdded = 0;
+	bool isOk = true;
 
-	for (auto pos = in.begin(); pos != in.end(); ++pos)
+	for (auto pos = in.begin(); pos != in.end() && isOk; ++pos)
 	{
 		//_log.Log(LOG_STATUS, "unzip: %s", pos->path().c_str());
 		std::string fpath = pos->path();
@@ -9390,6 +9392,7 @@ bool CSQLHelper::InsertCustomIconFromZipFile(const std::string& szZipFile, std::
 				StringSplit(sLine, ";", splitresult);
 				if (splitresult.size() == 3)
 				{
+					std::lock_guard<std::recursive_mutex> l(m_sqlQueryMutex);
 					std::string IconBase = splitresult[0];
 					std::string IconName = splitresult[1];
 					std::string IconDesc = splitresult[2];
@@ -9422,11 +9425,8 @@ bool CSQLHelper::InsertCustomIconFromZipFile(const std::string& szZipFile, std::
 						if (in.find(IconFile) == in.end())
 						{
 							ErrorMessage = "Icon File: " + IconFile + " is not present";
-							if (iTotalAdded > 0)
-							{
-								m_webservers.ReloadCustomSwitchIcons();
-							}
-							return false;
+							isOk = false;
+							break;
 						}
 					}
 
@@ -9441,11 +9441,8 @@ bool CSQLHelper::InsertCustomIconFromZipFile(const std::string& szZipFile, std::
 						if (result.empty())
 						{
 							ErrorMessage = "Error adding new row to database!";
-							if (iTotalAdded > 0)
-							{
-								m_webservers.ReloadCustomSwitchIcons();
-							}
-							return false;
+							isOk = false;
+							break;
 						}
 						RowID = atoi(result[0][0].c_str());
 					}
@@ -9482,11 +9479,8 @@ bool CSQLHelper::InsertCustomIconFromZipFile(const std::string& szZipFile, std::
 						sqlite3_free(zQuery);
 						if (rc != SQLITE_OK) {
 							ErrorMessage = "Problem inserting icon into database! " + std::string(sqlite3_errmsg(m_dbase));
-							if (iTotalAdded > 0)
-							{
-								m_webservers.ReloadCustomSwitchIcons();
-							}
-							return false;
+							isOk = false;
+							break;
 						}
 						// SQLITE_STATIC because the statement is finalized
 						// before the buffer is freed:
@@ -9494,37 +9488,34 @@ bool CSQLHelper::InsertCustomIconFromZipFile(const std::string& szZipFile, std::
 						if (pFBuf == nullptr)
 						{
 							ErrorMessage = "Could not extract File: " + IconFile16;
-							if (iTotalAdded > 0)
-							{
-								m_webservers.ReloadCustomSwitchIcons();
-							}
-							return false;
+							isOk = false;
+							break;
 						}
 						rc = sqlite3_bind_blob(stmt, 1, pFBuf, fsize, SQLITE_STATIC);
 						if (rc != SQLITE_OK) {
 							ErrorMessage = "Problem inserting icon into database! " + std::string(sqlite3_errmsg(m_dbase));
 							free(pFBuf);
-							if (iTotalAdded > 0)
-							{
-								m_webservers.ReloadCustomSwitchIcons();
-							}
-							return false;
+							isOk = false;
+							break;
 						}
 						rc = sqlite3_step(stmt);
 						if (rc != SQLITE_DONE)
 						{
 							free(pFBuf);
 							ErrorMessage = "Problem inserting icon into database! " + std::string(sqlite3_errmsg(m_dbase));
-							if (iTotalAdded > 0)
-							{
-								m_webservers.ReloadCustomSwitchIcons();
-							}
-							return false;
+							isOk = false;
+							break;
 						}
 						sqlite3_finalize(stmt);
 						free(pFBuf);
 						iTotalAdded++;
 					}
+
+					if(!isOk)
+					{
+						break;
+					}
+
 				}
 			}
 		}
@@ -9532,13 +9523,16 @@ bool CSQLHelper::InsertCustomIconFromZipFile(const std::string& szZipFile, std::
 
 	if (iTotalAdded == 0)
 	{
-		//definition file not found
-		ErrorMessage = "No Icon definition file not found";
+		if(isOk)
+		{
+			//definition file not found
+			ErrorMessage = "No Icon definition file not found";
+		}
 		return false;
 	}
 
 	m_webservers.ReloadCustomSwitchIcons();
-	return true;
+	return isOk;
 }
 
 std::map<std::string, std::string> CSQLHelper::BuildDeviceOptions(const std::string& options, const bool decode)
