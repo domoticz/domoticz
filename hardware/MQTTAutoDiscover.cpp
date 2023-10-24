@@ -4308,6 +4308,10 @@ void MQTTAutoDiscover::UpdateBlindPosition(_tMQTTASensor* pSensor)
 			level = atoi(szSwitchCmd.c_str());
 			szSwitchCmd = "Set Level";
 		}
+		if (pSensor->last_topic == pSensor->state_topic)
+		{
+			return;
+		}
 	}
 
 	if (level == pSensor->position_open)
