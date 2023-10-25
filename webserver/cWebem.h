@@ -148,7 +148,6 @@ namespace http
 			bool parse_cookie(const request &req, std::string &sSID, std::string &sAuthToken, std::string &szTime, bool &expired);
 			bool AreWeInTrustedNetwork(const std::string &sHost);
 			bool IsIPInRange(const std::string &ip, const _tIPNetwork &ipnetwork, const bool &bIsIPv6);
-			int authorize(WebEmSession &session, const request &req, reply &rep);
 			void Logout();
 			int parse_auth_header(const request &req, struct ah *ah);
 			std::string generateAuthToken(const WebEmSession &session, const request &req);
