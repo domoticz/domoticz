@@ -314,33 +314,6 @@ struct _tTaskItem
 	}
 };
 
-// row result for an sql query : string Vector
-typedef std::vector<std::string> TSqlRowQuery;
-
-// result for an sql query : Vector of TSqlRowQuery
-typedef std::vector<TSqlRowQuery> TSqlQueryResult;
-
-class CSQLStatement
-{
-      private:
-	sqlite3 *m_DBase;
-	sqlite3_stmt *m_Statement;
-	int iNextParam;
-	int m_Status;
-	std::string m_ErrorText;
-
-      public:
-	CSQLStatement(sqlite3 *pDBase, const std::string &pSQL);
-	int AddParameter(std::string &pParam);
-	int Execute();
-	bool Error();
-	const char *ErrorText()
-	{
-		return m_ErrorText.c_str();
-	};
-	~CSQLStatement();
-};
-
 class CSQLHelper : public StoppableTask
 {
       public:
@@ -439,7 +412,6 @@ class CSQLHelper : public StoppableTask
 
 	bool HandleOnOffAction(bool bIsOn, const std::string &OnAction, const std::string &OffAction);
 
-	int execute_sql(const std::string &sSQL, std::vector<std::string> *pValues, bool bLogError);
 	std::vector<std::vector<std::string>> safe_query(const char *fmt, ...);
 	std::vector<std::vector<std::string>> safe_queryBlob(const char *fmt, ...);
 	void safe_exec_no_return(const char *fmt, ...);

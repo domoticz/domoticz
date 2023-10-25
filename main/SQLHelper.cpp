@@ -611,64 +611,6 @@ constexpr auto sqlCreateApplications =
 
 extern std::string szUserDataFolder;
 
-CSQLStatement::CSQLStatement(sqlite3 *pDBase, const std::string &pSQL)
-	: m_DBase(pDBase)
-	, m_Statement(nullptr)
-	, iNextParam(1)
-	, m_Status(SQLITE_OK)
-{
-	const char *pTail;
-	int iRetVal = sqlite3_prepare_v3(m_DBase, pSQL.c_str(), pSQL.length(), 0, &m_Statement, &pTail);
-	if (iRetVal != SQLITE_OK)
-	{
-		m_Status = iRetVal;
-		m_ErrorText = sqlite3_errmsg(m_DBase);
-	}
-}
-
-int CSQLStatement::AddParameter(std::string &pParam)
-{
-	std::string sText = pParam;
-	// Strip delimiters if supplied
-	if (((sText[0] == '\'') && (sText[sText.length() - 1] == '\'')) || (sText[0] == '\"') && (sText[sText.length() - 1] == '\"'))
-	{
-		sText = pParam.substr(1, pParam.size() - 2);
-		;
-	}
-
-	int iRetVal = sqlite3_bind_text(m_Statement, iNextParam++, sText.c_str(), sText.length(), SQLITE_TRANSIENT);
-	if (iRetVal != SQLITE_OK)
-	{
-		m_Status = iRetVal;
-		m_ErrorText = sqlite3_errmsg(m_DBase);
-	}
-	return iRetVal;
-}
-
-int CSQLStatement::Execute()
-{
-	int iRetVal = sqlite3_step(m_Statement);
-	if (iRetVal != SQLITE_DONE)
-	{
-		m_Status = iRetVal;
-		m_ErrorText = sqlite3_errmsg(m_DBase);
-	}
-	return iRetVal;
-}
-
-bool CSQLStatement::Error()
-{
-	return (m_Status != SQLITE_OK) && (m_Status != SQLITE_DONE);
-};
-
-CSQLStatement::~CSQLStatement()
-{
-	if (m_Statement)
-	{
-		sqlite3_finalize(m_Statement);
-	}
-}
-
 CSQLHelper::CSQLHelper()
 {
 	m_LastSwitchRowID = 0;
@@ -4332,38 +4274,6 @@ bool CSQLHelper::safe_UpdateBlobInTableWithID(const std::string& Table, const st
 	}
 	sqlite3_finalize(stmt);
 	return true;
-}
-
-int CSQLHelper::execute_sql(const std::string &sSQL, std::vector<std::string> *pValues, bool bLogError)
-{
-	CSQLStatement sqlStatement(m_dbase, sSQL);
-	std::vector<std::vector<std::string>> result;
-	for (unsigned int i = 0; (i < pValues->size()) && (!sqlStatement.Error()); i++)
-	{
-		sqlStatement.AddParameter((*pValues)[i]);
-	}
-
-	if (!sqlStatement.Error())
-	{
-		sqlStatement.Execute();
-	}
-
-	if (!sqlStatement.Error())
-	{
-		result = safe_query("SELECT changes();");
-	}
-	else
-	{
-		if (bLogError)
-		{
-			_log.Log(LOG_ERROR, "Error performing operation: '%s'", sqlStatement.ErrorText());
-		}
-	}
-
-	if (result.empty() || result[0][0] == "0")
-		return 0;
-	else
-		return atoi(result[0][0].c_str());
 }
 
 std::vector<std::vector<std::string>> CSQLHelper::safe_query(const char *fmt, ...)
