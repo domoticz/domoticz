@@ -640,7 +640,7 @@ namespace Plugins {
 							sDescription.c_str(),
 							sColor.c_str(),
 							sOptionValue.c_str(),
-							TimeToString(nullptr, TF_DateTime));
+							TimeToString(nullptr, TF_DateTime).c_str());
 
 						if (!result.empty())
 						{
