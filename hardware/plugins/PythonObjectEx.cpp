@@ -641,7 +641,7 @@ namespace Plugins {
 							sColor.c_str(),
 							sOptionValue.c_str(),
 							TimeToString(nullptr, TF_DateTime).c_str());
-
+						result = m_sql.safe_query("SELECT Name FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%s') AND (Unit==%d)", pModState->pPlugin->m_HwdID, sDeviceID.c_str(), self->Unit);
 						if (!result.empty())
 						{
 							self->ID = atoi(result[0][0].c_str());
