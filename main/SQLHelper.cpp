@@ -2649,6 +2649,8 @@ bool CSQLHelper::OpenDatabase()
 		}
 		if (dbversion < 140)
 		{
+			query("ALTER TABLE SharedDevices ADD COLUMN [Order] INTEGER BIGINT(10) default 0");
+
 			//Migrate all Pushers into one table
 			safe_query("UPDATE PushLink SET PushType = %d", CBasePush::PushType::PUSHTYPE_INFLUXDB);
 
@@ -3030,7 +3032,8 @@ bool CSQLHelper::OpenDatabase()
 		if (dbversion < 162)
 		{
 			//add Order column to SharedDevices
-			query("ALTER TABLE SharedDevices ADD COLUMN [Order] INTEGER BIGINT(10) default 0");
+			if (!DoesColumnExistsInTable("SharedDevices", "Order"))
+				query("ALTER TABLE SharedDevices ADD COLUMN [Order] INTEGER BIGINT(10) default 0");
 			query(sqlCreateSharedDevicesTrigger);
 			std::vector<std::vector<std::string> > result;
 			result = safe_query("SELECT A.[Order], B.ID FROM DeviceStatus as A, SharedDevices as B WHERE (B.[Order] == 0) AND (A.ID == B.DeviceRowID)");
