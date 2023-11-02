@@ -6301,18 +6301,31 @@ bool CSQLHelper::UpdateCalendarMeter(
 	const bool shortLog,
 	const bool multiMeter,
 	const char* date,
-	const int64_t value1,
-	const int64_t value2,
-	const int64_t value3,
-	const int64_t value4,
-	const int64_t value5,
-	const int64_t value6,
-	const int64_t counter1,
-	const int64_t counter2,
-	const int64_t counter3,
-	const int64_t counter4)
+	int64_t value1,
+	int64_t value2,
+	int64_t value3,
+	int64_t value4,
+	int64_t value5,
+	int64_t value6,
+	int64_t counter1,
+	int64_t counter2,
+	int64_t counter3,
+	int64_t counter4)
 {
 	std::vector<std::vector<std::string> > result;
+
+	bool bIsManagedCounter = (devType == pTypeGeneral && subType == sTypeManagedCounter);
+
+	value1 = (value1 < 0 && !bIsManagedCounter) ? 0 : value1;
+	value2 = (value2 < 0 && !bIsManagedCounter) ? 0 : value2;
+	value3 = (value3 < 0 && !bIsManagedCounter) ? 0 : value3;
+	value4 = (value4 < 0 && !bIsManagedCounter) ? 0 : value4;
+	value5 = (value5 < 0 && !bIsManagedCounter) ? 0 : value5;
+	value6 = (value6 < 0 && !bIsManagedCounter) ? 0 : value6;
+	counter1 = (counter1 < 0 && !bIsManagedCounter) ? 0 : counter1;
+	counter2 = (counter2 < 0 && !bIsManagedCounter) ? 0 : counter2;
+	counter3 = (counter3 < 0 && !bIsManagedCounter) ? 0 : counter3;
+	counter4 = (counter4 < 0 && !bIsManagedCounter) ? 0 : counter4;
 
 	result = safe_query("SELECT ID, Name, SwitchType FROM DeviceStatus WHERE (HardwareID=%d AND DeviceID='%q' AND Unit=%d AND Type=%d AND SubType=%d)", HardwareID, DeviceID, unit, devType, subType);
 	if (result.empty()) {
@@ -6344,12 +6357,12 @@ bool CSQLHelper::UpdateCalendarMeter(
 					"INSERT INTO MultiMeter (DeviceRowID, Value1, Value2, Value3, Value4, Value5, Value6, Date) "
 					"VALUES ('%" PRIu64 "', '%" PRId64 "', '%" PRId64 "', '%" PRId64 "', '%" PRId64 "', '%" PRId64 "', '%" PRId64 "', '%q')",
 					DeviceRowID,
-					(value1 < 0) ? 0 : value1,
-					(value2 < 0) ? 0 : value2,
-					(value3 < 0) ? 0 : value3,
-					(value4 < 0) ? 0 : value4,
-					(value5 < 0) ? 0 : value5,
-					(value6 < 0) ? 0 : value6,
+					value1,
+					value2,
+					value3,
+					value4,
+					value5,
+					value6,
 					date
 				);
 			}
@@ -6358,12 +6371,12 @@ bool CSQLHelper::UpdateCalendarMeter(
 				safe_query(
 					"UPDATE MultiMeter SET Value1='%" PRId64 "', Value2='%" PRId64 "', Value3='%" PRId64 "', Value4='%" PRId64 "', Value5='%" PRId64 "', Value6='%" PRId64 "' "
 					"WHERE ((DeviceRowID=='%" PRIu64 "') AND (Date=='%q'))",
-					(value1 < 0) ? 0 : value1,
-					(value2 < 0) ? 0 : value2,
-					(value3 < 0) ? 0 : value3,
-					(value4 < 0) ? 0 : value4,
-					(value5 < 0) ? 0 : value5,
-					(value6 < 0) ? 0 : value6,
+					value1,
+					value2,
+					value3,
+					value4,
+					value5,
+					value6,
 					DeviceRowID,
 					date
 				);
@@ -6380,7 +6393,7 @@ bool CSQLHelper::UpdateCalendarMeter(
 				safe_query(
 					"INSERT INTO Meter (DeviceRowID, Value, Usage, Date) "
 					"VALUES ('%" PRIu64 "','%" PRId64 "','%" PRId64 "','%q')",
-					DeviceRowID, (value1 < 0) ? 0 : value1, (value2 < 0) ? 0 : value2, date
+					DeviceRowID, value1, value2, date
 				);
 			}
 			else
@@ -6388,7 +6401,7 @@ bool CSQLHelper::UpdateCalendarMeter(
 				safe_query(
 					"UPDATE Meter SET DeviceRowID='%" PRIu64 "', Value='%" PRId64 "', Usage='%" PRId64 "', Date='%q' "
 					"WHERE ((DeviceRowID=='%" PRIu64 "') AND (Date=='%q'))",
-					DeviceRowID, (value1 < 0) ? 0 : value1, (value2 < 0) ? 0 : value2, date,
+					DeviceRowID, value1, value2, date,
 					DeviceRowID, date
 				);
 			}
@@ -6412,16 +6425,16 @@ bool CSQLHelper::UpdateCalendarMeter(
 					"INSERT INTO MultiMeter_Calendar (DeviceRowID, Value1, Value2, Value3, Value4, Value5, Value6, Counter1, Counter2, Counter3, Counter4, Date) "
 					"VALUES ('%" PRIu64 "', '%" PRId64 "', '%" PRId64 "', '%" PRId64 "', '%" PRId64 "', '%" PRId64 "', '%" PRId64 "', '%" PRId64 "', '%" PRId64 "', '%" PRId64 "', '%" PRId64 "', '%q')",
 					DeviceRowID,
-					(value1 < 0) ? 0 : value1,
-					(value2 < 0) ? 0 : value2,
-					(value3 < 0) ? 0 : value3,
-					(value4 < 0) ? 0 : value4,
-					(value5 < 0) ? 0 : value5,
-					(value6 < 0) ? 0 : value6,
-					(counter1 < 0) ? 0 : counter1,
-					(counter2 < 0) ? 0 : counter2,
-					(counter3 < 0) ? 0 : counter3,
-					(counter4 < 0) ? 0 : counter4,
+					value1,
+					value2,
+					value3,
+					value4,
+					value5,
+					value6,
+					counter1,
+					counter2,
+					counter3,
+					counter4,
 					date
 				);
 			}
@@ -6430,16 +6443,16 @@ bool CSQLHelper::UpdateCalendarMeter(
 				safe_query(
 					"UPDATE MultiMeter_Calendar SET Value1='%" PRId64 "', Value2='%" PRId64 "', Value3='%" PRId64 "', Value4='%" PRId64 "', Value5='%" PRId64 "', Value6='%" PRId64 "' , Counter1='%" PRId64 "' , Counter2='%" PRId64 "' , Counter3='%" PRId64 "' , Counter4='%" PRId64 "' "
 					"WHERE ((DeviceRowID=='%" PRIu64 "') AND (Date=='%q'))",
-					(value1 < 0) ? 0 : value1,
-					(value2 < 0) ? 0 : value2,
-					(value3 < 0) ? 0 : value3,
-					(value4 < 0) ? 0 : value4,
-					(value5 < 0) ? 0 : value5,
-					(value6 < 0) ? 0 : value6,
-					(counter1 < 0) ? 0 : counter1,
-					(counter2 < 0) ? 0 : counter2,
-					(counter3 < 0) ? 0 : counter3,
-					(counter4 < 0) ? 0 : counter4,
+					value1,
+					value2,
+					value3,
+					value4,
+					value5,
+					value6,
+					counter1,
+					counter2,
+					counter3,
+					counter4,
 					DeviceRowID,
 					date
 				);
@@ -6456,7 +6469,7 @@ bool CSQLHelper::UpdateCalendarMeter(
 				safe_query(
 					"INSERT INTO Meter_Calendar (DeviceRowID, Counter, Value, Date) "
 					"VALUES ('%" PRIu64 "', '%" PRId64 "', '%" PRId64 "', '%q')",
-					DeviceRowID, (value1 < 0) ? 0 : value1, (value2 < 0) ? 0 : value2, date
+					DeviceRowID, value1, value2, date
 				);
 			}
 			else
@@ -6464,7 +6477,7 @@ bool CSQLHelper::UpdateCalendarMeter(
 				safe_query(
 					"UPDATE Meter_Calendar SET DeviceRowID='%" PRIu64 "', Counter='%" PRId64 "', Value='%" PRId64 "', Date='%q' "
 					"WHERE (DeviceRowID=='%" PRIu64 "') AND (Date=='%q')",
-					DeviceRowID, (value1 < 0) ? 0 : value1, (value2 < 0) ? 0 : value2, date,
+					DeviceRowID, value1, value2, date,
 					DeviceRowID, date
 				);
 			}
