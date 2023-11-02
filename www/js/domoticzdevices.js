@@ -1504,6 +1504,10 @@ function Current(item) {
                         this.LogLink = this.onClick = "window.location.href = '#/Devices/" + this.index + "/Log'";
                         this.smallStatus = this.data;
                         break;
+                    case "Current":		
+                        this.LogLink = this.onClick = "window.location.href = '#/Devices/" + this.index + "/Log'";
+                        this.smallStatus = this.data;
+                        break;
                     default:
                         this.LogLink = this.onClick = "ShowCurrentLog('#" + Device.contentTag + "','" + Device.backFunction + "','" + this.index + "','" + this.name + "', '" + this.switchTypeVal + "');";
                         break;
