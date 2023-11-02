@@ -23,7 +23,7 @@
 
 
 #ifdef _DEBUG
-//#define DEBUG_Enever_R
+#define DEBUG_Enever_R
 //#define DEBUG_Enever_W
 #endif
 
@@ -452,7 +452,7 @@ void Enever::parseElectricity(const std::string& szElectricityData, const bool b
 
 	uint64_t idx = -1;
 
-	uint64_t totalPrice = 0;
+	int64_t totalPrice = 0;
 	int totalValues = 0;
 
 	std::string szDeviceName = "Daily Electricity Price";
@@ -484,7 +484,7 @@ void Enever::parseElectricity(const std::string& szElectricityData, const bool b
 		std::string szProviderPrice = itt[szProviderPriceName].asString();
 		float fProviderPrice = std::stof(szProviderPrice);
 
-		uint64_t iRate = (uint64_t)round(fProviderPrice * 10000); //4 digts after comma!
+		int64_t iRate = (int64_t)round(fProviderPrice * 10000); //4 digts after comma!
 
 		bool bIsNow = (bIsToday) && (lltime.tm_hour == act_hour);
 
@@ -519,7 +519,7 @@ void Enever::parseElectricity(const std::string& szElectricityData, const bool b
 			if (totalValues != 0)
 			{
 				//Set average day price
-				uint64_t avgPrice = totalPrice / totalValues;
+				int64_t avgPrice = totalPrice / totalValues;
 				std::string szTime = std_format("%04d-%02d-%02d", ltime->tm_year + 1900, ltime->tm_mon + 1, ltime->tm_mday);
 				std::string sValue = std::to_string(avgPrice) + ";" + std::to_string(avgPrice) + ";" + szTime;
 				UpdateValueInt("0001", 1, pTypeGeneral, sTypeManagedCounter, 12, 255, 0, sValue.c_str(), szDeviceName, false, "Enever", true);
@@ -661,12 +661,12 @@ void Enever::parseGas()
 
 	std::string szTime = std_format("%04d-%02d-%02d", ltime->tm_year + 1900, ltime->tm_mon + 1, ltime->tm_mday);
 
-	uint64_t iRate = (uint64_t)round(fProviderPrice * 10000); //4 digts after comma!
+	int64_t iRate = (int64_t)round(fProviderPrice * 10000); //4 digts after comma!
 
 	std::string sValueDTime = std::to_string(iRate) + ";" + std::to_string(iRate) + ";" + szTime;
 
 	std::string szDeviceName = "Daily Gas Price";
-	uint64_t idx = UpdateValueInt("0001", 2, pTypeGeneral, sTypeManagedCounter, 12, 255, 0, sValueDTime.c_str(), szDeviceName, false, "Enever", true);
+	int64_t idx = UpdateValueInt("0001", 2, pTypeGeneral, sTypeManagedCounter, 12, 255, 0, sValueDTime.c_str(), szDeviceName, false, "Enever", true);
 	if (!bDoesMeterExitstInSystem)
 	{
 		//Set right units
