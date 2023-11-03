@@ -299,6 +299,9 @@ void MQTT::on_message(const struct mosquitto_message *message)
 		if (szCommand == "switchlight")
 		{
 			std::string switchcmd = root["switchcmd"].asString();
+			std::string onlyonchange("");
+			if (!root["ooc"].empty())
+				onlyonchange = root["ooc"].asString();
 			// if ((switchcmd != "On") && (switchcmd != "Off") && (switchcmd != "Toggle") && (switchcmd != "Set Level") && (switchcmd != "Stop"))
 			//	goto mqttinvaliddata;
 			int level = -1;
@@ -312,8 +315,9 @@ void MQTT::on_message(const struct mosquitto_message *message)
 
 			// Prevent MQTT update being send to client after next update
 			m_LastUpdatedDeviceRowIdx = idx;
+			const bool bIsOOC = atoi(onlyonchange.c_str()) != 0;
 
-			if (m_mainworker.SwitchLight(idx, switchcmd, level, NoColor, false, 0, "MQTT") == MainWorker::SL_ERROR)
+			if (m_mainworker.SwitchLight(idx, switchcmd, level, NoColor, bIsOOC, 0, "MQTT") == MainWorker::SL_ERROR)
 			{
 				Log(LOG_ERROR, "Error sending switch command!");
 			}
