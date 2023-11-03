@@ -3664,15 +3664,30 @@ namespace http
 					}
 				}
 
-				_log.Log(LOG_STATUS, "User: %s initiated a switch command (%s/%s/%s)", szSwitchUser.c_str(), idx.c_str(), sSwitchName.c_str(), switchcmd.c_str());
-
 				root["title"] = "SwitchLight";
-				if (m_mainworker.SwitchLight(idx, switchcmd, level, "-1", onlyonchange, 0, szSwitchUser) == true)
+
+				const bool bIsOOC = atoi(onlyonchange.c_str()) != 0;
+
+				std::string szSwitchMsg = std_format("User: %s initiated a switch command (%s/%s/%s)", szSwitchUser.c_str(), idx.c_str(), sSwitchName.c_str(), switchcmd.c_str());
+
+				if (!bIsOOC)
+					_log.Log(LOG_STATUS, szSwitchMsg.c_str());
+
+				MainWorker::eSwitchLightReturnCode sRet;
+				sRet = m_mainworker.SwitchLight(idx, switchcmd, level, "-1", onlyonchange, 0, szSwitchUser);
+				if (sRet != MainWorker::SL_ERROR)
 				{
+					if (
+						(bIsOOC)
+						&& (sRet != MainWorker::SL_OK_NO_ACTION)
+						)
+						_log.Log(LOG_STATUS, szSwitchMsg.c_str());
 					root["status"] = "OK";
 				}
 				else
 				{
+					if (bIsOOC)
+						_log.Log(LOG_STATUS, szSwitchMsg.c_str());
 					root["status"] = "ERROR";
 					root["message"] = "Error sending switch command, check device/hardware (idx=" + idx + ") !";
 				}

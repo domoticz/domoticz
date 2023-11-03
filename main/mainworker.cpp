@@ -11557,7 +11557,7 @@ bool MainWorker::GetSensorData(const uint64_t idx, int& nValue, std::string& sVa
 	return true;
 }
 
-bool MainWorker::SwitchLightInt(const std::vector<std::string>& sd, std::string switchcmd, int level, const _tColor color, const bool IsTesting, const std::string& User)
+MainWorker::eSwitchLightReturnCode MainWorker::SwitchLightInt(const std::vector<std::string>& sd, std::string switchcmd, int level, const _tColor color, const bool IsTesting, const std::string& User)
 {
 	unsigned long ID;
 	std::stringstream s_strid;
@@ -11577,11 +11577,11 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string>& sd, std::string 
 	if (hindex == -1)
 	{
 		_log.Log(LOG_ERROR, "Switch command not send!, Hardware device disabled or not found!");
-		return false;
+		return SL_ERROR;
 	}
 	CDomoticzHardwareBase* pHardware = GetHardware(HardwareID);
 	if (pHardware == nullptr)
-		return false;
+		return SL_ERROR;
 
 	std::string deviceID = sd[1];
 	int Unit = atoi(sd[2].c_str());
@@ -11611,9 +11611,9 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string>& sd, std::string 
 			else if (switchcmd == "Arm Away")
 				iSecStatus = 2;
 			else
-				return false;
+				return SL_ERROR;
 			UpdateDomoticzSecurityStatus(iSecStatus, User);
-			return true;
+			return SL_OK;
 		}
 	}
 
@@ -11729,7 +11729,7 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string>& sd, std::string 
 		}
 		((Plugins::CPlugin*)m_hardwaredevices[hindex])->SendCommand(sd[1], Unit, switchcmd, level, color);
 #endif
-		return true;
+		return SL_OK;
 	}
 	if (pHardware->HwdType == HTYPE_MQTTAutoDiscovery)
 	{
@@ -11738,7 +11738,8 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string>& sd, std::string 
 		{
 			switchcmd = "Set Color";
 		}
-		return ((MQTTAutoDiscover*)m_hardwaredevices[hindex])->SendSwitchCommand(sd[1], sd[9], Unit, switchcmd, level, color, User);
+		bool bret = ((MQTTAutoDiscover*)m_hardwaredevices[hindex])->SendSwitchCommand(sd[1], sd[9], Unit, switchcmd, level, color, User);
+		return (bret == true) ? SL_OK : SL_ERROR;
 	}
 
 	switch (dType)
@@ -11756,7 +11757,7 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string>& sd, std::string 
 		lcmd.LIGHTING1.rssi = 12;
 
 		if (!GetLightCommand(dType, dSubType, switchtype, switchcmd, lcmd.LIGHTING1.cmnd, options))
-			return false;
+			return SL_ERROR;
 		if (switchtype == STYPE_Doorbell)
 		{
 			int rnvalue = 0;
@@ -11768,12 +11769,12 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string>& sd, std::string 
 		}
 
 		if (!WriteToHardware(HardwareID, (const char*)&lcmd, sizeof(lcmd.LIGHTING1)))
-			return false;
+			return SL_ERROR;
 		if (!IsTesting) {
 			//send to internal for now (later we use the ACK)
 			PushAndWaitRxMessage(m_hardwaredevices[hindex], (const uint8_t*)&lcmd, nullptr, -1, User.c_str());
 		}
-		return true;
+		return SL_OK;
 	}
 	break;
 	case pTypeLighting2:
@@ -11792,7 +11793,7 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string>& sd, std::string 
 		lcmd.LIGHTING2.rssi = 12;
 
 		if (!GetLightCommand(dType, dSubType, switchtype, switchcmd, lcmd.LIGHTING2.cmnd, options))
-			return false;
+			return SL_ERROR;
 		if (switchtype == STYPE_Doorbell) {
 			int rnvalue = 0;
 			m_sql.GetPreferencesVar("DoorbellCommand", rnvalue);
@@ -11842,14 +11843,14 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string>& sd, std::string 
 		else if (switchtype != STYPE_Motion)
 		{ // Don't send actual motion off command
 			if (!WriteToHardware(HardwareID, (const char*)&lcmd, sizeof(lcmd.LIGHTING2)))
-				return false;
+				return SL_ERROR;
 		}
 
 		if (!IsTesting)
 		{ //send to internal for now (later we use the ACK)
 			PushAndWaitRxMessage(m_hardwaredevices[hindex], (const uint8_t*)&lcmd, nullptr, -1, User.c_str());
 		}
-		return true;
+		return SL_OK;
 	}
 	break;
 	case pTypeLighting3:
@@ -11881,14 +11882,14 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string>& sd, std::string 
 			lcmd.LIGHTING4.pulseHigh = pulsetimeing / 256;
 			lcmd.LIGHTING4.pulseLow = pulsetimeing & 0xFF;
 			if (!WriteToHardware(HardwareID, (const char*)&lcmd, sizeof(lcmd.LIGHTING4)))
-				return false;
+				return SL_ERROR;
 			if (!IsTesting) {
 				//send to internal for now (later we use the ACK)
 				PushAndWaitRxMessage(m_hardwaredevices[hindex], (const uint8_t*)&lcmd, nullptr, -1, User.c_str());
 			}
-			return true;
+			return SL_OK;
 		}
-		return false;
+		return SL_ERROR;
 	}
 	break;
 	case pTypeLighting5:
@@ -11906,7 +11907,7 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string>& sd, std::string 
 		lcmd.LIGHTING5.rssi = 12;
 
 		if (!GetLightCommand(dType, dSubType, switchtype, switchcmd, lcmd.LIGHTING5.cmnd, options))
-			return false;
+			return SL_ERROR;
 		if (switchtype == STYPE_Doorbell)
 		{
 			int rnvalue = 0;
@@ -11937,7 +11938,7 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string>& sd, std::string 
 				uint8_t oldCmd = lcmd.LIGHTING5.cmnd;
 				lcmd.LIGHTING5.cmnd = light5_sLivoloAllOff;
 				if (!WriteToHardware(HardwareID, (const char*)&lcmd, sizeof(lcmd.LIGHTING5)))
-					return false;
+					return SL_ERROR;
 				lcmd.LIGHTING5.cmnd = oldCmd;
 			}
 			if (switchcmd == "Set Level")
@@ -11945,11 +11946,11 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string>& sd, std::string 
 				//dim value we have to send multiple times
 				for (int iDim = 0; iDim < level; iDim++)
 					if (!WriteToHardware(HardwareID, (const char*)&lcmd, sizeof(lcmd.LIGHTING5)))
-						return false;
+						return SL_ERROR;
 			}
 			else
 				if (!WriteToHardware(HardwareID, (const char*)&lcmd, sizeof(lcmd.LIGHTING5)))
-					return false;
+					return SL_ERROR;
 		}
 		else if ((dSubType == sTypeTRC02) || (dSubType == sTypeTRC02_2))
 		{
@@ -11968,7 +11969,7 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string>& sd, std::string 
 				uint8_t oldCmd = lcmd.LIGHTING5.cmnd;
 				lcmd.LIGHTING5.cmnd = light5_sRGBoff;
 				if (!WriteToHardware(HardwareID, (const char*)&lcmd, sizeof(lcmd.LIGHTING5)))
-					return false;
+					return SL_ERROR;
 				lcmd.LIGHTING5.cmnd = oldCmd;
 				sleep_milliseconds(100);
 			}
@@ -11977,7 +11978,7 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string>& sd, std::string 
 				//turn on
 				lcmd.LIGHTING5.cmnd = light5_sRGBon;
 				if (!WriteToHardware(HardwareID, (const char*)&lcmd, sizeof(lcmd.LIGHTING5)))
-					return false;
+					return SL_ERROR;
 				sleep_milliseconds(100);
 
 				if (switchcmd == "Set Color")
@@ -11991,7 +11992,7 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string>& sd, std::string 
 						float dval = 126.0F * hsb[0]; // Color Range is 0x06..0x84
 						lcmd.LIGHTING5.cmnd = light5_sRGBcolormin + 1 + round(dval);
 						if (!WriteToHardware(HardwareID, (const char*)&lcmd, sizeof(lcmd.LIGHTING5)))
-							return false;
+							return SL_ERROR;
 					}
 				}
 			}
@@ -11999,13 +12000,13 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string>& sd, std::string 
 		else
 		{
 			if (!WriteToHardware(HardwareID, (const char*)&lcmd, sizeof(lcmd.LIGHTING5)))
-				return false;
+				return SL_ERROR;
 		}
 		if (!IsTesting) {
 			//send to internal for now (later we use the ACK)
 			PushAndWaitRxMessage(m_hardwaredevices[hindex], (const uint8_t*)&lcmd, nullptr, -1, User.c_str());
 		}
-		return true;
+		return SL_OK;
 	}
 	break;
 	case pTypeLighting6:
@@ -12025,14 +12026,14 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string>& sd, std::string 
 		lcmd.LIGHTING6.rssi = 12;
 
 		if (!GetLightCommand(dType, dSubType, switchtype, switchcmd, lcmd.LIGHTING6.cmnd, options))
-			return false;
+			return SL_ERROR;
 		if (!WriteToHardware(HardwareID, (const char*)&lcmd, sizeof(lcmd.LIGHTING6)))
-			return false;
+			return SL_ERROR;
 		if (!IsTesting) {
 			//send to internal for now (later we use the ACK)
 			PushAndWaitRxMessage(m_hardwaredevices[hindex], (const uint8_t*)&lcmd, nullptr, -1, User.c_str());
 		}
-		return true;
+		return SL_OK;
 	}
 	break;
 	case pTypeFS20:
@@ -12049,7 +12050,7 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string>& sd, std::string 
 		lcmd.FS20.rssi = 12;
 		lcmd.FS20.cmd2 = 0;
 		if (!GetLightCommand(dType, dSubType, switchtype, switchcmd, lcmd.FS20.cmd1, options))
-			return false;
+			return SL_ERROR;
 		level = (level > 15) ? 15 : level;
 
 		if (level > 0)
@@ -12060,14 +12061,14 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string>& sd, std::string 
 		if (switchtype != STYPE_Motion) //dont send actual motion off command
 		{
 			if (!WriteToHardware(HardwareID, (const char*)&lcmd, sizeof(lcmd.FS20)))
-				return false;
+				return SL_ERROR;
 		}
 
 		if (!IsTesting) {
 			//send to internal for now (later we use the ACK)
 			PushAndWaitRxMessage(m_hardwaredevices[hindex], (const uint8_t*)&lcmd, nullptr, -1, User.c_str());
 		}
-		return true;
+		return SL_OK;
 	}
 	break;
 	case pTypeHomeConfort:
@@ -12086,14 +12087,14 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string>& sd, std::string 
 		lcmd.HOMECONFORT.rssi = 12;
 
 		if (!GetLightCommand(dType, dSubType, switchtype, switchcmd, lcmd.HOMECONFORT.cmnd, options))
-			return false;
+			return SL_ERROR;
 		if (!WriteToHardware(HardwareID, (const char*)&lcmd, sizeof(lcmd.HOMECONFORT)))
-			return false;
+			return SL_ERROR;
 		if (!IsTesting) {
 			//send to internal for now (later we use the ACK)
 			PushAndWaitRxMessage(m_hardwaredevices[hindex], (const uint8_t*)&lcmd, nullptr, -1, User.c_str());
 		}
-		return true;
+		return SL_OK;
 	}
 	break;
 	case pTypeFan:
@@ -12110,14 +12111,14 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string>& sd, std::string 
 		lcmd.FAN.rssi = 12;
 
 		if (!GetLightCommand(dType, dSubType, switchtype, switchcmd, lcmd.FAN.cmnd, options))
-			return false;
+			return SL_ERROR;
 		if (!WriteToHardware(HardwareID, (const char*)&lcmd, sizeof(lcmd.FAN)))
-			return false;
+			return SL_ERROR;
 		if (!IsTesting) {
 			//send to internal for now (later we use the ACK)
 			PushAndWaitRxMessage(m_hardwaredevices[hindex], (const uint8_t*)&lcmd, nullptr, -1, User.c_str());
 		}
-		return true;
+		return SL_OK;
 	}
 	break;
 	case pTypeColorSwitch:
@@ -12140,14 +12141,14 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string>& sd, std::string 
 			}
 		}
 		if (!GetLightCommand(dType, dSubType, switchtype, switchcmd, lcmd.command, options))
-			return false;
+			return SL_ERROR;
 		if (!WriteToHardware(HardwareID, (const char*)&lcmd, sizeof(_tColorSwitch)))
-			return false;
+			return SL_ERROR;
 		if (!IsTesting) {
 			//send to internal for now (later we use the ACK)
 			PushAndWaitRxMessage(m_hardwaredevices[hindex], (const uint8_t*)&lcmd, nullptr, -1, User.c_str());
 		}
-		return true;
+		return SL_OK;
 	}
 	break;
 	case pTypeSecurity1:
@@ -12168,13 +12169,13 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string>& sd, std::string 
 		case sTypeSA30:
 		{
 			if (!GetLightCommand(dType, dSubType, switchtype, switchcmd, lcmd.SECURITY1.status, options))
-				return false;
+				return SL_ERROR;
 			//send it twice
 			if (!WriteToHardware(HardwareID, (const char*)&lcmd, sizeof(lcmd.SECURITY1)))
-				return false;
+				return SL_ERROR;
 			sleep_milliseconds(500);
 			if (!WriteToHardware(HardwareID, (const char*)&lcmd, sizeof(lcmd.SECURITY1)))
-				return false;
+				return SL_ERROR;
 			if (!IsTesting) {
 				//send to internal for now (later we use the ACK)
 				PushAndWaitRxMessage(m_hardwaredevices[hindex], (const uint8_t*)&lcmd, nullptr, -1, User.c_str());
@@ -12187,9 +12188,9 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string>& sd, std::string 
 		case sTypeMeiantech:
 		{
 			if (!GetLightCommand(dType, dSubType, switchtype, switchcmd, lcmd.SECURITY1.status, options))
-				return false;
+				return SL_ERROR;
 			if (!WriteToHardware(HardwareID, (const char*)&lcmd, sizeof(lcmd.SECURITY1)))
-				return false;
+				return SL_ERROR;
 			if (!IsTesting) {
 				//send to internal for now (later we use the ACK)
 				PushAndWaitRxMessage(m_hardwaredevices[hindex], (const uint8_t*)&lcmd, nullptr, -1, User.c_str());
@@ -12197,7 +12198,7 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string>& sd, std::string 
 		}
 		break;
 		}
-		return true;
+		return SL_OK;
 	}
 	break;
 	case pTypeSecurity2:
@@ -12205,7 +12206,7 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string>& sd, std::string 
 		BYTE kCodes[9];
 		if (sd[1].size() < 8 * 2)
 		{
-			return false;
+			return SL_ERROR;
 		}
 		for (int ii = 0; ii < 8; ii++)
 		{
@@ -12236,12 +12237,12 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string>& sd, std::string 
 		lcmd.SECURITY2.rssi = 12;
 
 		if (!WriteToHardware(HardwareID, (const char*)&lcmd, sizeof(lcmd.SECURITY2)))
-			return false;
+			return SL_ERROR;
 		if (!IsTesting) {
 			//send to internal for now (later we use the ACK)
 			PushAndWaitRxMessage(m_hardwaredevices[hindex], (const uint8_t*)&lcmd, nullptr, -1, User.c_str());
 		}
-		return true;
+		return SL_OK;
 	}
 	break;
 	case pTypeHunter:
@@ -12249,7 +12250,7 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string>& sd, std::string 
 		BYTE kCodes[6];
 		if (sd[1].size() < 6 * 2)
 		{
-			return false;
+			return SL_ERROR;
 		}
 		for (int ii = 0; ii < 6; ii++)
 		{
@@ -12272,16 +12273,16 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string>& sd, std::string 
 		lcmd.HUNTER.id5 = kCodes[4];
 		lcmd.HUNTER.id6 = kCodes[5];
 		if (!GetLightCommand(dType, dSubType, switchtype, switchcmd, lcmd.HUNTER.cmnd, options))
-			return false;
+			return SL_ERROR;
 		lcmd.HUNTER.rssi = 12;
 
 		if (!WriteToHardware(HardwareID, (const char*)&lcmd, sizeof(lcmd.SECURITY2)))
-			return false;
+			return SL_ERROR;
 		if (!IsTesting) {
 			//send to internal for now (later we use the ACK)
 			PushAndWaitRxMessage(m_hardwaredevices[hindex], (const uint8_t*)&lcmd, nullptr, -1, User.c_str());
 		}
-		return true;
+		return SL_OK;
 	}
 	break;
 	case pTypeCurtain:
@@ -12294,16 +12295,16 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string>& sd, std::string 
 		lcmd.CURTAIN1.housecode = atoi(sd[1].c_str());
 		lcmd.CURTAIN1.unitcode = Unit;
 		if (!GetLightCommand(dType, dSubType, switchtype, switchcmd, lcmd.CURTAIN1.cmnd, options))
-			return false;
+			return SL_ERROR;
 		lcmd.CURTAIN1.filler = 0;
 
 		if (!WriteToHardware(HardwareID, (const char*)&lcmd, sizeof(lcmd.CURTAIN1)))
-			return false;
+			return SL_ERROR;
 		if (!IsTesting) {
 			//send to internal for now (later we use the ACK)
 			PushAndWaitRxMessage(m_hardwaredevices[hindex], (const uint8_t*)&lcmd, nullptr, -1, User.c_str());
 		}
-		return true;
+		return SL_OK;
 	}
 	break;
 	case pTypeBlinds:
@@ -12343,17 +12344,17 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string>& sd, std::string 
 			lcmd.BLINDS1.unitcode = 0;
 		}
 		if (!GetLightCommand(dType, dSubType, switchtype, switchcmd, lcmd.BLINDS1.cmnd, options))
-			return false;
+			return SL_ERROR;
 		level = 15;
 		lcmd.BLINDS1.filler = 0;
 		lcmd.BLINDS1.rssi = 12;
 		if (!WriteToHardware(HardwareID, (const char*)&lcmd, sizeof(lcmd.BLINDS1)))
-			return false;
+			return SL_ERROR;
 		if (!IsTesting) {
 			//send to internal for now (later we use the ACK)
 			PushAndWaitRxMessage(m_hardwaredevices[hindex], (const uint8_t*)&lcmd, nullptr, -1, User.c_str());
 		}
-		return true;
+		return SL_OK;
 	}
 	break;
 	case pTypeRFY:
@@ -12375,7 +12376,7 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string>& sd, std::string 
 		else
 		{
 			if (!GetLightCommand(dType, dSubType, switchtype, switchcmd, lcmd.RFY.cmnd, options))
-				return false;
+				return SL_ERROR;
 		}
 
 		bool bIsRFY2 = (lcmd.RFY.subtype == sTypeRFY2);
@@ -12394,14 +12395,14 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string>& sd, std::string 
 		lcmd.RFY.filler = 0;
 		lcmd.RFY.rssi = 12;
 		if (!WriteToHardware(HardwareID, (const char*)&lcmd, sizeof(lcmd.RFY)))
-			return false;
+			return SL_ERROR;
 		if (!IsTesting) {
 			if (bIsRFY2)
 				lcmd.RFY.subtype = sTypeRFY2;
 			//send to internal for now (later we use the ACK)
 			PushAndWaitRxMessage(m_hardwaredevices[hindex], (const uint8_t*)&lcmd, nullptr, -1, User.c_str());
 		}
-		return true;
+		return SL_OK;
 	}
 	break;
 	case pTypeDDxxxx:
@@ -12417,7 +12418,7 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string>& sd, std::string 
 		lcmd.DDXXXX.id4 = ID4;
 		lcmd.DDXXXX.unitcode = Unit;
 		if (!GetLightCommand(dType, dSubType, switchtype, switchcmd, lcmd.DDXXXX.cmnd, options))
-			return false;
+			return SL_ERROR;
 		lcmd.DDXXXX.filler = 0;
 		lcmd.DDXXXX.rssi = 12;
 
@@ -12436,12 +12437,12 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string>& sd, std::string 
 		}
 
 		if (!WriteToHardware(HardwareID, (const char*)&lcmd, sizeof(lcmd.DDXXXX)))
-			return false;
+			return SL_ERROR;
 		if (!IsTesting) {
 			//send to internal for now (later we use the ACK)
 			PushAndWaitRxMessage(m_hardwaredevices[hindex], (const uint8_t*)&lcmd, nullptr, -1, User.c_str());
 		}
-		return true;
+		return SL_OK;
 	}
 	break;
 	case pTypeChime:
@@ -12467,12 +12468,12 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string>& sd, std::string 
 		lcmd.CHIME.id4 = 0;
 		lcmd.CHIME.rssi = 12;
 		if (!WriteToHardware(HardwareID, (const char*)&lcmd, sizeof(lcmd.CHIME)))
-			return false;
+			return SL_ERROR;
 		if (!IsTesting) {
 			//send to internal for now (later we use the ACK)
 			PushAndWaitRxMessage(m_hardwaredevices[hindex], (const uint8_t*)&lcmd, nullptr, -1, User.c_str());
 		}
-		return true;
+		return SL_OK;
 	}
 	break;
 	case pTypeThermostat2:
@@ -12486,17 +12487,17 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string>& sd, std::string 
 		lcmd.THERMOSTAT2.seqnbr = m_hardwaredevices[hindex]->m_SeqNr++;
 
 		if (!GetLightCommand(dType, dSubType, switchtype, switchcmd, lcmd.THERMOSTAT2.cmnd, options))
-			return false;
+			return SL_ERROR;
 
 		lcmd.THERMOSTAT2.filler = 0;
 		lcmd.THERMOSTAT2.rssi = 12;
 		if (!WriteToHardware(HardwareID, (const char*)&lcmd, sizeof(lcmd.THERMOSTAT2)))
-			return false;
+			return SL_ERROR;
 		if (!IsTesting) {
 			//send to internal for now (later we use the ACK)
 			PushAndWaitRxMessage(m_hardwaredevices[hindex], (const uint8_t*)&lcmd, nullptr, -1, User.c_str());
 		}
-		return true;
+		return SL_OK;
 	}
 	break;
 	case pTypeThermostat3:
@@ -12510,17 +12511,17 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string>& sd, std::string 
 		lcmd.THERMOSTAT3.unitcode3 = ID4;
 		lcmd.THERMOSTAT3.seqnbr = m_hardwaredevices[hindex]->m_SeqNr++;
 		if (!GetLightCommand(dType, dSubType, switchtype, switchcmd, lcmd.THERMOSTAT3.cmnd, options))
-			return false;
+			return SL_ERROR;
 		level = 15;
 		lcmd.THERMOSTAT3.filler = 0;
 		lcmd.THERMOSTAT3.rssi = 12;
 		if (!WriteToHardware(HardwareID, (const char*)&lcmd, sizeof(lcmd.THERMOSTAT3)))
-			return false;
+			return SL_ERROR;
 		if (!IsTesting) {
 			//send to internal for now (later we use the ACK)
 			PushAndWaitRxMessage(m_hardwaredevices[hindex], (const uint8_t*)&lcmd, nullptr, -1, User.c_str());
 		}
-		return true;
+		return SL_OK;
 	}
 	break;
 	case pTypeThermostat4:
@@ -12536,18 +12537,18 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string>& sd, std::string 
 		lcmd.THERMOSTAT4.unitcode3 = ID4;
 		lcmd.THERMOSTAT4.seqnbr = m_hardwaredevices[hindex]->m_SeqNr++;
 		if (!GetLightCommand(dType, dSubType, switchtype, switchcmd, lcmd.THERMOSTAT4.mode, options))
-		return false;
+		return SL_ERROR;
 		level = 15;
 		lcmd.THERMOSTAT4.filler = 0;
 		lcmd.THERMOSTAT4.rssi = 12;
 		if (!WriteToHardware(HardwareID, (const char*)&lcmd, sizeof(lcmd.THERMOSTAT4)))
-		return false;
+		return SL_ERROR;
 		if (!IsTesting) {
 		//send to internal for now (later we use the ACK)
 		PushAndWaitRxMessage(m_hardwaredevices[hindex], (const uint8_t *)&lcmd, NULL, -1);
 		}
 		*/
-		return true;
+		return SL_OK;
 	}
 	break;
 	case pTypeRemote:
@@ -12563,12 +12564,12 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string>& sd, std::string 
 		lcmd.REMOTE.toggle = 0;
 		lcmd.REMOTE.rssi = 12;
 		if (!WriteToHardware(HardwareID, (const char*)&lcmd, sizeof(lcmd.REMOTE)))
-			return false;
+			return SL_ERROR;
 		if (!IsTesting) {
 			//send to internal for now (later we use the ACK)
 			PushAndWaitRxMessage(m_hardwaredevices[hindex], (const uint8_t*)&lcmd, nullptr, -1, User.c_str());
 		}
-		return true;
+		return SL_OK;
 	}
 	break;
 	case pTypeEvohomeRelay:
@@ -12586,12 +12587,12 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string>& sd, std::string 
 			lcmd.demand = level;
 
 		if (!WriteToHardware(HardwareID, (const char*)&lcmd, sizeof(_tEVOHOME3)))
-			return false;
+			return SL_ERROR;
 		if (!IsTesting) {
 			//send to internal for now (later we use the ACK)
 			PushAndWaitRxMessage(m_hardwaredevices[hindex], (const uint8_t*)&lcmd, nullptr, -1, User.c_str());
 		}
-		return true;
+		return SL_OK;
 	}
 	break;
 	case pTypeRadiator1:
@@ -12607,7 +12608,7 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string>& sd, std::string 
 		lcmd.RADIATOR1.id4 = ID4;
 		lcmd.RADIATOR1.unitcode = Unit;
 		if (!GetLightCommand(dType, dSubType, switchtype, switchcmd, lcmd.RADIATOR1.cmnd, options))
-			return false;
+			return SL_ERROR;
 		if (level > 15)
 			level = 15;
 		lcmd.RADIATOR1.temperature = 0;
@@ -12615,14 +12616,14 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string>& sd, std::string 
 		lcmd.RADIATOR1.filler = 0;
 		lcmd.RADIATOR1.rssi = 12;
 		if (!WriteToHardware(HardwareID, (const char*)&lcmd, sizeof(lcmd.RADIATOR1)))
-			return false;
+			return SL_ERROR;
 
 		if (!IsTesting) {
 			//send to internal for now (later we use the ACK)
 			lcmd.RADIATOR1.subtype = sTypeSmartwaresSwitchRadiator;
 			PushAndWaitRxMessage(m_hardwaredevices[hindex], (const uint8_t*)&lcmd, nullptr, -1, User.c_str());
 		}
-		return true;
+		return SL_OK;
 	}
 	break;
 	case pTypeGeneralSwitch:
@@ -12636,7 +12637,7 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string>& sd, std::string 
 		gswitch.unitcode = Unit;
 
 		if (!GetLightCommand(dType, dSubType, switchtype, switchcmd, gswitch.cmnd, options))
-			return false;
+			return SL_ERROR;
 
 		if ((switchtype != STYPE_Selector) && (dSubType != sSwitchGeneralSwitch))
 		{
@@ -12665,7 +12666,7 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string>& sd, std::string 
 					)
 				{
 					_log.Log(LOG_ERROR, "Setting a wrong level value %d to Selector device %lu", level, ID);
-					return false;
+					return SL_ERROR;
 				}
 			}
 		}
@@ -12675,17 +12676,17 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string>& sd, std::string 
 		if (switchtype != STYPE_Motion) //dont send actual motion off command
 		{
 			if (!WriteToHardware(HardwareID, (const char*)&gswitch, sizeof(_tGeneralSwitch)))
-				return false;
+				return SL_ERROR;
 		}
 		if (!IsTesting) {
 			//send to internal for now (later we use the ACK)
 			PushAndWaitRxMessage(m_hardwaredevices[hindex], (const uint8_t*)&gswitch, nullptr, -1, User.c_str());
 		}
-		return true;
+		return SL_OK;
 	}
 	break;
 	}
-	return false;
+	return SL_ERROR;
 }
 
 bool MainWorker::SwitchEvoModal(const std::string& idx, const std::string& status, const std::string& action, const std::string& ooc, const std::string& until)
@@ -12760,7 +12761,7 @@ bool MainWorker::SwitchEvoModal(const std::string& idx, const std::string& statu
 	return true;
 }
 
-bool MainWorker::SwitchLight(const std::string& idx, const std::string& switchcmd, const std::string& level, const std::string& color, const std::string& ooc, const int ExtraDelay, const std::string& User)
+MainWorker::eSwitchLightReturnCode MainWorker::SwitchLight(const std::string& idx, const std::string& switchcmd, const std::string& level, const std::string& color, const std::string& ooc, const int ExtraDelay, const std::string& User)
 {
 	uint64_t ID = std::stoull(idx);
 	int ilevel = -1;
@@ -12770,7 +12771,7 @@ bool MainWorker::SwitchLight(const std::string& idx, const std::string& switchcm
 	return SwitchLight(ID, switchcmd, ilevel, _tColor(color), atoi(ooc.c_str()) != 0, ExtraDelay, User);
 }
 
-bool MainWorker::SwitchLight(const uint64_t idx, const std::string& switchcmd, const int level, _tColor color, const bool ooc, const int ExtraDelay, const std::string& User)
+MainWorker::eSwitchLightReturnCode MainWorker::SwitchLight(const uint64_t idx, const std::string& switchcmd, const int level, _tColor color, const bool ooc, const int ExtraDelay, const std::string& User)
 {
 	//Get Device details
 	_log.Debug(DEBUG_NORM, "MAIN SwitchLight idx:%" PRIu64 " cmd:%s lvl:%d ", idx, switchcmd.c_str(), level);
@@ -12779,7 +12780,7 @@ bool MainWorker::SwitchLight(const uint64_t idx, const std::string& switchcmd, c
 		"SELECT HardwareID,DeviceID,Unit,Type,SubType,SwitchType,AddjValue2,nValue,sValue,Name,Options FROM DeviceStatus WHERE (ID == %" PRIu64 ")",
 		idx);
 	if (result.empty())
-		return false;
+		return SL_ERROR;
 
 	std::vector<std::string> sd = result[0];
 	std::string hwdid = sd[0];
@@ -12810,11 +12811,11 @@ bool MainWorker::SwitchLight(const uint64_t idx, const std::string& switchcmd, c
 	{
 		int nNewVal = bIsOn ? 1 : 0;//Is that everything we need here
 		if ((switchtype == STYPE_Selector) && (nValue == nNewVal) && (level == atoi(sValue.c_str()))) {
-			return true;
+			return SL_OK_NO_ACTION;
 		}
 		if (nValue == nNewVal)
 		{
-			return true;//FIXME no return code for already set
+			return SL_OK_NO_ACTION;
 		}
 	}
 	//Check if we have an On-Delay, if yes, add it to the tasker
@@ -12825,7 +12826,7 @@ bool MainWorker::SwitchLight(const uint64_t idx, const std::string& switchcmd, c
 			_log.Log(LOG_NORM, "Delaying switch [%s] action (%s) for %d seconds", devName.c_str(), switchcmd.c_str(), iOnDelay + ExtraDelay);
 		}
 		m_sql.AddTaskItem(_tTaskItem::SwitchLightEvent(static_cast<float>(iOnDelay + ExtraDelay), idx, switchcmd, level, color, "Switch with Delay", User));
-		return true;
+		return SL_OK;
 	}
 	return SwitchLightInt(sd, switchcmd, level, color, false, User);
 }

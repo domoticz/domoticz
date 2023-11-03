@@ -313,7 +313,7 @@ void MQTT::on_message(const struct mosquitto_message *message)
 			// Prevent MQTT update being send to client after next update
 			m_LastUpdatedDeviceRowIdx = idx;
 
-			if (!m_mainworker.SwitchLight(idx, switchcmd, level, NoColor, false, 0, "MQTT") == true)
+			if (m_mainworker.SwitchLight(idx, switchcmd, level, NoColor, false, 0, "MQTT") == MainWorker::SL_ERROR)
 			{
 				Log(LOG_ERROR, "Error sending switch command!");
 			}
@@ -439,7 +439,7 @@ void MQTT::on_message(const struct mosquitto_message *message)
 			// Prevent MQTT update being send to client after next update
 			m_LastUpdatedDeviceRowIdx = idx;
 
-			if (!m_mainworker.SwitchLight(idx, "Set Color", ival, color, false, 0, "MQTT") == true)
+			if (m_mainworker.SwitchLight(idx, "Set Color", ival, color, false, 0, "MQTT") == MainWorker::SL_ERROR)
 			{
 				Log(LOG_ERROR, "Error sending switch command!");
 			}

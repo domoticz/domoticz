@@ -941,8 +941,7 @@ void CScheduler::CheckSchedules()
 									ilevel = 0; // force level to a valid value for Selector
 								}
 							}
-							if (!m_mainworker.SwitchLight(item.RowID, switchcmd, ilevel, item.Color, false, 0,
-								"timer"))
+							if (m_mainworker.SwitchLight(item.RowID, switchcmd, ilevel, item.Color, false, 0, "timer") == MainWorker::SL_ERROR)
 							{
 								_log.Log(LOG_ERROR,
 									"Error sending switch command, DevID: %" PRIu64 ", Time: %s",

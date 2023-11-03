@@ -52,9 +52,16 @@ public:
 	void DecodeRXMessage(const CDomoticzHardwareBase *pHardware, const uint8_t *pRXCommand, const char *defaultName, int BatteryLevel, const char *userName);
 	void PushAndWaitRxMessage(const CDomoticzHardwareBase *pHardware, const uint8_t *pRXCommand, const char *defaultName, int BatteryLevel, const char *userName);
 
-	bool SwitchLight(const std::string &idx, const std::string &switchcmd, const std::string &level, const std::string &color, const std::string &ooc, int ExtraDelay, const std::string &User);
-	bool SwitchLight(uint64_t idx, const std::string &switchcmd, int level, _tColor color, bool ooc, int ExtraDelay, const std::string &User);
-	bool SwitchLightInt(const std::vector<std::string> &sd, std::string switchcmd, int level, _tColor color, bool IsTesting, const std::string &User);
+	enum eSwitchLightReturnCode
+	{
+		SL_ERROR = 0,			//there was a problem switching the light
+		SL_OK = 1,				//the light was switched
+		SL_OK_NO_ACTION = 2,	//the light was not switched because it was already in the requested state
+	};
+
+	eSwitchLightReturnCode SwitchLight(const std::string &idx, const std::string &switchcmd, const std::string &level, const std::string &color, const std::string &ooc, int ExtraDelay, const std::string &User);
+	eSwitchLightReturnCode SwitchLight(uint64_t idx, const std::string &switchcmd, int level, _tColor color, bool ooc, int ExtraDelay, const std::string &User);
+	eSwitchLightReturnCode SwitchLightInt(const std::vector<std::string> &sd, std::string switchcmd, int level, _tColor color, bool IsTesting, const std::string &User);
 
 	bool SwitchScene(const std::string &idx, const std::string &switchcmd, const std::string& User);
 	bool SwitchScene(uint64_t idx, std::string switchcmd, const std::string &User);

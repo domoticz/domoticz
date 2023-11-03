@@ -3593,7 +3593,8 @@ bool CSQLHelper::SwitchLightFromTasker(uint64_t idx, const std::string& switchcm
 		return false;
 
 	std::string switchCommand = switchcmd;
-	return m_mainworker.SwitchLightInt(sd, switchCommand, level, color, false, User);
+	bool bret = m_mainworker.SwitchLightInt(sd, switchCommand, level, color, false, User);
+	return (bret) ? MainWorker::SL_OK : MainWorker::SL_ERROR;
 }
 
 #ifndef WIN32
