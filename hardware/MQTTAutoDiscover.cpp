@@ -666,6 +666,7 @@ void MQTTAutoDiscover::on_auto_discovery_message(const struct mosquitto_message*
 	try
 	{
 		std::string sensor_unique_id;
+
 		if (!root["unique_id"].empty())
 			sensor_unique_id = root["unique_id"].asString();
 		else if (!root["uniq_id"].empty())
@@ -674,11 +675,6 @@ void MQTTAutoDiscover::on_auto_discovery_message(const struct mosquitto_message*
 		{
 			//It's optional, but good to have one
 			sensor_unique_id = GenerateUUID();
-		}
-
-		if (root["name"].empty())
-		{
-			root["name"] = sensor_unique_id;
 		}
 
 		std::string device_identifiers;
@@ -725,10 +721,32 @@ void MQTTAutoDiscover::on_auto_discovery_message(const struct mosquitto_message*
 		_tMQTTADevice* pDevice = &m_discovered_devices[device_identifiers];
 
 		pDevice->identifiers = device_identifiers;
+
+		std::string dev_name("");
 		if (!root["device"]["name"].empty())
-			pDevice->name = root["device"]["name"].asString();
+		{
+			dev_name = root["device"]["name"].asString();
+		}
 		else if (!root["dev"]["name"].empty())
-			pDevice->name = root["dev"]["name"].asString();
+		{
+			dev_name = root["dev"]["name"].asString();
+		}
+
+		if (!dev_name.empty())
+		{
+			if (root["name"].empty())
+			{
+				root["name"] = sensor_unique_id;
+			}
+			std::string subname = root["name"].asString();
+			if (subname.find("0x") != 0)
+			{
+				pDevice->name = dev_name + " (" + subname + ")";
+			}
+			else
+				pDevice->name = dev_name;
+		}
+
 		if (pDevice->name.empty())
 			pDevice->name = pDevice->identifiers;
 
