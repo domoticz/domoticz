@@ -27,9 +27,7 @@ body table#itemtablesmalldoubleicon tr td:first-child + td + td + td + td + td:b
 body table#itemtable tr td:first-child + td + td + td + td:before ,
 body table#itemtablenotype tr td:first-child + td + td + td + td:before,
 body table#itemtablenostatus tr td:first-child + td + td + td + td:before,
-body table#itemtabletrippleicon tr td:first-child + td + td + td + td:before,
 body table#itemtablesmalldoubleicon tr td:first-child + td + td + td + td:before,
-body table#itemtablesmalltrippleicon tr td:first-child + td + td + td + td:before,
 body table#mobileitem tr td:first-child + td + td + td + td:before{
  content: "Last seen: " !important;
 }
@@ -39,9 +37,7 @@ body table#itemtablesmalldoubleicon tr td:first-child + td + td + td + td + td:b
 body table#itemtable tr td:first-child + td + td + td + td:before ,
 body table#itemtablenotype tr td:first-child + td + td + td + td:before,
 body table#itemtablenostatus tr td:first-child + td + td + td + td:before,
-body table#itemtabletrippleicon tr td:first-child + td + td + td + td:before,
 body table#itemtablesmalldoubleicon tr td:first-child + td + td + td + td:before,
-body table#itemtablesmalltrippleicon tr td:first-child + td + td + td + td:before,
 body table#mobileitem tr td:first-child + td + td + td + td:before{
  content: "Type:"
 
@@ -233,10 +229,8 @@ width: 99.5% !important;
 }
 
 .dimslider {
-   width: calc(98% - 55px) !important;
    height: 10px;
    margin-top: 0px !important;
-   margin-left: 48px !important;
    box-shadow: initial;
    position: relative;
 }
@@ -247,7 +241,7 @@ width: 99.5% !important;
    margin-top: 10px !important;
 }
 
-#itemtablesmall .dimslider {
+/* #itemtablesmall .dimslider { */
    width: calc(98% - 52px) !important;
    margin-top: 10px !important;
    margin-left: 48px !important;
