@@ -562,14 +562,10 @@ input[type="search"] {
   margin-left: 3px;
 }
 .dimslider {
-  position: relative;
-  right: -58px;
-  width: calc(98% - 120px) !important;
+  width: calc(98% - 140px) !important;
   background-color: #555555 !important;
   border-radius: 0px !important;
   height: 10px;
-  margin-top: 7px !important;
-  margin-left: 56px !important;
   box-shadow: initial;
 }
 .btnsmall,
