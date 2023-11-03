@@ -241,7 +241,7 @@ width: 99.5% !important;
    margin-top: 10px !important;
 }
 
-/* #itemtablesmall .dimslider { */
+#itemtablesmall .dimslider {
    width: calc(98% - 52px) !important;
    margin-top: 10px !important;
    margin-left: 48px !important;
