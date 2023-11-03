@@ -666,6 +666,9 @@ void MQTTAutoDiscover::on_auto_discovery_message(const struct mosquitto_message*
 	try
 	{
 		std::string sensor_unique_id;
+        std::string subname;
+        subname = root["name"].asString();
+
 		if (!root["unique_id"].empty())
 			sensor_unique_id = root["unique_id"].asString();
 		else if (!root["uniq_id"].empty())
@@ -726,9 +729,15 @@ void MQTTAutoDiscover::on_auto_discovery_message(const struct mosquitto_message*
 
 		pDevice->identifiers = device_identifiers;
 		if (!root["device"]["name"].empty())
-			pDevice->name = root["device"]["name"].asString();
+            if (subname.empty())
+                pDevice->name = root["device"]["name"].asString();
+            else
+                pDevice->name = root["device"]["name"].asString() + " (" + subname + ")";
 		else if (!root["dev"]["name"].empty())
-			pDevice->name = root["dev"]["name"].asString();
+            if (subname.empty())
+                pDevice->name = root["dev"]["name"].asString();
+            else
+                pDevice->name = root["dev"]["name"].asString() + " (" + subname + ")";
 		if (pDevice->name.empty())
 			pDevice->name = pDevice->identifiers;
 
