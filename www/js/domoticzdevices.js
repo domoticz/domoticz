@@ -1213,7 +1213,10 @@ function Sensor(item) {
 		) {
             this.LogLink = "window.location.href = '#/Devices/" + this.index + "/Log'";
         } else {
-            this.LogLink = this.onClick = "Show" + sensorType + "Log('#" + Device.contentTag + "','" + Device.backFunction + "','" + this.index + "','" + this.name + "', '" + this.switchTypeVal + "');";
+            if (sensorType === 'RFXMeter')	
+	        this.LogLink = this.onClick = "window.location.href = '#/Devices/" + this.index + "/Log'";
+	    else
+                this.LogLink = this.onClick = "Show" + sensorType + "Log('#" + Device.contentTag + "','" + Device.backFunction + "','" + this.index + "','" + this.name + "', '" + this.switchTypeVal + "');";
         }
 
         this.imagetext = "Show graph";
@@ -1501,6 +1504,10 @@ function Current(item) {
                         this.smallStatus = this.data;
                         break;
                     case "Voltage":
+                        this.LogLink = this.onClick = "window.location.href = '#/Devices/" + this.index + "/Log'";
+                        this.smallStatus = this.data;
+                        break;
+                    case "Current":		
                         this.LogLink = this.onClick = "window.location.href = '#/Devices/" + this.index + "/Log'";
                         this.smallStatus = this.data;
                         break;
