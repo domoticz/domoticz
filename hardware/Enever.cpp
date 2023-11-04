@@ -23,7 +23,7 @@
 
 
 #ifdef _DEBUG
-#define DEBUG_Enever_R
+//#define DEBUG_Enever_R
 //#define DEBUG_Enever_W
 #endif
 
