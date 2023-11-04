@@ -717,7 +717,7 @@ define(['app'], function (app) {
 					ShowNotify($.t("Problem saving settings!"), 2000, true);
 					return;
 			    }
-				$window.location = '/#Dashboard';
+				$window.location = '/#Setup';
 				$window.location.reload();
 			}, function errorCallback(response) {
 			    HideNotify();
