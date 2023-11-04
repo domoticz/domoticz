@@ -746,6 +746,10 @@ void MQTTAutoDiscover::on_auto_discovery_message(const struct mosquitto_message*
 			else
 				pDevice->name = dev_name;
 		}
+		else if (!root["name"].empty())
+		{
+			pDevice->name = root["name"].asString();
+		}
 
 		if (pDevice->name.empty())
 			pDevice->name = pDevice->identifiers;
