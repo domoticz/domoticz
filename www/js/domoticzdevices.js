@@ -869,6 +869,7 @@ Device.create = function (item) {
 			if (
 				(item.Type != 'General')
 				&&(item.Type != 'P1 Smart Meter')
+				&&(type != 'push')
 				) {
 				if (typeof item.Image !== 'undefined') {
 					type = item.Image.toLowerCase();
