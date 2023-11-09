@@ -126,7 +126,7 @@ void CVisualCrossing::GetMeterDetails()
 	sResult = ReadFile("E:\\VisualCrossing.json");
 #else
 	std::stringstream sURL;
-	std::string szLoc = m_Location;
+	std::string szLoc = CURLEncode::URLEncode(m_Location);
 	sURL << "https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/" << szLoc << "?key=" << m_APIKey << "&unitGroup=metric&include=current";
 	try
 	{
