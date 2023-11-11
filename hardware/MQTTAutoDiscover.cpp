@@ -3451,337 +3451,346 @@ void MQTTAutoDiscover::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 		m_sql.UpdateDeviceValue("SubType", subType, szIdx);
 	pSensor->subType = subType;
 
-	bool bOn = false;
-
-	bool bIsJSON = false;
-	Json::Value root;
-	if (pSensor->bIsJSON)
-	{
-		bool ret = ParseJSon(pSensor->last_json_value, root);
-		if (ret)
-		{
-			bIsJSON = root.isObject();
-		}
-	}
-
-	_tColor color_old;
-	_tColor color_new;
-	color_old.mode = ColorModeCustom;
-	color_new.mode = ColorModeCustom;
 	bool bHaveColorChange = false;
 	bool bDoNotUpdateLevel = false;
+	bool bHaveLevelChange = false;
 
-	if (bIsJSON)
-	{
-		if (root["value"].isObject() && (!root["value"]["red"].empty() && root["value"]["r"].empty()))
-		{
-			// Color values are defined in "value" object instead of "color" as expected by domoticz (e.g. Fibaro FGRGBW)
-			root["color"] = root["value"];
-			root.removeMember("value");
-		}
+	_tColor color_new;
+	color_new.mode = ColorModeCustom;
 
-		if (root["color"].isObject() && !root["color"]["red"].empty())
-		{
-			// The device uses "red", "green"... to specify the color components, default for domoticz would be "r", "g"... (e.g. Fibaro FGRGBW)
-			JSonRenameKey(root["color"], "red", "r");
-			JSonRenameKey(root["color"], "green", "g");
-			JSonRenameKey(root["color"], "blue", "b");
-			JSonRenameKey(root["color"], "warmWhite", "w");
-			JSonRenameKey(root["color"], "coldWhite", "c");
-		}
-
-		if (root["state"].empty() && root["color"].isObject())
-		{
-			// The on/off state is omitted in the message, so guess it from the color components (e.g. Fibaro FGRGBW)
-			int r = root["color"]["r"].asInt();
-			int g = root["color"]["g"].asInt();
-			int b = root["color"]["b"].asInt();
-			int w = root["color"]["w"].asInt();
-			int c = root["color"]["c"].asInt();
-			if (r == 0 && g == 0 && b == 0 && w == 0 && c == 0)
-			{
-				root["state"] = "OFF";
-			}
-			else
-				root["state"] = "ON";
-		}
-
-		if (!pSensor->state_value_template.empty())
-		{
-			if (pSensor->state_topic == pSensor->last_topic)
-			{
-				std::string szValue = GetValueFromTemplate(root, pSensor->state_value_template);
-				if (szValue == pSensor->state_on)
-					szSwitchCmd = pSensor->payload_on;
-				else if (szValue == pSensor->state_off)
-					szSwitchCmd = pSensor->payload_off;
-				else
-					szSwitchCmd = szValue;
-			}
-		}
-
-		if (!root["state"].empty())
-		{
-			szSwitchCmd = root["state"].asString();
-		}
-		else if (!root["value"].empty())
-		{
-			szSwitchCmd = root["value"].asString();
-			if (
-				(szSwitchCmd != pSensor->payload_on)
-				&& (szSwitchCmd != pSensor->payload_off)
-				)
-			{
-				if (is_number(szSwitchCmd))
-				{
-					//must be a level
-					level = atoi(szSwitchCmd.c_str());
-
-					if (pSensor->bHave_brightness_scale)
-						level = (int)round((100.0 / pSensor->brightness_scale) * level);
-
-					if (level == 0)
-						szSwitchCmd = "off";
-					else if (level == 100)
-						szSwitchCmd = "on";
-					else
-						szSwitchCmd = "Set Level";
-				}
-			}
-		}
-
-		if (!root["brightness"].empty())
-		{
-			float dLevel = (100.F / pSensor->brightness_scale) * root["brightness"].asInt();
-			level = (int)round(dLevel);
-			if (
-				(szSwitchCmd != pSensor->payload_on)
-				&& (szSwitchCmd != pSensor->payload_off))
-			{
-				if (level == 0)
-					szSwitchCmd = pSensor->payload_off;
-				else if (level == 100)
-					szSwitchCmd = pSensor->payload_on;
-				else
-					szSwitchCmd = "Set Level";
-			}
-			else if ((szSwitchCmd == pSensor->payload_on) && (level > 0) && (level < 100))
-			{
-				szSwitchCmd = "Set Level";
-			}
-		}
-		if (!root["color"].empty())
-		{
-			Json::Value root_color;
-			bool ret = ParseJSon(sColor, root_color);
-			if (ret)
-			{
-				if (root_color.isObject())
-				{
-					color_old.fromJSON(root_color);
-				}
-			}
-
-			bool bReceivedColor = false;
-			//for some nodes "color" = {}, in this case there could be a brightness only status
-			if (!root["color"]["r"].empty())
-			{
-				bReceivedColor = true;
-				color_new.r = root["color"]["r"].asInt();
-			}
-			if (!root["color"]["g"].empty())
-			{
-				bReceivedColor = true;
-				color_new.g = root["color"]["g"].asInt();
-			}
-			if (!root["color"]["b"].empty())
-			{
-				bReceivedColor = true;
-				color_new.b = root["color"]["b"].asInt();
-			}
-			if (!root["color"]["c"].empty())
-			{
-				bReceivedColor = true;
-				color_new.cw = root["color"]["c"].asInt();
-			}
-			if (!root["color"]["w"].empty())
-			{
-				bReceivedColor = true;
-				color_new.ww = root["color"]["w"].asInt();
-			}
-
-			if ((!root["color"]["x"].empty()) && (!root["color"]["y"].empty()))
-			{
-				bReceivedColor = true;
-				// convert xy to rgb
-				_tColor::RgbFromXY(root["color"]["x"].asDouble(), root["color"]["y"].asDouble(), color_new.r, color_new.g, color_new.b);
-			}
-			if ((!root["color"]["h"].empty()) && (!root["color"]["s"].empty()))
-			{
-				bReceivedColor = true;
-				// convert hue/sat to rgb
-				float iHue = float(root["color"]["h"].asDouble()) * 360.0F / 65535.0F;
-				float iSat = float(root["color"]["s"].asDouble()) / 254.0F;
-				int r = 0;
-				int g = 0;
-				int b = 0;
-				hsb2rgb(iHue, iSat, 1.0F, r, g, b, 255);
-				color_new.r = (uint8_t)r;
-				color_new.g = (uint8_t)g;
-				color_new.b = (uint8_t)b;
-			}
-
-			if (!root["color_temp"].empty())
-			{
-				bReceivedColor = true;
-				float CT = root["color_temp"].asFloat();
-				float iCt = ((float(CT) - pSensor->min_mireds) / (pSensor->max_mireds - pSensor->min_mireds)) * 255.0F;
-				_tColor color_CT = _tColor((uint8_t)round(iCt), ColorModeTemp);
-				color_new.t = color_CT.t;
-				color_new.cw = color_CT.cw;
-				color_new.ww = color_CT.ww;
-			}
-
-			std::string szColorOld = color_old.toJSONString();
-			std::string szColorNew = color_new.toJSONString();
-			bHaveColorChange = szColorOld != szColorNew;
-			if (bReceivedColor)
-				bDoNotUpdateLevel = true;
-		}
-		else if (!root["color_temp"].empty())
-		{
-			float CT = root["color_temp"].asFloat();
-			float iCt = ((float(CT) - pSensor->min_mireds) / (pSensor->max_mireds - pSensor->min_mireds)) * 255.0F;
-			color_new = _tColor((uint8_t)round(iCt), ColorModeTemp);
-			std::string szColorOld = color_old.toJSONString();
-			std::string szColorNew = color_new.toJSONString();
-			bHaveColorChange = szColorOld != szColorNew;
-			bDoNotUpdateLevel = true;
-		}
-	}
-	else
-	{
-		//not json
-		if (is_number(szSwitchCmd))
-		{
-			//must be a level
-			level = atoi(szSwitchCmd.c_str());
-			if (pSensor->component_type == "binary_sensor" && szSwitchCmd == pSensor->payload_off)
-				szSwitchCmd = "off";
-			else if (pSensor->component_type == "binary_sensor" && szSwitchCmd == pSensor->payload_on)
-				szSwitchCmd = "on";
-			else if (pSensor->component_type == "lock" && szSwitchCmd == pSensor->state_unlocked)
-				szSwitchCmd = "off";
-			else if (pSensor->component_type == "lock" && szSwitchCmd == pSensor->state_locked)
-				szSwitchCmd = "on";
-			else if (pSensor->component_type == "lock" && !pSensor->value_template.empty())
-				// ignore states defined in the value template until value_template support is built in
-				return;
-
-			else
-			{
-				if (level == 0)
-					szSwitchCmd = "off";
-				else {
-					szSwitchCmd = "Set Level";
-					if (pSensor->bHave_brightness_scale)
-						level = (int)round((100.0 / pSensor->brightness_scale) * level);
-					else if (!pSensor->percentage_value_template.empty())
-					{
-						level = (int)round((100.0 / 255) * level);
-					}
-				}
-			}
-		}
-		else
-		{
-			if (pSensor->component_type == "binary_sensor")
-			{
-				if (szSwitchCmd == pSensor->payload_off)
-					szSwitchCmd = "off";
-				else if (szSwitchCmd == pSensor->payload_on)
-					szSwitchCmd = "on";
-			}
-			else if (pSensor->component_type == "lock")
-			{
-				if (szSwitchCmd == pSensor->state_unlocked)
-					szSwitchCmd = "off";
-				else if (szSwitchCmd == pSensor->state_locked)
-					szSwitchCmd = "on";
-			}
-		}
-	}
-
-	if (level > 100)
-		level = 100;
-
-	int slevel = atoi(sValue.c_str());
-	bool bHaveLevelChange = (slevel != level);
-
-
-	if (szSwitchCmd == pSensor->payload_on)
-		bOn = true;
-	else if (szSwitchCmd == pSensor->payload_off)
-		bOn = false;
-	else
-		bOn = (szSwitchCmd == "on") || (szSwitchCmd == "ON") || (szSwitchCmd == "true") || (szSwitchCmd == "Set Level");
-
-	// check if we have a change, if not do not update it
 	if (
 		(switchType != STYPE_PushOn)
 		&& (switchType != STYPE_PushOff)
 		)
 	{
-		if ((!bOn) && (nValue == 0))
+		bool bOn = false;
+		bool bIsJSON = false;
+		Json::Value root;
+		if (pSensor->bIsJSON)
 		{
-			if (!bHaveLevelChange)
+			bool ret = ParseJSon(pSensor->last_json_value, root);
+			if (ret)
 			{
-				if (!bHaveColorChange)
-					return;
+				bIsJSON = root.isObject();
 			}
 		}
-		if ((bOn && (nValue != 0)))
+
+		_tColor color_old;
+		color_old.mode = ColorModeCustom;
+
+		if (bIsJSON)
 		{
-			// Check Level
-			int slevel = atoi(sValue.c_str());
-			if (slevel == level)
+			if (root["value"].isObject() && (!root["value"]["red"].empty() && root["value"]["r"].empty()))
 			{
-				if (!bHaveColorChange)
-					return;
+				// Color values are defined in "value" object instead of "color" as expected by domoticz (e.g. Fibaro FGRGBW)
+				root["color"] = root["value"];
+				root.removeMember("value");
 			}
-		}
-		/*
-				if (bOn && (level == 0) && (slevel != 0)) {
-					level = slevel; //set level to last level (can't have a light that is on with a level of 0)
+
+			if (root["color"].isObject() && !root["color"]["red"].empty())
+			{
+				// The device uses "red", "green"... to specify the color components, default for domoticz would be "r", "g"... (e.g. Fibaro FGRGBW)
+				JSonRenameKey(root["color"], "red", "r");
+				JSonRenameKey(root["color"], "green", "g");
+				JSonRenameKey(root["color"], "blue", "b");
+				JSonRenameKey(root["color"], "warmWhite", "w");
+				JSonRenameKey(root["color"], "coldWhite", "c");
+			}
+
+			if (root["state"].empty() && root["color"].isObject())
+			{
+				// The on/off state is omitted in the message, so guess it from the color components (e.g. Fibaro FGRGBW)
+				int r = root["color"]["r"].asInt();
+				int g = root["color"]["g"].asInt();
+				int b = root["color"]["b"].asInt();
+				int w = root["color"]["w"].asInt();
+				int c = root["color"]["c"].asInt();
+				if (r == 0 && g == 0 && b == 0 && w == 0 && c == 0)
+				{
+					root["state"] = "OFF";
+				}
+				else
+					root["state"] = "ON";
+			}
+
+			if (!pSensor->state_value_template.empty())
+			{
+				if (pSensor->state_topic == pSensor->last_topic)
+				{
+					std::string szValue = GetValueFromTemplate(root, pSensor->state_value_template);
+					if (szValue == pSensor->state_on)
+						szSwitchCmd = pSensor->payload_on;
+					else if (szValue == pSensor->state_off)
+						szSwitchCmd = pSensor->payload_off;
+					else
+						szSwitchCmd = szValue;
+				}
+			}
+
+			if (!root["state"].empty())
+			{
+				szSwitchCmd = root["state"].asString();
+			}
+			else if (!root["value"].empty())
+			{
+				szSwitchCmd = root["value"].asString();
+				if (
+					(szSwitchCmd != pSensor->payload_on)
+					&& (szSwitchCmd != pSensor->payload_off)
+					)
+				{
+					if (is_number(szSwitchCmd))
+					{
+						//must be a level
+						level = atoi(szSwitchCmd.c_str());
+
+						if (pSensor->bHave_brightness_scale)
+							level = (int)round((100.0 / pSensor->brightness_scale) * level);
+
+						if (level == 0)
+							szSwitchCmd = "off";
+						else if (level == 100)
+							szSwitchCmd = "on";
+						else
+							szSwitchCmd = "Set Level";
+					}
+				}
+			}
+
+			if (!root["brightness"].empty())
+			{
+				float dLevel = (100.F / pSensor->brightness_scale) * root["brightness"].asInt();
+				level = (int)round(dLevel);
+				if (
+					(szSwitchCmd != pSensor->payload_on)
+					&& (szSwitchCmd != pSensor->payload_off))
+				{
+					if (level == 0)
+						szSwitchCmd = pSensor->payload_off;
+					else if (level == 100)
+						szSwitchCmd = pSensor->payload_on;
+					else
+						szSwitchCmd = "Set Level";
+				}
+				else if ((szSwitchCmd == pSensor->payload_on) && (level > 0) && (level < 100))
+				{
 					szSwitchCmd = "Set Level";
 				}
-		*/
-	}
+			}
+			if (!root["color"].empty())
+			{
+				Json::Value root_color;
+				bool ret = ParseJSon(sColor, root_color);
+				if (ret)
+				{
+					if (root_color.isObject())
+					{
+						color_old.fromJSON(root_color);
+					}
+				}
 
-	sValue = std_format("%d", level);
+				bool bReceivedColor = false;
+				//for some nodes "color" = {}, in this case there could be a brightness only status
+				if (!root["color"]["r"].empty())
+				{
+					bReceivedColor = true;
+					color_new.r = root["color"]["r"].asInt();
+				}
+				if (!root["color"]["g"].empty())
+				{
+					bReceivedColor = true;
+					color_new.g = root["color"]["g"].asInt();
+				}
+				if (!root["color"]["b"].empty())
+				{
+					bReceivedColor = true;
+					color_new.b = root["color"]["b"].asInt();
+				}
+				if (!root["color"]["c"].empty())
+				{
+					bReceivedColor = true;
+					color_new.cw = root["color"]["c"].asInt();
+				}
+				if (!root["color"]["w"].empty())
+				{
+					bReceivedColor = true;
+					color_new.ww = root["color"]["w"].asInt();
+				}
 
-	if (pSensor->devType != pTypeColorSwitch)
-	{
-		if (szSwitchCmd == "Set Level")
-		{
-			nValue = gswitch_sSetLevel;
+				if ((!root["color"]["x"].empty()) && (!root["color"]["y"].empty()))
+				{
+					bReceivedColor = true;
+					// convert xy to rgb
+					_tColor::RgbFromXY(root["color"]["x"].asDouble(), root["color"]["y"].asDouble(), color_new.r, color_new.g, color_new.b);
+				}
+				if ((!root["color"]["h"].empty()) && (!root["color"]["s"].empty()))
+				{
+					bReceivedColor = true;
+					// convert hue/sat to rgb
+					float iHue = float(root["color"]["h"].asDouble()) * 360.0F / 65535.0F;
+					float iSat = float(root["color"]["s"].asDouble()) / 254.0F;
+					int r = 0;
+					int g = 0;
+					int b = 0;
+					hsb2rgb(iHue, iSat, 1.0F, r, g, b, 255);
+					color_new.r = (uint8_t)r;
+					color_new.g = (uint8_t)g;
+					color_new.b = (uint8_t)b;
+				}
+
+				if (!root["color_temp"].empty())
+				{
+					bReceivedColor = true;
+					float CT = root["color_temp"].asFloat();
+					float iCt = ((float(CT) - pSensor->min_mireds) / (pSensor->max_mireds - pSensor->min_mireds)) * 255.0F;
+					_tColor color_CT = _tColor((uint8_t)round(iCt), ColorModeTemp);
+					color_new.t = color_CT.t;
+					color_new.cw = color_CT.cw;
+					color_new.ww = color_CT.ww;
+				}
+
+				std::string szColorOld = color_old.toJSONString();
+				std::string szColorNew = color_new.toJSONString();
+				bHaveColorChange = szColorOld != szColorNew;
+				if (bReceivedColor)
+					bDoNotUpdateLevel = true;
+			}
+			else if (!root["color_temp"].empty())
+			{
+				float CT = root["color_temp"].asFloat();
+				float iCt = ((float(CT) - pSensor->min_mireds) / (pSensor->max_mireds - pSensor->min_mireds)) * 255.0F;
+				color_new = _tColor((uint8_t)round(iCt), ColorModeTemp);
+				std::string szColorOld = color_old.toJSONString();
+				std::string szColorNew = color_new.toJSONString();
+				bHaveColorChange = szColorOld != szColorNew;
+				bDoNotUpdateLevel = true;
+			}
 		}
 		else
 		{
-			nValue = (bOn) ? gswitch_sOn : gswitch_sOff;
+			//not json
+			if (is_number(szSwitchCmd))
+			{
+				//must be a level
+				level = atoi(szSwitchCmd.c_str());
+				if (pSensor->component_type == "binary_sensor" && szSwitchCmd == pSensor->payload_off)
+					szSwitchCmd = "off";
+				else if (pSensor->component_type == "binary_sensor" && szSwitchCmd == pSensor->payload_on)
+					szSwitchCmd = "on";
+				else if (pSensor->component_type == "lock" && szSwitchCmd == pSensor->state_unlocked)
+					szSwitchCmd = "off";
+				else if (pSensor->component_type == "lock" && szSwitchCmd == pSensor->state_locked)
+					szSwitchCmd = "on";
+				else if (pSensor->component_type == "lock" && !pSensor->value_template.empty())
+					// ignore states defined in the value template until value_template support is built in
+					return;
+
+				else
+				{
+					if (level == 0)
+						szSwitchCmd = "off";
+					else {
+						szSwitchCmd = "Set Level";
+						if (pSensor->bHave_brightness_scale)
+							level = (int)round((100.0 / pSensor->brightness_scale) * level);
+						else if (!pSensor->percentage_value_template.empty())
+						{
+							level = (int)round((100.0 / 255) * level);
+						}
+					}
+				}
+			}
+			else
+			{
+				if (pSensor->component_type == "binary_sensor")
+				{
+					if (szSwitchCmd == pSensor->payload_off)
+						szSwitchCmd = "off";
+					else if (szSwitchCmd == pSensor->payload_on)
+						szSwitchCmd = "on";
+				}
+				else if (pSensor->component_type == "lock")
+				{
+					if (szSwitchCmd == pSensor->state_unlocked)
+						szSwitchCmd = "off";
+					else if (szSwitchCmd == pSensor->state_locked)
+						szSwitchCmd = "on";
+				}
+			}
 		}
-	}
-	else
-	{
+
+		if (level > 100)
+			level = 100;
+
+		int slevel = atoi(sValue.c_str());
+		bHaveLevelChange = (slevel != level);
+
+
+		if (szSwitchCmd == pSensor->payload_on)
+			bOn = true;
+		else if (szSwitchCmd == pSensor->payload_off)
+			bOn = false;
+		else
+			bOn = (szSwitchCmd == "on") || (szSwitchCmd == "ON") || (szSwitchCmd == "true") || (szSwitchCmd == "Set Level");
+
+		// check if we have a change, if not do not update it
 		if (
-			(szSwitchCmd == "Set Level")
-			|| (bOn && (level > 0) && (sValue != pSensor->payload_on))
+			(switchType != STYPE_PushOn)
+			&& (switchType != STYPE_PushOff)
 			)
 		{
-			nValue = Color_SetBrightnessLevel;
+			if ((!bOn) && (nValue == 0))
+			{
+				if (!bHaveLevelChange)
+				{
+					if (!bHaveColorChange)
+						return;
+				}
+			}
+			if ((bOn && (nValue != 0)))
+			{
+				// Check Level
+				int slevel = atoi(sValue.c_str());
+				if (slevel == level)
+				{
+					if (!bHaveColorChange)
+						return;
+				}
+			}
+		}
+		sValue = std_format("%d", level);
+
+		if (pSensor->devType != pTypeColorSwitch)
+		{
+			if (szSwitchCmd == "Set Level")
+			{
+				nValue = gswitch_sSetLevel;
+			}
+			else
+			{
+				nValue = (bOn) ? gswitch_sOn : gswitch_sOff;
+			}
 		}
 		else
-			nValue = (bOn) ? Color_LedOn : Color_LedOff;
+		{
+			if (
+				(szSwitchCmd == "Set Level")
+				|| (bOn && (level > 0) && (sValue != pSensor->payload_on))
+				)
+			{
+				nValue = Color_SetBrightnessLevel;
+			}
+			else
+				nValue = (bOn) ? Color_LedOn : Color_LedOff;
+		}
+	}
+	else if (switchType == STYPE_PushOn)
+	{
+		nValue = gswitch_sOn;
+	}
+	else if (switchType == STYPE_PushOff)
+	{
+		nValue = gswitch_sOff;
 	}
 
 	pSensor->nValue = nValue;

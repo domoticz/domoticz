@@ -2132,9 +2132,6 @@
     <ClInclude Include="..\hardware\Buienradar.h">
       <Filter>Devices\Buienradar</Filter>
     </ClInclude>
-    <ClInclude Include="..\main\mosquitto_helper.h">
-      <Filter>MQTT</Filter>
-    </ClInclude>
     <ClInclude Include="..\main\NotificationObserver.h">
       <Filter>EventSystem</Filter>
     </ClInclude>
@@ -2233,6 +2230,9 @@
     </ClInclude>
     <ClInclude Include="..\hardware\MitsubishiWF.h">
       <Filter>Devices\Mitsubishi_WF_RAC</Filter>
+    </ClInclude>
+    <ClInclude Include="..\main\mosquitto_helper.h">
+      <Filter>Devices\MQTT</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -2920,9 +2920,6 @@
     <ClCompile Include="..\hardware\Buienradar.cpp">
       <Filter>Devices\Buienradar</Filter>
     </ClCompile>
-    <ClCompile Include="..\main\mosquitto_helper.cpp">
-      <Filter>MQTT</Filter>
-    </ClCompile>
     <ClCompile Include="..\main\LuaTable.cpp">
       <Filter>EventSystem\Lua</Filter>
     </ClCompile>
@@ -3003,6 +3000,9 @@
     </ClCompile>
     <ClCompile Include="..\hardware\MitsubishiWF.cpp">
       <Filter>Devices\Mitsubishi_WF_RAC</Filter>
+    </ClCompile>
+    <ClCompile Include="..\main\mosquitto_helper.cpp">
+      <Filter>Devices\MQTT</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
