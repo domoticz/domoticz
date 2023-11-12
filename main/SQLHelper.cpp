@@ -39,7 +39,7 @@
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
 
-#define DB_VERSION 164
+#define DB_VERSION 165
 
 #define DEFAULT_ADMINUSER "admin"
 #define DEFAULT_ADMINPWD "domoticz"
@@ -3079,6 +3079,25 @@ bool CSQLHelper::OpenDatabase()
 							safe_query("UPDATE Notifications SET Params='%q' WHERE (ID=%q)", szParams.c_str(), idx2.c_str());
 						}
 					}
+				}
+			}
+		}
+		if (dbversion < 165)
+		{
+			//Make Enphase counter offset related to hardware ID
+			result = m_sql.safe_query("SELECT ID FROM HARDWARE WHERE ([Type]==%d)", HTYPE_EnphaseAPI);
+			if (!result.empty())
+			{
+				int hwID = atoi(result[0][0].c_str());
+				std::string szOldName = "EnphaseOffset_Production";
+				result = m_sql.safe_query("SELECT ID, Value FROM UserVariables WHERE (Name=='%q')", szOldName.c_str());
+				if (!result.empty())
+				{
+					int vID = atoi(result[0][0].c_str());
+					std::string szValue = result[0][1];
+					std::string szNewName = szOldName + "_" + std::to_string(hwID);
+					m_sql.safe_query("INSERT INTO UserVariables (Name, ValueType, Value) VALUES ('%q',%d,'%q')", szNewName.c_str(), USERVARTYPE_STRING, szValue.c_str());
+					m_sql.safe_query("DELETE FROM UserVariables WHERE (ID=%d)", vID);
 				}
 			}
 		}

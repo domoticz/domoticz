@@ -563,6 +563,7 @@
     <ClInclude Include="..\hardware\Comm5Serial.h" />
     <ClInclude Include="..\hardware\Comm5SMTCP.h" />
     <ClInclude Include="..\hardware\Comm5TCP.h" />
+    <ClInclude Include="..\hardware\CounterHelper.h" />
     <ClInclude Include="..\hardware\csocket.h" />
     <ClInclude Include="..\hardware\CurrentCostMeterBase.h" />
     <ClInclude Include="..\hardware\CurrentCostMeterSerial.h" />
@@ -857,6 +858,12 @@
     <ClCompile Include="..\hardware\Comm5Serial.cpp" />
     <ClCompile Include="..\hardware\Comm5SMTCP.cpp" />
     <ClCompile Include="..\hardware\Comm5TCP.cpp" />
+    <ClCompile Include="..\hardware\CounterHelper.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Use</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Use</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Use</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Use</PrecompiledHeader>
+    </ClCompile>
     <ClCompile Include="..\hardware\csocket.cpp" />
     <ClCompile Include="..\hardware\CurrentCostMeterBase.cpp" />
     <ClCompile Include="..\hardware\CurrentCostMeterSerial.cpp" />

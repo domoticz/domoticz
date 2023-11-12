@@ -2,6 +2,7 @@
 
 #include "DomoticzHardware.h"
 #include "hardwaretypes.h"
+#include "CounterHelper.h"
 
 namespace Json
 {
@@ -84,6 +85,8 @@ private:
 	uint16_t m_usIPPort;
 
 	_tAircoStatus m_AircoStatus;
+
+	CounterHelper m_kWhCounter;
 
 	std::shared_ptr<std::thread> m_thread;
 };

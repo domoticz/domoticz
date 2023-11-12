@@ -2234,6 +2234,9 @@
     <ClInclude Include="..\main\mosquitto_helper.h">
       <Filter>Devices\MQTT</Filter>
     </ClInclude>
+    <ClInclude Include="..\hardware\CounterHelper.h">
+      <Filter>Devices</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\webserver\Base64.cpp">
@@ -3003,6 +3006,9 @@
     </ClCompile>
     <ClCompile Include="..\main\mosquitto_helper.cpp">
       <Filter>Devices\MQTT</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\CounterHelper.cpp">
+      <Filter>Devices</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

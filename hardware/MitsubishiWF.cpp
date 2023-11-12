@@ -73,6 +73,8 @@ MitsubishiWF::MitsubishiWF(const int ID, const std::string& IPAddress, const uns
 	if (PollInterval > 300)
 		PollInterval = 300;
 	m_poll_interval = PollInterval;
+
+	m_kWhCounter.Init("MitsubishiWF_kWh", this);
 }
 
 bool MitsubishiWF::StartHardware()
@@ -982,7 +984,7 @@ void MitsubishiWF::ParseAirconStat(const _tAircoStatus& aircoStatus)
 	
 	if (aircoStatus.bHaveElectric)
 	{
-		SendKwhMeter(1, 1, 255, 0, aircoStatus.Electric_kWh_Used, "Electricity used");
+		m_kWhCounter.SendKwhMeter(1, 1, 255, 0, aircoStatus.Electric_kWh_Used, "Electricity used");
 	}
 }
 

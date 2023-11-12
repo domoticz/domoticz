@@ -17,6 +17,7 @@ enum _eDebugLevel : uint32_t;
 class CDomoticzHardwareBase : public StoppableTask
 {
 	friend class MainWorker;
+	friend class CounterHelper;
 
 	public:
 	CDomoticzHardwareBase();
