@@ -44,7 +44,7 @@ void CounterHelper::SendKwhMeter(int NodeID, int ChildID, int BatteryLevel, doub
 
 			rTotal = m_CounterOffset + mtotal;
 		}
-		m_pHardwareBase->SendKwhMeter(NodeID, ChildID, BatteryLevel, musage, static_cast<double>(rTotal) / 1000.0, defaultname, RssiLevel);
+		m_pHardwareBase->SendKwhMeter(NodeID, ChildID, BatteryLevel, musage, static_cast<double>(rTotal), defaultname, RssiLevel);
 		m_nLastCounterValue = rTotal;
 	}
 

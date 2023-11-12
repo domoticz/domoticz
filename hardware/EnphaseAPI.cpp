@@ -131,18 +131,8 @@ EnphaseAPI::EnphaseAPI(const int ID, const std::string& IPAddress, const unsigne
 	}
 	//(We can probably not use them both at the same time)
 
-	//Retreive production counter offer
-	szName = "EnphaseOffset_Production";
-	result = m_sql.safe_query("SELECT ID, Value FROM UserVariables WHERE (Name=='%q')", szName.c_str());
-	if (result.empty())
-	{
-		m_sql.safe_query("INSERT INTO UserVariables (Name, ValueType, Value) VALUES ('%q',%d,'%q')", szName.c_str(), USERVARTYPE_STRING, "0");
-		result = m_sql.safe_query("SELECT ID, Value FROM UserVariables WHERE (Name=='%q')", szName.c_str());
-	}
-	if (!result.empty())
-	{
-		m_nProductionCounterOffset = std::stoull(result[0][1]);
-	}
+	//Init Production counter
+	m_ProductionCounter.Init("EnphaseOffset_Production_" + std::to_string(m_HwdID), this);
 }
 
 bool EnphaseAPI::StartHardware()
@@ -827,21 +817,7 @@ void EnphaseAPI::parseProduction(const Json::Value& root)
 	uint64_t mtotal = reading["whLifetime"].asUInt64();
 	if (mtotal != 0)
 	{
-		uint64_t rTotal = m_nProductionCounterOffset + mtotal;
-		if (
-			(rTotal < m_nLastProductionCounterValue)
-			&& (m_nLastProductionCounterValue != 0)
-			)
-		{
-			m_nProductionCounterOffset = m_nLastProductionCounterValue;
-
-			std::string szName = "EnphaseOffset_Production";
-			m_sql.safe_query("UPDATE UserVariables SET Value='%q', LastUpdate='%s' WHERE (Name=='%q')", std::to_string(m_nProductionCounterOffset).c_str(), TimeToString(nullptr, TF_DateTime).c_str(), szName.c_str());
-
-			rTotal = m_nProductionCounterOffset + mtotal;
-		}
-		SendKwhMeter(m_HwdID, 1, 255, musage, static_cast<double>(rTotal) / 1000.0, "Enphase kWh Production");
-		m_nLastProductionCounterValue = rTotal;
+		m_ProductionCounter.SendKwhMeter(m_HwdID, 1, 255, musage, mtotal / 1000.0, "Enphase kWh Production");
 	}
 }
 
