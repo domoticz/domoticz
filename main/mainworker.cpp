@@ -6027,49 +6027,46 @@ void MainWorker::decode_ColorSwitch(const CDomoticzHardwareBase* pHardware, cons
 	char szValueTmp[100];
 	sprintf(szValueTmp, "%u", value);
 	std::string sValue = szValueTmp;
-	uint64_t DevRowIdx = m_sql.UpdateValue(pHardware->m_HwdID, ID.c_str(), Unit, devType, subType, 12, -1, cmnd, sValue.c_str(), procResult.DeviceName, true, procResult.Username.c_str());
-	if (DevRowIdx == (uint64_t)-1)
-		return;
-	CheckSceneCode(DevRowIdx, devType, subType, cmnd, szTmp, procResult.DeviceName);
+
+	uint64_t DevRowIdx = (uint64_t)-1;
+
+	auto result = m_sql.safe_query(
+		"SELECT ID FROM DeviceStatus WHERE (HardwareID=%d AND DeviceID='%q' AND Unit=%d AND Type=%d AND SubType=%d)",
+		pHardware->m_HwdID, ID.c_str(), Unit, devType, subType);
+	if (!result.empty())
+	{
+		DevRowIdx = std::stoull(result[0][0]);
+	}
+	else
+	{
+		DevRowIdx = m_sql.UpdateValue(pHardware->m_HwdID, ID.c_str(), Unit, devType, subType, 12, -1, cmnd, sValue.c_str(), procResult.DeviceName, true, procResult.Username.c_str());
+		if (DevRowIdx == (uint64_t)-1)
+			return;
+	}
 
 	// TODO: Why don't we let database update be handled by CSQLHelper::UpdateValue?
 	if (cmnd == Color_SetBrightnessLevel || cmnd == Color_SetColor)
 	{
-		std::vector<std::vector<std::string> > result;
-		result = m_sql.safe_query(
-			"SELECT ID,Name FROM DeviceStatus WHERE (HardwareID=%d AND DeviceID='%q' AND Unit=%d AND Type=%d AND SubType=%d)",
-			pHardware->m_HwdID, ID.c_str(), Unit, devType, subType);
-		if (!result.empty())
-		{
-			uint64_t ulID = std::stoull(result[0][0]);
-
-			//store light level
-			m_sql.safe_query(
-				"UPDATE DeviceStatus SET LastLevel='%d' WHERE (ID = %" PRIu64 ")",
-				value,
-				ulID);
-		}
-
+		//store light level
+		m_sql.safe_query(
+			"UPDATE DeviceStatus SET LastLevel='%d' WHERE (ID = %" PRIu64 ")",
+			value,
+			DevRowIdx);
 	}
 
 	if (cmnd == Color_SetColor)
 	{
-		std::vector<std::vector<std::string> > result;
-		result = m_sql.safe_query(
-			"SELECT ID,Name FROM DeviceStatus WHERE (HardwareID=%d AND DeviceID='%q' AND Unit=%d AND Type=%d AND SubType=%d)",
-			pHardware->m_HwdID, ID.c_str(), Unit, devType, subType);
-		if (!result.empty())
-		{
-			uint64_t ulID = std::stoull(result[0][0]);
-
-			//store color in database
-			m_sql.safe_query(
-				"UPDATE DeviceStatus SET Color='%q' WHERE (ID = %" PRIu64 ")",
-				color.toJSONString().c_str(),
-				ulID);
-		}
-
+		//store color in database
+		m_sql.safe_query(
+			"UPDATE DeviceStatus SET Color='%q' WHERE (ID = %" PRIu64 ")",
+			color.toJSONString().c_str(),
+			DevRowIdx);
 	}
+
+	DevRowIdx = m_sql.UpdateValue(pHardware->m_HwdID, ID.c_str(), Unit, devType, subType, 12, -1, cmnd, sValue.c_str(), procResult.DeviceName, true, procResult.Username.c_str());
+	if (DevRowIdx == (uint64_t)-1)
+		return;
+	CheckSceneCode(DevRowIdx, devType, subType, cmnd, szTmp, procResult.DeviceName);
 
 	procResult.DeviceRowIdx = DevRowIdx;
 }
