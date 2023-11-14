@@ -863,6 +863,8 @@ Device.create = function (item) {
         (item.SwitchType === 'Selector')
 	  ) {
         type = item.SwitchType.toLowerCase()
+    } else if (item.Type === 'RFXMeter') {
+        type = 'counter'; 
     } else {
         type = item.TypeImg.toLowerCase();
         if (item.CustomImage !== 0) {
@@ -1444,7 +1446,7 @@ function Counter(item) {
             if (item.SubType == "Gas") {
               this.image = "images/Gas48.png";
             } else {
-              this.image = "images/"+item.Image+".png";
+              this.image = "images/"+item.Image+"48_On.png";
             }
         }
         this.LogLink = this.onClick = "window.location.href = '#/Devices/" + this.index + "/Log'";
