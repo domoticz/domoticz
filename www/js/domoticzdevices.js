@@ -1541,6 +1541,7 @@ function Custom(item) {
             this.image = "images/Custom.png";
         }
         this.LogLink = this.onClick = "window.location.href = '#/Devices/" + this.index + "/Log'";
+	this.status = this.data;
         this.data = '';
     }
 }
