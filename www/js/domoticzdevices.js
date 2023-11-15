@@ -864,7 +864,9 @@ Device.create = function (item) {
 	  ) {
         type = item.SwitchType.toLowerCase()
     } else if (item.Type === 'RFXMeter') {
-        type = 'counter'; 
+        type = 'counter';
+    } else if (item.Type === 'Current') {
+        type = 'current';
     } else {
         type = item.TypeImg.toLowerCase();
         if (item.CustomImage !== 0) {
@@ -1500,34 +1502,46 @@ function Current(item) {
             case "Energy":
                 this.LogLink = this.onClick = "window.location.href = '#/Devices/" + this.index + "/Log'";
                 this.smallStatus = this.data;
+                this.smallStatus = this.smallStatus.split(', ')[0];			
                 break;
             case "Usage":
                 this.LogLink = this.onClick = "window.location.href = '#/Devices/" + this.index + "/Log'";
+                this.smallStatus = this.smallStatus.split(', ')[0];			
                 break;
             case "General":
                 switch (this.subtype) {
                     case "kWh":
                         this.LogLink = this.onClick = "window.location.href = '#/Devices/" + this.index + "/Log'";
                         this.smallStatus = this.data;
+                        this.smallStatus = this.smallStatus.split(', ')[0];				
                         break;
                     case "Voltage":
                         this.LogLink = this.onClick = "window.location.href = '#/Devices/" + this.index + "/Log'";
                         this.smallStatus = this.data;
+                        this.smallStatus = this.smallStatus.split(', ')[0];				
                         break;
                     case "Current":		
                         this.LogLink = this.onClick = "window.location.href = '#/Devices/" + this.index + "/Log'";
                         this.smallStatus = this.data;
+                        this.smallStatus = this.smallStatus.split(', ')[0];				
                         break;
                     default:
                         this.LogLink = this.onClick = "ShowCurrentLog('#" + Device.contentTag + "','" + Device.backFunction + "','" + this.index + "','" + this.name + "', '" + this.switchTypeVal + "');";
-                        break;
+                        this.smallStatus = this.smallStatus.split(', ')[0];
+			break;
                 }
                 break;
+            case "Current":
+                this.LogLink = this.onClick = "ShowCurrentLog('#" + Device.contentTag + "','" + Device.backFunction + "','" + this.index + "','" + this.name + "', '" + this.switchTypeVal + "');";
+                this.smallStatus = this.data;
+                this.status = this.data;
+                this.data = '';
+                break;			
             default:
                 this.LogLink = this.onClick = "ShowCurrentLog('#" + Device.contentTag + "','" + Device.backFunction + "','" + this.index + "','" + this.name + "', '" + this.switchTypeVal + "');";
-                break;
+                this.smallStatus = this.smallStatus.split(', ')[0];
+		break;
         }
-        this.smallStatus = this.smallStatus.split(', ')[0];
     }
 }
 Current.inheritsFrom(UtilitySensor);
