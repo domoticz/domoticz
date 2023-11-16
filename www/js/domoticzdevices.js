@@ -1176,7 +1176,7 @@ Device.MakeFavorite = function (id, isfavorite) {
 function Sensor(item) {
     if (arguments.length != 0) {
         this.parent.constructor(item);
-       
+
         this.image = "images/";
 		
         if ((item.Type == "RFXMeter") || (item.Type == "YouLess Meter") || (item.SubType == "Counter Incremental") || (item.SubType == "Managed Counter")) {
@@ -1465,6 +1465,7 @@ function Counter(item) {
                 this.status += ', ' + $.t("Return") + ': ' + item.CounterDelivToday;
             }
         }
+		this.smallStatus = this.data;
     }
 }
 Counter.inheritsFrom(UtilitySensor);
@@ -1484,6 +1485,7 @@ function Current(item) {
     if (arguments.length != 0) {
         this.parent.constructor(item);
         this.status = '';
+
         if (typeof item.Usage != 'undefined') {
             this.status = (item.Usage != this.data) ? item.Usage : '';
         }
@@ -1529,7 +1531,6 @@ function Current(item) {
                 this.LogLink = this.onClick = "ShowCurrentLog('#" + Device.contentTag + "','" + Device.backFunction + "','" + this.index + "','" + this.name + "', '" + this.switchTypeVal + "');";
                 break;
         }
-        this.smallStatus = this.smallStatus.split(', ')[0];
     }
 }
 Current.inheritsFrom(UtilitySensor);
