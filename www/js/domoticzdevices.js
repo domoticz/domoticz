@@ -1452,13 +1452,15 @@ function Counter(item) {
         this.LogLink = this.onClick = "window.location.href = '#/Devices/" + this.index + "/Log'";
 
         if (typeof item.CounterToday != 'undefined') {
-            this.status += ' ' + $.t("Today") + ': ' + item.CounterToday;
-            this.smallStatus = item.CounterToday;
+			this.status = this.data;
+			this.data = item.CounterToday;
         }
         if (typeof item.CounterDeliv != 'undefined') {
+			this.data = this.status;
+			this.status = $.t("Usage") + ': ' + item.CounterToday;
             if (item.CounterDeliv != 0) {
                 if (item.UsageDeliv.charAt(0) != 0) {
-                    this.status += '-' + item.UsageDeliv;
+                    this.data += '-' + item.UsageDeliv;
                 }
                 this.status += ', ' + $.t("Return") + ': ' + item.CounterDelivToday;
             }
