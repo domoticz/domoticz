@@ -1451,11 +1451,11 @@ function Counter(item) {
         }
         this.LogLink = this.onClick = "window.location.href = '#/Devices/" + this.index + "/Log'";
 
-	this.smallStatus = this.data;
+        this.smallStatus = this.data;
         if (typeof item.CounterToday != 'undefined') {
 			this.status = this.data;
 			this.data = item.CounterToday;
-			this.smallStatus = item.CounterToday;			
+			this.smallStatus = item.CounterToday;
         }
         if (typeof item.CounterDeliv != 'undefined') {
 			this.data = this.status;
@@ -1496,7 +1496,7 @@ function Current(item) {
         if (typeof item.CounterDeliv != 'undefined') {
             if (item.CounterDeliv != 0) {
                 if (item.UsageDeliv.charAt(0) != 0) {
-                    this.status += '-' + item.UsageDeliv;
+                    this.status += ' -' + item.UsageDeliv;
                 }
                 this.status += ', ' + $.t("Return") + ': ' + item.CounterDelivToday;
             }
@@ -1552,7 +1552,7 @@ function Custom(item) {
         }
         this.LogLink = this.onClick = "window.location.href = '#/Devices/" + this.index + "/Log'";
         this.status = this.data;
-	this.data = '';
+        this.data = '';
     }
 }
 Custom.inheritsFrom(UtilitySensor);
