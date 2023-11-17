@@ -1451,21 +1451,22 @@ function Counter(item) {
         }
         this.LogLink = this.onClick = "window.location.href = '#/Devices/" + this.index + "/Log'";
 
+	this.smallStatus = this.data;
         if (typeof item.CounterToday != 'undefined') {
 			this.status = this.data;
 			this.data = item.CounterToday;
+			this.smallStatus = item.CounterToday;			
         }
         if (typeof item.CounterDeliv != 'undefined') {
 			this.data = this.status;
 			this.status = $.t("Usage") + ': ' + item.CounterToday;
             if (item.CounterDeliv != 0) {
                 if (item.UsageDeliv.charAt(0) != 0) {
-                    this.data += '-' + item.UsageDeliv;
+                    this.data += ' -' + item.UsageDeliv;
                 }
                 this.status += ', ' + $.t("Return") + ': ' + item.CounterDelivToday;
             }
         }
-		this.smallStatus = this.data;
     }
 }
 Counter.inheritsFrom(UtilitySensor);
@@ -1527,6 +1528,12 @@ function Current(item) {
                         break;
                 }
                 break;
+            case "Current":
+                this.LogLink = this.onClick = "ShowCurrentLog('#" + Device.contentTag + "','" + Device.backFunction + "','" + this.index + "','" + this.name + "', '" + this.switchTypeVal + "');";
+                this.smallStatus = this.data;
+                this.status = this.data;
+                this.data = '';
+                break;
             default:
                 this.LogLink = this.onClick = "ShowCurrentLog('#" + Device.contentTag + "','" + Device.backFunction + "','" + this.index + "','" + this.name + "', '" + this.switchTypeVal + "');";
                 break;
@@ -1544,7 +1551,8 @@ function Custom(item) {
             this.image = "images/Custom.png";
         }
         this.LogLink = this.onClick = "window.location.href = '#/Devices/" + this.index + "/Log'";
-        this.data = '';
+        this.status = this.data;
+	this.data = '';
     }
 }
 Custom.inheritsFrom(UtilitySensor);
