@@ -860,7 +860,8 @@ Device.create = function (item) {
 		type = 'percentage';
     } else if (
         (item.SwitchType === 'Dusk Sensor') ||
-        (item.SwitchType === 'Selector')
+        (item.SwitchType === 'Selector') ||
+        (item.SwitchType === 'Dimmer')
 	  ) {
         type = item.SwitchType.toLowerCase()
     } else if (item.Type === 'RFXMeter') {
