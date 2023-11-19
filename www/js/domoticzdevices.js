@@ -859,7 +859,8 @@ Device.create = function (item) {
 	} else if ((item.Type === 'General') && (item.SubType === 'Percentage')) {
 		type = 'percentage';
     } else if (
-        (item.SwitchType === 'Dusk Sensor') ||
+        (item.SwitchType === 'Dimmer') ||
+        (item.SwitchType === 'Dusk Sensor') ||	    
         (item.SwitchType === 'Selector')
 	  ) {
         type = item.SwitchType.toLowerCase()
