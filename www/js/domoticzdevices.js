@@ -1814,7 +1814,7 @@ Smoke.inheritsFrom(BinarySensor);
 function Sound(item) {
     if (arguments.length != 0) {
         this.parent.constructor(item);
-        var onoff = ((item.Status == "On") ? "On" : "Off")
+        var onoff = ((item.Data != "0 dB") ? "On" : "Off")
         if (item.CustomImage != 0) {
             this.image = "images/" + item.Image + "48_" + onoff + ".png";
         } else {
