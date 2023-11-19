@@ -98,6 +98,9 @@ class MQTTAutoDiscover : public MQTT
 		std::string preset_mode_command_template;
 		std::string preset_mode_state_topic;
 		std::string preset_mode_value_template;
+		double temp_step = 1;
+		double temp_max = 35;
+		double temp_min = 7;
 
 		//Lock
 		std::string payload_lock = "LOCK";
