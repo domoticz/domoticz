@@ -1249,11 +1249,11 @@ void MQTTAutoDiscover::on_auto_discovery_message(const struct mosquitto_message*
 			pSensor->temp_min = 44.6;
 		}
 		if (!root["min_temp"].empty())
-			pSensor->temp_min = root["min_temp"].asFloat();
+			pSensor->temp_min = atof(root["min_temp"].asString().c_str());
 		if (!root["max_temp"].empty())
-			pSensor->temp_max = root["max_temp"].asFloat();
+			pSensor->temp_max = atof(root["max_temp"].asString().c_str());
 		if (!root["temp_step"].empty())
-			pSensor->temp_step = root["temp_step"].asFloat();
+			pSensor->temp_step = atof(root["temp_step"].asString().c_str());
 		if (!root["current_temperature_topic"].empty())
 			pSensor->current_temperature_topic = root["current_temperature_topic"].asString();
 		if (!root["curr_temp_t"].empty())
