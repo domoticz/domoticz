@@ -126,6 +126,8 @@ public:
 	bool PythonScheduleEvent(const std::string &ID, const std::string &Action, const std::string &eventName);
 	bool GetEventTrigger(uint64_t ulDevID, _eReason reason, bool bEventTrigger);
 	void SetEventTrigger(uint64_t ulDevID, _eReason reason, float fDelayTime);
+	void SendNotification(std::string arg);
+	bool SendEmail(std::string arg);
 	bool CustomCommand(uint64_t idx, const std::string &sCommand);
 
 	void TriggerURL(const std::string &result, const std::vector<std::string> &headerData, const std::string &callback);

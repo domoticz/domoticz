@@ -2574,6 +2574,17 @@ bool CEventSystem::PythonScheduleEvent(const std::string &ID, const std::string 
 
 		return true;
 	}
+	if (ID.find("SendNotification:") == 0)
+	{
+		std::string doWhat = std::string(Action);
+		SendNotification(doWhat);
+		return true;
+	}
+	if (ID.find("SendEmail:") == 0)
+	{
+		std::string doWhat = std::string(Action);
+		return SendEmail(doWhat);
+	}
 	if (ID.find("CustomCommand:") == 0)
 	{
 		int idx = atoi(ID.substr(14).c_str());
@@ -3208,54 +3219,11 @@ bool CEventSystem::processLuaCommand(lua_State *lua_state, const std::string &fi
 	bool scriptTrue = false;
 	std::string lCommand = std::string(lua_tostring(lua_state, -2));
 	if (lCommand == "SendNotification") {
-		std::string luaString = lua_tostring(lua_state, -1);
-		std::string subject, body, priority("0"), sound, subsystem;
-		std::string extraData;
-		std::vector<std::string> aParam;
-		StringSplit(luaString, "#", aParam);
-		subject = body = aParam[0];
-		if (aParam.size() > 1) {
-			if (!aParam[1].empty())
-				body = aParam[1];
-		}
-		if (aParam.size() > 2) {
-			priority = aParam[2];
-		}
-		if (aParam.size() > 3) {
-			sound = aParam[3];
-		}
-		if (aParam.size() > 4) {
-			if (aParam[4].find("midx_") != std::string::npos) {
-				extraData = aParam[4];
-			}
-			else {
-				extraData = "|Device=" + aParam[4];
-			}
-		}
-		if (aParam.size() > 5) {
-			subsystem = aParam[5];
-		}
-
-		m_sql.AddTaskItem(_tTaskItem::SendNotification(0, subject, body, extraData, atoi(priority.c_str()), sound, subsystem));
+		SendNotification(lua_tostring(lua_state, -1));
 		scriptTrue = true;
 	}
 	else if (lCommand == "SendEmail") {
-		std::string luaString = lua_tostring(lua_state, -1);
-		std::string subject, body, to;
-		std::vector<std::string> aParam;
-		StringSplit(luaString, "#", aParam);
-		if (aParam.size() != 3)
-		{
-			//Invalid
-			_log.Log(LOG_ERROR, "EventSystem: SendEmail, not enough parameters!");
-			return false;
-		}
-		subject = aParam[0];
-		body = aParam[1];
-		stdreplace(body, "\\n", "<br>");
-		to = aParam[2];
-		m_sql.AddTaskItem(_tTaskItem::SendEmailTo(1, subject, body, to));
-		scriptTrue = true;
+		scriptTrue = SendEmail(lua_tostring(lua_state, -1));
 	}
 	else if (lCommand == "SendSMS") {
 		std::string luaString = lua_tostring(lua_state, -1);
@@ -3403,6 +3371,55 @@ void CEventSystem::report_errors(lua_State *L, int status, const std::string &fi
 		_log.Log(LOG_ERROR, "EventSystem: in %s: %s", filename.c_str(), lua_tostring(L, -1));
 		lua_pop(L, 1); // remove error message
 	}
+}
+
+bool CEventSystem::SendEmail(std::string arg)
+{
+	std::string subject, body, to;
+	std::vector<std::string> aParam;
+	StringSplit(arg, "#", aParam);
+	if (aParam.size() != 3) {
+		//Invalid
+		_log.Log(LOG_ERROR, "EventSystem: SendEmail, not enough parameters!");
+		return false;
+	}
+	subject = aParam[0];
+	body = aParam[1];
+	stdreplace(body, "\\n", "<br>");
+	to = aParam[2];
+	m_sql.AddTaskItem(_tTaskItem::SendEmailTo(1, subject, body, to));
+	return true;
+}
+
+void CEventSystem::SendNotification(std::string arg)
+{
+	std::string subject, body, priority("0"), sound, subsystem;
+	std::string extraData;
+	std::vector<std::string> aParam;
+
+	StringSplit(arg, "#", aParam);
+	subject = body = aParam[0];
+
+	if ((aParam.size() > 1) && (!aParam[1].empty()))
+		body = aParam[1];
+
+	if (aParam.size() > 2)
+		priority = aParam[2];
+
+	if (aParam.size() > 3)
+		sound = aParam[3];
+
+	if (aParam.size() > 4) {
+		if (aParam[4].find("midx_") != std::string::npos)
+			extraData = aParam[4];
+		else
+			extraData = "|Device=" + aParam[4];
+	}
+
+	if (aParam.size() > 5)
+		subsystem = aParam[5];
+
+	m_sql.AddTaskItem(_tTaskItem::SendNotification(0, subject, body, extraData, atoi(priority.c_str()), sound, subsystem));
 }
 
 bool CEventSystem::CustomCommand(const uint64_t idx, const std::string &sCommand)
