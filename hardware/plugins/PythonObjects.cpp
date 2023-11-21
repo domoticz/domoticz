@@ -484,22 +484,22 @@ namespace Plugins {
 
 				// PyDict_SetItemString(OptionsOut, "LevelActions", PyUnicode_FromString("|||"));
 				PyObject* str_LevelActions = PyUnicode_FromString("|||");
-				PyDict_SetItemString(self->Options, "Custom", str_LevelActions);
+				PyDict_SetItemString(OptionsOut, "Custom", str_LevelActions);
 				Py_DECREF(str_LevelActions);
 				
 				// PyDict_SetItemString(OptionsOut, "LevelNames", PyUnicode_FromString("Off|Level1|Level2|Level3"));		
 				PyObject* str_LevelNames = PyUnicode_FromString("Off|Level1|Level2|Level3");
-				PyDict_SetItemString(self->Options, "Custom", str_LevelNames);
+				PyDict_SetItemString(OptionsOut, "Custom", str_LevelNames);
 				Py_DECREF(str_LevelNames);
 				
 				// PyDict_SetItemString(OptionsOut, "LevelOffHidden", PyUnicode_FromString("false"));
 				PyObject* str_LevelOffHidden = PyUnicode_FromString("false");
-				PyDict_SetItemString(self->Options, "Custom", str_LevelOffHidden);
+				PyDict_SetItemString(OptionsOut, "Custom", str_LevelOffHidden);
 				Py_DECREF(str_LevelOffHidden);
 				
 				// PyDict_SetItemString(OptionsOut, "SelectorStyle", PyUnicode_FromString("0"));
 				PyObject* str_SelectorStyle = PyUnicode_FromString("0");
-				PyDict_SetItemString(self->Options, "Custom", str_SelectorStyle);
+				PyDict_SetItemString(OptionsOut, "Custom", str_SelectorStyle);
 				Py_DECREF(str_SelectorStyle);
 			}
 			Type = pTypeGeneralSwitch;
@@ -544,7 +544,7 @@ namespace Plugins {
 				
 				// PyDict_SetItemString(OptionsOut, "Custom", PyUnicode_FromString("1"));
 				PyObject* str = PyUnicode_FromString("1");
-				PyDict_SetItemString(self->Options, "Custom", str);
+				PyDict_SetItemString(OptionsOut, "Custom", str);
 				Py_DECREF(str);
 			}
 		}
