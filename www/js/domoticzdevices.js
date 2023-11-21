@@ -1461,7 +1461,7 @@ function Counter(item) {
             this.status = $.t("Usage") + ': ' + item.CounterToday;
             if (item.CounterDeliv != 0) {
                 if (item.UsageDeliv.charAt(0) != 0) {
-                    this.data += ' -' + item.UsageDeliv;
+                    this.data += ', -' + item.UsageDeliv;
                 }
                 this.status += ', ' + $.t("Return") + ': ' + item.CounterDelivToday;
             }
