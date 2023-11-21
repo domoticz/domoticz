@@ -702,7 +702,9 @@ namespace Plugins {
 					{
 						if (self->SubType == sTypeCustom)
 						{
-							PyDict_SetItemString(self->Options, "Custom", PyUnicode_FromString(sd[14].c_str()));
+							PyObject* str = PyUnicode_FromString(sd[14].c_str());
+							PyDict_SetItemString(self->Options, "Custom", str);
+							Py_DECREF(str);
 						}
 						else
 						{
