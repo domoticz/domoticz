@@ -1481,8 +1481,11 @@ function Counter(item) {
             usage = 0;
         }
         balance = usage - deliv;
-        if (balance != 0) {
+        if (deliv != 0 || usage != 0) {
             this.smallStatus = balance += ' ' + unit;
+            if (deliv == 0 || usage == 0 ) {
+                this.data = this.smallStatus;
+            }
         }
         else {
             this.smallStatus = this.data;
