@@ -860,7 +860,7 @@ Device.create = function (item) {
 		type = 'percentage';
     } else if (
         (item.SwitchType === 'Dimmer') ||
-        (item.SwitchType === 'Dusk Sensor') ||	    
+        (item.SwitchType === 'Dusk Sensor') ||
         (item.SwitchType === 'Selector')
 	  ) {
         type = item.SwitchType.toLowerCase()
@@ -1453,20 +1453,43 @@ function Counter(item) {
         this.LogLink = this.onClick = "window.location.href = '#/Devices/" + this.index + "/Log'";
 
         if (typeof item.CounterToday != 'undefined') {
-			this.status = this.data;
-			this.data = item.CounterToday;
+            this.status = this.data;
+            this.data = item.CounterToday;
         }
         if (typeof item.CounterDeliv != 'undefined') {
-			this.data = this.status;
-			this.status = $.t("Usage") + ': ' + item.CounterToday;
+            this.data = this.status;
+            this.status = $.t("Usage") + ': ' + item.CounterToday;
             if (item.CounterDeliv != 0) {
                 if (item.UsageDeliv.charAt(0) != 0) {
-                    this.data += '-' + item.UsageDeliv;
+                    this.data += ', -' + item.UsageDeliv;
                 }
                 this.status += ', ' + $.t("Return") + ': ' + item.CounterDelivToday;
             }
         }
-		this.smallStatus = this.data;
+        if (typeof item.UsageDeliv != 'undefined') {
+            deliv = item.UsageDeliv.split(/\s(.+)/)[0];
+            unit  = item.UsageDeliv.split(/\s(.+)/)[1];
+        }
+        else {
+            deliv = 0;
+        }
+        if (typeof item.Usage != 'undefined') {
+            usage = item.Usage.split(/\s(.+)/)[0];
+            unit  = item.Usage.split(/\s(.+)/)[1];
+        }
+        else {
+            usage = 0;
+        }
+        balance = usage - deliv;
+        if (deliv != 0 || usage != 0) {
+            this.smallStatus = balance += ' ' + unit;
+            if (deliv == 0 || usage == 0 ) {
+                this.data = this.smallStatus;
+            }
+        }
+        else {
+            this.smallStatus = this.data;
+        }
     }
 }
 Counter.inheritsFrom(UtilitySensor);
