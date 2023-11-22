@@ -3015,7 +3015,7 @@ namespace http
 
 							root["result"][ii]["Data"] = szTmp;
 							root["result"][ii]["SetPoint"] = szTmp;
-							root["result"][ii]["HaveTimeout"] = bHaveTimeout;
+							root["result"][ii]["HaveTimeout"] = false;
 							root["result"][ii]["step"] = valuestep;
 							root["result"][ii]["min"] = valuemin;
 							root["result"][ii]["max"] = valuemax;
