@@ -1070,8 +1070,7 @@ void MySensorsBase::UpdateSwitchLastUpdate(const unsigned char NodeID, const int
 	result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit==%d) AND (Type==%d) AND (Subtype==%d)", m_HwdID, szIdx, ChildID, int(pTypeGeneralSwitch), int(sSwitchTypeAC));
 	if (result.empty())
 		return; //not found!
-	std::string sLastUpdate = TimeToString(nullptr, TF_DateTime);
-	m_sql.safe_query("UPDATE DeviceStatus SET LastUpdate='%q' WHERE (ID = '%q')", sLastUpdate.c_str(), result[0][0].c_str());
+	m_sql.UpdateLastUpdate(result[0][0]);
 }
 
 void MySensorsBase::UpdateBlindSensorLastUpdate(const int NodeID, const int ChildID)
@@ -1082,8 +1081,7 @@ void MySensorsBase::UpdateBlindSensorLastUpdate(const int NodeID, const int Chil
 	result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit==%d)", m_HwdID, szIdx, ChildID);
 	if (result.empty())
 		return;
-	std::string sLastUpdate = TimeToString(nullptr, TF_DateTime);
-	m_sql.safe_query("UPDATE DeviceStatus SET LastUpdate='%q' WHERE (ID = '%q')", sLastUpdate.c_str(), result[0][0].c_str());
+	m_sql.UpdateLastUpdate(result[0][0]);
 }
 
 void MySensorsBase::UpdateRGBWSwitchLastUpdate(const int NodeID, const int ChildID)
@@ -1098,8 +1096,7 @@ void MySensorsBase::UpdateRGBWSwitchLastUpdate(const int NodeID, const int Child
 	result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit==%d)", m_HwdID, szIdx, ChildID);
 	if (result.empty())
 		return;
-	std::string sLastUpdate = TimeToString(nullptr, TF_DateTime);
-	m_sql.safe_query("UPDATE DeviceStatus SET LastUpdate='%q' WHERE (ID = '%q')", sLastUpdate.c_str(), result[0][0].c_str());
+	m_sql.UpdateLastUpdate(result[0][0]);
 }
 
 void MySensorsBase::UpdateSwitch(const _eSetType vType, const unsigned char Idx, const int SubUnit, const bool bOn, const double Level, const std::string& defaultname, const int BatLevel)

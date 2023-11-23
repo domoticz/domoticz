@@ -5598,6 +5598,24 @@ uint64_t CSQLHelper::UpdateValueInt(
 	return ulID;
 }
 
+bool CSQLHelper::UpdateLastUpdate(const std::string& sidx)
+{
+	return UpdateLastUpdate(std::stoull(sidx));
+}
+
+bool CSQLHelper::UpdateLastUpdate(const int64_t idx)
+{
+	if (!m_dbase)
+		return false;
+
+	std::string sLastUpdate = TimeToString(nullptr, TF_DateTime);
+
+	safe_query("UPDATE DeviceStatus SET LastUpdate='%q' WHERE (ID = %" PRIu64 ")", sLastUpdate.c_str(), idx);
+
+	return true;
+}
+
+
 bool CSQLHelper::GetLastValue(const int HardwareID, const char* DeviceID, const unsigned char unit, const unsigned char devType, const unsigned char subType, int& nValue, std::string& sValue, struct tm& LastUpdateTime)
 {
 	bool result = false;

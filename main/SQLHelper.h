@@ -341,6 +341,9 @@ class CSQLHelper : public StoppableTask
 	uint64_t UpdateValueHomeConfortGroupCmd(int HardwareID, const char *ID, unsigned char unit, unsigned char devType, unsigned char subType, unsigned char signallevel, unsigned char batterylevel,
 						int nValue, const char *sValue, std::string &devname, const bool bUseOnOffAction, const char* User = nullptr);
 
+	bool UpdateLastUpdate(const int64_t idx);
+	bool UpdateLastUpdate(const std::string& sidx);
+
 	uint64_t GetDeviceIndex(int HardwareID, const std::string &ID, unsigned char unit, unsigned char devType, unsigned char subType, std::string &devname);
 
 	uint64_t InsertDevice(int HardwareID, const char *ID, unsigned char unit, unsigned char devType, unsigned char subType, int switchType, int nValue, const char *sValue,
