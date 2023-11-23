@@ -3160,8 +3160,8 @@ void MQTTAutoDiscover::handle_auto_discovery_climate(_tMQTTASensor* pSensor, con
 							pSensor->sValue.c_str(),
 							sName);
 					}
-					//else
-						//m_sql.safe_query("UPDATE DeviceStatus SET LastUpdate='%s' WHERE (ID == %s )", TimeToString(nullptr, TF_DateTime).c_str(), sID.c_str());
+					else
+						m_sql.UpdateLastUpdate(sID);
 				}
 			}
 		}
