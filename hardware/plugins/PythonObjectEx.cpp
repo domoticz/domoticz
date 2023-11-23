@@ -510,7 +510,7 @@ namespace Plugins {
 						if (self->SubType == sTypeCustom)
 						{
 							PyNewRef str = PyUnicode_FromString(sd[13].c_str());
-							PyDict_SetItemString(self->Options, "Custom", str));
+							PyDict_SetItemString(self->Options, "Custom", str);
 						}
 						else
 						{
