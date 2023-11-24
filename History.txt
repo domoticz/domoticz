@@ -3,6 +3,7 @@ Version 2023.xxxxx (xxxxx 2023)
 - Implemented: AlfenEve, Added Solar charging mode and settings
 - Implemented: Devices overview, Setpoint log button
 - Implemented: Enever, added support for providers Atoom Alliantie, Energie van Ons, Vandebron, Wout Energie
+- Implemented: Enever: added two uservariables for average gas/electricity price
 - Implemented: Enever, option to specify different providers for Gas/Electricity
 - Implemented: Enphase, counter helper to prevent turnover caused by powerloss, reboot or other envoy issues
 - Implemented: Enphase, Initial support for Encharge battery status (needs more work)

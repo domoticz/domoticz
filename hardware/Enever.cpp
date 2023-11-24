@@ -23,7 +23,7 @@
 
 
 #ifdef _DEBUG
-//#define DEBUG_Enever_R
+#define DEBUG_Enever_R
 //#define DEBUG_Enever_W
 #endif
 
@@ -195,7 +195,7 @@ void Enever::Do_Work()
 				GetPriceGas(true);
 			}
 			else
-				GetPriceGas(false);
+				GetPriceGas(last_hour == -1);
 
 			GetPriceElectricity();
 			parseElectricity(m_szCurrentElectricityPrices, true);
@@ -523,6 +523,12 @@ void Enever::parseElectricity(const std::string& szElectricityData, const bool b
 				std::string szTime = std_format("%04d-%02d-%02d", ltime->tm_year + 1900, ltime->tm_mon + 1, ltime->tm_mday);
 				std::string sValue = std::to_string(avgPrice) + ";" + std::to_string(avgPrice) + ";" + szTime;
 				UpdateValueInt("0001", 1, pTypeGeneral, sTypeManagedCounter, 12, 255, 0, sValue.c_str(), szDeviceName, false, "Enever", true);
+
+				//Set average day price in Uservariable
+				std::string szVarName = "Electricity_Price_Average_Today_" + std::to_string(m_HwdID);
+				std::string szVarValue = std_format("%.4f", (float)avgPrice / 10000);
+				std::string errorMessage;
+				m_sql.AddUserVariableEx(szVarName, USERVARTYPE_FLOAT, szVarValue, true, errorMessage);
 			}
 		}
 	}
@@ -673,6 +679,12 @@ void Enever::parseGas()
 		m_sql.safe_query("UPDATE DeviceStatus SET SwitchType=3, AddjValue2=10000, Options='%q' WHERE (ID==%" PRIu64 ")", "ValueQuantity:RXVybyAvIG0z;ValueUnits:4oKs", idx);
 		bDoesMeterExitstInSystem = true;
 	}
+
+	//Set average day price in Uservariable
+	std::string szVarName = "Gas_Price_Average_Today_" + std::to_string(m_HwdID);
+	std::string szVarValue = std_format("%.4f", (float)iRate / 10000);
+	std::string errorMessage;
+	m_sql.AddUserVariableEx(szVarName, USERVARTYPE_FLOAT, szVarValue, true, errorMessage);
 
 	//Short log value
 	szTime = std_format("%04d-%02d-%02d %02d:%02d:%02d", lltime.tm_year + 1900, lltime.tm_mon + 1, lltime.tm_mday, lltime.tm_hour, 0, 0);
