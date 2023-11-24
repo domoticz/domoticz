@@ -9033,6 +9033,7 @@ bool CSQLHelper::GetUserVariable(const std::string& varname, const _eUsrVariable
 	return false;
 }
 
+//Adds a new user variable if it does not exist
 bool CSQLHelper::AddUserVariable(const std::string& varname, const _eUsrVariableType eVartype, const std::string& varvalue, std::string& errorMessage)
 {
 	std::vector<std::vector<std::string> > result;
@@ -9051,6 +9052,34 @@ bool CSQLHelper::AddUserVariable(const std::string& varname, const _eUsrVariable
 
 	if (m_bEnableEventSystem)
 		m_mainworker.m_eventsystem.GetCurrentUserVariables();
+
+	return true;
+}
+
+//Adds a new user variable or update if it exists
+bool CSQLHelper::AddUserVariableEx(const std::string& varname, const _eUsrVariableType eVartype, const std::string& varvalue, bool eventtrigger, std::string& errorMessage)
+{
+	auto result = safe_query("SELECT ID FROM UserVariables WHERE (Name=='%q')", varname.c_str());
+	if (!result.empty())
+	{
+		return UpdateUserVariable(varname, eVartype, varvalue, eventtrigger, errorMessage);
+	}
+
+	if (!CheckUserVariable(eVartype, varvalue, errorMessage))
+		return false;
+
+	std::string szVarValue = CURLEncode::URLDecode(varvalue);
+	safe_query("INSERT INTO UserVariables (Name, ValueType, Value) VALUES ('%q','%d','%q')", varname.c_str(), eVartype, szVarValue.c_str());
+
+	result = safe_query("SELECT ID FROM UserVariables WHERE (Name=='%q')", varname.c_str());
+	if (!result.empty())
+	{
+		uint64_t vId = std::stoull(result[0][0]);
+		if (eventtrigger)
+			m_mainworker.m_eventsystem.SetEventTrigger(vId, m_mainworker.m_eventsystem.REASON_USERVARIABLE, 0);
+		if (m_bEnableEventSystem)
+			m_mainworker.m_eventsystem.UpdateUserVariable(vId, varname, (int)eVartype, szVarValue, TimeToString(nullptr, TF_DateTime));
+	}
 
 	return true;
 }
@@ -9075,7 +9104,35 @@ bool CSQLHelper::UpdateUserVariable(const std::string& idx, const std::string& v
 		uint64_t vId = std::stoull(idx);
 		if (eventtrigger)
 			m_mainworker.m_eventsystem.SetEventTrigger(vId, m_mainworker.m_eventsystem.REASON_USERVARIABLE, 0);
-		m_mainworker.m_eventsystem.UpdateUserVariable(vId, szVarValue, sLastUpdate);
+		m_mainworker.m_eventsystem.UpdateUserVariable(vId, varname, (int)eVartype, szVarValue, sLastUpdate);
+	}
+	return true;
+}
+
+bool CSQLHelper::UpdateUserVariable(const std::string& varname, const _eUsrVariableType eVartype, const std::string& varvalue, const bool eventtrigger, std::string& errorMessage)
+{
+	if (!CheckUserVariable(eVartype, varvalue, errorMessage))
+		return false;
+
+	auto result = safe_query("SELECT ID FROM UserVariables WHERE (Name=='%q')", varname.c_str());
+	if (result.empty())
+		return false;
+
+	std::string sLastUpdate = TimeToString(nullptr, TF_DateTime);
+	std::string szVarValue = CURLEncode::URLDecode(varvalue);
+	safe_query(
+		"UPDATE UserVariables SET ValueType='%d', Value='%q', LastUpdate='%q' WHERE (Name=='%q')",
+		eVartype,
+		szVarValue.c_str(),
+		sLastUpdate.c_str(),
+		varname.c_str()
+	);
+	if (m_bEnableEventSystem)
+	{
+		uint64_t vId = std::stoull(result[0][0]);
+		if (eventtrigger)
+			m_mainworker.m_eventsystem.SetEventTrigger(vId, m_mainworker.m_eventsystem.REASON_USERVARIABLE, 0);
+		m_mainworker.m_eventsystem.UpdateUserVariable(vId, varname, (int)eVartype, szVarValue, sLastUpdate);
 	}
 	return true;
 }

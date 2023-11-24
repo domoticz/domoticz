@@ -422,7 +422,9 @@ class CSQLHelper : public StoppableTask
 	bool DoesColumnExistsInTable(const std::string &columnname, const std::string &tablename);
 
 	bool AddUserVariable(const std::string &varname, _eUsrVariableType eVartype, const std::string &varvalue, std::string &errorMessage);
-	bool UpdateUserVariable(const std::string &idx, const std::string &varname, _eUsrVariableType eVartype, const std::string &varvalue, bool eventtrigger, std::string &errorMessage);
+	bool AddUserVariableEx(const std::string& varname, _eUsrVariableType eVartype, const std::string& varvalue, bool eventtrigger, std::string& errorMessage);
+	bool UpdateUserVariable(const std::string& idx, const std::string& varname, _eUsrVariableType eVartype, const std::string& varvalue, bool eventtrigger, std::string& errorMessage);
+	bool UpdateUserVariable(const std::string& varname, _eUsrVariableType eVartype, const std::string& varvalue, bool eventtrigger, std::string& errorMessage);
 	void DeleteUserVariable(const std::string &idx);
 	bool GetUserVariable(const std::string &varname, _eUsrVariableType eVartype, std::string &varvalue);
 	bool CheckUserVariable(_eUsrVariableType eVartype, const std::string &varvalue, std::string &errorMessage);

@@ -1256,7 +1256,7 @@ bool CEventSystem::UpdateSceneGroup(const uint64_t ulDevID, const int nValue, co
 	return bEventTrigger;
 }
 
-void CEventSystem::UpdateUserVariable(const uint64_t ulDevID, const std::string &varValue, const std::string &lastUpdate)
+void CEventSystem::UpdateUserVariable(const uint64_t ulDevID, const std::string& varname, const int eVartype, const std::string &varValue, const std::string &lastUpdate)
 {
 	if (!m_bEnabled)
 		return;
@@ -1265,10 +1265,20 @@ void CEventSystem::UpdateUserVariable(const uint64_t ulDevID, const std::string 
 
 	auto itt = m_uservariables.find(ulDevID);
 	if (itt == m_uservariables.end())
-		return; //not found
+	{
+		//not found, add it
+		_tUserVariable uvitem;
+		uvitem.ID = ulDevID;
+		uvitem.variableName = varname;
+		uvitem.variableValue = varValue;
+		uvitem.variableType = eVartype;
+		uvitem.lastUpdate = lastUpdate;
+		m_uservariables[uvitem.ID] = uvitem;
+
+		itt = m_uservariables.find(ulDevID);
+	}
 
 	_tUserVariable replaceitem = itt->second;
-
 	replaceitem.variableValue = varValue;
 
 	if (GetEventTrigger(ulDevID, REASON_USERVARIABLE, false))
@@ -1280,6 +1290,7 @@ void CEventSystem::UpdateUserVariable(const uint64_t ulDevID, const std::string 
 		item.lastUpdate = itt->second.lastUpdate;
 		m_eventqueue.push(item);
 	}
+
 	replaceitem.lastUpdate = lastUpdate;
 	itt->second = replaceitem;
 }

@@ -122,7 +122,7 @@ public:
 	void GetCurrentScenesGroups();
 	void GetCurrentUserVariables();
 	bool UpdateSceneGroup(uint64_t ulDevID, int nValue, const std::string &lastUpdate);
-	void UpdateUserVariable(uint64_t ulDevID, const std::string &varValue, const std::string &lastUpdate);
+	void UpdateUserVariable(uint64_t ulDevID, const std::string& varname, const int eVartype, const std::string &varValue, const std::string &lastUpdate);
 	bool PythonScheduleEvent(const std::string &ID, const std::string &Action, const std::string &eventName);
 	bool GetEventTrigger(uint64_t ulDevID, _eReason reason, bool bEventTrigger);
 	void SetEventTrigger(uint64_t ulDevID, _eReason reason, float fDelayTime);

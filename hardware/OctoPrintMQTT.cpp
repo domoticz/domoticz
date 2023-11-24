@@ -315,7 +315,7 @@ void COctoPrintMQTT::UpdateUserVariable(const std::string &varName, const std::s
 	}
 
 	m_mainworker.m_eventsystem.SetEventTrigger(ID, m_mainworker.m_eventsystem.REASON_USERVARIABLE, 0);
-	m_mainworker.m_eventsystem.UpdateUserVariable(ID, varValue, sLastUpdate);
+	m_mainworker.m_eventsystem.UpdateUserVariable(ID, varName, (int)USERVARTYPE_STRING, varValue, sLastUpdate);
 }
 
 
