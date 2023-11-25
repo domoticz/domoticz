@@ -2783,6 +2783,11 @@ bool CSQLHelper::OpenDatabase()
 		}
 		if (dbversion < 147)
 		{
+			if (!DoesColumnExistsInTable("Order", "SharedDevices"))
+			{
+				query("ALTER TABLE SharedDevices ADD COLUMN [Order] INTEGER BIGINT(10) default 0");
+			}
+
 			//Pushlink is not zero based anymore
 			safe_exec_no_return("UPDATE PushLink SET DelimitedValue=1 WHERE (DelimitedValue == 0)");
 		}
@@ -2942,7 +2947,7 @@ bool CSQLHelper::OpenDatabase()
 				{
 					if (!WebUserName.empty() && !WebPassword.empty())
 					{
-						result = safe_query("SELECT ROWID, Active, Rights FROM Users WHERE Username='%s'", WebUserName.c_str());
+						result = safe_query("SELECT ROWID, Active, Rights, TabsEnabled FROM Users WHERE Username='%s'", WebUserName.c_str());
 						if (result.empty())
 						{
 							// Add this User to the Users table as no User with this name exists
@@ -2953,11 +2958,14 @@ bool CSQLHelper::OpenDatabase()
 							nValue = atoi(result[0][0].c_str());	// RowID
 							int iActive = atoi(result[0][1].c_str());
 							int iRights = atoi(result[0][2].c_str());
-							if (iActive != 1 || iRights != http::server::URIGHTS_ADMIN)
+							int iTabsEnabled = atoi(result[0][3].c_str());
+							if (iActive != 1 || iTabsEnabled == 0 || iRights != http::server::URIGHTS_ADMIN)
 							{
 								// Although there already is a User with the same Username as the WebUserName
 								// this User is not an Admin and/or is not Active so cannot be used if we don't update it
-								safe_query("UPDATE Users SET Password='%s', Active=1, Rights=%d WHERE ROWID=%d", WebPassword.c_str(), http::server::URIGHTS_ADMIN, nValue);
+								safe_query("UPDATE Users SET Password='%s', Active=1, Rights=%d, TabsEnabled=31 WHERE ROWID=%d", WebPassword.c_str(), http::server::URIGHTS_ADMIN, nValue);
+								//to be sure, delete it's shared devices
+								safe_query("DELETE FROM SharedDevices WHERE SharedUserID=%d", nValue);
 							}
 						}
 					}
@@ -3008,7 +3016,7 @@ bool CSQLHelper::OpenDatabase()
 		if (dbversion < 160)
 		{
 			//Change UserVariables Value type to TEXT
-			query("ALTER TABLE UserVariables RENAME TO tmp_UserVariables;");
+			query("ALTER TABLE UserVariables RENAME TO tmp_UserVariables");
 			query(sqlCreateUserVariables);
 			query(
 				"INSERT INTO UserVariables ([ID],[Name],[ValueType],[Value],[LastUpdate]) "
@@ -3032,7 +3040,7 @@ bool CSQLHelper::OpenDatabase()
 		if (dbversion < 162)
 		{
 			//add Order column to SharedDevices
-			if (!DoesColumnExistsInTable("SharedDevices", "Order"))
+			if (!DoesColumnExistsInTable("Order", "SharedDevices"))
 				query("ALTER TABLE SharedDevices ADD COLUMN [Order] INTEGER BIGINT(10) default 0");
 			query(sqlCreateSharedDevicesTrigger);
 			std::vector<std::vector<std::string> > result;
@@ -4243,7 +4251,7 @@ bool CSQLHelper::DoesColumnExistsInTable(const std::string& columnname, const st
 	bool columnExists = false;
 
 	sqlite3_stmt* statement;
-	std::string szQuery = "SELECT " + columnname + " FROM " + tablename;
+	std::string szQuery = "SELECT [" + columnname + "] FROM " + tablename;
 	if (sqlite3_prepare_v2(m_dbase, szQuery.c_str(), -1, &statement, nullptr) == SQLITE_OK)
 	{
 		columnExists = true;
