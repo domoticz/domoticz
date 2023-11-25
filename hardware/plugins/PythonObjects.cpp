@@ -33,6 +33,7 @@ namespace Plugins {
 		Py_XDECREF(self->Base);
 		Py_XDECREF(self->Name);
 		Py_XDECREF(self->Description);
+		Py_XDECREF(self->Filename);
 
 		PyNewRef	pType = PyObject_Type((PyObject*)self);
 		freefunc pFree = (freefunc)PyType_GetSlot(pType, Py_tp_free);
@@ -190,6 +191,7 @@ namespace Plugins {
 								PyObject*	pKey = PyUnicode_FromString(sd[1].c_str());
 								if (PyDict_SetItem((PyObject*)self->pPlugin->m_ImageDict, pKey, (PyObject*)pImage) == -1)
 								{
+									Py_DECREF(pKey);
 									_log.Log(LOG_ERROR, "(%s) failed to add ID '%s' to image dictionary.", self->pPlugin->m_PluginKey.c_str(), sd[0].c_str());
 									break;
 								}
@@ -198,6 +200,7 @@ namespace Plugins {
 								pImage->Name = PyUnicode_FromString(sd[2].c_str());
 								pImage->Description = PyUnicode_FromString(sd[3].c_str());
 								Py_DECREF(pImage);
+								Py_DECREF(pKey);
 							}
 						}
 					}
@@ -1162,6 +1165,7 @@ namespace Plugins {
 			pPlugin->Log(LOG_NORM, "Deallocating connection object '%s' (%s:%s).", PyUnicode_AsUTF8(self->Name), PyUnicode_AsUTF8(self->Address), PyUnicode_AsUTF8(self->Port));
 		}
 
+		Py_XDECREF(self->Name);
 		Py_XDECREF(self->Target);
 		Py_XDECREF(self->Address);
 		Py_XDECREF(self->Port);
