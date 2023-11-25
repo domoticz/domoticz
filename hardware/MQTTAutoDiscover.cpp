@@ -170,6 +170,7 @@ void MQTTAutoDiscover::CleanValueTemplate(std::string& szValueTemplate)
 
 	szValueTemplate = szValueTemplate.substr(0, szValueTemplate.find("|"));
 	szValueTemplate = szValueTemplate.substr(0, szValueTemplate.find(".split("));
+	szValueTemplate = szValueTemplate.substr(0, szValueTemplate.find("if value_json."));
 
 	stdstring_trim(szValueTemplate);
 
@@ -1292,6 +1293,28 @@ void MQTTAutoDiscover::on_auto_discovery_message(const struct mosquitto_message*
 			pSensor->preset_mode_state_topic = root["pr_mode_stat_t"].asString();
 		if (!root["pr_mode_val_tpl"].empty())
 			pSensor->preset_mode_value_template = root["pr_mode_val_tpl"].asString();
+
+		//Special case for Fan percentage_command_template
+		if (pSensor->component_type == "fan")
+		{
+			if (!pSensor->percentage_command_template.empty())
+			{
+				std::string tstring(pSensor->percentage_command_template);
+				stdreplace(tstring, "[value]", "");
+				std::vector<std::string> strarray;
+				StringSplit(tstring, ",", strarray);
+
+				for (const auto& ittMode : strarray)
+				{
+					std::vector<std::string> strarray2;
+					StringSplit(ittMode, ":", strarray2);
+					if (strarray2.size() == 2)
+					{
+						pSensor->preset_modes.push_back(strarray2[1]);
+					}
+				}
+			}
+		}
 
 		CleanValueTemplate(pSensor->mode_state_template);
 		CleanValueTemplate(pSensor->mode_command_template);
