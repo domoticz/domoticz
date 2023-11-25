@@ -27,14 +27,6 @@ PyAPI_FUNC(int) PyCodec_Register(
        PyObject *search_function
        );
 
-/* Unregister a codec search function and clear the registry's cache.
-   If the search function is not registered, do nothing.
-   Return 0 on success. Raise an exception and return -1 on error. */
-
-PyAPI_FUNC(int) PyCodec_Unregister(
-       PyObject *search_function
-       );
-
 /* Codec registry lookup API.
 
    Looks up the given encoding and returns a CodecInfo object with
@@ -233,14 +225,10 @@ PyAPI_FUNC(PyObject *) PyCodec_XMLCharRefReplaceErrors(PyObject *exc);
 /* replace the unicode encode error with backslash escapes (\x, \u and \U) */
 PyAPI_FUNC(PyObject *) PyCodec_BackslashReplaceErrors(PyObject *exc);
 
-#if !defined(Py_LIMITED_API) || Py_LIMITED_API+0 >= 0x03050000
 /* replace the unicode encode error with backslash escapes (\N, \x, \u and \U) */
 PyAPI_FUNC(PyObject *) PyCodec_NameReplaceErrors(PyObject *exc);
-#endif
 
-#ifndef Py_LIMITED_API
 PyAPI_DATA(const char *) Py_hexdigits;
-#endif
 
 #ifdef __cplusplus
 }

@@ -7,7 +7,7 @@ extern "C" {
 
 /* Module support interface */
 
-#include <stdarg.h>               // va_list
+#include <stdarg.h>
 
 /* If PY_SSIZE_T_CLEAN is defined, each functions treats #-specifier
    to mean Py_ssize_t */
@@ -19,6 +19,8 @@ extern "C" {
 #define PyArg_VaParseTupleAndKeywords   _PyArg_VaParseTupleAndKeywords_SizeT
 #define Py_BuildValue                   _Py_BuildValue_SizeT
 #define Py_VaBuildValue                 _Py_VaBuildValue_SizeT
+#else
+PyAPI_FUNC(PyObject *) _Py_VaBuildValue_SizeT(const char *, va_list);
 #endif
 
 /* Due to a glitch in 3.2, the _SizeT versions weren't exported from the DLL. */
@@ -27,39 +29,26 @@ PyAPI_FUNC(int) PyArg_Parse(PyObject *, const char *, ...);
 PyAPI_FUNC(int) PyArg_ParseTuple(PyObject *, const char *, ...);
 PyAPI_FUNC(int) PyArg_ParseTupleAndKeywords(PyObject *, PyObject *,
                                                   const char *, char **, ...);
-PyAPI_FUNC(int) PyArg_VaParse(PyObject *, const char *, va_list);
-PyAPI_FUNC(int) PyArg_VaParseTupleAndKeywords(PyObject *, PyObject *,
-                                                  const char *, char **, va_list);
-#endif
 PyAPI_FUNC(int) PyArg_ValidateKeywordArguments(PyObject *);
 PyAPI_FUNC(int) PyArg_UnpackTuple(PyObject *, const char *, Py_ssize_t, Py_ssize_t, ...);
 PyAPI_FUNC(PyObject *) Py_BuildValue(const char *, ...);
 PyAPI_FUNC(PyObject *) _Py_BuildValue_SizeT(const char *, ...);
+#endif
+#ifndef Py_LIMITED_API
+PyAPI_FUNC(int) _PyArg_NoKeywords(const char *funcname, PyObject *kw);
+PyAPI_FUNC(int) _PyArg_NoPositional(const char *funcname, PyObject *args);
 
-
+PyAPI_FUNC(int) PyArg_VaParse(PyObject *, const char *, va_list);
+PyAPI_FUNC(int) PyArg_VaParseTupleAndKeywords(PyObject *, PyObject *,
+                                                  const char *, char **, va_list);
+#endif
 PyAPI_FUNC(PyObject *) Py_VaBuildValue(const char *, va_list);
 
-#if !defined(Py_LIMITED_API) || Py_LIMITED_API+0 >= 0x030a0000
-// Add an attribute with name 'name' and value 'obj' to the module 'mod.
-// On success, return 0 on success.
-// On error, raise an exception and return -1.
-PyAPI_FUNC(int) PyModule_AddObjectRef(PyObject *mod, const char *name, PyObject *value);
-#endif   /* Py_LIMITED_API */
-
-// Similar to PyModule_AddObjectRef() but steal a reference to 'obj'
-// (Py_DECREF(obj)) on success (if it returns 0).
-PyAPI_FUNC(int) PyModule_AddObject(PyObject *mod, const char *, PyObject *value);
-
+PyAPI_FUNC(int) PyModule_AddObject(PyObject *, const char *, PyObject *);
 PyAPI_FUNC(int) PyModule_AddIntConstant(PyObject *, const char *, long);
 PyAPI_FUNC(int) PyModule_AddStringConstant(PyObject *, const char *, const char *);
-
-#if !defined(Py_LIMITED_API) || Py_LIMITED_API+0 >= 0x03090000
-/* New in 3.9 */
-PyAPI_FUNC(int) PyModule_AddType(PyObject *module, PyTypeObject *type);
-#endif /* Py_LIMITED_API */
-
-#define PyModule_AddIntMacro(m, c) PyModule_AddIntConstant((m), #c, (c))
-#define PyModule_AddStringMacro(m, c) PyModule_AddStringConstant((m), #c, (c))
+#define PyModule_AddIntMacro(m, c) PyModule_AddIntConstant(m, #c, c)
+#define PyModule_AddStringMacro(m, c) PyModule_AddStringConstant(m, #c, c)
 
 #if !defined(Py_LIMITED_API) || Py_LIMITED_API+0 >= 0x03050000
 /* New in 3.5 */
@@ -130,14 +119,15 @@ PyAPI_FUNC(int) PyModule_ExecDef(PyObject *module, PyModuleDef *def);
  #define PyModule_FromDefAndSpec2 PyModule_FromDefAndSpec2TraceRefs
 #endif
 
-PyAPI_FUNC(PyObject *) PyModule_Create2(PyModuleDef*, int apiver);
+PyAPI_FUNC(PyObject *) PyModule_Create2(struct PyModuleDef*,
+                                     int apiver);
 
 #ifdef Py_LIMITED_API
 #define PyModule_Create(module) \
-        PyModule_Create2((module), PYTHON_ABI_VERSION)
+        PyModule_Create2(module, PYTHON_ABI_VERSION)
 #else
 #define PyModule_Create(module) \
-        PyModule_Create2((module), PYTHON_API_VERSION)
+        PyModule_Create2(module, PYTHON_API_VERSION)
 #endif
 
 #if !defined(Py_LIMITED_API) || Py_LIMITED_API+0 >= 0x03050000
@@ -148,18 +138,15 @@ PyAPI_FUNC(PyObject *) PyModule_FromDefAndSpec2(PyModuleDef *def,
 
 #ifdef Py_LIMITED_API
 #define PyModule_FromDefAndSpec(module, spec) \
-    PyModule_FromDefAndSpec2((module), (spec), PYTHON_ABI_VERSION)
+    PyModule_FromDefAndSpec2(module, spec, PYTHON_ABI_VERSION)
 #else
 #define PyModule_FromDefAndSpec(module, spec) \
-    PyModule_FromDefAndSpec2((module), (spec), PYTHON_API_VERSION)
+    PyModule_FromDefAndSpec2(module, spec, PYTHON_API_VERSION)
 #endif /* Py_LIMITED_API */
-
 #endif /* New in 3.5 */
 
 #ifndef Py_LIMITED_API
-#  define Py_CPYTHON_MODSUPPORT_H
-#  include "cpython/modsupport.h"
-#  undef Py_CPYTHON_MODSUPPORT_H
+PyAPI_DATA(char *) _Py_PackageContext;
 #endif
 
 #ifdef __cplusplus

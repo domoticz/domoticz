@@ -63,10 +63,10 @@
 #    if defined(__LP64__)
      /* MacOSX 10.4 (the first release to support 64-bit code
       * at all) only supports 64-bit in the UNIX layer.
-      * Therefore suppress the toolbox-glue in 64-bit mode.
+      * Therefore surpress the toolbox-glue in 64-bit mode.
       */
 
-    /* In 64-bit mode setpgrp always has no arguments, in 32-bit
+    /* In 64-bit mode setpgrp always has no argments, in 32-bit
      * mode that depends on the compilation environment
      */
 #       undef SETPGRP_HAVE_ARG
@@ -83,6 +83,18 @@
 #ifdef __i386__
 # define HAVE_GCC_ASM_FOR_X87
 #endif
+
+    /*
+     * The definition in pyconfig.h is only valid on the OS release
+     * where configure ran on and not necessarily for all systems where
+     * the executable can be used on.
+     *
+     * Specifically: OSX 10.4 has limited supported for '%zd', while
+     * 10.5 has full support for '%zd'. A binary built on 10.5 won't
+     * work properly on 10.4 unless we surpress the definition
+     * of PY_FORMAT_SIZE_T
+     */
+#undef  PY_FORMAT_SIZE_T
 
 
 #endif /* defined(_APPLE__) */
