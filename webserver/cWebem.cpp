@@ -1905,12 +1905,12 @@ namespace http {
 					{
 						session.username = my.Username;
 						session.rights = my.userrights;
+						bTrustedNetwork = true;
 						break;
 					}
 				}
 				if (session.rights == -1)
 					_log.Debug(DEBUG_AUTH, "[Auth Check] Trusted network exception detected, but no Admin User found!");
-				bTrustedNetwork = true;
 			}
 
 			//Check for valid Authorization headers (JWT Token, Basis Authentication, etc.) and use these offered credentials
@@ -1972,7 +1972,7 @@ namespace http {
 			if(parse_cookie(req, sSID, sAuthToken, szTime, expired))
 			{
 				time_t now = mytime(nullptr);
-				if (session.rights == 2)
+				if (session.rights == URIGHTS_ADMIN)
 				{
 					if (!sSID.empty())
 					{
@@ -1990,7 +1990,7 @@ namespace http {
 						}
 					}
 					if (sSID.empty() || expired)
-						session.isnew = true;
+						session.isnew = true;	// There was a cookie, but it was expired or the session was not found
 					return true;
 				}
 
@@ -2033,22 +2033,15 @@ namespace http {
 					}
 
 					return false;
-
 				}
-				// invalid cookie
-				if (CheckAuthByPass(req))
-					return true;
 
-				// Force login form
 				return false;
 			}
-
-			// Not sure why this is here? Isn't this the case for all situation where the session ID is empty? Not only with admins
-			if ((session.rights == URIGHTS_ADMIN) && (session.id.empty()))
-			{
+			else	// No session cookie found
 				session.isnew = true;
+
+			if (bTrustedNetwork)
 				return true;
-			}
 
 			return false;
 		}
@@ -2195,6 +2188,12 @@ namespace http {
 			session.local_host = req.host_local_address;
 			session.local_port = req.host_local_port;
 			session.rights = -1;
+			session.reply_status = reply::ok;
+			session.isnew = false;
+			session.rememberme = false;
+
+			rep.status = reply::ok;
+			rep.bIsGZIP = false;
 
 			// Let's examine possible proxies, etc.
 			std::string realHost;
@@ -2227,13 +2226,6 @@ namespace http {
 			}
 			itt_rc->second.last_seen = mytime(nullptr);
 			itt_rc->second.host_last_request_uri_ = req.uri;
-
-			session.reply_status = reply::ok;
-			session.isnew = false;
-			session.rememberme = false;
-
-			rep.status = reply::ok;
-			rep.bIsGZIP = false;
 
 			// Respond to CORS Preflight request (for JSON API)
 			if (req.method == "OPTIONS")
@@ -2276,11 +2268,10 @@ namespace http {
 			// Check if this is an upgrade request to a websocket connection
 			bool isUpgradeRequest = is_upgrade_request(session, req, rep);
 
-			// Does the request needs to be Authorized?
-			bool needsAuthentication = (!CheckAuthByPass(req));
-			bool isAuthenticated = CheckAuthentication(session, req, rep);
+			bool isAuthenticated = CheckAuthentication(session, req, rep);	// This check also restores the session if an active session is found
+			bool needsAuthentication = (!CheckAuthByPass(req));		// Does the request needs to be Authorized?
 
-			_log.Debug(DEBUG_AUTH,"[web:%s] isPage %d isAction %d isUpgrade %d needsAuthentication %d isAuthenticated %d (%s)", myWebem->GetPort().c_str(), isPage, isAction, isUpgradeRequest, needsAuthentication, isAuthenticated, session.username.c_str());
+			_log.Debug(DEBUG_AUTH,"[web:%s] isPage %d isAction %d isUpgrade %d needsAuthentication %d isAuthenticated %d (%s) isNew %d", myWebem->GetPort().c_str(), isPage, isAction, isUpgradeRequest, needsAuthentication, isAuthenticated, session.username.c_str(), session.isnew);
 
 			// Check user authentication on each page or action, if it exists.
 			if ((isPage || isAction || isUpgradeRequest) && needsAuthentication && !isAuthenticated)
