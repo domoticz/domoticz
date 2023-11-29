@@ -881,7 +881,7 @@ void MitsubishiWF::TranslateAirconStat(const std::string& szStat, _tAircoStatus&
 		aircoStatus.szErrorCode = "E" + std::to_string(aircoStatus.code);
 
 	int8_t* vals = content_byte_array + start_length + 19;// len(content_byte_array) - 2
-	int len = (int)szStat.size() - 2 - start_length - 19;
+	size_t len = szStat.size() - 2 - start_length - 19;
 
 	for (int i = 0; i < len; i += 4)
 	{

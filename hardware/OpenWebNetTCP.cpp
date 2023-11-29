@@ -183,7 +183,7 @@ bool COpenWebNetTCP::isStatusSocketConnected()
 **/
 bool COpenWebNetTCP::ownWrite(csocket *connectionSocket, const char* pdata, size_t size)
 {
-	int bytesWritten = connectionSocket->write(pdata, size);
+	int bytesWritten = connectionSocket->write(pdata, static_cast<unsigned int>(size));
 	if (bytesWritten != size) 
 	{
 		Log(LOG_ERROR, "partial write: %u/%u", bytesWritten, (unsigned int)size);
@@ -198,7 +198,7 @@ bool COpenWebNetTCP::ownWrite(csocket *connectionSocket, const char* pdata, size
 int COpenWebNetTCP::ownRead(csocket *connectionSocket, char* pdata, size_t size)
 {
 	memset(pdata, 0, size);
-	int read = connectionSocket->read(pdata, size, false);
+	int read = connectionSocket->read(pdata, static_cast<unsigned int>(size), false);
 	return (read);
 }
 
@@ -1031,7 +1031,7 @@ void COpenWebNetTCP::UpdateSwitch(const int who, const int where, const int what
 **/
 void COpenWebNetTCP::decodeWhereAndFill(const int who, const std::string &where, std::vector<std::string> whereParam, std::string *devname, int *iWhere)
 {
-	int wlen = where.length();	
+	size_t wlen = where.length();	
 	int iArea = -1;
 	*iWhere = -1;
 

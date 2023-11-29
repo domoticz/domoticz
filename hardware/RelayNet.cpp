@@ -697,7 +697,7 @@ void RelayNet::OnDisconnect()
 
 void RelayNet::OnData(const unsigned char *pData, size_t length)
 {
-	ParseData(pData, length);
+	ParseData(pData, static_cast<int>(length));
 }
 
 //===========================================================================

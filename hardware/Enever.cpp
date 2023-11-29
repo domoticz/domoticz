@@ -241,57 +241,60 @@ uint64_t Enever::UpdateValueInt(const char* ID, unsigned char unit, unsigned cha
 
 bool Enever::GetPriceElectricity()
 {
-	if (!m_szCurrentElectricityPrices.empty())
+	try
 	{
-		time_t atime = mytime(nullptr);
-		struct tm* ltime = localtime(&atime);
-		Json::Value jsonCurrent;
-		if (ParseJSon(m_szCurrentElectricityPrices, jsonCurrent))
+		if (!m_szCurrentElectricityPrices.empty())
 		{
-			if (
-				(jsonCurrent.isMember("data"))
-				&& (jsonCurrent["data"].isArray())
-				)
+			time_t atime = mytime(nullptr);
+			struct tm* ltime = localtime(&atime);
+			Json::Value jsonCurrent;
+			if (ParseJSon(m_szCurrentElectricityPrices, jsonCurrent))
 			{
-				Json::Value firstRecord = jsonCurrent["data"][0];
-				std::string szDate = firstRecord["datum"].asString();
-				time_t rtime;
-				struct tm lltime;
-				if (ParseSQLdatetime(rtime, lltime, szDate))
+				if (
+					(jsonCurrent.isMember("data"))
+					&& (jsonCurrent["data"].isArray())
+					)
 				{
-					if (
-						(lltime.tm_year == ltime->tm_year)
-						&& (lltime.tm_mon == ltime->tm_mon)
-						&& (lltime.tm_mday == ltime->tm_mday)
-						)
+					Json::Value firstRecord = jsonCurrent["data"][0];
+					std::string szDate = firstRecord["datum"].asString();
+					time_t rtime;
+					struct tm lltime;
+					if (ParseSQLdatetime(rtime, lltime, szDate))
 					{
-						return true; //we are up to date
-					}
-					else
-					{
-						//we are out of date, but maybe we have a newer version in the cache from tomorrow that works
-						if (!m_szCurrentElectricityPrices_Tomorrow.empty())
+						if (
+							(lltime.tm_year == ltime->tm_year)
+							&& (lltime.tm_mon == ltime->tm_mon)
+							&& (lltime.tm_mday == ltime->tm_mday)
+							)
 						{
-							jsonCurrent.clear();
-							if (ParseJSon(m_szCurrentElectricityPrices_Tomorrow, jsonCurrent))
+							return true; //we are up to date
+						}
+						else
+						{
+							//we are out of date, but maybe we have a newer version in the cache from tomorrow that works
+							if (!m_szCurrentElectricityPrices_Tomorrow.empty())
 							{
-								if (jsonCurrent.isMember("data"))
+								jsonCurrent.clear();
+								if (ParseJSon(m_szCurrentElectricityPrices_Tomorrow, jsonCurrent))
 								{
-									Json::Value firstRecord = jsonCurrent["data"][0];
-									std::string szDate = firstRecord["datum"].asString();
-									time_t rtime;
-									struct tm lltime;
-									if (ParseSQLdatetime(rtime, lltime, szDate))
+									if (jsonCurrent.isMember("data"))
 									{
-										if (
-											(lltime.tm_year == ltime->tm_year)
-											&& (lltime.tm_mon == ltime->tm_mon)
-											&& (lltime.tm_mday == ltime->tm_mday)
-											)
+										Json::Value firstRecord = jsonCurrent["data"][0];
+										std::string szDate = firstRecord["datum"].asString();
+										time_t rtime;
+										struct tm lltime;
+										if (ParseSQLdatetime(rtime, lltime, szDate))
 										{
-											m_szCurrentElectricityPrices = m_szCurrentElectricityPrices_Tomorrow;
-											m_szCurrentElectricityPrices_Tomorrow.clear();
-											return true;
+											if (
+												(lltime.tm_year == ltime->tm_year)
+												&& (lltime.tm_mon == ltime->tm_mon)
+												&& (lltime.tm_mday == ltime->tm_mday)
+												)
+											{
+												m_szCurrentElectricityPrices = m_szCurrentElectricityPrices_Tomorrow;
+												m_szCurrentElectricityPrices_Tomorrow.clear();
+												return true;
+											}
 										}
 									}
 								}
@@ -301,397 +304,433 @@ bool Enever::GetPriceElectricity()
 				}
 			}
 		}
-	}
 
-	m_szCurrentElectricityPrices.clear();
-	std::string sResult;
+		m_szCurrentElectricityPrices.clear();
+		std::string sResult;
 
 #ifdef DEBUG_Enever_R
-	sResult = ReadFile("E:\\enever_stroom.json");
+		sResult = ReadFile("E:\\enever_stroom.json");
 #else
-	std::vector<std::string> ExtraHeaders;
-	if (m_szToken.empty()) {
-		return false;
-	}
+		std::vector<std::string> ExtraHeaders;
+		if (m_szToken.empty()) {
+			return false;
+		}
 
-	if (!HTTPClient::GET(MakeURL(ENEVER_FEED_ELEC_TODAY), ExtraHeaders, sResult))
-	{
-		Log(LOG_ERROR, "Error getting http data! (electricity)");
-		return false;
-	}
+		if (!HTTPClient::GET(MakeURL(ENEVER_FEED_ELEC_TODAY), ExtraHeaders, sResult))
+		{
+			Log(LOG_ERROR, "Error getting http data! (electricity)");
+			return false;
+		}
 #ifdef DEBUG_Enever_W
-	SaveString2Disk(sResult, "E:\\enever_stroom.json");
+		SaveString2Disk(sResult, "E:\\enever_stroom.json");
 #endif
 #endif
-	Debug(DEBUG_RECEIVED, "electricity_prices: %s", sResult.c_str());
+		Debug(DEBUG_RECEIVED, "electricity_prices: %s", sResult.c_str());
 
-	//Store for later usage
-	std::string szName = "Enever_Electricity_" + std::to_string(m_HwdID);
-	m_sql.safe_query("UPDATE UserVariables SET Value='%q', LastUpdate='%s' WHERE (Name=='%q')", sResult.c_str(), TimeToString(nullptr, TF_DateTime).c_str(), szName.c_str());
+		//Store for later usage
+		std::string szName = "Enever_Electricity_" + std::to_string(m_HwdID);
+		m_sql.safe_query("UPDATE UserVariables SET Value='%q', LastUpdate='%s' WHERE (Name=='%q')", sResult.c_str(), TimeToString(nullptr, TF_DateTime).c_str(), szName.c_str());
 
-	Json::Value result;
-	bool ret = ParseJSon(sResult, result);
-	if ((!ret) || (!result.isObject()))
-	{
-		Log(LOG_ERROR, "Invalid data received! (electricity/json)");
-		return false;
+		Json::Value result;
+		bool ret = ParseJSon(sResult, result);
+		if ((!ret) || (!result.isObject()))
+		{
+			Log(LOG_ERROR, "Invalid data received! (electricity/json)");
+			return false;
+		}
+		if (
+			(result["data"].empty())
+			|| (!result["data"].isArray())
+			)
+		{
+			Log(LOG_ERROR, "Invalid (no) data received (electricity prices, date object not found). Check Token!");
+			return false;
+		}
+		m_szCurrentElectricityPrices = sResult;
+		return true;
 	}
-	if (
-		(result["data"].empty())
-		|| (!result["data"].isArray())
-		)
+	catch (const std::exception& e)
 	{
-		Log(LOG_ERROR, "Invalid (no) data received (electricity prices, date object not found). Check Token!");
-		return false;
+		Log(LOG_ERROR, "Exception (GetPriceElectricity): %s!", e.what());
 	}
-	m_szCurrentElectricityPrices = sResult;
-	return true;
+	return false;
 }
 
 bool Enever::GetPriceElectricity_Tomorrow()
 {
-	time_t atime = mytime(nullptr);
-	atime += 86400; //tomorrow
-	struct tm* ltime = localtime(&atime);
-
-	bool bNeedUpdate = true;
-	if (!m_szCurrentElectricityPrices_Tomorrow.empty())
+	try
 	{
-		//check if we need to update (data is not from tomorrow)
-		Json::Value jsonCurrent;
-		if (ParseJSon(m_szCurrentElectricityPrices_Tomorrow, jsonCurrent))
+		time_t atime = mytime(nullptr);
+		atime += 86400; //tomorrow
+		struct tm* ltime = localtime(&atime);
+
+		bool bNeedUpdate = true;
+		if (!m_szCurrentElectricityPrices_Tomorrow.empty())
 		{
-			if (
-				(jsonCurrent.isMember("data"))
-				&& (jsonCurrent["data"].isArray())
-				)
+			//check if we need to update (data is not from tomorrow)
+			Json::Value jsonCurrent;
+			if (ParseJSon(m_szCurrentElectricityPrices_Tomorrow, jsonCurrent))
 			{
-				Json::Value firstRecord = jsonCurrent["data"][0];
-				std::string szDate = firstRecord["datum"].asString();
-				time_t rtime;
-				struct tm lltime;
-				if (ParseSQLdatetime(rtime, lltime, szDate))
+				if (
+					(jsonCurrent.isMember("data"))
+					&& (jsonCurrent["data"].isArray())
+					)
 				{
-					if (
-						(lltime.tm_year == ltime->tm_year)
-						&& (lltime.tm_mon == ltime->tm_mon)
-						&& (lltime.tm_mday == ltime->tm_mday)
-						)
+					Json::Value firstRecord = jsonCurrent["data"][0];
+					std::string szDate = firstRecord["datum"].asString();
+					time_t rtime;
+					struct tm lltime;
+					if (ParseSQLdatetime(rtime, lltime, szDate))
 					{
-						return true; //no need to update
+						if (
+							(lltime.tm_year == ltime->tm_year)
+							&& (lltime.tm_mon == ltime->tm_mon)
+							&& (lltime.tm_mday == ltime->tm_mday)
+							)
+						{
+							return true; //no need to update
+						}
 					}
 				}
 			}
 		}
-	}
-	m_szCurrentElectricityPrices_Tomorrow.clear();
+		m_szCurrentElectricityPrices_Tomorrow.clear();
 
-	std::string sResult;
+		std::string sResult;
 
 #ifdef DEBUG_Enever_R
-	sResult = ReadFile("E:\\enever_stroom_morgen.json");
+		sResult = ReadFile("E:\\enever_stroom_morgen.json");
 #else
-	std::vector<std::string> ExtraHeaders;
-	if (m_szToken.empty()) {
-		return false;
-	}
+		std::vector<std::string> ExtraHeaders;
+		if (m_szToken.empty()) {
+			return false;
+		}
 
-	if (!HTTPClient::GET(MakeURL(ENEVER_FEED_ELEC_TOMORROW), ExtraHeaders, sResult))
-	{
-		Log(LOG_ERROR, "Error getting http data! (electricity_tomorrow)");
-		return false;
-	}
+		if (!HTTPClient::GET(MakeURL(ENEVER_FEED_ELEC_TOMORROW), ExtraHeaders, sResult))
+		{
+			Log(LOG_ERROR, "Error getting http data! (electricity_tomorrow)");
+			return false;
+		}
 #ifdef DEBUG_Enever_W
-	SaveString2Disk(sResult, "E:\\enever_stroom_morgen.json");
+		SaveString2Disk(sResult, "E:\\enever_stroom_morgen.json");
 #endif
 #endif
-	Debug(DEBUG_RECEIVED, "electricity_prices_tomorrow: %s", sResult.c_str());
+		Debug(DEBUG_RECEIVED, "electricity_prices_tomorrow: %s", sResult.c_str());
 
-	//Store for later usage
-	std::string szName = "Enever_Electricity_tomorrow_" + std::to_string(m_HwdID);
-	m_sql.safe_query("UPDATE UserVariables SET Value='%q', LastUpdate='%s' WHERE (Name=='%q')", sResult.c_str(), TimeToString(nullptr, TF_DateTime).c_str(), szName.c_str());
+		//Store for later usage
+		std::string szName = "Enever_Electricity_tomorrow_" + std::to_string(m_HwdID);
+		m_sql.safe_query("UPDATE UserVariables SET Value='%q', LastUpdate='%s' WHERE (Name=='%q')", sResult.c_str(), TimeToString(nullptr, TF_DateTime).c_str(), szName.c_str());
 
-	Json::Value result;
-	bool ret = ParseJSon(sResult, result);
-	if ((!ret) || (!result.isObject()))
-	{
-		Log(LOG_ERROR, "Invalid data received! (electricity_tomorrow/json)");
-		return false;
+		Json::Value result;
+		bool ret = ParseJSon(sResult, result);
+		if ((!ret) || (!result.isObject()))
+		{
+			Log(LOG_ERROR, "Invalid data received! (electricity_tomorrow/json)");
+			return false;
+		}
+		if (
+			(result["data"].empty())
+			|| (!result["data"].isArray())
+			)
+		{
+			Log(LOG_ERROR, "Invalid (no) data received (electricity prices tomorrow, data object not found). Check Token!");
+			return false;
+		}
+		m_szCurrentElectricityPrices_Tomorrow = sResult;
+		return true;
 	}
-	if (
-		(result["data"].empty())
-		|| (!result["data"].isArray())
-		)
+	catch (const std::exception& e)
 	{
-		Log(LOG_ERROR, "Invalid (no) data received (electricity prices tomorrow, data object not found). Check Token!");
-		return false;
+		Log(LOG_ERROR, "Exception (GetPriceElectricity_Tomorrow): %s!", e.what());
 	}
-	m_szCurrentElectricityPrices_Tomorrow = sResult;
-	return true;
+	return false;
 }
 
 void Enever::parseElectricity(const std::string& szElectricityData, const bool bIsToday)
 {
-	if (szElectricityData.empty())
-		return;
-
-	Json::Value root;
-	if (!ParseJSon(szElectricityData, root))
-		return;
-
-	if (root["data"].empty() == true)
+	try
 	{
-		//No date details available
-		return;
-	}
+		if (szElectricityData.empty())
+			return;
 
-	time_t atime = mytime(nullptr);
-	struct tm* ltime = localtime(&atime);
+		Json::Value root;
+		if (!ParseJSon(szElectricityData, root))
+			return;
 
-	int act_hour = ltime->tm_hour;
-
-	uint64_t idx = -1;
-
-	int64_t totalPrice = 0;
-	int totalValues = 0;
-
-	std::string szDeviceName = "Daily Electricity Price";
-
-	bool bDoesMeterExitstInSystem = false;
-	auto result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (Type==%d) AND (SubType==%d) AND (Unit==%d) AND (HardwareID==%d)", pTypeGeneral, sTypeManagedCounter, 1, m_HwdID);
-	if (!result.empty())
-	{
-		bDoesMeterExitstInSystem = true;
-	}
-
-	for (const auto& itt : root["data"])
-	{
-		std::string szDate = itt["datum"].asString();
-		std::string szPrice = itt["prijs"].asString();
-
-		time_t rtime = 0;
-		struct tm lltime;
-		if (!ParseSQLdatetime(rtime, lltime, szDate))
+		if (root["data"].empty() == true)
 		{
-			Log(LOG_ERROR, "Invalid date received (electricity prices)");
-			return; //invalid date!
+			//No date details available
+			return;
 		}
 
-		std::string szProviderPriceName = "prijs" + m_szProviderElectricity;
-		if (itt[szProviderPriceName].empty())
-			return; //no price for this provider
+		time_t atime = mytime(nullptr);
+		struct tm* ltime = localtime(&atime);
 
-		std::string szProviderPrice = itt[szProviderPriceName].asString();
-		float fProviderPrice = std::stof(szProviderPrice);
+		int act_hour = ltime->tm_hour;
 
-		int64_t iRate = (int64_t)round(fProviderPrice * 10000); //4 digts after comma!
+		uint64_t idx = -1;
 
-		bool bIsNow = (bIsToday) && (lltime.tm_hour == act_hour);
+		int64_t totalPrice = 0;
+		int totalValues = 0;
 
-		if (bIsNow)
+		std::string szDeviceName = "Daily Electricity Price";
+
+		bool bDoesMeterExitstInSystem = false;
+		auto result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (Type==%d) AND (SubType==%d) AND (Unit==%d) AND (HardwareID==%d)", pTypeGeneral, sTypeManagedCounter, 1, m_HwdID);
+		if (!result.empty())
 		{
-			SendCustomSensor(1, 1, 255, fProviderPrice, "Actual Electricity Price", "Euro / kWh");
-		}
-
-		totalPrice += iRate;
-		totalValues++;
-
-		std::string szTime = std_format("%04d-%02d-%02d %02d:%02d:%02d", lltime.tm_year + 1900, lltime.tm_mon + 1, lltime.tm_mday, lltime.tm_hour, 0, 0);
-		std::string sValue = std::to_string(iRate) + ";" + std::to_string(iRate);
-		std::string sValueDTime = sValue + ";" + szTime;
-
-		idx = UpdateValueInt("0001", 1, pTypeGeneral, sTypeManagedCounter, 12, 255, 0, sValueDTime.c_str(), szDeviceName, false, "Enever", false);
-		if (!bDoesMeterExitstInSystem)
-		{
-			//Set right units
-			m_sql.safe_query("UPDATE DeviceStatus SET SwitchType=3, AddjValue2=10000, Options='%q' WHERE (ID==%" PRIu64 ")", "ValueQuantity:RXVybyAvIGtXaA==;ValueUnits:4oKs", idx);
 			bDoesMeterExitstInSystem = true;
 		}
-		if (bIsNow)
-		{
-			UpdateValueInt("0001", 1, pTypeGeneral, sTypeManagedCounter, 12, 255, 0, sValue.c_str(), szDeviceName, false, "Enever", true);
-		}
-	}
-	if (bIsToday)
-	{
-		if (idx != -1)
-		{
-			if (totalValues != 0)
-			{
-				//Set average day price
-				int64_t avgPrice = totalPrice / totalValues;
-				std::string szTime = std_format("%04d-%02d-%02d", ltime->tm_year + 1900, ltime->tm_mon + 1, ltime->tm_mday);
-				std::string sValue = std::to_string(avgPrice) + ";" + std::to_string(avgPrice) + ";" + szTime;
-				UpdateValueInt("0001", 1, pTypeGeneral, sTypeManagedCounter, 12, 255, 0, sValue.c_str(), szDeviceName, false, "Enever", true);
 
-				//Set average day price in Uservariable
-				std::string szVarName = "Electricity_Price_Average_Today_" + std::to_string(m_HwdID);
-				std::string szVarValue = std_format("%.4f", (float)avgPrice / 10000);
-				std::string errorMessage;
-				m_sql.AddUserVariableEx(szVarName, USERVARTYPE_FLOAT, szVarValue, true, errorMessage);
+		for (const auto& itt : root["data"])
+		{
+			std::string szDate = itt["datum"].asString();
+			std::string szPrice = itt["prijs"].asString();
+
+			time_t rtime = 0;
+			struct tm lltime;
+			if (!ParseSQLdatetime(rtime, lltime, szDate))
+			{
+				Log(LOG_ERROR, "Invalid date received (electricity prices)");
+				return; //invalid date!
+			}
+
+			std::string szProviderPriceName = "prijs" + m_szProviderElectricity;
+			if (itt[szProviderPriceName].empty())
+				return; //no price for this provider
+
+			std::string szProviderPrice = itt[szProviderPriceName].asString();
+			float fProviderPrice = std::stof(szProviderPrice);
+
+			int64_t iRate = (int64_t)round(fProviderPrice * 10000); //4 digts after comma!
+
+			bool bIsNow = (bIsToday) && (lltime.tm_hour == act_hour);
+
+			if (bIsNow)
+			{
+				SendCustomSensor(1, 1, 255, fProviderPrice, "Actual Electricity Price", "Euro / kWh");
+			}
+
+			totalPrice += iRate;
+			totalValues++;
+
+			std::string szTime = std_format("%04d-%02d-%02d %02d:%02d:%02d", lltime.tm_year + 1900, lltime.tm_mon + 1, lltime.tm_mday, lltime.tm_hour, 0, 0);
+			std::string sValue = std::to_string(iRate) + ";" + std::to_string(iRate);
+			std::string sValueDTime = sValue + ";" + szTime;
+
+			idx = UpdateValueInt("0001", 1, pTypeGeneral, sTypeManagedCounter, 12, 255, 0, sValueDTime.c_str(), szDeviceName, false, "Enever", false);
+			if (!bDoesMeterExitstInSystem)
+			{
+				//Set right units
+				m_sql.safe_query("UPDATE DeviceStatus SET SwitchType=3, AddjValue2=10000, Options='%q' WHERE (ID==%" PRIu64 ")", "ValueQuantity:RXVybyAvIGtXaA==;ValueUnits:4oKs", idx);
+				bDoesMeterExitstInSystem = true;
+			}
+			if (bIsNow)
+			{
+				UpdateValueInt("0001", 1, pTypeGeneral, sTypeManagedCounter, 12, 255, 0, sValue.c_str(), szDeviceName, false, "Enever", true);
 			}
 		}
+		if (bIsToday)
+		{
+			if (idx != -1)
+			{
+				if (totalValues != 0)
+				{
+					//Set average day price
+					int64_t avgPrice = totalPrice / totalValues;
+					std::string szTime = std_format("%04d-%02d-%02d", ltime->tm_year + 1900, ltime->tm_mon + 1, ltime->tm_mday);
+					std::string sValue = std::to_string(avgPrice) + ";" + std::to_string(avgPrice) + ";" + szTime;
+					UpdateValueInt("0001", 1, pTypeGeneral, sTypeManagedCounter, 12, 255, 0, sValue.c_str(), szDeviceName, false, "Enever", true);
+
+					//Set average day price in Uservariable
+					std::string szVarName = "Electricity_Price_Average_Today_" + std::to_string(m_HwdID);
+					std::string szVarValue = std_format("%.4f", (float)avgPrice / 10000);
+					std::string errorMessage;
+					m_sql.AddUserVariableEx(szVarName, USERVARTYPE_FLOAT, szVarValue, true, errorMessage);
+				}
+			}
+		}
+	}
+	catch (const std::exception& e)
+	{
+		Log(LOG_ERROR, "Exception (parseElectricity): %s!", e.what());
+		return;
 	}
 }
 
 //Gas price is valid from 06:00am today till 06:00am tomorrow
 bool Enever::GetPriceGas(const bool bForce)
 {
-	std::string sResult;
-
-	if (
-		(!m_szCurrentGasPrices.empty())
-		&& (!bForce)
-		)
-		return true; //we still have current data
-
-	if (!m_szCurrentGasPrices.empty())
+	try
 	{
-		//check if we need to update (data is not from today)
-		time_t atime = mytime(nullptr);
-		struct tm* ltime = localtime(&atime);
-		Json::Value jsonCurrent;
-		if (ParseJSon(m_szCurrentGasPrices, jsonCurrent))
+		std::string sResult;
+
+		if (
+			(!m_szCurrentGasPrices.empty())
+			&& (!bForce)
+			)
+			return true; //we still have current data
+
+		if (!m_szCurrentGasPrices.empty())
 		{
-			if (
-				(jsonCurrent.isMember("data"))
-				&& (jsonCurrent["data"].isArray())
-				)
+			//check if we need to update (data is not from today)
+			time_t atime = mytime(nullptr);
+			struct tm* ltime = localtime(&atime);
+			Json::Value jsonCurrent;
+			if (ParseJSon(m_szCurrentGasPrices, jsonCurrent))
 			{
-				Json::Value firstRecord = jsonCurrent["data"][0];
-				std::string szDate = firstRecord["datum"].asString();
-				time_t rtime;
-				struct tm lltime;
-				if (ParseSQLdatetime(rtime, lltime, szDate))
+				if (
+					(jsonCurrent.isMember("data"))
+					&& (jsonCurrent["data"].isArray())
+					)
 				{
-					if (
-						(lltime.tm_year == ltime->tm_year)
-						&& (lltime.tm_mon == ltime->tm_mon)
-						&& (lltime.tm_mday == ltime->tm_mday)
-						)
+					Json::Value firstRecord = jsonCurrent["data"][0];
+					std::string szDate = firstRecord["datum"].asString();
+					time_t rtime;
+					struct tm lltime;
+					if (ParseSQLdatetime(rtime, lltime, szDate))
 					{
-						return true; //data is from today, no need to update
+						if (
+							(lltime.tm_year == ltime->tm_year)
+							&& (lltime.tm_mon == ltime->tm_mon)
+							&& (lltime.tm_mday == ltime->tm_mday)
+							)
+						{
+							return true; //data is from today, no need to update
+						}
 					}
 				}
 			}
 		}
-	}
-	m_szCurrentGasPrices.clear();
+		m_szCurrentGasPrices.clear();
 #ifdef DEBUG_Enever_R
-	sResult = ReadFile("E:\\enever_gas.json");
+		sResult = ReadFile("E:\\enever_gas.json");
 #else
-	std::vector<std::string> ExtraHeaders;
-	if (m_szToken.empty()) {
-		return false;
-	}
+		std::vector<std::string> ExtraHeaders;
+		if (m_szToken.empty()) {
+			return false;
+		}
 
-	if (!HTTPClient::GET(MakeURL(ENEVER_FEED_GAS_TODAY), ExtraHeaders, sResult))
-	{
-		Log(LOG_ERROR, "Error getting http data! (gas)");
-		return false;
-	}
+		if (!HTTPClient::GET(MakeURL(ENEVER_FEED_GAS_TODAY), ExtraHeaders, sResult))
+		{
+			Log(LOG_ERROR, "Error getting http data! (gas)");
+			return false;
+		}
 #ifdef DEBUG_Enever_W
-	SaveString2Disk(sResult, "E:\\enever_gas.json");
+		SaveString2Disk(sResult, "E:\\enever_gas.json");
 #endif
 #endif
-	Debug(DEBUG_RECEIVED, "gas_prices: %s", sResult.c_str());
+		Debug(DEBUG_RECEIVED, "gas_prices: %s", sResult.c_str());
 
-	//Store for later usage
-	std::string szName = "Enever_Gas_" + std::to_string(m_HwdID);
-	m_sql.safe_query("UPDATE UserVariables SET Value='%q', LastUpdate='%s' WHERE (Name=='%q')", sResult.c_str(), TimeToString(nullptr, TF_DateTime).c_str(), szName.c_str());
+		//Store for later usage
+		std::string szName = "Enever_Gas_" + std::to_string(m_HwdID);
+		m_sql.safe_query("UPDATE UserVariables SET Value='%q', LastUpdate='%s' WHERE (Name=='%q')", sResult.c_str(), TimeToString(nullptr, TF_DateTime).c_str(), szName.c_str());
 
-	Json::Value result;
-	bool ret = ParseJSon(sResult, result);
-	if ((!ret) || (!result.isObject()))
-	{
-		Log(LOG_ERROR, "Invalid data received! (gas/json)");
-		return false;
+		Json::Value result;
+		bool ret = ParseJSon(sResult, result);
+		if ((!ret) || (!result.isObject()))
+		{
+			Log(LOG_ERROR, "Invalid data received! (gas/json)");
+			return false;
+		}
+		if (
+			(result["data"].empty())
+			|| (!result["data"].isArray())
+			)
+		{
+			Log(LOG_ERROR, "Invalid (no) data received (gas prices, date object not found). Check Token!");
+			return false;
+		}
+		m_szCurrentGasPrices = sResult;
+		return true;
 	}
-	if (
-		(result["data"].empty())
-		|| (!result["data"].isArray())
-		)
+	catch (const std::exception& e)
 	{
-		Log(LOG_ERROR, "Invalid (no) data received (gas prices, date object not found). Check Token!");
-		return false;
+		Log(LOG_ERROR, "Exception (GetPriceElectricity_Tomorrow): %s!", e.what());
 	}
-	m_szCurrentGasPrices = sResult;
-	return true;
+	return false;
 }
 
 //Gas prices are for the entire day
 void Enever::parseGas()
 {
-	if (m_szCurrentGasPrices.empty())
-		return;
-
-	Json::Value root;
-	if (!ParseJSon(m_szCurrentGasPrices, root))
-		return;
-
-	if (root["data"].empty() == true)
+	try
 	{
-		//No date details available
-		return;
-	}
+		if (m_szCurrentGasPrices.empty())
+			return;
 
-	bool bDoesMeterExitstInSystem = false;
-	auto result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (Type==%d) AND (SubType==%d) AND (Unit==%d) AND (HardwareID==%d)", pTypeGeneral, sTypeManagedCounter, 2, m_HwdID);
-	if (!result.empty())
+		Json::Value root;
+		if (!ParseJSon(m_szCurrentGasPrices, root))
+			return;
+
+		if (root["data"].empty() == true)
+		{
+			//No date details available
+			return;
+		}
+
+		bool bDoesMeterExitstInSystem = false;
+		auto result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (Type==%d) AND (SubType==%d) AND (Unit==%d) AND (HardwareID==%d)", pTypeGeneral, sTypeManagedCounter, 2, m_HwdID);
+		if (!result.empty())
+		{
+			bDoesMeterExitstInSystem = true;
+		}
+
+		time_t atime = mytime(nullptr);
+		struct tm* ltime = localtime(&atime);
+
+		std::string szDate = root["data"][0]["datum"].asString();
+		std::string szPrice = root["data"][0]["prijs"].asString();
+
+		time_t rtime;
+		struct tm lltime;
+		if (!ParseSQLdatetime(rtime, lltime, szDate))
+		{
+			Log(LOG_ERROR, "Invalid date received (gas prices)");
+			return; //invalid date!
+		}
+
+		std::string szProviderPriceName = "prijs" + m_szProviderGas;
+		if (root["data"][0][szProviderPriceName].empty())
+			return; //no price for this provider
+
+		std::string szProviderPrice = root["data"][0][szProviderPriceName].asString();
+		float fProviderPrice = std::stof(szProviderPrice);
+
+		SendCustomSensor(1, 2, 255, fProviderPrice, "Actual Gas Price", "Euro / m3");
+
+		std::string szTime = std_format("%04d-%02d-%02d", ltime->tm_year + 1900, ltime->tm_mon + 1, ltime->tm_mday);
+
+		int64_t iRate = (int64_t)round(fProviderPrice * 10000); //4 digts after comma!
+
+		std::string sValueDTime = std::to_string(iRate) + ";" + std::to_string(iRate) + ";" + szTime;
+
+		std::string szDeviceName = "Daily Gas Price";
+		int64_t idx = UpdateValueInt("0001", 2, pTypeGeneral, sTypeManagedCounter, 12, 255, 0, sValueDTime.c_str(), szDeviceName, false, "Enever", true);
+		if (!bDoesMeterExitstInSystem)
+		{
+			//Set right units
+			m_sql.safe_query("UPDATE DeviceStatus SET SwitchType=3, AddjValue2=10000, Options='%q' WHERE (ID==%" PRIu64 ")", "ValueQuantity:RXVybyAvIG0z;ValueUnits:4oKs", idx);
+			bDoesMeterExitstInSystem = true;
+		}
+
+		//Set average day price in Uservariable
+		std::string szVarName = "Gas_Price_Average_Today_" + std::to_string(m_HwdID);
+		std::string szVarValue = std_format("%.4f", (float)iRate / 10000);
+		std::string errorMessage;
+		m_sql.AddUserVariableEx(szVarName, USERVARTYPE_FLOAT, szVarValue, true, errorMessage);
+
+		//Short log value
+		szTime = std_format("%04d-%02d-%02d %02d:%02d:%02d", lltime.tm_year + 1900, lltime.tm_mon + 1, lltime.tm_mday, lltime.tm_hour, 0, 0);
+		std::string sValue = std::to_string(iRate) + ";" + std::to_string(iRate);
+		sValueDTime = sValue + ";" + szTime;
+		UpdateValueInt("0001", 2, pTypeGeneral, sTypeManagedCounter, 12, 255, 0, sValueDTime.c_str(), szDeviceName, false, "Enever", false);
+
+		//Current state
+		UpdateValueInt("0001", 2, pTypeGeneral, sTypeManagedCounter, 12, 255, 0, sValue.c_str(), szDeviceName, false, "Enever", true);
+	}
+	catch (const std::exception& e)
 	{
-		bDoesMeterExitstInSystem = true;
+		Log(LOG_ERROR, "Exception (parse_Gas): %s!", e.what());
 	}
-
-	time_t atime = mytime(nullptr);
-	struct tm* ltime = localtime(&atime);
-
-	std::string szDate = root["data"][0]["datum"].asString();
-	std::string szPrice = root["data"][0]["prijs"].asString();
-
-	time_t rtime;
-	struct tm lltime;
-	if (!ParseSQLdatetime(rtime, lltime, szDate))
-	{
-		Log(LOG_ERROR, "Invalid date received (gas prices)");
-		return; //invalid date!
-	}
-
-	std::string szProviderPriceName = "prijs" + m_szProviderGas;
-	if (root["data"][0][szProviderPriceName].empty())
-		return; //no price for this provider
-
-	std::string szProviderPrice = root["data"][0][szProviderPriceName].asString();
-	float fProviderPrice = std::stof(szProviderPrice);
-
-	SendCustomSensor(1, 2, 255, fProviderPrice, "Actual Gas Price", "Euro / m3");
-
-	std::string szTime = std_format("%04d-%02d-%02d", ltime->tm_year + 1900, ltime->tm_mon + 1, ltime->tm_mday);
-
-	int64_t iRate = (int64_t)round(fProviderPrice * 10000); //4 digts after comma!
-
-	std::string sValueDTime = std::to_string(iRate) + ";" + std::to_string(iRate) + ";" + szTime;
-
-	std::string szDeviceName = "Daily Gas Price";
-	int64_t idx = UpdateValueInt("0001", 2, pTypeGeneral, sTypeManagedCounter, 12, 255, 0, sValueDTime.c_str(), szDeviceName, false, "Enever", true);
-	if (!bDoesMeterExitstInSystem)
-	{
-		//Set right units
-		m_sql.safe_query("UPDATE DeviceStatus SET SwitchType=3, AddjValue2=10000, Options='%q' WHERE (ID==%" PRIu64 ")", "ValueQuantity:RXVybyAvIG0z;ValueUnits:4oKs", idx);
-		bDoesMeterExitstInSystem = true;
-	}
-
-	//Set average day price in Uservariable
-	std::string szVarName = "Gas_Price_Average_Today_" + std::to_string(m_HwdID);
-	std::string szVarValue = std_format("%.4f", (float)iRate / 10000);
-	std::string errorMessage;
-	m_sql.AddUserVariableEx(szVarName, USERVARTYPE_FLOAT, szVarValue, true, errorMessage);
-
-	//Short log value
-	szTime = std_format("%04d-%02d-%02d %02d:%02d:%02d", lltime.tm_year + 1900, lltime.tm_mon + 1, lltime.tm_mday, lltime.tm_hour, 0, 0);
-	std::string sValue = std::to_string(iRate) + ";" + std::to_string(iRate);
-	sValueDTime = sValue + ";" + szTime;
-	UpdateValueInt("0001", 2, pTypeGeneral, sTypeManagedCounter, 12, 255, 0, sValueDTime.c_str(), szDeviceName, false, "Enever", false);
-
-	//Current state
-	UpdateValueInt("0001", 2, pTypeGeneral, sTypeManagedCounter, 12, 255, 0, sValue.c_str(), szDeviceName, false, "Enever", true);
 }

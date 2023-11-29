@@ -130,7 +130,7 @@ void KMTronicUDP::GetMeterDetails()
 {
 	//status command
 
-	int udpSocket, n;
+	SOCKET udpSocket, n;
 	struct sockaddr_in udpClient;
 	char buf[8];
 	socklen_t serverlen;

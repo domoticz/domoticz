@@ -643,7 +643,7 @@ void CNest::SetSetpoint(const int idx, const float temp)
 		if (!Login())
 			return;
 	}
-	size_t iThermostat = (idx - 1) / 3;
+	int iThermostat = (idx - 1) / 3;
 	if (iThermostat > m_thermostats.size())
 		return;
 
@@ -689,7 +689,7 @@ bool CNest::SetAway(const unsigned char Idx, const bool bIsAway)
 			return false;
 	}
 
-	size_t iThermostat = (Idx - 3) / 3;
+	int iThermostat = (Idx - 3) / 3;
 	if (iThermostat > m_thermostats.size())
 		return false;
 
@@ -729,7 +729,7 @@ bool CNest::SetManualEcoMode(const unsigned char Idx, const bool bIsManualEcoMod
 			return false;
 	}
 
-	size_t iThermostat = (Idx - 4) / 3;
+	int iThermostat = (Idx - 4) / 3;
 	if (iThermostat > m_thermostats.size())
 		return false;
 

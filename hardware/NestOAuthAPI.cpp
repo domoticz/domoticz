@@ -615,7 +615,7 @@ void CNestOAuthAPI::SetSetpoint(const int idx, const float temp)
 			return;
 	}
 
-	size_t iThermostat = (idx - 1) / 3;
+	int iThermostat = (idx - 1) / 3;
 	if (iThermostat > m_thermostats.size())
 		return;
 
@@ -655,7 +655,7 @@ void CNestOAuthAPI::SetSetpoint(const int idx, const float temp)
 bool CNestOAuthAPI::SetManualEcoMode(const unsigned char node_id, const bool bIsOn)
 {
 	// Determine the index for the thermostat.
-	size_t iThermostat = (node_id - 4) / 3;
+	int iThermostat = (node_id - 4) / 3;
 
 	// Check if we even got that many thermostats.
 	if (iThermostat > m_thermostats.size())
@@ -735,7 +735,7 @@ bool CNestOAuthAPI::PushToNestApi(const std::string & /*sMethod*/, const std::st
 
 bool CNestOAuthAPI::SetAway(const unsigned char Idx, const bool bIsAway)
 {
-	size_t iStructure = (Idx - 3) / 3;
+	int iStructure = (Idx - 3) / 3;
 	if (iStructure > m_structures.size())
 		return false;
 
