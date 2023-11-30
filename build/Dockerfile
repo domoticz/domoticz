@@ -50,6 +50,8 @@ RUN VERSION_=$(echo ${BOOST_VERSION} | tr . _) \
  && cd .. \
  && rm -fr boost_${VERSION_}
 
+RUN git config --global --add safe.directory '*'
+
 COPY build-helper.sh .
 
 EXPOSE 8080
