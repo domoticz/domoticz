@@ -1972,27 +1972,6 @@ namespace http {
 			if(parse_cookie(req, sSID, sAuthToken, szTime, expired))
 			{
 				time_t now = mytime(nullptr);
-				if (session.rights == URIGHTS_ADMIN)
-				{
-					if (!sSID.empty())
-					{
-						WebEmSession* oldSession = myWebem->GetSession(sSID);
-						if (oldSession == nullptr)
-						{
-							session.id = sSID;
-							session.auth_token = sAuthToken;
-							expired = (!checkAuthToken(session));
-						}
-						else
-						{
-							session = *oldSession;
-							expired = (oldSession->expires < now);
-						}
-					}
-					if (sSID.empty() || expired)
-						session.isnew = true;	// There was a cookie, but it was expired or the session was not found
-					return true;
-				}
 
 				if (!(sSID.empty() || sAuthToken.empty() || szTime.empty()))
 				{
