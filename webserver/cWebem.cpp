@@ -2350,48 +2350,6 @@ namespace http {
 			// Set timeout to make session in use
 			session.timeout = mytime(nullptr) + SHORT_SESSION_TIMEOUT;
 
-			if ((session.isnew == true) &&
-				(session.rights == URIGHTS_ADMIN) &&
-				(req.uri.find("json.htm") != std::string::npos) &&
-				(req.uri.find("logincheck") == std::string::npos)
-				)
-			{
-				// client is possibly a script that does not send cookies - see if we have the IP address registered as a session ID
-				WebEmSession* memSession = myWebem->GetSession(session.remote_host);
-				time_t now = mytime(nullptr);
-				if (memSession != nullptr)
-				{
-					if (memSession->expires < now)
-					{
-						myWebem->RemoveSession(session.remote_host);
-					}
-					else
-					{
-						session.isnew = false;
-						if (memSession->expires - (SHORT_SESSION_TIMEOUT / 2) < now)
-						{
-							memSession->expires = now + SHORT_SESSION_TIMEOUT;
-
-							// unsure about the point of the forced removal of 'live' sessions and restore from
-							// database but these 'fake' sessions are memory only and can't be restored that way.
-							// Should I do a RemoveSession() followed by a AddSession()?
-							// For now: keep 'timeout' in sync with 'expires'
-							memSession->timeout = memSession->expires;
-						}
-					}
-				}
-
-				if (session.isnew == true)
-				{
-					// register a 'fake' IP based session so we can reference that if the client returns here
-					session.id = session.remote_host;
-					session.rights = -1; // predictable session ID must have no rights
-					session.expires = session.timeout;
-					myWebem->AddSession(session);
-					session.rights = 2; // restore session rights
-				}
-			}
-
 			if (session.isnew == true && req.uri.find("json.htm") == std::string::npos)	// No session found and we need a session (not for API calls), create a new one
 			{
 				_log.Log(LOG_STATUS, "[web:%s] Incoming connection from: %s", myWebem->GetPort().c_str(), session.remote_host.c_str());
