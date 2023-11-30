@@ -644,7 +644,7 @@ void CNest::SetSetpoint(const int idx, const float temp)
 			return;
 	}
 	int iThermostat = (idx - 1) / 3;
-	if (iThermostat > m_thermostats.size())
+	if (iThermostat > (int)m_thermostats.size())
 		return;
 
 	std::vector<std::string> ExtraHeaders;
@@ -690,7 +690,7 @@ bool CNest::SetAway(const unsigned char Idx, const bool bIsAway)
 	}
 
 	int iThermostat = (Idx - 3) / 3;
-	if (iThermostat > m_thermostats.size())
+	if (iThermostat > (int)m_thermostats.size())
 		return false;
 
 	std::vector<std::string> ExtraHeaders;
@@ -730,7 +730,7 @@ bool CNest::SetManualEcoMode(const unsigned char Idx, const bool bIsManualEcoMod
 	}
 
 	int iThermostat = (Idx - 4) / 3;
-	if (iThermostat > m_thermostats.size())
+	if (iThermostat > (int)m_thermostats.size())
 		return false;
 
 	std::vector<std::string> ExtraHeaders;

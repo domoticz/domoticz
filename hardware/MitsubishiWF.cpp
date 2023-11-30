@@ -883,7 +883,7 @@ void MitsubishiWF::TranslateAirconStat(const std::string& szStat, _tAircoStatus&
 	int8_t* vals = content_byte_array + start_length + 19;// len(content_byte_array) - 2
 	size_t len = szStat.size() - 2 - start_length - 19;
 
-	for (int i = 0; i < len; i += 4)
+	for (int i = 0; i < (int)len; i += 4)
 	{
 		if (vals[i] == -128 && vals[i + 1] == 16)
 		{
