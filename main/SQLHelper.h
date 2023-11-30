@@ -543,6 +543,8 @@ class CSQLHelper : public StoppableTask
 	bool CheckTime(const std::string &sTime);
 	void SendUpdateInt(const std::string& Idx);
 
+	void CorrectOffDelaySwitchStates();
+
 	std::vector<std::vector<std::string>> query(const std::string &szQuery);
 	std::vector<std::vector<std::string>> queryBlob(const std::string &szQuery);
 };

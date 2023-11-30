@@ -30,6 +30,7 @@ Version 2023.xxxxx (xxxxx 2023)
 - Fixed: MQTT-AD: prevent blind from updating on non-numeric state changes
 - Fixed: MQTT-AD, RGB dimmers did not work correctly in scenes/timers
 - Fixed: Sunset/rise timers now correctly set the time for next day
+- Fixed: Switches defined with "Off Delay" are not set to "Off" at startup
 - Removed: OpenZWave (Move to ZWaveJS-UI in combination with MQTT Auto Discovery)
 
 Version 2023.2 (July 21 2023)

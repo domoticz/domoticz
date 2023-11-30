@@ -3563,6 +3563,8 @@ bool CSQLHelper::OpenDatabase()
 	//Update version in database
 	UpdatePreferencesVar("Domoticz_Version", szAppVersion);
 
+	CorrectOffDelaySwitchStates();
+
 	//Start background thread
 	if (!StartThread())
 		return false;
@@ -9699,4 +9701,17 @@ float CSQLHelper::GetCounterDivider(const int metertype, const int dType, const 
 			divider = 1.0F;
 	}
 	return divider;
+}
+
+//Sets all switches that have a OFF delay configured to OFF
+void CSQLHelper::CorrectOffDelaySwitchStates()
+{
+	auto result = safe_query("SELECT ID FROM DeviceStatus WHERE (AddjValue!=0) AND (nValue!=0)");
+	if (!result.empty())
+	{
+		for (const auto &sd : result)
+		{
+			UpdateDeviceValue("nValue", 0, sd[0]);
+		}
+	}
 }
