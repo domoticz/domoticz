@@ -2413,7 +2413,7 @@ namespace http {
 				}
 			}
 
-			if (session.isnew == true)
+			if (session.isnew == true && req.uri.find("json.htm") == std::string::npos)	// No session found and we need a session (not for API calls), create a new one
 			{
 				_log.Log(LOG_STATUS, "[web:%s] Incoming connection from: %s", myWebem->GetPort().c_str(), session.remote_host.c_str());
 				// Create a new session ID
@@ -2429,9 +2429,8 @@ namespace http {
 				myWebem->AddSession(session);
 				send_cookie(rep, session);
 			}
-			else if (!session.id.empty())
+			else if (!session.id.empty())	// Session found, Renew session expiration and authentication token
 			{
-				// Renew session expiration and authentication token
 				WebEmSession* memSession = myWebem->GetSession(session.id);
 				if (memSession != nullptr)
 				{
