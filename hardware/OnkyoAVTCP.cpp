@@ -317,7 +317,7 @@ bool OnkyoAVTCP::SendPacket(const char *pdata)
 
 	pPkt->magic = htonl(0x49534350); // "ISCP"
 	pPkt->hdr_size = htonl(16);
-	pPkt->data_size = static_cast<uint32_t>(htonl(length + 3));
+	pPkt->data_size = static_cast<uint32_t>(htonl((unsigned long)length + 3));
 	pPkt->version = 1;
 	memset(pPkt->reserved, 0, sizeof(pPkt->reserved));
 	pPkt->start = '!';
