@@ -169,7 +169,6 @@ run)
 check|updateIndexDefines|test)
     if [ -n "$PROJECT" ]; then
         do_make $PROJECT $CMD
-    else
     fi
     ;;
 shell)
