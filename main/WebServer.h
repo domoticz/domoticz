@@ -150,18 +150,6 @@ private:
 	void Cmd_LMSGetPlaylists(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_LMSMediaCommand(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_LMSDeleteUnusedDevices(WebEmSession & session, const request& req, Json::Value &root);
-	void Cmd_SaveFibaroLinkConfig(WebEmSession & session, const request& req, Json::Value &root);
-	void Cmd_GetFibaroLinkConfig(WebEmSession & session, const request& req, Json::Value &root);
-	void Cmd_GetFibaroLinks(WebEmSession & session, const request& req, Json::Value &root);
-	void Cmd_SaveFibaroLink(WebEmSession & session, const request& req, Json::Value &root);
-	void Cmd_DeleteFibaroLink(WebEmSession & session, const request& req, Json::Value &root);
-	void Cmd_GetDevicesForFibaroLink(WebEmSession & session, const request& req, Json::Value &root);
-	void Cmd_SaveInfluxLinkConfig(WebEmSession & session, const request& req, Json::Value &root);
-	void Cmd_GetInfluxLinkConfig(WebEmSession & session, const request& req, Json::Value &root);
-	void Cmd_GetInfluxLinks(WebEmSession & session, const request& req, Json::Value &root);
-	void Cmd_SaveInfluxLink(WebEmSession & session, const request& req, Json::Value &root);
-	void Cmd_DeleteInfluxLink(WebEmSession & session, const request& req, Json::Value &root);
-	void Cmd_GetDevicesForInfluxLink(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_GetDeviceValueOptions(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_GetDeviceValueOptionWording(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_DeleteUserVariable(WebEmSession & session, const request& req, Json::Value &root);
@@ -249,6 +237,18 @@ private:
 	void Cmd_UpdateCustomIcon(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_RenameDevice(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_SetDeviceUsed(WebEmSession & session, const request& req, Json::Value &root);
+
+	//Pushers
+	void Cmd_SaveFibaroLinkConfig(WebEmSession& session, const request& req, Json::Value& root);
+	void Cmd_GetFibaroLinkConfig(WebEmSession& session, const request& req, Json::Value& root);
+	void Cmd_GetFibaroLinks(WebEmSession& session, const request& req, Json::Value& root);
+	void Cmd_SaveFibaroLink(WebEmSession& session, const request& req, Json::Value& root);
+	void Cmd_DeleteFibaroLink(WebEmSession& session, const request& req, Json::Value& root);
+	void Cmd_SaveInfluxLinkConfig(WebEmSession& session, const request& req, Json::Value& root);
+	void Cmd_GetInfluxLinkConfig(WebEmSession& session, const request& req, Json::Value& root);
+	void Cmd_GetInfluxLinks(WebEmSession& session, const request& req, Json::Value& root);
+	void Cmd_SaveInfluxLink(WebEmSession& session, const request& req, Json::Value& root);
+	void Cmd_DeleteInfluxLink(WebEmSession& session, const request& req, Json::Value& root);
 	void Cmd_SaveHttpLinkConfig(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_GetHttpLinkConfig(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_GetHttpLinks(WebEmSession & session, const request& req, Json::Value &root);
@@ -259,6 +259,7 @@ private:
 	void Cmd_GetGooglePubSubLinks(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_SaveGooglePubSubLink(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_DeleteGooglePubSubLink(WebEmSession & session, const request& req, Json::Value &root);
+
 	void Cmd_AddLogMessage(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_ClearShortLog(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_VacuumDatabase(WebEmSession & session, const request& req, Json::Value &root);
