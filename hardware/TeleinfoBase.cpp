@@ -677,15 +677,12 @@ void CTeleinfoBase::MatchLine()
 		// Color of tomorow
 		int tomorow = ( m_teleinfo.STGE & 0x0C000000 ) >> 26;
 
-		// If 0 then tomorow color is identical to today's color 
-		if ( tomorow == 0 ) tomorow = ( m_teleinfo.STGE & 0x03000000 ) >> 24;
-
 		switch (tomorow)
 		{
 			case 1: m_teleinfo.DEMAIN = "BLEU"; break;
 			case 2: m_teleinfo.DEMAIN = "BLAN"; break;
 			case 3: m_teleinfo.DEMAIN = "ROUG"; break;		
-			default: break;
+			default: m_teleinfo.DEMAIN = "----"; break;
 		}
 	}
 	
