@@ -2,7 +2,9 @@
 
 #include "BasePush.h"
 
-class CFibaroPush : public CBasePush
+#include "../main/StoppableTask.h"
+
+class CFibaroPush : public CBasePush, public StoppableTask
 {
 public:
 	CFibaroPush();

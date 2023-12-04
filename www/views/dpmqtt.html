@@ -1,0 +1,98 @@
+<div id="mqttmain" class="container">
+    <table class="display" id="mqlinktable" border="0" cellpadding="0" cellspacing="0" width="100%">
+        <thead>
+            <tr>
+				<th width="60" align="left">Idx</th>
+				<th align="left" data-i18n="Device name">Device name</th>
+				<th width="140" align="left" data-i18n="Value to send">Value to send</th>
+				<th width="120" align="left" data-i18n="Target type">Target type</th>
+				<th width="60" align="left" data-i18n="Enabled">Enabled</th>
+            </tr>
+        </thead>		
+    </table>
+	<p>
+	<table width="100%">
+	<tr>
+	<td valign="top" >
+	<h2 data-i18n="Edit link">Edit link</h2><br>
+	<table class="display" id="linkparamstable" border="0" cellpadding="0" cellspacing="20">
+		<tr id="targetdevicename">
+			<td align="right" style="width:110px"><label for="devicename"><span data-i18n="Device name"></span>:</label></td>
+			<td><select id="devicename" style="width:280px" class="combobox ui-corner-all" onchange="ValueSelectorUpdate();"></select></td>
+		</tr>
+		<tr id="variabletosend">
+			<td align="right"><label for="name"><span data-i18n="Value to send"></span>:</label></td>
+			<!--<td><input type="text" id="valuetosend" value="0" style="width: 50px; padding: .2em;" class="text ui-widget-content ui-corner-all"> (<span data-i18n="0 = nvalue, 1 = svalue field 1, 2 = svalue field 2, etc."></span>)</td>-->
+			<td><select id="combosendvalue" style="width:160px" class="combobox ui-corner-all"></select>
+		</tr>
+		<tr>
+			<td align="right"><label for="combotargettype"><span data-i18n="Target type"></span>:</label></td>
+			<td><select id="combotargettype" style="width:160px" class="combobox ui-corner-all">
+					<option value="0" data-i18n="On Value Change">On Value Change</option>
+					<option value="1" data-i18n="Direct">Direct</option>
+					<!--<option value="2" data-i18n="On Interval">On Interval</option>-->
+				</select>
+			</td>
+		</tr>
+		<tr id="targetlinkenabled">
+			<td align="right" style="width:80px"><span data-i18n="Link active"></span>:</td>
+			<td><input type="checkbox" id="linkenabled" checked><label for="linkenabled"></td>
+		</tr>
+		<tr>
+			<td colspan="2">
+				<a class="btnstyle3" onclick="AddLink('a');" data-i18n="Add">Add</a>
+				<a class="btnstyle3-dis" id="linkupdate" data-i18n="Update">Update</a>&nbsp;&nbsp;&nbsp;
+				<a class="btnstyle3-dis" id="linkdelete" data-i18n="Delete">Delete</a>
+			</td>
+		</tr>	
+	</table>
+	</td>
+	<td valign="top" >
+	<h2 data-i18n="General settings">General settings</h2><br>
+		<table class="display" id="mqttremote" border="0" cellpadding="0" cellspacing="20">
+		<tr>
+			<td align="right" style="width:110px"><span data-i18n="Enabled"></span>:</td>
+			<td><input type="checkbox" id="linkactive" checked><label for="linkactive"></td>
+		</tr>
+		<tr>
+			<td align="right" style="width:110px"><label><span data-i18n="Remote Address"></span>:</label></td>
+			<td><input type="text" id="ipaddress" style="width: 250px; padding: .2em;" class="text ui-widget-content ui-corner-all"></td>
+		</tr>
+		<tr>
+			<td align="right"><label><span data-i18n="Port"></span>:</label></td>
+			<td><input type="text" id="port" style="width: 60px; padding: .2em;" class="text ui-widget-content ui-corner-all"></td>
+		</tr>
+		<tr>
+			<td align="right"><label><span data-i18n="Username"></span>:</label></td>
+			<td><input type="text" id="username" style="width: 150px; padding: .2em;" class="text ui-widget-content ui-corner-all"></td>
+		</tr>
+		<tr>
+			<td align="right"><label><span data-i18n="Password"></span>:</label></td>
+			<td><input type="password" id="password" style="width: 350px; padding: .2em;" class="text ui-widget-content ui-corner-all"></td>
+		</tr>
+		<tr>
+			<td align="right"><label><span data-i18n="Topic Out Prefix"></span>:</label></td>
+			<td>
+				<input type="text" id="topicout" style="width: 300px; padding: .2em;" class="text ui-widget-content ui-corner-all" value="domoticz">
+			</td>
+		</tr>
+		<tr>
+			<td align="right"><label><span data-i18n="CA Filename">CA Filename</span>:</label></td>
+			<td><input type="text" id="cafile" style="width: 300px; padding: .2em;" class="text ui-widget-content ui-corner-all"></td>
+		</tr>
+		<tr>
+			<td align="right"><label><span data-i18n="TLS Version">TLS Version</span>:</label></td>
+			<td>
+				<select id="combotlsversion" style="width:200px" class="combobox ui-corner-all">
+					<option value="0">tlsv1</option>
+					<option value="1">tlsv1.1</option>
+					<option value="2">tlsv1.2</option>
+				</select>
+			</td>
+		</tr>
+	</table>
+	<a class="btnstyle3" onclick="SaveConfiguration();" data-i18n="Save">Save</a>
+	</td>
+	</tr>
+</table>
+</div>

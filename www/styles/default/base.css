@@ -217,9 +217,17 @@ textarea:focus {
 	display: block;
 }
 
-	#influxmain > table > tbody > tr > td > table {
-		margin-bottom: 20px
-	}
+#influxmain > table > tbody > tr > td > table {
+	margin-bottom: 20px
+}
+
+#mqttmain > table > tbody > tr > td {
+	display: block;
+}
+
+#mqttmain > table > tbody > tr > td > table {
+	margin-bottom: 20px
+}
 
 #googlepubsubmain > table > tbody > tr > td {
 	display: block;

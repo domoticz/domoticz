@@ -259,6 +259,11 @@ private:
 	void Cmd_GetGooglePubSubLinks(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_SaveGooglePubSubLink(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_DeleteGooglePubSubLink(WebEmSession & session, const request& req, Json::Value &root);
+	void Cmd_SaveMQTTLinkConfig(WebEmSession& session, const request& req, Json::Value& root);
+	void Cmd_GetMQTTLinkConfig(WebEmSession& session, const request& req, Json::Value& root);
+	void Cmd_GetMQTTLinks(WebEmSession& session, const request& req, Json::Value& root);
+	void Cmd_SaveMQTTLink(WebEmSession& session, const request& req, Json::Value& root);
+	void Cmd_DeleteMQTTLink(WebEmSession& session, const request& req, Json::Value& root);
 
 	void Cmd_AddLogMessage(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_ClearShortLog(WebEmSession & session, const request& req, Json::Value &root);
