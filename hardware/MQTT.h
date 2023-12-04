@@ -18,6 +18,10 @@ public:
 	{
 		return m_IsConnected;
 	};
+	bool isStarted()
+	{
+		return m_thread != nullptr;
+	};
 
 	void on_connect(int rc) override;
 	void on_disconnect(int rc) override;
@@ -30,6 +34,8 @@ public:
 
 	void SendMessage(const std::string& Topic, const std::string& Message);
 	void SendMessageEx(const std::string& Topic, const std::string& Message, int qos = 0, bool retain = false);
+
+	bool ReconnectNow();
 
 	bool m_bDoReconnect = false;
 	bool m_IsConnected = false;

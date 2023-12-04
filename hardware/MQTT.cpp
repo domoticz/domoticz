@@ -595,6 +595,13 @@ void MQTT::on_going_down()
 {
 }
 
+bool MQTT::ReconnectNow()
+{
+	disconnect();
+	ConnectIntEx();
+	return true;
+}
+
 bool MQTT::ConnectInt()
 {
 	StopMQTT();

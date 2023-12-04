@@ -17,7 +17,7 @@
 
 extern CMQTTPush m_mqttpush;
 
-CMQTTPush::CMQTTPush()
+CMQTTPush::CMQTTPush() : MQTT(0, "", 0, "", "", "", 2, 0, std::string("Domoticz-MQTT-Push") + GenerateUUID(), true)
 {
 	m_HwdID = 0;
 	m_Name = "MQTTPush";
@@ -47,6 +47,8 @@ void CMQTTPush::Stop()
 	if (m_sConnection.connected())
 		m_sConnection.disconnect();
 
+	StopHardware();
+
 	if (m_thread)
 	{
 		RequestStop();
@@ -55,6 +57,64 @@ void CMQTTPush::Stop()
 	}
 }
 
+void CMQTTPush::on_message(const struct mosquitto_message* message)
+{
+	std::string topic = message->topic;
+	std::string qMessage = std::string((char*)message->payload, (char*)message->payload + message->payloadlen);
+
+	try
+	{
+		Debug(DEBUG_HARDWARE, "topic: %s, message: %s", topic.c_str(), qMessage.c_str());
+
+		if (qMessage.empty())
+			return;
+	}
+	catch (const std::exception& e)
+	{
+		Log(LOG_ERROR, "Exception (on_message): %s! (topic: %s, message: %s)", e.what(), topic.c_str(), qMessage.c_str());
+		return;
+	}
+}
+
+void CMQTTPush::on_connect(int rc)
+{
+	/* rc=
+	** 0 - success
+	** 1 - connection refused(unacceptable protocol version)
+	** 2 - connection refused(identifier rejected)
+	** 3 - connection refused(broker unavailable)
+	*/
+
+	if (rc == 0)
+	{
+		if (m_IsConnected)
+		{
+			Log(LOG_STATUS, "re-connected to: %s:%d", m_szIPAddress.c_str(), m_usIPPort);
+		}
+		else
+		{
+			Log(LOG_STATUS, "connected to: %s:%d", m_szIPAddress.c_str(), m_usIPPort);
+			m_IsConnected = true;
+			sOnConnected(this);
+		}
+	}
+	else
+	{
+		Log(LOG_ERROR, "Connection failed!, restarting (rc=%d)", rc);
+		m_bDoReconnect = true;
+	}
+}
+
+void CMQTTPush::on_going_down()
+{
+}
+
+void CMQTTPush::on_disconnect(int rc)
+{
+	MQTT::on_disconnect(rc);
+}
+
+
 void CMQTTPush::UpdateSettings()
 {
 	int fActive = 0;
@@ -62,12 +122,24 @@ void CMQTTPush::UpdateSettings()
 	m_bLinkActive = (fActive == 1);
 
 	m_sql.GetPreferencesVar("MQTTPushIP", m_szIPAddress);
-	m_sql.GetPreferencesVar("MQTTPushPort", m_usIPPort);
+	int nValue = 1883;
+	m_sql.GetPreferencesVar("MQTTPushPort", nValue);
+	m_usIPPort = nValue;
 	m_sql.GetPreferencesVar("MQTTPushUsername", m_UserName);
 	m_sql.GetPreferencesVar("MQTTPushPassword", m_Password);
 	m_sql.GetPreferencesVar("MQTTPushTopicOut", m_TopicOut);
 	m_sql.GetPreferencesVar("MQTTPushCAFile", m_CAFilename);
-	m_sql.GetPreferencesVar("MQTTPushTLSVersion", m_TLS_Version);
+	m_sql.GetPreferencesVar("MQTTPushTLSVersion", nValue);
+	m_TLS_Version = nValue;
+
+	if (isStarted())
+	{
+		ReconnectNow();
+	}
+	else
+	{
+		StartHardware();
+	}	
 }
 
 void CMQTTPush::OnDeviceReceived(int m_HwdID, uint64_t DeviceRowIdx, const std::string& DeviceName, const unsigned char* pRXCommand)
@@ -122,14 +194,15 @@ void CMQTTPush::DoMQTTPush(const uint64_t DeviceRowIdx, const bool bForced)
 
 		std::string szKey;
 		std::string vType = CBasePush::DropdownOptionsValue(dType, dSubType, delpos);
-		stdreplace(vType, " ", "-");
-		stdreplace(name, " ", "-");
+		stdreplace(vType, " ", "_");
+		stdreplace(name, " ", "_");
 		szKey = vType + ",idx=" + sd[0] + ",name=" + name;
 
 		_tPushItem pItem;
-		pItem.skey = szKey;
-		pItem.stimestamp = atime;
+		pItem.idx = sd[0];
+		pItem.stype = vType;
 		pItem.svalue = sendValue;
+		pItem.stimestamp = atime;
 
 		if ((targetType == 0) && (!bForced))
 		{
@@ -170,13 +243,8 @@ void CMQTTPush::Do_Work()
 
 		for (const auto& item : _items2do)
 		{
-			if (!sSendData.empty())
-				sSendData += '\n';
-
-			std::stringstream sziData;
-			sziData << item.skey << " value=" << item.svalue;
-			sziData << " " << item.stimestamp;
-			sSendData += sziData.str();
+			std::string sTopic = m_TopicOut + "/" + item.idx + "/" + item.stype;
+			SendMessage(sTopic, item.svalue);
 		}
 	}
 }
@@ -212,7 +280,7 @@ namespace http
 
 			m_sql.UpdatePreferencesVar("MQTTPushActive", ilinkactive);
 			m_sql.UpdatePreferencesVar("MQTTPushIP", ipaddress);
-			m_sql.UpdatePreferencesVar("MQTTPushPort", port);
+			m_sql.UpdatePreferencesVar("MQTTPushPort", atoi(port.c_str()));
 			m_sql.UpdatePreferencesVar("MQTTPushUsername", username);
 			m_sql.UpdatePreferencesVar("MQTTPushPassword", password);
 			m_sql.UpdatePreferencesVar("MQTTPushTopicOut", topic_out);
@@ -248,9 +316,9 @@ namespace http
 			{
 				root["ipaddress"] = svalue;
 			}
-			if (m_sql.GetPreferencesVar("MQTTPushPort", svalue))
+			if (m_sql.GetPreferencesVar("MQTTPushPort", nValue))
 			{
-				root["port"] = svalue;
+				root["port"] = nValue;
 			}
 			if (m_sql.GetPreferencesVar("MQTTPushUsername", svalue))
 			{

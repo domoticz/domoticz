@@ -10,12 +10,19 @@ public:
 	bool Start();
 	void Stop();
 	void UpdateSettings();
+public:
+	void on_message(const struct mosquitto_message* message) override;
+	void on_connect(int rc) override;
+	void on_disconnect(int rc) override;
+	void on_going_down();
 private:
 	struct _tPushItem
 	{
-		std::string skey;
-		time_t stimestamp;
+		std::string idx;
+		std::string name;
+		std::string stype;
 		std::string svalue;
+		time_t stimestamp;
 	};
 	void OnDeviceReceived(int m_HwdID, uint64_t DeviceRowIdx, const std::string& DeviceName, const unsigned char* pRXCommand);
 	void DoMQTTPush(const uint64_t DeviceRowIdx, const bool bForced = false);
@@ -27,12 +34,6 @@ private:
 	std::map<std::string, _tPushItem> m_PushedItems;
 	std::vector<_tPushItem> m_background_task_queue;
 
-	std::string m_szIPAddress;
-	int m_usIPPort;
-	std::string m_UserName;
-	std::string m_Password;
-	std::string m_CAFilename;
-	int m_TLS_Version;
 	std::string m_TopicOut;
 };
 extern CMQTTPush m_mqttpush;

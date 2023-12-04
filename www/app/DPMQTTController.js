@@ -24,7 +24,7 @@ define(['app'], function (app) {
 							var tls_version = 2;
 							if (tls_version == 0)
 								tls_version = 2;
-							$("#mqttremote #hardwareparamsmqtt #combotlsversion").val(tls_version);
+							$("#mqttremote #combotlsversion").val(tls_version);
 						}
 					}
 				},
