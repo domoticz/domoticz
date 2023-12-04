@@ -69,12 +69,6 @@ namespace Plugins
 	{
 		if (m_pPlugin)
 		{
-			if (PyErr_Occurred())
-			{
-				m_pPlugin->Log(LOG_NORM, "Python error was set during unlock for '%s'", m_Text.c_str());
-				m_pPlugin->LogPythonException();
-				PyErr_Clear();
-			}
 			m_pPlugin->ReleaseThread();
 		}
 	}
@@ -1094,7 +1088,8 @@ namespace Plugins
 					}
 				}
 			}
-
+			if (m_bIsStopped)			
+				continue; 
 			if (Now >= (m_LastHeartbeat + m_iPollInterval))
 			{
 				//	Add heartbeat to message queue
@@ -2047,6 +2042,12 @@ namespace Plugins
 	{
 		if (m_PyInterpreter)
 		{
+			if (PyErr_Occurred())
+			{
+				Log(LOG_NORM, "Python error was set during unlock for '%s'",  m_PluginKey.c_str());
+				LogPythonException();
+				PyErr_Clear();
+			}	
 			if (!PyEval_SaveThread())
 			{
 				Log(LOG_ERROR, "Attempt to release GIL returned NULL value");
