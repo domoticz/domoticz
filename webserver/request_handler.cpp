@@ -404,16 +404,6 @@ void request_handler::handle_request(const request &req, reply &rep, modify_info
 				rep.content.append((std::istreambuf_iterator<char>(is)), (std::istreambuf_iterator<char>()));
 				rep.bIsGZIP = (bClientHasGZipSupport && bHaveLoadedgzip);
 			}
-			/* 20230525 No Longer in Use! Will be removed soon!
-			if (bIsCompressibleType && (!bHaveLoadedgzip))
-			{
-				// Find and include any special cWebem strings
-				if (myWebem->Include(rep.content))
-				{
-					_log.Debug(DEBUG_WEBSERVER,"[web:%s] Added some include in non-zipped file", request_path.c_str());
-				}
-			}
-			*/
 			if (bClientHasGZipSupport && bIsCompressibleType && (!bHaveLoadedgzip))
 			{
 				// The sourcefile is not compressed, but the client supports receiving compressed content
