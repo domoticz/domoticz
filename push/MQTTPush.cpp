@@ -139,7 +139,7 @@ void CMQTTPush::UpdateSettings()
 	else
 	{
 		StartHardware();
-	}	
+	}
 }
 
 void CMQTTPush::OnDeviceReceived(int m_HwdID, uint64_t DeviceRowIdx, const std::string& DeviceName, const unsigned char* pRXCommand)
@@ -162,19 +162,24 @@ void CMQTTPush::DoMQTTPush(const uint64_t DeviceRowIdx, const bool bForced)
 	if (result.empty())
 		return;
 
+	Json::Value root;
+	bool bHaveChanges = false;
+
 	time_t atime = mytime(nullptr);
+
+	int dType = atoi(result[0][3].c_str());
+	int dSubType = atoi(result[0][4].c_str());
+	int nValue = atoi(result[0][5].c_str());
+	std::string sValue = result[0][6];
+	std::string name = result[0][9];
+	int metertype = atoi(result[0][10].c_str());
+
 	for (const auto& sd : result)
 	{
 		std::string sendValue;
 		int delpos = atoi(sd[1].c_str());
-		int dType = atoi(sd[3].c_str());
-		int dSubType = atoi(sd[4].c_str());
-		int nValue = atoi(sd[5].c_str());
-		std::string sValue = sd[6];
 		int targetType = atoi(sd[7].c_str());
 		int includeUnit = atoi(sd[8].c_str());
-		std::string name = sd[9];
-		int metertype = atoi(sd[10].c_str());
 
 		std::vector<std::string> strarray;
 		if (sValue.find(';') != std::string::npos)
@@ -195,14 +200,14 @@ void CMQTTPush::DoMQTTPush(const uint64_t DeviceRowIdx, const bool bForced)
 		std::string szKey;
 		std::string vType = CBasePush::DropdownOptionsValue(dType, dSubType, delpos);
 		stdreplace(vType, " ", "_");
+		stdlower(vType);
 		stdreplace(name, " ", "_");
 		szKey = vType + ",idx=" + sd[0] + ",name=" + name;
 
-		_tPushItem pItem;
-		pItem.idx = sd[0];
-		pItem.stype = vType;
-		pItem.svalue = sendValue;
-		pItem.stimestamp = atime;
+		if (is_number(sendValue))
+			root[vType] = atoi(sendValue.c_str());
+		else
+			root[vType] = sendValue;
 
 		if ((targetType == 0) && (!bForced))
 		{
@@ -210,16 +215,26 @@ void CMQTTPush::DoMQTTPush(const uint64_t DeviceRowIdx, const bool bForced)
 			auto itt = m_PushedItems.find(szKey);
 			if (itt != m_PushedItems.end())
 			{
-				if (sendValue == itt->second.svalue)
+				if (sendValue == itt->second)
 					continue;
 			}
-			m_PushedItems[szKey] = pItem;
+			bHaveChanges = true;
+			m_PushedItems[szKey] = sendValue;
 		}
-
-		std::lock_guard<std::mutex> l(m_background_task_mutex);
-		if (m_background_task_queue.size() < 50)
-			m_background_task_queue.push_back(pItem);
 	}
+
+	if (!bHaveChanges)
+		return;
+
+	_tPushItem pItem;
+	pItem.idx = DeviceRowIdx;
+	pItem.name = name;
+	pItem.stimestamp = atime;
+	pItem.json = JSonToRawString(root);
+
+	std::lock_guard<std::mutex> l(m_background_task_mutex);
+	if (m_background_task_queue.size() < 50)
+		m_background_task_queue.push_back(pItem);
 }
 
 void CMQTTPush::Do_Work()
@@ -243,8 +258,8 @@ void CMQTTPush::Do_Work()
 
 		for (const auto& item : _items2do)
 		{
-			std::string sTopic = m_TopicOut + "/" + item.idx + "/" + item.stype;
-			SendMessage(sTopic, item.svalue);
+			std::string sTopic = m_TopicOut + "/" + std::to_string(item.idx) + "/state";
+			SendMessage(sTopic, item.json);
 		}
 	}
 }
