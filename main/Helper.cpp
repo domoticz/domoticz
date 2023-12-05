@@ -1626,7 +1626,7 @@ char* make_web_time(const time_t rawtime)
 	if (gmtime_r(&rawtime, &gmt) == nullptr)
 #endif
 	{
-		strcpy(buffer, "Thu, 01 Jan 1970 00:00:00 GMT");
+		strcpy(buffer, "Thu, 1 Jan 1970 00:00:00 GMT");
 	}
 	else
 	{
@@ -1638,6 +1638,8 @@ char* make_web_time(const time_t rawtime)
 			gmt.tm_hour,
 			gmt.tm_min,
 			gmt.tm_sec);
+
+
 	}
 	return buffer;
 }
