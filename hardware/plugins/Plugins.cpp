@@ -2296,6 +2296,15 @@ namespace Plugins
 			}
 			if (PythonThreadCount())
 				Log(LOG_NORM, "Abandoning wait for Plugin thread shutdown, hang or crash may result.");
+			if (m_PyInterpreter)
+			{
+				if (PyErr_Occurred()) // get the errors occured during onStopCallback message handling
+				{
+					Log(LOG_NORM, "Python error was set during onStopCallback for '%s'",  m_PluginKey.c_str());
+					LogPythonException();
+					PyErr_Clear();
+ 				}
+			}
 
 			// Stop Python
 			Py_XDECREF(m_PyModule);
