@@ -1,6 +1,5 @@
 from pytest_bdd import scenario, given, when, then, parsers
 import requests, subprocess
-import re
 
 class Domoticz:
     sBaseURI = ""
@@ -76,16 +75,6 @@ def check_header(test_domoticz,headername, headervalue):
         print(test_domoticz.oResponse.headers)
         assert False
 
-@then(parsers.parse('the HTTP-header "{headername}" should comply to pattern "{headerpattern}"'))
-def check_header(test_domoticz,headername, headerpattern):
-    bExists = headername in test_domoticz.oResponse.headers
-    if bExists:
-        headervalue = test_domoticz.oResponse.headers[headername]
-        assert re.match(headerpattern, headervalue)
-    else:
-        print(test_domoticz.oResponse.headers)
-        assert False
-
 @then(parsers.parse('the HTTP-header "{headername}" should be absent'))
-def check_noheader(test_domoticz,headername):
+def check_noheader(test_domoticz,headername, headervalue):
     assert not headername in test_domoticz.oResponse.headers
