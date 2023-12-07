@@ -6,6 +6,7 @@
 #include "../main/mainworker.h"
 #include "../main/SQLHelper.h"
 #include "../main/json_helper.h"
+#include "../main/WebServer.h"
 #include "../notifications/NotificationHelper.h"
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
@@ -79,6 +80,8 @@ MQTT::~MQTT()
 
 bool MQTT::StartHardware()
 {
+	ReloadSharedDevices();
+
 	RequestStart();
 
 	// force connect the next first time
@@ -785,6 +788,17 @@ void MQTT::SendDeviceInfo(const int HwdID, const uint64_t DeviceRowIdx, const st
 		m_LastUpdatedDeviceRowIdx = 0;
 		return;
 	}
+
+	std::lock_guard<std::mutex> l(m_mutex);
+	if (!m_shared_devices.empty())
+	{
+		auto itt = m_shared_devices.find(DeviceRowIdx);
+		if (itt == m_shared_devices.end())
+		{
+			return;
+		}
+	}
+
 	std::vector<std::vector<std::string>> result;
 	result = m_sql.safe_query("SELECT HardwareID, DeviceID, Unit, Name, [Type], SubType, nValue, sValue, SwitchType, SignalLevel, BatteryLevel, Options, Description, LastLevel, Color, LastUpdate "
 				  "FROM DeviceStatus WHERE (HardwareID==%d) AND (ID==%" PRIu64 ")",
@@ -1001,4 +1015,117 @@ void MQTT::SubscribeTopic(const std::string &szTopic, const int qos)
 		subscribe(nullptr, szTopic.c_str(), qos);
 	}
 }
+
+void MQTT::ReloadSharedDevices()
+{
+	std::lock_guard<std::mutex> l(m_mutex);
+	m_shared_devices.clear();
+	auto result = m_sql.safe_query("SELECT DeviceRowID FROM SharedDevices WHERE (SharedUserID == %d)", 2000 + m_HwdID);
+	if (!result.empty())
+	{
+		for (const auto& sd : result)
+		{
+			m_shared_devices[std::stoull(sd[0])] = true;
+		}
+	}
+}
+
+//Webserver helpers
+namespace http {
+	namespace server {
+		//As the SharedDevices is also used for Users, we are going to add 2000 to the index so we can distinguish between the two
+		void CWebServer::Cmd_GetSharedMQTTDevices(WebEmSession& session, const request& req, Json::Value& root)
+		{
+			if (session.rights != 2)
+			{
+				session.reply_status = reply::forbidden;
+				return; // Only admin user allowed
+			}
+			std::string sidx = request::findValue(&req, "idx");
+			if (sidx.empty())
+				return;
+			int idx = atoi(sidx.c_str()) + 2000;
+			root["title"] = "GetSharedMQTTDevices";
+
+			auto result = m_sql.safe_query("SELECT DeviceRowID FROM SharedDevices WHERE (SharedUserID == %d)", idx);
+			if (!result.empty())
+			{
+				int ii = 0;
+				for (const auto& sd : result)
+				{
+					root["result"][ii]["DeviceRowIdx"] = sd[0];
+					ii++;
+				}
+			}
+			root["status"] = "OK";
+		}
+
+		void CWebServer::Cmd_SetSharedMQTTDevices(WebEmSession& session, const request& req, Json::Value& root)
+		{
+			if (session.rights != 2)
+			{
+				session.reply_status = reply::forbidden;
+				return; // Only admin user allowed
+			}
+			std::string sidx = request::findValue(&req, "idx");
+			if (sidx.empty())
+				return;
+			int idx = atoi(sidx.c_str()) + 2000;
+
+			std::string userdevices = CURLEncode::URLDecode(request::findValue(&req, "devices"));
+			root["title"] = "SetSharedMQTTDevices";
+			std::vector<std::string> strarray;
+			StringSplit(userdevices, ";", strarray);
+
+			// First make a backup of the favorite devices before deleting the devices, then add the (new) onces and restore favorites
+			m_sql.safe_query("UPDATE SharedDevices SET SharedUserID = 0 WHERE SharedUserID == %d and Favorite == 1", idx);
+			m_sql.safe_query("DELETE FROM SharedDevices WHERE SharedUserID == %d", idx);
+
+			int nDevices = static_cast<int>(strarray.size());
+			for (int ii = 0; ii < nDevices; ii++)
+			{
+				m_sql.safe_query("INSERT INTO SharedDevices (SharedUserID,DeviceRowID) VALUES (%d,'%q')", idx, strarray[ii].c_str());
+				m_sql.safe_query("UPDATE SharedDevices SET Favorite = 1 WHERE SharedUserid == %d AND DeviceRowID IN (SELECT DeviceRowID FROM SharedDevices WHERE SharedUserID == 0)", idx);
+			}
+			m_sql.safe_query("DELETE FROM SharedDevices WHERE SharedUserID == 0");
+
+			CDomoticzHardwareBase* pHardware = m_mainworker.GetHardware(idx - 2000);
+			if (pHardware != nullptr)
+			{
+				if (pHardware->HwdType == HTYPE_MQTT)
+				{
+					MQTT* pMTTHardware = dynamic_cast<MQTT*>(pHardware);
+					pMTTHardware->ReloadSharedDevices();
+				}
+			}
+			root["status"] = "OK";
+		}
+
+		void CWebServer::Cmd_ClearSharedMQTTDevices(WebEmSession& session, const request& req, Json::Value& root)
+		{
+			if (session.rights != 2)
+			{
+				session.reply_status = reply::forbidden;
+				return; // Only admin user allowed
+			}
+			std::string sidx = request::findValue(&req, "idx");
+			if (sidx.empty())
+				return;
+			int idx = atoi(sidx.c_str()) + 2000;
+			root["status"] = "OK";
+			root["title"] = "ClearSharedMQTTDevices";
+			m_sql.safe_query("DELETE FROM SharedDevices WHERE SharedUserID == %d", idx);
+			CDomoticzHardwareBase* pHardware = m_mainworker.GetHardware(idx - 2000);
+			if (pHardware != nullptr)
+			{
+				if (pHardware->HwdType == HTYPE_MQTT)
+				{
+					MQTT* pMTTHardware = dynamic_cast<MQTT*>(pHardware);
+					pMTTHardware->ReloadSharedDevices();
+				}
+			}
+		}
+	} // namespace server
+} // namespace http
+
 

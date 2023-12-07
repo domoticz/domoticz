@@ -9,6 +9,7 @@ Version 2023.xxxxx (xxxxx 2023)
 - Implemented: Enphase, Initial support for Encharge battery status (needs more work)
 - Implemented: Managed Counters, now possible to use negative values
 - Implemented: Mitsubishi WF RAC Airco
+- Implemented: MQTT, added option to specify devices to be published to MQTT
 - Implemented: MQTT-AD, added support for climate min_temp/max_temp and temp_step
 - Implemented: MQTT-AD, added support for number voc type
 - Implemented: MQTT-AD, added support for Wh and Wm sensors

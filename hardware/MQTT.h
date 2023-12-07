@@ -30,6 +30,8 @@ public:
 	void SendMessage(const std::string& Topic, const std::string& Message);
 	void SendMessageEx(const std::string& Topic, const std::string& Message, int qos = 0, bool retain = false);
 
+	void ReloadSharedDevices();
+
 	bool m_bDoReconnect;
 	bool m_IsConnected;
 
@@ -76,5 +78,7 @@ private:
 	bool m_bRetain = false;
 	uint64_t m_LastUpdatedDeviceRowIdx = 0;
 	uint64_t m_LastUpdatedSceneRowIdx = 0;
+	std::mutex m_mutex;
+	std::map<uint64_t, bool> m_shared_devices;
 	std::map<std::string, bool> m_subscribed_topics;
 };

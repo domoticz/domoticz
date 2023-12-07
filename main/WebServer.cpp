@@ -505,8 +505,6 @@ namespace http
 			RegisterCommandCode("bindevohome", [this](auto&& session, auto&& req, auto&& root) { Cmd_BindEvohome(session, req, root); });
 			RegisterCommandCode("custom_light_icons", [this](auto&& session, auto&& req, auto&& root) { Cmd_CustomLightIcons(session, req, root); });
 			RegisterCommandCode("deletedevice", [this](auto&& session, auto&& req, auto&& root) { Cmd_DeleteDevice(session, req, root); });
-			RegisterCommandCode("getshareduserdevices", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetSharedUserDevices(session, req, root); });
-			RegisterCommandCode("setshareduserdevices", [this](auto&& session, auto&& req, auto&& root) { Cmd_SetSharedUserDevices(session, req, root); });
 			RegisterCommandCode("graph", [this](auto&& session, auto&& req, auto&& root) { Cmd_HandleGraph(session, req, root); });
 			RegisterCommandCode("rclientslog", [this](auto&& session, auto&& req, auto&& root) { Cmd_RemoteWebClientsLog(session, req, root); });
 			RegisterCommandCode("setused", [this](auto&& session, auto&& req, auto&& root) { Cmd_SetUsed(session, req, root); });
@@ -514,7 +512,15 @@ namespace http
 			// Migrated ActionCodes to regular commands
 			RegisterCommandCode("setccmetertype", [this](auto&& session, auto&& req, auto&& root) { Cmd_SetCurrentCostUSBType(session, req, root); });
 
-			RegisterCommandCode("clearuserdevices", [this](auto&& session, auto&& req, auto&& root) { Cmd_ClearUserDevices(session, req, root); });
+			//Shared User Devices
+			RegisterCommandCode("getshareduserdevices", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetSharedUserDevices(session, req, root); });
+			RegisterCommandCode("setshareduserdevices", [this](auto&& session, auto&& req, auto&& root) { Cmd_SetSharedUserDevices(session, req, root); });
+			RegisterCommandCode("clearshareduserdevices", [this](auto&& session, auto&& req, auto&& root) { Cmd_ClearSharedUserDevices(session, req, root); });
+
+			//Shared MQTT Devices
+			RegisterCommandCode("getsharedmqttdevices", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetSharedMQTTDevices(session, req, root); });
+			RegisterCommandCode("setsharedmqttdevices", [this](auto&& session, auto&& req, auto&& root) { Cmd_SetSharedMQTTDevices(session, req, root); });
+			RegisterCommandCode("clearsharedmqttdevices", [this](auto&& session, auto&& req, auto&& root) { Cmd_ClearSharedMQTTDevices(session, req, root); });
 
 			//MQTT-AD
 			RegisterCommandCode("mqttadgetconfig", [this](auto&& session, auto&& req, auto&& root) { Cmd_MQTTAD_GetConfig(session, req, root); });
