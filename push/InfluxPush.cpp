@@ -212,7 +212,11 @@ void CInfluxPush::Do_Work()
 				sSendData += '\n';
 
 			std::stringstream sziData;
-			sziData << item.skey << " value=" << item.svalue;
+			sziData << item.skey << " value=";
+			if (item.skey.find("Text,") == 0)
+				sziData << "\"" << item.svalue << "\"";
+			else
+				sziData << item.svalue;
 			if (m_bInfluxDebugActive)
 			{
 				_log.Log(LOG_NORM, "InfluxLink: value %s", sziData.str().c_str());
