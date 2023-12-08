@@ -6784,8 +6784,10 @@ void CSQLHelper::UpdateMeter()
 
 			try
 			{
-				MeterUsage = std::stoll(sUsage);
-				MeterValue = std::stoll(sValue);
+				if (!sUsage.empty())
+					MeterUsage = std::stoll(sUsage);
+				if (!sValue.empty())
+					MeterValue = std::stoll(sValue);
 			}
 			catch (const std::exception&)
 			{
