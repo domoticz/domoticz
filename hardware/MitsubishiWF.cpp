@@ -74,7 +74,7 @@ MitsubishiWF::MitsubishiWF(const int ID, const std::string& IPAddress, const uns
 		PollInterval = 300;
 	m_poll_interval = PollInterval;
 
-	m_kWhCounter.Init("MitsubishiWF_kWh", this);
+	m_kWhCounter.Init("MitsubishiWF_kWh_" + std::to_string(ID), this);
 }
 
 bool MitsubishiWF::StartHardware()
