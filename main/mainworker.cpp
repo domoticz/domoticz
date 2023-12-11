@@ -1011,7 +1011,7 @@ bool MainWorker::AddHardwareFromParams(
 		pHardware = new BleBox(ID, Mode1);
 		break;
 	case HTYPE_OpenWeatherMap:
-		pHardware = new COpenWeatherMap(ID, Username, Password, Mode1, Mode2, Mode3, Mode4);
+		pHardware = new COpenWeatherMap(ID, Username, Password, Mode1);
 		break;
 	case HTYPE_Ec3kMeterTCP:
 		pHardware = new Ec3kMeterTCP(ID, Address, Port);
