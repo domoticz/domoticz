@@ -1,0 +1,28 @@
+<div id="hardwarecontent" class="container">
+    <div class="page-header-small">
+        <table border="0" cellpadding="0" cellspacing="0" width="100%">
+            <tr>
+                <td>
+                    <h1 data-i18n="Devices"></h1>
+                </td>
+            </tr>
+        </table>
+    </div>
+	<div id="userdevices">
+		<table id="mqttdevicestable" border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td>
+					<select style="width: 80%" id="devices" class="multiselect" multiple="multiple" name="devices[]">
+					</select>
+				</td>
+			</tr>
+			<tr>
+				<td>
+					<br>
+					<a class="btnstyle3" onclick="SaveMQTTDevices();" data-i18n="Save">Save</a>
+					<a class="btn btn-danger" onclick="ClearMQTTDevices();" data-i18n="Clear">Clear</a>
+				</td>
+			</tr>
+		</table>
+	</div>
+</div>

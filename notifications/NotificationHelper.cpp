@@ -462,7 +462,6 @@ bool CNotificationHelper::CheckAndHandleNotification(const uint64_t DevRowIdx, c
 					return CheckAndHandleNotification(DevRowIdx, sName, cType, cSubType, NTYPE_PERCENTAGE, fValue);
 				case sTypeSoilMoisture:
 				case sTypeLeafWetness:
-				case sTypeAlert:
 					return CheckAndHandleNotification(DevRowIdx, sName, cType, cSubType, NTYPE_USAGE, (float)nValue);
 				case sTypeFan:
 				case sTypeSoundLevel:
@@ -473,6 +472,8 @@ bool CNotificationHelper::CheckAndHandleNotification(const uint64_t DevRowIdx, c
 				case sTypeWaterflow:
 				case sTypeCustom:
 					return CheckAndHandleNotification(DevRowIdx, sName, cType, cSubType, NTYPE_USAGE, fValue);
+				case sTypeAlert:
+					return CheckAndHandleAlertNotification(DevRowIdx, sName, sValue);
 				default:
 					// silently ignore other general devices
 					return false;
@@ -1260,6 +1261,39 @@ bool CNotificationHelper::CheckAndHandleRainNotification(
 		}
 	}
 	return false;
+}
+
+bool CNotificationHelper::CheckAndHandleAlertNotification(
+	const uint64_t Idx,
+	const std::string &devicename,
+	const std::string &sValue)
+{
+	std::vector<_tNotification> notifications = GetNotifications(Idx);
+	if (notifications.empty())
+		return false;
+
+	time_t atime = mytime(nullptr);
+
+	//check if not sent 12 hours ago, and if applicable
+	atime -= m_NotificationSensorInterval;
+
+	for (const auto &n : notifications)
+	{
+		if (n.LastUpdate)
+			TouchLastUpdate(n.ID);
+		std::vector<std::string> splitresults;
+		StringSplit(n.Params, ";", splitresults);
+		if (splitresults.empty())
+			continue; //impossible
+		std::string atype = splitresults[0];
+		if ((atime >= n.LastSend) || (n.SendAlways)) // emergency always goes true
+		{
+			std::string msg = ParseCustomMessage(n.CustomMessage, devicename, sValue);
+			SendMessageEx(Idx, devicename, n.ActiveSystems, n.CustomAction, msg, msg, std::string(""), n.Priority, std::string(""), true);
+			TouchNotification(n.ID);
+		}
+	}
+	return true;
 }
 
 

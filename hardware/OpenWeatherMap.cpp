@@ -556,7 +556,7 @@ bool COpenWeatherMap::ProcessForecast(Json::Value &forecast, const std::string &
 			sName << "TempHumBaro " << period << " " << (count + 0);
 			SendTempHumBaroSensorFloat(NodeID, 255, maxtemp, humidity, barometric, barometric_forecast, sName.str());
 
-			NodeID++;;
+			NodeID++;
 			sName.str("");
 			sName.clear();
 			sName << "Weather Description " << period << " " << (count + 0);
@@ -573,7 +573,7 @@ bool COpenWeatherMap::ProcessForecast(Json::Value &forecast, const std::string &
 			if(m_add_descriptiondevices)
 				SendTextSensor(NodeID, 3, 255, periodname, sName.str());
 
-			NodeID++;;
+			NodeID++;
 			sName.str("");
 			sName.clear();
 			sName << "Minumum Temperature " << period << " " << (count + 0);
@@ -582,13 +582,13 @@ bool COpenWeatherMap::ProcessForecast(Json::Value &forecast, const std::string &
 				SendTempSensor(NodeID, 255, mintemp, sName.str());
 			}
 
-			NodeID++;;
+			NodeID++;
 			sName.str("");
 			sName.clear();
 			sName << "Wind " << period << " " << (count + 0);
 			SendWind(NodeID, 255, wind_degrees, windspeed_ms, 0, 0, 0, false, false, sName.str());
 
-			NodeID++;;
+			NodeID++;
 			sName.str("");
 			sName.clear();
 			sName << "UV Index " << period << " " << (count + 0);
@@ -600,13 +600,13 @@ bool COpenWeatherMap::ProcessForecast(Json::Value &forecast, const std::string &
 			NodeID++;
 			// We do not have visibility forecasts
 
-			NodeID++;;
+			NodeID++;
 			sName.str("");
 			sName.clear();
 			sName << "Clouds % " << period << " " << (count + 0);
 			SendPercentageSensor(NodeID, 1, 255, clouds, sName.str());
 
-			NodeID++;;
+			NodeID++;
 			if (rainmm != 9999.00F)
 			{
 				sName.str("");
@@ -615,7 +615,7 @@ bool COpenWeatherMap::ProcessForecast(Json::Value &forecast, const std::string &
 				SendRainRateSensor(NodeID, 255, rainmm, sName.str());
 			}
 
-			NodeID++;;
+			NodeID++;
 			sName.str("");
 			sName.clear();
 			sName << "Precipitation " << period << " " << (count + 0);

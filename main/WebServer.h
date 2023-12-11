@@ -346,8 +346,6 @@ private:
 	void Cmd_CreateEvohomeSensor(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_BindEvohome(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_CustomLightIcons(WebEmSession & session, const request& req, Json::Value &root);
-	void Cmd_GetSharedUserDevices(WebEmSession & session, const request& req, Json::Value &root);
-	void Cmd_SetSharedUserDevices(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_HandleGraph(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_RemoteWebClientsLog(WebEmSession& session, const request& req, Json::Value& root);
 	void Cmd_SetUsed(WebEmSession & session, const request& req, Json::Value &root);
@@ -355,7 +353,15 @@ private:
 	//Migrated ActionCodes
 	void Cmd_SetCurrentCostUSBType(WebEmSession& session, const request& req, Json::Value& root);
 
-	void Cmd_ClearUserDevices(WebEmSession& session, const request& req, Json::Value& root);
+	//Shared User Devices
+	void Cmd_GetSharedUserDevices(WebEmSession& session, const request& req, Json::Value& root);
+	void Cmd_SetSharedUserDevices(WebEmSession& session, const request& req, Json::Value& root);
+	void Cmd_ClearSharedUserDevices(WebEmSession& session, const request& req, Json::Value& root);
+
+	//Shared MQTT Devices
+	void Cmd_GetSharedMQTTDevices(WebEmSession& session, const request& req, Json::Value& root);
+	void Cmd_SetSharedMQTTDevices(WebEmSession& session, const request& req, Json::Value& root);
+	void Cmd_ClearSharedMQTTDevices(WebEmSession& session, const request& req, Json::Value& root);
 
 	//MQTT-AD
 	void Cmd_MQTTAD_GetConfig(WebEmSession& session, const request& req, Json::Value& root);
