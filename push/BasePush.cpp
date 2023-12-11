@@ -216,7 +216,7 @@ const char* RFX_Type_SubType_Values(const unsigned char dType, const unsigned ch
 
 		{ pTypeRFXMeter, sTypeRFXMeterCount, "Counter" },
 
-		{ pTypeP1Power, sTypeP1Power, "Counter Usage 1,Counter Usage 2,Counter Delivery 1,Counter Delivery 2,Usage current,Delivery current" },
+		{ pTypeP1Power, sTypeP1Power, "Usage 1,Usage 2,Delivery 1,Delivery 2,Usage current,Delivery current" },
 		{ pTypeP1Gas, sTypeP1Gas, "Gas usage" },
 
 		{ pTypeYouLess, sTypeYouLess, "Usage,Usage current" },
@@ -615,11 +615,11 @@ std::string CBasePush::ProcessSendValue(
 		{
 			strcpy(szData, rawsendValue.c_str());
 		}
-		else if ((vType == "Usage") || (vType == "Counter Usage 1") || (vType == "Counter Usage 2"))
+		else if ((vType == "Usage") || (vType == "Usage 1") || (vType == "Usage 2"))
 		{
 			strcpy(szData, rawsendValue.c_str());
 		}
-		else if ((vType == "Delivery") || (vType == "Counter Delivery 1") || (vType == "Counter Delivery 2"))
+		else if ((vType == "Delivery") || (vType == "Delivery 1") || (vType == "Delivery 2"))
 		{
 			strcpy(szData, rawsendValue.c_str());
 		}
@@ -808,11 +808,11 @@ std::string CBasePush::getUnit(const int devType, const int devSubType, const in
 	{
 		strcpy(szData, "");
 	}
-	else if ((vType == "Usage") || (vType == "Counter Usage 1") || (vType == "Counter Usage 2"))
+	else if ((vType == "Usage") || (vType == "Usage 1") || (vType == "Usage 2"))
 	{
 		strcpy(szData, "Watt");
 	}
-	else if ((vType == "Delivery") || (vType == "Counter Delivery 1") || (vType == "Counter Delivery 2"))
+	else if ((vType == "Delivery") || (vType == "Delivery 1") || (vType == "Delivery 2"))
 	{
 		strcpy(szData, "Watt");
 	}
