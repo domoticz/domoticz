@@ -3957,6 +3957,9 @@ define(['app'], function (app) {
 							else if (HwTypeStr.indexOf("BleBox") >= 0) {
 								HwTypeStr += ' ' + hardwareSetupLink;
 							}
+							else if (HwTypeStr.indexOf("MQTT Client") >= 0) {
+                                HwTypeStr += ' ' + hardwareSetupLink;
+							}
 							else if (HwTypeStr.indexOf("MQTT Auto") >= 0) {
 								HwTypeStr += ' ' + hardwareSetupLink;
 							}

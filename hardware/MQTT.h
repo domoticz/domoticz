@@ -40,6 +40,8 @@ public:
 	bool m_bDoReconnect = false;
 	bool m_IsConnected = false;
 
+	void ReloadSharedDevices();
+
 public:
 	// signals
 	boost::signals2::signal<void()> sDisconnected;
@@ -83,5 +85,7 @@ private:
 	bool m_bRetain = false;
 	uint64_t m_LastUpdatedDeviceRowIdx = 0;
 	uint64_t m_LastUpdatedSceneRowIdx = 0;
+	std::mutex m_mutex;
+	std::map<uint64_t, bool> m_shared_devices;
 	std::map<std::string, bool> m_subscribed_topics;
 };

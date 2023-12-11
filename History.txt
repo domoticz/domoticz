@@ -9,6 +9,7 @@ Version 2023.xxxxx (xxxxx 2023)
 - Implemented: Enphase, Initial support for Encharge battery status (needs more work)
 - Implemented: Managed Counters, now possible to use negative values
 - Implemented: Mitsubishi WF RAC Airco
+- Implemented: MQTT, added option to specify devices to be published to MQTT
 - Implemented: MQTT-AD, added support for climate min_temp/max_temp and temp_step
 - Implemented: MQTT-AD, added support for number voc type
 - Implemented: MQTT-AD, added support for Wh and Wm sensors
@@ -29,6 +30,7 @@ Version 2023.xxxxx (xxxxx 2023)
 - Fixed: MQTT-AD: fixed brightness for HS lights
 - Fixed: MQTT-AD: prevent blind from updating on non-numeric state changes
 - Fixed: MQTT-AD, RGB dimmers did not work correctly in scenes/timers
+- Fixed: P1 Meter, buffer size increased because of large datagrams on some meters
 - Fixed: Sunset/rise timers now correctly set the time for next day
 - Fixed: Switches defined with "Off Delay" are not set to "Off" at startup
 - Removed: OpenZWave (Move to ZWaveJS-UI in combination with MQTT Auto Discovery)

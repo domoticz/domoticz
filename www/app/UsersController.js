@@ -116,7 +116,7 @@ define(['app'], function (app) {
 		ClearUserDevices = function () {
             bootbox.confirm($.t("Are you sure to delete ALL Nodes?\n\nThis action can not be undone!"), function (result) {
 				$.ajax({
-					url: "json.htm?type=command&param=clearuserdevices&idx=" + $.devIdx,
+					url: "json.htm?type=command&param=clearshareduserdevices&idx=" + $.devIdx,
 					async: false,
 					dataType: 'json',
 					success: function (data) {

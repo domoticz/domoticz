@@ -12,6 +12,15 @@ CounterHelper::~CounterHelper()
 {
 }
 
+void CounterHelper::Reset()
+{
+	m_nLastCounterValue = 0;
+	m_CounterOffset = 0;
+	if (m_szUservariableName.empty())
+		return;
+	m_sql.safe_query("UPDATE UserVariables SET Value='%q', LastUpdate='%s' WHERE (Name=='%q')", std::to_string(m_CounterOffset).c_str(), TimeToString(nullptr, TF_DateTime).c_str(), m_szUservariableName.c_str());
+}
+
 void CounterHelper::Init(const std::string& szUservariableName, CDomoticzHardwareBase* pHardwareBase)
 {
 	m_szUservariableName = szUservariableName;
@@ -48,4 +57,23 @@ void CounterHelper::SendKwhMeter(int NodeID, int ChildID, int BatteryLevel, doub
 		m_nLastCounterValue = rTotal;
 	}
 
+}
+
+double CounterHelper::SetCounterValue(const double nNewCounbterValue)
+{
+	double rCounter = m_CounterOffset + nNewCounbterValue;
+	if (
+		(rCounter < m_nLastCounterValue)
+		&& (m_nLastCounterValue != 0)
+		)
+	{
+		m_CounterOffset = m_nLastCounterValue;
+
+		if (!m_szUservariableName.empty())
+			m_sql.safe_query("UPDATE UserVariables SET Value='%q', LastUpdate='%s' WHERE (Name=='%q')", std::to_string(m_CounterOffset).c_str(), TimeToString(nullptr, TF_DateTime).c_str(), m_szUservariableName.c_str());
+
+		rCounter = m_CounterOffset + nNewCounbterValue;
+	}
+	m_nLastCounterValue = rCounter;
+	return m_nLastCounterValue;
 }

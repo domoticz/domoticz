@@ -4317,7 +4317,7 @@ namespace http
 			root["status"] = "OK";
 		}
 
-		void CWebServer::Cmd_ClearUserDevices(WebEmSession& session, const request& req, Json::Value& root)
+		void CWebServer::Cmd_ClearSharedUserDevices(WebEmSession& session, const request& req, Json::Value& root)
 		{
 			if (session.rights != 2)
 			{
@@ -4328,7 +4328,7 @@ namespace http
 			if (idx.empty())
 				return;
 			root["status"] = "OK";
-			root["title"] = "ClearUserDevices";
+			root["title"] = "ClearSharedUserDevices";
 			m_sql.safe_query("DELETE FROM SharedDevices WHERE SharedUserID == '%q'", idx.c_str());
 			LoadUsers();
 		}

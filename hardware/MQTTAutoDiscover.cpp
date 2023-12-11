@@ -76,7 +76,7 @@ void MQTTAutoDiscover::on_message(const struct mosquitto_message* message)
 			return;
 
 		if (
-			(topic.substr(0, topic.find('/')) == m_TopicDiscoveryPrefix)
+			topic.find(m_TopicDiscoveryPrefix) == 0
 			&& (topic.find("/config") != std::string::npos)
 			)
 		{
