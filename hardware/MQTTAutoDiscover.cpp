@@ -2810,7 +2810,7 @@ void MQTTAutoDiscover::handle_auto_discovery_select(_tMQTTASensor* pSensor, cons
 	}
 
 	if (iActualIndex == -1) {
-		Log(LOG_ERROR, "Select device doesn't have the option for received STATE \"%s\")", current_mode.c_str());
+		Log(LOG_ERROR, "Select device \"%s\" doesn't have the option for received STATE \"%s\")", szDeviceName.c_str(), current_mode.c_str());
 		iActualIndex = atoi(sValue.c_str());
 	}
 
