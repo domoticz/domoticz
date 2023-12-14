@@ -1,7 +1,9 @@
 #pragma once
 #include "BasePush.h"
 
-class CInfluxPush : public CBasePush
+#include "../main/StoppableTask.h"
+
+class CInfluxPush : public CBasePush, public StoppableTask
 {
 public:
 	CInfluxPush();

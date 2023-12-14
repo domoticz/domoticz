@@ -2,10 +2,9 @@
 
 #define BOOST_ALLOW_DEPRECATED_HEADERS
 #include <boost/signals2.hpp>
-#include "../main/StoppableTask.h"
 #include <mutex>
 
-class CBasePush : public StoppableTask
+class CBasePush
 {
 public:
 	enum class PushType
@@ -15,7 +14,8 @@ public:
 		PUSHTYPE_GOOGLE_PUB_SUB,
 		PUSHTYPE_HTTP,
 		PUSHTYPE_INFLUXDB,
-		PUSHTYPE_WEBSOCKET
+		PUSHTYPE_WEBSOCKET,
+		PUSHTYPE_MQTT
 	};
 	struct _tPushLinks
 	{

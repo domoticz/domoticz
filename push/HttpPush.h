@@ -2,7 +2,9 @@
 
 #include "BasePush.h"
 
-class CHttpPush : public CBasePush
+#include "../main/StoppableTask.h"
+
+class CHttpPush : public CBasePush, public StoppableTask
 {
 public:
 	CHttpPush();

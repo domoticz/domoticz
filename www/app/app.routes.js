@@ -60,6 +60,11 @@ define(['angularAMD', 'angular', 'angular-route'], function (angularAMD) {
                 controller: 'DPInfluxController',
                 permission: 'Admin'
             }))
+            .when('/DPMQTT', angularAMD.route({
+                templateUrl: 'views/dpmqtt.html',
+                controller: 'DPMQTTController',
+                permission: 'Admin'
+            }))
             .when('/DPGooglePubSub', angularAMD.route({
                 templateUrl: 'views/dpgooglepubsub.html',
                 controller: 'DPGooglePubSubController',
