@@ -132,13 +132,20 @@ void CMQTTPush::UpdateSettings()
 	m_sql.GetPreferencesVar("MQTTPushTLSVersion", nValue);
 	m_TLS_Version = nValue;
 
-	if (isStarted())
+	if (m_bLinkActive)
 	{
-		ReconnectNow();
+		if (isStarted())
+		{
+			ReconnectNow();
+		}
+		else
+		{
+			StartHardware();
+		}
 	}
 	else
 	{
-		StartHardware();
+		StopHardware();
 	}
 }
 

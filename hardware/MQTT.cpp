@@ -85,6 +85,9 @@ MQTT::~MQTT()
 
 bool MQTT::StartHardware()
 {
+	if (m_szIPAddress.empty())
+		return false;
+
 	ReloadSharedDevices();
 
 	RequestStart();
@@ -607,12 +610,16 @@ bool MQTT::ReconnectNow()
 
 bool MQTT::ConnectInt()
 {
+	if (m_szIPAddress.empty())
+		return false;
 	StopMQTT();
 	return ConnectIntEx();
 }
 
 bool MQTT::ConnectIntEx()
 {
+	if (m_szIPAddress.empty())
+		return false;
 	m_bDoReconnect = false;
 
 	std::string IPAddress(m_szIPAddress);
