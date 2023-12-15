@@ -3477,6 +3477,15 @@ void MQTTAutoDiscover::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 		else
 			szSwitchCmd = "on";
 	}
+	if (
+		(pSensor->unique_id.find("child_lock") != std::string::npos)
+		|| (pSensor->unique_id.find("indicator_mode") != std::string::npos)
+		)
+	{
+		//don't add these as used by default
+		iUsed = 0;
+	}
+
 
 	std::vector<std::vector<std::string>> result;
 	result = m_sql.safe_query("SELECT ID, Name, nValue, sValue, Color, SubType, SwitchType FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit==%d)", m_HwdID, pSensor->unique_id.c_str(), pSensor->devUnit);
