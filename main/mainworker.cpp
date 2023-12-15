@@ -9,6 +9,7 @@
 #include "../push/HttpPush.h"
 #include "../push/InfluxPush.h"
 #include "../push/GooglePubSubPush.h"
+#include "../push/MQTTPush.h"
 
 #include "../httpclient/HTTPClient.h"
 #include "../webserver/Base64.h"
@@ -198,6 +199,7 @@ CFibaroPush m_fibaropush;
 CGooglePubSubPush m_googlepubsubpush;
 CHttpPush m_httppush;
 CInfluxPush m_influxpush;
+CMQTTPush m_mqttpush;
 
 
 namespace tcp {
@@ -1134,6 +1136,7 @@ bool MainWorker::Start()
 	m_fibaropush.Start();
 	m_httppush.Start();
 	m_influxpush.Start();
+	m_mqttpush.Start();
 	m_googlepubsubpush.Start();
 #ifdef PARSE_RFXCOM_DEVICE_LOG
 	if (m_bStartHardware == false)
@@ -1224,6 +1227,7 @@ bool MainWorker::Stop()
 		m_fibaropush.Stop();
 		m_httppush.Stop();
 		m_influxpush.Stop();
+		m_mqttpush.Stop();
 		m_googlepubsubpush.Stop();
 #ifdef ENABLE_PYTHON
 		m_pluginsystem.StopPluginSystem();

@@ -362,6 +362,12 @@ namespace http
 			RegisterCommandCode("savegooglepubsublink", [this](auto&& session, auto&& req, auto&& root) { Cmd_SaveGooglePubSubLink(session, req, root); });
 			RegisterCommandCode("deletegooglepubsublink", [this](auto&& session, auto&& req, auto&& root) { Cmd_DeleteGooglePubSubLink(session, req, root); });
 
+			RegisterCommandCode("savemqttlinkconfig", [this](auto&& session, auto&& req, auto&& root) { Cmd_SaveMQTTLinkConfig(session, req, root); });
+			RegisterCommandCode("getmqttlinkconfig", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetMQTTLinkConfig(session, req, root); });
+			RegisterCommandCode("getmqttlinks", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetMQTTLinks(session, req, root); });
+			RegisterCommandCode("savemqttlink", [this](auto&& session, auto&& req, auto&& root) { Cmd_SaveMQTTLink(session, req, root); });
+			RegisterCommandCode("deletemqttlink", [this](auto&& session, auto&& req, auto&& root) { Cmd_DeleteMQTTLink(session, req, root); });
+
 			RegisterCommandCode("getdevicevalueoptions", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetDeviceValueOptions(session, req, root); });
 			RegisterCommandCode("getdevicevalueoptionwording", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetDeviceValueOptionWording(session, req, root); });
 

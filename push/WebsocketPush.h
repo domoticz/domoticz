@@ -7,7 +7,9 @@ namespace http {
 	} // namespace server
 } // namespace http
 
-class CWebSocketPush : public CBasePush
+#include "../main/StoppableTask.h"
+
+class CWebSocketPush : public CBasePush, public StoppableTask
 {
 public:
 	explicit CWebSocketPush(http::server::CWebsocketHandler *sock);

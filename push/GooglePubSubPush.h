@@ -2,7 +2,9 @@
 
 #include "BasePush.h"
 
-class CGooglePubSubPush : public CBasePush
+#include "../main/StoppableTask.h"
+
+class CGooglePubSubPush : public CBasePush, public StoppableTask
 {
 public:
 	CGooglePubSubPush();
