@@ -131,7 +131,7 @@ a:hover { text-decoration: none; color: #003366; }
 
 				<div>
 					<div id="frame">
-						<div id="mode" style="font-size:40px;;color:#3333cc;">--</div>
+						<div id="mode" style="font-size:40px;color:#3333cc;">--</div>
 						<div id="label_lg">Water Today (ltr)</div>
 					</div>
 					<div id="frame">

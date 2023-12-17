@@ -155,7 +155,7 @@ bool RelayNet::StartHardware()
 {
 	RequestStart();
 
-	bool bOk = false;;
+	bool bOk = false;
 	m_bIsStarted = false;
 	m_setup_devices = false;
 	m_bIsStarted = false;
