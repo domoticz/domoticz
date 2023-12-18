@@ -695,7 +695,7 @@ std::string CBasePush::ProcessSendValue(
 		}
 		else
 		{
-			_log.Log(LOG_ERROR, "BasePush: Unhandled type (devIdx: %" PRIu64 ", vType: %s", DeviceRowIdx, vType.c_str());
+			_log.Log(LOG_ERROR, "BasePush: Unhandled type (devIdx: %" PRIu64 ", vType: %s)", DeviceRowIdx, vType.c_str());
 			return ""; //unhandled type
 		}
 	}
