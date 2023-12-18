@@ -403,6 +403,11 @@ namespace http {
 			if ((targettypei == 2) && (targetdeviceid.empty()))
 				return;
 			if (idx == "0") {
+				//check if we already have this link
+				auto result = m_sql.safe_query("SELECT ID FROM PushLink WHERE (PushType==%d AND DeviceRowID==%d AND DelimitedValue==%d AND TargetType==%d)",
+					CBasePush::PushType::PUSHTYPE_GOOGLE_PUB_SUB, deviceidi, atoi(valuetosend.c_str()), targettypei);
+				if (!result.empty())
+					return; //already have this
 				m_sql.safe_query(
 					"INSERT INTO PushLink (PushType, DeviceRowID,DelimitedValue,TargetType,TargetVariable,TargetDeviceID,TargetProperty,IncludeUnit,Enabled) VALUES ('%d','%d','%d','%d','%q','%d','%q','%d','%d')",
 					CBasePush::PushType::PUSHTYPE_GOOGLE_PUB_SUB,
