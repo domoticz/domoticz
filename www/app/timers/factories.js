@@ -52,6 +52,7 @@ define(['app'], function (app) {
                 hour: 0,
                 min: 0,
                 randomness: false,
+                persistent: false,
                 command: 0,
                 level: null,
                 tvalue: '123',

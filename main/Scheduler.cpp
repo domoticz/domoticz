@@ -67,7 +67,7 @@ void CScheduler::ReloadSchedules()
 		"SELECT T1.DeviceRowID, T1.Time, T1.Type, T1.Cmd, T1.Level, T1.Days, T2.Name,"
 		" T2.Used, T1.UseRandomness, T1.Color, T1.[Date], T1.MDay, T1.Month, T1.Occurence, T1.ID"
 		" FROM Timers as T1, DeviceStatus as T2"
-		" WHERE ((T1.Active == 1) AND (T1.TimerPlan == %d) AND (T2.ID == T1.DeviceRowID))"
+		" WHERE ((T1.Active == 1) AND ((T1.TimerPlan == %d) OR (T1.TimerPlan == 9999)) AND (T2.ID == T1.DeviceRowID))"
 		" ORDER BY T1.ID",
 		m_sql.m_ActiveTimerPlan);
 	if (!result.empty())
@@ -165,7 +165,7 @@ void CScheduler::ReloadSchedules()
 		"SELECT T1.SceneRowID, T1.Time, T1.Type, T1.Cmd, T1.Level, T1.Days, T2.Name,"
 		" T1.UseRandomness, T1.[Date], T1.MDay, T1.Month, T1.Occurence, T1.ID"
 		" FROM SceneTimers as T1, Scenes as T2"
-		" WHERE ((T1.Active == 1) AND (T1.TimerPlan == %d) AND (T2.ID == T1.SceneRowID))"
+		" WHERE ((T1.Active == 1) AND ((T1.TimerPlan == %d) OR (T1.TimerPlan == 9999)) AND (T2.ID == T1.SceneRowID))"
 		" ORDER BY T1.ID",
 		m_sql.m_ActiveTimerPlan);
 	if (!result.empty())
@@ -255,7 +255,7 @@ void CScheduler::ReloadSchedules()
 		"SELECT T1.DeviceRowID, T1.Time, T1.Type, T1.Temperature, T1.Days, T2.Name,"
 		" T1.[Date], T1.MDay, T1.Month, T1.Occurence, T1.ID"
 		" FROM SetpointTimers as T1, DeviceStatus as T2"
-		" WHERE ((T1.Active == 1) AND (T1.TimerPlan == %d) AND (T2.ID == T1.DeviceRowID))"
+		" WHERE ((T1.Active == 1) AND ((T1.TimerPlan == %d) OR (T1.TimerPlan == 9999)) AND (T2.ID == T1.DeviceRowID))"
 		" ORDER BY T1.ID",
 		m_sql.m_ActiveTimerPlan);
 	if (!result.empty())
@@ -1203,7 +1203,7 @@ namespace http {
 				);
 
 
-			result = m_sql.safe_query("SELECT ID, Active, [Date], Time, Type, Cmd, Level, Color, Days, UseRandomness, MDay, Month, Occurence FROM Timers WHERE (DeviceRowID==%" PRIu64 ") AND (TimerPlan==%d) ORDER BY ID",
+			result = m_sql.safe_query("SELECT ID, Active, [Date], Time, Type, Cmd, Level, Color, Days, UseRandomness, MDay, Month, Occurence, TimerPlan FROM Timers WHERE (DeviceRowID==%" PRIu64 ") AND ((TimerPlan==%d) OR (TimerPlan==9999)) ORDER BY ID",
 				idx, m_sql.m_ActiveTimerPlan);
 			if (!result.empty())
 			{
@@ -1239,6 +1239,7 @@ namespace http {
 					root["result"][ii]["MDay"] = atoi(sd[10].c_str());
 					root["result"][ii]["Month"] = atoi(sd[11].c_str());
 					root["result"][ii]["Occurence"] = atoi(sd[12].c_str());
+					root["result"][ii]["Persistent"] = (atoi(sd[13].c_str()) == 9999) ? "true" : "false";
 					ii++;
 				}
 			}
@@ -1297,9 +1298,12 @@ namespace http {
 			std::string smday = "0";
 			std::string smonth = "0";
 			std::string soccurence = "0";
+			std::string persistent = request::findValue(&req, "persistent");
 			if ((idx.empty()) || (active.empty()) || (stimertype.empty()) || (shour.empty()) || (smin.empty()) || (randomness.empty()) || (scmd.empty()) || (sdays.empty()))
 				return;
 			unsigned char iTimerType = atoi(stimertype.c_str());
+
+			int timer_plan = (persistent == "true") ? 9999 : m_sql.m_ActiveTimerPlan;
 
 			time_t now = mytime(nullptr);
 			struct tm tm1;
@@ -1370,7 +1374,7 @@ namespace http {
 				mday,
 				month,
 				occurence,
-				m_sql.m_ActiveTimerPlan
+				timer_plan
 			);
 			m_mainworker.m_scheduler.ReloadSchedules();
 		}
@@ -1397,10 +1401,14 @@ namespace http {
 			std::string smday = "0";
 			std::string smonth = "0";
 			std::string soccurence = "0";
+			std::string persistent = request::findValue(&req, "persistent");
 			if ((idx.empty()) || (active.empty()) || (stimertype.empty()) || (shour.empty()) || (smin.empty()) || (randomness.empty()) || (scmd.empty()) || (sdays.empty()))
 				return;
 
 			unsigned char iTimerType = atoi(stimertype.c_str());
+
+			int timer_plan = (persistent == "true") ? 9999 : m_sql.m_ActiveTimerPlan;
+
 			time_t now = mytime(nullptr);
 			struct tm tm1;
 			localtime_r(&now, &tm1);
@@ -1456,7 +1464,7 @@ namespace http {
 			root["status"] = "OK";
 			root["title"] = "UpdateTimer";
 			m_sql.safe_query(
-				"UPDATE Timers SET Active=%d, [Date]='%04d-%02d-%02d', Time='%02d:%02d', Type=%d, UseRandomness=%d, Cmd=%d, Level=%d, Color='%q', Days=%d, MDay=%d, Month=%d, Occurence=%d WHERE (ID == '%q')",
+				"UPDATE Timers SET Active=%d, [Date]='%04d-%02d-%02d', Time='%02d:%02d', Type=%d, UseRandomness=%d, Cmd=%d, Level=%d, Color='%q', Days=%d, MDay=%d, Month=%d, Occurence=%d, TimerPlan=%d WHERE (ID == '%q')",
 				(active == "true") ? 1 : 0,
 				Year, Month, Day,
 				hour, min,
@@ -1469,6 +1477,7 @@ namespace http {
 				mday,
 				month,
 				occurence,
+				timer_plan,
 				idx.c_str()
 			);
 			m_mainworker.m_scheduler.ReloadSchedules();
@@ -1548,7 +1557,7 @@ namespace http {
 			root["status"] = "OK";
 			root["title"] = "ClearTimer";
 			m_sql.safe_query(
-				"DELETE FROM Timers WHERE ((DeviceRowID == '%q') AND (TimerPlan == %d))",
+				"DELETE FROM Timers WHERE (DeviceRowID == '%q') AND ((TimerPlan == %d) OR (TimerPlan == 9999))",
 				idx.c_str(),
 				m_sql.m_ActiveTimerPlan
 			);
@@ -1569,7 +1578,7 @@ namespace http {
 			char szTmp[50];
 
 			std::vector<std::vector<std::string> > result;
-			result = m_sql.safe_query("SELECT ID, Active, [Date], Time, Type, Temperature, Days, MDay, Month, Occurence FROM SetpointTimers WHERE (DeviceRowID=%" PRIu64 ") AND (TimerPlan==%d) ORDER BY ID",
+			result = m_sql.safe_query("SELECT ID, Active, [Date], Time, Type, Temperature, Days, MDay, Month, Occurence, TimerPlan FROM SetpointTimers WHERE (DeviceRowID=%" PRIu64 ") AND ((TimerPlan==%d) OR (TimerPlan==9999)) ORDER BY ID",
 				idx, m_sql.m_ActiveTimerPlan);
 			if (!result.empty())
 			{
@@ -1599,6 +1608,7 @@ namespace http {
 					root["result"][ii]["MDay"] = atoi(sd[7].c_str());
 					root["result"][ii]["Month"] = atoi(sd[8].c_str());
 					root["result"][ii]["Occurence"] = atoi(sd[9].c_str());
+					root["result"][ii]["Persistent"] = (atoi(sd[10].c_str()) == 9999) ? "true" : "false";
 					ii++;
 				}
 			}
@@ -1622,9 +1632,13 @@ namespace http {
 			std::string smday = "0";
 			std::string smonth = "0";
 			std::string soccurence = "0";
+			std::string persistent = request::findValue(&req, "persistent");
+
 			if ((idx.empty()) || (active.empty()) || (stimertype.empty()) || (shour.empty()) || (smin.empty()) || (stvalue.empty()) || (sdays.empty()))
 				return;
+
 			unsigned char iTimerType = atoi(stimertype.c_str());
+			int timer_plan = (persistent == "true") ? 9999 : m_sql.m_ActiveTimerPlan;
 
 			time_t now = mytime(nullptr);
 			struct tm tm1;
@@ -1688,7 +1702,7 @@ namespace http {
 				szDate.c_str(),
 				szTime.c_str(),
 				iTimerType,
-				m_sql.m_ActiveTimerPlan
+				timer_plan
 			);
 			if (!result.empty())
 				return; //duplicate!
@@ -1705,7 +1719,7 @@ namespace http {
 				mday,
 				month,
 				occurence,
-				m_sql.m_ActiveTimerPlan
+				timer_plan
 			);
 			m_mainworker.m_scheduler.ReloadSchedules();
 		}
@@ -1729,10 +1743,13 @@ namespace http {
 			std::string smday = "0";
 			std::string smonth = "0";
 			std::string soccurence = "0";
+			std::string persistent = request::findValue(&req, "persistent");
 			if ((idx.empty()) || (active.empty()) || (stimertype.empty()) || (shour.empty()) || (smin.empty()) || (stvalue.empty()) || (sdays.empty()))
 				return;
 
 			unsigned char iTimerType = atoi(stimertype.c_str());
+			int timer_plan = (persistent == "true") ? 9999 : m_sql.m_ActiveTimerPlan;
+
 			time_t now = mytime(nullptr);
 			struct tm tm1;
 			localtime_r(&now, &tm1);
@@ -1786,7 +1803,7 @@ namespace http {
 			root["status"] = "OK";
 			root["title"] = "UpdateSetpointTimer";
 			m_sql.safe_query(
-				"UPDATE SetpointTimers SET Active=%d, [Date]='%04d-%02d-%02d', Time='%02d:%02d', Type=%d, Temperature=%.1f, Days=%d, MDay=%d, Month=%d, Occurence=%d WHERE (ID == '%q')",
+				"UPDATE SetpointTimers SET Active=%d, [Date]='%04d-%02d-%02d', Time='%02d:%02d', Type=%d, Temperature=%.1f, Days=%d, MDay=%d, Month=%d, Occurence=%d, TimerPlan=%d WHERE (ID == '%q')",
 				(active == "true") ? 1 : 0,
 				Year, Month, Day,
 				hour, min,
@@ -1796,6 +1813,7 @@ namespace http {
 				mday,
 				month,
 				occurence,
+				timer_plan,
 				idx.c_str()
 			);
 			m_mainworker.m_scheduler.ReloadSchedules();
@@ -1872,11 +1890,15 @@ namespace http {
 			std::string idx = request::findValue(&req, "idx");
 			if (idx.empty())
 				return;
+
+			int timer_plan = m_sql.m_ActiveTimerPlan;
+
 			root["status"] = "OK";
 			root["title"] = "ClearSetpointTimers";
 			m_sql.safe_query(
-				"DELETE FROM SetpointTimers WHERE (DeviceRowID == '%q')",
-				idx.c_str()
+				"DELETE FROM SetpointTimers WHERE (DeviceRowID == '%q') AND ((TimerPlan==%d) OR (TimerPlan==9999))",
+				idx.c_str(),
+				timer_plan
 			);
 			m_mainworker.m_scheduler.ReloadSchedules();
 		}
@@ -1896,7 +1918,7 @@ namespace http {
 			char szTmp[40];
 
 			std::vector<std::vector<std::string> > result;
-			result = m_sql.safe_query("SELECT ID, Active, [Date], Time, Type, Cmd, Level, Days, UseRandomness, MDay, Month, Occurence FROM SceneTimers WHERE (SceneRowID==%" PRIu64 ") AND (TimerPlan==%d) ORDER BY ID",
+			result = m_sql.safe_query("SELECT ID, Active, [Date], Time, Type, Cmd, Level, Days, UseRandomness, MDay, Month, Occurence, TimerPlan FROM SceneTimers WHERE (SceneRowID==%" PRIu64 ") AND ((TimerPlan==%d) OR (TimerPlan==9999)) ORDER BY ID",
 				idx, m_sql.m_ActiveTimerPlan);
 			if (!result.empty())
 			{
@@ -1932,6 +1954,7 @@ namespace http {
 					root["result"][ii]["MDay"] = atoi(sd[9].c_str());
 					root["result"][ii]["Month"] = atoi(sd[10].c_str());
 					root["result"][ii]["Occurence"] = atoi(sd[11].c_str());
+					root["result"][ii]["Persistent"] = (atoi(sd[12].c_str()) == 9999) ? "true" : "false";
 					ii++;
 				}
 			}
@@ -1958,9 +1981,13 @@ namespace http {
 			std::string smday = "0";
 			std::string smonth = "0";
 			std::string soccurence = "0";
+			std::string persistent = request::findValue(&req, "persistent");
+
 			if ((idx.empty()) || (active.empty()) || (stimertype.empty()) || (shour.empty()) || (smin.empty()) || (randomness.empty()) || (scmd.empty()) || (sdays.empty()))
 				return;
+
 			unsigned char iTimerType = atoi(stimertype.c_str());
+			int timer_plan = (persistent == "true") ? 9999 : m_sql.m_ActiveTimerPlan;
 
 			time_t now = mytime(nullptr);
 			struct tm tm1;
@@ -2029,7 +2056,7 @@ namespace http {
 				mday,
 				month,
 				occurence,
-				m_sql.m_ActiveTimerPlan
+				timer_plan
 			);
 			m_mainworker.m_scheduler.ReloadSchedules();
 		}
@@ -2055,10 +2082,12 @@ namespace http {
 			std::string smday = "0";
 			std::string smonth = "0";
 			std::string soccurence = "0";
+			std::string persistent = request::findValue(&req, "persistent");
 			if ((idx.empty()) || (active.empty()) || (stimertype.empty()) || (shour.empty()) || (smin.empty()) || (randomness.empty()) || (scmd.empty()) || (sdays.empty()))
 				return;
 
 			unsigned char iTimerType = atoi(stimertype.c_str());
+			int timer_plan = (persistent == "true") ? 9999 : m_sql.m_ActiveTimerPlan;
 
 			time_t now = mytime(nullptr);
 			struct tm tm1;
@@ -2114,7 +2143,7 @@ namespace http {
 			root["status"] = "OK";
 			root["title"] = "UpdateSceneTimer";
 			m_sql.safe_query(
-				"UPDATE SceneTimers SET Active=%d, [Date]='%04d-%02d-%02d', Time='%02d:%02d', Type=%d, UseRandomness=%d, Cmd=%d, Level=%d, Days=%d, MDay=%d, Month=%d, Occurence=%d WHERE (ID == '%q')",
+				"UPDATE SceneTimers SET Active=%d, [Date]='%04d-%02d-%02d', Time='%02d:%02d', Type=%d, UseRandomness=%d, Cmd=%d, Level=%d, Days=%d, MDay=%d, Month=%d, Occurence=%d, TimerPlan=%d WHERE (ID == '%q')",
 				(active == "true") ? 1 : 0,
 				Year, Month, Day,
 				hour, min,
@@ -2126,6 +2155,7 @@ namespace http {
 				mday,
 				month,
 				occurence,
+				timer_plan,
 				idx.c_str()
 			);
 			m_mainworker.m_scheduler.ReloadSchedules();
@@ -2199,14 +2229,17 @@ namespace http {
 				return; //Only admin user allowed
 			}
 
+			int timer_plan = m_sql.m_ActiveTimerPlan;
+
 			std::string idx = request::findValue(&req, "idx");
 			if (idx.empty())
 				return;
 			root["status"] = "OK";
 			root["title"] = "ClearSceneTimer";
 			m_sql.safe_query(
-				"DELETE FROM SceneTimers WHERE (SceneRowID == '%q')",
-				idx.c_str()
+				"DELETE FROM SceneTimers WHERE (SceneRowID == '%q') AND ((TimerPlan==%d) OR (TimerPlan==9999))",
+				idx.c_str(),
+				timer_plan
 			);
 			m_mainworker.m_scheduler.ReloadSchedules();
 		}
