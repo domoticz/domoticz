@@ -146,11 +146,6 @@ define(['angularAMD', 'angular', 'angular-route'], function (angularAMD) {
                 controller: 'RestoreDatabaseController',
                 permission: 'Admin'
             }))
-            .when('/RFXComFirmware', angularAMD.route({
-                templateUrl: 'views/rfxcomfirmware.html',
-                controller: 'RFXComFirmwareController',
-                permission: 'Admin'
-            }))
             .when('/Cam', angularAMD.route({
                 templateUrl: 'views/cam.html',
                 controller: 'CamController',
