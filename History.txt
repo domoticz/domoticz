@@ -16,6 +16,7 @@ Version 2023.xxxxx (xxxxx 2023)
 - Implemented: MQTT-AD, added support for Wh and Wm sensors
 - Implemented: MQTT-AD, don't add new devices when this is disabled in the system
 - Implemented: MQTT-AD: Fan percentage_command_template merged with preset_modes
+- Implemented: P1 Meter report, now possible to remove data point (via shift click) from month chart
 - Implemented: SetPoint devices can now be configured with a custom unit, min/max and step size and have a custom icon
 - Implemented: Support for Pytjon 3.12
 - Implemented: TeleInfo, added Tempo field

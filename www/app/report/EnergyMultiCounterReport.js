@@ -177,6 +177,8 @@ define(['app', 'report/helpers'], function (app, reportHelpers) {
             vm.isMonthView = vm.selectedMonth > 0;
             vm.degreeType = $.myglobals.tempsign;
 
+			$.devIdx = vm.device.idx;
+
             getData();
         }
 
@@ -283,6 +285,10 @@ define(['app', 'report/helpers'], function (app, reportHelpers) {
                 .add(data.items)
                 .draw();
         }
+
+		function reloadPage() {
+			window.location.reload();
+		}
 
         function showUsageChart(data) {
             var chartElement = $element.find('#usagegraph');
@@ -392,6 +398,17 @@ define(['app', 'report/helpers'], function (app, reportHelpers) {
 					//useHTML: true
                 },
                 plotOptions: {
+					series: {
+						point: {
+							events: {
+								click: function (event) {
+									if (vm.isMonthView) {
+										chartPointClickNew(event, false, reloadPage);
+									}
+								}
+							}
+						}
+					},
                     column: {
                         stacking: 'normal',
                         minPointLength: 4,
