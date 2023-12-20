@@ -19,6 +19,7 @@ Version 2023.xxxxx (xxxxx 2023)
 - Implemented: Support for Pytjon 3.12
 - Implemented: TeleInfo, added Tempo field
 - Implemented: Temp/Hum/Baro or combination can be replaced by any other Temp/Hum/Baro or combination
+- Implemented: Temperature report, now possible to remove data point (via shift click) from variation chart
 - Changed: Floorplan, better display of current state for counter devices
 - Changed: Floorplan, Sound Icon state (0 dB = Off else On)
 - Changed: MQTT-AD: better device name generation
