@@ -461,7 +461,9 @@ define(['app', 'report/helpers'], function (app, reportHelpers) {
 						point: {
 							events: {
 								click: function (event) {
-									chartPointClickNew(event, false, reloadPage);
+									if (vm.isMonthView) {
+										chartPointClickNew(event, false, reloadPage);
+									}
 								}
 							}
 						}
