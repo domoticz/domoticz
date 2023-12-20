@@ -1,6 +1,7 @@
 Version 2023.xxxxx (xxxxx 2023)
 - Implemented: AlfenEve, Added option to specify charge current (or disable this)
 - Implemented: AlfenEve, Added Solar charging mode and settings
+- Implemented: Counter report, now possible to remove data point (via shift click) from month chart
 - Implemented: Devices overview, Setpoint log button
 - Implemented: Enever, added support for providers Atoom Alliantie, Energie van Ons, Vandebron, Wout Energie
 - Implemented: Enever: added two uservariables for average gas/electricity price
