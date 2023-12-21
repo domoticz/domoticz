@@ -293,7 +293,7 @@ namespace http
 			std::string cafile = request::findValue(&req, "cafile");
 			std::string tls_version = request::findValue(&req, "tlsversion");
 
-			if ((linkactive.empty()) || (ipaddress.empty()) || (port.empty()) || (username.empty()) || (password.empty()) || (topic_out.empty()) || (tls_version.empty()))
+			if ((linkactive.empty()) || (ipaddress.empty()) || (port.empty()) || (topic_out.empty()) || (tls_version.empty()))
 				return;
 
 			int ilinkactive = atoi(linkactive.c_str());
