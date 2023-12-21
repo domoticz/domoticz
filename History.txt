@@ -1,25 +1,25 @@
 Version 2023.xxxxx (xxxxx 2023)
-- Implemented: AlfenEve, Added option to specify charge current (or disable this)
-- Implemented: AlfenEve, Added Solar charging mode and settings
+- Implemented: AlfenEve, added option to specify charge current (or disable this)
+- Implemented: AlfenEve, added Solar charging mode and settings
 - Implemented: Counter report, now possible to remove data point (via shift click) from month chart
 - Implemented: Devices overview, Setpoint log button
 - Implemented: Enever, added support for providers Atoom Alliantie, Energie van Ons, Vandebron, Wout Energie
-- Implemented: Enever: added two uservariables for average gas/electricity price
 - Implemented: Enever, option to specify different providers for Gas/Electricity
+- Implemented: Enever: added two user variables for average gas/electricity price
 - Implemented: Enphase, counter helper to prevent turnover caused by powerloss, reboot or other envoy issues
 - Implemented: Enphase, Initial support for Encharge battery status (needs more work)
 - Implemented: Managed Counters, now possible to use negative values
-- Implemented: Mitsubishi WF RAC Airco
-- Implemented: MQTT, added option to specify devices to be published to MQTT
+- Implemented: Mitsubishi WF RAC Airconditioning
 - Implemented: MQTT-AD, added support for climate min_temp/max_temp and temp_step
 - Implemented: MQTT-AD, added support for number voc type
 - Implemented: MQTT-AD, added support for Wh and Wm sensors
 - Implemented: MQTT-AD, don't add new devices when this is disabled in the system
 - Implemented: MQTT-AD: Fan percentage_command_template merged with preset_modes
+- Implemented: MQTT, added option to specify devices to be published to MQTT
 - Implemented: P1 Meter report, now possible to remove data point (via shift click) from month chart
 - Implemented: Persistent Timers (will work in all timer plans)
 - Implemented: SetPoint devices can now be configured with a custom unit, min/max and step size and have a custom icon
-- Implemented: Support for Pytjon 3.12
+- Implemented: Support for Python 3.12
 - Implemented: TeleInfo, added Tempo field
 - Implemented: Temp/Hum/Baro or combination can be replaced by any other Temp/Hum/Baro or combination
 - Implemented: Temperature report, now possible to remove data point (via shift click) from variation chart
@@ -27,13 +27,13 @@ Version 2023.xxxxx (xxxxx 2023)
 - Changed: Floorplan, Sound Icon state (0 dB = Off else On)
 - Changed: MQTT-AD: better device name generation
 - Changed: Netatmo login, now using the API Token
-- Fixed: Eport to csv from Charts
 - Fixed: EventSystem, corrected event of RGB/W/WW devices
+- Fixed: Export to csv from Charts
+- Fixed: MQTT-AD, RGB dimmers did not work correctly in scenes/timers
 - Fixed: MQTT-AD: better handling of Push-On/Push-Off devices
 - Fixed: MQTT-AD: better handling of Switch commands that needs a 'state' object
 - Fixed: MQTT-AD: fixed brightness for HS lights
 - Fixed: MQTT-AD: prevent blind from updating on non-numeric state changes
-- Fixed: MQTT-AD, RGB dimmers did not work correctly in scenes/timers
 - Fixed: P1 Meter, buffer size increased because of large datagrams on some meters
 - Fixed: Sunset/rise timers now correctly set the time for next day
 - Fixed: Switches defined with "Off Delay" are not set to "Off" at startup
