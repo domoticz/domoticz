@@ -639,6 +639,7 @@ void MQTTAutoDiscover::on_auto_discovery_message(const struct mosquitto_message*
 			|| (object_id.find("max_") == 0)
 			|| (object_id.find("_sensitivity") != std::string::npos)
 			|| (object_id.find("_alarm") != std::string::npos)
+			|| (object_id.find("_calibration") != std::string::npos)
 			)
 		{
 			return;
@@ -2269,6 +2270,8 @@ bool MQTTAutoDiscover::HaveSingleTempHumBaro(const std::string& device_identifie
 			continue;
 
 		_tMQTTASensor* pSensor = &pSensorBase->second;
+		if (pSensor->component_type == "number")
+			continue; //ignore number sensors
 
 		uint8_t devType, subType;
 		std::string szOptions, sValue;
