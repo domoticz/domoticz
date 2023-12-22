@@ -4296,7 +4296,7 @@ bool CSQLHelper::safe_UpdateBlobInTableWithID(const std::string& Table, const st
 	if (rc != SQLITE_OK) {
 		return false;
 	}
-	rc = sqlite3_bind_blob(stmt, 1, BlobData.c_str(), BlobData.size(), SQLITE_STATIC);
+	rc = sqlite3_bind_blob(stmt, 1, BlobData.c_str(), static_cast<int>(BlobData.size()), SQLITE_STATIC);
 	if (rc != SQLITE_OK) {
 		return false;
 	}
@@ -9622,7 +9622,7 @@ std::map<std::string, std::string> CSQLHelper::GetDeviceOptions(const std::strin
 std::string CSQLHelper::FormatDeviceOptions(const std::map<std::string, std::string>& optionsMap)
 {
 	std::string options;
-	int count = optionsMap.size();
+	size_t count = optionsMap.size();
 	if (count > 0) {
 		int i = 0;
 		std::stringstream ssoptions;
