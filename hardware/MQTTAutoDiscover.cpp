@@ -1886,7 +1886,10 @@ bool MQTTAutoDiscover::GuessSensorTypeValue(const _tMQTTASensor* pSensor, uint8_
 	else if (szUnit == "variable")
 	{
 		std::string errorMessage;
-		m_sql.AddUserVariableEx(pSensor->name, USERVARTYPE_STRING, pSensor->last_value, true, errorMessage);
+		_eUsrVariableType varType = USERVARTYPE_STRING;
+		if (is_number(pSensor->last_value))
+			varType = USERVARTYPE_FLOAT;
+		m_sql.AddUserVariableEx(pSensor->name, varType, pSensor->last_value, true, errorMessage);
 		return false;
 	}
 	else if (
