@@ -86,13 +86,14 @@ std::string ReadFile(std::string filename)
 }
 #endif
 
-EnphaseAPI::EnphaseAPI(const int ID, const std::string& IPAddress, const unsigned short usIPPort, int PollInterval, const bool bPollInverters, const std::string& szUsername, const std::string& szPassword, const std::string& szSiteID) :
+EnphaseAPI::EnphaseAPI(const int ID, const std::string& IPAddress, const unsigned short usIPPort, int PollInterval, const bool bPollInverters, const bool bDontGetMeteredValues, const std::string& szUsername, const std::string& szPassword, const std::string& szSiteID) :
 	m_szIPAddress(IPAddress),
 	m_szUsername(szUsername),
 	m_szPassword(CURLEncode::URLEncode(szPassword)),
 	m_szSiteID(szSiteID)
 {
 	m_bGetInverterDetails = bPollInverters;
+	m_bDontGetMeteredValues = bDontGetMeteredValues;
 
 	m_HwdID = ID;
 
@@ -802,15 +803,15 @@ void EnphaseAPI::parseProduction(const Json::Value& root)
 		return;
 	}
 	size_t sproduction = root["production"].size();
-	bool bIsMeteredVersion = (sproduction > 1);
+	bool bIsMeteredVersion = (sproduction > 1) && !m_bDontGetMeteredValues;
 	if (bIsMeteredVersion)
 	{
 		bIsMeteredVersion = root["production"][1]["whLifetime"].asInt() != 0;
-	}
+	} 
 	Json::Value reading = (bIsMeteredVersion) ? root["production"][1] : root["production"][0];
 
 	int musage = reading["wNow"].asInt();
-
+	
 	if (musage < 0)
 		musage = 0; //seems sometimes the production value is negative??
 

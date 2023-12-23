@@ -1051,7 +1051,7 @@ bool MainWorker::AddHardwareFromParams(
 		pHardware = new USBtin(ID, SerialPort, Mode1, Mode2);
 		break;
 	case HTYPE_EnphaseAPI:
-		pHardware = new EnphaseAPI(ID, Address, Port, Mode1, Mode2, Username, Password, Extra);
+		pHardware = new EnphaseAPI(ID, Address, Port, Mode1, Mode2, Mode3, Username, Password, Extra);
 		break;
 	case HTYPE_Comm5SMTCP:
 		pHardware = new Comm5SMTCP(ID, Address, Port);
@@ -12967,8 +12967,8 @@ bool MainWorker::SetSetPointInt(const std::vector<std::string>& sd, const float 
 
 		if (
 			(value_unit.empty())
-			|| (value_unit == "°C")
-			|| (value_unit == "°F")
+			|| (value_unit == "ï¿½C")
+			|| (value_unit == "ï¿½F")
 			|| (value_unit == "C")
 			|| (value_unit == "F")
 			)
