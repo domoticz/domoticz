@@ -129,7 +129,8 @@ define(['app', 'timers/factories', 'timers/components','timers/planning'], funct
                 color: vm.isLED ? config.color : undefined,
                 tvalue: vm.isSetpointTimers ? config.tvalue : undefined,
                 command: vm.isSetpointTimers ? undefined : config.command,
-                randomness: vm.isSetpointTimers ? undefined : config.randomness
+                randomness: vm.isSetpointTimers ? undefined : config.randomness,
+                persistent: config.persistent
             });
 
             var error = deviceTimerConfigUtils.getTimerConfigErrors(config);

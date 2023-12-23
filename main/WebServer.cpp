@@ -234,7 +234,6 @@ namespace http
 			// End of 'Pages' to be moved...
 
 			m_pWebEm->RegisterActionCode("setrfxcommode", [this](auto&& session, auto&& req, auto&& redirect_uri) { SetRFXCOMMode(session, req, redirect_uri); });
-			m_pWebEm->RegisterActionCode("rfxupgradefirmware", [this](auto&& session, auto&& req, auto&& redirect_uri) { RFXComUpgradeFirmware(session, req, redirect_uri); });
 			m_pWebEm->RegisterActionCode("setrego6xxtype", [this](auto&& session, auto&& req, auto&& redirect_uri) { SetRego6XXType(session, req, redirect_uri); });
 			m_pWebEm->RegisterActionCode("sets0metertype", [this](auto&& session, auto&& req, auto&& redirect_uri) { SetS0MeterType(session, req, redirect_uri); });
 			m_pWebEm->RegisterActionCode("setlimitlesstype", [this](auto&& session, auto&& req, auto&& redirect_uri) { SetLimitlessType(session, req, redirect_uri); });
@@ -260,8 +259,6 @@ namespace http
 			RegisterCommandCode("getauth", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetAuth(session, req, root); }, true);
 			RegisterCommandCode("getuptime", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetUptime(session, req, root); }, true);
 			RegisterCommandCode("getconfig", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetConfig(session, req, root); }, true);
-
-			RegisterCommandCode("rfxfirmwaregetpercentage", [this](auto&& session, auto&& req, auto&& root) { Cmd_RFXComGetFirmwarePercentage(session, req, root); }, true);
 
 			// Commands that require authentication
 			RegisterCommandCode("sendopenthermcommand", [this](auto&& session, auto&& req, auto&& root) { Cmd_SendOpenThermCommand(session, req, root); });

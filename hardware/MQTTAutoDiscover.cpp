@@ -639,6 +639,7 @@ void MQTTAutoDiscover::on_auto_discovery_message(const struct mosquitto_message*
 			|| (object_id.find("max_") == 0)
 			|| (object_id.find("_sensitivity") != std::string::npos)
 			|| (object_id.find("_alarm") != std::string::npos)
+			|| (object_id.find("_calibration") != std::string::npos)
 			)
 		{
 			return;
@@ -1885,7 +1886,10 @@ bool MQTTAutoDiscover::GuessSensorTypeValue(const _tMQTTASensor* pSensor, uint8_
 	else if (szUnit == "variable")
 	{
 		std::string errorMessage;
-		m_sql.AddUserVariableEx(pSensor->name, USERVARTYPE_STRING, pSensor->last_value, true, errorMessage);
+		_eUsrVariableType varType = USERVARTYPE_STRING;
+		if (is_number(pSensor->last_value))
+			varType = USERVARTYPE_FLOAT;
+		m_sql.AddUserVariableEx(pSensor->name, varType, pSensor->last_value, true, errorMessage);
 		return false;
 	}
 	else if (
@@ -2269,6 +2273,8 @@ bool MQTTAutoDiscover::HaveSingleTempHumBaro(const std::string& device_identifie
 			continue;
 
 		_tMQTTASensor* pSensor = &pSensorBase->second;
+		if (pSensor->component_type == "number")
+			continue; //ignore number sensors
 
 		uint8_t devType, subType;
 		std::string szOptions, sValue;

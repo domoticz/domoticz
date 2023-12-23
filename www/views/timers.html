@@ -1,3 +1,4 @@
+
 <div id="deviceTimers" class="container js-device-timers">
 <div ng-show="!vm.ismobile">
 	<table class="bannav" id="bannav" border="0" cellpadding="0" cellspacing="0" width="100%">
@@ -84,6 +85,7 @@
 						<th width="80" align="center"></th>
 						<th width="60" align="center"></th>
 						<th width="60" align="center"></th>
+						<th width="60" align="center"></th>
 						<th width="140" align="center"></th>
 						<th align="left"></th>
 					</tr>
@@ -152,6 +154,15 @@
 					<td>
 						<input id="randomness" type="checkbox" ng-model="vm.timerSettings.randomness">
 						<label for="randomness"></label>
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<label for="persistent">{{:: 'Persistent' | translate }}:</label>
+					</td>
+					<td>
+						<input id="persistent" type="checkbox" ng-model="vm.timerSettings.persistent">
+						<label for="persistent"></label>
 					</td>
 				</tr>
 				<tr ng-hide="::vm.isSetpointTimers || vm.isCommandSelectionDisabled">

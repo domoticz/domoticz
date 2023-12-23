@@ -212,7 +212,11 @@ void CInfluxPush::Do_Work()
 				sSendData += '\n';
 
 			std::stringstream sziData;
-			sziData << item.skey << " value=" << item.svalue;
+			sziData << item.skey << " value=";
+			if (item.skey.find("Text,") == 0)
+				sziData << "\"" << item.svalue << "\"";
+			else
+				sziData << item.svalue;
 			if (m_bInfluxDebugActive)
 			{
 				_log.Log(LOG_NORM, "InfluxLink: value %s", sziData.str().c_str());
@@ -416,6 +420,11 @@ namespace http
 			std::string linkactive = request::findValue(&req, "linkactive");
 			if (idx == "0")
 			{
+				//check if we already have this link
+				auto result = m_sql.safe_query("SELECT ID FROM PushLink WHERE (PushType==%d AND DeviceRowID==%d AND DelimitedValue==%d AND TargetType==%d)",
+					CBasePush::PushType::PUSHTYPE_INFLUXDB, deviceidi, atoi(valuetosend.c_str()), targettypei);
+				if (!result.empty())
+					return; //already have this
 				m_sql.safe_query("INSERT INTO PushLink (PushType,DeviceRowID,DelimitedValue,TargetType,TargetVariable,TargetDeviceID,TargetProperty,IncludeUnit,Enabled) VALUES "
 						 "(%d,'%d',%d,%d,'%q',%d,'%q',%d,%d)",
 						 CBasePush::PushType::PUSHTYPE_INFLUXDB, deviceidi, atoi(valuetosend.c_str()), targettypei, "-", 0, "-", 0, atoi(linkactive.c_str()));

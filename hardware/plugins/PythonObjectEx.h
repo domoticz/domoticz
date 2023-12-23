@@ -88,7 +88,7 @@ namespace Plugins {
 		{ "SwitchType", T_INT, offsetof(CUnitEx, SwitchType), 0, "Numeric device switchtype" },
 		{ "LastLevel", T_INT, offsetof(CUnitEx, LastLevel), 0, "Previous device level" },
 		{ "LastUpdate", T_OBJECT, offsetof(CUnitEx, LastUpdate), READONLY, "Last update timestamp" },
-		{ "Options", T_OBJECT, offsetof(CUnitEx, Options), READONLY, "Device options" },
+		{ "Options", T_OBJECT, offsetof(CUnitEx, Options), 0, "Device options" },
 		{ "Used", T_INT, offsetof(CUnitEx, Used), 0, "Numeric device Used flag" },
 		{ "Description", T_OBJECT, offsetof(CUnitEx, Description), 0, "Description" },
 		{ "Color", T_OBJECT, offsetof(CUnitEx, Color), 0, "Color JSON dictionary" },

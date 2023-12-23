@@ -1,5 +1,5 @@
 [main]
-host = https://app.transifex.com
+host = https://www.transifex.com
 
 [o:domoticz:p:domoticz:r:domoticz-enjson]
 file_filter = ../www/i18n/domoticz-<lang>.json

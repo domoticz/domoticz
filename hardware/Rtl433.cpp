@@ -160,6 +160,12 @@ bool CRtl433::ParseData(std::map<std::string, std::string>& data)
 
 	int code = 0;
 
+	if (FindField(data, "center_frequency"))
+	{
+		// Frequency hoping
+		return true;
+	}
+
 	if (FindField(data, "id"))
 	{
 		id = atoi(data["id"].c_str());

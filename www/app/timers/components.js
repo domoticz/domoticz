@@ -197,6 +197,7 @@ define(['app', 'components/rgbw-picker/RgbwPicker', 'timers/factories'], functio
                     {title: $.t('Date'), data: 'Date', type: 'date-us', width: 100 },
                     {title: $.t('Time'), data: 'Time'},
                     {title: $.t('Randomness'), data: 'Randomness', render: activeRenderer},
+                    {title: $.t('Persistent'), data: 'Persistent', render: activeRenderer},
                     {title: $.t('Command'), data: 'idx', render: commandRenderer},
                     {title: $.t('Days'), data: 'idx', render: daysRenderer},
                 ];
@@ -213,6 +214,7 @@ define(['app', 'components/rgbw-picker/RgbwPicker', 'timers/factories'], functio
                     vm.selectedTimerIdx = timer.idx;
                     vm.timerSettings.active = timer.Active === 'true';
                     vm.timerSettings.randomness = timer.Randomness === 'true';
+                    vm.timerSettings.persistent = timer.Persistent === 'true';
                     vm.timerSettings.timertype = timer.Type;
                     vm.timerSettings.hour = parseInt(timer.Time.substring(0, 2));
                     vm.timerSettings.min = parseInt(timer.Time.substring(3, 5));
