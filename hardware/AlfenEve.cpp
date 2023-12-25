@@ -1040,6 +1040,17 @@ void AlfenEve::parseProperties(const Json::Value& root)
 			int socket1_StateLeds = itt["value"].asInt();
 			SendTextSensor(1, 2, 255, szSocket1_Status(socket1_StateLeds), "Socket 1 State");
 			//shall we also retreive status for possible second socket?
+
+			//Are we charging?
+			bool bCharging = (
+				socket1_StateLeds == 9
+				|| socket1_StateLeds == 11
+				|| socket1_StateLeds == 12
+				|| socket1_StateLeds == 35
+				|| socket1_StateLeds == 41
+				|| socket1_StateLeds == 43
+				);
+			SendSwitch(1, 10, 255, bCharging, 0, "Charging", m_Name);
 		}
 		else if (id == "2129_0")
 		{
