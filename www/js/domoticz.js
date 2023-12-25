@@ -6324,6 +6324,7 @@ GenerateLiveSearchTextDefault = function (item) {
 	searchText = AddToLiveSearch(searchText, item.Name);
 	searchText = AddToLiveSearch(searchText, item.Description.replace('"',"'"));
 	searchText = AddToLiveSearch(searchText, item.Type);
+	searchText = AddToLiveSearch(searchText, item.HardwareName);
 	if (typeof item.SubType != 'undefined') {
 		searchText = AddToLiveSearch(searchText, item.SubType);
 	}
@@ -6428,15 +6429,15 @@ function WatchLiveSearch(){
 			div.removeClass('row');
 			div.find('.clearfix').hide();  /* only for Weather and Temperatures pages */
 
+			var searchString=query.replace('\\','').replace('[','\\[').replace(']','\\]').replace('.','\\.')
+			const regexStr = '(?=.*' + searchString.split(/\,|\s/).join(')(?=.*') + ')';
+			const searchRegEx = new RegExp(regexStr, 'gi');
+
 			items.each(function(index){
 				var searchText	=$(this).find('#name').attr('data-search')	|| '';
-
-				var safe_query=query.replace('\\','').replace('[','\\[').replace(']','\\]').replace('.','\\.')
-				var re		= new RegExp(safe_query, "mi");
-				//var re_s	= new RegExp('^'+safe_query, "i");
-
 				var to_hide=$(this);
-				if (re.test(searchText)) {
+
+				if (searchText.match(searchRegEx) !== null) {
 					to_hide.show();
 					to_hide.addClass(cl_shown);
 				}
