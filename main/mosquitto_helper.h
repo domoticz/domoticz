@@ -41,6 +41,7 @@ namespace mosqdz {
 	  virtual ~mosquittodz();
 
 	  int reinitialise(const char *id, bool clean_session);
+	  void set_callbacks();
 	  void clear_callbacks();
 	  int socket();
 	  int will_set(const char *topic, int payloadlen = 0, const void *payload = nullptr, int qos = 0, bool retain = false);
