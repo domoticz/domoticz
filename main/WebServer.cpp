@@ -3562,6 +3562,54 @@ namespace http
 			}
 		}
 
+		void CWebServer::MakeCompareDataSensor(Json::Value& root, std::string dbasetable, uint64_t deviceidx, std::string dfield)
+		{
+			std::string queryString = "SELECT strftime('%Y', Date) as y, strftime('%m', Date) as c, AVG(" + dfield + ") as s FROM " + dbasetable + " WHERE DeviceRowID == " + std::to_string(deviceidx) + " GROUP BY strftime('%Y', Date), strftime('%m', Date)";
+			auto result = m_sql.unsafe_query(queryString.c_str());
+
+			int firstYearCounting = 0;
+			int last_year = 0;
+			double prev_value = 0;
+			bool first = true;
+			int ii = 0;
+
+			for (const auto& sd : result)
+			{
+				const int year = atoi(sd[0].c_str());
+				const int month = atoi(sd[1].c_str());
+				const double value = atof(sd[2].c_str());
+
+				if ((firstYearCounting == 0) || (year < firstYearCounting))
+				{
+					firstYearCounting = year;
+				}
+
+				if (
+					(last_year == 0)
+					|| (last_year != year)
+					)
+				{
+					last_year = year;
+					prev_value = value;
+					first = true;
+				}
+
+
+				const char* trend = (first) ? "" : (prev_value < value) ? "up" : (prev_value > value) ? "down" : "equal";
+				prev_value = value;
+				first = false;
+
+				root["result"][ii]["y"] = year;
+				root["result"][ii]["c"] = month;
+				root["result"][ii]["s"] = value;
+				root["result"][ii]["t"] = trend;
+
+				ii++;
+			}
+			root["firstYear"] = firstYearCounting;
+		}
+
+
 		/*
 		 * Takes root["result"] and groups all items according to sgroupby, summing all values for each category, then creating new items in root["result"]
 		 * for each combination year/category.

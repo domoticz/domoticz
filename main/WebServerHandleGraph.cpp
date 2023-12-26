@@ -1919,6 +1919,14 @@ namespace http
 				if (sensor == "temp")
 				{
 					root["status"] = "OK";
+
+					if (!sgroupby.empty())
+					{
+						root["title"] = "Comparing " + sensor;
+						MakeCompareDataSensor(root, dbasetable, idx, "Temp_Avg");
+						return;
+					}
+
 					root["title"] = "Graph " + sensor + " " + srange;
 
 					// Actual Year
