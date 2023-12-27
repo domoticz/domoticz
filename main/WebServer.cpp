@@ -3562,49 +3562,46 @@ namespace http
 			}
 		}
 
-		void CWebServer::MakeCompareDataSensor(Json::Value& root, std::string dbasetable, uint64_t deviceidx, std::string dfield)
+		void CWebServer::MakeCompareDataSensor(Json::Value& root, const std::string& sgroupby, const std::string& dbasetable, uint64_t deviceidx, const std::string& dfield)
 		{
-			std::string queryString = "SELECT strftime('%Y', Date) as y, strftime('%m', Date) as c, AVG(" + dfield + ") as s FROM " + dbasetable + " WHERE DeviceRowID == " + std::to_string(deviceidx) + " GROUP BY strftime('%Y', Date), strftime('%m', Date)";
+			std::string queryString;
+			queryString.append("SELECT strftime('%Y', Date) as y,");
+			if ((sgroupby == "month") || (sgroupby == "year"))
+				queryString.append("strftime('%m', Date) as m");
+			else if (sgroupby == "quarter")
+				queryString.append("case when cast(strftime('%m', Date) as integer) between 1 and 3 then 'Q1' when cast(strftime('%m', Date) as integer) between 4 and 6 then 'Q2' when cast(strftime('%m', Date) as integer) between 7 and 9 then 'Q3' else 'Q4' end as Q");
+
+			queryString.append(", AVG(" + dfield + ") as s FROM " + dbasetable + " WHERE DeviceRowID == " + std::to_string(deviceidx) + " GROUP BY strftime('%Y', Date), ");
+			if ((sgroupby == "month") || (sgroupby == "year"))
+				queryString.append("strftime('%m', Date)");
+			else if (sgroupby == "quarter")
+				queryString.append("case when cast(strftime('%m', Date) as integer) between 1 and 3 then 'Q1' when cast(strftime('%m', Date) as integer) between 4 and 6 then 'Q2' when cast(strftime('%m', Date) as integer) between 7 and 9 then 'Q3' else 'Q4' end");
 			auto result = m_sql.unsafe_query(queryString.c_str());
 
 			int firstYearCounting = 0;
-			int last_year = 0;
-			double prev_value = 0;
-			bool first = true;
-			int ii = 0;
+			double yearSumPrevious[12] = { 0 };
+			int yearPrevious[12] = { 0 };
 
 			for (const auto& sd : result)
 			{
 				const int year = atoi(sd[0].c_str());
-				const int month = atoi(sd[1].c_str());
 				const double value = atof(sd[2].c_str());
 
-				if ((firstYearCounting == 0) || (year < firstYearCounting))
+				const int previousIndex = sgroupby == "year" ? 0 : sgroupby == "quarter" ? sd[1][1] - '0' - 1 : atoi(sd[1].c_str()) - 1;
+				const double* sumPrevious = year - 1 != yearPrevious[previousIndex] ? NULL : &yearSumPrevious[previousIndex];
+				const char* trend = !sumPrevious ? "" : *sumPrevious < value ? "up" : *sumPrevious > value ? "down" : "equal";
+				const int ii = root["result"].size();
+				if (firstYearCounting == 0 || year < firstYearCounting)
 				{
 					firstYearCounting = year;
 				}
 
-				if (
-					(last_year == 0)
-					|| (last_year != year)
-					)
-				{
-					last_year = year;
-					prev_value = value;
-					first = true;
-				}
-
-
-				const char* trend = (first) ? "" : (prev_value < value) ? "up" : (prev_value > value) ? "down" : "equal";
-				prev_value = value;
-				first = false;
-
 				root["result"][ii]["y"] = year;
-				root["result"][ii]["c"] = month;
+				root["result"][ii]["c"] = (sgroupby == "year") ? sd[0] : sd[1];
 				root["result"][ii]["s"] = value;
 				root["result"][ii]["t"] = trend;
-
-				ii++;
+				yearSumPrevious[previousIndex] = value;
+				yearPrevious[previousIndex] = year;
 			}
 			root["firstYear"] = firstYearCounting;
 		}

@@ -1923,7 +1923,7 @@ namespace http
 					if (!sgroupby.empty())
 					{
 						root["title"] = "Comparing " + sensor;
-						MakeCompareDataSensor(root, dbasetable, idx, "Temp_Avg");
+						MakeCompareDataSensor(root, sgroupby, dbasetable, idx, "Temp_Avg");
 						return;
 					}
 

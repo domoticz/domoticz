@@ -103,7 +103,10 @@ define(['app'], function (app) {
         valueUnits: valueUnits,
         aggregateTrendline: aggregateTrendline,
         aggregateTrendlineZoomed: aggregateTrendlineZoomed,
-        yearColor: yearColor
+        yearColor: yearColor,
+		chartParamsCompare: chartParamsCompare,
+		chartParamsCompareTemplate: chartParamsCompareTemplate,
+		compareSeriesSuppliers: compareSeriesSuppliers
     });
 
     function baseParams(jquery) {
@@ -196,6 +199,222 @@ define(['app'], function (app) {
         '2038': rgbToString(hsvToRgb(hsv(colors[8]['h'],colors[8]['s'],   colors[8]['v']-.2))),
         '2039': rgbToString(hsvToRgb(hsv(colors[9]['h'],colors[9]['s'],   colors[9]['v']-.2))),
     }
+
+  function chartParamsCompare(domoticzGlobals, ctrl, chartParamsTemplate, dataSupplierTemplate, seriesSuppliers) {
+		return _.merge(
+			{
+				highchartTemplate: {
+					xAxis: {
+						type: 'category'
+					},
+					plotOptions: {
+						column: {
+							pointPlacement: 0,
+							stacking: undefined
+						},
+						series: {
+							stacking: undefined
+						}
+					},
+					chart: {
+						marginRight: 10
+					},
+					tooltip: {
+						crosshairs: false
+					}
+				},
+				ctrl: ctrl,
+				range: ctrl.range,
+				device: ctrl.device,
+				sensorType: ctrl.sensorType,
+				groupingBy: ctrl.groupingBy,
+				autoRefreshIsEnabled: function () {
+					return ctrl.logCtrl.autoRefresh;
+				},
+				dataSupplier:
+					_.merge(
+						{
+							seriesSuppliers: seriesSuppliers
+						},
+						dataSupplierTemplate
+					)
+			},
+			chartParamsTemplate
+		);
+	}
+
+	function chartParamsCompareTemplate(ctrl, what, deviceUnit) {
+		const template = {
+			chartName: $.t('Comparing') + ' ' + $.t(what),
+			trendValuationIsReversed: function () {
+				return false;
+			},
+			highchartTemplate: {
+				chart: {
+					type: 'column'
+				},
+				plotOptions: {
+					column: {
+						stacking: ctrl.groupingBy === 'year' ? 'normal' : undefined
+					}
+				},
+				xAxis: {
+					labels: {
+						formatter: function () {
+							return categoryKeyToString(this.value);
+						}
+					}
+				},
+				tooltip: {
+					useHTML: true,
+					formatter: function () {
+						return ''
+							+ '<table>'
+							+ '<tr><td colspan="2"><b>' + categoryKeyToString(this.x) + '</b></td></tr>'
+							+ this.points.reduce(
+								function (rowsHtml, point) {
+									return rowsHtml
+										+ '<tr>'
+										+ '<td><span style="color:' + point.color + '">●</span> ' + point.series.name + ': </td>'
+										+ '<td><b>' + Highcharts.numberFormat(point.y) + '</b></td>'
+										+ '<td><b>' + (deviceUnit ? '&nbsp;' + deviceUnit : '') + '</b></td>'
+										+ '<td style="text-align: center; padding-left: 3px;">' + fontAwesomeIcon(
+												trendToFontAwesomeIconNameAndSize(point.point.options.trend),
+												trendToColor(point.point.options.trend)) + '</td>'
+										+ '</tr>';
+								}, '')
+							+ '</table>';
+
+						function trendToFontAwesomeIconNameAndSize(trend) {
+							if (trend === 'up' || trend === 'down') {
+								return {
+									name: 'caret-' + trend,
+									size: '1.3em'
+								};
+							}
+							if (trend === 'equal') {
+								return {
+									name: 'equals',
+									size: '0.9em'
+								};
+							}
+						}
+
+						function trendToColor(trend) {
+							const valuation = trendValuation(trend);
+							if (valuation === 'better') {
+								return 'rgb(125,220,78)';
+							}
+							if (valuation === 'worse') {
+								return 'rgb(255,107,107)';
+							}
+							if (valuation === 'same') {
+								return 'rgb(192,192,192)';
+							}
+						}
+
+						function trendValuation(trend) {
+							if (template.trendValuationIsReversed()) {
+								if (trend === 'up') {
+									return 'better';
+								}
+								if (trend === 'down') {
+									return 'worse';
+								}
+							} else {
+								if (trend === 'up') {
+									return 'worse';
+								}
+								if (trend === 'down') {
+									return 'better';
+								}
+							}
+							if (trend === 'equal') {
+								return 'same';
+							}
+						}
+
+						function fontAwesomeIcon(nameAndSize, color) {
+							if (nameAndSize === undefined) {
+								return '';
+							}
+							return '<i class="fas fa-' + nameAndSize.name + '" style="font-size: ' + nameAndSize.size + '; color: ' + color + ';"></i>';
+						}
+					}
+				}
+			}
+		};
+		return template;
+
+		function categoryKeyToString(categoryKey) {
+			return ctrl.groupingBy === 'month' ? monthToString(categoryKey) : categoryKey;
+		}
+
+		function monthToString(month) {
+			const months = {
+				'01': $.t('Jan'),
+				'02': $.t('Feb'),
+				'03': $.t('Mar'),
+				'04': $.t('Apr'),
+				'05': $.t('May'),
+				'06': $.t('Jun'),
+				'07': $.t('Jul'),
+				'08': $.t('Aug'),
+				'09': $.t('Sep'),
+				'10': $.t('Oct'),
+				'11': $.t('Nov'),
+				'12': $.t('Dec'),
+			};
+			return months[month];
+		}
+	}
+			
+	function compareSeriesSuppliers(ctrl) {
+		return function (data) {
+			if (data.firstYear === undefined) {
+				return [];
+			}
+			return _.range(data.firstYear, new Date().getFullYear() + 1)
+				.reduce(
+					function (seriesSuppliers, year) {
+						return seriesSuppliers.concat({
+							id: year.toString(),
+							convertZeroToNull: true,
+							year: year,
+							template: {
+								name: year.toString(),
+								color: yearColor(year),
+								index: year - data.firstYear + 1
+							},
+							postprocessXaxis: function (xAxis) {
+							},
+							initialiseDatapoints: function () {
+								this.datapoints = this.dataSupplier.categories.map(function (category) {
+									return null;
+								});
+							},
+							acceptDatapointFromDataItem: function (dataItem, datapoint) {
+								const categoryIndex = this.dataSupplier.categories.indexOf(dataItem["c"]);
+								if (categoryIndex !== -1) {
+									this.datapoints[categoryIndex] = datapoint;
+								}
+							},
+							dataItemIsValid: function (dataItem) {
+								return this.year === parseInt(dataItem["y"]);
+							},
+							dataItemIsComplete: dataItem => true,
+							datapointFromDataItem: function (dataItem) {
+								return {
+									y: this.valueFromDataItemValue(dataItem["s"]),
+									trend: dataItem["t"]
+								};
+							}
+						});
+					},
+					[]
+				);
+		}
+	}
 
     // input: h in [0,360] and s,v in [0,1] - output: r,g,b in [0,1]
     function hsvToRgb(hsv) {
