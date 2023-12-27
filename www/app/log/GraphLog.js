@@ -131,7 +131,6 @@ define(['app', 'lodash', 'RefreshingChart', 'DataLoader', 'ChartLoader'],
 					self.$onInit = function() {
 						self.groupingBy = 'month';
 						self.sensorType = domoticzGlobals.sensorTypeForDevice(self.device);
-						console.log(self.device);
 						self.chart = new RefreshingChart(
 							chart.baseParams($),
 							chart.angularParams($location, $route, $scope, $timeout, $element),
