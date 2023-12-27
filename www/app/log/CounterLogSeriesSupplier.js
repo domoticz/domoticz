@@ -88,7 +88,7 @@ define(['app', 'log/Chart'], function (app) {
 
         function counterCompareSeriesSuppliers(ctrl) {
             return function (data) {
-                if (data.firstYear === undefined) {
+                if ((data.firstYear === undefined)||(data.firstYear==0)) {
                     return [];
                 }
                 return _.range(data.firstYear, new Date().getFullYear() + 1)
