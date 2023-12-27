@@ -111,6 +111,10 @@ define(['app', 'RefreshingChart', 'DataLoader', 'ChartLoader', 'log/Chart', 'log
             }
         }
     });
+	
+	changeCompType = function() {
+			alert("Change!!");
+	}
 
     app.directive('temperatureCompareChart', function () {
         return {
@@ -122,7 +126,7 @@ define(['app', 'RefreshingChart', 'DataLoader', 'ChartLoader', 'log/Chart', 'log
                 degreeType: '<',
                 range: '@'
             },
-            templateUrl: function($element, $attrs) { return 'app/log/chart-' + $attrs.range + '.html'; },
+            templateUrl: function($element, $attrs) { return 'app/log/chart-' + $attrs.range + '-temp.html'; },
             replace: true,
             bindToController: true,
             controllerAs: 'vm',
@@ -130,6 +134,7 @@ define(['app', 'RefreshingChart', 'DataLoader', 'ChartLoader', 'log/Chart', 'log
                 const self = this;
 				self.groupingBy = 'month';
                 self.sensorType = 'temp';
+				self.var_name = 'Temp_Avg';
 
                 self.$onInit = function() {
                     self.chart = new RefreshingChart(
@@ -149,6 +154,7 @@ define(['app', 'RefreshingChart', 'DataLoader', 'ChartLoader', 'log/Chart', 'log
 										}],
                                 extendDataRequest: function (dataRequest) {
                                     dataRequest['groupby'] = self.groupingBy;
+									dataRequest['var_name'] = self.var_name;
                                     return dataRequest;
                                 },
                                 preprocessData: function (data) {

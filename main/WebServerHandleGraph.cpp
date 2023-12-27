@@ -1923,7 +1923,8 @@ namespace http
 					if (!sgroupby.empty())
 					{
 						root["title"] = "Comparing " + sensor;
-						MakeCompareDataSensor(root, sgroupby, dbasetable, idx, "Temp_Avg");
+						std::string var_name = request::findValue(&req, "var_name");
+						MakeCompareDataSensor(root, sgroupby, dbasetable, idx, var_name);
 						return;
 					}
 

@@ -597,6 +597,11 @@ define(['lodash', 'Base', 'DomoticzBase', 'DataLoader', 'ChartLoader', 'ChartZoo
                 zoom(xAxis.dataMin, xAxis.dataMax);
             }
 
+			self.$scope.changeCompTypeTemp = function() {
+				self.ctrl.var_name = self.$scope.comptype;
+				refreshChartData();
+			}
+
             self.$scope.groupByLabel = function (label) {
                 const matcher = label.match(/^(?<letter>[yq])$/);
                 if (matcher !== null) {
