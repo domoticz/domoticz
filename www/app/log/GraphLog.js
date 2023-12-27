@@ -1,5 +1,5 @@
-define(['app', 'lodash', 'RefreshingChart'],
-    function (app, _, RefreshingChart) {
+define(['app', 'lodash', 'RefreshingChart', 'DataLoader', 'ChartLoader'],
+    function (app, _, RefreshingChart, DataLoader, ChartLoader) {
 
         app.component('deviceGraphLog', {
             bindings: {
@@ -111,6 +111,84 @@ define(['app', 'lodash', 'RefreshingChart'],
                 }
             }
         });
+
+		app.directive('deviceCompareChart', function () {
+			return {
+				require: {
+					logCtrl: '^deviceGraphLog'
+				},
+				scope: {
+					device: '<',
+					range: '@'
+				},
+				templateUrl: function($element, $attrs) { return 'app/log/chart-' + $attrs.range + '.html'; },
+				replace: true,
+				bindToController: true,
+				controllerAs: 'vm',
+				controller: function ($location, $route, $scope, $timeout, $element, domoticzGlobals, domoticzApi, domoticzDataPointApi, chart) {
+					const self = this;
+
+					self.$onInit = function() {
+						self.groupingBy = 'month';
+						self.sensorType = domoticzGlobals.sensorTypeForDevice(self.device);
+						self.chart = new RefreshingChart(
+							chart.baseParams($),
+							chart.angularParams($location, $route, $scope, $timeout, $element),
+							chart.domoticzParams(domoticzGlobals, domoticzApi, domoticzDataPointApi),
+							chart.chartParamsCompare(
+								domoticzGlobals,
+								self,
+								chart.chartParamsCompareTemplate(self, self.device.Name, self.device.getUnit()),
+								{
+									isShortLogChart: false,
+									yAxes: [{
+												title: {
+													text: $.t('Degrees') + ' ' + self.device.getUnit()
+												}
+											}],
+									extendDataRequest: function (dataRequest) {
+										dataRequest['groupby'] = self.groupingBy;
+										return dataRequest;
+									},
+									preprocessData: function (data) {
+										this.firstYear = data.firstYear;
+										this.categories = categoriesFromGroupingBy.call(this, self.groupingBy);
+										if (self.chart.chart.xAxis[0].categories === true) {
+											self.chart.chart.xAxis[0].categories = [];
+										} else {
+											self.chart.chart.xAxis[0].categories.length = 0;
+										}
+										this.categories.forEach(function (c) {
+											self.chart.chart.xAxis[0].categories.push(c); });
+
+										function categoriesFromGroupingBy(groupingBy) {
+											if (groupingBy === 'year') {
+												if (this.firstYear === undefined) {
+													return [];
+												}
+												return _.range(this.firstYear, new Date().getFullYear() + 1).map(year => year.toString());
+											} else if (groupingBy === 'quarter') {
+												return ['Q1', 'Q2', 'Q3', 'Q4'];
+											} else if (groupingBy === 'month') {
+												return _.range(1, 13).map(month => pad2(month));
+											}
+
+											function pad2(i) {
+												return (i < 10 ? '0' : '') + i.toString();
+											}
+										}
+									},
+								},
+								chart.compareSeriesSuppliers(self)
+							),
+							new DataLoader(),
+							new ChartLoader($location),
+							null
+						);
+					};
+				}
+			}
+		});
 
         function baseParams(jquery) {
             return {

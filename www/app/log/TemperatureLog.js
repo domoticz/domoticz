@@ -1,4 +1,4 @@
-define(['app', 'RefreshingChart', 'log/factories'], function (app, RefreshingChart) {
+define(['app', 'RefreshingChart', 'DataLoader', 'ChartLoader', 'log/Chart', 'log/factories'], function (app, RefreshingChart, DataLoader, ChartLoader) {
 
     app.component('deviceTemperatureLog', {
         bindings: {
@@ -106,6 +106,91 @@ define(['app', 'RefreshingChart', 'log/factories'], function (app, RefreshingCha
                                 temperatureTrendlineSeriesSupplier()
                             ]
                         )
+                    );
+                };
+            }
+        }
+    });
+	
+	changeCompType = function() {
+			alert("Change!!");
+	}
+
+    app.directive('temperatureCompareChart', function () {
+        return {
+            require: {
+                logCtrl: '^deviceTemperatureLog'
+            },
+            scope: {
+                device: '<',
+                degreeType: '<',
+                range: '@'
+            },
+            templateUrl: function($element, $attrs) { return 'app/log/chart-' + $attrs.range + '-temp.html'; },
+            replace: true,
+            bindToController: true,
+            controllerAs: 'vm',
+            controller: function ($location, $route, $scope, $timeout, $element, domoticzGlobals, domoticzApi, domoticzDataPointApi, chart) {
+                const self = this;
+				self.groupingBy = 'month';
+                self.sensorType = 'temp';
+				self.var_name = 'Temp_Avg';
+
+                self.$onInit = function() {
+                    self.chart = new RefreshingChart(
+                        chart.baseParams($),
+                        chart.angularParams($location, $route, $scope, $timeout, $element),
+                        chart.domoticzParams(domoticzGlobals, domoticzApi, domoticzDataPointApi),
+						chart.chartParamsCompare(
+							domoticzGlobals,
+							self,
+							chart.chartParamsCompareTemplate(self, 'Temperature', degreeSuffix),
+                            {
+                                isShortLogChart: false,
+                                yAxes: [{
+											title: {
+												text: $.t('Degrees') + ' ' + degreeSuffix
+											}
+										}],
+                                extendDataRequest: function (dataRequest) {
+                                    dataRequest['groupby'] = self.groupingBy;
+									dataRequest['var_name'] = self.var_name;
+                                    return dataRequest;
+                                },
+                                preprocessData: function (data) {
+                                    this.firstYear = data.firstYear;
+                                    this.categories = categoriesFromGroupingBy.call(this, self.groupingBy);
+                                    if (self.chart.chart.xAxis[0].categories === true) {
+                                        self.chart.chart.xAxis[0].categories = [];
+                                    } else {
+                                        self.chart.chart.xAxis[0].categories.length = 0;
+                                    }
+                                    this.categories.forEach(function (c) {
+                                        self.chart.chart.xAxis[0].categories.push(c); });
+
+                                    function categoriesFromGroupingBy(groupingBy) {
+                                        if (groupingBy === 'year') {
+                                            if (this.firstYear === undefined) {
+                                                return [];
+                                            }
+                                            return _.range(this.firstYear, new Date().getFullYear() + 1).map(year => year.toString());
+                                        } else if (groupingBy === 'quarter') {
+                                            return ['Q1', 'Q2', 'Q3', 'Q4'];
+                                        } else if (groupingBy === 'month') {
+                                            return _.range(1, 13).map(month => pad2(month));
+                                        }
+
+                                        function pad2(i) {
+                                            return (i < 10 ? '0' : '') + i.toString();
+                                        }
+                                    }
+                                },
+                            },
+                            chart.compareSeriesSuppliers(self)
+                        ),
+                        new DataLoader(),
+                        new ChartLoader($location),
+                        null
                     );
                 };
             }

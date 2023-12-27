@@ -29,7 +29,7 @@ bool CMQTTPush::Start()
 {
 	Stop();
 
-	RequestStart();
+	m_Task.RequestStart();
 
 	UpdateSettings();
 	ReloadPushLinks(m_PushType);
@@ -51,7 +51,7 @@ void CMQTTPush::Stop()
 
 	if (m_thread)
 	{
-		RequestStop();
+		m_Task.RequestStop();
 		m_thread->join();
 		m_thread.reset();
 	}
@@ -248,7 +248,7 @@ void CMQTTPush::Do_Work()
 {
 	std::vector<_tPushItem> _items2do;
 
-	while (!IsStopRequested(500))
+	while (!m_Task.IsStopRequested(500))
 	{
 		{ // additional scope for lock (accessing size should be within lock too)
 			std::lock_guard<std::mutex> l(m_background_task_mutex);
@@ -269,6 +269,7 @@ void CMQTTPush::Do_Work()
 			SendMessage(sTopic, item.json);
 		}
 	}
+	while (1 == 0);
 }
 
 // Webserver helpers

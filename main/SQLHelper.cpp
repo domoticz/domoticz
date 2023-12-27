@@ -4339,6 +4339,11 @@ std::vector<std::vector<std::string>> CSQLHelper::safe_query(const char *fmt, ..
 	return results;
 }
 
+std::vector<std::vector<std::string>> CSQLHelper::unsafe_query(const std::string& szQuery)
+{
+	return query(szQuery);
+}
+
 std::vector<std::vector<std::string> > CSQLHelper::query(const std::string& szQuery)
 {
 	if (!m_dbase)
@@ -9624,7 +9629,7 @@ std::string CSQLHelper::FormatDeviceOptions(const std::map<std::string, std::str
 	std::string options;
 	size_t count = optionsMap.size();
 	if (count > 0) {
-		int i = 0;
+		size_t i = 0;
 		std::stringstream ssoptions;
 		for (const auto &sd : optionsMap)
 		{
