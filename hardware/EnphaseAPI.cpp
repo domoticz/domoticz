@@ -807,11 +807,11 @@ void EnphaseAPI::parseProduction(const Json::Value& root)
 	if (bIsMeteredVersion)
 	{
 		bIsMeteredVersion = root["production"][1]["whLifetime"].asInt() != 0;
-	} 
+	}
 	Json::Value reading = (bIsMeteredVersion) ? root["production"][1] : root["production"][0];
 
 	int musage = reading["wNow"].asInt();
-	
+
 	if (musage < 0)
 		musage = 0; //seems sometimes the production value is negative??
 
