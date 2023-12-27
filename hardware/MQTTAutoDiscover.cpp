@@ -1078,6 +1078,12 @@ void MQTTAutoDiscover::on_auto_discovery_message(const struct mosquitto_message*
 			pSensor->rgb_command_template = root["rgb_cmd_tpl"].asString();
 		CleanValueTemplate(pSensor->rgb_command_template);
 
+		// Not normalised JSON template for the Shelly rgbw devices
+		if (!root["rgbw_command_json_template"].empty())
+			pSensor->rgb_command_template = root["rgbw_command_json_template"].asString();
+		if (!root["rgbw_cmd_jtpl"].empty())
+			pSensor->rgb_command_template = root["rgbw_cmd_jtpl"].asString();
+
 		if (!root["rgb_command_topic"].empty())
 			pSensor->rgb_command_topic = root["rgb_command_topic"].asString();
 		if (!root["rgb_cmd_t"].empty())
@@ -3556,11 +3562,46 @@ void MQTTAutoDiscover::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 
 		if (bIsJSON)
 		{
+			// Shelly always report the brigntess
+			bool bDevColdBeOn = true;
+
 			if (root["value"].isObject() && (!root["value"]["red"].empty() && root["value"]["r"].empty()))
 			{
 				// Color values are defined in "value" object instead of "color" as expected by domoticz (e.g. Fibaro FGRGBW)
 				root["color"] = root["value"];
 				root.removeMember("value");
+			}
+
+			if( !root["ison"].empty() && !root["mode"].empty() &&
+				root["color"].empty() && root["mode"].asString() == "color" &&
+				!root["red"].empty() && !root["green"].empty() && !root["blue"].empty()
+			)
+			{
+				root["color"]["r"] = root["red"];
+				root["color"]["g"] = root["green"];
+				root["color"]["b"] = root["blue"];
+				root.removeMember("red");
+				root.removeMember("green");
+				root.removeMember("blue");
+
+				root["brightness"] = root["gain"];
+				root.removeMember("gain");
+
+				root["color"]["c"] = root["white"];
+				root.removeMember("white");
+			}
+
+			if( !root["ison"].empty() && !root["temp"].empty() )
+			{
+				root["color_temp"] = root["temp"];
+				root.removeMember("temp");
+			}
+
+			if( !root["ison"].empty() )
+			{
+				bDevColdBeOn = root["ison"].asBool();
+				szSwitchCmd = bDevColdBeOn ? pSensor->payload_on : pSensor->payload_off;
+				// root.removeMember("ison");
 			}
 
 			if (root["color"].isObject() && !root["color"]["red"].empty())
@@ -3585,7 +3626,7 @@ void MQTTAutoDiscover::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 				{
 					root["state"] = "OFF";
 				}
-				else
+				else if( bDevColdBeOn )
 					root["state"] = "ON";
 			}
 
@@ -3633,7 +3674,7 @@ void MQTTAutoDiscover::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 				}
 			}
 
-			if (!root["brightness"].empty())
+			if ( bDevColdBeOn && !root["brightness"].empty())
 			{
 				float dLevel = (100.F / pSensor->brightness_scale) * root["brightness"].asInt();
 				level = (int)round(dLevel);
@@ -3976,11 +4017,24 @@ bool MQTTAutoDiscover::SendSwitchCommand(const std::string& DeviceID, const std:
 	else if (pSensor->component_type == "light")
 	{
 		Json::Value root;
+		Json::Value jrgbcmdt;
+
+		// Try to pparse the rgb command as JSON
+		if( !pSensor->rgb_command_template.empty() )
+		{
+			bool result = ParseJSon(pSensor->rgb_command_template, jrgbcmdt);
+		}
 
 		if (eCommand == SwitchCommands::COMMAND_ON ||
 			eCommand == SwitchCommands::COMMAND_OFF)
 		{
-			if (!pSensor->brightness_value_template.empty())
+			// Shelly devices use JSON command templates
+			Json::Value cmdtmpl;
+			bool cmdparse = ParseJSon( szSendValue , cmdtmpl);
+
+			if ( 	!pSensor->brightness_value_template.empty() ||
+					( cmdparse && cmdtmpl.isObject())
+			)
 			{
 				SendMessage(pSensor->command_topic, szSendValue);
 				return true;
@@ -4006,7 +4060,82 @@ bool MQTTAutoDiscover::SendSwitchCommand(const std::string& DeviceID, const std:
 			if (pSensor->bHave_brightness_scale)
 				slevel = (int)round((pSensor->brightness_scale / 100.F) * level);
 
-			if (pSensor->brightness_value_template.empty())
+			// Shelly devices
+			if( jrgbcmdt.isObject() )
+			{
+				Json::Value lastjval;
+				Json::Value cmdtmpl;
+
+				// Shelly devices should contains the switch on fields
+				if( ParseJSon(  pSensor->payload_on , cmdtmpl) &&
+					cmdtmpl.isObject() 
+				)
+				{
+					root.copy( cmdtmpl );
+				}
+				
+				if( ParseJSon( pSensor->last_json_value , lastjval) &&
+					lastjval.isObject() &&
+					!lastjval[ "mode" ].empty() &&
+					(	root[ "mode" ].empty() ||
+						lastjval[ "mode" ] != root[ "mode" ]
+					)
+				)
+				{
+					root[ "mode" ] = lastjval[ "mode" ];
+				}
+				else if(!jrgbcmdt["mode"].empty() )
+				{
+					if( !root[ "mode" ].empty() )
+					{
+						root.removeMember("mode");
+					}
+
+					if( jrgbcmdt["mode"].isObject() )
+					{
+						// Looking for the possible modes
+						for (Json::ValueConstIterator it = jrgbcmdt["mode"].begin(); it != jrgbcmdt["mode"].end(); ++it)
+						{
+							// Default the ffirst os color if defined
+							if( root[ "mode" ].empty() )
+							{
+								root[ "mode" ] = (*it).asString();
+							}
+							else if( (*it).asString() == "color" )
+							{
+								root[ "mode" ] = "color";	
+							}
+						}
+					}
+					else if( jrgbcmdt["mode"].isString() || jrgbcmdt["mode"].isNumeric() )
+					{
+						root[ "mode" ] = jrgbcmdt["mode"];
+					}
+					else
+					{	// Last resort...
+						root[ "mode" ] = "color";	
+					}
+				}
+				else
+				{	// Last resort...
+					root[ "mode" ] = "color";
+				}
+
+				// Shelly brightness json field name differ in white and color mode... 
+				if( !root[ "mode" ].empty() &&
+					!jrgbcmdt["brightness"].empty() &&
+					!jrgbcmdt["brightness"][ root[ "mode" ].asString() ].empty()
+				)
+				{
+					root[ jrgbcmdt["brightness"][ root[ "mode" ].asString() ].asString() ] = slevel;
+				}
+				else
+				{
+					// Last resort...
+					root[ "brightness" ] = slevel;
+				}
+			}
+			else if (pSensor->brightness_value_template.empty())
 			{
 				root["brightness"] = slevel;
 
@@ -4080,7 +4209,20 @@ bool MQTTAutoDiscover::SendSwitchCommand(const std::string& DeviceID, const std:
 				root = nullNewRoot;
 			}
 
-			root["state"] = pSensor->payload_on;
+			// Shelly devices need the merged the on payload
+			Json::Value cmdtmpl;
+
+			if(	//jrgbcmdt.isObject() &&
+				ParseJSon(  pSensor->payload_on , cmdtmpl) &&
+				cmdtmpl.isObject() 
+			)
+			{
+				root.copy( cmdtmpl );
+			}
+			else
+			{
+				root["state"] = pSensor->payload_on;
+			}
 
 			bool bCouldUseBrightness = false;
 
@@ -4129,9 +4271,52 @@ bool MQTTAutoDiscover::SendSwitchCommand(const std::string& DeviceID, const std:
 					|| (pSensor->supported_color_modes.find("rgbcct") != pSensor->supported_color_modes.end())
 					)
 				{
-					root["color"]["r"] = color.r;
-					root["color"]["g"] = color.g;
-					root["color"]["b"] = color.b;
+					// Handle the Shelly like devices using tthis kind of descriptors
+					// "{{ "r":"red","g":"green","b":"blue","brightness":{ "3":"gain" , "2":"brightness" },"mode":{ "3":"color", "2":"white"}}}"
+					if( jrgbcmdt.isObject() &&
+						jrgbcmdt["mode"].isObject()
+					)
+					{
+						// We do not need this...
+						if( root.isMember( "color ") )
+						{
+							root.removeMember("color");
+						}
+
+						std::string	szmode = "color";
+
+						if( jrgbcmdt["mode"][ std::to_string( color.mode ) ].empty() )
+						{
+							Log(LOG_ERROR, "%s: No appropriate color mode name defined for mode %d !", pSensor->name.c_str(), color.mode );
+						}
+						else
+						{
+							szmode = jrgbcmdt["mode"][ std::to_string( color.mode ) ].asString();
+						}
+
+						if( !jrgbcmdt["r"].empty() && !jrgbcmdt["g"].empty() && !jrgbcmdt["b"].empty() )
+						{
+							root["mode"] 	= szmode.c_str();
+							root[ jrgbcmdt["r"].asString() ] 	= color.r;
+							root[ jrgbcmdt["g"].asString() ] 	= color.g;
+							root[ jrgbcmdt["b"].asString() ] 	= color.b;
+							if( !jrgbcmdt["w"].empty() )
+							{
+								root[ jrgbcmdt["w"].asString() ]= color.cw;
+							}
+						}
+						else
+						{
+							Log(LOG_ERROR, "Must be define { r, g, b } mapping in JSON" );
+						}
+ 					}
+					else
+					{
+						root["color"]["r"] = color.r;
+						root["color"]["g"] = color.g;
+						root["color"]["b"] = color.b;
+					}
+					
 					if ((pSensor->bBrightness) && (level > 1))
 						bCouldUseBrightness = true;
 				}
@@ -4161,12 +4346,27 @@ bool MQTTAutoDiscover::SendSwitchCommand(const std::string& DeviceID, const std:
 			}
 			else if (color.mode == ColorModeTemp)
 			{
+				// Switch the color mode if it is aplicable
+				if( jrgbcmdt.isObject() &&
+					jrgbcmdt["mode"].isObject() &&
+					!jrgbcmdt["mode"][ std::to_string( color.mode ) ].empty()
+				)
+				{
+					root[ "mode" ] = jrgbcmdt["mode"][ std::to_string( color.mode ) ].asString();
+				}
+
 				if (pSensor->supported_color_modes.find("color_temp") != pSensor->supported_color_modes.end())
 				{
 					//color.cw color.ww t
 					float iCt = pSensor->min_mireds + ((static_cast<float>(pSensor->max_mireds - pSensor->min_mireds) / 255.0F) * color.t);
 					int iCT = (int)round(iCt);
-					if (!pSensor->color_temp_value_template.empty())
+					if( jrgbcmdt.isObject() &&
+						!jrgbcmdt["color_temp"].empty()
+					)
+					{
+						root[ jrgbcmdt["color_temp"].asString() ] = (int)iCt;
+					}
+					else if (!pSensor->color_temp_value_template.empty())
 					{
 						std::string szKey = GetValueTemplateKey(pSensor->color_temp_value_template);
 						if (!szKey.empty())
@@ -4178,7 +4378,9 @@ bool MQTTAutoDiscover::SendSwitchCommand(const std::string& DeviceID, const std:
 						}
 					}
 					else
+					{
 						root["color_temp"] = iCT;
+					}
 				}
 				bCouldUseBrightness = true;
 			}
@@ -4201,6 +4403,13 @@ bool MQTTAutoDiscover::SendSwitchCommand(const std::string& DeviceID, const std:
 						Log(LOG_ERROR, "Color device unhandled brightness_value_template (%s/%s)", DeviceID.c_str(), DeviceName.c_str());
 						return false;
 					}
+				}
+				else if(jrgbcmdt.isObject() &&
+						!jrgbcmdt["mode"].empty() &&
+						!jrgbcmdt["brightness"][ jrgbcmdt["mode"][std::to_string( color.mode )].asString() ].empty()
+				)
+				{
+					root[ jrgbcmdt["brightness"][ jrgbcmdt["mode"][std::to_string( color.mode )].asString() ].asString() ] = slevel;
 				}
 				else
 					root["brightness"] = slevel;
