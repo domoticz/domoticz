@@ -29,6 +29,9 @@ define(['app'], function (app) {
     function sensorNameForDevice(device) {
         if (device.Type === 'Usage') {
             return $.t('Usage');
+		}
+        else if (device.Type === 'Rain') {
+            return $.t('Rain');
         } else {
             return $.t(device.SubType)
         }
