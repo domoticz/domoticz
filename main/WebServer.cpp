@@ -2160,7 +2160,7 @@ namespace http
 						{
 							double tempCelcius = atof(strarray[0].c_str());
 							double temp = ConvertTemperature(tempCelcius, tempsign);
-							int humidity = atoi(strarray[1].c_str());
+							double humidity = atoi(strarray[1].c_str());
 
 							root["result"][ii]["Temp"] = temp;
 							root["result"][ii]["Humidity"] = humidity;
@@ -2171,7 +2171,7 @@ namespace http
 
 							// Calculate dew point
 
-							sprintf(szTmp, "%.2f", ConvertTemperature(CalculateDewPoint(tempCelcius, humidity), tempsign));
+							sprintf(szTmp, "%.2f", ConvertTemperature(CalculateDewPoint(tempCelcius, round(humidity)), tempsign));
 							root["result"][ii]["DewPoint"] = szTmp;
 
 							_tTrendCalculator::_eTendencyType tstate = _tTrendCalculator::_eTendencyType::TENDENCY_UNKNOWN;
@@ -2191,14 +2191,14 @@ namespace http
 						{
 							double tempCelcius = atof(strarray[0].c_str());
 							double temp = ConvertTemperature(tempCelcius, tempsign);
-							int humidity = atoi(strarray[1].c_str());
+							double humidity = atof(strarray[1].c_str());
 
 							root["result"][ii]["Temp"] = temp;
 							root["result"][ii]["Humidity"] = humidity;
 							root["result"][ii]["HumidityStatus"] = RFX_Humidity_Status_Desc(atoi(strarray[2].c_str()));
 							root["result"][ii]["Forecast"] = atoi(strarray[4].c_str());
 
-							sprintf(szTmp, "%.2f", ConvertTemperature(CalculateDewPoint(tempCelcius, humidity), tempsign));
+							sprintf(szTmp, "%.2f", ConvertTemperature(CalculateDewPoint(tempCelcius, round(humidity)), tempsign));
 							root["result"][ii]["DewPoint"] = szTmp;
 
 							if (dSubType == sTypeTHBFloat)
@@ -3562,7 +3562,7 @@ namespace http
 			}
 		}
 
-		void CWebServer::MakeCompareDataSensor(Json::Value& root, const std::string& sgroupby, const std::string& dbasetable, uint64_t deviceidx, const std::string& dfield)
+		void CWebServer::MakeCompareDataSensor(Json::Value& root, const std::string& sgroupby, const std::string& dbasetable, uint64_t deviceidx, const std::string& dfield, const double divider, const bool isCounter)
 		{
 			std::string queryString;
 			queryString.append("SELECT strftime('%Y', Date) as y,");
@@ -3571,7 +3571,13 @@ namespace http
 			else if (sgroupby == "quarter")
 				queryString.append("case when cast(strftime('%m', Date) as integer) between 1 and 3 then 'Q1' when cast(strftime('%m', Date) as integer) between 4 and 6 then 'Q2' when cast(strftime('%m', Date) as integer) between 7 and 9 then 'Q3' else 'Q4' end as Q");
 
-			queryString.append(", AVG(" + dfield + ") as s FROM " + dbasetable + " WHERE DeviceRowID == " + std::to_string(deviceidx) + " GROUP BY strftime('%Y', Date), ");
+			queryString.append(", ");
+			if (!isCounter)
+				queryString.append("AVG(" + dfield + ")");
+			else
+				queryString.append("SUM(" + dfield + ")");
+			queryString.append("/" + std::to_string(divider));
+			queryString.append(" as s FROM " + dbasetable + " WHERE DeviceRowID == " + std::to_string(deviceidx) + " GROUP BY strftime('%Y', Date), ");
 			if ((sgroupby == "month") || (sgroupby == "year"))
 				queryString.append("strftime('%m', Date)");
 			else if (sgroupby == "quarter")

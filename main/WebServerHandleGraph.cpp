@@ -2405,7 +2405,7 @@ namespace http
 					if (!sgroupby.empty())
 					{
 						root["title"] = "Comparing " + sensor;
-						MakeCompareDataSensor(root, sgroupby, dbasetable, idx, "Total");
+						MakeCompareDataSensor(root, sgroupby, dbasetable, idx, "Total", 1, true);
 						return;
 					}
 
@@ -2713,7 +2713,8 @@ namespace http
 						if (!sgroupby.empty())
 						{
 							root["title"] = "Comparing " + sensor;
-							MakeCompareDataSensor(root, sgroupby, dbasetable, idx, "Value2");
+							double divider = 1.0;
+							MakeCompareDataSensor(root, sgroupby, dbasetable, idx, "Value2", divider);
 							return;
 						}
 
@@ -2742,7 +2743,10 @@ namespace http
 						if (!sgroupby.empty())
 						{
 							root["title"] = "Comparing " + sensor;
-							MakeCompareDataSensor(root, sgroupby, dbasetable, idx, "Value3");
+							double divider = 1.0;
+							if (dSubType == sTypeVoltage)
+								divider = 1000.0;
+							MakeCompareDataSensor(root, sgroupby, dbasetable, idx, "Value3", divider);
 							return;
 						}
 
