@@ -143,7 +143,7 @@ define(['app', 'lodash', 'RefreshingChart', 'DataLoader', 'ChartLoader'],
 									isShortLogChart: false,
 									yAxes: [{
 												title: {
-													text: $.t('Degrees') + ' ' + self.device.getUnit()
+													text: domoticzGlobals.axisTitleForDevice(self.device)
 												}
 											}],
 									extendDataRequest: function (dataRequest) {
