@@ -524,7 +524,7 @@ define(['app', 'livesocket'], function (app) {
 			$('#modal').show();
 
 			var htmlcontent = '';
-			var bHaveAddedDevider = false;
+			var bHaveAddedDivider = false;
 
 			var tophtm = "";
 			var i = 0;
@@ -541,13 +541,13 @@ define(['app', 'livesocket'], function (app) {
 						}
 						$.each(data.result, function (i, item) {
 							if (i % 3 == 0) {
-								//add devider
-								if (bHaveAddedDevider == true) {
-									//close previous devider
+								//add divider
+								if (bHaveAddedDivider == true) {
+									//close previous divider
 									htmlcontent += '</div>\n';
 								}
 								htmlcontent += '<div class="row divider">\n';
-								bHaveAddedDevider = true;
+								bHaveAddedDivider = true;
 							}
 							var backgroundClass = $rootScope.GetItemBackgroundStatus(item);
 							var graphLogLink = '#/Devices/' + item.idx + '/Log';
@@ -985,8 +985,8 @@ define(['app', 'livesocket'], function (app) {
 					}
 				}
 			});
-			if (bHaveAddedDevider == true) {
-				//close previous devider
+			if (bHaveAddedDivider == true) {
+				//close previous divider
 				htmlcontent += '</div>\n';
 			}
 			if (htmlcontent == '') {
