@@ -724,7 +724,7 @@ bool CZiBlueBase::ParseBinary(const uint8_t SDQ, const uint8_t *data, size_t len
 	else if (FrameType == 0)
 	{
 		// Normal RF
-		int dlen = len - 8;
+		size_t dlen = len - 8;
 		REGULAR_INCOMING_RF_TO_BINARY_USB_FRAME_HEADER *pIncomming = (REGULAR_INCOMING_RF_TO_BINARY_USB_FRAME_HEADER *)data;
 #ifdef DEBUG_ZIBLUE
 		Log(LOG_NORM, "frameType: %d, cluster: %d, dataFlag: %d (%s MHz)", pIncomming->frameType, pIncomming->cluster, pIncomming->dataFlag, (pIncomming->dataFlag == 0) ? "433" : "868");

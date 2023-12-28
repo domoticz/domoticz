@@ -42,7 +42,7 @@ private:
 	void InsertUpdateControlSwitch(int NodeID, int ChildID, const std::string &defaultname);
 	void SetOutputBlinkInDomoticz(unsigned long sID, int OutputNumber, bool Blink);
 	void Traitement_Trame_EtatBloc(unsigned int RefBloc, char Codage, char Ssreseau, unsigned int rxDLC, unsigned int bufferdata[8]);
-	int getIndexFromBlocname(std::string blocname);
+	size_t getIndexFromBlocname(std::string blocname);
 	void FillBufferSFSP_toSend(int Sid, char KeyCode);
 	const char* getBlocnameFromIndex(int indexreference);
 	void Traitement_IBS(const unsigned int FrameType, const unsigned int RefBloc, const char Codage, const char Ssreseau, unsigned int bufferdata[8]);
