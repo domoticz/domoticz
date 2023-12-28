@@ -1482,7 +1482,7 @@ void USBtin_MultiblocV8::USBtin_MultiblocV8_Send_SFSP_LearnCommand_OnCAN(long ba
 	}*/
 }
 
-int USBtin_MultiblocV8::getIndexFromBlocname(std::string blocname)
+size_t USBtin_MultiblocV8::getIndexFromBlocname(std::string blocname)
 {
 	for (size_t i = 0; i < NomRefBloc.size(); i++)
 	{
