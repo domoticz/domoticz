@@ -610,6 +610,7 @@ constexpr auto sqlCreateApplications =
 ");";
 
 extern std::string szUserDataFolder;
+#define round(a) (int)(a + .5)
 
 CSQLHelper::CSQLHelper()
 {
@@ -6077,7 +6078,7 @@ void CSQLHelper::UpdateTemperatureLog()
 				if (splitresults.size() >= 2)
 				{
 					temp = static_cast<float>(atof(splitresults[0].c_str()));
-					humidity = atoi(splitresults[1].c_str());
+					humidity = round(atof(splitresults[1].c_str()));
 					dewpoint = (float)CalculateDewPoint(temp, humidity);
 				}
 				break;
@@ -6085,7 +6086,7 @@ void CSQLHelper::UpdateTemperatureLog()
 				if (splitresults.size() == 5)
 				{
 					temp = static_cast<float>(atof(splitresults[0].c_str()));
-					humidity = atoi(splitresults[1].c_str());
+					humidity = round(atof(splitresults[1].c_str()));
 					if (dSubType == sTypeTHBFloat)
 						barometer = int(atof(splitresults[3].c_str()) * 10.0F);
 					else

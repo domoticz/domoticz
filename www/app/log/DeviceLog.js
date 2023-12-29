@@ -1,10 +1,11 @@
-define(['app', 'log/Chart', 'log/TextLog', 'log/TemperatureLog', 'log/LightLog', 'log/GraphLog', 'log/CounterLog', 'log/CounterLogCounter', 'log/CounterLogInstantAndCounter', 'log/CounterLogP1Energy', 'log/SetpointLog'], function (app) {
+define(['app', 'log/Chart', 'log/TextLog', 'log/TemperatureLog', 'log/LightLog', 'log/GraphLog', 'log/CounterLog', 'log/CounterLogCounter', 'log/CounterLogInstantAndCounter', 'log/CounterLogP1Energy', 'log/RainLog', 'log/SetpointLog'], function (app) {
     app.controller('DeviceLogController', function ($location, $routeParams, domoticzApi, deviceApi, chart) {
         var vm = this;
 
         vm.isTextLog = isTextLog;
         vm.isLightLog = isLightLog;
         vm.isGraphLog = isGraphLog;
+		vm.isRainLog = isRainLog;
         vm.isTemperatureLog = isTemperatureLog;
         vm.isSetpointLog = isSetpointLog;
         vm.isReportAvailable = isReportAvailable;
@@ -97,6 +98,13 @@ define(['app', 'log/Chart', 'log/TextLog', 'log/TemperatureLog', 'log/LightLog',
                 'Sound Level', 'Solar Radiation', 'Visibility', 'Distance',
                 'Soil Moisture', 'Leaf Wetness', 'Waterflow', 'Lux', 'Percentage'
             ].includes(vm.device.SubType)
+        }
+
+        function isRainLog() {
+            if (!vm.device) {
+                return undefined;
+            }
+            return (vm.device.Type === 'Rain');
         }
 
         function isP1EnergyLog() {

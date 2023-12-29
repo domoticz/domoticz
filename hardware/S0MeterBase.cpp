@@ -276,7 +276,7 @@ void S0MeterBase::ParseLine()
 		Log(LOG_ERROR, "Invalid Data received! %s", sLine.c_str());
 		return;
 	}
-	int totmeters = (results.size() - 4) / 3;
+	int totmeters = static_cast<int>((results.size() - 4) / 3);
 	if (totmeters > max_s0_meters)
 		totmeters = max_s0_meters;
 	// ID:0001:I:99:M1:123:456:M2:234:567 = ID(1)/Pulse Interval(3)/M1Actual(5)/M1Total(7)/M2Actual(8)/M2Total(9)

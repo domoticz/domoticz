@@ -105,6 +105,7 @@ define(['app'], function (app) {
         aggregateTrendlineZoomed: aggregateTrendlineZoomed,
         yearColor: yearColor,
 		chartParamsCompare: chartParamsCompare,
+		chartParamsWeekTemplate: chartParamsWeekTemplate,
 		chartParamsCompareTemplate: chartParamsCompareTemplate,
 		compareSeriesSuppliers: compareSeriesSuppliers
     });
@@ -241,6 +242,21 @@ define(['app'], function (app) {
 			},
 			chartParamsTemplate
 		);
+	}
+	
+	function chartParamsWeekTemplate() {
+		const template = {
+			highchartTemplate: {
+				plotOptions: {
+					column: {
+						dataLabels: {
+							enabled: true
+						}
+					}
+				}
+			}
+		};
+		return template;
 	}
 
 	function chartParamsCompareTemplate(ctrl, what, deviceUnit) {

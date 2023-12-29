@@ -165,6 +165,8 @@ define(function () {
                     return '%';
                 } else if (this.Type === 'Weight') {
                     return this.SwitchTypeVal === 0 ? 'kg' : 'lbs';
+                } else if (this.Type === 'Rain') {
+                    return 'mm';
                 } else {
                     return '?';
                 }
