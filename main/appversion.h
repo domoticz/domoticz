@@ -1,10 +1,10 @@
 #pragma once
 #include "../appversion.h"
 
-//#define BUILD_MASTER
+#define BUILD_MASTER
 
-#define VERSION_MAJOR               2023
-#define VERSION_MINOR               2
+#define VERSION_MAJOR               2024
+#define VERSION_MINOR               1
 #define VERSION_REVISION            0
 #define VERSION_BUILD               APPVERSION
 
