@@ -37,10 +37,11 @@ Version 2023.xxxxx (xxxxx 2023)
 - Fixed: MQTT-AD: fixed brightness for HS lights
 - Fixed: MQTT-AD: prevent blind from updating on non-numeric state changes
 - Fixed: P1 Meter, buffer size increased because of large datagrams on some meters
+- Fixed: Python memory leak
 - Fixed: Sunset/rise timers now correctly set the time for next day
 - Fixed: Switches defined with "Off Delay" are not set to "Off" at startup
 - Removed: OpenZWave (Move to ZWaveJS-UI in combination with MQTT Auto Discovery)
-- Removed: RFXCom, updating firmware via web interface (use RFXFlash instead)
+- Removed: RFXCom, firmware update via web interface (use RFXFlash instead)
 
 Version 2023.2 (July 21 2023)
 - Implemented: 2FA/TOTP (Time-based One-Time Password) and HOTP (HMAC-based One-Time Password)
