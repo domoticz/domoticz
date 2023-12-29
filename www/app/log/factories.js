@@ -5,6 +5,8 @@ define(['app'], function (app) {
             return 'lux'
         } else if (device.Type === 'Usage') {
             return 'u'
+        } else if (device.Type === 'Rain') {
+            return 'mm'
         } else {
             return 'v';
         }

@@ -22,16 +22,16 @@ define(['app', 'lodash', 'RefreshingChart', 'DataLoader', 'ChartLoader', 'log/Ch
             },
             templateUrl: 'app/log/chart-day.html',
             controllerAs: 'vm',
-            controller: function ($location, $route, $scope, $timeout, $element, domoticzGlobals, domoticzApi, domoticzDataPointApi) {
+            controller: function ($location, $route, $scope, $timeout, $element, domoticzGlobals, domoticzApi, domoticzDataPointApi, chart) {
                 const self = this;
                 self.range = 'day';
 
                 self.$onInit = function () {
                     new RefreshingChart(
-                        baseParams($),
-                        angularParams($location, $route, $scope, $timeout, $element),
-                        domoticzParams(domoticzGlobals, domoticzApi, domoticzDataPointApi),
-                        chartParams(
+                        chart.baseParams($),
+                        chart.angularParams($location, $route, $scope, $timeout, $element),
+                        chart.domoticzParams(domoticzGlobals, domoticzApi, domoticzDataPointApi),
+                        chartParamsCol(
                             domoticzGlobals,
                             self,
                             true,
@@ -42,10 +42,10 @@ define(['app', 'lodash', 'RefreshingChart', 'DataLoader', 'ChartLoader', 'log/Ch
                                 {
                                     id: 'rain',
                                     valueKeySuffix: '',
-                                    colorIndex: 0,
                                     template: {
-                                        name: domoticzGlobals.sensorNameForDevice(self.device),
-                                        showInLegend: false
+										color: 'rgba(3,190,252,0.8)',
+										showInLegend: false,
+                                        name: $.t('mm')
                                     }
                                 }
                             ]
@@ -67,16 +67,12 @@ define(['app', 'lodash', 'RefreshingChart', 'DataLoader', 'ChartLoader', 'log/Ch
             controller: function ($location, $route, $scope, $timeout, $element, domoticzGlobals, domoticzApi, domoticzDataPointApi, chart) {
                 const self = this;
                 self.range = 'week';
-				//alert(self.device);
-				
-				//self.sensorType = domoticzGlobals.sensorTypeForDevice(self.device);
-
                 self.$onInit = function () {
                     self.chart = new RefreshingChart(
                         chart.baseParams($),
                         chart.angularParams($location, $route, $scope, $timeout, $element),
                         chart.domoticzParams(domoticzGlobals, domoticzApi, domoticzDataPointApi),
-                        chartParams(
+                        chartParamsWeek(
                             domoticzGlobals,
                             self,
                             false,
@@ -86,10 +82,10 @@ define(['app', 'lodash', 'RefreshingChart', 'DataLoader', 'ChartLoader', 'log/Ch
                             [
                                 {
                                     id: 'mm',
-                                    valueKeySuffix: 'mm',
-                                    colorIndex: 0,
+                                    valueKeySuffix: '',
                                     template: {
-                                        name: $.t('Minimum')
+										color: 'rgba(3,190,252,0.8)',
+                                        name: $.t('mm')
                                     }
                                 }
                             ]
@@ -109,14 +105,14 @@ define(['app', 'lodash', 'RefreshingChart', 'DataLoader', 'ChartLoader', 'log/Ch
             },
             templateUrl: function($element, $attrs) { return 'app/log/chart-' + $attrs.range + '.html'; },
             controllerAs: 'vm',
-            controller: function ($location, $route, $scope, $timeout, $element, domoticzGlobals, domoticzApi, domoticzDataPointApi) {
+            controller: function ($location, $route, $scope, $timeout, $element, domoticzGlobals, domoticzApi, domoticzDataPointApi, chart) {
                 const self = this;
 
                 self.$onInit = function () {
                     new RefreshingChart(
-                        baseParams($),
-                        angularParams($location, $route, $scope, $timeout, $element),
-                        domoticzParams(domoticzGlobals, domoticzApi, domoticzDataPointApi),
+                        chart.baseParams($),
+                        chart.angularParams($location, $route, $scope, $timeout, $element),
+                        chart.domoticzParams(domoticzGlobals, domoticzApi, domoticzDataPointApi),
                         chartParams(
                             domoticzGlobals,
                             self,
@@ -127,10 +123,10 @@ define(['app', 'lodash', 'RefreshingChart', 'DataLoader', 'ChartLoader', 'log/Ch
                             [
                                 {
                                     id: 'mm',
-                                    valueKeySuffix: 'mm',
-                                    colorIndex: 0,
+                                    valueKeySuffix: '',
                                     template: {
-                                        name: $.t('Minimum')
+										color: 'rgba(3,190,252,0.8)',
+                                        name: $.t('mm')
                                     }
                                 }
                             ]
@@ -218,27 +214,6 @@ define(['app', 'lodash', 'RefreshingChart', 'DataLoader', 'ChartLoader', 'log/Ch
 			}
 		});
 
-        function baseParams(jquery) {
-            return {
-                jquery: jquery
-            };
-        }
-        function angularParams(location, route, scope, timeout, element) {
-            return {
-                location: location,
-                route: route,
-                scope: scope,
-                timeout: timeout,
-                element: element
-            };
-        }
-        function domoticzParams(globals, api, datapointApi) {
-            return {
-                globals: globals,
-                api: api,
-                datapointApi: datapointApi
-            };
-        }
         function chartParams(domoticzGlobals, ctrl, isShortLogChart, timestampFromDataItem, seriesSuppliers) {
             return {
                 ctrl: ctrl,
@@ -273,5 +248,74 @@ define(['app', 'lodash', 'RefreshingChart', 'DataLoader', 'ChartLoader', 'log/Ch
                 }
             };
         }
+
+        function chartParamsCol(domoticzGlobals, ctrl, isShortLogChart, timestampFromDataItem, seriesSuppliers) {
+            return _.merge({
+					highchartTemplate: {
+						chart: {
+							type: 'column',
+							zoomType: false,
+							marginRight: 10
+						},
+						plotOptions: {
+							column: {
+								pointPlacement: 0,
+								stacking: undefined,
+								dataLabels: {
+									enabled: false,
+									color: 'white'
+								}
+							},
+							series: {
+								// colorByPoint: true
+								stacking: undefined
+							}
+						},
+						tooltip: {
+							shared: false,
+							crosshairs: false
+						}
+					}
+				}, chartParams(domoticzGlobals, ctrl, isShortLogChart, timestampFromDataItem, seriesSuppliers)
+			);
+        }
+
+        function chartParamsWeek(domoticzGlobals, ctrl, isShortLogChart, timestampFromDataItem, seriesSuppliers) {
+            return _.merge({
+                    highchartTemplate: {
+                        chart: {
+                            type: 'column',
+                            zoomType: false,
+                            marginRight: 10
+                        },
+                        xAxis: {
+                            dateTimeLabelFormats: {
+                                day: '%a'
+                            },
+                            tickInterval: 24 * 3600 * 1000
+                        },
+                        plotOptions: {
+                            column: {
+                                pointPlacement: 0,
+                                stacking: undefined,
+								dataLabels: {
+									enabled: true,
+									color: 'white'
+								}
+                            },
+                            series: {
+                                // colorByPoint: true
+                                stacking: undefined
+                            }
+                        },
+                        tooltip: {
+                            shared: false,
+                            crosshairs: false
+                        }
+                    }
+				}, chartParams(domoticzGlobals, ctrl, isShortLogChart, timestampFromDataItem, seriesSuppliers)
+			);
+        }
+		
     }
 );
