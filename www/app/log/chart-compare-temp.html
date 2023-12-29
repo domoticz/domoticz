@@ -1,0 +1,20 @@
+<div class="chart noselect">
+    <div class="chart-title-center">
+        <div class="chart-title-container" ng-class="{clickable: chartTitleToggling}">
+            <h2 ng-bind-html="chartTitle"></h2>
+        </div>
+    </div>
+    <div class="chartarea">
+        <div class="zoom-buttons-container">
+			<select id="comptype" class="combobox ui-corner-all" ng-init="comptype='Temp_Avg'" ng-model="comptype" ng-change="changeCompTypeTemp()">
+				<option data-i18n="Min" value="Temp_Min">Min</option>
+				<option data-i18n="Max" value="Temp_Max">Max</option>
+				<option data-i18n="Average" value="Temp_Avg" selected="selected">Average</option>
+			</select>&nbsp;&nbsp;
+            <button class="zoom-button" ng-click="groupBy('year')" ng-bind="groupByLabel('y')"></button>
+            <button class="zoom-button" ng-click="groupBy('quarter')" ng-bind="groupByLabel('q')"></button>
+            <button class="zoom-button" ng-click="groupBy('month')" ng-bind="groupByLabel('m')"></button>
+        </div>
+        <div class="chartcontainer"></div>
+    </div>
+</div>

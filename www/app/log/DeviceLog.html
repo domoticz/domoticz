@@ -18,6 +18,7 @@
     <device-temperature-log ng-if="::vm.isTemperatureLog()" device="::vm.device"></device-temperature-log>
     <device-setpoint-log ng-if="::vm.isSetpointLog()" device="::vm.device"></device-setpoint-log>
     <device-graph-log ng-if="::vm.isGraphLog()" device="::vm.device"></device-graph-log>
+    <device-rain-log ng-if="::vm.isRainLog()" device="::vm.device"></device-rain-log>
     <device-counter-log ng-if="::vm.isInstantAndCounterLog()" device="::vm.device" subtype="'instantAndCounter'"></device-counter-log>
     <device-counter-log ng-if="::vm.isP1EnergyLog()" device="::vm.device" subtype="'p1Energy'"></device-counter-log>
     <device-counter-log ng-if="::vm.isCounterLog() && vm.isEnergyUsedDevice()" device="::vm.device" subtype="'energy-used'"></device-counter-log>

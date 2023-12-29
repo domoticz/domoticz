@@ -678,6 +678,8 @@ void MQTT::Do_Work()
 	int msec_counter = 0;
 	int sec_counter = 0;
 
+	set_callbacks();
+
 	while (!IsStopRequested(100))
 	{
 		if (!bFirstTime)

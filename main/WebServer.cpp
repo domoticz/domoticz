@@ -2160,7 +2160,7 @@ namespace http
 						{
 							double tempCelcius = atof(strarray[0].c_str());
 							double temp = ConvertTemperature(tempCelcius, tempsign);
-							int humidity = atoi(strarray[1].c_str());
+							double humidity = atoi(strarray[1].c_str());
 
 							root["result"][ii]["Temp"] = temp;
 							root["result"][ii]["Humidity"] = humidity;
@@ -2171,7 +2171,7 @@ namespace http
 
 							// Calculate dew point
 
-							sprintf(szTmp, "%.2f", ConvertTemperature(CalculateDewPoint(tempCelcius, humidity), tempsign));
+							sprintf(szTmp, "%.2f", ConvertTemperature(CalculateDewPoint(tempCelcius, round(humidity)), tempsign));
 							root["result"][ii]["DewPoint"] = szTmp;
 
 							_tTrendCalculator::_eTendencyType tstate = _tTrendCalculator::_eTendencyType::TENDENCY_UNKNOWN;
@@ -2191,14 +2191,14 @@ namespace http
 						{
 							double tempCelcius = atof(strarray[0].c_str());
 							double temp = ConvertTemperature(tempCelcius, tempsign);
-							int humidity = atoi(strarray[1].c_str());
+							double humidity = atof(strarray[1].c_str());
 
 							root["result"][ii]["Temp"] = temp;
 							root["result"][ii]["Humidity"] = humidity;
 							root["result"][ii]["HumidityStatus"] = RFX_Humidity_Status_Desc(atoi(strarray[2].c_str()));
 							root["result"][ii]["Forecast"] = atoi(strarray[4].c_str());
 
-							sprintf(szTmp, "%.2f", ConvertTemperature(CalculateDewPoint(tempCelcius, humidity), tempsign));
+							sprintf(szTmp, "%.2f", ConvertTemperature(CalculateDewPoint(tempCelcius, round(humidity)), tempsign));
 							root["result"][ii]["DewPoint"] = szTmp;
 
 							if (dSubType == sTypeTHBFloat)
@@ -3561,6 +3561,57 @@ namespace http
 				}
 			}
 		}
+
+		void CWebServer::MakeCompareDataSensor(Json::Value& root, const std::string& sgroupby, const std::string& dbasetable, uint64_t deviceidx, const std::string& dfield, const double divider, const bool isCounter)
+		{
+			std::string queryString;
+			queryString.append("SELECT strftime('%Y', Date) as y,");
+			if ((sgroupby == "month") || (sgroupby == "year"))
+				queryString.append("strftime('%m', Date) as m");
+			else if (sgroupby == "quarter")
+				queryString.append("case when cast(strftime('%m', Date) as integer) between 1 and 3 then 'Q1' when cast(strftime('%m', Date) as integer) between 4 and 6 then 'Q2' when cast(strftime('%m', Date) as integer) between 7 and 9 then 'Q3' else 'Q4' end as Q");
+
+			queryString.append(", ");
+			if (!isCounter)
+				queryString.append("AVG(" + dfield + ")");
+			else
+				queryString.append("SUM(" + dfield + ")");
+			queryString.append("/" + std::to_string(divider));
+			queryString.append(" as s FROM " + dbasetable + " WHERE DeviceRowID == " + std::to_string(deviceidx) + " GROUP BY strftime('%Y', Date), ");
+			if ((sgroupby == "month") || (sgroupby == "year"))
+				queryString.append("strftime('%m', Date)");
+			else if (sgroupby == "quarter")
+				queryString.append("case when cast(strftime('%m', Date) as integer) between 1 and 3 then 'Q1' when cast(strftime('%m', Date) as integer) between 4 and 6 then 'Q2' when cast(strftime('%m', Date) as integer) between 7 and 9 then 'Q3' else 'Q4' end");
+			auto result = m_sql.unsafe_query(queryString.c_str());
+
+			int firstYearCounting = 0;
+			double yearSumPrevious[12] = { 0 };
+			int yearPrevious[12] = { 0 };
+
+			for (const auto& sd : result)
+			{
+				const int year = atoi(sd[0].c_str());
+				const double value = atof(sd[2].c_str());
+
+				const int previousIndex = sgroupby == "year" ? 0 : sgroupby == "quarter" ? sd[1][1] - '0' - 1 : atoi(sd[1].c_str()) - 1;
+				const double* sumPrevious = year - 1 != yearPrevious[previousIndex] ? NULL : &yearSumPrevious[previousIndex];
+				const char* trend = !sumPrevious ? "" : *sumPrevious < value ? "up" : *sumPrevious > value ? "down" : "equal";
+				const int ii = root["result"].size();
+				if (firstYearCounting == 0 || year < firstYearCounting)
+				{
+					firstYearCounting = year;
+				}
+
+				root["result"][ii]["y"] = year;
+				root["result"][ii]["c"] = (sgroupby == "year") ? sd[0] : sd[1];
+				root["result"][ii]["s"] = value;
+				root["result"][ii]["t"] = trend;
+				yearSumPrevious[previousIndex] = value;
+				yearPrevious[previousIndex] = year;
+			}
+			root["firstYear"] = firstYearCounting;
+		}
+
 
 		/*
 		 * Takes root["result"] and groups all items according to sgroupby, summing all values for each category, then creating new items in root["result"]

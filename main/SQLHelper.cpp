@@ -610,6 +610,7 @@ constexpr auto sqlCreateApplications =
 ");";
 
 extern std::string szUserDataFolder;
+#define round(a) (int)(a + .5)
 
 CSQLHelper::CSQLHelper()
 {
@@ -4339,6 +4340,11 @@ std::vector<std::vector<std::string>> CSQLHelper::safe_query(const char *fmt, ..
 	return results;
 }
 
+std::vector<std::vector<std::string>> CSQLHelper::unsafe_query(const std::string& szQuery)
+{
+	return query(szQuery);
+}
+
 std::vector<std::vector<std::string> > CSQLHelper::query(const std::string& szQuery)
 {
 	if (!m_dbase)
@@ -6072,7 +6078,7 @@ void CSQLHelper::UpdateTemperatureLog()
 				if (splitresults.size() >= 2)
 				{
 					temp = static_cast<float>(atof(splitresults[0].c_str()));
-					humidity = atoi(splitresults[1].c_str());
+					humidity = round(atof(splitresults[1].c_str()));
 					dewpoint = (float)CalculateDewPoint(temp, humidity);
 				}
 				break;
@@ -6080,7 +6086,7 @@ void CSQLHelper::UpdateTemperatureLog()
 				if (splitresults.size() == 5)
 				{
 					temp = static_cast<float>(atof(splitresults[0].c_str()));
-					humidity = atoi(splitresults[1].c_str());
+					humidity = round(atof(splitresults[1].c_str()));
 					if (dSubType == sTypeTHBFloat)
 						barometer = int(atof(splitresults[3].c_str()) * 10.0F);
 					else
@@ -9624,7 +9630,7 @@ std::string CSQLHelper::FormatDeviceOptions(const std::map<std::string, std::str
 	std::string options;
 	size_t count = optionsMap.size();
 	if (count > 0) {
-		int i = 0;
+		size_t i = 0;
 		std::stringstream ssoptions;
 		for (const auto &sd : optionsMap)
 		{

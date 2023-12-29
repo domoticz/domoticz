@@ -622,7 +622,7 @@ namespace http
 
 			char md[20];
 			unsigned int mdLen;
-			HMAC(EVP_sha1(), key.c_str(), key.size(), (const unsigned char*)&intCounter, sizeof(intCounter), (unsigned char*)&md, &mdLen);
+			HMAC(EVP_sha1(), key.c_str(), static_cast<int>(key.size()), (const unsigned char*)&intCounter, sizeof(intCounter), (unsigned char*)&md, &mdLen);
 
 			int offset = md[19] & 0x0f;
 			int bin_code = (md[offset] & 0x7f) << 24

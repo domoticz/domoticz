@@ -30,6 +30,7 @@ private:
 	std::mutex m_background_task_mutex;
 	void Do_Work();
 
+	StoppableTask m_Task;
 	std::map<std::string, std::string> m_PushedItems;
 	std::vector<_tPushItem> m_background_task_queue;
 

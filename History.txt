@@ -1,4 +1,5 @@
 Version 2023.xxxxx (xxxxx 2023)
+- Implemented: AlfenEve, added charging indication switch
 - Implemented: AlfenEve, added option to specify charge current (or disable this)
 - Implemented: AlfenEve, added Solar charging mode and settings
 - Implemented: Counter report, now possible to remove data point (via shift click) from month chart
@@ -8,6 +9,7 @@ Version 2023.xxxxx (xxxxx 2023)
 - Implemented: Enever: added two user variables for average gas/electricity price
 - Implemented: Enphase, counter helper to prevent turnover caused by powerloss, reboot or other envoy issues
 - Implemented: Enphase, Initial support for Encharge battery status (needs more work)
+- Implemented: Livesearch, included hardware name and optimized search algorithm to search all entered strings
 - Implemented: Managed Counters, now possible to use negative values
 - Implemented: Mitsubishi WF RAC Airconditioning
 - Implemented: MQTT-AD, added support for climate min_temp/max_temp and temp_step
@@ -35,10 +37,11 @@ Version 2023.xxxxx (xxxxx 2023)
 - Fixed: MQTT-AD: fixed brightness for HS lights
 - Fixed: MQTT-AD: prevent blind from updating on non-numeric state changes
 - Fixed: P1 Meter, buffer size increased because of large datagrams on some meters
+- Fixed: Python memory leak
 - Fixed: Sunset/rise timers now correctly set the time for next day
 - Fixed: Switches defined with "Off Delay" are not set to "Off" at startup
 - Removed: OpenZWave (Move to ZWaveJS-UI in combination with MQTT Auto Discovery)
-- Removed: RFXCom, updating firmware via web interface (use RFXFlash instead)
+- Removed: RFXCom, firmware update via web interface (use RFXFlash instead)
 
 Version 2023.2 (July 21 2023)
 - Implemented: 2FA/TOTP (Time-based One-Time Password) and HOTP (HMAC-based One-Time Password)

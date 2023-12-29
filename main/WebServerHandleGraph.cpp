@@ -1859,7 +1859,7 @@ namespace http
 					}
 				}
 			} // week
-			else if (srange == "month" || srange == "year" || !sgroupby.empty())
+			else if (srange == "month" || srange	== "year" || !sgroupby.empty())
 			{
 				char szDateStart[40];
 				char szDateEnd[40];
@@ -1919,6 +1919,15 @@ namespace http
 				if (sensor == "temp")
 				{
 					root["status"] = "OK";
+
+					if (!sgroupby.empty())
+					{
+						root["title"] = "Comparing " + sensor;
+						std::string var_name = request::findValue(&req, "var_name");
+						MakeCompareDataSensor(root, sgroupby, dbasetable, idx, var_name);
+						return;
+					}
+
 					root["title"] = "Graph " + sensor + " " + srange;
 
 					// Actual Year
@@ -2265,6 +2274,14 @@ namespace http
 				else if (sensor == "Percentage")
 				{
 					root["status"] = "OK";
+
+					if (!sgroupby.empty())
+					{
+						root["title"] = "Comparing " + sensor;
+						MakeCompareDataSensor(root, sgroupby, dbasetable, idx, "Percentage_Avg");
+						return;
+					}
+
 					root["title"] = "Graph " + sensor + " " + srange;
 
 					result = m_sql.safe_query("SELECT Percentage_Min, Percentage_Max, Percentage_Avg, Date FROM %s WHERE (DeviceRowID==%" PRIu64
@@ -2298,6 +2315,14 @@ namespace http
 				else if (sensor == "fan")
 				{
 					root["status"] = "OK";
+
+					if (!sgroupby.empty())
+					{
+						root["title"] = "Comparing " + sensor;
+						MakeCompareDataSensor(root, sgroupby, dbasetable, idx, "Speed_Avg");
+						return;
+					}
+
 					root["title"] = "Graph " + sensor + " " + srange;
 
 					result = m_sql.safe_query("SELECT Speed_Min, Speed_Max, Date FROM %s WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q' AND Date<='%q') ORDER BY Date ASC",
@@ -2327,6 +2352,14 @@ namespace http
 				else if (sensor == "uv")
 				{
 					root["status"] = "OK";
+
+					if (!sgroupby.empty())
+					{
+						root["title"] = "Comparing " + sensor;
+						MakeCompareDataSensor(root, sgroupby, dbasetable, idx, "Level");
+						return;
+					}
+
 					root["title"] = "Graph " + sensor + " " + srange;
 
 					result = m_sql.safe_query("SELECT Level, Date FROM %s WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q' AND Date<='%q') ORDER BY Date ASC", dbasetable.c_str(),
@@ -2368,6 +2401,14 @@ namespace http
 				else if (sensor == "rain")
 				{
 					root["status"] = "OK";
+
+					if (!sgroupby.empty())
+					{
+						root["title"] = "Comparing " + sensor;
+						MakeCompareDataSensor(root, sgroupby, dbasetable, idx, "Total", 1, true);
+						return;
+					}
+
 					root["title"] = "Graph " + sensor + " " + srange;
 
 					result = m_sql.safe_query("SELECT Total, Rate, Date FROM %s WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q' AND Date<='%q') ORDER BY Date ASC",
@@ -2628,6 +2669,14 @@ namespace http
 					else if (dType == pTypeAirQuality)
 					{ // month/year
 						root["status"] = "OK";
+
+						if (!sgroupby.empty())
+						{
+							root["title"] = "Comparing " + sensor;
+							MakeCompareDataSensor(root, sgroupby, dbasetable, idx, "Value3");
+							return;
+						}
+
 						root["title"] = "Graph " + sensor + " " + srange;
 
 						result = m_sql.safe_query("SELECT Value1,Value2,Value3,Date FROM %s WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q' AND Date<='%q') ORDER BY Date ASC",
@@ -2660,6 +2709,15 @@ namespace http
 						((dType == pTypeRFXSensor) && ((dSubType == sTypeRFXSensorAD) || (dSubType == sTypeRFXSensorVolt))))
 					{ // month/year
 						root["status"] = "OK";
+
+						if (!sgroupby.empty())
+						{
+							root["title"] = "Comparing " + sensor;
+							double divider = 1.0;
+							MakeCompareDataSensor(root, sgroupby, dbasetable, idx, "Value2", divider);
+							return;
+						}
+
 						root["title"] = "Graph " + sensor + " " + srange;
 
 						result = m_sql.safe_query("SELECT Value1,Value2, Date FROM %s WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q' AND Date<='%q') ORDER BY Date ASC",
@@ -2681,6 +2739,17 @@ namespace http
 						((dType == pTypeGeneral) && (dSubType == sTypeSoundLevel)))
 					{ // month/year
 						root["status"] = "OK";
+
+						if (!sgroupby.empty())
+						{
+							root["title"] = "Comparing " + sensor;
+							double divider = 1.0;
+							if (dSubType == sTypeVoltage)
+								divider = 1000.0;
+							MakeCompareDataSensor(root, sgroupby, dbasetable, idx, "Value3", divider);
+							return;
+						}
+
 						root["title"] = "Graph " + sensor + " " + srange;
 
 						float vdiv = 10.0F;
@@ -2746,6 +2815,14 @@ namespace http
 					else if (dType == pTypeLux)
 					{ // month/year
 						root["status"] = "OK";
+
+						if (!sgroupby.empty())
+						{
+							root["title"] = "Comparing " + sensor;
+							MakeCompareDataSensor(root, sgroupby, dbasetable, idx, "Value3");
+							return;
+						}
+
 						root["title"] = "Graph " + sensor + " " + srange;
 
 						result = m_sql.safe_query("SELECT Value1,Value2,Value3, Date FROM %s WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q' AND Date<='%q') ORDER BY Date ASC",
@@ -2765,6 +2842,15 @@ namespace http
 					else if (dType == pTypeWEIGHT)
 					{ // month/year
 						root["status"] = "OK";
+
+						if (!sgroupby.empty())
+						{
+							root["title"] = "Comparing " + sensor;
+							MakeCompareDataSensor(root, sgroupby, dbasetable, idx, "Value3");
+							return;
+						}
+
+
 						root["title"] = "Graph " + sensor + " " + srange;
 
 						result = m_sql.safe_query("SELECT Value1,Value2, Date FROM %s WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q' AND Date<='%q') ORDER BY Date ASC",
@@ -2785,6 +2871,13 @@ namespace http
 					else if (dType == pTypeUsage)
 					{ // month/year
 						root["status"] = "OK";
+
+						if (!sgroupby.empty())
+						{
+							root["title"] = "Comparing " + sensor;
+							MakeCompareDataSensor(root, sgroupby, dbasetable, idx, "Value2");
+							return;
+						}
 						root["title"] = "Graph " + sensor + " " + srange;
 
 						result = m_sql.safe_query("SELECT Value1,Value2, Date FROM %s WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q' AND Date<='%q') ORDER BY Date ASC",
@@ -3532,6 +3625,14 @@ namespace http
 				else if (sensor == "wind")
 				{
 					root["status"] = "OK";
+
+					if (!sgroupby.empty())
+					{
+						root["title"] = "Comparing " + sensor;
+						MakeCompareDataSensor(root, sgroupby, dbasetable, idx, "Speed_Max");
+						return;
+					}
+
 					root["title"] = "Graph " + sensor + " " + srange;
 
 					int ii = 0;
