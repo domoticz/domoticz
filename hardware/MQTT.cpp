@@ -300,7 +300,7 @@ void MQTT::on_message(const struct mosquitto_message *message)
 			// Prevent MQTT update being send to client after next update
 			m_LastUpdatedDeviceRowIdx = idx;
 
-			if (!m_mainworker.UpdateDevice(HardwareID, DeviceID, unit, devType, subType, nvalue, svalue, m_Name, signallevel, batterylevel, bParseTrigger))
+			if (!m_mainworker.UpdateDevice(HardwareID, 0, DeviceID, unit, devType, subType, nvalue, svalue, m_Name, signallevel, batterylevel, bParseTrigger))
 			{
 				Log(LOG_ERROR, "Problem updating sensor (check idx, hardware enabled)");
 				return;

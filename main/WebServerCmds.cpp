@@ -2039,7 +2039,7 @@ namespace http
 				batterylevel = atoi(sBatteryLevel.c_str());
 			}
 			std::string szUpdateUser = Username + " (IP: " + session.remote_host + ")";
-			if (m_mainworker.UpdateDevice(HardwareID, DeviceID, unit, devType, subType, invalue, svalue, szUpdateUser, signallevel, batterylevel, parseTrigger))
+			if (m_mainworker.UpdateDevice(HardwareID, 0, DeviceID, unit, devType, subType, invalue, svalue, szUpdateUser, signallevel, batterylevel, parseTrigger))
 			{
 				root["status"] = "OK";
 				root["title"] = "Update Device";

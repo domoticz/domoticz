@@ -311,7 +311,7 @@ void RelayNet::SetupDevices()
 			{
 				Log(LOG_STATUS, "Create %s/Relay%i", m_szIPAddress.c_str(), relayNumber);
 
-				m_sql.InsertDevice(m_HwdID, szIdx, relayNumber, pTypeLighting2, sTypeAC, STYPE_OnOff, 0, " ", "Relay");
+				m_sql.InsertDevice(m_HwdID, 0, szIdx, relayNumber, pTypeLighting2, sTypeAC, STYPE_OnOff, 0, " ", "Relay");
 			}
 		}
 	}
@@ -326,7 +326,7 @@ void RelayNet::SetupDevices()
 			{
 				Log(LOG_STATUS, "Create %s/Input%i", m_szIPAddress.c_str(), inputNumber);
 
-				m_sql.InsertDevice(m_HwdID, szIdx, 100 + inputNumber, pTypeLighting2, sTypeAC, int(STYPE_Contact), 0, " ", "Input");
+				m_sql.InsertDevice(m_HwdID, 0, szIdx, 100 + inputNumber, pTypeLighting2, sTypeAC, int(STYPE_Contact), 0, " ", "Input");
 			}
 		}
 	}

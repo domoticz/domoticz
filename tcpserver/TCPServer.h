@@ -27,11 +27,14 @@ public:
 	virtual void stopClient(CTCPClient_ptr c) = 0;
 	virtual void stopAllClients();
 
-	void SendToAll(int HardwareID, uint64_t DeviceRowID, const char *pData, size_t Length, const CTCPClientBase *pClient2Ignore);
+	std::string AssambleDeviceInfo(int HardwareID, uint64_t DeviceRowID);
+	void SendToAll(int HardwareID, uint64_t DeviceRowID, const CTCPClientBase *pClient2Ignore);
+	void SendToClient(CTCPClientBase* pClient, std::string &szData);
 
 	void SetRemoteUsers(const std::vector<_tRemoteShareUser> &users);
 	std::vector<_tRemoteShareUser> GetRemoteUsers();
 	unsigned int GetUserDevicesCount(const std::string &username);
+	_tRemoteShareUser* FindUser(const std::string& username);
 protected:
 	struct _tTCPLogInfo
 	{
@@ -39,10 +42,8 @@ protected:
 		std::string string;
 	};
 
-	_tRemoteShareUser* FindUser(const std::string &username);
-
 	bool HandleAuthentication(const CTCPClient_ptr &c, const std::string &username, const std::string &password);
-	void DoDecodeMessage(const CTCPClientBase *pClient, const unsigned char *pRXCommand);
+	void DoDecodeMessage(const CTCPClientBase *pClient, const uint8_t *pData, size_t len);
 
 	std::vector<_tRemoteShareUser> m_users;
 	CTCPServer *m_pRoot;
@@ -94,7 +95,7 @@ public:
 	{
 		return true;
 	};
-	void DoDecodeMessage(const CTCPClientBase *pClient, const unsigned char *pRXCommand);
+	void DoDecodeMessage(const CTCPClientBase *pClient, const uint8_t* pData, size_t len);
 private:
 	std::mutex m_server_mutex;
 	CTCPServerInt *m_pTCPServer;

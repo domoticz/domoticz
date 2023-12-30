@@ -856,7 +856,7 @@ void COpenWebNetTCP::UpdateBlinds(const int who, const int where, const int Comm
 		nvalue = 0;
 		slevel = 0;
 		switch_type = (iLevel < 0) ? STYPE_VenetianBlindsEU : STYPE_BlindsPercentage;
-		m_sql.InsertDevice(m_HwdID, szIdx, iInterface, pTypeGeneralSwitch, sSwitchTypeAC, switch_type, 0, "", devname);
+		m_sql.InsertDevice(m_HwdID, 0, szIdx, iInterface, pTypeGeneralSwitch, sSwitchTypeAC, switch_type, 0, "", devname);
 	}
 	else
 	{
@@ -934,7 +934,7 @@ void COpenWebNetTCP::UpdateCenPlus(const int who, const int where, const int Com
 	{
 		// First insert, set SwitchType = STYPE_Contact, so we have a correct contact device
 		nvalue = 0;
-		m_sql.InsertDevice(m_HwdID, szIdx, iInterface, pTypeGeneralSwitch, sSwitchTypeAC, STYPE_Contact, 0, "Unavailable", devname);
+		m_sql.InsertDevice(m_HwdID, 0, szIdx, iInterface, pTypeGeneralSwitch, sSwitchTypeAC, STYPE_Contact, 0, "Unavailable", devname);
 	}
 	else
 	{
@@ -967,7 +967,7 @@ void COpenWebNetTCP::UpdateSoundDiffusion(const int who, const int where, const 
 	result = m_sql.safe_query("SELECT ID,SwitchType FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%s') AND (Unit==%d)", m_HwdID, szIdx, iInterface);
 	if (result.empty())
 	{
-		//m_sql.InsertDevice(m_HwdID, szIdx, iInterface, pTypeGeneralSwitch, sSwitchTypeAC, STYPE_Media, 0, "Unavailable", "OpenWebNet Media", 12, 255, 1);
+		//m_sql.InsertDevice(m_HwdID, 0, szIdx, iInterface, pTypeGeneralSwitch, sSwitchTypeAC, STYPE_Media, 0, "Unavailable", "OpenWebNet Media", 12, 255, 1);
 	}
 
 	//TODO: manage SoundDiffusion device like dimmer (on, off and set volume) or like media device (check how to do it)
@@ -1001,7 +1001,7 @@ void COpenWebNetTCP::UpdateSwitch(const int who, const int where, const int what
 		}
 		else
 			switch_type = STYPE_OnOff;
-		m_sql.InsertDevice(m_HwdID, szIdx, iInterface, pTypeGeneralSwitch, sSwitchTypeAC, switch_type, 0, "Unavailable", devname);
+		m_sql.InsertDevice(m_HwdID, 0, szIdx, iInterface, pTypeGeneralSwitch, sSwitchTypeAC, switch_type, 0, "Unavailable", devname);
 	}
 	else
 	{

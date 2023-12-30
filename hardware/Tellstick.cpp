@@ -53,7 +53,7 @@ bool CTellstick::AddSwitchIfNotExits(const int id, const char* devname, bool isD
 	if (result.empty())
     {
         Log(LOG_NORM, "device %d %s: %s", id, sid ,devname);
-		m_sql.InsertDevice(m_HwdID, sid, 3, pTypeGeneralSwitch, sSwitchTypeAC, isDimmer ? STYPE_Dimmer : STYPE_OnOff, 0, " ", devname);
+		m_sql.InsertDevice(m_HwdID, 0, sid, 3, pTypeGeneralSwitch, sSwitchTypeAC, isDimmer ? STYPE_Dimmer : STYPE_OnOff, 0, " ", devname);
 
         return true;
     }

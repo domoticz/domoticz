@@ -779,6 +779,7 @@ namespace Plugins {
 
 			DevRowIdx = m_sql.UpdateValue(
 				pModState->pPlugin->m_HwdID,
+				0,
 				sDeviceID.c_str(),
 				self->Unit,
 				iType,
