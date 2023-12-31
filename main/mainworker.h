@@ -69,8 +69,8 @@ public:
 	bool DoesDeviceActiveAScene(uint64_t DevRowIdx, int Cmnd);
 
 	bool SetSetPoint(const std::string &idx, float TempValue);
-	bool SetSetPoint(const std::string &idx, float TempValue, const std::string &newMode, const std::string &until);
 	bool SetSetPointInt(const std::vector<std::string> &sd, float TempValue);
+	bool SetSetPointEvo(const std::string& idx, float TempValue, const std::string& newMode, const std::string& until);
 	bool SetThermostatState(const std::string &idx, int newState);
 
 	bool SwitchEvoModal(const std::string &idx, const std::string &status, const std::string &action, const std::string &ooc, const std::string &until);
@@ -132,7 +132,6 @@ public:
 	time_t m_LastHeartbeat = 0;
 private:
 	void HandleAutomaticBackups();
-	uint64_t PerformRealActionFromDomoticzClient(const uint8_t *pRXCommand, CDomoticzHardwareBase **pOriginalHardware);
 	void HandleLogNotifications();
 	std::map<std::string, std::pair<time_t, bool> > m_componentheartbeats;
 	std::mutex m_heartbeatmutex;

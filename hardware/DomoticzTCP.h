@@ -15,7 +15,10 @@ public:
 	bool WriteToHardware(const char* pdata, unsigned char length) override;
 	boost::signals2::signal<void()> sDisconnected;
 	bool SwitchLight(const uint64_t idx, const std::string& switchcmd, const int level, _tColor color, const bool ooc, const std::string& User);
-	bool SetSetPoint(const std::string& idx, const float TempValue, const std::string& newMode, const std::string& until);
+	bool SetSetPoint(const std::string& idx, const float TempValue);
+	bool SetSetPointEvo(const std::string& idx, float TempValue, const std::string& newMode, const std::string& until);
+	bool SetThermostatState(const std::string& idx, int newState);
+	bool SwitchEvoModal(const std::string& idx, const std::string& status, const std::string& action, const std::string& ooc, const std::string& until);
 private:
 	bool StartHardware() override;
 	bool StopHardware() override;

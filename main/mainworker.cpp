@@ -1806,165 +1806,6 @@ void MainWorker::OnHardwareConnected(CDomoticzHardwareBase* pHardware)
 	pRFXBase->SendResetCommand();
 }
 
-uint64_t MainWorker::PerformRealActionFromDomoticzClient(const uint8_t* pRXCommand, CDomoticzHardwareBase** pOriginalHardware)
-{
-	*pOriginalHardware = nullptr;
-	uint8_t devType = pRXCommand[1];
-	uint8_t subType = pRXCommand[2];
-	std::string ID;
-	uint8_t Unit = 0;
-	const tRBUF* pResponse = reinterpret_cast<const tRBUF*>(pRXCommand);
-	char szTmp[300];
-	std::vector<std::vector<std::string> > result;
-
-	switch (devType) {
-	case pTypeLighting1:
-		ID = std_format("%d", pResponse->LIGHTING1.housecode);
-		Unit = pResponse->LIGHTING1.unitcode;
-		break;
-	case pTypeLighting2:
-		sprintf(szTmp, "%X%02X%02X%02X", pResponse->LIGHTING2.id1, pResponse->LIGHTING2.id2, pResponse->LIGHTING2.id3, pResponse->LIGHTING2.id4);
-		ID = szTmp;
-		Unit = pResponse->LIGHTING2.unitcode;
-		break;
-	case pTypeLighting5:
-		if (subType != sTypeEMW100)
-			sprintf(szTmp, "%02X%02X%02X", pResponse->LIGHTING5.id1, pResponse->LIGHTING5.id2, pResponse->LIGHTING5.id3);
-		else
-			sprintf(szTmp, "%02X%02X", pResponse->LIGHTING5.id2, pResponse->LIGHTING5.id3);
-		ID = szTmp;
-		Unit = pResponse->LIGHTING5.unitcode;
-		break;
-	case pTypeLighting6:
-		sprintf(szTmp, "%02X%02X%02X", pResponse->LIGHTING6.id1, pResponse->LIGHTING6.id2, pResponse->LIGHTING6.groupcode);
-		ID = szTmp;
-		Unit = pResponse->LIGHTING6.unitcode;
-		break;
-	case pTypeHomeConfort:
-		sprintf(szTmp, "%02X%02X%02X%02X", pResponse->HOMECONFORT.id1, pResponse->HOMECONFORT.id2, pResponse->HOMECONFORT.id3, pResponse->HOMECONFORT.housecode);
-		ID = szTmp;
-		Unit = pResponse->HOMECONFORT.unitcode;
-		break;
-	case pTypeRadiator1:
-		if (subType == sTypeSmartwaresSwitchRadiator)
-		{
-			sprintf(szTmp, "%X%02X%02X%02X", pResponse->RADIATOR1.id1, pResponse->RADIATOR1.id2, pResponse->RADIATOR1.id3, pResponse->RADIATOR1.id4);
-			ID = szTmp;
-			Unit = pResponse->RADIATOR1.unitcode;
-		}
-		break;
-	case pTypeColorSwitch:
-	{
-		const _tColorSwitch* pLed = reinterpret_cast<const _tColorSwitch*>(pResponse);
-		ID = "1";
-		Unit = pLed->dunit;
-	}
-	break;
-	case pTypeFS20:
-		sprintf(szTmp, "%02X%02X", pResponse->FS20.hc1, pResponse->FS20.hc2);
-		ID = szTmp;
-		Unit = pResponse->FS20.addr;
-		break;
-	case pTypeCurtain:
-		sprintf(szTmp, "%d", pResponse->CURTAIN1.housecode);
-		ID = szTmp;
-		Unit = pResponse->CURTAIN1.unitcode;
-		break;
-	case pTypeBlinds:
-		sprintf(szTmp, "%02X%02X%02X", pResponse->BLINDS1.id1, pResponse->BLINDS1.id2, pResponse->BLINDS1.id3);
-		ID = szTmp;
-		Unit = pResponse->BLINDS1.unitcode;
-		break;
-	case pTypeRFY:
-		sprintf(szTmp, "%02X%02X%02X", pResponse->RFY.id1, pResponse->RFY.id2, pResponse->RFY.id3);
-		ID = szTmp;
-		Unit = pResponse->RFY.unitcode;
-		break;
-	case pTypeSecurity1:
-		sprintf(szTmp, "%02X%02X%02X", pResponse->SECURITY1.id1, pResponse->SECURITY1.id2, pResponse->SECURITY1.id3);
-		ID = szTmp;
-		Unit = 0;
-		break;
-	case pTypeSecurity2:
-		sprintf(szTmp, "%02X%02X%02X%02X%02X%02X%02X%02X", pResponse->SECURITY2.id1, pResponse->SECURITY2.id2, pResponse->SECURITY2.id3, pResponse->SECURITY2.id4, pResponse->SECURITY2.id5, pResponse->SECURITY2.id6, pResponse->SECURITY2.id7, pResponse->SECURITY2.id8);
-		ID = szTmp;
-		Unit = 0;
-		break;
-	case pTypeChime:
-		sprintf(szTmp, "%02X%02X", pResponse->CHIME.id1, pResponse->CHIME.id2);
-		ID = szTmp;
-		Unit = pResponse->CHIME.sound;
-		break;
-	case pTypeSetpoint:
-	{
-		const _tSetpoint* pMeter = reinterpret_cast<const _tSetpoint*>(pResponse);
-		sprintf(szTmp, "%X%02X%02X%02X", pMeter->id1, pMeter->id2, pMeter->id3, pMeter->id4);
-		ID = szTmp;
-		Unit = pMeter->dunit;
-	}
-	break;
-	case pTypeThermostat2:
-		ID = "1";
-		Unit = pResponse->THERMOSTAT2.unitcode;
-		break;
-	case pTypeThermostat3:
-		sprintf(szTmp, "%02X%02X%02X", pResponse->THERMOSTAT3.unitcode1, pResponse->THERMOSTAT3.unitcode2, pResponse->THERMOSTAT3.unitcode3);
-		ID = szTmp;
-		Unit = 0;
-		break;
-	case pTypeThermostat4:
-		sprintf(szTmp, "%02X%02X%02X", pResponse->THERMOSTAT4.unitcode1, pResponse->THERMOSTAT4.unitcode2, pResponse->THERMOSTAT4.unitcode3);
-		ID = szTmp;
-		Unit = 0;
-		break;
-	case pTypeGeneralSwitch:
-	{
-		const _tGeneralSwitch* pSwitch = reinterpret_cast<const _tGeneralSwitch*>(pResponse);
-		sprintf(szTmp, "%08X", pSwitch->id);
-		ID = szTmp;
-		Unit = pSwitch->unitcode;
-	}
-	break;
-	case pTypeDDxxxx:
-		sprintf(szTmp, "%02X%02X%02X%02X", pResponse->DDXXXX.id1, pResponse->DDXXXX.id2, pResponse->DDXXXX.id3, pResponse->DDXXXX.id4);
-		ID = szTmp;
-		Unit = pResponse->DDXXXX.unitcode;
-		break;
-	default:
-		return -1;
-	}
-
-	if (!ID.empty())
-	{
-		// find our original hardware
-		// if it is not a domoticz type, perform the actual command
-
-		result = m_sql.safe_query(
-			"SELECT HardwareID,ID,Name,StrParam1,StrParam2,nValue,sValue FROM DeviceStatus WHERE (DeviceID='%q' AND Unit=%d AND Type=%d AND SubType=%d)",
-			ID.c_str(), Unit, devType, subType);
-		if (result.size() == 1)
-		{
-			std::vector<std::string> sd = result[0];
-
-			CDomoticzHardwareBase* pHardware = GetHardware(atoi(sd[0].c_str()));
-			if (pHardware != nullptr)
-			{
-				if (pHardware->HwdType != HTYPE_Domoticz)
-				{
-					*pOriginalHardware = pHardware;
-					pHardware->WriteToHardware((const char*)pRXCommand, pRXCommand[0] + 1);
-					std::stringstream s_strid;
-					s_strid << std::dec << sd[1];
-					uint64_t ullID;
-					s_strid >> ullID;
-					return ullID;
-				}
-			}
-		}
-	}
-	return -1;
-}
-
 void MainWorker::DecodeRXMessage(const CDomoticzHardwareBase* pHardware, const uint8_t* pRXCommand, const char* defaultName, const int BatteryLevel, const char* userName)
 {
 	if ((pHardware == nullptr) || (pRXCommand == nullptr))
@@ -2186,63 +2027,9 @@ void MainWorker::ProcessRXMessage(const CDomoticzHardwareBase* pHardware, const 
 
 	uint64_t DeviceRowIdx = (uint64_t)-1;
 	std::string DeviceName;
-	tcp::server::CTCPClient* pClient2Ignore = nullptr;
-
-	std::string szLastSwitchUser = userName;
-
-	if (pHardware->HwdType == HTYPE_Domoticz)
-	{
-		szLastSwitchUser = pHardware->m_Name;
-		if (pHardware->m_HwdID == 8765) // did we receive it from our master?
-		{
-			CDomoticzHardwareBase* pOrgHardware = nullptr;
-			switch (pRXCommand[1])
-			{
-			case pTypeLighting1:
-			case pTypeLighting2:
-			case pTypeLighting3:
-			case pTypeLighting4:
-			case pTypeLighting5:
-			case pTypeLighting6:
-			case pTypeColorSwitch:
-			case pTypeCurtain:
-			case pTypeBlinds:
-			case pTypeRFY:
-			case pTypeSecurity1:
-			case pTypeSecurity2:
-			case pTypeChime:
-			case pTypeSetpoint:
-			case pTypeThermostat2:
-			case pTypeThermostat3:
-			case pTypeThermostat4:
-			case pTypeRadiator1:
-			case pTypeGeneralSwitch:
-			case pTypeHomeConfort:
-			case pTypeFan:
-			case pTypeFS20:
-			case pTypeHunter:
-			case pTypeDDxxxx:
-				// we received a control message from a domoticz client,
-				// and should actually perform this command ourself switch
-				DeviceRowIdx = PerformRealActionFromDomoticzClient(pRXCommand, &pOrgHardware);
-				if (DeviceRowIdx != (uint64_t)-1)
-				{
-					if (pOrgHardware != nullptr)
-					{
-						DeviceRowIdx = -1;
-						pClient2Ignore = (tcp::server::CTCPClient*)pHardware->m_pUserData;
-						pHardware = pOrgHardware;
-					}
-					WriteMessage("Control Command, ", (pOrgHardware == nullptr));
-				}
-				break;
-			}
-		}
-	}
-
 
 	_tRxMessageProcessingResult procResult;
-	procResult.Username = szLastSwitchUser;
+	procResult.Username = userName;
 	if (DeviceRowIdx == (uint64_t)-1)
 	{
 		switch (pRXCommand[1])
@@ -2502,7 +2289,7 @@ void MainWorker::ProcessRXMessage(const CDomoticzHardwareBase* pHardware, const 
 	//TODO: Notify plugin?
 
 	//Send to connected Sharing Users
-	m_sharedserver.SendToAll(pHardware->m_HwdID, DeviceRowIdx, (const char*)pRXCommand, pRXCommand[0] + 1, pClient2Ignore);
+	m_sharedserver.SendToAll(pHardware->m_HwdID, DeviceRowIdx, nullptr);
 
 	sOnDeviceReceived(pHardware->m_HwdID, DeviceRowIdx, DeviceName, pRXCommand);
 }
@@ -12699,7 +12486,28 @@ bool MainWorker::SwitchEvoModal(const std::string& idx, const std::string& statu
 		idx.c_str());
 	if (result.empty())
 		return false;
+
 	std::vector<std::string> sd = result[0];
+
+	int HardwareID = atoi(sd[0].c_str());
+	int hindex = FindDomoticzHardware(HardwareID);
+	if (hindex == -1)
+		return false;
+
+	//uint8_t Unit = atoi(sd[2].c_str());
+	//uint8_t dType = atoi(sd[3].c_str());
+	//uint8_t dSubType = atoi(sd[4].c_str());
+	//_eSwitchType switchtype = (_eSwitchType)atoi(sd[5].c_str());
+
+	CDomoticzHardwareBase* pHardware = GetHardware(HardwareID);
+	if (pHardware == nullptr)
+		return false;
+
+	if (pHardware->HwdType == HTYPE_Domoticz)
+	{
+		DomoticzTCP* pDomoticz = static_cast<DomoticzTCP*>(pHardware);
+		return pDomoticz->SwitchEvoModal(idx, status, action, ooc, until);
+	}
 
 	int nStatus = 0;
 	if (status == "Away")
@@ -12718,21 +12526,6 @@ bool MainWorker::SwitchEvoModal(const std::string& idx, const std::string& statu
 	int nValue = atoi(sd[7].c_str());
 	if (ooc == "1" && nValue == nStatus)
 		return false;//FIXME not an error ... status = (already set)
-
-	int HardwareID = atoi(sd[0].c_str());
-	int hindex = FindDomoticzHardware(HardwareID);
-	if (hindex == -1)
-		return false;
-
-	//uint8_t Unit = atoi(sd[2].c_str());
-	//uint8_t dType = atoi(sd[3].c_str());
-	//uint8_t dSubType = atoi(sd[4].c_str());
-	//_eSwitchType switchtype = (_eSwitchType)atoi(sd[5].c_str());
-
-	CDomoticzHardwareBase* pHardware = GetHardware(HardwareID);
-	if (pHardware == nullptr)
-		return false;
-
 
 	unsigned long ID;
 	std::stringstream s_strid;
@@ -12851,7 +12644,7 @@ MainWorker::eSwitchLightReturnCode MainWorker::SwitchLight(const uint64_t idx, c
 
 //Seems this is only called for EvoHome, so this function needs to be moved to the EvoHome (base)class!
 //(and modify Scheduler scripts)
-bool MainWorker::SetSetPoint(const std::string& idx, const float TempValue, const std::string& newMode, const std::string& until)
+bool MainWorker::SetSetPointEvo(const std::string& idx, const float TempValue, const std::string& newMode, const std::string& until)
 {
 	//Get Device details
 	std::vector<std::vector<std::string> > result;
@@ -12871,14 +12664,14 @@ bool MainWorker::SetSetPoint(const std::string& idx, const float TempValue, cons
 	if (pHardware == nullptr)
 		return false;
 
+	if (pHardware->HwdType != HTYPE_EVOHOME_SCRIPT && pHardware->HwdType != HTYPE_EVOHOME_SERIAL && pHardware->HwdType != HTYPE_EVOHOME_WEB && pHardware->HwdType != HTYPE_EVOHOME_TCP)
+		return false;
+
 	if (pHardware->HwdType == HTYPE_Domoticz)
 	{
 		DomoticzTCP* pDomoticz = static_cast<DomoticzTCP*>(pHardware);
-		return pDomoticz->SetSetPoint(idx, TempValue, newMode, until);
+		return pDomoticz->SetSetPointEvo(idx, TempValue, newMode, until);
 	}
-
-	if (pHardware->HwdType != HTYPE_EVOHOME_SCRIPT && pHardware->HwdType != HTYPE_EVOHOME_SERIAL && pHardware->HwdType != HTYPE_EVOHOME_WEB && pHardware->HwdType != HTYPE_EVOHOME_TCP)
-		return SetSetPointInt(sd, TempValue);
 
 	int nEvoMode = 0;
 	if (newMode == "PermanentOverride" || newMode.empty())
@@ -12944,6 +12737,22 @@ bool MainWorker::SetSetPoint(const std::string& idx, const float TempValue)
 		return false;
 
 	std::vector<std::string> sd = result[0];
+
+	int HardwareID = atoi(sd[0].c_str());
+	int hindex = FindDomoticzHardware(HardwareID);
+	if (hindex == -1)
+		return false;
+
+	CDomoticzHardwareBase* pHardware = GetHardware(HardwareID);
+	if (pHardware == nullptr)
+		return false;
+
+	if (pHardware->HwdType == HTYPE_Domoticz)
+	{
+		DomoticzTCP* pDomoticz = static_cast<DomoticzTCP*>(pHardware);
+		return pDomoticz->SetSetPoint(idx, TempValue);
+	}
+
 	return SetSetPointInt(sd, TempValue);
 }
 
@@ -13100,7 +12909,7 @@ bool MainWorker::SetSetPointInt(const std::vector<std::string>& sd, const float 
 		}
 		else if (pHardware->HwdType == HTYPE_EVOHOME_SCRIPT || pHardware->HwdType == HTYPE_EVOHOME_SERIAL || pHardware->HwdType == HTYPE_EVOHOME_WEB || pHardware->HwdType == HTYPE_EVOHOME_TCP)
 		{
-			return SetSetPoint(sd[7], TempValue, "PermanentOverride", "");
+			return SetSetPointEvo(sd[7], TempValue, "PermanentOverride", "");
 		}
 		else if (pHardware->HwdType == HTYPE_IntergasInComfortLAN2RF)
 		{
@@ -13183,6 +12992,13 @@ bool MainWorker::SetThermostatState(const std::string& idx, const int newState)
 	CDomoticzHardwareBase* pHardware = GetHardware(HardwareID);
 	if (pHardware == nullptr)
 		return false;
+
+	if (pHardware->HwdType == HTYPE_Domoticz)
+	{
+		DomoticzTCP* pDomoticz = static_cast<DomoticzTCP*>(pHardware);
+		return pDomoticz->SetThermostatState(idx, newState);
+	}
+
 	if (pHardware->HwdType == HTYPE_TOONTHERMOSTAT)
 	{
 		CToonThermostat* pGateway = dynamic_cast<CToonThermostat*>(pHardware);
@@ -13862,8 +13678,6 @@ bool MainWorker::UpdateDevice(const int HardwareID, const int OrgHardwareID, con
 		s_strid << std::hex << DeviceID;
 		s_strid >> ID;
 
-		float temp = 12345.0F;
-
 		CDomoticzHardwareBase* pHardware = GetHardware(HardwareID);
 		if (pHardware)
 		{
@@ -13898,8 +13712,15 @@ bool MainWorker::UpdateDevice(const int HardwareID, const int OrgHardwareID, con
 				return true;
 			}
 
-			if ((devType == pTypeTEMP) || (devType == pTypeTEMP_HUM) || (devType == pTypeTEMP_HUM_BARO) || (devType == pTypeBARO))
+			if (
+				(devType == pTypeTEMP)
+				|| (devType == pTypeTEMP_HUM)
+				|| (devType == pTypeTEMP_HUM_BARO)
+				|| (devType == pTypeBARO)
+				)
 			{
+				float temp = 12345.0F;
+
 				// Adjustment value
 				float AddjValue = 0.0F;
 				float AddjMulti = 1.0F;
@@ -13951,6 +13772,12 @@ bool MainWorker::UpdateDevice(const int HardwareID, const int OrgHardwareID, con
 						sValue = szTmp;
 					}
 				}
+				// Calculate temperature trend
+				if (temp != 12345.0F)
+				{
+					uint64_t tID = ((uint64_t)(HardwareID & 0x7FFFFFFF) << 32) | (devidx & 0x7FFFFFFF);
+					m_trend_calculator[tID].AddValueAndReturnTendency(static_cast<double>(temp), _tTrendCalculator::TAVERAGE_TEMP);
+				}
 			}
 		}
 
@@ -13980,20 +13807,18 @@ bool MainWorker::UpdateDevice(const int HardwareID, const int OrgHardwareID, con
 				MySensorsBase* pMySensorDevice = dynamic_cast<MySensorsBase*>(pHardware);
 				pMySensorDevice->SendTextSensorValue(NodeID, ChildID, sValue);
 			}
-		}
 
-		// Calculate temperature trend
-		if (temp != 12345.0F)
-		{
-			uint64_t tID = ((uint64_t)(HardwareID & 0x7FFFFFFF) << 32) | (devidx & 0x7FFFFFFF);
-			m_trend_calculator[tID].AddValueAndReturnTendency(static_cast<double>(temp), _tTrendCalculator::TAVERAGE_TEMP);
+			if ((pHardware->HwdType != HTYPE_Domoticz) && (OrgHardwareID == 0))
+			{
+				//Send to connected Sharing Users
+				m_sharedserver.SendToAll(HardwareID, devidx, nullptr);
+			}
 		}
 
 #ifdef ENABLE_PYTHON
 		// notify plugin
 		m_pluginsystem.DeviceModified(devidx);
 #endif
-
 		// signal connected devices (MQTT, fibaro, http push ... ) about the update
 		sOnDeviceReceived(HardwareID, devidx, devname, nullptr);
 

@@ -87,7 +87,7 @@ public:
 
 	bool StartServer(const std::string &address, const std::string &port);
 	void StopServer();
-	void SendToAll(int HardwareID, uint64_t DeviceRowID, const char *pData, size_t Length, const CTCPClientBase *pClient2Ignore);
+	void SendToAll(int HardwareID, uint64_t DeviceRowID, const CTCPClientBase *pClient2Ignore);
 	void SetRemoteUsers(const std::vector<_tRemoteShareUser> &users);
 	unsigned int GetUserDevicesCount(const std::string &username);
 	void stopAllClients();

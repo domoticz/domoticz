@@ -190,21 +190,26 @@ bool DomoticzTCP::WriteToHardware(const std::string& szData)
 	return true;
 }
 
-bool DomoticzTCP::SwitchLight(const uint64_t idx, const std::string& switchcmd, const int level, _tColor color, const bool ooc, const std::string& User)
+bool AssambleDeviceInfo(const std::string &idx, Json::Value &root)
 {
-	auto result = m_sql.safe_query("SELECT OrgHardwareID, DeviceID, Unit, Type, SubType FROM DeviceStatus WHERE (ID==%q)", std::to_string(idx).c_str());
+	auto result = m_sql.safe_query("SELECT OrgHardwareID, DeviceID, Unit, Type, SubType FROM DeviceStatus WHERE (ID==%q)", idx.c_str());
 	if (result.empty())
 		return false;
-
-	Json::Value root;
-
 	int iIndex = 0;
-	root["action"] = "SwitchLight";
 	root["HardwareID"] = atoi(result[0][iIndex++].c_str());
 	root["DeviceID"] = result[0][iIndex++];
 	root["Unit"] = atoi(result[0][iIndex++].c_str());
 	root["Type"] = atoi(result[0][iIndex++].c_str());
 	root["SubType"] = atoi(result[0][iIndex++].c_str());
+	return true;
+}
+
+bool DomoticzTCP::SwitchLight(const uint64_t idx, const std::string& switchcmd, const int level, _tColor color, const bool ooc, const std::string& User)
+{
+	Json::Value root;
+	if (!AssambleDeviceInfo(std::to_string(idx), root))
+		return false;
+	root["action"] = "SwitchLight";
 	root["switchcmd"] = switchcmd;
 	root["level"] = level;
 	root["color"] = color.toJSONString();
@@ -212,34 +217,71 @@ bool DomoticzTCP::SwitchLight(const uint64_t idx, const std::string& switchcmd, 
 	root["User"] = User;
 
 	std::string szSend = JSonToRawString(root);
-
 	std::vector<char> uhash = HexToBytes(m_password);
 	std::string szEncrypted;
 	AESEncryptData(szSend, szEncrypted, (const uint8_t*)uhash.data());
 	return WriteToHardware(szEncrypted);
 }
 
-bool DomoticzTCP::SetSetPoint(const std::string& idx, const float TempValue, const std::string& newMode, const std::string& until)
+bool DomoticzTCP::SetSetPoint(const std::string& idx, const float TempValue)
 {
-	auto result = m_sql.safe_query("SELECT OrgHardwareID, DeviceID, Unit, Type, SubType FROM DeviceStatus WHERE (ID==%q)", idx.c_str());
-	if (result.empty())
-		return false;
-
 	Json::Value root;
-
-	int iIndex = 0;
+	if (!AssambleDeviceInfo(idx, root))
+		return false;
 	root["action"] = "SetSetpoint";
-	root["HardwareID"] = atoi(result[0][iIndex++].c_str());
-	root["DeviceID"] = result[0][iIndex++];
-	root["Unit"] = atoi(result[0][iIndex++].c_str());
-	root["Type"] = atoi(result[0][iIndex++].c_str());
-	root["SubType"] = atoi(result[0][iIndex++].c_str());
+	root["TempValue"] = TempValue;
+
+	std::string szSend = JSonToRawString(root);
+	std::vector<char> uhash = HexToBytes(m_password);
+	std::string szEncrypted;
+	AESEncryptData(szSend, szEncrypted, (const uint8_t*)uhash.data());
+	return WriteToHardware(szEncrypted);
+}
+
+bool DomoticzTCP::SetSetPointEvo(const std::string& idx, float TempValue, const std::string& newMode, const std::string& until)
+{
+	Json::Value root;
+	if (!AssambleDeviceInfo(idx, root))
+		return false;
+	root["action"] = "SetSetpointEvo";
 	root["TempValue"] = TempValue;
 	root["newMode"] = newMode;
 	root["until"] = until;
 
 	std::string szSend = JSonToRawString(root);
+	std::vector<char> uhash = HexToBytes(m_password);
+	std::string szEncrypted;
+	AESEncryptData(szSend, szEncrypted, (const uint8_t*)uhash.data());
+	return WriteToHardware(szEncrypted);
+}
 
+bool DomoticzTCP::SetThermostatState(const std::string& idx, int newState)
+{
+	Json::Value root;
+	if (!AssambleDeviceInfo(idx, root))
+		return false;
+	root["action"] = "SetThermostatState";
+	root["newState"] = newState;
+
+	std::string szSend = JSonToRawString(root);
+	std::vector<char> uhash = HexToBytes(m_password);
+	std::string szEncrypted;
+	AESEncryptData(szSend, szEncrypted, (const uint8_t*)uhash.data());
+	return WriteToHardware(szEncrypted);
+}
+
+bool DomoticzTCP::SwitchEvoModal(const std::string& idx, const std::string& status, const std::string& action, const std::string& ooc, const std::string& until)
+{
+	Json::Value root;
+	if (!AssambleDeviceInfo(idx, root))
+		return false;
+	root["action"] = "SwitchEvoModal";
+	root["status"] = status;
+	root["evo_action"] = action;
+	root["ooc"] = ooc;
+	root["until"] = until;
+
+	std::string szSend = JSonToRawString(root);
 	std::vector<char> uhash = HexToBytes(m_password);
 	std::string szEncrypted;
 	AESEncryptData(szSend, szEncrypted, (const uint8_t*)uhash.data());

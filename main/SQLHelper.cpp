@@ -4177,7 +4177,16 @@ void CSQLHelper::Do_Work()
 				sstr << itt._idx;
 				std::string idx = sstr.str();
 				float fValue = (float)atof(itt._sValue.c_str());
-				m_mainworker.SetSetPoint(idx, fValue, itt._command, itt._sUntil);
+
+				auto result = safe_query("SELECT a.[Type] FROM Hardware as a, DeviceStatus as b WHERE (b.ID == 9693) AND (a.ID == b.HardwareID)");
+				if (!result.empty())
+				{
+					_eHardwareTypes HwdType = (_eHardwareTypes)atoi(result[0][0].c_str());
+					if (HwdType == HTYPE_EVOHOME_SCRIPT || HwdType == HTYPE_EVOHOME_SERIAL || HwdType == HTYPE_EVOHOME_WEB || HwdType == HTYPE_EVOHOME_TCP)
+						m_mainworker.SetSetPointEvo(idx, fValue, itt._command, itt._sUntil);
+					else
+						m_mainworker.SetSetPoint(idx, fValue);
+				}
 			}
 			else if (itt._ItemType == TITEM_SEND_NOTIFICATION)
 			{

@@ -328,7 +328,7 @@ namespace tcp {
 			}
 		}
 
-		void CTCPServer::SendToAll(const int HardwareID, const uint64_t DeviceRowID, const char* pData, size_t Length, const CTCPClientBase* pClient2Ignore)
+		void CTCPServer::SendToAll(const int HardwareID, const uint64_t DeviceRowID, const CTCPClientBase* pClient2Ignore)
 		{
 			std::lock_guard<std::mutex> l(m_server_mutex);
 			if (m_pTCPServer)
@@ -411,34 +411,40 @@ namespace tcp {
 				bool ooc = root["ooc"].asBool();
 				std::string User = root["User"].asString();
 
-				if (m_mainworker.SwitchLight(idx, switchcmd, level, color, ooc, 0, User) == MainWorker::eSwitchLightReturnCode::SL_OK)
-				{
-				}
+				m_mainworker.SwitchLight(idx, switchcmd, level, color, ooc, 0, User);
 			}
 			else if (szAction == "SetSetpoint")
 			{
 				float TempValue = root["TempValue"].asFloat();
+				m_mainworker.SetSetPoint(szIdx, TempValue);
+			}
+			else if (szAction == "SetSetPointEvo")
+			{
+				float TempValue = root["TempValue"].asFloat();
 				std::string newMode = root["newMode"].asString();
 				std::string until = root["until"].asString();
+				m_mainworker.SetSetPointEvo(szIdx, TempValue, newMode, until);
+			}
+			else if (szAction == "SetThermostatState")
+			{
+				int newState = root["newState"].asInt();
+				m_mainworker.SetThermostatState(szIdx, newState);
 
-				if (m_mainworker.SetSetPoint(szIdx, TempValue, newMode, until))
-				{
-				}
+			}
+			else if (szAction == "SwitchEvoModal")
+			{
+				std::string status = root["status"].asString();
+				std::string action = root["evo_action"].asString();
+				std::string ooc = root["ooc"].asString();
+				std::string until = root["until"].asString();
+
+				m_mainworker.SwitchEvoModal(szIdx, status, action, ooc, until);
 			}
 			else
 			{
 				Log(LOG_ERROR, "Unhandled action received: %s", szAction.c_str());
 				return;
 			}
-/*
-			m_sql.UpdateValueInt((
-			HwdType = HTYPE_Domoticz;
-			m_HwdID = 8765;
-			m_Name = "DomoticzFromMaster";
-			m_SeqNr = 1;
-			m_pUserData = (void*)pClient;
-			sDecodeRXMessage(this, pRXCommand, nullptr, -1, m_Name.c_str());
-*/
 		}
 
 	} // namespace server
