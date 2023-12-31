@@ -2286,11 +2286,6 @@ void MainWorker::ProcessRXMessage(const CDomoticzHardwareBase* pHardware, const 
 		const_cast<CDomoticzHardwareBase*>(pHardware)->Log(LOG_NORM, szLogString);
 	}
 
-	//TODO: Notify plugin?
-
-	//Send to connected Sharing Users
-	m_sharedserver.SendToAll(pHardware->m_HwdID, DeviceRowIdx, nullptr);
-
 	sOnDeviceReceived(pHardware->m_HwdID, DeviceRowIdx, DeviceName, pRXCommand);
 }
 
@@ -13806,12 +13801,6 @@ bool MainWorker::UpdateDevice(const int HardwareID, const int OrgHardwareID, con
 
 				MySensorsBase* pMySensorDevice = dynamic_cast<MySensorsBase*>(pHardware);
 				pMySensorDevice->SendTextSensorValue(NodeID, ChildID, sValue);
-			}
-
-			if ((pHardware->HwdType != HTYPE_Domoticz) && (OrgHardwareID == 0))
-			{
-				//Send to connected Sharing Users
-				m_sharedserver.SendToAll(HardwareID, devidx, nullptr);
 			}
 		}
 

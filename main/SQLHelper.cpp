@@ -5623,7 +5623,15 @@ uint64_t CSQLHelper::UpdateValueInt(
 	_log.Debug(DEBUG_NORM, "SQLH UpdateValueInt %s HwID:%d  DevID:%s Type:%d  sType:%d nValue:%d sValue:%s ", devname.c_str(), HardwareID, ID, devType, subType, nValue, sValue);
 
 	if (bDeviceUsed)
+	{
 		m_mainworker.m_eventsystem.ProcessDevice(HardwareID, ulID, unit, devType, subType, signallevel, batterylevel, nValue, sValue);
+
+		if (OrgHardwareID == 0)
+		{
+			//Send to connected Sharing Users
+			m_mainworker.m_sharedserver.SendToAll(HardwareID, ulID, nullptr);
+		}
+	}
 	return ulID;
 }
 
