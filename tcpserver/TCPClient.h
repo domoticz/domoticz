@@ -22,7 +22,7 @@ public:
 
 	std::string m_username;
 	std::string m_endpoint;
-	bool m_bIsLoggedIn;
+	bool m_bIsLoggedIn = false;
 
 	// usual tcp parameters
 	boost::asio::ip::tcp::socket *socket() { return socket_; }

@@ -156,3 +156,5 @@ bool base32_encode(const std::string &input, std::string &output);
 
 std::string vector_2_string(std::vector<std::string> const& strings, const std::string& delim);
 
+bool AESEncryptData(const std::string& szInputBuffer, std::string& szOutputBuffer, const uint8_t* pKey16);
+bool AESDecryptData(const std::string& szInputBuffer, std::string& szOutputBuffer, const uint8_t* pKey16);
