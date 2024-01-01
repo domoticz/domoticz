@@ -64,9 +64,9 @@ jobs:
       # Boost
       - name: build boost libraries
         run: |
-          wget https://boostorg.jfrog.io/artifactory/main/release/1.83.0/source/boost_1_83_0.tar.gz >> /dev/null 2>&1
-          tar xfz boost_1_83_0.tar.gz
-          cd boost_1_83_0/
+          wget https://github.com/boostorg/boost/releases/download/boost-1.83.0/boost-1.83.0.tar.gz >> /dev/null 2>&1
+          tar xfz boost-1.83.0.tar.gz
+          cd boost-1.83.0/
           ./bootstrap.sh
           ./b2 stage threading=multi link=static --with-thread --with-system --with-chrono >> /dev/null 2>&1
           sudo ./b2 install threading=multi link=static --with-thread --with-system --with-chrono >> /dev/null 2>&1
