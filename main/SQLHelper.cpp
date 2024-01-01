@@ -5049,6 +5049,7 @@ uint64_t CSQLHelper::UpdateManagedValueInt(
 )
 {
 	uint64_t ulID = 0;
+	bool bDeviceUsed = false;
 
 	std::vector<std::vector<std::string> > result;
 	result = safe_query("SELECT ID, Name, Used, SwitchType, nValue, sValue, LastUpdate, Options FROM DeviceStatus WHERE (HardwareID=%d AND OrgHardwareID=%d AND DeviceID='%q' AND Unit=%d AND Type=%d AND SubType=%d)", HardwareID, OrgHardwareID, ID, unit, devType, subType);
@@ -5066,6 +5067,7 @@ uint64_t CSQLHelper::UpdateManagedValueInt(
 	{
 		ulID = std::stoull(result[0][0]);
 		devname = result[0][1];
+		bDeviceUsed = atoi(result[0][2].c_str()) != 0;
 	}
 
 	std::string sLastUpdate = TimeToString(nullptr, TF_DateTime);
@@ -5148,7 +5150,16 @@ uint64_t CSQLHelper::UpdateManagedValueInt(
 
 	safe_query("UPDATE DeviceStatus SET LastUpdate='%q', sValue='%q' WHERE (ID = %" PRIu64 ")", sLastUpdate.c_str(), sValue, ulID);
 	
-	m_mainworker.m_eventsystem.ProcessDevice(HardwareID, ulID, unit, devType, subType, signallevel, batterylevel, nValue, sValue);
+	if (bDeviceUsed)
+	{
+		m_mainworker.m_eventsystem.ProcessDevice(HardwareID, ulID, unit, devType, subType, signallevel, batterylevel, nValue, sValue);
+
+		if (OrgHardwareID == 0)
+		{
+			//Send to connected Sharing Users
+			m_mainworker.m_sharedserver.SendToAll(HardwareID, ulID, nullptr);
+		}
+	}
 
 	return ulID;
 }
