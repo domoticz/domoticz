@@ -16,7 +16,6 @@
 </plugin>
 """
 import Domoticz
-from Domoticz import Devices, Parameters
 import binascii
 import struct
 import lib.pySmartPlugSmpB16

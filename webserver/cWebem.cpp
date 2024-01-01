@@ -997,6 +997,12 @@ namespace http {
 				{
 					cleanIP = cleanIP.substr(1,cleanIP.size()-2);	// Remove brackets from begin and end
 				}
+				// Link-local IPv6 addresses could have a 'zone-index' identifiyng which interface is used
+				// on a machine which has multiple interface. Can be discarded for checking
+				if ((cleanIP.find("fe80::") == 0) && (cleanIP.find('%') != std::string::npos))
+				{
+					cleanIP = cleanIP.substr(0,cleanIP.find('%'));
+				}
 			}
 		#ifndef WIN32
 			else
@@ -1097,8 +1103,18 @@ namespace http {
 				StringSplit(sLine, ",", vLineParts);
 				for (std::string sPart : vLineParts)
 				{
-					if(isValidIP(sPart))
+					if (isValidIP(sPart))
 						vHosts.push_back(sPart);
+					else {
+						size_t dpos = sPart.find_last_of(':');
+						if (dpos != std::string::npos)
+						{
+							//Strip off the port number
+							sPart = sPart.substr(0, dpos);
+							if (isValidIP(sPart))
+								vHosts.push_back(sPart);
+						}
+					}
 				}
 			}
 
@@ -1419,77 +1435,6 @@ namespace http {
 			return 0;
 		}
 
-		// Authorize against the internal Userlist. Credentials coming via Authorization header or URL parameters.
-		// Return 1 if authorized.
-		// Only used when webserver Authentication method is set to Auth_Basic.
-		int cWebemRequestHandler::authorize(WebEmSession & session, const request& req, reply& rep)
-		{
-			struct ah _ah;
-
-			std::string uname;
-			std::string upass;
-
-			if (!parse_auth_header(req, &_ah))
-			{	// No username, password (or other identification) found in Authorization header. Check URI for user parameters.
-				size_t uPos = req.uri.find("username=");
-				size_t pPos = req.uri.find("password=");
-				if (
-					(uPos == std::string::npos) ||
-					(pPos == std::string::npos)
-					)
-				{
-					return 0;
-				}
-				uPos += 9; //strlen("username=")
-				pPos += 9; //strlen("password=")
-				size_t uEnd = req.uri.find('&', uPos);
-				size_t pEnd = req.uri.find('&', pPos);
-				std::string tmpuname;
-				std::string tmpupass;
-				if (uEnd == std::string::npos)
-					tmpuname = req.uri.substr(uPos);
-				else
-					tmpuname = req.uri.substr(uPos, uEnd - uPos);
-				if (pEnd == std::string::npos)
-					tmpupass = req.uri.substr(pPos);
-				else
-					tmpupass = req.uri.substr(pPos, pEnd - pPos);
-				if (request_handler::url_decode(tmpuname, uname) && request_handler::url_decode(tmpupass, upass))
-				{	// Found parameters, so lets use these to check
-					_ah.user = base64_decode(uname);
-					_ah.response = base64_decode(upass);
-				}
-				else
-				{
-					m_failcounter++;
-					return 0;
-				}
-			}
-
-			// Check if valid password has been provided for the user
-			for (const auto &my : myWebem->m_userpasswords)
-			{
-				if (my.Username == _ah.user)
-				{
-					int bOK = check_password(&_ah, my.Password);
-					_log.Debug(DEBUG_AUTH, "[Authorize] User %s password check: %d", _ah.user.c_str(), bOK);
-					if (!bOK || my.userrights == URIGHTS_CLIENTID)	// User with ClientID 'rights' are not real users!
-					{
-						m_failcounter++;
-						return 0;
-					}
-					session.isnew = true;
-					session.username = my.Username;
-					session.rights = my.userrights;
-					session.rememberme = false;
-					m_failcounter = 0;
-					return 1;
-				}
-			}
-			m_failcounter++;
-			return 0;
-		}
-
 		bool cWebem::GenerateJwtToken(std::string &jwttoken, const std::string &clientid, const std::string &clientsecret, const std::string &user, const uint32_t exptime, const Json::Value jwtpayload)
 		{
 			bool bOk = false;
@@ -1589,16 +1534,15 @@ namespace http {
 				return false;
 
 			//Is the given 'host' a valid IP address?
-			bool bIsIPv6 = (sHost.find(':') != std::string::npos);
-			uint8_t IP[16] = { 0 };
-			if ( (sHost.size() < 3) || (inet_pton((!bIsIPv6) ? AF_INET : AF_INET6, sHost.c_str(), &IP) != 1) )
-			{
+			std::string sCleanHost = sHost;
+			if (!cWebem::isValidIP(sCleanHost))			{
 				_log.Log(LOG_STATUS,"[web:%s] Given host (%s) is not a valid Ipv4 or IPv6 address! Unable to check if in Trusted Network!", myWebem->GetPort().c_str() ,sHost.c_str());
 				return false;	// The IP address is not a valid IPv4 or IPv6 address
 			}
+			bool bIsIPv6 = (sCleanHost.find(':') != std::string::npos);
 
 			return std::any_of(myWebem->m_localnetworks.begin(), myWebem->m_localnetworks.end(),
-					   [&](const _tIPNetwork &my) { return IsIPInRange(sHost, my, bIsIPv6); });
+					   [&](const _tIPNetwork &my) { return IsIPInRange(sCleanHost, my, bIsIPv6); });
 		}
 
 		std::string cWebemRequestHandler::generateSessionID()

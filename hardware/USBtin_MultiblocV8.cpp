@@ -35,6 +35,12 @@ History :
 * Add support of IBS Frame from Bloc 9 (Intelligent Battery Sensor) up to 6 sensors by bloc (IBS1 to 6) (Bloc 9 must be configured before use)
 * With IBS: management of a "time left before charge/discharge" for each IBS detected
 
+- 2023-10-07 : V4.00 Update  :
+* Add support of Bloc 7 (Bloc with 6 analog input + 6xIBS + Supply voltage, fully configurable)
+* Add digital input processing for frame receive by bloc 7 (and future used)
+* So input must be set before use with configuration tool.
+* Fixed bad sID write for supply voltage receive by bloc 9/sfsp (so old id used were incorrect )
+
 */
 
 #include "stdafx.h"
@@ -54,7 +60,7 @@ History :
 
 #define round(a) (int)(a + .5)
 
-#define MULTIBLOC_V8_VERSION "02.00.00"
+#define MULTIBLOC_V8_VERSION "04.00.00"
 
 #define TIME_1sec 1000
 #define TIME_500ms 500
@@ -166,13 +172,14 @@ History :
 // xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 #define BLOC_DOMOTICZ 0x01
 
+#define BLOC_7 0x0B
 #define BLOC_9 0x0D
 #define BLOC_SFSP_M 0x14
 #define BLOC_SFSP_E 0x15
 
 #define NomRefBloc_MAX_SIZE 78
 
-constexpr std::array<const char *, NomRefBloc_MAX_SIZE> NomRefBloc{
+constexpr std::array<const char*, NomRefBloc_MAX_SIZE> NomRefBloc{
 	"UNDEFINED",
 	"DOMOTICZ",
 	"NAVIGRAPH_VER",
@@ -255,13 +262,13 @@ constexpr std::array<const char *, NomRefBloc_MAX_SIZE> NomRefBloc{
 
 #define BatteryType_MAX_SIZE 5
 
-constexpr std::array<const char *, BatteryType_MAX_SIZE> BatteryType{
+constexpr std::array<const char*, BatteryType_MAX_SIZE> BatteryType{
 	"Flooded", "AGM", "Enhanced flooded", "Lithium", "Undefined",
 };
 
 #define IBSType_MAX_SIZE 5
 
-constexpr std::array<const char *, IBSType_MAX_SIZE> IBSType{
+constexpr std::array<const char*, IBSType_MAX_SIZE> IBSType{
 	"Absent/Missing",
 	"IBS_12V",
 	"IBS_24V",
@@ -317,7 +324,7 @@ void USBtin_MultiblocV8::ClearingBlocList()
 {
 	Log(LOG_NORM, "MultiblocV8: clearing BlocList");
 	// effacement du tableau à l'init
-	for (auto &i : m_BlocList_CAN)
+	for (auto& i : m_BlocList_CAN)
 	{
 		i.BlocID = 0;
 		i.Status = 0;
@@ -346,14 +353,15 @@ void USBtin_MultiblocV8::Do_Work()
 
 			if (m_V8minCounterBase == 0)
 			{
-				// each 5 minutes
+				// each 5 minutes the analog and etor of all blocs are requested to update data
 				m_V8minCounterBase = (60 * 5);
 				m_BOOL_TaskAGo = true;
+				m_BOOL_TaskRqEtorGo = true;
 			}
 
 			if (m_V8minCounter1 == 0)
 			{
-				// each 6 hours...
+				// each 6 hours the ouputs states of all blocs are requested
 				m_V8minCounter1 = (3600 * 6);
 				m_BOOL_TaskRqStorGo = true;
 			}
@@ -362,7 +370,7 @@ void USBtin_MultiblocV8::Do_Work()
 			if (m_V8secCounter1 >= 3)
 			{
 				m_V8secCounter1 = 0;
-				// each 3 seconds
+				// each 3 seconds check the state of all blocs (alive or not)
 				BlocList_CheckBloc();
 			}
 		}
@@ -400,6 +408,7 @@ void USBtin_MultiblocV8::FillBufferSFSP_toSend(int Sid, char KeyCode)
 	}
 }
 
+/* this methods used to send request RTR on Can bus */
 void USBtin_MultiblocV8::SendRequest(int sID)
 {
 	char szDeviceID[10];
@@ -425,57 +434,59 @@ void USBtin_MultiblocV8::Traitement_MultiblocV8(int IDhexNumber, unsigned int rx
 	{
 		switch (FrameType)
 		{ // First switch !
-			case type_ALIVE_FRAME:
-				// création/update d'un composant détecter grace à sa trame de vie :
-				// creates/updates of a blocs detected with his life frame :
-				// Log(LOG_NORM,"MultiblocV8: Life Frame, ref: %#x Codage : %d Network: %d",RefBloc,Codage,SsReseau);
-				Traitement_Trame_Vie(RefBloc, Codage, SsReseau, rxDLC, Buffer_Octets);
-				break;
+		case type_ALIVE_FRAME:
+			// création/update d'un composant détecter grace à sa trame de vie :
+			// creates/updates of a blocs detected with his life frame :
+			// Log(LOG_NORM,"MultiblocV8: Life Frame, ref: %#x Codage : %d Network: %d",RefBloc,Codage,SsReseau);
+			Traitement_Trame_Vie(RefBloc, Codage, SsReseau, rxDLC, Buffer_Octets);
+			break;
 
-			case type_ETAT_BLOC:
-				// traitement ETAT BLOC reçu :
-				Traitement_Trame_EtatBloc(RefBloc, Codage, SsReseau, rxDLC, Buffer_Octets);
-				break;
+		case type_ETAT_BLOC:
+			// traitement ETAT BLOC reçu :
+			Traitement_Trame_EtatBloc(RefBloc, Codage, SsReseau, rxDLC, Buffer_Octets);
+			break;
 
-			case type_STATE_S_TOR_1_TO_2:
-			case type_STATE_S_TOR_3_TO_4:
-			case type_STATE_S_TOR_5_TO_6:
-			case type_STATE_S_TOR_7_TO_8:
-			case type_STATE_S_TOR_9_TO_10:
-				// Log(LOG_NORM,"MultiblocV8: States Frame S_TOR, ref: %#x Codage : %d S/Réseau: %d",RefBloc,Codage,SsReseau);
-				Traitement_Etat_S_TOR_Recu(FrameType, RefBloc, Codage, SsReseau, Buffer_Octets);
-				break;
+		case type_STATE_S_TOR_1_TO_2:
+		case type_STATE_S_TOR_3_TO_4:
+		case type_STATE_S_TOR_5_TO_6:
+		case type_STATE_S_TOR_7_TO_8:
+		case type_STATE_S_TOR_9_TO_10:
+			// Log(LOG_NORM,"MultiblocV8: States Frame S_TOR, ref: %#x Codage : %d S/Réseau: %d",RefBloc,Codage,SsReseau);
+			Traitement_Etat_S_TOR_Recu(FrameType, RefBloc, Codage, SsReseau, Buffer_Octets);
+			break;
 
-			case type_E_ANA_1_TO_4:
-			case type_E_ANA_5_TO_8:
-				Traitement_E_ANA_Recu(FrameType, RefBloc, Codage, SsReseau, Buffer_Octets);
-				break;
+		case type_E_ANA_1_TO_4:
+		case type_E_ANA_5_TO_8:
+			Traitement_E_ANA_Recu(FrameType, RefBloc, Codage, SsReseau, Buffer_Octets);
+			break;
+		case type_E_TOR:
+			Traitement_E_TOR_Recu(FrameType, RefBloc, Codage, SsReseau, Buffer_Octets);
+			break;
+		case type_SFSP_SWITCH:
+			if (rxDLC == 5)
+				Traitement_SFSP_Switch_Recu(FrameType, RefBloc, Codage, SsReseau, Buffer_Octets);
+			break;
 
-			case type_SFSP_SWITCH:
-				if (rxDLC == 5)
-					Traitement_SFSP_Switch_Recu(FrameType, RefBloc, Codage, SsReseau, Buffer_Octets);
-				break;
-
-			case type_IBS_1_1:
-			case type_IBS_1_2:
-			case type_IBS_2_1:
-			case type_IBS_2_2:
-			case type_IBS_3_1:
-			case type_IBS_3_2:
-			case type_IBS_4_1:
-			case type_IBS_4_2:
-			case type_IBS_5_1:
-			case type_IBS_5_2:
-			case type_IBS_6_1:
-			case type_IBS_6_2:
-			case type_IBS_1_3:
-			case type_IBS_2_3:
-			case type_IBS_3_3:
-			case type_IBS_4_3:
-			case type_IBS_5_3:
-			case type_IBS_6_3:
-				Traitement_IBS(FrameType, RefBloc, Codage, SsReseau, Buffer_Octets);
-				break;
+		case type_IBS_1_1:
+		case type_IBS_1_2:
+		case type_IBS_2_1:
+		case type_IBS_2_2:
+		case type_IBS_3_1:
+		case type_IBS_3_2:
+		case type_IBS_4_1:
+		case type_IBS_4_2:
+		case type_IBS_5_1:
+		case type_IBS_5_2:
+		case type_IBS_6_1:
+		case type_IBS_6_2:
+		case type_IBS_1_3:
+		case type_IBS_2_3:
+		case type_IBS_3_3:
+		case type_IBS_4_3:
+		case type_IBS_5_3:
+		case type_IBS_6_3:
+			Traitement_IBS(FrameType, RefBloc, Codage, SsReseau, Buffer_Octets);
+			break;
 		}
 	}
 }
@@ -493,7 +504,7 @@ void USBtin_MultiblocV8::Traitement_SFSP_Switch_Recu(const unsigned int FrameTyp
 	std::string defaultname = " ";
 
 	Log(LOG_NORM, "MultiblocV8: Receiving SFSP Switch Frame: Id: %s Codage: %d Ssreseau: %d SwitchID: %08X CodeTouche: %02X", getBlocnameFromIndex(RefBloc), Codage, Ssreseau, SwitchId,
-	    codetouche);
+		codetouche);
 
 	tRBUF lcmd;
 	memset(&lcmd, 0, sizeof(RBUF));
@@ -533,7 +544,7 @@ void USBtin_MultiblocV8::Traitement_SFSP_Switch_Recu(const unsigned int FrameTyp
 	convert << CodeNumber;
 	defaultname += convert.str();
 
-	sDecodeRXMessage(this, (const unsigned char *)&lcmd.LIGHTING2, defaultname.c_str(), 255, m_Name.c_str());
+	sDecodeRXMessage(this, (const unsigned char*)&lcmd.LIGHTING2, defaultname.c_str(), 255, m_Name.c_str());
 }
 
 // For listing of detected blocs :
@@ -589,42 +600,60 @@ void USBtin_MultiblocV8::BlocList_GetInfo(const unsigned int RefBloc, const char
 				// checking if we must send request, to refresh the hardware in domoticz devices :
 				switch (RefBloc)
 				{
-					case BLOC_9:
-						// send IBS request...
-						if (m_BOOL_DebugInMultiblocV8 == true)
-						{
-							Log(LOG_NORM, "MultiblocV8: Send IBS request to: %s", GetCompleteBlocNameSource(RefBloc, Codage, Ssreseau).c_str());
-						}
-						Rqid = (type_IBS << SHIFT_TYPE_TRAME) + m_BlocList_CAN[i].BlocID;
-						SendRequest(Rqid);
+				case BLOC_7:
+					Rqid = (type_E_ANA_1_TO_4 << SHIFT_TYPE_TRAME) + m_BlocList_CAN[i].BlocID;
+					SendRequest(Rqid);
+					Rqid = (type_E_ANA_5_TO_8 << SHIFT_TYPE_TRAME) + m_BlocList_CAN[i].BlocID;
+					SendRequest(Rqid);
+					Rqid = (type_E_TOR << SHIFT_TYPE_TRAME) + m_BlocList_CAN[i].BlocID;
+					SendRequest(Rqid);
+					Rqid = (type_STATE_S_TOR_1_TO_2 << SHIFT_TYPE_TRAME) + m_BlocList_CAN[i].BlocID;
+					SendRequest(Rqid);
+					// send IBS request...
+					if (m_BOOL_DebugInMultiblocV8 == true)
+					{
+						Log(LOG_NORM, "MultiblocV8: Send IBS request to: %s", GetCompleteBlocNameSource(RefBloc, Codage, Ssreseau).c_str());
+					}
+					Rqid = (type_IBS << SHIFT_TYPE_TRAME) + m_BlocList_CAN[i].BlocID;
+					SendRequest(Rqid);
+					break;
+
+				case BLOC_9:
+					// send IBS request...
+					if (m_BOOL_DebugInMultiblocV8 == true)
+					{
+						Log(LOG_NORM, "MultiblocV8: Send IBS request to: %s", GetCompleteBlocNameSource(RefBloc, Codage, Ssreseau).c_str());
+					}
+					Rqid = (type_IBS << SHIFT_TYPE_TRAME) + m_BlocList_CAN[i].BlocID;
+					SendRequest(Rqid);
 
 					// bloc SFSP M / E / 9  1 analog input avec 6 outputs
-					case BLOC_SFSP_M:
-					case BLOC_SFSP_E:
-						// requete analogique (tension alim) / analog send request for Power tension of SFSP Blocs
-						Rqid = (type_E_ANA_1_TO_4 << SHIFT_TYPE_TRAME) + m_BlocList_CAN[i].BlocID;
-						SendRequest(Rqid);
-						// Envoi 6 requetes STOR vers les SFSP : / sending 3 request to obtains states of the 6 outputs
-						Rqid = (type_STATE_S_TOR_1_TO_2 << SHIFT_TYPE_TRAME) + m_BlocList_CAN[i].BlocID;
-						SendRequest(Rqid);
-						Rqid = (type_STATE_S_TOR_3_TO_4 << SHIFT_TYPE_TRAME) + m_BlocList_CAN[i].BlocID;
-						SendRequest(Rqid);
-						Rqid = (type_STATE_S_TOR_5_TO_6 << SHIFT_TYPE_TRAME) + m_BlocList_CAN[i].BlocID;
-						SendRequest(Rqid);
+				case BLOC_SFSP_M:
+				case BLOC_SFSP_E:
+					// requete analogique (tension alim) / analog send request for Power tension of SFSP Blocs
+					Rqid = (type_E_ANA_1_TO_4 << SHIFT_TYPE_TRAME) + m_BlocList_CAN[i].BlocID;
+					SendRequest(Rqid);
+					// Envoi 6 requetes STOR vers les SFSP : / sending 3 request to obtains states of the 6 outputs
+					Rqid = (type_STATE_S_TOR_1_TO_2 << SHIFT_TYPE_TRAME) + m_BlocList_CAN[i].BlocID;
+					SendRequest(Rqid);
+					Rqid = (type_STATE_S_TOR_3_TO_4 << SHIFT_TYPE_TRAME) + m_BlocList_CAN[i].BlocID;
+					SendRequest(Rqid);
+					Rqid = (type_STATE_S_TOR_5_TO_6 << SHIFT_TYPE_TRAME) + m_BlocList_CAN[i].BlocID;
+					SendRequest(Rqid);
 
-						// Créates 3 switch for Learning, Learning Exit and Clearing switches store into blocs
-						// defaultname will contain the bloc adress source (ex: BLOC_9@1_0 for BLOC_9 coding 1 in the subnetwork 0 (base))
-						std::string defaultname = GetCompleteBlocNameSource(RefBloc, Codage, Ssreseau);
-						std::string defaultnamenormal = defaultname + " LEARN EXIT";
-						std::string defaultnamelearn = defaultname + " LEARN ENTRY";
-						std::string defaultnameclear = defaultname + " CLEAR ALL";
-						std::string defaultnamenextlearning = defaultname + " NEXT LEARNING OUTPUT";
+					// Créates 3 switch for Learning, Learning Exit and Clearing switches store into blocs
+					// defaultname will contain the bloc adress source (ex: BLOC_9@1_0 for BLOC_9 coding 1 in the subnetwork 0 (base))
+					std::string defaultname = GetCompleteBlocNameSource(RefBloc, Codage, Ssreseau);
+					std::string defaultnamenormal = defaultname + " LEARN EXIT";
+					std::string defaultnamelearn = defaultname + " LEARN ENTRY";
+					std::string defaultnameclear = defaultname + " CLEAR ALL";
+					std::string defaultnamenextlearning = defaultname + " NEXT LEARNING OUTPUT";
 
-						unsigned long sID_CommandBase = sID + (type_COMMANDE_ETAT_BLOC << SHIFT_TYPE_TRAME);
-						InsertUpdateControlSwitch(sID_CommandBase, BLOC_STATES_LEARNING_STOP, defaultnamenormal);
-						InsertUpdateControlSwitch(sID_CommandBase, BLOC_STATES_LEARNING, defaultnamelearn);
-						InsertUpdateControlSwitch(sID_CommandBase, BLOC_STATES_CLEARING, defaultnameclear);
-						break;
+					unsigned long sID_CommandBase = sID + (type_COMMANDE_ETAT_BLOC << SHIFT_TYPE_TRAME);
+					InsertUpdateControlSwitch(sID_CommandBase, BLOC_STATES_LEARNING_STOP, defaultnamenormal);
+					InsertUpdateControlSwitch(sID_CommandBase, BLOC_STATES_LEARNING, defaultnamelearn);
+					InsertUpdateControlSwitch(sID_CommandBase, BLOC_STATES_CLEARING, defaultnameclear);
+					break;
 				}
 				break;
 			}
@@ -632,7 +661,7 @@ void USBtin_MultiblocV8::BlocList_GetInfo(const unsigned int RefBloc, const char
 	}
 }
 
-void USBtin_MultiblocV8::InsertUpdateControlSwitch(const int NodeID, const int ChildID, const std::string &defaultname)
+void USBtin_MultiblocV8::InsertUpdateControlSwitch(const int NodeID, const int ChildID, const std::string& defaultname)
 {
 
 	// make device ID
@@ -645,18 +674,18 @@ void USBtin_MultiblocV8::InsertUpdateControlSwitch(const int NodeID, const int C
 	sprintf(szIdx, "%X%02X%02X%02X", ID1, ID2, ID3, ID4);
 	std::vector<std::vector<std::string>> result;
 	result = m_sql.safe_query("SELECT Name,nValue,sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit == %d) AND (Type==%d) AND (Subtype==%d)", m_HwdID, szIdx, ChildID,
-				  int(pTypeLighting2), int(sTypeAC));
+		int(pTypeLighting2), int(sTypeAC));
 
 	if (result.empty())
 	{
 		m_sql.safe_query("INSERT INTO DeviceStatus (HardwareID, DeviceID, Unit, Type, SubType, SwitchType, Used, SignalLevel, BatteryLevel, Name, nValue, sValue) "
-				 "VALUES (%d,'%q',%d,%d,%d,%d,0, 12,255,'%q',0,' ')",
-				 m_HwdID, szIdx, ChildID, pTypeLighting2, sTypeAC, int(STYPE_PushOn), defaultname.c_str());
+			"VALUES (%d,'%q',%d,%d,%d,%d,0, 12,255,'%q',0,' ')",
+			m_HwdID, szIdx, ChildID, pTypeLighting2, sTypeAC, int(STYPE_PushOn), defaultname.c_str());
 	}
 	else
 	{ // sinon on remet à 0 les état ici
 		m_sql.safe_query("UPDATE DeviceStatus SET nValue=%d WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Type==%d) AND (Subtype==%d) AND (Unit==%d)", 0, m_HwdID, szIdx, pTypeLighting2,
-				 sTypeAC, ChildID);
+			sTypeAC, ChildID);
 	}
 }
 
@@ -693,30 +722,51 @@ void USBtin_MultiblocV8::BlocList_CheckBloc()
 				// Log(LOG_NORM,"MultiblocV8: BlocAlive with ref #%d# ",RefBloc);
 				switch (RefBloc)
 				{
-					case BLOC_SFSP_M:
-					case BLOC_SFSP_E:
-					case BLOC_9:
-						if (m_BOOL_TaskAGo == true)
-						{
-							Rqid = (type_E_ANA_1_TO_4 << SHIFT_TYPE_TRAME) + m_BlocList_CAN[i].BlocID;
-							SendRequest(Rqid);
-						}
-						if (m_BOOL_TaskRqStorGo == true)
-						{
-							m_BlocList_CAN[i].ForceUpdateSTOR[0] = true;
-							m_BlocList_CAN[i].ForceUpdateSTOR[1] = true;
-							m_BlocList_CAN[i].ForceUpdateSTOR[2] = true;
-							m_BlocList_CAN[i].ForceUpdateSTOR[3] = true;
-							m_BlocList_CAN[i].ForceUpdateSTOR[4] = true;
-							m_BlocList_CAN[i].ForceUpdateSTOR[5] = true;
-							Rqid = (type_STATE_S_TOR_1_TO_2 << SHIFT_TYPE_TRAME) + m_BlocList_CAN[i].BlocID;
-							SendRequest(Rqid);
-							Rqid = (type_STATE_S_TOR_3_TO_4 << SHIFT_TYPE_TRAME) + m_BlocList_CAN[i].BlocID;
-							SendRequest(Rqid);
-							Rqid = (type_STATE_S_TOR_5_TO_6 << SHIFT_TYPE_TRAME) + m_BlocList_CAN[i].BlocID;
-							SendRequest(Rqid);
-						}
-						break;
+				case BLOC_7:
+					if (m_BOOL_TaskAGo == true)
+					{
+						Rqid = (type_E_ANA_1_TO_4 << SHIFT_TYPE_TRAME) + m_BlocList_CAN[i].BlocID;
+						SendRequest(Rqid);
+						Rqid = (type_E_ANA_5_TO_8 << SHIFT_TYPE_TRAME) + m_BlocList_CAN[i].BlocID;
+						SendRequest(Rqid);
+					}
+					if (m_BOOL_TaskRqEtorGo == true)
+					{
+						Rqid = (type_E_TOR_1_TO_64 << SHIFT_TYPE_TRAME) + m_BlocList_CAN[i].BlocID;
+						SendRequest(Rqid);
+					}
+					if (m_BOOL_TaskRqStorGo == true)
+					{
+						m_BlocList_CAN[i].ForceUpdateSTOR[0] = true;
+						m_BlocList_CAN[i].ForceUpdateSTOR[1] = true;
+						Rqid = (type_STATE_S_TOR_1_TO_2 << SHIFT_TYPE_TRAME) + m_BlocList_CAN[i].BlocID;
+						SendRequest(Rqid);
+					}
+					break;
+				case BLOC_SFSP_M:
+				case BLOC_SFSP_E:
+				case BLOC_9:
+					if (m_BOOL_TaskAGo == true)
+					{
+						Rqid = (type_E_ANA_1_TO_4 << SHIFT_TYPE_TRAME) + m_BlocList_CAN[i].BlocID;
+						SendRequest(Rqid);
+					}
+					if (m_BOOL_TaskRqStorGo == true)
+					{
+						m_BlocList_CAN[i].ForceUpdateSTOR[0] = true;
+						m_BlocList_CAN[i].ForceUpdateSTOR[1] = true;
+						m_BlocList_CAN[i].ForceUpdateSTOR[2] = true;
+						m_BlocList_CAN[i].ForceUpdateSTOR[3] = true;
+						m_BlocList_CAN[i].ForceUpdateSTOR[4] = true;
+						m_BlocList_CAN[i].ForceUpdateSTOR[5] = true;
+						Rqid = (type_STATE_S_TOR_1_TO_2 << SHIFT_TYPE_TRAME) + m_BlocList_CAN[i].BlocID;
+						SendRequest(Rqid);
+						Rqid = (type_STATE_S_TOR_3_TO_4 << SHIFT_TYPE_TRAME) + m_BlocList_CAN[i].BlocID;
+						SendRequest(Rqid);
+						Rqid = (type_STATE_S_TOR_5_TO_6 << SHIFT_TYPE_TRAME) + m_BlocList_CAN[i].BlocID;
+						SendRequest(Rqid);
+					}
+					break;
 				}
 				m_BlocList_CAN[i].Status = BLOC_NOTALIVE; // RAZ ici de l'info toutes les 3 sec !
 			}
@@ -724,6 +774,7 @@ void USBtin_MultiblocV8::BlocList_CheckBloc()
 	}
 	m_BOOL_TaskAGo = false;
 	m_BOOL_TaskRqStorGo = false;
+	m_BOOL_TaskRqEtorGo = false;
 }
 
 // traitement sur réception trame de vie / Life frame treatment :
@@ -754,7 +805,7 @@ void USBtin_MultiblocV8::Traitement_Trame_EtatBloc(const unsigned int RefBloc, c
 			for (i = 0; i < (BLOC_STATES_CLEARING + 1); i++)
 			{
 				result = m_sql.safe_query("UPDATE DeviceStatus SET nValue=%d WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Type==%d) AND (Subtype==%d) AND (Unit==%d)", 0, m_HwdID,
-							  szDeviceID, pTypeLighting2, sTypeAC, i);
+					szDeviceID, pTypeLighting2, sTypeAC, i);
 				/*result = m_sql.safe_query("SELECT ID,nValue,sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Type==%d) AND (Subtype==%d) AND (Unit==%d)",
 				m_HwdID, szDeviceID,pTypeLighting2,sTypeAC, i);
 				//if(!result.empty() ){ //if command exist in db :
@@ -809,36 +860,36 @@ bool USBtin_MultiblocV8::CheckOutputChange(unsigned long sID, int OutputNumber, 
 	// but we start to 0 for the management !
 	switch (outputindex)
 	{
-		case 0:
-		case 1:
-			IdFordbSearch += (type_STATE_S_TOR_1_TO_2 << SHIFT_TYPE_TRAME);
-			break;
-		case 2:
-		case 3:
-			IdFordbSearch += (type_STATE_S_TOR_3_TO_4 << SHIFT_TYPE_TRAME);
-			break;
-		case 4:
-		case 5:
-			IdFordbSearch += (type_STATE_S_TOR_5_TO_6 << SHIFT_TYPE_TRAME);
-			break;
-		case 6:
-		case 7:
-			IdFordbSearch += (type_STATE_S_TOR_7_TO_8 << SHIFT_TYPE_TRAME);
-			break;
-		case 8:
-		case 9:
-			IdFordbSearch += (type_STATE_S_TOR_9_TO_10 << SHIFT_TYPE_TRAME);
-			break;
-		case 10:
-		case 11:
-			IdFordbSearch += (type_STATE_S_TOR_11_TO_12 << SHIFT_TYPE_TRAME);
-			break;
+	case 0:
+	case 1:
+		IdFordbSearch += (type_STATE_S_TOR_1_TO_2 << SHIFT_TYPE_TRAME);
+		break;
+	case 2:
+	case 3:
+		IdFordbSearch += (type_STATE_S_TOR_3_TO_4 << SHIFT_TYPE_TRAME);
+		break;
+	case 4:
+	case 5:
+		IdFordbSearch += (type_STATE_S_TOR_5_TO_6 << SHIFT_TYPE_TRAME);
+		break;
+	case 6:
+	case 7:
+		IdFordbSearch += (type_STATE_S_TOR_7_TO_8 << SHIFT_TYPE_TRAME);
+		break;
+	case 8:
+	case 9:
+		IdFordbSearch += (type_STATE_S_TOR_9_TO_10 << SHIFT_TYPE_TRAME);
+		break;
+	case 10:
+	case 11:
+		IdFordbSearch += (type_STATE_S_TOR_11_TO_12 << SHIFT_TYPE_TRAME);
+		break;
 	}
 
 	sprintf(szDeviceID, "%07X", (unsigned int)IdFordbSearch);
 	// Log(LOG_NORM,"MultiblocV8: Check states for output: %d with hardwarId: %d and id: %s ",OutputNumber,m_HwdID,szDeviceID);
 	result = m_sql.safe_query("SELECT ID,nValue,sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Type==%d) AND (Subtype==%d) AND (Unit==%d)", m_HwdID, szDeviceID,
-				  pTypeLighting2, sTypeAC, OutputNumber); // Unit = 1 = sortie n°1
+		pTypeLighting2, sTypeAC, OutputNumber); // Unit = 1 = sortie n°1
 	if (!result.empty())
 	{ // if output exist in db and no forceupdate
 		if (!ForceUpdate)
@@ -912,7 +963,7 @@ void USBtin_MultiblocV8::OutputNewStates(unsigned long sID, int OutputNumber, bo
 	convert << OutputNumber;
 	defaultname += convert.str();
 
-	sDecodeRXMessage(this, (const unsigned char *)&lcmd.LIGHTING2, defaultname.c_str(), 255, m_Name.c_str());
+	sDecodeRXMessage(this, (const unsigned char*)&lcmd.LIGHTING2, defaultname.c_str(), 255, m_Name.c_str());
 }
 
 // The STOR Frame always contain a maximum of 2 stor States. 4 Low bytes = STOR 1 / 4 high bytes = STOR2
@@ -929,139 +980,139 @@ void USBtin_MultiblocV8::Traitement_Etat_S_TOR_Recu(const unsigned int FrameType
 
 	switch (FrameType)
 	{
-		case type_STATE_S_TOR_1_TO_2:
-			if (bufferdata[2] & 0x01)
-				OutputCde = true;
-			else
-				OutputCde = false;
+	case type_STATE_S_TOR_1_TO_2:
+		if (bufferdata[2] & 0x01)
+			OutputCde = true;
+		else
+			OutputCde = false;
 
-			// if( ((bufferdata[2]>>4) & 0x01) )OutputPWM = true;
-			// else OutputPWM = false;
-			level_value = bufferdata[0]; // variable niveau (lvl) 0-254 à convertir en 0 - 100%
-			level_value /= 16;
-			if (level_value > 15)
-				level_value = 15;
-			if (CheckOutputChange(sID, 1, OutputCde, level_value) == true)
-			{ // on met à jours si nécessaire !
-				OutputNewStates(sID, 1, OutputCde, level_value);
-			}
+		// if( ((bufferdata[2]>>4) & 0x01) )OutputPWM = true;
+		// else OutputPWM = false;
+		level_value = bufferdata[0]; // variable niveau (lvl) 0-254 à convertir en 0 - 100%
+		level_value /= 16;
+		if (level_value > 15)
+			level_value = 15;
+		if (CheckOutputChange(sID, 1, OutputCde, level_value) == true)
+		{ // on met à jours si nécessaire !
+			OutputNewStates(sID, 1, OutputCde, level_value);
+		}
 
-			if (bufferdata[2] & 0x02)
-				IsBlink = true;
-			else
-				IsBlink = false;
-			// SetOutputBlinkInDomoticz( sID,1,IsBlink);
+		if (bufferdata[2] & 0x02)
+			IsBlink = true;
+		else
+			IsBlink = false;
+		// SetOutputBlinkInDomoticz( sID,1,IsBlink);
 
-			if (bufferdata[6] & 0x01)
-				OutputCde = true;
-			else
-				OutputCde = false;
+		if (bufferdata[6] & 0x01)
+			OutputCde = true;
+		else
+			OutputCde = false;
 
-			// if((bufferdata[6]>>4) & 0x01)OutputPWM = true;
-			// else OutputPWM = false;
-			level_value = bufferdata[4]; // variable niveau (lvl) 0-254 à convertir en 0 - 100%
-			level_value /= 16;
-			if (level_value > 15)
-				level_value = 15;
-			if (CheckOutputChange(sID, 2, OutputCde, level_value) == true)
-			{ // on met à jours si nécessaire !
-				OutputNewStates(sID, 2, OutputCde, level_value);
-			}
+		// if((bufferdata[6]>>4) & 0x01)OutputPWM = true;
+		// else OutputPWM = false;
+		level_value = bufferdata[4]; // variable niveau (lvl) 0-254 à convertir en 0 - 100%
+		level_value /= 16;
+		if (level_value > 15)
+			level_value = 15;
+		if (CheckOutputChange(sID, 2, OutputCde, level_value) == true)
+		{ // on met à jours si nécessaire !
+			OutputNewStates(sID, 2, OutputCde, level_value);
+		}
 
-			if (bufferdata[6] & 0x02)
-				IsBlink = true;
-			else
-				IsBlink = false;
-			// SetOutputBlinkInDomoticz( sID,2,IsBlink);
-			break;
+		if (bufferdata[6] & 0x02)
+			IsBlink = true;
+		else
+			IsBlink = false;
+		// SetOutputBlinkInDomoticz( sID,2,IsBlink);
+		break;
 
-		case type_STATE_S_TOR_3_TO_4:
-			if (bufferdata[2] & 0x01)
-				OutputCde = true;
-			else
-				OutputCde = false;
-			// if( ((bufferdata[2]>>4) & 0x01) )OutputPWM = true;
-			// else OutputPWM = false;
-			level_value = bufferdata[0]; // variable niveau (lvl) 0-254 à convertir en 0 - 100%
-			level_value /= 16;
-			if (level_value > 15)
-				level_value = 15;
-			if (CheckOutputChange(sID, 3, OutputCde, level_value) == true)
-			{ // on met à jours si nécessaire !
-				OutputNewStates(sID, 3, OutputCde, level_value);
-			}
+	case type_STATE_S_TOR_3_TO_4:
+		if (bufferdata[2] & 0x01)
+			OutputCde = true;
+		else
+			OutputCde = false;
+		// if( ((bufferdata[2]>>4) & 0x01) )OutputPWM = true;
+		// else OutputPWM = false;
+		level_value = bufferdata[0]; // variable niveau (lvl) 0-254 à convertir en 0 - 100%
+		level_value /= 16;
+		if (level_value > 15)
+			level_value = 15;
+		if (CheckOutputChange(sID, 3, OutputCde, level_value) == true)
+		{ // on met à jours si nécessaire !
+			OutputNewStates(sID, 3, OutputCde, level_value);
+		}
 
-			if (bufferdata[2] & 0x02)
-				IsBlink = true;
-			else
-				IsBlink = false;
-			// SetOutputBlinkInDomoticz( sID,3,IsBlink);
+		if (bufferdata[2] & 0x02)
+			IsBlink = true;
+		else
+			IsBlink = false;
+		// SetOutputBlinkInDomoticz( sID,3,IsBlink);
 
-			if (bufferdata[6] & 0x01)
-				OutputCde = true;
-			else
-				OutputCde = false;
-			// if((bufferdata[6]>>4) & 0x01)OutputPWM = true;
-			// else OutputPWM = false;
-			level_value = bufferdata[4]; // variable niveau (lvl) 0-254 à convertir en 0 - 100%
-			level_value /= 16;
-			if (level_value > 15)
-				level_value = 15;
-			if (CheckOutputChange(sID, 4, OutputCde, level_value) == true)
-			{ // on met à jours si nécessaire !
-				OutputNewStates(sID, 4, OutputCde, level_value);
-			}
+		if (bufferdata[6] & 0x01)
+			OutputCde = true;
+		else
+			OutputCde = false;
+		// if((bufferdata[6]>>4) & 0x01)OutputPWM = true;
+		// else OutputPWM = false;
+		level_value = bufferdata[4]; // variable niveau (lvl) 0-254 à convertir en 0 - 100%
+		level_value /= 16;
+		if (level_value > 15)
+			level_value = 15;
+		if (CheckOutputChange(sID, 4, OutputCde, level_value) == true)
+		{ // on met à jours si nécessaire !
+			OutputNewStates(sID, 4, OutputCde, level_value);
+		}
 
-			if (bufferdata[6] & 0x02)
-				IsBlink = true;
-			else
-				IsBlink = false;
-			// SetOutputBlinkInDomoticz( sID,4,IsBlink);
-			break;
+		if (bufferdata[6] & 0x02)
+			IsBlink = true;
+		else
+			IsBlink = false;
+		// SetOutputBlinkInDomoticz( sID,4,IsBlink);
+		break;
 
-		case type_STATE_S_TOR_5_TO_6:
-			if (bufferdata[2] & 0x01)
-				OutputCde = true;
-			else
-				OutputCde = false;
-			// if( ((bufferdata[2]>>4) & 0x01) )OutputPWM = true;
-			// else OutputPWM = false;
-			level_value = bufferdata[0]; // variable niveau (lvl) 0-254 à convertir en 0 - 100%
-			level_value /= 16;
-			if (level_value > 15)
-				level_value = 15;
-			if (CheckOutputChange(sID, 5, OutputCde, level_value) == true)
-			{ // on met à jours si nécessaire !
-				OutputNewStates(sID, 5, OutputCde, level_value);
-			}
+	case type_STATE_S_TOR_5_TO_6:
+		if (bufferdata[2] & 0x01)
+			OutputCde = true;
+		else
+			OutputCde = false;
+		// if( ((bufferdata[2]>>4) & 0x01) )OutputPWM = true;
+		// else OutputPWM = false;
+		level_value = bufferdata[0]; // variable niveau (lvl) 0-254 à convertir en 0 - 100%
+		level_value /= 16;
+		if (level_value > 15)
+			level_value = 15;
+		if (CheckOutputChange(sID, 5, OutputCde, level_value) == true)
+		{ // on met à jours si nécessaire !
+			OutputNewStates(sID, 5, OutputCde, level_value);
+		}
 
-			if (bufferdata[2] & 0x02)
-				IsBlink = true;
-			else
-				IsBlink = false;
-			// SetOutputBlinkInDomoticz( sID,5,IsBlink);
+		if (bufferdata[2] & 0x02)
+			IsBlink = true;
+		else
+			IsBlink = false;
+		// SetOutputBlinkInDomoticz( sID,5,IsBlink);
 
-			if (bufferdata[6] & 0x01)
-				OutputCde = true;
-			else
-				OutputCde = false;
-			// if((bufferdata[6]>>4) & 0x01)OutputPWM = true;
-			// else OutputPWM = false;
-			level_value = bufferdata[4]; // variable niveau (lvl) 0-254 à convertir en 0 - 100%
-			level_value /= 16;
-			if (level_value > 15)
-				level_value = 15;
-			if (CheckOutputChange(sID, 6, OutputCde, level_value) == true)
-			{ // on met à jours si nécessaire !
-				OutputNewStates(sID, 6, OutputCde, level_value);
-			}
+		if (bufferdata[6] & 0x01)
+			OutputCde = true;
+		else
+			OutputCde = false;
+		// if((bufferdata[6]>>4) & 0x01)OutputPWM = true;
+		// else OutputPWM = false;
+		level_value = bufferdata[4]; // variable niveau (lvl) 0-254 à convertir en 0 - 100%
+		level_value /= 16;
+		if (level_value > 15)
+			level_value = 15;
+		if (CheckOutputChange(sID, 6, OutputCde, level_value) == true)
+		{ // on met à jours si nécessaire !
+			OutputNewStates(sID, 6, OutputCde, level_value);
+		}
 
-			if (bufferdata[6] & 0x02)
-				IsBlink = true;
-			else
-				IsBlink = false;
-			// SetOutputBlinkInDomoticz( sID,6,IsBlink);
-			break;
+		if (bufferdata[6] & 0x02)
+			IsBlink = true;
+		else
+			IsBlink = false;
+		// SetOutputBlinkInDomoticz( sID,6,IsBlink);
+		break;
 	}
 }
 
@@ -1079,52 +1130,129 @@ void USBtin_MultiblocV8::SetOutputBlinkInDomoticz(unsigned long sID, int OutputN
 			int RefBlocAlive = ((m_BlocList_CAN[i].BlocID & MSK_INDEX_MODULE) >> SHIFT_INDEX_MODULE);
 			switch (RefBlocAlive)
 			{ // Switch because the Number of output can be different for over ref blocks !
-				case BLOC_SFSP_M:
-				case BLOC_SFSP_E:
-				case BLOC_9:
-					// 6 outputs on sfsp blocks //OutputNumber
-					m_BlocList_CAN[i].IsOutputBlink[OutputNumber] = Blink;
-					break;
+			case BLOC_SFSP_M:
+			case BLOC_SFSP_E:
+			case BLOC_9:
+				// 6 outputs on sfsp blocks //OutputNumber
+				m_BlocList_CAN[i].IsOutputBlink[OutputNumber] = Blink;
+				break;
 			}
 		}
 	}
 }
 
+/*
+ * Voltage is in 1/10 volt receive from Can
+ *
+ */
+void USBtin_MultiblocV8::StoreSupplyVoltage(int sID, int VoltageLevel, std::string defaultname) {
+	int percent = ((VoltageLevel * 100) / 125);
+	float voltage = (float)VoltageLevel / 10;
+	// defaultname will contain the bloc adress source (ex: BLOC_9@1_0 for BLOC_9 coding 1 in the subnetwork 0 (base))
+	defaultname += " Supply";
+	SendVoltageSensor(sID, 1, percent, voltage, defaultname);
+}
+
 // traitement d'une trame info analogique reçue
 void USBtin_MultiblocV8::Traitement_E_ANA_Recu(const unsigned int FrameType, const unsigned int RefBloc, const char Codage, const char Ssreseau, unsigned int bufferdata[8])
 {
-	unsigned long sID = (RefBloc << SHIFT_INDEX_MODULE) + (Codage << SHIFT_CODAGE_MODULE) + Ssreseau;
+	unsigned int sID = (RefBloc << SHIFT_INDEX_MODULE) + (Codage << SHIFT_CODAGE_MODULE) + Ssreseau;
 
 	switch (RefBloc)
 	{
-		case BLOC_SFSP_M:
-		case BLOC_SFSP_E:
-		case BLOC_9:
-			if (m_BOOL_DebugInMultiblocV8 == true)
-			{
-				Log(LOG_NORM, "MultiblocV8: receive ANA (alimentation) %s: D0: %d D1: %d#", GetCompleteBlocNameSource(RefBloc, Codage, Ssreseau).c_str(), bufferdata[0], bufferdata[1]);
+	case BLOC_7:
+		if (FrameType == type_E_ANA_1_TO_4) {
+			//we have receive analog input 1 to 4 :
+			for (uint8_t i = 0; i < 4; i++) {
+				int index = i * 2;
+				int value = (bufferdata[index] << 8) + bufferdata[index + 1];
+
+				// defaultname will contain the bloc adress source (ex: BLOC_9@1_0 for BLOC_9 coding 1 in the subnetwork 0 (base))
+				std::string defaultname = GetCompleteBlocNameSource(RefBloc, Codage, Ssreseau);
+				defaultname += " Eana";
+				defaultname += std::to_string(i + 1);
+				SendCustomSensor(sID, i, 255, static_cast<float>(value), defaultname, "", 12);
 			}
-			int VoltageLevel = bufferdata[0];
+		}
+		else if (FrameType == type_E_ANA_5_TO_8) {
+			//we have receivee eanalog input 5 to 6 and supply voltage on 7
+			for (uint8_t i = 0; i < 2; i++) {
+				int index = i * 2;
+				int value = (bufferdata[index] << 8) + bufferdata[index + 1];
+
+				// defaultname will contain the bloc adress source (ex: BLOC_9@1_0 for BLOC_9 coding 1 in the subnetwork 0 (base))
+				std::string defaultname = GetCompleteBlocNameSource(RefBloc, Codage, Ssreseau);
+				defaultname += " Eana";
+				defaultname += std::to_string(i + 5);
+				SendCustomSensor(sID, (i + 5), 255, static_cast<float>(value), defaultname, "", 12);
+			}
+
+			int VoltageLevel = bufferdata[4];
 			VoltageLevel <<= 8;
-			VoltageLevel += bufferdata[1];
-			// Log(LOG_NORM,"MultiblocV8: receive ANA1 (alimentation) sfsp: #%d# ",VoltageLevel);
-			int percent = ((VoltageLevel * 100) / 125);
-			float voltage = (float)VoltageLevel / 10;
-
-			// defaultname will contain the bloc adress source (ex: BLOC_9@1_0 for BLOC_9 coding 1 in the subnetwork 0 (base))
+			VoltageLevel += bufferdata[5];
 			std::string defaultname = GetCompleteBlocNameSource(RefBloc, Codage, Ssreseau);
-			defaultname += " Voltage";
+			StoreSupplyVoltage(sID, VoltageLevel, defaultname);
+		}
+		break;
 
-			SendVoltageSensor(((sID >> 8) & 0xffff), (sID & 0xff), percent, voltage, defaultname);
-			break;
+		//analog information is only on D0+D1 for this bloc: (supply voltage in 1/10Volt)
+	case BLOC_SFSP_M:
+	case BLOC_SFSP_E:
+	case BLOC_9:
+		if (m_BOOL_DebugInMultiblocV8 == true)
+		{
+			Log(LOG_NORM, "MultiblocV8: receive ANA (alimentation) %s: D0: %d D1: %d#", GetCompleteBlocNameSource(RefBloc, Codage, Ssreseau).c_str(), bufferdata[0], bufferdata[1]);
+		}
+		int VoltageLevel = bufferdata[0];
+		VoltageLevel <<= 8;
+		VoltageLevel += bufferdata[1];
+		// Log(LOG_NORM,"MultiblocV8: receive ANA1 (alimentation) sfsp: #%d# ",VoltageLevel);
+		std::string defaultname = GetCompleteBlocNameSource(RefBloc, Codage, Ssreseau);
+		StoreSupplyVoltage(sID, VoltageLevel, defaultname);
+		break;
+	}
+}
+
+void USBtin_MultiblocV8::Traitement_E_TOR_Recu(const unsigned int FrameType, const unsigned int RefBloc, const char Codage, const char Ssreseau, unsigned int bufferdata[8])
+{
+	unsigned int sID = (RefBloc << SHIFT_INDEX_MODULE) + (Codage << SHIFT_CODAGE_MODULE) + Ssreseau;
+
+	switch (RefBloc)
+	{
+	case BLOC_7: //Bloc 7 is abble to send itss 3 digital input states
+		//only the first byte contains informations
+		std::string sourcename = GetCompleteBlocNameSource(RefBloc, Codage, Ssreseau);
+		sourcename += " E";
+		uint8_t State = bufferdata[0] & 0x01;
+		uint8_t level = 0;
+		if (State > 0) level = 100;
+		std::string defaultname = sourcename + "1";
+		SendGeneralSwitch(sID, 1, 100, State, level, defaultname, "", 12);
+
+		State = (bufferdata[0] >> 1 & 0x01);
+		level = 0;
+		if (State > 0) level = 100;
+		defaultname = sourcename + "2";
+		SendGeneralSwitch(sID, 2, 100, State, level, defaultname, "", 12);
+
+		State = (bufferdata[0] >> 2 & 0x01);
+		level = 0;
+		if (State > 0) level = 100;
+		defaultname = sourcename + "3";
+		SendGeneralSwitch(sID, 3, 100, State, level, defaultname, "", 12);
+
+
+		break;
+
 	}
 }
 
 // Envoi d'une trame suite à une commande dans domoticz...
 // sending Frame in response to a domoticz action :
-bool USBtin_MultiblocV8::WriteToHardware(const char *pdata, const unsigned char length)
+// frame sent to drive standard stor outputs only for supported bloc (like bloc sfsp, bllloc 9, bloc 7)
+bool USBtin_MultiblocV8::WriteToHardware(const char* pdata, const unsigned char length)
 {
-	const tRBUF *pSen = reinterpret_cast<const tRBUF *>(pdata);
+	const tRBUF* pSen = reinterpret_cast<const tRBUF*>(pdata);
 	char szDeviceID[10];
 	char DataToSend[16];
 	unsigned char packettype = pSen->ICMND.packettype;
@@ -1157,7 +1285,7 @@ bool USBtin_MultiblocV8::WriteToHardware(const char *pdata, const unsigned char 
 		{
 			// test to know wich type of frame to send...
 			if (FrameType == type_STATE_S_TOR_1_TO_2 || FrameType == type_STATE_S_TOR_3_TO_4 || FrameType == type_STATE_S_TOR_5_TO_6 || FrameType == type_STATE_S_TOR_7_TO_8 ||
-			    FrameType == type_STATE_S_TOR_9_TO_10 || FrameType == type_STATE_S_TOR_11_TO_12)
+				FrameType == type_STATE_S_TOR_9_TO_10 || FrameType == type_STATE_S_TOR_11_TO_12)
 			{ // if it's directly a STOR Command...
 
 				unsigned long sID = (type_CMD_S_TOR << SHIFT_TYPE_TRAME) + (sID_EnBase & (MSK_INDEX_MODULE + MSK_CODAGE_MODULE + MSK_SRES_MODULE));
@@ -1275,6 +1403,9 @@ bool USBtin_MultiblocV8::WriteToHardware(const char *pdata, const unsigned char 
 	return false;
 }
 
+/* methods to generate an sfsp switch action on the Can BUS
+ * Used by virtual sitches created by manual add on this hardware, type On/Off EnOcean
+ */
 void USBtin_MultiblocV8::USBtin_MultiblocV8_Send_SFSPSwitch_OnCAN(long sID_ToSend, char CodeTouche)
 {
 	char szDeviceID[10];
@@ -1314,6 +1445,7 @@ void USBtin_MultiblocV8::USBtin_MultiblocV8_Send_CommandBlocState_OnCAN(long sID
 	writeFrame(szTrameToSend);
 }
 
+/* to send a Learn command to a bloc that support SFSP protocol */
 void USBtin_MultiblocV8::USBtin_MultiblocV8_Send_SFSP_LearnCommand_OnCAN(long baseID_ToSend, char Commande)
 {
 	char szDeviceID[10];
@@ -1350,7 +1482,7 @@ void USBtin_MultiblocV8::USBtin_MultiblocV8_Send_SFSP_LearnCommand_OnCAN(long ba
 	}*/
 }
 
-int USBtin_MultiblocV8::getIndexFromBlocname(std::string blocname)
+size_t USBtin_MultiblocV8::getIndexFromBlocname(std::string blocname)
 {
 	for (size_t i = 0; i < NomRefBloc.size(); i++)
 	{
@@ -1362,7 +1494,7 @@ int USBtin_MultiblocV8::getIndexFromBlocname(std::string blocname)
 	return 0;
 }
 
-const char *USBtin_MultiblocV8::getBlocnameFromIndex(int indexreference)
+const char* USBtin_MultiblocV8::getBlocnameFromIndex(int indexreference)
 {
 	if (indexreference >= (int)NomRefBloc.size())
 	{
@@ -1374,7 +1506,7 @@ const char *USBtin_MultiblocV8::getBlocnameFromIndex(int indexreference)
 	}
 }
 
-// traitement d'une trame info analogique reçue
+// processing of information frame IBS informations
 void USBtin_MultiblocV8::Traitement_IBS(const unsigned int FrameType, const unsigned int RefBloc, const char Codage, const char Ssreseau, unsigned int bufferdata[8])
 {
 	uint32_t sID = (FrameType << SHIFT_TYPE_TRAME) + (RefBloc << SHIFT_INDEX_MODULE) + (Codage << SHIFT_CODAGE_MODULE) + Ssreseau;
@@ -1419,9 +1551,9 @@ void USBtin_MultiblocV8::Traitement_IBS(const unsigned int FrameType, const unsi
 	if (FrameType == type_IBS_1_1 || FrameType == type_IBS_2_1 || FrameType == type_IBS_3_1 || FrameType == type_IBS_4_1 || FrameType == type_IBS_5_1 || FrameType == type_IBS_6_1)
 	{
 
-		if( m_BOOL_DebugInMultiblocV8 == true ){
+		if (m_BOOL_DebugInMultiblocV8 == true) {
 			Log(LOG_NORM, "MultiblocV8: %s IBS_Frametype 1 [D0: %02X D1: %02X D2: %02X D3: %02X D4: %02X D5: %02X]", defaultname.c_str(), bufferdata[0], bufferdata[1], bufferdata[2],
-		    	bufferdata[3], bufferdata[4], bufferdata[5]);
+				bufferdata[3], bufferdata[4], bufferdata[5]);
 		}
 
 		// frame type 1 contain :
@@ -1464,9 +1596,9 @@ void USBtin_MultiblocV8::Traitement_IBS(const unsigned int FrameType, const unsi
 	else if (FrameType == type_IBS_1_2 || FrameType == type_IBS_2_2 || FrameType == type_IBS_3_2 || FrameType == type_IBS_4_2 || FrameType == type_IBS_5_2 || FrameType == type_IBS_6_2)
 	{
 
-		if( m_BOOL_DebugInMultiblocV8 == true ){
+		if (m_BOOL_DebugInMultiblocV8 == true) {
 			Log(LOG_NORM, "MultiblocV8: %s IBS_Frametype 2 [D0: %02X D1: %02X D2: %02X D3: %02X D4: %02X D5: %02X]", defaultname.c_str(), bufferdata[0], bufferdata[1], bufferdata[2],
-		    	bufferdata[3], bufferdata[4], bufferdata[5]);
+				bufferdata[3], bufferdata[4], bufferdata[5]);
 		}
 		int Soc = (int)bufferdata[0];
 		std::string soc_name = defaultname;
@@ -1504,7 +1636,7 @@ void USBtin_MultiblocV8::Traitement_IBS(const unsigned int FrameType, const unsi
 	else if (FrameType == type_IBS_1_3 || FrameType == type_IBS_2_3 || FrameType == type_IBS_3_3 || FrameType == type_IBS_4_3 || FrameType == type_IBS_5_3 || FrameType == type_IBS_6_3)
 	{
 
-		if( m_BOOL_DebugInMultiblocV8 == true ){
+		if (m_BOOL_DebugInMultiblocV8 == true) {
 			Log(LOG_NORM, "MultiblocV8: %s IBS_Frametype 3 [D0: %02X D1: %02X D2: %02X D3: %02X]", defaultname.c_str(), bufferdata[0], bufferdata[1], bufferdata[2], bufferdata[3]);
 		}
 
@@ -1522,27 +1654,27 @@ void USBtin_MultiblocV8::Traitement_IBS(const unsigned int FrameType, const unsi
 	}
 }
 
-void USBtin_MultiblocV8::SendIBSVoltageSensor(const int NodeID, const uint32_t ChildID, const int BatteryLevel, const float Volt, const std::string &defaultname)
+void USBtin_MultiblocV8::SendIBSVoltageSensor(const int NodeID, const uint32_t ChildID, const int BatteryLevel, const float Volt, const std::string& defaultname)
 {
 	_tGeneralDevice gDevice;
 	gDevice.subtype = sTypeVoltage;
 	gDevice.id = ChildID;
 	gDevice.intval1 = NodeID;
 	gDevice.floatval1 = Volt;
-	sDecodeRXMessage(this, (const unsigned char *)&gDevice, defaultname.c_str(), BatteryLevel, nullptr);
+	sDecodeRXMessage(this, (const unsigned char*)&gDevice, defaultname.c_str(), BatteryLevel, nullptr);
 }
 
-void USBtin_MultiblocV8::SendIBSCurrentSensor(const int NodeID, const uint8_t ChildID, float Amp, const std::string &defaultname)
+void USBtin_MultiblocV8::SendIBSCurrentSensor(const int NodeID, const uint8_t ChildID, float Amp, const std::string& defaultname)
 {
 	_tGeneralDevice gDevice;
 	gDevice.subtype = sTypeCurrent;
 	gDevice.id = ChildID;
 	gDevice.intval1 = NodeID;
 	gDevice.floatval1 = Amp;
-	sDecodeRXMessage(this, (const unsigned char *)&gDevice, defaultname.c_str(), 255, nullptr);
+	sDecodeRXMessage(this, (const unsigned char*)&gDevice, defaultname.c_str(), 255, nullptr);
 }
 
-void USBtin_MultiblocV8::SendIBTemperatureSensor(const int NodeID, const uint8_t ChildID, float Temp, const std::string &defaultname)
+void USBtin_MultiblocV8::SendIBTemperatureSensor(const int NodeID, const uint8_t ChildID, float Temp, const std::string& defaultname)
 {
 	RBUF tsen;
 	memset(&tsen, 0, sizeof(RBUF));
@@ -1558,7 +1690,7 @@ void USBtin_MultiblocV8::SendIBTemperatureSensor(const int NodeID, const uint8_t
 	tsen.TEMP.temperatureh = (BYTE)(at10 / 256);
 	at10 -= (tsen.TEMP.temperatureh * 256);
 	tsen.TEMP.temperaturel = (BYTE)(at10);
-	sDecodeRXMessage(this, (const unsigned char *)&tsen.TEMP, defaultname.c_str(), 255, nullptr);
+	sDecodeRXMessage(this, (const unsigned char*)&tsen.TEMP, defaultname.c_str(), 255, nullptr);
 }
 
 std::string USBtin_MultiblocV8::GetCompleteBlocNameSource(const unsigned int RefBloc, const char Codage, const char Ssreseau)
@@ -1595,7 +1727,7 @@ std::string USBtin_MultiblocV8::GetIBSTypeName(int index)
 	}
 }
 
-void USBtin_MultiblocV8::ComputeTimeLeft(const unsigned int RefBloc, const char Codage, const char Ssreseau, const int ibsindex, const std::string &defaultname)
+void USBtin_MultiblocV8::ComputeTimeLeft(const unsigned int RefBloc, const char Codage, const char Ssreseau, const int ibsindex, const std::string& defaultname)
 {
 	int FrameTypeForRequest = 0;
 
@@ -1613,7 +1745,7 @@ void USBtin_MultiblocV8::ComputeTimeLeft(const unsigned int RefBloc, const char 
 		FrameTypeForRequest = type_IBS_6_1;
 	uint32_t sIDforRequestCurrent = (FrameTypeForRequest << SHIFT_TYPE_TRAME) + (RefBloc << SHIFT_INDEX_MODULE) + (Codage << SHIFT_CODAGE_MODULE) + Ssreseau;
 	sIDforRequestCurrent <<= 4;
-	float current = GetInformationFromId(((sIDforRequestCurrent) + ibsindex), sTypeCurrent);
+	float current = GetInformationFromId(((sIDforRequestCurrent)+ibsindex), sTypeCurrent);
 
 	uint32_t sID = sIDforRequestCurrent;
 
@@ -1663,7 +1795,7 @@ float USBtin_MultiblocV8::TimeLeftInMinutes(float current, int DischargeableAh, 
 	if (current < 0)
 	{
 		float timeleft = (float)DischargeableAh;
-		timeleft -= ((float)lastavailableAh * 40 / 100 );
+		timeleft -= ((float)lastavailableAh * 40 / 100);
 		timeleft /= current; //timeleft in 1/100 hours so calculate time in minute:
 		int hour = static_cast<int>(timeleft);
 		int minute = static_cast<int>((timeleft - hour) * 60);
@@ -1696,7 +1828,7 @@ float USBtin_MultiblocV8::GetInformationFromId(int NodeId, int sType)
 	std::string sTmp = std_format("%08X", gDevice.intval1);
 	std::vector<std::vector<std::string>> result;
 	result = m_sql.safe_query("SELECT ID,nValue,sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Type==%d) AND (Subtype==%d)", m_HwdID, sTmp.c_str(), int(pTypeGeneral),
-				  int(sType));
+		int(sType));
 
 	if (!result.empty())
 	{

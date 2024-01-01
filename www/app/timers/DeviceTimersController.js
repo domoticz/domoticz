@@ -18,7 +18,10 @@ define(['app', 'timers/factories', 'timers/components','timers/planning'], funct
             vm.deviceIdx = $routeParams.id;
             vm.selectedTimerIdx = null;
 //          $.myglobals.ismobile = true;
-            vm.ismobile = ($.myglobals.ismobile == true)
+            vm.ismobile = ($.myglobals.ismobile == true);
+			
+            vm.typeOptions = deviceTimerOptions.timerTypes;
+			vm.timerSettings = deviceTimerConfigUtils.getTimerDefaultConfig();
 
             deviceApi.getDeviceInfo(vm.deviceIdx).then(function (device) {
                 vm.isLoaded = true;
@@ -36,7 +39,7 @@ define(['app', 'timers/factories', 'timers/components','timers/planning'], funct
 				if ((device.CustomImage !== 0) && (typeof device.Image !== 'undefined')) {
 					type = device.Image.toLowerCase();
 				}
-                vm.isSetpointTimers = (device.Type === 'Thermostat' && device.SubType == 'SetPoint') || (device.Type === 'Radiator 1');
+                vm.isSetpointTimers = (device.Type === 'Setpoint' && device.SubType == 'SetPoint') || (device.Type === 'Radiator 1');
 				vm.isBlind = (type == 'blinds');
 				//vm.isBlind = [3, 13, 14, 15, 21].includes(device.SwitchTypeVal);
 
@@ -70,11 +73,12 @@ define(['app', 'timers/factories', 'timers/components','timers/planning'], funct
                 else
                     $('#GridTable').hide()
 
+				if (typeof device.vunit !== 'undefined') {
+					vm.timerSettings.vunit=device.vunit;
+				}
+
                 refreshTimers();
             });
-
-            vm.typeOptions = deviceTimerOptions.timerTypes;
-            vm.timerSettings = deviceTimerConfigUtils.getTimerDefaultConfig();
         }
 
         function refreshTimers() {
@@ -125,7 +129,8 @@ define(['app', 'timers/factories', 'timers/components','timers/planning'], funct
                 color: vm.isLED ? config.color : undefined,
                 tvalue: vm.isSetpointTimers ? config.tvalue : undefined,
                 command: vm.isSetpointTimers ? undefined : config.command,
-                randomness: vm.isSetpointTimers ? undefined : config.randomness
+                randomness: vm.isSetpointTimers ? undefined : config.randomness,
+                persistent: config.persistent
             });
 
             var error = deviceTimerConfigUtils.getTimerConfigErrors(config);

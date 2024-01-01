@@ -202,11 +202,13 @@ void CEventSystem::LoadEvents()
 	m_lua_Dir = szUserDataFolder + "scripts\\lua\\";
 	dzv_Dir = szUserDataFolder + "scripts\\dzVents\\generated_scripts\\";
 	dzvents->m_scriptsDir = szUserDataFolder + "scripts\\dzVents\\scripts\\";
+	dzvents->m_dataDir = szUserDataFolder + "scripts\\dzVents\\data\\";
 	dzvents->m_runtimeDir = szStartupFolder + "dzVents\\runtime\\";
 #else
 	m_lua_Dir = szUserDataFolder + "scripts/lua/";
 	dzv_Dir = szUserDataFolder + "scripts/dzVents/generated_scripts/";
 	dzvents->m_scriptsDir = szUserDataFolder + "scripts/dzVents/scripts/";
+	dzvents->m_dataDir = szUserDataFolder + "scripts/dzVents/data/";
 	dzvents->m_runtimeDir = szStartupFolder + "dzVents/runtime/";
 #endif
 	if (!mkdir_deep(m_lua_Dir.c_str(), 0755))
@@ -220,6 +222,10 @@ void CEventSystem::LoadEvents()
 	if (!mkdir_deep(dzvents->m_scriptsDir.c_str(), 0755))
 	{
 		_log.Log(LOG_NORM, "%s: Created directory %s", __func__, dzvents->m_scriptsDir.c_str());
+	}
+	if (!mkdir_deep(dzvents->m_dataDir.c_str(), 0755))
+	{
+		_log.Log(LOG_NORM, "%s: Created directory %s", __func__, dzvents->m_dataDir.c_str());
 	}
 
 	boost::unique_lock<boost::shared_mutex> eventsMutexLock(m_eventsMutex);
@@ -591,7 +597,6 @@ void CEventSystem::GetCurrentMeasurementStates()
 	m_winddirValuesByName.clear();
 	m_windspeedValuesByName.clear();
 	m_windgustValuesByName.clear();
-	m_zwaveAlarmValuesByName.clear();
 
 	m_tempValuesByID.clear();
 	m_dewValuesByID.clear();
@@ -605,7 +610,6 @@ void CEventSystem::GetCurrentMeasurementStates()
 	m_winddirValuesByID.clear();
 	m_windspeedValuesByID.clear();
 	m_windgustValuesByID.clear();
-	m_zwaveAlarmValuesByID.clear();
 
 	boost::shared_lock<boost::shared_mutex> devicestatesMutexLock(m_devicestatesMutex);
 
@@ -645,7 +649,6 @@ void CEventSystem::GetCurrentMeasurementStates()
 		bool isWindDir = false;
 		bool isWindSpeed = false;
 		bool isWindGust = false;
-		bool isZWaveAlarm = false;
 
 		switch (sitem.devType)
 		{
@@ -657,7 +660,7 @@ void CEventSystem::GetCurrentMeasurementStates()
 				isTemp = true;
 			}
 			break;
-		case pTypeThermostat:
+		case pTypeSetpoint:
 			if (sitem.subType == sTypeThermTemperature)
 			{
 				if (!splitresults.empty())
@@ -871,12 +874,7 @@ void CEventSystem::GetCurrentMeasurementStates()
 			}
 			else
 			{
-				if (sitem.subType == sTypeZWaveAlarm)
-				{
-					alarmval = sitem.nValue;
-					isZWaveAlarm = true;
-				}
-				else if (sitem.subType == sTypeCounterIncremental)
+				if (sitem.subType == sTypeCounterIncremental)
 				{
 					const _eMeterType metertype = (const _eMeterType)sitem.switchtype;
 
@@ -1064,11 +1062,6 @@ void CEventSystem::GetCurrentMeasurementStates()
 		if (isWindGust) {
 			m_windgustValuesByName[sitem.deviceName] = windgust;
 			m_windgustValuesByID[sitem.ID] = windgust;
-		}
-		if (isZWaveAlarm)
-		{
-			m_zwaveAlarmValuesByName[sitem.deviceName] = alarmval;
-			m_zwaveAlarmValuesByID[sitem.ID] = alarmval;
 		}
 	}
 }
@@ -1263,7 +1256,7 @@ bool CEventSystem::UpdateSceneGroup(const uint64_t ulDevID, const int nValue, co
 	return bEventTrigger;
 }
 
-void CEventSystem::UpdateUserVariable(const uint64_t ulDevID, const std::string &varValue, const std::string &lastUpdate)
+void CEventSystem::UpdateUserVariable(const uint64_t ulDevID, const std::string& varname, const int eVartype, const std::string &varValue, const std::string &lastUpdate)
 {
 	if (!m_bEnabled)
 		return;
@@ -1272,10 +1265,20 @@ void CEventSystem::UpdateUserVariable(const uint64_t ulDevID, const std::string 
 
 	auto itt = m_uservariables.find(ulDevID);
 	if (itt == m_uservariables.end())
-		return; //not found
+	{
+		//not found, add it
+		_tUserVariable uvitem;
+		uvitem.ID = ulDevID;
+		uvitem.variableName = varname;
+		uvitem.variableValue = varValue;
+		uvitem.variableType = eVartype;
+		uvitem.lastUpdate = lastUpdate;
+		m_uservariables[uvitem.ID] = uvitem;
+
+		itt = m_uservariables.find(ulDevID);
+	}
 
 	_tUserVariable replaceitem = itt->second;
-
 	replaceitem.variableValue = varValue;
 
 	if (GetEventTrigger(ulDevID, REASON_USERVARIABLE, false))
@@ -1287,6 +1290,7 @@ void CEventSystem::UpdateUserVariable(const uint64_t ulDevID, const std::string 
 		item.lastUpdate = itt->second.lastUpdate;
 		m_eventqueue.push(item);
 	}
+
 	replaceitem.lastUpdate = lastUpdate;
 	itt->second = replaceitem;
 }
@@ -1816,15 +1820,6 @@ lua_State *CEventSystem::CreateBlocklyLuaState()
 		}
 		luaTable.Publish();
 	}
-	if (!m_zwaveAlarmValuesByID.empty())
-	{
-		luaTable.InitTable(lua_state, "zwavealarms", (int)m_zwaveAlarmValuesByID.size(), 0);
-		for (const auto &alarm : m_zwaveAlarmValuesByID)
-		{
-			luaTable.AddNumber(alarm.first, alarm.second);
-		}
-		luaTable.Publish();
-	}
 
 	lua_pushnumber(lua_state, (lua_Number)m_SecStatus);
 	lua_setglobal(lua_state, "securitystatus");
@@ -2089,16 +2084,6 @@ std::string CEventSystem::ProcessVariableArgument(const std::string &Argument)
 		if (itt != m_uservariables.end())
 		{
 			return itt->second.variableValue;
-		}
-	}
-	else if (Argument.find("zwavealarms") == 0)
-	{
-		auto itt = m_zwaveAlarmValuesByID.find(dindex);
-		if (itt != m_zwaveAlarmValuesByID.end())
-		{
-			std::stringstream sstr;
-			sstr << (int)itt->second;
-			return sstr.str();
 		}
 	}
 
@@ -2683,7 +2668,6 @@ void CEventSystem::EvaluateLuaClassic(lua_State *lua_state, const _tEventQueue &
 		//float thisDeviceWindSpeed = 0;
 		//float thisDeviceWindGust = 0;
 		float thisDeviceWeather = 0;
-		int thisZwaveAlarm = 0;
 
 		if (!m_tempValuesByName.empty())
 		{
@@ -2838,19 +2822,6 @@ void CEventSystem::EvaluateLuaClassic(lua_State *lua_state, const _tEventQueue &
 			}
 			luaTable.Publish();
 		}
-		if (!m_zwaveAlarmValuesByName.empty())
-		{
-			CLuaTable luaTable(lua_state, "otherdevices_zwavealarms", (int)m_zwaveAlarmValuesByName.size(), 0);
-			for (const auto &alarm : m_zwaveAlarmValuesByName)
-			{
-				luaTable.AddNumber(alarm.first, alarm.second);
-				if (alarm.first == item.devname)
-				{
-					thisZwaveAlarm = alarm.second;
-				}
-			}
-			luaTable.Publish();
-		}
 
 		if (item.reason == REASON_DEVICE)
 		{
@@ -2905,11 +2876,6 @@ void CEventSystem::EvaluateLuaClassic(lua_State *lua_state, const _tEventQueue &
 				std::string tempName = item.devname;
 				tempName += "_UV";
 				luaTable.AddNumber(tempName, thisDeviceUV);
-			}
-			if (thisZwaveAlarm != 0) {
-				std::string alarmName = item.devname;
-				alarmName += "_ZWaveAlarm";
-				luaTable.AddNumber(alarmName, thisZwaveAlarm);
 			}
 			luaTable.Publish();
 
@@ -4066,7 +4032,7 @@ int CEventSystem::calculateDimLevel(int deviceID, int percentageLevel)
 				{
 					std::map<std::string, std::string> statuses;
 					GetSelectorSwitchStatuses(m_sql.BuildDeviceOptions(sd[3]), statuses);
-					maxLevel = (statuses.size() - 1) * 10;
+					maxLevel = static_cast<int>(statuses.size() - 1) * 10;
 				}
 				if (iLevel > maxLevel)
 					iLevel = maxLevel;

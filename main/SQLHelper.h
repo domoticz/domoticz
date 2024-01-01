@@ -314,33 +314,6 @@ struct _tTaskItem
 	}
 };
 
-// row result for an sql query : string Vector
-typedef std::vector<std::string> TSqlRowQuery;
-
-// result for an sql query : Vector of TSqlRowQuery
-typedef std::vector<TSqlRowQuery> TSqlQueryResult;
-
-class CSQLStatement
-{
-      private:
-	sqlite3 *m_DBase;
-	sqlite3_stmt *m_Statement;
-	int iNextParam;
-	int m_Status;
-	std::string m_ErrorText;
-
-      public:
-	CSQLStatement(sqlite3 *pDBase, const std::string &pSQL);
-	int AddParameter(std::string &pParam);
-	int Execute();
-	bool Error();
-	const char *ErrorText()
-	{
-		return m_ErrorText.c_str();
-	};
-	~CSQLStatement();
-};
-
 class CSQLHelper : public StoppableTask
 {
       public:
@@ -367,6 +340,9 @@ class CSQLHelper : public StoppableTask
 					      int nValue, const char *sValue, std::string &devname, const bool bUseOnOffAction, const char* User = nullptr);
 	uint64_t UpdateValueHomeConfortGroupCmd(int HardwareID, const char *ID, unsigned char unit, unsigned char devType, unsigned char subType, unsigned char signallevel, unsigned char batterylevel,
 						int nValue, const char *sValue, std::string &devname, const bool bUseOnOffAction, const char* User = nullptr);
+
+	bool UpdateLastUpdate(const int64_t idx);
+	bool UpdateLastUpdate(const std::string& sidx);
 
 	uint64_t GetDeviceIndex(int HardwareID, const std::string &ID, unsigned char unit, unsigned char devType, unsigned char subType, std::string &devname);
 
@@ -439,15 +415,18 @@ class CSQLHelper : public StoppableTask
 
 	bool HandleOnOffAction(bool bIsOn, const std::string &OnAction, const std::string &OffAction);
 
-	int execute_sql(const std::string &sSQL, std::vector<std::string> *pValues, bool bLogError);
 	std::vector<std::vector<std::string>> safe_query(const char *fmt, ...);
 	std::vector<std::vector<std::string>> safe_queryBlob(const char *fmt, ...);
+	std::vector<std::vector<std::string>> unsafe_query(const std::string& szQuery);
+
 	void safe_exec_no_return(const char *fmt, ...);
 	bool safe_UpdateBlobInTableWithID(const std::string &Table, const std::string &Column, const std::string &sID, const std::string &BlobData);
 	bool DoesColumnExistsInTable(const std::string &columnname, const std::string &tablename);
 
 	bool AddUserVariable(const std::string &varname, _eUsrVariableType eVartype, const std::string &varvalue, std::string &errorMessage);
-	bool UpdateUserVariable(const std::string &idx, const std::string &varname, _eUsrVariableType eVartype, const std::string &varvalue, bool eventtrigger, std::string &errorMessage);
+	bool AddUserVariableEx(const std::string& varname, _eUsrVariableType eVartype, const std::string& varvalue, bool eventtrigger, std::string& errorMessage);
+	bool UpdateUserVariable(const std::string& idx, const std::string& varname, _eUsrVariableType eVartype, const std::string& varvalue, bool eventtrigger, std::string& errorMessage);
+	bool UpdateUserVariable(const std::string& varname, _eUsrVariableType eVartype, const std::string& varvalue, bool eventtrigger, std::string& errorMessage);
 	void DeleteUserVariable(const std::string &idx);
 	bool GetUserVariable(const std::string &varname, _eUsrVariableType eVartype, std::string &varvalue);
 	bool CheckUserVariable(_eUsrVariableType eVartype, const std::string &varvalue, std::string &errorMessage);
@@ -565,6 +544,8 @@ class CSQLHelper : public StoppableTask
 	bool CheckDateTimeSQL(const std::string &sDateTime);
 	bool CheckTime(const std::string &sTime);
 	void SendUpdateInt(const std::string& Idx);
+
+	void CorrectOffDelaySwitchStates();
 
 	std::vector<std::vector<std::string>> query(const std::string &szQuery);
 	std::vector<std::vector<std::string>> queryBlob(const std::string &szQuery);

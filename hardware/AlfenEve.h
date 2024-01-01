@@ -18,6 +18,7 @@ public:
 	bool WriteToHardware(const char* pdata, unsigned char length) override;
 	std::string m_szSoftwareVersion;
 	bool SetChargeCurrent(const int current);
+	void SetSetpoint(const int idx, const float value);
 private:
 	bool StartHardware() override;
 	bool StopHardware() override;

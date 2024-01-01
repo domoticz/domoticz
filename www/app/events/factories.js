@@ -41,16 +41,16 @@ define(['app'], function (app) {
         }
 
         function updateEvent(event) {
-			return domoticzApi.sendCommand('events', {
-				evparam: 'create',
-				eventid: event.id,
-				name: event.name,
-				interpreter: event.interpreter,
-				eventtype: event.type,
-				xml: event.xmlstatement,
-				logicarray: event.logicarray,
-				eventstatus: event.eventstatus
-			});
+			var fd = new FormData();
+			fd.append('evparam', 'create');
+			fd.append('eventid', event.id);
+			fd.append('name', event.name);
+			fd.append('interpreter', event.interpreter);
+			fd.append('eventtype', event.type);
+			fd.append('xml', event.xmlstatement);
+			fd.append('logicarray', event.logicarray);
+			fd.append('eventstatus', event.eventstatus);
+			return domoticzApi.postCommand('events', fd);
         }
 
         function updateEventState(eventId, isEnabled) {

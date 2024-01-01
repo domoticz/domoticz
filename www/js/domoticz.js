@@ -5896,52 +5896,6 @@ function ShowTherm3Popup(event, idx, Protected, MaxDimLevel, LevelInt, hue) {
 	});
 }
 
-
-function CloseSetpointPopup() {
-	$("#setpoint_popup").hide();
-}
-
-function SetpointUp() {
-	var curValue = parseFloat($('#setpoint_popup #popup_setpoint').val());
-	curValue += 0.5;
-	curValue = Math.round(curValue / 0.5) * 0.5;
-	var curValueStr = curValue.toFixed(1);
-	$('#setpoint_popup #popup_setpoint').val(curValueStr);
-}
-
-function SetpointDown() {
-	var curValue = parseFloat($('#setpoint_popup #popup_setpoint').val());
-	curValue -= 0.5;
-	curValue = Math.round(curValue / 0.5) * 0.5;
-	var curValueStr = curValue.toFixed(1);
-	$('#setpoint_popup #popup_setpoint').val(curValueStr);
-}
-
-function SetSetpoint() {
-	var curValue = parseFloat($('#setpoint_popup #popup_setpoint').val());
-	$.ajax({
-		url: "json.htm?type=command&param=setsetpoint&idx=" + $.devIdx +
-		"&setpoint=" + curValue,
-		async: false,
-		dataType: 'json',
-		success: function (data) {
-			CloseSetpointPopup();
-			if (data.status == "ERROR") {
-				HideNotify();
-				bootbox.alert($.t('Problem setting Setpoint value'));
-			}
-			//wait 1 second
-			setTimeout(function () {
-				HideNotify();
-			}, 1000);
-		},
-		error: function () {
-			HideNotify();
-			bootbox.alert($.t('Problem setting Setpoint value'));
-		}
-	});
-}
-
 function RFYEnableSunWind(bDoEnable) {
 	var switchcmd = "EnableSunWind";
 	if (bDoEnable == false) {
@@ -5951,13 +5905,21 @@ function RFYEnableSunWind(bDoEnable) {
 	SwitchLight($.devIdx, switchcmd, $.Protected);
 }
 
-function ShowSetpointPopupInt(mouseX, mouseY, idx, currentvalue, ismobile) {
+function ShowSetpointPopupInt(mouseX, mouseY, idx, currentvalue, ismobile, step, min, max) {
 	$.devIdx = idx;
-	var curValue = parseFloat(currentvalue).toFixed(1);
+	$.setstep = step;
+	$.setmin = min;
+	$.setmax = max;
+	var curValue = (Number.isInteger(currentvalue)) ? currentvalue : parseFloat(currentvalue).toFixed(1);
 	$('#setpoint_popup #actual_value').html(curValue);
 	$('#setpoint_popup #popup_setpoint').val(curValue);
 
-	if (typeof ismobile == 'undefined') {
+	var bIsMobile = false;
+	if (typeof ismobile !== 'undefined') {
+		bIsMobile = ismobile;
+	}
+
+	if (bIsMobile == false) {
 		$("#setpoint_popup").css({
 			"top": mouseY,
 			"left": mouseX + 15,
@@ -5983,8 +5945,64 @@ function ShowSetpointPopupInt(mouseX, mouseY, idx, currentvalue, ismobile) {
 	$("#setpoint_popup").show();
 }
 
-function ShowSetpointPopup(event, idx, Protected, currentvalue, ismobile) {
+function CloseSetpointPopup() {
+	$("#setpoint_popup").hide();
+}
+
+function SetpointUp() {
+	var curValue = parseFloat($('#setpoint_popup #popup_setpoint').val());
+	curValue += $.setstep;
+	curValue = Math.round(curValue / $.setstep) * $.setstep;
+	if (curValue > $.setmax)
+		curValue = $.setmax;
+	var curValueStr = (Number.isInteger(curValue)) ? curValue : curValue.toFixed(1);
+	$('#setpoint_popup #popup_setpoint').val(curValueStr);
+}
+
+function SetpointDown() {
+	var curValue = parseFloat($('#setpoint_popup #popup_setpoint').val());
+	curValue -= $.setstep;
+	curValue = Math.round(curValue / $.setstep) * $.setstep;
+	if (curValue < $.setmin)
+		curValue = $.setmin;
+	var curValueStr = (Number.isInteger(curValue)) ? curValue : curValue.toFixed(1);
+	$('#setpoint_popup #popup_setpoint').val(curValueStr);
+}
+
+function SetSetpoint() {
+	var currentvalue = parseFloat($('#setpoint_popup #popup_setpoint').val());
+	var curValue = (Number.isInteger(currentvalue)) ? currentvalue : currentvalue.toFixed(1);
+	$.ajax({
+		url: "json.htm?type=command&param=setsetpoint&idx=" + $.devIdx +
+		"&setpoint=" + curValue,
+		async: false,
+		dataType: 'json',
+		success: function (data) {
+			CloseSetpointPopup();
+			if (data.status == "ERROR") {
+				HideNotify();
+				bootbox.alert($.t('Problem setting Setpoint value'));
+			}
+			//wait 1 second
+			setTimeout(function () {
+				HideNotify();
+			}, 1000);
+		},
+		error: function () {
+			HideNotify();
+			bootbox.alert($.t('Problem setting Setpoint value'));
+		}
+	});
+}
+
+
+function ShowSetpointPopup(event, idx, Protected, currentvalue, ismobile, step, min, max) {
 	$.Protected = Protected;
+
+	if (typeof step == 'undefined') step = 0.5;
+	if (typeof min == 'undefined') min = -200;
+	if (typeof max == 'undefined') max = 200;
+
 	event = event || window.event;
 	// If pageX/Y aren't available and clientX/Y are,
 	// calculate pageX/Y - logic taken from jQuery.
@@ -6004,7 +6022,7 @@ function ShowSetpointPopup(event, idx, Protected, currentvalue, ismobile) {
 	var mouseX = event.pageX;
 	var mouseY = event.pageY;
 	HandleProtection(Protected, function () {
-		ShowSetpointPopupInt(mouseX, mouseY, idx, currentvalue, ismobile);
+		ShowSetpointPopupInt(mouseX, mouseY, idx, currentvalue, ismobile, step, min, max);
 	});
 }
 
@@ -6306,6 +6324,7 @@ GenerateLiveSearchTextDefault = function (item) {
 	searchText = AddToLiveSearch(searchText, item.Name);
 	searchText = AddToLiveSearch(searchText, item.Description.replace('"',"'"));
 	searchText = AddToLiveSearch(searchText, item.Type);
+	searchText = AddToLiveSearch(searchText, item.HardwareName);
 	if (typeof item.SubType != 'undefined') {
 		searchText = AddToLiveSearch(searchText, item.SubType);
 	}
@@ -6410,15 +6429,15 @@ function WatchLiveSearch(){
 			div.removeClass('row');
 			div.find('.clearfix').hide();  /* only for Weather and Temperatures pages */
 
+			var searchString=query.replace('\\','').replace('[','\\[').replace(']','\\]').replace('.','\\.')
+			const regexStr = '(?=.*' + searchString.split(/\,|\s/).join(')(?=.*') + ')';
+			const searchRegEx = new RegExp(regexStr, 'gi');
+
 			items.each(function(index){
 				var searchText	=$(this).find('#name').attr('data-search')	|| '';
-
-				var safe_query=query.replace('\\','').replace('[','\\[').replace(']','\\]').replace('.','\\.')
-				var re		= new RegExp(safe_query, "mi");
-				//var re_s	= new RegExp('^'+safe_query, "i");
-
 				var to_hide=$(this);
-				if (re.test(searchText)) {
+
+				if (searchText.match(searchRegEx) !== null) {
 					to_hide.show();
 					to_hide.addClass(cl_shown);
 				}
@@ -6459,6 +6478,13 @@ function _tbDisplayResults(on, count){
 /* Pad Left with spaces ------------------------------------------- */
 function _tbPadCount(txt){
 	return String('xxx' + txt).slice(-4).replace(/x/g, '&nbsp;');
+}
+
+function truncateString(str, num) {
+  if (str.length <= num) {
+    return str
+  }
+  return str.slice(0, num) + '...'
 }
 
 /* Display descriptions when hovering name ################################################################## */

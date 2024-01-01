@@ -18,6 +18,7 @@ define(function () {
             '2': $.t('Ampere 2'),
             '3': $.t('Ampere 3'),
             'P': $.t('Percentage'),
+            'N': $.t('Set Point'),
             'V': $.t('Play Video'),
             'A': $.t('Play Audio'),
             'X': $.t('View Photo'),

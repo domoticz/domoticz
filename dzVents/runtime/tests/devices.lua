@@ -60,7 +60,7 @@ return
 			['BatteryLevel'] = 40,
 			['SignalLevel'] = '-',
 			['SubType'] = 'SetPoint',
-			['Type'] = 'Thermostat',
+			['Type'] = 'Setpoint',
 			['HardwareName'] = 'hw4',
 			['HardwareType'] = 'ht4',
 			['HardwareID'] = 4,

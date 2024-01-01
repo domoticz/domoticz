@@ -854,21 +854,25 @@ Device.create = function (item) {
         type = 'baro';
     } else if ((item.Type === 'General') && (item.SubType === 'Custom Sensor')) {
         type = 'custom';
-    } else if ((item.Type === 'Thermostat') && (item.SubType === 'SetPoint')) {
-        type = 'setpoint';  // Instead of the TypeImg (which changes when using custom images)
+    } else if ((item.Type === 'Setpoint') && (item.SubType === 'SetPoint')) {
+        type = 'setpoint';
 	} else if ((item.Type === 'General') && (item.SubType === 'Percentage')) {
 		type = 'percentage';
     } else if (
+        (item.SwitchType === 'Dimmer') ||
         (item.SwitchType === 'Dusk Sensor') ||
         (item.SwitchType === 'Selector')
 	  ) {
         type = item.SwitchType.toLowerCase()
+    } else if (item.Type === 'RFXMeter') {
+        type = 'counter'; 
     } else {
         type = item.TypeImg.toLowerCase();
         if (item.CustomImage !== 0) {
 			if (
 				(item.Type != 'General')
 				&&(item.Type != 'P1 Smart Meter')
+				&&(type != 'push')
 				) {
 				if (typeof item.Image !== 'undefined') {
 					type = item.Image.toLowerCase();
@@ -1173,25 +1177,29 @@ Device.MakeFavorite = function (id, isfavorite) {
 function Sensor(item) {
     if (arguments.length != 0) {
         this.parent.constructor(item);
-       
+
         this.image = "images/";
 		
         if ((item.Type == "RFXMeter") || (item.Type == "YouLess Meter") || (item.SubType == "Counter Incremental") || (item.SubType == "Managed Counter")) {
-          if (item.SwitchTypeVal == 1) {
-            this.image += (item.CustomImage == 0)  ? 'Gas48.png' : item.TypeImg + '48.png';
-          }
-          else if (item.SwitchTypeVal == 2) {
-            this.image += (item.CustomImage == 0)  ? 'Water48.png' : item.TypeImg + '48.png';
-          }
-          else if (item.SwitchTypeVal == 3) {
-            this.image += (item.CustomImage == 0)  ? 'Counter48.png' : item.TypeImg + '48.png';
-          }
-          else if (item.SwitchTypeVal == 4) {
-            this.image += (item.CustomImage == 0)  ? 'PV48.png' : item.TypeImg + '48.png';
-          }
-          else {
-            this.image += item.TypeImg + "48.png";
-          }
+			if (item.CustomImage == 0)  {
+				if (item.SwitchTypeVal == 1) {
+					this.image += (item.CustomImage == 0)  ? 'Gas48.png' : item.TypeImg + '48.png';
+				}
+				else if (item.SwitchTypeVal == 2) {
+					this.image += (item.CustomImage == 0)  ? 'Water48.png' : item.TypeImg + '48.png';
+				}
+				else if (item.SwitchTypeVal == 3) {
+					this.image += (item.CustomImage == 0)  ? 'Counter48.png' : item.TypeImg + '48.png';
+				}
+				else if (item.SwitchTypeVal == 4) {
+					this.image += (item.CustomImage == 0)  ? 'PV48.png' : item.TypeImg + '48.png';
+				}
+				else {
+					this.image += item.TypeImg + "48.png";
+				}
+			} else {
+				this.image += item.Image + '48_On.png';
+			}
 		} else if ((item.Type == "General") && (item.SubType == "kWh")) {
           if (item.SwitchTypeVal == 4) {
             this.image += (item.CustomImage == 0)  ? 'PV48.png' : item.TypeImg + '48.png';
@@ -1213,7 +1221,10 @@ function Sensor(item) {
 		) {
             this.LogLink = "window.location.href = '#/Devices/" + this.index + "/Log'";
         } else {
-            this.LogLink = this.onClick = "Show" + sensorType + "Log('#" + Device.contentTag + "','" + Device.backFunction + "','" + this.index + "','" + this.name + "', '" + this.switchTypeVal + "');";
+            if (sensorType === 'RFXMeter')	
+	        this.LogLink = this.onClick = "window.location.href = '#/Devices/" + this.index + "/Log'";
+	    else
+                this.LogLink = this.onClick = "Show" + sensorType + "Log('#" + Device.contentTag + "','" + Device.backFunction + "','" + this.index + "','" + this.name + "', '" + this.switchTypeVal + "');";
         }
 
         this.imagetext = "Show graph";
@@ -1436,22 +1447,48 @@ function Counter(item) {
             if (item.SubType == "Gas") {
               this.image = "images/Gas48.png";
             } else {
-              this.image = "images/"+item.Image+".png";
+              this.image = "images/"+item.Image+"48_On.png";
             }
         }
         this.LogLink = this.onClick = "window.location.href = '#/Devices/" + this.index + "/Log'";
 
         if (typeof item.CounterToday != 'undefined') {
-            this.status += ' ' + $.t("Today") + ': ' + item.CounterToday;
-            this.smallStatus = item.CounterToday;
+            this.status = this.data;
+            this.data = item.CounterToday;
         }
         if (typeof item.CounterDeliv != 'undefined') {
+            this.data = this.status;
+            this.status = $.t("Usage") + ': ' + item.CounterToday;
             if (item.CounterDeliv != 0) {
                 if (item.UsageDeliv.charAt(0) != 0) {
-                    this.status += '-' + item.UsageDeliv;
+                    this.data += ', -' + item.UsageDeliv;
                 }
                 this.status += ', ' + $.t("Return") + ': ' + item.CounterDelivToday;
             }
+        }
+        if (typeof item.UsageDeliv != 'undefined') {
+            deliv = item.UsageDeliv.split(/\s(.+)/)[0];
+            unit  = item.UsageDeliv.split(/\s(.+)/)[1];
+        }
+        else {
+            deliv = 0;
+        }
+        if (typeof item.Usage != 'undefined') {
+            usage = item.Usage.split(/\s(.+)/)[0];
+            unit  = item.Usage.split(/\s(.+)/)[1];
+        }
+        else {
+            usage = 0;
+        }
+        balance = usage - deliv;
+        if (deliv != 0 || usage != 0) {
+            this.smallStatus = balance += ' ' + unit;
+            if (deliv == 0 || usage == 0 ) {
+                this.data = this.smallStatus;
+            }
+        }
+        else {
+            this.smallStatus = this.data;
         }
     }
 }
@@ -1472,6 +1509,7 @@ function Current(item) {
     if (arguments.length != 0) {
         this.parent.constructor(item);
         this.status = '';
+
         if (typeof item.Usage != 'undefined') {
             this.status = (item.Usage != this.data) ? item.Usage : '';
         }
@@ -1504,6 +1542,10 @@ function Current(item) {
                         this.LogLink = this.onClick = "window.location.href = '#/Devices/" + this.index + "/Log'";
                         this.smallStatus = this.data;
                         break;
+                    case "Current":		
+                        this.LogLink = this.onClick = "window.location.href = '#/Devices/" + this.index + "/Log'";
+                        this.smallStatus = this.data;
+                        break;
                     default:
                         this.LogLink = this.onClick = "ShowCurrentLog('#" + Device.contentTag + "','" + Device.backFunction + "','" + this.index + "','" + this.name + "', '" + this.switchTypeVal + "');";
                         break;
@@ -1513,7 +1555,6 @@ function Current(item) {
                 this.LogLink = this.onClick = "ShowCurrentLog('#" + Device.contentTag + "','" + Device.backFunction + "','" + this.index + "','" + this.name + "', '" + this.switchTypeVal + "');";
                 break;
         }
-        this.smallStatus = this.smallStatus.split(', ')[0];
     }
 }
 Current.inheritsFrom(UtilitySensor);
@@ -1527,6 +1568,7 @@ function Custom(item) {
             this.image = "images/Custom.png";
         }
         this.LogLink = this.onClick = "window.location.href = '#/Devices/" + this.index + "/Log'";
+        this.status = this.data;
         this.data = '';
     }
 }
@@ -1762,14 +1804,15 @@ function SetPoint(item) {
         } else {
             this.image = "images/override.png";
         }
-        if ($.isNumeric(this.data)) this.data += '\u00B0' + $.myglobals.tempsign;
-        if ($.isNumeric(this.status)) this.status += '\u00B0' + $.myglobals.tempsign;
-        var pattern = new RegExp('\\d\\s' + $.myglobals.tempsign + '\\b');
-        while (this.data.search(pattern) > 0) this.data = this.data.setCharAt(this.data.search(pattern) + 1, '\u00B0');
-        while (this.status.search(pattern) > 0) this.status = this.status.setCharAt(this.status.search(pattern) + 1, '\u00B0');
-        this.imagetext = "Set Temp";
+		this.setstep = item.step;
+		this.setmin = item.min;
+		this.setmax = item.max;
+
+        if ($.isNumeric(this.data)) this.data += ' ' + item.vunit;
+		this.status = '';
+        this.imagetext = "Set Value";
         this.controlable = true;
-        this.onClick = 'ShowSetpointPopup(' + event + ', ' + this.index + ', ' + this.protected + ' , "' + this.data + '");';
+        this.onClick = 'ShowSetpointPopup(' + event + ', ' + this.index + ', ' + this.protected + ' , "' + this.data + '", false, ' + item.step + ', ' + item.min + ', ' + item.max + ');';
     }
 }
 SetPoint.inheritsFrom(TemperatureSensor);
@@ -1796,7 +1839,7 @@ Smoke.inheritsFrom(BinarySensor);
 function Sound(item) {
     if (arguments.length != 0) {
         this.parent.constructor(item);
-        var onoff = ((item.Status == "On") ? "On" : "Off")
+        var onoff = ((item.Data != "0 dB") ? "On" : "Off")
         if (item.CustomImage != 0) {
             this.image = "images/" + item.Image + "48_" + onoff + ".png";
         } else {

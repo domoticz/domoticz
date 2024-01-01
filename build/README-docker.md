@@ -1,6 +1,6 @@
 Building Domoticz via Docker
 
-This builder still a bit work on progress. It uses Docker to compile OpenZWave and Domoticz. To speed up the build process on macos and Windows it uses a persistent volume for the actual compilation. Currently it supports only builds to amd64 targets. Using `docker buildx` it should be possible to add architectures like Raspberry Pi.
+This builder still a bit work on progress. It uses Docker to compile Domoticz. To speed up the build process on macos and Windows it uses a persistent volume for the actual compilation. Currently it supports only builds to amd64 targets. Using `docker buildx` it should be possible to add architectures like Raspberry Pi.
 
 ## Prerequisites
 You need to have docker-compose installed.
@@ -15,14 +15,7 @@ exit
 
 ## Initial Setup
 
-The scripts expect that you've cloned OpenZWave repository besides Domoticz like:
-
-```shell
-$ git clone https://github.com/domoticz/domoticz.git dev-domoticz
-$ git clone --depth 1 https://github.com/domoticz/open-zwave.git
-```
-
-Then create the Docker image:
+Create the Docker image:
 
 ```shell
 $ docker-compose -f dev-domoticz/build/docker-compose.yml build
@@ -53,7 +46,6 @@ WITH_LIBUSB=YES
 
 USE_LUA_STATIC=YES
 USE_OPENSSL_STATIC=NO
-USE_STATIC_OPENZWAVE=YES
 
 USE_PRECOMPILED_HEADER=YES
 GIT_SUBMODULE=ON
@@ -71,7 +63,7 @@ First generate the Domoticz Makefiles:
 $ ./dev-domoticz/build/build cmake
 ```
 
-Now you can build OpenZWave and Domoticz:
+Now you can build Domoticz:
 
 ```shell
 $ ./dev-domoticz/build/build compile
@@ -94,16 +86,12 @@ Open http://127.0.0.1:8080/ in your browser.
 $ cd dev-domoticz/build
 $ ./build
 Usage:
-  build clean [-p openzwave | domoticz]   # clean source
-  build compile [-p openzwave | domoticz] # compile source
+  build clean [-p domoticz]   # clean source
+  build compile [-p domoticz] # compile source
   build shell                             # run bash inside the container
 
 Only for Domoticz:
   build cmake                             # (re)creates Makefiles
   build run                               # run Domoticz for testing
 
-Only for OpenZWave:
-  build check                             # validates XML configuration files
-  build updateIndexDefines
-  build test
 ```

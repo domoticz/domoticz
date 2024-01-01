@@ -44,8 +44,8 @@
 #define bmpbaroforecast_unknown 0x05
 #define bmpbaroforecast_rain 0x06 // when forecast was cloudy and pressure is below 1010 we have 50%+ change of rain
 
-#define pTypeThermostat 0xF2
-#define sTypeThermSetpoint 0x01
+#define pTypeSetpoint 0xF2
+#define sTypeSetpoint 0x01
 #define sTypeThermTemperature 0x02
 
 #define pTypeGeneral 0xF3
@@ -60,10 +60,7 @@
 #define sTypePressure 0x09
 #define sTypeSetPoint 0x10
 #define sTypeTemperature 0x11
-#define sTypeZWaveClock 0x12
 #define sTypeTextStatus 0x13
-#define sTypeZWaveThermostatMode 0x14
-#define sTypeZWaveThermostatFanMode 0x15
 #define sTypeAlert 0x16
 #define sTypeCurrent 0x17
 #define sTypeSoundLevel 0x18
@@ -74,9 +71,7 @@
 #define sTypeKwh 0x1D
 #define sTypeWaterflow 0x1E
 #define sTypeCustom 0x1F
-#define sTypeZWaveAlarm 0x20
 #define sTypeManagedCounter 0x21
-#define sTypeZWaveThermostatOperatingState 0x23
 
 // General Switch
 #define pTypeGeneralSwitch 0xF4
@@ -254,7 +249,7 @@
 #define sTypeElectric 0x01
 
 #define pTypeAirQuality 0xF9
-#define sTypeVoltcraft 0x01
+#define sTypeVoc 0x01
 
 #define pTypeP1Power 0xFA
 #define sTypeP1Power 0x01
@@ -294,7 +289,7 @@
 //#define sTypeEvohomeStatus 0x40 //Not sure if we can do this in 1 sensor would be for things like zone valve status, boiler relay status (maybe OT values too) and comms errors (maybe seperature
 // sensor or switch for each is easiest)
 
-typedef struct _tThermostat
+typedef struct _tSetpoint
 {
 	uint8_t len;
 	uint8_t type;
@@ -305,13 +300,7 @@ typedef struct _tThermostat
 	uint8_t id4;
 	uint8_t dunit;
 	uint8_t battery_level;
-	float temp;
-	float temp1;
-	float temp2;
-	float temp3;
-	uint8_t utemp1;
-	uint8_t utemp2;
-	uint8_t utemp3;
+	float value;
 
 	template <class Archive> void serialize(Archive &ar)
 	{
@@ -324,19 +313,13 @@ typedef struct _tThermostat
 		ar &cereal::make_nvp("id4", id4);
 		ar &cereal::make_nvp("dunit", dunit);
 		ar &cereal::make_nvp("battery_level", battery_level);
-		ar &cereal::make_nvp("temp", temp);
-		ar &cereal::make_nvp("temp1", temp1);
-		ar &cereal::make_nvp("temp2", temp2);
-		ar &cereal::make_nvp("temp3", temp3);
-		ar &cereal::make_nvp("utemp1", utemp1);
-		ar &cereal::make_nvp("utemp2", utemp2);
-		ar &cereal::make_nvp("utemp3", utemp3);
+		ar &cereal::make_nvp("value", value);
 	}
 
-	_tThermostat()
+	_tSetpoint()
 	{
-		len = sizeof(_tThermostat) - 1;
-		type = pTypeThermostat;
+		len = sizeof(_tSetpoint) - 1;
+		type = pTypeSetpoint;
 		subtype = sTypeThermTemperature;
 		battery_level = 255;
 		id1 = 1;
@@ -344,15 +327,9 @@ typedef struct _tThermostat
 		id3 = 0;
 		id4 = 0;
 		dunit = 0;
-		temp = 0;
-		temp1 = 0;
-		temp2 = 0;
-		temp3 = 0;
-		utemp1 = 0;
-		utemp2 = 0;
-		utemp3 = 0;
+		value = 0;
 	}
-} tThermostat;
+} tSetpoint;
 
 typedef struct _tTempBaro
 {
@@ -413,7 +390,7 @@ typedef struct _tAirQualityMeter
 	{
 		len = sizeof(_tAirQualityMeter) - 1;
 		type = pTypeAirQuality;
-		subtype = sTypeVoltcraft;
+		subtype = sTypeVoc;
 		id1 = 0;
 		id2 = 1;
 		airquality = 0;

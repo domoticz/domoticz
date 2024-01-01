@@ -162,14 +162,14 @@ void CAnnaThermostat::Do_Work()
 
 void CAnnaThermostat::SendSetPointSensor(const unsigned char Idx, const float Temp, const std::string& defaultname)
 {
-	_tThermostat thermos;
-	thermos.subtype = sTypeThermSetpoint;
+	_tSetpoint thermos;
+	thermos.subtype = sTypeSetpoint;
 	thermos.id1 = 0;
 	thermos.id2 = 0;
 	thermos.id3 = 0;
 	thermos.id4 = Idx;
 	thermos.dunit = 1;
-	thermos.temp = Temp;
+	thermos.value = Temp;
 	sDecodeRXMessage(this, (const unsigned char *)&thermos, defaultname.c_str(), 255, nullptr);
 }
 

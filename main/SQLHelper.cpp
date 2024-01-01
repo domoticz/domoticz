@@ -39,7 +39,7 @@
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
 
-#define DB_VERSION 163
+#define DB_VERSION 165
 
 #define DEFAULT_ADMINUSER "admin"
 #define DEFAULT_ADMINPWD "domoticz"
@@ -446,16 +446,6 @@ constexpr auto sqlCreateEventRules =
 "[SequenceNo] INTEGER NOT NULL, "
 "FOREIGN KEY (EMID) REFERENCES EventMaster(ID));";
 
-constexpr auto sqlCreateZWaveNodes =
-"CREATE TABLE IF NOT EXISTS [ZWaveNodes] ("
-"[ID] INTEGER PRIMARY KEY, "
-"[HardwareID] INTEGER NOT NULL, "
-"[HomeID] INTEGER NOT NULL, "
-"[NodeID] INTEGER NOT NULL, "
-"[Name] VARCHAR(100) DEFAULT Unknown, "
-"[ProductDescription] VARCHAR(100) DEFAULT Unknown, "
-"[PollTime] INTEGER DEFAULT 0);";
-
 constexpr auto sqlCreateWOLNodes =
 "CREATE TABLE IF NOT EXISTS [WOLNodes] ("
 "[ID] INTEGER PRIMARY KEY, "
@@ -620,64 +610,7 @@ constexpr auto sqlCreateApplications =
 ");";
 
 extern std::string szUserDataFolder;
-
-CSQLStatement::CSQLStatement(sqlite3 *pDBase, const std::string &pSQL)
-	: m_DBase(pDBase)
-	, m_Statement(nullptr)
-	, iNextParam(1)
-	, m_Status(SQLITE_OK)
-{
-	const char *pTail;
-	int iRetVal = sqlite3_prepare_v3(m_DBase, pSQL.c_str(), pSQL.length(), 0, &m_Statement, &pTail);
-	if (iRetVal != SQLITE_OK)
-	{
-		m_Status = iRetVal;
-		m_ErrorText = sqlite3_errmsg(m_DBase);
-	}
-}
-
-int CSQLStatement::AddParameter(std::string &pParam)
-{
-	std::string sText = pParam;
-	// Strip delimiters if supplied
-	if (((sText[0] == '\'') && (sText[sText.length() - 1] == '\'')) || (sText[0] == '\"') && (sText[sText.length() - 1] == '\"'))
-	{
-		sText = pParam.substr(1, pParam.size() - 2);
-		;
-	}
-
-	int iRetVal = sqlite3_bind_text(m_Statement, iNextParam++, sText.c_str(), sText.length(), SQLITE_TRANSIENT);
-	if (iRetVal != SQLITE_OK)
-	{
-		m_Status = iRetVal;
-		m_ErrorText = sqlite3_errmsg(m_DBase);
-	}
-	return iRetVal;
-}
-
-int CSQLStatement::Execute()
-{
-	int iRetVal = sqlite3_step(m_Statement);
-	if (iRetVal != SQLITE_DONE)
-	{
-		m_Status = iRetVal;
-		m_ErrorText = sqlite3_errmsg(m_DBase);
-	}
-	return iRetVal;
-}
-
-bool CSQLStatement::Error()
-{
-	return (m_Status != SQLITE_OK) && (m_Status != SQLITE_DONE);
-};
-
-CSQLStatement::~CSQLStatement()
-{
-	if (m_Statement)
-	{
-		sqlite3_finalize(m_Statement);
-	}
-}
+#define round(a) (int)(a + .5)
 
 CSQLHelper::CSQLHelper()
 {
@@ -785,7 +718,6 @@ bool CSQLHelper::OpenDatabase()
 	query(sqlCreateSharedDevicesTrigger);
 	query(sqlCreateEventMaster);
 	query(sqlCreateEventRules);
-	query(sqlCreateZWaveNodes);
 	query(sqlCreateWOLNodes);
 	query(sqlCreatePercentage);
 	query(sqlCreatePercentage_Calendar);
@@ -1952,8 +1884,7 @@ bool CSQLHelper::OpenDatabase()
 				<< "([Type] = " << HTYPE_Wunderground << ") OR "
 				<< "([Type] = " << HTYPE_DarkSky << ") OR "
 				<< "([Type] = " << HTYPE_VisualCrossing << ") OR "
-				<< "([Type] = " << HTYPE_AccuWeather << ") OR "
-				<< "([Type] = " << HTYPE_OpenZWave << ")"
+				<< "([Type] = " << HTYPE_AccuWeather << ") "
 				<< ")";
 			result = query(szQuery.str());
 			if (!result.empty())
@@ -1974,8 +1905,7 @@ bool CSQLHelper::OpenDatabase()
 			std::vector<std::vector<std::string> > result;
 			szQuery << "SELECT ID FROM Hardware WHERE ( "
 				<< "([Type] = " << HTYPE_DavisVantage << ") OR "
-				<< "([Type] = " << HTYPE_TE923 << ") OR "
-				<< "([Type] = " << HTYPE_OpenZWave << ")"
+				<< "([Type] = " << HTYPE_TE923 << ") "
 				<< ")";
 			result = query(szQuery.str());
 			if (!result.empty())
@@ -2431,31 +2361,6 @@ bool CSQLHelper::OpenDatabase()
 					query(szQuery2.str());
 				}
 			}
-
-			//Patch for ZWave, change device type from sTypeColor_RGB_W to sTypeColor_RGB_W_Z
-			szQuery2.clear();
-			szQuery2.str("");
-			szQuery2 << "SELECT ID FROM Hardware WHERE ([Type]==" << HTYPE_OpenZWave << ")";
-			result = query(szQuery2.str());
-			if (!result.empty())
-			{
-				for (const auto &sd : result)
-				{
-					szQuery2.clear();
-					szQuery2.str("");
-					szQuery2 << "SELECT ID FROM DeviceStatus WHERE ([Type]=" << (int)pTypeColorSwitch << ") AND (SubType=" << (int)sTypeColor_RGB_W << ") AND (HardwareID=" << sd[0] << ")";
-					result2 = query(szQuery2.str());
-
-					for (const auto &sd : result2)
-					{
-						//Change device type
-						szQuery2.clear();
-						szQuery2.str("");
-						szQuery2 << "UPDATE DeviceStatus SET SubType=" << (int)sTypeColor_RGB_W_Z << " WHERE (ID=" << sd[0] << ")";
-						query(szQuery2.str());
-					}
-				}
-			}
 		}
 		if (dbversion < 125)
 		{
@@ -2641,17 +2546,6 @@ bool CSQLHelper::OpenDatabase()
 		}
 		if (dbversion < 135)
 		{
-			//OpenZWave COMMAND_CLASS_METER new index, need to delete the cache!
-			std::vector<std::string> root_files_;
-			DirectoryListing(root_files_, szUserDataFolder + "Config", false, true);
-			for (const auto &file : root_files_)
-			{
-				if (file.find("ozwcache_0x") != std::string::npos)
-				{
-					std::string dfile = szUserDataFolder + "Config/" + file;
-					std::remove(dfile.c_str());
-				}
-			}
 		}
 		if (dbversion < 136)
 		{
@@ -2756,6 +2650,8 @@ bool CSQLHelper::OpenDatabase()
 		}
 		if (dbversion < 140)
 		{
+			query("ALTER TABLE SharedDevices ADD COLUMN [Order] INTEGER BIGINT(10) default 0");
+
 			//Migrate all Pushers into one table
 			safe_query("UPDATE PushLink SET PushType = %d", CBasePush::PushType::PUSHTYPE_INFLUXDB);
 
@@ -2888,6 +2784,11 @@ bool CSQLHelper::OpenDatabase()
 		}
 		if (dbversion < 147)
 		{
+			if (!DoesColumnExistsInTable("Order", "SharedDevices"))
+			{
+				query("ALTER TABLE SharedDevices ADD COLUMN [Order] INTEGER BIGINT(10) default 0");
+			}
+
 			//Pushlink is not zero based anymore
 			safe_exec_no_return("UPDATE PushLink SET DelimitedValue=1 WHERE (DelimitedValue == 0)");
 		}
@@ -3047,7 +2948,7 @@ bool CSQLHelper::OpenDatabase()
 				{
 					if (!WebUserName.empty() && !WebPassword.empty())
 					{
-						result = safe_query("SELECT ROWID, Active, Rights FROM Users WHERE Username='%s'", WebUserName.c_str());
+						result = safe_query("SELECT ROWID, Active, Rights, TabsEnabled FROM Users WHERE Username='%s'", WebUserName.c_str());
 						if (result.empty())
 						{
 							// Add this User to the Users table as no User with this name exists
@@ -3058,11 +2959,14 @@ bool CSQLHelper::OpenDatabase()
 							nValue = atoi(result[0][0].c_str());	// RowID
 							int iActive = atoi(result[0][1].c_str());
 							int iRights = atoi(result[0][2].c_str());
-							if (iActive != 1 || iRights != http::server::URIGHTS_ADMIN)
+							int iTabsEnabled = atoi(result[0][3].c_str());
+							if (iActive != 1 || iTabsEnabled == 0 || iRights != http::server::URIGHTS_ADMIN)
 							{
 								// Although there already is a User with the same Username as the WebUserName
 								// this User is not an Admin and/or is not Active so cannot be used if we don't update it
-								safe_query("UPDATE Users SET Password='%s', Active=1, Rights=%d WHERE ROWID=%d", WebPassword.c_str(), http::server::URIGHTS_ADMIN, nValue);
+								safe_query("UPDATE Users SET Password='%s', Active=1, Rights=%d, TabsEnabled=31 WHERE ROWID=%d", WebPassword.c_str(), http::server::URIGHTS_ADMIN, nValue);
+								//to be sure, delete it's shared devices
+								safe_query("DELETE FROM SharedDevices WHERE SharedUserID=%d", nValue);
 							}
 						}
 					}
@@ -3113,7 +3017,7 @@ bool CSQLHelper::OpenDatabase()
 		if (dbversion < 160)
 		{
 			//Change UserVariables Value type to TEXT
-			query("ALTER TABLE UserVariables RENAME TO tmp_UserVariables;");
+			query("ALTER TABLE UserVariables RENAME TO tmp_UserVariables");
 			query(sqlCreateUserVariables);
 			query(
 				"INSERT INTO UserVariables ([ID],[Name],[ValueType],[Value],[LastUpdate]) "
@@ -3137,7 +3041,8 @@ bool CSQLHelper::OpenDatabase()
 		if (dbversion < 162)
 		{
 			//add Order column to SharedDevices
-			query("ALTER TABLE SharedDevices ADD COLUMN [Order] INTEGER BIGINT(10) default 0");
+			if (!DoesColumnExistsInTable("Order", "SharedDevices"))
+				query("ALTER TABLE SharedDevices ADD COLUMN [Order] INTEGER BIGINT(10) default 0");
 			query(sqlCreateSharedDevicesTrigger);
 			std::vector<std::vector<std::string> > result;
 			result = safe_query("SELECT A.[Order], B.ID FROM DeviceStatus as A, SharedDevices as B WHERE (B.[Order] == 0) AND (A.ID == B.DeviceRowID)");
@@ -3161,6 +3066,48 @@ bool CSQLHelper::OpenDatabase()
 				// None of the default Applications exist, so add them
 				safe_query("INSERT INTO Applications (Active, Public, Applicationname) VALUES (1, 1, 'domoticzUI')");
 				safe_query("INSERT INTO Applications (Active, Public, Applicationname) VALUES (0, 0, 'domoticzMobileApp')");
+			}
+		}
+		if (dbversion < 164)
+		{
+			result = safe_query("SELECT ID FROM DeviceStatus WHERE (Type=%d) AND (SubType=%d)", pTypeSetpoint, sTypeSetpoint);
+			if (!result.empty())
+			{
+				for (const auto& sd : result)
+				{
+					std::string idx = sd[0];
+
+					auto result2 = safe_query("SELECT ID, Params FROM Notifications WHERE (DeviceRowID=%q)", idx.c_str());
+					for (const auto& sd2 : result2)
+					{
+						std::string idx2 = sd2[0];
+						std::string szParams = sd2[1];
+						if (szParams[0] == Notification_Type_Desc(NTYPE_TEMPERATURE, 1)[0])
+						{
+							szParams[0] = Notification_Type_Desc(NTYPE_SETPOINT, 1)[0];
+							safe_query("UPDATE Notifications SET Params='%q' WHERE (ID=%q)", szParams.c_str(), idx2.c_str());
+						}
+					}
+				}
+			}
+		}
+		if (dbversion < 165)
+		{
+			//Make Enphase counter offset related to hardware ID
+			result = m_sql.safe_query("SELECT ID FROM HARDWARE WHERE ([Type]==%d)", HTYPE_EnphaseAPI);
+			if (!result.empty())
+			{
+				int hwID = atoi(result[0][0].c_str());
+				std::string szOldName = "EnphaseOffset_Production";
+				result = m_sql.safe_query("SELECT ID, Value FROM UserVariables WHERE (Name=='%q')", szOldName.c_str());
+				if (!result.empty())
+				{
+					int vID = atoi(result[0][0].c_str());
+					std::string szValue = result[0][1];
+					std::string szNewName = szOldName + "_" + std::to_string(hwID);
+					m_sql.safe_query("INSERT INTO UserVariables (Name, ValueType, Value) VALUES ('%q',%d,'%q')", szNewName.c_str(), USERVARTYPE_STRING, szValue.c_str());
+					m_sql.safe_query("DELETE FROM UserVariables WHERE (ID=%d)", vID);
+				}
 			}
 		}
 	}
@@ -3442,32 +3389,7 @@ bool CSQLHelper::OpenDatabase()
 		nValue = 1;
 	}
 	m_bAcceptNewHardware = (nValue == 1);
-	if ((!GetPreferencesVar("ZWavePollInterval", nValue)) || (nValue == 0))
-	{
-		UpdatePreferencesVar("ZWavePollInterval", 60);
-	}
-	if (!GetPreferencesVar("ZWaveEnableDebug", nValue))
-	{
-		UpdatePreferencesVar("ZWaveEnableDebug", 0);
-	}
-	if ((!GetPreferencesVar("ZWaveNetworkKey", sValue)) || (sValue.empty()))
-	{
-		sValue = "0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F, 0x10";
-		UpdatePreferencesVar("ZWaveNetworkKey", sValue);
-	}
-	//Double check network_key
-	std::vector<std::string> splitresults;
-	StringSplit(sValue, ",", splitresults);
-	if (splitresults.size() != 16)
-	{
-		sValue = "0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F, 0x10";
-		UpdatePreferencesVar("ZWaveNetworkKey", sValue);
-	}
 
-	if (!GetPreferencesVar("ZWaveEnableNightlyNetworkHeal", nValue))
-	{
-		UpdatePreferencesVar("ZWaveEnableNightlyNetworkHeal", 0);
-	}
 	if (!GetPreferencesVar("BatteryLowNotification", nValue))
 	{
 		UpdatePreferencesVar("BatteryLowNotification", 0); //default disabled
@@ -3642,6 +3564,8 @@ bool CSQLHelper::OpenDatabase()
 	//Update version in database
 	UpdatePreferencesVar("Domoticz_Version", szAppVersion);
 
+	CorrectOffDelaySwitchStates();
+
 	//Start background thread
 	if (!StartThread())
 		return false;
@@ -3699,7 +3623,8 @@ bool CSQLHelper::SwitchLightFromTasker(uint64_t idx, const std::string& switchcm
 		return false;
 
 	std::string switchCommand = switchcmd;
-	return m_mainworker.SwitchLightInt(sd, switchCommand, level, color, false, User);
+	bool bret = m_mainworker.SwitchLightInt(sd, switchCommand, level, color, false, User);
+	return (bret) ? MainWorker::SL_OK : MainWorker::SL_ERROR;
 }
 
 #ifndef WIN32
@@ -4329,7 +4254,7 @@ bool CSQLHelper::DoesColumnExistsInTable(const std::string& columnname, const st
 	bool columnExists = false;
 
 	sqlite3_stmt* statement;
-	std::string szQuery = "SELECT " + columnname + " FROM " + tablename;
+	std::string szQuery = "SELECT [" + columnname + "] FROM " + tablename;
 	if (sqlite3_prepare_v2(m_dbase, szQuery.c_str(), -1, &statement, nullptr) == SQLITE_OK)
 	{
 		columnExists = true;
@@ -4372,7 +4297,7 @@ bool CSQLHelper::safe_UpdateBlobInTableWithID(const std::string& Table, const st
 	if (rc != SQLITE_OK) {
 		return false;
 	}
-	rc = sqlite3_bind_blob(stmt, 1, BlobData.c_str(), BlobData.size(), SQLITE_STATIC);
+	rc = sqlite3_bind_blob(stmt, 1, BlobData.c_str(), static_cast<int>(BlobData.size()), SQLITE_STATIC);
 	if (rc != SQLITE_OK) {
 		return false;
 	}
@@ -4383,38 +4308,6 @@ bool CSQLHelper::safe_UpdateBlobInTableWithID(const std::string& Table, const st
 	}
 	sqlite3_finalize(stmt);
 	return true;
-}
-
-int CSQLHelper::execute_sql(const std::string &sSQL, std::vector<std::string> *pValues, bool bLogError)
-{
-	CSQLStatement sqlStatement(m_dbase, sSQL);
-	std::vector<std::vector<std::string>> result;
-	for (unsigned int i = 0; (i < pValues->size()) && (!sqlStatement.Error()); i++)
-	{
-		sqlStatement.AddParameter((*pValues)[i]);
-	}
-
-	if (!sqlStatement.Error())
-	{
-		sqlStatement.Execute();
-	}
-
-	if (!sqlStatement.Error())
-	{
-		result = safe_query("SELECT changes();");
-	}
-	else
-	{
-		if (bLogError)
-		{
-			_log.Log(LOG_ERROR, "Error performing operation: '%s'", sqlStatement.ErrorText());
-		}
-	}
-
-	if (result.empty() || result[0][0] == "0")
-		return 0;
-	else
-		return atoi(result[0][0].c_str());
 }
 
 std::vector<std::vector<std::string>> CSQLHelper::safe_query(const char *fmt, ...)
@@ -4445,6 +4338,11 @@ std::vector<std::vector<std::string>> CSQLHelper::safe_query(const char *fmt, ..
 #endif
 	}
 	return results;
+}
+
+std::vector<std::vector<std::string>> CSQLHelper::unsafe_query(const std::string& szQuery)
+{
+	return query(szQuery);
 }
 
 std::vector<std::vector<std::string> > CSQLHelper::query(const std::string& szQuery)
@@ -4632,7 +4530,7 @@ uint64_t CSQLHelper::CreateDevice(const int HardwareID, const int SensorType, co
 		//Current/Ampere
 		DeviceRowIdx = UpdateValue(HardwareID, ID, 1, SensorType, SensorSubType, 12, 255, 0, "0.0;0.0;0.0", devname, true, userName.c_str());
 		break;
-	case pTypeThermostat: //Thermostat Setpoint
+	case pTypeSetpoint: //Thermostat Setpoint
 	{
 		unsigned char ID1 = (unsigned char)((nid & 0xFF000000) >> 24);
 		unsigned char ID2 = (unsigned char)((nid & 0x00FF0000) >> 16);
@@ -4967,6 +4865,9 @@ uint64_t CSQLHelper::UpdateValue(const int HardwareID, const char* ID, const uns
 					case pTypeFS20:
 						newnValue = fs20_sOff;
 						break;
+					case pTypeDDxxxx:
+						newnValue = DDxxxx_Up;
+						break;
 					default:
 						continue;
 					}
@@ -5055,6 +4956,9 @@ uint64_t CSQLHelper::UpdateValue(const int HardwareID, const char* ID, const uns
 				break;
 			case pTypeFS20:
 				newnValue = fs20_sOff;
+				break;
+			case pTypeDDxxxx:
+				newnValue = DDxxxx_Up;
 				break;
 			default:
 				continue;
@@ -5153,13 +5057,12 @@ uint64_t CSQLHelper::UpdateManagedValueInt(
 
 	std::string sLastUpdate = TimeToString(nullptr, TF_DateTime);
 
-	bool bOK = false;
-
-	std::vector<std::string> parts, parts2;
+	std::vector<std::string> parts;
 	StringSplit(sValue, ";", parts);
 	if (parts.size() == 11)
 	{
 		// is last part date only, or date with hour with space?
+		std::vector<std::string> parts2;
 		StringSplit(parts[10], " ", parts2);
 		bool shortLog = false;
 		if (parts2.size() > 1) {
@@ -5184,11 +5087,12 @@ uint64_t CSQLHelper::UpdateManagedValueInt(
 			std::stoll(parts[8]),
 			std::stoll(parts[9])
 		);
-		bOK = true;
+		return ulID;
 	}
-	if (parts.size() == 7)
+	else if (parts.size() == 7)
 	{
 		// is last part date only, or date with hour with space?
+		std::vector<std::string> parts2;
 		StringSplit(parts[6], " ", parts2);
 		bool shortLog = false;
 		if (parts2.size() > 1) {
@@ -5208,12 +5112,13 @@ uint64_t CSQLHelper::UpdateManagedValueInt(
 			std::stoll(parts[1]),
 			std::stoll(parts[3])
 		);
-		bOK = true;
+		return ulID;
 	}
-	if (parts.size() == 3)
+	else if (parts.size() == 3)
 	{
+		// is last part date only, or date with hour with space?
+		std::vector<std::string> parts2;
 		StringSplit(parts[2], " ", parts2);
-		// second part is date only, or date with hour with space
 		bool shortLog = false;
 		if (parts2.size() > 1) {
 			shortLog = true;
@@ -5225,11 +5130,13 @@ uint64_t CSQLHelper::UpdateManagedValueInt(
 			std::stoll(parts[0]),
 			std::stoll(parts[1])
 		);
-		bOK = true;
+		return ulID;
 	}
-	if (!bOK)
-		return -1;
+
 	safe_query("UPDATE DeviceStatus SET LastUpdate='%q', sValue='%q' WHERE (ID = %" PRIu64 ")", sLastUpdate.c_str(), sValue, ulID);
+	
+	m_mainworker.m_eventsystem.ProcessDevice(HardwareID, ulID, unit, devType, subType, signallevel, batterylevel, nValue, sValue);
+
 	return ulID;
 }
 
@@ -5244,7 +5151,6 @@ uint64_t CSQLHelper::UpdateValueInt(
 		return -1;
 
 	uint64_t ulID = 0;
-	std::string sOption;
 	std::map<std::string, std::string> options;
 
 	bool bIsManagedCounter = (devType == pTypeGeneral && subType == sTypeManagedCounter);
@@ -5254,7 +5160,7 @@ uint64_t CSQLHelper::UpdateValueInt(
 
 	if (!result.empty())
 	{
-		sOption = result[0][7];
+		std::string sOption = result[0][7];
 		options = BuildDeviceOptions(sOption);
 
 		if (options["AddDBLogEntry"] == "true")
@@ -5429,6 +5335,7 @@ uint64_t CSQLHelper::UpdateValueInt(
 	case pTypeFS20:
 	case pTypeRadiator1:
 	case pTypeHunter:
+	case pTypeDDxxxx:
 		if ((devType == pTypeRadiator1) && (subType != sTypeSmartwaresSwitchRadiator))
 			break;
 		m_LastSwitchID = ID;
@@ -5706,6 +5613,24 @@ uint64_t CSQLHelper::UpdateValueInt(
 		m_mainworker.m_eventsystem.ProcessDevice(HardwareID, ulID, unit, devType, subType, signallevel, batterylevel, nValue, sValue);
 	return ulID;
 }
+
+bool CSQLHelper::UpdateLastUpdate(const std::string& sidx)
+{
+	return UpdateLastUpdate(std::stoull(sidx));
+}
+
+bool CSQLHelper::UpdateLastUpdate(const int64_t idx)
+{
+	if (!m_dbase)
+		return false;
+
+	std::string sLastUpdate = TimeToString(nullptr, TF_DateTime);
+
+	safe_query("UPDATE DeviceStatus SET LastUpdate='%q' WHERE (ID = %" PRIu64 ")", sLastUpdate.c_str(), idx);
+
+	return true;
+}
+
 
 bool CSQLHelper::GetLastValue(const int HardwareID, const char* DeviceID, const unsigned char unit, const unsigned char devType, const unsigned char subType, int& nValue, std::string& sValue, struct tm& LastUpdateTime)
 {
@@ -6072,7 +5997,7 @@ void CSQLHelper::UpdateTemperatureLog()
 		pTypeEvohomeWater,
 		pTypeRadiator1,
 		pTypeGeneral, sTypeSystemTemp,
-		pTypeThermostat, sTypeThermSetpoint,
+		pTypeSetpoint, sTypeSetpoint,
 		pTypeGeneral, sTypeBaro
 	);
 	if (!result.empty())
@@ -6118,7 +6043,7 @@ void CSQLHelper::UpdateTemperatureLog()
 			{
 			case pTypeRego6XXTemp:
 			case pTypeTEMP:
-			case pTypeThermostat:
+			case pTypeSetpoint:
 				temp = static_cast<float>(atof(splitresults[0].c_str()));
 				break;
 			case pTypeThermostat1:
@@ -6153,7 +6078,7 @@ void CSQLHelper::UpdateTemperatureLog()
 				if (splitresults.size() >= 2)
 				{
 					temp = static_cast<float>(atof(splitresults[0].c_str()));
-					humidity = atoi(splitresults[1].c_str());
+					humidity = round(atof(splitresults[1].c_str()));
 					dewpoint = (float)CalculateDewPoint(temp, humidity);
 				}
 				break;
@@ -6161,7 +6086,7 @@ void CSQLHelper::UpdateTemperatureLog()
 				if (splitresults.size() == 5)
 				{
 					temp = static_cast<float>(atof(splitresults[0].c_str()));
-					humidity = atoi(splitresults[1].c_str());
+					humidity = round(atof(splitresults[1].c_str()));
 					if (dSubType == sTypeTHBFloat)
 						barometer = int(atof(splitresults[3].c_str()) * 10.0F);
 					else
@@ -6430,18 +6355,31 @@ bool CSQLHelper::UpdateCalendarMeter(
 	const bool shortLog,
 	const bool multiMeter,
 	const char* date,
-	const int64_t value1,
-	const int64_t value2,
-	const int64_t value3,
-	const int64_t value4,
-	const int64_t value5,
-	const int64_t value6,
-	const int64_t counter1,
-	const int64_t counter2,
-	const int64_t counter3,
-	const int64_t counter4)
+	int64_t value1,
+	int64_t value2,
+	int64_t value3,
+	int64_t value4,
+	int64_t value5,
+	int64_t value6,
+	int64_t counter1,
+	int64_t counter2,
+	int64_t counter3,
+	int64_t counter4)
 {
 	std::vector<std::vector<std::string> > result;
+
+	bool bIsManagedCounter = (devType == pTypeGeneral && subType == sTypeManagedCounter);
+
+	value1 = (value1 < 0 && !bIsManagedCounter) ? 0 : value1;
+	value2 = (value2 < 0 && !bIsManagedCounter) ? 0 : value2;
+	value3 = (value3 < 0 && !bIsManagedCounter) ? 0 : value3;
+	value4 = (value4 < 0 && !bIsManagedCounter) ? 0 : value4;
+	value5 = (value5 < 0 && !bIsManagedCounter) ? 0 : value5;
+	value6 = (value6 < 0 && !bIsManagedCounter) ? 0 : value6;
+	counter1 = (counter1 < 0 && !bIsManagedCounter) ? 0 : counter1;
+	counter2 = (counter2 < 0 && !bIsManagedCounter) ? 0 : counter2;
+	counter3 = (counter3 < 0 && !bIsManagedCounter) ? 0 : counter3;
+	counter4 = (counter4 < 0 && !bIsManagedCounter) ? 0 : counter4;
 
 	result = safe_query("SELECT ID, Name, SwitchType FROM DeviceStatus WHERE (HardwareID=%d AND DeviceID='%q' AND Unit=%d AND Type=%d AND SubType=%d)", HardwareID, DeviceID, unit, devType, subType);
 	if (result.empty()) {
@@ -6473,12 +6411,12 @@ bool CSQLHelper::UpdateCalendarMeter(
 					"INSERT INTO MultiMeter (DeviceRowID, Value1, Value2, Value3, Value4, Value5, Value6, Date) "
 					"VALUES ('%" PRIu64 "', '%" PRId64 "', '%" PRId64 "', '%" PRId64 "', '%" PRId64 "', '%" PRId64 "', '%" PRId64 "', '%q')",
 					DeviceRowID,
-					(value1 < 0) ? 0 : value1,
-					(value2 < 0) ? 0 : value2,
-					(value3 < 0) ? 0 : value3,
-					(value4 < 0) ? 0 : value4,
-					(value5 < 0) ? 0 : value5,
-					(value6 < 0) ? 0 : value6,
+					value1,
+					value2,
+					value3,
+					value4,
+					value5,
+					value6,
 					date
 				);
 			}
@@ -6487,12 +6425,12 @@ bool CSQLHelper::UpdateCalendarMeter(
 				safe_query(
 					"UPDATE MultiMeter SET Value1='%" PRId64 "', Value2='%" PRId64 "', Value3='%" PRId64 "', Value4='%" PRId64 "', Value5='%" PRId64 "', Value6='%" PRId64 "' "
 					"WHERE ((DeviceRowID=='%" PRIu64 "') AND (Date=='%q'))",
-					(value1 < 0) ? 0 : value1,
-					(value2 < 0) ? 0 : value2,
-					(value3 < 0) ? 0 : value3,
-					(value4 < 0) ? 0 : value4,
-					(value5 < 0) ? 0 : value5,
-					(value6 < 0) ? 0 : value6,
+					value1,
+					value2,
+					value3,
+					value4,
+					value5,
+					value6,
 					DeviceRowID,
 					date
 				);
@@ -6509,7 +6447,7 @@ bool CSQLHelper::UpdateCalendarMeter(
 				safe_query(
 					"INSERT INTO Meter (DeviceRowID, Value, Usage, Date) "
 					"VALUES ('%" PRIu64 "','%" PRId64 "','%" PRId64 "','%q')",
-					DeviceRowID, (value1 < 0) ? 0 : value1, (value2 < 0) ? 0 : value2, date
+					DeviceRowID, value1, value2, date
 				);
 			}
 			else
@@ -6517,7 +6455,7 @@ bool CSQLHelper::UpdateCalendarMeter(
 				safe_query(
 					"UPDATE Meter SET DeviceRowID='%" PRIu64 "', Value='%" PRId64 "', Usage='%" PRId64 "', Date='%q' "
 					"WHERE ((DeviceRowID=='%" PRIu64 "') AND (Date=='%q'))",
-					DeviceRowID, (value1 < 0) ? 0 : value1, (value2 < 0) ? 0 : value2, date,
+					DeviceRowID, value1, value2, date,
 					DeviceRowID, date
 				);
 			}
@@ -6541,16 +6479,16 @@ bool CSQLHelper::UpdateCalendarMeter(
 					"INSERT INTO MultiMeter_Calendar (DeviceRowID, Value1, Value2, Value3, Value4, Value5, Value6, Counter1, Counter2, Counter3, Counter4, Date) "
 					"VALUES ('%" PRIu64 "', '%" PRId64 "', '%" PRId64 "', '%" PRId64 "', '%" PRId64 "', '%" PRId64 "', '%" PRId64 "', '%" PRId64 "', '%" PRId64 "', '%" PRId64 "', '%" PRId64 "', '%q')",
 					DeviceRowID,
-					(value1 < 0) ? 0 : value1,
-					(value2 < 0) ? 0 : value2,
-					(value3 < 0) ? 0 : value3,
-					(value4 < 0) ? 0 : value4,
-					(value5 < 0) ? 0 : value5,
-					(value6 < 0) ? 0 : value6,
-					(counter1 < 0) ? 0 : counter1,
-					(counter2 < 0) ? 0 : counter2,
-					(counter3 < 0) ? 0 : counter3,
-					(counter4 < 0) ? 0 : counter4,
+					value1,
+					value2,
+					value3,
+					value4,
+					value5,
+					value6,
+					counter1,
+					counter2,
+					counter3,
+					counter4,
 					date
 				);
 			}
@@ -6559,16 +6497,16 @@ bool CSQLHelper::UpdateCalendarMeter(
 				safe_query(
 					"UPDATE MultiMeter_Calendar SET Value1='%" PRId64 "', Value2='%" PRId64 "', Value3='%" PRId64 "', Value4='%" PRId64 "', Value5='%" PRId64 "', Value6='%" PRId64 "' , Counter1='%" PRId64 "' , Counter2='%" PRId64 "' , Counter3='%" PRId64 "' , Counter4='%" PRId64 "' "
 					"WHERE ((DeviceRowID=='%" PRIu64 "') AND (Date=='%q'))",
-					(value1 < 0) ? 0 : value1,
-					(value2 < 0) ? 0 : value2,
-					(value3 < 0) ? 0 : value3,
-					(value4 < 0) ? 0 : value4,
-					(value5 < 0) ? 0 : value5,
-					(value6 < 0) ? 0 : value6,
-					(counter1 < 0) ? 0 : counter1,
-					(counter2 < 0) ? 0 : counter2,
-					(counter3 < 0) ? 0 : counter3,
-					(counter4 < 0) ? 0 : counter4,
+					value1,
+					value2,
+					value3,
+					value4,
+					value5,
+					value6,
+					counter1,
+					counter2,
+					counter3,
+					counter4,
 					DeviceRowID,
 					date
 				);
@@ -6585,7 +6523,7 @@ bool CSQLHelper::UpdateCalendarMeter(
 				safe_query(
 					"INSERT INTO Meter_Calendar (DeviceRowID, Counter, Value, Date) "
 					"VALUES ('%" PRIu64 "', '%" PRId64 "', '%" PRId64 "', '%q')",
-					DeviceRowID, (value1 < 0) ? 0 : value1, (value2 < 0) ? 0 : value2, date
+					DeviceRowID, value1, value2, date
 				);
 			}
 			else
@@ -6593,7 +6531,7 @@ bool CSQLHelper::UpdateCalendarMeter(
 				safe_query(
 					"UPDATE Meter_Calendar SET DeviceRowID='%" PRIu64 "', Counter='%" PRId64 "', Value='%" PRId64 "', Date='%q' "
 					"WHERE (DeviceRowID=='%" PRIu64 "') AND (Date=='%q')",
-					DeviceRowID, (value1 < 0) ? 0 : value1, (value2 < 0) ? 0 : value2, date,
+					DeviceRowID, value1, value2, date,
 					DeviceRowID, date
 				);
 			}
@@ -6852,8 +6790,10 @@ void CSQLHelper::UpdateMeter()
 
 			try
 			{
-				MeterUsage = std::stoll(sUsage);
-				MeterValue = std::stoll(sValue);
+				if (!sUsage.empty())
+					MeterUsage = std::stoll(sUsage);
+				if (!sValue.empty())
+					MeterValue = std::stoll(sValue);
 			}
 			catch (const std::exception&)
 			{
@@ -7950,7 +7890,6 @@ void CSQLHelper::DeleteHardware(const std::string& idx)
 		DeleteDevices(devs2delete);
 	}
 	//also delete all records in other tables
-	safe_query("DELETE FROM ZWaveNodes WHERE (HardwareID=='%q')", idx.c_str());
 	safe_query("DELETE FROM EnOceanNodes WHERE (HardwareID=='%q')", idx.c_str());
 	safe_query("DELETE FROM MySensors WHERE (HardwareID=='%q')", idx.c_str());
 	safe_query("DELETE FROM WOLNodes WHERE (HardwareID=='%q')", idx.c_str());
@@ -8779,7 +8718,7 @@ void CSQLHelper::CheckDeviceTimeout()
 	result = safe_query(
 		"SELECT ID, Name, LastUpdate FROM DeviceStatus WHERE (Used!=0 AND LastUpdate<='%04d-%02d-%02d %02d:%02d:%02d' "
 		"AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d "
-		"AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d) "
+		"AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d) "
 		"ORDER BY Name COLLATE NOCASE ASC",
 		ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, ltime.tm_sec,
 		pTypeLighting1,
@@ -8803,7 +8742,8 @@ void CSQLHelper::CheckDeviceTimeout()
 		pTypeGeneralSwitch,
 		pTypeHomeConfort,
 		pTypeFS20,
-		pTypeHunter
+		pTypeHunter,
+		pTypeDDxxxx
 	);
 	if (result.empty())
 		return;
@@ -9111,6 +9051,7 @@ bool CSQLHelper::GetUserVariable(const std::string& varname, const _eUsrVariable
 	return false;
 }
 
+//Adds a new user variable if it does not exist
 bool CSQLHelper::AddUserVariable(const std::string& varname, const _eUsrVariableType eVartype, const std::string& varvalue, std::string& errorMessage)
 {
 	std::vector<std::vector<std::string> > result;
@@ -9129,6 +9070,34 @@ bool CSQLHelper::AddUserVariable(const std::string& varname, const _eUsrVariable
 
 	if (m_bEnableEventSystem)
 		m_mainworker.m_eventsystem.GetCurrentUserVariables();
+
+	return true;
+}
+
+//Adds a new user variable or update if it exists
+bool CSQLHelper::AddUserVariableEx(const std::string& varname, const _eUsrVariableType eVartype, const std::string& varvalue, bool eventtrigger, std::string& errorMessage)
+{
+	auto result = safe_query("SELECT ID FROM UserVariables WHERE (Name=='%q')", varname.c_str());
+	if (!result.empty())
+	{
+		return UpdateUserVariable(varname, eVartype, varvalue, eventtrigger, errorMessage);
+	}
+
+	if (!CheckUserVariable(eVartype, varvalue, errorMessage))
+		return false;
+
+	std::string szVarValue = CURLEncode::URLDecode(varvalue);
+	safe_query("INSERT INTO UserVariables (Name, ValueType, Value) VALUES ('%q','%d','%q')", varname.c_str(), eVartype, szVarValue.c_str());
+
+	result = safe_query("SELECT ID FROM UserVariables WHERE (Name=='%q')", varname.c_str());
+	if (!result.empty())
+	{
+		uint64_t vId = std::stoull(result[0][0]);
+		if (eventtrigger)
+			m_mainworker.m_eventsystem.SetEventTrigger(vId, m_mainworker.m_eventsystem.REASON_USERVARIABLE, 0);
+		if (m_bEnableEventSystem)
+			m_mainworker.m_eventsystem.UpdateUserVariable(vId, varname, (int)eVartype, szVarValue, TimeToString(nullptr, TF_DateTime));
+	}
 
 	return true;
 }
@@ -9153,7 +9122,35 @@ bool CSQLHelper::UpdateUserVariable(const std::string& idx, const std::string& v
 		uint64_t vId = std::stoull(idx);
 		if (eventtrigger)
 			m_mainworker.m_eventsystem.SetEventTrigger(vId, m_mainworker.m_eventsystem.REASON_USERVARIABLE, 0);
-		m_mainworker.m_eventsystem.UpdateUserVariable(vId, szVarValue, sLastUpdate);
+		m_mainworker.m_eventsystem.UpdateUserVariable(vId, varname, (int)eVartype, szVarValue, sLastUpdate);
+	}
+	return true;
+}
+
+bool CSQLHelper::UpdateUserVariable(const std::string& varname, const _eUsrVariableType eVartype, const std::string& varvalue, const bool eventtrigger, std::string& errorMessage)
+{
+	if (!CheckUserVariable(eVartype, varvalue, errorMessage))
+		return false;
+
+	auto result = safe_query("SELECT ID FROM UserVariables WHERE (Name=='%q')", varname.c_str());
+	if (result.empty())
+		return false;
+
+	std::string sLastUpdate = TimeToString(nullptr, TF_DateTime);
+	std::string szVarValue = CURLEncode::URLDecode(varvalue);
+	safe_query(
+		"UPDATE UserVariables SET ValueType='%d', Value='%q', LastUpdate='%q' WHERE (Name=='%q')",
+		eVartype,
+		szVarValue.c_str(),
+		sLastUpdate.c_str(),
+		varname.c_str()
+	);
+	if (m_bEnableEventSystem)
+	{
+		uint64_t vId = std::stoull(result[0][0]);
+		if (eventtrigger)
+			m_mainworker.m_eventsystem.SetEventTrigger(vId, m_mainworker.m_eventsystem.REASON_USERVARIABLE, 0);
+		m_mainworker.m_eventsystem.UpdateUserVariable(vId, varname, (int)eVartype, szVarValue, sLastUpdate);
 	}
 	return true;
 }
@@ -9631,9 +9628,9 @@ std::map<std::string, std::string> CSQLHelper::GetDeviceOptions(const std::strin
 std::string CSQLHelper::FormatDeviceOptions(const std::map<std::string, std::string>& optionsMap)
 {
 	std::string options;
-	int count = optionsMap.size();
+	size_t count = optionsMap.size();
 	if (count > 0) {
-		int i = 0;
+		size_t i = 0;
 		std::stringstream ssoptions;
 		for (const auto &sd : optionsMap)
 		{
@@ -9712,4 +9709,17 @@ float CSQLHelper::GetCounterDivider(const int metertype, const int dType, const 
 			divider = 1.0F;
 	}
 	return divider;
+}
+
+//Sets all switches that have a OFF delay configured to OFF
+void CSQLHelper::CorrectOffDelaySwitchStates()
+{
+	auto result = safe_query("SELECT ID FROM DeviceStatus WHERE (AddjValue!=0) AND (nValue!=0)");
+	if (!result.empty())
+	{
+		for (const auto &sd : result)
+		{
+			UpdateDeviceValue("nValue", 0, sd[0]);
+		}
+	}
 }

@@ -5,6 +5,7 @@ define(['app.permissions', 'livesocket'], function(appPermissionsModule, websock
         return {
             sendRequest: sendRequest,
             sendCommand: sendCommand,
+			postCommand: postCommand,
             errorHandler: errorHandler
         };
 
@@ -24,6 +25,15 @@ define(['app.permissions', 'livesocket'], function(appPermissionsModule, websock
         function sendCommand(command, data) {
             var commandParams = { type: 'command', param: command };
             return sendRequest(Object.assign({}, commandParams, data)).then(errorHandler);
+        }
+
+        function postCommand(command, data) {
+			$http.post('json.htm?type=command&param=' + command, data, {
+				transformRequest: angular.identity,
+				headers: { 'Content-Type': undefined }
+			}).then(function(response) {
+                    return response.data;
+            });
         }
 
         function errorHandler(response) {

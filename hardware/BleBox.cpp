@@ -29,7 +29,7 @@ constexpr std::array<STR_DEVICE, 9> DevicesType{
 		{ 4, "gateBox", "Gate Box", pTypeGeneral, sTypePercentage, 0, "gate" },
 		{ 5, "dimmerBox", "Dimmer Box", pTypeLighting2, sTypeAC, STYPE_Dimmer, "dimmer" },
 		{ 6, "switchBoxD", "Switch Box D", pTypeLighting2, sTypeAC, STYPE_OnOff, "relay" },
-		{ 7, "airSensor", "Air Sensor", pTypeAirQuality, sTypeVoltcraft, 0, "air" },
+		{ 7, "airSensor", "Air Sensor", pTypeAirQuality, sTypeVoc, 0, "air" },
 		{ 8, "tempSensor", "Temp Sensor", pTypeGeneral, sTypeTemperature, 0, "tempsensor" },
 	},
 };

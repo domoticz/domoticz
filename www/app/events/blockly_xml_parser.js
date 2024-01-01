@@ -86,10 +86,6 @@ define(function () {
                 var fieldA = $(value).find('field')[0];
                 return 'weatherdevice[' + $(fieldA).text() + ']';
             }
-            else if (variableType.indexOf('zwavealarms') >= 0) {
-                var fieldA = $(value).find('field')[0];
-                return 'zwavealarms[' + $(fieldA).text() + ']';
-            }
             else {
                 var fieldB = $(value).find('field')[0];
                 if ($(fieldB).attr('name') == 'State') {

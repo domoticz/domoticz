@@ -321,19 +321,17 @@ void CDomoticzHardwareBase::SendTempBaroSensor(const uint8_t NodeID, const int B
 	sDecodeRXMessage(this, (const unsigned char *)&tsensor, defaultname.c_str(), BatteryLevel, nullptr);
 }
 
-void CDomoticzHardwareBase::SendSetPointSensor(const uint8_t NodeID, const uint8_t ChildID, const unsigned char SensorID, const float Temp, const std::string& defaultname)
+void CDomoticzHardwareBase::SendSetPointSensor(const uint8_t NodeID, const uint8_t ChildID, const unsigned char SensorID, const float Value, const std::string& defaultname)
 {
-	_tThermostat thermos;
-	thermos.subtype = sTypeThermSetpoint;
-	thermos.id1 = 0;
-	thermos.id2 = NodeID;
-	thermos.id3 = ChildID;
-	thermos.id4 = SensorID;
-	thermos.dunit = 1;
-
-	thermos.temp = Temp;
-
-	sDecodeRXMessage(this, (const unsigned char *)&thermos, defaultname.c_str(), -1, nullptr);
+	_tSetpoint setpoint;
+	setpoint.subtype = sTypeSetpoint;
+	setpoint.id1 = 0;
+	setpoint.id2 = NodeID;
+	setpoint.id3 = ChildID;
+	setpoint.id4 = SensorID;
+	setpoint.dunit = 1;
+	setpoint.value = Value;
+	sDecodeRXMessage(this, (const unsigned char *)&setpoint, defaultname.c_str(), -1, nullptr);
 }
 
 
@@ -619,7 +617,7 @@ void CDomoticzHardwareBase::SendAirQualitySensor(const uint8_t NodeID, const uin
 	_tAirQualityMeter meter;
 	meter.len = sizeof(_tAirQualityMeter) - 1;
 	meter.type = pTypeAirQuality;
-	meter.subtype = sTypeVoltcraft;
+	meter.subtype = sTypeVoc;
 	meter.airquality = AirQuality;
 	meter.id1 = NodeID;
 	meter.id2 = ChildID;
@@ -1015,28 +1013,6 @@ void CDomoticzHardwareBase::SendUVSensor(const int NodeID, const int ChildID, co
 	sDecodeRXMessage(this, (const unsigned char *)&tsen.UV, defaultname.c_str(), BatteryLevel, nullptr);
 }
 
-void CDomoticzHardwareBase::SendZWaveAlarmSensor(const int NodeID, const uint8_t InstanceID, const int BatteryLevel, const uint8_t aType, const int aValue, const std::string& alarmLabel, const std::string& defaultname)
-{
-	uint8_t ID1 = 0;
-	uint8_t ID2 = (unsigned char)((NodeID & 0xFF00) >> 8);
-	uint8_t ID3 = (unsigned char)NodeID & 0xFF;
-	uint8_t ID4 = InstanceID;
-
-	unsigned long lID = (ID1 << 24) + (ID2 << 16) + (ID3 << 8) + ID4;
-
-	_tGeneralDevice gDevice;
-	gDevice.subtype = sTypeZWaveAlarm;
-	gDevice.id = aType;
-	gDevice.intval1 = (int)(lID);
-	gDevice.intval2 = aValue;
-
-	int maxChars = (alarmLabel.size() < sizeof(_tGeneralDevice::text) - 1) ? alarmLabel.size() : sizeof(_tGeneralDevice::text) - 1;
-	strncpy(gDevice.text, alarmLabel.c_str(), maxChars);
-	gDevice.text[maxChars] = 0;
-
-	sDecodeRXMessage(this, (const unsigned char *)&gDevice, defaultname.c_str(), BatteryLevel, nullptr);
-}
-
 void CDomoticzHardwareBase::SendFanSensor(const int Idx, const int BatteryLevel, const int FanSpeed, const std::string& defaultname)
 {
 	_tGeneralDevice gDevice;
@@ -1156,7 +1132,7 @@ int CDomoticzHardwareBase::MigrateSelectorSwitch(const int NodeID, const uint8_t
 	    return 0;  // switch does not exist yet
 	std::map<std::string, std::string> optionsMap;
 	optionsMap = m_sql.BuildDeviceOptions(result[0][0]);
-	int count = optionsMap.size();
+	int count = static_cast<int>(optionsMap.size());
 	if (count > 0) 
 	{
 		int i = 0;

@@ -104,10 +104,11 @@ define(['app'], function (app) {
 							var addId = oTable.fnAddData({
 								"DT_RowId": item.idx,
 								"DT_ItemType": item.Type,
+								"DT_Value": item.Value,
 								"0": item.idx,
 								"1": item.Name,
 								"2": typeWording,
-								"3": item.Value,
+								"3": truncateString(item.Value, 150),
 								"4": item.LastUpdate
 							});
 						});
@@ -138,7 +139,7 @@ define(['app'], function (app) {
 						$('#uservariabledelete').attr("class", "btnstyle3");
 						$("#uservariablesedittable #uservariablename").val(data["1"]);
 						$("#uservariablesedittable #uservariabletype").val(data["DT_ItemType"]);
-						$("#uservariablesedittable #uservariablevalue").val(data["3"]);
+						$("#uservariablesedittable #uservariablevalue").val(data["DT_Value"]);
 					}
 				}
 			});

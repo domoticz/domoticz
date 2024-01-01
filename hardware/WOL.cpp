@@ -92,7 +92,7 @@ bool GenerateWOLPacket(unsigned char *pPacket, const std::string &MACAddress)
 
 bool CWOL::SendWOLPacket(const unsigned char *pPacket)
 {
-	int udpSocket;
+	SOCKET udpSocket;
 	struct sockaddr_in udpClient, udpServer;
 
 	udpSocket = socket(AF_INET, SOCK_DGRAM, 0);

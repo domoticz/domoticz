@@ -176,7 +176,6 @@ static const STR_TABLE_SINGLE HardwareTypeTable[] = {
 	{ HTYPE_OpenThermGateway, "OpenTherm Gateway USB", "OpenTherm" },
 	{ HTYPE_TeleinfoMeter, "Teleinfo EDF", "TeleInfo" },
 	{ HTYPE_OpenThermGatewayTCP, "OpenTherm Gateway with LAN interface", "OpenTherm" },
-	{ HTYPE_OpenZWave, "OpenZWave USB", "OpenZWave" },
 	{ HTYPE_LimitlessLights, "Limitless/AppLamp/Mi Light with LAN/WiFi interface", "Limitless" },
 	{ HTYPE_System, "Motherboard sensors", "HardwareMonitor" },
 	{ HTYPE_EnOceanESP2, "EnOcean USB (ESP2)", "EnOcean" },
@@ -278,7 +277,8 @@ static const STR_TABLE_SINGLE HardwareTypeTable[] = {
 	{ HTYPE_AirconWithMe, "AirconWithMe Wifi Airco module", "AirconWithMe" },
 	{ HTYPE_TeleinfoMeterTCP, "Teleinfo EDF with LAN interface", "TeleInfo" },
 	{ HTYPE_MQTTAutoDiscovery, "MQTT Auto Discovery Client Gateway with LAN interface", "MQTT-AD" },
-	{ HTYPE_RFLINKMQTT, "RFLink Gateway MQTT",	"RFLink" },
+	{ HTYPE_RFLINKMQTT, "RFLink Gateway MQTT", "RFLink" },
+	{ HTYPE_MitsubishiWF, "Mitsubishi WF RAC Airco with LAN (HTTP) interface", "MitsubishiWF" },
 	{ 0, nullptr, nullptr },
 };
 
@@ -394,7 +394,7 @@ const char* Notification_Type_Label(const int nType)
 		{ NTYPE_PERCENTAGE, "%" },
 		{ NTYPE_RPM, "RPM" },
 		{ NTYPE_DEWPOINT, "degrees" },
-		{ NTYPE_SETPOINT, "degrees" },
+		{ NTYPE_SETPOINT, "" },
 		{ NTYPE_VIDEO, "" },
 		{ NTYPE_AUDIO, "" },
 		{ NTYPE_PHOTO, "" },
@@ -457,36 +457,12 @@ const char* RFX_Type_Desc(const unsigned char i, const unsigned char snum)
 		{ pTypeInterfaceMessage, "Interface Message", "unknown" },
 		{ pTypeRecXmitMessage, "Receiver/Transmitter Message", "unknown" },
 		{ pTypeUndecoded, "Undecoded RF Message", "unknown" },
-		{
-			pTypeLighting1,
-			"Lighting 1",
-			"lightbulb",
-		},
-		{
-			pTypeLighting2,
-			"Lighting 2",
-			"lightbulb",
-		},
-		{
-			pTypeLighting3,
-			"Lighting 3",
-			"lightbulb",
-		},
-		{
-			pTypeLighting4,
-			"Lighting 4",
-			"lightbulb",
-		},
-		{
-			pTypeLighting5,
-			"Lighting 5",
-			"lightbulb",
-		},
-		{
-			pTypeLighting6,
-			"Lighting 6",
-			"lightbulb",
-		},
+		{ pTypeLighting1, "Lighting 1", "lightbulb" },
+		{ pTypeLighting2, "Lighting 2", "lightbulb" },
+		{ pTypeLighting3, "Lighting 3", "lightbulb" },
+		{ pTypeLighting4, "Lighting 4", "lightbulb"	},
+		{ pTypeLighting5, "Lighting 5", "lightbulb" },
+		{ pTypeLighting6, "Lighting 6", "lightbulb" },
 		{ pTypeHomeConfort, "Home Confort", "lightbulb" },
 		{ pTypeColorSwitch, "Color Switch", "lightbulb" },
 		{ pTypeCurtain, "Curtain", "blinds" },
@@ -528,7 +504,7 @@ const char* RFX_Type_Desc(const unsigned char i, const unsigned char snum)
 		{ pTypeTEMP_BARO, "Temp + Baro", "temperature" },
 		{ pTypeLux, "Lux", "lux" },
 		{ pTypeGeneral, "General", "General" },
-		{ pTypeThermostat, "Thermostat", "thermostat" },
+		{ pTypeSetpoint, "Setpoint", "setpoint" },
 		{ pTypeTEMP_RAIN, "Temp + Rain", "Temp + Rain" },
 		{ pTypeChime, "Chime", "doorbell" },
 		{ pTypeFan, "Fan", "fan" },
@@ -543,6 +519,7 @@ const char* RFX_Type_Desc(const unsigned char i, const unsigned char snum)
 		{ pTypeWEATHER, "Weather", "weather" },
 		{ pTypeSOLAR, "Solar", "solar" },
 		{ pTypeHunter, "Hunter", "Hunter" },
+		{ pTypeDDxxxx, "Blinds", "blinds" },
 		{ 0, nullptr, nullptr },
 	};
 	if (snum == 1)
@@ -760,7 +737,7 @@ const char* RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 		{ pTypeRego6XXValue, sTypeRego6XXStatus, "Rego 6XX" },
 		{ pTypeRego6XXValue, sTypeRego6XXCounter, "Rego 6XX" },
 
-		{ pTypeAirQuality, sTypeVoltcraft, "Voltcraft CO-20" },
+		{ pTypeAirQuality, sTypeVoc, "Voc" },
 
 		{ pTypeUsage, sTypeElectric, "Electric" },
 
@@ -781,11 +758,7 @@ const char* RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 		{ pTypeGeneral, sTypeBaro, "Barometer" },
 		{ pTypeGeneral, sTypeSetPoint, "Setpoint" },
 		{ pTypeGeneral, sTypeTemperature, "Temperature" },
-		{ pTypeGeneral, sTypeZWaveClock, "Thermostat Clock" },
 		{ pTypeGeneral, sTypeTextStatus, "Text" },
-		{ pTypeGeneral, sTypeZWaveThermostatMode, "Thermostat Mode" },
-		{ pTypeGeneral, sTypeZWaveThermostatFanMode, "Thermostat Fan Mode" },
-		{ pTypeGeneral, sTypeZWaveThermostatOperatingState, "Thermostat Operating State" },
 		{ pTypeGeneral, sTypeAlert, "Alert" },
 		{ pTypeGeneral, sTypeSoundLevel, "Sound Level" },
 		{ pTypeGeneral, sTypeUV, "UV" },
@@ -794,11 +767,10 @@ const char* RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 		{ pTypeGeneral, sTypeKwh, "kWh" },
 		{ pTypeGeneral, sTypeWaterflow, "Waterflow" },
 		{ pTypeGeneral, sTypeCustom, "Custom Sensor" },
-		{ pTypeGeneral, sTypeZWaveAlarm, "Alarm" },
 		{ pTypeGeneral, sTypeManagedCounter, "Managed Counter" },
 
-		{ pTypeThermostat, sTypeThermSetpoint, "SetPoint" },
-		{ pTypeThermostat, sTypeThermTemperature, "Temperature" },
+		{ pTypeSetpoint, sTypeSetpoint, "SetPoint" },
+		{ pTypeSetpoint, sTypeThermTemperature, "Temperature" },
 
 		{ pTypeChime, sTypeByronSX, "Byron SX" },
 		{ pTypeChime, sTypeByronMP001, "Byron MP001" },
@@ -981,65 +953,6 @@ const char* Media_Player_States(const _eMediaStatus Status)
 	};
 	return findTableIDSingle1(Table, Status);
 }
-
-const char* ZWave_Clock_Days(const unsigned char Day)
-{
-	static const STR_TABLE_SINGLE Table[] = {
-		{ 0, "Monday" }, { 1, "Tuesday" },  { 2, "Wednesday" }, { 3, "Thursday" },
-		{ 4, "Friday" }, { 5, "Saturday" }, { 6, "Sunday" },	{ 0, nullptr, nullptr },
-	};
-	return findTableIDSingle1(Table, Day);
-}
-/*
-const char *ZWave_Thermostat_Modes[] =
-{
-"Off",
-"Heat",
-"Cool",
-"Auto",
-"Aux Heat",
-"Resume",
-"Fan Only",
-"Furnace",
-"Dry Air",
-"Moist Air",
-"Auto Changeover",
-"Heat Econ",
-"Cool Econ",
-"Away",
-"Unknown",
-NULL
-};
-*/
-const char *ZWave_Thermostat_Fan_Modes[]
-= { "Auto Low", "On Low", "Auto High", "On High", "Unknown 4", "Unknown 5", "Circulate", "Unknown", nullptr };
-
-int Lookup_ZWave_Thermostat_Modes(const std::vector<std::string>& Modes, const std::string& sMode)
-{
-	int ii = 0;
-	for (const auto &mode : Modes)
-	{
-		if (mode == sMode)
-			return ii;
-		ii++;
-	}
-	return -1;
-}
-
-int Lookup_ZWave_Thermostat_Fan_Modes(const std::string& sMode)
-{
-	int ii = 0;
-	while (ZWave_Thermostat_Fan_Modes[ii] != nullptr)
-	{
-		if (ZWave_Thermostat_Fan_Modes[ii] == sMode)
-		{
-			return ii;
-		}
-		ii++;
-	}
-	return -1;
-}
-
 
 void GetLightStatus(
 	const unsigned char dType,
@@ -2300,6 +2213,41 @@ void GetLightStatus(
 		break;
 		}
 		break;
+	case pTypeDDxxxx:
+		bHaveDimmer = true;
+		maxDimLevel = 100;
+		llevel = (int)float((100.0F / float(maxDimLevel)) * atof(sValue.c_str()));
+
+		switch (nValue)
+		{
+		case DDxxxx_Up:
+			lstatus = "Open";
+			break;
+		case DDxxxx_Down:
+			lstatus = "Close";
+			break;
+		case DDxxxx_Stop:
+			lstatus = "Stop";
+			break;
+		case DDxxxx_P2:
+			lstatus = "Pair";
+			break;
+		case DDxxxx_Percent:
+			if (llevel == 0)
+				lstatus = "Close";
+			else if (llevel == 100)
+				lstatus = "Open";
+			else
+			{
+				sprintf(szTmp, "Set Level: %d %%", llevel);
+				lstatus = szTmp;
+			}
+			break;
+		case DDxxxx_HoldStopDown:
+			lstatus = "unknown/unsupported!";
+			break;
+		}
+		break;
 	}
 
 	const bool bIsBlinds = (switchtype == STYPE_Blinds
@@ -2927,10 +2875,13 @@ bool GetLightCommand(
 				// Not a managed command
 				return false;
 			}
-			int level = GetSelectorSwitchLevel(options, switchcmd);
-			if (level > 0) { // not Off but a level name
-							 // switchcmd cannot be a level name
-				return false;
+			if ((switchcmd != "On") && (switchcmd != "Off"))
+			{
+				int level = GetSelectorSwitchLevel(options, switchcmd);
+				if (level > 0) {
+					// switchcmd cannot be a level name
+					return false;
+				}
 			}
 		}
 
@@ -3856,6 +3807,33 @@ bool GetLightCommand(
 		break;
 	}
 	break;
+	case pTypeDDxxxx:
+		if (switchcmd == "Open")
+		{
+			cmd = DDxxxx_Up;
+			return true;
+		}
+		else if (switchcmd == "Close")
+		{
+			cmd = DDxxxx_Down;
+			return true;
+		}
+		else if (switchcmd == "Stop")
+		{
+			cmd = DDxxxx_Stop;
+			return true;
+		}
+		else if (switchcmd == "Pair")
+		{
+			cmd = DDxxxx_P2;
+			return true;
+		}
+		else if (switchcmd == "Set Level")
+		{
+			cmd = DDxxxx_Percent;
+			return true;
+		}
+		break;
 	}
 	//unknown command
 	return false;
@@ -3924,7 +3902,6 @@ bool IsSerialDevice(const _eHardwareTypes htype)
 	case HTYPE_S0SmartMeterUSB:
 	case HTYPE_OpenThermGateway:
 	case HTYPE_TeleinfoMeter:
-	case HTYPE_OpenZWave:
 	case HTYPE_EnOceanESP2:
 	case HTYPE_EnOceanESP3:
 	case HTYPE_Meteostick:
@@ -3947,6 +3924,7 @@ bool IsSerialDevice(const _eHardwareTypes htype)
 bool IsNetworkDevice(const _eHardwareTypes htype)
 {
 	switch (htype) {
+	case HTYPE_Domoticz:
 	case HTYPE_RFXLAN:
 	case HTYPE_P1SmartMeterLAN:
 	case HTYPE_YouLess:
@@ -3985,7 +3963,10 @@ bool IsNetworkDevice(const _eHardwareTypes htype)
 	case HTYPE_OctoPrint:
 	case HTYPE_TeleinfoMeterTCP:
 	case HTYPE_MQTTAutoDiscovery:
+	case HTYPE_HARMONY_HUB:
+	case HTYPE_Philips_Hue:
 	case HTYPE_AlfenEveCharger:
+	case HTYPE_MitsubishiWF:
 		return true;
 	default:
 		return false;

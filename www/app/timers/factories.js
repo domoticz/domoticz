@@ -52,9 +52,11 @@ define(['app'], function (app) {
                 hour: 0,
                 min: 0,
                 randomness: false,
+                persistent: false,
                 command: 0,
                 level: null,
-                tvalue: '',
+                tvalue: '123',
+				vunit: '',
                 days: 0x80,
                 color: '', // Empty string, intentionally illegal JSON
                 mday: 1,

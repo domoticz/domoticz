@@ -735,7 +735,7 @@ define(['app', 'livesocket'], function (app) {
 
 			var htmlcontent = '';
 	
-			var bHaveAddedDevider = false;
+			var bHaveAddedDivider = false;
 
 			var tophtm = "";
 
@@ -759,13 +759,13 @@ define(['app', 'livesocket'], function (app) {
 
 						$.each(data.result, function (i, item) {
 							if (j % 3 == 0) {
-								//add devider
-								if (bHaveAddedDevider == true) {
-									//close previous devider
+								//add divider
+								if (bHaveAddedDivider == true) {
+									//close previous divider
 									htmlcontent += '</div>\n';
 								}
 								htmlcontent += '<div class="row divider">\n';
-								bHaveAddedDevider = true;
+								bHaveAddedDivider = true;
 							}
 							var bAddTimer = true;
 							var bIsDimmer = false;
@@ -1251,8 +1251,8 @@ define(['app', 'livesocket'], function (app) {
 			});
 
 
-			if (bHaveAddedDevider == true) {
-				//close previous devider
+			if (bHaveAddedDivider == true) {
+				//close previous divider
 				htmlcontent += '</div>\n';
 			}
 			if (j == 0) {

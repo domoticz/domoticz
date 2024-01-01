@@ -119,15 +119,14 @@ void CNest::Do_Work()
 
 void CNest::SendSetPointSensor(const unsigned char Idx, const float Temp, const std::string &defaultname)
 {
-	_tThermostat thermos;
-	thermos.subtype = sTypeThermSetpoint;
+	_tSetpoint thermos;
+	thermos.subtype = sTypeSetpoint;
 	thermos.id1 = 0;
 	thermos.id2 = 0;
 	thermos.id3 = 0;
 	thermos.id4 = Idx;
 	thermos.dunit = 0;
-	thermos.temp = Temp;
-
+	thermos.value = Temp;
 	sDecodeRXMessage(this, (const unsigned char *)&thermos, defaultname.c_str(), 255, nullptr);
 }
 
@@ -528,7 +527,7 @@ void CNest::GetMeterDetails()
 		return;
 	}
 
-	size_t iThermostat = 0;
+	int iThermostat = 0;
 	for (auto ittStructure = root["structure"].begin(); ittStructure != root["structure"].end(); ++ittStructure)
 	{
 		Json::Value nstructure = *ittStructure;
@@ -644,8 +643,8 @@ void CNest::SetSetpoint(const int idx, const float temp)
 		if (!Login())
 			return;
 	}
-	size_t iThermostat = (idx - 1) / 3;
-	if (iThermostat > m_thermostats.size())
+	int iThermostat = (idx - 1) / 3;
+	if (iThermostat > (int)m_thermostats.size())
 		return;
 
 	std::vector<std::string> ExtraHeaders;
@@ -690,8 +689,8 @@ bool CNest::SetAway(const unsigned char Idx, const bool bIsAway)
 			return false;
 	}
 
-	size_t iThermostat = (Idx - 3) / 3;
-	if (iThermostat > m_thermostats.size())
+	int iThermostat = (Idx - 3) / 3;
+	if (iThermostat > (int)m_thermostats.size())
 		return false;
 
 	std::vector<std::string> ExtraHeaders;
@@ -730,8 +729,8 @@ bool CNest::SetManualEcoMode(const unsigned char Idx, const bool bIsManualEcoMod
 			return false;
 	}
 
-	size_t iThermostat = (Idx - 4) / 3;
-	if (iThermostat > m_thermostats.size())
+	int iThermostat = (Idx - 4) / 3;
+	if (iThermostat > (int)m_thermostats.size())
 		return false;
 
 	std::vector<std::string> ExtraHeaders;

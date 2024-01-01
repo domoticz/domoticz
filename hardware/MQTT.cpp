@@ -6,6 +6,7 @@
 #include "../main/mainworker.h"
 #include "../main/SQLHelper.h"
 #include "../main/json_helper.h"
+#include "../main/WebServer.h"
 #include "../notifications/NotificationHelper.h"
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
@@ -18,6 +19,8 @@
 #define QOS 1
 #define RETAIN_BIT 0x80
 
+extern std::string szCertFile;
+
 namespace
 {
 	constexpr std::array<const char *, 3> szTLSVersions{
@@ -26,6 +29,13 @@ namespace
 		"tlsv1.2", //
 	};
 } // namespace
+
+MQTT::MQTT()
+{
+	mosqdz::lib_init();
+	threaded_set(true);
+	m_bPreventLoop = true;
+}
 
 MQTT::MQTT(const int ID, const std::string &IPAddress, const unsigned short usIPPort, const std::string &Username, const std::string &Password, const std::string &CAfilenameExtra,
 	   const int TLS_Version, const int PublishScheme, const std::string &MQTTClientID, const bool PreventLoop)
@@ -36,8 +46,6 @@ MQTT::MQTT(const int ID, const std::string &IPAddress, const unsigned short usIP
 	, m_CAFilename(CAfilenameExtra)
 {
 	m_HwdID = ID;
-	m_IsConnected = false;
-	m_bDoReconnect = false;
 	mosqdz::lib_init();
 
 	m_usIPPort = usIPPort;
@@ -77,6 +85,11 @@ MQTT::~MQTT()
 
 bool MQTT::StartHardware()
 {
+	if (m_szIPAddress.empty())
+		return false;
+
+	ReloadSharedDevices();
+
 	RequestStart();
 
 	// force connect the next first time
@@ -297,6 +310,9 @@ void MQTT::on_message(const struct mosquitto_message *message)
 		if (szCommand == "switchlight")
 		{
 			std::string switchcmd = root["switchcmd"].asString();
+			std::string onlyonchange("");
+			if (!root["ooc"].empty())
+				onlyonchange = root["ooc"].asString();
 			// if ((switchcmd != "On") && (switchcmd != "Off") && (switchcmd != "Toggle") && (switchcmd != "Set Level") && (switchcmd != "Stop"))
 			//	goto mqttinvaliddata;
 			int level = -1;
@@ -310,8 +326,9 @@ void MQTT::on_message(const struct mosquitto_message *message)
 
 			// Prevent MQTT update being send to client after next update
 			m_LastUpdatedDeviceRowIdx = idx;
+			const bool bIsOOC = atoi(onlyonchange.c_str()) != 0;
 
-			if (!m_mainworker.SwitchLight(idx, switchcmd, level, NoColor, false, 0, "MQTT") == true)
+			if (m_mainworker.SwitchLight(idx, switchcmd, level, NoColor, bIsOOC, 0, "MQTT") == MainWorker::SL_ERROR)
 			{
 				Log(LOG_ERROR, "Error sending switch command!");
 			}
@@ -437,7 +454,7 @@ void MQTT::on_message(const struct mosquitto_message *message)
 			// Prevent MQTT update being send to client after next update
 			m_LastUpdatedDeviceRowIdx = idx;
 
-			if (!m_mainworker.SwitchLight(idx, "Set Color", ival, color, false, 0, "MQTT") == true)
+			if (m_mainworker.SwitchLight(idx, "Set Color", ival, color, false, 0, "MQTT") == MainWorker::SL_ERROR)
 			{
 				Log(LOG_ERROR, "Error sending switch command!");
 			}
@@ -584,14 +601,25 @@ void MQTT::on_going_down()
 {
 }
 
+bool MQTT::ReconnectNow()
+{
+	disconnect();
+	ConnectIntEx();
+	return true;
+}
+
 bool MQTT::ConnectInt()
 {
+	if (m_szIPAddress.empty())
+		return false;
 	StopMQTT();
 	return ConnectIntEx();
 }
 
 bool MQTT::ConnectIntEx()
 {
+	if (m_szIPAddress.empty())
+		return false;
 	m_bDoReconnect = false;
 
 	std::string IPAddress(m_szIPAddress);
@@ -612,20 +640,22 @@ bool MQTT::ConnectIntEx()
 		)
 	{
 		rc = tls_opts_set(SSL_VERIFY_NONE, szTLSVersions[m_TLS_Version], nullptr);
-		if (!m_CAFilename.empty())
+		if (rc != MOSQ_ERR_SUCCESS)
 		{
-			rc = tls_set(m_CAFilename.c_str());
+			Log(LOG_ERROR, "Failed enabling TLS mode (tls_opts_set(%d, %s), return code: %d)", SSL_VERIFY_NONE, szTLSVersions[m_TLS_Version], rc);
+			return false;
 		}
-		else
-		{
-			//Use our servers certificate
-			rc = tls_set("./server_cert.pem");
+		std::string ca_path = (!m_CAFilename.empty()) ? m_CAFilename : szCertFile;
+		rc = tls_set(ca_path.c_str());
+		if (rc != MOSQ_ERR_SUCCESS) {
+			Log(LOG_ERROR, "Failed enabling TLS mode (tls_set(%s), return code: %d)", ca_path.c_str(), rc);
+			return false;
 		}
 		rc = tls_insecure_set(true);
 
 		if (rc != MOSQ_ERR_SUCCESS)
 		{
-			Log(LOG_ERROR, "Failed enabling TLS mode, return code: %d (CA certificate: '%s')", rc, m_CAFilename.c_str());
+			Log(LOG_ERROR, "Failed enabling TLS mode, (tls_insecure_set(%s), return code: %d)", "true", rc);
 			return false;
 		}
 		Log(LOG_STATUS, "enabled TLS mode");
@@ -647,6 +677,8 @@ void MQTT::Do_Work()
 	bool bFirstTime = true;
 	int msec_counter = 0;
 	int sec_counter = 0;
+
+	set_callbacks();
 
 	while (!IsStopRequested(100))
 	{
@@ -746,7 +778,7 @@ void MQTT::SendMessageEx(const std::string& Topic, const std::string& Message, i
 		return;
 	try
 	{
-		publish(nullptr, Topic.c_str(), Message.size(), Message.c_str(), qos, retain);
+		publish(nullptr, Topic.c_str(), static_cast<int>(Message.size()), Message.c_str(), qos, retain);
 	}
 	catch (...)
 	{
@@ -777,6 +809,17 @@ void MQTT::SendDeviceInfo(const int HwdID, const uint64_t DeviceRowIdx, const st
 		m_LastUpdatedDeviceRowIdx = 0;
 		return;
 	}
+
+	std::lock_guard<std::mutex> l(m_mutex);
+	if (!m_shared_devices.empty())
+	{
+		auto itt = m_shared_devices.find(DeviceRowIdx);
+		if (itt == m_shared_devices.end())
+		{
+			return;
+		}
+	}
+
 	std::vector<std::vector<std::string>> result;
 	result = m_sql.safe_query("SELECT HardwareID, DeviceID, Unit, Name, [Type], SubType, nValue, sValue, SwitchType, SignalLevel, BatteryLevel, Options, Description, LastLevel, Color, LastUpdate "
 				  "FROM DeviceStatus WHERE (HardwareID==%d) AND (ID==%" PRIu64 ")",
@@ -993,4 +1036,117 @@ void MQTT::SubscribeTopic(const std::string &szTopic, const int qos)
 		subscribe(nullptr, szTopic.c_str(), qos);
 	}
 }
+
+void MQTT::ReloadSharedDevices()
+{
+	std::lock_guard<std::mutex> l(m_mutex);
+	m_shared_devices.clear();
+	auto result = m_sql.safe_query("SELECT DeviceRowID FROM SharedDevices WHERE (SharedUserID == %d)", 2000 + m_HwdID);
+	if (!result.empty())
+	{
+		for (const auto& sd : result)
+		{
+			m_shared_devices[std::stoull(sd[0])] = true;
+		}
+	}
+}
+
+//Webserver helpers
+namespace http {
+	namespace server {
+		//As the SharedDevices is also used for Users, we are going to add 2000 to the index so we can distinguish between the two
+		void CWebServer::Cmd_GetSharedMQTTDevices(WebEmSession& session, const request& req, Json::Value& root)
+		{
+			if (session.rights != 2)
+			{
+				session.reply_status = reply::forbidden;
+				return; // Only admin user allowed
+			}
+			std::string sidx = request::findValue(&req, "idx");
+			if (sidx.empty())
+				return;
+			int idx = atoi(sidx.c_str()) + 2000;
+			root["title"] = "GetSharedMQTTDevices";
+
+			auto result = m_sql.safe_query("SELECT DeviceRowID FROM SharedDevices WHERE (SharedUserID == %d)", idx);
+			if (!result.empty())
+			{
+				int ii = 0;
+				for (const auto& sd : result)
+				{
+					root["result"][ii]["DeviceRowIdx"] = sd[0];
+					ii++;
+				}
+			}
+			root["status"] = "OK";
+		}
+
+		void CWebServer::Cmd_SetSharedMQTTDevices(WebEmSession& session, const request& req, Json::Value& root)
+		{
+			if (session.rights != 2)
+			{
+				session.reply_status = reply::forbidden;
+				return; // Only admin user allowed
+			}
+			std::string sidx = request::findValue(&req, "idx");
+			if (sidx.empty())
+				return;
+			int idx = atoi(sidx.c_str()) + 2000;
+
+			std::string userdevices = CURLEncode::URLDecode(request::findValue(&req, "devices"));
+			root["title"] = "SetSharedMQTTDevices";
+			std::vector<std::string> strarray;
+			StringSplit(userdevices, ";", strarray);
+
+			// First make a backup of the favorite devices before deleting the devices, then add the (new) onces and restore favorites
+			m_sql.safe_query("UPDATE SharedDevices SET SharedUserID = 0 WHERE SharedUserID == %d and Favorite == 1", idx);
+			m_sql.safe_query("DELETE FROM SharedDevices WHERE SharedUserID == %d", idx);
+
+			int nDevices = static_cast<int>(strarray.size());
+			for (int ii = 0; ii < nDevices; ii++)
+			{
+				m_sql.safe_query("INSERT INTO SharedDevices (SharedUserID,DeviceRowID) VALUES (%d,'%q')", idx, strarray[ii].c_str());
+				m_sql.safe_query("UPDATE SharedDevices SET Favorite = 1 WHERE SharedUserid == %d AND DeviceRowID IN (SELECT DeviceRowID FROM SharedDevices WHERE SharedUserID == 0)", idx);
+			}
+			m_sql.safe_query("DELETE FROM SharedDevices WHERE SharedUserID == 0");
+
+			CDomoticzHardwareBase* pHardware = m_mainworker.GetHardware(idx - 2000);
+			if (pHardware != nullptr)
+			{
+				if (pHardware->HwdType == HTYPE_MQTT)
+				{
+					MQTT* pMTTHardware = dynamic_cast<MQTT*>(pHardware);
+					pMTTHardware->ReloadSharedDevices();
+				}
+			}
+			root["status"] = "OK";
+		}
+
+		void CWebServer::Cmd_ClearSharedMQTTDevices(WebEmSession& session, const request& req, Json::Value& root)
+		{
+			if (session.rights != 2)
+			{
+				session.reply_status = reply::forbidden;
+				return; // Only admin user allowed
+			}
+			std::string sidx = request::findValue(&req, "idx");
+			if (sidx.empty())
+				return;
+			int idx = atoi(sidx.c_str()) + 2000;
+			root["status"] = "OK";
+			root["title"] = "ClearSharedMQTTDevices";
+			m_sql.safe_query("DELETE FROM SharedDevices WHERE SharedUserID == %d", idx);
+			CDomoticzHardwareBase* pHardware = m_mainworker.GetHardware(idx - 2000);
+			if (pHardware != nullptr)
+			{
+				if (pHardware->HwdType == HTYPE_MQTT)
+				{
+					MQTT* pMTTHardware = dynamic_cast<MQTT*>(pHardware);
+					pMTTHardware->ReloadSharedDevices();
+				}
+			}
+		}
+	} // namespace server
+} // namespace http
+
 

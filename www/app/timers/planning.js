@@ -499,11 +499,11 @@ PlanningTimerSheet = function(options){
 				"&date=" + tsettings.Date +
 				"&hour=" + tsettings.Hour +
 				"&min=" + tsettings.Min +
-
 				"&days=" + tsettings.Days +
 				"&mday=" + tsettings.MDay +
 				"&month=" + tsettings.Month +
 				"&occurence=" + tsettings.Occurence +
+				"&persistent=" + tsettings.Persistent +
 				"&randomness=false";
 				
 			if(!(defaults.propValue === "Level" && tsettings[defaults.propValue] === 0)) {

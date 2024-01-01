@@ -27,6 +27,9 @@ class CNetatmo : public CDomoticzHardwareBase
 	};
 	std::string m_clientId;
 	std::string m_clientSecret;
+	std::string m_scopes;
+	std::string m_redirectUri;
+	std::string m_authCode;
 	std::string m_username;
 	std::string m_password;
 	std::string m_accessToken;

@@ -857,7 +857,7 @@ define(['app', 'livesocket'], function (app) {
 			RefreshLightSwitchesComboArray();
 
 			var htmlcontent = '';
-			var bHaveAddedDevider = false;
+			var bHaveAddedDivider = false;
 			var bAllowWidgetReorder = true;
 
 			var tophtm = "";
@@ -879,12 +879,12 @@ define(['app', 'livesocket'], function (app) {
 						$.each(data.result, function (i, item) {
 							if (j % 3 == 0) {
 								//add divider
-								if (bHaveAddedDevider == true) {
-									//close previous devider
+								if (bHaveAddedDivider == true) {
+									//close previous divider
 									htmlcontent += '</div>\n';
 								}
 								htmlcontent += '<div class="row divider">\n';
-								bHaveAddedDevider = true;
+								bHaveAddedDivider = true;
 							}
 
 							var backgroundClass = $rootScope.GetItemBackgroundStatus(item);
@@ -971,8 +971,8 @@ define(['app', 'livesocket'], function (app) {
 				}
 			});
 
-			if (bHaveAddedDevider == true) {
-				//close previous devider
+			if (bHaveAddedDivider == true) {
+				//close previous divider
 				htmlcontent += '</div>\n';
 			}
 			if (htmlcontent == '') {

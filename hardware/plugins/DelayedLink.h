@@ -156,6 +156,7 @@ namespace Plugins {
 			shared_lib_ = nullptr;
 			if (!shared_lib_) {
 #ifdef WIN32
+				if (!shared_lib_) shared_lib_ = LoadLibrary("python312.dll");
 				if (!shared_lib_) shared_lib_ = LoadLibrary("python311.dll");
 				if (!shared_lib_) shared_lib_ = LoadLibrary("python310.dll");
 				if (!shared_lib_) shared_lib_ = LoadLibrary("python39.dll");
@@ -165,6 +166,7 @@ namespace Plugins {
 				if (!shared_lib_) shared_lib_ = LoadLibrary("python35.dll");
 				if (!shared_lib_) shared_lib_ = LoadLibrary("python34.dll");
 #else
+				if (!shared_lib_) FindLibrary("python3.12", true);
 				if (!shared_lib_) FindLibrary("python3.11", true);
 				if (!shared_lib_) FindLibrary("python3.10", true);
 				if (!shared_lib_) FindLibrary("python3.9", true);
@@ -174,6 +176,11 @@ namespace Plugins {
 				if (!shared_lib_) FindLibrary("python3.5", true);
 				if (!shared_lib_) FindLibrary("python3.4", true);
 #ifdef __FreeBSD__
+				if (!shared_lib_) FindLibrary("python3.12m", true);
+				if (!shared_lib_) FindLibrary("python3.11m", true);
+				if (!shared_lib_) FindLibrary("python3.10m", true);
+				if (!shared_lib_) FindLibrary("python3.9m", true);
+				if (!shared_lib_) FindLibrary("python3.8m", true);
 				if (!shared_lib_) FindLibrary("python3.7m", true);
 				if (!shared_lib_) FindLibrary("python3.6m", true);
 				if (!shared_lib_) FindLibrary("python3.5m", true);
@@ -504,22 +511,17 @@ extern	SharedLibraryProxy* pythonLib;
 #define	Py_CompileString		pythonLib->Py_CompileString
 #define	PyEval_EvalCode			pythonLib->PyEval_EvalCode
 #define	PyType_GetFlags			pythonLib->PyType_GetFlags
-#ifdef WIN32  
-#	define	_Py_Dealloc				pythonLib->_Py_Dealloc		// Builds against a low Python version
-#elif PY_VERSION_HEX < 0x03090000
-#	define	_Py_Dealloc				pythonLib->_Py_Dealloc
-#else
+#define	_Py_Dealloc			pythonLib->_Py_Dealloc
+#if PY_VERSION_HEX >= 0x03090000
 #	ifndef _Py_DEC_REFTOTAL
 	/* _Py_DEC_REFTOTAL macro has been removed from Python 3.9 by: https://github.com/python/cpython/commit/49932fec62c616ec88da52642339d83ae719e924 */
 #		ifdef Py_REF_DEBUG
 #			define _Py_DEC_REFTOTAL _Py_RefTotal--
 #		else
 #			define _Py_DEC_REFTOTAL
-#			define _Py_Dealloc
 #		endif
 #	endif
 #endif
-
 #if PY_VERSION_HEX >= 0x030800f0
 static inline void py3__Py_INCREF(PyObject* op)
 {

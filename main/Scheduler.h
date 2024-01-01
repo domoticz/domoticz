@@ -51,7 +51,7 @@ public:
 
   void ReloadSchedules();
 
-  void SetSunRiseSetTimers(const std::string &sSunRise, const std::string &sSunSet, const std::string &sSunAtSouth, const std::string &sCivTwStart, const std::string &sCivTwEnd,
+  void SetSunRiseSetTimes(const std::string &sSunRise, const std::string &sSunSet, const std::string &sSunAtSouth, const std::string &sCivTwStart, const std::string &sCivTwEnd,
 			   const std::string &sNautTwStart, const std::string &sNauTtwEnd, const std::string &sAstTwStart, const std::string &sAstTwEnd);
 
   std::vector<tScheduleItem> GetScheduleItems();
@@ -76,6 +76,7 @@ private:
 	//will set the new/next startTime
 	//returns false if timer is invalid (like no sunset/sunrise known yet)
 	bool AdjustScheduleItem(tScheduleItem *pItem, bool bForceAddDay);
+	void AdjustSunRiseSetSchedules();
 	//will check if anything needs to be scheduled
 	void CheckSchedules();
 	void DeleteExpiredTimers();

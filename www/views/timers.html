@@ -1,3 +1,4 @@
+
 <div id="deviceTimers" class="container js-device-timers">
 <div ng-show="!vm.ismobile">
 	<table class="bannav" id="bannav" border="0" cellpadding="0" cellspacing="0" width="100%">
@@ -84,6 +85,7 @@
 						<th width="80" align="center"></th>
 						<th width="60" align="center"></th>
 						<th width="60" align="center"></th>
+						<th width="60" align="center"></th>
 						<th width="140" align="center"></th>
 						<th align="left"></th>
 					</tr>
@@ -154,6 +156,15 @@
 						<label for="randomness"></label>
 					</td>
 				</tr>
+				<tr>
+					<td>
+						<label for="persistent">{{:: 'Persistent' | translate }}:</label>
+					</td>
+					<td>
+						<input id="persistent" type="checkbox" ng-model="vm.timerSettings.persistent">
+						<label for="persistent"></label>
+					</td>
+				</tr>
 				<tr ng-hide="::vm.isSetpointTimers || vm.isCommandSelectionDisabled">
 					<td>
 						<label for="combocommand">{{:: 'Command' | translate }}:</label>
@@ -182,7 +193,9 @@
 					<td>
 						<input type="text" id="tvalue" style="width: 60px; padding: .2em;"
 							   class="text ui-widget-content ui-corner-all"
-							   ng-model="vm.timerSettings.tvalue">
+							   ng-model="vm.timerSettings.tvalue">&nbsp;
+							   <label for="tvalue">{{vm.timerSettings.vunit}}</label>
+							   
 					</td>
 				</tr>
 

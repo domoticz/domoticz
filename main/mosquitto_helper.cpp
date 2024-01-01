@@ -167,14 +167,7 @@ int subscribe_callback(
 mosquittodz::mosquittodz(const char *id, bool clean_session)
 {
 	m_mosq = mosquitto_new(id, clean_session, this);
-	mosquitto_connect_callback_set(m_mosq, on_connect_wrapper);
-	mosquitto_connect_with_flags_callback_set(m_mosq, on_connect_with_flags_wrapper);
-	mosquitto_disconnect_callback_set(m_mosq, on_disconnect_wrapper);
-	mosquitto_publish_callback_set(m_mosq, on_publish_wrapper);
-	mosquitto_message_callback_set(m_mosq, on_message_wrapper);
-	mosquitto_subscribe_callback_set(m_mosq, on_subscribe_wrapper);
-	mosquitto_unsubscribe_callback_set(m_mosq, on_unsubscribe_wrapper);
-	mosquitto_log_callback_set(m_mosq, on_log_wrapper);
+	set_callbacks();
 }
 
 mosquittodz::~mosquittodz()
@@ -187,16 +180,21 @@ int mosquittodz::reinitialise(const char *id, bool clean_session)
 	int rc;
 	rc = mosquitto_reinitialise(m_mosq, id, clean_session, this);
 	if(rc == MOSQ_ERR_SUCCESS){
-		mosquitto_connect_callback_set(m_mosq, on_connect_wrapper);
-		mosquitto_connect_with_flags_callback_set(m_mosq, on_connect_with_flags_wrapper);
-		mosquitto_disconnect_callback_set(m_mosq, on_disconnect_wrapper);
-		mosquitto_publish_callback_set(m_mosq, on_publish_wrapper);
-		mosquitto_message_callback_set(m_mosq, on_message_wrapper);
-		mosquitto_subscribe_callback_set(m_mosq, on_subscribe_wrapper);
-		mosquitto_unsubscribe_callback_set(m_mosq, on_unsubscribe_wrapper);
-		mosquitto_log_callback_set(m_mosq, on_log_wrapper);
+		set_callbacks();
 	}
 	return rc;
+}
+
+void mosquittodz::set_callbacks()
+{
+	mosquitto_connect_callback_set(m_mosq, on_connect_wrapper);
+	mosquitto_connect_with_flags_callback_set(m_mosq, on_connect_with_flags_wrapper);
+	mosquitto_disconnect_callback_set(m_mosq, on_disconnect_wrapper);
+	mosquitto_publish_callback_set(m_mosq, on_publish_wrapper);
+	mosquitto_message_callback_set(m_mosq, on_message_wrapper);
+	mosquitto_subscribe_callback_set(m_mosq, on_subscribe_wrapper);
+	mosquitto_unsubscribe_callback_set(m_mosq, on_unsubscribe_wrapper);
+	mosquitto_log_callback_set(m_mosq, on_log_wrapper);
 }
 
 void mosquittodz::clear_callbacks()

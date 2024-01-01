@@ -17,6 +17,7 @@ enum _eDebugLevel : uint32_t;
 class CDomoticzHardwareBase : public StoppableTask
 {
 	friend class MainWorker;
+	friend class CounterHelper;
 
 	public:
 	CDomoticzHardwareBase();
@@ -91,7 +92,7 @@ class CDomoticzHardwareBase : public StoppableTask
 	void SendTempHumBaroSensor(int NodeID, int BatteryLevel, float temperature, int humidity, float pressure, int forecast, const std::string &defaultname, int RssiLevel = 12);
 	void SendTempHumBaroSensorFloat(int NodeID, int BatteryLevel, float temperature, int humidity, float pressure, uint8_t forecast, const std::string &defaultname, int RssiLevel = 12);
 	void SendTempBaroSensor(uint8_t NodeID, int BatteryLevel, float temperature, float pressure, const std::string &defaultname);
-	void SendSetPointSensor(uint8_t NodeID, uint8_t ChildID, unsigned char SensorID, float Temp, const std::string &defaultname);
+	void SendSetPointSensor(uint8_t NodeID, uint8_t ChildID, unsigned char SensorID, float Value, const std::string &defaultname);
 	void SendKwhMeterOldWay(int NodeID, int ChildID, int BatteryLevel, double musage, double mtotal, const std::string &defaultname, int RssiLevel = 12);
 	void SendKwhMeter(int NodeID, int ChildID, int BatteryLevel, double musage, double mtotal, const std::string &defaultname, int RssiLevel = 12);
 	void SendWattMeter(uint8_t NodeID, uint8_t ChildID, int BatteryLevel, float musage, const std::string &defaultname, int RssiLevel = 12);
@@ -128,7 +129,6 @@ class CDomoticzHardwareBase : public StoppableTask
 	std::string GetTextSensorText(int NodeID, int ChildID, bool &bExists);
 	bool CheckPercentageSensorExists(int NodeID, int ChildID);
 	void SendCustomSensor(int NodeID, uint8_t ChildID, int BatteryLevel, float CustomValue, const std::string &defaultname, const std::string &defaultLabel, int RssiLevel = 12);
-	void SendZWaveAlarmSensor(int NodeID, uint8_t InstanceID, int BatteryLevel, uint8_t aType, int aValue, const std::string &alarmLabel, const std::string &defaultname);
 	void SendFanSensor(int Idx, int BatteryLevel, int FanSpeed, const std::string &defaultname);
 	void SendSecurity1Sensor(int NodeID, int DeviceSubType, int BatteryLevel, int Status, const std::string &defaultname, const std::string &userName, int RssiLevel = 12);
 	void SendSelectorSwitch(int NodeID, uint8_t ChildID, const std::string &sValue, const std::string &defaultname, int customImage, bool nDropdown, const std::string &LevelNames,

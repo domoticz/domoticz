@@ -140,12 +140,12 @@ bool CHoneywell::WriteToHardware(const char *pdata, const unsigned char /*length
 		}
 
 	}
-	else if (pCmd->ICMND.packettype == pTypeThermostat && pCmd->LIGHTING2.subtype == sTypeThermSetpoint)
+	else if (pCmd->ICMND.packettype == pTypeSetpoint && pCmd->LIGHTING2.subtype == sTypeSetpoint)
 	{
 		int nodeID = pCmd->LIGHTING2.id3;
 		int devID = nodeID / 10;
-		const _tThermostat *therm = reinterpret_cast<const _tThermostat*>(pdata);
-		SetSetpoint(devID, therm->temp, nodeID);
+		const _tSetpoint* therm = reinterpret_cast<const _tSetpoint*>(pdata);
+		SetSetpoint(devID, therm->value, nodeID);
 	}
 	return false;
 }
@@ -347,16 +347,14 @@ void CHoneywell::GetThermostatData()
 //
 void CHoneywell::SendSetPointSensor(const unsigned char Idx, const float Temp, const std::string &defaultname)
 {
-	_tThermostat thermos;
-	thermos.subtype = sTypeThermSetpoint;
+	_tSetpoint thermos;
+	thermos.subtype = sTypeSetpoint;
 	thermos.id1 = 0;
 	thermos.id2 = 0;
 	thermos.id3 = 0;
 	thermos.id4 = Idx;
 	thermos.dunit = 0;
-
-	thermos.temp = Temp;
-
+	thermos.value = Temp;
 	sDecodeRXMessage(this, (const unsigned char *)&thermos, defaultname.c_str(), 255, nullptr);
 }
 

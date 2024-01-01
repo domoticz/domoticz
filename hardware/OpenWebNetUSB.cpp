@@ -329,7 +329,7 @@ bool COpenWebNetUSB::sendCommand(bt_openwebnet& command, std::vector<bt_openwebn
 	m_bIsStarted = true;
 
 
-	if (!writeRead(OPENWEBNET_COMMAND_SESSION, strlen(OPENWEBNET_COMMAND_SESSION), silent)) {
+	if (!writeRead(OPENWEBNET_COMMAND_SESSION, static_cast<unsigned int>(strlen(OPENWEBNET_COMMAND_SESSION)), silent)) {
 		m_bWriting = false;
 		return false;
 	}
@@ -347,7 +347,7 @@ bool COpenWebNetUSB::sendCommand(bt_openwebnet& command, std::vector<bt_openwebn
 		return false;
 	}
 
-	if (!writeRead(command.m_frameOpen.c_str(), command.m_frameOpen.length(), silent)) {
+	if (!writeRead(command.m_frameOpen.c_str(), static_cast<unsigned int>(command.m_frameOpen.length()), silent)) {
 		m_bWriting = false;
 		return false;
 	}
@@ -398,7 +398,7 @@ void COpenWebNetUSB::readCallback(const char *data, size_t len)
 	{
 		if (len < OPENWEBNET_SERIAL_BUFFER_SIZE) {
 			memcpy(m_readBuffer, data, len);
-			m_readBufferSize = len;
+			m_readBufferSize = static_cast<int>(len);
 		}
 		else {
 			memcpy(m_readBuffer, data, OPENWEBNET_SERIAL_BUFFER_SIZE);

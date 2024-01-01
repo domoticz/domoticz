@@ -459,7 +459,7 @@ eHouseTCP::eHouseTCP(const int ID, const std::string &IPAddress, const unsigned 
 	}
 
 	_log.Debug(DEBUG_HARDWARE, "[eHouse] Opts: %x,%x\r\n", m_eHOptA, m_eHOptB);
-	int len = userCode.length();
+	size_t len = userCode.length();
 	if (len > 6)
 		len = 6;
 	userCode.copy(m_PassWord, len);
@@ -567,7 +567,7 @@ bool eHouseTCP::StopHardware()
 	return true;
 }
 ///////////////////////////////////////////////////////////////////////////////////
-int eHouseTCP::ConnectTCP(unsigned int IP)
+SOCKET eHouseTCP::ConnectTCP(unsigned int IP)
 {
 	unsigned char challange[30];
 #ifndef WIN32
@@ -588,7 +588,7 @@ int eHouseTCP::ConnectTCP(unsigned int IP)
 
 	struct sockaddr_in server;
 	struct sockaddr_in saddr;
-	int TCPSocket = -1;
+	SOCKET TCPSocket = INVALID_SOCKET;
 	saddr.sin_family = AF_INET; // initialization of protocol & socket
 	if (IP > 0)
 		saddr.sin_addr.s_addr = IP;
@@ -951,15 +951,15 @@ bool eHouseTCP::WriteToHardware(const char *pdata, const unsigned char /*length*
 		id = getrealRMpgm(ID, level);
 	}
 
-	if ((output->ICMND.packettype == pTypeThermostat) && (output->ICMND.subtype == sTypeThermSetpoint))
+	if ((output->ICMND.packettype == pTypeSetpoint) && (output->ICMND.subtype == sTypeSetpoint))
 	{
-		const _tThermostat *therm = reinterpret_cast<const _tThermostat *>(pdata);
+		const _tSetpoint*therm = reinterpret_cast<const _tSetpoint*>(pdata);
 		AddrH = therm->id1;
 		AddrL = therm->id2;
 		cmd = therm->id3;
 		nr = therm->id4;
 
-		float temp = therm->temp;
+		float temp = therm->value;
 		int ttemp = (int)(temp * 10);
 
 		ev[0] = AddrH;

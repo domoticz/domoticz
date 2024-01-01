@@ -75,9 +75,6 @@
     <Filter Include="Devices\OpenTherm-Gateway">
       <UniqueIdentifier>{9b834e19-65cb-442c-bfd7-c39e44279cb7}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Devices\ZWave">
-      <UniqueIdentifier>{8541fa16-1ca3-4b1c-8658-7075b91f73a8}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Devices\LimitlessLed">
       <UniqueIdentifier>{80714ac8-8783-4ef2-8836-3bb5b15adbb0}</UniqueIdentifier>
     </Filter>
@@ -146,9 +143,6 @@
     </Filter>
     <Filter Include="Devices\MySensors">
       <UniqueIdentifier>{16e4b391-9590-41fe-b5fa-aaf91d629b2b}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="MQTT">
-      <UniqueIdentifier>{1315bb26-40a6-402e-84be-bc07bee1aef1}</UniqueIdentifier>
     </Filter>
     <Filter Include="Devices\MQTT">
       <UniqueIdentifier>{3a449100-50ce-4b1e-96f5-5eab825f169c}</UniqueIdentifier>
@@ -405,9 +399,6 @@
     <Filter Include="Devices\InComfort">
       <UniqueIdentifier>{bbff9485-9778-469f-9659-e3575b33a348}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Devices\ZWave\Control Panel">
-      <UniqueIdentifier>{2467c1b1-dd49-4842-9931-bb5a12d729e2}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Pushers\InfluxDB">
       <UniqueIdentifier>{2c9db333-1435-4a52-970c-2a53298e2689}</UniqueIdentifier>
     </Filter>
@@ -513,6 +504,12 @@
     <Filter Include="Devices\Enever">
       <UniqueIdentifier>{10536bc9-7284-4bae-9c04-448ec48cf184}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Devices\Mitsubishi_WF_RAC">
+      <UniqueIdentifier>{3ed60fed-bd93-4dae-aca5-13d7ccd3c6d4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Pushers\MQTT">
+      <UniqueIdentifier>{9b505904-8aa5-4496-b7ec-61bd8d8e4301}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\CMakeLists.txt">
@@ -523,9 +520,6 @@
     </None>
     <None Include="domoticz.ico">
       <Filter>Windows</Filter>
-    </None>
-    <None Include="..\www\zwavetopology.html">
-      <Filter>www</Filter>
     </None>
     <None Include="..\www\eventsframe.html">
       <Filter>www</Filter>
@@ -606,9 +600,6 @@
       <Filter>www\app</Filter>
     </None>
     <None Include="..\www\app\WeatherController.js">
-      <Filter>www\app</Filter>
-    </None>
-    <None Include="..\www\app\ZWaveTopologyController.js">
       <Filter>www\app</Filter>
     </None>
     <None Include="..\www\app\AboutController.js">
@@ -1394,12 +1385,6 @@
     <None Include="..\www\app\hardware\setup\WakeOnLan.js">
       <Filter>www\app\hardware\setup</Filter>
     </None>
-    <None Include="..\www\app\hardware\setup\ZWave.html">
-      <Filter>www\app\hardware\setup</Filter>
-    </None>
-    <None Include="..\www\app\hardware\setup\ZWave.js">
-      <Filter>www\app\hardware\setup</Filter>
-    </None>
     <None Include="..\www\app\livesocket.js">
       <Filter>www\app</Filter>
     </None>
@@ -1452,12 +1437,14 @@
     <None Include="..\www\js\sw-toolbox.js">
       <Filter>www\js</Filter>
     </None>
-    <None Include="..\www\css\planning.css" />
     <None Include="..\www\app\hardware\setup\MQTT-AD.html">
       <Filter>www\app\hardware\setup</Filter>
     </None>
     <None Include="..\www\app\hardware\setup\MQTT-AD.js">
       <Filter>www\app\hardware\setup</Filter>
+    </None>
+    <None Include="..\www\css\planning.css">
+      <Filter>www\css</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
@@ -1626,12 +1613,6 @@
     <ClInclude Include="..\hardware\OTGWTCP.h">
       <Filter>Devices\OpenTherm-Gateway</Filter>
     </ClInclude>
-    <ClInclude Include="..\hardware\ZWaveBase.h">
-      <Filter>Devices\ZWave</Filter>
-    </ClInclude>
-    <ClInclude Include="..\hardware\ZWaveCommands.h">
-      <Filter>Devices\ZWave</Filter>
-    </ClInclude>
     <ClInclude Include="..\hardware\1Wire\1WireForWindows.h">
       <Filter>Devices\1-Wire</Filter>
     </ClInclude>
@@ -1715,9 +1696,6 @@
     </ClInclude>
     <ClInclude Include="..\hardware\PhilipsHue\PhilipsHueSensors.h">
       <Filter>Devices\Philips Hue</Filter>
-    </ClInclude>
-    <ClInclude Include="..\hardware\openzwave\control_panel\ozwcp.h">
-      <Filter>Devices\ZWave\Control Panel</Filter>
     </ClInclude>
     <ClInclude Include="..\hardware\EvohomeBase.h">
       <Filter>Devices\EvoHome</Filter>
@@ -1992,9 +1970,6 @@
     <ClInclude Include="..\hardware\InComfort.h">
       <Filter>Devices\InComfort</Filter>
     </ClInclude>
-    <ClInclude Include="..\hardware\OpenZWave.h">
-      <Filter>Devices\ZWave</Filter>
-    </ClInclude>
     <ClInclude Include="..\push\InfluxPush.h">
       <Filter>Pushers\InfluxDB</Filter>
     </ClInclude>
@@ -2157,9 +2132,6 @@
     <ClInclude Include="..\hardware\Buienradar.h">
       <Filter>Devices\Buienradar</Filter>
     </ClInclude>
-    <ClInclude Include="..\main\mosquitto_helper.h">
-      <Filter>MQTT</Filter>
-    </ClInclude>
     <ClInclude Include="..\main\NotificationObserver.h">
       <Filter>EventSystem</Filter>
     </ClInclude>
@@ -2256,6 +2228,18 @@
     <ClInclude Include="..\hardware\Enever.h">
       <Filter>Devices\Enever</Filter>
     </ClInclude>
+    <ClInclude Include="..\hardware\MitsubishiWF.h">
+      <Filter>Devices\Mitsubishi_WF_RAC</Filter>
+    </ClInclude>
+    <ClInclude Include="..\main\mosquitto_helper.h">
+      <Filter>Devices\MQTT</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\CounterHelper.h">
+      <Filter>Devices</Filter>
+    </ClInclude>
+    <ClInclude Include="..\push\MQTTPush.h">
+      <Filter>Pushers\MQTT</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\webserver\Base64.cpp">
@@ -2336,7 +2320,13 @@
     <ClCompile Include="..\main\WebServer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\main\WebServerCmds.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="..\main\WebServerCommands.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\main\WebServerHandleGraph.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\iamserver\IamService.cpp">
@@ -2398,9 +2388,6 @@
     </ClCompile>
     <ClCompile Include="..\hardware\OTGWTCP.cpp">
       <Filter>Devices\OpenTherm-Gateway</Filter>
-    </ClCompile>
-    <ClCompile Include="..\hardware\ZWaveBase.cpp">
-      <Filter>Devices\ZWave</Filter>
     </ClCompile>
     <ClCompile Include="..\hardware\1Wire\1WireForWindows.cpp">
       <Filter>Devices\1-Wire</Filter>
@@ -2482,9 +2469,6 @@
     </ClCompile>
     <ClCompile Include="..\hardware\PhilipsHue\PhilipsHueSensors.cpp">
       <Filter>Devices\Philips Hue</Filter>
-    </ClCompile>
-    <ClCompile Include="..\hardware\openzwave\control_panel\ozwcp.cpp">
-      <Filter>Devices\ZWave\Control Panel</Filter>
     </ClCompile>
     <ClCompile Include="..\hardware\EvohomeBase.cpp">
       <Filter>Devices\EvoHome</Filter>
@@ -2623,9 +2607,6 @@
     </ClCompile>
     <ClCompile Include="..\notifications\NotificationLogitechMediaServer.cpp">
       <Filter>Notifications</Filter>
-    </ClCompile>
-    <ClCompile Include="..\hardware\openzwave\control_panel\zwavelib.cpp">
-      <Filter>Devices\ZWave\Control Panel</Filter>
     </ClCompile>
     <ClCompile Include="..\hardware\RFLinkSerial.cpp">
       <Filter>Devices\RFLink</Filter>
@@ -2804,9 +2785,6 @@
     <ClCompile Include="..\hardware\InComfort.cpp">
       <Filter>Devices\InComfort</Filter>
     </ClCompile>
-    <ClCompile Include="..\hardware\OpenZWave.cpp">
-      <Filter>Devices\ZWave</Filter>
-    </ClCompile>
     <ClCompile Include="..\push\InfluxPush.cpp">
       <Filter>Pushers\InfluxDB</Filter>
     </ClCompile>
@@ -2948,9 +2926,6 @@
     <ClCompile Include="..\hardware\Buienradar.cpp">
       <Filter>Devices\Buienradar</Filter>
     </ClCompile>
-    <ClCompile Include="..\main\mosquitto_helper.cpp">
-      <Filter>MQTT</Filter>
-    </ClCompile>
     <ClCompile Include="..\main\LuaTable.cpp">
       <Filter>EventSystem\Lua</Filter>
     </ClCompile>
@@ -3028,6 +3003,18 @@
     </ClCompile>
     <ClCompile Include="..\hardware\Enever.cpp">
       <Filter>Devices\Enever</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\MitsubishiWF.cpp">
+      <Filter>Devices\Mitsubishi_WF_RAC</Filter>
+    </ClCompile>
+    <ClCompile Include="..\main\mosquitto_helper.cpp">
+      <Filter>Devices\MQTT</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\CounterHelper.cpp">
+      <Filter>Devices</Filter>
+    </ClCompile>
+    <ClCompile Include="..\push\MQTTPush.cpp">
+      <Filter>Pushers\MQTT</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

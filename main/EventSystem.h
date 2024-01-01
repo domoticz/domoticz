@@ -122,7 +122,7 @@ public:
 	void GetCurrentScenesGroups();
 	void GetCurrentUserVariables();
 	bool UpdateSceneGroup(uint64_t ulDevID, int nValue, const std::string &lastUpdate);
-	void UpdateUserVariable(uint64_t ulDevID, const std::string &varValue, const std::string &lastUpdate);
+	void UpdateUserVariable(uint64_t ulDevID, const std::string& varname, const int eVartype, const std::string &varValue, const std::string &lastUpdate);
 	bool PythonScheduleEvent(const std::string &ID, const std::string &Action, const std::string &eventName);
 	bool GetEventTrigger(uint64_t ulDevID, _eReason reason, bool bEventTrigger);
 	void SetEventTrigger(uint64_t ulDevID, _eReason reason, float fDelayTime);
@@ -249,7 +249,6 @@ private:
 	std::map<std::string, float> m_winddirValuesByName;
 	std::map<std::string, float> m_windspeedValuesByName;
 	std::map<std::string, float> m_windgustValuesByName;
-	std::map<std::string, int>	 m_zwaveAlarmValuesByName;
 
 	std::map<uint64_t, float> m_tempValuesByID;
 	std::map<uint64_t, float> m_dewValuesByID;
@@ -263,7 +262,6 @@ private:
 	std::map<uint64_t, float> m_winddirValuesByID;
 	std::map<uint64_t, float> m_windspeedValuesByID;
 	std::map<uint64_t, float> m_windgustValuesByID;
-	std::map<uint64_t, int> m_zwaveAlarmValuesByID;
 
 	void reportMissingDevice(int deviceID, const _tEventItem &item);
 	int getSunRiseSunSetMinutes(const std::string &what);

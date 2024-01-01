@@ -155,7 +155,7 @@ bool RelayNet::StartHardware()
 {
 	RequestStart();
 
-	bool bOk = false;;
+	bool bOk = false;
 	m_bIsStarted = false;
 	m_setup_devices = false;
 	m_bIsStarted = false;
@@ -697,7 +697,7 @@ void RelayNet::OnDisconnect()
 
 void RelayNet::OnData(const unsigned char *pData, size_t length)
 {
-	ParseData(pData, length);
+	ParseData(pData, static_cast<int>(length));
 }
 
 //===========================================================================

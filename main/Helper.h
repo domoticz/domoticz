@@ -104,7 +104,10 @@ void rgb2hsb(int r, int g, int b, float hsbvals[3]);
 bool is_number(const std::string& s);
 void padLeft(std::string &str, size_t num, char paddingChar = '0');
 
-bool IsLightOrSwitch(int devType, int subType);
+bool IsLightOrSwitch(int dType, int dSubType);
+bool IsTemp(int dType, int dSubType);
+bool IsWeather(int dType, int dSubType);
+bool IsUtility(int dType, int dSubType);
 
 int MStoBeaufort(float ms);
 
@@ -150,3 +153,6 @@ char* make_web_time(const time_t rawtime);
 
 bool base32_decode(const std::string &input, std::string &output);
 bool base32_encode(const std::string &input, std::string &output);
+
+std::string vector_2_string(std::vector<std::string> const& strings, const std::string& delim);
+

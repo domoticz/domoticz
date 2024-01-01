@@ -363,7 +363,7 @@ void CTTNMQTT::SendMessage(const std::string &Topic, const std::string &Message)
 			Log(LOG_STATUS, "Not Connected, failed to send message: %s", Message.c_str());
 			return;
 		}
-		publish(nullptr, Topic.c_str(), Message.size(), Message.c_str());
+		publish(nullptr, Topic.c_str(), static_cast<int>(Message.size()), Message.c_str());
 	}
 	catch (...)
 	{
@@ -431,7 +431,7 @@ void CTTNMQTT::UpdateUserVariable(const std::string &varName, const std::string 
 	}
 
 	m_mainworker.m_eventsystem.SetEventTrigger(ID, m_mainworker.m_eventsystem.REASON_USERVARIABLE, 0);
-	m_mainworker.m_eventsystem.UpdateUserVariable(ID, varValue, sLastUpdate);
+	m_mainworker.m_eventsystem.UpdateUserVariable(ID, varName, (int)USERVARTYPE_STRING, varValue, sLastUpdate);
 }
 
 int CTTNMQTT::GetAddDeviceAndSensor(const int m_HwdID, const std::string &DeviceName, const std::string &MacAddress)

@@ -282,7 +282,7 @@ bool CLimitLess::IsDataAvailable(const SOCKET /*sock*/)
 	tv.tv_usec = 0;
 
 	// Wait until timeout or data received.
-	n = select(m_RemoteSocket + 1, &fds, nullptr, nullptr, &tv);
+	n = select(static_cast<int>(m_RemoteSocket + 1), &fds, nullptr, nullptr, &tv);
 	return (n > 0);
 }
 

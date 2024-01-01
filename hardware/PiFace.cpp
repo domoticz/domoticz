@@ -182,7 +182,7 @@ int CPiFace::LoadConfig()
 				Line = preprocess(input);
 
 				//find any comments
-				StartPos = Line.find("//", 0);
+				StartPos = (int)Line.find("//", 0);
 				if (StartPos >= 0)
 				{
 					//comment found, remove it

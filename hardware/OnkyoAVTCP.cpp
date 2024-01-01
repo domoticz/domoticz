@@ -216,7 +216,7 @@ void OnkyoAVTCP::Do_Work()
 
 void OnkyoAVTCP::OnData(const unsigned char *pData, size_t length)
 {
-	ParseData(pData, length);
+	ParseData(pData, static_cast<int>(length));
 }
 
 void OnkyoAVTCP::OnError(const boost::system::error_code &error)
@@ -317,7 +317,7 @@ bool OnkyoAVTCP::SendPacket(const char *pdata)
 
 	pPkt->magic = htonl(0x49534350); // "ISCP"
 	pPkt->hdr_size = htonl(16);
-	pPkt->data_size = htonl(length + 3);
+	pPkt->data_size = static_cast<uint32_t>(htonl((unsigned long)length + 3));
 	pPkt->version = 1;
 	memset(pPkt->reserved, 0, sizeof(pPkt->reserved));
 	pPkt->start = '!';
@@ -500,7 +500,7 @@ bool OnkyoAVTCP::ReceiveXML(const char *pData, int Len)
 				continue;
 
 			char *escaped_name = strdup(name);
-			int nlen = strlen(name);
+			size_t nlen = strlen(name);
 			while (nlen)
 			{
 				if (escaped_name[nlen - 1] == ' ' && escaped_name[nlen] == 0)

@@ -79,6 +79,7 @@ class CNotificationHelper
 	bool CheckAndHandleValueNotification(uint64_t Idx, const std::string &DeviceName, int value);
 	bool CheckAndHandleRainNotification(uint64_t Idx, const std::string &DeviceName, unsigned char devType, unsigned char subType, _eNotificationTypes ntype, float mvalue);
 	bool CheckAndHandleAmpere123Notification(uint64_t Idx, const std::string &DeviceName, float Ampere1, float Ampere2, float Ampere3);
+	bool CheckAndHandleAlertNotification(uint64_t Idx, const std::string &DeviceName, const std::string &sValue);
 
 	std::string ParseCustomMessage(const std::string &cMessage, const std::string &sName, const std::string &sValue);
 	bool ApplyRule(const std::string &rule, bool equal, bool less);

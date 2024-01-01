@@ -148,7 +148,6 @@ namespace http
 			bool parse_cookie(const request &req, std::string &sSID, std::string &sAuthToken, std::string &szTime, bool &expired);
 			bool AreWeInTrustedNetwork(const std::string &sHost);
 			bool IsIPInRange(const std::string &ip, const _tIPNetwork &ipnetwork, const bool &bIsIPv6);
-			int authorize(WebEmSession &session, const request &req, reply &rep);
 			void Logout();
 			int parse_auth_header(const request &req, struct ah *ah);
 			std::string generateAuthToken(const WebEmSession &session, const request &req);
@@ -200,6 +199,7 @@ namespace http
 			bool FindAuthenticatedUser(std::string &user, const request &req, reply &rep);
 			bool CheckVHost(const request &req);
 			bool findRealHostBehindProxies(const request &req, std::string &realhost);
+			static bool isValidIP(std::string& ip);
 
 			void ClearUserPasswords();
 			std::vector<_tWebUserPassword> m_userpasswords;
@@ -244,8 +244,6 @@ namespace http
 			std::map<std::string, webem_action_function> myActions;
 			/// store name walue pairs for form submit action
 			std::map<std::string, webem_page_function> myPages;
-
-			static bool isValidIP(std::string& ip);
 
 			void CleanSessions();
 			bool sumProxyHeader(const std::string &sHeader, const request &req, std::vector<std::string> &vHeaderLines);

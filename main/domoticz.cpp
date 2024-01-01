@@ -126,28 +126,8 @@ std::string szUserDataFolder;
 std::string szWWWFolder;
 std::string szWebRoot;
 std::string dbasefile;
+std::string szCertFile = "./server_cert.pem";
 bool bDoCachePages = true;
-
-/*
-#define VCGENCMDTEMPCOMMAND "vcgencmd measure_temp"
-#define VCGENCMDARMSPEEDCOMMAND "vcgencmd measure_clock arm"
-#define VCGENCMDV3DSPEEDCOMMAND "vcgencmd measure_clock v3d"
-#define VCGENCMDCORESPEEDCOMMAND "vcgencmd measure_clock core"
-
-bool bHasInternalTemperature=false;
-std::string szInternalTemperatureCommand = "";
-
-bool bHasInternalClockSpeeds=false;
-std::string szInternalARMSpeedCommand = "";
-std::string szInternalV3DSpeedCommand = "";
-std::string szInternalCoreSpeedCommand = "";
-
-bool bHasInternalVoltage=false;
-std::string szInternalVoltageCommand = "";
-
-bool bHasInternalCurrent=false;
-std::string szInternalCurrentCommand = "";
-*/
 
 std::string szAppVersion="???";
 int iAppRevision=0;
@@ -917,8 +897,9 @@ int main(int argc, char**argv)
 				_log.Log(LOG_ERROR, "Please specify a file path for your server certificate file");
 				return 1;
 			}
-			secure_webserver_settings.cert_file_path = cmdLine.GetSafeArgument("-sslcert", 0, "");
-			secure_webserver_settings.private_key_file_path = secure_webserver_settings.cert_file_path;
+			szCertFile = cmdLine.GetSafeArgument("-sslcert", 0, "");
+			secure_webserver_settings.cert_file_path = szCertFile;
+			secure_webserver_settings.private_key_file_path = szCertFile;
 		}
 		if (cmdLine.HasSwitch("-sslkey"))
 		{

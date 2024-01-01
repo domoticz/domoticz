@@ -3,18 +3,14 @@
 usage() {
     cat <<HERE
 Usage:
-  build clean [-p openzwave | domoticz]   # clean source
-  build compile [-p openzwave | domoticz] # compile source
+  build clean [-p domoticz]   # clean source
+  build compile [-p domoticz] # compile source
   build shell                             # run bash inside the container
 
 Only for Domoticz:
   build cmake                             # (re)creates Makefiles
   build run                               # run Domoticz for testing
 
-Only for OpenZWave:
-  build check                             # validates XML configuration files
-  build updateIndexDefines
-  build test
 HERE
     exit 1
 }
@@ -28,9 +24,7 @@ while getopts 'p:' c; do
   case $c in
     p)
         PROJECT=$OPTARG
-        if [ $PROJECT = openzwave ]; then
-            PROJECT=open-zwave-read-only
-        elif [ $PROJECT = domoticz ]; then
+        if [ $PROJECT = domoticz ]; then
             PROJECT=dev-domoticz
         else
             usage
@@ -91,7 +85,6 @@ do_cmake() {
                 WITH_LIBUSB \
                 USE_LUA_STATIC \
                 USE_OPENSSL_STATIC \
-                USE_STATIC_OPENZWAVE \
                 USE_PRECOMPILED_HEADER \
                 GIT_SUBMODULE
         do
@@ -149,7 +142,6 @@ clean)
     if [ -n "$PROJECT" ]; then
         do_clean $PROJECT
     else
-        do_clean open-zwave-read-only
         do_clean dev-domoticz
     fi
     ;;
@@ -157,7 +149,6 @@ compile)
     if [ -n "$PROJECT" ]; then
         do_compile $PROJECT
     else
-        do_compile open-zwave-read-only
         do_compile dev-domoticz
     fi
     ;;
@@ -178,8 +169,6 @@ run)
 check|updateIndexDefines|test)
     if [ -n "$PROJECT" ]; then
         do_make $PROJECT $CMD
-    else
-        do_make open-zwave-read-only $CMD
     fi
     ;;
 shell)

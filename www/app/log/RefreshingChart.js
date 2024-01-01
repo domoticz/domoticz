@@ -474,7 +474,7 @@ define(['lodash', 'Base', 'DomoticzBase', 'DataLoader', 'ChartLoader', 'ChartZoo
                     let axisMin, axisMax;
                     const t = self.device.Type;
                     const s = self.device.SubType;
-                    if (['Percentage'].includes(s) || ['Temp', 'Thermostat', 'Humidity', 'Heating'].includes(t)) {
+                    if (['Percentage'].includes(s) || ['Temp', 'Setpoint', 'Humidity', 'Heating'].includes(t)) {
                         axisMin = 0;
                         axisMax = 100;
                     } else if (['Visibility'].includes(s)) {
@@ -596,6 +596,11 @@ define(['lodash', 'Base', 'DomoticzBase', 'DataLoader', 'ChartLoader', 'ChartZoo
                 const xAxis = self.chart.xAxis[0];
                 zoom(xAxis.dataMin, xAxis.dataMax);
             }
+
+			self.$scope.changeCompTypeTemp = function() {
+				self.ctrl.var_name = self.$scope.comptype;
+				refreshChartData();
+			}
 
             self.$scope.groupByLabel = function (label) {
                 const matcher = label.match(/^(?<letter>[yq])$/);

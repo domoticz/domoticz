@@ -56,29 +56,14 @@ std::string ReadFile(std::string filename)
 }
 #endif
 
-CThermosmart::CThermosmart(const int ID, const std::string &Username, const std::string &Password, const int Mode1, const int Mode2, const int Mode3, const int Mode4, const int Mode5, const int Mode6)
+CThermosmart::CThermosmart(const int ID, const std::string &Username, const std::string &Password, const int Mode1)
 {
-	if ((Password == "secret")|| (Password.empty()))
-	{
-		Log(LOG_ERROR, "Please update your username/password!...");
-	}
-	else
-	{
-		m_UserName = Username;
-		m_Password = Password;
-		stdstring_trim(m_UserName);
-		stdstring_trim(m_Password);
-	}
+	m_UserName = Username;
+	m_Password = Password;
 	m_HwdID=ID;
-	m_OutsideTemperatureIdx = 0; //use build in
+	m_OutsideTemperatureIdx = Mode1;	// 0 is build in, else idx of outside temperature sensor
 	m_LastMinute = -1;
-	SetModes(Mode1, Mode2, Mode3, Mode4, Mode5, Mode6);
 	Init();
-}
-
-void CThermosmart::SetModes(const int Mode1, const int Mode2, const int Mode3, const int Mode4, const int Mode5, const int Mode6)
-{
-	m_OutsideTemperatureIdx = Mode1;
 }
 
 void CThermosmart::Init()
@@ -161,14 +146,14 @@ bool CThermosmart::GetOutsideTemperatureFromDomoticz(float &tvalue)
 
 void CThermosmart::SendSetPointSensor(const unsigned char Idx, const float Temp, const std::string &defaultname)
 {
-	_tThermostat thermos;
-	thermos.subtype=sTypeThermSetpoint;
+	_tSetpoint thermos;
+	thermos.subtype=sTypeSetpoint;
 	thermos.id1=0;
 	thermos.id2=0;
 	thermos.id3=0;
 	thermos.id4=Idx;
 	thermos.dunit=0;
-	thermos.temp=Temp;
+	thermos.value=Temp;
 	sDecodeRXMessage(this, (const unsigned char *)&thermos, "Setpoint", 255, nullptr);
 }
 
@@ -302,7 +287,6 @@ void CThermosmart::Logout()
 	m_ThermostatID = "";
 	m_bDoLogin = true;
 }
-
 
 bool CThermosmart::WriteToHardware(const char *pdata, const unsigned char length)
 {
@@ -476,4 +460,3 @@ void CThermosmart::SetOutsideTemp(const float temp)
 		return;
 	}
 }
-

@@ -262,7 +262,7 @@ void CSBFSpot::ImportOldMonthData(const uint64_t DevID, const int Year, const in
 	if (m_SBFPlantName.empty())
 		return;
 
-	int iInvOff = 1;
+	size_t iInvOff = 1;
 	char szLogFile[256];
 	std::string tmpPath = m_SBFDataPath;
 	stdreplace(tmpPath, "%Y", std::to_string(Year));

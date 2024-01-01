@@ -205,9 +205,6 @@
 			<input type="hidden" id="idx" name="idx" value="-1">
 			<button class="btn btn-warning" id="defaultbutton">Default</button>
 			<button class="btn btn-danger" id="submitbutton">Set Mode</button>
-			<br>
-			<br>
-			<button class="btn btn-info" id="firmwarebutton">Upgrade Firmware</button>
 		</form>
 	</center>
 </div>
@@ -254,9 +251,6 @@
 			<input type="hidden" id="idx" name="idx" value="-1">
 			<button class="btn btn-warning" id="defaultbutton">Default</button>
 			<button class="btn btn-danger" id="submitbutton">Set Mode</button>
-			<br>
-			<br>
-			<button class="btn btn-info" id="firmwarebutton">Upgrade Firmware</button>
 		</form>
 	</center>
 </div>
@@ -1333,19 +1327,46 @@
 				<td><input type="text" id="AccessToken" style="width: 300px; padding: .2em;" class="text ui-widget-content ui-corner-all"></td>
 			</tr>
 			<tr>
-				<td align="right" <label><span data-i18n="Provider"></span>:</label></td>
+				<td align="right" <label><span data-i18n="Provider Electricity"></span>:</label></td>
 				<td>
-					<select id="provider" name="provider" style="width:200px" class="combobox ui-corner-all">
+					<select id="providerAC" name="providerAC" style="width:200px" class="combobox ui-corner-all">
+						<option value="AA">Atoom Alliantie</option>
 						<option value="AIP">All in power</option>
-						<option value="ANWB" selected="selected">ANWB Energie</option>
+						<option value="ANWB">ANWB Energie</option>
 						<option value="EE">EasyEnergy</option>
+						<option value="EVO">Energie van Ons</option>
 						<option value="EZ">Energy Zero</option>
 						<option value="FR">Frank Energie</option>
 						<option value="GSL">Groenestroom Lokaal</option>
 						<option value="MDE">Mijndomein Energie</option>
 						<option value="NE">NextEnergy</option>
 						<option value="TI">Tibber</option>
+						<option value="VDB">Vandebron</option>
 						<option value="VON">Vrij op naam</option>
+						<option value="WE">Wout Energie</option>
+						<option value="ZG">ZonderGas</option>
+						<option value="ZP">Zonneplan</option>
+					</select>
+				</td>
+			</tr>
+			<tr>
+				<td align="right" <label><span data-i18n="Provider Gas"></span>:</label></td>
+				<td>
+					<select id="providerGas" name="providerGas" style="width:200px" class="combobox ui-corner-all">
+						<option value="AA">Atoom Alliantie</option>
+						<option value="AIP">All in power</option>
+						<option value="ANWB">ANWB Energie</option>
+						<option value="EE">EasyEnergy</option>
+						<option value="EVO">Energie van Ons</option>
+						<option value="EZ">Energy Zero</option>
+						<option value="FR">Frank Energie</option>
+						<option value="GSL">Groenestroom Lokaal</option>
+						<option value="MDE">Mijndomein Energie</option>
+						<option value="NE">NextEnergy</option>
+						<option value="TI">Tibber</option>
+						<option value="VDB">Vandebron</option>
+						<option value="VON">Vrij op naam</option>
+						<option value="WE">Wout Energie</option>
 						<option value="ZG">ZonderGas</option>
 						<option value="ZP">Zonneplan</option>
 					</select>
@@ -1598,6 +1619,7 @@
 						<option value="0xF107" data-i18n="RGBWWZ Switch">RGBWWZ Switch</option>
 						<option value="0x5D01" data-i18n="Scale">Scale (Weight)</option>
 						<option value="0xF43E" data-i18n="Selector Switch">Selector Switch</option>
+						<option value="0xF201" data-i18n="Setpoint">Setpoint</option>
 						<option value="0xF303" data-i18n="Soil Moisture">Soil Moisture</option>
 						<option value="0xF302" data-i18n="Solar Radiation">Solar Radiation</option>
 						<option value="0xF318" data-i18n="Sound Level">Sound Level</option>

@@ -507,7 +507,7 @@ void CRFLinkMQTT::SendMessage(const std::string &Topic, const std::string &Messa
 		}
 		//_log.Log(LOG_STATUS, ">>> RFLINK MQTT::Publish message %s:%s", Topic.c_str() , Message.substr(0, Message.size()-1).c_str());
         _log.Log(LOG_NORM, ">>> RFLINK MQTT::Publish message %s:%s", Topic.c_str() , msg.substr(0, msg.size()-1).c_str());
-        publish(NULL, Topic.c_str(), msg.size(), msg.c_str());
+        publish(NULL, Topic.c_str(), static_cast<int>(msg.size()), msg.c_str());
 	}
 	catch (...)
 	{

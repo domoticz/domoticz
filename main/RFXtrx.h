@@ -27,6 +27,11 @@ portions of this file.
 */
 
 /*
+SDK version 9.40	June 21, 2023
+	msg3_868 ALECTO5500enabled changed to FINEOFFSETenabled
+	FWtypeRFX310 added
+	Brel bi-directional updated
+
 SDK version 9.39	February 27, 2023
 	Orcon struct FANEXT added
 	lightning WH57 added
@@ -486,6 +491,8 @@ SDK version 4.9
 #define FWtypeRFX433 0x14 //RFM69 433 firmware
 #define FWtypeRFX868 0x15 //RFM69 868 firmware
 #define FWtypeProXL95 0x16 //RFM95 firmware
+#define FWtypeRFX433XXL 0x17 //RFU
+#define FWtypeRFX310 0x18 //RFXusb with 310MHz receiver module
 
 //433 config bits
 #define msg3_AE 0x01			//AE Blyss
@@ -1180,13 +1187,18 @@ SDK version 4.9
 //types for Bi-directional Blinds DDxxxx
 #define pTypeDDxxxx 0x31
 #define sTypeDDxxxx 0x00
-#define DDxxxx_Open 0x0
-#define DDxxxx_Close 0x1
+#define DDxxxx_Up 0x0
+#define DDxxxx_Down 0x1
 #define DDxxxx_Stop 0x2
-#define DDxxxx_Pair 0x3
+#define DDxxxx_P2 0x3	//Pair
 #define DDxxxx_Percent 0x4
 #define DDxxxx_Angle 0x5
 #define DDxxxx_PercentAngle 0x6
+#define DDxxxx_HoldUp 0x7 //not yet used
+#define DDxxxx_HoldStop 0x8 //not yet used
+#define DDxxxx_HoldUpDown 0x9 //not yet used
+#define DDxxxx_HoldStopUp 0xA //not yet used
+#define DDxxxx_HoldStopDown 0xB //not yet used
 
 //types for Thermostat
 #define pTypeThermostat1 0x40

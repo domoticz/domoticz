@@ -394,7 +394,7 @@ void request_handler::handle_request(const request &req, reply &rep, modify_info
 				// We found an already compressed source file, but the client does not seem to support to received it compressed. So we decompress it first.
 				std::string gzcontent((std::istreambuf_iterator<char>(is)), (std::istreambuf_iterator<char>()));
 
-				CGZIP2AT<> decompress((LPGZIP)gzcontent.c_str(), gzcontent.size());
+				CGZIP2AT<> decompress((LPGZIP)gzcontent.c_str(), static_cast<int>(gzcontent.size()));
 				rep.content.append(decompress.psz, decompress.Length);
 				_log.Debug(DEBUG_WEBSERVER, "[web:%s] decompressed content from %s before sending.", request_path.c_str(), full_path.c_str());
 			}
@@ -404,16 +404,6 @@ void request_handler::handle_request(const request &req, reply &rep, modify_info
 				rep.content.append((std::istreambuf_iterator<char>(is)), (std::istreambuf_iterator<char>()));
 				rep.bIsGZIP = (bClientHasGZipSupport && bHaveLoadedgzip);
 			}
-			/* 20230525 No Longer in Use! Will be removed soon!
-			if (bIsCompressibleType && (!bHaveLoadedgzip))
-			{
-				// Find and include any special cWebem strings
-				if (myWebem->Include(rep.content))
-				{
-					_log.Debug(DEBUG_WEBSERVER,"[web:%s] Added some include in non-zipped file", request_path.c_str());
-				}
-			}
-			*/
 			if (bClientHasGZipSupport && bIsCompressibleType && (!bHaveLoadedgzip))
 			{
 				// The sourcefile is not compressed, but the client supports receiving compressed content

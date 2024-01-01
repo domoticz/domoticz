@@ -165,6 +165,8 @@ define(function () {
                     return '%';
                 } else if (this.Type === 'Weight') {
                     return this.SwitchTypeVal === 0 ? 'kg' : 'lbs';
+                } else if (this.Type === 'Rain') {
+                    return 'mm';
                 } else {
                     return '?';
                 }
@@ -179,7 +181,7 @@ define(function () {
                     'Voltage', 'Current', 'Pressure', 'Custom Sensor', 'kWh',
                     'Sound Level', 'Solar Radiation', 'Visibility', 'Distance',
                     'Soil Moisture', 'Leaf Wetness', 'Waterflow', 'Lux', 'Percentage',
-                    'Text', 'Alert', 'Temperature'
+                    'Text', 'Alert', 'Temperature', 'SetPoint'
                 ];
 
                 if (deviceTypes.some(function(item) {

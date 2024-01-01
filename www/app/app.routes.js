@@ -60,6 +60,11 @@ define(['angularAMD', 'angular', 'angular-route'], function (angularAMD) {
                 controller: 'DPInfluxController',
                 permission: 'Admin'
             }))
+            .when('/DPMQTT', angularAMD.route({
+                templateUrl: 'views/dpmqtt.html',
+                controller: 'DPMQTTController',
+                permission: 'Admin'
+            }))
             .when('/DPGooglePubSub', angularAMD.route({
                 templateUrl: 'views/dpgooglepubsub.html',
                 controller: 'DPGooglePubSubController',
@@ -139,11 +144,6 @@ define(['angularAMD', 'angular', 'angular-route'], function (angularAMD) {
             .when('/RestoreDatabase', angularAMD.route({
                 templateUrl: 'views/restoredatabase.html',
                 controller: 'RestoreDatabaseController',
-                permission: 'Admin'
-            }))
-            .when('/RFXComFirmware', angularAMD.route({
-                templateUrl: 'views/rfxcomfirmware.html',
-                controller: 'RFXComFirmwareController',
                 permission: 'Admin'
             }))
             .when('/Cam', angularAMD.route({
@@ -227,11 +227,6 @@ define(['angularAMD', 'angular', 'angular-route'], function (angularAMD) {
                 templateUrl: 'views/weather.html',
                 controller: 'WeatherController',
                 controllerAs: 'ctrl'
-            }))
-            .when('/ZWaveTopology', angularAMD.route({
-                templateUrl: 'zwavetopology.html',
-                controller: 'ZWaveTopologyController',
-                permission: 'Admin'
             }))
             .when('/Mobile', angularAMD.route({
                 templateUrl: 'views/mobile_notifications.html',

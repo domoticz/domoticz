@@ -19,20 +19,15 @@
         </thead>
     </table>
     <input type="hidden" id="idx" name="idx" value="-1">
-    <table id="updelclr" border="0" cellpadding="0" cellspacing="0" width="100%">
-        <tr>
-            <td align="right">
-                <a class="btnstyle3" id="nodelistrefresh" data-i18n="Refresh" onclick="RefreshConfiguration();">Refresh</a>
-            </td>
-        </tr>
-    </table>
-    <br>
-    <table class="display" id="numbervaluetable" border="0" cellpadding="0" cellspacing="20">
+    <table id="numbervaluetable" border="0" cellpadding="0" cellspacing="0" width="100%">
         <tr>
             <td align="right" style="width:80px"><label for="numval"><span data-i18n="Value"></span>:</label></td>
             <td><input type="number" id="numval" style="width: 60px; padding: .2em;" class="text ui-widget-content ui-corner-all">&nbsp;
 			<span id="numunit"></span>&nbsp;
 			<a id="numberupdate" class="btnstyle3" onclick="UpdateValue();" data-i18n="Update"></a></td>
+            <td align="right">
+                <a class="btnstyle3" id="nodelistrefresh" data-i18n="Refresh" onclick="RefreshConfiguration();">Refresh</a>&nbsp;
+            </td>
         </tr>
     </table>
 </div>

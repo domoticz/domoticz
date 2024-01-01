@@ -434,16 +434,16 @@ bool CAirconWithMe::WriteToHardware(const char* pdata, const unsigned char lengt
 
 		SendValueToAirco(uid, value);
 	}
-	else if (packettype == pTypeThermostat)
+	else if (packettype == pTypeSetpoint)
 	{
-		const _tThermostat* pThemostat = reinterpret_cast<const _tThermostat*>(pSen);
+		const _tSetpoint* pThemostat = reinterpret_cast<const _tSetpoint*>(pSen);
 		int32_t uid = pThemostat->id3 * 256 + pThemostat->id4;
 		if (_UIDMap.find(uid) == _UIDMap.end())
 			return false;
 		if (mDeviceInfo.find(uid) == mDeviceInfo.end())
 			return false;
 
-		int32_t value = static_cast<int32_t>(pThemostat->temp * 10);
+		int32_t value = static_cast<int32_t>(pThemostat->value * 10);
 		SendValueToAirco(uid, value);
 	}
 

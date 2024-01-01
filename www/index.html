@@ -118,6 +118,7 @@
 		<script charset="utf-8" src="js/highcharts/highcharts.js"></script>
 		<script charset="utf-8" src="js/highcharts/highcharts-more.js"></script>
 		<script charset="utf-8" src="js/highcharts/modules/sankey.js"></script>
+		<script charset="utf-8" src="js/highcharts/modules/data.js"></script>
 		<script charset="utf-8" src="js/highcharts/modules/dependency-wheel.js"></script>
 		<script charset="utf-8" src="js/highcharts/modules/no-data-to-display.js"></script>
 		<script charset="utf-8" src="js/highcharts/modules/exporting.js"></script>
@@ -497,7 +498,7 @@ $(document).ready(function() {
 				</td>
 				<td align="center" style="vertical-align: center;">
 					<a id="popup_temp_up"><img src="images/Up48.png" class="lcursor" style="margin-top: 5px;" height="48" width="48" onclick="SetpointUp()"></a><br>
-					<input id="popup_setpoint" type="text" style="width: 50px; padding: .2em; margin-top: 10px; margin-bottom: 10px; font-size: 24px; font-weight: bold; border: 3px solid white; text-align: center;" class="text ui-widget-content ui-corner-all"><br>
+					<input id="popup_setpoint" type="text" style="width: 90px; padding: .2em; margin-top: 10px; margin-bottom: 10px; font-size: 24px; font-weight: bold; border: 3px solid white; text-align: center;" class="text ui-widget-content ui-corner-all"><br>
 					<a id="popup_temp_down"><img src="images/Down48.png" class="lcursor" height="48" width="48" onclick="SetpointDown()"></a>
 				</td>
 				<td align="center" style="vertical-align: center;">
@@ -1286,6 +1287,7 @@ $(document).ready(function() {
 										<a id="cDataPush" tabindex="-1"><img src="images/contact.png"> <span data-i18n="Data push">Data push</span></a>
 										<ul class="dropdown-menu pull-right">
 											<li ng-class="{'current_page_item':getClass('/DPInflux')}" id="mDPInflux"><a id="cDPInflux" href="#DPInflux"> <span>InfluxDB</span></a></li>
+											<li ng-class="{'current_page_item':getClass('/DPMQTT')}" id="mDPMQTT"><a id="cDPMQTT" href="#DPMQTT"> <span>MQTT</span></a></li>
 											<li ng-class="{'current_page_item':getClass('/DPFibaro')}" id="mDPFibaro"><a id="cDPFibaro" href="#DPFibaro"> <span data-i18n="FibaroLink">FibaroLink</span></a></li>
 											<li ng-class="{'current_page_item':getClass('/DPHttp')}" id="mDPHttp"><a id="cDPHttp" href="#DPHttp"> <span data-i18n="HTTP">HTTP</span></a></li>
 											<li ng-class="{'current_page_item':getClass('/DPGooglePubSub')}" id="mDPGooglePubSub"><a id="cDPGooglePubSub" href="#DPGooglePubSub"> <span data-i18n="GooglePubSub">Google PubSub</span></a></li>

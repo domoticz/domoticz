@@ -57,8 +57,8 @@ namespace http
 						int iUser = -1;
 						if (!client_id.empty())
 						{
-							iClient = FindUser(client_id.c_str());
-							if (iClient != -1 && m_users[iClient].userrights == URIGHTS_CLIENTID)
+							iClient = FindClient(client_id.c_str());
+							if (iClient != -1)
 							{
 								std::string Username;
 
@@ -234,8 +234,8 @@ namespace http
 						int iUser = -1;
 						if (!client_id.empty())
 						{
-							iClient = FindUser(client_id.c_str());
-							if (iClient != -1 && m_users[iClient].userrights == URIGHTS_CLIENTID)
+							iClient = FindClient(client_id.c_str());
+							if (iClient != -1)
 							{
 								// Let's find the user for this client with the right auth_code, if any
 								iUser = 0;
@@ -388,10 +388,10 @@ namespace http
 									iUser = FindUser(user.c_str());
 									if(iUser != -1)
 									{
-										if (m_users[iUser].userrights != URIGHTS_CLIENTID && GenerateMD5Hash(passwd).compare(m_users[iUser].Password) == 0)
+										if (GenerateMD5Hash(passwd).compare(m_users[iUser].Password) == 0)
 										{
-											iClient = FindUser(client_id.c_str());
-											if (iClient != -1 && m_users[iClient].ID >= m_iamsettings.getUserIdxOffset() && m_users[iClient].userrights == URIGHTS_CLIENTID)
+											iClient = FindClient(client_id.c_str());
+											if (iClient != -1)
 											{
 												Json::Value jwtpayload;
 												jwtpayload["preferred_username"] = m_users[iUser].Username;
@@ -622,7 +622,7 @@ namespace http
 
 			char md[20];
 			unsigned int mdLen;
-			HMAC(EVP_sha1(), key.c_str(), key.size(), (const unsigned char*)&intCounter, sizeof(intCounter), (unsigned char*)&md, &mdLen);
+			HMAC(EVP_sha1(), key.c_str(), static_cast<int>(key.size()), (const unsigned char*)&intCounter, sizeof(intCounter), (unsigned char*)&md, &mdLen);
 
 			int offset = md[19] & 0x0f;
 			int bin_code = (md[offset] & 0x7f) << 24

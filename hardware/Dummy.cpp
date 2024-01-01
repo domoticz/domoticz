@@ -70,7 +70,7 @@ namespace http {
 		};
 
 		constexpr std::array<_mappedsensorname, 40> mappedsensorname{ {
-			{ 249, pTypeAirQuality, sTypeVoltcraft },	   // Air Quality
+			{ 249, pTypeAirQuality, sTypeVoc },	   // Air Quality
 			{ 7, pTypeGeneral, sTypeAlert },		   // Alert
 			{ 9, pTypeCURRENT, sTypeELEC1 },		   // Ampere (3 Phase)
 			{ 19, pTypeGeneral, sTypeCurrent },		   // Ampere (1 Phase)
@@ -102,7 +102,7 @@ namespace http {
 			{ 84, pTypeTEMP_HUM_BARO, sTypeTHB1 },		   // Temp+Hum+Baro
 			{ 247, pTypeTEMP_BARO, sTypeBMP085 },		   // Temp+Baro
 			{ 5, pTypeGeneral, sTypeTextStatus },		   // Text
-			{ 8, pTypeThermostat, sTypeThermSetpoint },	   // Thermostat Setpoint
+			{ 8, pTypeSetpoint, sTypeSetpoint },	   // Thermostat Setpoint
 			{ 248, pTypeUsage, sTypeElectric },		   // Usage (Electric)
 			{ 87, pTypeUV, sTypeUV1 },			   // UV
 			{ 12, pTypeGeneral, sTypeVisibility },		   // Visibility

@@ -14,7 +14,7 @@
 #define SE_POWERLIMIT 21
 #define SE_GROUND_RES 22
 #define SE_INV_MODE 23
-#define SE_AC_FREQ 24
+#define SE_AC_CURRENT 24
 #define SE_DATE 25
 
 #ifdef _DEBUG
@@ -416,7 +416,7 @@ void SolarEdgeAPI::GetInverterDetails(const _tInverterSettings* pInverterSetting
 			{
 				float acCurrent = reading[szPhase]["acCurrent"].asFloat();
 				sprintf(szTmp, "acCurrent L%d %s", iPhase, pInverterSettings->name.c_str());
-				SendCustomSensor(iInverterNumber, SE_AC_FREQ, 255, acCurrent, szTmp, "A");
+				SendCustomSensor(iInverterNumber, SE_AC_CURRENT + ii, 255, acCurrent, szTmp, "A");
 			}
 
 			if (!reading[szPhase]["activePower"].empty())
