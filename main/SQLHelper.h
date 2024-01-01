@@ -68,6 +68,7 @@ struct _tTaskItem
 	_eTaskItemType _ItemType;
 	float _DelayTime = 0.F;
 	int _HardwareID = 0;
+	int _OrgHardwareID = 0;
 	uint64_t _idx = 0;
 	std::string _ID;
 	unsigned char _unit = 0;
@@ -330,11 +331,11 @@ class CSQLHelper : public StoppableTask
 	bool RestoreDatabase(const std::string &dbase);
 
 	// Returns DeviceRowID
-	uint64_t UpdateValue(int HardwareID, const char *ID, unsigned char unit, unsigned char devType, unsigned char subType, unsigned char signallevel, unsigned char batterylevel, int nValue,
+	uint64_t UpdateValue(int HardwareID, int OrgHardwareID, const char *ID, unsigned char unit, unsigned char devType, unsigned char subType, unsigned char signallevel, unsigned char batterylevel, int nValue,
 			     std::string &devname, const bool bUseOnOffAction, const char *User = nullptr);
-	uint64_t UpdateValue(int HardwareID, const char *ID, unsigned char unit, unsigned char devType, unsigned char subType, unsigned char signallevel, unsigned char batterylevel,
+	uint64_t UpdateValue(int HardwareID, int OrgHardwareID, const char *ID, unsigned char unit, unsigned char devType, unsigned char subType, unsigned char signallevel, unsigned char batterylevel,
 			     const char *sValue, std::string &devname, const bool bUseOnOffAction, const char* User = nullptr);
-	uint64_t UpdateValue(int HardwareID, const char *ID, unsigned char unit, unsigned char devType, unsigned char subType, unsigned char signallevel, unsigned char batterylevel, int nValue,
+	uint64_t UpdateValue(int HardwareID, int OrgHardwareID, const char *ID, unsigned char unit, unsigned char devType, unsigned char subType, unsigned char signallevel, unsigned char batterylevel, int nValue,
 			     const char *sValue, std::string &devname, const bool bUseOnOffAction, const char* User = nullptr);
 	uint64_t UpdateValueLighting2GroupCmd(int HardwareID, const char *ID, unsigned char unit, unsigned char devType, unsigned char subType, unsigned char signallevel, unsigned char batterylevel,
 					      int nValue, const char *sValue, std::string &devname, const bool bUseOnOffAction, const char* User = nullptr);
@@ -344,10 +345,10 @@ class CSQLHelper : public StoppableTask
 	bool UpdateLastUpdate(const int64_t idx);
 	bool UpdateLastUpdate(const std::string& sidx);
 
-	uint64_t GetDeviceIndex(int HardwareID, const std::string &ID, unsigned char unit, unsigned char devType, unsigned char subType, std::string &devname);
+	uint64_t GetDeviceIndex(int HardwareID, int OrgHardwareID, const std::string &ID, unsigned char unit, unsigned char devType, unsigned char subType, std::string &devname);
 
-	uint64_t InsertDevice(int HardwareID, const char *ID, unsigned char unit, unsigned char devType, unsigned char subType, int switchType, int nValue, const char *sValue,
-			      const std::string &devname, unsigned char signallevel = 12, unsigned char batterylevel = 255, int used = 0);
+	uint64_t InsertDevice(const int HardwareID, const int OrgHardwareID, const char *ID, const unsigned char unit, const unsigned char devType, const unsigned char subType, const int switchType, const int nValue, const char *sValue,
+			      const std::string &devname, const unsigned char signallevel = 12, const unsigned char batterylevel = 255, const int used = 0);
 
 	bool GetLastValue(int HardwareID, const char *DeviceID, unsigned char unit, unsigned char devType, unsigned char subType, int &nvalue, std::string &sValue, struct tm &LastUpdateTime);
 
@@ -507,10 +508,10 @@ class CSQLHelper : public StoppableTask
 	void FixDaylightSaving();
 
 	// Returns DeviceRowID
-	uint64_t UpdateValueInt(int HardwareID, const char *ID, unsigned char unit, unsigned char devType, unsigned char subType, unsigned char signallevel, unsigned char batterylevel, int nValue,
-				const char *sValue, std::string &devname, bool bUseOnOffAction, const char* User = nullptr);
+	uint64_t UpdateValueInt(const int HardwareID, const int OrgHardwareID, const char *ID, const unsigned char unit, const unsigned char devType, const unsigned char subType, const unsigned char signallevel, const unsigned char batterylevel, const int nValue,
+				const char *sValue, std::string &devname, const bool bUseOnOffAction, const char* User = nullptr);
 
-	uint64_t UpdateManagedValueInt(int HardwareID, const char* ID, unsigned char unit, unsigned char devType, unsigned char subType, unsigned char signallevel, unsigned char batterylevel, int nValue,
+	uint64_t UpdateManagedValueInt(int HardwareID, int OrgHardwareID, const char* ID, unsigned char unit, unsigned char devType, unsigned char subType, unsigned char signallevel, unsigned char batterylevel, int nValue,
 		const char* sValue, std::string& devname, bool bUseOnOffAction, const char* User = nullptr);
 
 	bool UpdateCalendarMeter(int HardwareID, const char *DeviceID, unsigned char unit, unsigned char devType, unsigned char subType, bool shortLog, bool multiMeter, const char *date,

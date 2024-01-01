@@ -1797,7 +1797,7 @@ namespace http
 					bool bActEnabledState = m_sql.m_bAcceptNewHardware;
 					m_sql.m_bAcceptNewHardware = true;
 					std::string devname;
-					m_sql.UpdateValue(atoi(hwdid.c_str()), devid.c_str(), atoi(sunitcode.c_str()), dtype, subtype, 0, -1, 0, devname, true, szSwitchUser.c_str());
+					m_sql.UpdateValue(atoi(hwdid.c_str()), 0, devid.c_str(), atoi(sunitcode.c_str()), dtype, subtype, 0, -1, 0, devname, true, szSwitchUser.c_str());
 					m_sql.m_bAcceptNewHardware = bActEnabledState;
 
 					// set name and switchtype
@@ -2202,7 +2202,7 @@ namespace http
 					bool bActEnabledState = m_sql.m_bAcceptNewHardware;
 					m_sql.m_bAcceptNewHardware = true;
 					std::string devname;
-					m_sql.UpdateValue(atoi(hwdid.c_str()), devid.c_str(), atoi(sunitcode.c_str()), dtype, subtype, 0, -1, 0, "20.5", devname, true, szSwitchUser.c_str());
+					m_sql.UpdateValue(atoi(hwdid.c_str()), 0, devid.c_str(), atoi(sunitcode.c_str()), dtype, subtype, 0, -1, 0, "20.5", devname, true, szSwitchUser.c_str());
 					m_sql.m_bAcceptNewHardware = bActEnabledState;
 
 					// set name and switchtype
@@ -2498,7 +2498,7 @@ namespace http
 				bool bActEnabledState = m_sql.m_bAcceptNewHardware;
 				m_sql.m_bAcceptNewHardware = true;
 				std::string devname;
-				m_sql.UpdateValue(atoi(hwdid.c_str()), devid.c_str(), atoi(sunitcode.c_str()), dtype, subtype, 0, -1, 0, devname, true, szSwitchUser.c_str());
+				m_sql.UpdateValue(atoi(hwdid.c_str()), 0, devid.c_str(), atoi(sunitcode.c_str()), dtype, subtype, 0, -1, 0, devname, true, szSwitchUser.c_str());
 				m_sql.m_bAcceptNewHardware = bActEnabledState;
 
 				// set name and switchtype
