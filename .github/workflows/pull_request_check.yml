@@ -64,16 +64,16 @@ jobs:
       # get CMake
       - name: cmake-compile
         run: |
-          curl -sSL https://github.com/Kitware/CMake/releases/download/v3.26.0/cmake-3.26.0-Linux-x86_64.tar.gz -o cmake.tar.gz;
+          curl -sSL https://github.com/Kitware/CMake/releases/download/v3.28.1/cmake-3.28.1-Linux-x86_64.tar.gz -o cmake.tar.gz;
           sudo tar xf cmake.tar.gz --strip 1 -C /usr/local;
           export PATH=/usr/local/bin:$PATH;
 
       # Boost
       - name: build boost libraries
         run: |
-          wget https://boostorg.jfrog.io/artifactory/main/release/1.83.0/source/boost_1_83_0.tar.gz >> /dev/null 2>&1
-          tar xfz boost_1_83_0.tar.gz
-          cd boost_1_83_0/
+          wget https://github.com/boostorg/boost/releases/download/boost-1.84.0/boost-1.84.0.tar.gz >> /dev/null 2>&1
+          tar xfz boost-1.84.0.tar.gz
+          cd boost-1.84.0/
           ./bootstrap.sh
           ./b2 stage threading=multi link=static --with-thread --with-system --with-chrono >> /dev/null 2>&1
           sudo ./b2 install threading=multi link=static --with-thread --with-system --with-chrono >> /dev/null 2>&1
