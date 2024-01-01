@@ -14,8 +14,7 @@ on:
 #used for both X86 and qemu, require to rebuild the github packages via a manual workflow_dispatch
 env:
   Vcmake: 3.26.3
-  Vboost: 1.81.0
-  Vboost_ : 1_81_0
+  Vboost: 1.83.0
 
 jobs:
   build:
@@ -49,9 +48,9 @@ jobs:
         curl -sSL https://github.com/Kitware/CMake/releases/download/v${Vcmake}/cmake-${Vcmake}-linux-x86_64.tar.gz -o cmake.tar.gz;
         sudo tar xf cmake.tar.gz --strip 1 -C /usr/local;
         export PATH=/usr/local/bin:$PATH;
-        wget https://boostorg.jfrog.io/artifactory/main/release/${Vboost}/source/boost_${Vboost_}.tar.gz >> /dev/null 2>&1
-        tar xfz boost_${Vboost_}.tar.gz
-        cd boost_${Vboost_}/
+        wget https://github.com/boostorg/boost/releases/download/boost-${Vboost}/boost-${Vboost}.tar.gz >> /dev/null 2>&1
+        tar xfz boost-${Vboost}.tar.gz
+        cd boost-${Vboost}/
         ./bootstrap.sh
         ./b2 stage threading=multi link=static --with-thread --with-system --with-chrono >> /dev/null 2>&1
         sudo ./b2 install threading=multi link=static --with-thread --with-system --with-chrono >> /dev/null 2>&1
