@@ -2740,23 +2740,21 @@ namespace http
 					{ // month/year
 						root["status"] = "OK";
 
-						if (!sgroupby.empty())
-						{
-							root["title"] = "Comparing " + sensor;
-							double divider = 1.0;
-							if (dSubType == sTypeVoltage)
-								divider = 1000.0;
-							MakeCompareDataSensor(root, sgroupby, dbasetable, idx, "Value3", divider);
-							return;
-						}
-
-						root["title"] = "Graph " + sensor + " " + srange;
-
 						float vdiv = 10.0F;
 						if (((dType == pTypeGeneral) && (dSubType == sTypeVoltage)) || ((dType == pTypeGeneral) && (dSubType == sTypeCurrent)))
 						{
 							vdiv = 1000.0F;
 						}
+
+						if (!sgroupby.empty())
+						{
+							root["title"] = "Comparing " + sensor;
+							double divider = (double)vdiv;
+							MakeCompareDataSensor(root, sgroupby, dbasetable, idx, "Value3", divider);
+							return;
+						}
+
+						root["title"] = "Graph " + sensor + " " + srange;
 
 						result = m_sql.safe_query("SELECT Value1,Value2,Value3,Date FROM %s WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q' AND Date<='%q') ORDER BY Date ASC",
 							dbasetable.c_str(), idx, szDateStart, szDateEnd);
