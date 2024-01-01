@@ -1,4 +1,6 @@
-Version 2023.xxxxx (xxxxx 2023)
+Version 2024.xxxxx (xxxxx 2024)
+
+Version 2024.1 (January 1th 2024)
 - Implemented: AlfenEve, added charging indication switch
 - Implemented: AlfenEve, added option to specify charge current (or disable this)
 - Implemented: AlfenEve, added Solar charging mode and settings
