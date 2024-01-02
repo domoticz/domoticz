@@ -11,7 +11,7 @@
 
 extern http::server::CWebServerHelper m_webservers;
 
-DomoticzTCP::DomoticzTCP(const int ID, const std::string &IPAddress, const unsigned short usIPPort, const std::string &username, const std::string &password)
+DomoticzTCP::DomoticzTCP(const int ID, const std::string& IPAddress, const unsigned short usIPPort, const std::string& username, const std::string& password)
 	: m_szIPAddress(IPAddress)
 	, m_username(username)
 	, m_password(password)
@@ -60,9 +60,9 @@ void DomoticzTCP::OnDisconnect()
 	Log(LOG_STATUS, "disconnected from: %s:%d", m_szIPAddress.c_str(), m_usIPPort);
 }
 
-void DomoticzTCP::OnData(const uint8_t *pData, size_t length)
+void DomoticzTCP::OnData(const uint8_t* pData, size_t length)
 {
-	if (length == 6 && strstr(reinterpret_cast<const char *>(pData), "NOAUTH") != nullptr)
+	if (length == 6 && strstr(reinterpret_cast<const char*>(pData), "NOAUTH") != nullptr)
 	{
 		Log(LOG_ERROR, "Authentication failed for user %s on %s:%d", m_username.c_str(), m_szIPAddress.c_str(), m_usIPPort);
 		return;
@@ -124,7 +124,7 @@ void DomoticzTCP::OnData(const uint8_t *pData, size_t length)
 		std::string oldOptions = result[0][1];
 		std::string oldColor = result[0][2];
 
-		if (SwitchType!= oldSwitchType)
+		if (SwitchType != oldSwitchType)
 			m_sql.UpdateDeviceValue("SwitchType", SwitchType, std::to_string(idx));
 		if (Options != oldOptions)
 			m_sql.UpdateDeviceValue("Options", Options, std::to_string(idx));
@@ -190,7 +190,7 @@ bool DomoticzTCP::WriteToHardware(const std::string& szData)
 	return true;
 }
 
-bool AssambleDeviceInfo(const std::string &idx, Json::Value &root)
+bool AssambleDeviceInfo(const std::string& idx, Json::Value& root)
 {
 	auto result = m_sql.safe_query("SELECT OrgHardwareID, DeviceID, Unit, Type, SubType FROM DeviceStatus WHERE (ID==%q)", idx.c_str());
 	if (result.empty())
