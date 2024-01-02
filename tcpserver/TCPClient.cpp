@@ -47,7 +47,7 @@ namespace tcp {
 				{
 					std::string recstr;
 					recstr.append(buffer_.data(), bytes_transferred);
-					if (recstr.find("AUTHv2") == 0)
+					if (recstr.find("SIGNv2") == 0)
 					{
 						//Authentication
 						std::vector<std::string> strarray;

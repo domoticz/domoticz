@@ -49,7 +49,7 @@ void DomoticzTCP::OnConnect()
 	Log(LOG_STATUS, "connected to: %s:%d", m_szIPAddress.c_str(), m_usIPPort);
 	if (!m_username.empty())
 	{
-		std::string sAuth = std_format("AUTHv2;%s;%s", m_username.c_str(), m_password.c_str());
+		std::string sAuth = std_format("SIGNv2;%s;%s", m_username.c_str(), m_password.c_str());
 		WriteToHardware(sAuth);
 	}
 	sOnConnected(this);
