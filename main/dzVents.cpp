@@ -86,42 +86,50 @@ void CdzVents::ProcessNotificationItem(CLuaTable &luaTable, int &index, const CE
 	type = m_mainworker.m_notificationsystem.GetTypeString(item.nValue);
 	status = m_mainworker.m_notificationsystem.GetStatusString(item.lastLevel);
 
-	if (item.sValue.empty())
-		luaTable.AddString("message", "");
-	else
+	try
 	{
-		luaTable.AddString("message", "");
-		luaTable.OpenSubTableEntry("data", 0, 0);
-		if (item.nValue >= Notification::HW_TIMEOUT && item.nValue <= Notification::HW_THREAD_ENDED)
+		if (item.sValue.empty())
+			luaTable.AddString("message", "");
+		else
 		{
-			Json::Value eventdata;
-			if (ParseJSon(item.sValue, eventdata))
+			luaTable.AddString("message", "");
+			luaTable.OpenSubTableEntry("data", 0, 0);
+			if (item.nValue >= Notification::HW_TIMEOUT && item.nValue <= Notification::HW_THREAD_ENDED)
 			{
-				luaTable.AddInteger("id", eventdata["m_HwdID"].asInt());
-				luaTable.AddString("name", eventdata["m_Name"].asString());
+				Json::Value eventdata;
+				if (ParseJSon(item.sValue, eventdata))
+				{
+					luaTable.AddInteger("id", eventdata["m_HwdID"].asInt());
+					luaTable.AddString("name", eventdata["m_Name"].asString());
+				}
 			}
-		}
-		else if (item.nValue == Notification::DZ_BACKUP_DONE)
-		{
-			Json::Value eventdata;
-			if(ParseJSon(item.sValue, eventdata))
+			else if (item.nValue == Notification::DZ_BACKUP_DONE)
 			{
-				type = type + eventdata["type"].asString();
-				luaTable.AddNumber("duration", eventdata["duration"].asFloat());
-				luaTable.AddString("location", eventdata["location"].asString());
+				Json::Value eventdata;
+				if (ParseJSon(item.sValue, eventdata))
+				{
+					type = type + eventdata["type"].asString();
+					luaTable.AddNumber("duration", eventdata["duration"].asFloat());
+					luaTable.AddString("location", eventdata["location"].asString());
+				}
 			}
-		}
-		else if (item.nValue == Notification::DZ_CUSTOM)
-		{
-			Json::Value eventdata;
-			if (ParseJSon(item.sValue, eventdata))
+			else if (item.nValue == Notification::DZ_CUSTOM)
 			{
-				luaTable.AddString("name", eventdata["name"].asString());
-				luaTable.AddString("data", eventdata["data"].asString());
+				Json::Value eventdata;
+				if (ParseJSon(item.sValue, eventdata))
+				{
+					luaTable.AddString("name", eventdata["name"].asString());
+					luaTable.AddString("data", eventdata["data"].asString());
+				}
 			}
+			luaTable.CloseSubTableEntry();
 		}
-		luaTable.CloseSubTableEntry();
 	}
+	catch (const std::exception& e)
+	{
+		_log.Log(LOG_ERROR, "dzVents: Error in ProcessNotificationItem: %s", e.what());
+	}
+
 	luaTable.AddString("type", type);
 	luaTable.AddString("status", status);
 	luaTable.CloseSubTableEntry();
