@@ -52,7 +52,7 @@ constexpr auto sqlCreateDeviceStatus =
 "CREATE TABLE IF NOT EXISTS [DeviceStatus] ("
 "[ID] INTEGER PRIMARY KEY, "
 "[HardwareID] INTEGER NOT NULL, "
-"[OrgHardwareID] INTEGER NOT NULL, "
+"[OrgHardwareID] DEFAULT 0, "
 "[DeviceID] VARCHAR(25) NOT NULL, "
 "[Unit] INTEGER DEFAULT 0, "
 "[Name] VARCHAR(100) DEFAULT Unknown, "

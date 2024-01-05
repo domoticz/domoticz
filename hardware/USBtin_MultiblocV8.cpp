@@ -678,9 +678,9 @@ void USBtin_MultiblocV8::InsertUpdateControlSwitch(const int NodeID, const int C
 
 	if (result.empty())
 	{
-		m_sql.safe_query("INSERT INTO DeviceStatus (HardwareID, DeviceID, Unit, Type, SubType, SwitchType, Used, SignalLevel, BatteryLevel, Name, nValue, sValue) "
-			"VALUES (%d,'%q',%d,%d,%d,%d,0, 12,255,'%q',0,' ')",
-			m_HwdID, szIdx, ChildID, pTypeLighting2, sTypeAC, int(STYPE_PushOn), defaultname.c_str());
+		m_sql.safe_query("INSERT INTO DeviceStatus (HardwareID, OrgHardwareID, DeviceID, Unit, Type, SubType, SwitchType, Used, SignalLevel, BatteryLevel, Name, nValue, sValue) "
+			"VALUES (%d, %d,'%q',%d,%d,%d,%d,0, 12,255,'%q',0,' ')",
+			m_HwdID, 0, szIdx, ChildID, pTypeLighting2, sTypeAC, int(STYPE_PushOn), defaultname.c_str());
 	}
 	else
 	{ // sinon on remet à 0 les état ici

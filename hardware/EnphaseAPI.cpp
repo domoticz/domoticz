@@ -1276,9 +1276,9 @@ bool EnphaseAPI::getInverterDetails()
 		{
 			// Insert
 			int iUsed = 0;
-			m_sql.safe_query("INSERT INTO DeviceStatus (HardwareID, DeviceID, Unit, Type, SubType, SignalLevel, BatteryLevel, Name, Used, nValue, sValue) "
-				"VALUES (%d, '%q', 1, %d, %d, %d, %d, '%q', %d, %d, '%q')",
-				m_HwdID, szDeviceID.c_str(), devType, subType, 12, 255, sDeviceName.c_str(), iUsed, nValue, sValue.c_str());
+			m_sql.safe_query("INSERT INTO DeviceStatus (HardwareID, OrgHardwareID, DeviceID, Unit, Type, SubType, SignalLevel, BatteryLevel, Name, Used, nValue, sValue) "
+				"VALUES (%d, %d, '%q', 1, %d, %d, %d, %d, '%q', %d, %d, '%q')",
+				m_HwdID, 0, szDeviceID.c_str(), devType, subType, 12, 255, sDeviceName.c_str(), iUsed, nValue, sValue.c_str());
 
 			result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit == %d) AND (Type==%d) AND (Subtype==%d)",
 				m_HwdID, szDeviceID.c_str(), 1, devType, subType);

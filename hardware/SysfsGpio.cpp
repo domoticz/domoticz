@@ -576,10 +576,10 @@ void CSysfsGpio::CreateDomoticzDevices()
 			if (createNewDevice)
 			{
 				/* create new input device */
-				m_sql.safe_query("INSERT INTO DeviceStatus (HardwareID, DeviceID, Unit, Type, SubType, SwitchType, Used, "
+				m_sql.safe_query("INSERT INTO DeviceStatus (HardwareID, OrgHardwareID, DeviceID, Unit, Type, SubType, SwitchType, Used, "
 						 "SignalLevel, BatteryLevel, Name, nValue, sValue, Options) "
-						 "VALUES (%d,'%q',%d, %d, %d, %d, 0, 12, 255, '%q', %d, ' ', '0')",
-						 m_HwdID, deviceid[0].c_str(), s.pin_number, pTypeLighting2, sTypeAC, int(STYPE_Contact), "Input", s.value);
+						 "VALUES (%d, %d,'%q',%d, %d, %d, %d, 0, 12, 255, '%q', %d, ' ', '0')",
+						 m_HwdID, 0, deviceid[0].c_str(), s.pin_number, pTypeLighting2, sTypeAC, int(STYPE_Contact), "Input", s.value);
 			}
 		}
 		else
@@ -623,10 +623,10 @@ void CSysfsGpio::CreateDomoticzDevices()
 			if (createNewDevice)
 			{
 				/* create new output device */
-				m_sql.safe_query("INSERT INTO DeviceStatus (HardwareID, DeviceID, Unit, Type, SubType, SwitchType, Used, "
+				m_sql.safe_query("INSERT INTO DeviceStatus (HardwareID, OrgHardwareID, DeviceID, Unit, Type, SubType, SwitchType, Used, "
 						 "SignalLevel, BatteryLevel, Name, nValue, sValue, Options) "
-						 "VALUES (%d,'%q',%d, %d, %d, %d, 0, 12, 255, '%q', %d, ' ', '1')",
-						 m_HwdID, deviceid[0].c_str(), s.pin_number, pTypeLighting2, sTypeAC, int(STYPE_OnOff), "Output", s.value);
+						 "VALUES (%d, %d,'%q',%d, %d, %d, %d, 0, 12, 255, '%q', %d, ' ', '1')",
+						 m_HwdID, 0, deviceid[0].c_str(), s.pin_number, pTypeLighting2, sTypeAC, int(STYPE_OnOff), "Output", s.value);
 			}
 		}
 	}
