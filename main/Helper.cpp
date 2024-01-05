@@ -28,6 +28,7 @@
 #include <stdarg.h>
 #include <locale>
 #include <codecvt>
+#include <random>
 
 #if defined WIN32
 #include "../msbuild/WindowsHelper.h"
@@ -1220,9 +1221,13 @@ void DirectoryListing(std::vector<std::string>& entries, const std::string &dir,
 
 std::string GenerateUserAgent()
 {
-	int cversion = rand() % 0xFFFF;
-	int mversion = rand() % 3;
-	int sversion = rand() % 3;
+	std::random_device rd;  // a seed source for the random number engine
+	std::mt19937 gen(rd()); // mersenne_twister_engine seeded with rd()
+	std::uniform_int_distribution<> distrib_FFFF(0, 0xFFFF);
+
+	int cversion = distrib_FFFF(gen) % 0xFFFF;
+	int mversion = distrib_FFFF(gen) % 3;
+	int sversion = distrib_FFFF(gen) % 3;
 	std::stringstream sstr;
 	sstr << "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/" << (601 + sversion) << "." << (36+mversion) << " (KHTML, like Gecko) Chrome/" << (53 + mversion) << ".0." << cversion << ".0 Safari/" << (601 + sversion) << "." << (36+sversion);
 	return sstr.str();
@@ -1527,11 +1532,16 @@ std::string GenerateUUID() // DCE/RFC 4122
 	//uuid[19] = ' '; //N Variant 1 UUIDs (10xx N=8..b, 2 bits)
 	uuid[23] = '-';
 
+	std::random_device rd;  // a seed source for the random number engine
+	std::mt19937 gen(rd()); // mersenne_twister_engine seeded with rd()
+	std::uniform_int_distribution<> distrib_F(0, 0x0F);
+	std::uniform_int_distribution<> distrib_3(0, 0x03);
+
 	for (size_t ii = 0; ii < uuid.size(); ii++)
 	{
 		if (uuid[ii] == ' ')
 		{
-			uuid[ii] = hexCHARS[(ii == 19) ? (8 + (std::rand() & 0x03)) : std::rand() & 0x0F];
+			uuid[ii] = hexCHARS[(ii == 19) ? (8 + (distrib_3(gen) & 0x03)) : distrib_F(gen) & 0x0F];
 		}
 	}
 	return uuid;
