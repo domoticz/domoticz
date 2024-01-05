@@ -71,6 +71,16 @@ jobs:
           ./b2 stage threading=multi link=static --with-thread --with-system --with-chrono >> /dev/null 2>&1
           sudo ./b2 install threading=multi link=static --with-thread --with-system --with-chrono >> /dev/null 2>&1
 
+      # OpenZWave
+      - name: openzwave
+        run: |
+          cd $GITHUB_WORKSPACE
+          cd ..
+          git clone https://github.com/domoticz/open-zwave.git open-zwave-read-only
+          cd open-zwave-read-only
+          make
+          sudo make install >> /dev/null 2>&1
+
       # Domoticz
       - name: build domoticz
         run: |
