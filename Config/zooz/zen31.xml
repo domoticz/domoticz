@@ -1,0 +1,206 @@
+<Product Revision="2" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="Name">RGBW Dimmer</MetaDataItem>
+    <MetaDataItem name="Description">FEATURES:
+- Manual or Z-Wave on/off, brightness, and RGBW color control
+- Perfect for programming your existing RGBW LED strip
+- Energy monitoring in live mode and over time
+- Double tap to full brightness feature + optional scene control
+- Remembers and restores on/off status after power failure
+- Built-in Z-Wave Plus signal repeater to extend network range
+- S2 security protocol and AES-128 bank-grade encryption
+
+SPECIFICATIONS:
+- Model Number: ZEN31
+- Z-Wave Signal Frequency: 908.42 MHz
+- Power: 12 / 24 V DC (Do NOT connect to 120 V AC high-voltage power!)
+- Maximum Load: 10 A total between all channels (6 A per channel max); 120 W total when powered by 12 V DC / 240 W total when powered by 24 V DC
+- Range: Up to 100 feet line of sight
+- Operating Temperature: 32-104° F (0-40° C)
+- Installation and Use: Indoor only
+- Dimensions: 1.67” x 1.5” x 0.69”</MetaDataItem>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/027a:2000:0902</MetaDataItem>
+    <MetaDataItem name="ProductPage">http://www.getzooz.com/</MetaDataItem>
+    <MetaDataItem name="ProductSupport">http://www.support.getzooz.com/kb/section/135</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/zooz/zen31.png</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://products.z-wavealliance.org/ProductManual/File?folder=&amp;filename=product_documents/3720/zooz-s2-rgbw-dimmer-zen31-manual-online.pdf</MetaDataItem>
+    <MetaDataItem name="InclusionDescription">1. Initiate inclusion (pairing) in the app (or web interface) of your hub.  If you're using an S2 hub, it may ask you to enter the DSK key printed on the back cover sticker or scan the QR code next to it to complete secure inclusion.
+2. Activate the dimmer.  Make sure the RGBW Dimmer is powered up.  Click the Z-Wave button 3 times quickly to include the device.  The LED will blink yellow to indicate communication with the hub.  It will blink green (for non-secure, S0, or S2 unauthenticated inclusion) or magenta (for S2 authenticated) once the device is successfully included to your network.  It will blink red if inclusion is not successful.</MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">1. Bring your Z-Wave gateway (hub) close to the RGBW dimmer if possible.
+2. Put the Z-Wave hub into exclusion mode (not sure how to do that?  ask@getzooz.com)
+3. Click the Z-Wave button on the device 3 times quickly
+4. Your hub will confirm exclusion, the LED indicator on the RGBW Dimmer will light up in red, and the device will disappear from your controller's device list.</MetaDataItem>
+    <MetaDataItem name="ResetDescription">If your primary controller is missing or inoperable, you may need to reset the device to factory settings. To complete the reset process manually, press and hold the Z-Wave button to enter reset mode.  Release the button when the LED indicator glows yellow.  Then quickly click the Z-Wave button again to confirm factory reset.  Wait a few seconds until the device resets and restarts - the LED indicator will light up in red when it's ready.</MetaDataItem>
+    <MetaDataItem id="2000" name="ZWProductPage" type="0902">https://products.z-wavealliance.org/products/3720</MetaDataItem>
+    <MetaDataItem id="2000" name="FrequencyName" type="0902">U.S. / Canada / Mexico</MetaDataItem>
+    <MetaDataItem id="2000" name="Identifier" type="0902">ZEN-31</MetaDataItem>
+    <ChangeLog>
+      <Entry author="David Alden - dave@alden.name" date="26 Jan 2020" revision="2">Initial Metadata Import</Entry>
+    </ChangeLog>
+  </MetaData>
+
+  <!-- https://products.z-wavealliance.org/products/3720 -->
+
+  <!-- Configuration Parameters -->
+  <CommandClass id="112">
+    <Value type="list" genre="config" index="1" label="On Off Status After Power Failure" size="1" min="0" max="2" value="0">
+      <Help>On Off Status After Power Failure.  Default: forced to OFF</Help>
+      <Item label="forced to OFF" value="0"/>
+      <Item label="restore to previous state" value="1"/>
+      <Item label="forced to on" value="2"/>
+    </Value>
+    <Value type="list" genre="config" index="20" label="Switch / Input Type for IN1" size="1" min="0" max="4" value="2">
+      <Help>Switch / Input Type for IN1.  Choose the input/switch type you want to connect to the IN1 terminal.  Default: momentary switch</Help>
+      <Item label="analog sensor w/no pullup" value="0"/>
+      <Item label="analog sensor with pull-up" value="1"/>
+      <Item label="momentary switch" value="2"/>
+      <Item label="toggle switch (on when swithc is on)" value="3"/>
+      <Item label="toggle switch (toggles with switch toggle)" value="4"/>
+    </Value>
+    <Value type="list" genre="config" index="21" label="Switch / Input Type for IN2" size="1" min="0" max="4" value="2">
+      <Help>Switch / Input Type for IN2.  Choose the input/switch type you want to connect to the IN2 terminal.  Default: momentary switch</Help>
+      <Item label="analog sensor w/no pullup" value="0"/>
+      <Item label="analog sensor with pull-up" value="1"/>
+      <Item label="momentary switch" value="2"/>
+      <Item label="toggle switch (on when swithc is on)" value="3"/>
+      <Item label="toggle switch (toggles with switch toggle)" value="4"/>
+    </Value>
+    <Value type="list" genre="config" index="22" label="Switch / Input Type for IN3" size="1" min="0" max="4" value="2">
+      <Help>Switch / Input Type for IN3.  Choose the input/switch type you want to connect to the IN3 terminal.  Default: momentary switch</Help>
+      <Item label="analog sensor w/no pullup" value="0"/>
+      <Item label="analog sensor with pull-up" value="1"/>
+      <Item label="momentary switch" value="2"/>
+      <Item label="toggle switch (on when swithc is on)" value="3"/>
+      <Item label="toggle switch (toggles with switch toggle)" value="4"/>
+    </Value>
+    <Value type="list" genre="config" index="23" label="Switch / Input Type for IN4" size="1" min="0" max="4" value="2">
+      <Help>Switch / Input Type for IN4.  Choose the input/switch type you want to connect to the IN4 terminal.  Default: momentary switch</Help>
+      <Item label="analog sensor w/no pullup" value="0"/>
+      <Item label="analog sensor with pull-up" value="1"/>
+      <Item label="momentary switch" value="2"/>
+      <Item label="toggle switch (on when swithc is on)" value="3"/>
+      <Item label="toggle switch (toggles with switch toggle)" value="4"/>
+    </Value>
+    <Value type="bitset" genre="config" index="40" label="Scene Control for IN1" size="1" bitmask="255" units="" value="15">
+      <Help>Assign scene activation trigger for IN1 terminal.  Default: Everything</Help>
+      <BitSet id="1">
+        <Label>click/toggle 1 time to trigger</Label>
+	<Help>Click/toggle the connected switch 1 time to trigger a scene.</Help>
+      </BitSet>
+      <BitSet id="2">
+        <Label>click/toggle 2 times to trigger</Label>
+	<Help>Click/toggle the connected switch 2 times to trigger a scene.</Help>
+      </BitSet>
+      <BitSet id="3">
+        <Label>click/toggle 3 times to trigger</Label>
+	<Help>Click/toggle the connected switch 3 times to trigger a scene.</Help>
+      </BitSet>
+      <BitSet id="4">
+        <Label>click/toggle 4 times to trigger</Label>
+	<Help>Click/toggle the connected switch 4 times to trigger a scene.</Help>
+      </BitSet>
+    </Value>
+    <Value type="bitset" genre="config" index="41" label="Scene Control for IN2" size="1" bitmask="255" units="" value="15">
+      <Help>Assign scene activation trigger for IN2 terminal.  Default: Everything</Help>
+      <BitSet id="1">
+        <Label>click/toggle 1 time to trigger</Label>
+	<Help>Click/toggle the connected switch 1 time to trigger a scene.</Help>
+      </BitSet>
+      <BitSet id="2">
+        <Label>click/toggle 2 times to trigger</Label>
+	<Help>Click/toggle the connected switch 2 times to trigger a scene.</Help>
+      </BitSet>
+      <BitSet id="3">
+        <Label>click/toggle 3 times to trigger</Label>
+	<Help>Click/toggle the connected switch 3 times to trigger a scene.</Help>
+      </BitSet>
+      <BitSet id="4">
+        <Label>click/toggle 4 times to trigger</Label>
+	<Help>Click/toggle the connected switch 4 times to trigger a scene.</Help>
+      </BitSet>
+    </Value>
+    <Value type="bitset" genre="config" index="42" label="Scene Control for IN3" size="1" bitmask="255" units="" value="15">
+      <Help>Assign scene activation trigger for IN3 terminal.  Default: Everything</Help>
+      <BitSet id="1">
+        <Label>click/toggle 1 time to trigger</Label>
+	<Help>Click/toggle the connected switch 1 time to trigger a scene.</Help>
+      </BitSet>
+      <BitSet id="2">
+        <Label>click/toggle 2 times to trigger</Label>
+	<Help>Click/toggle the connected switch 2 times to trigger a scene.</Help>
+      </BitSet>
+      <BitSet id="3">
+        <Label>click/toggle 3 times to trigger</Label>
+	<Help>Click/toggle the connected switch 3 times to trigger a scene.</Help>
+      </BitSet>
+      <BitSet id="4">
+        <Label>click/toggle 4 times to trigger</Label>
+	<Help>Click/toggle the connected switch 4 times to trigger a scene.</Help>
+      </BitSet>
+    </Value>
+    <Value type="bitset" genre="config" index="43" label="Scene Control for IN4" size="1" bitmask="255" units="" value="15">
+      <Help>Assign scene activation trigger for IN4 terminal.  Default: Everything</Help>
+      <BitSet id="1">
+        <Label>click/toggle 1 time to trigger</Label>
+	<Help>Click/toggle the connected switch 1 time to trigger a scene.</Help>
+      </BitSet>
+      <BitSet id="2">
+        <Label>click/toggle 2 times to trigger</Label>
+	<Help>Click/toggle the connected switch 2 times to trigger a scene.</Help>
+      </BitSet>
+      <BitSet id="3">
+        <Label>click/toggle 3 times to trigger</Label>
+	<Help>Click/toggle the connected switch 3 times to trigger a scene.</Help>
+      </BitSet>
+      <BitSet id="4">
+        <Label>click/toggle 4 times to trigger</Label>
+	<Help>Click/toggle the connected switch 4 times to trigger a scene.</Help>
+      </BitSet>
+    </Value>
+    <Value type="short" genre="config" index="62" label="Power Report Frequency" size="2" min="0" max="32400" value="3600" units="seconds">
+      <Help>Power Report Frequency. Choose how often you want your RGBW Dimmer to report power consumption (W) to your controller.  NOTE: must be 0, or an increment of 30.  Default: 3600</Help>
+    </Value>
+    <Value type="short" genre="config" index="65" label="Energy Report Threshold" size="2" min="0" max="500" value="10">
+      <Help>Energy Report Threshold.  Choose how you want your RGBW Dimmer to report energy use (kWh) to your hub.  The number entered as value corresponds to decimal values in energy useage change. So if 10 is entered by default, the RGBW Dimmer will report any change in energy use over 0.1 kWh. Energy reports are sent in t least 30-second intervals.</Help>
+    </Value>
+    <Value type="short" genre="config" index="66" label="Energy Report Frequency" size="2" min="0" max="32400" value="3600" units="seconds">
+      <Help>Energy Report Frequency. Choose how often you want your RGBW Dimmer to report energy (kWh) to your controller.  NOTE: must be 0, or an increment of 30.  Default: 3600</Help>
+    </Value>
+    <Value type="list" genre="config" index="150" label="RGBW/HSB Wall Switch Mode" size="1" min="0" max="1" value="0">
+      <Help>RGBW/HSB Wall Switch Mode.  Choose how switches connected to the input terminals control your LED strip. In the default RGBW mode, each switch connected to each input terminal controls the RGBW chnnels separately (so IN1 for red, IN2 for green, etc.) with a single click for ON/OFF, double click to full brightness, and press-and-hold to dim (momentary switches only). In the HSB, IN1 controls hue, IN2 - saturation, IN3 - brightness, IN4 - white with single click for last set value or value 0, double click to max value, and press-and-hold to set custom value.  Default: RGBW mode</Help>
+      <Item label="RGBW mode" value="0"/>
+      <Item label="HSB mode" value="1"/>
+    </Value>
+    <Value type="short" genre="config" index="151" label="Ramp Rate (switch)" size="2" min="0" max="127" value="3" units="seconds">
+      <Help>Ramp Rate (switch).  Adjust the ramp rate for your RGBW dimmer (fade-in/fade-out effect for on/off operation).  Values correspond to the number of seconds it takes for the dimmer to reach full brightness or turn off when operated from the connected wall switch.  Note that 0 is instant on/off.  Default : 3 seconds</Help>
+    </Value>
+    <Value type="short" genre="config" index="152" label="Ramp Rate (Z-Wave)" size="2" min="0" max="127" value="3" units="seconds">
+      <Help>Ramp Rate (Z-Wave).  Adjust the ramp rate for your RGBW dimmer (fade-in/fade-out effect for on/off operation).  Values correspond to the number of seconds it takes for the dimmer to reach full brightness or turn off when operated remotely from the Z-Wave hub  Note that 0 is instant on/off.  Default : 3 seconds</Help>
+    </Value>
+    <Value type="list" genre="config" index="157" label="Preset Programs" size="1" min="0" max="10" value="0">
+      <Help>Enable one of the preset animated color programs to set the mood with a click.  Default: preset programs disabled</Help>
+      <Item label="preset programs disabled" value="0"/>
+      <Item label="fireplace" value="6"/>
+      <Item label="storm" value="7"/>
+      <Item label="rainbow" value="8"/>
+      <Item label="polar lights" value="9"/>
+      <Item label="police" value="10"/>
+    </Value>
+  </CommandClass>
+
+  <!-- Association Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="10">
+      <Group index="1" max_associations="1" label="Lifeline"/>
+      <Group index="2" max_associations="5" label="Zooz RGBW Dimmers only"/>
+      <Group index="3" max_associations="5" label="IN1 on/off sync"/>
+      <Group index="4" max_associations="5" label="IN1 Brightness sync"/>
+      <Group index="5" max_associations="5" label="IN2 on/off sync"/>
+      <Group index="6" max_associations="5" label="IN2 Brightness sync"/>
+      <Group index="7" max_associations="5" label="IN3 on/off sync"/>
+      <Group index="8" max_associations="5" label="IN3 Brightness sync"/>
+      <Group index="9" max_associations="5" label="IN4 on/off sync"/>
+      <Group index="10" max_associations="5" label="IN4 Brightness sync"/>
+    </Associations>
+  </CommandClass>
+</Product>

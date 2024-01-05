@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Enerwave ZWN-SC7 -->
+<Product xmlns='https://github.com/OpenZWave/open-zwave' Revision="1">
+  <!-- COMMAND_CLASS_BASIC does not respond to requests -->
+  <CommandClass id="32" action="remove" />
+</Product>

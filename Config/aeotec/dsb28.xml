@@ -1,0 +1,192 @@
+<Product Revision="2" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0086:001C:0002</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/aeotec/dsb28.png</MetaDataItem>
+    <MetaDataItem id="001C" name="ZWProductPage" type="0002">https://products.z-wavealliance.org/products/705/</MetaDataItem>
+    <MetaDataItem id="001C" name="Identifier" type="0002">DSB28-ZWUS</MetaDataItem>
+    <MetaDataItem id="001C" name="FrequencyName" type="0002">U.S. / Canada / Mexico</MetaDataItem>
+    <MetaDataItem name="Description">You hear a lot about energy use these days. About how if we reduce the amount of energy we use we can not only save money but also save the environment. But saving money by using less electricity is only possible if we understand when and how we use it. That’s what Aeotec’s Z-Wave Home Energy Meter provides you with – understanding.
+
+Installed in an electricity box, the energy meter will monitor the total consumption of electricity used by an entire building. And its intelligent clamps will report that energy use back to your Z-Wave gateway or controller, in watts or kilowatt-hours, and in real time. So you can see how much electricity you really use and when you use it.</MetaDataItem>
+    <MetaDataItem name="Name">Home Energy Meter G2</MetaDataItem>
+    <MetaDataItem name="ProductPage">http://aeotec.com/z-wave-home-energy-measure</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 May 2019" revision="2">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/705/xml</Entry>
+    </ChangeLog>
+  </MetaData>
+  <!-- 
+Aeotec DSB28 Home Energy Meter (2nd Edition) 
+https://aeotec.freshdesk.com/helpdesk/attachments/6009584508
+-->
+  <!-- Configuration Parameters -->
+  <CommandClass id="112">
+    <Value genre="config" index="2" label="Reverse Clamping" max="1" min="0" size="1" type="list" units="" value="0">
+      <Help>
+      If the reverse clamping pliers, negative power is detected. 
+      </Help>
+      <Item label="Disable" value="0"/>
+      <Item label="Enable" value="1"/>
+    </Value>
+    <Value genre="config" index="3" label="Power changed" max="1" min="0" size="1" type="list" units="" value="0">
+      <Help>
+	Automatic report only when power is changed.
+      </Help>
+      <Item label="Disable" value="0"/>
+      <Item label="Enable" value="1"/>
+    </Value>
+    <Value genre="config" index="4" label="Wattage Threshold" type="short" units="watts" value="50">
+      <Help>
+	Threshold change in wattage to induce a automatic report (whole HEM).
+      </Help>
+    </Value>
+    <Value genre="config" index="5" label="Wattage Threshold C1" type="short" units="watts" value="50">
+      <Help>
+	Threshold change in wattage to induce a automatic report (Clamp 1).
+      </Help>
+    </Value>
+    <Value genre="config" index="6" label="Wattage Threshold C2" type="short" units="watts" value="50">
+      <Help>
+	Threshold change in wattage to induce a automatic report (Clamp 2).
+      </Help>
+    </Value>
+    <Value genre="config" index="7" label="Wattage Threshold C3" type="short" units="watts" value="50">
+      <Help>
+	Threshold change in wattage to induce a automatic report (Clamp 3).
+      </Help>
+    </Value>
+    <Value genre="config" index="8" label="Wattage Percentage Change" type="byte" units="%" value="10">
+      <Help>
+	Percentage change in wattage to induce a automatic report (whole HEM).
+      </Help>
+    </Value>
+    <Value genre="config" index="9" label="Wattage Percentage Change C1" type="byte" units="%" value="10">
+      <Help>
+	Percentage change in wattage to induce a automatic report (Clamp 1).
+      </Help>
+    </Value>
+    <Value genre="config" index="10" label="Wattage Percentage Change C2" type="byte" units="%" value="10">
+      <Help>
+	Percentage change in wattage to induce a automatic report (Clamp 2).
+      </Help>
+    </Value>
+    <Value genre="config" index="11" label="Wattage Percentage Change C3" type="byte" units="%" value="10">
+      <Help>
+	Percentage change in wattage to induce a automatic report (Clamp 3).
+      </Help>
+    </Value>
+    <Value affects="101,102,103" genre="config" index="100" label="Reset #101-103" type="int" units="" value="0" write_only="true">
+      <Help>
+	Reset to default parameters number 101-103. Any value other then 0 will initiate this reset.
+      </Help>
+    </Value>
+    <Value genre="config" index="101" label="Group 1 Reports" type="int" units="" value="0">
+      <Help>
+	Which reports need to send in group1. Format is as follows:
+	Byte 1 (msb): Reserved
+	Byte 2: Reserved
+	Byte 3: Bit 7: reserved
+                Bit 6: reserved
+                Bit 5: Auto Send Meter Report (for kWh) at the group time interval (Clamp 3)
+                Bit 4: Auto Send Meter Report (for kWh) at the group time interval (Clamp 2)
+                Bit 3: Auto Send Meter Report (for kWh) at the group time interval (Clamp 1)
+                Bit 2: Auto Send Meter Report (for watts) at the group time interval (Clamp 3)
+                Bit 1: Auto Send Meter Report (for watts) at the group time interval (Clamp 2)
+                Bit 0: Auto Send Meter Report (for watts) at the group time interval (Clamp 1)
+	Byte 4 (lsb): Bit 7: reserved
+                Bit 6: reserved
+                Bit 5: reserved
+                Bit 4: reserved
+                Bit 3: Auto Send Meter Report (for kWh) at the group time interval (whole HEM)
+                Bit 2: Auto Send Meter Report (for watts) at the group time interval (whole HEM)
+                Bit 1: Auto Send Multilevel Sensor Report (for watts) at the group time interval (whole HEM)
+                Bit 0: Auto Send Battery Report at the group time interval (whole HEM)
+      </Help>
+    </Value>
+    <Value genre="config" index="102" label="Group 2 Reports" type="int" units="" value="0">
+      <Help>
+	Which reports need to send in group2. Format is as follows:
+	Byte 1 (msb): Reserved
+	Byte 2: Reserved
+	Byte 3: Bit 7: reserved
+                Bit 6: reserved
+                Bit 5: Auto Send Meter Report (for kWh) at the group time interval (Clamp 3)
+                Bit 4: Auto Send Meter Report (for kWh) at the group time interval (Clamp 2)
+                Bit 3: Auto Send Meter Report (for kWh) at the group time interval (Clamp 1)
+                Bit 2: Auto Send Meter Report (for watts) at the group time interval (Clamp 3)
+                Bit 1: Auto Send Meter Report (for watts) at the group time interval (Clamp 2)
+                Bit 0: Auto Send Meter Report (for watts) at the group time interval (Clamp 1)
+	Byte 4 (lsb): Bit 7: reserved
+                Bit 6: reserved
+                Bit 5: reserved
+                Bit 4: reserved
+                Bit 3: Auto Send Meter Report (for kWh) at the group time interval (whole HEM)
+                Bit 2: Auto Send Meter Report (for watts) at the group time interval (whole HEM)
+                Bit 1: Auto Send Multilevel Sensor Report (for watts) at the group time interval (whole HEM)
+                Bit 0: Auto Send Battery Report at the group time interval (whole HEM)
+      </Help>
+    </Value>
+    <Value genre="config" index="103" label="Group 3 Reports" type="int" units="" value="0">
+      <Help>
+	Which reports need to send in group3. Format is as follows:
+	Byte 1 (msb): Reserved
+	Byte 2: Reserved
+	Byte 3: Bit 7: reserved
+	Bit 6: reserved
+                Bit 5: Auto Send Meter Report (for kWh) at the group time interval (Clamp 3)
+                Bit 4: Auto Send Meter Report (for kWh) at the group time interval (Clamp 2)
+                Bit 3: Auto Send Meter Report (for kWh) at the group time interval (Clamp 1)
+                Bit 2: Auto Send Meter Report (for watts) at the group time interval (Clamp 3)
+                Bit 1: Auto Send Meter Report (for watts) at the group time interval (Clamp 2)
+                Bit 0: Auto Send Meter Report (for watts) at the group time interval (Clamp 1)
+	Byte 4 (lsb): Bit 7: reserved
+                Bit 6: reserved
+                Bit 5: reserved
+                Bit 4: reserved
+                Bit 3: Auto Send Meter Report (for kWh) at the group time interval (whole HEM)
+                Bit 2: Auto Send Meter Report (for watts) at the group time interval (whole HEM)
+                Bit 1: Auto Send Multilevel Sensor Report (for watts) at the group time interval (whole HEM)
+                Bit 0: Auto Send Battery Report at the group time interval (whole HEM)
+      </Help>
+    </Value>
+    <Value affects="111,112,113" genre="config" index="110" label="Reset #111-113" type="int" units="" value="0" write_only="true">
+      <Help>
+	Reset to default parameters number 111-113. Any value other then 0 will initiate this reset.
+      </Help>
+    </Value>
+    <Value genre="config" index="111" label="Group 1 Interval" type="int" units="seconds" value="720">
+      <Help>
+	The interval of sending report group 1.
+      </Help>
+    </Value>
+    <Value genre="config" index="112" label="Group 2 Interval" type="int" units="seconds" value="720">
+      <Help>
+	The interval of sending report group 2.
+      </Help>
+    </Value>
+    <Value genre="config" index="113" label="Group 3 Interval" type="int" units="seconds" value="720">
+      <Help>
+	The interval of sending report group 3.
+      </Help>
+    </Value>
+    <Value genre="config" index="200" label="Partner ID" max="1" min="0" size="1" type="list" units="" value="0">
+      <Item label="Aeon Labs Standard Product" value="0"/>
+      <Item label="AT&amp;T" value="1"/>
+    </Value>
+    <Value genre="config" index="254" label="Device Tag" type="short" units="" value="0">
+      <Help>
+	Device tag.
+      </Help>
+    </Value>
+    <Value affects="all" genre="config" index="255" label="Reset default configuration" type="int" units="" value="0" write_only="true">
+      <Help>
+	Reset to the default configuration.
+      </Help>
+    </Value>
+  </CommandClass>
+  <!-- Association Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="1">
+      <Group index="1" label="Lifeline" max_associations="5"/>
+    </Associations>
+  </CommandClass>
+</Product>

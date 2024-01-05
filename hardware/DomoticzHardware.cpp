@@ -1253,3 +1253,27 @@ void CDomoticzHardwareBase::SendBlindSwitch(int NodeID, uint8_t ChildID, uint8_t
 
 	sDecodeRXMessage(this, (const unsigned char *)&xcmd, defaultName.c_str(), batteryLevel, userName.c_str());
 }
+
+#ifdef WITH_OPENZWAVE
+void CDomoticzHardwareBase::SendZWaveAlarmSensor(const int NodeID, const uint8_t InstanceID, const int BatteryLevel, const uint8_t aType, const int aValue, const std::string& alarmLabel, const std::string& defaultname)
+{
+	uint8_t ID1 = 0;
+	uint8_t ID2 = (unsigned char)((NodeID & 0xFF00) >> 8);
+	uint8_t ID3 = (unsigned char)NodeID & 0xFF;
+	uint8_t ID4 = InstanceID;
+
+	unsigned long lID = (ID1 << 24) + (ID2 << 16) + (ID3 << 8) + ID4;
+
+	_tGeneralDevice gDevice;
+	gDevice.subtype = sTypeZWaveAlarm;
+	gDevice.id = aType;
+	gDevice.intval1 = (int)(lID);
+	gDevice.intval2 = aValue;
+
+	int maxChars = (alarmLabel.size() < sizeof(_tGeneralDevice::text) - 1) ? alarmLabel.size() : sizeof(_tGeneralDevice::text) - 1;
+	strncpy(gDevice.text, alarmLabel.c_str(), maxChars);
+	gDevice.text[maxChars] = 0;
+
+	sDecodeRXMessage(this, (const unsigned char*)&gDevice, defaultname.c_str(), BatteryLevel, nullptr);
+}
+#endif

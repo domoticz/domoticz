@@ -1,0 +1,249 @@
+<!--
+Oomi FT111 Nano Dimmer
+https://products.z-wavealliance.org/products/2765
+--><Product Revision="4" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/016A:006F:0103</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/oomi/ft111.png</MetaDataItem>
+    <MetaDataItem id="006F" name="ZWProductPage" type="0103">https://products.z-wavealliance.org/products/2258/</MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">Turn the primary controller of Z-Wave network into exclusion mode, short press the product’s Action button that you can find on the product's housing.</MetaDataItem>
+    <MetaDataItem name="InclusionDescription">Turn the primary controller of Z-Wave network into inclusion mode, short press the product’s Action button that you can find on the product's housing.</MetaDataItem>
+    <MetaDataItem name="ResetDescription">Press and hold the Action button that you can find on the product's housing for 20 seconds and then release. This procedure should only be used when the primary controller is inoperable.</MetaDataItem>
+    <MetaDataItem name="Description">Oomi In-Wall Dimmer is a Z-Wave Smart Dimmer specifically used to enable Z-Wave command and control (on/off/dim) of any wall switches. It can report immediate wattage consumption or kWh energy usage over a period of time. In the event of power failure, non-volatile memory retains all programmed information relating to the unit’s operating status.
+It can connect to 2 external manual switches to control the load ON/OFF independently. Its surface has a pin socket, which can be used for connecting to the touch panel, so you can also use the touch panel to control the Nano Dimmer.
+The In-Wall Dimmer is also a security Z-Wave plus device and supports Over The Air (OTA) feature for the products firmware upgrade.</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://Products.Z-WaveAlliance.org/ProductManual/File?folder=&amp;filename=Manuals/2765/Oomi In-Wall Dimmer manual (FT111-K) - 2.pdf</MetaDataItem>
+    <MetaDataItem id="006F" name="FrequencyName" type="0103">U.S. / Canada / Mexico</MetaDataItem>
+    <MetaDataItem id="006F" name="Identifier" type="0103">FT111-A</MetaDataItem>
+    <MetaDataItem name="Name">In-Wall Dimmer</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="02 Jun 2019" revision="2">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/2258/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="02 Jun 2019" revision="3">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/2273/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="02 Jun 2019" revision="4">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/2765/xml</Entry>
+    </ChangeLog>
+    <MetaDataItem id="006F" name="ZWProductPage" type="0203">https://products.z-wavealliance.org/products/2273/</MetaDataItem>
+    <MetaDataItem id="006F" name="Identifier" type="0203">FT111-B</MetaDataItem>
+    <MetaDataItem id="006F" name="FrequencyName" type="0203">Australia / New Zealand</MetaDataItem>
+    <MetaDataItem id="006F" name="ZWProductPage" type="1D03">https://products.z-wavealliance.org/products/2765/</MetaDataItem>
+    <MetaDataItem id="006F" name="Identifier" type="1D03">FT111-K</MetaDataItem>
+    <MetaDataItem id="006F" name="FrequencyName" type="1D03">China</MetaDataItem>
+  </MetaData>
+  <!-- Configuration Parameters -->
+  <CommandClass id="112">
+    <Value genre="config" index="3" label="Over current protection" max="1" min="0" size="1" type="list" units="" value="1">
+      <Help>Output Load will be turned off automatically after 30 seconds and if the current overrun 1.5A.</Help>
+      <Item label="Disable" value="0"/>
+      <Item label="Enable" value="1"/>
+    </Value>
+    <Value genre="config" index="4" label="Over heat protection" max="1" min="0" size="1" type="list" units="" value="0">
+      <Help>Output load will be closed after 30 seconds if the temperature inside the product exceeds 100C.</Help>
+      <Item label="Disable" value="0"/>
+      <Item label="Enable" value="1"/>
+    </Value>
+    <Value genre="config" index="20" label="Status re-power on" size="1" type="list" value="0">
+      <Help>Configure the output load status after re-power on</Help>
+      <Item label="The last status before the power outage" value="0"/>
+      <Item label="Always on" value="1"/>
+      <Item label="Always off" value="2"/>
+    </Value>
+    <Value genre="config" index="80" label="Notification report association group 1" size="1" type="list" units="" value="3">
+      <Help>To set which notification would be sent to the associated nodes in association group 1 when the state of output load is changed</Help>
+      <Item label="None" value="0"/>
+      <Item label="Hail" value="1"/>
+      <Item label="Basic" value="2"/>
+      <Item label="Send Multilevel Switch report" value="3"/>
+      <Item label="Send Hail CC when using the manual switch to change the load state" value="4"/>
+    </Value>
+    <Value genre="config" index="81" label="Notification report using the external switch 1" size="1" type="list" units="" value="1">
+      <Help>To set which notification would be sent to the associated nodes in association group 3 when using the external switch 1 to switch the loads</Help>
+      <Item label="None" value="0"/>
+      <Item label="Basic" value="1"/>
+    </Value>
+    <Value genre="config" index="82" label="Notification report using the external switch 2" size="1" type="list" units="" value="1">
+      <Help>To set which notification would be sent to the associated nodes in association group 4 when using the external switch 2 to switch the loads</Help>
+      <Item label="None" value="0"/>
+      <Item label="Basic" value="1"/>
+    </Value>
+    <Value genre="config" index="85" label="State appointment 1" type="int" value="2566920192">
+      <Help>State appointment
+                Set the ON time of output load.
+                Value1 = 0, disable or = non zero, enable (day, bit0 - bit6 represent Mon to Sun).
+                Value2 = ON (hour)
+                Value3 = ON (minute)
+                Value4 = ON (brightness level)
+            </Help>
+    </Value>
+    <Value genre="config" index="86" label="State appointment 2" type="int" value="8960">
+      <Help>State appointment
+                Set the ON time of output load.
+                Value1 = 0, disable or = non zero, enable (day, bit0 - bit6 represent Mon to Sun).
+                Value2 = ON (hour)
+                Value3 = ON (minute)
+                Value4 = ON (brightness level)
+            </Help>
+    </Value>
+    <Value genre="config" index="90" label="Enable/disable the parameter 91 and 92" size="1" type="list" units="" value="0">
+      <Help>Enables/disables parameter 91 and 92</Help>
+      <Item label="Disable" value="0"/>
+      <Item label="Enable" value="1"/>
+    </Value>
+    <Value genre="config" index="91" label="Minimum Change to send Report (Watt)" max="6000" min="0" size="2" type="short" units="watts" value="25">
+      <Help>The value represents the minimum change in wattage for a Report to be sent (default 25 W)</Help>
+    </Value>
+    <Value genre="config" index="92" label="Minimum Change to send Report (%)" max="100" min="0" type="byte" units="%" value="5">
+      <Help>The value represents the minimum percentage change in wattage for a Report to be sent (Default 5)</Help>
+    </Value>
+    <Value affects="101,102,103" genre="config" index="100" label="Default Group Reports" type="button" units="" write_only="true">
+      <Help>Set report types for groups 1, 2 and 3 to default.</Help>
+    </Value>
+    <Value genre="config" index="101" label="Report type sent in Reporting Group 1" type="int" units="" value="0">
+      <Help>
+                Defines the type of report sent for reporting group 1.
+                1 is meter report for voltage.
+                2 is meter report for current.
+                4 is meter report for watts.
+                8 is meter report for kilowatts.
+                Value 1 (msb) Reserved
+                Value 2 Reserved
+                Value 3 Reserved
+                Value 4 (lsb) bits 7-4 reserved
+                bit 3 current
+                bit 2 voltage
+                bit 1 watt
+                bit 0 kWh
+            </Help>
+    </Value>
+    <Value genre="config" index="102" label="Report type sent in Reporting Group 2" type="int" units="" value="0">
+      <Help>
+                Defines the type of report sent for reporting group 2.
+                1 is meter report for voltage.
+                2 is meter report for current.
+                4 is meter report for watts.
+                8 is meter report for kilowatts.
+                Value 1 (msb) Reserved
+                Value 2 Reserved
+                Value 3 Reserved
+                Value 4 (lsb) bits 7-4 reserved
+                bit 3 current
+                bit 2 voltage
+                bit 1 watt
+                bit 0 kWh
+            </Help>
+    </Value>
+    <Value genre="config" index="103" label="Report type sent in Reporting Group 3" type="int" units="" value="0">
+      <Help>
+                Defines the type of report sent for reporting group 3.
+                1 is meter report for voltage.
+                2 is meter report for current.
+                4 is meter report for watts.
+                8 is meter report for kilowatts.
+                Value 1 (msb) Reserved
+                Value 2 Reserved
+                Value 3 Reserved
+                Value 4 (lsb) bits 7-4 reserved
+                bit 3 current
+                bit 2 voltage
+                bit 1 watt
+                bit 0 kWh
+            </Help>
+    </Value>
+    <Value affects="111,112,113" genre="config" index="110" label="Set 111-113 to default" type="button" units="" value="0" write_only="true">
+      <Help>Set time interval for sending reports for groups 1, 2 and 3 to default.</Help>
+    </Value>
+    <Value genre="config" index="111" label="Send Interval for Reporting Group 1" max="2147483647" min="0" type="int" units="seconds" value="3">
+      <Help>Defines the time interval when the defined report for group 1 is sent.</Help>
+    </Value>
+    <Value genre="config" index="112" label="Send Interval for Reporting Group 2" max="2147483647" min="0" type="int" units="seconds" value="600">
+      <Help>Defines the time interval when the defined report for group 2 is sent.</Help>
+    </Value>
+    <Value genre="config" index="113" label="Send Interval for Reporting Group 3" max="2147483647" min="0" type="int" units="seconds" value="600">
+      <Help>Defines the time interval when the defined report for group 3 is sent.</Help>
+    </Value>
+    <Value genre="config" index="120" label="Set the external switch mode for S1" max="4" min="0" size="1" type="list" units="" value="0">
+      <Help>When the mode is determined, this mode value will not be reset after exclusion</Help>
+      <Item label="Unidentified" value="0"/>
+      <Item label="2-state switch" value="1"/>
+      <Item label="3-way switch" value="2"/>
+      <Item label="Momentary button" value="3"/>
+      <Item label="Enter automatic identification" value="4"/>
+    </Value>
+    <Value genre="config" index="121" label="Set the external switch mode for S2" max="4" min="0" size="1" type="list" units="" value="0">
+      <Help>When the mode is determined, this mode value will not be reset after exclusion</Help>
+      <Item label="Unidentified" value="0"/>
+      <Item label="2-state switch" value="1"/>
+      <Item label="3-way switch" value="2"/>
+      <Item label="Momentary button" value="3"/>
+      <Item label="Enter automatic identification" value="4"/>
+    </Value>
+    <Value genre="config" index="122" label="Touch panel port state" max="5" min="0" read_only="true" size="1" type="list" units="" value="0">
+      <Help>Get the state of touch panel port</Help>
+      <Item label="Not connected" value="0"/>
+      <Item label="Connected" value="5"/>
+    </Value>
+    <Value genre="config" index="123" label="Control destination for external switch S1" max="3" min="0" size="1" type="list" units="" value="3">
+      <Help>Set the control destination for external switch S1</Help>
+      <Item label="Output loads of itself" value="1"/>
+      <Item label="Other nodes" value="2"/>
+      <Item label="Output loads of itself and other nodes" value="3"/>
+    </Value>
+    <Value genre="config" index="124" label="Control destination for external switch S2" max="3" min="1" size="1" type="list" units="" value="3">
+      <Help>Set the control destination for external switch S2</Help>
+      <Item label="Output loads of itself" value="1"/>
+      <Item label="Other nodes" value="2"/>
+      <Item label="Output loads of itself and other nodes" value="3"/>
+    </Value>
+    <Value genre="config" index="125" label="Default dimming rate" max="99" min="0" type="byte" units="%" value="3">
+      <Help>Set the default dimming rate</Help>
+    </Value>
+    <Value genre="config" index="128" label="Current working mode" max="2" min="0" read_only="true" size="1" type="list" units="" value="0">
+      <Help>Get the current working mode</Help>
+      <Item label="Unknown" value="0"/>
+      <Item label="2-wire mode" value="1"/>
+      <Item label="3-wire mode" value="2"/>
+    </Value>
+    <Value genre="config" index="129" label="Dimming principle" max="1" min="0" size="1" type="list" units="" value="1">
+      <Help>Set the dimming principle</Help>
+      <Item label="Trailing edge mode" value="0"/>
+      <Item label="Leading edge mode" value="1"/>
+    </Value>
+    <Value genre="config" index="130" label="Type of load" max="3" min="0" read_only="true" size="1" type="list" units="" value="0">
+      <Help>To get what type of load the Dimmer is connected to</Help>
+      <Item label="Unknown" value="0"/>
+      <Item label="Resistive load" value="1"/>
+      <Item label="Capacitive load" value="2"/>
+      <Item label="Inductive load" value="3"/>
+    </Value>
+    <Value genre="config" index="131" label="Min brightness level" max="99" min="0" type="byte" units="%" value="20">
+      <Help>Set the min brightness level that the load can reach to</Help>
+    </Value>
+    <Value genre="config" index="132" label="Max brightness level" max="99" min="0" type="byte" units="%" value="95">
+      <Help>Set the max brightness level that the load can reach to</Help>
+    </Value>
+    <Value genre="config" index="249" label="Recognition way of load" max="2" min="0" size="1" type="list" units="" value="2">
+      <Help>Set the recognition way of load</Help>
+      <Item label="Never recognize the load when power on" value="0"/>
+      <Item label="Only recognize once when first power on" value="1"/>
+      <Item label="Recognize the load once power on" value="2"/>
+    </Value>
+    <Value genre="config" index="252" label="Configuration Locked" max="1" min="0" size="1" type="list" units="" value="0">
+      <Help>Enable/disable Configuration Locked</Help>
+      <Item label="Disable" value="0"/>
+      <Item label="Enable" value="1"/>
+    </Value>
+    <Value genre="config" index="255" label="Reset To Factory Defaults" size="4" type="list" value="1" write_only="true">
+      <Help>Reset to factory defaults</Help>
+      <Item label="Reset to factory default setting" value="0"/>
+      <Item label="Normal" value="1"/>
+      <Item label="Reset to factory default setting and removed from the z-wave network" value="1431655765"/>
+    </Value>
+  </CommandClass>
+  <!-- Association Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="4">
+      <Group index="1" label="Lifeline" max_associations="5"/>
+      <Group index="2" label="Retransmit" max_associations="5"/>
+      <Group index="3" label="Control Key1" max_associations="5"/>
+      <Group index="4" label="Control Key2" max_associations="5"/>
+    </Associations>
+  </CommandClass>
+</Product>

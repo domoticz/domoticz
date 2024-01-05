@@ -61,6 +61,12 @@
 #define sTypeSetPoint 0x10
 #define sTypeTemperature 0x11
 #define sTypeTextStatus 0x13
+#ifdef WITH_OPENZWAVE
+	#define sTypeZWaveThermostatMode 0x14
+	#define sTypeZWaveThermostatFanMode 0x15
+	#define sTypeZWaveAlarm 0x20
+#define sTypeZWaveThermostatOperatingState 0x23
+#endif
 #define sTypeAlert 0x16
 #define sTypeCurrent 0x17
 #define sTypeSoundLevel 0x18

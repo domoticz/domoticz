@@ -1,0 +1,58 @@
+<Product Revision="1" xmlns="https://github.com/OpenZWave/open-zwave">
+<MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0063:3032:4F44</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/ge/14285.png</MetaDataItem>
+    <MetaDataItem id="3032" name="ZWProductPage" type="4F44">https://products.z-wavealliance.org/products/2939/</MetaDataItem>
+    <MetaDataItem name="ResetDescription">1.  Place the device into ON mode (upper position of Operating Mode Switch)
+2.  Press and hold the programming button.
+3.  While holding programming button, place device into OFF mode (middle position of Operating Mode Switch).
+4.  While holding programming button, place device back into ON mode (upper position of Operating Mode Switch).
+5.  After three (3) seconds, release programming button.  Green LED will flash 3 times when completed successfully.
+
+Note: This should only be used in the event your networks primary controller is missing or otherwise inoperable.</MetaDataItem>
+    <MetaDataItem id="3032" name="Identifier" type="4F44">14285/ZW4007</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://products.z-wavealliance.org/ProductManual/File?folder=&amp;filename=MarketCertificationFiles/2939/14285%20QSG.pdf</MetaDataItem>
+    <MetaDataItem name="Description">Transform any home into a smart home with the GE 40 Amp Z-Wave Direct-Wire Indoor/Outdoor Smart Switch. When added to a Z-Wave network, the heavy duty switch enables wireless control of on/off functions for large load, hard-wired applications such as waters heaters, landscape lighting, spas, pool pumps and heaters. The Smart Switch can be used indoors or outdoors and features an easy access wire connection block, front mounted LED lights indicating power and on/off status, and an override switch to turn connected devices on or off manually. The Smart Switch is housed in a lockable, tamper-resistant case to ensure settings and wiring are secure. The rugged, weather-resistant design will keep out dirt and debris while being suitable for use in extreme weather conditions. The GE Z-Wave Direct-Wire Outdoor Smart Switch is also equipped with state-of-the-art energy monitoring capability, allowing you to monitor watts and kilowatt hours, helping you keep your energy costs to a minimum. Take control of your home lighting and large load devices with GE Z-Wave Smart Lighting Controls!</MetaDataItem>
+    <MetaDataItem name="Name">Direct-Wire Outdoor Smart Switch</MetaDataItem>
+    <MetaDataItem id="3032" name="FrequencyName" type="4F44">U.S. / Canada / Mexico</MetaDataItem>
+    <MetaDataItem name="InclusionDescription">1.  Follow the instructions for your Z-Wave certified controller to add a device to the Z-Wave network.
+2.  Once the controller is ready to add your device, press and release the programming button to add it to the network.  If prompted by the controller to enter the S2 security code, refer to the QR code/security number on the back of the box, or the QR code label on the product.
+3.  Once your controller has confirmed that the device has been added, refresh the Z-Wave network to optimize performance.</MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">1.  Follow the instructions for your Z-Wave certified controller to remove a device from the Z-Wave network.
+2.  Once the controller is ready to remove your device press and release the programming button to remove it from the network.</MetaDataItem>
+    <ChangeLog>
+      <Entry author="John Klimek - jklimek@gmail.com" date="8 June 2020" revision="1">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/2939/xml</Entry>
+    </ChangeLog>
+  </MetaData>
+  <!-- Configuration Parameters -->
+  <CommandClass id="112">
+    <Value genre="config" instance="1" index="1" value="0" label="Product State after Power Reset" units="" size="1" min="0" max="2" type="list">
+      <Help>Product State after Power Reset</Help>
+      <Item value="0" label="Return to last state"/>
+      <Item value="1" label="Return to off"/>
+      <Item value="2" label="Return to on"/>
+    </Value>
+    <Value genre="config" instance="1" index="2" value="0" label="Energy Report Mode" units="" size="1" min="0" max="2" type="list">
+      <Help>Energy Report Mode</Help>
+      <Item value="0" label="Once monthly"/>
+      <Item value="1" label="Reports based on Parameter 3 setting"/>
+      <Item value="2" label="Once daily"/>
+    </Value>
+    <Value genre="config" instance="1" index="3" value="5" label="Energy Report Frequency" units="" size="1" min="5" max="60" type="byte">
+      <Help>Energy Report Frequency</Help>
+    </Value>
+    <Value genre="config" instance="1" index="19" value="0" label="Alternate Exclusion" units="" size="1" min="0" max="1" type="list">
+      <Help>Alternate Exclusion</Help>
+      <Item value="0" label="Default"/>
+      <Item value="1" label="Alternate Exclusion (3 button presses)"/>
+    </Value>
+  </CommandClass>
+  <!-- Association Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="3">
+      <Group index="1" label="Lifeline" max_associations="5" />
+      <Group index="2" label="Basic Set, controlled by local load" max_associations="5" />
+      <Group index="3" label="Basic Set, controlled by pressing the On or Off button" max_associations="5" />
+    </Associations>
+  </CommandClass>
+</Product>

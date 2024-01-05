@@ -1,0 +1,57 @@
+<Product Revision="3" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0001:3033:5257</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/act/zrw103.png</MetaDataItem>
+    <MetaDataItem id="3033" name="ZWProductPage" type="5257">https://products.z-wavealliance.org/products/413/</MetaDataItem>
+    <MetaDataItem name="Description">US Wall Switch Relay 20A - 200 upt.Provides wireless RF ON/OFF (or manual) control of any light or lamp connected. 
+•	 Can control two groups of 5 modules each independent of its own state. 
+•	 Can replace current wall switch and can add 3-way or 4-way capability. 
+•	 Each ZRW103 Wall Mounted Switch functions as an automatic repeater to other Z-Wave Modules to ensure full home coverage of the RF signal. 
+•	
+ Supports the Powerlevel command 
+
+ Has automatic Static Update Controller (SUC) capability. 
+ This product supports 40Kbps data transmission. This product can also be used for networking support in systems that stream metadata. An example might include transmission of information from audio devices such as song album information to various displays around the home. 
+</MetaDataItem>
+    <MetaDataItem id="3033" name="FrequencyName" type="5257">U.S. / Canada / Mexico</MetaDataItem>
+    <MetaDataItem name="ProductPage">http://www.act-solutions.com/HomePro-Product-Matrix.html#top</MetaDataItem>
+    <MetaDataItem name="ProductSupport">http://www.act-solutions.com/Contact-Advanced-Control-Technologies.html</MetaDataItem>
+    <MetaDataItem id="3033" name="Identifier" type="5257">ZRW103</MetaDataItem>
+    <MetaDataItem name="Name">ZRW103</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 May 2019" revision="3">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/413/xml</Entry>
+    </ChangeLog>
+  </MetaData>
+  <!-- Configuration Parameters -->
+  <CommandClass id="112">
+    <Value genre="config" index="1" label="Ignore Start-Level (Transmitting)" size="1" type="list" value="1">
+      <Help>Dimmers controlled by this switch will start dimming from their current level.</Help>
+      <Item label="No" value="0"/>
+      <Item label="Yes" value="1"/>
+    </Value>
+    <Value genre="config" index="3" label="Night Light" size="1" type="list" value="0">
+      <Help>In night-light mode the LED on the switch will turn ON when the switch is turned OFF.</Help>
+      <Item label="No" value="0"/>
+      <Item label="Yes" value="1"/>
+    </Value>
+    <Value genre="config" index="4" label="Invert Switch" size="1" type="list" value="0">
+      <Help>Change the top of the switch to OFF and the bottom of the switch to ON.</Help>
+      <Item label="No" value="0"/>
+      <Item label="Yes" value="1"/>
+    </Value>
+    <Value genre="config" index="19" label="LED Transmission Indication" size="1" type="list" value="2">
+      <Help>The ZRW103 will flicker its LED when it is transmitting to any of its 4 groups. This flickering can be set to not flicker at all, to flicker the entire time it is transmitting, or to flicker for only 1 second when it begins transmitting.</Help>
+      <Item label="None" value="0"/>
+      <Item label="While Transmitting" value="1"/>
+      <Item label="One Second Maximum" value="2"/>
+    </Value>
+  </CommandClass>
+  <!-- Association Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="3">
+      <Group index="1" label="Group 1" max_associations="5"/>
+      <Group index="2" label="Group 2 (two taps)" max_associations="5"/>
+      <Group index="3" label="Group 3 (three taps)" max_associations="5"/>
+    </Associations>
+  </CommandClass>
+</Product>

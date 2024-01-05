@@ -1,0 +1,97 @@
+<Product Revision="2" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0299:1A90:0002</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/technisat/03009499.png</MetaDataItem>
+    <MetaDataItem id="1000" name="ZWProductPage" type="0303">https://products.z-wavealliance.org/products/3677/</MetaDataItem>
+    <MetaDataItem name="WakeupDescription">TechniSat Single-Switch is powered with mains voltage so it is always awake.</MetaDataItem>
+    <MetaDataItem name="ResetDescription">Use this procedure only when the network primary controller is missing or otherwise inoperable.
+      1. Press and hold position T2 for more than 20 seconds.
+      2. The LED will alternately flash red and green for 5 seconds after a successful reset.
+</MetaDataItem>
+    <MetaDataItem id="1000" name="Identifier" type="0303">0300/9496</MetaDataItem>
+    <MetaDataItem name="Name">Shutter</MetaDataItem>
+    <MetaDataItem name="InclusionDescription">1. Install the TechniSat Single-Switch.
+      2. After checking the correct installation, re-enable electrical power at the main fuse or circuit breaker.
+      3. Start the Z-Wave device add mode on your Z-Wave gateway, according to the gateway‘s manual.
+      4. Press position T1 3x within 1 second.
+      5. The red status LED is on while the device is added to the Z-Wave network.
+      6. The green LED is on for 5 seconds after successfully adding the device.
+</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://products.z-wavealliance.org/ProductManual/File?folder=&amp;filename=product_documents/3778/Manual_SMD01_Shutter.pdf</MetaDataItem>
+    <MetaDataItem id="1000" name="FrequencyName" type="0303">CEPT (Europe)</MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">1. Start the Z-Wave device remove mode on your Z-Wave gateway, according to the gateway‘s manual.
+      2. Press and hold position T1 for more than 10 seconds.
+      3. The red status LED is on while the device is removed from the Z-Wave network.
+      4. The green LED is on for 5 seconds after successfully removing the device.
+</MetaDataItem>
+    <MetaDataItem name="Description">Designed as a drop-in replacement for your single wall switch from leading brand manufacturers, TechniSat's Single-Switch integrates your wall switch into the Smart Home future. Featuring Z-Wave SmartStart and S2 security for easy installation and secure operation, your wall switch can now be controlled from your Smart Home as well.
+       - Full manual operation
+       - can trigger central scenes via multiple button clicks
+       - Integrated 230 V auxiliary input for push buttons or toggle switch types, applicable in alternating switching and or intermediate switching circuits
+       - Short circuit and overload protection monitoring
+</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Mathis Klooss - ozw@gunah.eu" date="13 Jun 2020" revision="1">Initial file based on z-wavealliance.org</Entry>
+      <Entry author="Andreas Krueger - ankrueg@gmx.de" date="03 Jan 2021" revision="2">Value type for "Parameter 2" and "Parameter 3" changed to "short" as parameter size is 2 bytes.</Entry>
+    </ChangeLog>
+  </MetaData>
+  <!-- Configuration -->
+  <CommandClass id="112">
+    <Value type="list" genre="config" instance="1" index="1" label="Parameter 1" size="1" value="1">
+      <Help>
+        Enable/disable central scene notifications for 2x-5x button presses.
+      </Help>
+      <Item label="disable central scene" value="0" />
+      <Item label="enable central scene" value="1" />
+    </Value>
+    <Value type="short" genre="config" instance="1" index="2" label="Parameter 2" value="3" min="0" max="8640">
+      <Help>
+        3 to 8640 - Interval of unsolicited reports in 10s increments (30 seconds - 1 day)
+        0 - Disable unsolicited meter reports of current wattage.
+      </Help>
+    </Value>
+    <Value type="short" genre="config" instance="1" index="3" label="Parameter 3" value="60" min="0" max="30240">
+      <Help>
+        Interval of active energy meter reports in minutes.
+         - 10 to 30240 - Interval of active energy meter unsolicited reports in minutes (10 minutes - 3 weeks)
+         - 0 - Disable unsolicited meter reports of active energy.
+      </Help>
+    </Value>
+    <Value type="list" genre="config" instance="1" index="4" label="Parameter 4" size="1" value="0">
+      <Help>
+        Operations mode for push buttons controlling the output.
+         - Normal Switch: In this mode the top button will turn the output on, while the bottom button will turn the output off.
+         - Toogle Switch: In this mode any button press will toggle the output - when on it will be turned off, when off it will be turned on.
+      </Help>
+      <Item label="Normal Switch" value="0" />
+      <Item label="Toogle Switch" value="1" />
+    </Value>
+    <Value type="list" genre="config" instance="1" index="5" label="Parameter 5" size="1" value="0">
+      <Help>
+        Configuration of switch type connected to extension input S.
+         - Normal Switch: Use this value if a toggle switch is connected to extension input S.
+         - Toogle Switch: Use this value if a push button switch is connected to extension input S.
+      </Help>
+      <Item label="Normal Switch" value="0" />
+      <Item label="Toogle Switch" value="1" />
+    </Value>
+    <Value type="list" genre="config" instance="1" index="6" label="Parameter 6" size="1" value="1">
+      <Help>
+        Central Scene mapping of extension input S.
+         - Central Scene 1: Multiple button presses (2x-5x) on extension input S will trigger events of central scene 1.
+         - Central Scene 2: Multiple button presses (2x-5x) on extension input S will trigger events of central scene 2.
+         - Central Scene 3: Multiple button presses (2x-5x) on extension input S will trigger events of central scene 3 - an additional central scene exclusive to extension input S.
+      </Help>
+      <Item label="Central Scene 1" value="1" />
+      <Item label="Central Scene 2" value="2" />
+      <Item label="Central Scene 3" value="3" />
+    </Value>
+  </CommandClass>
+  <!-- Association Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="2">
+      <Group index="1" label="Lifeline" max_associations="1"/>
+      <Group index="2" label="Basic on/off" max_associations="16"/>
+    </Associations>
+  </CommandClass>
+</Product>

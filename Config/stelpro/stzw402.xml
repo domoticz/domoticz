@@ -1,0 +1,64 @@
+<Product Revision="3" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0239:0001:0001</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/stelpro/stzw402.png</MetaDataItem>
+    <MetaDataItem id="0001" name="ZWProductPage" type="0001">https://products.z-wavealliance.org/products/1603/</MetaDataItem>
+    <MetaDataItem name="ResetDescription">The thermostat may be manually reset to its factory state.
+When this is performed, all parameters are reset to their default values and the thermostat is removed (excluded) from the Z-Wave network.
+To reset the thermostat to its default state:
+- Enter the advanced settings
+- Enter the °STELPRO menu (menu 6)
+- Navigate to the “def” screen using the UP or DOWN buttons.
+- Enter the “def” menu by pressing the UP and DOWN buttons for less than 3 seconds
+- Select “yes” and confirm the selection by pressing the UP and DOWN buttons for less than 3 seconds.
+If the thermostat was added (included) in a Z-wave network, it will send a ‘’device reset locally’’ notification.
+The thermostat will then reset itself.
+
+Please use this procedure only when the network primary controller is missing or otherwise inoperable.</MetaDataItem>
+    <MetaDataItem id="0001" name="Identifier" type="0001">STZW402+</MetaDataItem>
+    <MetaDataItem name="Description">Ki, the smart home line-voltage thermostat by Stelpro - STZW402+
+•	The very first Z-Wave Plus line voltage thermostat in North America
+•	Supports 120Vac - 240Vac (50/60 Hz) voltages
+•	Controls baseboard heaters and convectors up to 4000W
+•	Easy to use 2 button interface
+•	Made in Canada
+•	High precision temperature control +/- 0.1 °C
+•	Z-Wave Plus certified, works with thousands of other Z-Wave devices
+•	Brings optimal comfort into your smart home
+•	Can be integrated into smart home automated scenes
+•	Local keypad lock
+•	Displays external temperature
+•	Adjustable backlight intensity
+•	Comfort and Eco modes
+•	Celsius or Fahrenheit display
+•	Quiet TRIAC operation
+•	Frost-free warning
+•	Sleek design to harmonize with any decor
+•	Backed by Stelpro’s 30 years of experience as a leader in the heating market</MetaDataItem>
+    <MetaDataItem id="0001" name="FrequencyName" type="0001">U.S. / Canada / Mexico</MetaDataItem>
+    <MetaDataItem name="InclusionDescription">Make sure the Z-Wave hub is in the include mode (Refer to your Z-Wave hub instruction manual).
+
+To add (include) the thermostat to a Z-Wave network, enter the Menu 1 (Z-Wave menu) and select “On”. Then press the UP and DOWN buttons to start the inclusion process. During inclusion, “On” will be blinking and the connectivity icon  will be animated in an increasing pattern. When the inclusion process has been completed, On will be displayed solid. If an error occurs, “Err” will be displayed for 3 seconds then the screen will revert to “Off” selection.
+</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://Products.Z-WaveAlliance.org/ProductManual/File?folder=&amp;filename=Manuals/1603/INS_STZW402_1215_EN.pdf</MetaDataItem>
+    <MetaDataItem name="Name">Ki - Electronic Thermostat for Smart Home</MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">Make sure the Z-Wave hub is in the exclude mode (Refer to your Z-Wave hub instruction manual).
+To remove (exclude) the thermostat from a Z-Wave network, enter the Menu1 (Z-Wave menu) and select “Off”. Then press the UP and DOWN buttons to start the exclusion process. During exclusion, “Off” will be blinking and the connectivity icon  will be animated in an decreasing pattern. When the exclusion process has been completed, Off will be displayed solid. If an error occurs, “Err” will be displayed for 3 seconds then the screen will revert to “On” selection.
+</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="24 May 2019" revision="3">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1603/xml</Entry>
+    </ChangeLog>
+  </MetaData>
+  <!-- Association Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="1">
+      <Group index="1" label="Lifeline" max_associations="1"/>
+    </Associations>
+  </CommandClass>
+  <!-- This thermostat's setpoint descriptions are 0 based, not 1 -->
+  <CommandClass id="67">
+    <Compatibility>
+      <Base>0</Base>
+    </Compatibility>
+  </CommandClass>
+</Product>

@@ -1,0 +1,19 @@
+<Product Revision="1" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0060:0002:0011</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/everspring/han02-1.png</MetaDataItem>
+    <MetaDataItem id="0002" name="ZWProductPage" type="0011">https://products.z-wavealliance.org/products/696/</MetaDataItem>
+    <MetaDataItem id="0002" name="FrequencyName" type="0011">CEPT (Europe)</MetaDataItem>
+    <MetaDataItem name="ProductPage">http://www.everspring.com/HAN02.aspx</MetaDataItem>
+    <MetaDataItem id="0002" name="Identifier" type="0011">HAN02-1</MetaDataItem>
+    <MetaDataItem name="Name">Small Z-Wave In-Wall Switch Module With Two Relay</MetaDataItem>
+    <MetaDataItem name="Description">This in-wall switch module is a transceiver which is a Z-Wave enabled device and is fully compatible with any Z-Wave enabled network. Z-Wave enabled devices displaying the Z-Wave logo can also be used with it regardless of the manufacturer, and ours can also be used in other manufacturer’s Z-Wave enabled networks. Remote On/Off control of the connected load is possible with other manufacturer’s Wireless Controller. 
+
+This in-wall switch module is able to detect overload wattage of connected non-dimmable lights or appliances. When detecting overload state, the Module will be disabled and its On/Off button will be lockout of which LED will flash quickly.  However, disconnect and re-connect the wiring of the Module will reset its overload condition to normal status.
+Two additional digital inputs allow user to manual switch on/off the module for normal operation and can manual execute inclusion/exclusion/association at the first 3 minute when the first power is applied, this can let installer easy to configure even the module already install inside the wall box.</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 May 2019" revision="1">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/696/xml</Entry>
+    </ChangeLog>
+  </MetaData>
+  <CommandClass id="112"/>
+</Product>

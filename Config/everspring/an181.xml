@@ -1,0 +1,72 @@
+<Product Revision="4" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0060:0006:0004</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/everspring/an181.png</MetaDataItem>
+    <MetaDataItem id="0006" name="ZWProductPage" type="0004">https://products.z-wavealliance.org/products/1067/</MetaDataItem>
+    <MetaDataItem name="ResetDescription">(This procedure should only be used when the network primary controller is inoperable.)
+1. Press the link key three times within 1.5 seconds to put the unit into exclusion mode.
+2. Within 1 second of step 1, press link key again and hold it until LED is off (about 5 seconds). (Please refer to the documentation for the location of the link key.)
+3. Node ID is excluded.  The device reverts to factory default state and will be in auto-inclusion mode for 4 minutes..</MetaDataItem>
+    <MetaDataItem name="Name">Metering Mini Plug</MetaDataItem>
+    <MetaDataItem name="WakeupDescription">NR</MetaDataItem>
+    <MetaDataItem name="InclusionDescription">1. Put the Z-Wave Controller into inclusion mode.
+2. Press the link key three times within 1.5 seconds to put the unit into inclusion mode. (Please refer to the documentation for the location of the link key.)
+</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://Products.Z-WaveAlliance.org/ProductManual/File?folder=&amp;filename=Manuals/1067/manual_AN181_20140729.pdf</MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">1. Put the Z-Wave Controller into exclusion mode.
+2. Press the link key three times within 1.5 seconds to put the unit into exclusion mode. (Please refer to the documentation for the location of the link key.)
+</MetaDataItem>
+    <MetaDataItem id="0006" name="Identifier" type="0004">AN181-6</MetaDataItem>
+    <MetaDataItem id="0006" name="FrequencyName" type="0004">CEPT (Europe)</MetaDataItem>
+    <MetaDataItem name="Description">The Metering Plug is a Z-Wave enabled device which is fully compatible with any Z-Wave enabled network.  Z-Wave enabled devices displaying the Z-Wave logo can also be used with it regardless of the manufacturer, and ours can also be used in other manufacturer’s Z-Wave enabled networks.  Inclusion of this unit on other manufacturer’s Wireless Controller menu allows remote operation of the unit and the connected load.
+
+The Metering Plug is designed to control the on/off status of lighting and appliances load in your house.  For metering the unit can detect up to 10485.75kW/h before resetting to 0 and can support wattage, voltage, ampere, and PF detection. The unit can also detect overload upon which the unit will switch off relay and keep LED flashing until power is off and re-applied.  At 220-240V voltage, this Plug can support up to 2500W resistive, 1200W incandescent, 700W motor, or 320W (40W*8) fluorescent load.
+</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 May 2019" revision="4">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1067/xml</Entry>
+    </ChangeLog>
+  </MetaData>
+  <!-- Everspring - AN181 - Miniplug On/Off with meter function -->
+    <!-- Configuration Parameters -->
+  <CommandClass id="112">
+    <Value genre="config" index="1" label="Basic Set Command" max="255" min="0" size="2" type="short" units="" value="255">
+      <Help>
+	Set Basic Set Command value to be sent to group 2 when switch is turned on.
+
+	When the physical button on the mini-plug is used to turn OFF the switch the value "0" will always be sent to group 2,
+	however this is not the case when the switch is turned off remotely.
+	    </Help>
+    </Value>
+    <Value genre="config" index="2" label="Delay" max="25" min="3" size="1" type="byte" units="seconds" value="3">
+      <Help>
+                The delaying time to report to Group 1
+            </Help>
+    </Value>
+    <Value genre="config" index="3" label="Remember Last" max="1" min="0" size="1" type="list" units="" value="1">
+      <Help>
+                Remember the last status on plug
+            </Help>
+      <Item label="Do not remember" value="0"/>
+      <Item label="Remember" value="1"/>
+    </Value>
+    <Value genre="config" index="4" label="Wattage Auto Report" max="32767" min="0" size="2" type="short" units="minutes" value="1">
+      <Help>Set the interval for wattage auto report (0 = disabled)</Help>
+    </Value>
+    <Value genre="config" index="5" label="Energy Auto report" max="32767" min="0" size="2" type="short" units="minutes" value="60">
+      <Help>Set the interval for kWh auto report (0 = disabled)</Help>
+    </Value>
+    <Value genre="config" index="6" label="Value of Wattage surpassed" max="2500" min="0" size="2" type="short" units="watts" value="0">
+      <Help>Auto report is sent when load surpasses the set value of wattage (0 = disabled)</Help>
+    </Value>
+    <Value genre="config" index="7" label="Change of Wattage surpassed" max="100" min="0" size="1" type="byte" units="%" value="0">
+      <Help>Auto report is sent when the change of wattage surpasses the set percentage (0 = disabled)</Help>
+    </Value>
+  </CommandClass>
+  <!-- Association Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="2">
+      <Group index="1" label="Lifeline" max_associations="1"/>
+      <Group index="2" label="On/Off control (Button on the mini-plug)" max_associations="4"/>
+    </Associations>
+  </CommandClass>
+</Product>

@@ -1,0 +1,37 @@
+<Product Revision="1" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="Name">EcoNet Z-Wave Plus Water Leak Sensor</MetaDataItem>
+    <MetaDataItem name="Description">Damage from water leaks can be both devastating and costly, leading to both unnecessary expenses and stress. Protect your home from water damage with EcoNet’s EZW1204 Z-Wave leak sensor. This sleek and compact leak sensor can be placed below dishwashers, in laundry rooms, beside hot water tanks, on a wall close a sump pump and more. It comes with an optional snap-in wall mount piece.
+Z-Wave Plus technology allows this sensor to communicate with any Z-Wave enabled network and controller so notifications can be sent to your smartphone or other enabled smart devices. Its compatible with most popular Smart Home systems including Samsung’s SmartThings, Wink, Vera and Homeseer. It has a wireless range of 30 meters in a clear line of sight.
+</MetaDataItem>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/015D:C41C:2003</MetaDataItem>
+    <MetaDataItem name="ProductPage">https://www.econetshop.com/products.html</MetaDataItem>
+    <MetaDataItem name="ProductSupport">https://www.econetshop.com/support</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/econet/ezw1204.png</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://products.z-wavealliance.org/ProductManual/File?folder=&amp;filename=MarketCertificationFiles/2748/EZW1204-Manual-Guide%C2%A0171220.pdf</MetaDataItem>
+    <MetaDataItem name="WakeupDescription">Open the shell, wake up immediately</MetaDataItem>
+    <MetaDataItem name="InclusionDescription">Press the inclusion switch 3 or more times rapidly (within 0.5s).  It is recommended to keep the EZW1204 within 1M/3ft of the controller.
+(Set controller to inclusion mode first)</MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">Press the inclusion switch 3 or more times rapidly (within 0.5s).  It is recommended to keep the EZW1204 within 1M/3ft of the controller.
+(Set controller to exclusion mode first)</MetaDataItem>
+    <MetaDataItem name="ResetDescription">Press and hold down the inclusion switch for 5 or more seconds.
+Note: this should only be used in the event your network's primary controller is missing or otherwise inoperable</MetaDataItem>
+    <MetaDataItem id="c41c" name="ZWProductPage" type="2003">https://products.z-wavealliance.org/products/2748/</MetaDataItem>
+    <MetaDataItem id="c41c" name="FrequencyName" type="2003">U.S. / Canada / Mexico</MetaDataItem>
+    <MetaDataItem id="c41c" name="Identifier" type="2003">EZW1204</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Keith Laidlaw - laidlaw1546@gmail.com" date="16 Sep 2020" revision="1">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/2748/xml</Entry>
+    </ChangeLog>
+  </MetaData>
+  <!-- Configuration Command Class - All Configuration Parameters should be entered into the section below -->
+  <CommandClass id="112">
+  </CommandClass>
+  <!-- Association Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="3">
+      <Group index="1" label="Lifeline" max_associations="5"/>
+      <Group index="2" label="Water leak send basic Set" max_associations="5"/>
+      <Group index="3" label="Cover plate open send basic Set" max_associations="5"/>
+    </Associations>
+  </CommandClass>
+</Product>

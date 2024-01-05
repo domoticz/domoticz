@@ -1,0 +1,73 @@
+<!--
+Ecolink Motion Detector
+http://products.z-wavealliance.org/ProductManual/File?folder=&filename=Manuals/1500/Ecolink%20PIR%20Zwave%20Plus%20Manual%20R1.04%20021116kgs.docx
+--><Product Revision="4" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/014A:0001:0004</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/ecolink/motion.png</MetaDataItem>
+    <MetaDataItem id="0001" name="ZWProductPage" type="0004">https://products.z-wavealliance.org/products/2928/</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://Products.Z-WaveAlliance.org/ProductManual/File?folder=&amp;filename=Manuals/2928/EU Z-wave PIR H214101 ZWAVE_Ver02.pdf</MetaDataItem>
+    <MetaDataItem name="InclusionDescription">The sensor must be added to a Z-Wave network prior to use. To include the sensor in a network, both the sensor and the network controller must be in inclusion mode at the same time. 
+
+Activate inclusion mode for the sensor by removing the battery isolation pull tab, or by inserting the battery (see next section for battery installation tips). When the inclusion process is complete the red LED will turn on for approximately 10 seconds and then it will go out. If the LED continues to flash repeat the inclusion process.
+
+Refer to the instructions provided by the manufacturer of your specific controller for details on initiating the controller’s inclusion mode. 
+
+	
+STEP ONE    	Start by placing the controller into inclusion mode.
+
+STEP TWO	Activate inclusion mode for the sensor by removing the battery isolation pull tab, or by inserting the battery (see next section for battery installation tips). When the inclusion process is complete the red LED will turn on for approximately 10 seconds and then it will go out.  If the LED continues to flash repeat the inclusion process.   
+STEP THREE  	Test the motion sensor before mounting it.  Place the sensor in an unoccupied room.  Leave the room for at least 4 minutes.  Return to the room and pass in front of the sensor lens.  The LED will flash once to indicate that motion was detected.     
+</MetaDataItem>
+    <MetaDataItem id="0001" name="Identifier" type="0004">H214101</MetaDataItem>
+    <MetaDataItem name="ResetDescription">To restore this sensor to factory default settings, follow the instructions in this manual to exclude this sensor from the Z-Wave network.  Upon completion of removal from the network the sensor will restore itself to factory default settings automatically.  Use this procedure only in the event that the network primary controller is missing or otherwise inoperable.</MetaDataItem>
+    <MetaDataItem name="Description">•	For indoor use only 
+•	Operating frequency: 908.42 MHz 
+•	Operating range: Up to 100 feet (30.5 meters) line-of-sight 
+•	Operating temperature: 0˚C to 49˚C, 32˚F to 120˚F (ambient temperature) 
+•	Detection radius: 39 feet (see detection region diagram) 
+•	Detection angle: 45 degrees in either direction from the sensor’s center 
+•	Battery type: 3V Lithium CR123A 
+•	Battery life: approximately 3 years 
+•	Passive Infrared (PIR) based technology </MetaDataItem>
+    <MetaDataItem name="Name">EU Z-WAVE PIR MOTION SENSOR</MetaDataItem>
+    <MetaDataItem name="WakeupDescription">To save power, this sensor sleeps most of the time and is therefore not awake to receive messages from a gateway for testing. Removing the top case from the sensor will put in device into a tampered mode in which the sensor will stay awake and able to receive messages. Most of the time an end user would not do this, but if the sensor needs to be configured after inclusion, an end user can follow the instructions below for sending Wake-Up notifications.</MetaDataItem>
+    <MetaDataItem id="0001" name="FrequencyName" type="0004">U.S. / Canada / Mexico / CEPT (Europe)</MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">Exclusion mode on the sensor is initiated following the same exact procedure as inclusion.</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="08 May 2019" revision="3">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1500/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="02 Jun 2019" revision="4">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/2928/xml</Entry>
+    </ChangeLog>
+  </MetaData>
+  <!-- Basic set as report-->
+  <CommandClass id="32">
+    <Compatibility>
+      <SetAsReport>true</SetAsReport>
+    </Compatibility>
+  </CommandClass>
+  <!-- Configuration Parameters -->
+  <CommandClass id="112">
+    <Value genre="config" index="1" instance="1" label="Basic Set Report when sensor is restored" max="1" min="0" size="1" type="list" value="0">
+      <Help>
+			Configures the sensor to send or not send Basic Set commands of 0x00 to nodes in Association group 2 turning the devices off when the sensor is in a restored state (i.e. motion not detected).  
+			By default the sensor does NOT send Basic Set commands of 0x00.
+			</Help>
+      <Item label="Disable" value="0"/>
+      <Item label="Enable" value="255"/>
+    </Value>
+    <Value genre="config" index="2" instance="1" label="Basic Set Report" max="1" min="0" size="1" type="list" value="0">
+      <Help>
+			Configures the sensor to either to send or not to send Sensor Binary Report commands to Association Group 1 when the sensor is faulted and restored.  
+			</Help>
+      <Item label="Enable Binary Reports" value="0"/>
+      <Item label="Disable Binary Reports" value="255"/>
+    </Value>
+  </CommandClass>
+  <!-- Association Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="2">
+      <Group index="1" label="Lifeline" max_associations="5"/>
+      <Group index="2" label="Basic Report" max_associations="5"/>
+    </Associations>
+  </CommandClass>
+</Product>

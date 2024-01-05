@@ -1,0 +1,58 @@
+<Product Revision="1" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="Name">Door/Window Sensor</MetaDataItem>
+    <MetaDataItem name="Description">Door/Window Sensor is a wireless reed sensor powered by AAA battery. It is used for detecting the opening or closing of doors, windows. It can communicate with an associated Z-Wave device, such as Siren, Smart Switch, etc.</MetaDataItem>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/000C:0008:0201</MetaDataItem>
+    <MetaDataItem name="ProductPage">https://homeseer.com/sensors/</MetaDataItem>
+    <MetaDataItem name="ProductSupport">https://homeseer.com/support-home/</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/homeseer/hs-ds100plus.png</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://Products.Z-WaveAlliance.org/ProductManual/File?folder=&amp;filename=Manuals/2958/DoorWindowSensorEngineeringSpecification.pdf</MetaDataItem>
+    <MetaDataItem name="WakeupDescription"></MetaDataItem>
+    <MetaDataItem name="InclusionDescription">1.	Insert the AAA battery.
+2.	Set the Z-Wave network main controller into learning mode.
+3.	Triple or single short press the Z-button.
+4.	If the add for inclusion is successful, the LED will blink less than 5 seconds and then keep on 3 seconds. Otherwise, the LED will blink 5 seconds and then turn off, in which case you need to repeat the process from step 2.
+</MetaDataItem>
+    <MetaDataItem name="ResetDescription">1.	Insert the AAA battery.
+2.    Pressing and holding the Z button for more than 20 seconds,
+3.    Led will keep on until the Z-Button is released, and it will reset to factory default when the button is released.
+
+Using this procedure only in the event that the network primary controller is missing or otherwise inoperable.
+</MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">1.	Insert the AAA battery.
+2.	Set the Z-Wave network main controller into learning mode.
+3.	Triple clicking the Z-button.
+4.	If the remove for exclusion, the LED will turn off within 1 second. Otherwise, the LED will blink 5 seconds and then turn off, in which case you need to repeat the process from step 2.
+</MetaDataItem>
+    <MetaDataItem id="0008" name="ZWProductPage" type="0201">https://products.z-wavealliance.org/products/2958/</MetaDataItem>
+    <MetaDataItem id="0008" name="FrequencyName" type="0201">U.S. / Canada / Mexico</MetaDataItem>
+    <MetaDataItem id="0008" name="Identifier" type="0201">HS-DS100+</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Jim Stuhlmacher - jim@stuhlmacher.us" date="17 Jul 2019" revision="1">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/Products/2958/XML</Entry>
+    </ChangeLog>
+  </MetaData>
+  <!-- Configuration Parameters -->
+  <CommandClass id="112">
+    <Value genre="config" index="15" label="Value for basic set command" max="1" min="0" size="1" type="list" value="0">
+      <Help>Door/Window Sensor can reverse its value of BASIC SET when the magnet is triggered.
+            </Help>
+      <Item label="Send BASIC SET VALUE = 255 to nodes associated with group 2 when door/window is opened.  Send BASIC SET VALUE = 0 to nodes associated with group 2 when door/window is closed." value="0"/>
+      <Item label="Send BASIC SET VALUE = 0 to nodes associated with group 2 when door/window is opened.  Send BASIC SET VALUE = 255 to nodes associated with group 2 when door/window is closed." value="1"/>
+    </Value>
+    <Value genre="config" index="32" label="Low battery threshold" max="50" min="10" size="1" type="list" units="%" value="20">
+      <Help>This parameter defines a battery level as the “low battery”.</Help>
+      <Item label="10" value="10"/>
+      <Item label="20" value="20"/>
+      <Item label="30" value="30"/>
+      <Item label="40" value="40"/>
+      <Item label="50" value="50"/>
+    </Value>
+  </CommandClass>
+  <!-- Association Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="2">
+      <Group index="1" label="Lifeline" max_associations="5"/>
+      <Group index="2" label="Basic Set" max_associations="5"/>
+    </Associations>
+  </CommandClass>
+</Product>

@@ -1,0 +1,97 @@
+<Product Revision="15" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/019A:0003:0003</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/sensative/strips.png</MetaDataItem>
+    <MetaDataItem id="0003" name="ZWProductPage" type="0003">https://products.z-wavealliance.org/products/3388/</MetaDataItem>
+    <MetaDataItem name="ResetDescription">Please use this procedure only when your Z-Wave controller is missing or otherwise inoperable:
+
+1. Place the round magnet at the rounded edge of Strips. 
+
+2. When the LED blinks, move the magnet away. Repeat 3 times in total within 10 seconds.
+
+3. On the 3rd repetition, leave the magnet at the rounded edge for 10s. 
+
+4. A long LED signal indicates success. </MetaDataItem>
+    <MetaDataItem name="WakeupDescription">Wake up Strips manually for Z-Wave communication:
+
+1. Place the round magnet at the rounded edge of Strips. 
+
+2. When the LED blinks, move the magnet away. 
+
+3. Repeat 3 times in total within 10 seconds.
+</MetaDataItem>
+    <MetaDataItem name="InclusionDescription">Strips is delivered in "auto-add" mode. 
+Follow the process below to add Strips in a Z-Wave network.
+
+1. Start the add mode on the Z-Wave controller. 
+See the controller’s manual.
+
+2. Remove both magnets from Strips. Strips blinks twice to confirm the command and successful addition. 
+
+3. A long LED blink indicates that the add process was successful
+
+4. The Z-Wave controller application should now allow you to monitor your Strips sensor status.
+
+5. Move the squared magnet as shown in the picture . Check that the Z-Wave system indicates the status correctly.
+
+6. If the Z-Wave system does not respond, it may be needed to change Strips’ notification type.
+
+Manual add:
+1. Set the controller to add mode  (See your controller’s manual).  
+
+2. Place the round magnet at the rounded edge of Strips. 
+When the LED blinks, move the magnet away. Repeat 3 times in total within 10 seconds. 
+
+3. A long LED blink indicates that the add process was successful.
+</MetaDataItem>
+    <MetaDataItem id="0003" name="Identifier" type="0003">11 01 015</MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">1. Set the controller in remove mode  (See your controller’s manual).  
+
+2. Place the round magnet at the rounded edge of Strips. 
+When the LED blinks, move the magnet away. Repeat 3 times in total within 10 seconds. 
+
+3. A long LED blink indicates that the remove process was successful.</MetaDataItem>
+    <MetaDataItem name="Description">Strips Guard is an ultra-thin magnetic sensor designed to monitor windows and doors for your safety. It´s so thin that it can be mounted invisibly in the tiny gap between the frame and the door or window. 
+It is as easy to mount as a sticker using Strips's  adhesive tape.
+Strips Guard is Z-Wave plus compliant and can be used with any existing Z-Wave smarthome systems. </MetaDataItem>
+    <MetaDataItem name="Name">Strips-MaZw</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://Products.Z-WaveAlliance.org/ProductManual/File?folder=&amp;filename=Manuals/3388/Strips Guard EU R3.pdf</MetaDataItem>
+    <MetaDataItem id="0003" name="FrequencyName" type="0003">CEPT (Europe) / U.S. / Canada / Mexico / CEPT (Europe) / U.S. / Canada / Mexico / CEPT (Europe) / U.S. / Canada / Mexico / U.S. / Canada / Mexico / CEPT (Europe) / CEPT (Europe) / CEPT (Europe) / U.S. / Canada / Mexico / Australia / New Zealand / India</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="23 May 2019" revision="2">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1510/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="24 May 2019" revision="3">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1753/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="24 May 2019" revision="4">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1790/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="24 May 2019" revision="5">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1862/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="24 May 2019" revision="6">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1863/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="02 Jun 2019" revision="7">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/2073/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="02 Jun 2019" revision="8">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/2080/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="02 Jun 2019" revision="9">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/2144/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="02 Jun 2019" revision="10">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/2146/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="02 Jun 2019" revision="11">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/2827/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 Jun 2019" revision="12">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/3296/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 Jun 2019" revision="13">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/3297/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 Jun 2019" revision="14">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/3369/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 Jun 2019" revision="15">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/3388/xml</Entry>
+    </ChangeLog>
+  </MetaData>
+  <!-- Configuration Parameters -->
+  <CommandClass id="112">
+    <Value genre="config" index="1" label="Notification type" size="1" type="list" value="1">
+      <Help>Set Notification type.</Help>
+      <Item label="Binary Sensor report" value="0"/>
+      <Item label="Notification report" value="1"/>
+      <Item label="Basic report" value="2"/>
+    </Value>
+    <Value genre="config" index="2" label="Led indication" size="1" type="list" value="1">
+      <Help>Set Led indication.</Help>
+      <Item label="Off" value="0"/>
+      <Item label="On" value="1"/>
+    </Value>
+  </CommandClass>
+  <!-- Association Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="1">
+      <Group index="1" label="Lifeline" max_associations="1"/>
+    </Associations>
+  </CommandClass>
+</Product>

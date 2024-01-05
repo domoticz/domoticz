@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Product xmlns='https://github.com/OpenZWave/open-zwave' Revision="3">
+  <!-- Zipato Bulb 2 -->
+  <!-- Configuration Parameters -->
+  <CommandClass id="112">
+    <Value type="byte" index="1" genre="config" label="Internal buld temperature" units="celsius" value="0" read_only="true">
+      <Help></Help>
+    </Value>
+    <Value type="list" index="255" genre="config" label="Reset bulb to factory settings" size="4" value="1" write_only="true">
+      <Help>
+      </Help>
+      <Item label="Normal" value="1"/>
+      <Item label="Perform Reset" value="2290649224"/>
+    </Value>
+  </CommandClass>
+
+  <!-- Association Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="1">
+      <Group index="1" max_associations="5" label="Report"  />
+    </Associations>
+  </CommandClass>
+</Product>
+

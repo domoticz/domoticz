@@ -1,0 +1,26 @@
+<!-- EVERSPRING SF812 SMOKE DETECTOR --><Product Revision="4" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0060:0001:000D</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/everspring/sf812.png</MetaDataItem>
+    <MetaDataItem id="0001" name="ZWProductPage" type="000D">https://products.z-wavealliance.org/products/618/</MetaDataItem>
+    <MetaDataItem name="ProductPage">http://www.everspring.com/SF812.aspx</MetaDataItem>
+    <MetaDataItem id="0001" name="Identifier" type="000D">SF812-ANZ</MetaDataItem>
+    <MetaDataItem name="Name">Smoke Detector</MetaDataItem>
+    <MetaDataItem id="0001" name="FrequencyName" type="000D">CEPT (Europe) / Australia / New Zealand</MetaDataItem>
+    <MetaDataItem name="Description">The photoelectric Smoke Detector is a Z-Wave enabled device which is fully compatible with any Z-Wave enabled network.  
+
+The detector is designed to sense smoke that comes into the detector chamber.  It does not sense gas, heat, or flame. The working principle is when the smoke detector detects a certain density of smoke, the horn of smoke detector will sound and in the meantime, the detector will emit the signals to the associated devices for further execution.  It can provide precious time for you and your family to escape before a fire spreads. 
+</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 May 2019" revision="3">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/272/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 May 2019" revision="4">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/618/xml</Entry>
+    </ChangeLog>
+  </MetaData>
+  <!-- Configuration Parameters not supported -->
+	<!-- Association Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="1">
+      <Group index="1" label="Reports" max_associations="5"/>
+    </Associations>
+  </CommandClass>
+</Product>

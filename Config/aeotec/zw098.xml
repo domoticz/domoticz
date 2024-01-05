@@ -1,0 +1,126 @@
+<!-- Aeotec LED Bulb --><Product Revision="10" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0086:0062:0103</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/aeotec/zw098.png</MetaDataItem>
+    <MetaDataItem id="0062" name="ZWProductPage" type="0103">https://products.z-wavealliance.org/products/1829/</MetaDataItem>
+    <MetaDataItem name="Description">Aeotec LED Bulb is a low-cost Z-Wave LED module which allows control (on/off/dim) with the use of Z-Wave. 
+It’s a bulb has a Smart RGB LED, which can be used to add colour to your home. The bulb has 5 main colour channels available for you to adjust: Red, Green, Blue, Warm White and Cold White. You can configure its colour according to your favour.
+The LED Bulb is also a security Z-Wave device and supports the Over The Air (OTA) feature for the product’s firmware upgrade.</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://Products.Z-WaveAlliance.org/ProductManual/File?folder=&amp;filename=Manuals/1851/LED Bulb manual.pdf</MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">Turn the primary controller of Z-Wave network into exclusion mode, press the external switch of LED Bulb to turn off and then press the external switch again to turn on it, repeat the operation 3 times.</MetaDataItem>
+    <MetaDataItem id="0062" name="Identifier" type="0103">ZW098-A52</MetaDataItem>
+    <MetaDataItem id="0062" name="FrequencyName" type="0103">U.S. / Canada / Mexico</MetaDataItem>
+    <MetaDataItem name="InclusionDescription">Turn the primary controller of Z-Wave network into inclusion mode, press the external switch of LED Bulb to turn it off and then press the external switch again to turn it on.</MetaDataItem>
+    <MetaDataItem name="WakeupDescription">N/A</MetaDataItem>
+    <MetaDataItem name="Name">LED Bulb</MetaDataItem>
+    <MetaDataItem name="ResetDescription">Turn the controller of Z-Wave network into exclusion mode, press the external switch of LED Bulb to turn off and then press the external switch again to turn on it, repeat the operation 3 times.
+After the LED Bulb is excluded from network, it will be reset to factory default state.
+Use this procedure only in the event that your primary network controller is missing or inoperable.</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="08 May 2019" revision="3">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1315/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="08 May 2019" revision="4">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1368/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="08 May 2019" revision="5">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1379/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="08 May 2019" revision="6">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1380/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="23 May 2019" revision="7">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1594/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="24 May 2019" revision="8">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1829/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="24 May 2019" revision="9">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1844/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="24 May 2019" revision="10">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1851/xml</Entry>
+    </ChangeLog>
+    <MetaDataItem id="0062" name="ZWProductPage" type="0203">https://products.z-wavealliance.org/products/1844/</MetaDataItem>
+    <MetaDataItem id="0062" name="FrequencyName" type="0203">Australia / New Zealand</MetaDataItem>
+    <MetaDataItem id="0062" name="Identifier" type="0203">ZW098-B55</MetaDataItem>
+    <MetaDataItem id="0062" name="ZWProductPage" type="0003">https://products.z-wavealliance.org/products/1851/</MetaDataItem>
+    <MetaDataItem id="0062" name="FrequencyName" type="0003">CEPT (Europe)</MetaDataItem>
+    <MetaDataItem id="0062" name="Identifier" type="0003">ZW098-C55</MetaDataItem>
+  </MetaData>
+  <!-- 
+Aeotec ZW098 LED Bulb
+https://aeotec.freshdesk.com/helpdesk/attachments/6009584691 v1.04 
+https://aeotec.freshdesk.com/helpdesk/attachments/6034356249 v1.05
+-->
+	<!-- Configuration Parameters -->
+  <CommandClass id="112">
+    <Value genre="config" index="20" label="State after re-power" max="2" min="0" size="1" type="list" value="1">
+      <Help>The Bulb state after re-power on it.</Help>
+      <Item label="The last state before re-power on" value="0"/>
+      <Item label="Always On" value="1"/>
+      <Item label="Always Off" value="2"/>
+    </Value>
+    <Value genre="config" index="32" label="Send out a report when the color is changed" max="1" min="0" size="1" type="list" value="0">
+      <Help>Enable/disable to send out a report when the color is changed</Help>
+      <Item label="Disable" value="0"/>
+      <Item label="Hail CC" value="1"/>
+    </Value>
+    <Value genre="config" index="33" label="Get the Bulb color value" max="4294967295" min="0" read_only="true" size="4" type="int" value="0">
+      <Help>
+			Value 1 = Reserved.
+			Value 2 = Red color value.
+			Value 3 = Green color value.
+			Value 4 = Blue color value.
+			Note: This parameter is a get-only parameter
+			</Help>
+    </Value>
+    <Value genre="config" index="34" label="Use External Switch to turn on/off the bulb" max="1" min="0" size="1" type="list" value="0">
+      <Help>Enable/disable the function of using External Switch to turn on/off the bulb</Help>
+      <Item label="Disable" value="0"/>
+      <Item label="Enable" value="1"/>
+    </Value>
+    <Value genre="config" index="35" label="Use External Switch to changes the bulb color" max="1" min="0" size="1" type="list" value="1">
+      <Help>Enable/disable the function of using External Switch to changes the bulb color</Help>
+      <Item label="Disable" value="0"/>
+      <Item label="Enable" value="1"/>
+    </Value>
+    <Value genre="config" index="36" label="Colorful mode" max="3" min="0" size="1" type="list" value="0">
+      <Help>Reboot/save/exit Colorful mode</Help>
+      <Item label="Un-reboot Colorful mode" value="0"/>
+      <Item label="Reboot Colorful mode" value="1"/>
+      <Item label="Exit Colorful mode" value="2"/>
+      <Item label="Save the current Colorful mode value and then to be exited" value="3"/>
+    </Value>
+    <Value genre="config" index="37" label="Colorful mode configuration" max="4294967295" min="0" size="4" type="int" value="157483008">
+      <Help>Colorful mode configuration (See https://aeotec.freshdesk.com/helpdesk/attachments/6035749140)</Help>
+    </Value>
+    <Value genre="config" index="38" label="Change speed" max="4294967295" min="0" size="4" type="int" value="50332416">
+      <Help>
+			Value 1: the speed from OFF to ON.
+			Value 2: the speed from ON to OFF.
+			Value 3: pause time of ON.
+			Value 4: pause time of OFF.
+			</Help>
+    </Value>
+    <Value genre="config" index="39" label="Color index configuration when the bulb is in Multi color mode" max="4294967295" min="0" size="4" type="int" value="2271560481">
+      <Help>Color index configuration when the bulb is in Multi color mode (See https://aeotec.freshdesk.com/helpdesk/attachments/6035749140)</Help>
+    </Value>
+    <Value genre="config" index="80" label="Send notifications to associated devices (Lifeline)" max="2" min="0" size="1" type="list" value="2">
+      <Help>Enable to send notifications to associated devices (Lifeline) when the state of LED Bulb is changed</Help>
+      <Item label="Nothing" value="0"/>
+      <Item label="Hail" value="1"/>
+      <Item label="Basic" value="2"/>
+    </Value>
+    <Value genre="config" index="112" label="Dimmer mode" max="3" min="0" size="1" type="list" value="0">
+      <Help>Enable to send notifications to associated devices (Lifeline) when the state of LED Bulb is changed</Help>
+      <Item label="Parabolic curve" value="0"/>
+      <Item label="Index curve" value="1"/>
+      <Item label="(Parabolic + Index)/2" value="2"/>
+      <Item label="Linear" value="3"/>
+    </Value>
+    <Value genre="config" index="252" label="Lock/Unlock Configuration" max="1" min="0" size="1" type="list" value="0">
+      <Help>Lock/ unlock all configuration parameters</Help>
+      <Item label="Unlock" value="0"/>
+      <Item label="Lock" value="1"/>
+    </Value>
+    <Value genre="config" index="255" label="Reset To Factory Defaults" size="4" type="list" value="1" write_only="true">
+      <Help>Reset to factory defaults</Help>
+      <Item label="Reset to factory default setting" value="0"/>
+      <Item label="Normal" value="1"/>
+      <Item label="Reset to factory default setting and removed from the z-wave network" value="1431655765"/>
+    </Value>
+  </CommandClass>
+  <!-- Association Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="2">
+      <Group index="1" label="Lifeline" max_associations="5"/>
+      <Group index="2" label="Retransmit" max_associations="5"/>
+    </Associations>
+  </CommandClass>
+</Product>

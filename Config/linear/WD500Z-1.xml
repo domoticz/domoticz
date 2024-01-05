@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Product xmlns='https://github.com/OpenZWave/open-zwave' Revision="2">
+	<!-- Configuration Parameters -->
+	<CommandClass id="112">
+		<Value type="list" index="3" genre="config" label="LED Mode" size="1" value="0">
+			<Help>In night-light mode the LED on the switch will turn ON when the switch is turned OFF, instead of following the state of the load.</Help>
+			<Item label="Normal" value="0" />
+			<Item label="Night-light" value="1" />
+		</Value>
+		<Value type="bool" index="4" genre="config" label="Invert Switch" size="1" value="False">
+			<Help>Change the top of the switch to OFF and the bottom of the switch to ON.</Help>
+		</Value>
+    <Value type="bool" index="5" genre="config" label="Ignore Start-Level (Receiving)" size="1" value="True">
+			<Help>This dimmer will always start dimming from its current level, ignoring any commanded start level.</Help>
+		</Value>
+  </CommandClass>
+  <!-- Set correct max level for COMMAND_CLASS_SWITCH_MULTILEVEL, the dimmer will ignore any commands to set value >99 -->
+  <CommandClass id="38">
+    <Value type="byte" genre="user" index="0" label="Level" min="0" max="100" value="0" />
+  </CommandClass>
+</Product>
+

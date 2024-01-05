@@ -101,8 +101,8 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;NOMINMAX;ENABLE_PYTHON;_DEBUG;PTW32_STATIC_LIB;WWW_ENABLE_SSL;HAVE_SNPRINTF;JSON_DLL;WITH_TLS;_CONSOLE;BOOST_CONFIG_SUPPRESS_OUTDATED_MESSAGE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>../hardware/plugins/Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;NOMINMAX;ENABLE_PYTHON;WITH_OPENZWAVE;OPENZWAVE_USEDLL;_DEBUG;PTW32_STATIC_LIB;WWW_ENABLE_SSL;HAVE_SNPRINTF;JSON_DLL;WITH_TLS;_CONSOLE;BOOST_CONFIG_SUPPRESS_OUTDATED_MESSAGE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>../msbuild/Windows Libraries/openzwave/openzwave;../hardware/plugins/Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <EnablePREfast>false</EnablePREfast>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
@@ -113,7 +113,7 @@
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>Setupapi.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;dnsapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>Setupapi.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;dnsapi.lib;../msbuild/Windows Libraries/openzwave/OpenZWaveD.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <UACExecutionLevel>AsInvoker</UACExecutionLevel>
       <Profile>false</Profile>
     </Link>
@@ -129,8 +129,8 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;NOMINMAX;ENABLE_PYTHON;_DEBUG;PTW32_STATIC_LIB;WWW_ENABLE_SSL;HAVE_SNPRINTF;WITH_TLS;JSON_DLL;_CONSOLE;BOOST_CONFIG_SUPPRESS_OUTDATED_MESSAGE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>../hardware/plugins/Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;NOMINMAX;ENABLE_PYTHON;_DEBUG;PTW32_STATIC_LIB;WITH_OPENZWAVE;OPENZWAVE_USEDLL;WWW_ENABLE_SSL;HAVE_SNPRINTF;WITH_TLS;JSON_DLL;_CONSOLE;BOOST_CONFIG_SUPPRESS_OUTDATED_MESSAGE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>../msbuild/Windows Libraries/openzwave/openzwave;../hardware/plugins/Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <EnablePREfast>false</EnablePREfast>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
@@ -141,7 +141,7 @@
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>Setupapi.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;dnsapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>Setupapi.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;dnsapi.lib;../msbuild/Windows Libraries/openzwave/x64/OpenZWaved.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <UACExecutionLevel>AsInvoker</UACExecutionLevel>
       <Profile>false</Profile>
     </Link>
@@ -159,8 +159,8 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>WIN32;NOMINMAX;ENABLE_PYTHON;NDEBUG;_CONSOLE;JSON_DLL;WWW_ENABLE_SSL;HAVE_SNPRINTF;WITH_TLS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>../msbuild/Windows Libraries/include;../hardware/plugins/Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;NOMINMAX;ENABLE_PYTHON;WITH_OPENZWAVE;NDEBUG;_CONSOLE;JSON_DLL;WWW_ENABLE_SSL;HAVE_SNPRINTF;WITH_TLS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>../msbuild/Windows Libraries/openzwave/openzwave;../msbuild/Windows Libraries/include;../hardware/plugins/Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <AdditionalOptions>/d2guardspecload %(AdditionalOptions)</AdditionalOptions>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
@@ -171,7 +171,7 @@
       <EnableCOMDATFolding>false</EnableCOMDATFolding>
       <OptimizeReferences>false</OptimizeReferences>
       <AdditionalLibraryDirectories>./Windows Libraries/lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>lua.lib;libcurl.lib;minizip.lib;jsoncpp.lib;libcrypto.lib;libssl.lib;Wldap32.lib;zlib.lib;pthreadVC3.lib;sqlite3.lib;mosquitto.lib;boost_thread-vc140-mt.lib;boost_chrono-vc140-mt.lib;boost_system-vc140-mt.lib;Crypt32.lib;Setupapi.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;dnsapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>lua.lib;libcurl.lib;minizip.lib;jsoncpp.lib;libcrypto.lib;libssl.lib;Wldap32.lib;zlib.lib;pthreadVC3.lib;sqlite3.lib;mosquitto.lib;boost_thread-vc140-mt.lib;boost_chrono-vc140-mt.lib;boost_system-vc140-mt.lib;Crypt32.lib;Setupapi.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;dnsapi.lib;../msbuild/Windows Libraries/openzwave/OpenZWave.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <UACExecutionLevel>AsInvoker</UACExecutionLevel>
       <IgnoreSpecificDefaultLibraries>MSVCRT</IgnoreSpecificDefaultLibraries>
       <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
@@ -188,8 +188,8 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>WIN32;NOMINMAX;ENABLE_PYTHON;NDEBUG;PTW32_STATIC_LIB;_CONSOLE;WWW_ENABLE_SSL;HAVE_SNPRINTF;WITH_TLS;JSON_DLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>../hardware/plugins/Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;NOMINMAX;ENABLE_PYTHON;NDEBUG;PTW32_STATIC_LIB;WITH_OPENZWAVE;OPENZWAVE_USEDLL;_CONSOLE;WWW_ENABLE_SSL;HAVE_SNPRINTF;WITH_TLS;JSON_DLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>../msbuild/Windows Libraries/openzwave/openzwave;../hardware/plugins/Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <AdditionalOptions>/d2guardspecload %(AdditionalOptions)</AdditionalOptions>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
@@ -200,7 +200,7 @@
       <EnableCOMDATFolding>false</EnableCOMDATFolding>
       <OptimizeReferences>false</OptimizeReferences>
       <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>Setupapi.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;dnsapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>Setupapi.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;dnsapi.lib;../msbuild/Windows Libraries/openzwave/x64/OpenZWave.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <UACExecutionLevel>AsInvoker</UACExecutionLevel>
       <IgnoreSpecificDefaultLibraries>
       </IgnoreSpecificDefaultLibraries>
@@ -622,6 +622,8 @@
     <ClInclude Include="..\hardware\MQTTAutoDiscover.h" />
     <ClInclude Include="..\hardware\NestOAuthAPI.h" />
     <ClInclude Include="..\hardware\OctoPrintMQTT.h" />
+    <ClInclude Include="..\hardware\OpenZWave.h" />
+    <ClInclude Include="..\hardware\openzwave\control_panel\ozwcp.h" />
     <ClInclude Include="..\hardware\plugins\PythonObjectEx.h" />
     <ClInclude Include="..\hardware\Rtl433.h" />
     <ClInclude Include="..\hardware\serial\impl\win.h" />
@@ -714,6 +716,8 @@
     <ClInclude Include="..\hardware\ZiBlueSerial.h" />
     <ClInclude Include="..\hardware\ZiBlueTCP.h" />
     <ClInclude Include="..\hardware\ziblue_usb_frame_api.h" />
+    <ClInclude Include="..\hardware\ZWaveBase.h" />
+    <ClInclude Include="..\hardware\ZWaveCommands.h" />
     <ClInclude Include="..\httpclient\HTTPClient.h" />
     <ClInclude Include="..\iamserver\iam_settings.hpp" />
     <ClInclude Include="..\main\appversion.h" />
@@ -933,6 +937,9 @@
     <ClCompile Include="..\hardware\MQTTAutoDiscover.cpp" />
     <ClCompile Include="..\hardware\NestOAuthAPI.cpp" />
     <ClCompile Include="..\hardware\OctoPrintMQTT.cpp" />
+    <ClCompile Include="..\hardware\OpenZWave.cpp" />
+    <ClCompile Include="..\hardware\openzwave\control_panel\ozwcp.cpp" />
+    <ClCompile Include="..\hardware\openzwave\control_panel\zwavelib.cpp" />
     <ClCompile Include="..\hardware\plugins\PythonObjectEx.cpp" />
     <ClCompile Include="..\hardware\Rtl433.cpp" />
     <ClCompile Include="..\hardware\SysfsGpio.cpp" />
@@ -1028,6 +1035,7 @@
     <ClCompile Include="..\hardware\ZiBlueBase.cpp" />
     <ClCompile Include="..\hardware\ZiBlueSerial.cpp" />
     <ClCompile Include="..\hardware\ZiBlueTCP.cpp" />
+    <ClCompile Include="..\hardware\ZWaveBase.cpp" />
     <ClCompile Include="..\httpclient\HTTPClient.cpp" />
     <ClCompile Include="..\iamserver\IamService.cpp" />
     <ClCompile Include="..\main\BaroForecastCalculator.cpp" />

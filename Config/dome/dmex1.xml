@@ -1,0 +1,49 @@
+<!--
+Dome DMEX1 Range Extender
+--><Product Revision="1" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="ProductPic">images/dome/dmex1.png</MetaDataItem>
+    <MetaDataItem id="0108" name="ZWProductPage" type="0003">https://products.z-wavealliance.org/products/2984/</MetaDataItem>
+    <MetaDataItem id="0108" name="FrequencyName" type="0003">U.S. / Canada / Mexico</MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">Turn the primary controller of Z-Wave network into inclusion mode, press the button on DMEX1 quickly 3 times in a row.</MetaDataItem>
+    <MetaDataItem name="Description">The Dome Range Extender is designed to improve communication between Z-Wave devices. It amplifies Z-Wave signals and increases the reach of your controller, ensuring your devices stay connected. The Extender has an LED light that works as a nightlight and can also act as an indicator in regular mode. The included suction cup lets you mount the Extender onto any smooth surface while using a micro USB power supply. All these features make the Dome Range extender the perfect choice for your home.</MetaDataItem>
+    <MetaDataItem name="Name">DMEX1 Range Extender</MetaDataItem>
+    <MetaDataItem name="ResetDescription">Press the button 6 times quickly, then immediately press and hold for 10 seconds. Use this procedure only in the event that your primary network controller is missing or inoperable.</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://products.z-wavealliance.org/ProductManual/File?folder=&amp;filename=MarketCertificationFiles/2984/DomeExtenderAPIManual10-31.pdf</MetaDataItem>
+    <MetaDataItem id="0108" name="Identifier" type="0003">DMEX1</MetaDataItem>
+    <MetaDataItem name="InclusionDescription">Turn the primary controller of Z-Wave network into inclusion mode, press the button on DMEX1 quickly 3 times in a row.</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Dybedahl - madj42@gmail.com" date="12 July 2020" revision="1">Initial Entry</Entry>
+    </ChangeLog>
+  </MetaData>
+  <!-- COMMAND_CLASS_BASIC -->
+  <CommandClass id="32">
+    <Compatibility>
+      <GetSupported>false</GetSupported>
+    </Compatibility>
+  </CommandClass>
+  <!-- Configuration Parameters -->
+  <CommandClass id="112">
+    <Value genre="config" type="byte" size="1" index="1" label="Night Light “Off” Threshold " min="0" max="10" value="5">
+      <Help>
+      This parameter sets the luminance (brightness) level at which night light is turned off. This is a unitless value that can be set to any value from 0 - 10, with a default value of 5. The higher this value, the brighter the ambient light must be to turn off the night light.
+      Range:0-10
+      Default: 5
+      </Help>
+    </Value>
+	<Value genre="config" type="byte" size="1" index="2" label="Night Light “On” Threshold " min="0" max="10" value="5">
+      <Help>
+	  This parameter sets the luminance (brightness) level at which night light is turned on. This is a unitless value that can be set to any value from 0 - 10, with a default value of 5. The lower this value, the dimmer the ambient light must be to turn on the night light.
+      Range:0-10
+      Default: 5
+      </Help>
+    </Value>
+  </CommandClass>
+  <!-- Association Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="2">
+      <Group index="1" label="Lifeline" max_associations="5"/>
+      <Group index="2" label="Retransmit" max_associations="5"/>
+    </Associations>
+  </CommandClass>
+</Product>

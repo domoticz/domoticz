@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- EVERSPRING AN145 SCREW-IN ON/OFF MODULE -->
+<Product xmlns='https://github.com/OpenZWave/open-zwave' Revision="2">
+	<!-- Configuration Parameters not supported -->
+	<!-- Association Groups -->
+	<CommandClass id="133">
+		<Associations num_groups="1">
+			<Group index="1" max_associations="5" label="Basic" />
+		</Associations>
+	</CommandClass>
+</Product>

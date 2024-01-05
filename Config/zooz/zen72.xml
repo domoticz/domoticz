@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Product Revision="3" xmlns="https://github.com/OpenZWave/open-zwave">
+    <MetaData>
+      <MetaDataItem name="Name">Zooz ZEN72 Dimmer Switch</MetaDataItem>
+      <MetaDataItem name="Description">Product features:
+- Full brightness control of your lights, from the physical dimmer and via Z-Wave when added to your smart home hub (sold separately)
+- Works with any dimmable LED bulb that accepts triac (forward-phase) dimmers up to 150 W total and with any incandescent bulbs up to 500 W. NOT COMPATIBLE WITH LUMINUS, LITHONIA, OR FEIT BULBS.
+- NEW in 700 series: smaller in the back so it fits easier in shallow or crowded boxes; replace the standard white paddles with almond, brown, or black paddles (sold separately).
+- NEW 700 chip: the latest S2 security, SmartStart for instant pairing and more Z-Wave coverage than ever!
+- Direct 3-Way Solution: connects to an existing light switch for 2-point control, no add-on switch necessary! Wires just like the ZEN22 model. Neutral wire required, on/off control only from the secondary switch, use in 4-way installations only if you have direct connection to load and line in one box.
+- Scene control: multi-tap triggers available on select hubs*
+- Night Light Mode: press and hold the lower paddle when dimmer is off to turn the light on to low brightness
+- Double tap to full brightness: now fully adjustable double tap and single tap behavior*
+- Fully adjustable ramp rate*
+- Don't use with fan motors, receptacles, or tube lights!
+- Stronger signal repeater for a more reliable Z-Wave network
+- Choose the color and brightness level of the LED indicator*
+SPECIFICATIONS:
+- Model Number: ZEN72
+- Z-Wave Frequency: 908.42 MHz (US)
+- Power: 120 VAC, 60 Hz
+- Maximum Loads: 500W Incandescent, 150W LED
+- Range: Up to 200 feet line of sight
+- Operating Temperature: 32-104° F (0-40° C)
+- Installation and Use: Indoor only
+https://www.support.getzooz.com/kb/article/538-zen72-dimmer-switch-700-ver-1-02-advanced-settings/
+          
+MANUAL CONTROL
+Upper Paddle:
+1 x tap: load on to last / custom / full / max brightness; Scene 1, attribute 00
+2 x tap: on to full / max / custom brightness; Scene 1, attribute 03
+3 x tap: enter inclusion (pairing) mode (only if not included to Z-Wave network); Scene 1, attribute 04
+4 x tap: Scene 1, attribute 05
+5 x tap: Scene 1, attribute 06
+6 x tap: change LED indicator mode (see parameter 2)
+press and hold: increase brightness level; Scene 1, attribute 01
+release: Scene 1, attribute 02
+Lower Paddle:
+1 x tap: load off; Scene 2, attribute 00
+2 x tap: Scene 2, attribute 03
+3 x tap: enter exclusion (unpairing) mode; Scene 2, attribute 04
+4 x tap: Scene 2, attribute 05
+5 x tap: Scene 2, attribute 06
+press and hold: decrease brightness level; Scene 2, attribute 01
+press and hold when off: turn on to 20% brightness (night light mode)
+release: Scene 2, attribute 02
+held for 10 seconds (LED indicator starts blinking): enter the setting menu, 5 x tap down for factory reset; 5 x tap up to change LED bulb mode (see parameter 11); 2 x tap down to enable the range test tool.</MetaDataItem>    
+        <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/027a:a002:7000</MetaDataItem>
+        <MetaDataItem name="ProductPage">https://www.thesmartesthouse.com/collections/light-switches/products/zooz-700-series-z-wave-plus-dimmer-zen72</MetaDataItem>
+        <MetaDataItem name="ProductSupport">https://www.support.getzooz.com/kb/section/195/</MetaDataItem>
+        <MetaDataItem name="ProductPic">images/zooz/zen72.png</MetaDataItem>
+        <MetaDataItem name="ProductManual">https://cdn.shopify.com/s/files/1/0218/7704/files/zooz-700-series-z-wave-dimmer-zen72-manual.pdf</MetaDataItem>
+        <MetaDataItem name="InclusionDescription">1. Initiate inclusion (pairing) in the app (or web interface) of your hub. 2. Tap the upper paddle on the switch 3 times quickly.</MetaDataItem>
+        <MetaDataItem name="ExclusionDescription">1. Bring your Z-Wave gateway (hub) close to the switch if possible 2. Put the Z-Wave hub into exclusion mode (not sure how to do that? ask@getzooz.com) 3. Tap the lower paddle on the switch 3 times quickly</MetaDataItem>
+        <MetaDataItem name="ResetDescription">If your primary controller is missing or inoperable, you may need to reset the device to factory settings. To complete the reset process manually, tap-tap-tap’n’hold the upper paddle for at least 10 seconds. The LED indicator will flash to confirm successful reset. NOTE: All previously recorded activity and custom settings will be erased from the device’s memory.</MetaDataItem>
+        <MetaDataItem id="A002" name="FrequencyName" type="A000">U.S. / Canada / Mexico</MetaDataItem>
+        <MetaDataItem id="A002" name="Identifier" type="7000">ZEN72</MetaDataItem>
+        <ChangeLog>
+            <Entry author="shbatm - support@shbatm.com" date="31 Jan 2021" revision="1">Initial Copy from ZEN27, not yet available on ZWAlliance website</Entry>
+            <Entry author="Matthew Grimes - https://github.com/cybergrimes" date="9 Feb 2021" revision="2">Reorganize metadataitem entries, correct ProductPic, add missing metadataitems and start revision at 1</Entry>
+            <Entry author="Matthew Grimes - https://github.com/cybergrimes" date="12 Feb 2021" revision="3">Fix a few configuration parameters for auto off/on timer.</Entry>
+        </ChangeLog>
+    </MetaData>
+    <!-- Configuration Parameters -->
+    <CommandClass id="112">
+        <Value type="list" genre="config" index="1" label="On/Off Paddle Orientation" size="1" min="0" max="2" value="0">
+            <Help>Normal mode: Upper paddle turns the light on, lower paddle turns the light off. Reverse mode: Upper paddle turns the light off, lower paddle turns the light on. Toggle mode: Either paddle toggles the light.</Help>
+            <Item label="Normal" value="0" />
+            <Item label="Reverse" value="1" />
+            <Item label="Toggle" value="2" />
+        </Value>
+        <Value type="list" genre="config" index="2" label="LED Indication Control" size="1" min="0" max="3" value="0">
+            <Help>LED Indication light function. Normal has the LED Indication on when the switch is off, off when the switch is on. </Help>
+            <Item label="Normal" value="0" />
+            <Item label="Reverse" value="1" />
+            <Item label="Always Off" value="2" />
+            <Item label="Always On" value="3" />
+        </Value>
+        <Value type="list" genre="config" instance="1" index="23" label="LED Indicator Color" size="1" min="0" max="3" value="1">
+            <Help>Choose the color of the LED indicator. Default: Blue</Help>
+            <Item label="White" value="0" />
+            <Item label="Blue" value="1" />
+            <Item label="Green" value="2" />
+            <Item label="Red" value="3" />
+        </Value>
+        <Value type="list" genre="config" instance="1" index="24" label="LED Indicator Brightness" size="1" min="0" max="2" value="1">
+            <Help>Choose the brightness of the LED indicator. Default: Medium</Help>
+            <Item label="Bright" value="0" />
+            <Item label="Medium" value="1" />
+            <Item label="Low" value="2" />
+        </Value>
+        <Value type="int" genre="config" index="3" label="Auto Turn-Off Timer" size="4" min="0" max="65535" value="0" units="minutes">
+            <Help>Set the time (in minutes) after which you want the switch to automatically turn off once it has been turned on.</Help>
+        </Value>
+        <Value type="int" genre="config" index="5" label="Auto Turn-On Timer" size="4" min="0" max="65535" value="60" units="minutes">
+            <Help>Set the time (in minutes) after which you want the switch to automatically turn on once it has been turned off.</Help>
+        </Value>
+        <Value type="list" genre="config" index="8" label="On Off Status After Power Failure" size="1" min="0" max="2" value="2">
+            <Help>Status after power failure. Off: always turn light off. On: always turn light on. Restore: remember the latest state and restore that state.</Help>
+            <Item label="Off" value="0" />
+            <Item label="On" value="1" />
+            <Item label="Restore" value="2" />
+        </Value>
+        <Value type="byte" genre="config" index="9" label="Ramp Rate Control" size="1" min="0" max="99" value="1" units="seconds">
+            <Help>Adjust the physical ramp rate for your dimmer (fade-in / fade-out effect for on / off operation). Values correspond to the number of seconds it take for the dimmer to reach full brightness or turn off when operated manually. This setting is for physical taps only, see parameter 17 to adjust Z-Wave ramp rate. Values: 1 – 99 (seconds). 0 – instant on/off. Default: 1</Help>
+        </Value>
+        <Value type="byte" genre="config" index="10" label="Minimum Brightness" size="1" min="1" max="99" value="1" units="%">
+            <Help>Set the minimum brightness level (in %) for your dimmer. You won't be able to dim the light below the set value.</Help>
+        </Value>
+        <Value type="byte" genre="config" index="11" label="Maximum Brightness" size="1" min="1" max="99" value="99" units="%">
+            <Help> Set the maximum brightness level (in %) for your dimmer. You won't be able to add brightness to the light beyond the set value. Note: if Parameter 12 is set to value "Full", Parameter 11 is automatically disabled.</Help>
+        </Value>
+        <Value type="list" genre="config" index="12" label="Double-Tap Function" size="1" min="0" max="3" value="0">
+            <Help>Upper Paddle Double-Tap action. When set to Full, turns light on to 100%. When set to Custom Level, the light will turn on to custom brightness elvel set in Parameter 18. If set to Maximum Level, turns light on to % set in Parameter 11. Disable will disable the double tap feature.</Help>
+            <Item label="Full" value="0" />
+            <Item label="Custom Level" value="1" />
+            <Item label="Maximum Level" value="2" />
+            <Item label="Disable" value="3" />
+        </Value>
+        <Value type="list" genre="config" index="25" label="Single-Tap Function" size="1" min="0" max="3" value="0">
+            <Help>Upper Paddle Single-Tap action. When set to Full, turns light on to 100%. When set to Custom Level, the light will turn on to custom brightness elvel set in Parameter 18. If set to Maximum Level, turns light on to % set in Parameter 11. If set to Last, turns light on to last brightness level (default).</Help>
+            <Item label="Last" value="0" />
+            <Item label="Custom Level" value="1" />
+            <Item label="Maximum Level" value="2" />
+            <Item label="Full" value="3" />
+        </Value>
+        <Value type="list" genre="config" index="13" label="Enable/Disable Scene Control" size="1" min="0" max="1" value="0">
+            <Help>Enable or Disable scene control functionality for quick double tap triggers.</Help>
+            <Item label="Disabled" value="0" />
+            <Item label="Enabled" value="1" />
+        </Value>
+        <Value type="list" genre="config" instance="1" index="15" label="Smart Bulb Mode: Enable/Disable Paddle / Z-Wave Control" units="" min="0" max="2" value="1" size="1">
+            <Help>Enable or disable local on/off control. If enabled, you’ll only be able to control the connected light via Z-Wave. Scenes and other functionality will still be available through paddles. NOTE: hold the lower paddle for 10 seconds until the LED indicator starts blinking, then within 2 seconds, tap the upper paddle 5 times quickly to change this mode. The LED indicator will stay solid green for 3 seconds to confirm the change.</Help>
+            <Item label="physical paddle control disabled" value="0" />
+            <Item label="physical paddle control enabled (default)" value="1" />
+            <Item label="physical paddle and Z-Wave control disabled" value="2" />
+        </Value>
+        <Value type="byte" genre="config" instance="1" index="16" label="Physical Dimming Speed" units="" min="1" max="99" value="4">
+            <Help>Set the time it takes to get from 0% to 100% brightness when pressing and holding the paddle (physical dimming). The number entered as value corresponds to the number of seconds. Default: 4</Help>
+        </Value>
+        <Value type="byte" genre="config" instance="1" index="18" label="Custom Brightness Level On" units="" min="0" max="99" value="0">
+            <Help>Set the custom brightness level (instead of the last set brightness level) you want the dimmer to come on to when you single tap the upper paddle. Default: 0 - last brightness level</Help>
+        </Value>
+        <Value type="list" genre="config" instance="1" index="20" label="Z-Wave tap and hold Control" units="" min="0" max="1" value="0" size="1">
+            <Help>Choose how you'd like the dimmer to report when paddles are tapped and held and physical / Z-Wave control is enabled or disabled.</Help>
+            <Item label="report each brightness level to hub when physical / Z-Wave control is disabled for physical dimming (final level only reported if physical / Z-Wave control is enabled)" value="0" />
+            <Item label="report final brightness level only for physical dimming, regardless of the physical / Z-Wave control mode" value="1" />
+        </Value>
+        <Value type="list" genre="config" instance="1" index="19" label="3-Way Switch Type" units="" min="0" max="3" value="0" size="1">
+            <Help>Choose the type of 3-way switch you want to use with this dimmer in a 3-way set-up. Changing this setting can allow you to control brightness and dim the light from both 3-way locations. Use a regular momentary switch (like the Zooz ZAC99 accessory switch) if value is set to 2.</Help>
+            <Item label="regular mechanical 3-way on/off switch, use the connected 3-way switch to turn the light off or on to the last brightness level, dimming only available from the Zooz Z-Wave dimmer and from the hub (or through voice control if smart speaker is integrated with your Z-Wave hub)" value="0" />
+            <Item label="regular mechanical 3-way on/off switch, tap the paddles once to change state (light on or off), tap the paddles twice quickly to turn light on to full brightness, tap the paddles quickly 3 times to enable a dimming sequence (the light will start dimming up and down in a loop) and tap the switch again to set the selected brightness level" value="1" />
+            <Item label="momentary switch, click once to change status (light on or off), click twice quickly to turn light on to full brightness, press and hold to adjust brightness (dim up / dim down in sequence)" value="2" />
+            <Item label="momentary switch, click once to change status (light on or off), click twice quickly to turn light on to full brightness, press and hold to adjust brightness (dim up / dim down in sequence but always reduce brightness after double click)" value="2" />
+        </Value>
+        <Value type="list" genre="config" instance="1" index="21" label="Reporting behavior with disabled physical control" units="" min="0" max="1" value="0" size="1">
+            <Help>Set reporting behavior for disabled physical control.</Help>
+            <Item label="switch reports on/off status and changes LED indicator state even if physical and Z-Wave control is disabled (default)" value="0" />
+            <Item label="switch doesn't report on/off status or change LED indicator state when physical (and Z-Wave) control is disabled" value="1" />
+        </Value>
+        <Value type="byte" genre="config" instance="1" index="22" label="Night Light Mode" units="" min="0" max="99" value="20">
+            <Help>Set the brightness level the dimmer will turn on to when off and when lower paddle is held DOWN for a second. Default: 20</Help>
+        </Value>
+    </CommandClass>
+    <!-- Association Groups -->
+    <CommandClass id="133">
+        <Associations num_groups="3">
+          <Group index="1" label="Lifeline" max_associations="1"/>
+          <Group index="2" label="Group 2" max_associations="5"/>
+	  <Group index="3" label="Group 3" max_associations="5"/>
+        </Associations>
+    </CommandClass>
+</Product>

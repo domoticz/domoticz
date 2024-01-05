@@ -1,0 +1,96 @@
+<!-- GE(Jasco) 12724 3-Way Dimmer Switch --><Product Revision="11" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0063:3031:4944</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/ge/12724-dimmer.png</MetaDataItem>
+    <MetaDataItem id="3031" name="ZWProductPage" type="4944">https://products.z-wavealliance.org/products/1197/</MetaDataItem>
+    <MetaDataItem name="Description">Transform any home into a smart home with the GE Z-Wave Smart Fan Control. The in-wall fan control easily replaces any standard in-wall switch remotely controls a ceiling fan in your home and features a three-speed control system. Your home will be equipped with ultimate flexibility with the GE Z-Wave Smart Fan Control, capable of being used by itself or with up to four GE add-on switches. Screw terminal installation provides improved space efficiency when replacing existing switches and the integrated LED indicator light allows you to easily locate the switch in a dark room. The GE Z-Wave Smart Fan Control is compatible with any Z-Wave certified gateway, providing access to many popular home automation systems. Take control of your home lighting with GE Z-Wave Smart Lighting Controls! </MetaDataItem>
+    <MetaDataItem id="3031" name="FrequencyName" type="4944">U.S. / Canada / Mexico</MetaDataItem>
+    <MetaDataItem name="Name">In-Wall Smart Fan Control </MetaDataItem>
+    <MetaDataItem name="ProductPage">http://www.ezzwave.com</MetaDataItem>
+    <MetaDataItem id="3031" name="Identifier" type="4944">12724 / ZW3005</MetaDataItem>
+    <MetaDataItem id="3032" name="ZWProductPage" type="4944">https://products.z-wavealliance.org/products/1198/</MetaDataItem>
+    <MetaDataItem id="3032" name="FrequencyName" type="4944">U.S. / Canada / Mexico</MetaDataItem>
+    <MetaDataItem id="3032" name="Identifier" type="4944">12725 / ZW3006</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="08 May 2019" revision="3">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1197/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="08 May 2019" revision="4">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1201/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="08 May 2019" revision="5">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1202/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="08 May 2019" revision="6">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1221/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="02 Jun 2019" revision="7">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/2103/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="02 Jun 2019" revision="8">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/2506/xml</Entry>
+      <Entry author="Shaun Feakes" date="04 Sep 2019" revision="9">Update for 3032</Entry>
+      <Entry author="Justin Hammond" date="26 June 2020" revision="10">Add Verifed Change Flag</Entry>
+      <Entry author="Brian France" date="23 Nov 2020" revision="11">Added COMMAND_CLASS_BASIC block to set Value type instead of Node Event for Basic Set, Added COMMAND_CLASS_ASSOCIATION block for double tap with double tap defauled to auto</Entry>
+    </ChangeLog>
+    <MetaDataItem id="3033" name="ZWProductPage" type="4944">https://products.z-wavealliance.org/products/1201/</MetaDataItem>
+    <MetaDataItem id="3033" name="FrequencyName" type="4944">U.S. / Canada / Mexico</MetaDataItem>
+    <MetaDataItem id="3033" name="Identifier" type="4944">12729 / ZW3004</MetaDataItem>
+    <MetaDataItem id="3034" name="ZWProductPage" type="4944">https://products.z-wavealliance.org/products/1221/</MetaDataItem>
+    <MetaDataItem id="3034" name="FrequencyName" type="4944">U.S. / Canada / Mexico</MetaDataItem>
+    <MetaDataItem id="3034" name="Identifier" type="4944">45743</MetaDataItem>
+    <MetaDataItem id="3131" name="ZWProductPage" type="4944">https://products.z-wavealliance.org/products/2506/</MetaDataItem>
+    <MetaDataItem id="3131" name="FrequencyName" type="4944">U.S. / Canada / Mexico</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://Products.Z-WaveAlliance.org/ProductManual/File?folder=&amp;filename=Manuals/2506/Binder2.pdf</MetaDataItem>
+    <MetaDataItem id="3131" name="Identifier" type="4944">14287/ZW4002</MetaDataItem>
+    <MetaDataItem name="InclusionDescription">1. Follow the instructions for your Z-Wave certified controller to include a device to the Z-Wave network.
+2. Once the controller is ready to include your device, press and release the top or bottom of the smart fan control switch (rocker) to include it in the network.
+3. Once your controller has confirmed the device has been included, refresh the Z-Wave network to optimize performance.</MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">1. Follow the instructions for your Z-Wave certified controller to exclude a device from the Z-Wave network. 
+2. Once the controller is ready to Exclude your device, press and release the top or bottom of the wireless smart switch (rocker) to exclude it from the network.</MetaDataItem>
+    <MetaDataItem name="ResetDescription">1. Quickly press ON (Top) button three (3) times then immediately press the OFF (Bottom) button three (3) times. The LED will flash ON/OFF 5 times when completed successfully.
+Note: This should only be used in the event your network’s primary controller is missing or otherwise inoperable.</MetaDataItem>
+  </MetaData>
+  <!-- Configuration Parameters - per http://www.ezzwave.com/advanced-operation/ -->
+  <CommandClass id="112">
+    <Value genre="config" index="3" label="LED Light" max="2" min="0" size="1" type="list" value="0">
+      <Help>Sets when the LED on the switch is lit.</Help>
+      <Item label="LED on when light off" value="0"/>
+      <Item label="LED on when light on" value="1"/>
+      <Item label="LED always off" value="2"/>
+    </Value>
+    <Value genre="config" index="4" label="Invert Switch" max="1" min="0" size="1" type="list" value="0">
+      <Help>Change the top of the switch to OFF and the bottom of the switch to ON, if the switch was installed upside down.</Help>
+      <Item label="No" value="0"/>
+      <Item label="Yes" value="1"/>
+    </Value>
+    <!-- Both the number of steps (or levels) that the dimmer will change and the timing of the steps can be modified to suit personal preferences. The timing of the steps can be adjusted in 10 millisecond intervals. As an example, the default setting for parameter 8 is 3. This means that the lighting level will change every 30 milliseconds when the Dim Command is received. A value of 255 would mean that the level would change every 2.55 seconds. Combined, the two parameters allow dim rate adjustments from 10 milliseconds to 4.2 minutes to go from maximum-to-minimum or minimum-to-maximum brightness levels. -->
+    <Value genre="config" index="7" label="Z-Wave Command Dim Step" max="99" min="1" type="byte" units="" value="1">
+      <Help>Indicates how many levels the dimmer will change for each dimming step.</Help>
+    </Value>
+    <Value genre="config" index="8" label="Z-Wave Command Dim Rate" max="255" min="1" type="byte" units="x 10 milliseconds" value="3">
+      <Help>This value indicates in 10 millisecond resolution, how often the dim level will change. For example, if you set this parameter to 1, then every 10ms the dim level will change. If you set it to 255, then every 2.55 seconds the dim level will change.</Help>
+    </Value>
+    <Value genre="config" index="9" label="Local Control Dim Step" max="99" min="1" type="byte" units="" value="1">
+      <Help>Indicates how many levels the dimmer will change for each dimming step.</Help>
+    </Value>
+    <Value genre="config" index="10" label="Local Control Dim Rate" max="255" min="1" type="byte" units="x 10 milliseconds" value="3">
+      <Help>This value indicates in 10 millisecond resolution, how often the dim level will change. For example, if you set this parameter to 1, then every 10ms the dim level will change. If you set it to 255, then every 2.55 seconds the dim level will change.</Help>
+    </Value>
+    <Value genre="config" index="11" label="ALL ON/ALL OFF Dim Step" max="99" min="1" type="byte" units="" value="1">
+      <Help>Indicates how many levels the dimmer will change for each dimming step.</Help>
+    </Value>
+    <Value genre="config" index="12" label="ALL ON/ALL OFF Dim Rate" max="255" min="1" type="byte" units="x 10 milliseconds" value="3">
+      <Help>This value indicates in 10 millisecond resolution, how often the dim level will change. For example, if you set this parameter to 1, then every 10ms the dim level will change. If you set it to 255, then every 2.55 seconds the dim level will change.</Help>
+    </Value>
+  </CommandClass>
+  <CommandClass id="38">
+    <Compatibility>
+      <VerifyChanged index="0">true</VerifyChanged>
+    </Compatibility>
+  </CommandClass>
+  <!-- Association Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="3">
+      <Group index="1" label="Lifeline" max_associations="5"/>
+      <Group index="2" label="Basic - Local Load" max_associations="5"/>
+      <Group index="3" label="Basic - Double Tap" max_associations="5" auto="true" />
+    </Associations>
+  </CommandClass>
+  <!-- COMMAND_CLASS_BASIC -->
+  <CommandClass id="32">
+    <Compatibility>
+      <IgnoreMapping>true</IgnoreMapping>
+      <SetAsReport>true</SetAsReport>
+    </Compatibility>
+  </CommandClass>
+</Product>

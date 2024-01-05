@@ -1,0 +1,151 @@
+<!-- ZWA012 Door Window Sensor 7 Pro -->
+<Product Revision="1" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0371:0002:000C</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/aeotec/zwa012.png</MetaDataItem>
+    <MetaDataItem id="0002" name="ZWProductPage" type="000C">https://products.z-wavealliance.org/products/3866/</MetaDataItem>
+    <MetaDataItem name="Name">Door / Window Sensor 7 Pro</MetaDataItem>
+    <MetaDataItem id="0002" name="FrequencyName" type="000C">CEPT (Europe)</MetaDataItem>
+    <MetaDataItem id="0002" name="Identifier" type="000C">ZWA012-C</MetaDataItem>
+    <MetaDataItem name="Description">Aeotec Door/ Window Sensor 7 Pro is built on the 700 series Z-Wave technology. 
+      Its a small window position sensor for your smart home, it monitors window and their exact opening position and lets your know when a window is tilted or completely opened. 
+      It also supports connecting external binary sensors with a dry contact through the dry binary contact of the Door/ Window sensor. 
+      Using the latest technology it supports the highest Z-Wave security level of S2 and SmartStart. 
+    </MetaDataItem>
+    <MetaDataItem name="WakeupDescription">Press the tamper once</MetaDataItem>
+    <MetaDataItem name="InclusionDescription">1. Open the housing.
+      2. Remove the battery protection.
+      3. Press the tamper on the side of the appliance three times quickly.
+    </MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">1. Open the housing.
+      2. Press the tamper on the side of the appliance three times quickly.
+    </MetaDataItem>
+    <MetaDataItem name="ResetDescription">Reset to factory default
+      This device also allows to be reset without any involvement of a Z-Wave controller. This procedure should only be used when the primary controller is inoperable.
+      Once Cover is removed and the tamper switch is tripped, push the tamper for 5 seconds until the RED LED
+      blinks once. Then release tamper and push it again for 5 seconds while the RED LED is blinking until the
+      GREEN LED blinks once.
+    </MetaDataItem>
+    <MetaDataItem name="ProductManual">https://aeotec.freshdesk.com/support/solutions/folders/6000237099</MetaDataItem>
+    <MetaDataItem name="ProductSupport">https://aeotec.freshdesk.com/support/solutions/folders/6000237099</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond" date="06 July 2020" revision="1">Initial Config File</Entry>
+    </ChangeLog>
+  </MetaData>
+  <!-- Basic set as report -->
+  <CommandClass id="32">
+    <Compatibility>
+      <SetAsReport>true</SetAsReport>
+    </Compatibility>
+  </CommandClass>
+  <!-- Configuration Parameters -->
+  <CommandClass id="112">
+    <Value genre="config" index="1" instance="1" label="Sensor Operation Mode" max="1" min="0" size="1" type="list" value="0">
+      <Help>This parameter defines if the internal magnet sensor or the external terminal input is detected and used to issue alarm notification. 
+      There is always one input active only. 
+      The other sensor input the deactivated.
+      </Help>
+      <Item label="Internal Magnet Sensor Used" value="0"/>
+      <Item label="External Terminal Inputs Used" value="1"/>
+    </Value>
+    <Value genre="config" index="2" instance="1" label="Sensor State Polarity" max="1" min="0" size="1" type="list" value="0">
+      <Help>This parameter defines the polarity of the magnet sensor.
+      </Help>
+      <Item label="Closed when Magnet in proximity" value="0"/>
+      <Item label="Opened when Magnet in proximity" value="1"/>
+    </Value>
+    <Value genre="config" index="3" instance="1" label="Visual LED indications" max="7" min="0" size="1" type="bitset" value="7" bitmask="23">
+      <Help>This parameter defines when the red LED will indicate events. Disabling all indications may extend battery life.
+      </Help>
+      <BitSet id="1">
+        <Label>No Indications</Label>
+        <Help>No Indications</Help>
+      </BitSet>
+      <BitSet id="2">
+        <Label>Open/Close Status Change</Label>
+        <Help>Open/Close Status Change</Help>
+      </BitSet>
+      <BitSet id="3">
+        <Label>Wake Up</Label>
+        <Help>Wake Up</Help>
+      </BitSet>
+      <BitSet id="5">
+        <Label>Device Tampering</Label>
+        <Help>Device Tampering</Help>
+      </BitSet>
+    </Value>
+    <Value genre="config" index="4" instance="1" label="Range test after double click" max="1" min="0" size="1" type="list" value="0">
+      <Help>Allows to enable activation of Z-Wave range test with double click of a Tamper Switch.
+      </Help>
+      <Item label="Disable" value="0"/>
+      <Item label="Enable" value="1"/>
+    </Value>
+    <Value genre="config" index="5" instance="1" label="2nd Association Group triggers" max="1" min="0" size="1" type="list" value="0">
+      <Help>This parameter defines the status of the magnet switch that causes sending a BASIC command to all devices of Association Group 2.
+      </Help>
+      <Item label="Switch after opening and closing" value="0"/>
+      <Item label="Switch after opening" value="1"/>
+      <Item label="Switch after closing" value="2"/>
+    </Value>
+    <Value genre="config" index="6" instance="1" label="Commands sent to 2nd Association Group" max="1" min="0" size="1" type="list" value="2">
+      <Help>Command frames sent to devices added to the 2nd association group.
+      </Help>
+      <Item label="On" value="0"/>
+      <Item label="Off" value="1"/>
+      <Item label="On and Off" value="2"/>
+    </Value>
+    <Value genre="config" index="7" instance="1" label="BASIC command value sent to 2nd Association Group on On event" max="255" min="0" size="1" type="byte" value="255">
+      <Help>The value of 0 turns OFF the device, 255 turns it On.
+            In case of associating the Dimmer or Roller Shutter module, values 1-99 allow to set an Associated device to a specified level.
+      </Help>
+    </Value>
+    <Value genre="config" index="8" instance="1" label="BASIC command value sent to 2nd Association Group on Off event" max="255" min="0" size="1" type="byte" value="0">
+      <Help>The value of 0 turns OFF the device, 255 turns it On.
+            In case of associating the Dimmer or Roller Shutter module, values 1-99 allow to set an Associated device to a specified level.
+      </Help>
+    </Value>
+    <Value genre="config" index="9" instance="1" label="Time delay of ON command frame" max="32400" min="0" size="2" type="short" units="seconds" value="0">
+      <Help>Time period after which On command frame will be sent.
+      </Help>
+    </Value>
+    <Value genre="config" index="10" instance="1" label="Time delay of OFF command frame" max="32400" min="0" size="2" type="short" units="seconds" value="0">
+      <Help>Time period after which Off command frame will be sent.
+      </Help>
+    </Value>
+    <Value genre="config" index="11" instance="1" label="Delay of tamper alarm cancellation" max="32400" min="0" size="2" type="short" units="seconds" value="5">
+      <Help>Time period after which a tamper alarm will be cancelled.
+      </Help>
+    </Value>
+    <Value genre="config" index="12" instance="1" label="Reporting tamper alarm cancellation" max="1" min="0" size="1" type="list" value="1">
+      <Help>Reporting cancellation of tamper alarm to the controller and 5th Association Group.
+      </Help>
+      <Item label="Do not send tamper cancellation report" value="0"/>
+      <Item label="Send tamper cancellation report" value="1"/>
+    </Value>
+    <Value genre="config" index="13" instance="1" label="Scene activation functionality" max="1" min="0" size="1" type="list" value="0">
+      <Help>This parameter enables/disables the central scene function.
+      </Help>
+      <Item label="Disable" value="0"/>
+      <Item label="Enable" value="1"/>
+    </Value>
+    <Value genre="config" index="14" instance="1" label="Tilt Sensor Functionality" max="1" min="0" size="1" type="list" value="1">
+      <Help>This parameter enables/disables the tilt function.
+      </Help>
+      <Item label="Disable" value="0"/>
+      <Item label="Enable" value="1"/>
+    </Value>
+    <Value genre="config" index="15" instance="1" label="Tilt sensitivity" max="100" min="0" size="1" type="byte" units="" value="50">
+      <Help>You can use this parameter to adjust the tilt sensitivity if the tilt is too low or too high.
+      </Help>
+    </Value>
+  </CommandClass>
+  <!-- Association Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="4">
+      <Group index="1" label="Lifeline" max_associations="5"/>
+      <Group index="2" label="Control" max_associations="5"/>
+      <Group index="3" label="Alarm sensor" max_associations="5"/>
+      <Group index="4" label="Alarm tamper" max_associations="5"/>
+    </Associations>
+  </CommandClass>
+</Product>

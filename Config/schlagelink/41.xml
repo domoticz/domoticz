@@ -1,0 +1,15 @@
+<Product Revision="1" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0097:5501:6941</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/schlagelink/41.png</MetaDataItem>
+    <MetaDataItem id="5501" name="ZWProductPage" type="6941">https://products.z-wavealliance.org/products/729/</MetaDataItem>
+    <MetaDataItem name="Description">Product number 41, A plugin module for a power socket which can switch on/off</MetaDataItem>
+    <MetaDataItem name="Name">Wintop iPlug, Brazil</MetaDataItem>
+    <MetaDataItem id="5501" name="FrequencyName" type="6941">Brazil</MetaDataItem>
+    <MetaDataItem id="5501" name="Identifier" type="6941">41</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 May 2019" revision="1">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/729/xml</Entry>
+    </ChangeLog>
+  </MetaData>
+  <CommandClass id="112"/>
+</Product>

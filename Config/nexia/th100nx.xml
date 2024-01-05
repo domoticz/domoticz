@@ -1,0 +1,98 @@
+<Product Revision="1" 
+    xmlns="https://github.com/OpenZWave/open-zwave">
+    <!-- Please refer to https://github.com/OpenZWave/open-zwave/wiki/Adding-Devices for instructions -->
+    <MetaData>
+        <MetaDataItem name="Name">Remote Temperature and Humidity Sensor</MetaDataItem>
+        <MetaDataItem name="Description">The Remote Temperature and Humidity sensor is a Z-Wave Plus multilevel, battery-powered, routing sensor that measures and reports indoor temperature and relative humidity.  The reporting intervals and thresholds for the indoor temperature, indoor humidity and battery are configurable.  The wakeup interval is also configurable.   This sensor cannot be used with Trane/American Standard thermostats for HVAC control.</MetaDataItem>
+        <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0178:3130:5448</MetaDataItem>
+        <MetaDataItem name="ProductPage">https://products.z-wavealliance.org/products/2223</MetaDataItem>
+        <MetaDataItem name="ProductPic">images/nexia/th100nx.png</MetaDataItem>
+        <MetaDataItem name="ProductManual">https://products.z-wavealliance.org/ProductManual/File?folder=&amp;filename=MarketCertificationFiles/2223/18-HD84D1-1A.pdf</MetaDataItem>
+        <MetaDataItem name="WakeupDescription">Press the Install button three times rapidly to send a Battery Report and Wakeup Notification when installed on a network.</MetaDataItem>
+        <MetaDataItem name="InclusionDescription">Set primary controller to inclusion mode, then press and release install button. Status LED will blink three times to show success.</MetaDataItem>
+        <MetaDataItem name="ExclusionDescription">Set primary controller to exclusion mode, then press and release install button. Status LED will blink three times to show success.</MetaDataItem>
+        <MetaDataItem name="ResetDescription">Press and hold install button for 10 seconds to restore to factory defaults.</MetaDataItem>
+        <MetaDataItem id="3130" name="ZWProductPage" type="5448">https://products.z-wavealliance.org/products/2223</MetaDataItem>
+        <MetaDataItem id="3130" name="FrequencyName" type="5448">U.S. / Canada / Mexico</MetaDataItem>
+        <MetaDataItem id="3130" name="Identifier" type="5448">TH100NX</MetaDataItem>
+        <ChangeLog>
+            <Entry author="Daniel Koronthaly - daniel@koronthaly.net" date="06 July 2020" revision="1">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/2223/xml</Entry>
+        </ChangeLog>
+    </MetaData>
+    <!-- Configuration Command Class - All Configuration Parameters should be entered into the section below -->
+    <CommandClass id="112">
+        <Value genre="config" index="1" label="Battery Report Interval" max="127" min="0" size="1" type="list" units="hours" value="0">
+            <Help>Time between Battery Reports in hours</Help>
+            <Item label="Do not send periodically" value="0"/>
+        </Value>
+        <Value genre="config" index="2" label="Basic Set ON Above Temp" max="121" min="15" size="1" type="list" units="Farenheit" value="121">
+            <Help>BASIC SET ON above this temperature.</Help>
+            <Item label="Disabled" value="121"/>
+        </Value>
+        <Value genre="config" index="3" label="Basic Set ON Below Temp" max="121" min="15" size="1" type="list" units="Farenheit" value="121">
+            <Help>BASIC SET ON below this temperature.</Help>
+            <Item label="Disabled" value="121"/>
+        </Value>
+        <Value genre="config" index="4" label="Basic Set OFF Above Temp" max="121" min="15" size="1" type="list" units="Farenheit" value="121">
+            <Help>BASIC SET OFF above this temperature.</Help>
+            <Item label="Disabled" value="121"/>
+        </Value>
+        <Value genre="config" index="5" label="Basic Set OFF Below Temp" max="121" min="15" size="1" type="list" units="Farenheit" value="121">
+            <Help>BASIC SET OFF below this temperature.</Help>
+            <Item label="Disabled" value="121"/>
+        </Value>
+        <Value genre="config" index="6" label="Basic Set Attempts" max="5" min="0" size="1" type="list" units="Attempts" value="0">
+            <Help>How many attempts</Help>
+            <Item label="Disabled" value="0"/>
+        </Value>
+        <Value genre="config" index="7" label="Temp Units" max="1" min="0" size="1" type="list" units="C/F" value="1">
+            <Help>Temperature Units used</Help>
+            <Item label="Farenheit" value="1"/>
+            <Item label="Celsius" value="0"/>
+        </Value>
+        <Value genre="config" index="12" label="Basic Set ON Above RH" max="100" min="0" size="1" type="list" units="%" value="0">
+            <Help>BASIC SET ON above this humidity</Help>
+            <Item label="Disabled" value="0"/>
+        </Value>
+        <Value genre="config" index="13" label="Basic Set ON Below RH" max="100" min="0" size="1" type="list" units="%" value="0">
+            <Help>BASIC SET ON below this humidity</Help>
+            <Item label="Disabled" value="0"/>
+        </Value>
+        <Value genre="config" index="14" label="Basic Set OFF Above RH" max="100" min="0" size="1" type="list" units="%" value="0">
+            <Help>BASIC SET OFF above this humidity</Help>
+            <Item label="Disabled" value="0"/>
+        </Value>
+        <Value genre="config" index="15" label="Basic Set OFF Below RH" max="100" min="0" size="1" type="list" units="%" value="0">
+            <Help>BASIC SET OFF below this humidity</Help>
+            <Item label="Disabled" value="0"/>
+        </Value>
+        <Value genre="config" index="20" label="Basic Set Option" max="4" min="1" size="1" type="list" units="int" value="1">
+            <Help>Basic Set Options for temperature and humidity.
+                1 = Enable Registers 2, 5, 12 15
+                2 = Enable Registers 2, 5, 13, 14
+                3 = Enable Registers 3, 4, 12, 15
+                4 = Enable Registers 3, 4, 13, 14
+            </Help>
+        </Value>
+        <Value genre="config" index="21" label="Temp Offset" max="7" min="-7" size="1" type="list" units="Farenheit" value="0">
+            <Help>Temperature offset</Help>
+        </Value>
+        <Value genre="config" index="22" label="Humidity Offset" max="7" min="-7" size="1" type="list" units="%" value="0">
+            <Help>Humidity offset</Help>
+        </Value>
+        <Value genre="config" index="23" label="Humidity Filter Time Constant" max="60" min="1" size="1" type="list" units="minutes" value="30">
+            <Help>BASIC SET ON above this humidity</Help>
+        </Value>
+    </CommandClass>
+    <CommandClass id="133">
+        <Associations num_groups="6">
+            <!-- Z-Wave Plus Lifeline Battery Report, Notification Report, Device Reset Locally Notification -->
+            <Group index="1" label="Lifeline" max_associations="1"/>
+            <Group index="2" label="Temperature Reports" max_associations="5"/>
+            <Group index="3" label="Humidity Reports" max_associations="5"/>
+            <Group index="4" label="Temperature Driven Basic Sets" max_associations="5"/>
+            <Group index="5" label="Humidity Driven Basic Sets" max_associations="5"/>
+            <Group index="6" label="Battery Reports" max_associations="5"/>
+        </Associations>
+    </CommandClass>
+</Product>

@@ -1,0 +1,21 @@
+<Product Revision="1" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/007A:0001:0002</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/merten/508244.png</MetaDataItem>
+    <MetaDataItem id="0001" name="ZWProductPage" type="0002">https://products.z-wavealliance.org/products/268/</MetaDataItem>
+    <MetaDataItem name="Description">Battery powered pushbutton devices that controls other devices.
+
+(1 Key Device) (5080xx)Move - Mobile switching and dimming of lighting
+
+Move is for anyone who wants to be even more fl exible. The new little round radio push-button can be easily removed from its respective wall bracket and used as a radio remote control. And you can snap it back into the frame when you're done.</MetaDataItem>
+    <MetaDataItem name="Name">508244 - CONNECT MOVE </MetaDataItem>
+    <MetaDataItem name="ProductSupport">http://www.merten.com/Info-Centre.59.0.html</MetaDataItem>
+    <MetaDataItem id="0001" name="FrequencyName" type="0002">CEPT (Europe)</MetaDataItem>
+    <MetaDataItem name="ProductPage">http://www.merten.com/Radio-transmitter-and-radio-receiver.148.0.html?&amp;L=3%3Fq%3Dplus%20lin</MetaDataItem>
+    <MetaDataItem id="0001" name="Identifier" type="0002">508244</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 May 2019" revision="1">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/268/xml</Entry>
+    </ChangeLog>
+  </MetaData>
+  <CommandClass id="112"/>
+</Product>

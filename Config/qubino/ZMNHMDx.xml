@@ -1,0 +1,168 @@
+<Product Revision="1" xmlns="https://github.com/OpenZWave/open-zwave">
+    <MetaData>
+        <MetaDataItem name="Name">Smart leak protector</MetaDataItem>
+        <MetaDataItem name="Description">Qubino Smart leak protector can get the information about consumed water on one side, or have the complete protection of your home water system with water metering, flood detection and actuator for opening and closing the valve accordingly.</MetaDataItem>
+        <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0159:0051:0006</MetaDataItem>
+        <MetaDataItem name="ProductPage">https://qubino.com</MetaDataItem>
+        <MetaDataItem name="ProductSupport">https://support.qubino.com/support/home</MetaDataItem>
+        <MetaDataItem name="ProductPic">images/qubino/ZMNHADx.png</MetaDataItem>
+        <MetaDataItem name="InclusionDescription">
+            1. Enable add/remove mode on your Z-Wave gateway.
+			2. Connect the device to the power supply.
+			3. Make sure the device is within direct range of your Z-Wave gateway.
+			4. Push the switch connected to the I1 terminal 3 times within 5 seconds.
+			OR
+			Press and hold the S (Service) button between 2 and 6 seconds.
+			4. A new device will appear on your dashboard.
+			5. Inclusion with the switch connected to I1 terminal is not limited by time.
+		</MetaDataItem>
+        <MetaDataItem name="ExclusionDescription">
+            1. Connect the device to the power supply.
+			2. Make sure the device is within direct range of your Z-Wave gateway or use a hand-held Z-Wave remote to perform exclusion.
+			3. Enable add/remove mode on your Z-Wave gateway.
+			4. Toggle the switch connected to the I1 terminal 3 times within 5 seconds. The device must get ON/OFF signal 3 times. 
+			OR
+			Press and hold the S (Service) button between 2 and 6 seconds.
+			5. Exclusion with the switch connected to I1 terminal is not limited by time.
+			6. The device will be removed from your network, but any custom configuration parameters will not be erased.
+		</MetaDataItem>
+        <MetaDataItem name="ResetDescription">
+            1. Connect the device to the power supply.
+			2. Within the first minute (60 seconds) of the device being connected to the power supply, push the momentary switch connected to the I1 terminal 5 times within 5 seconds.
+			OR
+			Press and hold the S (Service) button for more than 6 seconds.
+			The procedure is always available.
+		</MetaDataItem>
+        <ChangeLog>
+            <Entry author="K.Petrovcic@goap.si" date="26 March 2021" revision="1">Initial Import</Entry>
+        </ChangeLog>
+    </MetaData>
+
+    <!-- Configuration Command Class -->
+    <CommandClass id="112">
+
+        <Value genre="config" index="1" instance="1" label="Output 1 contact type" max="1" min="0" size="1" type="list" value="0">
+            <Help>Defines the output contact type for Q↑.</Help>
+            <Item label="NO (normally open) contact type" value="0"/>
+            <Item label="NC (normally closed) contact type" value="1"/>
+        </Value>
+		
+		<Value genre="config" index="2" instance="1" label="Input 2 contact type" max="1" min="0" size="1" type="list" value="0">
+            <Help>Defines how the device reacts if a signal from I2 input is registered.</Help>
+            <Item label="NO (normally open) contact type" value="0"/>
+            <Item label="NC (normally closed) contact type" value="1"/>
+        </Value>
+		
+		<Value genre="config" index="3" instance="1" label="Input 3 contact type" max="1" min="0" size="1" type="list" value="0">
+            <Help>Defines how the device reacts if a signal from I3 input is registered..</Help>
+            <Item label="NO (normally open) contact type" value="0"/>
+            <Item label="NC (normally closed) contact type" value="1"/>
+        </Value>
+		
+		 <Value genre="config" index="30" instance="1" label="Restore state on power failure" max="1" min="0" size="1" type="list" value="0">
+            <Help>With this parameter, the user can select if the state of the device should be restored, after a power failure.</Help>
+            <Item label="Enabled (the device will restore state on power failure)" value="0"/>
+            <Item label="Disabled (the device will not restore state on power failure and will remain off)" value="1"/>
+        </Value>
+		
+		<Value genre="config" index="48" instance="1" label="Water total consumption value in Liters" max="2147483647" min="-2147483648" size="4" type="int" value="0">
+            <Help>
+				With this parameter we can set the current water consumption value in liters. 
+				The value is represented with two's complement notation so that it can represent negative values also. 
+				Span of the input value is from (-2147483648) to (+2147483647). 
+				Its main usage is to set the same value on our device as on physical water meter. 
+				If we get the PARAMETER_48 value with PARAMETER_GET command we get the last value that was set with this parameter and not the current water consumption value! 
+				To get the current consumption value we must send the METER_GET command.
+			</Help>
+        </Value>
+		
+		<Value genre="config" index="50" instance="1" label="Number of liters per pulse" units="litres" max="1000" min="1" size="2" type="short" value="10">
+            <Help>
+				This number defines how many litres represent 1 received pulse from the water meter connected to I2.
+				Default value = 10 (1 pulse = 10 liters)
+				1 to 1000 => 1 litre – 1000 litres (step is 1 litre).
+            </Help>
+        </Value>
+		
+		<Value genre="config" index="51" instance="1" label="Number of liters for Slow Leak" units="litres" max="1000" min="1" size="2" type="short" value="10">
+            <Help>
+				This number defines how many minimum litres must be consumed each hour and constantly repeated for the defined time in parameter 52 to cause the leak alarm (depends on meter resolution).
+				Default value = 1 (1 litre)
+				1 to 1000 => 1 litre – 1000 litres (step is 1 litre).
+			</Help>
+        </Value>
+		
+		<Value genre="config" index="52" instance="1" label="Water consumption time interval for Slow Leak" units="hours" max="24" min="1" size="1" type="byte" value="24">
+            <Help>
+				Set value means time interval (0 – 24) in hours, during which the device checks, if water consumption defined in Parameter 51 was consumed to cause the leak alarm.
+				Default value = 24 (checking for a leak alarm in 24 hours)
+				1 – 24 => 1 hour – 24 hours
+			</Help>
+        </Value>
+		
+		<Value genre="config" index="53" instance="1" label="Number of liters for Medium Leak" units="litres" max="1000" min="1" size="2" type="short" value="150">
+            <Help>
+				This number defines how many minimum litres must be consumed each hour and constantly repeated for the defined time in parameter 54 to cause the leak alarm.
+				Default value = 150 (150 litres)
+				1 – 1000 => 1 litre – 1000 litres – step is 1 litre
+			</Help>
+        </Value>
+		
+		<Value genre="config" index="54" instance="1" label="Water consumption time interval for Medium Leak" units="hours" max="24" min="1" size="1" type="byte" value="6">
+            <Help>
+				Set value means time interval (0 – 24) in hours, during which the device checks, if water consumption defined in Parameter 53 was consumed to cause the leak alarm.
+				Default value = 6 (checking for a leak alarm in 6 hours)
+				1 – 24 => 1 hour – 24 hours
+			</Help>
+        </Value>
+		
+		<Value genre="config" index="55" instance="1" label="Number of liters for Fast Leak" units="litres" max="1000" min="1" size="2" type="short" value="300">
+            <Help>
+				This number defines how many minimum liters must be consumed each hour and constantly repeated for the defined time in parameter 56 to cause the leak alarm.
+				Default value 300 (300 liters)
+				1 – 1000 = 1 litre – 1000 litres – step is 1 litre
+			</Help>
+        </Value>
+		
+		<Value genre="config" index="56" instance="1" label="Water consumption time interval for Fast Leak" units="hours" max="24" min="1" size="1" type="byte" value="3">
+            <Help>
+				Set value means time interval (0 – 24) in hours, during which the device checks, if water consumption defined in Parameter 53 was consumed to cause the leak alarm.
+				Default value = 3 (checking for a leak alarm in 3 hours)
+				1 – 24 => 1 hour – 24 hours
+			</Help>
+        </Value>
+		
+		<Value genre="config" index="60" instance="1" label="Enable closing valve according to Slow Leak" max="1" min="0" size="1" type="list" value="1">
+            <Help>This parameter defines what happens with the valve if the leak alarm is triggered.</Help>
+            <Item label="Close the valve" value="0"/>
+            <Item label="Don’t close the valve" value="1"/>
+        </Value>
+		
+		<Value genre="config" index="61" instance="1" label="Enable closing valve according to Medium Leak" max="1" min="0" size="1" type="list" value="1">
+            <Help>This parameter defines what happens with the valve if the leak alarm is triggered.</Help>
+            <Item label="Close the valve" value="0"/>
+            <Item label="Don’t close the valve" value="1"/>
+        </Value>
+		
+		<Value genre="config" index="62" instance="1" label="Enable closing valve according to Fast Leak" max="1" min="0" size="1" type="list" value="1">
+            <Help>This parameter defines what happens with the valve if the leak alarm is triggered.</Help>
+            <Item label="Close the valve" value="0"/>
+            <Item label="Don’t close the valve" value="1"/>
+        </Value>
+		
+		<Value genre="config" index="63" instance="1" label="Enable closing valve according to Hardware Leak" max="1" min="0" size="1" type="list" value="1">
+            <Help>This parameter defines what happens with the valve if the leak alarm is triggered.</Help>
+            <Item label="Close the valve" value="0"/>
+            <Item label="Don’t close the valve" value="1"/>
+        </Value>
+       
+    </CommandClass>
+	
+    <!-- Association Groups -->
+    <CommandClass id="133">
+        <Associations num_groups="2">
+            <Group index="1" label="Lifeline" max_associations="1"/>
+            <Group index="2" label="Basic OnOff" max_associations="5"/>
+        </Associations>
+    </CommandClass>
+</Product>

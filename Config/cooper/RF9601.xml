@@ -1,0 +1,73 @@
+<Product Revision="1" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/001A:0503:534C</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/cooper/RF9601.png</MetaDataItem>
+    <MetaDataItem id="0503" name="ZWProductPage" type="534C">https://products.z-wavealliance.org/products/3038/</MetaDataItem>
+    <MetaDataItem id="0503" name="Identifier" type="534C">Eaton RF9601DW</MetaDataItem>
+    <MetaDataItem id="0503" name="FrequencyName" type="534C">U.S. / Canada / Mexico</MetaDataItem>
+    <MetaDataItem name="Name">Eaton’s Z-Wave Plus Wireless Switch</MetaDataItem>
+    <MetaDataItem name="Description">Eaton’s Z-Wave plus wireless switch replaces regular switches (where a neutral is present) to provide local and remote ON/OFF control for most common residential lighting loads including LEDs and certain motor loads. Each switch can be manually and
+      remotely controlled by commands sent from your compatible Z-Wave certified controller. Features and Benefits: • Replaces standard switch to add local and wireless control • Single pole and 3-Way control: Use with standard 3-Way switch or Z-Wave
+      Plus Accessory RF9617 • Neutral is required for installation • Supports motors loads up to ½ HP • Features blue load indicating LED light that can be dimmed in ON or OFF state</MetaDataItem>
+    <MetaDataItem name="ProductPage">https://www.eaton.com/us/en-us/skuPage.RF9601DW.html</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Zachary Knight" date="01 Jan 2021" revision="1">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/3038/xml</Entry>
+    </ChangeLog>
+  </MetaData>
+  <!-- Configuration Parameters -->
+  <CommandClass id="112">
+    <Value genre="config" index="1" label="Delayed OFF time" max="255" min="0" type="byte" units="seconds" value="0">
+      <Help>
+        The configuration value is a signed single byte number. This value may represent a value with no units or may represent a value such as time. 0 to 127 (decimal) represents 0 to 127 seconds of time. -128 to -1 (negative decimal numbers) represents 128
+        to 255 seconds as calculated by this formula. Config value = desired time in seconds (or desired value) -256 For an example of 172 seconds: config value = 172 - 256 = -84 (decimal) or 0xAC (hex)
+      </Help>
+    </Value>
+    <Value genre="config" index="2" label="Panic ON time" max="255" min="1" type="byte" units="seconds" value="0">
+      <Help>
+        The amount of time in seconds the switch will turn on for when panic mode is trigered. The configuration value is a signed single byte number. This value may represent a value with no units or may represent a value such as time. 0 to 127 (decimal) represents
+        0 to 127 seconds of time. -128 to -1 (negative decimal numbers) represents 128 to 255 seconds as calculated by this formula. Config value = desired time in seconds (or desired value) -256 For an example of 172 seconds: config value = 172 - 256
+        = -84 (decimal) or 0xAC (hex)
+      </Help>
+    </Value>
+    <Value genre="config" index="3" label="Panic OFF time" max="255" min="1" type="byte" units="seconds" value="0">
+      <Help>
+        The amount of time in seconds the switch will turn off for when panic mode is triggered. The configuration value is a signed single byte number. This value may represent a value with no units or may represent a value such as time. 0 to 127 (decimal) represents
+        0 to 127 seconds of time. -128 to -1 (negative decimal numbers) represents 128 to 255 seconds as calculated by this formula. Config value = desired time in seconds (or desired value) -256 For an example of 172 seconds: config value = 172 - 256
+        = -84 (decimal) or 0xAC (hex)
+      </Help>
+    </Value>
+    <Value genre="config" index="5" label="Power Up State" max="3" min="1" size="1" type="list" units="" value="3">
+      <Help>
+        Power up state of the device
+      </Help>
+      <Item label="OFF" value="1" />
+      <Item label="ON" value="2" />
+      <Item label="Last state" value="3" />
+    </Value>
+    <Value genre="config" index="6" label="Panic mode enable" max="2" min="1" size="1" type="list" units="" value="1">
+      <Help>
+        Enables this switch to participate in panic mode
+      </Help>
+      <Item label="OFF" value="1" />
+      <Item label="ON" value="2" />
+    </Value>
+    <Value genre="config" index="13" label="BLUE LED Brightness Level while the Switch is ON" max="4" min="0" size="1" type="byte" value="4">
+      <Help>
+        Adjust brightness of the blue indicator LED with Switch is ON - 0 = OFF 4 = Maximum brightness
+      </Help>
+    </Value>
+    <Value genre="config" index="14" label="BLUE LED Brightness Level while the Switch is OFF" max="4" min="0" size="1" type="byte" value="1">
+      <Help>
+        Adjust brightness of the blue indicator LED with Switch is OFF - 0 = OFF 4 = Maximum brightness
+      </Help>
+    </Value>
+  </CommandClass>
+
+  <!-- Association Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="2">
+      <Group index="1" label="Lifeline" max_associations="5" />
+      <Group index="2" label="Set" max_associations="5" />
+    </Associations>
+  </CommandClass>
+</Product>

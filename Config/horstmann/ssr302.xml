@@ -1,0 +1,71 @@
+<!-- Horstmann SSR302 2-zone thermostat receiver --><Product Revision="3" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0059:0002:0003</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/horstmann/ssr302.png</MetaDataItem>
+    <MetaDataItem id="0002" name="ZWProductPage" type="0003">https://products.z-wavealliance.org/products/116/</MetaDataItem>
+    <MetaDataItem name="Description">AS2-RF thermostat transmits via Z Wave mesh radio technology and is capable of operation  in most domestic houses with an operating range of approximately 30 metres. Ideal for controlling combi boilers, it can be mounted  in any suitable location without the need to disturb existing wiring or décor. Operates from 3 standard AA batteries, with 2 years+ life and separate clock battery.</MetaDataItem>
+    <MetaDataItem id="0002" name="Identifier" type="0003">SSR302</MetaDataItem>
+    <MetaDataItem id="0002" name="FrequencyName" type="0003">CEPT (Europe)</MetaDataItem>
+    <MetaDataItem name="Name">Secure SSR302 2ch Zwave Relay Box (Rx)</MetaDataItem>
+    <MetaDataItem name="ProductPage">http://www.securetogether.eu/</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 May 2019" revision="3">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/116/xml</Entry>
+    </ChangeLog>
+  </MetaData>
+  <!-- Associate V2: 
+    Product supports one group (Lifeline) and have a maximum of 4 node. No current active group. 
+  -->
+  <CommandClass id="133">
+    <Associations num_groups="1">
+      <Group index="1" label="Lifeline" max_associations="4"/>
+    </Associations>
+  </CommandClass>
+  <!-- Thermostat mode (v1): 
+    Only 'Idle Mode' and 'Heat Mode' are supported within this command class, which can either set or read.
+    The SSR 302 has a failsafe mode where by the relay is turned off if another Thermostat Mode SET command has not been received within 60 minutes.
+  -->
+  <CommandClass id="64">
+    <SupportedModes>
+      <Mode index="0" label="Idle Mode"/>
+      <Mode index="1" label="Heat Mode"/>
+    </SupportedModes>
+  </CommandClass>
+  <!-- Switch Binary (v1):
+    Supports SET and GET to control the relay.
+    Opposed to the Thermostat command class there is no failsafe mode. If Binary Switch SET command is received than previously active failsafe mode closed.
+  -->
+
+  <!-- Basic (V1):
+    The Basic command class has been mapped to Switch Binary command class as follows:
+    Basic Set : Mapped to Switch Binary Set.
+    Basic Get : Mapped to Switch Binary Get.
+    Basic Report : Mapped to Switch Binary Report
+    Same as Switch Binary command class there is no failsafe mode. If Basic SET command is received than previously active failsafe mode closed.
+  -->
+
+  <!--
+    Power Level (V1):
+    Power Level Command Class defines RF transmit power controlling commands useful when installing or testing a network.
+  -->
+  
+  <!-- Mutli Channel (V4):
+    This command is used to independently access the two channels available on the SSR 302.
+    Product has 2 identical, non-dynamic end points with no aggregated endpoints.
+    Each endpoint capability reports:
+    Generic Device Class: SWITCH BINARY
+    Specific Device Class: POWER SWITCH BINARY
+    
+    Supported Command Class:
+    COMMAND_CLASS_ZWAVEPLUS_INFO
+    COMMAND_CLASS_BASIC
+    COMMAND_CLASS_THERMOSTAT_MODE
+    COMMAND_CLASS_SWITCH_BINARY
+    COMMAND_CLASS_ASSOCIATION
+    COMMAND_CLASS_ASSOCIATION_GROUP_INFO
+  -->
+  <CommandClass id="96">
+    <Compatibility>
+      <MapRootToEndpoint>true</MapRootToEndpoint>
+    </Compatibility>
+  </CommandClass>
+</Product>

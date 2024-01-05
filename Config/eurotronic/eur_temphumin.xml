@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+Eurotronic Z-Wave Plus temperature and humitity sensor
+Product website: https://eurotronic.org/produkte/sensoren/temperatur-feuchte-sensor/
+-->
+<Product  Revision="2" xmlns="https://github.com/OpenZWave/open-zwave">
+    <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0148:0001:0004</MetaDataItem>
+    <MetaDataItem name="Name">Temperature and Humidity Sensor</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/eurotronic/eur_temphumid.png</MetaDataItem>
+    <MetaDataItem name="InclusionDescription">Start Inclusion mode of your primary Z-Wave Controller.
+Press the network button three times within 1 second.</MetaDataItem>
+    <MetaDataItem name="ResetDescription">Please use this procedure only when the network primary controller is missing or otherwise inoperable.
+
+Press and hold the network button for at least 10 seconds. The temperature humidity sensor will indicate
+the reset blinking pattern once the reset is completed.
+    </MetaDataItem>
+    <MetaDataItem id="0001" name="FrequencyName" type="0004">CEPT (Europe)</MetaDataItem>
+    <MetaDataItem id="0001" name="ZWProductPage" type="0004">https://eurotronic.org/produkte/sensoren/temperatur-feuchte-sensor/</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://eurotronic.org/</MetaDataItem>
+    <MetaDataItem name="Description">
+ <!--
+TODO: English manual not yet available on website of eurotronics
+-->
+This Z-Wave sensor provides comprehensive information on indoor
+temperature and humidity. 
+• Returns the following values:
+  - Temperature (°C)
+  - Humidity (%)
+  - Dew point (°C)
+• Supports Z-Wave Plus S2 security (encryption)
+   </MetaDataItem>
+
+    <ChangeLog>
+      <Entry author="gpgmailencrypt@gmx.de" date="13 Mar 2020" revision="2">Initial Metadata Import </Entry>
+    </ChangeLog>
+  </MetaData>
+
+    <!-- Configuration Parameters -->
+    <CommandClass id="112">
+        <Instance index="1"/>
+        <Value type="byte" genre="config" instance="1" index="1" label="Temperature on Change Reporting" min="0" max="50" value="5" size="1">
+            <Help>
+                0: Don't report temperature changes
+                1-50: Report temperature changes from 0,1°C - 5,0°C 
+                Default: 5
+            </Help>
+        </Value>
+
+        <Value type="byte" genre="config" instance="1" index="2" label="Humidity on Change Reporting" min="0" max="10" value="5" size="1">
+            <Help>
+                0: Don't report humidity changes
+                1-10: report humidity changes in 1% steps
+                Default: 5
+            </Help>
+        </Value>
+        <Value type="list" genre="config" instance="1" index="3" label="Temperature Scale" min="0" max="1" value="0" size="1">
+            <Help>
+                0: Temperature in Degrees Celcius
+                1: Temperature in Degrees Fahrenheit
+                Default: 0
+            </Help>
+            <Item label="Celsius" value="0" />
+            <Item label="Fahrenheit" value="1" />
+        </Value>
+        <Value type="byte" genre="config" instance="1" index="4" label="Temperature Resolution" min="0" max="2" value="1" size="1">
+            <Help>
+                0: no decimal places
+                1: one decimal place
+                2: two decimal places
+                Default: 1
+            </Help>
+        </Value>
+        <Value type="byte" genre="config" instance="1" index="5" label="Humidity Resolution" min="0" max="2" value="0" size="1">
+            <Help>
+                0: no decimal places
+                1: one decimal place
+                2: two decimal places
+                Default: 0
+            </Help>
+        </Value>
+  </CommandClass>
+ 
+ 
+    <!-- Association Groups -->
+   <CommandClass id="133">
+    <Associations num_groups="2">
+      <Group index="1" max_associations="1" label="Lifeline" />
+      <Group index="2" max_associations="5" label="Temperature" />
+    </Associations>
+  </CommandClass>
+</Product>

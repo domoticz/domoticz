@@ -1,0 +1,64 @@
+<?xml version='1.0'?>
+<xs:schema xmlns:xs='http://www.w3.org/2001/XMLSchema' targetNamespace='https://github.com/OpenZWave/open-zwave' xmlns:NotificationTypes='https://github.com/OpenZWave/open-zwave' elementFormDefault='qualified'>
+
+	<xs:element name='NotificationTypes'>
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element ref='NotificationTypes:AlarmType' minOccurs='1' maxOccurs='unbounded' />
+			</xs:sequence>
+			<xs:attribute name='Revision' type='xs:integer' use='required' />
+		</xs:complexType>
+	</xs:element>
+
+	<xs:element name='AlarmType'>
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element ref='NotificationTypes:AlarmEvent' minOccurs='1' maxOccurs='unbounded' />
+			</xs:sequence>
+			<xs:attribute name='id' type='xs:string' use='required' />
+			<xs:attribute name='name' type='xs:string' use='required' />
+		</xs:complexType>
+	</xs:element>
+
+	<xs:element name='AlarmEvent'>
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element ref='NotificationTypes:AlarmEventParam' minOccurs='0' maxOccurs='1' />
+			</xs:sequence>
+			<xs:attribute name='id' type='xs:string' use='required' />
+			<xs:attribute name='name' type='xs:string' use='required' />
+		</xs:complexType>
+	</xs:element>
+
+	<xs:element name='AlarmEventParam'>
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element ref='NotificationTypes:Item' minOccurs='0' maxOccurs='unbounded' />
+			</xs:sequence>
+			<xs:attribute name='id' type='xs:string' use='required' />
+			<xs:attribute name='type' use='required'>
+				<xs:simpleType>
+					<xs:restriction base='xs:string'>
+						<xs:enumeration value='location' />
+						<xs:enumeration value='list' />
+						<xs:enumeration value='usercodereport' />
+						<xs:enumeration value='byte' />
+						<xs:enumeration value='string' />
+						<xs:enumeration value='duration' />
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:attribute>
+
+			<xs:attribute name='name' type='xs:string' use='required' />
+		</xs:complexType>
+	</xs:element>
+
+	<xs:element name='Item'>
+		<xs:complexType>
+			<xs:attribute name='id' type='xs:string' use='required' />
+			<xs:attribute name='label' type='xs:string' use='required' />
+		</xs:complexType>
+	</xs:element>
+
+
+</xs:schema>

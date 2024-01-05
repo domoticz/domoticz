@@ -1,0 +1,57 @@
+<Product Revision="3" xmlns="https://github.com/OpenZWave/open-zwave">
+  <!-- Qubino: ZMNHUD1 DIN Pilot Wire Z-Wave Plus-->
+	<!-- Configuration -->
+  <CommandClass id="112">
+    <Value genre="config" index="1" instance="1" label="Input 1 switch type" max="1" min="0" size="1" type="list" value="1">
+      <Help/>
+      <Item label="Mono-stable" value="0"/>
+      <Item label="Bi-stable" value="1"/>
+    </Value>
+    <Value genre="config" index="2" instance="1" label="Input 1 contact type" max="1" min="0" size="1" type="list" value="0">
+      <Help/>
+      <Item label="Normally Open" value="0"/>
+      <Item label="Normally Close" value="1"/>
+    </Value>
+    <Value genre="config" index="11" instance="1" label="Input 1 operation mode 1" max="6" min="0" size="1" type="list" value="1">
+      <Help/>
+      <Item label="No modification with Input 1" value="0"/>
+      <Item label="Confort" value="1"/>
+      <Item label="Confort -1C" value="2"/>
+      <Item label="Confort -2C" value="3"/>
+      <Item label="Eco Mode" value="4"/>
+      <Item label="Frost Protection" value="5"/>
+      <Item label="Stop" value="6"/>
+    </Value>
+    <Value genre="config" index="12" instance="1" label="Input 1 operation mode 2" max="6" min="0" size="1" type="list" value="4">
+      <Help/>
+      <Item label="No modification with Input 1" value="0"/>
+      <Item label="Confort" value="1"/>
+      <Item label="Confort -1C" value="2"/>
+      <Item label="Confort -2C" value="3"/>
+      <Item label="Eco Mode" value="4"/>
+      <Item label="Frost Protection" value="5"/>
+      <Item label="Stop" value="6"/>
+    </Value>
+    <Value genre="config" index="30" instance="1" label="Saving the state of the device after a power failure" max="1" min="0" size="1" type="list" value="0">
+      <Help></Help>
+      <Item label="Returns to the last position saved before a power failure" value="0"/>
+      <Item label="Returns to off position" value="1"/>
+    </Value>
+  </CommandClass>
+  <!-- Association Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="3">
+      <Group index="1" label="Lifeline" max_associations="1"/>
+      <Group index="2" label="Multilevel" max_associations="16"/>
+      <Group index="3" label="Basic on/off " max_associations="16"/>
+    </Associations>
+  </CommandClass>
+  <!-- Remove COMMAND_CLASS_BASIC -->
+  <CommandClass action="remove" id="32"/>
+  <!-- Map endpoints to instances -->
+  <CommandClass id="96">
+    <Compatibility>
+      <MapRootToEndpoint>true</MapRootToEndpoint>
+    </Compatibility>
+  </CommandClass>
+</Product>

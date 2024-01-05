@@ -1,0 +1,150 @@
+<Product Revision="6" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0159:0053:0002</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/qubino/ZMNHNDx.png</MetaDataItem>
+    <MetaDataItem id="0053" name="ZWProductPage" type="0002">https://products.z-wavealliance.org/products/2536/</MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">•	Connect module to power supply 
+•	bring module within maximum 1 meter (3 feet) of the main controller,
+•	enable add/remove mode on main controller,
+•	press service button S for more than 6 second or
+•	press push button I1 five times within 3s (5 times change switch state within 3 seconds) in the first 60 seconds after the module is connected to the power supply.
+By this function all parameters of the module are set to default values and own ID is deleted.
+If service button S is pressed more than 2 and less than 6 seconds (or if push button I1 is pressed three times within 3s) module is excluded, but configuration parameters are not set to default values.
+
+NOTE: If the module is included with parameters 71 with value different to default and module reset is done, wait at least 30s before next inclusion.
+
+NOTE: Please use this procedure only when the network primary controller is missing or otherwise inoperable.
+</MetaDataItem>
+    <MetaDataItem id="0053" name="FrequencyName" type="0002">CEPT (Europe)</MetaDataItem>
+    <MetaDataItem name="Description">The Qubino Flush Shutter DC is ideal for controlling the 12–24V DC motors of blinds, rollers, shades, venetian blinds and similar sunscreens. You can control it either remotely through the Z-Wave network or through wall switches. It also measures power consumption and supports the connection of a digital temperature sensor.</MetaDataItem>
+    <MetaDataItem name="InclusionDescription">•	Connect module to power supply (with 
+temperature sensor connected - if purchased),
+•	auto-inclusion (works for about 5 seconds after connected to power supply) or
+•	press service button S for more than 2 second or
+•	press push button I1 three times within 3s (3 times change switch state within 3 seconds).
+
+NOTE1: For auto-inclusion procedure, first set main controller into inclusion mode and then connect module to power supply.
+
+NOTE2: When connecting temperature sensor to module that has already been included, you have to exclude module first. Switch off power supply, connect the sensor and re-include the module.
+</MetaDataItem>
+    <MetaDataItem name="ResetDescription">press service button S for more than 6 second or
+•	press push button I1 five times within 3s (5 times change switch state within 3 seconds) in the first 60 seconds after the module is connected to the power supply.
+By this function all parameters of the module are set to default values and own ID is deleted.
+If service button S is pressed more than 2 and less than 6 seconds (or if push button I1 is pressed three times within 3s) module is excluded, but configuration parameters are not set to default values.
+
+NOTE: Please use this procedure only when the network primary controller is missing or otherwise inoperable.
+
+</MetaDataItem>
+    <MetaDataItem name="Name">Flush Shutter DC</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://Products.Z-WaveAlliance.org/ProductManual/File?folder=&amp;filename=Manuals/2536/Qubino_Flush Shutter DC PLUS extended manual_eng_2.2.pdf</MetaDataItem>
+    <MetaDataItem id="0053" name="Identifier" type="0002">ZMNHOD1</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="08 May 2019" revision="4">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1336/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="02 Jun 2019" revision="5">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/2536/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="26 Jun 2019" revision="6">Enable MapRootToEndPoint in MultiChannel Class</Entry>
+    </ChangeLog>
+  </MetaData>
+  <!-- 
+	Qubino ZMNHNDx Flush 1D Relay 
+	ZMNHND1 868,4 MHz
+	ZMNHND2 921,4 MHz
+	ZMNHND3 908,4 MHz
+	ZMNHND4 869,0 MHz
+	ZMNHND5 916,0 MHz
+	-->
+	
+	<!-- Configuration  -->
+  <CommandClass id="112">
+    <Value genre="config" index="1" instance="1" label="Input 1 switch type" max="1" min="0" size="1" type="list" value="1">
+      <Help/>
+      <Item label="Mono-stable switch type (push button)" value="0"/>
+      <Item label="Bi-stable switch type" value="1"/>
+    </Value>
+    <Value genre="config" index="2" instance="1" label="Input 2 contact type" max="1" min="0" size="1" type="list" value="0">
+      <Help/>
+      <Item label="NO (normaly open) input type" value="0"/>
+      <Item label="NC (normaly close) input type" value="1"/>
+    </Value>
+    <Value genre="config" index="10" instance="1" label="Activate / deactivate functions ALL ON/ALL OFF" max="255" min="0" size="2" type="list" value="255">
+      <Help>Flush 1 relay module responds to commands ALL ON / ALL OFF that may be sent by the main controller or by other controller belonging to the system</Help>
+      <Item label="ALL ON active, ALL OFF active" value="255"/>
+      <Item label="ALL ON is not active ALL OFF is not active" value="0"/>
+      <Item label="ALL ON is not active ALL OFF active" value="1"/>
+      <Item label="ALL ON active ALL OFF is not active" value="2"/>
+    </Value>
+    <Value genre="config" index="11" instance="1" label="Automatic turning off relay after set time" max="32535" min="0" size="2" type="short" value="0">
+      <Help>
+			0 => Auto OFF disabled. 
+			1 - 32535  => 1 second (0,01s) - 32535 seconds (325,35s). 
+			Auto OFF enabled with define time, step is 1s or 10ms according to parameter 15. Default value 0</Help>
+    </Value>
+    <Value genre="config" index="12" instance="1" label="Automatic turning on relay after set time" max="32535" min="0" size="2" type="short" value="0">
+      <Help>
+			0 - Auto OFF disabled. 
+			1 - 32535  => 1 second (0,01s) - 32535 seconds (325,35s).
+			Auto ON enabled with define time, step is 1s or 10ms according to parameter 15. Default value 0</Help>
+    </Value>
+    <Value genre="config" index="15" instance="1" label="Automatic turning on/off seconds or milliseconds selection" max="1" min="0" size="1" type="list" value="0">
+      <Help/>
+      <Item label="seconds" value="0"/>
+      <Item label="milliseconds" value="1"/>
+    </Value>
+    <Value genre="config" index="30" instance="1" label="Saving the state of the relay after a power failure" max="1" min="0" size="1" type="list" value="0">
+      <Help/>
+      <Item label="Flush 1 relay module saves its state before power failure (it returns to the last position saved before a power failure)" value="0"/>
+      <Item label="Flush 1 relay module does not save the state after a power failure, it returns to off position." value="1"/>
+    </Value>
+    <Value genre="config" index="63" instance="1" label="Output switch selection" max="1" min="0" size="1" type="list" value="0">
+      <Help/>
+      <Item label="When system is turned off the output is 0V (NC)" value="0"/>
+      <Item label="When system is turned off the output is 230V or 24V (NO)" value="1"/>
+    </Value>
+    <Value genre="config" index="80" instance="1" label="Reporting to controller" max="1" min="0" size="1" type="list" value="1">
+      <Help>
+			Available from SW version S1 Only 
+			This parameter defines if reporting regarding power level, multilevel, etc, are reported to controller or not. 
+			NOTE: Disabling reporting is recommended in case Z-wave modules communicate in association groups without using main controller.
+			</Help>
+      <Item label="Disabled" value="0"/>
+      <Item label="Enabled" value="1"/>
+    </Value>
+    <Value genre="config" index="100" instance="1" label="Enable / Disable Endpoints I2 or select notification type and event" max="9" min="0" size="1" type="list" value="1">
+      <Help/>
+      <Item label="Endpoint, I2 disabled" value="0"/>
+      <Item label="Home Security; Motion Detection, unknown location" value="1"/>
+      <Item label="Carbon Monoxide; Carbon Monoxide detected, unknown location" value="2"/>
+      <Item label="Carbon Dioxide; Carbon Dioxide detected, unknown location" value="3"/>
+      <Item label="Water Alarm; Water Leak detected, unknown location" value="4"/>
+      <Item label="Heat Alarm; Overheat detected, unknown location" value="5"/>
+      <Item label="Smoke Alarm; Smoke detected, unknown location" value="6"/>
+      <Item label="Sensor binary" value="9"/>
+    </Value>
+    <Value genre="config" index="110" instance="1" label="Temperature sensor offset settings" max="32535" min="0" size="2" type="short" value="32535">
+      <Help>Set value is added or subtracted to actual measured value by sensor. 
+			Available configuration parameters : default value 32536. 32536  offset is 0.0C. 
+			From 1 to 100 = value from 0.1C to 10.0C is added to actual measured temperature.
+			From 1001 to 1100 = value from -0.1 C to -10.0 C is subtracted to actual measured temperature.</Help>
+    </Value>
+    <Value genre="config" index="120" instance="1" label="Digital temperature sensor reporting" max="127" min="0" type="byte" value="5">
+      <Help>If digital temperature sensor is connected, module reports measured temperature on temperature change defined by this parameter. 
+			Available configuration parameters : 0 = reporting disabled. 1 to 127 = 0,1C to 12,7C, step is 0,1C. Default value is 5 = 0,5C</Help>
+    </Value>
+  </CommandClass>
+  <!-- Association Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="5">
+      <Group index="1" label="Lifeline" max_associations="1"/>
+      <Group index="2" label="Basic on/off of the output state" max_associations="16"/>
+      <Group index="3" label="Basic on/off of the input I2 state" max_associations="16"/>
+      <Group index="4" label="Binary Sensor Report of the input I2 state" max_associations="16"/>
+      <Group index="5" label="Notification Report of the input I2 state" max_associations="16"/>
+    </Associations>
+  </CommandClass>
+  <!-- Remove COMMAND_CLASS_BASIC -->
+  <CommandClass action="remove" id="32"/>
+  <CommandClass id="96">
+    <Compatibility>
+      <MapRootToEndpoint>true</MapRootToEndpoint>
+    </Compatibility>
+  </CommandClass>
+</Product>

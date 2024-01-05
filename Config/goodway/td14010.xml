@@ -1,0 +1,133 @@
+<Product Revision="3" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="Name">RGBW Color LED Dimmer</MetaDataItem>
+    <MetaDataItem name="Description">Good Way RGBW module is used to control RGB/RGBW strips and LED strips or bulbs to create countless colour options and has 6 special scene effects. Its extremely small size allows for easy installation behind wall sockets and switches. Controlled devices may be powered by 12 or 24 VDC.</MetaDataItem>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0068:000b:0003</MetaDataItem>
+    <MetaDataItem name="ProductPage">http://www.goodway.com.tw/product3.asp?listid=9&amp;id=26&amp;subid=102&amp;id=1168&amp;typeid=</MetaDataItem>
+    <MetaDataItem name="ProductSupport"></MetaDataItem>
+    <MetaDataItem name="ProductPic">images/goodway/td14010.png</MetaDataItem>
+    <MetaDataItem name="ProductManual"></MetaDataItem>
+    <MetaDataItem name="InclusionDescription">Connect the module to the power supply. Enable inclusion mode on your Z-Wave controller. Press and release the Include/Exclude button 3 times within 2 seconds.</MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">Connect the module to the power supply. Make sure the module is within direct range of your Z-Wave controller or use a hand-held Z-Wave remote to perform exclusion. Press and release the Include/Exclude button 3 times within 2 seconds. NOTE: The module will be excluded from your network, but any custom configuration parameters will not be erased.</MetaDataItem>
+    <MetaDataItem name="ResetDescription">Connect the module to the power supply.  Press and hold the Include/Excude button for at least 10 seconds. NOTE: By resetting the module, all custom parameters previously set on the module will return to their default values and the owner ID will be deleted. Use this reset procedure only when the main controller is missing or otherwise inoperable.</MetaDataItem>
+    <MetaDataItem id="000b" name="ZWProductPage" type="0003">https://products.z-wavealliance.org/products/2466/features</MetaDataItem>
+    <MetaDataItem id="000b" name="FrequencyName" type="0003">U.S. / Canada / Mexico</MetaDataItem>
+    <MetaDataItem id="000b" name="Identifier" type="0003">Good Way RGBW Dimmer</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Daniel Brunt - daniel@brunt.ca" date="31 July 2020" revision="1">Initial release</Entry>
+      <Entry author="Daniel Brunt - daniel@brunt.ca" date="2 Oct 2020" revision="2">Added indexes 8 and 9 to CC 112</Entry>
+      <Entry author="Daniel Brunt - daniel@brunt.ca" date="2 Oct 2020" revision="3">Removed indexes 8 and 9 to CC 112</Entry>
+    </ChangeLog>
+  </MetaData>
+  <!-- Configuration Command Class - All Configuration Parameters should be entered into the section below -->
+  <CommandClass id="112">
+    <Value genre="config" index="1" instance="1" label="Input IN1 configuration" max="9" min="1" size="1" type="list" value="1">
+      <Help></Help>
+      <Item label="NORMAL mode – momentary switch type" value="1"/>
+      <Item label="NORMAL mode – toggle switch type" value="2"/>
+      <Item label="NORMAL mode – toggle with memory switch type" value="3"/>
+      <Item label="BRIGHTNESS mode – momentary switch type" value="4"/>
+      <Item label="BRIGHTNESS mode – toggle switch type" value="5"/>
+      <Item label="BRIGHTNESS mode – toggle with memory switch type" value="6"/>
+      <Item label="SCENE mode – momentary switch type" value="7"/>
+      <Item label="SCENE mode – toggle switch type" value="8"/>
+      <Item label="SCENE mode – toggle with memory switch type" value="9"/>
+    </Value>
+    <Value genre="config" index="2" instance="1" label="Input IN2 configuration" max="9" min="1" size="1" type="list" value="1">
+      <Help></Help>
+      <Item label="NORMAL mode – momentary switch type" value="1"/>
+      <Item label="NORMAL mode – toggle switch type" value="2"/>
+      <Item label="NORMAL mode – toggle with memory switch type" value="3"/>
+      <Item label="BRIGHTNESS mode – momentary switch type" value="4"/>
+      <Item label="BRIGHTNESS mode – toggle switch type" value="5"/>
+      <Item label="BRIGHTNESS mode – toggle with memory switch type" value="6"/>
+      <Item label="SCENE mode – momentary switch type" value="7"/>
+      <Item label="SCENE mode – toggle switch type" value="8"/>
+      <Item label="SCENE mode – toggle with memory switch type" value="9"/>
+    </Value>
+    <Value genre="config" index="3" instance="1" label="Input IN3 configuration" max="9" min="1" size="1" type="list" value="1">
+      <Help></Help>
+      <Item label="NORMAL mode – momentary switch type" value="1"/>
+      <Item label="NORMAL mode – toggle switch type" value="2"/>
+      <Item label="NORMAL mode – toggle with memory switch type" value="3"/>
+      <Item label="BRIGHTNESS mode – momentary switch type" value="4"/>
+      <Item label="BRIGHTNESS mode – toggle switch type" value="5"/>
+      <Item label="BRIGHTNESS mode – toggle with memory switch type" value="6"/>
+      <Item label="SCENE mode – momentary switch type" value="7"/>
+      <Item label="SCENE mode – toggle switch type" value="8"/>
+      <Item label="SCENE mode – toggle with memory switch type" value="9"/>
+    </Value>
+    <Value genre="config" index="4" instance="1" label="Input IN4 configuration" max="9" min="1" size="1" type="list" value="1">
+      <Help></Help>
+      <Item label="NORMAL mode – momentary switch type" value="1"/>
+      <Item label="NORMAL mode – toggle switch type" value="2"/>
+      <Item label="NORMAL mode – toggle with memory switch type" value="3"/>
+      <Item label="BRIGHTNESS mode – momentary switch type" value="4"/>
+      <Item label="BRIGHTNESS mode – toggle switch type" value="5"/>
+      <Item label="BRIGHTNESS mode – toggle with memory switch type" value="6"/>
+      <Item label="SCENE mode – momentary switch type" value="7"/>
+      <Item label="SCENE mode – toggle switch type" value="8"/>
+      <Item label="SCENE mode – toggle with memory switch type" value="9"/>
+    </Value>
+    <Value genre="config" index="5" instance="1" label="Auto Scene Mode Set" max="7" min="0" size="1" type="list" value="1">
+      <Help></Help>
+      <Item label="Off" value="0"/>
+      <Item label="Ocean" value="1"/>
+      <Item label="Lightning" value="2"/>
+      <Item label="Rainbow" value="3"/>
+      <Item label="Snow" value="4"/>
+      <Item label="Sun" value="5"/>
+      <Item label="Dancing" value="6"/>
+    </Value>
+    <Value genre="config" index="6" instance="1" label="Auto Scene Mode – Duration between Colour change" max="1127" min="0" type="short" value="3">
+      <Help>
+        This parameter is used to adjust time between 2 Colours in the Scene.
+        1-127 – delay duration is 1 sec to 127 sec.
+        1001-1127 – delay duration is from 1 min to 127 min. This parameter has no effect on lighting and Dancing scenes.</Help>
+    </Value>
+    <Value genre="config" index="7" instance="1" label="Memorize device status at power cut" max="1" min="0" size="1" type="list" value="0">
+      <Help>Device will be set to status memorized before power cut.</Help>
+      <Item label="Disabled" value="0"/>
+      <Item label="Enabled" value="1"/>
+    </Value>
+    <Value genre="config" index="10" instance="1" label="MAX dimming value" max="99" min="2" size="1" type="byte" units="%" value="99">
+      <Help></Help>
+    </Value>
+    <Value genre="config" index="11" instance="1" label="MIN dimming value" max="98" min="1" size="1" type="byte" units="%" value="1">
+      <Help>NOTE: The minimum level may not be higher than the MAX dimming value.</Help>
+    </Value>
+    <Value genre="config" index="12" instance="1" label="Dimming time (soft on/off)" max="25" min="5" size="1" type="byte" units="0.1 seconds" value="10">
+      <Help>
+        Default value 10 = 1 s.
+        5–25 = from 0.5 to 2.5 seconds</Help>
+    </Value>
+    <Value genre="config" index="13" instance="1" label="Dimming time when key pressed" max="127" min="1" size="1" type="byte" units="seconds" value="5">
+      <Help>
+        1–127 = from 1 to 127 seconds.
+        NOTE: Dimming time depends also on Min and Max dimming value.
+      </Help>
+    </Value>
+    <Value genre="config" index="14" instance="1" label="Dimmer mode" max="3" min="0" size="1" type="list" value="0">
+      <Help>
+        NOTE: If the parameter no. 14 is enabled, parameter no. 1,2,3,4 has no effect.
+        NOTE: After parameter change, first exclude device (without setting parameters to default value) and then re include the device.
+      </Help>
+      <Item label="4 dimmers mode disabled" value="0"/>
+      <Item label="4 dimmers mode enabled – momentary switch type" value="1"/>
+      <Item label="4 dimmers mode enabled – toggle switch type" value="2"/>
+      <Item label="4 dimmers mode enabled – toggle with memory switch type" value="3"/>
+    </Value>
+  </CommandClass>
+  <!-- Association Group Information -->
+  <CommandClass id="133">
+    <Associations num_groups="1">
+      <Group index="1" label="Lifeline" max_associations="1"/>
+    </Associations>
+  </CommandClass>
+  <!-- Map endpoints to instances -->
+  <CommandClass id="96">
+    <Compatibility>
+      <MapRootToEndpoint>true</MapRootToEndpoint>
+    </Compatibility>
+  </CommandClass>
+</Product>

@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Product xmlns='https://github.com/OpenZWave/open-zwave' Revision="3">
+  <!--MCOHome Touch Panel Dimmer Switch MH-DT411 
+	type=d411, id=5102	Unknown: id=015f	0x5102	0xd411
+  -->
+  <MetaData>
+    <MetaDataItem name="Name">Dimmer Switch MH-DT411</MetaDataItem>
+    <MetaDataItem name="Description">Dimmer switch is a wall panel built-in with Z-Wave Plus module. With it's stylish design and stable performance, the panel can be used to control the light level. It supports basic command class, multi channel command class and multi channel association command class, also works as a repeater in a Z-Wave network. This product can be included and operated in any Z-Wave network with other Z-Wave certified devices from any other manufacturers.</MetaDataItem>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/015f:5102:d411</MetaDataItem>
+    <MetaDataItem name="ProductPage">http://www.mcohome.com/ProductDetail/3894312.html</MetaDataItem>
+    <MetaDataItem name="ProductSupport">http://www.mcohome.com/ProductDetail/3894312.html</MetaDataItem>
+	<MetaDataItem name="ProductPic">images/mcohome/015f_5102_d411.png</MetaDataItem>
+    <MetaDataItem name="InclusionDescription">Set controller into inclusion mode and press 3 clicks on '+' button to include. If succeeded, green led flashes 4 times.</MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">Set controller into exclusion mode and press 3 clicks on '-' button to exclude. If succeeded, green led flashes 4 times.</MetaDataItem>
+    <MetaDataItem name="ResetDescription">Press 10 times of any button or exclude the device from Z-Wave network, then cut off the main power. The factory setting will be restored.</MetaDataItem>
+	<MetaDataItem id="015f" name="FrequencyName" type="015f">CEPT (Europe)</MetaDataItem>
+    <ChangeLog>
+      <Entry author="rrozema - richard@uitdelft.nl" date="16 November 2020" revision="1">Information retrieved from manual pages delivered with the product. No revision or date on the manual.</Entry>
+      <Entry author="rrozema - richard@uitdelft.nl" date="18 November 2020" revision="2">Fixed option 17. Enabled and Disabled where interchanged.</Entry>
+      <Entry author="rrozema - richard@uitdelft.nl" date="18 November 2020" revision="3">Fixed association group indexes. Was 1, 2, 5, 8. Now 1, 2, 3, 4.</Entry>
+    </ChangeLog>
+  </MetaData>
+  
+  <!-- Configuration -->
+  <CommandClass id="112">    
+    <Value type="list" genre="config" instance="1" index="1" label="Saving state before power failure" size="1" value="1">
+      <Help>Switch state saved or not when power down</Help>
+      <Item label="Disabled" value="0"/>
+      <Item label="Enabled" value="1"/>
+    </Value>
+    <Value genre="config" index="2" instance="1" label="Dimming mode" type="list" size="1" value="1">
+      <Help>0x00 leading edge, 0x01 trailing edge, 0x02 On/off only. Default 0x01.</Help>
+      <Item label="Leading edge" value="0"/>
+      <Item label="Trailing edge" value="1"/>
+      <Item label="On/off only" value="2"/>
+    </Value>
+    <Value genre="config" index="3" instance="1" label="Auto detection of dimming mode when powered on" type="list" size="1" value="1">
+      <Help>0 = Auto detection disabled, 1 = Auto detection enabled.</Help>
+      <Item label="Disabled" value="0"/>
+      <Item label="Enabled" value="1"/>
+    </Value>
+    <Value genre="config" index="4" instance="1" label="LED Backlit brightness level" type="byte" min="0" max="10" value="10">
+      <Help>0 = LED disabled, 1 - 10 = min level - max level.</Help>
+    </Value>
+    <Value genre="config" index="5" instance="1" label="Minimum brightness level" type="byte" min="1" max="98" units="%" value="1">
+      <Help>1 - 98 percentage minimum brightness level. Must always be less than Maximum (option 6).</Help>
+    </Value>
+    <Value genre="config" index="6" instance="1" label="Maximum brightness level" type="byte" min="2" max="99" units="%" value="99">
+      <Help>1 - 98 percentage minimum brightness level. Must always be higher than Minimum (option 5).</Help>
+    </Value>
+    <Value genre="config" index="7" instance="1" label="Single dimming step time (manual)" type="short" min="0" max="255" units="10 ms" value="3">
+      <Help>Max 2.55s, in 10ms steps. Default = 3 for 30ms.</Help>
+    </Value>
+    <Value genre="config" index="8" instance="1" label="Single dimming step size (manual)" type="byte" min="0" max="99" units="%" value="1">
+      <Help>1 - 99% per step. Recommended not to change. Default value = 1.</Help>
+    </Value>
+    <Value genre="config" index="9" instance="1" label="Single dimming step time (auto)" type="short" min="0" max="255" units="10 ms" value="3">
+      <Help>Max 2.55s, in 10ms steps. Default = 3 for 30ms.</Help>
+    </Value>
+    <Value genre="config" index="10" instance="1" label="Single dimming step size (auto)" type="byte" min="0" max="99" units="%" value="1">
+      <Help>1 - 99% per step. Recommended not to change. Default value = 1.</Help>
+    </Value>
+    <Value genre="config" index="11" instance="1" label="Dimming percentage set when single touching button '+' or '-'" type="byte" min="0" max="99" units="%" value="0">
+      <Help>0 = percentage from the last button-holding touch. 1 - 99 = percentage to set. Default value = 0.</Help>
+    </Value>
+    <Value genre="config" index="12" instance="1" label="Reporting interval for dimming level" type="byte" min="0" max="255" units="10 ms" value="10">
+      <Help>0 = No report during dimming, 1 - 255 = send report in 1 - 255 * 10ms intervals. Default value = 10ms.</Help>
+    </Value>
+    <Value genre="config" index="13" instance="1" label="External switch type" type="list" size="1" value="0">
+      <Help>0 = Buttons, 1 = Toggle. Default value = Buttons.</Help>
+      <Item label="Buttons (momentary buttons)" value="0"/>
+      <Item label="Toggle (2-state switches)" value="1"/>
+    </Value>
+	<Value genre="config" index="14" instance="1" label="External switch input" type="list" size="1" value="0">
+      <Help>Default value = function disabled.</Help>
+      <Item label="function disabled" value="0"/>
+      <Item label="wire 1 external switch key to S1 only" value="1"/>
+      <Item label="wire 1 external switch key to S2 only" value="2"/>
+      <Item label="2 external switch keys wired to S1 and S2, each key can control both dimming directions" value="3"/>
+      <Item label="2 external switch keys wired to S1 and S2, each key controls one dimming direction" value="4"/>
+    </Value>
+	<Value genre="config" index="15" instance="1" label="Energy meter reporting" type="list" size="1" value="0">
+      <Help>Defines which metering values to send to the gateway. Default value = Disabled.</Help>
+      <Item label="Disabled" value="0"/>
+      <Item label="Watt" value="1"/>
+      <Item label="KWH" value="2"/>
+      <Item label="Watt + KWH" value="3"/>
+      <Item label="Ampere" value="4"/>
+      <Item label="Watt + Ampere" value="5"/>
+      <Item label="KWH + Ampere" value="6"/>
+      <Item label="Watt + KWH + Ampere" value="7"/>
+      <Item label="Voltage" value="8"/>
+      <Item label="Watt + Voltage" value="9"/>
+      <Item label="KWH + Voltage" value="10"/>
+      <Item label="Watt + KWH + Voltage" value="11"/>
+      <Item label="Ampere + Voltage" value="12"/>
+      <Item label="Watt + Ampere + Voltage" value="13"/>
+      <Item label="KWH + Ampere + Voltage" value="14"/>
+      <Item label="Watt + KWH + Ampere + Voltage" value="15"/>
+    </Value>
+    <Value genre="config" index="16" instance="1" label="Energy meter reporting interval" type="byte" min="0" max="255" units="seconds" value="10">
+      <Help>Interval to send unsollicited energy reports to the gateway. Requires option 15 (Energy meter reporting) to be set to anything other than Disabled. Default value is every 10 seconds.</Help>
+    </Value>
+    <Value genre="config" index="17" instance="1" label="Beep" type="list" size="1" value="1">
+      <Help>Enable or disable beep upon touching '+' and '-'. Default value = Enabled.</Help>
+      <Item label="Disabled" value="0"/>
+      <Item label="Enabled" value="1"/>
+    </Value>
+    <Value genre="config" index="32" instance="1" label="Ampere alarm threshold" type="short" units="0.01 Ampere" min="0" max="5000" value="0">
+      <Help>0 = alarm disabled, 1 - 5000 * 0.01 Ampere alarm enabled (notification to gateway). Default = 0 - alarm disabled.</Help>
+    </Value>
+    <Value genre="config" index="33" instance="1" label="Voltage alarm threshold" type="short" units="0.1 Volt" min="0" max="10000" value="0">
+      <Help>0 = alarm disabled, 1 - 10000 * 0.1 Volt alarm enabled (notification to gateway). Default = 0 - alarm disabled.</Help>
+    </Value>
+    <Value genre="config" index="255" instance="1" label="Factory reset" type="list" size="1" value="0">
+      <Help>Restore factory settings (write only). Default value = Disabled.</Help>
+      <Item label="Disabled" value="0"/>
+      <Item label="Factory reset" value="85"/>
+    </Value>
+  </CommandClass>
+        
+  <!-- Association Groups -->  
+  <CommandClass id="133">
+    <Associations num_groups="4">
+      <Group index="1" max_associations="1" label="Lifeline"/>
+      <Group index="2" max_associations="5" label="Send Switch Multilevel to associated devices"/>
+      <Group index="3" max_associations="5" label="Send Basic Set to associated devices on key '+'"/>
+      <Group index="4" max_associations="5" label="Send Basic Set to associated devices on key '-'"/>
+    </Associations>
+  </CommandClass>
+</Product>

@@ -1,0 +1,99 @@
+<!-- Aeon Labs Recessed Door Sensor --><Product Revision="6" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0086:0059:0102</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/aeotec/zw089.png</MetaDataItem>
+    <MetaDataItem id="0059" name="ZWProductPage" type="0102">https://products.z-wavealliance.org/products/1179/</MetaDataItem>
+    <MetaDataItem name="Name">Recessed Door Sensor Gen5 </MetaDataItem>
+    <MetaDataItem name="WakeupDescription">Press and hold the Z-Wave button for 5 seconds will trigger sending the Wake up notification command and then keep waking up for 10 seconds after release the Z-Wave button.</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://Products.Z-WaveAlliance.org/ProductManual/File?folder=&amp;filename=Manuals/1184/Recessed Door Sensor Gen5 - Manual MCert.pdf</MetaDataItem>
+    <MetaDataItem name="InclusionDescription">Turn the primary controller of Z-Wave network into inclusion mode, short press the product’s Z-Wave button that you can find in the back of the product.</MetaDataItem>
+    <MetaDataItem id="0059" name="FrequencyName" type="0102">U.S. / Canada / Mexico</MetaDataItem>
+    <MetaDataItem id="0059" name="Identifier" type="0102">ZW089-A</MetaDataItem>
+    <MetaDataItem name="ResetDescription">Press and hold the Z-Wave button that you can find in back of the product for 20 seconds and then release. This procedure should only be used when the primary controller is inoperable.</MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">Turn the primary controller of Z-Wave network into exclusion mode, short press the product’s Z-Wave button that you can find in back of the product.</MetaDataItem>
+    <MetaDataItem name="Description">The Aeotec by Aeon Labs Recessed Door Sensor Gen5 is a door sensor that can detect the state of the door's open/close. It will report the door state to your controller/ gateway/associated nodes in real time when the state of your door has a change. 
+It’s a security Z-Wave device that supports security encryption. Also it supports the “Over the Air Firmware Updating” that allows you wirelessly update its firmware if needs. 
+It can be included and operated in any Z-Wave network with other Z-Wave certified devices from manufacturers and/or other applications.
+</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="08 May 2019" revision="4">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1179/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="08 May 2019" revision="5">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1183/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="08 May 2019" revision="6">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1184/xml</Entry>
+    </ChangeLog>
+    <MetaDataItem id="0059" name="ZWProductPage" type="0202">https://products.z-wavealliance.org/products/1183/</MetaDataItem>
+    <MetaDataItem id="0059" name="FrequencyName" type="0202">Australia / New Zealand</MetaDataItem>
+    <MetaDataItem id="0059" name="Identifier" type="0202">ZW089-B</MetaDataItem>
+    <MetaDataItem id="0059" name="ZWProductPage" type="0002">https://products.z-wavealliance.org/products/1184/</MetaDataItem>
+    <MetaDataItem id="0059" name="FrequencyName" type="0002">CEPT (Europe)</MetaDataItem>
+    <MetaDataItem id="0059" name="Identifier" type="0002">ZW089-C</MetaDataItem>
+  </MetaData>
+  <!-- Configuration -->
+    <!-- Alarm CC isn't supported on this device -->
+  <CommandClass action="remove" id="113"/>
+  <CommandClass id="112">
+    <Value genre="config" index="1" instance="1" label="Sensor Binary Report Toggle" max="1" min="0" size="1" type="list" value="0">
+      <Help>Which value of the Sensor Binary Report will be sent when 
+            the magnet switch to open/close.</Help>
+      <Item label="Normal" value="0"/>
+      <Item label="Inverse" value="1"/>
+    </Value>
+    <Value genre="config" index="3" instance="1" label="Basic Set Toggle" max="1" min="0" size="1" type="list" value="0">
+      <Help>Which value of the Basic Set will be sent when the magnet 
+            switch to open/close.
+            </Help>
+      <Item label="Normal" value="0"/>
+      <Item label="Inverse" value="1"/>
+    </Value>
+    <Value genre="config" index="101" instance="1" label="Low Battery Check Enable" max="1" min="0" size="1" type="list" value="0">
+      <Help>Enable/disable the function of low battery checking, when 
+            the current voltage is less than the warning voltage, it will 
+            send the Battery Low Warning Report. 
+            </Help>
+      <Item label="Disabled" value="0"/>
+      <Item label="Enabled" value="1"/>
+    </Value>
+    <Value genre="config" index="111" instance="1" label="Low Battery Check Interval" max="4294967295" min="0" type="int" value="86640">
+      <Help>This parameter is available when the low battery checking
+                  function is activated or the device was waked up by other
+                  actions (i.e. the z-wave button trigger, magnet switch
+                  trigger and the Wake Up Interval Set timeout trigger).
+                  The Recessed Door Sensor will check the battery power
+                  when it was wake up as other ways. For example: the
+                  z-wave button trigger, magnet switch trigger and the
+                  Wake Up Interval Set timeout trigger.
+              Default setting: 86640
+            </Help>
+    </Value>
+    <Value genre="config" index="121" instance="1" label="Report Type" size="4" type="list" value="256">
+      <Help>Configure which sensor report will be sent when the sensor is Opened/Closed</Help>
+      <Item label="Disabled" value="0"/>
+      <Item label="Basic Set" value="256"/>
+      <Item label="Sensor Binary Report" value="16"/>
+      <Item label="Basic Set and Sensor Binary Report" value="272"/>
+    </Value>
+    <Value genre="config" index="252" label="Lock/Unlock Configuration" max="1" min="0" size="1" type="list" value="0">
+      <Help>Lock/ unlock all configuration parameters</Help>
+      <Item label="Unlock" value="0"/>
+      <Item label="Lock" value="1"/>
+    </Value>
+    <Value genre="config" index="254" label="Device Tag" max="65535" min="0" type="short" units="" value="0">
+      <Help>Device Tag</Help>
+    </Value>
+    <Value genre="config" index="255" label="Reset To Factory Defaults" type="button" value="0" write_only="true">
+      <Help>Reset to factory defaults.</Help>
+    </Value>
+  </CommandClass>
+  <!-- Basic set as report-->
+  <CommandClass id="32">
+    <Compatibility>
+      <SetAsReport>true</SetAsReport>
+    </Compatibility>
+  </CommandClass>
+  <!-- Association Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="2">
+      <Group index="1" label="LifeLine" max_associations="5"/>
+      <Group auto="true" index="2" label="Battery" max_associations="5"/>
+    </Associations>
+  </CommandClass>
+</Product>

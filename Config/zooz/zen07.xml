@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Product xmlns='https://github.com/OpenZWave/open-zwave' Revision="2">
+    <!-- Zooz ZEN07 Mini Plug -->
+
+    <!-- Configuration Parameters -->
+    <CommandClass id="112">
+        <Value type="list" genre="config" index="1" label="Metering Reports" size="1" min="0" max="1" value="1">
+            <Help>Choose if you want the Mini Plug to send metering reports to the controller.</Help>
+            <Item label="Disabled" value="0"/>
+            <Item label="Enabled" value="1"/>
+        </Value>
+        <Value type="short" genre="config" index="2" label="Metering Reports Interval" size="2" min="1" max="65535" value="300" units="seconds">
+            <Help>Choose how often you want the Mini Plug to send metering reports to the controller, in seconds.</Help>
+        </Value>
+        <Value type="byte" genre="config" index="6" label="Power Reporting Percentage Threshold" units="%" size="1" min="1" max="100" value="5" >
+            <Help>Percentage change of electricity, voltage, power consumption, or energy before report is sent.
+                Defaults to 5%.</Help>
+        </Value>
+        <Value type="byte" genre="config" index="3" label="Overload Protection" size="1" min="1" max="16" value="13" units="Amperes">
+            <Help>Use this parameter to adjust the max amount of electricity you want your Mini Plug to handle, by Amperes.
+                Defaults to 13A.</Help>
+        </Value>
+        <Value type="byte" genre="config" index="4" label="LED Notifications - Heavy Load"  size="1" min="1" max="13" value="12" units="Amperes">
+            <Help>Use this parameter to adjust the LED Notification for Heavy Load by setting a threshold of Amperes.
+                Must be lower than Parameter #3.
+                Defaults to 12A</Help>
+        </Value>
+        <Value type="list" genre="config" index="5" label="LED Notifications" size="1" min="0" max="1" value="1">
+            <Help>Use this parameter to turn LED notifications on or off.</Help>
+            <Item label="Disabled" value="0"/>
+            <Item label="Enabled" value="1"/>
+        </Value>
+        <Value type="list" genre="config" index="7" label="On/Off Status After Power Failure" size="1" min="0" max="1" value="1">
+            <Help>Choose the recovery state for the Mini Plug if power outage occurs. Off sets the state to "OFF" once power is restored.
+                Resume sets the state to the previous state prior to the outage.
+                Defaults to Resume.</Help>
+            <Item label="Off" value="0"/>
+            <Item label="Resume" value="1"/>
+        </Value>
+        <Value type="list" genre="config" index="8" label="Auto Turn-Off Timer" size="1" min="0" max="1" value="0">
+            <Help>Use this parameter to enable or disable the auto turn-off timer function.
+                If enabled, the Mini Plug will automatically turn off after a fixed period of time, set in Parameter #9.
+                Defaults to Disabled.</Help>
+            <Item label="Disabled" value="0"/>
+            <Item label="Enabled" value="1"/>
+        </Value>
+        <Value type="short" genre="config" index="9" label="Auto Turn-Off Timer Interval" units="minutes" size="2" min="1" max="65535" value="150">
+            <Help>Use this parameter to set the time, in minutes, after which the Mini Plug should turn off if Auto Turn-Off Timer is Enabled (Parameter #8).
+                Defaults to 150 minutes.</Help>
+        </Value>
+        <Value type="list" genre="config" index="10" label="Manual Control" size="1" min="0" max="1" value="1">
+            <Help>Choose if you want the Z-Wave button to turn the Mini Plug on or off manually, or if you want to disable this function. Defaults to Enabled.</Help>
+            <Item label="Disabled" value="0"/>
+            <Item label="Enabled" value="1"/>
+        </Value>
+    </CommandClass>
+
+    <!-- Association Groups -->
+    <CommandClass id="133">
+        <Associations num_groups="3">
+            <Group index="1" max_associations="5" label="Lifeline"/>
+            <Group index="2" max_associations="5" label="Status"/>
+            <Group index="3" max_associations="5" label="Notifications"/>
+        </Associations>
+    </CommandClass>
+</Product>

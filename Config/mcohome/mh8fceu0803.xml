@@ -1,0 +1,56 @@
+<Product Revision="1" xmlns="https://github.com/OpenZWave/open-zwave">
+  <!--MCOHome Thermostat fan coil MH8-FC-EU -->
+  <MetaData>
+	<MetaDataItem name="Name">MH8-FC</MetaDataItem>
+	<MetaDataItem name="Description">Fan Coil Thermostat MH8 is a Z-Wave Plus enabled device for indoor temperature control. 
+
+It is mainly applied to a 2-pipe Fan coil system. 
+
+It can read room temperature and local time, 
+
+and automatically control fan speed based on the temperature difference. 
+
+The device is of high reliability and practicability. 
+
+This product can be included and operated 
+
+in any Z-Wave network with other Z-Wave certified devices 
+
+from any other manufacturers. </MetaDataItem>
+	<MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/015f:5102:0803</MetaDataItem>
+	<MetaDataItem name="ProductPage">http://www.mcohome.com/ProductDetail/3894174.html</MetaDataItem>
+	<MetaDataItem name="ProductSupport">http://www.mcohome.com/ProductDetail/3894174.html</MetaDataItem>
+	<MetaDataItem name="ProductPic">images/mcohome/mh8fceu0803.png</MetaDataItem>
+	<MetaDataItem name="ProductManual">http://www.mcohome.com/index.php?c=Front/DownDetail&amp;a=downloadFujian&amp;name=MH8-FC%20/%20MH8-FC4&amp;path=L2NvbWRhdGEvOTUzMDEvcHJvZHVjdGZ1amlhbi8yMDIwMDYwMzE1MDQwNjVlZDc0YjY2MjRmODkucGRm</MetaDataItem>
+	<MetaDataItem id="5102" name="Identifier" type="0803">mh8fceu</MetaDataItem>
+	<ChangeLog>
+		<Entry author="Kostas Injeyan - kostas2911@yahoo.gr" date="24 June 2020" revision="1">Initial Metadata Import</Entry>
+	</ChangeLog>
+  </MetaData>
+  <CommandClass id="67">
+  	<Compatibility>
+      <Base>0</Base>
+	    <AltTypeInterpretation>false</AltTypeInterpretation>
+    </Compatibility>
+  </CommandClass>
+  <!-- The thermostat does not properly report its operating modes -->
+  <CommandClass id="68">
+    <Instance index="1"/>
+    <Value genre="user" index="0" instance="1" label="Fan Mode" size="1" type="list" units="">
+      <Item label="On Low" value="1"/>
+      <Item label="On High" value="3"/>
+      <Item label="On Medium" value="5"/>
+    </Value>
+    <SupportedModes>
+      <Mode index="1" label="On Low"/>
+      <Mode index="3" label="On High"/>
+      <Mode index="5" label="On Medium"/>
+    </SupportedModes>
+  </CommandClass>
+  <!-- Association Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="1">
+      <Group index="1" label="Lifeline" max_associations="1"/>
+    </Associations>
+  </CommandClass>
+</Product>

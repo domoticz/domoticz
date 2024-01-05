@@ -1,0 +1,56 @@
+<Product Revision="1" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="Name">Smart 3-Way Switch/Dimmer</MetaDataItem>
+    <MetaDataItem name="Description">The WT00Z5-1 Wall Mount Accessory Dimmer Switch allows remote ON/OFF control and dimming of lights controlled by associated Z-Wave modules, creating virtual 3-way switches. The WT00Z5-1 controls no load directly, so it can be wired anywhere power is available, without the need for a traveler wire.</MetaDataItem>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/014f:3530:5754</MetaDataItem>
+    <MetaDataItem name="ProductPage">https://www.gocontrol.com/detail.php?productId=1782</MetaDataItem>
+    <MetaDataItem name="ProductSupport">https://www.gocontrol.com/support.php</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/linear/WT00Z5-1.png</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://products.z-wavealliance.org/ProductManual/File?folder=&amp;filename=MarketCertificationFiles/1888/10007350B%20.pdf</MetaDataItem>
+    <MetaDataItem name="InclusionDescription">Refer to your Controller operating instructions to add this switch under the command of the Wireless Controller.
+1. With your Controller in Discovery or Add Mode, tap the switch. The LED will blink slowly when in ADD Mode.
+2. You should see an indication on your Controller that the “device was added” to the network and the LED will stop blinking.
+3. The device will appear in the list of Switches. It should display as a switch.
+If the Controller/Gateway shows the addition failed, repeat Steps 1-3.
+NOTE: If you have trouble adding the WT00Z5-1 to a group it may be that the Home ID and Node ID were not cleared from it after testing. You must first “RESET UNIT” to remove it from the network. Although adding it to a group includes it in the network, removing it from a group does not remove it from the network. If removed from a group, it functions as a repeater (only). “RESET UNIT” removes it completely from the network.</MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">The WT00Z5-1 can be removed from the network by the Controller/Gateway. Refer to the Controller operating instructions for details.
+1. Set the Controller into Removal Mode and follow its instruction to delete the WT00Z5-1 from the Controller.
+2. Remove the switch by tapping the paddle 2 times. The LED will begin blinking slowly for 10 seconds indicating that it has been removed.
+3. You should see an indication on your Controller that the “device was removed” from the network.</MetaDataItem>
+    <MetaDataItem name="ResetDescription">In the event that your primary Controller is lost or otherwise inoperable, to reset the WT00Z5-1 and clear all network information, follow these steps:
+1. Tap the top of the switch five (5) times.
+2. Press and hold the bottom of the switch for 15 seconds. The LED will increasingly blink faster to indicate that a Reset is taking place.</MetaDataItem>
+    <MetaDataItem id="3530" name="ZWProductPage" type="5754">https://products.z-wavealliance.org/products/1888</MetaDataItem>
+    <MetaDataItem id="3530" name="FrequencyName" type="5754">U.S. / Canada / Mexico</MetaDataItem>
+    <MetaDataItem id="3530" name="Identifier" type="5754">WT00Z5-1</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Nathan Spencer - natekspencer@gmail.com" date="06 July 2020" revision="1">Initial entry with data obtained from https://products.z-wavealliance.org/products/1888</Entry>
+    </ChangeLog>
+  </MetaData>
+  <CommandClass id="112">
+    <Value type="list" index="3" genre="config" label="Night Light" units="" min="0" max="4" value="0" size="1">
+      <Help>
+        By default, the LED on the WT00Z5-1 will turn OFF when the Associated device is turned ON.
+      </Help>
+      <Item label="LED OFF when the load is on" value="0" />
+      <Item label="LED ON when the load is on" value="1" />
+      <Item label="LED is always ON" value="2" />
+      <Item label="LED is always OFF" value="3" />
+      <Item label="LED blinks during RF transmissions" value="4" />
+    </Value>
+    <Value type="list" index="4" genre="config" label="Invert Switch" units="" min="0" max="1" value="0" size="1">
+      <Help>
+        Change the top of the switch to OFF and the bottom of the switch to ON.
+      </Help>
+      <Item label="False" value="0" />
+      <Item label="True" value="1" />
+    </Value>
+  </CommandClass>
+  <CommandClass id="133">
+    <Associations num_groups="3">
+      <Group index="1" max_associations="1" label="Lifeline" />
+      <Group index="2" max_associations="5" label="BASIC On/Off" />
+      <Group index="3" max_associations="5" label="Multilevel Switch" />
+    </Associations>
+  </CommandClass>
+</Product>

@@ -1,0 +1,75 @@
+<!--
+ZWA003 NanoMote Quad
+--><Product Revision="4" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0371:0003:0102</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/aeotec/zwa003.png</MetaDataItem>
+    <MetaDataItem id="0003" name="ZWProductPage" type="0102">https://products.z-wavealliance.org/products/2817/</MetaDataItem>
+    <MetaDataItem name="Description">TheNanoMote Quad  is a wireless, portable and rechargeable scene switch. It can control a Z-Wave device, such as smart plug, smart dimmer with a Z-Wave gateway. You can also activate a scene like sleep scene, movie scene and entertainment scene with it. </MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">To remove the NanoMote Quad from the Z-Wave network:
+(1) Insert the LIR2450 battery.
+(2) Set the Z-Wave network main controller into remove mode
+(see Z-Wave controller operating manual).
+(3) Triple click the a button, if the exclusion is successful, LED
+will blink long.
+
+
+</MetaDataItem>
+    <MetaDataItem name="InclusionDescription">Included  device:
+1.   Insert the LIR2450 battery.
+2.   Set the Z-Wave network main controller into learning mode (see Z-Wave network controller operating manual).
+3.   Pressing and holding a button for 3 seconds.
+4.   If the inclusion is successful, the LED will blink in green less than for 5 seconds and then keep on for 15 seconds.
+
+</MetaDataItem>
+    <MetaDataItem name="Name">NanoMote Quad</MetaDataItem>
+    <MetaDataItem name="ResetDescription">Pressing and holding a button for 20 seconds. Release the button after 20 seconds, LED will keep in yellow for 3 seconds. Scene Controller will be reset to factory defaults if you short press the button within this 3 seconds.
+Please use this procedure only when the network primary controller is missing or otherwise inoperable.</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://Products.Z-WaveAlliance.org/ProductManual/File?folder=&amp;filename=Manuals/2820/NanoMote Quad USER MANUAL .pdf</MetaDataItem>
+    <MetaDataItem name="WakeupDescription">Pressing and holding a button for 3 seconds. Led will turn to green,
+which means Scene Controller has been woken up.</MetaDataItem>
+    <MetaDataItem id="0003" name="FrequencyName" type="0102">U.S. / Canada / Mexico</MetaDataItem>
+    <MetaDataItem id="0003" name="Identifier" type="0102">ZWA003-A</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="02 Jun 2019" revision="3">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/2817/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="02 Jun 2019" revision="4">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/2820/xml</Entry>
+    </ChangeLog>
+    <MetaDataItem id="0003" name="ZWProductPage" type="0002">https://products.z-wavealliance.org/products/2820/</MetaDataItem>
+    <MetaDataItem id="0003" name="Identifier" type="0002">ZWA003-C</MetaDataItem>
+    <MetaDataItem id="0003" name="FrequencyName" type="0002">CEPT (Europe)</MetaDataItem>
+  </MetaData>
+  <!-- Configuration Parameters -->
+  <CommandClass id="112">
+    <Value genre="config" index="32" label="Low battery level" max="50" min="10" type="byte" units="%" value="20">
+      <Help>
+				Set the low battery value.
+				Range: 10% - 50%.
+			</Help>
+    </Value>
+    <Value genre="config" index="42" label="Duration of the command switch multilevel" max="255" min="0" type="byte" units="" value="255">
+      <Help>
+				Setting the duration value of the command switch multilevel.
+				Available settings: 0-255.
+			</Help>
+    </Value>
+    <Value genre="config" index="43" instance="1" label="Battery low buzzer alarm" max="1" min="0" size="1" type="list" value="1">
+      <Help>Enable/disable the buzzer alarm when battery is running low</Help>
+      <Item label="Disable" value="0"/>
+      <Item label="Enable" value="1"/>
+    </Value>
+  </CommandClass>
+  <!-- Association Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="9">
+      <Group index="1" label="Lifeline" max_associations="1"/>
+      <Group index="2" label="On/Off control via Button 1" max_associations="5"/>
+      <Group index="3" label="Dimmer control via Button 1" max_associations="5"/>
+      <Group index="4" label="On/Off control via Button 2" max_associations="5"/>
+      <Group index="5" label="Dimmer control via Button 2" max_associations="5"/>
+      <Group index="6" label="On/Off control via Button 3" max_associations="5"/>
+      <Group index="7" label="Dimmer control via Button 3" max_associations="5"/>
+      <Group index="8" label="On/Off control via Button 4" max_associations="5"/>
+      <Group index="9" label="Dimmer control via Button 4" max_associations="5"/>
+    </Associations>
+  </CommandClass>
+</Product>

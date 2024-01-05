@@ -1,0 +1,32 @@
+<Product Revision="3" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0166:0100:0100</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/swiid/swiidinter.png</MetaDataItem>
+    <MetaDataItem id="0100" name="ZWProductPage" type="0100">https://products.z-wavealliance.org/products/1082/</MetaDataItem>
+    <MetaDataItem name="Name">CBCC SwiidInter - Z-Wave Cord Switch</MetaDataItem>
+    <MetaDataItem id="0100" name="Identifier" type="0100">SW-ZCS-1</MetaDataItem>
+    <MetaDataItem id="0100" name="FrequencyName" type="0100">CEPT (Europe)</MetaDataItem>
+    <MetaDataItem name="Description">Z-Wave cord switch</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 May 2019" revision="3">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1082/xml</Entry>
+    </ChangeLog>
+  </MetaData>
+  <!-- Swiidinter (Z-Wave Cord Switch) -->
+    <!-- Configuration -->
+  <CommandClass id="112">
+    <Value genre="config" index="1" instance="1" label="Switch All" max="255" min="0" size="1" type="list" value="255">
+      <Help>Enable/Disable ALL ON/OFF</Help>
+      <Item label="Disabled" value="0"/>
+      <Item label="Switch off only" value="1"/>
+      <Item label="Switch on only" value="2"/>
+      <Item label="Fully enabled (Default)" value="255"/>
+    </Value>
+  </CommandClass>
+  <!-- Association Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="2">
+      <Group index="1" label="Long press" max_associations="5"/>
+      <Group auto="true" index="2" label="Short press" max_associations="5"/>
+    </Associations>
+  </CommandClass>
+</Product>

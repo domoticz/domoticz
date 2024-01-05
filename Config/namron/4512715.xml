@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Product xmlns='https://github.com/OpenZWave/open-zwave' Revision="1">
+  <MetaData>
+    <MetaDataItem name="Name">Namron Z-Wave Switch 400W</MetaDataItem>
+    <MetaDataItem name="Description">
+      The in-wall switch is a Z-wave device that is used to switch ON/OFF the connected light and can be controlled by other Z-Wave devices.
+      Supports S2 Unauthenticated.
+      Supports OTA.
+    </MetaDataItem>
+    <MetaDataItem name="ProductPic">images/namron/4512715.png</MetaDataItem>
+    <MetaDataItem name="InclusionDescription">Triple click on the reset button or repower the device</MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">Triple click on the reset button</MetaDataItem>
+    <MetaDataItem name="ResetDescription">Press and hold reset button for 10 seconds</MetaDataItem>
+    <MetaDataItem id="d006" name="Identifier" type="0200">4512715</MetaDataItem>
+     <ChangeLog>
+      <Entry author="Nikhil André Luthra - nikhil.a.luthra@gmail.com" date="01 Nov 2020" revision="1">Handcrafted based on namron/1402756.xml and Vendors product manual</Entry>
+    </ChangeLog>
+  </MetaData>
+
+  <!-- Configuration -->
+  <CommandClass id="112"> 	
+    <Value type="list" genre="config" instance="1" index="2" label="Saving load state before power failure" size="1" value="2">
+        <Help>
+          Saving state before power failure.
+        </Help>
+      <Item label="Shutoff load" value="0"/>
+      <Item label="Turn on load" value="1"/>
+      <Item label="Save load state before power failure" value="2"/>
+    </Value>
+    <Value type="list" genre="config" instance="1" index="3" label="Send Basic report" size="1" value="1">
+        <Help> 
+          Enable/disable to send the basic report to the Lifeline when the load state changed（When value set as 1, repower on the dimmer, it will send Basic report automatically）
+        </Help>
+      <Item label="Disable to send Basic report" value="0"/>
+      <Item label="Enable to send Basic report" value="1"/>
+    </Value>
+    <Value type="list" genre="config" instance="1" index="7" label="Add/remove through external switch" size="1" value="1">
+        <Help>
+          Added to and removed from a network through external
+          switch (when enables this function, triple press the external
+          switch within 1.5 seconds to be added to or removed from a
+          network)
+        </Help>
+        <Item label="Disable" value="0"/>
+        <Item label="Enable" value="1"/>
+    </Value>
+  </CommandClass>
+  <!-- Association Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="1">
+      <Group index="1" max_associations="5" label="Lifeline"/>
+    </Associations>
+  </CommandClass>
+</Product>

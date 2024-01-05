@@ -1,0 +1,96 @@
+<Product Revision="3" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0208:0004:0100</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/hank/hkzw-rgb01.png</MetaDataItem>
+    <MetaDataItem id="0004" name="ZWProductPage" type="0100">https://products.z-wavealliance.org/products/1897/</MetaDataItem>
+    <MetaDataItem name="ResetDescription">There are two ways to reset the RGB BULB. One is that removing
+RGB BULB from the Z-Wave network, the other is that using the
+configuration command class.</MetaDataItem>
+    <MetaDataItem name="Description">RGB Bulb is a smart bulb enables Z-Wave remote command and control (on/off/dim). It has over 16,000,000 colors, you can choose its color according to your favour.</MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">To remove the RGB BULB from the Z-Wave network:
+(1) Screw in the RGB BULB.
+(2) Set the Z-Wave network main controller into excluding mode
+(see Z-Wave controller operating manual).
+(3) Toggle the wall switch off and on 3 times quickly(within 3
+and the final ending position of the wall switch must be on),
+if the exclusion is successful, the RGB BULB will blink fast in
+orange for less than 5 seconds and then keep on for 3 seconds.
+RGB BULB will keep on warm white after the exclusion procedure
+is finished.</MetaDataItem>
+    <MetaDataItem name="Name">RGB Bulb</MetaDataItem>
+    <MetaDataItem name="InclusionDescription">To include RGB BULB into a Z-Wave network as a non-security device:
+(1) Make sure the power supply is disconnected and the RGB BULB is
+located within a direct Z-Wave network's main controller
+communication range.
+(2) Set the Z-Wave network main controller into learning mode
+(see Z-Wave network controller operating manual).
+(3) Insert the RGB BULB into a lamp-socket and then power on.
+(4) Auto-inclusion will be activated. If the inclusion is successful, the
+RGB BULB will blink fast in blue for less than 5 seconds and then
+keep on for 3 seconds. RGB BULB will keep on in the color before it
+is included into the Z-Wave network after the inclusion procedure
+is finished.
+
+To include RGB BULB into a Z-Wave network as a security device:
+(1) Screw in the RGB BULB.
+(2) Set the Z-Wave network main controller into learning mode
+(see Z-Wave network controller operating manual).
+(3) Toggle the wall switch off and on 3 times quickly (within 3 seconds
+and the final ending position of the wall switch must be on).
+(4) If the inclusion is successful, the RGB BULB will blink fast in green
+for less than 5 seconds and then keep on 3 seconds. RGB BULB will
+keep on in the color before it is included into the Z-Wave network
+after the inclusion procedure is finished.</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://Products.Z-WaveAlliance.org/ProductManual/File?folder=&amp;filename=Manuals/1976/HKZW-RGB01 Manual.pdf</MetaDataItem>
+    <MetaDataItem id="0004" name="Identifier" type="0100">HKZW-RGB01</MetaDataItem>
+    <MetaDataItem id="0004" name="FrequencyName" type="0100">CEPT (Europe)</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="24 May 2019" revision="2">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1897/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="24 May 2019" revision="3">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1976/xml</Entry>
+    </ChangeLog>
+    <MetaDataItem id="0004" name="ZWProductPage" type="0101">https://products.z-wavealliance.org/products/1976/</MetaDataItem>
+    <MetaDataItem id="0004" name="Identifier" type="0101">HKZW-RGB01</MetaDataItem>
+    <MetaDataItem id="0004" name="FrequencyName" type="0101">U.S. / Canada / Mexico</MetaDataItem>
+  </MetaData>
+  <!-- Configuration Parameters -->
+  <CommandClass id="112">
+    <Value genre="config" index="21" instance="1" label="Status after power failure" max="2" min="0" size="1" type="list" units="" value="0">
+      <Help>Define how the RGB BULB will react after the power supply is back on.</Help>
+      <Item label="RGB BULB memorizes its state after a power failure" value="0"/>
+      <Item label="Device will be on after power supply is reconnected" value="1"/>
+      <Item label="Device will be off after power supply is reconnected" value="2"/>
+    </Value>
+    <Value genre="config" index="24" instance="1" label="Notification when Load status change" max="2" min="0" size="1" type="list" units="" value="1">
+      <Help>RGB BULB can send notifications to associated device </Help>
+      <Item label="Notifications Disabled" value="0"/>
+      <Item label="Send BASIC REPORT" value="1"/>
+      <Item label="Send BASIC REPORT only without status change" value="2"/>
+    </Value>
+    <Value genre="config" index="51" instance="1" label="Enable/disable the function of using wall switch" max="1" min="0" size="1" type="list" units="" value="0">
+      <Help>Enable/disable the function of using wall switch to turn on/off RGB BULB</Help>
+      <Item label="Disable" value="0"/>
+      <Item label="Enable" value="1"/>
+    </Value>
+    <Value genre="config" index="61" instance="1" label="Advance mode" max="318816256" min="3072" size="4" type="list" units="" value="3072">
+      <Help>RGB BULB can blink or cyclic/random change color automatically at set intervals.</Help>
+      <Item label="Stop changing" value="3072"/>
+      <Item label="Color gradual change randomly" value="16826368"/>
+      <Item label="Color change randomly with a breathing blink" value="33603584"/>
+      <Item label="Blink with random color" value="50380800"/>
+      <Item label="Color change randomly" value="67158016"/>
+      <Item label="Color gradual change" value="285261824"/>
+      <Item label="Breathing blink with a specific color" value="302039040"/>
+      <Item label="Blink with a specific color" value="318816256"/>
+    </Value>
+    <Value genre="config" index="255" instance="1" label="Resetting to factory default" max="1431655765" min="1" size="4" type="list" units="" value="1">
+      <Help>RGB BULB will exclude from the Z-Wave network with this particular command</Help>
+      <Item label="Resetting to the factory default" value="1431655765"/>
+    </Value>
+  </CommandClass>
+  <!-- Association Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="1">
+      <Group index="1" label="Lifeline" max_associations="5"/>
+    </Associations>
+  </CommandClass>
+</Product>

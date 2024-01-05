@@ -1,0 +1,106 @@
+<Product Revision="2" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0176:0003:0003</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/telldus/tzwp102.png</MetaDataItem>
+    <MetaDataItem id="0003" name="ZWProductPage" type="0003">https://products.z-wavealliance.org/products/2892/</MetaDataItem>
+    <MetaDataItem id="0003" name="Identifier" type="0003"> TZWP-102</MetaDataItem>
+    <MetaDataItem id="0003" name="FrequencyName" type="0003">CEPT (Europe)</MetaDataItem>
+    <MetaDataItem name="Name">Plug-in Switch Mini</MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">1.	Set the Z-Wave network main controller into removing mode.
+2.	Short press Z-button twice.
+3.	The LED keep blink to the end of remove exclusion, If the remove for exclusion is successful, The LED will keep slow flash, Otherwise, LED will be in power indication mode.
+</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://Products.Z-WaveAlliance.org/ProductManual/File?folder=&amp;filename=Manuals/2892/TZWP-102_technical-manual.pdf</MetaDataItem>
+    <MetaDataItem name="ResetDescription">Reset Smart Plug to factory Default:
+1.	Make sure that the Smart Plug has been connected to the power supply.
+2.	Press and hold the Z-button for 5 seconds.
+3.	If holding time is more than one second, the LED will blink faster and faster. If holding time is more than 5 seconds, the LED will be solid for 3 seconds to indicate that the resetting is successful. Otherwise, repeat step 2.
+
+ Use this procedure only in the event that the network primary controller missing or otherwise inoperable.</MetaDataItem>
+    <MetaDataItem name="InclusionDescription">1.	Set the Z-Wave network main controller into learning mode.
+2.	Short press the Z-button twice
+3.	The LED keep blink to the end of add inclusion, If the add for inclusion is successful, LED will turn on within 2 seconds and Then will be in power indication mode, Otherwise, The LED will keep slow flash.
+</MetaDataItem>
+    <MetaDataItem name="Description">Smart Plug can be included and operated in any Z-Wave network with other Z-Wave certified devices from other manufacturers and/or other applications. All non-battery operated nodes within the network will act as repeaters regardless of vendor to increase reliability of the network.
+Smart Plug is also a security Z-Wave device and supports the Over The Air (OTA) feature for the product’s firmware upgrade.
+
+</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="02 Jun 2019" revision="2">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/2892/xml</Entry>
+    </ChangeLog>
+  </MetaData>
+  <!-- Telldus TZWP-102 On/Off -->
+    <!-- Configuration Parameters -->
+  <CommandClass id="112">
+    <Value genre="config" index="1" label="Overcurrent protection" max="1" min="0" size="1" type="list" value="1">
+      <Help>
+                If the current exceeds 16A for more than 5 sec, the load will be switched off. Default 1.
+            </Help>
+      <Item label="Disabled" value="0"/>
+      <Item label="Enabled" value="1"/>
+    </Value>
+    <Value genre="config" index="2" label="Remember device status after power failure" max="2" min="0" size="1" type="list" value="0">
+      <Help>
+                Define how the plug will react after the power supply is back on. Default 0.
+            </Help>
+      <Item label="Remember status" value="0"/>
+      <Item label="Always on" value="1"/>
+      <Item label="Always off" value="2"/>
+    </Value>
+    <Value genre="config" index="3" label="Send status in Lifeline when Load status change" max="2" min="0" size="1" type="list" value="1">
+      <Help>
+                Smart Plug can send notifications to associated devices in Lifeline when the status of the plug is changed. Default 1.
+            </Help>
+      <Item label="Disabled" value="0"/>
+      <Item label="Send Basic Report" value="1"/>
+      <Item label="Send Basic Report only when Load status is not changed by Z-Wave Command" value="2"/>
+    </Value>
+    <Value genre="config" index="4" label="LED Indicator" max="1" min="0" size="1" type="list" value="0">
+      <Help>
+                Configure LED mode. Default 0.
+            </Help>
+      <Item label="The LED follows the load status" value="0"/>
+      <Item label="When operating plug, the LED is lit for 5 seconds" value="1"/>
+    </Value>
+    <Value genre="config" index="16" label="Send report on change of power consumption (W)" max="2500" min="0" size="2" type="short" units="Watts" value="50">
+      <Help>
+                This parameter will send a power report automatically if the power value changes of x W (Watts) compared to the last report. Default 50.
+            </Help>
+    </Value>
+    <Value genre="config" index="17" label="Send report on change of power consumption (%)" max="100" min="0" size="1" type="byte" units="%" value="10">
+      <Help>
+                This parameter will send a power report automatically if the power value changes of x % compared to the last report. Default 10.
+            </Help>
+    </Value>
+    <Value genre="config" index="101" label="Power (W) report interval" max="2678400" min="0" size="4" type="int" units="seconds" value="600">
+      <Help>
+                This parameter defines the period of sending power reports. Default 600.
+                                0=Disabled, 5-2678400 seconds
+            </Help>
+    </Value>
+    <Value genre="config" index="102" label="Energy (kWh) report interval" max="2678400" min="0" size="4" type="int" units="seconds" value="3600">
+      <Help>
+                This parameter defines the period of sending energy reports. Default 3600.
+                                0=Disabled, 5-2678400 seconds
+            </Help>
+    </Value>
+    <Value genre="config" index="103" label="Voltage (V) report interval" max="2678400" min="0" size="4" type="int" units="seconds" value="0">
+      <Help>
+                This parameter defines the period of sending voltage reports. Default 0.
+                                0=Disabled, 5-2678400 seconds
+            </Help>
+    </Value>
+    <Value genre="config" index="104" label="Current (A) report interval" max="2678400" min="0" size="4" type="int" units="seconds" value="0">
+      <Help>
+                This parameter defines the period of sending current reports. Default 0.
+                                0=Disabled, 5-2678400 seconds
+            </Help>
+    </Value>
+  </CommandClass>
+  <!-- Association Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="1">
+      <Group index="1" label="Lifeline" max_associations="5"/>
+    </Associations>
+  </CommandClass>
+</Product>

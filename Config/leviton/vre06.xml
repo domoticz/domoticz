@@ -1,0 +1,8 @@
+<Product Revision="2" xmlns="https://github.com/OpenZWave/open-zwave">
+  <!-- COMMAND_CLASS_VERSION CommandClassGet not supported -->
+  <CommandClass id="134">
+    <Compatibility>
+      <ClassGetVersionSupported>false</ClassGetVersionSupported>
+    </Compatibility>
+  </CommandClass>
+</Product>

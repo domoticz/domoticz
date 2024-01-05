@@ -1,0 +1,96 @@
+<Product Revision="1" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0330:D002:0200</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/sunricher/srzv9101facct.png</MetaDataItem>
+    <MetaDataItem id="D002" name="FrequencyName" type="0200">CEPT (Europe)</MetaDataItem>
+    <MetaDataItem id="D002" name="FrequencyName" type="0201">U.S. / Canada / Mexico</MetaDataItem>
+    <MetaDataItem id="D002" name="FrequencyName" type="0202">Australia / New Zealand</MetaDataItem>
+    <MetaDataItem id="D002" name="FrequencyName" type="021A">Russia</MetaDataItem>
+    <MetaDataItem name="InclusionDescription">1. Set primary controller/gateway into inclusion mode (Please refer to your primary controllers manual on how to turn your controller into inclusion).
+2. Power on the in-wall dimmer and set it into inclusion mode. There are two methods to set the in-wall dimmer into inclusion mode:
+1)Repower on the dimmer, it will be set into inclusion mode automatically, and waiting to be included.
+2)Triple press the action button on the dimmer, it will set the plug into inclusion mode.
+The connected light will stay solid on for 3 seconds to indicate successful inclusion.</MetaDataItem>
+    <MetaDataItem name="Name">Dimmable LED controller</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://www.sunricher.com/media/resources/manual/SR-ZV9101FA-CCT%20Instruction%20V1.pdf</MetaDataItem>
+    <MetaDataItem id="D002" name="Identifier" type="0200">SR-ZV9101FA</MetaDataItem>
+    <MetaDataItem name="ResetDescription">Press and hold down the action button for over 10 seconds, the dimmer will be reset to factory defaults.</MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">There are two exclusion methods:
+Method 1: Exclusion from the primary controller/gateway as follows:
+1. Set the primary controller/gateway into exclusion mode (Please refer to your primary controllers manual on how to set your controller into exclusion).
+2. Triple press the action button, the dimmer will be set to exclusion mode, and waiting to be excluded, then the dimmer will be included to the network.
+Method 2: Factory reset the dimmer will force the it to be excluded from a network.
+(please refer to the part “Factory Reset” of this manual)
+Note: Factory reset is not recommended for exclusion, please use this procedure only if the primary controller/gateway is missing or otherwise inoperable.</MetaDataItem>
+    <MetaDataItem name="Description">The LED dimmer is a Z-Wave device that is used to switch ON/OFF, adjust light intensity and optionally the color temperature and rgbw of the connected tunable LED light and can be controlled by other Z-Wave devices.</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Mark Broadbent" date="23 Aug 2020" revision="1">Initial import, adapted from ZV9101</Entry>
+    </ChangeLog>
+  </MetaData>
+  <!--
+    Sunricher ZV-9101FA (same for CCT, DIM and RGBW)
+    https://www.sunricher.com/media/resources/manual/SR-ZV9101FA-CCT%20Instruction%20V1.pdf
+    -->
+
+  <!-- Configuration -->
+  <CommandClass id="112">
+    <Value genre="config" index="2" instance="1" label="Saving state before power failure" size="1" type="list" value="1">
+      <Help>
+              Saving state before power failure. Default Not saved.
+        </Help>
+      <Item label="State NOT saved at power failure, all outputs are set to OFF upon power restore" value="0"/>
+      <Item label="State NOT saved at power failure, all outputs are set to ON upon power restore" value="1"/>
+      <Item label="State saved at power failure, all outputs are set to previous state upon power restore" value="2"/>
+    </Value>
+    <Value genre="config" index="3" instance="1" label="Send the basic report" size="1" type="list" value="1">
+      <Help>Enable/disable to send the basic report to the Lifeline when the load state changed.
+              When value set as 1, re-power on the dimmer, it will send Basic report automatically.
+            Default Enabled.
+        </Help>
+      <Item label="Disable" value="0"/>
+      <Item label="Enable" value="1"/>
+    </Value>
+    <Value genre="config" index="5" instance="1" label="Choose a cool light stage mode" size="1" type="list" value="0">
+      <Help>Choose a cool light stage mode (when receiving Command Class Switch Color, it recovers to normal lighting mode.)
+        </Help>
+      <Item label="Inactive of light stage mode" value="0"/>
+      <Item label="Fade in and fade out mode, colors set by parameter 8" value="1"/>
+      <Item label="Flash mode, colors set by parameter 8" value="2"/>
+      <Item label="Rainbow mode, system fixed changing effect" value="3"/>
+      <Item label="Fade in and fade out mode, color changes randomly" value="4"/>
+      <Item label="Flash mode, color changes randomly" value="5"/>
+      <Item label="Rainbow mode, color changes randomly" value="6"/>
+      <Item label="Random mode, the colors switch randomly" value="7"/>
+    </Value>
+    <Value genre="config" index="6" instance="1" label="Speed of stage mode" size="1" max="255" min="0" type="byte" value="243">
+      <Help>
+          Speed of stage mode. 0 is the slowest, 255 is the fastest
+        </Help>
+    </Value>
+    <Value genre="config" index="7" instance="1" label="Execution times of stage mode" size="1" max="255" min="0" type="byte" value="0">
+      <Help>
+          Execution times of stage mode.
+          0: unlimited times.
+          1~255: execution times 1~255
+        </Help>
+    </Value>
+    <Value genre="config" index="8" instance="1" label="The hue of stage mode" size="1" max="255" min="0" type="byte" value="0">
+      <Help>
+          The hue of stage mode. The hue is only valid for fade in and fade out mode, flash mode
+        </Help>
+    </Value>
+    <Value genre="config" index="9" instance="1" label="Enable/disable external switch to be added to and removed from a network" size="1" type="list" value="0">
+      <Help>
+          Enable/disable external switch to be added to and removed from a network (when enables this function, triple press the external switch within 1.5 seconds to be added to or removed from a network)
+        </Help>
+      <Item label="Disable" value="0"/>
+      <Item label="Enable" value="1"/>
+    </Value>
+  </CommandClass>
+  <!-- Association Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="1">
+      <Group index="1" label="Lifeline" max_associations="5"/>
+    </Associations>
+  </CommandClass>
+</Product>

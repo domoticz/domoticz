@@ -1,0 +1,117 @@
+<Product Revision="2" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/021F:0088:0003</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/dome/0088.png</MetaDataItem>
+    <MetaDataItem id="0088" name="ZWProductPage" type="0003">https://products.z-wavealliance.org/products/2059/</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://Products.Z-WaveAlliance.org/ProductManual/File?folder=&amp;filename=Manuals/2059/Dome Siren Manual.pdf</MetaDataItem>
+    <MetaDataItem name="Description">The Dome™ Home Automation DMS01 Siren offers ten user selectable sounds with three volume levels (at up to 105dB) and adjustable siren timeout (30/60/300 seconds or infinite). It includes a functionality of an alarm siren, doorbell and an audible chime notification when door/window opens (advanced settings subject to Z-Wave Hub compatibility). Additional visual notification is provided by built-in flashing LED’s when triggered. One of a kind device on the market with 100% battery operation allowing for easy installation anywhere in your home. There is a 3-year battery life, so you can always be confident that your siren has power. Extra-long Z-Wave wireless range (up to 150 ft) allows you to place it where it’s needed without worrying if the signal is reaching your Z-Wave Hub. Dome™ DMS01 Siren comes with a 1-year limited warranty. Measurements in inches: 2.625 x 2.625 x 1.125. Dome™ Home Automation Z-Wave devices give your family peace of mind and security you can count on. With Dome™, you’re always connected and always covered. </MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">Follow the instructions for your Z-Wave certified Controller to enter exclusion mode.
+When prompted by the Controller:
+1. Remove the Back Plate of the Siren.
+2. Press the Connect Button quickly 3 times in a row.
+The LED Ring will flash five times indicating exclusion/disconnection.</MetaDataItem>
+    <MetaDataItem id="0088" name="FrequencyName" type="0003">U.S. / Canada / Mexico</MetaDataItem>
+    <MetaDataItem name="InclusionDescription">Follow the instructions for your Z-Wave certified Controller to enter inclusion mode.
+When prompted by the Controller:
+1. For proper inclusion, bring the Siren to the final location where it will be used. *
+2. Remove the Back Plate of the Siren.
+3. Remove the Battery Tabs.
+4. Press the Connect Button quickly 3 times in a row.
+The LED Ring will flash five times indicating inclusion.
+*For non Z-Wave Plus networks, please consult the owner’s manual for your primary controller to determine the best method and location for adding the Siren to your Z-Wave network.</MetaDataItem>
+    <MetaDataItem name="Name">Dome Z-Wave Plus Siren</MetaDataItem>
+    <MetaDataItem name="ResetDescription">To disconnect from the Z-Wave Network and restore factory default settings:
+1. Open the Back Plate and make sure the Siren is powered.
+1. Hold the Connect Button for 10 seconds until the LED Ring blinks once, then release the button.
+Only do this if the controller is missing or otherwise unreachable!</MetaDataItem>
+    <MetaDataItem id="0088" name="Identifier" type="0003">DMS01</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="02 Jun 2019" revision="2">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/2059/xml</Entry>
+    </ChangeLog>
+  </MetaData>
+  <!--
+  Dome Siren DMS01
+  https://docs.domeha.com/#siren
+  -->
+  <!-- Configuration Parameters -->
+  <CommandClass id="112">
+    <Value genre="config" index="1" label="Primary Notification Volume Level" max="3" min="1" size="1" type="list" units="level" value="3">
+      <Help>This parameter sets the volume of the Siren (primary) sound. There are three possible volume levels available.</Help>
+      <Item label="Low" value="1"/>
+      <Item label="Medium" value="2"/>
+      <Item label="High" value="3"/>
+    </Value>
+    <Value genre="config" index="2" label="Primary Notification Length" max="255" min="1" size="1" type="list" value="2">
+      <Help>This parameter defines the length of the Alarm/primary notification.</Help>
+      <Item label="30 Seconds" value="1"/>
+      <Item label="1 Minute" value="2"/>
+      <Item label="2 Minutes" value="3"/>
+      <Item label="Until battery depleted" value="255"/>
+    </Value>
+    <Value genre="config" index="3" label="Secondary Notification Length" max="255" min="0" size="1" type="byte" value="1">
+      <Help>This parameter defines the number of times the Chime/Secondary Notification will play.</Help>
+    </Value>
+    <Value genre="config" index="4" label="Secondary Notification Volume" max="3" min="3" size="1" type="list" value="1">
+      <Help>This parameter sets the volume of the Chime (secondary) sound. There are three possible volume levels available.</Help>
+      <Item label="Low" value="1"/>
+      <Item label="Medium" value="2"/>
+      <Item label="High" value="3"/>
+    </Value>
+    <Value genre="config" index="5" label="Primary Notification Sound" max="10" min="1" size="1" type="list" value="10">
+      <Help>
+        The Siren offers ten different sounds to use as the Siren (primary) notification.
+        This parameter sets the Siren (primary) notification sound.
+      </Help>
+      <Item label="Doorbell" value="1"/>
+      <Item label="Fur Elise" value="2"/>
+      <Item label="Doorbell Extended" value="3"/>
+      <Item label="Alert" value="4"/>
+      <Item label="William Tell" value="5"/>
+      <Item label="Rondo Alla Turca" value="6"/>
+      <Item label="Police Siren" value="7"/>
+      <Item label="Evacuation" value="8"/>
+      <Item label="Beep Beep" value="9"/>
+      <Item label="Beep" value="10"/>
+    </Value>
+    <Value genre="config" index="6" label="Secondary Notification Sound" max="10" min="1" size="1" type="list" value="9">
+      <Help>
+        If Parameter 7 is set to 02, the Siren will play a secondary chime sound instead of the main alarm.
+        The Siren offers ten different sounds to use as the Chime (secondary) notification.
+        This parameter sets the Chime (secondary) notification sound.
+      </Help>
+      <Item label="Doorbell" value="1"/>
+      <Item label="Fur Elise" value="2"/>
+      <Item label="Doorbell Extended" value="3"/>
+      <Item label="Alert" value="4"/>
+      <Item label="William Tell" value="5"/>
+      <Item label="Rondo Alla Turca" value="6"/>
+      <Item label="Police Siren" value="7"/>
+      <Item label="Evacuation" value="8"/>
+      <Item label="Beep Beep" value="9"/>
+      <Item label="Beep" value="10"/>
+    </Value>
+    <Value genre="config" index="7" label="Toggle Secondary Chime" max="2" min="1" size="1" type="list" value="1">
+      <Help>This Parameter toggles between the Primary and Secondary notification sound to be played when the Siren receives a BINARY_SWITCH_SET(FF) command.</Help>
+      <Item label="Primary Notification Will Play" value="1"/>
+      <Item label="Secondary Notification Will Play" value="2"/>
+    </Value>
+    <Value genre="config" index="8" label="Primary Notification Strobe" max="1" min="0" size="1" type="list" value="1">
+      <Help>This Parameter enables or disables the Flashing LED Ring (strobe) accompanying the Primary Notification.</Help>
+      <Item label="LED Ring Will Not Flash" value="0"/>
+      <Item label="LED Ring Will Flash" value="1"/>
+    </Value>
+    <Value genre="config" index="9" label="Secondary Notification Strobe" max="1" min="0" size="1" type="list" value="0">
+      <Help>This Parameter enables or disables the Flashing LED Ring (strobe) accompanying the Secondary Notification.</Help>
+      <Item label="LED Ring Will Not Flash" value="0"/>
+      <Item label="LED Ring Will Flash" value="1"/>
+    </Value>
+  </CommandClass>
+  <!-- Association Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="3">
+      <Group index="1" label="Lifeline" max_associations="5"/>
+      <Group index="2" label="Control Commands" max_associations="5"/>
+      <Group index="3" label="Send Notification Report" max_associations="5"/>
+    </Associations>
+  </CommandClass>
+</Product>

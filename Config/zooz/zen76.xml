@@ -1,0 +1,140 @@
+<Product Revision="1" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="Name">Zooz ZEN76 S2 On Off Switch</MetaDataItem>
+    <MetaDataItem name="Description">FEATURES:
+- Control your lights from the switch and via Z-Wave
+- Use with LED or incandescent lighting only: do NOT connect to switched receptacles, fans, or tube lights
+- NEW in 700 series: slimmer switch to fit shallow and crowded boxes (just 1.1" deep); almond, brown, and black paddles available (basic version comes in white)
+- NEW 700 chip: SmartStart inclusion, S2 security, more range than ever and super fast communication!
+- Simple Direct 3-Way or 4-Way: Still no add-on and use it in larger set-ups for multi-point control. Wires like the ZEN26 model with quicker and easy installation guaranteed. (Neutral wire required)
+- Scene Control on hubs that support multi-tap triggers*
+- Program the LED indicator with custom color and brightness level that fits your needs*
+- Smart range test mode: troubleshoot communication issues right from your switch
+- Immediate on/off status reports
+- Smart LED indicator makes pairing and set-up more intuitive (now control the LED mode with 6 clicks of any paddle!)
+- Restores status after power failure
+
+SPECIFICATIONS:
+- Model Number: ZEN76
+- Z-Wave Signal Frequency: 908.42 MHz (US)
+- Power: 120 VAC, 60 Hz
+- Range: Up to 200 feet line of sight
+- Operating Temperature: 32-104° F (0-40° C)
+- Installation: Indoor use only
+
+MANUAL CONTROL:
+Upper Paddle: 
+1 x tap: load on; Scene 1, attribute 00
+2 x tap: Scene 1, attribute 03
+3 x tap: enter inclusion (pairing) mode (only if the switch is not included to the hub); Scene 1, attribute 04
+4 x tap: Scene 1, attribute 05
+5 x tap: Scene 1, attribute 06
+6 x tap: change LED indicator mode (see parameter 2)
+held: Scene 1, attribute 01
+released: Scene 1, attribute 02
+
+Lower Paddle: 
+1 x tap: load off; Scene 2, attribute 00
+2 x tap: Scene 2, attribute 03
+3 x tap: enter exclusion (unpairing) mode; Scene 2, attribute 04
+4 x tap: Scene 2, attribute 05
+5 x tap: Scene 2, attribute 06
+held: Scene 2, attribute 01
+released: Scene 2, attribute 02
+held for 10 seconds (LED indicator starts blinking): enter the setting menu >> 5 x tap down for factory reset; 5 x tap up to change LED bulb mode (see parameter 11); 2 x tap down to enable the range test tool.</MetaDataItem>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/027a:a006:7000</MetaDataItem>
+    <MetaDataItem name="ProductPage">https://www.thesmartesthouse.com/products/zooz-700-series-z-wave-plus-s2-on-off-wall-switch-zen76</MetaDataItem>
+    <MetaDataItem name="ProductSupport">https://www.support.getzooz.com/kb/section/207</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/zooz/zen76.png</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://cdn.shopify.com/s/files/1/0218/7704/files/zooz-700-series-z-wave-plus-s2-switch-zen76-manual.pdf</MetaDataItem>
+    <MetaDataItem name="WakeupDescription"></MetaDataItem>
+    <MetaDataItem name="InclusionDescription">Click the upper paddle 3 times quickly. The LED indicator will blink blue during the process and light up green once added successfully. It will light up red if failed.</MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">Click the lower paddle 3 times very quickly.</MetaDataItem>
+    <MetaDataItem name="ResetDescription">Press and hold the lower paddle for 10 seconds until the LED indicator starts blinking. Release paddle, and immediately after, tap the lower paddle 5 times to complete the reset. The LED indicator will flash blue 3 times and turn red for 3 seconds to confirm successful reset.</MetaDataItem>
+    <MetaDataItem id="a006" name="ZWProductPage" type="7000"><!-- url to https://products.z-wavealliance.org/products/XXXX/ page for this specific version of the device --></MetaDataItem>
+	  <!--product page not available as of Feb. 9, 2021 -->
+    <MetaDataItem id="a006" name="FrequencyName" type="7000">U.S. / Canada / Mexico</MetaDataItem>
+    <MetaDataItem id="a006" name="Identifier" type="7000">ZEN76</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Matthew Grimes - https://github.com/cybergrimes" date="9 February 2021" revision="1">Initial configuration from Zooz; firmware 1.01</Entry>
+    </ChangeLog>
+  </MetaData>
+  
+    <!-- Configuration Parameters -->
+	<CommandClass id="112">
+		<Value type="list" genre="config" index="1" label="On/Off Paddle Orientation" size="1" min="0" max="2" value="0">
+			<Help>Normal mode: Upper paddle turns the light on, lower paddle turns the light off.  Reverse mode: Upper paddle turns the light off, lower paddle turns the light on.  Toggle mode: Either paddle toggles the light.</Help>
+			<Item label="Normal" value="0"/>
+			<Item label="Reverse" value="1"/>
+			<Item label="Toggle" value="2"/>
+		</Value>
+		<Value type="list" genre="config" index="2" label="LED Indication Control" size="1" min="0" max="3" value="0">
+			<Help>LED Indication light function.  Normal has the LED Indication on when the switch is off, off when the switch is on.</Help>
+			<Item label="Normal" value="0"/>
+			<Item label="Reverse" value="1"/>
+			<Item label="Always Off" value="2"/>
+			<Item label="Always On" value="3"/>
+		</Value>
+		<Value type="int" genre="config" index="3" label="Auto Turn-Off Timer" size="4" min="0" max="65535" value="0" units="minutes">
+			<Help>Set the time (in minutes) after which you want the switch to automatically turn off once it has been turned on.</Help>
+		</Value>
+		<Value type="int" genre="config" index="5" label="Auto Turn-On Timer" size="4" min="0" max="65535" value="0" units="minutes">
+			<Help>Set the time (in minutes) after which you want the switch to automatically turn on once it has been turned off.</Help>
+		</Value>
+		<Value type="list" genre="config" index="8" label="On Off Status After Power Failure" size="1" min="0" max="2" value="2">
+			<Help>Status after power failure.  Off: always turn light off.  On: always turn light on.  Restore: remember the latest state and restore that state.</Help>
+			<Item label="Off" value="0"/>
+			<Item label="On" value="1"/>
+			<Item label="Restore" value="2"/>
+		</Value>
+		<Value type="list" genre="config" index="9" label="Enable/Disable Scene Control" size="1" min="0" max="1" value="0">
+			<Help>Enable or disable scene control functionality for quick double tap triggers.</Help>
+			<Item label="Disabled" value="0"/>
+			<Item label="Enabled" value="1"/>
+		</Value>
+		<Value type="list" genre="config" instance="1" index="11" label="Smart Bulb Mode: Enable/Disable Paddle / Z-Wave Control" units="" min="0" max="2" value="1" size="1">
+			<Help>Enable or disable local on/off control. If enabled, you’ll only be able to control the connected light via Z-Wave. Scenes and other functionality will still be available through paddles.</Help>
+			<Item label="physical paddle control disabled" value="0" />
+			<Item label="physical paddle control enabled (default)" value="1" />
+			<Item label="physical paddle and Z-Wave control disabled" value="2" />
+		</Value>
+		<Value type="list" genre="config" instance="1" index="12" label="3 Way Switch Type" units="" min="0" max="1" value="0" size="1">
+			<Help>Choose the type of 3-way switch you want to use with this switch in a 3-way set-up.</Help>
+			<Item label="Regular mechanical 3-way on/off switch, use the connected 3-way switch to turn the light on or off (default)" value="0"/>
+			<Item label="Momentary switch, click once to change status (light on or off)" value="1"/>
+		</Value>
+		<Value type="list" genre="config" instance="1" index="13" label="Reporting behavior with disabled physical control" units="" min="0" max="1" value="0" size="1">
+			<Help>Set reporting behavior for disabled physical control.</Help>
+			<Item label="Switch reports on/off status and changes LED indicator state even if physical and Z-Wave control is disabled (default)" value="0"/>
+			<Item label="Switch doesn't report on/off status or change LED indicator state when physical (and Z-Wave) control is disabled" value="1"/>
+		</Value>
+		<Value type="list" genre="config" index="14" label="LED Indicator Color" size="1" min="0" max="3" value="0">
+			<Help>Choose the color of the LED indicator.</Help>
+			<Item label="White" value="0"/>
+			<Item label="Blue (default)" value="1"/>
+			<Item label="Green" value="2"/>
+			<Item label="Red" value="3"/>
+		</Value>
+		<Value type="list" genre="config" index="15" label="LED Indicator Brightness" size="1" min="0" max="2" value="1">
+			<Help>Choose the LED indicator's brightness level.</Help>
+			<Item label="Bright (100%)" value="0"/>
+			<Item label="Medium (60%)" value="1"/>
+			<Item label="Low (30%)" value="2"/>
+		</Value>
+		<Value type="list" genre="config" instance="1" index="16" label="Association Reports" units="" min="0" max="1" value="1" size="1">
+			<Help>Choose how the switch reports its status back to the hub.</Help>
+			<Item label="Binary switch report for Z-Wave control, basic set report for paddle control" value="0"/>
+			<Item label="Binary switch report for both Z-Wave and paddle control (default)" value="1"/>
+		</Value>
+	</CommandClass>
+	
+    <!-- Association Groups -->
+    <CommandClass id="133">
+      <Associations num_groups="3">
+        <Group index="1" label="Lifeline" max_associations="1"/>
+        <Group index="2" label="Group 2" max_associations="5"/>
+	<Group index="3" label="Group 3" max_associations="5"/>
+      </Associations>
+    </CommandClass>
+	
+</Product>

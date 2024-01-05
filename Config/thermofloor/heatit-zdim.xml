@@ -1,0 +1,187 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Product Revision="2" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/019b:2200:0003</MetaDataItem>  
+    <MetaDataItem name="ProductPic">images/thermofloor/heatit_zdim.png</MetaDataItem>	
+    <MetaDataItem id="2200" name="ZWProductPage" type="0003">https://products.z-wavealliance.org/products/3261</MetaDataItem>  
+    <MetaDataItem id="2200" name="Identifier" type="0003">Zdim</MetaDataItem>	
+    <MetaDataItem name="ProductManual">https://products.z-wavealliance.org/ProductManual/File?folder=&amp;filename=product_documents/3261/Manual_Heatit_Z-DIM_FW%201.0_Ver2019-A_ENG.pdf</MetaDataItem>	
+    <MetaDataItem name="Description">Z-Wave rotary dimmer for different light sources. The LED dimmer dims at low load without the light flickering. Dimmer LED from 1-200VA, 230V halogen and incandescent bulbs, dimmable LED drivers and electronic transformers. Not affected by additional starting currents. Need L + N conductor connected.
+The dimmer has end-turn function. This allows you to turn on the light and dimming with one dimmer, and then turn off the light with another dimmer. Convenient for example in stairs and corridors.
+The dimmer fits into standard Elko, Schneider Exxact and Gira System 55 frame systems.
+
+FUNCTIONS
+- Z-wave rotary dimmer
+- Scene controller
+- Dims:
+- LED
+- 230V halogen
+- Incandescent lightbulbs
+- Dimable LED-drivers
+- Electronic transformators
+- Starts at 1VA and dims up to 200VA LED
+- Trailing edge
+- Multiway switching option
+- Electronic thermal cutoff with automatic reset
+- Firmware updates (OTA)
+- Power metering
+- Supports encryption mode: S0, S2 Authenticated Class, S2 Unauthenticated Class
+
+CONNECTION
+1. Disconnect the power.
+2. Connect the live to the dimmer terminal marked "L".
+3. Connect the neutral to the dimmer terminal marked "N".
+4. Connect the neutral to the load terminal marked "N".
+5. Connect the load terminal marked "L" to the dimmer terminal marked (see wiring
+ diagram).
+6. Install the dimmer (A) in the wall box. Make sure that no wires are pinched.
+7. Attach the cover (B) with the supplied nut (C).
+8. Attach the button (D) with a simple push.
+To use the multiway function (stairway function) a 230VAC rated momentary switch
+can be connected as follows:
+9. Connect the live to the toggle switch terminal marked "L".
+10. Connect the toggle switch terminal marked to the dimmer terminal marked "S"
+ (see wiring diagram).
+
+TECHNICAL DATA
+Protocol Z-Wave, 868,4MHz
+Chip Z-Wave 500 chip
+SDK 6.71.03
+Rated voltage 230V AC 50Hz
+Power 1VA - 200VA
+Input current 0,9A
+Controls Push and rotary dimmer
+Operating temperature -20°C - 40 °C
+Connection Max. 2,5mm2
+Flush mounting depth 15mm
+IP Code IP 20
+Size (LxWxH) 84 x 84 x 43mm
+
+APPROVALS
+Z-Wave Plus
+CE
+EN 55015/A2: 2009, EN 61547:2009
+EN 61000-3-2/A2:2009
+EN 61000-3-3:2008
+EN 60669-2-1/A12:2010
+EN 60669-1:A2:2008
+EMC 2014/30/EU, RoHS 2011/65/EU
+LVD 2014/35/EU
+</MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">INCLUSION/EXCLUSION
+Press the main button on dimmer 6 times in a rapid sequence. Heatit Z-DIM is now included in your Z-Wave network.</MetaDataItem>
+    <MetaDataItem id="2200" name="FrequencyName" type="0003">CEPT (Europe)</MetaDataItem>
+    <MetaDataItem name="Name">Heatit Zdim</MetaDataItem>
+    <MetaDataItem name="ResetDescription">FACTORY RESET - RES
+By pressing and holding the main button for 20 seconds, the dimmer will perform
+a complete factory reset. The connected light source will blink once and go in the
+"OFF" state if successfully reset. NB! Please use this procedure only when the primary
+controller is missing or otherwise inoperable</MetaDataItem>
+    <MetaDataItem name="InclusionDescription">INCLUSION/EXCLUSION
+Press the main button on dimmer 6 times in a rapid sequence. Heatit Z-DIM is now included in your Z-Wave network.</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Pål Kristensen - paalkr77@gmail.com" date="10 January 2020" revision="1">Initial release</Entry>
+      <Entry author="Pål Kristensen - paalkr77@gmail.com" date="11 January 2021" revision="2">Fixed COMMAND_CLASS_SWITCH_MULTILEVEL get commands</Entry>
+    </ChangeLog>
+  </MetaData>
+
+  <CommandClass id="112">
+    <Value genre="config" instance="1" index="1" value="0" label="Connected Load" size="1" min="0" max="200" type="byte">
+      <Help>
+The parameter defines the value of connected load. Refer to Paragraph 8 "Power Metering". 
+0 = Default
+1 - 200 = 1-200 Watts connected load
+
+POWER METERING
+The Heatit Z-Dim has functionality to calculate power consumption. To enable this
+function, Parameter 1 "Connected load" should have a value greater than 0. This is an
+estimated value, therefore power consumption accuracy depends on load estimation.
+1. Estimate the load value (Watt) connected to the Heatit Z-Dim.
+2. Use this value in Parameter 1.
+Heatit Z-Dim can report accumulated (kWh) and instant (Watt), or only instant (Watt)
+power consumption. The report time interval can be altered by Parameter 9. 
+	  </Help>
+    </Value>
+    <Value genre="config" instance="1" index="2" value="20" label="Minimum Dim level" units="%" size="1" min="1" max="98" type="byte">
+      <Help>
+The parameter defines the lowest dimming level of the dimmer. The value must be lower than parameter 3 "Maximum Dim Level"	  
+1% - 98% Default is 20 (20%)
+	  </Help>
+    </Value>
+    <Value genre="config" instance="1" index="3" value="85" label="Maximum Dim level" units="%" size="1" min="2" max="99" type="byte">
+      <Help>
+The parameter defines the highest dimming level of the dimmer.
+The value must be higher than parameter 2 "Minimum Dim Level"
+2% - 99% Default is 85 (85%)	  
+	  </Help>
+    </Value>
+    <Value genre="config" instance="1" index="4" value="15" label="Total steps" units="step" size="1" min="5" max="255" type="byte">
+      <Help>
+The parameter defines how many steps it should take to dim from minimum
+to maximum dim level (One round = 20 steps).
+5 - 255 = 5-255 steps. Default is 15 (3/4 round)
+	  </Help>
+    </Value>
+    <Value genre="config" instance="1" index="5" value="0" label="Double press function" size="1" type="list">
+      <Help>The parameter defines the double press functionality. </Help>
+      <Item value="0" label="Central Scene notification (Default)"/>
+      <Item value="1" label="Dim to highest level"/>
+    </Value>
+    <Value genre="config" instance="1" index="6" value="1" label="Scene controller" size="1" type="list">
+      <Help>Enables scene controller</Help>
+      <Item value="0" label="Disabled"/>
+      <Item value="1" label="Active (Default)"/>
+    </Value>
+    <Value genre="config" instance="1" index="7" value="0" label="Switch ON level" units="%" size="1" min="0" max="99" type="byte">
+      <Help>
+The parameter defines the dimming level when restored from the OFF state
+by push button. 
+0 = Restores last dim level (Default)
+1 - 99 = 1% - 99%
+	  </Help>
+    </Value>
+    <Value genre="config" instance="1" index="8" value="1" label="Dimming Duration" units="time" size="1" min="0" max="255" type="byte">
+      <Help>
+The parameter defines how long it takes to dim to the desired level.
+Note! Only Multilevel Switch Command Class is affected by this parameter. 
+0 = Disabled
+1 - 127 = Duration in seconds (1 - 127 seconds. Default is 1)
+128 - 255 = Duration in minutes (1 - 127 minutes)
+	  </Help>
+    </Value>
+    <Value genre="config" instance="1" index="9" value="60" label="Meter Report Interval" units="sec" size="2" min="0" max="32767" type="short">
+      <Help>
+The parameter defines the report interval for Power Metering.
+30 - 32767 = Duration in seconds (30 - 32 767. Default is 60)
+	  </Help>
+    </Value>
+    <Value genre="config" instance="1" index="10" value="50" label="Power restore level" units="%" size="1" min="1" max="99" type="byte">
+      <Help>
+The parameter defines the initial dimming level after power loss.
+1 - 99 = 1% - 99% Default is 50 (50%)
+	  </Help>
+    </Value>
+  </CommandClass>
+
+  <!-- COMMAND_CLASS_SWITCH_MULTILEVEL. This class is in the list reported by the device, but it does not respond to requests -->
+  <CommandClass id="38">
+    <Compatibility>
+      <GetSupported>false</GetSupported>
+    </Compatibility>
+  </CommandClass>
+
+  <CommandClass id="133">
+    <Associations num_groups="3">
+      <Group index="1" label="Lifeline" max_associations="8" />
+      <Group index="2" label="Dimming level" max_associations="8" auto="true" />
+      <Group index="3" label="State of Device ON/OFF" max_associations="8" auto="true" />
+    </Associations>
+  </CommandClass>
+
+  <CommandClass id="142">
+    <Compatibility>
+      <ForceInstances>true</ForceInstances>
+    </Compatibility>
+  </CommandClass>
+
+</Product>

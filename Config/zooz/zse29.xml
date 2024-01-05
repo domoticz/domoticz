@@ -1,0 +1,96 @@
+<Product Revision="3" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/027A:0005:0001</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/zooz/zse29.png</MetaDataItem>
+    <MetaDataItem id="0005" name="ZWProductPage" type="0001">https://products.z-wavealliance.org/products/3081/</MetaDataItem>
+    <MetaDataItem name="Description">FEATURES:
+- Quick and reliable motion alerts to Z-Wave hub
+- Outdoor ready housing (avoid direct sun and rain)
+- Set motion time-out and lux trigger at the sensor
+- Auto-inclusion for easy set-up
+- The latest S2 security and Z-Wave Plus chip
+- Powered by common batteries or Micro USB
+- Built-in tamper switch for extra security
+
+SPECS:
+- Model Number: ZSE29
+- Z-Wave Signal Frequency: 908.42 MHz
+- Power: 3 x AA (1.5 V) batteries / Micro USB
+- Motion Detection: up to 30 feet
+- Operating Temperature: -4 – 104 F
+- Warm-up time: 1 minute
+- Range: Up to 130 feet line of sight
+- Installation and Use: Indoor / Outdoor</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://Products.Z-WaveAlliance.org/ProductManual/File?folder=&amp;filename=Manuals/3081/zooz-z-wave-plus-s2-outdoor-motion-sensor-zse29-manual.pdf</MetaDataItem>
+    <MetaDataItem name="WakeupDescription">The sensor’s wake-up interval is set to 4 hours by default to save battery life. Use the Wake Up Command Class to adjust the interval (in seconds, working in 600s intervals, with 600 as min and 86400 as max values).
+During wake-up, the sensor turns the Z-Wave radio on for 10 seconds to receive communication from the hub. Long wake-up interval will not affect how often the sensor reports motion to your hub.</MetaDataItem>
+    <MetaDataItem name="Name">Outdoor Motion Sensor</MetaDataItem>
+    <MetaDataItem id="0005" name="FrequencyName" type="0001">U.S. / Canada / Mexico</MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">1. Bring the sensor within direct range of your Z-Wave
+gateway (hub).
+2. Put the Z-Wave hub into exclusion mode (not sure
+how to do that? ask@getzooz.com).
+3. Press and release the tamper switch 3 times quickly.
+4. Your hub will confirm exclusion and the sensor will
+disappear from your controller's device list.</MetaDataItem>
+    <MetaDataItem name="InclusionDescription">AUTO-INCLUSION:
+1. Initiate inclusion (pairing) in the app (or web interface). Not Sure how? ask@getzooz.com. If you’re using an S2 hub, it may ask you to enter the DSK key printed on the back cover sticker to complete secure inclusion.
+2. Insert the batteries or the USB adapter board. The LED indicator
+will start blinking and the sensor will join the network Automatically.
+
+MANUAL INCLUSION:
+Put your Z-Wave hub into inclusion mode and click the tamper switch 3 times quickly.</MetaDataItem>
+    <MetaDataItem name="ResetDescription">When your network’s primary controller is missing or otherwise inoperable, you may need to reset the device to factory settings manually. In order to complete the process, make sure the sensor is powered, then CLICKCLICK-CLICK-CLICK’N’HOLD the tamper switch for AT LEAST 5 SECONDS. The LED indicator will turn off to
+indicate successful reset. The sensor will then enter auto-inclusion mode for 4 minutes.
+NOTE: All previously recorded activity and custom settings will be erased from the device’s memory. </MetaDataItem>
+    <MetaDataItem id="0005" name="Identifier" type="0001">ZSE29</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 Jun 2019" revision="2">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/3081/xml</Entry>
+      <Entry author="Brad Parker - https://github.com/bepsoccer" date="27 May 2020" revision="3">Updated for firmware version 2.0</Entry>
+    </ChangeLog>
+  </MetaData>
+
+  <!-- Configuration Parameters -->
+  <CommandClass id="112">
+    <Value type="byte" genre="config" index="1" label="Basic Set Report Value Sent to Associated Devices" size="1" min="0" max="99" value="99">
+      <Help> Set the value of basic set report sent to the light associated with the sensor in Group 2 (so the light turns on to the selected brightness level). 99 is the equivalent of full brightness in Z-Wave terms.
+      default: 99
+      </Help>
+    </Value>
+    <Value type="list" genre="config" index="2" label="Enable / Disable Motion Reports" size="1" min="0" max="1" value="1">
+      <Help>Enable or disable motion reports completely. If motion sensor is disabled, the device will not report motion at all to your hub.</Help>
+      <Item label="Disabled" value="0"/>
+      <Item label="Enabled (default)" value="1"/>
+    </Value> 
+    <Value type="byte" genre="config" index="3" label="Motion Sensativity" size="1" min="1" max="10" value="10">
+      <Help>Adjust motion sensitivity where 10 is the most sensative setting.
+      default: 10
+      </Help>
+    </Value>
+    <Value type="short" genre="config" index="4" label="Lux Level Trigger" size="2" min="0" max="900" value="0">
+      <Help>Set lux level trigger with 10 being the lowest reported value.  The sensor will report motion to the hub and associated devices only if lux level is below the set value.
+      0 - set manually by lux knob; (default)
+      1 - ignore lux and always report motion;
+      </Help>
+    </Value>
+    <Value type="short" genre="config" index="5" label="Motion Re-trigger Time" size="2" min="0" max="720" value="0" units="seconds">
+      <Help>Set motion re-trigger time for the delay before the sensor reports no motion to the hub and associated devices after detecting the last motion activity.
+      0 - set manually by timer knob; (default)
+      5-720 (seconds) - set customer re-trigger time;
+      </Help>
+    </Value>
+    <Value type="short" genre="config" index="6" label="Lux Reporting Frequency" size="2" min="1" max="1440" value="30" units="minutes">
+      <Help>Set lux reporting frequency to decide how often the snesor will measure and send brightness level data to the hub and associated devices.
+      default: 30 (minutes)
+      </Help>
+    </Value>
+  </CommandClass>
+
+    <!-- Association Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="2">
+      <Group index="1" label="Lifeline" max_associations="1"/>
+      <Group index="2" label="PIR Control" max_associations="4"/>
+    </Associations>
+  </CommandClass>
+</Product>
