@@ -1520,9 +1520,9 @@ bool IsDebuggerPresent()
 }
 #endif
 
-const std::string hexCHARS = "0123456789abcdef";
 std::string GenerateUUID() // DCE/RFC 4122
 {
+	const std::string hexCHARS = "0123456789abcdef";
 	std::string uuid = std::string(36, ' ');
 
 	uuid[8] = '-';
@@ -1549,6 +1549,7 @@ std::string GenerateUUID() // DCE/RFC 4122
 
 bool isHexRepresentation(const std::string &input)
 {
+	const std::string hexCHARS = "0123456789abcdef";
 	if (input.empty())
 		return false;
 	bool bIsHex = true;
@@ -1599,6 +1600,8 @@ std::wstring utf8_to_wstring(const std::string& utf8str)
 
 std::string sha256hex(const std::string &input)
 {
+	const std::string hexCHARS = "0123456789abcdef";
+
     unsigned char digest[33] = {0};
 	char hexdigest[65] = {0};
 	size_t idxb, idxh;
