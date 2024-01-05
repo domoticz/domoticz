@@ -1,0 +1,77 @@
+<!-- https://products.z-wavealliance.org/products/1563 --><Product Revision="3" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0059:0005:0001</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/horstmann/srt321.png</MetaDataItem>
+    <MetaDataItem id="0005" name="ZWProductPage" type="0001">https://products.z-wavealliance.org/products/1563/</MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">STEP 1: On the SRT321, Set DIL switch 1 on the back of the unit to 'ON' position, scroll through the function menu by rotating the dial, select "E" and press the dial to activate Exclusion process. Now the character "E" starts flashing.
+STEP 2: On the 3rd party device, select Exclusion for removing device from SRT321's network.
+After successful Exclusion SRT321 displayed "EP" other wise displayed "EF" (Exclusion fail).
+Note: Once the character starts flashing the installer has 60 seconds to activate the 3rd party device.
+After successful Exclusion set DIL switch 1 to 'OFF' position to operate SRT321 in normal operation.
+If the Exclusion process has failed more than once, try moving the SRT321 to another position and repeat the Exclusion steps.</MetaDataItem>
+    <MetaDataItem name="Name">SRT-321 (Thermostat-HVAC)</MetaDataItem>
+    <MetaDataItem id="0005" name="FrequencyName" type="0001">CEPT (Europe)</MetaDataItem>
+    <MetaDataItem name="InclusionDescription">STEP 1: On the SRT321, set DIL switch 1 on the back of the unit to 'ON' position, scroll through the function menu by rotating the dial, select "I" and press the dial to activate Inclusion process. Now the character "I" starts flashing.
+STEP 2: On the 3rd party device, select Inclusion for adding a device into SRT321's network.
+After successful inclusion SRT321 displayed "IP" other wise displayed "IF" (Inclusion fail).
+Note: Once the character starts flashing the installer has 60 seconds to activate the 3rd party device.
+After successful Inclusion set DIL switch 1 to 'OFF' position to operate SRT321 in normal operation.
+If the inclusion process fails more than once, the 3rd party device may be already included in another network. So first exclude and then include the device.</MetaDataItem>
+    <MetaDataItem name="ResetDescription">Please use this procedure only when the primary controller is missing or otherwise inoperable.
+To reset the thermostat Set DIL switch 1 on the back of the unit to 'ON' position, scroll through the function menu by rotating the dial, select "P" and press the dial twice on the target device to execute reset. 
+Note: After successful operation device displayed "PP".
+It will put the device in factory default, that include setting all the configuration, Association to factory default and removing the device from Z-Wave network.</MetaDataItem>
+    <MetaDataItem id="0005" name="Identifier" type="0001">MAX10U-734</MetaDataItem>
+    <MetaDataItem name="WakeupDescription">SRT321 will wake-up regularly and announce the wakeup state by sending Wakeup Notification to the configured node ID if Wakeup Interval and valid node ID is set. 
+To forcefully wake up the device to send Wakeup notification do the following steps: Set DIL switch 1 on the back of the unit to 'ON' position, and than back to the 'OFF' position.
+Note: It is possible to set the node ID to 255 to send wakeup notifications as broadcast. In this mode device takes more time to go to sleep and drains battery faster, but can notify all it's direct neighbors about a wakeup.</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://Products.Z-WaveAlliance.org/ProductManual/File?folder=&amp;filename=Manuals/1563/SRT321 User MAnual.pdf</MetaDataItem>
+    <MetaDataItem name="Description">The thermostat includes TPI software that optimises boiler firing to minimise overshooting of temperature in a heated environment. It has been proved that TPI controllers provide considerable energy savings over standard heating controllers. By using interoperable radio solutions the user can remotely change the set point, read the temperature or receive battery reports. It makes this device an ideal partner for use with a home gateway for web enabled apps allowing you to remotely control your heating while on the move. You no longer have to worry about returning to a cold house as long as you have a phone or tablet PC handy. 
+By combining ease of use, ease of installation and intelligent control this thermostat is suitable for use in most heating systems.</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="23 May 2019" revision="3">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1563/xml</Entry>
+    </ChangeLog>
+  </MetaData>
+  <!-- The thermostat does not properly report its operating modes -->
+  <CommandClass id="64">
+    <SupportedModes>
+      <Mode index="0" label="Off"/>
+      <Mode index="1" label="Heat"/>
+    </SupportedModes>
+  </CommandClass>
+  <!-- This thermostat's setpoint descriptions are 0 based, not 1 -->
+  <CommandClass id="67">
+    <Compatibility>
+      <Base>0</Base>
+    </Compatibility>
+  </CommandClass>
+  <!-- Configuration Parameters -->
+  <CommandClass id="112">
+    <Value genre="config" index="1" label="Temperature sensor" max="1" min="0" size="1" type="list" value="0">
+      <Help>Enables Temperature Sensor</Help>
+      <Item label="Disable" value="0"/>
+      <Item label="Enable" value="255"/>
+    </Value>
+    <Value genre="config" index="2" label="Temperature Scale" max="1" min="0" size="1" type="list" value="0">
+      <Help></Help>
+      <Item label="Celsius" value="0"/>
+      <Item label="Fahrenheit" value="255"/>
+    </Value>
+    <Value genre="config" index="3" label="Delta Temperature" type="byte" value="10">
+      <Help>
+        Delta Temperature in 0.1 degree steps.
+      </Help>
+    </Value>
+  </CommandClass>
+  <!-- Association Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="6">
+      <Group index="1" label="Lifeline" max_associations="1"/>
+      <Group index="2" label="Thermostat Mode Set" max_associations="4"/>
+      <Group index="3" label="Binary Switch Set" max_associations="4"/>
+      <Group index="4" label="Unsolicited Battery Level Reports" max_associations="4"/>
+      <Group index="5" label="Thermostat Set Point Reports" max_associations="4"/>
+      <Group index="6" label="Unsolicited Sensor Multilevel Reports" max_associations="4"/>
+    </Associations>
+  </CommandClass>
+</Product>

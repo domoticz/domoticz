@@ -1,0 +1,30 @@
+<Product Revision="2" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0138:0002:0001</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/firstalert/zcombo.png</MetaDataItem>
+    <MetaDataItem id="0002" name="ZWProductPage" type="0001">https://products.z-wavealliance.org/products/862/</MetaDataItem>
+    <MetaDataItem name="Description">Smoke and Carbon Monoxide Alarm</MetaDataItem>
+    <MetaDataItem id="0002" name="Identifier" type="0001">ZCOMBO</MetaDataItem>
+    <MetaDataItem id="0002" name="FrequencyName" type="0001">U.S. / Canada / Mexico</MetaDataItem>
+    <MetaDataItem name="Name">Smoke/CO Alarm</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 May 2019" revision="2">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/862/xml</Entry>
+    </ChangeLog>
+  </MetaData>
+  <!-- First Alert ZCombo Smoke and Carbon Monoxide Detector -->
+ 
+  <!-- Configuration -->
+  <CommandClass id="112">
+    <Value genre="config" index="1" instance="1" label="Send double alarm messages" size="1" type="list" value="0">
+      <Help>Causes the device to send double alarm messages.</Help>
+      <Item label="Disable" value="0"/>
+      <Item label="Enable" value="1"/>
+    </Value>
+  </CommandClass>
+  <!-- Association Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="1">
+      <Group index="1" label="Lifeline" max_associations="1"/>
+    </Associations>
+  </CommandClass>
+</Product>

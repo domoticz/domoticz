@@ -1,0 +1,124 @@
+<Product Revision="2" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0090:0541:0003</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/kwikset/888.png</MetaDataItem>
+    <MetaDataItem id="0446" name="ZWProductPage" type="0003">https://products.z-wavealliance.org/products/2176</MetaDataItem>
+    <MetaDataItem id="0446" name="FrequencyName" type="0003">U.S. / Canada / Mexico</MetaDataItem>
+    <MetaDataItem id="0446" name="Identifier" type="0003">888</MetaDataItem>
+    <MetaDataItem name="ProductPage">https://www.kwikset.com/products/detail/888-smartcode-electronic-deadbolt-with-z-wave-technology</MetaDataItem>
+    <MetaDataItem name="Description">Extend your smart home system to your current deadbolt, enabling your existing deadbolt to wirelessly communicate with your smart home or security system
+Dramatically reduced, all-metal interior
+Works with existing select single cylinder deadbolts</MetaDataItem>
+    <MetaDataItem name="ProductSupport">http://www.kwikset.com/Customer-Support/Overview.aspx</MetaDataItem>
+    <MetaDataItem name="Name">SmartCode 888</MetaDataItem>
+    <ChangeLog>
+      <Entry author="mike240se" date="20 Jun 2020" revision="1">Initial Version</Entry>
+      <Entry author="mike240se" date="24 Jul 2020" revision="2">Add Config Params</Entry>
+    </ChangeLog>
+    <MetaDataItem name="WakeupDescription">The electronic conversion kit remains asleep until an action occurs on the latch or a request is received from the RF side.
+For the RF side, it will wake up every 1 second to check if there are any requests from your smart home controller.</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://products.z-wavealliance.org/ProductManual/File?folder=&amp;filename=MarketCertificationFiles/2268/Install_Guide_914C_03_09_2017.pdf</MetaDataItem>
+    <MetaDataItem name="InclusionDescription">Initiate the process to add the lock to your system at your smart home controller.
+When prompted by your smart home system to add the lock, press button “A” on the lock interior one time. The red LED will illuminate when the lock enters Add Mode.
+Please allow time for the controller to add the lock to your system.</MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">Follow your smart home system’s instructions to remove the lock from the network. When prompted by the system, press button A” on the lock interior once.  The red LED will illuminate when the lock enters Remove mode. </MetaDataItem>
+    <MetaDataItem name="ResetDescription">A factory reset will delete all user codes associated with the lock and will remove itself from your smart home system.
+Please only perform a factory reset when the primary controller is missing or inoperable.
+
+To perform a factory reset, please perform the following:
+1. Remove the battery pack
+2. Press and HOLD the Program button while reinserting the battery pack.
+3. Keep holding the button for 30 seconds until the lock beeps and the status LED flashes red.
+4. Press the Program button once more.  The status LED will flash green and red several times.
+5. After a few seconds, the lock will initiate the door handing process.</MetaDataItem>
+  </MetaData>
+  <!-- Configuration Parameters -->
+  <CommandClass id="112">
+	<Value genre="config" index="33" instance="1" label="MSB SKU part numbers" max="255" min="0" type="byte">
+      <Help>The configuration parameters 33 and 34 are used to set and get the SKU part numbers.
+The SKU is made up of 8 bytes. Each parameter consists of four bytes of data.
+Parameter 33 contains the first four most significant bytes of the SKU, while parameter
+34 contains the four least significant bytes of the SKU.
+When setting the SKU, it must be done in two set commands, one for each parameter.
+The order of programming the SKU does not matter. 
+Setting parameter 33 will program the first four bytes of the SKU. Setting parameter 34
+will program the last 4 bytes of the SKU. Most printable values are accepted for the set
+command.
+When getting the SKU, it must be done in two get commands, one for each parameter.
+The order of getting the SKU does not matter.
+Getting parameter 33 will retrieve the first four bytes of the SKU. Getting parameter 34
+will retrieve the last 4 bytes of the SKU.
+			</Help>
+    </Value>
+    <Value genre="config" index="34" instance="1" label="LSB SKU part numbers" max="255" min="0" type="byte">
+      <Help>The Configuration Parameter 33 and 34 are used to set the SKU part numbers to the Kwikset locks. 
+			Is the least four significant bytes (LSB). 			
+			</Help>
+    </Value>
+	<Value genre="config" index="35" instance="1" label="Interior Status LED Control" max="1" min="0" type="bool">
+	  <Help>The configuration parameter 35 is a one byte field that will allow the user to get / set the
+value for the Interior Status LED control. The value of 0 means that the setting is
+disabled; whereas the value of 1 means that the setting is enabled.
+Sending a set command with the default field set to 1 will cause the control to revert back
+to its factory default setting. </Help>
+	</Value>
+	<Value genre="config" index="36" label="AutoLock" size="2" type="list" value="1">
+      <Help>The configuration parameter 36 uses 2 bytes that will allow the user to get / set the value
+for the Auto Lock feature and timing for that feature. The first byte will be the
+enable/disable byte. The value of 0 means that the setting is disabled; whereas the value
+of 1 means that the setting is enabled. The next two bytes will be the timing for the Auto
+Lock feature and should contain the number of seconds before the Auto Lock will occur.
+The valid values are: 0 (default – 30 seconds), 30, 60, 90, 120, 180. For example, setting
+the auto lock feature for 60 seconds, the two timing bytes should be: 0x003C.
+Sending a set command with the default field set to 1 will cause the control to revert back
+to its factory default settings. </Help>
+      <Item label="Disabled" value="30"/>
+      <Item label="Enabled - 30s" value="286"/>
+      <Item label="Enabled - 60s" value="316"/>
+      <Item label="Enabled - 90s" value="346"/>
+	  <Item label="Enabled - 120s" value="376"/>
+	  <Item label="Enabled - 180s" value="436"/>
+    </Value>
+	<Value genre="config" index="37" instance="1" label="Audio Feature Control" max="1" min="0" type="bool">
+	  <Help>The configuration parameter 37 is a one byte field that will allow the user to get / set the
+value for the Audio feature. The value of 0 means that the setting is disabled; whereas
+the value of 1 means that the setting is enabled.
+Sending a set command with the default field set to 1 will cause the control to revert back
+to its factory default setting. 
+	   </Help>
+	</Value>
+	<Value genre="config" index="40" label="Reset To Factory Defaults" size="1" type="list" value="0" write_only="true">
+      <Help>Reset to factory defaults</Help>
+      <Item label="Perform Factory Reset" value="1"/>
+      <Item label="Normal" value="0"/>
+    </Value>
+	
+	<Value genre="config" index="47" label="Motor Load Control" size="1" max="1" min="0" type="bool">
+	  <Help>The configuration parameter 47 uses 1 byte that will allow the user to get / set the value
+to enable or disable the motor load alarm. Setting this byte to 0 will disable the alarm,
+whereas setting this byte to 1 will enable the alarm. If a motor load alarm has been
+activated and the alarm has been enabled, the alarm will be sent via the Power
+Management group in the Notification Command Class as a Load Error (0x09). 
+	   </Help>
+	</Value>
+	
+	
+  </CommandClass>
+  <CommandClass id="113">
+    <!-- These Door Locks don't send a DoorLockReport when the
+                Lock Status is Changed, but instead send a Alarm Message -
+                So we trigger a Refresh of the DoorLock Command Class when
+                we recieve a Alarm Message Instead -->
+    <TriggerRefreshValue Genre="user" Index="6" Instance="1">
+      <RefreshClassValue CommandClass="98" Index="1" Instance="1" RequestFlags="0"/>
+    </TriggerRefreshValue>
+  </CommandClass>
+  <!-- Association Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="2">
+      <Group index="1" label="Lifeline" max_associations="1"/>
+      <Group index="2" label="Doorlock notify report" max_associations="5"/>
+    </Associations>
+  </CommandClass>
+</Product>
+

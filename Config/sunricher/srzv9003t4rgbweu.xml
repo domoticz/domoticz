@@ -1,0 +1,38 @@
+<Product Revision="1" 
+  xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="Name">Z-Wave Wall Controller</MetaDataItem>
+    <MetaDataItem name="Description">The Wall controller is a Security Enabled Z-Wave Plus device that can both control other Z-Wave devices and activate scenes in Gateways.</MetaDataItem>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0330:0300:a108</MetaDataItem>
+    <MetaDataItem name="ProductPage">http://www.sunricher.com/touch-panel-rgbw-z-wave-wall-controller-sr-zv9001t4-rgbw-eu.html</MetaDataItem>
+    <MetaDataItem name="ProductSupport">http://www.sunricher.com/</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/sunricher/srzv9003t4rgbweu.png</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://products.z-wavealliance.org/ProductManual/File?folder=&amp;filename=Manuals/2945/Z-Wave%20Wall%20Controller%20SR-ZV9003T4-RGBW-EU.pdf</MetaDataItem>
+    <MetaDataItem name="InclusionDescription">Short press the “inclusion/exclusion” button, or press and hold down “ALL ON/OFF” button for over 3 seconds, the wall controller will be set to inclusion mode, and waiting to be included, then LED indicator turns on and blinks 6 times quickly to indicate successful inclusion.</MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">Short press the “inclusion/exclusion” button, or press and hold down “ALL ON/OFF” button for over 3 seconds, the wall controller will be set to exclusion mode, and waiting to be excluded, then LED indicator turns on and shows 3 short blinks and 1 long blink to indicate successful exclusion.</MetaDataItem>
+    <MetaDataItem name="ResetDescription">Press and hold down “inclusion/exclusion” button for over 8 seconds, LED indicator blinks slowly to indicate successful factory reset, release “inclusion/exclusion” button,the wall controller will restart automatically.</MetaDataItem>
+    <MetaDataItem id="a108" name="ZWProductPage" type="0300">https://products.z-wavealliance.org/products/2945</MetaDataItem>
+    <MetaDataItem id="a108" name="FrequencyName" type="0300">CEPT (Europe)</MetaDataItem>
+    <MetaDataItem id="0108" name="Identifier" type="0300">SR-ZV9003T4-RGBW-EU</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Peter Gebruers - peter.gebruers@gmail.com" date="11 July 2019" revision="1">Initial entry based on manufacturer data and test device</Entry>
+    </ChangeLog>
+  </MetaData>
+  <!-- Device does not have parameters, there is no CommandClass id="112" -->
+  <!-- This device has no real or virtual outputs so cannot be controlled or polled, basic class is 'controlling' only -->
+  <CommandClass id="32">
+    <Compatibility>
+      <GetSupported>false</GetSupported>
+    </Compatibility>
+  </CommandClass>
+  <!-- The Association Group Information -->
+  <CommandClass id="142">
+    <Associations num_groups="5">
+      <Group index="1" label="LifeLine" max_associations="1"/>
+      <Group index="2" label="Launch 1. Press button 1 to activate group." max_associations="12"/>
+      <Group index="3" label="Launch 2. Press button 2 to activate group." max_associations="12"/>
+      <Group index="4" label="Launch 3. Press button 3 to activate group." max_associations="12"/>
+      <Group index="5" label="Launch 4. Press button 4 to activate group." max_associations="12"/>
+    </Associations>
+  </CommandClass>
+</Product>

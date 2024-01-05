@@ -1,0 +1,84 @@
+<Product Revision="1" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="Name">Indoor Siren</MetaDataItem>
+    <MetaDataItem name="Description">The indoor siren is an intelligent device that can be controlled remotely by the Z-wave network. The indoor siren is battery powered, small and easily installed. When the siren is triggered, an LED light will flash, and there will be an alarm sound at the same time. The sound level is at least 115 dB.</MetaDataItem>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0131:1083:0004</MetaDataItem>
+    <MetaDataItem name="ProductPage">https://www.zipato.com/product/indoor-siren</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/zipato/ne-nas-ab01z.png</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://products.z-wavealliance.org/ProductManual/File?folder=&amp;filename=MarketCertificationFiles/3046/ne-nas-ab02z.eu%20-%20Zipato%20INDOOR%20SIREN-waveEU_UserManual_v1.3.pdf</MetaDataItem>
+    <MetaDataItem name="InclusionDescription">Quickly triple click the code button, LED light will flash red for 5 times.</MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">Quickly triple click the code button, LED light will flash red for 5 times.</MetaDataItem>
+    <MetaDataItem name="ResetDescription">Make sure the sensor is connected to power source, Press the code button for 10 seconds, LED will flash blue for 3 seconds</MetaDataItem>
+    <MetaDataItem id="1083" name="ZWProductPage" type="0003">https://products.z-wavealliance.org/products/3046</MetaDataItem>
+    <MetaDataItem id="1083" name="FrequencyName" type="0003">CEPT (Europe)</MetaDataItem>
+    <MetaDataItem id="1083" name="Identifier" type="0003">ne-nas-ab02z.eu</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Marcus Birkin - marcus.birkin@gmail.com" date="18 January 2020" revision="1">Information obtained from manual, z-wavealliance, re-brand documentation (https://products.z-wavealliance.org/products/3069), and trial &amp; error</Entry>
+    </ChangeLog>
+  </MetaData>
+
+  <!-- COMMAND_CLASS_CONFIGURATION -->
+  <CommandClass id="112">
+
+    <Value genre="config" index="7" label="Siren On Mode" max="2" min="1" size="1" type="list" units="" value="1">
+      <Help>This parameter defines the default sound index, volume and the duration time for siren on</Help>
+      <Item label="Alarm Mode" value="1"/>
+      <Item label="Doorbell Mode" value="2"/>
+    </Value>
+
+    <Value genre="config" index="1" label="Alarm volume" max="3" min="1" size="1" type="list" value="2">
+      <Help>This parameter defines the output volume when siren plays alarm.</Help>
+      <Item label="Low" value="1"/>
+      <Item label="Middle" value="2"/>
+      <Item label="High" value="3"/>
+    </Value>
+
+    <Value genre="config" index="5" label="Alarm sound index" max="10" min="1" type="byte" units="" value="10">
+      <Help>This parameter defines the alarm sound index so siren can play different sound when an alarm occurs.</Help>
+    </Value>
+
+    <Value genre="config" index="2" label="Alarm duration time" max="127" min="0" size="1" type="list" value="2">
+      <Help>This Parameter defines the alarm duration time when siren receives an alarm sensor notification report or an alarm command from controller.</Help>
+      <Item label="Siren is not on" value="0"/>      
+      <Item label="30 Seconds" value="1"/>
+      <Item label="1 Minute" value="2"/>
+      <Item label="5 Minutes" value="3"/>
+      <Item label="Siren is always on" value="127"/>
+    </Value>
+
+    <Value genre="config" index="8" label="Alarm LED" max="1" min="0" size="1" type="list" value="1">
+      <Help>This parameter defines the default led enable status when siren is on for alarm</Help>
+      <Item label="Disable" value="0" />
+      <Item label="Enable" value="1" />
+    </Value>
+
+    <Value genre="config" index="4" label="Doorbell volume" max="3" min="1" size="1" type="list" value="2">
+      <Help>This parameter defines the output volume when siren plays doorbell music</Help>
+      <Item label="Low" value="1"/>
+      <Item label="Middle" value="2"/>
+      <Item label="High" value="3"/>
+    </Value>
+
+    <Value genre="config" index="6" label="Doorbell sound index" max="10" min="1" type="byte" units="" value="9">
+      <Help>This parameter defines the doorbell music index so siren can play different music when an alarm occurs. </Help>
+    </Value>
+
+    <Value genre="config" index="3" label="Doorbell duration time" max="127" min="0" type="byte" units="" value="1">
+      <Help>This parameter defines the doorbell music duration time when siren receives a door/window sensor notification report or an alarm command (BASIC_SET=0x02) from a controller</Help>
+    </Value>
+
+    <Value genre="config" index="9" label="Doorbell LED" max="1" min="0" size="1" type="list" value="0">
+      <Help>This parameter defines the default led enable status when siren is on for doorbell</Help>
+      <Item label="Disable" value="0" />
+      <Item label="Enable" value="1" />
+    </Value>
+  </CommandClass>
+
+  <!-- COMMAND_CLASS_ASSOCIATION -->
+  <CommandClass id="133">
+    <Associations num_groups="2">
+      <Group index="1" label="LifeLine" max_associations="5"/>
+      <Group index="2" label="Siren status" max_associations="5"/>
+    </Associations>
+  </CommandClass>
+</Product>

@@ -1,0 +1,73 @@
+<Product Revision="2" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/013C:0031:0005</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/philio/pad02.png</MetaDataItem>
+    <MetaDataItem id="0031" name="ZWProductPage" type="0005">https://products.z-wavealliance.org/products/2355/</MetaDataItem>
+    <MetaDataItem name="ResetDescription">Use this procedure only in the event that the primary controller is lost or otherwise inoperable. 
+1. Pressing Include button of PAD02 three times within 2 seconds will enter inclusion mode.
+2. Within 1 second, press Include button of PAD02 again for 5 seconds. 
+3. IDs are excluded. </MetaDataItem>
+    <MetaDataItem id="0031" name="Identifier" type="0005">PAD02</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://Products.Z-WaveAlliance.org/ProductManual/File?folder=&amp;filename=Manuals/2355/PAD02-A1 manual-20170405.pdf</MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">1. Put your Z-Wave controller into exclusion mode by following the instructions provided by the controller manufacturer.
+2. Pressing Include button of PAD02 three times within 2 seconds will enter exclusion mode. 
+3. Node ID has been excluded.</MetaDataItem>
+    <MetaDataItem name="Name">Z-Wave Smart Dimmer Socket</MetaDataItem>
+    <MetaDataItem id="0031" name="FrequencyName" type="0005">CEPT (Europe)</MetaDataItem>
+    <MetaDataItem name="Description">PAD02 is an E27(EU)/ E26(US) Edison screw based lamp socket, which provides electrical connection to the E14(EU)/ E12(US) Edison screw based lamps and support it in the lighting fixture. The use of socket allows lamps to be safely and conveniently replaced. You can On/Off the light by pressing the button briefly, or a long pressing to control the brightness of dimmable lightbulb. 
+This dimmer is a transceiver which is a security enabled device which based on Z-Wave Plus technology. Z-Wave PlusTM enabled devices displaying the Z-Wave PlusTM logo can also be used with it regardless of the manufacturer, and can also be used in other manufacturer’s Z- WaveTM enabled networks. Remote dim level control of the connected light is possible with other manufacturer’s wireless Controller. Since PAD02 supports Security Command Class, it can learn with a Secured enabled controller to fully utilize the device. Its functionality and supported command classes is identical when included as a secure and non-secure device. 
+
+Adding to Z- WaveTM  Network 
+In the front casing, there is an on/off button with LED indicator below which is used to switch on and off, dim level, or carries out add, remove, reset or association. When first power is applied, its LED flashes on and off alternately and repeatedly at 0.5 second intervals. It implies that it has not been assigned a node ID and start auto inclusion. 
+
+Auto Inclusion
+The function of auto inclusion will be executed as long as the dimmer does not have Node ID and just connect the dimmer to main power. Note: Auto inclusion timeout is 2 minute during which the node information of explorer frame will be emitted once every several seconds. Unlike “inclusion” function as shown in the table below, the execution of auto inclusion is free from pressing the On/Off button on the dimmer. 
+</MetaDataItem>
+    <MetaDataItem name="InclusionDescription">1. Put your Z-Wave controller into inclusion mode by following the instructions provided by the controller manufacturer.
+2. Pressing Include button of PAD02 three times within 2 seconds will enter inclusion mode. </MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="02 Jun 2019" revision="2">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/2355/xml</Entry>
+    </ChangeLog>
+  </MetaData>
+  <!--
+    philio / Zipato Smart Dimmer Socket E27
+    https://products.z-wavealliance.org/products/2355
+    -->
+    <!-- Configuration Parameters -->
+  <CommandClass id="112">
+    <Value genre="config" index="1" label="Dimmer Level Report mode" max="1" min="0" size="1" type="list" value="1">
+      <Help>
+                Whenever dimmer on/off state changes, it will send MULTILEVEL_SWITCH_ REPORT to the nodes of group1.
+                The default setting is Enable the function.
+            </Help>
+      <Item label="Disable" value="0"/>
+      <Item label="Enable" value="1"/>
+    </Value>
+    <Value genre="config" index="2" label="LED indication mode" max="3" min="1" size="1" type="list" value="1">
+      <Help>
+                Show dimmer State: When dimmer is on, LED is on. When dimmer is off, LED is off.
+                Show Night mode: When dimmer is on, LED is off. When dimmer is off, LED is on.
+                One flash mode: When dimmer on/off state changes, LED will light on one second and then off.
+            </Help>
+      <Item label="Show dimmer state" value="1"/>
+      <Item label="Show night mode" value="2"/>
+      <Item label="One flash mode" value="3"/>
+    </Value>
+    <Value genre="config" index="3" label="Restore dimmer state" max="2" min="0" size="1" type="list" value="1">
+      <Help>
+                Whenever the AC power return from lost, PAD02 will restore the switch state which could be Dimmer off, Last dimmer state, Dimmer on.
+                The default setting is Last dimmer state.
+            </Help>
+      <Item label="Dimmer off" value="0"/>
+      <Item label="Last dimmer state" value="1"/>
+      <Item label="Dimmer on" value="2"/>
+    </Value>
+  </CommandClass>
+  <!-- COMMAND_CLASS_ASSOCIATION. Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="2">
+      <Group index="1" label="Lifeline" max_associations="5"/>
+      <Group index="2" label="Retransmit local Control" max_associations="5"/>
+    </Associations>
+  </CommandClass>
+</Product>

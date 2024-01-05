@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Product xmlns='https://github.com/OpenZWave/open-zwave' Revision="0">
+    <!--MCOHome Particle Matter 2.5 Monitor MH10-PM2.5-WD -->
+    <!-- Configuration -->
+    <CommandClass id="112">
+        <Value genre="config" index="2" instance="1" label="PM2.5 reporting threshold" max="127" min="0" size="1" type="byte" units="" value="10">
+            <Help>0 report disabled, base on 0.1ug/m3 unit, 10 by default, 10*0.1ug/m3=1ug/m3</Help>
+        </Value>
+        <Value genre="config" index="3" instance="1" label="Temperature reporting threshold" max="127" min="0" size="1" type="byte" units="" value="1">
+            <Help>0 report disabled, base on 0.5C unit, 1 by default, 1*0.5C=0.5C</Help>
+        </Value>
+        <Value genre="config" index="4" instance="1" label="Humidity reporting threshold" max="50" min="0" size="1" type="byte" units="" value="2">
+            <Help>0 report disabled, base on 1% unit, 2 by default, 2*1C=2C</Help>
+        </Value>
+        <Value genre="config" index="255" instance="1" label="Factory setting" max="255" min="0" size="1" type="byte" units="" value="0">
+            <Help>Restore the factory setting - write only, set to 85 to reset</Help>
+        </Value>        
+    </CommandClass>
+    <!-- Association Groups -->
+    <CommandClass id="133">
+        <Associations num_groups="2">
+            <Group index="1" max_associations="5" label="Notification" auto="false"/>
+            <Group index="2" max_associations="1" label="Lifeline" auto="true"/>
+        </Associations>
+    </CommandClass>
+</Product>

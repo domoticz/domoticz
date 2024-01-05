@@ -72,7 +72,12 @@ public:
 	bool SetSetPointInt(const std::vector<std::string> &sd, float TempValue);
 	bool SetSetPointEvo(const std::string& idx, float TempValue, const std::string& newMode, const std::string& until);
 	bool SetThermostatState(const std::string &idx, int newState);
-
+#ifdef WITH_OPENZWAVE
+	bool SetZWaveThermostatMode(const std::string& idx, int tMode);
+	bool SetZWaveThermostatFanMode(const std::string& idx, int fMode);
+	bool SetZWaveThermostatModeInt(const std::vector<std::string>& sd, int tMode);
+	bool SetZWaveThermostatFanModeInt(const std::vector<std::string>& sd, int fMode);
+#endif
 	bool SwitchEvoModal(const std::string &idx, const std::string &status, const std::string &action, const std::string &ooc, const std::string &until);
 
 	bool GetSunSettings();

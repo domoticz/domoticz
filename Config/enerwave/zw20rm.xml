@@ -1,0 +1,55 @@
+<!-- Enerwave ZW20RM http://enerwaveautomation.com/products/zw20rm/ --><Product Revision="2" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/011A:0101:0111</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/enerwave/zw20rm.png</MetaDataItem>
+    <MetaDataItem id="0101" name="ZWProductPage" type="0111">https://products.z-wavealliance.org/products/1766/</MetaDataItem>
+    <MetaDataItem name="Name">PLUG-IN SMART METER APPLIANCE MODULE</MetaDataItem>
+    <MetaDataItem id="0101" name="Identifier" type="0111">ZWN-333M</MetaDataItem>
+    <MetaDataItem name="Description">This ZWN-333M Smart Meter Appliance Module is a Z-Wave enabled device and fully interoperable with other Z-Wave certified device from other manufacturers and/or other applications, which can report wattage energy usage or kWh energy usage to a Z-Wave gateway. In a Z-Wave network, ZWN-333M can be controlled to turn on/off to save energy, also act as a wireless repeater regardless of vendor to increase reliability of the network. With a horizontal design, the Smart Meter Appliance Module will not block other nearby AC outlets.</MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">Once program button is pressed and hold for 3 second, the device will enter into
+learn mode to accomplish adding or removing by controller. Refer to the instruction
+for your primary controller to access the setup function and add or remove devices.</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://Products.Z-WaveAlliance.org/ProductManual/File?folder=&amp;filename=Manuals/1766/ZWN-333M_20160506.pdf</MetaDataItem>
+    <MetaDataItem name="InclusionDescription">Once program button is pressed and hold for 3 second, the device will enter into
+learn mode to accomplish adding or removing by controller. Refer to the instruction
+for your primary controller to access the setup function and add or remove devices.</MetaDataItem>
+    <MetaDataItem name="ResetDescription">Once program button is pressed and hold for 10 second, the device will send a device reset locally notification to controller. Then clear all of information for the network, and restore factory defaults, and reset the module. Use this procedure only in the event that the network primary controller is missing or otherwise inoperable.
+</MetaDataItem>
+    <MetaDataItem id="0101" name="FrequencyName" type="0111">U.S. / Canada / Mexico</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="24 May 2019" revision="2">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1766/xml</Entry>
+    </ChangeLog>
+  </MetaData>
+  <!-- Configuration Parameters -->
+  <CommandClass id="112">
+    <Value genre="config" index="1" label="LED mode" size="1" type="list" value="0">
+      <Help>Synchronization of outlet power and LED indicator</Help>
+      <Item label="Power on, LED off" value="0"/>
+      <Item label="Power on, LED on" value="1"/>
+    </Value>
+    <Value genre="config" index="8" label="Instant Meter Autosend Interval" max="255" min="0" type="byte" units="minutes" value="0">
+      <Help>How often to send the energy report for the moment-in-time usage (METER_REPORT version) automatically in minutes. 0 = disabled.</Help>
+    </Value>
+    <Value genre="config" index="9" label="Instant Multilevel Autosend Interval" max="255" min="0" type="byte" units="minutes" value="0">
+      <Help>How often to send the energy report for the moment-in-time usage (SENSOR_MULTILEVEL_REPORT version) automatically in minutes. 0 = disabled.</Help>
+    </Value>
+    <Value genre="config" index="10" label="Accumulated Energy Autosend Interval" max="255" min="0" type="byte" units="minutes" value="0">
+      <Help>How often to send the energy report for the accumulated energy usage usage (METER_REPORT) automatically in minutes. 0 = disabled.</Help>
+    </Value>
+    <Value genre="config" index="11" label="Wattage Change Notifications" size="1" type="list" value="1">
+      <Help>Enable automatic notifications when there is a change in wattage.</Help>
+      <Item label="No report" value="0"/>
+      <Item label="Send METER_REPORT only (default)" value="1"/>
+      <Item label="Send SENSOR_MULTILEVEL_REPORT only" value="2"/>
+      <Item label="Send both reports (recommended)" value="3"/>
+    </Value>
+    <Value genre="config" index="12" label="Wattage Change Threshold" max="255" min="0" type="byte" units="0.1 watt" value="10">
+      <Help>How much the wattage needs to change by to trigger the wattage change notifications. Units are 1-10th of a watt; 0-255: 0.0-25.5W</Help>
+    </Value>
+  </CommandClass>
+  <CommandClass id="133">
+    <Associations num_groups="1">
+      <Group index="1" label="Reports" max_associations="5"/>
+    </Associations>
+  </CommandClass>
+</Product>

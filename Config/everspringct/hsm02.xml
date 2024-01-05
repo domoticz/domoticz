@@ -1,0 +1,108 @@
+<Product Revision="6" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0116:0001:0002</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/everspring/hsm02.png</MetaDataItem>
+    <MetaDataItem id="0001" name="ZWProductPage" type="0002">https://products.z-wavealliance.org/products/607/</MetaDataItem>
+    <MetaDataItem name="ProductSupport">http://www.ctc-chromagic.com/?q=contact</MetaDataItem>
+    <MetaDataItem id="0001" name="FrequencyName" type="0002">CEPT (Europe)</MetaDataItem>
+    <MetaDataItem name="Description">Magnetic door or window sensor.  Z-Wave protocol to secure the success of wireless two way communication
+Very small size
+With tamper-proof protection
+Easy install
+Low battery indication
+Auto report the open/close status and battery status
+Very low power consumption (3 years battery life)</MetaDataItem>
+    <MetaDataItem name="ProductPage">http://www.ctc-chromagic.com/?q=zwave/HSM02</MetaDataItem>
+    <MetaDataItem name="Name">Chromagic (HSM02) Magnetic Sensor</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 May 2019" revision="5">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/14/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 May 2019" revision="6">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/607/xml</Entry>
+    </ChangeLog>
+  </MetaData>
+  <!-- Configuration Parameters -->
+  <CommandClass id="112">
+    <Value genre="config" index="0" label="Basic Set Level" max="99" min="0" type="byte" units="" value="99">
+      <Help>
+				When Basic Set Command is sent where contains a value, the receiver will
+				take it for consideration; for instance, if a lamp module is received the Basic
+				Set command of which value is decisive as to how bright of dim level of lamp
+				module shall be.
+			</Help>
+    </Value>
+    <Value genre="config" index="1" label="Off Delay" max="127" min="0" type="byte" units="seconds" value="0">
+      <Help>
+				The Configuration parameter that can be used to adjust the amount of delay
+				before the OFF command is transmitted as Configuration Parameter #2.
+				This parameter can be configured with the value of 0 through 127, where 0
+				means send OFF command immediately and 127 means 127 seconds of
+				delay
+			</Help>
+    </Value>
+    <Compatibility/>
+  </CommandClass>
+  <!-- COMMAND_CLASS_SENSOR_BINARY. -->
+  <CommandClass id="48">
+    <Value genre="user" index="0" label="Magnet open" max="255" min="0" read_only="true" type="bool" units="" value="" write_only="false">
+      <Help>
+				Magnets to be opened/closed
+			</Help>
+    </Value>
+    <Compatibility/>
+  </CommandClass>
+  <!-- COMMAND_CLASS_ALARM. -->
+  <CommandClass id="113">
+    <Value genre="user" index="0" instance="1" label="Alarm Type" max="255" min="0" read_only="true" type="byte" units="" value="12" verify_changes="false" write_only="false">
+      <Help>Grouping 1, afterward, LED will light up for 1 sec to remind user when HSM02 is triggered due to open or close incidents.</Help>
+    </Value>
+    <Value genre="user" index="1" instance="1" label="Alarm Report" read_only="true" size="1" type="list" value="0" verify_changes="false" vindex="0" write_only="false">
+      <Help>
+				No alarm : There is no alarm to report. 
+				Power applied : Once the power has been applied, Alarm Report Command will be sent to
+				Nodes in Grouping 1 to confirm the power applied status for HSM02. 
+				Tamper event : Grouping 1, afterward, LED will light up for 1 sec to remind user when HSM02 is
+				triggered due to open or close incidents. 
+				Low battery : When HSM02 automatically wakes up, it will check the battery usage. When
+				low battery is detected, Alarm Report Command will be sent to Nodes in
+				Grouping 1, afterward, LED will light up for 1 sec to remind user when HSM02 is
+				triggered due to open or close incidents.
+			</Help>
+      <Item label="No alarm" value="0"/>
+      <Item label="Power applied" value="2"/>
+      <Item label="Tamper event" value="17"/>
+      <Item label="Low battery" value="255"/>
+    </Value>
+    <Compatibility/>
+  </CommandClass>
+  <!-- COMMAND_CLASS_BATTERY. -->
+  <CommandClass id="128">
+    <Value genre="user" index="0" label="Battery Check" max="100" min="20" type="byte" units="%" value="">
+      <Help>
+				The users can also inquire the battery status of the unit by sending
+				BATTERY_GET command via Z-Wave Controller. Once the unit receives the
+				command, it will return BATTERY_REPORT command. The unit will send
+				Battery_Level = 255 (0xFF) command to the Z-Wave Controller to inform that
+				the unit is in low battery status.
+			</Help>
+    </Value>
+    <Compatibility/>
+  </CommandClass>
+  <!-- COMMAND_CLASS_WAKE_UP. -->
+  <CommandClass id="132">
+    <Instance index="1"/>
+    <Value genre="system" index="0" instance="1" label="Wake-up Interval" max="1005696000" min="60" read_only="false" type="int" units="Seconds" value="" write_only="false"/>
+    <Compatibility>
+      <CreateVars>true</CreateVars>
+    </Compatibility>
+  </CommandClass>
+  <!-- COMMAND_CLASS_ASSOCIATION. Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="2">
+      <Group index="1" label="Alarm Reports" max_associations="1">
+<!-- Once the power has been applied, Alarm Report Command will be sent to Nodes in Grouping 1 to confirm the power applied status for HSM02. -->
+			</Group>
+      <Group index="2" label="Basic level" max_associations="5">
+<!-- However, the BASIC_SET command will be also sent to the nodes of Grouping 2. For instance, a lamp module will be turned off after receiving the BASIC_SET command. -->
+			</Group>
+    </Associations>
+  </CommandClass>
+</Product>

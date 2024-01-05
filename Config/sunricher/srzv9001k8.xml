@@ -1,0 +1,53 @@
+<Product Revision="1" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0330:a305:0300</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/sunricher/srzv9001k8.png</MetaDataItem>
+    <MetaDataItem id="a305" name="ZWProductPage" type="0300">https://products.z-wavealliance.org/products/3334</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://www.sunricher.com/media/resources/manual/SR-ZV9001K8-DIM-G4%20Instruction%20V1.pdf</MetaDataItem>
+    <MetaDataItem name="Description">The remote control is a Z-Wave device that can both control other Z-Wave devices and activate scenes in Gateways.</MetaDataItem>
+    <MetaDataItem name="Name">Wall Controller</MetaDataItem>
+    <MetaDataItem id="a305" name="FrequencyName" type="0300">CEPT (Europe)</MetaDataItem>
+    <MetaDataItem id="a305" name="Identifier" type="0300">SR-ZV9001K8-DIM-G4</MetaDataItem>
+    <MetaDataItem name="InclusionDescription">Step 1. Make sure the remote control does not belong to any Z-Wave network, short press any button, if LED
+indicator does not turn on, the remote control does not belong to any network, then continue step 2,if LED
+indicator turns on, it means the remote control has already been included to a network, please first set the
+remote control to exclusion mode (refer to the part "Exclusion" of this manual),then continue step 2.
+Step 2. Set primary controller/gateway into inclusion mode (Please refer to your primary controllers manual on
+how to turn your controller into inclusion).
+Step 3. Press and hold down both buttons and of Group 2 over 3 seconds, LED indicator turns on, the
+remote control will be set to inclusion mode, and waiting to be included, after 10s LED indicator blinks 6 times
+quickly to indicate successful inclusion. The remote control is a sleepy device, after inclusion it will not enter
+into sleepy mode immediately, and will continue activation status for 30s and wait data interaction from the
+gateway, the LED indicator will stay solid on, please be patient to wait LED indicator to turn off.</MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">There are two exclusion methods:
+Method 1: Exclusion from the primary controller/gateway as follows:
+1. Set the primary controller/gateway into exclusion mode (Please refer to your primary controllers manual on
+how to set your controller into exclusion).
+2. Press and hold down both buttons and of Group 2 over 3 seconds, LED indicator turns on, the remote
+control will be set to exclusion mode, and waiting to be excluded, after 7s LED indicator blinks 4 times quickly to
+indicate successful exclusion.
+Method 2: Factory reset the remote control will force the remote control to be excluded from a network. (please
+refer to the part “Factory Reset” of this manual)
+Note: Factory reset is not recommended for exclusion, please use this procedure only if the primary
+controller/gateway is missing or otherwise inoperable.</MetaDataItem>
+    <MetaDataItem name="ResetDescription">Press and hold down both buttons and of Group 2 for over 10 seconds, LED indicator turns on and then blinks 4 times quickly to indicate successful factory reset.</MetaDataItem>
+    <ChangeLog>
+      <Entry author="GizMoCuz" date="12 Jun 2019" revision="1">Initial Configuration file</Entry>
+    </ChangeLog>
+  </MetaData>
+  <!--
+    Z-Wave Dim Remote Control SR-ZV9001K8-DIM-G4
+    Manual: https://www.sunricher.com/media/resources/manual/SR-ZV9001K8-DIM-G4%20Instruction%20V1.pdf
+    -->
+
+    <!-- Association Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="5">
+      <Group index="1" label="Lifeline" max_associations="1"/>
+      <Group index="2" label="Button 1" max_associations="12"/>
+      <Group index="3" label="Button 2" max_associations="12"/>
+      <Group index="4" label="Button 3" max_associations="12"/>
+      <Group index="5" label="Button 4" max_associations="12"/>
+    </Associations>
+  </CommandClass>
+</Product>

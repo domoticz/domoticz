@@ -1,0 +1,217 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Product xmlns='https://github.com/OpenZWave/open-zwave' Revision="1">
+	<MetaData>
+		<MetaDataItem name="Name">Evolve Guest Controls T-100 Thermostat</MetaDataItem>
+		<MetaDataItem name="Description">The T-100H is a Z-Wave wireless digital thermostat, designed to control the majority of HVAC systems. The T-100H contains a robust thermostat interface and is designed for use with communicating systems where remote monitoring and/or remote control are desired.</MetaDataItem>
+		<MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0113:5434:4556</MetaDataItem>
+		<MetaDataItem name="ProductPic">images/evolve/t-100.png</MetaDataItem>
+		<MetaDataItem id="5434" name="ZWProductPage" type="4556">https://products.z-wavealliance.org/products/81</MetaDataItem>
+		<ChangeLog>
+		  <Entry author="Eric Yeargan - eric@yeargan.org" date="22 December 2020" revision="1">Initial config with 'Heating 1' setpoint missing from discovered config</Entry>
+		</ChangeLog>
+	</MetaData>
+	<CommandClass id="32">
+		<Compatibility>
+			<Mapping>64</Mapping>
+		</Compatibility>
+		<Instance index="1" />
+	</CommandClass>
+	<CommandClass id="43">
+		<Compatibility />
+		<Instance index="1" />
+		<Value type="int" genre="user" instance="1" index="0" label="Scene" units="" read_only="true" write_only="false" verify_changes="false" min="-2147483648" max="2147483647" value="0">
+			<Help></Help>
+		</Value>
+		<Value type="int" genre="user" instance="1" index="1" label="Duration" units="" read_only="true" write_only="false" verify_changes="false" min="-2147483648" max="2147483647" value="0">
+			<Help></Help>
+		</Value>
+	</CommandClass>
+	<CommandClass id="49">
+		<Compatibility />
+		<Instance index="1" />
+		<Value type="decimal" genre="user" instance="1" index="1" label="Air Temperature" units="F" read_only="true" write_only="false" verify_changes="false" min="0" max="0" value="72">
+			<Help>Air Temperature Sensor Value</Help>
+		</Value>
+	</CommandClass>
+	<CommandClass id="64">
+		<Compatibility />
+		<Instance index="1" />
+		<Value type="list" genre="user" instance="1" index="0" label="Mode" units="" read_only="false" write_only="false" verify_changes="false" min="0" max="0" vindex="1" size="1">
+			<Help>Set the Thermostat Mode</Help>
+			<Item label="Off" value="0" />
+			<Item label="Heat" value="1" />
+			<Item label="Cool" value="2" />
+			<Item label="Auto" value="3" />
+			<Item label="Aux Heat" value="4" />
+		</Value>
+		<SupportedModes>
+			<Mode index="0" label="Off" />
+			<Mode index="1" label="Heat" />
+			<Mode index="2" label="Cool" />
+			<Mode index="3" label="Auto" />
+			<Mode index="4" label="Aux Heat" />
+		</SupportedModes>
+	</CommandClass>
+	<CommandClass id="66">
+		<Compatibility />
+		<Instance index="1" />
+		<Value type="string" genre="user" instance="1" index="0" label="Operating State" units="" read_only="true" write_only="false" verify_changes="false" min="0" max="0" value="Idle">
+			<Help>Set the Thermostat Operating State</Help>
+		</Value>
+	</CommandClass>
+	<CommandClass id="67">
+		<Compatibility />
+		<Instance index="1" />
+		<Value type="decimal" genre="user" instance="1" index="1" label="Heating 1" units="F" read_only="false" write_only="false" verify_changes="false" min="0" max="0" value="72">
+			<Help>Set the Thermostat Setpoint Heating 1</Help>
+		</Value>
+		<Value type="decimal" genre="user" instance="1" index="2" label="Cooling 1" units="F" read_only="false" write_only="false" verify_changes="false" min="0" max="0" value="77">
+			<Help>Set the Thermostat Setpoint Cooling 1</Help>
+		</Value>
+		<Value type="decimal" genre="user" instance="1" index="3" label="Unused 3" units="C" read_only="false" write_only="false" verify_changes="false" min="0" max="0" value="0.0">
+			<Help>Set the Thermostat Setpoint Unused 3</Help>
+		</Value>
+		<Value type="decimal" genre="user" instance="1" index="12" label="Cooling Econ" units="F" read_only="false" write_only="false" verify_changes="false" min="0" max="0" value="80">
+			<Help>Set the Thermostat Setpoint Cooling Econ</Help>
+		</Value>
+		<Value type="decimal" genre="user" instance="1" index="13" label="Away Heating" units="C" read_only="false" write_only="false" verify_changes="false" min="0" max="0" value="0.0">
+			<Help>Set the Thermostat Setpoint Away Heating</Help>
+		</Value>
+	</CommandClass>
+	<CommandClass id="68">
+		<Compatibility />
+		<Instance index="1" />
+		<Value type="list" genre="user" instance="1" index="0" label="Fan Mode" units="" read_only="false" write_only="false" verify_changes="false" min="0" max="0" vindex="0" size="1">
+			<Help>Set the Fan Mode</Help>
+			<Item label="Auto Low" value="0" />
+			<Item label="On Low" value="1" />
+		</Value>
+		<SupportedModes>
+			<Mode index="0" label="Auto Low" />
+			<Mode index="1" label="On Low" />
+		</SupportedModes>
+	</CommandClass>
+	<CommandClass id="69">
+		<Compatibility />
+		<Instance index="1" />
+		<Value type="string" genre="user" instance="1" index="0" label="Fan State" units="" read_only="true" write_only="false" verify_changes="false" min="0" max="0" value="Idle">
+			<Help>Set the Fan State</Help>
+		</Value>
+	</CommandClass>
+	<CommandClass id="112">
+		<Compatibility />
+		<Instance index="1" />
+	</CommandClass>
+	<CommandClass id="114">
+		<Compatibility />
+		<Instance index="1" />
+		<Value type="int" genre="system" instance="1" index="0" label="Loaded Config Revision" units="" read_only="true" write_only="false" verify_changes="false" min="-2147483648" max="2147483647" value="0">
+			<Help>Revision of the Config file currently loaded</Help>
+		</Value>
+		<Value type="int" genre="system" instance="1" index="1" label="Config File Revision" units="" read_only="true" write_only="false" verify_changes="false" min="-2147483648" max="2147483647" value="0">
+			<Help>Revision of the Config file on the File System</Help>
+		</Value>
+		<Value type="int" genre="system" instance="1" index="2" label="Latest Available Config File Revision" units="" read_only="true" write_only="false" verify_changes="false" min="-2147483648" max="2147483647" value="0">
+			<Help>Latest Revision of the Config file available for download</Help>
+		</Value>
+	</CommandClass>
+	<CommandClass id="115">
+		<Compatibility />
+		<Instance index="1" />
+		<Value type="list" genre="system" instance="1" index="0" label="Powerlevel" units="dB" read_only="false" write_only="false" verify_changes="false" min="0" max="0" vindex="0" size="1">
+			<Help>Output RF PowerLevel</Help>
+			<Item label="Normal" value="0" />
+			<Item label="-1dB" value="1" />
+			<Item label="-2dB" value="2" />
+			<Item label="-3dB" value="3" />
+			<Item label="-4dB" value="4" />
+			<Item label="-5dB" value="5" />
+			<Item label="-6dB" value="6" />
+			<Item label="-7dB" value="7" />
+			<Item label="-8dB" value="8" />
+			<Item label="-9dB" value="9" />
+		</Value>
+		<Value type="byte" genre="system" instance="1" index="1" label="Timeout" units="seconds" read_only="false" write_only="false" verify_changes="false" min="0" max="255" value="0">
+			<Help>Timeout till the PowerLevel is reset to Normal</Help>
+		</Value>
+		<Value type="button" genre="system" instance="1" index="2" label="Set Powerlevel" units="" read_only="false" write_only="true" verify_changes="false" min="0" max="0">
+			<Help>Apply the Output PowerLevel and Timeout Values</Help>
+		</Value>
+		<Value type="byte" genre="system" instance="1" index="3" label="Test Node" units="" read_only="false" write_only="false" verify_changes="false" min="0" max="255" value="0">
+			<Help>Node to Perform a test against</Help>
+		</Value>
+		<Value type="list" genre="system" instance="1" index="4" label="Test Powerlevel" units="dB" read_only="false" write_only="false" verify_changes="false" min="0" max="0" vindex="0" size="1">
+			<Help>PowerLevel to use for the Test</Help>
+			<Item label="Normal" value="0" />
+			<Item label="-1dB" value="1" />
+			<Item label="-2dB" value="2" />
+			<Item label="-3dB" value="3" />
+			<Item label="-4dB" value="4" />
+			<Item label="-5dB" value="5" />
+			<Item label="-6dB" value="6" />
+			<Item label="-7dB" value="7" />
+			<Item label="-8dB" value="8" />
+			<Item label="-9dB" value="9" />
+		</Value>
+		<Value type="short" genre="system" instance="1" index="5" label="Frame Count" units="" read_only="false" write_only="false" verify_changes="false" min="-32768" max="32767" value="0">
+			<Help>How Many Messages to send to the Node for the Test</Help>
+		</Value>
+		<Value type="button" genre="system" instance="1" index="6" label="Test" units="" read_only="false" write_only="true" verify_changes="false" min="0" max="0">
+			<Help>Perform a PowerLevel Test against the a Node</Help>
+		</Value>
+		<Value type="button" genre="system" instance="1" index="7" label="Report" units="" read_only="false" write_only="true" verify_changes="false" min="0" max="0">
+			<Help>Get the results of the latest PowerLevel Test against a Node</Help>
+		</Value>
+		<Value type="list" genre="system" instance="1" index="8" label="Test Status" units="" read_only="true" write_only="false" verify_changes="false" min="0" max="0" vindex="0" size="1">
+			<Help>The Current Status of the last PowerNode Test Executed</Help>
+			<Item label="Failed" value="0" />
+			<Item label="Success" value="1" />
+			<Item label="In Progress" value="2" />
+		</Value>
+		<Value type="short" genre="system" instance="1" index="9" label="Acked Frames" units="" read_only="true" write_only="false" verify_changes="false" min="-32768" max="32767" value="0">
+			<Help>Number of Messages successfully Acked by the Target Node</Help>
+		</Value>
+	</CommandClass>
+	<CommandClass id="129">
+		<Compatibility />
+		<Instance index="1" />
+		<Value type="list" genre="user" instance="1" index="0" label="Day" units="" read_only="false" write_only="false" verify_changes="false" min="0" max="0" vindex="0" size="1">
+			<Help>Day of Week</Help>
+			<Item label="Monday" value="1" />
+			<Item label="Tuesday" value="2" />
+			<Item label="Wednesday" value="3" />
+			<Item label="Thursday" value="4" />
+			<Item label="Friday" value="5" />
+			<Item label="Saturday" value="6" />
+			<Item label="Sunday" value="7" />
+		</Value>
+		<Value type="byte" genre="user" instance="1" index="1" label="Hour" units="" read_only="false" write_only="false" verify_changes="false" min="0" max="255" value="7">
+			<Help>Hour</Help>
+		</Value>
+		<Value type="byte" genre="user" instance="1" index="2" label="Minute" units="" read_only="false" write_only="false" verify_changes="false" min="0" max="255" value="37">
+			<Help>Minute</Help>
+		</Value>
+	</CommandClass>
+	<CommandClass id="133">
+		<Compatibility />
+		<Instance index="1" />
+		<Associations num_groups="3">
+			<Group index="1" max_associations="5" label="Group 1"/>
+			<Group index="2" max_associations="5" label="Group 2"/>
+			<Group index="3" max_associations="5" label="Group 3"/>
+		</Associations>
+	</CommandClass>
+	<CommandClass id="134">
+		<Compatibility />
+		<Instance index="1" />
+		<Value type="string" genre="system" instance="1" index="0" label="Library Version" units="" read_only="true" write_only="false" verify_changes="false" min="0" max="0" value="6">
+			<Help>Z-Wave Library Version</Help>
+		</Value>
+		<Value type="string" genre="system" instance="1" index="1" label="Protocol Version" units="" read_only="true" write_only="false" verify_changes="false" min="0" max="0" value="3.40">
+			<Help>Z-Wave Protocol Version</Help>
+		</Value>
+		<Value type="string" genre="system" instance="1" index="2" label="Application Version" units="" read_only="true" write_only="false" verify_changes="false" min="0" max="0" value="2.39">
+			<Help>Application Version</Help>
+		</Value>
+	</CommandClass>
+</Product>

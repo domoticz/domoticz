@@ -1,0 +1,189 @@
+<Product Revision="3" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem id="0B00" name="ProductPage" type="1214">https://www.widom.it/it/smart-double-switch/</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/widom/WDS2.png</MetaDataItem>
+    <MetaDataItem id="0B00" name="Identifier" type="1214">WDS2</MetaDataItem>
+    <MetaDataItem name="Description">Widom Smart Double Switch is the new ON/OFF smallest control device in the world designed to independently control two separate loads</MetaDataItem>
+    <MetaDataItem id="0B00" name="FrequencyName" type="1214">CEPT (Europe)</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://www.widom.it/wp-content/uploads/2019/03/Widom_Smart_Double_Switch_EN.pdf</MetaDataItem>
+    <MetaDataItem name="Name">WiDom Smart Double switch</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Giuseppe Tiddia - giuseppe.tiddia@widom.it" date="15 Nov 2019" revision="1">Initial Metadata</Entry>
+      <Entry author="Giuseppe Tiddia - giuseppe.tiddia@widom.it" date="15 Nov 2019" revision="2">Some fixes comparing with openHab exported file</Entry>
+      <Entry author="Giuseppe Tiddia - giuseppe.tiddia@widom.it" date="17 Feb 2020" revision="3">Added product image</Entry>
+    </ChangeLog>
+  </MetaData>
+  <!-- Configuration -->
+  <CommandClass id="112">
+     <Value type="byte" genre="config" instance="1" index="1" label="Numbers of clicks to control the loads" max="7" min="0" size="1" value="7">
+      <Help>
+        Define which sequences of clicks control the load connected to both Channel 1 and Channel 2, if parameter No. 2 is set to its default value.
+        Otherwise parameter No.1 sets the clicks sequence only for Channel 1 and parameter No. 2 sets the clicks sequence for Channel 2.
+        0 - Local Control disabled
+        1 - 1 click controls the local load
+        2 - 2 clicks control the local load
+        4 - 3 clicks control the local load
+        7 - The load connected to the Channel 1 can be controlled using 1 click, 2 clicks or 3 clicks
+        Default value: 7
+        Other options:
+        To control the load with 1 click and 2 clicks -> Parameter value must be 1 + 2 =3
+        To control the load with 1 click and 3 clicks -> Parameter value must be 1 + 4 =5
+        To control the load with 2 clicks and 3 clicks -> Parameter value must be 2 + 4 =6
+      </Help>
+    </Value>
+     <Value type="byte" genre="config" instance="1" index="2" label=" Numbers of clicks to control Channel 2 load" max="8" min="0" size="1" value="8">
+      <Help>
+        Defines which sequences of click control the load connected to Channel 2
+        0 - Local Control disabled
+        1 - 1 click controls the local load
+        2 - 2 clicks control the local load
+        4 - 3 clicks control the local load
+        8 - The load connected to the Channel 2 will be controlled with the same number of clicks configured for Channel 1 load.
+        Default value: 8
+        Other options:
+        To control the load with 1 click and 2 clicks -> Parameter value must be 1 + 2 =3
+        To control the load with 1 click and 3 clicks -> Parameter value must be 1 + 4 =5
+        To control the load with 2 clicks and 3 clicks -> Parameter value must be 2 + 4 =6
+        To control the load with 1 click, 2 clicks and 3 clicks -> Parameter value must be 1 + 2 + 4 =7
+      </Help>
+    </Value>
+    <Value type="byte" genre="config" instance="1" index="4" label="Value used for devices belonging to Group 2" max="100" min="-1" size="1" value="100">
+      <Help>
+        Value used for devices belonging to Group 2 when external switch I1 receives 1 Click
+        1-99 : Dimming purpose
+        0 : OFF
+        -1 : ON
+        100 : (Default Value) The same value of Channel 1 load status
+      </Help>
+    </Value>
+    <Value type="byte" genre="config" instance="1" index="5" label="Value used for devices belonging to Group 5" max="100" min="-1" size="1" value="100">
+      <Help>
+        Value used for devices belonging to Group 5 when external switch I2 receives 1 Click
+        1-99 : Dimming purpose
+        0 : OFF
+        -1 : ON
+        100 : (Default Value) The same value of Channel 2 load status
+      </Help>
+    </Value>
+    <Value type="byte" genre="config" instance="1" index="6" label="Value used for devices belonging to Group 3" max="100" min="-1" size="1" value="100">
+      <Help>
+        Value used for devices belonging to Group 3 when external switch I1 receives 2 Clicks
+        1-99 : Dimming purpose
+        0 : OFF
+        -1 : ON
+        100 : (Default Value) The same value of Channel 1 load status
+      </Help>
+    </Value>
+    <Value type="byte" genre="config" instance="1" index="7" label="Value used for devices belonging to Group 6" max="100" min="-1" size="1" value="100">
+      <Help>Value used for devices belonging to Group 6 when external switch I2 receives 2 Clicks
+        1-99 : Dimming purpose
+        0 : OFF
+        -1 : ON
+        100 : (Default Value) The same value of Channel 2 load status
+      </Help>
+    </Value>
+    <Value type="byte" genre="config" instance="1" index="8" label="Value used for devices belonging to Group 4" max="100" min="-1" size="1" value="100">
+      <Help>
+        Value used for devices belonging to Group 4 when external switch I1 receives 3 Clicks
+        1-99 : Dimming purpose
+        0 : OFF
+        -1 : ON
+        100 : (Default Value) The same value of Channel 1 load status
+      </Help>
+    </Value>
+    <Value type="byte" genre="config" instance="1" index="9" label="Value used for devices belonging to Group 7" max="100" min="-1" size="1" value="100">
+      <Help>
+        Value used for devices belonging to Group 7 when external switch I2 receives 3 Clicks
+        1-99 : Dimming purpose
+        0 : OFF
+        -1 : ON
+        100 : (Default Value) The same value of Channel 2 load status
+      </Help>
+    </Value>
+    <Value type="short" genre="config" instance="1" index="10" label=" Timer to switch OFF the Channel 1" max="32000" min="0" size="2" units="seconds" value="0">
+      <Help>
+        Defines the time after which the Channel 1 load is switched OFF.
+        0 (Default Value) Timer disabled.
+        From 1 to 32000 (seconds) After this time the relay of the Channel 1 is OFF.
+      </Help>
+    </Value>
+    <Value type="short" genre="config" instance="1" index="11" label="Timer to switch OFF the Channel 2" max="32000" min="0" size="2" units="seconds" value="0">
+      <Help>
+        Defines the time after which the Channel 2 load is switched OFF.
+        0 (Default Value) Timer disabled.
+        From 1 to 32000 (seconds) After this time the relay of the Channel 2 is OFF.
+      </Help>
+    </Value>
+    <Value  type="short" genre="config" instance="1" index="12" label="Timer to switch ON the Channel 1" max="32000" min="0" size="2" units="seconds" value="0">
+      <Help>
+        Defines the time after which the Channel 1 load is switched ON.
+        0 (Default Value) Timer disabled.
+        From 1 to 32000 (seconds) After this time the relay of the Channel 1 is ON.
+      </Help>
+    </Value>
+    <Value type="short" genre="config" instance="1" index="13" label="Timer to switch ON the Channel 2" max="32000" min="0" size="2" units="seconds" value="0">
+      <Help>
+        Defines the time after which the Channel 2 load is switched ON.
+        0 (Default Value) Timer disabled.
+        From 1 to 32000 (seconds) After this time the relay of the Channel 2 is ON.
+      </Help>
+    </Value>
+    <Value type="list" genre="config" instance="1" index="40" label="Local Scenario" size="1" value="1">
+      <Help>
+        Defines the behavior of the device Channels when the I1/I2 external switches receive a valid number of clicks (see Parameters No. 1 and No. 2).
+        Note: When to the parameter 40 is given a value different from zero, the associated devices will not be controlled. 
+      </Help>
+      <Item label="INDIPENDENT_CHANNELS
+" value="1"/>
+      <Item label="NEVER_BOTH_ON" value="2"/>
+      <Item label="SEQUENCING_RELAY" value="3"/>
+    </Value>
+    <Value type="list" genre="config" instance="1" index="60" label="Start-up status" size="1" value="4">
+      <Help>Defines the status of the device following a restart (Default Value: 4).</Help>
+      <Item label="OFF_OFF" value="0"/>
+      <Item label="OFF_ON" value="1"/>
+      <Item label="ON_OFF" value="2"/>
+      <Item label="ON_ON
+" value="3"/>
+      <Item label="PREVIOUS STATUS
+" value="4"/>
+    </Value>
+    <Value  type="list" genre="config" instance="1" index="62" label="Type of external switch" size="1" value="1">
+      <Help>
+        Defines the type of external switch connected both to input 1 and input 2, if parameter No. 63 is set in its default value.
+        Otherwise parameter No. 62 defines only the external switch connected to the input 1 and parameter No. 63 the switch connected to the input 2.
+        (Default Value: 1)
+      </Help>
+      <Item label="IGNORE" value="0"/>
+      <Item label="BUTTON
+" value="1"/>
+      <Item label="SWITCH" value="2"/>
+    </Value>
+    <Value  type="list" genre="config" instance="1" index="63" label="Type of external switch" size="1" value="3">
+      <Help>
+        Defines the type of external switch connected both to input 1 and input 2, if parameter No. 63 is set in its default value.
+        Otherwise parameter No. 62 defines only the external switch connected to the input 1 and parameter No. 63 the switch connected to the input 2.
+        (Default Value: 1)
+      </Help>
+      <Item label="IGNORE" value="0"/>
+      <Item label="BUTTON
+" value="1"/>
+      <Item label="SWITCH" value="2"/>
+      <Item label="EQUAL TO SWITCH 1
+" value="3"/>
+    </Value>
+  </CommandClass>
+  <!-- -->
+  <!-- Association Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="7">
+      <Group index="1" label="Lifeline" max_associations="8"/>
+      <Group index="2" label="1 Click button S1" max_associations="8"/>
+      <Group index="3" label="2 Clicks button S1" max_associations="8"/>
+      <Group index="4" label="3 Clicks button S1" max_associations="8"/>
+      <Group index="5" label="1 Click button S2" max_associations="8"/>
+      <Group index="6" label="2 Clicks button S2" max_associations="8"/>
+      <Group index="7" label="3 Clicks button S2" max_associations="8"/>
+    </Associations>
+  </CommandClass>
+</Product>

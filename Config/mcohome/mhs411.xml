@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Product xmlns='https://github.com/OpenZWave/open-zwave' Revision="2">
+  <!--MCOHome Touch Panel Switch MH-S411 -->
+  <!-- Configuration -->
+  <CommandClass id="112">    
+    <Value type="list" genre="config" instance="1" index="1" label="Saving state before power failure" size="1" value="1">
+      <Help>Switch state saved or not when power down</Help>
+      <Item label="Disabled" value="0"/>
+      <Item label="Enabled" value="1"/>
+    </Value>   
+  </CommandClass>
+        
+  <!-- Association Groups -->  
+  <CommandClass id="133">
+    <Associations num_groups="2">
+      <Group index="1" max_associations="5" label="Button1" auto="false"/>
+      <Group index="2" max_associations="1" label="Lifeline" auto="true"/>
+    </Associations>
+  </CommandClass>
+</Product>

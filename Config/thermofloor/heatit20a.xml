@@ -1,0 +1,121 @@
+<?xml version="1.0"?>
+<!--
+Heatit Z-Water
+https://products.z-wavealliance.org/products/3102
+-->
+<Product xmlns="https://github.com/OpenZWave/open-zwave" Revision="3">
+  <MetaData>
+    <MetaDataItem name="ProductPic">images/thermofloor/heatit20a.png</MetaDataItem>
+    <MetaDataItem id="020a" name="ZWProductPage" type="0003">https://products.z-wavealliance.org/products/3102/</MetaDataItem>
+    <MetaDataItem name="InclusionDescription">Adding the device:
+When the primary controller is set to add/remove modus press the &#x201D;INCLUSION&#x201D; button once on the device</MetaDataItem>
+    <MetaDataItem id="020a" name="Identifier" type="0003">Z-Water</MetaDataItem>
+    <MetaDataItem name="Description">Heatit Z-Water is equipped with 10 relay outputs and 4 analog inputs, and a Z-Wave radio for interfacing to the wireless
+Z-Wave network.
+The regulator can be power supplied from a 230V AC mains connection, and is able to deliver an output supply of 24V DC.
+Heatit Z-Water relay outputs are able to be freely controlled from the Z-Wave network, and can be used for several
+purposes, e.g. on/off control of light, control of valve actuators for an underfloor heating system, or control of other home
+automation systems.
+Heatit Z-Water inputs are analog inputs for interfacing simple temperature sensors; NTC, PT1000, etc.
+It is possible to configure the level and the indication of the status indicator LED in the front of the Heatit Z-Water
+regulator.</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://Products.Z-WaveAlliance.org/ProductManual/File?folder=&amp;filename=Manuals/3102/Manual_Heatit_Z-Water_analog%20inputs_FW%202.1_Ver2019-A_ENG.pdf</MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">Removing the device: When the primary controller is set to add/remove modus press the &#x201D;INCLUSION&#x201D; button once on the device</MetaDataItem>
+    <MetaDataItem id="020a" name="FrequencyName" type="0003">CEPT (Europe)</MetaDataItem>
+    <MetaDataItem name="ResetDescription">By pressing buttons Right and Center (down and confirm) for 20 seconds, the thermostat will perform a complete factory reset.
+NB! Please use this procedure only when the primary controller/ gateway is missing or otherwise inoperable.</MetaDataItem>
+    <MetaDataItem name="Name">Heatit Z-Water</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Espen Throndsen - espenthrondsen@gmail.com" date="21 Oct 2019" revision="1">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/3102/xml</Entry>
+      <Entry author="Lars Tobias Skjong-B&#xF8;rsting - larstobi@relatime.no" date="28 Jun 2020" revision="2">Added ProductPic</Entry>
+      <Entry author="Lars Tobias Skjong-B&#xF8;rsting - larstobi@relatime.no" date="12 Jul 2020" revision="3">Fixed errors</Entry>
+    </ChangeLog>
+  </MetaData>
+  <CommandClass id="112">
+    <Value genre="config" index="1" label="status LED" size="1" type="list" value="1">
+      <Help>Set LED mode</Help>
+      <Item label="LED turned off" value="0"/>
+      <Item label="LED turned on.(default)" value="1"/>
+      <Item label="2 LED flashing at 1 second intervals (&#xBD; Hz)" value="2"/>
+      <Item label="3 LED flashing at &#xBD; second interval (1 Hz)" value="3"/>
+    </Value>
+    <Value genre="config" index="2" instance="1" label="Specifies the brightness level of the LED when it is on.(0-100) Default is 50" size="1" type="byte" value="50">
+      <Help>Set Brightnes</Help>
+    </Value>
+    <Value genre="config" index="3" instance="1" label="Thermistor type connected to input 1" size="1" type="list" value="0">
+      <Help>This parameter decides which kind of thermistor that is connected to the input.</Help>
+      <Item label="0 No thermistor, input is disabled" value="0"/>
+      <Item label="1 10K NTC. (PART NUMBER: TT02-10KC3-93D-3000R-TPH). (Default)" value="1"/>
+    </Value>
+    <Value genre="config" index="4" instance="1" label="Thermistor type connected to input 2" size="1" type="list" value="0">
+      <Help>This parameter decides which kind of thermistor that is connected to the input.</Help>
+      <Item label="0 No thermistor, input is disabled" value="0"/>
+      <Item label="1 10K NTC. (PART NUMBER: TT02-10KC3-93D-3000R-TPH). (Default)" value="1"/>
+    </Value>
+    <Value genre="config" index="5" instance="1" label="Thermistor type connected to input 3" size="1" type="list" value="0">
+      <Help>This parameter decides which kind of thermistor that is connected to the input.</Help>
+      <Item label="0 No thermistor, input is disabled" value="0"/>
+      <Item label="1 10K NTC. (PART NUMBER: TT02-10KC3-93D-3000R-TPH). (Default)" value="1"/>
+    </Value>
+    <Value genre="config" index="6" instance="1" label="Thermistor type connected to input 4" size="1" type="list" value="0">
+      <Help>This parameter decides which kind of thermistor that is connected to the input.</Help>
+      <Item label="0 No thermistor, input is disabled" value="0"/>
+      <Item label="1 10K NTC. (PART NUMBER: TT02-10KC3-93D-3000R-TPH). (Default)" value="1"/>
+    </Value>
+    <Value genre="config" index="7" instance="1" label="Input 1 calibration" size="1" type="byte" max="255" min="0" value="0">
+      <Help>-40 - 40 (-4.0C - 4.0C) Default is 0 (0.0C) To set a negative value, use 255 and subtract the desired value.</Help>
+    </Value>
+    <Value genre="config" index="8" instance="1" label="Input 2 calibration" size="1" type="byte" max="255" min="0" value="0">
+      <Help>-40 - 40 (-4.0C - 4.0C) Default is 0 (0.0C) To set a negative value, use 255 and subtract the desired value.</Help>
+    </Value>
+    <Value genre="config" index="9" instance="1" label="Input 3 calibration" size="1" type="byte" max="255" min="0" value="0">
+      <Help>-40 - 40 (-4.0C - 4.0C) Default is 0 (0.0C) To set a negative value, use 255 and subtract the desired value.</Help>
+    </Value>
+    <Value genre="config" index="10" instance="1" label="Input 4 calibration" size="1" type="byte" max="255" min="0" value="0">
+      <Help>-40 - 40 (-4.0C - 4.0C) Default is 0 (0.0C) To set a negative value, use 255 and subtract the desired value.</Help>
+    </Value>
+    <Value genre="config" index="11" instance="1" label="Input 1 Temperature report interval" max="8640" min="0" size="2" type="short" value="60">
+      <Help>
+				0 (Report disabled)
+        Multiply with 10 seconds, 10 seconds &#x2013; 24 hours. Default is 6 (60 seconds).</Help>
+    </Value>
+    <Value genre="config" index="12" instance="1" label="Input 2 Temperature report interval" max="8640" min="0" size="2" type="short" value="60">
+      <Help>
+				0 (Report disabled)
+        Multiply with 10 seconds, 10 seconds &#x2013; 24 hours. Default is 6 (60 seconds).</Help>
+    </Value>
+    <Value genre="config" index="13" instance="1" label="Input 3 Temperature report interval" max="8640" min="0" size="2" type="short" value="60">
+      <Help>
+				0 (Report disabled)
+        Multiply with 10 seconds, 10 seconds &#x2013; 24 hours. Default is 6 (60 seconds).</Help>
+    </Value>
+    <Value genre="config" index="14" instance="1" label="Input 4 Temperature report interval" max="8640" min="0" size="2" type="short" value="60">
+      <Help>
+				0 (Report disabled)
+        Multiply with 10 seconds, 10 seconds &#x2013; 24 hours. Default is 6 (60 seconds).</Help>
+    </Value>
+    <Compatibility/>
+  </CommandClass>
+  <CommandClass id="133">
+    <Associations num_groups="5">
+      <Group index="1" label="Lifeline. - Reset notification - Basic Report On / Off - Multilevel Sensor Report" max_associations="5"/>
+      <Group index="2" label="Sends Multilevel Sensor Reports for input 1" max_associations="5"/>
+      <Group index="3" label="Sends Multilevel Sensor Reports for input 2" max_associations="5"/>
+      <Group index="4" label="Sends Multilevel Sensor Reports for input 3" max_associations="5"/>
+      <Group index="5" label="Sends Multilevel Sensor Reports for input 4" max_associations="5"/>
+    </Associations>
+    <Compatibility/>
+  </CommandClass>
+  <!-- COMMAND_CLASS_MULTI_CHANNEL_ASSOCIATION_V2-->
+  <CommandClass id="142">
+    <Compatibility>
+      <ForceInstances>true</ForceInstances>
+    </Compatibility>
+  </CommandClass>
+  <!--COMMAND_CLASS_MULTI_CHANNEL_V2 Map endpoints to instances -->
+  <CommandClass id="96">
+    <Compatibility>
+      <MapRootToEndpoint>true</MapRootToEndpoint>
+    </Compatibility>
+  </CommandClass>
+</Product>

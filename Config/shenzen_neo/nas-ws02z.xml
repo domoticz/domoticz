@@ -1,0 +1,98 @@
+<Product Revision="2" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0258:0085:0003</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/shenzen_neo/nas-ws02z.png</MetaDataItem>
+    <MetaDataItem id="0085" name="ZWProductPage" type="0003">https://products.z-wavealliance.org/products/1788/</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://Products.Z-WaveAlliance.org/ProductManual/File?folder=&amp;filename=Manuals/1788/Water Leakage Detector User Manual V2.doc</MetaDataItem>
+    <MetaDataItem id="0085" name="Identifier" type="0003">NAS-WS01Z</MetaDataItem>
+    <MetaDataItem name="InclusionDescription">Add the Sensor to Z-Wave Network
+
+1.Remove the sensor cover. 
+
+2.Make sure the sensor is powered. 
+
+3.Set Z-Wave controller or Z-Wave gateway into inclusion mode (Refer to the controller or gateway operating manual) 
+
+4.Press the button three times within 1.5 second, the device will enter inclusion mode. And the LED will flash on and off alternately five times. </MetaDataItem>
+    <MetaDataItem name="Description">In the front casing, there is button that is used to carry out include, exclude or reset factory default settings on PCB Board.
+
+When power is first supplied, the LED will flash on and off alternately at one second intervals within 5 seconds if the detector has been added a Z-Wave network. Please get familiar with the terms below before starting the operations.
+
+This product can be included and operated in any Z-Wave network with other Z-Wave certified devices from other manufacturers and/or other applications. All non-battery operated nodes within the network will act as repeaters regardless of vendor to increase reliability of the network.</MetaDataItem>
+    <MetaDataItem name="Name">Water Sensor </MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">Delete the Sensor from Z-Wave Network
+
+1.Remove the device cover. 
+
+2.Make sure the sensor is powered. 
+
+3.Set Z-Wave controller or Z-Wave gateway into exclusion mode (Refer to the controller or gateway operating manual) 
+
+4.Press the button three times within 1.5 second, the device will enter exclusion mode. </MetaDataItem>
+    <MetaDataItem name="ResetDescription">Restore the Sensor to Factory Default Settings
+
+Note: to use the reset procedure only when the primary controller is missing or inoperable
+
+Reset procedure will delete all information on the Z-Wave network and Z-Wave controller or Z-Wave Gateway, and restore the sensor to factory default settings.
+
+1.Remove the device cover. 
+
+2.Make sure the sensor is powered. 
+
+3.Press and hold the button for 10 seconds, led will blink once. 
+
+4.Release the button. </MetaDataItem>
+    <MetaDataItem name="WakeupDescription">Wakeup the Sensor Manual
+
+User can press button once to wake-up this sensor to send wakeup notification to controller, the Led will be blink one time.</MetaDataItem>
+    <MetaDataItem id="0085" name="FrequencyName" type="0003">U.S. / Canada / Mexico</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="24 May 2019" revision="2">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1788/xml</Entry>
+    </ChangeLog>
+  </MetaData>
+  <!-- Configuration Parameters -->
+  <CommandClass id="112">
+    <Value genre="config" index="1" instance="1" label="Alarm Duration Time" max="255" min="0" size="1" type="byte" units="minute" value="120">
+      <Help>If this parameter is set to 0, the beep and LED will be turn on always until water leakage is not detected.</Help>
+    </Value>
+    <Value genre="config" index="2" instance="1" label="Alarm Interval" max="255" min="0" size="1" type="byte" units="minute" value="1">
+      <Help>This Parameter defines beep on/off interval time when water leakage is detected.</Help>
+    </Value>
+    <Value genre="config" index="3" instance="1" label="First Alarm On Time Duration" max="255" min="0" size="1" type="byte" units="second" value="60">
+      <Help>This parameter defines beep on duration first time when water leakage is detected.</Help>
+    </Value>
+    <Value genre="config" index="4" instance="1" label="Alarm on Time Duration" max="255" min="0" size="1" type="byte" units="second" value="5">
+      <Help>This parameter defines beep on duration after fist beep on when water leakage is detected.</Help>
+    </Value>
+    <Value genre="config" index="5" instance="1" label="Alarm sound" size="1" type="list" value="1">
+      <Help>This parameter defines beep on is enabled or disabled when water leakage is detected.
+                0 indicate beep on is disable, but LED will be turned on when water leakage detected.
+                1 indicate beep on is enabled, the BEEP and LED will be turned on when water leakage detected.
+            </Help>
+      <Item label="Disabled" value="0"/>
+      <Item label="Enabled" value="1"/>
+    </Value>
+    <Value genre="config" index="6" instance="1" label="Water Leakage Detected Report" size="1" type="list" value="1">
+      <Help>This parameter defines the function than water leakage detect is enabled or disabled.
+                0 indicate disable water leakage detect,
+                1 indicate enable water leakage detect.
+            </Help>
+      <Item label="Disabled" value="0"/>
+      <Item label="Enabled" value="1"/>
+    </Value>
+    <Value genre="config" index="7" instance="1" label="Basic Set Level" max="255" min="0" size="1" type="byte" value="255">
+      <Help>Basic Set Command will be sent where contains a value when the leakage is detected, the receiver will take it for consideration;
+                for instance, if a lamp module is received the Basic Set Command of which value is decisive as to how bright of dim level of lamp module shall be.
+            </Help>
+    </Value>
+  </CommandClass>
+  <!-- Association Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="4">
+      <Group index="1" label="Lifeline" max_associations="4"/>
+      <Group index="2" label="Control Commands" max_associations="4"/>
+      <Group index="3" label="Send Notification Report" max_associations="4"/>
+      <Group index="4" label="Send Binary Sensor Report" max_associations="4"/>
+    </Associations>
+  </CommandClass>
+</Product>

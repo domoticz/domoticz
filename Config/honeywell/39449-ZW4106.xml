@@ -1,0 +1,52 @@
+<!-- Honeywell(Jasco) 39449 / ZW4106 Plug-in Smart Switch -->
+<Product Revision="2" xmlns="https://github.com/OpenZWave/open-zwave">
+  <!-- Please refer to https://github.com/OpenZWave/open-zwave/wiki/Adding-Devices for instructions -->
+  <MetaData>
+    <MetaDataItem name="Name">39449 / ZW4106 Plug-in Smart Switch</MetaDataItem>
+    <MetaDataItem name="Description">Plug-in Switch (Dual Plug Simultaneous Control)</MetaDataItem>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0039:3033:5052</MetaDataItem>
+    <MetaDataItem name="ProductPage">https://www.security.honeywellhome.com/product-repository/z5swpid</MetaDataItem>
+    <!--<MetaDataItem name="ProductSupport"></MetaDataItem>-->
+    <MetaDataItem name="ProductPic">images/honeywell/39449-ZW4106.png</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://products.z-wavealliance.org/ProductManual/File?folder=&amp;filename=product_documents/3740/39449-HQSG_v3.pdf</MetaDataItem>
+    <!--<MetaDataItem name="WakeupDescription"></MetaDataItem>-->
+    <MetaDataItem name="InclusionDescription">
+      1) Follow the instructions for your Z-Wave certified controller to add a device to the Z-Wave network.
+      2) Once the controller is ready to add your device, press and release the manual/program button on the smart switch. Repeat as necessary to add the switch to the network.
+    </MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">
+      1) Follow the instructions for your Z-Wave certified controller to remove a device from the Z-Wave network.
+      2) Once the controller is ready to remove your device, press and release the manual/program button on the smart switch to remove it from the network.
+    </MetaDataItem>
+    <MetaDataItem name="ResetDescription">
+      1) If plugged in, unplug the device from the receptacle.
+      2) Press and hold the top button, plug the device in, and continue to hold for at least 3 seconds.
+    </MetaDataItem>
+    <MetaDataItem id="3033" name="ZWProductPage" type="5052">https://products.z-wavealliance.org/products/3740?selectedFrequencyId=2</MetaDataItem>
+    <MetaDataItem id="3033" name="FrequencyName" type="5052">U.S. / Canada / Mexico</MetaDataItem>
+    <MetaDataItem id="3033" name="Identifier" type="5052">39449 / ZW4106 </MetaDataItem>
+    <ChangeLog>
+      <Entry author="Alexander Bauer - sasha@linux.com" date="24 May 2020" revision="1">Initial metadata import from Z-Wave Alliance</Entry>
+      <Entry author="Justin Hammond" date="24 June 2020" revision="2">Correct Path to Image File</Entry>
+    </ChangeLog>
+  </MetaData>
+  <!-- Configuration Command Class - All Configuration Parameters should be entered into the section below -->
+  <CommandClass id="112">
+    <Value genre="config" index="3" label="Invert/Disable LED" min="0" max="2" size="1" type="list" value="0">
+      <Help>
+        Invert/Disable LED (Adjusts when the indicator LED is turned ON, OFF, or disables it entirely)
+      </Help>
+      <Item value="0" label="LED ON / Device ON"/>
+      <Item value="1" label="LED ON / Device OFF"/>
+      <Item value="2" label="Disable LED"/>
+    </Value>
+  </CommandClass>
+  <!-- The Association Group Information -->
+  <CommandClass id="133">
+    <Associations num_groups="3">
+      <Group index="1" label="LifeLine" max_associations="5"/>
+      <Group index="2" label="Basic - Load" max_associations="5"/>
+      <Group index="3" label="Basic - Double Tap" max_associations="5"/>
+    </Associations>
+  </CommandClass>
+</Product>

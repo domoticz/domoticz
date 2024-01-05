@@ -1,0 +1,361 @@
+<?xml version="1.0" encoding="utf-8"?>
+<DeviceClasses xmlns="https://github.com/OpenZWave/open-zwave">
+  <Basic key="0x01" label="Controller"/>
+  <Basic key="0x02" label="Static Controller"/>
+  <Basic key="0x03" label="Slave"/>
+  <Basic key="0x04" label="Routing Slave"/>
+  <Generic key="0x01" label="Remote Controller" command_classes="0xef,0x20">
+    <Specific key="0x01" label="Portable Remote Controller"/>
+    <Specific key="0x02" label="Portable Scene Controller" command_classes="0x2d,0x72,0x85,0xef,0x2b"/>
+    <Specific key="0x03" label="Portable Installer Tool" command_classes="0x21,0x72,0x86,0x8f,0xef,0x21,0x60,0x70,0x72,0x84,0x85,0x86,0x8e"/>
+    <Specific key="0x04" label="Remote Control AV"/>
+    <Specific key="0x06" label="Remote Control Simple"/>
+  </Generic>
+  <Generic key="0x02" label="Static Controller" command_classes="0xef,0x20">
+    <Specific key="0x01" label="Static PC Controller"/>
+    <Specific key="0x02" label="Static Scene Controller" command_classes="0x2d,0x72,0x85,0xef,0x2b"/>
+    <Specific key="0x03" label="Static Installer Tool" command_classes="0x21,0x72,0x86,0x8f,0xef,0x21,0x60,0x70,0x72,0x84,0x85,0x86,0x8e"/>
+    <Specific key="0x04" label="Set Top Box"/>
+    <Specific key="0x05" label="Sub System Controller"/>
+    <Specific key="0x06" label="TV"/>
+    <Specific key="0x07" label="Gateway"/>
+  </Generic>
+  <Generic key="0x03" label="AV Control Point" command_classes="0x20">
+    <!-- SDS11847-28 4.23 Sound Switch -->
+    <!-- SDS14224-6 4.5.6 Sound Switch DT -->
+    <Specific key="0x01" label="Sound Switch" command_classes="0x55,0x59,0x5a,0x5e,0x6c,0x72,0x73,0x79,0x85,0x86,0x9f"/>
+    <Specific key="0x04" label="Satellite Receiver" command_classes="0x72,0x86,0x94"/>
+    <Specific key="0x11" label="Satellite Receiver V2" command_classes="0x72,0x86,0x94" basic="0x94"/>
+    <Specific key="0x12" label="Doorbell" command_classes="0x30,0x72,0x85,0x86" basic="0x30"/>
+  </Generic>
+  <Generic key="0x04" label="Display" command_classes="0x20">
+    <Specific key="0x01" label="Simple Display" command_classes="0x72,0x86,0x92,0x93"/>
+  </Generic>
+  <Generic key="0x05" label="Network Extender" command_classes="0x20">
+    <Specific key="0x01" label="Secure Extender"/>
+  </Generic>
+  <Generic key="0x06" label="Appliance" command_classes="0x20">
+    <Specific key="0x01" label="General Appliance"/>
+    <Specific key="0x02" label="Kitchen Appliance"/>
+    <Specific key="0x03" label="Laundry Appliance"/>
+  </Generic>
+  <Generic key="0x07" label="Notification Sensor" command_classes="0x20">
+    <Specific key="0x01" label="Notification Sensor"/>
+  </Generic>
+  <Generic key="0x08" label="Thermostat" command_classes="0x20">
+    <Specific key="0x01" label="Heating Thermostat"/>
+    <Specific key="0x02" label="General Thermostat" command_classes="0x40,0x43,0x72" basic="0x40"/>
+    <Specific key="0x03" label="Setback Schedule Thermostat" command_classes="0x46,0x72,0x86,0x8f,0xef,0x46,0x81,0x8f" basic="0x46"/>
+    <Specific key="0x04" label="Setpoint Thermostat" command_classes="0x43,0x72,0x86,0x8f,0xef,0x43,0x8f" basic="0x43"/>
+    <Specific key="0x05" label="Setback Thermostat" command_classes="0x40,0x43,0x47,0x72,0x86" basic="0x40"/>
+    <Specific key="0x06" label="General Thermostat V2" command_classes="0x40,0x43,0x72,0x86" basic="0x40"/>
+  </Generic>
+  <Generic key="0x09" label="Window Covering" command_classes="0x20">
+    <Specific key="0x01" label="Simple Window Covering" command_classes="0x50" basic="0x50"/>
+  </Generic>
+  <Generic key="0x0f" label="Repeater Slave" command_classes="0x20">
+    <Specific key="0x01" label="Basic Repeater Slave"/>
+    <!-- SDK 7.11 SPECIFIC_TYPE_VIRTUAL_NODE-->
+    <Specific key="0x02" label="Virtual Node"/>
+  </Generic>
+  <Generic key="0x10" label="Binary Switch" command_classes="0x20,0x25" basic="0x25">
+    <Specific key="0x01" label="Binary Power Switch" command_classes="0x27"/>
+    <!-- SDS10242-30 5.4.3.4 Binary Tunable Color Light Specific Device Class -->
+    <!-- SDS14224-6 4.5.3 Color Switch DT -->
+    <Specific key="0x02" label="Binary Tunable Color Light" command_classes="0x27,0x33,0x72" basic="0x25"/>
+    <Specific key="0x03" label="Binary Scene Switch" command_classes="0x2b,0x2c,0x72"/>
+    <Specific key="0x04" label="Power Strip" command_classes="0x20,0x25" basic="0x25"/>
+    <Specific key="0x05" label="Siren" command_classes="0x20,0x25" basic="0x25"/>
+    <Specific key="0x06" label="Valve Open Close" command_classes="0x20,0x25" basic="0x25"/>
+    <!-- SDS10242-30 5.4.3.5 Irrigation Control Specific Device Class -->
+    <!-- SDS11847-28 4.10 Irrigation Control -->
+    <Specific key="0x07" label="Irrigation Control" command_classes="0x55,0x59,0x5a,0x5e,0x6c,0x72,0x73,0x85,0x86,0x9f"/>
+  </Generic>
+  <Generic key="0x11" label="Multilevel Switch" command_classes="0x20,0x26" basic="0x26">
+    <Specific key="0x01" label="Multilevel Power Switch" command_classes="0x27"/>
+    <!--- SDS10242-30 5.9.3.9 Multilevel Tunable Color Light Specific Device Class -->
+    <!-- SDS14224-6 4.5.3 Color Switch DT -->
+    <Specific key="0x02" label="Multilevel Tunable Color Light" command_classes="0x27,0x33,0x72"/>
+    <Specific key="0x03" label="Multiposition Motor" command_classes="0x72,0x86"/>
+    <Specific key="0x04" label="Multilevel Scene Switch" command_classes="0x27,0x2b,0x2c,0x72"/>
+    <Specific key="0x05" label="Motor Control Class A" command_classes="0x25,0x72,0x86"/>
+    <Specific key="0x06" label="Motor Control Class B" command_classes="0x25,0x72,0x86"/>
+    <Specific key="0x07" label="Motor Control Class C" command_classes="0x25,0x72,0x86"/>
+    <!-- SDS11847-28 4.7 Fan Switch -->
+    <Specific key="0x08" label="Fan Switch" command_classes="0x55,0x59,0x5a,0x5e,0x6c,0x72,0x73,0x85,0x86,0x9f"/>
+  </Generic>
+  <Generic key="0x12" label="Remote Switch" command_classes="0xef,0x20">
+    <Specific key="0x01" label="Binary Remote Switch" command_classes="0xef,0x25" basic="0x25"/>
+    <Specific key="0x02" label="Multilevel Remote Switch" command_classes="0xef,0x26" basic="0x26"/>
+    <Specific key="0x03" label="Binary Toggle Remote Switch" command_classes="0xef,0x28" basic="0x28"/>
+    <Specific key="0x04" label="Multilevel Toggle Remote Switch" command_classes="0xef,0x29" basic="0x29"/>
+  </Generic>
+  <Generic key="0x13" label="Toggle Switch" command_classes="0x20">
+    <Specific key="0x01" label="Binary Toggle Switch" command_classes="0x25,0x28" basic="0x28"/>
+    <Specific key="0x02" label="Multilevel Toggle Switch" command_classes="0x26,0x29" basic="0x29"/>
+  </Generic>
+  <Generic key="0x14" label="Z/IP Gateway" command_classes="0x20">
+    <Specific key="0x01" label="Z/IP Tunneling Gateway" command_classes="0x23,0x24,0x72,0x86"/>
+    <Specific key="0x02" label="Z/IP Advanced Gateway" command_classes="0x23,0x24,0x2f,0x33,0x72,0x86"/>
+  </Generic>
+  <Generic key="0x15" label="Z/IP Node">
+    <Specific key="0x01" label="Z/IP Tunneling Node" command_classes="0x23,0x2e,0x72,0x86"/>
+    <Specific key="0x02" label="Z/IP Advanced Node" command_classes="0x23,0x2e,0x2f,0x34,0x72,0x86"/>
+  </Generic>
+  <Generic key="0x16" label="Ventilation" command_classes="0x20">
+    <Specific key="0x01" label="Residential Heat Recovery Ventilation" command_classes="0x37,0x39,0x72,0x86" basic="0x39"/>
+  </Generic>
+  <Generic key="0x17" label="Security Panel" command_classes="0x20">
+    <Specific key="0x01" label="Zoned Security Panel"/>
+  </Generic>
+  <Generic key="0x18" label="Wall Controller" command_classes="0x20">
+    <Specific key="0x01" label="Basic Wall Controller"/>
+  </Generic>
+  <Generic key="0x20" label="Binary Sensor" command_classes="0x30,0xef,0x20" basic="0x30">
+    <Specific key="0x01" label="Routing Binary Sensor"/>
+  </Generic>
+  <Generic key="0x21" label="Multilevel Sensor" command_classes="0x31,0xef,0x20" basic="0x31">
+    <Specific key="0x01" label="Routing Multilevel Sensor"/>
+    <Specific key="0x02" label="Chimney Fan"/>
+  </Generic>
+  <Generic key="0x30" label="Pulse Meter" command_classes="0x35,0xef,0x20" basic="0x35"/>
+  <Generic key="0x31" label="Meter" command_classes="0xef,0x20">
+    <Specific key="0x01" label="Simple Meter" command_classes="0x32,0x72,0x86" basic="0x32"/>
+    <Specific key="0x02" label="Advanced Energy Control" command_classes="0x3c,0x3d,0x72,0x86"/>
+    <Specific key="0x03" label="Whole Home Meter Simple"/>
+  </Generic>
+  <Generic key="0x40" label="Entry Control" command_classes="0x20">
+    <Specific key="0x01" label="Door Lock" command_classes="0x62" basic="0x62"/>
+    <Specific key="0x02" label="Advanced Door Lock" command_classes="0x62,0x72,0x86" basic="0x62"/>
+    <Specific key="0x03" label="Secure Keypad Door Lock" command_classes="0x62,0x63,0x72,0x86,0x98" basic="0x62"/>
+    <Specific key="0x04" label="Secure Keypad Door Lock DeadBolt" command_classes="0x63,0x72,0x76,0x86,0x98" basic="0x76"/>
+    <Specific key="0x05" label="Secure Door"/>
+    <Specific key="0x06" label="Secure Gate"/>
+    <Specific key="0x07" label="Secure Barrier AddOn"/>
+    <Specific key="0x08" label="Secure Barrier Open Only"/>
+    <Specific key="0x09" label="Secure Barrier Close Only"/>
+    <Specific key="0x0a" label="Secure LockBox"/>
+    <!-- SDS10242-30 5.6.4.6 Secure Keypad Specific Device Class -->
+    <!-- SDS11847-28 4.6 Entry Control Keypad -->
+    <!-- SDS14224-6 4.6.1 Entry Control Keypad DT -->
+    <Specific key="0x0b" label="Secure Keypad" command_classes="0x55,0x59,0x5e,0x5a,0x6c,0x6f,0x72,0x73,0x85,0x86,0x98,0x9f"/>
+  </Generic>
+  <Generic key="0x50" label="Semi Interoperable" command_classes="0x20,0x72,0x86,0x88">
+    <Specific key="0x01" label="Energy Production" command_classes="0x90"/>
+  </Generic>
+  <Generic key="0xa1" label="Alarm Sensor" command_classes="0xef,0x20" basic="0x71">
+    <Specific key="0x01" label="Basic Routing Alarm Sensor" command_classes="0x71,0x72,0x85,0x86,0xef,0x71"/>
+    <Specific key="0x02" label="Routing Alarm Sensor" command_classes="0x71,0x72,0x80,0x85,0x86,0xef,0x71"/>
+    <Specific key="0x03" label="Basic Zensor Alarm Sensor" command_classes="0x71,0x72,0x86,0xef,0x71"/>
+    <Specific key="0x04" label="Zensor Alarm Sensor" command_classes="0x71,0x72,0x80,0x86,0xef,0x71"/>
+    <Specific key="0x05" label="Advanced Zensor Alarm Sensor" command_classes="0x71,0x72,0x80,0x85,0x86,0xef,0x71"/>
+    <Specific key="0x06" label="Basic Routing Smoke Sensor" command_classes="0x71,0x72,0x85,0x86,0xef,0x71"/>
+    <Specific key="0x07" label="Routing Smoke Sensor" command_classes="0x71,0x72,0x80,0x85,0x86,0xef,0x71"/>
+    <Specific key="0x08" label="Basic Zensor Smoke Sensor" command_classes="0x71,0x72,0x86,0xef,0x71"/>
+    <Specific key="0x09" label="Zensor Smoke Sensor" command_classes="0x71,0x72,0x80,0x86,0xef,0x71"/>
+    <Specific key="0x0a" label="Advanced Zensor Smoke Sensor" command_classes="0x71,0x72,0x80,0x85,0x86,0xef,0x71"/>
+    <Specific key="0x0b" label="Alarm Sensor" command_classes="0x71,0x72,0x85,0x86,0xef,0x71" basic="0x71"/>
+  </Generic>
+  <Generic key="0xff" label="Non Interoperable"/>
+  <!-- Z-Wave+ role -->
+  <Role key="0x00" label="Central Controller" command_classes="0x5a"/>
+  <Role key="0x01" label="Sub Controller" command_classes="0x5a"/>
+  <Role key="0x02" label="Portable Controller" command_classes="0x5a"/>
+  <Role key="0x03" label="Portable Reporting Controller" command_classes="0x5a,0x84"/>
+  <Role key="0x04" label="Portable Slave" command_classes="0x5a,0x84"/>
+  <Role key="0x05" label="Always On Slave" command_classes="0x5a"/>
+  <Role key="0x06" label="Reporting Sleeping Slave" command_classes="0x5a,0x84"/>
+  <Role key="0x07" label="Listening Sleeping Slave" command_classes="0x5a"/>
+  <!-- SDS11846-26 5.9 Network Aware Slave (NAS) -->
+  <Role key="0x08" label="Network Aware Slave"/>
+  <!-- Z-Wave+ NodeType -->
+  <NodeType key="0x00" label="Z-Wave+ node"/>
+  <NodeType key="0x01" label="Z-Wave+ IP router"/>
+  <NodeType key="0x02" label="Z-Wave+ IP gateway"/>
+  <NodeType key="0x03" label="Z-Wave+ IP client and IP node"/>
+  <NodeType key="0x04" label="Z-Wave+ IP client and Zwave node"/>
+  <!-- Z-Wave+ IconType  -->
+  <!-- SDS13738 Z-Wave Plus Assigned Icon Types.xlsx-->
+  <!-- All Devices must support:
+  ZWaveInfo - 0x5e
+  Manufacturer Specific - 0x72
+  Device Reset Locally - 0x5a
+  Association Group Info - 0x59
+  Association - 0x85
+  PowerLevel - 0x73
+  Security - If required - 0x98
+  -->
+  <DeviceType key="0x0000" label="Unknown Type (0x0000)"/>
+  <DeviceType key="0x0100" label="Central Controller" command_classes="0x5a,0x5e,0x59,0x72,0x73,0x85,0x86,0x56,0x22"/>
+  <DeviceType key="0x0200" label="Display Simple" command_classes="0x5a,0x5e,0x59,0x72,0x73,0x85,0x86"/>
+  <DeviceType key="0x0300" label="Door Lock Keypad" command_classes="0x5a,0x5e,0x59,0x72,0x73,0x85,0x86,0x62,0x63,0x80"/>
+  <DeviceType key="0x0400" label="Fan Switch" command_classes="0x5a,0x5e,0x59,0x72,0x73,0x85,0x86,0x26"/>
+  <DeviceType key="0x0500" label="Gateway" command_classes="0x5a,0x5e,0x59,0x72,0x73,0x85,0x86,0x56,0x60,0x8E,0x84,0x22"/>
+  <DeviceType key="0x0600" label="Light Dimmer Switch" command_classes="0x5a,0x5e,0x59,0x72,0x73,0x85,0x86,0x26"/>
+  <DeviceType key="0x0700" label="On/Off Power Switch" command_classes="0x5a,0x5e,0x59,0x72,0x73,0x85,0x86,0x25"/>
+  <DeviceType key="0x0800" label="Power Strip" command_classes="0x5a,0x5e,0x59,0x72,0x73,0x85,0x86,0x60,0x8E,0x25"/>
+  <DeviceType key="0x0900" label="Remote Control AV" command_classes="0x5a,0x5e,0x59,0x72,0x73,0x85,0x86"/>
+  <DeviceType key="0x0a00" label="Remote Control Multi Purpose" command_classes="0x5a,0x5e,0x59,0x72,0x73,0x85,0x86,0x84"/>
+  <DeviceType key="0x0b00" label="Remote Control Simple" command_classes="0x5a,0x5e,0x59,0x72,0x73,0x85,0x86,0x5b"/>
+  <DeviceType key="0x0b01" label="Key Fob" command_classes="0x5a,0x5e,0x59,0x72,0x73,0x85,0x86,0x5b"/>
+  <DeviceType key="0x0c00" label="Sensor Notification" command_classes="0x5a,0x5e,0x59,0x72,0x73,0x85,0x86,0x30"/>
+  <DeviceType key="0x0c01" label="Smoke Alarm Sensor" command_classes="0x5a,0x5e,0x59,0x72,0x73,0x85,0x86,0x30"/>
+  <DeviceType key="0x0c02" label="CO Alarm Sensor" command_classes="0x5a,0x5e,0x59,0x72,0x73,0x85,0x86,0x30"/>
+  <DeviceType key="0x0c03" label="CO2 Alarm Sensor" command_classes="0x5a,0x5e,0x59,0x72,0x73,0x85,0x86,0x30"/>
+  <DeviceType key="0x0c04" label="Heat Alarm Sensor" command_classes="0x5a,0x5e,0x59,0x72,0x73,0x85,0x86,0x30"/>
+  <DeviceType key="0x0c05" label="Water Alarm Sensor" command_classes="0x5a,0x5e,0x59,0x72,0x73,0x85,0x86,0x30"/>
+  <DeviceType key="0x0c06" label="Access Control Sensor" command_classes="0x5a,0x5e,0x59,0x72,0x73,0x85,0x86,0x30"/>
+  <DeviceType key="0x0c07" label="Home Security Sensor" command_classes="0x5a,0x5e,0x59,0x72,0x73,0x85,0x86,0x30"/>
+  <DeviceType key="0x0c08" label="Power Management Sensor" command_classes="0x5a,0x5e,0x59,0x72,0x73,0x85,0x86,0x30"/>
+  <DeviceType key="0x0c09" label="System Sensor" command_classes="0x5a,0x5e,0x59,0x72,0x73,0x85,0x86,0x30"/>
+  <DeviceType key="0x0c0a" label="Emergency Alarm Sensor" command_classes="0x5a,0x5e,0x59,0x72,0x73,0x85,0x86,0x30"/>
+  <DeviceType key="0x0c0b" label="Clock Sensor" command_classes="0x5a,0x5e,0x59,0x72,0x73,0x85,0x86,0x30"/>
+  <DeviceType key="0x0cff" label="MultiDevice Sensor" command_classes="0x5a,0x5e,0x59,0x72,0x73,0x85,0x86,0x30"/>
+  <DeviceType key="0x0d00" label="Multilevel Sensor" command_classes="0x5a,0x5e,0x59,0x72,0x73,0x85,0x86,0x30,0x31"/>
+  <DeviceType key="0x0d01" label="Air Temperature Sensor" command_classes="0x5a,0x5e,0x59,0x72,0x73,0x85,0x86,0x30,0x31"/>
+  <DeviceType key="0x0d02" label="General Purpose Sensor" command_classes="0x5a,0x5e,0x59,0x72,0x73,0x85,0x86,0x30,0x31"/>
+  <DeviceType key="0x0d03" label="Luminance Sensor" command_classes="0x5a,0x5e,0x59,0x72,0x73,0x85,0x86,0x30,0x31"/>
+  <DeviceType key="0x0d04" label="Power Sensor" command_classes="0x5a,0x5e,0x59,0x72,0x73,0x85,0x86,0x30,0x31"/>
+  <DeviceType key="0x0d05" label="Humidity Sensor" command_classes="0x5a,0x5e,0x59,0x72,0x73,0x85,0x86,0x30,0x31"/>
+  <DeviceType key="0x0d06" label="Velocity Sensor" command_classes="0x5a,0x5e,0x59,0x72,0x73,0x85,0x86,0x30,0x31"/>
+  <DeviceType key="0x0d07" label="Direction Sensor" command_classes="0x5a,0x5e,0x59,0x72,0x73,0x85,0x86,0x30,0x31"/>
+  <DeviceType key="0x0d08" label="Atmospheric Pressure Sensor" command_classes="0x5a,0x5e,0x59,0x72,0x73,0x85,0x86,0x30,0x31"/>
+  <DeviceType key="0x0d09" label="Barometric Pressure Sensor" command_classes="0x5a,0x5e,0x59,0x72,0x73,0x85,0x86,0x30,0x31"/>
+  <DeviceType key="0x0d0a" label="Solar Radiation Sensor" command_classes="0x5a,0x5e,0x59,0x72,0x73,0x85,0x86,0x30,0x31"/>
+  <DeviceType key="0x0d0b" label="Dew Point Sensor" command_classes="0x5a,0x5e,0x59,0x72,0x73,0x85,0x86,0x30,0x31"/>
+  <DeviceType key="0x0d0c" label="Rain Rate Sensor" command_classes="0x5a,0x5e,0x59,0x72,0x73,0x85,0x86,0x30,0x31"/>
+  <DeviceType key="0x0d0d" label="Tide Level Sensor" command_classes="0x5a,0x5e,0x59,0x72,0x73,0x85,0x86,0x30,0x31"/>
+  <DeviceType key="0x0d0e" label="Weight Sensor" command_classes="0x5a,0x5e,0x59,0x72,0x73,0x85,0x86,0x30,0x31"/>
+  <DeviceType key="0x0d0f" label="Voltage Sensor" command_classes="0x5a,0x5e,0x59,0x72,0x73,0x85,0x86,0x30,0x31"/>
+  <DeviceType key="0x0d10" label="Current Sensor" command_classes="0x5a,0x5e,0x59,0x72,0x73,0x85,0x86,0x30,0x31"/>
+  <DeviceType key="0x0d11" label="CO2 Level Sensor" command_classes="0x5a,0x5e,0x59,0x72,0x73,0x85,0x86,0x30,0x31"/>
+  <DeviceType key="0x0d12" label="Air Flow Sensor" command_classes="0x5a,0x5e,0x59,0x72,0x73,0x85,0x86,0x30,0x31"/>
+  <DeviceType key="0x0d13" label="Tank Capacity Sensor" command_classes="0x5a,0x5e,0x59,0x72,0x73,0x85,0x86,0x30,0x31"/>
+  <DeviceType key="0x0d14" label="Distance Sensor" command_classes="0x5a,0x5e,0x59,0x72,0x73,0x85,0x86,0x30,0x31"/>
+  <DeviceType key="0x0d15" label="Angle Postition Sensor" command_classes="0x5a,0x5e,0x59,0x72,0x73,0x85,0x86,0x30,0x31"/>
+  <DeviceType key="0x0d16" label="Rotation Sensor" command_classes="0x5a,0x5e,0x59,0x72,0x73,0x85,0x86,0x30,0x31"/>
+  <DeviceType key="0x0d17" label="Water Temperature Sensor" command_classes="0x5a,0x5e,0x59,0x72,0x73,0x85,0x86,0x30,0x31"/>
+  <DeviceType key="0x0d18" label="Soil Temperature Sensor" command_classes="0x5a,0x5e,0x59,0x72,0x73,0x85,0x86,0x30,0x31"/>
+  <DeviceType key="0x0d19" label="Seismic Intensity Sensor" command_classes="0x5a,0x5e,0x59,0x72,0x73,0x85,0x86,0x30,0x31"/>
+  <DeviceType key="0x0d1a" label="Seismic Magnitude Sensor" command_classes="0x5a,0x5e,0x59,0x72,0x73,0x85,0x86,0x30,0x31"/>
+  <DeviceType key="0x0d1b" label="Ultraviolet Sensor" command_classes="0x5a,0x5e,0x59,0x72,0x73,0x85,0x86,0x30,0x31"/>
+  <DeviceType key="0x0d1c" label="Electrical Resistivity Sensor" command_classes="0x5a,0x5e,0x59,0x72,0x73,0x85,0x86,0x30,0x31"/>
+  <DeviceType key="0x0d1d" label="Electrical Conductivity Sensor" command_classes="0x5a,0x5e,0x59,0x72,0x73,0x85,0x86,0x30,0x31"/>
+  <DeviceType key="0x0d1e" label="Loudness Sensor" command_classes="0x5a,0x5e,0x59,0x72,0x73,0x85,0x86,0x30,0x31"/>
+  <DeviceType key="0x0d1f" label="Moisture Sensor" command_classes="0x5a,0x5e,0x59,0x72,0x73,0x85,0x86,0x30,0x31"/>
+  <DeviceType key="0x0d20" label="Frequency Sensor" command_classes="0x5a,0x5e,0x59,0x72,0x73,0x85,0x86,0x30,0x31"/>
+  <DeviceType key="0x0d21" label="Time Sensor" command_classes="0x5a,0x5e,0x59,0x72,0x73,0x85,0x86,0x30,0x31"/>
+  <DeviceType key="0x0d22" label="Target Temperature Sensor" command_classes="0x5a,0x5e,0x59,0x72,0x73,0x85,0x86,0x30,0x31"/>
+  <DeviceType key="0x0dff" label="MultiDevice Sensor" command_classes="0x5a,0x5e,0x59,0x72,0x73,0x85,0x86,0x30,0x31"/>
+  <DeviceType key="0x0e00" label="Set Top Box" command_classes="0x5a,0x5e,0x59,0x72,0x73,0x85,0x86,0x56,0x60,0x8e,0x84,0x22"/>
+  <DeviceType key="0x0f00" label="Siren" command_classes="0x5a,0x5e,0x59,0x72,0x73,0x85,0x86"/>
+  <DeviceType key="0x1000" label="Sub Energy Meter" command_classes="0x5a,0x5e,0x59,0x72,0x73,0x85,0x86,0x56,0x32"/>
+  <DeviceType key="0x1100" label="Sub System Controller" command_classes="0x5a,0x5e,0x59,0x72,0x73,0x85,0x86,0x60,0x84,0x22"/>
+  <DeviceType key="0x1200" label="Thermostat HVAC" command_classes="0x5a,0x5e,0x59,0x72,0x73,0x85,0x86,0x43,0x40"/>
+  <DeviceType key="0x1300" label="Thermostat Setback" command_classes="0x5a,0x5e,0x59,0x72,0x73,0x85,0x86,0x43"/>
+  <DeviceType key="0x1400" label="TV" command_classes="0x5a,0x5e,0x59,0x72,0x73,0x85,0x86,0x56,0x60,0x8e,0x84,0x22"/>
+  <DeviceType key="0x1500" label="Valve open/close" command_classes="0x5a,0x5e,0x59,0x72,0x73,0x85,0x86,0x26,0x25"/>
+  <DeviceType key="0x1600" label="Wall Controller" command_classes="0x5a,0x5e,0x59,0x72,0x73,0x85,0x86,0x5b"/>
+  <DeviceType key="0x1700" label="Whole Home Meter Simple" command_classes="0x5a,0x5e,0x59,0x72,0x73,0x85,0x86,0x56,0x32"/>
+  <DeviceType key="0x1800" label="Window Covering No Position/Endpoint" command_classes="0x5a,0x5e,0x59,0x72,0x73,0x85,0x86,0x26,0x25"/>
+  <DeviceType key="0x1900" label="Window Covering Endpoint Aware" command_classes="0x5a,0x5e,0x59,0x72,0x73,0x85,0x86,0x26,0x25"/>
+  <DeviceType key="0x1a00" label="Window Covering Position/Endpoint Aware" command_classes="0x5a,0x5e,0x59,0x72,0x73,0x85,0x86,0x26,0x25"/>
+  <!--
+  2019-05-24 add data, based on "Z-Wave Specification release 2019B": SDS13738 Z-Wave Plus Assigned Icon Types.xlsx
+  The DeviceType entries are based on Z-Wave Plus Info Report Command, field User Icon Type (16 bits). 
+  These new entries have no command classes assigned, as per spec SDS13782-10 4.43 Z-Wave Plus Info Command Class:
+  "Icon types do not affect the operation of a product or how it is certified."
+  -->
+  <DeviceType key="0x0601" label="Light Dimmer Switch Plugin"/>
+  <DeviceType key="0x0602" label="Light Dimmer Switch Wall Outlet"/>
+  <DeviceType key="0x0603" label="Light Dimmer Switch Ceiling Outlet"/>
+  <DeviceType key="0x0604" label="Light Dimmer Switch Wall Lamp"/>
+  <DeviceType key="0x0605" label="Light Dimmer Switch Lamp Post High"/>
+  <DeviceType key="0x0606" label="Light Dimmer Switch Lamp Post Low"/>
+  <DeviceType key="0x0607" label="Light Dimmer Switch Din Rail Module"/>
+  <DeviceType key="0x0701" label="On/Off Power Switch Plugin"/>
+  <DeviceType key="0x0702" label="On/Off Power Switch Wall Outlet"/>
+  <DeviceType key="0x0703" label="On/Off Power Switch Ceiling Outlet"/>
+  <DeviceType key="0x0704" label="On/Off Power Switch Wall Lamp"/>
+  <DeviceType key="0x0705" label="On/Off Power Switch Lamp Post High"/>
+  <DeviceType key="0x0706" label="On/Off Power Switch Lamp Post Low"/>
+  <DeviceType key="0x0707" label="On/Off Power Switch Din Rail Module"/>
+  <DeviceType key="0x08ff" label="Power Strip Individual Outlet"/>
+  <DeviceType key="0x0c0c" label="Sensor Notification Appliance"/>
+  <DeviceType key="0x0c0d" label="Sensor Notification Home Health"/>
+  <DeviceType key="0x0c0e" label="Sensor Notification Siren"/>
+  <DeviceType key="0x0c0f" label="Sensor Notification Water Valve"/>
+  <DeviceType key="0x0c10" label="Sensor Notification Weather Alarm"/>
+  <DeviceType key="0x0c11" label="Sensor Notification Irrigation"/>
+  <DeviceType key="0x0c12" label="Sensor Notification Gas Alarm"/>
+  <DeviceType key="0x0c13" label="Sensor Notification Pest Control"/>
+  <DeviceType key="0x0c14" label="Sensor Notification Light Sensor"/>
+  <!-- Already Present above - <DeviceType key="0x0cff" label="Sensor Notification Multidevice"/> -->
+  <DeviceType key="0x0d23" label="Multilevel Sensor: Particulate Matter 2.5"/>
+  <DeviceType key="0x0d24" label="Multilevel Sensor: Formaldehyde CH2O-level"/>
+  <DeviceType key="0x0d25" label="Multilevel Sensor: Radon Concentration"/>
+  <DeviceType key="0x0d26" label="Multilevel Sensor: Methane (CH4) density"/>
+  <DeviceType key="0x0d27" label="Multilevel Sensor: Volatile Organic Compound level"/>
+  <DeviceType key="0x0d28" label="Multilevel Sensor: Carbon Monoxide level"/>
+  <DeviceType key="0x0d29" label="Multilevel Sensor: Soil Humidity"/>
+  <DeviceType key="0x0d2a" label="Multilevel Sensor: Soil Reactivity"/>
+  <DeviceType key="0x0d2b" label="Multilevel Sensor: Soil Salinity"/>
+  <DeviceType key="0x0d2c" label="Multilevel Sensor: Heart Rate"/>
+  <DeviceType key="0x0d2d" label="Multilevel Sensor: Blood Pressure"/>
+  <DeviceType key="0x0d2e" label="Multilevel Sensor: Muscle Mass"/>
+  <DeviceType key="0x0d2f" label="Multilevel Sensor: Fat Mass"/>
+  <DeviceType key="0x0d30" label="Multilevel Sensor: Bone Mass"/>
+  <DeviceType key="0x0d31" label="Multilevel Sensor: Total Body Water"/>
+  <DeviceType key="0x0d32" label="Multilevel Sensor: Basis Metabolic Rate"/>
+  <DeviceType key="0x0d33" label="Multilevel Sensor: Body Mass Index"/>
+  <DeviceType key="0x0d34" label="Multilevel Sensor: Acceleration X Axis"/>
+  <DeviceType key="0x0d35" label="Multilevel Sensor: Acceleration Y Axis"/>
+  <DeviceType key="0x0d36" label="Multilevel Sensor: Acceleration Z Axis"/>
+  <DeviceType key="0x0d37" label="Multilevel Sensor: Smoke Density"/>
+  <DeviceType key="0x0d38" label="Multilevel Sensor: Water Flow"/>
+  <DeviceType key="0x0d39" label="Multilevel Sensor: Water Pressure"/>
+  <DeviceType key="0x0d3a" label="Multilevel Sensor: Signal Strength"/>
+  <DeviceType key="0x0d3b" label="Multilevel Sensor: particulate Matter 10"/>
+  <DeviceType key="0x0d3c" label="Multilevel Sensor: Respiratory Rate"/>
+  <DeviceType key="0x0d3d" label="Multilevel Sensor: Relative Modulation Level"/>
+  <DeviceType key="0x0d3e" label="Multilevel Sensor: Boiler Water Temperature"/>
+  <DeviceType key="0x0d3f" label="Multilevel Sensor: Domestic Hot Water temperature"/>
+  <DeviceType key="0x0d40" label="Multilevel Sensor: Outside temperature"/>
+  <DeviceType key="0x0d41" label="Multilevel Sensor: Exhaust temperature"/>
+  <DeviceType key="0x0d42" label="Multilevel Sensor: Water Chlorine level"/>
+  <DeviceType key="0x0d43" label="Multilevel Sensor: Water Acidity"/>
+  <DeviceType key="0x0d44" label="Multilevel Sensor: Water Oxidation reduction potential"/>
+  <!-- Already Present Above - <DeviceType key="0x0dff" label="Multilevel Sensor: Multidevice"/> -->
+  <DeviceType key="0x1201" label="Thermostat, Line Voltage Switching"/>
+  <DeviceType key="0x1202" label="Thermostat, Setback Type"/>
+  <DeviceType key="0x1b00" label="Generic Repeater"/>
+  <DeviceType key="0x1b01" label="Basic Repeater Slave"/>
+  <DeviceType key="0x1b03" label="IR Repeater"/>
+  <DeviceType key="0x1c00" label="Dimmer Wall Switch"/>
+  <DeviceType key="0x1c01" label="Dimmer Wall Switch, 1 button"/>
+  <DeviceType key="0x1c02" label="Dimmer Wall Switch, 2 buttons"/>
+  <DeviceType key="0x1c03" label="Dimmer Wall Switch, 3 buttons"/>
+  <DeviceType key="0x1c04" label="Dimmer Wall Switch, 4 buttons"/>
+  <DeviceType key="0x1cf1" label="Dimmer Wall Switch, 1 rotary knob"/>
+  <DeviceType key="0x1d00" label="On/Off Wall Switch"/>
+  <DeviceType key="0x1d01" label="On/Off Wall Switch, 1 button"/>
+  <DeviceType key="0x1d02" label="On/Off Wall Switch, 2 buttons"/>
+  <DeviceType key="0x1d03" label="On/Off Wall Switch, 3 buttons"/>
+  <DeviceType key="0x1d04" label="On/Off Wall Switch, 4 buttons"/>
+  <DeviceType key="0x1de1" label="On/Off Wall Switch, Door Bell"/>
+  <DeviceType key="0x1df1" label="On/Off Wall Switch, 1 rotary knob"/>
+  <DeviceType key="0x1e00" label="Barrier"/>
+  <DeviceType key="0x1f00" label="Irrigation"/>
+  <DeviceType key="0x2000" label="Entry Control"/>
+  <DeviceType key="0x2001" label="Entry Control, Keypad 0-9"/>
+  <DeviceType key="0x2002" label="Entry Control, RFID tag reader, no button"/>
+  <DeviceType key="0x2003" label="Entry control, keypad 0-9 with ok and cancel buttons"/>
+  <DeviceType key="0x2004" label="Entry control, keypad 0-9 with ok, cancel, home, stay and away buttons"/>
+  <DeviceType key="0x2100" label="Home Security Alarm"/>
+  <DeviceType key="0x2101" label="Home Security Alarm, Intrusion"/>
+  <DeviceType key="0x2102" label="Home Security Alarm, Glass Breakage"/>
+  <DeviceType key="0x2200" label="Sound Switch"/>
+  <DeviceType key="0x2201" label="Sound Switch, Doorbell"/>
+  <DeviceType key="0x2202" label="Sound Switch, Chime"/>
+  <DeviceType key="0x2203" label="Sound Switch, Alarm Clock"/>
+</DeviceClasses>

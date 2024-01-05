@@ -1,0 +1,140 @@
+<!-- Fibaro FGFS101 Zwave+ Flood Sensor --><Product Revision="8" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/010F:1002:0B01</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/fibaro/fgfs101zw5.png</MetaDataItem>
+    <MetaDataItem id="1002" name="ZWProductPage" type="0B01">https://products.z-wavealliance.org/products/2791/</MetaDataItem>
+    <MetaDataItem name="ResetDescription">1) Open the cover by turning it counter-clockwise. 
+2) Make sure the device is powered (either by a battery or a DC power supply).
+3) Press and hold the TMP button for 15-20 seconds until LED glows yellow (4th menu position).
+4) Release and click the TMP button to start the reset procedure.
+5) Successful reset will be confirmed with the LED indicator changing colour to red and an acoustic signal.
+Use reset procedure only if the primary controller is missing or inoperable.
+</MetaDataItem>
+    <MetaDataItem id="1002" name="Identifier" type="0B01">FGFS-101</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://Products.Z-WaveAlliance.org/ProductManual/File?folder=&amp;filename=Manuals/3327/FGFS-101-EN-T-v2.11.pdf</MetaDataItem>
+    <MetaDataItem name="WakeupDescription">FIBARO Flood Sensor will wake up at a defined time interval and will always try to communicate with the main controller. There is a possibility to wake up the device manually by clicking the TMP button</MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">1) Open the cover by turning it counter-clockwise.
+2) Make sure the device is powered (either by a battery or a DC power supply).
+3) Place the device within the direct range of your Z-Wave controller.
+4) Set the main controller in remove mode (see the controller’s manual).
+5) Quickly, triple click the TMP button located inside the casing.
+6) Wait for the removing process to end.  
+7) Successful removing will be confirmed by the Z-Wave controller’s message.
+</MetaDataItem>
+    <MetaDataItem name="InclusionDescription">1) Open the cover by turning it counter-clockwise.
+2) Remove battery blocker.
+3) Place the device within the direct range of your Z-Wave controller.
+4) Set the main controller in (security/non-security) add mode (see the controller’s manual).
+5) Quickly, triple click the TMP button located inside the casing.
+6) Wait for the adding process to end. 
+7) Successful adding will be confirmed by the Z-Wave controller’s message.
+8) Close the cover by turning it clockwise.
+9) Place the sensor onto a surface prone to flooding. Three electrodes underneath the device should evenly touch the surface.
+</MetaDataItem>
+    <MetaDataItem name="Description">FIBARO Flood Sensor is a universal, Z-Wave Plus compatible, flood and temperature sensor. The device can be powered using battery, 12/24V DC power supply or both. Flood alarm is sent to the Z-Wave network devices or additionally to any alarm system controller through opening a NC contact using the external power supply. The device has a built-in temperature sensor that allows to monitor ambient temperature. FIBARO Flood Sensor is designed to be placed on the floor or mounted on a wall (in this case Flood Sensor probes should be extended using addition wire). The device has a built-in visual LED indicator and an acoustic alarm. The LED indicator signals flood, operating mode or the Z-Wave network communication range. In addition, the device is equipped with a sensor reporting tilt or movement to the main controller e.g. when someone has taken the Sensor from its original location.  FIBARO Flood Sensor is sink-proof, which means it drifts on the water surface and keeps on sending alarm signal in case of substantial inundation of water (if not wired). Flood Sensor is compatible with any Z-Wave or Z-Wave+ Controller.</MetaDataItem>
+    <MetaDataItem id="1002" name="FrequencyName" type="0B01">CEPT (Europe)</MetaDataItem>
+    <MetaDataItem name="Name">FIBARO Flood Sensor</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="08 May 2019" revision="4">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1354/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="24 May 2019" revision="5">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1642/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="02 Jun 2019" revision="6">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/2742/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="02 Jun 2019" revision="7">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/2791/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 Jun 2019" revision="8">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/3327/xml</Entry>
+    </ChangeLog>
+    <MetaDataItem id="2002" name="ZWProductPage" type="0B01">https://products.z-wavealliance.org/products/2742/</MetaDataItem>
+    <MetaDataItem id="2002" name="Identifier" type="0B01">FGFS-101</MetaDataItem>
+    <MetaDataItem id="2002" name="FrequencyName" type="0B01">U.S. / Canada / Mexico</MetaDataItem>
+    <MetaDataItem id="1003" name="ZWProductPage" type="0B01">https://products.z-wavealliance.org/products/3327/</MetaDataItem>
+    <MetaDataItem id="1003" name="Identifier" type="0B01">FGFS-101</MetaDataItem>
+    <MetaDataItem id="1003" name="FrequencyName" type="0B01">CEPT (Europe)</MetaDataItem>
+  </MetaData>
+  <!-- Configuration -->
+  <CommandClass id="112">
+    <Value genre="config" index="1" instance="1" label="Alarm Cancellation Delay" max="3600" min="0" type="short" value="0">
+      <Help>Determines time period (in seconds) by which a Flood Sensor will retain the flood state after the flooding itself has ceased. The sensor will keep on reporting flooding to the main controller. This parameter setting does not affect acoustic and visual alarms, which turn off immediately after flooding ceases.</Help>
+    </Value>
+    <Value genre="config" index="2" instance="1" label="Acoustic and visual signals" size="1" type="list" value="3">
+      <Help>Acoustic and visual signals in case of flooding.</Help>
+      <Item label="acoustic and visual alarms inactive" value="0"/>
+      <Item label="acoustic alarm inactive, visual alarm active" value="1"/>
+      <Item label="acoustic alarm active, visual alarm inactive" value="2"/>
+      <Item label="acoustic and visual alarms active" value="3"/>
+    </Value>
+    <Value genre="config" index="7" instance="1" label="Requested dimming level / roller blind opening level when sending turn on / open command to 2nd association group devices" max="255" min="1" type="byte" value="255">
+      <Help>Determines the requested "on" level to be sent to devices from 2nd association group upon flood event.</Help>
+    </Value>
+    <Value genre="config" index="9" instance="1" label="Deactivate turning off devices in 2nd association group alarm cancellation in 3rd group" size="1" type="list" value="1">
+      <Help>This setting decides whether device turn off commands and alarm cancellation notifications will be sent to devices in 2nd and 3rd association groups (respectively)</Help>
+      <Item label="Alarm (flooding) cancellation INACTIVE" value="0"/>
+      <Item label="Alarm (flooding) cancellation ACTIVE" value="1"/>
+    </Value>
+    <Value genre="config" index="10" instance="1" label="Interval between successive readings of temperature sensors" max="65535" min="1" type="short" value="300">
+      <Help>Interval between successive readings of temperature from all sensors connected to the device in seconds. Note: taking temperature readings from the sensor does not result in sending a temperature condition report to the central hub.</Help>
+    </Value>
+    <Value genre="config" index="12" instance="1" label="Insensitiveness to temperature changes." max="1000" min="1" type="short" value="50">
+      <Help>Insensitiveness to temperature changes. This is the maximum acceptable difference between the last reported temperature and the current temperature taken from the sensor. If the temperatures differ by the set value or more, then a report with the current temperature value is sent to the device assigned to association group no. 3. Intervals between taking readings from sensors are specified by parameter no. 10.
+                Possible parameter settings:1 to 1000 [each 0.01oC] [0.01oC to 10.00oC].</Help>
+    </Value>
+    <Value genre="config" index="50" instance="1" label="Low temperature alarm threshold." max="10000" min="-10000" type="short" value="1500">
+      <Help>The parameter stores a temperature value, below which LED indicator blinks with a colour determined by Parameter 61 settings. By default the LED indicator blinks blue.
+                Possible parameter settings:-10000 to 10000 [each 0.01oC] [-100oC to 100oC].</Help>
+    </Value>
+    <Value genre="config" index="51" instance="1" label="High temperature alarm threshold." max="10000" min="-10000" type="short" value="3500">
+      <Help>The parameter stores a temperature value, above which LED indicator blinks with a colour determined by Parameter 62 settings. By default the LED indicator blinks red.
+                Possible parameter settings:-10000 to 10000 [each 0.01oC] [-100oC to 100oC].</Help>
+    </Value>
+    <Value genre="config" index="61" instance="1" label="Low temperature alarm indicator colour." max="16777215" min="0" type="int" value="255">
+      <Help>The parameter stores RGB colour value.</Help>
+    </Value>
+    <Value genre="config" index="62" instance="1" label="High temperature alarm indicator colour." max="16777215" min="0" type="int" value="16711680">
+      <Help>The parameter stores RGB colour value.</Help>
+    </Value>
+    <Value genre="config" index="63" instance="1" label="Managing a LED indicator under standard operation." size="1" type="list" value="2">
+      <Help>Parameter determines LED indicator's operation. Set to 0 turns the indicator off, saving battery life.</Help>
+      <Item label="LED doesn't indicate temperature" value="0"/>
+      <Item label="LED indicates temperature (blink) every Temperature Measurement Interval (Parameter 10, constant power + battery) or Wake Up Interval (battery)" value="1"/>
+      <Item label="LED indicates temperature constantly, only in constant power mode." value="2"/>
+    </Value>
+    <Value genre="config" index="73" instance="1" label="Temperature measurement compensation." max="10000" min="-10000" type="short" value="0">
+      <Help>Parameter stores a temperature value to be added to or deducted from the current temperature measured by the internal temperature sensor in order to compensate the difference between air temperature and the temperature at floor level.
+                Possible parameter settings:-10000 to 10000 [each 0.01oC] [-100oC to 100oC].</Help>
+    </Value>
+    <Value genre="config" index="74" instance="1" label="Alarm frame sent to 1st and 4th Association Group activation." size="1" type="list" value="2">
+      <Help>The device is able to report tamper alarms resulting from sensor tilt/movement or TMP button state change.</Help>
+      <Item label="Tamper alarms INACTIVE" value="0"/>
+      <Item label="Button tamper alarm ACTIVE" value="1"/>
+      <Item label="Movement tamper alarm ACTIVE" value="2"/>
+      <Item label="Button and movement tamper alarms ACTIVE" value="3"/>
+    </Value>
+    <Value genre="config" index="75" instance="1" label="Visual and audible alarm duration" max="65535" min="0" type="short" value="0">
+      <Help>Parameter determines a time period after which alarm will become quiet - still active but the device will go into battery saving mode. Visual or acoustic alarm will be reactivated after time period specified in Parameter 76. When alarm status ceases, alarm will be turned off immediately.
+                Value of 0 means visual and acoustic alarms are active indefinitely. In battery power mode the device will never go to sleep which may shorten battery life significantly.</Help>
+    </Value>
+    <Value genre="config" index="76" instance="1" label="Alarm signalization reactivation period" max="65535" min="0" type="short" value="0">
+      <Help>Parameter determines a time period after which an alarm frame will be retransmitted.
+                Value of 0 cancels an alarm frame retransmission.</Help>
+    </Value>
+    <Value genre="config" index="77" instance="1" label="Flood sensor functionality turned off." size="1" type="list" value="0">
+      <Help>Allows for turning off the internal flood sensor. Tamper and internal temperature sensors will remain active.</Help>
+      <Item label="Default flood sensor operation (ACTIVE)" value="0"/>
+      <Item label="Flood sensor INACTIVE" value="1"/>
+    </Value>
+    <Value genre="config" index="78" instance="1" label="Associations in Z-Wave network security mode" max="7" min="0" type="byte" value="7">
+      <Help>This parameter defines how commands are sent in specified association groups: as secure or non-secure. Parameter is active only in Z-Wave network security mode. It does not apply to 1st Lifeline group.</Help>
+    </Value>
+  </CommandClass>
+  <CommandClass id="96">
+    <Compatibility>
+      <MapRootToEndpoint>true</MapRootToEndpoint>
+    </Compatibility>
+  </CommandClass>
+  <!-- Association Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="4">
+      <Group index="1" label="Lifeline" max_associations="1"/>
+      <Group index="2" label="Flood Control" max_associations="5"/>
+      <Group index="3" label="Flood Alarm" max_associations="5"/>
+      <Group index="4" label="Tamper Alarm" max_associations="5"/>
+    </Associations>
+  </CommandClass>
+</Product>

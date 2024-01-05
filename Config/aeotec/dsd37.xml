@@ -1,0 +1,40 @@
+<Product Revision="5" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0086:0025:0004</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/aeotec/dsd37.png</MetaDataItem>
+    <MetaDataItem id="0025" name="ZWProductPage" type="0004">https://products.z-wavealliance.org/products/1017/</MetaDataItem>
+    <MetaDataItem id="0025" name="Identifier" type="0004">DSD37-ZWAU</MetaDataItem>
+    <MetaDataItem id="0025" name="FrequencyName" type="0004">U.S. / Canada / Mexico / CEPT (Europe) / Australia / New Zealand</MetaDataItem>
+    <MetaDataItem name="Name">Aeon Labs Range Extender DSD37-ZWAU</MetaDataItem>
+    <MetaDataItem name="Description">Range Extender / Repeater</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 May 2019" revision="3">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/752/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 May 2019" revision="4">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1004/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 May 2019" revision="5">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1017/xml</Entry>
+    </ChangeLog>
+  </MetaData>
+  <!-- 
+Aeotec DSD37-ZWUS Repeater 
+https://aeotec.freshdesk.com/helpdesk/attachments/6009584515
+-->
+    <!-- Configuration -->
+  <CommandClass id="112">
+    <Value genre="config" index="200" label="Partner ID" max="1" min="0" size="1" type="list" value="0">
+      <Help>Partner ID</Help>
+      <Item label="Aeon Labs Standard (Default)" value="0"/>
+      <Item label="Others" value="1"/>
+    </Value>
+    <Value genre="config" index="254" label="Device Tag" max="255" min="0" type="short" value="0">
+      <Help>Device Tag</Help>
+    </Value>
+    <Value genre="config" index="255" label="Reset configuration settings to factory defaults" type="button" value="0" write_only="true">
+      <Help>Reset to factory defaults.</Help>
+    </Value>
+  </CommandClass>
+  <!-- Association Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="1">
+      <Group index="1" label="LifeLine" max_associations="5"/>
+    </Associations>
+  </CommandClass>
+</Product>

@@ -1,0 +1,86 @@
+<Product Revision="3" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="Name">ZEN34 Remote Switch</MetaDataItem>
+    <MetaDataItem name="Description">FEATURES:
+- Control Z-Wave devices or activate scenes with the multi-tap feature
+- Wire-free: the perfect add-on switch to put in an existing switch box or install on any flat surface
+- Scene Control (select hubs only): trigger up to 8 scenes or control up to 8 devices with multi-tap control.*
+- Smart bulb control: use scene control or direct association (for Z-Wave bulbs only) to turn your smart bulbs on and off through wireless signal instead of cutting power to them
+- New 700 Z-Wave chip: more range and faster speed than ever
+- Adjustable LED indicator: choose from 4 colors and 3 brightness levels
+- S2 security protocol and AES-128 bank-grade encryption
+
+SPECIFICATIONS:
+- Model Number: ZEN34
+- Z-Wave Signal Frequency: 908.42 MHz
+- Power: 2 x CR2032 batteries
+- Range: Up to 250 feet line of sight
+- Operating Temperature: 32-104° F (0-40° C)
+- Installation and Use: Indoor only</MetaDataItem>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/027a:F001:0004</MetaDataItem>
+    <MetaDataItem name="ProductPage">http://www.getzooz.com/</MetaDataItem>
+    <MetaDataItem name="ProductSupport">http://www.support.getzooz.com/kb/section/185</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/zooz/zen34.png</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://opensmarthouse.org/zwavedatabase/1310/reference/zooz-zen34-manual-curves.pdf</MetaDataItem>
+    <MetaDataItem name="InclusionDescription">Put the primary controller into inclusion mode and click the upper paddle 6 times quickly. The LED indicator will blink blue during the process and light up green once added successfully. It will light up red if failed.</MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">Put the primary controller into exclusion mode and click the lower paddle 6 times quickly.</MetaDataItem>
+	<MetaDataItem name="WakeupDescription">Click the upper paddle 7 times quickly. The LED indicator will stay solid blue during wakeup and will turn off when the device turns the Z-Wave radio off again.</MetaDataItem>
+    <MetaDataItem name="ResetDescription">When your network's primary controller is missing or otherwise inoperable, you may need to reset the device to factory settings manually. In order to complete the process, make sure the device is powered, then taptap- tap'and'hold the upper paddle. The LED indicator will blink red 5 times to indicate successful reset.</MetaDataItem>
+    <MetaDataItem id="F001" name="Identifier" type="0004">ZEN34</MetaDataItem>
+    <MetaDataItem id="F001" name="FrequencyName" type="0004">U.S. / Canada / Mexico</MetaDataItem>
+    <MetaDataItem id="F001" name="ZWProductPage" type="0004">https://products.z-wavealliance.org/products/xxxx</MetaDataItem>
+	  <!--product page not available as of 11/17/20 -->
+    <MetaDataItem id="F001" name="Identifier" type="7000">ZEN34</MetaDataItem>
+    <MetaDataItem id="F001" name="FrequencyName" type="7000">U.S. / Canada / Mexico</MetaDataItem>
+    <MetaDataItem id="F001" name="ZWProductPage" type="7000">https://products.z-wavealliance.org/products/xxxx</MetaDataItem>
+	  <!--still unable to locate a product page as of Jan. 31, 2021 -->
+    <ChangeLog>
+      <Entry author="momo" date="16 Nov 2020" revision="1">Initial Metadata Import</Entry>
+      <Entry author="Matthew Grimes, https://github.com/cybergrimes" date="31 Jan 2021" revision="2">Update to include hardware run with different type code</Entry>
+      <Entry author="Matthew Grimes, https://github.com/cybergrimes" date="9 Feb 2021" revision="3">Fix small typo</Entry>
+    </ChangeLog>
+  </MetaData>
+
+  <!-- https://products.z-wavealliance.org/products/xxxx not yet available-->
+
+  <!-- Configuration Parameters -->
+  <CommandClass id="112">
+	
+    <Value genre="config" index="1" value="1" label="LED Indicator Mode" size="1" min="0" max="3" type="list">
+      <Help>Choose the LED indicator mode for your Remote Switch</Help>
+      <Item value="0" label="LED always off"/>
+      <Item value="1" label="LED on when button is pressed"/>
+      <Item value="2" label="LED always on in color specified in parameter 2"/>
+      <Item value="3" label="LED always on in color specified in parameter 3"/>    
+	</Value>
+    <Value genre="config" index="2" value="1" label="LED color for UPPER paddle" size="1" min="0" max="6" type="list">
+      <Help>Choose the LED indicator color for the UPPER paddle remote control triggers</Help>
+      <Item value="0" label="white"/>
+      <Item value="1" label="blue"/>
+      <Item value="2" label="green"/>
+      <Item value="3" label="red"/>
+      <Item value="4" label="magenta"/>
+      <Item value="5" label="yellow"/>
+	  <Item value="6" label="cyan"/>
+	</Value>
+    <Value genre="config" index="3" value="1" label="LED color for LOWER paddle" size="1" min="0" max="6" type="list">
+      <Help>Choose the LED indicator color for the LOWER paddle remote control triggers</Help>
+      <Item value="0" label="white"/>
+      <Item value="1" label="blue"/>
+      <Item value="2" label="green"/>
+      <Item value="3" label="red"/>
+      <Item value="4" label="magenta"/>
+      <Item value="5" label="yellow"/>
+	  <Item value="6" label="cyan"/>
+	</Value>
+  </CommandClass>
+
+  <!-- Association Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="3">
+      <Group index="1" max_associations="1" label="Lifeline"/>
+      <Group index="2" max_associations="5" label="Basic Set"/>
+      <Group index="3" max_associations="5" label="Switch Multilevel"/>
+    </Associations>
+  </CommandClass>
+</Product>

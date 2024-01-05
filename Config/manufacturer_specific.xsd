@@ -1,0 +1,42 @@
+<?xml version='1.0'?>
+<xs:schema
+  xmlns:xs='http://www.w3.org/2001/XMLSchema'
+  targetNamespace='https://github.com/OpenZWave/open-zwave'
+  xmlns:ManufacturerSpecificData='https://github.com/OpenZWave/open-zwave'
+  elementFormDefault='qualified'>
+
+ <xs:element name='ManufacturerSpecificData'>
+  <xs:complexType>
+   <xs:sequence>
+    <xs:element ref='ManufacturerSpecificData:Manufacturer' minOccurs='0' maxOccurs='unbounded'/>
+   </xs:sequence>
+   <xs:attribute name='Revision' type='xs:integer' use='required'/>
+  </xs:complexType>
+ </xs:element>
+
+ <xs:element name='Manufacturer'>
+  <xs:complexType>
+   <xs:sequence>
+    <xs:element ref='ManufacturerSpecificData:Product' minOccurs='0' maxOccurs='unbounded'/>
+   </xs:sequence>
+   <xs:attribute name='id' type='xs:string' use='required'/>
+   <xs:attribute name='name' type='xs:string' use='required'/>
+  </xs:complexType>
+ </xs:element>
+
+ <xs:element name='Product'>
+  <xs:complexType>
+   <xs:attribute name='type' type='xs:string' use='required'/>
+   <xs:attribute name='id' type='xs:string' use='required'/>
+   <xs:attribute name='name' type='xs:string' use='required'/>
+   <xs:attribute name='config' use='optional'>
+     <xs:simpleType>
+       <xs:restriction base="xs:string">
+          <xs:pattern value="\S+"/>
+       </xs:restriction>
+     </xs:simpleType>
+   </xs:attribute>
+  </xs:complexType>
+ </xs:element>
+
+</xs:schema>

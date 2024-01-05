@@ -1,0 +1,48 @@
+<Product Revision="1"
+  xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="Name">ZCombo-G Smoke/CO Alarm</MetaDataItem>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0138:0003:0001</MetaDataItem>
+    <MetaDataItem name="ProductPage">https://products.z-wavealliance.org/products/3886</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/firstalert/zcombo-g.png</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://products.z-wavealliance.org/ProductManual/File?folder=&amp;filename=product_documents/3886/User_Manual_M08-0456-173833_D2.pdf</MetaDataItem>
+    <MetaDataItem name="Description">The Z-Wave Smoke/CO alarm can be implemented in residential and institutional applications. Installation settings include sleeping areas within hospitals, hotels, motels, dormitories and other multi-family dwellings that are defined in standard NFPA 101. The First Alert ZCOMBO-G Smoke and Carbon Monoxide Detector has been fully tested and complies with UL217, UL2034, CSFM, NFPA 720, NFPA 101 and other agencies that model their codes after the above agencies. The combination alarm meets building codes that require the use of a battery operated Z-Wave wireless Smoke and CO detector. This First Alert Z-Wave Combination Alarm includes silence features and meets the model building codes published by the ICC.
+    The First Alert Z-Wave Combo Alarm includes: an insect screened photoelectric smoke sensing chamber, electrochemical carbon monoxide sensor, 85dB horn, supervised 3V (2 AA batteries) power supply, full function test switch and a silence feature.
+    The First Alert Z-Wave Enabled Battery Smoke &amp; Carbon Monoxide Combo Alarm includes a battery drawer that prevents battery removal and tamper resistant locking pins that lock the alarm to the mounting bracket. This First Alert Combination Alarm is an ideal fit for any number of applications that include apartments, dormitories, and hotels. Designed for wall or ceiling mounting, this alarm includes all of the required mounting anchors and screws needed for easy installation.
+    </MetaDataItem>
+    <MetaDataItem name="WakeupDescription">To manual wake-up the device, slide the battery door open wait for ~5 seconds and then slide the battery drawer closed. Upon power-up, the device will send the wake-up notification.</MetaDataItem>
+    <MetaDataItem name="InclusionDescription">1. Slide battery door open.
+2. Insert batteries checking the correct orientation.
+3. Press and hold the test button. Keep it held down as you slide the battery drawer closed. You may then release the button.</MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">1. Slide battery door open.
+2. Insert batteries checking the correct orientation.
+3. Press and hold the test button. Keep it held down as you slide the battery drawer closed. You may then release the button.</MetaDataItem>
+    <MetaDataItem name="ResetDescription">If the device is powered up with the test button held down for 10+ seconds, the device will reset all Z-Wave settings and leave the network.
+Upon completion of the Reset operation, the LED will glow and the horn will sound for ~1 second.
+Please use this procedure only when the network primary controller is missing or otherwise inoperable.
+    </MetaDataItem>
+    <MetaDataItem id="0003" name="ZWProductPage" type="0001">https://products.z-wavealliance.org/products/3886/</MetaDataItem>
+    <MetaDataItem id="0003" name="FrequencyName" type="0001">U.S. / Canada / Mexico</MetaDataItem>
+    <MetaDataItem id="0003" name="Identifier" type="0001">ZCOMBO</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Richard Tallent - richard@tallent.us" date="11 Oct 2020" revision="1">Copy from ZCOMBO, update based on Z-Wave Alliance Database - https://products.z-wavealliance.org/products/3886/xml</Entry>
+    </ChangeLog>
+  </MetaData>
+  <CommandClass id="112">
+    <Value genre="config" index="1" label="SuperVision report timeout" size="2" type="short" value="1500" units="ms" min="500" max="5000">
+      <Help>ZCOMBO will send the message over SuperVision Command Class and it will wait for the SuperVision report from the Controller for the SuperVision report timeout time.</Help>
+    </Value>
+    <Value genre="config" index="2" label="SuperVision retry count" size="2" type="short" value="1" units="" min="0" max="5">
+      <Help>If the SuperVision report is not received within the SuperVision report timeout time, the ZCOMBO will retry sending the message again. Upon exceeding the max retry, the ZCOMBO device will send the next message available in the queue.</Help>
+    </Value>
+    <Value genre="config" index="3" label="SuperVision wait time" size="2" type="short" value="5" units="sec" min="1" max="60">
+      <Help>Before retrying the message, ZCOMBO will wait for the SuperVision wait time. Actual wait time is calculated using the formula: Wait Time = SuperVision wait time base-value + random-value + (attempt-count x 5 seconds). The random value will be between 100 and 1100 milliseconds.
+      </Help>
+    </Value>
+  </CommandClass>
+  <CommandClass id="133">
+    <Associations num_groups="1">
+      <Group index="1" label="Lifeline" max_associations="1"/>
+    </Associations>
+  </CommandClass>
+</Product>

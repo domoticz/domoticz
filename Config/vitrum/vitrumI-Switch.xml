@@ -1,0 +1,33 @@
+<Product Revision="3" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/010A:5100:1200</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/vitrum/vitrumI-Switch.png</MetaDataItem>
+    <MetaDataItem id="5100" name="ZWProductPage" type="1200">https://products.z-wavealliance.org/products/8/</MetaDataItem>
+    <MetaDataItem id="5100" name="FrequencyName" type="1200">CEPT (Europe)</MetaDataItem>
+    <MetaDataItem name="ProductSupport">http://www.ivitrum.com/index.php?file=contact</MetaDataItem>
+    <MetaDataItem name="ProductPage">http://www.vitrum.com/eng/content/vitrum-i</MetaDataItem>
+    <MetaDataItem name="Name">Vitrum I EU on-off wireless</MetaDataItem>
+    <MetaDataItem name="Description">1 channel Switch - 503 BOX - ZWavene button Smart Glass Switch 
+Switch Device for Modbus System
+with one switche for lighting control 
+or alternatively, sequential 
+pre-programmed settings
+Configurable aural feedback
+
+Available in British Standard &amp; European Standard;
+Dimensions:BS 95x95mm; EU 125x95mm; 
+Dimming is by the "iPod ®-like" touch control
+Capacitive technology to adjust lighting level. </MetaDataItem>
+    <MetaDataItem id="5100" name="Identifier" type="1200">01E010020</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 May 2019" revision="3">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/8/xml</Entry>
+    </ChangeLog>
+  </MetaData>
+  <!-- Multi-Instance configuration -->
+  <CommandClass id="96">
+    <Compatibility>
+      <IgnoreMCCapReports>true</IgnoreMCCapReports>
+      <MapRootToEndpoint>true</MapRootToEndpoint>
+    </Compatibility>
+  </CommandClass>
+</Product>

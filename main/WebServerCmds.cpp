@@ -63,7 +63,9 @@
 #include "../hardware/EnphaseAPI.h"
 #include "../hardware/AlfenEve.h"
 #include "../hardware/RFLinkBase.h"
-
+#ifdef WITH_OPENZWAVE
+#include "../hardware/OpenZWave.h"
+#endif
 #define round(a) (int)(a + .5)
 
 extern std::string szStartupFolder;
@@ -294,6 +296,10 @@ namespace http
 #endif
 				}
 #endif
+#endif
+#ifndef WITH_OPENZWAVE
+				if (ii == HTYPE_OpenZWave)
+					bDoAdd = false;
 #endif
 #ifndef WITH_GPIO
 				if (ii == HTYPE_RaspberryGPIO)
@@ -3143,7 +3149,9 @@ namespace http
 		void CWebServer::Cmd_GetHardware(WebEmSession& session, const request& req, Json::Value& root)
 		{
 			root["title"] = "gethardware";
-
+#ifdef WITH_OPENZWAVE
+			m_ZW_Hwidx = -1;
+#endif
 			std::vector<std::vector<std::string>> result;
 			result = m_sql.safe_query("SELECT ID, Name, Enabled, Type, Address, Port, SerialPort, Username, Password, Extra, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6, DataTimeout, "
 				"LogLevel FROM Hardware ORDER BY ID ASC");
@@ -3225,6 +3233,14 @@ namespace http
 							AlfenEve* pMyHardware = dynamic_cast<AlfenEve*>(pHardware);
 							root["result"][ii]["version"] = pMyHardware->m_szSoftwareVersion;
 						}
+#ifdef WITH_OPENZWAVE
+						else if (pHardware->HwdType == HTYPE_OpenZWave)
+						{ // Special case for openzwave (status for nodes queried)
+							COpenZWave* pOZWHardware = dynamic_cast<COpenZWave*>(pHardware);
+							root["result"][ii]["version"] = pOZWHardware->GetVersionLong();
+							root["result"][ii]["NodesQueried"] = (pOZWHardware->m_awakeNodesQueried || pOZWHardware->m_allNodesQueried);
+						}
+#endif
 					}
 					ii++;
 				}

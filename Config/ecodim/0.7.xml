@@ -1,0 +1,99 @@
+<Product Revision="2" xmlns="https://github.com/OpenZWave/open-zwave">
+  <!-- Please refer to https://github.com/OpenZWave/open-zwave/wiki/Adding-Devices for instructions -->
+  <MetaData>
+    <MetaDataItem name="Name">ECO-DIM.07 Z-Wave LED dimmer</MetaDataItem>
+    <MetaDataItem name="Description">ECO-DIM.07 Z-Wave is a push/rotary dimmer for LED lights.
+The dimmer has a range of 0-200W LED, and is able to dim 230V halogen and incandescent bulds, dimable LED-drivers and electronic transfomers.
+The minimum and maximum light level of the dimmer can be adjusted via a potentiometer. It is protected against overload and interference signals.
+Installation can be done via 2 wires, there is no need for a neutral wire!
+It is suitable for most popular smarthome systems, and the frame systems of the most popular brands can be used: Busch-Jaeger, Merten by Schneider, Berker by Hager, Niko, Gira, Jung and Peha.
+The dimmer is compatible with 95% of all dimmable LED lights.</MetaDataItem>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0431:0001:0202</MetaDataItem>
+    <MetaDataItem name="ProductPage">https://www.ecodim.nl/eco-dim07-z-wave-druk-draai-led-dimmer-fase-afsnij.html</MetaDataItem>
+    <MetaDataItem name="ProductSupport">https://www.ecodim.nl/service/</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/ecodim/0.7.jpg</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://products.z-wavealliance.org/ProductManual/File?folder=&amp;filename=product_documents/3796/Z-Wave%20Dimmer%20Controller%20V1.4%20(1).pdf</MetaDataItem>
+    <MetaDataItem name="InclusionDescription">Double press the reset button on the device then initiate inclusion on your z-wave controller.</MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">Press the reset button three times on the device then initiate exclusion on your z-wave controller.</MetaDataItem>
+    <MetaDataItem name="ResetDescription">Push reset button for 5 seconds.</MetaDataItem>
+    <MetaDataItem id="0001" name="ZWProductPage" type="0202">https://products.z-wavealliance.org/products/3796/</MetaDataItem>
+    <MetaDataItem id="0001" name="FrequencyName" type="0202">CEPT (Europe)</MetaDataItem>
+    <MetaDataItem id="0001" name="Identifier" type="0202">ECO-DIM.07 Z-Wave</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Lukas Söder - lukas.l.soder@gmail.com" date="2020-07-02" revision="1">Information from manufacturer website and manual</Entry>
+      <Entry author="Lukas Söder - lukas.l.soder@gmail.com" date="2020-07-24" revision="2">Change ProductManual link format</Entry>
+    </ChangeLog>
+  </MetaData>
+  <!-- Configuration Command Class - All Configuration Parameters should be entered into the section below -->
+  <CommandClass id="112">
+    <!-- Here is a Byte/Int/Short Value Sample -->
+    <Value genre="config" index="1" label="State after power restore" max="2" min="0" type="byte" units="" value="0">
+      <Help>
+        State After Power Restored: The state the switch should return to once power is restored after power failure.
+        Default value: 0
+        0 - Off.
+        1 - On.
+        2 - Returns to level before Power Outage
+      </Help>
+    </Value>
+    <Value genre="config" index="2" label="Notification when Load status change" type="bool" value="1">
+      <Help>
+        Notification when Load status change: The Dimmer will send notification to associated device (Group Lifeline) when the status of Dimmer load is changed.
+        Default value: 1
+        0 - The function is disabled.
+        1 - Send Switch Multilevel Report.
+      </Help>
+    </Value>
+    <Value genre="config" index="3" label="Dimming speed" max="100" min="0" type="byte" units="seconds" value="5">
+      <Help>
+        Default dimming speed，unit is second. Valid values: 0-100.
+        Default value: 5
+        0 - Instanly.
+        1 - Fast.
+        ...
+        100 - Slow.
+      </Help>
+    </Value>
+    <!-- 4 got lost along the way? Doesn't exist in manual. -->
+    <Value genre="config" index="5" label="Enable or Disable external switch to pair network"  type="bool" value="0">
+      <Help>
+        Enable or Disable external switch to pair network.
+        Default value: 0
+        0 - Disable.
+        1 - Enable.
+      </Help>
+    </Value>
+    <Value genre="config" index="6" label="Dimming algorithm"  type="bool" value="0">
+      <Help>
+        Setting dimming way.
+        Default value: 0
+        0 - Linear dimming.
+        1 - Logarithmic dimming.
+      </Help>
+    </Value>
+    <Value genre="config" index="7" label="Default brightness" max="100" min="0" type="byte" units="" value="0">
+      <Help>
+        Setting default brightness when turn on the dimmer from off status.
+        Setting of 0 means that the dimmer will use parameter 1.
+        Default value: 0
+        Valid values: 0-99
+      </Help>
+    </Value>
+    <Value genre="config" index="8" label="Turn off delay" max="60" min="0" type="byte" units="seconds" value="0">
+      <Help>
+        Setting delay time when turn off, unit is second.
+        Default value: 0
+        Valid values: 0-60
+      </Help>
+    </Value>
+  </CommandClass>
+  <!-- The Association Group Information -->
+  <CommandClass id="133">
+    <Associations num_groups="4">
+      <Group index="1" label="LifeLine" max_associations="5"/>
+      <Group index="2" label="Basic Set" max_associations="5"/>
+      <Group index="3" label="Switch Multilevel" max_associations="5"/>
+      <Group index="4" label="External Button" max_associations="5"/>
+    </Associations>
+  </CommandClass>
+</Product>

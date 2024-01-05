@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Product xmlns='https://github.com/OpenZWave/open-zwave' Revision="1">
+  <!--
+  Dome Z-Wave Plus Motion Detector
+  https://products.z-wavealliance.org/products/1953
+  -->
+  <!-- Configuration Parameters -->
+  <CommandClass id="112">
+    <Value type="byte" genre="config" index="1" label="Sensitivity Level" value="8" min="8" max="255" size="1">
+      <Help>
+        This parameter sets the sensitivity of the Motion Detector.
+        It is a unitless parameter ranging in values from 8 up to 255, with 8 being the highest sensitivity level and 255 being the lowest.
+        After physical installation, make sure the farthest part of the coverage area is still visible to the Motion Detector by adjusting this parameter.
+      </Help>
+    </Value>
+    <Value type="short" genre="config" index="2" label="Motion Cleared Time Delay" value="30" units="Seconds" min="5" max="600" size="2">
+      <Help>
+        This parameters sets the amount of time after a motion event before the Motion Detector reports no activity to the main controller.
+        This also sets the amount of time before a BASIC_SET(00) command is sent to Association Group 2 to turn off any activated devices.
+        This value must be higher than the value of Parameter 6, and if this parameter is reset to default settings, Parameter 6 will also be reset.
+        See Group 2 on page for more information.
+      </Help>
+    </Value>
+    <Value type="byte" genre="config" index="3" label="Basic Set Level" value="255" min="0" max="255" size="1">
+      <Help>
+        This parameter sets the value sent by the BASIC_SET command to Association Group 2.
+        0 Turn Off Device.
+        1 to 99 Set Device to Value.
+        255 Turn On Device.
+      </Help>
+    </Value>
+    <Value type="list" genre="config" index="4" label="Motion Detection" min="0" max="1" size="1" value="1">
+      <Help>
+        This setting enables or disables motion detection and light reporting.
+      </Help>
+      <Item label="Disable" value="0"/>
+      <Item label="Enable" value="1"/>
+    </Value>
+    <Value type="short" genre="config" index="5" label="Group 2 Ambient Light Threshold" value="100" units="Lux" min="5" max="1000" size="2">
+      <Help>
+        If Parameter 8 is enabled, this setting sets the light level below which the Motion Detector will send BASIC_SET commands to Association Group 2 when motion is detected.
+      </Help>
+    </Value>
+    <Value type="byte" genre="config" index="6" label="Retrigger Interval" value="8" units="Seconds" min="1" max="8" size="1">
+      <Help>
+        After each motion event, the Motion Detector is disabled for the amount of time set by this parameter before it can send out another Motion Detected Notification Report/Binary Sensor Report.
+        This value must be lower than the value of Parameter 2, and if this parameter is reset to default settings, Parameter 2 will also be reset.
+      </Help>
+    </Value>
+    <Value type="short" genre="config" index="7" label="Light Sensing Interval" value="180" units="Seconds" min="60" max="3600" size="2">
+      <Help>
+        This parameter sets the amount of time between each successive ambient light level reading that is sent.
+        This value must be less than the Wakeup Interval Time (which is 43,200 seconds or 12 hours by default.)
+      </Help>
+    </Value>
+    <Value type="list" genre="config" index="8" label="Group 2 Ambient Light Threshold" min="0" max="1" size="1" value="0">
+      <Help>
+        If this parameter is enabled, the Motion Detector will only send Basic Set commands to Associon Group 2 if the ambient light level is below the value set in Parameter 05.
+      </Help>
+      <Item label="Disable" value="0"/>
+      <Item label="Enable" value="1"/>
+    </Value>
+    <Value type="byte" genre="config" index="9" label="Ambient Light Sensitivity Level" value="100" units="Lux" min="0" max="255" size="1">
+      <Help>
+        This Parameter sets the minimum change in ambient light level (in lux) the Motion Detector must detect before a Multilevel Sensor Report is sent to the main controller.
+      </Help>
+    </Value>
+    <Value type="list" genre="config" index="10" label="Indicator LED" units="level" min="0" max="1" size="1" value="1">
+      <Help>
+        If this parameter is enabled, the LED INDICATOR will flash everytime there motion is detected.
+        If this is disabled, the LED INDICATOR will not flash to indicate motion events.
+      </Help>
+      <Item label="Disable" value="0"/>
+      <Item label="Enable" value="1"/>
+    </Value>
+  </CommandClass>
+  <!-- Association Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="4">
+      <Group index="1" max_associations="5" label="Lifeline" />
+      <Group index="2" max_associations="5" label="Basic Set" />
+      <Group index="3" max_associations="5" label="Notification Report" />
+      <Group index="4" max_associations="5" label="Sensor Binary Report"/>
+    </Associations>
+  </CommandClass>
+</Product>

@@ -1,0 +1,70 @@
+<!-- Zipato: PH-PSG01 Smoke Sensor --><Product Revision="5" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/013C:001E:0002</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/philio/phpsg01.png</MetaDataItem>
+    <MetaDataItem id="001E" name="ZWProductPage" type="0002">https://products.z-wavealliance.org/products/2868/</MetaDataItem>
+    <MetaDataItem name="Name">Датчика дыма (Smoke sensor)</MetaDataItem>
+    <MetaDataItem name="Description">This is the Z-WaveTM plus Smoke Sensor, it supports security OTA with the newest features of the Z-Wave technology. Z-Wave is a wireless
+communication protocol designed for home automation, specifically to
+remotely control applications in residential and light commercial
+environments. The technology uses a low-power RF radio embedded or
+retrofitted into home electronics devices and systems, such as lighting,
+home access control, entertainment systems and household appliances.</MetaDataItem>
+    <MetaDataItem name="InclusionDescription">    1. Have Z-Wave Controller entered inclusion mode.
+    2. Pressing button three times within 1.5 seconds will enter the inclusion mode.
+    3. After add successful, the device will wake to receive the setting command from Z-Wave Controller, about 20 seconds.
+</MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">    1. Have Z-Wave Controller entered exclusion mode.
+    2. Pressing button three times within 1.5 seconds to enter the exclusion mode. Node ID has been removed.
+</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://Products.Z-WaveAlliance.org/ProductManual/File?folder=&amp;filename=Manuals/2868/PSG01_Manual-2015-06-12.pdf</MetaDataItem>
+    <MetaDataItem name="ResetDescription">       Notice: Use this procedure only in the event that the primary controller is lost or otherwise inoperable.
+    1. Pressing button four times within 1.5 seconds and do not release the button in the 4th press, the red LED will light be ON.
+    2. After the red LED flash 9 times, release the button within 2 seconds.
+    3. IDs are removed and all settings will reset to factory default.</MetaDataItem>
+    <MetaDataItem id="001E" name="Identifier" type="0002"> PSG01 </MetaDataItem>
+    <MetaDataItem id="001E" name="FrequencyName" type="0002">CEPT (Europe) / Russia / Russia</MetaDataItem>
+    <MetaDataItem name="WakeupDescription">After the device is added to the network, it will wake-up once per day in default. When it wakes-up it will broadcast the “Wake Up Notification” message to the network, and wake-up 10 seconds to receive the setting commands.
+The wake-up interval minimum setting is 30 minutes, the maximum setting is 120 hours,  the interval step is 30 minutes.
+
+If the user wants to wake-up the device immediately, please press the  button once. The device will wake-up 10 seconds.</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="08 May 2019" revision="3">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1167/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="02 Jun 2019" revision="4">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/2835/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="02 Jun 2019" revision="5">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/2868/xml</Entry>
+    </ChangeLog>
+  </MetaData>
+  <!-- Configuration Parameters -->
+  <CommandClass id="112">
+    <Value genre="config" index="7" label="Customer Function" max="127" min="0" type="byte" value="4">
+      <Help>
+                Customer function switch, using bit control.
+                Bit0: Reserve.
+                Bit1: Reserve.
+                Bit2: Reserve => 1.
+                Bit4: Notification Type (0: Notification Report, 1: Sensor Binary Report).
+                Bit5: Reserve.
+                Bit6: Reserve.
+                Bit7: Reserve.
+            </Help>
+    </Value>
+    <Value genre="config" index="10" instance="1" label="Auto Report Battery Time" max="127" min="1" type="byte" units="30 min" value="12">
+      <Help>
+                The interval time for auto report the battery level.
+                30 minutes per tick and minimum time is 30 minutes, default tick is 12 (6 hours)
+            </Help>
+    </Value>
+  </CommandClass>
+  <!-- Basic set as report -->
+  <CommandClass id="32">
+    <Compatibility>
+      <SetAsReport>true</SetAsReport>
+    </Compatibility>
+  </CommandClass>
+  <!-- Association Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="1">
+      <Group index="1" label="Lifeline" max_associations="8"/>
+    </Associations>
+  </CommandClass>
+</Product>

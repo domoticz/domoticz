@@ -1,0 +1,140 @@
+<Product Revision="3" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/000C:0001:0203</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/homeseer/hs-fc200plus.png</MetaDataItem>
+    <MetaDataItem id="0001" name="ZWProductPage" type="0203">https://products.z-wavealliance.org/products/2957/</MetaDataItem>
+    <MetaDataItem name="Description">HS-FC200+ is a Z-Wave controllable wired fan controller for use with 3-speed or 4-speed ceiling fans. It has a vertical row of LED’s that indicate the fan speed level.
+
+• Works with 3-speed or 4-speed fans only
+• 4 segment LED dim level indicator
+• Remotely or manually turns ON or OFF, or fan speed level
+• Fits standard wall plates (wall plate not included)
+• Works with any certified gateway supporting Z-Wave</MetaDataItem>
+    <MetaDataItem name="InclusionDescription">Inclusion: Add the device into your network by a Z-Wave certified controller. HS-FC200+ supports the latest S2 security offered by Z-Wave certified controllers. If your controller supports S2, please refer to the user guide of the controller for detailed instructions on adding devices to the network. You should be able to add HS-FC200+ into your network using the unique QR code or the DSK 5 digit pin located on the product or packaging. In addition, the device can be added or removed using the following 2-step procedure:
+
+1. Put your Z-Wave controller into Inclusion mode. Consult your controller manual if you're unsure how to do this.
+2. Tap the paddle of your new HomeSeer switch to begin the inclusion process. This will take a few moments to complete.</MetaDataItem>
+    <MetaDataItem id="0001" name="Identifier" type="0203">HS-FC200+</MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">Exclusion: Remove the device from your network by a Z-Wave certified controller. HS-FC200+ supports the latest S2 security offered by Z-Wave certified controllers. If your controller supports S2, please refer to the user guide of the controller for detailed instructions on removing devices from the network. You should be able to remove HS-FC200+ into your network using the unique QR code or the DSK 5 digit pin located on the product or packaging. In addition, the device can be added or removed using the following 2-step procedure:
+
+1. Put your Z-Wave controller into Exclusion mode. Consult your controller manual if you're unsure how to do this.
+2. Tap the paddle of your new HomeSeer switch to begin the Exclusion process. This will take a few moments to complete.</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://Products.Z-WaveAlliance.org/ProductManual/File?folder=&amp;filename=Manuals/2957/HS FC200 Manual Market Cert v1.pdf</MetaDataItem>
+    <MetaDataItem id="0001" name="FrequencyName" type="0203">U.S. / Canada / Mexico</MetaDataItem>
+    <MetaDataItem name="Name">Z-Wave RGB Fan Controller</MetaDataItem>
+    <MetaDataItem name="ResetDescription">To be used only in the event that the network primary controller is lost or otherwise inoperable. 
+
+(1) Turn switch on by tapping the top of the paddle once. 
+(2) Quickly ap top of the paddle 3 times. 
+(3) Quickly tap bottom of paddle 3 times. 
+(4) If the LED turns off then on again, switch is reset. If not, repeat manual rest.
+</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="02 Jun 2019" revision="3">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/2957/xml</Entry>
+    </ChangeLog>
+  </MetaData>
+  <!--
+    HomeSeer HS-FC200+ Z-Wave Plus RGB Smart Fan Speed Controller Switch
+    https://products.z-wavealliance.org/products/2957
+    https://homeseer.com/wp-content/uploads/2018/09/HS-FC200-Manual-Online-072318.pdf
+    -->
+
+    <!-- Configuration Parameters -->
+  <CommandClass id="112">
+    <Value genre="config" index="3" label="Bottom LED operation" max="1" min="0" size="1" type="list" value="1">
+      <Help>Sets bottom LED operation (in normal mode)</Help>
+      <Item label="Bottom LED on if load is off" value="0"/>
+      <Item label="Bottom LED off if load is off" value="1"/>
+    </Value>
+    <Value genre="config" index="4" label="Paddle load orientation" max="1" min="0" size="1" type="list" value="0">
+      <Help>Sets paddle's load orientation</Help>
+      <Item label="Top of paddle turns load ON" value="0"/>
+      <Item label="Bottom of paddle turns load ON" value="1"/>
+    </Value>
+    <Value genre="config" index="5" label="Fan type" max="1" min="0" size="1" type="list" value="0">
+      <Help>Sets fan type</Help>
+      <Item label="3-speed" value="0"/>
+      <Item label="4-speed" value="1"/>
+    </Value>
+    <Value genre="config" index="13" label="LED indicator mode" max="1" min="0" size="1" type="list" value="0">
+      <Help>Sets LED indicator mode of operation</Help>
+      <Item label="Normal mode (load status)" value="0"/>
+      <Item label="Status mode (custom status)" value="1"/>
+    </Value>
+    <Value genre="config" index="14" label="Normal mode LED color" max="6" min="0" size="1" type="list" value="0">
+      <Help>Sets the Normal mode LED color</Help>
+      <Item label="White" value="0"/>
+      <Item label="Red" value="1"/>
+      <Item label="Green" value="2"/>
+      <Item label="Blue" value="3"/>
+      <Item label="Magenta" value="4"/>
+      <Item label="Yellow" value="5"/>
+      <Item label="Cyan" value="6"/>
+    </Value>
+    <Value genre="config" index="21" label="Status mode LED 1 (bottom) color" max="7" min="0" size="1" type="list" value="0">
+      <Help>Sets the Status mode LED 1 (bottom) color</Help>
+      <Item label="Off" value="0"/>
+      <Item label="Red" value="1"/>
+      <Item label="Green" value="2"/>
+      <Item label="Blue" value="3"/>
+      <Item label="Magenta" value="4"/>
+      <Item label="Yellow" value="5"/>
+      <Item label="Cyan" value="6"/>
+      <Item label="White" value="7"/>
+    </Value>
+    <Value genre="config" index="22" label="Status mode LED 2 color" max="7" min="0" size="1" type="list" value="0">
+      <Help>Sets the Status mode LED 2 color</Help>
+      <Item label="Off" value="0"/>
+      <Item label="Red" value="1"/>
+      <Item label="Green" value="2"/>
+      <Item label="Blue" value="3"/>
+      <Item label="Magenta" value="4"/>
+      <Item label="Yellow" value="5"/>
+      <Item label="Cyan" value="6"/>
+      <Item label="White" value="7"/>
+    </Value>
+    <Value genre="config" index="23" label="Status mode LED 3 color" max="7" min="0" size="1" type="list" value="0">
+      <Help>Sets the Status mode LED 3 color</Help>
+      <Item label="Off" value="0"/>
+      <Item label="Red" value="1"/>
+      <Item label="Green" value="2"/>
+      <Item label="Blue" value="3"/>
+      <Item label="Magenta" value="4"/>
+      <Item label="Yellow" value="5"/>
+      <Item label="Cyan" value="6"/>
+      <Item label="White" value="7"/>
+    </Value>
+    <Value genre="config" index="24" label="Status mode LED 4 color" max="7" min="0" size="1" type="list" value="0">
+      <Help>Sets the Status mode LED 4 color</Help>
+      <Item label="Off" value="0"/>
+      <Item label="Red" value="1"/>
+      <Item label="Green" value="2"/>
+      <Item label="Blue" value="3"/>
+      <Item label="Magenta" value="4"/>
+      <Item label="Yellow" value="5"/>
+      <Item label="Cyan" value="6"/>
+      <Item label="White" value="7"/>
+    </Value>
+    <Value genre="config" index="30" label="Blink frequency for all LEDs in Status mode" max="255" min="0" type="byte" value="0">
+      <Help>Sets the blink frequency for all LEDs in Status mode. Possible values: 0, 1-255
+              0 = No blink
+              1 = 100ms ON then 100ms OFF
+            </Help>
+    </Value>
+    <Value genre="config" index="31" label="LEDs to blink in status mode" max="15" min="0" type="byte" value="0">
+      <Help>Sets LEDs 1-4 to blink in Status mode. Bitmask defines specific LEDs to enable for blinking. Note: this decimal value is derived from a hex code calculation based on the following: 
+              Bit 0 = LED 1
+              Bit 1 = LED 2
+              Bit 2 = LED 3
+              Bit 3 = LED 4
+              IE: value of 1 = first LED, 8 = LED 4
+            </Help>
+    </Value>
+  </CommandClass>
+  <!-- Association Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="1">
+      <Group index="1" label="Lifeline" max_associations="5"/>
+    </Associations>
+  </CommandClass>
+</Product>

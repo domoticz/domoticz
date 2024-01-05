@@ -15,6 +15,8 @@ before_install:
   - eval "${MATRIX_EVAL}"
   # Domoticz needs the full history to be able to calculate the version string
   - git fetch --unshallow
+  # OpenZWave
+  - git clone https://github.com/OpenZWave/open-zwave.git open-zwave-read-only
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
       brew update;
       brew upgrade boost;

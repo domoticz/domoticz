@@ -1,0 +1,19 @@
+<!--Taken from http://www.uk-automation.co.uk/pdf/Duwiswitch.pdf --><Product Revision="3" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0064:0000:2001</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/duwi/ZWES1000.png</MetaDataItem>
+    <MetaDataItem id="0000" name="ZWProductPage" type="2001">https://products.z-wavealliance.org/products/351/</MetaDataItem>
+    <MetaDataItem id="0000" name="FrequencyName" type="2001">CEPT (Europe)</MetaDataItem>
+    <MetaDataItem name="Description">For wireless switching of: light bulbs, HV and LV halogen lamps or electrical equipment (e.g. fans). Combinable with all Z-Wave transmitters and remote controls, with installation in splash-proof  junction box IP 44, can be selectively installed in flush-mounted power points and canopies or triggered directly via wireless rockers. </MetaDataItem>
+    <MetaDataItem name="Name">ZW-ES-1000 - Flush-mount Z-Wave switch</MetaDataItem>
+    <MetaDataItem name="ProductSupport">http://www.duewi.de/index.php?productid=29184</MetaDataItem>
+    <MetaDataItem name="ProductPage">http://www.duewi.de/index.php?productid=37347</MetaDataItem>
+    <MetaDataItem id="0000" name="Identifier" type="2001">ZW-ES-1000</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 May 2019" revision="2">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/338/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 May 2019" revision="3">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/351/xml</Entry>
+    </ChangeLog>
+  </MetaData>
+  <!-- COMMAND_CLASS_SWITCH_MULTILEVEL. This class is in the list reported by the Duwi device, but it does not respond to requests -->
+  <CommandClass action="remove" id="38"/>
+</Product>

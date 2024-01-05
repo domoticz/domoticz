@@ -35,6 +35,8 @@ option(WITH_LIBUSB "Enable libusb support" YES)
 option(USE_LUA_STATIC "Link LUA static" YES)
 option(USE_OPENSSL_STATIC "Link OpenSSL static" NO)
 option(USE_STATIC_BOOST "Build with static BOOST libraries" YES)
+option(USE_STATIC_OPENZWAVE "Build with static OpenZwave libraries" YES)
+
 
 # Developer-oriented options
 option(USE_PRECOMPILED_HEADER "Use precompiled header feature to speed up build time " YES)
@@ -278,6 +280,9 @@ hardware/OpenWeatherMap.cpp
 hardware/OpenWebNetTCP.cpp
 hardware/OpenWebNetUSB.cpp
 hardware/openwebnet/bt_openwebnet.cpp
+hardware/OpenZWave.cpp
+hardware/openzwave/control_panel/ozwcp.cpp
+hardware/openzwave/control_panel/zwavelib.cpp
 hardware/OTGWBase.cpp
 hardware/OTGWSerial.cpp
 hardware/OTGWTCP.cpp
@@ -338,6 +343,7 @@ hardware/YouLess.cpp
 hardware/ZiBlueBase.cpp
 hardware/ZiBlueSerial.cpp
 hardware/ZiBlueTCP.cpp
+hardware/ZWaveBase.cpp
 hardware/plugins/DelayedLink.cpp
 hardware/plugins/Plugins.cpp
 hardware/plugins/PluginManager.cpp
@@ -729,6 +735,39 @@ IF(WITH_LIBUSB)
     MESSAGE(STATUS "==== LibUSB not found, support for TE923/Voltcraft disabled!")
   ENDIF(LIBUSB_FOUND)
 ENDIF(WITH_LIBUSB)
+
+#
+# OpenZWave
+# try to find open-zwave, if found, include support
+#
+IF(USE_STATIC_OPENZWAVE)
+  find_library(OpenZWave NAMES libopenzwave.a HINTS "../open-zwave-read-only" "../open-zwave-read-only/cpp/build")
+  get_filename_component(OpenZWave_dir ${OpenZWave} DIRECTORY)
+  find_path(OPENZWAVE_INCLUDE_DIRS NAMES OZWException.h HINTS "${OpenZWave_dir}/cpp/src")
+  set(OPENZWAVE_LIB ${OpenZWave})
+ELSE()
+  pkg_check_modules(OPENZWAVE libopenzwave)
+  IF(OPENZWAVE_FOUND)
+    MESSAGE(STATUS "==== OpenZWave package found!")
+    find_library(OpenZWave NAMES libopenzwave.so HINTS ${OPENZWAVE_LIBRARY_DIRS})
+    message(STATUS OpenZWave library found at: ${OpenZWave})
+  ENDIF()
+ENDIF()
+IF(OpenZWave)
+  message(STATUS "OpenZWave library found at: ${OpenZWave}")
+  target_link_libraries(domoticz ${OpenZWave})
+
+  find_path(OPENZWAVE_INCLUDE_DIRS NAMES OZWException.h)
+  IF (OPENZWAVE_INCLUDE_DIRS)
+    include_directories(${OPENZWAVE_INCLUDE_DIRS})
+    message(STATUS "OpenZWave includes found at: ${OPENZWAVE_INCLUDE_DIRS}")
+  ELSE()
+    message(FATAL_ERROR "OpenZWave includes not found.")
+  ENDIF (OPENZWAVE_INCLUDE_DIRS)
+  add_definitions(-DWITH_OPENZWAVE)
+ELSE()
+  MESSAGE(STATUS "==== OpenZWave not found, support disabled!")
+ENDIF(OpenZWave)
 
 IF(EXISTS /sys/class/gpio OR FORCE_WITH_GPIO)
   message(STATUS "GPIO is available")

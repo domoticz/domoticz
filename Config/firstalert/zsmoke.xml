@@ -1,0 +1,29 @@
+<Product Revision="1" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="ProductPic">images/firstalert/zsmoke.png</MetaDataItem>
+    <MetaDataItem id="0002" name="ZWProductPage" type="0001">https://products.z-wavealliance.org/products/863/</MetaDataItem>
+    <MetaDataItem name="Description">Smoke Alarm</MetaDataItem>
+    <MetaDataItem id="0001" name="Identifier" type="0001">ZSMOKE</MetaDataItem>
+    <MetaDataItem id="0001" name="FrequencyName" type="0001">U.S. / Canada / Mexico</MetaDataItem>
+    <MetaDataItem name="Name">Smoke Alarm</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Steve28" date="31 Jul 2020" revision="1">Initial release - modified from zcombo</Entry>
+    </ChangeLog>
+  </MetaData>
+  <!-- First Alert ZSmoke Smoke Detector -->
+ 
+  <!-- Configuration -->
+  <CommandClass id="112">
+    <Value genre="config" index="1" instance="1" label="Send double alarm messages" size="1" type="list" value="0">
+      <Help>Causes the device to send double alarm messages.</Help>
+      <Item label="Disable" value="0"/>
+      <Item label="Enable" value="1"/>
+    </Value>
+  </CommandClass>
+  <!-- Association Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="1">
+      <Group index="1" label="Lifeline" max_associations="1"/>
+    </Associations>
+  </CommandClass>
+</Product>

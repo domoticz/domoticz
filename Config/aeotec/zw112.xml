@@ -1,0 +1,84 @@
+<!-- Aeon Labs Door/Window Sensor 6 --><Product Revision="6" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0086:0070:0102</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/aeotec/zw112.png</MetaDataItem>
+    <MetaDataItem id="0070" name="ZWProductPage" type="0102">https://products.z-wavealliance.org/products/1611/</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://Products.Z-WaveAlliance.org/ProductManual/File?folder=&amp;filename=Manuals/1616/Door Window Sensor 6 manual.pdf</MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">Turn the primary controller into exclusion mode, short press the product’s Action Button that you can find in back of the product.</MetaDataItem>
+    <MetaDataItem name="WakeupDescription">Press the Action Button once, which will trigger sending out the Wake up notification command, press and hold the Action Button for 3 seconds, which will toggle on/off the Sensor be waked up for 10 minutes.</MetaDataItem>
+    <MetaDataItem id="0070" name="FrequencyName" type="0102">U.S. / Canada / Mexico</MetaDataItem>
+    <MetaDataItem name="InclusionDescription">Turn the primary controller into inclusion mode, short press the product’s Action Button that you can find in the back of the product.</MetaDataItem>
+    <MetaDataItem name="Description">Aeon Labs Door/ Window Sensor 6 is a smart Z-Wave sensor that can detect the status of door/window's open/close in real time. 
+It’s a security Z-Wave device that supports security encryption. Also it supports the “Over the Air Firmware Updating” that allows you wirelessly update its firmware if needs. 
+It can be included and operated in any Z-Wave network with other Z-Wave certified devices from manufacturers and/or other applications.</MetaDataItem>
+    <MetaDataItem name="Name">Door/ Window Sensor 6</MetaDataItem>
+    <MetaDataItem name="ResetDescription">Press the Action Button once that you can find in the back of the product for 20 seconds and then release. This procedure should only be used when the primary controller is inoperable.</MetaDataItem>
+    <MetaDataItem id="0070" name="Identifier" type="0102">ZW112-A</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="24 May 2019" revision="4">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1611/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="24 May 2019" revision="5">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1615/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="24 May 2019" revision="6">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1616/xml</Entry>
+    </ChangeLog>
+    <MetaDataItem id="0070" name="ZWProductPage" type="0002">https://products.z-wavealliance.org/products/1615/</MetaDataItem>
+    <MetaDataItem id="0070" name="FrequencyName" type="0002">CEPT (Europe)</MetaDataItem>
+    <MetaDataItem id="0070" name="Identifier" type="0002">ZW112-C</MetaDataItem>
+    <MetaDataItem id="0070" name="ZWProductPage" type="0202">https://products.z-wavealliance.org/products/1616/</MetaDataItem>
+    <MetaDataItem id="0070" name="Identifier" type="0202">ZW112-B</MetaDataItem>
+    <MetaDataItem id="0070" name="FrequencyName" type="0202">Australia / New Zealand</MetaDataItem>
+  </MetaData>
+  <!-- Alarm CC isn't supported on this device-->
+  <CommandClass action="remove" id="113"/>
+  <!-- Configuration Parameters -->
+  <CommandClass id="112">
+    <Value genre="config" index="1" instance="1" label="Value when the Magnet is triggered" max="1" min="0" size="1" type="list" value="0">
+      <Help>Which value of the Sensor Binary Report or Basic Set will be sent when the door is Opened/Closed</Help>
+      <Item label="Open: 0xFF, Close: 0x00" value="0"/>
+      <Item label="Open: 0x00, Close: 0xFF" value="1"/>
+    </Value>
+    <Value genre="config" index="39" instance="1" label="Set the low battery value" max="50" min="10" size="1" type="byte" value="20">
+      <Help>10% to 50%</Help>
+    </Value>
+    <Value genre="config" index="101" instance="1" label="Low Battery Check" max="1" min="0" size="1" type="list" value="0">
+      <Help>Enable/disable the low battery checking</Help>
+      <Item label="Disabled" value="0"/>
+      <Item label="Enabled" value="1"/>
+    </Value>
+    <Value genre="config" index="111" instance="1" label="Interval time of low battery checking" max="2147483647" min="0" size="4" type="int" value="86640">
+      <Help>
+				The minimum interval is 4 minutes
+			</Help>
+    </Value>
+    <Value genre="config" index="121" instance="1" label="Report Type to Send" max="3" min="0" size="1" type="list" value="1">
+      <Help>
+                Configure which sensor report will be sent when the door is Opened/Closed
+            </Help>
+      <Item label="Disabled" value="0"/>
+      <Item label="Basic Set" value="1"/>
+      <Item label="Sensor Binary Report" value="2"/>
+      <Item label="Basic Set and Sensor Binary Report" value="3"/>
+    </Value>
+    <Value genre="config" index="252" label="Lock/Unlock Configuration" max="1" min="0" size="1" type="list" value="0">
+      <Help>Lock/ unlock all configuration parameters</Help>
+      <Item label="Unlock" value="0"/>
+      <Item label="Lock" value="1"/>
+    </Value>
+    <Value genre="config" index="255" label="Reset To Factory Defaults" size="4" type="list" value="1">
+      <Help>Reset to factory defaults</Help>
+      <Item label="Reset to factory default setting" value="0"/>
+      <Item label="Normal" value="1"/>
+      <Item label="Reset to factory default setting and removed from the z-wave network" value="1431655765"/>
+    </Value>
+  </CommandClass>
+  <!-- Basic set as report-->
+  <CommandClass id="32">
+    <Compatibility>
+      <SetAsReport>true</SetAsReport>
+    </Compatibility>
+  </CommandClass>
+  <!-- Association Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="1">
+      <Group index="1" label="Lifeline" max_associations="5"/>
+    </Associations>
+  </CommandClass>
+</Product>

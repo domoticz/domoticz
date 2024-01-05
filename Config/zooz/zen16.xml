@@ -1,0 +1,191 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Product Revision="4" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="Name">Multirelay</MetaDataItem>
+    <MetaDataItem name="Description">PRODUCT FEATURES:
+- Powerful dry contact relays to control loads up to 15 A and 20 A
+- Perfect for outdoor lighting, pool pumps, garage door, or gas fireplace
+- Control up to 3 connected loads independently or together
+- Z-Wave or optional wall switch control (toggle or momentary type)
+- Built-in timers for each relay to simplify automation
+- Remembers and restores on/off status after power failure
+- Powered by 12-24 V DC/AC or USB C port for easy set-up
+- Wall mounting and minimal design for clean installation
+- S2 security protocol and the latest 500 Z-Wave chip
+
+SPECIFICATIONS:
+- Model Number: ZEN16
+- Z-Wave Signal Frequency: 908.42 MHz
+- Power: 12-24 V DC/AC or USB C
+- Maximum Load: Relay 1: 15A (1/3 HP), Relay 2: 15A (1/3 HP),Relay 3: 20A (3/4 HP)
+    </MetaDataItem>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/027a:a00a:a000</MetaDataItem>
+    <MetaDataItem name="ProductPage">http://www.getzooz.com/</MetaDataItem>
+    <MetaDataItem name="ProductSupport">http://www.support.getzooz.com/home/</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/zooz/zen16.png</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://products.z-wavealliance.org/ProductManual/File?folder=&amp;filename=product_documents/3788/zooz-s2-multirelay-zen16-ver1.0-manual-online.pdf</MetaDataItem>
+    <MetaDataItem name="InclusionDescription">1. Initiate inclusion (pairing) in the app (or web interface) of your hub.  2. Finalize inclusion at the device.  Click the Z-Wave button 3 times quickly to add the MultiRelay to your network.  The LED indicator will blink to signal communication and remain on for 2 seconds to confirm inclusion.
+    </MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">1. Bring your MultiRelay close to the Z-Wave gateay (hub) and power it.
+2. Put the Z-Wave hub into exclusion mode (not sure how to do that?  ask@getzooz.com
+3. Click the Z-Wave button 3 times quickly
+4. Your hub will confirm exclusion and the device will disappear from your controller's device list</MetaDataItem>
+    <MetaDataItem name="ResetDescription">If your primary controller is missing or inoperable, you may need to reset the device to factory settings. To complete the reset process manually, click the Z-Wave button 4 times quickly, the LED indicator will light up, then quickly click the Z-Wave button 4 times again.  The LED indicator will flash 3 times to confirm successful reset and will then turn off.
+    </MetaDataItem>
+    <MetaDataItem id="A00A" name="ZWProductPage" type="A000">https://products.z-wavealliance.org/products/3788</MetaDataItem>
+    <MetaDataItem id="A00A" name="FrequencyName" type="A000">U.S. / Canada / Mexico</MetaDataItem>
+    <MetaDataItem id="A00A" name="Identifier" type="A000">ZEN16</MetaDataItem>
+    <ChangeLog>
+      <Entry author="David Alden - dave@alden.name" date="16 Feb 2020" revision="2">Initial Metadata Import</Entry>
+      <Entry author="Brad Parker - https://github.com/bepsoccer" date="6 May 2020" revision="3">Updated for firmware version 1.02</Entry>
+      <Entry author="Matthew Grimes - https://github.com/cybergrimes" date="20 January 2021" revision="4">Updated for firmware version 1.03</Entry>
+    </ChangeLog>
+  </MetaData>
+
+  <!-- https://products.z-wavealliance.org/products/3788 -->
+
+  <!-- Configuration Parameters -->
+  <CommandClass id="112">
+    <Value type="list" genre="config" index="1" label="On Off Status After Power Failure" size="1" min="0" max="4" value="1">
+      <Help>On Off Status After Power Failure.  Default: all relays restore to previous state</Help>
+      <Item label="all relays forced off" value="0"/>
+      <Item label="all relays restore to previous state" value="1"/>
+      <Item label="all relays forced on" value="2"/>
+      <Item label="relays 1/2 restore, 3/4 forced off" value="3"/>
+      <Item label="relays 1/2 restore, 3/4 forced on" value="4"/>
+    </Value>
+    <Value type="list" genre="config" index="2" label="Switch Type for Relay 1 (Sw1)" size="1" min="0" max="3" value="2">
+      <Help>Switch Type for Relay 1 (Sw1).  Choose the wall switch type you want to connect to the Sw1 terminal.  Default: toggle switch (state changes whenever the switch is toggled)</Help>
+      <Item label="momentary switch" value="0"/>
+      <Item label="toggle switch (light on when switch is up/off when down)" value="1"/>
+      <Item label="toggle switch (state changes whenever the switch is toggled)" value="2"/>
+      <Item label="garage door (momentary mode for Z-Wave control)" value="3"/>
+    </Value>
+    <Value type="list" genre="config" index="3" label="Switch Type for Relay 2 (Sw2)" size="1" min="0" max="3" value="2">
+      <Help>Switch Type for Relay 2 (Sw2).  Choose the wall switch type you want to connect to the Sw2 terminal.  Default: toggle switch (state changes whenever the switch is toggled)</Help>
+      <Item label="momentary switch" value="0"/>
+      <Item label="toggle switch (light on when switch is up/off when down)" value="1"/>
+      <Item label="toggle switch (state changes whenever the switch is toggled)" value="2"/>
+      <Item label="garage door (momentary mode for Z-Wave control)" value="3"/>
+    </Value>
+    <Value type="list" genre="config" index="4" label="Switch Type for Relay 3 (Sw3)" size="1" min="0" max="3" value="2">
+      <Help>Switch Type for Relay 3 (Sw3).  Choose the wall switch type you want to connect to the Sw3 terminal.  Default: toggle switch (state changes whenever the switch is toggled)</Help>
+      <Item label="momentary switch" value="0"/>
+      <Item label="toggle switch (light on when switch is up/off when down)" value="1"/>
+      <Item label="toggle switch (state changes whenever the switch is toggled)" value="2"/>
+      <Item label="garage door (momentary mode for Z-Wave control)" value="3"/>
+    </Value>
+    <Value type="list" genre="config" index="5" label="LED Indicator Control" size="1" min="0" max="3" value="0">
+      <Help>LED Indicator Control.  Choose if you want the LED indicator to turn on when any of the relays are on or if all of them are off, or if you want it to remain on or off at all times.  Default: On when all relays are off</Help>
+      <Item label="On when all relays are off" value="0"/>
+      <Item label="On when any relays are on" value="1"/>
+      <Item label="Always Off" value="2"/>
+      <Item label="Always On" value="3"/>
+    </Value>
+    <Value type="int" genre="config" index="6" label="Auto Turn-Off Timer for Relay 1" size="4" min="0" max="65535" value="0" units="minutes">
+      <Help>Auto Turn-Off Timer for Relay 1.  Sets the time (in minutes) after which you want relay 1 to automatically turn off once it has been turned on.  Range: 1-65535.  Default: 0 (disabled)</Help>
+    </Value>
+    <Value type="int" genre="config" index="7" label="Auto Turn-On Timer for Relay 1" size="4" min="0" max="65535" value="0" units="minutes">
+      <Help>Auto Turn-On Timer for Relay 1.  Sets the time (in minutes) after which you want relay 1 to automatically turn on once it has been turned off.  Range: 1-65535.  Default: 0 (disabled)</Help>
+    </Value>
+    <Value type="int" genre="config" index="8" label="Auto Turn-Off Timer for Relay 2" size="4" min="0" max="65535" value="0" units="minutes">
+      <Help>Auto Turn-Off Timer for Relay 2.  Sets the time (in minutes) after which you want relay 2 to automatically turn off once it has been turned on.  Range: 1-65535.  Default: 0 (disabled)</Help>
+    </Value>
+    <Value type="int" genre="config" index="9" label="Auto Turn-On Timer for Relay 2" size="4" min="0" max="65535" value="0" units="minutes">
+      <Help>Auto Turn-On Timer for Relay 2.  Sets the time (in minutes) after which you want relay 2 to automatically turn on once it has been turned off.  Range: 1-65535.  Default: 0 (disabled)</Help>
+    </Value>
+    <Value type="int" genre="config" index="10" label="Auto Turn-Off Timer for Relay 3" size="4" min="0" max="65535" value="0" units="minutes">
+      <Help>Auto Turn-Off Timer for Relay 3.  Sets the time (in minutes) after which you want relay 3 to automatically turn off once it has been turned on.  Range: 1-65535.  Default: 0 (disabled)</Help>
+    </Value>
+    <Value type="int" genre="config" index="11" label="Auto Turn-On Timer for Relay 3" size="4" min="0" max="65535" value="0" units="minutes">
+      <Help>Auto Turn-On Timer for Relay 3.  Sets the time (in minutes) after which you want relay 3 to automatically turn on once it has been turned off.  Range: 1-65535.  Default: 0 (disabled)</Help>
+    </Value>
+    <Value type="list" genre="config" index="12" label="Enable/Disable Manual Control for SW1" size="1" min="0" max="2" value="1">
+      <Help>Enable/Disable Manual Control for SW1.  Default: enabled</Help>
+      <Item label="disabled" value="0"/>
+      <Item label="enabled" value="1"/>
+      <Item label="local control disabled with enable on/off reports" value="2"/>
+    </Value>
+    <Value type="list" genre="config" index="13" label="Enable/Disable Manual Control for SW2" size="1" min="0" max="2" value="1">
+      <Help>Enable/Disable Manual Control for SW2.  Default: enabled</Help>
+      <Item label="disabled" value="0"/>
+      <Item label="enabled" value="1"/>
+      <Item label="local control disabled with enable on/off reports" value="2"/>
+    </Value>
+    <Value type="list" genre="config" index="14" label="Enable/Disable Manual Control for SW3" size="1" min="0" max="2" value="1">
+      <Help>Enable/Disable Manual Control for SW3.  Default: enabled</Help>
+      <Item label="disabled" value="0"/>
+      <Item label="enabled" value="1"/>
+      <Item label="local control disabled with enable on/off reports" value="2"/>
+    </Value>
+    <Value type="list" genre="config" index="15" label="Auto Turn-Off Timer Unit for Relay 1" size="1" min="0" max="2" value="0">
+      <Help>Choose between second, minutes, and hours as the unit for Auto Turn-Off time for Relay 1.  Default: minutes</Help>
+      <Item label="minutes" value="0"/>
+      <Item label="seconds" value="1"/>
+      <Item label="hours" value="2"/>
+    </Value>
+    <Value type="list" genre="config" index="16" label="Auto Turn-On Timer Unit for Relay 1" size="1" min="0" max="2" value="0">
+      <Help>Choose between second, minutes, and hours as the unit for Auto Turn-On time for Relay 1.  Default: minutes</Help>
+      <Item label="minutes" value="0"/>
+      <Item label="seconds" value="1"/>
+      <Item label="hours" value="2"/>
+    </Value>
+    <Value type="list" genre="config" index="17" label="Auto Turn-Off Timer Unit for Relay 2" size="1" min="0" max="2" value="0">
+      <Help>Choose between second, minutes, and hours as the unit for Auto Turn-Off time for Relay 2.  Default: minutes</Help>
+      <Item label="minutes" value="0"/>
+      <Item label="seconds" value="1"/>
+      <Item label="hours" value="2"/>
+    </Value>
+    <Value type="list" genre="config" index="18" label="Auto Turn-On Timer Unit for Relay 2" size="1" min="0" max="2" value="0">
+      <Help>Choose between second, minutes, and hours as the unit for Auto Turn-On time for Relay 2.  Default: minutes</Help>
+      <Item label="minutes" value="0"/>
+      <Item label="seconds" value="1"/>
+      <Item label="hours" value="2"/>
+    </Value>
+    <Value type="list" genre="config" index="19" label="Auto Turn-Off Timer Unit for Relay 3" size="1" min="0" max="2" value="0">
+      <Help>Choose between second, minutes, and hours as the unit for Auto Turn-Off time for Relay 3.  Default: minutes</Help>
+      <Item label="minutes" value="0"/>
+      <Item label="seconds" value="1"/>
+      <Item label="hours" value="2"/>
+    </Value>
+    <Value type="list" genre="config" index="20" label="Auto Turn-On Timer Unit for Relay 3" size="1" min="0" max="2" value="0">
+      <Help>Choose between second, minutes, and hours as the unit for Auto Turn-On time for Relay 3.  Default: minutes</Help>
+      <Item label="minutes" value="0"/>
+      <Item label="seconds" value="1"/>
+      <Item label="hours" value="2"/>
+    </Value>
+     <Value type="list" genre="config" index="21" label="Normally open/close for Relay 1" size="1" min="0" max="2" value="0">
+      <Help>Decide whether you'd like Relay 1 to be normally open (NO) or normally closed (NC). Default normally open.</Help>
+      <Item label="normally open (relay reports off when it's open / switch is off and on when it's closed / switch is on)" value="0"/>
+      <Item label="normally closed (relay reports off when it's open / switch is on and on when it's closed / switch is off)" value="1"/>
+      <Item label="normally closed (relay reports off when it's closed / switch is off and on when it's open / switch is on)" value="2"/>
+    </Value>
+    <Value type="list" genre="config" index="22" label="Normally open/close for Relay 2" size="1" min="0" max="2" value="0">
+      <Help>Decide whether you'd like Relay 2 to be normally open (NO) or normally closed (NC). Default normally open.</Help>
+      <Item label="normally open (relay reports off when it's open / switch is off and on when it's closed / switch is on)" value="0"/>
+      <Item label="normally closed (relay reports off when it's open / switch is on and on when it's closed / switch is off)" value="1"/>
+      <Item label="normally closed (relay reports off when it's closed / switch is off and on when it's open / switch is on)" value="2"/>
+    </Value>
+    <Value type="list" genre="config" index="23" label="Normally open/close for Relay 3" size="1" min="0" max="2" value="0">
+      <Help>Decide whether you'd like Relay 3 to be normally open (NO) or normally closed (NC). Default normally open.</Help>
+      <Item label="normally open (relay reports off when it's open / switch is off and on when it's closed / switch is on)" value="0"/>
+      <Item label="normally closed (relay reports off when it's open / switch is on and on when it's closed / switch is off)" value="1"/>
+      <Item label="normally closed (relay reports off when it's closed / switch is off and on when it's open / switch is on)" value="2"/>
+    </Value>
+    <Value type="list" genre="config" index="24" label="DC Motor Mode" size="1" min="0" max="1" value="0">
+      <Help>Sync Relay 1 and Relay 2 together to prevent them from being activated at the same time. Default disabled.</Help>
+      <Item label="DC motor mode disabled (relays will always turn on whenever activated)" value="0"/>
+      <Item label="DC motor mode enabled (relay checks the status of the other relay after being triggered and shuts the other relay off before activating so that only one of the relays is on at a time)" value="1"/>
+    </Value>
+  </CommandClass>
+
+  <!-- Association Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="4">
+      <Group index="1" max_associations="1" label="Lifeline"/>
+      <Group index="2" max_associations="5" label="Relay 1 Status"/>
+      <Group index="3" max_associations="5" label="Relay 2 Status"/>
+      <Group index="4" max_associations="5" label="Relay 3 Status"/>
+    </Associations>
+  </CommandClass>
+</Product>

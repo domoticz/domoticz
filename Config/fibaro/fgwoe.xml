@@ -1,0 +1,491 @@
+<Product Revision="1" xmlns="https://github.com/OpenZWave/open-zwave">
+  <!-- Please refer to https://github.com/OpenZWave/open-zwave/wiki/Adding-Devices for instructions -->
+  <MetaData>
+    <MetaDataItem name="Name">FIBARO Walli Outlet</MetaDataItem>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/010F:1000:1f01</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/fibaro/fgwoe.png</MetaDataItem>
+    <MetaDataItem name="ProductSupport">https://manuals.fibaro.com/content/manuals/en/FGWOEF-011/FGWOEF-011-T-EN-v1.0.pdf</MetaDataItem>
+    <MetaDataItem id="1000" name="ProductPage" type="1f01">https://products.z-wavealliance.org/products/3220</MetaDataItem>
+    <MetaDataItem id="1000" name="FrequencyName" type="1f01">CEPT (Europe)</MetaDataItem>
+    <MetaDataItem id="1000" name="Identifier" type="1f01">FGWOE/F-11</MetaDataItem>
+    <MetaDataItem name="Description">FIBARO Walli Outlet is a smart electrical outlet designed to control electrical devices via Z-Wave network.
+It measures active power and energy consumed by the controlled load.
+You can install it with provided cover plate and socket cover or other compatible.
+
+Main features of FIBARO Walli Outlet:
+- Can turn ON/OFF plugged device remotely.
+- Available in two versions for plug types:
+  o Type E,
+  o Type F.
+- Can be used with provided cover plate or one of the following:
+  o GIRA - System 55 (Standard 55, E2, Event, Event Clear),
+  o Legrand - Celiane
+  o Schneider - Odace.
+- Active power and energy consumption metering.
+- Displays current load using multicolour LED frame (with FIBARO cover plate).
+- Supports Z-Wave network Security Modes: S0 with AES-128 encryption and S2 Authenticated with PRNG-based encryption.
+- Works as Z-Wave signal repeater (all non-battery operated devices within the network will act as repeaters to increase reliability of the network).
+- May be used with all devices certified with the Z-Wave Plus certificate and should be compatible with such devices produced by other manufacturers.
+</MetaDataItem>
+    <MetaDataItem name="WakeupDescription">FIBARO Walli Outlet is powered using DC power supply unit so it is always awake.</MetaDataItem>
+    <MetaDataItem name="InclusionDescription">To add the device to the Z-Wave network manually:
+1. Power the device.
+2. Set the main controller in (Security/non-Security Mode) add mode (see the controller's manual).
+3. Quickly, three times click one of the buttons.
+4. If you are adding in Security S2 Authenticated, scan the DSK QR code or input the underlined part of the DSK (on the device label).
+5. LED will start blinking yellow, wait for the adding process to end.
+6. Adding result will be confirmed by the Z-Wave controller's message and the LED frame:
+   - Green - successful (non-secure, S0, S2 non-authenticated),
+   - Magenta - successful (Security S2 Authenticated),
+   - Red - not successful.
+</MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">To remove the device from the Z-Wave network:
+1. Power the device.
+2. Set the main controller into remove mode (see the controller's manual).
+3. Quickly, three times click the button.
+4. LED will start blinking yellow, wait for the removing process to end.
+5. Successful removing will be confirmed by the Z-Wave controller's message and red LED colour.
+</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Jorge Schrauwen" date="06 Aug 2019" revision="1">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/3220/xml</Entry>
+    </ChangeLog>
+  </MetaData>
+  <!-- Configuration -->
+  <CommandClass id="112">
+    <Value type="list" index="1" genre="config" label="Remember device state" size="1" value="1">
+      <Help>This parameter determines how the device will react in the event of power supply failure (e.g. power outage).</Help>
+      <Item label="Wall Outlet remains switched off after restoring power" value="0"/>
+      <Item label="Wall Outlet restores remembered state after restoring power" value="1"/>
+    </Value>
+    <Value type="int" index="2" genre="config" label="Overload safety switch" value="0" min="0" max="36800">
+      <Help>This function allows to turn off the controlled device in case of exceeding the defined power. Controlled device can be turned back on via button or sending a control frame.
+0: function disabled, 10-36800: (1.0-3680.0W, step 0.1W) power threshold
+</Help>
+    </Value>
+    <Value type="int" index="10" genre="config" label="LED frame - power limit" value="36800" min="500" max="36800">
+      <Help>This parameter determines maximum active power. Exceeding it results in the LED frame flashing violet. Function is active only when parameter 11 is set to 8 or 9.
+500-36800 (50.0-3680.0W, step 0.1W) - power threshold</Help>
+    </Value>
+    <Value type="list" index="11" genre="config" label="LED frame - colour when ON" size="1" value="8">
+      <Help>This parameter defines the LED colour when the device is ON.
+
+When set to 8 or 9, LED frame colour will change depending on the measured power and parameter 10. Other colours are set permanently and do not depend on power consumption.</Help>
+      <Item label="LED disabled" value="0"/>
+      <Item label="White" value="1"/>
+      <Item label="Red" value="2"/>
+      <Item label="Green" value="3"/>
+      <Item label="Blue" value="4"/>
+      <Item label="Yellow" value="5"/>
+      <Item label="Cyan" value="6"/>
+      <Item label="Magenta" value="7"/>
+      <Item label="Colour changes smoothly depending on measured power" value="8"/>
+      <Item label="Colour changes in steps depending on measured power" value="9"/>
+    </Value>
+    <Value type="list" index="12" genre="config" label="LED frame - colour when OFF" size="1" value="0">
+      <Help>This parameter defines the LED colour when the device is OFF.</Help>
+      <Item label="LED disabled" value="0"/>
+      <Item label="White" value="1"/>
+      <Item label="Red" value="2"/>
+      <Item label="Green" value="3"/>
+      <Item label="Blue" value="4"/>
+      <Item label="Yellow" value="5"/>
+      <Item label="Cyan" value="6"/>
+      <Item label="Magenta" value="7"/>
+    </Value>
+    <Value type="list" index="13" genre="config" label="LED frame - brightness" size="1" value="100" min="0" max="102">
+      <Help>This parameter allows to adjust the LED frame brightness.</Help>
+      <Item label="disabled" value="0"/>
+      <Item label="1%" value="1"/>
+      <Item label="2%" value="2"/>
+      <Item label="3%" value="3"/>
+      <Item label="4%" value="4"/>
+      <Item label="5%" value="5"/>
+      <Item label="6%" value="6"/>
+      <Item label="7%" value="7"/>
+      <Item label="8%" value="8"/>
+      <Item label="9%" value="9"/>
+      <Item label="10%" value="10"/>
+      <Item label="11%" value="11"/>
+      <Item label="12%" value="12"/>
+      <Item label="13%" value="13"/>
+      <Item label="14%" value="14"/>
+      <Item label="15%" value="15"/>
+      <Item label="16%" value="16"/>
+      <Item label="17%" value="17"/>
+      <Item label="18%" value="18"/>
+      <Item label="19%" value="19"/>
+      <Item label="20%" value="20"/>
+      <Item label="21%" value="21"/>
+      <Item label="22%" value="22"/>
+      <Item label="23%" value="23"/>
+      <Item label="24%" value="24"/>
+      <Item label="25%" value="25"/>
+      <Item label="26%" value="26"/>
+      <Item label="27%" value="27"/>
+      <Item label="28%" value="28"/>
+      <Item label="29%" value="29"/>
+      <Item label="30%" value="30"/>
+      <Item label="31%" value="31"/>
+      <Item label="32%" value="32"/>
+      <Item label="33%" value="33"/>
+      <Item label="34%" value="34"/>
+      <Item label="35%" value="35"/>
+      <Item label="36%" value="36"/>
+      <Item label="37%" value="37"/>
+      <Item label="38%" value="38"/>
+      <Item label="39%" value="39"/>
+      <Item label="40%" value="40"/>
+      <Item label="41%" value="41"/>
+      <Item label="42%" value="42"/>
+      <Item label="43%" value="43"/>
+      <Item label="44%" value="44"/>
+      <Item label="45%" value="45"/>
+      <Item label="46%" value="46"/>
+      <Item label="47%" value="47"/>
+      <Item label="48%" value="48"/>
+      <Item label="49%" value="49"/>
+      <Item label="50%" value="50"/>
+      <Item label="51%" value="51"/>
+      <Item label="52%" value="52"/>
+      <Item label="53%" value="53"/>
+      <Item label="54%" value="54"/>
+      <Item label="55%" value="55"/>
+      <Item label="56%" value="56"/>
+      <Item label="57%" value="57"/>
+      <Item label="58%" value="58"/>
+      <Item label="59%" value="59"/>
+      <Item label="60%" value="60"/>
+      <Item label="61%" value="61"/>
+      <Item label="62%" value="62"/>
+      <Item label="63%" value="63"/>
+      <Item label="64%" value="64"/>
+      <Item label="65%" value="65"/>
+      <Item label="66%" value="66"/>
+      <Item label="67%" value="67"/>
+      <Item label="68%" value="68"/>
+      <Item label="69%" value="69"/>
+      <Item label="70%" value="70"/>
+      <Item label="71%" value="71"/>
+      <Item label="72%" value="72"/>
+      <Item label="73%" value="73"/>
+      <Item label="74%" value="74"/>
+      <Item label="75%" value="75"/>
+      <Item label="76%" value="76"/>
+      <Item label="77%" value="77"/>
+      <Item label="78%" value="78"/>
+      <Item label="79%" value="79"/>
+      <Item label="80%" value="80"/>
+      <Item label="81%" value="81"/>
+      <Item label="82%" value="82"/>
+      <Item label="83%" value="83"/>
+      <Item label="84%" value="84"/>
+      <Item label="85%" value="85"/>
+      <Item label="86%" value="86"/>
+      <Item label="87%" value="87"/>
+      <Item label="88%" value="88"/>
+      <Item label="89%" value="89"/>
+      <Item label="90%" value="90"/>
+      <Item label="91%" value="91"/>
+      <Item label="92%" value="92"/>
+      <Item label="93%" value="93"/>
+      <Item label="94%" value="94"/>
+      <Item label="95%" value="95"/>
+      <Item label="96%" value="96"/>
+      <Item label="97%" value="97"/>
+      <Item label="98%" value="98"/>
+      <Item label="99%" value="99"/>
+      <Item label="100%" value="100"/>
+      <Item label="brightness directly proportional to measured power" value="101"/>
+      <Item label="brightness inversely proportional to measured power" value="102"/>
+    </Value>
+    <Value type="int" index="30" genre="config" label="Alarm configuration - 1st slot" value="0" min="0" max="4294967295">
+        <Help>This parameter determines to which alarm frames and how the device should react. The parameters consist of 4 bytes, three most significant bytes are set according to the official Z-Wave protocol specification.
+1B:  [MSB] Notification Type, 2B:  Notification Status, 3B: Event/State Parameters, 4B: [LSB] action
+0xX0: no action on output, 0xX1: turn ON, 0xX2: turn OFF, 0xX3: turn ON/OFF continuously, 0x0X: no action on LED frame, 0x1X: LED frame blinks red, 0x2X: LED frame blinks green, 0x4X: LED frame blinks blue, 0x8X: disable LED frame, 0xFX: LED frame LAPD signal (red-white-blue)
+</Help>
+    </Value>
+    <Value type="int" index="31" genre="config" label="Alarm configuration - 2nd slot" value="0" min="0" max="4294967295">
+        <Help>This parameter determines to which alarm frames and how the device should react. The parameters consist of 4 bytes, three most significant bytes are set according to the official Z-Wave protocol specification.
+1B:  [MSB] Notification Type, 2B:  Notification Status, 3B: Event/State Parameters, 4B: [LSB] action
+0xX0: no action on output, 0xX1: turn ON, 0xX2: turn OFF, 0xX3: turn ON/OFF continuously, 0x0X: no action on LED frame, 0x1X: LED frame blinks red, 0x2X: LED frame blinks green, 0x4X: LED frame blinks blue, 0x8X: disable LED frame, 0xFX: LED frame LAPD signal (red-white-blue)
+</Help>
+    </Value>
+    <Value type="int" index="32" genre="config" label="Alarm configuration - 3rd slot" value="0" min="0" max="4294967295">
+        <Help>This parameter determines to which alarm frames and how the device should react. The parameters consist of 4 bytes, three most significant bytes are set according to the official Z-Wave protocol specification.
+1B:  [MSB] Notification Type, 2B:  Notification Status, 3B: Event/State Parameters, 4B: [LSB] action
+0xX0: no action on output, 0xX1: turn ON, 0xX2: turn OFF, 0xX3: turn ON/OFF continuously, 0x0X: no action on LED frame, 0x1X: LED frame blinks red, 0x2X: LED frame blinks green, 0x4X: LED frame blinks blue, 0x8X: disable LED frame, 0xFX: LED frame LAPD signal (red-white-blue)
+</Help>
+    </Value>
+    <Value type="int" index="33" genre="config" label="Alarm configuration - 4th slot" value="0" min="0" max="4294967295">
+        <Help>This parameter determines to which alarm frames and how the device should react. The parameters consist of 4 bytes, three most significant bytes are set according to the official Z-Wave protocol specification.
+1B:  [MSB] Notification Type, 2B:  Notification Status, 3B: Event/State Parameters, 4B: [LSB] action
+0xX0: no action on output, 0xX1: turn ON, 0xX2: turn OFF, 0xX3: turn ON/OFF continuously, 0x0X: no action on LED frame, 0x1X: LED frame blinks red, 0x2X: LED frame blinks green, 0x4X: LED frame blinks blue, 0x8X: disable LED frame, 0xFX: LED frame LAPD signal (red-white-blue)
+</Help>
+    </Value>
+    <Value type="int" index="34" genre="config" label="Alarm configuration - 5th slot" value="0" min="0" max="4294967295">
+        <Help>This parameter determines to which alarm frames and how the device should react. The parameters consist of 4 bytes, three most significant bytes are set according to the official Z-Wave protocol specification.
+1B:  [MSB] Notification Type, 2B:  Notification Status, 3B: Event/State Parameters, 4B: [LSB] action
+0xX0: no action on output, 0xX1: turn ON, 0xX2: turn OFF, 0xX3: turn ON/OFF continuously, 0x0X: no action on LED frame, 0x1X: LED frame blinks red, 0x2X: LED frame blinks green, 0x4X: LED frame blinks blue, 0x8X: disable LED frame, 0xFX: LED frame LAPD signal (red-white-blue)
+</Help>
+    </Value>
+    <Value type="short" index="35" genre="config" label="Alarm configuration - duration" value="600" min="0" max="32400">
+        <Help>This parameter defines duration of alarm sequence. When time set in this parameter elapses, alarm is cancelled, LED frame and relay restore normal operation, but do not recover state from before the alarm.
+        0: Infinite, 1-32400: (1s-9h, 1s step) - Duration
+        </Help>
+    </Value>
+    <Value type="list" index="45" genre="config" label="Associations - 2nd group" size="1" value="3" min="1" max="3">
+      <Help>This parameter determines which actions will result in sending control frames to devices associated in 2nd group.</Help>
+      <Item label="Power exceeds UP threshold" value="1"/>
+      <Item label="Power drops below DOWN threshold" value="2"/>
+      <Item label="Power exceeds UP threshold or drops below DOWN threshold" value="3"/>
+    </Value>
+    <Value type="int" index="46" genre="config" label="Associations - UP threshold" value="500" min="100" max="36800">
+      <Help>This parameter determines upper power threshold for 2nd association group (paramter 45). Exceeding it will result in sending value set in parameter 47. Cannot be lower than DOWN threshold (parameter 48).
+100-36800: (10-3680W, 0.1W step) - power threshold
+</Help>
+    </Value>
+    <Value type="list" index="47" genre="config" label="Associations - UP threshold frame value" value="255" min="0" max="255" size="2">
+      <Help>This parameter defines value sent to devices in 2nd association group when power exceeds UP threshold set in parameter 46 (using Basic Command Class).</Help>
+      <Item label="turn off" value="0"/>
+      <Item label="level 1" value="1"/>
+      <Item label="level 2" value="2"/>
+      <Item label="level 3" value="3"/>
+      <Item label="level 4" value="4"/>
+      <Item label="level 5" value="5"/>
+      <Item label="level 6" value="6"/>
+      <Item label="level 7" value="7"/>
+      <Item label="level 8" value="8"/>
+      <Item label="level 9" value="9"/>
+      <Item label="level 10" value="10"/>
+      <Item label="level 11" value="11"/>
+      <Item label="level 12" value="12"/>
+      <Item label="level 13" value="13"/>
+      <Item label="level 14" value="14"/>
+      <Item label="level 15" value="15"/>
+      <Item label="level 16" value="16"/>
+      <Item label="level 17" value="17"/>
+      <Item label="level 18" value="18"/>
+      <Item label="level 19" value="19"/>
+      <Item label="level 20" value="20"/>
+      <Item label="level 21" value="21"/>
+      <Item label="level 22" value="22"/>
+      <Item label="level 23" value="23"/>
+      <Item label="level 24" value="24"/>
+      <Item label="level 25" value="25"/>
+      <Item label="level 26" value="26"/>
+      <Item label="level 27" value="27"/>
+      <Item label="level 28" value="28"/>
+      <Item label="level 29" value="29"/>
+      <Item label="level 30" value="30"/>
+      <Item label="level 31" value="31"/>
+      <Item label="level 32" value="32"/>
+      <Item label="level 33" value="33"/>
+      <Item label="level 34" value="34"/>
+      <Item label="level 35" value="35"/>
+      <Item label="level 36" value="36"/>
+      <Item label="level 37" value="37"/>
+      <Item label="level 38" value="38"/>
+      <Item label="level 39" value="39"/>
+      <Item label="level 40" value="40"/>
+      <Item label="level 41" value="41"/>
+      <Item label="level 42" value="42"/>
+      <Item label="level 43" value="43"/>
+      <Item label="level 44" value="44"/>
+      <Item label="level 45" value="45"/>
+      <Item label="level 46" value="46"/>
+      <Item label="level 47" value="47"/>
+      <Item label="level 48" value="48"/>
+      <Item label="level 49" value="49"/>
+      <Item label="level 50" value="50"/>
+      <Item label="level 51" value="51"/>
+      <Item label="level 52" value="52"/>
+      <Item label="level 53" value="53"/>
+      <Item label="level 54" value="54"/>
+      <Item label="level 55" value="55"/>
+      <Item label="level 56" value="56"/>
+      <Item label="level 57" value="57"/>
+      <Item label="level 58" value="58"/>
+      <Item label="level 59" value="59"/>
+      <Item label="level 60" value="60"/>
+      <Item label="level 61" value="61"/>
+      <Item label="level 62" value="62"/>
+      <Item label="level 63" value="63"/>
+      <Item label="level 64" value="64"/>
+      <Item label="level 65" value="65"/>
+      <Item label="level 66" value="66"/>
+      <Item label="level 67" value="67"/>
+      <Item label="level 68" value="68"/>
+      <Item label="level 69" value="69"/>
+      <Item label="level 70" value="70"/>
+      <Item label="level 71" value="71"/>
+      <Item label="level 72" value="72"/>
+      <Item label="level 73" value="73"/>
+      <Item label="level 74" value="74"/>
+      <Item label="level 75" value="75"/>
+      <Item label="level 76" value="76"/>
+      <Item label="level 77" value="77"/>
+      <Item label="level 78" value="78"/>
+      <Item label="level 79" value="79"/>
+      <Item label="level 80" value="80"/>
+      <Item label="level 81" value="81"/>
+      <Item label="level 82" value="82"/>
+      <Item label="level 83" value="83"/>
+      <Item label="level 84" value="84"/>
+      <Item label="level 85" value="85"/>
+      <Item label="level 86" value="86"/>
+      <Item label="level 87" value="87"/>
+      <Item label="level 88" value="88"/>
+      <Item label="level 89" value="89"/>
+      <Item label="level 90" value="90"/>
+      <Item label="level 91" value="91"/>
+      <Item label="level 92" value="92"/>
+      <Item label="level 93" value="93"/>
+      <Item label="level 94" value="94"/>
+      <Item label="level 95" value="95"/>
+      <Item label="level 96" value="96"/>
+      <Item label="level 97" value="97"/>
+      <Item label="level 98" value="98"/>
+      <Item label="level 99" value="99"/>
+      <Item label="level 100" value="100"/>
+      <Item label="turn on with previous level" value="255"/>
+    </Value>
+    <Value type="int" index="48" genre="config" label="Associations - DOWN threshold" value="300" min="0" max="36700">
+      <Help>This parameter determines lower power threshold for 2nd association group (parameter 45). Exceeding it will result in sending value set in parameter 49.
+0-36700: (0-3670W, 0.1W step) - power threshold
+</Help>
+    </Value>
+    <Value type="short" index="49" genre="config" label="Associations - DOWN threshold frame value" value="255" min="0" max="255" size="2">
+      <Help>This parameter defines value sent to devices in 2nd association group when power exceeds UP threshold set in parameter 46 (using Basic Command Class).</Help>
+      <Item label="turn off" value="0"/>
+      <Item label="level 1" value="1"/>
+      <Item label="level 2" value="2"/>
+      <Item label="level 3" value="3"/>
+      <Item label="level 4" value="4"/>
+      <Item label="level 5" value="5"/>
+      <Item label="level 6" value="6"/>
+      <Item label="level 7" value="7"/>
+      <Item label="level 8" value="8"/>
+      <Item label="level 9" value="9"/>
+      <Item label="level 10" value="10"/>
+      <Item label="level 11" value="11"/>
+      <Item label="level 12" value="12"/>
+      <Item label="level 13" value="13"/>
+      <Item label="level 14" value="14"/>
+      <Item label="level 15" value="15"/>
+      <Item label="level 16" value="16"/>
+      <Item label="level 17" value="17"/>
+      <Item label="level 18" value="18"/>
+      <Item label="level 19" value="19"/>
+      <Item label="level 20" value="20"/>
+      <Item label="level 21" value="21"/>
+      <Item label="level 22" value="22"/>
+      <Item label="level 23" value="23"/>
+      <Item label="level 24" value="24"/>
+      <Item label="level 25" value="25"/>
+      <Item label="level 26" value="26"/>
+      <Item label="level 27" value="27"/>
+      <Item label="level 28" value="28"/>
+      <Item label="level 29" value="29"/>
+      <Item label="level 30" value="30"/>
+      <Item label="level 31" value="31"/>
+      <Item label="level 32" value="32"/>
+      <Item label="level 33" value="33"/>
+      <Item label="level 34" value="34"/>
+      <Item label="level 35" value="35"/>
+      <Item label="level 36" value="36"/>
+      <Item label="level 37" value="37"/>
+      <Item label="level 38" value="38"/>
+      <Item label="level 39" value="39"/>
+      <Item label="level 40" value="40"/>
+      <Item label="level 41" value="41"/>
+      <Item label="level 42" value="42"/>
+      <Item label="level 43" value="43"/>
+      <Item label="level 44" value="44"/>
+      <Item label="level 45" value="45"/>
+      <Item label="level 46" value="46"/>
+      <Item label="level 47" value="47"/>
+      <Item label="level 48" value="48"/>
+      <Item label="level 49" value="49"/>
+      <Item label="level 50" value="50"/>
+      <Item label="level 51" value="51"/>
+      <Item label="level 52" value="52"/>
+      <Item label="level 53" value="53"/>
+      <Item label="level 54" value="54"/>
+      <Item label="level 55" value="55"/>
+      <Item label="level 56" value="56"/>
+      <Item label="level 57" value="57"/>
+      <Item label="level 58" value="58"/>
+      <Item label="level 59" value="59"/>
+      <Item label="level 60" value="60"/>
+      <Item label="level 61" value="61"/>
+      <Item label="level 62" value="62"/>
+      <Item label="level 63" value="63"/>
+      <Item label="level 64" value="64"/>
+      <Item label="level 65" value="65"/>
+      <Item label="level 66" value="66"/>
+      <Item label="level 67" value="67"/>
+      <Item label="level 68" value="68"/>
+      <Item label="level 69" value="69"/>
+      <Item label="level 70" value="70"/>
+      <Item label="level 71" value="71"/>
+      <Item label="level 72" value="72"/>
+      <Item label="level 73" value="73"/>
+      <Item label="level 74" value="74"/>
+      <Item label="level 75" value="75"/>
+      <Item label="level 76" value="76"/>
+      <Item label="level 77" value="77"/>
+      <Item label="level 78" value="78"/>
+      <Item label="level 79" value="79"/>
+      <Item label="level 80" value="80"/>
+      <Item label="level 81" value="81"/>
+      <Item label="level 82" value="82"/>
+      <Item label="level 83" value="83"/>
+      <Item label="level 84" value="84"/>
+      <Item label="level 85" value="85"/>
+      <Item label="level 86" value="86"/>
+      <Item label="level 87" value="87"/>
+      <Item label="level 88" value="88"/>
+      <Item label="level 89" value="89"/>
+      <Item label="level 90" value="90"/>
+      <Item label="level 91" value="91"/>
+      <Item label="level 92" value="92"/>
+      <Item label="level 93" value="93"/>
+      <Item label="level 94" value="94"/>
+      <Item label="level 95" value="95"/>
+      <Item label="level 96" value="96"/>
+      <Item label="level 97" value="97"/>
+      <Item label="level 98" value="98"/>
+      <Item label="level 99" value="99"/>
+      <Item label="level 100" value="100"/>
+      <Item label="turn on with previous level" value="255"/>
+    </Value>
+    <Value type="list" index="60" genre="config" label="Power reports - include self-consumption" size="1" value="0">
+      <Help>This parameter determines whether the power measurements should include power consumed by the device itself.</Help>
+      <Item label="Self-consumption not included" value="0"/>
+      <Item label="Self-consumption included" value="1"/>
+    </Value>
+    <Value type="short" index="61" genre="config" label="Power reports - on change" value="15" min="0" max="500">
+      <Help>This parameter defines minimal change (from the last reported) in measured power that results in sending new report. For loads under 50W the parameter is irrelevant, reports are sent every 5W change.
+0: reporting on change disabled, 1-500: (1-500%, 1% step) minimal change</Help>
+    </Value>
+    <Value type="short" index="62" genre="config" label="Power reports - periodic" value="3600" min="0" max="32400">
+      <Help>This parameter defines reporting interval for measured power. Periodic reports are independent from changes in value (parameter 61).
+0: periodic reports disabled, 30-32400: (30s-9h, 1s step) time interval</Help>
+    </Value>
+    <Value type="short" index="65" genre="config" label="Energy reports - on change" value="10" min="0" max="500">
+      <Help>This parameter defines minimal change (from the last reported) in measured energy that results in sending new report.
+0: reporting on change disabled, 1-500: (0.01-5kWh, 0.01kWh step) minimal change</Help>
+    </Value>
+    <Value type="short" index="66" genre="config" label="Energy reports - periodic" value="3600" min="0" max="32400">
+      <Help>This parameter defines reporting interval for measured energy. Periodic reports are independent from changes in value (parameter 65).
+0: periodic reports disabled, 30-32400: (30s-9h, 1s step) time interval</Help>
+    </Value>
+  </CommandClass>
+  <!-- Association Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="2">
+      <Group index="1" label="Lifeline" max_associations="1"/>
+      <Group index="2" label="Power" max_associations="5"/>
+    </Associations>
+  </CommandClass>
+</Product>

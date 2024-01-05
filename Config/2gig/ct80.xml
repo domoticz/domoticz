@@ -1,0 +1,9 @@
+<Product Revision="2" xmlns="https://github.com/OpenZWave/open-zwave">
+  <!-- 2gig CT80 thermostat with USNAP module RTZW-01 -->
+  <!-- This thermostat's setpoint descriptions are 0 based, not 1 -->
+  <CommandClass id="67">
+    <Compatibility>
+      <Base>0</Base>
+    </Compatibility>
+  </CommandClass>
+</Product>

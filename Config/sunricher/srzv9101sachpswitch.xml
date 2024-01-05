@@ -1,0 +1,65 @@
+<Product Revision="1" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0330:D006:0200</MetaDataItem>
+    <MetaDataItem name="ProductPage">https://www.sunricher.com/z-wave-ac-in-wall-switch-sr-zv9101sac-hp-switch.html</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/sunricher/srzv9101sachpswitch.png</MetaDataItem>
+    <MetaDataItem name="ResetDescription">Press and hold down the action button for over 10 seconds, the dimmer will be reset to factory defaults.
+
+Note: Factory reset is not recommended for exclusion, please use this procedure only if the primary controller/gateway is missing or otherwise inoperable.</MetaDataItem>
+    <MetaDataItem name="Description">The in-wall switch is a Z-Wave device that is used to switch ON/OFF the connected light and can be controlled
+by other Z-Wave devices. The In-wall switch can be included and operated in any Z-Wave network with other ZWave certified devices from other manufacturers and/or other applications. All non-battery operated nodes
+within the network will act as repeaters regardless of vendor to increase reliability of the network.</MetaDataItem>
+    <MetaDataItem name="Name">Z-Wave AC In Wall Switch</MetaDataItem>
+    <MetaDataItem name="InclusionDescription">1. Set primary controller/gateway into inclusion mode (Please refer to your primary controller’s manual on how to turn your controller into inclusion).
+2. Power on the in-wall switch and set it into inclusion mode. There are two methods to set the in-wall switch into inclusion mode:
+1)Repower on the switch, it will be set into inclusion mode automatically, and waiting to be included.
+2)Triple press the action button on the switch, it will set the switch into inclusion mode.
+The connected light will stay solid on for 3 seconds to indicate successful inclusion.</MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">There are two exclusion methods:
+Method 1: Exclusion from the primary controller/gateway as follows:
+1. Set the primary controller/gateway into exclusion mode (Please refer to your primary controllers manual on how to set your controller into exclusion).
+2. Triple press the action button, the switch will be set to exclusion mode, and waiting to be excluded, then the switch will be excluded from the network.
+Method 2: Factory reset the switch will force it to be excluded from a network. (please refer to the part “Factory Reset” of this manual)
+Note: Factory reset is not recommended for exclusion, please use this procedure only if the primary controller/gateway is missing or otherwise inoperable.</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://www.sunricher.com/media/resources/manual/SR-ZV9101SAC-HP-Switch%20Instruction.pdf</MetaDataItem>
+    <MetaDataItem id="D006" name="Identifier" type="0200">SR-ZV9101SAC-HP-Switch</MetaDataItem>
+    <MetaDataItem id="D006" name="FrequencyName" type="0200">CEPT (Europe)</MetaDataItem>
+    <ChangeLog>
+      <Entry author="stevew817" date="13 Dec 2020" revision="1">Initial Configuration file</Entry>
+    </ChangeLog>
+  </MetaData>
+  <!-- Configuration -->
+  <CommandClass id="112">
+    <Value genre="config" index="2" instance="1" label="Saving state before power failure" size="1" type="list" value="2">
+      <Help>
+              Saving state before power failure.
+            Default Not saved.
+        </Help>
+      <Item label="State NOT saved at power failure, all outputs are set to OFF upon power restore" value="0"/>
+      <Item label="State NOT saved at power failure, all outputs are set to ON upon power restore" value="1"/>
+      <Item label="State saved at power failure, all outputs are set to previous state upon power restore" value="2"/>
+    </Value>
+    <Value genre="config" index="3" instance="1" label="Send the basic report" size="1" type="list" value="1">
+      <Help>Enable/disable to send the basic report to the Lifeline when the load state changed.
+              When value set as 1, re-power on the switch, it will send Basic report automatically.
+		Default Enabled.
+        </Help>
+      <Item label="Disable" value="0"/>
+      <Item label="Enable" value="1"/>
+    </Value>
+    <Value genre="config" index="7" instance="1" label="External switch to be added to and removed from a network" size="1" type="list" value="1">
+      <Help>Enable/disable external switch to be added to and removed from a network.
+              When enables this function, triple press the external switch within 1.5 seconds to be added to or removed from a net-work.
+            Default Enabled.
+        </Help>
+      <Item label="Disable" value="0"/>
+      <Item label="Enable" value="1"/>
+    </Value>
+  </CommandClass>
+  <!-- Association Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="1">
+      <Group index="1" label="Lifeline" max_associations="1"/>
+    </Associations>
+  </CommandClass>
+</Product>

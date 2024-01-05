@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Product Revision="1" xmlns="https://github.com/OpenZWave/open-zwave">
+    <MetaData>
+        <MetaDataItem name="Name">SR-ZV9001 5 Channel Dimmer Remote Control</MetaDataItem>
+        <MetaDataItem name="Description">The remote control is a Z-Wave device that can both control other Z-Wave
+            devices and activate scenes in Gateways.
+        </MetaDataItem>
+        <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0330:b301:0300</MetaDataItem>
+        <MetaDataItem name="ProductPage">
+            https://www.sunricher.com/single-color-z-wave-remote-secondary-controller-sr-zv9001k12-dim-z5.html
+        </MetaDataItem>
+        <MetaDataItem name="ProductPic">images/sunricher/srzv9001k12dimz5.png</MetaDataItem>
+        <MetaDataItem name="ProductManual">
+            https://www.sunricher.com/media/resources/manual/SR-ZV9001K12-DIM-Z5%20V2%20Instruction.pdf
+        </MetaDataItem>
+        <MetaDataItem name="WakeupDescription">Short press any button to activate the remote control for 3s, and press
+            and hold down both buttons All On and All Off for over 1 second to activate the remote control for 7s.
+        </MetaDataItem>
+        <MetaDataItem name="InclusionDescription">
+            Step 1. Make sure the remote control does not belong to any Z-Wave network, short press any button, if LED
+            indicator does not turn on, the remote control does not belong to any network, then continue step 2,if LED
+            indicator turns on, it means the remote control has already been included to a network, please first set the
+            remote control to exclusion mode (refer to the part "Exclusion" of this manual),then continue step 2.
+            Step 2. Set primary controller/gateway into inclusion mode (Please refer to your primary controllers manual
+            on how to turn your controller into inclusion).
+            Step 3. Press and hold down both buttons All On and All Off for over 3 seconds, LED indicator turns on, the
+            remote control will be set to inclusion mode, and waiting to be included, after 10s LED indicator blinks 6
+            times quickly to indicate successful inclusion. The remote control is a sleepy device, after inclusion it
+            will not enter into sleepy mode immediately, and will continue activation status for 30s and wait data
+            interaction from the gateway, the LED indicator will stay solid on, please be patient to wait LED indicator
+            to turn off.
+        </MetaDataItem>
+        <MetaDataItem name="ExclusionDescription">
+            There are two exclusion methods:
+            Method 1: Exclusion from the primary controller/gateway as follows:
+            1. Set the primary controller/gateway into exclusion mode (Please refer to your primary controllers manual
+            on how to set your controller into exclusion).
+            2. Press and hold down both buttons All On and All Off for over 3 seconds, LED indicator turns on, the
+            remote control will be set to exclusion mode, and waiting to be excluded, after 7s LED indicator blinks 4
+            times quickly to indicate successful exclusion.
+            Method 2: Factory reset the remote control will force the remote control to be excluded from a network.
+            (please refer to the part “Factory Reset” of this manual)
+        </MetaDataItem>
+        <MetaDataItem name="ResetDescription">
+            Press and hold down both buttons All On and All Off for over 10 seconds, LED indicator turns on and then
+            blinks 4 times quickly to indicate successful factory reset.
+        </MetaDataItem>
+        <MetaDataItem id="b301" name="FrequencyName" type="0300">CEPT (Europe)</MetaDataItem>
+        <MetaDataItem id="b301" name="FrequencyName" type="0301">U.S. / Canada / Mexico</MetaDataItem>
+        <MetaDataItem id="b301" name="FrequencyName" type="0302">Australia / New Zealand</MetaDataItem>
+        <MetaDataItem id="b301" name="Identifier" type="0300">SR-ZV9001K12-DIM-Z5</MetaDataItem>
+        <MetaDataItem id="b301" name="Identifier" type="0301">SR-ZV9001K12-DIM-Z5</MetaDataItem>
+        <MetaDataItem id="b301" name="Identifier" type="0302">SR-ZV9001K12-DIM-Z5</MetaDataItem>
+        <ChangeLog>
+            <Entry author="Thiago Bergman" date="28 Aug 2020" revision="1">Initial Configuration file</Entry>
+        </ChangeLog>
+    </MetaData>
+    <CommandClass id="133">
+        <Associations num_groups="6">
+            <Group index="1" max_associations="5" label="Lifeline"/>
+            <Group index="2" label="Launch 1" max_associations="5"/>
+            <Group index="3" label="Launch 2" max_associations="5"/>
+            <Group index="4" label="Launch 3" max_associations="5"/>
+            <Group index="5" label="Launch 4" max_associations="5"/>
+            <Group index="6" label="Launch 5" max_associations="5"/>
+        </Associations>
+    </CommandClass>
+</Product>

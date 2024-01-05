@@ -1,0 +1,243 @@
+<!-- 
+Aeotec ZW122 Water Sensor 6
+http://products.z-wavealliance.org/products/2437
+--><Product Revision="10" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0086:007A:0102</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/aeotec/zw122.png</MetaDataItem>
+    <MetaDataItem id="007A" name="ZWProductPage" type="0102">https://products.z-wavealliance.org/products/2407/</MetaDataItem>
+    <MetaDataItem name="ResetDescription">Press and hold the Action Button that you can find on the product for 20 seconds and then release. This procedure should only be used when the primary controller is inoperable.</MetaDataItem>
+    <MetaDataItem name="InclusionDescription">Turn the primary controller of Z-Wave network into inclusion mode, short press the product’s Action Button that you can find on the product.</MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">Turn the primary controller of Z-Wave network into exclusion mode, short press the product’s Action Button that you can find on the product.</MetaDataItem>
+    <MetaDataItem name="WakeupDescription">Pressing the Action Button once will trigger sending the Wake up notification command. If press and hold the Z-Wave button for 3 seconds, the Water Sensor will wake up for 10 minutes.</MetaDataItem>
+    <MetaDataItem name="Name">Water Sensor 6</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://Products.Z-WaveAlliance.org/ProductManual/File?folder=&amp;filename=Manuals/2437/Aeon Labs Water Sensor 6 manual.pdf</MetaDataItem>
+    <MetaDataItem id="007A" name="Identifier" type="0102">ZW122-A</MetaDataItem>
+    <MetaDataItem name="Description">Aeotec by Aeon Labs Water Sensor 6 brings intelligence to a new level, one that is suited to both safety and convenience. It contains 4 sensing points, which would be more accurately to detect the presence and absence of water or detect whether there is water leak in some places of your home. The Water Sensor 6 has an inbuilt buzzer that can play alarm sounds to let you know when the water is detected.
+
+The Water Sensor 6 is also a security Z-Wave device that supports Over The Air (OTA) for firmware updates.
+</MetaDataItem>
+    <MetaDataItem id="007A" name="FrequencyName" type="0102">U.S. / Canada / Mexico</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="02 Jun 2019" revision="8">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/2407/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="02 Jun 2019" revision="9">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/2411/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="02 Jun 2019" revision="10">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/2437/xml</Entry>
+    </ChangeLog>
+    <MetaDataItem id="007A" name="ZWProductPage" type="0202">https://products.z-wavealliance.org/products/2411/</MetaDataItem>
+    <MetaDataItem id="007A" name="FrequencyName" type="0202">Australia / New Zealand</MetaDataItem>
+    <MetaDataItem id="007A" name="Identifier" type="0202">ZW122-B</MetaDataItem>
+    <MetaDataItem id="007A" name="ZWProductPage" type="0002">https://products.z-wavealliance.org/products/2437/</MetaDataItem>
+    <MetaDataItem id="007A" name="Identifier" type="0002">ZW122-C</MetaDataItem>
+    <MetaDataItem id="007A" name="FrequencyName" type="0002">CEPT (Europe)</MetaDataItem>
+  </MetaData>
+  <!-- Basic get not supported -->
+  <CommandClass id="32">
+    <Compatibility>
+      <GetSupported>false</GetSupported>
+    </Compatibility>
+  </CommandClass>
+  <!-- COMMAND_CLASS_BINARY_SENSOR. This class is in the list reported by the device, but it does not respond to requests-->
+  <CommandClass action="remove" id="48"/>
+  <!-- Configuration Parameters -->
+  <CommandClass id="112">
+    <Value genre="config" index="2" instance="1" label="Waking up for 10 minutes when re-power on" max="1" min="0" size="1" type="list" value="0">
+      <Help>Enable/Disable waking up for 10 minutes when re-power on (battery mode) the Water Sensor.</Help>
+      <Item label="Disabled" value="0"/>
+      <Item label="Enabled" value="1"/>
+    </Value>
+    <Value genre="config" index="8" instance="1" label="Timeout of awake after the Wake Up CC is sent out" max="127" min="8" size="1" type="byte" units="seconds" value="30">
+      <Help>
+				Set the timeout of awake after the Wake Up CC is sent out.
+				Available rang is 8 to 127 seconds.
+			</Help>
+    </Value>
+    <Value genre="config" index="9" instance="1" label="Current power mode" max="258" min="0" read_only="true" size="2" type="list" value="0">
+      <Help>Report the current power mode and the product state for battery power mode</Help>
+      <Item label="USB power, sleeping mode after re-power on" value="0"/>
+      <Item label="USB power, keep awake for 10 minutes after re-power on" value="1"/>
+      <Item label="USB power, always awake state" value="2"/>
+      <Item label="Battery power, sleeping mode after re-power on" value="256"/>
+      <Item label="Battery power, keep awake for 10 minutes after re-power on" value="257"/>
+      <Item label="Battery power, always awake state" value="258"/>
+    </Value>
+    <Value genre="config" index="10" instance="1" label="Alarm time for the Buzzer" max="2147483647" min="655360" size="4" type="int" value="1968650">
+      <Help>
+				Set the alarm time for the Buzzer when the sensor is triggered.
+				1 to 255 Repeated cycle of Buzzer alarm.
+				256 to 65535 the time of Buzzer keeping ON state (MSB).
+				65536 to 2147483647 The time of Buzzer keeping OFF state.
+			</Help>
+    </Value>
+    <Value genre="config" index="39" instance="1" label="Set the low battery value" max="50" min="10" size="1" type="byte" units="%" value="20">
+      <Help>10% to 50%</Help>
+    </Value>
+    <Value genre="config" index="48" instance="1" label="Sensor report" max="55" min="0" size="1" type="byte" value="55">
+      <Help>Enable/disable the sensor report:
+				Bit 7 - Bit 6 - Bit 5 Notification Report for Overheat alarm.
+				Bit 4 Notification Report for Under heat alarm.
+				Bit 3 - Bit 2 Configuration Report for Tilt sensor.
+				Bit 1 Notification Report for Vibration event.
+				Bit 0 Notification Report for Water Leak event.
+				Note: if the value = 1+2+4+16+32=55, which means if any sensor will report alarm.
+			</Help>
+    </Value>
+    <Value genre="config" index="49" instance="1" label="Upper limit value" max="2147483647" min="65536" size="4" type="int" value="26214400">
+      <Help>
+				Set the upper limit value (overheat).
+				0 Celsius unit
+				1 Fahrenheit unit
+				65536 to 2147483647 Temperature value.
+				Default: 0x01900000 => 40.0C
+			</Help>
+    </Value>
+    <Value genre="config" index="50" instance="1" label="Lower limit value" max="2147483647" min="65536" size="4" type="int" value="0">
+      <Help>
+				Set the lower limit value (under heat).
+				0 Celsius unit
+				1 Fahrenheit unit
+				65536 to 2147483647 Temperature value
+			</Help>
+    </Value>
+    <Value genre="config" index="57" instance="1" label="Recover limit value of temperature sensor" max="4080" min="100" size="2" type="short" value="5120">
+      <Help>
+				Set the recover limit value of temperature sensor.
+				Note:
+				1. When the current measurement less than or equal (Upper limit - Recover limit), the upper limit report is enabled and then it would send out a sensor report when the next measurement is more than the upper limit.
+				After that the upper limit report would be disabled again until the measurement less than or equal (Upper limit - Recover limit).
+				2. When the current measurement greater than or equal (Lower limit + Recover limit), the lower limit report is enabled and then it would send out a sensor report when the next measurement is less than the lower limit.
+				After that the lower limit report would be disabled again until the measurement >= (Lower limit + Recover limit).
+				3. High byte is the recover limit value. Low byte is the unit (0x00=Celsius, 0x01=Fahrenheit).
+				4. Recover limit range: 1.0 to 25.5 C/F (0x0100 to 0xFF00 or 0x0101 to 0xFF01).
+				E.g. The default recover limit value is 2.0 C/F (0x1400/0x1401), when the measurement is less than (Upper limit - 2), the upper limit report would be enabled one time or when the measurement is more than (Lower limit + 2), the lower limit report would be enabled one time.
+			</Help>
+    </Value>
+    <Value genre="config" index="64" instance="1" label="Unit of the automatic temperature report" max="1" min="0" size="1" type="list" value="0">
+      <Help>Set the default unit of the automatic temperature report in parameter 101-103</Help>
+      <Item label="Celsius" value="0"/>
+      <Item label="Fahrenheit" value="1"/>
+    </Value>
+    <Value genre="config" index="84" instance="1" label="Get the state of tilt sensor" max="1" min="0" read_only="true" size="1" type="list" value="0">
+      <Help>Get the state of tilt sensor</Help>
+      <Item label="Horizontal" value="0"/>
+      <Item label="Vertical" value="1"/>
+    </Value>
+    <Value genre="config" index="86" instance="1" label="Buzzer" max="1" min="0" size="1" type="list" value="1">
+      <Help>Enable/ disable the buzzer.</Help>
+      <Item label="Disabled" value="0"/>
+      <Item label="Enabled" value="1"/>
+    </Value>
+    <Value bitmask="55" genre="config" index="87" instance="1" label="Sensor is triggered the buzzer will alarm" max="55" min="0" size="4" type="bitset" value="55">
+      <Help>What Sensors Trigger the Buzzer</Help>
+      <BitSet id="1">
+        <Label>Water Leak</Label>
+        <Help>If the Water leak is triggered, the buzzer will alarm.</Help>
+      </BitSet>
+      <BitSet id="2">
+        <Label>Vibration</Label>
+        <Help>If the vibration is triggered, the buzzer will alarm.</Help>
+      </BitSet>
+      <BitSet id="3">
+        <Label>Tilt Sensor</Label>
+        <Help>If the Tilt Sensor is triggered, the buzzer will alarm.</Help>
+      </BitSet>
+      <BitSet id="5">
+        <Label>UnderHeat</Label>
+        <Help>If the Under Heat Temperature is triggered, the buzzer will alarm.</Help>
+      </BitSet>
+      <BitSet id="6">
+        <Label>OverHeat</Label>
+        <Help>If the Over Heat Temperature is triggered, the buzzer will alarm.</Help>
+      </BitSet>
+    </Value>
+    <Value genre="config" index="88" instance="1" label="Probe 1 Basic Set on grp 3" max="2" min="0" size="1" type="list" value="0">
+      <Help>To set which value of the Basic Set will be sent to the associated nodes in association Group 3 when the Sensor probe 1 is triggered.</Help>
+      <Item label="Send nothing" value="0"/>
+      <Item label="Presence/absence of water 0xFF/0x00" value="1"/>
+      <Item label="Presence/absence of water 0x00/0xFF" value="2"/>
+    </Value>
+    <Value genre="config" index="89" instance="1" label="Probe 2 Basic Set on grp 4" max="2" min="0" size="1" type="list" value="0">
+      <Help>To set which value of the Basic Set will be sent to the associated nodes in association Group 4 when the Sensor probe 2 is triggered.</Help>
+      <Item label="Send nothing" value="0"/>
+      <Item label="Presence/absence of water 0xFF/0x00" value="1"/>
+      <Item label="Presence/absence of water 0x00/0xFF" value="2"/>
+    </Value>
+    <Value genre="config" index="94" instance="1" label="Battery report selection" max="1" min="0" size="1" type="list" value="0">
+      <Help>To set which power source level is reported via the Battery CC.</Help>
+      <Item label="USB power level" value="0"/>
+      <Item label="CR123A battery level" value="1"/>
+    </Value>
+    <Value genre="config" index="101" instance="1" label="Unsolicited report" max="3" min="0" size="1" type="list" value="3">
+      <Help>
+				To set what unsolicited report would be sent to the Lifeline group.
+			</Help>
+      <Item label="Send Nothing" value="0"/>
+      <Item label="Battery Report" value="1"/>
+      <Item label="Multilevel sensor report for temperature" value="2"/>
+      <Item label="Battery Report and Multilevel sensor report for temperature" value="3"/>
+    </Value>
+    <Value genre="config" index="111" instance="1" label="Unsolicited report interval time" max="2678400" min="5" size="4" type="int" units="seconds" value="3600">
+      <Help>
+				To set the interval time of sending reports in Report group 1
+			</Help>
+    </Value>
+    <Value genre="config" index="135" instance="1" label="Water leak event report selection" max="3" min="0" size="1" type="list" value="1">
+      <Help>To set which sensor report can be sent when the water leak event is triggered and if the receiving device is a non-multichannel device.</Help>
+      <Item label="Send nothing" value="0"/>
+      <Item label="Send notification report to association group 1" value="1"/>
+      <Item label="Send configuration 0x88 report to association group 2" value="2"/>
+      <Item label="Send notification report to association group 1 and Send configuration 0x88 report to association group 2" value="3"/>
+    </Value>
+    <Value genre="config" index="136" instance="1" label="Report Type to Send" max="2" min="0" read_only="true" size="1" type="list" value="0">
+      <Help>
+				When the parameter 0x87 is set to 2 or 3, it can get the sensor probes status through this configuration value.
+			</Help>
+      <Item label="Absence of water is triggered by probe 1 and 2" value="0"/>
+      <Item label="Presence of water is triggered by probe 1" value="1"/>
+      <Item label="Presence of water is triggered by probe 2" value="2"/>
+      <Item label="Presence of water is triggered by probe 1 and 2" value="3"/>
+    </Value>
+    <Value genre="config" index="201" instance="1" label="Temperature sensor calibration" size="2" type="short" value="0">
+      <Help>
+				Temperature calibration (the available value range is [-128, 127] or [-12.8C, 12.7C]).
+				Note:
+				1. High byte is the calibration value. Low byte is the unit (0x00=Celsius, 0x01=Fahrenheit).
+				2. The calibration value (high byte) contains one decimal point. E.g.
+				if the value is set to 20 (0x1400), the calibration value is 2.0 C (EU/AU version) or if the value is set to 20 (0x1401), the calibration value is 2.0 F(US version).
+				3. The calibration value (high byte) = standard value - measure value.
+				E.g. If measure value =25.3C and the standard value = 23.2C, so the calibration value= 23.2C - 25.3C= -2.1C (0xEB).
+				If the measure value =30.1C and the standard value = 33.2C, so the calibration value= 33.2C - 30.1C=3.1C (0x1F).
+			</Help>
+    </Value>
+    <Value genre="config" index="252" label="Lock/Unlock Configuration" max="1" min="0" size="1" type="list" value="0">
+      <Help>Lock/ unlock all configuration parameters</Help>
+      <Item label="Unlock" value="0"/>
+      <Item label="Lock" value="1"/>
+    </Value>
+    <Value genre="config" index="255" label="Reset To Factory Defaults" size="4" type="list" value="1" write_only="true">
+      <Help>Reset to factory defaults</Help>
+      <Item label="Normal" value="0"/>
+      <Item label="Reset to factory default setting" value="1"/>
+      <Item label="Reset to factory default setting and removed from the z-wave network" value="1431655765"/>
+    </Value>
+  </CommandClass>
+  <!-- Map endpoints to instances -->
+  <CommandClass id="96">
+    <Compatibility>
+      <MapRootToEndpoint>true</MapRootToEndpoint>
+    </Compatibility>
+  </CommandClass>
+  <CommandClass id="142">
+    <Compatibility>
+      <ForceInstances>true</ForceInstances>
+    </Compatibility>
+  </CommandClass>
+  <!-- Association Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="4">
+      <Group index="1" label="Lifeline" max_associations="5"/>
+      <Group index="2" label="Send the configuration parameter 0x88" max_associations="5"/>
+      <Group index="3" label="Send Basic Set when the Sensor probe 1 is triggered" max_associations="5"/>
+      <Group index="4" label="Send Basic Set when the Sensor probe 2 is triggered" max_associations="5"/>
+    </Associations>
+  </CommandClass>
+</Product>

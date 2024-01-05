@@ -1,0 +1,70 @@
+<Product Revision="1" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="Name">Plug-in Dimmer (Dual Plug Simultaneous Control)</MetaDataItem>
+    <MetaDataItem name="Description">Transform any home into a smart home with the Honeywell Z-Wave Smart Lighting Control Lamp Module with Dimmer Control. The lamp module enables wireless control of on/off and dim functions for standard incandescent table and floor lamps, as well as dimmable fluorescent, LED and CFL fixtures and more! Use the dimmer control to customize the lighting output and create the perfect ambiance for any room. The space-saving horizontal module plugs into a standard wall receptacle without blocking the second outlet or obstructing placement of furniture. It provides a Z-Wave enabled outlet for the lamp you would like to control and one always-on, simultaneous control AC outlet for other electrical appliances. Take control of your home lighting with Honeywell Z-Wave Smart Controls!</MetaDataItem>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0039:3033:5044</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/honeywell/3830-zw3107.png</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://products.z-wavealliance.org/ProductManual/File?folder=&amp;filename=product_documents/3830/39446-HQSG_v4.pdf</MetaDataItem>
+    <MetaDataItem name="InclusionDescription">Follow the instructions for your Z-Wave certified controller to add a device to the Z-Wave network. Once the controller is ready to add your device, press and release the manual/program button on the smart dimmer. Repeat as necessary to add the dimmer to the network.</MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">Follow the instructions for your Z-Wave certified controller to remove a device from the Z-Wave network. Once the controller is ready to remove your device, press and release the manual/program button on the smart dimmer to remove it from the network.</MetaDataItem>
+    <MetaDataItem name="ResetDescription">If plugged in, unplug the dimmer from the receptacle. Press and hold the top button, plug the device in and continue to hold for at least 3 seconds.</MetaDataItem>
+    <MetaDataItem id="3033" name="ZWProductPage" type="5044">https://products.z-wavealliance.org/products/3830</MetaDataItem>
+    <MetaDataItem id="3033" name="FrequencyName" type="5044">U.S. / Canada / Mexico</MetaDataItem>
+    <MetaDataItem id="3033" name="Identifier" type="5044">39446 / ZW3107</MetaDataItem>
+    <ChangeLog>
+      <Entry author="AJ Schmidt - ajs4392@gmail.com" date="30 Aug 2020" revision="1">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/Products/3830/xml</Entry>
+    </ChangeLog>
+  </MetaData>
+
+
+  <CommandClass id="38">
+    <Compatibility>
+      <VerifyChanged index="0">true</VerifyChanged>
+    </Compatibility>
+  </CommandClass>
+
+
+  <!-- Configuration Command Class - All Configuration Parameters should be entered into the section below -->
+  <CommandClass id="112">
+    <Value genre="config" index="3" label="Invert/Disable LED" max="2" min="0" size="1" type="list" value="1">
+      <Help>Adjusts when the indicator LED is turned ON, OFF, or disabled</Help>
+      <Item label="LED ON/Device OFF" value="0"/>
+      <Item label="(Default) LED ON/Device ON" value="1"/>
+      <Item label="Disable LED" value="2"/>
+    </Value>
+    <Value genre="config" index="6" label="Dim up/down rate" max="1" min="0" size="1" type="list" value="0">
+      <Help>Adjusts when the indicator LED is turned ON, OFF, or disabled</Help>
+      <Item label="(Default) Dim up/down the light to the specified level quickly by command except value 0 and FF" value="0"/>
+      <Item label="Dim up/down the light to the specified level slowly by command except value 0 and FF" value="1"/>
+    </Value>
+
+    <Value genre="config" index="7" label="Z-Wave Command Dim Step" max="99" min="1" type="byte" units="" value="1">
+      <Help>Indicates how many levels the dimmer will change for each dimming step.</Help>
+    </Value>
+    <Value genre="config" index="8" label="Z-Wave Command Dim Rate" max="255" min="1" type="short" units="x 10 milliseconds" value="3">
+      <Help>This value indicates in 10 millisecond resolution, how often the dim level will change. For example, if you set this parameter to 1, then every 10ms the dim level will change. If you set it to 255, then every 2.55 seconds the dim level will change.</Help>
+    </Value>
+    <Value genre="config" index="9" label="Local Control Dim Step" max="99" min="1" type="byte" units="" value="1">
+      <Help>Indicates how many levels the dimmer will change for each dimming step.</Help>
+    </Value>
+    <Value genre="config" index="10" label="Local Control Dim Rate" max="255" min="1" type="short" units="x 10 milliseconds" value="3">
+      <Help>This value indicates in 10 millisecond resolution, how often the dim level will change. For example, if you set this parameter to 1, then every 10ms the dim level will change. If you set it to 255, then every 2.55 seconds the dim level will change.</Help>
+    </Value>
+    <Value genre="config" index="11" label="ALL ON/ALL OFF Dim Step" max="99" min="1" type="byte" units="" value="1">
+      <Help>Indicates how many levels the dimmer will change for each dimming step.</Help>
+    </Value>
+    <Value genre="config" index="12" label="ALL ON/ALL OFF Dim Rate" max="255" min="1" type="short" units="x 10 milliseconds" value="3">
+      <Help>This value indicates in 10 millisecond resolution, how often the dim level will change. For example, if you set this parameter to 1, then every 10ms the dim level will change. If you set it to 255, then every 2.55 seconds the dim level will change.</Help>
+    </Value>
+  </CommandClass>
+
+
+  <!-- The Association Group Information -->
+  <CommandClass id="133">
+    <Associations num_groups="3">
+      <Group index="1" label="LifeLine" max_associations="5"/>
+      <Group index="2" label="Supports Basic Set and is controlled with the local load" max_associations="5"/>
+      <Group index="3" label="Supports Basic Set and is controlled by double pressing the On or Off button" max_associations="5"/>
+    </Associations>
+  </CommandClass>
+</Product>

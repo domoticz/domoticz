@@ -136,7 +136,9 @@ class CDomoticzHardwareBase : public StoppableTask
 	int MigrateSelectorSwitch(int NodeID, uint8_t ChildID, const std::string &LevelNames, const std::string &LevelActions, bool bMigrate);
 	void CreateBlindSwitch(int NodeID, uint8_t ChildID, _eSwitchType switchtype, bool bDeviceUsed, bool bReversePosition, bool bReverseState, uint8_t cmnd, uint8_t level, const std::string &defaultName, const std::string &userName, int32_t batteryLevel, uint8_t rssiLevel = 12);
 	void SendBlindSwitch(int NodeID, uint8_t ChildID, uint8_t cmnd, uint8_t level, const std::string &defaultName, const std::string &userName, int32_t batteryLevel, uint8_t rssiLevel = 12);
-
+#ifdef WITH_OPENZWAVE
+	void SendZWaveAlarmSensor(int NodeID, uint8_t InstanceID, int BatteryLevel, uint8_t aType, int aValue, const std::string& alarmLabel, const std::string& defaultname);
+#endif
 	int m_iHBCounter = { 0 };
 	bool m_bIsStarted = { false };
 

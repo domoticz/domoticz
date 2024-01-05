@@ -1,0 +1,18 @@
+<Product Revision="2" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/001A:0002:4449</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/cooper/rf9534.png</MetaDataItem>
+    <MetaDataItem id="0002" name="ZWProductPage" type="4449">https://products.z-wavealliance.org/products/761/</MetaDataItem>
+    <MetaDataItem id="0002" name="FrequencyName" type="4449">U.S. / Canada / Mexico</MetaDataItem>
+    <MetaDataItem id="0002" name="Identifier" type="4449">RF9536</MetaDataItem>
+    <MetaDataItem name="Description">RF9536 - 1000W Incandescent Smart Dimmer ASPIRE RF Dimmers replace regular switches or dimmers to provide local and remote ON/OFF/DIM/BRIGHT control and are compatible with incandescent lighting loads. ASPIRE RF Dimmers provide other programmable functions (scenes, events, association, child lockout, etc.) when used with ASPIRE RF or other Z-Wave compliant controllers*.
+
+(*Note: some specific ASPIRE RF features may not be programmable)</MetaDataItem>
+    <MetaDataItem name="Name">ASPIRE RF 1000W Incandescent Smart Dimmer</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 May 2019" revision="1">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/760/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 May 2019" revision="2">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/761/xml</Entry>
+    </ChangeLog>
+  </MetaData>
+  <CommandClass id="112"/>
+</Product>

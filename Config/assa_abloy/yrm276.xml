@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Product Revision="1" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="Name">Yale Assure Lock for Andersen Patio Doors</MetaDataItem>
+    <MetaDataItem name="Description">Yale Assure Lock® is a secure, keyless lock developed by Yale exclusively available with Andersen Patio Doors (E-Series and A-Series hinged patio doors). Monitor, lock and unlock from anywhere with your Yale Assure Lock featuring Andersen’s VeriLock™ sensor technology and integrate into a compatible home automation or security system.</MetaDataItem>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0129:1604:8014</MetaDataItem>
+    <MetaDataItem name="ProductPage">https://shopyalehome.com/products/assure-lock-for-andersen-patio-doors-z-wave-plus-in-satin-nickel?_pos=9&amp;_sid=9cc5e3274&amp;_ss=r</MetaDataItem>
+    <MetaDataItem name="ProductSupport">https://support.shopyalehome.com/en_us/categories/getting-started-Sy5xA1Wyw</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/assa_abloy/yrm276.png</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://products.z-wavealliance.org/ProductManual/File?folder=&amp;filename=MarketCertificationFiles/2911/YRM276_YRM476-INST-FUL%20Rev%20A%20WEB_SystemGuide.pdf</MetaDataItem>
+    <MetaDataItem name="InclusionDescription">1. Enter the 4-8 digit master PIN code followed by the gear key.
+2. Press the 7 key followed by the gear key.
+3. Press the 1 key followed by the gear key.</MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">1. Enter the 4-8 digit master PIN code followed by the gear key.
+2. Press the 7 key followed by the gear key.
+3. Press the 3 key followed by the gear key.</MetaDataItem>
+    <MetaDataItem name="ResetDescription">Please use this procedure only when the network primary controller is missing or otherwise inoperable.
+When resetting the lock, all user codes, including the Master code, are deleted. All programming features are reset to the original default settings.
+1. Remove the battery cover and batteries.
+2. Remove the interior lock to access the reset button.
+3. The reset button is located above the cable connectors. PCB
+4. Re-insert 3 batteries and hold the reset button for 3 seconds.
+5. While still holding the reset button, insert the 4th battery, and hold the reset button for an additional 3 seconds.
+6. Release the reset button.</MetaDataItem>
+    <MetaDataItem id="1604" name="ZWProductPage" type="8014">https://products.z-wavealliance.org/products/2925</MetaDataItem>
+    <MetaDataItem id="1604" name="FrequencyName" type="8014">U.S. / Canada / Mexico</MetaDataItem>
+    <MetaDataItem id="1604" name="Identifier" type="8014">YRM276</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Nathan Spencer - natekspencer@gmail.com" date="17 January 2022" revision="1">Initial entry with data obtained from https://products.z-wavealliance.org/products/2925</Entry>
+    </ChangeLog>
+  </MetaData>
+  <CommandClass id="112">
+    <Value genre="config" index="1" label="Volume Mode" max="3" min="1" size="1" type="list" value="2">
+      <Help>Default is Low Volume</Help>
+      <Item label="High Volume" value="1"/>
+      <Item label="Low Volume" value="2"/>
+      <Item label="Silent" value="3"/>
+    </Value>
+    <Value genre="config" index="2" label="Auto Relock" max="255" min="0" size="1" type="list" value="0">
+      <Help>Default is Off</Help>
+      <Item label="Off" value="0"/>
+      <Item label="On" value="255"/>
+    </Value>
+    <Value genre="config" index="3" label="Auto Relock Time" max="180" min="1" size="1" type="byte" units="seconds" value="30">
+      <Help>1 to 180 seconds (default is 30)</Help>
+    </Value>
+    <Value genre="config" index="4" label="Wrong Code Entry Limit" max="10" min="3" size="1" type="byte" value="5">
+      <Help>3 to 10 (default is 5)</Help>
+    </Value>
+    <Value genre="config" index="5" label="Language" max="3" min="1" size="1" type="list" value="2">
+      <Help>Default is English</Help>
+      <Item label="English" value="1"/>
+      <Item label="Spanish" value="2"/>
+      <Item label="French" value="3"/>
+    </Value>
+    <Value genre="config" index="7" label="Shutdown Time (after wrong code entries)" max="180" min="10" size="1" type="byte" units="seconds" value="60">
+      <Help>10 to 180 seconds (default is 60)</Help>
+    </Value>
+    <Value genre="config" index="8" label="Operating Mode" max="2" min="0" size="1" type="list" value="0">
+      <Help>Normal (default)
+Vacation = keypad lockout
+Privacy = no keypad, RF Unlock will work</Help>
+      <Item label="Normal" value="0"/>
+      <Item label="Vacation" value="1"/>
+      <Item label="Privacy" value="2"/>
+    </Value>
+    <Value genre="config" index="11" label="One Touch Locking" max="255" min="0" size="1" type="list" value="255">
+      <Help>Default is On</Help>
+      <Item label="Off" value="0"/>
+      <Item label="On" value="255"/>
+    </Value>
+    <Value genre="config" index="12" label="Privacy Button" max="255" min="0" size="1" type="list" value="0">
+      <Help>Default is Off</Help>
+      <Item label="Off" value="0"/>
+      <Item label="On" value="255"/>
+    </Value>
+    <Value genre="config" index="13" label="Lock Status LED" max="255" min="0" size="1" type="list" value="0">
+      <Help>Default is Off</Help>
+      <Item label="Off" value="0"/>
+      <Item label="On" value="255"/>
+    </Value>
+    <Value genre="config" index="15" label="Reset To Factory Defaults" max="1" min="0" size="1" type="list">
+      <Help>No default value</Help>
+      <Item label="Lock will execute Reset To Factory" value="1"/>
+    </Value>
+    <Value genre="config" index="18" label="Door Propped Timer**" max="254" min="0" size="1" type="byte" units="seconds x 10" value="0">
+      <Help>10 to 2540 second. This value is represented as seconds X 10 (ie a value of 4 would mean a door propped timer of 40 seconds). Set to 0 to disable (default).
+
+**Optional Door Position Switch must hvae been installed with the lock.</Help>
+    </Value>
+    <Value genre="config" index="19" label="DPS Alarms**" max="255" min="0" size="1" type="list" value="0">
+      <Help>Used to enable/disable door condition alarms for locks that support a door position sensor. Any lock that does not support DPS will always report Off. Default is Off
+
+**Optional Door Position Switch must hvae been installed with the lock.</Help>
+      <Item label="Off" value="0"/>
+      <Item label="On" value="255"/>
+    </Value>
+    <Value genre="config" index="24" label="DPS Locking Protection**" max="255" min="0" size="1" type="list" value="0">
+      <Help>Off (default) = The lock will always lock regardless of DPSstate
+On = Check DPS before motorized lock function
+
+**Optional Door Position Switch must hvae been installed with the lock.</Help>
+      <Item label="Off" value="0"/>
+      <Item label="On" value="255"/>
+    </Value>
+  </CommandClass>
+  <CommandClass id="133">
+    <Associations num_groups="1">
+      <Group index="1" label="LifeLine" max_associations="5"/>
+    </Associations>
+  </CommandClass>
+</Product>

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Product xmlns='https://github.com/OpenZWave/open-zwave' Revision="2">
+  <!-- Multi-Instance configuration -->
+  <CommandClass id="96">
+  	<Compatibility>
+  		<EndpointHint>4</EndpointHint>
+  	</Compatibility>
+  </CommandClass>
+</Product>

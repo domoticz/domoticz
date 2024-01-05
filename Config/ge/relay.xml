@@ -1,0 +1,40 @@
+<Product Revision="10" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0063:3533:5257</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/ge/relay.png</MetaDataItem>
+    <MetaDataItem id="3533" name="ZWProductPage" type="5257">https://products.z-wavealliance.org/products/1222/</MetaDataItem>
+    <MetaDataItem name="ProductPage">http://www.ezzwave.com</MetaDataItem>
+    <MetaDataItem name="Description">3-way relay wall switch - Toggle Style - light almond color</MetaDataItem>
+    <MetaDataItem name="ProductSupport">http://www.jascoproducts.com/support/</MetaDataItem>
+    <MetaDataItem id="3533" name="Identifier" type="5257">45760</MetaDataItem>
+    <MetaDataItem name="Name">Jasco In-Wall ON/OFF, Toggle, Almond (45760)</MetaDataItem>
+    <MetaDataItem id="3533" name="FrequencyName" type="5257">U.S. / Canada / Mexico</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 May 2019" revision="3">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/653/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 May 2019" revision="4">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/725/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 May 2019" revision="5">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/841/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 May 2019" revision="6">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/845/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="08 May 2019" revision="7">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1196/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="08 May 2019" revision="8">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1213/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="08 May 2019" revision="9">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1219/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="08 May 2019" revision="10">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1222/xml</Entry>
+    </ChangeLog>
+    <MetaDataItem id="3032" name="ZWProductPage" type="4952">https://products.z-wavealliance.org/products/1196/</MetaDataItem>
+    <MetaDataItem id="3032" name="FrequencyName" type="4952">U.S. / Canada / Mexico</MetaDataItem>
+    <MetaDataItem id="3032" name="Identifier" type="4952">12722 / ZW4005</MetaDataItem>
+  </MetaData>
+  <!-- Configuration Parameters -->
+  <CommandClass id="112">
+    <Value genre="config" index="3" label="LED Light" max="2" min="0" size="1" type="list" value="0">
+      <Help>Sets when the LED on the switch is lit.</Help>
+      <Item label="LED on when light off" value="0"/>
+      <Item label="LED on when light on" value="1"/>
+      <Item label="LED always off" value="2"/>
+    </Value>
+    <Value genre="config" index="4" label="Invert Switch" size="1" type="list" value="0">
+      <Help>Change the top of the switch to OFF and the bottom of the switch to ON.</Help>
+      <Item label="No" value="0"/>
+      <Item label="Yes" value="1"/>
+    </Value>
+  </CommandClass>
+</Product>

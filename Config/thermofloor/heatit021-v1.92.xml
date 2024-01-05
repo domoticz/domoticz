@@ -1,0 +1,221 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Product Revision="1"
+	xmlns="https://github.com/OpenZWave/open-zwave">
+	<MetaData>
+		<MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/019B:0201:0003</MetaDataItem>
+		<MetaDataItem name="ProductPic">images/thermofloor/heatit021.png</MetaDataItem>
+		<MetaDataItem id="0201" name="ZWProductPage" type="0003">https://products.z-wavealliance.org/products/1234/</MetaDataItem>
+		<MetaDataItem name="Description">Heatit Z-Wave is an electronic thermostat for mounting in a standard wall box. The thermostat has a built-in Z-Wave chip that 
+can be connected to Home Automation systems like Fibaro, Sensio, Vera, Zipato and others.
+The display will show the actual room temperature. By pressing the buttons, the display will show the set value.
+Heatit Z-Wave is equipped with a single-pole switch.
+The thermostat can handle loads up to 16A/3600Wat 230V. If the load is greater than this, the thermostat needs to be connected to a contactor. It can be used with two external temperature sensors.
+
+FUNCTIONS
+• Room sensor
+• Floor sensor
+• Temperature limiter
+• Power regulator
+• Z-Wave chip 500 series
+• Week program/setback temperature via gateway
+• Setback mode
+• 7-segment LCD-screen
+• Can be used in connection with diff erent NTC-sensors
+• Lock mode/child lock
+• Backlight
+• Calibration
+• 8 scenarios
+CONNECTION CLAMPS
+Use 1,5 mm² or 2,5 mm² cables according to power need.
+TECHNICAL DATA
+Display LED-display 3x 7-Seg 13.2mm CA white
+Rated voltage: 230V 50/60Hz
+Max. load: 3600W
+Max. current: 16A
+Power consumption: 1,5W
+Protection class: IP21
+Min/Max installation temp: -20°C to 40°C
+Min/Max operating temp: 5°C to 40°C
+Temperature range +5°C/+40°C
+Displayed temperature -30°C …. 60°C
+Floor min. limit 5°C (5°C…35°C)
+Floor max. limit 35°C (5°C…35°C)
+Air min. limit 5°C (5°C…40°C)
+Air max. limit 35°C (5°C…40°C)
+Regulator min. limit 0 (0…9)
+Power regulator P02 (P00…P10) cycle of 30 minutes
+Temperature setback Adjustable within temperature range.
+Temperature setback activation Pilot wire/Z-Wave user interface
+Hysteresis: 0,5°C
+Sensor values: 0°C 29,1 kOhm
+10°C 18,6 kOhm
+15°C 15,1 kOhm
+20°C 12,2 kOhm
+25°C 10,0 kOhm
+Switch: Single-pole
+Standard Color White RAL 9003 – Black RAL 9011
+Approvals CE – FIMKO - Z-Wave Plus
+		</MetaDataItem>
+		<MetaDataItem name="ExclusionDescription">INCLUSION/EXCLUSION
+To include the thermostat to your home automation gateway, press Center (confirm) for 10 seconds.
+The display will show OFF. Press Right (down) 4 times till you see Con in the display.
+Now start add device in your home automation software. Start inclusion mode by pressing Center (confirm) for approximately
+2 seconds. The inclusion/exclusion icon will appear in the display. Confirmation will show Inc/EcL in the display. If inclusion
+fails, Err (error) will appear.
+Leave programming mode by choosing ESC in menu. Your thermostat is ready for use with default settings.</MetaDataItem>
+		<MetaDataItem name="ProductManual">https://products.z-wavealliance.org/ProductManual/File?folder=&amp;filename=MarketCertificationFiles/1182/Manual_Multireg%20Z-Wave_Ver2015-A.pdf</MetaDataItem>
+		<MetaDataItem id="0001" name="FrequencyName" type="0001">CEPT (Europe)</MetaDataItem>
+		<MetaDataItem name="Name">Heatit Z-Wave</MetaDataItem>
+		<MetaDataItem id="0001" name="Identifier" type="0001">TF021</MetaDataItem>
+		<MetaDataItem name="ResetDescription">FACTORY RESET - RES
+By pressing buttons Left and Center (up and confirm) for 20 seconds, the thermostat will perform a complete factory reset.
+NB! Please use this procedure only when the primary controller is missing or otherwise inoperable.</MetaDataItem>
+		<MetaDataItem name="InclusionDescription">INCLUSION/EXCLUSION
+To include the thermostat to your home automation gateway, press Center (confirm) for 10 seconds.
+The display will show OFF. Press Right (down) 4 times till you see Con in the display.
+Now start add device in your home automation software. Start inclusion mode by pressing Center (confirm) for approximately
+2 seconds. The inclusion/exclusion icon will appear in the display. Confirmation will show Inc/EcL in the display. If inclusion
+fails, Err (error) will appear.
+Leave programming mode by choosing ESC in menu. Your thermostat is ready for use with default settings.</MetaDataItem>
+		<MetaDataItem name="WakeupDescription">If Er2 appears in the display, touch any button to restart the display.</MetaDataItem>
+		<ChangeLog>
+			<Entry author="Pål Kristensen - paalkr77@gmail.com" date="11 January 2021" revision="1">Initial release</Entry>
+		</ChangeLog>
+	</MetaData>
+
+	<CommandClass id="32">
+		<Compatibility>
+			<Mapping>37</Mapping>
+		</Compatibility>
+	</CommandClass>
+	<CommandClass id="49">
+		<Value type="decimal" genre="user" instance="1" index="1" label="Internal Air Temperature Sensor" units="C" read_only="true" write_only="false"/>
+		<Value type="decimal" genre="user" instance="2" index="1" label="External Air Temperature Sensor" units="C" read_only="true" write_only="false"/>
+		<Value type="decimal" genre="user" instance="3" index="1" label="External Floor Temperature Sensor" units="C" read_only="true" write_only="false"/>
+		<Compatibility>
+			<Base>0</Base>
+			<CreateVars>true</CreateVars>
+		</Compatibility>
+	</CommandClass>
+	<CommandClass id="64">
+		<Value genre="user" index="0" instance="1" label="Mode" max="0" min="0" read_only="false" size="1" type="list" units="" value="0" write_only="false">
+			<Item label="Off" value="0"/>
+			<Item label="Heat" value="1"/>
+			<Item label="Cool" value="2"/>
+			<Item label="Energy Heat" value="11"/>
+		</Value>
+		<SupportedModes>
+			<Mode index="0" label="Off"/>
+			<Mode index="1" label="Heat"/>
+			<Mode index="2" label="Cool"/>
+			<Mode index="11" label="Energy Heat"/>
+		</SupportedModes>
+	</CommandClass>
+
+	<CommandClass id="67">
+		<Instance index="1"/>
+		<Value type="decimal" genre="user" instance="1" index="1" label="Heating" units="C" read_only="false" write_only="false" min="0" max="0" value="20"/>
+		<Value type="decimal" genre="user" instance="1" index="2" label="Cooling" units="C" read_only="false" write_only="false" min="0" max="0" value="21"/>
+		<Value type="decimal" genre="user" instance="1" index="11" label="Energy Heat" units="C" read_only="false" write_only="false" min="0" max="0" value="16"/>
+		<Compatibility>
+			<Base>0</Base>
+			<CreateVars>true</CreateVars>
+		</Compatibility>
+	</CommandClass>
+
+	<CommandClass id="112">
+		<Value type="list" genre="config" index="1" label="Operation mode" value="1" size="1">
+			<Help>Set operation mode</Help>
+			<Item label="Off" value="0"/>
+			<Item label="Heat" value="1"/>
+			<Item label="Cool" value="2"/>
+			<Item label="Energy save heat" value="11"/>
+		</Value>
+		<Value type="list" genre="config" index="2" label="Sensor mode" value="1" size="1">
+			<Help>Set sensor mode</Help>
+			<Item label="F - Floor sensor" value="0"/>
+			<Item label="A - Internal room sensor" value="1"/>
+			<Item label="AF - Internal room sensor and floor sensor" value="2"/>
+			<Item label="A2 - External room sensor" value="3"/>
+			<Item label="P - Power regulator" value="4"/>
+			<Item label="FP - Floor sensor and power regulator" value="5"/>
+		</Value>
+		<Value type="list" genre="config" index="3" label="Floor sensor type" value="0" size="1">
+			<Help>Floor sensor type (10K NTC Default)</Help>
+			<Item label="10k ntc" value="0"/>
+			<Item label="12k ntc" value="1"/>
+			<Item label="15k ntc" value="2"/>
+			<Item label="22k ntc" value="3"/>
+			<Item label="33k ntc" value="4"/>
+			<Item label="47k ntc" value="5"/>
+		</Value>
+		<Value type="byte" index="4" genre="config" label="DIFF l. Temperature control Hysteresis" min="0" max="30" size="1" value="5">
+			<Help>0-30 (0,3C - 3.0C)</Help>
+		</Value>
+		<Value type="short" index="5" genre="config" label="FLo: Floor min limit" min="50" max="400" size="2" value="50">
+			<Help>50-400 (5.0C - 40.0C)</Help>
+		</Value>
+		<Value type="short" index="6" genre="config" label="FHi: Floor max limit" min="50" max="400" size="2" value="400">
+			<Help>50-400 (5.0C - 40.0C)</Help>
+		</Value>
+		<Value type="short" index="7" genre="config" label="ALo: Air min limit" min="50" max="400" size="2" value="50">
+			<Help>50-400 (5.0C - 40.0C)</Help>
+		</Value>
+		<Value type="short" index="8" genre="config" label="AHi: Air max limit" min="50" max="400" size="2" value="400">
+			<Help>50-400 (5.0C - 40.0C)</Help>
+		</Value>
+		<Value type="byte" index="9" genre="config" label="PLo: Min power in FP-mode" min="0" max="9" size="1" value="0">
+			<Help>Min power 0-9 in FP-mode (Floor sensor and power regulator mode)</Help>
+		</Value>
+		<Value type="short" genre="config" instance="1" index="10" label="CO mode setpoint" size="2" min="50" max="400" value="210">
+			<Help>50-400 (5.0C - 40.0C)</Help>
+		</Value>
+		<Value type="short" genre="config" instance="1" index="11" label="ECO mode setpoint" size="2" min="50" max="400" value="180">
+			<Help>50-400 (5.0C - 40.0C)</Help>
+		</Value>
+		<Value type="byte" index="12" genre="config" label="P setting" min="0" max="10" size="1" value="2">
+			<Help>Power 0-10 in P-mode (Power regulator mode)</Help>
+		</Value>
+		<Value type="short" genre="config" instance="1" index="13" label="COOL setpoint" size="2" min="50" max="400" value="210">
+			<Help>Only if cooling is enabled. 50-400 (5.0C - 40.0C)</Help>
+		</Value>
+		<Value type="byte" index="14" genre="config" label="Room sensor calibration" min="0" max="40" size="1" value="0">
+			<Help>Temperature correction 0 - 4.0C (Default: 0). For positive value 40 = 4.0C. Negative value is not working (Adjust negativ calibration on thermostat)</Help>
+		</Value>
+		<Value type="byte" index="15" genre="config" label="Floor sensor calibration" min="0" max="40" size="1" value="0">
+			<Help>Temperature correction 0 - 4.0C (Default: 0). For positive value 40 = 4.0C. Negative value is not working (Adjust negativ calibration on thermostat)</Help>
+		</Value>
+		<Value type="byte" index="16" genre="config" label="External sensor calibration" min="0" max="40" size="1" value="0">
+			<Help>Temperature correction 0 - 4.0C (Default: 0). For positive value 40 = 4.0C. Negative value is not working (Adjust negativ calibration on thermostat)</Help>
+		</Value>
+		<Value type="short" index="17" genre="config" label="Temperature report interval" min="0" max="8640" size="2" value="6">
+			<Help> 0 (Report disabled) 1-8640 Multiply with 10 seconds, 10 seconds - 24 hours. Default is 6 (60 seconds)</Help>
+		</Value>
+		<Value type="byte" index="18" genre="config" label="Temperature report hysteresis" min="1" max="100" size="1" value="10">
+			<Help>1-100 (0.1C - 10C). Default is 10 (1.0C)</Help>
+		</Value>
+	</CommandClass>
+	<CommandClass id="133">
+		<Associations num_groups="5">
+			<Group index="1" max_associations="2" label="Lifeline"/>
+			<Group index="2" max_associations="2" label="On/Off control"/>
+			<Group index="3" max_associations="2" label="Multilevel sensor reports - Internal sensor" auto="true" />
+			<Group index="4" max_associations="2" label="Multilevel sensor reports - External sensor" />
+			<Group index="5" max_associations="2" label="Multilevel sensor reports - Floor sensor" auto="true" />
+		</Associations>
+	</CommandClass>
+
+	<!-- COMMAND_CLASS_MULTI_CHANNEL_ASSOCIATION_V2-->
+	<CommandClass id="142">
+		<Compatibility>
+			<ForceInstances>true</ForceInstances>
+		</Compatibility>
+	</CommandClass>
+
+	<!--COMMAND_CLASS_MULTI_CHANNEL_V2 Map endpoints to instances -->
+	<CommandClass id="96">
+		<Compatibility>
+			<MapRootToEndpoint>true</MapRootToEndpoint>
+		</Compatibility>
+	</CommandClass>
+</Product>

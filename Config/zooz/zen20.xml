@@ -1,0 +1,44 @@
+<Product Revision="2" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/015D:F51C:0651</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/zooz/zen20.png</MetaDataItem>
+    <MetaDataItem id="F51C" name="ZWProductPage" type="0651">https://products.z-wavealliance.org/products/1646/</MetaDataItem>
+    <MetaDataItem id="F51C" name="FrequencyName" type="0651">U.S. / Canada / Mexico</MetaDataItem>
+    <MetaDataItem name="InclusionDescription">1. Follow the instructions for your Z-Wave certified controller to include a device to   
+  the Z-Wave network.
+2. Once the controller is ready to include your device, press up and release the toggle 
+  to include it in the network.
+3. Once your controller has confirmed that the device has been included, refresh the 
+  Z-Wave network to optimize performance.
+4. The device is associated in the same group when it included in setting process. 
+  Now you can control your Z-Wave device according to groups, scenes, schedules and automation programmed.
+</MetaDataItem>
+    <MetaDataItem name="Description">The 5 outlets power strip provides five Z-Wave outlets for remote controlled by controller through Z-Wave gateway for internet of thing service and can be configured in Z-Wave sensor network, if Z-Wave certified controller features remote access, you can now control five outlets from your mobile phone each one. Five outlets can
+manual On/Off the same time by push button. The two USB ports provide 5V/2.1A charging power for MP3/ mobile phone.etc..
+</MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">1. Follow the instructions for your Z-Wave certified controller to exclude a device 
+  from the Z-Wave network.
+2. Once the controller is ready to Exclude your device, press up and release the toggle 
+  to exclude it from the network.
+</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://Products.Z-WaveAlliance.org/ProductManual/File?folder=&amp;filename=Manuals/1646/ZW1505-Manual0130.pdf</MetaDataItem>
+    <MetaDataItem name="ResetDescription">1. Press and hold the top button for at least 3 seconds while you plug the smart 
+  switch into a receptacle.
+2. Use this procedure only in the event that the network primary controller is missing 
+  or otherwise inoperable.
+</MetaDataItem>
+    <MetaDataItem name="Name">5 Outlet Power Strip with USB charger</MetaDataItem>
+    <MetaDataItem id="F51C" name="Identifier" type="0651">ZW 1505</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="24 May 2019" revision="2">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1646/xml</Entry>
+    </ChangeLog>
+  </MetaData>
+  <!-- Configuration Parameters -->
+  <CommandClass id="112"></CommandClass>
+  <!-- Association Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="1">
+      <Group index="1" label="Lifeline" max_associations="5"/>
+    </Associations>
+  </CommandClass>
+</Product>

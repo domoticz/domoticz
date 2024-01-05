@@ -1,0 +1,32 @@
+<!-- FortrezZ WV-01 Automated Water Shut-Off Valve --><Product Revision="4" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0084:020C:0213</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/fortrezz/wv01.png</MetaDataItem>
+    <MetaDataItem id="020C" name="ZWProductPage" type="0213">https://products.z-wavealliance.org/products/178/</MetaDataItem>
+    <MetaDataItem id="020C" name="Identifier" type="0213">WV-01_1002</MetaDataItem>
+    <MetaDataItem name="Description">Professional grade, electrically operated water shutoff valve that is Z-Wave Wireless compatible</MetaDataItem>
+    <MetaDataItem name="Name">FortrezZ Wireless Water Valve</MetaDataItem>
+    <MetaDataItem id="020C" name="FrequencyName" type="0213">U.S. / Canada / Mexico</MetaDataItem>
+    <MetaDataItem name="ProductPage">http://www.fortrezz.com/wv01.html</MetaDataItem>
+    <MetaDataItem name="ProductSupport">http://www.fortrezz.com/</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 May 2019" revision="2">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/178/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 May 2019" revision="3">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/817/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 May 2019" revision="4">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/818/xml</Entry>
+    </ChangeLog>
+    <MetaDataItem id="0216" name="ZWProductPage" type="0243">https://products.z-wavealliance.org/products/818/</MetaDataItem>
+    <MetaDataItem id="0216" name="FrequencyName" type="0243">U.S. / Canada / Mexico</MetaDataItem>
+    <MetaDataItem id="0216" name="Identifier" type="0243">Wireless Water Valve</MetaDataItem>
+  </MetaData>
+  <!-- Configuration -->
+  <CommandClass id="112">
+    <Value genre="config" index="0" label="Mode" max="255" min="0" size="1" type="list" value="0">
+      <Help></Help>
+      <Item label="Water Alarm" value="0"/>
+      <Item label="Water Level" value="255"/>
+    </Value>
+    <Value genre="config" index="1" instance="1" label="Water Level timeout" max="32767" min="0" type="short" units="minutes" value="60">
+      <Help></Help>
+    </Value>
+  </CommandClass>
+</Product>

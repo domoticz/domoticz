@@ -1,0 +1,153 @@
+<!-- D-Link: DCH-Z120 --><Product Revision="3" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0108:000D:0002</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/dlink/dch-z120.png</MetaDataItem>
+    <MetaDataItem id="000D" name="ZWProductPage" type="0002">https://products.z-wavealliance.org/products/1152/</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://Products.Z-WaveAlliance.org/ProductManual/File?folder=&amp;filename=Manuals/1152/D-Link DCH-Z110_120 manual.pdf</MetaDataItem>
+    <MetaDataItem id="000D" name="FrequencyName" type="0002">CEPT (Europe)</MetaDataItem>
+    <MetaDataItem name="WakeupDescription">There are two tamper keys in the device, one is in the back side, another is in the front side.  Both of them  can add,  remove, reset or association from Z-Wave network.
+Press any key once, the device will awake 10 seconds.</MetaDataItem>
+    <MetaDataItem name="Description">The mydlink Z-Wave Motion Sensor DCH-Z120 has PIR, temperature and illumination, 3 sensors function in one,based on Z-Wave technology.</MetaDataItem>
+    <MetaDataItem name="InclusionDescription">There are two tamper keys in the device, one is in the back side, another is in the front side.  Both of them  can add,  remove, reset or association from Z-Wave network.
+To add into a Z-Wave network: 
+1. Have Z-Wave  Controller entered inclusion mode.
+2. Pressing tamper key three times within 1.5 seconds to enter the inclusion mode.
+3. After add successful, the device will wake to receive the setting command from Z-Wave Controller about 20 seconds.</MetaDataItem>
+    <MetaDataItem id="000D" name="Identifier" type="0002">DCH-Z120</MetaDataItem>
+    <MetaDataItem name="Name">D-Link Z-Wave Motion Sensor</MetaDataItem>
+    <MetaDataItem name="ResetDescription">There are two tamper keys in the device, one is in the back side, another is in the front side.  Both of them  can add,  remove, reset or association from Z-Wave network.
+To reset the device: 
+Notice: Use this procedure only in the event that the primary controller is lost or otherwise inoperable.
+1. Pressing tamper key four times within 1.5 seconds and do not release the tamper key in the 4th  pressed, and the LED will light ON.
+2. After 3 seconds the LED will turn OFF, after that within 2 seconds, release the tamper key. If successful, the LED will light ON one second. Otherwise, the LED will flash once.
+3. IDs are excluded and all settings will reset to factory default.</MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">There are two tamper keys in the device, one is in the back side, another is in the front side.  Both of them  can add,  remove, reset or association from Z-Wave network.
+To remove the device from a Z-Wave network: 
+1. Have Z-Wave  Controller entered exclusion mode.
+2. Pressing tamper key three times within 1.5 seconds to enter the exclusion mode.
+Node ID has been excluded.</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="08 May 2019" revision="3">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1152/xml</Entry>
+    </ChangeLog>
+  </MetaData>
+  <!-- Configuration Parameters -->
+  <CommandClass id="112">
+    <Value genre="config" index="2" label="Basic Set Level" max="255" min="0" type="byte" value="255">
+      <Help>
+          Set the BASIC command value to turn on the light.
+          255: always turn on the light. 
+          For dimmer equipment 1 to 100 means the light strength. 0 means turn off the light.
+	  </Help>
+    </Value>
+    <Value genre="config" index="3" label="PIR Sensitivity" max="99" min="0" type="byte" value="80">
+      <Help>
+          PIR sensitivity settings.
+          0 means disable the PIR motion.
+          1 means the lowest sensitivity.
+          99 means the highest sensitivity.
+          High sensitivity means the sensor can detect over a long distance, but if there is more noise signal in the environment, it will re-trigger too frequently.
+	  </Help>
+    </Value>
+    <Value genre="config" index="4" label="Light threshold" max="100" min="0" type="byte" value="99">
+      <Help>
+          Set the illumination threshold to turn on the light. When the event is triggered and the environment illumination is lower than the threshold, the device will turn on the light.
+          0 means turn off illumination detected function and never turn on the light.
+          1 means darkest.
+          99 means brightest.
+          100 means turn off illumination detected function. And always turn on the light.
+          * Notice * in none test mode, only the value in 1 to 99 will enable the illumination detected function and update the illumination value.
+       </Help>
+    </Value>
+    <Value genre="config" index="5" label="Operation Mode" max="127" min="0" type="byte" value="0">
+      <Help>
+          Bit 0: Reserved 
+          Bit 1: 1 means test mode, 0 means normal mode.
+           Notice: This bit only effect by the DIP Switch setting to customer mode, otherwise it decides by DIP Switch setting to Test or Normal Mode.
+          Bit 2: Reserved
+          Bit 3: Setting the temperature scale. 0: Fahrenheit, 1:Celsius. 
+          Bit 4: Disable the illumination report after event triggered (1: Disable, 0: Enable). 
+          Bit 5: Disable the temperature report after event triggered (1: Disable, 0: Enable).
+          Bit 6: Reserved.
+          Bit 7: Disable the back key release into test mode. (1: Disable, 0: Enable)
+          Note: All default to 0.
+       </Help>
+    </Value>
+    <Value genre="config" index="6" label="Multi-Sensor Function Switch" max="127" min="0" type="byte" value="4">
+      <Help>
+          Multi-Sensor Function switch. Using bit to control.
+          Bit 0: Reserved. (Default: 0)
+          Bit 1: Disable PIR integrate Illumination to turn ON the lighting nodes in the association group 2. (1:Disable, 0:Enable) (Default: 0)
+          Bit 2: Reserved always 1
+          Bit 3: Reserved always 0
+          Bit 4: Reserved always 0 
+          Bit 5: Reserved always 0
+          Bit 6: Reserved always 0
+          Bit 7: Reserved always 0
+	  </Help>
+    </Value>
+    <Value genre="config" index="7" label="Customer Function" max="127" min="0" type="byte" value="4">
+      <Help>
+          Customer function switch, using bit control. 
+          Bit 0: Reserved always 0. 
+          Bit 1: Enable sending motion OFF report. Note: Depends on the Bit4, 0: Report Notification CC, Type: 0x07, Event: 0xFE 1: Sensor Binary Report, Type: 0x0C, Value: 0x00.  (Default: 0)
+          Bit 2: Enable PIR super sensitivity mode. (Default: 1) 
+          Bit 3: Reserved always 0
+          Bit 4: Notification Type, 0: Using Notification Report. 1: Using Sensor Binary Report. (Default: 0)
+          Bit 5: Disable Multi CC in auto report. (Default: 0)
+          Bit 6: Disable to report battery state when the device triggered. (1:Disable, 0:Enable) (Default: 0) 
+          Bit 7: Reserved always 0.
+       </Help>
+    </Value>
+    <Value genre="config" index="8" label="PIR Re-Detect Interval Time" max="127" min="1" type="byte" units="8 sec" value="3">
+      <Help>
+          In the normal mode, after the PIR motion detected, setting the re-detect time. 8 seconds per tick, default tick is 3 (24 seconds). Set a suitable value to prevent receiving the trigger signal too frequently. Also can save the battery energy. Notice: If this value bigger than the configuration setting NO. 9 there will be a period after the light turned off where the PIR is not detecting.
+       </Help>
+    </Value>
+    <Value genre="config" index="9" label="Turn Off Light Time" max="127" min="0" type="byte" units="8 sec" value="4">
+      <Help>
+          After turn on the lighting, setting the delay time to turn off the lighting when the PIR motion is not detected. 
+          8 seconds per tick, default tick is 4 (32 seconds). 0 means never send turn off light command.
+       </Help>
+    </Value>
+    <Value genre="config" index="10" label="Auto Report Battery Time" max="127" min="0" type="byte" units="30 min" value="12">
+      <Help>
+          The interval time for auto report the battery level. 0 means turn off auto report battery. The default value is 12. The tick time can be set by the configuration No.20.
+      </Help>
+    </Value>
+    <Value genre="config" index="12" label="Auto Report Illumination Time" max="127" min="0" type="byte" units="30 min" value="12">
+      <Help>
+          The interval time for auto reporting of the illumination. 0 means turn off auto report illumination. The default value is 12. The tick time can be set by the configuration No.20.
+      </Help>
+    </Value>
+    <Value genre="config" index="13" label="Auto Report Temperature time" max="127" min="0" type="byte" units="30 min" value="12">
+      <Help>
+          The interval time for auto report the temperature. 0 means turn off auto report temperature. The default value is 12. The tick time can be set by the configuration No.20.
+      </Help>
+    </Value>
+    <Value genre="config" index="20" label="Auto Report Tick Interval" max="255" min="0" type="byte" units="mins" value="30">
+      <Help>
+          The interval time for auto report each tick. Setting this configuration will effect configuration No.10, No.11, No.12 and No.13. Caution: Setting to 0 means turn off all auto report function. Default is 30 minutes
+      </Help>
+    </Value>
+    <Value genre="config" index="21" label="Temperature Differential Report" max="127" min="0" type="byte" units="deg F" value="1">
+      <Help>
+          The temperature differential to report. 0 means turn off this function. The unit is Fahrenheit. Enable this function the device will detect every minutes. And when the temperature is over 140 degree Fahrenheit, it will continue report. Enable this functionality will cause some issue please see the detail in the "Temperature Report" section.
+      </Help>
+    </Value>
+    <Value genre="config" index="22" label="Illumination Differential Report" max="99" min="0" type="byte" units="%" value="0">
+      <Help>
+          The illumination differential to report.0 means turn off this function. The unit is percentage. Enable this function the device will detect every minutes. Enable this functionality will cause some issue please see the detail in the "Illumination Report" section.
+      </Help>
+    </Value>
+  </CommandClass>
+  <!-- Basic set as report -->
+  <!-- <CommandClass id="32" setasreport="true" ignoremapping="true"/> -->
+ 
+  <!-- Association Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="2">
+      <Group index="1" label="Reports" max_associations="8"/>
+      <Group index="2" label="Light Control" max_associations="8"/>
+    </Associations>
+  </CommandClass>
+</Product>

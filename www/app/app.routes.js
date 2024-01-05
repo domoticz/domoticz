@@ -228,6 +228,11 @@ define(['angularAMD', 'angular', 'angular-route'], function (angularAMD) {
                 controller: 'WeatherController',
                 controllerAs: 'ctrl'
             }))
+            .when('/ZWaveTopology', angularAMD.route({
+                templateUrl: 'zwavetopology.html',
+                controller: 'ZWaveTopologyController',
+                permission: 'Admin'
+            }))
             .when('/Mobile', angularAMD.route({
                 templateUrl: 'views/mobile_notifications.html',
                 controller: 'MobileNotificationsController',

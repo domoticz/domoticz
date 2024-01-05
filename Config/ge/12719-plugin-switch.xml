@@ -1,0 +1,25 @@
+<!-- 
+GE Z-Wave Plug-in Smart Switch 12719 (ZW4101) 
+https://products.z-wavealliance.org/products/1193
+ --><Product Revision="3" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0063:3031:5052</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/ge/12719-plugin-switch.png</MetaDataItem>
+    <MetaDataItem id="3031" name="ZWProductPage" type="5052">https://products.z-wavealliance.org/products/1210/</MetaDataItem>
+    <MetaDataItem id="3031" name="Identifier" type="5052">45703</MetaDataItem>
+    <MetaDataItem id="3031" name="FrequencyName" type="5052">U.S. / Canada / Mexico</MetaDataItem>
+    <MetaDataItem name="ProductPage">http://www.ezzwave.com</MetaDataItem>
+    <MetaDataItem name="Name">Jasco Lighting and Small Appliance Module (45703)</MetaDataItem>
+    <MetaDataItem name="Description">Florescent Light and Appliance Module</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="08 May 2019" revision="2">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1193/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="08 May 2019" revision="3">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1210/xml</Entry>
+    </ChangeLog>
+  </MetaData>
+  <!-- Association Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="1">
+      <Group index="1" label="Lifeline" max_associations="1"/>
+    </Associations>
+  </CommandClass>
+</Product>

@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Product Revision="2"
+  xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="Name">Yale Pro SL Key-Free Deadbolt (YRD136 or YRD156)</MetaDataItem>
+    <MetaDataItem name="Description">Never worry about the hassle of carrying around or losing your keys again. Lock and unlock your home with ease from the back-lit keypad. Create unique entry codes for friends, family, service providers, and renters. The YRD136 has Z-Wave Plus built in so you can easily integrate it into a compatible smart home or alarm system with one-touch enrollment. </MetaDataItem>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0129:803b:0508</MetaDataItem>
+    <MetaDataItem name="ProductPage">https://us.yalehome.com/en/yalehome-products/yale-pro-sl-yrd156yrd136/yale-pro-sl-yrd156yrd136/prosl/</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/assa_abloy/ProSLKey-FreeDeadbolt.png</MetaDataItem>
+	<MetaDataItem name="ProductManual">https://products.z-wavealliance.org/ProductManual/File?folder=&amp;filename=MarketCertificationFiles/3446/YRD136%20FINAL-compressed%20(1).pdf</MetaDataItem>
+    <MetaDataItem name="InclusionDescription">
+	1. Remove the battery cover.
+	2. Press button and hold until unit beeps two (2) times.
+	3. Release button and network joining automatically begins.
+	4. Replace battery cover.
+	</MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">
+	1. Remove the battery cover.
+	2. Press button and hold until unit beeps five (5) times.
+	3. Release button and network removal automatically begins.
+	4. Replace battery cover.
+	</MetaDataItem>
+    <MetaDataItem id="0508" name="ZWProductPage" type="803b">https://products.z-wavealliance.org/products/3446/</MetaDataItem>
+    <MetaDataItem id="0508" name="FrequencyName" type="803b">U.S. / Canada / Mexico</MetaDataItem>
+    <MetaDataItem id="0508" name="Identifier" type="803b">YRD136</MetaDataItem>
+	<ChangeLog>
+      <Entry author="Matthew Grimes - https://github.com/cybergrimes" date="18 January 2021" revision="1">Initial product configuration</Entry>
+	  <Entry author="Jean-François Auger - nechry@gmail.com" date="22 January 2021" revision="2">Fix metadata</Entry>	 
+  	</ChangeLog>
+  </MetaData>
+ 
+
+    <!-- Configuration -->
+    <CommandClass id="112">
+		<Value type="list" size="1" genre="config" instance="1" index="1" label="Audio Mode" value="3">
+			<Help>Disable the door sensor alarm function.</Help>
+			<Item label="On" value="1" />
+			<Item label="Off" value="3" />
+		</Value>
+		<Value type="list" size="1" genre="config" instance="1" index="2" label="Auto Relock" value="0">
+			<Help></Help>
+			<Item label="Off" value="0" />
+			<Item label="On" value="255" />
+		</Value>
+		<Value type="byte" genre="config" instance="1" index="3" label="Re-lock Time" size="1" min="10" max="180" units="seconds" value="30">
+			<Help>seconds; after successful code entry and unit unlocks, it will automatically re-lock after specified time (30 = default value)</Help>
+		</Value>
+		<Value type="list" size="1" genre="config" instance="1" index="4" label="Wrong Code Entry Limit" min="3" max="10" value="5">
+			<Help>
+			The number of invalid code entries lock will accept before sending TAMPER Alarm. 
+			When number of wrong code entries is exceeded, lock will disable keypad for the time specified by Shutdown Time parameter. (5 = default)
+			</Help>
+			<Item label="3" value="3" />
+			<Item label="4" value="4" />
+			<Item label="5" value="5" />
+			<Item label="6" value="6" />
+			<Item label="7" value="7" />
+			<Item label="8" value="8"/>
+			<Item label="9" value="9"/>
+			<Item label="10" value="10"/>
+		</Value>
+		<Value type="byte" genre="config" instance="1" index="7" label="Shutdown Time" size="1" min="10" max="180" units="seconds" value="60">
+			<Help>number of seconds unit will be inoperable after number of wrong code entries is exceeded (60 = default)</Help>
+		</Value>
+		<Value type="list" size="1" genre="config" instance="1" index="8" label="Operating Mode" min="0" max="1" value="0">
+			<Help>
+			Normal Mode: Master code and all user codes enabled (default).
+            Vacation Mode: Master code enabled, all user codes disabled.
+		    </Help>
+			<Item label="Normal" value="0" />
+			<Item label="Vacation" value="1" />			
+		</Value>
+		<Value type="list" size="1" genre="config" instance="1" index="11" label="One Touch Locking" value="255">
+			<Help></Help>
+			<Item label="Off" value="0"/>
+			<Item label="On" value="255"/>
+		</Value>
+		<Value type="list" size="1" genre="config" instance="1" index="13" label="Lock Status LED" value="0">
+			<Help></Help>
+			<Item label="Off" value="0"/>
+			<Item label="On" value="255"/>
+		</Value>
+		<Value type="list" size="1" genre="config" instance="1" index="15" label="Reset to Factory Defaults" value="0">
+			<Help></Help>
+			<Item label="Off" value="0"/>
+			<Item label="On" value="255"/>
+		</Value>
+	</CommandClass>
+	<CommandClass id="113">
+		<!-- These Door Locks don't send a DoorLockReport when the
+		Lock Status is Changed, but instead send a Alarm Message -
+		So we trigger a Refresh of the DoorLock Command Class when
+		we recieve a Alarm Message Instead -->
+		<TriggerRefreshValue Genre="user" Index="6" Instance="1">
+			<RefreshClassValue CommandClass="98" Index="0" Instance="1" RequestFlags="0"/>
+			<RefreshClassValue CommandClass="98" Index="1" Instance="1" RequestFlags="0"/>
+		</TriggerRefreshValue>
+	</CommandClass>
+	<!-- Association Groups -->
+	<CommandClass id="133">
+		<Associations num_groups="1">
+			<Group index="1" max_associations="5" label="Lifeline"/>			
+		</Associations>
+	</CommandClass>
+</Product>

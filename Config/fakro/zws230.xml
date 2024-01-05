@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Fakro ZWS230 Chain actuator 230VAC -->
+<Product xmlns='https://github.com/OpenZWave/open-zwave' Revision="3">
+  <!-- Configuration -->  
+  <!--
+  <CommandClass id="112">
+    <Value type="list" genre="config" instance="1" index="7" label="Speed motor I" min="1" max="4" value="2" size="1">
+      <Help></Help>
+      <Item label="1" value="1" />
+      <Item label="2" value="2" />
+      <Item label="3" value="3" />
+      <Item label="4" value="4" />
+    </Value>
+
+    <Value type="list" genre="config" instance="1" index="8" label="Speed motor II (ZRD)" min="1" max="4" value="2" size="1">
+      <Help></Help>
+      <Item label="1" value="1" />
+      <Item label="2" value="2" />
+      <Item label="3" value="3" />
+      <Item label="4" value="4" />
+    </Value>
+
+    <Value type="list" genre="config" instance="1" index="9" label="Soft start" min="1" max="2" value="1" size="1">
+      <Help></Help>
+      <Item label="Yes" value="1" />
+      <Item label="No" value="2" />
+    </Value>
+
+    <Value type="list" genre="config" instance="1" index="12" label="Callibration" min="1" max="3" value="2" size="1" >
+      <Help></Help>
+      <Item label="Start calibration" value="1" />
+      <Item label="Remove calibration" value="2" />
+      <Item label="Only report (when encoder damage)" value="3" />
+    </Value>
+
+    <Value type="byte" genre="config" instance="1" index="14" label="Comfortable position" min="1" max="99" value="32">
+      <Help>
+        1 : go to comfortable position.
+        [2 to 99] select comfortable position.
+        32 - default
+      </Help>
+    </Value>
+
+    <Value type="byte" genre="config" instance="1" index="15" label="Close after time" min="0" max="255" value="0" units="minutes">
+      <Help>
+        0 : dont close.
+        [1 to 255] minutes to close.
+      </Help>
+    </Value>
+
+    <Value type="list" genre="config" instance="1" index="99" label="Factory settings" min="1" max="2" value="1" size="1">
+      <Help></Help>
+      <Item label="Reset" value="1" />
+      <Item label="Normal" value="2" />
+    </Value>
+  </CommandClass>
+  -->
+
+  <!-- Association Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="1">
+      <Group index="1" max_associations="5" label="Lifeline"/>
+    </Associations>
+  </CommandClass>
+</Product>

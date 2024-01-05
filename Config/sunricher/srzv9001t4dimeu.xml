@@ -1,0 +1,63 @@
+<Product Revision="2" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0330:a10d:0003</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/sunricher/srzv9001t4dimeu.png</MetaDataItem>
+    <MetaDataItem id="A10D" name="ZWProductPage" type="0003">https://products.z-wavealliance.org/products/2704/</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://Products.Z-WaveAlliance.org/ProductManual/File?folder=&amp;filename=Manuals/2704/Z-Wave Wall Controller SR-ZV9001T4-DIM-EU User Manual.pdf</MetaDataItem>
+    <MetaDataItem name="Description">The Wall controller is a Security Enabled Z-Wave Plus device that can both control other Z-Wave devices and activate scenes in Gateways. The wall controller can be included and operated in any Z-Wave network with other Z-Wave certified devices from other manufacturers and/or other applications. All non‐battery operated nodes within the network will act as repeaters regardless of vendor to increase reliability of the network.</MetaDataItem>
+    <MetaDataItem name="Name">Wall Controller</MetaDataItem>
+    <MetaDataItem id="A10D" name="FrequencyName" type="0003">CEPT (Europe)</MetaDataItem>
+    <MetaDataItem id="A10D" name="Identifier" type="0003">SR-ZV9001T4-DIM-EU</MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">There are two exclusion methods:
+Method 1: Exclusion from the primary controller/gateway as follows:
+1. Set the primary controller/gateway into exclusion mode (Please refer to your primary
+controllers manual on how to set your controller into exclusion).
+2. Short press the “inclusion/exclusion” button, or press and hold down “ALL ON/OFF”
+button for over 3 seconds, the wall controller will be set to exclusion mode, and waiting
+to be excluded, then LED indicator turns on and shows 3 short blinks and 1 long blink to
+indicate successful exclusion.
+Once the wall controller quits “exclusion mode”, the LED indicator will turns off. There
+are 3 methods for the wall controller to quit “exclusion mode”:
+1. Automatically quits after successful exclusion.
+2. Quits after 25 seconds timeout.
+3. Press and hold down “ALL ON/OFF” button for over 3 seconds, or short press the
+“inclusion/exclusion” button to quit.
+Method 2: Factory reset the wall controller will force the wall controller to be excluded
+from a network. (please refer to the part “Factory Reset” of this manual)</MetaDataItem>
+    <MetaDataItem name="ResetDescription">Press and hold down “inclusion/exclusion” button for over 8 seconds, LED indicator turns on and shows 3 short blinks and 1 long blink to indicate successful factory reset, release “inclusion/exclusion” button, the wall controller will restart automatically.
+
+If this controller is the primary controller for your network, resetting it will result in the nodes in your network being orphaned and it will be necessary after the reset to exclude and re-include all of the nodes in the network.  If this controller is being used as a secondary controller in the network, use this procedure to reset this controller only in the event that the network primary controller is missing or otherwise inoperable.</MetaDataItem>
+    <MetaDataItem name="InclusionDescription">1. Set primary controller/gateway into inclusion mode (Please refer to your primary
+controllers manual on how to turn your controller into inclusion).
+2. Make sure the wall controller does not belong to any Z-Wave network (please refer to
+the part “How to check whether the wall controller included to a network” of this manual).
+3. Short press the “inclusion/exclusion” button, or press and hold down “ALL ON/OFF”
+button for over 3 seconds, the wall controller will be set to inclusion mode, and waiting to
+be included, then LED indicator turns on and blinks 6 times quickly to indicate
+successful inclusion.
+Once the wall controller quits “inclusion mode”, the LED indicator will turns off. There
+are 3 methods for the wall controller to quit “inclusion mode”:
+1. Automatically quits after successful inclusion.
+2. Quits after 25 seconds timeout.
+3. Press and hold down “ALL ON/OFF” button for over 3 seconds, or short press the
+“inclusion/exclusion” button to quit.</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="02 Jun 2019" revision="2">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/2704/xml</Entry>
+    </ChangeLog>
+  </MetaData>
+  <!--
+    Z-Wave Wall Controller SR-ZV9001T4-DIM-EU
+    Manual: http://www.sunricher.com/media/resources/manual/Z-Wave%20Wall%20Controller%20SR-ZV9001T4-DIM-EU.pdf
+    -->
+
+    <!-- Association Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="5">
+      <Group index="1" label="Lifeline" max_associations="1"/>
+      <Group index="2" label="Button 1" max_associations="12"/>
+      <Group index="3" label="Button 2" max_associations="12"/>
+      <Group index="4" label="Button 3" max_associations="12"/>
+      <Group index="5" label="Button 4" max_associations="12"/>
+    </Associations>
+  </CommandClass>
+</Product>

@@ -1,0 +1,174 @@
+<Product Revision="2" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0086:000A:0003</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/aeotec/dsc10.png</MetaDataItem>
+    <MetaDataItem id="000A" name="ZWProductPage" type="0003">https://products.z-wavealliance.org/products/704/</MetaDataItem>
+    <MetaDataItem name="Name">Heavy-Duty Smart Energy Switch</MetaDataItem>
+    <MetaDataItem id="000A" name="FrequencyName" type="0003">U.S. / Canada / Mexico</MetaDataItem>
+    <MetaDataItem name="ProductPage">http://aeotec.com/z-wave-plug-in-switch/1014-high-power-z-wave-switch.html</MetaDataItem>
+    <MetaDataItem id="000A" name="Identifier" type="0003">DSC10-ZWUS</MetaDataItem>
+    <MetaDataItem name="Description">Control, automate and record the electricity consumption of a premise’s heavy-duty appliances. Works in and outdoors with appliances up to 30 amps.</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 May 2019" revision="2">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/704/xml</Entry>
+    </ChangeLog>
+  </MetaData>
+  <!--
+Aeotec DSC10 Heavy-Duty Smart Switch
+-->
+  <Protocol refreshonnodeinfoframe="false"/>
+  <!-- Configuration Parameters -->
+  <CommandClass id="112">
+    <Value genre="config" index="3" label="Current Overload Protection" size="1" type="list" value="0">
+      <Help>
+      Current Overload Protection. Load will be closed when
+      the Current more than 39.5A and the time more than 5
+      seconds
+      </Help>
+      <Item label="Disable" value="0"/>
+      <Item label="Enable" value="1"/>
+    </Value>
+    <Value genre="config" index="20" label="LED Mode" size="1" type="list" value="0">
+      <Help>LED status after power on</Help>
+      <Item label="Last Status" value="0"/>
+      <Item label="On" value="1"/>
+      <Item label="Off" value="2"/>
+    </Value>
+    <Value genre="config" index="80" label="Notification status" size="1" type="list" units="" value="0">
+      <Help>
+	Enables automatic notifications to associated devices whenever there is a state change.
+      </Help>
+      <Item label="None" value="0"/>
+      <Item label="Hail" value="1"/>
+      <Item label="Basic" value="2"/>
+    </Value>
+    <Value genre="config" index="90" label="Enable Wattage Reports" type="bool" units="" value="1">
+      <Help>
+	Enable/disable Wattage threshold and percent.
+      </Help>
+    </Value>
+    <Value genre="config" index="91" label="Wattage threshold" max="32000" min="0" type="short" units="watts" value="50">
+      <Help>
+	The minimum change in wattage for a report to be sent.
+      </Help>
+    </Value>
+    <Value genre="config" index="92" label="Wattage threshold percent" max="99" min="0" type="byte" units="%" value="10">
+      <Help>
+	Minimum change in percent of wattage to send a report.
+      </Help>
+    </Value>
+    <Value affects="101,102,103" genre="config" index="100" label="Default Group Reports" type="button" units="" value="0" write_only="true">
+      <Help>
+	Set report types for groups 1, 2 and 3 to default. Reverts to 0
+	after set.
+      </Help>
+    </Value>
+    <Value genre="config" index="101" label="Report type G1" type="int" units="" value="4">
+      <Help>
+	Defines the type of report sent for reporting group 1. 2 is multisensor report. 4 is meter report for watts. 8 is meter report for kilowatts.
+	 Value 1 (msb) Reserved
+	 Value 2 Reserved
+	 Value 3 Reserved
+	 Value 4 (lsb) bits 7-4 reserved
+                     bit 3 MRC (KWH)
+		     bit 2 MRC (watt)
+		     bit 1 MSRC (Current)
+		     bit 0 MRC (Voltage)
+
+	The MRC(KWH) flag signals that Report Group 1 send(1) or don't send(0)
+	Meter Report Command(KWh) automatically.
+
+	The MRC(Watt) flag signals that Report Group 1 send(1) or don't send(0)
+	Meter Report Command(wattage) automatically.
+
+	The MSRC flag signals that Report Group 1 send(1) or don't send(0)
+	Multilevel Sensor Report Command(wattage) automatically.
+      </Help>
+    </Value>
+    <Value genre="config" index="102" label="Report type G2" type="int" units="" value="8">
+      <Help>
+	Defines the type of report sent for reporting group 2. 2 is multisensor report. 4 is meter report for watts. 8 is meter report for kilowatts.
+	 Value 1 (msb) Reserved
+	 Value 2 Reserved
+	 Value 3 Reserved
+	 Value 4 (lsb) bits 7-4 reserved
+                     bit 3 MRC (KWH)
+		     bit 2 MRC (watt)
+		     bit 1 MSRC (Current)
+		     bit 0 MRC (Voltage)
+
+	The MRC(KWH) flag signals that Report Group 1 send(1) or don't send(0)
+	Meter Report Command(KWh) automatically.
+
+	The MRC(Watt) flag signals that Report Group 1 send(1) or don't send(0)
+	Meter Report Command(wattage) automatically.
+
+	The MSRC flag signals that Report Group 1 send(1) or don't send(0)
+	Multilevel Sensor Report Command(wattage) automatically.
+      </Help>
+    </Value>
+    <Value genre="config" index="103" label="Report type G3" type="int" units="" value="0">
+      <Help>
+	Defines the type of report sent for reporting group 3. 2 is multisensor report. 4 is meter report for watts. 8 is meter report for kilowatts.
+	 Value 1 (msb) Reserved
+	 Value 2 Reserved
+	 Value 3 Reserved
+	 Value 4 (lsb) bits 7-4 reserved
+                     bit 3 MRC (KWH)
+		     bit 2 MRC (watt)
+		     bit 1 MSRC (Current)
+		     bit 0 MRC (Voltage)
+
+	The MRC(KWH) flag signals that Report Group 1 send(1) or don't send(0)
+	Meter Report Command(KWh) automatically.
+
+	The MRC(Watt) flag signals that Report Group 1 send(1) or don't send(0)
+	Meter Report Command(wattage) automatically.
+
+	The MSRC flag signals that Report Group 1 send(1) or don't send(0)
+	Multilevel Sensor Report Command(wattage) automatically.
+      </Help>
+    </Value>
+    <Value affects="111,112,113" genre="config" index="110" label="Default Group Time" type="button" units="" value="0" write_only="true">
+      <Help>
+	Set time interval for sending reports for groups 1, 2 and 3 to default.
+      </Help>
+    </Value>
+    <Value genre="config" index="111" label="Send interval G1" max="65535" min="0" type="int" units="seconds" value="5">
+      <Help>
+	Defines the time interval when the defined report for group 1 is sent.
+      </Help>
+    </Value>
+    <Value genre="config" index="112" label="Send interval G2" max="65535" min="0" type="int" units="seconds" value="120">
+      <Help>
+	Defines the time interval when the defined report for group 2 is sent.
+      </Help>
+    </Value>
+    <Value genre="config" index="113" label="Send interval G3" max="65535" min="0" type="int" units="seconds" value="120">
+      <Help>
+	Defines the time interval when the defined report for group 3 is sent.
+      </Help>
+    </Value>
+    <Value genre="config" index="200" label="Partner ID" max="1" min="0" size="1" type="list" units="" value="0">
+      <Item label="Aeon Labs Standard Product" value="0"/>
+      <Item label="Other" value="1"/>
+    </Value>
+    <Value genre="config" index="252" label="Lock/Unlock Configuration" max="1" min="0" size="1" type="list" value="0">
+      <Help>Lock/ unlock all configuration parameters</Help>
+      <Item label="Unlock" value="0"/>
+      <Item label="Lock" value="1"/>
+    </Value>
+    <Value genre="config" index="255" label="Reset To Factory Defaults" size="4" type="list" value="1" write_only="true">
+      <Help>Reset to factory defaults</Help>
+      <Item label="Reset to factory default setting" value="0"/>
+      <Item label="Normal" value="1"/>
+      <Item label="Reset to factory default setting and removed from the z-wave network" value="1431655765"/>
+    </Value>
+  </CommandClass>
+  <!-- Association Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="2">
+      <Group index="1" label="LifeLine" max_associations="5"/>
+      <Group index="2" label="Retransmit Switch CC" max_associations="5"/>
+    </Associations>
+  </CommandClass>
+</Product>

@@ -1,0 +1,80 @@
+<Product Revision="1" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0330:d00f:0200</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/sunricher/zv9100a.png</MetaDataItem>
+    <MetaDataItem id="d00f" name="ZWProductPage" type="0200">https://products.z-wavealliance.org/products/3333</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://Products.Z-WaveAlliance.org/ProductManual/File?folder=&amp;filename=Manuals/3331/SR-ZV9100A-A%20In-Wall%20Smart%20Switch.pdf</MetaDataItem>
+    <MetaDataItem name="Description">The in-wall smart switch is a Z-Wave device designed to work with various types of light sources.</MetaDataItem>
+    <MetaDataItem name="Name">In-wall switch</MetaDataItem>
+    <MetaDataItem id="d00f" name="FrequencyName" type="0200">CEPT (Europe)</MetaDataItem>
+    <MetaDataItem id="d00f" name="Identifier" type="0200">SR-ZV9100A-A</MetaDataItem>
+    <MetaDataItem name="InclusionDescription">Step 1. Set primary controller/gateway into inclusion mode (Please refer to your primary controllers manual on
+how to turn your controller into inclusion).
+Step 2. Power on the in-wall switch and set it into inclusion mode. There are two methods to set the in-wall switch into inclusion mode:
+1)Repower on the switch, it will be set into inclusion mode automatically, and waiting to be included.
+2)Triple press the action button on the switch, it will set the switch into inclusion mode.</MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">There are two exclusion methods:
+Method 1: Exclusion from the primary controller/gateway as follows:
+1. Set the primary controller/gateway into exclusion mode (Please refer to your primary controllers manual on
+how to set your controller into exclusion).
+2. Press and hold down both buttons and of Group 2 over 3 seconds, LED indicator turns on, the remote
+control will be set to exclusion mode, and waiting to be excluded, after 7s LED indicator blinks 4 times quickly to
+indicate successful exclusion.
+Method 2: Factory reset the remote control will force the remote control to be excluded from a network. (please
+refer to the part “Factory Reset” of this manual)
+Note: Factory reset is not recommended for exclusion, please use this procedure only if the primary
+controller/gateway is missing or otherwise inoperable.</MetaDataItem>
+    <MetaDataItem name="ResetDescription">Press and hold down the action button for over 10 seconds, the switch will be reset to factory defaults.</MetaDataItem>
+    <ChangeLog>
+      <Entry author="AntoineVDH" date="7 Dec 2020" revision="1">Initial Configuration file</Entry>
+    </ChangeLog>
+  </MetaData>
+  <!--
+    Z-Wave In-Wall Smart Switch SR-ZV9100A-A
+    Manual: https://www.sunricher.com/media/resources/manual/SR-ZV9100A-A%20Instruction%20V1.pdf
+    -->
+
+   <!-- Configuration -->
+  <CommandClass id="112">
+    <Value genre="config" index="2" instance="1" label="Saving state before power failure" size="1" type="list" value="1">
+      <Help>
+              Saving state before power failure.
+            Default Not saved.
+        </Help>
+      <Item label="State NOT saved at power failure, all outputs are set to OFF upon power restore" value="0"/>
+      <Item label="State NOT saved at power failure, all outputs are set to ON upon power restore" value="1"/>
+      <Item label="State saved at power failure, all outputs are set to previous state upon power restore" value="2"/>
+    </Value>
+    <Value genre="config" index="3" instance="1" label="Send the basic report" size="1" type="list" value="1">
+      <Help>Enable/disable to send the basic report to the Lifeline when the load state changed.
+              When value set as 1, re-power on the switch, it will send Basic report automatically. 
+		Default Enabled.
+        </Help>
+      <Item label="Disable" value="0"/>
+      <Item label="Enable" value="1"/>
+    </Value>
+    <Value genre="config" index="4" instance="1" label="External switch to be added to and removed from a network" size="1" type="list" value="1">
+      <Help>Enable/disable external switch to be added to and removed from a network.
+              When enables this function, triple press the external switch within 1.5 seconds to be added to or removed from a net-work.
+            Default Enabled.
+        </Help>
+      <Item label="Disable" value="0"/>
+      <Item label="Enable" value="1"/>
+    </Value>
+    <Value genre="config" index="5" instance="1" label="External switch type" size="1" type="list" value="0">
+      <Help>
+	   Choose external switch type. 
+		Default push button switch. 
+        </Help>
+      <Item label="Push button switch" value="0"/>
+      <Item label="normal on/off switch" value="1"/>
+      <Item label="3-way switch" value="2"/>
+    </Value>
+  </CommandClass>
+    <!-- Association Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="1">
+      <Group index="1" label="Lifeline" max_associations="5"/>
+    </Associations>
+  </CommandClass>
+</Product>

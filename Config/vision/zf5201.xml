@@ -1,0 +1,14 @@
+<Product Revision="2" xmlns="https://github.com/OpenZWave/open-zwave">
+  <!-- Vision Security ZF5201 Flood-Sensor -->
+<!-- COMMAND_CLASS_BASIC -->
+  <CommandClass id="32">
+    <Compatibility>
+      <SetAsReport>true</SetAsReport>
+    </Compatibility>
+  </CommandClass>
+  <CommandClass id="133">
+    <Associations num_groups="1">
+      <Group index="1" label="Flood detected" max_associations="5"/>
+    </Associations>
+  </CommandClass>
+</Product>

@@ -1,0 +1,52 @@
+<!--
+Everspring Outdoor Motion Detector SP816-1
+https://products.z-wavealliance.org/products/2656
+--><Product Revision="5" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0060:0005:0001</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/everspring/sp816.png</MetaDataItem>
+    <MetaDataItem id="0005" name="ZWProductPage" type="0001">https://products.z-wavealliance.org/products/3077/</MetaDataItem>
+    <MetaDataItem name="WakeupDescription">After it has been included into a Z-wave network, the detector will go to sleep but will send a Wakeup Notification Command periodically at preset period to the controller. The Motion detector will stay awake for 10 seconds at least and then go back to sleep to conserve battery life.</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://Products.Z-WaveAlliance.org/ProductManual/File?folder=&amp;filename=Manuals/3077/SP816 A501112630R01_20180913.pdf</MetaDataItem>
+    <MetaDataItem name="Name">Outdoor Motion Detector</MetaDataItem>
+    <MetaDataItem id="0005" name="FrequencyName" type="0001">CEPT (Europe) / U.S. / Canada / Mexico</MetaDataItem>
+    <MetaDataItem name="Description">The SP816 Outdoor Motion Detector is a Z-Wave PlusTM enabled device and is fully compatible with any Z-WaveTM enabled network. The device can be set up in a Z-Wave network to communicate directly with other end devices such as lighting controllers, or to report directly to a Z-Eave controller (usually a gateway).
+
+This motion detector is primarily designed for outdoor lighting control application. It features a PIR motion detector to detect movement in a protected area and a lux sensor for determining brightness of its surroundings. It comes with a built in timer to set the duration for light turn on. The lux level and the timer can be set through knobs on the device itself.
+
+If the PIR detects motion when lux level falls below a preset setting, the device will transmit a signal to turn on the outdoor lighting (or indirectly through gateway) and then later turns it off when its timer has elapsed.
+
+This device can also be used as a basic motion sensor for indoor security application.
+</MetaDataItem>
+    <MetaDataItem id="0005" name="Identifier" type="0001">SP816-2</MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">1. Put the Z-Wave Controller into exclusion mode.
+2. Press the tamper switch 3 times within 1.5 seconds to put the unit into exclusion mode.
+
+</MetaDataItem>
+    <MetaDataItem name="ResetDescription">1. Press the tamper switch 3 times within 1.5 seconds to put the unit into exclusion mode.
+2.  Within 1 second of step 1, press the tamper switch again and hold until LED is off (about 5 seconds).
+3.  Node ID is excluded. The device reverts to factory default state and will be in auto-inclusion mode for 4 minutes.
+(This procedure should only be used when the controller is inoperable.)</MetaDataItem>
+    <MetaDataItem name="InclusionDescription">1.Put the Z-Wave Controller into inclusion mode.
+2.Press the tamper switch 3 times within 1.5 seconds to put the unit into inclusion mode.
+</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="02 Jun 2019" revision="4">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/2656/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 Jun 2019" revision="5">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/3077/xml</Entry>
+    </ChangeLog>
+  </MetaData>
+  <!-- Configuration not Supported-->
+  <!-- Basic set as report -->
+  <CommandClass id="32">
+    <Compatibility>
+      <SetAsReport>true</SetAsReport>
+    </Compatibility>
+  </CommandClass>
+  <!-- COMMAND_CLASS_ASSOCIATION. Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="2">
+      <Group index="1" label="Lifeline" max_associations="1"/>
+      <Group auto="true" index="2" label="Control" max_associations="4"/>
+    </Associations>
+  </CommandClass>
+</Product>
