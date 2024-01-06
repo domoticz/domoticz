@@ -1,5 +1,6 @@
 #pragma once
 
+#ifdef WITH_OPENZWAVE
 #include <time.h>
 #include "DomoticzHardware.h"
 
@@ -182,3 +183,4 @@ class ZWaveBase : public CDomoticzHardwareBase
 	std::map<std::string, _tZWaveDevice> m_devices;
 	std::shared_ptr<std::thread> m_thread;
 };
+#endif // WITH_OPENZWAVE

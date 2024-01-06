@@ -1,4 +1,7 @@
 #include "stdafx.h"
+
+#ifdef WITH_OPENZWAVE
+
 #include "ZWaveBase.h"
 #include "ZWaveCommands.h"
 
@@ -1169,4 +1172,4 @@ bool ZWaveBase::WriteToHardware(const char* pdata, const unsigned char length)
 	}
 	return true;
 }
-
+#endif
