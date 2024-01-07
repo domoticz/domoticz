@@ -30,6 +30,7 @@ option(USE_PYTHON "Use Python for Plugins and Event-Scripts" YES)
 option(INCLUDE_LINUX_I2C "Include I2C support" YES)
 option(INCLUDE_SPI "Include SPI support" YES)
 option(WITH_LIBUSB "Enable libusb support" YES)
+option(WITH_LIBUUID "Enable libuuid support" NO)
 
 # Link static or shared, external dependencies
 option(USE_LUA_STATIC "Link LUA static" YES)
@@ -737,11 +738,29 @@ IF(WITH_LIBUSB)
 ENDIF(WITH_LIBUSB)
 
 #
+# UUID
+#
+IF(WITH_LIBUUID)
+  find_path(LIBUUID_INCLUDE_DIR uuid/uuid.h
+     HINTS ${PC_LIBUUID_INCLUDEDIR} ${PC_LIBUUID_INCLUDE_DIRS})
+  find_library(LIBUUID_LIBRARY NAMES uuid
+     HINTS ${PC_LIBUUID_LIBDIR} ${PC_LIBUUID_LIBRARY_DIRS})
+  set(LIBUUID_LIBRARIES ${LIBUUID_LIBRARY})
+
+  find_package_handle_standard_args(LIBUUID  DEFAULT_MSG  LIBUUID_LIBRARIES LIBUUID_INCLUDE_DIR)
+  IF(LIBUUID_FOUND)
+    MESSAGE(STATUS "LIBUUID library found at: ${LIBUUID_LIBRARIES}")
+    add_definitions(-DWITH_LIBUUID)
+    target_link_libraries(domoticz ${LIBUUID_LIBRARIES})
+    target_link_libraries(domoticztester ${LIBUUID_LIBRARIES})
+  ENDIF(LIBUUID_FOUND)
+ENDIF(WITH_LIBUUID)
+
+#
 # OpenZWave
 # try to find open-zwave, if found, include support
 #
 IF(USE_STATIC_OPENZWAVE)
-  find_library(OpenZWave NAMES libopenzwave.a HINTS "../open-zwave-read-only" "../open-zwave-read-only/cpp/build")
   get_filename_component(OpenZWave_dir ${OpenZWave} DIRECTORY)
   find_path(OPENZWAVE_INCLUDE_DIRS NAMES OZWException.h HINTS "${OpenZWave_dir}/cpp/src")
   set(OPENZWAVE_LIB ${OpenZWave})
