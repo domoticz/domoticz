@@ -14,10 +14,12 @@ on:
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
   # This workflow contains a single job called "build"
-    build:
-        runs-on:ubuntu-latest
+  build:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
@@ -65,6 +67,14 @@ jobs:
           cmake -DCMAKE_BUILD_TYPE=Release CMakeLists.txt
           make
 
+      # Run automated tests (disabled March 2022)
+      #- name: unit-tests domoticz-dzVents
+      #  run: |
+      #    cd $GITHUB_WORKSPACE/dzVents/runtime/tests
+      #    busted --coverage -o TAP *
+      #    luacov
+      #    tail -19 luacov.report.out
+      #  continue-on-error: true
       - name: functional-tests domoticz
         run: |
           cd $GITHUB_WORKSPACE
@@ -92,12 +102,3 @@ jobs:
           path: package/
           retention-days: 7
           if-no-files-found: error
-
-      # Deploy
-      # Using WebHooks and 'workflow_run' events on this action, the artifact will be available via other channels as well
-
-      #- name: Start SSH debug Session
-      #  uses: luchihoratiu/debug-via-ssh@main
-      #  with:
-      #   NGROK_AUTH_TOKEN: ${{ secrets.NGROK_TOKEN }}
-      #   SSH_PASS: ${{ secrets.NGROK_PASSWORD }}
