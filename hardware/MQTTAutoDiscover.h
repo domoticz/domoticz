@@ -170,7 +170,7 @@ private:
 	std::string GetValueFromTemplate(Json::Value root, std::string szValueTemplate);
 	std::string GetValueFromTemplate(const std::string &szValue, std::string szValueTemplate);
 	bool SetValueWithTemplate(Json::Value& root, std::string szValueTemplate, std::string szValue);
-	bool GuessSensorTypeValue(const _tMQTTASensor* pSensor, uint8_t& devType, uint8_t& subType, std::string& szOptions, int& nValue, std::string& sValue);
+	bool GuessSensorTypeValue(_tMQTTASensor* pSensor, uint8_t& devType, uint8_t& subType, std::string& szOptions, int& nValue, std::string& sValue);
 	void ApplySignalLevelDevice(const _tMQTTASensor* pSensor);
 
 	void on_auto_discovery_message(const struct mosquitto_message* message);

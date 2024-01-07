@@ -1654,7 +1654,7 @@ void MQTTAutoDiscover::handle_auto_discovery_availability(_tMQTTASensor* pSensor
 	}
 }
 
-bool MQTTAutoDiscover::GuessSensorTypeValue(const _tMQTTASensor* pSensor, uint8_t& devType, uint8_t& subType, std::string& szOptions, int& nValue, std::string& sValue)
+bool MQTTAutoDiscover::GuessSensorTypeValue(_tMQTTASensor* pSensor, uint8_t& devType, uint8_t& subType, std::string& szOptions, int& nValue, std::string& sValue)
 {
 	devType = pTypeGeneral;
 	subType = sTypeCustom;
@@ -2435,7 +2435,7 @@ void MQTTAutoDiscover::handle_auto_discovery_sensor(_tMQTTASensor* pSensor, cons
 		}
 
 		if (pTempSensor)
-			temp = static_cast<float>(atof(pTempSensor->last_value.c_str()));
+			temp = static_cast<float>(atof(pTempSensor->sValue.c_str()));
 		if (pHumSensor)
 			humidity = pHumSensor->nValue;
 		if (pBaroSensor)
@@ -3234,7 +3234,14 @@ void MQTTAutoDiscover::handle_auto_discovery_climate(_tMQTTASensor* pSensor, con
 
 		if (bValid)
 		{
-			if (pSensor->temperature_unit == "F")
+			std::string szUnit = pSensor->temperature_unit;
+			stdlower(szUnit);
+			if (
+				(szUnit == "°f")
+				|| (szUnit == "\xB0" "f")
+				|| (szUnit == "f")
+				|| (szUnit == "?f")
+				)
 			{
 				// Convert back to Celsius
 				temp_current = ConvertToCelsius(temp_current);
