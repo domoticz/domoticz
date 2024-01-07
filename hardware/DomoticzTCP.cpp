@@ -287,3 +287,36 @@ bool DomoticzTCP::SwitchEvoModal(const std::string& idx, const std::string& stat
 	AESEncryptData(szSend, szEncrypted, (const uint8_t*)uhash.data());
 	return WriteToHardware(szEncrypted);
 }
+
+#ifdef WITH_OPENZWAVE
+bool DomoticzTCP::SetZWaveThermostatMode(const std::string& idx, int tMode)
+{
+	Json::Value root;
+	if (!AssambleDeviceInfo(idx, root))
+		return false;
+	root["action"] = "SetZWaveThermostatMode";
+	root["tMode"] = tMode;
+
+	std::string szSend = JSonToRawString(root);
+	std::vector<char> uhash = HexToBytes(m_password);
+	std::string szEncrypted;
+	AESEncryptData(szSend, szEncrypted, (const uint8_t*)uhash.data());
+	return WriteToHardware(szEncrypted);
+}
+
+bool DomoticzTCP::SetZWaveThermostatFanMode(const std::string& idx, int fMode)
+{
+	Json::Value root;
+	if (!AssambleDeviceInfo(idx, root))
+		return false;
+	root["action"] = "SetZWaveThermostatFanMode";
+	root["fMode"] = fMode;
+
+	std::string szSend = JSonToRawString(root);
+	std::vector<char> uhash = HexToBytes(m_password);
+	std::string szEncrypted;
+	AESEncryptData(szSend, szEncrypted, (const uint8_t*)uhash.data());
+	return WriteToHardware(szEncrypted);
+}
+
+#endif

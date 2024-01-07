@@ -75,8 +75,6 @@ public:
 #ifdef WITH_OPENZWAVE
 	bool SetZWaveThermostatMode(const std::string& idx, int tMode);
 	bool SetZWaveThermostatFanMode(const std::string& idx, int fMode);
-	bool SetZWaveThermostatModeInt(const std::vector<std::string>& sd, int tMode);
-	bool SetZWaveThermostatFanModeInt(const std::vector<std::string>& sd, int fMode);
 #endif
 	bool SwitchEvoModal(const std::string &idx, const std::string &status, const std::string &action, const std::string &ooc, const std::string &until);
 

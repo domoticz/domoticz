@@ -13137,58 +13137,6 @@ bool MainWorker::SetThermostatState(const std::string& idx, const int newState)
 }
 
 #ifdef WITH_OPENZWAVE
-bool MainWorker::SetZWaveThermostatModeInt(const std::vector<std::string>& sd, const int tMode)
-{
-	int HardwareID = atoi(sd[0].c_str());
-	int hindex = FindDomoticzHardware(HardwareID);
-	if (hindex == -1)
-		return false;
-
-	unsigned long ID;
-	std::stringstream s_strid;
-	s_strid << std::hex << sd[1];
-	s_strid >> ID;
-	CDomoticzHardwareBase* pHardware = GetHardware(HardwareID);
-	if (pHardware == nullptr)
-		return false;
-	if (pHardware->HwdType == HTYPE_OpenZWave)
-	{
-		_tGeneralDevice tmeter;
-		tmeter.subtype = sTypeZWaveThermostatMode;
-		tmeter.intval1 = ID;
-		tmeter.intval2 = tMode;
-		if (!WriteToHardware(HardwareID, (const char*)&tmeter, sizeof(_tGeneralDevice)))
-			return false;
-	}
-	return true;
-}
-
-bool MainWorker::SetZWaveThermostatFanModeInt(const std::vector<std::string>& sd, const int fMode)
-{
-	int HardwareID = atoi(sd[0].c_str());
-	int hindex = FindDomoticzHardware(HardwareID);
-	if (hindex == -1)
-		return false;
-
-	unsigned long ID;
-	std::stringstream s_strid;
-	s_strid << std::hex << sd[1];
-	s_strid >> ID;
-	CDomoticzHardwareBase* pHardware = GetHardware(HardwareID);
-	if (pHardware == nullptr)
-		return false;
-	if (pHardware->HwdType == HTYPE_OpenZWave)
-	{
-		_tGeneralDevice tmeter;
-		tmeter.subtype = sTypeZWaveThermostatFanMode;
-		tmeter.intval1 = ID;
-		tmeter.intval2 = fMode;
-		if (!WriteToHardware(HardwareID, (const char*)&tmeter, sizeof(_tGeneralDevice)))
-			return false;
-	}
-	return true;
-}
-
 bool MainWorker::SetZWaveThermostatMode(const std::string& idx, const int tMode)
 {
 	//Get Device details
@@ -13199,8 +13147,32 @@ bool MainWorker::SetZWaveThermostatMode(const std::string& idx, const int tMode)
 	if (result.empty())
 		return false;
 
-	std::vector<std::string> sd = result[0];
-	return SetZWaveThermostatModeInt(sd, tMode);
+	int HardwareID = atoi(result[0][0].c_str());
+	int hindex = FindDomoticzHardware(HardwareID);
+	if (hindex == -1)
+		return false;
+	CDomoticzHardwareBase* pHardware = GetHardware(HardwareID);
+	if (pHardware == nullptr)
+		return false;
+
+	if (pHardware->HwdType == HTYPE_Domoticz)
+	{
+		DomoticzTCP* pDomoticz = static_cast<DomoticzTCP*>(pHardware);
+		return pDomoticz->SetZWaveThermostatMode(idx, tMode);
+	}
+
+	unsigned long ID;
+	std::stringstream s_strid;
+	s_strid << std::hex << result[0][1];
+	s_strid >> ID;
+
+	if (pHardware->HwdType != HTYPE_OpenZWave)
+		return false;
+	_tGeneralDevice tmeter;
+	tmeter.subtype = sTypeZWaveThermostatMode;
+	tmeter.intval1 = ID;
+	tmeter.intval2 = tMode;
+	return WriteToHardware(HardwareID, (const char*)&tmeter, sizeof(_tGeneralDevice));
 }
 
 bool MainWorker::SetZWaveThermostatFanMode(const std::string& idx, const int fMode)
@@ -13213,8 +13185,32 @@ bool MainWorker::SetZWaveThermostatFanMode(const std::string& idx, const int fMo
 	if (result.empty())
 		return false;
 
-	std::vector<std::string> sd = result[0];
-	return SetZWaveThermostatFanModeInt(sd, fMode);
+	int HardwareID = atoi(result[0][0].c_str());
+	int hindex = FindDomoticzHardware(HardwareID);
+	if (hindex == -1)
+		return false;
+	CDomoticzHardwareBase* pHardware = GetHardware(HardwareID);
+	if (pHardware == nullptr)
+		return false;
+
+	if (pHardware->HwdType == HTYPE_Domoticz)
+	{
+		DomoticzTCP* pDomoticz = static_cast<DomoticzTCP*>(pHardware);
+		return pDomoticz->SetZWaveThermostatFanMode(idx, fMode);
+	}
+	if (pHardware->HwdType != HTYPE_OpenZWave)
+		return false;
+
+	unsigned long ID;
+	std::stringstream s_strid;
+	s_strid << std::hex << result[0][1];
+	s_strid >> ID;
+
+	_tGeneralDevice tmeter;
+	tmeter.subtype = sTypeZWaveThermostatFanMode;
+	tmeter.intval1 = ID;
+	tmeter.intval2 = fMode;
+	return WriteToHardware(HardwareID, (const char*)&tmeter, sizeof(_tGeneralDevice));
 }
 
 #endif

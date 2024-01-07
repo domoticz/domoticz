@@ -440,6 +440,16 @@ namespace tcp {
 
 				m_mainworker.SwitchEvoModal(szIdx, status, action, ooc, until);
 			}
+			else if (szAction == "SetZWaveThermostatMode")
+			{
+				int tMode = root["tMode"].asInt();
+				m_mainworker.SetZWaveThermostatMode(szIdx, tMode);
+			}
+			else if (szAction == "SetZWaveThermostatFanMode")
+			{
+				int fMode = root["fMode"].asInt();
+				m_mainworker.SetZWaveThermostatFanMode(szIdx, fMode);
+			}
 			else
 			{
 				Log(LOG_ERROR, "Unhandled action received: %s", szAction.c_str());
