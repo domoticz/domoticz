@@ -761,6 +761,7 @@ ENDIF(WITH_LIBUUID)
 # try to find open-zwave, if found, include support
 #
 IF(USE_STATIC_OPENZWAVE)
+  find_library(OpenZWave NAMES libopenzwave.a HINTS "../open-zwave-read-only" "../open-zwave-read-only/cpp/build")
   get_filename_component(OpenZWave_dir ${OpenZWave} DIRECTORY)
   find_path(OPENZWAVE_INCLUDE_DIRS NAMES OZWException.h HINTS "${OpenZWave_dir}/cpp/src")
   set(OPENZWAVE_LIB ${OpenZWave})
