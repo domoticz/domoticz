@@ -56,6 +56,10 @@
 #endif
 #endif
 
+#ifdef WITH_LIBUUID
+#include <uuid/uuid.h>
+#endif
+
 namespace
 {
 	constexpr std::array<uint8_t, 256> crc8_tab{
@@ -1522,6 +1526,15 @@ bool IsDebuggerPresent()
 
 std::string GenerateUUID() // DCE/RFC 4122
 {
+#ifdef WITH_LIBUUID
+	uuid_t  uu;
+	char    uuid[UUID_STR_LEN];
+
+	uuid_generate(uu);
+	uuid_unparse_lower(uu, uuid);
+
+	return std::string(uuid);
+#else
 	const std::string hexCHARS = "0123456789abcdef";
 	std::string uuid = std::string(36, ' ');
 
@@ -1545,6 +1558,7 @@ std::string GenerateUUID() // DCE/RFC 4122
 		}
 	}
 	return uuid;
+#endif
 }
 
 bool isHexRepresentation(const std::string &input)
