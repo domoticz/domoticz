@@ -318,5 +318,5 @@ bool DomoticzTCP::SetZWaveThermostatFanMode(const std::string& idx, int fMode)
 	AESEncryptData(szSend, szEncrypted, (const uint8_t*)uhash.data());
 	return WriteToHardware(szEncrypted);
 }
-
 #endif
+

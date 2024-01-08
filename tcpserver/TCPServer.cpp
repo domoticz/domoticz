@@ -440,6 +440,7 @@ namespace tcp {
 
 				m_mainworker.SwitchEvoModal(szIdx, status, action, ooc, until);
 			}
+#ifdef WITH_OPENZWAVE
 			else if (szAction == "SetZWaveThermostatMode")
 			{
 				int tMode = root["tMode"].asInt();
@@ -450,6 +451,7 @@ namespace tcp {
 				int fMode = root["fMode"].asInt();
 				m_mainworker.SetZWaveThermostatFanMode(szIdx, fMode);
 			}
+#endif
 			else
 			{
 				Log(LOG_ERROR, "Unhandled action received: %s", szAction.c_str());
