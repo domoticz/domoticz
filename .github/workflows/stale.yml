@@ -1,0 +1,23 @@
+# This workflow warns and then closes issues and PRs that have had no activity for a specified amount of time.
+#
+# You can adjust the behavior by modifying this file.
+# For more information, see:
+# https://github.com/actions/stale
+name: 'Close stale issues and PRs'
+on:
+  schedule:
+    - cron: '30 1 * * *'
+
+jobs:
+  stale:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/stale@v9
+        with:
+		  any-of-labels: 'PendingFeedback'
+          stale-issue-message: 'This issue is stale because it has been open 14 days with no activity. Please comment or this issue will be closed in 7 days.'
+          days-before-stale: 14
+          days-before-close: 7
+		  remove-stale-when-updated: true
+          labels-to-remove-when-stale: 'PendingFeedback'
+		  debug-only: true
