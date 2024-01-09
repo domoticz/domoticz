@@ -3609,8 +3609,14 @@ void MQTTAutoDiscover::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 						szSwitchCmd = szValue;
 				}
 			}
-
-			if (!root["state"].empty())
+			else if (!pSensor->value_template.empty())
+			{
+				if (pSensor->state_topic == pSensor->last_topic)
+				{
+					szSwitchCmd = GetValueFromTemplate(root, pSensor->value_template);
+				}
+			}
+			else if (!root["state"].empty())
 			{
 				szSwitchCmd = root["state"].asString();
 			}
