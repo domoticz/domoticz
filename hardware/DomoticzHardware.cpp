@@ -1270,7 +1270,7 @@ void CDomoticzHardwareBase::SendZWaveAlarmSensor(const int NodeID, const uint8_t
 	gDevice.intval1 = (int)(lID);
 	gDevice.intval2 = aValue;
 
-	int maxChars = (alarmLabel.size() < sizeof(_tGeneralDevice::text) - 1) ? alarmLabel.size() : sizeof(_tGeneralDevice::text) - 1;
+	size_t maxChars = (alarmLabel.size() < sizeof(_tGeneralDevice::text) - 1) ? alarmLabel.size() : sizeof(_tGeneralDevice::text) - 1;
 	strncpy(gDevice.text, alarmLabel.c_str(), maxChars);
 	gDevice.text[maxChars] = 0;
 
