@@ -190,6 +190,8 @@ void MQTT::on_connect(int rc)
 
 void MQTT::on_message(const struct mosquitto_message *message)
 {
+	SetHeartbeatReceived();
+
 	std::string topic = message->topic;
 	std::string qMessage = std::string((char*)message->payload, (char*)message->payload + message->payloadlen);
 
