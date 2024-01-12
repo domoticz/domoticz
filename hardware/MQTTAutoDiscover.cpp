@@ -625,6 +625,9 @@ void MQTTAutoDiscover::on_auto_discovery_message(const struct mosquitto_message*
 		|| (object_id.find("_address") != std::string::npos)
 		|| (object_id.find("_ssid") != std::string::npos)
 		|| (object_id.find("_signal_sensor") != std::string::npos)
+		|| (object_id == "connection_state")
+		|| (object_id == "log_level")
+		|| (object_id == "restart")
 		)
 	{
 		return;
@@ -2583,121 +2586,119 @@ void MQTTAutoDiscover::handle_auto_discovery_button(_tMQTTASensor* pSensor, cons
 void MQTTAutoDiscover::handle_auto_discovery_fan(_tMQTTASensor* pSensor, const struct mosquitto_message* message, const std::string& topic)
 {
 	//handle it as a switch/drimmer
-	if (pSensor->preset_mode_state_topic != topic)
+	if (pSensor->preset_modes.empty())
 	{
 		InsertUpdateSwitch(pSensor);
+		return;
 	}
 
 	// Create/update Selector device for preset_modes
 	bool bValid = true;
-	if (!pSensor->preset_modes.empty())
+	pSensor->devType = pTypeGeneralSwitch;
+	pSensor->subType = sSwitchGeneralSwitch;
+	int switchType = STYPE_Selector;
+
+	bool bIsNewDevice = false;
+
+	uint8_t unit = FAN_PRESET_UNIT; //preset mode
+
+	std::vector<std::vector<std::string>> result;
+	result = m_sql.safe_query("SELECT ID,Name,nValue,sValue,Options FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Type==%d) AND (SubType==%d) AND (Unit==%d)", m_HwdID, pSensor->unique_id.c_str(), pSensor->devType, pSensor->subType, unit);
+	if (result.empty())
 	{
-		pSensor->devType = pTypeGeneralSwitch;
-		pSensor->subType = sSwitchGeneralSwitch;
-		int switchType = STYPE_Selector;
-
-		bool bIsNewDevice = false;
-
-		uint8_t unit = FAN_PRESET_UNIT; //preset mode
-
-		std::vector<std::vector<std::string>> result;
+		// New switch, add it to the system
+		if (!m_sql.m_bAcceptNewHardware)
+		{
+			Log(LOG_NORM, "Accept new hardware disabled. Ignoring new sensor %s", pSensor->name.c_str());
+			return;
+		}
+		bIsNewDevice = true;
+		int iUsed = (pSensor->bEnabled_by_default) ? 1 : 0;
+		m_sql.safe_query("INSERT INTO DeviceStatus (HardwareID, OrgHardwareID, DeviceID, Unit, Type, SubType, switchType, SignalLevel, BatteryLevel, Name, Used, nValue, sValue) "
+			"VALUES (%d, %d, '%q', %d, %d, %d, %d, %d, %d, '%q', %d, %d, '0')",
+			m_HwdID, 0, pSensor->unique_id.c_str(), unit, pSensor->devType, pSensor->subType, switchType, pSensor->SignalLevel, pSensor->BatteryLevel, pSensor->name.c_str(), iUsed, 0);
 		result = m_sql.safe_query("SELECT ID,Name,nValue,sValue,Options FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Type==%d) AND (SubType==%d) AND (Unit==%d)", m_HwdID, pSensor->unique_id.c_str(), pSensor->devType, pSensor->subType, unit);
 		if (result.empty())
+			return; // should not happen!
+	}
+
+	if (
+		(pSensor->preset_mode_state_topic == topic)
+		|| (bIsNewDevice)
+		)
+	{
+		bool bIsJSON = false;
+		Json::Value root;
+		bool ret = ParseJSon(pSensor->last_value, root);
+		if (ret)
 		{
-			// New switch, add it to the system
-			if (!m_sql.m_bAcceptNewHardware)
-			{
-				Log(LOG_NORM, "Accept new hardware disabled. Ignoring new sensor %s", pSensor->name.c_str());
-				return;
-			}
-			bIsNewDevice = true;
-			int iUsed = (pSensor->bEnabled_by_default) ? 1 : 0;
-			m_sql.safe_query("INSERT INTO DeviceStatus (HardwareID, OrgHardwareID, DeviceID, Unit, Type, SubType, switchType, SignalLevel, BatteryLevel, Name, Used, nValue, sValue) "
-				"VALUES (%d, %d, '%q', %d, %d, %d, %d, %d, %d, '%q', %d, %d, '0')",
-				m_HwdID, 0, pSensor->unique_id.c_str(), unit, pSensor->devType, pSensor->subType, switchType, pSensor->SignalLevel, pSensor->BatteryLevel, pSensor->name.c_str(), iUsed, 0);
-			result = m_sql.safe_query("SELECT ID,Name,nValue,sValue,Options FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Type==%d) AND (SubType==%d) AND (Unit==%d)", m_HwdID, pSensor->unique_id.c_str(), pSensor->devType, pSensor->subType, unit);
-			if (result.empty())
-				return; // should not happen!
+			bIsJSON = root.isObject();
 		}
 
+		std::string current_mode;
 		if (
-			(pSensor->preset_mode_state_topic == topic)
-			|| (bIsNewDevice)
+			(!pSensor->preset_mode_value_template.empty())
+			&& (bIsJSON)
 			)
 		{
-			bool bIsJSON = false;
-			Json::Value root;
-			bool ret = ParseJSon(pSensor->last_value, root);
-			if (ret)
+			current_mode = GetValueFromTemplate(root, pSensor->preset_mode_value_template);
+			if ((pSensor->preset_mode_state_topic == topic) && current_mode.empty())
 			{
-				bIsJSON = root.isObject();
+				Log(LOG_ERROR, "Climate device no idea how to interpretate preset_mode_state value (%s)", pSensor->unique_id.c_str());
+				bValid = false;
+			}
+		}
+		else
+			current_mode = pSensor->last_value;
+
+		if (bValid)
+		{
+			std::string szIdx = result[0][0];
+			uint64_t DevRowIdx = std::stoull(szIdx);
+			std::string szDeviceName = result[0][1];
+			int nValue = atoi(result[0][2].c_str());
+			std::string sValue = result[0][3];
+			std::string sOptions = result[0][4];
+
+			int iActualIndex = current_mode.empty() ? 0 : -1;
+
+			// Build switch options
+			int iValueIndex = 0;
+			std::string tmpOptionString;
+			for (const auto& ittOptions : pSensor->preset_modes)
+			{
+				if (ittOptions == current_mode)
+					iActualIndex = iValueIndex;
+				if (!tmpOptionString.empty())
+					tmpOptionString += "|";
+				tmpOptionString += ittOptions;
+				iValueIndex += 10;
 			}
 
-			std::string current_mode;
-			if (
-				(!pSensor->preset_mode_value_template.empty())
-				&& (bIsJSON)
-				)
+			if (iActualIndex == -1)
 			{
-				current_mode = GetValueFromTemplate(root, pSensor->preset_mode_value_template);
-				if ((pSensor->preset_mode_state_topic == topic) && current_mode.empty())
-				{
-					Log(LOG_ERROR, "Climate device no idea how to interpretate preset_mode_state value (%s)", pSensor->unique_id.c_str());
-					bValid = false;
-				}
+				Log(LOG_ERROR, "Climate device invalid/unknown preset_mode received! (%s: %s)", pSensor->unique_id.c_str(), current_mode.c_str());
+				bValid = false;
 			}
-			else
-				current_mode = pSensor->last_value;
 
 			if (bValid)
 			{
-				std::string szIdx = result[0][0];
-				uint64_t DevRowIdx = std::stoull(szIdx);
-				std::string szDeviceName = result[0][1];
-				int nValue = atoi(result[0][2].c_str());
-				std::string sValue = result[0][3];
-				std::string sOptions = result[0][4];
+				std::map<std::string, std::string> optionsMap;
+				optionsMap["SelectorStyle"] = "0";
+				optionsMap["LevelOffHidden"] = "false";
+				optionsMap["LevelNames"] = tmpOptionString;
 
-				int iActualIndex = current_mode.empty() ? 0 : -1;
+				std::string newOptions = m_sql.FormatDeviceOptions(optionsMap);
+				if (newOptions != sOptions)
+					m_sql.SetDeviceOptions(DevRowIdx, optionsMap);
 
-				// Build switch options
-				int iValueIndex = 0;
-				std::string tmpOptionString;
-				for (const auto& ittOptions : pSensor->preset_modes)
+				pSensor->nValue = (iActualIndex == 0) ? 0 : 2;
+				pSensor->sValue = std_format("%d", iActualIndex);
+
+				if ((pSensor->nValue != nValue) || (pSensor->sValue != sValue))
 				{
-					if (ittOptions == current_mode)
-						iActualIndex = iValueIndex;
-					if (!tmpOptionString.empty())
-						tmpOptionString += "|";
-					tmpOptionString += ittOptions;
-					iValueIndex += 10;
-				}
-
-				if (iActualIndex == -1)
-				{
-					Log(LOG_ERROR, "Climate device invalid/unknown preset_mode received! (%s: %s)", pSensor->unique_id.c_str(), current_mode.c_str());
-					bValid = false;
-				}
-
-				if (bValid)
-				{
-					std::map<std::string, std::string> optionsMap;
-					optionsMap["SelectorStyle"] = "0";
-					optionsMap["LevelOffHidden"] = "false";
-					optionsMap["LevelNames"] = tmpOptionString;
-
-					std::string newOptions = m_sql.FormatDeviceOptions(optionsMap);
-					if (newOptions != sOptions)
-						m_sql.SetDeviceOptions(DevRowIdx, optionsMap);
-
-					pSensor->nValue = (iActualIndex == 0) ? 0 : 2;
-					pSensor->sValue = std_format("%d", iActualIndex);
-
-					if ((pSensor->nValue != nValue) || (pSensor->sValue != sValue))
-					{
-						UpdateValueInt(m_HwdID, pSensor->unique_id.c_str(), unit, pSensor->devType, pSensor->subType, pSensor->SignalLevel, pSensor->BatteryLevel, pSensor->nValue,
-							pSensor->sValue.c_str(), szDeviceName);
-					}
+					UpdateValueInt(m_HwdID, pSensor->unique_id.c_str(), unit, pSensor->devType, pSensor->subType, pSensor->SignalLevel, pSensor->BatteryLevel, pSensor->nValue,
+						pSensor->sValue.c_str(), szDeviceName);
 				}
 			}
 		}
