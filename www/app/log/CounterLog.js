@@ -192,6 +192,8 @@ define(['app', 'lodash', 'RefreshingChart', 'DataLoader', 'ChartLoader', 'log/Ch
                                     return subtype.extendDataRequestCompare.call(self, dataRequest);
                                 },
                                 preprocessData: function (data) {
+									this.deviceCounterName = self.device.ValueQuantity;
+									
                                     if (subtype.preprocessCompareData !== undefined) {
                                         subtype.preprocessCompareData.call(self, data);
                                     }

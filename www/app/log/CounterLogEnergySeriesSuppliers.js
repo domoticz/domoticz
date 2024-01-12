@@ -318,9 +318,11 @@ define(['app', 'log/Chart', 'log/CounterLogSeriesSupplier'], function (app) {
                     id: 'powerReturned1',
                     dataItemKeys: ['r1'],
                     dataIsValid: function (data) {
-						//make all values negative for the graph
-						for (var i = 0; i < data.result.length; i++) {
-							data.result[i]['r1']= -data.result[i]['r1'];
+						if (data.result !== undefined) {
+							//make all values negative for the graph
+							for (var i = 0; i < data.result.length; i++) {
+								data.result[i]['r1']= -data.result[i]['r1'];
+							}
 						}
                         return data.delivered === true;
                     },
