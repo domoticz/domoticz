@@ -16,7 +16,6 @@
 #include <boost/algorithm/string/join.hpp>
 #include "../main/json_helper.h"
 
-#include <boost/crc.hpp>
 #include <algorithm>
 #include <set>
 
@@ -2045,8 +2044,6 @@ void MainWorker::ProcessRXMessage(const CDomoticzHardwareBase* pHardware, const 
 {
 	// current date/time based on current system
 	//size_t Len = pRXCommand[0] + 1;
-
-	const_cast<CDomoticzHardwareBase*>(pHardware)->SetHeartbeatReceived();
 
 	uint64_t DeviceRowIdx = (uint64_t)-1;
 	std::string DeviceName;
@@ -13697,11 +13694,10 @@ void MainWorker::HeartbeatCheck()
 	{
 		if (!pHardware->m_bSkipReceiveCheck)
 		{
-			//Skip Dummy Hardware
+			//Check Thread Timeout
 			bool bDoCheck = (pHardware->HwdType != HTYPE_Dummy) && (pHardware->HwdType != HTYPE_EVOHOME_SCRIPT);
 			if (bDoCheck)
 			{
-				//Check Thread Timeout
 				double diff = difftime(now, pHardware->m_LastHeartbeat);
 				//_log.Log(LOG_STATUS, "%d last checking  %.2lf seconds ago", iterator->first, dif);
 				if (diff > 60)
@@ -13716,28 +13712,12 @@ void MainWorker::HeartbeatCheck()
 				}
 			}
 
+			//Check received data timeout
 			if (pHardware->m_DataTimeout > 0)
 			{
 				//Check Receive Timeout
 				double diff = difftime(now, pHardware->m_LastHeartbeatReceive);
 				bool bHaveDataTimeout = (diff > pHardware->m_DataTimeout);
-				if (!bHaveDataTimeout)
-				{
-					if (
-						(pHardware->HwdType == HTYPE_RFXLAN)
-						|| (pHardware->HwdType == HTYPE_RFXtrx315)
-						|| (pHardware->HwdType == HTYPE_RFXtrx433)
-						|| (pHardware->HwdType == HTYPE_RFXtrx868)
-						)
-					{
-						const CRFXBase* pRFXBase = static_cast<CRFXBase*>(pHardware);
-						if (pRFXBase->m_LastP1Received != 0)
-						{
-							diff = difftime(now, pRFXBase->m_LastP1Received);
-							bHaveDataTimeout = (diff > pHardware->m_DataTimeout);
-						}
-					}
-				}
 				if (bHaveDataTimeout)
 				{
 					std::string sDataTimeout;
@@ -13778,7 +13758,6 @@ void MainWorker::HeartbeatCheck()
 					m_devicestorestart.push_back(pHardware->m_HwdID);
 				}
 			}
-
 		}
 	}
 }

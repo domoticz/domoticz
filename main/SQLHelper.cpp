@@ -5189,6 +5189,12 @@ uint64_t CSQLHelper::UpdateValueInt(
 	if (!m_dbase)
 		return -1;
 
+	CDomoticzHardwareBase* pHardware = m_mainworker.GetHardware(HardwareID);
+	if (pHardware != nullptr)
+	{
+		const_cast<CDomoticzHardwareBase*>(pHardware)->SetHeartbeatReceived();
+	}
+
 	uint64_t ulID = 0;
 	std::map<std::string, std::string> options;
 
@@ -5229,7 +5235,6 @@ uint64_t CSQLHelper::UpdateValueInt(
 
 #ifdef ENABLE_PYTHON
 		//TODO: Plugins should perhaps be blocked from implicitly adding a device by update? It's most likely a bug due to updating a removed device..
-		CDomoticzHardwareBase* pHardware = m_mainworker.GetHardware(HardwareID);
 		if (pHardware != nullptr && pHardware->HwdType == HTYPE_PythonPlugin)
 		{
 			_log.Debug(DEBUG_NORM, "CSQLHelper::UpdateValueInt: Notifying plugin %u about creation of device %u", HardwareID, unit);
@@ -5421,7 +5426,6 @@ uint64_t CSQLHelper::UpdateValueInt(
 			std::string slevel = sd[6];
 
 			_eHardwareTypes HWtype = HTYPE_Domoticz; //just a value
-			CDomoticzHardwareBase* pHardware = m_mainworker.GetHardware(HardwareID);
 			if (pHardware != nullptr)
 				HWtype = pHardware->HwdType;
 

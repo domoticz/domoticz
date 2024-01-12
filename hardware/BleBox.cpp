@@ -256,7 +256,6 @@ void BleBox::GetDevicesState()
 					break;
 				}
 			}
-			SetHeartbeatReceived();
 		}
 	}
 }

@@ -330,6 +330,7 @@ int eHouseTCP::UpdateSQLPlan(int /*devh*/, int /*devl*/, int /*devtype*/, const 
 // Update eHouse Controllers status in DeviceStatus Database
 void eHouseTCP::UpdateSQLStatus(int devh, int devl, int /*devtype*/, int code, int nr, char /*signal*/, int nValue, const char *sValue, int /*battery*/)
 {
+	//GizMoCuz: This should be done via CDomoticzHardwareBase::SendSwitch?
 	char IDX[20];
 	char state[5] = "";
 	std::string sLastUpdate = TimeToString(nullptr, TF_DateTime);

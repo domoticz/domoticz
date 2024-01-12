@@ -40,8 +40,10 @@ History :
 * Add digital input processing for frame receive by bloc 7 (and future used)
 * So input must be set before use with configuration tool.
 * Fixed bad sID write for supply voltage receive by bloc 9/sfsp (so old id used were incorrect )
-
 */
+
+//GizMoCuz: Please change all comments in English, so we can understand it too.
+//The above link of the SDSP bloc does not work
 
 #include "stdafx.h"
 #include "USBtin_MultiblocV8.h"
@@ -663,7 +665,7 @@ void USBtin_MultiblocV8::BlocList_GetInfo(const unsigned int RefBloc, const char
 
 void USBtin_MultiblocV8::InsertUpdateControlSwitch(const int NodeID, const int ChildID, const std::string& defaultname)
 {
-
+	//GizMoCuz: This should be done via CDomoticzHardwareBase::SendSwitch?
 	// make device ID
 	unsigned char ID1 = (unsigned char)((NodeID & 0xFF000000) >> 24);
 	unsigned char ID2 = (unsigned char)((NodeID & 0xFF0000) >> 16);

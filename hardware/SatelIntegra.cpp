@@ -188,8 +188,6 @@ void SatelIntegra::Do_Work()
 
 			if (ReadNewData())
 			{
-				SetHeartbeatReceived();
-
 				if (m_newData[3] & 8)
 				{
 					ReadAlarm();

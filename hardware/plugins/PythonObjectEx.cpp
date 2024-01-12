@@ -731,8 +731,6 @@ namespace Plugins {
 
 		if (pModState->pPlugin)
 		{
-			pModState->pPlugin->SetHeartbeatReceived();
-
 			char *TypeName = nullptr;
 			int bWriteLog = false;
 
