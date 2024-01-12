@@ -74,7 +74,7 @@ private:
 	void SendSceneInfo(uint64_t SceneIdx, const std::string& SceneName);
 	void StopMQTT();
 	void Do_Work();
-	void SubscribeTopic(const std::string& szTopic, const int qos = 0);
+	void SubscribeTopic(const std::string& szTopic, int qos = -1);
 	virtual void SendHeartbeat();
 	void WriteInt(const std::string& sendStr) override;
 	std::shared_ptr<std::thread> m_thread;

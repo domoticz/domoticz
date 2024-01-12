@@ -1029,8 +1029,11 @@ void MQTT::SendSceneInfo(const uint64_t SceneIdx, const std::string & /*SceneNam
 	}
 }
 
-void MQTT::SubscribeTopic(const std::string &szTopic, const int qos)
+void MQTT::SubscribeTopic(const std::string &szTopic, int qos)
 {
+	if (qos == -1)
+		qos = QOS;
+
 	if (szTopic.empty())
 		return;
 	if (m_subscribed_topics.find(szTopic) == m_subscribed_topics.end())

@@ -108,7 +108,7 @@ class MQTTAutoDiscover : public MQTT
 		std::string state_locked = "LOCKED";
 		std::string state_unlocked = "UNLOCKED";
 
-		int qos = 0;
+		int qos = 1;
 
 		std::map<std::string, std::string> keys;
 
