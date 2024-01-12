@@ -82,7 +82,6 @@ class CDomoticzHardwareBase : public StoppableTask
 	void StartHeartbeatThread();
 	void StartHeartbeatThread(const char *ThreadName);
 	void StopHeartbeatThread();
-	void HandleHBCounter(int iInterval);
 
 	// Sensor Helpers
 	void SendTempSensor(int NodeID, int BatteryLevel, float temperature, const std::string &defaultname, int RssiLevel = 12);

@@ -118,15 +118,6 @@ void CDomoticzHardwareBase::SetHeartbeatReceived()
 	mytime(&m_LastHeartbeatReceive);
 }
 
-void CDomoticzHardwareBase::HandleHBCounter(const int iInterval)
-{
-	m_iHBCounter++;
-	if (m_iHBCounter % iInterval == 0)
-	{
-		SetHeartbeatReceived();
-	}
-}
-
 int CDomoticzHardwareBase::SetThreadNameInt(const std::thread::native_handle_type& thread)
 {
 	return SetThreadName(thread, m_Name.c_str());
