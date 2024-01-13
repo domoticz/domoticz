@@ -58,6 +58,8 @@ class MQTTAutoDiscover : public MQTT
 		int position_open = 100;
 		int position_closed = 0;
 
+		std::string on_command_type;
+
 		std::string payload_available;
 		std::string payload_not_available;
 

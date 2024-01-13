@@ -1012,6 +1012,9 @@ void MQTTAutoDiscover::on_auto_discovery_message(const struct mosquitto_message*
 		else if (!root["pos_clsd"].empty())
 			pSensor->position_closed = root["pos_clsd"].asInt();
 
+		if (!root["on_command_type"].empty())
+			pSensor->on_command_type = root["on_command_type"].asString();
+
 		if (!root["payload_available"].empty())
 			pSensor->payload_available = root["payload_available"].asString();
 		else if (!root["pl_avail"].empty())
@@ -3597,45 +3600,53 @@ void MQTTAutoDiscover::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 					root["state"] = "ON";
 			}
 
+			bool bHandledValueTemplate = false;
 			if (!pSensor->state_value_template.empty())
 			{
 				if (pSensor->state_topic == pSensor->last_topic)
 				{
 					std::string szValue = GetValueFromTemplate(root, pSensor->state_value_template);
-					if (szValue == pSensor->state_on)
-						szSwitchCmd = pSensor->payload_on;
-					else if (szValue == pSensor->state_off)
-						szSwitchCmd = pSensor->payload_off;
-					else
-						szSwitchCmd = szValue;
+					if (!szValue.empty())
+					{
+						bHandledValueTemplate = true;
+						if (szValue == pSensor->state_on)
+							szSwitchCmd = pSensor->payload_on;
+						else if (szValue == pSensor->state_off)
+							szSwitchCmd = pSensor->payload_off;
+						else
+							szSwitchCmd = szValue;
+					}
 				}
 			}
-			else if ((!root["state"].empty()) && (pSensor->value_template.empty()))
+			if (!bHandledValueTemplate)
 			{
-				szSwitchCmd = root["state"].asString();
-			}
-			else if (!root["value"].empty())
-			{
-				szSwitchCmd = root["value"].asString();
-				if (
-					(szSwitchCmd != pSensor->payload_on)
-					&& (szSwitchCmd != pSensor->payload_off)
-					)
+				if ((!root["state"].empty()) && (pSensor->value_template.empty()))
 				{
-					if (is_number(szSwitchCmd))
+					szSwitchCmd = root["state"].asString();
+				}
+				else if (!root["value"].empty())
+				{
+					szSwitchCmd = root["value"].asString();
+					if (
+						(szSwitchCmd != pSensor->payload_on)
+						&& (szSwitchCmd != pSensor->payload_off)
+						)
 					{
-						//must be a level
-						level = atoi(szSwitchCmd.c_str());
+						if (is_number(szSwitchCmd))
+						{
+							//must be a level
+							level = atoi(szSwitchCmd.c_str());
 
-						if (pSensor->bHave_brightness_scale)
-							level = (int)round((100.0 / pSensor->brightness_scale) * level);
+							if (pSensor->bHave_brightness_scale)
+								level = (int)round((100.0 / pSensor->brightness_scale) * level);
 
-						if (level == 0)
-							szSwitchCmd = "off";
-						else if (level == 100)
-							szSwitchCmd = "on";
-						else
-							szSwitchCmd = "Set Level";
+							if (level == 0)
+								szSwitchCmd = "off";
+							else if (level == 100)
+								szSwitchCmd = "on";
+							else
+								szSwitchCmd = "Set Level";
+						}
 					}
 				}
 			}
@@ -4029,8 +4040,11 @@ bool MQTTAutoDiscover::SendSwitchCommand(const std::string& DeviceID, const std:
 				std::string szKey = GetValueTemplateKey(pSensor->brightness_value_template);
 
 				if (!szKey.empty() && szKey == "value")
+				{
 					// just send the plain percentage as HA does for value in template
+					// GizMoCuz: Uhm why? Why not use { "value" : 10 } as ment to be?
 					root = slevel;
+				}
 				else if (!szKey.empty())
 				{
 					// in case another key was requested
