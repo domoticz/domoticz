@@ -20,4 +20,3 @@ jobs:
           days-before-close: 7
           remove-stale-when-updated: true
           labels-to-remove-when-stale: 'PendingFeedback'
-          debug-only: true
