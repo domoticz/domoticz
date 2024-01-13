@@ -3600,7 +3600,7 @@ void MQTTAutoDiscover::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 					root["state"] = "ON";
 			}
 
-			bool bHandledValueTemplate = false;
+			bool bHandledValue = false;
 			if (!pSensor->state_value_template.empty())
 			{
 				if (pSensor->state_topic == pSensor->last_topic)
@@ -3608,7 +3608,7 @@ void MQTTAutoDiscover::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 					std::string szValue = GetValueFromTemplate(root, pSensor->state_value_template);
 					if (!szValue.empty())
 					{
-						bHandledValueTemplate = true;
+						bHandledValue = true;
 						if (szValue == pSensor->state_on)
 							szSwitchCmd = pSensor->payload_on;
 						else if (szValue == pSensor->state_off)
@@ -3618,7 +3618,7 @@ void MQTTAutoDiscover::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 					}
 				}
 			}
-			if (!bHandledValueTemplate)
+			if (!bHandledValue)
 			{
 				if ((!root["state"].empty()) && (pSensor->value_template.empty()))
 				{
@@ -3650,7 +3650,42 @@ void MQTTAutoDiscover::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 					}
 				}
 			}
+/*
+			if (pSensor->brightness_state_topic == pSensor->last_topic)
+			{
+				std::string szValue;
+				if (!pSensor->brightness_value_template.empty())
+				{
+					szValue = GetValueFromTemplate(root, pSensor->brightness_value_template);
+					if (!szValue.empty())
+					{
+						bHandledValue = true;
+					}
+				}
+				if (!bHandledValue)
+				{
+					if (!root["value"].empty())
+					{
+						szValue = root["value"].asString();
+						bHandledValue = true;
+					}
+				}
+				if (bHandledValue)
+				{
+					level = atoi(szValue.c_str());
 
+					if (pSensor->bHave_brightness_scale)
+						level = (int)round((100.0 / pSensor->brightness_scale) * level);
+
+					if (level == 0)
+						szSwitchCmd = "off";
+					else if (level == 100)
+						szSwitchCmd = "on";
+					else
+						szSwitchCmd = "Set Level";
+				}
+			}
+*/
 			if (!root["brightness"].empty())
 			{
 				float dLevel = (100.F / pSensor->brightness_scale) * root["brightness"].asInt();
@@ -3671,6 +3706,7 @@ void MQTTAutoDiscover::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 					szSwitchCmd = "Set Level";
 				}
 			}
+
 			if (!root["color"].empty())
 			{
 				Json::Value root_color;
