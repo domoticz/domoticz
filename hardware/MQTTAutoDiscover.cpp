@@ -1462,8 +1462,10 @@ void MQTTAutoDiscover::on_auto_discovery_message(const struct mosquitto_message*
 		if (bDoSubscribe)
 		{
 			SubscribeTopic(pSensor->availability_topic, pSensor->qos);
-			SubscribeTopic(pSensor->state_topic, pSensor->qos);
-			SubscribeTopic(pSensor->position_topic, pSensor->qos);
+			if (!pSensor->position_topic.empty())
+				SubscribeTopic(pSensor->position_topic, pSensor->qos);
+			else
+				SubscribeTopic(pSensor->state_topic, pSensor->qos);
 			SubscribeTopic(pSensor->brightness_state_topic, pSensor->qos);
 			SubscribeTopic(pSensor->mode_state_topic, pSensor->qos);
 			SubscribeTopic(pSensor->current_temperature_topic, pSensor->qos);
