@@ -53,7 +53,7 @@ constexpr auto sqlCreateDeviceStatus =
 "CREATE TABLE IF NOT EXISTS [DeviceStatus] ("
 "[ID] INTEGER PRIMARY KEY, "
 "[HardwareID] INTEGER NOT NULL, "
-"[OrgHardwareID] DEFAULT 0, "
+"[OrgHardwareID] INTEGER DEFAULT 0, "
 "[DeviceID] VARCHAR(25) NOT NULL, "
 "[Unit] INTEGER DEFAULT 0, "
 "[Name] VARCHAR(100) DEFAULT Unknown, "
@@ -5027,7 +5027,7 @@ uint64_t CSQLHelper::InsertDevice(const int HardwareID, const int OrgHardwareID,
 
 	safe_query(
 		"INSERT INTO DeviceStatus (HardwareID, OrgHardwareID, DeviceID, Unit, Type, SubType, SwitchType, SignalLevel, BatteryLevel, nValue, sValue, Name) "
-		"VALUES ('%d','%d','%q','%d','%d','%d','%d','%d','%d','%d','%q','%q')",
+		"VALUES (%d,%d,'%q',%d,%d,%d,%d,%d,%d,%d,'%q','%q')",
 		HardwareID, OrgHardwareID, ID, unit,
 		devType, subType, switchType,
 		signallevel, batterylevel,
