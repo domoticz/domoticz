@@ -134,9 +134,9 @@ void DomoticzTCP::OnData(const uint8_t* pData, size_t length)
 		m_sql.UpdateDeviceValue("LastUpdate", LastUpdate, std::to_string(idx));
 
 	}
-	catch (const std::exception&)
+	catch (const std::exception& e)
 	{
-		Log(LOG_ERROR, "Invalid data received!");
+		Log(LOG_ERROR, "Exception: Invalid data received! (%s)", e.what());
 	}
 }
 
