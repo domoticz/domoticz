@@ -62,14 +62,6 @@ void DomoticzTCP::OnDisconnect()
 
 void DomoticzTCP::OnData(const uint8_t* pData, size_t length)
 {
-	static size_t max_size = 0;
-
-	if (length > max_size)
-	{
-		max_size = length;
-		Log(LOG_STATUS, "Max data size: %d", max_size);
-	}
-
 	if (length == 6 && strstr(reinterpret_cast<const char*>(pData), "NOAUTH") != nullptr)
 	{
 		Log(LOG_ERROR, "Authentication failed for user %s on %s:%d", m_username.c_str(), m_szIPAddress.c_str(), m_usIPPort);
