@@ -1797,7 +1797,7 @@ namespace http
 					bool bActEnabledState = m_sql.m_bAcceptNewHardware;
 					m_sql.m_bAcceptNewHardware = true;
 					std::string devname;
-					m_sql.UpdateValue(atoi(hwdid.c_str()), devid.c_str(), atoi(sunitcode.c_str()), dtype, subtype, 0, -1, 0, devname, true, szSwitchUser.c_str());
+					m_sql.UpdateValue(atoi(hwdid.c_str()), 0, devid.c_str(), atoi(sunitcode.c_str()), dtype, subtype, 0, -1, 0, devname, true, szSwitchUser.c_str());
 					m_sql.m_bAcceptNewHardware = bActEnabledState;
 
 					// set name and switchtype
@@ -2202,7 +2202,7 @@ namespace http
 					bool bActEnabledState = m_sql.m_bAcceptNewHardware;
 					m_sql.m_bAcceptNewHardware = true;
 					std::string devname;
-					m_sql.UpdateValue(atoi(hwdid.c_str()), devid.c_str(), atoi(sunitcode.c_str()), dtype, subtype, 0, -1, 0, "20.5", devname, true, szSwitchUser.c_str());
+					m_sql.UpdateValue(atoi(hwdid.c_str()), 0, devid.c_str(), atoi(sunitcode.c_str()), dtype, subtype, 0, -1, 0, "20.5", devname, true, szSwitchUser.c_str());
 					m_sql.m_bAcceptNewHardware = bActEnabledState;
 
 					// set name and switchtype
@@ -2498,7 +2498,7 @@ namespace http
 				bool bActEnabledState = m_sql.m_bAcceptNewHardware;
 				m_sql.m_bAcceptNewHardware = true;
 				std::string devname;
-				m_sql.UpdateValue(atoi(hwdid.c_str()), devid.c_str(), atoi(sunitcode.c_str()), dtype, subtype, 0, -1, 0, devname, true, szSwitchUser.c_str());
+				m_sql.UpdateValue(atoi(hwdid.c_str()), 0, devid.c_str(), atoi(sunitcode.c_str()), dtype, subtype, 0, -1, 0, devname, true, szSwitchUser.c_str());
 				m_sql.m_bAcceptNewHardware = bActEnabledState;
 
 				// set name and switchtype
@@ -2960,154 +2960,6 @@ namespace http
 					root["result"][ii]["ptag"] = Notification_Type_Desc(NTYPE_LASTUPDATE, 1);
 					ii++;
 				}
-			}
-			else if (cparam == "addnotification")
-			{
-				if (session.rights < 2)
-				{
-					session.reply_status = reply::forbidden;
-					return false; // Only admin user allowed
-				}
-
-				std::string idx = request::findValue(&req, "idx");
-				if (idx.empty())
-					return false;
-
-				std::string stype = request::findValue(&req, "ttype");
-				std::string swhen = request::findValue(&req, "twhen");
-				std::string svalue = request::findValue(&req, "tvalue");
-				std::string scustommessage = request::findValue(&req, "tmsg");
-				std::string scustomaction = CURLEncode::URLDecode(request::findValue(&req, "taction"));
-				std::string sactivesystems = request::findValue(&req, "tsystems");
-				std::string spriority = request::findValue(&req, "tpriority");
-				std::string ssendalways = request::findValue(&req, "tsendalways");
-				std::string srecovery = (request::findValue(&req, "trecovery") == "true") ? "1" : "0";
-
-				if ((stype.empty()) || (swhen.empty()) || (svalue.empty()) || (spriority.empty()) || (ssendalways.empty()) || (srecovery.empty()))
-					return false;
-
-				_eNotificationTypes ntype = (_eNotificationTypes)atoi(stype.c_str());
-				std::string ttype = Notification_Type_Desc(ntype, 1);
-				if ((ntype == NTYPE_SWITCH_ON) || (ntype == NTYPE_SWITCH_OFF) || (ntype == NTYPE_DEWPOINT))
-				{
-					if ((ntype == NTYPE_SWITCH_ON) && (swhen == "2"))
-					{ // '='
-						unsigned char twhen = '=';
-						sprintf(szTmp, "%s;%c;%s", ttype.c_str(), twhen, svalue.c_str());
-					}
-					else
-						strcpy(szTmp, ttype.c_str());
-				}
-				else
-				{
-					std::string twhen;
-					if (swhen == "0")
-						twhen = ">";
-					else if (swhen == "1")
-						twhen = ">=";
-					else if (swhen == "2")
-						twhen = "=";
-					else if (swhen == "3")
-						twhen = "!=";
-					else if (swhen == "4")
-						twhen = "<=";
-					else
-						twhen = "<";
-					sprintf(szTmp, "%s;%s;%s;%s", ttype.c_str(), twhen.c_str(), svalue.c_str(), srecovery.c_str());
-				}
-				int priority = atoi(spriority.c_str());
-				bool bOK = m_notifications.AddNotification(idx, szTmp, scustommessage, scustomaction, sactivesystems, priority, (ssendalways == "true") ? true : false);
-				if (bOK)
-				{
-					root["status"] = "OK";
-					root["title"] = "AddNotification";
-				}
-			}
-			else if (cparam == "updatenotification")
-			{
-				if (session.rights < 2)
-				{
-					session.reply_status = reply::forbidden;
-					return false; // Only admin user allowed
-				}
-
-				std::string idx = request::findValue(&req, "idx");
-				std::string devidx = request::findValue(&req, "devidx");
-				if ((idx.empty()) || (devidx.empty()))
-					return false;
-
-				std::string stype = request::findValue(&req, "ttype");
-				std::string swhen = request::findValue(&req, "twhen");
-				std::string svalue = request::findValue(&req, "tvalue");
-				std::string scustommessage = request::findValue(&req, "tmsg");
-				std::string scustomaction = CURLEncode::URLDecode(request::findValue(&req, "taction"));
-				std::string sactivesystems = request::findValue(&req, "tsystems");
-				std::string spriority = request::findValue(&req, "tpriority");
-				std::string ssendalways = request::findValue(&req, "tsendalways");
-				std::string srecovery = (request::findValue(&req, "trecovery") == "true") ? "1" : "0";
-
-				if ((stype.empty()) || (swhen.empty()) || (svalue.empty()) || (spriority.empty()) || (ssendalways.empty()) || srecovery.empty())
-					return false;
-				root["status"] = "OK";
-				root["title"] = "UpdateNotification";
-
-				std::string recoverymsg;
-				if ((srecovery == "1") && (m_notifications.CustomRecoveryMessage(strtoull(idx.c_str(), nullptr, 0), recoverymsg, true)))
-				{
-					scustommessage.append(";;");
-					scustommessage.append(recoverymsg);
-				}
-				// delete old record
-				m_notifications.RemoveNotification(idx);
-
-				_eNotificationTypes ntype = (_eNotificationTypes)atoi(stype.c_str());
-				std::string ttype = Notification_Type_Desc(ntype, 1);
-				if ((ntype == NTYPE_SWITCH_ON) || (ntype == NTYPE_SWITCH_OFF) || (ntype == NTYPE_DEWPOINT))
-				{
-					if ((ntype == NTYPE_SWITCH_ON) && (swhen == "2"))
-					{ // '='
-						unsigned char twhen = '=';
-						sprintf(szTmp, "%s;%c;%s", ttype.c_str(), twhen, svalue.c_str());
-					}
-					else
-						strcpy(szTmp, ttype.c_str());
-				}
-				else
-				{
-					std::string twhen;
-					if (swhen == "0")
-						twhen = ">";
-					else if (swhen == "1")
-						twhen = ">=";
-					else if (swhen == "2")
-						twhen = "=";
-					else if (swhen == "3")
-						twhen = "!=";
-					else if (swhen == "4")
-						twhen = "<=";
-					else
-						twhen = "<";
-					sprintf(szTmp, "%s;%s;%s;%s", ttype.c_str(), twhen.c_str(), svalue.c_str(), srecovery.c_str());
-				}
-				int priority = atoi(spriority.c_str());
-				m_notifications.AddNotification(devidx, szTmp, scustommessage, scustomaction, sactivesystems, priority, (ssendalways == "true") ? true : false);
-			}
-			else if (cparam == "deletenotification")
-			{
-				if (session.rights < 2)
-				{
-					session.reply_status = reply::forbidden;
-					return false; // Only admin user allowed
-				}
-
-				std::string idx = request::findValue(&req, "idx");
-				if (idx.empty())
-					return false;
-
-				root["status"] = "OK";
-				root["title"] = "DeleteNotification";
-
-				m_notifications.RemoveNotification(idx);
 			}
 			else if (cparam == "switchdeviceorder")
 			{

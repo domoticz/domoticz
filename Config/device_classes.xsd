@@ -1,0 +1,75 @@
+<?xml version='1.0'?>
+<xs:schema
+  xmlns:xs='http://www.w3.org/2001/XMLSchema'
+  targetNamespace='https://github.com/OpenZWave/open-zwave'
+  xmlns:DeviceClasses='https://github.com/OpenZWave/open-zwave'
+  elementFormDefault='qualified'>
+
+ <xs:element name='DeviceClasses'>
+  <xs:complexType>
+   <xs:sequence>
+    <xs:element ref='DeviceClasses:Basic' minOccurs='0' maxOccurs='unbounded'/>
+    <xs:element ref='DeviceClasses:Generic' minOccurs='0' maxOccurs='unbounded'/>
+    <xs:element ref='DeviceClasses:Role' minOccurs='0' maxOccurs='unbounded'/>
+    <xs:element ref='DeviceClasses:NodeType' minOccurs='0' maxOccurs='unbounded'/>
+    <xs:element ref='DeviceClasses:DeviceType' minOccurs='0' maxOccurs='unbounded'/>
+   </xs:sequence>
+  </xs:complexType>
+ </xs:element>
+
+ <xs:element name='Basic'>
+  <xs:complexType>
+   <xs:attribute name='key' type='xs:string' use='required'/>
+   <xs:attribute name='label' type='xs:string' use='required'/>
+  </xs:complexType>
+ </xs:element>
+
+ <xs:element name='Generic'>
+  <xs:complexType>
+   <xs:sequence>
+    <xs:element ref='DeviceClasses:Specific' minOccurs='0' maxOccurs='unbounded'/>
+   </xs:sequence>
+   <xs:attribute name='key' type='xs:string' use='required'/>
+   <xs:attribute name='label' type='xs:string' use='required'/>
+   <xs:attribute name='command_classes' type='xs:string' use='optional'/>
+   <xs:attribute name='basic' type='xs:string' use='optional'/>
+  </xs:complexType>
+ </xs:element>
+
+ <xs:element name='Specific'>
+  <xs:complexType>
+   <xs:attribute name='key' type='xs:string' use='required'/>
+   <xs:attribute name='label' type='xs:string' use='required'/>
+   <xs:attribute name='command_classes' type='xs:string' use='optional'/>
+   <xs:attribute name='basic' type='xs:string' use='optional'/>
+  </xs:complexType>
+ </xs:element>
+
+ <xs:element name='Role'>
+  <xs:complexType>
+   <xs:attribute name='key' type='xs:string' use='required'/>
+   <xs:attribute name='label' type='xs:string' use='required'/>
+   <xs:attribute name='command_classes' type='xs:string' use='optional'/>
+   <xs:attribute name='basic' type='xs:string' use='optional'/>
+  </xs:complexType>
+ </xs:element>
+
+ <xs:element name='DeviceType'>
+  <xs:complexType>
+   <xs:attribute name='key' type='xs:string' use='required'/>
+   <xs:attribute name='label' type='xs:string' use='required'/>
+   <xs:attribute name='command_classes' type='xs:string' use='optional'/>
+   <xs:attribute name='basic' type='xs:string' use='optional'/>
+  </xs:complexType>
+ </xs:element>
+
+ <xs:element name='NodeType'>
+  <xs:complexType>
+   <xs:attribute name='key' type='xs:string' use='required'/>
+   <xs:attribute name='label' type='xs:string' use='required'/>
+   <xs:attribute name='command_classes' type='xs:string' use='optional'/>
+   <xs:attribute name='basic' type='xs:string' use='optional'/>
+  </xs:complexType>
+ </xs:element>
+
+</xs:schema>

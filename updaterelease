@@ -1,6 +1,7 @@
 #!/bin/sh
 
 # This script can be used to upgrade to the latest release version
+# To skip making a backup, use -nobackup as commandline argument
 
 lowercase(){
     echo "$1" | sed "y/ABCDEFGHIJKLMNOPQRSTUVWXYZ/abcdefghijklmnopqrstuvwxyz/"
@@ -9,22 +10,50 @@ lowercase(){
 OS=`lowercase \`uname -s\``
 MACH=`uname -m`
 ARCH=`dpkg --print-architecture`
-if [ ${MACH} = "armv6l" ] || [ ${ARCH} = "armhf" ]
+
+if [ ${MACH} = "armv6l" ]
+then
+ echo "ARMv6 is not supported anymore... Please upgrade your hardware"
+ exit 1
+fi
+
+if [ ${ARCH} = "armhf" ]
 then
  MACH="armv7l"
 fi
 
-echo "Updating to latest release version..."
-echo "Please Standby..."
-wget -4 -O domoticz_release.tgz --no-check-certificate "https://www.domoticz.com/download.php?channel=stable&type=release&system=${OS}&machine=${MACH}"
-echo "Checking file Integrity..."
-tar -tzf domoticz_release.tgz >/dev/null
+echo "Stopping Domoticz..."
+sudo service domoticz.sh stop
+if [ "$1" != "-nobackup" ]; then
+    echo "Making backup of current installation..."
+    # first remove oldest files (we keep 5 backups)
+    ls -t backups/domoticz_backup_* | tail -n +5 | xargs --no-run-if-empty -I {} rm -- {}
+    # create backup in parent folder (mostly home)
+    timestamp=$(date +%Y%m%d_%H%M%S)
+    echo "Output file: backups/domoticz_backup_$timestamp.tar.gz"
+    mkdir -p backups
+    sudo tar --exclude backups -czf backups/domoticz_backup_$timestamp.tar.gz .
+    echo "Backup finished..."
+fi
+echo "Downloading latest release version..."
+wget -4 -q -O domoticz_release.tgz --no-check-certificate "https://www.domoticz.com/download.php?channel=stable&type=release&system=${OS}&machine=${MACH}"
 if [ $? -ne 0 ]
 then
- echo "Problem in downloaded Domoticz archive. Stopping update!"
+ echo "Problem downloading new Domoticz version!!. Restarting current version..."
+ sudo service domoticz.sh start
  exit 1
 fi
-tar xvfz domoticz_release.tgz
+echo "Checking file integrity..."
+tar tzf domoticz_release.tgz >/dev/null
+if [ $? -ne 0 ]
+then
+ echo "Problem in downloaded Domoticz archive!!. Stopping and restarting current version..."
+ sudo service domoticz.sh start
+ exit 1
+fi
+echo "Installing new version..."
+tar xfz domoticz_release.tgz --checkpoint=.100
 rm domoticz_release.tgz
-echo "Restarting Domoticz... (please standby...)"
-sudo service domoticz.sh restart
+echo "\nStarting Domoticz... (please standby...)"
+sudo service domoticz.sh start
+echo "Done..."

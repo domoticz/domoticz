@@ -17,14 +17,18 @@
 #include <math.h>
 #include <algorithm>
 #include <sstream>
+#include <openssl/aes.h>
 #include <openssl/evp.h>
 #include <openssl/sha.h>
+#include <openssl/err.h>
+
 #include <chrono>
 #include <limits.h>
 #include <cstring>
 #include <stdarg.h>
 #include <locale>
 #include <codecvt>
+#include <random>
 
 #if defined WIN32
 #include "../msbuild/WindowsHelper.h"
@@ -1217,9 +1221,13 @@ void DirectoryListing(std::vector<std::string>& entries, const std::string &dir,
 
 std::string GenerateUserAgent()
 {
-	int cversion = rand() % 0xFFFF;
-	int mversion = rand() % 3;
-	int sversion = rand() % 3;
+	std::random_device rd;  // a seed source for the random number engine
+	std::mt19937 gen(rd()); // mersenne_twister_engine seeded with rd()
+	std::uniform_int_distribution<> distrib_FFFF(0, 0xFFFF);
+
+	int cversion = distrib_FFFF(gen) % 0xFFFF;
+	int mversion = distrib_FFFF(gen) % 3;
+	int sversion = distrib_FFFF(gen) % 3;
 	std::stringstream sstr;
 	sstr << "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/" << (601 + sversion) << "." << (36+mversion) << " (KHTML, like Gecko) Chrome/" << (53 + mversion) << ".0." << cversion << ".0 Safari/" << (601 + sversion) << "." << (36+sversion);
 	return sstr.str();
@@ -1512,9 +1520,9 @@ bool IsDebuggerPresent()
 }
 #endif
 
-const std::string hexCHARS = "0123456789abcdef";
 std::string GenerateUUID() // DCE/RFC 4122
 {
+	const std::string hexCHARS = "0123456789abcdef";
 	std::string uuid = std::string(36, ' ');
 
 	uuid[8] = '-';
@@ -1524,11 +1532,16 @@ std::string GenerateUUID() // DCE/RFC 4122
 	//uuid[19] = ' '; //N Variant 1 UUIDs (10xx N=8..b, 2 bits)
 	uuid[23] = '-';
 
+	std::random_device rd;  // a seed source for the random number engine
+	std::mt19937 gen(rd()); // mersenne_twister_engine seeded with rd()
+	std::uniform_int_distribution<> distrib_F(0, 0x0F);
+	std::uniform_int_distribution<> distrib_3(0, 0x03);
+
 	for (size_t ii = 0; ii < uuid.size(); ii++)
 	{
 		if (uuid[ii] == ' ')
 		{
-			uuid[ii] = hexCHARS[(ii == 19) ? (8 + (std::rand() & 0x03)) : std::rand() & 0x0F];
+			uuid[ii] = hexCHARS[(ii == 19) ? (8 + (distrib_3(gen) & 0x03)) : distrib_F(gen) & 0x0F];
 		}
 	}
 	return uuid;
@@ -1536,6 +1549,7 @@ std::string GenerateUUID() // DCE/RFC 4122
 
 bool isHexRepresentation(const std::string &input)
 {
+	const std::string hexCHARS = "0123456789abcdef";
 	if (input.empty())
 		return false;
 	bool bIsHex = true;
@@ -1586,6 +1600,8 @@ std::wstring utf8_to_wstring(const std::string& utf8str)
 
 std::string sha256hex(const std::string &input)
 {
+	const std::string hexCHARS = "0123456789abcdef";
+
     unsigned char digest[33] = {0};
 	char hexdigest[65] = {0};
 	size_t idxb, idxh;
@@ -1726,5 +1742,124 @@ std::string vector_2_string(std::vector<std::string> const& strings, const std::
 		ss << itt;
 	}
 	return ss.str();
+}
+
+#define AES_KEY_LENGTH 128/8
+
+bool AESEncryptData(const std::string& szInputBuffer, std::string& szOutputBuffer, const uint8_t* pKey16)
+{
+	//The following block makes it compatible with RTSS dongle code, but in reality you do not need to make a new string that is longer!
+	const size_t encs_length = ((szInputBuffer.size() + AES_BLOCK_SIZE) / AES_BLOCK_SIZE) * AES_BLOCK_SIZE;
+
+	uint8_t* pInBuf = new uint8_t[encs_length];
+	memset(pInBuf, 0, encs_length);
+
+	memcpy(pInBuf, (const uint8_t*)&szInputBuffer[0], szInputBuffer.size());
+
+	std::string szInputBufffer((const uint8_t*)pInBuf, (const uint8_t*)pInBuf + encs_length);
+
+	// max ciphertext len for a n bytes of plaintext is
+   // n + AES_BLOCK_SIZE - 1 bytes
+	int nLen = (int)szInputBufffer.size();
+	int nCLen = nLen + AES_BLOCK_SIZE;
+	int nFLen = 0;
+
+	unsigned char aes_key[AES_KEY_LENGTH];
+	memcpy(&aes_key, pKey16, 16);
+
+	unsigned char iv_enc[AES_BLOCK_SIZE];
+	memset(iv_enc, 0, AES_BLOCK_SIZE);
+	std::string szIV = "7E973805E90B4CE5";
+	memcpy(iv_enc, szIV.c_str(), szIV.size());
+
+	// Prepare output buffer
+	szOutputBuffer.resize(nCLen);
+
+	// Perform the encryption
+	EVP_CIPHER_CTX* ctx = EVP_CIPHER_CTX_new();
+
+	if (!ctx) return false;
+
+	bool fOk = true;
+
+	EVP_CIPHER_CTX_init(ctx);
+	if (fOk) fOk = EVP_EncryptInit_ex(ctx, EVP_aes_128_cbc(), NULL, aes_key, iv_enc);
+	if (!fOk)
+	{
+		ERR_print_errors_fp(stderr);
+		goto exit_sub;
+	}
+	EVP_CIPHER_CTX_set_padding(ctx, 0);
+	if (fOk) fOk = EVP_EncryptUpdate(ctx, (uint8_t*)&szOutputBuffer[0], &nCLen, (const uint8_t*)&szInputBufffer[0], nLen);
+	if (!fOk)
+	{
+		ERR_print_errors_fp(stderr);
+		goto exit_sub;
+	}
+	if (fOk) fOk = EVP_EncryptFinal_ex(ctx, (uint8_t*)(&szOutputBuffer[0]) + nCLen, &nFLen);
+	if (!fOk)
+	{
+		ERR_print_errors_fp(stderr);
+		goto exit_sub;
+	}
+exit_sub:
+	EVP_CIPHER_CTX_cleanup(ctx);
+	EVP_CIPHER_CTX_free(ctx);
+
+	if (!fOk)
+		return false;
+
+	szOutputBuffer.resize(nCLen + nFLen);
+	return true;
+}
+
+bool AESDecryptData(const std::string& szInputBuffer, std::string& szOutputBuffer, const uint8_t* pKey16)
+{
+	// plaintext will always be equal to or lesser than length of ciphertext
+	int nLen = (int)szInputBuffer.size();
+	int nPLen = nLen, nFLen = 0;
+
+	unsigned char aes_key[AES_KEY_LENGTH];
+	memcpy(&aes_key, pKey16, 16);
+
+	unsigned char iv_enc[AES_BLOCK_SIZE];
+	memset(iv_enc, 0, AES_BLOCK_SIZE);
+	std::string szIV = "7E973805E90B4CE5";
+	memcpy(iv_enc, szIV.c_str(), szIV.size());
+
+	// Prepare output buffer
+	szOutputBuffer.resize(nPLen);
+
+	bool fOk = true;
+
+	EVP_CIPHER_CTX* ctx = EVP_CIPHER_CTX_new();
+	if (fOk) fOk = EVP_DecryptInit_ex(ctx, EVP_aes_128_cbc(), NULL, aes_key, iv_enc);
+	if (!fOk)
+	{
+		ERR_print_errors_fp(stderr);
+		goto exit_sub;
+	}
+	EVP_CIPHER_CTX_set_padding(ctx, 0);
+
+	if (fOk) fOk = EVP_DecryptUpdate(ctx, (uint8_t*)&szOutputBuffer[0], &nPLen, (const uint8_t*)&szInputBuffer[0], nLen) != 0;
+	if (!fOk)
+	{
+		ERR_print_errors_fp(stderr);
+		goto exit_sub;
+	}
+
+	if (fOk) fOk = EVP_DecryptFinal_ex(ctx, (uint8_t*)(&szOutputBuffer[0]) + nPLen, &nFLen) != 0;
+	if (!fOk)
+	{
+		ERR_print_errors_fp(stderr);
+	}
+exit_sub:
+	EVP_CIPHER_CTX_free(ctx);
+
+	if (!fOk)
+		return false;
+
+	szOutputBuffer.resize(nPLen + nFLen);
+	return true;
 }
 

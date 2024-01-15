@@ -40,8 +40,10 @@ History :
 * Add digital input processing for frame receive by bloc 7 (and future used)
 * So input must be set before use with configuration tool.
 * Fixed bad sID write for supply voltage receive by bloc 9/sfsp (so old id used were incorrect )
-
 */
+
+//GizMoCuz: Please change all comments in English, so we can understand it too.
+//The above link of the SDSP bloc does not work
 
 #include "stdafx.h"
 #include "USBtin_MultiblocV8.h"
@@ -663,7 +665,7 @@ void USBtin_MultiblocV8::BlocList_GetInfo(const unsigned int RefBloc, const char
 
 void USBtin_MultiblocV8::InsertUpdateControlSwitch(const int NodeID, const int ChildID, const std::string& defaultname)
 {
-
+	//GizMoCuz: This should be done via CDomoticzHardwareBase::SendSwitch?
 	// make device ID
 	unsigned char ID1 = (unsigned char)((NodeID & 0xFF000000) >> 24);
 	unsigned char ID2 = (unsigned char)((NodeID & 0xFF0000) >> 16);
@@ -678,9 +680,9 @@ void USBtin_MultiblocV8::InsertUpdateControlSwitch(const int NodeID, const int C
 
 	if (result.empty())
 	{
-		m_sql.safe_query("INSERT INTO DeviceStatus (HardwareID, DeviceID, Unit, Type, SubType, SwitchType, Used, SignalLevel, BatteryLevel, Name, nValue, sValue) "
-			"VALUES (%d,'%q',%d,%d,%d,%d,0, 12,255,'%q',0,' ')",
-			m_HwdID, szIdx, ChildID, pTypeLighting2, sTypeAC, int(STYPE_PushOn), defaultname.c_str());
+		m_sql.safe_query("INSERT INTO DeviceStatus (HardwareID, OrgHardwareID, DeviceID, Unit, Type, SubType, SwitchType, Used, SignalLevel, BatteryLevel, Name, nValue, sValue) "
+			"VALUES (%d, %d,'%q',%d,%d,%d,%d,0, 12,255,'%q',0,' ')",
+			m_HwdID, 0, szIdx, ChildID, pTypeLighting2, sTypeAC, int(STYPE_PushOn), defaultname.c_str());
 	}
 	else
 	{ // sinon on remet à 0 les état ici

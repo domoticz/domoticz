@@ -1,0 +1,21 @@
+<Product Revision="3" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/001D:0206:0201</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/leviton/vrcs2.png</MetaDataItem>
+    <MetaDataItem id="0206" name="ZWProductPage" type="0201">https://products.z-wavealliance.org/products/288/</MetaDataItem>
+    <MetaDataItem id="0206" name="FrequencyName" type="0201">U.S. / Canada / Mexico</MetaDataItem>
+    <MetaDataItem name="Description">The Vizia RF + 4-Button Zone Controller with Switch (VRCZ4-MR) and 4-Button Scene Controller with Switch (VRCS4-MR) are perfect for retrofit applications because they replace an existing switch giving the user control of the local load as well as the benefit of scene or zone control.
+ Item Description
+Vizia RF + 4-Button Zone Controller with Switch for Multi-Location Control with IR Remote Capability. White face assembled on device, ivory and light almond faces included.</MetaDataItem>
+    <MetaDataItem name="ProductPage">http://www.leviton.com/OA_HTML/ProductDetail.jsp?partnumber=VRCZ4-MRZ&amp;section=44147&amp;minisite=10251</MetaDataItem>
+    <MetaDataItem id="0206" name="Identifier" type="0201">VRCZ4-MR</MetaDataItem>
+    <MetaDataItem name="ProductSupport">http://www.leviton.com/OA_HTML/Home.jsp?minisite=10251&amp;respid=22372</MetaDataItem>
+    <MetaDataItem name="Name">VRCZ4-MR</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 May 2019" revision="1">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/286/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 May 2019" revision="2">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/287/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 May 2019" revision="3">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/288/xml</Entry>
+    </ChangeLog>
+  </MetaData>
+  <CommandClass id="112"/>
+</Product>

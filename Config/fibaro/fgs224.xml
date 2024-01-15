@@ -1,0 +1,166 @@
+<Product Revision="2" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/010F:1000:0204</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/fibaro/fgs224.png</MetaDataItem>
+    <MetaDataItem id="1000" name="ZWProductPage" type="0204">https://products.z-wavealliance.org/products/3980/</MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">To remove the device from the Z-Wave network:
+1. Power the device.
+2. Set the main controller into remove mode (see the controller’s
+manual).
+3. Quickly, three times click the maintenance button.
+4. LED will start blinking yellow, wait for the removing process to
+end.
+5. Successful removing will be confirmed by the Z-Wave controller’s
+message and red LED colour.
+</MetaDataItem>
+    <MetaDataItem name="Description">The remotely operated FIBARO Double Smart Module is designed to turn electrical devices or circuits on and off. Double Smart Module allows to control two devices or circuits. The compact size of the device allows for the product to be installed in the housings of other devices. The devices can be controlled either via the Z-Wave™ network or with buttons connected directly to them.</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://Products.Z-WaveAlliance.org/ProductManual/File?folder=&amp;filename=Manuals/3980/FGS-2x4-T-EN-1.0.pdf</MetaDataItem>
+    <MetaDataItem name="InclusionDescription">To add the device to the Z-Wave network manually:
+1. Power the device.
+2. Set the main controller in (Security/non-Security Mode) add mode
+(see the controller’s manual).
+3. Quickly, three times click button connected to S1/S2 or the
+maintenance button.
+4. LED will start blinking yellow, wait for the adding process to end.
+5. If you are adding in Security S2 Authenticated, input the underlined
+part of the DSK (label on the bottom of the box).
+6. Adding result will be confirmed by the Z-Wave controller’s message
+and the LED:
+• Green – successful (non-secure, S0, S2 non-authenticated),
+• Magenta – successful (Security S2 Authenticated),
+• Red – not successful.
+</MetaDataItem>
+    <MetaDataItem name="ResetDescription">Reset procedure allows to restore the device back to its factory settings, which means all information about the Z-Wave controller and user configuration will be deleted. In order to reset the device:
+1. Press and hold the maintenance button to enter the menu.
+2. Release button when the device glows yellow.
+3. Quickly click the button to confirm.
+4. After few seconds the device will be restarted, which is signalled
+with red LED colour.
+
+Use reset procedure only if the primary controller is missing or inoperable.
+</MetaDataItem>
+    <MetaDataItem id="1000" name="Identifier" type="0204">FGS-224</MetaDataItem>
+    <MetaDataItem name="Name">FIBARO Double Smart Module</MetaDataItem>
+    <MetaDataItem id="1000" name="FrequencyName" type="0204">CEPT (Europe)</MetaDataItem>
+    <MetaDataItem name="WakeupDescription">The FIBARO Double Smart Module is powered with the mains voltage so it is always awake.</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Raffaele Fanizzi - vifani@gmail.com" date="15 Oct 2020" revision="1">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/Products/3980/XML</Entry>
+      <Entry author="Romke10" date="2 January 2021" revision="2">Added parameter 151</Entry>
+    </ChangeLog>
+  </MetaData>
+  <!-- Configuration -->
+  <CommandClass id="112">
+    <Value genre="config" index="1" instance="1" label="Remember relays state" max="2" min="0" size="1" type="list" value="1">
+      <Help>This parameter determines the state of relays power supply failure (e.g. power outage). auto OFF and flashing modes the parameter not relevant and the relay will always remain off.</Help>
+      <Item label="Relays remain switched off after restoring power" value="0"/>
+      <Item label="Restore remembered state of relays after restoring power" value="1"/>
+      <Item label="Restore remembered state of relays after restoring power, but for toggle switches (parameter 20/21 set to 1) set the same state as the current state of the switches" value="2"/>
+    </Value>
+    <Value genre="config" index="150" instance="1" label="First channel - operating mode" max="3" min="0" size="1" type="list" value="0">
+      <Help>This parameter allows to choose operating for channel controlled with Q/Q1 output. timed modes (value 1, 2 or 3), time is set parameter 154 and reaction to input is set with parameter 152.</Help>
+      <Item label="Standard operation" value="0"/>
+      <Item label="Delay Off" value="1"/>
+      <Item label="Auto Off" value="2"/>
+      <Item label="Flashing" value="3"/>
+    </Value>
+    <Value genre="config" index="151" instance="1" label="Second channel - operating mode" max="3" min="0" size="1" type="list" value="0">
+      <Help>This parameter allows to choose operating for channel controlled with Q/Q2 output. timed modes (value 1, 2 or 3), time is set parameter 155 and reaction to input is set with parameter 153.</Help>
+      <Item label="Standard operation" value="0"/>
+      <Item label="Delay Off" value="1"/>
+      <Item label="Auto Off" value="2"/>
+      <Item label="Flashing" value="3"/>
+    </Value>    
+    <Value genre="config" index="152" instance="1" label="First channel - reaction to input change in delayed/auto OFF modes" max="2" min="0" size="1" type="list" value="0">
+      <Help>This parameter determines how the device when changing state of S1 input in timed for first channel.</Help>
+      <Item label="Cancel mode and set default state" value="0"/>
+      <Item label="No reaction, mode runs until it ends" value="1"/>
+      <Item label="Reset timer, start counting time from the beginning" value="2"/>
+    </Value>
+    <Value genre="config" index="153" instance="1" label="Second channel - reaction to input change in delayed/auto OFF modes" max="2" min="0" size="1" type="list" value="0">
+      <Help>This parameter determines how the device when changing state of S2 input in timed for second channel.</Help>
+      <Item label="Cancel mode and set default state" value="0"/>
+      <Item label="No reaction, mode runs until it ends" value="1"/>
+      <Item label="Reset timer, start counting time from the beginning" value="2"/>
+    </Value>
+    <Value genre="config" index="154" instance="1" label="First channel – time parameter for delayed/auto OFF and flashing modes" max="32000" min="0" size="2" type="short" value="5">
+      <Help>This parameter allows to set time parameter used in timed modes. (s)</Help>
+    </Value>
+    <Value genre="config" index="155" instance="1" label="Second channel – time parameter for delayed/auto OFF and flashing modes" max="32000" min="0" size="2" type="short" value="5">
+      <Help>This parameter allows to set time parameter used in timed modes. (s)</Help>
+    </Value>
+    <Value genre="config" index="156" instance="1" label="S1 Switch ON value sent to 2nd association group" max="255" min="0" size="2" type="short" value="255">
+      <Help>This parameter determines value sent with Switch On command to devices associated in 2nd association group.</Help>
+    </Value>
+    <Value genre="config" index="157" instance="1" label="S1 Switch OFF value sent to 2nd association group" max="255" min="0" size="2" type="short" value="0">
+      <Help>This parameter determines value sent with Switch Off command to devices associated in 2nd association group.</Help>
+    </Value>
+    <Value genre="config" index="158" instance="1" label="S1 Switch Double Click value sent to 2nd association groups" max="255" min="0" size="2" type="short" value="99">
+      <Help>This parameter determines value sent with Double Click command to devices associated in 2nd  association group.</Help>
+    </Value>
+    <Value genre="config" index="159" instance="1" label="S2 Switch ON value sent to 3rd association group" max="255" min="0" size="2" type="short" value="255">
+      <Help>This parameter determines value sent with Switch On command to devices associated in 3rd association group.</Help>
+    </Value>
+    <Value genre="config" index="160" instance="1" label="S2 Switch OFF value sent to 3rd association group" max="255" min="0" size="2" type="short" value="0">
+      <Help>This parameter determines value sent with Switch Off command to devices associated in 3rd association group.</Help>
+    </Value>
+    <Value genre="config" index="161" instance="1" label="S2 Switch Double Click value sent to 3rd association groups" max="255" min="0" size="2" type="short" value="99">
+      <Help>This parameter determines value sent with Double Click command to devices associated in 3rd  association group.</Help>
+    </Value>
+    <Value genre="config" index="162" instance="1" label="Q/Q1 output type" max="1" min="0" size="1" type="list" value="0">
+      <Help>This parameter determines type of Q/Q1 output.</Help>
+      <Item label="Normally Open (relay contacts opened turned off, closed when turned on)" value="0"/>
+      <Item label="Normally Closed (relay contacts closed turned off, opened when turned on)" value="1"/>
+    </Value>
+    <Value genre="config" index="163" instance="1" label="Q2 output type" max="1" min="0" size="1" type="list" value="0">
+      <Help>This parameter determines type of Q2 output.</Help>
+      <Item label="Normally Open (relay contacts opened turned off, closed when turned on)" value="0"/>
+      <Item label="Normally Closed (relay contacts closed turned off, opened when turned on)" value="1"/>
+    </Value>
+    <Value genre="config" index="164" instance="1" label="Lock simultaneous switching of Q1 and Q2 outputs" max="1" min="0" size="1" type="list" value="0">
+      <Help>When the lock is enabled, both outputs cannot turned on at the same time.</Help>
+      <Item label="Lock disabled" value="0"/>
+      <Item label="Lock enabled" value="1"/>
+    </Value>
+    <Value genre="config" index="20" instance="1" label="S1 input – switch type" max="2" min="0" size="1" type="list" value="2">
+      <Help>S1 - Inputs type configuration</Help>
+      <Item label="Momentary switch" value="0"/>
+      <Item label="Toggle switch (contact closed - On, contact opened - OFF)" value="1"/>
+      <Item label="Toggle switch (device changes status when switch changes status)" value="2"/>
+    </Value>
+    <Value genre="config" index="21" instance="1" label="S2 input – switch type" max="2" min="0" size="1" type="list" value="2">
+      <Help>S2 - Inputs type configuration</Help>
+      <Item label="Momentary switch" value="0"/>
+      <Item label="Toggle switch (contact closed - On, contact opened - OFF)" value="1"/>
+      <Item label="Toggle switch (device changes status when switch changes status)" value="2"/>
+    </Value>
+    <Value genre="config" index="25" instance="1" label="Inputs orientation" max="1" min="0" size="1" type="list" value="0">
+      <Help>This parameter allows reversing operation of S1 and S2 inputs changing the wiring. Use in case of incorrect wiring.</Help>
+      <Item label="default (S1 - 1st channel, S2 - 2nd channel)" value="0"/>
+      <Item label="reversed (S1 - 2nd channel, S2 - 1st channel)" value="1"/>
+    </Value>
+    <Value genre="config" index="26" instance="1" label="Outputs orientation" max="1" min="0" size="1" type="list" value="0">
+      <Help>This parameter allows reversing operation of Q1 and Q2 outputs changing the wiring. Use in case of incorrect wiring.</Help>
+      <Item label="default (Q1 - 1st channel, Q2 - 2nd channel)" value="0"/>
+      <Item label="reversed (Q1 - 2nd channel, Q2 - 1st channel)" value="1"/>
+    </Value>
+  </CommandClass>
+  <!-- -->
+  <CommandClass id="96">
+    <Compatibility>
+      <MapRootToEndpoint>true</MapRootToEndpoint>
+    </Compatibility>
+  </CommandClass>
+  <!-- Association Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="3">
+      <Group index="1" label="Lifeline" max_associations="1"/>
+      <Group index="2" label="On/Off S1" max_associations="5"/>
+      <Group index="3" label="On/Off S2" max_associations="5"/>
+    </Associations>
+  </CommandClass>
+  <CommandClass id="142">
+    <Compatibility>
+      <ForceInstances>true</ForceInstances>
+    </Compatibility>
+  </CommandClass>
+</Product>

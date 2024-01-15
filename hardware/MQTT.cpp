@@ -220,7 +220,7 @@ void MQTT::on_message(const struct mosquitto_message *message)
 		{
 			idx = (uint64_t)root["idx"].asInt64();
 			// Get the raw device parameters
-			result = m_sql.safe_query("SELECT HardwareID, DeviceID, Unit, Type, SubType FROM DeviceStatus WHERE (ID==%" PRIu64 ")", idx);
+			result = m_sql.safe_query("SELECT HardwareID, OrgHardwareID, DeviceID, Unit, Type, SubType FROM DeviceStatus WHERE (ID==%" PRIu64 ")", idx);
 			if (result.empty())
 			{
 				Log(LOG_ERROR, "unknown idx received! (idx %" PRIu64 ")", idx);
@@ -252,10 +252,11 @@ void MQTT::on_message(const struct mosquitto_message *message)
 		if (szCommand == "udevice")
 		{
 			int HardwareID = atoi(result[0][0].c_str());
-			std::string DeviceID = result[0][1];
-			int unit = atoi(result[0][2].c_str());
-			int devType = atoi(result[0][3].c_str());
-			int subType = atoi(result[0][4].c_str());
+			int OrgHardwareID = atoi(result[0][1].c_str());
+			std::string DeviceID = result[0][2];
+			int unit = atoi(result[0][3].c_str());
+			int devType = atoi(result[0][4].c_str());
+			int subType = atoi(result[0][5].c_str());
 
 			bool bnvalue = !root["nvalue"].empty();
 			bool bsvalue = !root["svalue"].empty();
@@ -300,7 +301,7 @@ void MQTT::on_message(const struct mosquitto_message *message)
 			// Prevent MQTT update being send to client after next update
 			m_LastUpdatedDeviceRowIdx = idx;
 
-			if (!m_mainworker.UpdateDevice(HardwareID, DeviceID, unit, devType, subType, nvalue, svalue, m_Name, signallevel, batterylevel, bParseTrigger))
+			if (!m_mainworker.UpdateDevice(HardwareID, OrgHardwareID, DeviceID, unit, devType, subType, nvalue, svalue, m_Name, signallevel, batterylevel, bParseTrigger))
 			{
 				Log(LOG_ERROR, "Problem updating sensor (check idx, hardware enabled)");
 				return;
@@ -821,7 +822,7 @@ void MQTT::SendDeviceInfo(const int HwdID, const uint64_t DeviceRowIdx, const st
 	}
 
 	std::vector<std::vector<std::string>> result;
-	result = m_sql.safe_query("SELECT HardwareID, DeviceID, Unit, Name, [Type], SubType, nValue, sValue, SwitchType, SignalLevel, BatteryLevel, Options, Description, LastLevel, Color, LastUpdate "
+	result = m_sql.safe_query("SELECT HardwareID, OrgHardwareID, DeviceID, Unit, Name, [Type], SubType, nValue, sValue, SwitchType, SignalLevel, BatteryLevel, Options, Description, LastLevel, Color, LastUpdate "
 				  "FROM DeviceStatus WHERE (HardwareID==%d) AND (ID==%" PRIu64 ")",
 				  HwdID, DeviceRowIdx);
 	if (!result.empty())
@@ -829,6 +830,7 @@ void MQTT::SendDeviceInfo(const int HwdID, const uint64_t DeviceRowIdx, const st
 		int iIndex = 0;
 		std::vector<std::string> sd = result[0];
 		std::string hwid = sd[iIndex++];
+		std::string org_hwid = sd[iIndex++];
 		std::string did = sd[iIndex++];
 		int dunit = atoi(sd[iIndex++].c_str());
 		std::string name = sd[iIndex++];
@@ -849,6 +851,7 @@ void MQTT::SendDeviceInfo(const int HwdID, const uint64_t DeviceRowIdx, const st
 
 		root["idx"] = Json::Value::UInt64(DeviceRowIdx);
 		root["hwid"] = hwid;
+		root["org_hwid"] = hwid;
 
 		if ((dType == pTypeTEMP) || (dType == pTypeTEMP_BARO) || (dType == pTypeTEMP_HUM) || (dType == pTypeTEMP_HUM_BARO) || (dType == pTypeBARO) || (dType == pTypeHUM) ||
 		    (dType == pTypeWIND) || (dType == pTypeRAIN) || (dType == pTypeUV) || (dType == pTypeCURRENT) || (dType == pTypeCURRENTENERGY) || (dType == pTypeENERGY) ||
@@ -1026,8 +1029,11 @@ void MQTT::SendSceneInfo(const uint64_t SceneIdx, const std::string & /*SceneNam
 	}
 }
 
-void MQTT::SubscribeTopic(const std::string &szTopic, const int qos)
+void MQTT::SubscribeTopic(const std::string &szTopic, int qos)
 {
+	if (qos == -1)
+		qos = QOS;
+
 	if (szTopic.empty())
 		return;
 	if (m_subscribed_topics.find(szTopic) == m_subscribed_topics.end())

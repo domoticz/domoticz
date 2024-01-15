@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Product Revision="1" 
+  xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="ProductPic">images/honeywell/39349-ZW1002.png</MetaDataItem>
+    <MetaDataItem id="3133" name="ZWProductPage" type="4952">https://products.z-wavealliance.org/products/2690</MetaDataItem>
+    <MetaDataItem id="3133" name="Identifier" type="4952">39349 / ZW1002</MetaDataItem>
+    <MetaDataItem name="InclusionDescription">1. Follow the instructions for your Z-Wave certified controller to add a device to the Z-Wave network. 2. Once the controller is ready to add your device, press and release the program button to add it in the network.</MetaDataItem>
+    <MetaDataItem name="ResetDescription">Quickly press the button three (3) times, then press and hold the button for at least three (3) seconds. The LED will blink five (5) times to confirm.</MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">1. Follow the instructions for your Z-Wave certified controller to remove a device from the Z-Wave network. 2. Once the controller is ready to remove your device, press and release the manual/program button to remove it from the network.</MetaDataItem>
+    <MetaDataItem name="Name">In-Wall Tamper Resistant Outlet</MetaDataItem>
+    <MetaDataItem id="3133" name="FrequencyName" type="4952">U.S. / Canada / Mexico</MetaDataItem>
+    <MetaDataItem name="Description">The Honeywell Z-Wave Tamper Resistant Outlet enables wireless control of on/off functions from the Z-Wave controlled outlet</MetaDataItem>
+	<MetaDataItem name="ProductPage">https://byjasco.com/products/ge-z-wave-plus-wall-tamper-resistant-smart-outlet</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://products.z-wavealliance.org/ProductManual/File?folder=&amp;filename=MarketCertificationFiles/2690/39349_HQSG_1.pdf</MetaDataItem>
+	<MetaDataItem name="ProductSupport">https://byjasco.com/support</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Jeff Buss - jeff.buss.3477@gmail.com" date="5 AUG 2020" revision="1">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/Products/2690/XML</Entry>
+    </ChangeLog>
+  </MetaData>
+  <!-- Configuration Parameters - per https://products.z-wavealliance.org/Products/2690 -->
+  <CommandClass id="112">
+    <Value genre="config" index="3" label="LED Light" max="2" min="0" size="1" type="list" value="1">
+      <Help>Sets when the LED on the outlet is lit.</Help>
+      <Item label="LED on when load off" value="0"/>
+      <Item label="LED on when load on (Default)" value="1"/>
+      <Item label="LED always off" value="2"/>
+    </Value>
+  </CommandClass>
+  <!-- Association Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="3">
+      <Group index="1" label="Z-Wave Plus Lifeline" max_associations="5"/>
+      <Group index="2" label="Supports Basic Set and is controlled with the local load" max_associations="5"/>
+      <Group index="3" label="Supports Basic Set and is controlled by pressing the On or Off button" max_associations="5"/>
+    </Associations>
+  </CommandClass>
+</Product>

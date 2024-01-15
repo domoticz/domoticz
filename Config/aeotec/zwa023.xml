@@ -1,0 +1,310 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Product Revision="2" xmlns="https://github.com/OpenZWave/open-zwave">
+    <MetaData>
+        <MetaDataItem name="Name">ZWA023 Smart Switch 7</MetaDataItem>
+        <MetaDataItem name="Description">
+		Aeotec Smart Switch 7 is a Z-Wave Switch plug-in module specifically used to enable Z-Wave command and control (on/off) of any plug-in tool. It can report immediate wattage consumption or kWh energy usage over a period of time. In the event of power failure, non-volatile memory retains all programmed information relating to the unit’s operating status.
+		The Plug is also a security S2 Z-Wave device, it supports Over The Air (OTA) feature for the products firmware upgrade and SmartStart network pairing feature.
+        </MetaDataItem>
+        <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0371:0017:0103</MetaDataItem>
+        <MetaDataItem name="ProductPage">https://products.z-wavealliance.org/products/3844</MetaDataItem>
+        <MetaDataItem name="ProductSupport">https://products.z-wavealliance.org/products/3844</MetaDataItem>
+        <MetaDataItem name="ProductPic">images/aeotec/zwa023.png</MetaDataItem>
+        <MetaDataItem name="ProductManual">https://products.z-wavealliance.org/products/3844</MetaDataItem>
+        <MetaDataItem name="WakeupDescription">N/A</MetaDataItem>
+        <MetaDataItem name="InclusionDescription">
+		1. Set your Z-Wave Controller into its 'Add Device' mode.  Refer to the Controller's manual if you are unsure of how to perform this step.
+		2. Power your Smart Switch to any outlet; its LED will slowly fade in and out slowly with a blue color to indicate it is ready to pair.
+		3. Tap the action button once. The LED will turn solid yellow when it enters pair mode.
+		4. If your Z-Wave Controller supports S2 encryption, enter the first 5 digits of DSK into your Controller's interface if it is requested. The DSK is printed on Smart Switch.
+		a. If pairing succeeds, it will flash white/green 4 times. 
+		b. If pairing fails, it will light a solid bright red light for 2 seconds and then return to a breathing blue light; repeat steps 1 to 4 if this happens.
+	</MetaDataItem>
+        <MetaDataItem name="ExclusionDescription">
+		1. Set your Z-Wave Controller into 'Remove Device' / 'Unpair Device' mode.  Refer to the Controller's manual if you are unsure of how to perform this step.
+		2. Make sure the product is powered. If not, plug it into a wall socket and power it on.
+		3. Click Action Button 2 times quickly; it will bright violet light up to 2s.
+		a. If Removing fails, it will light a bright red color for 2 seconds and then turn back to Load Indicator Mode; repeat steps 1 to 3. Contact us for further support if needed.
+		b. If Removing succeeds, it will become breathing blue light. Smart Switch is removed from the Z-Wave network successfully and is ready to be paired again.
+        </MetaDataItem>
+	<MetaDataItem name="ResetDescription">
+		If the primary controller is missing or inoperable, you may need to reset the device to factory settings.
+
+		Make sure the product is powered. If not, plug it into a wall socket and power on. To complete the reset process manually: 
+
+		    1. Press and hold the Action Button for at least 20 seconds and then release.
+		    2. The LED indicator will fade its blue light in and out slowly, which indicates the reset operation is successful.
+	</MetaDataItem>
+        <MetaDataItem id="0017" name="ZWProductPage" type="0103">https://products.z-wavealliance.org/products/3844</MetaDataItem>
+	<MetaDataItem id="0017" name="FrequencyName" type="0103">U.S. / Canada / Mexico</MetaDataItem>
+        <MetaDataItem id="0017" name="Identifier" type="0103">ZWA023-A</MetaDataItem>
+        <ChangeLog>
+            <Entry author="Kris Knigga - kris@knigga.com" date="09 June 2021" revision="1">Add ZWA023 Smart Switch 7 - Info from Aeotec's engineering sheet</Entry>
+            <Entry author="Kris Knigga - kris@knigga.com" date="11 June 2021" revision="2">Fixed missing config params 1-9 - Info from Aeotec's engineering sheet</Entry>
+        </ChangeLog>
+    </MetaData>
+    <!-- Configuration Parameters -->
+    <CommandClass id="112">
+        <Value genre="config" index="1" label="LED Setting" max="2" min="0" size="1" type="list" units="" value="2">
+            <Help>
+		    This parameter is used to change the reaction of LED setting. 
+
+		    0 - Disable LED completely. LED will only be used for network operation indicator, such as inclusion, exclusion, factory reset.
+		    1 - Turn on between particular times only (act as night light). The default color is red, color can be changed by Color CC.
+		    2 - Display On/Off Status. The default color is white at 50% lightness. Color can be changed by Color CC. 
+            </Help>
+	    <Item label="Disable LED completely." value="0" />
+	    <Item label="Turn on between particular times only (act as night light)." value="1" />
+	    <Item label="Display On/Off Status." value="2" />
+        </Value>
+        <Value genre="config" index="2" label="Night Light On Time" max="4294967295" min="0" size="4" type="int" units="" value="1572864">
+            <Help>
+		    This parameter is used to configure the Night Light on time. User can use Color CC to change the Night Light color(default Red). Only useful when parameter 1 is set to 1. 
+
+		    Value is of the pattern 0xRRHHMMSS. Where:
+		    RR = Reserved
+		    HH = Hours
+		    MM = Minutes
+		    SS = Seconds
+		    Default = 0x00180000 means 6pm.
+		    0x00180000 = 1572864 dec
+            </Help>
+        </Value>
+        <Value genre="config" index="3" label="Night Light Off Time" max="4294967295" min="0" size="4" type="int" units="" value="393216">
+            <Help>
+		    This parameter is used to configure the Night Light off time. Only useful when parameter 1 is set to 1. 
+
+		    Value is of the pattern 0xRRHHMMSS. Where:
+		    RR = Reserved
+		    HH = Hours
+		    MM = Minutes
+		    SS = Seconds
+		    Default = 0x00060000 means 6am.
+		    0x00060000 = 393216 dec
+            </Help>
+        </Value>
+        <Value genre="config" index="4" label="LED Blink Duration" max="255" min="0" size="1" type="byte" units="S" value="0">
+            <Help>
+		    Set the duration of blink, unit second.
+		    0 - indicates that it is not blinking
+		    1~255 - set the duration
+            </Help>
+        </Value>
+        <Value genre="config" index="5" label="LED Blink Speed" max="24" min="1" size="1" type="byte" units="" value="5">
+            <Help>
+		    Set amount of blinks per second.
+                    i.e. If set to 5, it should blink 5 times per second. 
+            </Help>
+        </Value>
+        <Value genre="config" index="6" label="Send Alert When In Use" max="3000" min="0" size="2" type="short" units="W" value="100">
+            <Help>
+		    Send alert when in use. A Scene Activation Set command will be sent when energy draw is above this setting value. 
+		    0 - disable
+		    1~3000 - enable, unit W
+            </Help>
+        </Value>
+        <Value genre="config" index="7" label="Plug Always On" max="2" min="0" size="1" type="list" units="" value="0">
+            <Help>
+		    Prevents the plug from being turned off via its button. 
+
+		    0 - the plug will operate as normal and can be turned on or off.
+		    1 - the button on the plug will be disabled for on and off commands, but still work for network inclusion and exclusion.
+		    2 - the plug will ignore any commands to turn it off and it will ignore any use of the button (but still work for network inclusion and exclusion) 
+            </Help>
+	    <Item label="the plug will operate as normal and can be turned on or off." value="0" />
+	    <Item label="the button on the plug will be disabled for on and off commands, but still work for network inclusion and exclusion." value="1" />
+	    <Item label="the plug will ignore any commands to turn it off and it will ignore any use of the button (but still work for network inclusion and exclusion)" value="2" />
+        </Value>
+        <Value genre="config" index="8" label="Power Out Action" max="2" min="0" size="1" type="list" units="" value="0">
+            <Help>
+		    Set the plug’s action in case of power out. 
+
+		    0 - last status
+		    1 - power on
+		    2 - power off
+            </Help>
+	    <Item label="last status" value="0" />
+	    <Item label="power on" value="1" />
+	    <Item label="power off" value="2" />
+        </Value>
+        <Value genre="config" index="9" label="Group3 Scene Id" max="255" min="1" size="1" type="byte" units="" value="255">
+            <Help>
+		    Set the scene id when Scene Activation Set Command sent through group3. Refer parameter 6 for more information. 
+            </Help>
+        </Value>
+        <Value genre="config" index="10" label="Over-load protection" max="1800" min="0" size="2" type="short" units="W" value="1800">
+            <Help>
+		    Turn off switch when current of load connected bypasses the maximum allowed power regardless of always on setting.
+		    0 - disable overload protection 
+		    1~1800 - When watt detected above this setting value, the switch will be turned off immediately. And an over-load notification will be sent.
+            </Help>
+        </Value>
+        <Value genre="config" index="11" label="Over-voltage protection" max="255" min="0" size="1" type="byte" units="V" value="135">
+            <Help>
+		    This parameter is used to set the over-voltage protect value, unit V.
+		    0 - disable over-voltage protection
+		    1~94 - The device will set value to 95 instead.
+		    95~255 - When voltage detected above this setting value, the switch will be turned off immediately.  And an over-voltage notification will be sent.
+            </Help>
+        </Value>
+        <Value genre="config" index="19" label="Threshold Check Time" max="255" min="0" size="1" type="byte" units="S" value="5">
+            <Help>
+		    Set the period of threshold check. Unit second. 
+		    0 - disable all threshold settings
+		    1~255 - set in seconds on how fast device checks for threshold settings 
+            </Help>
+        </Value>
+        <Value genre="config" index="20" label="kWh Report Threshold" max="10000" min="0" size="2" type="short" units="kWh" value="100">
+            <Help>
+		    Energy kWh threshold reporting enable/disable. Unit kWh. 
+            </Help>
+        </Value>
+        <Value genre="config" index="21" label="Watt Report Threshold" max="2500" min="0" size="2" type="short" units="W" value="0">
+            <Help>
+		    Threshold setting for Watt for inducing automatic report. Unit W.
+            </Help>
+        </Value>
+        <Value genre="config" index="22" label="Current Report Threshold" max="150" min="0" size="1" type="byte" units="A" value="0">
+            <Help>
+		    Threshold settings for current for inducing automatic report. Unit A. 
+            </Help>
+        </Value>
+        <Value genre="config" index="23" label="Watt Automatic Report Time" max="65535" min="0" size="2" type="short" units="S" value="600">
+            <Help>
+		    Set the automatic report time of Watt. Unit second.
+		    0 - disable 
+		    1~30 = 30s.
+		    31-65535 = 31-65535s.
+            </Help>
+        </Value>
+        <Value genre="config" index="24" label="kWh Automatic Report Time" max="65535" min="0" size="2" type="short" units="S" value="600">
+            <Help>
+		    Set the automatic report time of kWh. Unit second. 
+		    0 - disable 
+		    1~30 = 30s.
+		    31-65535 = 31-65535s.
+            </Help>
+        </Value>
+        <Value genre="config" index="25" label="Voltage Automatic Report Time" max="65535" min="0" size="2" type="short" units="S" value="600">
+            <Help>
+		    Set the automatic report time of Voltage. Unit second. 
+		    0 - disable 
+		    1~30 = 30s.
+		    31-65535 = 31-65535s.
+            </Help>
+        </Value>
+        <Value genre="config" index="26" label="Current Automatic Report Time" max="65535" min="0" size="2" type="short" units="S" value="600">
+            <Help>
+		    Set the automatic report time of Current. Unit second.
+		    0 - disable 
+		    1~30 = 30s.
+		    31-65535 = 31-65535s.
+            </Help>
+        </Value>
+        <Value genre="config" index="30" label="Alarm Settings" max="255" min="0" size="1" type="bitset" bitmask="255" units="" value="0">
+            <Help>
+		    Bitfield.  Determines if alarms are enabled in Switch, and what Switch will react to which alarms.
+
+		    0 - Disable all alarm settings
+		    1 - Smoke Alarm
+		    2 - CO Alarm
+		    4 - CO2 Alarm
+		    8 - Heat Alarm
+		    16 - Water Alarm
+		    32 - Access Control (DW Sensor open)
+		    64 - Home Security (intrusion)
+		    128 - Motion Sensor trigger
+            </Help>
+	    <BitSet id="1">
+		    <Label>Smoke Alarm</Label>
+		    <Help>Smoke Alarm</Help>
+	    </BitSet>
+	    <BitSet id="2">
+		    <Label>CO Alarm</Label>
+		    <Help>CO Alarm</Help>
+	    </BitSet>
+	    <BitSet id="3">
+		    <Label>CO2 Alarm</Label>
+		    <Help>CO2 Alarm</Help>
+	    </BitSet>
+	    <BitSet id="4">
+		    <Label>Heat Alarm</Label>
+		    <Help>Heat Alarm</Help>
+	    </BitSet>
+	    <BitSet id="5">
+		    <Label>Water Alarm</Label>
+		    <Help>Water Alarm</Help>
+	    </BitSet>
+	    <BitSet id="6">
+		    <Label>Access Control (DW Sensor open)</Label>
+		    <Help>Access Control (DW Sensor open)</Help>
+	    </BitSet>
+	    <BitSet id="7">
+		    <Label>Home Security (intrusion)</Label>
+		    <Help>Home Security (intrusion)</Help>
+	    </BitSet>
+	    <BitSet id="8">
+		    <Label>Motion Sensor trigger</Label>
+		    <Help>Motion Sensor trigger</Help>
+	    </BitSet>
+        </Value>
+        <Value genre="config" index="31" label="Alarm Response" max="255" min="0" size="1" type="byte" units="" value="0">
+            <Help>
+		    Enabled by Alarm Settings, and determines what the switch does in the case an alarm is triggered. 
+
+		    0 - disable, no reaction to alarm settings
+		    1 - Switch is ON
+		    2 - Switch is OFF
+		    3~255 - Sets rate at which Switch turns ON and OFF in seconds. (i.e. If set to 3, then Switch will turn ON in 0.3 seconds, and then turn OFF in 0.3 seconds in a cycle until user disables the alarm manually. If set to 255, then it will cycle every 25.5 seconds)
+            </Help>
+        </Value>
+        <Value genre="config" index="32" label="Alarm Disable Setting" max="255" min="0" size="1" type="byte" units="" value="1">
+            <Help>
+		    Determines the method of disabling the alarm of the device. 
+
+		    0 - Can be disabled by 1 tapping Switches action button once.
+		    1 - Can be disabled by 2 tapping Switches action button within 1 second.
+		    2 - Can be disabled by 4 tapping Switches action button within 2 seconds.
+		    4 - Can be disabled by pressing and holding Switches action button about 4 seconds.
+		    5~255 - Sets the duration of the alarm in seconds (i.e Sets this setting to 50, the alarm state of the switch will disable after 50 seconds)
+		    Note:  when the device receives the corresponding Notification State Idle Event, which can also dismiss the current alarm.
+            </Help>
+        </Value>
+        <Value genre="config" index="40" label="Automatic Off Timer" max="86400" min="0" size="4" type="int" units="S" value="0">
+            <Help>
+		    Acts as auto off after as soon as the switch turns ON, setting is set in seconds. 
+
+		    0 - no auto off with timer
+		    1~86400 - seconds
+            </Help>
+        </Value>
+        <Value genre="config" index="41" label="Automatic On Timer" max="86400" min="0" size="4" type="int" units="S" value="0">
+            <Help>
+		    Acts as auto on after as soon as the switch turns OFF, setting is set in seconds. 
+
+		    0 - no auto on with timer
+		    1~86400 - seconds
+            </Help>
+        </Value>
+        <Value genre="config" index="42" label="Report Command Setting" max="2" min="0" size="1" type="list" units="" value="2">
+            <Help>
+		    Which report will be sent to lifeline group when the output state is changed. 
+
+		    0 - Send nothing
+		    1 - Send Basic Report
+		    2 - Send Switch Binary Report
+            </Help>
+	    <Item label="Send nothing" value="0" />
+	    <Item label="Send Basic Report" value="1" />
+	    <Item label="Send Switch Binary Report" value="2" />
+        </Value>
+    </CommandClass>
+    <!-- Association Groups -->
+    <CommandClass id="133">
+        <Associations num_groups="3">
+            <Group index="1" label="LifeLine" max_associations="5"/>
+            <Group index="2" label="Retransmit" max_associations="5"/>
+            <Group index="3" label="Alert" max_associations="5"/>
+        </Associations>
+    </CommandClass>
+</Product>

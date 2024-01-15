@@ -1,0 +1,83 @@
+<Product Revision="2" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0208:000A:0101</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/hank/hkzw-so03.png</MetaDataItem>
+    <MetaDataItem id="000A" name="ZWProductPage" type="0101">https://products.z-wavealliance.org/products/1854/</MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">1) Insert the Plug into a socket.
+2) Set the Z-Wave network controller into the exclusion mode (see Z-Wave controller operating manual).
+3) Triple click the Z button.
+4) RGB LED indicator will blink orange till the removing process is completed, than the indicator will keep orange for 3 seconds.
+</MetaDataItem>
+    <MetaDataItem id="000A" name="FrequencyName" type="0101">U.S. / Canada / Mexico</MetaDataItem>
+    <MetaDataItem name="Name">Smart Plug</MetaDataItem>
+    <MetaDataItem name="ResetDescription">1) Insert the Plug into a socket,
+2) Press and hold the Z button for more than 20 seconds,
+3) If holding time more than 20seconds, the RGB LED indicator will keep yellow for 2 seconds, which means resetting is complete. 
+ Use this procedure only in the event that the network primary controller is missing or otherwise inoperable.
+</MetaDataItem>
+    <MetaDataItem name="Description">Smart plug is a Z-Wave Switch plugin module specifically used to enable Z-Wave command and control (on/off) of any plug-in tool. It can report wattage consumption or kWh energy usage. 
+Smart Plug is also a security Z-Wave device and supports the Over The Air (OTA) feature for the product’s firmware upgrade .
+</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://Products.Z-WaveAlliance.org/ProductManual/File?folder=&amp;filename=Manuals/1854/HKZW-SO03_manual.pdf</MetaDataItem>
+    <MetaDataItem id="000A" name="Identifier" type="0101">HKZW-SO03</MetaDataItem>
+    <MetaDataItem name="InclusionDescription">1) Connect the power supply.
+2) Set the Z-Wave network main controller into inclusion mode (see Z-Wave network controller operating manual).
+3) Triple click the Z-button or power up the device , RGB LED indicator should blink fast in blue.
+4) Smart Plug should be recognized and included into the Z-Wave network.
+</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="24 May 2019" revision="2">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1854/xml</Entry>
+    </ChangeLog>
+  </MetaData>
+  <!-- https://products.z-wavealliance.org/products/1901 -->
+
+  <!-- Configuration Parameters -->
+  <CommandClass id="112">
+    <Value genre="config" index="20" instance="1" label="Overload Protection" max="1" min="0" size="1" type="list" units="" value="1">
+      <Help>turns relay off once voltage exceeds 16.5A for over 5 secs if enabled</Help>
+      <Item label="Disabled" value="0"/>
+      <Item label="Enabled" value="1"/>
+    </Value>
+    <Value genre="config" index="21" instance="1" label="On/Off Status Recovery After Power Failure" max="2" min="0" size="1" type="list" units="" value="0">
+      <Help>Recovery state for power failure</Help>
+      <Item label="Previous setting" value="0"/>
+      <Item label="ON" value="1"/>
+      <Item label="OFF" value="2"/>
+    </Value>
+    <Value genre="config" index="24" instance="1" label="On/Off Status Change Notifications " max="2" min="0" size="1" type="list" units="" value="1">
+      <Help>Send notifications to associated devices</Help>
+      <Item label="Disabled" value="0"/>
+      <Item label="Send any change" value="1"/>
+      <Item label="Send manual changes" value="2"/>
+    </Value>
+    <Value genre="config" index="27" instance="1" label="LED Indicator Control" max="1" min="0" size="1" type="list" units="" value="0">
+      <Help>LED Indicator Control</Help>
+      <Item label="Display power consumption always" value="0"/>
+      <Item label="Display power consumption at state change" value="1"/>
+    </Value>
+    <Value genre="config" index="151" instance="1" label="Power Report Value Threshold" max="65535" min="0" size="2" type="short" units="Watts" value="50">
+      <Help>Minimum change in watts to report</Help>
+    </Value>
+    <Value genre="config" index="152" instance="1" label="Power Report Percentage Threshold" max="255" min="0" size="1" type="byte" units="%" value="10">
+      <Help>Minimum percentage change to report</Help>
+    </Value>
+    <Value genre="config" index="171" instance="1" label="Power Report Frequency" max="2678400" min="0" size="4" type="int" units="seconds" value="30">
+      <Help>How often to report power consumption (W) in secs</Help>
+    </Value>
+    <Value genre="config" index="172" instance="1" label="Energy Report Frequency " max="2678400" min="0" size="4" type="int" units="seconds" value="300">
+      <Help>How often to report energy usage (KWH) in secs</Help>
+    </Value>
+    <Value genre="config" index="173" instance="1" label="Voltage Report Frequency " max="2678400" min="0" size="4" type="int" units="seconds" value="0">
+      <Help>How often to report voltage (V) in secs</Help>
+    </Value>
+    <Value genre="config" index="174" instance="1" label="Electricity Report Frequency" max="2678400" min="0" size="4" type="int" units="seconds" value="0">
+      <Help>How often to report electrical current (A) in secs</Help>
+    </Value>
+  </CommandClass>
+  <!-- Association Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="1">
+      <Group index="1" label="Lifeline" max_associations="5"/>
+    </Associations>
+  </CommandClass>
+</Product>

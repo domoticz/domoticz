@@ -1,0 +1,71 @@
+<Product Revision="2" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0299:1A93:0005</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/technisat/03009496.png</MetaDataItem>
+    <MetaDataItem id="1000" name="ZWProductPage" type="0303">https://products.z-wavealliance.org/products/3778/</MetaDataItem>
+    <MetaDataItem name="WakeupDescription">TechniSat Shutter is powered with mains voltage so it is always awake.</MetaDataItem>
+    <MetaDataItem name="ResetDescription">Use this procedure only when the network primary controller is missing or otherwise inoperable. 1. When the roller shutter is in the lowermost position, press and hold T2 for more than 20 seconds. 2. The LED will alternately flash red and green for 5 seconds after a successful reset.</MetaDataItem>
+    <MetaDataItem id="1000" name="Identifier" type="0303">0300/9496</MetaDataItem>
+    <MetaDataItem name="Name">Shutter</MetaDataItem>
+    <MetaDataItem name="InclusionDescription">1. Install the TechniSat Shutter.
+      2. After checking the correct installation, re-enable electrical power at the main fuse or circuit breaker.
+        3. Start the Z-Wave device add mode on your Z-Wave gateway, according to the gateway‘s manual.
+        4. Press T1 3x within 1 second.
+        5. The red status LED is on while the device is added to the Z-Wave network.
+        6. The green LED is on for 5 seconds after successfully adding the device.
+</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://products.z-wavealliance.org/ProductManual/File?folder=&amp;filename=product_documents/3778/Manual_SMD01_Shutter.pdf</MetaDataItem>
+    <MetaDataItem id="1000" name="FrequencyName" type="0303">CEPT (Europe)</MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">1. Start the Z-Wave device remove mode on your Z-Wave gateway, according to the gateway‘s manual.
+      2. When the roller shutter is in the uppermost position, press and hold T1 for more than 10 seconds.
+      3. The red status LED is on while the device is removed from the Z-Wave network.
+      4. The green LED is on for 5 seconds after successfully removing the device.
+</MetaDataItem>
+    <MetaDataItem name="Description">Designed as a drop-in replacement for your shutter wall switch from leading brand manufacturers, TechniSat's Shutter-Switch integrates your wall switch into the Smart Home future. Featuring Z-Wave SmartStart and S2 security for easy installation and secure operation, your shutter switch can now be controlled from your Smart Home as well.
+        - Full manual operation
+        - can trigger central scenes via multiple button clicks
+        - Short circuit and overload protection monitoring
+</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Mathis Klooss - ozw@gunah.eu" date="13 Jun 2020" revision="1">Initial file based on z-wavealliance.org</Entry>
+      <Entry author="Andreas Krueger - ankrueg@gmx.de" date="15 Nov 2020" revision="2">Value type for "Parameter 2" and "Parameter 3" changed to "short" as parameter size is 2 bytes.</Entry>
+    </ChangeLog>
+  </MetaData>
+  <!-- Configuration -->
+  <CommandClass id="112">
+    <Value type="list" genre="config" instance="1" index="1" label="Parameter 1" size="1" value="1">
+      <Help>
+        Enable/disable central scene notifications for 2x-5x button presses.
+      </Help>
+      <Item label="disable central scene" value="0" />
+      <Item label="enable central scene" value="1" />
+    </Value>
+    <Value type="short" genre="config" instance="1" index="2" label="Parameter 2" value="3" min="0" max="8640">
+      <Help>
+        3 to 8640 - Interval of current wattage meter reports in 10 seconds increments.
+        0 - Disable unsolicited meter reports of current wattage.
+      </Help>
+    </Value>
+    <Value type="short" genre="config" instance="1" index="3" label="Parameter 3" value="60" min="0" max="30240">
+      <Help>
+        Interval of active energy meter reports in minutes.
+         - 10 to 30240 - Interval of active energy meter unsolicited reports in minutes (10 minutes - 3 weeks)
+         - 0 - Disable unsolicited meter reports of active energy.
+      </Help>
+    </Value>
+    <Value type="list" genre="config" instance="1" index="4" label="Parameter 4" size="1" value="0">
+      <Help>
+        Setting this parameter to 1 will start a manual shutter calibration.
+      </Help>
+      <Item label="Default" value="0" />
+      <Item label="manual shutter calibration" value="1" />
+    </Value>
+  </CommandClass>
+  <!-- Association Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="2">
+      <Group index="1" label="Lifeline" max_associations="1"/>
+      <Group index="2" label="Basic on/off" max_associations="16"/>
+    </Associations>
+  </CommandClass>
+</Product>

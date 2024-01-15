@@ -192,7 +192,7 @@ define(['app', 'log/Chart'], function (app) {
         function chartParamsCompareTemplate(ctrl, deviceUnit) {
             const deviceType = ctrl.device.SwitchTypeVal;
             const template = {
-                chartName: $.t('Comparing') + ' ' + $.t(deviceType === chart.deviceTypes.EnergyUsed ? 'Usage' : deviceType === chart.deviceTypes.EnergyGenerated ? 'Generated' : chart.deviceTypes.fromIndex(deviceType)),
+                chartName: ($.t('Comparing') + ' ' + $.t(deviceType === chart.deviceTypes.EnergyUsed ? 'Usage' : deviceType === chart.deviceTypes.EnergyGenerated ? 'Generated' : '')).trim(),
                 trendValuationIsReversed: function () {
                     return deviceType === chart.deviceTypes.EnergyGenerated;
                 },

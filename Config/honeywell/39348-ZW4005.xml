@@ -1,0 +1,46 @@
+<!-- Honeywell(Jasco) 39348 / ZW4005 In-Wall Smart Switch-->
+<Product Revision="2" 
+  xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="ProductPic">images/honeywell/39348-ZW4005.png</MetaDataItem>
+    <MetaDataItem id="3036" name="ZWProductPage" type="4952">https://products.z-wavealliance.org/products/2689/</MetaDataItem>
+    <MetaDataItem id="3036" name="Identifier" type="4952">39348 / ZW4005</MetaDataItem>
+    <MetaDataItem name="InclusionDescription">1. Follow the instructions for your Z-Wave certified controller to include a device to the Z-Wave network.
+2. Once the controller is ready to include your device, press and release the top or bottom of the wireless smart switch(rocker) to include it in the network.
+3. Once your controller has confirmed that the device has been included, refresh the Z-Wave network to optimize performance.</MetaDataItem>
+    <MetaDataItem name="ResetDescription">Quickly press ON (Top) button 3 times then immediately press the OFF (Bottom) button 3 times. The LED will flash ON/OFF 5 times when completed successfully. 
+Note: Please use this reset procedure only when the primary controller is missing or inoperable.</MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">1. Follow the instructions for your Z-Wave certified controller to exclude a device from the Z-Wave network. 
+2. Once the controller is ready to exclude your device, press and release the top button of the wireless smart switch (rocker) to exclude it from the network.</MetaDataItem>
+    <MetaDataItem name="Name">In-Wall Smart Switch</MetaDataItem>
+    <MetaDataItem id="3036" name="FrequencyName" type="4952">U.S. / Canada / Mexico</MetaDataItem>
+    <MetaDataItem name="Description"></MetaDataItem>
+    <MetaDataItem name="ProductManual">https://products.z-wavealliance.org/ProductManual/File?folder=&amp;filename=MarketCertificationFiles/2689/39348-HQSG_v1.pdf</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Dinko Bajric - dbajric@gmail.com" date="22 March 2020" revision="1">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/Products/2689/XML</Entry>
+      <Entry author="Justin Hammond" date="24 June 2020" revision="2">Correct Product Pic Entry</Entry>
+    </ChangeLog>
+  </MetaData>
+  <!-- Configuration Parameters - per https://products.z-wavealliance.org/Products/2689 -->
+  <CommandClass id="112">
+    <Value genre="config" index="3" label="LED Light" max="2" min="0" size="1" type="list" value="0">
+      <Help>Sets when the LED on the switch is lit.</Help>
+      <Item label="LED on when light off" value="0"/>
+      <Item label="LED on when light on" value="1"/>
+      <Item label="LED always off" value="2"/>
+    </Value>
+    <Value genre="config" index="4" label="Invert Switch" max="1" min="0" size="1" type="list" value="0">
+      <Help>Change the top of the switch to OFF and the bottom of the switch to ON, if the switch was installed upside down.</Help>
+      <Item label="No" value="0"/>
+      <Item label="Yes" value="1"/>
+    </Value>
+  </CommandClass>
+  <!-- Association Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="3">
+      <Group index="1" label="Lifeline" max_associations="5"/>
+      <Group index="2" label="Basic - Load" max_associations="5"/>
+      <Group index="3" label="Basic - Double Tap" max_associations="5"/>
+    </Associations>
+  </CommandClass>
+</Product>

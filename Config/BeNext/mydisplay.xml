@@ -1,0 +1,37 @@
+<Product Revision="1" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/008A:0100:0002</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/BeNext/mydisplay.png</MetaDataItem>
+    <MetaDataItem id="0100" name="ZWProductPage" type="0002">https://products.z-wavealliance.org/products/39/</MetaDataItem>
+    <MetaDataItem name="Name">Remote Display</MetaDataItem>
+    <MetaDataItem name="Description">The Remote Display is a controlling device for changing automated lifestyles, selecting a scene or controlling individual products. The blue illuminated display provides comfortable readability during dark hours.
+Two hotkey buttons are available which can be configured to your own wishes within the free of charge online manager.
+The Remote Display runs on two AAA batteries, with an expected lifetime of four years.
+
+Features:
+Control and manage different scenes easily from one controller
+Easy to configure 
+Control individual products
+
+Specifications:
+Z Cert Prod Pkg ExcpLogo W max Converted Remote Display
+Product dimensions: 170 x 45 x 22 millimeter (L x W x H)
+Normal operating voltage: 2x AAA 1,5V batteries. From 2,3Vdc to 4,0Vdc. Do not use rechargeable batteries
+Storage temperature: -5°C to +65°C
+Storage humidity: 10% to 70%
+Operating temperature: 0°C to 50°C
+Operating humidity:	30% to 80%
+Frequency range: 868.42 MHz (Z-Wave)
+Maximum wireless range: 100 meters in line of sight
+Average wireless range: 30 meter
+Mesh-network wireless range: 150 to 300 meters (maximum of 4 hops)</MetaDataItem>
+    <MetaDataItem name="ProductSupport">info@benext.eu</MetaDataItem>
+    <MetaDataItem id="0100" name="Identifier" type="0002">BeNext myDisplay</MetaDataItem>
+    <MetaDataItem name="ProductPage">http://www.benext.eu/en/products/remote-display/</MetaDataItem>
+    <MetaDataItem id="0100" name="FrequencyName" type="0002">CEPT (Europe)</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 May 2019" revision="1">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/39/xml</Entry>
+    </ChangeLog>
+  </MetaData>
+  <CommandClass id="112"/>
+</Product>

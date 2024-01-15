@@ -1,0 +1,57 @@
+<!-- Honeywell(Jasco) 39348 / ZW4008 In-Wall Smart Switch-->
+<Product Revision="2" 
+  xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <!--<MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/</MetaDataItem>-->
+    <MetaDataItem name="ProductPic">images/honeywell/39348-ZW4008.png</MetaDataItem>
+    <MetaDataItem id="3135" name="ZWProductPage" type="4952">https://products.z-wavealliance.org/products/3599/</MetaDataItem>
+    <MetaDataItem id="3135" name="Identifier" type="4952">39348 / ZW4008</MetaDataItem>
+    <MetaDataItem name="InclusionDescription">1. Follow the instructions for your Z-Wave certified controller to add a device to the Z-Wave network.
+2. Once the controller is ready to add your device, press and release the top or bottom of the wireless smart switch (rocker) to add it in the network.
+
+If prompted by the controller to enter the S2 security code, refer to the QR code/security number on the back of the box, or the QR code label on the product.</MetaDataItem>
+    <MetaDataItem name="ResetDescription">Quickly press ON (top) button 3 times, then, immediately press the OFF (bottom) button 3 times. The LED will flash ON/OFF 5 times when completed successfully.
+Note: This should only be used in the event your network’s primary controller is missing or otherwise inoperable.</MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">1. Follow the instructions for your Z-Wave certified controller to remove a device from the Z-Wave network.
+2. Once the controller is ready to remove your device, press and release the top or bottom of the wireless smart switch (rocker) to remove it from the network.</MetaDataItem>
+    <MetaDataItem name="Name">In-Wall Smart Switch</MetaDataItem>
+    <MetaDataItem id="3135" name="FrequencyName" type="4952">U.S. / Canada / Mexico</MetaDataItem>
+    <MetaDataItem name="Description">In-Wall Smart Switch with QuickFit and SimpleWire enhancements. Revolutionary QuickFit design features a housing depth that is up to 20 percent smaller than the previous Z-Wave models. This reduced size coupled with the elimination of heat taps provides a better fit in older style boxes and multi-gang configurations. SimpleWire technology allows line and load to automatically be configured with auto-sensing line-load terminals. All of this is coupled with Z-Wave S2 and Smart Start allows for effortless installation while being safer than ever!</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://products.z-wavealliance.org/ProductManual/File?folder=&amp;filename=MarketCertificationFiles/3599/39348%20Binder.pdf</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Jeff Sanicola - jeff.sanicola@outlook.com" date="01 Jan 2020" revision="1">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/Products/3599/xml</Entry>
+      <Entry author="Brian France" date="11 Dec 2020" revision="2">Added COMMAND_CLASS_BASIC block to set Value type instead of Node Event for Basic Set, Added COMMAND_CLASS_ASSOCIATION block for double tap with double tap defauled to auto</Entry>
+    </ChangeLog>
+  </MetaData>
+  <!-- Configuration Parameters - per https://products.z-wavealliance.org/products/3599 -->
+  <CommandClass id="112">
+    <Value genre="config" index="3" label="LED Indication Configuration" max="3" min="0" size="1" type="list" value="0">
+      <Help>Sets when the LED on the switch is lit.</Help>
+      <Item label="LED on when light off" value="0"/>
+      <Item label="LED on when light on" value="1"/>
+      <Item label="LED always off" value="2"/>
+      <Item label="LED always on" value="3"/>
+    </Value>
+    <Value genre="config" index="19" label="Alternate Exclusion" max="1" size="1" type="list" value="0">
+      <Help>0 (default) - Press any button on the device 
+1 - Press 2 times ON button and then 2 times OFF button, LED will flash 5 times if done successful</Help>
+      <Item label="Any button" value="0"/>
+      <Item label="2x ON button, 2x OFF button" value="1"/>
+    </Value>
+  </CommandClass>
+  <!-- Association Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="3">
+      <Group index="1" label="Lifeline" max_associations="5"/>
+      <Group index="2" label="Basic - Load" max_associations="5"/>
+      <Group index="3" label="Basic - Double Tap" max_associations="5" auto="true"/>
+    </Associations>
+  </CommandClass>
+  <!-- COMMAND_CLASS_BASIC -->
+   <CommandClass id="32">
+     <Compatibility>
+       <IgnoreMapping>true</IgnoreMapping>
+       <SetAsReport>true</SetAsReport>
+     </Compatibility>
+   </CommandClass>
+</Product>

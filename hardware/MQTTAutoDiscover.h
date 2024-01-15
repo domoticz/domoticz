@@ -58,6 +58,8 @@ class MQTTAutoDiscover : public MQTT
 		int position_open = 100;
 		int position_closed = 0;
 
+		std::string on_command_type;
+
 		std::string payload_available;
 		std::string payload_not_available;
 
@@ -108,7 +110,7 @@ class MQTTAutoDiscover : public MQTT
 		std::string state_locked = "LOCKED";
 		std::string state_unlocked = "UNLOCKED";
 
-		int qos = 0;
+		int qos = 1;
 
 		std::map<std::string, std::string> keys;
 
@@ -170,7 +172,7 @@ private:
 	std::string GetValueFromTemplate(Json::Value root, std::string szValueTemplate);
 	std::string GetValueFromTemplate(const std::string &szValue, std::string szValueTemplate);
 	bool SetValueWithTemplate(Json::Value& root, std::string szValueTemplate, std::string szValue);
-	bool GuessSensorTypeValue(const _tMQTTASensor* pSensor, uint8_t& devType, uint8_t& subType, std::string& szOptions, int& nValue, std::string& sValue);
+	bool GuessSensorTypeValue(_tMQTTASensor* pSensor, uint8_t& devType, uint8_t& subType, std::string& szOptions, int& nValue, std::string& sValue);
 	void ApplySignalLevelDevice(const _tMQTTASensor* pSensor);
 
 	void on_auto_discovery_message(const struct mosquitto_message* message);

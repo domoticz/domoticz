@@ -1,0 +1,73 @@
+<Product Revision="4" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0086:000E:0003</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/aeotec/dsc14104.png</MetaDataItem>
+    <MetaDataItem id="000E" name="ZWProductPage" type="0003">https://products.z-wavealliance.org/products/1623/</MetaDataItem>
+    <MetaDataItem id="000E" name="Identifier" type="0003">DSC14104-ZWUS</MetaDataItem>
+    <MetaDataItem name="Description">Micro Motor Controller</MetaDataItem>
+    <MetaDataItem name="Name">Aeon Labs Micro Motor Controller DSC14104 ZWUS</MetaDataItem>
+    <MetaDataItem id="000E" name="FrequencyName" type="0003">U.S. / Canada / Mexico</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="24 May 2019" revision="4">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1623/xml</Entry>
+    </ChangeLog>
+  </MetaData>
+  <!-- 
+Aeotec DSC14104 Micro Motor Controller
+https://aeotec.freshdesk.com/helpdesk/attachments/6009584516
+ -->
+  <!-- Configuration Parameters -->
+  <CommandClass id="112">
+    <Value genre="config" index="1" label="Motor start delay time" size="4" type="int" units="ms" value="0">
+      <Help>Motor start delay time (ms)</Help>
+    </Value>
+    <Value genre="config" index="5" label="Opening time" size="2" type="short" units="ms" value="5000">
+      <Help>
+	  Total time from endpoint of close go to endpoint of opening (ms).
+	  This value set 0x00000000, will use the time of last calibration.
+	  Default 5 seconds</Help>
+    </Value>
+    <Value genre="config" index="6" label="Closing time" size="2" type="short" units="ms" value="5000">
+      <Help>
+	  Total time from endpoint of opening go to endpoint of close (ms).
+	  This value set 0x00000000, will use the time of last calibration.
+	  Default 5 seconds</Help>
+    </Value>
+    <Value genre="config" index="7" label="Motor status after power on" max="2" min="0" size="1" type="list" units="" value="0">
+      <Help>Motor status after power on</Help>
+      <Item label="Motor keep still (Default)" value="0"/>
+      <Item label="Open Motor" value="1"/>
+      <Item label="Close Motor" value="2"/>
+    </Value>
+    <Value genre="config" index="8" label="Set count of External Button/Switch" max="1" min="0" size="1" type="list" units="" value="0">
+      <Help>
+	  Set count of External Button/Switch
+	  Note: Single External Button must connect to ST and COM port.
+	  </Help>
+      <Item label="0=Three External Button/Switch (Default)" value="0"/>
+      <Item label="Single External Button" value="1"/>
+    </Value>
+    <Value genre="config" index="80" label="Notification status" max="2" min="0" size="1" type="list" units="" value="0">
+      <Help>Enable automatic notifications to associated group Reports devices whenever there is a state change</Help>
+      <Item label="Nothing" value="0"/>
+      <Item label="Hail" value="1"/>
+      <Item label="Basic" value="2"/>
+    </Value>
+    <Value genre="config" index="120" label="Control mode" max="1" min="0" size="1" type="list" units="" value="0">
+      <Help>Set External Switch/Button Control mode</Help>
+      <Item label="Momentary button mode" value="0"/>
+      <Item label="2 state switch mode" value="1"/>
+    </Value>
+    <Value genre="config" index="254" label="Device tag" max="65535" min="0" type="short" units="" value="0">
+      <Help>Device tag.</Help>
+    </Value>
+    <Value genre="config" index="255" label="Reset device" type="button" units="" write_only="true">
+      <Help>Reset to the default configuration.</Help>
+    </Value>
+  </CommandClass>
+  <!-- Association Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="1">
+      <Group index="1" label="Lifeline" max_associations="5"/>
+    </Associations>
+  </CommandClass>
+</Product>

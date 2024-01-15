@@ -1,0 +1,255 @@
+<Product Revision="5" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/031E:0001:0001</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/inovelli/lzw31-sn.png</MetaDataItem>
+    <MetaDataItem id="0001" name="ZWProductPage" type="0001">https://products.z-wavealliance.org/products/3438</MetaDataItem>
+    <MetaDataItem name="ProductPage">https://inovelli.com/shop/smart-light-switches/zwave-smart-switches-gen2/pre-order-z-wave-dimmer-switch-no-neutral-required-scenes-notification/</MetaDataItem>
+    <MetaDataItem name="ProductSupport">https://inovelli.com/shop/smart-light-switches/zwave-smart-switches-gen2/pre-order-z-wave-dimmer-switch-no-neutral-required-scenes-notification/</MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">To Exclude your switch, put your HUB in exclusion mode and press the Configuration Button three (3) times.</MetaDataItem>
+    <MetaDataItem id="0001" name="FrequencyName" type="0001">U.S. / Canada / Mexico</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://products.z-wavealliance.org/ProductManual/File?folder=&amp;filename=MarketCertificationFiles/3438/LZW31-SN%20Manual.pdf</MetaDataItem>
+    <MetaDataItem name="ResetDescription">You may factory reset the switch by holding down the Config Button for twenty (20) or more seconds. The LED Bar will turn Red and blink three (3) times to confirm.
+
+However, we recommend using a certified Z-Wave controller to remove the device from your network for factory resetting the switch.
+
+Only use either of these procedures in the event that the network primary controller is missing or otherwise inoperable.
+</MetaDataItem>
+    <MetaDataItem name="Description">The Inovelli Red Series Dimmer is a Z-Wave in-wall dimmer that controls attached LED, CFL, &amp; Incandescent lighting which can be highly customized to your liking at the switch itself with our unique config button and advanced firmware. The switch can also be used either with or without a neutral wire. In addition, the Red Series comes with advanced features such as scene support, power monitoring, notifications, local protection, etc.</MetaDataItem>
+    <MetaDataItem name="Name">LZW31-SN Dimmer</MetaDataItem>
+    <MetaDataItem id="0001" name="Identifier" type="0001">LZW31-SN</MetaDataItem>
+    <MetaDataItem name="InclusionDescription">To include your switch, start the inclusion process on your HUB and tap the Configuration Button three (3) times.
+
+Please Note: If this doesn't work, you can check to see if your switch is within Z-Wave Range by holding down the Configuration Button for 5-10 seconds (if it's not within range, the LED Bar will indicate Red and if it is within Range, the LED Bar will indicate Green). If your switch indicates Red, please move the switch closer to the HUB. If your switch indicates Green, please try running an Exclusion to reset your switch.</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Eric Maycock - ericm@inovelli.com" date="7 Nov 2019" revision="1">Initial Release</Entry>
+      <Entry author="Brett Daugherty and SirDeadlyStrike" date="23 Jul 2020" revision="2">Update config for Firmware 1.47+</Entry>
+      <Entry author="Eric Maycock - ericm@inovelli.com" date="24 Jul 2020" revision="3">Clarifying which scenes are disabled with parameter 51</Entry>
+      <Entry author="Eric Maycock - ericm@inovelli.com" date="31 Jul 2020" revision="4">Fix maximum value for parameter 16</Entry>
+      <Entry author="Eric Maycock - ericm@inovelli.com" date="30 Oct 2020" revision="5">Fixing value range for parameter 9 and 10</Entry>
+    </ChangeLog>
+  </MetaData>
+  <!-- Configuration Parameters -->
+  <CommandClass id="112">
+    <Value genre="config" type="byte" size="1" index="1" label="Dimming Speed" min="0" max="100" value="3">
+      <Help>
+      This changes the speed in which the attached light dims up or down. A setting of 0 should turn the light immediately on or off (almost like an on/off switch). Increasing the value should slow down the transition speed.
+      Range:0-100
+      Default: 3
+      </Help>
+    </Value>
+    <Value genre="config" type="byte" size="1" index="2" label="Dimming Speed (From Switch)" min="0" max="101" value="101">
+      <Help>
+      This changes the speed in which the attached light dims up or down when controlled from the physical switch. A setting of 0 should turn the light immediately on or off (almost like an on/off switch). Increasing the value should slow down the transition speed. A setting of 101 should keep this in sync with parameter 1.
+      Range:0-101
+      Default: 101
+      </Help>
+    </Value>
+    <Value genre="config" type="byte" size="1" index="3" label="Ramp Rate" min="0" max="101" value="101">
+      <Help>
+      This changes the speed in which the attached light turns on or off. For example, when a user sends the switch a basicSet(value: 0xFF) or basicSet(value: 0x00), this is the speed in which those actions take place. A setting of 0 should turn the light immediately on or off (almost like an on/off switch). Increasing the value should slow down the transition speed. A setting of 101 should keep this in sync with parameter 1.
+      Range:0-101
+      Default: 101
+      </Help>
+    </Value>
+    <Value genre="config" type="byte" size="1" index="4" label="Ramp Rate (From Switch)" min="0" max="101" value="101">
+      <Help>
+      This changes the speed in which the attached light turns on or off from the physical switch. For example, when a user presses the up or down button, this is the speed in which those actions take place. A setting of 0 should turn the light immediately on or off (almost like an on/off switch). Increasing the value should slow down the transition speed. A setting of 101 should keep this in sync with parameter 1.
+      Range:0-101
+      Default: 101
+      </Help>
+    </Value>
+    <Value genre="config" type="byte" size="1" index="5" label="Minimum Level" min="1" max="45" value="1">
+      <Help>
+      The minimum level that the dimmer allows the bulb to be dimmed to. Useful when the user has an LED bulb that does not turn on or flickers at a lower level.
+      Range:1-45
+      Default: 1
+      </Help>
+    </Value>
+    <Value genre="config" type="byte" size="1" index="6" label="Maximum Level" min="55" max="99" value="99">
+      <Help>
+      The maximum level that the dimmer allows the bulb to be dimmed to. Useful when the user has an LED bulb that reaches its maximum level before the dimmer value of 99.
+      Range:55-99
+      Default: 99
+      </Help>
+    </Value>
+    <Value genre="config" type="list" size="1" index="7" label="Invert Switch" min="0" max="1" value="0">
+      <Help>
+      Inverts the orientation of the switch. Useful when the switch is installed upside down. Essentially up becomes down and down becomes up.
+      Range: 0-1
+      Default: 0
+    </Help>
+    <Item value="1" label="Yes"/>
+    <Item value="0" label="No"/>
+    </Value>
+    <Value genre="config" type="short" size="2" index="8" label="Auto Off Timer" min="0" max="32767" value="0">
+      <Help>
+      Automatically turns the switch off after this many seconds. When the switch is turned on a timer is started that is the duration of this setting. When the timer expires, the switch is turned off.
+      Range:0-32767
+      Default: 0
+      </Help>
+    </Value>
+    <Value genre="config" type="byte" size="1" index="9" label="Default Level (Local)" min="0" max="99" value="0">
+      <Help>
+      Default level for the dimmer when it is powered on from the local switch. A setting of 0 means that the switch will return to the level that it was on before it was turned off.
+      Range:0-99
+      Default: 0
+      </Help>
+    </Value>
+    <Value genre="config" type="byte" size="1" index="10" label="Default Level (Z-Wave)" min="0" max="99" value="0">
+      <Help>
+      Default level for the dimmer when it is powered on from a Z-Wave command. A setting of 0 means that the switch will return to the level that it was on before it was turned off.
+      Range:0-99
+      Default: 0
+      </Help>
+    </Value>
+    <Value genre="config" type="byte" size="1" index="11" label="State After Power Restored" min="0" max="100" value="0">
+      <Help>
+      The state the switch should return to once power is restored after power failure. 0 = off, 1-99 = level, 100=previous.
+      Range:0-100
+      Default: 0
+      </Help>
+    </Value>
+    <Value genre="config" type="byte" size="1" index="12" label="Association Behavior" min="0" max="15" value="15">
+      <Help>
+      When should the switch send commands to associated devices?  01 - local 02 - 3way 03 - 3way &amp; local 04 - z-wave hub 05 - z-wave hub &amp; local 06 - z-wave hub &amp; 3-way 07 - z-wave hub &amp; local &amp; 3way 08 - timer 09 - timer &amp; local 10 - timer &amp; 3-way 11 - timer &amp; 3-way &amp; local 12 - timer &amp; z-wave hub 13 - timer &amp; z-wave hub &amp; local 14 - timer &amp; z-wave hub &amp; 3-way 15 - all
+      Range: 0-15
+      Default: 15
+      </Help>
+    </Value>
+    <Value genre="config" type="short" size="2" index="13" label="LED Indicator Color" min="0" max="255" value="170">
+      <Help>
+      This is the color of the LED strip.
+      Range: 0 to 255
+      Default: 170
+      </Help>
+    </Value>
+    <Value genre="config" type="list" size="1" index="14" label="LED Strip Intensity" min="0" max="10" value="5">
+      <Help>
+      This is the intensity of the LED strip.
+      Range: 0-10
+      Default: 5
+    </Help>
+    <Item value="0" label="0%"/>
+    <Item value="1" label="10%"/>
+    <Item value="2" label="20%"/>
+    <Item value="3" label="30%"/>
+    <Item value="4" label="40%"/>
+    <Item value="5" label="50%"/>
+    <Item value="6" label="60%"/>
+    <Item value="7" label="70%"/>
+    <Item value="8" label="80%"/>
+    <Item value="9" label="90%"/>
+    <Item value="10" label="100%"/>
+    </Value>
+    <Value genre="config" type="list" size="1" index="15" label="LED Strip Intensity (When OFF)" min="0" max="10" value="1">
+      <Help>
+      This is the intensity of the LED strip when the switch is off. This is useful for users to see the light switch location when the lights are off.
+      Range: 0-10
+      Default: 1
+    </Help>
+    <Item value="0" label="0%"/>
+    <Item value="1" label="10%"/>
+    <Item value="2" label="20%"/>
+    <Item value="3" label="30%"/>
+    <Item value="4" label="40%"/>
+    <Item value="5" label="50%"/>
+    <Item value="6" label="60%"/>
+    <Item value="7" label="70%"/>
+    <Item value="8" label="80%"/>
+    <Item value="9" label="90%"/>
+    <Item value="10" label="100%"/>
+    </Value>
+	<Value genre="config" type="int" size="4" index="16" label="LED Strip Effect" min="0" max="100600575" value="0">
+      <Help>
+      Please see website for documentation.
+      Range: 0-100600575
+      Default: 0
+      </Help>
+    </Value>
+    <Value genre="config" type="list" size="1" index="17" label="LED Strip Timeout" min="0" max="10" value="3">
+      <Help>
+      When the LED strip is disabled (LED Strip Intensity is set to 0), this setting allows the LED strip to turn on temporarily while being adjusted.
+      Range: 0-10
+      Default: 3
+    </Help>
+    <Item value="0" label="Stay Off"/>
+    <Item value="1" label="1 Second"/>
+    <Item value="2" label="2 Seconds"/>
+    <Item value="3" label="3 Seconds"/>
+    <Item value="4" label="4 Seconds"/>
+    <Item value="5" label="5 Seconds"/>
+    <Item value="6" label="6 Seconds"/>
+    <Item value="7" label="7 Seconds"/>
+    <Item value="8" label="8 Seconds"/>
+    <Item value="9" label="9 Seconds"/>
+    <Item value="10" label="10 Seconds"/>
+    </Value>
+    <Value genre="config" type="byte" size="1" index="18" label="Active Power Reports" min="0" max="100" value="10">
+      <Help>
+      The power level change that will result in a new power report being sent. The value is a percentage of the previous report. 0 = disabled.
+      Range:0-100
+      Default: 10
+      </Help>
+    </Value>
+    <Value genre="config" type="short" size="2" index="19" label="Periodic Power &amp; Energy Reports" min="0" max="32767" value="3600">
+      <Help>
+      Time period between consecutive power &amp; energy reports being sent (in seconds). The timer is reset after each report is sent.
+      Range:0-32767
+      Default: 3600
+      </Help>
+    </Value>
+    <Value genre="config" type="byte" size="1" index="20" label="Energy Reports" min="0" max="100" value="10">
+      <Help>
+      The energy level change that will result in a new energy report being sent. The value is a percentage of the previous report.
+      Range:0-100
+      Default: 10
+      </Help>
+    </Value>
+    <Value genre="config" type="list" size="1" index="21" label="AC Power Type" min="0" max="1" value="1">
+      <Help>
+      Configure the switch to use a neutral wire.
+      Range: 0-1
+      Default: 1
+    </Help>
+    <Item value="0" label="Non Neutral"/>
+    <Item value="1" label="Neutral"/>
+    </Value>
+    <Value genre="config" type="list" size="1" index="22" label="Switch Type" min="0" max="2" value="0">
+      <Help>
+      Configure the type of 3-way switch connected to the dimmer.
+      Range: 0-2
+      Default: 0
+    </Help>
+    <Item value="0" label="Load Only"/>
+    <Item value="1" label="3-way Toggle"/>
+    <Item value="2" label="3-way Momentary"/>
+    </Value>
+    <Value genre="config" type="list" size="1" index="51" label="Instant On" min="0" max="1" value="1">
+       <Help>
+       Enables instant on (ie: disables the 700ms button delay). Note, if you disable the delay, it will also disable scene control except for the following: Up pres
+sed, held, released, Down pressed, held, released &amp; config button pressed.
+
+       </Help>
+       <Item value="0" label="Enabled (no delay)"/>
+       <Item value="1" label="Disabled (700ms delay)"/>
+    </Value>
+    <Value genre="config" type="list" size="1" index="52" label="Smart Bulb Mode" min="0" max="1" value="0">
+      <Help>
+      Optimize power output to be more compatible with smart bulbs. This prevents the dimmer from being able to dim and makes it act like an ON / OFF switch. (firmware 1.47+)
+    </Help>
+    <Item value="0" label="Smart Bulb Mode Disabled (Default)"/>
+    <Item value="1" label="Smart Bulb Mode Enabled"/>
+    </Value>
+  </CommandClass>
+
+  <!-- Association Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="4">
+      <Group index="1" label="Lifeline" max_associations="5" />
+      <Group index="2" label="Basic_Set" max_associations="5" />
+      <Group index="3" label="Switch_MultiLevel_Set" max_associations="5" />
+      <Group index="4" label="Switch_MultiLevel_Start/Stop" max_associations="5" />
+    </Associations>
+  </CommandClass>
+  <!-- Central Scene Reports -->
+</Product>

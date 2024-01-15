@@ -1,0 +1,18 @@
+<Product Revision="1" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/001D:0334:0301</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/leviton/vrs15.png</MetaDataItem>
+    <MetaDataItem id="0334" name="ZWProductPage" type="0301">https://products.z-wavealliance.org/products/814/</MetaDataItem>
+    <MetaDataItem id="0334" name="Identifier" type="0301">VRS15</MetaDataItem>
+    <MetaDataItem name="Description">- Manual and remote ON/OFF control of connected loads
+- LED Display options control the length of time they remain lit
+- Push pad always returns to a neutral position whether switch is on or off so it maintains a consistent appearance when mixed in a multi-switch wall box
+- Compatible with Decora Plus screwless wallplates and Decora wallplates
+- Requires the Vizia RF + Handheld Remote - VRCPG for programming and control of the Vizia RF + System (sold separately)</MetaDataItem>
+    <MetaDataItem id="0334" name="FrequencyName" type="0301">U.S. / Canada / Mexico</MetaDataItem>
+    <MetaDataItem name="Name">Wall Switch, 15A</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 May 2019" revision="1">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/814/xml</Entry>
+    </ChangeLog>
+  </MetaData>
+</Product>

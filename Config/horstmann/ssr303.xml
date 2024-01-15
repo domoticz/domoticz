@@ -1,0 +1,73 @@
+<!-- Horstmann SSR303 thermostat receiver --><Product Revision="3" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0059:0005:0003</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/horstmann/ssr303.png</MetaDataItem>
+    <MetaDataItem id="0005" name="ZWProductPage" type="0003">https://products.z-wavealliance.org/products/1618/</MetaDataItem>
+    <MetaDataItem id="0005" name="FrequencyName" type="0003">CEPT (Europe)</MetaDataItem>
+    <MetaDataItem name="Description">The SSR 303 is a single channel relay/switch, it forms part of central heating control system, it can be operated by any third party controllers/Thermostat using ‘Binary Switch CC’ commands.
+
+SSR 303 will act as a repeater once added into the Z- Wave network, providing an alternative communication route for units which otherwise would not be within communication distance of each other.
+
+SSR 303 has a fail-safe mode where by the relay is turned OFF if another 'Thermostat Mode SET' command has not been received within 60 minutes.</MetaDataItem>
+    <MetaDataItem name="InclusionDescription">STEP 1: Ensure the Network LED is flashing on the SSR 303, if not follow  ‘Exclusion’ steps first.
+STEP 2: Put the 3rd party controller into inclusion mode.
+STEP 3: Press and hold the network button on the SSR 303 until the ‘ON’ LED’s start flashing.
+The SSR 303 has been added onto the network when the ‘OFF’ LED goes solid red.
+
+NOTE: If the ON LED does not flash then the add process has been unsuccessful.</MetaDataItem>
+    <MetaDataItem id="0005" name="Identifier" type="0003">MAX10Z-384</MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">STEP 1: Put the 3rd party controller into exclusion mode.
+STEP 2: Press and hold the network button on the SSR 303.
+The SSR 303 has been removed from the network when the Network LED starts flashing.
+
+NOTE: If the Network LED does not flash the remove process has been unsuccessful.</MetaDataItem>
+    <MetaDataItem name="Name">SSR 303 (Single Channel On/Off Power switch)</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://Products.Z-WaveAlliance.org/ProductManual/File?folder=&amp;filename=Manuals/1618/SSR 303 User Manual.pdf</MetaDataItem>
+    <MetaDataItem name="ResetDescription">"Please use this procedure only when the primary controller is missing or otherwise inoperable."
+
+Follow  ‘Exclusion’ steps.</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="24 May 2019" revision="3">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1618/xml</Entry>
+    </ChangeLog>
+  </MetaData>
+  <!-- Associate V2: 
+    Product supports one group (Lifeline) and have a maximum of 4 node. No current active group. 
+  -->
+  <CommandClass id="133">
+    <Associations num_groups="1">
+      <Group index="1" label="Lifeline" max_associations="4"/>
+    </Associations>
+  </CommandClass>
+  <!-- Thermostat mode (v1): 
+    Only 'Idle Mode' and 'Heat Mode' are supported within this command class, which can either set or read.
+    The SSR 303 has a failsafe mode where by the relay is turned off if another Thermostat Mode SET command has not been received within 60 minutes.
+  -->
+  <CommandClass id="64">
+    <SupportedModes>
+      <Mode index="0" label="Idle Mode"/>
+      <Mode index="1" label="Heat Mode"/>
+    </SupportedModes>
+  </CommandClass>
+  <!-- Switch Binary (v1):
+    Supports SET and GET to control the relay.
+    Opposed to the Thermostat command class there is no failsafe mode. If Binary Switch SET command is received than previously active failsafe mode closed.
+  -->
+
+  <!-- Basic (V1):
+    The Basic command class has been mapped to Switch Binary command class as follows:
+    Basic Set : Mapped to Switch Binary Set.
+    Basic Get : Mapped to Switch Binary Get.
+    Basic Report : Mapped to Switch Binary Report
+    Same as Switch Binary command class there is no failsafe mode. If Basic SET command is received than previously active failsafe mode closed.
+  -->
+
+  <!--
+    Power Level (V1):
+    Power Level Command Class defines RF transmit power controlling commands useful when installing or testing a network.
+  -->
+  <CommandClass id="96">
+    <Compatibility>
+      <MapRootToEndpoint>true</MapRootToEndpoint>
+    </Compatibility>
+  </CommandClass>
+</Product>

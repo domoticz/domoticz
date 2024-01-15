@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Product xmlns='https://github.com/OpenZWave/open-zwave' Revision="1">
+    <!--
+    Popp 700793 Power Plug
+    https://products.z-wavealliance.org/products/2955
+    -->
+    <!-- Configuration  -->
+    <CommandClass id="112">
+        <Value type="list" genre="config" instance="1" index="1" label="Condition after power failure" size="1" value="0">
+            <Help>Defines if the switch should restore switch state to the last prior to device power off (power cycle).</Help>
+            <Item label="Always Off" value="0" />
+            <Item label="Always On" value="1" />
+            <Item label="Last status" value="2" />
+        </Value>
+    </CommandClass>
+    <!-- Association Groups -->
+    <CommandClass id="133">
+        <Associations num_groups="1">
+            <Group index="1" max_associations="1" label="Lifeline"/>
+        </Associations>
+    </CommandClass>
+</Product>

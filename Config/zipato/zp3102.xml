@@ -1,0 +1,76 @@
+<!--
+Zipato Multisensor Duo
+https://www.zipato.com/wp-content/uploads/2015/09/vs-zp3102-Zipato-Multi-Sensor-Dual-User-Manual-v1.4.pdf
+--><Product Revision="4" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0131:0205:2002</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/zipato/zp3102.png</MetaDataItem>
+    <MetaDataItem id="0205" name="ZWProductPage" type="2002">https://products.z-wavealliance.org/products/1978/</MetaDataItem>
+    <MetaDataItem name="WakeupDescription">It will be triggered after opening the front cover.
+Red LED will last 10 seconds and Multisensor Duo will send “Wake
+Up Notification” after 10 seconds.</MetaDataItem>
+    <MetaDataItem name="InclusionDescription">Put your Z-Wave
+Controller into “inclusion” mode, and follow the instructions to add
+Multisensor Duo to your controller. To get in the “inclusion” mode,
+the distance between sensor and controller should be up to 1 meter.
+Press the program switch of Multisensor Duo once. The LED on the
+sensor should stop flashing, if not, please try again.</MetaDataItem>
+    <MetaDataItem id="0205" name="FrequencyName" type="2002">U.S. / Canada / Mexico / CEPT (Europe)</MetaDataItem>
+    <MetaDataItem name="Name">Zipato Multisensor Duo</MetaDataItem>
+    <MetaDataItem name="ResetDescription">Remove cover to trigged tamper
+switch, LED ON &amp; send out Alarm Report. Press Program Switch
+10 times within 10 seconds. Multisensor Duo will send the “Device
+Reset Locally Notification” command and reset to the factory
+default settings. 
+
+(Remark: This is to be done only in case of primary
+controller being inoperable or otherwise unavailable.)</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://Products.Z-WaveAlliance.org/ProductManual/File?folder=&amp;filename=Manuals/1978/manual.pdf</MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">Put your
+Z-Wave Controller into “exclusion” mode, and follow the instructions
+to remove the Multisensor Duo from you controller network. Press
+the program switch of Multisensor Duo once to be excluded. The
+LED on the Multisensor Duo should start to flash.</MetaDataItem>
+    <MetaDataItem name="Description">Motion and temperature sensor in one device. Zipato
+Multisensor Duo offers elaborate security and ambient sensing
+options. Multi-functional nature of this product allows you to detect
+motion, and measure room temperature. When used with Zipato
+home automation controllers it can be part of any automation
+scenario created using Zipato Rule Creator. Accordingly it can be
+used to automatically trigger other devices when activated.</MetaDataItem>
+    <MetaDataItem id="0205" name="Identifier" type="2002">vs-zp3102+.eu</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="24 May 2019" revision="3">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1969/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="24 May 2019" revision="4">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1978/xml</Entry>
+    </ChangeLog>
+  </MetaData>
+  <!-- COMMAND_CLASS_CONFIGURATION -->
+  <CommandClass id="112">
+    <Value genre="config" index="1" label="Re-Trigger Waiting Time" max="255" min="1" type="byte" units="minutes" value="3">
+      <Help>Time until an associated device will turn off if no new movement is detected</Help>
+    </Value>
+    <Value genre="config" index="2" label="Celcius/Fahrenheit" max="1" min="0" size="1" type="list" value="0">
+      <Help>Report temperature in Celcius or Fahrenheit</Help>
+      <Item label="Celcius" value="0"/>
+      <Item label="Fahrenheit" value="1"/>
+    </Value>
+    <Value genre="config" index="3" label="Sensitivity" max="7" min="1" type="byte" units="" value="4">
+      <Help>Sensitivity 1-7 (1 = most sensitive, 7 = most insensitive. 4 is default)</Help>
+    </Value>
+    <Value genre="config" index="4" label="Temperature adjustment" max="255" min="0" type="byte" units="Degrees Celsius" value="0">
+      <Help>-10 to -1, 0 to 10 (Signed decimal: 246 to 255, 0 to 10)</Help>
+    </Value>
+  </CommandClass>
+  <!-- COMMAND_CLASS_BASIC -->
+  <CommandClass id="32">
+    <Compatibility>
+      <SetAsReport>true</SetAsReport>
+    </Compatibility>
+  </CommandClass>
+  <!-- COMMAND_CLASS_ASSOCIATION -->
+  <CommandClass id="133">
+    <Associations num_groups="1">
+      <Group index="1" label="Basic on/off group for detecting movements" max_associations="5"/>
+    </Associations>
+  </CommandClass>
+</Product>

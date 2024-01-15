@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<Product xmlns='https://github.com/OpenZWave/open-zwave' Revision="2">
+  <MetaData>
+    <MetaDataItem name="ProductPic">images/wenzhou/tz78.png</MetaDataItem>
+    <MetaDataItem name="Name">In Wall Single Relay Switch</MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">1. Have Z-Wave controller with exclusion mode
+2. Press the on/off button three times within 1.5 seconds to be excluded from the controller</MetaDataItem>
+    <MetaDataItem name="InclusionDescription">1. Have Z-Wave controller with inclusion mode
+2. Press the on/off button three times within 1.5 seconds to be included to the controller</MetaDataItem>
+    <MetaDataItem id="0005" name="Identifier" type="0003">TZ78</MetaDataItem>
+    <MetaDataItem name="Description">1. This insert switch module is a transceiver which is a Z-Wave enabled device and is fully compatible with any Z-Wave enabled network. 
+2. Each switch is designed to act as a repeater. Repeaters will re-transmit the RF signal to ensure the signal to ensure that the signal is received by its intended destination.
+3. You can use the button on the switch to include/exclude, manually on/off or act as a indicator. You can use it to turn on/off appliance remotely via smart home or computer.</MetaDataItem>
+    <MetaDataItem name="ResetDescription">1. Press the socket on/off button three times within 1.5 seconds
+2.  then within 5 second to press and hold on for 1 second until the switch LED is off, reset to factory default successfully
+3. Use this procedure only in the event that the network primary controller is missing or otherwise inoperable 
+    </MetaDataItem>
+    <MetaDataItem id="0005" name="FrequencyName" type="0003">CEPT (Europe) / Brazil / China</MetaDataItem>
+    <ChangeLog>
+      <Entry author="magpern" date="12 Apr 2020" revision="1">Created, based on TZ74 and TZ68</Entry>
+      <Entry author="magpern" date="14 Apr 2020" revision="2">Added description, include, exclude, reset info</Entry>
+    </ChangeLog>
+  </MetaData>
+  <!-- Configuration -->
+    <CommandClass id="112">
+      <Value type="list" genre="config" instance="1" index="1" label="Night light" min="0" max="1" value="1" size="1">
+        <Help>The LED on the TZ78 will by default, turn ON when the load attached is turned OFF. To make the LED turn ON when the load attached is turned ON instead, set parameter to a value of 0.</Help>
+        <Item label="The LED is ON when the load is ON" value="0" />
+        <Item label="The LED is ON when the load is OFF" value="1" />
+      </Value>
+      <Value type="list" genre="config" instance="1" index="2" label="Memory Function" min="0" max="1" value="1" size="1">
+        <Help>switch memory function</Help>
+        <Item label="no switch memory function" value="0" />
+        <Item label="The socket status is same as before when power ON" value="1" />
+      </Value>
+      <Value type="list" genre="config" instance="1" index="3" label="Edge or Pulse mode" min="1" max="3" value="3" size="1">
+        <Help>switch mode</Help>
+        <Item label="Edge Mode" value="1" />
+        <Item label="Pulse Mode" value="2" />
+        <Item label="Edge-toggle Mode" value="3" />
+      </Value>
+    </CommandClass>
+   <!-- Association Groups -->
+   <CommandClass id="133">
+    <Associations num_groups="2">
+      <Group index="1" label="Lifeline" max_associations="5" />
+  	  <Group index="2" label="On/Off" max_associations="5"/>
+    </Associations>
+  </CommandClass>
+</Product>

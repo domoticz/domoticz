@@ -991,7 +991,7 @@ void MitsubishiWF::ParseAirconStat(const _tAircoStatus& aircoStatus)
 uint64_t MitsubishiWF::UpdateValueInt(const char* ID, unsigned char unit, unsigned char devType, unsigned char subType, unsigned char signallevel, unsigned char batterylevel, int nValue,
 	const char* sValue, std::string& devname, bool bUseOnOffAction, const std::string& user)
 {
-	uint64_t DeviceRowIdx = m_sql.UpdateValue(m_HwdID, ID, unit, devType, subType, signallevel, batterylevel, nValue, sValue, devname, bUseOnOffAction, (!user.empty()) ? user.c_str() : m_Name.c_str());
+	uint64_t DeviceRowIdx = m_sql.UpdateValue(m_HwdID, 0, ID, unit, devType, subType, signallevel, batterylevel, nValue, sValue, devname, bUseOnOffAction, (!user.empty()) ? user.c_str() : m_Name.c_str());
 	if (DeviceRowIdx == (uint64_t)-1)
 		return -1;
 	if (m_bOutputLog)
@@ -1024,9 +1024,9 @@ void MitsubishiWF::ParseModeSwitch(const uint8_t id, const char** vModes, const 
 		// New switch, add it to the system
 		bIsNewDevice = true;
 		int iUsed = 1;
-		m_sql.safe_query("INSERT INTO DeviceStatus (HardwareID, DeviceID, Unit, Type, SubType, switchType, SignalLevel, BatteryLevel, Name, Used, nValue, sValue, Options) "
-			"VALUES (%d, '%q', %d, %d, %d, %d, %d, %d, '%q', %d, %d, '0', null)",
-			m_HwdID, DeviceID.c_str(), unit, devType, subType, switchType, 12, 255, sName.c_str(), iUsed, 0);
+		m_sql.safe_query("INSERT INTO DeviceStatus (HardwareID, OrgHardwareID, DeviceID, Unit, Type, SubType, switchType, SignalLevel, BatteryLevel, Name, Used, nValue, sValue, Options) "
+			"VALUES (%d, %d, '%q', %d, %d, %d, %d, %d, %d, '%q', %d, %d, '0', null)",
+			m_HwdID, 0, DeviceID.c_str(), unit, devType, subType, switchType, 12, 255, sName.c_str(), iUsed, 0);
 		result = m_sql.safe_query("SELECT ID,Name,nValue,sValue,Options FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Type==%d) AND (SubType==%d) AND (Unit==%d)", m_HwdID, DeviceID.c_str(), devType, subType, unit);
 		if (result.empty())
 			return; // should not happen!

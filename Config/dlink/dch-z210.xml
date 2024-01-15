@@ -1,0 +1,37 @@
+<Product Revision="2" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="Description">This  plug-in  ON/OFF  switch  DCH-210 (aka Wenzhou TKB TZ88) is a security  enabled  wireless  switch,  based  on Z-Wave  Plus  technology.  Z-Wave  Plus™  enabled  devices  displaying  the  Z-Wave Plus™ logo can also be used with it regardless of the manufacturer, and can also be used in other manufacturer’s Z-Wave™ enabled networks. Remote On/Off control of the  connected  load  is  possible  with  other  manufacturer’s  wireless  Controller.  Each switch is designed to act as a repeater. Repeaters will re-transmit the RF signal to ensure  that  the  signal  is  received  by  its  intended  destination  by  routing  the  signal around obstacles and radio dead spots. Because TZ88 supports Security Command Class, it can learn with Secured controller. Its functionality and supported command classes is identical when included as a secure and non-secure device. 
+This  plug-in  ON/OFF  switch  is  able  to  detect  instance  wattage  (3000W/CE/CN, 1500W/UL/TW/JP)  and  overload  current  (14.5A)  of  connected  lights  or  appliances. When detecting overload state, the Switch will be disabled and its On/Off button will be  lockout  of  which  LED  will  flash  quickly.    However,  unplug  and  re-connect  the switch will reset its overload condition to normal status. 
+</MetaDataItem>
+    <MetaDataItem name="Name">Smart Energy Plug In Switch</MetaDataItem>
+    <MetaDataItem id="0011" name="Identifier" type="0001">DCH-Z210</MetaDataItem>
+    <MetaDataItem id="0011" name="FrequencyName" type="0001">CEPT (Europe) / U.S. / Canada / Mexico</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/dlink/dch-z210.png</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Jeff Thompson" date="27 April 2020" revision="1">Initial version - clone of Wenzhou (TKB) TZ88</Entry>
+      <Entry author="Justin Hammond" date="24 June 2020" revision="2">Add Product Pic</Entry>
+
+    </ChangeLog>
+    <MetaDataItem name="ResetDescription">Use this procedure only in the event that the primary controller is lost or otherwise inoperable.
+1. Pressing On/Off button three times within 2 seconds will enter inclusion mode. 
+2. Within 1 second, press On/Off button again for 5 seconds until LED is off.
+3. IDs are excluded.</MetaDataItem>
+    <MetaDataItem name="InclusionDescription">1. Put your Z-Wave controller into inclusion mode by following the instructions provided by the controller manufacturer. 
+2.  Pressing On/Off button three times within 2 seconds will enter inclusion mode. </MetaDataItem>
+    <MetaDataItem id="0011" name="FrequencyName" type="0001">CEPT (Europe)</MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">1. Put your Z-Wave controller into exclusion mode by following the instructions provided by the controller manufacturer. 
+2.Pressing On/Off button three times within 2 seconds will enter exclusion mode. 
+3. Node ID has been excluded. </MetaDataItem>
+    <MetaDataItem id="0011" name="Identifier" type="0001">DCH-Z10</MetaDataItem>
+  </MetaData>
+  <!-- http://products.z-wavealliance.org/products/786 -->
+  <!-- Configuration -->
+  <CommandClass id="112">
+    <Value genre="config" index="1" instance="1" label="Watt meter report period" max="32767" min="1" type="byte" units="5 sec" value="1">
+      <Help>If the setting is configured for 1 hour (value=720), the plug will report its instant power consumption every 1 hour.</Help>
+    </Value>
+    <Value genre="config" index="2" instance="1" label="kWh meter report period" max="32767" min="1" type="byte" units="10 min" value="6">
+      <Help>If the setting is configured for 1 hour (value=6), the plug will report its accumulated power consumption (kWh) every 1 hour.</Help>
+    </Value>
+  </CommandClass>
+</Product>

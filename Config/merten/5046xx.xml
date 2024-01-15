@@ -1,0 +1,15 @@
+<Product Revision="1" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/007A:0001:4003</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/merten/5046xx.png</MetaDataItem>
+    <MetaDataItem id="0001" name="ZWProductPage" type="4003">https://products.z-wavealliance.org/products/494/</MetaDataItem>
+    <MetaDataItem id="0001" name="FrequencyName" type="4003">CEPT (Europe)</MetaDataItem>
+    <MetaDataItem name="Description">Radio sensor cover for in wall dimmer</MetaDataItem>
+    <MetaDataItem name="Name">5046xx -  Radio sensor cover for in wall dimmer</MetaDataItem>
+    <MetaDataItem id="0001" name="Identifier" type="4003">5046xx</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 May 2019" revision="1">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/494/xml</Entry>
+    </ChangeLog>
+  </MetaData>
+  <CommandClass id="112"/>
+</Product>

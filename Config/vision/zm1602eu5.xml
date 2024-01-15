@@ -1,0 +1,70 @@
+<!-- Vision Security ZM 1602+ DC/AC Power Siren --><Product Revision="3" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0109:0908:2009</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/vision/zm1602eu5.png</MetaDataItem>
+    <MetaDataItem id="0908" name="ZWProductPage" type="2009">https://products.z-wavealliance.org/products/2901/</MetaDataItem>
+    <MetaDataItem id="0908" name="FrequencyName" type="2009">U.S. / Canada / Mexico</MetaDataItem>
+    <MetaDataItem id="0908" name="Identifier" type="2009">ZM1602US-5</MetaDataItem>
+    <MetaDataItem name="InclusionDescription">Put the Z-Wave™ Interface Controller into “inclusion” mode, and following its instruction to add the ZM 1602 to your controller. To get in the “inclusion” mode, the distance between siren and controller is suggested to be in one meter. Open the bracket and press the program switch of ZM 1602 for 1 second at least &amp; release to be included. After setting, the LED Setting Lighting should go off,</MetaDataItem>
+    <MetaDataItem name="Description">Features:
+
+*Loud audible alarm>105dB@1 meter
+*LED strobe lighting
+*Low battery detection
+*Siren for Battery Back-Up 
+*100ft line of sight
+*LED Status Indicator
+*Operating temp: -15oC~60oC
+*Working Voltage: 6V
+*Dimensions: 116*77*40mm
+</MetaDataItem>
+    <MetaDataItem name="Name">Wireless Siren</MetaDataItem>
+    <MetaDataItem name="WakeupDescription">removing the back cover of the ZM1602 to get into “Awake” mode,</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://Products.Z-WaveAlliance.org/ProductManual/File?folder=&amp;filename=Manuals/2901/ZM1602-5 Siren_R3_20180417 (RED).pdf</MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">Set up the Z-Wave™ Interface Controller into “exclusion” mode, and following its instruction to delete the ZM 1602 from your controller. Press the Tamper Switch of ZM 1602 for 1 second at least &amp; release to be excluded. </MetaDataItem>
+    <MetaDataItem name="ResetDescription">This device can’t be reset manually. It is reset to factory defaults when it is excluded. Please use this procedure only when the network primary controller is missing or otherwise inoperable.</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="02 Jun 2019" revision="3">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/2901/xml</Entry>
+    </ChangeLog>
+  </MetaData>
+  <!-- Configuration -->
+  <CommandClass id="112">
+    <Value genre="config" index="1" label="Siren Strobe Mode" max="2" min="0" size="1" type="list" value="0">
+      <Help>Defines the reaction of the siren: turn either Siren sound, Strobe light, or both when triggered</Help>
+      <Item label="All Enable" value="0"/>
+      <Item label="Siren Only" value="1"/>
+      <Item label="Strobe Only" value="2"/>
+    </Value>
+    <Value genre="config" index="2" label="Alarm Auto Stop Time" max="3" min="0" size="1" type="list" value="0">
+      <Help>Defines the duration of siren time when triggered</Help>
+      <Item label="30s" value="0"/>
+      <Item label="60s" value="1"/>
+      <Item label="120s" value="2"/>
+      <Item label="Will Not Automatically Stop" value="3"/>
+    </Value>
+  </CommandClass>
+  <!-- Basic set as report -->
+  <CommandClass id="32">
+    <Compatibility>
+      <SetAsReport>true</SetAsReport>
+    </Compatibility>
+  </CommandClass>
+  <!--  Binary report value when the Magnet switch is opened/closed -->
+  <CommandClass id="37">
+    <Compatibility>
+      <SetAsReport>true</SetAsReport>
+    </Compatibility>
+  </CommandClass>
+  <!--  Battery set as report -->
+  <CommandClass id="128">
+    <Compatibility>
+      <SetAsReport>true</SetAsReport>
+    </Compatibility>
+  </CommandClass>
+  <!-- COMMAND_CLASS_ASSOCIATION -->
+  <CommandClass id="133">
+    <Associations num_groups="1">
+      <Group index="1" label="Lifeline" max_associations="5"/>
+    </Associations>
+  </CommandClass>
+</Product>

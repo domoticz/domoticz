@@ -1,0 +1,76 @@
+<Product Revision="3" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0060:0004:0001</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/everspring/sp815.png</MetaDataItem>
+    <MetaDataItem id="0004" name="ZWProductPage" type="0001">https://products.z-wavealliance.org/products/3366/</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://Products.Z-WaveAlliance.org/ProductManual/File?folder=&amp;filename=Manuals/3366/SP815 user manual_05102019-A501112752R01.pdf</MetaDataItem>
+    <MetaDataItem id="0004" name="FrequencyName" type="0001">CEPT (Europe)</MetaDataItem>
+    <MetaDataItem name="InclusionDescription">1. Put the Z-Wave Controller into inclusion mode.
+2. Press the learn key 3 times within 1.5 seconds to put the unit into inclusion mode.
+</MetaDataItem>
+    <MetaDataItem name="WakeupDescription">After it has been included into a Z-Wave network, the detector will go to sleep but will send a Wakeup Notification Command periodically at preset period to the controller. The Motion detector will stay awake for 10 seconds at least and then go back to sleep to conserve battery life.
+
+The time interval between Wakeup Notification Commands can be set in the Wakeup Command Class based on the range values below: 
+
+Minimum Wake Up Interval	600s (10 minutes)
+Maximum Wake Up Interval	86400s (1 day)
+Default Wake Up Interval	14400s (4 hours)
+Wake Up Interval Step Seconds	600s (10 minutes)
+</MetaDataItem>
+    <MetaDataItem name="ResetDescription">1. Press the learn key 3 times within 1.5 seconds to put the unit into exclusion mode.
+2. Within 1 second of step 1, press the learn key again and hold for 5 seconds.
+3. Node ID is excluded. The device reverts to factory default state.
+(This procedure should only be used when the controller is inoperable.)</MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">1. Put the Z-Wave Controller into exclusion mode.
+2. Press the learn key 3 times within 1.5 seconds to put the unit into exclusion mode.
+</MetaDataItem>
+    <MetaDataItem name="Description">The SP815 is a multifunction device with motion detector and temperature/humidity sensor. It uses Passive Infra-Red (PIR) technology to detect movement in a protected area by sensing the changes of thermal radiation caused by the moving body within or across the field of detection. Featuring dual PIR sensor designed with dual lens technology, this detector is immune to presence of pets in the home allowing your pet to move freely without causing false alarms.
+
+This product is a Z-Wave Plus enabled device and is fully compatible with any Z-Wave enabled network. The device can be set up in a Z-Wave network to communicate directly with other end devices such as smartplugs, or to report directly to a Z-Wave controller (usually a gateway).
+
+When the motion detector is triggered, an alarm signal will be emitted to the controller and the controller, after receiving the signal, will perform certain action according to its settings.
+
+The product has a built in digital temperature sensor and humidity sensor to report environmental condition of the protected area to the controller.
+
+This product supports the S2 security protocol that uses encrypted Z-Wave Plus messages to communicate to other security-enabled Z-Wave Plus products. A security-enabled Z-Wave Plus Controller must be used in order to fully utilize the security features of this product.
+
+</MetaDataItem>
+    <MetaDataItem id="0004" name="Identifier" type="0001">SP815-1</MetaDataItem>
+    <MetaDataItem name="Name">PET IMMUNE PIR MOTION DETECTOR</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 Jun 2019" revision="3">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/3366/xml</Entry>
+    </ChangeLog>
+  </MetaData>
+  <!-- Configuration Parameters -->
+  <CommandClass id="112">
+    <Value genre="config" index="1" label="Temperature and Humidity Auto Report period setting" max="1440" min="0" type="short" units="Minutes" value="30">
+      <Help></Help>
+    </Value>
+    <Value genre="config" index="2" label="Re-trigger Interval Setting" max="3600" min="10" type="short" units="Seconds" value="180">
+      <Help>
+                The parameter adjusts the sleep period after the detector has been triggered.
+                No response will be made during this interval if a movement is presented.
+                Longer re-trigger interval will result in longer battery life.
+            </Help>
+    </Value>
+    <Value genre="config" index="3" label="Trigger Off Interval Setting" max="3600" min="10" type="short" units="Seconds" value="15">
+      <Help>
+                This controls how long the connected lighting will stay on after the motion is detected.
+                This is useful for Group 2 associations where the detector is connected directly to another device such as smartplugs.
+            </Help>
+    </Value>
+  </CommandClass>
+  <!-- Basic set as report -->
+  <CommandClass id="32">
+    <Compatibility>
+      <SetAsReport>true</SetAsReport>
+    </Compatibility>
+  </CommandClass>
+  <!-- COMMAND_CLASS_ASSOCIATION. Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="2">
+      <Group index="1" label="Lifeline" max_associations="1"/>
+      <Group index="2" label="Pir Control" max_associations="4"/>
+    </Associations>
+  </CommandClass>
+</Product>

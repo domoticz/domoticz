@@ -1031,6 +1031,27 @@ div.item.statusEvoSetPointMin td#name{
 	font-size: 1.1em;
 }
 
+.zwave_label {
+	font-style: normal;
+	font-weight: bold;
+	color: #fff;
+}
+.zwave_no_info {
+	font-style: italic;
+	color: #ff5050;
+}
+.zwave_help {
+	font-style: normal;
+	color: #bbd;
+}
+.zwave_help div {
+	padding-left: 2em;
+}
+.zwave_last_update {
+	font-style: italic;
+	font-size: smaller;
+	color: #e0c0ff;
+}
 #highcharts-menu #hr {
 	margin: 120px 0;
 }

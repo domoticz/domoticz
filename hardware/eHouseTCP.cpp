@@ -261,11 +261,11 @@ int eHouseTCP::UpdateSQLState(int devh, const uint8_t devl, int devtype, const u
 	{
 		/// GIZ		!!! Your solution NOT WORKING eg, not setting used=1 and is not sufficient We update devicestatus, and add RoomPlan for each controller
 		// i = m_sql.InsertDevice(m_HwdID, IDX, devl, type, subtype, swtype, nValue, sValue, devname, signal, battery, 1);
-		m_sql.safe_query("INSERT INTO DeviceStatus (HardwareID, DeviceID, Unit, Type, SubType, SignalLevel, BatteryLevel, nValue, sValue, Name, Used, SwitchType ) VALUES ('%d', '%q', "
-				 "'%d','%d', '%d', '%d', '%d', '%d', '%q', '%q', 1, %d)",
-				 m_HwdID, IDX, devl, type, subtype, signal, battery, nValue, sValue, devname.c_str(), swtype);
+		m_sql.safe_query("INSERT INTO DeviceStatus (HardwareID, OrgHardwareID, DeviceID, Unit, Type, SubType, SignalLevel, BatteryLevel, nValue, sValue, Name, Used, SwitchType ) "
+			"VALUES (%d, '%q', %d, %d,%d, %d, %d, %d, %d, '%q', '%q', 1, %d)",
+				 m_HwdID, 0, IDX, devl, type, subtype, signal, battery, nValue, sValue, devname.c_str(), swtype);
 
-		result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit==%d)", m_HwdID, IDX, devl);
+		result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID==%d) AND (OrgHardwareID==%d) AND (DeviceID=='%q') AND (Unit==%d)", m_HwdID, 0, IDX, devl);
 
 		// add Plan for each controllers
 		if (!result.empty())
@@ -330,6 +330,7 @@ int eHouseTCP::UpdateSQLPlan(int /*devh*/, int /*devl*/, int /*devtype*/, const 
 // Update eHouse Controllers status in DeviceStatus Database
 void eHouseTCP::UpdateSQLStatus(int devh, int devl, int /*devtype*/, int code, int nr, char /*signal*/, int nValue, const char *sValue, int /*battery*/)
 {
+	//GizMoCuz: This should be done via CDomoticzHardwareBase::SendSwitch?
 	char IDX[20];
 	char state[5] = "";
 	std::string sLastUpdate = TimeToString(nullptr, TF_DateTime);

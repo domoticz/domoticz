@@ -1,0 +1,28 @@
+<!-- EVERSPRING SE812 SIREN --><Product Revision="6" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0060:0001:000C</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/everspring/se812.png</MetaDataItem>
+    <MetaDataItem id="0001" name="ZWProductPage" type="000C">https://products.z-wavealliance.org/products/735/</MetaDataItem>
+    <MetaDataItem id="0001" name="FrequencyName" type="000C">CEPT (Europe) / U.S. / Canada / Mexico / Australia / New Zealand / U.S. / Canada / Mexico</MetaDataItem>
+    <MetaDataItem name="ProductSupport">http://www.everspring.com/SE812.aspx</MetaDataItem>
+    <MetaDataItem id="0001" name="Identifier" type="000C">TSE07-1</MetaDataItem>
+    <MetaDataItem name="Name">Everspring TSE07-1 Indoor Siren</MetaDataItem>
+    <MetaDataItem name="ProductPage">http://www.everspring.com/SE812.aspx</MetaDataItem>
+    <MetaDataItem name="Description">Z-WAVE INDOOR SIREN (US)  300 SERIES</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 May 2019" revision="3">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/273/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 May 2019" revision="4">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/584/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 May 2019" revision="5">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/616/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 May 2019" revision="6">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/735/xml</Entry>
+    </ChangeLog>
+  </MetaData>
+  <!-- Configuration Parameters not supported -->
+	<!-- Wakeup doesn't respond
+	<CommandClass id="132" create_vars="false" />-->
+	<!-- Association Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="1">
+      <Group index="1" label="Lifeline" max_associations="5"/>
+    </Associations>
+  </CommandClass>
+</Product>

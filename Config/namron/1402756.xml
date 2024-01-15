@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Product xmlns='https://github.com/OpenZWave/open-zwave' Revision="2">
+    <!--
+    LED Dimmer Z-Wave 200W
+    Manual: 
+    -->
+  <MetaData>
+    <MetaDataItem name="Name">Namron LED Dimmer Z-Wave 200W</MetaDataItem>
+    <MetaDataItem name="Description">LED Z-Wave dimmer with smart  functionality and power consumption tackle most conditions such as LED, halogen or electronic transformer. Possibility of wireless control via central unit / gateway or pulse control by direct connection.
+Technical description
+
+A trailing edge dimmer, for use with 230V Halogen, 230V LED and electronic transformers. Has built-in short cut protection in case of lamp failure. Only need L-conductor connected.</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/namron/1402756.png</MetaDataItem>
+    <MetaDataItem name="InclusionDescription">Double click on the reset button </MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">Double click on the reset button</MetaDataItem>
+    <MetaDataItem name="ResetDescription">Hold reset button for >5 secs</MetaDataItem>
+    <MetaDataItem id="0002" name="Identifier" type="0202">1402756</MetaDataItem>
+     <ChangeLog>
+      <Entry author="Per Weisteen - per@weisteen.net" date="01 May 2020" revision="1">Handcrafted based on domoticz/Config/config-template.xml and Vendors product manual</Entry>
+      <Entry author="Justin Hammond" date="24 June 2020" revision="2">Add Product Pic</Entry>
+    </ChangeLog>
+  </MetaData>
+
+  <!-- Configuration -->
+  <CommandClass id="112"> 	
+    <Value type="list" genre="config" instance="1" index="1" label="Saving state before power failure" size="1" value="0">
+        <Help>
+              Saving state before power failure.
+            Default Not saved.
+        </Help>
+      <Item label="State NOT saved at power failure, switch are set to OFF upon power restore" value="0"/>
+      <Item label="State NOT saved at power failure, switch are set to ON upon power restore" value="1"/>
+      <Item label="State saved at power failure, switch are set to previous state upon power restore" value="2"/>
+    </Value>
+    <Value type="list" genre="config" instance="1" index="2" label="Send the notification" size="1" value="1">
+        <Help>Enable/disable to send notification to the Group Lifeline when the load state changed.
+              When value set as 1, re-power on the dimmer, it will send Basic report automatically. 
+		Default Enabled.
+        </Help>
+      <Item label="Disable" value="0"/>
+      <Item label="Send Switch Multilevel Report" value="1"/>
+    </Value>
+    <Value type="byte" genre="config" instance="1" index="3" label="Dimming speed" min="0" max="100" value="5">
+        <Help>Dimming speed in seconds. Valid values is 0-100.
+		Default 5.
+        </Help>
+    </Value>
+    <Value type="list" genre="config" instance="1" index="5" label="External switch" size="1" value="0">
+        <Help>
+          Enable or Disable external switch to pair network
+        </Help>
+      <Item label="Disable" value="0"/>
+      <Item label="Enable" value="1"/>
+   </Value>
+   <Value type="list" genre="config" instance="1" index="6" label="Dimming mode" size="1" value="0">
+        <Help>
+	   Set the Dimming mode to be Linear or Logaritmic
+        </Help>
+      <Item label="Linear" value="0"/>
+      <Item label="Logaritmic" value="1"/>
+    </Value>
+    <Value type="byte" genre="config" instance="1" index="7" label="Dimming brightness when dimmer is turned on" size="1" min="0" max="99" value="0">
+        <Help>Setting brightness when turn on dimmer from off status.
+		Setting of 0 means that the dimmer will use parameter 1.
+		Valid values: 0-99
+        </Help>
+    </Value>
+    <Value type="byte" genre="config" instance="1" index="8" label="Delay time when turned off" min="0" max="60" value="0">
+        <Help>
+           Setting delay time in seconds when load is turned off.
+		Valid values : 0-60 seconds
+        </Help>
+     </Value>
+  </CommandClass>
+  <!-- Association Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="4">
+      <Group index="1" max_associations="5" label="Lifeline"/>
+      <Group index="2" max_associations="5" label="Basic Set"/>
+      <Group index="3" max_associations="5" label="Switch Multilevel"/>
+      <Group index="4" max_associations="5" label="External Button"/>
+    </Associations>
+  </CommandClass>
+</Product>

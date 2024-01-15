@@ -1,0 +1,22 @@
+<Product Revision="3" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0116:0001:0010</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/everspring/hac01.png</MetaDataItem>
+    <MetaDataItem id="0001" name="ZWProductPage" type="0010">https://products.z-wavealliance.org/products/694/</MetaDataItem>
+    <MetaDataItem id="0001" name="FrequencyName" type="0010">CEPT (Europe)</MetaDataItem>
+    <MetaDataItem name="Name">Small Z-Wave In-Wall Remote Module</MetaDataItem>
+    <MetaDataItem name="Description">This in-wall remote module is a transceiver which is a Z-Wave enabled device and is fully compatible with any Z-Wave enabled network. Mini size design let the module can easily put into the wall box and still have enough space to install the traditional wall switch. There are many application for the module , one application is connect the 2 wire of manual switch input to most of the wall switch sell in the market , while the connected wall switch been switched ON or OFF , the module will send the correspond signal to the associated devices like Z-Wave switch module HAN01 or any Z-Wave ON/OFF or dimmer module。Another application is connect this module to any traditional wire sensor which has NC/NO manual switch input output, and this will easily convert those wire sensors into wireless Z-wave sensors. 
+With the external antenna let this module have excellent  communicate RF range, and this will let the module not only send signal to the associated device by itself easily but also act as a good routing node in the z-wave mesh network.
+SM103.HSM02
+
+The Module can be connected to resistive load – 2990 watts for U.K. and Denmark, and 3500 watts for Germany, France and Italy. </MetaDataItem>
+    <MetaDataItem name="ProductPage">http://www.everspring.com/HAC01.aspx</MetaDataItem>
+    <MetaDataItem id="0001" name="Identifier" type="0010">HAC01</MetaDataItem>
+    <MetaDataItem name="ProductSupport">http://www.ctc-chromagic.com/?q=contact</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 May 2019" revision="2">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/23/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 May 2019" revision="3">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/694/xml</Entry>
+    </ChangeLog>
+  </MetaData>
+  <CommandClass id="112"/>
+</Product>

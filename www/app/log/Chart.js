@@ -261,7 +261,7 @@ define(['app'], function (app) {
 
 	function chartParamsCompareTemplate(ctrl, what, deviceUnit) {
 		const template = {
-			chartName: $.t('Comparing') + ' ' + $.t(what),
+			chartName: $.t('Comparing'),
 			trendValuationIsReversed: function () {
 				return false;
 			},

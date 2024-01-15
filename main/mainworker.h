@@ -69,10 +69,13 @@ public:
 	bool DoesDeviceActiveAScene(uint64_t DevRowIdx, int Cmnd);
 
 	bool SetSetPoint(const std::string &idx, float TempValue);
-	bool SetSetPoint(const std::string &idx, float TempValue, const std::string &newMode, const std::string &until);
 	bool SetSetPointInt(const std::vector<std::string> &sd, float TempValue);
+	bool SetSetPointEvo(const std::string& idx, float TempValue, const std::string& newMode, const std::string& until);
 	bool SetThermostatState(const std::string &idx, int newState);
-
+#ifdef WITH_OPENZWAVE
+	bool SetZWaveThermostatMode(const std::string& idx, int tMode);
+	bool SetZWaveThermostatFanMode(const std::string& idx, int fMode);
+#endif
 	bool SwitchEvoModal(const std::string &idx, const std::string &status, const std::string &action, const std::string &ooc, const std::string &until);
 
 	bool GetSunSettings();
@@ -92,7 +95,7 @@ public:
 
 	bool UpdateDevice(const int DevIdx, const int nValue, const std::string &sValue, const std::string &userName, const int signallevel = 12, const int batterylevel = 255,
 			  const bool parseTrigger = true);
-	bool UpdateDevice(const int HardwareID, const std::string &DeviceID, const int unit, const int devType, const int subType, const int nValue, std::string sValue,
+	bool UpdateDevice(const int HardwareID, const int OrgHardwareID, const std::string &DeviceID, const int unit, const int devType, const int subType, const int nValue, std::string sValue,
 			  const std::string &userName, const int signallevel = 12, const int batterylevel = 255, const bool parseTrigger = true);
 
 	boost::signals2::signal<void(const int m_HwdID, const uint64_t DeviceRowIdx, const std::string &DeviceName, const uint8_t *pRXCommand)> sOnDeviceReceived;
@@ -132,7 +135,6 @@ public:
 	time_t m_LastHeartbeat = 0;
 private:
 	void HandleAutomaticBackups();
-	uint64_t PerformRealActionFromDomoticzClient(const uint8_t *pRXCommand, CDomoticzHardwareBase **pOriginalHardware);
 	void HandleLogNotifications();
 	std::map<std::string, std::pair<time_t, bool> > m_componentheartbeats;
 	std::mutex m_heartbeatmutex;

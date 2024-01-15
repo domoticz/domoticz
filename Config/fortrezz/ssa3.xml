@@ -1,0 +1,35 @@
+<!-- FortrezZ: SSA3 - Siren/Strobe Light Alarm --><Product Revision="2" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0084:0205:0343</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/fortrezz/ssa3.png</MetaDataItem>
+    <MetaDataItem id="0205" name="ZWProductPage" type="0343">https://products.z-wavealliance.org/products/931/</MetaDataItem>
+    <MetaDataItem id="0205" name="FrequencyName" type="0343">U.S. / Canada / Mexico</MetaDataItem>
+    <MetaDataItem name="ProductPage">http://fortrezz.com/index.php/products/siren/itemlist/category/18-siren-strobe-alarm-wire-wireless</MetaDataItem>
+    <MetaDataItem name="Name">Siren &amp; Strobe Alarm</MetaDataItem>
+    <MetaDataItem id="0205" name="Identifier" type="0343">SSA3-P4</MetaDataItem>
+    <MetaDataItem name="Description">Siren Strobe Alarm SSA3 by FortrezZ, is a professional grade, with both wire and wireless triggers to be used as an alarm device for home security or home automation.
+
+SSA3 can be connected and triggered the traditional way, by wire, from the home security panel, or by wire from the security loop and also to be used wireless on the Z-Wave network.  SSA3 can be used indoor and/or outdoors and will sound a loud siren and flash a strobe light when an alarm message or alert is received on the Z-Wave network.  </MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 May 2019" revision="2">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/931/xml</Entry>
+    </ChangeLog>
+  </MetaData>
+  <!-- Configuration -->
+  <CommandClass id="112">
+    <Value genre="config" index="1" instance="1" label="Delay before accept of Basic Set Off" max="255" min="0" type="byte" units="seconds" value="0">
+      <Help>
+				Delay, from the time the siren-strobe turns on, before the Basic Set Off command is accepted;
+				1 Byte (in seconds, default is 0, interpreted as unsigned integer for negative values sent in set command).
+				This could be used, for example, to avoid the situation where an associated window/door sensor turns the SSA3 alarm on and immediately off when the window/door is opened and then quickly closed
+			</Help>
+    </Value>
+  </CommandClass>
+  <!-- Association Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="3">
+      <Group auto="false" index="1" label="Tamper Alarm" max_associations="2"/>
+      <Group index="2" label="Main power has dropped" max_associations="2"/>
+      <Group index="3" label="Security panel trigger is active" max_associations="2"/>
+    </Associations>
+  </CommandClass>
+</Product>

@@ -510,6 +510,12 @@
     <Filter Include="Pushers\MQTT">
       <UniqueIdentifier>{9b505904-8aa5-4496-b7ec-61bd8d8e4301}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Devices\ZWave">
+      <UniqueIdentifier>{4215cc65-39f6-40d9-9892-13519515736b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Devices\ZWave\ControlPanel">
+      <UniqueIdentifier>{dd597942-82d6-4aaf-aba7-da17ce1f9392}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\CMakeLists.txt">
@@ -2240,6 +2246,18 @@
     <ClInclude Include="..\push\MQTTPush.h">
       <Filter>Pushers\MQTT</Filter>
     </ClInclude>
+    <ClInclude Include="..\hardware\OpenZWave.h">
+      <Filter>Devices\ZWave</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\openzwave\control_panel\ozwcp.h">
+      <Filter>Devices\ZWave\ControlPanel</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\ZWaveBase.h">
+      <Filter>Devices\ZWave</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\ZWaveCommands.h">
+      <Filter>Devices\ZWave</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\webserver\Base64.cpp">
@@ -3015,6 +3033,18 @@
     </ClCompile>
     <ClCompile Include="..\push\MQTTPush.cpp">
       <Filter>Pushers\MQTT</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\OpenZWave.cpp">
+      <Filter>Devices\ZWave</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\openzwave\control_panel\ozwcp.cpp">
+      <Filter>Devices\ZWave\ControlPanel</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\openzwave\control_panel\zwavelib.cpp">
+      <Filter>Devices\ZWave\ControlPanel</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\ZWaveBase.cpp">
+      <Filter>Devices\ZWave</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

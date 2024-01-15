@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Product Revision="1" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">https://products.z-wavealliance.org/products/2662:0005:3007</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/shenzen_saykey/SK-3007-05.png</MetaDataItem>
+    <MetaDataItem id="0005" name="ZWProductPage" type="3007">https://products.z-wavealliance.org/products/2662/</MetaDataItem>
+    <MetaDataItem id="0005" name="Identifier" type="3007">SK-3007-05</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://products.z-wavealliance.org/ProductManual/File?folder=&amp;filename=Manuals/2662/SK-3007-05-Manual_en_20171112.pdf</MetaDataItem>
+    <MetaDataItem name="Name">Curtain Motor Control with external module</MetaDataItem>
+    <MetaDataItem name="Description">The SK-3007-05 curtain motor external module support connect specify motor to Z-Wave system reply. It support control motor open/close/stop and position, meanwhile it can feedback motor position as soon as it stopped.</MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">1. Connect power line to motor, plug power socket in 220VAC power supply, and Make sure
+the device is located within direct range of the Z-Wave controller.
+2. Set the controller into the exclusion/remove mode (refer to controllers operating manual).
+3. Click the PB-button triple times in 1.5 second, located left side of the motor external box.
+4. Curtain motor will be detected and excluded from the Z-Wave network.</MetaDataItem>
+    <MetaDataItem id="0000" name="FrequencyName" type="0001">China</MetaDataItem>
+    <MetaDataItem name="ResetDescription">1. Connect power line to motor, plug power socket in 220VAC power supply.
+2. Press and hold the PB-button excess 10 second.
+3. Curtain motor will be reset to factory default and clear Z-Wave included network state.
+Please use this procedure only when the network primary controller is missing or otherwise
+inoperable.</MetaDataItem>
+    <MetaDataItem name="InclusionDescription">1. Connect power line to motor, plug power socket in 220VAC power supply, and Make sure
+the device is located within direct range of the Z-Wave controller.
+2. Set the controller into the inclusion/add mode (refer to controllers operating manual).
+3. Click the PB-button triple times in 1.5 second, located left side of the motor external box.
+4. Curtain motor will be detected and included in the Z-Wave network.
+[Note] During inclusion, a LED will fast flash red light until inclusion done. If motor not
+included in any controller, a LED will slow flash red light constantly.
+[Note1] In order to working properly, user should operate curtain open and close once
+manually after power up. If lead tail was changed or re-assembling motor, motor tail
+reset should be done by configuration command parameter #7 manually.</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Remi ARNAUD" date="29 Jul 2019" revision="1">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/2662</Entry>
+    </ChangeLog>
+  </MetaData>
+  <!-- Configuration -->
+  <CommandClass id="112">
+    <Value genre="config" index="6" instance="1" label="Set motor direction reverse" max="127" min="-128" size="1" type="byte" value="0">
+      <Help>
+				Support Set only. Toggle motor direction between reverse and default as send out set command with any value(0x00-0xFF).
+			</Help>
+    </Value>
+    <Value genre="config" index="7" instance="1" label="Clear motor lead tail endpoint setting" max="127" min="-128" type="byte" value="0">
+      <Help>
+				Support Set only. Clear motor lead tail endpoint setting as send out set command with any value(0x00-0xFF).
+			</Help>
+    </Value>
+    <Value genre="config" index="8" instance="1" label="Enable manual pull function" max="127" min="-128" type="byte" value="0">
+      <Help>
+				Support Set only. Enable manual pull function as send out set command with any value(0x00-0xFF).
+			</Help>
+    </Value>
+  </CommandClass>
+  <!-- Association Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="1">
+      <Group index="1" label="Lifeline" max_associations="1"/>
+    </Associations>
+  </CommandClass>
+</Product>

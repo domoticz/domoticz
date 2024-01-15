@@ -1,0 +1,14 @@
+<Product Revision="1" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0109:1717:2017</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/vision/zl7432us.png</MetaDataItem>
+    <MetaDataItem id="1717" name="ZWProductPage" type="2017">https://products.z-wavealliance.org/products/1807/</MetaDataItem>
+    <MetaDataItem name="Description">Vision Security ZL7432US In-wall 2 relays switch</MetaDataItem>
+    <MetaDataItem id="1717" name="Identifier" type="2017">ZL7432US</MetaDataItem>
+    <MetaDataItem id="1717" name="FrequencyName" type="2017">U.S. / Canada / Mexico</MetaDataItem>
+    <MetaDataItem name="Name">ZL7432US In-wall 2 relays switch</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="24 May 2019" revision="1">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1807/xml</Entry>
+    </ChangeLog>
+  </MetaData>
+</Product>

@@ -55,6 +55,22 @@
     <table class="display table-details table-details-lg">
         <tr>
             <td>
+                <label for="checkactive">{{:: 'Enabled' | translate }}:</label>
+            </td>
+            <td>
+                <div id="id_checkactive">
+                    <input type="checkbox"
+                           id="checkactive"
+                           ng-model="$ctrl.notification.active"
+                           ng-change="$ctrl.updateViewValue()"
+                    >&nbsp;
+                    <label for="checkactive"></label>
+                </div>
+            </td>
+        </tr>
+
+        <tr>
+            <td>
                 <label for="combotype">{{:: 'Type' | translate }}:</label>
             </td>
             <td>

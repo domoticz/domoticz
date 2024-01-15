@@ -1,0 +1,74 @@
+<!--
+Domitech Smart LED Light Bulb ZB22UK
+http://products.z-wavealliance.org/MarketCertification/File?folder=&filename=MarketCertificationFiles/1543/Instructions_ZB22UK_10222015%20small.pdf
+--><Product Revision="2" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/020E:3135:4C42</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/domitech/zb22uk.png</MetaDataItem>
+    <MetaDataItem id="3135" name="ZWProductPage" type="4C42">https://products.z-wavealliance.org/products/1543/</MetaDataItem>
+    <MetaDataItem id="3135" name="Identifier" type="4C42">ZB22UK</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://Products.Z-WaveAlliance.org/ProductManual/File?folder=&amp;filename=Manuals/1543/Instructions_ZB22UK_10222015 small.pdf</MetaDataItem>
+    <MetaDataItem name="Description">Smart LED light bulb with Z-Wave radio.
+- Control lights remotely and save energy
+- Compatible with smart home systems supporting Z-Wave
+- 60 Watt equivalent light (806 lumens)
+- Consumes only 9 watts of power
+- 2700K Day light with frosted glass 
+- Instant ON and fully dimmable
+- Functions as a Z-Wave signal repeater
+- Very simple to include in your network
+- Z-Wave Plus certified 
+</MetaDataItem>
+    <MetaDataItem name="InclusionDescription">1. Turn Off power to the light bulb socket
+2. Screw in the light bulb
+3. Place your network controller into inclusion mode by following the controller manufacturer's instructions
+4. Turn On power to the light bulb.  If successful, the LED light bulb will flash twice to indicate successful inclusion.
+5. If the controller/gateway shows it was a fail, repeat the procedure.
+
+Note: If Inclusion still fails after the 2nd attempt, you need to first RESET the dt Smart Bulb before repeating the above steps. 
+</MetaDataItem>
+    <MetaDataItem id="3135" name="FrequencyName" type="4C42">CEPT (Europe)</MetaDataItem>
+    <MetaDataItem name="ResetDescription">You may manually reset the light bulb as follows:
+1.  Flick the wall switch “OFF-ON” 4 times within 4 seconds. 
+2. The dt Smart Bulb will flash twice after Reset is successful.  
+
+Use this procedure only in the event that the network primary controller is lost or otherwise inoperable.</MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">1. Turn off power to the light bulb socket
+2. Follow the network controller instruction to place your network controller into exclusion mode to remove the dt light bulb from the network.
+3. After being prompted by the network controller, turn On power to the light bulb.  If successful, the LED light bulb will flash twice to indicate successful inclusion.
+
+</MetaDataItem>
+    <MetaDataItem name="Name">Smart LED Light Bulb</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="23 May 2019" revision="2">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1543/xml</Entry>
+    </ChangeLog>
+  </MetaData>
+  <!-- Configuration -->
+  <CommandClass id="112">
+    <Value genre="config" index="1" label="Dim level when light is turned ON" max="1" min="0" size="1" type="list" units="" value="0">
+      <Help>You may select the dim level whenever the light is turned back ON to be either full brightness (100% dim level) or be the same as the last dim setting when the light is ON by flicking the wall switch</Help>
+      <Item label="Full brightness" value="0"/>
+      <Item label="Last brightness setting" value="1"/>
+    </Value>
+    <Value genre="config" index="9" instance="1" label="Dimming/Brightening Step Level" max="99" min="1" size="1" type="byte" value="1">
+      <Help>
+	  You may change the dimming step level when you adjust the brightness by your controller/gateway.
+	  When the value is low, dimming/brightening is gradual.
+	  When the value is high, dimming/brightening is rapid.
+	  </Help>
+    </Value>
+    <Value genre="config" index="10" instance="1" label="Dimming/Brightening Step Timing" max="10" min="1" size="1" type="byte" value="3">
+      <Help>
+	  You may change the dimming speed quicker or slower.
+	  When the value is low, the step timing is quick.
+	  When the value is high, the step timing is slow.
+	  </Help>
+    </Value>
+  </CommandClass>
+  <!-- Association Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="1">
+      <Group index="1" label="Lifeline" max_associations="5"/>
+    </Associations>
+  </CommandClass>
+</Product>

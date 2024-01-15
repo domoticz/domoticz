@@ -269,7 +269,7 @@ namespace http {
 					root["message"] = "Maximum number of controllers reached";
 					return;
 				}
-				m_sql.UpdateValue(HwdID, ID, 0, pTypeEvohome, sTypeEvohome, 10, 255, 0, "Normal", devname, true, "");
+				m_sql.UpdateValue(HwdID, 0, ID, 0, pTypeEvohome, sTypeEvohome, 10, 255, 0, "Normal", devname, true, "");
 				bCreated = true;
 				break;
 			case pTypeEvohomeZone://max of 12 zones
@@ -279,7 +279,7 @@ namespace http {
 					root["message"] = "Maximum number of supported zones reached";
 					return;
 				}
-				m_sql.UpdateValue(HwdID, ID, (uint8_t)nDevCount + 1, pTypeEvohomeZone, sTypeEvohomeZone, 10, 255, 0, "0.0;0.0;Auto", devname, true, "");
+				m_sql.UpdateValue(HwdID, 0, ID, (uint8_t)nDevCount + 1, pTypeEvohomeZone, sTypeEvohomeZone, 10, 255, 0, "0.0;0.0;Auto", devname, true, "");
 				bCreated = true;
 				break;
 			case pTypeEvohomeWater://DHW...should be 1 per hardware
@@ -289,7 +289,7 @@ namespace http {
 					root["message"] = "Maximum number of DHW zones reached";
 					return;
 				}
-				m_sql.UpdateValue(HwdID, ID, 1, pTypeEvohomeWater, sTypeEvohomeWater, 10, 255, 50, "0.0;Off;Auto", devname, true, "");
+				m_sql.UpdateValue(HwdID, 0, ID, 1, pTypeEvohomeWater, sTypeEvohomeWater, 10, 255, 50, "0.0;Off;Auto", devname, true, "");
 				bCreated = true;
 				break;
 			}

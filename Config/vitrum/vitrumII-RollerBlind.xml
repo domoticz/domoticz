@@ -1,0 +1,26 @@
+<Product Revision="3" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/010A:5A00:1300</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/vitrum/vitrumII-Blind.png</MetaDataItem>
+    <MetaDataItem id="5A00" name="ZWProductPage" type="1300">https://products.z-wavealliance.org/products/7/</MetaDataItem>
+    <MetaDataItem name="Description">Switch with two touch keys for control of curtains and roller blinds
+Two-button roll-down shutters and curtains control
+Touch control with capacitive technology and concave surface for tactile identification of the switch itself
+Acoustic feedback signal
+Crown backlit by low-consumption LEDs</MetaDataItem>
+    <MetaDataItem name="Name">VITRUM II Control of Roller Blinds - EU BOX</MetaDataItem>
+    <MetaDataItem name="ProductSupport">http://www.vitrum.com/eng/content/vitrum-ii-roll-down-shutter-and-curtain-control</MetaDataItem>
+    <MetaDataItem id="5A00" name="FrequencyName" type="1300">CEPT (Europe)</MetaDataItem>
+    <MetaDataItem name="ProductPage">http://www.vitrum.com/eng/content/vitrum-ii-roll-down-shutter-and-curtain-control</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 May 2019" revision="3">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/7/xml</Entry>
+    </ChangeLog>
+  </MetaData>
+  <!-- Multi-Instance configuration -->
+  <CommandClass id="96">
+    <Compatibility>
+      <IgnoreMCCapReports>true</IgnoreMCCapReports>
+      <MapRootToEndpoint>true</MapRootToEndpoint>
+    </Compatibility>
+  </CommandClass>
+</Product>

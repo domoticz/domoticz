@@ -1,0 +1,181 @@
+<Product Revision="4" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0086:0018:0003</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/aeotec/dsc24.png</MetaDataItem>
+    <MetaDataItem id="0018" name="ZWProductPage" type="0003">https://products.z-wavealliance.org/products/778/</MetaDataItem>
+    <MetaDataItem name="Description">The Aeotec Smart Energy Switch is a low-cost Z-Wave appliance switch which can report immediate wattage energy usage or kWh energy usage over a period of time. It can also be controlled by other Z-Wave devices to turn on/off to save electricity when appropriate. 
+
+With an unobtrusive small form factor, the Aeon Labs Smart Energy Switch will not block other nearby AC outlets. It is available in matte white.</MetaDataItem>
+    <MetaDataItem id="0018" name="Identifier" type="0003">DSC24-ZWAU</MetaDataItem>
+    <MetaDataItem id="0018" name="FrequencyName" type="0003">U.S. / Canada / Mexico / CEPT (Europe) / Australia / New Zealand</MetaDataItem>
+    <MetaDataItem name="ProductPage">http://aeotec.com/z-wave-plug-in-switch</MetaDataItem>
+    <MetaDataItem name="Name">Smart Energy Switch G2</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 May 2019" revision="2">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/712/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 May 2019" revision="3">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/770/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 May 2019" revision="4">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/778/xml</Entry>
+    </ChangeLog>
+  </MetaData>
+  <!-- 
+Aeotec DSC24 Smart Switch (2nd Edition) 
+https://aeotec.freshdesk.com/helpdesk/attachments/6009584528
+-->
+  <Protocol refreshonnodeinfoframe="false"/>
+  <!-- Configuration Parameters -->
+  <CommandClass id="112">
+    <Value genre="config" index="2" label="Blinking behavior" max="65535" min="257" size="2" type="short" units="" value="3850">
+      <Help>
+      Configuration Value 1: 1-255
+      Configuration Value 1  is to Specify the time that Smart Switch need blink, The unit is Second;
+      Configuration Value 2: 1-255
+      Configuration Value 2  is to Specify the Cycle of on/off, the unit of it is 0.1 second.
+      </Help>
+    </Value>
+    <Value genre="config" index="3" label="Current Overload Protection" max="1" min="0" size="1" type="list" units="" value="0">
+      <Help>Load will be closed when the Current overruns (EU 16.2A) for more than 2 minutes</Help>
+      <Item label="Deactivate Overload Protection (Default)" value="0"/>
+      <Item label="Active Overload Protection" value="1"/>
+    </Value>
+    <Value genre="config" index="20" label="Output Load Status" max="2" min="0" size="1" type="list" units="" value="0">
+      <Help>Configure the output load status after re-power on.</Help>
+      <Item label="Last status (Default)" value="0"/>
+      <Item label="Always on" value="1"/>
+      <Item label="Always off" value="2"/>
+    </Value>
+    <Value genre="config" index="80" label="Notification status" max="2" min="0" size="1" type="list" units="" value="0">
+      <Help>Defines the automated status notification of an associated device when status changes</Help>
+      <Item label="Nothing" value="0"/>
+      <Item label="Hail" value="1"/>
+      <Item label="Basic" value="2"/>
+    </Value>
+    <Value genre="config" index="90" label="Enables/disables parameter 91/92" type="bool" units="" value="0">
+      <Help>
+	Enable/disable Wattage threshold and percent.
+      </Help>
+    </Value>
+    <Value genre="config" index="91" label="Minimum Change to send Report (Watt)" max="32000" min="0" size="2" type="short" units="watts" value="25">
+      <Help>The value represents the minimum change in wattage for a Report to be sent (default 25 W)</Help>
+    </Value>
+    <Value genre="config" index="92" label="Minimum Change to send Report (%)" max="100" min="0" type="byte" units="%" value="5">
+      <Help>The value represents the minimum percentage change in wattage for a Report to be sent (Default 5)</Help>
+    </Value>
+    <Value affects="101,102,103" genre="config" index="100" label="Default Group Reports" type="button" units="" write_only="true">
+      <Help>
+	Set report types for groups 1, 2 and 3 to default.
+      </Help>
+    </Value>
+    <Value genre="config" index="101" label="Report type sent in Reporting Group 1" type="int" units="" value="4">
+      <Help>
+	Defines the type of report sent for reporting group 1. 2 is multisensor report. 4 is meter report for watts. 8 is meter report for kilowatts.
+	 Value 1 (msb) Reserved
+	 Value 2 Reserved
+	 Value 3 Reserved
+	 Value 4 (lsb) bits 7-4 reserved
+                     bit 3 MRC(KWH)
+		     bit 2 MRC(watt)
+		     bit 1 MSRC
+		     bit 0 reserved
+
+	The MRC(KWH) flag signals that Report Group 1 send(1) or don't send(0)
+	Meter Report Command(KWh) automatically.
+
+	The MRC(Watt) flag signals that Report Group 1 send(1) or don't send(0)
+	Meter Report Command(wattage) automatically.
+
+	The MSRC flag signals that Report Group 1 send(1) or don't send(0)
+	Multilevel Sensor Report Command(wattage) automatically.
+      </Help>
+    </Value>
+    <Value genre="config" index="102" label="Report type sent in Reporting Group 2" type="int" units="" value="8">
+      <Help>
+	Defines the type of report sent for reporting group 2. 2 is multisensor report. 4 is meter report for watts. 8 is meter report for kilowatts.
+	 Value 1 (msb) Reserved
+	 Value 2 Reserved
+	 Value 3 Reserved
+	 Value 4 (lsb) bits 7-4 reserved
+                     bit 3 MRC(KWH)
+		     bit 2 MRC(watt)
+		     bit 1 MSRC
+		     bit 0 reserved
+
+	The MRC(KWH) flag signals that Report Group 1 send(1) or don't send(0)
+	Meter Report Command(KWh) automatically.
+
+	The MRC(Watt) flag signals that Report Group 1 send(1) or don't send(0)
+	Meter Report Command(wattage) automatically.
+
+	The MSRC flag signals that Report Group 1 send(1) or don't send(0)
+	Multilevel Sensor Report Command(wattage) automatically.
+      </Help>
+    </Value>
+    <Value genre="config" index="103" label="Report type sent in Reporting Group 3" type="int" units="" value="0">
+      <Help>
+	Defines the type of report sent for reporting group 3. 2 is multisensor report. 4 is meter report for watts. 8 is meter report for kilowatts.
+	 Value 1 (msb) Reserved
+	 Value 2 Reserved
+	 Value 3 Reserved
+	 Value 4 (lsb) bits 7-4 reserved
+                     bit 3 MRC(KWH)
+		     bit 2 MRC(watt)
+		     bit 1 MSRC
+		     bit 0 reserved
+
+	The MRC(KWH) flag signals that Report Group 1 send(1) or don't send(0)
+	Meter Report Command(KWh) automatically.
+
+	The MRC(Watt) flag signals that Report Group 1 send(1) or don't send(0)
+	Meter Report Command(wattage) automatically.
+
+	The MSRC flag signals that Report Group 1 send(1) or don't send(0)
+	Multilevel Sensor Report Command(wattage) automatically.
+      </Help>
+    </Value>
+    <Value affects="111,112,113" genre="config" index="110" label="Set 111-113 to default" type="button" units="" value="0" write_only="true">
+      <Help>
+	Set time interval for sending reports for groups 1, 2 and 3 to default.
+      </Help>
+    </Value>
+    <Value genre="config" index="111" label="Send Interval for Reporting Group 1" max="65535" min="0" type="int" units="seconds" value="600">
+      <Help>
+	Defines the time interval when the defined report for group 1 is sent.
+      </Help>
+    </Value>
+    <Value genre="config" index="112" label="Send Interval for Reporting Group 2" max="65535" min="0" type="int" units="seconds" value="600">
+      <Help>
+	Defines the time interval when the defined report for group 2 is sent.
+      </Help>
+    </Value>
+    <Value genre="config" index="113" label="Send Interval for Reporting Group 3" max="65535" min="0" type="int" units="seconds" value="600">
+      <Help>
+	Defines the time interval when the defined report for group 3 is sent.
+      </Help>
+    </Value>
+    <Value genre="config" index="200" label="Partner ID" max="1" min="0" size="1" type="list" units="" value="0">
+      <Help>Partner ID</Help>
+      <Item label="Aeon Labs Standard (Default)" value="0"/>
+      <Item label="AT&amp;T" value="1"/>
+    </Value>
+    <Value genre="config" index="252" label="Configuration Locked" max="1" min="0" size="1" type="list" units="" value="0">
+      <Help>Enable/disable Configuration Locked</Help>
+      <Item label="Disable" value="0"/>
+      <Item label="Enable" value="1"/>
+    </Value>
+    <Value genre="config" index="254" label="Device tag" max="65535" min="0" type="short" units="" value="0">
+      <Help>
+	Device tag.
+      </Help>
+    </Value>
+    <Value genre="config" index="255" label="Reset device" type="button" units="" write_only="true">
+      <Help>
+	Reset to the default configuration.
+      </Help>
+    </Value>
+  </CommandClass>
+  <!-- Association Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="2">
+      <Group index="1" label="LifeLine" max_associations="5"/>
+      <Group index="2" label="Retransmit Switch CC" max_associations="5"/>
+    </Associations>
+  </CommandClass>
+</Product>

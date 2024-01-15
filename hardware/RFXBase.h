@@ -41,8 +41,6 @@ class CRFXBase : public P1MeterBase
 	bool StartHardware() override = 0;
 	bool StopHardware() override = 0;
 
-	time_t m_LastP1Received = 0;
-
 	std::mutex readQueueMutex;
 	unsigned char m_rxbuffer[RX_BUFFER_SIZE] = { 0 };
 	uint16_t m_rxbufferpos = { 0 };

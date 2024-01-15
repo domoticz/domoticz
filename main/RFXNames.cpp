@@ -176,6 +176,7 @@ static const STR_TABLE_SINGLE HardwareTypeTable[] = {
 	{ HTYPE_OpenThermGateway, "OpenTherm Gateway USB", "OpenTherm" },
 	{ HTYPE_TeleinfoMeter, "Teleinfo EDF", "TeleInfo" },
 	{ HTYPE_OpenThermGatewayTCP, "OpenTherm Gateway with LAN interface", "OpenTherm" },
+	{ HTYPE_OpenZWave, "OpenZWave USB", "OpenZWave" },
 	{ HTYPE_LimitlessLights, "Limitless/AppLamp/Mi Light with LAN/WiFi interface", "Limitless" },
 	{ HTYPE_System, "Motherboard sensors", "HardwareMonitor" },
 	{ HTYPE_EnOceanESP2, "EnOcean USB (ESP2)", "EnOcean" },
@@ -759,6 +760,12 @@ const char* RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 		{ pTypeGeneral, sTypeSetPoint, "Setpoint" },
 		{ pTypeGeneral, sTypeTemperature, "Temperature" },
 		{ pTypeGeneral, sTypeTextStatus, "Text" },
+#ifdef WITH_OPENZWAVE
+		{ pTypeGeneral, sTypeZWaveThermostatMode, "Thermostat Mode" },
+		{ pTypeGeneral, sTypeZWaveThermostatFanMode, "Thermostat Fan Mode" },
+		{ pTypeGeneral, sTypeZWaveThermostatOperatingState, "Thermostat Operating State" },
+		{ pTypeGeneral, sTypeZWaveAlarm, "Alarm" },
+#endif
 		{ pTypeGeneral, sTypeAlert, "Alert" },
 		{ pTypeGeneral, sTypeSoundLevel, "Sound Level" },
 		{ pTypeGeneral, sTypeUV, "UV" },
@@ -3902,6 +3909,7 @@ bool IsSerialDevice(const _eHardwareTypes htype)
 	case HTYPE_S0SmartMeterUSB:
 	case HTYPE_OpenThermGateway:
 	case HTYPE_TeleinfoMeter:
+	case HTYPE_OpenZWave:
 	case HTYPE_EnOceanESP2:
 	case HTYPE_EnOceanESP3:
 	case HTYPE_Meteostick:

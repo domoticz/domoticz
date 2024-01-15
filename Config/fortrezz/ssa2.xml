@@ -1,0 +1,43 @@
+<!-- FortrezZ: SSA1/SSA2 - Siren and Strobe Alarm--><Product Revision="2" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0084:0107:0313</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/fortrezz/ssa2.png</MetaDataItem>
+    <MetaDataItem id="0107" name="ZWProductPage" type="0313">https://products.z-wavealliance.org/products/130/</MetaDataItem>
+    <MetaDataItem name="ProductSupport">http://www.fortrezz.com/</MetaDataItem>
+    <MetaDataItem name="Name">FortrezZ SSA1/SSA2 Siren &amp; Strobe Alarm</MetaDataItem>
+    <MetaDataItem id="0107" name="FrequencyName" type="0313">U.S. / Canada / Mexico</MetaDataItem>
+    <MetaDataItem name="Description">The SSA1 / SSA2 is a Z-Wave enabled device that will sound a loud siren and/or flash a strobe light when signaled via a Z-Wave enabled network. SSA1: clear lens version; SSA2: red lens version.Integrate it into the home automation and/ or security network, and this siren/strobe module will deliver the audible and visual notifications you can depend on.
+- SSA will sound a loud audible alarm >110dB@1m and a strobe lighting when an alarm signal is received from a device in the Z-Wave home network. 
+- Intended for use inside a Z-Wave Home Automation network as a Siren / Strobe Light Alarm.
+
+- Can be used in a normal, existing home’s security system with wired controllers, using  Z-Wave to RS-232/485 bridge.
+
+- Extends the range of existing Z-Wave devices in the mesh network by acting as a signal repeater.
+
+- Uses the latest and most successful wireless home automation technology.
+
+- Tamper proof.  Uses 9V batter backup to sound alarm if AC power is disconnected / cut.
+- SSA is fully programmable with Z-wave smart controllers to provide the audible and visual notifications you set for your automation and/or security network.
+
+    - Siren ONLY mode
+
+    - Strobe ONLY mode
+
+    - Strobe &amp; Siren Mode</MetaDataItem>
+    <MetaDataItem id="0107" name="Identifier" type="0313">SSA1 - SSA2 01</MetaDataItem>
+    <MetaDataItem name="ProductPage">http://www.fortrezz.com/</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 May 2019" revision="2">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/130/xml</Entry>
+    </ChangeLog>
+  </MetaData>
+  <!-- Configuration -->
+  <CommandClass id="112">
+    <Value genre="config" index="1" instance="1" label="Delay before accept of Basic Set Off" max="255" min="0" type="byte" units="seconds" value="0">
+      <Help>
+				Delay, from the time the siren-strobe turns on, before the Basic Set Off command is accepted.
+				This could be used, for example, to avoid the situation where an associated window/door sensor turns the SSA1 alarm on and then immediately off when the window/door is opened and then quickly closed.
+				-128 seconds to -1 seconds -> Interpreted as unsigned integer for negative values sent in set command.
+			</Help>
+    </Value>
+  </CommandClass>
+</Product>

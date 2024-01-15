@@ -1,0 +1,33 @@
+<Product Revision="3" xmlns="https://github.com/OpenZWave/open-zwave">
+  <!--MCOHome Touch Panel Switch MH-S314 -->
+  <!-- Configuration -->
+  <CommandClass id="112">
+    <Value genre="config" index="1" instance="1" label="Saving state before power failure" size="1" type="list" value="1">
+      <Help>Switch state saved or not when power down</Help>
+      <Item label="Disabled" value="0"/>
+      <Item label="Enabled" value="1"/>
+    </Value>
+  </CommandClass>
+  <!-- Basic set as report -->
+  <CommandClass id="32">
+    <Compatibility>
+      <SetAsReport>true</SetAsReport>
+    </Compatibility>
+  </CommandClass>
+  <!-- Map endpoints to instances -->
+  <CommandClass id="96">
+    <Compatibility>
+      <MapRootToEndpoint>true</MapRootToEndpoint>
+    </Compatibility>
+  </CommandClass>
+  <!-- Association Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="5">
+      <Group auto="false" index="1" label="Button1" max_associations="5"/>
+      <Group index="2" label="Button2" max_associations="5"/>
+      <Group index="3" label="Button3" max_associations="5"/>
+      <Group index="4" label="Button4" max_associations="5"/>
+      <Group auto="true" index="5" label="Lifeline" max_associations="1"/>
+    </Associations>
+  </CommandClass>
+</Product>

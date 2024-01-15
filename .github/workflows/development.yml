@@ -19,8 +19,7 @@ jobs:
   # This workflow contains a single job called "build"
   build:
     # The type of runner that the job will run on
-    #runs-on: ubuntu-latest   # Per Dec 2022 latest = 22.04 with GCC 11, OpenSSL3.0
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
@@ -47,29 +46,19 @@ jobs:
           sudo apt-mark hold grub-efi-amd64-signed
           sudo apt-get update --fix-missing
           sudo apt-get upgrade
-          sudo apt-get install make gcc g++ libssl-dev git libcurl4-gnutls-dev libusb-dev python3-dev zlib1g-dev libcereal-dev liblua5.3-dev uthash-dev
+          sudo apt-get install make gcc cmake g++ libssl-dev git libcurl4-gnutls-dev libusb-dev python3-dev zlib1g-dev libcereal-dev liblua5.3-dev uthash-dev
+          sudo apt-get install libboost-chrono-dev libboost-system-dev libboost-thread-dev
           sudo apt-get install python3-pytest python3-pytest-bdd
-      #   sudo apt-get install lua5.3 luarocks
-      #   sudo luarocks install busted
-      #   sudo luarocks install luacov
-      # Disabled March 2022 - sudo luarocks install lodash
 
-      # get CMake
-      - name: cmake-compile
+      # OpenZWave
+      - name: openzwave
         run: |
-          curl -sSL https://github.com/Kitware/CMake/releases/download/v3.27.6/cmake-3.27.6-Linux-x86_64.tar.gz -o cmake.tar.gz;
-          sudo tar xf cmake.tar.gz --strip 1 -C /usr/local;
-          export PATH=/usr/local/bin:$PATH;
-
-      # Boost
-      - name: build boost libraries
-        run: |
-          wget https://github.com/boostorg/boost/releases/download/boost-1.83.0/boost-1.83.0.tar.gz >> /dev/null 2>&1
-          tar xfz boost-1.83.0.tar.gz
-          cd boost-1.83.0/
-          ./bootstrap.sh
-          ./b2 stage threading=multi link=static --with-thread --with-system --with-chrono >> /dev/null 2>&1
-          sudo ./b2 install threading=multi link=static --with-thread --with-system --with-chrono >> /dev/null 2>&1
+          cd $GITHUB_WORKSPACE
+          cd ..
+          git clone https://github.com/domoticz/open-zwave.git open-zwave-read-only
+          cd open-zwave-read-only
+          make
+          sudo make install >> /dev/null 2>&1
 
       # Domoticz
       - name: build domoticz
@@ -101,7 +90,7 @@ jobs:
         run: |
           cd $GITHUB_WORKSPACE
           mkdir package
-          tar czf package/domoticz_linux_x86_64-${{ env.BUILDNR }}.tgz domoticz History.txt License.txt domoticz.sh server_cert.pem updatebeta updaterelease www/ scripts/ dzVents/
+          tar czf package/domoticz_linux_x86_64-${{ env.BUILDNR }}.tgz domoticz History.txt License.txt domoticz.sh server_cert.pem updatebeta updaterelease www/ scripts/ Config/ dzVents/
           shasum -a 256 package/domoticz_linux_x86_64-${{ env.BUILDNR }}.tgz > package/domoticz_linux_x86_64-${{ env.BUILDNR }}.tgz.sha256sum
 
       # Artifact upload
@@ -113,12 +102,3 @@ jobs:
           path: package/
           retention-days: 7
           if-no-files-found: error
-
-      # Deploy
-      # Using WebHooks and 'workflow_run' events on this action, the artifact will be available via other channels as well
-
-      #- name: Start SSH debug Session
-      #  uses: luchihoratiu/debug-via-ssh@main
-      #  with:
-      #   NGROK_AUTH_TOKEN: ${{ secrets.NGROK_TOKEN }}
-      #   SSH_PASS: ${{ secrets.NGROK_PASSWORD }}

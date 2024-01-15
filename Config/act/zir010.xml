@@ -1,0 +1,75 @@
+<Product Revision="5" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0001:3330:4952</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/act/zir010.png</MetaDataItem>
+    <MetaDataItem id="3330" name="ZWProductPage" type="4952">https://products.z-wavealliance.org/products/549/</MetaDataItem>
+    <MetaDataItem id="3330" name="FrequencyName" type="4952">U.S. / Canada / Mexico</MetaDataItem>
+    <MetaDataItem name="ProductPage">http://www.act-solutions.com/HomePro-Product-Matrix.html#Euro</MetaDataItem>
+    <MetaDataItem name="Name">ZIR000</MetaDataItem>
+    <MetaDataItem name="Description">PIR Sensor</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 May 2019" revision="4">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/549/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 May 2019" revision="5">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/550/xml</Entry>
+    </ChangeLog>
+    <MetaDataItem id="3030" name="ZWProductPage" type="4952">https://products.z-wavealliance.org/products/550/</MetaDataItem>
+    <MetaDataItem id="3030" name="FrequencyName" type="4952">U.S. / Canada / Mexico</MetaDataItem>
+  </MetaData>
+  <!-- Configuration Parameters -->
+  <CommandClass id="112">
+    <Value genre="config" index="17" label="Mode" size="1" type="list" value="0">
+      <Help>
+				The ZIR010 can be configured to operate in 1 of 3 modes.
+				Those modes are:
+				Lighting Mode (factory default)
+				Alarm Mode
+				Sensor Mode
+				To change the mode of operation:
+				For Lighting Mode: Send a value of 0 to Configuration Parameter #17.
+				For Alarm Mode: Send a value of 1 to Configuration Parameter #17.
+				For Sensor Mode: Send a value of 2 to Configuration Parameter # 17.
+			</Help>
+      <Item label="Lighting" value="0"/>
+      <Item label="Alarm" value="1"/>
+      <Item label="Sensor" value="2"/>
+    </Value>
+    <Value genre="config" index="18" label="Off/Idle Delay" max="255" min="0" type="byte" units="minutes" value="1">
+      <Help>
+				The configuration parameter that can be used to adjust the amount of delay before the OFF or IDLE command is transmitted is Configuration Parameter # 18.
+				This parameter can be configured with the value of 0 through 255.
+				Where 0 means no delay and 255 means 255 minutes of delay.
+				Default appears to be 1 min.
+			</Help>
+    </Value>
+    <Value genre="config" index="19" label="Unsolicited Commands" size="1" type="list" value="1">
+      <Help>
+				The ZIR010 can be disabled from sending commands unsolicited without removing associated devices by
+				setting Configuration Parameter # 19 to 0 (when asked for number of bytes, select 1).
+				Setting it back to 1 will re-enable the ZIR010.
+			</Help>
+      <Item label="No" value="0"/>
+      <Item label="Yes" value="1"/>
+    </Value>
+    <Value genre="config" index="22" label="Awake Time" max="45" min="15" type="byte" units="seconds" value="30">
+      <Help>
+				The time the ZIR010 stays awake can be adjusted from 15 seconds to 45 seconds by sending a value of 15
+				to 45 to the ZIR010 using Configuration Parameter # 22 (when asked for the number of bytes, select 1).
+				This awake time period starts over every time the ZIR010 receives a command or request.
+				Defaults to 30 seconds.
+			</Help>
+    </Value>
+  </CommandClass>
+  <!-- Basic set as report -->
+  <CommandClass id="32">
+    <Compatibility>
+      <SetAsReport>true</SetAsReport>
+    </Compatibility>
+  </CommandClass>
+  <!-- Association Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="3">
+      <Group index="1" label="Motion" max_associations="5"/>
+      <Group auto="true" index="2" label="Tamper" max_associations="5"/>
+      <Group auto="true" index="3" label="Battery" max_associations="5"/>
+    </Associations>
+  </CommandClass>
+</Product>

@@ -1,0 +1,41 @@
+<Product Revision="1" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/001D:0334:1805</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/leviton/vrpa1.png</MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">When removing a device from a Z-Wave® network best practice is to use the exclusion command found in the Z-Wave® controller.
+• Enter Programming Mode by holding the control button for 7 seconds, the Locator LED will turn amber.
+• Follow directions in the Z-Wave® controller to enter exclusion mode.
+• Tap the control button one time. The Locator LED will quickly flash green.
+The Z-Wave® controller will exclude the Decora Smart device.
+• The Z-Wave® controller will confirm successful exclusion from the network.</MetaDataItem>
+    <MetaDataItem id="0334" name="Identifier" type="1805">VRPA1-15A</MetaDataItem>
+    <MetaDataItem name="Description"> The Vizia RF + Scene Capable Plug-in Appliance Module is ideal for any residential setting where remote ON/OFF switching of appliances, motor loads up to 1/2 HP, or freestanding lights, including Incandescent, Magnetic Low Voltage, Fluorescent and Compact Fluorescent loads is needed. Typical applications include switching of fluorescent lamps, portable fans, kitchen appliances, indoor fountains and more. The Vizia RF + Scene Capable Plug-in Appliance Module also allows users to incorporate small appliances into scene and zone home control applications</MetaDataItem>
+    <MetaDataItem name="InclusionDescription">1. Plug in the unit
+    2. Put your controller in inclusion mode
+    3. Press the button on the front of the plug-in module
+    </MetaDataItem>
+        <MetaDataItem name="ExclusionDescription">1. Plug in the unit
+    1. Put your controller in exclusion mode
+    2. Press the button on the front of the plug-in module
+    </MetaDataItem>
+    <MetaDataItem name="ResetDescription"></MetaDataItem>
+    <MetaDataItem name="Name">Plug-In Outlet</MetaDataItem>
+    <MetaDataItem id="0334" name="FrequencyName" type="1805">U.S. / Canada / Mexico</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Jeremy M. Johnson" date="21 June 2020" revision="1">Initial update based on dz15s, Leviton documentation, and CD-Jackson's Z-Wave Database</Entry>
+    </ChangeLog>
+    <MetaDataItem id="0334" name="ZWProductPage" type="1805">https://products.z-wavealliance.org/products/1959/</MetaDataItem>
+    <MetaDataItem id="0334" name="Identifier" type="1805">DZPA1</MetaDataItem>
+    <MetaDataItem id="0334" name="FrequencyName" type="1805">U.S. / Canada / Mexico</MetaDataItem>
+  </MetaData>
+  <!-- Configuration Parameters -->
+  <CommandClass id="112">
+    <!-- None -->
+  </CommandClass>
+  <!-- Association Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="1">
+      <Group index="1" label="Lifeline" max_associations="5"/>
+    </Associations>
+  </CommandClass>
+</Product>

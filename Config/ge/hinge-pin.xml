@@ -1,0 +1,33 @@
+<Product Revision="2" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0063:3032:4953</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/ge/hinge-pin.png</MetaDataItem>
+    <MetaDataItem id="3032" name="ZWProductPage" type="4953">https://products.z-wavealliance.org/products/1800/</MetaDataItem>
+    <MetaDataItem id="3032" name="Identifier" type="4953">32563 / ZW4001</MetaDataItem>
+    <MetaDataItem id="3032" name="FrequencyName" type="4953">U.S. / Canada / Mexico</MetaDataItem>
+    <MetaDataItem name="ResetDescription">You may wish to reset all of your Hinge Pin Smart Door Sensor's settings to their factory defaults. To do this, press the program button 10 times within 6 seconds. If your Door Sensor has been successfully reset, its LED light will blink for 3 seconds. 
+
+This should only be used in the event your network’s primary controller is missing or otherwise inoperable.</MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">1. Follow the instructions for your Z-Wave certified controller to exclude a device from the Z-Wave network. 
+2. Once the controller is ready to exclude your device, press and release the manual/program button on the Hinge Pin Smart Door Sensor to exclude it from the network. </MetaDataItem>
+    <MetaDataItem name="Name">Hinge Pin Smart Door Sensor</MetaDataItem>
+    <MetaDataItem name="Description">Transform any home into a smart home with the GE Hinge Pin Smart Door Sensor. This Smart Door Sensor is universal to fit any hinge size and is also reversible to allow it to work on a right or left opening door. With the adjustable zero pin position this will allow you to easily adjust for molding and when the sensor triggers. With the quick and easy installation, this sensor will notify you of when people enter or exit your home, you can also set the sensor to turn on a light or groups of lights.  </MetaDataItem>
+    <MetaDataItem name="ProductManual">https://Products.Z-WaveAlliance.org/ProductManual/File?folder=&amp;filename=Manuals/1800/32563-1 EnFrSp QSG - Combined.pdf</MetaDataItem>
+    <MetaDataItem name="WakeupDescription">1. Press and hold the Z-Wave Button for 6 seconds. It will be wake up and send “Wake Up Notification CC “ to HUB. 
+2 .It will sleep after timeout for 10 seconds, or sleep right away when received the “Wake Up No More Information CC”. 
+</MetaDataItem>
+    <MetaDataItem name="InclusionDescription">1. Follow the instructions for your Z-Wave certified controller to include the device to the Z-Wave network.
+2. Once the controller is ready to include your Hinge Pin Smart Door Sensor press and release the manual/program button on the smart switch to include it in the network. </MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="24 May 2019" revision="2">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1800/xml</Entry>
+    </ChangeLog>
+  </MetaData>
+  <!-- Configuration Parameters -->
+  <CommandClass id="112">
+    <Value genre="config" index="20" label="Change Open/Close Report Method" size="1" type="list" value="1">
+      <Item label="Notification" value="1"/>
+      <Item label="Basic Set" value="2"/>
+      <Item label="Basic Report" value="3"/>
+    </Value>
+  </CommandClass>
+</Product>

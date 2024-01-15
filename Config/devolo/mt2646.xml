@@ -1,0 +1,100 @@
+<!-- Devolo Metering Plug MT 2646
+http://products.z-wavealliance.org/products/1129
+ --><Product Revision="4" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0175:0011:0001</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/devolo/mt2646.png</MetaDataItem>
+    <MetaDataItem id="0011" name="ZWProductPage" type="0001">https://products.z-wavealliance.org/products/1129/</MetaDataItem>
+    <MetaDataItem name="ResetDescription">(Use this procedure only in the event that the primary controller is lost or otherwise inoperable.)
+
+1.  Pressing On/Off button three times within 2 seconds will enter inclusion mode on the switch.
+2.  Within 1 second, press On/Off button again for 5 seconds. 
+</MetaDataItem>
+    <MetaDataItem id="0011" name="Identifier" type="0001">MT02646</MetaDataItem>
+    <MetaDataItem name="Name">Metering Plug</MetaDataItem>
+    <MetaDataItem name="Description">This plug-in ON/OFF switch Home Control Metering Plug is a security enabled wireless switch, based on Z-Wave Plus technology. Z-Wave Plus™   enabled devices displaying  the  Z-Wave Plus™ logo can also be used with   it regardless of the manufacturer, and can also be used in other manufacturer’s Z-Wave™ enabled networks. Remote On/Off control of the connected load is possible with other manufacturer’s wireless Controller. Each switch is designed to act as a repeater. Repeaters will re-transmit the RF signal to ensure that the signal is received by its
+intended destination by routing the signal around obstacles and radio dead spots. Because Home Control Metering Plug supports Security Command Class, it can be added with a Secured controller. Its functionality and supported command classes is identical when included as a secure and non-secure device. 
+This plug-in ON/OFF switch is able to detect instance wattage   (3000W/CE/CN,1500W/UL/TW/JP) and overload current (14.5A) of connected lights or appliances. When detecting overload state, the Switch will be disabled and its On/Off button will be lockout of which LED will flash quickly.   However, unplug and re-connect the switch will reset its overload condition to normal status.</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://Products.Z-WaveAlliance.org/ProductManual/File?folder=&amp;filename=Manuals/1129/PAN11-1B manual-20140816.pdf</MetaDataItem>
+    <MetaDataItem name="InclusionDescription">1.  Put your Z-Wave controller into inclusion mode by following the instructions provided by the controller manufacturer. 
+2.  Pressing On/Off button three times within 2 seconds will enter inclusion 
+     mode on the switch. </MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">1.  Put your Z-Wave controller into exclusion mode by following the instructions provided by the controller manufacturer. 
+2.  Pressing On/Off button three times within 2 seconds will enter exclusion 
+     mode on the switch. </MetaDataItem>
+    <MetaDataItem id="0011" name="FrequencyName" type="0001">CEPT (Europe)</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="08 May 2019" revision="4">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1129/xml</Entry>
+    </ChangeLog>
+  </MetaData>
+  <!-- Configuration Parameters -->
+  <CommandClass id="112">
+    <Value genre="config" index="1" label="Watt Meter Report Period" max="32767" min="1" type="short" value="720">
+      <Help>
+          0 Disable automatic interval meter reporting of Watts.
+          1 to 32767 Enable automatic interval reporting with an interval of 5 * the value.
+	  </Help>
+    </Value>
+    <Value genre="config" index="2" label="KWH Meter Report Period" max="32767" min="1" type="short" value="6">
+      <Help>
+          0 Disable automatic interval meter kWh reporting.
+          If the setting is configured for 1hour (set value =6), the Home Control Metering Plug will report its Accumulated Power Consumption (KW/h) every 1 hour to Group1 node. The maximum interval to report its Accumulated Power Consumption (KW/h) is 227.55 days (10min*32767/1440=227.55 days).
+    </Help>
+    </Value>
+    <Value genre="config" index="3" label="Threshold of current for Load caution" max="1300" min="10" type="short" value="1300">
+      <Help>
+          This is a warning when the current of load over the preset threshold value, if the setting value is 1300, when the load current of Relay1 over this value, Home Control Metering Plug will send current meter report to warn the Group1 node, the Range of the setting value is from 10 to 1300,and the default value is 1300.
+    </Help>
+    </Value>
+    <Value genre="config" index="4" label="Threshold of KWh for Load caution" max="10000" min="1" type="short" units="KWh" value="1000">
+      <Help>
+          0 Disable kWh Load Caution Reporting
+          1 to 10000 Enable automatic warning when the accumulated kWh power consumption exceeds the setting value from 1KWh to 10000KWh.
+    </Help>
+    </Value>
+    <Value genre="config" index="5" label="Restore switch state mode" max="2" min="0" size="1" type="list" value="1">
+      <Help>
+          Whenever the AC power return from lost, Home Control Metering Plug will restore the switch state which could be SWITCH OFF, LAST SWITCH STATE, SWITCH ON. The default setting is LAST SWITCH STATE.
+      </Help>
+      <Item label="Switch Off" value="0"/>
+      <Item label="Last switch state" value="1"/>
+      <Item label="Switch On" value="2"/>
+    </Value>
+    <Value genre="config" index="6" label="Mode of Switch Off function" max="1" min="0" size="1" type="list" value="1">
+      <Help>
+            When the mode of switch On/Off is set to 0, any command of switch off will be disabled and the On/Off function of include button will be disabled. The default setting is enable mode.
+      </Help>
+      <Item label="Disable" value="0"/>
+      <Item label="Enable" value="1"/>
+    </Value>
+    <Value genre="config" index="7" label="LED indication mode" max="3" min="1" size="1" type="list" value="0">
+      <Help>
+          LED indication mode
+      </Help>
+      <Item label="Switch state" value="1"/>
+      <Item label="Night Mode" value="2"/>
+      <Item label="One flash mode" value="3"/>
+    </Value>
+    <Value genre="config" index="8" label="Auto off timer" max="32767" min="0" type="short" units="second" value="0">
+      <Help>
+          0 Disable the auto off function.
+          1 to 32767 1s to 32767s for automatically turning off.
+    </Help>
+    </Value>
+    <Value genre="config" index="9" label="RF off command mode" max="3" min="0" size="1" type="list" units="" value="0">
+      <Help>
+          Whenever a switch off command,BASIC_SET, BINARY_SWITCH_SET, SWITCH_ALL_OFF, is received, it could be interpreted as a variety of 4 commands.
+      </Help>
+      <Item label="Switch Off" value="0"/>
+      <Item label="Ignore" value="1"/>
+      <Item label="Switch toggle" value="2"/>
+      <Item label="Switch On" value="3"/>
+    </Value>
+  </CommandClass>
+  <!-- Association Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="1">
+      <Group index="1" label="Lifeline" max_associations="1"/>
+    </Associations>
+  </CommandClass>
+</Product>

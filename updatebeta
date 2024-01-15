@@ -10,7 +10,14 @@ lowercase(){
 OS=`lowercase \`uname -s\``
 MACH=`uname -m`
 ARCH=`dpkg --print-architecture`
-if [ ${MACH} = "armv6l" ] || [ ${ARCH} = "armhf" ]
+
+if [ ${MACH} = "armv6l" ]
+then
+ echo "ARMv6 is not supported anymore... Please upgrade your hardware"
+ exit 1
+fi
+
+if [ ${ARCH} = "armhf" ]
 then
  MACH="armv7l"
 fi

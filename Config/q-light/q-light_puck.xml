@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Product Revision="2" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0433:0005:0003</MetaDataItem>  
+    <MetaDataItem name="ProductPic">images/q-light/q-light_puck.png</MetaDataItem>	
+    <MetaDataItem id="0005" name="ZWProductPage" type="0003">https://products.z-wavealliance.org/products/3774</MetaDataItem>  
+    <MetaDataItem id="0005" name="Identifier" type="0003">Puck</MetaDataItem>	
+    <MetaDataItem name="ProductManual">https://products.z-wavealliance.org/ProductManual/File?folder=&amp;filename=product_documents/3774/Instructions_Z-Wave_Puck_Norsk_A4.pdf	</MetaDataItem>	
+    <MetaDataItem name="Description">Z-Wave Puck dimmer by Q-light is a micro size in wall dimmer.
+Features:
+- 0-100% dimming range
+- 2-180W LED load
+- Compatible with any Z-Wave or Z-Wave Plus Controller
+- There is memorized function at power off
+- OverLoad protection
+- Soft start function
+- SmartStart
+- Works with various types of switches – on/off, momentary, roller-blind, and etc
+- This device is a security enable Z-Wave Plus product that is able to use encrypted Z-Wave Plus
+messages to communicate to other security enable Z-Wave Plus products.
+</MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">
+Removing (Exclusion):
+Allowing to remove the Z-Wave device from existing Z-Wave network.
+
+1. Place the Z-Wave Puck within the direct range of your Z-Wave controller.
+2. Identify switch S1/S2 (turns the light on) or the Internal button (located on the device’s housing).
+3. Set the main controller in (security/non-security) add mode (see the controller’s manual).
+4. Quickly, three times press switch S1 / S2 or Internal button.
+5. Wait for the removing process to end.
+	</MetaDataItem>
+    <MetaDataItem id="0005" name="FrequencyName" type="0003">CEPT (Europe)</MetaDataItem>
+    <MetaDataItem name="Name">Q-light Zerodim Z-Wave</MetaDataItem>
+    <MetaDataItem name="ResetDescription">Resetting the Z-Wave Puck:
+
+1. Quickly, nine times press switch S1 / S2 or Internal button. 
+2. Wait for the resetting process to end, which is signaled with the LED indicator blinks 20 times. 
+
+Device reset status: Turn on the light at maximum brightness.
+
+Please use this procedure only when the network primary controller is missing or otherwise inoperable
+	</MetaDataItem>
+    <MetaDataItem name="InclusionDescription">
+Classic Learn Mode:
+
+1. Place the Z-Wave Puck within the direct range of your Z-Wave controller.
+2. Identify switch S1/S2 (turns the light on) or the Internal button (located on the device’s housing).
+3. Set the main controller in (security/non-security) add mode (see the controller’s manual).
+4. Quickly, three times press switch S1 / S2 or Internal button. 5. Wait for the adding process to end.
+6. Successful adding will be confirmed by the Z-Wave controller’s message.
+	</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Geir Råness - git@winning.no" date="03 July 2020" revision="1">Initial release</Entry>
+      <Entry author="Geir Råness - git@winning.no" date="06 July 2020" revision="2">fix associations</Entry>
+    </ChangeLog>
+  </MetaData>
+  
+  <CommandClass id="112">
+    <Value genre="config" instance="1" index="1" value="15" label="Minimum brightness level" units="%" size="1" min="1" max="98" type="byte">
+      <Help>
+Set the desired value from 1 to 98% for the minimum dim level that the dimmer is restricted to, the dimmer will not go lower than the value set here.
+	  </Help>
+    </Value>
+    <Value genre="config" instance="1" index="2" value="99" label="Maximum brightness level" units="%" size="1" min="2" max="99" type="byte">
+      <Help>
+Set the desired value from 2 to 99% for the maximum dim level that the dimmer is restricted to, the dimmer will not go higher than the value set here.
+	  </Help>
+    </Value>
+    <Value genre="config" instance="1" index="3" value="1" label="Automatic control - dimming step size" units="%" size="1" min="1" max="99" type="byte">
+      <Help>
+This parameter defines the percentage value of dimming step during the automatic control.
+	  </Help>
+    </Value>
+    <Value genre="config" instance="1" index="4" value="1" label="Automatic control - time of a dimming step" units="ms" size="1" min="1" max="255" type="byte">
+      <Help>
+This parameter defines the time of single dimming step set in parameter 3 during the automatic control.
+	  </Help>
+    </Value>
+    <Value genre="config" instance="1" index="5" value="1" label="Manual control - dimming step size" units="%" size="1" min="1" max="99" type="byte">
+      <Help>
+This parameter defines the percentage value of dimming step during the manual control.
+	  </Help>
+    </Value>
+    <Value genre="config" instance="1" index="6" value="5" label="Manual control - time of a dimming step" units="ms" size="1" min="1" max="255" type="byte">
+      <Help>
+This parameter defines the time of single dimming step setin parameter 5 during the manual control.	  
+	  </Help>
+    </Value>
+    <Value genre="config" instance="1" index="7" value="1" label="Memory function after power failure" size="1" min="0" max="1" type="list">
+      <Help>Set the desired value from 0 to 1 to turn on/off the memory function.Setting this value to 0 turns off the dimmer's Memory fucntion.Setting this value to 1 truns on the dimmer's Memory function.</Help>
+	    <Item value="0" label="Device does not save the state before a power failure, it returns to off position"/>
+      <Item value="1" label="Device restores it's state before power failure"/>
+    </Value>
+    <Value genre="config" instance="1" index="8" value="0" label="Switch type" size="1" min="0" max="2" type="list">
+      <Help>
+Choose between momentary, ON/OFF and roller blind switch.
+
+Available settings:
+0 – momentary (Push) switch.
+1 – ON/OFF switch. 
+2– roller blind switch-two switchs operate the device(S1 to brighter, S2 to dim
+	  </Help>
+	  <Item value="0" label="momentary (Push) switch"/>
+    <Item value="1" label="ON/OFF switch"/>
+	  <Item value="2" label="roller blind switch-two switchs operate the device(S1 to brighter, S2 to dim)"/>
+    </Value>
+    <Value genre="config" instance="1" index="9" value="0" label="Switch functionality of S1 and S2" size="1" min="0" max="1" type="list">
+      <Help>Set the desired value from 0 to 1 to turn on/off the memory function.Setting this value to 0 turns off the dimmer's Memory fucntion.Setting this value to 1 truns on the dimmer's Memory function.</Help>
+	    <Item value="0" label="Standard mode"/>
+      <Item value="1" label="S1 operates as S2, S2 operates as S1"/>
+    </Value>
+    <Value genre="config" instance="1" index="10" value="1" label="S1 Scene ID set" units="step" size="1" min="1" max="255" type="byte">
+      <Help>
+When you press S1 five times,the light is dimmed to the brightness set in Scene ID 3 .
+
+S1 Scene ID is set by this configuration.
+
+Note: The actual action of each SCENE ID are set by SCE-NE_ACTUATOR_CONF(0x26) command.
+	  </Help>
+    </Value>
+    <Value genre="config" instance="1" index="11" value="2" label="S1 Scene ID set" units="step" size="1" min="1" max="255" type="byte">
+      <Help>
+When you press S1 five times,the light is dimmed to the brightness set in Scene ID 5.
+
+
+S2 Scene ID is set by this configuration.
+
+Note: The actual action of each SCENE ID are set by SCE-NE_ACTUATOR_CONF(0x26) command.
+	  </Help>
+    </Value>
+    <Value genre="config" instance="1" index="12" value="0" label="Timer functionality (auto - off)" units="seconds" size="2" min="0" max="32767" type="short">
+    <Help>This parameter allows to automatically switch off the device after specified time from switching on the light source. It may be useful when the Zerodim Z-Wave is installed in the stairway.
+
+Available settings: 
+0 - Function disabled. 
+1-32767 - time to turn off measured in seconds (1s-9.1h)
+    </Help>
+    </Value>
+  </CommandClass>
+
+  <CommandClass id="133">
+    <Associations num_groups="5">
+      <Group index="1" label="Lifeline" max_associations="1" />
+      <Group index="2" label="On/Off(S1) / Mirror of endpoint 1, group 2" max_associations="5" />
+      <Group index="3" label="Dimmer(S1) / Mirror of endpoint 1, group 3" max_associations="5" />
+      <Group index="4" label="On/Off(S2) / Mirror of endpoint 2, group 2" max_associations="5" />
+      <Group index="5" label="Dimmer(S2) / Mirror of endpoint 2, group 3" max_associations="5" />
+    </Associations>
+  </CommandClass>
+
+</Product>

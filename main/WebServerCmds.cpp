@@ -63,7 +63,9 @@
 #include "../hardware/EnphaseAPI.h"
 #include "../hardware/AlfenEve.h"
 #include "../hardware/RFLinkBase.h"
-
+#ifdef WITH_OPENZWAVE
+#include "../hardware/OpenZWave.h"
+#endif
 #define round(a) (int)(a + .5)
 
 extern std::string szStartupFolder;
@@ -294,6 +296,10 @@ namespace http
 #endif
 				}
 #endif
+#endif
+#ifndef WITH_OPENZWAVE
+				if (ii == HTYPE_OpenZWave)
+					bDoAdd = false;
 #endif
 #ifndef WITH_GPIO
 				if (ii == HTYPE_RaspberryGPIO)
@@ -1979,6 +1985,7 @@ namespace http
 			}
 
 			std::string hid = request::findValue(&req, "hid");
+			std::string ohid = request::findValue(&req, "ohid");
 			std::string did = request::findValue(&req, "did");
 			std::string dunit = request::findValue(&req, "dunit");
 			std::string dtype = request::findValue(&req, "dtype");
@@ -2008,17 +2015,19 @@ namespace http
 			{
 				// Get the raw device parameters
 				std::vector<std::vector<std::string>> result;
-				result = m_sql.safe_query("SELECT HardwareID, DeviceID, Unit, Type, SubType FROM DeviceStatus WHERE (ID=='%q')", idx.c_str());
+				result = m_sql.safe_query("SELECT HardwareID, OrgHardwareID, DeviceID, Unit, Type, SubType FROM DeviceStatus WHERE (ID=='%q')", idx.c_str());
 				if (result.empty())
 					return;
 				hid = result[0][0];
-				did = result[0][1];
-				dunit = result[0][2];
-				dtype = result[0][3];
-				dsubtype = result[0][4];
+				ohid = result[0][1];
+				did = result[0][2];
+				dunit = result[0][3];
+				dtype = result[0][4];
+				dsubtype = result[0][5];
 			}
 
 			int HardwareID = atoi(hid.c_str());
+			int OrgHardwareID = atoi(ohid.c_str());
 			std::string DeviceID = did;
 			int unit = atoi(dunit.c_str());
 			int devType = atoi(dtype.c_str());
@@ -2039,7 +2048,7 @@ namespace http
 				batterylevel = atoi(sBatteryLevel.c_str());
 			}
 			std::string szUpdateUser = Username + " (IP: " + session.remote_host + ")";
-			if (m_mainworker.UpdateDevice(HardwareID, DeviceID, unit, devType, subType, invalue, svalue, szUpdateUser, signallevel, batterylevel, parseTrigger))
+			if (m_mainworker.UpdateDevice(HardwareID, OrgHardwareID, DeviceID, unit, devType, subType, invalue, svalue, szUpdateUser, signallevel, batterylevel, parseTrigger))
 			{
 				root["status"] = "OK";
 				root["title"] = "Update Device";
@@ -3140,7 +3149,9 @@ namespace http
 		void CWebServer::Cmd_GetHardware(WebEmSession& session, const request& req, Json::Value& root)
 		{
 			root["title"] = "gethardware";
-
+#ifdef WITH_OPENZWAVE
+			m_ZW_Hwidx = -1;
+#endif
 			std::vector<std::vector<std::string>> result;
 			result = m_sql.safe_query("SELECT ID, Name, Enabled, Type, Address, Port, SerialPort, Username, Password, Extra, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6, DataTimeout, "
 				"LogLevel FROM Hardware ORDER BY ID ASC");
@@ -3222,6 +3233,14 @@ namespace http
 							AlfenEve* pMyHardware = dynamic_cast<AlfenEve*>(pHardware);
 							root["result"][ii]["version"] = pMyHardware->m_szSoftwareVersion;
 						}
+#ifdef WITH_OPENZWAVE
+						else if (pHardware->HwdType == HTYPE_OpenZWave)
+						{ // Special case for openzwave (status for nodes queried)
+							COpenZWave* pOZWHardware = dynamic_cast<COpenZWave*>(pHardware);
+							root["result"][ii]["version"] = pOZWHardware->GetVersionLong();
+							root["result"][ii]["NodesQueried"] = (pOZWHardware->m_awakeNodesQueried || pOZWHardware->m_allNodesQueried);
+						}
+#endif
 					}
 					ii++;
 				}
@@ -4166,15 +4185,16 @@ namespace http
 			root["status"] = "OK";
 			root["title"] = "DoTransferDevice";
 
-			result = m_sql.safe_query("SELECT HardwareID, DeviceID, Unit, Type, SubType FROM DeviceStatus WHERE (ID == '%q')", newidx.c_str());
+			result = m_sql.safe_query("SELECT HardwareID, OrgHardwareID, DeviceID, Unit, Type, SubType FROM DeviceStatus WHERE (ID == '%q')", newidx.c_str());
 			if (result.empty())
 				return;
 
 			int newHardwareID = std::stoi(result[0].at(0));
-			std::string newDeviceID = result[0].at(1);
-			int newUnit = std::stoi(result[0].at(2));
-			int devType = std::stoi(result[0].at(3));
-			int subType = std::stoi(result[0].at(4));
+			int newOrgHardwareID = std::stoi(result[0].at(1));
+			std::string newDeviceID = result[0].at(2);
+			int newUnit = std::stoi(result[0].at(3));
+			int devType = std::stoi(result[0].at(4));
+			int subType = std::stoi(result[0].at(5));
 
 			//get last update date from old device
 			result = m_sql.safe_query("SELECT LastUpdate FROM DeviceStatus WHERE (ID == '%q')", sidx.c_str());
@@ -4182,7 +4202,7 @@ namespace http
 				return;
 			std::string szLastOldDate = result[0][0];
 
-			m_sql.safe_query("UPDATE DeviceStatus SET HardwareID = %d, DeviceID = '%q', Unit = %d, Type = %d, SubType = %d WHERE ID == '%q'", newHardwareID, newDeviceID.c_str(), newUnit, devType, subType, sidx.c_str());
+			m_sql.safe_query("UPDATE DeviceStatus SET HardwareID = %d, OrgHardwareID = %d, DeviceID = '%q', Unit = %d, Type = %d, SubType = %d WHERE ID == '%q'", newHardwareID, newOrgHardwareID, newDeviceID.c_str(), newUnit, devType, subType, sidx.c_str());
 
 			//new device could already have some logging, so let's keep this data
 			//Rain
@@ -4220,49 +4240,6 @@ namespace http
 			m_sql.DeleteDevices(newidx);
 
 			m_mainworker.m_scheduler.ReloadSchedules();
-		}
-
-		void CWebServer::Cmd_GetNotifications(WebEmSession& session, const request& req, Json::Value& root)
-		{
-			root["status"] = "OK";
-			root["title"] = "getnotifications";
-
-			int ii = 0;
-
-			// Add known notification systems
-			for (const auto& notifier : m_notifications.m_notifiers)
-			{
-				root["notifiers"][ii]["name"] = notifier.first;
-				root["notifiers"][ii]["description"] = notifier.first;
-				ii++;
-			}
-
-			uint64_t idx = 0;
-			if (!request::findValue(&req, "idx").empty())
-			{
-				idx = std::stoull(request::findValue(&req, "idx"));
-			}
-			std::vector<_tNotification> notifications = m_notifications.GetNotifications(idx);
-			if (!notifications.empty())
-			{
-				ii = 0;
-				for (const auto& n : notifications)
-				{
-					root["result"][ii]["idx"] = Json::Value::UInt64(n.ID);
-					std::string sParams = n.Params;
-					if (sParams.empty())
-					{
-						sParams = "S";
-					}
-					root["result"][ii]["Params"] = sParams;
-					root["result"][ii]["Priority"] = n.Priority;
-					root["result"][ii]["SendAlways"] = n.SendAlways;
-					root["result"][ii]["CustomMessage"] = n.CustomMessage;
-					root["result"][ii]["CustomAction"] = CURLEncode::URLEncode(n.CustomAction);
-					root["result"][ii]["ActiveSystems"] = n.ActiveSystems;
-					ii++;
-				}
-			}
 		}
 
 		void CWebServer::Cmd_GetSharedUserDevices(WebEmSession& session, const request& req, Json::Value& root)
@@ -4466,9 +4443,9 @@ namespace http
 				if (urights < 1)
 					return;
 				if (dType == pTypeEvohomeWater)
-					m_mainworker.SetSetPoint(idx, (state == "On") ? 1.0F : 0.0F, mode, until); // FIXME float not guaranteed precise?
+					m_mainworker.SetSetPointEvo(idx, (state == "On") ? 1.0F : 0.0F, mode, until); // FIXME float not guaranteed precise?
 				else if (dType == pTypeEvohomeZone)
-					m_mainworker.SetSetPoint(idx, static_cast<float>(atof(setPoint.c_str())), mode, until);
+					m_mainworker.SetSetPointEvo(idx, static_cast<float>(atof(setPoint.c_str())), mode, until);
 				else
 					m_mainworker.SetSetPoint(idx, static_cast<float>(atof(setPoint.c_str())));
 			}

@@ -1,0 +1,27 @@
+<Product Revision="4" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/013C:0001:0001</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/philio/pan11-1.png</MetaDataItem>
+    <MetaDataItem id="0001" name="ZWProductPage" type="0001">https://products.z-wavealliance.org/products/855/</MetaDataItem>
+    <MetaDataItem id="0001" name="Identifier" type="0001">PAN11-4</MetaDataItem>
+    <MetaDataItem id="0001" name="FrequencyName" type="0001">CEPT (Europe) / U.S. / Canada / Mexico</MetaDataItem>
+    <MetaDataItem name="Description">Features:
+- Higher RF output power (+2.5dBm output power as compared to -2.5dBm 300 series Z-wave module) to enhance the communication range
+- Adopt Z-Wave protocol to secure the success of wireless two way communication
+- Easy install
+- Very low no load power consumption, meet Europe year 2012 energy-related products requirement directive 2009/125/EC no. 1275/2008
+- Resistive load 1400W
+- Overload protection
+- Voltage, Current, Power factor, Instant power Wattage and Accumulated power consumption KWh report
+- Z-Wave V6.02
+- UL, FCC part15B+C LVD</MetaDataItem>
+    <MetaDataItem name="Name">Smart Energy Plug In Switch</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 May 2019" revision="1">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/780/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 May 2019" revision="2">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/783/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 May 2019" revision="3">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/784/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 May 2019" revision="4">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/855/xml</Entry>
+    </ChangeLog>
+    <MetaDataItem name="ProductPage">http://philio-tech.com/</MetaDataItem>
+  </MetaData>
+</Product>

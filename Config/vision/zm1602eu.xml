@@ -1,0 +1,30 @@
+<!-- Vision Security Battery Siren -->
+<Product Revision="2" xmlns="https://github.com/OpenZWave/open-zwave">
+  <!-- Configuration -->
+  <CommandClass id="112">
+    <Value genre="config" index="0" label="Siren Strobe Mode" max="255" min="0" type="byte" value="0">
+      <Help>Defines the reaction of the siren: [0] Strobe and Siren, [1] Siren, [2] Strobe (Default setting: 0)</Help>
+    </Value>
+    <Value genre="config" index="1" label="Alarm auto stop" max="255" min="0" type="byte" value="0">
+      <Help>Defines the auto time out of the alarm indication: [0] 30 seconds, [1] 60 seconds, [2] 120 seconds, [3] Continuous (Default setting: 0)</Help>
+    </Value>
+  </CommandClass>
+  <!-- Basic set as report -->
+  <CommandClass id="32">
+    <Compatibility>
+      <SetAsReport>true</SetAsReport>
+    </Compatibility>
+  </CommandClass>
+  <!--  Binary report value when the Magnet switch is opened/closed -->
+  <CommandClass id="37">
+    <Compatibility>
+      <SetAsReport>true</SetAsReport>
+    </Compatibility>
+  </CommandClass>
+  <!--  Battery set as report -->
+  <CommandClass id="128">
+    <Compatibility>
+      <SetAsReport>true</SetAsReport>
+    </Compatibility>
+  </CommandClass>
+</Product>

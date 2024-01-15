@@ -4,6 +4,7 @@
 #include "../main/SQLHelper.h"
 #include "../main/RFXtrx.h"
 #include "../main/mainworker.h"
+#include "../main/WebServer.h"
 #include "../hardware/DomoticzHardware.h"
 #include "../hardware/hardwaretypes.h"
 #include "NotificationHelper.h"
@@ -271,7 +272,6 @@ bool CNotificationHelper::CheckAndHandleNotification(const uint64_t DevRowIdx, c
 bool CNotificationHelper::CheckAndHandleNotification(const uint64_t DevRowIdx, const int HardwareID, const std::string &ID, const std::string &sName, const unsigned char unit, const unsigned char cType, const unsigned char cSubType, const int nValue, const std::string &sValue, const float fValue) {
 	float fValue2;
 	bool r1, r2, r3;
-	int nsize;
 	int nexpected = 0;
 
 	// Don't send notification for devices not in db
@@ -283,7 +283,7 @@ bool CNotificationHelper::CheckAndHandleNotification(const uint64_t DevRowIdx, c
 	int meterType = 0;
 	std::vector<std::string> strarray;
 	StringSplit(sValue, ";", strarray);
-	nsize = strarray.size();
+	size_t nsize = strarray.size();
 	switch(cType) {
 		case pTypeP1Power:
 			nexpected = 5;
@@ -1503,6 +1503,7 @@ bool CNotificationHelper::CustomRecoveryMessage(const uint64_t ID, std::string &
 
 bool CNotificationHelper::AddNotification(
 	const std::string &DevIdx,
+	const bool Active,
 	const std::string &Param,
 	const std::string& CustomMessage,
 	const std::string& CustomAction,
@@ -1520,8 +1521,8 @@ bool CNotificationHelper::AddNotification(
 		return false;//already there!
 
 	int iSendAlways = (SendAlways == true) ? 1 : 0;
-	m_sql.safe_query("INSERT INTO Notifications (DeviceRowID, Params, CustomMessage, CustomAction, ActiveSystems, Priority, SendAlways) VALUES ('%q','%q','%q','%q','%q',%d,%d)",
-		DevIdx.c_str(), Param.c_str(), CustomMessage.c_str(), CustomAction.c_str(), ActiveSystems.c_str(), Priority, iSendAlways);
+	m_sql.safe_query("INSERT INTO Notifications (DeviceRowID, Active, Params, CustomMessage, CustomAction, ActiveSystems, Priority, SendAlways) VALUES ('%q',%d,'%q','%q','%q','%q',%d,%d)",
+		DevIdx.c_str(), (Active) ? 1 : 0, Param.c_str(), CustomMessage.c_str(), CustomAction.c_str(), ActiveSystems.c_str(), Priority, iSendAlways);
 	ReloadNotifications();
 	return true;
 }
@@ -1542,22 +1543,21 @@ bool CNotificationHelper::RemoveNotification(const std::string &ID)
 	return true;
 }
 
-std::vector<_tNotification> CNotificationHelper::GetNotifications(const std::string &DevIdx)
-{
-	std::stringstream s_str(DevIdx);
-	uint64_t idxll;
-	s_str >> idxll;
-	return GetNotifications(idxll);
-}
-
-std::vector<_tNotification> CNotificationHelper::GetNotifications(const uint64_t DevIdx)
+std::vector<_tNotification> CNotificationHelper::GetNotifications(const uint64_t DevIdx, const bool bActiveOnly)
 {
 	std::lock_guard<std::mutex> l(m_mutex);
 	std::vector<_tNotification> ret;
 	auto itt = m_notifications.find(DevIdx);
 	if (itt != m_notifications.end())
 	{
-		ret = itt->second;
+		if (!bActiveOnly)
+			return itt->second;
+		std::vector<_tNotification> tarray = itt->second;
+		for (const auto& itt : tarray)
+		{
+			if (itt.Active)
+				ret.push_back(itt);
+		}
 	}
 	return ret;
 }
@@ -1586,7 +1586,7 @@ void CNotificationHelper::ReloadNotifications()
 	m_sql.GetPreferencesVar("NotificationSensorInterval", m_NotificationSensorInterval);
 	m_sql.GetPreferencesVar("NotificationSwitchInterval", m_NotificationSwitchInterval);
 
-	result = m_sql.safe_query("SELECT ID, DeviceRowID, Params, CustomMessage, CustomAction, ActiveSystems, Priority, SendAlways, LastSend FROM Notifications ORDER BY DeviceRowID");
+	result = m_sql.safe_query("SELECT ID, DeviceRowID, Active, Params, CustomMessage, CustomAction, ActiveSystems, Priority, SendAlways, LastSend FROM Notifications ORDER BY DeviceRowID");
 	if (result.empty())
 		return;
 
@@ -1614,14 +1614,15 @@ void CNotificationHelper::ReloadNotifications()
 		sstr << sd[1];
 		sstr >> Idx;
 
-		notification.Params = sd[2];
-		notification.CustomMessage = sd[3];
-		notification.CustomAction = CURLEncode::URLDecode(sd[4]);
-		notification.ActiveSystems = sd[5];
-		notification.Priority = atoi(sd[6].c_str());
-		notification.SendAlways = (atoi(sd[7].c_str())!=0);
+		notification.Active = atoi(sd[2].c_str()) != 0;
+		notification.Params = sd[3];
+		notification.CustomMessage = sd[4];
+		notification.CustomAction = CURLEncode::URLDecode(sd[5]);
+		notification.ActiveSystems = sd[6];
+		notification.Priority = atoi(sd[7].c_str());
+		notification.SendAlways = (atoi(sd[8].c_str())!=0);
 
-		std::string stime = sd[8];
+		std::string stime = sd[9];
 		if (stime == "0")
 		{
 			notification.LastSend = 0;
@@ -1655,3 +1656,207 @@ void CNotificationHelper::ReloadNotifications()
 		m_notifications[Idx].push_back(notification);
 	}
 }
+
+//Webserver helpers
+namespace http {
+	namespace server {
+		void CWebServer::Cmd_GetNotifications(WebEmSession& session, const request& req, Json::Value& root)
+		{
+			root["status"] = "OK";
+			root["title"] = "getnotifications";
+
+			int ii = 0;
+
+			// Add known notification systems
+			for (const auto& notifier : m_notifications.m_notifiers)
+			{
+				root["notifiers"][ii]["name"] = notifier.first;
+				root["notifiers"][ii]["description"] = notifier.first;
+				ii++;
+			}
+
+			uint64_t idx = 0;
+			if (!request::findValue(&req, "idx").empty())
+			{
+				idx = std::stoull(request::findValue(&req, "idx"));
+			}
+
+			std::vector<_tNotification> notifications = m_notifications.GetNotifications(idx, false);
+			if (!notifications.empty())
+			{
+				ii = 0;
+				for (const auto& n : notifications)
+				{
+					root["result"][ii]["idx"] = Json::Value::UInt64(n.ID);
+					root["result"][ii]["Active"] = n.Active;
+					std::string sParams = n.Params;
+					if (sParams.empty())
+					{
+						sParams = "S";
+					}
+					root["result"][ii]["Params"] = sParams;
+					root["result"][ii]["Priority"] = n.Priority;
+					root["result"][ii]["SendAlways"] = n.SendAlways;
+					root["result"][ii]["CustomMessage"] = n.CustomMessage;
+					root["result"][ii]["CustomAction"] = CURLEncode::URLEncode(n.CustomAction);
+					root["result"][ii]["ActiveSystems"] = n.ActiveSystems;
+					ii++;
+				}
+			}
+		}
+		void CWebServer::Cmd_AddNotification(WebEmSession& session, const request& req, Json::Value& root)
+		{
+			if (session.rights < 2)
+			{
+				session.reply_status = reply::forbidden;
+				return; // Only admin user allowed
+			}
+
+			std::string idx = request::findValue(&req, "idx");
+			if (idx.empty())
+				return;
+
+			std::string sactive = request::findValue(&req, "tactive");
+			std::string stype = request::findValue(&req, "ttype");
+			std::string swhen = request::findValue(&req, "twhen");
+			std::string svalue = request::findValue(&req, "tvalue");
+			std::string scustommessage = request::findValue(&req, "tmsg");
+			std::string scustomaction = CURLEncode::URLDecode(request::findValue(&req, "taction"));
+			std::string sactivesystems = request::findValue(&req, "tsystems");
+			std::string spriority = request::findValue(&req, "tpriority");
+			std::string ssendalways = request::findValue(&req, "tsendalways");
+			std::string srecovery = (request::findValue(&req, "trecovery") == "true") ? "1" : "0";
+
+			if (sactive.empty() || stype.empty() || swhen.empty() || svalue.empty() || spriority.empty() || ssendalways.empty() || srecovery.empty())
+				return;
+
+			std::string Param;
+
+			_eNotificationTypes ntype = (_eNotificationTypes)atoi(stype.c_str());
+			std::string ttype = Notification_Type_Desc(ntype, 1);
+			if ((ntype == NTYPE_SWITCH_ON) || (ntype == NTYPE_SWITCH_OFF) || (ntype == NTYPE_DEWPOINT))
+			{
+				if ((ntype == NTYPE_SWITCH_ON) && (swhen == "2"))
+				{ // '='
+					unsigned char twhen = '=';
+					Param = std_format("%s;%c;%s", ttype.c_str(), twhen, svalue.c_str());
+				}
+				else
+					Param = ttype;
+			}
+			else
+			{
+				std::string twhen;
+				if (swhen == "0")
+					twhen = ">";
+				else if (swhen == "1")
+					twhen = ">=";
+				else if (swhen == "2")
+					twhen = "=";
+				else if (swhen == "3")
+					twhen = "!=";
+				else if (swhen == "4")
+					twhen = "<=";
+				else
+					twhen = "<";
+				Param = std_format("%s;%s;%s;%s", ttype.c_str(), twhen.c_str(), svalue.c_str(), srecovery.c_str());
+			}
+			int priority = atoi(spriority.c_str());
+			bool bOK = m_notifications.AddNotification(idx, (sactive == "true") ? true : false, Param, scustommessage, scustomaction, sactivesystems, priority, (ssendalways == "true") ? true : false);
+			if (bOK)
+			{
+				root["status"] = "OK";
+				root["title"] = "AddNotification";
+			}
+		}
+		void CWebServer::Cmd_UpdateNotification(WebEmSession& session, const request& req, Json::Value& root)
+		{
+			if (session.rights < 2)
+			{
+				session.reply_status = reply::forbidden;
+				return; // Only admin user allowed
+			}
+
+			std::string idx = request::findValue(&req, "idx");
+			std::string devidx = request::findValue(&req, "devidx");
+			if ((idx.empty()) || (devidx.empty()))
+				return;
+
+			std::string sactive = request::findValue(&req, "tactive");
+			std::string stype = request::findValue(&req, "ttype");
+			std::string swhen = request::findValue(&req, "twhen");
+			std::string svalue = request::findValue(&req, "tvalue");
+			std::string scustommessage = request::findValue(&req, "tmsg");
+			std::string scustomaction = CURLEncode::URLDecode(request::findValue(&req, "taction"));
+			std::string sactivesystems = request::findValue(&req, "tsystems");
+			std::string spriority = request::findValue(&req, "tpriority");
+			std::string ssendalways = request::findValue(&req, "tsendalways");
+			std::string srecovery = (request::findValue(&req, "trecovery") == "true") ? "1" : "0";
+
+			if (stype.empty() || sactive.empty() || swhen.empty() || svalue.empty() || spriority.empty() || ssendalways.empty() || srecovery.empty())
+				return;
+			root["status"] = "OK";
+			root["title"] = "UpdateNotification";
+
+			std::string recoverymsg;
+			if ((srecovery == "1") && (m_notifications.CustomRecoveryMessage(strtoull(idx.c_str(), nullptr, 0), recoverymsg, true)))
+			{
+				scustommessage.append(";;");
+				scustommessage.append(recoverymsg);
+			}
+			// delete old record
+			m_notifications.RemoveNotification(idx);
+
+			std::string Param;
+
+			_eNotificationTypes ntype = (_eNotificationTypes)atoi(stype.c_str());
+			std::string ttype = Notification_Type_Desc(ntype, 1);
+			if ((ntype == NTYPE_SWITCH_ON) || (ntype == NTYPE_SWITCH_OFF) || (ntype == NTYPE_DEWPOINT))
+			{
+				if ((ntype == NTYPE_SWITCH_ON) && (swhen == "2"))
+				{ // '='
+					unsigned char twhen = '=';
+					Param = std_format("%s;%c;%s", ttype.c_str(), twhen, svalue.c_str());
+				}
+				else
+					Param = ttype;
+			}
+			else
+			{
+				std::string twhen;
+				if (swhen == "0")
+					twhen = ">";
+				else if (swhen == "1")
+					twhen = ">=";
+				else if (swhen == "2")
+					twhen = "=";
+				else if (swhen == "3")
+					twhen = "!=";
+				else if (swhen == "4")
+					twhen = "<=";
+				else
+					twhen = "<";
+				Param = std_format("%s;%s;%s;%s", ttype.c_str(), twhen.c_str(), svalue.c_str(), srecovery.c_str());
+			}
+			int priority = atoi(spriority.c_str());
+			m_notifications.AddNotification(devidx, (sactive == "true") ? true : false, Param, scustommessage, scustomaction, sactivesystems, priority, (ssendalways == "true") ? true : false);
+		}
+		void CWebServer::Cmd_DeleteNotification(WebEmSession& session, const request& req, Json::Value& root)
+		{
+			if (session.rights < 2)
+			{
+				session.reply_status = reply::forbidden;
+				return; // Only admin user allowed
+			}
+
+			std::string idx = request::findValue(&req, "idx");
+			if (idx.empty())
+				return;
+
+			root["status"] = "OK";
+			root["title"] = "DeleteNotification";
+
+			m_notifications.RemoveNotification(idx);
+		}
+	} // namespace server
+} // namespace http

@@ -119,6 +119,11 @@ define(['app', 'log/Chart'], function (app) {
                                         )
                                         .sort()*/;
                                 },
+                                postprocessYaxis: function (yAxis) {
+									if (this.dataSupplier.deviceCounterName !== undefined) {
+										yAxis.options.title.text = this.dataSupplier.deviceCounterName;
+									}
+								},
                                 initialiseDatapoints: function () {
                                     this.datapoints = this.dataSupplier.categories.map(function (category) {
                                         return null;

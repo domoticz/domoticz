@@ -218,7 +218,7 @@ jobs:
         sudo chown -R $(whoami): ./src
         cd src
         mkdir package
-        tar czf package/domoticz_linux_${{ matrix.appimage_arch }}.tgz domoticz History.txt License.txt domoticz.sh server_cert.pem updatebeta updaterelease www/ scripts/ dzVents/
+        tar czf package/domoticz_linux_${{ matrix.appimage_arch }}.tgz domoticz History.txt License.txt domoticz.sh server_cert.pem updatebeta updaterelease www/ scripts/ Config/ dzVents/
         shasum -a 256 package/domoticz_linux_${{ matrix.appimage_arch }}.tgz > package/domoticz_linux_${{ matrix.appimage_arch }}.tgz.sha256sum
 
       # Artifact upload

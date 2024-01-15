@@ -622,9 +622,10 @@ namespace Plugins {
 						}
 
 						m_sql.safe_query("INSERT INTO DeviceStatus "
-							"(HardwareID, DeviceID, Unit, Type, SubType, SwitchType, Used, SignalLevel, BatteryLevel, Name, nValue, sValue, CustomImage, Description, Color, Options, LastUpdate) "
-							"VALUES (%d,'%q',%d,%d,%d,%d,%d,%d,%d,'%q',%d,'%q',%d,'%q','%q','%q','%q')",
+							"(HardwareID, OrgHardwareID, DeviceID, Unit, Type, SubType, SwitchType, Used, SignalLevel, BatteryLevel, Name, nValue, sValue, CustomImage, Description, Color, Options, LastUpdate) "
+							"VALUES (%d, %d,'%q',%d,%d,%d,%d,%d,%d,%d,'%q',%d,'%q',%d,'%q','%q','%q','%q')",
 							pModState->pPlugin->m_HwdID,
+							0,
 							sDeviceID.c_str(),
 							self->Unit,
 							self->Type,
@@ -730,8 +731,6 @@ namespace Plugins {
 
 		if (pModState->pPlugin)
 		{
-			pModState->pPlugin->SetHeartbeatReceived();
-
 			char *TypeName = nullptr;
 			int bWriteLog = false;
 
@@ -779,6 +778,7 @@ namespace Plugins {
 
 			DevRowIdx = m_sql.UpdateValue(
 				pModState->pPlugin->m_HwdID,
+				0,
 				sDeviceID.c_str(),
 				self->Unit,
 				iType,

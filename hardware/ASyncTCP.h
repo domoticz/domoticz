@@ -83,7 +83,7 @@ class ASyncTCP
 	boost::asio::io_service::strand mSendStrand{ mIos };
 	std::deque<std::string> mWriteQ; // we need a write queue to allow concurrent writes
 
-	uint8_t mRxBuffer[1024];
+	uint8_t* m_pRXBuffer = nullptr;
 
 	int mReconnectDelay = DEFAULT_RECONNECT_TIME;
 	int mTimeoutDelay = 0;

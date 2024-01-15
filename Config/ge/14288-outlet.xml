@@ -1,0 +1,50 @@
+<!--
+  GE In-Wall Tamper Resistant Smart Outlet 
+  https://products.z-wavealliance.org/products/2236
+--><Product Revision="3" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0063:3134:4952</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/ge/14288-outlet.png</MetaDataItem>
+    <MetaDataItem id="3134" name="ZWProductPage" type="4952">https://products.z-wavealliance.org/products/2372/</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://Products.Z-WaveAlliance.org/ProductManual/File?folder=&amp;filename=Manuals/2372/14315 QSG v0.pdf</MetaDataItem>
+    <MetaDataItem name="Name">In-Wall Tamper Resistant Smart Outlet </MetaDataItem>
+    <MetaDataItem id="3134" name="FrequencyName" type="4952">U.S. / Canada / Mexico</MetaDataItem>
+    <MetaDataItem id="3134" name="Identifier" type="4952">14315/ZW1002</MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">1. Follow the instructions for your Z-Wave certified controller to
+remove a device from the Z-Wave network.
+2. Once the controller is ready to remove your device, press and
+release the manual/program button to remove it from the
+network.</MetaDataItem>
+    <MetaDataItem name="InclusionDescription">Follow the instructions for your Z-Wave certified
+controller to add a device to the Z-Wave network.
+2. Once the controller is ready to add your device, press and
+release the Program Button to add it in the network.</MetaDataItem>
+    <MetaDataItem name="ResetDescription">Press the button 3 times, then press and hold the button for at least 3
+seconds. The LED will blink 5 times to confirm.
+NOTE: This should only be used in the event your network’s primary
+controller is missing or otherwise inoperable</MetaDataItem>
+    <MetaDataItem name="Description">Transform any home into a smart home with the Jasco Z-Wave Tamper Resistant Smart Outlet. The Jasco Z-Wave Tamper Resistant Smart Outlet enables wireless control of on/off functions from the Z-Wave controlled outlet, and is compatible with incandescent, LED, Xenon, Halogen, fluorescent and compact fluorescent bulbs. The tamper resistant duplex receptacle includes a blue LED indicator light to easily locate the receptacle in a dark room. The receptacle replaces your current electrical outlet, uses your existing wiring and provides a Z-Wave enabled outlet for the lamp or appliance that you would like to control and a standard pass-through AC outlet for other electrical appliances. Take control of your home lighting with Jasco Z-Wave Smart Lighting Controls! 
+</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="02 Jun 2019" revision="2">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/2236/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="02 Jun 2019" revision="3">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/2372/xml</Entry>
+    </ChangeLog>
+  </MetaData>
+  <!-- Configuration Parameters -->
+  <CommandClass id="112">
+    <Value genre="config" index="3" label="LED Light" max="2" min="0" size="1" type="list" value="1">
+      <Help>Sets when the LED on the outlet is lit.</Help>
+      <Item label="LED On when load is Off, Led Off when load is On" value="0"/>
+      <Item label="LED On when load is On, LED Off when laod is Off (Default)" value="1"/>
+      <Item label="LED always off" value="2"/>
+    </Value>
+  </CommandClass>
+  <!-- Association Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="3">
+      <Group index="1" label="Z-Wave Plus Lifeline" max_associations="5"/>
+      <Group index="2" label="Supports Basic Set and is controlled with the local load" max_associations="5"/>
+      <Group index="3" label="Supports Basic Set and is controlled by pressing the On or Off button" max_associations="5"/>
+    </Associations>
+  </CommandClass>
+</Product>
