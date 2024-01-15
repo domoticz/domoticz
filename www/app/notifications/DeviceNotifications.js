@@ -52,9 +52,7 @@ define(['app', 'notifications/constants', 'notifications/factories'], function (
             };
 
             function activeRenderer(value) {
-                return value === 'true'
-                    ? $.t('Yes')
-                    : $.t('No');
+				return $.t(value === true ? 'Yes' : 'No');
             }
 
             function typeRenderer(value) {
@@ -155,7 +153,6 @@ define(['app', 'notifications/constants', 'notifications/factories'], function (
                         : [];
 
                     var params = notification.Params.split(';');
-
                     vm.notification = {
                         active: notification.Active,
                         type: params[0],

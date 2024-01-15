@@ -272,7 +272,6 @@ bool CNotificationHelper::CheckAndHandleNotification(const uint64_t DevRowIdx, c
 bool CNotificationHelper::CheckAndHandleNotification(const uint64_t DevRowIdx, const int HardwareID, const std::string &ID, const std::string &sName, const unsigned char unit, const unsigned char cType, const unsigned char cSubType, const int nValue, const std::string &sValue, const float fValue) {
 	float fValue2;
 	bool r1, r2, r3;
-	int nsize;
 	int nexpected = 0;
 
 	// Don't send notification for devices not in db
@@ -284,7 +283,7 @@ bool CNotificationHelper::CheckAndHandleNotification(const uint64_t DevRowIdx, c
 	int meterType = 0;
 	std::vector<std::string> strarray;
 	StringSplit(sValue, ";", strarray);
-	nsize = strarray.size();
+	size_t nsize = strarray.size();
 	switch(cType) {
 		case pTypeP1Power:
 			nexpected = 5;
@@ -1689,7 +1688,7 @@ namespace http {
 				for (const auto& n : notifications)
 				{
 					root["result"][ii]["idx"] = Json::Value::UInt64(n.ID);
-					root["result"][ii]["Active"] = (n.Active) ? "true" : "false";
+					root["result"][ii]["Active"] = n.Active;
 					std::string sParams = n.Params;
 					if (sParams.empty())
 					{

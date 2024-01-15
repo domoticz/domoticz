@@ -53,15 +53,21 @@
 
 <script type="text/ng-template" id="app/notifications/notificationForm.html">
     <table class="display table-details table-details-lg">
-		<tr>
-			<td>
-				<label for="enabled">{{:: 'Enabled' | translate }}:</label>
-			</td>
-			<td>
-				<input type="checkbox" id="enabled" ng-model="$ctrl.notification.active">
-				<label for="enabled"></label>
-			</td>
-		</tr>
+        <tr>
+            <td>
+                <label for="checkactive">{{:: 'Enabled' | translate }}:</label>
+            </td>
+            <td>
+                <div id="id_checkactive">
+                    <input type="checkbox"
+                           id="checkactive"
+                           ng-model="$ctrl.notification.active"
+                           ng-change="$ctrl.updateViewValue()"
+                    >&nbsp;
+                    <label for="checkactive"></label>
+                </div>
+            </td>
+        </tr>
 
         <tr>
             <td>
