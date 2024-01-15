@@ -2753,7 +2753,6 @@ namespace http
 							MakeCompareDataSensor(root, sgroupby, dbasetable, idx, "Value3", divider);
 							return;
 						}
-
 						root["title"] = "Graph " + sensor + " " + srange;
 
 						result = m_sql.safe_query("SELECT Value1,Value2,Value3,Date FROM %s WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q' AND Date<='%q') ORDER BY Date ASC",
