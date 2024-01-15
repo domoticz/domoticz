@@ -94,13 +94,13 @@ void C1WireByKernel::ReadStates()
 {
 	for (auto & it : m_Devices)
 	{
+		// Priority to changes asked by Domoticz
+		ThreadProcessPendingChanges();
+
+		DeviceState* device = it.second;
 		// Next read one device state
 		try
 		{
-			// Priority to changes asked by Domoticz
-			ThreadProcessPendingChanges();
-
-			DeviceState* device = it.second;
 
 			switch (device->GetDevice().family)
 			{
@@ -147,6 +147,9 @@ void C1WireByKernel::ReadStates()
 		catch (const OneWireReadErrorException& e)
 		{
 			m_p1WireBase->Log(LOG_ERROR, "%s", e.what());
+			if ( device->GetDevice().family == Temperature_memory ){
+			    device->m_Temperature = -1000.0F; //invalid temperature
+			}
 		}
 	}
 
@@ -219,7 +222,7 @@ void C1WireByKernel::ThreadBuildDevicesList()
 				std::string sLine;
 
 				catfile+="/"+directoryName+"/w1_master_slaves";
-				
+
 				infile.open(catfile.c_str());
 				if (!infile.is_open())
 					return;
@@ -228,7 +231,7 @@ void C1WireByKernel::ThreadBuildDevicesList()
 				while (!infile.eof())
 				{
 					getline(infile, sLine);
-					if (!sLine.empty())
+					if (!sLine.empty() && sLine.find("not found.") == std::string::npos)
 					{
 						// Get the device from it's name
 						_t1WireDevice device;
@@ -241,8 +244,10 @@ void C1WireByKernel::ThreadBuildDevicesList()
 						case _8_channel_addressable_switch:
 						case programmable_resolution_digital_thermometer:
 						case Temperature_memory:
-							m_Devices[device.devid] = new DeviceState(device);
-							m_p1WireBase->Log(LOG_STATUS, "1Wire: Added Device: %s", sLine.c_str());
+							if (m_Devices.count(device.devid) == 0) {
+								m_Devices[device.devid] = new DeviceState(device);
+								m_p1WireBase->Log(LOG_STATUS, "1Wire: Added Device: %s", sLine.c_str());
+							}
 							break;
 						default: // Device not supported in kernel mode (maybe later...), use OWFS solution.
 							m_p1WireBase->Log(LOG_ERROR, "1Wire: Device not yet supported in Kernel mode (Please report!) ID:%s, family: %02X", sLine.c_str(), device.family);
