@@ -6,6 +6,8 @@
 
 struct hostent;
 
+#define MAX_TCP_BUFFER_SIZE 4096
+
 #ifndef WIN32
 	#include <unistd.h> //gethostbyname
 #endif
@@ -17,6 +19,7 @@ ASyncTCP::ASyncTCP(const bool secure)
 	: mSecure(secure)
 #endif
 {
+	m_pRXBuffer = new uint8_t[MAX_TCP_BUFFER_SIZE];
 #ifdef WWW_ENABLE_SSL
 	mContext.set_verify_mode(boost::asio::ssl::verify_none);
 	if (mSecure) 
@@ -41,6 +44,8 @@ ASyncTCP::~ASyncTCP()
 			mTcpthread.reset();
 		}
 	}
+	if (m_pRXBuffer != nullptr)
+		delete[] m_pRXBuffer;
 }
 
 void ASyncTCP::SetReconnectDelay(int32_t Delay)
@@ -252,12 +257,12 @@ void ASyncTCP::do_read_start()
 #ifdef WWW_ENABLE_SSL
 	if (mSecure)
 	{
-		mSslSocket->async_read_some(boost::asio::buffer(mRxBuffer, sizeof(mRxBuffer)), [this](auto &&err, auto bytes) { cb_read_done(err, bytes); });
+		mSslSocket->async_read_some(boost::asio::buffer(m_pRXBuffer, MAX_TCP_BUFFER_SIZE), [this](auto &&err, auto bytes) { cb_read_done(err, bytes); });
 	}
 	else
 #endif
 	{
-		mSocket.async_read_some(boost::asio::buffer(mRxBuffer, sizeof(mRxBuffer)), [this](auto &&err, auto bytes) { cb_read_done(err, bytes); });
+		mSocket.async_read_some(boost::asio::buffer(m_pRXBuffer, MAX_TCP_BUFFER_SIZE), [this](auto &&err, auto bytes) { cb_read_done(err, bytes); });
 	}
 }
 
@@ -267,7 +272,7 @@ void ASyncTCP::cb_read_done(const boost::system::error_code& error, size_t bytes
 
 	if (STATUS_OK(error))
 	{
-		OnData(mRxBuffer, bytes_transferred);
+		OnData(m_pRXBuffer, bytes_transferred);
 		do_read_start();
 	}
 	else
