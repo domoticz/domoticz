@@ -2,7 +2,8 @@ Version 2024.xxxxx (xxxxx 2024)
 - Implemented: Compare chart for most sensor types
 - Implemented: Email, Splitting mime attachments over multiple lines
 - Implemented: Notifications, Option to enable/disable
-- Implemented: OpenZwave is back. (No Support)
+- Implemented: OpenZwave is back.... (No Support)
+- Updated: Translations
 - Changed: Comparing charts now uses correct Y-Axis label
 - Changed: Internal, Last received is now handled differently, should solve possible hardware timeout issues
 - Changed: MQTT, QoS is now set to 1 for all messages
