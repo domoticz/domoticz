@@ -40,7 +40,7 @@
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
 
-#define DB_VERSION 166
+#define DB_VERSION 167
 
 #define DEFAULT_ADMINUSER "admin"
 #define DEFAULT_ADMINPWD "domoticz"
@@ -226,6 +226,7 @@ constexpr auto sqlCreateMultiMeter_Calendar =
 constexpr auto sqlCreateNotifications =
 "CREATE TABLE IF NOT EXISTS [Notifications] ("
 "[ID] INTEGER PRIMARY KEY, "
+"[Active] BOOLEAN DEFAULT true, "
 "[DeviceRowID] BIGINT(10) NOT NULL, "
 "[Params] VARCHAR(100), "
 "[CustomMessage] VARCHAR(300) DEFAULT (''), "
@@ -3115,6 +3116,10 @@ bool CSQLHelper::OpenDatabase()
 		if (dbversion < 166)
 		{
 			query("ALTER TABLE DeviceStatus ADD COLUMN [OrgHardwareID] INTEGER default 0");
+		}
+		if (dbversion < 167)
+		{
+			query("ALTER TABLE Notifications ADD COLUMN [Active] BOOLEAN DEFAULT true");
 		}
 	}
 	else if (bNewInstall)

@@ -14,6 +14,7 @@ define(['app', 'notifications/constants', 'notifications/factories'], function (
             $ctrl.$onInit = function () {
                 table = $element.find('table').dataTable(Object.assign({}, dataTableDefaultSettings, {
                     columns: [
+                        {title: $.t('Active'), data: 'Active', render: activeRenderer},
                         {title: $.t('Type'), width: '120px', data: 'Params', render: typeRenderer},
                         {title: $.t('When'), width: '160px', data: 'Params', render: whenRenderer},
                         {title: $.t('Active Systems'), data: 'ActiveSystems', render: activeSystemsRenderer},
@@ -49,6 +50,12 @@ define(['app', 'notifications/constants', 'notifications/factories'], function (
                         .draw();
                 }
             };
+
+            function activeRenderer(value) {
+                return value === 'true'
+                    ? $.t('Yes')
+                    : $.t('No');
+            }
 
             function typeRenderer(value) {
                 var parts = value.split(';');
@@ -150,6 +157,7 @@ define(['app', 'notifications/constants', 'notifications/factories'], function (
                     var params = notification.Params.split(';');
 
                     vm.notification = {
+                        active: notification.Active,
                         type: params[0],
                         condition: params[1],
                         level: parseFloat(params[2]),
@@ -185,6 +193,7 @@ define(['app', 'notifications/constants', 'notifications/factories'], function (
                 }
 
                 var value = Object.assign({}, vm.ngModelCtrl.$modelValue, {
+                    Active: vm.notification.active,
                     Params: params.join(';'),
                     Priority: vm.notification.priority,
                     CustomMessage: vm.notification.customMessage,
@@ -224,6 +233,7 @@ define(['app', 'notifications/constants', 'notifications/factories'], function (
 
         function init() {
             vm.notification = {
+                Active: true,
                 Priority: 0,
                 CustomMessage: '',
                 CustomAction: '',
@@ -287,12 +297,13 @@ define(['app', 'notifications/constants', 'notifications/factories'], function (
         function getNotificationData(notification) {
             var params = notification.Params.split(';');
 
-            var norificationType = vm.notificationTypes.find(function (item) {
+            var notificationType = vm.notificationTypes.find(function (item) {
                 return item.ptag === params[0];
             });
 
             return {
-                ttype: norificationType.val,
+                tactive: notification.Active,
+                ttype: notificationType.val,
                 twhen: params[1]
                     ? Object.keys(deviceNotificationsConstants.whenByConditionMap).indexOf(params[1])
                     : 0,

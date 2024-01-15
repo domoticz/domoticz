@@ -4242,49 +4242,6 @@ namespace http
 			m_mainworker.m_scheduler.ReloadSchedules();
 		}
 
-		void CWebServer::Cmd_GetNotifications(WebEmSession& session, const request& req, Json::Value& root)
-		{
-			root["status"] = "OK";
-			root["title"] = "getnotifications";
-
-			int ii = 0;
-
-			// Add known notification systems
-			for (const auto& notifier : m_notifications.m_notifiers)
-			{
-				root["notifiers"][ii]["name"] = notifier.first;
-				root["notifiers"][ii]["description"] = notifier.first;
-				ii++;
-			}
-
-			uint64_t idx = 0;
-			if (!request::findValue(&req, "idx").empty())
-			{
-				idx = std::stoull(request::findValue(&req, "idx"));
-			}
-			std::vector<_tNotification> notifications = m_notifications.GetNotifications(idx);
-			if (!notifications.empty())
-			{
-				ii = 0;
-				for (const auto& n : notifications)
-				{
-					root["result"][ii]["idx"] = Json::Value::UInt64(n.ID);
-					std::string sParams = n.Params;
-					if (sParams.empty())
-					{
-						sParams = "S";
-					}
-					root["result"][ii]["Params"] = sParams;
-					root["result"][ii]["Priority"] = n.Priority;
-					root["result"][ii]["SendAlways"] = n.SendAlways;
-					root["result"][ii]["CustomMessage"] = n.CustomMessage;
-					root["result"][ii]["CustomAction"] = CURLEncode::URLEncode(n.CustomAction);
-					root["result"][ii]["ActiveSystems"] = n.ActiveSystems;
-					ii++;
-				}
-			}
-		}
-
 		void CWebServer::Cmd_GetSharedUserDevices(WebEmSession& session, const request& req, Json::Value& root)
 		{
 			std::string idx = request::findValue(&req, "idx");

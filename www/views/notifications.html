@@ -53,6 +53,16 @@
 
 <script type="text/ng-template" id="app/notifications/notificationForm.html">
     <table class="display table-details table-details-lg">
+		<tr>
+			<td>
+				<label for="enabled">{{:: 'Enabled' | translate }}:</label>
+			</td>
+			<td>
+				<input type="checkbox" id="enabled" ng-model="$ctrl.notification.active">
+				<label for="enabled"></label>
+			</td>
+		</tr>
+
         <tr>
             <td>
                 <label for="combotype">{{:: 'Type' | translate }}:</label>

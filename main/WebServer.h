@@ -338,7 +338,12 @@ private:
 	void Cmd_GetTransfers(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_DoTransferDevice(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_Events(WebEmSession & session, const request& req, Json::Value &root);
-	void Cmd_GetNotifications(WebEmSession & session, const request& req, Json::Value &root);
+
+	void Cmd_GetNotifications(WebEmSession& session, const request& req, Json::Value& root);
+	void Cmd_AddNotification(WebEmSession& session, const request& req, Json::Value& root);
+	void Cmd_UpdateNotification(WebEmSession& session, const request& req, Json::Value& root);
+	void Cmd_DeleteNotification(WebEmSession& session, const request& req, Json::Value& root);
+
 	void Cmd_CreateRFLinkDevice(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_CreateMappedSensor(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_CreateDevice(WebEmSession & session, const request& req, Json::Value &root);

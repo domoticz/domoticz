@@ -487,7 +487,12 @@ namespace http
 			RegisterCommandCode("getdevices", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetDevices(session, req, root); });
 			RegisterCommandCode("gethardware", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetHardware(session, req, root); });
 			RegisterCommandCode("events", [this](auto&& session, auto&& req, auto&& root) { Cmd_Events(session, req, root); });
+
 			RegisterCommandCode("getnotifications", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetNotifications(session, req, root); });
+			RegisterCommandCode("addnotification", [this](auto&& session, auto&& req, auto&& root) { Cmd_AddNotification(session, req, root); });
+			RegisterCommandCode("updatenotification", [this](auto&& session, auto&& req, auto&& root) { Cmd_UpdateNotification(session, req, root); });
+			RegisterCommandCode("deletenotification", [this](auto&& session, auto&& req, auto&& root) { Cmd_DeleteNotification(session, req, root); });
+
 			RegisterCommandCode("createvirtualsensor", [this](auto&& session, auto&& req, auto&& root) { Cmd_CreateMappedSensor(session, req, root); });
 			RegisterCommandCode("createdevice", [this](auto&& session, auto&& req, auto&& root) { Cmd_CreateDevice(session, req, root); });
 
