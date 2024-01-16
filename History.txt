@@ -1,3 +1,5 @@
+Version 2024.xxxxx (xxxxx 2024)
+
 Version 2024.2 (January 15th 2024)
 - Implemented: Compare chart for most sensor types
 - Implemented: Email, Splitting mime attachments over multiple lines

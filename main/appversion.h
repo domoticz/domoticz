@@ -1,7 +1,7 @@
 #pragma once
 #include "../appversion.h"
 
-#define BUILD_MASTER
+//#define BUILD_MASTER
 
 #define VERSION_MAJOR               2024
 #define VERSION_MINOR               2
