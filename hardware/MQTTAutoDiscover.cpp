@@ -4738,7 +4738,7 @@ void MQTTAutoDiscover::GetConfig(Json::Value& root)
 			root["result"][ii]["idx"] = itt.first;
 
 			_tMQTTADevice* pDevice = &m_discovered_devices[itt.second.device_identifiers];
-			root["result"][ii]["dev_name"] = (pDevice != nullptr) ? pDevice->name : "?";
+			root["result"][ii]["dev_name"] = itt.second.device_identifiers;
 			root["result"][ii]["name"] = itt.second.name;
 			root["result"][ii]["value"] = itt.second.last_value;
 			root["result"][ii]["unit"] = itt.second.unit_of_measurement;
