@@ -1,6 +1,7 @@
 Version 2024.xxxxx (xxxxx 2024)
 - Implemented: Domoticz Remote Server, added better error message if remote domoticz device could not be created because accepting new devices is disabled under settings
 - Fixed: Alert sensor notification
+- Fixed: Scripts/Lua/Blockly, setting a setPoint
 
 Version 2024.2 (January 15th 2024)
 - Implemented: Compare chart for most sensor types

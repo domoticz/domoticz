@@ -4198,7 +4198,7 @@ void CSQLHelper::Do_Work()
 				std::string idx = sstr.str();
 				float fValue = (float)atof(itt._sValue.c_str());
 
-				auto result = safe_query("SELECT a.[Type] FROM Hardware as a, DeviceStatus as b WHERE (b.ID == 9693) AND (a.ID == b.HardwareID)");
+				auto result = safe_query("SELECT a.[Type] FROM Hardware as a, DeviceStatus as b WHERE (b.ID == %" PRIu64 ") AND (a.ID == b.HardwareID)", itt._idx);
 				if (!result.empty())
 				{
 					_eHardwareTypes HwdType = (_eHardwareTypes)atoi(result[0][0].c_str());
