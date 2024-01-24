@@ -3148,10 +3148,12 @@ void MQTTAutoDiscover::handle_auto_discovery_climate(_tMQTTASensor* pSensor, con
 					std::string tstring = GetValueFromTemplate(root, pSensor->temperature_state_template);
 					if (tstring.empty())
 					{
-						Log(LOG_ERROR, "Climate device unhandled temperature_state_template (%s)", pSensor->unique_id.c_str());
+						//No temperature_state provided
+						//Log(LOG_ERROR, "Climate device unhandled temperature_state_template (%s)", pSensor->unique_id.c_str());
 						bValid = false;
 					}
-					temp_setpoint = static_cast<double>(atof(tstring.c_str()));
+					else
+						temp_setpoint = static_cast<double>(atof(tstring.c_str()));
 				}
 			}
 			else
@@ -4738,7 +4740,7 @@ void MQTTAutoDiscover::GetConfig(Json::Value& root)
 			root["result"][ii]["idx"] = itt.first;
 
 			_tMQTTADevice* pDevice = &m_discovered_devices[itt.second.device_identifiers];
-			root["result"][ii]["dev_name"] = (pDevice != nullptr) ? pDevice->name : "?";
+			root["result"][ii]["dev_name"] = itt.second.device_identifiers;
 			root["result"][ii]["name"] = itt.second.name;
 			root["result"][ii]["value"] = itt.second.last_value;
 			root["result"][ii]["unit"] = itt.second.unit_of_measurement;

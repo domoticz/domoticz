@@ -249,7 +249,10 @@ void CInfluxPush::Do_Work()
 					bool bHaveError = false;
 					std::string szMessage;
 
-					if (szCode == "unauthorized")
+					if (
+						(szCode == "unauthorized")
+						|| (szCode == "forbidden")
+						)
 					{
 						bHaveError = true;
 						szMessage = root["message"].asString();

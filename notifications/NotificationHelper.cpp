@@ -272,7 +272,7 @@ bool CNotificationHelper::CheckAndHandleNotification(const uint64_t DevRowIdx, c
 bool CNotificationHelper::CheckAndHandleNotification(const uint64_t DevRowIdx, const int HardwareID, const std::string &ID, const std::string &sName, const unsigned char unit, const unsigned char cType, const unsigned char cSubType, const int nValue, const std::string &sValue, const float fValue) {
 	float fValue2;
 	bool r1, r2, r3;
-	int nexpected = 0;
+	size_t nexpected = 0;
 
 	// Don't send notification for devices not in db
 	// Notifications for switches are handled by CheckAndHandleSwitchNotification in UpdateValue() of SQLHelper
@@ -462,6 +462,7 @@ bool CNotificationHelper::CheckAndHandleNotification(const uint64_t DevRowIdx, c
 					return CheckAndHandleNotification(DevRowIdx, sName, cType, cSubType, NTYPE_PERCENTAGE, fValue);
 				case sTypeSoilMoisture:
 				case sTypeLeafWetness:
+				case sTypeAlert:
 					return CheckAndHandleNotification(DevRowIdx, sName, cType, cSubType, NTYPE_USAGE, (float)nValue);
 				case sTypeFan:
 				case sTypeSoundLevel:
@@ -472,8 +473,6 @@ bool CNotificationHelper::CheckAndHandleNotification(const uint64_t DevRowIdx, c
 				case sTypeWaterflow:
 				case sTypeCustom:
 					return CheckAndHandleNotification(DevRowIdx, sName, cType, cSubType, NTYPE_USAGE, fValue);
-				case sTypeAlert:
-					return CheckAndHandleAlertNotification(DevRowIdx, sName, sValue);
 				default:
 					// silently ignore other general devices
 					return false;
@@ -914,21 +913,20 @@ bool CNotificationHelper::CheckAndHandleNotification(
 	if (notifications.empty())
 		return false;
 
-	char szTmp[600];
 
 	double intpart;
 	std::string pvalue;
 	if (modf(mvalue, &intpart) == 0)
-		sprintf(szTmp, "%.0f", mvalue);
+		pvalue = std_format("%.0f", mvalue);
 	else
-		sprintf(szTmp, "%.1f", mvalue);
-	pvalue = szTmp;
+		pvalue = std_format("%.1f", mvalue);
 
 	std::vector<std::vector<std::string> > result;
-	result = m_sql.safe_query("SELECT SwitchType FROM DeviceStatus WHERE (ID=%" PRIu64 ")", Idx);
+	result = m_sql.safe_query("SELECT SwitchType, sValue FROM DeviceStatus WHERE (ID=%" PRIu64 ")", Idx);
 	if (result.empty())
 		return false;
 	std::string szExtraData = "|Name=" + devicename + "|SwitchType=" + result[0][0] + "|";
+	std::string sValue = result[0][1];
 
 	time_t atime = mytime(nullptr);
 
@@ -969,8 +967,11 @@ bool CNotificationHelper::CheckAndHandleNotification(
 				bSendNotification = ApplyRule(splitresults[1], (mvalue == svalue), (mvalue < svalue));
 				if (bSendNotification && (!bRecoveryMessage || n.SendAlways))
 				{
-					sprintf(szTmp, "%s %s is %s %s [%s %.1f %s]", devicename.c_str(), ltype.c_str(), pvalue.c_str(), label.c_str(), splitresults[1].c_str(), svalue, label.c_str());
-					msg = szTmp;
+					msg = std_format("%s %s is %s %s [%s %.1f %s]", devicename.c_str(), ltype.c_str(), pvalue.c_str(), label.c_str(), splitresults[1].c_str(), svalue, label.c_str());
+					if ((devType == pTypeGeneral) && (subType == sTypeAlert))
+					{
+						msg += " (" + sValue + ")";
+					}
 				}
 				else if (!bSendNotification && bRecoveryMessage)
 				{
@@ -987,7 +988,17 @@ bool CNotificationHelper::CheckAndHandleNotification(
 			if (bSendNotification)
 			{
 				if (bCustomMessage && !bRecoveryMessage)
-					msg = ParseCustomMessage(custommsg, devicename, pvalue);
+				{
+					if ((devType == pTypeGeneral) && (subType == sTypeAlert))
+					{
+						std::string sAlert = pvalue + " (" + sValue + ")";
+						msg = ParseCustomMessage(custommsg, devicename, sAlert);
+					}
+					else
+					{
+						msg = ParseCustomMessage(custommsg, devicename, pvalue);
+					}
+				}
 				SendMessageEx(Idx, devicename, n.ActiveSystems, n.CustomAction, msg, msg, szExtraData, n.Priority, std::string(""), true);
 				if (!bRecoveryMessage)
 				{
@@ -1262,40 +1273,6 @@ bool CNotificationHelper::CheckAndHandleRainNotification(
 	}
 	return false;
 }
-
-bool CNotificationHelper::CheckAndHandleAlertNotification(
-	const uint64_t Idx,
-	const std::string &devicename,
-	const std::string &sValue)
-{
-	std::vector<_tNotification> notifications = GetNotifications(Idx);
-	if (notifications.empty())
-		return false;
-
-	time_t atime = mytime(nullptr);
-
-	//check if not sent 12 hours ago, and if applicable
-	atime -= m_NotificationSensorInterval;
-
-	for (const auto &n : notifications)
-	{
-		if (n.LastUpdate)
-			TouchLastUpdate(n.ID);
-		std::vector<std::string> splitresults;
-		StringSplit(n.Params, ";", splitresults);
-		if (splitresults.empty())
-			continue; //impossible
-		std::string atype = splitresults[0];
-		if ((atime >= n.LastSend) || (n.SendAlways)) // emergency always goes true
-		{
-			std::string msg = ParseCustomMessage(n.CustomMessage, devicename, sValue);
-			SendMessageEx(Idx, devicename, n.ActiveSystems, n.CustomAction, msg, msg, std::string(""), n.Priority, std::string(""), true);
-			TouchNotification(n.ID);
-		}
-	}
-	return true;
-}
-
 
 void CNotificationHelper::CheckAndHandleLastUpdateNotification()
 {

@@ -85,12 +85,20 @@ void SMTPClient::AddAttachment(const std::string& adata, const std::string& atyp
 void SMTPClient::SetPlainBody(const std::string& body)
 {
 	m_PlainBody = body;
+
+	stdreplace(m_PlainBody, "\r\n", "\n");
+	stdreplace(m_PlainBody, "\n", "\r\n");
+
 	m_HTMLBody = "";
 }
 
 void SMTPClient::SetHTMLBody(const std::string& body)
 {
 	m_HTMLBody = body;
+
+	stdreplace(m_HTMLBody, "\r\n", "\n");
+	stdreplace(m_HTMLBody, "\n", "\r\n");
+
 	m_PlainBody = "";
 }
 
