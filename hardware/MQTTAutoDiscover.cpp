@@ -3148,10 +3148,12 @@ void MQTTAutoDiscover::handle_auto_discovery_climate(_tMQTTASensor* pSensor, con
 					std::string tstring = GetValueFromTemplate(root, pSensor->temperature_state_template);
 					if (tstring.empty())
 					{
-						Log(LOG_ERROR, "Climate device unhandled temperature_state_template (%s)", pSensor->unique_id.c_str());
+						//No temperature_state provided
+						//Log(LOG_ERROR, "Climate device unhandled temperature_state_template (%s)", pSensor->unique_id.c_str());
 						bValid = false;
 					}
-					temp_setpoint = static_cast<double>(atof(tstring.c_str()));
+					else
+						temp_setpoint = static_cast<double>(atof(tstring.c_str()));
 				}
 			}
 			else
