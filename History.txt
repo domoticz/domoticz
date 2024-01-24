@@ -1,3 +1,5 @@
+Version 2024.xxxxx (xxxxx 2024)
+
 Version 2024.3 (January 24th 2024)
 - Implemented: Domoticz Remote Server, added better error message if remote Domoticz device could not be created because accepting new devices is disabled under settings
 - Implemented: InfluxDB Data push, add error message when return status code is forbidden
