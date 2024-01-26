@@ -974,7 +974,7 @@ namespace http {
 				mySessionStore->CleanSessions();
 			}
 			// Schedule next cleanup
-			m_session_clean_timer.expires_at(m_session_clean_timer.expires_at() + boost::posix_time::minutes(15));
+			m_session_clean_timer.expires_from_now(boost::posix_time::minutes(15));
 			m_session_clean_timer.async_wait([this](auto &&) { CleanSessions(); });
 		}
 
