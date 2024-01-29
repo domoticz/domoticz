@@ -273,7 +273,7 @@ bool CEvohomeWeb::GetStatus()
 		return false;
 	}
 
-	_log.Log(LOG_NORM, "(%s) fetch data from server", m_Name.c_str());
+	_log.Log(LOG_STATUS, "(%s) fetch data from server", m_Name.c_str());
 
 	// system status
 	DecodeControllerMode(m_tcs);
@@ -298,7 +298,7 @@ bool CEvohomeWeb::SetSystemMode(uint8_t sysmode)
 	std::string sznewmode = GetWebAPIModeName(sysmode);
 	if (set_system_mode(m_tcs->systemId, (int)(m_dczToEvoWebAPIMode[sysmode])))
 	{
-		_log.Log(LOG_NORM, "(%s) changed system status to %s", m_Name.c_str(), GetControllerModeName(sysmode));
+		_log.Log(LOG_STATUS, "(%s) changed system status to %s", m_Name.c_str(), GetControllerModeName(sysmode));
 
 		if (sznewmode == "HeatingOff")
 		{
