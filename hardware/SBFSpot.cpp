@@ -12,8 +12,6 @@
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
 
-#define round(a) ( int ) ( a + .5 )
-
 CSBFSpot::CSBFSpot(const int ID, const std::string &SMAConfigFile)
 {
 	std::vector<std::string> results;

@@ -693,7 +693,7 @@ void CEventSystem::GetCurrentMeasurementStates()
 			if (splitresults.size() > 1)
 			{
 				temp = static_cast<float>(atof(splitresults[0].c_str()));
-				humidity = atoi(splitresults[1].c_str());
+				humidity = ground(atof(splitresults[1].c_str()));
 				dewpoint = (float)CalculateDewPoint(temp, humidity);
 				isTemp = true;
 				isHum = true;
@@ -706,7 +706,7 @@ void CEventSystem::GetCurrentMeasurementStates()
 				continue;
 			}
 			temp = static_cast<float>(atof(splitresults[0].c_str()));
-			humidity = atoi(splitresults[1].c_str());
+			humidity = ground(atof(splitresults[1].c_str()));
 			barometer = static_cast<float>(atof(splitresults[3].c_str()));
 			dewpoint = (float)CalculateDewPoint(temp, humidity);
 			isTemp = true;

@@ -15,8 +15,6 @@
 #include "../main/json_helper.h"
 #include "../webserver/Base64.h"
 
-#define round(a) (int)(a + .5)
-
 // Base URL of API including trailing slash
 const std::string NEST_OAUTHAPI_BASE = "https://developer-api.nest.com/";
 const std::string NEST_OAUTHAPI_OAUTH_ACCESSTOKENURL = "https://api.home.nest.com/oauth2/access_token";

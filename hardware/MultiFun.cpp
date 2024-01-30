@@ -17,8 +17,6 @@
 #define BUFFER_LENGHT 100
 #define MULTIFUN_POLL_INTERVAL 10 //TODO - to settings on www
 
-#define round(a) ( int ) ( a + .5 )
-
 #define sensorsCount 16
 #define registersCount 34
 

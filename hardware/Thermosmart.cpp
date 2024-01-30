@@ -10,8 +10,6 @@
 #include "../main/mainworker.h"
 #include "../main/json_helper.h"
 
-#define round(a) ( int ) ( a + .5 )
-
 const std::string THERMOSMART_LOGIN_PATH = "https://api.thermosmart.com/login";
 const std::string THERMOSMART_AUTHORISE_PATH = "https://api.thermosmart.com/oauth2/authorize?response_type=code&client_id=client123&redirect_uri=http://clientapp.com/done";
 const std::string THERMOSMART_DECISION_PATH = "https://api.thermosmart.com/oauth2/authorize/decision";

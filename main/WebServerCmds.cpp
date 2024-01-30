@@ -66,7 +66,6 @@
 #ifdef WITH_OPENZWAVE
 #include "../hardware/OpenZWave.h"
 #endif
-#define round(a) (int)(a + .5)
 
 extern std::string szStartupFolder;
 extern std::string szUserDataFolder;

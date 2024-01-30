@@ -55,8 +55,6 @@
 #define POLL_INTERVAL_MEM	80
 #define POLL_INTERVAL_DISK	170
 
-#define round(a) ( int ) ( a + .5 )
-
 CHardwareMonitor::CHardwareMonitor(const int ID)
 {
 	m_HwdID = ID;

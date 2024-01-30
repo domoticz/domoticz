@@ -114,8 +114,6 @@ uint8_t GetIndexFromAlarm(const std::string& sLabel)
 extern std::string szStartupFolder;
 extern std::string szUserDataFolder;
 
-#define round(a) ( int ) ( a + .5 )
-
 //Should be obsolete when OZW 2.0 comes out
 uint16_t GetUInt16FromString(const std::string& inStr)
 {
@@ -2024,7 +2022,7 @@ void COpenZWave::AddValue(NodeInfo* pNode, const OpenZWave::ValueID& vID)
 			|| (vOrgIndex == ValueID_Index_SensorMultiLevel::Soil_Humidity)
 			)
 		{
-			_device.intvalue = round(fValue);
+			_device.intvalue = ground(fValue);
 			_device.devType = ZDTYPE_SENSOR_HUMIDITY;
 		}
 		else if (vOrgIndex == ValueID_Index_SensorMultiLevel::Ultraviolet)
@@ -3293,7 +3291,7 @@ void COpenZWave::UpdateValue(NodeInfo* pNode, const OpenZWave::ValueID& vID)
 	case ZDTYPE_SENSOR_HUMIDITY:
 		if (vType != OpenZWave::ValueID::ValueType_Decimal)
 			return;
-		pDevice->intvalue = round(fValue);
+		pDevice->intvalue = ground(fValue);
 		break;
 	case ZDTYPE_SENSOR_UV:
 		if (vType != OpenZWave::ValueID::ValueType_Decimal)

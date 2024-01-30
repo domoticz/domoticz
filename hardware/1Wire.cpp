@@ -18,8 +18,6 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 
-#define round(a) ( int ) ( a + .5 )
-
 C1Wire::C1Wire(const int ID, const int sensorThreadPeriod, const int switchThreadPeriod, const std::string& path)
 	: m_system(nullptr)
 	, m_sensorThreadPeriod(sensorThreadPeriod)
@@ -491,7 +489,7 @@ void C1Wire::ReportHumidity(const std::string& deviceId, const float humidity)
 	DeviceIdToByteArray(deviceId, deviceIdByteArray);
 	uint16_t lID = (deviceIdByteArray[0] << 8) | deviceIdByteArray[1];
 
-	SendHumiditySensor(lID, 255, round(humidity), "Humidity");
+	SendHumiditySensor(lID, 255, ground(humidity), "Humidity");
 
 }
 
@@ -514,7 +512,7 @@ void C1Wire::ReportTemperatureHumidity(const std::string& deviceId, const float 
 	DeviceIdToByteArray(deviceId, deviceIdByteArray);
 
 	uint16_t lID = (deviceIdByteArray[0] << 8) | deviceIdByteArray[1];
-	SendTempHumSensor(lID, 255, temperature, round(humidity), "TempHum");
+	SendTempHumSensor(lID, 255, temperature, ground(humidity), "TempHum");
 }
 
 void C1Wire::ReportLightState(const std::string& deviceId, const uint8_t unit, const bool state)

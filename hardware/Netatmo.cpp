@@ -8,8 +8,6 @@
 #include "../httpclient/HTTPClient.h"
 #include "../main/json_helper.h"
 
-#define round(a) ( int ) ( a + .5 )
-
 #define NETATMO_OAUTH2_TOKEN_URI "https://api.netatmo.net/oauth2/token"
 #define NETATMO_SCOPES "read_station read_thermostat write_thermostat read_homecoach read_smokedetector read_presence read_camera"
 #define NETATMO_REDIRECT_URI "http://localhost/netatmo"

@@ -12,8 +12,6 @@
 #include "../../main/json_helper.h"
 #include "../hardwaretypes.h"
 
-#define round(a) ( int ) ( a + .5 )
-
 #define HUE_DEFAULT_POLL_INTERVAL 10
 #define HUE_NOT_ADD_GROUPS 0x01
 #define HUE_NOT_ADD_SCENES 0x02
@@ -168,7 +166,7 @@ bool CPhilipsHue::WriteToHardware(const char* pdata, const unsigned char /*lengt
 			float fvalue = (254.0F / 100.0F) * float(pSwitch->level);
 			if (fvalue > 254.0F)
 				fvalue = 254.0F;
-			svalue = round(fvalue);
+			svalue = ground(fvalue);
 		}
 		SwitchLight(nodeID, LCmd, svalue);
 	}
@@ -208,7 +206,7 @@ bool CPhilipsHue::WriteToHardware(const char* pdata, const unsigned char /*lengt
 				float fvalue = (254.0F / 100.0F) * float(pLed->value);
 				if (fvalue > 254.0F)
 					fvalue = 254.0F;
-				svalue = round(fvalue);
+				svalue = ground(fvalue);
 				SwitchLight(nodeID, LCmd, svalue);
 			}
 			return true;
@@ -243,7 +241,7 @@ bool CPhilipsHue::WriteToHardware(const char* pdata, const unsigned char /*lengt
 			else if (pLed->color.mode == ColorModeTemp)
 			{
 				LCmd = "Set CT";
-				svalue2 = round(float(pLed->color.t) * (500.0F - 153.0F) / 255.0F + 153.0F);
+				svalue2 = ground(float(pLed->color.t) * (500.0F - 153.0F) / 255.0F + 153.0F);
 			}
 			else if (pLed->color.mode == ColorModeRGB)
 			{
@@ -252,8 +250,8 @@ bool CPhilipsHue::WriteToHardware(const char* pdata, const unsigned char /*lengt
 				double y = 0;
 				RgbToXY(m_lightModels[nodeID], pLed->color.r, pLed->color.g, pLed->color.b, x, y);
 				LCmd = "Set XY";
-				svalue2 = round(x * 1000);
-				svalue3 = round(y * 1000);
+				svalue2 = ground(x * 1000);
+				svalue3 = ground(y * 1000);
 
 				/*
 				float hsb[3];
@@ -261,8 +259,8 @@ bool CPhilipsHue::WriteToHardware(const char* pdata, const unsigned char /*lengt
 				float cHue = (65535.0F) * hsb[0]; // Scale hue from 0..1 to 0..65535
 				float cSat = (254.0F) * hsb[1];	  // Scale saturation from 0..1 to 0..254
 				LCmd = "Set Hue";
-				svalue2 = round(cHue);
-				svalue3 = round(cSat);
+				svalue2 = ground(cHue);
+				svalue3 = ground(cSat);
 				*/
 			}
 			else {
@@ -271,7 +269,7 @@ bool CPhilipsHue::WriteToHardware(const char* pdata, const unsigned char /*lengt
 			float fvalue = (254.0F / 100.0F) * float(pLed->value);
 			if (fvalue > 254.0F)
 				fvalue = 254.0F;
-			svalue = round(fvalue);
+			svalue = ground(fvalue);
 			SwitchLight(nodeID, LCmd, svalue, svalue2, svalue3);
 			return true;
 		}
@@ -577,7 +575,7 @@ void CPhilipsHue::InsertUpdateLamp(const int NodeID, const _eHueLightType LType,
 			if (tstate.mode == HLMODE_CT)
 			{
 				float iCt = (float(tstate.ct) - 153.0F) / (500.0F - 153.0F) * 255.0F;
-				color = _tColor(round(iCt), ColorModeTemp);
+				color = _tColor(ground(iCt), ColorModeTemp);
 			}
 			cmd = Color_SetColor;
 		}

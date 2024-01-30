@@ -183,8 +183,6 @@
 #include <fstream>
 #endif
 
-#define round(a) ( int ) ( a + .5 )
-
 extern std::string szStartupFolder;
 extern std::string szUserDataFolder;
 extern std::string szWWWFolder;
@@ -2971,7 +2969,7 @@ void MainWorker::decode_Rain(const CDomoticzHardwareBase* pHardware, const tRBUF
 			if (result.size() == 1)
 			{
 				float totalRainFallLastHour = TotalRain - static_cast<float>(atof(result[0][0].c_str()));
-				Rainrate = round(totalRainFallLastHour * 100.0F);
+				Rainrate = ground(totalRainFallLastHour * 100.0F);
 			}
 		}
 	}
@@ -3124,7 +3122,7 @@ void MainWorker::decode_Wind(const CDomoticzHardwareBase* pHardware, const tRBUF
 	else
 		strDirection = "---";
 
-	dDirection = round(dDirection);
+	dDirection = ground(dDirection);
 
 	int intSpeed = (pResponse->WIND.av_speedh * 256) + pResponse->WIND.av_speedl;
 	int intGust = (pResponse->WIND.gusth * 256) + pResponse->WIND.gustl;
@@ -8934,7 +8932,7 @@ void MainWorker::decode_Power(const CDomoticzHardwareBase* pHardware, const tRBU
 	double powerfactor = pResponse->POWER.pf / 100.0;
 	float frequency = (float)pResponse->POWER.freq; //Hz
 
-	sprintf(szTmp, "%ld;%.2f", long(round(instant)), usage * 1000.0);
+	sprintf(szTmp, "%ld;%.2f", long(ground(instant)), usage * 1000.0);
 	uint64_t DevRowIdx = m_sql.UpdateValue(pHardware->m_HwdID, 0, ID.c_str(), Unit, devType, subType, SignalLevel, BatteryLevel, cmnd, szTmp, procResult.DeviceName, true, procResult.Username.c_str());
 	if (DevRowIdx == (uint64_t)-1)
 		return;
@@ -9068,7 +9066,7 @@ void MainWorker::decode_Current_Energy(const CDomoticzHardwareBase* pHardware, c
 		int voltage = 230;
 		m_sql.GetPreferencesVar("ElectricVoltage", voltage);
 
-		sprintf(szTmp, "%ld;%.2f", (long)round((CurrentChannel1 + CurrentChannel2 + CurrentChannel3) * voltage), usage);
+		sprintf(szTmp, "%ld;%.2f", (long)ground((CurrentChannel1 + CurrentChannel2 + CurrentChannel3) * voltage), usage);
 		m_sql.UpdateValue(pHardware->m_HwdID, 0, ID.c_str(), Unit, pTypeENERGY, sTypeELEC3, SignalLevel, BatteryLevel, cmnd, szTmp, procResult.DeviceName, true, procResult.Username.c_str());
 	}
 	sprintf(szTmp, "%.1f;%.1f;%.1f;%.3f", CurrentChannel1, CurrentChannel2, CurrentChannel3, usage);
@@ -10365,7 +10363,7 @@ void MainWorker::decode_BBQ(const CDomoticzHardwareBase* pHardware, const tRBUF*
 	tsen.TEMP.id2 = 1;
 
 	tsen.TEMP.tempsign = (temp1 >= 0) ? 0 : 1;
-	int at10 = round(std::abs(temp1 * 10.0F));
+	int at10 = ground(std::abs(temp1 * 10.0F));
 	tsen.TEMP.temperatureh = (BYTE)(at10 / 256);
 	at10 -= (tsen.TEMP.temperatureh * 256);
 	tsen.TEMP.temperaturel = (BYTE)(at10);
@@ -10378,7 +10376,7 @@ void MainWorker::decode_BBQ(const CDomoticzHardwareBase* pHardware, const tRBUF*
 	tsen.TEMP.id2 = 2;
 
 	tsen.TEMP.tempsign = (temp2 >= 0) ? 0 : 1;
-	at10 = round(std::abs(temp2 * 10.0F));
+	at10 = ground(std::abs(temp2 * 10.0F));
 	tsen.TEMP.temperatureh = (BYTE)(at10 / 256);
 	at10 -= (tsen.TEMP.temperatureh * 256);
 	tsen.TEMP.temperaturel = (BYTE)(at10);
@@ -11505,7 +11503,7 @@ MainWorker::eSwitchLightReturnCode MainWorker::SwitchLightInt(const std::vector<
 			float fLevel = (maxDimLevel / 100.0F) * level;
 			if (fLevel > 100)
 				fLevel = 100;
-			level = round(fLevel);
+			level = ground(fLevel);
 		}
 		_log.Debug(DEBUG_NORM, "MAIN SwitchLightInt : switchcmd==\"On\" || level < 0, new level:%d", level);
 	}
@@ -11835,7 +11833,7 @@ MainWorker::eSwitchLightReturnCode MainWorker::SwitchLightInt(const std::vector<
 						switchcmd = "Set Color";
 
 						float dval = 126.0F * hsb[0]; // Color Range is 0x06..0x84
-						lcmd.LIGHTING5.cmnd = light5_sRGBcolormin + 1 + round(dval);
+						lcmd.LIGHTING5.cmnd = light5_sRGBcolormin + 1 + ground(dval);
 						if (!WriteToHardware(HardwareID, (const char*)&lcmd, sizeof(lcmd.LIGHTING5)))
 							return SL_ERROR;
 					}
@@ -13416,13 +13414,13 @@ bool MainWorker::SwitchScene(const uint64_t idx, std::string switchcmd, const st
 					float fLevel = (maxDimLevel / 100.0F) * level;
 					if (fLevel > 100)
 						fLevel = 100;
-					ilevel = round(fLevel);
+					ilevel = ground(fLevel);
 				}
 				if (switchtype == STYPE_Selector) {
 					if (lstatus != "Set Level") {
 						ilevel = 0;
 					}
-					ilevel = round(ilevel / 10.0F) * 10; // select only multiples of 10
+					ilevel = ground(ilevel / 10.0F) * 10; // select only multiples of 10
 					if (ilevel == 0) {
 						lstatus = "Off";
 					}
