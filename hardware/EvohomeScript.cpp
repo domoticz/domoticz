@@ -157,7 +157,7 @@ void CEvohomeScript::RunScript(const char* pdata, const unsigned char /*length*/
 				m_sql.AddTaskItem(_tTaskItem::ExecuteScript(0.2F, scriptname, scriptparams));
 			}
 			else
-				_log.Log(LOG_ERROR, "evohome: Error script not found '%s'", scriptname.c_str());
+				Log(LOG_ERROR, "Error script not found '%s'", scriptname.c_str());
 		}
 	}
 }
