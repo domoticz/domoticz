@@ -642,25 +642,10 @@ namespace Plugins {
 							sColor.c_str(),
 							sOptionValue.c_str(),
 							TimeToString(nullptr, TF_DateTime).c_str());
-						result = m_sql.safe_query("SELECT Name FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%s') AND (Unit==%d)", pModState->pPlugin->m_HwdID, sDeviceID.c_str(), self->Unit);
+						result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID==%d) AND (OrgHardwareID==0) AND (DeviceID=='%s') AND (Unit==%d)", pModState->pPlugin->m_HwdID, sDeviceID.c_str(), self->Unit);
 						if (!result.empty())
 						{
 							self->ID = atoi(result[0][0].c_str());
-
-							// DeviceStatus successfully created, now set the options when supplied
-							if ((self->SubType != sTypeCustom) && (PyDict_Size(self->Options) > 0))
-							{
-								PyBorrowedRef	pKeyDict, pValueDict;
-								Py_ssize_t pos = 0;
-								std::map<std::string, std::string> mpOptions;
-								while (PyDict_Next(self->Options, &pos, &pKeyDict, &pValueDict))
-								{
-									std::string sOptionName = pKeyDict;
-									std::string sOptionValue = pValueDict;
-									mpOptions.insert(std::pair<std::string, std::string>(sOptionName, sOptionValue));
-								}
-								m_sql.SetDeviceOptions(self->ID, mpOptions);
-							}
 
 							// Check the parent device is in the plugin dictionary (can happen if this Unit has just been created)
 							if (!PyDict_Contains((PyObject *)pModState->pPlugin->m_DeviceDict, pDevice->DeviceID))

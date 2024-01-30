@@ -1925,6 +1925,14 @@ namespace http
 						root["title"] = "Comparing " + sensor;
 						std::string var_name = request::findValue(&req, "var_name");
 						MakeCompareDataSensor(root, sgroupby, dbasetable, idx, var_name);
+
+						if (tempsign == 'F')
+						{
+							for (auto & itt : root["result"])
+							{
+								itt["s"] = ConvertTemperature(itt["s"].asDouble(), tempsign);
+							}
+						}
 						return;
 					}
 

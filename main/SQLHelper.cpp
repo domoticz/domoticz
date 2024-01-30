@@ -9667,7 +9667,7 @@ std::map<std::string, std::string> CSQLHelper::GetDeviceOptions(const std::strin
 	std::map<std::string, std::string> optionsMap;
 
 	if (idx.empty()) {
-		_log.Log(LOG_ERROR, "Cannot set options on device %s", idx.c_str());
+		_log.Log(LOG_ERROR, "GetDeviceOptions, idx cannot be empty!");
 		return optionsMap;
 	}
 

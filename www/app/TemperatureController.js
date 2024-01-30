@@ -495,7 +495,7 @@ define(['app', 'livesocket'], function (app) {
 			window.myglobals.LastPlanSelected = idx;
 
 			$route.updateParams({
-					room: idx > 0 ? idx : undefined
+					room: idx >= 0 ? idx : undefined
 				});
 				$location.replace();
 				$scope.$apply();

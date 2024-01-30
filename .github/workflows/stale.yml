@@ -14,7 +14,7 @@ jobs:
     steps:
       - uses: actions/stale@v9
         with:
-          any-of-labels: "PendingFeedback"
+          only-labels: 'PendingFeedback,Stale'
           stale-issue-message: 'This issue is stale because it has been open 14 days with no activity. Please comment or this issue will be closed in 7 days.'
           days-before-stale: 14
           days-before-close: 7
