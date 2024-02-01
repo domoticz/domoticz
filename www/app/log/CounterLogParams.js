@@ -32,7 +32,7 @@ define(['app', 'log/Chart'], function (app) {
                         },
                         plotOptions: {
 							column: {
-								pointPlacement: 0
+								pointPlacement: 'between'
 							},
                             series: {
                                 matchExtremes: true
