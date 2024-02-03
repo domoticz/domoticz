@@ -848,6 +848,11 @@ Device.create = function (item) {
     // Anomalies in device pattern (Scenes & Dusk sensors say they are  lights(???)
     if (item.Type === 'Scene') {
         type = 'scene';
+    } else if (
+		(item.Type === 'Light/Switch')
+		|| (item.Type.startsWith('Lighting'))
+		) {
+        type = 'light';
     } else if (item.Type === 'Group') {
         type = 'group';
     } else if ((item.Type === 'General') && (item.SubType === 'Barometer')) {
@@ -882,6 +887,10 @@ Device.create = function (item) {
     }
 	//alert(item.Name + '-' + type);
     switch (type) {
+        case "light":
+        case "lightbulb":
+            dev = new Lightbulb(item);
+            break;
         case "alert":
             dev = new Alert(item);
             break;
@@ -925,9 +934,6 @@ Device.create = function (item) {
             break;
         case "humidity":
             dev = new Humidity(item);
-            break;
-        case "lightbulb":
-            dev = new Lightbulb(item);
             break;
         case "lux":
             dev = new VariableSensor(item);
