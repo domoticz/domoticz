@@ -70,7 +70,7 @@ Connection information:
 #define GPIO_FALLING		2
 #define GPIO_BOTH			3
 #define GPIO_PIN_MIN		0
-#define GPIO_PIN_MAX		512
+#define GPIO_PIN_MAX		31
 #define GPIO_MAX_VALUE_SIZE	16
 #define GPIO_MAX_PATH		64
 #define GPIO_PATH			"/sys/class/gpio/gpio"
