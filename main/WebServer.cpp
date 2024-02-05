@@ -51,8 +51,6 @@
 
 #include "../hardware/Limitless.h"
 
-#define round(a) (int)(a + .5)
-
 extern std::string szStartupFolder;
 extern std::string szUserDataFolder;
 extern std::string szWWWFolder;
@@ -1766,7 +1764,7 @@ namespace http
 						if (switchtype == STYPE_Dimmer)
 						{
 							root["result"][ii]["Level"] = LastLevel;
-							int iLevel = round((float(maxDimLevel) / 100.0F) * LastLevel);
+							int iLevel = ground((float(maxDimLevel) / 100.0F) * LastLevel);
 							root["result"][ii]["LevelInt"] = iLevel;
 							if ((dType == pTypeColorSwitch) || (dType == pTypeLighting5 && dSubType == sTypeTRC02) ||
 								(dType == pTypeLighting5 && dSubType == sTypeTRC02_2) || (dType == pTypeGeneralSwitch && dSubType == sSwitchTypeTRC02) ||
@@ -2000,7 +1998,7 @@ namespace http
 							root["result"][ii]["Status"] = lstatus;
 
 							root["result"][ii]["Level"] = LastLevel;
-							int iLevel = round((float(maxDimLevel) / 100.0F) * LastLevel);
+							int iLevel = ground((float(maxDimLevel) / 100.0F) * LastLevel);
 							root["result"][ii]["LevelInt"] = iLevel;
 
 							root["result"][ii]["ReverseState"] = bReverseState;
@@ -2252,7 +2250,7 @@ namespace http
 
 							// Calculate dew point
 
-							sprintf(szTmp, "%.2f", ConvertTemperature(CalculateDewPoint(tempCelcius, round(humidity)), tempsign));
+							sprintf(szTmp, "%.2f", ConvertTemperature(CalculateDewPoint(tempCelcius, ground(humidity)), tempsign));
 							root["result"][ii]["DewPoint"] = szTmp;
 
 							_tTrendCalculator::_eTendencyType tstate = _tTrendCalculator::_eTendencyType::TENDENCY_UNKNOWN;
@@ -2279,7 +2277,7 @@ namespace http
 							root["result"][ii]["HumidityStatus"] = RFX_Humidity_Status_Desc(atoi(strarray[2].c_str()));
 							root["result"][ii]["Forecast"] = atoi(strarray[4].c_str());
 
-							sprintf(szTmp, "%.2f", ConvertTemperature(CalculateDewPoint(tempCelcius, round(humidity)), tempsign));
+							sprintf(szTmp, "%.2f", ConvertTemperature(CalculateDewPoint(tempCelcius, ground(humidity)), tempsign));
 							root["result"][ii]["DewPoint"] = szTmp;
 
 							if (dSubType == sTypeTHBFloat)
@@ -2542,7 +2540,7 @@ namespace http
 								break;
 							case MTYPE_WATER:
 								musage = double(total_real) / (divider / 1000.0F);
-								sprintf(szTmp, "%d Liter", round(musage));
+								sprintf(szTmp, "%d Liter", ground(musage));
 								break;
 							case MTYPE_COUNTER:
 								musage = double(total_real) / divider;

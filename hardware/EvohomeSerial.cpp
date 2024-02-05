@@ -43,14 +43,14 @@ bool CEvohomeSerial::OpenSerialDevice()
 	//Try to open the Serial Port
 	try
 	{
-		_log.Log(LOG_STATUS,"evohome serial: Opening serial port: %s@%d", m_szSerialPort.c_str(), m_iBaudRate);
+		Log(LOG_STATUS,"Serial: Opening serial port: %s@%d", m_szSerialPort.c_str(), m_iBaudRate);
 		open(m_szSerialPort,m_iBaudRate);
 	}
 	catch (boost::exception & e)
 	{
-		_log.Log(LOG_ERROR,"evohome serial: Error opening serial port: %s", m_szSerialPort.c_str());
+		Log(LOG_ERROR,"Serial: Error opening serial port: %s", m_szSerialPort.c_str());
 #ifdef _DEBUG
-		_log.Log(LOG_ERROR,"-----------------\n%s\n----------------", boost::diagnostic_information(e).c_str());
+		Log(LOG_ERROR,"-----------------\n%s\n----------------", boost::diagnostic_information(e).c_str());
 #else
 		(void)e;
 #endif
@@ -58,7 +58,7 @@ bool CEvohomeSerial::OpenSerialDevice()
 	}
 	catch ( ... )
 	{
-		_log.Log(LOG_ERROR,"evohome serial: Error opening serial port!!!");
+		Log(LOG_ERROR,"Serial: Error opening serial port!!!");
 		return false;
 	}
 	m_nBufPtr=0;
@@ -72,7 +72,7 @@ void CEvohomeSerial::ReadCallback(const char *data, size_t len)
 {
 	try
 	{
-		//_log.Log(LOG_NORM,"evohome: received %ld bytes",len);
+		//Log(LOG_NORM," Received %ld bytes",len);
 		if (!HandleLoopData(data,len))
 		{
 			//error in data, try again...
@@ -105,7 +105,7 @@ void CEvohomeSerial::Do_Work()
 		{
 			if (m_retrycntr==0)
 			{
-				_log.Log(LOG_STATUS,"evohome serial: serial setup retry in %d seconds...", EVOHOME_RETRY_DELAY);
+				Log(LOG_STATUS,"Serial: serial setup retry in %d seconds...", EVOHOME_RETRY_DELAY);
 			}
 			m_retrycntr++;
 			if (m_retrycntr>=EVOHOME_RETRY_DELAY)
@@ -125,7 +125,7 @@ void CEvohomeSerial::Do_Work()
 	}
 	terminate();
 
-	_log.Log(LOG_STATUS,"Evohome: Worker stopped...");
+	Log(LOG_STATUS,"Worker stopped...");
 }
 
 void CEvohomeSerial::Do_Send(std::string str)

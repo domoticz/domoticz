@@ -9,8 +9,6 @@
 #include "../main/RFXtrx.h"
 #include "../main/mainworker.h"
 
-#define round(a) ( int ) ( a + .5 )
-
 #ifdef _DEBUG
 	//#define DEBUG_AccuWeatherR
 	//#define DEBUG_AccuWeatherW
@@ -395,7 +393,7 @@ void CAccuWeather::GetMeterDetails()
 						float rainrateph = static_cast<float>(atof(root["PrecipitationSummary"]["PastHour"]["Metric"]["Value"].asString().c_str()));
 						if (rainrateph != -9999.00F)
 						{
-							int at10 = round(std::abs(rainrateph * 10.0F));
+							int at10 = ground(std::abs(rainrateph * 10.0F));
 							tsen.RAIN.rainrateh = (BYTE)(at10 / 256);
 							at10 -= (tsen.RAIN.rainrateh * 256);
 							tsen.RAIN.rainratel = (BYTE)(at10);

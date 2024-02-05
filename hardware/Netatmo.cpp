@@ -10,14 +10,11 @@
 #include <iostream>
 #include <string>
 
-#define round(a) ( int ) ( a + .5 )
-
 #define NETATMO_OAUTH2_TOKEN_URI "https://api.netatmo.com/oauth2/token"
 #define NETATMO_API_URI "https://api.netatmo.com/"
 #define NETATMO_SCOPES "read_station read_smarther write_smarther read_thermostat write_thermostat read_camera write_camera read_doorbell read_presence write_presence read_homecoach read_carbonmonoxidedetector read_smokedetector"
 #define NETATMO_REDIRECT_URI "http://localhost/netatmo"
 // https://api.netatmo.com/oauth2/authorize?client_id=<CLIENT_ID>&redirect_uri=http://localhost/netatmo&state=teststate&scope=read_station%20read_smarther%20write_smarther%20read_thermostat%20write_thermostat%20read_camera%20write_camera%20read_doorbell%20read_presence%20write_presence%20read_homecoach%20read_carbonmonoxidedetector%20read_smokedetector
-
 
 #ifdef _DEBUG
 //#define DEBUG_NetatmoWeatherStationR

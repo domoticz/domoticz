@@ -13,8 +13,6 @@
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
 
-#define round(a) ( int ) ( a + .5 )
-
 CScheduler::CScheduler()
 {
 	m_tSunRise = 0;
@@ -904,7 +902,7 @@ void CScheduler::CheckSchedules()
 									// set position to value between 1 and 99 %
 									switchcmd = "Set Level";
 									float fLevel = (maxDimLevel / 100.0F) * item.Level;
-									ilevel = round(fLevel);
+									ilevel = ground(fLevel);
 									if (ilevel > maxDimLevel)
 										ilevel = maxDimLevel;
 								}
@@ -925,7 +923,7 @@ void CScheduler::CheckSchedules()
 								{
 									switchcmd = "Set Level";
 									float fLevel = (maxDimLevel / 100.0F) * item.Level;
-									ilevel = round(fLevel);
+									ilevel = ground(fLevel);
 									if (ilevel > maxDimLevel)
 										ilevel = maxDimLevel;
 								}

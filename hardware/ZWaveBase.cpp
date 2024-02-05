@@ -23,8 +23,6 @@
 
 #pragma warning(disable: 4996)
 
-#define round(a) ( int ) ( a + .5 )
-
 ZWaveBase::ZWaveBase()
 {
 	m_bNodeReplaced=true;
@@ -543,7 +541,7 @@ void ZWaveBase::SendDevice2Domoticz(_tZWaveDevice* pDevice)
 		tsen.CURRENT.packetlength = sizeof(tsen.CURRENT) - 1;
 		tsen.CURRENT.id1 = pDevice->nodeID;
 		tsen.CURRENT.id2 = pDevice->instanceID;
-		int amps = round(pDevice->floatValue * 10.0F);
+		int amps = ground(pDevice->floatValue * 10.0F);
 		tsen.CURRENT.ch1h = amps / 256;
 		amps -= (tsen.CURRENT.ch1h * 256);
 		tsen.CURRENT.ch1l = (BYTE)amps;
@@ -631,12 +629,12 @@ void ZWaveBase::SendDevice2Domoticz(_tZWaveDevice* pDevice)
 		tsen.WIND.id2 = pDevice->instanceID;
 
 		float winddir = 0;
-		int aw = round(winddir);
+		int aw = ground(winddir);
 		tsen.WIND.directionh = (BYTE)(aw / 256);
 		aw -= (tsen.WIND.directionh * 256);
 		tsen.WIND.directionl = (BYTE)(aw);
 
-		int sw = round(pDevice->floatValue * 10.0F);
+		int sw = ground(pDevice->floatValue * 10.0F);
 		tsen.WIND.av_speedh = (BYTE)(sw / 256);
 		sw -= (tsen.WIND.av_speedh * 256);
 		tsen.WIND.av_speedl = (BYTE)(sw);
@@ -656,7 +654,7 @@ void ZWaveBase::SendDevice2Domoticz(_tZWaveDevice* pDevice)
 				return;
 			tsen.WIND.tempsign = (pTempDevice->floatValue >= 0) ? 0 : 1;
 			tsen.WIND.chillsign = (pTempDevice->floatValue >= 0) ? 0 : 1;
-			int at10 = round(std::abs(pTempDevice->floatValue * 10.0F));
+			int at10 = ground(std::abs(pTempDevice->floatValue * 10.0F));
 			tsen.WIND.temperatureh = (BYTE)(at10 / 256);
 			tsen.WIND.chillh = (BYTE)(at10 / 256);
 			at10 -= (tsen.WIND.chillh * 256);
@@ -729,7 +727,7 @@ void ZWaveBase::SendDevice2Domoticz(_tZWaveDevice* pDevice)
 	}
 	else if (pDevice->devType == ZDTYPE_SENSOR_LOUDNESS)
 	{
-		SendSoundSensor(pDevice->nodeID, BatLevel, round(pDevice->floatValue), (!pDevice->label.empty()) ? pDevice->label.c_str() : "Loudness");
+		SendSoundSensor(pDevice->nodeID, BatLevel, ground(pDevice->floatValue), (!pDevice->label.empty()) ? pDevice->label.c_str() : "Loudness");
 	}
 	else if (pDevice->devType == ZDTYPE_SENSOR_SETPOINT)
 	{
@@ -1098,7 +1096,7 @@ bool ZWaveBase::WriteToHardware(const char* pdata, const unsigned char length)
 				if (pLed->command == Color_SetColorToWhite)
 				{
 					int Brightness = 100;
-					int wWhite = round((255.0F / 100.0F) * float(Brightness));
+					int wWhite = ground((255.0F / 100.0F) * float(Brightness));
 					int cWhite = 0;
 					sstr << "#000000"
 						<< std::setw(2) << std::uppercase << std::hex << std::setfill('0') << std::hex << wWhite

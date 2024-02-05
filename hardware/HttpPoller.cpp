@@ -11,8 +11,6 @@
 #include "../main/WebServer.h"
 #include "../main/LuaHandler.h"
 
-#define round(a) ( int ) ( a + .5 )
-
 CHttpPoller::CHttpPoller(const int ID, const std::string& username, const std::string& password, const std::string& url, const std::string& extradata, const unsigned short refresh) :
 m_username(CURLEncode::URLEncode(username)),
 m_password(CURLEncode::URLEncode(password)),

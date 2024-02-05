@@ -20,8 +20,6 @@
 
 #define bitrange(data, shift, mask) ((data >> shift) & mask)
 
-#define round(a) ((int) (a + 0.5))
-
 /**
  * \brief The default structure for EnOcean packets
  *
@@ -1083,7 +1081,7 @@ bool CEnOceanESP2::ParseData()
 				uint8_t DT = bitrange(pFrame->DATA_BYTE0, 2, 0x01); // 0 = cumulative count, 1 = current value / s
 				uint8_t DIV = bitrange(pFrame->DATA_BYTE0, 0, 0x03);
 				float scaleMax = (DIV == 0) ? 16777215.000F : ((DIV == 1) ? 1677721.500F : ((DIV == 2) ? 167772.150F : 16777.215F));
-				uint32_t MR = round(GetDeviceValue((pFrame->DATA_BYTE3 << 16) | (pFrame->DATA_BYTE2 << 8) | pFrame->DATA_BYTE1, 0, 16777215, 0.0F, scaleMax));
+				uint32_t MR = ground(GetDeviceValue((pFrame->DATA_BYTE3 << 16) | (pFrame->DATA_BYTE2 << 8) | pFrame->DATA_BYTE1, 0, 16777215, 0.0F, scaleMax));
 
 				RBUF tsen;
 				memset(&tsen, 0, sizeof(RBUF));
@@ -1130,7 +1128,7 @@ bool CEnOceanESP2::ParseData()
 				uint8_t DT = bitrange(pFrame->DATA_BYTE0, 2, 0x01); // 0 = cumulative count (kWh), 1 = current value (W)
 				uint8_t DIV = bitrange(pFrame->DATA_BYTE0, 0, 0x03);
 				float scaleMax = (DIV == 0) ? 16777215.000F : ((DIV == 1) ? 1677721.500F : ((DIV == 2) ? 167772.150F : 16777.215F));
-				uint32_t MR = round(GetDeviceValue((pFrame->DATA_BYTE3 << 16) | (pFrame->DATA_BYTE2 << 8) | pFrame->DATA_BYTE1, 0, 16777215, 0.0F, scaleMax));
+				uint32_t MR = ground(GetDeviceValue((pFrame->DATA_BYTE3 << 16) | (pFrame->DATA_BYTE2 << 8) | pFrame->DATA_BYTE1, 0, 16777215, 0.0F, scaleMax));
 
 				RBUF tsen;
 				memset(&tsen, 0, sizeof(RBUF));
@@ -1156,7 +1154,7 @@ bool CEnOceanESP2::ParseData()
 				uint8_t DT = bitrange(pFrame->DATA_BYTE0, 2, 0x01); // 0 = cumulative count (kWh), 1 = current value (W)
 				uint8_t DIV = bitrange(pFrame->DATA_BYTE0, 0, 0x03);
 				float scaleMax = (DIV == 0) ? 16777215.000F : ((DIV == 1) ? 1677721.500F : ((DIV == 2) ? 167772.150F : 16777.215F));
-				uint32_t MR = round(GetDeviceValue((pFrame->DATA_BYTE3 << 16) | (pFrame->DATA_BYTE2 << 8) | pFrame->DATA_BYTE1, 0, 16777215, 0.0F, scaleMax));
+				uint32_t MR = ground(GetDeviceValue((pFrame->DATA_BYTE3 << 16) | (pFrame->DATA_BYTE2 << 8) | pFrame->DATA_BYTE1, 0, 16777215, 0.0F, scaleMax));
 
 				RBUF tsen;
 				memset(&tsen, 0, sizeof(RBUF));
@@ -1305,7 +1303,7 @@ bool CEnOceanESP2::ParseData()
 				tsen.TEMP.battery_level = bitrange(pFrame->ID_BYTE0, 0, 0x0F);
 				tsen.TEMP.rssi = bitrange(pFrame->ID_BYTE0, 4, 0x0F);
 				tsen.TEMP.tempsign = (TMP >= 0) ? 0 : 1;
-				int at10 = round(std::abs(TMP * 10.0F));
+				int at10 = ground(std::abs(TMP * 10.0F));
 				tsen.TEMP.temperatureh = (BYTE) (at10 / 256);
 				at10 -= tsen.TEMP.temperatureh * 256;
 				tsen.TEMP.temperaturel = (BYTE) at10;
@@ -1448,7 +1446,7 @@ bool CEnOceanESP2::ParseData()
 					tsen.TEMP.battery_level = pFrame->ID_BYTE0 & 0x0F;
 					tsen.TEMP.rssi = (pFrame->ID_BYTE0 & 0xF0) >> 4;
 					tsen.TEMP.tempsign = (TMP >= 0) ? 0 : 1;
-					int at10 = round(std::abs(TMP * 10.0F));
+					int at10 = ground(std::abs(TMP * 10.0F));
 					tsen.TEMP.temperatureh = (BYTE) (at10 / 256);
 					at10 -= (tsen.TEMP.temperatureh * 256);
 					tsen.TEMP.temperaturel = (BYTE) at10;
@@ -1499,11 +1497,11 @@ bool CEnOceanESP2::ParseData()
 					tsen.TEMP_HUM.id1 = pFrame->ID_BYTE2;
 					tsen.TEMP_HUM.id2 = pFrame->ID_BYTE1;
 					tsen.TEMP_HUM.tempsign = (TMP >= 0) ? 0 : 1;
-					int at10 = round(std::abs(TMP * 10.0F));
+					int at10 = ground(std::abs(TMP * 10.0F));
 					tsen.TEMP_HUM.temperatureh = (BYTE) (at10 / 256);
 					at10 -= (tsen.TEMP_HUM.temperatureh * 256);
 					tsen.TEMP_HUM.temperaturel = (BYTE) at10;
-					tsen.TEMP_HUM.humidity = (BYTE) round(HUM);
+					tsen.TEMP_HUM.humidity = (BYTE) ground(HUM);
 					tsen.TEMP_HUM.humidity_status = Get_Humidity_Level(tsen.TEMP_HUM.humidity);
 					tsen.TEMP_HUM.battery_level = 9; // OK
 					tsen.TEMP_HUM.rssi = 12; // Not available
@@ -1522,7 +1520,7 @@ bool CEnOceanESP2::ParseData()
 					tsen.HUM.seqnbr = 0;
 					tsen.HUM.id1 = pFrame->ID_BYTE2;
 					tsen.HUM.id2 = pFrame->ID_BYTE1;
-					tsen.HUM.humidity = (BYTE) round(HUM);
+					tsen.HUM.humidity = (BYTE) ground(HUM);
 					tsen.HUM.humidity_status = Get_Humidity_Level(tsen.HUM.humidity);
 					tsen.HUM.battery_level = 9; // OK, TODO: Should be 255 (unknown battery level) ?
 					tsen.HUM.rssi = 12; // Not available
@@ -1702,7 +1700,7 @@ bool CEnOceanESP2::ParseData()
 					tsen.HUM.seqnbr = 0;
 					tsen.HUM.id1 = pFrame->ID_BYTE2;
 					tsen.HUM.id2 = pFrame->ID_BYTE1;
-					tsen.HUM.humidity = (BYTE) round(HUM);
+					tsen.HUM.humidity = (BYTE) ground(HUM);
 					tsen.HUM.humidity_status = Get_Humidity_Level(tsen.HUM.humidity);
 					tsen.HUM.battery_level = 9; // OK
 					tsen.HUM.rssi = 12;
@@ -1716,7 +1714,7 @@ bool CEnOceanESP2::ParseData()
 
 				Debug(DEBUG_NORM, "4BS msg: Node %08X CO2 %.1Fppm", nodeID, CONC);
 
-				SendAirQualitySensor(pFrame->ID_BYTE2, pFrame->ID_BYTE1, 9, round(CONC), GetEEPLabel(enocean::RORG_4BS, Profile, iType));
+				SendAirQualitySensor(pFrame->ID_BYTE2, pFrame->ID_BYTE1, 9, ground(CONC), GetEEPLabel(enocean::RORG_4BS, Profile, iType));
 
 				uint8_t TSN = bitrange(pFrame->DATA_BYTE0, 1, 0x01);
 				if (TSN == 1)
@@ -1735,7 +1733,7 @@ bool CEnOceanESP2::ParseData()
 					tsen.TEMP.battery_level = pFrame->ID_BYTE0 & 0x0F;
 					tsen.TEMP.rssi = (pFrame->ID_BYTE0 & 0xF0) >> 4;
 					tsen.TEMP.tempsign = (TMP >= 0) ? 0 : 1;
-					int at10 = round(std::abs(TMP * 10.0F));
+					int at10 = ground(std::abs(TMP * 10.0F));
 					tsen.TEMP.temperatureh = (BYTE) (at10 / 256);
 					at10 -= (tsen.TEMP.temperatureh * 256);
 					tsen.TEMP.temperaturel = (BYTE) at10;

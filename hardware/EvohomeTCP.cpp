@@ -39,14 +39,14 @@ bool CEvohomeTCP::StopHardware()
 void CEvohomeTCP::OnConnect()
 {
     CEvohomeRadio::OnConnect();
-	_log.Log(LOG_STATUS,"evohome TCP/IP: connected to: %s:%d", m_szIPAddress.c_str(), m_usIPPort);
+	Log(LOG_STATUS,"TCP/IP: connected to: %s:%d", m_szIPAddress.c_str(), m_usIPPort);
 	m_bIsStarted=true;
 	sOnConnected(this);
 }
 
 void CEvohomeTCP::OnDisconnect()
 {
-	_log.Log(LOG_STATUS,"evohome TCP/IP: disconnected");
+	Log(LOG_STATUS,"TCP/IP: disconnected");
 }
 
 void CEvohomeTCP::Do_Work()
@@ -58,7 +58,7 @@ void CEvohomeTCP::Do_Work()
 
 	int sec_counter = 0;
 
-	_log.Log(LOG_STATUS, "evohome TCP/IP: trying to connect to %s:%d", m_szIPAddress.c_str(), m_usIPPort);
+	Log(LOG_STATUS, "TCP/IP: trying to connect to %s:%d", m_szIPAddress.c_str(), m_usIPPort);
 	connect(m_szIPAddress,m_usIPPort);
 	while (!IsStopRequested(1000))
 	{
@@ -73,14 +73,14 @@ void CEvohomeTCP::Do_Work()
 
 	terminate();
 
-	_log.Log(LOG_STATUS,"evohome TCP/IP: TCP/IP Worker stopped...");
+	Log(LOG_STATUS,"TCP/IP: TCP/IP Worker stopped...");
 }
 
 void CEvohomeTCP::OnData(const unsigned char *pData, size_t length)
 {
 	try
 	{
-		//_log.Log(LOG_NORM,"evohome: received %ld bytes",len);
+		//Log(LOG_NORM,"Received %ld bytes",len);
 		HandleLoopData((const char *)pData, length);
 	}
 	catch (...)
@@ -104,15 +104,15 @@ void CEvohomeTCP::OnError(const boost::system::error_code& error)
 		(error == boost::asio::error::timed_out)
 		)
 	{
-		_log.Log(LOG_ERROR, "evohome TCP/IP: Can not connect to: %s:%d", m_szIPAddress.c_str(), m_usIPPort);
+		Log(LOG_ERROR, "TCP/IP: Can not connect to: %s:%d", m_szIPAddress.c_str(), m_usIPPort);
 	}
 	else if (
 		(error == boost::asio::error::eof) ||
 		(error == boost::asio::error::connection_reset)
 		)
 	{
-		_log.Log(LOG_STATUS, "evohome TCP/IP: Connection reset!");
+		Log(LOG_STATUS, "TCP/IP: Connection reset!");
 	}
 	else
-		_log.Log(LOG_ERROR, "evohome TCP/IP: %s", error.message().c_str());
+		Log(LOG_ERROR, "TCP/IP: %s", error.message().c_str());
 }

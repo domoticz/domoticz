@@ -10,8 +10,6 @@
 #include "../main/mainworker.h"
 #include "../main/json_helper.h"
 
-#define round(a) ( int ) ( a + .5 )
-
 #ifdef _DEBUG
 //#define DEBUG_InComfort
 #endif

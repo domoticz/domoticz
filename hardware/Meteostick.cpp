@@ -15,8 +15,6 @@
 
 #define RETRY_DELAY 30
 
-#define round(a) ( int ) ( a + .5 )
-
 #define USE_868_MHz
 #define RAIN_IN_MM
 
@@ -211,14 +209,14 @@ void Meteostick::SendWindSensor(const unsigned char Idx, const float Temp, const
 	tsen.WIND.id1 = 0;
 	tsen.WIND.id2 = Idx;
 
-	int aw = round(Direction);
+	int aw = ground(Direction);
 	tsen.WIND.directionh = (BYTE)(aw / 256);
 	aw -= (tsen.WIND.directionh * 256);
 	tsen.WIND.directionl = (BYTE)(aw);
 
 	tsen.WIND.av_speedh = 0;
 	tsen.WIND.av_speedl = 0;
-	int sw = round(Speed * 10.0F);
+	int sw = ground(Speed * 10.0F);
 	tsen.WIND.av_speedh = (BYTE)(sw / 256);
 	sw -= (tsen.WIND.av_speedh * 256);
 	tsen.WIND.av_speedl = (BYTE)(sw);

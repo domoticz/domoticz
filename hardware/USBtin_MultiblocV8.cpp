@@ -60,8 +60,6 @@ History :
 
 #include <bitset> // This is necessary to compile on Windows
 
-#define round(a) (int)(a + .5)
-
 #define MULTIBLOC_V8_VERSION "04.00.00"
 
 #define TIME_1sec 1000
@@ -1688,7 +1686,7 @@ void USBtin_MultiblocV8::SendIBTemperatureSensor(const int NodeID, const uint8_t
 	tsen.TEMP.id1 = (NodeID & 0xff00) >> 8;
 	tsen.TEMP.id2 = NodeID & 0xff;
 	tsen.TEMP.tempsign = (Temp >= 0) ? 0 : 1;
-	int at10 = round(std::abs(Temp * 10.0F));
+	int at10 = ground(std::abs(Temp * 10.0F));
 	tsen.TEMP.temperatureh = (BYTE)(at10 / 256);
 	at10 -= (tsen.TEMP.temperatureh * 256);
 	tsen.TEMP.temperaturel = (BYTE)(at10);

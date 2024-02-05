@@ -15,8 +15,6 @@
 
 #include <ctime>
 
-#define round(a) ( int ) ( a + .5 )
-
 // Mapping to device idx for backwards compatibility
 #define MsgID0		101
 #define MsgID1		1

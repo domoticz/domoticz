@@ -9,8 +9,6 @@
 #include "../main/mainworker.h"
 #include "../main/json_helper.h"
 
-#define round(a) (int)(a + .5)
-
 const std::string NEST_LOGIN_PATH = "https://home.nest.com/user/login";
 const std::string NEST_GET_STATUS = "/v2/mobile/user.";
 const std::string NEST_SET_SHARED = "/v2/put/shared.";

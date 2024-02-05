@@ -3,6 +3,8 @@
 #include <string>
 #include <map>
 
+#define ground(a) (int)(a + .5)
+
 enum _eTimeFormat
 {
 	TF_Time = 0,	// 0
@@ -75,7 +77,7 @@ std::string &stdstring_trim(std::string &s);
 std::string &stdstring_ltrimws(std::string &s);
 std::string &stdstring_rtrimws(std::string &s);
 std::string &stdstring_trimws(std::string &s);
-double CalculateDewPoint(double temp, int humidity);
+double CalculateDewPoint(double temp, double humidity);
 uint32_t IPToUInt(const std::string &ip);
 bool isInt(const std::string &s);
 
