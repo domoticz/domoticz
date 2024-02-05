@@ -109,7 +109,7 @@
 	24-jun-2017	HvB		Add hardware debounce parameter, range 10..750 milli sec.
 	04-jul-2017	HvB		Poll after an interrupt received to recover missed interrupts
 	06-jul-2017 HvB		Removed log message for interrupt state change, forum request
-	05-feb-2023 Es    Add unit id so GPIO outside [0-255] can also be used 
+	05-feb-2023 Es		Add unit id so GPIO outside [0-255] can also be used 
 */
 
 #include "stdafx.h"
@@ -508,7 +508,7 @@ void CSysfsGpio::FindGpioExports()
 			gi.id3 = 0;
 			gi.id4 = 0;
 			gi.request_update = -1;
-      gi.unit = ConvertGpioPin(gpio_pin);
+			gi.unit = ConvertGpioPin(gpio_pin);
 
 			m_saved_state.push_back(gi);
 			close(fd);
@@ -1030,24 +1030,12 @@ void CSysfsGpio::GpioSaveState(int index, int value)
 	m_state_mutex.unlock();
 }
 
-
-char ConvertGpioPin(int pin)
+uint8_t ConvertGpioPin(int pin)
 {
 	// The Sysfs gpio pins can can a higher number than the unit number [0-225]
-	// So we map them
-
-	// If the number is lower than 100, it is kept as is
-	if (pin >= 0 && pin < 100)
-	{
-		return static_cast<char>(pin);
-	}
-	else if (pin >= 400 && pin <= 432) /* this is the raspberry pi 5 range for the GPIO header*/
-	{
-		return static_cast<char>(pin - 300);
-	}
-	else
-	{
-		return static_cast<char>(pin % 255); // This for all others
+	// This function will generate a unit based on the gpio pin.
+  // This is not 100% robust, but the best there is
+	return static_cast<uint8_t>(pin % 255);
 }
 
 //---------------------------------------------------------------------------

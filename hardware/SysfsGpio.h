@@ -58,7 +58,7 @@ class CSysfsGpio : public CDomoticzHardwareBase
 	int GetReadResult(int bytecount, char *value_str);
 	int GpioGetState(int index);
 	void GpioSaveState(int index, int value);
-	char ConvertGpioPin(int pin);
+	uint8_t ConvertGpioPin(int pin);
 
 	static std::vector<gpio_info> m_saved_state;
 	static int m_sysfs_hwdid;
