@@ -1030,7 +1030,7 @@ void CSysfsGpio::GpioSaveState(int index, int value)
 	m_state_mutex.unlock();
 }
 
-uint8_t ConvertGpioPin(int pin)
+uint8_t CSysfsGpio::ConvertGpioPin(int pin)
 {
 	// The Sysfs gpio pins can can a higher number than the unit number [0-225]
 	// This function will generate a unit based on the gpio pin.
