@@ -840,18 +840,20 @@ Device.initialise = function () {
 Device.create = function (item) {
     var dev;
     var type = '';
-
     // if we got a string instead of an object then convert it
     if (typeof item === 'string') {
         item = JSON.parse(item);
     }
-    // Anomalies in device pattern (Scenes & Dusk sensors say they are  lights(???)
+
     if (item.Type === 'Scene') {
         type = 'scene';
     } else if (
-		(item.Type === 'Light/Switch')
-		|| (item.Type.startsWith('Lighting'))
-		) {
+        (item.SwitchType === 'Dimmer')
+        || (item.SwitchType === 'Dusk Sensor')
+        || (item.SwitchType === 'Selector')
+	  ) {
+        type = item.SwitchType.toLowerCase();
+	} else if (item.SwitchType.startsWith('On/Off')) {
         type = 'light';
     } else if (item.Type === 'Group') {
         type = 'group';
@@ -863,12 +865,6 @@ Device.create = function (item) {
         type = 'setpoint';
 	} else if ((item.Type === 'General') && (item.SubType === 'Percentage')) {
 		type = 'percentage';
-    } else if (
-        (item.SwitchType === 'Dimmer') ||
-        (item.SwitchType === 'Dusk Sensor') ||
-        (item.SwitchType === 'Selector')
-	  ) {
-        type = item.SwitchType.toLowerCase()
     } else if (item.Type === 'RFXMeter') {
         type = 'counter'; 
     } else {
