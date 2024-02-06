@@ -853,7 +853,7 @@ Device.create = function (item) {
         || (item.SwitchType === 'Selector')
 	  ) {
         type = item.SwitchType.toLowerCase();
-	} else if (item.SwitchType.startsWith('On/Off')) {
+	} else if ((typeof item.SwitchType !== 'undefined') && (item.SwitchType.startsWith('On/Off'))) {
         type = 'light';
     } else if (item.Type === 'Group') {
         type = 'group';
