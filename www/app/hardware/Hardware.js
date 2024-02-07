@@ -4746,6 +4746,8 @@ define(['app'], function (app) {
 			// Handle plugins 1st because all the text indexof logic below will have unpredictable impacts for plugins
 			// Python Plugins have the plugin name, not the hardware type id, as the value
 			if (!$.isNumeric($("#hardwarecontent #hardwareparamstable #combotype option:selected").val())) {
+				$("#hardwarecontent #extrahw").val("");
+				$("#hardwarecontent #divextrahwparams").empty();
 				$("#hardwarecontent #divpythonplugin .plugin").hide();
 				var plugin = $("#hardwarecontent #hardwareparamstable #combotype option:selected").attr("id");
 				$("#hardwarecontent #divpythonplugin .plugin").each(function () { if ($(this).attr("id") === plugin) $(this).show(); });

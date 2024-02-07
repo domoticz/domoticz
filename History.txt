@@ -1,5 +1,6 @@
 Version 2024.xxxxx (xxxxx 2024)
 - Fixed: Floorplan, better detection of switches
+- Fixed: Hardware Setup, hiding extra parameters when selecting a python plugin
 - Changed: EvoHome, now making use of general logging system
 
 Version 2024.4 (January 30th 2024)
