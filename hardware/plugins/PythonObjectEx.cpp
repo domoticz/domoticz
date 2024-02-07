@@ -822,19 +822,6 @@ namespace Plugins {
 				{
 					m_notifications.CheckAndHandleNotification(DevRowIdx, pModState->pPlugin->m_HwdID, sDeviceID, sName, self->Unit, iType, iSubType, nValue, sValue);
 				}
-				else
-				{
-					std::string lstatus;
-					int llevel;
-					bool bHaveDimmer;
-					int maxDimLevel;
-					bool bHaveGroupCmd;
-					GetLightStatus(iType, iSubType, (_eSwitchType)iSwitchType, nValue, sValue, lstatus, llevel, bHaveDimmer, maxDimLevel, bHaveGroupCmd);
-					if (self->SwitchType == STYPE_Selector)
-						m_notifications.CheckAndHandleSwitchNotification(DevRowIdx, sName, (IsLightSwitchOn(lstatus)) ? NTYPE_SWITCH_ON : NTYPE_SWITCH_OFF, llevel);
-					else
-						m_notifications.CheckAndHandleSwitchNotification(DevRowIdx, sName, (IsLightSwitchOn(lstatus)) ? NTYPE_SWITCH_ON : NTYPE_SWITCH_OFF);
-				}
 			}
 			PyNewRef	pRetVal = CUnitEx_refresh(self);
 		}
