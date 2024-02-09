@@ -2244,6 +2244,8 @@ void MQTTAutoDiscover::handle_auto_discovery_battery(_tMQTTASensor* pSensor, con
 
 void MQTTAutoDiscover::handle_auto_discovery_number(_tMQTTASensor* pSensor, const struct mosquitto_message* message)
 {
+	if (!pSensor->bEnabled_by_default)
+		return;
 	if (pSensor->last_value.empty())
 		return;
 	if (!is_number(pSensor->last_value))
