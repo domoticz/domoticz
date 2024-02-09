@@ -931,12 +931,12 @@ void MQTTAutoDiscover::on_auto_discovery_message(const struct mosquitto_message*
 			pSensor->brightness_state_topic = root["bri_stat_t"].asString();
 		if (!root["brightness_scale"].empty())
 		{
-			pSensor->brightness_scale = root["brightness_scale"].asFloat();
+			pSensor->brightness_scale = static_cast<float>(atof(root["brightness_scale"].asString().c_str()));
 			pSensor->bHave_brightness_scale = true;
 		}
 		else if (!root["bri_scl"].empty())
 		{
-			pSensor->brightness_scale = root["bri_scl"].asFloat();
+			pSensor->brightness_scale = static_cast<float>(atof(root["bri_scl"].asString().c_str()));
 			pSensor->bHave_brightness_scale = true;
 		}
 		if (!root["brightness_value_template"].empty())
