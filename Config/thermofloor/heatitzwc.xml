@@ -1,0 +1,41 @@
+<Product Revision="1" xmlns="https://github.com/OpenZWave/open-zwave">
+  <!-- Please refer to https://github.com/OpenZWave/open-zwave/wiki/Adding-Devices for instructions -->
+  <MetaData>
+    <MetaDataItem name="Name">Heatit Z-wave Wall Controller</MetaDataItem>
+    <MetaDataItem name="Description">The Heatit Z-Push Wall Controller is a wireless wall-mounted Z-Wave Controller. It has mounting options for 1, 2 or 3 rockers, allowing for easy and practical management of your Z-Wave products. The switch can be set up to control scenarios or work in association with other Z-Wave products. Each rocker switch has a dual-color LED to indicate button actions.
+</MetaDataItem>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/XXXX:XXXX:XXXX</MetaDataItem>
+    <MetaDataItem name="ProductPage">https://https://heatit.com/product/10221/smart-products/controllers/heatit-z-push-wall-controller-white-ral-9010-glossy/1107/</MetaDataItem>
+    <MetaDataItem name="ProductSupport">https://heatit.com/product/10221/smart-products/controllers/heatit-z-push-wall-controller-white-ral-9010-glossy/1107/</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/thermofloor/Heatit-Z-Push-button-8-white.png</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://https://media.heatit.com/2077</MetaDataItem>
+    <MetaDataItem name="WakeupDescription">short press any button</MetaDataItem>
+    <MetaDataItem name="InclusionDescription">set controller in inclusion mode press and press up button for 6 times in 3 seconds</MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">set controller in exclusion mode press and press down button for 6 times in 3 seconds</MetaDataItem>
+    <MetaDataItem id="0x2403" name="ZWProductPage" type="0x0004">https://products.z-wavealliance.org/products/4028</MetaDataItem>
+    <MetaDataItem id="0x2403" name="FrequencyName" type="0x0004">CEPT</MetaDataItem>
+    <MetaDataItem id="0x2403" name="Identifier" type="0x0004">Heat-It</MetaDataItem>
+    <ChangeLog>
+      <Entry author="MadPatrick" date="23 December 2023" revision="1">add Heatit Z-wave Wall Controller</Entry>
+    </ChangeLog>
+  </MetaData>
+  <!-- Configuration Command Class - All Configuration Parameters should be entered into the section below -->
+  <CommandClass id="112">
+
+    <!-- Here is a Byte/Int/Short Value Sample -->
+    <Value genre="config" index="1" label="Factory reset"  max="21930" min="21930" type="int" units="" value="0" write_only="true">
+      <Help>
+			Set to 21930 to factory reset the device.
+			</Help>
+    </Value>
+  </CommandClass>
+  <!-- The Association Group Information -->
+  <CommandClass id="133">
+    <Associations num_groups="3">
+      <Group index="1" label="LifeLine" max_associations="5"/>
+      <Group index="2" label="Launch 1" max_associations="5"/>
+      <Group index="3" label="Launch 2" max_associations="5"/>
+      <Group index="4" label="Launch 3" max_associations="5"/>
+    </Associations>
+  </CommandClass>
+</Product>
