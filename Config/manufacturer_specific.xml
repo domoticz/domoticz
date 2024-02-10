@@ -1781,6 +1781,7 @@
     <Product config="thermofloor/heatitz8.xml" id="a305" name="Heatit Z-Push Button 8" type="0300"/>
     <Product config="thermofloor/heatit20a.xml" id="020a" name="Heatit Z-Water TF 20a" type="0003"/>
     <Product config="thermofloor/heatitz4.xml" id="a306" name="Heatit Z-Push Button 4" type="0300"/>
+    <Product config="thermofloor/heatitzwc.xml" id="0x2403" name="Heatit Wall Controller" type="0x0004"/>
   </Manufacturer>
   <Manufacturer id="0317" name="Think Simple srl"></Manufacturer>
   <Manufacturer id="022A" name="TIMEVALVE"></Manufacturer>
