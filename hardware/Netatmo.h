@@ -13,8 +13,7 @@ namespace Json
 
 class CNetatmo : public CDomoticzHardwareBase
 {
-//      friend class Respons;
-//        void Get_Respons_API(const _eNetatmoType NType, std::string sResult, std::string home_id = 0 , bool bRet = 0, Json::Value root = 'k');
+//      friend class;
       //
       private:
 	enum _eNetatmoType
@@ -146,12 +145,11 @@ class CNetatmo : public CDomoticzHardwareBase
         std::map<int, std::string> m_ZoneNames;
         std::map<int, std::string> m_ZoneIDs;
         std::map<int, std::string> m_ZoneTypes;
-
-
 	std::map<int, CBaroForecastCalculator> m_forecast_calculators;
 
+        uint64_t UpdateValueInt(int HardwareID, const char* ID, unsigned char unit, unsigned char devType, unsigned char subType, unsigned char signallevel, unsigned char batterylevel, int nValue, const char* sValue, std::string& devname, bool bUseOnOffAction, const std::string& user);
 	int GetBatteryLevel(const std::string &ModuleType, int battery_percent);
-	bool ParseDashboard(const Json::Value &root, int DevIdx, int ID, const std::string &name, const std::string &ModuleType, int battery_percent, int rf_status);
+	bool ParseDashboard(const Json::Value &root, int DevIdx, int ID, std::string &name, const std::string &ModuleType, int battery_percent, int rf_status, std::string& Hardware_ID);
 //        bool ParseDashboard(const Json::Value root, int DevIdx, int ID, const std::string &name, const std::string &ModuleType, int battery_percent, int rf_status);
       //
       public:
