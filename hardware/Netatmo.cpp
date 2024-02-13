@@ -80,7 +80,7 @@ uint64_t convert_mac(std::string mac)
 uint64_t CNetatmo::UpdateValueInt(int HardwareID, const char* ID, unsigned char unit, unsigned char devType, unsigned char subType, unsigned char signallevel, unsigned char batterylevel, int nValue,
         const char* sValue, std::string& devname, bool bUseOnOffAction, const std::string& user)
 {
-        uint64_t DeviceRowIdx = m_sql.UpdateValueInt(HardwareID, ID, unit, devType, subType, signallevel, batterylevel, nValue, sValue, devname, bUseOnOffAction, user.c_str());
+        uint64_t DeviceRowIdx = m_sql.UpdateValue(HardwareID, ID, unit, devType, subType, signallevel, batterylevel, nValue, sValue, devname, bUseOnOffAction, user.c_str());
         //uint64_t DeviceRowIdx = m_sql.UpdateValue(HardwareID, ID, unit, devType, subType, signallevel, batterylevel, nValue, sValue, devname, bUseOnOffAction, m_Name.c_str());
         if (DeviceRowIdx == (uint64_t)-1)
                 return -1;
@@ -2247,7 +2247,7 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root )
                         if (!events["message"].empty())
                                 events_Message = events["message"].asString();
                                 //converting ID to char const
-                                char const* pchar_ID = events_ID.c_str();
+                                char const* pchar_ID = events_Module_ID.c_str();
                                 e_Name = m_ModuleNames[events_Module_ID] + " - events";
                                 // Hardware_ID hex to int
                                 int Hardware_int = convert_mac(events_Module_ID);
@@ -2256,7 +2256,7 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root )
                                 y << " ; ";
                                 y << events_Type;
                                 sValue = y.str().c_str();
-                                UpdateValueInt(Hardware_int, pchar_ID, 0, pTypeGeneral, sTypeTextStatus, '0', 255, '0', sValue.c_str(), e_Name, '0', m_Name);
+                                UpdateValueInt(Hardware_int, pchar_ID, 5, pTypeGeneral, sTypeTextStatus, '0', 255, '0', sValue.c_str(), e_Name, '0', m_Name);
                         if (!events["video_id"].empty())
                                 std::string events_Video_ID = events["video_id"].asString();
                         if (!events["video_status"].empty())
@@ -2286,7 +2286,7 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root )
                                 z << " ; ";
                                 z << events_subevents_Message;
                                 sValue = z.str().c_str();
-                                UpdateValueInt(Hardware_int, pchar_ID, 0, pTypeGeneral, sTypeTextStatus, '0', 255, '0', sValue.c_str(), e_Name, '0', m_Name);
+                                UpdateValueInt(Hardware_int, pchar_ID, 5, pTypeGeneral, sTypeTextStatus, '0', 255, '0', sValue.c_str(), e_Name, '0', m_Name);
                         }
                         if (!events["sub_type"].empty())
                                 bool events_sub_type = events["sub_type"].asBool();
