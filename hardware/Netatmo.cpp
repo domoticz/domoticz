@@ -80,7 +80,8 @@ uint64_t convert_mac(std::string mac)
 uint64_t CNetatmo::UpdateValueInt(int HardwareID, const char* ID, unsigned char unit, unsigned char devType, unsigned char subType, unsigned char signallevel, unsigned char batterylevel, int nValue,
         const char* sValue, std::string& devname, bool bUseOnOffAction, const std::string& user)
 {
-        uint64_t DeviceRowIdx = m_sql.UpdateValue(HardwareID, HardwareID, ID, unit, devType, subType, signallevel, batterylevel, nValue, sValue, devname, bUseOnOffAction, user.c_str());
+	uint64_t DeviceRowIdx = m_sql.UpdateValue(HardwareID, ID, unit, devType, subType, signallevel, batterylevel, nValue, sValue, devname, bUseOnOffAction, user.c_str());
+	//uint64_t DeviceRowIdx = m_sql.UpdateValue(HardwareID, HardwareID, ID, unit, devType, subType, signallevel, batterylevel, nValue, sValue, devname, bUseOnOffAction, user.c_str());
         //uint64_t DeviceRowIdx = m_sql.UpdateValue(HardwareID, ID, unit, devType, subType, signallevel, batterylevel, nValue, sValue, devname, bUseOnOffAction, m_Name.c_str());
         if (DeviceRowIdx == (uint64_t)-1)
                 return -1;
@@ -2122,6 +2123,10 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root )
 			{
 				std::string roomNetatmoID = room["id"].asString();
 				std::string roomName = roomNetatmoID;
+				int rssiLevel = 12;
+                                int batValue = 255;
+                                std::stringstream m;
+                                std::string sValue = "";
                                 //Debug(DEBUG_HARDWARE, "Parse RoomName %s", roomName.c_str());
 				int roomID = iDevIndex + 1;
                                 iDevIndex ++;
@@ -2161,14 +2166,14 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root )
 					//SendTempSensor(crcId, 255, room["therm_measured_temperature"].asInt(), roomName);
 		                	m << room["therm_measured_temperature"].asString();
                 			sValue = m.str().c_str();
-					UpdateValueInt(roomID, crcId, 0, pTypeGeneral, sTypeTemperature, 12, 255, '0', sValue.c_str(), roomName, 0, m_Name);
+					UpdateValueInt(roomID, roomNetatmoID.c_str(), 0, pTypeGeneral, sTypeTemperature, 12, 255, '0', sValue.c_str(), roomName, 0, m_Name);
 //                                        SendTempSensor((roomID & 0x00FFFFFF) | 0x03000000, 255, room["therm_measured_temperature"].asFloat(), roomName);
 				if (!room["therm_setpoint_temperature"].empty())
                                         //void SendSetPointSensor(uint8_t NodeID, uint8_t ChildID, unsigned char SensorID, float Value, const std::string &defaultname);
 					//SendSetPointSensor((uint8_t)((crcId & 0x00FF0000) >> 16), (roomID & 0XFF00) >> 8, roomID & 0XFF, room["therm_setpoint_temperature"].asInt(), roomName);
 		                	m << room["therm_setpoint_temperature"].asString();
                 			sValue = s.str().c_str();
-					UpdateValueInt(roomID, crcId, 0, pTypeGeneral, sTypeSetPoint, 12, 255, '0', sValue.c_str(), roomName, 0, m_Name);
+					UpdateValueInt(roomID, roomNetatmoID.c_str(), 0, pTypeGeneral, sTypeSetPoint, 12, 255, '0', sValue.c_str(), roomName, 0, m_Name);
 //                                        SendSetPointSensor((uint8_t)(((roomID & 0x00FF0000) | 0x02000000) >> 16), (roomID & 0XFF00) >> 8, roomID & 0XFF, room["therm_setpoint_temperature"].asFloat(), roomName));
 				if (!room["therm_setpoint_mode"].empty())
 				{
@@ -2196,7 +2201,7 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root )
 
                                 };
 				sValue = m.str().c_str();
-				UpdateValueInt(roomID, crcId, 0, pTypeThermostat1, sTypeDigimax, rssiLevel, batValue, '0', sValue.c_str(), roomName, 0, m_Name);
+				UpdateValueInt(roomID, roomNetatmoID.c_str(), 0, pTypeThermostat1, sTypeDigimax, rssiLevel, batValue, '0', sValue.c_str(), roomName, 0, m_Name);
 			}
 		}
 	}
