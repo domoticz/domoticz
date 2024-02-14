@@ -2072,11 +2072,12 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root )
                                 if (!module["status"].empty())
                                 {
                                         // Door sensor
-                                        std::string aName = moduleName + " - Status"; //m_[id];
+                                        std::string a_Name = moduleName + " - Status"; //m_[id];
                                         //
                                         // mrf_percentage & batteryLevel
                                         // rf_strength
                                         //SendTextSensor(crcId, 2, batteryLevel, module["status"].asString(), aName);
+					std::string sValue = module["status"].asString();
                                         UpdateValueInt(Hardware_int, pchar_ID, 2, pTypeGeneral, sTypeTextStatus, '0', 255, '0', sValue.c_str(), a_Name, 0, m_Name);
 					bool bIsActive = (module["status"].asString() == "open");
                                         // SendSwitch(int NodeID, uint8_t ChildID, int BatteryLevel, bool bOn, double Level, const std::string &defaultname, const std::string &userName, int RssiLevel = 12);
@@ -2172,7 +2173,6 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root )
                                         //void SendSetPointSensor(uint8_t NodeID, uint8_t ChildID, unsigned char SensorID, float Value, const std::string &defaultname);
 					//SendSetPointSensor((uint8_t)((crcId & 0x00FF0000) >> 16), (roomID & 0XFF00) >> 8, roomID & 0XFF, room["therm_setpoint_temperature"].asInt(), roomName);
 		                	m << room["therm_setpoint_temperature"].asString();
-                			sValue = s.str().c_str();
 					UpdateValueInt(roomID, roomNetatmoID.c_str(), 0, pTypeGeneral, sTypeSetPoint, 12, 255, '0', sValue.c_str(), roomName, 0, m_Name);
 //                                        SendSetPointSensor((uint8_t)(((roomID & 0x00FF0000) | 0x02000000) >> 16), (roomID & 0XFF00) >> 8, roomID & 0XFF, room["therm_setpoint_temperature"].asFloat(), roomName));
 				if (!room["therm_setpoint_mode"].empty())
