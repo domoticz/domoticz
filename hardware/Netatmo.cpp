@@ -2257,6 +2257,7 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root )
                 std::string events_ID;
                 std::string events_Type;
                 std::string e_Name;
+		int Hardware_int;
                 //std::string sValue = "";
 
                 for (auto events : mRoot)
