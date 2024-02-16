@@ -2258,6 +2258,7 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root )
                 std::string events_Type;
                 std::string e_Name;
 		int Hardware_int;
+		char const* pchar_ID;
                 //std::string sValue = "";
 
                 for (auto events : mRoot)
@@ -2277,10 +2278,10 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root )
                                 events_Message = events["message"].asString();
                                 //converting ID to char const
                                 //char const* pchar_ID = events_Module_ID.c_str();
-                                char const* pchar_ID = events_Module_ID.c_str();
+                                pchar_ID = events_Module_ID.c_str();
 				e_Name = m_ModuleNames[events_Module_ID] + " - events";
                                 // Hardware_ID hex to int
-                                int Hardware_int = convert_mac(events_Module_ID);
+                                Hardware_int = convert_mac(events_Module_ID);
                                 std::stringstream y;
                                 y << events_Message;
                                 y << " ; ";
