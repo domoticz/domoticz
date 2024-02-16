@@ -2032,6 +2032,7 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root )
                                         //Thermostat status (boiler heating or not : informationnal switch)
                                         std::string aName = moduleName + " - Heating Status";
                                         bool bIsActive = module["boiler_status"].asBool();
+					std::string boiler_status = module["boiler_status"].asString();
                                         Debug(DEBUG_HARDWARE, "Boiler Heating Status %s - %d %d %s - m_Name %s", aName.c_str(), crcId, bIsActive, module["boiler_status"].asString().c_str(), m_Name.c_str());
                                         //SendSwitch(crcId, 1, 255, bIsActive, 0, aName, m_Name);
                                         m_Room_status[id] = bIsActive;
