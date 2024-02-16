@@ -1,3 +1,4 @@
+#include "stdafx.h"
 #include "Netatmo.h"
 #include "hardwaretypes.h"
 #include "../notifications/NotificationHelper.h"
