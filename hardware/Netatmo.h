@@ -2,14 +2,13 @@
 
 #include "DomoticzHardware.h"
 #include "../main/BaroForecastCalculator.h"
-#include <mutex>
+
 
 namespace Json
 {
 	class Value;
-} // namespace Json
+}       // namespace Json
 
-//class Respons; // forward declaration
 
 class CNetatmo : public CDomoticzHardwareBase
 {
@@ -150,7 +149,7 @@ class CNetatmo : public CDomoticzHardwareBase
         uint64_t UpdateValueInt(int HardwareID, const char* ID, unsigned char unit, unsigned char devType, unsigned char subType, unsigned char signallevel, unsigned char batterylevel, int nValue, const char* sValue, std::string& devname, bool bUseOnOffAction, const std::string& user);
 	int GetBatteryLevel(const std::string &ModuleType, int battery_percent);
 	bool ParseDashboard(const Json::Value &root, int DevIdx, int ID, std::string &name, const std::string &ModuleType, int battery_percent, int rf_status, std::string& Hardware_ID);
-//        bool ParseDashboard(const Json::Value root, int DevIdx, int ID, const std::string &name, const std::string &ModuleType, int battery_percent, int rf_status);
+
       //
       public:
         CNetatmo(int ID, const std::string &username, const std::string &password);
