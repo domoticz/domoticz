@@ -1880,6 +1880,7 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root )
 		return false;
 
 	//int thermostatID;
+	int nValue = 0;
         int wifi_status = 0;
         float mrf_percentage = 0;
         float rf_strength = 0;
