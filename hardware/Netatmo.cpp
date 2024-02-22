@@ -1021,7 +1021,7 @@ void CNetatmo::GetHomesDataDetails()
                                                  std::string roomID = room["id"].asString();
                                                  m_RoomNames[roomID] = room["name"].asString();
                                                  std::string roomTYPE = room["type"].asString();
-                                                 m_Room_Type[roomID] = roomTYPE;
+                                                 m_Types[roomID] = roomTYPE;
 
                                                  int crcId;
                                                  for (auto module_ids : room["module_ids"])
@@ -1301,7 +1301,7 @@ void CNetatmo::Get_Events(std::string home_id, std::string device_types, std::st
 	
 	bool bRet;           //Parsing status
         //
-        Get_Respons_API(NETYPE_EVENTS, sResult, home_data, bRet, root);
+        Get_Respons_API(NETYPE_EVENTS, sResult, home_events_data, bRet, root);
         //
         if (!root["body"]["home"].empty())
         {
@@ -2138,7 +2138,7 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root )
 //				//roomName = m_RoomNames[roomNetatmoID].asString();
 				roomName = m_RoomNames[roomNetatmoID];
                                 roomID = m_RoomIDs[roomNetatmoID];
-                                std::string roomType = m_Room_Type[roomNetatmoID];
+                                std::string roomType = m_Types[roomNetatmoID];
                                 std::string roomCategory = m_Module_category[roomNetatmoID];
 
 				m_thermostatDeviceID[roomID & 0xFFFFFF] = roomNetatmoID;
