@@ -127,7 +127,7 @@ class CNetatmo : public CDomoticzHardwareBase
 
 	std::map<std::string, std::string> m_ThermostatName;
 	std::map<std::string, std::string> m_RoomNames;
-        std::map<std::string, std::string> m_Room_Type;
+        std::map<std::string, std::string> m_Types;
         std::map<std::string, std::string> m_Room;
         std::map<std::string, std::string> m_Room_status;
 	std::map<std::string, int> m_RoomIDs;
@@ -145,6 +145,7 @@ class CNetatmo : public CDomoticzHardwareBase
         std::map<int, std::string> m_ZoneNames;
         std::map<int, std::string> m_ZoneIDs;
         std::map<int, std::string> m_ZoneTypes;
+        std::map<int, std::string> m_Events_Device_ID;
 	std::map<int, CBaroForecastCalculator> m_forecast_calculators;
 
         uint64_t UpdateValueInt(int HardwareID, const char* ID, unsigned char unit, unsigned char devType, unsigned char subType, unsigned char signallevel, unsigned char batterylevel, int nValue, const char* sValue, std::string& devname, bool bUseOnOffAction, const std::string& user);
