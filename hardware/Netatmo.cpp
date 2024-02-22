@@ -129,9 +129,9 @@ CNetatmo::CNetatmo(const int ID, const std::string& username, const std::string&
 	m_nextRefreshTs = mytime(nullptr);
 	m_isLogged = false;
 
-        m_weatherType = NETYPE_WEATHER_STATION;
-        m_homecoachType = NETYPE_AIRCARE;
-        m_energyType = NETYPE_ENERGY;
+//        m_weatherType = NETYPE_WEATHER_STATION;
+//        m_homecoachType = NETYPE_AIRCARE;
+//        m_energyType = NETYPE_ENERGY;
 
 	m_HwdID = ID;
         m_Home_ID = "";
@@ -161,7 +161,7 @@ void CNetatmo::Init()
 	m_Room_status.clear();
 	m_ModuleNames.clear();
 	m_ModuleIDs.clear();
-	m_Room_Type.clear();
+	m_Types.clear();
         m_Module_category.clear();
         m_thermostatDeviceID.clear();
 	m_thermostatModuleID.clear();
@@ -176,6 +176,7 @@ void CNetatmo::Init()
 	m_ScheduleIDs.clear();
         m_ZoneNames.clear();
         m_ZoneIDs.clear();
+	m_Events_Device_ID.clear();
 	
         m_bPollThermostat = true;
 	m_bPollWeatherData = true;
@@ -186,9 +187,9 @@ void CNetatmo::Init()
 	m_bFirstTimeWeatherData = true;
 	m_bForceSetpointUpdate = false;
 
-        m_energyType = NETYPE_ENERGY;
-        m_weatherType = NETYPE_WEATHER_STATION;
-        m_homecoachType = NETYPE_AIRCARE;
+//        m_energyType = NETYPE_ENERGY;
+//        m_weatherType = NETYPE_WEATHER_STATION;
+//        m_homecoachType = NETYPE_AIRCARE;
 
 	m_bForceLogin = false;
         //
@@ -1214,6 +1215,14 @@ void CNetatmo::GetHomeStatusDetails()
 	std::string home_data = m_Home_ID;
         bool bRet;                             //Parsing status
 	Json::Value root;                      // root JSON object
+	std::string device_types = "";
+        std::string event_id = "";
+        std::string person_id = "";
+        std::string bridge_id = "";
+        std::string module_id = "";
+        int offset = ' ';
+        int size = ' ';
+        std::string locale = "";
 	//
         GetHomesDataDetails();                 //Homes Data
 	//
@@ -1221,6 +1230,8 @@ void CNetatmo::GetHomeStatusDetails()
 	//
 	//Parse API response
 	bRet = ParseHomeStatus(sResult, root);
+	//
+	Get_Events(home_data, device_types, event_id, person_id, bridge_id, module_id, offset, size, locale);
 //	if (bRet)
 //	{
 //			// Data was parsed with success so we have our device
@@ -1232,6 +1243,7 @@ void CNetatmo::GetHomeStatusDetails()
 
 /// <summary>
 /// Get Historical data from Netatmo Device
+/// Devices from Aircare, Weather, Energy and Home + Control API
 /// </summary>
 void CNetatmo::Get_Measure(std::string gateway, std::string module_id, std::string scale)
 {
@@ -1280,34 +1292,20 @@ void CNetatmo::Get_Events(std::string home_id, std::string device_types, std::st
         Json::Value root;    // root JSON object
         std::string offset_str = bool_as_text(offset);
         std::string size_str = bool_as_text(size);
+	std::string home_events_data;
         // https://api.netatmo.com/api/getevents?home_id=xxx&device_types=xxx&event_id=xxx&person_id=xxx&device_id=xxx&module_id=xxx&offset=15&size=15&locale=nl
-        std::string home_data = "home_id=" + home_id + "&device_types=" + device_types + "&event_id=" + event_id + "&person_id=" + person_id + "&module_id=" + module_id + "&offset=" + offset_str + "&size=" + size_str;
-        bool bRet;           //Parsing status
+        if (!device_id.empty())
+                home_events_data = home_id + "&device_types=" + device_types + "&event_id=" + event_id + "&person_id=" + person_id + "&module_id=" + module_id + "&offset=" + offset_str + "&size=" + size_str;
+        else
+                home_events_data = home_id ;
+	
+	bool bRet;           //Parsing status
         //
         Get_Respons_API(NETYPE_EVENTS, sResult, home_data, bRet, root);
         //
         if (!root["body"]["home"].empty())
         {
-                //
-//                                                    if (!detection["snapshot"]["filename"].empty())
-//                                                    {
-//                                                             std::string detection_snapshot_filename = detection["snapshot"]["filename"].asString();
-//                                                             std::string detection_vignette_filename = detection["vignette"]["filename"].asString();
-//                                                    }
-//                                                    else
-//                                                    {
-//                                                             std::string detection_snapshot_id = detection["snapshot"]["id"].asString();
-//                                                             std::string detection_snapshot_version = detection["snapshot"]["version"].asString();
-//                                                             std::string detection_snapshot_key = detection["snapshot"]["key"].asString();
-//                                                             std::string detection_snapshot_url = detection["snapshot"]["url"].asString();
-//                                                             std::string detection_snapshot_ts = detection["snapshot"]["expires_at"].asString();
-//                                                             std::string detection_vignette_id = detection["vignette"]["id"].asString();
-//                                                             std::string detection_vignette_version = detection["vignette"]["version"].asString();
-//                                                             std::string detection_vignette_key = detection["vignette"]["key"].asString();
-//                                                             std::string detection_vignette_url = detection["snapshot"]["url"].asString();
-//                                                             std::string detection_vignette_ts = detection["vignette"]["expires_at"].asString();
-//                                                    }
-                bRet = ParseHomeStatus(sResult, root);
+		bRet = ParseEvents(sResult, root);
                 if (bRet)
                 {
                         // Data was parsed with success
@@ -2280,7 +2278,18 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root )
                 }
         }
 //	return (iPersonIndex > 0);
+	return true;
+}
 
+
+/// <summary>
+/// Parse data for energy/security devices
+/// get and create/update domoticz devices
+/// </summary>
+/// <param name="sResult">JSON raw data to parse</param>
+/// <returns></returns>
+bool CNetatmo::ParseEvents(const std::string& sResult, Json::Value& root )
+{
         //Parse Events
         int iEventsIndex = 0;
         if (!root["body"]["home"]["events"].empty())
@@ -2288,94 +2297,165 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root )
                 if (!root["body"]["home"]["events"].isArray())
                         return false;
                 Json::Value mRoot = root["body"]["home"]["events"];
-                std::string event_Text;
-                std::string events_Message;
-                std::string events_Module_ID;
+                std::string event_Text = "check Parse Events";
                 std::string events_ID;
                 std::string events_Type;
-                std::string e_Name;
-		int Hardware_int;
-		char const* pchar_ID;
+                std::string events_Module_ID;
+                std::string events_Message;
+                std::string events_subevents_type;
+                std::string e_Name = "";
+                int Hardware_int = 0;
+                char const* pchar_ID = 0;
+                int RF_status = 0;
+                int nValue = 0;
                 //std::string sValue = "";
 
                 for (auto events : mRoot)
                 {
                         if (!events["id"].empty())
                         // Domoticz Device for Events ? / Camera's ?
+			// Using Textstatus for now
+                        if (!events["id"].empty())
                         {
-                                //event_Text
                                 events_ID = events["id"].asString();
+                        };
+                        if (!events["type"].empty())
+                        {
                                 events_Type = events["type"].asString();
+                        };
+                        if (!events["time"].empty())
+                        {
                                 bool events_Time = events["time"].asBool();
+                        };
+                        if (!events["module_id"].empty())
+                        {
                                 events_Module_ID = events["module_id"].asString();
-                                //
-                        }
-                        if (!events["message"].empty())
-			{
-                                events_Message = events["message"].asString();
+                                e_Name = m_ModuleNames[events_Module_ID] + " - events";
                                 //converting ID to char const
-                                //char const* pchar_ID = events_Module_ID.c_str();
-                                pchar_ID = events_Module_ID.c_str();
-				e_Name = m_ModuleNames[events_Module_ID] + " - events";
-                                // Hardware_ID hex to int
+                                //std::string str_id = std::to_string(events_Module_ID);
+                                //char const* pchar_ID = events_ID.c_str();
+                                //
                                 Hardware_int = convert_mac(events_Module_ID);
+                                //pchar_ID = str_id.c_str();
+                                pchar_ID = events_Module_ID.c_str();
+                        };
+                        if (!events["message"].empty())
+                        {
+                                events_Message = events["message"].asString();
                                 std::stringstream y;
                                 y << events_Message;
-                                y << " ; ";
+                                y << ";";
                                 y << events_Type;
                                 std::string sValue = y.str().c_str();
-                                UpdateValueInt(Hardware_int, pchar_ID, 5, pTypeGeneral, sTypeTextStatus, '0', 255, '0', sValue.c_str(), e_Name, '0', m_Name);
-			};
-			if (!events["video_id"].empty())
-			{
+                                Debug(DEBUG_HARDWARE, "Message %s from %s %d", sValue.c_str(), e_Name.c_str(), Hardware_int);
+                                //UpdateValueInt(Hardware_int, pchar_ID, 5, pTypeGeneral, sTypeTextStatus, RF_status, 255, nValue, sValue.c_str(), e_Name, '0', m_Name); Database ERROR
+                        };
+                        if (!events["video_id"].empty())
+                        {
                                 std::string events_Video_ID = events["video_id"].asString();
-			};
+                        };
                         if (!events["video_status"].empty())
 			{
                                 std::string events_Video_Status = events["video_status"].asString();
-//                                std::string events_Snapshot = events["snapshot"];
-//                                std::string events_Snapshot = events["snapshot"]["url"];
-//                                std::string events_Snapshot = events["snapshot"]["expires_at"];
-//                                std::string events_Vignette = events["vignette"];
-//                                std::string events_Vignette = events["vignette"]["url"];
-//                                std::string events_Vignette = events["vignette"]["expires_at"];
-			};
-                        if (!events["subevents"]["id"].empty())
+                        };
+                        if (!events["snapshot"].empty())
                         {
-                                std::string events_subevents_ID = events["subevents"]["id"].asString();
-                                std::string events_subevents_type = events["subevents"]["type"].asString();
-                                bool events_subevents_time = events["subevents"]["time"].asBool();
-                                std::string events_subevents_verified = events["subevents"]["verified"].asString();
-                                std::string events_subevents_offset = events["subevents"]["offset"].asString();
-//                                std::string events_subevents_ID = events["subevents"]["snapshot"].asString();
-//                                std::string events_subevents_Snapshot = events["subevents"]["snapshot"]["url"].asString();
-//                                std::string events_subevents_Snapshot = events["subevents"]["snapshot"]["expires_at"].asString();
-//                                std::string events_subevents_Vignette = events["subevents"]["vignette"].asString();
-//                                std::string events_subevents_Vignette = events["subevents"]["vignette"]["url"].asString();
-//                                std::string events_subevents_Vignette = events["subevents"]["vignette"]["expires_at"].asString();
-                                std::string events_subevents_Message = events["subevents"]["message"].asString();
-                                std::stringstream z;
-                                z << events_subevents_type;
-                                z << ";";
-                                z << events_subevents_Message;
-                                std::string sValue = z.str().c_str();
-                                UpdateValueInt(Hardware_int, pchar_ID, 5, pTypeGeneral, sTypeTextStatus, '0', 255, '0', sValue.c_str(), e_Name, '0', m_Name);
+                                //events_Snapshot = events["snapshot"];
+//                                std::string events_Snapshot_url = events["snapshot"]["url"];
+//                                std::string events_Snapshot_exp = events["snapshot"]["expires_at"];
+                        };
+                        if (!events["vignette"].empty())
+                        {
+//                                //events_Vignette = events["vignette"];
+//                                std::string events_Vignette_url = events["vignette"]["url"];
+//                                std::string events_Vignette_exp = events["vignette"]["expires_at"];
+                        };
+                        if (!events["subevents"].empty())
+                        {
+                                for (auto sub_events : events["subevents"])
+                                {
+                                        if (!sub_events["id"].empty())
+                                        {
+                                                std::string events_subevents_ID = sub_events["id"].asString();
+                                        };
+                                        if (!sub_events["type"].empty())
+                                        {
+                                                events_subevents_type = sub_events["type"].asString();
+                                        };
+                                        if (!sub_events["time"].empty())
+                                        {
+                                                bool events_subevents_time = sub_events["time"].asBool();
+                                        };
+                                        if (!sub_events["verified"].empty())
+                                        {
+                                                std::string events_subevents_verified = sub_events["verified"].asString(); // true or false
+                                        };
+                                        if (!sub_events["offset"].empty())
+                                        {
+                                                int events_subevents_offset = sub_events["offset"].asInt();
+                                        };
+                                        if (!sub_events["snapshot"].empty())
+                                        {
+                                                //events_subevents_ID = sub_events["snapshot"];
+//                                                std::string events_subevents_Snapshot = sub_events["snapshot"]["url"].asString();
+//                                                std::string events_subevents_Snapshot = sub_events["snapshot"]["expires_at"].asString();
+                                        };
+                                        if (!sub_events["vignette"].empty())
+                                        {
+                                                //events_subevents_Vignette = sub_events["vignette"];
+//                                                std::string events_subevents_Vignette = sub_events["vignette"]["url"].asString();
+//                                                std::string events_subevents_Vignette = sub_events["vignette"]["expires_at"].asString();
+                                        };
+					if (!sub_events["message"].empty())
+                                        {
+                                                std::string events_subevents_Message = sub_events["message"].asString();
+                                                std::stringstream z;
+                                                z << events_subevents_type;
+                                                z << ";";
+                                                z << events_subevents_Message;
+                                                events_Message = events_subevents_Message;
+                                                std::string sValue = z.str().c_str();
+                                                Debug(DEBUG_HARDWARE, "Sub Message %s from %s %d", sValue.c_str(), e_Name.c_str(), Hardware_int);
+                                                //UpdateValueInt(Hardware_int, pchar_ID, 5, pTypeGeneral, sTypeTextStatus, RF_status, 255, nValue, sValue.c_str(), e_Name, '0', m_Name) Database ERROR;
+                                        };
+                                };
                         };
                         if (!events["sub_type"].empty())
 			{
                                 bool events_sub_type = events["sub_type"].asBool();
+				events_Type = events["sub_type"].asString();
 			};
 			if (!events["persons"].empty())
                                 for (auto person : events["persons"])
                                 {
-                                        std::string events_person_id = person["id"].asString();
-                                        std::string events_person_face_id = person["face_id"].asString();
-                                        std::string events_person_face_key = person["face_key"].asString();
-                                        std::string events_person_is_known = person["is_known"].asString();
-                                        std::string events_person_face_url = person["face_url"].asString();
-                                }
-                        event_Text = events_Message;
-                        //SendTextSensor(crcId, 1, 255, event_Text, m_ModuleNames[events_Module_ID]);
+                                        if (!person["id"].empty())
+                                                std::string events_person_id = person["id"].asString();
+                                        if (!person["face_id"].empty())
+                                                std::string events_person_face_id = person["face_id"].asString();
+                                        if (!person["face_key"].empty())
+                                                std::string events_person_face_key = person["face_key"].asString();
+                                        if (!person["is_known"].empty())
+                                                std::string events_person_is_known = person["is_known"].asString();
+                                        if (!person["face_url"].empty())
+                                                std::string events_person_face_url = person["face_url"].asString();
+                                };
+			if (!events["person_id"].empty())
+                        {
+                                std::string events_person_id = events["person_id"].asString();
+                        };
+                        if (!events["out_of_sight"].empty())
+                        {
+                                bool events_sub_type = events["out_of_sight"].asBool(); // true or false
+                        };
+                        if (!events_Message.empty())
+                        {
+                                event_Text = events_Message + " - " + events_Type;
+                                int crcId;
+                                crcId = Crc32(0, (const unsigned char*)events_Module_ID.c_str(), events_Module_ID.length());
+				//SendTextSensor(crcId, 1, 255, event_Text, e_Name);
+                                std::string sValue = event_Text.c_str();
+				UpdateValueInt(Hardware_int, std::to_string(Hardware_int).c_str(), 5, pTypeGeneral, sTypeTextStatus, RF_status, 255, nValue, sValue.c_str(), e_Name, '0', m_Name);
+                        };
                         //
                 };
         };
