@@ -98,6 +98,7 @@ class CNetatmo : public CDomoticzHardwareBase
 
 	bool ParseStationData(const std::string &sResult, bool bIsThermostat);
 	bool ParseHomeStatus(const std::string &sResult, Json::Value& root );
+	bool ParseEvents(const std::string& sResult, Json::Value& root );
 
         bool ParseHomeData(const std::string &sResult, Json::Value& root );
 
