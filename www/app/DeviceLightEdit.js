@@ -503,7 +503,6 @@ define(['app', 'components/rgbw-picker/RgbwPicker'], function (app) {
 		vm.isBlind = isBlind;
 		vm.onActionLabel = onActionLabel;
 		vm.offActionLabel = offActionLabel;
-		/* Test */
 		vm.addDeviceToPlan = addDeviceToPlan;
 		vm.removeDeviceFromPlan = removeDeviceFromPlan;
 
