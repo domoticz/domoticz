@@ -11,7 +11,11 @@
         <select id="switch-types-template">
         </select>
     </div>
-
+    <div style="display: none">
+        <select id="device-roomplan-template">
+        </select>
+    </div>
+	
     <br>
 
     <form name="deviceInfoForm" ng-submit="vm.updateDevice()">
@@ -220,7 +224,54 @@
                 </textarea>
                 </td>
             </tr>
-            <tr>
+	    <tr>
+		<td>
+		<label>{{ :: 'Roomplan' | translate}}:</label>
+                </td>
+                <td>
+		<table class="display dataTable no-footer" border="0" cellpadding="0" cellspacing="0" width="100%">
+			<thead>
+			<tr valign="middle">
+				<th width="40" align="center">Idx</th>
+				<th align="left">{{ :: 'Name' | translate}}</th>
+				<th width="60" align="center"></th>
+				<th width="40" align="center"></th>
+			</tr>
+			</thead>
+			<tbody>
+			<tr role="row" ng-class="$even ? 'odd' : 'even'" ng-repeat="items in ::vm.device.PlanIDs">
+				<td>{{ items }}</td>
+				<td ng-repeat="i in ::vm.planIDsOptions" ng-if="items == i.value" >{{ i.label }}</td>
+				<td></td>
+				<td  ng-repeat="i in ::vm.planIDsOptions" ng-if="items == i.value" ng-click="vm.removeDeviceFromPlan(vm.device.idx, i.value)">
+					<img src="images/delete.png" title="{{:: 'Delete' | translate}}" class="lcursor js-delete" width="16" height="16"></img>
+				</td>
+			</tr>
+			</tbody>
+		</table>
+					
+		</td>
+		</tr>
+		<tr>
+		<td>
+		</td>
+		<td>
+			<select id="roomplansoptions"
+				style="width:200px"
+				class="combobox ui-corner-all"
+				ng-options="item.value as item.label for item in ::vm.planIDsOptions"
+				ng-model="vm.device.PlanID">
+			</select>
+			<button type="button" class="btnstyle3" ng-click="vm.addDeviceToPlan()">
+			{{:: 'Add Plan' | translate }}
+			</button>
+		</td>
+		</tr>
+		<tr>
+			 <td></td>
+			 <td><br></td>
+		</tr>
+		<tr>
                 <td></td>
                 <td>
                     <button type="submit" class="btnstyle3" ng-disabled="deviceInfoForm.$invalid">
