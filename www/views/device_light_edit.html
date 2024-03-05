@@ -236,18 +236,19 @@
 						<tr valign="middle">
 							<th width="40" align="center">Idx</th>
 							<th align="left">{{ :: 'Name' | translate}}</th>
-							<th width="100%" align="center"></th>
+							
 							<th width="40" align="center"></th>
 						</tr>
 						</thead>
 						<tbody>
 							<tr role="row" ng-class="$even ? 'odd' : 'even'" ng-repeat="items in ::vm.device.PlanIDs">
 								<td>{{ items }}</td>
-								<td ng-repeat="i in ::vm.planIDsOptions" ng-if="items == i.value" >{{ i.label }}</td>
-								<td></td>
+								<td ng-repeat="i in ::vm.planIDsOptions" ng-if="items == i.value">{{ i.label }}</td>
+								<td ng-if="items == 0">No roomplan is added</td>
 								<td  ng-repeat="i in ::vm.planIDsOptions" ng-if="items == i.value" ng-click="vm.removeDeviceFromPlan(vm.device.idx, i.value)">
 									<img src="images/delete.png" title="{{:: 'Delete' | translate}}" class="lcursor js-delete" width="16" height="16"></img>
 								</td>
+								<td ng-if="items == 0"></td>
 							</tr>
 						</tbody>
 					</table>
