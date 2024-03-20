@@ -755,6 +755,31 @@ namespace Plugins {
 				nValue = 0;
 				sValue = stdsValue;
 			}
+                        // Type change
+                        if (iType != self->Type)
+                        {
+                                Py_BEGIN_ALLOW_THREADS
+                                m_sql.UpdateDeviceValue("Type", iType, sID);
+                                Py_END_ALLOW_THREADS
+                        }
+
+                        // SubType change
+                        if (iSubType != self->SubType)
+                        {
+                                Py_BEGIN_ALLOW_THREADS
+                                m_sql.UpdateDeviceValue("SubType", iSubType, sID);
+                                Py_END_ALLOW_THREADS
+                        }
+
+                        // SwitchType change
+                        if (iSwitchType != self->SwitchType)
+                        {
+                                Py_BEGIN_ALLOW_THREADS
+                                m_sql.UpdateDeviceValue("SwitchType", iSwitchType, sID);
+                                Py_END_ALLOW_THREADS
+                        }
+
+
 
 			uint64_t DevRowIdx = -1;
 
