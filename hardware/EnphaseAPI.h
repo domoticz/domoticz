@@ -12,7 +12,7 @@ namespace Json
 class EnphaseAPI : public CDomoticzHardwareBase
 {
 public:
-	EnphaseAPI(int ID, const std::string& IPAddress, unsigned short usIPPort, int PollInterval, const bool bPollInverters, const std::string& szUsername, const std::string& szPassword, const std::string &szSiteID);
+	EnphaseAPI(int ID, const std::string& IPAddress, unsigned short usIPPort, int PollInterval, const bool bPollInverters, const bool bDontGetMeteredValues, const std::string& szUsername, const std::string& szPassword, const std::string &szSiteID);
 	~EnphaseAPI() override = default;
 	bool WriteToHardware(const char* pdata, unsigned char length) override;
 	std::string m_szSoftwareVersion;
@@ -61,6 +61,7 @@ private:
 	std::string m_szSiteID;
 
 	bool m_bGetInverterDetails = false;
+	bool m_bDontGetMeteredValues = false;
 
 	bool m_bHaveConsumption = false;
 	bool m_bHaveNetConsumption = false;
