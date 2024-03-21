@@ -244,7 +244,7 @@
 							<tr role="row" ng-class="$even ? 'odd' : 'even'" ng-repeat="items in ::vm.device.PlanIDs">
 								<td>{{ items }}</td>
 								<td ng-repeat="i in ::vm.planIDsOptions" ng-if="items == i.value">{{ i.label }}</td>
-								<td ng-if="items == 0">{{ :: 'No roomplan is added' | translate }}</td>
+								<td ng-if="items == 0">{{ :: 'No roomplan assigned' | translate }}</td>
 								<td  ng-repeat="i in ::vm.planIDsOptions" ng-if="items == i.value" ng-click="vm.removeDeviceFromPlan(vm.device.idx, i.value)">
 									<img src="images/delete.png" title="{{:: 'Delete' | translate}}" class="lcursor js-delete" width="16" height="16"></img>
 								</td>
