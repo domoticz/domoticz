@@ -14,6 +14,14 @@ class CNetatmo : public CDomoticzHardwareBase
 {
 //      friend class;
       //
+        struct _tNetatmoDevice
+        {
+                std::string ID;
+                std::string ModuleName;
+                std::string StationName;
+                std::vector<std::string> ModulesIDs;
+                //Json::Value Modules;
+        };
       private:
 	enum _eNetatmoType
 	{
@@ -53,6 +61,7 @@ class CNetatmo : public CDomoticzHardwareBase
 	std::string m_password;
 	std::string m_accessToken;
 	std::string m_refreshToken;
+        std::map<int, int> m_thermostat_ID;
 	std::map<int, std::string> m_thermostatDeviceID;
 	std::map<int, std::string> m_thermostatModuleID;
 	bool m_bPollWeatherData;
@@ -129,13 +138,17 @@ class CNetatmo : public CDomoticzHardwareBase
 	std::map<std::string, std::string> m_ThermostatName;
 	std::map<std::string, std::string> m_RoomNames;
         std::map<std::string, std::string> m_Types;
-        std::map<std::string, std::string> m_Room;
-        std::map<std::string, std::string> m_Room_status;
-	std::map<std::string, int> m_RoomIDs;
+        std::map<int, Json::Value> m_Room;
+        std::map<std::string, std::string> m_Room_mode;
+        std::map<std::string, std::string> m_Room_setpoint;
+        std::map<std::string, std::string> m_Room_Temp;
+	std::map<std::string, std::string> m_RoomIDs;
         std::map<std::string, std::string> m_Module_category;
 	std::map<std::string, std::string> m_ModuleNames;
+        std::map<std::string, int> m_Module_Bat_Level;
+        std::map<std::string, int> m_Module_RF_Level;
 
-	std::map<std::string, int> m_ModuleIDs;
+	std::map<int, int> m_ModuleIDs;
         std::map<std::string, std::string> m_Persons;
         std::map<std::string, std::string> m_PersonsNames;
         std::map<std::string, int> m_PersonsIDs;
@@ -147,6 +160,7 @@ class CNetatmo : public CDomoticzHardwareBase
         std::map<int, std::string> m_ZoneIDs;
         std::map<int, std::string> m_ZoneTypes;
         std::map<int, std::string> m_Events_Device_ID;
+        std::map<int, _tNetatmoDevice> m_thermostats;
 	std::map<int, CBaroForecastCalculator> m_forecast_calculators;
 
         uint64_t UpdateValueInt(int HardwareID, const char* ID, unsigned char unit, unsigned char devType, unsigned char subType, unsigned char signallevel, unsigned char batterylevel, int nValue, const char* sValue, std::string& devname, bool bUseOnOffAction, const std::string& user);
@@ -159,7 +173,7 @@ class CNetatmo : public CDomoticzHardwareBase
         ~CNetatmo() override = default;
         //
         bool WriteToHardware(const char *, unsigned char) override;
-        void SetSetpoint(int idx, float temp);
+        void SetSetpoint(int DeviceID, float temp);
         bool SetProgramState(int idx, int newState);
         void Get_Respons_API(const _eNetatmoType& NType, std::string& sResult, std::string& home_id , bool& bRet, Json::Value& root );
         //
