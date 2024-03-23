@@ -12854,6 +12854,24 @@ bool MainWorker::SetSetPointInt(const std::vector<std::string>& sd, const float 
 	std::stringstream s_strid;
 	s_strid << std::hex << sd[1];
 	s_strid >> ID;
+	std::string id;
+        unsigned long idx_int = 0;
+        _log.Debug(DEBUG_HARDWARE, "Index %d ", sd.size());
+        for(auto it = sd.begin(); it != sd.end(); ++it)
+        {
+                int index = std::distance(sd.begin(), it);
+                // SD 8
+                _log.Debug(DEBUG_HARDWARE, "SD %d %s -", index, sd[index].c_str());
+        };
+        if (!sd[7].empty())
+        {
+                id = sd[1];
+                std::string idx = sd[7];
+                std::stringstream ss;
+                ss << sd[7];
+                ss >> idx_int;
+                _log.Debug(DEBUG_HARDWARE, "IDX %d , HardwareID %d - %s", idx_int, HardwareID, id.c_str());
+        };
 	uint8_t ID1 = (uint8_t)((ID & 0xFF000000) >> 24);
 	uint8_t ID2 = (uint8_t)((ID & 0x00FF0000) >> 16);
 	uint8_t ID3 = (uint8_t)((ID & 0x0000FF00) >> 8);
@@ -12880,8 +12898,8 @@ bool MainWorker::SetSetPointInt(const std::vector<std::string>& sd, const float 
 
 		if (
 			(value_unit.empty())
-			|| (value_unit == "°C")
-			|| (value_unit == "°F")
+			|| (value_unit == "Â°C")
+			|| (value_unit == "Â°F")
 			|| (value_unit == "C")
 			|| (value_unit == "F")
 			)
@@ -12981,7 +12999,7 @@ bool MainWorker::SetSetPointInt(const std::vector<std::string>& sd, const float 
 		else if (pHardware->HwdType == HTYPE_Netatmo)
 		{
 			CNetatmo* pGateway = dynamic_cast<CNetatmo*>(pHardware);
-			pGateway->SetSetpoint(ID, TempValue);
+			pGateway->SetSetpoint(idx_int, TempValue);
 		}
 		else if (pHardware->HwdType == HTYPE_NefitEastLAN)
 		{
