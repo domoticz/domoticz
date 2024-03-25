@@ -2250,7 +2250,7 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root )
                                         //SendSelectorSwitch(crcId, 0, setpoint_mode, lName, 15, true, "Off|On|Auto", "", true, m_Name);
                                         //SendSwitch(crcId, 0, 255, bIsActive, 0, lName, m_Name);
                                         DeviceRowIdx = UpdateValueInt(m_HwdID, moduleID, module_id.c_str(), 2, pTypeGeneralSwitch, sSwitchTypeSelector, 12, 255, 0, options.c_str(), lName,  '0', m_Name.c_str());
-                                        m_sql.SetDeviceOptions(DeviceRowIdx, options);
+                                        m_sql.SetDeviceOptions(DeviceRowIdx, Options);
                                 };
                                 if ((type == "NATherm1") || (type == "NRV"))
                                 {
@@ -2269,7 +2269,7 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root )
                                         m << moduleID;
                                         m >> module;
                                         DeviceRowIdx = UpdateValueInt(moduleID, module_id.c_str(), 3, pTypeSetpoint, sTypeSetpoint, mrf_status, batteryLevel, '0', room_setpoint.c_str(), aName, bIsActive, m_Name);
-                                        Debug(DEBUG_HARDWARE, "Thermostat Room ID = %s / %s %s %s RF = %d %d", roomNetatmoID.c_str(), module_id.c_str(), roomName.c_str(), type.c_str(), rf_strength, mrf_status);
+                                        Debug(DEBUG_HARDWARE, "Thermostat Room ID = %s / %s %s %s ", roomNetatmoID.c_str(), module_id.c_str(), roomName.c_str(), type.c_str());
                                         // thermostatModuleID from IDX
                                         int mid = convert_mac(module_id);
                                         m_thermostat_ID[DeviceRowIdx] = moduleID;
@@ -2308,12 +2308,12 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root )
                                         // "SelectorStyle:1;LevelNames:Off;LevelOffHidden:true;LevelActions:00"
                                         // "SelectorStyle:18;LevelNames:Off|Main|Sub|Main+Sub;LevelOffHidden:true;LevelActions:00|01|02|03"
 
-		                	std::map<std::string, std::string> options;
-                			options["SelectorStyle"] = "18";
-		                	options["LevelOffHidden"] = "true";
-                   			options["LevelNames"] = "Off|On|Auto";
-                                        options["LevelNames"] = "Off|On|Away|Frost Guard";
-                                        options["LevelActions"] = "00|10|20|30";
+		                	std::map<std::string, std::string> Options;
+                			Options["SelectorStyle"] = "18";
+		                	Options["LevelOffHidden"] = "true";
+                   			Options["LevelNames"] = "Off|On|Auto";
+                                        Options["LevelNames"] = "Off|On|Away|Frost Guard";
+                                        Options["LevelActions"] = "00|10|20|30";
 					//BuildDeviceOptions(Options, false));
                                         //BuildDeviceOptions("SelectorStyle:0;LevelOffHidden:true;LevelNames:Off|On|Auto;LevelActions:00|10|20|30", false));
                                         std::string options = "SelectorStyle:18;LevelOffHidden:true;LevelNames:Off|On|Away|Frost Guard;LevelActions:00|10|20|30";
@@ -2322,8 +2322,7 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root )
                                         int nValue = 0;
                                         //SendSelectorSwitch(crcId, 2, ssv.str(), sName, 15, true, allSchName, allSchAction, true, m_Name);
                                         DeviceRowIdx = m_sql.UpdateValue(m_HwdID, moduleID, module_id.c_str(), 2, pTypeGeneralSwitch, sSwitchTypeSelector, 12, 255, setpoint_mode_i, options.c_str(), sName, '0', m_Name.c_str>
-                                        if (DeviceRowIdx == (uint64_t)-1)
-                                                return -1;
+                                        m_sql.SetDeviceOptions(DeviceRowIdx, Options);
                                         //idx = DeviceRowIdx;
                                         m_thermostatDeviceID[DeviceRowIdx] = moduleID;
                                         m_thermostat_ID[DeviceRowIdx] = moduleID;
