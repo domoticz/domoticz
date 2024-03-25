@@ -140,13 +140,13 @@ void CSterbox::UpdateSwitch(const unsigned char Idx, const int SubUnit, const bo
 	if (!result.empty())
 	{
 		//check if we have a change, if not do not update it
-		int nvalue = atoi(result[0][1].c_str());
+		int nvalue = stoi(result[0][1]);
 		if ((!bOn) && (nvalue == 0))
 			return;
 		if ((bOn && (nvalue != 0)))
 		{
 			//Check Level
-			int slevel = atoi(result[0][2].c_str());
+			int slevel = stoi(result[0][2]);
 			if (slevel == level)
 				return;
 		}
@@ -326,7 +326,7 @@ void CSterbox::GetMeterDetails()
 					tmpinp = analog[jj];
 					tmpstr2 = tmpstr2.substr(1, 10);
 
-					float lValue = (float)atof(tmpstr2.c_str());
+					float lValue = stof(tmpstr2);
 					std::stringstream sstr;
 					sstr << "Analog " << jj;
 					pos1 = tmpinp.find('t');
@@ -354,12 +354,12 @@ void CSterbox::GetMeterDetails()
 					//Log(LOG_ERROR,"OU Status: %s", tmpstr2.c_str());
 
 				}
-				//int Idx = atoi(tmpstr.substr(0, pos1).c_str());
+				//int Idx = stoi(tmpstr.substr(0, pos1));
 				//tmpstr = tmpstr.substr(pos1 + 1);
 				//pos1 = tmpstr.find("<");
 				//if (pos1 != std::string::npos)
 				//{
-				//	int lValue = atoi(tmpstr.substr(0, pos1).c_str());
+				//	int lValue = stoi(tmpstr.substr(0, pos1));
 				//	float voltage = (float)(5.0f / 1023.0f)*lValue;
 				//	if (voltage > 5.0f)
 				//		voltage = 5.0f;

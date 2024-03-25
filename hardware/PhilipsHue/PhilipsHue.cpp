@@ -526,10 +526,10 @@ void CPhilipsHue::InsertUpdateLamp(const int NodeID, const _eHueLightType LType,
 		{
 			//Already in the system
 			//Update state
-			int nvalue = atoi(result[0][0].c_str());
-			unsigned sTypeOld = atoi(result[0][3].c_str());
+			int nvalue = stoi(result[0][0]);
+			unsigned sTypeOld = (unsigned) stoul(result[0][3]);
 			std::string sID = result[0][4];
-			bool bUsed = std::stoi(result[0][5]) != 0;
+			bool bUsed = stoi(result[0][5]) != 0;
 			std::string curName = result[0][6];
 			if (!bUsed)
 			{
@@ -614,9 +614,9 @@ void CPhilipsHue::InsertUpdateLamp(const int NodeID, const _eHueLightType LType,
 		if (!result.empty())
 		{
 			//Already in the system
-			int nvalue = atoi(result[0][0].c_str());
+			int nvalue = stoi(result[0][0]);
 			std::string sID = result[0][1];
-			bool bUsed = std::stoi(result[0][2]) != 0;
+			bool bUsed = stoi(result[0][2]) != 0;
 			std::string curName = result[0][3];
 			if (!bUsed)
 			{
@@ -669,7 +669,7 @@ void CPhilipsHue::InsertUpdateLamp(const int NodeID, const _eHueLightType LType,
 			//Already in the system
 
 			std::string sID = result[0][2];
-			bool bUsed = std::stoi(result[0][3]) != 0;
+			bool bUsed = stoi(result[0][3]) != 0;
 			std::string curName = result[0][4];
 
 			if (!bUsed)
@@ -683,7 +683,7 @@ void CPhilipsHue::InsertUpdateLamp(const int NodeID, const _eHueLightType LType,
 			}
 
 			//Update state
-			int nvalue = atoi(result[0][0].c_str());
+			int nvalue = stoi(result[0][0]);
 		}
 		else
 		{
@@ -861,7 +861,7 @@ bool CPhilipsHue::GetLights(const Json::Value& root)
 		Json::Value light = *iLight;
 		if (light.isObject())
 		{
-			int lID = atoi(iLight.key().asString().c_str());
+			int lID = stoi(iLight.key().asString());
 
 			_tHueLightState tlight;
 			_eHueLightType LType;
@@ -899,7 +899,7 @@ bool CPhilipsHue::GetGroups(const Json::Value& root)
 		Json::Value group = *iGroup;
 		if (group.isObject())
 		{
-			int gID = atoi(iGroup.key().asString().c_str());
+			int gID = stoi(iGroup.key().asString());
 
 			_tHueLightState tstate;
 			_eHueLightType LType;
@@ -1044,7 +1044,7 @@ bool CPhilipsHue::GetScenes(const Json::Value& root)
 				if (!result.empty())
 				{
 					//existing scene
-					sID = atoi(result[0][0].c_str());
+					sID = stoi(result[0][0]);
 				}
 				else
 				{
@@ -1056,7 +1056,7 @@ bool CPhilipsHue::GetScenes(const Json::Value& root)
 						Log(LOG_ERROR, "Problem adding new Scene!!");
 						return false;
 					}
-					sID = atoi(result[0][0].c_str());
+					sID = stoi(result[0][0]);
 				}
 				std::string Name = "Scene " + hscene.name;
 				_tHueLightState tstate;
@@ -1086,7 +1086,7 @@ bool CPhilipsHue::GetSensors(const Json::Value& root)
 		if (sensor.isObject())
 		{
 			bool bNewSensor = false;
-			int sID = atoi(iSensor.key().asString().c_str());
+			int sID = stoi(iSensor.key().asString());
 
 			CPHSensor current_sensor(sensor);
 			CPHSensor previous_sensor;
@@ -1239,7 +1239,7 @@ void CPhilipsHue::SetSwitchOptions(const int NodeID, const uint8_t Unitcode, con
 	result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%08X') AND (Unit == '%d')", m_HwdID, NodeID, Unitcode);
 	if (!result.empty())
 	{
-		int sIdx = std::stoi(result[0][0]);
+		int sIdx = stoi(result[0][0]);
 		m_sql.SetDeviceOptions(sIdx, options);
 	}
 }
@@ -1263,7 +1263,7 @@ namespace http {
 			if ((sipaddress.empty()) || (sport.empty()))
 				return;
 
-			std::string sresult = CPhilipsHue::RegisterUser(sipaddress, (unsigned short)atoi(sport.c_str()), susername);
+			std::string sresult = CPhilipsHue::RegisterUser(sipaddress, (unsigned short) stoi(sport), susername);
 			std::vector<std::string> strarray;
 			StringSplit(sresult, ";", strarray);
 			if (strarray.size() != 2)

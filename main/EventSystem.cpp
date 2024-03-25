@@ -242,15 +242,15 @@ void CEventSystem::LoadEvents()
 		for (auto &sd : result)
 		{
 			_tEventItem eitem;
-			eitem.ID = std::stoull(sd[0]);
+			eitem.ID = stoull(sd[0]);
 			eitem.Name = sd[1] + "_" + sd[5];
 			eitem.Interpreter = sd[6];
 			std::transform(sd[7].begin(), sd[7].end(), sd[7].begin(), ::tolower);
 			eitem.Type = sd[7];
 			eitem.Conditions = sd[2];
 			eitem.Actions = sd[3];
-			eitem.EventStatus = atoi(sd[4].c_str());
-			eitem.SequenceNo = atoi(sd[5].c_str());
+			eitem.EventStatus = stoi(sd[4]);
+			eitem.SequenceNo = stoi(sd[5]);
 			m_events.push_back(eitem);
 		}
 	}
@@ -274,12 +274,12 @@ void CEventSystem::LoadEvents()
 		for (auto &sd : result)
 		{
 			CEventSystem::_tEventItem eitem;
-			eitem.ID = std::stoull(sd[0]);
+			eitem.ID = stoull(sd[0]);
 			eitem.Name = sd[1];
 			eitem.Interpreter = sd[2];
 			std::transform(sd[3].begin(), sd[3].end(), sd[3].begin(), ::tolower);
 			eitem.Type = sd[3];
-			eitem.EventStatus = atoi(sd[4].c_str());
+			eitem.EventStatus = stoi(sd[4]);
 			eitem.Actions = sd[5];
 			eitem.SequenceNo = 0;
 			m_events.push_back(eitem);
@@ -410,10 +410,10 @@ void CEventSystem::UpdateJsonMap(_tDeviceStatus &item, const uint64_t ulDevID)
 					item.JsonMapString[index] = l_JsonValueString.assign(value);
 					break;
 				case JTYPE_FLOAT:
-					item.JsonMapFloat[index] = (float)atof(value.c_str());
+					item.JsonMapFloat[index] = stof(value);
 					break;
 				case JTYPE_INT:
-					item.JsonMapInt[index] = atoi(value.c_str());
+					item.JsonMapInt[index] = stoi(value);
 					break;
 				case JTYPE_BOOL:
 					if (value == "true")
@@ -458,12 +458,12 @@ void CEventSystem::GetCurrentStates()
 			std::string l_description;		l_description.reserve(200);
 			std::string l_deviceID;			l_deviceID.reserve(25);
 
-			sitem.hardwareID = atoi(sd[0].c_str());
-			sitem.ID = std::stoull(sd[1]);
+			sitem.hardwareID = stoi(sd[0]);
+			sitem.ID = stoull(sd[1]);
 			sitem.deviceName = l_deviceName.assign(sd[2]);
 
-			sitem.devType = atoi(sd[5].c_str());
-			sitem.subType = atoi(sd[6].c_str());
+			sitem.devType = (uint8_t) stoi(sd[5]);
+			sitem.subType = (uint8_t) stoi(sd[6]);
 
 			if ((sitem.devType == pTypeGeneral) && (sitem.subType == sTypeCounterIncremental))
 			{
@@ -472,39 +472,39 @@ void CEventSystem::GetCurrentStates()
 				std::vector<std::vector<std::string> > result2;
 
 				result2 = m_sql.safe_query("SELECT sValue FROM DeviceStatus WHERE (ID=%" PRIu64 ")", sitem.ID);
-				uint64_t total_max = std::stoull(result2[0][0]);
+				uint64_t total_max = stoull(result2[0][0]);
 
 				//get value of today
 				std::string szDate = TimeToString(nullptr, TF_Date);
 				result2 = m_sql.safe_query("SELECT MIN(Value) FROM Meter WHERE (DeviceRowID=%" PRIu64 " AND Date>='%q')", sitem.ID, szDate.c_str());
 				if (!result2.empty())
 				{
-					uint64_t total_min = std::stoull(result2[0][0]);
+					uint64_t total_min = stoull(result2[0][0]);
 					uint64_t total_real = total_max - total_min;
 
 					sd[4] = std::to_string(total_real); //sitem.sValue = l_sValue.assign(sd[4]);
 				}
 			}
 
-			sitem.nValue = atoi(sd[3].c_str());
+			sitem.nValue = stoi(sd[3]);
 			sitem.sValue = l_sValue.assign(sd[4]);
 
-			sitem.switchtype = atoi(sd[7].c_str());
+			sitem.switchtype = (uint8_t) stoi(sd[7]);
 			_eSwitchType switchtype = (_eSwitchType)sitem.switchtype;
 			std::map<std::string, std::string> options = m_sql.BuildDeviceOptions(sd[10]);
 			sitem.nValueWording = l_nValueWording.assign(nValueToWording(sitem.devType, sitem.subType, switchtype, sitem.nValue, sitem.sValue, options));
 			sitem.lastUpdate = l_lastUpdate.assign(sd[8]);
-			sitem.lastLevel = atoi(sd[9].c_str());
+			sitem.lastLevel = (uint8_t) stoi(sd[9]);
 			sitem.description = l_description.assign(sd[11]);
-			sitem.batteryLevel = atoi(sd[12].c_str());
-			sitem.signalLevel = atoi(sd[13].c_str());
-			sitem.unit = atoi(sd[14].c_str());
+			sitem.batteryLevel = stoi(sd[12]);
+			sitem.signalLevel = stoi(sd[13]);
+			sitem.unit = stoi(sd[14]);
 			sitem.deviceID = l_deviceID.assign(sd[15]);
-			sitem.protection = atoi(sd[16].c_str());
-			sitem.AddjValue = std::stof(sd[17]);
-			sitem.AddjMulti = std::stof(sd[18]);
-			sitem.AddjValue2 = std::stof(sd[19]);
-			sitem.AddjMulti2 = std::stof(sd[20]);
+			sitem.protection = stoi(sd[16]);
+			sitem.AddjValue = stof(sd[17]);
+			sitem.AddjMulti = stof(sd[18]);
+			sitem.AddjValue2 = stof(sd[19]);
+			sitem.AddjMulti2 = stof(sd[20]);
 
 			if (!m_sql.m_bDisableDzVentsSystem)
 			{
@@ -531,10 +531,10 @@ void CEventSystem::GetCurrentUserVariables()
 		for (const auto &sd : result)
 		{
 			_tUserVariable uvitem;
-			uvitem.ID = std::stoull(sd[0]);
+			uvitem.ID = stoull(sd[0]);
 			uvitem.variableName = sd[1];
 			uvitem.variableValue = sd[2];
-			uvitem.variableType = atoi(sd[3].c_str());
+			uvitem.variableType = stoi(sd[3]);
 			uvitem.lastUpdate = sd[4];
 			m_uservariables[uvitem.ID] = uvitem;
 		}
@@ -556,8 +556,8 @@ void CEventSystem::GetCurrentScenesGroups()
 			std::vector<std::vector<std::string> > result2;
 
 			_tScenesGroups sgitem;
-			sgitem.ID = std::stoull(sd[0]);
-			unsigned char nValue = atoi(sd[2].c_str());
+			sgitem.ID = stoull(sd[0]);
+			unsigned char nValue = stoi(sd[2]);
 
 			if (nValue == 0)
 				sgitem.scenesgroupValue = "Off";
@@ -566,16 +566,16 @@ void CEventSystem::GetCurrentScenesGroups()
 			else
 				sgitem.scenesgroupValue = "Mixed";
 			sgitem.scenesgroupName = sd[1];
-			sgitem.scenesgroupType = atoi(sd[3].c_str());
+			sgitem.scenesgroupType = stoi(sd[3]);
 			sgitem.lastUpdate = sd[4];
-			sgitem.protection = atoi(sd[5].c_str());
+			sgitem.protection = stoi(sd[5]);
 			sgitem.description = sd[6];
 			result2 = m_sql.safe_query("SELECT DISTINCT A.DeviceRowID FROM SceneDevices AS A, DeviceStatus AS B WHERE (A.SceneRowID == %" PRIu64 ") AND (A.DeviceRowID == B.ID)", sgitem.ID);
 			if (!result2.empty())
 			{
 				for (const auto &sd2 : result2)
 				{
-					sgitem.memberID.push_back(std::stoull(sd2[0]));
+					sgitem.memberID.push_back(stoull(sd2[0]));
 				}
 			}
 			m_scenesgroups[sgitem.ID] = sgitem;
@@ -656,7 +656,7 @@ void CEventSystem::GetCurrentMeasurementStates()
 		case pTypeTEMP:
 			if (!splitresults.empty())
 			{
-				temp = static_cast<float>(atof(splitresults[0].c_str()));
+				temp = stof(splitresults[0]);
 				isTemp = true;
 			}
 			break;
@@ -665,7 +665,7 @@ void CEventSystem::GetCurrentMeasurementStates()
 			{
 				if (!splitresults.empty())
 				{
-					temp = static_cast<float>(atof(splitresults[0].c_str()));
+					temp = stof(splitresults[0]);
 					isTemp = true;
 				}
 			}
@@ -673,7 +673,7 @@ void CEventSystem::GetCurrentMeasurementStates()
 			{
 				if (!splitresults.empty())
 				{
-					utilityval = static_cast<float>(atof(splitresults[0].c_str()));
+					utilityval = stof(splitresults[0]);
 					isUtility = true;
 				}
 			}
@@ -681,7 +681,7 @@ void CEventSystem::GetCurrentMeasurementStates()
 		case pTypeThermostat1:
 			if (!splitresults.empty())
 			{
-				temp = static_cast<float>(atof(splitresults[0].c_str()));
+				temp = stof(splitresults[0]);
 				isTemp = true;
 			}
 			break;
@@ -692,8 +692,8 @@ void CEventSystem::GetCurrentMeasurementStates()
 		case pTypeTEMP_HUM:
 			if (splitresults.size() > 1)
 			{
-				temp = static_cast<float>(atof(splitresults[0].c_str()));
-				humidity = ground(atof(splitresults[1].c_str()));
+				temp = stof(splitresults[0]);
+				humidity = ground(stof(splitresults[1]));
 				dewpoint = (float)CalculateDewPoint(temp, humidity);
 				isTemp = true;
 				isHum = true;
@@ -705,9 +705,9 @@ void CEventSystem::GetCurrentMeasurementStates()
 				_log.Log(LOG_ERROR, "EventSystem: TEMP_HUM_BARO missing values : ID=%" PRIu64 ", sValue=%s", sitem.ID, sitem.sValue.c_str());
 				continue;
 			}
-			temp = static_cast<float>(atof(splitresults[0].c_str()));
-			humidity = ground(atof(splitresults[1].c_str()));
-			barometer = static_cast<float>(atof(splitresults[3].c_str()));
+			temp = stof(splitresults[0]);
+			humidity = ground(stof(splitresults[1]));
+			barometer = stof(splitresults[3]);
 			dewpoint = (float)CalculateDewPoint(temp, humidity);
 			isTemp = true;
 			isHum = true;
@@ -717,34 +717,34 @@ void CEventSystem::GetCurrentMeasurementStates()
 		case pTypeTEMP_BARO:
 			if (splitresults.size() > 1)
 			{
-				temp = static_cast<float>(atof(splitresults[0].c_str()));
-				barometer = static_cast<float>(atof(splitresults[1].c_str()));
+				temp = stof(splitresults[0]);
+				barometer = stof(splitresults[1]);
 				isTemp = true;
 				isBaro = true;
 			}
 			break;
 		case pTypeBARO:
-			barometer = static_cast<float>(atof(splitresults[0].c_str()));
+			barometer = stof(splitresults[0]);
 			isBaro = true;
 			break;
 		case pTypeRadiator1:
 			if (sitem.subType == sTypeSmartwares)
 			{
-				utilityval = static_cast<float>(atof(sitem.sValue.c_str()));
+				utilityval = stof(sitem.sValue);
 				isUtility = true;
 			}
 			break;
 		case pTypeUV:
 			if (splitresults.size() == 2)
 			{
-				uv = static_cast<float>(atof(splitresults[0].c_str()));
+				uv = stof(splitresults[0]);
 				isUV = true;
 				weatherval = uv;
 				isWeather = true;
 
 				if (sitem.subType == sTypeUV3)
 				{
-					temp = static_cast<float>(atof(splitresults[1].c_str()));
+					temp = stof(splitresults[1]);
 					isTemp = true;
 				}
 			}
@@ -752,17 +752,17 @@ void CEventSystem::GetCurrentMeasurementStates()
 		case pTypeWIND:
 			if (splitresults.size() == 6)
 			{
-				winddir = static_cast<float>(atof(splitresults[0].c_str()));
+				winddir = stof(splitresults[0]);
 				isWindDir = true;
 
 				if (sitem.subType != sTypeWIND5)
 				{
-					int intSpeed = atoi(splitresults[2].c_str());
+					int intSpeed = stoi(splitresults[2]);
 					windspeed = float(intSpeed) * 0.1F; // m/s
 					isWindSpeed = true;
 				}
 
-				int intGust = atoi(splitresults[3].c_str());
+				int intGust = stoi(splitresults[3]);
 				windgust = float(intGust) * 0.1F; // m/s
 				isWindGust = true;
 				if ((windgust == 0) && (windspeed != 0))
@@ -777,8 +777,8 @@ void CEventSystem::GetCurrentMeasurementStates()
 				}
 				if ((sitem.subType == sTypeWIND4) || (sitem.subType == sTypeWINDNoTemp))
 				{
-					temp = static_cast<float>(atof(splitresults[4].c_str()));
-					//chill = static_cast<float>(atof(splitresults[5].c_str()));
+					temp = stof(splitresults[4]);
+					//chill = stof(splitresults[5]);
 					isTemp = true;
 				}
 			}
@@ -788,13 +788,13 @@ void CEventSystem::GetCurrentMeasurementStates()
 			{
 				if (!splitresults.empty())
 				{
-					temp = static_cast<float>(atof(splitresults[0].c_str()));
+					temp = stof(splitresults[0]);
 					isTemp = true;
 				}
 			}
 			else if ((sitem.subType == sTypeRFXSensorVolt) || (sitem.subType == sTypeRFXSensorAD))
 			{
-				utilityval = static_cast<float>(atof(sitem.sValue.c_str()));
+				utilityval = stof(sitem.sValue);
 				isUtility = true;
 			}
 			break;
@@ -806,37 +806,37 @@ void CEventSystem::GetCurrentMeasurementStates()
 			if (!splitresults.empty())
 			{
 				if (splitresults.size() == 2)
-					utilityval = static_cast<float>(atof(splitresults[1].c_str()));
+					utilityval = stof(splitresults[1]);
 				else
-					utilityval = static_cast<float>(atof(splitresults[0].c_str()));
+					utilityval = stof(splitresults[0]);
 				isUtility = true;
 			}
 			break;
 		case pTypePOWER:
 			if (!splitresults.empty())
 			{
-				utilityval = static_cast<float>(atof(splitresults[0].c_str()));
+				utilityval = stof(splitresults[0]);
 				isUtility = true;
 			}
 			break;
 		case pTypeUsage:
 			if (!splitresults.empty())
 			{
-				utilityval = static_cast<float>(atof(splitresults[0].c_str()));
+				utilityval = stof(splitresults[0]);
 				isUtility = true;
 			}
 			break;
 		case pTypeP1Power:
 			if (splitresults.size() == 6)
 			{
-				utilityval = static_cast<float>(atof(splitresults[4].c_str()));
+				utilityval = stof(splitresults[4]);
 				isUtility = true;
 			}
 			break;
 		case pTypeLux:
 			if (!splitresults.empty())
 			{
-				utilityval = static_cast<float>(atof(splitresults[0].c_str()));
+				utilityval = stof(splitresults[0]);
 				isUtility = true;
 			}
 			break;
@@ -846,14 +846,14 @@ void CEventSystem::GetCurrentMeasurementStates()
 			{
 				if ((sitem.subType == sTypeVisibility) || (sitem.subType == sTypeSolarRadiation))
 				{
-					utilityval = static_cast<float>(atof(splitresults[0].c_str()));
+					utilityval = stof(splitresults[0]);
 					isUtility = true;
 					weatherval = utilityval;
 					isWeather = true;
 				}
 				else if (sitem.subType == sTypeBaro)
 				{
-					barometer = static_cast<float>(atof(splitresults[0].c_str()));
+					barometer = stof(splitresults[0]);
 					isBaro = true;
 				}
 				else if ((sitem.subType == sTypeAlert)
@@ -868,7 +868,7 @@ void CEventSystem::GetCurrentMeasurementStates()
 					|| (sitem.subType == sTypeSoundLevel)
 					)
 				{
-					utilityval = static_cast<float>(atof(splitresults[0].c_str()));
+					utilityval = stof(splitresults[0]);
 					isUtility = true;
 				}
 			}
@@ -883,7 +883,7 @@ void CEventSystem::GetCurrentMeasurementStates()
 					std::vector<std::vector<std::string> > result2;
 
 					result2 = m_sql.safe_query("SELECT sValue FROM DeviceStatus WHERE (ID=%" PRIu64 ")", sitem.ID);
-					uint64_t total_max = std::stoull(result2[0][0]);
+					uint64_t total_max = stoull(result2[0][0]);
 
 					//get value of today
 					std::string szDate = TimeToString(nullptr, TF_Date);
@@ -891,7 +891,7 @@ void CEventSystem::GetCurrentMeasurementStates()
 						sitem.ID, szDate.c_str());
 					if (!result2.empty())
 					{
-						uint64_t total_min = std::stoull(result2[0][0]);
+						uint64_t total_min = stoull(result2[0][0]);
 						uint64_t total_real = total_max - total_min;
 
 						utilityval = float(total_real) / divider;
@@ -905,7 +905,7 @@ void CEventSystem::GetCurrentMeasurementStates()
 					float divider = m_sql.GetCounterDivider(int(metertype), int(sitem.devType), float(sitem.AddjValue2));
 
 					if (splitresults.size() > 1) {
-						float usage = std::stof(splitresults[1]);
+						float usage = stof(splitresults[1]);
 						if (usage < 0.0) {
 							usage = 0.0;
 						}
@@ -921,7 +921,7 @@ void CEventSystem::GetCurrentMeasurementStates()
 			if (splitresults.size() == 2)
 			{
 				rainmm = 0;
-				rainmmlasthour = static_cast<float>(atof(splitresults[0].c_str())) / 100.0F;
+				rainmmlasthour = stof(splitresults[0]) / 100.0F;
 				isRain = true;
 				weatherval = rainmmlasthour;
 				isWeather = true;
@@ -949,12 +949,12 @@ void CEventSystem::GetCurrentMeasurementStates()
 					std::vector<std::string> sd2 = result2[0];
 					if (sitem.subType == sTypeRAINWU || sitem.subType == sTypeRAINByRate)
 					{
-						total_real = atof(sd2[1].c_str());
+						total_real = stod(sd2[1]);
 					}
 					else
 					{
-						float total_min = static_cast<float>(atof(sd2[0].c_str()));
-						float total_max = static_cast<float>(atof(splitresults[1].c_str()));
+						float total_min = stof(sd2[0]);
+						float total_max = stof(splitresults[1]);
 						total_real = total_max - total_min;
 					}
 					rainmm = float(total_real);
@@ -976,8 +976,8 @@ void CEventSystem::GetCurrentMeasurementStates()
 				uint64_t total_min_gas, total_real_gas;
 				uint64_t gasactual;
 
-				total_min_gas = std::stoull(sd2[0]);
-				gasactual = std::stoull(sitem.sValue);
+				total_min_gas = stoull(sd2[0]);
+				gasactual = stoull(sitem.sValue);
 				total_real_gas = gasactual - total_min_gas;
 				utilityval = float(total_real_gas) / GasDivider;
 				isUtility = true;
@@ -1001,8 +1001,8 @@ void CEventSystem::GetCurrentMeasurementStates()
 
 					uint64_t total_min, total_max, total_real;
 
-					total_min = std::stoull(sd2[0]);
-					total_max = std::stoull(sd2[1]);
+					total_min = stoull(sd2[0]);
+					total_max = stoull(sd2[1]);
 					total_real = total_max - total_min;
 
 					utilityval = float(total_real) / divider;
@@ -1455,9 +1455,9 @@ void CEventSystem::ProcessDevice(
 
 	std::vector<std::string> sd = result[0];
 
-	_eSwitchType switchType = (_eSwitchType)std::stoi(sd[0]);
+	_eSwitchType switchType = (_eSwitchType) stoi(sd[0]);
 	std::string lastUpdate = sd[1];
-	uint8_t lastLevel = (uint8_t)std::stoi(sd[2]);
+	uint8_t lastLevel = (uint8_t) stoi(sd[2]);
 	std::string dev_options = sd[3];
 	std::string devname = sd[4];
 
@@ -1470,14 +1470,14 @@ void CEventSystem::ProcessDevice(
 		//special case for incremental counter, need to calculate the actual count value
 
 		//get value of today
-		uint64_t total_max = std::stoull(osValue);
+		uint64_t total_max = stoull(osValue);
 
 		std::string szDate = TimeToString(nullptr, TF_Date);
 		std::vector<std::vector<std::string> > result2;
 		result2 = m_sql.safe_query("SELECT MIN(Value) FROM Meter WHERE (DeviceRowID=%" PRIu64 " AND Date>='%q')", ulDevID, szDate.c_str());
 		if (!result2.empty())
 		{
-			uint64_t total_min = std::stoull(result2[0][0]);
+			uint64_t total_min = stoull(result2[0][0]);
 			uint64_t total_real = total_max - total_min;
 
 			osValue = std::to_string(total_real); //sitem.sValue = l_sValue.assign(dev_options);
@@ -1640,9 +1640,9 @@ void CEventSystem::EvaluateEvent(const std::vector<_tEventQueue> &items)
 			if (!result.empty())
 			{
 				std::vector<std::string> sd = result[0];
-				Plugins::CPlugin* pPlugin = (Plugins::CPlugin*)m_mainworker.GetHardware(atoi(sd[0].c_str()));
+				Plugins::CPlugin* pPlugin = (Plugins::CPlugin*)m_mainworker.GetHardware(stoi(sd[0]));
 				if (pPlugin)
-					pPlugin->MessagePlugin(new Plugins::onSecurityEventCallback(sd[2].c_str(), atoi(sd[3].c_str()), item.nValue, m_szSecStatus[item.nValue]));
+					pPlugin->MessagePlugin(new Plugins::onSecurityEventCallback(sd[2].c_str(), stoi(sd[3]), item.nValue, m_szSecStatus[item.nValue]));
 			}
 		}
 #endif
@@ -1695,16 +1695,15 @@ lua_State *CEventSystem::CreateBlocklyLuaState()
 	for (const auto &variable : m_uservariables)
 	{
 		_tUserVariable uvitem = variable.second;
-		if (uvitem.variableType == 0) {
-			//Integer
-			luaTable.AddInteger(uvitem.ID, atoi(uvitem.variableValue.c_str()));
+		if (uvitem.variableType == 0)
+		{ //Integer
+			luaTable.AddInteger(uvitem.ID, stoi(uvitem.variableValue));
 		}
-		else if (uvitem.variableType == 1) {
-			//Float
-			luaTable.AddNumber(uvitem.ID, atof(uvitem.variableValue.c_str()));
+		else if (uvitem.variableType == 1)
+		{ //Float
+			luaTable.AddNumber(uvitem.ID, stof(uvitem.variableValue));
 		}
-		else {
-			//String,Date,Time
+		else { //String,Date,Time
 			luaTable.AddString(uvitem.ID, uvitem.variableValue);
 		}
 	}
@@ -1948,7 +1947,7 @@ static inline int64_t GetIndexFromDevice(std::string devline)
 	if (fpos == std::string::npos)
 		return -1;
 	devline = devline.substr(0, fpos);
-	return atoll(devline.c_str());
+	return stoll(devline);
 }
 
 std::string CEventSystem::ProcessVariableArgument(const std::string &Argument)
@@ -2161,7 +2160,7 @@ bool CEventSystem::parseBlocklyActions(const _tEventItem &item)
 			break;
 		}
 
-		int deviceNo = atoi(deviceName.c_str());
+		int deviceNo = stoi(deviceName);
 		if (deviceNo)
 		{
 			boost::shared_lock<boost::shared_mutex> devicestatesMutexLock(m_devicestatesMutex);
@@ -2184,7 +2183,7 @@ bool CEventSystem::parseBlocklyActions(const _tEventItem &item)
 			{
 				sceneType = 2;
 			}
-			deviceNo = atoi(deviceName.substr(6).c_str());
+			deviceNo = stoi(deviceName.substr(6));
 			if (deviceNo)
 			{
 				if (ScheduleEvent(deviceNo, doWhat, true, item.Name, sceneType))
@@ -2211,14 +2210,14 @@ bool CEventSystem::parseBlocklyActions(const _tEventItem &item)
 				{
 					std::vector<std::string> sd = result[0];
 					std::string errorMessage;
-					if (!m_sql.UpdateUserVariable(variableNo, sd[0], (const _eUsrVariableType)atoi(sd[1].c_str()), doWhat, false, errorMessage))
+					if (!m_sql.UpdateUserVariable(variableNo, sd[0], (const _eUsrVariableType) stoi(sd[1]), doWhat, false, errorMessage))
 					{
 						_log.Log(LOG_ERROR, "EventSystem: Error updating variable %s: %s", sd[0].c_str(), errorMessage.c_str());
 					}
 				}
 			}
 			else
-				m_sql.AddTaskItem(_tTaskItem::SetVariable(parseResult.fAfterSec, (const uint64_t)atol(variableNo.c_str()), doWhat, false));
+				m_sql.AddTaskItem(_tTaskItem::SetVariable(parseResult.fAfterSec, (const uint64_t) stoull(variableNo), doWhat, false));
 
 			actionsDone = true;
 			continue;
@@ -2232,16 +2231,16 @@ bool CEventSystem::parseBlocklyActions(const _tEventItem &item)
 			StripQuotes(parseResult.sCommand);
 
 			if (parseResult.fAfterSec < (1. / timer_resolution_hz / 2))
-				m_mainworker.UpdateDevice(std::stoi(variableName), 0, parseResult.sCommand, "EventSystem/" + item.Name,
+				m_mainworker.UpdateDevice(stoi(variableName), 0, parseResult.sCommand, "EventSystem/" + item.Name,
 					12, 255, false);
 			else
-				m_sql.AddTaskItem(_tTaskItem::UpdateDevice(parseResult.fAfterSec, std::stoull(variableName), 0, parseResult.sCommand, false, false, item.Name));
+				m_sql.AddTaskItem(_tTaskItem::UpdateDevice(parseResult.fAfterSec, stoull(variableName), 0, parseResult.sCommand, false, false, item.Name));
 
 			actionsDone = true;
 		}
 		else if (deviceName.find("SendCamera:") == 0)
 		{
-			if (!atoi(deviceName.substr(11).c_str()))
+			if (!stoi(deviceName.substr(11)))
 				continue;
 			ScheduleEvent(deviceName, doWhat, item.Name);
 			actionsDone = true;
@@ -2249,7 +2248,7 @@ bool CEventSystem::parseBlocklyActions(const _tEventItem &item)
 		}
 		else if (deviceName.find("SetSetpoint:") == 0)
 		{
-			int idx = atoi(deviceName.substr(12).c_str());
+			int idx = stoi(deviceName.substr(12));
 			std::string temp, mode, until;
 			std::vector<std::string> aParam;
 			StringSplit(doWhat, "#", aParam);
@@ -2399,13 +2398,13 @@ bool CEventSystem::parseBlocklyActions(const _tEventItem &item)
 				sound = aParam[3];
 				subsystem = aParam[4];
 			}
-			m_sql.AddTaskItem(_tTaskItem::SendNotification(0, subject, body, std::string(""), atoi(priority.c_str()), sound, subsystem));
+			m_sql.AddTaskItem(_tTaskItem::SendNotification(0, subject, body, std::string(""), stoi(priority), sound, subsystem));
 			actionsDone = true;
 			continue;
 		}
 		else if (deviceName.find("CustomCommand:") == 0)
 		{
-			int idx = atoi(deviceName.substr(14).c_str());
+			int idx = stoi(deviceName.substr(14));
 			_tActionParseResults parseResult;
 			parseResult.fAfterSec = 0;
 			ParseActionString(doWhat, parseResult);
@@ -2491,19 +2490,19 @@ void CEventSystem::ParseActionString(const std::string &oAction_, _tActionParseR
 				oResults_.sCommand.append(sToken);
 				break;
 			case 1:
-				oResults_.fForSec = 60.F * static_cast<float>(atof(sToken.c_str()));
+				oResults_.fForSec = 60.0F * stof(sToken);
 				break;
 			case 2:
-				oResults_.fAfterSec = 1.F * static_cast<float>(atof(sToken.c_str()));
+				oResults_.fAfterSec = 1.0F * stof(sToken);
 				break;
 			case 3:
-				oResults_.fRandomSec = 60.F * static_cast<float>(atof(sToken.c_str()));
+				oResults_.fRandomSec = 60.0F * stof(sToken);
 				break;
 			case 4:
-				oResults_.iRepeat = atoi(sToken.c_str());
+				oResults_.iRepeat = stoi(sToken);
 				break;
 			case 5:
-				oResults_.fRepeatSec = 1.F * static_cast<float>(atof(sToken.c_str()));
+				oResults_.fRepeatSec = 1.0F * stof(sToken);
 				break;
 			}
 		}
@@ -2544,14 +2543,14 @@ bool CEventSystem::PythonScheduleEvent(const std::string &ID, const std::string 
 
 		doWhat = ProcessVariableArgument(parseResult.sCommand);
 
-		uint64_t idx = atol(sd[0].c_str());
+		uint64_t idx = stoull(sd[0]);
 		m_sql.AddTaskItem(_tTaskItem::SetVariable(parseResult.fAfterSec, idx, doWhat, false));
 
 		return true;
 	}
 	if (ID.find("SetSetpoint:") == 0)
 	{
-		int idx = atoi(ID.substr(12).c_str());
+		int idx = stoi(ID.substr(12));
 		std::string doWhat = std::string(Action);
 		std::string temp, mode, until;
 		std::vector<std::string> aParam;
@@ -2576,7 +2575,7 @@ bool CEventSystem::PythonScheduleEvent(const std::string &ID, const std::string 
 	}
 	if (ID.find("CustomCommand:") == 0)
 	{
-		int idx = atoi(ID.substr(14).c_str());
+		int idx = stoi(ID.substr(14));
 		std::string doWhat = std::string(Action);
 		_tActionParseResults parseResult;
 		parseResult.fAfterSec = 0;
@@ -2898,16 +2897,14 @@ void CEventSystem::EvaluateLuaClassic(lua_State *lua_state, const _tEventQueue &
 	for (const auto &uservar : m_uservariables)
 	{
 		_tUserVariable uvitem = uservar.second;
-		if (uvitem.variableType == 0) {
-			//Integer
-			luaTable.AddInteger(uvitem.variableName, atoi(uvitem.variableValue.c_str()));
+		if (uvitem.variableType == 0)
+		{ //Integer
+			luaTable.AddInteger(uvitem.variableName, stoi(uvitem.variableValue));
 		}
-		else if (uvitem.variableType == 1) {
-			//Float
-			luaTable.AddNumber(uvitem.variableName, atof(uvitem.variableValue.c_str()));
-		}
-		else {
-			//String,Date,Time
+		else if (uvitem.variableType == 1)
+		{ //Float
+			luaTable.AddNumber(uvitem.variableName, stof(uvitem.variableValue));
+		} else { //String,Date,Time
 			luaTable.AddString(uvitem.variableName, uvitem.variableValue);
 		}
 	}
@@ -3236,7 +3233,7 @@ bool CEventSystem::processLuaCommand(lua_State *lua_state, const std::string &fi
 			subsystem = aParam[5];
 		}
 
-		m_sql.AddTaskItem(_tTaskItem::SendNotification(0, subject, body, extraData, atoi(priority.c_str()), sound, subsystem));
+		m_sql.AddTaskItem(_tTaskItem::SendNotification(0, subject, body, extraData, stoi(priority), sound, subsystem));
 		scriptTrue = true;
 	}
 	else if (lCommand == "SendEmail") {
@@ -3310,13 +3307,13 @@ bool CEventSystem::processLuaCommand(lua_State *lua_state, const std::string &fi
 		}
 		int nValue = 0;
 		std::string sValue;
-		int idx = std::stoi(strarray[0]);
+		int idx = stoi(strarray[0]);
 		if (strarray.size() > 1 && !strarray[1].empty())
-			nValue = atoi(strarray[1].c_str());
+			nValue = stoi(strarray[1]);
 		if (strarray.size() > 2 && !strarray[2].empty())
 			sValue = strarray[2];
 		//if (strarray.size() > 3 && !strarray[3].empty())
-			//Protected = atoi(strarray[3].c_str()); //GizMoCuz: this should not be able to be changed via events!
+			//Protected = stoi(strarray[3]); //GizMoCuz: this should not be able to be changed via events!
 
 		m_mainworker.UpdateDevice(idx, nValue, sValue, "EventSystem/" + filename, 12, 255, false);
 		scriptTrue = true;
@@ -3341,14 +3338,14 @@ bool CEventSystem::processLuaCommand(lua_State *lua_state, const std::string &fi
 			if (parseResult.fAfterSec < (1. / timer_resolution_hz / 2))
 			{
 				std::string errorMessage;
-				if (!m_sql.UpdateUserVariable(sd[0], variableName, (const _eUsrVariableType)atoi(sd[1].c_str()), variableValue, false, errorMessage))
+				if (!m_sql.UpdateUserVariable(sd[0], variableName, (const _eUsrVariableType) stoi(sd[1]), variableValue, false, errorMessage))
 				{
 					_log.Log(LOG_ERROR, "EventSystem: Error updating variable %s: %s", variableName.c_str(), errorMessage.c_str());
 				}
 			}
 			else
 			{
-				uint64_t idx = std::stoull(sd[0]);
+				uint64_t idx = stoull(sd[0]);
 				m_sql.AddTaskItem(_tTaskItem::SetVariable(parseResult.fAfterSec, idx, variableValue, false));
 			}
 			scriptTrue = true;
@@ -3368,7 +3365,7 @@ bool CEventSystem::processLuaCommand(lua_State *lua_state, const std::string &fi
 		case 2:
 			mode = aParam[1];
 		case 1:
-			idx = atoi(SetPointIdx.c_str());
+			idx = stoi(SetPointIdx);
 			temp = aParam[0];
 			m_sql.AddTaskItem(_tTaskItem::SetSetPoint(0.5F, idx, temp, mode, until));
 			break;
@@ -3381,7 +3378,7 @@ bool CEventSystem::processLuaCommand(lua_State *lua_state, const std::string &fi
 	}
 	else if (lCommand.find("CustomCommand:") == 0)
 	{
-		int idx = atoi(lCommand.substr(14).c_str());
+		int idx = stoi(lCommand.substr(14));
 		std::string luaString = lua_tostring(lua_state, -1);
 		_tActionParseResults parseResult;
 		parseResult.fAfterSec = 0;
@@ -3412,7 +3409,7 @@ bool CEventSystem::CustomCommand(const uint64_t idx, const std::string &sCommand
 	if (result.size() != 1)
 		return false;
 
-	int HardwareID = atoi(result[0][0].c_str());
+	int HardwareID = stoi(result[0][0]);
 	CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(HardwareID);
 	if (!pHardware)
 		return false;
@@ -3449,12 +3446,12 @@ void CEventSystem::WriteToLog(const std::string &devNameNoQuotes, const std::str
 	}
 	else if (devNameNoQuotes == "WriteToLogUserVariable")
 	{
-		_log.Log(LOG_STATUS, "%s", m_uservariables[atoi(doWhat.c_str())].variableValue.c_str());
+		_log.Log(LOG_STATUS, "%s", m_uservariables[stoi(doWhat)].variableValue.c_str());
 	}
 	else if (devNameNoQuotes == "WriteToLogDeviceVariable")
 	{
 		boost::shared_lock<boost::shared_mutex> devicestatesMutexLock(m_devicestatesMutex);
-		int devIdx = atoi(doWhat.c_str());
+		int devIdx = stoi(doWhat);
 		if (m_devicestates[devIdx].devType == pTypeHUM)
 		{
 			//nValue devices
@@ -3468,7 +3465,7 @@ void CEventSystem::WriteToLog(const std::string &devNameNoQuotes, const std::str
 	else if (devNameNoQuotes == "WriteToLogSwitch")
 	{
 		boost::shared_lock<boost::shared_mutex> devicestatesMutexLock(m_devicestatesMutex);
-		_log.Log(LOG_STATUS, "%s", m_devicestates[atoi(doWhat.c_str())].nValueWording.c_str());
+		_log.Log(LOG_STATUS, "%s", m_devicestates[stoi(doWhat)].nValueWording.c_str());
 	}
 }
 
@@ -3520,7 +3517,7 @@ bool CEventSystem::ScheduleEvent(std::string deviceName, const std::string &Acti
 	if (!result.empty())
 	{
 		std::vector<std::string> sd = result[0];
-		int idx = atoi(sd[0].c_str());
+		int idx = stoi(sd[0]);
 		return (ScheduleEvent(idx, Action, isScene, eventName, sceneType));
 	}
 
@@ -3546,7 +3543,7 @@ bool CEventSystem::ScheduleEvent(int deviceID, const std::string &Action, bool i
 			_log.Log(LOG_ERROR, "EventSystem: Missing command arguments! '%s'", oParseResults.sCommand.c_str());
 			return false;
 		}
-		level = calculateDimLevel(deviceID, atoi(oParseResults.sCommand.substr(10).c_str()));
+		level = calculateDimLevel(deviceID, stoi(oParseResults.sCommand.substr(10)));
 		oParseResults.sCommand = oParseResults.sCommand.substr(0, 9);
 	}
 	else if (oParseResults.sCommand.substr(0, 10) == "Set Volume") {
@@ -3555,7 +3552,7 @@ bool CEventSystem::ScheduleEvent(int deviceID, const std::string &Action, bool i
 			_log.Log(LOG_ERROR, "EventSystem: Missing command arguments! '%s'", oParseResults.sCommand.c_str());
 			return false;
 		}
-		level = atoi(oParseResults.sCommand.substr(11).c_str());
+		level = stoi(oParseResults.sCommand.substr(11));
 		oParseResults.sCommand = oParseResults.sCommand.substr(0, 10);
 	}
 	else if (oParseResults.sCommand.substr(0, 13) == "Play Playlist") {
@@ -3576,7 +3573,7 @@ bool CEventSystem::ScheduleEvent(int deviceID, const std::string &Action, bool i
 			if (iLastSpace != std::string::npos)
 			{
 				sPlayList = sParams.substr(0, iLastSpace);
-				level = atoi(sParams.substr(iLastSpace).c_str());
+				level = stoi(sParams.substr(iLastSpace));
 			}
 			if (!pHardware->SetPlaylist(deviceID, sPlayList))
 			{
@@ -3611,7 +3608,7 @@ bool CEventSystem::ScheduleEvent(int deviceID, const std::string &Action, bool i
 			//CKodi			*pHardware = dynamic_cast<CKodi*>(pBaseHardware);
 			if (sParams.length() > 0)
 			{
-				level = atoi(sParams.c_str());
+				level = stoi(sParams);
 			}
 		}
 		oParseResults.sCommand = oParseResults.sCommand.substr(0, 14);
@@ -3654,8 +3651,8 @@ bool CEventSystem::ScheduleEvent(int deviceID, const std::string &Action, bool i
 		}
 
 		std::vector<std::string> sd = result[0];
-		_eSwitchType switchtype = (_eSwitchType)atoi(sd[0].c_str());
-		int iOnDelay = atoi(sd[1].c_str());
+		_eSwitchType switchtype = (_eSwitchType) stoi(sd[0]);
+		int iOnDelay = stoi(sd[1]);
 
 		bool bIsOn = IsLightSwitchOn(oParseResults.sCommand);
 		if (switchtype == STYPE_Selector) {
@@ -3997,9 +3994,9 @@ int CEventSystem::calculateDimLevel(int deviceID, int percentageLevel)
 	{
 		std::vector<std::string> sd = result[0];
 
-		unsigned char dType = atoi(sd[0].c_str());
-		unsigned char dSubType = atoi(sd[1].c_str());
-		_eSwitchType switchtype = (_eSwitchType)atoi(sd[2].c_str());
+		unsigned char dType = (unsigned char) stoi(sd[0]);
+		unsigned char dSubType = (unsigned char) stoi(sd[1]);
+		_eSwitchType switchtype = (_eSwitchType) stoi(sd[2]);
 		std::string lstatus;
 		int llevel = 0;
 		bool bHaveDimmer = false;
@@ -4160,7 +4157,7 @@ namespace http {
 						std::string Name = sd[1];
 						std::string XMLStatement = sd[2];
 						std::string eventStatus = sd[3];
-						//int Status=atoi(sd[3].c_str());
+						//int Status = stoi(sd[3]);
 
 						root["result"][ii]["id"] = ID;
 						root["result"][ii]["name"] = Name;
@@ -4183,7 +4180,7 @@ namespace http {
 				if (eventid.empty())
 					return;
 
-				m_sql.safe_query("UPDATE EventMaster SET Status ='%d' WHERE (ID == '%q')", atoi(eventactive.c_str()), eventid.c_str());
+				m_sql.safe_query("UPDATE EventMaster SET Status ='%d' WHERE (ID == '%q')", stoi(eventactive), eventid.c_str());
 				m_mainworker.m_eventsystem.LoadEvents();
 				root["status"] = "OK";
 
@@ -4220,7 +4217,7 @@ namespace http {
 				if ((interpreter == "Blockly") && (eventlogic.empty()))
 					return;
 
-				int eventStatus = atoi(eventactive.c_str());
+				int eventStatus = stoi(eventactive);
 
 				bool parsingSuccessful = eventxml.length() > 0;
 				Json::Value jsonRoot;

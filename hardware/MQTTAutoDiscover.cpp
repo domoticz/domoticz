@@ -288,7 +288,7 @@ std::string MQTTAutoDiscover::GetValueFromTemplate(Json::Value root, std::string
 						return ""; //no index?
 
 					szKey = szKey.substr(0, szKey.find('['));
-					int iIndex = std::stoi(szIndex);
+					int iIndex = stoi(szIndex);
 					if (root[szKey].empty())
 						return ""; //key not found!
 					if (static_cast<int>(root[szKey].size()) <= iIndex)
@@ -335,7 +335,7 @@ std::string MQTTAutoDiscover::GetValueFromTemplate(Json::Value root, std::string
 						&& (root.isArray()))
 					)
 				{
-					int iNumber = std::stoi(szKey);
+					int iNumber = stoi(szKey);
 					size_t object_size = root.size();
 					if (iNumber < (int)object_size)
 					{
@@ -478,7 +478,7 @@ bool MQTTAutoDiscover::SetValueWithTemplate(Json::Value& root, std::string szVal
 				szValue = value_options_[szValue];
 			}
 			if (is_number(szValue))
-				root[szKey] = atoi(szValue.c_str());
+				root[szKey] = stoi(szValue);
 			else
 				root[szKey] = szValue;
 			return true;
@@ -931,12 +931,12 @@ void MQTTAutoDiscover::on_auto_discovery_message(const struct mosquitto_message*
 			pSensor->brightness_state_topic = root["bri_stat_t"].asString();
 		if (!root["brightness_scale"].empty())
 		{
-			pSensor->brightness_scale = static_cast<float>(atof(root["brightness_scale"].asString().c_str()));
+			pSensor->brightness_scale = stof(root["brightness_scale"].asString());
 			pSensor->bHave_brightness_scale = true;
 		}
 		else if (!root["bri_scl"].empty())
 		{
-			pSensor->brightness_scale = static_cast<float>(atof(root["bri_scl"].asString().c_str()));
+			pSensor->brightness_scale = stof(root["bri_scl"].asString());
 			pSensor->bHave_brightness_scale = true;
 		}
 		if (!root["brightness_value_template"].empty())
@@ -1257,11 +1257,11 @@ void MQTTAutoDiscover::on_auto_discovery_message(const struct mosquitto_message*
 			pSensor->temp_min = 44.6;
 		}
 		if (!root["min_temp"].empty())
-			pSensor->temp_min = atof(root["min_temp"].asString().c_str());
+			pSensor->temp_min = stod(root["min_temp"].asString());
 		if (!root["max_temp"].empty())
-			pSensor->temp_max = atof(root["max_temp"].asString().c_str());
+			pSensor->temp_max = stod(root["max_temp"].asString());
 		if (!root["temp_step"].empty())
-			pSensor->temp_step = atof(root["temp_step"].asString().c_str());
+			pSensor->temp_step = stod(root["temp_step"].asString());
 		if (!root["current_temperature_topic"].empty())
 			pSensor->current_temperature_topic = root["current_temperature_topic"].asString();
 		if (!root["curr_temp_t"].empty())
@@ -1336,14 +1336,14 @@ void MQTTAutoDiscover::on_auto_discovery_message(const struct mosquitto_message*
 
 		//number (some configs use strings instead of numbers)
 		if (!root["min"].empty())
-			pSensor->number_min = root["min"].isDouble() ? root["min"].asDouble() : atof(root["min"].asString().c_str());
+			pSensor->number_min = root["min"].isDouble() ? root["min"].asDouble() : stod(root["min"].asString());
 		if (!root["max"].empty())
-			pSensor->number_max = root["max"].isDouble() ? root["max"].asDouble() : atof(root["max"].asString().c_str());
+			pSensor->number_max = root["max"].isDouble() ? root["max"].asDouble() : stod(root["max"].asString());
 		if (!root["step"].empty())
-			pSensor->number_step = root["step"].isDouble() ? root["step"].asDouble() : atof(root["step"].asString().c_str());
+			pSensor->number_step = root["step"].isDouble() ? root["step"].asDouble() : stod(root["step"].asString());
 
 		if (!root["qos"].empty())
-			pSensor->qos = atoi(root["qos"].asString().c_str());
+			pSensor->qos = stoi(root["qos"].asString());
 
 		for (const auto ittMember : root.getMemberNames())
 		{
@@ -1548,7 +1548,7 @@ void MQTTAutoDiscover::handle_auto_discovery_sensor_message(const struct mosquit
 							szValue = GetValueFromTemplate(root, pSensor->value_template);
 							if (!szValue.empty())
 							{
-								pSensor->BatteryLevel = std::stoi(szValue);
+								pSensor->BatteryLevel = stoi(szValue);
 							}
 						}
 					}
@@ -1568,7 +1568,7 @@ void MQTTAutoDiscover::handle_auto_discovery_sensor_message(const struct mosquit
 					}
 					if (pSensor->value_template.find("RSSI") != std::string::npos)
 					{
-						pSensor->SignalLevel = (int)round((10.0F / 255.0F) * atof(szValue.c_str()));
+						pSensor->SignalLevel = (int)round((10.0F / 255.0F) * stof(szValue));
 						ApplySignalLevelDevice(pSensor);
 					}
 				}
@@ -1694,7 +1694,7 @@ bool MQTTAutoDiscover::GuessSensorTypeValue(_tMQTTASensor* pSensor, uint8_t& dev
 	{
 		devType = pTypeGeneral;
 		subType = sTypeBaro;
-		float pressure = static_cast<float>(atof(pSensor->last_value.c_str()));
+		float pressure = stof(pSensor->last_value);
 		if (szUnit == "kpa")
 			pressure *= 10.0F;
 		int nforecast = bmpbaroforecast_cloudy;
@@ -1710,32 +1710,32 @@ bool MQTTAutoDiscover::GuessSensorTypeValue(_tMQTTASensor* pSensor, uint8_t& dev
 	{
 		devType = pTypeAirQuality;
 		subType = sTypeVoc;
-		nValue = atoi(pSensor->last_value.c_str());
+		nValue = stoi(pSensor->last_value);
 	}
 	else if (szUnit == "v")
 	{
 		devType = pTypeGeneral;
 		subType = sTypeVoltage;
-		sValue = std_format("%.3f", static_cast<float>(atof(pSensor->last_value.c_str())));
+		sValue = std_format("%.3f", stof(pSensor->last_value));
 	}
 	else if (szUnit == "mv")
 	{
 		devType = pTypeGeneral;
 		subType = sTypeVoltage;
-		sValue = std_format("%.3f", static_cast<float>(atof(pSensor->last_value.c_str())) / 1000.0F);
+		sValue = std_format("%.3f", stof(pSensor->last_value) / 1000.0F);
 	}
 	else if (szUnit == "a")
 	{
 		devType = pTypeGeneral;
 		subType = sTypeCurrent;
-		sValue = std_format("%.3f", static_cast<float>(atof(pSensor->last_value.c_str())));
+		sValue = std_format("%.3f", stof(pSensor->last_value));
 	}
 	else if (szUnit == "w")
 	{
 		devType = pTypeUsage;
 		subType = sTypeElectric;
 
-		float fUsage = static_cast<float>(atof(pSensor->last_value.c_str()));
+		float fUsage = stof(pSensor->last_value);
 
 		if (fUsage < -1000000)
 		{
@@ -1746,17 +1746,17 @@ bool MQTTAutoDiscover::GuessSensorTypeValue(_tMQTTASensor* pSensor, uint8_t& dev
 		float fkWh = 0.0F;
 		_tMQTTASensor* pkWhSensor = get_auto_discovery_sensor_unit(pSensor, "kwh");
 		if (pkWhSensor)
-			fkWh = static_cast<float>(atof(pkWhSensor->last_value.c_str())) * 1000.0F;
+			fkWh = stof(pkWhSensor->last_value) * 1000.0F;
 		else
 		{
 			pkWhSensor = get_auto_discovery_sensor_unit(pSensor, "wh");
 			if (pkWhSensor)
-				fkWh = static_cast<float>(atof(pkWhSensor->last_value.c_str()));
+				fkWh = stof(pkWhSensor->last_value);
 			else
 			{
 				pkWhSensor = get_auto_discovery_sensor_unit(pSensor, "wm");
 				if (pkWhSensor)
-					fkWh = static_cast<float>(atof(pkWhSensor->last_value.c_str())) / 60.0F;
+					fkWh = stof(pkWhSensor->last_value) / 60.0F;
 			}
 		}
 		if (pkWhSensor)
@@ -1789,7 +1789,7 @@ bool MQTTAutoDiscover::GuessSensorTypeValue(_tMQTTASensor* pSensor, uint8_t& dev
 		else if (szUnit == "wm")
 			multiply = 1.0F / 60.0F;
 
-		float fkWh = static_cast<float>(atof(pSensor->last_value.c_str())) * multiply;
+		float fkWh = stof(pSensor->last_value) * multiply;
 
 		if (fkWh < -1000000)
 		{
@@ -1809,7 +1809,7 @@ bool MQTTAutoDiscover::GuessSensorTypeValue(_tMQTTASensor* pSensor, uint8_t& dev
 				StringSplit(result[0][0], ";", strarray);
 				if (strarray.size() == 2)
 				{
-					fkWh = static_cast<float>(atof(strarray[1].c_str()));
+					fkWh = stof(strarray[1]);
 				}
 			}
 		}
@@ -1817,7 +1817,7 @@ bool MQTTAutoDiscover::GuessSensorTypeValue(_tMQTTASensor* pSensor, uint8_t& dev
 		_tMQTTASensor* pWattSensor = get_auto_discovery_sensor_WATT_unit(pSensor);
 		if (pWattSensor)
 		{
-			fUsage = static_cast<float>(atof(pWattSensor->last_value.c_str()));
+			fUsage = stof(pWattSensor->last_value);
 		}
 		sValue = std_format("%.3f;%.3f", fUsage, fkWh);
 	}
@@ -1829,7 +1829,7 @@ bool MQTTAutoDiscover::GuessSensorTypeValue(_tMQTTASensor* pSensor, uint8_t& dev
 	{
 		devType = pTypeLux;
 		subType = sTypeLux;
-		sValue = std_format("%.0f", static_cast<float>(atof(pSensor->last_value.c_str())));
+		sValue = std_format("%.0f", stof(pSensor->last_value));
 	}
 	/*
 	*	//our distance sensor is in meters or inches
@@ -1837,14 +1837,14 @@ bool MQTTAutoDiscover::GuessSensorTypeValue(_tMQTTASensor* pSensor, uint8_t& dev
 		{
 			devType = pTypeGeneral;
 			subType = sTypeDistance;
-			sValue = std_format("%.1f", static_cast<float>(atof(pSensor->last_value.c_str())) * 100.0F);
+			sValue = std_format("%.1f", stof(pSensor->last_value) * 100.0F);
 		}
 	*/
 	else if (szUnit == "cm")
 	{
 		devType = pTypeGeneral;
 		subType = sTypeDistance;
-		sValue = std_format("%.1f", static_cast<float>(atof(pSensor->last_value.c_str())));
+		sValue = std_format("%.1f", stof(pSensor->last_value));
 	}
 
 	else if (
@@ -1865,7 +1865,7 @@ bool MQTTAutoDiscover::GuessSensorTypeValue(_tMQTTASensor* pSensor, uint8_t& dev
 		{
 			devType = pTypeRFXMeter;
 			subType = sTypeRFXMeterCount;
-			unsigned long counter = (unsigned long)(atof(pSensor->last_value.c_str()) * 1000.0F);
+			unsigned long counter = (unsigned long)(stof(pSensor->last_value) * 1000.0F);
 			sValue = std_format("%lu", counter);
 		}
 	}
@@ -1874,7 +1874,7 @@ bool MQTTAutoDiscover::GuessSensorTypeValue(_tMQTTASensor* pSensor, uint8_t& dev
 		//our sensor is in Liters / minute
 		devType = pTypeGeneral;
 		subType = sTypeWaterflow;
-		sValue = std_format("%.2f", static_cast<float>(atof(pSensor->last_value.c_str())) / 60.0F);
+		sValue = std_format("%.2f", stof(pSensor->last_value) / 60.0F);
 	}
 	else if (
 		(szUnit == "db")
@@ -1883,7 +1883,7 @@ bool MQTTAutoDiscover::GuessSensorTypeValue(_tMQTTASensor* pSensor, uint8_t& dev
 	{
 		devType = pTypeGeneral;
 		subType = sTypeSoundLevel;
-		sValue = std_format("%d", atoi(pSensor->last_value.c_str()));
+		sValue = std_format("%d", stoi(pSensor->last_value));
 	}
 	else if (szUnit == "text")
 	{
@@ -1919,7 +1919,7 @@ bool MQTTAutoDiscover::GuessSensorTypeValue(_tMQTTASensor* pSensor, uint8_t& dev
 		{
 			devType = pTypeRAIN;
 			subType = sTypeRAIN3;
-			float TotalRain = static_cast<float>(atof(pSensor->last_value.c_str()));
+			float TotalRain = stof(pSensor->last_value);
 			int Rainrate = 0;
 
 			_tMQTTASensor* pRainRateSensor = get_auto_discovery_sensor_unit(pSensor, "mm/h");
@@ -1927,7 +1927,7 @@ bool MQTTAutoDiscover::GuessSensorTypeValue(_tMQTTASensor* pSensor, uint8_t& dev
 			{
 				if (pRainRateSensor->last_received != 0)
 				{
-					Rainrate = atoi(pRainRateSensor->last_value.c_str());
+					Rainrate = stoi(pRainRateSensor->last_value);
 				}
 			}
 
@@ -1937,7 +1937,7 @@ bool MQTTAutoDiscover::GuessSensorTypeValue(_tMQTTASensor* pSensor, uint8_t& dev
 		{
 			devType = pTypeP1Gas;
 			subType = sTypeP1Gas;
-			float TotalGas = static_cast<float>(atof(pSensor->last_value.c_str()));
+			float TotalGas = stof(pSensor->last_value);
 			sValue = std_format("%.0f", TotalGas * 1000.0F);
 		}
 		else if (
@@ -1968,8 +1968,8 @@ bool MQTTAutoDiscover::GuessSensorTypeValue(_tMQTTASensor* pSensor, uint8_t& dev
 		{
 			if (pRainSensor->last_received != 0)
 			{
-				float TotalRain = static_cast<float>(atof(pRainSensor->last_value.c_str()));
-				int Rainrate = atoi(pSensor->last_value.c_str());
+				float TotalRain = stof(pRainSensor->last_value);
+				int Rainrate = stoi(pSensor->last_value);
 
 				pRainSensor->sValue = std_format("%d;%.1f", Rainrate, TotalRain * 1000.0F);
 				mosquitto_message xmessage;
@@ -2001,7 +2001,7 @@ bool MQTTAutoDiscover::GuessSensorTypeValue(_tMQTTASensor* pSensor, uint8_t& dev
 		devType = pTypeTEMP;
 		subType = sTypeTEMP1;
 
-		double temp = static_cast<float>(atof(pSensor->last_value.c_str()));
+		double temp = stod(pSensor->last_value);
 
 		if (
 			(szUnit == "°f")
@@ -2029,7 +2029,7 @@ bool MQTTAutoDiscover::GuessSensorTypeValue(_tMQTTASensor* pSensor, uint8_t& dev
 		{
 			devType = pTypeHUM;
 			subType = sTypeHUM2;
-			nValue = atoi(pSensor->last_value.c_str());
+			nValue = stoi(pSensor->last_value);
 			sValue = std_format("%d", Get_Humidity_Level(pSensor->nValue));
 		}
 		else
@@ -2230,7 +2230,7 @@ void MQTTAutoDiscover::handle_auto_discovery_battery(_tMQTTASensor* pSensor, con
 	if (!is_number(pSensor->last_value))
 		return;
 
-	int iLevel = atoi(pSensor->last_value.c_str());
+	int iLevel = stoi(pSensor->last_value);
 
 	for (auto& itt : m_discovered_sensors)
 	{
@@ -2252,7 +2252,7 @@ void MQTTAutoDiscover::handle_auto_discovery_number(_tMQTTASensor* pSensor, cons
 		return;
 
 	return;
-	int iValue = atoi(pSensor->last_value.c_str());
+	int iValue = stoi(pSensor->last_value);
 
 	for (auto& itt : m_discovered_sensors)
 	{
@@ -2445,12 +2445,12 @@ void MQTTAutoDiscover::handle_auto_discovery_sensor(_tMQTTASensor* pSensor, cons
 		}
 
 		if (pTempSensor)
-			temp = static_cast<float>(atof(pTempSensor->sValue.c_str()));
+			temp = stof(pTempSensor->sValue);
 		if (pHumSensor)
 			humidity = pHumSensor->nValue;
 		if (pBaroSensor)
 		{
-			pressure = static_cast<float>(atof(pBaroSensor->last_value.c_str()));
+			pressure = stof(pBaroSensor->last_value);
 			if (pBaroSensor->unit_of_measurement == "kPa")
 				pressure *= 10.0F;
 		}
@@ -2661,9 +2661,9 @@ void MQTTAutoDiscover::handle_auto_discovery_fan(_tMQTTASensor* pSensor, const s
 		if (bValid)
 		{
 			std::string szIdx = result[0][0];
-			uint64_t DevRowIdx = std::stoull(szIdx);
+			uint64_t DevRowIdx = stoull(szIdx);
 			std::string szDeviceName = result[0][1];
-			int nValue = atoi(result[0][2].c_str());
+			int nValue = stoi(result[0][2]);
 			std::string sValue = result[0][3];
 			std::string sOptions = result[0][4];
 
@@ -2807,9 +2807,9 @@ void MQTTAutoDiscover::handle_auto_discovery_select(_tMQTTASensor* pSensor, cons
 	}
 
 	std::string szIdx = result[0][0];
-	uint64_t DevRowIdx = std::stoull(szIdx);
+	uint64_t DevRowIdx = stoull(szIdx);
 	std::string szDeviceName = result[0][1];
-	int nValue = atoi(result[0][2].c_str());
+	int nValue = stoi(result[0][2]);
 	std::string sValue = result[0][3];
 
 	std::string sOldOptions = result[0][4];
@@ -2832,7 +2832,7 @@ void MQTTAutoDiscover::handle_auto_discovery_select(_tMQTTASensor* pSensor, cons
 
 	if (iActualIndex == -1) {
 		Log(LOG_ERROR, "Select device \"%s\" doesn't have the option for received STATE \"%s\")", szDeviceName.c_str(), current_mode.c_str());
-		iActualIndex = atoi(sValue.c_str());
+		iActualIndex = stoi(sValue);
 	}
 
 	std::map<std::string, std::string> optionsMap;
@@ -2975,9 +2975,9 @@ void MQTTAutoDiscover::handle_auto_discovery_climate(_tMQTTASensor* pSensor, con
 			if (bValid)
 			{
 				std::string szIdx = result[0][0];
-				uint64_t DevRowIdx = std::stoull(szIdx);
+				uint64_t DevRowIdx = stoull(szIdx);
 				std::string szDeviceName = result[0][1];
-				int nValue = atoi(result[0][2].c_str());
+				int nValue = stoi(result[0][2]);
 				std::string sValue = result[0][3];
 				std::string sOptions = result[0][4];
 
@@ -3083,9 +3083,9 @@ void MQTTAutoDiscover::handle_auto_discovery_climate(_tMQTTASensor* pSensor, con
 			if (bValid)
 			{
 				std::string szIdx = result[0][0];
-				uint64_t DevRowIdx = std::stoull(szIdx);
+				uint64_t DevRowIdx = stoull(szIdx);
 				std::string szDeviceName = result[0][1];
-				int nValue = atoi(result[0][2].c_str());
+				int nValue = stoi(result[0][2]);
 				std::string sValue = result[0][3];
 				std::string sOptions = result[0][4];
 
@@ -3155,11 +3155,11 @@ void MQTTAutoDiscover::handle_auto_discovery_climate(_tMQTTASensor* pSensor, con
 						bValid = false;
 					}
 					else
-						temp_setpoint = static_cast<double>(atof(tstring.c_str()));
+						temp_setpoint = stod(tstring);
 				}
 			}
 			else
-				temp_setpoint = static_cast<double>(atof(qMessage.c_str()));
+				temp_setpoint = stod(qMessage);
 			bHaveReceiveValue = true;
 		}
 		if (bValid)
@@ -3194,7 +3194,7 @@ void MQTTAutoDiscover::handle_auto_discovery_climate(_tMQTTASensor* pSensor, con
 					pSensor->unique_id.c_str(), 1, pSensor->devType, pSensor->subType);
 				//Set options
 				std::string new_options = std_format("ValueStep:%g;ValueMin:%g;ValueMax:%g;ValueUnit:%s;", pSensor->temp_step, pSensor->temp_min, pSensor->temp_max, pSensor->temperature_unit.c_str());
-				uint64_t ullidx = std::stoull(result[0][0]);
+				uint64_t ullidx = stoull(result[0][0]);
 				m_sql.SetDeviceOptions(ullidx, m_sql.BuildDeviceOptions(new_options, false));
 			}
 			else
@@ -3236,11 +3236,11 @@ void MQTTAutoDiscover::handle_auto_discovery_climate(_tMQTTASensor* pSensor, con
 					//Log(LOG_ERROR, "Climate device unhandled current_temperature_template (%s)", pSensor->unique_id.c_str());
 					bValid = false;
 				}
-				temp_current = static_cast<double>(atof(tstring.c_str()));
+				temp_current = stod(tstring);
 			}
 		}
 		else
-			temp_current = static_cast<double>(atof(qMessage.c_str()));
+			temp_current = stod(qMessage);
 
 		if (bValid)
 		{
@@ -3482,7 +3482,7 @@ void MQTTAutoDiscover::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 	}
 	else if (pSensor->object_id.find("scene_state_scene") != std::string::npos)
 	{
-		pSensor->devUnit = atoi(pSensor->last_value.c_str());
+		pSensor->devUnit = (uint8_t) stoi(pSensor->last_value);
 		switchType = STYPE_PushOn;
 		szSensorName += "_" + pSensor->last_value;
 		szSwitchCmd = "on";
@@ -3532,13 +3532,13 @@ void MQTTAutoDiscover::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 		return;
 
 	std::string szIdx = result[0][0];
-	uint64_t DevRowIdx = std::stoull(szIdx);
+	uint64_t DevRowIdx = stoull(szIdx);
 	std::string szDeviceName = result[0][1];
-	int nValue = atoi(result[0][2].c_str());
+	int nValue = stoi(result[0][2]);
 	std::string sValue = result[0][3];
 	std::string sColor = result[0][4];
-	int subType = atoi(result[0][5].c_str());
-	_eSwitchType sSwitchType = (_eSwitchType)atoi(result[0][6].c_str());
+	int subType = stoi(result[0][5]);
+	_eSwitchType sSwitchType = (_eSwitchType) stoi(result[0][6]);
 
 	if (pSensor->subType != subType)
 		m_sql.UpdateDeviceValue("SubType", subType, szIdx);
@@ -3641,7 +3641,7 @@ void MQTTAutoDiscover::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 						if (is_number(szSwitchCmd))
 						{
 							//must be a level
-							level = atoi(szSwitchCmd.c_str());
+							level = stoi(szSwitchCmd);
 
 							if (pSensor->bHave_brightness_scale)
 								level = (int)round((100.0 / pSensor->brightness_scale) * level);
@@ -3678,7 +3678,7 @@ void MQTTAutoDiscover::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 				}
 				if (bHandledValue)
 				{
-					level = atoi(szValue.c_str());
+					level = stoi(szValue);
 
 					if (pSensor->bHave_brightness_scale)
 						level = (int)round((100.0 / pSensor->brightness_scale) * level);
@@ -3808,7 +3808,7 @@ void MQTTAutoDiscover::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 			if (is_number(szSwitchCmd))
 			{
 				//must be a level
-				level = atoi(szSwitchCmd.c_str());
+				level = stoi(szSwitchCmd);
 				if (pSensor->component_type == "binary_sensor" && szSwitchCmd == pSensor->payload_off)
 					szSwitchCmd = "off";
 				else if (pSensor->component_type == "binary_sensor" && szSwitchCmd == pSensor->payload_on)
@@ -3858,7 +3858,7 @@ void MQTTAutoDiscover::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 		if (level > 100)
 			level = 100;
 
-		int slevel = atoi(sValue.c_str());
+		int slevel = stoi(sValue);
 		bHaveLevelChange = (slevel != level);
 
 
@@ -3886,7 +3886,7 @@ void MQTTAutoDiscover::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 			if ((bOn && (nValue != 0)))
 			{
 				// Check Level
-				int slevel = atoi(sValue.c_str());
+				int slevel = stoi(sValue);
 				if (slevel == level)
 				{
 					if (!bHaveColorChange)
@@ -4461,12 +4461,12 @@ void MQTTAutoDiscover::UpdateBlindPosition(_tMQTTASensor* pSensor)
 		return;
 
 	std::string szIdx = result[0][0];
-	uint64_t DevRowIdx = std::stoull(szIdx);
+	uint64_t DevRowIdx = stoull(szIdx);
 	std::string szDeviceName = result[0][1];
-	int nValue = atoi(result[0][2].c_str());
+	int nValue = stoi(result[0][2]);
 	std::string sValue = result[0][3];
-	int subType = atoi(result[0][4].c_str());
-	_eSwitchType sSwitchType = (_eSwitchType)atoi(result[0][5].c_str());
+	int subType = stoi(result[0][4]);
+	_eSwitchType sSwitchType = (_eSwitchType) stoi(result[0][5]);
 
 	if (pSensor->subType != subType)
 		m_sql.UpdateDeviceValue("SubType", subType, szIdx);
@@ -4508,7 +4508,7 @@ void MQTTAutoDiscover::UpdateBlindPosition(_tMQTTASensor* pSensor)
 		if (is_number(szSwitchCmd))
 		{
 			//must be a position
-			level = atoi(szSwitchCmd.c_str());
+			level = stoi(szSwitchCmd);
 			szSwitchCmd = "Set Level";
 		}
 	}
@@ -4519,7 +4519,7 @@ void MQTTAutoDiscover::UpdateBlindPosition(_tMQTTASensor* pSensor)
 		if (is_number(szSwitchCmd))
 		{
 			//must be a level
-			level = atoi(szSwitchCmd.c_str());
+			level = stoi(szSwitchCmd);
 			szSwitchCmd = "Set Level";
 		}
 		else if (pSensor->last_topic == pSensor->state_topic)
@@ -4544,7 +4544,7 @@ void MQTTAutoDiscover::UpdateBlindPosition(_tMQTTASensor* pSensor)
 	if (level > 100)
 		level = 100;
 
-	int lastlevel = atoi(sValue.c_str());
+	int lastlevel = stoi(sValue);
 	bool bHaveLevelChange = (lastlevel != level);
 
 	std::string new_sValue = std_format("%d", level);
@@ -4760,7 +4760,7 @@ bool MQTTAutoDiscover::UpdateNumber(const std::string& idx, const std::string& s
 	{
 		if (itt.first == idx)
 		{
-			double dValue = atof(sValue.c_str());
+			double dValue = stod(sValue);
 			if (dValue < itt.second.number_min || dValue > itt.second.number_max)
 				return false;
 			SendMessage(itt.second.command_topic, sValue);
@@ -4806,7 +4806,7 @@ namespace http {
 			if (hwid.empty())
 				return;
 
-			CDomoticzHardwareBase* pHardware = m_mainworker.GetHardware(std::stoi(hwid));
+			CDomoticzHardwareBase* pHardware = m_mainworker.GetHardware(stoi(hwid));
 			if (pHardware == nullptr)
 				return;
 			if (pHardware->HwdType != HTYPE_MQTTAutoDiscovery)
@@ -4837,7 +4837,7 @@ namespace http {
 				)
 				return;
 
-			CDomoticzHardwareBase* pHardware = m_mainworker.GetHardware(std::stoi(hwid));
+			CDomoticzHardwareBase* pHardware = m_mainworker.GetHardware(stoi(hwid));
 			if (pHardware == nullptr)
 				return;
 			if (pHardware->HwdType != HTYPE_MQTTAutoDiscovery)

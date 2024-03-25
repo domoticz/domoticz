@@ -23,7 +23,7 @@ m_refresh(refresh)
 	if (strextra.size() == 3 || strextra.size() == 4 || strextra.size() == 5)
 	{
 		m_script = base64_decode(strextra[0]);
-		m_method = (unsigned short)atoi(base64_decode(strextra[1]).c_str());
+		m_method = (unsigned short) stoi(base64_decode(strextra[1]));
 		m_contenttype = base64_decode(strextra[2]);
 		if (strextra.size() >= 4)
 		{

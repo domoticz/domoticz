@@ -1064,7 +1064,7 @@ void GetLightStatus(
 
 		if (switchtype != STYPE_Media) {
 			// Calculate % that the light is currently on, taking the maxdimlevel into account.
-			llevel = (int)float((100.0F / float(maxDimLevel)) * atof(sValue.c_str()));
+			llevel = int((100.0F / float(maxDimLevel)) * stof(sValue));
 		}
 
 		// Fill in other parameters
@@ -1098,7 +1098,7 @@ void GetLightStatus(
 				lstatus = "Group On";
 				break;
 			case light2_sSetGroupLevel:
-				sprintf(szTmp, "Set Group Level: %d %%", atoi(sValue.c_str()));
+				sprintf(szTmp, "Set Group Level: %d %%", stoi(sValue));
 				if (sValue != "0")
 					lstatus = szTmp;
 				else
@@ -1124,16 +1124,16 @@ void GetLightStatus(
 		break;
 	case pTypeLighting5:
 		if (dSubType == sTypeLivolo)
-			llevel = int((100.0F / 7.0F) * atof(sValue.c_str()));
+			llevel = int((100.0F / 7.0F) * stof(sValue));
 		else
-			llevel = int((100.0F / 31.0F) * atof(sValue.c_str()));
+			llevel = int((100.0F / 31.0F) * stof(sValue));
 		switch (dSubType)
 		{
 		case sTypeLightwaveRF:
 			bHaveGroupCmd = true;
 			bHaveDimmer = true;
 			maxDimLevel = 32;
-			llevel = (int)float((100.0F / float(maxDimLevel)) * atof(sValue.c_str()));
+			llevel = int((100.0F / float(maxDimLevel)) * stof(sValue));
 			switch (nValue)
 			{
 			case light5_sOff:
@@ -1321,7 +1321,7 @@ void GetLightStatus(
 			break;
 		case sTypeIT:
 			maxDimLevel = 9;
-			llevel = (int)float((100.0F / float(maxDimLevel)) * atof(sValue.c_str()));
+			llevel = int((100.0F / float(maxDimLevel)) * stof(sValue));
 			switch (nValue)
 			{
 			case light5_sOff:
@@ -1396,7 +1396,7 @@ void GetLightStatus(
 		maxDimLevel = 100;
 
 		// Calculate % that the light is currently on, taking the maxdimlevel into account.
-		llevel = (int)float((100.0F / float(maxDimLevel)) * atof(sValue.c_str()));
+		llevel = int((100.0F / float(maxDimLevel)) * stof(sValue));
 
 		// Fill in other parameters
 		switch (dSubType)
@@ -1434,7 +1434,7 @@ void GetLightStatus(
 			lstatus = "Group On";
 			break;
 		case gswitch_sSetGroupLevel:
-			sprintf(szTmp, "Set Group Level: %d %%", atoi(sValue.c_str()));
+			sprintf(szTmp, "Set Group Level: %d %%", stoi(sValue));
 			if (sValue != "0")
 				lstatus = szTmp;
 			else
@@ -1552,7 +1552,7 @@ void GetLightStatus(
 		maxDimLevel = 100;
 
 		// Calculate % that the light is currently on, taking the maxdimlevel into account.
-		llevel = (int)float((100.0F / float(maxDimLevel)) * atof(sValue.c_str()));
+		llevel = int((100.0F / float(maxDimLevel)) * stof(sValue));
 
 		switch (nValue)
 		{
@@ -1739,7 +1739,7 @@ void GetLightStatus(
 			maxDimLevel = 100;
 
 		// Calculate % that the light is currently on, taking the maxdimlevel into account.
-			llevel = (int)float((100.0F / float(maxDimLevel)) * atof(sValue.c_str()));
+			llevel = int((100.0F / float(maxDimLevel)) * stof(sValue));
 		}
 
 		switch (nValue)
@@ -1909,7 +1909,7 @@ void GetLightStatus(
 	case pTypeEvohomeRelay:
 		bHaveDimmer = true;
 		maxDimLevel = 200;
-		llevel = int(0.5F * atof(sValue.c_str()));
+		llevel = int(0.5F * stof(sValue));
 		switch (nValue)
 		{
 		case light1_sOff:
@@ -2223,7 +2223,7 @@ void GetLightStatus(
 	case pTypeDDxxxx:
 		bHaveDimmer = true;
 		maxDimLevel = 100;
-		llevel = (int)float((100.0F / float(maxDimLevel)) * atof(sValue.c_str()));
+		llevel = int((100.0F / float(maxDimLevel)) * stof(sValue));
 
 		switch (nValue)
 		{
@@ -3989,7 +3989,7 @@ void ConvertToGeneralSwitchType(std::string& devid, int& dtype, int& subtype)
 		if (subtype == sTypeAB400D) subtype = sSwitchTypeAB400D;
 		if (subtype == sTypeIMPULS) subtype = sSwitchTypeTriState;
 		std::stringstream s_strid;
-		s_strid << std::hex << atoi(devid.c_str());
+		s_strid << std::hex << stoi(devid);
 		devid = s_strid.str();
 		devid = "000000" + devid;
 	}

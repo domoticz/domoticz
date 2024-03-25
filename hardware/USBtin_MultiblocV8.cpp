@@ -895,8 +895,8 @@ bool USBtin_MultiblocV8::CheckOutputChange(unsigned long sID, int OutputNumber, 
 		if (!ForceUpdate)
 		{
 			// check if we have a change, if not do not update it
-			nvalue = atoi(result[0][1].c_str());
-			slevel = atoi(result[0][2].c_str());
+			nvalue = stoi(result[0][1]);
+			slevel = stoi(result[0][2]);
 			// Log(LOG_NORM,"MultiblocV8: Output 1 nvalue : %d ",nvalue);
 			if ((!CdeReceive) && (nvalue == 0))
 				returnvalue = false; // still off, nothing to do
@@ -1832,7 +1832,7 @@ float USBtin_MultiblocV8::GetInformationFromId(int NodeId, int sType)
 
 	if (!result.empty())
 	{
-		value = static_cast<float>(atof(result[0][2].c_str()));
+		value = stof(result[0][2]);
 	}
 	return value;
 }

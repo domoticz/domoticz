@@ -72,7 +72,7 @@ void CScheduler::ReloadSchedules()
 	{
 		for (const auto& sd : result)
 		{
-			bool bDUsed = (atoi(sd[7].c_str()) != 0);
+			bool bDUsed = (stoi(sd[7]) != 0);
 
 			if (bDUsed == true)
 			{
@@ -82,16 +82,16 @@ void CScheduler::ReloadSchedules()
 				titem.bIsScene = false;
 				titem.bIsThermostat = false;
 
-				_eTimerType timerType = (_eTimerType)atoi(sd[2].c_str());
-				titem.RowID = std::stoull(sd[0]);
-				titem.TimerID = std::stoull(sd[14]);
-				titem.startHour = (unsigned char)atoi(sd[1].substr(0, 2).c_str());
-				titem.startMin = (unsigned char)atoi(sd[1].substr(3, 2).c_str());
+				_eTimerType timerType = (_eTimerType) stoi(sd[2]);
+				titem.RowID = stoull(sd[0]);
+				titem.TimerID = stoull(sd[14]);
+				titem.startHour = (unsigned char) stoi(sd[1].substr(0, 2));
+				titem.startMin = (unsigned char) stoi(sd[1].substr(3, 2));
 				titem.startTime = 0;
 				titem.timerType = timerType;
-				titem.timerCmd = (_eTimerCommand)atoi(sd[3].c_str());
-				titem.Level = (unsigned char)atoi(sd[4].c_str());
-				titem.bUseRandomness = (atoi(sd[8].c_str()) != 0);
+				titem.timerCmd = (_eTimerCommand) stoi(sd[3]);
+				titem.Level = stoi(sd[4]);
+				titem.bUseRandomness = (stoi(sd[8]) != 0);
 				titem.Color = _tColor(sd[9]);
 				titem.MDay = 0;
 				titem.Month = 0;
@@ -102,23 +102,23 @@ void CScheduler::ReloadSchedules()
 					std::string sdate = sd[10];
 					if (sdate.size() != 10)
 						continue; //invalid
-					titem.startYear = (unsigned short)atoi(sdate.substr(0, 4).c_str());
-					titem.startMonth = (unsigned char)atoi(sdate.substr(5, 2).c_str());
-					titem.startDay = (unsigned char)atoi(sdate.substr(8, 2).c_str());
+					titem.startYear = (unsigned short) stoi(sdate.substr(0, 4));
+					titem.startMonth = (unsigned char) stoi(sdate.substr(5, 2));
+					titem.startDay = (unsigned char) stoi(sdate.substr(8, 2));
 				}
 				else if (timerType == TTYPE_MONTHLY)
 				{
 					std::string smday = sd[11];
 					if (smday == "0")
 						continue; //invalid
-					titem.MDay = atoi(smday.c_str());
+					titem.MDay = stoi(smday);
 				}
 				else if (timerType == TTYPE_MONTHLY_WD)
 				{
 					std::string socc = sd[13];
 					if (socc == "0")
 						continue; //invalid
-					titem.Occurence = atoi(socc.c_str());
+					titem.Occurence = stoi(socc);
 				}
 				else if (timerType == TTYPE_YEARLY)
 				{
@@ -126,8 +126,8 @@ void CScheduler::ReloadSchedules()
 					std::string smonth = sd[12];
 					if ((smday == "0") || (smonth == "0"))
 						continue; //invalid
-					titem.MDay = atoi(smday.c_str());
-					titem.Month = atoi(smonth.c_str());
+					titem.MDay = stoi(smday);
+					titem.Month = stoi(smonth);
 				}
 				else if (timerType == TTYPE_YEARLY_WD)
 				{
@@ -135,15 +135,15 @@ void CScheduler::ReloadSchedules()
 					std::string socc = sd[13];
 					if ((smonth == "0") || (socc == "0"))
 						continue; //invalid
-					titem.Month = atoi(smonth.c_str());
-					titem.Occurence = atoi(socc.c_str());
+					titem.Month = stoi(smonth);
+					titem.Occurence = stoi(socc);
 				}
 
 				if ((titem.timerCmd == TCMD_ON) && (titem.Level == 0))
 				{
 					titem.Level = 100;
 				}
-				titem.Days = atoi(sd[5].c_str());
+				titem.Days = stoi(sd[5]);
 				titem.DeviceName = sd[6];
 
 				if (AdjustScheduleItem(&titem, false) == true)
@@ -186,30 +186,30 @@ void CScheduler::ReloadSchedules()
 				std::stringstream s_str(sd[12]);
 				s_str >> titem.TimerID; }
 
-			_eTimerType timerType = (_eTimerType)atoi(sd[2].c_str());
+			_eTimerType timerType = (_eTimerType) stoi(sd[2]);
 
 			if (timerType == TTYPE_FIXEDDATETIME)
 			{
 				std::string sdate = sd[8];
 				if (sdate.size() != 10)
 					continue; //invalid
-				titem.startYear = (unsigned short)atoi(sdate.substr(0, 4).c_str());
-				titem.startMonth = (unsigned char)atoi(sdate.substr(5, 2).c_str());
-				titem.startDay = (unsigned char)atoi(sdate.substr(8, 2).c_str());
+				titem.startYear = (unsigned short) stoi(sdate.substr(0, 4));
+				titem.startMonth = (unsigned char) stoi(sdate.substr(5, 2));
+				titem.startDay = (unsigned char) stoi(sdate.substr(8, 2));
 			}
 			else if (timerType == TTYPE_MONTHLY)
 			{
 				std::string smday = sd[9];
 				if (smday == "0")
 					continue; //invalid
-				titem.MDay = atoi(smday.c_str());
+				titem.MDay = stoi(smday);
 			}
 			else if (timerType == TTYPE_MONTHLY_WD)
 			{
 				std::string socc = sd[11];
 				if (socc == "0")
 					continue; //invalid
-				titem.Occurence = atoi(socc.c_str());
+				titem.Occurence = stoi(socc);
 			}
 			else if (timerType == TTYPE_YEARLY)
 			{
@@ -217,8 +217,8 @@ void CScheduler::ReloadSchedules()
 				std::string smonth = sd[10];
 				if ((smday == "0") || (smonth == "0"))
 					continue; //invalid
-				titem.MDay = atoi(smday.c_str());
-				titem.Month = atoi(smonth.c_str());
+				titem.MDay = stoi(smday);
+				titem.Month = stoi(smonth);
 			}
 			else if (timerType == TTYPE_YEARLY_WD)
 			{
@@ -226,22 +226,22 @@ void CScheduler::ReloadSchedules()
 				std::string socc = sd[11];
 				if ((smonth == "0") || (socc == "0"))
 					continue; //invalid
-				titem.Month = atoi(smonth.c_str());
-				titem.Occurence = atoi(socc.c_str());
+				titem.Month = stoi(smonth);
+				titem.Occurence = stoi(socc);
 			}
 
-			titem.startHour = (unsigned char)atoi(sd[1].substr(0, 2).c_str());
-			titem.startMin = (unsigned char)atoi(sd[1].substr(3, 2).c_str());
+			titem.startHour = (unsigned char) stoi(sd[1].substr(0, 2));
+			titem.startMin = (unsigned char) stoi(sd[1].substr(3, 2));
 			titem.startTime = 0;
 			titem.timerType = timerType;
-			titem.timerCmd = (_eTimerCommand)atoi(sd[3].c_str());
-			titem.Level = (unsigned char)atoi(sd[4].c_str());
-			titem.bUseRandomness = (atoi(sd[7].c_str()) != 0);
+			titem.timerCmd = (_eTimerCommand) stoi(sd[3]);
+			titem.Level = stoi(sd[4]);
+			titem.bUseRandomness = (stoi(sd[7]) != 0);
 			if ((titem.timerCmd == TCMD_ON) && (titem.Level == 0))
 			{
 				titem.Level = 100;
 			}
-			titem.Days = atoi(sd[5].c_str());
+			titem.Days = stoi(sd[5]);
 			titem.DeviceName = sd[6];
 			if (AdjustScheduleItem(&titem, false) == true)
 				m_scheduleitems.push_back(titem);
@@ -268,33 +268,33 @@ void CScheduler::ReloadSchedules()
 			titem.MDay = 0;
 			titem.Month = 0;
 			titem.Occurence = 0;
-			titem.RowID = std::stoull(sd[0]);
-			titem.TimerID = std::stoull(sd[10]);
+			titem.RowID = stoull(sd[0]);
+			titem.TimerID = stoull(sd[10]);
 
-			_eTimerType timerType = (_eTimerType)atoi(sd[2].c_str());
+			_eTimerType timerType = (_eTimerType) stoi(sd[2]);
 
 			if (timerType == TTYPE_FIXEDDATETIME)
 			{
 				std::string sdate = sd[6];
 				if (sdate.size() != 10)
 					continue; //invalid
-				titem.startYear = (unsigned short)atoi(sdate.substr(0, 4).c_str());
-				titem.startMonth = (unsigned char)atoi(sdate.substr(5, 2).c_str());
-				titem.startDay = (unsigned char)atoi(sdate.substr(8, 2).c_str());
+				titem.startYear = (unsigned short) stoi(sdate.substr(0, 4));
+				titem.startMonth = (unsigned char) stoi(sdate.substr(5, 2));
+				titem.startDay = (unsigned char) stoi(sdate.substr(8, 2));
 			}
 			else if (timerType == TTYPE_MONTHLY)
 			{
 				std::string smday = sd[7];
 				if (smday == "0")
 					continue; //invalid
-				titem.MDay = atoi(smday.c_str());
+				titem.MDay = stoi(smday);
 			}
 			else if (timerType == TTYPE_MONTHLY_WD)
 			{
 				std::string socc = sd[9];
 				if (socc == "0")
 					continue; //invalid
-				titem.Occurence = atoi(socc.c_str());
+				titem.Occurence = stoi(socc);
 			}
 			else if (timerType == TTYPE_YEARLY)
 			{
@@ -302,8 +302,8 @@ void CScheduler::ReloadSchedules()
 				std::string smonth = sd[8];
 				if ((smday == "0") || (smonth == "0"))
 					continue; //invalid
-				titem.MDay = atoi(smday.c_str());
-				titem.Month = atoi(smonth.c_str());
+				titem.MDay = stoi(smday);
+				titem.Month = stoi(smonth);
 			}
 			else if (timerType == TTYPE_YEARLY_WD)
 			{
@@ -311,19 +311,19 @@ void CScheduler::ReloadSchedules()
 				std::string socc = sd[9];
 				if ((smonth == "0") || (socc == "0"))
 					continue; //invalid
-				titem.Month = atoi(smonth.c_str());
-				titem.Occurence = atoi(socc.c_str());
+				titem.Month = stoi(smonth);
+				titem.Occurence = stoi(socc);
 			}
 
-			titem.startHour = (unsigned char)atoi(sd[1].substr(0, 2).c_str());
-			titem.startMin = (unsigned char)atoi(sd[1].substr(3, 2).c_str());
+			titem.startHour = (unsigned char) stoi(sd[1].substr(0, 2));
+			titem.startMin = (unsigned char) stoi(sd[1].substr(3, 2));
 			titem.startTime = 0;
 			titem.timerType = timerType;
 			titem.timerCmd = TCMD_ON;
-			titem.Temperature = static_cast<float>(atof(sd[3].c_str()));
+			titem.Temperature = stof(sd[3]);
 			titem.Level = 100;
 			titem.bUseRandomness = false;
-			titem.Days = atoi(sd[4].c_str());
+			titem.Days = stoi(sd[4]);
 			titem.DeviceName = sd[5];
 			if (AdjustScheduleItem(&titem, false) == true)
 				m_scheduleitems.push_back(titem);
@@ -350,9 +350,9 @@ void CScheduler::SetSunRiseSetTimes(const std::string& sSunRise, const std::stri
 		for (size_t a = 0; a < allSchedules.size(); a = a + 1)
 		{
 			//std::cout << allSchedules[a].c_str() << ' ';
-			int hour = atoi(allSchedules[a].substr(0, 2).c_str());
-			int min = atoi(allSchedules[a].substr(3, 2).c_str());
-			int sec = atoi(allSchedules[a].substr(6, 2).c_str());
+			int hour = stoi(allSchedules[a].substr(0, 2));
+			int min = stoi(allSchedules[a].substr(3, 2));
+			int sec = stoi(allSchedules[a].substr(6, 2));
 
 			constructTime(temptime, tm1, ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday, hour, min, sec, ltime.tm_isdst);
 			if ((*allTimes[a] != temptime) && (temptime != 0))
@@ -874,9 +874,9 @@ void CScheduler::CheckSchedules()
 						{
 							std::vector<std::string> sd = result[0];
 
-							unsigned char dType = atoi(sd[0].c_str());
-							unsigned char dSubType = atoi(sd[1].c_str());
-							_eSwitchType switchtype = (_eSwitchType)atoi(sd[2].c_str());
+							unsigned char dType = (unsigned char) stoi(sd[0]);
+							unsigned char dSubType = (unsigned char) stoi(sd[1]);
+							_eSwitchType switchtype = (_eSwitchType) stoi(sd[2]);
 							std::string lstatus;
 							int llevel = 0;
 							bool bHaveDimmer = false;
@@ -1103,11 +1103,11 @@ namespace http {
 				int ii = 0;
 				for (const auto& sd : tot_result)
 				{
-					int iTimerIdx = atoi(sd[0].c_str());
-					bool bActive = atoi(sd[1].c_str()) != 0;
-					bool bIsScene = atoi(sd[4].c_str()) != 0;
-					bool bIsThermostat = atoi(sd[5].c_str()) != 0;
-					int iDays = atoi(sd[13].c_str());
+					int iTimerIdx = stoi(sd[0]);
+					bool bActive = stoi(sd[1]) != 0;
+					bool bIsScene = stoi(sd[4]) != 0;
+					bool bIsThermostat = stoi(sd[5]) != 0;
+					int iDays = stoi(sd[13]);
 					char ltimeBuf[30] = "";
 
 					if (bActive)
@@ -1125,18 +1125,18 @@ namespace http {
 						}
 					}
 
-					unsigned char iLevel = atoi(sd[10].c_str());
+					unsigned char iLevel = (unsigned char) stoi(sd[10]);
 					if (iLevel == 0)
 						iLevel = 100;
 
-					int iTimerType = atoi(sd[8].c_str());
+					int iTimerType = stoi(sd[8]);
 					std::string sdate = sd[6];
 					if ((iTimerType == TTYPE_FIXEDDATETIME) && (sdate.size() == 10))
 					{
 						char szTmp[30];
-						int Year = atoi(sdate.substr(0, 4).c_str());
-						int Month = atoi(sdate.substr(5, 2).c_str());
-						int Day = atoi(sdate.substr(8, 2).c_str());
+						int Year = stoi(sdate.substr(0, 4));
+						int Month = stoi(sdate.substr(5, 2));
+						int Day = stoi(sdate.substr(8, 2));
 						sprintf(szTmp, "%04d-%02d-%02d", Year, Month, Day);
 						sdate = szTmp;
 					}
@@ -1148,15 +1148,15 @@ namespace http {
 					root["result"][ii]["Type"] = bIsScene ? "Scene" : "Device";
 					root["result"][ii]["IsThermostat"] = bIsThermostat ? "true" : "false";
 					root["result"][ii]["DevName"] = sd[2];
-					root["result"][ii]["DeviceRowID"] = atoi(sd[3].c_str()); //TODO: Isn't this a 64 bit device index?
+					root["result"][ii]["DeviceRowID"] = stoi(sd[3]); //TODO: Isn't this a 64 bit device index?
 					root["result"][ii]["Date"] = sdate;
 					root["result"][ii]["Time"] = sd[7];
 					root["result"][ii]["TimerType"] = iTimerType;
 					root["result"][ii]["TimerTypeStr"] = Timer_Type_Desc(iTimerType);
 					root["result"][ii]["Days"] = iDays;
-					root["result"][ii]["MDay"] = atoi(sd[15].c_str());
-					root["result"][ii]["Month"] = atoi(sd[16].c_str());
-					root["result"][ii]["Occurence"] = atoi(sd[17].c_str());
+					root["result"][ii]["MDay"] = stoi(sd[15]);
+					root["result"][ii]["Month"] = stoi(sd[16]);
+					root["result"][ii]["Occurence"] = stoi(sd[17]);
 					root["result"][ii]["ScheduleDate"] = ltimeBuf;
 					if (bIsThermostat)
 					{
@@ -1164,10 +1164,10 @@ namespace http {
 					}
 					else
 					{
-						root["result"][ii]["TimerCmd"] = atoi(sd[9].c_str());
+						root["result"][ii]["TimerCmd"] = stoi(sd[9]);
 						root["result"][ii]["Level"] = iLevel;
 						root["result"][ii]["Color"] = sd[11];
-						root["result"][ii]["Randomness"] = (atoi(sd[14].c_str()) != 0) ? "true" : "false";
+						root["result"][ii]["Randomness"] = (stoi(sd[14]) != 0) ? "true" : "false";
 					}
 					ii++;
 				}
@@ -1178,7 +1178,7 @@ namespace http {
 			uint64_t idx = 0;
 			if (!request::findValue(&req, "idx").empty())
 			{
-				idx = std::stoull(request::findValue(&req, "idx"));
+				idx = stoull(request::findValue(&req, "idx"));
 			}
 			if (idx == 0)
 				return;
@@ -1191,7 +1191,7 @@ namespace http {
 			if (result.empty())
 				return;
 
-			_eSwitchType switchtype = (_eSwitchType)std::stoi(result[0][0]);
+			_eSwitchType switchtype = (_eSwitchType) stoi(result[0][0]);
 			const bool bIsBlinds = (
 				switchtype == STYPE_Blinds
 				|| switchtype == STYPE_BlindsPercentage
@@ -1208,36 +1208,36 @@ namespace http {
 				int ii = 0;
 				for (const auto& sd : result)
 				{
-					unsigned char iLevel = atoi(sd[6].c_str());
+					unsigned char iLevel = (unsigned char) stoi(sd[6]);
 					if ((iLevel == 0) && (!bIsBlinds))
 						iLevel = 100;
 
-					int iTimerType = atoi(sd[4].c_str());
+					int iTimerType = stoi(sd[4]);
 					std::string sdate = sd[2];
 					if ((iTimerType == TTYPE_FIXEDDATETIME) && (sdate.size() == 10))
 					{
-						int Year = atoi(sdate.substr(0, 4).c_str());
-						int Month = atoi(sdate.substr(5, 2).c_str());
-						int Day = atoi(sdate.substr(8, 2).c_str());
+						int Year = stoi(sdate.substr(0, 4));
+						int Month = stoi(sdate.substr(5, 2));
+						int Day = stoi(sdate.substr(8, 2));
 						sdate = std_format("%04d-%02d-%02d", Year, Month, Day);
 					}
 					else
 						sdate = "";
 
 					root["result"][ii]["idx"] = sd[0];
-					root["result"][ii]["Active"] = (atoi(sd[1].c_str()) == 0) ? "false" : "true";
+					root["result"][ii]["Active"] = (stoi(sd[1]) == 0) ? "false" : "true";
 					root["result"][ii]["Date"] = sdate;
 					root["result"][ii]["Time"] = sd[3].substr(0, 5);
 					root["result"][ii]["Type"] = iTimerType;
-					root["result"][ii]["Cmd"] = atoi(sd[5].c_str());
+					root["result"][ii]["Cmd"] = stoi(sd[5]);
 					root["result"][ii]["Level"] = iLevel;
 					root["result"][ii]["Color"] = sd[7];
-					root["result"][ii]["Days"] = atoi(sd[8].c_str());
-					root["result"][ii]["Randomness"] = (atoi(sd[9].c_str()) == 0) ? "false" : "true";
-					root["result"][ii]["MDay"] = atoi(sd[10].c_str());
-					root["result"][ii]["Month"] = atoi(sd[11].c_str());
-					root["result"][ii]["Occurence"] = atoi(sd[12].c_str());
-					root["result"][ii]["Persistent"] = (atoi(sd[13].c_str()) == 9999) ? "true" : "false";
+					root["result"][ii]["Days"] = stoi(sd[8]);
+					root["result"][ii]["Randomness"] = (stoi(sd[9]) == 0) ? "false" : "true";
+					root["result"][ii]["MDay"] = stoi(sd[10]);
+					root["result"][ii]["Month"] = stoi(sd[11]);
+					root["result"][ii]["Occurence"] = stoi(sd[12]);
+					root["result"][ii]["Persistent"] = (stoi(sd[13]) == 9999) ? "true" : "false";
 					ii++;
 				}
 			}
@@ -1256,7 +1256,7 @@ namespace http {
 			int rnvalue = 0;
 			std::string sValue = request::findValue(&req, "ActiveTimerPlan");
 			m_sql.GetPreferencesVar("ActiveTimerPlan", rnOldvalue);
-			rnvalue = (!sValue.empty() ? atoi(sValue.c_str()) : rnOldvalue);
+			rnvalue = (!sValue.empty() ? stoi(sValue) : rnOldvalue);
 			if (rnOldvalue != rnvalue)
 			{
 				std::vector<std::vector<std::string> > result;
@@ -1299,7 +1299,7 @@ namespace http {
 			std::string persistent = request::findValue(&req, "persistent");
 			if ((idx.empty()) || (active.empty()) || (stimertype.empty()) || (shour.empty()) || (smin.empty()) || (randomness.empty()) || (scmd.empty()) || (sdays.empty()))
 				return;
-			unsigned char iTimerType = atoi(stimertype.c_str());
+			unsigned char iTimerType = (unsigned char) stoi(stimertype);
 
 			int timer_plan = (persistent == "true") ? 9999 : m_sql.m_ActiveTimerPlan;
 
@@ -1314,9 +1314,9 @@ namespace http {
 			{
 				if (sdate.size() == 10)
 				{
-					Year = atoi(sdate.substr(0, 4).c_str());
-					Month = atoi(sdate.substr(5, 2).c_str());
-					Day = atoi(sdate.substr(8, 2).c_str());
+					Year = stoi(sdate.substr(0, 4));
+					Month = stoi(sdate.substr(5, 2));
+					Day = stoi(sdate.substr(8, 2));
 				}
 			}
 			else if (iTimerType == TTYPE_MONTHLY)
@@ -1346,15 +1346,15 @@ namespace http {
 					return;
 			}
 
-			unsigned char hour = atoi(shour.c_str());
-			unsigned char min = atoi(smin.c_str());
-			unsigned char icmd = atoi(scmd.c_str());
-			int days = atoi(sdays.c_str());
-			unsigned char level = atoi(slevel.c_str());
+			unsigned char hour = (unsigned char) stoi(shour);
+			unsigned char min = (unsigned char) stoi(smin);
+			unsigned char icmd = (unsigned char) stoi(scmd);
+			int days = stoi(sdays);
+			unsigned char level = (unsigned char) stoi(slevel);
 			_tColor color = _tColor(scolor);
-			int mday = atoi(smday.c_str());
-			int month = atoi(smonth.c_str());
-			int occurence = atoi(soccurence.c_str());
+			int mday = stoi(smday);
+			int month = stoi(smonth);
+			int occurence = stoi(soccurence);
 			root["status"] = "OK";
 			root["title"] = "AddTimer";
 			m_sql.safe_query(
@@ -1403,7 +1403,7 @@ namespace http {
 			if ((idx.empty()) || (active.empty()) || (stimertype.empty()) || (shour.empty()) || (smin.empty()) || (randomness.empty()) || (scmd.empty()) || (sdays.empty()))
 				return;
 
-			unsigned char iTimerType = atoi(stimertype.c_str());
+			unsigned char iTimerType = (unsigned char) stoi(stimertype);
 
 			int timer_plan = (persistent == "true") ? 9999 : m_sql.m_ActiveTimerPlan;
 
@@ -1418,9 +1418,9 @@ namespace http {
 			{
 				if (sdate.size() == 10)
 				{
-					Year = atoi(sdate.substr(0, 4).c_str());
-					Month = atoi(sdate.substr(5, 2).c_str());
-					Day = atoi(sdate.substr(8, 2).c_str());
+					Year = stoi(sdate.substr(0, 4));
+					Month = stoi(sdate.substr(5, 2));
+					Day = stoi(sdate.substr(8, 2));
 				}
 			}
 			else if (iTimerType == TTYPE_MONTHLY)
@@ -1450,15 +1450,15 @@ namespace http {
 					return;
 			}
 
-			unsigned char hour = atoi(shour.c_str());
-			unsigned char min = atoi(smin.c_str());
-			unsigned char icmd = atoi(scmd.c_str());
-			int days = atoi(sdays.c_str());
-			unsigned char level = atoi(slevel.c_str());
+			unsigned char hour = (unsigned char) stoi(shour);
+			unsigned char min = (unsigned char) stoi(smin);
+			unsigned char icmd = (unsigned char) stoi(scmd);
+			int days = stoi(sdays);
+			unsigned char level = (unsigned char) stoi(slevel);
 			_tColor color = _tColor(scolor);
-			int mday = atoi(smday.c_str());
-			int month = atoi(smonth.c_str());
-			int occurence = atoi(soccurence.c_str());
+			int mday = stoi(smday);
+			int month = stoi(smonth);
+			int occurence = stoi(soccurence);
 			root["status"] = "OK";
 			root["title"] = "UpdateTimer";
 			m_sql.safe_query(
@@ -1567,7 +1567,7 @@ namespace http {
 			uint64_t idx = 0;
 			if (!request::findValue(&req, "idx").empty())
 			{
-				idx = std::stoull(request::findValue(&req, "idx"));
+				idx = stoull(request::findValue(&req, "idx"));
 			}
 			if (idx == 0)
 				return;
@@ -1583,13 +1583,13 @@ namespace http {
 				int ii = 0;
 				for (const auto& sd : result)
 				{
-					int iTimerType = atoi(sd[4].c_str());
+					int iTimerType = stoi(sd[4]);
 					std::string sdate = sd[2];
 					if ((iTimerType == TTYPE_FIXEDDATETIME) && (sdate.size() == 10))
 					{
-						int Year = atoi(sdate.substr(0, 4).c_str());
-						int Month = atoi(sdate.substr(5, 2).c_str());
-						int Day = atoi(sdate.substr(8, 2).c_str());
+						int Year = stoi(sdate.substr(0, 4));
+						int Month = stoi(sdate.substr(5, 2));
+						int Day = stoi(sdate.substr(8, 2));
 						sprintf(szTmp, "%04d-%02d-%02d", Year, Month, Day);
 						sdate = szTmp;
 					}
@@ -1597,16 +1597,16 @@ namespace http {
 						sdate = "";
 
 					root["result"][ii]["idx"] = sd[0];
-					root["result"][ii]["Active"] = (atoi(sd[1].c_str()) == 0) ? "false" : "true";
+					root["result"][ii]["Active"] = (stoi(sd[1]) == 0) ? "false" : "true";
 					root["result"][ii]["Date"] = sdate;
 					root["result"][ii]["Time"] = sd[3].substr(0, 5);
 					root["result"][ii]["Type"] = iTimerType;
-					root["result"][ii]["Temperature"] = atof(sd[5].c_str());
-					root["result"][ii]["Days"] = atoi(sd[6].c_str());
-					root["result"][ii]["MDay"] = atoi(sd[7].c_str());
-					root["result"][ii]["Month"] = atoi(sd[8].c_str());
-					root["result"][ii]["Occurence"] = atoi(sd[9].c_str());
-					root["result"][ii]["Persistent"] = (atoi(sd[10].c_str()) == 9999) ? "true" : "false";
+					root["result"][ii]["Temperature"] = stof(sd[5]);
+					root["result"][ii]["Days"] = stoi(sd[6]);
+					root["result"][ii]["MDay"] = stoi(sd[7]);
+					root["result"][ii]["Month"] = stoi(sd[8]);
+					root["result"][ii]["Occurence"] = stoi(sd[9]);
+					root["result"][ii]["Persistent"] = (stoi(sd[10]) == 9999) ? "true" : "false";
 					ii++;
 				}
 			}
@@ -1635,7 +1635,7 @@ namespace http {
 			if ((idx.empty()) || (active.empty()) || (stimertype.empty()) || (shour.empty()) || (smin.empty()) || (stvalue.empty()) || (sdays.empty()))
 				return;
 
-			unsigned char iTimerType = atoi(stimertype.c_str());
+			unsigned char iTimerType = (unsigned char) stoi(stimertype);
 			int timer_plan = (persistent == "true") ? 9999 : m_sql.m_ActiveTimerPlan;
 
 			time_t now = mytime(nullptr);
@@ -1649,9 +1649,9 @@ namespace http {
 			{
 				if (sdate.size() == 10)
 				{
-					Year = atoi(sdate.substr(0, 4).c_str());
-					Month = atoi(sdate.substr(5, 2).c_str());
-					Day = atoi(sdate.substr(8, 2).c_str());
+					Year = stoi(sdate.substr(0, 4));
+					Month = stoi(sdate.substr(5, 2));
+					Day = stoi(sdate.substr(8, 2));
 				}
 			}
 			else if (iTimerType == TTYPE_MONTHLY)
@@ -1681,13 +1681,13 @@ namespace http {
 					return;
 			}
 
-			unsigned char hour = atoi(shour.c_str());
-			unsigned char min = atoi(smin.c_str());
-			int days = atoi(sdays.c_str());
-			float temperature = static_cast<float>(atof(stvalue.c_str()));
-			int mday = atoi(smday.c_str());
-			int month = atoi(smonth.c_str());
-			int occurence = atoi(soccurence.c_str());
+			unsigned char hour = (unsigned char) stoi(shour);
+			unsigned char min = (unsigned char) stoi(smin);
+			int days = stoi(sdays);
+			float temperature = stof(stvalue);
+			int mday = stoi(smday);
+			int month = stoi(smonth);
+			int occurence = stoi(soccurence);
 			root["status"] = "OK";
 			root["title"] = "AddSetpointTimer";
 
@@ -1745,7 +1745,7 @@ namespace http {
 			if ((idx.empty()) || (active.empty()) || (stimertype.empty()) || (shour.empty()) || (smin.empty()) || (stvalue.empty()) || (sdays.empty()))
 				return;
 
-			unsigned char iTimerType = atoi(stimertype.c_str());
+			unsigned char iTimerType = (unsigned char) stoi(stimertype);
 			int timer_plan = (persistent == "true") ? 9999 : m_sql.m_ActiveTimerPlan;
 
 			time_t now = mytime(nullptr);
@@ -1759,9 +1759,9 @@ namespace http {
 			{
 				if (sdate.size() == 10)
 				{
-					Year = atoi(sdate.substr(0, 4).c_str());
-					Month = atoi(sdate.substr(5, 2).c_str());
-					Day = atoi(sdate.substr(8, 2).c_str());
+					Year = stoi(sdate.substr(0, 4));
+					Month = stoi(sdate.substr(5, 2));
+					Day = stoi(sdate.substr(8, 2));
 				}
 			}
 			else if (iTimerType == TTYPE_MONTHLY)
@@ -1791,13 +1791,13 @@ namespace http {
 					return;
 			}
 
-			unsigned char hour = atoi(shour.c_str());
-			unsigned char min = atoi(smin.c_str());
-			int days = atoi(sdays.c_str());
-			float tempvalue = static_cast<float>(atof(stvalue.c_str()));
-			int mday = atoi(smday.c_str());
-			int month = atoi(smonth.c_str());
-			int occurence = atoi(soccurence.c_str());
+			unsigned char hour = (unsigned char) stoi(shour);
+			unsigned char min = (unsigned char) stoi(smin);
+			int days = stoi(sdays);
+			float tempvalue = stof(stvalue);
+			int mday = stoi(smday);
+			int month = stoi(smonth);
+			int occurence = stoi(soccurence);
 			root["status"] = "OK";
 			root["title"] = "UpdateSetpointTimer";
 			m_sql.safe_query(
@@ -1906,7 +1906,7 @@ namespace http {
 			uint64_t idx = 0;
 			if (!request::findValue(&req, "idx").empty())
 			{
-				idx = std::stoull(request::findValue(&req, "idx"));
+				idx = stoull(request::findValue(&req, "idx"));
 			}
 			if (idx == 0)
 				return;
@@ -1923,17 +1923,17 @@ namespace http {
 				int ii = 0;
 				for (const auto& sd : result)
 				{
-					unsigned char iLevel = atoi(sd[6].c_str());
+					unsigned char iLevel = (unsigned char) stoi(sd[6]);
 					if (iLevel == 0)
 						iLevel = 100;
 
-					int iTimerType = atoi(sd[4].c_str());
+					int iTimerType = stoi(sd[4]);
 					std::string sdate = sd[2];
 					if ((iTimerType == TTYPE_FIXEDDATETIME) && (sdate.size() == 10))
 					{
-						int Year = atoi(sdate.substr(0, 4).c_str());
-						int Month = atoi(sdate.substr(5, 2).c_str());
-						int Day = atoi(sdate.substr(8, 2).c_str());
+						int Year = stoi(sdate.substr(0, 4));
+						int Month = stoi(sdate.substr(5, 2));
+						int Day = stoi(sdate.substr(8, 2));
 						sprintf(szTmp, "%04d-%02d-%02d", Year, Month, Day);
 						sdate = szTmp;
 					}
@@ -1941,18 +1941,18 @@ namespace http {
 						sdate = "";
 
 					root["result"][ii]["idx"] = sd[0];
-					root["result"][ii]["Active"] = (atoi(sd[1].c_str()) == 0) ? "false" : "true";
+					root["result"][ii]["Active"] = (stoi(sd[1]) == 0) ? "false" : "true";
 					root["result"][ii]["Date"] = sdate;
 					root["result"][ii]["Time"] = sd[3].substr(0, 5);
 					root["result"][ii]["Type"] = iTimerType;
-					root["result"][ii]["Cmd"] = atoi(sd[5].c_str());
+					root["result"][ii]["Cmd"] = stoi(sd[5]);
 					root["result"][ii]["Level"] = iLevel;
-					root["result"][ii]["Days"] = atoi(sd[7].c_str());
-					root["result"][ii]["Randomness"] = (atoi(sd[8].c_str()) == 0) ? "false" : "true";
-					root["result"][ii]["MDay"] = atoi(sd[9].c_str());
-					root["result"][ii]["Month"] = atoi(sd[10].c_str());
-					root["result"][ii]["Occurence"] = atoi(sd[11].c_str());
-					root["result"][ii]["Persistent"] = (atoi(sd[12].c_str()) == 9999) ? "true" : "false";
+					root["result"][ii]["Days"] = stoi(sd[7]);
+					root["result"][ii]["Randomness"] = (stoi(sd[8]) == 0) ? "false" : "true";
+					root["result"][ii]["MDay"] = stoi(sd[9]);
+					root["result"][ii]["Month"] = stoi(sd[10]);
+					root["result"][ii]["Occurence"] = stoi(sd[11]);
+					root["result"][ii]["Persistent"] = (stoi(sd[12]) == 9999) ? "true" : "false";
 					ii++;
 				}
 			}
@@ -1984,7 +1984,7 @@ namespace http {
 			if ((idx.empty()) || (active.empty()) || (stimertype.empty()) || (shour.empty()) || (smin.empty()) || (randomness.empty()) || (scmd.empty()) || (sdays.empty()))
 				return;
 
-			unsigned char iTimerType = atoi(stimertype.c_str());
+			unsigned char iTimerType = (unsigned char) stoi(stimertype);
 			int timer_plan = (persistent == "true") ? 9999 : m_sql.m_ActiveTimerPlan;
 
 			time_t now = mytime(nullptr);
@@ -1998,9 +1998,9 @@ namespace http {
 			{
 				if (sdate.size() == 10)
 				{
-					Year = atoi(sdate.substr(0, 4).c_str());
-					Month = atoi(sdate.substr(5, 2).c_str());
-					Day = atoi(sdate.substr(8, 2).c_str());
+					Year = stoi(sdate.substr(0, 4));
+					Month = stoi(sdate.substr(5, 2));
+					Day = stoi(sdate.substr(8, 2));
 				}
 			}
 			else if (iTimerType == TTYPE_MONTHLY)
@@ -2030,14 +2030,14 @@ namespace http {
 					return;
 			}
 
-			unsigned char hour = atoi(shour.c_str());
-			unsigned char min = atoi(smin.c_str());
-			unsigned char icmd = atoi(scmd.c_str());
-			int days = atoi(sdays.c_str());
-			unsigned char level = atoi(slevel.c_str());
-			int mday = atoi(smday.c_str());
-			int month = atoi(smonth.c_str());
-			int occurence = atoi(soccurence.c_str());
+			unsigned char hour = (unsigned char) stoi(shour);
+			unsigned char min = (unsigned char) stoi(smin);
+			unsigned char icmd = (unsigned char) stoi(scmd);
+			int days = stoi(sdays);
+			unsigned char level = (unsigned char) stoi(slevel);
+			int mday = stoi(smday);
+			int month = stoi(smonth);
+			int occurence = stoi(soccurence);
 			root["status"] = "OK";
 			root["title"] = "AddSceneTimer";
 			m_sql.safe_query(
@@ -2084,7 +2084,7 @@ namespace http {
 			if ((idx.empty()) || (active.empty()) || (stimertype.empty()) || (shour.empty()) || (smin.empty()) || (randomness.empty()) || (scmd.empty()) || (sdays.empty()))
 				return;
 
-			unsigned char iTimerType = atoi(stimertype.c_str());
+			unsigned char iTimerType = (unsigned char) stoi(stimertype);
 			int timer_plan = (persistent == "true") ? 9999 : m_sql.m_ActiveTimerPlan;
 
 			time_t now = mytime(nullptr);
@@ -2098,9 +2098,9 @@ namespace http {
 			{
 				if (sdate.size() == 10)
 				{
-					Year = atoi(sdate.substr(0, 4).c_str());
-					Month = atoi(sdate.substr(5, 2).c_str());
-					Day = atoi(sdate.substr(8, 2).c_str());
+					Year = stoi(sdate.substr(0, 4));
+					Month = stoi(sdate.substr(5, 2));
+					Day = stoi(sdate.substr(8, 2));
 				}
 			}
 			else if (iTimerType == TTYPE_MONTHLY)
@@ -2130,14 +2130,14 @@ namespace http {
 					return;
 			}
 
-			unsigned char hour = atoi(shour.c_str());
-			unsigned char min = atoi(smin.c_str());
-			unsigned char icmd = atoi(scmd.c_str());
-			int days = atoi(sdays.c_str());
-			unsigned char level = atoi(slevel.c_str());
-			int mday = atoi(smday.c_str());
-			int month = atoi(smonth.c_str());
-			int occurence = atoi(soccurence.c_str());
+			unsigned char hour = (unsigned char) stoi(shour);
+			unsigned char min = (unsigned char) stoi(smin);
+			unsigned char icmd = (unsigned char) stoi(scmd);
+			int days = stoi(sdays);
+			unsigned char level = (unsigned char) stoi(slevel);
+			int mday = stoi(smday);
+			int month = stoi(smonth);
+			int occurence = stoi(soccurence);
 			root["status"] = "OK";
 			root["title"] = "UpdateSceneTimer";
 			m_sql.safe_query(
@@ -2258,7 +2258,7 @@ namespace http {
 				int ii = 0;
 				for (const auto& sd : result)
 				{
-					root["result"][ii]["idx"] = atoi(sd[0].c_str());
+					root["result"][ii]["idx"] = stoi(sd[0]);
 					root["result"][ii]["Name"] = sd[1];
 					root["result"][ii]["Active"] = (sd[0] == sd[2]);
 					ii++;
@@ -2320,7 +2320,7 @@ namespace http {
 			std::string idx = request::findValue(&req, "idx");
 			if (idx.empty())
 				return;
-			int iPlan = atoi(idx.c_str());
+			int iPlan = stoi(idx);
 			if (iPlan < 1)
 				return;
 

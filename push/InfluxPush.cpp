@@ -132,15 +132,15 @@ void CInfluxPush::DoInfluxPush(const uint64_t DeviceRowIdx, const bool bForced)
 	for (const auto &sd : result)
 	{
 		std::string sendValue;
-		int delpos = atoi(sd[1].c_str());
-		int dType = atoi(sd[3].c_str());
-		int dSubType = atoi(sd[4].c_str());
-		int nValue = atoi(sd[5].c_str());
+		int delpos = stoi(sd[1]);
+		int dType = stoi(sd[3]);
+		int dSubType = stoi(sd[4]);
+		int nValue = stoi(sd[5]);
 		std::string sValue = sd[6];
-		int targetType = atoi(sd[7].c_str());
-		int includeUnit = atoi(sd[8].c_str());
+		int targetType = stoi(sd[7]);
+		int includeUnit = stoi(sd[8]);
 		std::string name = sd[9];
-		int metertype = atoi(sd[10].c_str());
+		int metertype = stoi(sd[10]);
 
 		std::vector<std::string> strarray;
 		if (sValue.find(';') != std::string::npos)
@@ -292,12 +292,12 @@ namespace http
 			std::string debugenabled = request::findValue(&req, "debugenabled");
 			if ((linkactive.empty()) || (remote.empty()) || (port.empty()) || (database.empty()) || (debugenabled.empty()))
 				return;
-			int ilinkactive = atoi(linkactive.c_str());
-			int idebugenabled = atoi(debugenabled.c_str());
+			int ilinkactive = stoi(linkactive);
+			int idebugenabled = stoi(debugenabled);
 			m_sql.UpdatePreferencesVar("InfluxActive", ilinkactive);
-			m_sql.UpdatePreferencesVar("InfluxVersion2", atoi(isversion2.c_str()));
+			m_sql.UpdatePreferencesVar("InfluxVersion2", stoi(isversion2));
 			m_sql.UpdatePreferencesVar("InfluxIP", remote);
-			m_sql.UpdatePreferencesVar("InfluxPort", atoi(port.c_str()));
+			m_sql.UpdatePreferencesVar("InfluxPort", stoi(port));
 			m_sql.UpdatePreferencesVar("InfluxPath", path);
 			m_sql.UpdatePreferencesVar("InfluxDatabase", database);
 			m_sql.UpdatePreferencesVar("InfluxUsername", username);
@@ -385,9 +385,9 @@ namespace http
 				int ii = 0;
 				for (const auto &sd : result)
 				{
-					int Delimitedvalue = std::stoi(sd[2]);
-					int devType = std::stoi(sd[10]);
-					int devSubType = std::stoi(sd[11]);
+					int Delimitedvalue = stoi(sd[2]);
+					int devType = stoi(sd[10]);
+					int devSubType = stoi(sd[11]);
 
 					root["result"][ii]["idx"] = sd[0];
 					root["result"][ii]["DeviceID"] = sd[1];
@@ -416,26 +416,26 @@ namespace http
 			}
 			std::string idx = request::findValue(&req, "idx");
 			std::string deviceid = request::findValue(&req, "deviceid");
-			int deviceidi = atoi(deviceid.c_str());
+			int deviceidi = stoi(deviceid);
 			std::string valuetosend = request::findValue(&req, "valuetosend");
 			std::string targettype = request::findValue(&req, "targettype");
-			int targettypei = atoi(targettype.c_str());
+			int targettypei = stoi(targettype);
 			std::string linkactive = request::findValue(&req, "linkactive");
 			if (idx == "0")
 			{
 				//check if we already have this link
 				auto result = m_sql.safe_query("SELECT ID FROM PushLink WHERE (PushType==%d AND DeviceRowID==%d AND DelimitedValue==%d AND TargetType==%d)",
-					CBasePush::PushType::PUSHTYPE_INFLUXDB, deviceidi, atoi(valuetosend.c_str()), targettypei);
+					CBasePush::PushType::PUSHTYPE_INFLUXDB, deviceidi, stoi(valuetosend), targettypei);
 				if (!result.empty())
 					return; //already have this
 				m_sql.safe_query("INSERT INTO PushLink (PushType,DeviceRowID,DelimitedValue,TargetType,TargetVariable,TargetDeviceID,TargetProperty,IncludeUnit,Enabled) VALUES "
 						 "(%d,'%d',%d,%d,'%q',%d,'%q',%d,%d)",
-						 CBasePush::PushType::PUSHTYPE_INFLUXDB, deviceidi, atoi(valuetosend.c_str()), targettypei, "-", 0, "-", 0, atoi(linkactive.c_str()));
+						 CBasePush::PushType::PUSHTYPE_INFLUXDB, deviceidi, stoi(valuetosend), targettypei, "-", 0, "-", 0, stoi(linkactive));
 			}
 			else
 			{
-				m_sql.safe_query("UPDATE PushLink SET DeviceRowID=%d, DelimitedValue=%d, TargetType=%d, Enabled=%d WHERE (ID == '%q')", deviceidi, atoi(valuetosend.c_str()),
-						 targettypei, atoi(linkactive.c_str()), idx.c_str());
+				m_sql.safe_query("UPDATE PushLink SET DeviceRowID=%d, DelimitedValue=%d, TargetType=%d, Enabled=%d WHERE (ID == '%q')", deviceidi, stoi(valuetosend),
+						 targettypei, stoi(linkactive), idx.c_str());
 			}
 			m_influxpush.ReloadPushLinks(CBasePush::PushType::PUSHTYPE_INFLUXDB);
 			root["status"] = "OK";

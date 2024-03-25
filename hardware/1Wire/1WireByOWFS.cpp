@@ -199,7 +199,7 @@ float C1WireByOWFS::GetTemperature(const _t1WireDevice& device) const
 
    if (readValue.empty())
       return -1000.0;
-   return static_cast<float>(atof(readValue.c_str()));
+   return stof(readValue);
 }
 
 float C1WireByOWFS::GetHumidity(const _t1WireDevice& device) const
@@ -210,7 +210,7 @@ float C1WireByOWFS::GetHumidity(const _t1WireDevice& device) const
 
    if (readValue.empty())
 	   return -1000.0;
-   return static_cast<float>(atof(readValue.c_str()));
+   return stof(readValue);
 }
 
 float C1WireByOWFS::GetPressure(const _t1WireDevice& device) const
@@ -220,7 +220,7 @@ float C1WireByOWFS::GetPressure(const _t1WireDevice& device) const
    std::string readValue=readRawData(std::string(realFilename+"/pressure"));
    if (readValue.empty())
 	   return -1000.0;
-   return static_cast<float>(atof(readValue.c_str()));
+   return stof(readValue);
 }
 
 bool C1WireByOWFS::GetLightState(const _t1WireDevice& device,int unit) const
@@ -283,7 +283,8 @@ bool C1WireByOWFS::GetLightState(const _t1WireDevice& device,int unit) const
       {
          // 1 = Unconditionally off (non-conducting)
          // 2 = Unconditionally on (conducting)
-         int iValue=atoi(readValue.c_str())==2;
+         // FIXME: in following code iValue is a bool and cannot equal 2
+         int iValue=stoi(readValue)==2;
          if (iValue!=1 && iValue!=2)
             return false;
 
@@ -298,7 +299,7 @@ unsigned int C1WireByOWFS::GetNbChannels(const _t1WireDevice& device) const
    std::string readValue=readRawData(std::string(device.filename+"/channels"));
    if (readValue.empty())
       return 0;
-   return atoi(readValue.c_str());
+   return (unsigned int) stoul(readValue);
 }
 
 unsigned long C1WireByOWFS::GetCounter(const _t1WireDevice& device,int unit) const
@@ -309,7 +310,7 @@ unsigned long C1WireByOWFS::GetCounter(const _t1WireDevice& device,int unit) con
       readValue=readRawData(std::string(device.filename+"/counters.").append(1,'A'+(char)unit));
    if (readValue.empty())
 	   return -1;  // NULL read.
-   return (unsigned long)atol(readValue.c_str());
+   return stoul(readValue);
 }
 
 int C1WireByOWFS::GetVoltage(const _t1WireDevice& device,int unit) const
@@ -336,7 +337,7 @@ int C1WireByOWFS::GetVoltage(const _t1WireDevice& device,int unit) const
    std::string readValue=readRawData(fileName);
    if (readValue.empty())
 	   return -1000;
-   return static_cast<int>((atof(readValue.c_str())*1000.0));
+   return static_cast<int>(stof(readValue) * 1000.0F);
 }
 
 float C1WireByOWFS::GetIlluminance(const _t1WireDevice& device) const
@@ -346,8 +347,8 @@ float C1WireByOWFS::GetIlluminance(const _t1WireDevice& device) const
    if (readValue.empty())
       readValue=readRawData(std::string(device.filename+"/S3-R1-A/illumination"));
    if (readValue.empty())
-	   return -1000.0;
-   return (float)(atof(readValue.c_str())*1000.0);
+	   return -1000.0F;
+   return stof(readValue) * 1000.0F;
 }
 
 int C1WireByOWFS::GetWiper(const _t1WireDevice& device) const
@@ -355,7 +356,7 @@ int C1WireByOWFS::GetWiper(const _t1WireDevice& device) const
 	std::string readValue = readRawData(std::string(device.filename + "/wiper"));
 	if (readValue.empty())
 		return -1;
-	return atoi(readValue.c_str());
+	return stoi(readValue);
 }
 
 void C1WireByOWFS::StartSimultaneousTemperatureRead()

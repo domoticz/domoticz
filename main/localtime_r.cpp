@@ -95,12 +95,12 @@ bool ParseSQLdatetime(time_t &time, struct tm &result, const std::string &szSQLd
 	bool goodtime = false;
 	while (!goodtime) {
 		result.tm_isdst = isdst;
-		result.tm_year = atoi(szSQLdate.substr(0, 4).c_str()) - 1900;
-		result.tm_mon = atoi(szSQLdate.substr(5, 2).c_str()) - 1;
-		result.tm_mday = atoi(szSQLdate.substr(8, 2).c_str());
-		result.tm_hour = atoi(szSQLdate.substr(11, 2).c_str());
-		result.tm_min = atoi(szSQLdate.substr(14, 2).c_str());
-		result.tm_sec = atoi(szSQLdate.substr(17, 2).c_str());
+		result.tm_year = stoi(szSQLdate.substr(0, 4)) - 1900;
+		result.tm_mon = stoi(szSQLdate.substr(5, 2)) - 1;
+		result.tm_mday = stoi(szSQLdate.substr(8, 2));
+		result.tm_hour = stoi(szSQLdate.substr(11, 2));
+		result.tm_min = stoi(szSQLdate.substr(14, 2));
+		result.tm_sec = stoi(szSQLdate.substr(17, 2));
 		if (i > 1)
 			result.tm_hour++; // required to make result consistent across platforms
 		time = mktime(&result);

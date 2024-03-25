@@ -1455,11 +1455,11 @@ namespace http
 			if (result.empty())
 				return;
 
-			int Mode1 = atoi(request::findValue(&req, "LimitlessType").c_str());
-			int Mode2 = atoi(request::findValue(&req, "CCBridgeType").c_str());
-			int Mode3 = atoi(result[0][2].c_str());
-			int Mode4 = atoi(result[0][3].c_str());
-			m_sql.UpdateRFXCOMHardwareDetails(atoi(idx.c_str()), Mode1, Mode2, Mode3, Mode4, 0, 0);
+			int Mode1 = stoi(request::findValue(&req, "LimitlessType"));
+			int Mode2 = stoi(request::findValue(&req, "CCBridgeType"));
+			int Mode3 = stoi(result[0][2]);
+			int Mode4 = stoi(result[0][3]);
+			m_sql.UpdateRFXCOMHardwareDetails(stoi(idx), Mode1, Mode2, Mode3, Mode4, 0, 0);
 
 			m_mainworker.RestartHardware(idx);
 		}

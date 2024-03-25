@@ -66,13 +66,13 @@ void CTellstick::sensorEvent(int deviceId, const char *protocol, const char *mod
     switch (dataType)
     {
     case TELLSTICK_TEMPERATURE:
-        SendTempSensor(deviceId, 255, static_cast<float>(atof(value)), "Temp");
+        SendTempSensor(deviceId, 255, atof(value), "Temp");
         break;
     case TELLSTICK_HUMIDITY:
         SendHumiditySensor(deviceId, 255, atoi(value), "Humidity");
         break;
     case TELLSTICK_RAINRATE:
-        SendRainSensor(deviceId, 255, static_cast<float>(atof(value)), "Rain");
+        SendRainSensor(deviceId, 255, atof(value), "Rain");
         break;
     case TELLSTICK_RAINTOTAL:
     case TELLSTICK_WINDDIRECTION:
@@ -105,7 +105,7 @@ void CTellstick::deviceEvent(int deviceId, int method, const char *data)
 	break;
     case TELLSTICK_DIM:
         gswitch.cmnd = gswitch_sSetLevel;
-        gswitch.level = atoi(data)*99/255;
+        gswitch.level = atoi(data) * 99 / 255;
 	    sDecodeRXMessage(this, (const unsigned char *)&gswitch, nullptr, 255, m_Name.c_str());
 	break;
     default:
@@ -157,7 +157,7 @@ void CTellstick::rawDeviceEvent(int controllerId, const char *data)
 	pos = message.find(';', pos + 1);
     }
     if (!deviceId.empty() && !winddirection.empty() && ! windaverage.empty() && ! windgust.empty()) {
-        SendWind(atoi(deviceId.c_str()), 255, atoi(winddirection.c_str()), static_cast<float>(atof(windaverage.c_str())), static_cast<float>(atof(windgust.c_str())), 0, 0, false, false, "Wind");
+        SendWind(stoi(deviceId), 255, stoi(winddirection), stof(windaverage), stof(windgust), 0, 0, false, false, "Wind");
     }
 }
 
@@ -333,9 +333,9 @@ namespace http {
             if (hwIdStr.empty() || repeatsStr.empty() || repeatIntervalStr.empty())
                 return;
 
-            int hwID = atoi(hwIdStr.c_str());
-            int repeats = atoi(repeatsStr.c_str());
-            int repeatInterval = atoi(repeatIntervalStr.c_str());
+            int hwID = stoi(hwIdStr);
+            int repeats = stoi(repeatsStr);
+            int repeatInterval = stoi(repeatIntervalStr);
 
             m_sql.safe_query("UPDATE Hardware SET Mode1=%d, Mode2=%d WHERE (ID == %d)",
                              repeats, repeatInterval, hwID);

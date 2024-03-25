@@ -289,8 +289,8 @@ bool CeVehicle::StartHardware()
 	{
 		std::string Latitude = strarray[0];
 		std::string Longitude = strarray[1];
-		m_api->m_config.home_latitude = std::stod(Latitude);
-		m_api->m_config.home_longitude = std::stod(Longitude);
+		m_api->m_config.home_latitude = stod(Latitude);
+		m_api->m_config.home_longitude = stod(Longitude);
 
 		Log(LOG_STATUS, "Using Domoticz home location (Lat %s, Lon %s) as car's home location.", Latitude.c_str(), Longitude.c_str());
 	}
@@ -886,7 +886,7 @@ void CeVehicle::UpdateCustomVehicleData(CVehicleApi::tCustomData& data)
 
 						if (is_number(sValue))
 						{
-							float fValue = static_cast<float>(std::atof(sValue.c_str()));
+							float fValue = stof(sValue);
 							SendCustom(VEHICLE_CUSTOM, iChildID, fValue, sLabel);
 						}
 						else if (isBool)

@@ -341,12 +341,12 @@ namespace http
 									const std::string &smode1, const std::string &smode2, const std::string &smode3, const std::string &smode4, const std::string &smode5, const std::string &smode6,
 									const std::string &extra, const std::string idx = "")
 		{
-			int mode1 = !smode1.empty() ? atoi(smode1.c_str()) : -1;
-			int mode2 = !smode2.empty() ? atoi(smode2.c_str()) : -1;
-			int mode3 = !smode3.empty() ? atoi(smode3.c_str()) : -1;
-			int mode4 = !smode4.empty() ? atoi(smode4.c_str()) : -1;
-			int mode5 = !smode5.empty() ? atoi(smode5.c_str()) : -1;
-			int mode6 = !smode6.empty() ? atoi(smode6.c_str()) : -1;
+			int mode1 = !smode1.empty() ? stoi(smode1) : -1;
+			int mode2 = !smode2.empty() ? stoi(smode2) : -1;
+			int mode3 = !smode3.empty() ? stoi(smode3) : -1;
+			int mode4 = !smode4.empty() ? stoi(smode4) : -1;
+			int mode5 = !smode5.empty() ? stoi(smode5) : -1;
+			int mode6 = !smode6.empty() ? stoi(smode6) : -1;
 
 			if (htype == HTYPE_DomoticzInternal)
 			{
@@ -477,48 +477,48 @@ namespace http
 			std::string sdatatimeout = request::findValue(&req, "datatimeout");
 			if ((name.empty()) || (senabled.empty()) || (shtype.empty()))
 				return;
-			_eHardwareTypes htype = (_eHardwareTypes)atoi(shtype.c_str());
+			_eHardwareTypes htype = (_eHardwareTypes) stoi(shtype);
 
 			stdstring_trim(username);
 			stdstring_trim(password);
-			int iDataTimeout = atoi(sdatatimeout.c_str());
+			int iDataTimeout = stoi(sdatatimeout);
 			int mode1 = 0;
 			int mode2 = 0;
 			int mode3 = 0;
 			int mode4 = 0;
 			int mode5 = 0;
 			int mode6 = 0;
-			int port = atoi(sport.c_str());
-			uint32_t iLogLevelEnabled = (uint32_t)atoi(loglevel.c_str());
+			int port = stoi(sport);
+			uint32_t iLogLevelEnabled = (uint32_t) stoul(loglevel);
 			std::string mode1Str = request::findValue(&req, "Mode1");
 			if (!mode1Str.empty())
 			{
-				mode1 = atoi(mode1Str.c_str());
+				mode1 = stoi(mode1Str);
 			}
 			std::string mode2Str = request::findValue(&req, "Mode2");
 			if (!mode2Str.empty())
 			{
-				mode2 = atoi(mode2Str.c_str());
+				mode2 = stoi(mode2Str);
 			}
 			std::string mode3Str = request::findValue(&req, "Mode3");
 			if (!mode3Str.empty())
 			{
-				mode3 = atoi(mode3Str.c_str());
+				mode3 = stoi(mode3Str);
 			}
 			std::string mode4Str = request::findValue(&req, "Mode4");
 			if (!mode4Str.empty())
 			{
-				mode4 = atoi(mode4Str.c_str());
+				mode4 = stoi(mode4Str);
 			}
 			std::string mode5Str = request::findValue(&req, "Mode5");
 			if (!mode5Str.empty())
 			{
-				mode5 = atoi(mode5Str.c_str());
+				mode5 = stoi(mode5Str);
 			}
 			std::string mode6Str = request::findValue(&req, "Mode6");
 			if (!mode6Str.empty())
 			{
-				mode6 = atoi(mode6Str.c_str());
+				mode6 = stoi(mode6Str);
 			}
 
 			if (!ValidateHardware(htype, sport, address, port, username, password, mode1Str, mode2Str, mode3Str, mode4Str, mode5Str, mode6Str, extra))
@@ -608,7 +608,7 @@ namespace http
 			if (!result.empty())
 			{
 				std::vector<std::string> sd = result[0];
-				int ID = atoi(sd[0].c_str());
+				int ID = stoi(sd[0]);
 
 				root["idx"] = sd[0].c_str(); // OTO output the created ID for easier management on the caller side (if automated)
 
@@ -652,20 +652,20 @@ namespace http
 			std::string mode5Str = request::findValue(&req, "Mode5");
 			std::string mode6Str = request::findValue(&req, "Mode6");
 
-			int mode1 = atoi(mode1Str.c_str());
-			int mode2 = atoi(mode2Str.c_str());
-			int mode3 = atoi(mode3Str.c_str());
-			int mode4 = atoi(mode4Str.c_str());
-			int mode5 = atoi(mode5Str.c_str());
-			int mode6 = atoi(mode6Str.c_str());
+			int mode1 = stoi(mode1Str);
+			int mode2 = stoi(mode2Str);
+			int mode3 = stoi(mode3Str);
+			int mode4 = stoi(mode4Str);
+			int mode5 = stoi(mode5Str);
+			int mode6 = stoi(mode6Str);
 
 			bool bEnabled = (senabled == "true") ? true : false;
 
-			_eHardwareTypes htype = (_eHardwareTypes)atoi(shtype.c_str());
-			int iDataTimeout = atoi(sdatatimeout.c_str());
+			_eHardwareTypes htype = (_eHardwareTypes) stoi(shtype);
+			int iDataTimeout = stoi(sdatatimeout);
 
-			int port = atoi(sport.c_str());
-			uint32_t iLogLevelEnabled = (uint32_t)atoi(loglevel.c_str());
+			int port = stoi(sport);
+			uint32_t iLogLevelEnabled = (uint32_t) stoul(loglevel);
 
 			bool bIsSerial = false;
 
@@ -728,7 +728,7 @@ namespace http
 			}
 
 			// re-add the device in our system
-			int ID = atoi(idx.c_str());
+			int ID = stoi(idx);
 			m_mainworker.AddHardwareFromParams(ID, name, bEnabled, htype, iLogLevelEnabled, address, port, sport, username, password, extra, mode1, mode2, mode3, mode4, mode5, mode6,
 				iDataTimeout, true);
 		}
@@ -747,8 +747,8 @@ namespace http
 			devresult = m_sql.safe_query("SELECT Type, SubType FROM DeviceStatus WHERE (ID=='%q')", idx.c_str());
 			if (!devresult.empty())
 			{
-				int devType = std::stoi(devresult[0][0]);
-				int devSubType = std::stoi(devresult[0][1]);
+				int devType = stoi(devresult[0][0]);
+				int devSubType = stoi(devresult[0][1]);
 				std::vector<std::string> result;
 				result = CBasePush::DropdownOptions(devType, devSubType);
 				int ii = 0;
@@ -779,9 +779,9 @@ namespace http
 			devresult = m_sql.safe_query("SELECT Type, SubType FROM DeviceStatus WHERE (ID=='%q')", idx.c_str());
 			if (!devresult.empty())
 			{
-				int devType = std::stoi(devresult[0][0]);
-				int devSubType = std::stoi(devresult[0][1]);
-				wording = CBasePush::DropdownOptionsValue(devType, devSubType, std::stoi(pos));
+				int devType = stoi(devresult[0][0]);
+				int devSubType = stoi(devresult[0][1]);
+				wording = CBasePush::DropdownOptionsValue(devType, devSubType, stoi(pos));
 			}
 			root["wording"] = wording;
 			root["status"] = "OK";
@@ -832,7 +832,7 @@ namespace http
 			}
 
 			std::string errorMessage;
-			if (!m_sql.AddUserVariable(variablename, (const _eUsrVariableType)atoi(variabletype.c_str()), variablevalue, errorMessage))
+			if (!m_sql.AddUserVariable(variablename, (const _eUsrVariableType) stoi(variabletype), variablevalue, errorMessage))
 			{
 				root["message"] = errorMessage;
 			}
@@ -930,7 +930,7 @@ namespace http
 				bTypeNameChanged = true; // new type
 
 			std::string errorMessage;
-			if (!m_sql.UpdateUserVariable(idx, variablename, (const _eUsrVariableType)atoi(variabletype.c_str()), variablevalue, !bTypeNameChanged, errorMessage))
+			if (!m_sql.UpdateUserVariable(idx, variablename, (const _eUsrVariableType) stoi(variabletype), variablevalue, !bTypeNameChanged, errorMessage))
 			{
 				root["message"] = errorMessage;
 			}
@@ -969,7 +969,7 @@ namespace http
 			if (idx.empty())
 				return;
 
-			int iVarID = atoi(idx.c_str());
+			int iVarID = stoi(idx);
 
 			std::vector<std::vector<std::string>> result;
 			result = m_sql.safe_query("SELECT ID, Name, ValueType, Value, LastUpdate FROM UserVariables WHERE (ID==%d)", iVarID);
@@ -1000,7 +1000,7 @@ namespace http
 			root["status"] = "OK";
 			root["title"] = "AllowNewHardware";
 
-			m_sql.AllowNewHardwareTimer(atoi(sTimeout.c_str()));
+			m_sql.AllowNewHardwareTimer(stoi(sTimeout));
 		}
 
 		void CWebServer::Cmd_DeleteHardware(WebEmSession& session, const request& req, Json::Value& root)
@@ -1014,7 +1014,7 @@ namespace http
 			std::string idx = request::findValue(&req, "idx");
 			if (idx.empty())
 				return;
-			int hwID = atoi(idx.c_str());
+			int hwID = stoi(idx);
 
 			CDomoticzHardwareBase* pBaseHardware = m_mainworker.GetHardware(hwID);
 			if ((pBaseHardware != nullptr) && (pBaseHardware->HwdType == HTYPE_DomoticzInternal))
@@ -1047,7 +1047,7 @@ namespace http
 			std::string sloglevel = request::findValue(&req, "loglevel");
 			if (!sloglevel.empty())
 			{
-				lLevel = (_eLogLevel)atoi(sloglevel.c_str());
+				lLevel = (_eLogLevel) stoi(sloglevel);
 			}
 
 			std::list<CLogger::_tLogLineStruct> logmessages = _log.GetLog(lLevel);
@@ -1096,7 +1096,7 @@ namespace http
 			if (!result.empty())
 			{
 				std::vector<std::string> sd = result[0];
-				int ID = atoi(sd[0].c_str());
+				int ID = stoi(sd[0]);
 
 				root["idx"] = ID; // OTO output the created ID for easier management on the caller side (if automated)
 			}
@@ -1154,7 +1154,7 @@ namespace http
 				|| sactplan.empty()
 				)
 				return;
-			const int iActPlan = atoi(sactplan.c_str());
+			const int iActPlan = stoi(sactplan);
 			const bool iUnique = (sunique == "true") ? true : false;
 			int ii = 0;
 
@@ -1174,8 +1174,8 @@ namespace http
 					}
 					if (bDoAdd)
 					{
-						int _dtype = atoi(sd[2].c_str());
-						std::string Name = "[" + sd[4] + "] " + sd[1] + " (" + RFX_Type_Desc(_dtype, 1) + "/" + RFX_Type_SubType_Desc(_dtype, atoi(sd[3].c_str())) + ")";
+						int _dtype = stoi(sd[2]);
+						std::string Name = "[" + sd[4] + "] " + sd[1] + " (" + RFX_Type_Desc(_dtype, 1) + "/" + RFX_Type_SubType_Desc(_dtype, (unsigned char) stoi(sd[3])) + ")";
 						root["result"][ii]["type"] = 0;
 						root["result"][ii]["idx"] = sd[0];
 						root["result"][ii]["Name"] = Name;
@@ -1223,7 +1223,7 @@ namespace http
 			root["status"] = "OK";
 			root["title"] = "AddPlanActiveDevice";
 
-			int activetype = atoi(sactivetype.c_str());
+			int activetype = stoi(sactivetype);
 
 			// check if it is not already there
 			std::vector<std::vector<std::string>> result;
@@ -1250,7 +1250,7 @@ namespace http
 				for (const auto& sd : result)
 				{
 					std::string ID = sd[0];
-					int DevSceneType = atoi(sd[1].c_str());
+					int DevSceneType = stoi(sd[1]);
 					std::string DevSceneRowID = sd[2];
 
 					std::string Name;
@@ -1678,7 +1678,7 @@ namespace http
 			}
 			if (m_sql.GetPreferencesVar("DegreeDaysBaseTemperature", sValue))
 			{
-				root["DegreeDaysBaseTemperature"] = atof(sValue.c_str());
+				root["DegreeDaysBaseTemperature"] = stof(sValue);
 			}
 			m_sql.GetPreferencesVar("DashboardType", iDashboardType);
 			root["DashboardType"] = iDashboardType;
@@ -1719,7 +1719,7 @@ namespace http
 				result = m_sql.safe_query("SELECT TabsEnabled FROM Users WHERE (ID==%lu)", UserID);
 				if (!result.empty())
 				{
-					int TabsEnabled = atoi(result[0][0].c_str());
+					int TabsEnabled = stoi(result[0][0]);
 					bEnableTabLight = (TabsEnabled & (1 << 0));
 					bEnableTabScenes = (TabsEnabled & (1 << 1));
 					bEnableTabTemp = (TabsEnabled & (1 << 2));
@@ -1976,7 +1976,7 @@ namespace http
 
 			std::string idx = request::findValue(&req, "idx");
 
-			if (!IsIdxForUser(&session, atoi(idx.c_str())))
+			if (!IsIdxForUser(&session, stoi(idx)))
 			{
 				_log.Log(LOG_ERROR, "User: %s tried to update an Unauthorized device!", session.username.c_str());
 				session.reply_status = reply::forbidden;
@@ -2025,26 +2025,26 @@ namespace http
 				dsubtype = result[0][5];
 			}
 
-			int HardwareID = atoi(hid.c_str());
-			int OrgHardwareID = atoi(ohid.c_str());
+			int HardwareID = stoi(hid);
+			int OrgHardwareID = stoi(ohid);
 			std::string DeviceID = did;
-			int unit = atoi(dunit.c_str());
-			int devType = atoi(dtype.c_str());
-			int subType = atoi(dsubtype.c_str());
+			int unit = stoi(dunit);
+			int devType = stoi(dtype);
+			int subType = stoi(dsubtype);
 
-			// uint64_t ulIdx = std::stoull(idx);
+			// uint64_t ulIdx = stoull(idx);
 
-			int invalue = atoi(nvalue.c_str());
+			int invalue = stoi(nvalue);
 
 			std::string sSignalLevel = request::findValue(&req, "rssi");
 			if (!sSignalLevel.empty())
 			{
-				signallevel = atoi(sSignalLevel.c_str());
+				signallevel = stoi(sSignalLevel);
 			}
 			std::string sBatteryLevel = request::findValue(&req, "battery");
 			if (!sBatteryLevel.empty())
 			{
-				batterylevel = atoi(sBatteryLevel.c_str());
+				batterylevel = stoi(sBatteryLevel);
 			}
 			std::string szUpdateUser = Username + " (IP: " + session.remote_host + ")";
 			if (m_mainworker.UpdateDevice(HardwareID, OrgHardwareID, DeviceID, unit, devType, subType, invalue, svalue, szUpdateUser, signallevel, batterylevel, parseTrigger))
@@ -2116,7 +2116,7 @@ namespace http
 
 			if ((idx.empty()) || (sstate.empty()))
 				return;
-			int iState = atoi(sstate.c_str());
+			int iState = stoi(sstate);
 
 			int urights = 3;
 			bool bHaveUser = (!session.username.empty());
@@ -2300,9 +2300,9 @@ namespace http
 				root["title"] = "GetCosts";
 
 				std::vector<std::string> sd = result[0];
-				unsigned char dType = atoi(sd[0].c_str());
-				// unsigned char subType = atoi(sd[1].c_str());
-				// nValue = (unsigned char)atoi(sd[2].c_str());
+				unsigned char dType = (unsigned char) stoi(sd[0]);
+				// unsigned char subType = (unsigned char) stoi(sd[1]);
+				// nValue = (unsigned char) stoi(sd[2]);
 				std::string sValue = sd[3];
 
 				if (dType == pTypeP1Power)
@@ -2314,12 +2314,12 @@ namespace http
 					if (splitresults.size() != 6)
 						return;
 
-					uint64_t powerusage1 = std::stoull(splitresults[0]);
-					uint64_t powerusage2 = std::stoull(splitresults[1]);
-					uint64_t powerdeliv1 = std::stoull(splitresults[2]);
-					uint64_t powerdeliv2 = std::stoull(splitresults[3]);
-					// uint64_t usagecurrent = std::stoull(splitresults[4]);
-					// uint64_t delivcurrent = std::stoull(splitresults[5]);
+					uint64_t powerusage1 = stoull(splitresults[0]);
+					uint64_t powerusage2 = stoull(splitresults[1]);
+					uint64_t powerdeliv1 = stoull(splitresults[2]);
+					uint64_t powerdeliv2 = stoull(splitresults[3]);
+					// uint64_t usagecurrent = stoull(splitresults[4]);
+					// uint64_t delivcurrent = stoull(splitresults[5]);
 
 					powerdeliv1 = (powerdeliv1 < 10) ? 0 : powerdeliv1;
 					powerdeliv2 = (powerdeliv2 < 10) ? 0 : powerdeliv2;
@@ -2448,22 +2448,22 @@ namespace http
 				/* Start processing the simple ones */
 				/* -------------------------------- */
 
-				m_sql.UpdatePreferencesVar("DashboardType", atoi(request::findValue(&req, "DashboardType").c_str())); cntSettings++;
-				m_sql.UpdatePreferencesVar("MobileType", atoi(request::findValue(&req, "MobileType").c_str())); cntSettings++;
-				m_sql.UpdatePreferencesVar("ReleaseChannel", atoi(request::findValue(&req, "ReleaseChannel").c_str())); cntSettings++;
-				m_sql.UpdatePreferencesVar("LightHistoryDays", atoi(request::findValue(&req, "LightHistoryDays").c_str())); cntSettings++;
-				m_sql.UpdatePreferencesVar("5MinuteHistoryDays", atoi(request::findValue(&req, "ShortLogDays").c_str())); cntSettings++;
-				m_sql.UpdatePreferencesVar("ElectricVoltage", atoi(request::findValue(&req, "ElectricVoltage").c_str())); cntSettings++;
-				m_sql.UpdatePreferencesVar("CM113DisplayType", atoi(request::findValue(&req, "CM113DisplayType").c_str())); cntSettings++;
-				m_sql.UpdatePreferencesVar("MaxElectricPower", atoi(request::findValue(&req, "MaxElectricPower").c_str())); cntSettings++;
-				m_sql.UpdatePreferencesVar("DoorbellCommand", atoi(request::findValue(&req, "DoorbellCommand").c_str())); cntSettings++;
-				m_sql.UpdatePreferencesVar("SmartMeterType", atoi(request::findValue(&req, "SmartMeterType").c_str())); cntSettings++;
-				m_sql.UpdatePreferencesVar("SecOnDelay", atoi(request::findValue(&req, "SecOnDelay").c_str())); cntSettings++;
-				m_sql.UpdatePreferencesVar("FloorplanPopupDelay", atoi(request::findValue(&req, "FloorplanPopupDelay").c_str())); cntSettings++;
-				m_sql.UpdatePreferencesVar("FloorplanActiveOpacity", atoi(request::findValue(&req, "FloorplanActiveOpacity").c_str())); cntSettings++;
-				m_sql.UpdatePreferencesVar("FloorplanInactiveOpacity", atoi(request::findValue(&req, "FloorplanInactiveOpacity").c_str())); cntSettings++;
-				m_sql.UpdatePreferencesVar("OneWireSensorPollPeriod", atoi(request::findValue(&req, "OneWireSensorPollPeriod").c_str())); cntSettings++;
-				m_sql.UpdatePreferencesVar("OneWireSwitchPollPeriod", atoi(request::findValue(&req, "OneWireSwitchPollPeriod").c_str())); cntSettings++;
+				m_sql.UpdatePreferencesVar("DashboardType", stoi(request::findValue(&req, "DashboardType"))); cntSettings++;
+				m_sql.UpdatePreferencesVar("MobileType", stoi(request::findValue(&req, "MobileType"))); cntSettings++;
+				m_sql.UpdatePreferencesVar("ReleaseChannel", stoi(request::findValue(&req, "ReleaseChannel"))); cntSettings++;
+				m_sql.UpdatePreferencesVar("LightHistoryDays", stoi(request::findValue(&req, "LightHistoryDays"))); cntSettings++;
+				m_sql.UpdatePreferencesVar("5MinuteHistoryDays", stoi(request::findValue(&req, "ShortLogDays"))); cntSettings++;
+				m_sql.UpdatePreferencesVar("ElectricVoltage", stoi(request::findValue(&req, "ElectricVoltage"))); cntSettings++;
+				m_sql.UpdatePreferencesVar("CM113DisplayType", stoi(request::findValue(&req, "CM113DisplayType"))); cntSettings++;
+				m_sql.UpdatePreferencesVar("MaxElectricPower", stoi(request::findValue(&req, "MaxElectricPower"))); cntSettings++;
+				m_sql.UpdatePreferencesVar("DoorbellCommand", stoi(request::findValue(&req, "DoorbellCommand"))); cntSettings++;
+				m_sql.UpdatePreferencesVar("SmartMeterType", stoi(request::findValue(&req, "SmartMeterType"))); cntSettings++;
+				m_sql.UpdatePreferencesVar("SecOnDelay", stoi(request::findValue(&req, "SecOnDelay"))); cntSettings++;
+				m_sql.UpdatePreferencesVar("FloorplanPopupDelay", stoi(request::findValue(&req, "FloorplanPopupDelay"))); cntSettings++;
+				m_sql.UpdatePreferencesVar("FloorplanActiveOpacity", stoi(request::findValue(&req, "FloorplanActiveOpacity"))); cntSettings++;
+				m_sql.UpdatePreferencesVar("FloorplanInactiveOpacity", stoi(request::findValue(&req, "FloorplanInactiveOpacity"))); cntSettings++;
+				m_sql.UpdatePreferencesVar("OneWireSensorPollPeriod", stoi(request::findValue(&req, "OneWireSensorPollPeriod"))); cntSettings++;
+				m_sql.UpdatePreferencesVar("OneWireSwitchPollPeriod", stoi(request::findValue(&req, "OneWireSwitchPollPeriod"))); cntSettings++;
 
 				m_sql.UpdatePreferencesVar("UseAutoUpdate", (request::findValue(&req, "checkforupdates") == "on" ? 1 : 0)); cntSettings++;
 				m_sql.UpdatePreferencesVar("UseAutoBackup", (request::findValue(&req, "enableautobackup") == "on" ? 1 : 0)); cntSettings++;
@@ -2487,33 +2487,33 @@ namespace http
 				/* More complex ones that need additional processing */
 				/* ------------------------------------------------- */
 
-				float CostEnergy = static_cast<float>(atof(request::findValue(&req, "CostEnergy").c_str()));
+				float CostEnergy = stof(request::findValue(&req, "CostEnergy"));
 				m_sql.UpdatePreferencesVar("CostEnergy", int(CostEnergy * 10000.0F)); cntSettings++;
-				float CostEnergyT2 = static_cast<float>(atof(request::findValue(&req, "CostEnergyT2").c_str()));
+				float CostEnergyT2 = stof(request::findValue(&req, "CostEnergyT2"));
 				m_sql.UpdatePreferencesVar("CostEnergyT2", int(CostEnergyT2 * 10000.0F)); cntSettings++;
-				float CostEnergyR1 = static_cast<float>(atof(request::findValue(&req, "CostEnergyR1").c_str()));
+				float CostEnergyR1 = stof(request::findValue(&req, "CostEnergyR1"));
 				m_sql.UpdatePreferencesVar("CostEnergyR1", int(CostEnergyR1 * 10000.0F)); cntSettings++;
-				float CostEnergyR2 = static_cast<float>(atof(request::findValue(&req, "CostEnergyR2").c_str()));
+				float CostEnergyR2 = stof(request::findValue(&req, "CostEnergyR2"));
 				m_sql.UpdatePreferencesVar("CostEnergyR2", int(CostEnergyR2 * 10000.0F)); cntSettings++;
-				float CostGas = static_cast<float>(atof(request::findValue(&req, "CostGas").c_str()));
+				float CostGas = stof(request::findValue(&req, "CostGas"));
 				m_sql.UpdatePreferencesVar("CostGas", int(CostGas * 10000.0F)); cntSettings++;
-				float CostWater = static_cast<float>(atof(request::findValue(&req, "CostWater").c_str()));
+				float CostWater = stof(request::findValue(&req, "CostWater"));
 				m_sql.UpdatePreferencesVar("CostWater", int(CostWater * 10000.0F)); cntSettings++;
 
-				int EnergyDivider = atoi(request::findValue(&req, "EnergyDivider").c_str());
+				int EnergyDivider = stoi(request::findValue(&req, "EnergyDivider"));
 				if (EnergyDivider < 1)
 					EnergyDivider = 1000;
 				m_sql.UpdatePreferencesVar("MeterDividerEnergy", EnergyDivider); cntSettings++;
-				int GasDivider = atoi(request::findValue(&req, "GasDivider").c_str());
+				int GasDivider = stoi(request::findValue(&req, "GasDivider"));
 				if (GasDivider < 1)
 					GasDivider = 100;
 				m_sql.UpdatePreferencesVar("MeterDividerGas", GasDivider); cntSettings++;
-				int WaterDivider = atoi(request::findValue(&req, "WaterDivider").c_str());
+				int WaterDivider = stoi(request::findValue(&req, "WaterDivider"));
 				if (WaterDivider < 1)
 					WaterDivider = 100;
 				m_sql.UpdatePreferencesVar("MeterDividerWater", WaterDivider); cntSettings++;
 
-				int sensortimeout = atoi(request::findValue(&req, "SensorTimeout").c_str());
+				int sensortimeout = stoi(request::findValue(&req, "SensorTimeout"));
 				if (sensortimeout < 10)
 					sensortimeout = 10;
 				m_sql.UpdatePreferencesVar("SensorTimeout", sensortimeout); cntSettings++;
@@ -2531,7 +2531,7 @@ namespace http
 				/* Also update m_sql.variables */
 				/* --------------------------- */
 
-				int iShortLogInterval = atoi(request::findValue(&req, "ShortLogInterval").c_str());
+				int iShortLogInterval = stoi(request::findValue(&req, "ShortLogInterval"));
 				if (iShortLogInterval < 1)
 					iShortLogInterval = 5;
 				m_sql.m_ShortLogInterval = iShortLogInterval;
@@ -2550,15 +2550,15 @@ namespace http
 				m_sql.m_bAcceptNewHardware = (iEnableNewHardware == 1);
 				m_sql.UpdatePreferencesVar("AcceptNewHardware", m_sql.m_bAcceptNewHardware); cntSettings++;
 
-				int nUnit = atoi(request::findValue(&req, "WindUnit").c_str());
+				int nUnit = stoi(request::findValue(&req, "WindUnit"));
 				m_sql.m_windunit = (_eWindUnit)nUnit;
 				m_sql.UpdatePreferencesVar("WindUnit", m_sql.m_windunit); cntSettings++;
 
-				nUnit = atoi(request::findValue(&req, "TempUnit").c_str());
+				nUnit = stoi(request::findValue(&req, "TempUnit"));
 				m_sql.m_tempunit = (_eTempUnit)nUnit;
 				m_sql.UpdatePreferencesVar("TempUnit", m_sql.m_tempunit); cntSettings++;
 
-				nUnit = atoi(request::findValue(&req, "WeightUnit").c_str());
+				nUnit = stoi(request::findValue(&req, "WeightUnit"));
 				m_sql.m_weightunit = (_eWeightUnit)nUnit;
 				m_sql.UpdatePreferencesVar("WeightUnit", m_sql.m_weightunit); cntSettings++;
 
@@ -2622,7 +2622,7 @@ namespace http
 				int rnvalue = 0;
 
 				m_sql.GetPreferencesVar("ActiveTimerPlan", rnOldvalue);
-				rnvalue = atoi(request::findValue(&req, "ActiveTimerPlan").c_str());
+				rnvalue = stoi(request::findValue(&req, "ActiveTimerPlan"));
 				if (rnOldvalue != rnvalue)
 				{
 					m_sql.UpdatePreferencesVar("ActiveTimerPlan", rnvalue);
@@ -2633,7 +2633,7 @@ namespace http
 
 				rnOldvalue = 0;
 				m_sql.GetPreferencesVar("NotificationSensorInterval", rnOldvalue);
-				rnvalue = atoi(request::findValue(&req, "NotificationSensorInterval").c_str());
+				rnvalue = stoi(request::findValue(&req, "NotificationSensorInterval"));
 				if (rnOldvalue != rnvalue)
 				{
 					m_sql.UpdatePreferencesVar("NotificationSensorInterval", rnvalue);
@@ -2643,7 +2643,7 @@ namespace http
 
 				rnOldvalue = 0;
 				m_sql.GetPreferencesVar("NotificationSwitchInterval", rnOldvalue);
-				rnvalue = atoi(request::findValue(&req, "NotificationSwitchInterval").c_str());
+				rnvalue = stoi(request::findValue(&req, "NotificationSwitchInterval"));
 				if (rnOldvalue != rnvalue)
 				{
 					m_sql.UpdatePreferencesVar("NotificationSwitchInterval", rnvalue);
@@ -2681,12 +2681,12 @@ namespace http
 					m_mainworker.m_eventsystem.GetCurrentStates();
 				}
 				cntSettings++;
-				m_sql.UpdatePreferencesVar("DzVentsLogLevel", atoi(request::findValue(&req, "DzVentsLogLevel").c_str()));
+				m_sql.UpdatePreferencesVar("DzVentsLogLevel", stoi(request::findValue(&req, "DzVentsLogLevel")));
 				cntSettings++;
 
 				rnOldvalue = 0;
 				m_sql.GetPreferencesVar("RemoteSharedPort", rnOldvalue);
-				m_sql.UpdatePreferencesVar("RemoteSharedPort", atoi(request::findValue(&req, "RemoteSharedPort").c_str()));
+				m_sql.UpdatePreferencesVar("RemoteSharedPort", stoi(request::findValue(&req, "RemoteSharedPort")));
 				m_sql.GetPreferencesVar("RemoteSharedPort", rnvalue);
 
 				if (rnvalue != rnOldvalue)
@@ -2704,7 +2704,7 @@ namespace http
 
 				rnOldvalue = 0;
 				m_sql.GetPreferencesVar("RandomTimerFrame", rnOldvalue);
-				rnvalue = atoi(request::findValue(&req, "RandomSpread").c_str());
+				rnvalue = stoi(request::findValue(&req, "RandomSpread"));
 				if (rnOldvalue != rnvalue)
 				{
 					m_sql.UpdatePreferencesVar("RandomTimerFrame", rnvalue);
@@ -2713,7 +2713,7 @@ namespace http
 				cntSettings++;
 
 				rnOldvalue = 0;
-				int batterylowlevel = atoi(request::findValue(&req, "BatterLowLevel").c_str());
+				int batterylowlevel = stoi(request::findValue(&req, "BatterLowLevel"));
 				if (batterylowlevel > 100)
 					batterylowlevel = 100;
 				m_sql.GetPreferencesVar("BatteryLowNotification", rnOldvalue);
@@ -2815,7 +2815,7 @@ namespace http
 			}
 			root["status"] = "OK";
 			root["title"] = "AddScene";
-			m_sql.safe_query("INSERT INTO Scenes (Name,SceneType) VALUES ('%q',%d)", name.c_str(), atoi(stype.c_str()));
+			m_sql.safe_query("INSERT INTO Scenes (Name,SceneType) VALUES ('%q',%d)", name.c_str(), stoi(stype));
 			if (m_sql.m_bEnableEventSystem)
 			{
 				m_mainworker.m_eventsystem.GetCurrentScenesGroups();
@@ -2871,8 +2871,8 @@ namespace http
 			root["status"] = "OK";
 			root["title"] = "UpdateScene";
 			m_sql.safe_query("UPDATE Scenes SET Name='%q', Description='%q', SceneType=%d, Protected=%d, OnAction='%q', OffAction='%q' WHERE (ID == '%q')", name.c_str(),
-				description.c_str(), atoi(stype.c_str()), iProtected, onaction.c_str(), offaction.c_str(), idx.c_str());
-			uint64_t ullidx = std::stoull(idx);
+				description.c_str(), stoi(stype), iProtected, onaction.c_str(), offaction.c_str(), idx.c_str());
+			uint64_t ullidx = stoull(idx);
 			m_mainworker.m_eventsystem.WWWUpdateSingleState(ullidx, name, m_mainworker.m_eventsystem.REASON_SCENEGROUP);
 		}
 
@@ -2931,7 +2931,7 @@ namespace http
 						result2 = m_sql.safe_query("SELECT COUNT(*) FROM DeviceToPlansMap WHERE (PlanID=='%q')", sd[0].c_str());
 						if (!result2.empty())
 						{
-							totDevices = (unsigned int)atoi(result2[0][0].c_str());
+							totDevices = (unsigned int) stoul(result2[0][0]);
 						}
 						root["result"][ii]["Devices"] = totDevices;
 
@@ -2955,7 +2955,7 @@ namespace http
 			for (const auto& sd : result)
 			{
 				std::string Key = sd[0];
-				int nValue = atoi(sd[1].c_str());
+				int nValue = stoi(sd[1]);
 				std::string sValue = sd[2];
 
 				if (Key == "FloorplanPopupDelay")
@@ -3014,7 +3014,7 @@ namespace http
 					result3 = m_sql.safe_query("SELECT COUNT(*) FROM Plans WHERE (FloorplanID=='%q')", sd[0].c_str());
 					if (!result3.empty())
 					{
-						totPlans = (unsigned int)atoi(result3[0][0].c_str());
+						totPlans = (unsigned int) stoul(result3[0][0]);
 					}
 					root["result"][ii]["Plans"] = totPlans;
 
@@ -3076,9 +3076,9 @@ namespace http
 							continue;
 					}
 
-					unsigned char nValue = atoi(sd[4].c_str());
-					unsigned char scenetype = atoi(sd[5].c_str());
-					int iProtected = atoi(sd[7].c_str());
+					unsigned char nValue = (unsigned char) stoi(sd[4]);
+					unsigned char scenetype = (unsigned char) stoi(sd[5]);
+					int iProtected = stoi(sd[7]);
 
 					std::string onaction = base64_encode(sd[8]);
 					std::string offaction = base64_encode(sd[9]);
@@ -3086,7 +3086,7 @@ namespace http
 					root["result"][ii]["idx"] = sd[0];
 					root["result"][ii]["Name"] = sName;
 					root["result"][ii]["Description"] = sd[10];
-					root["result"][ii]["Favorite"] = atoi(sd[3].c_str());
+					root["result"][ii]["Favorite"] = stoi(sd[3]);
 					root["result"][ii]["Protected"] = (iProtected != 0);
 					root["result"][ii]["OnAction"] = onaction;
 					root["result"][ii]["OffAction"] = offaction;
@@ -3159,7 +3159,7 @@ namespace http
 				int ii = 0;
 				for (const auto& sd : result)
 				{
-					_eHardwareTypes hType = (_eHardwareTypes)atoi(sd[3].c_str());
+					_eHardwareTypes hType = (_eHardwareTypes) stoi(sd[3]);
 					if (hType == HTYPE_DomoticzInternal)
 						continue;
 					root["result"][ii]["idx"] = sd[0];
@@ -3167,7 +3167,7 @@ namespace http
 					root["result"][ii]["Enabled"] = (sd[2] == "1") ? "true" : "false";
 					root["result"][ii]["Type"] = hType;
 					root["result"][ii]["Address"] = sd[4];
-					root["result"][ii]["Port"] = atoi(sd[5].c_str());
+					root["result"][ii]["Port"] = stoi(sd[5]);
 					root["result"][ii]["SerialPort"] = sd[6];
 					root["result"][ii]["Username"] = sd[7];
 					root["result"][ii]["Password"] = sd[8];
@@ -3184,17 +3184,17 @@ namespace http
 					}
 					else
 					{
-						root["result"][ii]["Mode1"] = atoi(sd[10].c_str());
-						root["result"][ii]["Mode2"] = atoi(sd[11].c_str());
-						root["result"][ii]["Mode3"] = atoi(sd[12].c_str());
-						root["result"][ii]["Mode4"] = atoi(sd[13].c_str());
-						root["result"][ii]["Mode5"] = atoi(sd[14].c_str());
-						root["result"][ii]["Mode6"] = atoi(sd[15].c_str());
+						root["result"][ii]["Mode1"] = stoi(sd[10]);
+						root["result"][ii]["Mode2"] = stoi(sd[11]);
+						root["result"][ii]["Mode3"] = stoi(sd[12]);
+						root["result"][ii]["Mode4"] = stoi(sd[13]);
+						root["result"][ii]["Mode5"] = stoi(sd[14]);
+						root["result"][ii]["Mode6"] = stoi(sd[15]);
 					}
-					root["result"][ii]["DataTimeout"] = atoi(sd[16].c_str());
-					root["result"][ii]["LogLevel"] = atoi(sd[17].c_str());
+					root["result"][ii]["DataTimeout"] = stoi(sd[16]);
+					root["result"][ii]["LogLevel"] = stoi(sd[17]);
 
-					CDomoticzHardwareBase* pHardware = m_mainworker.GetHardware(atoi(sd[0].c_str()));
+					CDomoticzHardwareBase* pHardware = m_mainworker.GetHardware(stoi(sd[0]));
 					if (pHardware != nullptr)
 					{
 						if ((pHardware->HwdType == HTYPE_RFXtrx315) || (pHardware->HwdType == HTYPE_RFXtrx433) || (pHardware->HwdType == HTYPE_RFXtrx868) ||
@@ -3303,9 +3303,9 @@ namespace http
 					root["result"][ii]["Enabled"] = (sd[1] == "1") ? "true" : "false";
 					root["result"][ii]["Username"] = base64_decode(sd[2]);
 					root["result"][ii]["Password"] = sd[3];
-					root["result"][ii]["Rights"] = atoi(sd[4].c_str());
-					root["result"][ii]["RemoteSharing"] = atoi(sd[5].c_str());
-					root["result"][ii]["TabsEnabled"] = atoi(sd[6].c_str());
+					root["result"][ii]["Rights"] = stoi(sd[4]);
+					root["result"][ii]["RemoteSharing"] = stoi(sd[5]);
+					root["result"][ii]["TabsEnabled"] = stoi(sd[6]);
 					ii++;
 				}
 				root["status"] = "OK";
@@ -3528,7 +3528,7 @@ namespace http
 			{
 				_log.Log(LOG_STATUS, "User: %s initiated a SetPoint command", m_users[iUser].Username.c_str());
 			}
-			m_mainworker.SetSetPoint(idx, static_cast<float>(atof(setpoint.c_str())));
+			m_mainworker.SetSetPoint(idx, stof(setpoint));
 		}
 
 		void CWebServer::Cmd_GetSceneActivations(WebEmSession& session, const request& req, Json::Value& root)
@@ -3552,7 +3552,7 @@ namespace http
 				return;
 			int ii = 0;
 			std::string Activators = result[0][0];
-			int SceneType = atoi(result[0][1].c_str());
+			int SceneType = stoi(result[0][1]);
 			if (!Activators.empty())
 			{
 				// Get Activator device names
@@ -3567,7 +3567,7 @@ namespace http
 					int sCode = 0;
 					if (arrayCode.size() == 2)
 					{
-						sCode = atoi(arrayCode[1].c_str());
+						sCode = stoi(arrayCode[1]);
 					}
 
 					result2 = m_sql.safe_query("SELECT Name, [Type], SubType, SwitchType FROM DeviceStatus WHERE (ID==%q)", sID.c_str());
@@ -3577,9 +3577,9 @@ namespace http
 						std::string lstatus = "-";
 						if ((SceneType == 0) && (arrayCode.size() == 2))
 						{
-							unsigned char devType = (unsigned char)atoi(sd[1].c_str());
-							unsigned char subType = (unsigned char)atoi(sd[2].c_str());
-							_eSwitchType switchtype = (_eSwitchType)atoi(sd[3].c_str());
+							unsigned char devType = (unsigned char) stoi(sd[1]);
+							unsigned char subType = (unsigned char) stoi(sd[2]);
+							_eSwitchType switchtype = (_eSwitchType) stoi(sd[3]);
 							int nValue = sCode;
 							std::string sValue;
 							int llevel = 0;
@@ -3588,7 +3588,7 @@ namespace http
 							int maxDimLevel = 0;
 							GetLightStatus(devType, subType, switchtype, nValue, sValue, lstatus, llevel, bHaveDimmer, maxDimLevel, bHaveGroupCmd);
 						}
-						uint64_t dID = std::stoull(sID);
+						uint64_t dID = stoull(sID);
 						root["result"][ii]["idx"] = Json::Value::UInt64(dID);
 						root["result"][ii]["name"] = sd[0];
 						root["result"][ii]["code"] = sCode;
@@ -3621,7 +3621,7 @@ namespace http
 			if (result.empty())
 				return;
 			std::string Activators = result[0][0];
-			unsigned char scenetype = atoi(result[0][1].c_str());
+			unsigned char scenetype = (unsigned char) stoi(result[0][1]);
 
 			if (!Activators.empty())
 			{
@@ -3680,7 +3680,7 @@ namespace http
 			if (result.empty())
 				return;
 			std::string Activators = result[0][0];
-			int SceneType = atoi(result[0][1].c_str());
+			int SceneType = stoi(result[0][1]);
 			if (!Activators.empty())
 			{
 				// Get Activator device names
@@ -3777,11 +3777,11 @@ namespace http
 					root["result"][ii]["name"] = sd[1];
 					root["result"][ii]["name_type"] = std_format("%s (%s/%s)",
 						sd[1].c_str(),
-						RFX_Type_Desc(std::stoi(sd[2]), 1),
-						RFX_Type_SubType_Desc(std::stoi(sd[2]), std::stoi(sd[3]))
+						RFX_Type_Desc((unsigned char) stoi(sd[2]), 1),
+						RFX_Type_SubType_Desc((unsigned char) stoi(sd[2]), (unsigned char) stoi(sd[3]))
 					);
-					//root["result"][ii]["Type"] = RFX_Type_Desc(std::stoi(sd[2]), 1);
-					//root["result"][ii]["SubType"] = RFX_Type_SubType_Desc(std::stoi(sd[2]), std::stoi(sd[3]));
+					//root["result"][ii]["Type"] = RFX_Type_Desc((unsigned char) stoi(sd[2]), 1);
+					//root["result"][ii]["SubType"] = RFX_Type_SubType_Desc((unsigned char) stoi(sd[2]), (unsigned char) stoi(sd[3]));
 					ii++;
 				}
 			}
@@ -3847,7 +3847,7 @@ namespace http
 			std::string sidx = request::findValue(&req, "idx");
 			if (sidx.empty())
 				return;
-			int idx = atoi(sidx.c_str());
+			int idx = stoi(sidx);
 			root["status"] = "OK";
 			root["title"] = "DeleteCustomIcon";
 
@@ -3884,7 +3884,7 @@ namespace http
 			if ((sidx.empty()) || (sname.empty()) || (sdescription.empty()))
 				return;
 
-			int idx = atoi(sidx.c_str());
+			int idx = stoi(sidx);
 			root["status"] = "OK";
 			root["title"] = "UpdateCustomIcon";
 
@@ -3904,12 +3904,12 @@ namespace http
 			std::string sname = HTMLSanitizer::Sanitize(request::findValue(&req, "name"));
 			if ((sidx.empty()) || (sname.empty()))
 				return;
-			int idx = atoi(sidx.c_str());
+			int idx = stoi(sidx);
 			root["status"] = "OK";
 			root["title"] = "RenameDevice";
 
 			m_sql.safe_query("UPDATE DeviceStatus SET Name='%q' WHERE (ID == %d)", sname.c_str(), idx);
-			uint64_t ullidx = std::stoull(sidx);
+			uint64_t ullidx = stoull(sidx);
 			m_mainworker.m_eventsystem.WWWUpdateSingleState(ullidx, sname, m_mainworker.m_eventsystem.REASON_DEVICE);
 
 #ifdef ENABLE_PYTHON
@@ -3930,12 +3930,12 @@ namespace http
 			std::string sname = HTMLSanitizer::Sanitize(request::findValue(&req, "name"));
 			if ((sidx.empty()) || (sname.empty()))
 				return;
-			int idx = atoi(sidx.c_str());
+			int idx = stoi(sidx);
 			root["status"] = "OK";
 			root["title"] = "RenameScene";
 
 			m_sql.safe_query("UPDATE Scenes SET Name='%q' WHERE (ID == %d)", sname.c_str(), idx);
-			uint64_t ullidx = std::stoull(sidx);
+			uint64_t ullidx = stoull(sidx);
 			m_mainworker.m_eventsystem.WWWUpdateSingleState(ullidx, sname, m_mainworker.m_eventsystem.REASON_SCENEGROUP);
 		}
 
@@ -3953,7 +3953,7 @@ namespace http
 			std::string sMainDeviceIdx = request::findValue(&req, "maindeviceidx");
 			if (sIdx.empty() || sUsed.empty())
 				return;
-			const int idx = atoi(sIdx.c_str());
+			const int idx = stoi(sIdx);
 			bool bIsUsed = (sUsed == "true");
 
 			if (!sName.empty())
@@ -4100,7 +4100,7 @@ namespace http
 
 			if ((sidx.empty()) || (enabled.empty()) || (name.empty()))
 				return;
-			uint64_t idx = std::stoull(sidx);
+			uint64_t idx = stoull(sidx);
 
 			m_sql.safe_query("UPDATE MobileDevices SET Name='%q', Active=%d WHERE (ID==%" PRIu64 ")", name.c_str(), (enabled == "true") ? 1 : 0, idx);
 
@@ -4135,14 +4135,14 @@ namespace http
 			uint64_t idx = 0;
 			if (!request::findValue(&req, "idx").empty())
 			{
-				idx = std::stoull(request::findValue(&req, "idx"));
+				idx = stoull(request::findValue(&req, "idx"));
 			}
 
 			std::vector<std::vector<std::string>> result;
 			result = m_sql.safe_query("SELECT Type, SubType FROM DeviceStatus WHERE (ID==%" PRIu64 ")", idx);
 			if (!result.empty())
 			{
-				int dType = atoi(result[0][0].c_str());
+				int dType = stoi(result[0][0]);
 				if ((dType == pTypeTEMP) || (dType == pTypeTEMP_HUM) || (dType == pTypeTEMP_HUM_BARO))
 				{
 					//Allow old Temp or Temp+Hum or Temp+Hum+Baro devices to be replaced by new Temp or Temp+Hum or Temp+Hum+Baro
@@ -4188,12 +4188,12 @@ namespace http
 			if (result.empty())
 				return;
 
-			int newHardwareID = std::stoi(result[0].at(0));
-			int newOrgHardwareID = std::stoi(result[0].at(1));
+			int newHardwareID = stoi(result[0].at(0));
+			int newOrgHardwareID = stoi(result[0].at(1));
 			std::string newDeviceID = result[0].at(2);
-			int newUnit = std::stoi(result[0].at(3));
-			int devType = std::stoi(result[0].at(4));
-			int subType = std::stoi(result[0].at(5));
+			int newUnit = stoi(result[0].at(3));
+			int devType = stoi(result[0].at(4));
+			int subType = stoi(result[0].at(5));
 
 			//get last update date from old device
 			result = m_sql.safe_query("SELECT LastUpdate FROM DeviceStatus WHERE (ID == '%q')", sidx.c_str());
@@ -4366,20 +4366,20 @@ namespace http
 
 			int switchtype = -1;
 			if (!sswitchtype.empty())
-				switchtype = atoi(sswitchtype.c_str());
+				switchtype = stoi(sswitchtype);
 
 			int used = (sused == "true") ? 1 : 0;
 			if (!maindeviceidx.empty())
 				used = 0;
 
 			std::vector<std::string> sd = result[0];
-			unsigned char dType = atoi(sd[0].c_str());
-			unsigned char dSubType = atoi(sd[1].c_str());
-			int HwdID = atoi(sd[2].c_str());
+			unsigned char dType = (unsigned char) stoi(sd[0]);
+			unsigned char dSubType = (unsigned char) stoi(sd[1]);
+			int HwdID = stoi(sd[2]);
 			std::string sHwdID = sd[2];
-			int OldCustomImage = atoi(sd[3].c_str());
+			int OldCustomImage = stoi(sd[3]);
 
-			int CustomImage = (!sCustomImage.empty()) ? std::stoi(sCustomImage) : OldCustomImage;
+			int CustomImage = (!sCustomImage.empty()) ? stoi(sCustomImage) : OldCustomImage;
 
 			// Strip trailing spaces in 'name'
 			name = stdstring_trim(name);
@@ -4389,7 +4389,7 @@ namespace http
 
 			if (!setPoint.empty() || !state.empty())
 			{
-				double tempcelcius = atof(setPoint.c_str());
+				double tempcelcius = stod(setPoint);
 				if (m_sql.m_tempunit == TEMPUNIT_F)
 				{
 					// Convert back to Celsius
@@ -4444,9 +4444,9 @@ namespace http
 				if (dType == pTypeEvohomeWater)
 					m_mainworker.SetSetPointEvo(idx, (state == "On") ? 1.0F : 0.0F, mode, until); // FIXME float not guaranteed precise?
 				else if (dType == pTypeEvohomeZone)
-					m_mainworker.SetSetPointEvo(idx, static_cast<float>(atof(setPoint.c_str())), mode, until);
+					m_mainworker.SetSetPointEvo(idx, stof(setPoint), mode, until);
 				else
-					m_mainworker.SetSetPoint(idx, static_cast<float>(atof(setPoint.c_str())));
+					m_mainworker.SetSetPoint(idx, stof(setPoint));
 			}
 
 			if (!strunit.empty())
@@ -4458,7 +4458,7 @@ namespace http
 				result = m_sql.safe_query("SELECT Type FROM Hardware WHERE (ID == %d)", HwdID);
 				if (!result.empty())
 				{
-					_eHardwareTypes Type = (_eHardwareTypes)std::stoi(result[0][0]);
+					_eHardwareTypes Type = (_eHardwareTypes) stoi(result[0][0]);
 					if (Type == HTYPE_PythonPlugin)
 					{
 						bUpdateUnit = false;
@@ -4478,24 +4478,24 @@ namespace http
 			}
 			if (!addjvalue.empty())
 			{
-				double faddjvalue = atof(addjvalue.c_str());
+				double faddjvalue = stod(addjvalue);
 				m_sql.safe_query("UPDATE DeviceStatus SET AddjValue=%f WHERE (ID == '%q')", faddjvalue, idx.c_str());
 			}
 			if (!addjmulti.empty())
 			{
-				double faddjmulti = atof(addjmulti.c_str());
+				double faddjmulti = stod(addjmulti);
 				if (faddjmulti == 0)
 					faddjmulti = 1;
 				m_sql.safe_query("UPDATE DeviceStatus SET AddjMulti=%f WHERE (ID == '%q')", faddjmulti, idx.c_str());
 			}
 			if (!addjvalue2.empty())
 			{
-				double faddjvalue2 = atof(addjvalue2.c_str());
+				double faddjvalue2 = stod(addjvalue2);
 				m_sql.safe_query("UPDATE DeviceStatus SET AddjValue2=%f WHERE (ID == '%q')", faddjvalue2, idx.c_str());
 			}
 			if (!addjmulti2.empty())
 			{
-				double faddjmulti2 = atof(addjmulti2.c_str());
+				double faddjmulti2 = stod(addjmulti2);
 				if (faddjmulti2 == 0)
 					faddjmulti2 = 1;
 				m_sql.safe_query("UPDATE DeviceStatus SET AddjMulti2=%f WHERE (ID == '%q')", faddjmulti2, idx.c_str());
@@ -4504,7 +4504,7 @@ namespace http
 			{
 				auto options = m_sql.GetDeviceOptions(idx);
 				options["EnergyMeterMode"] = EnergyMeterMode;
-				uint64_t ullidx = std::stoull(idx);
+				uint64_t ullidx = stoull(idx);
 				m_sql.SetDeviceOptions(ullidx, options);
 			}
 
@@ -4530,7 +4530,7 @@ namespace http
 			// Save device options
 			if (!sOptions.empty())
 			{
-				uint64_t ullidx = std::stoull(idx);
+				uint64_t ullidx = stoull(idx);
 				m_sql.SetDeviceOptions(ullidx, m_sql.BuildDeviceOptions(sOptions, false));
 			}
 
@@ -4557,7 +4557,7 @@ namespace http
 			{
 #ifdef ENABLE_PYTHON
 				// Notify plugin framework about the change
-				m_mainworker.m_pluginsystem.DeviceModified(atoi(idx.c_str()));
+				m_mainworker.m_pluginsystem.DeviceModified(stoull(idx));
 #endif
 			}
 			if (!result.empty())
@@ -4584,7 +4584,7 @@ namespace http
 			for (const auto& sd : result)
 			{
 				std::string Key = sd[0];
-				int nValue = atoi(sd[1].c_str());
+				int nValue = stoi(sd[1]);
 				std::string sValue = sd[2];
 
 				if (Key == "Location")
@@ -4932,7 +4932,7 @@ namespace http
 			uint64_t idx = 0;
 			if (!request::findValue(&req, "idx").empty())
 			{
-				idx = std::stoull(request::findValue(&req, "idx"));
+				idx = stoull(request::findValue(&req, "idx"));
 			}
 			std::vector<std::vector<std::string>> result;
 			// First get Device Type/SubType
@@ -4940,9 +4940,9 @@ namespace http
 			if (result.empty())
 				return;
 
-			unsigned char dType = atoi(result[0][0].c_str());
-			unsigned char dSubType = atoi(result[0][1].c_str());
-			_eSwitchType switchtype = (_eSwitchType)atoi(result[0][2].c_str());
+			unsigned char dType = (unsigned char) stoi(result[0][0]);
+			unsigned char dSubType = (unsigned char) stoi(result[0][1]);
+			_eSwitchType switchtype = (_eSwitchType) stoi(result[0][2]);
 			std::map<std::string, std::string> options = m_sql.BuildDeviceOptions(result[0][3]);
 
 			if (
@@ -4970,7 +4970,7 @@ namespace http
 				for (const auto& sd : result)
 				{
 					std::string lidx = sd.at(0);
-					int nValue = atoi(sd.at(1).c_str());
+					int nValue = stoi(sd.at(1));
 					std::string sValue = sd.at(2);
 					std::string sUser = sd.at(3);
 					std::string ldate = sd.at(4);
@@ -5004,7 +5004,7 @@ namespace http
 							std::string sLevel = selectorStatuses[sValue];
 							ldata = sLevel;
 							lstatus = "Set Level: " + sLevel;
-							llevel = atoi(sValue.c_str());
+							llevel = stoi(sValue);
 						}
 					}
 					else
@@ -5055,7 +5055,7 @@ namespace http
 			uint64_t idx = 0;
 			if (!request::findValue(&req, "idx").empty())
 			{
-				idx = std::stoull(request::findValue(&req, "idx"));
+				idx = stoull(request::findValue(&req, "idx"));
 			}
 			std::vector<std::vector<std::string>> result;
 
@@ -5082,7 +5082,7 @@ namespace http
 			uint64_t idx = 0;
 			if (!request::findValue(&req, "idx").empty())
 			{
-				idx = std::stoull(request::findValue(&req, "idx"));
+				idx = stoull(request::findValue(&req, "idx"));
 			}
 			std::vector<std::vector<std::string>> result;
 
@@ -5096,7 +5096,7 @@ namespace http
 				for (const auto& sd : result)
 				{
 					root["result"][ii]["idx"] = sd[0];
-					int nValue = atoi(sd[1].c_str());
+					int nValue = stoi(sd[1]);
 					root["result"][ii]["Data"] = (nValue == 0) ? "Off" : "On";
 					root["result"][ii]["User"] = sd[2];
 					root["result"][ii]["Date"] = sd[3];

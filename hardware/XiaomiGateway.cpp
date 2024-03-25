@@ -666,8 +666,8 @@ void XiaomiGateway::InsertUpdateRGBGateway(const std::string &nodeid, const std:
 	if (result.empty())
 	{
 		Log(LOG_STATUS, "New Gateway Found (%s/%s)", str.c_str(), Name.c_str());
-		// int value = atoi(brightness.c_str());
-		// int value = hue; // atoi(hue.c_str());
+		// int value = stoi(brightness);
+		// int value = hue; // stoi(hue);
 		int cmd = Color_LedOn;
 		if (!bIsOn)
 		{
@@ -685,10 +685,10 @@ void XiaomiGateway::InsertUpdateRGBGateway(const std::string &nodeid, const std:
 	}
 	else
 	{
-		nvalue = atoi(result[0][0].c_str());
+		nvalue = stoi(result[0][0]);
 		tIsOn = (nvalue != 0);
-		lastLevel = atoi(result[0][1].c_str());
-		// int value = atoi(brightness.c_str());
+		lastLevel = stoi(result[0][1]);
+		// int value = stoi(brightness);
 		if ((bIsOn != tIsOn) || (brightness != lastLevel))
 		{
 			int cmd = Color_LedOn;
@@ -799,64 +799,64 @@ void XiaomiGateway::InsertUpdateSwitch(const std::string &nodeid, const std::str
 				std::string Idx = result[0][0];
 				if (Name == NAME_SELECTOR_WIRELESS_SINGLE)
 				{
-					m_sql.SetDeviceOptions(atoi(Idx.c_str()), m_sql.BuildDeviceOptions("SelectorStyle:0;LevelNames:Off|Click|Double Click|Long Click|Long Click Release", false));
+					m_sql.SetDeviceOptions(stoi(Idx), m_sql.BuildDeviceOptions("SelectorStyle:0;LevelNames:Off|Click|Double Click|Long Click|Long Click Release", false));
 				}
 				else if (Name == NAME_SELECTOR_WIRELESS_SINGLE_SQUARE)
 				{
-					m_sql.SetDeviceOptions(atoi(Idx.c_str()), m_sql.BuildDeviceOptions("SelectorStyle:0;LevelNames:Off|Click|Double Click", false));
+					m_sql.SetDeviceOptions(stoi(Idx), m_sql.BuildDeviceOptions("SelectorStyle:0;LevelNames:Off|Click|Double Click", false));
 				}
 				else if (Name == NAME_SELECTOR_WIRELESS_SINGLE_SMART_PUSH)
 				{
-					m_sql.SetDeviceOptions(atoi(Idx.c_str()), m_sql.BuildDeviceOptions("SelectorStyle:0;LevelNames:Off|Click|Shake", false));
+					m_sql.SetDeviceOptions(stoi(Idx), m_sql.BuildDeviceOptions("SelectorStyle:0;LevelNames:Off|Click|Shake", false));
 				}
 				else if (Name == NAME_SELECTOR_CUBE_V1)
 				{
 					m_sql.SetDeviceOptions(
-						atoi(Idx.c_str()),
+						stoi(Idx),
 						m_sql.BuildDeviceOptions("SelectorStyle:0;LevelNames:Off|flip90|flip180|move|tap_twice|shake_air|swing|alert|free_fall|clock_wise|anti_clock_wise",
 									 false));
 				}
 				else if (Name == NAME_SELECTOR_CUBE_AQARA)
 				{
-					m_sql.SetDeviceOptions(atoi(Idx.c_str()),
+					m_sql.SetDeviceOptions(stoi(Idx),
 							       m_sql.BuildDeviceOptions("SelectorStyle:0;LevelNames:Off|flip90|flip180|move|tap_twice|shake_air|swing|alert|free_fall|rotate", false));
 				}
 				else if (Name == NAME_SENSOR_VIBRATION)
 				{
-					m_sql.SetDeviceOptions(atoi(Idx.c_str()), m_sql.BuildDeviceOptions("SelectorStyle:0;LevelNames:Off|Tilt|Vibrate|Free Fall", false));
+					m_sql.SetDeviceOptions(stoi(Idx), m_sql.BuildDeviceOptions("SelectorStyle:0;LevelNames:Off|Tilt|Vibrate|Free Fall", false));
 				}
 				else if (Name == NAME_SELECTOR_WIRELESS_WALL_DUAL)
 				{
-					m_sql.SetDeviceOptions(atoi(Idx.c_str()), m_sql.BuildDeviceOptions("SelectorStyle:0;LevelNames:Off|Switch 1|Switch 2|Both Click|Switch 1 Double Click|Switch 2 "
+					m_sql.SetDeviceOptions(stoi(Idx), m_sql.BuildDeviceOptions("SelectorStyle:0;LevelNames:Off|Switch 1|Switch 2|Both Click|Switch 1 Double Click|Switch 2 "
 													   "Double Click|Both Double Click|Switch 1 Long Click|Switch 2 Long Click|Both Long Click",
 													   false));
 				}
 				else if (Name == NAME_SELECTOR_WIRED_WALL_SINGLE)
 				{
-					m_sql.SetDeviceOptions(atoi(Idx.c_str()), m_sql.BuildDeviceOptions("SelectorStyle:0;LevelNames:Off|Switch1 On|Switch1 Off", false));
+					m_sql.SetDeviceOptions(stoi(Idx), m_sql.BuildDeviceOptions("SelectorStyle:0;LevelNames:Off|Switch1 On|Switch1 Off", false));
 				}
 				else if (Name == NAME_SELECTOR_WIRELESS_WALL_SINGLE)
 				{
-					m_sql.SetDeviceOptions(atoi(Idx.c_str()), m_sql.BuildDeviceOptions("SelectorStyle:0;LevelNames:Off|Click|Double Click|Long Click", false));
+					m_sql.SetDeviceOptions(stoi(Idx), m_sql.BuildDeviceOptions("SelectorStyle:0;LevelNames:Off|Click|Double Click|Long Click", false));
 				}
 				else if (Name == NAME_GATEWAY_SOUND_ALARM_RINGTONE)
 				{
 					m_sql.SetDeviceOptions(
-						atoi(Idx.c_str()),
+						stoi(Idx),
 						m_sql.BuildDeviceOptions(
 							"SelectorStyle:1;LevelNames:Off|Police siren 1|Police siren 2|Accident tone|Missle countdown|Ghost|Sniper|War|Air Strike|Barking dogs", false));
 				}
 				else if (Name == NAME_GATEWAY_SOUND_ALARM_CLOCK)
 				{
 					m_sql.SetDeviceOptions(
-						atoi(Idx.c_str()),
+						stoi(Idx),
 						m_sql.BuildDeviceOptions(
 							"SelectorStyle:1;LevelNames:Off|MiMix|Enthusiastic|GuitarClassic|IceWorldPiano|LeisureTime|Childhood|MorningStreamlet|MusicBox|Orange|Thinker",
 							false));
 				}
 				else if (Name == NAME_GATEWAY_SOUND_DOORBELL)
 				{
-					m_sql.SetDeviceOptions(atoi(Idx.c_str()),
+					m_sql.SetDeviceOptions(stoi(Idx),
 							       m_sql.BuildDeviceOptions("SelectorStyle:1;LevelNames:Off|Doorbell ring tone|Knock on door|Hilarious|Alarm clock", false));
 				}
 			}
@@ -869,8 +869,8 @@ void XiaomiGateway::InsertUpdateSwitch(const std::string &nodeid, const std::str
 	}
 	else
 	{
-		int nvalue = atoi(result[0][0].c_str());
-		int BatteryLevel = atoi(result[0][1].c_str());
+		int nvalue = stoi(result[0][0]);
+		int BatteryLevel = stoi(result[0][1]);
 
 		if (messagetype == "heartbeat")
 		{
@@ -893,8 +893,8 @@ void XiaomiGateway::InsertUpdateSwitch(const std::string &nodeid, const std::str
 		{
 			if (!load_power.empty() && !power_consumed.empty())
 			{
-				int power = atoi(load_power.c_str());
-				int consumed = atoi(power_consumed.c_str()) / 1000;
+				int power = stoi(load_power);
+				int consumed = stoi(power_consumed) / 1000;
 				SendKwhMeter(sID, 1, 255, power, consumed, "Xiaomi Smart Plug Usage");
 			}
 		}
@@ -1411,7 +1411,7 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 				int battery = 255;
 				if (!voltage.empty() && voltage != "3600")
 				{
-					battery = ((atoi(voltage.c_str()) - 2200) / 10);
+					battery = ((stoi(voltage) - 2200) / 10);
 				}
 				if (type != STYPE_END)
 				{
@@ -1454,7 +1454,7 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 							level = 0;
 						}
 						if (!density.empty())
-							level = atoi(density.c_str());
+							level = stoi(density);
 					}
 					if ((status == STATE_MOTION_YES) || (status == STATE_OPEN) || (status == "no_close") || (status == STATE_ON) || (!no_close.empty()))
 					{
@@ -1516,7 +1516,7 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 					std::string rotate = root2["rotate"].asString();
 					if (!rotate.empty())
 					{
-						int amount = atoi(rotate.c_str());
+						int amount = stoi(rotate);
 						if (amount > 0)
 						{
 							level = 90;
@@ -1562,7 +1562,7 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 						}
 						else if ((model == MODEL_ACT_BLINDS_CURTAIN) && (!curtain.empty()))
 						{
-							level = atoi(curtain.c_str());
+							level = stoi(curtain);
 							TrueGateway->InsertUpdateSwitch(sid, name, on, type, unitcode, level, cmd, "", "", battery);
 						}
 						else
@@ -1573,11 +1573,11 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 							}
 							if (!lux.empty())
 							{
-								TrueGateway->InsertUpdateLux(sid, name, atoi(lux.c_str()), battery);
+								TrueGateway->InsertUpdateLux(sid, name, stoi(lux), battery);
 							}
 							if (!voltage.empty() && m_IncludeVoltage)
 							{
-								TrueGateway->InsertUpdateVoltage(sid, name, atoi(voltage.c_str()));
+								TrueGateway->InsertUpdateVoltage(sid, name, stoi(voltage));
 							}
 						}
 					}
@@ -1620,26 +1620,26 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 					if (name == NAME_SENSOR_TEMP_HUM_AQARA)
 					{
 						std::string szPressure = root2["pressure"].asString();
-						pressure = static_cast<float>(atof(szPressure.c_str())) / 100.0F;
+						pressure = stof(szPressure) / 100.0F;
 					}
 
 					if ((!temperature.empty()) && (!humidity.empty()) && (pressure != 0))
 					{
 						// Temp+Hum+Baro
-						float temp = std::stof(temperature) / 100.0F;
-						int hum = static_cast<int>((std::stof(humidity) / 100));
+						float temp = stof(temperature) / 100.0F;
+						int hum = static_cast<int>(stof(humidity) / 100.0F);
 						TrueGateway->InsertUpdateTempHumPressure(sid, "Xiaomi TempHumBaro", temp, hum, pressure, battery);
 					}
 					else if ((!temperature.empty()) && (!humidity.empty()))
 					{
 						// Temp+Hum
-						float temp = std::stof(temperature) / 100.0F;
-						int hum = static_cast<int>((std::stof(humidity) / 100));
+						float temp = stof(temperature) / 100.0F;
+						int hum = static_cast<int>(stof(humidity) / 100.0F);
 						TrueGateway->InsertUpdateTempHum(sid, "Xiaomi TempHum", temp, hum, battery);
 					}
 					else if (!temperature.empty())
 					{
-						float temp = std::stof(temperature) / 100.0F;
+						float temp = stof(temperature) / 100.0F;
 						if (temp < 99)
 						{
 							TrueGateway->InsertUpdateTemperature(sid, "Xiaomi Temperature", temp, battery);
@@ -1647,7 +1647,7 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 					}
 					else if (!humidity.empty())
 					{
-						int hum = static_cast<int>((std::stof(humidity) / 100));
+						int hum = static_cast<int>(stof(humidity) / 100.0F);
 						if (hum > 1)
 						{
 							TrueGateway->InsertUpdateHumidity(sid, "Xiaomi Humidity", hum, battery);
@@ -1664,7 +1664,7 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 						if (TrueGateway->GetGatewaySid() == sid)
 						{
 							std::stringstream ss;
-							ss << std::hex << atoi(rgb.c_str());
+							ss << std::hex << stoi(rgb);
 							std::string hexstring(ss.str());
 							if (hexstring.length() == 7)
 							{
@@ -1680,7 +1680,7 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 								on = true;
 							}
 							TrueGateway->InsertUpdateRGBGateway(sid, name + " (" + TrueGateway->GetGatewayIp() + ")", on, brightness, 0);
-							TrueGateway->InsertUpdateLux(sid, NAME_GATEWAY_LUX, atoi(illumination.c_str()), 255);
+							TrueGateway->InsertUpdateLux(sid, NAME_GATEWAY_LUX, stoi(illumination), 255);
 							TrueGateway->InsertUpdateSwitch(sid, NAME_GATEWAY_SOUND_ALARM_RINGTONE, false, STYPE_Selector, 3, 0, cmd, "", "", 255);
 							TrueGateway->InsertUpdateSwitch(sid, NAME_GATEWAY_SOUND_ALARM_CLOCK, false, STYPE_Selector, 4, 0, cmd, "", "", 255);
 							TrueGateway->InsertUpdateSwitch(sid, NAME_GATEWAY_SOUND_DOORBELL, false, STYPE_Selector, 5, 0, cmd, "", "", 255);

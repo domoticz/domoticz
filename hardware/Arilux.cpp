@@ -218,10 +218,10 @@ namespace http {
 				return;
 			root["status"] = "OK";
 
-			int HwdID = atoi(idx.c_str());
+			int HwdID = stoi(idx);
 
 			// stype values aligned to ColorSwitch.h enum values in Hardware.html
-			int subtype = std::stoi(stype);
+			int subtype = stoi(stype);
 			if ( (subtype <= 0) || (subtype > 8) ) subtype = 1;
 
 			Arilux Arilux(HwdID);

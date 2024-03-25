@@ -258,7 +258,7 @@ void GetSwitchType(const char* ID, const unsigned char unit, const unsigned char
 	result = m_sql.safe_query("SELECT SwitchType FROM DeviceStatus WHERE (DeviceID='%q' AND Unit=%d AND Type=%d AND SubType=%d)", ID, unit, devType, subType);
 	if (!result.empty())
 	{
-		switchType = atoi(result[0][0].c_str());
+		switchType = stoi(result[0][0]);
 	}
 }
 
@@ -587,7 +587,7 @@ bool CRFLinkBase::SendSwitchInt(const int ID, const int switchunit, const int Ba
 		if (switchcmd.compare(0, 10, "SET_LEVEL=") == 0 ){
 			cmnd=gswitch_sSetLevel;
 			std::string str2 = switchcmd.substr(10);
-			svalue=atoi(str2.c_str());
+			svalue = stoi(str2);
 	  		Log(LOG_STATUS, "%d level: %d", cmnd, svalue);
 		}
 	}
@@ -669,7 +669,7 @@ bool CRFLinkBase::ParseLine(const std::string &sLine)
 		(sLine.find("PING") != std::string::npos)
 		);
 
-	int RFLink_ID = atoi(results[0].c_str());
+	int RFLink_ID = stoi(results[0]);
 	if (RFLink_ID != 20)
 	{
 		return false; //only accept RFLink->Master messages
@@ -1182,7 +1182,7 @@ namespace http {
 			#endif
 
 			bool bCreated = false;						// flag to know if the command was a success
-			CRFLinkBase *pRFLINK = dynamic_cast<CRFLinkBase*>(m_mainworker.GetHardware(atoi(idx.c_str())));
+			CRFLinkBase *pRFLINK = dynamic_cast<CRFLinkBase*>(m_mainworker.GetHardware(stoi(idx)));
 			if (pRFLINK == nullptr)
 				return;
 

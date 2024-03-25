@@ -249,31 +249,31 @@ void P1MeterBase::Init()
 	std::string tmpval;
 	tmpval = GetTextSensorText(0, 7, bExists);
 	if (bExists)
-		m_last_nbr_pwr_failures = std::stoi(tmpval);
+		m_last_nbr_pwr_failures = stoi(tmpval);
 
 	tmpval = GetTextSensorText(0, 8, bExists);
 	if (bExists)
-		m_last_nbr_long_pwr_failures = std::stoi(tmpval);
+		m_last_nbr_long_pwr_failures = stoi(tmpval);
 
 	tmpval = GetTextSensorText(0, 9, bExists);
 	if (bExists)
-		m_last_nbr_volt_sags_l1 = std::stoi(tmpval);
+		m_last_nbr_volt_sags_l1 = stoi(tmpval);
 	tmpval = GetTextSensorText(0, 10, bExists);
 	if (bExists)
-		m_last_nbr_volt_sags_l2 = std::stoi(tmpval);
+		m_last_nbr_volt_sags_l2 = stoi(tmpval);
 	tmpval = GetTextSensorText(0, 11, bExists);
 	if (bExists)
-		m_last_nbr_volt_sags_l3 = std::stoi(tmpval);
+		m_last_nbr_volt_sags_l3 = stoi(tmpval);
 
 	tmpval = GetTextSensorText(0, 12, bExists);
 	if (bExists)
-		m_last_nbr_volt_swells_l1 = std::stoi(tmpval);
+		m_last_nbr_volt_swells_l1 = stoi(tmpval);
 	tmpval = GetTextSensorText(0, 13, bExists);
 	if (bExists)
-		m_last_nbr_volt_swells_l2 = std::stoi(tmpval);
+		m_last_nbr_volt_swells_l2 = stoi(tmpval);
 	tmpval = GetTextSensorText(0, 14, bExists);
 	if (bExists)
-		m_last_nbr_volt_swells_l3 = std::stoi(tmpval);
+		m_last_nbr_volt_swells_l3 = stoi(tmpval);
 
 	m_voltagel1 = -1;
 	m_voltagel2 = -1;
@@ -596,12 +596,12 @@ bool P1MeterBase::MatchLine()
 							else // gas clock is ahead
 							{
 								struct tm gastm;
-								gastm.tm_year = atoi(m_gastimestamp.substr(0, 2).c_str()) + 100;
-								gastm.tm_mon = atoi(m_gastimestamp.substr(2, 2).c_str()) - 1;
-								gastm.tm_mday = atoi(m_gastimestamp.substr(4, 2).c_str());
-								gastm.tm_hour = atoi(m_gastimestamp.substr(6, 2).c_str());
-								gastm.tm_min = atoi(m_gastimestamp.substr(8, 2).c_str());
-								gastm.tm_sec = atoi(m_gastimestamp.substr(10, 2).c_str());
+								gastm.tm_year = stoi(m_gastimestamp.substr(0, 2)) + 100;
+								gastm.tm_mon = stoi(m_gastimestamp.substr(2, 2)) - 1;
+								gastm.tm_mday = stoi(m_gastimestamp.substr(4, 2));
+								gastm.tm_hour = stoi(m_gastimestamp.substr(6, 2));
+								gastm.tm_min = stoi(m_gastimestamp.substr(8, 2));
+								gastm.tm_sec = stoi(m_gastimestamp.substr(10, 2));
 								if (m_gastimestamp.length() == 12)
 									gastm.tm_isdst = -1;
 								else if (m_gastimestamp[12] == 'W')
@@ -713,21 +713,21 @@ bool P1MeterBase::MatchLine()
 					}
 					break;
 				case P1TYPE_MBUSDEVICETYPE:
-					mbus_type = (P1MBusType)std::stoul(sValue);
+					mbus_type = (P1MBusType) stoul(sValue);
 					mbus_channel = l_buffer[2];
 					//Open Metering System Specification 4.3.3 table 2 (Device Types of OMS-Meter)
 					/*
 					* Electricity meter 02h
 					* Gas meter 03h
 					* Heat meter 04h
-					* Warm water meter (30°C ... 90°C) 06h
+					* Warm water meter (30ï¿½C ... 90ï¿½C) 06h
 					* Water meter 07h
 					* Heat Cost Allocator 08h
 					* Cooling meter (Volume measured at return temperature: outlet) 0Ah
 					* Cooling meter (Volume measured at flow temperature: inlet) 0Bh
 					* Heat meter (Volume measured at flow temperature: inlet) 0Ch
 					* Combined Heat / Cooling meter 0Dh
-					* Hot water meter (= 90°C) 15h
+					* Hot water meter (= 90ï¿½C) 15h
 					* Cold water meter a 16h
 					* Breaker (electricity) 20h
 					* Valve (gas or water) 21h
@@ -766,7 +766,7 @@ bool P1MeterBase::MatchLine()
 					m_p1_mbus_channel = l_buffer[2];
 					break;
 				case P1TYPE_POWERUSAGE:
-					temp_usage = (unsigned long)(std::stof(sValue) * 1000.0F);
+					temp_usage = (unsigned long)(stof(sValue) * 1000.0F);
 					if ((l_buffer[8] & 0xFE) == 0x30)
 					{
 						// map tariff IDs 0 (Lux) and 1 (Bel, Nld) both to powerusage1
@@ -784,7 +784,7 @@ bool P1MeterBase::MatchLine()
 					}
 					break;
 				case P1TYPE_POWERDELIV:
-					temp_usage = (unsigned long)(std::stof(sValue) * 1000.0F);
+					temp_usage = (unsigned long)(stof(sValue) * 1000.0F);
 					if ((l_buffer[8] & 0xFE) == 0x30)
 					{
 						// map tariff IDs 0 (Lux) and 1 (Bel, Nld) both to powerdeliv1
@@ -802,56 +802,56 @@ bool P1MeterBase::MatchLine()
 					}
 					break;
 				case P1TYPE_USAGECURRENT:
-					temp_usage = (unsigned long)(std::stof(sValue) * 1000.0F); // Watt
+					temp_usage = (unsigned long)(stof(sValue) * 1000.0F); // Watt
 					if (temp_usage < P1MAXTOTALPOWER)
 						m_power.usagecurrent = temp_usage;
 					break;
 				case P1TYPE_DELIVCURRENT:
-					temp_usage = (unsigned long)(std::stof(sValue) * 1000.0F); // Watt;
+					temp_usage = (unsigned long)(stof(sValue) * 1000.0F); // Watt;
 					if (temp_usage < P1MAXTOTALPOWER)
 						m_power.delivcurrent = temp_usage;
 					break;
 				case P1TYPE_NUMPWRFAIL:
-					m_nbr_pwr_failures = std::stoi(sValue);
+					m_nbr_pwr_failures = stoi(sValue);
 					break;
 				case P1TYPE_NUMLONGPWRFAIL:
-					m_nbr_long_pwr_failures = std::stoi(sValue);
+					m_nbr_long_pwr_failures = stoi(sValue);
 					break;
 				case P1TYPE_NUMVOLTSAGSL1:
-					m_nbr_volt_sags_l1 = std::stoi(sValue);
+					m_nbr_volt_sags_l1 = stoi(sValue);
 					break;
 				case P1TYPE_NUMVOLTSAGSL2:
-					m_nbr_volt_sags_l2 = std::stoi(sValue);
+					m_nbr_volt_sags_l2 = stoi(sValue);
 					break;
 				case P1TYPE_NUMVOLTSAGSL3:
-					m_nbr_volt_sags_l3 = std::stoi(sValue);
+					m_nbr_volt_sags_l3 = stoi(sValue);
 					break;
 				case P1TYPE_NUMVOLTSWELLSL1:
-					m_nbr_volt_swells_l1 = std::stoi(sValue);
+					m_nbr_volt_swells_l1 = stoi(sValue);
 					break;
 				case P1TYPE_NUMVOLTSWELLSL2:
-					m_nbr_volt_swells_l2 = std::stoi(sValue);
+					m_nbr_volt_swells_l2 = stoi(sValue);
 					break;
 				case P1TYPE_NUMVOLTSWELLSL3:
-					m_nbr_volt_swells_l3 = std::stoi(sValue);
+					m_nbr_volt_swells_l3 = stoi(sValue);
 					break;
 				case P1TYPE_VOLTAGEL1:
-					temp_volt = std::stof(sValue);
+					temp_volt = stof(sValue);
 					if (temp_volt < 300)
 						m_voltagel1 = temp_volt; //Voltage L1;
 					break;
 				case P1TYPE_VOLTAGEL2:
-					temp_volt = std::stof(sValue);
+					temp_volt = stof(sValue);
 					if (temp_volt < 300)
 						m_voltagel2 = temp_volt; //Voltage L2;
 					break;
 				case P1TYPE_VOLTAGEL3:
-					temp_volt = std::stof(sValue);
+					temp_volt = stof(sValue);
 					if (temp_volt < 300)
 						m_voltagel3 = temp_volt; //Voltage L3;
 					break;
 				case P1TYPE_AMPERAGEL1:
-					temp_ampere = std::stof(sValue);
+					temp_ampere = stof(sValue);
 					if (temp_ampere < 100)
 					{
 						m_amperagel1 = temp_ampere; //Amperage L1;
@@ -859,7 +859,7 @@ bool P1MeterBase::MatchLine()
 					}
 					break;
 				case P1TYPE_AMPERAGEL2:
-					temp_ampere = std::stof(sValue);
+					temp_ampere = stof(sValue);
 					if (temp_ampere < 100)
 					{
 						m_amperagel2 = temp_ampere; //Amperage L2;
@@ -867,7 +867,7 @@ bool P1MeterBase::MatchLine()
 					}
 					break;
 				case P1TYPE_AMPERAGEL3:
-					temp_ampere = std::stof(sValue);
+					temp_ampere = stof(sValue);
 					if (temp_ampere < 100)
 					{
 						m_amperagel3 = temp_ampere; //Amperage L3;
@@ -875,32 +875,32 @@ bool P1MeterBase::MatchLine()
 					}
 					break;
 				case P1TYPE_POWERUSEL1:
-					temp_power = std::stof(sValue) * 1000.0F;
+					temp_power = stof(sValue) * 1000.0F;
 					if (temp_power < P1MAXPHASEPOWER)
 						m_powerusel1 = temp_power; //Power Used L1;
 					break;
 				case P1TYPE_POWERUSEL2:
-					temp_power = std::stof(sValue) * 1000.0F;
+					temp_power = stof(sValue) * 1000.0F;
 					if (temp_power < P1MAXPHASEPOWER)
 						m_powerusel2 = temp_power; //Power Used L2;
 					break;
 				case P1TYPE_POWERUSEL3:
-					temp_power = std::stof(sValue) * 1000.0F;
+					temp_power = stof(sValue) * 1000.0F;
 					if (temp_power < P1MAXPHASEPOWER)
 						m_powerusel3 = temp_power; //Power Used L3;
 					break;
 				case P1TYPE_POWERDELL1:
-					temp_power = std::stof(sValue) * 1000.0F;
+					temp_power = stof(sValue) * 1000.0F;
 					if (temp_power < P1MAXPHASEPOWER)
 						m_powerdell1 = temp_power; //Power Used L1;
 					break;
 				case P1TYPE_POWERDELL2:
-					temp_power = std::stof(sValue) * 1000.0F;
+					temp_power = stof(sValue) * 1000.0F;
 					if (temp_power < P1MAXPHASEPOWER)
 						m_powerdell2 = temp_power; //Power Used L2;
 					break;
 				case P1TYPE_POWERDELL3:
-					temp_power = std::stof(sValue) * 1000.0F;
+					temp_power = stof(sValue) * 1000.0F;
 					if (temp_power < P1MAXPHASEPOWER)
 						m_powerdell3 = temp_power; //Power Used L3;
 					break;
@@ -909,7 +909,7 @@ bool P1MeterBase::MatchLine()
 					break;
 				case P1TYPE_GASUSAGE:
 				case P1TYPE_MBUSUSAGEDSMR4:
-					temp_float = std::stof(sValue);
+					temp_float = stof(sValue);
 					temp_usage = (unsigned long)(temp_float * 1000.0F);
 
 					if (

@@ -174,7 +174,7 @@ namespace http
 					case 2:
 						_log.Log(LOG_ERROR, "WebServer(%s) startup failed on address %s with port: %s: %s", m_server_alias.c_str(), settings.listening_address.c_str(),
 							settings.listening_port.c_str(), e.what());
-						if (atoi(settings.listening_port.c_str()) < 1024)
+						if (stoi(settings.listening_port) < 1024)
 							_log.Log(LOG_ERROR, "WebServer(%s) check privileges for opening ports below 1024", m_server_alias.c_str());
 						else
 							_log.Log(LOG_ERROR, "WebServer(%s) check if no other application is using port: %s", m_server_alias.c_str(),
@@ -720,17 +720,17 @@ namespace http
 			{
 				for (const auto& sd : result)
 				{
-					int bIsActive = static_cast<int>(atoi(sd[1].c_str()));
+					int bIsActive = stoi(sd[1]);
 					if (bIsActive)
 					{
-						unsigned long ID = (unsigned long)atol(sd[0].c_str());
+						unsigned long ID = stoul(sd[0]);
 
 						std::string username = base64_decode(sd[2]);
 						std::string password = sd[3];
 						std::string mfatoken = sd[4];
 
-						_eUserRights rights = (_eUserRights)atoi(sd[5].c_str());
-						int activetabs = atoi(sd[6].c_str());
+						_eUserRights rights = (_eUserRights) stoi(sd[5]);
+						int activetabs = stoi(sd[6]);
 
 						AddUser(ID, username, password, mfatoken, rights, activetabs);
 					}
@@ -743,11 +743,11 @@ namespace http
 			{
 				for (const auto& sd : result)
 				{
-					int bIsActive = static_cast<int>(atoi(sd[1].c_str()));
+					int bIsActive = stoi(sd[1]);
 					if (bIsActive)
 					{
-						unsigned long ID = (unsigned long)m_iamsettings.getUserIdxOffset() + (unsigned long)atol(sd[0].c_str());
-						int bPublic = static_cast<int>(atoi(sd[2].c_str()));
+						unsigned long ID = ((unsigned long) m_iamsettings.getUserIdxOffset()) + stoul(sd[0]);
+						int bPublic = stoi(sd[2]);
 						std::string applicationname = sd[3];
 						std::string secret = sd[4];
 						std::string pemfile = sd[5];
@@ -843,7 +843,7 @@ namespace http
 			wtmp.PubKey = pubkey;
 			wtmp.userrights = (_eUserRights)userrights;
 			wtmp.ActiveTabs = activetabs;
-			wtmp.TotSensors = atoi(result[0][0].c_str());
+			wtmp.TotSensors = stoi(result[0][0]);
 			m_users.push_back(wtmp);
 
 			_tUserAccessCode utmp;
@@ -932,10 +932,10 @@ namespace http
 				for (const auto& sd : result)
 				{
 					_tHardwareListInt tlist;
-					int ID = atoi(sd[0].c_str());
+					int ID = stoi(sd[0]);
 					tlist.Name = sd[1];
-					tlist.Enabled = (atoi(sd[2].c_str()) != 0);
-					tlist.HardwareTypeVal = atoi(sd[3].c_str());
+					tlist.Enabled = (stoi(sd[2]) != 0);
+					tlist.HardwareTypeVal = stoi(sd[3]);
 #ifndef ENABLE_PYTHON
 					tlist.HardwareType = Hardware_Type_Desc(tlist.HardwareTypeVal);
 #else
@@ -1025,7 +1025,7 @@ namespace http
 							result = m_sql.safe_query("SELECT COUNT(*) FROM SharedDevices WHERE (SharedUserID == %lu)", m_users[iUser].ID);
 							if (!result.empty())
 							{
-								totUserDevices = (unsigned int)std::stoi(result[0][0]);
+								totUserDevices = (unsigned int) stoul(result[0][0]);
 							}
 						}
 					}
@@ -1077,7 +1077,7 @@ namespace http
 					{
 						for (const auto& sd : result)
 						{
-							unsigned char favorite = atoi(sd[4].c_str());
+							unsigned char favorite = (unsigned char) stoi(sd[4]);
 							// Check if we only want favorite devices
 							if ((bFetchFavorites) && (!favorite))
 								continue;
@@ -1092,10 +1092,10 @@ namespace http
 									continue;
 							}
 
-							int nValue = atoi(sd[2].c_str());
+							int nValue = stoi(sd[2]);
 
-							unsigned char scenetype = atoi(sd[5].c_str());
-							int iProtected = atoi(sd[6].c_str());
+							unsigned char scenetype = (unsigned char) stoi(sd[5]);
+							int iProtected = stoi(sd[6]);
 
 							std::string sSceneName = sd[1];
 							if (!bDisplayHidden && sSceneName[0] == '$')
@@ -1125,7 +1125,7 @@ namespace http
 								std::string typeOfThisOne = root["result"][ii]["Type"].asString();
 								if (typeOfThisOne == root["result"][ii - 1]["Type"].asString())
 								{
-									root["result"][ii - 1]["PlanIDs"].append(atoi(sd[9].c_str()));
+									root["result"][ii - 1]["PlanIDs"].append(stoi(sd[9]));
 									continue;
 								}
 							}
@@ -1138,7 +1138,7 @@ namespace http
 							root["result"][ii]["LastUpdate"] = sLastUpdate;
 							root["result"][ii]["PlanID"] = sd[9].c_str();
 							Json::Value jsonArray;
-							jsonArray.append(atoi(sd[9].c_str()));
+							jsonArray.append(stoi(sd[9]));
 							root["result"][ii]["PlanIDs"] = jsonArray;
 
 							if (nValue == 0)
@@ -1157,8 +1157,8 @@ namespace http
 								root["result"][ii]["CameraIdx"] = scidx.str();
 								root["result"][ii]["CameraAspect"] = m_mainworker.m_cameras.GetCameraAspectRatio(scidx.str());
 							}
-							root["result"][ii]["XOffset"] = atoi(sd[7].c_str());
-							root["result"][ii]["YOffset"] = atoi(sd[8].c_str());
+							root["result"][ii]["XOffset"] = stoi(sd[7]);
+							root["result"][ii]["YOffset"] = stoi(sd[8]);
 							ii++;
 						}
 					}
@@ -1385,7 +1385,7 @@ namespace http
 			{
 				try
 				{
-					unsigned char favorite = atoi(sd[12].c_str());
+					unsigned char favorite = (unsigned char) stoi(sd[12]);
 					bool bIsInPlan = !planID.empty() && (planID != "0");
 
 					// Check if we only want favorite devices
@@ -1409,7 +1409,7 @@ namespace http
 								sDeviceName = sDeviceName.substr(1);
 						}
 					}
-					int hardwareID = atoi(sd[14].c_str());
+					int hardwareID = stoi(sd[14]);
 					auto hItt = _hardwareNames.find(hardwareID);
 					bool bIsHardwareDisabled = true;
 					if (hItt != _hardwareNames.end())
@@ -1420,10 +1420,10 @@ namespace http
 						bIsHardwareDisabled = !(*hItt).second.Enabled;
 					}
 
-					unsigned int dType = atoi(sd[5].c_str());
-					unsigned int dSubType = atoi(sd[6].c_str());
-					unsigned int used = atoi(sd[4].c_str());
-					int nValue = atoi(sd[9].c_str());
+					unsigned int dType = (unsigned int) stoul(sd[5]);
+					unsigned int dSubType = (unsigned int) stoul(sd[6]);
+					unsigned int used = (unsigned int) stoul(sd[4]);
+					int nValue = stoi(sd[9]);
 					std::string sValue = sd[10];
 					std::string sLastUpdate = sd[11];
 					if (sLastUpdate.size() > 19)
@@ -1437,17 +1437,17 @@ namespace http
 							continue;
 					}
 
-					_eSwitchType switchtype = (_eSwitchType)atoi(sd[13].c_str());
+					_eSwitchType switchtype = (_eSwitchType) stoi(sd[13]);
 					_eMeterType metertype = (_eMeterType)switchtype;
-					double AddjValue = atof(sd[15].c_str());
-					double AddjMulti = atof(sd[16].c_str());
-					double AddjValue2 = atof(sd[17].c_str());
-					double AddjMulti2 = atof(sd[18].c_str());
-					int LastLevel = atoi(sd[19].c_str());
-					int CustomImage = atoi(sd[20].c_str());
+					double AddjValue = stod(sd[15]);
+					double AddjMulti = stod(sd[16]);
+					double AddjValue2 = stod(sd[17]);
+					double AddjMulti2 = stod(sd[18]);
+					int LastLevel = stoi(sd[19]);
+					int CustomImage = stoi(sd[20]);
 					std::string strParam1 = base64_encode(sd[21]);
 					std::string strParam2 = base64_encode(sd[22]);
-					int iProtected = atoi(sd[23].c_str());
+					int iProtected = stoi(sd[23]);
 
 					std::string Description = sd[27];
 					std::string sOptions = sd[28];
@@ -1522,14 +1522,14 @@ namespace http
 					// assume results are ordered such that same device is adjacent
 					// if the idx and the Type are equal (type to prevent matching against Scene with same idx)
 					std::string thisIdx = sd[0];
-					const int devIdx = atoi(thisIdx.c_str());
+					const int devIdx = stoi(thisIdx);
 
 					if ((ii > 0) && thisIdx == root["result"][ii - 1]["idx"].asString())
 					{
 						std::string typeOfThisOne = RFX_Type_Desc(dType, 1);
 						if (typeOfThisOne == root["result"][ii - 1]["Type"].asString())
 						{
-							root["result"][ii - 1]["PlanIDs"].append(atoi(sd[26].c_str()));
+							root["result"][ii - 1]["PlanIDs"].append(stoi(sd[26]));
 							continue;
 						}
 					}
@@ -1637,7 +1637,7 @@ namespace http
 							(dType == pTypeCURRENTENERGY) || (dType == pTypeENERGY) || (dType == pTypeRFXMeter) || (dType == pTypeAirQuality) || (dType == pTypeRFXSensor) ||
 							(dType == pTypeP1Power) || (dType == pTypeP1Gas))
 						{
-							root["result"][ii]["ID"] = is_number(sd[1]) ? std_format("%04X", (unsigned int)atoi(sd[1].c_str())) : sd[1];
+							root["result"][ii]["ID"] = is_number(sd[1]) ? std_format("%04X", (unsigned int) stoul(sd[1])) : sd[1];
 						}
 						else
 						{
@@ -1645,7 +1645,7 @@ namespace http
 						}
 					}
 
-					root["result"][ii]["Unit"] = atoi(sd[2].c_str());
+					root["result"][ii]["Unit"] = stoi(sd[2]);
 					root["result"][ii]["Type"] = RFX_Type_Desc(dType, 1);
 					root["result"][ii]["SubType"] = RFX_Type_SubType_Desc(dType, dSubType);
 					root["result"][ii]["TypeImg"] = RFX_Type_Desc(dType, 2);
@@ -1654,12 +1654,12 @@ namespace http
 					root["result"][ii]["Used"] = used;
 					root["result"][ii]["Favorite"] = favorite;
 
-					int iSignalLevel = atoi(sd[7].c_str());
+					int iSignalLevel = stoi(sd[7]);
 					if (iSignalLevel < 12)
 						root["result"][ii]["SignalLevel"] = iSignalLevel;
 					else
 						root["result"][ii]["SignalLevel"] = "-";
-					root["result"][ii]["BatteryLevel"] = atoi(sd[8].c_str());
+					root["result"][ii]["BatteryLevel"] = stoi(sd[8]);
 					root["result"][ii]["LastUpdate"] = sLastUpdate;
 
 					root["result"][ii]["CustomImage"] = CustomImage;
@@ -1683,7 +1683,7 @@ namespace http
 					root["result"][ii]["YOffset"] = sd[25].c_str();
 					root["result"][ii]["PlanID"] = sd[26].c_str();
 					Json::Value jsonArray;
-					jsonArray.append(atoi(sd[26].c_str()));
+					jsonArray.append(stoi(sd[26]));
 					root["result"][ii]["PlanIDs"] = jsonArray;
 					root["result"][ii]["AddjValue"] = AddjValue;
 					root["result"][ii]["AddjMulti"] = AddjMulti;
@@ -1784,7 +1784,7 @@ namespace http
 						else
 						{
 							root["result"][ii]["Level"] = llevel;
-							root["result"][ii]["LevelInt"] = atoi(sValue.c_str());
+							root["result"][ii]["LevelInt"] = stoi(sValue);
 						}
 						root["result"][ii]["HaveDimmer"] = bHaveDimmer;
 						std::string DimmerType = "none";
@@ -1795,10 +1795,10 @@ namespace http
 							{
 								// Milight V4/V5 bridges do not support absolute dimming for RGB or CW_WW lights
 								if (_hardwareNames[hardwareID].HardwareTypeVal == HTYPE_LimitlessLights &&
-									atoi(_hardwareNames[hardwareID].Mode2.c_str()) != CLimitLess::LBTYPE_V6 &&
-									(atoi(_hardwareNames[hardwareID].Mode1.c_str()) == sTypeColor_RGB ||
-										atoi(_hardwareNames[hardwareID].Mode1.c_str()) == sTypeColor_White ||
-										atoi(_hardwareNames[hardwareID].Mode1.c_str()) == sTypeColor_CW_WW))
+									stoi(_hardwareNames[hardwareID].Mode2) != CLimitLess::LBTYPE_V6 &&
+									(stoi(_hardwareNames[hardwareID].Mode1) == sTypeColor_RGB ||
+										stoi(_hardwareNames[hardwareID].Mode1) == sTypeColor_White ||
+										stoi(_hardwareNames[hardwareID].Mode1) == sTypeColor_CW_WW))
 								{
 									DimmerType = "rel";
 								}
@@ -2031,7 +2031,7 @@ namespace http
 								levelNames.assign("Off"); // default is Off only
 							}
 							root["result"][ii]["TypeImg"] = "Light";
-							root["result"][ii]["SelectorStyle"] = atoi(selectorStyle.c_str());
+							root["result"][ii]["SelectorStyle"] = stoi(selectorStyle);
 							root["result"][ii]["LevelOffHidden"] = (levelOffHidden == "true");
 							root["result"][ii]["LevelNames"] = base64_encode(levelNames);
 							root["result"][ii]["LevelActions"] = base64_encode(levelActions);
@@ -2119,11 +2119,11 @@ namespace http
 						{
 							root["result"][ii]["SwitchType"] = "TPI";
 							root["result"][ii]["Level"] = llevel;
-							root["result"][ii]["LevelInt"] = atoi(sValue.c_str());
+							root["result"][ii]["LevelInt"] = stoi(sValue);
 							if (root["result"][ii]["Unit"].asInt() > 100)
 								root["result"][ii]["Protected"] = true;
 
-							sprintf(szData, "%s: %d", lstatus.c_str(), atoi(sValue.c_str()));
+							sprintf(szData, "%s: %d", lstatus.c_str(), stoi(sValue));
 							root["result"][ii]["Data"] = szData;
 						}
 					}
@@ -2137,7 +2137,7 @@ namespace http
 						if (strarray.size() >= 3)
 						{
 							int i = 0;
-							double tempCelcius = atof(strarray[i++].c_str());
+							double tempCelcius = stod(strarray[i++]);
 							double temp = ConvertTemperature(tempCelcius, tempsign);
 							double tempSetPoint;
 							root["result"][ii]["Temp"] = temp;
@@ -2147,7 +2147,7 @@ namespace http
 							}
 							else
 							{
-								tempCelcius = atof(strarray[i++].c_str());
+								tempCelcius = stod(strarray[i++]);
 								tempSetPoint = ConvertTemperature(tempCelcius, tempsign);
 								root["result"][ii]["SetPoint"] = tempSetPoint;
 							}
@@ -2180,7 +2180,7 @@ namespace http
 					}
 					else if ((dType == pTypeTEMP) || (dType == pTypeRego6XXTemp))
 					{
-						double tvalue = ConvertTemperature(atof(sValue.c_str()), tempsign);
+						double tvalue = ConvertTemperature(stod(sValue), tempsign);
 						root["result"][ii]["Temp"] = tvalue;
 						sprintf(szData, "%.1f %c", tvalue, tempsign);
 						root["result"][ii]["Data"] = szData;
@@ -2200,7 +2200,7 @@ namespace http
 						StringSplit(sValue, ";", strarray);
 						if (strarray.size() == 4)
 						{
-							double tvalue = ConvertTemperature(atof(strarray[0].c_str()), tempsign);
+							double tvalue = ConvertTemperature(stod(strarray[0]), tempsign);
 							root["result"][ii]["Temp"] = tvalue;
 							sprintf(szData, "%.1f %c", tvalue, tempsign);
 							root["result"][ii]["Data"] = szData;
@@ -2209,7 +2209,7 @@ namespace http
 					}
 					else if ((dType == pTypeRFXSensor) && (dSubType == sTypeRFXSensorTemp))
 					{
-						double tvalue = ConvertTemperature(atof(sValue.c_str()), tempsign);
+						double tvalue = ConvertTemperature(stod(sValue), tempsign);
 						root["result"][ii]["Temp"] = tvalue;
 						sprintf(szData, "%.1f %c", tvalue, tempsign);
 						root["result"][ii]["Data"] = szData;
@@ -2226,7 +2226,7 @@ namespace http
 					else if (dType == pTypeHUM)
 					{
 						root["result"][ii]["Humidity"] = nValue;
-						root["result"][ii]["HumidityStatus"] = RFX_Humidity_Status_Desc(atoi(sValue.c_str()));
+						root["result"][ii]["HumidityStatus"] = RFX_Humidity_Status_Desc((unsigned char) stoi(sValue));
 						sprintf(szData, "Humidity %d %%", nValue);
 						root["result"][ii]["Data"] = szData;
 						root["result"][ii]["HaveTimeout"] = bHaveTimeout;
@@ -2237,14 +2237,14 @@ namespace http
 						StringSplit(sValue, ";", strarray);
 						if (strarray.size() == 3)
 						{
-							double tempCelcius = atof(strarray[0].c_str());
+							double tempCelcius = stod(strarray[0]);
 							double temp = ConvertTemperature(tempCelcius, tempsign);
-							double humidity = atoi(strarray[1].c_str());
+							double humidity = stod(strarray[1]);
 
 							root["result"][ii]["Temp"] = temp;
 							root["result"][ii]["Humidity"] = humidity;
-							root["result"][ii]["HumidityStatus"] = RFX_Humidity_Status_Desc(atoi(strarray[2].c_str()));
-							sprintf(szData, "%.1f %c, %d %%", temp, tempsign, atoi(strarray[1].c_str()));
+							root["result"][ii]["HumidityStatus"] = RFX_Humidity_Status_Desc(stoi(strarray[2]));
+							sprintf(szData, "%.1f %c, %d %%", temp, tempsign, stoi(strarray[1]));
 							root["result"][ii]["Data"] = szData;
 							root["result"][ii]["HaveTimeout"] = bHaveTimeout;
 
@@ -2268,35 +2268,35 @@ namespace http
 						StringSplit(sValue, ";", strarray);
 						if (strarray.size() == 5)
 						{
-							double tempCelcius = atof(strarray[0].c_str());
+							double tempCelcius = stod(strarray[0]);
 							double temp = ConvertTemperature(tempCelcius, tempsign);
-							double humidity = atof(strarray[1].c_str());
+							double humidity = stod(strarray[1]);
 
 							root["result"][ii]["Temp"] = temp;
 							root["result"][ii]["Humidity"] = humidity;
-							root["result"][ii]["HumidityStatus"] = RFX_Humidity_Status_Desc(atoi(strarray[2].c_str()));
-							root["result"][ii]["Forecast"] = atoi(strarray[4].c_str());
+							root["result"][ii]["HumidityStatus"] = RFX_Humidity_Status_Desc((unsigned char) stoi(strarray[2]));
+							root["result"][ii]["Forecast"] = stoi(strarray[4]);
 
 							sprintf(szTmp, "%.2f", ConvertTemperature(CalculateDewPoint(tempCelcius, ground(humidity)), tempsign));
 							root["result"][ii]["DewPoint"] = szTmp;
 
 							if (dSubType == sTypeTHBFloat)
 							{
-								root["result"][ii]["Barometer"] = atof(strarray[3].c_str());
-								root["result"][ii]["ForecastStr"] = RFX_WSForecast_Desc(atoi(strarray[4].c_str()));
+								root["result"][ii]["Barometer"] = stof(strarray[3]);
+								root["result"][ii]["ForecastStr"] = RFX_WSForecast_Desc((unsigned char) stoi(strarray[4]));
 							}
 							else
 							{
-								root["result"][ii]["Barometer"] = atoi(strarray[3].c_str());
-								root["result"][ii]["ForecastStr"] = RFX_Forecast_Desc(atoi(strarray[4].c_str()));
+								root["result"][ii]["Barometer"] = stoi(strarray[3]);
+								root["result"][ii]["ForecastStr"] = RFX_Forecast_Desc((unsigned char) stoi(strarray[4]));
 							}
 							if (dSubType == sTypeTHBFloat)
 							{
-								sprintf(szData, "%.1f %c, %d %%, %.1f hPa", temp, tempsign, atoi(strarray[1].c_str()), atof(strarray[3].c_str()));
+								sprintf(szData, "%.1f %c, %d %%, %.1f hPa", temp, tempsign, stoi(strarray[1]), stof(strarray[3]));
 							}
 							else
 							{
-								sprintf(szData, "%.1f %c, %d %%, %d hPa", temp, tempsign, atoi(strarray[1].c_str()), atoi(strarray[3].c_str()));
+								sprintf(szData, "%.1f %c, %d %%, %d hPa", temp, tempsign, stoi(strarray[1]), stoi(strarray[3]));
 							}
 							root["result"][ii]["Data"] = szData;
 							root["result"][ii]["HaveTimeout"] = bHaveTimeout;
@@ -2316,14 +2316,14 @@ namespace http
 						StringSplit(sValue, ";", strarray);
 						if (strarray.size() >= 3)
 						{
-							double tvalue = ConvertTemperature(atof(strarray[0].c_str()), tempsign);
+							double tvalue = ConvertTemperature(stod(strarray[0]), tempsign);
 							root["result"][ii]["Temp"] = tvalue;
-							int forecast = atoi(strarray[2].c_str());
+							int forecast = stoi(strarray[2]);
 							root["result"][ii]["Forecast"] = forecast;
 							root["result"][ii]["ForecastStr"] = BMP_Forecast_Desc(forecast);
-							root["result"][ii]["Barometer"] = atof(strarray[1].c_str());
+							root["result"][ii]["Barometer"] = stof(strarray[1]);
 
-							sprintf(szData, "%.1f %c, %.1f hPa", tvalue, tempsign, atof(strarray[1].c_str()));
+							sprintf(szData, "%.1f %c, %.1f hPa", tvalue, tempsign, stof(strarray[1]));
 							root["result"][ii]["Data"] = szData;
 							root["result"][ii]["HaveTimeout"] = bHaveTimeout;
 
@@ -2342,11 +2342,11 @@ namespace http
 						StringSplit(sValue, ";", strarray);
 						if (strarray.size() == 2)
 						{
-							float UVI = static_cast<float>(atof(strarray[0].c_str()));
+							float UVI = stof(strarray[0]);
 							root["result"][ii]["UVI"] = strarray[0];
 							if (dSubType == sTypeUV3)
 							{
-								double tvalue = ConvertTemperature(atof(strarray[1].c_str()), tempsign);
+								double tvalue = ConvertTemperature(stod(strarray[1]), tempsign);
 
 								root["result"][ii]["Temp"] = tvalue;
 								sprintf(szData, "%.1f UVI, %.1f&deg; %c", UVI, tvalue, tempsign);
@@ -2373,12 +2373,12 @@ namespace http
 						StringSplit(sValue, ";", strarray);
 						if (strarray.size() == 6)
 						{
-							root["result"][ii]["Direction"] = atof(strarray[0].c_str());
+							root["result"][ii]["Direction"] = stof(strarray[0]);
 							root["result"][ii]["DirectionStr"] = strarray[1];
 
 							if (dSubType != sTypeWIND5)
 							{
-								int intSpeed = atoi(strarray[2].c_str());
+								int intSpeed = stoi(strarray[2]);
 								if (m_sql.m_windunit != WINDUNIT_Beaufort)
 								{
 									sprintf(szTmp, "%.1f", float(intSpeed) * m_sql.m_windscale);
@@ -2393,7 +2393,7 @@ namespace http
 
 							// if (dSubType!=sTypeWIND6) //problem in RFXCOM firmware? gust=speed?
 							{
-								int intGust = atoi(strarray[3].c_str());
+								int intGust = stoi(strarray[3]);
 								if (m_sql.m_windunit != WINDUNIT_Beaufort)
 								{
 									sprintf(szTmp, "%.1f", float(intGust) * m_sql.m_windscale);
@@ -2409,10 +2409,10 @@ namespace http
 							{
 								if (dSubType == sTypeWIND4)
 								{
-									double tvalue = ConvertTemperature(atof(strarray[4].c_str()), tempsign);
+									double tvalue = ConvertTemperature(stod(strarray[4]), tempsign);
 									root["result"][ii]["Temp"] = tvalue;
 								}
-								double tvalue = ConvertTemperature(atof(strarray[5].c_str()), tempsign);
+								double tvalue = ConvertTemperature(stod(strarray[5]), tempsign);
 								root["result"][ii]["Chill"] = tvalue;
 
 								_tTrendCalculator::_eTendencyType tstate = _tTrendCalculator::_eTendencyType::TENDENCY_UNKNOWN;
@@ -2460,23 +2460,23 @@ namespace http
 
 								if (dSubType == sTypeRAINWU || dSubType == sTypeRAINByRate)
 								{
-									total_real = atof(sd2[0].c_str());
+									total_real = stod(sd2[0]);
 								}
 								else
 								{
-									double total_min = atof(sd2[0].c_str());
-									double total_max = atof(strarray[1].c_str());
+									double total_min = stod(sd2[0]);
+									double total_max = stod(strarray[1]);
 									total_real = total_max - total_min;
 								}
 
 								total_real *= AddjMulti;
 								if (dSubType == sTypeRAINByRate)
 								{
-									rate = static_cast<float>(atof(sd2[1].c_str()) / 10000.0F);
+									rate = stof(sd2[1]) / 10000.0F;
 								}
 								else
 								{
-									rate = (static_cast<float>(atof(strarray[0].c_str())) / 100.0F) * float(AddjMulti);
+									rate = stof(strarray[0]) * float(AddjMulti) / 100.0F;
 								}
 
 								sprintf(szTmp, "%.1f", total_real);
@@ -2520,8 +2520,8 @@ namespace http
 						{
 							std::vector<std::string> sd2 = result2[0];
 
-							int64_t total_first = std::stoll(sd2[0]);
-							int64_t total_last = std::stoll(sValue);
+							int64_t total_first = stoll(sd2[0]);
+							int64_t total_last = stoll(sValue);
 							int64_t total_real = total_last - total_first;
 
 							sprintf(szTmp, "%" PRId64, total_real);
@@ -2566,7 +2566,7 @@ namespace http
 
 						double meteroffset = AddjValue;
 
-						double dvalue = static_cast<double>(atof(sValue.c_str()));
+						double dvalue = stod(sValue);
 
 						switch (metertype)
 						{
@@ -2628,8 +2628,8 @@ namespace http
 						{
 							std::vector<std::string> sd2 = result2[0];
 
-							uint64_t total_min = std::stoull(sd2[0]);
-							uint64_t total_max = std::stoull(sd2[1]);
+							uint64_t total_min = stoull(sd2[0]);
+							uint64_t total_max = stoull(sd2[1]);
 							uint64_t total_real = total_max - total_min;
 
 							sprintf(szTmp, "%" PRIu64, total_real);
@@ -2670,7 +2670,7 @@ namespace http
 						if (splitresults.size() < 2)
 							continue;
 
-						uint64_t total_actual = std::stoull(splitresults[0]);
+						uint64_t total_actual = stoull(splitresults[0]);
 						musage = 0;
 						switch (metertype)
 						{
@@ -2695,7 +2695,7 @@ namespace http
 
 						root["result"][ii]["SwitchTypeVal"] = metertype;
 
-						uint64_t acounter = std::stoull(sValue);
+						uint64_t acounter = stoull(sValue);
 						musage = 0;
 						switch (metertype)
 						{
@@ -2777,12 +2777,12 @@ namespace http
 								EnergyDivider = float(tValue);
 							}
 
-							uint64_t powerusage1 = std::stoull(splitresults[0]);
-							uint64_t powerusage2 = std::stoull(splitresults[1]);
-							uint64_t powerdeliv1 = std::stoull(splitresults[2]);
-							uint64_t powerdeliv2 = std::stoull(splitresults[3]);
-							uint64_t usagecurrent = std::stoull(splitresults[4]);
-							uint64_t delivcurrent = std::stoull(splitresults[5]);
+							uint64_t powerusage1 = stoull(splitresults[0]);
+							uint64_t powerusage2 = stoull(splitresults[1]);
+							uint64_t powerdeliv1 = stoull(splitresults[2]);
+							uint64_t powerdeliv2 = stoull(splitresults[3]);
+							uint64_t usagecurrent = stoull(splitresults[4]);
+							uint64_t delivcurrent = stoull(splitresults[5]);
 
 							powerdeliv1 = (powerdeliv1 < 10) ? 0 : powerdeliv1;
 							powerdeliv2 = (powerdeliv2 < 10) ? 0 : powerdeliv2;
@@ -2829,10 +2829,10 @@ namespace http
 							{
 								std::vector<std::string> sd2 = result2[0];
 
-								uint64_t total_min_usage_1 = std::stoull(sd2[0]);
-								uint64_t total_min_deliv_1 = std::stoull(sd2[1]);
-								uint64_t total_min_usage_2 = std::stoull(sd2[2]);
-								uint64_t total_min_deliv_2 = std::stoull(sd2[3]);
+								uint64_t total_min_usage_1 = stoull(sd2[0]);
+								uint64_t total_min_deliv_1 = stoull(sd2[1]);
+								uint64_t total_min_usage_2 = stoull(sd2[2]);
+								uint64_t total_min_deliv_2 = stoull(sd2[3]);
 								uint64_t total_real_usage, total_real_deliv;
 
 								total_min_deliv_1 = (total_min_deliv_1 < 10) ? 0 : total_min_deliv_1;
@@ -2880,11 +2880,11 @@ namespace http
 						{
 							std::vector<std::string> sd2 = result2[0];
 
-							uint64_t total_min_gas = std::stoull(sd2[0]);
+							uint64_t total_min_gas = stoull(sd2[0]);
 							uint64_t gasactual;
 							try
 							{
-								gasactual = std::stoull(sValue);
+								gasactual = stoull(sValue);
 							}
 							catch (std::invalid_argument e)
 							{
@@ -2900,7 +2900,7 @@ namespace http
 							sprintf(szTmp, "%.03f m3", musage);
 							root["result"][ii]["CounterToday"] = szTmp;
 							root["result"][ii]["HaveTimeout"] = bHaveTimeout;
-							sprintf(szTmp, "%.03f", atof(sValue.c_str()) / divider);
+							sprintf(szTmp, "%.03f", stof(sValue) / divider);
 							root["result"][ii]["Data"] = szTmp;
 						}
 						else
@@ -2909,7 +2909,7 @@ namespace http
 							root["result"][ii]["Counter"] = szTmp;
 							sprintf(szTmp, "%.03f m3", 0.0F);
 							root["result"][ii]["CounterToday"] = szTmp;
-							sprintf(szTmp, "%.03f", atof(sValue.c_str()) / divider);
+							sprintf(szTmp, "%.03f", stof(sValue) / divider);
 							root["result"][ii]["Data"] = szTmp;
 							root["result"][ii]["HaveTimeout"] = bHaveTimeout;
 						}
@@ -2926,9 +2926,9 @@ namespace http
 							m_sql.GetPreferencesVar("CM113DisplayType", displaytype);
 							m_sql.GetPreferencesVar("ElectricVoltage", voltage);
 
-							double val1 = atof(strarray[0].c_str());
-							double val2 = atof(strarray[1].c_str());
-							double val3 = atof(strarray[2].c_str());
+							double val1 = stod(strarray[0]);
+							double val2 = stod(strarray[1]);
+							double val3 = stod(strarray[2]);
 
 							if (displaytype == 0)
 							{
@@ -2961,15 +2961,15 @@ namespace http
 							m_sql.GetPreferencesVar("CM113DisplayType", displaytype);
 							m_sql.GetPreferencesVar("ElectricVoltage", voltage);
 
-							double total = atof(strarray[3].c_str());
+							double total = stod(strarray[3]);
 							if (displaytype == 0)
 							{
-								sprintf(szData, "%.1f A, %.1f A, %.1f A", atof(strarray[0].c_str()), atof(strarray[1].c_str()), atof(strarray[2].c_str()));
+								sprintf(szData, "%.1f A, %.1f A, %.1f A", stof(strarray[0]), stof(strarray[1]), stof(strarray[2]));
 							}
 							else
 							{
-								sprintf(szData, "%d Watt, %d Watt, %d Watt", int(atof(strarray[0].c_str()) * voltage), int(atof(strarray[1].c_str()) * voltage),
-									int(atof(strarray[2].c_str()) * voltage));
+								sprintf(szData, "%d Watt, %d Watt, %d Watt", int(stof(strarray[0]) * voltage), int(stof(strarray[1]) * voltage),
+									int(stof(strarray[2]) * voltage));
 							}
 							if (total > 0)
 							{
@@ -2987,7 +2987,7 @@ namespace http
 						StringSplit(sValue, ";", strarray);
 						if (strarray.size() == 2)
 						{
-							double total = atof(strarray[1].c_str()) / 1000;
+							double total = stod(strarray[1]) / 1000;
 
 							time_t now = mytime(nullptr);
 							struct tm ltime;
@@ -3005,17 +3005,17 @@ namespace http
 								float divider = m_sql.GetCounterDivider(int(metertype), int(dType), float(AddjValue2));
 
 								std::vector<std::string> sd2 = result2[0];
-								double minimum = atof(sd2[0].c_str()) / divider;
+								double minimum = stod(sd2[0]) / divider;
 
 								sprintf(szData, "%.3f kWh", total);
 								root["result"][ii]["Data"] = szData;
 								if ((dType == pTypeENERGY) || (dType == pTypePOWER))
 								{
-									sprintf(szData, "%ld Watt", atol(strarray[0].c_str()));
+									sprintf(szData, "%ld Watt", stol(strarray[0]));
 								}
 								else
 								{
-									sprintf(szData, "%g Watt", atof(strarray[0].c_str()));
+									sprintf(szData, "%g Watt", stof(strarray[0]));
 								}
 								root["result"][ii]["Usage"] = szData;
 								root["result"][ii]["HaveTimeout"] = bHaveTimeout;
@@ -3028,11 +3028,11 @@ namespace http
 								root["result"][ii]["Data"] = szData;
 								if ((dType == pTypeENERGY) || (dType == pTypePOWER))
 								{
-									sprintf(szData, "%ld Watt", atol(strarray[0].c_str()));
+									sprintf(szData, "%ld Watt", stol(strarray[0]));
 								}
 								else
 								{
-									sprintf(szData, "%g Watt", atof(strarray[0].c_str()));
+									sprintf(szData, "%g Watt", stof(strarray[0]));
 								}
 								root["result"][ii]["Usage"] = szData;
 								root["result"][ii]["HaveTimeout"] = bHaveTimeout;
@@ -3074,11 +3074,11 @@ namespace http
 							std::string value_max = options["ValueMax"];
 							std::string value_unit = options["ValueUnit"];
 
-							double valuestep = (!value_step.empty()) ? atof(value_step.c_str()) : 0.5;
-							double valuemin = (!value_min.empty()) ? atof(value_min.c_str()) : -200.0;
-							double valuemax = (!value_max.empty()) ? atof(value_max.c_str()) : 200.0;
+							double valuestep = (!value_step.empty()) ? stod(value_step) : 0.5;
+							double valuemin = (!value_min.empty()) ? stod(value_min) : -200.0;
+							double valuemax = (!value_max.empty()) ? stod(value_max) : 200.0;
 
-							double value = atof(sValue.c_str());
+							double value = stod(sValue);
 
 							if (
 								(value_unit.empty())
@@ -3117,7 +3117,7 @@ namespace http
 						{
 							bHasTimers = m_sql.HasTimers(sd[0]);
 
-							double tempCelcius = atof(sValue.c_str());
+							double tempCelcius = stod(sValue);
 							double temp = ConvertTemperature(tempCelcius, tempsign);
 
 							sprintf(szTmp, "%.1f", temp);
@@ -3131,7 +3131,7 @@ namespace http
 					{
 						if (dSubType == sTypeVisibility)
 						{
-							float vis = static_cast<float>(atof(sValue.c_str()));
+							float vis = stof(sValue);
 							if (metertype == 0)
 							{
 								// km
@@ -3143,14 +3143,14 @@ namespace http
 								sprintf(szTmp, "%.1f mi", vis * 0.6214F);
 							}
 							root["result"][ii]["Data"] = szTmp;
-							root["result"][ii]["Visibility"] = atof(sValue.c_str());
+							root["result"][ii]["Visibility"] = stof(sValue);
 							root["result"][ii]["HaveTimeout"] = bHaveTimeout;
 							root["result"][ii]["TypeImg"] = "visibility";
 							root["result"][ii]["SwitchTypeVal"] = metertype;
 						}
 						else if (dSubType == sTypeDistance)
 						{
-							float vis = static_cast<float>(atof(sValue.c_str()));
+							float vis = stof(sValue);
 							if (metertype == 0)
 							{
 								// Metric
@@ -3168,10 +3168,10 @@ namespace http
 						}
 						else if (dSubType == sTypeSolarRadiation)
 						{
-							float radiation = static_cast<float>(atof(sValue.c_str()));
+							float radiation = stof(sValue);
 							sprintf(szTmp, "%.1f Watt/m2", radiation);
 							root["result"][ii]["Data"] = szTmp;
-							root["result"][ii]["Radiation"] = atof(sValue.c_str());
+							root["result"][ii]["Radiation"] = stof(sValue);
 							root["result"][ii]["HaveTimeout"] = bHaveTimeout;
 							root["result"][ii]["TypeImg"] = "radiation";
 							root["result"][ii]["SwitchTypeVal"] = metertype;
@@ -3195,7 +3195,7 @@ namespace http
 						}
 						else if (dSubType == sTypeSystemTemp)
 						{
-							double tvalue = ConvertTemperature(atof(sValue.c_str()), tempsign);
+							double tvalue = ConvertTemperature(stod(sValue), tempsign);
 							root["result"][ii]["Temp"] = tvalue;
 							sprintf(szData, "%.1f %c", tvalue, tempsign);
 							root["result"][ii]["Data"] = szData;
@@ -3214,14 +3214,14 @@ namespace http
 						}
 						else if (dSubType == sTypePercentage)
 						{
-							sprintf(szData, "%g%%", atof(sValue.c_str()));
+							sprintf(szData, "%g%%", stof(sValue));
 							root["result"][ii]["Data"] = szData;
 							root["result"][ii]["HaveTimeout"] = bHaveTimeout;
 							root["result"][ii]["TypeImg"] = "hardware";
 						}
 						else if (dSubType == sTypeWaterflow)
 						{
-							sprintf(szData, "%g l/min", atof(sValue.c_str()));
+							sprintf(szData, "%g l/min", stof(sValue));
 							root["result"][ii]["Data"] = szData;
 							root["result"][ii]["HaveTimeout"] = bHaveTimeout;
 							if (!CustomImage)
@@ -3237,10 +3237,10 @@ namespace http
 
 							if (sResults.size() == 2)
 							{
-								SensorType = atoi(sResults[0].c_str());
+								SensorType = stoi(sResults[0]);
 								szAxesLabel = sResults[1];
 							}
-							sprintf(szData, "%g %s", atof(sValue.c_str()), szAxesLabel.c_str());
+							sprintf(szData, "%g %s", stof(sValue), szAxesLabel.c_str());
 							root["result"][ii]["Data"] = szData;
 							root["result"][ii]["SensorType"] = SensorType;
 							root["result"][ii]["SensorUnit"] = szAxesLabel;
@@ -3252,7 +3252,7 @@ namespace http
 						}
 						else if (dSubType == sTypeFan)
 						{
-							sprintf(szData, "%d RPM", atoi(sValue.c_str()));
+							sprintf(szData, "%d RPM", stoi(sValue));
 							root["result"][ii]["Data"] = szData;
 							root["result"][ii]["HaveTimeout"] = bHaveTimeout;
 							if (!CustomImage)
@@ -3261,26 +3261,26 @@ namespace http
 						}
 						else if (dSubType == sTypeSoundLevel)
 						{
-							sprintf(szData, "%d dB", atoi(sValue.c_str()));
+							sprintf(szData, "%d dB", stoi(sValue));
 							root["result"][ii]["Data"] = szData;
 							root["result"][ii]["TypeImg"] = "Speaker";
 							root["result"][ii]["HaveTimeout"] = bHaveTimeout;
 						}
 						else if (dSubType == sTypeVoltage)
 						{
-							sprintf(szData, "%g V", atof(sValue.c_str()));
+							sprintf(szData, "%g V", stof(sValue));
 							root["result"][ii]["Data"] = szData;
 							root["result"][ii]["TypeImg"] = "current";
 							root["result"][ii]["HaveTimeout"] = bHaveTimeout;
-							root["result"][ii]["Voltage"] = atof(sValue.c_str());
+							root["result"][ii]["Voltage"] = stof(sValue);
 						}
 						else if (dSubType == sTypeCurrent)
 						{
-							sprintf(szData, "%g A", atof(sValue.c_str()));
+							sprintf(szData, "%g A", stof(sValue));
 							root["result"][ii]["Data"] = szData;
 							root["result"][ii]["TypeImg"] = "current";
 							root["result"][ii]["HaveTimeout"] = bHaveTimeout;
-							root["result"][ii]["Current"] = atof(sValue.c_str());
+							root["result"][ii]["Current"] = stof(sValue);
 						}
 						else if (dSubType == sTypeTextStatus)
 						{
@@ -3305,11 +3305,11 @@ namespace http
 						}
 						else if (dSubType == sTypePressure)
 						{
-							sprintf(szData, "%.1f Bar", atof(sValue.c_str()));
+							sprintf(szData, "%.1f Bar", stof(sValue));
 							root["result"][ii]["Data"] = szData;
 							root["result"][ii]["TypeImg"] = "gauge";
 							root["result"][ii]["HaveTimeout"] = bHaveTimeout;
-							root["result"][ii]["Pressure"] = atof(sValue.c_str());
+							root["result"][ii]["Pressure"] = stof(sValue);
 						}
 						else if (dSubType == sTypeBaro)
 						{
@@ -3317,14 +3317,14 @@ namespace http
 							StringSplit(sValue, ";", tstrarray);
 							if (tstrarray.empty())
 								continue;
-							sprintf(szData, "%g hPa", atof(tstrarray[0].c_str()));
+							sprintf(szData, "%g hPa", stof(tstrarray[0]));
 							root["result"][ii]["Data"] = szData;
 							root["result"][ii]["TypeImg"] = "gauge";
 							root["result"][ii]["HaveTimeout"] = bHaveTimeout;
 							if (tstrarray.size() > 1)
 							{
-								root["result"][ii]["Barometer"] = atof(tstrarray[0].c_str());
-								int forecast = atoi(tstrarray[1].c_str());
+								root["result"][ii]["Barometer"] = stof(tstrarray[0]);
+								int forecast = stoi(tstrarray[1]);
 								root["result"][ii]["Forecast"] = forecast;
 								root["result"][ii]["ForecastStr"] = BMP_Forecast_Desc(forecast);
 							}
@@ -3460,8 +3460,8 @@ namespace http
 							{
 								std::vector<std::string> sd2 = result2[0];
 
-								int64_t total_first = std::stoll(sd2[0]);
-								int64_t total_last = std::stoll(sValue);
+								int64_t total_first = stoll(sd2[0]);
+								int64_t total_last = stoll(sValue);
 								int64_t total_real = total_last - total_first;
 
 								double musage = 0;
@@ -3502,7 +3502,7 @@ namespace http
 							root["result"][ii]["ValueUnits"] = ValueUnits;
 							root["result"][ii]["Divider"] = divider;
 
-							double dvalue = static_cast<double>(atof(sValue.c_str()));
+							double dvalue = stod(sValue);
 							double meteroffset = AddjValue;
 
 							switch (metertype)
@@ -3555,14 +3555,14 @@ namespace http
 							double dvalue;
 							if (splitresults.size() < 2)
 							{
-								dvalue = static_cast<double>(atof(sValue.c_str()));
+								dvalue = stod(sValue);
 							}
 							else
 							{
-								dvalue = static_cast<double>(atof(splitresults[1].c_str()));
+								dvalue = stod(splitresults[1]);
 								if (dvalue < 0.0)
 								{
-									dvalue = static_cast<double>(atof(splitresults[0].c_str()));
+									dvalue = stod(splitresults[0]);
 								}
 							}
 							root["result"][ii]["SwitchTypeVal"] = metertype;
@@ -3611,13 +3611,13 @@ namespace http
 					}
 					else if (dType == pTypeLux)
 					{
-						sprintf(szTmp, "%.0f Lux", atof(sValue.c_str()));
+						sprintf(szTmp, "%.0f Lux", stof(sValue));
 						root["result"][ii]["Data"] = szTmp;
 						root["result"][ii]["HaveTimeout"] = bHaveTimeout;
 					}
 					else if (dType == pTypeWEIGHT)
 					{
-						sprintf(szTmp, "%g %s", m_sql.m_weightscale * atof(sValue.c_str()), m_sql.m_weightsign.c_str());
+						sprintf(szTmp, "%g %s", m_sql.m_weightscale * stof(sValue), m_sql.m_weightsign.c_str());
 						root["result"][ii]["Data"] = szTmp;
 						root["result"][ii]["HaveTimeout"] = false;
 						root["result"][ii]["SwitchTypeVal"] = (m_sql.m_weightsign == "kg") ? 0 : 1;
@@ -3626,7 +3626,7 @@ namespace http
 					{
 						if (dSubType == sTypeElectric)
 						{
-							sprintf(szData, "%g Watt", atof(sValue.c_str()));
+							sprintf(szData, "%g Watt", stof(sValue));
 							root["result"][ii]["Data"] = szData;
 						}
 						else
@@ -3640,11 +3640,11 @@ namespace http
 						switch (dSubType)
 						{
 						case sTypeRFXSensorAD:
-							sprintf(szData, "%d mV", atoi(sValue.c_str()));
+							sprintf(szData, "%d mV", stoi(sValue));
 							root["result"][ii]["TypeImg"] = "current";
 							break;
 						case sTypeRFXSensorVolt:
-							sprintf(szData, "%d mV", atoi(sValue.c_str()));
+							sprintf(szData, "%d mV", stoi(sValue));
 							root["result"][ii]["TypeImg"] = "current";
 							break;
 						}
@@ -3659,7 +3659,7 @@ namespace http
 						{
 							std::string lstatus = "On";
 
-							if (atoi(sValue.c_str()) == 0)
+							if (stoi(sValue) == 0)
 							{
 								lstatus = "Off";
 							}
@@ -3669,7 +3669,7 @@ namespace http
 							root["result"][ii]["HaveGroupCmd"] = false;
 							root["result"][ii]["SwitchTypeVal"] = STYPE_OnOff;
 							root["result"][ii]["SwitchType"] = Switch_Type_Desc(STYPE_OnOff);
-							sprintf(szData, "%d", atoi(sValue.c_str()));
+							sprintf(szData, "%d", stoi(sValue));
 							root["result"][ii]["Data"] = szData;
 							root["result"][ii]["HaveTimeout"] = bHaveTimeout;
 							root["result"][ii]["StrParam1"] = strParam1;
@@ -3691,7 +3691,7 @@ namespace http
 							}
 
 							root["result"][ii]["Level"] = 0;
-							root["result"][ii]["LevelInt"] = atoi(sValue.c_str());
+							root["result"][ii]["LevelInt"] = stoi(sValue);
 						}
 						break;
 						case sTypeRego6XXCounter:
@@ -3710,8 +3710,8 @@ namespace http
 							{
 								std::vector<std::string> sd2 = result2[0];
 
-								uint64_t total_min = std::stoull(sd2[0]);
-								uint64_t total_max = std::stoull(sd2[1]);
+								uint64_t total_min = stoull(sd2[0]);
+								uint64_t total_max = stoull(sd2[1]);
 								uint64_t total_real = total_max - total_min;
 
 								sprintf(szTmp, "%" PRIu64, total_real);
@@ -3731,7 +3731,7 @@ namespace http
 						if (pHardware->HwdType == HTYPE_PythonPlugin)
 						{
 							Plugins::CPlugin* pPlugin = (Plugins::CPlugin*)pHardware;
-							bHaveTimeout = pPlugin->HasNodeFailed(sd[1].c_str(), atoi(sd[2].c_str()));
+							bHaveTimeout = pPlugin->HasNodeFailed(sd[1].c_str(), stoi(sd[2]));
 							root["result"][ii]["HaveTimeout"] = bHaveTimeout;
 						}
 					}
@@ -3775,10 +3775,9 @@ namespace http
 
 			for (const auto& sd : result)
 			{
-				const int year = atoi(sd[0].c_str());
-				const double value = atof(sd[2].c_str());
-
-				const int previousIndex = sgroupby == "year" ? 0 : sgroupby == "quarter" ? sd[1][1] - '0' - 1 : atoi(sd[1].c_str()) - 1;
+				const int year = stoi(sd[0]);
+				const double value = stod(sd[2]);
+				const int previousIndex = sgroupby == "year" ? 0 : sgroupby == "quarter" ? sd[1][1] - '0' - 1 : stoi(sd[1]) - 1;
 				const double* sumPrevious = year - 1 != yearPrevious[previousIndex] ? NULL : &yearSumPrevious[previousIndex];
 				const char* trend = !sumPrevious ? "" : *sumPrevious < value ? "up" : *sumPrevious > value ? "down" : "equal";
 				const int ii = root["result"].size();
@@ -3825,7 +3824,7 @@ namespace http
 			{
 				queryString = "select count(*) from " + dbasetable + " where DeviceRowID = " + std::to_string(idx) + " and " + counter("") + " != 0 ";
 				result = m_sql.safe_query(queryString.c_str(), idx, idx, idx, idx, idx);
-				if (atoi(result[0][0].c_str()) == 0)
+				if (stoi(result[0][0]) == 0)
 				{
 					bUseValues = true;
 				}
@@ -3920,9 +3919,9 @@ namespace http
 				int yearPrevious[12];
 				for (const auto& sd : result)
 				{
-					const int year = atoi(sd[0].c_str());
-					const double fsum = atof(sd[1].c_str());
-					const int previousIndex = sgroupby == "year" ? 0 : sgroupby == "quarter" ? sd[2][1] - '0' - 1 : atoi(sd[2].c_str()) - 1;
+					const int year = stoi(sd[0]);
+					const double fsum = stod(sd[1]);
+					const int previousIndex = sgroupby == "year" ? 0 : sgroupby == "quarter" ? sd[2][1] - '0' - 1 : stoi(sd[2]) - 1;
 					const double* sumPrevious = year - 1 != yearPrevious[previousIndex] ? NULL : &yearSumPrevious[previousIndex];
 					const char* trend = !sumPrevious ? "" : *sumPrevious < fsum ? "up" : *sumPrevious > fsum ? "down" : "equal";
 					const int ii = root["result"].size();
@@ -3951,7 +3950,7 @@ namespace http
 			std::string todayCategory;
 			if (sgroupby == "quarter")
 			{
-				int todayMonth = atoi(today.substr(5, 2).c_str());
+				int todayMonth = stoi(today.substr(5, 2));
 				if (todayMonth < 4)
 					todayCategory = "Q1";
 				else if (todayMonth < 7)
@@ -3989,7 +3988,7 @@ namespace http
 			}
 			else
 			{
-				resultPlusTodayValue = atof(root["result"][todayResultIndex]["s"].asString().c_str()) + todayValue;
+				resultPlusTodayValue = stod(root["result"][todayResultIndex]["s"].asString()) + todayValue;
 			}
 			char szTmp[30];
 			sprintf(szTmp, formatString.c_str(), resultPlusTodayValue);
@@ -4042,7 +4041,7 @@ namespace http
 				int ii = 0;
 				for (const auto& sd : result)
 				{
-					int ID = atoi(sd[0].c_str());
+					int ID = stoi(sd[0]);
 
 					_tCustomIcon cImage;
 					cImage.idx = 100 + ID;
@@ -4295,7 +4294,7 @@ namespace http
 				return;
 			}
 			std::vector<std::vector<std::string>> result;
-			result = m_sql.safe_queryBlob("SELECT Image FROM Floorplans WHERE ID=%d", atol(idx.c_str()));
+			result = m_sql.safe_queryBlob("SELECT Image FROM Floorplans WHERE ID=%d", stol(idx));
 			if (result.empty())
 				return;
 			reply::set_content(&rep, result[0][0].begin(), result[0][0].end());

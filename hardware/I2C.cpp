@@ -147,7 +147,7 @@ namespace
 
 I2C::I2C(const int ID, const _eI2CType DevType, const std::string &Address, const std::string &SerialPort, const int Mode1)
 	: m_dev_type(DevType)
-	, m_i2c_addr((uint8_t)atoi(Address.c_str()))
+	, m_i2c_addr((uint8_t) stoi(Address))
 	, m_ActI2CBus(SerialPort)
 	, m_invert_data((bool)Mode1)
 {
@@ -413,8 +413,8 @@ void I2C::MCP23017_Init()
 	{
 		for (const auto &sd : results)
 		{
-			unit = atoi(sd[0].c_str());
-			nvalue = atoi(sd[1].c_str());
+			unit = stoi(sd[0]);
+			nvalue = stoi(sd[1]);
 
 			if (m_invert_data == true)
 			{

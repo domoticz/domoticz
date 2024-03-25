@@ -104,7 +104,7 @@ void OTGWBase::UpdateSwitch(const unsigned char Idx, const bool bOn, const std::
 	if (!result.empty())
 	{
 		//check if we have a change, if not do not update it
-		int nvalue=atoi(result[0][1].c_str());
+		int nvalue = stoi(result[0][1]);
 		if ((!bOn)&&(nvalue==0))
 			return;
 		if ((bOn&&(nvalue!=0)))
@@ -409,43 +409,43 @@ void OTGWBase::ParseLine()
 			bool bDiagnosticEvent=(_status.MsgID[9+1]=='1');												UpdateSwitch(116,bDiagnosticEvent,"DiagnosticEvent");
 		}
 
-		_status.Control_setpoint = static_cast<float>(atof(results[idx++].c_str()));						SendTempSensor(MsgID1, 255, _status.Control_setpoint, "Control Setpoint");
+		_status.Control_setpoint = stof(results[idx++]);						SendTempSensor(MsgID1, 255, _status.Control_setpoint, "Control Setpoint");
 		_status.Remote_parameter_flags=results[idx++];
 		if(bIsFirmware5)
 		{
 			idx+=2;
 		}
-		_status.Maximum_relative_modulation_level = static_cast<float>(atof(results[idx++].c_str()));
+		_status.Maximum_relative_modulation_level = stof(results[idx++]);
 		bool bExists = CheckPercentageSensorExists(MsgID14, 1);
 		if ((_status.Maximum_relative_modulation_level != 0) || (bExists))
 		{
 			SendPercentageSensor(MsgID14, 1, 255, _status.Maximum_relative_modulation_level, "Maximum Relative Modulation Level");
 		}
 		_status.Boiler_capacity_and_modulation_limits=results[idx++];
-		_status.Room_Setpoint = static_cast<float>(atof(results[idx++].c_str()));
+		_status.Room_Setpoint = stof(results[idx++]);
 		UpdateSetPointSensor((uint8_t)MsgID16, ((m_OverrideTemperature != 0.0F) ? m_OverrideTemperature : _status.Room_Setpoint), "Room Setpoint");
-		_status.Relative_modulation_level = static_cast<float>(atof(results[idx++].c_str()));
+		_status.Relative_modulation_level = stof(results[idx++]);
 		bExists = CheckPercentageSensorExists(MsgID17, 1);
 		if ((_status.Relative_modulation_level != 0) || (bExists))
 		{
 			SendPercentageSensor(MsgID17, 1, 255, _status.Relative_modulation_level, "Relative modulation level");
 		}
-		_status.CH_water_pressure = static_cast<float>(atof(results[idx++].c_str()));
+		_status.CH_water_pressure = stof(results[idx++]);
 		if (_status.CH_water_pressure != 0)
 		{
 			SendPressureSensor(0, MsgID18, 255, _status.CH_water_pressure, "CH Water Pressure");
 		}
 		if(bIsFirmware5)
 		{
-			_status.DHW_flow_rate = static_cast<float>(atof(results[idx++].c_str()));						SendWaterflowSensor(MsgID19, 1, 255, _status.DHW_flow_rate, "DHW Flow Rate");
+			_status.DHW_flow_rate = stof(results[idx++]);						SendWaterflowSensor(MsgID19, 1, 255, _status.DHW_flow_rate, "DHW Flow Rate");
 			//CH2 room setpoint (MsgID=23)
 			idx+=1;
 		}
-		_status.Room_temperature = static_cast<float>(atof(results[idx++].c_str()));						SendTempSensor(MsgID24, 255, _status.Room_temperature, "Room Temperature");
-		_status.Boiler_water_temperature = static_cast<float>(atof(results[idx++].c_str()));				SendTempSensor(MsgID25, 255, _status.Boiler_water_temperature, "Boiler Water Temperature");
-		_status.DHW_temperature = static_cast<float>(atof(results[idx++].c_str()));							SendTempSensor(MsgID26, 255, _status.DHW_temperature, "DHW Temperature");
-		_status.Outside_temperature = static_cast<float>(atof(results[idx++].c_str()));						SendTempSensor(MsgID27, 255, _status.Outside_temperature, "Outside Temperature");
-		_status.Return_water_temperature = static_cast<float>(atof(results[idx++].c_str()));				SendTempSensor(MsgID28, 255, _status.Return_water_temperature, "Return Water Temperature");
+		_status.Room_temperature = stof(results[idx++]);						SendTempSensor(MsgID24, 255, _status.Room_temperature, "Room Temperature");
+		_status.Boiler_water_temperature = stof(results[idx++]);				SendTempSensor(MsgID25, 255, _status.Boiler_water_temperature, "Boiler Water Temperature");
+		_status.DHW_temperature = stof(results[idx++]);							SendTempSensor(MsgID26, 255, _status.DHW_temperature, "DHW Temperature");
+		_status.Outside_temperature = stof(results[idx++]);						SendTempSensor(MsgID27, 255, _status.Outside_temperature, "Outside Temperature");
+		_status.Return_water_temperature = stof(results[idx++]);				SendTempSensor(MsgID28, 255, _status.Return_water_temperature, "Return Water Temperature");
 		if(bIsFirmware5)
 		{
 			//CH2 flow temperature(MsgID = 31)
@@ -454,12 +454,12 @@ void OTGWBase::ParseLine()
 		}
 		_status.DHW_setpoint_boundaries=results[idx++];
 		_status.Max_CH_setpoint_boundaries=results[idx++];
-		_status.DHW_setpoint = static_cast<float>(atof(results[idx++].c_str()));
+		_status.DHW_setpoint = stof(results[idx++]);
 		if (_status.DHW_setpoint != 0.0F)
 		{
 			UpdateSetPointSensor((uint8_t)MsgID56, _status.DHW_setpoint, "DHW Setpoint");
 		}
-		_status.Max_CH_water_setpoint = static_cast<float>(atof(results[idx++].c_str()));
+		_status.Max_CH_water_setpoint = stof(results[idx++]);
 		if (_status.Max_CH_water_setpoint != 0.0F)
 		{
 			UpdateSetPointSensor((uint8_t)MsgID57, _status.Max_CH_water_setpoint, "Max_CH Water Setpoint");
@@ -471,14 +471,14 @@ void OTGWBase::ParseLine()
 			//Relative ventilation(MsgID = 77)
 			idx+=3;
 		}
-		_status.Burner_starts=atol(results[idx++].c_str());
-		_status.CH_pump_starts=atol(results[idx++].c_str());
-		_status.DHW_pump_valve_starts=atol(results[idx++].c_str());
-		_status.DHW_burner_starts=atol(results[idx++].c_str());
-		_status.Burner_operation_hours=atol(results[idx++].c_str());
-		_status.CH_pump_operation_hours=atol(results[idx++].c_str());
-		_status.DHW_pump_valve_operation_hours=atol(results[idx++].c_str());
-		_status.DHW_burner_operation_hours=atol(results[idx++].c_str());
+		_status.Burner_starts = stol(results[idx++]);
+		_status.CH_pump_starts = stol(results[idx++]);
+		_status.DHW_pump_valve_starts = stol(results[idx++]);
+		_status.DHW_burner_starts = stol(results[idx++]);
+		_status.Burner_operation_hours = stol(results[idx++]);
+		_status.CH_pump_operation_hours = stol(results[idx++]);
+		_status.DHW_pump_valve_operation_hours = stol(results[idx++]);
+		_status.DHW_burner_operation_hours = stol(results[idx++]);
 		return;
 	}
 
@@ -524,7 +524,7 @@ void OTGWBase::ParseLine()
 		if (status == 'c' || status == 't')
 		{
 			// Get override setpoint value
-			m_OverrideTemperature = static_cast<float>(atof(sLine.substr(7).c_str()));
+			m_OverrideTemperature = stof(sLine.substr(7));
 		}
 	}
 	else if (sLine.find("PR: A") != std::string::npos)
@@ -571,14 +571,14 @@ namespace http {
 				return;
 
 
-			int currentMode1 = atoi(result[0][0].c_str());
+			int currentMode1 = stoi(result[0][0]);
 
 			std::string sOutsideTempSensor = request::findValue(&req, "combooutsidesensor");
-			int newMode1 = atoi(sOutsideTempSensor.c_str());
+			int newMode1 = stoi(sOutsideTempSensor);
 
 			if (currentMode1 != newMode1)
 			{
-				m_sql.UpdateRFXCOMHardwareDetails(atoi(idx.c_str()), newMode1, 0, 0, 0, 0, 0);
+				m_sql.UpdateRFXCOMHardwareDetails(stoi(idx), newMode1, 0, 0, 0, 0, 0);
 				m_mainworker.RestartHardware(idx);
 			}
 		}
@@ -607,7 +607,7 @@ namespace http {
 			stdupper(rcmnd);
 			cmnd = rcmnd + rdata;
 
-			OTGWBase *pOTGW = dynamic_cast<OTGWBase*>(m_mainworker.GetHardware(atoi(idx.c_str())));
+			OTGWBase *pOTGW = dynamic_cast<OTGWBase*>(m_mainworker.GetHardware(stoi(idx)));
 			if (pOTGW == nullptr)
 				return;
 

@@ -563,7 +563,7 @@ void CSysfsGpio::CreateDomoticzDevices()
 					}
 					else
 					{
-						if (atoi(sd[1].c_str()) != GPIO_IN) /* device was not an input, delete it */
+						if (stoi(sd[1]) != GPIO_IN) // device was not an input, delete it
 						{
 							m_sql.safe_query("DELETE FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==%d)", m_HwdID, s.pin_number);
 
@@ -606,7 +606,7 @@ void CSysfsGpio::CreateDomoticzDevices()
 					}
 					else
 					{
-						if ((atoi(sd[1].c_str()) != GPIO_OUT)) /* device was not an output, delete it */
+						if ((stoi(sd[1]) != GPIO_OUT)) // device was not an output, delete it
 						{
 							m_sql.safe_query("DELETE FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==%d)", m_HwdID, s.pin_number);
 
@@ -614,7 +614,7 @@ void CSysfsGpio::CreateDomoticzDevices()
 						}
 						else
 						{
-							GpioWrite(s.pin_number, atoi(sd[0].c_str()));
+							GpioWrite(s.pin_number, stoi(sd[0]));
 						}
 					}
 				}
@@ -689,11 +689,11 @@ void CSysfsGpio::UpdateDomoticzInputs(bool forceUpdate)
 				{
 					std::vector<std::string> sd = result[0];
 
-					if (atoi(sd[1].c_str()) == 1) /* Check if device is used */
+					if (stoi(sd[1]) == 1) // Check if device is used
 					{
 						int db_state = GPIO_HIGH;
 
-						if (atoi(sd[0].c_str()) == GPIO_LOW) /* determine database state*/
+						if (stoi(sd[0]) == GPIO_LOW) // determine database stat
 						{
 							db_state = GPIO_LOW;
 						}
@@ -806,9 +806,9 @@ void CSysfsGpio::UpdateGpioOutputs()
 			if ((!result.empty()) && (!result.empty()))
 			{
 				std::vector<std::string> sd = result[0];
-				s.db_state = atoi(sd[0].c_str());
+				s.db_state = (int8_t) stoi(sd[0]);
 
-				if (atoi(sd[1].c_str()))
+				if (stoi(sd[1]))
 				{
 					/* device is used, update gpio output pin */
 					GpioWrite(s.pin_number, s.db_state);

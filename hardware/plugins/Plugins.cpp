@@ -1427,7 +1427,7 @@ namespace Plugins
 				for (const auto &sd : result)
 				{
 					// Build argument list
-					PyNewRef nrArgList = Py_BuildValue(tupleStr.c_str(), sd[0].c_str(), atoi(sd[1].c_str()));
+					PyNewRef nrArgList = Py_BuildValue(tupleStr.c_str(), sd[0].c_str(), stoi(sd[1]));
 					if (!nrArgList)
 					{
 						Log(LOG_ERROR, "Building device argument list failed for key %s/%s.", sd[0].c_str(), sd[1].c_str());
@@ -1486,7 +1486,7 @@ namespace Plugins
 						Log(LOG_ERROR, "(%s) failed to add ID '%s' to image dictionary.", m_PluginKey.c_str(), sd[0].c_str());
 						goto Error;
 					}
-					pImage->ImageID = atoi(sd[0].c_str()) + 100;
+					pImage->ImageID = stoi(sd[0]) + 100;
 					pImage->Base = PyUnicode_FromString(sd[1].c_str());
 					pImage->Name = PyUnicode_FromString(sd[2].c_str());
 					pImage->Description = PyUnicode_FromString(sd[3].c_str());
@@ -2541,7 +2541,7 @@ namespace Plugins
 
 	std::string CPluginNotifier::GetCustomIcon(std::string &szCustom)
 	{
-		int iIconLine = atoi(szCustom.c_str());
+		int iIconLine = stoi(szCustom);
 		std::string szRetVal = "Light48";
 		if (iIconLine < 100) // default set of custom icons
 		{
@@ -2620,7 +2620,7 @@ namespace Plugins
 		{
 			posCustom += 13;
 			std::string szCustom = ExtraData.substr(posCustom, ExtraData.find('|', posCustom) - posCustom);
-			int iCustom = atoi(szCustom.c_str());
+			int iCustom = stoi(szCustom);
 			if (iCustom)
 			{
 				szImageFile = szImageFolder + GetCustomIcon(szCustom) + "_" + szStatus + ".png";
@@ -2648,7 +2648,7 @@ namespace Plugins
 			posType += 12;
 			std::string szType = ExtraData.substr(posType, ExtraData.find('|', posType) - posType);
 			std::string szTypeImage;
-			_eSwitchType switchtype = (_eSwitchType)atoi(szType.c_str());
+			_eSwitchType switchtype = (_eSwitchType) stoi(szType);
 			switch (switchtype)
 			{
 				case STYPE_OnOff:

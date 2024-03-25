@@ -174,19 +174,19 @@ void CMQTTPush::DoMQTTPush(const uint64_t DeviceRowIdx, const bool bForced)
 
 	time_t atime = mytime(nullptr);
 
-	int dType = atoi(result[0][3].c_str());
-	int dSubType = atoi(result[0][4].c_str());
-	int nValue = atoi(result[0][5].c_str());
+	int dType = stoi(result[0][3]);
+	int dSubType = stoi(result[0][4]);
+	int nValue = stoi(result[0][5]);
 	std::string sValue = result[0][6];
 	std::string name = result[0][9];
-	int metertype = atoi(result[0][10].c_str());
+	int metertype = stoi(result[0][10]);
 
 	for (const auto& sd : result)
 	{
 		std::string sendValue;
-		int delpos = atoi(sd[1].c_str());
-		int targetType = atoi(sd[7].c_str());
-		int includeUnit = atoi(sd[8].c_str());
+		int delpos = stoi(sd[1]);
+		int targetType = stoi(sd[7]);
+		int includeUnit = stoi(sd[8]);
 
 		std::vector<std::string> strarray;
 		if (sValue.find(';') != std::string::npos)
@@ -212,7 +212,7 @@ void CMQTTPush::DoMQTTPush(const uint64_t DeviceRowIdx, const bool bForced)
 		szKey = vType + ",idx=" + sd[0] + ",name=" + name;
 
 		if (is_number(sendValue))
-			root[vType] = atoi(sendValue.c_str());
+			root[vType] = stoi(sendValue);
 		else
 			root[vType] = sendValue;
 
@@ -297,13 +297,13 @@ namespace http
 			if ((linkactive.empty()) || (ipaddress.empty()) || (port.empty()) || (topic_out.empty()) || (tls_version.empty()))
 				return;
 
-			int ilinkactive = atoi(linkactive.c_str());
-			int iTLSVersion = atoi(tls_version.c_str());
+			int ilinkactive = stoi(linkactive);
+			int iTLSVersion = stoi(tls_version);
 			if (iTLSVersion == 0) iTLSVersion = 2;
 
 			m_sql.UpdatePreferencesVar("MQTTPushActive", ilinkactive);
 			m_sql.UpdatePreferencesVar("MQTTPushIP", ipaddress);
-			m_sql.UpdatePreferencesVar("MQTTPushPort", atoi(port.c_str()));
+			m_sql.UpdatePreferencesVar("MQTTPushPort", stoi(port));
 			m_sql.UpdatePreferencesVar("MQTTPushUsername", username);
 			m_sql.UpdatePreferencesVar("MQTTPushPassword", password);
 			m_sql.UpdatePreferencesVar("MQTTPushTopicOut", topic_out);
@@ -385,9 +385,9 @@ namespace http
 				int ii = 0;
 				for (const auto& sd : result)
 				{
-					int Delimitedvalue = std::stoi(sd[2]);
-					int devType = std::stoi(sd[10]);
-					int devSubType = std::stoi(sd[11]);
+					int Delimitedvalue = stoi(sd[2]);
+					int devType = stoi(sd[10]);
+					int devSubType = stoi(sd[11]);
 
 					root["result"][ii]["idx"] = sd[0];
 					root["result"][ii]["DeviceID"] = sd[1];
@@ -416,26 +416,26 @@ namespace http
 			}
 			std::string idx = request::findValue(&req, "idx");
 			std::string deviceid = request::findValue(&req, "deviceid");
-			int deviceidi = atoi(deviceid.c_str());
+			int deviceidi = stoi(deviceid);
 			std::string valuetosend = request::findValue(&req, "valuetosend");
 			std::string targettype = request::findValue(&req, "targettype");
-			int targettypei = atoi(targettype.c_str());
+			int targettypei = stoi(targettype);
 			std::string linkactive = request::findValue(&req, "linkactive");
 			if (idx == "0")
 			{
 				//check if we already have this link
 				auto result = m_sql.safe_query("SELECT ID FROM PushLink WHERE (PushType==%d AND DeviceRowID==%d AND DelimitedValue==%d AND TargetType==%d)",
-					CBasePush::PushType::PUSHTYPE_MQTT, deviceidi, atoi(valuetosend.c_str()), targettypei);
+					CBasePush::PushType::PUSHTYPE_MQTT, deviceidi, stoi(valuetosend), targettypei);
 				if (!result.empty())
 					return; //already have this
 				m_sql.safe_query("INSERT INTO PushLink (PushType,DeviceRowID,DelimitedValue,TargetType,TargetVariable,TargetDeviceID,TargetProperty,IncludeUnit,Enabled) VALUES "
 					"(%d,'%d',%d,%d,'%q',%d,'%q',%d,%d)",
-					CBasePush::PushType::PUSHTYPE_MQTT, deviceidi, atoi(valuetosend.c_str()), targettypei, "-", 0, "-", 0, atoi(linkactive.c_str()));
+					CBasePush::PushType::PUSHTYPE_MQTT, deviceidi, stoi(valuetosend), targettypei, "-", 0, "-", 0, stoi(linkactive));
 			}
 			else
 			{
-				m_sql.safe_query("UPDATE PushLink SET DeviceRowID=%d, DelimitedValue=%d, TargetType=%d, Enabled=%d WHERE (ID == '%q')", deviceidi, atoi(valuetosend.c_str()),
-					targettypei, atoi(linkactive.c_str()), idx.c_str());
+				m_sql.safe_query("UPDATE PushLink SET DeviceRowID=%d, DelimitedValue=%d, TargetType=%d, Enabled=%d WHERE (ID == '%q')", deviceidi, stoi(valuetosend),
+					targettypei, stoi(linkactive), idx.c_str());
 			}
 			m_mqttpush.ReloadPushLinks(CBasePush::PushType::PUSHTYPE_MQTT);
 			root["status"] = "OK";

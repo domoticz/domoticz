@@ -33,7 +33,7 @@ void CounterHelper::Init(const std::string& szUservariableName, CDomoticzHardwar
 	}
 	if (!result.empty())
 	{
-		m_CounterOffset = std::stod(result[0][1]);
+		m_CounterOffset = stod(result[0][1]);
 	}
 }
 

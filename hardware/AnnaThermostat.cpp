@@ -513,7 +513,7 @@ void CAnnaThermostat::GetMeterDetails()
 				tmpstr = GetPeriodMeasurement(pElem);
 				if (!tmpstr.empty())
 				{
-					float temperature = (float)atof(tmpstr.c_str());
+					float temperature = stof(tmpstr);
 					SendTempSensor(sAnnaTemperature, 255, temperature, sname);
 				}
 			}
@@ -522,7 +522,7 @@ void CAnnaThermostat::GetMeterDetails()
 				tmpstr = GetPeriodMeasurement(pElem);
 				if (!tmpstr.empty())
 				{
-					float illuminance = (float)atof(tmpstr.c_str());
+					float illuminance = stof(tmpstr);
 					SendLuxSensor(sAnnaIlluminance, 1, 255, illuminance, sname);
 				}
 			}
@@ -531,7 +531,7 @@ void CAnnaThermostat::GetMeterDetails()
 				tmpstr = GetPeriodMeasurement(pElem);
 				if (!tmpstr.empty())
 				{
-					float temperature = (float)atof(tmpstr.c_str());
+					float temperature = stof(tmpstr);
 					SendSetPointSensor(sAnnaThermostat, temperature, sname);
 				}
 			}
@@ -540,7 +540,7 @@ void CAnnaThermostat::GetMeterDetails()
 				tmpstr = GetPeriodMeasurement(pElem);
 				if (!tmpstr.empty())
 				{
-					float temperature = (float)atof(tmpstr.c_str());
+					float temperature = stof(tmpstr);
 					SendTempSensor(sAnnaIntendedBoilerTemperature, 255, temperature, sname);
 				}
 			}
@@ -549,7 +549,7 @@ void CAnnaThermostat::GetMeterDetails()
 				tmpstr = GetPeriodMeasurement(pElem);
 				if (!tmpstr.empty())
 				{
-					float temperature = (float)atof(tmpstr.c_str());
+					float temperature = stof(tmpstr);
 					SendTempSensor(sAnnaReturnWaterTemperature, 255, temperature, sname);
 				}
 			}
@@ -558,7 +558,7 @@ void CAnnaThermostat::GetMeterDetails()
 				tmpstr = GetPeriodMeasurement(pElem);
 				if (!tmpstr.empty())
 				{
-					float temperature = (float)atof(tmpstr.c_str());
+					float temperature = stof(tmpstr);
 					SendTempSensor(sAnnaBoilerTemperature, 255, temperature, sname);
 				}
 			}
@@ -567,7 +567,7 @@ void CAnnaThermostat::GetMeterDetails()
 				tmpstr = GetPeriodMeasurement(pElem);
 				if (!tmpstr.empty())
 				{
-					float temperature = (float)atof(tmpstr.c_str());
+					float temperature = stof(tmpstr);
 					SendTempSensor(sAnnaMaxBoilerTemperature, 255, temperature, sname);
 				}
 			}
@@ -680,7 +680,7 @@ void CAnnaThermostat::GetMeterDetails()
                 tmpstr = GetPeriodMeasurement(pElem);
                 if (!tmpstr.empty())
                 {
-                    float level = (float)atof(tmpstr.c_str()) * 100.F;
+                    float level = stof(tmpstr) * 100.F;
                     SendPercentageSensor(sAnnaModulationLevel, 1, 255, level, sname);
                 }
             }
@@ -689,7 +689,7 @@ void CAnnaThermostat::GetMeterDetails()
                 tmpstr = GetPeriodMeasurement(pElem);
                 if (!tmpstr.empty())
                 {
-                    float pressure = (float)atof(tmpstr.c_str());
+                    float pressure = stof(tmpstr);
                     SendPressureSensor(sAnnaWaterPressure, 1, 255, pressure, sname);
                 }
             }
@@ -698,7 +698,7 @@ void CAnnaThermostat::GetMeterDetails()
                 tmpstr = GetPeriodMeasurement(pElem);
                 if (!tmpstr.empty())
                 {
-                    float dbm = (float)atof(tmpstr.c_str());
+                    float dbm = stof(tmpstr);
                     SendCustomSensor(sAnnaSignalStrength, 1, 255, dbm, sname, "dBm");
                 }
             }
@@ -707,7 +707,7 @@ void CAnnaThermostat::GetMeterDetails()
                 tmpstr = GetPeriodMeasurement(pElem);
                 if (!tmpstr.empty())
                 {
-                    float starts = (float)atof(tmpstr.c_str());
+                    float starts = stof(tmpstr);
                     SendCustomSensor(sAnnaBurnerStarts, 1, 255, starts, sname, "");
                 }
             }
@@ -716,7 +716,7 @@ void CAnnaThermostat::GetMeterDetails()
                 tmpstr = GetPeriodMeasurement(pElem);
                 if (!tmpstr.empty())
                 {
-                    float starts = (float)atof(tmpstr.c_str());
+                    float starts = stof(tmpstr);
                     SendCustomSensor(sAnnaFailedBurnerStarts, 1, 255, starts, sname, "");
                 }
             }
@@ -725,7 +725,7 @@ void CAnnaThermostat::GetMeterDetails()
                 tmpstr = GetPeriodMeasurement(pElem);
                 if (!tmpstr.empty())
                 {
-                    float hour = (float)atof(tmpstr.c_str());
+                    float hour = stof(tmpstr);
                     SendCustomSensor(sAnnaBurnerOperationTime, 1, 255, hour, sname, "Hour(s)");
                 }
             }
@@ -734,7 +734,7 @@ void CAnnaThermostat::GetMeterDetails()
                 tmpstr = GetPeriodMeasurement(pElem);
                 if (!tmpstr.empty())
                 {
-                    float hour = (float)atof(tmpstr.c_str());
+                    float hour = stof(tmpstr);
                     SendCustomSensor(sAnnaHotWaterBurnerOperationTime, 1, 255, hour, sname, "Hour(s)");
                 }
             }
@@ -743,7 +743,7 @@ void CAnnaThermostat::GetMeterDetails()
                 tmpstr = GetPeriodMeasurement(pElem);
                 if (!tmpstr.empty())
                 {
-                    float flow = (float)atof(tmpstr.c_str());
+                    float flow = stof(tmpstr);
                     SendWaterflowSensor(sAnnaHotWaterFlow, 1, 255, flow, sname);
                 }
             }
@@ -752,7 +752,7 @@ void CAnnaThermostat::GetMeterDetails()
                 tmpstr = GetPeriodMeasurement(pElem);
                 if (!tmpstr.empty())
                 {
-                    float temperature = (float)atof(tmpstr.c_str());
+                    float temperature = stof(tmpstr);
                     SendTempSensor(sAnnaHotWaterTemperature, 255, temperature, sname);
                 }
             }

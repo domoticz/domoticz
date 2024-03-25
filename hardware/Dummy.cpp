@@ -132,7 +132,7 @@ namespace http {
 			if ((idx.empty()) || (ssensortype.empty()) || (ssensorname.empty()))
 				return;
 
-			int sensortype = atoi(ssensortype.c_str());
+			int sensortype = stoi(ssensortype);
 			unsigned int type = 0;
 			unsigned int subType = 0;
 			uint64_t DeviceRowIdx = (uint64_t )-1;
@@ -144,7 +144,7 @@ namespace http {
 					type = sensor.type;
 					subType = sensor.subtype;
 
-					int HwdID = atoi(idx.c_str());
+					int HwdID = stoi(idx);
 
 					//Make a unique number for ID
 					std::vector<std::vector<std::string> > result;
@@ -154,7 +154,7 @@ namespace http {
 
 					if (!result.empty())
 					{
-						nid = atol(result[0][0].c_str()) + 1;
+						nid = stol(result[0][0]) + 1;
 					}
 					unsigned long vs_idx = nid; // OTO keep idx to be returned before masking
 					nid += 82000;
@@ -217,13 +217,13 @@ namespace http {
 			else
 				if (!devicetype.empty() && !devicesubtype.empty())
 				{ // for creating any device (type=x&subtype=y) from json api or code
-					type = atoi(devicetype.c_str());
-					subType = atoi(devicesubtype.c_str());
+					type = stoi(devicetype);
+					subType = stoi(devicesubtype);
 				}
 				else
 					return;
 
-			int HwdID = atoi(idx.c_str());
+			int HwdID = stoi(idx);
 
 			//Make a unique number for ID
 			std::vector<std::vector<std::string> > result;
@@ -233,7 +233,7 @@ namespace http {
 
 			if (!result.empty())
 			{
-				nid = atol(result[0][0].c_str()) + 1;
+				nid = stol(result[0][0]) + 1;
 			}
 
 			bool bPrevAcceptNewHardware = m_sql.m_bAcceptNewHardware;

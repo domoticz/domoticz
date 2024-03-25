@@ -1562,7 +1562,7 @@ double round_digits(double dIn, const int totDigits)
 {
 	std::stringstream sstr;
 	sstr << std::setprecision(totDigits) << std::fixed << dIn;
-	return std::stod(sstr.str());
+	return stod(sstr.str());
 }
 
 const std::string std_format(const char* szFormat, ...)

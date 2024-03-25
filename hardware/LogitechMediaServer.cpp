@@ -36,7 +36,7 @@ CLogitechMediaServer::CLogitechMediaServer(const int ID) :
 	if (!result.empty())
 	{
 		m_IP = result[0][0];
-		m_Port = atoi(result[0][1].c_str());
+		m_Port = stoi(result[0][1]);
 		m_User = result[0][2];
 		m_Pwd = result[0][3];
 	}
@@ -391,7 +391,7 @@ void CLogitechMediaServer::GetPlayerInfo()
 					if (IPPort.size() < 2)
 						continue; //invalid ip:port
 					std::string ip = IPPort[0];
-					//int port = atoi(IPPort[1].c_str());
+					//int port = stoi(IPPort[1]);
 
 					if (
 						//(model == "slimp3") ||			//SliMP3
@@ -484,7 +484,7 @@ void CLogitechMediaServer::UpsertPlayer(const std::string &Name, const std::stri
 	if (result.empty())
 		return;
 
-	int ID = atoi(result[0][0].c_str());
+	int ID = stoi(result[0][0]);
 
 	char szID[40];
 	sprintf(szID, "%X%02X%02X%02X", 0, 0, (ID & 0xFF00) >> 8, ID & 0xFF);
@@ -564,7 +564,7 @@ void CLogitechMediaServer::ReloadNodes()
 		{
 			LogitechMediaServerNode pnode;
 			pnode.ID = 0;
-			pnode.DevID = atoi(sd[0].c_str());
+			pnode.DevID = stoi(sd[0]);
 			sprintf(pnode.szDevID, "%X%02X%02X%02X", 0, 0, (pnode.DevID & 0xFF00) >> 8, pnode.DevID & 0xFF);
 			pnode.Name = sd[1];
 			pnode.IP = sd[2];
@@ -576,8 +576,8 @@ void CLogitechMediaServer::ReloadNodes()
 			result2 = m_sql.safe_query("SELECT ID,nValue,sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit == 1)", m_HwdID, pnode.szDevID);
 			if (result2.size() == 1)
 			{
-				pnode.ID = atoi(result2[0][0].c_str());
-				pnode.nStatus = (_eMediaStatus)atoi(result2[0][1].c_str());
+				pnode.ID = stoi(result2[0][0]);
+				pnode.nStatus = (_eMediaStatus) stoi(result2[0][1]);
 				pnode.sStatus = result2[0][2];
 			}
 
@@ -799,7 +799,7 @@ namespace http {
 			std::string mode1 = request::findValue(&req, "mode1");
 			if ((hwid.empty()) || (mode1.empty()))
 				return;
-			int iHardwareID = atoi(hwid.c_str());
+			int iHardwareID = stoi(hwid);
 			CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardware(iHardwareID);
 			if (pBaseHardware == nullptr)
 				return;
@@ -810,7 +810,7 @@ namespace http {
 			root["status"] = "OK";
 			root["title"] = "LMSSetMode";
 
-			int iMode1 = atoi(mode1.c_str());
+			int iMode1 = stoi(mode1);
 
 			m_sql.safe_query("UPDATE Hardware SET Mode1=%d WHERE (ID == '%q')", iMode1, hwid.c_str());
 			pHardware->SetSettings(iMode1);
@@ -827,7 +827,7 @@ namespace http {
 			std::string hwid = request::findValue(&req, "idx");
 			if (hwid.empty())
 				return;
-			int iHardwareID = atoi(hwid.c_str());
+			int iHardwareID = stoi(hwid);
 			CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardware(iHardwareID);
 			if (pBaseHardware == nullptr)
 				return;
@@ -846,7 +846,7 @@ namespace http {
 			std::string hwid = request::findValue(&req, "idx");
 			if (hwid.empty())
 				return;
-			int iHardwareID = atoi(hwid.c_str());
+			int iHardwareID = stoi(hwid);
 			CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(iHardwareID);
 			if (pHardware == nullptr)
 				return;
@@ -877,7 +877,7 @@ namespace http {
 			std::string hwid = request::findValue(&req, "idx");
 			if (hwid.empty())
 				return;
-			int iHardwareID = atoi(hwid.c_str());
+			int iHardwareID = stoi(hwid);
 			CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardware(iHardwareID);
 			if (pBaseHardware == nullptr)
 				return;
@@ -906,7 +906,7 @@ namespace http {
 			std::string sAction = request::findValue(&req, "action");
 			if (sIdx.empty())
 				return;
-			int idx = atoi(sIdx.c_str());
+			int idx = stoi(sIdx);
 			root["status"] = "OK";
 			root["title"] = "LMSMediaCommand";
 
@@ -914,9 +914,9 @@ namespace http {
 			result = m_sql.safe_query("SELECT DS.SwitchType, H.Type, H.ID FROM DeviceStatus DS, Hardware H WHERE (DS.ID=='%q') AND (DS.HardwareID == H.ID)", sIdx.c_str());
 			if (result.size() == 1)
 			{
-				_eSwitchType	sType = (_eSwitchType)atoi(result[0][0].c_str());
-				_eHardwareTypes	hType = (_eHardwareTypes)atoi(result[0][1].c_str());
-				int HwID = atoi(result[0][2].c_str());
+				_eSwitchType	sType = (_eSwitchType) stoi(result[0][0]);
+				_eHardwareTypes	hType = (_eHardwareTypes) stoi(result[0][1]);
+				int HwID = stoi(result[0][2]);
 				// Is the device a media Player?
 				if (sType == STYPE_Media)
 				{

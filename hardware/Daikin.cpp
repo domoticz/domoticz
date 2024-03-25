@@ -415,7 +415,7 @@ void CDaikin::GetControlInfo()
 			if (m_otemp != results2[1])
 			{
 				m_otemp = results2[1];
-				SendTempSensor(10, -1, static_cast<float>(atof(results2[1].c_str())), "Outside Temperature");
+				SendTempSensor(10, -1, stof(results2[1]), "Outside Temperature");
 			}
 		}
 		else if (results2[0] == "stemp")
@@ -423,7 +423,7 @@ void CDaikin::GetControlInfo()
 			if (m_stemp != results2[1])
 			{
 				m_stemp = results2[1];
-				SendSetPointSensor(20, 1, 1, static_cast<float>(atof(results2[1].c_str())), "Target Temperature");
+				SendSetPointSensor(20, 1, 1, stof(results2[1]), "Target Temperature");
 			}
 		}
 		else if (results2[0] == "f_rate")
@@ -544,16 +544,16 @@ void CDaikin::GetSensorInfo()
 			continue;
 		if (results2[0] == "htemp")
 		{
-			htemp = static_cast<float>(atof(results2[1].c_str()));
+			htemp = stof(results2[1]);
 		}
 		else if (results2[0] == "hhum")
 		{
 			if (results2[1] != "-")
-				hhum = static_cast<int>(atoi(results2[1].c_str()));
+				hhum = stoi(results2[1]);
 		}
 		else if (results2[0] == "otemp")
 		{
-			SendTempSensor(10, -1, static_cast<float>(atof(results2[1].c_str())), "Outside Temperature");
+			SendTempSensor(10, -1, stof(results2[1]), "Outside Temperature");
 		}
 	}
 	if (htemp != -1)
@@ -623,7 +623,7 @@ void CDaikin::GetYearPower()
 			StringSplit(results2[1], "/", months);
 			for (const auto &month : months)
 			{
-				cooltotalkWh += std::stof(month) / 10; // energy saved as 0.1 kWh units
+				cooltotalkWh += stof(month) / 10; // energy saved as 0.1 kWh units
 			}
 			SendKwhMeter(30, 30, 255, 0, cooltotalkWh, "Cool kWh");
 		}
@@ -633,7 +633,7 @@ void CDaikin::GetYearPower()
 			StringSplit(results2[1], "/", months);
 			for (const auto &month : months)
 			{
-				heattotalkWh += std::stof(month) / 10; // energy saved as 0.1 kWh units
+				heattotalkWh += stof(month) / 10; // energy saved as 0.1 kWh units
 			}
 			SendKwhMeter(31, 31, 255, 0, heattotalkWh, "Heat kWh");
 		}
@@ -755,21 +755,21 @@ void CDaikin::InsertUpdateSwitchSelector(uint32_t Idx, const bool bIsOn, const i
 			if (defaultname == "Mode")
 			{
 				m_sql.SetDeviceOptions(
-					atoi(sIdx.c_str()),
+					stoi(sIdx),
 					m_sql.BuildDeviceOptions("SelectorStyle:0;LevelNames:Off|AUTO|DEHUMDIFICATOR|COLD|HOT|FAN;LevelOffHidden:true;LevelActions:00|01|02|03|04|06", false));
 			}
 			else if (defaultname == "Ventillation")
 			{
 				// for the Fans
 				m_sql.SetDeviceOptions(
-					atoi(sIdx.c_str()),
+					stoi(sIdx),
 					m_sql.BuildDeviceOptions("SelectorStyle:0;LevelNames:Off|AUTO|Silence|Lev 1|Lev 2|Lev 3|Lev 4|Lev 5;LevelOffHidden:true;LevelActions:00|10|20|30|40|50|60|70",
 								 false));
 			}
 			else if (defaultname == "Winds")
 			{
 				// for the Wings
-				m_sql.SetDeviceOptions(atoi(sIdx.c_str()), m_sql.BuildDeviceOptions("SelectorStyle:0;LevelNames:Off|Stopped|Vert|Horiz|Both;LevelOffHidden:true", false));
+				m_sql.SetDeviceOptions(stoi(sIdx), m_sql.BuildDeviceOptions("SelectorStyle:0;LevelNames:Off|Stopped|Vert|Horiz|Both;LevelOffHidden:true", false));
 			}
 		}
 	}

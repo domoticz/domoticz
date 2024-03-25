@@ -572,7 +572,7 @@ bool ParseConfigFile(const std::string &szConfigFile)
 		}
 
 		else if (szFlag == "startup_delay") {
-			int DelaySeconds = atoi(sLine.c_str());
+			int DelaySeconds = stoi(sLine);
 			_log.Log(LOG_STATUS, "Startup delay... waiting %d seconds...", DelaySeconds);
 			sleep_seconds(DelaySeconds);
 		}
@@ -799,7 +799,7 @@ int main(int argc, char**argv)
 				_log.Log(LOG_ERROR, "Please specify a startupdelay");
 				return 1;
 			}
-			int DelaySeconds = atoi(cmdLine.GetSafeArgument("-startupdelay", 0, "").c_str());
+			int DelaySeconds = stoi(cmdLine.GetSafeArgument("-startupdelay", 0, ""));
 			_log.Log(LOG_STATUS, "Startup delay... waiting %d seconds...", DelaySeconds);
 			sleep_seconds(DelaySeconds);
 		}
@@ -820,7 +820,7 @@ int main(int argc, char**argv)
 				return 1;
 			}
 			std::string wwwport = cmdLine.GetSafeArgument("-www", 0, "");
-			int iPort = (int)atoi(wwwport.c_str());
+			int iPort = stoi(wwwport);
 			if ((iPort < 0) || (iPort > 49151))
 			{
 				_log.Log(LOG_ERROR, "Please specify a valid www port (1 - 49151, or 0 to disable)");
@@ -870,7 +870,7 @@ int main(int argc, char**argv)
 				return 1;
 			}
 			std::string wwwport = cmdLine.GetSafeArgument("-sslwww", 0, "");
-			int iPort = (int)atoi(wwwport.c_str());
+			int iPort = stoi(wwwport);
 			if ((iPort < 0) || (iPort > 49151))
 			{
 				_log.Log(LOG_ERROR, "Please specify a valid sslwww port (1 - 49151)");
@@ -1174,7 +1174,7 @@ int main(int argc, char**argv)
 #ifndef _DEBUG
 	RedirectIOToConsole();	//hide console
 #endif
-	InitWindowsHelper(hInstance, hPrevInstance, nShowCmd, m_mainworker.GetWebserverAddress(), atoi(m_mainworker.GetWebserverPort().c_str()), bStartWebBrowser);
+	InitWindowsHelper(hInstance, hPrevInstance, nShowCmd, m_mainworker.GetWebserverAddress(), stoi(m_mainworker.GetWebserverPort()), bStartWebBrowser);
 	MSG Msg;
 	while (!g_bStopApplication)
 	{

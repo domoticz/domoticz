@@ -212,14 +212,14 @@ namespace http {
 			if (result.empty())
 				return;
 
-			unsigned char Mode1 = atoi(result[0][0].c_str());
-			unsigned char Mode2 = atoi(result[0][1].c_str());
-			unsigned char Mode3 = atoi(result[0][2].c_str());
-			unsigned char Mode4 = atoi(result[0][3].c_str());
-			unsigned char Mode5 = atoi(result[0][4].c_str());
-			unsigned char Mode6 = atoi(result[0][5].c_str());
+			unsigned char Mode1 = stoi(result[0][0]);
+			unsigned char Mode2 = stoi(result[0][1]);
+			unsigned char Mode3 = stoi(result[0][2]);
+			unsigned char Mode4 = stoi(result[0][3]);
+			unsigned char Mode5 = stoi(result[0][4]);
+			unsigned char Mode6 = stoi(result[0][5]);
 
-			_eHardwareTypes HWType = (_eHardwareTypes)atoi(result[0][6].c_str());
+			_eHardwareTypes HWType = (_eHardwareTypes) stoi(result[0][6]);
 
 			tRBUF Response;
 			Response.ICMND.freqsel = Mode1;
@@ -258,7 +258,7 @@ namespace http {
 				Response.IRESPONSE.KEELOQenabled = (request::findValue(&req, "Keeloq") == "on") ? 1 : 0;
 				Response.IRESPONSE.HCEnabled = (request::findValue(&req, "HC") == "on") ? 1 : 0;
 
-				CDomoticzHardwareBase* pHardware = m_mainworker.GetHardware(atoi(idx.c_str()));
+				CDomoticzHardwareBase* pHardware = m_mainworker.GetHardware(stoi(idx));
 				if (pHardware)
 				{
 					CRFXBase* pBase = dynamic_cast<CRFXBase*>(pHardware);
@@ -270,7 +270,7 @@ namespace http {
 						if (AsyncMode.empty())
 							AsyncMode = "0";
 						result = m_sql.safe_query("UPDATE Hardware SET Extra='%q' WHERE (ID='%q')", AsyncMode.c_str(), idx.c_str());
-						pBase->SetAsyncType((CRFXBase::_eRFXAsyncType)atoi(AsyncMode.c_str()));
+						pBase->SetAsyncType((CRFXBase::_eRFXAsyncType) stoi(AsyncMode));
 					}
 				}
 			}

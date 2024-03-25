@@ -160,7 +160,7 @@ bool CEvohomeWeb::StartSession()
 			if (!splitresults.empty())
 				m_awaysetpoint = strtod(splitresults[0].c_str(), nullptr);
 			if (splitresults.size() > 1)
-				m_wdayoff = atoi(splitresults[1].c_str()) % 7;
+				m_wdayoff = stoi(splitresults[1]) % 7;
 		}
 		if (m_awaysetpoint == 0)
 			m_awaysetpoint = 15; // use default 'Away' setpoint value
@@ -317,7 +317,7 @@ bool CEvohomeWeb::SetSystemMode(uint8_t sysmode)
 					sztemperature = "-";
 					sznewmode = "Offline";
 				}
-				unsigned long evoID = atol(szId.c_str());
+				unsigned long evoID = stoul(szId);
 				std::stringstream ssUpdateStat;
 				ssUpdateStat << sztemperature << ";5;" << sznewmode;
 				std::string sdevname;
@@ -373,7 +373,7 @@ bool CEvohomeWeb::SetSystemMode(uint8_t sysmode)
 				sznewmode = "Offline";
 			}
 
-			unsigned long evoID = atol(hz->zoneId.c_str());
+			unsigned long evoID = stoul(hz->zoneId);
 			std::stringstream ssUpdateStat;
 			if (setpoint < 5) // there was an error - no schedule?
 				ssUpdateStat << sztemperature << ";5;Unknown";
@@ -421,11 +421,11 @@ bool CEvohomeWeb::SetSetpoint(const char* pdata)
 
 		if ((m_showschedule) && (!szuntil.empty()))
 		{
-			pEvo->year = (uint16_t)(atoi(szuntil.substr(0, 4).c_str()));
-			pEvo->month = (uint8_t)(atoi(szuntil.substr(5, 2).c_str()));
-			pEvo->day = (uint8_t)(atoi(szuntil.substr(8, 2).c_str()));
-			pEvo->hrs = (uint8_t)(atoi(szuntil.substr(11, 2).c_str()));
-			pEvo->mins = (uint8_t)(atoi(szuntil.substr(14, 2).c_str()));
+			pEvo->year = (uint16_t) stoi(szuntil.substr(0, 4));
+			pEvo->month = (uint8_t) stoi(szuntil.substr(5, 2));
+			pEvo->day = (uint8_t) stoi(szuntil.substr(8, 2));
+			pEvo->hrs = (uint8_t) stoi(szuntil.substr(11, 2));
+			pEvo->mins = (uint8_t) stoi(szuntil.substr(14, 2));
 		}
 		else
 			pEvo->year = 0;
@@ -452,11 +452,11 @@ bool CEvohomeWeb::SetSetpoint(const char* pdata)
 				szISODate = local_to_utc(get_next_switchpoint_ex(hz->schedule, szsetpoint_tmp));
 				if (!szISODate.empty())
 				{
-					pEvo->year = (uint16_t)(atoi(szISODate.substr(0, 4).c_str()));
-					pEvo->month = (uint8_t)(atoi(szISODate.substr(5, 2).c_str()));
-					pEvo->day = (uint8_t)(atoi(szISODate.substr(8, 2).c_str()));
-					pEvo->hrs = (uint8_t)(atoi(szISODate.substr(11, 2).c_str()));
-					pEvo->mins = (uint8_t)(atoi(szISODate.substr(14, 2).c_str()));
+					pEvo->year = (uint16_t)(stoi(szISODate.substr(0, 4)));
+					pEvo->month = (uint8_t)(stoi(szISODate.substr(5, 2)));
+					pEvo->day = (uint8_t)(stoi(szISODate.substr(8, 2)));
+					pEvo->hrs = (uint8_t)(stoi(szISODate.substr(11, 2)));
+					pEvo->mins = (uint8_t)(stoi(szISODate.substr(14, 2)));
 				}
 			}
 		}
@@ -576,7 +576,7 @@ void CEvohomeWeb::DecodeZone(zone* hz)
 		}
 	}
 
-	unsigned long evoID = atol(szId.c_str());
+	unsigned long evoID = stoul(szId);
 	std::string szsysmode;
 	if (m_tcs->status == nullptr)
 		szsysmode = "Unknown";
@@ -708,7 +708,7 @@ void CEvohomeWeb::DecodeDHWState(temperatureControlSystem* tcs)
 		}
 		else if ((result[0][1] != szId) || (result[0][2] != ndevname))
 		{
-			uint64_t DevRowIdx = std::stoull(result[0][0]);
+			uint64_t DevRowIdx = stoull(result[0][0]);
 			// also wipe StrParam1 - we do not want a double action from the old (python) script when changing the setpoint
 			m_sql.safe_query("UPDATE DeviceStatus SET DeviceID='%q', Name='%q', StrParam1='' WHERE (ID == %" PRIu64 ")", szId.c_str(), ndevname.c_str(), DevRowIdx);
 		}
@@ -752,8 +752,8 @@ uint8_t CEvohomeWeb::GetUnit_by_ID(unsigned long evoID)
 			m_zones[row] = 0;
 		for (row = 0; row < (int)result.size(); row++)
 		{
-			int unit = atoi(result[row][0].c_str());
-			m_zones[unit] = atol(result[row][1].c_str());
+			int unit = stoi(result[row][0]);
+			m_zones[unit] = stoul(result[row][1]);
 			if (m_zones[unit] == uint64_t(unit) + 92000) // mark manually added, unlinked zone as free
 				m_zones[unit] = 0;
 		}
@@ -813,12 +813,12 @@ std::string CEvohomeWeb::local_to_utc(const std::string& local_time)
 	}
 	struct tm ltime;
 	ltime.tm_isdst = -1;
-	ltime.tm_year = atoi(local_time.substr(0, 4).c_str()) - 1900;
-	ltime.tm_mon = atoi(local_time.substr(5, 2).c_str()) - 1;
-	ltime.tm_mday = atoi(local_time.substr(8, 2).c_str());
-	ltime.tm_hour = atoi(local_time.substr(11, 2).c_str());
-	ltime.tm_min = atoi(local_time.substr(14, 2).c_str());
-	ltime.tm_sec = atoi(local_time.substr(17, 2).c_str()) + m_tzoffset;
+	ltime.tm_year = stoi(local_time.substr(0, 4)) - 1900;
+	ltime.tm_mon = stoi(local_time.substr(5, 2)) - 1;
+	ltime.tm_mday = stoi(local_time.substr(8, 2));
+	ltime.tm_hour = stoi(local_time.substr(11, 2));
+	ltime.tm_min = stoi(local_time.substr(14, 2));
+	ltime.tm_sec = stoi(local_time.substr(17, 2)) + m_tzoffset;
 	mktime(&ltime);
 	if (m_lastDST == -1)
 		m_lastDST = ltime.tm_isdst;
@@ -919,7 +919,7 @@ bool CEvohomeWeb::login(const std::string& user, const std::string& password)
 	}
 
 	m_v2refresh_token = j_login["refresh_token"].asString();
-	int v2token_expiration_time = atoi(j_login["expires_in"].asString().c_str());
+	int v2token_expiration_time = stoi(j_login["expires_in"].asString());
 	m_sessiontimer = mytime(nullptr) + v2token_expiration_time; // Honeywell will invalidate our session ID after an hour
 
 	std::stringstream atoken;
@@ -999,7 +999,7 @@ bool CEvohomeWeb::renew_login()
 	}
 
 	m_v2refresh_token = j_login["refresh_token"].asString();
-	int v2token_expiration_time = atoi(j_login["expires_in"].asString().c_str());
+	int v2token_expiration_time = stoi(j_login["expires_in"].asString());
 	m_sessiontimer = mytime(nullptr) + v2token_expiration_time; // Honeywell will invalidate our session ID after an hour
 
 	std::stringstream atoken;
@@ -1486,9 +1486,9 @@ std::string CEvohomeWeb::get_next_switchpoint_ex(Json::Value& schedule, std::str
 			ltime.tm_year = year;
 			ltime.tm_mon = month;
 			ltime.tm_mday = day + d;
-			ltime.tm_hour = atoi(sztime.substr(0, 2).c_str());
-			ltime.tm_min = atoi(sztime.substr(3, 2).c_str());
-			ltime.tm_sec = atoi(sztime.substr(6, 2).c_str());
+			ltime.tm_hour = stoi(sztime.substr(0, 2));
+			ltime.tm_min = stoi(sztime.substr(3, 2));
+			ltime.tm_sec = stoi(sztime.substr(6, 2));
 			time_t ntime = mktime(&ltime);
 			if (ntime > now)
 				found = true;
@@ -1556,12 +1556,12 @@ bool CEvohomeWeb::verify_datetime(const std::string& datetime)
 	std::string s_time = datetime.substr(11, 8);
 	struct tm mtime;
 	mtime.tm_isdst = -1;
-	mtime.tm_year = atoi(datetime.substr(0, 4).c_str()) - 1900;
-	mtime.tm_mon = atoi(datetime.substr(5, 2).c_str()) - 1;
-	mtime.tm_mday = atoi(datetime.substr(8, 2).c_str());
-	mtime.tm_hour = atoi(datetime.substr(11, 2).c_str());
-	mtime.tm_min = atoi(datetime.substr(14, 2).c_str());
-	mtime.tm_sec = atoi(datetime.substr(17, 2).c_str());
+	mtime.tm_year = stoi(datetime.substr(0, 4)) - 1900;
+	mtime.tm_mon = stoi(datetime.substr(5, 2)) - 1;
+	mtime.tm_mday = stoi(datetime.substr(8, 2));
+	mtime.tm_hour = stoi(datetime.substr(11, 2));
+	mtime.tm_min = stoi(datetime.substr(14, 2));
+	mtime.tm_sec = stoi(datetime.substr(17, 2));
 	time_t ntime = mktime(&mtime);
 	if (ntime == -1)
 		return false;

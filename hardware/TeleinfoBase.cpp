@@ -543,7 +543,7 @@ void CTeleinfoBase::MatchLine()
 
 	label = splitresults[0];
 	vString = splitresults[1];
-	value = atoi(splitresults[1].c_str());
+	value = stoul(splitresults[1]);
 
 	// Historic mode
 	if (label == "ADCO" || label == "ADSC") 

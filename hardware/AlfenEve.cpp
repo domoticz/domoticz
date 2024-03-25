@@ -96,7 +96,7 @@ bool AlfenEve::StartHardware()
 	std::string sValue = GetTextSensorText(1, 1, bExits);
 	if (bExits)
 	{
-		m_LastBootcount = atoi(sValue.c_str());
+		m_LastBootcount = stoi(sValue);
 	}
 
 	RequestStart();

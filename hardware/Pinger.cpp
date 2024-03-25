@@ -244,7 +244,7 @@ void CPinger::AddNode(const std::string &Name, const std::string &IPAddress, con
 	if (result.empty())
 		return;
 
-	int ID = atoi(result[0][0].c_str());
+	int ID = stoi(result[0][0]);
 
 	char szID[40];
 	sprintf(szID, "%X%02X%02X%02X", 0, 0, (ID & 0xFF00) >> 8, ID & 0xFF);
@@ -317,12 +317,12 @@ void CPinger::ReloadNodes()
 		for (const auto &sd : result)
 		{
 			PingNode pnode;
-			pnode.ID = atoi(sd[0].c_str());
+			pnode.ID = stoi(sd[0]);
 			pnode.Name = sd[1];
 			pnode.IP = sd[2];
 			pnode.LastOK = mytime(nullptr);
 
-			int SensorTimeoutSec = atoi(sd[3].c_str());
+			int SensorTimeoutSec = stoi(sd[3]);
 			pnode.SensorTimeoutSec = (SensorTimeoutSec > 0) ? SensorTimeoutSec : 5;
 			m_nodes.push_back(pnode);
 		}
@@ -459,7 +459,7 @@ namespace http {
 			std::string hwid = request::findValue(&req, "idx");
 			if (hwid.empty())
 				return;
-			int iHardwareID = atoi(hwid.c_str());
+			int iHardwareID = stoi(hwid);
 			CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(iHardwareID);
 			if (pHardware == nullptr)
 				return;
@@ -480,7 +480,7 @@ namespace http {
 					root["result"][ii]["idx"] = sd[0];
 					root["result"][ii]["Name"] = sd[1];
 					root["result"][ii]["IP"] = sd[2];
-					root["result"][ii]["Timeout"] = atoi(sd[3].c_str());
+					root["result"][ii]["Timeout"] = stoi(sd[3]);
 					ii++;
 				}
 			}
@@ -498,7 +498,7 @@ namespace http {
 			std::string mode2 = request::findValue(&req, "mode2");
 			if ((hwid.empty()) || (mode1.empty()) || (mode2.empty()))
 				return;
-			int iHardwareID = atoi(hwid.c_str());
+			int iHardwareID = stoi(hwid);
 			CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardware(iHardwareID);
 			if (pBaseHardware == nullptr)
 				return;
@@ -509,8 +509,8 @@ namespace http {
 			root["status"] = "OK";
 			root["title"] = "PingerSetMode";
 
-			int iMode1 = atoi(mode1.c_str());
-			int iMode2 = atoi(mode2.c_str());
+			int iMode1 = stoi(mode1);
+			int iMode2 = stoi(mode2);
 
 			m_sql.safe_query(
 				"UPDATE Hardware SET Mode1=%d, Mode2=%d WHERE (ID == '%q')",
@@ -533,10 +533,10 @@ namespace http {
 			std::string hwid = request::findValue(&req, "idx");
 			std::string name = HTMLSanitizer::Sanitize(request::findValue(&req, "name"));
 			std::string ip = HTMLSanitizer::Sanitize(request::findValue(&req, "ip"));
-			int Timeout = atoi(request::findValue(&req, "timeout").c_str());
+			int Timeout = stoi(request::findValue(&req, "timeout"));
 			if ((hwid.empty()) || (name.empty()) || (ip.empty()) || (Timeout == 0))
 				return;
-			int iHardwareID = atoi(hwid.c_str());
+			int iHardwareID = stoi(hwid);
 			CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardware(iHardwareID);
 			if (pBaseHardware == nullptr)
 				return;
@@ -561,10 +561,10 @@ namespace http {
 			std::string nodeid = request::findValue(&req, "nodeid");
 			std::string name = HTMLSanitizer::Sanitize(request::findValue(&req, "name"));
 			std::string ip = HTMLSanitizer::Sanitize(request::findValue(&req, "ip"));
-			int Timeout = atoi(request::findValue(&req, "timeout").c_str());
+			int Timeout = stoi(request::findValue(&req, "timeout"));
 			if ((hwid.empty()) || (nodeid.empty()) || (name.empty()) || (ip.empty()) || (Timeout == 0))
 				return;
-			int iHardwareID = atoi(hwid.c_str());
+			int iHardwareID = stoi(hwid);
 			CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardware(iHardwareID);
 			if (pBaseHardware == nullptr)
 				return;
@@ -572,7 +572,7 @@ namespace http {
 				return;
 			CPinger *pHardware = dynamic_cast<CPinger*>(pBaseHardware);
 
-			int NodeID = atoi(nodeid.c_str());
+			int NodeID = stoi(nodeid);
 			root["status"] = "OK";
 			root["title"] = "PingerUpdateNode";
 			pHardware->UpdateNode(NodeID, name, ip, Timeout);
@@ -590,7 +590,7 @@ namespace http {
 			std::string nodeid = request::findValue(&req, "nodeid");
 			if ((hwid.empty()) || (nodeid.empty()))
 				return;
-			int iHardwareID = atoi(hwid.c_str());
+			int iHardwareID = stoi(hwid);
 			CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardware(iHardwareID);
 			if (pBaseHardware == nullptr)
 				return;
@@ -598,7 +598,7 @@ namespace http {
 				return;
 			CPinger *pHardware = dynamic_cast<CPinger*>(pBaseHardware);
 
-			int NodeID = atoi(nodeid.c_str());
+			int NodeID = stoi(nodeid);
 			root["status"] = "OK";
 			root["title"] = "PingerRemoveNode";
 			pHardware->RemoveNode(NodeID);
@@ -615,7 +615,7 @@ namespace http {
 			std::string hwid = request::findValue(&req, "idx");
 			if (hwid.empty())
 				return;
-			int iHardwareID = atoi(hwid.c_str());
+			int iHardwareID = stoi(hwid);
 			CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardware(iHardwareID);
 			if (pBaseHardware == nullptr)
 				return;

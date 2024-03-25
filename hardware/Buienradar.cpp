@@ -79,7 +79,7 @@ void CBuienRadar::Init()
 				if (is_number(strarray[0]))
 				{
 					try {
-						m_iStationID = std::stoi(strarray[0]);
+						m_iStationID = stoi(strarray[0]);
 						if (m_iStationID == 0)
 						{
 							// No station ID provided
@@ -264,8 +264,8 @@ bool CBuienRadar::GetStationDetails()
 
 	if (m_iStationID == 0)
 	{
-		double MyLatitude = std::stod(m_szMyLatitude);
-		double MyLongitude = std::stod(m_szMyLongitude);
+		double MyLatitude = stod(m_szMyLatitude);
+		double MyLongitude = stod(m_szMyLongitude);
 
 		double shortest_distance_km = 200.0;//start with 200 km
 		double shortest_station_lat = 0;
@@ -320,7 +320,7 @@ bool CBuienRadar::GetStationDetails()
 				m_sStationRegion = measurement["regio"].asString();
 				m_szMyLatitude = std::to_string(measurement["lat"].asDouble());
 				m_szMyLongitude = std::to_string(measurement["lon"].asDouble());
-				Log(LOG_STATUS, "Using Station: %s (%s), ID: %d, Lat/Lon: %g,%g", m_sStationName.c_str(), m_sStationRegion.c_str(), m_iStationID, atof(m_szMyLatitude.c_str()), atof(m_szMyLongitude.c_str()));
+				Log(LOG_STATUS, "Using Station: %s (%s), ID: %d, Lat/Lon: %g,%g", m_sStationName.c_str(), m_sStationRegion.c_str(), m_iStationID, stof(m_szMyLatitude), stof(m_szMyLongitude));
 			}
 			ParseMeterDetails(measurement);
 			return true;
@@ -446,7 +446,7 @@ void CBuienRadar::ParseMeterDetails(const Json::Value& root)
 
 void CBuienRadar::GetRainPrediction()
 {
-	if (m_szMyLatitude.empty() || m_szMyLongitude.empty() ||  std::stoi(m_szMyLatitude)<1 || std::stoi(m_szMyLongitude)<1)
+	if (m_szMyLatitude.empty() || m_szMyLongitude.empty() ||  stoi(m_szMyLatitude)<1 || stoi(m_szMyLongitude)<1)
 		return;
 
 	std::string sResult;
@@ -533,7 +533,7 @@ void CBuienRadar::GetRainPrediction()
 			if (strarray.size() != 2)
 				return;
 
-			int rain_value = std::stoi(strarray[0]);
+			int rain_value = stoi(strarray[0]);
 
 			if (line == 0)
 			{
@@ -541,8 +541,8 @@ void CBuienRadar::GetRainPrediction()
 				if (strarray.size() != 2)
 					return;
 
-				int hour = std::stoi(strarray[0]);
-				int min = std::stoi(strarray[1]);
+				int hour = stoi(strarray[0]);
+				int min = stoi(strarray[1]);
 
 				rain_time = (hour * 60) + min;
 

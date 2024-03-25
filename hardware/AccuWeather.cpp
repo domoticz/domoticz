@@ -245,7 +245,7 @@ void CAccuWeather::GetMeterDetails()
 		}
 		if (!root["Pressure"].empty())
 		{
-			barometric = atoi(root["Pressure"]["Metric"]["Value"].asString().c_str());
+			barometric = stoi(root["Pressure"]["Metric"]["Value"].asString());
 			if (barometric < 1000)
 				barometric_forcast = baroForecastRain;
 			else if (barometric < 1020)
@@ -257,7 +257,7 @@ void CAccuWeather::GetMeterDetails()
 
 			if (!root["WeatherIcon"].empty())
 			{
-				int forcasticon = atoi(root["WeatherIcon"].asString().c_str());
+				int forcasticon = stoi(root["WeatherIcon"].asString());
 				switch (forcasticon)
 				{
 				case 1:
@@ -360,7 +360,7 @@ void CAccuWeather::GetMeterDetails()
 		//UV
 		if (!root["UVIndex"].empty())
 		{
-			float UV = static_cast<float>(atof(root["UVIndex"].asString().c_str()));
+			float UV = stof(root["UVIndex"].asString());
 			if ((UV < 16) && (UV >= 0))
 			{
 				SendUVSensor(0, 1, 255, UV, "UV");
@@ -372,7 +372,7 @@ void CAccuWeather::GetMeterDetails()
 		{
 			if (!root["PrecipitationSummary"]["Precipitation"].empty())
 			{
-				float RainCount = static_cast<float>(atof(root["PrecipitationSummary"]["Precipitation"]["Metric"]["Value"].asString().c_str()));
+				float RainCount = stof(root["PrecipitationSummary"]["Precipitation"]["Metric"]["Value"].asString());
 				if ((RainCount != -9999.00F) && (RainCount >= 0.00F))
 				{
 					RBUF tsen;
@@ -390,7 +390,7 @@ void CAccuWeather::GetMeterDetails()
 
 					if (!root["PrecipitationSummary"]["PastHour"].empty())
 					{
-						float rainrateph = static_cast<float>(atof(root["PrecipitationSummary"]["PastHour"]["Metric"]["Value"].asString().c_str()));
+						float rainrateph = stof(root["PrecipitationSummary"]["PastHour"]["Metric"]["Value"].asString());
 						if (rainrateph != -9999.00F)
 						{
 							int at10 = ground(std::abs(rainrateph * 10.0F));

@@ -194,7 +194,7 @@ bool CHoneywell::refreshToken()
 	std::string rt = root["refresh_token"].asString();
 	std::string ei = root["expires_in"].asString();
 	if (at.length() && rt.length() && ei.length()) {
-		int expires_in = std::stoi(ei);
+		int expires_in = stoi(ei);
 		mTokenExpires = mytime(nullptr) + (expires_in > 0 ? expires_in : 600) - HWAPITIMEOUT;
 		mAccessToken = at;
 		mRefreshToken = rt;
@@ -514,7 +514,7 @@ bool CHoneywell::GetSwitchValue(const int NodeID)
 		m_HwdID, szIdx, ChildID, int(pTypeLighting2), int(sTypeAC));
 	if (!result.empty())
 	{
-		int nvalue = atoi(result[0][1].c_str());
+		int nvalue = stoi(result[0][1]);
 		return (nvalue != light2_sOff);
 	}
 

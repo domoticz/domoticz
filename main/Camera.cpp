@@ -36,15 +36,15 @@ void CCameraHandler::ReloadCameras()
 		for (const auto &sd : result)
 		{
 			cameraDevice citem;
-			citem.ID = std::stoull(sd[0]);
+			citem.ID = stoull(sd[0]);
 			citem.Name = sd[1];
 			citem.Address = sd[2];
-			citem.Port = atoi(sd[3].c_str());
+			citem.Port = stoi(sd[3]);
 			citem.Username = base64_decode(sd[4]);
 			citem.Password = base64_decode(sd[5]);
 			citem.ImageURL = sd[6];
-			citem.Protocol = (eCameraProtocol)atoi(sd[7].c_str());
-			citem.AspectRatio = (uint8_t)atoi(sd[8].c_str());
+			citem.Protocol = (eCameraProtocol) stoi(sd[7]);
+			citem.AspectRatio = (uint8_t) stoi(sd[8]);
 			m_cameradevices.push_back(citem);
 			_AddedCameras.push_back(sd[0]);
 		}
@@ -70,10 +70,10 @@ void CCameraHandler::ReloadCameraActiveDevices(const std::string &CamID)
 		for (const auto &sd : result)
 		{
 			cameraActiveDevice aDevice;
-			aDevice.ID = std::stoull(sd[0]);
-			aDevice.DevSceneType = (unsigned char)atoi(sd[1].c_str());
-			aDevice.DevSceneRowID = std::stoull(sd[2]);
-			aDevice.AspectRatio = std::stoi(sd[3]);
+			aDevice.ID = stoull(sd[0]);
+			aDevice.DevSceneType = (unsigned char) stoi(sd[1]);
+			aDevice.DevSceneRowID = stoull(sd[2]);
+			aDevice.AspectRatio = (uint8_t) stoi(sd[3]);
 			pCamera->mActiveDevices.push_back(aDevice);
 		}
 	}
@@ -82,7 +82,7 @@ void CCameraHandler::ReloadCameraActiveDevices(const std::string &CamID)
 //Return 0 if NO, otherwise Cam IDX
 uint64_t CCameraHandler::IsDevSceneInCamera(const unsigned char DevSceneType, const std::string &DevSceneID)
 {
-	return IsDevSceneInCamera(DevSceneType, std::stoull(DevSceneID));
+	return IsDevSceneInCamera(DevSceneType, stoull(DevSceneID));
 }
 
 uint64_t CCameraHandler::IsDevSceneInCamera(const unsigned char DevSceneType, const uint64_t DevSceneID)
@@ -134,7 +134,7 @@ std::string CCameraHandler::GetCameraURL(cameraDevice *pCamera)
 
 CCameraHandler::cameraDevice* CCameraHandler::GetCamera(const std::string &CamID)
 {
-	return GetCamera(std::stoull(CamID));
+	return GetCamera(stoull(CamID));
 }
 
 CCameraHandler::cameraDevice* CCameraHandler::GetCamera(const uint64_t CamID)
@@ -149,7 +149,7 @@ CCameraHandler::cameraDevice* CCameraHandler::GetCamera(const uint64_t CamID)
 
 int CCameraHandler::GetCameraAspectRatio(const std::string& CamIdx)
 {
-	return GetCameraAspectRatio(std::stoull(CamIdx));
+	return GetCameraAspectRatio(stoull(CamIdx));
 }
 
 int CCameraHandler::GetCameraAspectRatio(const uint64_t &CamID)
@@ -165,7 +165,7 @@ int CCameraHandler::GetCameraAspectRatio(const uint64_t &CamID)
 bool CCameraHandler::TakeSnapshot(const std::string &CamID, std::vector<unsigned char> &camimage)
 {
 	if (is_number(CamID))
-		return TakeSnapshot(std::stoull(CamID), camimage);
+		return TakeSnapshot(stoull(CamID), camimage);
 	else
 		return TakeSnapshot(CamID, camimage);
 }
@@ -412,12 +412,12 @@ namespace http {
 					root["result"][ii]["Name"] = sd[1];
 					root["result"][ii]["Enabled"] = (sd[2] == "1") ? "true" : "false";
 					root["result"][ii]["Address"] = sd[3];
-					root["result"][ii]["Port"] = atoi(sd[4].c_str());
+					root["result"][ii]["Port"] = stoi(sd[4]);
 					root["result"][ii]["Username"] = base64_decode(sd[5]);
 					root["result"][ii]["Password"] = base64_decode(sd[6]);
 					root["result"][ii]["ImageURL"] = sd[7];
-					root["result"][ii]["Protocol"] = atoi(sd[8].c_str());
-					root["result"][ii]["AspectRatio"] = atoi(sd[9].c_str());
+					root["result"][ii]["Protocol"] = stoi(sd[8]);
+					root["result"][ii]["AspectRatio"] = stoi(sd[9]);
 					ii++;
 				}
 			}
@@ -492,8 +492,8 @@ namespace http {
 			std::string username = HTMLSanitizer::Sanitize(request::findValue(&req, "username"));
 			std::string password = request::findValue(&req, "password");
 			std::string timageurl = HTMLSanitizer::Sanitize(request::findValue(&req, "imageurl"));
-			int cprotocol = atoi(request::findValue(&req, "protocol").c_str());
-			int aspectratio = atoi(request::findValue(&req, "aspectratio").c_str());
+			int cprotocol = stoi(request::findValue(&req, "protocol"));
+			int aspectratio = stoi(request::findValue(&req, "aspectratio"));
 			if ((name.empty()) || (address.empty()) || (timageurl.empty()))
 				return;
 
@@ -502,7 +502,7 @@ namespace http {
 			{
 				imageurl = base64_decode(imageurl);
 
-				int port = atoi(sport.c_str());
+				int port = stoi(sport);
 				root["status"] = "OK";
 				root["title"] = "AddCamera";
 				m_sql.safe_query(
@@ -539,8 +539,8 @@ namespace http {
 			std::string username = HTMLSanitizer::Sanitize(request::findValue(&req, "username"));
 			std::string password = request::findValue(&req, "password");
 			std::string timageurl = HTMLSanitizer::Sanitize(request::findValue(&req, "imageurl"));
-			int cprotocol = atoi(request::findValue(&req, "protocol").c_str());
-			int aspectratio = atoi(request::findValue(&req, "aspectratio").c_str());
+			int cprotocol = stoi(request::findValue(&req, "protocol"));
+			int aspectratio = stoi(request::findValue(&req, "aspectratio"));
 			if ((name.empty()) || (senabled.empty()) || (address.empty()) || (timageurl.empty()))
 				return;
 
@@ -549,7 +549,7 @@ namespace http {
 			{
 				imageurl = base64_decode(imageurl);
 
-				int port = atoi(sport.c_str());
+				int port = stoi(sport);
 
 				root["status"] = "OK";
 				root["title"] = "UpdateCamera";

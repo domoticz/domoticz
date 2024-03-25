@@ -276,25 +276,25 @@ void MainWorker::AddAllDomoticzHardware()
 	{
 		for (const auto& sd : result)
 		{
-			int ID = atoi(sd[0].c_str());
+			int ID = stoi(sd[0]);
 			std::string Name = sd[1];
 			std::string sEnabled = sd[2];
 			bool Enabled = (sEnabled == "1") ? true : false;
-			_eHardwareTypes Type = (_eHardwareTypes)atoi(sd[3].c_str());
-			uint32_t LogLevelEnabled = (uint32_t)atoi(sd[4].c_str());
+			_eHardwareTypes Type = (_eHardwareTypes) stoi(sd[3]);
+			uint32_t LogLevelEnabled = stoul(sd[4]);
 			std::string Address = sd[5];
-			uint16_t Port = (uint16_t)atoi(sd[6].c_str());
+			uint16_t Port = (uint16_t) stoi(sd[6]);
 			std::string SerialPort = sd[7];
 			std::string Username = sd[8];
 			std::string Password = sd[9];
 			std::string Extra = sd[10];
-			int mode1 = atoi(sd[11].c_str());
-			int mode2 = atoi(sd[12].c_str());
-			int mode3 = atoi(sd[13].c_str());
-			int mode4 = atoi(sd[14].c_str());
-			int mode5 = atoi(sd[15].c_str());
-			int mode6 = atoi(sd[16].c_str());
-			int DataTimeout = atoi(sd[17].c_str());
+			int mode1 = stoi(sd[11]);
+			int mode2 = stoi(sd[12]);
+			int mode3 = stoi(sd[13]);
+			int mode4 = stoi(sd[14]);
+			int mode5 = stoi(sd[15]);
+			int mode6 = stoi(sd[16]);
+			int DataTimeout = stoi(sd[17]);
 			AddHardwareFromParams(ID, Name, Enabled, Type, LogLevelEnabled, Address, Port, SerialPort, Username, Password, Extra, mode1, mode2, mode3, mode4, mode5, mode6, DataTimeout,
 				false);
 		}
@@ -445,7 +445,7 @@ CDomoticzHardwareBase* MainWorker::GetHardwareByIDType(const std::string& HwdId,
 {
 	if (HwdId.empty())
 		return nullptr;
-	int iHardwareID = atoi(HwdId.c_str());
+	int iHardwareID = stoi(HwdId);
 	CDomoticzHardwareBase* pHardware = m_mainworker.GetHardware(iHardwareID);
 	if (pHardware == nullptr)
 		return nullptr;
@@ -495,8 +495,8 @@ bool MainWorker::GetSunSettings()
 	int month = ltime.tm_mon + 1;
 	int day = ltime.tm_mday;
 
-	double dLatitude = atof(Latitude.c_str());
-	double dLongitude = atof(Longitude.c_str());
+	double dLatitude = stod(Latitude);
+	double dLongitude = stod(Longitude);
 
 	SunRiseSet::_tSubRiseSetResults sresult;
 	SunRiseSet::GetSunRiseSet(dLatitude, dLongitude, year, month, day, sresult);
@@ -532,7 +532,7 @@ bool MainWorker::GetSunSettings()
 		for (const auto& str : strarray)
 		{
 			StringSplit(str, ":", hourMinItem);
-			int intMins = (atoi(hourMinItem[0].c_str()) * 60) + atoi(hourMinItem[1].c_str());
+			int intMins = (stoi(hourMinItem[0]) * 60) + stoi(hourMinItem[1]);
 			m_SunRiseSetMins.push_back(intMins);
 		}
 
@@ -606,22 +606,22 @@ bool MainWorker::RestartHardware(const std::string& idx)
 	std::vector<std::string> sd = result[0];
 	std::string Name = sd[0];
 	std::string senabled = (sd[1] == "1") ? "true" : "false";
-	_eHardwareTypes htype = (_eHardwareTypes)atoi(sd[2].c_str());
-	uint32_t LogLevelEnabled = (uint32_t)atoi(sd[3].c_str());
+	_eHardwareTypes htype = (_eHardwareTypes) stoi(sd[2]);
+	uint32_t LogLevelEnabled = stoul(sd[3]);
 	std::string address = sd[4];
-	uint16_t port = (uint16_t)atoi(sd[5].c_str());
+	uint16_t port = (uint16_t) stoi(sd[5]);
 	std::string serialport = sd[6];
 	std::string username = sd[7];
 	std::string password = sd[8];
 	std::string extra = sd[9];
-	int Mode1 = atoi(sd[10].c_str());
-	int Mode2 = atoi(sd[11].c_str());
-	int Mode3 = atoi(sd[12].c_str());
-	int Mode4 = atoi(sd[13].c_str());
-	int Mode5 = atoi(sd[14].c_str());
-	int Mode6 = atoi(sd[15].c_str());
-	int DataTimeout = atoi(sd[16].c_str());
-	return AddHardwareFromParams(atoi(idx.c_str()), Name, (senabled == "true") ? true : false, htype, LogLevelEnabled, address, port, serialport, username, password, extra, Mode1, Mode2, Mode3,
+	int Mode1 = stoi(sd[10]);
+	int Mode2 = stoi(sd[11]);
+	int Mode3 = stoi(sd[12]);
+	int Mode4 = stoi(sd[13]);
+	int Mode5 = stoi(sd[14]);
+	int Mode6 = stoi(sd[15]);
+	int DataTimeout = stoi(sd[16]);
+	return AddHardwareFromParams(stoi(idx), Name, (senabled == "true") ? true : false, htype, LogLevelEnabled, address, port, serialport, username, password, extra, Mode1, Mode2, Mode3,
 		Mode4, Mode5, Mode6, DataTimeout, true);
 }
 
@@ -656,10 +656,10 @@ bool MainWorker::AddHardwareFromParams(
 	case HTYPE_RFXtrx315:
 	case HTYPE_RFXtrx433:
 	case HTYPE_RFXtrx868:
-		pHardware = new RFXComSerial(ID, SerialPort, 38400, (CRFXBase::_eRFXAsyncType)atoi(Extra.c_str()));
+		pHardware = new RFXComSerial(ID, SerialPort, 38400, (CRFXBase::_eRFXAsyncType) stoi(Extra));
 		break;
 	case HTYPE_RFXLAN:
-		pHardware = new RFXComTCP(ID, Address, Port, (CRFXBase::_eRFXAsyncType)atoi(Extra.c_str()));
+		pHardware = new RFXComTCP(ID, Address, Port, (CRFXBase::_eRFXAsyncType) stoi(Extra));
 		break;
 	case HTYPE_P1SmartMeter:
 		pHardware = new P1MeterSerial(ID, SerialPort, (Mode1 == 1) ? 115200 : 9600, (Mode2 != 0), Mode3, Password);
@@ -1338,7 +1338,7 @@ bool MainWorker::IsUpdateAvailable(const bool bIsForced)
 	if (strarray.size() != 3)
 		return false;
 
-	m_iRevision = atoi(strarray[2].c_str());
+	m_iRevision = stoi(strarray[2]);
 #ifdef DEBUG_DOWNLOAD
 	m_bHaveUpdate = true;
 #else
@@ -2908,7 +2908,7 @@ void MainWorker::decode_Rain(const CDomoticzHardwareBase* pHardware, const tRBUF
 			"SELECT ID FROM DeviceStatus WHERE (HardwareID=%d AND DeviceID='%q' AND Unit=%d AND Type=%d AND SubType=%d)", pHardware->m_HwdID, ID.c_str(), Unit, devType, subType);
 		if (!result.empty())
 		{
-			uint64_t ulID = std::stoull(result[0][0]);
+			uint64_t ulID = stoull(result[0][0]);
 
 			time_t now = mytime(nullptr);
 			struct tm ltime;
@@ -2926,7 +2926,7 @@ void MainWorker::decode_Rain(const CDomoticzHardwareBase* pHardware, const tRBUF
 
 				for (const auto& sd : result)
 				{
-					float rate = (float)atof(sd[0].c_str()) / 10000.0F;
+					float rate = stof(sd[0]) / 10000.0F;
 					std::string date = sd[1];
 
 					time_t rowtime;
@@ -2954,7 +2954,7 @@ void MainWorker::decode_Rain(const CDomoticzHardwareBase* pHardware, const tRBUF
 			"SELECT ID FROM DeviceStatus WHERE (HardwareID=%d AND DeviceID='%q' AND Unit=%d AND Type=%d AND SubType=%d)", pHardware->m_HwdID, ID.c_str(), Unit, devType, subType);
 		if (!result.empty())
 		{
-			uint64_t ulID = std::stoull(result[0][0]);
+			uint64_t ulID = stoull(result[0][0]);
 
 			//Get Counter from one Hour ago
 			time_t now = mytime(nullptr);
@@ -2968,7 +2968,7 @@ void MainWorker::decode_Rain(const CDomoticzHardwareBase* pHardware, const tRBUF
 				ulID, ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, ltime.tm_sec);
 			if (result.size() == 1)
 			{
-				float totalRainFallLastHour = TotalRain - static_cast<float>(atof(result[0][0].c_str()));
+				float totalRainFallLastHour = TotalRain - stof(result[0][0]);
 				Rainrate = ground(totalRainFallLastHour * 100.0F);
 			}
 		}
@@ -3364,8 +3364,8 @@ void MainWorker::decode_Temp(const CDomoticzHardwareBase* pHardware, const tRBUF
 		{
 			m_sql.GetAddjustment(pHardware->m_HwdID, ID.c_str(), 2, pTypeTEMP_HUM, sTypeTH_LC_TC, AddjValue, AddjMulti);
 			temp += AddjValue;
-			humidity = atoi(result[0][0].c_str());
-			uint8_t humidity_status = atoi(result[0][1].c_str());
+			humidity = (uint8_t) stoi(result[0][0]);
+			uint8_t humidity_status = stoi(result[0][1]);
 			sprintf(szTmp, "%.1f;%d;%d", temp, humidity, humidity_status);
 			DevRowIdx = m_sql.UpdateValue(pHardware->m_HwdID, 0, ID.c_str(), 2, pTypeTEMP_HUM, sTypeTH_LC_TC, SignalLevel, BatteryLevel, 0, szTmp, procResult.DeviceName, true, procResult.Username.c_str());
 			m_notifications.CheckAndHandleNotification(DevRowIdx, pHardware->m_HwdID, ID, procResult.DeviceName, Unit, pTypeTEMP_HUM, sTypeTH_LC_TC, szTmp);
@@ -3500,7 +3500,7 @@ void MainWorker::decode_Hum(const CDomoticzHardwareBase* pHardware, const tRBUF*
 			pHardware->m_HwdID, ID.c_str(), 0, pTypeTEMP, sTypeTEMP5);
 		if (result.size() == 1)
 		{
-			temp = static_cast<float>(atof(result[0][0].c_str()));
+			temp = stof(result[0][0]);
 			float AddjValue = 0.0F;
 			float AddjMulti = 1.0F;
 			m_sql.GetAddjustment(pHardware->m_HwdID, ID.c_str(), 2, pTypeTEMP_HUM, sTypeTH_LC_TC, AddjValue, AddjMulti);
@@ -5859,7 +5859,7 @@ void MainWorker::decode_ColorSwitch(const CDomoticzHardwareBase* pHardware, cons
 		pHardware->m_HwdID, ID.c_str(), Unit, devType, subType);
 	if (!result.empty())
 	{
-		DevRowIdx = std::stoull(result[0][0]);
+		DevRowIdx = stoull(result[0][0]);
 	}
 	else
 	{
@@ -6547,7 +6547,7 @@ void MainWorker::decode_evohome1(const CDomoticzHardwareBase* pHardware, const t
 	if (!result.empty())
 	{
 		std::vector<std::string> sd = result[0];
-		if (atoi(sd[7].c_str()) == cmnd && sd[8] == szUntilDate)
+		if (stoi(sd[7]) == cmnd && sd[8] == szUntilDate)
 			return;
 	}
 	else
@@ -6654,11 +6654,11 @@ void MainWorker::decode_evohome2(const CDomoticzHardwareBase* pHardware, const t
 	{
 		std::vector<std::string> sd = result[0];
 		szDevID = sd[1];
-		Unit = atoi(sd[2].c_str());
-		dType = atoi(sd[3].c_str());
-		dSubType = atoi(sd[4].c_str());
+		Unit = (uint8_t) stoi(sd[2]);
+		dType = (uint8_t) stoi(sd[3]);
+		dSubType = (uint8_t) stoi(sd[4]);
 		szUpdateStat = sd[5];
-		BatteryLevel = atoi(sd[6].c_str());
+		BatteryLevel = (uint8_t) stoi(sd[6]);
 	}
 	else
 	{
@@ -6793,18 +6793,18 @@ void MainWorker::decode_evohome3(const CDomoticzHardwareBase* pHardware, const t
 	{
 		if (pEvo->demand == 0xFF)//we sometimes get a 0418 message after the initial device creation but it will mess up the logging as we don't have a demand
 			return;
-		uint8_t cur_cmnd = atoi(result[0][5].c_str());
-		BatteryLevel = atoi(result[0][7].c_str());
+		uint8_t cur_cmnd = (uint8_t) stoi(result[0][5]);
+		BatteryLevel = (uint8_t) stoi(result[0][7]);
 
 		if (pEvo->updatetype == CEvohomeBase::updBattery)
 		{
 			BatteryLevel = pEvo->battery_level;
 			szDemand = result[0][6];
-			cmnd = (atoi(szDemand.c_str()) > 0) ? light1_sOn : light1_sOff;
+			cmnd = (stoi(szDemand) > 0) ? light1_sOn : light1_sOff;
 		}
 		if (Unit == 0xFF)
 		{
-			Unit = atoi(result[0][2].c_str());
+			Unit = (uint8_t) stoi(result[0][2]);
 			szDemand = result[0][6];
 			if (cmnd == cur_cmnd)
 				return;
@@ -8886,7 +8886,7 @@ void MainWorker::decode_Energy(const CDomoticzHardwareBase* pHardware, const tRB
 			StringSplit(sValue, ";", strarray);
 			if (strarray.size() != 2)
 				return;
-			total = atof(strarray[1].c_str());
+			total = stod(strarray[1]);
 		}
 	}
 
@@ -9029,7 +9029,7 @@ void MainWorker::decode_Current_Energy(const CDomoticzHardwareBase* pHardware, c
 			StringSplit(result2[0][1], ";", strarray);
 			if (strarray.size() == 4)
 			{
-				usage = atof(strarray[3].c_str());
+				usage = stod(strarray[3]);
 			}
 		}
 	}
@@ -9058,7 +9058,7 @@ void MainWorker::decode_Current_Energy(const CDomoticzHardwareBase* pHardware, c
 				StringSplit(result2[0][1], ";", strarray);
 				if (strarray.size() == 4)
 				{
-					usage = atof(strarray[3].c_str());
+					usage = stod(strarray[3]);
 				}
 			}
 		}
@@ -11112,7 +11112,7 @@ void MainWorker::decode_LightningSensor(const CDomoticzHardwareBase* pHardware, 
 	result = m_sql.safe_query("SELECT Timeout, ID FROM WOLNodes WHERE (HardwareID==%d) AND (Name=='%q')", pHardware->m_HwdID, lookupName.c_str());
 	if (!result.empty())
 	{
-		int old_count = atoi(result[0][0].c_str());
+		int old_count = stoi(result[0][0]);
 		if (old_count <= new_count)
 		{
 			new_count = strike_count - old_count;
@@ -11254,11 +11254,11 @@ bool MainWorker::GetSensorData(const uint64_t idx, int& nValue, std::string& sVa
 	if (result.empty())
 		return false;
 	std::vector<std::string> sd = result[0];
-	int devType = atoi(sd[0].c_str());
-	int subType = atoi(sd[1].c_str());
-	nValue = atoi(sd[2].c_str());
+	int devType = stoi(sd[0]);
+	int subType = stoi(sd[1]);
+	nValue = stoi(sd[2]);
 	sValue = sd[3];
-	_eMeterType metertype = (_eMeterType)atoi(sd[4].c_str());
+	_eMeterType metertype = (_eMeterType) stoi(sd[4]);
 
 	//Special cases
 	if ((devType == pTypeP1Power) && (subType == sTypeP1Power))
@@ -11268,8 +11268,8 @@ bool MainWorker::GetSensorData(const uint64_t idx, int& nValue, std::string& sVa
 		if (results.size() < 6)
 			return false; //invalid data
 		//Return usage or delivery
-		long usagecurrent = atol(results[4].c_str());
-		long delivcurrent = atol(results[5].c_str());
+		long usagecurrent = stol(results[4]);
+		long delivcurrent = stol(results[5]);
 		std::stringstream ssvalue;
 		if (delivcurrent > 0)
 		{
@@ -11308,8 +11308,8 @@ bool MainWorker::GetSensorData(const uint64_t idx, int& nValue, std::string& sVa
 		if (!result2.empty())
 		{
 			std::vector<std::string> sd2 = result2[0];
-			uint64_t total_min_gas = std::stoull(sd2[0].c_str());
-			uint64_t gasactual = std::stoull(sValue);
+			uint64_t total_min_gas = stoull(sd2[0]);
+			uint64_t gasactual = stoull(sValue);
 			uint64_t total_real_gas = gasactual - total_min_gas;
 			float musage = float(total_real_gas) / GasDivider;
 			sprintf(szTmp, "%.03f", musage);
@@ -11364,8 +11364,8 @@ bool MainWorker::GetSensorData(const uint64_t idx, int& nValue, std::string& sVa
 		{
 			std::vector<std::string> sd2 = result2[0];
 
-			uint64_t total_min = std::stoull(sd2[0]);
-			uint64_t total_max = std::stoull(sd2[1]);
+			uint64_t total_min = stoull(sd2[0]);
+			uint64_t total_max = stoull(sd2[1]);
 			uint64_t total_real = total_max - total_min;
 			sprintf(szTmp, "%" PRIu64, total_real);
 
@@ -11402,7 +11402,7 @@ bool MainWorker::GetSensorData(const uint64_t idx, int& nValue, std::string& sVa
 
 MainWorker::eSwitchLightReturnCode MainWorker::SwitchLightInt(const std::vector<std::string>& sd, std::string switchcmd, int level, const _tColor color, const bool IsTesting, const std::string& User)
 {
-	int HardwareID = atoi(sd[0].c_str());
+	int HardwareID = stoi(sd[0]);
 	int hindex = FindDomoticzHardware(HardwareID);
 	if (hindex == -1)
 	{
@@ -11427,17 +11427,17 @@ MainWorker::eSwitchLightReturnCode MainWorker::SwitchLightInt(const std::vector<
 
 
 	std::string deviceID = sd[1];
-	int Unit = atoi(sd[2].c_str());
-	int dType = atoi(sd[3].c_str());
-	int dSubType = atoi(sd[4].c_str());
-	_eSwitchType switchtype = (_eSwitchType)atoi(sd[5].c_str());
+	int Unit = stoi(sd[2]);
+	int dType = stoi(sd[3]);
+	int dSubType = stoi(sd[4]);
+	_eSwitchType switchtype = (_eSwitchType) stoi(sd[5]);
 
 	std::string lstatus;
 	int llevel = 0;
 	bool bHaveDimmer = false;
 	bool bHaveGroupCmd = false;
 	int maxDimLevel = 0;
-	int nValue = atoi(sd[7].c_str());
+	int nValue = stoi(sd[7]);
 	std::string sValue = sd[8];
 	GetLightStatus(dType, dSubType, switchtype, nValue, sValue, lstatus, llevel, bHaveDimmer, maxDimLevel, bHaveGroupCmd);
 
@@ -11486,7 +11486,7 @@ MainWorker::eSwitchLightReturnCode MainWorker::SwitchLightInt(const std::vector<
 			"SELECT LastLevel FROM DeviceStatus WHERE (HardwareID=%d AND DeviceID='%q' AND Unit=%d AND Type=%d AND SubType=%d)", HardwareID, sd[1].c_str(), Unit, int(dType), int(dSubType));
 		if (result.size() == 1)
 		{
-			level = atoi(result[0][0].c_str());
+			level = stoi(result[0][0]);
 			if (
 				(switchcmd == "On")
 				&& (level > 0)
@@ -11594,7 +11594,7 @@ MainWorker::eSwitchLightReturnCode MainWorker::SwitchLightInt(const std::vector<
 		lcmd.LIGHTING1.packettype = dType;
 		lcmd.LIGHTING1.subtype = dSubType;
 		lcmd.LIGHTING1.seqnbr = m_hardwaredevices[hindex]->m_SeqNr++;
-		lcmd.LIGHTING1.housecode = atoi(sd[1].c_str());
+		lcmd.LIGHTING1.housecode = (BYTE) stoi(sd[1]);
 		lcmd.LIGHTING1.unitcode = Unit;
 		lcmd.LIGHTING1.filler = 0;
 		lcmd.LIGHTING1.rssi = 12;
@@ -11721,7 +11721,7 @@ MainWorker::eSwitchLightReturnCode MainWorker::SwitchLightInt(const std::vector<
 			"SELECT sValue FROM DeviceStatus WHERE (HardwareID=%d AND DeviceID='%q' AND Unit=%d AND Type=%d AND SubType=%d)", HardwareID, sd[1].c_str(), Unit, int(dType), int(dSubType));
 		if (result.size() == 1)
 		{
-			int pulsetimeing = atoi(result[0][0].c_str());
+			int pulsetimeing = stoi(result[0][0]);
 			lcmd.LIGHTING4.pulseHigh = pulsetimeing / 256;
 			lcmd.LIGHTING4.pulseLow = pulsetimeing & 0xFF;
 			if (!WriteToHardware(HardwareID, (const char*)&lcmd, sizeof(lcmd.LIGHTING4)))
@@ -12135,7 +12135,7 @@ MainWorker::eSwitchLightReturnCode MainWorker::SwitchLightInt(const std::vector<
 		lcmd.CURTAIN1.packettype = dType;
 		lcmd.CURTAIN1.subtype = dSubType;
 		lcmd.CURTAIN1.seqnbr = m_hardwaredevices[hindex]->m_SeqNr++;
-		lcmd.CURTAIN1.housecode = atoi(sd[1].c_str());
+		lcmd.CURTAIN1.housecode = (BYTE) stoi(sd[1]);
 		lcmd.CURTAIN1.unitcode = Unit;
 		if (!GetLightCommand(dType, dSubType, switchtype, switchcmd, lcmd.CURTAIN1.cmnd, options))
 			return SL_ERROR;
@@ -12570,15 +12570,15 @@ bool MainWorker::SwitchEvoModal(const std::string& idx, const std::string& statu
 
 	std::vector<std::string> sd = result[0];
 
-	int HardwareID = atoi(sd[0].c_str());
+	int HardwareID = stoi(sd[0]);
 	int hindex = FindDomoticzHardware(HardwareID);
 	if (hindex == -1)
 		return false;
 
-	//uint8_t Unit = atoi(sd[2].c_str());
-	//uint8_t dType = atoi(sd[3].c_str());
-	//uint8_t dSubType = atoi(sd[4].c_str());
-	//_eSwitchType switchtype = (_eSwitchType)atoi(sd[5].c_str());
+	//uint8_t Unit = (uint8_t) stoi(sd[2]);
+	//uint8_t dType = (uint8_t) stoi(sd[3]);
+	//uint8_t dSubType = (uint8_t) stoi(sd[4]);
+	//_eSwitchType switchtype = (_eSwitchType) stoi(sd[5]);
 
 	CDomoticzHardwareBase* pHardware = GetHardware(HardwareID);
 	if (pHardware == nullptr)
@@ -12604,7 +12604,7 @@ bool MainWorker::SwitchEvoModal(const std::string& idx, const std::string& statu
 	else if (status == "HeatingOff")
 		nStatus = CEvohomeBase::cmEvoHeatingOff;
 
-	int nValue = atoi(sd[7].c_str());
+	int nValue = stoi(sd[7]);
 	if (ooc == "1" && nValue == nStatus)
 		return false;//FIXME not an error ... status = (already set)
 
@@ -12638,12 +12638,12 @@ bool MainWorker::SwitchEvoModal(const std::string& idx, const std::string& statu
 
 MainWorker::eSwitchLightReturnCode MainWorker::SwitchLight(const std::string& idx, const std::string& switchcmd, const std::string& level, const std::string& color, const std::string& ooc, const int ExtraDelay, const std::string& User)
 {
-	uint64_t ID = std::stoull(idx);
+	uint64_t ID = stoull(idx);
 	int ilevel = -1;
 	if (!level.empty())
-		ilevel = atoi(level.c_str());
+		ilevel = stoi(level);
 
-	return SwitchLight(ID, switchcmd, ilevel, _tColor(color), atoi(ooc.c_str()) != 0, ExtraDelay, User);
+	return SwitchLight(ID, switchcmd, ilevel, _tColor(color), stoi(ooc) != 0, ExtraDelay, User);
 }
 
 MainWorker::eSwitchLightReturnCode MainWorker::SwitchLight(const uint64_t idx, const std::string& switchcmd, const int level, _tColor color, const bool ooc, const int ExtraDelay, const std::string& User)
@@ -12660,17 +12660,17 @@ MainWorker::eSwitchLightReturnCode MainWorker::SwitchLight(const uint64_t idx, c
 	std::vector<std::string> sd = result[0];
 	std::string hwdid = sd[0];
 	std::string devid = sd[1];
-	int dtype = atoi(sd[3].c_str());
-	int subtype = atoi(sd[4].c_str());
-	_eSwitchType switchtype = (_eSwitchType)atoi(sd[5].c_str());
-	int iOnDelay = atoi(sd[6].c_str());
-	int nValue = atoi(sd[7].c_str());
+	int dtype = stoi(sd[3]);
+	int subtype = stoi(sd[4]);
+	_eSwitchType switchtype = (_eSwitchType) stoi(sd[5]);
+	int iOnDelay = stoi(sd[6]);
+	int nValue = stoi(sd[7]);
 	std::string sValue = sd[8];
 	std::string devName = sd[9];
 
 	//std::string sOptions = sd[10].c_str();
 	// ----------- If needed convert to GeneralSwitch type (for o.a. RFlink) -----------
-	CDomoticzHardwareBase* pBaseHardware = m_mainworker.GetHardware(atoi(hwdid.c_str()));
+	CDomoticzHardwareBase* pBaseHardware = m_mainworker.GetHardware(stoi(hwdid));
 	if (pBaseHardware != nullptr)
 	{
 		if (pBaseHardware->HwdType == HTYPE_ZIBLUEUSB || pBaseHardware->HwdType == HTYPE_ZIBLUETCP)
@@ -12685,7 +12685,7 @@ MainWorker::eSwitchLightReturnCode MainWorker::SwitchLight(const uint64_t idx, c
 	if (ooc)//Only on change
 	{
 		int nNewVal = bIsOn ? 1 : 0;//Is that everything we need here
-		if ((switchtype == STYPE_Selector) && (nValue == nNewVal) && (level == atoi(sValue.c_str()))) {
+		if ((switchtype == STYPE_Selector) && (nValue == nNewVal) && (level == stoi(sValue))) {
 			return SL_OK_NO_ACTION;
 		}
 		if (nValue == nNewVal)
@@ -12704,7 +12704,7 @@ MainWorker::eSwitchLightReturnCode MainWorker::SwitchLight(const uint64_t idx, c
 		return SL_OK;
 	}
 
-	int HardwareID = atoi(hwdid.c_str());
+	int HardwareID = stoi(hwdid);
 	int hindex = FindDomoticzHardware(HardwareID);
 	if (hindex == -1)
 	{
@@ -12736,7 +12736,7 @@ bool MainWorker::SetSetPointEvo(const std::string& idx, const float TempValue, c
 		return false;
 
 	std::vector<std::string> sd = result[0];
-	int HardwareID = atoi(sd[0].c_str());
+	int HardwareID = stoi(sd[0]);
 	int hindex = FindDomoticzHardware(HardwareID);
 	if (hindex == -1)
 		return false;
@@ -12771,10 +12771,10 @@ bool MainWorker::SetSetPointEvo(const std::string& idx, const float TempValue, c
 	s_strid >> ID;
 
 
-	uint8_t Unit = atoi(sd[2].c_str());
-	uint8_t dType = atoi(sd[3].c_str());
-	uint8_t dSubType = atoi(sd[4].c_str());
-	//_eSwitchType switchtype=(_eSwitchType)atoi(sd[5].c_str());
+	uint8_t Unit = (uint8_t) stoi(sd[2]);
+	uint8_t dType = (uint8_t) stoi(sd[3]);
+	uint8_t dSubType = (uint8_t) stoi(sd[4]);
+	//_eSwitchType switchtype=(_eSwitchType) stoi(sd[5]);
 
 	if (pHardware->HwdType == HTYPE_EVOHOME_SCRIPT || pHardware->HwdType == HTYPE_EVOHOME_SERIAL || pHardware->HwdType == HTYPE_EVOHOME_WEB || pHardware->HwdType == HTYPE_EVOHOME_TCP)
 	{
@@ -12799,7 +12799,7 @@ bool MainWorker::SetSetPointEvo(const std::string& idx, const float TempValue, c
 		if (!result.empty())
 		{
 			sd = result[0];
-			tsen.controllermode = atoi(sd[2].c_str());
+			tsen.controllermode = (uint8_t) stoi(sd[2]);
 		}
 		//the latency on the scripted solution is quite bad so it's good to see the update happening...ideally this would go to an 'updating' status (also useful to update database if we ever use this as a pure virtual device)
 		PushAndWaitRxMessage(pHardware, (const uint8_t*)&tsen, nullptr, -1, nullptr);
@@ -12819,7 +12819,7 @@ bool MainWorker::SetSetPoint(const std::string& idx, const float TempValue)
 
 	std::vector<std::string> sd = result[0];
 
-	int HardwareID = atoi(sd[0].c_str());
+	int HardwareID = stoi(sd[0]);
 	int hindex = FindDomoticzHardware(HardwareID);
 	if (hindex == -1)
 		return false;
@@ -12839,7 +12839,7 @@ bool MainWorker::SetSetPoint(const std::string& idx, const float TempValue)
 
 bool MainWorker::SetSetPointInt(const std::vector<std::string>& sd, const float TempValue)
 {
-	int HardwareID = atoi(sd[0].c_str());
+	int HardwareID = stoi(sd[0]);
 	int hindex = FindDomoticzHardware(HardwareID);
 	if (hindex == -1)
 		return false;
@@ -12859,10 +12859,10 @@ bool MainWorker::SetSetPointInt(const std::vector<std::string>& sd, const float 
 	uint8_t ID3 = (uint8_t)((ID & 0x0000FF00) >> 8);
 	uint8_t ID4 = (uint8_t)((ID & 0x000000FF));
 
-	uint8_t Unit = atoi(sd[2].c_str());
-	uint8_t dType = atoi(sd[3].c_str());
-	uint8_t dSubType = atoi(sd[4].c_str());
-	//_eSwitchType switchtype = (_eSwitchType)atoi(sd[5].c_str());
+	uint8_t Unit = (uint8_t) stoi(sd[2]);
+	uint8_t dType = (uint8_t) stoi(sd[3]);
+	uint8_t dSubType = (uint8_t) stoi(sd[4]);
+	//_eSwitchType switchtype = (_eSwitchType) stoi(sd[5]);
 
 	_tSetpoint tmeter;
 	tmeter.subtype = sTypeSetpoint;
@@ -12880,8 +12880,8 @@ bool MainWorker::SetSetPointInt(const std::vector<std::string>& sd, const float 
 
 		if (
 			(value_unit.empty())
-			|| (value_unit == "°C")
-			|| (value_unit == "°F")
+			|| (value_unit == "ï¿½C")
+			|| (value_unit == "ï¿½F")
 			|| (value_unit == "C")
 			|| (value_unit == "F")
 			)
@@ -13035,8 +13035,8 @@ bool MainWorker::SetSetPointInt(const std::vector<std::string>& sd, const float 
 			sprintf(szTemp, "%.1f", TempValue);
 			std::vector<std::string> strarray;
 			StringSplit(szTemp, ".", strarray);
-			lcmd.RADIATOR1.temperature = (uint8_t)atoi(strarray[0].c_str());
-			lcmd.RADIATOR1.tempPoint5 = (uint8_t)atoi(strarray[1].c_str());
+			lcmd.RADIATOR1.temperature = (BYTE) stoi(strarray[0]);
+			lcmd.RADIATOR1.tempPoint5 = (BYTE) stoi(strarray[1]);
 			if (!WriteToHardware(HardwareID, (const char*)&lcmd, sizeof(lcmd.RADIATOR1)))
 				return false;
 			PushAndWaitRxMessage(pHardware, (const uint8_t*)&lcmd, nullptr, -1, nullptr);
@@ -13064,7 +13064,7 @@ bool MainWorker::SetThermostatState(const std::string& idx, const int newState)
 		idx.c_str());
 	if (result.empty())
 		return false;
-	int HardwareID = atoi(result[0][0].c_str());
+	int HardwareID = stoi(result[0][0]);
 	int hindex = FindDomoticzHardware(HardwareID);
 	if (hindex == -1)
 		return false;
@@ -13118,7 +13118,7 @@ bool MainWorker::SetThermostatState(const std::string& idx, const int newState)
 	if (pHardware->HwdType == HTYPE_Netatmo)
 	{
 		CNetatmo* pGateway = dynamic_cast<CNetatmo*>(pHardware);
-		int tIndex = atoi(idx.c_str());
+		int tIndex = stoi(idx);
 		pGateway->SetProgramState(tIndex, newState);
 		return true;
 	}
@@ -13142,7 +13142,7 @@ bool MainWorker::SetZWaveThermostatMode(const std::string& idx, const int tMode)
 	if (result.empty())
 		return false;
 
-	int HardwareID = atoi(result[0][0].c_str());
+	int HardwareID = stoi(result[0][0]);
 	int hindex = FindDomoticzHardware(HardwareID);
 	if (hindex == -1)
 		return false;
@@ -13180,7 +13180,7 @@ bool MainWorker::SetZWaveThermostatFanMode(const std::string& idx, const int fMo
 	if (result.empty())
 		return false;
 
-	int HardwareID = atoi(result[0][0].c_str());
+	int HardwareID = stoi(result[0][0]);
 	int hindex = FindDomoticzHardware(HardwareID);
 	if (hindex == -1)
 		return false;
@@ -13221,7 +13221,7 @@ bool MainWorker::DoesDeviceActiveAScene(const uint64_t DevRowIdx, const int Cmnd
 	{
 		for (const auto& sd : result)
 		{
-			int SceneType = atoi(sd[1].c_str());
+			int SceneType = stoi(sd[1]);
 
 			std::vector<std::string> arrayActivators;
 			StringSplit(sd[0], ";", arrayActivators);
@@ -13237,12 +13237,12 @@ bool MainWorker::DoesDeviceActiveAScene(const uint64_t DevRowIdx, const int Cmnd
 					sCode = arrayCode[1];
 				}
 
-				uint64_t aID = std::stoull(sID);
+				uint64_t aID = stoull(sID);
 				if (aID == DevRowIdx)
 				{
 					if ((SceneType == SGTYPE_GROUP) || (sCode.empty()))
 						return true;
-					int iCode = atoi(sCode.c_str());
+					int iCode = stoi(sCode);
 					if (iCode == Cmnd)
 						return true;
 				}
@@ -13254,7 +13254,7 @@ bool MainWorker::DoesDeviceActiveAScene(const uint64_t DevRowIdx, const int Cmnd
 
 bool MainWorker::SwitchScene(const std::string& idx, const std::string& switchcmd, const std::string& User)
 {
-	uint64_t ID = std::stoull(idx);
+	uint64_t ID = stoull(idx);
 
 	return SwitchScene(ID, switchcmd, User);
 }
@@ -13276,7 +13276,7 @@ bool MainWorker::SwitchScene(const uint64_t idx, std::string switchcmd, const st
 	{
 		std::vector<std::string> sds = result[0];
 		Name = sds[0];
-		scenetype = (_eSceneGroupType)atoi(sds[1].c_str());
+		scenetype = (_eSceneGroupType) stoi(sds[1]);
 		onaction = sds[2];
 		offaction = sds[3];
 		status = sds[4];
@@ -13288,7 +13288,7 @@ bool MainWorker::SwitchScene(const uint64_t idx, std::string switchcmd, const st
 				return false;
 			//when asking for Toggle, just switch to the opposite value
 			if (switchcmd == "Toggle") {
-				nValue = (atoi(status.c_str()) == 0 ? 1 : 0);
+				nValue = (stoi(status) == 0 ? 1 : 0);
 				switchcmd = (nValue == 1 ? "On" : "Off");
 			}
 		}
@@ -13325,7 +13325,7 @@ bool MainWorker::SwitchScene(const uint64_t idx, std::string switchcmd, const st
 				for (const auto& sd : result)
 				{
 					std::string camidx = sd[0];
-					int delay = atoi(sd[1].c_str());
+					int delay = stoi(sd[1]);
 					std::string subject;
 					if (scenetype == SGTYPE_SCENE)
 						subject = Name + " Activated";
@@ -13354,27 +13354,27 @@ bool MainWorker::SwitchScene(const uint64_t idx, std::string switchcmd, const st
 
 	for (const auto& sd : result)
 	{
-		int cmd = atoi(sd[1].c_str());
-		int level = atoi(sd[2].c_str());
+		int cmd = stoi(sd[1]);
+		int level = stoi(sd[2]);
 		_tColor color(sd[3]);
-		int ondelay = atoi(sd[4].c_str());
-		int offdelay = atoi(sd[5].c_str());
+		int ondelay = stoi(sd[4]);
+		int offdelay = stoi(sd[5]);
 		std::vector<std::vector<std::string> > result2;
 		result2 = m_sql.safe_query(
 			"SELECT HardwareID, DeviceID,Unit,Type,SubType,SwitchType, nValue, sValue, Name FROM DeviceStatus WHERE (ID == '%q')", sd[0].c_str());
 		if (!result2.empty())
 		{
 			std::vector<std::string> sd2 = result2[0];
-			//uint8_t rnValue = atoi(sd2[6].c_str());
+			//uint8_t rnValue = (uint8_t) stoi(sd2[6]);
 			std::string sValue = sd2[7];
-			//uint8_t Unit = atoi(sd2[2].c_str());
-			uint8_t dType = atoi(sd2[3].c_str());
-			uint8_t dSubType = atoi(sd2[4].c_str());
+			//uint8_t Unit = (uint8_t) stoi(sd2[2]);
+			uint8_t dType = (uint8_t) stoi(sd2[3]);
+			uint8_t dSubType = (uint8_t) stoi(sd2[4]);
 			std::string DeviceName = sd2[8];
-			_eSwitchType switchtype = (_eSwitchType)atoi(sd2[5].c_str());
+			_eSwitchType switchtype = (_eSwitchType) stoi(sd2[5]);
 
 			//Check if this device will not activate a scene
-			uint64_t dID = std::stoull(sd[0]);
+			uint64_t dID = stoull(sd[0]);
 			if (DoesDeviceActiveAScene(dID, cmd))
 			{
 				_log.Log(LOG_ERROR, "Skipping sensor '%s' because this triggers another scene!", DeviceName.c_str());
@@ -13427,7 +13427,7 @@ bool MainWorker::SwitchScene(const uint64_t idx, std::string switchcmd, const st
 				}
 			}
 
-			int idx = atoi(sd[0].c_str());
+			int idx = stoi(sd[0]);
 			if (switchtype != STYPE_PushOn)
 			{
 				int delay = (lstatus == "Off") ? offdelay : ondelay;
@@ -13481,17 +13481,17 @@ void MainWorker::CheckSceneCode(const uint64_t DevRowIdx, const uint8_t dType, c
 					sCode = arrayCode[1];
 				}
 
-				uint64_t aID = std::stoull(sID);
+				uint64_t aID = stoull(sID);
 				if (aID == DevRowIdx)
 				{
-					uint64_t ID = std::stoull(sd[0]);
-					int scenetype = atoi(sd[2].c_str());
+					uint64_t ID = stoull(sd[0]);
+					int scenetype = stoi(sd[2]);
 					int rnValue = nValue;
 
 					if ((scenetype == SGTYPE_SCENE) && (!sCode.empty()))
 					{
 						//Also check code
-						int iCode = atoi(sCode.c_str());
+						int iCode = stoi(sCode);
 						if (iCode != nValue)
 							continue;
 						rnValue = 1; //A Scene can only be activated (On)
@@ -13535,7 +13535,7 @@ void MainWorker::LoadSharedUsers()
 			{
 				for (const auto& sd2 : result2)
 				{
-					uint64_t ID = std::stoull(sd2[0]);
+					uint64_t ID = stoull(sd2[0]);
 					suser.Devices.push_back(ID);
 				}
 			}
@@ -13768,12 +13768,12 @@ bool MainWorker::UpdateDevice(const int DevIdx, const int nValue, const std::str
 	if (result.empty())
 		return false;
 
-	int HardwareID = std::stoi(result[0][0]);
-	int OrgHardwareID = std::stoi(result[0][1]);
+	int HardwareID = stoi(result[0][0]);
+	int OrgHardwareID = stoi(result[0][1]);
 	std::string DeviceID = result[0][2];
-	int unit = std::stoi(result[0][3]);
-	int devType = std::stoi(result[0][4]);
-	int subType = std::stoi(result[0][5]);
+	int unit = stoi(result[0][3]);
+	int devType = stoi(result[0][4]);
+	int subType = stoi(result[0][5]);
 
 	return UpdateDevice(HardwareID, OrgHardwareID, DeviceID, unit, devType, subType, nValue, sValue, userName, signallevel, batterylevel, parseTrigger);
 }
@@ -13799,7 +13799,7 @@ bool MainWorker::UpdateDevice(const int HardwareID, const int OrgHardwareID, con
 			)
 		{
 			_log.Log(LOG_NORM, "Updating SetPoint device....");
-			SetSetPoint(sidx.str(), static_cast<float>(atof(sValue.c_str())));
+			SetSetPoint(sidx.str(), stof(sValue));
 
 #ifdef ENABLE_PYTHON
 			// notify plugin
@@ -13844,7 +13844,7 @@ bool MainWorker::UpdateDevice(const int HardwareID, const int OrgHardwareID, con
 				lcmd.LIGHTING2.id4 = ID4;
 				lcmd.LIGHTING2.unitcode = (uint8_t)unit;
 				lcmd.LIGHTING2.cmnd = (uint8_t)nValue;
-				lcmd.LIGHTING2.level = (uint8_t)atoi(sValue.c_str());
+				lcmd.LIGHTING2.level = (BYTE) stoi(sValue);
 				lcmd.LIGHTING2.filler = 0;
 				lcmd.LIGHTING2.rssi = signallevel;
 				DecodeRXMessage(pHardware, (const uint8_t*)&lcmd.LIGHTING2, nullptr, batterylevel, userName.c_str());
@@ -13871,7 +13871,7 @@ bool MainWorker::UpdateDevice(const int HardwareID, const int OrgHardwareID, con
 
 				if (devType == pTypeTEMP)
 				{
-					temp = static_cast<float>(atof(sValue.c_str()));
+					temp = stof(sValue);
 					temp += AddjValue;
 					sprintf(szTmp, "%.2f", temp);
 					sValue = szTmp;
@@ -13881,7 +13881,7 @@ bool MainWorker::UpdateDevice(const int HardwareID, const int OrgHardwareID, con
 					StringSplit(sValue, ";", strarray);
 					if (strarray.size() == 3)
 					{
-						temp = static_cast<float>(atof(strarray[0].c_str()));
+						temp = stof(strarray[0]);
 						temp += AddjValue;
 						sprintf(szTmp, "%.2f;%s;%s", temp, strarray[1].c_str(), strarray[2].c_str());
 						sValue = szTmp;
@@ -13892,8 +13892,8 @@ bool MainWorker::UpdateDevice(const int HardwareID, const int OrgHardwareID, con
 					StringSplit(sValue, ";", strarray);
 					if (strarray.size() == 5)
 					{
-						temp = static_cast<float>(atof(strarray[0].c_str()));
-						float fbarometer = static_cast<float>(atof(strarray[3].c_str()));
+						temp = stof(strarray[0]);
+						float fbarometer = stof(strarray[3]);
 						temp += AddjValue;
 
 						AddjValue = 0.0F;

@@ -331,8 +331,8 @@ int EnphaseAPI::getSunRiseSunSetMinutes(const bool bGetSunRise)
 		StringSplit(strarray[0], ":", sunRisearray);
 		StringSplit(strarray[1], ":", sunSetarray);
 
-		int sunRiseInMinutes = (atoi(sunRisearray[0].c_str()) * 60) + atoi(sunRisearray[1].c_str());
-		int sunSetInMinutes = (atoi(sunSetarray[0].c_str()) * 60) + atoi(sunSetarray[1].c_str());
+		int sunRiseInMinutes = (stoi(sunRisearray[0]) * 60) + stoi(sunRisearray[1]);
+		int sunSetInMinutes = (stoi(sunSetarray[0]) * 60) + stoi(sunSetarray[1]);
 
 		if (bGetSunRise) {
 			return sunRiseInMinutes;
@@ -971,7 +971,7 @@ void EnphaseAPI::parseInventory(const Json::Value& root)
 				std::string sleep_enabled = itt["sleep_enabled"].asString(); //boolean
 				std::string dc_switch_off = itt["dc_switch_off"].asString(); //boolean
 
-				double dCurrentCapacity = (std::stod(encharge_capacity) / 100.0) * std::stod(percentFull);
+				double dCurrentCapacity = (stod(encharge_capacity) / 100.0) * stod(percentFull);
 
 				std::string real_power_w = ""; //The current power charging/discharging the battery, in watts. Positive values indicate charging, negative values indicate discharging.
 				if (!itt["real_power_w"].empty())
@@ -982,7 +982,7 @@ void EnphaseAPI::parseInventory(const Json::Value& root)
 				int NodeID = 100 + (iInventoryIndex * 50);
 
 				szName = "Encharge " + serial_num + " Percent Full";
-				SendPercentageSensor(NodeID + iDeviceIndex, 1, 255, static_cast<float>(std::stod(percentFull)), szName);
+				SendPercentageSensor(NodeID + iDeviceIndex, 1, 255, stof(percentFull), szName);
 
 				szName = "Encharge " + serial_num + " Current Capacity";
 				SendWattMeter(NodeID, iDeviceIndex + 1, 255, static_cast<float>(dCurrentCapacity), szName);
@@ -996,7 +996,7 @@ void EnphaseAPI::parseInventory(const Json::Value& root)
 				//SendTextSensor((NodeID * 2) + (iDeviceIndex * 30) + 3, 1, 255, admin_state_str, szName);
 
 				std::string szStatus = "Unknown";
-				int iLedStatus = atoi(led_status.c_str());
+				int iLedStatus = stoi(led_status);
 				switch (iLedStatus)
 				{
 				case 12: //Charging
@@ -1285,7 +1285,7 @@ bool EnphaseAPI::getInverterDetails()
 				m_HwdID, szDeviceID.c_str(), 1, devType, subType);
 			if (!result.empty())
 			{
-				m_sql.SetDeviceOptions(std::stoull(result[0][0]), m_sql.BuildDeviceOptions("EnergyMeterMode:1", false));
+				m_sql.SetDeviceOptions(stoull(result[0][0]), m_sql.BuildDeviceOptions("EnergyMeterMode:1", false));
 			}
 		}
 		else

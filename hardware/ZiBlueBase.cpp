@@ -301,7 +301,7 @@ void CZiBlueBase::GetManualSwitchParameters(const std::multimap<std::string, std
 	auto it = Parameters.find("housecode");
 	if (it != Parameters.end())
 	{
-		int ID = atoi(it->second.c_str());
+		int ID = stoi(it->second);
 		std::stringstream s_strid;
 		s_strid << std::hex << std::setfill('0') << std::setw(8) << ID;
 		devIDOut = s_strid.str();
@@ -316,7 +316,7 @@ void CZiBlueBase::GetManualSwitchParameters(const std::multimap<std::string, std
 		it = Parameters.find("qualifier");
 		if (it != Parameters.end())
 		{
-			int id = atoi(devIDOut.c_str());
+			int id = stoi(devIDOut);
 			int qualifier = it->second == "true" ? 1 : 0; 
 			id |= qualifier << 16;
 			std::stringstream temp;
@@ -572,7 +572,7 @@ bool CZiBlueBase::SendSwitchInt(const int ID, const int switchunit, const int Ba
 		{
 			cmnd = gswitch_sSetLevel;
 			std::string str2 = switchcmd.substr(10);
-			svalue = atoi(str2.c_str());
+			svalue = stoi(str2);
 			Log(LOG_STATUS, "%d level: %d", cmnd, svalue);
 		}
 	}

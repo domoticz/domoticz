@@ -178,17 +178,17 @@ namespace tcp {
 
 			int iIndex = 0;
 			root["DeviceID"] = result[0][iIndex++];
-			root["Unit"] = atoi(result[0][iIndex++].c_str());
+			root["Unit"] = stoi(result[0][iIndex++]);
 			root["Name"] = result[0][iIndex++];
-			root["Type"] = atoi(result[0][iIndex++].c_str());
-			root["SubType"] = atoi(result[0][iIndex++].c_str());
-			root["SwitchType"] = atoi(result[0][iIndex++].c_str());
-			root["SignalLevel"] = atoi(result[0][iIndex++].c_str());
-			root["BatteryLevel"] = atoi(result[0][iIndex++].c_str());
-			root["nValue"] = atoi(result[0][iIndex++].c_str());
+			root["Type"] = stoi(result[0][iIndex++]);
+			root["SubType"] = stoi(result[0][iIndex++]);
+			root["SwitchType"] = stoi(result[0][iIndex++]);
+			root["SignalLevel"] = stoi(result[0][iIndex++]);
+			root["BatteryLevel"] = stoi(result[0][iIndex++]);
+			root["nValue"] = stoi(result[0][iIndex++]);
 			root["sValue"] = result[0][iIndex++];
 			root["LastUpdate"] = result[0][iIndex++];
-			root["LastLevel"] = atoi(result[0][iIndex++].c_str());
+			root["LastLevel"] = stoi(result[0][iIndex++]);
 			root["Options"] = result[0][iIndex++];
 			root["Color"] = result[0][iIndex++];
 
@@ -400,7 +400,7 @@ namespace tcp {
 			}
 
 			std::string szIdx = result[0][0];
-			uint64_t idx = std::stoull(szIdx);
+			uint64_t idx = stoull(szIdx);
 
 			if (szAction == "SwitchLight")
 			{

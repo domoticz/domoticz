@@ -451,8 +451,8 @@ namespace http
 								StringSplit(usernamefromtoken,";", strarray);
 								if(strarray.size() == 2)
 								{
-									int iClient = std::atoi(strarray[0].c_str());
-									int iUser = std::atoi(strarray[1].c_str());
+									int iClient = stoi(strarray[0]);
+									int iUser = stoi(strarray[1]);
 									_log.Debug(DEBUG_AUTH, "OAuth2 Access Token: Found valid Refresh token (%s) (c:%d,u:%d)!", refresh_token.c_str(), iClient, iUser);
 
 									Json::Value jwtpayload;

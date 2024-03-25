@@ -298,7 +298,7 @@ void CdzVents::ProcessHttpResponse(lua_State* lua_state, const std::vector<CEven
 							{
 								pos = header.find(results[0]);
 								protocol = header.substr(0, pos + results[0].size());
-								statusCode = atoi(results[1].c_str());
+								statusCode = stoi(results[1]);
 								if (results.size() >= 3)
 								{
 									statusText = header.substr(header.find(results[2]));
@@ -951,11 +951,11 @@ void CdzVents::ExportDomoticzDataToLua(lua_State *lua_state, const std::vector<C
 			{
 				long double value = 0.0F;
 				if (strarray.size() > 1)
-					value = atof(strarray[1].c_str());
+					value = stold(strarray[1]);
 				luaTable.AddNumber("whTotal", value);
 				value = 0.0F;
 				if (!strarray.empty())
-					value = atof(strarray[0].c_str());
+					value = stold(strarray[0]);
 				luaTable.AddNumber("whActual", value);
 			}
 
@@ -1081,18 +1081,16 @@ void CdzVents::ExportDomoticzDataToLua(lua_State *lua_state, const std::vector<C
 
 		if (uvitem.variableType == 0)
 		{
-			luaTable.AddInteger("value", atoi(uvitem.variableValue.c_str()));
+			luaTable.AddInteger("value", stoi(uvitem.variableValue));
 			vtype = "integer";
 		}
 		else if (uvitem.variableType == 1)
-		{
-			//Float
-			luaTable.AddNumber("value", atof(uvitem.variableValue.c_str()));
+		{ //Float
+			luaTable.AddNumber("value", stof(uvitem.variableValue));
 			vtype = "float";
 		}
 		else
-		{
-			//String,Date,Time
+		{ //String,Date,Time
 			luaTable.AddString("value", uvitem.variableValue);
 			if (uvitem.variableType == 2)
 				vtype = "string";
@@ -1121,7 +1119,7 @@ void CdzVents::ExportDomoticzDataToLua(lua_State *lua_state, const std::vector<C
 		{
 			luaTable.OpenSubTableEntry(index, 1, 3);
 			luaTable.AddString("name", sd[1]);
-			luaTable.AddInteger("id", atoi(sd[0].c_str()));
+			luaTable.AddInteger("id", stoi(sd[0]));
 			luaTable.AddString("baseType", "camera");
 			luaTable.CloseSubTableEntry(); // end entry
 
@@ -1137,11 +1135,11 @@ void CdzVents::ExportDomoticzDataToLua(lua_State *lua_state, const std::vector<C
 	{
 		for (const auto &sd : result)
 		{
-			HardwareTypeVal = atoi(sd[2].c_str());
+			HardwareTypeVal = stoi(sd[2]);
 
 			luaTable.OpenSubTableEntry(index, 1, 6);
 			luaTable.AddString("name", sd[1]);
-			luaTable.AddInteger("id", atoi(sd[0].c_str()));
+			luaTable.AddInteger("id", stoi(sd[0]));
 			luaTable.AddInteger("typeValue", HardwareTypeVal);
 			luaTable.AddString("baseType", "hardware");
 			if (HardwareTypeVal != HTYPE_PythonPlugin)

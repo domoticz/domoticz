@@ -818,7 +818,7 @@ namespace http {
 					if (inet_pton((!ipnetwork.bIsIPv6) ? AF_INET : AF_INET6, szNetwork.c_str(), &ipnetwork.Network) != 1)
 						return; //invalid address
 
-					uint8_t iBitcount = std::stoi(szMask);
+					uint8_t iBitcount = (uint8_t) stoi(szMask);
 
 					if (!ipnetwork.bIsIPv6)
 					{
@@ -1923,7 +1923,7 @@ namespace http {
 					session.isnew = false;
 					session.rememberme = false;
 					session.username = _ah.user;
-					session.rights = std::atoi(_ah.qop.c_str());
+					session.rights = stoi(_ah.qop);
 					return true;
 				}
 				else if (_ah.method == "BASIC")
@@ -1938,7 +1938,7 @@ namespace http {
 								session.isnew = false;
 								session.rememberme = false;
 								session.username = _ah.user;
-								session.rights = std::atoi(_ah.qop.c_str());
+								session.rights = stoi(_ah.qop);
 								return true;
 							}
 							else

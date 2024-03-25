@@ -404,7 +404,7 @@ void CAirconWithMe::UpdateSelectorSwitch(const int32_t uid, const int32_t value,
 			options["LevelOffHidden"] = "true";
 			options["LevelNames"] = deviceInfo.mSelectorStates;
 
-			int sIdx = std::stoi(result[0][0]);
+			int sIdx = stoi(result[0][0]);
 			m_sql.SetDeviceOptions(sIdx, options);
 		}
 	}

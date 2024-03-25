@@ -251,12 +251,12 @@ void MQTT::on_message(const struct mosquitto_message *message)
 		// Perform Actions
 		if (szCommand == "udevice")
 		{
-			int HardwareID = atoi(result[0][0].c_str());
-			int OrgHardwareID = atoi(result[0][1].c_str());
+			int HardwareID = stoi(result[0][0]);
+			int OrgHardwareID = stoi(result[0][1]);
 			std::string DeviceID = result[0][2];
-			int unit = atoi(result[0][3].c_str());
-			int devType = atoi(result[0][4].c_str());
-			int subType = atoi(result[0][5].c_str());
+			int unit = stoi(result[0][3]);
+			int devType = stoi(result[0][4]);
+			int subType = stoi(result[0][5]);
 
 			bool bnvalue = !root["nvalue"].empty();
 			bool bsvalue = !root["svalue"].empty();
@@ -320,14 +320,14 @@ void MQTT::on_message(const struct mosquitto_message *message)
 			if (!root["level"].empty())
 			{
 				if (root["level"].isString())
-					level = atoi(root["level"].asString().c_str());
+					level = stoi(root["level"].asString());
 				else
 					level = root["level"].asInt();
 			}
 
 			// Prevent MQTT update being send to client after next update
 			m_LastUpdatedDeviceRowIdx = idx;
-			const bool bIsOOC = atoi(onlyonchange.c_str()) != 0;
+			const bool bIsOOC = stoi(onlyonchange) != 0;
 
 			if (m_mainworker.SwitchLight(idx, switchcmd, level, NoColor, bIsOOC, 0, "MQTT") == MainWorker::SL_ERROR)
 			{
@@ -427,10 +427,10 @@ void MQTT::on_message(const struct mosquitto_message *message)
 				int r, g, b;
 
 				// convert hue to RGB
-				float iHue = float(atof(hue.c_str()));
+				float iHue = stof(hue);
 				float iSat = 100.0F;
 				if (!sat.empty())
-					iSat = float(atof(sat.c_str()));
+					iSat = stof(sat);
 				hsb2rgb(iHue, iSat / 100.0F, 1.0F, r, g, b, 255);
 
 				color = _tColor((uint8_t)r, (uint8_t)g, (uint8_t)b, 0, 0, ColorModeRGB);
@@ -445,7 +445,7 @@ void MQTT::on_message(const struct mosquitto_message *message)
 			}
 
 			if (!brightness.empty())
-				ival = atoi(brightness.c_str());
+				ival = stoi(brightness);
 			ival = int(ival * brightnessAdj);
 			ival = std::max(ival, 0);
 			ival = std::min(ival, 100);
@@ -481,7 +481,7 @@ void MQTT::on_message(const struct mosquitto_message *message)
 			idx = (uint64_t)root["idx"].asInt64();
 			result = m_sql.safe_query("SELECT Name, ValueType FROM UserVariables WHERE (ID==%" PRIu64 ")", idx);
 			std::string sVarName = result[0][0];
-			_eUsrVariableType varType = (_eUsrVariableType)atoi(result[0][1].c_str());
+			_eUsrVariableType varType = (_eUsrVariableType) stoi(result[0][1]);
 
 			std::string errorMessage;
 			if (!m_sql.UpdateUserVariable(root["idx"].asString(), sVarName, varType, varvalue, true, errorMessage))
@@ -554,7 +554,7 @@ void MQTT::on_message(const struct mosquitto_message *message)
 		}
 		else if (szCommand == "getdeviceinfo")
 		{
-			int HardwareID = atoi(result[0][0].c_str());
+			int HardwareID = stoi(result[0][0]);
 			SendDeviceInfo(HardwareID, idx, "request device", nullptr);
 		}
 		else if (szCommand == "getsceneinfo")
@@ -832,18 +832,18 @@ void MQTT::SendDeviceInfo(const int HwdID, const uint64_t DeviceRowIdx, const st
 		std::string hwid = sd[iIndex++];
 		std::string org_hwid = sd[iIndex++];
 		std::string did = sd[iIndex++];
-		int dunit = atoi(sd[iIndex++].c_str());
+		int dunit = stoi(sd[iIndex++]);
 		std::string name = sd[iIndex++];
-		int dType = atoi(sd[iIndex++].c_str());
-		int dSubType = atoi(sd[iIndex++].c_str());
-		int nvalue = atoi(sd[iIndex++].c_str());
+		int dType = stoi(sd[iIndex++]);
+		int dSubType = stoi(sd[iIndex++]);
+		int nvalue = stoi(sd[iIndex++]);
 		std::string svalue = sd[iIndex++];
-		_eSwitchType switchType = (_eSwitchType)atoi(sd[iIndex++].c_str());
-		int RSSI = atoi(sd[iIndex++].c_str());
-		int BatteryLevel = atoi(sd[iIndex++].c_str());
+		_eSwitchType switchType = (_eSwitchType) stoi(sd[iIndex++]);
+		int RSSI = stoi(sd[iIndex++]);
+		int BatteryLevel = stoi(sd[iIndex++]);
 		std::map<std::string, std::string> options = m_sql.BuildDeviceOptions(sd[iIndex++]);
 		std::string description = sd[iIndex++];
-		int LastLevel = atoi(sd[iIndex++].c_str());
+		int LastLevel = stoi(sd[iIndex++]);
 		std::string sColor = sd[iIndex++];
 		std::string sLastUpdate = sd[iIndex++];
 
@@ -859,7 +859,7 @@ void MQTT::SendDeviceInfo(const int HwdID, const uint64_t DeviceRowIdx, const st
 		{
 			try
 			{
-				root["id"] = std_format("%04X", std::stoi(did));
+				root["id"] = std_format("%04X", stoi(did));
 			}
 			catch (const std::exception&)
 			{
@@ -986,19 +986,19 @@ void MQTT::SendSceneInfo(const uint64_t SceneIdx, const std::string & /*SceneNam
 	std::string sName = sd[1];
 	std::string sLastUpdate = sd[6];
 
-	unsigned char nValue = (uint8_t)atoi(sd[4].c_str());
-	unsigned char scenetype = (uint8_t)atoi(sd[5].c_str());
-	// int iProtected = atoi(sd[7].c_str());
+	unsigned char nValue = (unsigned char) stoi(sd[4]);
+	unsigned char scenetype = (unsigned char) stoi(sd[5]);
+	// int iProtected = stoi(sd[7]);
 
 	// std::string onaction = base64_encode((sd[8]);
 	// std::string offaction = base64_encode(sd[9]);
 
 	Json::Value root;
 
-	root["idx"] = atoi(sd[0].c_str());
+	root["idx"] = stoi(sd[0]);
 	root["Name"] = sName;
 	// root["Description"] = sd[10];
-	// root["Favorite"] = atoi(sd[3].c_str());
+	// root["Favorite"] = stoi(sd[3]);
 	// root["Protected"] = (iProtected != 0);
 	// root["OnAction"] = onaction;
 	// root["OffAction"] = offaction;
@@ -1052,7 +1052,7 @@ void MQTT::ReloadSharedDevices()
 	{
 		for (const auto& sd : result)
 		{
-			m_shared_devices[std::stoull(sd[0])] = true;
+			m_shared_devices[stoull(sd[0])] = true;
 		}
 	}
 }
@@ -1071,7 +1071,7 @@ namespace http {
 			std::string sidx = request::findValue(&req, "idx");
 			if (sidx.empty())
 				return;
-			int idx = atoi(sidx.c_str()) + 2000;
+			int idx = stoi(sidx) + 2000;
 			root["title"] = "GetSharedMQTTDevices";
 
 			auto result = m_sql.safe_query("SELECT DeviceRowID FROM SharedDevices WHERE (SharedUserID == %d)", idx);
@@ -1097,7 +1097,7 @@ namespace http {
 			std::string sidx = request::findValue(&req, "idx");
 			if (sidx.empty())
 				return;
-			int idx = atoi(sidx.c_str()) + 2000;
+			int idx = stoi(sidx) + 2000;
 
 			std::string userdevices = CURLEncode::URLDecode(request::findValue(&req, "devices"));
 			root["title"] = "SetSharedMQTTDevices";
@@ -1138,7 +1138,7 @@ namespace http {
 			std::string sidx = request::findValue(&req, "idx");
 			if (sidx.empty())
 				return;
-			int idx = atoi(sidx.c_str()) + 2000;
+			int idx = stoi(sidx) + 2000;
 			root["status"] = "OK";
 			root["title"] = "ClearSharedMQTTDevices";
 			m_sql.safe_query("DELETE FROM SharedDevices WHERE SharedUserID == %d", idx);

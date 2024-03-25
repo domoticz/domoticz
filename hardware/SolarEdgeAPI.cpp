@@ -129,8 +129,8 @@ int SolarEdgeAPI::getSunRiseSunSetMinutes(const bool bGetSunRise)
 		StringSplit(strarray[0], ":", sunRisearray);
 		StringSplit(strarray[1], ":", sunSetarray);
 
-		int sunRiseInMinutes = (atoi(sunRisearray[0].c_str()) * 60) + atoi(sunRisearray[1].c_str());
-		int sunSetInMinutes = (atoi(sunSetarray[0].c_str()) * 60) + atoi(sunSetarray[1].c_str());
+		int sunRiseInMinutes = (stoi(sunRisearray[0]) * 60) + stoi(sunRisearray[1]);
+		int sunSetInMinutes = (stoi(sunSetarray[0]) * 60) + stoi(sunSetarray[1]);
 
 		if (bGetSunRise) {
 			return sunRiseInMinutes;

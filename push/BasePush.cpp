@@ -472,7 +472,7 @@ std::string CBasePush::ProcessSendValue(
 
 		if ((vType == "Temperature") || (vType == "Temperature 1") || (vType == "Temperature 2") || (vType == "Setpoint"))
 		{
-			sprintf(szData, "%g", ConvertTemperature(std::stod(rawsendValue), tempsign));
+			sprintf(szData, "%g", ConvertTemperature(stod(rawsendValue), tempsign));
 		}
 		else if (vType == "Concentration")
 		{
@@ -487,7 +487,7 @@ std::string CBasePush::ProcessSendValue(
 		}
 		else if (vType == "Humidity Status")
 		{
-			sprintf(szData, "%s", RFX_Humidity_Status_Desc(std::stoi(rawsendValue)));
+			sprintf(szData, "%s", RFX_Humidity_Status_Desc((unsigned char) stoi(rawsendValue)));
 		}
 		else if (vType == "Barometer")
 		{
@@ -495,7 +495,7 @@ std::string CBasePush::ProcessSendValue(
 		}
 		else if (vType == "Forecast")
 		{
-			int forecast = std::stoi(rawsendValue);
+			int forecast = stoi(rawsendValue);
 			if (forecast != baroForecastNoInfo)
 			{
 				sprintf(szData, "%s", RFX_Forecast_Desc(forecast));
@@ -522,7 +522,7 @@ std::string CBasePush::ProcessSendValue(
 		}
 		else if (vType == "Speed")
 		{
-			int intSpeed = std::stoi(rawsendValue);
+			int intSpeed = stoi(rawsendValue);
 			if (m_sql.m_windunit != WINDUNIT_Beaufort)
 			{
 				sprintf(szData, "%g", float(intSpeed) * m_sql.m_windscale);
@@ -535,7 +535,7 @@ std::string CBasePush::ProcessSendValue(
 		}
 		else if (vType == "Gust")
 		{
-			int intGust = std::stoi(rawsendValue);
+			int intGust = stoi(rawsendValue);
 			if (m_sql.m_windunit != WINDUNIT_Beaufort)
 			{
 				sprintf(szData, "%g", float(intGust) * m_sql.m_windscale);
@@ -548,7 +548,7 @@ std::string CBasePush::ProcessSendValue(
 		}
 		else if (vType == "Chill")
 		{
-			sprintf(szData, "%g", ConvertTemperature(std::stof(rawsendValue), tempsign));
+			sprintf(szData, "%g", ConvertTemperature(stod(rawsendValue), tempsign));
 		}
 		else if (vType == "Rain rate")
 		{
@@ -572,7 +572,7 @@ std::string CBasePush::ProcessSendValue(
 		}
 		else if (vType == "Distance")
 		{
-			float vis = std::stof(rawsendValue);
+			float vis = stof(rawsendValue);
 			if (metertype == 0)
 			{
 				//cm
@@ -597,7 +597,7 @@ std::string CBasePush::ProcessSendValue(
 			int maxDimLevel = 0;
 			GetLightStatus(devType, devSubType, static_cast<_eSwitchType>(metertypein), 1, rawsendValue, lstatus, llevel, bHaveDimmer, maxDimLevel, bHaveGroupCmd);
 
-			int level = atoi(rawsendValue.c_str());
+			int level = stoi(rawsendValue);
 
 			if (maxDimLevel != 0)
 				level = (int) float((100.0F / float(maxDimLevel)) * level);
@@ -633,7 +633,7 @@ std::string CBasePush::ProcessSendValue(
 		}
 		else if (vType == "Gas usage")
 		{
-			sprintf(szData, "%g", std::stof(rawsendValue) / 1000.0F);
+			sprintf(szData, "%g", stof(rawsendValue) / 1000.0F);
 		}
 		else if (vType == "Weight")
 		{
@@ -649,7 +649,7 @@ std::string CBasePush::ProcessSendValue(
 		}
 		else if (vType == "Visibility")
 		{
-			float vis = std::stof(rawsendValue);
+			float vis = stof(rawsendValue);
 			if (metertype == 0)
 			{
 				//km
@@ -679,7 +679,7 @@ std::string CBasePush::ProcessSendValue(
 		}
 		else if (vType == "Fanspeed")
 		{
-			sprintf(szData, "%d", std::stoi(rawsendValue));
+			sprintf(szData, "%d", stoi(rawsendValue));
 		}
 		else if (vType == "Pressure")
 		{
@@ -913,12 +913,12 @@ void CBasePush::ReloadPushLinks(const PushType PType)
 	for (const auto& sd : result)
 	{
 		_tPushLinks tlink;
-		tlink.DeviceRowIdx = std::stoull(sd[0]);
-		tlink.DelimiterPos = std::stoi(sd[1]);
+		tlink.DeviceRowIdx = stoull(sd[0]);
+		tlink.DelimiterPos = stoi(sd[1]);
 		tlink.DeviceName = sd[3];
-		tlink.devType = std::stoi(sd[4]);
-		tlink.devSubType = std::stoi(sd[5]);
-		tlink.metertype = std::stoi(sd[6]);
+		tlink.devType = stoi(sd[4]);
+		tlink.devSubType = stoi(sd[5]);
+		tlink.metertype = stoi(sd[6]);
 		m_pushlinks.push_back(tlink);
 	}
 }
@@ -959,8 +959,8 @@ namespace http {
 				int ii = 0;
 				for (const auto& sd : result)
 				{
-					int dType = atoi(sd[2].c_str());
-					int dSubType = atoi(sd[3].c_str());
+					int dType = stoi(sd[2]);
+					int dSubType = stoi(sd[3]);
 					std::string sOptions = RFX_Type_SubType_Values(dType, dSubType);
 					std::vector<std::string> tmpV;
 					StringSplit(sOptions, ",", tmpV);

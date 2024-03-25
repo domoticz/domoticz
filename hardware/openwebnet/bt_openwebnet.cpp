@@ -1127,7 +1127,7 @@ std::string bt_openwebnet::getWhatDescription(const std::string& who, const std:
 {
 	if (who == "0") {
 		// "Scenario"
-		int scenNumber = atoi(what.c_str());
+		int scenNumber = stoi(what);
 		if (scenNumber >= 1 && scenNumber <= 32) {
 			std::stringstream sstr;
 			sstr << "Scenario ";
@@ -1465,7 +1465,7 @@ std::string bt_openwebnet::getWhatDescription(const std::string& who, const std:
 		{
 			return "Release of sensor local adjustment";
 		}
-		int iWhat = atoi(what.c_str());
+		int iWhat = stoi(what);
 		if (iWhat >= 1100 && iWhat <= 1199) {
 			//Weekly Heating program x(x = 1...3)
 			std::stringstream sstr;
@@ -1696,7 +1696,7 @@ std::string bt_openwebnet::getWhatDescription(const std::string& who, const std:
 		{
 			return "decreases image quality";
 		}
-		int iWhat = atoi(what.c_str());
+		int iWhat = stoi(what);
 		if (iWhat >= 311 && iWhat <= 344)
 		{
 			int iFirstDial = (iWhat - 300) / 10;
@@ -1775,7 +1775,7 @@ std::string bt_openwebnet::getWhatDescription(const std::string& who, const std:
 			}
 		}
 
-		int iWhat = atoi(what.c_str());
+		int iWhat = stoi(what);
 		if (iWhat >= 0 && iWhat <= 31) {
 			//int iFirstDial = (iWhat - 300) / 10;
 			//int iSecondDial = iWhat - 300 - 10 * iFirstDial;
@@ -1851,7 +1851,7 @@ std::string bt_openwebnet::getWhatDescription(const std::string& who, const std:
 			return "find the first free frequency less than the selected one";
 		}
 
-		int iWhat = atoi(what.c_str());
+		int iWhat = stoi(what);
 		if (iWhat >= 1001 && iWhat <= 1015) {
 			std::stringstream sstr;
 			int iDeltaVolume = iWhat - 1000;
@@ -2089,7 +2089,7 @@ std::string bt_openwebnet::getWhatDescription(const std::string& who, const std:
 			sstr << "profile id ";
 			if (!whatParameters.empty())
 			{
-				int profileID = atoi(whatParameters[0].c_str());
+				int profileID = stoi(whatParameters[0]);
 				sstr << profileID;
 			}
 		}
@@ -2188,13 +2188,13 @@ std::string bt_openwebnet::getWhereDescription(const std::string& who, const std
 		}
 
 		if (!macAddr.empty()) {
-			long lMacAddr = atol(macAddr.c_str());
+			long lMacAddr = stol(macAddr);
 			desc << "mac address ";
 			desc << std::hex << lMacAddr;
 		}
 
 		if (!unit.empty()) {
-			if (atoi(unit.c_str()) == 0) {
+			if (stoi(unit) == 0) {
 				desc << "all units";
 			}
 			else {
@@ -2246,7 +2246,7 @@ std::string bt_openwebnet::getWhereDescription(const std::string& who, const std
 		}
 		else if (int len1 = str1.length()) 
 		{
-			int iWhere = atoi(str1.c_str());
+			int iWhere = stoi(str1);
 			if (len1 <= 2)
 			{
 				// 0 : General probes (all probes)
@@ -2282,7 +2282,7 @@ std::string bt_openwebnet::getWhereDescription(const std::string& who, const std
 			//#0 : Central Unit
 			//#1 : Zone 1 via Central Unit...
 			//#99 : Zone 99 via Central Unit
-			int iWhere = atoi(str2.c_str());
+			int iWhere = stoi(str2);
 			if (iWhere == 0)
 				return "Central Unit";
 			else if ((iWhere >= 1) && (iWhere <= 99))
@@ -2290,18 +2290,19 @@ std::string bt_openwebnet::getWhereDescription(const std::string& who, const std
 		}
 	}
 	else if (who == "5") {
-        
-        if (atoi(what.c_str()) == 11 ){
+        int iWhat = stoi(what);
+
+        if (iWhat == 11 ){
             return "zone " + whereParameters[0];
         }
-	if (atoi(what.c_str()) >= 0 && atoi(what.c_str()) <= 10)
-	{
-		return "";
-	}
-	if (atoi(what.c_str()) == 18)
-	{
-		return "zone " + whereParameters[0];
-	}
+		if (iWhat >= 0 && iWhat <= 10)
+		{
+			return "";
+		}
+		if (iWhat == 18)
+		{
+			return "zone " + whereParameters[0];
+		}
 
 		// "Burglar alarm" : TODO
 		//1 : CONTROL PANEL
@@ -2378,7 +2379,7 @@ std::string bt_openwebnet::getWhereDescription(const std::string& who, const std
 		// "Dry contact";
 		if (where.length() >= 2 && where[0] == '3') {
 			std::string whereRight = where.substr(1);
-			int iWhere = atoi(whereRight.c_str());
+			int iWhere = stoi(whereRight);
 			if (iWhere > 10 && iWhere < 100) {
 				int iZ = iWhere / 10;
 				int iN = iWhere - 10 * iZ;
@@ -2405,7 +2406,7 @@ std::string bt_openwebnet::getWhereDescription(const std::string& who, const std
 
 
 	if (translateAmbPL) {
-		if (atoi(where.c_str()) == 0) {
+		if (stoi(where) == 0) {
 			if (!whereParameters.empty())
 			{
 				//group from 1 to 255
@@ -2459,7 +2460,7 @@ std::string bt_openwebnet::getWhereDescription(const std::string& who, const std
 				pointOfLight = end;
 			}
 			else {
-				int amb = atoi(begin.c_str());
+				int amb = stoi(begin);
 				if (amb >= 1 && amb <= 10) {
 					//A = [01 - 09], PL = [10 - 15]
 					//A = 10 , PL = [01 - 15];
@@ -2524,7 +2525,7 @@ std::string bt_openwebnet::getDimensionsDescription(const std::string& who, cons
 		//12 Complete probe status
 		//13 Local set offset : 00  knob on 0 // 01  knob on + 1 (degree) //11  knob on - 1 (degree)//02  knob on + 2 (degree)//12  knob on - 2 (degree)//03  knob on + 3 (degree)//13  knob on - 3 (degree)//4  knob on Local OFF
 		//14 Set Point temperature
-		//14 et 0 : values T et M : T = Zone operation temperature not ad just by local offset.The T field is composed from 4 digits: c1c2c3c4, included between "0050"(5° temperature) and "0400"(40° temperature). c1 is always equal to 0, it indicates a positive temperature.The c2c3 couple indicates the temperature values between[05° - 40°].c4 indicates the decimal Celsius degree by 0.5° step. M = operation mode1  heating mode2  conditional mode3  generic mode
+		//14 et 0 : values T et M : T = Zone operation temperature not ad just by local offset.The T field is composed from 4 digits: c1c2c3c4, included between "0050"(5ï¿½ temperature) and "0400"(40ï¿½ temperature). c1 is always equal to 0, it indicates a positive temperature.The c2c3 couple indicates the temperature values between[05ï¿½ - 40ï¿½].c4 indicates the decimal Celsius degree by 0.5ï¿½ step. M = operation mode1  heating mode2  conditional mode3  generic mode
 		//19 Valves status 		CV, HV = Valves' status, CV: Conditioning Valve and HV : Heating Valve
 		//			CV, HV = 0  OFF
 		//		CV, HV = 1  ON
@@ -2655,7 +2656,7 @@ std::string bt_openwebnet::getDimensionsDescription(const std::string& who, cons
 		//	71			Actuators info
 		//	72			Totalizers
 		//	73			Differential current level
-		//	250			Status Stop&Go(Général)
+		//	250			Status Stop&Go(Gï¿½nï¿½ral)
 		//	251			Status Stop&Go(open / close)
 		//	252			Status Stop&Go(failure / no failure)
 		//	253			Status Stop&Go(block / not block)

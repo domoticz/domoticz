@@ -250,7 +250,7 @@ CPanasonicNode::CPanasonicNode(const int pHwdID, const int PollIntervalsec, cons
 	m_PowerOnSupported = false;
 
 	m_HwdID = pHwdID;
-	m_DevID = atoi(pID.c_str());
+	m_DevID = stoi(pID);
 	sprintf(m_szDevID, "%X%02X%02X%02X", 0, 0, (m_DevID & 0xFF00) >> 8, m_DevID & 0xFF);
 	m_Name = pName;
 	m_IP = pIP;
@@ -263,8 +263,8 @@ CPanasonicNode::CPanasonicNode(const int pHwdID, const int PollIntervalsec, cons
 	result2 = m_sql.safe_query("SELECT ID,nValue,sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit == 1)", m_HwdID, m_szDevID);
 	if (result2.size() == 1)
 	{
-		m_ID = atoi(result2[0][0].c_str());
-		m_PreviousStatus.Status((_eMediaStatus)atoi(result2[0][1].c_str()));
+		m_ID = stoi(result2[0][0]);
+		m_PreviousStatus.Status((_eMediaStatus) stoi(result2[0][1]));
 		m_PreviousStatus.Status(result2[0][2]);
 	}
 	m_CurrentStatus = m_PreviousStatus;
@@ -456,7 +456,7 @@ int CPanasonicNode::handleMessage(const std::string& pMessage)
 			std::string sFound = pMessage.substr(iPosBegin + 1, ((iPosEnd - iPosBegin) - 1));
 			if (is_number(sFound))
 			{
-				return atoi(sFound.c_str());
+				return stoi(sFound);
 			}
 		}
 		iPosBegin++;
@@ -1002,7 +1002,7 @@ void CPanasonic::AddNode(const std::string& Name, const std::string& IPAddress, 
 	if (result.empty())
 		return;
 
-	int ID = atoi(result[0][0].c_str());
+	int ID = stoi(result[0][0]);
 
 	char szID[40];
 	sprintf(szID, "%X%02X%02X%02X", 0, 0, (ID & 0xFF00) >> 8, ID & 0xFF);
@@ -1149,7 +1149,7 @@ namespace http {
 			std::string hwid = request::findValue(&req, "idx");
 			if (hwid.empty())
 				return;
-			int iHardwareID = atoi(hwid.c_str());
+			int iHardwareID = stoi(hwid);
 			CDomoticzHardwareBase* pHardware = m_mainworker.GetHardware(iHardwareID);
 			if (pHardware == nullptr)
 				return;
@@ -1169,7 +1169,7 @@ namespace http {
 					root["result"][ii]["idx"] = sd[0];
 					root["result"][ii]["Name"] = sd[1];
 					root["result"][ii]["IP"] = sd[2];
-					root["result"][ii]["Port"] = atoi(sd[3].c_str());
+					root["result"][ii]["Port"] = stoi(sd[3]);
 					ii++;
 				}
 			}
@@ -1190,7 +1190,7 @@ namespace http {
 			std::string extra = request::findValue(&req, "extra");
 			if ((hwid.empty()) || (mode1.empty()) || (mode2.empty()))
 				return;
-			int iHardwareID = atoi(hwid.c_str());
+			int iHardwareID = stoi(hwid);
 			CDomoticzHardwareBase* pBaseHardware = m_mainworker.GetHardware(iHardwareID);
 			if (pBaseHardware == nullptr)
 				return;
@@ -1201,9 +1201,9 @@ namespace http {
 			root["status"] = "OK";
 			root["title"] = "PanasonicSetMode";
 
-			int iMode1 = atoi(mode1.c_str());
-			int iMode2 = atoi(mode2.c_str());
-			int iMode3 = atoi(mode3.c_str());
+			int iMode1 = stoi(mode1);
+			int iMode2 = stoi(mode2);
+			int iMode3 = stoi(mode3);
 
 			m_sql.safe_query("UPDATE Hardware SET Mode1=%d, Mode2=%d, Mode3=%d, Extra='%s' WHERE (ID == '%q')", iMode1, iMode2, iMode3, extra.c_str(), hwid.c_str());
 
@@ -1223,10 +1223,10 @@ namespace http {
 			std::string hwid = request::findValue(&req, "idx");
 			std::string name = HTMLSanitizer::Sanitize(request::findValue(&req, "name"));
 			std::string ip = HTMLSanitizer::Sanitize(request::findValue(&req, "ip"));
-			int Port = atoi(request::findValue(&req, "port").c_str());
+			int Port = stoi(request::findValue(&req, "port"));
 			if ((hwid.empty()) || (name.empty()) || (ip.empty()) || (Port == 0))
 				return;
-			int iHardwareID = atoi(hwid.c_str());
+			int iHardwareID = stoi(hwid);
 			CDomoticzHardwareBase* pBaseHardware = m_mainworker.GetHardware(iHardwareID);
 			if (pBaseHardware == nullptr)
 				return;
@@ -1251,10 +1251,10 @@ namespace http {
 			std::string nodeid = request::findValue(&req, "nodeid");
 			std::string name = HTMLSanitizer::Sanitize(request::findValue(&req, "name"));
 			std::string ip = HTMLSanitizer::Sanitize(request::findValue(&req, "ip"));
-			int Port = atoi(request::findValue(&req, "port").c_str());
+			int Port = stoi(request::findValue(&req, "port"));
 			if ((hwid.empty()) || (nodeid.empty()) || (name.empty()) || (ip.empty()) || (Port == 0))
 				return;
-			int iHardwareID = atoi(hwid.c_str());
+			int iHardwareID = stoi(hwid);
 			CDomoticzHardwareBase* pBaseHardware = m_mainworker.GetHardware(iHardwareID);
 			if (pBaseHardware == nullptr)
 				return;
@@ -1262,7 +1262,7 @@ namespace http {
 				return;
 			CPanasonic* pHardware = dynamic_cast<CPanasonic*>(pBaseHardware);
 
-			int NodeID = atoi(nodeid.c_str());
+			int NodeID = stoi(nodeid);
 			root["status"] = "OK";
 			root["title"] = "PanasonicUpdateNode";
 			pHardware->UpdateNode(NodeID, name, ip, Port);
@@ -1280,7 +1280,7 @@ namespace http {
 			std::string nodeid = request::findValue(&req, "nodeid");
 			if ((hwid.empty()) || (nodeid.empty()))
 				return;
-			int iHardwareID = atoi(hwid.c_str());
+			int iHardwareID = stoi(hwid);
 			CDomoticzHardwareBase* pBaseHardware = m_mainworker.GetHardware(iHardwareID);
 			if (pBaseHardware == nullptr)
 				return;
@@ -1288,7 +1288,7 @@ namespace http {
 				return;
 			CPanasonic* pHardware = dynamic_cast<CPanasonic*>(pBaseHardware);
 
-			int NodeID = atoi(nodeid.c_str());
+			int NodeID = stoi(nodeid);
 			root["status"] = "OK";
 			root["title"] = "PanasonicRemoveNode";
 			pHardware->RemoveNode(NodeID);
@@ -1305,7 +1305,7 @@ namespace http {
 			std::string hwid = request::findValue(&req, "idx");
 			if (hwid.empty())
 				return;
-			int iHardwareID = atoi(hwid.c_str());
+			int iHardwareID = stoi(hwid);
 			CDomoticzHardwareBase* pBaseHardware = m_mainworker.GetHardware(iHardwareID);
 			if (pBaseHardware == nullptr)
 				return;
@@ -1324,7 +1324,7 @@ namespace http {
 			std::string sAction = request::findValue(&req, "action");
 			if (sIdx.empty())
 				return;
-			int idx = atoi(sIdx.c_str());
+			int idx = stoi(sIdx);
 			root["status"] = "OK";
 			root["title"] = "PanasonicMediaCommand";
 
@@ -1332,9 +1332,9 @@ namespace http {
 			result = m_sql.safe_query("SELECT DS.SwitchType, H.Type, H.ID FROM DeviceStatus DS, Hardware H WHERE (DS.ID=='%q') AND (DS.HardwareID == H.ID)", sIdx.c_str());
 			if (result.size() == 1)
 			{
-				_eSwitchType	sType = (_eSwitchType)atoi(result[0][0].c_str());
-				_eHardwareTypes	hType = (_eHardwareTypes)atoi(result[0][1].c_str());
-				int HwID = atoi(result[0][2].c_str());
+				_eSwitchType	sType = (_eSwitchType) stoi(result[0][0]);
+				_eHardwareTypes	hType = (_eHardwareTypes) stoi(result[0][1]);
+				int HwID = stoi(result[0][2]);
 				// Is the device a media Player?
 				if (sType == STYPE_Media)
 				{

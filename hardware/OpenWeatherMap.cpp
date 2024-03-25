@@ -187,8 +187,8 @@ bool COpenWeatherMap::StartHardware()
 
 					if (!((sLatitude == "1") && (sLongitude == "1")))
 					{
-						m_Lat = std::stod(sLatitude);
-						m_Lon = std::stod(sLongitude);
+						m_Lat = stod(sLatitude);
+						m_Lon = stod(sLongitude);
 
 						m_Location = sLatitude + "," + sLongitude;	// rewrite the default Location data to match what OWN expects
 
@@ -244,8 +244,8 @@ bool COpenWeatherMap::StartHardware()
 				}
 				else
 				{
-					m_Lat = std::stod(sLatitude);
-					m_Lon = std::stod(sLongitude);
+					m_Lat = stod(sLatitude);
+					m_Lon = stod(sLongitude);
 					Log(LOG_STATUS, "Using specified location (Lon %s, Lat %s) Unable to find nearest City!", sLongitude.c_str(), sLatitude.c_str());
 				}
 			}
@@ -259,8 +259,8 @@ bool COpenWeatherMap::StartHardware()
 				sLongitude = strarray[1];
 				if ((sLatitude.find("lat=") == 0) && (sLongitude.find("lon=") == 0))
 				{
-					m_Lat = std::stod(sLatitude.substr(4));
-					m_Lon = std::stod(sLongitude.substr(4));
+					m_Lat = stod(sLatitude.substr(4));
+					m_Lon = stod(sLongitude.substr(4));
 					Log(LOG_STATUS, "Using specified location (Lon %s, Lat %s)!", sLongitude.c_str(), sLatitude.c_str());
 				}
 				else

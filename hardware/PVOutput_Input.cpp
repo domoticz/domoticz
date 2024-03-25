@@ -132,7 +132,7 @@ void CPVOutputInput::GetMeterDetails()
 	double Usage = 0;
 	if (splitresult[3] != "NaN")
 	{
-		Usage = atof(splitresult[3].c_str());
+		Usage = stod(splitresult[3]);
 	}
 	if (Usage < 0)
 		Usage = 0;
@@ -140,7 +140,7 @@ void CPVOutputInput::GetMeterDetails()
 	double Consumption = 0;
 	if (splitresult[5] != "NaN")
 	{
-		Consumption = atof(splitresult[5].c_str());
+		Consumption = stod(splitresult[5]);
 		if (Consumption < 0)
 			Consumption = 0;
 		m_bHadConsumption = true;
@@ -148,19 +148,19 @@ void CPVOutputInput::GetMeterDetails()
 
 	if (splitresult[6] != "NaN")
 	{
-		double Efficiency = atof(splitresult[6].c_str()) * 100.0;
+		double Efficiency = stod(splitresult[6]) * 100.0;
 		if (Efficiency > 100.0)
 			Efficiency = 100.0;
 		SendPercentageSensor(1, 0, 255, float(Efficiency), "Efficiency");
 	}
 	if (splitresult[7] != "NaN")
 	{
-		double Temperature = atof(splitresult[7].c_str());
+		double Temperature = stod(splitresult[7]);
 		SendTempSensor(1, 255, float(Temperature), "Temperature");
 	}
 	if (splitresult[8] != "NaN")
 	{
-		double Voltage = atof(splitresult[8].c_str());
+		double Voltage = stod(splitresult[8]);
 		if (Voltage >= 0)
 			SendVoltageSensor(0, 1, 255, float(Voltage), "Voltage");
 	}
@@ -206,7 +206,7 @@ void CPVOutputInput::GetMeterDetails()
 	double kWhCounterUsage = 0;
 	if (splitresult[0] != "NaN")
 	{
-		kWhCounterUsage = atof(splitresult[0].c_str());
+		kWhCounterUsage = stod(splitresult[0]);
 	}
 	SendKwhMeter(0, 1, 255, Usage, kWhCounterUsage / 1000.0, "SolarMain");
 
@@ -217,7 +217,7 @@ void CPVOutputInput::GetMeterDetails()
 			double kWhCounterConsumed = 0;
 			if (splitresult[11] != "NaN")
 			{
-				kWhCounterConsumed = atof(splitresult[11].c_str());
+				kWhCounterConsumed = stod(splitresult[11]);
 			}
 			
 			if (kWhCounterConsumed != 0)

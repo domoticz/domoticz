@@ -275,7 +275,7 @@ void CWunderground::GetMeterDetails()
 	}
 	if (root["metric_si"]["pressure"].empty()==false)
 	{
-		barometric=atoi(root["metric_si"]["pressure"].asString().c_str());
+		barometric = stoi(root["metric_si"]["pressure"].asString());
 		if (barometric<1000)
 			barometric_forcast=baroForecastRain;
 		else if (barometric<1020)
@@ -313,27 +313,27 @@ void CWunderground::GetMeterDetails()
 
 	if (root["winddir"].empty()==false)
 	{
-		wind_degrees=atoi(root["winddir"].asString().c_str());
+		wind_degrees = stoi(root["winddir"].asString());
 	}
 	if (root["metric_si"]["windSpeed"].empty()==false)
 	{
 		if ((root["metric_si"]["windSpeed"] != "N/A") && (root["metric_si"]["windSpeed"] != "--"))
 		{
-			windspeed_ms = static_cast<float>(atof(root["metric_si"]["windSpeed"].asString().c_str()));
+			windspeed_ms = stof(root["metric_si"]["windSpeed"].asString());
 		}
 	}
 	if (root["metric_si"]["windGust"].empty()==false)
 	{
 		if ((root["metric_si"]["windGust"] != "N/A") && (root["metric_si"]["windGust"] != "--"))
 		{
-			windgust_ms = static_cast<float>(atof(root["metric_si"]["windGust"].asString().c_str()));
+			windgust_ms = stof(root["metric_si"]["windGust"].asString());
 		}
 	}
 	if (root["metric_si"]["windChill"].empty()==false)
 	{
 		if ((root["metric_si"]["windChill"] != "N/A") && (root["metric_si"]["windChill"] != "--"))
 		{
-			wind_chill = static_cast<float>(atof(root["metric_si"]["windChill"].asString().c_str()));
+			wind_chill = stof(root["metric_si"]["windChill"].asString());
 		}
 	}
 	if (wind_degrees!=-1)
@@ -394,7 +394,7 @@ void CWunderground::GetMeterDetails()
 	{
 		if ((root["uv"] != "N/A") && (root["uv"] != "--"))
 		{
-			float UV = static_cast<float>(atof(root["uv"].asString().c_str()));
+			float UV = stof(root["uv"].asString());
 			if ((UV < 16) && (UV >= 0))
 			{
 				SendUVSensor(0, 1, 255, UV, "UV");
@@ -407,7 +407,7 @@ void CWunderground::GetMeterDetails()
 	{
 		if ((root["metric_si"]["precipTotal"] != "N/A") && (root["metric_si"]["precipTotal"] != "--"))
 		{
-			float RainCount = static_cast<float>(atof(root["metric_si"]["precipTotal"].asString().c_str()));
+			float RainCount = stof(root["metric_si"]["precipTotal"].asString());
 			if ((RainCount != -9999.00F) && (RainCount >= 0.00F))
 			{
 				RBUF tsen;
@@ -427,7 +427,7 @@ void CWunderground::GetMeterDetails()
 				{
 					if ((root["metric_si"]["precipRate"] != "N/A") && (root["metric_si"]["precipRate"] != "--"))
 					{
-						float rainrateph = static_cast<float>(atof(root["metric_si"]["precipRate"].asString().c_str()));
+						float rainrateph = stof(root["metric_si"]["precipRate"].asString());
 						if (rainrateph != -9999.00F)
 						{
 							int at10 = ground(std::abs(rainrateph * 100.0F));
@@ -454,7 +454,7 @@ void CWunderground::GetMeterDetails()
 	{
 		if ((root["visibility"] != "N/A") && (root["visibility"] != "--"))
 		{
-			float visibility = static_cast<float>(atof(root["visibility"].asString().c_str()));
+			float visibility = stof(root["visibility"].asString());
 			if (visibility >= 0)
 			{
 				_tGeneralDevice gdevice;
@@ -468,7 +468,7 @@ void CWunderground::GetMeterDetails()
 	//Solar Radiation
 	if (root["solarRadiation"].empty() == false)
 	{
-		float radiation = static_cast<float>(atof(root["solarRadiation"].asString().c_str()));
+		float radiation = stof(root["solarRadiation"].asString());
 		if (radiation >= 0.0F)
 		{
 			_tGeneralDevice gdevice;

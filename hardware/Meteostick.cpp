@@ -332,8 +332,8 @@ void Meteostick::ParseLine()
 		//temperature in Celsius, pressure in hPa
 		if (results.size() >= 3)
 		{
-			float temp = static_cast<float>(atof(results[1].c_str()));
-			float baro = static_cast<float>(atof(results[2].c_str()));
+			float temp = stof(results[1]);
+			float baro = stof(results[2]);
 
 			SendTempBaroSensorInt(0, temp, baro, "Meteostick Temp+Baro");
 		}
@@ -342,11 +342,11 @@ void Meteostick::ParseLine()
 		//current wind speed in m / s, wind direction in degrees
 		if (results.size() >= 5)
 		{
-			unsigned char ID = (unsigned char)atoi(results[1].c_str());
+			unsigned char ID = (unsigned char) stoi(results[1]);
 			if (m_LastOutsideTemp[ID%MAX_IDS] != 12345)
 			{
-				float speed = static_cast<float>(atof(results[2].c_str()));
-				int direction = static_cast<int>(atoi(results[3].c_str()));
+				float speed = stof(results[2]);
+				int direction = stoi(results[3]);
 				SendWindSensor(ID, m_LastOutsideTemp[ID%MAX_IDS], speed, direction, "Wind");
 			}
 		}
@@ -355,9 +355,9 @@ void Meteostick::ParseLine()
 		//temperature in degree Celsius, humidity in percent
 		if (results.size() >= 5)
 		{
-			unsigned char ID = (unsigned char)atoi(results[1].c_str());
-			float temp = static_cast<float>(atof(results[2].c_str()));
-			int hum = static_cast<int>(atoi(results[3].c_str()));
+			unsigned char ID = (unsigned char) stoi(results[1]);
+			float temp = stof(results[2]);
+			int hum = stoi(results[3]);
 
 			SendTempHumSensor(ID, 255, temp, hum, "Outside Temp+Hum");
 			m_LastOutsideTemp[ID%MAX_IDS] = temp;
@@ -370,8 +370,8 @@ void Meteostick::ParseLine()
 		//it only has a small counter, so we should make the total counter ourselfses
 		if (results.size() >= 4)
 		{
-			unsigned char ID = (unsigned char)atoi(results[1].c_str());
-			int raincntr = atoi(results[2].c_str());
+			unsigned char ID = (unsigned char) stoi(results[1]);
+			int raincntr = stoi(results[2]);
 			float Rainmm = 0;
 			if (m_LastRainValue[ID%MAX_IDS] != -1)
 			{
@@ -405,8 +405,8 @@ void Meteostick::ParseLine()
 		//solar radiation, solar radiation in W / qm
 		if (results.size() >= 4)
 		{
-			unsigned char ID = (unsigned char)atoi(results[1].c_str());
-			float Radiation = static_cast<float>(atof(results[2].c_str()));
+			unsigned char ID = (unsigned char) stoi(results[1]);
+			float Radiation = stof(results[2]);
 			SendSolarRadiationSensor(ID, Radiation, "Solar Radiation");
 		}
 		break;
@@ -414,8 +414,8 @@ void Meteostick::ParseLine()
 		//UV index
 		if (results.size() >= 4)
 		{
-			unsigned char ID = (unsigned char)atoi(results[1].c_str());
-			float UV = static_cast<float>(atof(results[2].c_str()));
+			unsigned char ID = (unsigned char) stoi(results[1]);
+			float UV = stof(results[2]);
 			CDomoticzHardwareBase::SendUVSensor(0, ID, 255, UV, "UV");
 		}
 		break;
@@ -424,9 +424,9 @@ void Meteostick::ParseLine()
 		//channel number (1 - 4), leaf wetness (0-15)
 		if (results.size() >= 5)
 		{
-			unsigned char ID = (unsigned char)atoi(results[1].c_str());
-			unsigned char Channel = (unsigned char)atoi(results[2].c_str());
-			unsigned char Wetness = (unsigned char)atoi(results[3].c_str());
+			unsigned char ID = (unsigned char) stoi(results[1]);
+			unsigned char Channel = (unsigned char) stoi(results[2]);
+			unsigned char Wetness = (unsigned char) stoi(results[3]);
 			SendLeafWetnessRainSensor(ID, Channel, Wetness, "Leaf Wetness");
 		}
 		break;
@@ -435,9 +435,9 @@ void Meteostick::ParseLine()
 		//channel number (1 - 4), Soil moisture in cbar(0 - 200)
 		if (results.size() >= 5)
 		{
-			unsigned char ID = (unsigned char)atoi(results[1].c_str());
-			unsigned char Channel = (unsigned char)atoi(results[2].c_str());
-			unsigned char Moisture = (unsigned char)atoi(results[3].c_str());
+			unsigned char ID = (unsigned char) stoi(results[1]);
+			unsigned char Channel = (unsigned char) stoi(results[2]);
+			unsigned char Moisture = (unsigned char) stoi(results[3]);
 			SendSoilMoistureSensor(ID, Channel, Moisture, "Soil Moisture");
 		}
 		break;
@@ -446,9 +446,9 @@ void Meteostick::ParseLine()
 		//channel number (1 - 4), soil / leaf temperature in degrees Celsius
 		if (results.size() >= 5)
 		{
-			unsigned char ID = (unsigned char)atoi(results[1].c_str());
-			unsigned char Channel = (unsigned char)atoi(results[2].c_str());
-			float temp = static_cast<float>(atof(results[3].c_str()));
+			unsigned char ID = (unsigned char) stoi(results[1]);
+			unsigned char Channel = (unsigned char) stoi(results[2]);
+			float temp = stof(results[3]);
 			unsigned char finalID = (ID * 10) + Channel;
 			SendTempSensor(finalID, 255, temp, "Soil/Leaf Temp");
 		}
@@ -457,8 +457,8 @@ void Meteostick::ParseLine()
 		//solar panel power in(0 - 100)
 		if (results.size() >= 4)
 		{
-			unsigned char ID = (unsigned char)atoi(results[1].c_str());
-			float Percentage = static_cast<float>(atof(results[2].c_str()));
+			unsigned char ID = (unsigned char) stoi(results[1]);
+			float Percentage = stof(results[2]);
 			SendPercentageSensor(ID, 0, 255, Percentage, "power of solar panel");
 		}
 		break;

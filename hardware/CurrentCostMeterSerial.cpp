@@ -137,13 +137,13 @@ namespace http {
 			if (result.empty())
 				return;
 
-			int Mode1 = atoi(request::findValue(&req, "CCBaudrate").c_str());
+			int Mode1 = stoi(request::findValue(&req, "CCBaudrate"));
 			int Mode2 = 0;
 			int Mode3 = 0;
 			int Mode4 = 0;
 			int Mode5 = 0;
 			int Mode6 = 0;
-			m_sql.UpdateRFXCOMHardwareDetails(atoi(idx.c_str()), Mode1, Mode2, Mode3, Mode4, Mode5, Mode6);
+			m_sql.UpdateRFXCOMHardwareDetails(stoi(idx), Mode1, Mode2, Mode3, Mode4, Mode5, Mode6);
 
 			m_mainworker.RestartHardware(idx);
 			root["status"] = "OK";

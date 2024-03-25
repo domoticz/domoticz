@@ -89,7 +89,7 @@ CMercApi::CMercApi(const std::string &username, const std::string &password, con
 			return;
 	}
 
-	m_uservar_refreshtoken_idx = atoi(result[0][0].c_str());
+	m_uservar_refreshtoken_idx = (uint32_t) stoul(result[0][0]);
 	m_refreshtoken = result[0][1];
 }
 
@@ -190,8 +190,8 @@ void CMercApi::GetLocationData(Json::Value& jsondata, tLocationData& data)
 	std::string CarLongitude = jsondata["longitude"].asString();
 	data.speed = jsondata["speed"].asInt();
 	data.is_driving = data.speed > 0;
-	data.latitude = std::stod(CarLatitude);
-	data.longitude = std::stod(CarLongitude);
+	data.latitude = stod(CarLatitude);
+	data.longitude = stod(CarLongitude);
 	*/
 }
 
@@ -253,7 +253,7 @@ void CMercApi::GetChargeData(Json::Value& jsondata, CVehicleApi::tChargeData& da
 					if(!iter2["value"].empty())
 					{
 						m_pBase->Debug(DEBUG_NORM, "SoC has value %s", iter2["value"].asString().c_str());
-						data.battery_level = static_cast<float>(atof(iter2["value"].asString().c_str()));
+						data.battery_level = stof(iter2["value"].asString());
 					}
 				}
 				if (id == "rangeelectric")
@@ -457,7 +457,7 @@ void CMercApi::GetVehicleData(Json::Value& jsondata, tVehicleData& data)
 					if(!iter2["value"].empty())
 					{
 						m_pBase->Debug(DEBUG_NORM, "Odo has value %s", iter2["value"].asString().c_str());
-						data.odo = static_cast<float>(atof(iter2["value"].asString().c_str()));
+						data.odo = stof(iter2["value"].asString());
 					}
 				}
 			}
@@ -952,7 +952,7 @@ uint16_t CMercApi::ExtractHTTPResultCode(const std::string& sResponseHeaderLine0
 			{
 				iHttpCodeStartPos = (uint8_t)sResponseHeaderLine0.find_first_of(' ') + 1;	// So look for a SPACE as the seperator (RFC2616)
 
-				iHttpCode = (uint16_t)std::stoi(sResponseHeaderLine0.substr(iHttpCodeStartPos, 3));
+				iHttpCode = (uint16_t) stoi(sResponseHeaderLine0.substr(iHttpCodeStartPos, 3));
 				if (iHttpCode < 100 || iHttpCode > 599)		// Check valid resultcode range
 				{
 					m_pBase->Log(LOG_STATUS, "Found non-standard resultcode (%d) in HTTP response statusline: %s", iHttpCode, sResponseHeaderLine0.c_str());

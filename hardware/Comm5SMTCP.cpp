@@ -118,7 +118,7 @@ void Comm5SMTCP::ParseData(const unsigned char* data, const size_t len)
 			if (tokens.size() < 2)
 				break;
 
-			float temperature = static_cast<float>(atof(tokens[1].c_str()));
+			float temperature = stof(tokens[1]);
 			SendTempSensor(1, 255, temperature, "TEMPERATURE");
 		}
 		else if (startsWith(line, "281")) {
@@ -126,7 +126,7 @@ void Comm5SMTCP::ParseData(const unsigned char* data, const size_t len)
 			if (tokens.size() < 2)
 				break;
 
-			int humidity = atoi(tokens[1].c_str());
+			int humidity = stoi(tokens[1]);
 			SendHumiditySensor(1, 255, humidity, "HUMIDITY");
 		}
 		else if (startsWith(line, "282")) {
@@ -134,7 +134,7 @@ void Comm5SMTCP::ParseData(const unsigned char* data, const size_t len)
 			if (tokens.size() < 2)
 				break;
 
-			float baro = static_cast<float>(atof(tokens[1].c_str()));
+			float baro = stof(tokens[1]);
 			SendBaroSensor(1, 0, 255, baro, 0, "BAROMETRIC");
 		}
 	}

@@ -299,7 +299,7 @@ boost::tribool request_parser::consume(request& req, const char* &pInput, const 
 			  std::transform(hname.begin(), hname.end(), hname.begin(), ::tolower);
 			  if (hname == "content-length")
 			  {
-				  req.content_length = atoi(ph.value.c_str());
+				  req.content_length = stoi(ph.value);
 				  break;
 			  }
 		  }

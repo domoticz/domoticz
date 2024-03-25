@@ -221,7 +221,7 @@ void CHardwareMonitor::GetInternalTemperature()
 		tmpline = tmpline.substr(0, pos);
 	}
 
-	float temperature = static_cast<float>(atof(tmpline.c_str()));
+	float temperature = stof(tmpline);
 	if (temperature == 0)
 		return; //hardly possible for a on board temp sensor, if it is, it is probably not working
 
@@ -248,7 +248,7 @@ void CHardwareMonitor::GetInternalVoltage()
 		tmpline = tmpline.substr(0, pos);
 	}
 
-	float voltage = static_cast<float>(atof(tmpline.c_str()));
+	float voltage = stof(tmpline);
 	if (voltage == 0)
 		return; //hardly possible for a on board temp sensor, if it is, it is probably not working
 
@@ -272,7 +272,7 @@ void CHardwareMonitor::GetInternalCurrent()
 		tmpline = tmpline.substr(0, pos);
 	}
 
-	float current = static_cast<float>(atof(tmpline.c_str()));
+	float current = stof(tmpline);
 	if (current == 0)
 		return; //hardly possible for a on board temp sensor, if it is, it is probably not working
 
@@ -289,37 +289,37 @@ void CHardwareMonitor::UpdateSystemSensor(const std::string& qType, const int di
 	if (qType == "Temperature")
 	{
 		doffset = 1000;
-		float temp = static_cast<float>(atof(devValue.c_str()));
+		float temp = stof(devValue);
 		SendTempSensor(doffset + dindex, 255, temp, devName);
 	}
 	else if (qType == "Load")
 	{
 		doffset = 1100;
-		float perc = static_cast<float>(atof(devValue.c_str()));
+		float perc = stof(devValue);
 		SendPercentageSensor(doffset + dindex, 0, 255, perc, devName);
 	}
 	else if (qType == "Fan")
 	{
 		doffset = 1200;
-		int fanspeed = atoi(devValue.c_str());
+		int fanspeed = stoi(devValue);
 		SendFanSensor(doffset + dindex, 255, fanspeed, devName);
 	}
 	else if (qType == "Voltage")
 	{
 		doffset = 1300;
-		float volt = static_cast<float>(atof(devValue.c_str()));
+		float volt = stof(devValue);
 		SendVoltageSensor(0, (uint32_t)(doffset + dindex), 255, volt, devName);
 	}
 	else if (qType == "Current")
 	{
 		doffset = 1400;
-		float curr = static_cast<float>(atof(devValue.c_str()));
+		float curr = stof(devValue);
 		SendCurrent(doffset + dindex, curr, devName);
 	}
 	else if (qType == "Process")
 	{
 		doffset = 1500;
-		float usage = static_cast<float>(atof(devValue.c_str()));
+		float usage = stof(devValue);
 		SendCustomSensor(0, doffset + dindex, 255, usage, devName, "MB");
 	}
 }

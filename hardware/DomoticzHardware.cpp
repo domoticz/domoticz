@@ -465,7 +465,7 @@ float CDomoticzHardwareBase::GetRainSensorValue(const int NodeID, bool& bExists)
 		return 0.0F;
 	}
 	bExists = true;
-	return (float)atof(splitresults[1].c_str());
+	return stof(splitresults[1]);
 }
 
 bool CDomoticzHardwareBase::GetWindSensorValue(const int NodeID, int& WindDir, float& WindSpeed, float& WindGust, float& WindTemp, float& WindChill, bool bHaveWindTemp, bool& bExists)
@@ -494,11 +494,11 @@ bool CDomoticzHardwareBase::GetWindSensorValue(const int NodeID, int& WindDir, f
 		return 0.0F;
 	}
 	bExists = true;
-	WindDir = (int)atof(splitresults[0].c_str());
-	WindSpeed = (float)atof(splitresults[2].c_str());
-	WindGust = (float)atof(splitresults[3].c_str());
-	WindTemp = (float)atof(splitresults[4].c_str());
-	WindChill = (float)atof(splitresults[5].c_str());
+	WindDir = (int) stof(splitresults[0]);
+	WindSpeed = stof(splitresults[2]);
+	WindGust = stof(splitresults[3]);
+	WindTemp = stof(splitresults[4]);
+	WindChill = stof(splitresults[5]);
 	return bExists;
 }
 
@@ -566,7 +566,7 @@ double CDomoticzHardwareBase::GetKwhMeter(const int NodeID, const int ChildID, b
 		return 0.0F;
 	}
 	bExists = true;
-	return atof(splitresults[1].c_str());
+	return stof(splitresults[1]);
 }
 
 void CDomoticzHardwareBase::SendMeterSensor(const int NodeID, const int ChildID, const int BatteryLevel, const float metervalue, const std::string& defaultname, const int RssiLevel /* =12 */)
@@ -693,13 +693,13 @@ void CDomoticzHardwareBase::SendSwitch(const int NodeID, const uint8_t ChildID, 
 	if (!result.empty())
 	{
 		//check if we have a change, if not do not update it
-		int nvalue = atoi(result[0][1].c_str());
+		int nvalue = stoi(result[0][1]);
 		if ((!bOn) && (nvalue == light2_sOff))
 			return;
 		if ((bOn && (nvalue != light2_sOff)))
 		{
 			//Check Level
-			int slevel = atoi(result[0][2].c_str());
+			int slevel = stoi(result[0][2]);
 			if (slevel == level)
 				return;
 		}
@@ -1060,7 +1060,7 @@ void CDomoticzHardwareBase::SendSelectorSwitch(const int NodeID, const uint8_t C
 	xcmd.subtype = sSwitchTypeSelector;
 	xcmd.id = NodeID;
 	xcmd.unitcode = ChildID; //Do we support multiple copies of the same selector switch ??
-	xcmd.level = std::stoi(sValue);
+	xcmd.level = stoi(sValue);
 
 	_eSwitchType switchtype;
 	switchtype = STYPE_Selector;
@@ -1092,7 +1092,7 @@ void CDomoticzHardwareBase::SendSelectorSwitch(const int NodeID, const uint8_t C
 	else
 	{ 
 		//Check Level (sValue in SQL Query)
-		if (xcmd.level == std::stoi(result[0][1]))
+		if (xcmd.level == stoi(result[0][1]))
 			return; // no need to uodate
 		result = m_sql.safe_query("UPDATE DeviceStatus SET sValue=%i WHERE (HardwareID==%d) AND (DeviceID=='%08X')", xcmd.level, m_HwdID, NodeID);
 	}

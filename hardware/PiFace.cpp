@@ -1357,7 +1357,7 @@ void CIOPort::Init(bool Available, int hwdId, int devId /* 0 - 4 */, unsigned ch
 			result = m_sql.safe_query("SELECT sValue FROM DeviceStatus WHERE (HardwareID=%d AND Type=%d AND DeviceID='%d')", hwdId, int(pTypeRFXMeter), meterid);
 			if (result.size() == 1)
 			{
-				value = atol(result[0][0].c_str());
+				value = stoul(result[0][0]);
 				found = true;
 			}
 			break;
@@ -1378,12 +1378,14 @@ void CIOPort::Init(bool Available, int hwdId, int devId /* 0 - 4 */, unsigned ch
 				double dValue = 0;
 				if (resultparts.size() == 1)
 				{
-					dValue = atol(resultparts[0].c_str()) / (1000. / Pin[PinNr].Count.GetDivider());
+					// FIXME: use stod instead of stol ?
+					dValue = stol(resultparts[0]) / (1000.0 / Pin[PinNr].Count.GetDivider());
 					found = true;
 				}
 				else if (resultparts.size() == 2)
 				{
-					dValue = atol(resultparts[1].c_str()) / (1000. / Pin[PinNr].Count.GetDivider());
+					// FIXME: use stod instead of stol ?
+					dValue = stol(resultparts[1]) / (1000.0 / Pin[PinNr].Count.GetDivider());
 					found = true;
 				}
 				value = (unsigned long)dValue;

@@ -306,11 +306,11 @@ void COctoPrintMQTT::UpdateUserVariable(const std::string &varName, const std::s
 		result = m_sql.safe_query("SELECT ID FROM UserVariables WHERE (Name=='%q')", varName.c_str());
 		if (result.empty())
 			return;
-		ID = atoi(result[0][0].c_str());
+		ID = stoi(result[0][0]);
 	}
 	else
 	{
-		ID = atoi(result[0][0].c_str());
+		ID = stoi(result[0][0]);
 		m_sql.safe_query("UPDATE UserVariables SET Value='%q', LastUpdate='%q' WHERE (ID==%d)", varValue.c_str(), sLastUpdate.c_str(), ID);
 	}
 
@@ -388,7 +388,7 @@ void COctoPrintMQTT::on_message(const struct mosquitto_message *message)
 				}
 				m_LastSendTemp[szSensorName] = atime;
 				int crcID = Crc32(0, (const unsigned char*)szSensorName.c_str(), szSensorName.length());
-				SendTempSensor(crcID, 255, std::stof(root["actual"].asString()), szSensorName);
+				SendTempSensor(crcID, 255, stof(root["actual"].asString()), szSensorName);
 			}
 			else if (szMsgType == "progress")
 			{
@@ -422,7 +422,7 @@ void COctoPrintMQTT::on_message(const struct mosquitto_message *message)
 						}
 					}
 					else
-						SendPercentageSensor(1, 1, 255, std::stof(root["progress"].asString()), "Printing Progress");
+						SendPercentageSensor(1, 1, 255, stof(root["progress"].asString()), "Printing Progress");
 
 					if (!root["path"].empty())
 					{
@@ -495,7 +495,7 @@ void COctoPrintMQTT::on_message(const struct mosquitto_message *message)
 							Log(LOG_ERROR, "Invalid ZChange data received! (no new field in JSON payload ?)");
 							return;
 						}
-						//SendCustomSensor(1, 1, 255, std::stof(root["new"].asString()), "ZChange", "Z");
+						//SendCustomSensor(1, 1, 255, stof(root["new"].asString()), "ZChange", "Z");
 						return;
 					}
 					if (bIsPrintStatus)

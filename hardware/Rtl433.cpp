@@ -168,16 +168,16 @@ bool CRtl433::ParseData(std::map<std::string, std::string>& data)
 
 	if (FindField(data, "id"))
 	{
-		id = atoi(data["id"].c_str());
+		id = stoi(data["id"]);
 	}
 	if (FindField(data, "unit"))
 	{
-		unit = atoi(data["unit"].c_str());
+		unit = stoi(data["unit"]);
 		haveUnit = true;
 	}
 	if (FindField(data, "channel"))
 	{
-		channel = atoi(data["channel"].c_str());
+		channel = stoi(data["channel"]);
 		haveChannel = true;
 	}
 	if (FindField(data, "battery_ok"))
@@ -193,7 +193,7 @@ bool CRtl433::ParseData(std::map<std::string, std::string>& data)
 	}
 	if (FindField(data, "temperature_C"))
 	{
-		tempC = (float)atof(data["temperature_C"].c_str());
+		tempC = stof(data["temperature_C"]);
 		haveTemp = true;
 	}
 	if (FindField(data, "humidity"))
@@ -210,98 +210,98 @@ bool CRtl433::ParseData(std::map<std::string, std::string>& data)
 		}
 		else
 		{
-			humidity = atoi(data["humidity"].c_str());
+			humidity = stoi(data["humidity"]);
 			haveHumidity = true;
 		}
 	}
 	if (FindField(data, "pressure_hPa"))
 	{
-		pressure = (float)atof(data["pressure_hPa"].c_str());
+		pressure = stof(data["pressure_hPa"]);
 		havePressure = true;
 	}
 	if (FindField(data, "pressure_PSI"))
 	{
-		pressure_PSI = (float)atof(data["pressure_PSI"].c_str());
+		pressure_PSI = stof(data["pressure_PSI"]);
 		havePressure_PSI = true;
 	}
 	if (FindField(data, "pressure_kPa"))
 	{
-		pressure = 10.0F * (float)atof(data["pressure_kPa"].c_str()); // convert to hPA
+		pressure = stof(data["pressure_kPa"]) * 10.0F; // convert to hPA
 		havePressure = true;
 	}
 	if (FindField(data, "rain_mm"))
 	{
-		rain = (float)atof(data["rain_mm"].c_str());
+		rain = stof(data["rain_mm"]);
 		haveRain = true;
 	}
 	if (FindField(data, "depth_cm"))
 	{
-		depth = (float)atof(data["depth_cm"].c_str());
+		depth = stof(data["depth_cm"]);
 		haveDepth = true;
 	}
 	if (FindField(data, "wind_avg_km_h")) // wind speed average (converting into m/s note that internal storage if 10.0f*m/s) 
 	{
-		wind_speed = ((float)atof(data["wind_avg_km_h"].c_str())) / 3.6F;
+		wind_speed = (stof(data["wind_avg_km_h"])) / 3.6F;
 		haveWind_Speed = true;
 	}
 	if (FindField(data, "wind_avg_m_s")) // wind speed average
 	{
-		wind_speed = (float)atof(data["wind_avg_m_s"].c_str());
+		wind_speed = stof(data["wind_avg_m_s"]);
 		haveWind_Speed = true;
 	}
 	if (FindField(data, "wind_dir_deg"))
 	{
-		wind_dir = atoi(data["wind_dir_deg"].c_str()); // does domoticz assume it is degree ? (and not rad or something else)
+		wind_dir = stoi(data["wind_dir_deg"]); // does domoticz assume it is degree ? (and not rad or something else)
 		haveWind_Dir = true;
 	}
 	if (FindField(data, "wind_max_km_h")) // idem, converting to m/s
 	{
-		wind_gust = ((float)atof(data["wind_max_km_h"].c_str())) / 3.6F;
+		wind_gust = (stof(data["wind_max_km_h"])) / 3.6F;
 		haveWind_Gust = true;
 	}
 	if (FindField(data, "wind_max_m_s"))
 	{
-		wind_gust = (float)atof(data["wind_max_m_s"].c_str());
+		wind_gust = stof(data["wind_max_m_s"]);
 		haveWind_Gust = true;
 	}
 	if (FindField(data, "moisture"))
 	{
-		moisture = atoi(data["moisture"].c_str());
+		moisture = stoi(data["moisture"]);
 		haveMoisture = true;
 	}
 	if (FindField(data, "power_W")) // -- power_W,energy_kWh,radio_clock,sequence,
 	{
-		power = (float)atof(data["power_W"].c_str());
+		power = stof(data["power_W"]);
 		havePower = true;
 	}
 	if (FindField(data, "energy_kWh")) // sensor type general subtype electric counter
 	{
-		energy = (float)atof(data["energy_kWh"].c_str());
+		energy = stof(data["energy_kWh"]);
 		haveEnergy = true;
 	}
 	if (FindField(data, "sequence")) // please do not remove : to be added in future PR for data in sensor (for fiability reporting)
 	{
-		sequence = atoi(data["sequence"].c_str());
+		sequence = stoi(data["sequence"]);
 		haveSequence = true;
 	}
 	if (FindField(data, "uv"))
 	{
-		uvi = (float)atof(data["uv"].c_str());
+		uvi = stof(data["uv"]);
 		haveUV = true;
 	}
 	if (FindField(data, "light_klx"))
 	{
-		lux = ((float)atof(data["light_klx"].c_str())) * 1000;
+		lux = (stof(data["light_klx"])) * 1000.0F;
 		haveLux = true;
 	}
 	if (FindField(data, "light_lux"))
 	{
-		lux = (float)atof(data["light_lux"].c_str());
+		lux = stof(data["light_lux"]);
 		haveLux = true;
 	}
 	if (FindField(data, "volume_m3"))
 	{
-		meter = (float)atof(data["volume_m3"].c_str());
+		meter = stof(data["volume_m3"]);
 		haveMeter = true;
 	}
 	if (FindField(data, "snr"))
@@ -310,7 +310,7 @@ bool CRtl433::ParseData(std::map<std::string, std::string>& data)
 		   rtl_433 will not be able to decode a signal with less snr than 4dB or so, why we map snr<5dB to rssi=0 .
 		   We use better resolution at low snr. snr=5-10dB map to rssi=1-6, snr=11-20dB map to rssi=6-11, snr>20dB map to rssi=11
 		*/
-		snr = std::stoi(data["snr"]) - 4;
+		snr = stoi(data["snr"]) - 4;
 
 		if (snr > 5) snr -= (int)(snr - 5) / 2;
 		if (snr > 11) snr = 11; // Domoticz RSSI field can only be 0-11, 12 is used for non-RF received devices

@@ -403,7 +403,7 @@ bool fastcgi_parser::handlePHP(const server_settings &settings, const std::strin
 				if (tpos == std::string::npos)
 					continue;
 				std::string errcode = theader.substr(0, tpos);
-				rep = reply::stock_reply((reply::status_type)atoi(errcode.c_str()));
+				rep = reply::stock_reply((reply::status_type) stoi(errcode));
 				return true;
 			}
 

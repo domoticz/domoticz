@@ -175,7 +175,7 @@ bool helper_tester(const std::string szFunction, std::string &szInput, std::stri
 	{
 		if (svInputs.size() == 2)
 		{
-			double dTestOutput = round_digits(std::stod(svInputs[0]), std::stoi(svInputs[1]));
+			double dTestOutput = round_digits(stod(svInputs[0]), stoi(svInputs[1]));
 			szOutput = std_format("%f", dTestOutput);
 			bSuccess = true;
 		}
@@ -185,7 +185,7 @@ bool helper_tester(const std::string szFunction, std::string &szInput, std::stri
 	{
 		if (svInputs.size() == 2)
 		{
-			double dTestOutput = CalculateDewPoint(std::stod(svInputs[0]), std::stoi(svInputs[1]));
+			double dTestOutput = CalculateDewPoint(stod(svInputs[0]), stoi(svInputs[1]));
 			szOutput = std_format("%.2f", dTestOutput);
 			bSuccess = true;
 		}

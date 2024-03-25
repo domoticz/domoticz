@@ -176,7 +176,7 @@ void CDarkSky::GetMeterDetails()
 	}
 	if (root["currently"]["pressure"].empty() == false)
 	{
-		barometric = atoi(root["currently"]["pressure"].asString().c_str());
+		barometric = stoi(root["currently"]["pressure"].asString());
 		if (barometric < 1000)
 			barometric_forcast = baroForecastRain;
 		else if (barometric < 1020)
@@ -235,13 +235,13 @@ void CDarkSky::GetMeterDetails()
 
 	if (root["currently"]["windBearing"].empty() == false)
 	{
-		wind_degrees = atoi(root["currently"]["windBearing"].asString().c_str());
+		wind_degrees = stoi(root["currently"]["windBearing"].asString());
 	}
 	if (root["currently"]["windSpeed"].empty() == false)
 	{
 		if ((root["currently"]["windSpeed"] != "N/A") && (root["currently"]["windSpeed"] != "--"))
 		{
-			float temp_wind_mph = static_cast<float>(atof(root["currently"]["windSpeed"].asString().c_str()));
+			float temp_wind_mph = stof(root["currently"]["windSpeed"].asString());
 			if (temp_wind_mph != -9999.00F)
 			{
 				//convert to m/s
@@ -253,7 +253,7 @@ void CDarkSky::GetMeterDetails()
 	{
 		if ((root["currently"]["windGust"] != "N/A") && (root["currently"]["windGust"] != "--"))
 		{
-			float temp_wind_gust_mph = static_cast<float>(atof(root["currently"]["windGust"].asString().c_str()));
+			float temp_wind_gust_mph = stof(root["currently"]["windGust"].asString());
 			if (temp_wind_gust_mph != -9999.00F)
 			{
 				//convert to m/s
@@ -265,7 +265,7 @@ void CDarkSky::GetMeterDetails()
 	{
 		if ((root["currently"]["apparentTemperature"] != "N/A") && (root["currently"]["apparentTemperature"] != "--"))
 		{
-			wind_chill = static_cast<float>(atof(root["currently"]["apparentTemperature"].asString().c_str()));
+			wind_chill = stof(root["currently"]["apparentTemperature"].asString());
 			//Convert to celcius
 			wind_chill = float((wind_chill - 32) * (5.0 / 9.0));
 		}
@@ -341,7 +341,7 @@ void CDarkSky::GetMeterDetails()
 	{
 		if ((root["currently"]["precipIntensity"] != "N/A") && (root["currently"]["precipIntensity"] != "--"))
 		{
-			float rainrateph = static_cast<float>(atof(root["currently"]["precipIntensity"].asString().c_str())) * 25.4F; // inches to mm
+			float rainrateph = stof(root["currently"]["precipIntensity"].asString()) * 25.4F; // inches to mm
 			if ((rainrateph != -9999.00F) && (rainrateph >= 0.00F))
 			{
 				SendRainRateSensor(1, 255, rainrateph, "Rain");
@@ -354,7 +354,7 @@ void CDarkSky::GetMeterDetails()
 	{
 		if ((root["currently"]["visibility"] != "N/A") && (root["currently"]["visibility"] != "--"))
 		{
-			float visibility = static_cast<float>(atof(root["currently"]["visibility"].asString().c_str())) * 1.60934F; // miles to km
+			float visibility = stof(root["currently"]["visibility"].asString()) * 1.60934F; // miles to km
 			if (visibility >= 0)
 			{
 				_tGeneralDevice gdevice;
@@ -369,7 +369,7 @@ void CDarkSky::GetMeterDetails()
 	{
 		if ((root["currently"]["ozone"] != "N/A") && (root["currently"]["ozone"] != "--"))
 		{
-			float radiation = static_cast<float>(atof(root["currently"]["ozone"].asString().c_str()));
+			float radiation = stof(root["currently"]["ozone"].asString());
 			if (radiation >= 0.0F)
 			{
 				SendCustomSensor(1, 0, 255, radiation, "Ozone Sensor", "DU"); //(dobson units)
@@ -381,7 +381,7 @@ void CDarkSky::GetMeterDetails()
 	{
 		if ((root["currently"]["cloudCover"] != "N/A") && (root["currently"]["cloudCover"] != "--"))
 		{
-			float cloudcover = static_cast<float>(atof(root["currently"]["cloudCover"].asString().c_str()));
+			float cloudcover = stof(root["currently"]["cloudCover"].asString());
 			if (cloudcover >= 0.0F)
 			{
 				SendPercentageSensor(1, 0, 255, cloudcover * 100.0F, "Cloud Cover");

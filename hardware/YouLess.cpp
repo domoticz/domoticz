@@ -215,8 +215,8 @@ void CYouLess::GetMeterDetails()
 		pcurrent=pcurrent.substr(0,fpos);
 	stdreplace(pcurrent,",","");
 
-	unsigned long lpusage = atol(pusage.c_str());
-	unsigned long lpcurrent = atol(pcurrent.c_str());
+	unsigned long lpusage = stoul(pusage);
+	unsigned long lpcurrent = stoul(pcurrent);
 	if (lpusage)
 	{
 		m_meter.powerusage = lpusage;

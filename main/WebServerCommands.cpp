@@ -123,13 +123,13 @@ namespace http
 						root["result"][ii]["Name"] = sd[1];
 						root["result"][ii]["DevID"] = sd[2];
 						root["result"][ii]["DevRealIdx"] = sd[9];
-						root["result"][ii]["Order"] = atoi(sd[10].c_str());
-						root["result"][ii]["OnDelay"] = atoi(sd[12].c_str());
-						root["result"][ii]["OffDelay"] = atoi(sd[13].c_str());
+						root["result"][ii]["Order"] = stoi(sd[10]);
+						root["result"][ii]["OnDelay"] = stoi(sd[12]);
+						root["result"][ii]["OffDelay"] = stoi(sd[13]);
 
-						_eSwitchType switchtype = (_eSwitchType)atoi(sd[14].c_str());
+						_eSwitchType switchtype = (_eSwitchType) stoi(sd[14]);
 
-						unsigned char devType = atoi(sd[3].c_str());
+						unsigned char devType = (unsigned char) stoi(sd[3]);
 
 						bool bIsBlinds = (
 							switchtype == STYPE_Blinds
@@ -144,11 +144,11 @@ namespace http
 						if (devType != pTypeRFY)
 							switchtype = STYPE_OnOff;
 
-						unsigned char subType = atoi(sd[4].c_str());
-						// unsigned char nValue = (unsigned char)atoi(sd[5].c_str());
+						unsigned char subType = (unsigned char) stoi(sd[4]);
+						// unsigned char nValue = (unsigned char) stoi(sd[5]);
 						std::string sValue = sd[6];
-						int command = atoi(sd[7].c_str());
-						int level = atoi(sd[8].c_str());
+						int command = stoi(sd[7]);
+						int level = stoi(sd[8]);
 
 						std::string lstatus;
 						int llevel = 0;
@@ -184,10 +184,10 @@ namespace http
 					int ii = 0;
 					for (const auto& sd : result)
 					{
-						int ID = atoi(sd[0].c_str());
+						int ID = stoi(sd[0]);
 						std::string Name = sd[1];
-						_eHardwareTypes Type = (_eHardwareTypes)atoi(sd[2].c_str());
-						bool isEnabled = atoi(sd[3].c_str());
+						_eHardwareTypes Type = (_eHardwareTypes) stoi(sd[2]);
+						bool isEnabled = stoi(sd[3]) != 0;
 
 						bool supportsManual = ((Type == HTYPE_RFXLAN) || (Type == HTYPE_RFXtrx315) || (Type == HTYPE_RFXtrx433) || (Type == HTYPE_RFXtrx868) || (Type == HTYPE_EnOceanESP2) ||
 							(Type == HTYPE_EnOceanESP3) || (Type == HTYPE_Dummy) || (Type == HTYPE_Tellstick) || (Type == HTYPE_EVOHOME_SCRIPT) ||
@@ -296,10 +296,10 @@ namespace http
 					{
 						std::string ID = sd[0];
 						std::string Name = sd[1];
-						int Type = atoi(sd[2].c_str());
-						int SubType = atoi(sd[3].c_str());
-						int used = atoi(sd[4].c_str());
-						_eSwitchType switchtype = (_eSwitchType)atoi(sd[5].c_str());
+						int Type = stoi(sd[2]);
+						int SubType = stoi(sd[3]);
+						int used = stoi(sd[4]);
+						_eSwitchType switchtype = (_eSwitchType) stoi(sd[5]);
 						std::map<std::string, std::string> options = m_sql.BuildDeviceOptions(sd[6]);
 						bool bdoAdd = false;
 						switch (Type)
@@ -344,7 +344,7 @@ namespace http
 								bdoAdd = false;
 							if (bdoAdd)
 							{
-								int idx = atoi(ID.c_str());
+								int idx = stoi(ID);
 								if (!IsIdxForUser(&session, idx))
 									continue;
 								root["result"][ii]["idx"] = ID;
@@ -429,9 +429,9 @@ namespace http
 					{
 						std::string ID = sd[0];
 						std::string Name = sd[1];
-						int Type = atoi(sd[2].c_str());
-						int SubType = atoi(sd[3].c_str());
-						int used = atoi(sd[4].c_str());
+						int Type = stoi(sd[2]);
+						int SubType = stoi(sd[3]);
+						int used = stoi(sd[4]);
 						if (used)
 						{
 							switch (Type)
@@ -512,10 +512,10 @@ namespace http
 					for (const auto& sd : result)
 					{
 						std::string ID = sd[0];
-						int DevSceneType = atoi(sd[1].c_str());
+						int DevSceneType = stoi(sd[1]);
 						std::string DevSceneRowID = sd[2];
-						int DevSceneWhen = atoi(sd[3].c_str());
-						int DevSceneDelay = atoi(sd[4].c_str());
+						int DevSceneWhen = stoi(sd[3]);
+						int DevSceneDelay = stoi(sd[4]);
 
 						std::string Name;
 						if (DevSceneType == 0)
@@ -680,7 +680,7 @@ namespace http
 					return false;
 				}
 				root["status"] = "OK";
-				int iSecStatus = atoi(ssecstatus.c_str());
+				int iSecStatus = stoi(ssecstatus);
 				m_mainworker.UpdateDomoticzSecurityStatus(iSecStatus, szSwitchUser);
 			}
 			else if (cparam == "getfloorplanimages")
@@ -688,7 +688,7 @@ namespace http
 				root["status"] = "OK";
 				root["title"] = "GetFloorplanImages";
 
-				bool bReturnUnused = atoi(request::findValue(&req, "unused").c_str()) != 0;
+				bool bReturnUnused = stoi(request::findValue(&req, "unused")) != 0;
 
 				if (!bReturnUnused)
 					result = m_sql.safe_query("SELECT ID, Name, ScaleFactor FROM Floorplans ORDER BY [Name]");
@@ -794,23 +794,23 @@ namespace http
 				std::string devidx = request::findValue(&req, "devidx");
 				std::string isscene = request::findValue(&req, "isscene");
 				std::string scommand = request::findValue(&req, "command");
-				int ondelay = atoi(request::findValue(&req, "ondelay").c_str());
-				int offdelay = atoi(request::findValue(&req, "offdelay").c_str());
+				int ondelay = stoi(request::findValue(&req, "ondelay"));
+				int offdelay = stoi(request::findValue(&req, "offdelay"));
 
 				if ((idx.empty()) || (devidx.empty()) || (isscene.empty()))
 					return false;
 				int level = -1;
 				if (request::hasValue(&req, "level"))
-					level = atoi(request::findValue(&req, "level").c_str());
+					level = stoi(request::findValue(&req, "level"));
 				std::string color = _tColor(request::findValue(&req, "color")).toJSONString(); // Parse the color to detect incorrectly formatted color data
 
 				unsigned char command = 0;
 				result = m_sql.safe_query("SELECT HardwareID, DeviceID, Unit, Type, SubType, SwitchType, Options FROM DeviceStatus WHERE (ID=='%q')", devidx.c_str());
 				if (!result.empty())
 				{
-					int dType = atoi(result[0][3].c_str());
-					int sType = atoi(result[0][4].c_str());
-					_eSwitchType switchtype = (_eSwitchType)atoi(result[0][5].c_str());
+					int dType = stoi(result[0][3]);
+					int sType = stoi(result[0][4]);
+					_eSwitchType switchtype = (_eSwitchType) stoi(result[0][5]);
 					std::map<std::string, std::string> options = m_sql.BuildDeviceOptions(result[0][6]);
 					GetLightCommand(dType, sType, switchtype, scommand, command, options);
 				}
@@ -819,7 +819,7 @@ namespace http
 				result = m_sql.safe_query("SELECT Activators, SceneType FROM Scenes WHERE (ID=='%q')", idx.c_str());
 				if (!result.empty())
 				{
-					// int SceneType = atoi(result[0][1].c_str());
+					// int SceneType = stoi(result[0][1]);
 
 					std::vector<std::string> arrayActivators;
 					StringSplit(result[0][0], ";", arrayActivators);
@@ -883,8 +883,8 @@ namespace http
 				std::string idx = request::findValue(&req, "idx");
 				std::string devidx = request::findValue(&req, "devidx");
 				std::string scommand = request::findValue(&req, "command");
-				int ondelay = atoi(request::findValue(&req, "ondelay").c_str());
-				int offdelay = atoi(request::findValue(&req, "offdelay").c_str());
+				int ondelay = stoi(request::findValue(&req, "ondelay"));
+				int offdelay = stoi(request::findValue(&req, "offdelay"));
 
 				if ((idx.empty()) || (devidx.empty()))
 					return false;
@@ -894,15 +894,15 @@ namespace http
 				result = m_sql.safe_query("SELECT HardwareID, DeviceID, Unit, Type, SubType, SwitchType, Options FROM DeviceStatus WHERE (ID=='%q')", devidx.c_str());
 				if (!result.empty())
 				{
-					int dType = atoi(result[0][3].c_str());
-					int sType = atoi(result[0][4].c_str());
-					_eSwitchType switchtype = (_eSwitchType)atoi(result[0][5].c_str());
+					int dType = stoi(result[0][3]);
+					int sType = stoi(result[0][4]);
+					_eSwitchType switchtype = (_eSwitchType) stoi(result[0][5]);
 					std::map<std::string, std::string> options = m_sql.BuildDeviceOptions(result[0][6]);
 					GetLightCommand(dType, sType, switchtype, scommand, command, options);
 				}
 				int level = -1;
 				if (request::hasValue(&req, "level"))
-					level = atoi(request::findValue(&req, "level").c_str());
+					level = stoi(request::findValue(&req, "level"));
 				std::string color = _tColor(request::findValue(&req, "color")).toJSONString(); // Parse the color to detect incorrectly formatted color data
 				root["status"] = "OK";
 				root["title"] = "UpdateSceneDevice";
@@ -1013,9 +1013,9 @@ namespace http
 					return false;
 				}
 
-				int activetype = atoi(sactivetype.c_str());
-				int activewhen = atoi(sactivewhen.c_str());
-				int activedelay = atoi(sactivedelay.c_str());
+				int activetype = stoi(sactivetype);
+				int activewhen = stoi(sactivewhen);
+				int activedelay = stoi(sactivedelay);
 
 				// first check if it is not already a Active Device
 				result = m_sql.safe_query("SELECT ID FROM CamerasActiveDevices WHERE (CameraRowID=='%q')"
@@ -1105,14 +1105,14 @@ namespace http
 
 				if ((hwdid.empty()) || (sswitchtype.empty()) || (slighttype.empty()))
 					return false;
-				_eSwitchType switchtype = (_eSwitchType)atoi(sswitchtype.c_str());
-				int lighttype = atoi(slighttype.c_str());
+				_eSwitchType switchtype = (_eSwitchType) stoi(sswitchtype);
+				int lighttype = stoi(slighttype);
 				int dtype;
 				int subtype = 0;
 				std::string sunitcode;
 				std::string devid;
 
-				CDomoticzHardwareBase* pBaseHardware = m_mainworker.GetHardware(atoi(hwdid.c_str()));
+				CDomoticzHardwareBase* pBaseHardware = m_mainworker.GetHardware(stoi(hwdid));
 				if (pBaseHardware != nullptr && !pBaseHardware->GetManualSwitchesJsonConfiguration().empty())
 				{
 					pBaseHardware->GetManualSwitchParameters(req.parameters, switchtype, lighttype, dtype, subtype, devid, sunitcode);
@@ -1166,7 +1166,7 @@ namespace http
 						root["message"] = "No GPIO number given";
 						return false;
 					}
-					CGpio* pGpio = dynamic_cast<CGpio*>(m_mainworker.GetHardware(atoi(hwdid.c_str())));
+					CGpio* pGpio = dynamic_cast<CGpio*>(m_mainworker.GetHardware(stoi(hwdid)));
 					if (pGpio == nullptr)
 					{
 						root["status"] = "ERROR";
@@ -1179,7 +1179,7 @@ namespace http
 						root["message"] = "Given hardware is not GPIO";
 						return false;
 					}
-					CGpioPin* pPin = CGpio::GetPPinById(atoi(sunitcode.c_str()));
+					CGpioPin* pPin = CGpio::GetPPinById(stoi(sunitcode));
 					if (pPin == nullptr)
 					{
 						root["status"] = "ERROR";
@@ -1203,11 +1203,11 @@ namespace http
 #ifdef WITH_GPIO
 
 					sunitcode = request::findValue(&req, "unitcode"); // sysfs-gpio number
-					int unitcode = atoi(sunitcode.c_str());
+					int unitcode = stoi(sunitcode);
 					dtype = pTypeLighting2;
 					subtype = sTypeAC;
 					std::string sswitchtype = request::findValue(&req, "switchtype");
-					_eSwitchType switchtype = (_eSwitchType)atoi(sswitchtype.c_str());
+					_eSwitchType switchtype = (_eSwitchType) stoi(sswitchtype);
 
 					std::string id = request::findValue(&req, "id");
 					if ((id.empty()) || (sunitcode.empty()))
@@ -1223,7 +1223,7 @@ namespace http
 						return false;
 					}
 
-					CSysfsGpio* pSysfsGpio = dynamic_cast<CSysfsGpio*>(m_mainworker.GetHardware(atoi(hwdid.c_str())));
+					CSysfsGpio* pSysfsGpio = dynamic_cast<CSysfsGpio*>(m_mainworker.GetHardware(stoi(hwdid)));
 					if (pSysfsGpio == nullptr)
 					{
 						root["status"] = "ERROR";
@@ -1302,7 +1302,7 @@ namespace http
 					sunitcode = request::findValue(&req, "unitcode");
 					if ((id.empty()) || (sunitcode.empty()))
 						return false;
-					int iUnitCode = atoi(sunitcode.c_str()) - 1;
+					int iUnitCode = stoi(sunitcode) - 1;
 					switch (iUnitCode)
 					{
 					case 0:
@@ -1446,7 +1446,7 @@ namespace http
 					sunitcode = request::findValue(&req, "unitcode");
 					if ((id.empty()) || (sunitcode.empty()))
 						return false;
-					int iUnitCode = atoi(sunitcode.c_str());
+					int iUnitCode = stoi(sunitcode);
 					sprintf(szTmp, "%d", iUnitCode);
 					sunitcode = szTmp;
 					devid = id;
@@ -1474,10 +1474,10 @@ namespace http
 					if ((id.empty()) || (shousecode.empty()) || (sunitcode.empty()))
 						return false;
 
-					int iUnitCode = atoi(sunitcode.c_str());
+					int iUnitCode = stoi(sunitcode);
 					sprintf(szTmp, "%d", iUnitCode);
 					sunitcode = szTmp;
-					sprintf(szTmp, "%02X", atoi(shousecode.c_str()));
+					sprintf(szTmp, "%02X", stoi(shousecode));
 					shousecode = szTmp;
 					devid = id + shousecode;
 				}
@@ -1773,15 +1773,15 @@ namespace http
 
 				if ((hwdid.empty()) || (sswitchtype.empty()) || (slighttype.empty()) || (name.empty()))
 					return false;
-				_eSwitchType switchtype = (_eSwitchType)atoi(sswitchtype.c_str());
-				int lighttype = atoi(slighttype.c_str());
+				_eSwitchType switchtype = (_eSwitchType) stoi(sswitchtype);
+				int lighttype = stoi(slighttype);
 				int dtype = 0;
 				int subtype = 0;
 				std::string sunitcode;
 				std::string devid;
 				std::string StrParam1;
 
-				CDomoticzHardwareBase* pBaseHardware = m_mainworker.GetHardware(atoi(hwdid.c_str()));
+				CDomoticzHardwareBase* pBaseHardware = m_mainworker.GetHardware(stoi(hwdid));
 				if ((pBaseHardware != nullptr) && (!pBaseHardware->GetManualSwitchesJsonConfiguration().empty()))
 				{
 					pBaseHardware->GetManualSwitchParameters(req.parameters, switchtype, lighttype, dtype, subtype, devid, sunitcode);
@@ -1797,7 +1797,7 @@ namespace http
 					bool bActEnabledState = m_sql.m_bAcceptNewHardware;
 					m_sql.m_bAcceptNewHardware = true;
 					std::string devname;
-					m_sql.UpdateValue(atoi(hwdid.c_str()), 0, devid.c_str(), atoi(sunitcode.c_str()), dtype, subtype, 0, -1, 0, devname, true, szSwitchUser.c_str());
+					m_sql.UpdateValue(stoi(hwdid), 0, devid.c_str(), (unsigned char) stoi(sunitcode), dtype, subtype, 0, -1, 0, devname, true, szSwitchUser.c_str());
 					m_sql.m_bAcceptNewHardware = bActEnabledState;
 
 					// set name and switchtype
@@ -1821,7 +1821,7 @@ namespace http
 					m_mainworker.m_eventsystem.GetCurrentStates();
 
 					// Set device options
-					m_sql.SetDeviceOptions(atoi(ID.c_str()), m_sql.BuildDeviceOptions(deviceoptions, false));
+					m_sql.SetDeviceOptions(stoull(ID), m_sql.BuildDeviceOptions(deviceoptions, false));
 
 					if (!maindeviceidx.empty())
 					{
@@ -1849,11 +1849,11 @@ namespace http
 					if (!result.empty())
 					{
 						std::vector<std::string> sd = result[0];
-						_eHardwareTypes Type = (_eHardwareTypes)atoi(sd[0].c_str());
+						_eHardwareTypes Type = (_eHardwareTypes) stoi(sd[0]);
 						if (Type == HTYPE_PythonPlugin)
 						{
 							// Not allowed to add device to plugin HW (plugin framework does not use key column "ID" but instead uses column "unit" as key)
-							_log.Log(LOG_ERROR, "CWebServer::HandleCommand addswitch: Not allowed to add device owned by plugin %u!", atoi(hwdid.c_str()));
+							_log.Log(LOG_ERROR, "CWebServer::HandleCommand addswitch: Not allowed to add device owned by plugin %d!", stoi(hwdid));
 							root["message"] = "Not allowed to add switch to plugin HW!";
 							return false;
 						}
@@ -1909,7 +1909,7 @@ namespace http
 					{
 						return false;
 					}
-					CGpio* pGpio = dynamic_cast<CGpio*>(m_mainworker.GetHardware(atoi(hwdid.c_str())));
+					CGpio* pGpio = dynamic_cast<CGpio*>(m_mainworker.GetHardware(stoi(hwdid)));
 					if (pGpio == nullptr)
 					{
 						return false;
@@ -1918,7 +1918,7 @@ namespace http
 					{
 						return false;
 					}
-					CGpioPin* pPin = CGpio::GetPPinById(atoi(sunitcode.c_str()));
+					CGpioPin* pPin = CGpio::GetPPinById(stoi(sunitcode));
 					if (pPin == nullptr)
 					{
 						return false;
@@ -1934,9 +1934,9 @@ namespace http
 					subtype = sTypeAC;
 					devid = "0";
 					sunitcode = request::findValue(&req, "unitcode"); // sysfs-gpio number
-					int unitcode = atoi(sunitcode.c_str());
+					int unitcode = stoi(sunitcode);
 					std::string sswitchtype = request::findValue(&req, "switchtype");
-					_eSwitchType switchtype = (_eSwitchType)atoi(sswitchtype.c_str());
+					_eSwitchType switchtype = (_eSwitchType) stoi(sswitchtype);
 					std::string id = request::findValue(&req, "id");
 					CSysfsGpio::RequestDbUpdate(unitcode);
 
@@ -1946,7 +1946,7 @@ namespace http
 					}
 					devid = id;
 
-					CSysfsGpio* pSysfsGpio = dynamic_cast<CSysfsGpio*>(m_mainworker.GetHardware(atoi(hwdid.c_str())));
+					CSysfsGpio* pSysfsGpio = dynamic_cast<CSysfsGpio*>(m_mainworker.GetHardware(stoi(hwdid)));
 					if ((pSysfsGpio == nullptr) || (pSysfsGpio->HwdType != HTYPE_SysfsGpio))
 					{
 						return false;
@@ -2029,7 +2029,7 @@ namespace http
 					sunitcode = request::findValue(&req, "unitcode");
 					if ((id.empty()) || (sunitcode.empty()))
 						return false;
-					int iUnitCode = atoi(sunitcode.c_str()) - 1;
+					int iUnitCode = stoi(sunitcode) - 1;
 					switch (iUnitCode)
 					{
 					case 0:
@@ -2173,7 +2173,7 @@ namespace http
 					sunitcode = request::findValue(&req, "unitcode");
 					if ((id.empty()) || (sunitcode.empty()))
 						return false;
-					int iUnitCode = atoi(sunitcode.c_str());
+					int iUnitCode = stoi(sunitcode);
 					sprintf(szTmp, "%d", iUnitCode);
 					sunitcode = szTmp;
 					devid = id;
@@ -2202,7 +2202,7 @@ namespace http
 					bool bActEnabledState = m_sql.m_bAcceptNewHardware;
 					m_sql.m_bAcceptNewHardware = true;
 					std::string devname;
-					m_sql.UpdateValue(atoi(hwdid.c_str()), 0, devid.c_str(), atoi(sunitcode.c_str()), dtype, subtype, 0, -1, 0, "20.5", devname, true, szSwitchUser.c_str());
+					m_sql.UpdateValue(stoi(hwdid), 0, devid.c_str(), (unsigned char) stoi(sunitcode), dtype, subtype, 0, -1, 0, "20.5", devname, true, szSwitchUser.c_str());
 					m_sql.m_bAcceptNewHardware = bActEnabledState;
 
 					// set name and switchtype
@@ -2233,10 +2233,10 @@ namespace http
 					if ((id.empty()) || (shousecode.empty()) || (sunitcode.empty()))
 						return false;
 
-					int iUnitCode = atoi(sunitcode.c_str());
+					int iUnitCode = stoi(sunitcode);
 					sprintf(szTmp, "%d", iUnitCode);
 					sunitcode = szTmp;
-					sprintf(szTmp, "%02X", atoi(shousecode.c_str()));
+					sprintf(szTmp, "%02X", stoi(shousecode));
 					shousecode = szTmp;
 					devid = id + shousecode;
 				}
@@ -2498,7 +2498,7 @@ namespace http
 				bool bActEnabledState = m_sql.m_bAcceptNewHardware;
 				m_sql.m_bAcceptNewHardware = true;
 				std::string devname;
-				m_sql.UpdateValue(atoi(hwdid.c_str()), 0, devid.c_str(), atoi(sunitcode.c_str()), dtype, subtype, 0, -1, 0, devname, true, szSwitchUser.c_str());
+				m_sql.UpdateValue(stoi(hwdid), 0, devid.c_str(), (unsigned char) stoi(sunitcode), dtype, subtype, 0, -1, 0, devname, true, szSwitchUser.c_str());
 				m_sql.m_bAcceptNewHardware = bActEnabledState;
 
 				// set name and switchtype
@@ -2522,7 +2522,7 @@ namespace http
 				m_mainworker.m_eventsystem.GetCurrentStates();
 
 				// Set device options
-				m_sql.SetDeviceOptions(atoi(ID.c_str()), m_sql.BuildDeviceOptions(deviceoptions, false));
+				m_sql.SetDeviceOptions(stoull(ID), m_sql.BuildDeviceOptions(deviceoptions, false));
 
 				if (!maindeviceidx.empty())
 				{
@@ -2560,9 +2560,9 @@ namespace http
 
 				root["status"] = "OK";
 				root["title"] = "GetNotificationTypes";
-				unsigned char dType = atoi(result[0][0].c_str());
-				unsigned char dSubType = atoi(result[0][1].c_str());
-				unsigned char switchtype = atoi(result[0][2].c_str());
+				unsigned char dType = (unsigned char) stoi(result[0][0]);
+				unsigned char dSubType = (unsigned char) stoi(result[0][1]);
+				unsigned char switchtype = (unsigned char) stoi(result[0][2]);
 
 				int ii = 0;
 				if (
@@ -2595,7 +2595,7 @@ namespace http
 						if (!result.empty())
 						{
 							std::string hdwid = result[0][0];
-							CDomoticzHardwareBase* pBaseHardware = dynamic_cast<CDomoticzHardwareBase*>(m_mainworker.GetHardware(atoi(hdwid.c_str())));
+							CDomoticzHardwareBase* pBaseHardware = dynamic_cast<CDomoticzHardwareBase*>(m_mainworker.GetHardware(stoi(hdwid)));
 							if (pBaseHardware != nullptr)
 							{
 								_eHardwareTypes type = pBaseHardware->HwdType;
@@ -2974,7 +2974,7 @@ namespace http
 				if ((idx1.empty()) || (idx2.empty()))
 					return false;
 				std::string sroomid = request::findValue(&req, "roomid");
-				int roomid = atoi(sroomid.c_str());
+				int roomid = stoi(sroomid);
 
 				std::string Order1, Order2;
 				if (roomid == 0)
@@ -3017,7 +3017,7 @@ namespace http
 						root["status"] = "OK";
 						root["title"] = "SwitchDeviceOrder";
 
-						if (atoi(Order1.c_str()) < atoi(Order2.c_str()))
+						if (stoi(Order1) < stoi(Order2))
 						{
 							m_sql.safe_query("UPDATE SharedDevices SET [Order] = [Order]+1 WHERE ([Order] >= '%q' AND [Order] < '%q')", Order1.c_str(), Order2.c_str());
 						}
@@ -3044,7 +3044,7 @@ namespace http
 						root["status"] = "OK";
 						root["title"] = "SwitchDeviceOrder";
 
-						if (atoi(Order1.c_str()) < atoi(Order2.c_str()))
+						if (stoi(Order1) < stoi(Order2))
 						{
 							m_sql.safe_query("UPDATE DeviceStatus SET [Order] = [Order]+1 WHERE ([Order] >= '%q' AND [Order] < '%q')", Order1.c_str(), Order2.c_str());
 						}
@@ -3074,7 +3074,7 @@ namespace http
 					root["status"] = "OK";
 					root["title"] = "SwitchDeviceOrder";
 
-					if (atoi(Order1.c_str()) < atoi(Order2.c_str()))
+					if (stoi(Order1) < stoi(Order2))
 					{
 						m_sql.safe_query("UPDATE DeviceToPlansMap SET [Order] = [Order]+1 WHERE ([Order] >= '%q' AND [Order] < '%q') AND (PlanID==%d)", Order1.c_str(),
 							Order2.c_str(), roomid);
@@ -3117,7 +3117,7 @@ namespace http
 				root["status"] = "OK";
 				root["title"] = "SwitchSceneOrder";
 
-				if (atoi(Order1.c_str()) < atoi(Order2.c_str()))
+				if (stoi(Order1) < stoi(Order2))
 				{
 					m_sql.safe_query("UPDATE Scenes SET [Order] = [Order]+1 WHERE ([Order] >= '%q' AND [Order] < '%q')", Order1.c_str(), Order2.c_str());
 				}
@@ -3167,7 +3167,7 @@ namespace http
 				std::string srights = request::findValue(&req, "rights");
 				std::string sRemoteSharing = request::findValue(&req, "RemoteSharing");
 				std::string sTabsEnabled = request::findValue(&req, "TabsEnabled");
-				int rights = atoi(srights.c_str());
+				int rights = stoi(srights);
 
 				if (cparam != "deleteuser")
 				{
@@ -3204,7 +3204,7 @@ namespace http
 					root["title"] = "AddUser";
 					m_sql.safe_query("INSERT INTO Users (Active, Username, Password, Rights, RemoteSharing, TabsEnabled) VALUES (%d,'%q','%q','%d','%d','%d')",
 						(senabled == "true") ? 1 : 0, sHashedUsername.c_str(), password.c_str(), rights, (sRemoteSharing == "true") ? 1 : 0,
-						atoi(sTabsEnabled.c_str()));
+						stoi(sTabsEnabled));
 				}
 				else if (cparam == "updateuser")
 				{
@@ -3217,7 +3217,7 @@ namespace http
 						std::string sOldUsername = result[0][0];
 						std::string sOldPassword = result[0][1];
 						std::string sOldRights = result[0][2];
-						int oldrights = atoi(sOldRights.c_str());
+						int oldrights = stoi(sOldRights);
 						if ((oldrights == URIGHTS_ADMIN) && (rights != URIGHTS_ADMIN) && (CountAdminUsers() <= 1))
 						{
 							root["message"] = "Cannot change rights of last Admin user!";
@@ -3232,7 +3232,7 @@ namespace http
 							RemoveUsersSessions(sOldUsername, session);
 
 						m_sql.safe_query("UPDATE Users SET Active=%d, Username='%q', Password='%q', Rights=%d, RemoteSharing=%d, TabsEnabled=%d WHERE (ID == '%q')",
-							(senabled == "true") ? 1 : 0, sHashedUsername.c_str(), password.c_str(), rights, (sRemoteSharing == "true") ? 1 : 0, atoi(sTabsEnabled.c_str()),
+							(senabled == "true") ? 1 : 0, sHashedUsername.c_str(), password.c_str(), rights, (sRemoteSharing == "true") ? 1 : 0, stoi(sTabsEnabled),
 							idx.c_str());
 					}
 				}
@@ -3245,7 +3245,7 @@ namespace http
 					if (result.size() == 1)
 					{
 						srights = result[0][1];
-						rights = atoi(srights.c_str());
+						rights = stoi(srights);
 						if ((CountAdminUsers() <= 1) && (rights == URIGHTS_ADMIN))
 						{
 							root["message"] = "Cannot delete last Admin user!";
@@ -3277,8 +3277,8 @@ namespace http
 				if (result.empty())
 					return false;
 
-				unsigned char dType = atoi(result[0][0].c_str());
-				unsigned char dSubType = atoi(result[0][1].c_str());
+				unsigned char dType = (unsigned char) stoi(result[0][0]);
+				unsigned char dSubType = (unsigned char) stoi(result[0][1]);
 
 				if (
 					(dType != pTypeLighting1) && (dType != pTypeLighting2) && (dType != pTypeLighting3) && (dType != pTypeLighting4) && (dType != pTypeLighting5) &&
@@ -3345,8 +3345,8 @@ namespace http
 						root["ID"] = m_sql.m_LastSwitchID;
 						root["idx"] = Json::Value::UInt64(m_sql.m_LastSwitchRowID);
 						root["Name"] = result[0][0];
-						root["Used"] = atoi(result[0][1].c_str());
-						root["Cmd"] = atoi(result[0][2].c_str());
+						root["Used"] = stoi(result[0][1]);
+						root["Cmd"] = stoi(result[0][2]);
 					}
 				}
 			} // learnsw
@@ -3361,7 +3361,7 @@ namespace http
 				std::string sisfavorite = request::findValue(&req, "isfavorite");
 				if ((idx.empty()) || (sisfavorite.empty()))
 					return false;
-				int isfavorite = atoi(sisfavorite.c_str());
+				int isfavorite = stoi(sisfavorite);
 
 				root["status"] = "OK";
 				root["title"] = "MakeFavorite";
@@ -3395,7 +3395,7 @@ namespace http
 				std::string sisfavorite = request::findValue(&req, "isfavorite");
 				if ((idx.empty()) || (sisfavorite.empty()))
 					return false;
-				int isfavorite = atoi(sisfavorite.c_str());
+				int isfavorite = stoi(sisfavorite);
 				m_sql.safe_query("UPDATE Scenes SET Favorite=%d WHERE (ID == '%q')", isfavorite, idx.c_str());
 				root["status"] = "OK";
 				root["title"] = "MakeSceneFavorite";
@@ -3477,11 +3477,11 @@ namespace http
 					_log.Log(LOG_ERROR, "User: %s, switch not found (idx=%s)!", Username.c_str(), idx.c_str());
 					return false;
 				}
-				bool bIsProtected = atoi(result[0][0].c_str()) != 0;
+				bool bIsProtected = stoi(result[0][0]) != 0;
 				std::string sSwitchName = result[0][1];
 				if (session.rights == 1)
 				{
-					if (!IsIdxForUser(&session, atoi(idx.c_str())))
+					if (!IsIdxForUser(&session, stoi(idx)))
 					{
 						_log.Log(LOG_ERROR, "User: %s initiated a Unauthorized switch command!", Username.c_str());
 						session.reply_status = reply::forbidden;
@@ -3518,7 +3518,7 @@ namespace http
 
 				root["title"] = "SwitchLight";
 
-				const bool bIsOOC = atoi(onlyonchange.c_str()) != 0;
+				const bool bIsOOC = stoi(onlyonchange) != 0;
 
 				std::string szSwitchMsg = std_format("User: %s initiated a switch command (%s/%s/%s)", szSwitchUser.c_str(), idx.c_str(), sSwitchName.c_str(), switchcmd.c_str());
 
@@ -3570,7 +3570,7 @@ namespace http
 					_log.Log(LOG_ERROR, "User: %s, scene not found (idx=%s)!", szSwitchUser.c_str(), idx.c_str());
 					return false;
 				}
-				bool bIsProtected = atoi(result[0][0].c_str()) != 0;
+				bool bIsProtected = stoi(result[0][0]) != 0;
 				if (bIsProtected)
 				{
 					if (passcode.empty())
@@ -3620,7 +3620,7 @@ namespace http
 				{
 					return false;
 				}
-				uint64_t ID = std::stoull(idx);
+				uint64_t ID = stoull(idx);
 				_tColor color;
 
 				std::string json = request::findValue(&req, "color");
@@ -3705,10 +3705,10 @@ namespace http
 					int r, g, b;
 
 					// convert hue to RGB
-					float iHue = float(atof(hue.c_str()));
+					float iHue = stof(hue);
 					float iSat = 100.0F;
 					if (!sat.empty())
-						iSat = float(atof(sat.c_str()));
+						iSat = stof(sat);
 					hsb2rgb(iHue, iSat / 100.0F, 1.0F, r, g, b, 255);
 
 					color = _tColor(r, g, b, 0, 0, ColorModeRGB);
@@ -3723,7 +3723,7 @@ namespace http
 				}
 
 				if (!brightness.empty())
-					ival = atoi(brightness.c_str());
+					ival = stoi(brightness);
 				ival = int(ival * brightnessAdj);
 				ival = std::max(ival, 0);
 				ival = std::min(ival, 100);
@@ -3757,10 +3757,10 @@ namespace http
 					return false;
 				}
 
-				uint64_t ID = std::stoull(idx);
+				uint64_t ID = stoull(idx);
 
 				std::string kelvin = request::findValue(&req, "kelvin");
-				double ival = atof(kelvin.c_str());
+				double ival = stod(kelvin);
 				ival = std::max(ival, 0.0);
 				ival = std::min(ival, 100.0);
 				_tColor color = _tColor((int)round(ival * 255.0F / 100.0F), ColorModeTemp);
@@ -3791,7 +3791,7 @@ namespace http
 					return false;
 				}
 
-				uint64_t ID = std::stoull(idx);
+				uint64_t ID = stoull(idx);
 				std::string szSwitchUser = Username + " (IP: " + session.remote_host + ")";
 				m_mainworker.SwitchLight(ID, "Bright Up", 0, NoColor, false, 0, szSwitchUser);
 			}
@@ -3817,7 +3817,7 @@ namespace http
 					return false;
 				}
 
-				uint64_t ID = std::stoull(idx);
+				uint64_t ID = stoull(idx);
 				std::string szSwitchUser = Username + " (IP: " + session.remote_host + ")";
 				m_mainworker.SwitchLight(ID, "Bright Down", 0, NoColor, false, 0, szSwitchUser);
 			}
@@ -3843,7 +3843,7 @@ namespace http
 					return false;
 				}
 
-				uint64_t ID = std::stoull(idx);
+				uint64_t ID = stoull(idx);
 				std::string szSwitchUser = Username + " (IP: " + session.remote_host + ")";
 				m_mainworker.SwitchLight(ID, "Disco Mode", 0, NoColor, false, 0, szSwitchUser);
 			}
@@ -3869,7 +3869,7 @@ namespace http
 					return false;
 				}
 
-				uint64_t ID = std::stoull(idx);
+				uint64_t ID = stoull(idx);
 				char szTmp[40];
 				sprintf(szTmp, "Disco Mode %s", cparam.substr(12).c_str());
 				std::string szSwitchUser = Username + " (IP: " + session.remote_host + ")";
@@ -3897,7 +3897,7 @@ namespace http
 					return false;
 				}
 
-				uint64_t ID = std::stoull(idx);
+				uint64_t ID = stoull(idx);
 				std::string szSwitchUser = Username + " (IP: " + session.remote_host + ")";
 				m_mainworker.SwitchLight(ID, "Disco Up", 0, NoColor, false, 0, szSwitchUser);
 			}
@@ -3923,7 +3923,7 @@ namespace http
 					return false;
 				}
 
-				uint64_t ID = std::stoull(idx);
+				uint64_t ID = stoull(idx);
 				std::string szSwitchUser = Username + " (IP: " + session.remote_host + ")";
 				m_mainworker.SwitchLight(ID, "Disco Down", 0, NoColor, false, 0, szSwitchUser);
 			}
@@ -3949,7 +3949,7 @@ namespace http
 					return false;
 				}
 
-				uint64_t ID = std::stoull(idx);
+				uint64_t ID = stoull(idx);
 				std::string szSwitchUser = Username + " (IP: " + session.remote_host + ")";
 				m_mainworker.SwitchLight(ID, "Speed Up", 0, NoColor, false, 0, szSwitchUser);
 			}
@@ -3975,7 +3975,7 @@ namespace http
 					return false;
 				}
 
-				uint64_t ID = std::stoull(idx);
+				uint64_t ID = stoull(idx);
 				std::string szSwitchUser = Username + " (IP: " + session.remote_host + ")";
 				m_mainworker.SwitchLight(ID, "Speed Up Long", 0, NoColor, false, 0, szSwitchUser);
 			}
@@ -4001,7 +4001,7 @@ namespace http
 					return false;
 				}
 
-				uint64_t ID = std::stoull(idx);
+				uint64_t ID = stoull(idx);
 				std::string szSwitchUser = Username + " (IP: " + session.remote_host + ")";
 				m_mainworker.SwitchLight(ID, "Speed Down", 0, NoColor, false, 0, szSwitchUser);
 			}
@@ -4027,7 +4027,7 @@ namespace http
 					return false;
 				}
 
-				uint64_t ID = std::stoull(idx);
+				uint64_t ID = stoull(idx);
 				std::string szSwitchUser = Username + " (IP: " + session.remote_host + ")";
 				m_mainworker.SwitchLight(ID, "Speed Minimal", 0, NoColor, false, 0, szSwitchUser);
 			}
@@ -4053,7 +4053,7 @@ namespace http
 					return false;
 				}
 
-				uint64_t ID = std::stoull(idx);
+				uint64_t ID = stoull(idx);
 				std::string szSwitchUser = Username + " (IP: " + session.remote_host + ")";
 				m_mainworker.SwitchLight(ID, "Speed Maximal", 0, NoColor, false, 0, szSwitchUser);
 			}
@@ -4079,7 +4079,7 @@ namespace http
 					return false;
 				}
 
-				uint64_t ID = std::stoull(idx);
+				uint64_t ID = stoull(idx);
 				std::string szSwitchUser = Username + " (IP: " + session.remote_host + ")";
 				m_mainworker.SwitchLight(ID, "Warmer", 0, NoColor, false, 0, szSwitchUser);
 			}
@@ -4105,7 +4105,7 @@ namespace http
 					return false;
 				}
 
-				uint64_t ID = std::stoull(idx);
+				uint64_t ID = stoull(idx);
 				std::string szSwitchUser = Username + " (IP: " + session.remote_host + ")";
 				m_mainworker.SwitchLight(ID, "Cooler", 0, NoColor, false, 0, szSwitchUser);
 			}
@@ -4131,7 +4131,7 @@ namespace http
 					return false;
 				}
 
-				uint64_t ID = std::stoull(idx);
+				uint64_t ID = stoull(idx);
 				std::string szSwitchUser = Username + " (IP: " + session.remote_host + ")";
 				m_mainworker.SwitchLight(ID, "Set Full", 0, NoColor, false, 0, szSwitchUser);
 			}
@@ -4157,7 +4157,7 @@ namespace http
 					return false;
 				}
 
-				uint64_t ID = std::stoull(idx);
+				uint64_t ID = stoull(idx);
 				std::string szSwitchUser = Username + " (IP: " + session.remote_host + ")";
 				m_mainworker.SwitchLight(ID, "Set Night", 0, NoColor, false, 0, szSwitchUser);
 			}
@@ -4183,7 +4183,7 @@ namespace http
 					return false;
 				}
 
-				uint64_t ID = std::stoull(idx);
+				uint64_t ID = stoull(idx);
 				// TODO: Change to color with mode=ColorModeWhite and level=100?
 				std::string szSwitchUser = Username + " (IP: " + session.remote_host + ")";
 				m_mainworker.SwitchLight(ID, "Set White", 0, NoColor, false, 0, szSwitchUser);

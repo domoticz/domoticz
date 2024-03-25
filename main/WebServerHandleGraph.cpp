@@ -36,7 +36,7 @@ namespace http
 			uint64_t idx = 0;
 			if (!request::findValue(&req, "idx").empty())
 			{
-				idx = std::stoull(request::findValue(&req, "idx"));
+				idx = stoull(request::findValue(&req, "idx"));
 			}
 
 			std::vector<std::vector<std::string>> result;
@@ -59,9 +59,9 @@ namespace http
 			if (result.empty())
 				return;
 
-			unsigned char dType = atoi(result[0][0].c_str());
-			unsigned char dSubType = atoi(result[0][1].c_str());
-			_eMeterType metertype = (_eMeterType)atoi(result[0][2].c_str());
+			unsigned char dType = (unsigned char) stoi(result[0][0]);
+			unsigned char dSubType = (unsigned char) stoi(result[0][1]);
+			_eMeterType metertype = (_eMeterType) stoi(result[0][2]);
 			_log.Debug(DEBUG_WEBSERVER, "CWebServer::Cmd_HandleGraph() : dType:%02X  dSubType:%02X  metertype:%d", dType, dSubType, int(metertype));
 			if ((dType == pTypeP1Power) || (dType == pTypeENERGY) || (dType == pTypePOWER) || (dType == pTypeCURRENTENERGY) || ((dType == pTypeGeneral) && (dSubType == sTypeKwh)))
 			{
@@ -75,9 +75,9 @@ namespace http
 			// Special case of managed counter: Usage instead of Value in Meter table, and we don't want to calculate last value
 			bool bIsManagedCounter = (dType == pTypeGeneral) && (dSubType == sTypeManagedCounter);
 
-			double AddjValue = atof(result[0][3].c_str());
-			double AddjMulti = atof(result[0][4].c_str());
-			double AddjValue2 = atof(result[0][5].c_str());
+			double AddjValue = stod(result[0][3]);
+			double AddjMulti = stod(result[0][4]);
+			double AddjValue2 = stod(result[0][5]);
 			std::string sOptions = result[0][6];
 			std::map<std::string, std::string> options = m_sql.BuildDeviceOptions(sOptions);
 
@@ -198,12 +198,12 @@ namespace http
 								|| dType == pTypeEvohomeWater
 								)
 							{
-								double tvalue = ConvertTemperature(atof(sd[0].c_str()), tempsign);
+								double tvalue = ConvertTemperature(stod(sd[0]), tempsign);
 								root["result"][ii]["te"] = tvalue;
 							}
 							if (((dType == pTypeWIND) && (dSubType == sTypeWIND4)) || ((dType == pTypeWIND) && (dSubType == sTypeWINDNoTemp)))
 							{
-								double tvalue = ConvertTemperature(atof(sd[1].c_str()), tempsign);
+								double tvalue = ConvertTemperature(stod(sd[1]), tempsign);
 								root["result"][ii]["ch"] = tvalue;
 							}
 							if ((dType == pTypeHUM) || (dType == pTypeTEMP_HUM) || (dType == pTypeTEMP_HUM_BARO))
@@ -216,7 +216,7 @@ namespace http
 								{
 									if (dSubType == sTypeTHBFloat)
 									{
-										sprintf(szTmp, "%.1f", atof(sd[3].c_str()) / 10.0F);
+										sprintf(szTmp, "%.1f", stof(sd[3]) / 10.0F);
 										root["result"][ii]["ba"] = szTmp;
 									}
 									else
@@ -224,18 +224,18 @@ namespace http
 								}
 								else if (dType == pTypeTEMP_BARO)
 								{
-									sprintf(szTmp, "%.1f", atof(sd[3].c_str()) / 10.0F);
+									sprintf(szTmp, "%.1f", stof(sd[3]) / 10.0F);
 									root["result"][ii]["ba"] = szTmp;
 								}
 								else if ((dType == pTypeGeneral) && (dSubType == sTypeBaro))
 								{
-									sprintf(szTmp, "%.1f", atof(sd[3].c_str()) / 10.0F);
+									sprintf(szTmp, "%.1f", stof(sd[3]) / 10.0F);
 									root["result"][ii]["ba"] = szTmp;
 								}
 							}
 							if ((dType == pTypeEvohomeZone) || (dType == pTypeEvohomeWater))
 							{
-								double se = ConvertTemperature(atof(sd[5].c_str()), tempsign);
+								double se = ConvertTemperature(stod(sd[5]), tempsign);
 								root["result"][ii]["se"] = se;
 							}
 							if (dType == pTypeSetpoint && dSubType == sTypeSetpoint)
@@ -249,11 +249,11 @@ namespace http
 									|| (value_unit == "F")
 									)
 								{
-									double se = ConvertTemperature(atof(sd[0].c_str()), tempsign);
+									double se = ConvertTemperature(stod(sd[0]), tempsign);
 									root["result"][ii]["te"] = se;
 								}
 								else
-									root["result"][ii]["te"] = atof(sd[0].c_str());
+									root["result"][ii]["te"] = stof(sd[0]);
 							}
 							ii++;
 						}
@@ -324,10 +324,10 @@ namespace http
 							{
 								if (nMeterType == 0)
 								{
-									int64_t actUsage1 = std::stoll(sd[0]);
-									int64_t actUsage2 = std::stoll(sd[4]);
-									int64_t actDeliv1 = std::stoll(sd[1]);
-									int64_t actDeliv2 = std::stoll(sd[5]);
+									int64_t actUsage1 = stoll(sd[0]);
+									int64_t actUsage2 = stoll(sd[4]);
+									int64_t actDeliv1 = stoll(sd[1]);
+									int64_t actDeliv2 = stoll(sd[5]);
 									actDeliv1 = (actDeliv1 < 10) ? 0 : actDeliv1;
 									actDeliv2 = (actDeliv2 < 10) ? 0 : actDeliv2;
 
@@ -436,10 +436,10 @@ namespace http
 											if (!result2.empty())
 											{
 												std::vector<std::string> sd = result2[0];
-												firstUsage1 = std::stoll(sd[0]);
-												firstDeliv1 = std::stoll(sd[1]);
-												firstUsage2 = std::stoll(sd[2]);
-												firstDeliv2 = std::stoll(sd[3]);
+												firstUsage1 = stoll(sd[0]);
+												firstDeliv1 = stoll(sd[1]);
+												firstUsage2 = stoll(sd[2]);
+												firstDeliv2 = stoll(sd[3]);
 												lastDay = ntime.tm_mday;
 											}
 										}
@@ -521,7 +521,7 @@ namespace http
 							for (const auto& sd : result)
 							{
 								root["result"][ii]["d"] = sd[1].substr(0, 16);
-								float fValue = float(atof(sd[0].c_str())) / vdiv;
+								float fValue = stof(sd[0]) / vdiv;
 								if (metertype == 1)
 								{
 									if ((dType == pTypeGeneral) && (dSubType == sTypeDistance))
@@ -586,7 +586,7 @@ namespace http
 							for (const auto& sd : result)
 							{
 								root["result"][ii]["d"] = sd[1].substr(0, 16);
-								sprintf(szTmp, "%.1f", m_sql.m_weightscale * atof(sd[0].c_str()) / 10.0F);
+								sprintf(szTmp, "%.1f", m_sql.m_weightscale * stof(sd[0]) / 10.0F);
 								root["result"][ii]["v"] = szTmp;
 								ii++;
 							}
@@ -604,7 +604,7 @@ namespace http
 							for (const auto& sd : result)
 							{
 								root["result"][ii]["d"] = sd[1].substr(0, 16);
-								root["result"][ii]["u"] = atof(sd[0].c_str()) / 10.0F;
+								root["result"][ii]["u"] = stof(sd[0]) / 10.0F;
 								ii++;
 							}
 						}
@@ -633,9 +633,9 @@ namespace http
 							{
 								root["result"][ii]["d"] = sd[3].substr(0, 16);
 
-								float fval1 = static_cast<float>(atof(sd[0].c_str()) / 10.0F);
-								float fval2 = static_cast<float>(atof(sd[1].c_str()) / 10.0F);
-								float fval3 = static_cast<float>(atof(sd[2].c_str()) / 10.0F);
+								float fval1 = stof(sd[0]) / 10.0F;
+								float fval2 = stof(sd[1]) / 10.0F;
+								float fval3 = stof(sd[2]) / 10.0F;
 
 								if (fval1 != 0)
 									bHaveL1 = true;
@@ -703,9 +703,9 @@ namespace http
 							{
 								root["result"][ii]["d"] = sd[3].substr(0, 16);
 
-								float fval1 = static_cast<float>(atof(sd[0].c_str()) / 10.0F);
-								float fval2 = static_cast<float>(atof(sd[1].c_str()) / 10.0F);
-								float fval3 = static_cast<float>(atof(sd[2].c_str()) / 10.0F);
+								float fval1 = stof(sd[0]) / 10.0F;
+								float fval2 = stof(sd[1]) / 10.0F;
+								float fval3 = stof(sd[2]) / 10.0F;
 
 								if (fval1 != 0)
 									bHaveL1 = true;
@@ -762,8 +762,8 @@ namespace http
 						result = m_sql.safe_query("SELECT MIN([Usage]), MAX([Usage]) FROM %s WHERE (DeviceRowID==%" PRIu64 ")", dbasetable.c_str(), idx);
 						if (!result.empty())
 						{
-							int64_t minValue = std::stoll(result[0][0]);
-							int64_t maxValue = std::stoll(result[0][1]);
+							int64_t minValue = stoll(result[0][0]);
+							int64_t maxValue = stoll(result[0][1]);
 
 							if ((minValue == 0) && (maxValue == 0))
 							{
@@ -777,7 +777,7 @@ namespace http
 						int method = 0;
 						std::string sMethod = request::findValue(&req, "method");
 						if (!sMethod.empty())
-							method = atoi(sMethod.c_str());
+							method = stoi(sMethod);
 						if (bHaveUsage == false)
 							method = 0;
 
@@ -813,7 +813,7 @@ namespace http
 								{
 									// bars / hour
 									std::string actDateTimeHour = sd[2].substr(0, 13);
-									int64_t actValue = std::stoll(sd[0]); // actual energy value
+									int64_t actValue = stoll(sd[0]); // actual energy value
 
 									ulLastValue = actValue;
 
@@ -883,7 +883,7 @@ namespace http
 
 								if (method == 1)
 								{
-									int64_t actValue = std::stoll(sd[1]);
+									int64_t actValue = stoll(sd[1]);
 
 									root["result"][ii]["d"] = sd[2].substr(0, 16);
 
@@ -941,7 +941,7 @@ namespace http
 						int method = 0;
 						std::string sMethod = request::findValue(&req, "method");
 						if (!sMethod.empty())
-							method = atoi(sMethod.c_str());
+							method = stoi(sMethod);
 
 						if (bIsManagedCounter)
 						{
@@ -964,7 +964,7 @@ namespace http
 								if (method == 0)
 								{
 									// bars / hour
-									int64_t actValue = std::stoll(sd[0]);
+									int64_t actValue = stoll(sd[0]);
 									szlastDateTime = sd[1].substr(0, 16);
 									szActDateTimeHour = sd[1].substr(0, 13) + ":00";
 
@@ -1082,7 +1082,7 @@ namespace http
 											if (!result2.empty())
 											{
 												std::vector<std::string> sd = result2[0];
-												ulRealFirstValue = std::stoll(sd[0]);
+												ulRealFirstValue = stoll(sd[0]);
 												lastDay = ntime.tm_mday;
 											}
 										}
@@ -1094,7 +1094,7 @@ namespace http
 								else
 								{
 									// realtime graph
-									int64_t actValue = std::stoll(sd[0]);
+									int64_t actValue = stoll(sd[0]);
 
 									std::string stime = sd[1];
 									struct tm ntime;
@@ -1252,8 +1252,8 @@ namespace http
 						int ii = 0;
 						for (const auto& sd : result)
 						{
-							float ActTotal = static_cast<float>(atof(sd[0].c_str()));
-							int Hour = atoi(sd[1].substr(11, 2).c_str());
+							float ActTotal = stof(sd[0]);
+							int Hour = stoi(sd[1].substr(11, 2));
 							if (Hour != WorkingHour)
 							{
 								if (WorkingHour != -1)
@@ -1282,7 +1282,7 @@ namespace http
 							StringSplit(sValue, ";", results);
 							if (results.size() == 2)
 							{
-								float ActTotal = static_cast<float>(atof(results[1].c_str()));
+								float ActTotal = stof(results[1]);
 								if (ActTotal > LastValue)
 									LastValue = ActTotal;
 							}
@@ -1312,8 +1312,8 @@ namespace http
 							root["result"][ii]["d"] = sd[3].substr(0, 16);
 							root["result"][ii]["di"] = sd[0];
 
-							int intSpeed = atoi(sd[1].c_str());
-							int intGust = atoi(sd[2].c_str());
+							int intSpeed = stoi(sd[1]);
+							int intGust = stoi(sd[2]);
 
 							if (m_sql.m_windunit != WINDUNIT_Beaufort)
 							{
@@ -1418,12 +1418,12 @@ namespace http
 
 						for (const auto& sd : result)
 						{
-							float fdirection = static_cast<float>(atof(sd[0].c_str()));
+							float fdirection = stof(sd[0]);
 							if (fdirection >= 360)
 								fdirection = 0;
 							int direction = int(fdirection);
-							float speedOrg = static_cast<float>(atof(sd[1].c_str()));
-							float gustOrg = static_cast<float>(atof(sd[2].c_str()));
+							float speedOrg = stof(sd[1]);
+							float gustOrg = stof(sd[2]);
 							if ((gustOrg == 0) && (speedOrg != 0))
 								gustOrg = speedOrg;
 							if (gustOrg == 0)
@@ -1604,7 +1604,7 @@ namespace http
 						for (const auto& sd : result)
 						{
 							root["result"][ii]["d"] = sd[2].substr(0, 16);
-							double mmval = atof(sd[0].c_str());
+							double mmval = stod(sd[0]);
 							mmval *= AddjMulti;
 							sprintf(szTmp, "%.1f", mmval);
 							root["result"][ii]["mm"] = szTmp;
@@ -1625,9 +1625,9 @@ namespace http
 					{
 						std::vector<std::string> sd = result[0];
 
-						float total_min = static_cast<float>(atof(sd[0].c_str()));
-						float total_max = static_cast<float>(atof(sd[1].c_str()));
-						// int rate = atoi(sd[2].c_str());
+						float total_min = stof(sd[0]);
+						float total_max = stof(sd[1]);
+						// int rate = stoi(sd[2]);
 
 						double total_real = 0;
 						if (dSubType == sTypeRAINWU || dSubType == sTypeRAINByRate)
@@ -1680,10 +1680,10 @@ namespace http
 								std::string szValueUsage2 = sd[2];
 								std::string szValueDeliv2 = sd[3];
 
-								float fUsage1 = (float)(atof(szValueUsage1.c_str()));
-								float fUsage2 = (float)(atof(szValueUsage2.c_str()));
-								float fDeliv1 = (float)(atof(szValueDeliv1.c_str()));
-								float fDeliv2 = (float)(atof(szValueDeliv2.c_str()));
+								float fUsage1 = stof(szValueUsage1);
+								float fUsage2 = stof(szValueUsage2);
+								float fDeliv1 = stof(szValueDeliv1);
+								float fDeliv2 = stof(szValueDeliv2);
 
 								fDeliv1 = (fDeliv1 < 10) ? 0 : fDeliv1;
 								fDeliv2 = (fDeliv2 < 10) ? 0 : fDeliv2;
@@ -1720,19 +1720,19 @@ namespace http
 								{
 								case MTYPE_ENERGY:
 								case MTYPE_ENERGY_GENERATED:
-									sprintf(szTmp, "%.3f", atof(szValue.c_str()) / divider);
+									sprintf(szTmp, "%.3f", stof(szValue) / divider);
 									szValue = szTmp;
 									break;
 								case MTYPE_GAS:
-									sprintf(szTmp, "%.3f", atof(szValue.c_str()) / divider);
+									sprintf(szTmp, "%.3f", stof(szValue) / divider);
 									szValue = szTmp;
 									break;
 								case MTYPE_WATER:
-									sprintf(szTmp, "%.3f", atof(szValue.c_str()) / divider);
+									sprintf(szTmp, "%.3f", stof(szValue) / divider);
 									szValue = szTmp;
 									break;
 								case MTYPE_COUNTER:
-									sprintf(szTmp, "%.10g", atof(szValue.c_str()) / divider);
+									sprintf(szTmp, "%.10g", stof(szValue) / divider);
 									szValue = szTmp;
 									break;
 								default:
@@ -1754,15 +1754,15 @@ namespace http
 						{
 							std::vector<std::string> sd = result[0];
 
-							uint64_t total_min_usage_1 = std::stoull(sd[0]);
-							uint64_t total_max_usage_1 = std::stoull(sd[1]);
-							uint64_t total_min_usage_2 = std::stoull(sd[4]);
-							uint64_t total_max_usage_2 = std::stoull(sd[5]);
+							uint64_t total_min_usage_1 = stoull(sd[0]);
+							uint64_t total_max_usage_1 = stoull(sd[1]);
+							uint64_t total_min_usage_2 = stoull(sd[4]);
+							uint64_t total_max_usage_2 = stoull(sd[5]);
 							uint64_t total_real_usage_1, total_real_usage_2;
-							uint64_t total_min_deliv_1 = std::stoull(sd[2]);
-							uint64_t total_max_deliv_1 = std::stoull(sd[3]);
-							uint64_t total_min_deliv_2 = std::stoull(sd[6]);
-							uint64_t total_max_deliv_2 = std::stoull(sd[7]);
+							uint64_t total_min_deliv_1 = stoull(sd[2]);
+							uint64_t total_max_deliv_1 = stoull(sd[3]);
+							uint64_t total_min_deliv_2 = stoull(sd[6]);
+							uint64_t total_max_deliv_2 = stoull(sd[7]);
 							uint64_t total_real_deliv_1, total_real_deliv_2;
 
 							bool bHaveDeliverd = false;
@@ -1779,22 +1779,22 @@ namespace http
 
 							sprintf(szTmp, "%" PRIu64, total_real_usage_1);
 							std::string szValue = szTmp;
-							sprintf(szTmp, "%.3f", atof(szValue.c_str()) / divider);
+							sprintf(szTmp, "%.3f", stof(szValue) / divider);
 							root["result"][ii]["v"] = szTmp;
 
 							sprintf(szTmp, "%" PRIu64, total_real_usage_2);
 							szValue = szTmp;
-							sprintf(szTmp, "%.3f", atof(szValue.c_str()) / divider);
+							sprintf(szTmp, "%.3f", stof(szValue) / divider);
 							root["result"][ii]["v2"] = szTmp;
 
 							sprintf(szTmp, "%" PRIu64, total_real_deliv_1);
 							szValue = szTmp;
-							sprintf(szTmp, "%.3f", atof(szValue.c_str()) / divider);
+							sprintf(szTmp, "%.3f", stof(szValue) / divider);
 							root["result"][ii]["r1"] = szTmp;
 
 							sprintf(szTmp, "%" PRIu64, total_real_deliv_2);
 							szValue = szTmp;
-							sprintf(szTmp, "%.3f", atof(szValue.c_str()) / divider);
+							sprintf(szTmp, "%.3f", stof(szValue) / divider);
 							root["result"][ii]["r2"] = szTmp;
 
 							ii++;
@@ -1812,7 +1812,7 @@ namespace http
 						{
 							std::vector<std::string> sd = result[0];
 
-							int64_t total_min = std::stoll(sd[0]);
+							int64_t total_min = stoll(sd[0]);
 							int64_t total_max = total_min;
 							int64_t total_real;
 
@@ -1821,7 +1821,7 @@ namespace http
 							if (!result.empty())
 							{
 								std::vector<std::string> sd = result[0];
-								total_max = std::stoull(sd[0].c_str());
+								total_max = stoll(sd[0]);
 							}
 
 							total_real = total_max - total_min;
@@ -1832,19 +1832,19 @@ namespace http
 							{
 							case MTYPE_ENERGY:
 							case MTYPE_ENERGY_GENERATED:
-								sprintf(szTmp, "%.3f", atof(szValue.c_str()) / divider);
+								sprintf(szTmp, "%.3f", stof(szValue) / divider);
 								szValue = szTmp;
 								break;
 							case MTYPE_GAS:
-								sprintf(szTmp, "%.3f", atof(szValue.c_str()) / divider);
+								sprintf(szTmp, "%.3f", stof(szValue) / divider);
 								szValue = szTmp;
 								break;
 							case MTYPE_WATER:
-								sprintf(szTmp, "%.3f", atof(szValue.c_str()) / divider);
+								sprintf(szTmp, "%.3f", stof(szValue) / divider);
 								szValue = szTmp;
 								break;
 							case MTYPE_COUNTER:
-								sprintf(szTmp, "%.10g", atof(szValue.c_str()) / divider);
+								sprintf(szTmp, "%.10g", stof(szValue) / divider);
 								szValue = szTmp;
 								break;
 							default:
@@ -1869,8 +1869,8 @@ namespace http
 				std::string sactmonth = request::findValue(&req, "actmonth");
 				std::string sactyear = request::findValue(&req, "actyear");
 
-				int actMonth = atoi(sactmonth.c_str());
-				int actYear = atoi(sactyear.c_str());
+				int actMonth = stoi(sactmonth);
+				int actYear = stoi(sactyear);
 
 				if ((!sactmonth.empty()) && (!sactyear.empty()))
 				{
@@ -1976,9 +1976,9 @@ namespace http
 								}
 								if (bOK)
 								{
-									double te = ConvertTemperature(atof(sd[1].c_str()), tempsign);
-									double tm = ConvertTemperature(atof(sd[0].c_str()), tempsign);
-									double ta = ConvertTemperature(atof(sd[6].c_str()), tempsign);
+									double te = ConvertTemperature(stod(sd[1]), tempsign);
+									double tm = ConvertTemperature(stod(sd[0]), tempsign);
+									double ta = ConvertTemperature(stod(sd[6]), tempsign);
 									root["result"][ii]["te"] = te;
 									root["result"][ii]["tm"] = tm;
 									root["result"][ii]["ta"] = ta;
@@ -1986,8 +1986,8 @@ namespace http
 							}
 							if (((dType == pTypeWIND) && (dSubType == sTypeWIND4)) || ((dType == pTypeWIND) && (dSubType == sTypeWINDNoTemp)))
 							{
-								double ch = ConvertTemperature(atof(sd[3].c_str()), tempsign);
-								double cm = ConvertTemperature(atof(sd[2].c_str()), tempsign);
+								double ch = ConvertTemperature(stod(sd[3]), tempsign);
+								double cm = ConvertTemperature(stod(sd[2]), tempsign);
 								root["result"][ii]["ch"] = ch;
 								root["result"][ii]["cm"] = cm;
 							}
@@ -2001,7 +2001,7 @@ namespace http
 								{
 									if (dSubType == sTypeTHBFloat)
 									{
-										sprintf(szTmp, "%.1f", atof(sd[5].c_str()) / 10.0F);
+										sprintf(szTmp, "%.1f", stof(sd[5]) / 10.0F);
 										root["result"][ii]["ba"] = szTmp;
 									}
 									else
@@ -2009,20 +2009,20 @@ namespace http
 								}
 								else if (dType == pTypeTEMP_BARO)
 								{
-									sprintf(szTmp, "%.1f", atof(sd[5].c_str()) / 10.0F);
+									sprintf(szTmp, "%.1f", stof(sd[5]) / 10.0F);
 									root["result"][ii]["ba"] = szTmp;
 								}
 								else if ((dType == pTypeGeneral) && (dSubType == sTypeBaro))
 								{
-									sprintf(szTmp, "%.1f", atof(sd[5].c_str()) / 10.0F);
+									sprintf(szTmp, "%.1f", stof(sd[5]) / 10.0F);
 									root["result"][ii]["ba"] = szTmp;
 								}
 							}
 							if ((dType == pTypeEvohomeZone) || (dType == pTypeEvohomeWater))
 							{
-								double sm = ConvertTemperature(atof(sd[8].c_str()), tempsign);
-								double sx = ConvertTemperature(atof(sd[9].c_str()), tempsign);
-								double se = ConvertTemperature(atof(sd[10].c_str()), tempsign);
+								double sm = ConvertTemperature(stod(sd[8]), tempsign);
+								double sx = ConvertTemperature(stod(sd[9]), tempsign);
+								double se = ConvertTemperature(stod(sd[10]), tempsign);
 								root["result"][ii]["sm"] = sm;
 								root["result"][ii]["se"] = se;
 								root["result"][ii]["sx"] = sx;
@@ -2038,18 +2038,18 @@ namespace http
 									|| (value_unit == "F")
 									)
 								{
-									double te = ConvertTemperature(atof(sd[1].c_str()), tempsign);
-									double tm = ConvertTemperature(atof(sd[0].c_str()), tempsign);
-									double ta = ConvertTemperature(atof(sd[6].c_str()), tempsign);
+									double te = ConvertTemperature(stod(sd[1]), tempsign);
+									double tm = ConvertTemperature(stod(sd[0]), tempsign);
+									double ta = ConvertTemperature(stod(sd[6]), tempsign);
 									root["result"][ii]["te"] = te;
 									root["result"][ii]["tm"] = tm;
 									root["result"][ii]["ta"] = ta;
 								}
 								else
 								{
-									root["result"][ii]["te"] = atof(sd[1].c_str());
-									root["result"][ii]["tm"] = atof(sd[0].c_str());
-									root["result"][ii]["ta"] = atof(sd[6].c_str());
+									root["result"][ii]["te"] = stof(sd[1]);
+									root["result"][ii]["tm"] = stof(sd[0]);
+									root["result"][ii]["ta"] = stof(sd[6]);
 								}
 							}
 
@@ -2084,17 +2084,17 @@ namespace http
 							|| (dType == pTypeEvohomeWater)
 							)
 						{
-							double te = ConvertTemperature(atof(sd[1].c_str()), tempsign);
-							double tm = ConvertTemperature(atof(sd[0].c_str()), tempsign);
-							double ta = ConvertTemperature(atof(sd[6].c_str()), tempsign);
+							double te = ConvertTemperature(stod(sd[1]), tempsign);
+							double tm = ConvertTemperature(stod(sd[0]), tempsign);
+							double ta = ConvertTemperature(stod(sd[6]), tempsign);
 							root["result"][ii]["te"] = te;
 							root["result"][ii]["tm"] = tm;
 							root["result"][ii]["ta"] = ta;
 						}
 						if (((dType == pTypeWIND) && (dSubType == sTypeWIND4)) || ((dType == pTypeWIND) && (dSubType == sTypeWINDNoTemp)))
 						{
-							double ch = ConvertTemperature(atof(sd[3].c_str()), tempsign);
-							double cm = ConvertTemperature(atof(sd[2].c_str()), tempsign);
+							double ch = ConvertTemperature(stod(sd[3]), tempsign);
+							double cm = ConvertTemperature(stod(sd[2]), tempsign);
 							root["result"][ii]["ch"] = ch;
 							root["result"][ii]["cm"] = cm;
 						}
@@ -2108,7 +2108,7 @@ namespace http
 							{
 								if (dSubType == sTypeTHBFloat)
 								{
-									sprintf(szTmp, "%.1f", atof(sd[5].c_str()) / 10.0F);
+									sprintf(szTmp, "%.1f", stof(sd[5]) / 10.0F);
 									root["result"][ii]["ba"] = szTmp;
 								}
 								else
@@ -2116,20 +2116,20 @@ namespace http
 							}
 							else if (dType == pTypeTEMP_BARO)
 							{
-								sprintf(szTmp, "%.1f", atof(sd[5].c_str()) / 10.0F);
+								sprintf(szTmp, "%.1f", stof(sd[5]) / 10.0F);
 								root["result"][ii]["ba"] = szTmp;
 							}
 							else if ((dType == pTypeGeneral) && (dSubType == sTypeBaro))
 							{
-								sprintf(szTmp, "%.1f", atof(sd[5].c_str()) / 10.0F);
+								sprintf(szTmp, "%.1f", stof(sd[5]) / 10.0F);
 								root["result"][ii]["ba"] = szTmp;
 							}
 						}
 						if ((dType == pTypeEvohomeZone) || (dType == pTypeEvohomeWater))
 						{
-							double sx = ConvertTemperature(atof(sd[8].c_str()), tempsign);
-							double sm = ConvertTemperature(atof(sd[7].c_str()), tempsign);
-							double se = ConvertTemperature(atof(sd[9].c_str()), tempsign);
+							double sx = ConvertTemperature(stod(sd[8]), tempsign);
+							double sm = ConvertTemperature(stod(sd[7]), tempsign);
+							double se = ConvertTemperature(stod(sd[9]), tempsign);
 							root["result"][ii]["se"] = se;
 							root["result"][ii]["sm"] = sm;
 							root["result"][ii]["sx"] = sx;
@@ -2145,18 +2145,18 @@ namespace http
 								|| (value_unit == "F")
 								)
 							{
-								double te = ConvertTemperature(atof(sd[1].c_str()), tempsign);
-								double tm = ConvertTemperature(atof(sd[0].c_str()), tempsign);
-								double ta = ConvertTemperature(atof(sd[6].c_str()), tempsign);
+								double te = ConvertTemperature(stod(sd[1]), tempsign);
+								double tm = ConvertTemperature(stod(sd[0]), tempsign);
+								double ta = ConvertTemperature(stod(sd[6]), tempsign);
 								root["result"][ii]["te"] = te;
 								root["result"][ii]["tm"] = tm;
 								root["result"][ii]["ta"] = ta;
 							}
 							else
 							{
-								root["result"][ii]["te"] = atof(sd[1].c_str());
-								root["result"][ii]["tm"] = atof(sd[0].c_str());
-								root["result"][ii]["ta"] = atof(sd[6].c_str());
+								root["result"][ii]["te"] = stof(sd[1]);
+								root["result"][ii]["tm"] = stof(sd[0]);
+								root["result"][ii]["ta"] = stof(sd[6]);
 							}
 						}
 						ii++;
@@ -2198,9 +2198,9 @@ namespace http
 								}
 								if (bOK)
 								{
-									double te = ConvertTemperature(atof(sd[1].c_str()), tempsign);
-									double tm = ConvertTemperature(atof(sd[0].c_str()), tempsign);
-									double ta = ConvertTemperature(atof(sd[6].c_str()), tempsign);
+									double te = ConvertTemperature(stod(sd[1]), tempsign);
+									double tm = ConvertTemperature(stod(sd[0]), tempsign);
+									double ta = ConvertTemperature(stod(sd[6]), tempsign);
 									root["resultprev"][iPrev]["te"] = te;
 									root["resultprev"][iPrev]["tm"] = tm;
 									root["resultprev"][iPrev]["ta"] = ta;
@@ -2208,8 +2208,8 @@ namespace http
 							}
 							if (((dType == pTypeWIND) && (dSubType == sTypeWIND4)) || ((dType == pTypeWIND) && (dSubType == sTypeWINDNoTemp)))
 							{
-								double ch = ConvertTemperature(atof(sd[3].c_str()), tempsign);
-								double cm = ConvertTemperature(atof(sd[2].c_str()), tempsign);
+								double ch = ConvertTemperature(stod(sd[3]), tempsign);
+								double cm = ConvertTemperature(stod(sd[2]), tempsign);
 								root["resultprev"][iPrev]["ch"] = ch;
 								root["resultprev"][iPrev]["cm"] = cm;
 							}
@@ -2223,7 +2223,7 @@ namespace http
 								{
 									if (dSubType == sTypeTHBFloat)
 									{
-										sprintf(szTmp, "%.1f", atof(sd[5].c_str()) / 10.0F);
+										sprintf(szTmp, "%.1f", stof(sd[5]) / 10.0F);
 										root["resultprev"][iPrev]["ba"] = szTmp;
 									}
 									else
@@ -2231,20 +2231,20 @@ namespace http
 								}
 								else if (dType == pTypeTEMP_BARO)
 								{
-									sprintf(szTmp, "%.1f", atof(sd[5].c_str()) / 10.0F);
+									sprintf(szTmp, "%.1f", stof(sd[5]) / 10.0F);
 									root["resultprev"][iPrev]["ba"] = szTmp;
 								}
 								else if ((dType == pTypeGeneral) && (dSubType == sTypeBaro))
 								{
-									sprintf(szTmp, "%.1f", atof(sd[5].c_str()) / 10.0F);
+									sprintf(szTmp, "%.1f", stof(sd[5]) / 10.0F);
 									root["resultprev"][iPrev]["ba"] = szTmp;
 								}
 							}
 							if ((dType == pTypeEvohomeZone) || (dType == pTypeEvohomeWater))
 							{
-								double sx = ConvertTemperature(atof(sd[8].c_str()), tempsign);
-								double sm = ConvertTemperature(atof(sd[7].c_str()), tempsign);
-								double se = ConvertTemperature(atof(sd[9].c_str()), tempsign);
+								double sx = ConvertTemperature(stod(sd[8]), tempsign);
+								double sm = ConvertTemperature(stod(sd[7]), tempsign);
+								double se = ConvertTemperature(stod(sd[9]), tempsign);
 								root["resultprev"][iPrev]["se"] = se;
 								root["resultprev"][iPrev]["sm"] = sm;
 								root["resultprev"][iPrev]["sx"] = sx;
@@ -2260,18 +2260,18 @@ namespace http
 									|| (value_unit == "F")
 									)
 								{
-									double te = ConvertTemperature(atof(sd[1].c_str()), tempsign);
-									double tm = ConvertTemperature(atof(sd[0].c_str()), tempsign);
-									double ta = ConvertTemperature(atof(sd[6].c_str()), tempsign);
+									double te = ConvertTemperature(stod(sd[1]), tempsign);
+									double tm = ConvertTemperature(stod(sd[0]), tempsign);
+									double ta = ConvertTemperature(stod(sd[6]), tempsign);
 									root["resultprev"][iPrev]["te"] = te;
 									root["resultprev"][iPrev]["tm"] = tm;
 									root["resultprev"][iPrev]["ta"] = ta;
 								}
 								else
 								{
-									root["resultprev"][iPrev]["te"] = atof(sd[1].c_str());
-									root["resultprev"][iPrev]["tm"] = atof(sd[0].c_str());
-									root["resultprev"][iPrev]["ta"] = atof(sd[6].c_str());
+									root["resultprev"][iPrev]["te"] = stof(sd[1]);
+									root["resultprev"][iPrev]["tm"] = stof(sd[0]);
+									root["resultprev"][iPrev]["ta"] = stof(sd[6]);
 								}
 							}
 
@@ -2427,7 +2427,7 @@ namespace http
 						for (const auto& sd : result)
 						{
 							root["result"][ii]["d"] = sd[2].substr(0, 16);
-							double mmval = atof(sd[0].c_str());
+							double mmval = stod(sd[0]);
 							mmval *= AddjMulti;
 							sprintf(szTmp, "%.1f", mmval);
 							root["result"][ii]["mm"] = szTmp;
@@ -2448,9 +2448,9 @@ namespace http
 					{
 						std::vector<std::string> sd = result[0];
 
-						float total_min = static_cast<float>(atof(sd[0].c_str()));
-						float total_max = static_cast<float>(atof(sd[1].c_str()));
-						// int rate = atoi(sd[2].c_str());
+						float total_min = stof(sd[0]);
+						float total_max = stof(sd[1]);
+						// int rate = stoi(sd[2]);
 
 						double total_real = 0;
 						if (dSubType == sTypeRAINWU || dSubType == sTypeRAINByRate)
@@ -2476,7 +2476,7 @@ namespace http
 						for (const auto& sd : result)
 						{
 							root["resultprev"][iPrev]["d"] = sd[2].substr(0, 16);
-							double mmval = atof(sd[0].c_str());
+							double mmval = stod(sd[0]);
 							mmval *= AddjMulti;
 							sprintf(szTmp, "%.1f", mmval);
 							root["resultprev"][iPrev]["mm"] = szTmp;
@@ -2563,15 +2563,15 @@ namespace http
 								{
 									root["result"][ii]["d"] = sd[4].substr(0, 16);
 
-									double counter_1 = std::stod(sd[5]);
-									double counter_2 = std::stod(sd[6]);
-									double counter_3 = std::stod(sd[7]);
-									double counter_4 = std::stod(sd[8]);
+									double counter_1 = stod(sd[5]);
+									double counter_2 = stod(sd[6]);
+									double counter_3 = stod(sd[7]);
+									double counter_4 = stod(sd[8]);
 
-									float fUsage_1 = std::stof(sd[0]);
-									float fUsage_2 = std::stof(sd[2]);
-									float fDeliv_1 = std::stof(sd[1]);
-									float fDeliv_2 = std::stof(sd[3]);
+									float fUsage_1 = stof(sd[0]);
+									float fUsage_2 = stof(sd[2]);
+									float fDeliv_1 = stof(sd[1]);
+									float fDeliv_2 = stof(sd[3]);
 
 									fDeliv_1 = (fDeliv_1 < 10) ? 0 : fDeliv_1;
 									fDeliv_2 = (fDeliv_2 < 10) ? 0 : fDeliv_2;
@@ -2648,10 +2648,10 @@ namespace http
 								{
 									root["resultprev"][iPrev]["d"] = sd[4].substr(0, 16);
 
-									float fUsage_1 = std::stof(sd[0]);
-									float fUsage_2 = std::stof(sd[2]);
-									float fDeliv_1 = std::stof(sd[1]);
-									float fDeliv_2 = std::stof(sd[3]);
+									float fUsage_1 = stof(sd[0]);
+									float fUsage_2 = stof(sd[2]);
+									float fDeliv_1 = stof(sd[1]);
+									float fDeliv_2 = stof(sd[3]);
 
 									if ((fDeliv_1 != 0) || (fDeliv_2 != 0))
 									{
@@ -2769,9 +2769,9 @@ namespace http
 						{
 							for (const auto& sd : result)
 							{
-								float fValue1 = float(atof(sd[0].c_str())) / vdiv;
-								float fValue2 = float(atof(sd[1].c_str())) / vdiv;
-								float fValue3 = float(atof(sd[2].c_str())) / vdiv;
+								float fValue1 = stof(sd[0]) / vdiv;
+								float fValue2 = stof(sd[1]) / vdiv;
+								float fValue3 = stof(sd[2]) / vdiv;
 								root["result"][ii]["d"] = sd[3].substr(0, 16);
 
 								if (metertype == 1)
@@ -2865,9 +2865,9 @@ namespace http
 							for (const auto& sd : result)
 							{
 								root["result"][ii]["d"] = sd[2].substr(0, 16);
-								sprintf(szTmp, "%.1f", m_sql.m_weightscale * atof(sd[0].c_str()) / 10.0F);
+								sprintf(szTmp, "%.1f", m_sql.m_weightscale * stof(sd[0]) / 10.0F);
 								root["result"][ii]["v_min"] = szTmp;
-								sprintf(szTmp, "%.1f", m_sql.m_weightscale * atof(sd[1].c_str()) / 10.0F);
+								sprintf(szTmp, "%.1f", m_sql.m_weightscale * stof(sd[1]) / 10.0F);
 								root["result"][ii]["v_max"] = szTmp;
 								ii++;
 							}
@@ -2892,8 +2892,8 @@ namespace http
 							for (const auto& sd : result)
 							{
 								root["result"][ii]["d"] = sd[2].substr(0, 16);
-								root["result"][ii]["u_min"] = atof(sd[0].c_str()) / 10.0F;
-								root["result"][ii]["u_max"] = atof(sd[1].c_str()) / 10.0F;
+								root["result"][ii]["u_min"] = stof(sd[0]) / 10.0F;
+								root["result"][ii]["u_max"] = stof(sd[1]) / 10.0F;
 								ii++;
 							}
 						}
@@ -2920,12 +2920,12 @@ namespace http
 							{
 								root["result"][ii]["d"] = sd[6].substr(0, 16);
 
-								float fval1 = static_cast<float>(atof(sd[0].c_str()) / 10.0F);
-								float fval2 = static_cast<float>(atof(sd[1].c_str()) / 10.0F);
-								float fval3 = static_cast<float>(atof(sd[2].c_str()) / 10.0F);
-								float fval4 = static_cast<float>(atof(sd[3].c_str()) / 10.0F);
-								float fval5 = static_cast<float>(atof(sd[4].c_str()) / 10.0F);
-								float fval6 = static_cast<float>(atof(sd[5].c_str()) / 10.0F);
+								float fval1 = stof(sd[0]) / 10.0F;
+								float fval2 = stof(sd[1]) / 10.0F;
+								float fval3 = stof(sd[2]) / 10.0F;
+								float fval4 = stof(sd[3]) / 10.0F;
+								float fval5 = stof(sd[4]) / 10.0F;
+								float fval6 = stof(sd[5]) / 10.0F;
 
 								if ((fval1 != 0) || (fval2 != 0))
 									bHaveL1 = true;
@@ -3004,12 +3004,12 @@ namespace http
 							{
 								root["result"][ii]["d"] = sd[6].substr(0, 16);
 
-								float fval1 = static_cast<float>(atof(sd[0].c_str()) / 10.0F);
-								float fval2 = static_cast<float>(atof(sd[1].c_str()) / 10.0F);
-								float fval3 = static_cast<float>(atof(sd[2].c_str()) / 10.0F);
-								float fval4 = static_cast<float>(atof(sd[3].c_str()) / 10.0F);
-								float fval5 = static_cast<float>(atof(sd[4].c_str()) / 10.0F);
-								float fval6 = static_cast<float>(atof(sd[5].c_str()) / 10.0F);
+								float fval1 = stof(sd[0]) / 10.0F;
+								float fval2 = stof(sd[1]) / 10.0F;
+								float fval3 = stof(sd[2]) / 10.0F;
+								float fval4 = stof(sd[3]) / 10.0F;
+								float fval5 = stof(sd[4]) / 10.0F;
+								float fval6 = stof(sd[5]) / 10.0F;
 
 								if ((fval1 != 0) || (fval2 != 0))
 									bHaveL1 = true;
@@ -3071,7 +3071,7 @@ namespace http
 						if (dType == pTypeP1Gas)
 						{
 							// Add last counter value
-							sprintf(szTmp, "%.3f", atof(sValue.c_str()) / 1000.0);
+							sprintf(szTmp, "%.3f", stof(sValue) / 1000.0F);
 							root["counter"] = szTmp;
 						}
 						else if (dType == pTypeENERGY)
@@ -3079,7 +3079,7 @@ namespace http
 							size_t spos = sValue.find(';');
 							if (spos != std::string::npos)
 							{
-								float fvalue = static_cast<float>(atof(sValue.substr(spos + 1).c_str()));
+								float fvalue = stof(sValue.substr(spos + 1));
 								sprintf(szTmp, "%.3f", fvalue / (divider / 100.0F));
 								root["counter"] = szTmp;
 							}
@@ -3089,7 +3089,7 @@ namespace http
 							size_t spos = sValue.find(';');
 							if (spos != std::string::npos)
 							{
-								float fvalue = static_cast<float>(atof(sValue.substr(spos + 1).c_str()));
+								float fvalue = stof(sValue.substr(spos + 1));
 								sprintf(szTmp, "%.3f", fvalue / divider);
 								root["counter"] = szTmp;
 							}
@@ -3097,7 +3097,7 @@ namespace http
 						else if (dType == pTypeRFXMeter)
 						{
 							// Add last counter value
-							double fvalue = atof(sValue.c_str());
+							double fvalue = stod(sValue);
 							switch (metertype)
 							{
 							case MTYPE_ENERGY:
@@ -3126,7 +3126,7 @@ namespace http
 							if (results.size() == 2)
 							{
 								// Add last counter value
-								double fvalue = atof(results[0].c_str());
+								double fvalue = stod(results[0]);
 								switch (metertype)
 								{
 								case MTYPE_ENERGY:
@@ -3151,7 +3151,7 @@ namespace http
 						}
 						else if ((dType == pTypeGeneral) && (dSubType == sTypeCounterIncremental))
 						{
-							double dvalue = static_cast<double>(atof(sValue.c_str()));
+							double dvalue = stod(sValue);
 
 							switch (metertype)
 							{
@@ -3174,7 +3174,7 @@ namespace http
 						}
 						else if (!bIsManagedCounter)
 						{
-							double dvalue = static_cast<double>(atof(sValue.c_str()));
+							double dvalue = stod(sValue);
 							sprintf(szTmp, "%.10g", meteroffset + (dvalue / divider));
 							root["counter"] = szTmp;
 						}
@@ -3223,43 +3223,43 @@ namespace http
 
 									std::string szValue = sd[0];
 
-									double fcounter = atof(sd[2].c_str());
+									double fcounter = stod(sd[2]);
 
 									switch (metertype)
 									{
 									case MTYPE_ENERGY:
 									case MTYPE_ENERGY_GENERATED:
-										sprintf(szTmp, "%.3f", atof(szValue.c_str()) / divider);
+										sprintf(szTmp, "%.3f", stof(szValue) / divider);
 										root["result"][ii]["v"] = szTmp;
 										if (fcounter != 0)
-											sprintf(szTmp, "%.3f", meteroffset + ((fcounter - atof(szValue.c_str())) / divider));
+											sprintf(szTmp, "%.3f", meteroffset + ((fcounter - stof(szValue)) / divider));
 										else
 											strcpy(szTmp, "0");
 										root["result"][ii]["c"] = szTmp;
 										break;
 									case MTYPE_GAS:
-										sprintf(szTmp, "%.2f", atof(szValue.c_str()) / divider);
+										sprintf(szTmp, "%.2f", stof(szValue) / divider);
 										root["result"][ii]["v"] = szTmp;
 										if (fcounter != 0)
-											sprintf(szTmp, "%.2f", meteroffset + ((fcounter - atof(szValue.c_str())) / divider));
+											sprintf(szTmp, "%.2f", meteroffset + ((fcounter - stof(szValue)) / divider));
 										else
 											strcpy(szTmp, "0");
 										root["result"][ii]["c"] = szTmp;
 										break;
 									case MTYPE_WATER:
-										sprintf(szTmp, "%.3f", atof(szValue.c_str()) / divider);
+										sprintf(szTmp, "%.3f", stof(szValue) / divider);
 										root["result"][ii]["v"] = szTmp;
 										if (fcounter != 0)
-											sprintf(szTmp, "%.3f", meteroffset + ((fcounter - atof(szValue.c_str())) / divider));
+											sprintf(szTmp, "%.3f", meteroffset + ((fcounter - stof(szValue)) / divider));
 										else
 											strcpy(szTmp, "0");
 										root["result"][ii]["c"] = szTmp;
 										break;
 									case MTYPE_COUNTER:
-										sprintf(szTmp, "%.10g", atof(szValue.c_str()) / divider);
+										sprintf(szTmp, "%.10g", stof(szValue) / divider);
 										root["result"][ii]["v"] = szTmp;
 										if (fcounter != 0)
-											sprintf(szTmp, "%.10g", meteroffset + ((fcounter - atof(szValue.c_str())) / divider));
+											sprintf(szTmp, "%.10g", meteroffset + ((fcounter - stof(szValue)) / divider));
 										else
 											strcpy(szTmp, "0");
 										root["result"][ii]["c"] = szTmp;
@@ -3284,19 +3284,19 @@ namespace http
 									{
 									case MTYPE_ENERGY:
 									case MTYPE_ENERGY_GENERATED:
-										sprintf(szTmp, "%.3f", atof(szValue.c_str()) / divider);
+										sprintf(szTmp, "%.3f", stof(szValue) / divider);
 										root["resultprev"][iPrev]["v"] = szTmp;
 										break;
 									case MTYPE_GAS:
-										sprintf(szTmp, "%.2f", atof(szValue.c_str()) / divider);
+										sprintf(szTmp, "%.2f", stof(szValue) / divider);
 										root["resultprev"][iPrev]["v"] = szTmp;
 										break;
 									case MTYPE_WATER:
-										sprintf(szTmp, "%.3f", atof(szValue.c_str()) / divider);
+										sprintf(szTmp, "%.3f", stof(szValue) / divider);
 										root["resultprev"][iPrev]["v"] = szTmp;
 										break;
 									case MTYPE_COUNTER:
-										sprintf(szTmp, "%.10g", atof(szValue.c_str()) / divider);
+										sprintf(szTmp, "%.10g", stof(szValue) / divider);
 										root["resultprev"][iPrev]["v"] = szTmp;
 										break;
 									}
@@ -3313,7 +3313,7 @@ namespace http
 						localtime_r(&now, &loctime);
 						if ((!sactmonth.empty()) && (!sactyear.empty()))
 						{
-							bool bIsThisMonth = (atoi(sactyear.c_str()) == loctime.tm_year + 1900) && (atoi(sactmonth.c_str()) == loctime.tm_mon + 1);
+							bool bIsThisMonth = (stoi(sactyear) == loctime.tm_year + 1900) && (stoi(sactmonth) == loctime.tm_mon + 1);
 							if (bIsThisMonth)
 							{
 								sprintf(szDateEnd, "%04d-%02d-%02d", loctime.tm_year + 1900, loctime.tm_mon + 1, loctime.tm_mday);
@@ -3321,7 +3321,7 @@ namespace http
 						}
 						else if (!sactyear.empty())
 						{
-							bool bIsThisYear = (atoi(sactyear.c_str()) == loctime.tm_year + 1900);
+							bool bIsThisYear = (stoi(sactyear) == loctime.tm_year + 1900);
 							if (bIsThisYear)
 							{
 								sprintf(szDateEnd, "%04d-%02d-%02d", loctime.tm_year + 1900, loctime.tm_mon + 1, loctime.tm_mday);
@@ -3347,15 +3347,15 @@ namespace http
 						if (!result.empty())
 						{
 							std::vector<std::string> sd = result[0];
-							uint64_t total_min_usage_1 = std::stoull(sd[0]);
-							uint64_t total_max_usage_1 = std::stoull(sd[1]);
-							uint64_t total_min_usage_2 = std::stoull(sd[4]);
-							uint64_t total_max_usage_2 = std::stoull(sd[5]);
+							uint64_t total_min_usage_1 = stoull(sd[0]);
+							uint64_t total_max_usage_1 = stoull(sd[1]);
+							uint64_t total_min_usage_2 = stoull(sd[4]);
+							uint64_t total_max_usage_2 = stoull(sd[5]);
 							uint64_t total_real_usage_1, total_real_usage_2;
-							uint64_t total_min_deliv_1 = std::stoull(sd[2]);
-							uint64_t total_max_deliv_1 = std::stoull(sd[3]);
-							uint64_t total_min_deliv_2 = std::stoull(sd[6]);
-							uint64_t total_max_deliv_2 = std::stoull(sd[7]);
+							uint64_t total_min_deliv_1 = stoull(sd[2]);
+							uint64_t total_max_deliv_1 = stoull(sd[3]);
+							uint64_t total_min_deliv_2 = stoull(sd[6]);
+							uint64_t total_max_deliv_2 = stoull(sd[7]);
 							uint64_t total_real_deliv_1, total_real_deliv_2;
 
 							total_real_usage_1 = total_max_usage_1 - total_min_usage_1;
@@ -3455,8 +3455,8 @@ namespace http
 						if (!result.empty())
 						{
 							root["result"][ii]["d"] = szDateEnd;
-							float fValue1 = float(atof(result[0][0].c_str())) / vdiv;
-							float fValue2 = float(atof(result[0][1].c_str())) / vdiv;
+							float fValue1 = stof(result[0][0]) / vdiv;
+							float fValue2 = stof(result[0][1]) / vdiv;
 							if (metertype == 1)
 							{
 								if ((dType == pTypeGeneral) && (dSubType == sTypeDistance))
@@ -3508,9 +3508,9 @@ namespace http
 						if (!result.empty())
 						{
 							root["result"][ii]["d"] = szDateEnd;
-							sprintf(szTmp, "%.1f", m_sql.m_weightscale * atof(result[0][0].c_str()) / 10.0F);
+							sprintf(szTmp, "%.1f", m_sql.m_weightscale * stof(result[0][0]) / 10.0F);
 							root["result"][ii]["v_min"] = szTmp;
-							sprintf(szTmp, "%.1f", m_sql.m_weightscale * atof(result[0][1].c_str()) / 10.0F);
+							sprintf(szTmp, "%.1f", m_sql.m_weightscale * stof(result[0][1]) / 10.0F);
 							root["result"][ii]["v_max"] = szTmp;
 							ii++;
 						}
@@ -3521,8 +3521,8 @@ namespace http
 						if (!result.empty())
 						{
 							root["result"][ii]["d"] = szDateEnd;
-							root["result"][ii]["u_min"] = atof(result[0][0].c_str()) / 10.0F;
-							root["result"][ii]["u_max"] = atof(result[0][1].c_str()) / 10.0F;
+							root["result"][ii]["u_min"] = stof(result[0][0]) / 10.0F;
+							root["result"][ii]["u_max"] = stof(result[0][1]) / 10.0F;
 							ii++;
 						}
 					}
@@ -3539,7 +3539,7 @@ namespace http
 							if (!result.empty())
 							{
 								std::vector<std::string> sd = result[0];
-								int64_t total_min = std::stoll(sd[0]);
+								int64_t total_min = stoll(sd[0]);
 								int64_t total_max = total_min;
 								int64_t total_real;
 
@@ -3549,7 +3549,7 @@ namespace http
 								if (!result.empty())
 								{
 									std::vector<std::string> sd = result[0];
-									total_max = std::stoull(sd[0]);
+									total_max = stoll(sd[0]);
 								}
 
 								total_real = total_max - total_min;
@@ -3586,7 +3586,7 @@ namespace http
 									{
 									case MTYPE_ENERGY:
 									case MTYPE_ENERGY_GENERATED: {
-										sprintf(szTmp, "%.3f", atof(szValue.c_str()) / divider);
+										sprintf(szTmp, "%.3f", stof(szValue) / divider);
 										root["result"][ii]["v"] = szTmp;
 
 										std::vector<std::string> mresults;
@@ -3596,28 +3596,28 @@ namespace http
 											sValue = mresults[1];
 										}
 										if (dType == pTypeENERGY)
-											sprintf(szTmp, "%.3f", meteroffset + (((atof(sValue.c_str()) * 100.0F) - atof(szValue.c_str())) / divider));
+											sprintf(szTmp, "%.3f", meteroffset + (((stof(sValue) * 100.0F) - stof(szValue)) / divider));
 										else
-											sprintf(szTmp, "%.3f", meteroffset + ((atof(sValue.c_str()) - atof(szValue.c_str())) / divider));
+											sprintf(szTmp, "%.3f", meteroffset + ((stof(sValue) - stof(szValue)) / divider));
 										root["result"][ii]["c"] = szTmp;
 									}
 															   break;
 									case MTYPE_GAS:
-										sprintf(szTmp, "%.2f", atof(szValue.c_str()) / divider);
+										sprintf(szTmp, "%.2f", stof(szValue) / divider);
 										root["result"][ii]["v"] = szTmp;
-										sprintf(szTmp, "%.2f", meteroffset + ((atof(sValue.c_str()) - atof(szValue.c_str())) / divider));
+										sprintf(szTmp, "%.2f", meteroffset + ((stof(sValue) - stof(szValue)) / divider));
 										root["result"][ii]["c"] = szTmp;
 										break;
 									case MTYPE_WATER:
-										sprintf(szTmp, "%.3f", atof(szValue.c_str()) / divider);
+										sprintf(szTmp, "%.3f", stof(szValue) / divider);
 										root["result"][ii]["v"] = szTmp;
-										sprintf(szTmp, "%.3f", meteroffset + ((atof(sValue.c_str()) - atof(szValue.c_str())) / divider));
+										sprintf(szTmp, "%.3f", meteroffset + ((stof(sValue) - stof(szValue)) / divider));
 										root["result"][ii]["c"] = szTmp;
 										break;
 									case MTYPE_COUNTER:
-										sprintf(szTmp, "%.10g", atof(szValue.c_str()) / divider);
+										sprintf(szTmp, "%.10g", stof(szValue) / divider);
 										root["result"][ii]["v"] = szTmp;
-										sprintf(szTmp, "%.10g", meteroffset + ((atof(sValue.c_str()) - atof(szValue.c_str())) / divider));
+										sprintf(szTmp, "%.10g", meteroffset + ((stof(sValue) - stof(szValue)) / divider));
 										root["result"][ii]["c"] = szTmp;
 										break;
 									}
@@ -3654,8 +3654,8 @@ namespace http
 							root["result"][ii]["d"] = sd[5].substr(0, 16);
 							root["result"][ii]["di"] = sd[0];
 
-							int intSpeed = atoi(sd[2].c_str());
-							int intGust = atoi(sd[4].c_str());
+							int intSpeed = stoi(sd[2]);
+							int intGust = stoi(sd[4]);
 							if (m_sql.m_windunit != WINDUNIT_Beaufort)
 							{
 								sprintf(szTmp, "%.1f", float(intSpeed) * m_sql.m_windscale);
@@ -3687,8 +3687,8 @@ namespace http
 						root["result"][ii]["d"] = szDateEnd;
 						root["result"][ii]["di"] = sd[0];
 
-						int intSpeed = atoi(sd[2].c_str());
-						int intGust = atoi(sd[4].c_str());
+						int intSpeed = stoi(sd[2]);
+						int intGust = stoi(sd[4]);
 						if (m_sql.m_windunit != WINDUNIT_Beaufort)
 						{
 							sprintf(szTmp, "%.1f", float(intSpeed) * m_sql.m_windscale);
@@ -3721,8 +3721,8 @@ namespace http
 							root["resultprev"][iPrev]["d"] = sd[5].substr(0, 16);
 							root["resultprev"][iPrev]["di"] = sd[0];
 
-							int intSpeed = atoi(sd[2].c_str());
-							int intGust = atoi(sd[4].c_str());
+							int intSpeed = stoi(sd[2]);
+							int intGust = stoi(sd[4]);
 							if (m_sql.m_windunit != WINDUNIT_Beaufort)
 							{
 								sprintf(szTmp, "%.1f", float(intSpeed) * m_sql.m_windscale);
@@ -3813,15 +3813,15 @@ namespace http
 								root["result"][ii]["d"] = sd[4]; //.substr(0,16);
 								if (sendTemp)
 								{
-									double te = ConvertTemperature(atof(sd[0].c_str()), tempsign);
-									double tm = ConvertTemperature(atof(sd[0].c_str()), tempsign);
+									double te = ConvertTemperature(stod(sd[0]), tempsign);
+									double tm = ConvertTemperature(stod(sd[0]), tempsign);
 									root["result"][ii]["te"] = te;
 									root["result"][ii]["tm"] = tm;
 								}
 								if (sendChill)
 								{
-									double ch = ConvertTemperature(atof(sd[1].c_str()), tempsign);
-									double cm = ConvertTemperature(atof(sd[1].c_str()), tempsign);
+									double ch = ConvertTemperature(stod(sd[1]), tempsign);
+									double cm = ConvertTemperature(stod(sd[1]), tempsign);
 									root["result"][ii]["ch"] = ch;
 									root["result"][ii]["cm"] = cm;
 								}
@@ -3835,7 +3835,7 @@ namespace http
 									{
 										if (dSubType == sTypeTHBFloat)
 										{
-											sprintf(szTmp, "%.1f", atof(sd[3].c_str()) / 10.0F);
+											sprintf(szTmp, "%.1f", stof(sd[3]) / 10.0F);
 											root["result"][ii]["ba"] = szTmp;
 										}
 										else
@@ -3843,23 +3843,23 @@ namespace http
 									}
 									else if (dType == pTypeTEMP_BARO)
 									{
-										sprintf(szTmp, "%.1f", atof(sd[3].c_str()) / 10.0F);
+										sprintf(szTmp, "%.1f", stof(sd[3]) / 10.0F);
 										root["result"][ii]["ba"] = szTmp;
 									}
 									else if ((dType == pTypeGeneral) && (dSubType == sTypeBaro))
 									{
-										sprintf(szTmp, "%.1f", atof(sd[3].c_str()) / 10.0F);
+										sprintf(szTmp, "%.1f", stof(sd[3]) / 10.0F);
 										root["result"][ii]["ba"] = szTmp;
 									}
 								}
 								if (sendDew)
 								{
-									double dp = ConvertTemperature(atof(sd[5].c_str()), tempsign);
+									double dp = ConvertTemperature(stod(sd[5]), tempsign);
 									root["result"][ii]["dp"] = dp;
 								}
 								if (sendSet)
 								{
-									double se = ConvertTemperature(atof(sd[6].c_str()), tempsign);
+									double se = ConvertTemperature(stod(sd[6]), tempsign);
 									root["result"][ii]["se"] = se;
 								}
 								ii++;
@@ -3883,9 +3883,9 @@ namespace http
 								root["result"][ii]["d"] = sd[6].substr(0, 16);
 								if (sendTemp)
 								{
-									double te = ConvertTemperature(atof(sd[1].c_str()), tempsign);
-									double tm = ConvertTemperature(atof(sd[0].c_str()), tempsign);
-									double ta = ConvertTemperature(atof(sd[8].c_str()), tempsign);
+									double te = ConvertTemperature(stod(sd[1]), tempsign);
+									double tm = ConvertTemperature(stod(sd[0]), tempsign);
+									double ta = ConvertTemperature(stod(sd[8]), tempsign);
 
 									root["result"][ii]["te"] = te;
 									root["result"][ii]["tm"] = tm;
@@ -3893,8 +3893,8 @@ namespace http
 								}
 								if (sendChill)
 								{
-									double ch = ConvertTemperature(atof(sd[3].c_str()), tempsign);
-									double cm = ConvertTemperature(atof(sd[2].c_str()), tempsign);
+									double ch = ConvertTemperature(stod(sd[3]), tempsign);
+									double cm = ConvertTemperature(stod(sd[2]), tempsign);
 
 									root["result"][ii]["ch"] = ch;
 									root["result"][ii]["cm"] = cm;
@@ -3909,7 +3909,7 @@ namespace http
 									{
 										if (dSubType == sTypeTHBFloat)
 										{
-											sprintf(szTmp, "%.1f", atof(sd[5].c_str()) / 10.0F);
+											sprintf(szTmp, "%.1f", stof(sd[5]) / 10.0F);
 											root["result"][ii]["ba"] = szTmp;
 										}
 										else
@@ -3917,25 +3917,25 @@ namespace http
 									}
 									else if (dType == pTypeTEMP_BARO)
 									{
-										sprintf(szTmp, "%.1f", atof(sd[5].c_str()) / 10.0F);
+										sprintf(szTmp, "%.1f", stof(sd[5]) / 10.0F);
 										root["result"][ii]["ba"] = szTmp;
 									}
 									else if ((dType == pTypeGeneral) && (dSubType == sTypeBaro))
 									{
-										sprintf(szTmp, "%.1f", atof(sd[5].c_str()) / 10.0F);
+										sprintf(szTmp, "%.1f", stof(sd[5]) / 10.0F);
 										root["result"][ii]["ba"] = szTmp;
 									}
 								}
 								if (sendDew)
 								{
-									double dp = ConvertTemperature(atof(sd[7].c_str()), tempsign);
+									double dp = ConvertTemperature(stod(sd[7]), tempsign);
 									root["result"][ii]["dp"] = dp;
 								}
 								if (sendSet)
 								{
-									double sm = ConvertTemperature(atof(sd[9].c_str()), tempsign);
-									double sx = ConvertTemperature(atof(sd[10].c_str()), tempsign);
-									double se = ConvertTemperature(atof(sd[11].c_str()), tempsign);
+									double sm = ConvertTemperature(stod(sd[9]), tempsign);
+									double sx = ConvertTemperature(stod(sd[10]), tempsign);
+									double se = ConvertTemperature(stod(sd[11]), tempsign);
 									root["result"][ii]["sm"] = sm;
 									root["result"][ii]["se"] = se;
 									root["result"][ii]["sx"] = sx;
@@ -3961,9 +3961,9 @@ namespace http
 							root["result"][ii]["d"] = szDateEnd;
 							if (sendTemp)
 							{
-								double te = ConvertTemperature(atof(sd[1].c_str()), tempsign);
-								double tm = ConvertTemperature(atof(sd[0].c_str()), tempsign);
-								double ta = ConvertTemperature(atof(sd[7].c_str()), tempsign);
+								double te = ConvertTemperature(stod(sd[1]), tempsign);
+								double tm = ConvertTemperature(stod(sd[0]), tempsign);
+								double ta = ConvertTemperature(stod(sd[7]), tempsign);
 
 								root["result"][ii]["te"] = te;
 								root["result"][ii]["tm"] = tm;
@@ -3971,8 +3971,8 @@ namespace http
 							}
 							if (sendChill)
 							{
-								double ch = ConvertTemperature(atof(sd[3].c_str()), tempsign);
-								double cm = ConvertTemperature(atof(sd[2].c_str()), tempsign);
+								double ch = ConvertTemperature(stod(sd[3]), tempsign);
+								double cm = ConvertTemperature(stod(sd[2]), tempsign);
 								root["result"][ii]["ch"] = ch;
 								root["result"][ii]["cm"] = cm;
 							}
@@ -3986,7 +3986,7 @@ namespace http
 								{
 									if (dSubType == sTypeTHBFloat)
 									{
-										sprintf(szTmp, "%.1f", atof(sd[5].c_str()) / 10.0F);
+										sprintf(szTmp, "%.1f", stof(sd[5]) / 10.0F);
 										root["result"][ii]["ba"] = szTmp;
 									}
 									else
@@ -3994,25 +3994,25 @@ namespace http
 								}
 								else if (dType == pTypeTEMP_BARO)
 								{
-									sprintf(szTmp, "%.1f", atof(sd[5].c_str()) / 10.0F);
+									sprintf(szTmp, "%.1f", stof(sd[5]) / 10.0F);
 									root["result"][ii]["ba"] = szTmp;
 								}
 								else if ((dType == pTypeGeneral) && (dSubType == sTypeBaro))
 								{
-									sprintf(szTmp, "%.1f", atof(sd[5].c_str()) / 10.0F);
+									sprintf(szTmp, "%.1f", stof(sd[5]) / 10.0F);
 									root["result"][ii]["ba"] = szTmp;
 								}
 							}
 							if (sendDew)
 							{
-								double dp = ConvertTemperature(atof(sd[6].c_str()), tempsign);
+								double dp = ConvertTemperature(stod(sd[6]), tempsign);
 								root["result"][ii]["dp"] = dp;
 							}
 							if (sendSet)
 							{
-								double sm = ConvertTemperature(atof(sd[8].c_str()), tempsign);
-								double sx = ConvertTemperature(atof(sd[9].c_str()), tempsign);
-								double se = ConvertTemperature(atof(sd[10].c_str()), tempsign);
+								double sm = ConvertTemperature(stod(sd[8]), tempsign);
+								double sx = ConvertTemperature(stod(sd[9]), tempsign);
+								double se = ConvertTemperature(stod(sd[10]), tempsign);
 
 								root["result"][ii]["sm"] = sm;
 								root["result"][ii]["se"] = se;
@@ -4083,9 +4083,9 @@ namespace http
 					{
 						std::vector<std::string> sd = result[0];
 
-						float total_min = static_cast<float>(atof(sd[0].c_str()));
-						float total_max = static_cast<float>(atof(sd[1].c_str()));
-						// int rate = atoi(sd[2].c_str());
+						float total_min = stof(sd[0]);
+						float total_max = stof(sd[1]);
+						// int rate = stoi(sd[2]);
 
 						float total_real = 0;
 						if (dSubType == sTypeRAINWU || dSubType == sTypeRAINByRate)
@@ -4129,8 +4129,8 @@ namespace http
 								std::string szUsage2 = sd[2];
 								std::string szDeliv2 = sd[3];
 
-								float fUsage = (float)(atof(szUsage1.c_str()) + atof(szUsage2.c_str()));
-								float fDeliv = (float)(atof(szDeliv1.c_str()) + atof(szDeliv2.c_str()));
+								float fUsage = stof(szUsage1) + stof(szUsage2);
+								float fDeliv = stof(szDeliv1) + stof(szDeliv2);
 
 								if (fDeliv != 0)
 									bHaveDeliverd = true;
@@ -4159,19 +4159,19 @@ namespace http
 								{
 								case MTYPE_ENERGY:
 								case MTYPE_ENERGY_GENERATED:
-									sprintf(szTmp, "%.3f", atof(szValue.c_str()) / divider);
+									sprintf(szTmp, "%.3f", stof(szValue) / divider);
 									szValue = szTmp;
 									break;
 								case MTYPE_GAS:
-									sprintf(szTmp, "%.2f", atof(szValue.c_str()) / divider);
+									sprintf(szTmp, "%.2f", stof(szValue) / divider);
 									szValue = szTmp;
 									break;
 								case MTYPE_WATER:
-									sprintf(szTmp, "%.3f", atof(szValue.c_str()) / divider);
+									sprintf(szTmp, "%.3f", stof(szValue) / divider);
 									szValue = szTmp;
 									break;
 								case MTYPE_COUNTER:
-									sprintf(szTmp, "%.10g", atof(szValue.c_str()) / divider);
+									sprintf(szTmp, "%.10g", stof(szValue) / divider);
 									szValue = szTmp;
 									break;
 
@@ -4195,16 +4195,16 @@ namespace http
 						{
 							std::vector<std::string> sd = result[0];
 
-							uint64_t total_min_usage_1 = std::stoull(sd[0]);
-							uint64_t total_max_usage_1 = std::stoull(sd[1]);
-							uint64_t total_min_usage_2 = std::stoull(sd[4]);
-							uint64_t total_max_usage_2 = std::stoull(sd[5]);
+							uint64_t total_min_usage_1 = stoull(sd[0]);
+							uint64_t total_max_usage_1 = stoull(sd[1]);
+							uint64_t total_min_usage_2 = stoull(sd[4]);
+							uint64_t total_max_usage_2 = stoull(sd[5]);
 							uint64_t total_real_usage;
 
-							uint64_t total_min_deliv_1 = std::stoull(sd[2]);
-							uint64_t total_max_deliv_1 = std::stoull(sd[3]);
-							uint64_t total_min_deliv_2 = std::stoull(sd[6]);
-							uint64_t total_max_deliv_2 = std::stoull(sd[7]);
+							uint64_t total_min_deliv_1 = stoull(sd[2]);
+							uint64_t total_max_deliv_1 = stoull(sd[3]);
+							uint64_t total_min_deliv_2 = stoull(sd[6]);
+							uint64_t total_max_deliv_2 = stoull(sd[7]);
 							uint64_t total_real_deliv;
 
 							total_real_usage = (total_max_usage_1 + total_max_usage_2) - (total_min_usage_1 + total_min_usage_2);
@@ -4217,12 +4217,12 @@ namespace http
 
 							sprintf(szTmp, "%" PRIu64, total_real_usage);
 							std::string szValue = szTmp;
-							sprintf(szTmp, "%.3f", atof(szValue.c_str()) / divider);
+							sprintf(szTmp, "%.3f", stof(szValue) / divider);
 							root["result"][ii]["v"] = szTmp;
 
 							sprintf(szTmp, "%" PRIu64, total_real_deliv);
 							szValue = szTmp;
-							sprintf(szTmp, "%.3f", atof(szValue.c_str()) / divider);
+							sprintf(szTmp, "%.3f", stof(szValue) / divider);
 							root["result"][ii]["v2"] = szTmp;
 							
 							ii++;
@@ -4240,7 +4240,7 @@ namespace http
 						if (!result.empty())
 						{
 							std::vector<std::string> sd = result[0];
-							int64_t total_min = std::stoll(sd[0]);
+							int64_t total_min = stoll(sd[0]);
 							int64_t total_max = total_min;
 							int64_t total_real;
 
@@ -4250,7 +4250,7 @@ namespace http
 							if (!result.empty())
 							{
 								std::vector<std::string> sd = result[0];
-								total_max = std::stoull(sd[0]);
+								total_max = stoll(sd[0]);
 							}
 
 							total_real = total_max - total_min;
@@ -4260,19 +4260,19 @@ namespace http
 							{
 							case MTYPE_ENERGY:
 							case MTYPE_ENERGY_GENERATED:
-								sprintf(szTmp, "%.3f", atof(szValue.c_str()) / divider);
+								sprintf(szTmp, "%.3f", stof(szValue) / divider);
 								szValue = szTmp;
 								break;
 							case MTYPE_GAS:
-								sprintf(szTmp, "%.2f", atof(szValue.c_str()) / divider);
+								sprintf(szTmp, "%.2f", stof(szValue) / divider);
 								szValue = szTmp;
 								break;
 							case MTYPE_WATER:
-								sprintf(szTmp, "%.3f", atof(szValue.c_str()) / divider);
+								sprintf(szTmp, "%.3f", stof(szValue) / divider);
 								szValue = szTmp;
 								break;
 							case MTYPE_COUNTER:
-								sprintf(szTmp, "%.10g", atof(szValue.c_str()) / divider);
+								sprintf(szTmp, "%.10g", stof(szValue) / divider);
 								szValue = szTmp;
 								break;
 							}
@@ -4302,8 +4302,8 @@ namespace http
 							root["result"][ii]["d"] = sd[5].substr(0, 16);
 							root["result"][ii]["di"] = sd[0];
 
-							int intSpeed = atoi(sd[2].c_str());
-							int intGust = atoi(sd[4].c_str());
+							int intSpeed = stoi(sd[2]);
+							int intGust = stoi(sd[4]);
 							if (m_sql.m_windunit != WINDUNIT_Beaufort)
 							{
 								sprintf(szTmp, "%.1f", float(intSpeed) * m_sql.m_windscale);
@@ -4334,8 +4334,8 @@ namespace http
 						root["result"][ii]["d"] = szDateEnd;
 						root["result"][ii]["di"] = sd[0];
 
-						int intSpeed = atoi(sd[2].c_str());
-						int intGust = atoi(sd[4].c_str());
+						int intSpeed = stoi(sd[2]);
+						int intGust = stoi(sd[4]);
 						if (m_sql.m_windunit != WINDUNIT_Beaufort)
 						{
 							sprintf(szTmp, "%.1f", float(intSpeed) * m_sql.m_windscale);

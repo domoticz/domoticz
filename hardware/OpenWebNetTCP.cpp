@@ -227,7 +227,7 @@ uint32_t COpenWebNetTCP::ownCalcPass(const std::string &password, const std::str
 		{
 			if (flag)
 			{
-				num2 = (uint32_t)atoi(password.c_str());
+				num2 = stoul(password);
 				flag = false;
 			}
 		}
@@ -325,7 +325,7 @@ std::string COpenWebNetTCP::decToHexStrConvert(const std::string &paramString)
 	for (idxb = 0, idxh = 0; idxb < paramString.length(); idxb += 2, idxh++)
 	{
 		std::string str = paramString.substr(idxb, 2);
-		sprintf(&retStr[idxh], "%x", atoi(str.c_str()));
+		sprintf(&retStr[idxh], "%x", stoi(str));
 	}
 	return std::string(retStr);
 }
@@ -698,7 +698,7 @@ bool COpenWebNetTCP::GetValueMeter(const int NodeID, const int ChildID, double *
 		std::string sup, sValue = result[0][0];
 
 		if (usage)
-			*usage = (float)atof(sValue.c_str());
+			*usage = stod(sValue);
 
 		if (energy)
 		{
@@ -706,7 +706,7 @@ bool COpenWebNetTCP::GetValueMeter(const int NodeID, const int ChildID, double *
 			if (pos >= 0)
 			{
 				sup = sValue.substr(pos + 1);
-				*energy = (float)atof(sup.c_str());
+				*energy = stod(sup);
 			}
 		}
 
@@ -814,7 +814,7 @@ void COpenWebNetTCP::UpdateAlarm(const int who, const int where, const int Comma
 	if (!result.empty())
 	{
 		//check if we have a change, if not do not update it
-		int nvalue = atoi(result[0][0].c_str());
+		int nvalue = stoi(result[0][0]);
 		if (Command == -1 || nvalue == Command) return; // update not necessary
 	}
 
@@ -860,9 +860,9 @@ void COpenWebNetTCP::UpdateBlinds(const int who, const int where, const int Comm
 	}
 	else
 	{
-		nvalue = atoi(result[0][1].c_str());
-		slevel = atoi(result[0][2].c_str());
-		switch_type = atoi(result[0][3].c_str());
+		nvalue = stoi(result[0][1]);
+		slevel = stoi(result[0][2]);
+		switch_type = stoi(result[0][3]);
 	}
 
 	if (
@@ -938,7 +938,7 @@ void COpenWebNetTCP::UpdateCenPlus(const int who, const int where, const int Com
 	}
 	else
 	{
-		nvalue = atoi(result[0][1].c_str());
+		nvalue = stoi(result[0][1]);
 	}
 
 	//check if we have a change, if not do not update it
@@ -1005,9 +1005,9 @@ void COpenWebNetTCP::UpdateSwitch(const int who, const int where, const int what
 	}
 	else
 	{
-		nvalue = atoi(result[0][1].c_str());
-		slevel = atoi(result[0][2].c_str());
-		switch_type = atoi(result[0][3].c_str());
+		nvalue = stoi(result[0][1]);
+		slevel = stoi(result[0][2]);
+		switch_type = stoi(result[0][3]);
 	}
 
 	int level = (what > 1) ? (what * 10) : 0;
@@ -1040,7 +1040,7 @@ void COpenWebNetTCP::decodeWhereAndFill(const int who, const std::string &where,
 		/* GROUP light device */
 		if (!whereParam.empty())
 		{
-			*iWhere = atoi(whereParam[0].c_str()) + OPENWEBNET_GROUP_ID;
+			*iWhere = stoi(whereParam[0]) + OPENWEBNET_GROUP_ID;
 			*devname += " GROUP " + whereParam[0];
 		}
 	}
@@ -1056,7 +1056,7 @@ void COpenWebNetTCP::decodeWhereAndFill(const int who, const std::string &where,
 		if (wlen == 1)
 		{
 			// General o Area 1-9 command
-			int tmp = atoi(where.c_str());
+			int tmp = stoi(where);
 			if (tmp > 0) iArea = tmp;
 		}
 		else if ((wlen == 2) && (where == "00"))	// Area 0 (00) command
@@ -1069,7 +1069,7 @@ void COpenWebNetTCP::decodeWhereAndFill(const int who, const std::string &where,
 		}
 		else									// generic Area+PL command
 		{
-			*iWhere = atoi(where.c_str());
+			*iWhere = stoi(where);
 			*devname += " " + where;
 			if (wlen == 4)	// device with 4 chars command
 				*iWhere += OPENWEBNET_4CHARS;
@@ -1102,7 +1102,7 @@ void COpenWebNetTCP::decodeWhereAndFill(const int who, const std::string &where,
 	else
 	{
 		// others who..
-		*iWhere = atoi(where.c_str());
+		*iWhere = stoi(where);
 		*devname += " " + where;
 	}
 }
@@ -1124,14 +1124,14 @@ void COpenWebNetTCP::UpdateDeviceValue(std::vector<bt_openwebnet>::iterator iter
 	std::string devname, sCommand;
 	int iAppValue, iWhere, iLevel;
 
-	switch (atoi(who.c_str())) {
+	switch (stoi(who)) {
 	case WHO_LIGHTING:	// 1
 
 		if (!iter->IsNormalFrame())
 		{
 			if (iter->IsMeasureFrame())
 			{
-				switch (atoi(value.c_str()))
+				switch (stoi(value))
 				{
 				case LIGHTING_DIMENSION_SET_UP_LEVEL_WITH_GIVEN_SPEED:				// 1
 				case LIGHTING_DIMENSION_TEMPORISATION:								// 2
@@ -1142,7 +1142,7 @@ void COpenWebNetTCP::UpdateDeviceValue(std::vector<bt_openwebnet>::iterator iter
 					// TODO: manage lighting parameter..
 					return;
 				default:
-					Log(LOG_ERROR, "Who=%s measure error -> param=%u", who.c_str(), atoi(value.c_str()));
+					Log(LOG_ERROR, "Who=%s measure error -> param=%u", who.c_str(), stoi(value));
 					return;
 				}
 			}
@@ -1155,14 +1155,14 @@ void COpenWebNetTCP::UpdateDeviceValue(std::vector<bt_openwebnet>::iterator iter
 		else
 		{
 			// NORMALE FRAME..
-			iAppValue = atoi(what.c_str());
+			iAppValue = stoi(what);
 			if (iAppValue == 1000) // What = 1000 (Command translation)
-				iAppValue = atoi(whatParam[0].c_str());
+				iAppValue = stoi(whatParam[0]);
 		}		
 
 		devname = OPENWEBNET_LIGHT;
 		decodeWhereAndFill(WHO_LIGHTING, where, whereParam, &devname, &iWhere);
-		UpdateSwitch(WHO_LIGHTING, iWhere, iAppValue, atoi(sInterface.c_str()), 255, devname.c_str());
+		UpdateSwitch(WHO_LIGHTING, iWhere, iAppValue, stoi(sInterface), 255, devname.c_str());
 		break;
 	case WHO_AUTOMATION:								// 2
 		if (!iter->IsNormalFrame() && !iter->IsMeasureFrame())
@@ -1173,24 +1173,24 @@ void COpenWebNetTCP::UpdateDeviceValue(std::vector<bt_openwebnet>::iterator iter
 		if (iter->IsMeasureFrame()) // Advanced motor actuator (percentual) *#2*19*10*10*65*000*0##
 		{
 			std::string level = iter->Extract_value(1);
-			iLevel = atoi(level.c_str());
-			iAppValue = atoi(value.c_str());
+			iLevel = stoi(level);
+			iAppValue = stoi(value);
 
 			if (iAppValue == 1000) // What = 1000 (Command translation)
-				iAppValue = atoi(whatParam[0].c_str());
+				iAppValue = stoi(whatParam[0]);
 
 			devname = OPENWEBNET_AUTOMATION;
 			decodeWhereAndFill(WHO_AUTOMATION, where, whereParam, &devname, &iWhere);
-			UpdateBlinds(WHO_AUTOMATION, iWhere, iAppValue, atoi(sInterface.c_str()), iLevel, 255, devname.c_str());
+			UpdateBlinds(WHO_AUTOMATION, iWhere, iAppValue, stoi(sInterface), iLevel, 255, devname.c_str());
 		}
 		if (iter->IsNormalFrame())
 		{
-			iAppValue = atoi(what.c_str());
+			iAppValue = stoi(what);
 			if (iAppValue == 1000) // What = 1000 (Command translation)
-				iAppValue = atoi(whatParam[0].c_str());
+				iAppValue = stoi(whatParam[0]);
 
 			decodeWhereAndFill(WHO_AUTOMATION, where, whereParam, &devname, &iWhere);
-			UpdateBlinds(WHO_AUTOMATION, iWhere, iAppValue, atoi(sInterface.c_str()), -1, 255, devname.c_str());
+			UpdateBlinds(WHO_AUTOMATION, iWhere, iAppValue, stoi(sInterface), -1, 255, devname.c_str());
 		}
 		break;
 	case WHO_TEMPERATURE_CONTROL:
@@ -1200,22 +1200,22 @@ void COpenWebNetTCP::UpdateDeviceValue(std::vector<bt_openwebnet>::iterator iter
 			// 4: this is a openwebnet termoregulation update/poll messagge, setup devname
 			devname = OPENWEBNET_TEMPERATURE;
 			devname += where;
-			switch (atoi(dimension.c_str()))
+			switch (stoi(dimension))
 			{
 				case TEMPERATURE_CONTROL_DIMENSION_TEMPERATURE:				// 0
-					UpdateTemp(WHO_TEMPERATURE_CONTROL, atoi(where.c_str()), static_cast<float>(atof(value.c_str()) / 10.), atoi(sInterface.c_str()), 255, devname.c_str());
+					UpdateTemp(WHO_TEMPERATURE_CONTROL, stoi(where), stof(value) / 10.0F, stoi(sInterface), 255, devname.c_str());
 					break;
 				case TEMPERATURE_CONTROL_DIMENSION_VALVES_STATUS:				// 19
 					devname += " Valves";
-					UpdateSwitch(WHO_TEMPERATURE_CONTROL + 600, atoi(where.c_str()), atoi(value.c_str()), atoi(sInterface.c_str()), 255, devname.c_str());
+					UpdateSwitch(WHO_TEMPERATURE_CONTROL + 600, stoi(where), stoi(value), stoi(sInterface), 255, devname.c_str());
 					break;
 				case TEMPERATURE_CONTROL_DIMENSION_ACTUATOR_STATUS:				// 20
 					devname += " Actuator";
-					UpdateSwitch(WHO_TEMPERATURE_CONTROL + 500, atoi(where.c_str()), atoi(value.c_str()), atoi(sInterface.c_str()), 255, devname.c_str());
+					UpdateSwitch(WHO_TEMPERATURE_CONTROL + 500, stoi(where), stoi(value), stoi(sInterface), 255, devname.c_str());
 					break;
 				case TEMPERATURE_CONTROL_DIMENSION_COMPLETE_PROBE_STATUS:		// 12
 					devname += " Setpoint";
-					UpdateSetPoint(WHO_TEMPERATURE_CONTROL, atoi(where.c_str()), static_cast<float>(atof(value.c_str()) / 10.), atoi(sInterface.c_str()), devname.c_str());
+					UpdateSetPoint(WHO_TEMPERATURE_CONTROL, stoi(where), stof(value) / 10.0F, stoi(sInterface), devname.c_str());
 					break;
 				case TEMPERATURE_CONTROL_DIMENSION_LOCAL_SET_OFFSET:			// 13
 				{
@@ -1223,7 +1223,7 @@ void COpenWebNetTCP::UpdateDeviceValue(std::vector<bt_openwebnet>::iterator iter
 					devname += where;
 					//std::string sStatus = "";
 					std::stringstream sStatus;
-					switch (atoi(value.c_str()))
+					switch (stoi(value))
 					{
 						case TEMPERATURE_SELECTOR_0_NORMAL: // 0
 							sStatus << "No offset";
@@ -1232,13 +1232,13 @@ void COpenWebNetTCP::UpdateDeviceValue(std::vector<bt_openwebnet>::iterator iter
 						case TEMPERATURE_SELECTOR_02:	    // 2
 						case TEMPERATURE_SELECTOR_03:	    // 3
 							sStatus << "Offset +";
-							sStatus << atoi(value.c_str());
+							sStatus << stoi(value);
 							break;
 						case TEMPERATURE_SELECTOR_11: // 11 -> -1
 						case TEMPERATURE_SELECTOR_12: // 12 -> -2
 						case TEMPERATURE_SELECTOR_13: // 13 -> -3
 							sStatus << "Offset -";
-							sStatus << (atoi(value.c_str()) - 10);
+							sStatus << (stoi(value) - 10);
 							break;
 						case TEMPERATURE_SELECTOR_4: // 4
 							sStatus << "Local OFF";
@@ -1251,7 +1251,7 @@ void COpenWebNetTCP::UpdateDeviceValue(std::vector<bt_openwebnet>::iterator iter
 					}
 
 					if (sStatus.str() != "")
-						UpdateTempProbe(WHO_TEMPERATURE_CONTROL, atoi(where.c_str()), -1, 1, sStatus.str(), atoi(sInterface.c_str()), 255, devname.c_str());
+						UpdateTempProbe(WHO_TEMPERATURE_CONTROL, stoi(where), -1, 1, sStatus.str(), stoi(sInterface), 255, devname.c_str());
 				}
 				break;
 				case TEMPERATURE_CONTROL_DIMENSION_SET_POINT_TEMPERATURE:		// 14
@@ -1270,7 +1270,7 @@ void COpenWebNetTCP::UpdateDeviceValue(std::vector<bt_openwebnet>::iterator iter
 			devname = OPENWEBNET_TEMPERATURE_STATUS;			
 			devname += " " + where;
 			std::string sStatus = "";
-			switch (atoi(what.c_str()))
+			switch (stoi(what))
 			{
 				case TEMPERATURE_WHAT_MODE_CONDITIONING:		// 0
 					sStatus = "Conditioning";
@@ -1295,7 +1295,7 @@ void COpenWebNetTCP::UpdateDeviceValue(std::vector<bt_openwebnet>::iterator iter
 			if (sStatus != "")
 			{
 				//Log(LOG_STATUS, "Temperature Zone%s in %s", where.c_str(), sStatus.c_str());
-				UpdateTempProbe(WHO_TEMPERATURE_CONTROL, atoi(where.c_str()), -1, 0, sStatus, atoi(sInterface.c_str()), 255, devname.c_str());
+				UpdateTempProbe(WHO_TEMPERATURE_CONTROL, stoi(where), -1, 0, sStatus, stoi(sInterface), 255, devname.c_str());
 			}
 		}
 		else
@@ -1310,27 +1310,27 @@ void COpenWebNetTCP::UpdateDeviceValue(std::vector<bt_openwebnet>::iterator iter
 			return;
 		}
 		
-		switch (atoi(what.c_str())) {
+		switch (stoi(what)) {
 		case 0:         //maintenace
 			//Log(LOG_STATUS, "Alarm in Maintenance");
 			iWhere = ID_DEV_BURGLAR_SYS_STATUS; // force where because not exist
 			devname = OPENWEBNET_BURGLAR_ALARM_SYS_STATUS;
 			sCommand = "Maintenance";
-			UpdateAlarm(WHO_BURGLAR_ALARM, iWhere, 2, sCommand.c_str(), atoi(sInterface.c_str()), 255, devname.c_str());
+			UpdateAlarm(WHO_BURGLAR_ALARM, iWhere, 2, sCommand.c_str(), stoi(sInterface), 255, devname.c_str());
 			break;
 		case 1:         //active
 			//Log(LOG_STATUS, "Alarm Active");
 			iWhere = ID_DEV_BURGLAR_SYS_STATUS; // force where because not exist
 			devname = OPENWEBNET_BURGLAR_ALARM_SYS_STATUS;
 			sCommand = "Active";
-			UpdateAlarm(WHO_BURGLAR_ALARM, iWhere, 1, sCommand.c_str(), atoi(sInterface.c_str()), 255, devname.c_str());
+			UpdateAlarm(WHO_BURGLAR_ALARM, iWhere, 1, sCommand.c_str(), stoi(sInterface), 255, devname.c_str());
 			break;
 		case 2:         //disabled
 			//Log(LOG_STATUS, "Alarm Inactive");
 			iWhere = ID_DEV_BURGLAR_SYS_STATUS; // force where because not exist
 			devname = OPENWEBNET_BURGLAR_ALARM_SYS_STATUS;
 			sCommand = "Inactive";
-			UpdateAlarm(WHO_BURGLAR_ALARM, iWhere, 3, sCommand.c_str(), atoi(sInterface.c_str()), 255, devname.c_str());
+			UpdateAlarm(WHO_BURGLAR_ALARM, iWhere, 3, sCommand.c_str(), stoi(sInterface), 255, devname.c_str());
 			break;
 
 		case 4:         //battery fault
@@ -1338,7 +1338,7 @@ void COpenWebNetTCP::UpdateDeviceValue(std::vector<bt_openwebnet>::iterator iter
 			iWhere = ID_DEV_BURGLAR_BATTERY; // force where because not exist
 			devname = OPENWEBNET_BURGLAR_ALARM_BATTERY;
 			sCommand = "Battery Fault";
-			UpdateAlarm(WHO_BURGLAR_ALARM, iWhere, 4, sCommand.c_str(), atoi(sInterface.c_str()), 255, devname.c_str());
+			UpdateAlarm(WHO_BURGLAR_ALARM, iWhere, 4, sCommand.c_str(), stoi(sInterface), 255, devname.c_str());
 			break;
 
 		case 5:         //battery ok
@@ -1346,7 +1346,7 @@ void COpenWebNetTCP::UpdateDeviceValue(std::vector<bt_openwebnet>::iterator iter
 			iWhere = ID_DEV_BURGLAR_BATTERY; // force where because not exist
 			devname = OPENWEBNET_BURGLAR_ALARM_BATTERY;
 			sCommand = "Battery Ok";
-			UpdateAlarm(WHO_BURGLAR_ALARM, iWhere, 1, sCommand.c_str(), atoi(sInterface.c_str()), 255, devname.c_str());
+			UpdateAlarm(WHO_BURGLAR_ALARM, iWhere, 1, sCommand.c_str(), stoi(sInterface), 255, devname.c_str());
 			break;
 
 		case 6:			//no network
@@ -1354,7 +1354,7 @@ void COpenWebNetTCP::UpdateDeviceValue(std::vector<bt_openwebnet>::iterator iter
 			iWhere = ID_DEV_BURGLAR_NETWORK; // force where because not exist
 			devname = OPENWEBNET_BURGLAR_ALARM_NETWORK;
 			sCommand = "No network";
-			UpdateAlarm(WHO_BURGLAR_ALARM, iWhere, 4, sCommand.c_str(), atoi(sInterface.c_str()), 255, devname.c_str());
+			UpdateAlarm(WHO_BURGLAR_ALARM, iWhere, 4, sCommand.c_str(), stoi(sInterface), 255, devname.c_str());
 			break;
 
 		case 7:			//network ok
@@ -1362,7 +1362,7 @@ void COpenWebNetTCP::UpdateDeviceValue(std::vector<bt_openwebnet>::iterator iter
 			iWhere = ID_DEV_BURGLAR_NETWORK; // force where because not exist
 			devname = OPENWEBNET_BURGLAR_ALARM_NETWORK;
 			sCommand = "Network OK";
-			UpdateAlarm(WHO_BURGLAR_ALARM, iWhere, 1, sCommand.c_str(), atoi(sInterface.c_str()), 255, devname.c_str());
+			UpdateAlarm(WHO_BURGLAR_ALARM, iWhere, 1, sCommand.c_str(), stoi(sInterface), 255, devname.c_str());
 			break;
 
 		case 8: 	//engaged
@@ -1370,7 +1370,7 @@ void COpenWebNetTCP::UpdateDeviceValue(std::vector<bt_openwebnet>::iterator iter
 			iWhere = ID_DEV_BURGLAR_SYS_ENGAGEMENT; // force where because not exist
 			devname = OPENWEBNET_BURGLAR_ALARM_SYS_ENGAGEMENT;
 			sCommand = "Engaged";
-			UpdateAlarm(WHO_BURGLAR_ALARM, iWhere, 1, sCommand.c_str(), atoi(sInterface.c_str()), 255, devname.c_str());
+			UpdateAlarm(WHO_BURGLAR_ALARM, iWhere, 1, sCommand.c_str(), stoi(sInterface), 255, devname.c_str());
 			break;
 
 		case 9:         //disengaged
@@ -1378,7 +1378,7 @@ void COpenWebNetTCP::UpdateDeviceValue(std::vector<bt_openwebnet>::iterator iter
 			iWhere = ID_DEV_BURGLAR_SYS_ENGAGEMENT; // force where because not exist
 			devname = OPENWEBNET_BURGLAR_ALARM_SYS_ENGAGEMENT;
 			sCommand = "DisEngaged";
-			UpdateAlarm(WHO_BURGLAR_ALARM, iWhere, 0, sCommand.c_str(), atoi(sInterface.c_str()), 255, devname.c_str());
+			UpdateAlarm(WHO_BURGLAR_ALARM, iWhere, 0, sCommand.c_str(), stoi(sInterface), 255, devname.c_str());
 			break;
 
 		case 10:         //battery Unloads
@@ -1386,34 +1386,34 @@ void COpenWebNetTCP::UpdateDeviceValue(std::vector<bt_openwebnet>::iterator iter
 			iWhere = ID_DEV_BURGLAR_BATTERY; // force where because not exist
 			devname = OPENWEBNET_BURGLAR_ALARM_BATTERY;
 			sCommand = "Battery Unloads";
-			UpdateAlarm(WHO_BURGLAR_ALARM, iWhere, 4, sCommand.c_str(), atoi(sInterface.c_str()), 255, devname.c_str());
+			UpdateAlarm(WHO_BURGLAR_ALARM, iWhere, 4, sCommand.c_str(), stoi(sInterface), 255, devname.c_str());
 			break;
 
 		case 11:         // zone N Active
-			iWhere = atoi(whereParam[0].c_str());
+			iWhere = stoi(whereParam[0]);
 			//Log(LOG_STATUS, "Alarm Zone %d Active",iWhere);
 			devname = OPENWEBNET_BURGLAR_ALARM_SENSOR;
 			devname += " " + whereParam[0];
 			sCommand = "Active";
-			UpdateAlarm(WHO_BURGLAR_ALARM, iWhere, 1, sCommand.c_str(), atoi(sInterface.c_str()), 255, devname.c_str());
+			UpdateAlarm(WHO_BURGLAR_ALARM, iWhere, 1, sCommand.c_str(), stoi(sInterface), 255, devname.c_str());
 			break;
 
 		case 15:         //zone N INTRUSION ALARM
-			iWhere = atoi(whereParam[0].c_str());
+			iWhere = stoi(whereParam[0]);
 			//Log(LOG_STATUS, "Alarm Zone %d INTRUSION ALARM", iWhere);
 			devname = OPENWEBNET_BURGLAR_ALARM_SENSOR;
 			devname += " " + whereParam[0];
 			sCommand = "Intrusion";
-			UpdateAlarm(WHO_BURGLAR_ALARM, iWhere, 4, sCommand.c_str(), atoi(sInterface.c_str()), 255, devname.c_str());
+			UpdateAlarm(WHO_BURGLAR_ALARM, iWhere, 4, sCommand.c_str(), stoi(sInterface), 255, devname.c_str());
 			break;
 
 		case 18:         // zone N Not Active
-			iWhere = atoi(whereParam[0].c_str());
+			iWhere = stoi(whereParam[0]);
 			//Log(LOG_STATUS, "Alarm Zone %d Not active", iWhere);
 			devname = OPENWEBNET_BURGLAR_ALARM_SENSOR;
 			devname += " " + whereParam[0];
 			sCommand = "Inactive";
-			UpdateAlarm(WHO_BURGLAR_ALARM, iWhere, 0, sCommand.c_str(), atoi(sInterface.c_str()), 255, devname.c_str());
+			UpdateAlarm(WHO_BURGLAR_ALARM, iWhere, 0, sCommand.c_str(), stoi(sInterface), 255, devname.c_str());
 			break;
 
 		default:
@@ -1440,7 +1440,7 @@ void COpenWebNetTCP::UpdateDeviceValue(std::vector<bt_openwebnet>::iterator iter
 		devname = OPENWEBNET_AUXILIARY;
 		devname += " " + where;
 
-		UpdateSwitch(WHO_AUXILIARY, atoi(where.c_str()), atoi(what.c_str()), atoi(sInterface.c_str()), 255, devname.c_str());
+		UpdateSwitch(WHO_AUXILIARY, stoi(where), stoi(what), stoi(sInterface), 255, devname.c_str());
 		break;
 	case WHO_CEN_PLUS_DRY_CONTACT_IR_DETECTION:              // 25
 		if (!iter->IsNormalFrame())
@@ -1450,15 +1450,15 @@ void COpenWebNetTCP::UpdateDeviceValue(std::vector<bt_openwebnet>::iterator iter
 		}
 
 
-		switch (atoi(what.c_str())) { //CEN PLUS / DRY CONTACT / IR DETECTION
+		switch (stoi(what)) { //CEN PLUS / DRY CONTACT / IR DETECTION
 
 		case 21:         //Short pressure
-			iWhere = atoi(where.c_str());
-			iAppValue = atoi(whatParam[0].c_str());
+			iWhere = stoi(where);
+			iAppValue = stoi(whatParam[0]);
 			Log(LOG_STATUS, "CEN PLUS Short pressure %d Button %d", iWhere, iAppValue);
 			devname = OPENWEBNET_CENPLUS;
 			devname += " " + where + " Short Press Button " + whatParam[0];
-			UpdateCenPlus(WHO_CEN_PLUS_DRY_CONTACT_IR_DETECTION, iWhere, 1, iAppValue, atoi(what.c_str()), atoi(sInterface.c_str()), 255, devname.c_str());
+			UpdateCenPlus(WHO_CEN_PLUS_DRY_CONTACT_IR_DETECTION, iWhere, 1, iAppValue, stoi(what), stoi(sInterface), 255, devname.c_str());
 			break;
 
 		case 22:         //Start of extended pressure
@@ -1470,13 +1470,13 @@ void COpenWebNetTCP::UpdateDeviceValue(std::vector<bt_openwebnet>::iterator iter
 			break;
 
 		case 24:         //End of Extended pressure
-			iWhere = atoi(where.c_str());
-			iAppValue = atoi(whatParam[0].c_str());
+			iWhere = stoi(where);
+			iAppValue = stoi(whatParam[0]);
 
 			Log(LOG_STATUS, "CEN PLUS Long pressure %d Button %d", iWhere, iAppValue);
 			devname = OPENWEBNET_CENPLUS;
 			devname += " " + where + " Long Press Button " + whatParam[0];
-			UpdateCenPlus(WHO_CEN_PLUS_DRY_CONTACT_IR_DETECTION, iWhere, 1, iAppValue, atoi(what.c_str()), atoi(sInterface.c_str()), 255, devname.c_str());
+			UpdateCenPlus(WHO_CEN_PLUS_DRY_CONTACT_IR_DETECTION, iWhere, 1, iAppValue, stoi(what), stoi(sInterface), 255, devname.c_str());
 			break;
 
 		case 31:
@@ -1489,15 +1489,15 @@ void COpenWebNetTCP::UpdateDeviceValue(std::vector<bt_openwebnet>::iterator iter
 
 			devname = OPENWEBNET_DRY_CONTACT;
 			devname += " " + where.substr(1);
-			iWhere = atoi(where.substr(1).c_str());
+			iWhere = stoi(where.substr(1));
 
-			iAppValue = atoi(what.c_str());
+			iAppValue = stoi(what);
 			if (iAppValue == DRY_CONTACT_IR_DETECTION_WHAT_ON)
 				iAppValue = 1;
 			else
 				iAppValue = 0;
 
-			UpdateSwitch(WHO_CEN_PLUS_DRY_CONTACT_IR_DETECTION, iWhere, iAppValue, atoi(sInterface.c_str()), 255, devname.c_str());
+			UpdateSwitch(WHO_CEN_PLUS_DRY_CONTACT_IR_DETECTION, iWhere, iAppValue, stoi(sInterface), 255, devname.c_str());
 			break;
 		default:
 			Log(LOG_ERROR, "What=%s is not correct for who=%s", what.c_str(), who.c_str());
@@ -1515,16 +1515,16 @@ void COpenWebNetTCP::UpdateDeviceValue(std::vector<bt_openwebnet>::iterator iter
 		}
 		devname = OPENWEBNET_ENERGY_MANAGEMENT;
 		devname += " " + where;
-		switch (atoi(dimension.c_str()))
+		switch (stoi(dimension))
 		{
 		case ENERGY_MANAGEMENT_DIMENSION_ACTIVE_POWER:
-			UpdatePower(WHO_ENERGY_MANAGEMENT, atoi(where.c_str()), static_cast<float>(atof(value.c_str())), atoi(sInterface.c_str()), 255, devname.c_str());
+			UpdatePower(WHO_ENERGY_MANAGEMENT, stoi(where), stod(value), stoi(sInterface), 255, devname.c_str());
 			break;
 		case ENERGY_MANAGEMENT_DIMENSION_ENERGY_TOTALIZER:
-			UpdateEnergy(WHO_ENERGY_MANAGEMENT, atoi(where.c_str()), static_cast<float>(atof(value.c_str()) / 1000.), atoi(sInterface.c_str()), 255, devname.c_str());
+			UpdateEnergy(WHO_ENERGY_MANAGEMENT, stoi(where), stod(value) / 1000.0, stoi(sInterface), 255, devname.c_str());
 			break;
 		case ENERGY_MANAGEMENT_DIMENSION_END_AUTOMATIC_UPDATE:			
-			if (atoi(value.c_str()))
+			if (stoi(value))
 				Log(LOG_STATUS, "Start sending instantaneous consumption %s for %s minutes", where.c_str(), value.c_str());
 			else
 				Log(LOG_STATUS, "Stop sending instantaneous consumption %s", where.c_str());
@@ -1537,12 +1537,12 @@ void COpenWebNetTCP::UpdateDeviceValue(std::vector<bt_openwebnet>::iterator iter
 
 	case WHO_GATEWAY_INTERFACES_MANAGEMENT:         // 13
 		int timezone, model;
-		switch (atoi(dimension.c_str()))
+		switch (stoi(dimension))
 		{
 		case GATEWAY_INTERFACES_MANAGEMENT_DIMENSION_TIME:					// 0,		/* Read/Write */
 			if (valueParam.size() >= 4)
 			{
-				timezone = atoi(valueParam[3].c_str());
+				timezone = stoi(valueParam[3]);
 				Log(LOG_STATUS, "Gateway Time %s:%s:%s GMT%c%u", valueParam[0].c_str(), valueParam[1].c_str(), valueParam[2].c_str(), 
 																					  (timezone > 99) ? '-' : '+', (timezone % 100));
 			}
@@ -1557,29 +1557,29 @@ void COpenWebNetTCP::UpdateDeviceValue(std::vector<bt_openwebnet>::iterator iter
 		case GATEWAY_INTERFACES_MANAGEMENT_DIMENSION_IP_ADDRESS:			// 10,		/* Read		  */
 			if (valueParam.size() >= 4)
 			{
-				Log(LOG_STATUS, "Gateway IP Address %u.%u.%u.%u", atoi(valueParam[0].c_str()), atoi(valueParam[1].c_str()),
-																					   atoi(valueParam[2].c_str()), atoi(valueParam[3].c_str()));
+				Log(LOG_STATUS, "Gateway IP Address %u.%u.%u.%u", stoi(valueParam[0]), stoi(valueParam[1]),
+																					   stoi(valueParam[2]), stoi(valueParam[3]));
 			}
 			break;
 		case GATEWAY_INTERFACES_MANAGEMENT_DIMENSION_NET_MASK:				// 11,		/* Read		  */
 			if (valueParam.size() >= 4)
 			{
-				Log(LOG_STATUS, "Gateway Net Mask %u.%u.%u.%u", atoi(valueParam[0].c_str()), atoi(valueParam[1].c_str()),
-																					 atoi(valueParam[2].c_str()), atoi(valueParam[3].c_str()));
+				Log(LOG_STATUS, "Gateway Net Mask %u.%u.%u.%u", stoi(valueParam[0]), stoi(valueParam[1]),
+																					 stoi(valueParam[2]), stoi(valueParam[3]));
 			}
 			break;
 		case GATEWAY_INTERFACES_MANAGEMENT_DIMENSION_MAC_ADDRESS:			// 12,		/* Read		  */
 			if (valueParam.size() >= 6)
 			{
 				Log(LOG_STATUS, "Gateway MAC Address %02X:%02X:%02X:%02X:%02X:%02X",
-														atoi(valueParam[0].c_str()), atoi(valueParam[1].c_str()), atoi(valueParam[2].c_str()),
-														atoi(valueParam[3].c_str()), atoi(valueParam[4].c_str()), atoi(valueParam[5].c_str()));
+														stoi(valueParam[0]), stoi(valueParam[1]), stoi(valueParam[2]),
+														stoi(valueParam[3]), stoi(valueParam[4]), stoi(valueParam[5]));
 			}
 			break;
 		case GATEWAY_INTERFACES_MANAGEMENT_DIMENSION_DEVICE_TYPE:			// 15,		/* Read		  */
 			if (!valueParam.empty())
 			{
-				model = atoi(valueParam[0].c_str());
+				model = stoi(valueParam[0]);
 				switch (model)
 				{
 				case GATEWAY_MODEL_MHSERVER:	// 2
@@ -1627,17 +1627,17 @@ void COpenWebNetTCP::UpdateDeviceValue(std::vector<bt_openwebnet>::iterator iter
 				int delta;
 				struct tm ltime, lnowtime;
 
-				timezone = atoi(valueParam[3].c_str());
+				timezone = stoi(valueParam[3]);
 				timezone = ((timezone > 99) ? -(timezone % 100) : (timezone % 100)); // 
 
 				memset(&ltime, 0, sizeof(ltime));
-				ltime.tm_hour = atoi(valueParam[0].c_str());  // hours since midnight - [0, 23]
-				ltime.tm_min = atoi(valueParam[1].c_str());   // minutes after the hour - [0, 59]
-				ltime.tm_sec = atoi(valueParam[2].c_str());   // seconds after the minute - [0, 60] including leap second
-				ltime.tm_wday = atoi(valueParam[4].c_str());  // days since Sunday - [0, 6]
-				ltime.tm_mday = atoi(valueParam[5].c_str());  // day of the month - [1, 31]
-				ltime.tm_mon = atoi(valueParam[6].c_str());   // months since January - [0, 11]
-				ltime.tm_year = atoi(valueParam[7].c_str());  // years since 1900	
+				ltime.tm_hour = stoi(valueParam[0]);  // hours since midnight - [0, 23]
+				ltime.tm_min = stoi(valueParam[1]);   // minutes after the hour - [0, 59]
+				ltime.tm_sec = stoi(valueParam[2]);   // seconds after the minute - [0, 60] including leap second
+				ltime.tm_wday = stoi(valueParam[4]);  // days since Sunday - [0, 6]
+				ltime.tm_mday = stoi(valueParam[5]);  // day of the month - [1, 31]
+				ltime.tm_mon = stoi(valueParam[6]);   // months since January - [0, 11]
+				ltime.tm_year = stoi(valueParam[7]);  // years since 1900	
 
 				Log(LOG_STATUS, "Gateway DateTime %02u/%02u/%04u - %02u:%02u:%02u GMT%c%u",
 														ltime.tm_mday, ltime.tm_mon, ltime.tm_year,
@@ -1698,11 +1698,11 @@ void COpenWebNetTCP::UpdateDeviceValue(std::vector<bt_openwebnet>::iterator iter
 		break;
 
 	case WHO_SOUND_DIFFUSION:						// 22
-		//iAppValue = atoi(what.c_str());
-		//iWhere = atoi(where.c_str());
+		//iAppValue = stoi(what);
+		//iWhere = stoi(where);
 		//devname = OPENWEBNET_SOUND_DIFFUSION;
 		//devname += " " + where;
-		//UpdateSoundDiffusion(WHO_SOUND_DIFFUSION, iWhere, iAppValue, atoi(sInterface.c_str()), 255, devname.c_str());
+		//UpdateSoundDiffusion(WHO_SOUND_DIFFUSION, iWhere, iAppValue, stoi(sInterface), 255, devname.c_str());
 		//break;
 
 	case WHO_SCENARIO:                              // 0

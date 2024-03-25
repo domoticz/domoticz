@@ -146,7 +146,7 @@ void CNotificationBase::SetConfigValue(const std::string &Key, const std::string
 	{
 		if (Key == iter2.first)
 		{
-			*(iter2.second) = atoi(Value.c_str());
+			*(iter2.second) = stoi(Value);
 		}
 	}
 	for (auto &iter3 : _configValuesBase64)
@@ -191,7 +191,7 @@ void CNotificationBase::ConfigFromGetvars(const request& req, const bool save)
 			else if (sValue == "off")
 				Value = 0;
 			else
-				Value=atoi(sValue.c_str());
+				Value = stoi(sValue);
 		}
 		*(iter2.second) = Value;
 		if (save) {

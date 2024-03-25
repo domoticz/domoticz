@@ -445,7 +445,7 @@ void CTado::UpdateSwitch(const int Idx, const bool bOn, const std::string &defau
 	if (!result.empty())
 	{
 		//check if we have a change, if not do not update it
-		int nvalue = atoi(result[0][1].c_str());
+		int nvalue = stoi(result[0][1]);
 		if ((!bOn) && (nvalue == 0))
 			return;
 		if ((bOn && (nvalue != 0)))

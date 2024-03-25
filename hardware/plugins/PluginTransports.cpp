@@ -204,7 +204,7 @@ namespace Plugins {
 			{
 				if (!m_Acceptor)
 				{
-					m_Acceptor = new boost::asio::ip::tcp::acceptor(ios, boost::asio::ip::tcp::endpoint(boost::asio::ip::tcp::v4(), atoi(m_Port.c_str())));
+					m_Acceptor = new boost::asio::ip::tcp::acceptor(ios, boost::asio::ip::tcp::endpoint(boost::asio::ip::tcp::v4(), stoi(m_Port)));
 				}
 				boost::system::error_code ec;
 
@@ -632,7 +632,7 @@ namespace Plugins {
 			if (!m_Socket)
 			{
 				boost::system::error_code ec;
-				int	iPort = atoi(m_Port.c_str());
+				int	iPort = stoi(m_Port);
 
 				// Handle broadcast messages
 				if (m_IP == "255.255.255.255")
@@ -759,12 +759,12 @@ namespace Plugins {
 			if (((m_IP.substr(0, 4) >= "224.") && (m_IP.substr(0, 4) <= "239.")) || (m_IP.substr(0, 4) == "255."))
 			{
 				m_Socket->set_option(boost::asio::socket_base::broadcast(true));
-				boost::asio::ip::udp::endpoint destination(boost::asio::ip::address_v4::broadcast(), atoi(m_Port.c_str()));
+				boost::asio::ip::udp::endpoint destination(boost::asio::ip::address_v4::broadcast(), stoi(m_Port));
 				int bytes_transferred = m_Socket->send_to(boost::asio::buffer(pMessage, pMessage.size()), destination);
 			}
 			else
 			{
-				boost::asio::ip::udp::endpoint destination(boost::asio::ip::address::from_string(m_IP.c_str()), atoi(m_Port.c_str()));
+				boost::asio::ip::udp::endpoint destination(boost::asio::ip::address::from_string(m_IP.c_str()), stoi(m_Port));
 				int bytes_transferred = m_Socket->send_to(boost::asio::buffer(pMessage, pMessage.size()), destination);
 			}
 		}

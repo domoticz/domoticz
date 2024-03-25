@@ -101,8 +101,8 @@ bool CTTNMQTT::StartHardware()
 
 			if (!((Latitude == "1") && (Longitude == "1")))
 			{
-				m_DomLat = std::stod(Latitude);
-				m_DomLon = std::stod(Longitude);
+				m_DomLat = stod(Latitude);
+				m_DomLon = stod(Longitude);
 			}
 			else
 			{
@@ -422,11 +422,11 @@ void CTTNMQTT::UpdateUserVariable(const std::string &varName, const std::string 
 		result = m_sql.safe_query("SELECT ID FROM UserVariables WHERE (Name=='%q')", varName.c_str());
 		if (result.empty())
 			return;
-		ID = atoi(result[0][0].c_str());
+		ID = stoi(result[0][0]);
 	}
 	else
 	{
-		ID = atoi(result[0][0].c_str());
+		ID = stoi(result[0][0]);
 		m_sql.safe_query("UPDATE UserVariables SET Value='%q', LastUpdate='%q' WHERE (ID==%d)", varValue.c_str(), sLastUpdate.c_str(), ID);
 	}
 
@@ -456,7 +456,7 @@ int CTTNMQTT::GetAddDeviceAndSensor(const int m_HwdID, const std::string &Device
 
 	if (!result.empty())
 	{
-		DeviceID = atoi(result[0][0].c_str());
+		DeviceID = stoi(result[0][0]);
 		//Add last received in database ?
 	}
 
@@ -499,19 +499,19 @@ bool CTTNMQTT::ConvertField2Payload(const std::string &sType, const std::string 
 	if (IsSensorTypeOrAlias(sType, "temp")) {
 		payload[index]["channel"] = channel;
 		payload[index]["type"] = "temp";
-		payload[index]["value"] = std::stof(sValue);
+		payload[index]["value"] = stof(sValue);
 		ret = true;
 	}
 	else if (IsSensorTypeOrAlias(sType, "humidity")) {
 		payload[index]["channel"] = channel;
 		payload[index]["type"] = "humidity";
-		payload[index]["value"] = std::stof(sValue);
+		payload[index]["value"] = stof(sValue);
 		ret = true;
 	}
 	else if (IsSensorTypeOrAlias(sType, "baro")) {
 		payload[index]["channel"] = channel;
 		payload[index]["type"] = "baro";
-		payload[index]["value"] = std::stof(sValue);
+		payload[index]["value"] = stof(sValue);
 		ret = true;
 	}
 	else if (IsSensorTypeOrAlias(sType, "gps")) {
@@ -522,46 +522,46 @@ bool CTTNMQTT::ConvertField2Payload(const std::string &sType, const std::string 
 		{
 			payload[index]["channel"] = channel;
 			payload[index]["type"] = "gps";
-			payload[index]["lat"] = std::stod(strarray[0]);
-			payload[index]["lon"] = std::stod(strarray[1]);
-			payload[index]["alt"] = std::stof(strarray[2]);
+			payload[index]["lat"] = stod(strarray[0]);
+			payload[index]["lon"] = stod(strarray[1]);
+			payload[index]["alt"] = stof(strarray[2]);
 			ret = true;
 		}
 	}
 	else if (IsSensorTypeOrAlias(sType, "digital_input")) {
 		payload[index]["channel"] = channel;
 		payload[index]["type"] = "digital_input";
-		payload[index]["value"] = std::stoi(sValue);
+		payload[index]["value"] = stoi(sValue);
 		ret = true;
 	}
 	else if (IsSensorTypeOrAlias(sType, "digital_output")) {
 		payload[index]["channel"] = channel;
 		payload[index]["type"] = "digital_output";
-		payload[index]["value"] = std::stoi(sValue);
+		payload[index]["value"] = stoi(sValue);
 		ret = true;
 	}
 	else if (IsSensorTypeOrAlias(sType, "analog_input")) {
 		payload[index]["channel"] = channel;
 		payload[index]["type"] = "analog_input";
-		payload[index]["value"] = std::stof(sValue);
+		payload[index]["value"] = stof(sValue);
 		ret = true;
 	}
 	else if (IsSensorTypeOrAlias(sType, "analog_output")) {
 		payload[index]["channel"] = channel;
 		payload[index]["type"] = "analog_output";
-		payload[index]["value"] = std::stof(sValue);
+		payload[index]["value"] = stof(sValue);
 		ret = true;
 	}
 	else if (IsSensorTypeOrAlias(sType, "presence")) {
 		payload[index]["channel"] = channel;
 		payload[index]["type"] = "presence";
-		payload[index]["value"] = std::stof(sValue);
+		payload[index]["value"] = stof(sValue);
 		ret = true;
 	}
 	else if (IsSensorTypeOrAlias(sType, "luminosity")) {
 		payload[index]["channel"] = channel;
 		payload[index]["type"] = "luminosity";
-		payload[index]["value"] = std::stof(sValue);
+		payload[index]["value"] = stof(sValue);
 		ret = true;
 	}
 
@@ -571,7 +571,7 @@ bool CTTNMQTT::ConvertField2Payload(const std::string &sType, const std::string 
 	if (IsSensorTypeOrAlias(sType, "batterylevel")) {
 		payload[index]["channel"] = channel;
 		payload[index]["type"] = "batterylevel";
-		payload[index]["value"] = std::stoi(sValue);
+		payload[index]["value"] = stoi(sValue);
 		ret = true;
 	}
 

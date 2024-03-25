@@ -798,11 +798,11 @@ bool CEnOceanESP2::WriteToHardware(const char* pdata, const unsigned char /*leng
 		m_HwdID, sDeviceID.c_str(), (int) tsen->LIGHTING2.unitcode);
 	if (!result.empty())
 	{
-		_eSwitchType switchtype = static_cast<_eSwitchType>(std::stoul(result[0][0]));
+		_eSwitchType switchtype = static_cast<_eSwitchType>(stoul(result[0][0]));
 		if (switchtype == STYPE_Dimmer)
 			bIsDimmer = true;
 
-		LastLevel = static_cast<uint8_t>(std::stoul(result[0][1]));
+		LastLevel = static_cast<uint8_t>(stoul(result[0][1]));
 	}
 
 	uint8_t iLevel = tsen->LIGHTING2.level;
@@ -1071,9 +1071,9 @@ bool CEnOceanESP2::ParseData()
 				}
 				return true;
 			}
-			uint16_t Manufacturer = static_cast<uint16_t>(std::stoul(result[0][1]));
-			uint8_t Profile = static_cast<uint8_t>(std::stoul(result[0][2]));
-			uint8_t iType = static_cast<uint8_t>(std::stoul(result[0][3]));
+			uint16_t Manufacturer = static_cast<uint16_t>(stoul(result[0][1]));
+			uint8_t Profile = static_cast<uint8_t>(stoul(result[0][2]));
+			uint8_t iType = static_cast<uint8_t>(stoul(result[0][3]));
 
 			if (Profile == 0x12 && iType == 0x00)
 			{ // A5-12-00, Automated Meter Reading, Counter

@@ -429,7 +429,7 @@ void CHarmonyHub::Do_Work()
 void CHarmonyHub::CheckSetActivity(const std::string &activityID, const bool on)
 {
 	// get the device id from the db (if already inserted)
-	int actId=atoi(activityID.c_str());
+	int actId = stoi(activityID);
 	std::stringstream hexId ;
 	hexId << std::setw(7)  << std::hex << std::setfill('0') << std::uppercase << (int)( actId) ;
 	std::string actHex = hexId.str();
@@ -437,7 +437,7 @@ void CHarmonyHub::CheckSetActivity(const std::string &activityID, const bool on)
 	result = m_sql.safe_query("SELECT Name,DeviceID FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q')", m_HwdID, actHex.c_str());
 	if (!result.empty())
 	{
-		UpdateSwitch((uint8_t)(atoi(result[0][1].c_str())), activityID.c_str(),on,result[0][0]);
+		UpdateSwitch((unsigned char) stoi(result[0][1]), activityID.c_str(),on,result[0][0]);
 	}
 }
 
@@ -450,19 +450,21 @@ void CHarmonyHub::CheckSetActivity(const std::string &activityID, const bool on)
 void CHarmonyHub::UpdateSwitch(unsigned char /*idx*/, const char *realID, const bool bOn, const std::string &defaultname)
 {
 	std::stringstream hexId ;
-	hexId << std::setw(7) << std::setfill('0') << std::hex << std::uppercase << (int)( atoi(realID) );
+	int i_Id = atoi(realID);
+	
+	hexId << std::setw(7) << std::setfill('0') << std::hex << std::uppercase << i_Id;
+
 	std::vector<std::vector<std::string> > result;
 	result = m_sql.safe_query("SELECT Name,nValue,sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q')", m_HwdID, hexId.str().c_str());
 	if (!result.empty())
 	{
 		//check if we have a change, if not do not update it
-		int nvalue = atoi(result[0][1].c_str());
+		int nvalue = stoi(result[0][1]);
 		if ((!bOn) && (nvalue == light2_sOff))
 			return;
 		if ((bOn && (nvalue != light2_sOff)))
 			return;
 	}
-	int i_Id = atoi( realID);
 	//Send as Lighting 2
 	tRBUF lcmd;
 	memset(&lcmd, 0, sizeof(RBUF));
@@ -902,7 +904,7 @@ void CHarmonyHub::ProcessQueryResponse(std::string *szQueryResponse)
 				std::string szCurrentActivity = szJsonString.substr(0, pos);
 				if (_log.IsDebugLevelEnabled(DEBUG_HARDWARE))
 				{
-					Debug(DEBUG_HARDWARE, "Current activity ID = %d (%s)", atoi(szCurrentActivity.c_str()), m_mapActivities[szCurrentActivity].c_str());
+					Debug(DEBUG_HARDWARE, "Current activity ID = %d (%s)", stoi(szCurrentActivity), m_mapActivities[szCurrentActivity].c_str());
 				}
 
 				if (m_szCurActivityID.empty()) // initialize all switches
@@ -1057,7 +1059,7 @@ void CHarmonyHub::ProcessHarmonyMessage(std::string *szMessageBlock)
 	}
 	pos += 16;
 	size_t valueEnd = szMessageBlock->find('"', pos);
-	int msglen = atoi(szMessageBlock->substr(pos, valueEnd - pos).c_str());
+	int msglen = stoi(szMessageBlock->substr(pos, valueEnd - pos));
 	msgStart = valueEnd + 4;
 	if (szMessageBlock->compare(msgStart, 8, "<message") != 0)
 	{

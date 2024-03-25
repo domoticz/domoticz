@@ -397,20 +397,20 @@ void OnkyoAVTCP::ReceiveSwitchMsg(const char *pData, int Len, bool muting, int I
 			}
 			options["LevelActions"] = options["LevelActions"] + "|" + str;
 			options["LevelNames"] = options["LevelNames"] + "|" + level_name;
-			m_sql.SetDeviceOptions(atoi(result[0][4].c_str()), options);
+			m_sql.SetDeviceOptions(stoull(result[0][4]), options);
 		}
 		level = i;
 	}
 	if (!result.empty() && action == gswitch_sSetLevel)
 	{
 		// check if we have a change, if not do not update it
-		int nvalue = atoi(result[0][1].c_str());
+		int nvalue = stoi(result[0][1]);
 		if ((!level) && (nvalue == gswitch_sOff))
 			return;
 		if ((level && (nvalue != gswitch_sOff)))
 		{
 			// Check Level
-			int slevel = atoi(result[0][2].c_str());
+			int slevel = stoi(result[0][2]);
 			if (slevel == level)
 				return;
 		}
@@ -693,7 +693,7 @@ namespace http
 			std::string sAction = request::findValue(&req, "action");
 			if (sIdx.empty())
 				return;
-			// int idx = atoi(sIdx.c_str());
+			// int idx = stoi(sIdx);
 
 			std::vector<std::vector<std::string>> result;
 			result = m_sql.safe_query("SELECT DS.SwitchType, DS.DeviceID, H.Type, H.ID FROM DeviceStatus DS, Hardware H WHERE (DS.ID=='%q') AND (DS.HardwareID == H.ID)", sIdx.c_str());
@@ -701,7 +701,7 @@ namespace http
 			root["status"] = "ERR";
 			if (result.size() == 1)
 			{
-				_eHardwareTypes hType = (_eHardwareTypes)atoi(result[0][2].c_str());
+				_eHardwareTypes hType = (_eHardwareTypes) stoi(result[0][2]);
 				switch (hType)
 				{
 					// We allow raw EISCP commands to be sent on *any* of the logical devices

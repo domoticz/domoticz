@@ -1033,9 +1033,9 @@ void MitsubishiWF::ParseModeSwitch(const uint8_t id, const char** vModes, const 
 	}
 
 	std::string szIdx = result[0][0];
-	uint64_t DevRowIdx = std::stoull(szIdx);
+	uint64_t DevRowIdx = stoull(szIdx);
 	std::string szDeviceName = result[0][1];
-	int nValue = atoi(result[0][2].c_str());
+	int nValue = stoi(result[0][2]);
 	std::string sValue = result[0][3];
 	std::string sOptions = result[0][4];
 

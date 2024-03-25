@@ -195,21 +195,21 @@ bool CAtagOne::GetDeviceDetails(const std::string& ThermostatID)
 		Log(LOG_ERROR, "Invalid/no data received (1)...");
 		return false;
 	}
-	root["roomTemperature"] = static_cast<float>(atof(sret.c_str()));
+	root["roomTemperature"] = stof(sret);
 	//root["deviceAlias"] = GetHTMLPageValue(sResult, "Apparaat alias|Device alias", false);
 	//root["latestReportTime"] = GetHTMLPageValue(sResult, "Laatste rapportagetijd|Latest report time", false);
 	//root["connectedTo"] = GetHTMLPageValue(sResult, "Verbonden met|Connected to", false);
-	root["burningHours"] = static_cast<float>(atof(GetHTMLPageValue(sResult, "Branduren|Burning hours", true).c_str()));
+	root["burningHours"] = stof(GetHTMLPageValue(sResult, "Branduren|Burning hours", true));
 	//root["boilerHeatingFor"] = GetHTMLPageValue(sResult, "Ketel in bedrijf voor|Boiler heating for", false);
 	sret = GetHTMLPageValue(sResult, "Brander status|Flame status|Brennerstatus", false);
 	root["flameStatus"] = ((sret == "Aan") || (sret == "On") || (sret == "An")) ? true : false;
-	root["outsideTemperature"] = static_cast<float>(atof(GetHTMLPageValue(sResult, "Buitentemperatuur|Outside temperature|Au&#223;entemperatur", true).c_str()));
-	root["dhwSetpoint"] = static_cast<float>(atof(GetHTMLPageValue(sResult, "Setpoint warmwater|DHW setpoint", true).c_str()));
-	root["dhwWaterTemperature"] = static_cast<float>(atof(GetHTMLPageValue(sResult, "Warmwatertemperatuur|DHW water temperature|Warmwassertemperatur", true).c_str()));
-	root["chSetpoint"] = static_cast<float>(atof(GetHTMLPageValue(sResult, "Setpoint cv|CH setpoint", true).c_str()));
-	root["chWaterTemperature"] = static_cast<float>(atof(GetHTMLPageValue(sResult, "CV-aanvoertemperatuur|CH water temperature", true).c_str()));
-	root["chWaterPressure"] = static_cast<float>(atof(GetHTMLPageValue(sResult, "CV-waterdruk|CH water pressure|Anlagendruck", true).c_str()));
-	root["chReturnTemperature"] = static_cast<float>(atof(GetHTMLPageValue(sResult, "CV retourtemperatuur|CH return temperature|HZ R&#252;cklauftemperatur", true).c_str()));
+	root["outsideTemperature"] = stof(GetHTMLPageValue(sResult, "Buitentemperatuur|Outside temperature|Au&#223;entemperatur", true));
+	root["dhwSetpoint"] = stof(GetHTMLPageValue(sResult, "Setpoint warmwater|DHW setpoint", true));
+	root["dhwWaterTemperature"] = stof(GetHTMLPageValue(sResult, "Warmwatertemperatuur|DHW water temperature|Warmwassertemperatur", true));
+	root["chSetpoint"] = stof(GetHTMLPageValue(sResult, "Setpoint cv|CH setpoint", true));
+	root["chWaterTemperature"] = stof(GetHTMLPageValue(sResult, "CV-aanvoertemperatuur|CH water temperature", true));
+	root["chWaterPressure"] = stof(GetHTMLPageValue(sResult, "CV-waterdruk|CH water pressure|Anlagendruck", true));
+	root["chReturnTemperature"] = stof(GetHTMLPageValue(sResult, "CV retourtemperatuur|CH return temperature|HZ R&#252;cklauftemperatur", true));
 
 #ifdef DEBUG_AtagOneThermostat_read
 	sResult = ReadFile("E:\\AtagOne_gettargetsetpoint.txt");
@@ -239,7 +239,7 @@ bool CAtagOne::GetDeviceDetails(const std::string& ThermostatID)
 		Log(LOG_ERROR, "Invalid/no data received (3)...");
 		return false;
 	}
-	root["targetTemperature"] = static_cast<float>(atof(root2["targetTemp"].asString().c_str()));
+	root["targetTemperature"] = stof(root2["targetTemp"].asString());
 	root["currentMode"] = root2["currentMode"].asString();
 	root["vacationPlanned"] = root2["vacationPlanned"].asBool();
 

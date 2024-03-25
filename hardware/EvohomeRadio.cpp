@@ -160,7 +160,7 @@ bool CEvohomeRadio::StartHardware()
 			else
 				SetControllerID(0xFFFFFF);  // Dummy value to allow detection of multiple controllers
 		}
-		m_nControllerMode = (uint8_t)atoi(sd[2].c_str());
+		m_nControllerMode = (uint8_t) stoi(sd[2]);
 	}
 	else
 	{
@@ -178,11 +178,11 @@ bool CEvohomeRadio::StartHardware()
 	m_RelayCheck.clear();
 	for (auto &i : result)
 	{
-		Debug(DEBUG_HARDWARE, "Relay: devno=%d demmand=%d", atoi(i[0].c_str()), atoi(i[4].c_str()));
+		Debug(DEBUG_HARDWARE, "Relay: devno=%d demmand=%d", stoi(i[0]), stoi(i[4]));
 		m_RelayCheck.insert(
-			tmap_relay_check_pair(static_cast<uint8_t>(atoi(i[0].c_str())),
+			tmap_relay_check_pair(static_cast<uint8_t>(stoi(i[0])),
 					      _tRelayCheck(boost::get_system_time() - boost::posix_time::minutes(19),
-							   static_cast<uint8_t>(atoi(i[4].c_str()))))); // allow 1 minute for startup before
+							   static_cast<uint8_t>(stoi(i[4]))))); // allow 1 minute for startup before
 													// trying to restore demand
 	}
 
@@ -482,7 +482,7 @@ void CEvohomeRadio::SendExternalSensor()
 		std::vector<std::string> strarray;
 		StringSplit(result[0][0], ";", strarray);
 		if (!strarray.empty()) {
-			dbTemp = atof(strarray[0].c_str());
+			dbTemp = stod(strarray[0]);
 			AddSendQueue(CEvohomeMsg(CEvohomeMsg::pktinf, 0, GetGatewayID(), cmdExternalSensor).Add((uint8_t)2).Add(static_cast<int16_t>(dbTemp * 100.0)).Add((uint8_t)1));
 		}
 		else
@@ -494,7 +494,7 @@ void CEvohomeRadio::SendExternalSensor()
 	//FIXME no light level data available UV from WU is only thing vaguely close (on dev system) without a real sensor
 	result = m_sql.safe_query("SELECT sValue FROM DeviceStatus WHERE (Type==%d)", (int)pTypeUV);
 	if (!result.empty()) {
-		dbUV = atof(result[0][0].c_str());
+		dbUV = stod(result[0][0]);
 		AddSendQueue(CEvohomeMsg(CEvohomeMsg::pktinf, 0, GetGatewayID(), cmdExternalSensor).Add((uint8_t)0).Add(static_cast<uint16_t>(dbUV * 39)).Add((uint8_t)2));
 	}
 	else
@@ -515,7 +515,7 @@ void CEvohomeRadio::SendZoneSensor()
 	int nDevCount = 0;
 	if (!result.empty())
 	{
-		nDevCount = atoi(result[0][0].c_str());
+		nDevCount = stoi(result[0][0]);
 	}
 	else return;
 	for (int i = 40; i <= nDevCount; ++i)
@@ -535,7 +535,7 @@ void CEvohomeRadio::SendZoneSensor()
 				std::vector<std::string> strarray;
 				StringSplit(result[0][0], ";", strarray);
 				if (!strarray.empty())
-					dbTemp = atof(strarray[0].c_str());
+					dbTemp = stod(strarray[0]);
 				Debug(DEBUG_HARDWARE, "Send Temp Zone msg Zone: %d DeviceID: 0x%x Name:%s Temp:%f ", i, ID, SensorName.c_str(), dbTemp);
 				AddSendQueue(CEvohomeMsg(CEvohomeMsg::pktinf, 0, ID, cmdZoneTemp).Add((uint8_t)0).Add(static_cast<int16_t>(dbTemp * 100.0)));
 				// Update the dummy Temp Zone device with the new temperature
@@ -662,12 +662,12 @@ bool CEvohomeMsg::DecodePacket(const char* rawmsg)
 			{
 				if (i == 2)
 				{
-					timestamp = (uint8_t)atoi(tkn.c_str());
+					timestamp = (unsigned char) stoi(tkn);
 					SetFlag(flgts);
 				}
 				else if (cmdidx && i == cmdidx + 1)
 				{
-					payloadsize = (uint8_t)atoi(tkn.c_str());
+					payloadsize = (unsigned char) stoi(tkn);
 					SetFlag(flgps);
 				}
 			}
@@ -1052,7 +1052,7 @@ bool CEvohomeRadio::DecodeZoneTemp(CEvohomeMsg& msg)//0x30C9
 			result = m_sql.safe_query("SELECT Unit FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID == '%q') AND (Type == %d)", m_HwdID, zstrid.c_str(), (int)pTypeEvohomeZone);
 			if (!result.empty()) // Update existing temp sensor with value directly from sensor
 			{
-				tsen.zone = (uint8_t)atoi(result[0][0].c_str());
+				tsen.zone = (uint8_t) stoi(result[0][0]);
 				Debug(DEBUG_HARDWARE, "%s: Zone sensor msg: 0x%x: %d: %d", tag, msg.GetID(0), tsen.zone, tsen.temperature);
 				sDecodeRXMessage(this, (const unsigned char *)&tsen, "Zone Temp", -1, nullptr);
 			}
@@ -1061,9 +1061,9 @@ bool CEvohomeRadio::DecodeZoneTemp(CEvohomeMsg& msg)//0x30C9
 				result = m_sql.safe_query("SELECT Unit FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID == '%q') AND (Type == %d)", m_HwdID, zstrid.c_str(), (int)pTypeEvohomeRelay);
 				if (!result.empty())
 				{
-					tsen.zone = (uint8_t)(atoi(result[0][0].c_str()) + 12);
+					tsen.zone = (uint8_t)(stoi(result[0][0]) + 12);
 					char zstrname[40];
-					sprintf(zstrname, "Zone %d", atoi(result[0][0].c_str()));
+					sprintf(zstrname, "Zone %d", stoi(result[0][0]));
 					Debug(DEBUG_HARDWARE, "%s: Zone sensor msg: 0x%x: %d: %d", tag, msg.GetID(0), tsen.zone, tsen.temperature);
 					sDecodeRXMessage(this, (const unsigned char *)&tsen, zstrname, -1, nullptr);
 				}
@@ -1529,7 +1529,7 @@ void CEvohomeRadio::UpdateSwitch(const unsigned char Idx, const bool bOn, const 
 	if (!result.empty())
 	{
 		//check if we have a change, if not do not update it
-		int nvalue = atoi(result[0][1].c_str());
+		int nvalue = stoi(result[0][1]);
 		if ((!bOn) && (nvalue == 0))
 			return;
 		if ((bOn && (nvalue != 0)))
@@ -2153,7 +2153,7 @@ namespace http {
 
 			std::string idx = request::findValue(&req, "idx");
 			std::string type = request::findValue(&req, "devtype");
-			int HwdID = atoi(idx.c_str());
+			int HwdID = stoi(idx);
 			CDomoticzHardwareBase* pHardware = m_mainworker.GetHardware(HwdID);
 			if (pHardware == nullptr)
 				return;
@@ -2171,7 +2171,7 @@ namespace http {
 				int nDevCount = 0;
 				if (!result.empty())
 				{
-					nDevCount = atol(result[0][0].c_str());
+					nDevCount = stoi(result[0][0]);
 				}
 
 				if (nDevCount >= 32)//arbitrary maximum
@@ -2209,7 +2209,7 @@ namespace http {
 				int nDevCount = 0;
 				if (!result.empty())
 				{
-					nDevCount = atoi(result[0][0].c_str());
+					nDevCount = stoi(result[0][0]);
 				}
 				else nDevCount = 39;// If first device, assign Unit=40 (+1 below)
 
