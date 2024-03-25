@@ -2547,7 +2547,7 @@ bool CNetatmo::ParseEvents(const std::string& sResult, Json::Value& root )
 int GetBatteryLevel(const std::string& ModuleType, int battery_percent)
 {
 	int batValue = 255;
-        Log(LOG_STATUS, "batterij Level Updated");
+        _log.Log(LOG_STATUS, "batterij Level Updated");
 	// Others are plugged
 	if ((ModuleType == "NAModule1") || (ModuleType == "NAModule2") || (ModuleType == "NAModule3") || (ModuleType == "NAModule4"))
 		batValue = battery_percent;
