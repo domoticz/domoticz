@@ -1943,7 +1943,7 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root )
                                         room_str >> room_temp;
                                         m_Room_Temp[Room_id] = room_temp;
 
-                                        Debug(DEBUG_HARDWARE, "room %s temp = %s °C - %d ", roomName.c_str(), room_temp.c_str(), room_measured);
+                                        Debug(DEBUG_HARDWARE, "room %s temp = %s °C - %f ", roomName.c_str(), room_temp.c_str(), room_measured);
                                         //SendTempSensor((roomNetatmoID & 0x00FFFFFF) | 0x03000000, 255, room["therm_measured_temperature"].asFloat(), roomName);
                                 };
                                 if (!room["therm_setpoint_temperature"].empty())
@@ -2249,7 +2249,7 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root )
                                         Debug(DEBUG_HARDWARE, "Floodlight name %s - %d  - %s / mode %s", lName.c_str(), bIsActive,  sValue.c_str(), setpoint_mode.c_str());
                                         //SendSelectorSwitch(crcId, 0, setpoint_mode, lName, 15, true, "Off|On|Auto", "", true, m_Name);
                                         //SendSwitch(crcId, 0, 255, bIsActive, 0, lName, m_Name);
-                                        DeviceRowIdx = UpdateValueInt(m_HwdID, moduleID, module_id.c_str(), 2, pTypeGeneralSwitch, sSwitchTypeSelector, 12, 255, 0, options.c_str(), lName,  '0', m_Name.c_str());
+                                        DeviceRowIdx = m_sql.UpdateValue(m_HwdID, moduleID, module_id.c_str(), 2, pTypeGeneralSwitch, sSwitchTypeSelector, 12, 255, 0, options.c_str(), lName, '0', m_Name.c_str());
                                         m_sql.SetDeviceOptions(DeviceRowIdx, Options);
                                 };
                                 if ((type == "NATherm1") || (type == "NRV"))
@@ -2321,7 +2321,7 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root )
                                         std::string sName = moduleName + " - Schedule";
                                         int nValue = 0;
                                         //SendSelectorSwitch(crcId, 2, ssv.str(), sName, 15, true, allSchName, allSchAction, true, m_Name);
-                                        DeviceRowIdx = m_sql.UpdateValue(m_HwdID, moduleID, module_id.c_str(), 2, pTypeGeneralSwitch, sSwitchTypeSelector, 12, 255, setpoint_mode_i, options.c_str(), sName, '0', m_Name.c_str>
+                                        DeviceRowIdx = m_sql.UpdateValue(m_HwdID, moduleID, module_id.c_str(), 2, pTypeGeneralSwitch, sSwitchTypeSelector, 12, 255, setpoint_mode_i, options.c_str(), sName, '0', m_Name.c_str());
                                         m_sql.SetDeviceOptions(DeviceRowIdx, Options);
                                         //idx = DeviceRowIdx;
                                         m_thermostatDeviceID[DeviceRowIdx] = moduleID;
@@ -2544,7 +2544,7 @@ bool CNetatmo::ParseEvents(const std::string& sResult, Json::Value& root )
 /// <param name="ModuleType">Module type</param>                  // for reference only
 /// <param name="battery_percent">battery percent</param>
 /// <returns>normalized battery level</returns>
-int CNetatmo::GetBatteryLevel(const std::string& ModuleType, int battery_percent)
+int GetBatteryLevel(const std::string& ModuleType, int battery_percent)
 {
 	int batValue = 255;
         Log(LOG_STATUS, "batterij Level Updated");
