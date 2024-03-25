@@ -12856,7 +12856,7 @@ bool MainWorker::SetSetPointInt(const std::vector<std::string>& sd, const float 
 	s_strid >> ID;
 	std::string id;
         unsigned long idx_int = 0;
-        _log.Debug(DEBUG_HARDWARE, "Index %d ", sd.size());
+        _log.Debug(DEBUG_HARDWARE, "Index %lu ", sd.size());
         for(auto it = sd.begin(); it != sd.end(); ++it)
         {
                 int index = std::distance(sd.begin(), it);
@@ -12870,7 +12870,7 @@ bool MainWorker::SetSetPointInt(const std::vector<std::string>& sd, const float 
                 std::stringstream ss;
                 ss << sd[7];
                 ss >> idx_int;
-                _log.Debug(DEBUG_HARDWARE, "IDX %d , HardwareID %d - %s", idx_int, HardwareID, id.c_str());
+                _log.Debug(DEBUG_HARDWARE, "IDX %lu , HardwareID %d - %s", idx_int, HardwareID, id.c_str());
         };
 	uint8_t ID1 = (uint8_t)((ID & 0xFF000000) >> 24);
 	uint8_t ID2 = (uint8_t)((ID & 0x00FF0000) >> 16);
