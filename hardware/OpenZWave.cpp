@@ -5051,7 +5051,7 @@ bool COpenZWave::ApplyNodeConfig(const unsigned int homeID, const uint8_t nodeID
 						}
 						else if (vType == OpenZWave::ValueID::ValueType_Decimal)
 						{
-							bRet = m_pManager->SetValue(vID, stod(ValueVal));
+							bRet = m_pManager->SetValue(vID, stof(ValueVal));
 						}
 						else
 						{
