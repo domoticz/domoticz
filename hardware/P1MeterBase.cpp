@@ -1017,7 +1017,7 @@ bool P1MeterBase::CheckCRC()
 	char crc_str[5];
 	strncpy(crc_str, l_buffer + 1, 4);
 	crc_str[4] = 0;
-	uint16_t m_crc16 = (uint16_t)strtoul(crc_str, nullptr, 16);
+	uint16_t m_crc16 = (uint16_t) strtoul(crc_str, nullptr, 16);
 
 	// calculate CRC
 	uint16_t crc = 0;

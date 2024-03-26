@@ -158,7 +158,7 @@ bool CEvohomeWeb::StartSession()
 			std::vector<std::string> splitresults;
 			StringSplit(result[0][0], ";", splitresults);
 			if (!splitresults.empty())
-				m_awaysetpoint = strtod(splitresults[0].c_str(), nullptr);
+				m_awaysetpoint = stod(splitresults[0]);
 			if (splitresults.size() > 1)
 				m_wdayoff = stoi(splitresults[1]) % 7;
 		}
@@ -354,7 +354,7 @@ bool CEvohomeWeb::SetSystemMode(uint8_t sysmode)
 				if ((!hz->schedule.isNull()) || get_zone_schedule(hz->zoneId))
 				{
 					szuntil = local_to_utc(get_next_switchpoint_ex(hz->schedule, szsetpoint));
-					setpoint = strtod(szsetpoint.c_str(), nullptr);
+					setpoint = stod(szsetpoint);
 				}
 
 				// Eco lowers the setpoint of all zones by 3 degrees, but resets a zone mode to Normal setting
@@ -416,7 +416,7 @@ bool CEvohomeWeb::SetSetpoint(const char* pdata)
 		if ((!hz->schedule.isNull()) || get_zone_schedule(hz->zoneId))
 		{
 			szuntil = local_to_utc(get_next_switchpoint_ex(hz->schedule, szsetpoint));
-			pEvo->temperature = (int16_t)(strtod(szsetpoint.c_str(), nullptr) * 100);
+			pEvo->temperature = (int16_t) (stod(szsetpoint) * 100);
 		}
 
 		if ((m_showschedule) && (!szuntil.empty()))
@@ -499,7 +499,7 @@ bool CEvohomeWeb::SetDHWState(const char* pdata)
 
 void CEvohomeWeb::DecodeControllerMode(temperatureControlSystem* tcs)
 {
-	unsigned long ID = (unsigned long)(strtod(tcs->systemId.c_str(), nullptr));
+	unsigned long ID = (unsigned long) stod(tcs->systemId);
 	std::string szsystemMode, szmodelType;
 	uint8_t sysmode = 0;
 
@@ -584,7 +584,7 @@ void CEvohomeWeb::DecodeZone(zone* hz)
 		szsysmode = (*m_tcs->status)["systemModeStatus"]["mode"].asString();
 	if ((szsysmode == "Away") && (szmode == "FollowSchedule"))
 	{
-		double new_awaysetpoint = strtod(szsetpoint.c_str(), nullptr);
+		double new_awaysetpoint = stod(szsetpoint);
 		if (m_awaysetpoint != new_awaysetpoint)
 		{
 			m_awaysetpoint = new_awaysetpoint;

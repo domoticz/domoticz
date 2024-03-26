@@ -62,7 +62,7 @@ bool CLogger::SetLogFlags(const std::string &sFlags)
 		if (is_number(wflag))
 		{
 			// Flags are set provided (bitwise)
-			iFlags = strtoul(wflag.c_str(), nullptr, 10);
+			iFlags = stoul(wflag);
 			break;
 		}
 		if (wflag == "all")
@@ -105,7 +105,7 @@ bool CLogger::SetDebugFlags(const std::string &sFlags)
 		if (is_number(wflag))
 		{
 			// Flags are set provided (bitwise)
-			iFlags = strtoul(wflag.c_str(), nullptr, 10);
+			iFlags = stoul(wflag);
 			break;
 		}
 		if (wflag == "all")

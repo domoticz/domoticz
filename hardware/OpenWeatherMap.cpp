@@ -411,7 +411,7 @@ std::string COpenWeatherMap::GetHourFromUTCtimestamp(const uint8_t hournr, const
 {
 	std::string sHour = "Unknown";
 
-	time_t t = (time_t)strtol(UTCtimestamp.c_str(), nullptr, 10);
+	time_t t = (time_t) stol(UTCtimestamp);
 	std::string sDate = ctime(&t);
 
 	std::vector<std::string> strarray;
@@ -443,7 +443,7 @@ std::string COpenWeatherMap::GetDayFromUTCtimestamp(const uint8_t daynr, const s
 {
 	std::string sDay = "Unknown";
 
-	time_t t = (time_t)strtol(UTCtimestamp.c_str(), nullptr, 10);
+	time_t t = (time_t) stol(UTCtimestamp);
 	std::string sDate = ctime(&t);
 
 	std::vector<std::string> strarray;

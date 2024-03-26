@@ -639,7 +639,7 @@ bool CLogitechMediaServer::SendCommand(const int ID, const std::string &command,
 	if (result.size() == 1)
 	{
 		// Get connection details
-		long DeviceID = strtol(result[0][0].c_str(), nullptr, 16);
+		long DeviceID = stol(result[0][0], nullptr, 16);
 		result = m_sql.safe_query("SELECT Name, MacAddress,Timeout FROM WOLNodes WHERE (HardwareID==%d) AND (ID==%d)", m_HwdID, DeviceID);
 		sPlayerId = result[0][1];
 	}

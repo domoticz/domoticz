@@ -180,7 +180,7 @@ std::vector<char> HexToBytes(const std::string& hex) {
 
 	for (unsigned int i = 0; i < hex.length(); i += 2) {
 		std::string byteString = hex.substr(i, 2);
-		char byte = (char)strtol(byteString.c_str(), nullptr, 16);
+		char byte = (char) stol(byteString, nullptr, 16);
 		bytes.push_back(byte);
 	}
 

@@ -1776,7 +1776,7 @@ namespace http {
 			root["title"] = "UpdateNotification";
 
 			std::string recoverymsg;
-			if ((srecovery == "1") && (m_notifications.CustomRecoveryMessage(strtoull(idx.c_str(), nullptr, 0), recoverymsg, true)))
+			if ((srecovery == "1") && (m_notifications.CustomRecoveryMessage(stoull(idx, nullptr, 0), recoverymsg, true)))
 			{
 				scustommessage.append(";;");
 				scustommessage.append(recoverymsg);

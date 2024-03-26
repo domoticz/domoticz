@@ -778,10 +778,10 @@ void CSysfsGpio::UpdateDeviceID(int pin)
 			}
 
 			/* extract hex device sub-id's */
-			m_saved_state[index].id1 = strtol(sdeviceid.substr(0, 1).c_str(), nullptr, 16) & 0xFF;
-			m_saved_state[index].id2 = strtol(sdeviceid.substr(1, 2).c_str(), nullptr, 16) & 0xFF;
-			m_saved_state[index].id3 = strtol(sdeviceid.substr(3, 2).c_str(), nullptr, 16) & 0xFF;
-			m_saved_state[index].id4 = strtol(sdeviceid.substr(5, 2).c_str(), nullptr, 16) & 0xFF;
+			m_saved_state[index].id1 = stol(sdeviceid.substr(0, 1), nullptr, 16) & 0xFF;
+			m_saved_state[index].id2 = stol(sdeviceid.substr(1, 2), nullptr, 16) & 0xFF;
+			m_saved_state[index].id3 = stol(sdeviceid.substr(3, 2), nullptr, 16) & 0xFF;
+			m_saved_state[index].id4 = stol(sdeviceid.substr(5, 2), nullptr, 16) & 0xFF;
 			m_saved_state[index].id_valid = 1;
 		}
 

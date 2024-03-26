@@ -1512,8 +1512,8 @@ bool COpenZWave::SwitchColor(const uint8_t nodeID, const uint8_t instanceID, con
 							//Zipato Bulb2 does not support cold white and warm white at the same time
 							std::stringstream sstr;
 							std::string RGB = OutColorStr.substr(0, 7);
-							unsigned wWhite = strtoul(OutColorStr.substr(7, 2).c_str(), nullptr, 16);
-							unsigned cWhite = strtoul(OutColorStr.substr(9, 2).c_str(), nullptr, 16);
+							unsigned wWhite = stoul(OutColorStr.substr(7, 2), nullptr, 16);
+							unsigned cWhite = stoul(OutColorStr.substr(9, 2), nullptr, 16);
 							if (wWhite > cWhite)
 							{
 								wWhite = wWhite + cWhite;

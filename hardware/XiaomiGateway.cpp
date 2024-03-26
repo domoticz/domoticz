@@ -1673,7 +1673,7 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 							std::string bright_hex = hexstring.substr(0, 2);
 							std::stringstream ss2;
 							ss2 << std::hex << bright_hex.c_str();
-							int brightness = strtoul(bright_hex.c_str(), nullptr, 16);
+							int brightness = stoul(bright_hex, nullptr, 16);
 							bool on = false;
 							if (rgb != "0")
 							{

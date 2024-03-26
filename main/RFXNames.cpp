@@ -4045,7 +4045,7 @@ void ConvertToGeneralSwitchType(std::string& devid, int& dtype, int& subtype)
 		else if (subtype == sTypeBlindsT9) subtype = sSwitchTypeBrel;
 		else if (subtype == sTypeBlindsT10) subtype = sSwitchTypeDooya;
 		std::stringstream s_strid;
-		s_strid << std::hex << strtoul(devid.c_str(), nullptr, 16);
+		s_strid << std::hex << stoul(devid, nullptr, 16);
 		unsigned long deviceid = 0;
 		s_strid >> deviceid;
 		deviceid = (unsigned long)((deviceid & 0xffffff00) >> 8);
