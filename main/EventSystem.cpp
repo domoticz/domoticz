@@ -2499,7 +2499,7 @@ void CEventSystem::ParseActionString(const std::string &oAction_, _tActionParseR
 				oResults_.fRandomSec = static_cast<float>(stod(sToken) * 60.0);
 				break;
 			case 4:
-				oResults_.iRepeat = static_cast<float>(stod(sToken));
+				oResults_.iRepeat = stoi(sToken);
 				break;
 			case 5:
 				oResults_.fRepeatSec = static_cast<float>(stod(sToken));
