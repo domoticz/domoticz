@@ -949,7 +949,7 @@ void CdzVents::ExportDomoticzDataToLua(lua_State *lua_state, const std::vector<C
 			luaTable.AddInteger("hardwareID", sitem.hardwareID);
 			if (sitem.devType == pTypeGeneral && sitem.subType == sTypeKwh)
 			{
-				long double value = 0.0F;
+				long double value = 0.0;
 				if (strarray.size() > 1)
 					value = stold(strarray[1]);
 				luaTable.AddNumber("whTotal", value);
