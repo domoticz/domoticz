@@ -2968,8 +2968,7 @@ namespace http
 							}
 							else
 							{
-								sprintf(szData, "%d Watt, %d Watt, %d Watt", int(stof(strarray[0]) * voltage), int(stof(strarray[1]) * voltage),
-									int(stof(strarray[2]) * voltage));
+								sprintf(szData, "%d Watt, %d Watt, %d Watt", int(stof(strarray[0]) * voltage), int(stof(strarray[1]) * voltage), int(stof(strarray[2]) * voltage));
 							}
 							if (total > 0)
 							{

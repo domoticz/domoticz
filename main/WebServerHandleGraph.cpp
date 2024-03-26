@@ -1720,19 +1720,19 @@ namespace http
 								{
 								case MTYPE_ENERGY:
 								case MTYPE_ENERGY_GENERATED:
-									sprintf(szTmp, "%.3f", stof(szValue) / divider);
+									sprintf(szTmp, "%.3f", stod(szValue) / divider);
 									szValue = szTmp;
 									break;
 								case MTYPE_GAS:
-									sprintf(szTmp, "%.3f", stof(szValue) / divider);
+									sprintf(szTmp, "%.3f", stod(szValue) / divider);
 									szValue = szTmp;
 									break;
 								case MTYPE_WATER:
-									sprintf(szTmp, "%.3f", stof(szValue) / divider);
+									sprintf(szTmp, "%.3f", stod(szValue) / divider);
 									szValue = szTmp;
 									break;
 								case MTYPE_COUNTER:
-									sprintf(szTmp, "%.10g", stof(szValue) / divider);
+									sprintf(szTmp, "%.10g", stod(szValue) / divider);
 									szValue = szTmp;
 									break;
 								default:
@@ -1779,22 +1779,22 @@ namespace http
 
 							sprintf(szTmp, "%" PRIu64, total_real_usage_1);
 							std::string szValue = szTmp;
-							sprintf(szTmp, "%.3f", stof(szValue) / divider);
+							sprintf(szTmp, "%.3f", stod(szValue) / divider);
 							root["result"][ii]["v"] = szTmp;
 
 							sprintf(szTmp, "%" PRIu64, total_real_usage_2);
 							szValue = szTmp;
-							sprintf(szTmp, "%.3f", stof(szValue) / divider);
+							sprintf(szTmp, "%.3f", stod(szValue) / divider);
 							root["result"][ii]["v2"] = szTmp;
 
 							sprintf(szTmp, "%" PRIu64, total_real_deliv_1);
 							szValue = szTmp;
-							sprintf(szTmp, "%.3f", stof(szValue) / divider);
+							sprintf(szTmp, "%.3f", stod(szValue) / divider);
 							root["result"][ii]["r1"] = szTmp;
 
 							sprintf(szTmp, "%" PRIu64, total_real_deliv_2);
 							szValue = szTmp;
-							sprintf(szTmp, "%.3f", stof(szValue) / divider);
+							sprintf(szTmp, "%.3f", stod(szValue) / divider);
 							root["result"][ii]["r2"] = szTmp;
 
 							ii++;
@@ -1832,19 +1832,19 @@ namespace http
 							{
 							case MTYPE_ENERGY:
 							case MTYPE_ENERGY_GENERATED:
-								sprintf(szTmp, "%.3f", stof(szValue) / divider);
+								sprintf(szTmp, "%.3f", stod(szValue) / divider);
 								szValue = szTmp;
 								break;
 							case MTYPE_GAS:
-								sprintf(szTmp, "%.3f", stof(szValue) / divider);
+								sprintf(szTmp, "%.3f", stod(szValue) / divider);
 								szValue = szTmp;
 								break;
 							case MTYPE_WATER:
-								sprintf(szTmp, "%.3f", stof(szValue) / divider);
+								sprintf(szTmp, "%.3f", stod(szValue) / divider);
 								szValue = szTmp;
 								break;
 							case MTYPE_COUNTER:
-								sprintf(szTmp, "%.10g", stof(szValue) / divider);
+								sprintf(szTmp, "%.10g", stod(szValue) / divider);
 								szValue = szTmp;
 								break;
 							default:
@@ -3229,37 +3229,37 @@ namespace http
 									{
 									case MTYPE_ENERGY:
 									case MTYPE_ENERGY_GENERATED:
-										sprintf(szTmp, "%.3f", stof(szValue) / divider);
+										sprintf(szTmp, "%.3f", stod(szValue) / divider);
 										root["result"][ii]["v"] = szTmp;
 										if (fcounter != 0)
-											sprintf(szTmp, "%.3f", meteroffset + ((fcounter - stof(szValue)) / divider));
+											sprintf(szTmp, "%.3f", meteroffset + ((fcounter - stod(szValue)) / divider));
 										else
 											strcpy(szTmp, "0");
 										root["result"][ii]["c"] = szTmp;
 										break;
 									case MTYPE_GAS:
-										sprintf(szTmp, "%.2f", stof(szValue) / divider);
+										sprintf(szTmp, "%.2f", stod(szValue) / divider);
 										root["result"][ii]["v"] = szTmp;
 										if (fcounter != 0)
-											sprintf(szTmp, "%.2f", meteroffset + ((fcounter - stof(szValue)) / divider));
+											sprintf(szTmp, "%.2f", meteroffset + ((fcounter - stod(szValue)) / divider));
 										else
 											strcpy(szTmp, "0");
 										root["result"][ii]["c"] = szTmp;
 										break;
 									case MTYPE_WATER:
-										sprintf(szTmp, "%.3f", stof(szValue) / divider);
+										sprintf(szTmp, "%.3f", stod(szValue) / divider);
 										root["result"][ii]["v"] = szTmp;
 										if (fcounter != 0)
-											sprintf(szTmp, "%.3f", meteroffset + ((fcounter - stof(szValue)) / divider));
+											sprintf(szTmp, "%.3f", meteroffset + ((fcounter - stod(szValue)) / divider));
 										else
 											strcpy(szTmp, "0");
 										root["result"][ii]["c"] = szTmp;
 										break;
 									case MTYPE_COUNTER:
-										sprintf(szTmp, "%.10g", stof(szValue) / divider);
+										sprintf(szTmp, "%.10g", stod(szValue) / divider);
 										root["result"][ii]["v"] = szTmp;
 										if (fcounter != 0)
-											sprintf(szTmp, "%.10g", meteroffset + ((fcounter - stof(szValue)) / divider));
+											sprintf(szTmp, "%.10g", meteroffset + ((fcounter - stod(szValue)) / divider));
 										else
 											strcpy(szTmp, "0");
 										root["result"][ii]["c"] = szTmp;
@@ -3284,19 +3284,19 @@ namespace http
 									{
 									case MTYPE_ENERGY:
 									case MTYPE_ENERGY_GENERATED:
-										sprintf(szTmp, "%.3f", stof(szValue) / divider);
+										sprintf(szTmp, "%.3f", stod(szValue) / divider);
 										root["resultprev"][iPrev]["v"] = szTmp;
 										break;
 									case MTYPE_GAS:
-										sprintf(szTmp, "%.2f", stof(szValue) / divider);
+										sprintf(szTmp, "%.2f", stod(szValue) / divider);
 										root["resultprev"][iPrev]["v"] = szTmp;
 										break;
 									case MTYPE_WATER:
-										sprintf(szTmp, "%.3f", stof(szValue) / divider);
+										sprintf(szTmp, "%.3f", stod(szValue) / divider);
 										root["resultprev"][iPrev]["v"] = szTmp;
 										break;
 									case MTYPE_COUNTER:
-										sprintf(szTmp, "%.10g", stof(szValue) / divider);
+										sprintf(szTmp, "%.10g", stod(szValue) / divider);
 										root["resultprev"][iPrev]["v"] = szTmp;
 										break;
 									}
@@ -3586,7 +3586,7 @@ namespace http
 									{
 									case MTYPE_ENERGY:
 									case MTYPE_ENERGY_GENERATED: {
-										sprintf(szTmp, "%.3f", stof(szValue) / divider);
+										sprintf(szTmp, "%.3f", stod(szValue) / divider);
 										root["result"][ii]["v"] = szTmp;
 
 										std::vector<std::string> mresults;
@@ -3596,28 +3596,28 @@ namespace http
 											sValue = mresults[1];
 										}
 										if (dType == pTypeENERGY)
-											sprintf(szTmp, "%.3f", meteroffset + (((stof(sValue) * 100.0F) - stof(szValue)) / divider));
+											sprintf(szTmp, "%.3f", meteroffset + (((stod(sValue) * 100.0) - stod(szValue)) / divider));
 										else
-											sprintf(szTmp, "%.3f", meteroffset + ((stof(sValue) - stof(szValue)) / divider));
+											sprintf(szTmp, "%.3f", meteroffset + ((stod(sValue) - stod(szValue)) / divider));
 										root["result"][ii]["c"] = szTmp;
 									}
 															   break;
 									case MTYPE_GAS:
-										sprintf(szTmp, "%.2f", stof(szValue) / divider);
+										sprintf(szTmp, "%.2f", stod(szValue) / divider);
 										root["result"][ii]["v"] = szTmp;
-										sprintf(szTmp, "%.2f", meteroffset + ((stof(sValue) - stof(szValue)) / divider));
+										sprintf(szTmp, "%.2f", meteroffset + ((stod(sValue) - stod(szValue)) / divider));
 										root["result"][ii]["c"] = szTmp;
 										break;
 									case MTYPE_WATER:
-										sprintf(szTmp, "%.3f", stof(szValue) / divider);
+										sprintf(szTmp, "%.3f", stod(szValue) / divider);
 										root["result"][ii]["v"] = szTmp;
-										sprintf(szTmp, "%.3f", meteroffset + ((stof(sValue) - stof(szValue)) / divider));
+										sprintf(szTmp, "%.3f", meteroffset + ((stod(sValue) - stod(szValue)) / divider));
 										root["result"][ii]["c"] = szTmp;
 										break;
 									case MTYPE_COUNTER:
-										sprintf(szTmp, "%.10g", stof(szValue) / divider);
+										sprintf(szTmp, "%.10g", stod(szValue) / divider);
 										root["result"][ii]["v"] = szTmp;
-										sprintf(szTmp, "%.10g", meteroffset + ((stof(sValue) - stof(szValue)) / divider));
+										sprintf(szTmp, "%.10g", meteroffset + ((stod(sValue) - stod(szValue)) / divider));
 										root["result"][ii]["c"] = szTmp;
 										break;
 									}
@@ -4159,19 +4159,19 @@ namespace http
 								{
 								case MTYPE_ENERGY:
 								case MTYPE_ENERGY_GENERATED:
-									sprintf(szTmp, "%.3f", stof(szValue) / divider);
+									sprintf(szTmp, "%.3f", stod(szValue) / divider);
 									szValue = szTmp;
 									break;
 								case MTYPE_GAS:
-									sprintf(szTmp, "%.2f", stof(szValue) / divider);
+									sprintf(szTmp, "%.2f", stod(szValue) / divider);
 									szValue = szTmp;
 									break;
 								case MTYPE_WATER:
-									sprintf(szTmp, "%.3f", stof(szValue) / divider);
+									sprintf(szTmp, "%.3f", stod(szValue) / divider);
 									szValue = szTmp;
 									break;
 								case MTYPE_COUNTER:
-									sprintf(szTmp, "%.10g", stof(szValue) / divider);
+									sprintf(szTmp, "%.10g", stod(szValue) / divider);
 									szValue = szTmp;
 									break;
 
@@ -4217,12 +4217,12 @@ namespace http
 
 							sprintf(szTmp, "%" PRIu64, total_real_usage);
 							std::string szValue = szTmp;
-							sprintf(szTmp, "%.3f", stof(szValue) / divider);
+							sprintf(szTmp, "%.3f", stod(szValue) / divider);
 							root["result"][ii]["v"] = szTmp;
 
 							sprintf(szTmp, "%" PRIu64, total_real_deliv);
 							szValue = szTmp;
-							sprintf(szTmp, "%.3f", stof(szValue) / divider);
+							sprintf(szTmp, "%.3f", stod(szValue) / divider);
 							root["result"][ii]["v2"] = szTmp;
 							
 							ii++;
@@ -4260,19 +4260,19 @@ namespace http
 							{
 							case MTYPE_ENERGY:
 							case MTYPE_ENERGY_GENERATED:
-								sprintf(szTmp, "%.3f", stof(szValue) / divider);
+								sprintf(szTmp, "%.3f", stod(szValue) / divider);
 								szValue = szTmp;
 								break;
 							case MTYPE_GAS:
-								sprintf(szTmp, "%.2f", stof(szValue) / divider);
+								sprintf(szTmp, "%.2f", stod(szValue) / divider);
 								szValue = szTmp;
 								break;
 							case MTYPE_WATER:
-								sprintf(szTmp, "%.3f", stof(szValue) / divider);
+								sprintf(szTmp, "%.3f", stod(szValue) / divider);
 								szValue = szTmp;
 								break;
 							case MTYPE_COUNTER:
-								sprintf(szTmp, "%.10g", stof(szValue) / divider);
+								sprintf(szTmp, "%.10g", stod(szValue) / divider);
 								szValue = szTmp;
 								break;
 							}
