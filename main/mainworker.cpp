@@ -12880,8 +12880,8 @@ bool MainWorker::SetSetPointInt(const std::vector<std::string>& sd, const float 
 
 		if (
 			(value_unit.empty())
-			|| (value_unit == "�C")
-			|| (value_unit == "�F")
+			|| (value_unit == "°C")
+			|| (value_unit == "°F")
 			|| (value_unit == "C")
 			|| (value_unit == "F")
 			)

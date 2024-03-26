@@ -720,14 +720,14 @@ bool P1MeterBase::MatchLine()
 					* Electricity meter 02h
 					* Gas meter 03h
 					* Heat meter 04h
-					* Warm water meter (30�C ... 90�C) 06h
+					* Warm water meter (30°C ... 90°C) 06h
 					* Water meter 07h
 					* Heat Cost Allocator 08h
 					* Cooling meter (Volume measured at return temperature: outlet) 0Ah
 					* Cooling meter (Volume measured at flow temperature: inlet) 0Bh
 					* Heat meter (Volume measured at flow temperature: inlet) 0Ch
 					* Combined Heat / Cooling meter 0Dh
-					* Hot water meter (= 90�C) 15h
+					* Hot water meter (= 90°C) 15h
 					* Cold water meter a 16h
 					* Breaker (electricity) 20h
 					* Valve (gas or water) 21h

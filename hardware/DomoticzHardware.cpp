@@ -494,7 +494,7 @@ bool CDomoticzHardwareBase::GetWindSensorValue(const int NodeID, int& WindDir, f
 		return 0.0F;
 	}
 	bExists = true;
-	WindDir = (int) stof(splitresults[0]);
+	WindDir = static_cast<int>(stod(splitresults[0]));
 	WindSpeed = stof(splitresults[2]);
 	WindGust = stof(splitresults[3]);
 	WindTemp = stof(splitresults[4]);

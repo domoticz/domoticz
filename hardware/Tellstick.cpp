@@ -66,13 +66,13 @@ void CTellstick::sensorEvent(int deviceId, const char *protocol, const char *mod
     switch (dataType)
     {
     case TELLSTICK_TEMPERATURE:
-        SendTempSensor(deviceId, 255, (float) atof(value), "Temp");
+        SendTempSensor(deviceId, 255, static_cast<float>(atof(value)), "Temp");
         break;
     case TELLSTICK_HUMIDITY:
         SendHumiditySensor(deviceId, 255, atoi(value), "Humidity");
         break;
     case TELLSTICK_RAINRATE:
-        SendRainSensor(deviceId, 255, (float) atof(value), "Rain");
+        SendRainSensor(deviceId, 255, static_cast<float>(atof(value)), "Rain");
         break;
     case TELLSTICK_RAINTOTAL:
     case TELLSTICK_WINDDIRECTION:
@@ -105,6 +105,7 @@ void CTellstick::deviceEvent(int deviceId, int method, const char *data)
 	break;
     case TELLSTICK_DIM:
         gswitch.cmnd = gswitch_sSetLevel;
+        // FIXME: compute next line as double and ground to int ?
         gswitch.level = atoi(data) * 99 / 255;
 	    sDecodeRXMessage(this, (const unsigned char *)&gswitch, nullptr, 255, m_Name.c_str());
 	break;

@@ -2523,12 +2523,26 @@ std::string bt_openwebnet::getDimensionsDescription(const std::string& who, cons
 		//0 Measures Temperature
 		//11 Fan coil Speed 0 = Auto 1 = vel 1 2 = vel2 3 = vel3 15 = OFF
 		//12 Complete probe status
-		//13 Local set offset : 00  knob on 0 // 01  knob on + 1 (degree) //11  knob on - 1 (degree)//02  knob on + 2 (degree)//12  knob on - 2 (degree)//03  knob on + 3 (degree)//13  knob on - 3 (degree)//4  knob on Local OFF
+		//13 Local set offset :
+		//	00  knob on 0
+		//	01  knob on + 1 (degree)
+		//	11  knob on - 1 (degree)
+		//	02  knob on + 2 (degree)
+		//	12  knob on - 2 (degree)
+		//	03  knob on + 3 (degree)
+		//	13  knob on - 3 (degree)
+		//	04  knob on Local OFF
 		//14 Set Point temperature
-		//14 et 0 : values T et M : T = Zone operation temperature not ad just by local offset.The T field is composed from 4 digits: c1c2c3c4, included between "0050"(5� temperature) and "0400"(40� temperature). c1 is always equal to 0, it indicates a positive temperature.The c2c3 couple indicates the temperature values between[05� - 40�].c4 indicates the decimal Celsius degree by 0.5� step. M = operation mode1  heating mode2  conditional mode3  generic mode
+		//14 et 0 : values T et M :
+		//	T = Zone operation temperature not ad just by local offset.
+		//	The T field is composed from 4 digits: c1c2c3c4, included between "0050"(5° temperature) and "0400"(40° temperature).
+		//	c1 is always equal to 0, it indicates a positive temperature.
+		//	The c2c3 couple indicates the temperature values between[05° - 40°].
+		//	c4 indicates the decimal Celsius degree by 0.5° step.
+		//	M = operation mode1  heating mode2  conditional mode3  generic mode
 		//19 Valves status 		CV, HV = Valves' status, CV: Conditioning Valve and HV : Heating Valve
-		//			CV, HV = 0  OFF
-		//		CV, HV = 1  ON
+		//	CV, HV = 0  OFF
+		//	CV, HV = 1  ON
 		//	CV, HV = 2  Opened
 		//	CV, HV = 3  Closed
 		//	CV, HV = 4  Stop
@@ -2553,7 +2567,7 @@ std::string bt_openwebnet::getDimensionsDescription(const std::string& who, cons
 		//	Day = [01 - 31]
 		//	Month = [01 - 12]
 		//	Year = [2000 - 2099]
-		//	Example: 12 June 2007 is holiday end date			*#4 * #0 * #30 * 12 * 06 * 2007##
+		//	Example: 12 June 2007 is holiday end date	*#4 * #0 * #30 * 12 * 06 * 2007##
 		//31 Holiday deadline hour
 		//	Hour*Minutes
 		//	Hour = [00 - 23]
@@ -2647,8 +2661,8 @@ std::string bt_openwebnet::getDimensionsDescription(const std::string& who, cons
 	}
 	else if (who == "18") {
 		// "Energy management"
-		//113			Active Power
-		//	1200			End Automatic Update size
+		//	113			Active Power
+		//	1200		End Automatic Update size
 		//	51			Energy / Unit Totalizer
 		//	52			Energy / Unit pe month
 		//	53			Partial totalizer for current month
@@ -2656,7 +2670,7 @@ std::string bt_openwebnet::getDimensionsDescription(const std::string& who, cons
 		//	71			Actuators info
 		//	72			Totalizers
 		//	73			Differential current level
-		//	250			Status Stop&Go(G�n�ral)
+		//	250			Status Stop&Go(General)
 		//	251			Status Stop&Go(open / close)
 		//	252			Status Stop&Go(failure / no failure)
 		//	253			Status Stop&Go(block / not block)

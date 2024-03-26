@@ -2239,7 +2239,8 @@ namespace http
 						{
 							double tempCelcius = stod(strarray[0]);
 							double temp = ConvertTemperature(tempCelcius, tempsign);
-							double humidity = stod(strarray[1]);
+							// FIXME: use stod instead of stoi ?
+							double humidity = stoi(strarray[1]);
 
 							root["result"][ii]["Temp"] = temp;
 							root["result"][ii]["Humidity"] = humidity;

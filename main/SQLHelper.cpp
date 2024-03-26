@@ -1413,7 +1413,7 @@ bool CSQLHelper::OpenDatabase()
 				{
 					int hwId = stoi(sd[0]);
 					_eHardwareTypes hwtype = (_eHardwareTypes) stoi(sd[1]);
-					size_t Port = (size_t) stoull(sd[2]);
+					size_t Port = (size_t) stoul(sd[2]);
 
 					if (IsSerialDevice(hwtype))
 					{
@@ -5280,7 +5280,7 @@ uint64_t CSQLHelper::UpdateValueInt(
 			StringSplit(sValueBeforeUpdate, ";", powerAndEnergyBeforeUpdate);
 			if (powerAndEnergyBeforeUpdate.size() == 2)
 			{
-				// We need to use atof here because some users seem to have a illegal sValue in the database that causes stof to crash
+				// FIXME: We need to use atof here because some users seem to have a illegal sValue in the database that causes stof to crash
 				double powerDuringInterval = atof(powerAndEnergyBeforeUpdate[0].c_str());
 				double energyUpToInterval = atof(powerAndEnergyBeforeUpdate[1].c_str());
 				double energyDuringInterval = powerDuringInterval * intervalSeconds / 3600;

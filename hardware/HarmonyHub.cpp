@@ -431,7 +431,7 @@ void CHarmonyHub::CheckSetActivity(const std::string &activityID, const bool on)
 	// get the device id from the db (if already inserted)
 	int actId = stoi(activityID);
 	std::stringstream hexId ;
-	hexId << std::setw(7)  << std::hex << std::setfill('0') << std::uppercase << (int)( actId) ;
+	hexId << std::setw(7)  << std::hex << std::setfill('0') << std::uppercase << actId ;
 	std::string actHex = hexId.str();
 	std::vector<std::vector<std::string> > result;
 	result = m_sql.safe_query("SELECT Name,DeviceID FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q')", m_HwdID, actHex.c_str());
@@ -450,9 +450,9 @@ void CHarmonyHub::CheckSetActivity(const std::string &activityID, const bool on)
 void CHarmonyHub::UpdateSwitch(unsigned char /*idx*/, const char *realID, const bool bOn, const std::string &defaultname)
 {
 	std::stringstream hexId ;
-	int i_Id = atoi(realID);
+	int iId = atoi(realID);
 	
-	hexId << std::setw(7) << std::setfill('0') << std::hex << std::uppercase << i_Id;
+	hexId << std::setw(7) << std::setfill('0') << std::hex << std::uppercase << iId;
 
 	std::vector<std::vector<std::string> > result;
 	result = m_sql.safe_query("SELECT Name,nValue,sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q')", m_HwdID, hexId.str().c_str());
@@ -472,10 +472,10 @@ void CHarmonyHub::UpdateSwitch(unsigned char /*idx*/, const char *realID, const 
 	lcmd.LIGHTING2.packettype = pTypeLighting2;
 	lcmd.LIGHTING2.subtype = sTypeAC;
 
-	lcmd.LIGHTING2.id1 = (i_Id>> 24) & 0xFF;
-	lcmd.LIGHTING2.id2 = (i_Id>> 16) & 0xFF;
-	lcmd.LIGHTING2.id3 = (i_Id>> 8) & 0xFF;
-	lcmd.LIGHTING2.id4 = (i_Id) & 0xFF;
+	lcmd.LIGHTING2.id1 = (iId >> 24) & 0xFF;
+	lcmd.LIGHTING2.id2 = (iId >> 16) & 0xFF;
+	lcmd.LIGHTING2.id3 = (iId >> 8) & 0xFF;
+	lcmd.LIGHTING2.id4 = iId & 0xFF;
 	lcmd.LIGHTING2.unitcode = 1;
 	uint8_t level = 15;
 	if (!bOn)

@@ -283,12 +283,12 @@ bool C1WireByOWFS::GetLightState(const _t1WireDevice& device,int unit) const
       {
          // 1 = Unconditionally off (non-conducting)
          // 2 = Unconditionally on (conducting)
-         // FIXME: in following code iValue is a bool and cannot equal 2
-         int iValue=stoi(readValue)==2;
-         if (iValue!=1 && iValue!=2)
+         int iValue=(stoi(readValue) == 2);
+         // FIXME: iValue is a bool (i.e. 0 or 1), it cannot equal 2
+         if (iValue != 1 && iValue != 2)
             return false;
 
-	 return (iValue == 2);
+	      return (iValue == 2);
       }
    }
    return false;

@@ -452,7 +452,7 @@ bool CEvohomeWeb::SetSetpoint(const char* pdata)
 				szISODate = local_to_utc(get_next_switchpoint_ex(hz->schedule, szsetpoint_tmp));
 				if (!szISODate.empty())
 				{
-					pEvo->year = static_cast<uint8_t>(stoi(szISODate.substr(0, 4)));
+					pEvo->year = static_cast<uint16_t>(stoi(szISODate.substr(0, 4)));
 					pEvo->month = static_cast<uint8_t>(stoi(szISODate.substr(5, 2)));
 					pEvo->day = static_cast<uint8_t>(stoi(szISODate.substr(8, 2)));
 					pEvo->hrs = static_cast<uint8_t>(stoi(szISODate.substr(11, 2)));
@@ -499,7 +499,7 @@ bool CEvohomeWeb::SetDHWState(const char* pdata)
 
 void CEvohomeWeb::DecodeControllerMode(temperatureControlSystem* tcs)
 {
-	unsigned long ID = (unsigned long) stod(tcs->systemId);
+	unsigned long ID = static_cast<unsigned long>(stod(tcs->systemId));
 	std::string szsystemMode, szmodelType;
 	uint8_t sysmode = 0;
 

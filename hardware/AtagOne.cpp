@@ -195,21 +195,21 @@ bool CAtagOne::GetDeviceDetails(const std::string& ThermostatID)
 		Log(LOG_ERROR, "Invalid/no data received (1)...");
 		return false;
 	}
-	root["roomTemperature"] = stod(sret);
+	root["roomTemperature"] = static_cast<float>(stod(sret));
 	//root["deviceAlias"] = GetHTMLPageValue(sResult, "Apparaat alias|Device alias", false);
 	//root["latestReportTime"] = GetHTMLPageValue(sResult, "Laatste rapportagetijd|Latest report time", false);
 	//root["connectedTo"] = GetHTMLPageValue(sResult, "Verbonden met|Connected to", false);
-	root["burningHours"] = stod(GetHTMLPageValue(sResult, "Branduren|Burning hours", true));
+	root["burningHours"] = static_cast<float>(stod(GetHTMLPageValue(sResult, "Branduren|Burning hours", true)));
 	//root["boilerHeatingFor"] = GetHTMLPageValue(sResult, "Ketel in bedrijf voor|Boiler heating for", false);
 	sret = GetHTMLPageValue(sResult, "Brander status|Flame status|Brennerstatus", false);
 	root["flameStatus"] = ((sret == "Aan") || (sret == "On") || (sret == "An")) ? true : false;
-	root["outsideTemperature"] = stod(GetHTMLPageValue(sResult, "Buitentemperatuur|Outside temperature|Au&#223;entemperatur", true));
-	root["dhwSetpoint"] = stod(GetHTMLPageValue(sResult, "Setpoint warmwater|DHW setpoint", true));
-	root["dhwWaterTemperature"] = stod(GetHTMLPageValue(sResult, "Warmwatertemperatuur|DHW water temperature|Warmwassertemperatur", true));
-	root["chSetpoint"] = stod(GetHTMLPageValue(sResult, "Setpoint cv|CH setpoint", true));
-	root["chWaterTemperature"] = stod(GetHTMLPageValue(sResult, "CV-aanvoertemperatuur|CH water temperature", true));
-	root["chWaterPressure"] = stod(GetHTMLPageValue(sResult, "CV-waterdruk|CH water pressure|Anlagendruck", true));
-	root["chReturnTemperature"] = stod(GetHTMLPageValue(sResult, "CV retourtemperatuur|CH return temperature|HZ R&#252;cklauftemperatur", true));
+	root["outsideTemperature"] = static_cast<float>(stod(GetHTMLPageValue(sResult, "Buitentemperatuur|Outside temperature|Au&#223;entemperatur", true)));
+	root["dhwSetpoint"] = static_cast<float>(stod(GetHTMLPageValue(sResult, "Setpoint warmwater|DHW setpoint", true)));
+	root["dhwWaterTemperature"] = static_cast<float>(stod(GetHTMLPageValue(sResult, "Warmwatertemperatuur|DHW water temperature|Warmwassertemperatur", true)));
+	root["chSetpoint"] = static_cast<float>(stod(GetHTMLPageValue(sResult, "Setpoint cv|CH setpoint", true)));
+	root["chWaterTemperature"] = static_cast<float>(stod(GetHTMLPageValue(sResult, "CV-aanvoertemperatuur|CH water temperature", true)));
+	root["chWaterPressure"] = static_cast<float>(stod(GetHTMLPageValue(sResult, "CV-waterdruk|CH water pressure|Anlagendruck", true)));
+	root["chReturnTemperature"] = static_cast<float>(stod(GetHTMLPageValue(sResult, "CV retourtemperatuur|CH return temperature|HZ R&#252;cklauftemperatur", true)));
 
 #ifdef DEBUG_AtagOneThermostat_read
 	sResult = ReadFile("E:\\AtagOne_gettargetsetpoint.txt");

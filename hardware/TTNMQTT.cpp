@@ -499,19 +499,19 @@ bool CTTNMQTT::ConvertField2Payload(const std::string &sType, const std::string 
 	if (IsSensorTypeOrAlias(sType, "temp")) {
 		payload[index]["channel"] = channel;
 		payload[index]["type"] = "temp";
-		payload[index]["value"] = stod(sValue);
+		payload[index]["value"] = stof(sValue);
 		ret = true;
 	}
 	else if (IsSensorTypeOrAlias(sType, "humidity")) {
 		payload[index]["channel"] = channel;
 		payload[index]["type"] = "humidity";
-		payload[index]["value"] = stod(sValue);
+		payload[index]["value"] = stof(sValue);
 		ret = true;
 	}
 	else if (IsSensorTypeOrAlias(sType, "baro")) {
 		payload[index]["channel"] = channel;
 		payload[index]["type"] = "baro";
-		payload[index]["value"] = stod(sValue);
+		payload[index]["value"] = stof(sValue);
 		ret = true;
 	}
 	else if (IsSensorTypeOrAlias(sType, "gps")) {
@@ -524,7 +524,7 @@ bool CTTNMQTT::ConvertField2Payload(const std::string &sType, const std::string 
 			payload[index]["type"] = "gps";
 			payload[index]["lat"] = stod(strarray[0]);
 			payload[index]["lon"] = stod(strarray[1]);
-			payload[index]["alt"] = stod(strarray[2]);
+			payload[index]["alt"] = stof(strarray[2]);
 			ret = true;
 		}
 	}
@@ -543,25 +543,25 @@ bool CTTNMQTT::ConvertField2Payload(const std::string &sType, const std::string 
 	else if (IsSensorTypeOrAlias(sType, "analog_input")) {
 		payload[index]["channel"] = channel;
 		payload[index]["type"] = "analog_input";
-		payload[index]["value"] = stod(sValue);
+		payload[index]["value"] = stof(sValue);
 		ret = true;
 	}
 	else if (IsSensorTypeOrAlias(sType, "analog_output")) {
 		payload[index]["channel"] = channel;
 		payload[index]["type"] = "analog_output";
-		payload[index]["value"] = stod(sValue);
+		payload[index]["value"] = stof(sValue);
 		ret = true;
 	}
 	else if (IsSensorTypeOrAlias(sType, "presence")) {
 		payload[index]["channel"] = channel;
 		payload[index]["type"] = "presence";
-		payload[index]["value"] = stod(sValue);
+		payload[index]["value"] = stof(sValue);
 		ret = true;
 	}
 	else if (IsSensorTypeOrAlias(sType, "luminosity")) {
 		payload[index]["channel"] = channel;
 		payload[index]["type"] = "luminosity";
-		payload[index]["value"] = stod(sValue);
+		payload[index]["value"] = stof(sValue);
 		ret = true;
 	}
 
