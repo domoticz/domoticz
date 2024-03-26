@@ -951,7 +951,7 @@ bool CSQLHelper::OpenDatabase()
 				sqlite3_exec(m_dbase, "BEGIN TRANSACTION;", nullptr, nullptr, nullptr);
 				for (const auto &sd : result)
 				{
-					safe_query("UPDATE Temperature_Calendar SET Temp_Avg=%.1f WHERE RowID='%q'", stof(sd[1]), sd[0].c_str());
+					safe_query("UPDATE Temperature_Calendar SET Temp_Avg=%.1f WHERE RowID='%q'", stod(sd[1]), sd[0].c_str());
 				}
 				sqlite3_exec(m_dbase, "END TRANSACTION;", nullptr, nullptr, nullptr);
 			}
@@ -2283,7 +2283,7 @@ bool CSQLHelper::OpenDatabase()
 						{
 							szQuery2.clear();
 							szQuery2.str("");
-							szQuery2 << "INSERT INTO Percentage (DeviceRowID, Percentage, Date) VALUES (" << sd[0] << ", " << stof(sd3[0]) / 10.0F << ", '"
+							szQuery2 << "INSERT INTO Percentage (DeviceRowID, Percentage, Date) VALUES (" << sd[0] << ", " << (stod(sd3[0]) / 10.0) << ", '"
 								 << sd3[1] << "')";
 							query(szQuery2.str());
 						}
@@ -2301,9 +2301,9 @@ bool CSQLHelper::OpenDatabase()
 						{
 							szQuery2.clear();
 							szQuery2.str("");
-							float percentage_min = stof(sd3[0]) / 10.0F;
-							float percentage_max = stof(sd3[1]) / 10.0F;
-							float percentage_avg = stof(sd3[2]) / 10.0F;
+							float percentage_min = static_cast<float>(stod(sd3[0]) / 10.0);
+							float percentage_max = static_cast<float>(stod(sd3[1]) / 10.0);
+							float percentage_avg = static_cast<float>(stod(sd3[2]) / 10.0);
 							szQuery2 << "INSERT INTO Percentage_Calendar (DeviceRowID, Percentage_Min, Percentage_Max, Percentage_Avg, Date) VALUES (" << sd[0] << ", " << percentage_min << ", " << percentage_max << ", " << percentage_avg << ", '" << sd3[3] << "')";
 							query(szQuery2.str());
 						}
@@ -6134,7 +6134,7 @@ void CSQLHelper::UpdateTemperatureLog()
 				if (splitresults.size() >= 2)
 				{
 					temp = stof(splitresults[0]);
-					humidity = ground(stof(splitresults[1]));
+					humidity = static_cast<unsigned char>(ground(stod(splitresults[1])));
 					dewpoint = (float)CalculateDewPoint(temp, humidity);
 				}
 				break;
@@ -6142,9 +6142,9 @@ void CSQLHelper::UpdateTemperatureLog()
 				if (splitresults.size() == 5)
 				{
 					temp = stof(splitresults[0]);
-					humidity = ground(stof(splitresults[1]));
+					humidity = static_cast<unsigned char>(ground(stod(splitresults[1])));
 					if (dSubType == sTypeTHBFloat)
-						barometer = int(stof(splitresults[3]) * 10.0F);
+						barometer = static_cast<int>(stod(splitresults[3]) * 10.0);
 					else
 						barometer = stoi(splitresults[3]);
 					dewpoint = (float)CalculateDewPoint(temp, humidity);
@@ -6154,7 +6154,7 @@ void CSQLHelper::UpdateTemperatureLog()
 				if (splitresults.size() >= 2)
 				{
 					temp = stof(splitresults[0]);
-					barometer = int(stof(splitresults[1]) * 10.0F);
+					barometer = static_cast<int>(stod(splitresults[1]) * 10.0);
 				}
 				break;
 			case pTypeUV:
@@ -6191,7 +6191,7 @@ void CSQLHelper::UpdateTemperatureLog()
 				{
 					if (splitresults.size() != 2)
 						continue;
-					barometer = int(stof(splitresults[0]) * 10.0F);
+					barometer = static_cast<int>(stod(splitresults[0]) * 10.0);
 				}
 				break;
 			}
@@ -6967,19 +6967,19 @@ void CSQLHelper::UpdateMultiMeter()
 				if (splitresults.size() != 3)
 					continue; //impossible
 
-				value1 = (uint64_t) (stof(splitresults[0]) * 10.0F);
-				value2 = (uint64_t) (stof(splitresults[1]) * 10.0F);
-				value3 = (uint64_t) (stof(splitresults[2]) * 10.0F);
+				value1 = static_cast<uint64_t>(stod(splitresults[0]) * 10.0);
+				value2 = static_cast<uint64_t>(stod(splitresults[1]) * 10.0);
+				value3 = static_cast<uint64_t>(stod(splitresults[2]) * 10.0);
 			}
 			else if ((dType == pTypeCURRENTENERGY) && (dSubType == sTypeELEC4))
 			{
 				if (splitresults.size() != 4)
 					continue; //impossible
 
-				value1 = (uint64_t) (stof(splitresults[0]) * 10.0F);
-				value2 = (uint64_t) (stof(splitresults[1]) * 10.0F);
-				value3 = (uint64_t) (stof(splitresults[2]) * 10.0F);
-				value4 = (uint64_t) (stof(splitresults[3]) * 1000.0F);
+				value1 = static_cast<uint64_t>(stod(splitresults[0]) * 10.0);
+				value2 = static_cast<uint64_t>(stod(splitresults[1]) * 10.0);
+				value3 = static_cast<uint64_t>(stod(splitresults[2]) * 10.0);
+				value4 = static_cast<uint64_t>(stod(splitresults[3]) * 1000.0);
 			}
 			else
 				continue;//don't know you (yet)

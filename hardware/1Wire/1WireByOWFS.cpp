@@ -337,7 +337,7 @@ int C1WireByOWFS::GetVoltage(const _t1WireDevice& device,int unit) const
    std::string readValue=readRawData(fileName);
    if (readValue.empty())
 	   return -1000;
-   return static_cast<int>(stof(readValue) * 1000.0F);
+   return static_cast<int>(stod(readValue) * 1000.0);
 }
 
 float C1WireByOWFS::GetIlluminance(const _t1WireDevice& device) const
@@ -348,7 +348,7 @@ float C1WireByOWFS::GetIlluminance(const _t1WireDevice& device) const
       readValue=readRawData(std::string(device.filename+"/S3-R1-A/illumination"));
    if (readValue.empty())
 	   return -1000.0F;
-   return stof(readValue) * 1000.0F;
+   return static_cast<float>(stod(readValue) * 1000.0);
 }
 
 int C1WireByOWFS::GetWiper(const _t1WireDevice& device) const

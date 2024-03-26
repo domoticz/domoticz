@@ -1819,7 +1819,7 @@ float USBtin_MultiblocV8::TimeLeftInMinutes(float current, int DischargeableAh, 
 
 float USBtin_MultiblocV8::GetInformationFromId(int NodeId, int sType)
 {
-	float value = 0;
+	float value = 0.0F;
 	_tGeneralDevice gDevice;
 	gDevice.subtype = sType; // sTypeCustom;
 	gDevice.id = NodeId;

@@ -416,16 +416,16 @@ bool CEvohomeWeb::SetSetpoint(const char* pdata)
 		if ((!hz->schedule.isNull()) || get_zone_schedule(hz->zoneId))
 		{
 			szuntil = local_to_utc(get_next_switchpoint_ex(hz->schedule, szsetpoint));
-			pEvo->temperature = (int16_t) (stod(szsetpoint) * 100);
+			pEvo->temperature = static_cast<int16_t>(stod(szsetpoint) * 100);
 		}
 
 		if ((m_showschedule) && (!szuntil.empty()))
 		{
-			pEvo->year = (uint16_t) stoi(szuntil.substr(0, 4));
-			pEvo->month = (uint8_t) stoi(szuntil.substr(5, 2));
-			pEvo->day = (uint8_t) stoi(szuntil.substr(8, 2));
-			pEvo->hrs = (uint8_t) stoi(szuntil.substr(11, 2));
-			pEvo->mins = (uint8_t) stoi(szuntil.substr(14, 2));
+			pEvo->year = static_cast<uint16_t>(stoi(szuntil.substr(0, 4)));
+			pEvo->month = static_cast<uint8_t>(stoi(szuntil.substr(5, 2)));
+			pEvo->day = static_cast<uint8_t>(stoi(szuntil.substr(8, 2)));
+			pEvo->hrs = static_cast<uint8_t>(stoi(szuntil.substr(11, 2)));
+			pEvo->mins = static_cast<uint8_t>(stoi(szuntil.substr(14, 2)));
 		}
 		else
 			pEvo->year = 0;
@@ -452,11 +452,11 @@ bool CEvohomeWeb::SetSetpoint(const char* pdata)
 				szISODate = local_to_utc(get_next_switchpoint_ex(hz->schedule, szsetpoint_tmp));
 				if (!szISODate.empty())
 				{
-					pEvo->year = (uint16_t)(stoi(szISODate.substr(0, 4)));
-					pEvo->month = (uint8_t)(stoi(szISODate.substr(5, 2)));
-					pEvo->day = (uint8_t)(stoi(szISODate.substr(8, 2)));
-					pEvo->hrs = (uint8_t)(stoi(szISODate.substr(11, 2)));
-					pEvo->mins = (uint8_t)(stoi(szISODate.substr(14, 2)));
+					pEvo->year = static_cast<uint8_t>(stoi(szISODate.substr(0, 4)));
+					pEvo->month = static_cast<uint8_t>(stoi(szISODate.substr(5, 2)));
+					pEvo->day = static_cast<uint8_t>(stoi(szISODate.substr(8, 2)));
+					pEvo->hrs = static_cast<uint8_t>(stoi(szISODate.substr(11, 2)));
+					pEvo->mins = static_cast<uint8_t>(stoi(szISODate.substr(14, 2)));
 				}
 			}
 		}

@@ -396,7 +396,7 @@ float C1WireByKernel::ThreadReadRawDataHighPrecisionDigitalThermometer(const std
 	if (bFoundCrcOk)
 	{
 		if (is_number(data))
-			return stof(data) / 1000.0F; // Temperature given by kernel is in thousandths of degrees
+			return static_cast<float>(stod(data) / 1000.0); // Temperature given by kernel is in thousandths of degrees
 	}
 
 	throw OneWireReadErrorException(deviceFileName);

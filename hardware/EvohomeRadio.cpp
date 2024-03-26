@@ -1061,7 +1061,7 @@ bool CEvohomeRadio::DecodeZoneTemp(CEvohomeMsg& msg)//0x30C9
 				result = m_sql.safe_query("SELECT Unit FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID == '%q') AND (Type == %d)", m_HwdID, zstrid.c_str(), (int)pTypeEvohomeRelay);
 				if (!result.empty())
 				{
-					tsen.zone = (uint8_t)(stoi(result[0][0]) + 12);
+					tsen.zone = static_cast<uint8_t>(stoi(result[0][0]) + 12);
 					char zstrname[40];
 					sprintf(zstrname, "Zone %d", stoi(result[0][0]));
 					Debug(DEBUG_HARDWARE, "%s: Zone sensor msg: 0x%x: %d: %d", tag, msg.GetID(0), tsen.zone, tsen.temperature);

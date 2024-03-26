@@ -1064,7 +1064,7 @@ void GetLightStatus(
 
 		if (switchtype != STYPE_Media) {
 			// Calculate % that the light is currently on, taking the maxdimlevel into account.
-			llevel = int((100.0F / float(maxDimLevel)) * stof(sValue));
+			llevel = int((100.0 / double(maxDimLevel)) * stod(sValue));
 		}
 
 		// Fill in other parameters
@@ -1124,16 +1124,16 @@ void GetLightStatus(
 		break;
 	case pTypeLighting5:
 		if (dSubType == sTypeLivolo)
-			llevel = int((100.0F / 7.0F) * stof(sValue));
+			llevel = int((100.0 / 7.0) * stod(sValue));
 		else
-			llevel = int((100.0F / 31.0F) * stof(sValue));
+			llevel = int((100.0 / 31.0) * stod(sValue));
 		switch (dSubType)
 		{
 		case sTypeLightwaveRF:
 			bHaveGroupCmd = true;
 			bHaveDimmer = true;
 			maxDimLevel = 32;
-			llevel = int((100.0F / float(maxDimLevel)) * stof(sValue));
+			llevel = int((100.0 / double(maxDimLevel)) * stod(sValue));
 			switch (nValue)
 			{
 			case light5_sOff:
@@ -1321,7 +1321,7 @@ void GetLightStatus(
 			break;
 		case sTypeIT:
 			maxDimLevel = 9;
-			llevel = int((100.0F / float(maxDimLevel)) * stof(sValue));
+			llevel = int((100.0 / double(maxDimLevel)) * stod(sValue));
 			switch (nValue)
 			{
 			case light5_sOff:
@@ -1396,7 +1396,7 @@ void GetLightStatus(
 		maxDimLevel = 100;
 
 		// Calculate % that the light is currently on, taking the maxdimlevel into account.
-		llevel = int((100.0F / float(maxDimLevel)) * stof(sValue));
+		llevel = int((100.0 / double(maxDimLevel)) * stod(sValue));
 
 		// Fill in other parameters
 		switch (dSubType)
@@ -1552,7 +1552,7 @@ void GetLightStatus(
 		maxDimLevel = 100;
 
 		// Calculate % that the light is currently on, taking the maxdimlevel into account.
-		llevel = int((100.0F / float(maxDimLevel)) * stof(sValue));
+		llevel = int((100.0 / double(maxDimLevel)) * stod(sValue));
 
 		switch (nValue)
 		{
@@ -1739,7 +1739,7 @@ void GetLightStatus(
 			maxDimLevel = 100;
 
 		// Calculate % that the light is currently on, taking the maxdimlevel into account.
-			llevel = int((100.0F / float(maxDimLevel)) * stof(sValue));
+			llevel = int((100.0 / double(maxDimLevel)) * stod(sValue));
 		}
 
 		switch (nValue)
@@ -1909,7 +1909,7 @@ void GetLightStatus(
 	case pTypeEvohomeRelay:
 		bHaveDimmer = true;
 		maxDimLevel = 200;
-		llevel = int(0.5F * stof(sValue));
+		llevel = int(0.5 * stod(sValue));
 		switch (nValue)
 		{
 		case light1_sOff:
@@ -2223,7 +2223,7 @@ void GetLightStatus(
 	case pTypeDDxxxx:
 		bHaveDimmer = true;
 		maxDimLevel = 100;
-		llevel = int((100.0F / float(maxDimLevel)) * stof(sValue));
+		llevel = int((100.0 / double(maxDimLevel)) * stod(sValue));
 
 		switch (nValue)
 		{

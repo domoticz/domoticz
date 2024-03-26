@@ -1979,7 +1979,7 @@ void MySensorsBase::ParseLine(const std::string& sLine)
 			bHaveValue = true;
 			break;
 		case V_DIRECTION:
-			pChild->SetValue(vType, ground(stof(payload)));
+			pChild->SetValue(vType, static_cast<int>(ground(stod(payload))));
 			bHaveValue = true;
 			break;
 		case V_LIGHT_LEVEL:

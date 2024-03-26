@@ -1601,7 +1601,7 @@ namespace http {
 					root["result"][ii]["Date"] = sdate;
 					root["result"][ii]["Time"] = sd[3].substr(0, 5);
 					root["result"][ii]["Type"] = iTimerType;
-					root["result"][ii]["Temperature"] = stof(sd[5]);
+					root["result"][ii]["Temperature"] = stod(sd[5]);
 					root["result"][ii]["Days"] = stoi(sd[6]);
 					root["result"][ii]["MDay"] = stoi(sd[7]);
 					root["result"][ii]["Month"] = stoi(sd[8]);

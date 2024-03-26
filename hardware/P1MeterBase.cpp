@@ -766,7 +766,7 @@ bool P1MeterBase::MatchLine()
 					m_p1_mbus_channel = l_buffer[2];
 					break;
 				case P1TYPE_POWERUSAGE:
-					temp_usage = (unsigned long)(stof(sValue) * 1000.0F);
+					temp_usage = static_cast<unsigned long>(stod(sValue) * 1000.0);
 					if ((l_buffer[8] & 0xFE) == 0x30)
 					{
 						// map tariff IDs 0 (Lux) and 1 (Bel, Nld) both to powerusage1
@@ -784,7 +784,7 @@ bool P1MeterBase::MatchLine()
 					}
 					break;
 				case P1TYPE_POWERDELIV:
-					temp_usage = (unsigned long)(stof(sValue) * 1000.0F);
+					temp_usage = static_cast<unsigned long>(stod(sValue) * 1000.0);
 					if ((l_buffer[8] & 0xFE) == 0x30)
 					{
 						// map tariff IDs 0 (Lux) and 1 (Bel, Nld) both to powerdeliv1
@@ -802,12 +802,12 @@ bool P1MeterBase::MatchLine()
 					}
 					break;
 				case P1TYPE_USAGECURRENT:
-					temp_usage = (unsigned long)(stof(sValue) * 1000.0F); // Watt
+					temp_usage = static_cast<unsigned long>(stod(sValue) * 1000.0); // Watt
 					if (temp_usage < P1MAXTOTALPOWER)
 						m_power.usagecurrent = temp_usage;
 					break;
 				case P1TYPE_DELIVCURRENT:
-					temp_usage = (unsigned long)(stof(sValue) * 1000.0F); // Watt;
+					temp_usage = static_cast<unsigned long>(stod(sValue) * 1000.0); // Watt;
 					if (temp_usage < P1MAXTOTALPOWER)
 						m_power.delivcurrent = temp_usage;
 					break;
@@ -875,32 +875,32 @@ bool P1MeterBase::MatchLine()
 					}
 					break;
 				case P1TYPE_POWERUSEL1:
-					temp_power = stof(sValue) * 1000.0F;
+					temp_power = static_cast<float>(stod(sValue) * 1000.0);
 					if (temp_power < P1MAXPHASEPOWER)
 						m_powerusel1 = temp_power; //Power Used L1;
 					break;
 				case P1TYPE_POWERUSEL2:
-					temp_power = stof(sValue) * 1000.0F;
+					temp_power = static_cast<float>(stod(sValue) * 1000.0);
 					if (temp_power < P1MAXPHASEPOWER)
 						m_powerusel2 = temp_power; //Power Used L2;
 					break;
 				case P1TYPE_POWERUSEL3:
-					temp_power = stof(sValue) * 1000.0F;
+					temp_power = static_cast<float>(stod(sValue) * 1000.0);
 					if (temp_power < P1MAXPHASEPOWER)
 						m_powerusel3 = temp_power; //Power Used L3;
 					break;
 				case P1TYPE_POWERDELL1:
-					temp_power = stof(sValue) * 1000.0F;
+					temp_power = static_cast<float>(stod(sValue) * 1000.0);
 					if (temp_power < P1MAXPHASEPOWER)
 						m_powerdell1 = temp_power; //Power Used L1;
 					break;
 				case P1TYPE_POWERDELL2:
-					temp_power = stof(sValue) * 1000.0F;
+					temp_power = static_cast<float>(stod(sValue) * 1000.0);
 					if (temp_power < P1MAXPHASEPOWER)
 						m_powerdell2 = temp_power; //Power Used L2;
 					break;
 				case P1TYPE_POWERDELL3:
-					temp_power = stof(sValue) * 1000.0F;
+					temp_power = static_cast<float>(stod(sValue) * 1000.0);
 					if (temp_power < P1MAXPHASEPOWER)
 						m_powerdell3 = temp_power; //Power Used L3;
 					break;

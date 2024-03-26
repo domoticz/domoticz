@@ -1681,7 +1681,7 @@ void COpenZWave::AddValue(NodeInfo* pNode, const OpenZWave::ValueID& vID)
 				std::string strValue;
 				if (m_pManager->GetValueAsString(vID, &strValue) == true)
 				{
-					pNode->Application_version = (int)(stof(strValue) * 100.0F);
+					pNode->Application_version = static_cast<int>(stod(strValue) * 100.0);
 				}
 			}
 			else
@@ -5051,7 +5051,7 @@ bool COpenZWave::ApplyNodeConfig(const unsigned int homeID, const uint8_t nodeID
 						}
 						else if (vType == OpenZWave::ValueID::ValueType_Decimal)
 						{
-							bRet = m_pManager->SetValue(vID, stof(ValueVal));
+							bRet = m_pManager->SetValue(vID, stod(ValueVal));
 						}
 						else
 						{

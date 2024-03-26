@@ -1086,7 +1086,7 @@ void CdzVents::ExportDomoticzDataToLua(lua_State *lua_state, const std::vector<C
 		}
 		else if (uvitem.variableType == 1)
 		{ //Float
-			luaTable.AddNumber("value", stof(uvitem.variableValue));
+			luaTable.AddNumber("value", stold(uvitem.variableValue));
 			vtype = "float";
 		}
 		else

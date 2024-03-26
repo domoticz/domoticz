@@ -1620,26 +1620,26 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 					if (name == NAME_SENSOR_TEMP_HUM_AQARA)
 					{
 						std::string szPressure = root2["pressure"].asString();
-						pressure = stof(szPressure) / 100.0F;
+						pressure = static_cast<float>(stod(szPressure) / 100.0);
 					}
 
 					if ((!temperature.empty()) && (!humidity.empty()) && (pressure != 0))
 					{
 						// Temp+Hum+Baro
-						float temp = stof(temperature) / 100.0F;
-						int hum = static_cast<int>(stof(humidity) / 100.0F);
+						float temp = static_cast<float>(stod(temperature) / 100.0);
+						int hum = static_cast<int>(stod(humidity) / 100.0);
 						TrueGateway->InsertUpdateTempHumPressure(sid, "Xiaomi TempHumBaro", temp, hum, pressure, battery);
 					}
 					else if ((!temperature.empty()) && (!humidity.empty()))
 					{
 						// Temp+Hum
-						float temp = stof(temperature) / 100.0F;
-						int hum = static_cast<int>(stof(humidity) / 100.0F);
+						float temp = static_cast<float>(stod(temperature) / 100.0);
+						int hum = static_cast<int>(stod(humidity) / 100.0);
 						TrueGateway->InsertUpdateTempHum(sid, "Xiaomi TempHum", temp, hum, battery);
 					}
 					else if (!temperature.empty())
 					{
-						float temp = stof(temperature) / 100.0F;
+						float temp = static_cast<float>(stod(temperature) / 100.0);
 						if (temp < 99)
 						{
 							TrueGateway->InsertUpdateTemperature(sid, "Xiaomi Temperature", temp, battery);
@@ -1647,7 +1647,7 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 					}
 					else if (!humidity.empty())
 					{
-						int hum = static_cast<int>(stof(humidity) / 100.0F);
+						int hum = static_cast<int>(stod(humidity) / 100.0);
 						if (hum > 1)
 						{
 							TrueGateway->InsertUpdateHumidity(sid, "Xiaomi Humidity", hum, battery);

@@ -185,7 +185,7 @@ bool helper_tester(const std::string szFunction, std::string &szInput, std::stri
 	{
 		if (svInputs.size() == 2)
 		{
-			double dTestOutput = CalculateDewPoint(stod(svInputs[0]), stoi(svInputs[1]));
+			double dTestOutput = CalculateDewPoint(stod(svInputs[0]), static_cast<double>(stoi(svInputs[1])));
 			szOutput = std_format("%.2f", dTestOutput);
 			bSuccess = true;
 		}

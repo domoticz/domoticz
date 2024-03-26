@@ -1568,7 +1568,7 @@ void MQTTAutoDiscover::handle_auto_discovery_sensor_message(const struct mosquit
 					}
 					if (pSensor->value_template.find("RSSI") != std::string::npos)
 					{
-						pSensor->SignalLevel = (int)round((10.0F / 255.0F) * stof(szValue));
+						pSensor->SignalLevel = (int) round((10.0 / 255.0) * stod(szValue));
 						ApplySignalLevelDevice(pSensor);
 					}
 				}
@@ -1716,19 +1716,19 @@ bool MQTTAutoDiscover::GuessSensorTypeValue(_tMQTTASensor* pSensor, uint8_t& dev
 	{
 		devType = pTypeGeneral;
 		subType = sTypeVoltage;
-		sValue = std_format("%.3f", stof(pSensor->last_value));
+		sValue = std_format("%.3f", stod(pSensor->last_value));
 	}
 	else if (szUnit == "mv")
 	{
 		devType = pTypeGeneral;
 		subType = sTypeVoltage;
-		sValue = std_format("%.3f", stof(pSensor->last_value) / 1000.0F);
+		sValue = std_format("%.3f", stod(pSensor->last_value) / 1000.0);
 	}
 	else if (szUnit == "a")
 	{
 		devType = pTypeGeneral;
 		subType = sTypeCurrent;
-		sValue = std_format("%.3f", stof(pSensor->last_value));
+		sValue = std_format("%.3f", stod(pSensor->last_value));
 	}
 	else if (szUnit == "w")
 	{
@@ -1746,17 +1746,17 @@ bool MQTTAutoDiscover::GuessSensorTypeValue(_tMQTTASensor* pSensor, uint8_t& dev
 		float fkWh = 0.0F;
 		_tMQTTASensor* pkWhSensor = get_auto_discovery_sensor_unit(pSensor, "kwh");
 		if (pkWhSensor)
-			fkWh = stof(pkWhSensor->last_value) * 1000.0F;
+			fkWh = static_cast<float>(stod(pkWhSensor->last_value) * 1000.0);
 		else
 		{
 			pkWhSensor = get_auto_discovery_sensor_unit(pSensor, "wh");
 			if (pkWhSensor)
-				fkWh = stof(pkWhSensor->last_value);
+				fkWh = static_cast<float>(stod(pkWhSensor->last_value));
 			else
 			{
 				pkWhSensor = get_auto_discovery_sensor_unit(pSensor, "wm");
 				if (pkWhSensor)
-					fkWh = stof(pkWhSensor->last_value) / 60.0F;
+					fkWh = static_cast<float>(stod(pkWhSensor->last_value) / 60.0);
 			}
 		}
 		if (pkWhSensor)
@@ -1791,7 +1791,7 @@ bool MQTTAutoDiscover::GuessSensorTypeValue(_tMQTTASensor* pSensor, uint8_t& dev
 
 		float fkWh = stof(pSensor->last_value) * multiply;
 
-		if (fkWh < -1000000)
+		if (fkWh < -1000000.0F)
 		{
 			//Way to negative, probably a bug in the sensor
 			return false;
@@ -1829,7 +1829,7 @@ bool MQTTAutoDiscover::GuessSensorTypeValue(_tMQTTASensor* pSensor, uint8_t& dev
 	{
 		devType = pTypeLux;
 		subType = sTypeLux;
-		sValue = std_format("%.0f", stof(pSensor->last_value));
+		sValue = std_format("%.0f", stod(pSensor->last_value));
 	}
 	/*
 	*	//our distance sensor is in meters or inches
@@ -1837,14 +1837,14 @@ bool MQTTAutoDiscover::GuessSensorTypeValue(_tMQTTASensor* pSensor, uint8_t& dev
 		{
 			devType = pTypeGeneral;
 			subType = sTypeDistance;
-			sValue = std_format("%.1f", stof(pSensor->last_value) * 100.0F);
+			sValue = std_format("%.1f", stod(pSensor->last_value) * 100.0);
 		}
 	*/
 	else if (szUnit == "cm")
 	{
 		devType = pTypeGeneral;
 		subType = sTypeDistance;
-		sValue = std_format("%.1f", stof(pSensor->last_value));
+		sValue = std_format("%.1f", stod(pSensor->last_value));
 	}
 
 	else if (
@@ -1865,7 +1865,7 @@ bool MQTTAutoDiscover::GuessSensorTypeValue(_tMQTTASensor* pSensor, uint8_t& dev
 		{
 			devType = pTypeRFXMeter;
 			subType = sTypeRFXMeterCount;
-			unsigned long counter = (unsigned long)(stof(pSensor->last_value) * 1000.0F);
+			unsigned long counter = static_cast<unsigned long>(stod(pSensor->last_value) * 1000.0);
 			sValue = std_format("%lu", counter);
 		}
 	}
@@ -1874,7 +1874,7 @@ bool MQTTAutoDiscover::GuessSensorTypeValue(_tMQTTASensor* pSensor, uint8_t& dev
 		//our sensor is in Liters / minute
 		devType = pTypeGeneral;
 		subType = sTypeWaterflow;
-		sValue = std_format("%.2f", stof(pSensor->last_value) / 60.0F);
+		sValue = std_format("%.2f", stod(pSensor->last_value) / 60.0);
 	}
 	else if (
 		(szUnit == "db")

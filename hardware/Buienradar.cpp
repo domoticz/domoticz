@@ -320,7 +320,7 @@ bool CBuienRadar::GetStationDetails()
 				m_sStationRegion = measurement["regio"].asString();
 				m_szMyLatitude = std::to_string(measurement["lat"].asDouble());
 				m_szMyLongitude = std::to_string(measurement["lon"].asDouble());
-				Log(LOG_STATUS, "Using Station: %s (%s), ID: %d, Lat/Lon: %g,%g", m_sStationName.c_str(), m_sStationRegion.c_str(), m_iStationID, stof(m_szMyLatitude), stof(m_szMyLongitude));
+				Log(LOG_STATUS, "Using Station: %s (%s), ID: %d, Lat/Lon: %g,%g", m_sStationName.c_str(), m_sStationRegion.c_str(), m_iStationID, stod(m_szMyLatitude), stod(m_szMyLongitude));
 			}
 			ParseMeterDetails(measurement);
 			return true;

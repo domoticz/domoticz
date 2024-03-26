@@ -971,7 +971,7 @@ void EnphaseAPI::parseInventory(const Json::Value& root)
 				std::string sleep_enabled = itt["sleep_enabled"].asString(); //boolean
 				std::string dc_switch_off = itt["dc_switch_off"].asString(); //boolean
 
-				double dCurrentCapacity = (stod(encharge_capacity) / 100.0) * stod(percentFull);
+				double dCurrentCapacity = stod(encharge_capacity) * stod(percentFull) / 100.0;
 
 				std::string real_power_w = ""; //The current power charging/discharging the battery, in watts. Positive values indicate charging, negative values indicate discharging.
 				if (!itt["real_power_w"].empty())

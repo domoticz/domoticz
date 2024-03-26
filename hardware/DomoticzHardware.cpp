@@ -566,7 +566,7 @@ double CDomoticzHardwareBase::GetKwhMeter(const int NodeID, const int ChildID, b
 		return 0.0F;
 	}
 	bExists = true;
-	return stof(splitresults[1]);
+	return stod(splitresults[1]);
 }
 
 void CDomoticzHardwareBase::SendMeterSensor(const int NodeID, const int ChildID, const int BatteryLevel, const float metervalue, const std::string& defaultname, const int RssiLevel /* =12 */)

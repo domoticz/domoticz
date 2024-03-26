@@ -2926,7 +2926,7 @@ void MainWorker::decode_Rain(const CDomoticzHardwareBase* pHardware, const tRBUF
 
 				for (const auto& sd : result)
 				{
-					float rate = stof(sd[0]) / 10000.0F;
+					float rate = static_cast<float>(stod(sd[0]) / 10000.0);
 					std::string date = sd[1];
 
 					time_t rowtime;

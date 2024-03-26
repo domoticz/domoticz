@@ -1678,7 +1678,7 @@ namespace http
 			}
 			if (m_sql.GetPreferencesVar("DegreeDaysBaseTemperature", sValue))
 			{
-				root["DegreeDaysBaseTemperature"] = stof(sValue);
+				root["DegreeDaysBaseTemperature"] = stod(sValue);
 			}
 			m_sql.GetPreferencesVar("DashboardType", iDashboardType);
 			root["DashboardType"] = iDashboardType;

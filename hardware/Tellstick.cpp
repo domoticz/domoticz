@@ -157,7 +157,7 @@ void CTellstick::rawDeviceEvent(int controllerId, const char *data)
 	pos = message.find(';', pos + 1);
     }
     if (!deviceId.empty() && !winddirection.empty() && ! windaverage.empty() && ! windgust.empty()) {
-        SendWind(stoi(deviceId), 255, stoi(winddirection), stof(windaverage), stof(windgust), 0, 0, false, false, "Wind");
+        SendWind(stoi(deviceId), 255, stoi(winddirection), stof(windaverage), stof(windgust), 0.0F, 0.0F, false, false, "Wind");
     }
 }
 

@@ -226,7 +226,7 @@ bool CRtl433::ParseData(std::map<std::string, std::string>& data)
 	}
 	if (FindField(data, "pressure_kPa"))
 	{
-		pressure = stof(data["pressure_kPa"]) * 10.0F; // convert to hPA
+		pressure = static_cast<float>(stod(data["pressure_kPa"]) * 10.0); // convert to hPA
 		havePressure = true;
 	}
 	if (FindField(data, "rain_mm"))
@@ -241,7 +241,7 @@ bool CRtl433::ParseData(std::map<std::string, std::string>& data)
 	}
 	if (FindField(data, "wind_avg_km_h")) // wind speed average (converting into m/s note that internal storage if 10.0f*m/s) 
 	{
-		wind_speed = (stof(data["wind_avg_km_h"])) / 3.6F;
+		wind_speed = static_cast<float>(stod(data["wind_avg_km_h"]) / 3.6);
 		haveWind_Speed = true;
 	}
 	if (FindField(data, "wind_avg_m_s")) // wind speed average
@@ -256,7 +256,7 @@ bool CRtl433::ParseData(std::map<std::string, std::string>& data)
 	}
 	if (FindField(data, "wind_max_km_h")) // idem, converting to m/s
 	{
-		wind_gust = (stof(data["wind_max_km_h"])) / 3.6F;
+		wind_gust = static_cast<float>(stod(data["wind_max_km_h"]) / 3.6);
 		haveWind_Gust = true;
 	}
 	if (FindField(data, "wind_max_m_s"))
@@ -291,7 +291,7 @@ bool CRtl433::ParseData(std::map<std::string, std::string>& data)
 	}
 	if (FindField(data, "light_klx"))
 	{
-		lux = (stof(data["light_klx"])) * 1000.0F;
+		lux = static_cast<float>(stod(data["light_klx"]) * 1000.0);
 		haveLux = true;
 	}
 	if (FindField(data, "light_lux"))

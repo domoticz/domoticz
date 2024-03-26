@@ -390,7 +390,7 @@ bool CNotificationHelper::CheckAndHandleNotification(const uint64_t DevRowIdx, c
 		case pTypeWIND:
 			nexpected = 5;
 			if (nsize >= nexpected) {
-				float wspeedms = stof(strarray[2]) / 10.0F;
+				float wspeedms = static_cast<float>(stod(strarray[2]) / 10.0);
 				float temp = stof(strarray[4]);
 				r1 = CheckAndHandleNotification(DevRowIdx, sName, cType, cSubType, NTYPE_WIND, wspeedms);
 				r2 = CheckAndHandleTempHumidityNotification(DevRowIdx, sName, temp, 0, true, false);

@@ -1203,7 +1203,7 @@ void COpenWebNetTCP::UpdateDeviceValue(std::vector<bt_openwebnet>::iterator iter
 			switch (stoi(dimension))
 			{
 				case TEMPERATURE_CONTROL_DIMENSION_TEMPERATURE:				// 0
-					UpdateTemp(WHO_TEMPERATURE_CONTROL, stoi(where), stof(value) / 10.0F, stoi(sInterface), 255, devname.c_str());
+					UpdateTemp(WHO_TEMPERATURE_CONTROL, stoi(where), static_cast<float>(stod(value) / 10.0), stoi(sInterface), 255, devname.c_str());
 					break;
 				case TEMPERATURE_CONTROL_DIMENSION_VALVES_STATUS:				// 19
 					devname += " Valves";
@@ -1215,7 +1215,7 @@ void COpenWebNetTCP::UpdateDeviceValue(std::vector<bt_openwebnet>::iterator iter
 					break;
 				case TEMPERATURE_CONTROL_DIMENSION_COMPLETE_PROBE_STATUS:		// 12
 					devname += " Setpoint";
-					UpdateSetPoint(WHO_TEMPERATURE_CONTROL, stoi(where), stof(value) / 10.0F, stoi(sInterface), devname.c_str());
+					UpdateSetPoint(WHO_TEMPERATURE_CONTROL, stoi(where), static_cast<float>(stod(value) / 10.0), stoi(sInterface), devname.c_str());
 					break;
 				case TEMPERATURE_CONTROL_DIMENSION_LOCAL_SET_OFFSET:			// 13
 				{

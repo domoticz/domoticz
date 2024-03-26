@@ -216,7 +216,7 @@ namespace http
 								{
 									if (dSubType == sTypeTHBFloat)
 									{
-										sprintf(szTmp, "%.1f", stof(sd[3]) / 10.0F);
+										sprintf(szTmp, "%.1f", stod(sd[3]) / 10.0);
 										root["result"][ii]["ba"] = szTmp;
 									}
 									else
@@ -224,12 +224,12 @@ namespace http
 								}
 								else if (dType == pTypeTEMP_BARO)
 								{
-									sprintf(szTmp, "%.1f", stof(sd[3]) / 10.0F);
+									sprintf(szTmp, "%.1f", stod(sd[3]) / 10.0);
 									root["result"][ii]["ba"] = szTmp;
 								}
 								else if ((dType == pTypeGeneral) && (dSubType == sTypeBaro))
 								{
-									sprintf(szTmp, "%.1f", stof(sd[3]) / 10.0F);
+									sprintf(szTmp, "%.1f", stod(sd[3]) / 10.0);
 									root["result"][ii]["ba"] = szTmp;
 								}
 							}
@@ -253,7 +253,7 @@ namespace http
 									root["result"][ii]["te"] = se;
 								}
 								else
-									root["result"][ii]["te"] = stof(sd[0]);
+									root["result"][ii]["te"] = stod(sd[0]);
 							}
 							ii++;
 						}
@@ -586,7 +586,7 @@ namespace http
 							for (const auto& sd : result)
 							{
 								root["result"][ii]["d"] = sd[1].substr(0, 16);
-								sprintf(szTmp, "%.1f", m_sql.m_weightscale * stof(sd[0]) / 10.0F);
+								sprintf(szTmp, "%.1f", m_sql.m_weightscale * stod(sd[0]) / 10.0);
 								root["result"][ii]["v"] = szTmp;
 								ii++;
 							}
@@ -604,7 +604,7 @@ namespace http
 							for (const auto& sd : result)
 							{
 								root["result"][ii]["d"] = sd[1].substr(0, 16);
-								root["result"][ii]["u"] = stof(sd[0]) / 10.0F;
+								root["result"][ii]["u"] = stod(sd[0]) / 10.0;
 								ii++;
 							}
 						}
@@ -633,9 +633,9 @@ namespace http
 							{
 								root["result"][ii]["d"] = sd[3].substr(0, 16);
 
-								float fval1 = stof(sd[0]) / 10.0F;
-								float fval2 = stof(sd[1]) / 10.0F;
-								float fval3 = stof(sd[2]) / 10.0F;
+								float fval1 = static_cast<float>(stod(sd[0]) / 10.0);
+								float fval2 = static_cast<float>(stod(sd[1]) / 10.0);
+								float fval3 = static_cast<float>(stod(sd[2]) / 10.0);
 
 								if (fval1 != 0)
 									bHaveL1 = true;
@@ -703,9 +703,9 @@ namespace http
 							{
 								root["result"][ii]["d"] = sd[3].substr(0, 16);
 
-								float fval1 = stof(sd[0]) / 10.0F;
-								float fval2 = stof(sd[1]) / 10.0F;
-								float fval3 = stof(sd[2]) / 10.0F;
+								float fval1 = static_cast<float>(stod(sd[0]) / 10.0);
+								float fval2 = static_cast<float>(stod(sd[1]) / 10.0);
+								float fval3 = static_cast<float>(stod(sd[2]) / 10.0);
 
 								if (fval1 != 0)
 									bHaveL1 = true;
@@ -2001,7 +2001,7 @@ namespace http
 								{
 									if (dSubType == sTypeTHBFloat)
 									{
-										sprintf(szTmp, "%.1f", stof(sd[5]) / 10.0F);
+										sprintf(szTmp, "%.1f", stod(sd[5]) / 10.0);
 										root["result"][ii]["ba"] = szTmp;
 									}
 									else
@@ -2009,12 +2009,12 @@ namespace http
 								}
 								else if (dType == pTypeTEMP_BARO)
 								{
-									sprintf(szTmp, "%.1f", stof(sd[5]) / 10.0F);
+									sprintf(szTmp, "%.1f", stod(sd[5]) / 10.0);
 									root["result"][ii]["ba"] = szTmp;
 								}
 								else if ((dType == pTypeGeneral) && (dSubType == sTypeBaro))
 								{
-									sprintf(szTmp, "%.1f", stof(sd[5]) / 10.0F);
+									sprintf(szTmp, "%.1f", stod(sd[5]) / 10.0);
 									root["result"][ii]["ba"] = szTmp;
 								}
 							}
@@ -2047,9 +2047,9 @@ namespace http
 								}
 								else
 								{
-									root["result"][ii]["te"] = stof(sd[1]);
-									root["result"][ii]["tm"] = stof(sd[0]);
-									root["result"][ii]["ta"] = stof(sd[6]);
+									root["result"][ii]["te"] = stod(sd[1]);
+									root["result"][ii]["tm"] = stod(sd[0]);
+									root["result"][ii]["ta"] = stod(sd[6]);
 								}
 							}
 
@@ -2108,7 +2108,7 @@ namespace http
 							{
 								if (dSubType == sTypeTHBFloat)
 								{
-									sprintf(szTmp, "%.1f", stof(sd[5]) / 10.0F);
+									sprintf(szTmp, "%.1f", stod(sd[5]) / 10.0);
 									root["result"][ii]["ba"] = szTmp;
 								}
 								else
@@ -2116,12 +2116,12 @@ namespace http
 							}
 							else if (dType == pTypeTEMP_BARO)
 							{
-								sprintf(szTmp, "%.1f", stof(sd[5]) / 10.0F);
+								sprintf(szTmp, "%.1f", stod(sd[5]) / 10.0);
 								root["result"][ii]["ba"] = szTmp;
 							}
 							else if ((dType == pTypeGeneral) && (dSubType == sTypeBaro))
 							{
-								sprintf(szTmp, "%.1f", stof(sd[5]) / 10.0F);
+								sprintf(szTmp, "%.1f", stod(sd[5]) / 10.0);
 								root["result"][ii]["ba"] = szTmp;
 							}
 						}
@@ -2154,9 +2154,9 @@ namespace http
 							}
 							else
 							{
-								root["result"][ii]["te"] = stof(sd[1]);
-								root["result"][ii]["tm"] = stof(sd[0]);
-								root["result"][ii]["ta"] = stof(sd[6]);
+								root["result"][ii]["te"] = stod(sd[1]);
+								root["result"][ii]["tm"] = stod(sd[0]);
+								root["result"][ii]["ta"] = stod(sd[6]);
 							}
 						}
 						ii++;
@@ -2223,7 +2223,7 @@ namespace http
 								{
 									if (dSubType == sTypeTHBFloat)
 									{
-										sprintf(szTmp, "%.1f", stof(sd[5]) / 10.0F);
+										sprintf(szTmp, "%.1f", stod(sd[5]) / 10.0);
 										root["resultprev"][iPrev]["ba"] = szTmp;
 									}
 									else
@@ -2231,12 +2231,12 @@ namespace http
 								}
 								else if (dType == pTypeTEMP_BARO)
 								{
-									sprintf(szTmp, "%.1f", stof(sd[5]) / 10.0F);
+									sprintf(szTmp, "%.1f", stod(sd[5]) / 10.0);
 									root["resultprev"][iPrev]["ba"] = szTmp;
 								}
 								else if ((dType == pTypeGeneral) && (dSubType == sTypeBaro))
 								{
-									sprintf(szTmp, "%.1f", stof(sd[5]) / 10.0F);
+									sprintf(szTmp, "%.1f", stod(sd[5]) / 10.0);
 									root["resultprev"][iPrev]["ba"] = szTmp;
 								}
 							}
@@ -2269,9 +2269,9 @@ namespace http
 								}
 								else
 								{
-									root["resultprev"][iPrev]["te"] = stof(sd[1]);
-									root["resultprev"][iPrev]["tm"] = stof(sd[0]);
-									root["resultprev"][iPrev]["ta"] = stof(sd[6]);
+									root["resultprev"][iPrev]["te"] = stod(sd[1]);
+									root["resultprev"][iPrev]["tm"] = stod(sd[0]);
+									root["resultprev"][iPrev]["ta"] = stod(sd[6]);
 								}
 							}
 
@@ -2865,9 +2865,9 @@ namespace http
 							for (const auto& sd : result)
 							{
 								root["result"][ii]["d"] = sd[2].substr(0, 16);
-								sprintf(szTmp, "%.1f", m_sql.m_weightscale * stof(sd[0]) / 10.0F);
+								sprintf(szTmp, "%.1f", m_sql.m_weightscale * stod(sd[0]) / 10.0);
 								root["result"][ii]["v_min"] = szTmp;
-								sprintf(szTmp, "%.1f", m_sql.m_weightscale * stof(sd[1]) / 10.0F);
+								sprintf(szTmp, "%.1f", m_sql.m_weightscale * stod(sd[1]) / 10.0);
 								root["result"][ii]["v_max"] = szTmp;
 								ii++;
 							}
@@ -2892,8 +2892,8 @@ namespace http
 							for (const auto& sd : result)
 							{
 								root["result"][ii]["d"] = sd[2].substr(0, 16);
-								root["result"][ii]["u_min"] = stof(sd[0]) / 10.0F;
-								root["result"][ii]["u_max"] = stof(sd[1]) / 10.0F;
+								root["result"][ii]["u_min"] = stod(sd[0]) / 10.0;
+								root["result"][ii]["u_max"] = stod(sd[1]) / 10.0;
 								ii++;
 							}
 						}
@@ -2920,12 +2920,12 @@ namespace http
 							{
 								root["result"][ii]["d"] = sd[6].substr(0, 16);
 
-								float fval1 = stof(sd[0]) / 10.0F;
-								float fval2 = stof(sd[1]) / 10.0F;
-								float fval3 = stof(sd[2]) / 10.0F;
-								float fval4 = stof(sd[3]) / 10.0F;
-								float fval5 = stof(sd[4]) / 10.0F;
-								float fval6 = stof(sd[5]) / 10.0F;
+								float fval1 = static_cast<float>(stod(sd[0]) / 10.0);
+								float fval2 = static_cast<float>(stod(sd[1]) / 10.0);
+								float fval3 = static_cast<float>(stod(sd[2]) / 10.0);
+								float fval4 = static_cast<float>(stod(sd[3]) / 10.0);
+								float fval5 = static_cast<float>(stod(sd[4]) / 10.0);
+								float fval6 = static_cast<float>(stod(sd[5]) / 10.0);
 
 								if ((fval1 != 0) || (fval2 != 0))
 									bHaveL1 = true;
@@ -3004,12 +3004,12 @@ namespace http
 							{
 								root["result"][ii]["d"] = sd[6].substr(0, 16);
 
-								float fval1 = stof(sd[0]) / 10.0F;
-								float fval2 = stof(sd[1]) / 10.0F;
-								float fval3 = stof(sd[2]) / 10.0F;
-								float fval4 = stof(sd[3]) / 10.0F;
-								float fval5 = stof(sd[4]) / 10.0F;
-								float fval6 = stof(sd[5]) / 10.0F;
+								float fval1 = static_cast<float>(stod(sd[0]) / 10.0);
+								float fval2 = static_cast<float>(stod(sd[1]) / 10.0);
+								float fval3 = static_cast<float>(stod(sd[2]) / 10.0);
+								float fval4 = static_cast<float>(stod(sd[3]) / 10.0);
+								float fval5 = static_cast<float>(stod(sd[4]) / 10.0);
+								float fval6 = static_cast<float>(stod(sd[5]) / 10.0);
 
 								if ((fval1 != 0) || (fval2 != 0))
 									bHaveL1 = true;
@@ -3071,7 +3071,7 @@ namespace http
 						if (dType == pTypeP1Gas)
 						{
 							// Add last counter value
-							sprintf(szTmp, "%.3f", stof(sValue) / 1000.0F);
+							sprintf(szTmp, "%.3f", stod(sValue) / 1000.0);
 							root["counter"] = szTmp;
 						}
 						else if (dType == pTypeENERGY)
@@ -3508,9 +3508,9 @@ namespace http
 						if (!result.empty())
 						{
 							root["result"][ii]["d"] = szDateEnd;
-							sprintf(szTmp, "%.1f", m_sql.m_weightscale * stof(result[0][0]) / 10.0F);
+							sprintf(szTmp, "%.1f", m_sql.m_weightscale * stod(result[0][0]) / 10.0);
 							root["result"][ii]["v_min"] = szTmp;
-							sprintf(szTmp, "%.1f", m_sql.m_weightscale * stof(result[0][1]) / 10.0F);
+							sprintf(szTmp, "%.1f", m_sql.m_weightscale * stod(result[0][1]) / 10.0);
 							root["result"][ii]["v_max"] = szTmp;
 							ii++;
 						}
@@ -3521,8 +3521,8 @@ namespace http
 						if (!result.empty())
 						{
 							root["result"][ii]["d"] = szDateEnd;
-							root["result"][ii]["u_min"] = stof(result[0][0]) / 10.0F;
-							root["result"][ii]["u_max"] = stof(result[0][1]) / 10.0F;
+							root["result"][ii]["u_min"] = stod(result[0][0]) / 10.0;
+							root["result"][ii]["u_max"] = stod(result[0][1]) / 10.0;
 							ii++;
 						}
 					}
@@ -3835,7 +3835,7 @@ namespace http
 									{
 										if (dSubType == sTypeTHBFloat)
 										{
-											sprintf(szTmp, "%.1f", stof(sd[3]) / 10.0F);
+											sprintf(szTmp, "%.1f", stod(sd[3]) / 10.0);
 											root["result"][ii]["ba"] = szTmp;
 										}
 										else
@@ -3843,12 +3843,12 @@ namespace http
 									}
 									else if (dType == pTypeTEMP_BARO)
 									{
-										sprintf(szTmp, "%.1f", stof(sd[3]) / 10.0F);
+										sprintf(szTmp, "%.1f", stod(sd[3]) / 10.0);
 										root["result"][ii]["ba"] = szTmp;
 									}
 									else if ((dType == pTypeGeneral) && (dSubType == sTypeBaro))
 									{
-										sprintf(szTmp, "%.1f", stof(sd[3]) / 10.0F);
+										sprintf(szTmp, "%.1f", stod(sd[3]) / 10.0);
 										root["result"][ii]["ba"] = szTmp;
 									}
 								}
@@ -3909,7 +3909,7 @@ namespace http
 									{
 										if (dSubType == sTypeTHBFloat)
 										{
-											sprintf(szTmp, "%.1f", stof(sd[5]) / 10.0F);
+											sprintf(szTmp, "%.1f", stod(sd[5]) / 10.0);
 											root["result"][ii]["ba"] = szTmp;
 										}
 										else
@@ -3917,12 +3917,12 @@ namespace http
 									}
 									else if (dType == pTypeTEMP_BARO)
 									{
-										sprintf(szTmp, "%.1f", stof(sd[5]) / 10.0F);
+										sprintf(szTmp, "%.1f", stod(sd[5]) / 10.0);
 										root["result"][ii]["ba"] = szTmp;
 									}
 									else if ((dType == pTypeGeneral) && (dSubType == sTypeBaro))
 									{
-										sprintf(szTmp, "%.1f", stof(sd[5]) / 10.0F);
+										sprintf(szTmp, "%.1f", stod(sd[5]) / 10.0);
 										root["result"][ii]["ba"] = szTmp;
 									}
 								}
@@ -3986,7 +3986,7 @@ namespace http
 								{
 									if (dSubType == sTypeTHBFloat)
 									{
-										sprintf(szTmp, "%.1f", stof(sd[5]) / 10.0F);
+										sprintf(szTmp, "%.1f", stod(sd[5]) / 10.0);
 										root["result"][ii]["ba"] = szTmp;
 									}
 									else
@@ -3994,12 +3994,12 @@ namespace http
 								}
 								else if (dType == pTypeTEMP_BARO)
 								{
-									sprintf(szTmp, "%.1f", stof(sd[5]) / 10.0F);
+									sprintf(szTmp, "%.1f", stod(sd[5]) / 10.0);
 									root["result"][ii]["ba"] = szTmp;
 								}
 								else if ((dType == pTypeGeneral) && (dSubType == sTypeBaro))
 								{
-									sprintf(szTmp, "%.1f", stof(sd[5]) / 10.0F);
+									sprintf(szTmp, "%.1f", stod(sd[5]) / 10.0);
 									root["result"][ii]["ba"] = szTmp;
 								}
 							}

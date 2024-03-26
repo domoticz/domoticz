@@ -623,7 +623,7 @@ void CDaikin::GetYearPower()
 			StringSplit(results2[1], "/", months);
 			for (const auto &month : months)
 			{
-				cooltotalkWh += stof(month) / 10; // energy saved as 0.1 kWh units
+				cooltotalkWh += static_cast<float>(stod(month) / 10.0); // energy saved as 0.1 kWh units
 			}
 			SendKwhMeter(30, 30, 255, 0, cooltotalkWh, "Cool kWh");
 		}
@@ -633,7 +633,7 @@ void CDaikin::GetYearPower()
 			StringSplit(results2[1], "/", months);
 			for (const auto &month : months)
 			{
-				heattotalkWh += stof(month) / 10; // energy saved as 0.1 kWh units
+				heattotalkWh += static_cast<float>(stod(month) / 10.0); // energy saved as 0.1 kWh units
 			}
 			SendKwhMeter(31, 31, 255, 0, heattotalkWh, "Heat kWh");
 		}

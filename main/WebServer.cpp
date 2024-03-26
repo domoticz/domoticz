@@ -2282,7 +2282,7 @@ namespace http
 
 							if (dSubType == sTypeTHBFloat)
 							{
-								root["result"][ii]["Barometer"] = stof(strarray[3]);
+								root["result"][ii]["Barometer"] = stod(strarray[3]);
 								root["result"][ii]["ForecastStr"] = RFX_WSForecast_Desc((unsigned char) stoi(strarray[4]));
 							}
 							else
@@ -2292,7 +2292,7 @@ namespace http
 							}
 							if (dSubType == sTypeTHBFloat)
 							{
-								sprintf(szData, "%.1f %c, %d %%, %.1f hPa", temp, tempsign, stoi(strarray[1]), stof(strarray[3]));
+								sprintf(szData, "%.1f %c, %d %%, %.1f hPa", temp, tempsign, stoi(strarray[1]), stod(strarray[3]));
 							}
 							else
 							{
@@ -2321,9 +2321,9 @@ namespace http
 							int forecast = stoi(strarray[2]);
 							root["result"][ii]["Forecast"] = forecast;
 							root["result"][ii]["ForecastStr"] = BMP_Forecast_Desc(forecast);
-							root["result"][ii]["Barometer"] = stof(strarray[1]);
+							root["result"][ii]["Barometer"] = stod(strarray[1]);
 
-							sprintf(szData, "%.1f %c, %.1f hPa", tvalue, tempsign, stof(strarray[1]));
+							sprintf(szData, "%.1f %c, %.1f hPa", tvalue, tempsign, stod(strarray[1]));
 							root["result"][ii]["Data"] = szData;
 							root["result"][ii]["HaveTimeout"] = bHaveTimeout;
 
@@ -2373,7 +2373,7 @@ namespace http
 						StringSplit(sValue, ";", strarray);
 						if (strarray.size() == 6)
 						{
-							root["result"][ii]["Direction"] = stof(strarray[0]);
+							root["result"][ii]["Direction"] = stod(strarray[0]);
 							root["result"][ii]["DirectionStr"] = strarray[1];
 
 							if (dSubType != sTypeWIND5)
@@ -2471,13 +2471,9 @@ namespace http
 
 								total_real *= AddjMulti;
 								if (dSubType == sTypeRAINByRate)
-								{
-									rate = stof(sd2[1]) / 10000.0F;
-								}
+									rate = static_cast<float>(stod(sd2[1]) / 10000.0);
 								else
-								{
-									rate = stof(strarray[0]) * float(AddjMulti) / 100.0F;
-								}
+									rate = static_cast<float>(stod(strarray[0]) * double(AddjMulti) / 100.0);
 
 								sprintf(szTmp, "%.1f", total_real);
 								root["result"][ii]["Rain"] = szTmp;
@@ -2900,7 +2896,7 @@ namespace http
 							sprintf(szTmp, "%.03f m3", musage);
 							root["result"][ii]["CounterToday"] = szTmp;
 							root["result"][ii]["HaveTimeout"] = bHaveTimeout;
-							sprintf(szTmp, "%.03f", stof(sValue) / divider);
+							sprintf(szTmp, "%.03f", stod(sValue) / divider);
 							root["result"][ii]["Data"] = szTmp;
 						}
 						else
@@ -2909,7 +2905,7 @@ namespace http
 							root["result"][ii]["Counter"] = szTmp;
 							sprintf(szTmp, "%.03f m3", 0.0F);
 							root["result"][ii]["CounterToday"] = szTmp;
-							sprintf(szTmp, "%.03f", stof(sValue) / divider);
+							sprintf(szTmp, "%.03f", stod(sValue) / divider);
 							root["result"][ii]["Data"] = szTmp;
 							root["result"][ii]["HaveTimeout"] = bHaveTimeout;
 						}
@@ -2964,11 +2960,14 @@ namespace http
 							double total = stod(strarray[3]);
 							if (displaytype == 0)
 							{
-								sprintf(szData, "%.1f A, %.1f A, %.1f A", stof(strarray[0]), stof(strarray[1]), stof(strarray[2]));
+								sprintf(szData, "%.1f A, %.1f A, %.1f A", stod(strarray[0]), stod(strarray[1]), stod(strarray[2]));
 							}
 							else
 							{
-								sprintf(szData, "%d Watt, %d Watt, %d Watt", int(stof(strarray[0]) * voltage), int(stof(strarray[1]) * voltage), int(stof(strarray[2]) * voltage));
+								sprintf(szData, "%d Watt, %d Watt, %d Watt",
+										static_cast<int>(stod(strarray[0]) * voltage),
+										static_cast<int>(stod(strarray[1]) * voltage),
+										static_cast<int>(stod(strarray[2]) * voltage));
 							}
 							if (total > 0)
 							{
@@ -3014,7 +3013,7 @@ namespace http
 								}
 								else
 								{
-									sprintf(szData, "%g Watt", stof(strarray[0]));
+									sprintf(szData, "%g Watt", stod(strarray[0]));
 								}
 								root["result"][ii]["Usage"] = szData;
 								root["result"][ii]["HaveTimeout"] = bHaveTimeout;
@@ -3031,7 +3030,7 @@ namespace http
 								}
 								else
 								{
-									sprintf(szData, "%g Watt", stof(strarray[0]));
+									sprintf(szData, "%g Watt", stod(strarray[0]));
 								}
 								root["result"][ii]["Usage"] = szData;
 								root["result"][ii]["HaveTimeout"] = bHaveTimeout;
@@ -3142,7 +3141,7 @@ namespace http
 								sprintf(szTmp, "%.1f mi", vis * 0.6214F);
 							}
 							root["result"][ii]["Data"] = szTmp;
-							root["result"][ii]["Visibility"] = stof(sValue);
+							root["result"][ii]["Visibility"] = stod(sValue);
 							root["result"][ii]["HaveTimeout"] = bHaveTimeout;
 							root["result"][ii]["TypeImg"] = "visibility";
 							root["result"][ii]["SwitchTypeVal"] = metertype;
@@ -3170,7 +3169,7 @@ namespace http
 							float radiation = stof(sValue);
 							sprintf(szTmp, "%.1f Watt/m2", radiation);
 							root["result"][ii]["Data"] = szTmp;
-							root["result"][ii]["Radiation"] = stof(sValue);
+							root["result"][ii]["Radiation"] = stod(sValue);
 							root["result"][ii]["HaveTimeout"] = bHaveTimeout;
 							root["result"][ii]["TypeImg"] = "radiation";
 							root["result"][ii]["SwitchTypeVal"] = metertype;
@@ -3213,14 +3212,14 @@ namespace http
 						}
 						else if (dSubType == sTypePercentage)
 						{
-							sprintf(szData, "%g%%", stof(sValue));
+							sprintf(szData, "%g%%", stod(sValue));
 							root["result"][ii]["Data"] = szData;
 							root["result"][ii]["HaveTimeout"] = bHaveTimeout;
 							root["result"][ii]["TypeImg"] = "hardware";
 						}
 						else if (dSubType == sTypeWaterflow)
 						{
-							sprintf(szData, "%g l/min", stof(sValue));
+							sprintf(szData, "%g l/min", stod(sValue));
 							root["result"][ii]["Data"] = szData;
 							root["result"][ii]["HaveTimeout"] = bHaveTimeout;
 							if (!CustomImage)
@@ -3239,7 +3238,7 @@ namespace http
 								SensorType = stoi(sResults[0]);
 								szAxesLabel = sResults[1];
 							}
-							sprintf(szData, "%g %s", stof(sValue), szAxesLabel.c_str());
+							sprintf(szData, "%g %s", stod(sValue), szAxesLabel.c_str());
 							root["result"][ii]["Data"] = szData;
 							root["result"][ii]["SensorType"] = SensorType;
 							root["result"][ii]["SensorUnit"] = szAxesLabel;
@@ -3267,19 +3266,19 @@ namespace http
 						}
 						else if (dSubType == sTypeVoltage)
 						{
-							sprintf(szData, "%g V", stof(sValue));
+							sprintf(szData, "%g V", stod(sValue));
 							root["result"][ii]["Data"] = szData;
 							root["result"][ii]["TypeImg"] = "current";
 							root["result"][ii]["HaveTimeout"] = bHaveTimeout;
-							root["result"][ii]["Voltage"] = stof(sValue);
+							root["result"][ii]["Voltage"] = stod(sValue);
 						}
 						else if (dSubType == sTypeCurrent)
 						{
-							sprintf(szData, "%g A", stof(sValue));
+							sprintf(szData, "%g A", stod(sValue));
 							root["result"][ii]["Data"] = szData;
 							root["result"][ii]["TypeImg"] = "current";
 							root["result"][ii]["HaveTimeout"] = bHaveTimeout;
-							root["result"][ii]["Current"] = stof(sValue);
+							root["result"][ii]["Current"] = stod(sValue);
 						}
 						else if (dSubType == sTypeTextStatus)
 						{
@@ -3304,11 +3303,11 @@ namespace http
 						}
 						else if (dSubType == sTypePressure)
 						{
-							sprintf(szData, "%.1f Bar", stof(sValue));
+							sprintf(szData, "%.1f Bar", stod(sValue));
 							root["result"][ii]["Data"] = szData;
 							root["result"][ii]["TypeImg"] = "gauge";
 							root["result"][ii]["HaveTimeout"] = bHaveTimeout;
-							root["result"][ii]["Pressure"] = stof(sValue);
+							root["result"][ii]["Pressure"] = stod(sValue);
 						}
 						else if (dSubType == sTypeBaro)
 						{
@@ -3316,13 +3315,13 @@ namespace http
 							StringSplit(sValue, ";", tstrarray);
 							if (tstrarray.empty())
 								continue;
-							sprintf(szData, "%g hPa", stof(tstrarray[0]));
+							sprintf(szData, "%g hPa", stod(tstrarray[0]));
 							root["result"][ii]["Data"] = szData;
 							root["result"][ii]["TypeImg"] = "gauge";
 							root["result"][ii]["HaveTimeout"] = bHaveTimeout;
 							if (tstrarray.size() > 1)
 							{
-								root["result"][ii]["Barometer"] = stof(tstrarray[0]);
+								root["result"][ii]["Barometer"] = stod(tstrarray[0]);
 								int forecast = stoi(tstrarray[1]);
 								root["result"][ii]["Forecast"] = forecast;
 								root["result"][ii]["ForecastStr"] = BMP_Forecast_Desc(forecast);
@@ -3610,13 +3609,13 @@ namespace http
 					}
 					else if (dType == pTypeLux)
 					{
-						sprintf(szTmp, "%.0f Lux", stof(sValue));
+						sprintf(szTmp, "%.0f Lux", stod(sValue));
 						root["result"][ii]["Data"] = szTmp;
 						root["result"][ii]["HaveTimeout"] = bHaveTimeout;
 					}
 					else if (dType == pTypeWEIGHT)
 					{
-						sprintf(szTmp, "%g %s", m_sql.m_weightscale * stof(sValue), m_sql.m_weightsign.c_str());
+						sprintf(szTmp, "%g %s", m_sql.m_weightscale * stod(sValue), m_sql.m_weightsign.c_str());
 						root["result"][ii]["Data"] = szTmp;
 						root["result"][ii]["HaveTimeout"] = false;
 						root["result"][ii]["SwitchTypeVal"] = (m_sql.m_weightsign == "kg") ? 0 : 1;
@@ -3625,7 +3624,7 @@ namespace http
 					{
 						if (dSubType == sTypeElectric)
 						{
-							sprintf(szData, "%g Watt", stof(sValue));
+							sprintf(szData, "%g Watt", stod(sValue));
 							root["result"][ii]["Data"] = szData;
 						}
 						else

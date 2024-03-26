@@ -693,7 +693,7 @@ void CEventSystem::GetCurrentMeasurementStates()
 			if (splitresults.size() > 1)
 			{
 				temp = stof(splitresults[0]);
-				humidity = ground(stof(splitresults[1]));
+				humidity = static_cast<int>(ground(stod(splitresults[1])));
 				dewpoint = (float)CalculateDewPoint(temp, humidity);
 				isTemp = true;
 				isHum = true;
@@ -706,7 +706,7 @@ void CEventSystem::GetCurrentMeasurementStates()
 				continue;
 			}
 			temp = stof(splitresults[0]);
-			humidity = ground(stof(splitresults[1]));
+			humidity = static_cast<int>(ground(stod(splitresults[1])));
 			barometer = stof(splitresults[3]);
 			dewpoint = (float)CalculateDewPoint(temp, humidity);
 			isTemp = true;
@@ -921,7 +921,7 @@ void CEventSystem::GetCurrentMeasurementStates()
 			if (splitresults.size() == 2)
 			{
 				rainmm = 0;
-				rainmmlasthour = stof(splitresults[0]) / 100.0F;
+				rainmmlasthour = static_cast<float>(stod(splitresults[0]) / 100.0);
 				isRain = true;
 				weatherval = rainmmlasthour;
 				isWeather = true;
@@ -1701,7 +1701,7 @@ lua_State *CEventSystem::CreateBlocklyLuaState()
 		}
 		else if (uvitem.variableType == 1)
 		{ //Float
-			luaTable.AddNumber(uvitem.ID, stof(uvitem.variableValue));
+			luaTable.AddNumber(uvitem.ID, stold(uvitem.variableValue));
 		}
 		else { //String,Date,Time
 			luaTable.AddString(uvitem.ID, uvitem.variableValue);
@@ -2490,19 +2490,19 @@ void CEventSystem::ParseActionString(const std::string &oAction_, _tActionParseR
 				oResults_.sCommand.append(sToken);
 				break;
 			case 1:
-				oResults_.fForSec = 60.0F * stof(sToken);
+				oResults_.fForSec = static_cast<float>(stod(sToken) * 60.0);
 				break;
 			case 2:
-				oResults_.fAfterSec = 1.0F * stof(sToken);
+				oResults_.fAfterSec = static_cast<float>(stod(sToken));
 				break;
 			case 3:
-				oResults_.fRandomSec = 60.0F * stof(sToken);
+				oResults_.fRandomSec = static_cast<float>(stod(sToken) * 60.0);
 				break;
 			case 4:
-				oResults_.iRepeat = stoi(sToken);
+				oResults_.iRepeat = static_cast<float>(stod(sToken));
 				break;
 			case 5:
-				oResults_.fRepeatSec = 1.0F * stof(sToken);
+				oResults_.fRepeatSec = static_cast<float>(stod(sToken));
 				break;
 			}
 		}
@@ -2898,12 +2898,12 @@ void CEventSystem::EvaluateLuaClassic(lua_State *lua_state, const _tEventQueue &
 	{
 		_tUserVariable uvitem = uservar.second;
 		if (uvitem.variableType == 0)
-		{ //Integer
+		{ // Integer
 			luaTable.AddInteger(uvitem.variableName, stoi(uvitem.variableValue));
 		}
 		else if (uvitem.variableType == 1)
-		{ //Float
-			luaTable.AddNumber(uvitem.variableName, stof(uvitem.variableValue));
+		{ // Float
+			luaTable.AddNumber(uvitem.variableName, stold(uvitem.variableValue));
 		} else { //String,Date,Time
 			luaTable.AddString(uvitem.variableName, uvitem.variableValue);
 		}

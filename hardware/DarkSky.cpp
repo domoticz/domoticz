@@ -341,7 +341,7 @@ void CDarkSky::GetMeterDetails()
 	{
 		if ((root["currently"]["precipIntensity"] != "N/A") && (root["currently"]["precipIntensity"] != "--"))
 		{
-			float rainrateph = stof(root["currently"]["precipIntensity"].asString()) * 25.4F; // inches to mm
+			float rainrateph = static_cast<float>(stod(root["currently"]["precipIntensity"].asString()) * 25.4); // inches to mm
 			if ((rainrateph != -9999.00F) && (rainrateph >= 0.00F))
 			{
 				SendRainRateSensor(1, 255, rainrateph, "Rain");
@@ -354,7 +354,7 @@ void CDarkSky::GetMeterDetails()
 	{
 		if ((root["currently"]["visibility"] != "N/A") && (root["currently"]["visibility"] != "--"))
 		{
-			float visibility = stof(root["currently"]["visibility"].asString()) * 1.60934F; // miles to km
+			float visibility = static_cast<float>(stod(root["currently"]["visibility"].asString()) * 1.60934); // miles to km
 			if (visibility >= 0)
 			{
 				_tGeneralDevice gdevice;
