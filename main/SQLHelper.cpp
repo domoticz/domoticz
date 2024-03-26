@@ -5280,9 +5280,9 @@ uint64_t CSQLHelper::UpdateValueInt(
 			StringSplit(sValueBeforeUpdate, ";", powerAndEnergyBeforeUpdate);
 			if (powerAndEnergyBeforeUpdate.size() == 2)
 			{
-				//we need to use atof here because some users seem to have a illegal sValue in the database that causes stof to crash
-				double powerDuringInterval = stod(powerAndEnergyBeforeUpdate[0]);
-				double energyUpToInterval = stod(powerAndEnergyBeforeUpdate[1]);
+				// We need to use atof here because some users seem to have a illegal sValue in the database that causes stof to crash
+				double powerDuringInterval = atof(powerAndEnergyBeforeUpdate[0].c_str());
+				double energyUpToInterval = atof(powerAndEnergyBeforeUpdate[1].c_str());
 				double energyDuringInterval = powerDuringInterval * intervalSeconds / 3600;
 				double energyAfterInterval = energyUpToInterval + energyDuringInterval;
 				std::vector<std::string> powerAndEnergyUpdate;
