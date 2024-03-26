@@ -8,18 +8,15 @@
 #include "../main/mainworker.h"
 #include "../main/SQLHelper.h"
 
-
 #define NETATMO_OAUTH2_TOKEN_URI "https://api.netatmo.com/oauth2/token"
 #define NETATMO_API_URI "https://api.netatmo.com/"
 #define NETATMO_SCOPES "read_station read_smarther write_smarther read_thermostat write_thermostat read_camera write_camera read_doorbell read_presence write_presence read_homecoach read_carbonmonoxidedetector read_smokedetector"
 #define NETATMO_REDIRECT_URI "http://localhost/netatmo"
 // https://api.netatmo.com/oauth2/authorize?client_id=<CLIENT_ID>&redirect_uri=http://localhost/netatmo&state=teststate&scope=read_station%20read_smarther%20write_smarther%20read_thermostat%20write_thermostat%20read_camera%20write_camera%20read_doorbell%20read_presence%20write_presence%20read_homecoach%20read_carbonmonoxidedetector%20read_smokedetector
 
-
 #ifdef _DEBUG
 //#define DEBUG_NetatmoWeatherStationR
 #endif
-
 
 #ifdef DEBUG_NetatmoWeatherStationW
 void SaveJson2Disk(Json::Value str, std::string filename)
@@ -35,7 +32,6 @@ void SaveJson2Disk(Json::Value str, std::string filename)
 	}
 }
 #endif
-
 
 #ifdef DEBUG_NetatmoWeatherStationR
 std::string ReadFile(std::string filename)
@@ -55,7 +51,6 @@ std::string ReadFile(std::string filename)
 	return sResult;
 }
 #endif
-
 
 CNetatmo::CNetatmo(const int ID, const std::string& username, const std::string& password)
 	: m_username(CURLEncode::URLDecode(username))
@@ -100,7 +95,6 @@ CNetatmo::CNetatmo(const int ID, const std::string& username, const std::string&
 
 	Init();
 }
-
 
 void CNetatmo::Init()
 {
@@ -150,7 +144,6 @@ void CNetatmo::Init()
         //
 }
 
-
 bool CNetatmo::StartHardware()
 {
 	RequestStart();
@@ -164,7 +157,6 @@ bool CNetatmo::StartHardware()
 	return (m_thread != nullptr);
 }
 
-
 bool CNetatmo::StopHardware()
 {
 	if (m_thread)
@@ -176,7 +168,6 @@ bool CNetatmo::StopHardware()
 	m_bIsStarted = false;
 	return true;
 }
-
 
 void CNetatmo::Do_Work()
 {
@@ -282,7 +273,6 @@ void CNetatmo::Do_Work()
 	Log(LOG_STATUS, "Worker stopped...");
 }
 
-
 /// <summary>
 /// Login to Netatmon API
 /// </summary>
@@ -359,7 +349,6 @@ bool CNetatmo::Login()
 	m_isLogged = true;
 	return true;
 }
-
 
 /// <summary>
 /// Refresh a token previously granted by loggin to the API
@@ -455,7 +444,6 @@ bool CNetatmo::LoadRefreshToken()
 	return true;
 }
 
-
 /// <summary>
 /// Store an access token in the database for reuse after domoticz restart
 /// (Note : we should also store token duration)
@@ -467,14 +455,12 @@ void CNetatmo::StoreRefreshToken()
 	m_sql.safe_query("UPDATE Hardware SET Extra='%q' WHERE (ID == %d)", m_refreshToken.c_str(), m_HwdID);
 }
 
-
 std::string CNetatmo::bool_as_text(bool b)
 {
                 std::stringstream converter;
                 converter << std::boolalpha << b;   // flag boolalpha calls converter.setf(std::ios_base::boolalpha)
                 return converter.str();
 }
-
 
 /// <summary>
 /// Function to change the MAC-adres to integer
@@ -487,7 +473,6 @@ uint64_t CNetatmo::convert_mac(std::string mac)
         // Convert to uint64_t
         return strtoul(mac.c_str(), NULL, 16);
 }
-
 
 /// <summary>
 /// Send sensors to Main worker
@@ -509,7 +494,6 @@ uint64_t CNetatmo::UpdateValueInt(int HardwareID, const char* ID, unsigned char 
         m_mainworker.CheckSceneCode(DeviceRowIdx, devType, subType, nValue, sValue, "MQTT Auto");
         return DeviceRowIdx;
 }
-
 
 /// <summary>
 /// Upon domoticz devices action (pressing a switch) take action          - TO DO
@@ -579,7 +563,6 @@ bool CNetatmo::WriteToHardware(const char* pdata, const unsigned char /*length*/
 	return false;
 }
 
-
 /// <summary>
 /// Set the thermostat / valve in "away mode"                             - TO DO
 /// </summary>
@@ -591,7 +574,6 @@ bool CNetatmo::SetAway(const int idx, const bool bIsAway)
         Debug(DEBUG_HARDWARE, "NetatmoThermostat Away idx = %d", idx);
 	return SetProgramState(idx, (bIsAway == true) ? 1 : 0);
 }
-
 
 /// <summary>
 /// Set the thermostat / valve operationnal mode                          - TO DO     schedule, away, hg
@@ -687,7 +669,6 @@ bool CNetatmo::SetProgramState(const int idx, const int newState)
 	return true;
 }
 
-
 /// <summary>
 /// Set temperture override on thermostat / valve for
 /// one hour
@@ -770,7 +751,7 @@ void CNetatmo::SetSetpoint(int idx, const float temp)
 	else
 	{
 		//find module id
-		std::string module_ID = m_thermostatDeviceID[idx];  // (m_thermostatDeviceID[roomNetatmoID];
+		std::string module_ID = m_thermostatDeviceID[idx];
 
 		if (module_ID.empty())
 		{
@@ -795,7 +776,6 @@ void CNetatmo::SetSetpoint(int idx, const float temp)
 	m_tSetpointUpdateTime = time(nullptr) + 60;
 	m_bForceSetpointUpdate = true;
 }
-
 
 /// <summary>
 /// Change the schedule of the thermostat (new API only)                  - TO DO
@@ -836,7 +816,6 @@ bool CNetatmo::SetSchedule(int scheduleId)
 
 	return true;
 }
-
 
 /// <summary>
 /// Utility to make the URI based on the type of device we
@@ -944,7 +923,6 @@ std::string CNetatmo::MakeRequestURL(const _eNetatmoType NType, std::string data
 	return sstr.str();
 }
 
-
 /// <summary>
 /// Get API
 /// </summary>
@@ -987,7 +965,6 @@ void CNetatmo::Get_Respons_API(const _eNetatmoType& NType, std::string& sResult,
                 return ;
         }
 }
-
 
 /// <summary>
 /// Get details for home to be used in GetHomeStatusDetails / ParseHomeStatus
@@ -1177,7 +1154,6 @@ void CNetatmo::GetHomesDataDetails()
         }
 }
 
-
 /// <summary>
 /// Get details for weather station
 /// </summary>
@@ -1208,7 +1184,6 @@ void CNetatmo::GetWeatherDetails()
 //	m_bFirstTimeWeatherData = false;
 }
 
-
 /// <summary>
 /// Get details for homecoach
 /// </summary>
@@ -1234,7 +1209,6 @@ void CNetatmo::GetHomecoachDetails()
 //	}
 	m_bPollHomecoachData = false;
 }
-
 
 /// <summary>
 /// Get details for homeStatus
@@ -1275,7 +1249,6 @@ void CNetatmo::GetHomeStatusDetails()
 	m_bPollHomeStatus = false;
 }
 
-
 /// <summary>
 /// Get Historical data from Netatmo Device
 /// Devices from Aircare, Weather, Energy and Home + Control API
@@ -1308,7 +1281,6 @@ void CNetatmo::Get_Measure(std::string gateway, std::string module_id, std::stri
                 //}
          }
 }
-
 
 /// <summary>
 /// Get events
@@ -1345,7 +1317,6 @@ void CNetatmo::Get_Events(std::string home_id, std::string device_types, std::st
                 }
          }
 }
-
 
 /// <summary>
 /// Parse data for weather station and Homecoach
@@ -1537,7 +1508,6 @@ bool CNetatmo::ParseStationData(const std::string& sResult, const bool bIsThermo
         //return (!_netatmo_devices.empty());
         return true;
 }
-
 
 /// <summary>
 /// Parse weather data for weather / homecoach station based on previously parsed JSON (with ParseStationData)
@@ -1847,7 +1817,6 @@ bool CNetatmo::ParseDashboard(const Json::Value& root, const int DevIdx, const i
 	return true;
 }
 
-
 /// <summary>                                                          // Deprecated
 /// Parse data for energy station (thermostat and valves) and get      // For Reference Only
 /// module / room and schedule
@@ -1857,7 +1826,6 @@ bool CNetatmo::ParseDashboard(const Json::Value& root, const int DevIdx, const i
 //bool CNetatmo::ParseHomeData(const std::string& sResult, Json::Value& root )
 // for (auto home : root["body"]["homes"])
 // dict_keys(['id', 'name', 'altitude', 'coordinates', 'country', 'timezone', 'rooms', 'modules', 'temperature_control_mode', 'therm_mode', 'therm_setpoint_default_duration', 'persons', 'schedules'])
-
 
 /// <summary>
 /// Parse data for energy/security devices
@@ -2362,7 +2330,6 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root )
 	return true;
 }
 
-
 /// <summary>
 /// Parse data for energy/security devices
 /// get and create/update domoticz devices
@@ -2536,7 +2503,6 @@ bool CNetatmo::ParseEvents(const std::string& sResult, Json::Value& root )
         }
         return true;
 }
-
 
 /// <summary>
 /// Normalize battery level for station module                    //Not Used anymore
