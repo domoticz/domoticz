@@ -3,17 +3,23 @@
 #include "DomoticzHardware.h"
 #include "../main/BaroForecastCalculator.h"
 
-
 namespace Json
 {
 	class Value;
-}       // namespace Json
-
+}// namespace Json
 
 class CNetatmo : public CDomoticzHardwareBase
 {
-//      friend class;
-      //
+      public:
+        CNetatmo(int ID, const std::string &username, const std::string &password);
+        ~CNetatmo() override = default;
+
+        bool WriteToHardware(const char *, unsigned char) override;
+        void SetSetpoint(int DeviceID, float temp);
+        bool SetProgramState(int idx, int newState);
+        void Get_Respons_API(const _eNetatmoType& NType, std::string& sResult, std::string& home_id , bool& bRet, Json::Value& root );
+
+      private:
         struct _tNetatmoDevice
         {
                 std::string ID;
@@ -22,7 +28,6 @@ class CNetatmo : public CDomoticzHardwareBase
                 std::vector<std::string> ModulesIDs;
                 //Json::Value Modules;
         };
-      private:
 	enum _eNetatmoType
 	{
 		NETYPE_WEATHER_STATION = 0,
@@ -168,15 +173,4 @@ class CNetatmo : public CDomoticzHardwareBase
         uint64_t UpdateValueInt(int HardwareID, const char* ID, unsigned char unit, unsigned char devType, unsigned char subType, unsigned char signallevel, unsigned char batterylevel, int nValue, const char* sValue, std::string& devname, bool bUseOnOffAction, const std::string& user);
 
 	bool ParseDashboard(const Json::Value &root, int DevIdx, int ID, std::string &name, const std::string &ModuleType, int battery_percent, int rf_status, std::string& Hardware_ID);
-
-      //
-      public:
-        CNetatmo(int ID, const std::string &username, const std::string &password);
-        ~CNetatmo() override = default;
-        //
-        bool WriteToHardware(const char *, unsigned char) override;
-        void SetSetpoint(int DeviceID, float temp);
-        bool SetProgramState(int idx, int newState);
-        void Get_Respons_API(const _eNetatmoType& NType, std::string& sResult, std::string& home_id , bool& bRet, Json::Value& root );
-        //
 };
