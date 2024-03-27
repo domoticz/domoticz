@@ -22,6 +22,7 @@ struct gpio_info
 	int8_t id3;	       // Device id3
 	int8_t id4;	       // Device id4
 	int8_t id_valid;       // Device valid
+	int8_t unit;           // Unit, used in the database
 };
 
 class CSysfsGpio : public CDomoticzHardwareBase
@@ -57,6 +58,7 @@ class CSysfsGpio : public CDomoticzHardwareBase
 	int GetReadResult(int bytecount, char *value_str);
 	int GpioGetState(int index);
 	void GpioSaveState(int index, int value);
+	uint8_t ConvertGpioPin(int pin);
 
 	static std::vector<gpio_info> m_saved_state;
 	static int m_sysfs_hwdid;
