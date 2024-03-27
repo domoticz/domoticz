@@ -142,13 +142,13 @@ void CDenkoviSmartdenLan::UpdateSwitch(const unsigned char Idx, const int SubUni
 	if (!result.empty())
 	{
 		//check if we have a change, if not do not update it
-		int nvalue = atoi(result[0][1].c_str());
+		int nvalue = stoi(result[0][1]);
 		if ((!bOn) && (nvalue == 0))
 			return;
 		if ((bOn && (nvalue != 0)))
 		{
 			//Check Level
-			int slevel = atoi(result[0][2].c_str());
+			int slevel = stoi(result[0][2]);
 			if (slevel == level)
 				return;
 		}
@@ -221,7 +221,7 @@ void CDenkoviSmartdenLan::GetMeterDetails()
 			pos1 = tmpstr.find(">");
 			if (pos1 != std::string::npos)
 			{
-				Idx = atoi(tmpstr.substr(0, pos1).c_str());
+				Idx = stoi(tmpstr.substr(0, pos1));
 				continue;
 			}
 		}
@@ -234,7 +234,7 @@ void CDenkoviSmartdenLan::GetMeterDetails()
 			pos1 = tmpstr.find("</State>");
 			if (pos1 != std::string::npos)
 			{
-				int lValue = atoi(tmpstr.substr(0, pos1).c_str());
+				int lValue = stoi(tmpstr.substr(0, pos1));
 				std::stringstream sstr;
 				sstr << "Relay " << Idx;
 				UpdateSwitch(1, Idx, (lValue == 1) ? true : false, 100, sstr.str());

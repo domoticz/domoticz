@@ -128,7 +128,7 @@ void Yeelight::InsertUpdateSwitch(const std::string &nodeID, const std::string &
 		Log(LOG_STATUS, "Invalid location received! (No IP Address)");
 		return;
 	}
-	uint32_t sID = (uint32_t)(atoi(ipaddress[0].c_str()) << 24) | (uint32_t)(atoi(ipaddress[1].c_str()) << 16) | (atoi(ipaddress[2].c_str()) << 8) | atoi(ipaddress[3].c_str());
+	uint32_t sID = ((uint32_t) stoi(ipaddress[0]) << 24) | ((uint32_t) stoi(ipaddress[1]) << 16) | ((uint32_t) stoi(ipaddress[2]) << 8) | ((uint32_t) stoi(ipaddress[3]));
 	char szDeviceID[20];
 	if (sID == 1)
 		sprintf(szDeviceID, "%d", 1);
@@ -137,14 +137,14 @@ void Yeelight::InsertUpdateSwitch(const std::string &nodeID, const std::string &
 
 	std::vector<std::vector<std::string> > result;
 	result = m_sql.safe_query("SELECT nValue, LastLevel, SubType, ID FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Type==%d)", m_HwdID, szDeviceID, pTypeColorSwitch);
-	int yeelightColorMode = atoi(syeelightColorMode.c_str());
+	int yeelightColorMode = stoi(syeelightColorMode);
 	if (yeelightColorMode > 0) {
 		Debug(DEBUG_HARDWARE, "Yeelight::InsertUpdateSwitch colorMode: %u, Bri: %s, Hue: %s, Sat: %s, RGB: %s, CT: %s", yeelightColorMode, yeelightBright.c_str(), syeelightHue.c_str(), syeelightSat.c_str(), syeelightRGB.c_str(), syeelightCT.c_str());
 	}
 	if (result.empty())
 	{
 		Log(LOG_STATUS, "New Light Found (%s/%s)", Location.c_str(), lightName.c_str());
-		int value = atoi(yeelightBright.c_str());
+		int value = stoi(yeelightBright);
 		int cmd = Color_LedOn;
 		int level = 100;
 		if (!bIsOn) {
@@ -163,7 +163,7 @@ void Yeelight::InsertUpdateSwitch(const std::string &nodeID, const std::string &
 	}
 	else {
 		// Make sure subtype is correct
-		unsigned sTypeOld = atoi(result[0][2].c_str());
+		unsigned sTypeOld = (unsigned) stoul(result[0][2]);
 		std::string sIdx = result[0][3];
 		if (sTypeOld != YeeType)
 		{
@@ -171,10 +171,10 @@ void Yeelight::InsertUpdateSwitch(const std::string &nodeID, const std::string &
 			m_sql.UpdateDeviceValue("SubType", (int)YeeType, sIdx);
 		}
 
-		int nvalue = atoi(result[0][0].c_str());
+		int nvalue = stoi(result[0][0]);
 		bool tIsOn = (nvalue != 0);
-		int lastLevel = atoi(result[0][1].c_str());
-		int value = atoi(yeelightBright.c_str());
+		int lastLevel = stoi(result[0][1]);
+		int value = stoi(yeelightBright);
 		if ((bIsOn != tIsOn) || (value != lastLevel))
 		{
 			int cmd = Color_LedOn;
@@ -609,7 +609,7 @@ namespace http {
 				return;
 			root["status"] = "OK";
 
-			int HwdID = atoi(idx.c_str());
+			int HwdID = stoi(idx);
 
 			Yeelight yeelight(HwdID);
 			//TODO: Add support for other bulb types to WebUI (WW, RGB, RGBWW)

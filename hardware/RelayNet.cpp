@@ -443,7 +443,7 @@ void RelayNet::UpdateDomoticzInput(int InputNumber, bool State)
 		std::vector<std::string> sd=result[0];
 		bool dbState = true;
 
-		if (atoi(sd[1].c_str()) == 0)
+		if (stoi(sd[1]) == 0)
 		{
 			dbState = false;
 		}
@@ -495,7 +495,7 @@ void RelayNet::UpdateDomoticzRelay(int RelayNumber, bool State)
 		std::vector<std::string> sd = result[0];
 		bool dbState = true;
 
-		if (atoi(sd[1].c_str()) == 0)
+		if (stoi(sd[1]) == 0)
 		{
 			dbState = false;
 		}

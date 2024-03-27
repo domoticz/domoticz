@@ -151,7 +151,7 @@ namespace Plugins {
 			{
 				std::vector<std::string> sd = *itt;
 
-				PyNewRef nrArgList = Py_BuildValue("(ssi)", sd[0].c_str(), DeviceID.c_str(), atoi(sd[1].c_str()));
+				PyNewRef nrArgList = Py_BuildValue("(ssi)", sd[0].c_str(), DeviceID.c_str(), stoi(sd[1]));
 				if (!nrArgList)
 				{
 					pModState->pPlugin->Log(LOG_ERROR, "Building device argument list failed for key %s/%s.", sd[0].c_str(), sd[1].c_str());
@@ -160,12 +160,12 @@ namespace Plugins {
 				PyNewRef pUnit = PyObject_CallObject((PyObject *)pModState->pUnitClass, nrArgList);
 				if (!pUnit)
 				{
-					pModState->pPlugin->Log(LOG_ERROR, "Unit object creation failed for key %d.", atoi(sd[0].c_str()));
+					pModState->pPlugin->Log(LOG_ERROR, "Unit object creation failed for key %d.", stoi(sd[0]));
 					goto Error;
 				}
 
 				// Add the object to the dictionary
-				PyNewRef pKey = PyLong_FromLong(atoi(sd[1].c_str()));
+				PyNewRef pKey = PyLong_FromLong(stol(sd[1]));
 				if (PyDict_SetItem((PyObject *)self->m_UnitDict, pKey, pUnit) == -1)
 				{
 					pModState->pPlugin->Log(LOG_ERROR, "Failed to add key '%s' to Unit dictionary.", std::string(pKey).c_str());
@@ -488,20 +488,20 @@ namespace Plugins {
 			{
 				for (const auto &sd : result)
 				{
-					self->Unit = atoi(sd[0].c_str());
-					self->ID = atoi(sd[1].c_str());
+					self->Unit = stoi(sd[0]);
+					self->ID = stoi(sd[1]);
 					Py_XDECREF(self->Name);
 					self->Name = PyUnicode_FromString(sd[2].c_str());
-					self->nValue = atoi(sd[3].c_str());
+					self->nValue = stoi(sd[3]);
 					Py_XDECREF(self->sValue);
 					self->sValue = PyUnicode_FromString(sd[4].c_str());
-					self->Type = atoi(sd[5].c_str());
-					self->SubType = atoi(sd[6].c_str());
-					self->SwitchType = atoi(sd[7].c_str());
-					self->LastLevel = atoi(sd[8].c_str());
-					self->Image = atoi(sd[9].c_str());
-					self->SignalLevel = atoi(sd[10].c_str());
-					self->BatteryLevel = atoi(sd[11].c_str());
+					self->Type = stoi(sd[5]);
+					self->SubType = stoi(sd[6]);
+					self->SwitchType = stoi(sd[7]);
+					self->LastLevel = stoi(sd[8]);
+					self->Image = stoi(sd[9]);
+					self->SignalLevel = stoi(sd[10]);
+					self->BatteryLevel = stoi(sd[11]);
 					Py_XDECREF(self->LastUpdate);
 					self->LastUpdate = PyUnicode_FromString(sd[12].c_str());
 					PyDict_Clear(self->Options);
@@ -532,9 +532,9 @@ namespace Plugins {
 					self->Description = PyUnicode_FromString(sd[14].c_str());
 					Py_XDECREF(self->Color);
 					self->Color = PyUnicode_FromString(_tColor(std::string(sd[15])).toJSONString().c_str()); // Parse the color to detect incorrectly formatted color data
-					self->Used = atoi(sd[16].c_str());
-					self->Adjustment = static_cast<float>(atof(sd[17].c_str()));
-					self->Multiplier = static_cast<float>(atof(sd[18].c_str()));
+					self->Used = stoi(sd[16]);
+					self->Adjustment = stof(sd[17]);
+					self->Multiplier = stof(sd[18]);
 				}
 			}
 		}
@@ -645,7 +645,7 @@ namespace Plugins {
 						result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID==%d) AND (OrgHardwareID==0) AND (DeviceID=='%s') AND (Unit==%d)", pModState->pPlugin->m_HwdID, sDeviceID.c_str(), self->Unit);
 						if (!result.empty())
 						{
-							self->ID = atoi(result[0][0].c_str());
+							self->ID = stoi(result[0][0]);
 
 							// Check the parent device is in the plugin dictionary (can happen if this Unit has just been created)
 							if (!PyDict_Contains((PyObject *)pModState->pPlugin->m_DeviceDict, pDevice->DeviceID))

@@ -269,7 +269,7 @@ int eHouseTCP::UpdateSQLState(int devh, const uint8_t devl, int devtype, const u
 		// add Plan for each controllers
 		if (!result.empty())
 		{
-			i = atoi(result[0][0].c_str());
+			i = stoi(result[0][0]);
 			result = m_sql.safe_query("SELECT ID FROM DeviceToPlansMap WHERE (DeviceRowID==%d)", i);
 			if (result.empty())
 			{
@@ -287,7 +287,7 @@ int eHouseTCP::UpdateSQLState(int devh, const uint8_t devl, int devtype, const u
 	}
 	else
 	{
-		return atoi(result[0][0].c_str());
+		return stoi(result[0][0]);
 	}
 	return -1;
 }
@@ -320,7 +320,7 @@ int eHouseTCP::UpdateSQLPlan(int /*devh*/, int /*devl*/, int /*devtype*/, const 
 	}
 	else
 	{
-		i = atoi(result[0][0].c_str());
+		i = stoi(result[0][0]);
 		return i;
 	}
 	return -1;
@@ -1071,9 +1071,9 @@ bool eHouseTCP::WriteToHardware(const char *pdata, const unsigned char /*length*
 				result = m_sql.safe_query("SELECT nValue, sValue, LastLevel FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit==%d)", m_HwdID, IDX, AddrL);
 				if (!result.empty())
 				{
-					int nvalue = atoi(result[0][0].c_str());
-					int svalue = atoi(result[0][1].c_str());
-					// int lastLevel = atoi(result[0][2].c_str());
+					int nvalue = stoi(result[0][0]);
+					int svalue = stoi(result[0][1]);
+					// int lastLevel = stoi(result[0][2]);
 					if (nvalue == 0)
 					{
 						proev[4] = ev[4] = 2;

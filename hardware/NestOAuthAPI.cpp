@@ -113,7 +113,7 @@ void CNestOAuthAPI::UpdateSwitch(const unsigned char Idx, const bool bOn, const 
 	if (!result.empty())
 	{
 		// check if we have a change, if not do not update it
-		int nvalue = atoi(result[0][1].c_str());
+		int nvalue = stoi(result[0][1]);
 		if ((!bOn) && (nvalue == 0))
 			return;
 		if ((bOn && (nvalue != 0)))
@@ -313,7 +313,7 @@ void CNestOAuthAPI::UpdateSmokeSensor(const unsigned char Idx, const bool bOn, c
 	{
 		// check if we have a change, if not only update the LastUpdate field
 		bool bNoChange = false;
-		int nvalue = atoi(result[0][1].c_str());
+		int nvalue = stoi(result[0][1]);
 		if ((!bOn) && (nvalue == 0))
 			bNoChange = true;
 		else if ((bOn && (nvalue != 0)))

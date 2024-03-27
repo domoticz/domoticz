@@ -186,7 +186,7 @@ void CWOL::AddNode(const std::string &Name, const std::string &MACAddress)
 	if (result.empty())
 		return;
 
-	int ID = atoi(result[0][0].c_str());
+	int ID = stoi(result[0][0]);
 
 	char szID[40];
 	sprintf(szID, "%X%02X%02X%02X", 0, 0, (ID & 0xFF00) >> 8, ID & 0xFF);
@@ -254,7 +254,7 @@ namespace http {
 			std::string hwid = request::findValue(&req, "idx");
 			if (hwid.empty())
 				return;
-			int iHardwareID = atoi(hwid.c_str());
+			int iHardwareID = stoi(hwid);
 			CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(iHardwareID);
 			if (pHardware == nullptr)
 				return;
@@ -293,7 +293,7 @@ namespace http {
 			std::string mac = HTMLSanitizer::Sanitize(request::findValue(&req, "mac"));
 			if ((hwid.empty()) || (name.empty()) || (mac.empty()))
 				return;
-			int iHardwareID = atoi(hwid.c_str());
+			int iHardwareID = stoi(hwid);
 			CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardware(iHardwareID);
 			if (pBaseHardware == nullptr)
 				return;
@@ -320,7 +320,7 @@ namespace http {
 			std::string mac = HTMLSanitizer::Sanitize(request::findValue(&req, "mac"));
 			if ((hwid.empty()) || (nodeid.empty()) || (name.empty()) || (mac.empty()))
 				return;
-			int iHardwareID = atoi(hwid.c_str());
+			int iHardwareID = stoi(hwid);
 			CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardware(iHardwareID);
 			if (pBaseHardware == nullptr)
 				return;
@@ -328,7 +328,7 @@ namespace http {
 				return;
 			CWOL *pHardware = dynamic_cast<CWOL*>(pBaseHardware);
 
-			int NodeID = atoi(nodeid.c_str());
+			int NodeID = stoi(nodeid);
 			root["status"] = "OK";
 			root["title"] = "WOLUpdateNode";
 			pHardware->UpdateNode(NodeID, name, mac);
@@ -346,7 +346,7 @@ namespace http {
 			std::string nodeid = request::findValue(&req, "nodeid");
 			if ((hwid.empty()) || (nodeid.empty()))
 				return;
-			int iHardwareID = atoi(hwid.c_str());
+			int iHardwareID = stoi(hwid);
 			CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardware(iHardwareID);
 			if (pBaseHardware == nullptr)
 				return;
@@ -354,7 +354,7 @@ namespace http {
 				return;
 			CWOL *pHardware = dynamic_cast<CWOL*>(pBaseHardware);
 
-			int NodeID = atoi(nodeid.c_str());
+			int NodeID = stoi(nodeid);
 			root["status"] = "OK";
 			root["title"] = "WOLRemoveNode";
 			pHardware->RemoveNode(NodeID);
@@ -371,7 +371,7 @@ namespace http {
 			std::string hwid = request::findValue(&req, "idx");
 			if (hwid.empty())
 				return;
-			int iHardwareID = atoi(hwid.c_str());
+			int iHardwareID = stoi(hwid);
 			CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardware(iHardwareID);
 			if (pBaseHardware == nullptr)
 				return;

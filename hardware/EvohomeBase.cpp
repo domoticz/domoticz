@@ -232,9 +232,8 @@ namespace http {
 				return;
 
 			bool bCreated = false;
-			int iSensorType = atoi(ssensortype.c_str());
-
-			int HwdID = atoi(idx.c_str());
+			int iSensorType = stoi(ssensortype);
+			int HwdID = stoi(idx);
 
 			//Make a unique number for ID
 			std::vector<std::vector<std::string> > result;
@@ -243,7 +242,7 @@ namespace http {
 
 			if (!result.empty())
 			{
-				nid = atol(result[0][0].c_str());
+				nid = stol(result[0][0]);
 			}
 			nid += 92000;
 			char ID[40];
@@ -255,7 +254,7 @@ namespace http {
 			int nDevCount = 0;
 			if (!result.empty())
 			{
-				nDevCount = atol(result[0][0].c_str());
+				nDevCount = stol(result[0][0]);
 			}
 
 			std::string devname;

@@ -41,7 +41,7 @@ int CLuaHandler::l_domoticz_updateDevice(lua_State* lua_state)
 			}
 
 			// Parse
-			int invalue = (!nvalue.empty()) ? atoi(nvalue.c_str()) : 0;
+			int invalue = (!nvalue.empty()) ? stoi(nvalue) : 0;
 			int signallevel = 12;
 			if (nargs >= 4 && lua_isnumber(lua_state, 4))
 			{

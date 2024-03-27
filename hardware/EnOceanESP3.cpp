@@ -367,16 +367,16 @@ void CEnOceanESP3::LoadNodesFromDatabase()
 	{
 		NodeInfo node;
 
-		node.idx = static_cast<uint32_t>(std::stoul(sd[0]));
-		node.nodeID = static_cast<uint32_t>(std::stoul(sd[1]));
+		node.idx = static_cast<uint32_t>(stoul(sd[0]));
+		node.nodeID = static_cast<uint32_t>(stoul(sd[1]));
 		node.name = sd[2];
-		node.manufacturerID = static_cast<uint16_t>(std::stoul(sd[3]));
-		node.RORG = static_cast<uint8_t>(std::stoul(sd[4]));
-		node.func = static_cast<uint8_t>(std::stoul(sd[5]));
-		node.type = static_cast<uint8_t>(std::stoul(sd[6]));
+		node.manufacturerID = static_cast<uint16_t>(stoul(sd[3]));
+		node.RORG = static_cast<uint8_t>(stoul(sd[4]));
+		node.func = static_cast<uint8_t>(stoul(sd[5]));
+		node.type = static_cast<uint8_t>(stoul(sd[6]));
 		node.description = sd[7];
 
-		uint32_t nValue = static_cast<uint32_t>(std::stoul(sd[8]));
+		uint32_t nValue = static_cast<uint32_t>(stoul(sd[8]));
 
 		node.teachin_mode = static_cast<TeachinMode>(bitrange(nValue, TEACHIN_MODE_SHIFT, TEACHIN_MODE_MASK));
 /*
@@ -462,11 +462,11 @@ void CEnOceanESP3::GetNodesJSON(Json::Value &root)
 
 				for (const auto &sd : result)
 				{
-					int signalLevel = static_cast<int>(std::stol(sd[1]));
+					int signalLevel = stoi(sd[1]);
 					if (nodeSignalLevel > signalLevel)
 						nodeSignalLevel = signalLevel;
 
-					int battery_level = static_cast<int>(std::stol(sd[2]));
+					int battery_level = stoi(sd[2]);
 					if (nodeBatteryLevel > battery_level)
 						nodeBatteryLevel = battery_level;
 
@@ -562,7 +562,7 @@ void CEnOceanESP3::TeachInNode(const uint32_t nodeID, const uint16_t manID,
 	}
 	NodeInfo node;
 
-	node.idx = static_cast<uint32_t>(std::stoul(result[0][0]));
+	node.idx = static_cast<uint32_t>(stoul(result[0][0]));
 	node.nodeID = nodeID;
 	node.name = result[0][1];
 	node.manufacturerID = manID;
@@ -1946,8 +1946,8 @@ bool CEnOceanESP3::WriteToHardware(const char *pdata, const unsigned char length
 			m_HwdID, sDeviceID.c_str(), (int) tsen->LIGHTING2.unitcode);
 		if (!result.empty())
 		{ // Device found in the database
-			switchtype = static_cast<_eSwitchType>(std::stoul(result[0][0]));
-			LastLevel = static_cast<uint8_t>(std::stoul(result[0][1]));
+			switchtype = static_cast<_eSwitchType>(stoul(result[0][0]));
+			LastLevel = static_cast<uint8_t>(stoul(result[0][1]));
 		}
 
 		uint8_t iLevel = tsen->LIGHTING2.level;
@@ -2343,7 +2343,7 @@ void CEnOceanESP3::ParseESP3Packet(uint8_t packettype, uint8_t *data, uint16_t d
 
 				for (const auto &sd : result)
 				{
-					uint32_t nodeID = static_cast<uint32_t>(std::stoul(sd[0], 0, 16));
+					uint32_t nodeID = static_cast<uint32_t>(stoul(sd[0], 0, 16));
 					if (nodeID <= m_id_base || nodeID > (m_id_base + 128))
 						continue; // Device is not a virtual switch created from m_HwdID/m_id_base
 
@@ -3859,7 +3859,7 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 						StringSplit(sValue, ";", strarray);
 						double mtotal = 0;
 						if (strarray.size() >= 2)
-							mtotal = std::stod(strarray[1]);
+							mtotal = stod(strarray[1]);
 						//add current
 						mtotal += mv;
 						SendKwhMeter(senderID, 1, -1, mv, mtotal / 1000.0, pNode->name, rssi);
@@ -4473,7 +4473,7 @@ namespace http
 			if (hwdIDStr.empty())
 				return;
 
-			int hwdID = static_cast<int>(std::stol(hwdIDStr));
+			int hwdID = stoi(hwdIDStr);
 			
 			auto pHardware = m_mainworker.GetHardware(hwdID);
 			if (pHardware == nullptr)
@@ -4487,7 +4487,7 @@ namespace http
 			if (minutesStr.empty())
 				return;
 
-			uint32_t minutes = static_cast<uint32_t>(std::stoul(minutesStr));
+			uint32_t minutes = static_cast<uint32_t>(stoul(minutesStr));
 
 			pESP3Hardware->Debug(DEBUG_NORM, "Cmd_EnOceanESP3EnableLearnMode");
 
@@ -4503,7 +4503,7 @@ namespace http
 			if (hwdIDStr.empty())
 				return;
 
-			int hwdID = static_cast<int>(std::stol(hwdIDStr));
+			int hwdID = stoi(hwdIDStr);
 
 			auto pHardware = m_mainworker.GetHardware(hwdID);
 			if (pHardware == nullptr)
@@ -4527,7 +4527,7 @@ namespace http
 			if (hwdIDStr.empty())
 				return;
 
-			int hwdID = static_cast<int>(std::stol(hwdIDStr));
+			int hwdID = stoi(hwdIDStr);
 			
 			auto pHardware = m_mainworker.GetHardware(hwdID);
 			if (pHardware == nullptr)
@@ -4557,7 +4557,7 @@ namespace http
 			if (hwdIDStr.empty())
 				return;
 
-			int hwdID = static_cast<int>(std::stol(hwdIDStr));
+			int hwdID = stoi(hwdIDStr);
 			
 			auto pHardware = m_mainworker.GetHardware(hwdID);
 			if (pHardware == nullptr)
@@ -4587,7 +4587,7 @@ namespace http
 			if (hwdIDStr.empty())
 				return;
 
-			int hwdID = static_cast<int>(std::stol(hwdIDStr));
+			int hwdID = stoi(hwdIDStr);
 
 			auto pHardware = m_mainworker.GetHardware(hwdID);
 			if (pHardware == nullptr)
@@ -4601,7 +4601,7 @@ namespace http
 			if (nodeIDStr.empty())
 				return;
 
-			uint32_t nodeID = static_cast<uint32_t>(std::stoul(nodeIDStr));
+			uint32_t nodeID = static_cast<uint32_t>(stoul(nodeIDStr));
 
 			pESP3Hardware->Debug(DEBUG_NORM, "Cmd_EnOceanESP3UpdateNode: Node %08X", nodeID);
 
@@ -4615,7 +4615,7 @@ namespace http
 			if (manIDStr.empty())
 				return;
 
-			uint16_t manID = static_cast<uint16_t>(std::stoul(manIDStr));
+			uint16_t manID = static_cast<uint16_t>(stoul(manIDStr));
 			
 			std::string eepStr = request::findValue(&req, "eep");
 			if (eepStr.empty())
@@ -4652,7 +4652,7 @@ namespace http
 			if (hwdIDStr.empty())
 				return;
 
-			int hwdID = static_cast<int>(std::stol(hwdIDStr));
+			int hwdID = stoi(hwdIDStr);
 
 			auto pHardware = m_mainworker.GetHardware(hwdID);
 			if (pHardware == nullptr)
@@ -4666,7 +4666,7 @@ namespace http
 			if (nodeIDStr.empty())
 				return;
 
-			uint32_t nodeID = static_cast<uint32_t>(std::stoul(nodeIDStr));
+			uint32_t nodeID = static_cast<uint32_t>(stoul(nodeIDStr));
 
 			pESP3Hardware->Debug(DEBUG_NORM, "Cmd_EnOceanESP3DeleteNode: Node %08X", nodeID);
 
@@ -4682,7 +4682,7 @@ namespace http
 			if (hwdIDStr.empty())
 				return;
 
-			int hwdID = static_cast<int>(std::stol(hwdIDStr));
+			int hwdID = stoi(hwdIDStr);
 			
 			auto pHardware = m_mainworker.GetHardware(hwdID);
 			if (pHardware == nullptr)

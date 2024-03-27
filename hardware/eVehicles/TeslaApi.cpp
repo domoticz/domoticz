@@ -145,8 +145,8 @@ void CTeslaApi::GetLocationData(Json::Value &jsondata, tLocationData &data)
 	std::string CarLongitude = jsondata["longitude"].asString();
 	data.speed = jsondata["speed"].asInt();
 	data.is_driving = data.speed > 0;
-	data.latitude = std::stod(CarLatitude);
-	data.longitude = std::stod(CarLongitude);
+	data.latitude = stod(CarLatitude);
+	data.longitude = stod(CarLongitude);
 	if (m_config.home_latitude != 0 && m_config.home_latitude != 0)
 	{
 		if ((std::fabs(m_config.home_latitude - data.latitude) < 2E-4) && (std::fabs(m_config.home_longitude - data.longitude) < 2E-3) && !data.is_driving)

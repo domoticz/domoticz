@@ -391,7 +391,7 @@ bool CGpio::CreateDomoticzDevices()
 			if (!result.empty()) // input found
 			{
 				std::vector<std::string> sd = result[0];
-				bool bIsInput = (atoi(sd[2].c_str()) == 0);
+				bool bIsInput = (stoi(sd[2]) == 0);
 				if ((!bIsInput && it->GetIsInput()) ||
 					(bIsInput && !it->GetIsInput()))
 				{
@@ -401,7 +401,7 @@ bool CGpio::CreateDomoticzDevices()
 					createNewDevice = true;
 				}
 				else if (!it->GetIsInput()) // write actual db state to hardware in case of output
-					(atoi(sd[1].c_str()) == 1) ? GPIOWrite(it->GetPin(), !it->GetActiveLow()) : GPIOWrite(it->GetPin(), it->GetActiveLow());
+					(stoi(sd[1]) == 1) ? GPIOWrite(it->GetPin(), !it->GetActiveLow()) : GPIOWrite(it->GetPin(), it->GetActiveLow());
 			}
 		}
 		if (createNewDevice)
@@ -464,9 +464,9 @@ void CGpio::UpdateDeviceStates(bool forceUpdate)
 				{
 					std::vector<std::string> sd = result[0];
 
-					if (atoi(sd[3].c_str()) == 1) /* Check if device is used */
+					if (stoi(sd[3]) == 1) /* Check if device is used */
 					{
-						bool db_state = (atoi(sd[1].c_str()) == 1);
+						bool db_state = (stoi(sd[1]) == 1);
 						if (db_state != state)
 							updateDatabase = true;
 
@@ -500,7 +500,7 @@ bool CGpio::InitPins()
 			result = m_sql.safe_query("SELECT nValue FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==%d)",
 				m_HwdID, gpio_pin);
 			if (!result.empty())
-				db_state = atoi(result[0][0].c_str());
+				db_state = stoi(result[0][0]);
 
 			snprintf(label, sizeof(label), "GPIO pin %d", gpio_pin);
 			pins.push_back(CGpioPin(gpio_pin, label, GPIORead(gpio_pin, "value"), GPIORead(gpio_pin, "direction"), GPIORead(gpio_pin, "edge"), GPIORead(gpio_pin, "active_low"), -1, db_state));

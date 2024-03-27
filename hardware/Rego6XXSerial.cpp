@@ -447,14 +447,14 @@ namespace http {
 			if (result.empty())
 				return;
 
-			unsigned char currentMode1 = atoi(result[0][0].c_str());
+			unsigned char currentMode1 = (unsigned char) stoi(result[0][0]);
 
 			std::string sRego6XXType = request::findValue(&req, "Rego6XXType");
-			unsigned char newMode1 = atoi(sRego6XXType.c_str());
+			unsigned char newMode1 = (unsigned char) stoi(sRego6XXType);
 
 			if (currentMode1 != newMode1)
 			{
-				m_sql.UpdateRFXCOMHardwareDetails(atoi(idx.c_str()), newMode1, 0, 0, 0, 0, 0);
+				m_sql.UpdateRFXCOMHardwareDetails(stoi(idx), newMode1, 0, 0, 0, 0, 0);
 			}
 		}
 	} // namespace server

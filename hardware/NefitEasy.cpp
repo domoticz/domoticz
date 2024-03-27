@@ -402,7 +402,7 @@ bool CNefitEasy::GetStatusDetails()
 		tmpstr = root2["TSP"].asString();
 		if (tmpstr != "null")
 		{
-			float temp = static_cast<float>(atof(tmpstr.c_str()));
+			float temp = stof(tmpstr);
 			SendSetPointSensor(1, 1, 1, temp, "Setpoint");
 		}
 	}
@@ -411,7 +411,7 @@ bool CNefitEasy::GetStatusDetails()
 		tmpstr = root2["IHT"].asString();
 		if (tmpstr != "null")
 		{
-			float temp = static_cast<float>(atof(tmpstr.c_str()));
+			float temp = stof(tmpstr);
 			SendTempSensor(1, -1, temp, "Room Temperature");
 		}
 	}

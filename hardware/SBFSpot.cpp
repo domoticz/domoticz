@@ -208,8 +208,8 @@ bool CSBFSpot::GetMeter(const unsigned char ID1,const unsigned char ID2, double 
 	StringSplit(result[0][1],";",splitresult);
 	if (splitresult.size()!=2)
 		return false;
-	musage=atof(splitresult[0].c_str());
-	mtotal=atof(splitresult[1].c_str())/1000.0;
+	musage = stod(splitresult[0]);
+	mtotal = stod(splitresult[1])/1000.0;
 	return true;
 }
 
@@ -233,7 +233,7 @@ void CSBFSpot::ImportOldMonthData()
 			return;
 		}
 	}
-	uint64_t ulID = std::stoull(result[0][0]);
+	uint64_t ulID = stoull(result[0][0]);
 
 	//Try actual year, and previous year
 	time_t atime = time(nullptr);
@@ -293,9 +293,9 @@ void CSBFSpot::ImportOldMonthData(const uint64_t DevID, const int Year, const in
 		{
 			if (bIsSMAWebExport)
 			{
-				int day = atoi(sLine.substr(dayPos, 2).c_str());
-				int month = atoi(sLine.substr(monthPos, 2).c_str());
-				int year = atoi(sLine.substr(yearPos, 4).c_str());
+				int day = stoi(sLine.substr(dayPos, 2));
+				int month = stoi(sLine.substr(monthPos, 2));
+				int year = stoi(sLine.substr(yearPos, 4));
 
 				std::string szKwhCounter = sLine.substr(18);
 				size_t pPos = szKwhCounter.find('.');
@@ -306,7 +306,7 @@ void CSBFSpot::ImportOldMonthData(const uint64_t DevID, const int Year, const in
 				if (pPos == std::string::npos)
 					szKwhCounter = "0," + szKwhCounter;
 				stdreplace(szKwhCounter, ",", ".");
-				double kWhCounter = atof(szKwhCounter.c_str()) * 1000;
+				double kWhCounter = stod(szKwhCounter) * 1000.0;
 				uint64_t ulCounter = (uint64_t)kWhCounter;
 
 				//check if this day record does not exists in the database, and insert it
@@ -366,13 +366,13 @@ void CSBFSpot::ImportOldMonthData(const uint64_t DevID, const int Year, const in
 					}
 					else
 					{
-						int day = atoi(results[0].substr(dayPos, 2).c_str());
-						int month = atoi(results[0].substr(monthPos, 2).c_str());
-						int year = atoi(results[0].substr(yearPos, 4).c_str());
+						int day = stoi(results[0].substr(dayPos, 2));
+						int month = stoi(results[0].substr(monthPos, 2));
+						int year = stoi(results[0].substr(yearPos, 4));
 
 						std::string szKwhCounter = results[iInvOff + 1];
 						stdreplace(szKwhCounter, ",", ".");
-						double kWhCounter = atof(szKwhCounter.c_str()) * 1000;
+						double kWhCounter = stod(szKwhCounter) * 1000.0;
 						uint64_t ulCounter = (uint64_t)kWhCounter;
 
 						//check if this day record does not exists in the database, and insert it
@@ -419,8 +419,8 @@ int CSBFSpot::getSunRiseSunSetMinutes(const bool bGetSunRise)
 		StringSplit(strarray[0], ":", sunRisearray);
 		StringSplit(strarray[1], ":", sunSetarray);
 
-		int sunRiseInMinutes = (atoi(sunRisearray[0].c_str()) * 60) + atoi(sunRisearray[1].c_str());
-		int sunSetInMinutes = (atoi(sunSetarray[0].c_str()) * 60) + atoi(sunSetarray[1].c_str());
+		int sunRiseInMinutes = (stoi(sunRisearray[0]) * 60) + stoi(sunRisearray[1]);
+		int sunSetInMinutes = (stoi(sunSetarray[0]) * 60) + stoi(sunSetarray[1]);
 
 		if (bGetSunRise) {
 			return sunRiseInMinutes;
@@ -561,25 +561,25 @@ void CSBFSpot::GetMeterDetails()
 
 		std::string szKwhCounter = results[23];
 		stdreplace(szKwhCounter, ",", ".");
-		kWhCounter += atof(szKwhCounter.c_str());
+		kWhCounter += stod(szKwhCounter);
 		std::string szPacActual = results[20];
 		stdreplace(szPacActual, ",", ".");
-		Pac += atof(szPacActual.c_str());
+		Pac += stod(szPacActual);
 
 		float voltage;
 		tmpString = results[16];
 		stdreplace(tmpString, ",", ".");
-		voltage = static_cast<float>(atof(tmpString.c_str()));
+		voltage = stof(tmpString);
 		SendVoltageSensor(0, (InvIdx * 10) + 1, 255, voltage, "Volt uac1");
 		tmpString = results[17];
 		stdreplace(tmpString, ",", ".");
-		voltage = static_cast<float>(atof(tmpString.c_str()));
+		voltage = stof(tmpString);
 		if (voltage != 0) {
 			SendVoltageSensor(0, (InvIdx * 10) + 2, 255, voltage, "Volt uac2");
 		}
 		tmpString = results[18];
 		stdreplace(tmpString, ",", ".");
-		voltage = static_cast<float>(atof(tmpString.c_str()));
+		voltage = stof(tmpString);
 		if (voltage != 0) {
 			SendVoltageSensor(0, (InvIdx * 10) + 3, 255, voltage, "Volt uac3");
 		}
@@ -587,23 +587,23 @@ void CSBFSpot::GetMeterDetails()
 		float percentage;
 		tmpString = results[21];
 		stdreplace(tmpString, ",", ".");
-		percentage = static_cast<float>(atof(tmpString.c_str()));
+		percentage = stof(tmpString);
 		SendPercentageSensor((InvIdx * 10) + 1, 0, 255, percentage, "Efficiency");
 		tmpString = results[24];
 		stdreplace(tmpString, ",", ".");	
-		float frequency = static_cast<float>(atof(tmpString.c_str()));
+		float frequency = stof(tmpString);
 //		SendPercentageSensor((InvIdx * 10) + 2, 0, 255, percentage, "Hz");
 		SendCustomSensor((InvIdx * 10) + 2, 0, 255, frequency, "Hz", "Hz");
 		tmpString = results[27];
 		stdreplace(tmpString, ",", ".");
-		percentage = static_cast<float>(atof(tmpString.c_str()));
+		percentage = stof(tmpString);
 		SendPercentageSensor((InvIdx * 10) + 3, 0, 255, percentage, "BT_Signal");
 
 		if (results.size() >= 31)
 		{
 			tmpString = results[30];
 			stdreplace(tmpString, ",", ".");
-			float temperature = static_cast<float>(atof(tmpString.c_str()));
+			float temperature = stof(tmpString);
 			SendTempSensor((InvIdx * 10) + 1, 255, temperature, "Temperature");
 		}
 		InvIdx++;
@@ -642,7 +642,7 @@ namespace http {
 			{
 				return;
 			}
-			int hardwareID = atoi(idx.c_str());
+			int hardwareID = stoi(idx);
 			CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(hardwareID);
 			if (pHardware != nullptr)
 			{

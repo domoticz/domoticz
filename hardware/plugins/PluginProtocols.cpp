@@ -476,7 +476,7 @@ namespace Plugins {
 			std::string		sHeaderText = sHeaderLine.substr(sHeaderName.length() + 2);
 			if (uHeaderName == "CONTENT-LENGTH")
 			{
-				m_ContentLength = atoi(sHeaderText.c_str());
+				m_ContentLength = stoi(sHeaderText);
 			}
 			if (uHeaderName == "TRANSFER-ENCODING")
 			{
@@ -1356,7 +1356,7 @@ namespace Plugins {
 					if (iWillPropLen)
 					{
 						const char* cWill = (const char*)&*it;
-						AddIntToDict(pMqttDict, "WillDelayInterval", atoi(std::string(cWill, iWillPropLen).c_str()));
+						AddIntToDict(pMqttDict, "WillDelayInterval", stoi(std::string(cWill, iWillPropLen)));
 					}
 					else
 					{
@@ -1376,7 +1376,7 @@ namespace Plugins {
 					if (iTopicLen)
 					{
 						const char* cTopic = (const char*)&*it;
-						AddIntToDict(pMqttDict, "WillTopic", atoi(std::string(cTopic, iTopicLen).c_str()));
+						AddIntToDict(pMqttDict, "WillTopic", stoi(std::string(cTopic, iTopicLen)));
 					}
 					it += iTopicLen;
 				}
@@ -2521,7 +2521,7 @@ namespace Plugins {
 				else if (pMask.IsString())
 				{
 					std::string sMask = PyUnicode_AsUTF8(pMask);
-					llMaskingKey = atoi(sMask.c_str());
+					llMaskingKey = stoll(sMask);
 					bMaskBit = 0x80; // Set mask bit in header
 				}
 				else

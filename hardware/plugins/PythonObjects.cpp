@@ -195,7 +195,7 @@ namespace Plugins {
 									_log.Log(LOG_ERROR, "(%s) failed to add ID '%s' to image dictionary.", self->pPlugin->m_PluginKey.c_str(), sd[0].c_str());
 									break;
 								}
-								pImage->ImageID = atoi(sd[0].c_str()) + 100;
+								pImage->ImageID = stoi(sd[0]) + 100;
 								pImage->Base = PyUnicode_FromString(sd[1].c_str());
 								pImage->Name = PyUnicode_FromString(sd[2].c_str());
 								pImage->Description = PyUnicode_FromString(sd[3].c_str());
@@ -682,22 +682,22 @@ namespace Plugins {
 			{
 				for (const auto &sd : result)
 				{
-					self->Unit = atoi(sd[0].c_str());
-					self->ID = atoi(sd[1].c_str());
+					self->Unit = stoi(sd[0]);
+					self->ID = stoi(sd[1]);
 					Py_XDECREF(self->Name);
 					self->Name = PyUnicode_FromString(sd[2].c_str());
-					self->nValue = atoi(sd[3].c_str());
+					self->nValue = stoi(sd[3]);
 					Py_XDECREF(self->sValue);
 					self->sValue = PyUnicode_FromString(sd[4].c_str());
 					Py_XDECREF(self->DeviceID);
 					self->DeviceID = PyUnicode_FromString(sd[5].c_str());
-					self->Type = atoi(sd[6].c_str());
-					self->SubType = atoi(sd[7].c_str());
-					self->SwitchType = atoi(sd[8].c_str());
-					self->LastLevel = atoi(sd[9].c_str());
-					self->Image = atoi(sd[10].c_str());
-					self->SignalLevel = atoi(sd[11].c_str());
-					self->BatteryLevel = atoi(sd[12].c_str());
+					self->Type = stoi(sd[6]);
+					self->SubType = stoi(sd[7]);
+					self->SwitchType = stoi(sd[8]);
+					self->LastLevel = stoi(sd[9]);
+					self->Image = stoi(sd[10]);
+					self->SignalLevel = stoi(sd[11]);
+					self->BatteryLevel = stoi(sd[12]);
 					Py_XDECREF(self->LastUpdate);
 					self->LastUpdate = PyUnicode_FromString(sd[13].c_str());
 					PyDict_Clear(self->Options);
@@ -729,7 +729,7 @@ namespace Plugins {
 					self->Description = PyUnicode_FromString(sd[15].c_str());
 					Py_XDECREF(self->Color);
 					self->Color = PyUnicode_FromString(_tColor(std::string(sd[16])).toJSONString().c_str()); //Parse the color to detect incorrectly formatted color data
-					self->Used = atoi(sd[17].c_str());
+					self->Used = stoi(sd[17]);
 				}
 			}
 		}
@@ -793,7 +793,7 @@ namespace Plugins {
 						result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==%d)", self->HwdID, self->Unit);
 						if (!result.empty())
 						{
-							self->ID = atoi(result[0][0].c_str());
+							self->ID = stoi(result[0][0]);
 
 							PyNewRef	pKey = PyLong_FromLong(self->Unit);
 							if (PyDict_SetItem((PyObject*)self->pPlugin->m_DeviceDict, pKey, (PyObject*)self) == -1)

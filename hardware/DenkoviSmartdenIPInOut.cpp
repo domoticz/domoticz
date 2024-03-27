@@ -169,13 +169,13 @@ void CDenkoviSmartdenIPInOut::UpdateSwitch(const unsigned char Idx, const int Su
 	if (!result.empty())
 	{
 		//check if we have a change, if not do not update it
-		int nvalue = atoi(result[0][1].c_str());
+		int nvalue = stoi(result[0][1]);
 		if ((!bOn) && (nvalue == 0))
 			return;
 		if ((bOn && (nvalue != 0)))
 		{
 			//Check Level
-			int slevel = atoi(result[0][2].c_str());
+			int slevel = stoi(result[0][2]);
 			if (slevel == level)
 				return;
 		}
@@ -268,7 +268,7 @@ void CDenkoviSmartdenIPInOut::GetMeterDetails()
 				pos1 = tmpstr.find(">");
 				if (pos1 != std::string::npos)
 				{
-					Idx = atoi(tmpstr.substr(0, pos1).c_str());
+					Idx = stoi(tmpstr.substr(0, pos1));
 					bHaveDigitalInput = true;
 					continue;
 				}
@@ -281,7 +281,7 @@ void CDenkoviSmartdenIPInOut::GetMeterDetails()
 				pos1 = tmpstr.find(">");
 				if (pos1 != std::string::npos)
 				{
-					Idx = atoi(tmpstr.substr(0, pos1).c_str());
+					Idx = stoi(tmpstr.substr(0, pos1));
 					bHaveDigitalOutput = true;
 					continue;
 				}
@@ -294,7 +294,7 @@ void CDenkoviSmartdenIPInOut::GetMeterDetails()
 				pos1 = tmpstr.find(">");
 				if (pos1 != std::string::npos)
 				{
-					Idx = atoi(tmpstr.substr(0, pos1).c_str());
+					Idx = stoi(tmpstr.substr(0, pos1));
 					bHaveAnalogInput = true;
 					continue;
 				}
@@ -307,7 +307,7 @@ void CDenkoviSmartdenIPInOut::GetMeterDetails()
 				pos1 = tmpstr.find(">");
 				if (pos1 != std::string::npos)
 				{
-					Idx = atoi(tmpstr.substr(0, pos1).c_str());
+					Idx = stoi(tmpstr.substr(0, pos1));
 					bHaveTemperatureInput = true;
 					continue;
 				}
@@ -336,7 +336,7 @@ void CDenkoviSmartdenIPInOut::GetMeterDetails()
 				pos1 = tmpstr.find('<');
 				if (pos1 != std::string::npos)
 				{
-					int lValue = atoi(tmpstr.substr(0, pos1).c_str());
+					int lValue = stoi(tmpstr.substr(0, pos1));
 					std::stringstream sstr;
 					sstr << "Input " << Idx << " (" << name << ")";
 					UpdateSwitch(1, Idx, (lValue == 1) ? true : false, 100, sstr.str());
@@ -357,7 +357,7 @@ void CDenkoviSmartdenIPInOut::GetMeterDetails()
 				pos1 = tmpstr.find('<');
 				if (pos1 != std::string::npos)
 				{
-					int lValue = atoi(tmpstr.substr(0, pos1).c_str());
+					int lValue = stoi(tmpstr.substr(0, pos1));
 					std::stringstream sstr;
 					sstr << "Output " << Idx << " (" << name << ")";
 					UpdateSwitch(2, Idx, (lValue == 1) ? true : false, 100, sstr.str());
@@ -385,7 +385,7 @@ void CDenkoviSmartdenIPInOut::GetMeterDetails()
 						StringSplit(sMeasure, " ", vMeasure);
 						if (vMeasure.size() == 2)
 						{
-							SendCustomSensor(Idx, 1, 255, static_cast<float>(atof(vMeasure[0].c_str())), name, vMeasure[1]);
+							SendCustomSensor(Idx, 1, 255, stof(vMeasure[0]), name, vMeasure[1]);
 						}
 					}
 					Idx = -1;
@@ -407,7 +407,7 @@ void CDenkoviSmartdenIPInOut::GetMeterDetails()
 					pos1 = tmpstr.find('<');
 					if (pos1 != std::string::npos)
 					{
-						SendTempSensor(Idx, 255, static_cast<float>(atof(tmpstr.substr(0, pos1).c_str())), name);
+						SendTempSensor(Idx, 255, stof(tmpstr.substr(0, pos1)), name);
 					}
 					Idx = -1;
 					bHaveTemperatureInput = false;

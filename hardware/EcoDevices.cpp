@@ -229,11 +229,11 @@ void CEcoDevices::GetMeterDetails()
 	Debug(DEBUG_HARDWARE, "XML output for /status.xml\n%s", MakeHtml(sResult).c_str());
 
 	m_status.version = m_status.version + "..";
-	major = atoi(m_status.version.substr(0, m_status.version.find('.')).c_str());
+	major = stoi(m_status.version.substr(0, m_status.version.find('.')));
 	m_status.version.erase(0, m_status.version.find('.') + 1);
-	minor = atoi(m_status.version.substr(0, m_status.version.find('.')).c_str());
+	minor = stoi(m_status.version.substr(0, m_status.version.find('.')));
 	m_status.version.erase(0, m_status.version.find('.') + 1);
-	release = atoi(m_status.version.substr(0, m_status.version.find('.')).c_str());
+	release = stoi(m_status.version.substr(0, m_status.version.find('.')));
 	m_status.version = S_xpath_string(XMLdoc.RootElement(), "/response/version/text()").c_str();
 
 	if ((major > min_major) || ((major == min_major) && (minor > min_minor)) || ((major == min_major) && (minor == min_minor) && (release >= min_release)))
@@ -421,11 +421,11 @@ void CEcoDevices::GetMeterRT2Details()
 	Debug(DEBUG_HARDWARE, "XML output for /admin/status.xml\n%s", MakeHtml(sResult).c_str());
 
 	m_status.version = m_status.version + "..";
-	major = atoi(m_status.version.substr(0, m_status.version.find('.')).c_str());
+	major = stoi(m_status.version.substr(0, m_status.version.find('.')));
 	m_status.version.erase(0, m_status.version.find('.') + 1);
-	minor = atoi(m_status.version.substr(0, m_status.version.find('.')).c_str());
+	minor = stoi(m_status.version.substr(0, m_status.version.find('.')));
 	m_status.version.erase(0, m_status.version.find('.') + 1);
-	release = atoi(m_status.version.substr(0, m_status.version.find('.')).c_str());
+	release = stoi(m_status.version.substr(0, m_status.version.find('.')));
 	m_status.version = S_xpath_string(XMLdoc.RootElement(), "/response/version/text()").c_str();
 
 	if (!((major > min_major) || ((major == min_major) && (minor > min_minor)) || ((major == min_major) && (minor == min_minor) && (release >= min_release))))
@@ -463,29 +463,29 @@ void CEcoDevices::GetMeterRT2Details()
 	m_teleinfo1.OPTARIF = XMLmap["OPTARIF"];
 	m_teleinfo1.PTEC = XMLmap["PTEC"];
 	m_teleinfo1.DEMAIN = XMLmap["DEMAIN"];
-	m_teleinfo1.ISOUSC = atoi(XMLmap["ISOUSC"].c_str());
-	m_teleinfo1.PAPP = atoi(XMLmap["PAPP"].c_str());
+	m_teleinfo1.ISOUSC = stoi(XMLmap["ISOUSC"]);
+	m_teleinfo1.PAPP = stoi(XMLmap["PAPP"]);
 	if ( m_teleinfo1.PAPP > 0 ) {
 		m_teleinfo1.withPAPP = true;
 	}
-	m_teleinfo1.BASE = atoi(XMLmap["BASE"].c_str());
-	m_teleinfo1.HCHC = atoi(XMLmap["HCHC"].c_str());
-	m_teleinfo1.HCHP = atoi(XMLmap["HCHP"].c_str());
-	m_teleinfo1.EJPHN = atoi(XMLmap["EJPHN"].c_str());
-	m_teleinfo1.EJPHPM = atoi(XMLmap["EJPHPM"].c_str());
-	m_teleinfo1.BBRHCJB = atoi(XMLmap["BBRHCJB"].c_str());
-	m_teleinfo1.BBRHPJB = atoi(XMLmap["BBRHPJB"].c_str());
-	m_teleinfo1.BBRHCJW = atoi(XMLmap["BBRHCJW"].c_str());
-	m_teleinfo1.BBRHPJW = atoi(XMLmap["BBRHPJW"].c_str());
-	m_teleinfo1.BBRHCJR = atoi(XMLmap["BBRHCJR"].c_str());
-	m_teleinfo1.BBRHPJR = atoi(XMLmap["BBRPJR"].c_str());
-	m_teleinfo1.PEJP = atoi(XMLmap["PEJP"].c_str());
-	m_teleinfo1.IINST = atoi(XMLmap["IINST"].c_str());
-	m_teleinfo1.IINST1 = atoi(XMLmap["IINST1"].c_str());
-	m_teleinfo1.IINST2 = atoi(XMLmap["IINST2"].c_str());
-	m_teleinfo1.IINST3 = atoi(XMLmap["IISNT3"].c_str());
-	m_teleinfo1.PPOT = atoi(XMLmap["PPOT"].c_str());
-	m_teleinfo1.ADPS = atoi(XMLmap["ADPS"].c_str());
+	m_teleinfo1.BASE = stoi(XMLmap["BASE"]);
+	m_teleinfo1.HCHC = stoi(XMLmap["HCHC"]);
+	m_teleinfo1.HCHP = stoi(XMLmap["HCHP"]);
+	m_teleinfo1.EJPHN = stoi(XMLmap["EJPHN"]);
+	m_teleinfo1.EJPHPM = stoi(XMLmap["EJPHPM"]);
+	m_teleinfo1.BBRHCJB = stoi(XMLmap["BBRHCJB"]);
+	m_teleinfo1.BBRHPJB = stoi(XMLmap["BBRHPJB"]);
+	m_teleinfo1.BBRHCJW = stoi(XMLmap["BBRHCJW"]);
+	m_teleinfo1.BBRHPJW = stoi(XMLmap["BBRHPJW"]);
+	m_teleinfo1.BBRHCJR = stoi(XMLmap["BBRHCJR"]);
+	m_teleinfo1.BBRHPJR = stoi(XMLmap["BBRPJR"]);
+	m_teleinfo1.PEJP = stoi(XMLmap["PEJP"]);
+	m_teleinfo1.IINST = stoi(XMLmap["IINST"]);
+	m_teleinfo1.IINST1 = stoi(XMLmap["IINST1"]);
+	m_teleinfo1.IINST2 = stoi(XMLmap["IINST2"]);
+	m_teleinfo1.IINST3 = stoi(XMLmap["IISNT3"]);
+	m_teleinfo1.PPOT = stoi(XMLmap["PPOT"]);
+	m_teleinfo1.ADPS = stoi(XMLmap["ADPS"]);
 
 	Debug(DEBUG_HARDWARE, "OPTARIF: '%s'", m_teleinfo1.OPTARIF.c_str());
 	Debug(DEBUG_HARDWARE, "PTEC:    '%s'", m_teleinfo1.PTEC.c_str());
@@ -504,14 +504,14 @@ void CEcoDevices::GetMeterRT2Details()
 		if (splitresults[0].empty())
 			break;
 
-		fvalue1 = (float)atof(splitresults[0].c_str());
+		fvalue1 = stof(splitresults[0]);
 		if (fvalue1 > 0) {
 			if (major >= 3)
 				SendMeterSensor(m_HwdID, (uint8_t)i, 255, fvalue1, m_status.hostname + " " + label);
 			else
 				SendMeterSensor(m_HwdID, (uint8_t)i, 255, fvalue1 / 1000, m_status.hostname + " " + label);
 		}
-		fvalue2 = (float)atof(splitresults[1].c_str());
+		fvalue2 = stof(splitresults[1]);
 		if (fvalue2 > 0) {
 			if (major >= 3)
 				SendCustomSensor(m_HwdID, (uint8_t)i, 255, fvalue2, m_status.hostname + " " + label, "Eur");

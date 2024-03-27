@@ -18,7 +18,7 @@ CNotificationKodi::CNotificationKodi() : CNotificationBase(std::string("kodi"), 
 
 std::string CNotificationKodi::GetCustomIcon(std::string &szCustom)
 {
-	int	iIconLine = atoi(szCustom.c_str());
+	int	iIconLine = stoi(szCustom);
 	std::string szRetVal = "Light48";
 	if (iIconLine < 100)  // default set of custom icons
 	{
@@ -111,7 +111,7 @@ std::string CNotificationKodi::GetIconFile(const std::string &ExtraData)
 		posType+=12;
 		std::string szType = ExtraData.substr(posType, ExtraData.find('|', posType) - posType);
 		std::string	szTypeImage;
-		_eSwitchType switchtype=(_eSwitchType)atoi(szType.c_str());
+		_eSwitchType switchtype = (_eSwitchType) stoi(szType);
 		switch (switchtype)
 		{
 			case STYPE_OnOff:

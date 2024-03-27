@@ -207,7 +207,7 @@ int CPiFace::LoadConfig()
 				EndPos = GetParameterString(Line, ".", StartPos, Parameter);
 				if (EndPos >= 0)
 				{
-					Address = (unsigned char)(strtol(Parameter.c_str(), nullptr, 0) & 0xFF); // data can be restricted further but as we check later on keep it wide for
+					Address = (unsigned char) (stol(Parameter, nullptr, 0) & 0xFF); // data can be restricted further but as we check later on keep it wide for
 					// future use.
 					StartPos = EndPos;
 				}
@@ -234,7 +234,7 @@ int CPiFace::LoadConfig()
 				EndPos = GetParameterString(Line, ".", StartPos, Parameter);
 				if (EndPos >= 0)
 				{
-					PinNumber = (unsigned char)(strtol(Parameter.c_str(), nullptr, 0) & 0xFF); // data can be restricted further but as we check later on keep it wide for
+					PinNumber = (unsigned char) (stol(Parameter, nullptr, 0) & 0xFF); // data can be restricted further but as we check later on keep it wide for
 					// future use.
 					StartPos = EndPos;
 				}
@@ -351,7 +351,7 @@ int CPiFace::LoadConfig()
 						// count_update_interval(_s)(ec)
 						unsigned long UpdateInterval;
 
-						UpdateInterval = strtol(Parametervalue.c_str(), nullptr, 0);
+						UpdateInterval = stoul(Parametervalue, nullptr, 0);
 						IOport->Pin[PinNumber].Count.SetUpdateInterval(UpdateInterval * 1000);
 						result++;
 						break;
@@ -360,7 +360,7 @@ int CPiFace::LoadConfig()
 						// count_update_interval_diff_perc
 						unsigned long UpdateIntervalPerc;
 
-						UpdateIntervalPerc = strtol(Parametervalue.c_str(), nullptr, 0);
+						UpdateIntervalPerc = stoul(Parametervalue, nullptr, 0);
 						if (UpdateIntervalPerc < 1 || UpdateIntervalPerc > 1000)
 						{
 							Log(LOG_ERROR, "Error config file: invalid value %s found", Parametervalue.c_str());
@@ -375,7 +375,7 @@ int CPiFace::LoadConfig()
 						//count_initial_value
 						unsigned long StartValue;
 
-						StartValue = strtol(Parametervalue.c_str(), nullptr, 0);
+						StartValue = stoul(Parametervalue, nullptr, 0);
 						IOport->Pin[PinNumber].Count.SetTotal(StartValue);
 						result++;
 						Regenerate_Config = true;
@@ -385,7 +385,7 @@ int CPiFace::LoadConfig()
 						//count_minimum_pulse_period_msec
 						unsigned long Min_Pulse_Period;
 
-						Min_Pulse_Period = strtol(Parametervalue.c_str(), nullptr, 0); // results in 0 if str is invalid
+						Min_Pulse_Period = stoul(Parametervalue, nullptr, 0); // results in 0 if str is invalid
 						IOport->Pin[PinNumber].Count.SetRateLimit(Min_Pulse_Period);
 						result++;
 						break;
@@ -416,7 +416,7 @@ int CPiFace::LoadConfig()
 
 					case 12:
 						// count_divider
-						IOport->Pin[PinNumber].Count.SetDivider(strtol(Parametervalue.c_str(), nullptr, 0));
+						IOport->Pin[PinNumber].Count.SetDivider(stoul(Parametervalue, nullptr, 0));
 						result++;
 						break;
 					}
@@ -1357,7 +1357,7 @@ void CIOPort::Init(bool Available, int hwdId, int devId /* 0 - 4 */, unsigned ch
 			result = m_sql.safe_query("SELECT sValue FROM DeviceStatus WHERE (HardwareID=%d AND Type=%d AND DeviceID='%d')", hwdId, int(pTypeRFXMeter), meterid);
 			if (result.size() == 1)
 			{
-				value = atol(result[0][0].c_str());
+				value = stoul(result[0][0]);
 				found = true;
 			}
 			break;
@@ -1378,12 +1378,14 @@ void CIOPort::Init(bool Available, int hwdId, int devId /* 0 - 4 */, unsigned ch
 				double dValue = 0;
 				if (resultparts.size() == 1)
 				{
-					dValue = atol(resultparts[0].c_str()) / (1000. / Pin[PinNr].Count.GetDivider());
+					// FIXME: use stod instead of stol ?
+					dValue = stol(resultparts[0]) / (1000.0 / Pin[PinNr].Count.GetDivider());
 					found = true;
 				}
 				else if (resultparts.size() == 2)
 				{
-					dValue = atol(resultparts[1].c_str()) / (1000. / Pin[PinNr].Count.GetDivider());
+					// FIXME: use stod instead of stol ?
+					dValue = stol(resultparts[1]) / (1000.0 / Pin[PinNr].Count.GetDivider());
 					found = true;
 				}
 				value = (unsigned long)dValue;

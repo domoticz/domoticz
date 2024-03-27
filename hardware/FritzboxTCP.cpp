@@ -198,13 +198,13 @@ void FritzboxTCP::UpdateSwitch(const unsigned char Idx, const uint8_t SubUnit, c
 	if (!result.empty())
 	{
 		//check if we have a change, if not do not update it
-		int nvalue = atoi(result[0][1].c_str());
+		int nvalue = stoi(result[0][1]);
 		if ((!bOn) && (nvalue == 0))
 			return;
 		if ((bOn && (nvalue != 0)))
 		{
 			//Check Level
-			int slevel = atoi(result[0][2].c_str());
+			int slevel = stoi(result[0][2]);
 			if (slevel == level)
 				return;
 		}
@@ -355,7 +355,7 @@ void FritzboxTCP::GetStatistics()
 			return;
 		}
 	}
-	uint64_t BytesSend = std::stoull(tempValue);
+	uint64_t BytesSend = stoull(tempValue);
 
 	if (!GetValueFromXML(Response, "NewX_AVM_DE_TotalBytesReceived64", tempValue))
 	{
@@ -365,7 +365,7 @@ void FritzboxTCP::GetStatistics()
 			return;
 		}
 	}
-	uint64_t BytesReceived = std::stoull(tempValue);
+	uint64_t BytesReceived = stoull(tempValue);
 
 	SendMeterSensor(1, 1, 255, static_cast<float>(BytesSend) / (1024.0F * 1024.0F), "Bytes Send (MB)");
 	SendMeterSensor(1, 2, 255, static_cast<float>(BytesReceived) / (1024.0F * 1024.0F), "Bytes Received (MB)");
@@ -375,14 +375,14 @@ void FritzboxTCP::GetStatistics()
 		Log(LOG_ERROR, "Invalid data response received!");
 		return;
 	}
-	uint64_t NewByteSendRate = std::stoull(tempValue) * 8;
+	uint64_t NewByteSendRate = stoull(tempValue) * 8;
 
 	if (!GetValueFromXML(Response, "NewByteReceiveRate", tempValue))
 	{
 		Log(LOG_ERROR, "Invalid data response received!");
 		return;
 	}
-	uint64_t NewByteReceiveRate = std::stoull(tempValue) * 8;
+	uint64_t NewByteReceiveRate = stoull(tempValue) * 8;
 
 	float send_bps = static_cast<float>(NewByteSendRate) / (1024.0F * 1024.0F);
 	float received_bps = static_cast<float>(NewByteReceiveRate) / (1024.0F * 1024.0F);

@@ -69,16 +69,16 @@ void CMeteorologisk::Init()
 			StringSplit(m_Location, ",", strarray);
 			if (strarray.size() == 2)
 			{
-				m_Lat = strtod(strarray[0].c_str(), nullptr);
-				m_Lon = strtod(strarray[1].c_str(), nullptr);
+				m_Lat = stod(strarray[0]);
+				m_Lon = stod(strarray[1]);
 			}
 			else
 			{
 				StringSplit(m_Location, ";", strarray);
 				if (strarray.size() == 2)
 				{
-					m_Lat = strtod(strarray[0].c_str(), nullptr);
-					m_Lon = strtod(strarray[1].c_str(), nullptr);
+					m_Lat = stod(strarray[0]);
+					m_Lon = stod(strarray[1]);
 					Log(LOG_STATUS, "Found Location with semicolon as seperator instead of expected comma.");
 				}
 			}
@@ -96,8 +96,8 @@ void CMeteorologisk::Init()
 				StringSplit(sValue, ";", strarray);
 				if (strarray.size() == 2)
 				{
-					m_Lat = strtod(strarray[0].c_str(), nullptr);
-					m_Lon = strtod(strarray[1].c_str(), nullptr);
+					m_Lat = stod(strarray[0]);
+					m_Lon = stod(strarray[1]);
 					Log(LOG_STATUS, "Using Domoticz default location from Settings as Location.");
 				}
 			}

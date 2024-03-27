@@ -420,7 +420,7 @@ MyValue *MyNode::lookup(const std::string &data)
 	size_t pos1, pos2;
 	std::string str;
 
-	node = (uint8)strtol(data.c_str(), nullptr, 10);
+	node = (uint8) stol(data);
 	if (node == 0)
 		return nullptr;
 	pos1 = data.find('-', 0);
@@ -450,10 +450,10 @@ MyValue *MyNode::lookup(const std::string &data)
 	if (pos2 == std::string::npos)
 		return nullptr;
 	str = data.substr(pos1, pos2 - pos1);
-	inst = (uint8)strtol(str.c_str(), nullptr, 10);
+	inst = (uint8) stol(str);
 	pos1 = pos2 + 1;
 	str = data.substr(pos1);
-	ind = (uint8)strtol(str.c_str(), nullptr, 10);
+	ind = (uint8) stol(str);
 	OpenZWave::ValueID id(homeId, node, vg, cls, inst, ind, typ);
 	MyNode* n = nodes[node];
 	if (n == nullptr)

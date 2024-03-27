@@ -173,7 +173,7 @@ void CVisualCrossing::GetMeterDetails()
 	}
 	if (root["currentConditions"]["pressure"].empty() == false)
 	{
-		barometric = atoi(root["currentConditions"]["pressure"].asString().c_str());
+		barometric = stoi(root["currentConditions"]["pressure"].asString());
 		if (barometric<1000)
 			barometric_forcast = baroForecastRain;
 		else if (barometric<1020)
@@ -232,13 +232,13 @@ void CVisualCrossing::GetMeterDetails()
 
 	if (root["currentConditions"]["winddir"].empty() == false)
 	{
-		wind_degrees = atoi(root["currentConditions"]["winddir"].asString().c_str());
+		wind_degrees = stoi(root["currentConditions"]["winddir"].asString());
 	}
 	if (root["currentConditions"]["windspeed"].empty() == false)
 	{
 		if ((root["currentConditions"]["windspeed"] != "N/A") && (root["currentConditions"]["windspeed"] != "--"))
 		{
-			float temp_wind_kph = static_cast<float>(atof(root["currentConditions"]["windspeed"].asString().c_str()));
+			float temp_wind_kph = stof(root["currentConditions"]["windspeed"].asString());
 			if (temp_wind_kph != -9999.00F)
 			{
 				//convert to m/s
@@ -250,7 +250,7 @@ void CVisualCrossing::GetMeterDetails()
 	{
 		if ((root["currentConditions"]["windgust"] != "N/A") && (root["currentConditions"]["windgust"] != "--"))
 		{
-			float temp_wind_gust_kph = static_cast<float>(atof(root["currentConditions"]["windgust"].asString().c_str()));
+			float temp_wind_gust_kph = stof(root["currentConditions"]["windgust"].asString());
 			if (temp_wind_gust_kph != -9999.00F)
 			{
 				//convert to m/s
@@ -262,7 +262,7 @@ void CVisualCrossing::GetMeterDetails()
 	{
 		if ((root["currentConditions"]["feelslike"] != "N/A") && (root["currentConditions"]["feelslike"] != "--"))
 		{
-			wind_chill = static_cast<float>(atof(root["currentConditions"]["feelslike"].asString().c_str()));
+			wind_chill = stof(root["currentConditions"]["feelslike"].asString());
 		}
 	}
 	if (wind_degrees != -1)

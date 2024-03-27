@@ -246,8 +246,7 @@ void BleBox::GetDevicesState()
 						}
 
 						std::string temperature = sensor["value"].asString(); // xxxx (xx.xx = temperature)
-						float ftemp = static_cast<float>(std::stoi(temperature.substr(0, 2))
-										 + std::stoi(temperature.substr(2, 2)) / 100.0);
+						float ftemp = static_cast<float>(stoi(temperature.substr(0, 2)) + stoi(temperature.substr(2, 2)) / 100.0F);
 
 						// TODO - how save IP address ??
 						SendTempSensor(IP, 255, ftemp, DevicesType[device.second].name);
@@ -298,7 +297,7 @@ std::string BleBox::IPToHex(const std::string & IPAddress, const int type)
 	// because exists inconsistency when comparing deviceID in method decode_xxx in mainworker(Limitless uses small letter, lighting2 etc uses capital letter)
 	if (type != pTypeColorSwitch)
 	{
-		uint32_t uID = (uint32_t)(atoi(strarray[0].c_str()) << 24) | (uint32_t)(atoi(strarray[1].c_str()) << 16) | (atoi(strarray[2].c_str()) << 8) | atoi(strarray[3].c_str());
+		uint32_t uID = (((uint32_t) stoi(strarray[0])) << 24) | (((uint32_t) stoi(strarray[1])) << 16) | (((uint32_t) stoi(strarray[2])) << 8) | ((uint32_t) stoi(strarray[3]));
 		return std_format("%08X", uID);
 	}
 
@@ -678,13 +677,13 @@ void BleBox::SendSwitch(const int NodeID, const uint8_t ChildID, const int Batte
 	if (!result.empty())
 	{
 		//check if we have a change, if not do not update it
-		int nvalue = atoi(result[0][1].c_str());
+		int nvalue = stoi(result[0][1]);
 		if ((!bOn) && (nvalue == light2_sOff))
 			return;
 		if ((bOn && (nvalue != light2_sOff)))
 		{
 			//Check Level
-			int slevel = atoi(result[0][2].c_str());
+			int slevel = stoi(result[0][2]);
 			if (slevel == level)
 				return;
 		}
@@ -804,8 +803,8 @@ namespace http {
 			root["status"] = "OK";
 			root["title"] = "BleBoxSetMode";
 
-			int iMode1 = atoi(mode1.c_str());
-			int iMode2 = atoi(mode2.c_str());
+			int iMode1 = stoi(mode1);
+			int iMode2 = stoi(mode2);
 
 			m_sql.safe_query("UPDATE Hardware SET Mode1=%d, Mode2=%d WHERE (ID == '%q')", iMode1, iMode2, hwid.c_str());
 			pHardware->SetSettings(iMode1);
@@ -855,7 +854,7 @@ namespace http {
 
 			root["status"] = "OK";
 			root["title"] = "BleBoxRemoveNode";
-			int ID = atoi(nodeid.c_str());
+			int ID = stoi(nodeid);
 			pHardware->RemoveNode(ID);
 		}
 

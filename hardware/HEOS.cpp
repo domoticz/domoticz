@@ -112,7 +112,7 @@ void CHEOS::ParseLine()
 
 										/* If playing request now playing information */
 										if (state == "play") {
-											int PlayerID = atoi(pid.c_str());
+											int PlayerID = stoi(pid);
 											SendCommand("getNowPlaying", PlayerID);
 										}
 
@@ -214,7 +214,7 @@ void CHEOS::ParseLine()
 
 									/* If playing request now playing information */
 									if (state == "play") {
-										int PlayerID = atoi(pid.c_str());
+										int PlayerID = stoi(pid);
 										SendCommand("getNowPlaying", PlayerID);
 									}
 
@@ -237,7 +237,7 @@ void CHEOS::ParseLine()
 							if (!SplitMessage.empty())
 							{
 								std::string pid = SplitMessage[1];
-								int PlayerID = atoi(pid.c_str());
+								int PlayerID = stoi(pid);
 								SendCommand("getPlayState", PlayerID);
 							}
 						}
@@ -691,7 +691,7 @@ void CHEOS::AddNode(const std::string &Name, const std::string &PlayerID)
 
 	result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q')", m_HwdID, PlayerID.c_str());
 	if (!result.empty()) {
-		int ID = atoi(result[0][0].c_str());
+		int ID = stoi(result[0][0]);
 		UpdateNode(ID, Name);
 		return;
 	}
@@ -779,10 +779,10 @@ void CHEOS::ReloadNodes()
 		for (const auto &sd : result)
 		{
 			HEOSNode pnode;
-			pnode.ID = atoi(sd[0].c_str());
-			pnode.DevID = atoi(sd[1].c_str());
+			pnode.ID = stoi(sd[0]);
+			pnode.DevID = stoi(sd[1]);
 			pnode.Name = sd[2];
-			pnode.nStatus = (_eMediaStatus)atoi(sd[3].c_str());
+			pnode.nStatus = (_eMediaStatus) stoi(sd[3]);
 			pnode.sStatus = sd[4];
 			pnode.LastOK = mytime(nullptr);
 
@@ -811,7 +811,7 @@ namespace http {
 			std::string mode2 = request::findValue(&req, "mode2");
 			if ((hwid.empty()) || (mode1.empty()) || (mode2.empty()))
 				return;
-			int iHardwareID = atoi(hwid.c_str());
+			int iHardwareID = stoi(hwid);
 			CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardware(iHardwareID);
 			if (pBaseHardware == nullptr)
 				return;
@@ -822,8 +822,8 @@ namespace http {
 			root["status"] = "OK";
 			root["title"] = "HEOSSetMode";
 
-			int iMode1 = atoi(mode1.c_str());
-			int iMode2 = atoi(mode2.c_str());
+			int iMode1 = stoi(mode1);
+			int iMode2 = stoi(mode2);
 
 			m_sql.safe_query("UPDATE Hardware SET Mode1=%d, Mode2=%d WHERE (ID == '%q')", iMode1, iMode2, hwid.c_str());
 			pHardware->SetSettings(iMode1, iMode2);
@@ -835,7 +835,7 @@ namespace http {
 			std::string sAction = request::findValue(&req, "action");
 			if (sIdx.empty())
 				return;
-			//int idx = atoi(sIdx.c_str());
+			//int idx = stoi(sIdx);
 			root["status"] = "OK";
 			root["title"] = "HEOSMediaCommand";
 
@@ -845,10 +845,10 @@ namespace http {
 
 			if (result.size() == 1)
 			{
-				_eSwitchType	sType = (_eSwitchType)atoi(result[0][0].c_str());
-				int PlayerID = atoi(result[0][1].c_str());
-				_eHardwareTypes	hType = (_eHardwareTypes)atoi(result[0][2].c_str());
-				//int HwID = atoi(result[0][3].c_str());
+				_eSwitchType	sType = (_eSwitchType) stoi(result[0][0]);
+				int PlayerID = stoi(result[0][1]);
+				_eHardwareTypes	hType = (_eHardwareTypes) stoi(result[0][2]);
+				//int HwID = stoi(result[0][3]);
 				// Is the device a media Player?
 				if (sType == STYPE_Media)
 				{

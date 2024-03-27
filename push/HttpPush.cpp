@@ -89,21 +89,21 @@ void CHttpPush::DoHttpPush(const uint64_t DeviceRowIdx)
 		if (httpUrl.empty())
 			return;
 
-		//unsigned int deviceId = atoi(sd[0].c_str());
+		//unsigned int deviceId = (unsigned int) stoi(sd[0]);
 		std::string sdeviceId = sd[0];
 		std::string ldelpos = sd[1];
-		int delpos = atoi(sd[1].c_str());
-		int dType = atoi(sd[3].c_str());
-		int dSubType = atoi(sd[4].c_str());
-		int nValue = atoi(sd[5].c_str());
+		int delpos = stoi(sd[1]);
+		int dType = stoi(sd[3]);
+		int dSubType = stoi(sd[4]);
+		int nValue = stoi(sd[5]);
 		std::string sValue = sd[6];
-		//int targetType = atoi(sd[7].c_str());
+		//int targetType = stoi(sd[7]);
 		std::string targetVariable = sd[8];
-		//int targetDeviceID = atoi(sd[9].c_str());
+		//int targetDeviceID = stoi(sd[9]);
 		//std::string targetProperty = sd[10].c_str();
-		int includeUnit = atoi(sd[11].c_str());
-		int metertype = atoi(sd[12].c_str());
-		int lastUpdate = atoi(sd[13].c_str());
+		int includeUnit = stoi(sd[11]);
+		int metertype = stoi(sd[12]);
+		int lastUpdate = stoi(sd[13]);
 		std::string ltargetVariable = sd[8];
 		std::string ltargetDeviceId = sd[9];
 		std::string lname = sd[14];
@@ -272,15 +272,15 @@ namespace http {
 				return;
 			if ((method != "0") && (data.empty())) //PUT/POST should have data
 				return;
-			int ilinkactive = atoi(linkactive.c_str());
-			int idebugenabled = atoi(debugenabled.c_str());
+			int ilinkactive = stoi(linkactive);
+			int idebugenabled = stoi(debugenabled);
 			m_sql.UpdatePreferencesVar("HttpUrl", url);
-			m_sql.UpdatePreferencesVar("HttpMethod", atoi(method.c_str()));
+			m_sql.UpdatePreferencesVar("HttpMethod", stoi(method));
 			m_sql.UpdatePreferencesVar("HttpData", data);
 			m_sql.UpdatePreferencesVar("HttpHeaders", headers);
 			m_sql.UpdatePreferencesVar("HttpActive", ilinkactive);
 			m_sql.UpdatePreferencesVar("HttpDebug", idebugenabled);
-			m_sql.UpdatePreferencesVar("HttpAuth", atoi(auth.c_str()));
+			m_sql.UpdatePreferencesVar("HttpAuth", stoi(auth));
 			m_sql.UpdatePreferencesVar("HttpAuthBasicLogin", authbasiclogin);
 			m_sql.UpdatePreferencesVar("HttpAuthBasicPassword", authbasicpassword);
 
@@ -388,10 +388,10 @@ namespace http {
 			}
 			std::string idx = request::findValue(&req, "idx");
 			std::string deviceid = request::findValue(&req, "deviceid");
-			int deviceidi = atoi(deviceid.c_str());
+			int deviceidi = stoi(deviceid);
 			std::string valuetosend = request::findValue(&req, "valuetosend");
 			std::string targettype = request::findValue(&req, "targettype");
-			int targettypei = atoi(targettype.c_str());
+			int targettypei = stoi(targettype);
 			std::string targetvariable = request::findValue(&req, "targetvariable");
 			std::string targetdeviceid = request::findValue(&req, "targetdeviceid");
 			std::string targetproperty = request::findValue(&req, "targetproperty");
@@ -408,26 +408,26 @@ namespace http {
 					"INSERT INTO PushLink (PushType, DeviceRowID,DelimitedValue,TargetType,TargetVariable,TargetDeviceID,TargetProperty,IncludeUnit,Enabled) VALUES ('%d','%d','%d','%d','%q','%d','%q','%d','%d')",
 					CBasePush::PushType::PUSHTYPE_HTTP,
 					deviceidi,
-					atoi(valuetosend.c_str()),
+					stoi(valuetosend),
 					targettypei,
 					targetvariable.c_str(),
-					atoi(targetdeviceid.c_str()),
+					stoi(targetdeviceid),
 					targetproperty.c_str(),
-					atoi(includeunit.c_str()),
-					atoi(linkactive.c_str())
+					stoi(includeunit),
+					stoi(linkactive)
 				);
 			}
 			else {
 				m_sql.safe_query(
 					"UPDATE PushLink SET DeviceRowID='%d', DelimitedValue=%d, TargetType=%d, TargetVariable='%q', TargetDeviceID=%d, TargetProperty='%q', IncludeUnit='%d', Enabled='%d' WHERE (ID == '%q')",
 					deviceidi,
-					atoi(valuetosend.c_str()),
+					stoi(valuetosend),
 					targettypei,
 					targetvariable.c_str(),
-					atoi(targetdeviceid.c_str()),
+					stoi(targetdeviceid),
 					targetproperty.c_str(),
-					atoi(includeunit.c_str()),
-					atoi(linkactive.c_str()),
+					stoi(includeunit),
+					stoi(linkactive),
 					idx.c_str()
 				);
 			}

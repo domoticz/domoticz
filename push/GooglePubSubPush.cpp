@@ -131,18 +131,18 @@ void CGooglePubSubPush::DoGooglePubSubPush(const uint64_t DeviceRowIdx)
 
 		std::string sdeviceId = sd[0];
 		std::string ldelpos = sd[1];
-		int delpos = atoi(sd[1].c_str());
-		int dType = atoi(sd[3].c_str());
-		int dSubType = atoi(sd[4].c_str());
-		int nValue = atoi(sd[5].c_str());
+		int delpos = stoi(sd[1]);
+		int dType = stoi(sd[3]);
+		int dSubType = stoi(sd[4]);
+		int nValue = stoi(sd[5]);
 		std::string sValue = sd[6];
-		//int targetType = atoi(sd[7].c_str());
+		//int targetType = stoi(sd[7]);
 		std::string targetVariable = sd[8];
-		//int targetDeviceID = atoi(sd[9].c_str());
+		//int targetDeviceID = stoi(sd[9]);
 		std::string targetProperty = sd[10];
-		int includeUnit = atoi(sd[11].c_str());
-		int metertype = atoi(sd[12].c_str());
-		int lastUpdate = atoi(sd[13].c_str());
+		int includeUnit = stoi(sd[11]);
+		int metertype = stoi(sd[12]);
+		int lastUpdate = stoi(sd[13]);
 		std::string ltargetVariable = sd[8];
 		std::string ltargetDeviceId = sd[9];
 		std::string lname = sd[14];
@@ -307,8 +307,8 @@ namespace http {
 			std::string debugenabled = request::findValue(&req, "debugenabled");
 			if ((data.empty()) || (linkactive.empty()) || (debugenabled.empty()))
 				return;
-			int ilinkactive = atoi(linkactive.c_str());
-			int idebugenabled = atoi(debugenabled.c_str());
+			int ilinkactive = stoi(linkactive);
+			int idebugenabled = stoi(debugenabled);
 			m_sql.UpdatePreferencesVar("GooglePubSubData", data);
 			m_sql.UpdatePreferencesVar("GooglePubSubActive", ilinkactive);
 			m_sql.UpdatePreferencesVar("GooglePubSubDebug", idebugenabled);
@@ -387,10 +387,10 @@ namespace http {
 			}
 			std::string idx = request::findValue(&req, "idx");
 			std::string deviceid = request::findValue(&req, "deviceid");
-			int deviceidi = atoi(deviceid.c_str());
+			int deviceidi = stoi(deviceid);
 			std::string valuetosend = request::findValue(&req, "valuetosend");
 			std::string targettype = request::findValue(&req, "targettype");
-			int targettypei = atoi(targettype.c_str());
+			int targettypei = stoi(targettype);
 			std::string targetvariable = request::findValue(&req, "targetvariable");
 			std::string targetdeviceid = request::findValue(&req, "targetdeviceid");
 			std::string targetproperty = request::findValue(&req, "targetproperty");
@@ -405,33 +405,33 @@ namespace http {
 			if (idx == "0") {
 				//check if we already have this link
 				auto result = m_sql.safe_query("SELECT ID FROM PushLink WHERE (PushType==%d AND DeviceRowID==%d AND DelimitedValue==%d AND TargetType==%d)",
-					CBasePush::PushType::PUSHTYPE_GOOGLE_PUB_SUB, deviceidi, atoi(valuetosend.c_str()), targettypei);
+					CBasePush::PushType::PUSHTYPE_GOOGLE_PUB_SUB, deviceidi, stoi(valuetosend), targettypei);
 				if (!result.empty())
 					return; //already have this
 				m_sql.safe_query(
 					"INSERT INTO PushLink (PushType, DeviceRowID,DelimitedValue,TargetType,TargetVariable,TargetDeviceID,TargetProperty,IncludeUnit,Enabled) VALUES ('%d','%d','%d','%d','%q','%d','%q','%d','%d')",
 					CBasePush::PushType::PUSHTYPE_GOOGLE_PUB_SUB,
 					deviceidi,
-					atoi(valuetosend.c_str()),
+					stoi(valuetosend),
 					targettypei,
 					targetvariable.c_str(),
-					atoi(targetdeviceid.c_str()),
+					stoi(targetdeviceid),
 					targetproperty.c_str(),
-					atoi(includeunit.c_str()),
-					atoi(linkactive.c_str())
+					stoi(includeunit),
+					stoi(linkactive)
 				);
 			}
 			else {
 				m_sql.safe_query(
 					"UPDATE PushLink SET DeviceRowID='%d', DelimitedValue=%d, TargetType=%d, TargetVariable='%q', TargetDeviceID=%d, TargetProperty='%q', IncludeUnit='%d', Enabled='%d' WHERE (ID == '%q')",
 					deviceidi,
-					atoi(valuetosend.c_str()),
+					stoi(valuetosend),
 					targettypei,
 					targetvariable.c_str(),
-					atoi(targetdeviceid.c_str()),
+					stoi(targetdeviceid),
 					targetproperty.c_str(),
-					atoi(includeunit.c_str()),
-					atoi(linkactive.c_str()),
+					stoi(includeunit),
+					stoi(linkactive),
 					idx.c_str()
 				);
 			}

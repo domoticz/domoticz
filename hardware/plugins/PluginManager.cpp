@@ -108,14 +108,14 @@ namespace Plugins {
 			std::string sVersion = szPyVersion.substr(0, szPyVersion.find_first_of(' '));
 
 			std::string sMajorVersion = sVersion.substr(0, sVersion.find_first_of('.'));
-			if (std::stoi(sMajorVersion) < MINIMUM_MAJOR_VERSION)
+			if (stoi(sMajorVersion) < MINIMUM_MAJOR_VERSION)
 			{
 				_log.Log(LOG_STATUS, "PluginSystem: Invalid Python version '%s' found, Major version '%d' or above required.", sVersion.c_str(), MINIMUM_MAJOR_VERSION);
 				return false;
 			}
 
 			std::string sMinorVersion = sVersion.substr(sMajorVersion.length()+1);
-			if (std::stoi(sMinorVersion) < MINIMUM_MINOR_VERSION)
+			if (stoi(sMinorVersion) < MINIMUM_MINOR_VERSION)
 			{
 				_log.Log(LOG_STATUS, "PluginSystem: Invalid Python version '%s' found, Minor version '%d.%d' or above required.", sVersion.c_str(), MINIMUM_MAJOR_VERSION, MINIMUM_MINOR_VERSION);
 				return false;
@@ -348,9 +348,9 @@ namespace Plugins {
 			return;
 		//std::vector<std::string> sd = result[0];
 		//GizMoCuz: Why does this work with UNIT ? Why not use the device idx which is always unique ?
-		_log.Debug(DEBUG_NORM, "CPluginSystem::DeviceModified: Notifying plugin %u about modification of device %u", atoi(sHwdID.c_str()), atoi(Unit.c_str()));
+		_log.Debug(DEBUG_NORM, "CPluginSystem::DeviceModified: Notifying plugin %d about modification of device %d", stoi(sHwdID), stoi(Unit));
 		Plugins::CPlugin *pPlugin = (Plugins::CPlugin*)pHardware;
-		pPlugin->DeviceModified(sd[1], atoi(Unit.c_str()));
+		pPlugin->DeviceModified(sd[1], stoi(Unit));
 	}
 } // namespace Plugins
 
@@ -526,8 +526,8 @@ namespace http {
 			result = m_sql.safe_query("SELECT HardwareID, DeviceID, Unit FROM DeviceStatus WHERE (ID=='%q') ", sIdx.c_str());
 			if (result.size() == 1)
 			{
-				int HwID = atoi(result[0][0].c_str());
-				int Unit = atoi(result[0][2].c_str());
+				int HwID = stoi(result[0][0]);
+				int Unit = stoi(result[0][2]);
 				Plugins::CPluginSystem Plugins;
 				std::map<int, CDomoticzHardwareBase*>*	PluginHwd = Plugins.GetHardware();
 				Plugins::CPlugin*	pPlugin = (Plugins::CPlugin*)(*PluginHwd)[HwID];

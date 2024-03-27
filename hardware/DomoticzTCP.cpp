@@ -126,7 +126,7 @@ void DomoticzTCP::OnData(const uint8_t* pData, size_t length)
 
 		auto result = m_sql.safe_query("SELECT SwitchType, Options, Color FROM DeviceStatus WHERE (ID==%q)", std::to_string(idx).c_str());
 
-		int oldSwitchType = atoi(result[0][0].c_str());
+		int oldSwitchType = stoi(result[0][0]);
 		std::string oldOptions = result[0][1];
 		std::string oldColor = result[0][2];
 
@@ -202,11 +202,11 @@ bool AssambleDeviceInfo(const std::string& idx, Json::Value& root)
 	if (result.empty())
 		return false;
 	int iIndex = 0;
-	root["HardwareID"] = atoi(result[0][iIndex++].c_str());
+	root["HardwareID"] = stoi(result[0][iIndex++]);
 	root["DeviceID"] = result[0][iIndex++];
-	root["Unit"] = atoi(result[0][iIndex++].c_str());
-	root["Type"] = atoi(result[0][iIndex++].c_str());
-	root["SubType"] = atoi(result[0][iIndex++].c_str());
+	root["Unit"] = stoi(result[0][iIndex++]);
+	root["Type"] = stoi(result[0][iIndex++]);
+	root["SubType"] = stoi(result[0][iIndex++]);
 	return true;
 }
 

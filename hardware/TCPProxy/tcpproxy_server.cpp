@@ -52,7 +52,7 @@ namespace tcp_proxy
 		{
 			end=boost::asio::ip::tcp::endpoint(
 				boost::asio::ip::address::from_string(upstream_host),
-				(unsigned short)atoi(upstream_port.c_str()));
+				(unsigned short) stoi(upstream_port));
 		}
 		else
 			end=*i;

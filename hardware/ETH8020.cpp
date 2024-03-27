@@ -135,13 +135,13 @@ void CETH8020::UpdateSwitch(const unsigned char Idx, const uint8_t SubUnit, cons
 	if (!result.empty())
 	{
 		//check if we have a change, if not do not update it
-		int nvalue = atoi(result[0][1].c_str());
+		int nvalue = stoi(result[0][1]);
 		if ((!bOn) && (nvalue == 0))
 			return;
 		if ((bOn && (nvalue != 0)))
 		{
 			//Check Level
-			int slevel = atoi(result[0][2].c_str());
+			int slevel = stoi(result[0][2]);
 			if (slevel == level)
 				return;
 		}
@@ -218,12 +218,12 @@ void CETH8020::GetMeterDetails()
 			pos1 = tmpstr.find('>');
 			if (pos1 != std::string::npos)
 			{
-				Idx = (uint8_t)atoi(tmpstr.substr(0, pos1).c_str());
+				Idx = (uint8_t) stoi(tmpstr.substr(0, pos1));
 				tmpstr = tmpstr.substr(pos1+1);
 				pos1 = tmpstr.find('<');
 				if (pos1 != std::string::npos)
 				{
-					int lValue = atoi(tmpstr.substr(0, pos1).c_str());
+					int lValue = stoi(tmpstr.substr(0, pos1));
 					std::stringstream sstr;
 					sstr << "Relay " << Idx;
 					UpdateSwitch(1, Idx, (lValue == 1) ? true : false, 100, sstr.str());
@@ -236,12 +236,12 @@ void CETH8020::GetMeterDetails()
 			pos1 = tmpstr.find('>');
 			if (pos1 != std::string::npos)
 			{
-				Idx = (uint8_t)atoi(tmpstr.substr(0, pos1).c_str());
+				Idx = (uint8_t) stoi(tmpstr.substr(0, pos1));
 				tmpstr = tmpstr.substr(pos1 + 1);
 				pos1 = tmpstr.find('<');
 				if (pos1 != std::string::npos)
 				{
-					int lValue = atoi(tmpstr.substr(0, pos1).c_str());
+					int lValue = stoi(tmpstr.substr(0, pos1));
 					float voltage = (float)(5.0F / 1023.0F) * lValue;
 					if (voltage > 5.0F)
 						voltage = 5.0F;

@@ -63,16 +63,16 @@ void S0MeterBase::InitBase()
 	StringSplit(Settings, ";", splitresults);
 	if (splitresults.size() == 10)
 	{
-		m_meters[0].m_type = atoi(splitresults[0].c_str());
-		m_meters[0].m_pulse_per_unit = atof(splitresults[1].c_str());
-		m_meters[1].m_type = atoi(splitresults[2].c_str());
-		m_meters[1].m_pulse_per_unit = atof(splitresults[3].c_str());
-		m_meters[2].m_type = atoi(splitresults[4].c_str());
-		m_meters[2].m_pulse_per_unit = atof(splitresults[5].c_str());
-		m_meters[3].m_type = atoi(splitresults[6].c_str());
-		m_meters[3].m_pulse_per_unit = atof(splitresults[7].c_str());
-		m_meters[4].m_type = atoi(splitresults[8].c_str());
-		m_meters[4].m_pulse_per_unit = atof(splitresults[9].c_str());
+		m_meters[0].m_type = stoi(splitresults[0]);
+		m_meters[0].m_pulse_per_unit = stod(splitresults[1]);
+		m_meters[1].m_type = stoi(splitresults[2]);
+		m_meters[1].m_pulse_per_unit = stod(splitresults[3]);
+		m_meters[2].m_type = stoi(splitresults[4]);
+		m_meters[2].m_pulse_per_unit = stod(splitresults[5]);
+		m_meters[3].m_type = stoi(splitresults[6]);
+		m_meters[3].m_pulse_per_unit = stod(splitresults[7]);
+		m_meters[4].m_type = stoi(splitresults[8]);
+		m_meters[4].m_pulse_per_unit = stod(splitresults[9]);
 	}
 }
 
@@ -106,7 +106,7 @@ void S0MeterBase::ReloadLastTotals()
 			StringSplit(result[0][0],";",results);
 			if (results.size()==2)
 			{
-				m_meters[ii].m_counter_start=atof(results[1].c_str())/1000.0;
+				m_meters[ii].m_counter_start = stod(results[1]) / 1000.0;
 			}
 		}
 		*/
@@ -134,11 +134,11 @@ void S0MeterBase::ReloadLastTotals()
 			m_meters[ii].m_firstTime = false;
 			if (results.size() == 1)
 			{
-				m_meters[ii].m_counter_start = atof(results[0].c_str()) / 1000.0;
+				m_meters[ii].m_counter_start = stod(results[0]) / 1000.0;
 			}
 			else if (results.size() == 2)
 			{
-				m_meters[ii].m_counter_start = atof(results[1].c_str()) / 1000.0;
+				m_meters[ii].m_counter_start = stod(results[1]) / 1000.0;
 			}
 		}
 	}
@@ -281,7 +281,7 @@ void S0MeterBase::ParseLine()
 		totmeters = max_s0_meters;
 	// ID:0001:I:99:M1:123:456:M2:234:567 = ID(1)/Pulse Interval(3)/M1Actual(5)/M1Total(7)/M2Actual(8)/M2Total(9)
 	// std::string MeterID=results[1];
-	double s0_pulse_interval = atof(results[3].c_str());
+	double s0_pulse_interval = stod(results[3]);
 
 	int roffset = 4;
 	if (results[0] == "ID")
@@ -290,10 +290,10 @@ void S0MeterBase::ParseLine()
 		{
 			m_meters[ii].m_PacketsSinceLastPulseChange++;
 
-			double s0_pulse = atof(results[roffset + 1].c_str());
+			double s0_pulse = stod(results[roffset + 1]);
 
 			unsigned long LastTotalPulses = m_meters[ii].total_pulses;
-			m_meters[ii].total_pulses = (unsigned long)atol(results[roffset + 2].c_str());
+			m_meters[ii].total_pulses = stoul(results[roffset + 2]);
 			if (m_meters[ii].total_pulses < LastTotalPulses)
 			{
 				// counter has looped
@@ -355,7 +355,7 @@ void S0MeterBase::ParseLine()
 		roffset = 2;
 		for (int ii = 0; ii < totmeters; ii++)
 		{
-			double s0_counter = atof(results[roffset + 1].c_str());
+			double s0_counter = stod(results[roffset + 1]);
 			if (s0_counter != 0)
 			{
 				if (m_meters[ii].m_firstTime)
@@ -369,7 +369,7 @@ void S0MeterBase::ParseLine()
 					m_meters[ii].m_counter_start += m_meters[ii].m_current_counter;
 				}
 				m_meters[ii].m_current_counter = s0_counter;
-				m_meters[ii].m_CurrentUsage = atof(results[roffset + 2].c_str());
+				m_meters[ii].m_CurrentUsage = stod(results[roffset + 2]);
 
 				// double counter_value = m_meters[ii].m_counter_start + s0_counter;
 				SendMeter(ii + 1, m_meters[ii].m_CurrentUsage / 1000.0F, m_meters[ii].m_current_counter);

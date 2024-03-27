@@ -543,7 +543,7 @@ void CTeleinfoBase::MatchLine()
 
 	label = splitresults[0];
 	vString = splitresults[1];
-	value = atoi(splitresults[1].c_str());
+	value = stoul(splitresults[1]);
 
 	// Historic mode
 	if (label == "ADCO" || label == "ADSC") 
@@ -672,7 +672,7 @@ void CTeleinfoBase::MatchLine()
 	else if (label == "SINSTI") m_teleinfo.SINSTI = value;
 	else if (label == "STGE")
 	{  // Status register, hexadecimal string (without 0x)
-		m_teleinfo.STGE = strtoul(splitresults[1].c_str(), nullptr, 16);
+		m_teleinfo.STGE = stoul(splitresults[1], nullptr, 16);
 
 		// Color of tomorow
 		int tomorow = ( m_teleinfo.STGE & 0x0C000000 ) >> 26;

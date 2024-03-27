@@ -149,15 +149,15 @@ void CToonThermostat::Init()
 	result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID==1) AND ([Type]==%d) AND (SubType==%d)", m_HwdID, pTypeP1Power, sTypeP1Power);
 	if (!result.empty())
 	{
-		unsigned long devID = (unsigned long)atol(result[0][0].c_str());
+		unsigned long devID = stoul(result[0][0]);
 		result = m_sql.safe_query("SELECT MAX(Counter1), MAX(Counter2), MAX(Counter3), MAX(Counter4) FROM Multimeter_Calendar WHERE (DeviceRowID==%ld)", devID);
 		if (!result.empty())
 		{
 			std::vector<std::string> sd = *result.begin();
-			m_OffsetUsage1 = (unsigned long)atol(sd[0].c_str());
-			m_OffsetDeliv1 = (unsigned long)atol(sd[1].c_str());
-			m_OffsetUsage2 = (unsigned long)atol(sd[2].c_str());
-			m_OffsetDeliv2 = (unsigned long)atol(sd[3].c_str());
+			m_OffsetUsage1 = stoul(sd[0]);
+			m_OffsetDeliv1 = stoul(sd[1]);
+			m_OffsetUsage2 = stoul(sd[2]);
+			m_OffsetDeliv2 = stoul(sd[3]);
 		}
 	}
 	m_bDoLogin = true;
@@ -241,7 +241,7 @@ void CToonThermostat::UpdateSwitch(const unsigned char Idx, const bool bOn, cons
 	if (!result.empty())
 	{
 		// check if we have a change, if not do not update it
-		int nvalue = atoi(result[0][1].c_str());
+		int nvalue = stoi(result[0][1]);
 		if ((!bOn) && (nvalue == 0))
 			return;
 		if ((bOn && (nvalue != 0)))
@@ -418,7 +418,7 @@ bool CToonThermostat::GetUUIDIdx(const std::string &UUID, int &idx)
 	if (result.empty())
 		return false;
 	std::vector<std::string> sd = result[0];
-	idx = atoi(sd[0].c_str());
+	idx = stoi(sd[0]);
 	return true;
 }
 
@@ -804,7 +804,7 @@ bool CToonThermostat::ParseThermostatData(const Json::Value &root)
 
 		if (root["thermostatInfo"]["burnerInfo"].isString())
 		{
-			burnerInfo = atoi(root["thermostatInfo"]["burnerInfo"].asString().c_str());
+			burnerInfo = stoi(root["thermostatInfo"]["burnerInfo"].asString());
 		}
 		else if (root["thermostatInfo"]["burnerInfo"].isInt())
 		{

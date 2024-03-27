@@ -500,7 +500,7 @@ void Enever::parseElectricity(const std::string& szElectricityData, const bool b
 				return; //no price for this provider
 
 			std::string szProviderPrice = itt[szProviderPriceName].asString();
-			float fProviderPrice = std::stof(szProviderPrice);
+			float fProviderPrice = stof(szProviderPrice);
 
 			int64_t iRate = (int64_t)round(fProviderPrice * 10000); //4 digts after comma!
 
@@ -695,7 +695,7 @@ void Enever::parseGas()
 			return; //no price for this provider
 
 		std::string szProviderPrice = root["data"][0][szProviderPriceName].asString();
-		float fProviderPrice = std::stof(szProviderPrice);
+		float fProviderPrice = stof(szProviderPrice);
 
 		SendCustomSensor(1, 2, 255, fProviderPrice, "Actual Gas Price", "Euro / m3");
 
