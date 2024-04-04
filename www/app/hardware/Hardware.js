@@ -594,6 +594,8 @@ define(['app'], function (app) {
 					if ($("#hardwarecontent #divenphase #readinverters").prop("checked"))
 						Mode2 = 1;
 					Mode3 = 0;
+					Mode4 = $("#hardwarecontent #divenphase #inverterdetails").val();
+					
 					if ($("#hardwarecontent #divenphase #dontreadmeteredvalues").prop("checked"))
 						Mode3 = 1;
 					username = $("#hardwarecontent #divlogin #username").val();
@@ -1821,6 +1823,7 @@ define(['app'], function (app) {
 					Mode3 = 0;
 					if ($("#hardwarecontent #divenphase #dontreadmeteredvalues").prop("checked"))
 						Mode3 = 1;
+					Mode4 = $("#hardwarecontent #divenphase #inverterdetails").val();
 					username = $("#hardwarecontent #divlogin #username").val();
 					password = $("#hardwarecontent #divlogin #password").val();
 					extra = $("#hardwarecontent #divenphase #siteid").val();
@@ -4288,6 +4291,7 @@ define(['app'], function (app) {
 								$("#hardwarecontent #divenphase #readinverters").prop('checked', parseInt(data["Mode2"]) != 0);
 								$("#hardwarecontent #divenphase #dontreadmeteredvalues").prop('checked', parseInt(data["Mode3"]) != 0);
 								$("#hardwarecontent #divenphase #siteid").val(data["Extra"]);
+								$("#hardwarecontent #divenphase #inverterdetails").val(parseInt(data["Mode4"]));
 							}
 						}
 						else if (

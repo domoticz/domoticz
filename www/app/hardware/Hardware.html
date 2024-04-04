@@ -1305,8 +1305,16 @@
 				<td>
 					<input type="checkbox" id="readinverters" name="readinverters"><label for="readinverters"></label><br>
 					<span data-i18n="When enabled this will also collect individual inverter details.">When enabled this will also collect individual inverter details.</span>
+					<p>
+						<br/>
+						<label for="inverterdetails"><span data-i18n="Inverter Details"></span>:</label>
+						<select id="inverterdetails" name="inverterdetails" style="width:90px" class="combobox ui-corner-all">
+							<option value="0">Normal</option>
+							<option value="1">Detailed</option>
+						</select>
+						&nbsp;<span>(Detailed needs Site ID / Installer account)</span>
+					</p>
 				</td>
-			
 			</tr>
 			<tr>
 				<td align="right" style="vertical-align:top;"><span data-i18n="Don't read metered values">Don't read metered values</span>:</td>
