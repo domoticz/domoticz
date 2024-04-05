@@ -1180,13 +1180,13 @@ void EnphaseAPI::parseDevStatus(const Json::Value& root)
 
 		SendTempSensor(dIndex, 255, temperature, sDeviceName + " Temp");
 
-		UpdateValueInt(szDeviceID.c_str(), 1, pTypeGeneral, sTypeVoltage, 12, 255, 0, std_format("%.3f", dcVoltageINmV).c_str(), sDeviceName + " dcVolt");
-		UpdateValueInt(szDeviceID.c_str(), 2, pTypeGeneral, sTypeVoltage, 12, 255, 0, std_format("%.3f", acVoltageINmV).c_str(), sDeviceName + " acVolt");
+		UpdateValueInt(szDeviceID.c_str(), 1, pTypeGeneral, sTypeVoltage, 12, 255, 0, std_format("%.3f", dcVoltageINmV).c_str(), std::string(sDeviceName + " dcVolt"));
+		UpdateValueInt(szDeviceID.c_str(), 2, pTypeGeneral, sTypeVoltage, 12, 255, 0, std_format("%.3f", acVoltageINmV).c_str(), std::string(sDeviceName + " acVolt"));
 
 		struct tm ltime;
 		localtime_r(&reportDate, &ltime);
 		std::string szTime = std_format("%04d-%02d-%02d %02d:%02d:%02d", ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, ltime.tm_sec);
-		UpdateValueInt(szDeviceID.c_str(), 1, pTypeGeneral, sTypeTextStatus, 12, 255, 0, szTime.c_str(), sDeviceName + " lastUpdate");
+		UpdateValueInt(szDeviceID.c_str(), 1, pTypeGeneral, sTypeTextStatus, 12, 255, 0, szTime.c_str(), std::string(sDeviceName + " lastUpdate"));
 
 		dIndex++;
 	}
