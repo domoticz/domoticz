@@ -30,6 +30,7 @@ class COpenWeatherMap : public CDomoticzHardwareBase
 	bool ResolveOWMCityLonLat(const std::string sURL, double& latitude, double& longitude, uint32_t& cityid);
 
 	std::string m_APIKey;
+        std::string m_APIVersion;  // Track the API Versionto be use for onecall
 	std::string m_Location;
 	std::string m_ForecastURL;
 	std::string m_Language;
