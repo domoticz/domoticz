@@ -46,6 +46,7 @@ std::string ReadFile(std::string filename)
 #endif
 
 #define OWM_onecall_URL "https://api.openweathermap.org/data/2.5/onecall?"
+#define OWM_30_onecall_URL "https://api.openweathermap.org/data/3.0/onecall?"
 #define OWM_Get_City_Details "https://api.openweathermap.org/data/2.5/weather?"
 #define OWM_icon_URL "https://openweathermap.org/img/wn/"	// for example 10d@4x.png
 #define OWM_forecast_URL "https://openweathermap.org/city/"
@@ -60,6 +61,17 @@ COpenWeatherMap::COpenWeatherMap(const int ID, const std::string &APIKey, const 
 	m_use_owminforecastscreen(owmforecastscreen)
 {
 	m_HwdID=ID;
+
+        if ( m_APIKey.find("V3.0:" == 0) )
+        {
+               m_APIVersion = "3.0";
+               m_APIKey = m_APIKey.substr(5); // Remove the "V3.0:" prefix
+        }
+        else
+        {
+               m_APIVersion = "2.5";
+
+	}
 
 	std::string sValue;
 	if (m_sql.GetPreferencesVar("Language", sValue))
@@ -664,6 +676,15 @@ void COpenWeatherMap::GetMeterDetails()
 	std::stringstream sURL;
 
 	sURL << OWM_onecall_URL;
+        // Check API version to use the right onecall API
+        if (m_APIVersion.find("3.0") == 0)
+        {
+            sURL << OWM_30_onecall_URL;
+        }
+        else
+        {
+            sURL << OWM_onecall_URL;
+        }
 	sURL << "lat=" << m_Lat << "&lon=" << m_Lon;
 	sURL << "&exclude=minutely";
 	sURL << "&appid=" << m_APIKey;
