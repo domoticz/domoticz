@@ -1074,6 +1074,8 @@ define(['app'], function (app) {
 				var addhourforecast = $("#hardwarecontent #divopenweathermap #addhourforecast").prop("checked") ? 1 : 0;
 				var adddescdev = $("#hardwarecontent #divopenweathermap #adddescdev").prop("checked") ? 1 : 0;
 				var useowmforecast = $("#hardwarecontent #divopenweathermap #useowmforecast").prop("checked") ? 1 : 0;
+				var apiversion = $("#hardwarecontent #divopenweathermap #comboapiversion").val();
+
 				$.ajax({
 					url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype +
 					"&loglevel=" + logLevel +
@@ -1083,7 +1085,7 @@ define(['app'], function (app) {
 					"&enabled=" + bEnabled +
 					"&idx=" + idx +
 					"&datatimeout=" + datatimeout +
-					"&Mode1=" + adddayforecast + "&Mode2=" + addhourforecast + "&Mode3=" + adddescdev + "&Mode4=" + useowmforecast + "&Mode5=" + Mode5 + "&Mode6=" + Mode6,
+					"&Mode1=" + adddayforecast + "&Mode2=" + addhourforecast + "&Mode3=" + adddescdev + "&Mode4=" + useowmforecast + "&Mode5=" + apiversion + "&Mode6=" + Mode6,
 					async: false,
 					dataType: 'json',
 					success: function (data) {
@@ -2496,13 +2498,16 @@ define(['app'], function (app) {
 				var addhourforecast = $("#hardwarecontent #divopenweathermap #addhourforecast").prop("checked") ? 1 : 0;
 				var adddescdev = $("#hardwarecontent #divopenweathermap #adddescdev").prop("checked") ? 1 : 0;
 				var useowmforecast = $("#hardwarecontent #divopenweathermap #useowmforecast").prop("checked") ? 1 : 0;
+				var apiversion = $("#hardwarecontent #divopenweathermap #comboapiversion").val();
+				
 				$.ajax({
 					url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype + 
 					"&loglevel=" + logLevel +
 					"&username=" + encodeURIComponent(apikey) + "&password=" + encodeURIComponent(location) + 
 					"&name=" + encodeURIComponent(name) + "&enabled=" + bEnabled + "&datatimeout=" + datatimeout +
 					"&Mode1=" + adddayforecast + "&Mode2=" + addhourforecast +
-					"&Mode3=" + adddescdev + "&Mode4=" + useowmforecast,
+					"&Mode3=" + adddescdev + "&Mode4=" + useowmforecast +
+					"&Mode5=" + apiversion,
 					async: false,
 					dataType: 'json',
 					success: function (data) {
@@ -4372,6 +4377,7 @@ define(['app'], function (app) {
 							$("#hardwarecontent #hardwareparamsopenweathermap #addhourforecast").prop("checked", data["Mode2"] == 1);
 							$("#hardwarecontent #hardwareparamsopenweathermap #adddescdev").prop("checked", data["Mode3"] == 1);
 							$("#hardwarecontent #hardwareparamsopenweathermap #useowmforecast").prop("checked", data["Mode4"] == 1);
+							$("#hardwarecontent #divopenweathermap #comboapiversion").val(data["Mode5"]);
 						}
 						else if (data["Type"].indexOf("Buienradar") >= 0) {
 							var timeframe = parseInt(data["Mode1"]);
