@@ -17,7 +17,7 @@ std::set<std::string> allowed_components = {
 		"button",
 		"climate",
 		"cover",
-		//"device_automation",
+		"device_automation",
 		"light",
 		"lock",
 		"number",
@@ -619,7 +619,6 @@ void MQTTAutoDiscover::on_auto_discovery_message(const struct mosquitto_message*
 		|| (object_id == "color_temp_startup")
 		|| (object_id == "requested_brightness_level")
 		|| (object_id == "requested_brightness_percent")
-		|| (object_id == "device_automation")
 		|| (object_id == "over-load_status")
 		|| (object_id == "hardware_status")
 		|| (object_id.find("_address") != std::string::npos)
@@ -1602,6 +1601,8 @@ void MQTTAutoDiscover::handle_auto_discovery_sensor_message(const struct mosquit
 				handle_auto_discovery_switch(pSensor, message);
 			else if (pSensor->component_type == "binary_sensor")
 				handle_auto_discovery_binary_sensor(pSensor, message);
+			else if (pSensor->component_type == "device_automation")
+				handle_auto_discovery_device_autiomation_sensor(pSensor, message);
 			else if (pSensor->component_type == "light")
 				handle_auto_discovery_light(pSensor, message);
 			else if (pSensor->component_type == "cover")
@@ -2585,6 +2586,11 @@ void MQTTAutoDiscover::handle_auto_discovery_binary_sensor(_tMQTTASensor* pSenso
 	InsertUpdateSwitch(pSensor);
 }
 
+void MQTTAutoDiscover::handle_auto_discovery_device_autiomation_sensor(_tMQTTASensor* pSensor, const struct mosquitto_message* message)
+{
+	InsertUpdateSwitch(pSensor);
+}
+
 void MQTTAutoDiscover::handle_auto_discovery_button(_tMQTTASensor* pSensor, const struct mosquitto_message* message)
 {
 	InsertUpdateSwitch(pSensor);
@@ -3409,7 +3415,10 @@ void MQTTAutoDiscover::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 	{
 		switchType = STYPE_Dimmer;
 	}
-	else if (pSensor->component_type == "binary_sensor")
+	else if (
+		(pSensor->component_type == "binary_sensor")
+		|| (pSensor->component_type == "device_automation")
+		)
 	{
 		if (
 			(pSensor->object_id.find("_status") != std::string::npos)
@@ -3441,7 +3450,7 @@ void MQTTAutoDiscover::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 		switchType = STYPE_DoorLock;
 	else if (
 		(pSensor->value_template == "action")
-		|| (pSensor->object_id == "action")
+		|| (pSensor->object_id.find("action") == 0)
 		|| (pSensor->value_template == "click")
 		)
 	{
