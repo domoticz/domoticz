@@ -740,15 +740,19 @@ void MQTTAutoDiscover::on_auto_discovery_message(const struct mosquitto_message*
 		{
 			if (root["name"].empty())
 			{
-				root["name"] = sensor_unique_id;
+				root["name"] = (dev_name.empty()) ? sensor_unique_id : dev_name;
 			}
 			std::string subname = root["name"].asString();
 			if (subname.find("0x") != 0)
 			{
-				pDevice->name = dev_name + " (" + subname + ")";
+				pDevice->name = dev_name;
+				if (dev_name != subname)
+					pDevice->name += " (" + subname + ")";
 			}
 			else
+			{
 				pDevice->name = dev_name;
+			}
 		}
 		else if (!root["name"].empty())
 		{
@@ -2588,7 +2592,45 @@ void MQTTAutoDiscover::handle_auto_discovery_binary_sensor(_tMQTTASensor* pSenso
 
 void MQTTAutoDiscover::handle_auto_discovery_device_autiomation_sensor(_tMQTTASensor* pSensor, const struct mosquitto_message* message)
 {
-	InsertUpdateSwitch(pSensor);
+	std::string topic(message->topic);
+	std::string qMessage = std::string((char*)message->payload, (char*)message->payload + message->payloadlen);
+
+	_tMQTTASensor* pRealSensor = nullptr;
+
+	bool bIsJSON = false;
+	Json::Value root;
+	if (pSensor->bIsJSON)
+	{
+		bool ret = ParseJSon(qMessage, root);
+		if (ret)
+		{
+			bIsJSON = root.isObject();
+		}
+	}
+
+	std::string szValue;
+	if (!bIsJSON)
+		szValue = qMessage;
+	else
+	{
+		std::string szKey = "action";
+		if (root[szKey].empty())
+		{
+			Log(LOG_ERROR, "Could not find '%s' in device_automation object (topic: %s, value: %s)", szKey.c_str(), topic.c_str(), qMessage.c_str());
+			return;
+		}
+		szValue = root[szKey].asString();
+	}
+
+	if (
+		(pSensor->state_topic == topic)
+		&& (pSensor->component_type == "device_automation")
+		&& (pSensor->payload_on == szValue)
+		)
+	{
+		pSensor->last_value = szValue;
+		InsertUpdateSwitch(pSensor);
+	}
 }
 
 void MQTTAutoDiscover::handle_auto_discovery_button(_tMQTTASensor* pSensor, const struct mosquitto_message* message)
