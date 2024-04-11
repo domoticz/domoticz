@@ -84,7 +84,7 @@ Enever::Enever(int ID, const std::string& szToken, const std::string& szProvider
 
 	std::vector<std::vector<std::string> > result;
 
-	//Retreive current prices backup
+	//Retrieve current prices backup
 
 	//Electricity Today
 	std::string szName = "Enever_Electricity_" + std::to_string(m_HwdID);

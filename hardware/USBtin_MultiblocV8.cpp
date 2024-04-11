@@ -1269,7 +1269,7 @@ bool USBtin_MultiblocV8::WriteToHardware(const char* pdata, const unsigned char 
 	if (packettype == pTypeLighting2)
 	{
 		// if it's light command
-		// retreive the ID information of the blocs (Rebloc+Codage+Ssréseau ):
+		// retrieve the ID information of the blocs (Rebloc+Codage+Ssréseau ):
 		sID_EnBase = (pSen->LIGHTING2.id1 << 24) + (pSen->LIGHTING2.id2 << 16) + (pSen->LIGHTING2.id3 << 8) + (pSen->LIGHTING2.id4);
 		FrameType = (sID_EnBase & MSK_TYPE_TRAME) >> SHIFT_TYPE_TRAME;
 		ReferenceBloc = (sID_EnBase & MSK_INDEX_MODULE) >> SHIFT_INDEX_MODULE;
@@ -1465,7 +1465,7 @@ void USBtin_MultiblocV8::USBtin_MultiblocV8_Send_SFSP_LearnCommand_OnCAN(long ba
 	}
 	writeFrame(szTrameToSend);
 	/*
-	char RefBloc = (baseID_ToSend & MSK_INDEX_MODULE) >> SHIFT_INDEX_MODULE; //retreive the refblock
+	char RefBloc = (baseID_ToSend & MSK_INDEX_MODULE) >> SHIFT_INDEX_MODULE; //retrieve the refblock
 
 	switch(RefBloc){
 		case BLOC_SFSP_M :

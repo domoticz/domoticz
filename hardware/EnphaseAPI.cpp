@@ -116,7 +116,7 @@ EnphaseAPI::EnphaseAPI(
 
 	std::vector<std::vector<std::string> > result;
 
-	//Retreive Owner Token backup
+	//Retrieve Owner Token backup
 	std::string szName = "EnphaseToken_" + std::to_string(m_HwdID);
 	result = m_sql.safe_query("SELECT ID, Value FROM UserVariables WHERE (Name=='%q')", szName.c_str());
 	if (result.empty())
@@ -129,7 +129,7 @@ EnphaseAPI::EnphaseAPI(
 		m_szToken = result[0][1];
 	}
 
-	//Retreive Installer Token backup
+	//Retrieve Installer Token backup
 	szName = "EnphaseToken_" + std::to_string(m_HwdID) + "_ex";
 	result = m_sql.safe_query("SELECT ID, Value FROM UserVariables WHERE (Name=='%q')", szName.c_str());
 	if (result.empty())

@@ -968,7 +968,7 @@ void COpenZWaveControlPanel::web_get_groups(int n, TiXmlElement* ep)
 
 /*
 * web_get_values
-* Retreive class values based on genres
+* Retrieve class values based on genres
 */
 void COpenZWaveControlPanel::web_get_values(int i, TiXmlElement* ep)
 {

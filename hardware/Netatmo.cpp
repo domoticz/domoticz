@@ -357,7 +357,7 @@ bool CNetatmo::RefreshToken(const bool bForce)
 /// <summary>
 /// Load an access token from the database
 /// </summary>
-/// <returns>true if token retreived, store the token in member variables</returns>
+/// <returns>true if token retrieved, store the token in member variables</returns>
 bool CNetatmo::LoadRefreshToken()
 {
 	std::vector<std::vector<std::string> > result;
@@ -1137,7 +1137,7 @@ bool CNetatmo::ParseStationData(const std::string& sResult, const bool bIsThermo
 /// <returns>success retreiving and parsing data</returns>
 bool CNetatmo::ParseDashboard(const Json::Value& root, const int DevIdx, const int ID, const std::string& name, const std::string& ModuleType, const int battery_percent, const int rssiLevel)
 {
-	//Local variable for holding data retreived
+	//Local variable for holding data retrieved
 	bool bHaveTemp = false;
 	bool bHaveHum = false;
 	bool bHaveBaro = false;
@@ -1247,7 +1247,7 @@ bool CNetatmo::ParseDashboard(const Json::Value& root, const int DevIdx, const i
 		}
 	}
 
-	//Data retreived create / update appropriate domoticz devices
+	//Data retrieved create / update appropriate domoticz devices
 	//Temperature and humidity sensors
 	if (bHaveTemp && bHaveHum && bHaveBaro)
 	{

@@ -3922,6 +3922,10 @@ namespace http
 				{
 					const int year = atoi(sd[0].c_str());
 					const double fsum = atof(sd[1].c_str());
+
+					if ((!bUseValuesOrCounter) && (fsum > 20000000))
+						continue;
+
 					const int previousIndex = sgroupby == "year" ? 0 : sgroupby == "quarter" ? sd[2][1] - '0' - 1 : atoi(sd[2].c_str()) - 1;
 					const double* sumPrevious = year - 1 != yearPrevious[previousIndex] ? NULL : &yearSumPrevious[previousIndex];
 					const char* trend = !sumPrevious ? "" : *sumPrevious < fsum ? "up" : *sumPrevious > fsum ? "down" : "equal";
