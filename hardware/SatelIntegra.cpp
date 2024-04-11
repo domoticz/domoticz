@@ -275,7 +275,7 @@ bool SatelIntegra::ConnectToIntegra()
 #else
 	fcntl(m_socket, F_SETFL, O_NONBLOCK);
 #endif
-	Log(LOG_STATUS, "connected to %s:%d", m_IPAddress.c_str(), m_IPPort);
+	Log(LOG_STATUS, "Connected to %s:%d", m_IPAddress.c_str(), m_IPPort);
 
 	return true;
 }

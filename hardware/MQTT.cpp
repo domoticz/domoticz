@@ -166,11 +166,11 @@ void MQTT::on_connect(int rc)
 	{
 		if (m_IsConnected)
 		{
-			Log(LOG_STATUS, "re-connected to: %s:%d", m_szIPAddress.c_str(), m_usIPPort);
+			Log(LOG_STATUS, "Re-connected to: %s:%d", m_szIPAddress.c_str(), m_usIPPort);
 		}
 		else
 		{
-			Log(LOG_STATUS, "connected to: %s:%d", m_szIPAddress.c_str(), m_usIPPort);
+			Log(LOG_STATUS, "Connected to: %s:%d", m_szIPAddress.c_str(), m_usIPPort);
 			m_IsConnected = true;
 			sOnConnected(this);
 			m_sDeviceReceivedConnection = m_mainworker.sOnDeviceReceived.connect([this](auto id, auto idx, auto &&name, auto cmd) { SendDeviceInfo(id, idx, name, cmd); });
@@ -585,11 +585,11 @@ void MQTT::on_disconnect(int rc)
 		{
 			if (rc == 5)
 			{
-				Log(LOG_ERROR, "disconnected, Invalid Username/Password (rc=%d)", rc);
+				Log(LOG_ERROR, "Disconnected, Invalid Username/Password (rc=%d)", rc);
 			}
 			else
 			{
-				Log(LOG_ERROR, "disconnected, restarting (rc=%d/%s)", rc, mosquitto_strerror(rc));
+				Log(LOG_ERROR, "Disconnected, restarting (rc=%d/%s)", rc, mosquitto_strerror(rc));
 			}
 			m_subscribed_topics.clear();
 			m_bDoReconnect = true;

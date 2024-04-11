@@ -132,7 +132,7 @@ void MySensorsMQTT::on_connect(int rc)
 
 	if (m_IsConnected)
 	{
-		Log(LOG_STATUS, "connected to: %s:%d", m_szIPAddress.c_str(), m_usIPPort);
+		Log(LOG_STATUS, "Connected to: %s:%d", m_szIPAddress.c_str(), m_usIPPort);
 
 		//Request gateway version
 		std::string sRequest = "0;0;3;0;2;";

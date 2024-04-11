@@ -273,7 +273,7 @@ bool CRFLinkBase::WriteToHardware(const char *pdata, const unsigned char length)
 	std::string switchtype = GetGeneralRFLinkFromInt(rfswitches, pSwitch->subtype);
 	if (switchtype.empty())
 	{
-		Log(LOG_ERROR, "trying to send unknown switch type: %d", pSwitch->subtype);
+		Log(LOG_ERROR, "Trying to send unknown switch type: %d", pSwitch->subtype);
 		return false;
 	}
 	//Log(LOG_ERROR, "id: %d", pSwitch->id);
@@ -326,7 +326,7 @@ bool CRFLinkBase::WriteToHardware(const char *pdata, const unsigned char length)
 	    }
 
 		if (switchcmnd.empty()) {
-			Log(LOG_ERROR, "trying to send unknown switch command: %d", pSwitch->cmnd);
+			Log(LOG_ERROR, "Trying to send unknown switch command: %d", pSwitch->cmnd);
 			return false;
 		}
 
@@ -483,7 +483,7 @@ bool CRFLinkBase::WriteToHardware(const char *pdata, const unsigned char length)
 			bSendOn = true;
 			break;
 		default:
-			Log(LOG_ERROR, "trying to send unknown led switch command: %d", pLed->command);
+			Log(LOG_ERROR, "Trying to send unknown led switch command: %d", pLed->command);
 			return false;
 	}
 

@@ -351,7 +351,7 @@ bool CZiBlueBase::WriteToHardware(const char *pdata, const unsigned char length)
 	std::string protocol = GetGeneralZiBlueFromInt(ziblue_switches, pSwitch->subtype);
 	if (protocol.empty())
 	{
-		Log(LOG_ERROR, "trying to send unknown switch type: %d", pSwitch->subtype);
+		Log(LOG_ERROR, "Trying to send unknown switch type: %d", pSwitch->subtype);
 		return false;
 	}
 	else if (protocol == "JAMMING")
@@ -365,7 +365,7 @@ bool CZiBlueBase::WriteToHardware(const char *pdata, const unsigned char length)
 		std::string switchcmnd = GetGeneralZiBlueFromInt(ziBlueswitchcommands, pSwitch->cmnd);
 		if (switchcmnd.empty())
 		{
-			Log(LOG_ERROR, "trying to send unknown switch command: %d", pSwitch->cmnd);
+			Log(LOG_ERROR, "Trying to send unknown switch command: %d", pSwitch->cmnd);
 			return false;
 		}
 		// check setlevel command

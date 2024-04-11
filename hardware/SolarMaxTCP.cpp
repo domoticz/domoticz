@@ -204,7 +204,7 @@ void SolarMaxTCP::Do_Work()
 	}
 	disconnect();
 
-	Log(LOG_STATUS, "TCP/IP Worker stopped...");
+	Log(LOG_STATUS, "Worker stopped...");
 }
 
 void SolarMaxTCP::write(const char *data, size_t size)

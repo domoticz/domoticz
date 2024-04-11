@@ -69,7 +69,7 @@ bool Comm5SMTCP::StopHardware()
 
 void Comm5SMTCP::OnConnect()
 {
-	Log(LOG_STATUS, "connected to: %s:%d", m_szIPAddress.c_str(), m_usIPPort);
+	Log(LOG_STATUS, "Connected to: %s:%d", m_szIPAddress.c_str(), m_usIPPort);
 	m_bIsStarted = true;
 
 	sOnConnected(this);
@@ -78,7 +78,7 @@ void Comm5SMTCP::OnConnect()
 
 void Comm5SMTCP::OnDisconnect()
 {
-	Log(LOG_ERROR, "disconected");
+	Log(LOG_ERROR, "Disconected");
 }
 
 void Comm5SMTCP::Do_Work()
@@ -98,7 +98,7 @@ void Comm5SMTCP::Do_Work()
 	}
 	terminate();
 
-	Log(LOG_STATUS, "TCP/IP Worker stopped...");
+	Log(LOG_STATUS, "Worker stopped...");
 }
 
 void Comm5SMTCP::ParseData(const unsigned char* data, const size_t len)

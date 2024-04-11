@@ -92,7 +92,7 @@ void KMTronicTCP::Do_Work()
 			GetMeterDetails();
 		}
 	}
-	Log(LOG_STATUS, "TCP/IP Worker stopped...");
+	Log(LOG_STATUS, "Worker stopped...");
 }
 
 bool KMTronicTCP::WriteToHardware(const char *pdata, const unsigned char /*length*/)

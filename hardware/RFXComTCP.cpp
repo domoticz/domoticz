@@ -45,7 +45,7 @@ bool RFXComTCP::StopHardware()
 
 void RFXComTCP::OnConnect()
 {
-	Log(LOG_STATUS, "connected to: %s:%d", m_szIPAddress.c_str(), m_usIPPort);
+	Log(LOG_STATUS, "Connected to: %s:%d", m_szIPAddress.c_str(), m_usIPPort);
 	m_bIsStarted = true;
 
 	sOnConnected(this);
@@ -53,7 +53,7 @@ void RFXComTCP::OnConnect()
 
 void RFXComTCP::OnDisconnect()
 {
-	Log(LOG_STATUS, "disconnected");
+	Log(LOG_STATUS, "Disconnected");
 }
 
 void RFXComTCP::Do_Work()
@@ -70,7 +70,7 @@ void RFXComTCP::Do_Work()
 	}
 	terminate();
 
-	Log(LOG_STATUS,"TCP/IP Worker stopped...");
+	Log(LOG_STATUS,"Worker stopped...");
 }
 
 void RFXComTCP::OnData(const unsigned char *pData, size_t length)
