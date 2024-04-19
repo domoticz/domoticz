@@ -1909,7 +1909,12 @@ namespace http {
 					}
 				}
 				if (session.rights == -1)
+				{
 					_log.Debug(DEBUG_AUTH, "[Auth Check] Trusted network exception detected, but no Admin User found!");
+					//If the User database table is empty, we will create a default Admin user (we are in trusted network anyway)
+					session.username = "{admin}";
+					session.rights = URIGHTS_ADMIN;
+				}
 				bTrustedNetwork = true;
 			}
 
