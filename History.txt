@@ -8,6 +8,7 @@ Version 2024.xxxxx (xxxxx 2024)
 - Changed: EvoHome, now making use of general logging system
 - Changed: MQTT-AD, now also handles brightness scale number values as string
 - Changed: SBFSpot, disabled error 28 error
+- Removed: Cereal Proxy (not needed anymore)
 
 Version 2024.4 (January 30th 2024)
 - Fixed: cWebm, fixing high CPU load caused by time jumps

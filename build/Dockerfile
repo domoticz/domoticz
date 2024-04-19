@@ -10,7 +10,6 @@ RUN apt-get update -qq \
       g++ \
       gcc \
       git \
-      libcereal-dev \
       libcurl4-gnutls-dev \
       libjsoncpp-dev \
       liblua5.3-dev \

@@ -49,7 +49,6 @@ matrix:
           - libdigest-sha-perl
           - python3-dev
           - liblua5.3-dev
-          - libcereal-dev
           - uthash-dev
     script:
       - (cd open-zwave-read-only; make)

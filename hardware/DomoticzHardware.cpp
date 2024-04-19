@@ -7,7 +7,6 @@
 #include "../main/SQLHelper.h"
 #include "../main/mainworker.h"
 #include "hardwaretypes.h"
-#include "HardwareCereal.h"
 
 CDomoticzHardwareBase::CDomoticzHardwareBase()
 {

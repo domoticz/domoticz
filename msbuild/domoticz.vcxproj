@@ -615,7 +615,6 @@
     <ClInclude Include="..\hardware\FritzboxTCP.h" />
     <ClInclude Include="..\hardware\Gpio.h" />
     <ClInclude Include="..\hardware\GpioPin.h" />
-    <ClInclude Include="..\hardware\HardwareCereal.h" />
     <ClInclude Include="..\hardware\Honeywell.h" />
     <ClInclude Include="..\hardware\Meteorologisk.h" />
     <ClInclude Include="..\hardware\MitsubishiWF.h" />

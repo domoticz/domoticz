@@ -2114,9 +2114,6 @@
     <ClInclude Include="..\main\TrendCalculator.h">
       <Filter>Helpers</Filter>
     </ClInclude>
-    <ClInclude Include="..\hardware\HardwareCereal.h">
-      <Filter>Devices</Filter>
-    </ClInclude>
     <ClInclude Include="..\main\dzVents.h">
       <Filter>EventSystem\dzVents</Filter>
     </ClInclude>
