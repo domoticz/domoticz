@@ -1495,7 +1495,8 @@ namespace Plugins {
 	{
 		if (self->pTransport)
 		{
-			return PyLong_FromLong(self->pTransport->TotalBytes());
+			//GizMoCuz: change to PyLong_FromSize_t?
+			return PyLong_FromLong(static_cast<long>(self->pTransport->TotalBytes()));
 		}
 
 		return PyBool_FromLong(0);

@@ -251,7 +251,7 @@ namespace Plugins {
 			: PyBorrowedRef() {
 			m_pObject = PyBytes_FromStringAndSize((const char*)value.data(), value.size());
 		};
-		PyNewRef(const byte* value, const int size)
+		PyNewRef(const byte* value, const size_t size)
 			: PyBorrowedRef() {
 			m_pObject = PyBytes_FromStringAndSize((const char*)value, size);
 		};
