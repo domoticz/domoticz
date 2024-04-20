@@ -17,7 +17,7 @@ std::set<std::string> allowed_components = {
 		"button",
 		"climate",
 		"cover",
-		"device_automation",
+		//"device_automation",
 		"light",
 		"lock",
 		"number",
