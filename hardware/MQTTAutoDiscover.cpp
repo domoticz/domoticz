@@ -17,7 +17,7 @@ std::set<std::string> allowed_components = {
 		"button",
 		"climate",
 		"cover",
-		//"device_automation",
+		"device_automation",
 		"light",
 		"lock",
 		"number",
@@ -675,11 +675,6 @@ void MQTTAutoDiscover::on_auto_discovery_message(const struct mosquitto_message*
 			sensor_unique_id = root["unique_id"].asString();
 		else if (!root["uniq_id"].empty())
 			sensor_unique_id = root["uniq_id"].asString();
-		else
-		{
-			//It's optional, but good to have one
-			sensor_unique_id = GenerateUUID();
-		}
 
 		std::string device_identifiers;
 
@@ -706,6 +701,19 @@ void MQTTAutoDiscover::on_auto_discovery_message(const struct mosquitto_message*
 		else
 		{
 			//It's optional, but good to supply one
+		}
+
+		if (sensor_unique_id.empty())
+		{
+			if (!device_identifiers.empty())
+			{
+				sensor_unique_id = device_identifiers + "_" + object_id;
+			}
+			else
+			{
+				//It's optional, but good to have one
+				sensor_unique_id = GenerateUUID();
+			}
 		}
 
 		if (device_identifiers.empty())
@@ -3493,6 +3501,7 @@ void MQTTAutoDiscover::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 	else if (
 		(pSensor->value_template == "action")
 		|| (pSensor->object_id.find("action") == 0)
+		|| (pSensor->object_id.find("click") == 0)
 		|| (pSensor->value_template == "click")
 		)
 	{
