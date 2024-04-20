@@ -677,7 +677,9 @@ namespace Plugins {
 		{
 			// load associated devices to make them available to python
 			std::vector<std::vector<std::string> > result;
+			Py_BEGIN_ALLOW_THREADS
 			result = m_sql.safe_query("SELECT Unit, ID, Name, nValue, sValue, DeviceID, Type, SubType, SwitchType, LastLevel, CustomImage, SignalLevel, BatteryLevel, LastUpdate, Options, Description, Color, Used FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==%d) ORDER BY Unit ASC", self->HwdID, self->Unit);
+			Py_END_ALLOW_THREADS
 			if (!result.empty())
 			{
 				for (const auto &sd : result)
