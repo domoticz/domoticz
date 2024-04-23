@@ -1917,6 +1917,7 @@ bool MQTTAutoDiscover::GuessSensorTypeValue(_tMQTTASensor* pSensor, uint8_t& dev
 		(szUnit == "m³")
 		|| (szUnit == "m\xB3")
 		|| (szUnit == "cubic meters")
+		|| (szUnit == "counter")
 		)
 	{
 		if (
