@@ -445,7 +445,7 @@ class CSQLHelper : public StoppableTask
 	void AllowNewHardwareTimer(int iTotMinutes);
 
 	bool InsertCustomIconFromZip(const std::string &szZip, std::string &ErrorMessage);
-	bool InsertCustomIconFromZipFile(const std::string &szZipFile, std::string &ErrorMessage);
+	uint64_t InsertCustomIconFromZipFile(const std::string &szZipFile, std::string &ErrorMessage);
 
 	std::map<std::string, std::string> BuildDeviceOptions(const std::string &options, bool decode = true);
 	std::map<std::string, std::string> GetDeviceOptions(const std::string &idx);
