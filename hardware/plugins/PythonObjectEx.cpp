@@ -142,7 +142,10 @@ namespace Plugins {
 		// Populate the unit dictionary if there are any
 		std::string DeviceID = PyBorrowedRef(self->DeviceID);
 		std::vector<std::vector<std::string>> result;
+		
+		Py_BEGIN_ALLOW_THREADS
 		result = m_sql.safe_query("SELECT Name, Unit FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%s')", pModState->pPlugin->m_HwdID, DeviceID.c_str());
+		Py_END_ALLOW_THREADS
 		if (!result.empty())
 		{
 
@@ -481,9 +484,12 @@ namespace Plugins {
 			std::string sDevice = PyBorrowedRef(pDevice->DeviceID);
 			// load associated devices to make them available to python
 			std::vector<std::vector<std::string>> result;
+			
+			Py_BEGIN_ALLOW_THREADS
 			result = m_sql.safe_query("SELECT Unit, ID, Name, nValue, sValue, Type, SubType, SwitchType, LastLevel, CustomImage, SignalLevel, BatteryLevel, LastUpdate, Options, "
 						  "Description, Color, Used, AddjValue, AddjMulti FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%s') AND (Unit==%d) ORDER BY Unit ASC",
 						  pModState->pPlugin->m_HwdID, sDevice.c_str(), self->Unit);
+			Py_END_ALLOW_THREADS
 			if (!result.empty())
 			{
 				for (const auto &sd : result)
@@ -514,8 +520,10 @@ namespace Plugins {
 						else
 						{
 							std::map<std::string, std::string> mpOptions;
-							Py_BEGIN_ALLOW_THREADS mpOptions = m_sql.BuildDeviceOptions(sd[13], true);
-							Py_END_ALLOW_THREADS for (const auto &opt : mpOptions)
+							Py_BEGIN_ALLOW_THREADS 
+							mpOptions = m_sql.BuildDeviceOptions(sd[13], true);
+							Py_END_ALLOW_THREADS f
+							for (const auto &opt : mpOptions)
 							{
 								PyNewRef pKeyDict = PyUnicode_FromString(opt.first.c_str());
 								PyNewRef pValueDict = PyUnicode_FromString(opt.second.c_str());
