@@ -522,7 +522,7 @@ namespace Plugins {
 							std::map<std::string, std::string> mpOptions;
 							Py_BEGIN_ALLOW_THREADS 
 							mpOptions = m_sql.BuildDeviceOptions(sd[13], true);
-							Py_END_ALLOW_THREADS f
+							Py_END_ALLOW_THREADS
 							for (const auto &opt : mpOptions)
 							{
 								PyNewRef pKeyDict = PyUnicode_FromString(opt.first.c_str());
