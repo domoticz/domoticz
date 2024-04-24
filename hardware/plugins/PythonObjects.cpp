@@ -542,6 +542,48 @@ namespace Plugins {
 			Type = pTypeSetpoint;
 			SubType = sTypeSetpoint;
 		}
+		else if (sTypeName == "Venetian Blinds US")
+        	{
+            		Type = pTypeGeneralSwitch;
+            		SubType = sSwitchGeneralSwitch;
+            		SwitchType = STYPE_VenetianBlindsUS;
+		}
+        	else if (sTypeName == "Venetian Blinds EU")
+        	{
+           		Type = pTypeGeneralSwitch;
+            		SubType = sSwitchGeneralSwitch;
+            		SwitchType = STYPE_VenetianBlindsEU;
+        	}
+		else if (sTypeName == "Blinds Percentage")
+        	{
+            		Type = pTypeGeneralSwitch;
+            		SubType = sSwitchGeneralSwitch;
+            		SwitchType = STYPE_BlindsPercentage;
+        	}
+        	else if (sTypeName == "ColorControlWW")
+        	{
+            		Type = pTypeColorSwitch;
+            		SubType = sTypeColor_CW_WW;
+            		SwitchType = 7;
+        	}
+        	else if (sTypeName == "ColorControlRGB")
+        	{
+            		Type = pTypeColorSwitch;
+            		SubType = sTypeColor_RGB;
+            		SwitchType = 7;
+		}
+        	else if (sTypeName == "ColorControlRGBWW")
+        	{
+            		Type = pTypeColorSwitch;
+            		SubType = sTypeColor_RGB_CW_WW;
+            		SwitchType = 7;
+        	}
+        	else if (sTypeName == "ColorControl")
+        	{
+           		Type = pTypeColorSwitch;
+            		SubType = sTypeColor_RGB_CW_WW_Z;
+            	SwitchType = 7;
+        	}
 	}
 
 	int CDevice_init(CDevice *self, PyObject *args, PyObject *kwds)
