@@ -1,5 +1,5 @@
 define(['app', 'livesocket'], function (app) {
-	app.controller('WeatherController', function ($scope, $rootScope, $location, $http, $interval, deviceApi, permissions, livesocket) {
+	app.controller('WeatherController', function ($scope, $rootScope, $location, $http, $interval, $route, $routeParams, deviceApi, permissions, livesocket) {
 
 		var ctrl = this;
 
@@ -90,9 +90,8 @@ define(['app', 'livesocket'], function (app) {
 
 		//We only call this once. After this the widgets are being updated automatically by used of the 'jsonupdate' broadcast event.
 		RefreshWeathers = function () {
-			var id = "";
-
-			livesocket.getJson("json.htm?type=command&param=getdevices&filter=weather&used=true&order=[Order]&lastupdate=" + $.LastUpdateTime + "&plan=" + window.myglobals.LastPlanSelected, function (data) {
+			var roomPlanId = 0;//$routeParams.room || window.myglobals.LastPlanSelected;
+			livesocket.getJson("json.htm?type=command&param=getdevices&filter=weather&used=true&order=[Order]&lastupdate=" + $.LastUpdateTime + "&plan=" + roomPlanId, function (data) {
 				if (typeof data.ServerTime != 'undefined') {
 					$rootScope.SetTimeAndSun(data.Sunrise, data.Sunset, data.ServerTime);
 				}
@@ -119,8 +118,10 @@ define(['app', 'livesocket'], function (app) {
 		ShowWeathers = function () {
 			$('#modal').show();
 
+			var roomPlanId = 0;//$routeParams.room || window.myglobals.LastPlanSelected;
+
 			$.ajax({
-				url: "json.htm?type=command&param=getdevices&filter=weather&used=true&order=[Order]",
+				url: "json.htm?type=command&param=getdevices&filter=weather&used=true&order=[Order]&plan=" + roomPlanId,
 				async: false,
 				dataType: 'json',
 				success: function (data) {
@@ -155,8 +156,12 @@ define(['app', 'livesocket'], function (app) {
 		};
 		$scope.DropWidget = function (idx) {
 			var myid = idx;
+			var roomid = 0;//window.myglobals.LastPlanSelected;
+			if (typeof roomid == 'undefined') {
+				roomid = 0;
+			}
 			$.ajax({
-				url: "json.htm?type=command&param=switchdeviceorder&idx1=" + myid + "&idx2=" + $.devIdx,
+				url: "json.htm?type=command&param=switchdeviceorder&idx1=" + myid + "&idx2=" + $.devIdx + "&roomid=" + roomid,
 				async: false,
 				dataType: 'json',
 				success: function (data) {
@@ -708,7 +713,7 @@ define(['app', 'livesocket'], function (app) {
 					$('#weathertophtm').hide();
 					return ShowForecast(atob(item.forecast_url), escape(item.Name), escape(item.Description), '#weathercontent', 'ShowWeathers');
 				};
-
+				
 				$element.i18n();
 				//WatchLiveSearch();
 				WatchDescriptions();
