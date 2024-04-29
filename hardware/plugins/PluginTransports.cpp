@@ -377,7 +377,7 @@ namespace Plugins {
 					CPlugin* pPlugin = ((CConnection*)m_pConnection)->pPlugin;
 					if (!pPlugin)
 						return;
-					pPlugin->Log(LOG_ERROR, "Not all data written to socket (%s:%s). %d expected, %d written", m_IP.c_str(), m_Port.c_str(), int(pMessage.size()), iSentBytes);
+					pPlugin->Log(LOG_ERROR, "Not all data written to socket (%s:%s). %d expected, %d written", m_IP.c_str(), m_Port.c_str(), int(pMessage.size()), int(iSentBytes));
 				}
 			}
 			catch (std::exception & e)
@@ -452,7 +452,7 @@ namespace Plugins {
 					if (!pPlugin)
 						return;
 					pPlugin->Log(LOG_ERROR, "Not all data written to secure socket (%s:%s). %d expected, %d written", m_IP.c_str(), m_Port.c_str(), int(pMessage.size()),
-						     iSentBytes);
+						     int(iSentBytes));
 				}
 			}
 			catch (std::exception & e)
