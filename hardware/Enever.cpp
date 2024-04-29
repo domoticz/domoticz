@@ -293,6 +293,10 @@ bool Enever::GetPriceElectricity()
 											{
 												m_szCurrentElectricityPrices = m_szCurrentElectricityPrices_Tomorrow;
 												m_szCurrentElectricityPrices_Tomorrow.clear();
+
+												//Store for later usage
+												std::string szName = "Enever_Electricity_" + std::to_string(m_HwdID);
+												m_sql.safe_query("UPDATE UserVariables SET Value='%q', LastUpdate='%s' WHERE (Name=='%q')", m_szCurrentElectricityPrices.c_str(), TimeToString(nullptr, TF_DateTime).c_str(), szName.c_str());
 												return true;
 											}
 										}
