@@ -554,8 +554,8 @@ define(['app', 'components/rgbw-picker/RgbwPicker'], function (app) {
 
         function init() {
             vm.deviceIdx = $routeParams.id;
-            vm.switchTypeOptions = []
-			vm.planIDsOptions = []
+            vm.switchTypeOptions = [];
+			vm.planIDsOptions = [];
 			
             populatedevicetypes();
 			populatedeviceroomplans();
