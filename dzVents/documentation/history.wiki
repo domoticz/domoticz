@@ -1,4 +1,8 @@
 __NOTOC__
+== [3.1.9] ==
+
+* Added historical data helper <code>med(fromIndex, toIndex, default)</code> to calculate the median
+
 == [3.1.8] ==
 
 * Add option to deserialize serialized JSON strings

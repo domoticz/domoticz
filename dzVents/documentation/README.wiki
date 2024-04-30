@@ -1978,6 +1978,7 @@ Of course, if you don’t intend to use any of these statistical functions you c
 <ul>
 <li><p>'''avg( [fromIdx], [toIdx], [default] )''': Calculates the average of all item values within the range <code>fromIdx</code> to <code>toIdx</code>. If no data are in the set, the value <code>default</code> will be returned instead of <code>0</code>.</p></li>
 <li><p>'''avgSince([[#Time_specification_.28timeAgo.29|timeAgo]], default )''': Calculates the average of all data points since <code>timeAgo</code>. Returns <code>default</code> if there are no data, otherwise 0. E.g.: <code>local avg = myVar.avgSince('00:30:00')</code> returns the average over the past 30 minutes.</p></li>
+<li><p>'''med( [fromIdx], [toIdx], [default] )''': Calculates the median of all item values within the range <code>fromIdx</code> to <code>toIdx</code>. If no data are in the set, the value <code>default</code> will be returned instead of <code>0</code>.</p></li>
 <li><p>'''min( [fromIdx], [toIdx] )''': Returns the lowest value in the range defined by fromIdx and toIdx.</p></li>
 <li><p>'''minSince([[#Time_specification_.28timeAgo.29|timeAgo]])''': Same as '''min''' but now within the <code>timeAgo</code> interval.</p></li>
 <li><p>'''max( [fromIdx], [toIdx] )''': Returns the highest value in the range defined by fromIdx and toIdx.</p></li>

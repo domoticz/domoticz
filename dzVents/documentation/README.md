@@ -2033,6 +2033,7 @@ Of course, if you don't intend to use any of these statistical functions you can
 
  - **avg( [fromIdx], [toIdx], [default] )**: Calculates the average of all item values within the range `fromIdx` to `toIdx`. If no data are in the set, the value `default` will be returned instead of `0`.
  - **avgSince([timeAgo](#Time_specification_.28timeAgo.29), default )**: Calculates the average of all data points since `timeAgo`. Returns `default` if there are no data, otherwise 0. E.g.: `local avg = myVar.avgSince('00:30:00')` returns the average over the past 30 minutes.
+ - **med( [fromIdx], [toIdx], [default] )**: Calculates the median of all item values within the range `fromIdx` to `toIdx`. If no data are in the set, the value `default` will be returned instead of `0`.
  - **min( [fromIdx], [toIdx] )**: Returns the lowest value in the range defined by fromIdx and toIdx.
  - **minSince([timeAgo](#Time_specification_.28timeAgo.29))**: Same as **min** but now within the `timeAgo` interval.
  - **max( [fromIdx], [toIdx] )**: Returns the highest value in the range defined by fromIdx and toIdx.

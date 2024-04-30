@@ -308,6 +308,33 @@ local function HistoricalStorage(data, maxItems, maxHours, maxMinutes, getData)
 		end
 	end
 
+	local function _med(items)
+		local arr = {}
+		for i, item in ipairs(items) do
+			table.insert(arr, item.data)
+		end
+		local n = #arr
+		if n % 2 == 1 then
+			-- Odd number of elements
+			return arr[(n + 1) / 2]
+		else
+			-- Even number of elements
+			local mid1 = n / 2
+			local mid2 = mid1 + 1
+			return (arr[mid1] + arr[mid2]) / 2
+		end
+	end
+
+	function self.med(from, to, default)
+		local subset, length = self.subset(from, to)
+
+		if (length == 0) then
+			return default or 0
+		else
+			return _med(subset)
+		end
+	end
+
 	local function _min(items)
 		local itm =  nil
 		local min = items.reduce(function(acc, item)
