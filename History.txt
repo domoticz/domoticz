@@ -1,4 +1,5 @@
 Version 2024.xxxxx (xxxxx 2024)
+- Implemented: dzVents, Added historical data helper 'med' to calculate the median value
 - Implemented: Enever, Added Budget Energy and Eneco
 - Implemented: Enphase, Option for more Inverter details (ac/dc voltage, temperature, lastupdate)
 - Implemented: OpenWeatherMap, API 3.0 support
