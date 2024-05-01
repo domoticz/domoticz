@@ -313,6 +313,7 @@ local function HistoricalStorage(data, maxItems, maxHours, maxMinutes, getData)
 		for i, item in ipairs(items) do
 			table.insert(arr, item.data)
 		end
+		table.sort(arr)
 		local n = #arr
 		if n % 2 == 1 then
 			-- Odd number of elements
