@@ -29,7 +29,20 @@ define(['app', 'log/Chart'], function (app) {
                         xAxis: {
                             dateTimeLabelFormats: {
                                 day: '%a'
-                            }
+                            },
+							events: {
+								afterSetExtremes: function (event) {
+									var xMin = event.min;
+									var xMax = event.max;
+/*	
+									var chart = Highcharts.charts[4]; //need_some_help: this is not always the hour chart!?
+									var ex = chart.xAxis[0].getExtremes();
+									if (ex.min != xMin || ex.max != xMax) {
+										chart.xAxis[0].setExtremes(xMin, xMax, true, false);
+									}
+*/
+								}
+							}
                         },
                         plotOptions: {
 							column: {
@@ -72,6 +85,19 @@ define(['app', 'log/Chart'], function (app) {
                                 hour: '%H:00',
                                 day: '%H:00'
                             },
+							events: {
+								afterSetExtremes: function (event) {
+									var xMin = event.min;
+									var xMax = event.max;
+/*									
+									var chart = Highcharts.charts[0]; //need_some_help: this is not always the day chart!?
+									var ex = chart.xAxis[0].getExtremes();
+									if (ex.min != xMin || ex.max != xMax) {
+										chart.xAxis[0].setExtremes(xMin, xMax, true, false);
+									}
+*/
+								}
+							},
                             tickInterval: 1 * 3600 * 1000
                         },
                         tooltip: {
