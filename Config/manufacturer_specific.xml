@@ -2096,4 +2096,7 @@
   </Manufacturer>
   <Manufacturer id="0021" name="Zykronix"></Manufacturer>
   <Manufacturer id="0135" name="ZyXEL"></Manufacturer>
+  <Manufacturer id="0460" name="Shelly Qubino">
+    <Product config="shellyqubino/waveshutter.xml" id="0082" name="Wave Shutter" type="0003"/>
+  </Manufacturer>
 </ManufacturerSpecificData>

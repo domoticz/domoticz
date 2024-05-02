@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Product xmlns='https://github.com/OpenZWave/open-zwave' Revision="2">
+<!-- ShellyQubino: Wave shutter -->
+
+	<!-- Configuration  -->
+	<CommandClass id="112">
+		<Value type="list" genre="config" instance="1" index="71" label="Operating modes" size="1" min="0" max="1" value="0">
+			<Help>This parameter defines selection between two operating modes. NOTE: After setting a mode the module needs to be reconfigured. Please check the detailed description in the product manual.</Help>
+			<Item label="Shutter mode" value="0" />
+			<Item label="Venetian mode" value="1" />
+		</Value>
+		<Value type="list" genre="config" instance="1" index="78" label="Forced Shutter calibration" size="1" min="0" max="1" value="0">
+			<Help>By modifying the parameters setting from 0 to 1 a Shutter enters the calibration mode. Once the calibration process finished the parameter reports a result value: 2: device calibrated, 3 device not calibrated, 4 calibration error</Help>
+			<Item label="Default" value="0" />
+			<Item label="Start calibration process" value="1" />
+		</Value>
+	</CommandClass>
+
+	<!-- Association Groups -->
+	<CommandClass id="133">
+		<Associations num_groups="2">
+			<Group index="1" max_associations="16" label="Multilevel" auto="false"/>
+			<Group index="2" max_associations="1" label="Lifeline" auto="true"/>
+		</Associations>
+	</CommandClass>
+
+	<!-- Remove COMMAND_CLASS_BASIC -->
+	<CommandClass id="32" action="remove" />
+</Product>
