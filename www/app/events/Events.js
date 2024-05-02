@@ -9,8 +9,12 @@ define(['app', 'events/factories', 'events/EventViewer', 'events/CurrentStates']
         vm.updateEvent = updateEvent;
         vm.updateEventState = updateEventState;
         vm.deleteEvent = deleteEvent;
+		vm.storeRecentEvents = storeRecentEvents;
+		vm.loadRecentEvents = loadRecentEvents;
         vm.setActiveEventId = setActiveEventId;
         vm.isInterpreterSupported = isInterpreterSupported;
+		
+		vm.storeRecents = true;
 
         init();
 
@@ -43,7 +47,7 @@ define(['app', 'events/factories', 'events/EventViewer', 'events/CurrentStates']
                 { id: 'UserVariable', name: 'User variable' }
             ];
 
-            fetchEvents();
+            listEvents();
         }
 
         function isInterpreterSupported(interpreter) {
@@ -54,15 +58,15 @@ define(['app', 'events/factories', 'events/EventViewer', 'events/CurrentStates']
             return vm.interpreters.includes(interpreter);
         }
 
-        function fetchEvents() {
+        function listEvents() {
 			$rootScope.RefreshTimeAndSun();
 
-            return domoticzEventsApi.fetchEvents().then(function (data) {
+            return domoticzEventsApi.listEvents().then(function (data) {
                 vm.events = data.events;
                 vm.interpreters = data.interpreters;
 
                 if (vm.events.length > 0 && vm.openedEvents.length === 0) {
-                    openEvent(vm.events[0]);
+					loadRecentEvents();
                 }
             })
         }
@@ -110,8 +114,8 @@ define(['app', 'events/factories', 'events/EventViewer', 'events/CurrentStates']
                 return item.id === event.id
             })) {
                 vm.openedEvents.push(event);
+				storeRecentEvents();
             }
-
             setActiveEventId(event.id)
         }
 
@@ -135,6 +139,7 @@ define(['app', 'events/factories', 'events/EventViewer', 'events/CurrentStates']
                 vm.openedEvents = vm.openedEvents.filter(function (item) {
                     return item.id !== event.id
                 });
+				storeRecentEvents();
 
                 event.isChanged = false;
             });
@@ -142,7 +147,7 @@ define(['app', 'events/factories', 'events/EventViewer', 'events/CurrentStates']
 
         function updateEvent(event) {
             if (event.isNew) {
-                fetchEvents().then(function () {
+                listEvents().then(function () {
                     vm.openedEvents = vm.openedEvents.map(function (item) {
                         if (item.id !== event.id) {
                             return item;
@@ -187,5 +192,37 @@ define(['app', 'events/factories', 'events/EventViewer', 'events/CurrentStates']
 
             closeEvent(event, true);
         }
+		
+		function loadRecentEvents() {
+			vm.storeRecents = false;
+
+			domoticzEventsApi.loadRecents().then(function (data) {
+				if (data.length > 0) {
+					const recentEvents = data.split(',');
+					for (id of recentEvents) {
+						vm.events.map(function (item) {
+							if (item.id == id) {
+								openEvent(item);
+							}
+						});
+					}
+				} else {
+					//open first event
+					openEvent(vm.events[0]);
+				}
+				vm.storeRecents = true;
+			});
+		}
+		
+		function storeRecentEvents() {
+			if (vm.storeRecents == false) {
+				return;
+			}
+			var recentEvents = [];
+			vm.openedEvents.map(function (item) {
+				recentEvents.push(item.id);
+			});
+			domoticzEventsApi.storeRecents(recentEvents);
+		}
     }
 });
