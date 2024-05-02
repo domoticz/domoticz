@@ -2,7 +2,7 @@
  * WebServerHandleGraph.cpp
  *
  *  Created on: 7 August 2023
- * 
+ *
  * This file is NOT a separate class but is part of 'main/WebServer.cpp'
  * It contains the 'HandleGraph' Cmd that is part of the WebServer class, but for sourcecode management
  * reasons separated out into its own file. The definitions are still in 'main/Webserver.h'
@@ -86,7 +86,7 @@ namespace http
 			double meteroffset = AddjValue;
 
 			std::string dbasetable;
-			if (srange == "day")
+			if ((srange == "day") || (srange == "hour"))
 			{
 				if (sensor == "temp")
 					dbasetable = "Temperature";
@@ -167,7 +167,111 @@ namespace http
 
 			int iPrev;
 
-			if (srange == "day")
+			if (srange == "hour")
+			{
+				if (sensor == "counter")
+				{
+					if (dType == pTypeP1Power)
+					{
+						root["status"] = "OK";
+						root["title"] = "Graph " + sensor + " " + srange;
+/*
+						char szDateStart[40];
+						char szDateEnd[40];
+						sprintf(szDateEnd, "%04d-%02d-%02d %02d:%02d:%02d", tm1.tm_year + 1900, tm1.tm_mon + 1, tm1.tm_mday, tm1.tm_hour, tm1.tm_min, tm1.tm_sec);
+
+						// Subtract a day
+						time_t daybefore;
+						struct tm tm2;
+						getNoon(daybefore, tm2, tm1.tm_year + 1900, tm1.tm_mon + 1, tm1.tm_mday - 1); // We only want one day
+						sprintf(szDateStart, "%04d-%02d-%02d %02d:%02d:%02d", tm2.tm_year + 1900, tm2.tm_mon + 1, tm2.tm_mday, tm1.tm_hour, tm1.tm_min, tm1.tm_sec);
+
+						result = m_sql.safe_query("SELECT strftime('%%Y-%%m-%%d %%H:00:00', Date) as ymd, MIN(Value1) as u1, MIN(Value5) as u2, MIN(Value2) as d1, MIN(Value6) as d2 FROM %s WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q' AND Date<='%q') GROUP BY ymd",
+							dbasetable.c_str(), idx, szDateStart, szDateEnd);
+*/
+						result = m_sql.safe_query("SELECT strftime('%%Y-%%m-%%d %%H:00:00', Date) as ymd, MIN(Value1) as u1, MIN(Value5) as u2, MIN(Value2) as d1, MIN(Value6) as d2 FROM %s WHERE (DeviceRowID==%" PRIu64 ") GROUP BY ymd",
+							dbasetable.c_str(), idx);
+						if (!result.empty())
+						{
+							int ii = 0;
+							bool bHaveDeliverd = false;
+							bool bHaveFirstValue = false;
+							int64_t lastUsage, lastDeliv;
+							time_t lastTime = 0;
+
+							int nMeterType = 0;
+							m_sql.GetPreferencesVar("SmartMeterType", nMeterType);
+
+							int lastDay = 0;
+
+							for (const auto& sd : result)
+							{
+								int64_t actUsage1 = std::stoll(sd[1]);
+								int64_t actUsage2 = std::stoll(sd[2]);
+								int64_t actDeliv1 = std::stoll(sd[3]);
+								int64_t actDeliv2 = std::stoll(sd[4]);
+								actDeliv1 = (actDeliv1 < 10) ? 0 : actDeliv1;
+								actDeliv2 = (actDeliv2 < 10) ? 0 : actDeliv2;
+
+								int64_t actUsage = actUsage1 + actUsage2;
+								int64_t actDeliv = actDeliv1 + actDeliv2;
+
+								std::string stime = sd[0];
+								struct tm ntime;
+								time_t atime;
+								ParseSQLdatetime(atime, ntime, stime, -1);
+								if (lastDay != ntime.tm_mday)
+								{
+									lastDay = ntime.tm_mday;
+								}
+
+								if (bHaveFirstValue)
+								{
+									if (
+										(actUsage < lastUsage)
+										|| (actDeliv < lastDeliv)
+										|| (atime <= lastTime)
+										)
+									{
+										//daylight change happened, meter changed?, ignoring  for now
+										lastUsage = actUsage;
+										lastDeliv = actDeliv;
+										lastTime = atime;
+										continue;
+									}
+
+									long curUsage = (long)(actUsage - lastUsage);
+									long curDeliv = (long)(actDeliv - lastDeliv);
+
+									std::string stime = sd[0].substr(0, 16);
+									root["result"][ii]["d"] = stime;
+
+									if (curDeliv != 0)
+										bHaveDeliverd = true;
+
+									sprintf(szTmp, "%ld", curUsage);
+									root["result"][ii]["v"] = szTmp;
+									sprintf(szTmp, "%ld", curDeliv);
+									root["result"][ii]["r"] = szTmp;
+									ii++;
+								}
+								else
+								{
+									bHaveFirstValue = true;
+								}
+								lastUsage = actUsage;
+								lastDeliv = actDeliv;
+								lastTime = atime;
+							}
+							if (bHaveDeliverd)
+							{
+								root["delivered"] = true;
+							}
+						}
+					}
+				}
+			}
+			else if (srange == "day")
 			{
 				if (sensor == "temp")
 				{
@@ -998,7 +1102,7 @@ namespace http
 
 											// prevents graph from going crazy if the meter counter resets
 											// removed because it breaks  negative increments
-											double TotalValue=double(actValue - ulFirstValue);
+											double TotalValue = double(actValue - ulFirstValue);
 											//if (actValue < ulFirstValue) TotalValue=actValue;
 
 											// if (TotalValue != 0)
@@ -1118,7 +1222,7 @@ namespace http
 										{
 											curValue = actValue;
 										}
-										
+
 										curValue *= int(tlaps);
 
 										root["result"][ii]["d"] = sd[1].substr(0, 16);
@@ -1859,7 +1963,7 @@ namespace http
 					}
 				}
 			} // week
-			else if (srange == "month" || srange	== "year" || !sgroupby.empty())
+			else if (srange == "month" || srange == "year" || !sgroupby.empty())
 			{
 				char szDateStart[40];
 				char szDateEnd[40];
@@ -1928,7 +2032,7 @@ namespace http
 
 						if (tempsign == 'F')
 						{
-							for (auto & itt : root["result"])
+							for (auto& itt : root["result"])
 							{
 								itt["s"] = ConvertTemperature(itt["s"].asDouble(), tempsign);
 							}
@@ -2503,7 +2607,7 @@ namespace http
 
 					std::function<std::string(std::string, std::string)> tableColumn = [](std::string table, std::string expr) {
 						return (table.empty() ? "" : table + ".") + expr;
-					};
+						};
 
 					int ii = 0;
 					iPrev = 0;
@@ -2526,20 +2630,20 @@ namespace http
 									return std_format(expr, deliveryLow, deliveryNormal);
 								}
 								return std::string(expr);
-							};
+								};
 							std::function<std::string(std::string)> counterExpr = [sensorareaExpr](std::string expr) {
 								return sensorareaExpr(expr.c_str(), "1", "3", "2", "4");
-							};
+								};
 							std::function<std::string(std::string)> valueExpr = [sensorareaExpr](std::string expr) {
 								return sensorareaExpr(expr.c_str(), "1", "5", "2", "6");
-							};
+								};
 							GroupBy(
 								root, dbasetable, idx, sgroupby, bIsManagedCounter,
 								[counterExpr, tableColumn](std::string table) {
 									return counterExpr(tableColumn(table, "Counter%s") + "+" + tableColumn(table, "Counter%s"));
 								},
 								[valueExpr, tableColumn](std::string table) { return valueExpr(tableColumn(table, "Value%s") + "+" + tableColumn(table, "Value%s")); },
-									[divider, this](double sum) {
+								[divider, this](double sum) {
 									if (sum == 0)
 									{
 										return std::string("0");
@@ -3188,24 +3292,24 @@ namespace http
 								root, dbasetable, idx, sgroupby, bIsManagedCounter, [tableColumn](std::string table) { return tableColumn(table, "Counter"); },
 								[tableColumn](std::string table) { return tableColumn(table, "Value"); },
 								[metertype, AddjValue, divider, this](double sum) {
-								if (sum == 0)
-								{
-									return std::string("0");
-								}
-								switch (metertype)
-								{
-								case MTYPE_ENERGY:
-								case MTYPE_ENERGY_GENERATED:
-									return std_format("%.3f", sum / divider);
-								case MTYPE_GAS:
-									return std_format("%.2f", sum / divider);
-								case MTYPE_WATER:
-									return std_format("%.3f", sum / divider);
-								case MTYPE_COUNTER:
-									return std_format("%.10g", sum / divider);
-								}
-								return std::string("");
-							});
+									if (sum == 0)
+									{
+										return std::string("0");
+									}
+									switch (metertype)
+									{
+									case MTYPE_ENERGY:
+									case MTYPE_ENERGY_GENERATED:
+										return std_format("%.3f", sum / divider);
+									case MTYPE_GAS:
+										return std_format("%.2f", sum / divider);
+									case MTYPE_WATER:
+										return std_format("%.3f", sum / divider);
+									case MTYPE_COUNTER:
+										return std_format("%.10g", sum / divider);
+									}
+									return std::string("");
+								});
 							ii = root["result"].size();
 						}
 						else
@@ -4224,7 +4328,7 @@ namespace http
 							szValue = szTmp;
 							sprintf(szTmp, "%.3f", atof(szValue.c_str()) / divider);
 							root["result"][ii]["v2"] = szTmp;
-							
+
 							ii++;
 							if (bHaveDeliverd)
 							{

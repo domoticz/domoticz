@@ -3,6 +3,7 @@ Version 2024.xxxxx (xxxxx 2024)
 - Implemented: Enever, Added Budget Energy and Eneco
 - Implemented: Enphase, Option for more Inverter details (ac/dc voltage, temperature, lastupdate)
 - Implemented: Event Editor, storing/loading opened events
+- Implemented: Hour chart for P1 log
 - Implemented: OpenWeatherMap, API 3.0 support
 - Fixed: Floorplan, better detection of switches
 - Fixed: Hardware Setup, hiding extra parameters when selecting a python plugin

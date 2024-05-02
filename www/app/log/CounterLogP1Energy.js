@@ -14,6 +14,19 @@ define(['app', 'log/Chart', 'log/CounterLogParams', 'log/CounterLogEnergySeriesS
                     }
                 }
             },
+            chartParamsHourTemplate: {
+                highchartTemplate: {
+                    plotOptions: {
+                    },
+                    tooltip: {
+						headerFormat: '{point.x:%A, %B %d, %Y %H:00}<br/>',
+                        outside: true,
+						crosshairs: true,
+						shared: true,
+						//useHTML: true
+                    }
+                }
+            },
             chartParamsWeekTemplate: {
                 highchartTemplate: {
                     plotOptions: {
@@ -98,6 +111,16 @@ define(['app', 'log/Chart', 'log/CounterLogParams', 'log/CounterLogEnergySeriesS
                     }
                 ];
             },
+            yAxesHour: function (deviceType) {
+                return [
+                    {
+                        title: {
+                            text: $.t('Energy') + ' (' + chart.valueUnits.energy(chart.valueMultipliers.m1) + ')'
+                        },
+						min: 0
+                    }
+                ];
+            },
             yAxesWeek: function (deviceType) {
                 return [
                     {
@@ -140,6 +163,11 @@ define(['app', 'log/Chart', 'log/CounterLogParams', 'log/CounterLogEnergySeriesS
                 return []
                     .concat(counterLogEnergySeriesSuppliers.p1DaySeriesSuppliers(deviceType))
                     .concat(counterLogEnergySeriesSuppliers.powerReturnedDaySeriesSuppliers(deviceType));
+            },
+            hourSeriesSuppliers: function (deviceType) {
+                return []
+                    .concat(counterLogEnergySeriesSuppliers.p1HourSeriesSuppliers(deviceType))
+                    .concat(counterLogEnergySeriesSuppliers.powerReturnedHourSeriesSuppliers(deviceType));
             },
             weekSeriesSuppliers: function (deviceType) {
                 return []
