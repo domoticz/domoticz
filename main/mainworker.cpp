@@ -238,13 +238,6 @@ MainWorker::MainWorker()
 
 	time_t atime = mytime(nullptr);
 	m_LastHeartbeat = atime;
-	struct tm ltime;
-	localtime_r(&atime, &ltime);
-	m_ScheduleLastMinute = ltime.tm_min;
-	m_ScheduleLastHour = ltime.tm_hour;
-	m_ScheduleLastMinuteTime = 0;
-	m_ScheduleLastHourTime = 0;
-	m_ScheduleLastDayTime = 0;
 	m_LastSunriseSet = "";
 	m_DayLength = "";
 
@@ -1198,6 +1191,8 @@ bool MainWorker::Start()
 		LoadSharedUsers();
 	}
 
+	HandleHourPrice();
+
 	m_thread = std::make_shared<std::thread>([this] { Do_Work(); });
 	SetThreadName(m_thread->native_handle(), "MainWorker");
 	m_rxMessageThread = std::make_shared<std::thread>([this] { Do_Work_On_Rx_Messages(); });
@@ -1591,6 +1586,18 @@ void MainWorker::Do_Work()
 	int second_counter = 0;
 	int minute_counter = 0;
 	int heartbeat_counter = 0;
+
+	time_t atime = mytime(nullptr);
+	struct tm ltime;
+	localtime_r(&atime, &ltime);
+
+	int _ScheduleLastMinute = ltime.tm_min;
+	int _ScheduleLastHour = ltime.tm_hour;
+	time_t _ScheduleLastMinuteTime = 0;
+	time_t _ScheduleLastHourTime = 0;
+	time_t _ScheduleLastDayTime = 0;
+
+
 	while (!IsStopRequested(500))
 	{
 		if (m_bDoDownloadDomoticzUpdate)
@@ -1687,17 +1694,17 @@ void MainWorker::Do_Work()
 			}
 		}
 
-		time_t atime = mytime(nullptr);
+		atime = mytime(nullptr);
 		struct tm ltime;
 		localtime_r(&atime, &ltime);
 
-		if (ltime.tm_min != m_ScheduleLastMinute)
+		if (ltime.tm_min != _ScheduleLastMinute)
 		{
 			minute_counter++;
-			if (difftime(atime, m_ScheduleLastMinuteTime) > 30) //avoid RTC/NTP clock drifts
+			if (difftime(atime, _ScheduleLastMinuteTime) > 30) //avoid RTC/NTP clock drifts
 			{
-				m_ScheduleLastMinuteTime = atime;
-				m_ScheduleLastMinute = ltime.tm_min;
+				_ScheduleLastMinuteTime = atime;
+				_ScheduleLastMinute = ltime.tm_min;
 
 				tzset(); //this because localtime_r/localtime_s does not update for DST
 
@@ -1727,43 +1734,51 @@ void MainWorker::Do_Work()
 			{
 				IsUpdateAvailable(true);
 			}
-		}
-		if (ltime.tm_hour != m_ScheduleLastHour)
-		{
-			if (difftime(atime, m_ScheduleLastHourTime) > 30 * 60) //avoid RTC/NTP clock drifts
+			if (ltime.tm_hour != _ScheduleLastHour)
 			{
-				m_ScheduleLastHourTime = atime;
-				m_ScheduleLastHour = ltime.tm_hour;
-				GetSunSettings();
-
-				m_sql.CheckDeviceTimeout();
-				m_sql.CheckBatteryLow();
-
-				//check for daily schedule
-				if (ltime.tm_hour == 0)
+				if (difftime(atime, _ScheduleLastHourTime) > 30 * 60) //avoid RTC/NTP clock drifts
 				{
-					if (atime - m_ScheduleLastDayTime > 12 * 60 * 60)
+					_ScheduleLastHourTime = atime;
+					_ScheduleLastHour = ltime.tm_hour;
+					GetSunSettings();
+
+					m_sql.CheckDeviceTimeout();
+					m_sql.CheckBatteryLow();
+
+					//check for daily schedule
+					if (ltime.tm_hour == 0)
 					{
-						m_ScheduleLastDayTime = atime;
-						m_sql.ScheduleDay();
-					}
-				}
-#ifdef WITH_OPENZWAVE
-				if (ltime.tm_hour == 4)
-				{
-					//Heal the OpenZWave network
-					std::lock_guard<std::mutex> l(m_devicemutex);
-					for (const auto& pHardware : m_hardwaredevices)
-					{
-						if (pHardware->HwdType == HTYPE_OpenZWave)
+						if (atime - _ScheduleLastDayTime > 12 * 60 * 60)
 						{
-							COpenZWave* pZWave = dynamic_cast<COpenZWave*>(pHardware);
-							pZWave->NightlyNodeHeal();
+							_ScheduleLastDayTime = atime;
+							m_sql.ScheduleDay();
 						}
 					}
-				}
+#ifdef WITH_OPENZWAVE
+					if (ltime.tm_hour == 4)
+					{
+						//Heal the OpenZWave network
+						std::lock_guard<std::mutex> l(m_devicemutex);
+						for (const auto& pHardware : m_hardwaredevices)
+						{
+							if (pHardware->HwdType == HTYPE_OpenZWave)
+							{
+								COpenZWave* pZWave = dynamic_cast<COpenZWave*>(pHardware);
+								pZWave->NightlyNodeHeal();
+							}
+						}
+					}
 #endif
-				HandleAutomaticBackups();
+					HandleAutomaticBackups();
+				}
+			}
+
+			if (
+				(minute_counter % 5 == 0)
+				|| (m_hourPriceElectricity.timestamp == 0)
+				)
+			{
+				HandleHourPrice();
 			}
 		}
 		if (heartbeat_counter++ > 12)
@@ -13985,4 +14000,97 @@ bool MainWorker::UpdateDevice(const int HardwareID, const int OrgHardwareID, con
 	}
 	g_bUseEventTrigger = true;
 	return false;
+}
+
+void MainWorker::HandleHourPrice()
+{
+	int iHP_E_Idx = 0;
+	int iHP_G_Idx = 0;
+	m_sql.GetPreferencesVar("HourIdxElectricityDevice", iHP_E_Idx);
+	m_sql.GetPreferencesVar("HourIdxGasDevice", iHP_G_Idx);
+
+	int SensorTimeOut = 60;
+	m_sql.GetPreferencesVar("SensorTimeout", SensorTimeOut);
+
+	time_t atime = mytime(nullptr);
+	struct tm tm1;
+	localtime_r(&atime, &tm1);
+
+	float fHourPriceE = 0.0f;
+	float fHourPriceG = 0.0f;
+
+	if (iHP_E_Idx != 0)
+	{
+		auto result = m_sql.safe_query("SELECT Type, SubType, sValue, LastUpdate, AddjValue2 FROM DeviceStatus WHERE (ID==%" PRIu64 ")", iHP_E_Idx);
+		if (!result.empty())
+		{
+			uint8_t devType = std::stoi(result[0][0]);
+			uint8_t subType = std::stoi(result[0][1]);
+			std::string sValue = result[0][2];
+			std::string sLastUpdate = result[0][3];
+
+			struct tm ntime;
+			time_t checktime;
+			ParseSQLdatetime(checktime, ntime, sLastUpdate, tm1.tm_isdst);
+
+			if (difftime(atime, checktime) < SensorTimeOut * 60)
+			{
+				if ((devType == pTypeGeneral) && (subType == sTypeCustom))
+				{
+					fHourPriceE = static_cast<float>(atof(sValue.c_str()));
+				}
+				else if ((devType == pTypeGeneral) && (subType == sTypeManagedCounter))
+				{
+					std::vector<std::string> strarray;
+					StringSplit(sValue, ";", strarray);
+					if (strarray.size() == 2)
+					{
+						float AddjValue2 = std::stof(result[0][4]);
+						if (AddjValue2 == 0)
+							AddjValue2 = 1;
+						fHourPriceG = static_cast<float>(atof(strarray[1].c_str())) / AddjValue2;
+					}
+				}
+			}
+		}
+	}
+	if (iHP_G_Idx != 0)
+	{
+		auto result = m_sql.safe_query("SELECT Type, SubType, sValue, LastUpdate, AddjValue2 FROM DeviceStatus WHERE (ID==%" PRIu64 ")", iHP_G_Idx);
+		if (!result.empty())
+		{
+			uint8_t devType = std::stoi(result[0][0]);
+			uint8_t subType = std::stoi(result[0][1]);
+			std::string sValue = result[0][2];
+			std::string sLastUpdate = result[0][3];
+
+			struct tm ntime;
+			time_t checktime;
+			ParseSQLdatetime(checktime, ntime, sLastUpdate, tm1.tm_isdst);
+
+			if (difftime(atime, checktime) < SensorTimeOut * 60)
+			{
+				if ((devType == pTypeGeneral) && (subType == sTypeCustom))
+				{
+					fHourPriceG = static_cast<float>(atof(sValue.c_str()));
+				}
+				else if ((devType == pTypeGeneral) && (subType == sTypeManagedCounter))
+				{
+					std::vector<std::string> strarray;
+					StringSplit(sValue, ";", strarray);
+					if (strarray.size() == 2)
+					{
+						float AddjValue2 = std::stof(result[0][4]);
+						if (AddjValue2 == 0)
+							AddjValue2 = 1;
+						fHourPriceG = static_cast<float>(atof(strarray[1].c_str())) / AddjValue2;
+					}
+				}
+			}
+		}
+	}
+	m_hourPriceElectricity.timestamp = atime;
+	m_hourPriceElectricity.price = fHourPriceE;
+	m_hourPriceGas.timestamp = atime;
+	m_hourPriceGas.price = fHourPriceG;
 }

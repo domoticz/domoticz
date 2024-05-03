@@ -41,7 +41,7 @@
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
 
-#define DB_VERSION 167
+#define DB_VERSION 168
 
 #define DEFAULT_ADMINUSER "admin"
 #define DEFAULT_ADMINPWD "domoticz"
@@ -207,6 +207,7 @@ constexpr auto sqlCreateMultiMeter =
 "[Value4] BIGINT DEFAULT 0, "
 "[Value5] BIGINT DEFAULT 0, "
 "[Value6] BIGINT DEFAULT 0, "
+"[Price] FLOAT DEFAULT 0, "
 "[Date] DATETIME DEFAULT (datetime('now','localtime')));";
 
 constexpr auto sqlCreateMultiMeter_Calendar =
@@ -222,6 +223,7 @@ constexpr auto sqlCreateMultiMeter_Calendar =
 "[Counter2] BIGINT DEFAULT 0, "
 "[Counter3] BIGINT DEFAULT 0, "
 "[Counter4] BIGINT DEFAULT 0, "
+"[Price] FLOAT DEFAULT 0, "
 "[Date] DATETIME DEFAULT (datetime('now','localtime')));";
 
 constexpr auto sqlCreateNotifications =
@@ -275,6 +277,7 @@ constexpr auto sqlCreateMeter =
 "[DeviceRowID] BIGINT NOT NULL, "
 "[Value] BIGINT NOT NULL, "
 "[Usage] INTEGER DEFAULT 0, "
+"[Price] FLOAT DEFAULT 0, "
 "[Date] DATETIME DEFAULT (datetime('now','localtime')));";
 
 constexpr auto sqlCreateMeter_Calendar =
@@ -282,6 +285,7 @@ constexpr auto sqlCreateMeter_Calendar =
 "[DeviceRowID] BIGINT NOT NULL, "
 "[Value] BIGINT NOT NULL, "
 "[Counter] BIGINT DEFAULT 0, "
+"[Price] FLOAT DEFAULT 0, "
 "[Date] DATETIME DEFAULT (datetime('now','localtime')));";
 
 constexpr auto sqlCreateLightSubDevices =
@@ -3121,6 +3125,13 @@ bool CSQLHelper::OpenDatabase()
 		{
 			query("ALTER TABLE Notifications ADD COLUMN [Active] BOOLEAN DEFAULT true");
 		}
+		if (dbversion < 168)
+		{
+			query("ALTER TABLE Meter ADD COLUMN [Price] FLOAT DEFAULT 0");
+			query("ALTER TABLE Meter_Calendar ADD COLUMN [Price] FLOAT DEFAULT 0");
+			query("ALTER TABLE MultiMeter ADD COLUMN [Price] FLOAT DEFAULT 0");
+			query("ALTER TABLE MultiMeter_Calendar ADD COLUMN [Price] FLOAT DEFAULT 0");
+		}
 	}
 	else if (bNewInstall)
 	{
@@ -3571,6 +3582,16 @@ bool CSQLHelper::OpenDatabase()
 	if (nValue < 1)
 		nValue = 6000;
 	m_max_kwh_usage = nValue;
+
+
+	if (!GetPreferencesVar("HourIdxElectricityDevice", nValue))
+	{
+		UpdatePreferencesVar("HourIdxElectricityDevice", 0);
+	}
+	if (!GetPreferencesVar("HourIdxGasDevice", nValue))
+	{
+		UpdatePreferencesVar("HourIdxGasDevice", 0);
+	}
 
 	//Update version in database
 	UpdatePreferencesVar("Domoticz_Version", szAppVersion);
@@ -6437,6 +6458,11 @@ bool CSQLHelper::UpdateCalendarMeter(
 	counter3 = (counter3 < 0 && !bIsManagedCounter) ? 0 : counter3;
 	counter4 = (counter4 < 0 && !bIsManagedCounter) ? 0 : counter4;
 
+	float PriceE = m_mainworker.m_hourPriceElectricity.price;
+	float PriceG = m_mainworker.m_hourPriceGas.price;
+
+	float price = 0.0F;
+
 	result = safe_query("SELECT ID, Name, SwitchType FROM DeviceStatus WHERE (HardwareID=%d AND DeviceID='%q' AND Unit=%d AND Type=%d AND SubType=%d)", HardwareID, DeviceID, unit, devType, subType);
 	if (result.empty()) {
 		return false;
@@ -6464,8 +6490,8 @@ bool CSQLHelper::UpdateCalendarMeter(
 			if (result.empty())
 			{
 				safe_query(
-					"INSERT INTO MultiMeter (DeviceRowID, Value1, Value2, Value3, Value4, Value5, Value6, Date) "
-					"VALUES ('%" PRIu64 "', '%" PRId64 "', '%" PRId64 "', '%" PRId64 "', '%" PRId64 "', '%" PRId64 "', '%" PRId64 "', '%q')",
+					"INSERT INTO MultiMeter (DeviceRowID, Value1, Value2, Value3, Value4, Value5, Value6, Price, Date) "
+					"VALUES ('%" PRIu64 "', '%" PRId64 "', '%" PRId64 "', '%" PRId64 "', '%" PRId64 "', '%" PRId64 "', '%" PRId64 "', '%.4f', '%q')",
 					DeviceRowID,
 					value1,
 					value2,
@@ -6473,13 +6499,14 @@ bool CSQLHelper::UpdateCalendarMeter(
 					value4,
 					value5,
 					value6,
+					price,
 					date
 				);
 			}
 			else
 			{
 				safe_query(
-					"UPDATE MultiMeter SET Value1='%" PRId64 "', Value2='%" PRId64 "', Value3='%" PRId64 "', Value4='%" PRId64 "', Value5='%" PRId64 "', Value6='%" PRId64 "' "
+					"UPDATE MultiMeter SET Value1='%" PRId64 "', Value2='%" PRId64 "', Value3='%" PRId64 "', Value4='%" PRId64 "', Value5='%" PRId64 "', Value6='%" PRId64 "', Price='%.4f' "
 					"WHERE ((DeviceRowID=='%" PRIu64 "') AND (Date=='%q'))",
 					value1,
 					value2,
@@ -6487,6 +6514,7 @@ bool CSQLHelper::UpdateCalendarMeter(
 					value4,
 					value5,
 					value6,
+					price,
 					DeviceRowID,
 					date
 				);
@@ -6501,17 +6529,17 @@ bool CSQLHelper::UpdateCalendarMeter(
 			if (result.empty())
 			{
 				safe_query(
-					"INSERT INTO Meter (DeviceRowID, Value, Usage, Date) "
-					"VALUES ('%" PRIu64 "','%" PRId64 "','%" PRId64 "','%q')",
-					DeviceRowID, value1, value2, date
+					"INSERT INTO Meter (DeviceRowID, Value, Usage, Price, Date) "
+					"VALUES ('%" PRIu64 "','%" PRId64 "','%" PRId64 "', '%.4f', '%q')",
+					DeviceRowID, value1, value2, price, date
 				);
 			}
 			else
 			{
 				safe_query(
-					"UPDATE Meter SET DeviceRowID='%" PRIu64 "', Value='%" PRId64 "', Usage='%" PRId64 "', Date='%q' "
+					"UPDATE Meter SET DeviceRowID='%" PRIu64 "', Value='%" PRId64 "', Usage='%" PRId64 "', Price='%.4f', Date='%q' "
 					"WHERE ((DeviceRowID=='%" PRIu64 "') AND (Date=='%q'))",
-					DeviceRowID, value1, value2, date,
+					DeviceRowID, value1, value2, price, date,
 					DeviceRowID, date
 				);
 			}
@@ -6532,8 +6560,8 @@ bool CSQLHelper::UpdateCalendarMeter(
 			if (result.empty())
 			{
 				safe_query(
-					"INSERT INTO MultiMeter_Calendar (DeviceRowID, Value1, Value2, Value3, Value4, Value5, Value6, Counter1, Counter2, Counter3, Counter4, Date) "
-					"VALUES ('%" PRIu64 "', '%" PRId64 "', '%" PRId64 "', '%" PRId64 "', '%" PRId64 "', '%" PRId64 "', '%" PRId64 "', '%" PRId64 "', '%" PRId64 "', '%" PRId64 "', '%" PRId64 "', '%q')",
+					"INSERT INTO MultiMeter_Calendar (DeviceRowID, Value1, Value2, Value3, Value4, Value5, Value6, Counter1, Counter2, Counter3, Counter4, Price, Date) "
+					"VALUES ('%" PRIu64 "', '%" PRId64 "', '%" PRId64 "', '%" PRId64 "', '%" PRId64 "', '%" PRId64 "', '%" PRId64 "', '%" PRId64 "', '%" PRId64 "', '%" PRId64 "', '%" PRId64 "', '%.4f', '%q')",
 					DeviceRowID,
 					value1,
 					value2,
@@ -6545,13 +6573,14 @@ bool CSQLHelper::UpdateCalendarMeter(
 					counter2,
 					counter3,
 					counter4,
+					price,
 					date
 				);
 			}
 			else
 			{
 				safe_query(
-					"UPDATE MultiMeter_Calendar SET Value1='%" PRId64 "', Value2='%" PRId64 "', Value3='%" PRId64 "', Value4='%" PRId64 "', Value5='%" PRId64 "', Value6='%" PRId64 "' , Counter1='%" PRId64 "' , Counter2='%" PRId64 "' , Counter3='%" PRId64 "' , Counter4='%" PRId64 "' "
+					"UPDATE MultiMeter_Calendar SET Value1='%" PRId64 "', Value2='%" PRId64 "', Value3='%" PRId64 "', Value4='%" PRId64 "', Value5='%" PRId64 "', Value6='%" PRId64 "' , Counter1='%" PRId64 "' , Counter2='%" PRId64 "' , Counter3='%" PRId64 "' , Counter4='%" PRId64 "', Price='%.4f' "
 					"WHERE ((DeviceRowID=='%" PRIu64 "') AND (Date=='%q'))",
 					value1,
 					value2,
@@ -6563,6 +6592,7 @@ bool CSQLHelper::UpdateCalendarMeter(
 					counter2,
 					counter3,
 					counter4,
+					price,
 					DeviceRowID,
 					date
 				);
@@ -6577,17 +6607,17 @@ bool CSQLHelper::UpdateCalendarMeter(
 			if (result.empty())
 			{
 				safe_query(
-					"INSERT INTO Meter_Calendar (DeviceRowID, Counter, Value, Date) "
-					"VALUES ('%" PRIu64 "', '%" PRId64 "', '%" PRId64 "', '%q')",
-					DeviceRowID, value1, value2, date
+					"INSERT INTO Meter_Calendar (DeviceRowID, Counter, Value, Price, Date) "
+					"VALUES ('%" PRIu64 "', '%" PRId64 "', '%" PRId64 "', '%.4f', '%q')",
+					DeviceRowID, value1, value2, price, date
 				);
 			}
 			else
 			{
 				safe_query(
-					"UPDATE Meter_Calendar SET DeviceRowID='%" PRIu64 "', Counter='%" PRId64 "', Value='%" PRId64 "', Date='%q' "
+					"UPDATE Meter_Calendar SET DeviceRowID='%" PRIu64 "', Counter='%" PRId64 "', Value='%" PRId64 "', Price='%.4f', Date='%q' "
 					"WHERE (DeviceRowID=='%" PRIu64 "') AND (Date=='%q')",
-					DeviceRowID, value1, value2, date,
+					DeviceRowID, value1, value2, price, date,
 					DeviceRowID, date
 				);
 			}
@@ -6609,6 +6639,11 @@ void CSQLHelper::UpdateMeter()
 
 	std::vector<std::vector<std::string> > result;
 	std::vector<std::vector<std::string> > result2;
+
+	float PriceE = m_mainworker.m_hourPriceElectricity.price;
+	float PriceG = m_mainworker.m_hourPriceGas.price;
+
+	float price = 0.0F;
 
 	result = safe_query(
 		"SELECT ID,Name,HardwareID,DeviceID,Unit,Type,SubType,nValue,sValue,LastUpdate,Options FROM DeviceStatus WHERE ("
@@ -6709,6 +6744,7 @@ void CSQLHelper::UpdateMeter()
 				//P1 Gas meter transmits results every 1 a 2 hours
 				if (difftime(now, checktime) >= 3 * 3600)
 					continue;
+				price = PriceG;
 			}
 
 			if (dType == pTypeYouLess)
@@ -6719,6 +6755,7 @@ void CSQLHelper::UpdateMeter()
 					continue;
 				sValue = splitresults[0];
 				sUsage = splitresults[1];
+				price = PriceE;
 			}
 			else if (dType == pTypeENERGY)
 			{
@@ -6730,6 +6767,7 @@ void CSQLHelper::UpdateMeter()
 				double fValue = atof(splitresults[1].c_str()) * 100;
 				sprintf(szTmp, "%.0f", fValue);
 				sValue = szTmp;
+				price = PriceE;
 			}
 			else if (dType == pTypePOWER)
 			{
@@ -6741,6 +6779,7 @@ void CSQLHelper::UpdateMeter()
 				double fValue = atof(splitresults[1].c_str()) * 100;
 				sprintf(szTmp, "%.0f", fValue);
 				sValue = szTmp;
+				price = PriceE;
 			}
 			else if (dType == pTypeAirQuality)
 			{
@@ -6791,6 +6830,7 @@ void CSQLHelper::UpdateMeter()
 				fValue = atof(splitresults[1].c_str());
 				sprintf(szTmp, "%.0f", fValue);
 				sValue = szTmp;
+				price = PriceE;
 			}
 			else if (dType == pTypeLux)
 			{
@@ -6827,6 +6867,7 @@ void CSQLHelper::UpdateMeter()
 				double fValue = atof(sValue.c_str()) * 1000.0F;
 				sprintf(szTmp, "%.0f", fValue);
 				sValue = szTmp;
+				price = PriceE;
 			}
 			else if ((dType == pTypeGeneral) && (dSubType == sTypePressure))
 			{
@@ -6839,6 +6880,7 @@ void CSQLHelper::UpdateMeter()
 				double fValue = atof(sValue.c_str()) * 10.0F;
 				sprintf(szTmp, "%.0f", fValue);
 				sValue = szTmp;
+				price = PriceE;
 			}
 
 			int64_t MeterValue = 0;
@@ -6859,11 +6901,12 @@ void CSQLHelper::UpdateMeter()
 
 			//insert record
 			safe_query(
-				"INSERT INTO Meter (DeviceRowID, Value, [Usage]) "
-				"VALUES ('%" PRIu64 "', '%" PRId64 "', '%" PRId64 "')",
+				"INSERT INTO Meter (DeviceRowID, Value, [Usage], Price) "
+				"VALUES ('%" PRIu64 "', '%" PRId64 "', '%" PRId64 "', '%.4f')",
 				ID,
 				MeterValue,
-				MeterUsage
+				MeterUsage,
+				price
 			);
 		}
 	}
@@ -6879,6 +6922,11 @@ void CSQLHelper::UpdateMultiMeter()
 
 	int SensorTimeOut = 60;
 	GetPreferencesVar("SensorTimeout", SensorTimeOut);
+
+	float PriceE = m_mainworker.m_hourPriceElectricity.price;
+	float PriceG = m_mainworker.m_hourPriceGas.price;
+
+	float price = 0.0F;
 
 	std::vector<std::vector<std::string> > result;
 	result = safe_query("SELECT ID,Type,SubType,nValue,sValue,LastUpdate,Options FROM DeviceStatus WHERE (Type=%d OR Type=%d OR Type=%d)",
@@ -6961,6 +7009,7 @@ void CSQLHelper::UpdateMultiMeter()
 				value6 = powerdeliv2;
 				value3 = usagecurrent;
 				value4 = delivcurrent;
+				price = PriceE;
 			}
 			else if ((dType == pTypeCURRENT) && (dSubType == sTypeELEC1))
 			{
@@ -6970,6 +7019,7 @@ void CSQLHelper::UpdateMultiMeter()
 				value1 = (unsigned long)(atof(splitresults[0].c_str()) * 10.0F);
 				value2 = (unsigned long)(atof(splitresults[1].c_str()) * 10.0F);
 				value3 = (unsigned long)(atof(splitresults[2].c_str()) * 10.0F);
+				price = PriceE;
 			}
 			else if ((dType == pTypeCURRENTENERGY) && (dSubType == sTypeELEC4))
 			{
@@ -6980,21 +7030,23 @@ void CSQLHelper::UpdateMultiMeter()
 				value2 = (unsigned long)(atof(splitresults[1].c_str()) * 10.0F);
 				value3 = (unsigned long)(atof(splitresults[2].c_str()) * 10.0F);
 				value4 = (uint64_t)(atof(splitresults[3].c_str()) * 1000.0F);
+				price = PriceE;
 			}
 			else
 				continue;//don't know you (yet)
 
 			//insert record
 			safe_query(
-				"INSERT INTO MultiMeter (DeviceRowID, Value1, Value2, Value3, Value4, Value5, Value6) "
-				"VALUES ('%" PRIu64 "', '%" PRIu64 "', '%" PRIu64 "', '%" PRIu64 "', '%" PRIu64 "', '%" PRIu64 "', '%" PRIu64 "')",
+				"INSERT INTO MultiMeter (DeviceRowID, Value1, Value2, Value3, Value4, Value5, Value6, Price) "
+				"VALUES ('%" PRIu64 "', '%" PRIu64 "', '%" PRIu64 "', '%" PRIu64 "', '%" PRIu64 "', '%" PRIu64 "', '%" PRIu64 "', '%.4f')",
 				ID,
 				value1,
 				value2,
 				value3,
 				value4,
 				value5,
-				value6
+				value6,
+				price
 			);
 		}
 	}
@@ -7312,6 +7364,11 @@ void CSQLHelper::AddCalendarUpdateMeter()
 
 	std::vector<std::vector<std::string> > result;
 
+	float PriceE = m_mainworker.m_hourPriceElectricity.price;
+	float PriceG = m_mainworker.m_hourPriceGas.price;
+
+	float price = 0.0F;
+
 	for (const auto &sddev : resultdevices)
 	{
 		uint64_t ID = std::stoull(sddev[0]);
@@ -7416,11 +7473,12 @@ void CSQLHelper::AddCalendarUpdateMeter()
 				double counter = total_max;
 
 				result = safe_query(
-					"INSERT INTO Meter_Calendar (DeviceRowID, Value, Counter, Date) "
-					"VALUES ('%" PRIu64 "', '%.2f', '%.2f', '%q')",
+					"INSERT INTO Meter_Calendar (DeviceRowID, Value, Counter, Price, Date) "
+					"VALUES ('%" PRIu64 "', '%.2f', '%.2f', '%.4f', '%q')",
 					ID,
 					total_real,
 					counter,
+					price,
 					szDateStart
 				);
 
@@ -7458,9 +7516,9 @@ void CSQLHelper::AddCalendarUpdateMeter()
 			else
 			{
 				//AirQuality/Usage Meter/Moisture/RFXSensor/Voltage/Lux/SoundLevel insert into MultiMeter_Calendar table
-				result = safe_query("INSERT INTO MultiMeter_Calendar (DeviceRowID, Value1,Value2,Value3,Value4,Value5,Value6, Date) "
-						    "VALUES ('%" PRIu64 "', '%.2f','%.2f','%.2f','%.2f','%.2f','%.2f', '%q')",
-						    ID, total_min, total_max, avg_value, 0.0F, 0.0F, 0.0F, szDateStart);
+				result = safe_query("INSERT INTO MultiMeter_Calendar (DeviceRowID, Value1,Value2,Value3,Value4,Value5,Value6, Price, Date) "
+						    "VALUES ('%" PRIu64 "', '%.2f','%.2f','%.2f','%.2f','%.2f','%.2f', '%.4f', '%q')",
+						    ID, total_min, total_max, avg_value, 0.0F, 0.0F, 0.0F, price, szDateStart);
 			}
 			//Insert the last (max) counter value into the meter table to get the "today" value correct.
 			if (
@@ -7474,16 +7532,17 @@ void CSQLHelper::AddCalendarUpdateMeter()
 				|| ((devType == pTypeGeneral) && (subType == sTypeKwh))
 				)
 			{
-				result = safe_query("SELECT Value, Usage FROM Meter WHERE (DeviceRowID='%" PRIu64 "') ORDER BY ROWID DESC LIMIT 1", ID);
+				result = safe_query("SELECT Value, Usage, Price FROM Meter WHERE (DeviceRowID='%" PRIu64 "') ORDER BY ROWID DESC LIMIT 1", ID);
 				if (!result.empty())
 				{
 					std::vector<std::string> sd = result[0];
 					result = safe_query(
-						"INSERT INTO Meter (DeviceRowID, Value, Usage) "
-						"VALUES ('%" PRIu64 "', '%q', '%q')",
+						"INSERT INTO Meter (DeviceRowID, Value, Usage, Price) "
+						"VALUES ('%" PRIu64 "', '%q', '%q', '%q')",
 						ID,
 						sd[0].c_str(),
-						sd[1].c_str()
+						sd[1].c_str(),
+						sd[2].c_str()
 						);
 					//also send this to Influx as this can be used as start counter of today()
 					m_influxpush.DoInfluxPush(ID, true);
@@ -7493,9 +7552,9 @@ void CSQLHelper::AddCalendarUpdateMeter()
 		else
 		{
 			//no new meter result received in last day
-			result = safe_query("INSERT INTO Meter_Calendar (DeviceRowID, Value, Date) "
-					    "VALUES ('%" PRIu64 "', '%.2f', '%q')",
-					    ID, 0.0F, szDateStart);
+			result = safe_query("INSERT INTO Meter_Calendar (DeviceRowID, Value, Price, Date) "
+					    "VALUES ('%" PRIu64 "', '%.2f', '%.4f', '%q')",
+					    ID, 0.0F, 0.0F, szDateStart);
 		}
 	}
 }
@@ -7508,6 +7567,11 @@ void CSQLHelper::AddCalendarUpdateMultiMeter()
 	{
 		EnergyDivider = float(tValue);
 	}
+
+	float PriceE = m_mainworker.m_hourPriceElectricity.price;
+	float PriceG = m_mainworker.m_hourPriceGas.price;
+
+	float price = 0.0F;
 
 	//Get All meter devices
 	std::vector<std::vector<std::string> > resultdevices;
@@ -7601,8 +7665,8 @@ void CSQLHelper::AddCalendarUpdateMultiMeter()
 			}
 
 			result = safe_query(
-				"INSERT INTO MultiMeter_Calendar (DeviceRowID, Value1, Value2, Value3, Value4, Value5, Value6, Counter1, Counter2, Counter3, Counter4, Date) "
-				"VALUES ('%" PRIu64 "', '%.2f', '%.2f', '%.2f', '%.2f', '%.2f', '%.2f', '%.2f', '%.2f', '%.2f', '%.2f', '%q')",
+				"INSERT INTO MultiMeter_Calendar (DeviceRowID, Value1, Value2, Value3, Value4, Value5, Value6, Counter1, Counter2, Counter3, Counter4, Price, Date) "
+				"VALUES ('%" PRIu64 "', '%.2f', '%.2f', '%.2f', '%.2f', '%.2f', '%.2f', '%.2f', '%.2f', '%.2f', '%.2f', '%.4f', '%q')",
 				ID,
 				total_real[0],
 				total_real[1],
@@ -7614,6 +7678,7 @@ void CSQLHelper::AddCalendarUpdateMultiMeter()
 				counter2,
 				counter3,
 				counter4,
+				price,
 				szDateStart
 			);
 
@@ -7623,22 +7688,6 @@ void CSQLHelper::AddCalendarUpdateMultiMeter()
 				float musage = (total_real[0] + total_real[4]) / EnergyDivider;
 				m_notifications.CheckAndHandleNotification(ID, devname, devType, subType, NTYPE_TODAYENERGY, musage);
 			}
-			/*
-			//Insert the last (max) counter values into the table to get the "today" value correct.
-			sprintf(szTmp,
-			"INSERT INTO MultiMeter (DeviceRowID, Value1, Value2, Value3, Value4, Value5, Value6, Date) "
-			"VALUES (%" PRIu64 ", %s, %s, %s, %s, %s, %s, '%s')",
-			ID,
-			sd[0].c_str(),
-			sd[1].c_str(),
-			sd[2].c_str(),
-			sd[3].c_str(),
-			sd[4].c_str(),
-			sd[5].c_str(),
-			szDateEnd
-			);
-			result=query(szTmp);
-			*/
 		}
 	}
 }
