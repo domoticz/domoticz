@@ -2484,6 +2484,10 @@ namespace http
 
 				m_sql.UpdatePreferencesVar("Title", (request::findValue(&req, "Title").empty()) ? "Domoticz" : request::findValue(&req, "Title")); cntSettings++;
 
+				m_sql.UpdatePreferencesVar("HourIdxElectricityDevice", atoi(request::findValue(&req, "HourIdxElectricityDevice").c_str())); cntSettings++;
+				m_sql.UpdatePreferencesVar("HourIdxGasDevice", atoi(request::findValue(&req, "HourIdxGasDevice").c_str())); cntSettings++;
+
+
 				/* More complex ones that need additional processing */
 				/* ------------------------------------------------- */
 
@@ -4924,6 +4928,14 @@ namespace http
 				{
 					root["IFTTTAPI"] = sValue;
 				}
+				else if (Key == "HourIdxElectricityDevice")
+				{
+					root["HourIdxElectricityDevice"] = nValue;
+				}
+				else if (Key == "HourIdxGasDevice")
+				{
+					root["HourIdxGasDevice"] = nValue;
+				}
 			}
 		}
 
@@ -5131,6 +5143,29 @@ namespace http
 				ii++;
 			}
 			root["status"] = "OK";
+		}
+
+		void CWebServer::Cmd_GetDynamicPriceDevices(WebEmSession& session, const request& req, Json::Value& root)
+		{
+			if (session.rights != 2)
+			{
+				session.reply_status = reply::forbidden;
+				return; //Only admin user allowed
+			}
+			root["status"] = "OK";
+			root["title"] = "GetDynamicPriceDevices";
+			std::vector<std::vector<std::string> > result;
+			result = m_sql.safe_query("SELECT ID, Name FROM DeviceStatus WHERE( (Type==243 AND SubType==31) OR (Type==243 AND SubType==33) ) ORDER BY Name");
+			if (!result.empty())
+			{
+				int ii = 0;
+				for (const auto& sd : result)
+				{
+					root["result"][ii]["idx"] = atoi(sd[0].c_str());
+					root["result"][ii]["Name"] = sd[1];
+					ii++;
+				}
+			}
 		}
 
 	} // namespace server

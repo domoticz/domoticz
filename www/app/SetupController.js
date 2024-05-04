@@ -278,6 +278,24 @@ define(['app'], function (app) {
 					}
 				}
 			});
+			
+			//Get Dynamic Price devices
+			$.ajax({
+				url: "json.htm?type=command&param=getdynamicpricedevices",
+				async: false,
+				dataType: 'json',
+				success: function (data) {
+					if (typeof data.result != 'undefined') {
+						var $comboEP = $("#comboDPElectricity");
+						var $comboEG = $("#comboDPGas");
+						$.each(data.result, function (i, item) {
+							$comboEP.append($("<option />").val(item.idx).text(item.Name));
+							$comboEG.append($("<option />").val(item.idx).text(item.Name));
+						});
+					}
+				}
+			});
+			
 
 			$.ajax({
 				url: "json.htm?type=command&param=getsettings",
@@ -654,6 +672,13 @@ define(['app'], function (app) {
 					}
 					if (typeof data.IFTTTAPI != 'undefined') {
 						$("#ifttttable #IFTTTAPI").val(atob(data.IFTTTAPI));
+					}
+
+					if (typeof data.HourIdxElectricityDevice != 'undefined') {
+						$("#dpricetable #comboDPElectricity").val(data.HourIdxElectricityDevice);
+					}
+					if (typeof data.HourIdxGasDevice != 'undefined') {
+						$("#dpricetable #comboDPGas").val(data.HourIdxGasDevice);
 					}
 				}
 			});

@@ -609,6 +609,9 @@ namespace http
 			RegisterCommandCode("esp3deletenode", [this](auto&& session, auto&& req, auto&& root) { Cmd_EnOceanESP3DeleteNode(session, req, root); });
 			RegisterCommandCode("esp3getnodes", [this](auto&& session, auto&& req, auto&& root) { Cmd_EnOceanESP3GetNodes(session, req, root); });
 
+			//Dynamic Price
+			RegisterCommandCode("getdynamicpricedevices", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetDynamicPriceDevices(session, req, root); });
+
 			//Whitelist
 			m_pWebEm->RegisterWhitelistURLString("/images/floorplans/plan");
 
