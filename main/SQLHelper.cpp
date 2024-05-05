@@ -7323,6 +7323,33 @@ void CSQLHelper::AddCalendarUpdateRain()
 	}
 }
 
+float CSQLHelper::CalcMeterPrice(const uint64_t idx, const float divider, const char* szDateStart, const char* szDateEnd)
+{
+	if (divider == 0)
+		return 0;
+	//Calculate the total price for today
+	auto result = safe_query("SELECT strftime('%%Y-%%m-%%d %%H:00:00', Date) as ymd, MIN(Value) as Cntr, Price FROM Meter WHERE (DeviceRowID='%" PRIu64 "' AND Date>='%q' AND Date<='%q 00:00:00') GROUP BY ymd",
+		idx, szDateStart, szDateEnd);
+
+	uint64_t last_cntr = (uint64_t)-1;
+	float last_price = 0;
+	float total_price = 0;
+	for (const auto& itt : result)
+	{
+		uint64_t cntr = std::stoull(itt[1]);
+		float price = std::stof(itt[2]);
+
+		if (last_cntr != (uint64_t)-1)
+		{
+			uint64_t total = cntr - last_cntr;
+			total_price += ((static_cast<float>(total) / divider) * last_price);
+		}
+		last_cntr = cntr;
+		last_price = price;
+	}
+	return total_price;
+}
+
 void CSQLHelper::AddCalendarUpdateMeter()
 {
 	float EnergyDivider = 1000.0F;
@@ -7364,17 +7391,14 @@ void CSQLHelper::AddCalendarUpdateMeter()
 
 	std::vector<std::vector<std::string> > result;
 
-	float PriceE = m_mainworker.m_hourPriceElectricity.price;
-	float PriceG = m_mainworker.m_hourPriceGas.price;
-
-	float price = 0.0F;
-
 	for (const auto &sddev : resultdevices)
 	{
+		float price = 0.0F;
+
 		uint64_t ID = std::stoull(sddev[0]);
 
 		//Get Device Information
-		result = safe_query("SELECT Name, HardwareID, DeviceID, Unit, Type, SubType, SwitchType, Options FROM DeviceStatus WHERE (ID='%" PRIu64 "')", ID);
+		result = safe_query("SELECT Name, HardwareID, DeviceID, Unit, Type, SubType, SwitchType, Options, AddjValue2 FROM DeviceStatus WHERE (ID='%" PRIu64 "')", ID);
 		if (result.empty())
 			continue;
 		std::vector<std::string> sd = result[0];
@@ -7385,10 +7409,13 @@ void CSQLHelper::AddCalendarUpdateMeter()
 		//unsigned char Unit = atoi(sd[3].c_str());
 		unsigned char devType = atoi(sd[4].c_str());
 		unsigned char subType = atoi(sd[5].c_str());
-		_eSwitchType switchtype = (_eSwitchType)atoi(sd[6].c_str());
-		_eMeterType metertype = (_eMeterType)switchtype;
+		_eMeterType metertype = (_eMeterType)atoi(sd[6].c_str());
 		std::string sOptions = sd[7];
 		std::map<std::string, std::string> options = BuildDeviceOptions(sOptions);
+		float addjvalue2 = static_cast<float>(atof(sd[8].c_str()));
+
+		if (addjvalue2 == 0)
+			addjvalue2 = 1;
 
 		bool bIsManagedCounter = (devType == pTypeGeneral && subType == sTypeManagedCounter);
 
@@ -7400,6 +7427,8 @@ void CSQLHelper::AddCalendarUpdateMeter()
 		{
 			continue;
 		}
+
+		float divider = 1.0F;
 
 		float tGasDivider = GasDivider;
 
@@ -7415,6 +7444,26 @@ void CSQLHelper::AddCalendarUpdateMeter()
 		else if ((devType == pTypeRego6XXValue) && (subType == sTypeRego6XXCounter))
 		{
 			metertype = MTYPE_COUNTER;
+		}
+
+		switch (metertype)
+		{
+		case MTYPE_ENERGY:
+		case MTYPE_ENERGY_GENERATED:
+			divider = EnergyDivider;
+			break;
+		case MTYPE_GAS:
+			divider = tGasDivider;
+			break;
+		case MTYPE_WATER:
+			divider = WaterDivider;
+			break;
+		case MTYPE_COUNTER:
+			divider = addjvalue2;
+			break;
+		default:
+			divider = addjvalue2;
+			break;
 		}
 
 		result = safe_query("SELECT MIN(Value), MAX(Value), AVG(Value) FROM Meter WHERE (DeviceRowID='%" PRIu64 "' AND Date>='%q' AND Date<='%q 00:00:00')",
@@ -7472,6 +7521,8 @@ void CSQLHelper::AddCalendarUpdateMeter()
 				double total_real = total_max - total_min;
 				double counter = total_max;
 
+				price = CalcMeterPrice(ID, divider, szDateStart, szDateEnd);
+				
 				result = safe_query(
 					"INSERT INTO Meter_Calendar (DeviceRowID, Value, Counter, Price, Date) "
 					"VALUES ('%" PRIu64 "', '%.2f', '%.2f', '%.4f', '%q')",
@@ -7559,6 +7610,43 @@ void CSQLHelper::AddCalendarUpdateMeter()
 	}
 }
 
+std::vector<float> CSQLHelper::CalcMultiMeterPrice(const uint64_t idx, const float divider, const char* szDateStart, const char* szDateEnd)
+{
+	std::vector<float> ret;
+	if (divider == 0)
+		return ret;
+
+	//Calculate the total price for today
+	auto result = safe_query("SELECT strftime('%%Y-%%m-%%d %%H:00:00', Date) as ymd, MIN(Value1), MIN(Value2), MIN(Value3), MIN(Value4), MIN(Value5), MIN(Value6), Price FROM MultiMeter WHERE (DeviceRowID='%" PRIu64 "' AND Date>='%q' AND Date<='%q 00:00:00') GROUP BY ymd",
+		idx, szDateStart, szDateEnd);
+
+	uint64_t last_cntrs[6] = { (uint64_t)-1,(uint64_t)-1,(uint64_t)-1,(uint64_t)-1,(uint64_t)-1,(uint64_t)-1 };
+	float last_price = 0;
+	float total_price[6] = { 0,0,0,0,0,0 };
+	for (const auto& itt : result)
+	{
+		float price = std::stof(itt[7]);
+
+		uint64_t cntrs[6];
+		for (int ii = 0; ii < 6; ii++)
+		{
+			cntrs[ii] = std::stoull(itt[1 + ii]);
+			if (last_cntrs[ii] != (uint64_t)-1)
+			{
+				uint64_t total = cntrs[ii] - last_cntrs[ii];
+				total_price[ii] += ((static_cast<float>(total) / divider) * last_price);
+			}
+			last_cntrs[ii] = cntrs[ii];
+		}
+		last_price = price;
+	}
+	for (int ii = 0; ii < 6; ii++)
+	{
+		ret.push_back(total_price[ii]);
+	}
+	return ret;
+}
+
 void CSQLHelper::AddCalendarUpdateMultiMeter()
 {
 	float EnergyDivider = 1000.0F;
@@ -7567,11 +7655,6 @@ void CSQLHelper::AddCalendarUpdateMultiMeter()
 	{
 		EnergyDivider = float(tValue);
 	}
-
-	float PriceE = m_mainworker.m_hourPriceElectricity.price;
-	float PriceG = m_mainworker.m_hourPriceGas.price;
-
-	float price = 0.0F;
 
 	//Get All meter devices
 	std::vector<std::vector<std::string> > resultdevices;
@@ -7610,8 +7693,7 @@ void CSQLHelper::AddCalendarUpdateMultiMeter()
 		//unsigned char Unit = atoi(sd[3].c_str());
 		unsigned char devType = atoi(sd[4].c_str());
 		unsigned char subType = atoi(sd[5].c_str());
-		//_eSwitchType switchtype=(_eSwitchType) atoi(sd[6].c_str());
-		//_eMeterType metertype=(_eMeterType)switchtype;
+		//_eMeterType metertype=(_eMeterType)atoi(sd[6].c_str());
 
 		std::string sOptions = sd[7];
 		std::map<std::string, std::string> options = BuildDeviceOptions(sOptions);
@@ -7634,6 +7716,8 @@ void CSQLHelper::AddCalendarUpdateMultiMeter()
 		);
 		if (!result.empty())
 		{
+			float price = 0.0F;
+
 			std::vector<std::string> sd = result[0];
 
 			float total_real[6];
@@ -7644,6 +7728,7 @@ void CSQLHelper::AddCalendarUpdateMultiMeter()
 
 			if (devType == pTypeP1Power)
 			{
+				std::vector<float> prices = CalcMultiMeterPrice(ID, EnergyDivider, szDateStart, szDateEnd);
 				for (int ii = 0; ii < 6; ii++)
 				{
 					float total_min = static_cast<float>(atof(sd[(ii * 2) + 0].c_str()));
@@ -7654,6 +7739,12 @@ void CSQLHelper::AddCalendarUpdateMultiMeter()
 				counter2 = static_cast<float>(atof(sd[3].c_str()));
 				counter3 = static_cast<float>(atof(sd[9].c_str()));
 				counter4 = static_cast<float>(atof(sd[11].c_str()));
+
+				//counters are values 1(u1), 5(u2), 2(d1), 6(d2)
+				float price_usage = prices[0] + prices[4];
+				float price_deliver = prices[1] + prices[5];
+
+				price = price_usage - price_deliver;
 			}
 			else
 			{
