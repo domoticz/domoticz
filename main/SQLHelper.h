@@ -548,6 +548,8 @@ class CSQLHelper : public StoppableTask
 
 	void CorrectOffDelaySwitchStates();
 
+	float CalcMeterPrice(const uint64_t idx, const float divider, const char* szDateStart, const char* szDateEnd);
+
 	std::vector<std::vector<std::string>> query(const std::string &szQuery);
 	std::vector<std::vector<std::string>> queryBlob(const std::string &szQuery);
 };
