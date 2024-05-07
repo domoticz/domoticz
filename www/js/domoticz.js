@@ -5972,6 +5972,13 @@ function SetpointDown() {
 function SetSetpoint() {
 	var currentvalue = parseFloat($('#setpoint_popup #popup_setpoint').val());
 	var curValue = (Number.isInteger(currentvalue)) ? currentvalue : currentvalue.toFixed(1);
+	if ((curValue < $.setmin) || (curValue > $.setmax)) {
+		var betmsg = "!";
+		betmsg = " " + $.t('between') + " " + $.setmin + " " + $.t('and') + " " + $.setmax + "!";
+		var msg = $.t('Please enter a valid integer') + betmsg;
+		bootbox.alert(msg);
+		return;
+	}
 	$.ajax({
 		url: "json.htm?type=command&param=setsetpoint&idx=" + $.devIdx +
 		"&setpoint=" + curValue,
