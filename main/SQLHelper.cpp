@@ -41,7 +41,7 @@
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
 
-#define DB_VERSION 168
+#define DB_VERSION 169
 
 #define DEFAULT_ADMINUSER "admin"
 #define DEFAULT_ADMINPWD "domoticz"
@@ -3132,6 +3132,67 @@ bool CSQLHelper::OpenDatabase()
 			query("ALTER TABLE MultiMeter ADD COLUMN [Price] FLOAT DEFAULT 0");
 			query("ALTER TABLE MultiMeter_Calendar ADD COLUMN [Price] FLOAT DEFAULT 0");
 		}
+		if (dbversion < 169)
+		{ // new version of BleBox module
+			result = m_sql.safe_query("SELECT ID FROM HARDWARE WHERE ([Type]==%d)", HTYPE_BleBox);
+			if (!result.empty())
+			{
+				int hwID = atoi(result[0][0].c_str());
+				result = safe_query("SELECT ID, DeviceID FROM DeviceStatus WHERE (HardwareID=%d)", hwID);
+				if (!result.empty())
+				{
+					for (const auto& sd : result)
+					{
+						std::string idx = sd[0];
+						std::string deviceId = sd[1];
+
+						if (deviceId.size() == 8)
+						{
+							std::stringstream ss;
+							for (int i = 0; i < 4; ++i) {
+								std::string part = deviceId.substr(i * 2, 2);
+								int value;
+								std::stringstream(part) >> std::hex >> value;
+								ss << (i == 0 ? "" : ".") << value;
+							}
+							auto ip = ss.str();
+
+							safe_query("UPDATE DeviceStatus SET StrParam1='4', StrParam2='%q' WHERE (ID=='%q')", ip.c_str(), idx.c_str());
+						}
+						else
+						if (deviceId.size() == 7)
+						{
+							std::string part = deviceId.substr(1, 2);
+							int value;
+							std::stringstream(part) >> std::hex >> value;
+							if (value == 168)
+							{
+								std::stringstream ss;
+								ss << "192.168.";
+								for (int i = 0; i < 2; ++i) {
+									std::string part = deviceId.substr(i * 2 + 3, 2);
+									int value;
+									std::stringstream(part) >> std::hex >> value;
+									ss << (i == 0 ? "" : ".") << value;
+								}
+								const auto ip = ss.str();
+
+								safe_query("UPDATE DeviceStatus SET StrParam1='0', StrParam2='%q' WHERE (ID=='%q')", ip.c_str(), idx.c_str());
+							}
+							else
+							{ // remove duplicated node
+								DeleteDevices(idx);
+							}
+						}
+						else
+						{ // remove duplicated node
+							DeleteDevices(idx);
+						}
+					}
+				}
+			}
+		}
+
 	}
 	else if (bNewInstall)
 	{
