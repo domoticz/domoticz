@@ -1071,6 +1071,14 @@ int BleBox::GetDeviceType(const std::string& IPAddress)
 
 void BleBox::AddNode(const std::string& name, const std::string& IPAddress, bool reloadNodes)
 {
+	auto itt = std::find_if(m_devices.begin(), m_devices.end(), [&IPAddress](const _tBleBoxDevice& obj) {
+		return obj.addressIP == IPAddress;
+		});
+
+	if (itt != m_devices.end())
+		return;
+
+
 	auto device = IdentifyDevice(IPAddress);
 	std::string deviceApiName = device.first;
 	if (deviceApiName.empty())
@@ -1136,16 +1144,27 @@ void BleBox::AddNode(const std::string& name, const std::string& IPAddress, bool
 
 void BleBox::RemoveNode(const int id)
 {
-	m_sql.safe_query("DELETE FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%d')", m_HwdID, id);
+	m_sql.DeleteDevices(std::to_string(id));
 
 	ReloadNodes();
 }
 
 void BleBox::RemoveAllNodes()
 {
-	m_sql.safe_query("DELETE FROM DeviceStatus WHERE (HardwareID==%d)", m_HwdID);
+	auto result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID==%d)", m_HwdID);
+	if (!result.empty())
+	{
+		std::string devices;
+		for (const auto& sd : result)
+		{
+			if (!devices.empty())
+				devices += ";";
+			devices += sd[0];
+		}
+		m_sql.DeleteDevices(devices);
 
-	UnloadNodes();
+		UnloadNodes();
+	}
 }
 
 void BleBox::UnloadNodes()
