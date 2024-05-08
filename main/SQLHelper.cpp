@@ -3138,7 +3138,7 @@ bool CSQLHelper::OpenDatabase()
 			if (!result.empty())
 			{
 				int hwID = atoi(result[0][0].c_str());
-				result = safe_query("SELECT ID, DeviceID FROM DeviceStatus WHERE (HardwareID=%d)", hwID);
+				result = safe_query("SELECT ID, DeviceID, SwitchType FROM DeviceStatus WHERE (HardwareID=%d)", hwID);
 				if (!result.empty())
 				{
 					for (const auto& sd : result)
@@ -3163,9 +3163,9 @@ bool CSQLHelper::OpenDatabase()
 						if (deviceId.size() == 7)
 						{
 							std::string part = deviceId.substr(1, 2);
-							int value;
-							std::stringstream(part) >> std::hex >> value;
-							if (value == 168)
+							int value1;
+							std::stringstream(part) >> std::hex >> value1;
+							if (value1 == 168)
 							{
 								std::stringstream ss;
 								ss << "192.168.";
@@ -3177,7 +3177,11 @@ bool CSQLHelper::OpenDatabase()
 								}
 								const auto ip = ss.str();
 
-								safe_query("UPDATE DeviceStatus SET StrParam1='0', StrParam2='%q' WHERE (ID=='%q')", ip.c_str(), idx.c_str());
+								int type = 0;
+								if (sd[2] == std::to_string(STYPE_BlindsPercentage)) type = 1;
+								if (sd[2] == std::to_string(STYPE_Dimmer)) type = 2;
+
+								safe_query("UPDATE DeviceStatus SET StrParam1='%d', StrParam2='%q' WHERE (ID=='%q')", type, ip.c_str(), idx.c_str());
 							}
 							else
 							{ // remove duplicated node
