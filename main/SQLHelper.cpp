@@ -3159,8 +3159,7 @@ bool CSQLHelper::OpenDatabase()
 
 							safe_query("UPDATE DeviceStatus SET StrParam1='4', StrParam2='%q' WHERE (ID=='%q')", ip.c_str(), idx.c_str());
 						}
-						else
-						if (deviceId.size() == 7)
+						else if (deviceId.size() == 7)
 						{
 							std::string part = deviceId.substr(1, 2);
 							int value1;
