@@ -14,7 +14,7 @@ define(['app'], function (app) {
             $.devIdx = $ctrl.hardware.idx;
 
             $("#hardwarecontent #bleboxsettingstable #pollinterval").val($ctrl.hardware.Mode1);
-            $("#hardwarecontent #bleboxsettingstable #pingtimeout").val($ctrl.hardware.Mode2);
+            $("#hardwarecontent #bleboxsettingstable #showrssi").val($ctrl.hardware.Mode2);
             $("#hardwarecontent #bleboxsettingstable #ipmask").val("192.168.1.*");
 
             $('#bleboxnodestable').dataTable({
@@ -167,7 +167,8 @@ define(['app'], function (app) {
                                 "3": item.Type,
                                 "4": item.Uptime,
                                 "5": item.hv,
-                                "6": item.fv
+                                "6": item.fv,
+                                "7": item.rssi
                             });
                         });
                     }
@@ -206,9 +207,8 @@ define(['app'], function (app) {
             var Mode1 = parseInt($("#hardwarecontent #bleboxsettingstable #pollinterval").val());
             if (Mode1 < 1)
                 Mode1 = 30;
-            var Mode2 = parseInt($("#hardwarecontent #bleboxsettingstable #pingtimeout").val());
-            if (Mode2 < 1000)
-                Mode2 = 1000;
+            var Mode2 = parseInt($("#hardwarecontent #bleboxsettingstable #showrssi").val());
+
             $.ajax({
                 url: "json.htm?type=command&param=bleboxsetmode" +
                 "&idx=" + $.devIdx +

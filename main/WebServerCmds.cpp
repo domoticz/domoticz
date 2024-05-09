@@ -570,6 +570,11 @@ namespace http
 				mode1 = 4;
 				mode2 = 500;
 			}
+			else if (htype == HTYPE_BleBox)
+			{
+				mode1 = 60;
+				mode2 = 0;
+			}
 
 			if (htype == HTYPE_HTTPPOLLER)
 			{
