@@ -494,6 +494,12 @@ namespace Plugins {
 			SubType = sSwitchTypeSelector;
 			SwitchType = STYPE_Selector;
 		}
+		else if (sTypeName == "On/Off")
+		{
+			Type = pTypeGeneralSwitch;
+			SubType = sSwitchGeneralSwitch;
+			SwitchType = STYPE_OnOff;
+		}
 		else if (sTypeName == "Push On")
 		{
 			Type = pTypeGeneralSwitch;
