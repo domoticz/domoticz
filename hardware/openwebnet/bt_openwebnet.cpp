@@ -22,7 +22,6 @@ std::string bt_openwebnet::FirstToken(const std::string& myText, const std::stri
 // performs syntax checking
 void bt_openwebnet::IsCorrect()
 {
-  int j  = 0;
   std::string sup;
   std::string field;
 
@@ -54,7 +53,7 @@ void bt_openwebnet::IsCorrect()
   }
 
   //Check if there are bad character
-  for (j=0;j< m_lengthFrameOpen;j++)
+  for (size_t j=0;j< m_lengthFrameOpen;j++)
   {
     if(!isdigit(m_frameOpen[j]))
     {
@@ -2244,7 +2243,7 @@ std::string bt_openwebnet::getWhereDescription(const std::string& who, const std
 			// TODO
 			// 3#<where actuators> with actuators = Z#N belonging to [0 - 99]#[1 - 9] : Split Control actuator Z/N
 		}
-		else if (int len1 = str1.length()) 
+		else if (size_t len1 = str1.length()) 
 		{
 			int iWhere = atoi(str1.c_str());
 			if (len1 <= 2)
@@ -2416,7 +2415,7 @@ std::string bt_openwebnet::getWhereDescription(const std::string& who, const std
 
 		std::string room;
 		std::string pointOfLight;
-		int wlen = where.length();
+		size_t wlen = where.length();
 		if (wlen == 1)
 		{
 			if (where == "0")

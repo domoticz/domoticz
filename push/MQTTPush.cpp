@@ -89,11 +89,11 @@ void CMQTTPush::on_connect(int rc)
 	{
 		if (m_IsConnected)
 		{
-			Log(LOG_STATUS, "re-connected to: %s:%d", m_szIPAddress.c_str(), m_usIPPort);
+			Log(LOG_STATUS, "Re-connected to: %s:%d", m_szIPAddress.c_str(), m_usIPPort);
 		}
 		else
 		{
-			Log(LOG_STATUS, "connected to: %s:%d", m_szIPAddress.c_str(), m_usIPPort);
+			Log(LOG_STATUS, "Connected to: %s:%d", m_szIPAddress.c_str(), m_usIPPort);
 			m_IsConnected = true;
 			sOnConnected(this);
 		}

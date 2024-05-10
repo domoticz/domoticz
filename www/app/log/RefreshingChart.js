@@ -116,13 +116,14 @@ define(['lodash', 'Base', 'DomoticzBase', 'DataLoader', 'ChartLoader', 'ChartZoo
                                     self.isZoomed = true;
                                     self.consoledebug('Set zoom ' + self + ': left-sticky:' + self.isZoomLeftSticky + ', right-sticky:' + self.isZoomRightSticky);
                                 }
-                                self.seriesSuppliers.forEach(function (seriesSupplier) {
-                                    if (seriesSupplier.chartZoomLevelChanged !== undefined) {
-                                        seriesSupplier.chartZoomLevelChanged(self.chart,
-                                            e.min !== null ? e.min : xAxis.dataMin, e.max !== null ? e.max : xAxis.dataMax);
-                                    }
-                                });
-
+								if (self.seriesSuppliers !== undefined) {
+									self.seriesSuppliers.forEach(function (seriesSupplier) {
+										if (seriesSupplier.chartZoomLevelChanged !== undefined) {
+											seriesSupplier.chartZoomLevelChanged(self.chart,
+												e.min !== null ? e.min : xAxis.dataMin, e.max !== null ? e.max : xAxis.dataMax);
+										}
+									});
+								}
                                 if (self.isMouseDown) {
                                     self.isSynchronizeYaxesRequired = true;
                                 } else {

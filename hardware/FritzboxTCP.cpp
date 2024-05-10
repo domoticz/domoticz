@@ -74,7 +74,7 @@ bool FritzboxTCP::StopHardware()
 
 void FritzboxTCP::OnConnect()
 {
-	Log(LOG_STATUS, "connected to: %s:%d", m_szIPAddress.c_str(), m_usIPPort);
+	Log(LOG_STATUS, "Connected to: %s:%d", m_szIPAddress.c_str(), m_usIPPort);
 	m_bIsStarted = true;
 	m_bufferpos = 0;
 
@@ -83,7 +83,7 @@ void FritzboxTCP::OnConnect()
 
 void FritzboxTCP::OnDisconnect()
 {
-	Log(LOG_STATUS, "disconnected");
+	Log(LOG_STATUS, "Disconnected");
 }
 
 void FritzboxTCP::Do_Work()

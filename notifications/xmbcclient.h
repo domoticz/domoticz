@@ -202,10 +202,10 @@ public:
 	  if (m_Payload.empty())
 		  ConstructPayload();
 	  bool SendSuccessfull = true;
-	  int NbrOfPackages = (m_Payload.size() / MAX_PAYLOAD_SIZE) + 1;
+	  int NbrOfPackages = static_cast<int>((m_Payload.size() / MAX_PAYLOAD_SIZE) + 1);
 	  int Send = 0;
 	  int Sent = 0;
-	  int Left = m_Payload.size();
+	  int Left = static_cast<int>(m_Payload.size());
 	  for (int Package = 1; Package <= NbrOfPackages; Package++)
 	  {
 		  if (Left > MAX_PAYLOAD_SIZE)
@@ -324,8 +324,7 @@ public:
   {
     m_PacketType = PT_HELO;
 
-    unsigned int len = strlen(DevName);
-    for (unsigned int i = 0; i < len; i++)
+    for (int i = 0; DevName[i]; i++)
       m_DeviceName.push_back(DevName[i]);    
 
     m_IconType = IconType;
@@ -406,18 +405,15 @@ public:
     m_PacketType = PT_NOTIFICATION;
     m_IconData = nullptr;
     m_IconSize = 0;
-    unsigned int len = 0;
     if (Title != nullptr)
     {
-      len = strlen(Title);
-      for (unsigned int i = 0; i < len; i++)
+      for (int i = 0; Title[i]; i++)
         m_Title.push_back(Title[i]);
     }
 
     if (Message != nullptr)
     {
-      len = strlen(Message);
-      for (unsigned int i = 0; i < len; i++)
+      for (int i = 0; Message[i]; i++)
         m_Message.push_back(Message[i]);
     }
     m_IconType = IconType;
@@ -529,12 +525,10 @@ public:
     m_ButtonCode = 0;
     m_Amount     = Amount;
 
-    unsigned int len = strlen(DeviceMap);
-    for (unsigned int i = 0; i < len; i++)
+    for (int i = 0; DeviceMap[i]; i++)
       m_DeviceMap.push_back(DeviceMap[i]);
 
-    len = strlen(Button);
-    for (unsigned int i = 0; i < len; i++)
+    for (int i = 0; Button[i]; i++)
       m_Button.push_back(Button[i]);
   }
 
@@ -545,8 +539,7 @@ public:
     m_ButtonCode = ButtonCode;
     m_Amount     = Amount;
 
-    unsigned int len = strlen(DeviceMap);
-    for (unsigned int i = 0; i < len; i++)
+    for (int i = 0; DeviceMap[i]; i++)
       m_DeviceMap.push_back(DeviceMap[i]);
   }
 
@@ -657,8 +650,7 @@ public:
   {
     m_PacketType = PT_LOG;
 
-    unsigned int len = strlen(Message);
-    for (unsigned int i = 0; i < len; i++)
+    for (int i = 0; Message[i]; i++)
       m_Message.push_back(Message[i]);
 
     m_LogLevel = LogLevel;
@@ -700,8 +692,7 @@ public:
     m_PacketType = PT_ACTION;
 
     m_ActionType = ActionType;
-    unsigned int len = strlen(Action);
-    for (unsigned int i = 0; i < len; i++)
+    for (unsigned int i = 0; Action[i]; i++)
       m_Action.push_back(Action[i]);
   }
 
@@ -729,7 +720,7 @@ public:
   {
     m_Addr = CAddress(IP, Port);
     if (Socket == -1)
-      m_Socket = socket(AF_INET, SOCK_DGRAM, 0);
+      m_Socket = static_cast<int>(socket(AF_INET, SOCK_DGRAM, 0));
     else
       m_Socket = Socket;
 

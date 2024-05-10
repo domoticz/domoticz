@@ -706,17 +706,6 @@ ELSE()
 ENDIF(CURL_FOUND)
 
 #
-# CEREAL
-#
-find_path(CEREAL_INCLUDE_DIRS NAMES cereal/cereal.hpp)
-IF(CEREAL_INCLUDE_DIRS)
-  MESSAGE(STATUS "CEREAL includes found at: ${CEREAL_INCLUDE_DIRS}")
-  include_directories(${CEREAL_INCLUDE_DIRS})
-ELSE()
-  MESSAGE(FATAL_ERROR "CEREAL not found on your system! try 'sudo apt-get install libcereal-dev'")
-ENDIF(CEREAL_INCLUDE_DIRS)
-
-#
 # USB
 #
 IF(WITH_LIBUSB)

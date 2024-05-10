@@ -693,7 +693,7 @@ void CEventSystem::GetCurrentMeasurementStates()
 			if (splitresults.size() > 1)
 			{
 				temp = static_cast<float>(atof(splitresults[0].c_str()));
-				humidity = atoi(splitresults[1].c_str());
+				humidity = ground(atof(splitresults[1].c_str()));
 				dewpoint = (float)CalculateDewPoint(temp, humidity);
 				isTemp = true;
 				isHum = true;
@@ -706,7 +706,7 @@ void CEventSystem::GetCurrentMeasurementStates()
 				continue;
 			}
 			temp = static_cast<float>(atof(splitresults[0].c_str()));
-			humidity = atoi(splitresults[1].c_str());
+			humidity = ground(atof(splitresults[1].c_str()));
 			barometer = static_cast<float>(atof(splitresults[3].c_str()));
 			dewpoint = (float)CalculateDewPoint(temp, humidity);
 			isTemp = true;
@@ -4301,6 +4301,22 @@ namespace http {
 					return;
 				m_sql.DeleteEvent(idx);
 				m_mainworker.m_eventsystem.LoadEvents();
+				root["status"] = "OK";
+			}
+			else if (cparam == "load_recents")
+			{
+				root["title"] = "LoadRecentEvents";
+				std::string recent_list;
+				m_sql.GetPreferencesVar("events_recent_list", recent_list);
+				root["status"] = "OK";
+				root["result"] = recent_list;
+
+			}
+			else if (cparam == "store_recents")
+			{
+				root["title"] = "StoreRecentEvents";
+				std::string recent_list = request::findValue(&req, "recent_list");
+				m_sql.UpdatePreferencesVar("events_recent_list", recent_list);
 				root["status"] = "OK";
 			}
 			else if (cparam == "currentstates")

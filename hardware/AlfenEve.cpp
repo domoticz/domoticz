@@ -91,7 +91,7 @@ bool AlfenEve::StartHardware()
 	if (m_szPassword.empty())
 		return false;
 
-	//Retreive last bootcount
+	//Retrieve last bootcount
 	bool bExits = false;
 	std::string sValue = GetTextSensorText(1, 1, bExits);
 	if (bExits)
@@ -1039,7 +1039,7 @@ void AlfenEve::parseProperties(const Json::Value& root)
 		{
 			int socket1_StateLeds = itt["value"].asInt();
 			SendTextSensor(1, 2, 255, szSocket1_Status(socket1_StateLeds), "Socket 1 State");
-			//shall we also retreive status for possible second socket?
+			//shall we also retrieve status for possible second socket?
 
 			//Are we charging?
 			bool bCharging = (

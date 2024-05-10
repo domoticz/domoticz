@@ -25,7 +25,6 @@ Protocol is Zigbee and WiFi, and the gateway and
 Domoticz need to be in the same network/subnet with multicast working
 */
 
-#define round(a) (int)(a + .5)
 // Removing this vector and use unitcode to tell what kind of device each is
 // std::vector<std::string> arrAqara_Wired_ID;
 

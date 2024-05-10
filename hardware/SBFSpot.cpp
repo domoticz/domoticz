@@ -12,8 +12,6 @@
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
 
-#define round(a) ( int ) ( a + .5 )
-
 CSBFSpot::CSBFSpot(const int ID, const std::string &SMAConfigFile)
 {
 	std::vector<std::string> results;
@@ -556,7 +554,8 @@ void CSBFSpot::GetMeterDetails()
 		}
 		if ((results[28] != "OK") && (results[28] != "Ok"))
 		{
-			Log(LOG_ERROR, "Invalid field [28] should be OK!");
+			//could be because it's winter and not active yet
+			//Log(LOG_ERROR, "Invalid field [28] should be OK!");
 			return;
 		}
 

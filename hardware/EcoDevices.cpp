@@ -19,7 +19,7 @@ Version history
 3.2   12-04-2017 Added support for authentication when connecting to EcoDevices
 3.1   01-04-2017 Added basic support for recently launched EcoDevices RT2
 3.0   15-03-2017 Merge Teleinfo protocol processing with other hardware using common class CTeleinfoBase
-2.2   05-03-2017 Move from JSON to XML API on EcoDevices in order to retreive more Teleinfo variables (current, alerts...)
+2.2   05-03-2017 Move from JSON to XML API on EcoDevices in order to retrieve more Teleinfo variables (current, alerts...)
 2.1   27-02-2017 Switch from sDecodeRX to standard helpers (Sendxxxxx) for updating devices.
 				 Supports 4 main subscription plans (Basic, Tempo, EJP, "Heures Creuses")
 				 Text device for reporting the current rate for multiple rates plans.

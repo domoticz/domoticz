@@ -184,6 +184,7 @@ private:
 	void handle_auto_discovery_light(_tMQTTASensor* pSensor, const struct mosquitto_message* message);
 	void handle_auto_discovery_button(_tMQTTASensor* pSensor, const struct mosquitto_message* message);
 	void handle_auto_discovery_binary_sensor(_tMQTTASensor* pSensor, const struct mosquitto_message* message);
+	void handle_auto_discovery_device_autiomation_sensor(_tMQTTASensor* pSensor, const struct mosquitto_message* message);
 	void handle_auto_discovery_camera(_tMQTTASensor* pSensor, const struct mosquitto_message* message);
 	void handle_auto_discovery_cover(_tMQTTASensor* pSensor, const struct mosquitto_message* message);
 	void handle_auto_discovery_climate(_tMQTTASensor* pSensor, const struct mosquitto_message* message);

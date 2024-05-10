@@ -2,11 +2,13 @@ define(['app'], function (app) {
     app.factory('domoticzEventsApi', function ($http, $httpParamSerializer, $q, domoticzApi) {
         return {
             fetchCurrentStates: fetchCurrentStates,
-            fetchEvents: fetchEvents,
-            fetchEvent: fetchEvent,
+            listEvents: listEvents,
+            loadEvent: loadEvent,
             updateEvent: updateEvent,
             updateEventState: updateEventState,
             deleteEvent: deleteEvent,
+			loadRecents: loadRecents,
+			storeRecents: storeRecents,
             getTemplate: getTemplate
         };
 
@@ -20,7 +22,7 @@ define(['app'], function (app) {
             });
         }
 
-        function fetchEvents() {
+        function listEvents() {
             return domoticzApi.sendCommand('events', {
                 evparam: 'list'
             }).then(function (data) {
@@ -31,7 +33,7 @@ define(['app'], function (app) {
             });
         }
 
-        function fetchEvent(eventId) {
+        function loadEvent(eventId) {
             return domoticzApi.sendCommand('events', {
                 evparam: 'load',
                 event: eventId
@@ -75,6 +77,26 @@ define(['app'], function (app) {
                 eventtype: eventType || 'All'
             }).then(function (response) {
                 return response.template;
+            });
+        }
+		
+        function loadRecents() {
+            return domoticzApi.sendCommand('events', {
+                evparam: 'load_recents',
+            }).then(function (data) {
+                return data.result;
+            });
+        }
+
+        function storeRecents(recent_list) {
+			let arrStr = "";
+			for(var itr = 0; itr<recent_list.length;itr++) {
+				if (arrStr.length != 0) arrStr+=",";
+				arrStr+=recent_list[itr];
+			}			
+            return domoticzApi.sendCommand('events', {
+                evparam: 'store_recents',
+				recent_list: arrStr
             });
         }
     });

@@ -1,0 +1,15 @@
+<div class="chart noselect">
+    <div class="chart-title-center">
+        <div class="chart-title-container">
+            <h2 ng-bind="chartTitle"></h2>
+        </div>
+    </div>
+    <div class="chartarea">
+        <div class="zoom-buttons-container">
+            <button class="zoom-button" ng-click="zoomDays(1)" ng-bind="zoomLabel('1d')" ng-show="shortLogHistoryMaxDays > 1"></button>
+            <button class="zoom-button" ng-click="zoomDays(3)" ng-bind="zoomLabel('3d')" ng-show="shortLogHistoryMaxDays > 3"></button>
+            <button class="zoom-reset" ng-click="zoomreset()" ng-bind="zoomLabel('Reset')" ng-show="zoomed"></button>
+        </div>
+        <div class="chartcontainer"></div>
+    </div>
+</div>

@@ -15,8 +15,14 @@
             <td><input type="text" id="pollinterval" style="width: 80px; padding: .2em;" class="text ui-widget-content ui-corner-all">&nbsp;(<span data-i18n="Seconds">Seconds</span>)</td>
         </tr>
         <tr>
-            <td align="right" style="width:170px"><label for="pingtimeout"><span data-i18n="Ping Timeout"></span>:</label></td>
-            <td><input type="text" id="pingtimeout" style="width: 80px; padding: .2em;" class="text ui-widget-content ui-corner-all">&nbsp;(<span data-i18n="Milliseconds"></span>)</td>
+            <td align="right" style="width:170px"><label for="showrssi"><span data-i18n="Show RSSI (longer operation)"></span>:</label></td>
+            <td>
+                <select id="showrssi" style="width:210px" class="combobox ui-corner-all">
+                    <option value="0">None</option>
+                    <option value="1">Only on hardware page</option>
+                    <option value="2">Always</option>
+                </select>
+            </td>
         </tr>
         <tr>
             <td></td>
@@ -42,28 +48,29 @@
     </div>
     <table class="display" id="bleboxnodestable" border="0" cellpadding="0" cellspacing="0" width="100%">
         <thead>
-        <tr>
-            <th width="70" align="center" data-i18n="ID">ID</th>
-            <th width="250" align="left" data-i18n="Name">Name</th>
-            <th width="150" align="left" data-i18n="IP Address">IP Address</th>
-            <th width="200" align="left" data-i18n="Type">Type</th>
-            <th width="100" align="left" data-i18n="Uptime">Uptime</th>
-            <th width="100" align="left" data-i18n="Hardware">Hardware</th>
-            <th align="left" data-i18n="Firmware">Firmware</th>
-        </tr>
+            <tr>
+                <th width="70" align="center" data-i18n="ID">ID</th>
+                <th width="250" align="left" data-i18n="Name">Name</th>
+                <th width="150" align="left" data-i18n="IP Address">IP Address</th>
+                <th width="200" align="left" data-i18n="Type">Type</th>
+                <th width="100" align="left" data-i18n="Uptime">Uptime</th>
+                <th width="100" align="left" data-i18n="Hardware">Hardware</th>
+                <th width="100" align="left" data-i18n="Firmware">Firmware</th>
+                <th align="left" data-i18n="RSSI">RSSI</th>
+            </tr>
         </thead>
     </table>
     <input type="hidden" id="idx" name="idx" value="-1">
     <table id="updelclr" border="0" cellpadding="0" cellspacing="0" width="100%">
         <tr>
             <td>
-                <a class="btnstyle3-dis" id="nodedelete" data-i18n="Delete">Delete</a>&nbsp;&nbsp;&nbsp;
+                <a class="btnstyle3-dis" id="nodedelete" data-i18n="Delete selected">Delete selected</a>&nbsp;&nbsp;&nbsp;
             </td>
             <td align="right" style="width:200px">
                 <a align="left" class="btnstyle3" id="updatefirmware" data-i18n="Update devices firmware" onclick="BleBoxUpdateFirmware();">Update devices firmware</a>
             </td>
             <td align="right">
-                <a class="btnstyle3" id="nodelistrefresh" data-i18n="Clear" onclick="BleBoxClearNodes();">Clear</a>
+                <a class="btnstyle3" id="nodelistrefresh" data-i18n="Delete all" onclick="BleBoxClearNodes();">Delete all</a>
             </td>
         </tr>
     </table>

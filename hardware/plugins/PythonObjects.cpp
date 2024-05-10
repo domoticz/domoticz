@@ -172,14 +172,15 @@ namespace Plugins {
 					//	Call code to do insert here
 					//
 					std::string ErrorMessage;
-					if (!m_sql.InsertCustomIconFromZipFile(sFilename, ErrorMessage))
+					const uint64_t retidx = m_sql.InsertCustomIconFromZipFile(sFilename, ErrorMessage);
+					if (retidx == 0)
 					{
 						_log.Log(LOG_ERROR, "(%s) Insert Custom Icon From Zip failed on file '%s' with error '%s'.", self->pPlugin->m_Name.c_str(), sFilename.c_str(), ErrorMessage.c_str());
 					}
 					else
 					{
 						// load associated custom images to make them available to python
-						std::vector<std::vector<std::string> > result = m_sql.safe_query("SELECT max(ID), Base, Name, Description FROM CustomImages");
+						std::vector<std::vector<std::string> > result = m_sql.safe_query("SELECT ID, Base, Name, Description FROM CustomImages WHERE (ID == %d)", static_cast<int>(retidx));
 						if (!result.empty())
 						{
 							// Add image objects into the image dictionary with ID as the key
@@ -541,6 +542,88 @@ namespace Plugins {
 			Type = pTypeSetpoint;
 			SubType = sTypeSetpoint;
 		}
+
+		// Venetian and Blinds
+		else if (sTypeName == "Blinds")
+		{
+			Type = pTypeGeneralSwitch;
+			SubType = sSwitchGeneralSwitch;
+			SwitchType = STYPE_Blinds;
+		}
+		else if (sTypeName == "BlindsPercentage")
+		{
+			Type = pTypeGeneralSwitch;
+			SubType = sSwitchGeneralSwitch;
+			SwitchType = STYPE_BlindsPercentage;
+		}
+		else if (sTypeName == "VenetianBlindsUS")
+		{
+			Type = pTypeGeneralSwitch;
+			SubType = sSwitchGeneralSwitch;
+			SwitchType = STYPE_VenetianBlindsUS;
+		}
+		else if (sTypeName == "VenetianBlindsEU")
+		{
+			Type = pTypeGeneralSwitch;
+			SubType = sSwitchGeneralSwitch;
+			SwitchType = STYPE_VenetianBlindsEU;
+		}
+		else if (sTypeName == "BlindsPercentageWithStop")
+		{
+			Type = pTypeGeneralSwitch;
+			SubType = sSwitchGeneralSwitch;
+			SwitchType = STYPE_BlindsPercentageWithStop;
+		}
+
+		// Color Switch
+		else if (sTypeName == "WW")
+		{
+			Type = pTypeColorSwitch;
+			SubType = sTypeColor_RGB_W; // RGB + white, either RGB or white can be lit
+			SwitchType = 7;
+		}
+		else if (sTypeName == "RGB")
+		{
+			Type = pTypeColorSwitch;
+			SubType = sTypeColor_RGB; // RGB
+			SwitchType = 7;
+		}
+		else if (sTypeName == "White")
+		{
+			Type = pTypeColorSwitch;
+			SubType = sTypeColor_White; // Monochrome white
+			SwitchType = 7;
+		}
+		else if (sTypeName == "RGB_CW_WW")
+		{
+			Type = pTypeColorSwitch;
+			SubType = sTypeColor_RGB_CW_WW; // RGB + cold white + warm white, either RGB or white can be lit
+			SwitchType = 7;
+		}
+		else if (sTypeName == "LivCol")
+		{
+			Type = pTypeColorSwitch;
+			SubType = sTypeColor_LivCol;
+			SwitchType = 7;
+		}
+		else if (sTypeName == "RGB_W_Z")
+		{
+			Type = pTypeColorSwitch;
+			SubType = sTypeColor_RGB_W_Z; // Like RGBW, but allows combining RGB and white
+			SwitchType = 7;
+		}
+		else if (sTypeName == "RGB_CW_WW_Z")
+		{
+			Type = pTypeColorSwitch;
+			SubType = sTypeColor_RGB_CW_WW_Z; // Like RGBWW, but allows combining RGB and white
+			SwitchType = 7;
+		}
+		else if (sTypeName == "CW_WW")
+		{
+			Type = pTypeColorSwitch;
+			SubType = sTypeColor_CW_WW; // Cold white + Warm white
+			SwitchType = 7;
+		}
 	}
 
 	int CDevice_init(CDevice *self, PyObject *args, PyObject *kwds)
@@ -677,7 +760,9 @@ namespace Plugins {
 		{
 			// load associated devices to make them available to python
 			std::vector<std::vector<std::string> > result;
+			Py_BEGIN_ALLOW_THREADS
 			result = m_sql.safe_query("SELECT Unit, ID, Name, nValue, sValue, DeviceID, Type, SubType, SwitchType, LastLevel, CustomImage, SignalLevel, BatteryLevel, LastUpdate, Options, Description, Color, Used FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==%d) ORDER BY Unit ASC", self->HwdID, self->Unit);
+			Py_END_ALLOW_THREADS
 			if (!result.empty())
 			{
 				for (const auto &sd : result)
@@ -1495,7 +1580,8 @@ namespace Plugins {
 	{
 		if (self->pTransport)
 		{
-			return PyLong_FromLong(self->pTransport->TotalBytes());
+			//GizMoCuz: change to PyLong_FromSize_t?
+			return PyLong_FromLong(static_cast<long>(self->pTransport->TotalBytes()));
 		}
 
 		return PyBool_FromLong(0);

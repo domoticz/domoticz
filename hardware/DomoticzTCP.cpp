@@ -46,7 +46,7 @@ bool DomoticzTCP::StopHardware()
 
 void DomoticzTCP::OnConnect()
 {
-	Log(LOG_STATUS, "connected to: %s:%d", m_szIPAddress.c_str(), m_usIPPort);
+	Log(LOG_STATUS, "Connected to: %s:%d", m_szIPAddress.c_str(), m_usIPPort);
 	if (!m_username.empty())
 	{
 		std::string sAuth = std_format("SIGNv2;%s;%s", m_username.c_str(), m_password.c_str());
@@ -57,7 +57,7 @@ void DomoticzTCP::OnConnect()
 
 void DomoticzTCP::OnDisconnect()
 {
-	Log(LOG_STATUS, "disconnected from: %s:%d", m_szIPAddress.c_str(), m_usIPPort);
+	Log(LOG_STATUS, "Disconnected from: %s:%d", m_szIPAddress.c_str(), m_usIPPort);
 }
 
 void DomoticzTCP::OnData(const uint8_t* pData, size_t length)

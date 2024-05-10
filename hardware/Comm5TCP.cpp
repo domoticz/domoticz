@@ -73,7 +73,7 @@ bool Comm5TCP::StopHardware()
 
 void Comm5TCP::OnConnect()
 {
-	Log(LOG_STATUS, "connected to: %s:%d", m_szIPAddress.c_str(), m_usIPPort);
+	Log(LOG_STATUS, "Connected to: %s:%d", m_szIPAddress.c_str(), m_usIPPort);
 	m_bIsStarted = true;
 	notificationEnabled = false;
 
@@ -85,7 +85,7 @@ void Comm5TCP::OnConnect()
 
 void Comm5TCP::OnDisconnect()
 {
-	Log(LOG_ERROR, "disconected");
+	Log(LOG_ERROR, "Disconected");
 }
 
 void Comm5TCP::Do_Work()
@@ -105,7 +105,7 @@ void Comm5TCP::Do_Work()
 	}
 	terminate();
 
-	Log(LOG_STATUS, "TCP/IP Worker stopped...");
+	Log(LOG_STATUS, "Worker stopped...");
 }
 
 void Comm5TCP::processSensorData(const std::string& line)

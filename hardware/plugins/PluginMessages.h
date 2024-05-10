@@ -730,7 +730,7 @@ static std::string get_utf8_from_ansi(const std::string &utf8, int codepage)
 	class ReadEvent : public CEventBase, public CHasConnection
 	{
 	public:
-		ReadEvent(CConnection* Connection, const int ByteCount, const unsigned char* Data, const int ElapsedMs = -1) : CEventBase(), CHasConnection(Connection)
+		ReadEvent(CConnection* Connection, const size_t ByteCount, const unsigned char* Data, const int ElapsedMs = -1) : CEventBase(), CHasConnection(Connection)
 		{
 			m_Name = __func__;
 			m_ElapsedMs = ElapsedMs;

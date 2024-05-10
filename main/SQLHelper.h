@@ -445,7 +445,7 @@ class CSQLHelper : public StoppableTask
 	void AllowNewHardwareTimer(int iTotMinutes);
 
 	bool InsertCustomIconFromZip(const std::string &szZip, std::string &ErrorMessage);
-	bool InsertCustomIconFromZipFile(const std::string &szZipFile, std::string &ErrorMessage);
+	uint64_t InsertCustomIconFromZipFile(const std::string &szZipFile, std::string &ErrorMessage);
 
 	std::map<std::string, std::string> BuildDeviceOptions(const std::string &options, bool decode = true);
 	std::map<std::string, std::string> GetDeviceOptions(const std::string &idx);
@@ -547,6 +547,9 @@ class CSQLHelper : public StoppableTask
 	void SendUpdateInt(const std::string& Idx);
 
 	void CorrectOffDelaySwitchStates();
+
+	float CalcMeterPrice(const uint64_t idx, const float divider, const char* szDateStart, const char* szDateEnd);
+	std::vector<float> CalcMultiMeterPrice(const uint64_t idx, const float divider, const char* szDateStart, const char* szDateEnd);
 
 	std::vector<std::vector<std::string>> query(const std::string &szQuery);
 	std::vector<std::vector<std::string>> queryBlob(const std::string &szQuery);

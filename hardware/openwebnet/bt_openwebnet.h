@@ -418,7 +418,7 @@ private:
   std::vector<std::string> m_values;
 
   // frame length
-  int m_lengthFrameOpen;
+  size_t m_lengthFrameOpen;
 
 public:
 

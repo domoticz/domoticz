@@ -10,8 +10,6 @@
 #include "../main/mainworker.h"
 #include "../main/SQLHelper.h"
 
-#define round(a) ( int ) ( a + .5 )
-
 #ifdef _DEBUG
 	//#define DEBUG_WUNDERGROUNDR
 	//#define DEBUG_WUNDERGROUNDW
@@ -351,21 +349,21 @@ void CWunderground::GetMeterDetails()
 		tsen.WIND.id2=1;
 
 		float winddir=float(wind_degrees);
-		int aw=round(winddir);
+		int aw=ground(winddir);
 		tsen.WIND.directionh=(BYTE)(aw/256);
 		aw-=(tsen.WIND.directionh*256);
 		tsen.WIND.directionl=(BYTE)(aw);
 
 		tsen.WIND.av_speedh=0;
 		tsen.WIND.av_speedl=0;
-		int sw = round(windspeed_ms * 10.0F);
+		int sw = ground(windspeed_ms * 10.0F);
 		tsen.WIND.av_speedh=(BYTE)(sw/256);
 		sw-=(tsen.WIND.av_speedh*256);
 		tsen.WIND.av_speedl=(BYTE)(sw);
 
 		tsen.WIND.gusth=0;
 		tsen.WIND.gustl=0;
-		int gw = round(windgust_ms * 10.0F);
+		int gw = ground(windgust_ms * 10.0F);
 		tsen.WIND.gusth=(BYTE)(gw/256);
 		gw-=(tsen.WIND.gusth*256);
 		tsen.WIND.gustl=(BYTE)(gw);
@@ -377,13 +375,13 @@ void CWunderground::GetMeterDetails()
 		tsen.WIND.temperaturel=0;
 
 		tsen.WIND.tempsign=(wind_temp>=0)?0:1;
-		int at10 = round(std::abs(wind_temp * 10.0F));
+		int at10 = ground(std::abs(wind_temp * 10.0F));
 		tsen.WIND.temperatureh=(BYTE)(at10/256);
 		at10-=(tsen.WIND.temperatureh*256);
 		tsen.WIND.temperaturel=(BYTE)(at10);
 
 		tsen.WIND.chillsign=(wind_chill>=0)?0:1;
-		at10 = round(std::abs(wind_chill * 10.0F));
+		at10 = ground(std::abs(wind_chill * 10.0F));
 		tsen.WIND.chillh=(BYTE)(at10/256);
 		at10-=(tsen.WIND.chillh*256);
 		tsen.WIND.chilll=(BYTE)(at10);
@@ -432,7 +430,7 @@ void CWunderground::GetMeterDetails()
 						float rainrateph = static_cast<float>(atof(root["metric_si"]["precipRate"].asString().c_str()));
 						if (rainrateph != -9999.00F)
 						{
-							int at10 = round(std::abs(rainrateph * 100.0F));
+							int at10 = ground(std::abs(rainrateph * 100.0F));
 							tsen.RAIN.rainrateh = (BYTE)(at10 / 256);
 							at10 -= (tsen.RAIN.rainrateh * 256);
 							tsen.RAIN.rainratel = (BYTE)(at10);

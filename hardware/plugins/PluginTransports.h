@@ -17,7 +17,7 @@ namespace Plugins {
 		bool			m_bDisconnectQueued;
 		bool			m_bConnecting;
 		bool			m_bConnected;
-		long			m_iTotalBytes;
+		size_t			m_iTotalBytes;
 		time_t			m_tLastSeen;
 
 		unsigned char	m_Buffer[4096];
@@ -50,7 +50,7 @@ namespace Plugins {
 		time_t				LastSeen() { return m_tLastSeen; };
 		virtual bool		AsyncDisconnect() { return false; };
 		virtual bool		ThreadPoolRequired() { return false; };
-		long				TotalBytes() { return m_iTotalBytes; };
+		size_t				TotalBytes() { return m_iTotalBytes; };
 		virtual void		VerifyConnection();
 		CConnection *		Connection()
 		{

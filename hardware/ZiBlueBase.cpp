@@ -342,8 +342,6 @@ void CZiBlueBase::OnDisconnected()
 	Init();
 }
 
-#define round(a) (int)(a + .5)
-
 bool CZiBlueBase::WriteToHardware(const char *pdata, const unsigned char length)
 {
 	const _tGeneralSwitch *pSwitch = reinterpret_cast<const _tGeneralSwitch *>(pdata);
@@ -353,7 +351,7 @@ bool CZiBlueBase::WriteToHardware(const char *pdata, const unsigned char length)
 	std::string protocol = GetGeneralZiBlueFromInt(ziblue_switches, pSwitch->subtype);
 	if (protocol.empty())
 	{
-		Log(LOG_ERROR, "trying to send unknown switch type: %d", pSwitch->subtype);
+		Log(LOG_ERROR, "Trying to send unknown switch type: %d", pSwitch->subtype);
 		return false;
 	}
 	else if (protocol == "JAMMING")
@@ -367,7 +365,7 @@ bool CZiBlueBase::WriteToHardware(const char *pdata, const unsigned char length)
 		std::string switchcmnd = GetGeneralZiBlueFromInt(ziBlueswitchcommands, pSwitch->cmnd);
 		if (switchcmnd.empty())
 		{
-			Log(LOG_ERROR, "trying to send unknown switch command: %d", pSwitch->cmnd);
+			Log(LOG_ERROR, "Trying to send unknown switch command: %d", pSwitch->cmnd);
 			return false;
 		}
 		// check setlevel command
@@ -377,7 +375,7 @@ bool CZiBlueBase::WriteToHardware(const char *pdata, const unsigned char length)
 			float fvalue = (15.0F / 100.0F) * float(pSwitch->level);
 			if (fvalue > 15.0F)
 				fvalue = 15.0F; // 99 is fully on
-			int svalue = round(fvalue);
+			int svalue = ground(fvalue);
 			char buffer[50] = { 0 };
 			sprintf(buffer, "%d", svalue);
 			switchcmnd = buffer;
@@ -1079,8 +1077,8 @@ bool CZiBlueBase::ParseBinary(const uint8_t SDQ, const uint8_t *data, size_t len
 							 ((m_LastReceivedTime - m_LastReceivedKWhMeterTime[pSen->idLsb ^ pSen->idMsb ^ 1]) / 3600.0);
 						power2 = (total2 - m_LastReceivedKWhMeterValue[pSen->idLsb ^ pSen->idMsb ^ 2]) /
 							 ((m_LastReceivedTime - m_LastReceivedKWhMeterTime[pSen->idLsb ^ pSen->idMsb ^ 2]) / 3600.0);
-						power1 = round(power1);
-						power2 = round(power2);
+						power1 = ground(power1);
+						power2 = ground(power2);
 					}
 					SendKwhMeter(pSen->idLsb ^ pSen->idMsb, 1, (pSen->qualifier & 0x01) ? 0 : 100, power1, total1 / 1000.0, "HC");
 					SendKwhMeter(pSen->idLsb ^ pSen->idMsb, 2, (pSen->qualifier & 0x01) ? 0 : 100, power2, total2 / 1000.0, "HP");

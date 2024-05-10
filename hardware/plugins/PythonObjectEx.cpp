@@ -142,7 +142,10 @@ namespace Plugins {
 		// Populate the unit dictionary if there are any
 		std::string DeviceID = PyBorrowedRef(self->DeviceID);
 		std::vector<std::vector<std::string>> result;
+		
+		Py_BEGIN_ALLOW_THREADS
 		result = m_sql.safe_query("SELECT Name, Unit FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%s')", pModState->pPlugin->m_HwdID, DeviceID.c_str());
+		Py_END_ALLOW_THREADS
 		if (!result.empty())
 		{
 
@@ -481,9 +484,12 @@ namespace Plugins {
 			std::string sDevice = PyBorrowedRef(pDevice->DeviceID);
 			// load associated devices to make them available to python
 			std::vector<std::vector<std::string>> result;
+			
+			Py_BEGIN_ALLOW_THREADS
 			result = m_sql.safe_query("SELECT Unit, ID, Name, nValue, sValue, Type, SubType, SwitchType, LastLevel, CustomImage, SignalLevel, BatteryLevel, LastUpdate, Options, "
 						  "Description, Color, Used, AddjValue, AddjMulti FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%s') AND (Unit==%d) ORDER BY Unit ASC",
 						  pModState->pPlugin->m_HwdID, sDevice.c_str(), self->Unit);
+			Py_END_ALLOW_THREADS
 			if (!result.empty())
 			{
 				for (const auto &sd : result)
@@ -514,8 +520,10 @@ namespace Plugins {
 						else
 						{
 							std::map<std::string, std::string> mpOptions;
-							Py_BEGIN_ALLOW_THREADS mpOptions = m_sql.BuildDeviceOptions(sd[13], true);
-							Py_END_ALLOW_THREADS for (const auto &opt : mpOptions)
+							Py_BEGIN_ALLOW_THREADS 
+							mpOptions = m_sql.BuildDeviceOptions(sd[13], true);
+							Py_END_ALLOW_THREADS
+							for (const auto &opt : mpOptions)
 							{
 								PyNewRef pKeyDict = PyUnicode_FromString(opt.first.c_str());
 								PyNewRef pValueDict = PyUnicode_FromString(opt.second.c_str());
@@ -755,6 +763,31 @@ namespace Plugins {
 				nValue = 0;
 				sValue = stdsValue;
 			}
+                        // Type change
+                        if (iType != self->Type)
+                        {
+                                Py_BEGIN_ALLOW_THREADS
+                                m_sql.UpdateDeviceValue("Type", iType, sID);
+                                Py_END_ALLOW_THREADS
+                        }
+
+                        // SubType change
+                        if (iSubType != self->SubType)
+                        {
+                                Py_BEGIN_ALLOW_THREADS
+                                m_sql.UpdateDeviceValue("SubType", iSubType, sID);
+                                Py_END_ALLOW_THREADS
+                        }
+
+                        // SwitchType change
+                        if (iSwitchType != self->SwitchType)
+                        {
+                                Py_BEGIN_ALLOW_THREADS
+                                m_sql.UpdateDeviceValue("SwitchType", iSwitchType, sID);
+                                Py_END_ALLOW_THREADS
+                        }
+
+
 
 			uint64_t DevRowIdx = -1;
 
@@ -821,19 +854,6 @@ namespace Plugins {
 				if (!IsLightOrSwitch(iType, iSubType))
 				{
 					m_notifications.CheckAndHandleNotification(DevRowIdx, pModState->pPlugin->m_HwdID, sDeviceID, sName, self->Unit, iType, iSubType, nValue, sValue);
-				}
-				else
-				{
-					std::string lstatus;
-					int llevel;
-					bool bHaveDimmer;
-					int maxDimLevel;
-					bool bHaveGroupCmd;
-					GetLightStatus(iType, iSubType, (_eSwitchType)iSwitchType, nValue, sValue, lstatus, llevel, bHaveDimmer, maxDimLevel, bHaveGroupCmd);
-					if (self->SwitchType == STYPE_Selector)
-						m_notifications.CheckAndHandleSwitchNotification(DevRowIdx, sName, (IsLightSwitchOn(lstatus)) ? NTYPE_SWITCH_ON : NTYPE_SWITCH_OFF, llevel);
-					else
-						m_notifications.CheckAndHandleSwitchNotification(DevRowIdx, sName, (IsLightSwitchOn(lstatus)) ? NTYPE_SWITCH_ON : NTYPE_SWITCH_OFF);
 				}
 			}
 			PyNewRef	pRetVal = CUnitEx_refresh(self);

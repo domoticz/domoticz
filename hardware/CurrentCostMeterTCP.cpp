@@ -91,7 +91,7 @@ bool CurrentCostMeterTCP::ConnectInternal()
 		return false;
 	}
 
-	Log(LOG_STATUS, "connected to: %s:%d", m_szIPAddress.c_str(), m_usIPPort);
+	Log(LOG_STATUS, "Connected to: %s:%d", m_szIPAddress.c_str(), m_usIPPort);
 
 	Init();
 
@@ -152,7 +152,7 @@ void CurrentCostMeterTCP::Do_Work()
 			ParseData(data, bread);
 		}
 	}
-	Log(LOG_STATUS, "TCP/IP Worker stopped...");
+	Log(LOG_STATUS, "Worker stopped...");
 }
 
 void CurrentCostMeterTCP::write(const char* /*data*/, size_t /*size*/)

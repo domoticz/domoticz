@@ -385,7 +385,7 @@ void CTeleinfoBase::ProcessTeleinfo(const std::string& name, int rank, Teleinfo&
 			teleinfo.pAlertPPOT = teleinfo.PPOT;
 			teleinfo.PPOT >>= 1;
 			std::stringstream ss;
-			ss << "Bitmap phases: " << std::bitset<3>(~teleinfo.PPOT);
+			ss << "Bitmap phases: " << std::bitset<3>(~static_cast<uint64_t>(teleinfo.PPOT));
 			message = ss.str();
 			SendAlertSensor(32 * rank + 7, 255, alertPPOT, message, " Alerte Potentiels");
 		}

@@ -142,7 +142,7 @@ bool SMTPClient::SendEmail()
 
 		curl_easy_setopt(curl, CURLOPT_CONNECTTIMEOUT, 10);
 
-		curl_easy_setopt(curl, CURLOPT_INFILESIZE_LARGE, (curl_off_t)177);
+		//curl_easy_setopt(curl, CURLOPT_INFILESIZE_LARGE, (curl_off_t)177);
 		curl_easy_setopt(curl, CURLOPT_URL, szURL.c_str());
 		curl_easy_setopt(curl, CURLOPT_UPLOAD, 1L);
 		if (!m_Username.empty())

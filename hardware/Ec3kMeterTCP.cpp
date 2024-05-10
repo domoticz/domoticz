@@ -85,7 +85,7 @@ bool Ec3kMeterTCP::StopHardware()
 
 void Ec3kMeterTCP::OnConnect()
 {
-	Log(LOG_STATUS, "connected to: %s:%d", m_szIPAddress.c_str(), m_usIPPort);
+	Log(LOG_STATUS, "Connected to: %s:%d", m_szIPAddress.c_str(), m_usIPPort);
 	m_bIsStarted = true;
 
 	sOnConnected(this);
@@ -93,7 +93,7 @@ void Ec3kMeterTCP::OnConnect()
 
 void Ec3kMeterTCP::OnDisconnect()
 {
-	Log(LOG_STATUS, "disconnected");
+	Log(LOG_STATUS, "Disconnected");
 }
 
 void Ec3kMeterTCP::Do_Work()
@@ -110,7 +110,7 @@ void Ec3kMeterTCP::Do_Work()
 	}
 	terminate();
 
-	Log(LOG_STATUS, "TCP/IP Worker stopped...");
+	Log(LOG_STATUS, "Worker stopped...");
 }
 
 void Ec3kMeterTCP::OnData(const unsigned char* pData, size_t length)
