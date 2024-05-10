@@ -378,6 +378,7 @@ namespace Plugins {
 
 		if (sTypeName == "Pressure")					SubType = sTypePressure;
 		else if (sTypeName == "Percentage")				SubType = sTypePercentage;
+		else if (sTypeName == "Fan")					SubType = sTypeFan;
 		else if (sTypeName == "Gas")
 		{
 			Type = pTypeP1Gas;
