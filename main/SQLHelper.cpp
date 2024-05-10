@@ -5510,7 +5510,7 @@ uint64_t CSQLHelper::UpdateValueInt(
 			std::string Name = sd[0];
 			_eSwitchType switchtype = (_eSwitchType)atoi(sd[1].c_str());
 			float AddjValue = static_cast<float>(atof(sd[2].c_str()));
-			GetLightStatus(devType, subType, switchtype, nValue, sValue, lstatus, llevel, bHaveDimmer, maxDimLevel, bHaveGroupCmd);
+			GetLightStatus(devType, subType, switchtype, nValue, sValue, lstatus, llevel, bHaveDimmer, maxDimLevel, bHaveGroupCmd, nullptr);
 
 			bool bIsLightSwitchOn = IsLightSwitchOn(lstatus);
 			std::string slevel = sd[6];
@@ -8412,7 +8412,7 @@ void CSQLHelper::CheckSceneStatus(const uint64_t Idx)
 		bool bHaveGroupCmd = false;
 		int maxDimLevel = 0;
 
-		GetLightStatus(dType, dSubType, switchtype, nValue, sValue, lstatus, llevel, bHaveDimmer, maxDimLevel, bHaveGroupCmd);
+		GetLightStatus(dType, dSubType, switchtype, nValue, sValue, lstatus, llevel, bHaveDimmer, maxDimLevel, bHaveGroupCmd, nullptr);
 		_DeviceStatusResults.push_back(IsLightSwitchOn(lstatus));
 	}
 

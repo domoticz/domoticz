@@ -281,7 +281,7 @@ const char* Get_Alert_Desc(int level);
 const char* Media_Player_States(_eMediaStatus Status);
 
 void GetLightStatus(unsigned char dType, unsigned char dSubType, _eSwitchType switchtype, unsigned char nValue, const std::string& sValue, std::string& lstatus, int& llevel, bool& bHaveDimmer,
-	int& maxDimLevel, bool& bHaveGroupCmd);
+	int& maxDimLevel, bool& bHaveGroupCmd, const std::map<std::string, std::string>* options);
 
 int  GetSelectorSwitchLevel(const std::map<std::string, std::string>& options, const std::string& levelName);
 std::string GetSelectorSwitchLevelAction(const std::map<std::string, std::string>& options, int level);

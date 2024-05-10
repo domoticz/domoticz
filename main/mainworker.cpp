@@ -11454,7 +11454,7 @@ MainWorker::eSwitchLightReturnCode MainWorker::SwitchLightInt(const std::vector<
 	int maxDimLevel = 0;
 	int nValue = atoi(sd[7].c_str());
 	std::string sValue = sd[8];
-	GetLightStatus(dType, dSubType, switchtype, nValue, sValue, lstatus, llevel, bHaveDimmer, maxDimLevel, bHaveGroupCmd);
+	GetLightStatus(dType, dSubType, switchtype, nValue, sValue, lstatus, llevel, bHaveDimmer, maxDimLevel, bHaveGroupCmd, nullptr);
 
 	if (pHardware->HwdType == HTYPE_DomoticzInternal)
 	{
@@ -13402,7 +13402,7 @@ bool MainWorker::SwitchScene(const uint64_t idx, std::string switchcmd, const st
 			bool bHaveGroupCmd = false;
 			int maxDimLevel = 0;
 
-			GetLightStatus(dType, dSubType, switchtype, cmd, sValue, lstatus, llevel, bHaveDimmer, maxDimLevel, bHaveGroupCmd);
+			GetLightStatus(dType, dSubType, switchtype, cmd, sValue, lstatus, llevel, bHaveDimmer, maxDimLevel, bHaveGroupCmd, nullptr);
 
 			if (scenetype == SGTYPE_GROUP)
 			{
@@ -13518,7 +13518,7 @@ void MainWorker::CheckSceneCode(const uint64_t DevRowIdx, const uint8_t dType, c
 					bool bHaveGroupCmd = false;
 					int maxDimLevel = 0;
 
-					GetLightStatus(dType, dSubType, STYPE_OnOff, rnValue, sValue, lstatus, llevel, bHaveDimmer, maxDimLevel, bHaveGroupCmd);
+					GetLightStatus(dType, dSubType, STYPE_OnOff, rnValue, sValue, lstatus, llevel, bHaveDimmer, maxDimLevel, bHaveGroupCmd, nullptr);
 					std::string switchcmd = (IsLightSwitchOn(lstatus) == true) ? "On" : "Off";
 
 					m_sql.AddTaskItem(_tTaskItem::SwitchSceneEvent(0.2F, ID, switchcmd, "SceneTrigger", User));

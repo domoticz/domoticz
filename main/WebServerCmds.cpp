@@ -3595,7 +3595,7 @@ namespace http
 							bool bHaveDimmer = false;
 							bool bHaveGroupCmd = false;
 							int maxDimLevel = 0;
-							GetLightStatus(devType, subType, switchtype, nValue, sValue, lstatus, llevel, bHaveDimmer, maxDimLevel, bHaveGroupCmd);
+							GetLightStatus(devType, subType, switchtype, nValue, sValue, lstatus, llevel, bHaveDimmer, maxDimLevel, bHaveGroupCmd, nullptr);
 						}
 						uint64_t dID = std::stoull(sID);
 						root["result"][ii]["idx"] = Json::Value::UInt64(dID);
@@ -5026,7 +5026,7 @@ namespace http
 					}
 					else
 					{
-						GetLightStatus(dType, dSubType, switchtype, nValue, sValue, lstatus, llevel, bHaveDimmer, maxDimLevel, bHaveGroupCmd);
+						GetLightStatus(dType, dSubType, switchtype, nValue, sValue, lstatus, llevel, bHaveDimmer, maxDimLevel, bHaveGroupCmd, nullptr);
 						ldata = lstatus;
 					}
 

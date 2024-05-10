@@ -3755,7 +3755,7 @@ std::string CEventSystem::nValueToWording(const uint8_t dType, const uint8_t dSu
 
 	if (IsLightOrSwitch(dType, dSubType))
 	{
-		GetLightStatus(dType, dSubType, switchtype, nValue, sValue, lstatus, llevel, bHaveDimmer, maxDimLevel, bHaveGroupCmd);
+		GetLightStatus(dType, dSubType, switchtype, nValue, sValue, lstatus, llevel, bHaveDimmer, maxDimLevel, bHaveGroupCmd, nullptr);
 	}
 
 	if (switchtype == STYPE_Dimmer)
@@ -3777,7 +3777,7 @@ std::string CEventSystem::nValueToWording(const uint8_t dType, const uint8_t dSu
 	}
 	else if (dType == pTypeEvohome)
 	{
-		GetLightStatus(dType, dSubType, switchtype, nValue, sValue, lstatus, llevel, bHaveDimmer, maxDimLevel, bHaveGroupCmd);
+		GetLightStatus(dType, dSubType, switchtype, nValue, sValue, lstatus, llevel, bHaveDimmer, maxDimLevel, bHaveGroupCmd, nullptr);
 	}
 	else if (switchtype == STYPE_Selector)
 	{
@@ -4006,7 +4006,7 @@ int CEventSystem::calculateDimLevel(int deviceID, int percentageLevel)
 		bool bHaveGroupCmd = false;
 		int maxDimLevel = 0;
 
-		GetLightStatus(dType, dSubType, switchtype, 0, "", lstatus, llevel, bHaveDimmer, maxDimLevel, bHaveGroupCmd);
+		GetLightStatus(dType, dSubType, switchtype, 0, "", lstatus, llevel, bHaveDimmer, maxDimLevel, bHaveGroupCmd, nullptr);
 		iLevel = maxDimLevel;
 
 		if (maxDimLevel != 0)

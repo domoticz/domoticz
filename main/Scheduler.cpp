@@ -883,7 +883,7 @@ void CScheduler::CheckSchedules()
 							bool bHaveGroupCmd = false;
 							int maxDimLevel = 0;
 
-							GetLightStatus(dType, dSubType, switchtype, 0, "", lstatus, llevel, bHaveDimmer, maxDimLevel, bHaveGroupCmd);
+							GetLightStatus(dType, dSubType, switchtype, 0, "", lstatus, llevel, bHaveDimmer, maxDimLevel, bHaveGroupCmd, nullptr);
 							int ilevel = maxDimLevel;
 							if (switchtype == STYPE_Blinds)
 							{

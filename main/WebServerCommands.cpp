@@ -155,7 +155,7 @@ namespace http
 						bool bHaveDimmer = false;
 						bool bHaveGroupCmd = false;
 						int maxDimLevel = 0;
-						GetLightStatus(devType, subType, switchtype, command, sValue, lstatus, llevel, bHaveDimmer, maxDimLevel, bHaveGroupCmd);
+						GetLightStatus(devType, subType, switchtype, command, sValue, lstatus, llevel, bHaveDimmer, maxDimLevel, bHaveGroupCmd, nullptr);
 						if (bIsBlinds)
 						{
 							if (lstatus == "On")
@@ -394,7 +394,7 @@ namespace http
 										bool bHaveGroupCmd = false;
 
 										GetLightStatus(Type, SubType, switchtype, nValue, sValue, lstatus, llevel, bHaveDimmer, maxDimLevel,
-											bHaveGroupCmd);
+											bHaveGroupCmd, nullptr);
 
 										for (int i = 0; i <= maxDimLevel; i++)
 										{

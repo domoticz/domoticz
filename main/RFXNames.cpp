@@ -971,7 +971,8 @@ void GetLightStatus(
 	int& llevel,
 	bool& bHaveDimmer,
 	int& maxDimLevel,
-	bool& bHaveGroupCmd)
+	bool& bHaveGroupCmd,
+	const std::map<std::string, std::string>* options)
 {
 	bHaveDimmer = false;
 	maxDimLevel = 0;
@@ -1419,13 +1420,24 @@ void GetLightStatus(
 			lstatus = "On";
 			break;
 		case gswitch_sSetLevel:
-			sprintf(szTmp, "Set Level: %d %%", llevel);
-			if (sValue == "0")
-				lstatus = "Off";
-			else if (sValue == "100")
-				lstatus = "On";
+			if (options != nullptr)
+			{
+				std::map<std::string, std::string> selectorStatuses;
+				GetSelectorSwitchStatuses(*options, selectorStatuses);
+
+				std::string sLevel = selectorStatuses[sValue];
+				lstatus = "Set Level: " + sLevel;
+			}
 			else
-				lstatus = szTmp;
+			{
+				sprintf(szTmp, "Set Level: %d %%", llevel);
+				if (sValue == "0")
+					lstatus = "Off";
+				else if (sValue == "100")
+					lstatus = "On";
+				else
+					lstatus = szTmp;
+			}
 			break;
 		case gswitch_sGroupOff:
 			lstatus = "Group Off";

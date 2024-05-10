@@ -102,7 +102,7 @@ void CFibaroPush::DoFibaroPush(const uint64_t DeviceRowIdx)
 				bool bHaveDimmer = false;
 				bool bHaveGroupCmd = false;
 				int maxDimLevel = 0;
-				GetLightStatus(dType, dSubType, (_eSwitchType)metertype, nValue, sValue, lstatus, llevel, bHaveDimmer, maxDimLevel, bHaveGroupCmd);
+				GetLightStatus(dType, dSubType, (_eSwitchType)metertype, nValue, sValue, lstatus, llevel, bHaveDimmer, maxDimLevel, bHaveGroupCmd, nullptr);
 				sendValue = lstatus;
 			}
 			else if (delpos > 0) {
@@ -125,7 +125,7 @@ void CFibaroPush::DoFibaroPush(const uint64_t DeviceRowIdx)
 			bool bHaveDimmer = false;
 			bool bHaveGroupCmd = false;
 			int maxDimLevel = 0;
-			GetLightStatus(dType, dSubType, STYPE_OnOff, nValue, sValue, lstatus, llevel, bHaveDimmer, maxDimLevel, bHaveGroupCmd);
+			GetLightStatus(dType, dSubType, STYPE_OnOff, nValue, sValue, lstatus, llevel, bHaveDimmer, maxDimLevel, bHaveGroupCmd, nullptr);
 			sendValue = lstatus;
 		}
 		if (sendValue.empty())

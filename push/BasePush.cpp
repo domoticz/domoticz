@@ -595,7 +595,7 @@ std::string CBasePush::ProcessSendValue(
 			bool bHaveDimmer = false;
 			bool bHaveGroupCmd = false;
 			int maxDimLevel = 0;
-			GetLightStatus(devType, devSubType, static_cast<_eSwitchType>(metertypein), 1, rawsendValue, lstatus, llevel, bHaveDimmer, maxDimLevel, bHaveGroupCmd);
+			GetLightStatus(devType, devSubType, static_cast<_eSwitchType>(metertypein), 1, rawsendValue, lstatus, llevel, bHaveDimmer, maxDimLevel, bHaveGroupCmd, nullptr);
 
 			int level = atoi(rawsendValue.c_str());
 

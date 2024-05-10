@@ -1755,7 +1755,7 @@ namespace http
 						bool bHaveGroupCmd = false;
 						int maxDimLevel = 0;
 
-						GetLightStatus(dType, dSubType, switchtype, nValue, sValue, lstatus, llevel, bHaveDimmer, maxDimLevel, bHaveGroupCmd);
+						GetLightStatus(dType, dSubType, switchtype, nValue, sValue, lstatus, llevel, bHaveDimmer, maxDimLevel, bHaveGroupCmd, &options);
 
 						root["result"][ii]["Status"] = lstatus;
 						root["result"][ii]["StrParam1"] = strParam1;
@@ -2049,7 +2049,7 @@ namespace http
 						bool bHaveGroupCmd = false;
 						int maxDimLevel = 0;
 
-						GetLightStatus(dType, dSubType, switchtype, nValue, sValue, lstatus, llevel, bHaveDimmer, maxDimLevel, bHaveGroupCmd);
+						GetLightStatus(dType, dSubType, switchtype, nValue, sValue, lstatus, llevel, bHaveDimmer, maxDimLevel, bHaveGroupCmd, NULL);
 
 						root["result"][ii]["Status"] = lstatus;
 						root["result"][ii]["HaveDimmer"] = bHaveDimmer;
@@ -2079,7 +2079,7 @@ namespace http
 						bool bHaveGroupCmd = false;
 						int maxDimLevel = 0;
 
-						GetLightStatus(dType, dSubType, switchtype, nValue, sValue, lstatus, llevel, bHaveDimmer, maxDimLevel, bHaveGroupCmd);
+						GetLightStatus(dType, dSubType, switchtype, nValue, sValue, lstatus, llevel, bHaveDimmer, maxDimLevel, bHaveGroupCmd, NULL);
 
 						root["result"][ii]["Status"] = lstatus;
 						root["result"][ii]["HaveDimmer"] = bHaveDimmer;
@@ -2102,7 +2102,7 @@ namespace http
 						bool bHaveGroupCmd = false;
 						int maxDimLevel = 0;
 
-						GetLightStatus(dType, dSubType, switchtype, nValue, sValue, lstatus, llevel, bHaveDimmer, maxDimLevel, bHaveGroupCmd);
+						GetLightStatus(dType, dSubType, switchtype, nValue, sValue, lstatus, llevel, bHaveDimmer, maxDimLevel, bHaveGroupCmd, NULL);
 
 						root["result"][ii]["Status"] = lstatus;
 						root["result"][ii]["HaveDimmer"] = bHaveDimmer;
