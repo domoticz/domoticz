@@ -726,13 +726,15 @@ namespace Plugins {
 		{
 			char *TypeName = nullptr;
 			int bWriteLog = false;
+			int bUpdateProperties = false;
+			int bUpdateOptions = false;
 
-			static char *kwlist[] = { "Log", "TypeName", nullptr };
+			static char *kwlist[] = { "Log", "TypeName", "UpdateProperties", "UpdateOptions", nullptr };
 
 			// Try to extract parameters needed to update device settings
-			if (!PyArg_ParseTupleAndKeywords(args, kwds, "|ps", kwlist, &bWriteLog, &TypeName))
+			if (!PyArg_ParseTupleAndKeywords(args, kwds, "|pspp", kwlist, &bWriteLog, &TypeName, &bUpdateProperties, &bUpdateOptions))
 			{
-				pModState->pPlugin->Log(LOG_ERROR, "(%s) Failed to parse parameters: 'Log' and/or 'TypeName' expected.", __func__);
+				pModState->pPlugin->Log(LOG_ERROR, "(%s) Failed to parse parameters: 'Log' and/or 'TypeName' and/or 'UpdateProperties' and/or 'UpdateOptions' expected.", __func__);
 				pModState->pPlugin->LogPythonException(__func__);
 				Py_RETURN_NONE;
 			}
@@ -748,6 +750,10 @@ namespace Plugins {
 			std::string sColor = PyBorrowedRef(self->Color);
 			sColor = _tColor(sColor).toJSONString();
 			int nValue = self->nValue;
+			int iImage = self->Image;
+			int iBatteryLevel = self->BatteryLevel;
+			int iSignalLevel = self->SignalLevel;
+			int iUsed = self->Used;
 			int iType = self->Type;
 			int iSubType = self->SubType;
 			int iSwitchType = self->SwitchType;
@@ -763,31 +769,130 @@ namespace Plugins {
 				nValue = 0;
 				sValue = stdsValue;
 			}
-                        // Type change
-                        if (iType != self->Type)
-                        {
-                                Py_BEGIN_ALLOW_THREADS
-                                m_sql.UpdateDeviceValue("Type", iType, sID);
-                                Py_END_ALLOW_THREADS
-                        }
 
-                        // SubType change
-                        if (iSubType != self->SubType)
-                        {
-                                Py_BEGIN_ALLOW_THREADS
-                                m_sql.UpdateDeviceValue("SubType", iSubType, sID);
-                                Py_END_ALLOW_THREADS
-                        }
+			if (bUpdateProperties) {
+				// Grab state in db
+				CUnitEx_refresh(self);
 
-                        // SwitchType change
-                        if (iSwitchType != self->SwitchType)
-                        {
-                                Py_BEGIN_ALLOW_THREADS
-                                m_sql.UpdateDeviceValue("SwitchType", iSwitchType, sID);
-                                Py_END_ALLOW_THREADS
-                        }
+				// Then compare to object saved states and change only if different
+				// Name change
+				if (sName.compare(PyBorrowedRef(self->Name)) != 0)
+				{
+					Py_BEGIN_ALLOW_THREADS
+					m_sql.UpdateDeviceValue("Name", sName, sID);
+					Py_END_ALLOW_THREADS
+				}
 
+				// Description change
+				if (sDescription.compare(PyBorrowedRef(self->Description)) != 0)
+				{
+					Py_BEGIN_ALLOW_THREADS
+					m_sql.UpdateDeviceValue("Description", sDescription, sID);
+					Py_END_ALLOW_THREADS
+				}
 
+				// Image change
+				if (iImage != self->Image)
+				{
+					Py_BEGIN_ALLOW_THREADS
+					m_sql.UpdateDeviceValue("CustomImage", iImage, sID);
+					Py_END_ALLOW_THREADS
+				}
+
+				// BatteryLevel change
+				if (iBatteryLevel != self->BatteryLevel)
+				{
+					Py_BEGIN_ALLOW_THREADS
+					m_sql.UpdateDeviceValue("BatteryLevel", iBatteryLevel, sID);
+					Py_END_ALLOW_THREADS
+				}
+
+				// SignalLevel change
+				if (iSignalLevel != self->SignalLevel)
+				{
+					Py_BEGIN_ALLOW_THREADS
+					m_sql.UpdateDeviceValue("SignalLevel", iSignalLevel, sID);
+					Py_END_ALLOW_THREADS
+				}
+
+				// Used change
+				if (iUsed != self->Used)
+				{
+					Py_BEGIN_ALLOW_THREADS
+					m_sql.UpdateDeviceValue("Used", iUsed, sID);
+					Py_END_ALLOW_THREADS
+				}
+
+				// Color change
+				if (sColor.compare(PyBorrowedRef(self->Color)) != 0)
+				{
+					Py_BEGIN_ALLOW_THREADS
+					m_sql.UpdateDeviceValue("Color", sColor, sID);
+					Py_END_ALLOW_THREADS
+				}
+			}
+
+			// Type change
+			if (iType != self->Type)
+			{
+				Py_BEGIN_ALLOW_THREADS
+				m_sql.UpdateDeviceValue("Type", iType, sID);
+				Py_END_ALLOW_THREADS
+			}
+
+			// SubType change
+			if (iSubType != self->SubType)
+			{
+				Py_BEGIN_ALLOW_THREADS
+				m_sql.UpdateDeviceValue("SubType", iSubType, sID);
+				Py_END_ALLOW_THREADS
+			}
+
+			// SwitchType change
+			if (iSwitchType != self->SwitchType)
+			{
+				Py_BEGIN_ALLOW_THREADS
+				m_sql.UpdateDeviceValue("SwitchType", iSwitchType, sID);
+				Py_END_ALLOW_THREADS
+			}
+
+			if (bUpdateOptions) {
+				// Options provided, assume change
+				if (pOptionsDict && PyBorrowedRef(pOptionsDict).IsDict())
+				{
+					if (self->SubType != sTypeCustom)
+					{
+						PyBorrowedRef	pKeyDict, pValueDict;
+						Py_ssize_t pos = 0;
+						std::map<std::string, std::string> mpOptions;
+						while (PyDict_Next(pOptionsDict, &pos, &pKeyDict, &pValueDict))
+						{
+							std::string sOptionName = pKeyDict;
+							std::string sOptionValue = pValueDict;
+							mpOptions.insert(std::pair<std::string, std::string>(sOptionName, sOptionValue));
+						}
+						Py_BEGIN_ALLOW_THREADS
+						m_sql.SetDeviceOptions(self->ID, mpOptions);
+						Py_END_ALLOW_THREADS
+					}
+					else
+					{
+						std::string sOptionValue;
+						PyBorrowedRef	pValue = PyDict_GetItemString(pOptionsDict, "Custom");
+						if (pValue)
+						{
+							sOptionValue = PyUnicode_AsUTF8(pValue);
+						}
+
+						std::string sLastUpdate = TimeToString(nullptr, TF_DateTime);
+						Py_BEGIN_ALLOW_THREADS
+						m_sql.UpdateDeviceValue("Options", iUsed, sID);
+						m_sql.safe_query("UPDATE DeviceStatus SET Options='%q', LastUpdate='%q' WHERE (HardwareID==%d) and (Unit==%d)",
+							sOptionValue.c_str(), sLastUpdate.c_str(), pModState->pPlugin->m_HwdID, self->Unit);
+						Py_END_ALLOW_THREADS
+					}
+				}
+			}
 
 			uint64_t DevRowIdx = -1;
 
