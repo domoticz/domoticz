@@ -728,13 +728,14 @@ namespace Plugins {
 			int bWriteLog = false;
 			int bUpdateProperties = false;
 			int bUpdateOptions = false;
+			int bSuppressTriggers = false;
 
-			static char *kwlist[] = { "Log", "TypeName", "UpdateProperties", "UpdateOptions", nullptr };
+			static char *kwlist[] = { "Log", "TypeName", "UpdateProperties", "UpdateOptions", "SuppressTriggers", nullptr };
 
 			// Try to extract parameters needed to update device settings
-			if (!PyArg_ParseTupleAndKeywords(args, kwds, "|pspp", kwlist, &bWriteLog, &TypeName, &bUpdateProperties, &bUpdateOptions))
+			if (!PyArg_ParseTupleAndKeywords(args, kwds, "|psppp", kwlist, &bWriteLog, &TypeName, &bUpdateProperties, &bUpdateOptions, &bSuppressTriggers))
 			{
-				pModState->pPlugin->Log(LOG_ERROR, "(%s) Failed to parse parameters: 'Log' and/or 'TypeName' and/or 'UpdateProperties' and/or 'UpdateOptions' expected.", __func__);
+				pModState->pPlugin->Log(LOG_ERROR, "(%s) Failed to parse parameters: 'Log' and/or 'TypeName' and/or 'UpdateProperties' and/or 'UpdateOptions' and/or 'SuppressTriggers' expected.", __func__);
 				pModState->pPlugin->LogPythonException(__func__);
 				Py_RETURN_NONE;
 			}
@@ -894,73 +895,76 @@ namespace Plugins {
 				}
 			}
 
-			uint64_t DevRowIdx = -1;
+			if (!bSuppressTriggers) {
+				uint64_t DevRowIdx = -1;
 
-			Py_BEGIN_ALLOW_THREADS
-			std::string devname = sName.c_str();
+				Py_BEGIN_ALLOW_THREADS
+				std::string devname = sName.c_str();
 
-			DevRowIdx = m_sql.UpdateValue(
-				pModState->pPlugin->m_HwdID,
-				0,
-				sDeviceID.c_str(),
-				self->Unit,
-				iType,
-				iSubType,
-				self->SignalLevel,
-				self->BatteryLevel,
-				nValue,
-				sValue.c_str(),
-				devname,
-				true,
-				pModState->pPlugin->m_Name.c_str()
-			);
-			Py_END_ALLOW_THREADS
+				DevRowIdx = m_sql.UpdateValue(
+					pModState->pPlugin->m_HwdID,
+					0,
+					sDeviceID.c_str(),
+					self->Unit,
+					iType,
+					iSubType,
+					iSignalLevel,
+					iBatteryLevel,
+					nValue,
+					sValue.c_str(),
+					devname,
+					true,
+					pModState->pPlugin->m_Name.c_str()
+				);
+				Py_END_ALLOW_THREADS
 
-			if (DevRowIdx == (uint64_t)-1)
-			{
-				pModState->pPlugin->Log(LOG_ERROR, "Update to 'UnitEx' failed to update any DeviceStatus records for key %d/%s/%d", pModState->pPlugin->m_HwdID, sDeviceID.c_str(), self->Unit);
-				Py_RETURN_NONE;
-			}
-
-			m_mainworker.sOnDeviceReceived(pModState->pPlugin->m_HwdID, self->ID, pModState->pPlugin->m_Name, NULL);
-
-			// Only trigger notifications if a used value is changed
-			if (self->Used)
-			{
-				// if this is an internal Security Panel then there are some extra updates required if state has changed
-				if ((self->Type == pTypeSecurity1) && (self->SubType == sTypeDomoticzSecurity) && (self->nValue != nValue))
+				if (DevRowIdx == (uint64_t)-1)
 				{
-					Py_BEGIN_ALLOW_THREADS
-						switch (nValue)
-						{
-						case sStatusArmHome:
-						case sStatusArmHomeDelayed:
-							m_sql.UpdatePreferencesVar("SecStatus", SECSTATUS_ARMEDHOME);
-							m_mainworker.UpdateDomoticzSecurityStatus(SECSTATUS_ARMEDHOME, "Python");
-							break;
-						case sStatusArmAway:
-						case sStatusArmAwayDelayed:
-							m_sql.UpdatePreferencesVar("SecStatus", SECSTATUS_ARMEDAWAY);
-							m_mainworker.UpdateDomoticzSecurityStatus(SECSTATUS_ARMEDAWAY, "Python");
-							break;
-						case sStatusDisarm:
-						case sStatusNormal:
-						case sStatusNormalDelayed:
-						case sStatusNormalTamper:
-						case sStatusNormalDelayedTamper:
-							m_sql.UpdatePreferencesVar("SecStatus", SECSTATUS_DISARMED);
-							m_mainworker.UpdateDomoticzSecurityStatus(SECSTATUS_DISARMED, "Python");
-							break;
-						}
-					Py_END_ALLOW_THREADS
+					pModState->pPlugin->Log(LOG_ERROR, "Update to 'UnitEx' failed to update any DeviceStatus records for key %d/%s/%d", pModState->pPlugin->m_HwdID, sDeviceID.c_str(), self->Unit);
+					Py_RETURN_NONE;
 				}
 
-				// Notifications
-				if (!IsLightOrSwitch(iType, iSubType))
+				m_mainworker.sOnDeviceReceived(pModState->pPlugin->m_HwdID, self->ID, pModState->pPlugin->m_Name, NULL);
+
+				// Only trigger notifications if a used value is changed
+				if (self->Used)
 				{
-					m_notifications.CheckAndHandleNotification(DevRowIdx, pModState->pPlugin->m_HwdID, sDeviceID, sName, self->Unit, iType, iSubType, nValue, sValue);
+					// if this is an internal Security Panel then there are some extra updates required if state has changed
+					if ((self->Type == pTypeSecurity1) && (self->SubType == sTypeDomoticzSecurity) && (self->nValue != nValue))
+					{
+						Py_BEGIN_ALLOW_THREADS
+							switch (nValue)
+							{
+							case sStatusArmHome:
+							case sStatusArmHomeDelayed:
+								m_sql.UpdatePreferencesVar("SecStatus", SECSTATUS_ARMEDHOME);
+								m_mainworker.UpdateDomoticzSecurityStatus(SECSTATUS_ARMEDHOME, "Python");
+								break;
+							case sStatusArmAway:
+							case sStatusArmAwayDelayed:
+								m_sql.UpdatePreferencesVar("SecStatus", SECSTATUS_ARMEDAWAY);
+								m_mainworker.UpdateDomoticzSecurityStatus(SECSTATUS_ARMEDAWAY, "Python");
+								break;
+							case sStatusDisarm:
+							case sStatusNormal:
+							case sStatusNormalDelayed:
+							case sStatusNormalTamper:
+							case sStatusNormalDelayedTamper:
+								m_sql.UpdatePreferencesVar("SecStatus", SECSTATUS_DISARMED);
+								m_mainworker.UpdateDomoticzSecurityStatus(SECSTATUS_DISARMED, "Python");
+								break;
+							}
+						Py_END_ALLOW_THREADS
+					}
+
+					// Notifications
+					if (!IsLightOrSwitch(iType, iSubType))
+					{
+						m_notifications.CheckAndHandleNotification(DevRowIdx, pModState->pPlugin->m_HwdID, sDeviceID, sName, self->Unit, iType, iSubType, nValue, sValue);
+					}
 				}
 			}
+
 			PyNewRef	pRetVal = CUnitEx_refresh(self);
 		}
 		else
