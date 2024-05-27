@@ -1501,8 +1501,9 @@ function Contact(item) {
         this.parent.constructor(item);
         this.image = (this.status == "Closed") ? "images/" + item.Image + "48_Off.png" : "images/" + item.Image + "48_On.png";
         this.data = '';
+        this.NotifyLink = this.onClick = "";
         this.smallStatus = this.status;
-        this.LogLink = this.onClick = "window.location.href = '#/Devices/" + this.index + "/Log'";
+        this.LogLink = "window.location.href = '#/Devices/" + this.index + "/Log'";
     }
 }
 Contact.inheritsFrom(BinarySensor);
