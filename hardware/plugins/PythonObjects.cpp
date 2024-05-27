@@ -378,6 +378,7 @@ namespace Plugins {
 
 		if (sTypeName == "Pressure")					SubType = sTypePressure;
 		else if (sTypeName == "Percentage")				SubType = sTypePercentage;
+		else if (sTypeName == "Fan")					SubType = sTypeFan;
 		else if (sTypeName == "Gas")
 		{
 			Type = pTypeP1Gas;
@@ -493,6 +494,12 @@ namespace Plugins {
 			Type = pTypeGeneralSwitch;
 			SubType = sSwitchTypeSelector;
 			SwitchType = STYPE_Selector;
+		}
+		else if (sTypeName == "On/Off")
+		{
+			Type = pTypeGeneralSwitch;
+			SubType = sSwitchGeneralSwitch;
+			SwitchType = STYPE_OnOff;
 		}
 		else if (sTypeName == "Push On")
 		{
