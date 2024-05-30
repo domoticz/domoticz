@@ -17,14 +17,22 @@ define(['app', 'log/Chart', 'log/CounterLogSeriesSupplier'], function (app) {
     app.factory('counterLogEnergySeriesSuppliers', function (chart, counterLogSeriesSupplier) {
         return {
             counterDaySeriesSuppliers: counterDaySeriesSuppliers,
-            counterMonthYearSeriesSuppliers: counterMonthYearSeriesSuppliers,
             instantAndCounterDaySeriesSuppliers: instantAndCounterDaySeriesSuppliers,
             p1DaySeriesSuppliers: p1DaySeriesSuppliers,
             p1HourSeriesSuppliers: p1HourSeriesSuppliers,
             powerReturnedDaySeriesSuppliers: powerReturnedDaySeriesSuppliers,
             powerReturnedHourSeriesSuppliers: powerReturnedHourSeriesSuppliers,
             p1PriceHourSeriesSuppliers: p1PriceHourSeriesSuppliers,
-            powerReturnedMonthYearSeriesSuppliers: powerReturnedMonthYearSeriesSuppliers
+			
+            counterMonthYearSeriesSuppliers: counterMonthYearSeriesSuppliers,
+            priceMonthYearSeriesSuppliers: priceMonthYearSeriesSuppliers,
+			trendlineMonthYearSeriesSuppliers: trendlineMonthYearSeriesSuppliers,
+			pastMonthYearSeriesSuppliers: pastMonthYearSeriesSuppliers,
+
+            powerReturnedMonthYearSeriesSuppliers: powerReturnedMonthYearSeriesSuppliers,
+			powerTrendlineReturnedMonthYearSeriesSuppliers: powerTrendlineReturnedMonthYearSeriesSuppliers,
+			powerPastReturnedMonthYearSeriesSuppliers: powerPastReturnedMonthYearSeriesSuppliers
+
         };
 
         function counterDaySeriesSuppliers(deviceType) {
@@ -286,30 +294,17 @@ define(['app', 'log/Chart', 'log/CounterLogSeriesSupplier'], function (app) {
                         color: 'rgba(3,190,252,0.8)',
                         yAxis: 0
                     }
-                }),
-                counterLogSeriesSupplier.dataItemsKeysPredicatedSeriesSupplier('p', new DoesNotContain('eu'), {
-                    id: 'counterEnergyPrice',
-                    convertZeroToNull: true,
-                    valueDecimals: 4,
-                    label: 'B',
-                    showWithoutDatapoints: false,
-                    series: {
-                        type: 'spline',
-                        name: (deviceType === chart.deviceTypes.EnergyUsed ? $.t('Costs') : deviceType === chart.deviceTypes.EnergyGenerated ? $.t('Earned') : $.t('Earned')),
-                        zIndex: 3,
-                        tooltip: {
-                            valueSuffix: ' ' + '&#8364;'
-                        },
-                        color: 'rgba(190,252,60,0.8)',
-						showInLegend: false,
-                        yAxis: 0
-                    }
-                }),
+                })
+            ];
+        }
+
+        function trendlineMonthYearSeriesSuppliers(deviceType) {
+            return [
                 counterLogSeriesSupplier.summingSeriesSupplier({
                     id: 'counterEnergyUsedOrGeneratedTotalTrendline',
                     dataItemKeys: ['v', 'v2'],
                     postprocessDatapoints: chart.aggregateTrendline,
-                    label: 'D',
+                    label: 'E',
                     series: {
                         name: $.t('Trendline') + ' ' + (deviceType === chart.deviceTypes.EnergyUsed ? $.t('Usage') : deviceType === chart.deviceTypes.EnergyGenerated ? $.t('Generated') : $.t('Return')),
                         zIndex: 3,
@@ -322,13 +317,18 @@ define(['app', 'log/Chart', 'log/CounterLogSeriesSupplier'], function (app) {
                         yAxis: 0,
                         visible: false
                     }
-                }),
+                })
+            ];
+        }
+
+        function pastMonthYearSeriesSuppliers(deviceType) {
+            return [
                 counterLogSeriesSupplier.summingSeriesSupplier({
                     id: 'counterEnergyUsedOrGeneratedPrevious',
                     dataItemKeys: ['v', 'v2'],
                     useDataItemsFromPrevious: true,
                     convertZeroToNull: true,
-                    label: 'E',
+                    label: 'D',
                     series: {
                         type: 'spline',
                         name: $.t('Past') + ' ' + (deviceType === chart.deviceTypes.EnergyUsed ? $.t('Usage') : deviceType === chart.deviceTypes.EnergyGenerated ? $.t('Generated') : $.t('Return')),
@@ -372,7 +372,12 @@ define(['app', 'log/Chart', 'log/CounterLogSeriesSupplier'], function (app) {
                         color: 'rgba(3,252,190,0.8)',
                         yAxis: 0
                     }
-                }),
+                })
+            ];
+        }
+
+        function powerTrendlineReturnedMonthYearSeriesSuppliers(deviceType) {
+            return [
                 counterLogSeriesSupplier.summingSeriesSupplier({
                     id: 'powerReturnedTotalTrendline',
                     dataIsValid: function (data) {
@@ -394,7 +399,11 @@ define(['app', 'log/Chart', 'log/CounterLogSeriesSupplier'], function (app) {
                         yAxis: 0,
                         visible: false
                     }
-                }),
+                })
+            ];
+        }
+        function powerPastReturnedMonthYearSeriesSuppliers(deviceType) {
+            return [
                 counterLogSeriesSupplier.summingSeriesSupplier({
                     id: 'powerReturnedTotalPrevious',
                     dataIsValid: function (data) {
@@ -427,6 +436,30 @@ define(['app', 'log/Chart', 'log/CounterLogSeriesSupplier'], function (app) {
                 })
             ];
         }
+
+        function priceMonthYearSeriesSuppliers(deviceType) {
+            return [
+                counterLogSeriesSupplier.dataItemsKeysPredicatedSeriesSupplier('p', new DoesNotContain('eu'), {
+                    id: 'counterEnergyPrice',
+                    convertZeroToNull: true,
+                    valueDecimals: 4,
+                    label: 'B',
+                    showWithoutDatapoints: false,
+                    series: {
+                        type: 'spline',
+                        name: (deviceType === chart.deviceTypes.EnergyUsed ? $.t('Costs') : deviceType === chart.deviceTypes.EnergyGenerated ? $.t('Earned') : $.t('Earned')),
+                        zIndex: 4,
+                        tooltip: {
+                            valueSuffix: ' ' + '&#8364;'
+                        },
+                        color: 'rgba(190,252,60,0.8)',
+						showInLegend: false,
+                        yAxis: 0
+                    }
+                })
+            ];
+        }
+		
     });
 
 });
