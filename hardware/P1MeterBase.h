@@ -67,6 +67,8 @@ public:
 	P1Power m_power;
 	P1Gas m_gas;
 
+	unsigned char m_current_tariff = 0; // 1 (low) or 2 (high)
+
 	enum class P1MBusType
 	{
 		deviceType_Unknown = 0,
