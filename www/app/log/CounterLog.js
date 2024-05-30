@@ -89,43 +89,6 @@ define(['app', 'lodash', 'RefreshingChart', 'DataLoader', 'ChartLoader', 'log/Ch
             }
         });
 
-        app.component('counterWeekChart', {
-            require: {
-                logCtrl: '^deviceCounterLog'
-            },
-            bindings: {
-                device: '<'
-            },
-            templateUrl: 'app/log/chart-week.html',
-            controllerAs: 'vm',
-            controller: function ($location, $route, $scope, $timeout, $element, domoticzGlobals, domoticzApi, domoticzDataPointApi, chart, counterLogParams, counterLogSubtypeRegistry) {
-                const self = this;
-                self.range = 'week';
-
-                self.$onInit = function () {
-                    const subtype = counterLogSubtypeRegistry.get(self.logCtrl.subtype);
-                    self.chart = new RefreshingChart(
-                        chart.baseParams($),
-                        chart.angularParams($location, $route, $scope, $timeout, $element),
-                        chart.domoticzParams(domoticzGlobals, domoticzApi, domoticzDataPointApi),
-                        counterLogParams.chartParamsWeek(domoticzGlobals, self,
-                            subtype.chartParamsWeekTemplate,
-                            {
-                                isShortLogChart: false,
-                                yAxes: subtype.yAxesWeek(self.device.SwitchTypeVal),
-                                timestampFromDataItem: function (dataItem, yearOffset = 0) {
-                                    return GetLocalDateFromString(dataItem.d, yearOffset);
-                                },
-                                preprocessData: subtype.preprocessWeekData,
-                                preprocessDataItems: subtype.preprocessWeekDataItems
-                            },
-                            subtype.weekSeriesSuppliers(self.device.SwitchTypeVal, self.device.Divider)
-                        )
-                    );
-                }
-            }
-        });
-
         app.component('counterMonthChart', {
             require: {
                 logCtrl: '^deviceCounterLog'

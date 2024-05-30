@@ -27,27 +27,6 @@ define(['app', 'log/Chart', 'log/CounterLogParams', 'log/CounterLogEnergySeriesS
                     }
                 }
             },
-            chartParamsWeekTemplate: {
-                highchartTemplate: {
-                    plotOptions: {
-                        column: {
-                            stacking: 'normal',
-                            dataLabels: {
-                                enabled: false
-                            }
-                        }
-                    },
-                    tooltip: {
-						headerFormat: '{point.x:%A, %B %d, %Y}<br/>',
-                        pointFormat: '<span style="color: {point.color}">●</span> {series.name}: <b>{abs3 point.y} {point.series.tooltipOptions.valueSuffix}</b> ( {point.percentage:.0f}% )<br>',
-                        footerFormat: '<span style="color: #aaa">●</span> Usage Total: {point.total:,.f} {series.tooltipOptions.valueSuffix}',
-                        outside: true,
-						crosshairs: true,
-						shared: true,
-						//useHTML: true
-                    }
-                }
-            },
             chartParamsMonthYearTemplate: {
                 highchartTemplate: {
                     plotOptions: {
@@ -118,21 +97,6 @@ define(['app', 'log/Chart', 'log/CounterLogParams', 'log/CounterLogEnergySeriesS
                             text: $.t('Energy') + ' (' + chart.valueUnits.energy(chart.valueMultipliers.m1) + ')'
                         },
 						min: 0
-                    }
-                ];
-            },
-            yAxesWeek: function (deviceType) {
-                return [
-                    {
-                        maxPadding: 0.2,
-						labels: {
-							formatter: function () {
-								return Math.abs(Highcharts.numberFormat(this.value, 0));
-							}
-						},
-                        title: {
-                            text: $.t('Energy') + ' (' + chart.valueUnits.energy(chart.valueMultipliers.m1000) + ')'
-                        },
                     }
                 ];
             },

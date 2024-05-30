@@ -10,17 +10,6 @@ define(['app', 'log/Chart', 'log/CounterLogParams', 'log/CounterLogEnergySeriesS
                 },
                 synchronizeYaxes: true
             },
-            chartParamsWeekTemplate: {
-                highchartTemplate: {
-                    plotOptions: {
-                        column: {
-                            dataLabels: {
-                                enabled: true
-                            }
-                        }
-                    }
-                }
-            },
             chartParamsMonthYearTemplate: {
 
             },
@@ -46,16 +35,6 @@ define(['app', 'log/Chart', 'log/CounterLogParams', 'log/CounterLogEnergySeriesS
                     }
                 ];
             },
-            yAxesWeek: function (deviceType) {
-                return [
-                    {
-                        maxPadding: 0.2,
-                        title: {
-                            text: $.t('Energy') + ' (' + chart.valueUnits.energy(chart.valueMultipliers.m1000) + ')'
-                        }
-                    }
-                ];
-            },
             yAxesMonthYear: function (deviceType) {
                 return [
                     {
@@ -78,11 +57,6 @@ define(['app', 'log/Chart', 'log/CounterLogParams', 'log/CounterLogEnergySeriesS
                 return []
                     .concat(counterLogEnergySeriesSuppliers.instantAndCounterDaySeriesSuppliers(deviceType))
                     .concat(counterLogEnergySeriesSuppliers.counterDaySeriesSuppliers(deviceType));
-            },
-            weekSeriesSuppliers: function (deviceType) {
-                return []
-                    //.concat(counterLogEnergySeriesSuppliers.instantAndCounterWeekSeriesSuppliers(deviceType))
-                    .concat(counterLogEnergySeriesSuppliers.counterWeekSeriesSuppliers(deviceType));
             },
             monthYearSeriesSuppliers: function (deviceType) {
                 return []
