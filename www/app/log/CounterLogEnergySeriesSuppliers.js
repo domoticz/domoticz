@@ -68,6 +68,23 @@ define(['app', 'log/Chart', 'log/CounterLogSeriesSupplier'], function (app) {
                         stack: 'susage',
                         yAxis: 0
                     }
+                }),
+                counterLogSeriesSupplier.dataItemsKeysPredicatedSeriesSupplier('p', new DoesNotContain('eu'), {
+                    id: 'counterEnergyPrice',
+                    valueDecimals: 4,
+                    label: 'B',
+                    showWithoutDatapoints: false,
+                    series: {
+                        type: 'spline',
+                        name: $.t('Price'),
+                        tooltip: {
+                            valueSuffix: ' ' + '&#8364;'
+                        },
+                        color: 'rgba(190,252,60,0.8)',
+                        stack: 'susage',
+						showInLegend: false,
+                        yAxis: 0
+                    }
                 })
             ];
         }

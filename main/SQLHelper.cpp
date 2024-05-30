@@ -7792,7 +7792,6 @@ void CSQLHelper::AddCalendarUpdateMultiMeter()
 
 			if (devType == pTypeP1Power)
 			{
-				std::vector<float> prices = CalcMultiMeterPrice(ID, EnergyDivider, szDateStart, szDateEnd);
 				for (int ii = 0; ii < 6; ii++)
 				{
 					float total_min = static_cast<float>(atof(sd[(ii * 2) + 0].c_str()));
@@ -7805,6 +7804,7 @@ void CSQLHelper::AddCalendarUpdateMultiMeter()
 				counter4 = static_cast<float>(atof(sd[11].c_str()));
 
 				//counters are values 1(u1), 5(u2), 2(d1), 6(d2)
+				std::vector<float> prices = CalcMultiMeterPrice(ID, EnergyDivider, szDateStart, szDateEnd);
 				float price_usage = prices[0] + prices[4];
 				float price_deliver = prices[1] + prices[5];
 

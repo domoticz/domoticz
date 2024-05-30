@@ -157,8 +157,8 @@ define(['app', 'log/Chart'], function (app) {
                             }
                         },
                         tooltip: {
-                            shared: false,
-                            crosshairs: false
+                            shared: true,
+                            crosshairs: true
                         }
                     },
                     ctrl: ctrl,
