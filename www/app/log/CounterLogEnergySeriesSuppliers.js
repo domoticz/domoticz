@@ -71,12 +71,13 @@ define(['app', 'log/Chart', 'log/CounterLogSeriesSupplier'], function (app) {
                 }),
                 counterLogSeriesSupplier.dataItemsKeysPredicatedSeriesSupplier('p', new DoesNotContain('eu'), {
                     id: 'counterEnergyPrice',
+                    convertZeroToNull: true,
                     valueDecimals: 4,
                     label: 'B',
                     showWithoutDatapoints: false,
                     series: {
                         type: 'spline',
-                        name: $.t('Price'),
+                        name: $.t('Costs'),
                         tooltip: {
                             valueSuffix: ' ' + '&#8364;'
                         },
@@ -453,6 +454,24 @@ define(['app', 'log/Chart', 'log/CounterLogSeriesSupplier'], function (app) {
                             valueDecimals: 3
                         },
                         color: 'rgba(3,190,252,0.8)',
+                        yAxis: 0
+                    }
+                }),
+                counterLogSeriesSupplier.dataItemsKeysPredicatedSeriesSupplier('p', new DoesNotContain('eu'), {
+                    id: 'counterEnergyPrice',
+                    convertZeroToNull: true,
+                    valueDecimals: 4,
+                    label: 'B',
+                    showWithoutDatapoints: false,
+                    series: {
+                        type: 'spline',
+                        name: (deviceType === chart.deviceTypes.EnergyUsed ? $.t('Costs') : deviceType === chart.deviceTypes.EnergyGenerated ? $.t('Earned') : $.t('Earned')),
+                        zIndex: 3,
+                        tooltip: {
+                            valueSuffix: ' ' + '&#8364;'
+                        },
+                        color: 'rgba(190,252,60,0.8)',
+						showInLegend: false,
                         yAxis: 0
                     }
                 }),
