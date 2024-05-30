@@ -26,6 +26,7 @@ define(['app', 'log/Chart', 'log/CounterLogSeriesSupplier'], function (app) {
             p1WeekSeriesSuppliers: p1WeekSeriesSuppliers,
             powerReturnedDaySeriesSuppliers: powerReturnedDaySeriesSuppliers,
             powerReturnedHourSeriesSuppliers: powerReturnedHourSeriesSuppliers,
+            p1PriceHourSeriesSuppliers: p1PriceHourSeriesSuppliers,
             powerReturnedWeekSeriesSuppliers: powerReturnedWeekSeriesSuppliers,
             powerReturnedMonthYearSeriesSuppliers: powerReturnedMonthYearSeriesSuppliers
         };
@@ -282,6 +283,29 @@ define(['app', 'log/Chart', 'log/CounterLogSeriesSupplier'], function (app) {
 						yAxis: 0
 					}
 				})
+            ];
+        }
+        function p1PriceHourSeriesSuppliers(deviceType) {
+            return [
+                {
+                    id: 'price',
+                    dataItemKeys: ['p'],
+                    convertZeroToNull: true,
+                    label: '2',
+                    template: function (seriesSupplier) {
+                        return {
+							type: 'spline',
+                            name: $.t('Costs'),
+                            zIndex: 3,
+							tooltip: {
+								valueSuffix: ' ' + '&#8364;'
+							},
+							color: 'rgba(190,252,60,0.8)',
+							showInLegend: false,
+                            yAxis: 0
+                        };
+                    }
+                }
             ];
         }
 

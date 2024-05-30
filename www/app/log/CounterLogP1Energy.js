@@ -60,7 +60,7 @@ define(['app', 'log/Chart', 'log/CounterLogParams', 'log/CounterLogEnergySeriesS
                     },
                     tooltip: {
 						headerFormat: '{point.x:%A, %B %d}<br/>',
-						pointFormat: '<span style="color: {point.color}">●</span> {series.name}: <b>{abs3 point.y} {point.series.tooltipOptions.valueSuffix}</b><br>',
+						//pointFormat: '<span style="color: {point.color}">●</span> {series.name}: <b>{abs3 point.y} {point.series.tooltipOptions.valueSuffix}</b><br>',
                         outside: true,
 						crosshairs: true,
                         shared: true,
@@ -167,12 +167,8 @@ define(['app', 'log/Chart', 'log/CounterLogParams', 'log/CounterLogEnergySeriesS
             hourSeriesSuppliers: function (deviceType) {
                 return []
                     .concat(counterLogEnergySeriesSuppliers.p1HourSeriesSuppliers(deviceType))
-                    .concat(counterLogEnergySeriesSuppliers.powerReturnedHourSeriesSuppliers(deviceType));
-            },
-            weekSeriesSuppliers: function (deviceType) {
-                return []
-                    .concat(counterLogEnergySeriesSuppliers.p1WeekSeriesSuppliers(deviceType))
-                    .concat(counterLogEnergySeriesSuppliers.powerReturnedWeekSeriesSuppliers(deviceType));
+                    .concat(counterLogEnergySeriesSuppliers.powerReturnedHourSeriesSuppliers(deviceType))
+                    .concat(counterLogEnergySeriesSuppliers.p1PriceHourSeriesSuppliers(deviceType));
             },
             monthYearSeriesSuppliers: function (deviceType) {
                 return []

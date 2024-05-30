@@ -189,7 +189,7 @@ namespace http
 						result = m_sql.safe_query("SELECT strftime('%%Y-%%m-%%d %%H:00:00', Date) as ymd, MIN(Value1) as u1, MIN(Value5) as u2, MIN(Value2) as d1, MIN(Value6) as d2 FROM %s WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q' AND Date<='%q') GROUP BY ymd",
 							dbasetable.c_str(), idx, szDateStart, szDateEnd);
 */
-						result = m_sql.safe_query("SELECT strftime('%%Y-%%m-%%d %%H:00:00', Date) as ymd, MIN(Value1) as u1, MIN(Value5) as u2, MIN(Value2) as d1, MIN(Value6) as d2 FROM %s WHERE (DeviceRowID==%" PRIu64 ") GROUP BY ymd",
+						result = m_sql.safe_query("SELECT strftime('%%Y-%%m-%%d %%H:00:00', Date) as ymd, MIN(Value1) as u1, MIN(Value5) as u2, MIN(Value2) as d1, MIN(Value6) as d2, Price FROM %s WHERE (DeviceRowID==%" PRIu64 ") GROUP BY ymd",
 							dbasetable.c_str(), idx);
 						if (!result.empty())
 						{
@@ -253,6 +253,11 @@ namespace http
 									root["result"][ii]["v"] = szTmp;
 									sprintf(szTmp, "%ld", curDeliv);
 									root["result"][ii]["r"] = szTmp;
+
+									float total = (curUsage - curDeliv) / 1000.0F;
+									float fPrice = std::stof(sd[5]) * total;
+									sprintf(szTmp, "%.4f", fPrice);
+									root["result"][ii]["p"] = szTmp;
 									ii++;
 								}
 								else
@@ -1805,7 +1810,7 @@ namespace http
 								sprintf(szTmp, "%.3f", fDeliv2 / divider);
 								root["result"][ii]["r2"] = szTmp;
 
-								sprintf(szTmp, "%.4g", fPrice);
+								sprintf(szTmp, "%.4f", fPrice);
 								root["result"][ii]["p"] = szTmp;
 								ii++;
 							}
@@ -1852,7 +1857,7 @@ namespace http
 								}
 								root["result"][ii]["v"] = szValue;
 
-								sprintf(szTmp, "%.4g", fPrice);
+								sprintf(szTmp, "%.4f", fPrice);
 								root["result"][ii]["p"] = szTmp;
 								ii++;
 							}
@@ -1919,7 +1924,7 @@ namespace http
 							float price_deliver = prices[1] + prices[5];
 							float fPrice = price_usage - price_deliver;
 
-							sprintf(szTmp, "%.4g", fPrice);
+							sprintf(szTmp, "%.4f", fPrice);
 							root["result"][ii]["p"] = szTmp;
 
 							ii++;
@@ -1981,7 +1986,7 @@ namespace http
 							root["result"][ii]["v"] = szValue;
 
 							const float fPrice = m_sql.CalcMeterPrice(idx, static_cast<const float>(divider), szDateStart, szDateEnd);
-							sprintf(szTmp, "%.4g", fPrice);
+							sprintf(szTmp, "%.4f", fPrice);
 							root["result"][ii]["p"] = szTmp;
 
 							ii++;
@@ -2682,7 +2687,7 @@ namespace http
 						{
 							// Actual Year
 							result = m_sql.safe_query("SELECT Value1,Value2,Value5,Value6, Date,"
-								" Counter1, Counter2, Counter3, Counter4 "
+								" Counter1, Counter2, Counter3, Counter4, Price "
 								"FROM %s WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q'"
 								" AND Date<='%q') ORDER BY Date ASC",
 								dbasetable.c_str(), idx, szDateStart, szDateEnd);
@@ -2718,6 +2723,10 @@ namespace http
 									root["result"][ii]["r1"] = szTmp;
 									sprintf(szTmp, "%.3f", fDeliv_2 / divider);
 									root["result"][ii]["r2"] = szTmp;
+
+									float fPrice = std::stof(sd[9]);
+									sprintf(szTmp, "%.4f", fPrice);
+									root["result"][ii]["p"] = szTmp;
 
 									if (counter_1 != 0)
 									{
@@ -3396,8 +3405,8 @@ namespace http
 										root["result"][ii]["c"] = szTmp;
 										break;
 									}
-									sprintf(szTmp, "%.4g", fPrice);
-									root["result"][ii]["p"] = szTmp;
+									sprintf(szTmp, "%.4f", fPrice);
+									root["result"][ii]["p"] = szTmp; // Json::Value::null;
 									ii++;
 								}
 							}
@@ -3435,7 +3444,7 @@ namespace http
 										root["resultprev"][iPrev]["v"] = szTmp;
 										break;
 									}
-									sprintf(szTmp, "%.4g", fPrice);
+									sprintf(szTmp, "%.4f", fPrice);
 									root["resultprev"][iPrev]["p"] = szTmp;
 									iPrev++;
 								}
@@ -3551,7 +3560,7 @@ namespace http
 								float price_usage = prices[0] + prices[4];
 								float price_deliver = prices[1] + prices[5];
 								float fPrice = price_usage - price_deliver;
-								sprintf(szTmp, "%.4g", fPrice);
+								sprintf(szTmp, "%.4f", fPrice);
 								root["result"][ii]["p"] = szTmp;
 
 								ii++;
@@ -3771,7 +3780,7 @@ namespace http
 									strcpy(szDateStart, szDateEnd);
 									strcat(szDateEnd, " 23:59:59");
 									const float fPrice = m_sql.CalcMeterPrice(idx, static_cast<const float>(divider), szDateStart, szDateEnd);
-									sprintf(szTmp, "%.4g", fPrice);
+									sprintf(szTmp, "%.4f", fPrice);
 									root["result"][ii]["p"] = szTmp;
 
 									ii++;

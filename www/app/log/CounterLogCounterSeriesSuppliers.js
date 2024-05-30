@@ -117,6 +117,26 @@ define(['app', 'log/Chart'], function (app) {
                             yAxis: 0
                         };
                     }
+                },
+                {
+                    id: 'price',
+                    dataItemKeys: ['p'],
+                    convertZeroToNull: true,
+                    postprocessDataItemValue: postprocessDataItemValue,
+                    label: '2',
+                    template: function (seriesSupplier) {
+                        return {
+							type: 'spline',
+                            name: $.t('Costs'),
+                            zIndex: 3,
+							tooltip: {
+								valueSuffix: ' ' + '&#8364;'
+							},
+							color: 'rgba(190,252,60,0.8)',
+							showInLegend: false,
+                            yAxis: 0
+                        };
+                    }
                 }
             ];
         }
