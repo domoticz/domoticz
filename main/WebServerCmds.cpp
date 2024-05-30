@@ -2292,6 +2292,18 @@ namespace http
 				root["DividerEnergy"] = EnergyDivider;
 			}
 
+			int iP1Hardware = m_mainworker.FindDomoticzHardwareByType(HTYPE_P1SmartMeter);
+			if (iP1Hardware == -1)
+				iP1Hardware = m_mainworker.FindDomoticzHardwareByType(HTYPE_P1SmartMeterLAN);
+			if (iP1Hardware != -1)
+			{
+				P1MeterBase* pP1Meter = dynamic_cast<P1MeterBase*>(m_mainworker.GetHardware(iP1Hardware));
+				if (pP1Meter != nullptr)
+				{
+					root["P1_Tariff"] = (pP1Meter->m_current_tariff == 1) ? "Low" : "High";
+				}
+			}
+
 			std::string idx = request::findValue(&req, "idx");
 			if (idx.empty())
 				return;
@@ -2508,6 +2520,8 @@ namespace http
 				m_sql.UpdatePreferencesVar("CostGas", int(CostGas * 10000.0F)); cntSettings++;
 				float CostWater = static_cast<float>(atof(request::findValue(&req, "CostWater").c_str()));
 				m_sql.UpdatePreferencesVar("CostWater", int(CostWater * 10000.0F)); cntSettings++;
+
+				m_mainworker.HandleHourPrice();
 
 				int EnergyDivider = atoi(request::findValue(&req, "EnergyDivider").c_str());
 				if (EnergyDivider < 1)
@@ -5164,6 +5178,11 @@ namespace http
 			if (!result.empty())
 			{
 				int ii = 0;
+
+				root["result"][ii]["idx"] = 0x98765;
+				root["result"][ii]["Name"] = "Internal (Meter Settings)";
+				ii++;
+
 				for (const auto& sd : result)
 				{
 					root["result"][ii]["idx"] = atoi(sd[0].c_str());

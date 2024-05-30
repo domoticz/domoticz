@@ -27,27 +27,6 @@ define(['app', 'log/Chart', 'log/CounterLogParams', 'log/CounterLogEnergySeriesS
                     }
                 }
             },
-            chartParamsWeekTemplate: {
-                highchartTemplate: {
-                    plotOptions: {
-                        column: {
-                            stacking: 'normal',
-                            dataLabels: {
-                                enabled: false
-                            }
-                        }
-                    },
-                    tooltip: {
-						headerFormat: '{point.x:%A, %B %d, %Y}<br/>',
-                        pointFormat: '<span style="color: {point.color}">●</span> {series.name}: <b>{abs3 point.y} {point.series.tooltipOptions.valueSuffix}</b> ( {point.percentage:.0f}% )<br>',
-                        footerFormat: '<span style="color: #aaa">●</span> Usage Total: {point.total:,.f} {series.tooltipOptions.valueSuffix}',
-                        outside: true,
-						crosshairs: true,
-						shared: true,
-						//useHTML: true
-                    }
-                }
-            },
             chartParamsMonthYearTemplate: {
                 highchartTemplate: {
                     plotOptions: {
@@ -60,7 +39,7 @@ define(['app', 'log/Chart', 'log/CounterLogParams', 'log/CounterLogEnergySeriesS
                     },
                     tooltip: {
 						headerFormat: '{point.x:%A, %B %d}<br/>',
-						pointFormat: '<span style="color: {point.color}">●</span> {series.name}: <b>{abs3 point.y} {point.series.tooltipOptions.valueSuffix}</b><br>',
+						//pointFormat: '<span style="color: {point.color}">●</span> {series.name}: <b>{abs3 point.y} {point.series.tooltipOptions.valueSuffix}</b><br>',
                         outside: true,
 						crosshairs: true,
                         shared: true,
@@ -121,21 +100,6 @@ define(['app', 'log/Chart', 'log/CounterLogParams', 'log/CounterLogEnergySeriesS
                     }
                 ];
             },
-            yAxesWeek: function (deviceType) {
-                return [
-                    {
-                        maxPadding: 0.2,
-						labels: {
-							formatter: function () {
-								return Math.abs(Highcharts.numberFormat(this.value, 0));
-							}
-						},
-                        title: {
-                            text: $.t('Energy') + ' (' + chart.valueUnits.energy(chart.valueMultipliers.m1000) + ')'
-                        },
-                    }
-                ];
-            },
             yAxesMonthYear: function (deviceType) {
                 return [
                     {
@@ -167,17 +131,18 @@ define(['app', 'log/Chart', 'log/CounterLogParams', 'log/CounterLogEnergySeriesS
             hourSeriesSuppliers: function (deviceType) {
                 return []
                     .concat(counterLogEnergySeriesSuppliers.p1HourSeriesSuppliers(deviceType))
-                    .concat(counterLogEnergySeriesSuppliers.powerReturnedHourSeriesSuppliers(deviceType));
-            },
-            weekSeriesSuppliers: function (deviceType) {
-                return []
-                    .concat(counterLogEnergySeriesSuppliers.p1WeekSeriesSuppliers(deviceType))
-                    .concat(counterLogEnergySeriesSuppliers.powerReturnedWeekSeriesSuppliers(deviceType));
+                    .concat(counterLogEnergySeriesSuppliers.powerReturnedHourSeriesSuppliers(deviceType))
+                    .concat(counterLogEnergySeriesSuppliers.p1PriceHourSeriesSuppliers(deviceType));
             },
             monthYearSeriesSuppliers: function (deviceType) {
                 return []
                     .concat(counterLogEnergySeriesSuppliers.counterMonthYearSeriesSuppliers(deviceType))
-                    .concat(counterLogEnergySeriesSuppliers.powerReturnedMonthYearSeriesSuppliers(deviceType));
+                    .concat(counterLogEnergySeriesSuppliers.trendlineMonthYearSeriesSuppliers(deviceType))
+					.concat(counterLogEnergySeriesSuppliers.powerReturnedMonthYearSeriesSuppliers(deviceType))
+					.concat(counterLogEnergySeriesSuppliers.powerTrendlineReturnedMonthYearSeriesSuppliers(deviceType))
+                    .concat(counterLogEnergySeriesSuppliers.priceMonthYearSeriesSuppliers(deviceType))
+					.concat(counterLogEnergySeriesSuppliers.pastMonthYearSeriesSuppliers(deviceType))
+					.concat(counterLogEnergySeriesSuppliers.powerPastReturnedMonthYearSeriesSuppliers(deviceType));
             },
             preprocessCompareData: function (data) {
                 this.dataContainsDelivery = data.delivered ? true : false;

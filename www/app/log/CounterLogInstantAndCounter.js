@@ -10,17 +10,6 @@ define(['app', 'log/Chart', 'log/CounterLogParams', 'log/CounterLogEnergySeriesS
                 },
                 synchronizeYaxes: true
             },
-            chartParamsWeekTemplate: {
-                highchartTemplate: {
-                    plotOptions: {
-                        column: {
-                            dataLabels: {
-                                enabled: true
-                            }
-                        }
-                    }
-                }
-            },
             chartParamsMonthYearTemplate: {
 
             },
@@ -43,16 +32,6 @@ define(['app', 'log/Chart', 'log/CounterLogParams', 'log/CounterLogEnergySeriesS
                             text: $.t('Power') + ' (' + chart.valueUnits.power(chart.valueMultipliers.m1) + ')'
                         },
                         opposite: true
-                    }
-                ];
-            },
-            yAxesWeek: function (deviceType) {
-                return [
-                    {
-                        maxPadding: 0.2,
-                        title: {
-                            text: $.t('Energy') + ' (' + chart.valueUnits.energy(chart.valueMultipliers.m1000) + ')'
-                        }
                     }
                 ];
             },
@@ -79,14 +58,12 @@ define(['app', 'log/Chart', 'log/CounterLogParams', 'log/CounterLogEnergySeriesS
                     .concat(counterLogEnergySeriesSuppliers.instantAndCounterDaySeriesSuppliers(deviceType))
                     .concat(counterLogEnergySeriesSuppliers.counterDaySeriesSuppliers(deviceType));
             },
-            weekSeriesSuppliers: function (deviceType) {
-                return []
-                    //.concat(counterLogEnergySeriesSuppliers.instantAndCounterWeekSeriesSuppliers(deviceType))
-                    .concat(counterLogEnergySeriesSuppliers.counterWeekSeriesSuppliers(deviceType));
-            },
             monthYearSeriesSuppliers: function (deviceType) {
                 return []
-                    .concat(counterLogEnergySeriesSuppliers.counterMonthYearSeriesSuppliers(deviceType));
+                    .concat(counterLogEnergySeriesSuppliers.counterMonthYearSeriesSuppliers(deviceType))
+                    .concat(counterLogEnergySeriesSuppliers.trendlineMonthYearSeriesSuppliers(deviceType))
+                    .concat(counterLogEnergySeriesSuppliers.priceMonthYearSeriesSuppliers(deviceType))
+					.concat(counterLogEnergySeriesSuppliers.pastMonthYearSeriesSuppliers(deviceType));
             },
             extendDataRequestCompare: function (dataRequest) {
                 return dataRequest;

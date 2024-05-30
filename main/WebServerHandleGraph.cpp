@@ -189,7 +189,7 @@ namespace http
 						result = m_sql.safe_query("SELECT strftime('%%Y-%%m-%%d %%H:00:00', Date) as ymd, MIN(Value1) as u1, MIN(Value5) as u2, MIN(Value2) as d1, MIN(Value6) as d2 FROM %s WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q' AND Date<='%q') GROUP BY ymd",
 							dbasetable.c_str(), idx, szDateStart, szDateEnd);
 */
-						result = m_sql.safe_query("SELECT strftime('%%Y-%%m-%%d %%H:00:00', Date) as ymd, MIN(Value1) as u1, MIN(Value5) as u2, MIN(Value2) as d1, MIN(Value6) as d2 FROM %s WHERE (DeviceRowID==%" PRIu64 ") GROUP BY ymd",
+						result = m_sql.safe_query("SELECT strftime('%%Y-%%m-%%d %%H:00:00', Date) as ymd, MIN(Value1) as u1, MIN(Value5) as u2, MIN(Value2) as d1, MIN(Value6) as d2, Price FROM %s WHERE (DeviceRowID==%" PRIu64 ") GROUP BY ymd",
 							dbasetable.c_str(), idx);
 						if (!result.empty())
 						{
@@ -253,6 +253,11 @@ namespace http
 									root["result"][ii]["v"] = szTmp;
 									sprintf(szTmp, "%ld", curDeliv);
 									root["result"][ii]["r"] = szTmp;
+
+									float total = (curUsage - curDeliv) / 1000.0F;
+									float fPrice = std::stof(sd[5]) * total;
+									sprintf(szTmp, "%.4f", fPrice);
+									root["result"][ii]["p"] = szTmp;
 									ii++;
 								}
 								else
@@ -1770,7 +1775,7 @@ namespace http
 					int ii = 0;
 					if (dType == pTypeP1Power)
 					{
-						result = m_sql.safe_query("SELECT Value1,Value2,Value5,Value6,Date FROM %s WHERE (DeviceRowID==%" PRIu64
+						result = m_sql.safe_query("SELECT Value1,Value2,Value5,Value6,Price,Date FROM %s WHERE (DeviceRowID==%" PRIu64
 							" AND Date>='%q' AND Date<='%q') ORDER BY Date ASC",
 							dbasetable.c_str(), idx, szDateStart, szDateEnd);
 						if (!result.empty())
@@ -1778,11 +1783,13 @@ namespace http
 							bool bHaveDeliverd = false;
 							for (const auto& sd : result)
 							{
-								root["result"][ii]["d"] = sd[4].substr(0, 16);
+								root["result"][ii]["d"] = sd[5].substr(0, 16);
 								std::string szValueUsage1 = sd[0];
 								std::string szValueDeliv1 = sd[1];
 								std::string szValueUsage2 = sd[2];
 								std::string szValueDeliv2 = sd[3];
+
+								float fPrice = std::stof(sd[4]);
 
 								float fUsage1 = (float)(atof(szValueUsage1.c_str()));
 								float fUsage2 = (float)(atof(szValueUsage2.c_str()));
@@ -1802,6 +1809,9 @@ namespace http
 								root["result"][ii]["r1"] = szTmp;
 								sprintf(szTmp, "%.3f", fDeliv2 / divider);
 								root["result"][ii]["r2"] = szTmp;
+
+								sprintf(szTmp, "%.4f", fPrice);
+								root["result"][ii]["p"] = szTmp;
 								ii++;
 							}
 							if (bHaveDeliverd)
@@ -1812,14 +1822,16 @@ namespace http
 					}
 					else
 					{
-						result = m_sql.safe_query("SELECT Value, Date FROM %s WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q' AND Date<='%q') ORDER BY Date ASC",
+						result = m_sql.safe_query("SELECT Value, Price, Date FROM %s WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q' AND Date<='%q') ORDER BY Date ASC",
 							dbasetable.c_str(), idx, szDateStart, szDateEnd);
 						if (!result.empty())
 						{
 							for (const auto& sd : result)
 							{
-								root["result"][ii]["d"] = sd[1].substr(0, 16);
+								root["result"][ii]["d"] = sd[2].substr(0, 16);
 								std::string szValue = sd[0];
+								float fPrice = std::stof(sd[1]);
+
 								switch (metertype)
 								{
 								case MTYPE_ENERGY:
@@ -1844,16 +1856,21 @@ namespace http
 									break;
 								}
 								root["result"][ii]["v"] = szValue;
+
+								sprintf(szTmp, "%.4f", fPrice);
+								root["result"][ii]["p"] = szTmp;
 								ii++;
 							}
 						}
 					}
 					// add today (have to calculate it)
+					strcpy(szDateStart, szDateEnd);
+					strcat(szDateEnd, " 23:59:59");
 					if (dType == pTypeP1Power)
 					{
 						result = m_sql.safe_query("SELECT MIN(Value1), MAX(Value1), MIN(Value2), MAX(Value2),MIN(Value5), MAX(Value5), MIN(Value6), MAX(Value6) FROM "
 							"MultiMeter WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q')",
-							idx, szDateEnd);
+							idx, szDateStart);
 						if (!result.empty())
 						{
 							std::vector<std::string> sd = result[0];
@@ -1879,7 +1896,7 @@ namespace http
 							if ((total_real_deliv_1 != 0) || (total_real_deliv_2 != 0))
 								bHaveDeliverd = true;
 
-							root["result"][ii]["d"] = szDateEnd;
+							root["result"][ii]["d"] = szDateStart;
 
 							sprintf(szTmp, "%" PRIu64, total_real_usage_1);
 							std::string szValue = szTmp;
@@ -1901,6 +1918,15 @@ namespace http
 							sprintf(szTmp, "%.3f", atof(szValue.c_str()) / divider);
 							root["result"][ii]["r2"] = szTmp;
 
+							//Calculate price
+							std::vector<float> prices = m_sql.CalcMultiMeterPrice(idx, static_cast<const float>(divider), szDateStart, szDateEnd);
+							float price_usage = prices[0] + prices[4];
+							float price_deliver = prices[1] + prices[5];
+							float fPrice = price_usage - price_deliver;
+
+							sprintf(szTmp, "%.4f", fPrice);
+							root["result"][ii]["p"] = szTmp;
+
 							ii++;
 							if (bHaveDeliverd)
 							{
@@ -1911,7 +1937,7 @@ namespace http
 					else if (!bIsManagedCounter)
 					{
 						// get the first value of the day
-						result = m_sql.safe_query("SELECT Value FROM Meter WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q') ORDER BY Date ASC LIMIT 1", idx, szDateEnd);
+						result = m_sql.safe_query("SELECT Value FROM Meter WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q') ORDER BY Date ASC LIMIT 1", idx, szDateStart);
 						if (!result.empty())
 						{
 							std::vector<std::string> sd = result[0];
@@ -1921,7 +1947,7 @@ namespace http
 							int64_t total_real;
 
 							// get the last value of the day
-							result = m_sql.safe_query("SELECT Value FROM Meter WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q') ORDER BY Date DESC LIMIT 1", idx, szDateEnd);
+							result = m_sql.safe_query("SELECT Value FROM Meter WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q') ORDER BY Date DESC LIMIT 1", idx, szDateStart);
 							if (!result.empty())
 							{
 								std::vector<std::string> sd = result[0];
@@ -1956,8 +1982,13 @@ namespace http
 								break;
 							}
 
-							root["result"][ii]["d"] = szDateEnd;
+							root["result"][ii]["d"] = szDateStart;
 							root["result"][ii]["v"] = szValue;
+
+							const float fPrice = m_sql.CalcMeterPrice(idx, static_cast<const float>(divider), szDateStart, szDateEnd);
+							sprintf(szTmp, "%.4f", fPrice);
+							root["result"][ii]["p"] = szTmp;
+
 							ii++;
 						}
 					}
@@ -2656,7 +2687,7 @@ namespace http
 						{
 							// Actual Year
 							result = m_sql.safe_query("SELECT Value1,Value2,Value5,Value6, Date,"
-								" Counter1, Counter2, Counter3, Counter4 "
+								" Counter1, Counter2, Counter3, Counter4, Price "
 								"FROM %s WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q'"
 								" AND Date<='%q') ORDER BY Date ASC",
 								dbasetable.c_str(), idx, szDateStart, szDateEnd);
@@ -2692,6 +2723,10 @@ namespace http
 									root["result"][ii]["r1"] = szTmp;
 									sprintf(szTmp, "%.3f", fDeliv_2 / divider);
 									root["result"][ii]["r2"] = szTmp;
+
+									float fPrice = std::stof(sd[9]);
+									sprintf(szTmp, "%.4f", fPrice);
+									root["result"][ii]["p"] = szTmp;
 
 									if (counter_1 != 0)
 									{
@@ -3317,7 +3352,7 @@ namespace http
 
 							// Actual Year
 							result =
-								m_sql.safe_query("SELECT Value, Date, Counter FROM %s WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q' AND Date<='%q') ORDER BY Date ASC",
+								m_sql.safe_query("SELECT Value, Date, Counter, Price FROM %s WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q' AND Date<='%q') ORDER BY Date ASC",
 									dbasetable.c_str(), idx, szDateStart, szDateEnd);
 							if (!result.empty())
 							{
@@ -3328,6 +3363,7 @@ namespace http
 									std::string szValue = sd[0];
 
 									double fcounter = atof(sd[2].c_str());
+									float fPrice = std::stof(sd[3]);
 
 									switch (metertype)
 									{
@@ -3369,12 +3405,14 @@ namespace http
 										root["result"][ii]["c"] = szTmp;
 										break;
 									}
+									sprintf(szTmp, "%.4f", fPrice);
+									root["result"][ii]["p"] = szTmp; // Json::Value::null;
 									ii++;
 								}
 							}
 							// Past Year
 							result =
-								m_sql.safe_query("SELECT Value, Date, Counter FROM %s WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q' AND Date<='%q') ORDER BY Date ASC",
+								m_sql.safe_query("SELECT Value, Date, Counter, Price FROM %s WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q' AND Date<='%q') ORDER BY Date ASC",
 									dbasetable.c_str(), idx, szDateStartPrev, szDateEndPrev);
 							if (!result.empty())
 							{
@@ -3384,6 +3422,8 @@ namespace http
 									root["resultprev"][iPrev]["d"] = sd[1].substr(0, 16);
 
 									std::string szValue = sd[0];
+									float fPrice = std::stof(sd[3]);
+
 									switch (metertype)
 									{
 									case MTYPE_ENERGY:
@@ -3404,6 +3444,8 @@ namespace http
 										root["resultprev"][iPrev]["v"] = szTmp;
 										break;
 									}
+									sprintf(szTmp, "%.4f", fPrice);
+									root["resultprev"][iPrev]["p"] = szTmp;
 									iPrev++;
 								}
 							}
@@ -3511,6 +3553,15 @@ namespace http
 									root["result"][ii]["c2"] = szTmp;
 									root["result"][ii]["c4"] = szTmp;
 								}
+
+								strcpy(szDateStart, szDateEnd);
+								strcat(szDateEnd, " 23:59:59");
+								std::vector<float> prices = m_sql.CalcMultiMeterPrice(idx, static_cast<const float>(divider), szDateStart, szDateEnd);
+								float price_usage = prices[0] + prices[4];
+								float price_deliver = prices[1] + prices[5];
+								float fPrice = price_usage - price_deliver;
+								sprintf(szTmp, "%.4f", fPrice);
+								root["result"][ii]["p"] = szTmp;
 
 								ii++;
 							}
@@ -3725,6 +3776,13 @@ namespace http
 										root["result"][ii]["c"] = szTmp;
 										break;
 									}
+
+									strcpy(szDateStart, szDateEnd);
+									strcat(szDateEnd, " 23:59:59");
+									const float fPrice = m_sql.CalcMeterPrice(idx, static_cast<const float>(divider), szDateStart, szDateEnd);
+									sprintf(szTmp, "%.4f", fPrice);
+									root["result"][ii]["p"] = szTmp;
+
 									ii++;
 								}
 							}

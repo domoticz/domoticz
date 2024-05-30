@@ -317,7 +317,7 @@ struct _tTaskItem
 
 class CSQLHelper : public StoppableTask
 {
-      public:
+public:
 	CSQLHelper();
 	~CSQLHelper();
 
@@ -454,7 +454,9 @@ class CSQLHelper : public StoppableTask
 
 	float GetCounterDivider(int metertype, int dType, float DefaultValue);
 
-      public:
+	float CalcMeterPrice(const uint64_t idx, const float divider, const char* szDateStart, const char* szDateEnd);
+	std::vector<float> CalcMultiMeterPrice(const uint64_t idx, const float divider, const char* szDateStart, const char* szDateEnd);
+public:
 	std::string m_LastSwitchID; // for learning command
 	std::string m_UniqueID;
 	uint64_t m_LastSwitchRowID;
@@ -547,9 +549,6 @@ class CSQLHelper : public StoppableTask
 	void SendUpdateInt(const std::string& Idx);
 
 	void CorrectOffDelaySwitchStates();
-
-	float CalcMeterPrice(const uint64_t idx, const float divider, const char* szDateStart, const char* szDateEnd);
-	std::vector<float> CalcMultiMeterPrice(const uint64_t idx, const float divider, const char* szDateStart, const char* szDateEnd);
 
 	std::vector<std::vector<std::string>> query(const std::string &szQuery);
 	std::vector<std::vector<std::string>> queryBlob(const std::string &szQuery);
