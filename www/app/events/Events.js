@@ -120,6 +120,23 @@ define(['app', 'events/factories', 'events/EventViewer', 'events/CurrentStates']
         }
 
         function closeEvent(event, forceClose) {
+			if (event == -1) {
+				//close all events
+                vm.openedEvents = vm.openedEvents.filter(function (item) {
+                    return item.isChanged;
+                });
+				setActiveEventId('states');
+				storeRecentEvents();
+				return;
+			}
+
+			if (event == 0) {
+				for (let i = 0; i < vm.openedEvents.length; i++) {
+					if (vm.openedEvents[i].id == vm.activeEventId) {
+						event = vm.openedEvents[i];
+					}
+				}				
+			}
             $q.resolve(event.isChanged && !forceClose
                 ? bootbox.confirm($.t('This script has unsaved changes.\n\nAre you sure you want to close it?'))
                 : true
