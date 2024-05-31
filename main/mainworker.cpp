@@ -1698,6 +1698,11 @@ void MainWorker::Do_Work()
 		struct tm ltime;
 		localtime_r(&atime, &ltime);
 
+		if (ltime.tm_hour != _ScheduleLastHour)
+		{
+			HandleHourPrice();
+		}
+
 		if (ltime.tm_min != _ScheduleLastMinute)
 		{
 			minute_counter++;
@@ -1771,14 +1776,6 @@ void MainWorker::Do_Work()
 #endif
 					HandleAutomaticBackups();
 				}
-			}
-
-			if (
-				(minute_counter % 5 == 0)
-				|| (m_hourPriceElectricity.timestamp == 0)
-				)
-			{
-				HandleHourPrice();
 			}
 		}
 		if (heartbeat_counter++ > 12)
