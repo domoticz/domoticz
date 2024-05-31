@@ -35,14 +35,19 @@
 
 		<section class="events-editor__editor">
 			<nav class="events-editor__file-list">
+				<div class="events-editor__file dropdown">
+					<a class="dropdown-toggle lcursor" data-toggle="dropdown"><i class="icon-tasks"></i></a>
+						<ul class="dropdown-menu events-editor__menu">
+							<li><a class="events-editor__menu-item" tabindex="-1" href="javascript:void(0)" ng-click="$ctrl.closeEvent(0)"><span data-i18n="Close">Close</span></a></li>
+							<li><a class="events-editor__menu-item" tabindex="-1" href="javascript:void(0)" ng-click="$ctrl.closeEvent(-1)"><span data-i18n="Close All">Close All</span></a></li>
+						</ul>
+					</a>
+				</div>
 				<a class="events-editor__file"
 				   href="javascript:void(0)"
 				   ng-class="{'events-editor__file_active': $ctrl.activeEventId === 'states'}"
 				   ng-click="$ctrl.setActiveEventId('states')"
-				   title="{{:: 'Devices current states' | translate}}"
-			   >
-					<i class="icon-tasks"></i>
-				</a>
+				   title="{{:: 'Devices current states' | translate}}"><i class="icon-info-sign"></i></a>
 
 				<a class="events-editor__file"
 				   href="javascript:void(0)"
