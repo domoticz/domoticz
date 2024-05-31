@@ -1716,6 +1716,7 @@ void MainWorker::Do_Work()
 				//check for 5 minute schedule
 				if (ltime.tm_min % m_sql.m_ShortLogInterval == 0)
 				{
+					HandleHourPrice();
 					m_sql.ScheduleShortlog();
 				}
 				std::string szPwdResetFile = szStartupFolder + "resetpwd";
@@ -14061,6 +14062,7 @@ void MainWorker::HandleHourPrice()
 						//Make sure the prices are actual
 						Enever* pEnever = dynamic_cast<Enever*>(const_cast<CDomoticzHardwareBase*>(pHardware));
 						pEnever->ActualizePrices();
+						result = m_sql.safe_query("SELECT HardwareID, Type, SubType, sValue, LastUpdate, AddjValue2 FROM DeviceStatus WHERE (ID==%" PRIu64 ")", iHP_E_Idx);
 					}
 				}
 
