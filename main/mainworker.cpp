@@ -14052,13 +14052,25 @@ void MainWorker::HandleHourPrice()
 		}
 		else
 		{
-			auto result = m_sql.safe_query("SELECT Type, SubType, sValue, LastUpdate, AddjValue2 FROM DeviceStatus WHERE (ID==%" PRIu64 ")", iHP_E_Idx);
+			auto result = m_sql.safe_query("SELECT HardwareID, Type, SubType, sValue, LastUpdate, AddjValue2 FROM DeviceStatus WHERE (ID==%" PRIu64 ")", iHP_E_Idx);
 			if (!result.empty())
 			{
-				uint8_t devType = std::stoi(result[0][0]);
-				uint8_t subType = std::stoi(result[0][1]);
-				std::string sValue = result[0][2];
-				std::string sLastUpdate = result[0][3];
+				uint8_t hwdID = std::stoi(result[0][0]);
+				const CDomoticzHardwareBase* pHardware = GetHardware(hwdID);
+				if (pHardware != nullptr)
+				{
+					if (pHardware->HwdType == HTYPE_EneverPriceFeeds)
+					{
+						//Make sure the prices are actual
+						Enever* pEnever = dynamic_cast<Enever*>(const_cast<CDomoticzHardwareBase*>(pHardware));
+						pEnever->ActualizePrices();
+					}
+				}
+
+				uint8_t devType = std::stoi(result[0][1]);
+				uint8_t subType = std::stoi(result[0][2]);
+				std::string sValue = result[0][3];
+				std::string sLastUpdate = result[0][4];
 
 				struct tm ntime;
 				time_t checktime;
@@ -14076,7 +14088,7 @@ void MainWorker::HandleHourPrice()
 						StringSplit(sValue, ";", strarray);
 						if (strarray.size() == 2)
 						{
-							float AddjValue2 = std::stof(result[0][4]);
+							float AddjValue2 = std::stof(result[0][5]);
 							if (AddjValue2 == 0)
 								AddjValue2 = 1;
 							fHourPriceG = static_cast<float>(atof(strarray[1].c_str())) / AddjValue2;

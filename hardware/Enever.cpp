@@ -198,13 +198,19 @@ void Enever::Do_Work()
 				GetPriceGas(last_hour == -1);
 
 			GetPriceElectricity();
-			parseElectricity(m_szCurrentElectricityPrices, true);
-			parseGas();
+
+			ActualizePrices();
 
 			last_hour = ltime->tm_hour;
 		}
 	}
 	Log(LOG_STATUS, "Worker stopped...");
+}
+
+void Enever::ActualizePrices()
+{
+	parseElectricity(m_szCurrentElectricityPrices, true);
+	parseGas();
 }
 
 bool Enever::WriteToHardware(const char* pdata, const unsigned char length)
