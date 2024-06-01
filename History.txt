@@ -10,6 +10,7 @@ Version 2024.xxxxx (xxxxx 2024)
 - Fixed: Hardware Setup, hiding extra parameters when selecting a python plugin
 - Fixed: PythonEx framework, two notifications where send for switch type devices
 - Fixed: Python framework, custom image loading
+- Changed: Custom Templates are not cached in browser
 - Changed: EvoHome, now making use of general logging system
 - Changed: MQTT-AD, now also handles brightness scale number values as string
 - Changed: SBFSpot, disabled error 28 error
