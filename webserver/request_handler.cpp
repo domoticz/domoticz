@@ -480,6 +480,7 @@ void request_handler::handle_request(const request &req, reply &rep, modify_info
 		(req.uri.find("app/") != std::string::npos)
 		|| (req.uri.find("views/") != std::string::npos)
 		|| (req.uri.find("js/domoticz") != std::string::npos)
+		|| (req.uri.find("/templates/") != std::string::npos)
 		|| (!bDoCachePages)
 		)
 	{
