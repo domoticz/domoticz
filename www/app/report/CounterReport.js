@@ -290,7 +290,7 @@ define(['app', 'report/helpers'], function (app, reportHelpers) {
                         text: $.t(yAxisName) + ' (' + vm.unit + ')'
                     },
                     maxPadding: 0.2,
-                    min: 0
+                    //min: 0
                 },
                 tooltip: {
                     valueSuffix: ' ' + vm.unit,
