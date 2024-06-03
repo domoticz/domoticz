@@ -3457,7 +3457,7 @@ namespace http
 							sprintf(szDate, "%04d-%02d-%02d", ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday);
 
 							std::vector<std::vector<std::string>> result2;
-							strcpy(szTmp, "0");
+							strcpy(szTmp, "0.000");
 							result2 = m_sql.safe_query("SELECT Value FROM Meter WHERE (DeviceRowID='%q' AND Date>='%q') ORDER BY Date LIMIT 1", sd[0].c_str(), szDate);
 							if (!result2.empty())
 							{
