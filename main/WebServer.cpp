@@ -1400,6 +1400,8 @@ namespace http
 
 					std::string sDeviceName = sd[3];
 
+					uint64_t devIDX = std::stoull(sd[0]);
+
 					if (!bDisplayHidden)
 					{
 						if (_HiddenDevices.find(sd[0]) != _HiddenDevices.end())
@@ -2823,6 +2825,9 @@ namespace http
 							localtime_r(&now, &ltime);
 							char szDate[40];
 							sprintf(szDate, "%04d-%02d-%02d", ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday);
+							char szDateEndofToday[40];
+							strcpy(szDateEndofToday, szDate);
+							strcat(szDateEndofToday, " 23:59:59");
 
 							std::vector<std::vector<std::string>> result2;
 							strcpy(szTmp, "0");
@@ -2860,6 +2865,16 @@ namespace http
 								root["result"][ii]["CounterToday"] = szTmp;
 								root["result"][ii]["CounterDelivToday"] = szTmp;
 							}
+
+							//Calculate price
+							std::vector<float> prices = m_sql.CalcMultiMeterPrice(devIDX, static_cast<const float>(EnergyDivider), szDate, szDateEndofToday);
+							float price_usage = prices[0] + prices[4];
+							float price_deliver = prices[1] + prices[5];
+							float fPrice = price_usage - price_deliver;
+
+							sprintf(szTmp, "%.4f", fPrice);
+							root["result"][ii]["price"] = szTmp;
+
 						}
 					}
 					else if (dType == pTypeP1Gas)
