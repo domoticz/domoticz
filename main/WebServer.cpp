@@ -1050,7 +1050,7 @@ namespace http
 							" A.Protected, B.XOffset, B.YOffset, B.PlanID, A.Description"
 							" FROM Scenes as A"
 							" LEFT OUTER JOIN DeviceToPlansMap as B ON (B.DeviceRowID==a.ID) AND (B.DevSceneType==1)"
-							" WHERE (A.ID=='%q')",
+							" WHERE (A.ID IN (%q))",
 							rowid.c_str());
 					else if ((!planID.empty()) && (planID != "0"))
 						result = m_sql.safe_query("SELECT A.ID, A.Name, A.nValue, A.LastUpdate, A.Favorite, A.SceneType,"
@@ -1183,7 +1183,7 @@ namespace http
 						" A.Protected, IFNULL(B.XOffset,0), IFNULL(B.YOffset,0), IFNULL(B.PlanID,0), A.Description,"
 						" A.Options, A.Color "
 						"FROM DeviceStatus A LEFT OUTER JOIN DeviceToPlansMap as B ON (B.DeviceRowID==a.ID) "
-						"WHERE (A.ID=='%q')",
+						"WHERE (A.ID IN (%q))",
 						rowid.c_str());
 				}
 				else if ((!planID.empty()) && (planID != "0"))
@@ -1298,7 +1298,7 @@ namespace http
 						" A.Options, A.Color "
 						"FROM DeviceStatus as A, SharedDevices as B "
 						"WHERE (B.DeviceRowID==a.ID)"
-						" AND (B.SharedUserID==%lu) AND (A.ID=='%q')",
+						" AND (B.SharedUserID==%lu) AND (A.ID IN (%q))",
 						m_users[iUser].ID, rowid.c_str());
 				}
 				else if ((!planID.empty()) && (planID != "0"))
