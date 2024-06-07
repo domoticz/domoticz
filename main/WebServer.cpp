@@ -2865,16 +2865,6 @@ namespace http
 								root["result"][ii]["CounterToday"] = szTmp;
 								root["result"][ii]["CounterDelivToday"] = szTmp;
 							}
-
-							//Calculate price
-							std::vector<float> prices = m_sql.CalcMultiMeterPrice(devIDX, static_cast<const float>(EnergyDivider), szDate, szDateEndofToday);
-							float price_usage = prices[0] + prices[4];
-							float price_deliver = prices[1] + prices[5];
-							float fPrice = price_usage - price_deliver;
-
-							sprintf(szTmp, "%.4f", fPrice);
-							root["result"][ii]["price"] = szTmp;
-
 						}
 					}
 					else if (dType == pTypeP1Gas)
@@ -3743,6 +3733,13 @@ namespace http
 						break;
 						}
 					}
+					//Add calculated price if known
+					if (m_sql.m_actual_prices.find(devIDX) != m_sql.m_actual_prices.end())
+					{
+						sprintf(szTmp, "%.4f", m_sql.m_actual_prices[devIDX]);
+						root["result"][ii]["price"] = szTmp;
+					}
+
 #ifdef ENABLE_PYTHON
 					if (pHardware != nullptr)
 					{

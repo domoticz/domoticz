@@ -479,8 +479,9 @@ public:
 	bool m_bLogEventScriptTrigger;
 	bool m_bDisableDzVentsSystem;
 	double m_max_kwh_usage;
+	std::map<uint64_t, float> m_actual_prices;
 
-      private:
+private:
 	std::mutex m_executeThreadMutex;
 	std::mutex m_sqlQueryMutex;
 	sqlite3 *m_dbase;
@@ -508,6 +509,8 @@ public:
 
 	void FixDaylightSavingTableSimple(const std::string &TableName);
 	void FixDaylightSaving();
+
+	void RefreshActualPrices();
 
 	// Returns DeviceRowID
 	uint64_t UpdateValueInt(const int HardwareID, const int OrgHardwareID, const char *ID, const unsigned char unit, const unsigned char devType, const unsigned char subType, const unsigned char signallevel, const unsigned char batterylevel, const int nValue,

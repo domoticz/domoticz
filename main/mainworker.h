@@ -141,6 +141,7 @@ public:
 	};
 	_tHourPrice m_hourPriceElectricity;
 	_tHourPrice m_hourPriceGas;
+	_tHourPrice m_hourPriceWater;
 	void HandleHourPrice();
 private:
 	void HandleAutomaticBackups();
