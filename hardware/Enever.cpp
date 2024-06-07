@@ -172,24 +172,25 @@ void Enever::Do_Work()
 		}
 
 		time_t atime = mytime(nullptr);
-		struct tm* ltime = localtime(&atime);
+		struct tm ltime;
+		localtime_r(&atime, &ltime);
 
 		if (
-			(ltime->tm_hour != last_hour)
+			(ltime.tm_hour != last_hour)
 			|| (last_hour == -1)
 			)
 		{
 			if (
-				(ltime->tm_hour == 15)
-				|| (ltime->tm_hour == 16)
+				(ltime.tm_hour == 15)
+				|| (ltime.tm_hour == 16)
 				)
 			{
 				if (GetPriceElectricity_Tomorrow())
 					parseElectricity(m_szCurrentElectricityPrices_Tomorrow, false);
 			}
 			if (
-				(ltime->tm_hour == 6)
-				|| (ltime->tm_hour == 7)
+				(ltime.tm_hour == 6)
+				|| (ltime.tm_hour == 7)
 				)
 			{
 				GetPriceGas(true);
@@ -201,7 +202,7 @@ void Enever::Do_Work()
 
 			ActualizePrices();
 
-			last_hour = ltime->tm_hour;
+			last_hour = ltime.tm_hour;
 		}
 	}
 	Log(LOG_STATUS, "Worker stopped...");
@@ -252,7 +253,8 @@ bool Enever::GetPriceElectricity()
 		if (!m_szCurrentElectricityPrices.empty())
 		{
 			time_t atime = mytime(nullptr);
-			struct tm* ltime = localtime(&atime);
+			struct tm ltime;
+			localtime_r(&atime, &ltime);
 			Json::Value jsonCurrent;
 			if (ParseJSon(m_szCurrentElectricityPrices, jsonCurrent))
 			{
@@ -268,9 +270,9 @@ bool Enever::GetPriceElectricity()
 					if (ParseSQLdatetime(rtime, lltime, szDate))
 					{
 						if (
-							(lltime.tm_year == ltime->tm_year)
-							&& (lltime.tm_mon == ltime->tm_mon)
-							&& (lltime.tm_mday == ltime->tm_mday)
+							(lltime.tm_year == ltime.tm_year)
+							&& (lltime.tm_mon == ltime.tm_mon)
+							&& (lltime.tm_mday == ltime.tm_mday)
 							)
 						{
 							return true; //we are up to date
@@ -292,9 +294,9 @@ bool Enever::GetPriceElectricity()
 										if (ParseSQLdatetime(rtime, lltime, szDate))
 										{
 											if (
-												(lltime.tm_year == ltime->tm_year)
-												&& (lltime.tm_mon == ltime->tm_mon)
-												&& (lltime.tm_mday == ltime->tm_mday)
+												(lltime.tm_year == ltime.tm_year)
+												&& (lltime.tm_mon == ltime.tm_mon)
+												&& (lltime.tm_mday == ltime.tm_mday)
 												)
 											{
 												m_szCurrentElectricityPrices = m_szCurrentElectricityPrices_Tomorrow;
@@ -372,7 +374,8 @@ bool Enever::GetPriceElectricity_Tomorrow()
 	{
 		time_t atime = mytime(nullptr);
 		atime += 86400; //tomorrow
-		struct tm* ltime = localtime(&atime);
+		tm ltime;
+		localtime_r(&atime, &ltime);
 
 		bool bNeedUpdate = true;
 		if (!m_szCurrentElectricityPrices_Tomorrow.empty())
@@ -393,9 +396,9 @@ bool Enever::GetPriceElectricity_Tomorrow()
 					if (ParseSQLdatetime(rtime, lltime, szDate))
 					{
 						if (
-							(lltime.tm_year == ltime->tm_year)
-							&& (lltime.tm_mon == ltime->tm_mon)
-							&& (lltime.tm_mday == ltime->tm_mday)
+							(lltime.tm_year == ltime.tm_year)
+							&& (lltime.tm_mon == ltime.tm_mon)
+							&& (lltime.tm_mday == ltime.tm_mday)
 							)
 						{
 							return true; //no need to update
@@ -474,9 +477,10 @@ void Enever::parseElectricity(const std::string& szElectricityData, const bool b
 		}
 
 		time_t atime = mytime(nullptr);
-		struct tm* ltime = localtime(&atime);
+		struct tm ltime;
+		localtime_r(&atime, &ltime);
 
-		int act_hour = ltime->tm_hour;
+		int act_hour = ltime.tm_hour;
 
 		uint64_t idx = -1;
 
@@ -548,7 +552,7 @@ void Enever::parseElectricity(const std::string& szElectricityData, const bool b
 				{
 					//Set average day price
 					int64_t avgPrice = totalPrice / totalValues;
-					std::string szTime = std_format("%04d-%02d-%02d", ltime->tm_year + 1900, ltime->tm_mon + 1, ltime->tm_mday);
+					std::string szTime = std_format("%04d-%02d-%02d", ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday);
 					std::string sValue = std::to_string(avgPrice) + ";" + std::to_string(avgPrice) + ";" + szTime;
 					UpdateValueInt("0001", 1, pTypeGeneral, sTypeManagedCounter, 12, 255, 0, sValue.c_str(), szDeviceName, false, "Enever", true);
 
@@ -585,7 +589,8 @@ bool Enever::GetPriceGas(const bool bForce)
 		{
 			//check if we need to update (data is not from today)
 			time_t atime = mytime(nullptr);
-			struct tm* ltime = localtime(&atime);
+			struct tm ltime;
+			localtime_r(&atime, &ltime);
 			Json::Value jsonCurrent;
 			if (ParseJSon(m_szCurrentGasPrices, jsonCurrent))
 			{
@@ -601,9 +606,9 @@ bool Enever::GetPriceGas(const bool bForce)
 					if (ParseSQLdatetime(rtime, lltime, szDate))
 					{
 						if (
-							(lltime.tm_year == ltime->tm_year)
-							&& (lltime.tm_mon == ltime->tm_mon)
-							&& (lltime.tm_mday == ltime->tm_mday)
+							(lltime.tm_year == ltime.tm_year)
+							&& (lltime.tm_mon == ltime.tm_mon)
+							&& (lltime.tm_mday == ltime.tm_mday)
 							)
 						{
 							return true; //data is from today, no need to update
@@ -687,7 +692,8 @@ void Enever::parseGas()
 		}
 
 		time_t atime = mytime(nullptr);
-		struct tm* ltime = localtime(&atime);
+		struct tm ltime;
+		localtime_r(&atime, &ltime);
 
 		std::string szDate = root["data"][0]["datum"].asString();
 		std::string szPrice = root["data"][0]["prijs"].asString();
@@ -709,7 +715,7 @@ void Enever::parseGas()
 
 		SendCustomSensor(1, 2, 255, fProviderPrice, "Actual Gas Price", "Euro / m3");
 
-		std::string szTime = std_format("%04d-%02d-%02d", ltime->tm_year + 1900, ltime->tm_mon + 1, ltime->tm_mday);
+		std::string szTime = std_format("%04d-%02d-%02d", ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday);
 
 		int64_t iRate = (int64_t)round(fProviderPrice * 10000); //4 digts after comma!
 
