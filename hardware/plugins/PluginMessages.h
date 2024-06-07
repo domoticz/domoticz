@@ -89,7 +89,7 @@ namespace Plugins {
 				Py_INCREF(m_Target);
 				return pPlugin->Callback(m_Target, m_Callback, pParams);
 			}
-			return NULL;
+			return PyNewRef();
 		};
 		virtual const char* PythonName() { return m_Callback.c_str(); };
 

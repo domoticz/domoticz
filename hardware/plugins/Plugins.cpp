@@ -1335,7 +1335,8 @@ namespace Plugins
 	{
 		{
 			AccessPython Guard(this, m_Name.c_str());
-			PyNewRef result = Callback(PyBorrowedRef(this->m_PyModule), "HasManualSwitchesSupport", NULL);
+			PyBorrowedRef mod = PyBorrowedRef(this->m_PyModule);
+			PyNewRef result = Callback(mod, "HasManualSwitchesSupport", NULL);
 			if (result && result.IsBool())
 			{
 				return result.IsTrue();
@@ -1348,7 +1349,8 @@ namespace Plugins
 	{
 		{
 			AccessPython Guard(this, m_Name.c_str());
-			PyNewRef result = Callback(PyBorrowedRef(this->m_PyModule), "GetManualSwitchesJsonConfiguration", NULL);
+			PyBorrowedRef mod = PyBorrowedRef(this->m_PyModule);
+			PyNewRef result = Callback(mod, "GetManualSwitchesJsonConfiguration", NULL);
 			if (result && result.IsString())
 			{
 				return result;
@@ -1371,7 +1373,8 @@ namespace Plugins
 				PyDict_SetItemString(params, itr->first.c_str(), PyUnicode_FromString(itr->second.c_str()));
 			}
 			PyNewRef args = Py_BuildValue("siiO", Name.c_str(), SwitchType, Type, params);
-			PyNewRef result = Callback(PyBorrowedRef(this->m_PyModule), "AddManualSwitch", args);
+			PyBorrowedRef mod = PyBorrowedRef(this->m_PyModule);
+			PyNewRef result = Callback(mod, "AddManualSwitch", args);
 			if (result && result.IsBool())
 			{
 				return result.IsTrue();
@@ -1394,7 +1397,8 @@ namespace Plugins
 				PyDict_SetItemString(params, itr->first.c_str(), PyUnicode_FromString(itr->second.c_str()));
 			}
 			PyNewRef args = Py_BuildValue("iiO", SwitchType, Type, params);
-			PyNewRef result = Callback(PyBorrowedRef(this->m_PyModule), "TestManualSwitch", args);
+			PyBorrowedRef mod = PyBorrowedRef(this->m_PyModule);
+			PyNewRef result = Callback(mod, "TestManualSwitch", args);
 			if (result && result.IsBool())
 			{
 				return result.IsTrue();
@@ -2223,7 +2227,7 @@ namespace Plugins
 		{
 			Log(LOG_ERROR, "%s: Unknown execption thrown", __func__);
 		}
-		return NULL;
+		return PyNewRef();
 	}
 
 	long CPlugin::PythonThreadCount()
