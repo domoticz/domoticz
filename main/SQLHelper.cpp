@@ -10153,7 +10153,7 @@ void CSQLHelper::RefreshActualPrices()
 	std::vector<std::vector<std::string> > result;
 
 	result = safe_query(
-		"SELECT ID,Type,SubType,SwitchType,AddjValue2,LastUpdate FROM DeviceStatus WHERE ("
+		"SELECT ID,Type,SubType,SwitchType,AddjValue2 FROM DeviceStatus WHERE ("
 		"Type=%d OR " //pTypeRFXMeter
 		"Type=%d OR " //pTypeP1Gas
 		"Type=%d OR " //pTypeYouLess
@@ -10181,21 +10181,10 @@ void CSQLHelper::RefreshActualPrices()
 			unsigned char dSubType = atoi(sd[2].c_str());
 			_eMeterType metertype = (_eMeterType)atoi(sd[3].c_str());
 			float addjvalue2 = static_cast<float>(atof(sd[4].c_str()));
-			std::string sLastUpdate = sd[5];
-
-			//do not include sensors that have no reading within an hour
-			struct tm ntime;
-			time_t checktime;
-			ParseSQLdatetime(checktime, ntime, sLastUpdate, tm1.tm_isdst);
-
-			//(Some) P1 Gas meter transmits results every 1 a 2 hours
-			if (difftime(now, checktime) >= 3 * 3600)
-				continue;
 
 			float divider = 1.0F;
 
 			float tGasDivider = GasDivider;
-
 
 			if (dType == pTypeP1Power)
 			{
@@ -10233,24 +10222,10 @@ void CSQLHelper::RefreshActualPrices()
 			}
 		}
 	}
-	result = safe_query("SELECT ID,Type,SubType,LastUpdate FROM DeviceStatus WHERE (Type=%d)", pTypeP1Power);
+	result = safe_query("SELECT ID FROM DeviceStatus WHERE (Type=%d)", pTypeP1Power);
 	for (const auto& sd : result)
 	{
 		uint64_t ID = std::stoull(sd[0]);
-		unsigned char dType = atoi(sd[1].c_str());
-		unsigned char dSubType = atoi(sd[2].c_str());
-		std::string sLastUpdate = sd[3];
-		struct tm ntime;
-		time_t checktime;
-		ParseSQLdatetime(checktime, ntime, sLastUpdate, tm1.tm_isdst);
-
-		if (difftime(now, checktime) >= SensorTimeOut * 60)
-			continue;
-		if (m_bShortLogAddOnlyNewValues)
-		{
-			if (difftime(now, checktime) > m_ShortLogInterval * 60)
-				continue;
-		}
 
 		//counters are values 1(u1), 5(u2), 2(d1), 6(d2)
 		std::vector<float> prices = CalcMultiMeterPrice(ID, EnergyDivider, szDateStart, szDateEnd);
