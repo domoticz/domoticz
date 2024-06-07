@@ -23,9 +23,12 @@ class CZiBlueBase : public CDomoticzHardwareBase
 	public:
 	CZiBlueBase();
 	~CZiBlueBase() override = default;
-	virtual std::string GetManualSwitchesJsonConfiguration() const override;
-	virtual void GetManualSwitchParameters(const std::multimap<std::string, std::string> &Parameters, _eSwitchType & SwitchTypeInOut, int &LightTypeInOut,
-					int & dTypeOut, int &dSubTypeOut,std::string &devIDOut, std::string &sUnitOut) const override;
+
+	virtual bool HasManualSwitchesSupport() override;
+	virtual std::string GetManualSwitchesJsonConfiguration() override;
+	virtual bool AddManualSwitch(const std::string Name, _eSwitchType SwitchType, int Type, const std::multimap<std::string, std::string>& Parameters) override;
+	virtual bool TestManualSwitch(_eSwitchType SwitchType, int Type, const std::multimap<std::string, std::string>& Parameters) override;
+
 	bool WriteToHardware(const char *pdata, unsigned char length) override;
 	private:
 	void Init();
@@ -39,6 +42,9 @@ class CZiBlueBase : public CDomoticzHardwareBase
 	virtual bool WriteInt(const uint8_t *pData, size_t length) = 0;
 
       private:
+	void AdaptManualSwitchParameters(const std::multimap<std::string, std::string>& Parameters, _eSwitchType& SwitchTypeInOut, int& LightTypeInOut,
+		int& dTypeOut, int& dSubTypeOut, std::string& devIDOut, std::string& sUnitOut) const;
+
 	bool m_bTXokay;
 	std::string m_Version;
 

@@ -77,7 +77,7 @@ namespace Plugins {
 		CCallbackBase(const std::string &Callback) : CPluginMessageBase(), m_Callback(Callback)
 		{
 		};
-		virtual void Callback(CPlugin* pPlugin, PyObject* pParams)
+		virtual PyNewRef Callback(CPlugin* pPlugin, PyObject* pParams)
 		{
 			if (!m_Target)
 			{
@@ -87,8 +87,9 @@ namespace Plugins {
 			if (m_Target && m_Callback.length())
 			{
 				Py_INCREF(m_Target);
-				pPlugin->Callback(m_Target, m_Callback, pParams);
+				return pPlugin->Callback(m_Target, m_Callback, pParams);
 			}
+			return NULL;
 		};
 		virtual const char* PythonName() { return m_Callback.c_str(); };
 

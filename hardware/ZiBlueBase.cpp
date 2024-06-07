@@ -9,6 +9,7 @@
 #include "../main/mainworker.h"
 #include "../main/WebServer.h"
 #include "../webserver/cWebem.h"
+#include "../main/SQLHelper.h"
 #include <json/json.h>
 
 #include "ziblue_usb_frame_api.h"
@@ -242,11 +243,65 @@ static std::string jsonConfig=R"([
 	{"idx":"23","name":"EDISIO",       "parameters":[{"name":"housecode","display":"House Code","type":"housecode16"},{"name":"unitcode","display":"Unit Code","type":"unitcode16"}]}
 	])";
 
-std::string CZiBlueBase::GetManualSwitchesJsonConfiguration() const
+bool CZiBlueBase::HasManualSwitchesSupport()
+{
+	return true;
+}
+
+std::string CZiBlueBase::GetManualSwitchesJsonConfiguration()
 {
 	return jsonConfig;
 }
-void CZiBlueBase::GetManualSwitchParameters(const std::multimap<std::string, std::string> &Parameters, _eSwitchType & SwitchTypeInOut, int & LightTypeInOut,
+
+bool CZiBlueBase::AddManualSwitch(const std::string Name, _eSwitchType SwitchType, int Type, const std::multimap<std::string, std::string>& Parameters)
+{
+	int dtype, subtype;
+	std::string devid, sunitcode;
+	AdaptManualSwitchParameters(Parameters, SwitchType, Type, dtype, subtype, devid, sunitcode);
+	// check if switch is unique
+	auto result = m_sql.safe_query("SELECT Name FROM DeviceStatus WHERE (HardwareID=='%d' AND DeviceID=='%q' AND Unit=='%q' AND Type==%d AND SubType==%d)",
+		this->m_HwdID, devid.c_str(), sunitcode.c_str(), dtype, subtype);
+	if (!result.empty())
+	{
+		return false;
+	}
+
+	bool bActEnabledState = m_sql.m_bAcceptNewHardware;
+	m_sql.m_bAcceptNewHardware = true;
+	std::string devname;
+	m_sql.UpdateValue(this->m_HwdID, 0, devid.c_str(), atoi(sunitcode.c_str()), dtype, subtype, 0, -1, 0, devname, true);
+	m_sql.m_bAcceptNewHardware = bActEnabledState;
+
+	// set name and switchtype
+	result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID=='%d' AND DeviceID=='%q' AND Unit=='%q' AND Type==%d AND SubType==%d)", this->m_HwdID,
+		devid.c_str(), sunitcode.c_str(), dtype, subtype);
+	if (result.empty())
+	{
+		return false;
+	}
+	std::string ID = result[0][0];
+
+	m_sql.safe_query("UPDATE DeviceStatus SET Used=1, Name='%q', SwitchType=%d WHERE (ID == '%q')", Name.c_str(), SwitchType, ID.c_str());
+
+	m_mainworker.m_eventsystem.GetCurrentStates();
+
+	// Set device options
+	//m_sql.SetDeviceOptions(atoi(ID.c_str()), m_sql.BuildDeviceOptions(deviceoptions, false));
+	return true;
+}
+
+bool CZiBlueBase::TestManualSwitch(_eSwitchType SwitchType, int Type, const std::multimap<std::string, std::string>& Parameters)
+{
+	//int dtype, subtype;
+	//std::string devid, sunitcode;
+	//AdaptManualSwitchParameters(Parameters, SwitchType, Type, dtype, subtype, devid, sunitcode);
+	//_tGeneralSwitch gs;
+	//gs.id = devid;
+	//gs.subtype = subtype;
+	return false;
+}
+
+void CZiBlueBase::AdaptManualSwitchParameters(const std::multimap<std::string, std::string> &Parameters, _eSwitchType & SwitchTypeInOut, int & LightTypeInOut,
 										int & dTypeOut, int &dSubTypeOut, std::string &devIDOut, std::string &sUnitOut) const
 {
 	dTypeOut = pTypeGeneralSwitch;

@@ -19,14 +19,24 @@ bool CDomoticzHardwareBase::CustomCommand(const uint64_t /*idx*/, const std::str
 	return false;
 }
 
-std::string CDomoticzHardwareBase::GetManualSwitchesJsonConfiguration() const
+bool CDomoticzHardwareBase::HasManualSwitchesSupport()
+{
+	return false;
+}
+
+std::string CDomoticzHardwareBase::GetManualSwitchesJsonConfiguration()
 {
 	return std::string("");
 }
 
-void CDomoticzHardwareBase::GetManualSwitchParameters(const std::multimap<std::string, std::string> & /*Parameters*/, _eSwitchType & /*SwitchTypeInOut*/, int & /*LightTypeInOut*/,
-	 int & /*dTypeOut*/, int &dSubTypeOut, std::string & /*devIDOut*/, std::string & /*sUnitOut*/) const
+bool CDomoticzHardwareBase::AddManualSwitch(const std::string Name, _eSwitchType SwitchType, int Type, const std::multimap<std::string, std::string>& Parameters)
 {
+	return false;
+}
+
+bool CDomoticzHardwareBase::TestManualSwitch(_eSwitchType SwitchType, int Type, const std::multimap<std::string, std::string>& Parameters)
+{
+	return false;
 }
 
 bool CDomoticzHardwareBase::Start()

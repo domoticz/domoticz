@@ -1331,6 +1331,78 @@ namespace Plugins
 		return false;
 	}
 
+	bool CPlugin::HasManualSwitchesSupport()
+	{
+		{
+			AccessPython Guard(this, m_Name.c_str());
+			PyNewRef result = Callback(PyBorrowedRef(this->m_PyModule), "HasManualSwitchesSupport", NULL);
+			if (result && result.IsBool())
+			{
+				return result.IsTrue();
+			}
+		}
+		return false;
+	}
+
+	std::string CPlugin::GetManualSwitchesJsonConfiguration()
+	{
+		{
+			AccessPython Guard(this, m_Name.c_str());
+			PyNewRef result = Callback(PyBorrowedRef(this->m_PyModule), "GetManualSwitchesJsonConfiguration", NULL);
+			if (result && result.IsString())
+			{
+				return result;
+			}
+		}
+		return std::string("");
+	}
+
+	bool CPlugin::AddManualSwitch(const std::string Name, _eSwitchType SwitchType, int Type, const std::multimap<std::string, std::string>& Parameters)
+	{
+		{
+			AccessPython Guard(this, m_Name.c_str());
+			PyNewRef params = PyDict_New();
+			for (auto itr = Parameters.begin(); itr != Parameters.end(); ++itr)
+			{
+				if (itr->first == "hwdid" || itr->first == "param" ||
+					itr->first == "lighttype" || itr->first == "type" ||
+					itr->first == "description" || itr->first == "switchtype" || itr->first == "name")
+					continue;
+				PyDict_SetItemString(params, itr->first.c_str(), PyUnicode_FromString(itr->second.c_str()));
+			}
+			PyNewRef args = Py_BuildValue("siiO", Name.c_str(), SwitchType, Type, params);
+			PyNewRef result = Callback(PyBorrowedRef(this->m_PyModule), "AddManualSwitch", args);
+			if (result && result.IsBool())
+			{
+				return result.IsTrue();
+			}
+		}
+		return false;
+	}
+
+	bool CPlugin::TestManualSwitch(_eSwitchType SwitchType, int Type, const std::multimap<std::string, std::string>& Parameters)
+	{
+		{
+			AccessPython Guard(this, m_Name.c_str());
+			PyNewRef params = PyDict_New();
+			for (auto itr = Parameters.begin(); itr != Parameters.end(); ++itr)
+			{
+				if (itr->first == "hwdid" || itr->first == "param" ||
+					itr->first == "lighttype" || itr->first == "type" ||
+					itr->first == "description" || itr->first == "switchtype" || itr->first == "name")
+					continue;
+				PyDict_SetItemString(params, itr->first.c_str(), PyUnicode_FromString(itr->second.c_str()));
+			}
+			PyNewRef args = Py_BuildValue("iiO", SwitchType, Type, params);
+			PyNewRef result = Callback(PyBorrowedRef(this->m_PyModule), "TestManualSwitch", args);
+			if (result && result.IsBool())
+			{
+				return result.IsTrue();
+			}
+		}
+		return false;
+	}
+
 	bool CPlugin::Start()
 	{
 		try
@@ -2055,7 +2127,7 @@ namespace Plugins
 		}
 	}
 
-	void CPlugin::Callback(PyBorrowedRef& pTarget, const std::string &sHandler, PyObject *pParams)
+	PyNewRef CPlugin::Callback(PyBorrowedRef& pTarget, const std::string &sHandler, PyObject *pParams)
 	{
 		try
 		{
@@ -2086,7 +2158,7 @@ namespace Plugins
 					PyErr_Clear();
 
 					// Invoke the callback function
-					PyNewRef	pReturnValue = PyObject_CallObject(pFunc, pParams);
+					PyNewRef pReturnValue = PyObject_CallObject(pFunc, pParams);
 
 					if (pModState)
 					{
@@ -2128,6 +2200,7 @@ namespace Plugins
 							}
 						}
 					}
+					return pReturnValue;
 				}
 				else
 				{
@@ -2150,6 +2223,7 @@ namespace Plugins
 		{
 			Log(LOG_ERROR, "%s: Unknown execption thrown", __func__);
 		}
+		return NULL;
 	}
 
 	long CPlugin::PythonThreadCount()

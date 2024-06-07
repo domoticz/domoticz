@@ -1113,9 +1113,20 @@ namespace http
 				std::string devid;
 
 				CDomoticzHardwareBase* pBaseHardware = m_mainworker.GetHardware(atoi(hwdid.c_str()));
-				if (pBaseHardware != nullptr && !pBaseHardware->GetManualSwitchesJsonConfiguration().empty())
+				if (pBaseHardware != nullptr && pBaseHardware->HasManualSwitchesSupport())
 				{
-					pBaseHardware->GetManualSwitchParameters(req.parameters, switchtype, lighttype, dtype, subtype, devid, sunitcode);
+					bool res=pBaseHardware->TestManualSwitch(switchtype, lighttype, req.parameters);
+					if (res)
+					{
+						root["status"] = "OK";
+						root["message"] = "OK";
+						root["title"] = "TestSwitch";
+					}
+					else
+					{
+						root["message"] = "Fail to send 'On' command to the switch";
+					}
+					return res;
 				}
 				else if (lighttype < 20)
 				{
@@ -1782,65 +1793,20 @@ namespace http
 				std::string StrParam1;
 
 				CDomoticzHardwareBase* pBaseHardware = m_mainworker.GetHardware(atoi(hwdid.c_str()));
-				if ((pBaseHardware != nullptr) && (!pBaseHardware->GetManualSwitchesJsonConfiguration().empty()))
+				if ((pBaseHardware != nullptr) && (pBaseHardware->HasManualSwitchesSupport()))
 				{
-					pBaseHardware->GetManualSwitchParameters(req.parameters, switchtype, lighttype, dtype, subtype, devid, sunitcode);
-					// check if switch is unique
-					result = m_sql.safe_query("SELECT Name FROM DeviceStatus WHERE (HardwareID=='%q' AND DeviceID=='%q' AND Unit=='%q' AND Type==%d AND SubType==%d)",
-						hwdid.c_str(), devid.c_str(), sunitcode.c_str(), dtype, subtype);
-					if (!result.empty())
+					bool res = pBaseHardware->AddManualSwitch(name, switchtype, lighttype, req.parameters);
+					if (res)
 					{
-						root["message"] = "Switch already exists!";
-						return false;
+						root["status"] = "OK";
+						root["message"] = "OK";
+						root["title"] = "AddSwitch";
 					}
-
-					bool bActEnabledState = m_sql.m_bAcceptNewHardware;
-					m_sql.m_bAcceptNewHardware = true;
-					std::string devname;
-					m_sql.UpdateValue(atoi(hwdid.c_str()), 0, devid.c_str(), atoi(sunitcode.c_str()), dtype, subtype, 0, -1, 0, devname, true, szSwitchUser.c_str());
-					m_sql.m_bAcceptNewHardware = bActEnabledState;
-
-					// set name and switchtype
-					result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID=='%q' AND DeviceID=='%q' AND Unit=='%q' AND Type==%d AND SubType==%d)", hwdid.c_str(),
-						devid.c_str(), sunitcode.c_str(), dtype, subtype);
-					if (result.empty())
+					else
 					{
-						root["message"] = "Error finding switch in Database!?!?";
-						return false;
+						root["message"] = "Fail to add switch";
 					}
-					std::string ID = result[0][0];
-
-					m_sql.safe_query("UPDATE DeviceStatus SET Used=1, Name='%q', SwitchType=%d WHERE (ID == '%q')", name.c_str(), switchtype, ID.c_str());
-
-					if (lighttype == 407)
-					{
-						// Openwebnet Bus Custom
-						m_sql.safe_query("UPDATE DeviceStatus SET StrParam1='%s' WHERE (ID == '%q')", StrParam1.c_str(), ID.c_str());
-					}
-
-					m_mainworker.m_eventsystem.GetCurrentStates();
-
-					// Set device options
-					m_sql.SetDeviceOptions(atoi(ID.c_str()), m_sql.BuildDeviceOptions(deviceoptions, false));
-
-					if (!maindeviceidx.empty())
-					{
-						if (maindeviceidx != ID)
-						{
-							// this is a sub device for another light/switch
-							// first check if it is not already a sub device
-							result = m_sql.safe_query("SELECT ID FROM LightSubDevices WHERE (DeviceRowID=='%q') AND (ParentID =='%q')", ID.c_str(), maindeviceidx.c_str());
-							if (result.empty())
-							{
-								// no it is not, add it
-								result = m_sql.safe_query("INSERT INTO LightSubDevices (DeviceRowID, ParentID) VALUES ('%q','%q')", ID.c_str(), maindeviceidx.c_str());
-							}
-						}
-					}
-
-					root["status"] = "OK";
-					root["title"] = "AddSwitch";
-					return true;
+					return res;
 				}
 #ifdef ENABLE_PYTHON
 				// check if HW is plugin

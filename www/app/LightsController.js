@@ -1419,8 +1419,9 @@ define(['app', 'livesocket'], function (app) {
 			$("#dialog-addmanuallightdevice #lighttable #combolighttype").hide();
 			$("#dialog-addmanuallightdevice #lighttable #combolighttype2").unbind();
 			$("#dialog-addmanuallightdevice #lighttable #combolighttype2").change(function () {
-				UpdateAddManualDialogForConfiguredHardware(hardware);
+				UpdateAddManualDialogParametersForConfiguredHardware(hardware);
 			});
+			$("#dialog-addmanuallightdevice #lighttable #combolighttype2").empty();
 			$.each(hardware.config, function (i, item) {
 				var option = $('<option />');
 				option.attr('value', item.idx).text(item.name);
@@ -1444,6 +1445,10 @@ define(['app', 'livesocket'], function (app) {
 			$("#dialog-addmanuallightdevice #lighting2params").hide();
 			$("#dialog-addmanuallightdevice #lighting3params").hide();
 
+			UpdateAddManualDialogParametersForConfiguredHardware(hardware);
+		};
+
+		UpdateAddManualDialogParametersForConfiguredHardware = function (hardware) {
 			var lighttype = $("#dialog-addmanuallightdevice #lighttable #combolighttype2 option:selected").val();
 			var param = hardware.config.find(p => p.idx == lighttype);
 			$("#dialog-addmanuallightdevice #confparams").show();
@@ -1473,6 +1478,9 @@ define(['app', 'livesocket'], function (app) {
 					val.append(select);
 					select.append($('<option></option>').val("false").html("false"));
 					select.append($('<option></option>').val("true").html("true"));
+				} else if (item.type == "string") {
+					var select = $('<input id="config' + item.name + '" type="text" style="width:210px" class="ui-corner-all"></input>');
+					val.append(select);
 				}
 				$("#dialog-addmanuallightdevice #confparams").append(line);
 			});
@@ -1883,7 +1891,10 @@ define(['app', 'livesocket'], function (app) {
 			var lighttype = $("#dialog-addmanuallightdevice #lighttable #combolighttype2 option:selected").val();
 			mParams += "&lighttype=" + lighttype;
 			$.each(hardware.config.find(e => e.idx == lighttype).parameters, function (i, item) {
-				mParams += "&" + item.name + "=" + $("#dialog-addmanuallightdevice #config" + item.name + " option:selected").val();
+				if(item.type == "string")
+					mParams += "&" + item.name + "=" + $("#dialog-addmanuallightdevice #config" + item.name).val();
+				else
+					mParams += "&" + item.name + "=" + $("#dialog-addmanuallightdevice #config" + item.name + " option:selected").val();
 			});
 			var bIsSubDevice = $("#dialog-addmanuallightdevice #howtable #how_2").is(":checked");
 			var MainDeviceIdx = "";

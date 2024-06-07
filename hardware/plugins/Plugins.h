@@ -84,6 +84,11 @@ namespace Plugins {
 	  void AddConnection(CPluginTransport *);
 	  void RemoveConnection(CPluginTransport *);
 
+	  virtual bool HasManualSwitchesSupport() override;
+	  virtual std::string GetManualSwitchesJsonConfiguration() override;
+	  virtual bool AddManualSwitch(const std::string Name, _eSwitchType SwitchType, int Type, const std::multimap<std::string, std::string>& Parameters) override;
+	  virtual bool TestManualSwitch(_eSwitchType SwitchType, int Type, const std::multimap<std::string, std::string>& Parameters) override;
+
 	  bool Initialise();
 	  bool LoadSettings();
 	  bool Start();
@@ -94,7 +99,7 @@ namespace Plugins {
 	  void ConnectionWrite(CDirectiveBase *);
 	  void ConnectionDisconnect(CDirectiveBase *);
 	  void DisconnectEvent(CEventBase *);
-	  void Callback(PyBorrowedRef& pTarget, const std::string &sHandler, PyObject *pParams);
+	  PyNewRef Callback(PyBorrowedRef& pTarget, const std::string &sHandler, PyObject *pParams);
 	  long PythonThreadCount();
 	  void RestoreThread();
 	  void ReleaseThread();
