@@ -1989,7 +1989,7 @@ namespace http
 							root["result"][ii]["v"] = szValue;
 
 							float fPrice = 0;
-							m_sql.CalcMeterPrice(idx, static_cast<const float>(divider), szDateStart, szDateEnd, price);
+							m_sql.CalcMeterPrice(idx, static_cast<const float>(divider), szDateStart, szDateEnd, fPrice);
 							sprintf(szTmp, "%.4f", fPrice);
 							root["result"][ii]["p"] = szTmp;
 
@@ -3788,7 +3788,7 @@ namespace http
 									strcpy(szDateStart, szDateEnd);
 									strcat(szDateEnd, " 23:59:59");
 									float fPrice = 0;
-									m_sql.CalcMeterPrice(idx, static_cast<const float>(divider), szDateStart, szDateEnd, price);
+									m_sql.CalcMeterPrice(idx, static_cast<const float>(divider), szDateStart, szDateEnd, fPrice);
 									sprintf(szTmp, "%.4f", fPrice);
 									root["result"][ii]["p"] = szTmp;
 
