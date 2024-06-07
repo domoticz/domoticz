@@ -1919,11 +1919,14 @@ namespace http
 							root["result"][ii]["r2"] = szTmp;
 
 							//Calculate price
+							float fPrice = 0;
 							std::vector<float> prices = m_sql.CalcMultiMeterPrice(idx, static_cast<const float>(divider), szDateStart, szDateEnd);
-							float price_usage = prices[0] + prices[4];
-							float price_deliver = prices[1] + prices[5];
-							float fPrice = price_usage - price_deliver;
-
+							if (!prices.empty())
+							{
+								float price_usage = prices[0] + prices[4];
+								float price_deliver = prices[1] + prices[5];
+								fPrice = price_usage - price_deliver;
+							}
 							sprintf(szTmp, "%.4f", fPrice);
 							root["result"][ii]["p"] = szTmp;
 
@@ -1985,7 +1988,8 @@ namespace http
 							root["result"][ii]["d"] = szDateStart;
 							root["result"][ii]["v"] = szValue;
 
-							const float fPrice = m_sql.CalcMeterPrice(idx, static_cast<const float>(divider), szDateStart, szDateEnd);
+							float fPrice = 0;
+							m_sql.CalcMeterPrice(idx, static_cast<const float>(divider), szDateStart, szDateEnd, price);
 							sprintf(szTmp, "%.4f", fPrice);
 							root["result"][ii]["p"] = szTmp;
 
@@ -3556,10 +3560,14 @@ namespace http
 
 								strcpy(szDateStart, szDateEnd);
 								strcat(szDateEnd, " 23:59:59");
+								float fPrice = 0;
 								std::vector<float> prices = m_sql.CalcMultiMeterPrice(idx, static_cast<const float>(divider), szDateStart, szDateEnd);
-								float price_usage = prices[0] + prices[4];
-								float price_deliver = prices[1] + prices[5];
-								float fPrice = price_usage - price_deliver;
+								if (!prices.empty())
+								{
+									float price_usage = prices[0] + prices[4];
+									float price_deliver = prices[1] + prices[5];
+									fPrice = price_usage - price_deliver;
+								}
 								sprintf(szTmp, "%.4f", fPrice);
 								root["result"][ii]["p"] = szTmp;
 
@@ -3779,7 +3787,8 @@ namespace http
 
 									strcpy(szDateStart, szDateEnd);
 									strcat(szDateEnd, " 23:59:59");
-									const float fPrice = m_sql.CalcMeterPrice(idx, static_cast<const float>(divider), szDateStart, szDateEnd);
+									float fPrice = 0;
+									m_sql.CalcMeterPrice(idx, static_cast<const float>(divider), szDateStart, szDateEnd, price);
 									sprintf(szTmp, "%.4f", fPrice);
 									root["result"][ii]["p"] = szTmp;
 

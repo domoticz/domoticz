@@ -7060,8 +7060,10 @@ void CSQLHelper::UpdateMeter()
 				(dType != pTypeUsage)
 				)
 			{
-				price = CalcMeterPrice(ID, divider, szDateStart, szDateEnd);
-				m_actual_prices[ID] = price;
+				if (CalcMeterPrice(ID, divider, szDateStart, szDateEnd, price))
+				{
+					m_actual_prices[ID] = price;
+				}
 			}
 		}
 	}
@@ -7220,10 +7222,13 @@ void CSQLHelper::UpdateMultiMeter()
 			{
 				//counters are values 1(u1), 5(u2), 2(d1), 6(d2)
 				std::vector<float> prices = CalcMultiMeterPrice(ID, EnergyDivider, szDateStart, szDateEnd);
-				float price_usage = prices[0] + prices[4];
-				float price_deliver = prices[1] + prices[5];
-				price = price_usage - price_deliver;
-				m_actual_prices[ID] = price;
+				if (!prices.empty())
+				{
+					float price_usage = prices[0] + prices[4];
+					float price_deliver = prices[1] + prices[5];
+					price = price_usage - price_deliver;
+					m_actual_prices[ID] = price;
+				}
 			}
 		}
 	}
@@ -7500,33 +7505,6 @@ void CSQLHelper::AddCalendarUpdateRain()
 	}
 }
 
-float CSQLHelper::CalcMeterPrice(const uint64_t idx, const float divider, const char* szDateStart, const char* szDateEnd)
-{
-	if (divider == 0)
-		return 0;
-	//Calculate the total price for today
-	auto result = safe_query("SELECT strftime('%%Y-%%m-%%d %%H:00:00', Date) as ymd, MIN(Value) as Cntr, Price FROM Meter WHERE (DeviceRowID='%" PRIu64 "' AND Date>='%q' AND Date<='%q 00:00:00') GROUP BY ymd",
-		idx, szDateStart, szDateEnd);
-
-	uint64_t last_cntr = (uint64_t)-1;
-	float last_price = 0;
-	float total_price = 0;
-	for (const auto& itt : result)
-	{
-		uint64_t cntr = std::stoull(itt[1]);
-		float price = std::stof(itt[2]);
-
-		if (last_cntr != (uint64_t)-1)
-		{
-			uint64_t total = cntr - last_cntr;
-			total_price += ((static_cast<float>(total) / divider) * last_price);
-		}
-		last_cntr = cntr;
-		last_price = price;
-	}
-	return total_price;
-}
-
 void CSQLHelper::AddCalendarUpdateMeter()
 {
 	float EnergyDivider = 1000.0F;
@@ -7698,7 +7676,8 @@ void CSQLHelper::AddCalendarUpdateMeter()
 				double total_real = total_max - total_min;
 				double counter = total_max;
 
-				price = CalcMeterPrice(ID, divider, szDateStart, szDateEnd);
+				price = 0;
+				CalcMeterPrice(ID, divider, szDateStart, szDateEnd, price);
 				
 				result = safe_query(
 					"INSERT INTO Meter_Calendar (DeviceRowID, Value, Counter, Price, Date) "
@@ -7787,42 +7766,6 @@ void CSQLHelper::AddCalendarUpdateMeter()
 	}
 }
 
-std::vector<float> CSQLHelper::CalcMultiMeterPrice(const uint64_t idx, const float divider, const char* szDateStart, const char* szDateEnd)
-{
-	std::vector<float> ret;
-	if (divider == 0)
-		return ret;
-
-	//Calculate the total price for today
-	auto result = safe_query("SELECT strftime('%%Y-%%m-%%d %%H:00:00', Date) as ymd, MIN(Value1), MIN(Value2), MIN(Value3), MIN(Value4), MIN(Value5), MIN(Value6), Price FROM MultiMeter WHERE (DeviceRowID='%" PRIu64 "' AND Date>='%q' AND Date<='%q 00:00:00') GROUP BY ymd",
-		idx, szDateStart, szDateEnd);
-
-	uint64_t last_cntrs[6] = { (uint64_t)-1,(uint64_t)-1,(uint64_t)-1,(uint64_t)-1,(uint64_t)-1,(uint64_t)-1 };
-	float last_price = 0;
-	float total_price[6] = { 0,0,0,0,0,0 };
-	for (const auto& itt : result)
-	{
-		float price = std::stof(itt[7]);
-
-		uint64_t cntrs[6];
-		for (int ii = 0; ii < 6; ii++)
-		{
-			cntrs[ii] = std::stoull(itt[1 + ii]);
-			if (last_cntrs[ii] != (uint64_t)-1)
-			{
-				uint64_t total = cntrs[ii] - last_cntrs[ii];
-				total_price[ii] += ((static_cast<float>(total) / divider) * last_price);
-			}
-			last_cntrs[ii] = cntrs[ii];
-		}
-		last_price = price;
-	}
-	for (int ii = 0; ii < 6; ii++)
-	{
-		ret.push_back(total_price[ii]);
-	}
-	return ret;
-}
 
 void CSQLHelper::AddCalendarUpdateMultiMeter()
 {
@@ -7917,10 +7860,14 @@ void CSQLHelper::AddCalendarUpdateMultiMeter()
 				counter4 = static_cast<float>(atof(sd[11].c_str()));
 
 				//counters are values 1(u1), 5(u2), 2(d1), 6(d2)
+				price = 0;
 				std::vector<float> prices = CalcMultiMeterPrice(ID, EnergyDivider, szDateStart, szDateEnd);
-				float price_usage = prices[0] + prices[4];
-				float price_deliver = prices[1] + prices[5];
-				price = price_usage - price_deliver;
+				if (!prices.empty())
+				{
+					float price_usage = prices[0] + prices[4];
+					float price_deliver = prices[1] + prices[5];
+					price = price_usage - price_deliver;
+				}
 			}
 			else
 			{
@@ -10100,6 +10047,78 @@ void CSQLHelper::CorrectOffDelaySwitchStates()
 	}
 }
 
+bool CSQLHelper::CalcMeterPrice(const uint64_t idx, const float divider, const char* szDateStart, const char* szDateEnd, float& price)
+{
+	if (divider == 0)
+		return false;
+	//Calculate the total price for today
+	auto result = safe_query("SELECT strftime('%%Y-%%m-%%d %%H:00:00', Date) as ymd, MIN(Value) as Cntr, Price FROM Meter WHERE (DeviceRowID='%" PRIu64 "' AND Date>='%q' AND Date<='%q 00:00:00') GROUP BY ymd",
+		idx, szDateStart, szDateEnd);
+	if (result.empty())
+		return false;
+
+	bool bResult = false;
+
+	uint64_t last_cntr = (uint64_t)-1;
+	float last_price = 0;
+	float total_price = 0;
+	for (const auto& itt : result)
+	{
+		uint64_t cntr = std::stoull(itt[1]);
+		float price = std::stof(itt[2]);
+
+		if (last_cntr != (uint64_t)-1)
+		{
+			uint64_t total = cntr - last_cntr;
+			total_price += ((static_cast<float>(total) / divider) * last_price);
+			bResult = true;
+		}
+		last_cntr = cntr;
+		last_price = price;
+	}
+	if (total_price > 100000)
+		return false;
+	price = total_price;
+	return bResult;
+}
+
+std::vector<float> CSQLHelper::CalcMultiMeterPrice(const uint64_t idx, const float divider, const char* szDateStart, const char* szDateEnd)
+{
+	std::vector<float> ret;
+	if (divider == 0)
+		return ret;
+
+	//Calculate the total price for today
+	auto result = safe_query("SELECT strftime('%%Y-%%m-%%d %%H:00:00', Date) as ymd, MIN(Value1), MIN(Value2), MIN(Value3), MIN(Value4), MIN(Value5), MIN(Value6), Price FROM MultiMeter WHERE (DeviceRowID='%" PRIu64 "' AND Date>='%q' AND Date<='%q 00:00:00') GROUP BY ymd",
+		idx, szDateStart, szDateEnd);
+
+	uint64_t last_cntrs[6] = { (uint64_t)-1,(uint64_t)-1,(uint64_t)-1,(uint64_t)-1,(uint64_t)-1,(uint64_t)-1 };
+	float last_price = 0;
+	float total_price[6] = { 0,0,0,0,0,0 };
+	for (const auto& itt : result)
+	{
+		float price = std::stof(itt[7]);
+
+		uint64_t cntrs[6];
+		for (int ii = 0; ii < 6; ii++)
+		{
+			cntrs[ii] = std::stoull(itt[1 + ii]);
+			if (last_cntrs[ii] != (uint64_t)-1)
+			{
+				uint64_t total = cntrs[ii] - last_cntrs[ii];
+				total_price[ii] += ((static_cast<float>(total) / divider) * last_price);
+			}
+			last_cntrs[ii] = cntrs[ii];
+		}
+		last_price = price;
+	}
+	for (int ii = 0; ii < 6; ii++)
+	{
+		ret.push_back(total_price[ii]);
+	}
+	return ret;
+}
+
 void CSQLHelper::RefreshActualPrices()
 {
 	float EnergyDivider = 1000.0F;
@@ -10130,9 +10149,6 @@ void CSQLHelper::RefreshActualPrices()
 	sprintf(szDateStart, "%04d-%02d-%02d", tm1.tm_year + 1900, tm1.tm_mon + 1, tm1.tm_mday);
 	strcpy(szDateEnd, szDateStart);
 	strcat(szDateEnd, " 23:59:59");
-
-	int SensorTimeOut = 60;
-	GetPreferencesVar("SensorTimeout", SensorTimeOut);
 
 	std::vector<std::vector<std::string> > result;
 
@@ -10172,23 +10188,9 @@ void CSQLHelper::RefreshActualPrices()
 			time_t checktime;
 			ParseSQLdatetime(checktime, ntime, sLastUpdate, tm1.tm_isdst);
 
-			//Check for timeout, if timeout then don't add value
-			if (dType != pTypeP1Gas)
-			{
-				if (difftime(now, checktime) >= SensorTimeOut * 60)
-					continue;
-				if (m_bShortLogAddOnlyNewValues)
-				{
-					if (difftime(now, checktime) > m_ShortLogInterval * 60)
-						continue;
-				}
-			}
-			else
-			{
-				//(Some) P1 Gas meter transmits results every 1 a 2 hours
-				if (difftime(now, checktime) >= 3 * 3600)
-					continue;
-			}
+			//(Some) P1 Gas meter transmits results every 1 a 2 hours
+			if (difftime(now, checktime) >= 3 * 3600)
+				continue;
 
 			float divider = 1.0F;
 
@@ -10224,8 +10226,9 @@ void CSQLHelper::RefreshActualPrices()
 				break;
 			}
 
-			float price = CalcMeterPrice(ID, divider, szDateStart, szDateEnd);
-			if (price < 100000) {
+			float price = 0;
+			if (CalcMeterPrice(ID, divider, szDateStart, szDateEnd, price))
+			{
 				m_actual_prices[ID] = price;
 			}
 		}
@@ -10251,11 +10254,14 @@ void CSQLHelper::RefreshActualPrices()
 
 		//counters are values 1(u1), 5(u2), 2(d1), 6(d2)
 		std::vector<float> prices = CalcMultiMeterPrice(ID, EnergyDivider, szDateStart, szDateEnd);
-		float price_usage = prices[0] + prices[4];
-		float price_deliver = prices[1] + prices[5];
-		float price = price_usage - price_deliver;
-		if (price < 100000) {
-			m_actual_prices[ID] = price;
+		if (!prices.empty())
+		{
+			float price_usage = prices[0] + prices[4];
+			float price_deliver = prices[1] + prices[5];
+			float price = price_usage - price_deliver;
+			if (price < 100000) {
+				m_actual_prices[ID] = price;
+			}
 		}
 	}
 }
