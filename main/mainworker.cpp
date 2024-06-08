@@ -14049,7 +14049,7 @@ void MainWorker::HandleHourPrice()
 		}
 		else
 		{
-			auto result = m_sql.safe_query("SELECT HardwareID, Type, SubType, sValue, LastUpdate, AddjValue2 FROM DeviceStatus WHERE (ID==%" PRIu64 ")", iHP_E_Idx);
+			auto result = m_sql.safe_query("SELECT HardwareID, Type, SubType, sValue, LastUpdate, AddjValue2 FROM DeviceStatus WHERE (ID==%d)", iHP_E_Idx);
 			if (!result.empty())
 			{
 				uint8_t hwdID = std::stoi(result[0][0]);
@@ -14061,7 +14061,7 @@ void MainWorker::HandleHourPrice()
 						//Make sure the prices are actual
 						Enever* pEnever = dynamic_cast<Enever*>(const_cast<CDomoticzHardwareBase*>(pHardware));
 						pEnever->ActualizePrices();
-						result = m_sql.safe_query("SELECT HardwareID, Type, SubType, sValue, LastUpdate, AddjValue2 FROM DeviceStatus WHERE (ID==%" PRIu64 ")", iHP_E_Idx);
+						result = m_sql.safe_query("SELECT HardwareID, Type, SubType, sValue, LastUpdate, AddjValue2 FROM DeviceStatus WHERE (ID==%d)", iHP_E_Idx);
 					}
 				}
 
@@ -14106,7 +14106,7 @@ void MainWorker::HandleHourPrice()
 		}
 		else
 		{
-			auto result = m_sql.safe_query("SELECT Type, SubType, sValue, LastUpdate, AddjValue2 FROM DeviceStatus WHERE (ID==%" PRIu64 ")", iHP_G_Idx);
+			auto result = m_sql.safe_query("SELECT Type, SubType, sValue, LastUpdate, AddjValue2 FROM DeviceStatus WHERE (ID==%d)", iHP_G_Idx);
 			if (!result.empty())
 			{
 				uint8_t devType = std::stoi(result[0][0]);
