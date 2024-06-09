@@ -37,12 +37,12 @@
 		<form id="settings">
 			<div id="content">
 				<ul id="tabs" class="nav nav-tabs sub-tabs" data-tabs="tabs">
-					<li><a data-target="#tabsystem" data-toggle="tab" data-i18n="System">System</a></li>
+					<li class="active"><a data-target="#tabsystem" data-toggle="tab" data-i18n="System">System</a></li>
 					<li><a data-target="#tablog" data-toggle="tab" data-i18n="Log History"></a></li>
 					<li><a data-target="#tabnotifications" data-toggle="tab" data-i18n="Notifications"></a></li>
 					<li><a data-target="#tabemail" data-toggle="tab" data-i18n="Email">Email</a></li>
 					<li><a data-target="#tabmeters" data-toggle="tab" data-i18n="Meters/Counters">Meters/Counters</a></li>
-					<li class="active"><a data-target="#tabenergydashboard" data-toggle="tab" data-i18n="Energy Dashboard">Energy Dashboard</a></li>
+					<li><a data-target="#tabenergydashboard" data-toggle="tab" data-i18n="Energy Dashboard">Energy Dashboard</a></li>
 					<li><a data-target="#tabfloorplan" data-toggle="tab" data-i18n="Floorplan"></a></li>
 					<li><a data-target="#tabsecurity" data-toggle="tab" data-i18n="Security"></a></li>
 					<li><a data-target="#tabother" data-toggle="tab" data-i18n="Other">Other</a></li>
@@ -50,7 +50,7 @@
 					<li class="pull-right"><a data-i18n="Apply Settings" class="btn-danger sub-tabs-apply" ng-click="StoreSettings()">Apply Settings</a></li>
 				</ul>
 				<div id="my-tab-content" class="tab-content">
-					<div class="tab-pane" id="tabsystem">
+					<div class="tab-pane active" id="tabsystem">
 						<!-- System
 						================================================== -->
 						<section id="system">
@@ -1019,7 +1019,7 @@
 							</div>
 						</section>
 					</div>
-					<div class="tab-pane active" id="tabenergydashboard">
+					<div class="tab-pane" id="tabenergydashboard">
 						<!-- Energy Dashboard Settings
 						================================================== -->
 						<section id="metercounters">
