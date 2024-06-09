@@ -1796,34 +1796,6 @@ namespace http
 			root["status"] = "OK";
 		}
 
-		// Could now be obsolete as only 1 usage was found in Forecast screen, which now uses other command
-		void CWebServer::Cmd_GetLocation(WebEmSession& session, const request& req, Json::Value& root)
-		{
-			if (session.rights == -1)
-			{
-				session.reply_status = reply::forbidden;
-				return; // Only auth user allowed
-			}
-			root["title"] = "GetLocation";
-			std::string Latitude = "1";
-			std::string Longitude = "1";
-			std::string sValue;
-			if (m_sql.GetPreferencesVar("Location", sValue))
-			{
-				std::vector<std::string> strarray;
-				StringSplit(sValue, ";", strarray);
-
-				if (strarray.size() == 2)
-				{
-					Latitude = strarray[0];
-					Longitude = strarray[1];
-					root["status"] = "OK";
-				}
-			}
-			root["Latitude"] = Latitude;
-			root["Longitude"] = Longitude;
-		}
-
 		void CWebServer::Cmd_GetForecastConfig(WebEmSession& session, const request& req, Json::Value& root)
 		{
 			if (session.rights == -1)

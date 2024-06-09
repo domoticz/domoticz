@@ -404,7 +404,6 @@ namespace http
 			RegisterCommandCode("getmyprofile", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetMyProfile(session, req, root); });
 			RegisterCommandCode("updatemyprofile", [this](auto&& session, auto&& req, auto&& root) { Cmd_UpdateMyProfile(session, req, root); });
 
-			RegisterCommandCode("getlocation", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetLocation(session, req, root); });
 			RegisterCommandCode("getforecastconfig", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetForecastConfig(session, req, root); });
 			RegisterCommandCode("sendnotification", [this](auto&& session, auto&& req, auto&& root) { Cmd_SendNotification(session, req, root); });
 			RegisterCommandCode("emailcamerasnapshot", [this](auto&& session, auto&& req, auto&& root) { Cmd_EmailCameraSnapshot(session, req, root); });
