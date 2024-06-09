@@ -341,6 +341,22 @@ define(['app'], function (app) {
 								listGas.push({"idx": item.idx, "name": item.Name});
 							}
 							else if (item.Type == "RFXMeter") {
+								if (SwitchTypeVal == 1) {
+									listGas.push({"idx": item.idx, "name": item.Name});
+								}
+								else if (SwitchTypeVal == 2) {
+									listWater.push({"idx": item.idx, "name": item.Name});
+								}
+								else {
+									listExtra.push({"idx": item.idx, "name": item.Name});
+								}
+							}
+							else if (item.Type == "Setpoint") {
+								listBatteryWatt.push({"idx": item.idx, "name": item.Name});
+								listExtra.push({"idx": item.idx, "name": item.Name});
+							}
+							else if (item.Type == "General") {
+								if (item.SubType == "Counter Incremental") {
 									if (SwitchTypeVal == 1) {
 										listGas.push({"idx": item.idx, "name": item.Name});
 									}
@@ -350,13 +366,8 @@ define(['app'], function (app) {
 									else {
 										listExtra.push({"idx": item.idx, "name": item.Name});
 									}
-							}
-							else if (item.Type == "Setpoint") {
-								listBatteryWatt.push({"idx": item.idx, "name": item.Name});
-								listExtra.push({"idx": item.idx, "name": item.Name});
-							}
-							else if (item.Type == "General") {
-								if (item.SubType == "Percentage") {
+								}
+								else if (item.SubType == "Percentage") {
 									listBatterySoc.push({"idx": item.idx, "name": item.Name});
 									listExtra.push({"idx": item.idx, "name": item.Name});
 								}
@@ -815,12 +826,12 @@ define(['app'], function (app) {
 						$("#comboEExtra1").val(data.ESettings.idExtra1);
 						$("#comboEExtra2").val(data.ESettings.idExtra2);
 						$("#comboEExtra3").val(data.ESettings.idExtra3);
-						$("#EExtra1Field").val(data.ESettings.Extra1Field);
-						$("#EExtra2Field").val(data.ESettings.Extra2Field);
-						$("#EExtra3Field").val(data.ESettings.Extra3Field);
-						$("#EExtra1Icon").val(data.ESettings.Extra1Icon);
-						$("#EExtra2Icon").val(data.ESettings.Extra2Icon);
-						$("#EExtra3Icon").val(data.ESettings.Extra3Icon);
+						$("#comboEExtra1Field").val(data.ESettings.Extra1Field);
+						$("#comboEExtra2Field").val(data.ESettings.Extra2Field);
+						$("#comboEExtra3Field").val(data.ESettings.Extra3Field);
+						$("#comboEExtra1Icon").val(data.ESettings.Extra1Icon);
+						$("#comboEExtra2Icon").val(data.ESettings.Extra2Icon);
+						$("#comboEExtra3Icon").val(data.ESettings.Extra3Icon);
 
 						$("#EConvertWaterM3ToLiter").prop('checked', data.ESettings.ConvertWaterM3ToLiter == 1);
 						$("#EDisplayTime").prop('checked', data.ESettings.DisplayTime == 1);
