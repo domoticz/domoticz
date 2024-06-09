@@ -1,3 +1,61 @@
+<!--
+History:
+ v1.11 2024-06-09
+	- Added CounterToday for custom widgets
+	- Renamed isP1Meter -> idP1
+	- Renamed idBattSetpoint -> idBattWatt
+	- Auto detecten of Water units (M3 vs Liter)
+	- GridToBatt animation fixed
+	- Implemented nativly into Domoticz
+
+ v1.10 2024-06-08
+	- It is now also possible to use a kWh sensor for idBattSetpoint
+	- Added prices for Water/Gas and custom widgets
+	- Decreased font size of custom widgets a little bit
+
+ v1.9 2024-06-07
+	- Fixed Solar to Home
+
+ v1.8 2024-06-07
+	- Option to choose 5 different icons for the 3 extra widgets
+	- Using a styles for icon/text colors
+	- Optimized SVG/Code
+
+ v1.7 2024-06-06
+	- Added 3 extra widgets
+
+ v1.6 2024-06-06
+	- Real-time updates (Requires Domoticz version 16032 or higher)
+	- Removed all blocking remote queries
+	- Fixed Battery to Home did not add value to home usage
+	- Added costs to grid widget (needs dynamic energy prices configured in Domoticz meter settings)
+	- Added option for displaying server time/sunrise/sunset
+
+ v1.5 2024-06-05
+	- Dynamic battery icon
+	- Keep annimation consistent if speed does not change
+
+ v1.4 2024-06-05
+	- Rebuild to AngularJS
+	- Now possible to use a Water meter without a Gas meter in small mode
+   
+ v1.3 2024-06-04
+	- Add extra return power to Solar (To fix update frequency) (GizMoCuz)
+	- Gas/Water items smaller
+
+ v1.2 2024-06-01
+	- Added Battery SVG objects and code (GizMoCuz)
+ 
+ v1.1 2024-05-31
+	- Changed deprecated api url and corrected it to "/json.htm?type=command&param=getdevices&rid="
+	- idGas en idSolar can be set to -1 when not used.
+
+ v1.0 2024-05-18
+	- First version. (MeneerKlaas)
+   
+========================================================   
+-->
+
 <style type="text/css">
 #emain {
 	background: #eee;
