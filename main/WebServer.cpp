@@ -611,6 +611,10 @@ namespace http
 			//Dynamic Price
 			RegisterCommandCode("getdynamicpricedevices", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetDynamicPriceDevices(session, req, root); });
 
+			//EnergyDashboard
+			RegisterCommandCode("getenergydashboarddevices", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetEnergyDashboardDevices(session, req, root); });
+			
+
 			//Whitelist
 			m_pWebEm->RegisterWhitelistURLString("/images/floorplans/plan");
 
@@ -2039,6 +2043,14 @@ namespace http
 							root["result"][ii]["LevelOffHidden"] = (levelOffHidden == "true");
 							root["result"][ii]["LevelNames"] = base64_encode(levelNames);
 							root["result"][ii]["LevelActions"] = base64_encode(levelActions);
+
+							std::vector<std::string> strarray;
+							StringSplit(levelNames, "|", strarray);
+							int isLevel = llevel / 10;
+							if (static_cast<int>(strarray.size()) >= isLevel)
+							{
+								lstatus = strarray[isLevel];
+							}
 						}
 						root["result"][ii]["Data"] = lstatus;
 					}

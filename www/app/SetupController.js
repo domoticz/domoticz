@@ -1,5 +1,6 @@
 define(['app'], function (app) {
 	app.controller('SetupController', ['$scope', '$rootScope', '$window', '$location', '$http', '$interval', 'md5', function ($scope, $rootScope, $window, $location, $http, $interval, md5) {
+		
 		googleMapsCallback = function () {
 			$("#dialog-findlatlong").dialog("open");
 		};
@@ -296,7 +297,128 @@ define(['app'], function (app) {
 				}
 			});
 			
+			//Populate Energy Dashboard Devices
+			$.ajax({
+				url: "json.htm?displaydisabled=0&displayhidden=0&filter=all&param=getdevices&type=command&used=true&order=Name",
+				async: false,
+				dataType: 'json',
+				success: function (data) {
+					if (typeof data.result != 'undefined') {
+						
+						let listP1 = [];
+						let listGas = [];
+						let listWater = [];
+						let listSolar = [];
+						let listBatteryWatt = [];
+						let listBatterySoc = [];
+						let listText = [];
+						let listExtra = [];
+						
+						let $comboEP1 = $("#comboEP1");
+						let $comboEGas = $("#comboEGas");
+						let $comboEWater = $("#comboEWater");
 
+						let $comboESolar = $("#comboESolar");
+
+						let $comboEBatteryWatt = $("#comboEBatteryWatt");
+						let $comboEBatterySoc = $("#comboEBatterySoc");
+
+						let $comboEText = $("#comboETextSensor");
+						let $comboEExtra1 = $("#comboEExtra1");
+						let $comboEExtra2 = $("#comboEExtra2");
+						let $comboEExtra3 = $("#comboEExtra3");
+						
+						$.each(data.result, function (i, item) {
+							let SwitchTypeVal = 0;
+							if (item.hasOwnProperty("SwitchTypeVal")) {
+								SwitchTypeVal = parseInt(item["SwitchTypeVal"]);
+							}
+
+							if ((item.Type == "P1 Smart Meter")&&(item.SubType == "Energy")) {
+								listP1.push({"idx": item.idx, "name": item.Name});
+							}
+							else if ((item.Type == "P1 Smart Meter")&&(item.SubType == "Gas")) {
+								listGas.push({"idx": item.idx, "name": item.Name});
+							}
+							else if (item.Type == "RFXMeter") {
+									if (SwitchTypeVal == 1) {
+										listGas.push({"idx": item.idx, "name": item.Name});
+									}
+									else if (SwitchTypeVal == 2) {
+										listWater.push({"idx": item.idx, "name": item.Name});
+									}
+									else {
+										listExtra.push({"idx": item.idx, "name": item.Name});
+									}
+							}
+							else if (item.Type == "Setpoint") {
+								listBatteryWatt.push({"idx": item.idx, "name": item.Name});
+								listExtra.push({"idx": item.idx, "name": item.Name});
+							}
+							else if (item.Type == "General") {
+								if (item.SubType == "Percentage") {
+									listBatterySoc.push({"idx": item.idx, "name": item.Name});
+									listExtra.push({"idx": item.idx, "name": item.Name});
+								}
+								else if (item.SubType == "Text") {
+									listText.push({"idx": item.idx, "name": item.Name});
+									listExtra.push({"idx": item.idx, "name": item.Name});
+								}
+								else if (item.SubType == "kWh") {
+									listSolar.push({"idx": item.idx, "name": item.Name});
+									listBatteryWatt.push({"idx": item.idx, "name": item.Name});
+									listExtra.push({"idx": item.idx, "name": item.Name});
+								} else {
+									listExtra.push({"idx": item.idx, "name": item.Name});
+								}
+							}
+							else if ((item.Type == "Usage")&&(item.SubType == "Electric")) {
+								listSolar.push({"idx": item.idx, "name": item.Name});
+								listBatteryWatt.push({"idx": item.idx, "name": item.Name});
+								listExtra.push({"idx": item.idx, "name": item.Name});
+							} else {
+								listExtra.push({"idx": item.idx, "name": item.Name});
+							}
+						});
+						listP1.sort((a,b) => (a.name.toLowerCase() > b.name.toLowerCase()) ? 1 : ((b.name.toLowerCase() > a.name.toLowerCase()) ? -1 : 0));
+						listGas.sort((a,b) => (a.name.toLowerCase() > b.name.toLowerCase()) ? 1 : ((b.name.toLowerCase() > a.name.toLowerCase()) ? -1 : 0));
+						listWater.sort((a,b) => (a.name.toLowerCase() > b.name.toLowerCase()) ? 1 : ((b.name.toLowerCase() > a.name.toLowerCase()) ? -1 : 0));
+						listSolar.sort((a,b) => (a.name.toLowerCase() > b.name.toLowerCase()) ? 1 : ((b.name.toLowerCase() > a.name.toLowerCase()) ? -1 : 0));
+						listBatteryWatt.sort((a,b) => (a.name.toLowerCase() > b.name.toLowerCase()) ? 1 : ((b.name.toLowerCase() > a.name.toLowerCase()) ? -1 : 0));
+						listBatterySoc.sort((a,b) => (a.name.toLowerCase() > b.name.toLowerCase()) ? 1 : ((b.name.toLowerCase() > a.name.toLowerCase()) ? -1 : 0));
+						listText.sort((a,b) => (a.name.toLowerCase() > b.name.toLowerCase()) ? 1 : ((b.name.toLowerCase() > a.name.toLowerCase()) ? -1 : 0));
+						listExtra.sort((a,b) => (a.name.toLowerCase() > b.name.toLowerCase()) ? 1 : ((b.name.toLowerCase() > a.name.toLowerCase()) ? -1 : 0));
+
+						$.each(listP1, function (i, item) {
+							$comboEP1.append($("<option />").val(item.idx).text(item.name));
+						});
+						$.each(listGas, function (i, item) {
+							$comboEGas.append($("<option />").val(item.idx).text(item.name));
+						});
+						$.each(listWater, function (i, item) {
+							$comboEWater.append($("<option />").val(item.idx).text(item.name));
+						});
+						$.each(listSolar, function (i, item) {
+							$comboESolar.append($("<option />").val(item.idx).text(item.name));
+						});
+						$.each(listBatteryWatt, function (i, item) {
+							$comboEBatteryWatt.append($("<option />").val(item.idx).text(item.name));
+						});
+						$.each(listBatterySoc, function (i, item) {
+							$comboEBatterySoc.append($("<option />").val(item.idx).text(item.name));
+						});
+						$.each(listText, function (i, item) {
+							$comboEText.append($("<option />").val(item.idx).text(item.name));
+						});
+						$.each(listExtra, function (i, item) {
+							$comboEExtra1.append($("<option />").val(item.idx).text(item.name));
+							$comboEExtra2.append($("<option />").val(item.idx).text(item.name));
+							$comboEExtra3.append($("<option />").val(item.idx).text(item.name));
+						});
+					}
+				}
+			});
+			
 			$.ajax({
 				url: "json.htm?type=command&param=getsettings",
 				async: false,
@@ -306,6 +428,7 @@ define(['app'], function (app) {
 						$("#locationtable #Latitude").val(data.Location.Latitude);
 						$("#locationtable #Longitude").val(data.Location.Longitude);
 					}
+					$("#locationtable #CurrencySymbol").val(data.Currency);
 					if (typeof data.ProwlEnabled != 'undefined') {
 						$("#prowltable #ProwlEnabled").prop('checked', data.ProwlEnabled == 1);
 					}
@@ -318,15 +441,15 @@ define(['app'], function (app) {
 					if (typeof data.PushbulletAPI != 'undefined') {
 						$("#pushbullettable #PushbulletAPI").val(data.PushbulletAPI);
 					}
-                                        if (typeof data.TelegramEnabled != 'undefined') {
-                                                $("#telegramtable #TelegramEnabled").prop('checked', data.TelegramEnabled == 1);
-                                        }
-                                        if (typeof data.TelegramAPI != 'undefined') {
-                                                $("#telegramtable #TelegramAPI").val(data.TelegramAPI);
-                                        }
-                                        if (typeof data.TelegramChat != 'undefined') {
-                                                $("#telegramtable #TelegramChat").val(data.TelegramChat);
-                                        }
+					if (typeof data.TelegramEnabled != 'undefined') {
+							$("#telegramtable #TelegramEnabled").prop('checked', data.TelegramEnabled == 1);
+					}
+					if (typeof data.TelegramAPI != 'undefined') {
+							$("#telegramtable #TelegramAPI").val(data.TelegramAPI);
+					}
+					if (typeof data.TelegramChat != 'undefined') {
+							$("#telegramtable #TelegramChat").val(data.TelegramChat);
+					}
 					if (typeof data.PushsaferEnabled != 'undefined') {
 						$("#pushsafertable #PushsaferEnabled").prop('checked', data.PushsaferEnabled == 1);
 					}
@@ -679,6 +802,28 @@ define(['app'], function (app) {
 					}
 					if (typeof data.HourIdxGasDevice != 'undefined') {
 						$("#dpricetable #comboDPGas").val(data.HourIdxGasDevice);
+					}
+
+					if (typeof data.ESettings != 'undefined') {
+						$("#comboEP1").val(data.ESettings.idP1);
+						$("#comboEGas").val(data.ESettings.idGas);
+						$("#comboEWater").val(data.ESettings.idWater);
+						$("#comboESolar").val(data.ESettings.idSolar);
+						$("#comboEBatteryWatt").val(data.ESettings.idBatteryWatt);
+						$("#comboEBatterySoc").val(data.ESettings.idBatterySoc);
+						$("#comboETextSensor").val(data.ESettings.idTextSensor);
+						$("#comboEExtra1").val(data.ESettings.idExtra1);
+						$("#comboEExtra2").val(data.ESettings.idExtra2);
+						$("#comboEExtra3").val(data.ESettings.idExtra3);
+						$("#EExtra1Field").val(data.ESettings.Extra1Field);
+						$("#EExtra2Field").val(data.ESettings.Extra2Field);
+						$("#EExtra3Field").val(data.ESettings.Extra3Field);
+						$("#EExtra1Icon").val(data.ESettings.Extra1Icon);
+						$("#EExtra2Icon").val(data.ESettings.Extra2Icon);
+						$("#EExtra3Icon").val(data.ESettings.Extra3Icon);
+
+						$("#EConvertWaterM3ToLiter").prop('checked', data.ESettings.ConvertWaterM3ToLiter == 1);
+						$("#EDisplayTime").prop('checked', data.ESettings.DisplayTime == 1);
 					}
 				}
 			});

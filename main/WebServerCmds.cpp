@@ -2572,6 +2572,9 @@ namespace http
 				}
 				cntSettings++;
 
+				std::string sCurrency = request::findValue(&req, "CurrencySymbol");
+				m_sql.UpdatePreferencesVar("Currency", sCurrency); cntSettings++;
+
 				bool AllowPlainBasicAuth = (request::findValue(&req, "AllowPlainBasicAuth") == "on" ? 1 : 0);
 				m_sql.UpdatePreferencesVar("AllowPlainBasicAuth", AllowPlainBasicAuth);
 
@@ -2732,6 +2735,49 @@ namespace http
 						rnvalue = 6000;
 					m_sql.m_max_kwh_usage = rnvalue;
 				}
+
+				//Energy Dashboard Settings
+				int EP1 = atoi(request::findValue(&req, "EP1").c_str());
+				int EGas = atoi(request::findValue(&req, "EGas").c_str());
+				int EWater = atoi(request::findValue(&req, "EWater").c_str());
+				int ESolar = atoi(request::findValue(&req, "ESolar").c_str());
+				int EBatteryWatt = atoi(request::findValue(&req, "EBatteryWatt").c_str());
+				int EBatterySoc = atoi(request::findValue(&req, "EBatterySoc").c_str());
+				int ETextSensor = atoi(request::findValue(&req, "ETextSensor").c_str());
+				int EExtra1 = atoi(request::findValue(&req, "EExtra1").c_str());
+				int EExtra2 = atoi(request::findValue(&req, "EExtra2").c_str());
+				int EExtra3 = atoi(request::findValue(&req, "EExtra3").c_str());
+				std::string EExtra1Field = request::findValue(&req, "EExtra1Field");
+				std::string EExtra2Field = request::findValue(&req, "EExtra2Field");
+				std::string EExtra3Field = request::findValue(&req, "EExtra3Field");
+				std::string EExtra1Icon = request::findValue(&req, "EExtra1Icon");
+				std::string EExtra2Icon = request::findValue(&req, "EExtra2Icon");
+				std::string EExtra3Icon = request::findValue(&req, "EExtra3Icon");
+				bool bConvertWaterM3ToLiter = (request::findValue(&req, "EConvertWaterM3ToLiter") == "on" ? 1 : 0);
+				bool bDisplayTime = (request::findValue(&req, "EDisplayTime") == "on" ? 1 : 0);
+
+				Json::Value ESettings;
+				ESettings["idP1"] = EP1;
+				ESettings["idGas"] = EGas;
+				ESettings["idWater"] = EWater;
+				ESettings["idSolar"] = ESolar;
+				ESettings["idBatteryWatt"] = EBatteryWatt;
+				ESettings["idBatterySoc"] = EBatterySoc;
+				ESettings["idTextSensor"] = ETextSensor;
+				ESettings["idExtra1"] = EExtra1;
+				ESettings["idExtra2"] = EExtra2;
+				ESettings["idExtra3"] = EExtra3;
+				ESettings["Extra1Field"] = EExtra1Field;
+				ESettings["Extra2Field"] = EExtra2Field;
+				ESettings["Extra3Field"] = EExtra3Field;
+				ESettings["Extra1Icon"] = EExtra1Icon;
+				ESettings["Extra2Icon"] = EExtra2Icon;
+				ESettings["Extra3Icon"] = EExtra3Icon;
+				ESettings["ConvertWaterM3ToLiter"] = bConvertWaterM3ToLiter;
+				ESettings["DisplayTime"] = bDisplayTime;
+
+				std::string szESettings = JSonToRawString(ESettings);
+				m_sql.UpdatePreferencesVar("ESettings", szESettings);
 
 				/* To wrap up everything */
 				m_notifications.ConfigFromGetvars(req, true);
@@ -4927,6 +4973,19 @@ namespace http
 				{
 					root["HourIdxGasDevice"] = nValue;
 				}
+				else if (Key == "Currency")
+				{
+					root["Currency"] = sValue;
+				}
+				else if (Key == "ESettings")
+				{
+					Json::Value jesettings;
+					bool ret = ParseJSon(sValue, jesettings);
+					if (ret)
+					{
+						root["ESettings"] = jesettings;
+					}
+				}
 			}
 		}
 
@@ -5163,6 +5222,22 @@ namespace http
 				}
 			}
 		}
+		void CWebServer::Cmd_GetEnergyDashboardDevices(WebEmSession& session, const request& req, Json::Value& root)
+		{
+			root["title"] = "GetEnergyDashboardDevices";
 
+			std::string szESettings;
+			if (m_sql.GetPreferencesVar("ESettings", szESettings))
+			{
+				Json::Value jesettings;
+				bool ret = ParseJSon(szESettings, jesettings);
+				if (ret)
+				{
+					root["status"] = "OK";
+					root["result"]["ESettings"] = jesettings;
+				}
+			}
+		}
+		
 	} // namespace server
 } // namespace http

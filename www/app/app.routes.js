@@ -246,6 +246,10 @@ define(['angularAMD', 'angular', 'angular-route'], function (angularAMD) {
                 templateUrl: 'views/about.html',
                 controller: 'AboutController'
             }))
+            .when('/Energy', angularAMD.route({
+                templateUrl: 'views/energy_dashboard.html',
+                controller: 'EnergyDashboardController'
+            }))
             .when('/Custom/:custompage', angularAMD.route({
                     templateUrl: function (params) {
                         return 'templates/' + params.custompage + '.html';

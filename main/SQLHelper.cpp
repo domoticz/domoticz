@@ -3656,6 +3656,11 @@ bool CSQLHelper::OpenDatabase()
 	{
 		UpdatePreferencesVar("HourIdxGasDevice", 0);
 	}
+	if ((!GetPreferencesVar("Currency", sValue)) || (sValue.empty()))
+	{
+		std::string sstring = "â‚¬"; //€
+		UpdatePreferencesVar("Currency", sstring);
+	}
 
 	//Update version in database
 	UpdatePreferencesVar("Domoticz_Version", szAppVersion);

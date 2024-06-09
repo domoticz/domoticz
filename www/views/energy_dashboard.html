@@ -1,0 +1,220 @@
+<style type="text/css">
+#emain {
+	background: #eee;
+	border-color: #888;
+	border-radius: 1vw;
+	border-style: solid;
+	border-width: 3px;
+	text-align: center;
+	width: 90vw; 
+	height: calc(100vh - 140px);
+	margin: 0 auto auto auto;
+}
+
+#eicon {
+	fill: black;
+}
+
+#etext, #ltext {
+	fill: #222;
+}
+</style>
+<div id="dashcontent" class="force-select">
+	<div id="emain">
+		<svg width="100%" height="100%" version="1.1" ng-attr-view_box="{{viewBox}}" xmlns="http://www.w3.org/2000/svg">
+			<style>
+				#SolarToGrid-flow, #SolarToHome-flow, #BattNet-flow, #BattHome-flow, #GridToHome-flow, #SolarToBatt-flow {
+					stroke-dasharray: 1; 
+					stroke-dashoffset: 10;
+				}
+				#ltext {
+					clip-path: url(#pfad);
+				}
+				@keyframes flow {
+					100% {
+						stroke-dashoffset: 0;
+					}
+				}
+			</style>
+			<g id="groupText" ng-show="idTextObj!=-1">
+				<defs>
+					<clipPath id="pfad">
+						<rect x="0" y="3" width="20" height="13.8" ry="2" stroke-linecap="round" stroke-width=".2"/>
+					</clipPath>
+				</defs>
+				<rect id="rectText" x="0" y="5" width="20" height="14" ry="0" fill="none" stroke="#ccc" stroke-linecap="round" stroke-width=".0"/>
+				<text id="ltext" x="1" y="5.2" font-size="1.0px" text-anchor="left" dy="0" style="font-weight: normal; white-space: pre;"></text>
+			</g>
+			<text id="etext" x="46" y="6" opacity="0.35" font-size="2.0px" text-anchor="center" dy="0" style="font-weight: normal; white-space: pre;" ng-show="ServerTime">{{ ServerTime }}</text>
+			<text id="etext" x="46" y="7.5" opacity="0.5" font-size="1.0px" text-anchor="center" dy="0" style="font-weight: normal; white-space: pre;" ng-show="SunRise">↑{{ SunRise }} ↓{{ SunSet }}</text>
+			<g id="groupBatt" ng-show="idBattWatt != -1">
+				<g id="eicon">
+					<g transform="matrix(0.010083, 0, 0, 0.008335, 27.65, 45.2)">
+						<path d="m 319.089 27.221 h -36.475 v -27.221 h -95.27 v 27.221 h -34.607 c -22.517 0 -40.829 18.317 -40.829 40.832 v 362.946 c 0 22.51 18.317 40.83 40.829 40.83 h 166.352 c 22.524 0 40.832 -18.32 40.832 -40.83 v -362.947 c 0 -22.514 -18.308 -40.831 -40.832 -40.831 z m 13.616 403.781 c 0 7.501 -6.108 13.607 -13.616 13.607 h -166.352 c -7.501 0 -13.608 -6.095 -13.608 -13.607 v -362.95 c 0 -7.501 6.107 -13.611 13.608 -13.611 h 166.352 c 7.508 0 13.616 6.109 13.616 13.611 v 362.95 z"/>
+					</g>
+					<g id="batt_5" transform="matrix(0.010083, 0, 0, 0.008335, 31, 46.3)" ng-show="fBattSoc>=85">
+						<path d="m -14.843 -2.502 h -163.896 v -59.719 h 163.896 v 59.719 z"/>
+					</g>
+					<g id="batt_4" transform="matrix(0.010083, 0, 0, 0.008335, 31, 46.92)" ng-show="fBattSoc>=65">
+						<path d="m -14.843 -2.502 h -163.896 v -59.719 h 163.896 v 59.719 z"/>
+					</g>
+					<g id="batt_4" transform="matrix(0.010083, 0, 0, 0.008335, 31, 47.55)" ng-show="fBattSoc>=45">
+						<path d="m -14.843 -2.502 h -163.896 v -59.719 h 163.896 v 59.719 z"/>
+					</g>
+					<g id="batt_2" transform="matrix(0.010083, 0, 0, 0.008335, 31, 48.18)" ng-show="fBattSoc>=25">
+						<path d="m -14.843 -2.502 h -163.896 v -59.719 h 163.896 v 59.719 z"/>
+					</g>
+					<g id="batt_1" transform="matrix(0.010083, 0, 0, 0.008335, 31, 48.8)" ng-show="fBattSoc>5">
+						<path d="m -14.843 -2.502 h -163.896 v -59.719 h 163.896 v 59.719 z"/>
+					</g>
+				</g>
+				<line id="SolarToBatt" x1="30" y1="17" x2="30" y2="43" style="stroke:#ffd050;stroke-width:0.6"/>
+				<g ng-show="fSolarToBatt>0">
+					<line id="SolarToBatt-flow" x1="30.005" y1="17" x2="30" y2="43" style="stroke:red;stroke-width:0.2"/>
+					<g transform="translate(30.5, 29.2)">
+						<text id="etext" opacity="0.6" font-size="1.1px" text-anchor="end" transform="rotate(90)" style="font-variant-caps: normal; font-variant-east-asian: normal; font-variant-ligatures: normal; font-variant-numeric: normal; white-space: pre;">{{ fSolarToBatt }} Watt</text>
+					</g>
+				</g>
+				<path id="BattNet" fill="none" d="m29 43c0 -9 -2 -11 -12 -12" stroke="#a0f0a0" stroke-width=".6"/>
+				<g ng-show="fBattToNet!=0">
+					<path id="BattNet-flow" fill="none" d="m29 43c0 -9 -2 -11 -12 -12" stroke="#f00" stroke-linecap="round" stroke-width=".2"/>
+					<text id="etext" x="26" y="35" opacity="0.6" font-size="1.1px" text-align="end" text-anchor="end" style="font-variant-caps: normal; font-variant-east-asian: normal; font-variant-ligatures: normal; font-variant-numeric: normal; white-space: pre;">{{ fBattToNet }} Watt</text>
+				</g>
+				<path id="BattHome" fill="none" d="m31 43c0 -9 2 -11 12 -12" stroke="#a0f0a0" stroke-width=".6"/>
+				<g ng-show="fBattToHome>0">
+					<text id="etext" x="34" y="35" opacity="0.6" font-size="1.1px" style="font-variant-caps: normal; font-variant-east-asian: normal; font-variant-ligatures: normal; font-variant-numeric: normal; white-space: pre;">{{ fBattToHome }} Watt</text>
+					<path id="BattHome-flow" fill="none" d="m31 43c0 -9 2 -11 12 -12" stroke="#f00" stroke-linecap="round" stroke-width=".2"/>
+				</g>
+				
+				<text id="etext" x="30" y="51.7" font-size="2.1px" text-anchor="middle" style="font-variant-caps: normal; font-variant-east-asian: normal; font-variant-ligatures: normal; font-variant-numeric: normal; font-weight: bold; white-space: pre;">{{ fBattSoc }}%</text>
+				<text id="etext" x="30" y="54" font-size="1.6px" text-anchor="middle" style="font-variant-caps: normal; font-variant-east-asian: normal; font-variant-ligatures: normal; font-variant-numeric: normal; font-weight: bold; white-space: pre;">{{ fActualBattWatt }} Watt</text>
+				<rect id="rectBatt" x="23" y="43" width="14" height="14" ry="7" fill="none" stroke="#90e090" stroke-linecap="round" stroke-width=".3"/>
+			</g>
+			<g id="groupSolar">
+				<g id="eicon" transform="matrix(0.0095, 0, 0, 0.0095, 27, 4.5)">
+					<path d="M77.604,241.753l10.047-41.623c-21.697-9.842-38.879-39.91-38.879-65.383c0-40.4,32.761-73.162,73.162-73.162
+						c31.978,0,59.097,20.563,69.049,49.153h28.136c4.574-7.435,17.672-17.408,15.484-22.67c-2.766-6.681-27.566-1.566-31.546-7.515
+						c-4.003-5.979,10.172-26.951,5.1-32.022c-5.078-5.078-26.05,9.104-32.029,5.093c-5.941-3.973-0.834-28.788-7.508-31.553
+						c-6.572-2.722-20.497,18.396-27.639,16.984c-6.922-1.368-11.723-26.241-19.048-26.241c-7.325,0-12.126,24.873-19.048,26.241
+						c-7.134,1.412-21.06-19.706-27.631-16.977c-6.681,2.766-1.566,27.566-7.515,31.546c-5.979,4.003-26.951-10.171-32.022-5.1
+						c-5.078,5.078,9.104,26.05,5.101,32.029c-3.98,5.942-28.788,0.834-31.561,7.508c-2.722,6.572,18.397,20.504,16.984,27.639
+						C24.873,122.622,0,127.423,0,134.747c0,7.325,24.873,12.126,26.242,19.048c1.412,7.134-19.707,21.06-16.977,27.631
+						c2.766,6.681,27.565,1.566,31.546,7.515c4.003,5.979-10.171,26.951-5.1,32.022c5.078,5.078,26.05-9.104,32.029-5.101
+						C71.464,218.358,76.938,233.447,77.604,241.753z"/>
+					<path d="M66.144,349.022H512l-52.453-217.304h-340.95L66.144,349.022z M473.934,319.049H367.579L361.3,251.61h96.351
+						L473.934,319.049z M435.948,161.691l16.282,67.439h-93.022l-6.271-67.439H435.948z M247.644,161.691h82.718l6.278,67.439h-95.275
+						L247.644,161.691z M239.272,251.61h99.46l6.271,67.439H233.001L239.272,251.61z M142.204,161.691h82.865l-6.271,67.439h-92.876
+						L142.204,161.691z M216.705,251.61l-6.279,67.439H104.218L120.5,251.61H216.705z"/>
+					<polygon points="83.634,394.479 494.511,394.479 512,359.508 66.144,359.508 	"/>
+					<polygon points="311.702,408.668 266.449,408.668 264.02,448.271 218.358,470.897 218.358,499.187 359.794,499.187 
+						359.794,470.897 314.131,448.271 	"/>
+				</g>
+				<text x="10" y="31" fill="#ba88ff" font-size="1.6px" text-anchor="middle" style="font-variant-caps: normal; font-variant-east-asian: normal; font-variant-ligatures: normal; font-variant-numeric: normal; white-space: pre;">⇦ {{ fDayNetDeliv | number:3 }} kWh</text>
+				<path id="SolarToGrid" fill="none" d="m29 17c0 9-2 11-12 12" stroke="#ffd050" stroke-width=".6"/>
+				<g ng-show="fSolarToGrid>0">
+					<path id="SolarToGrid-flow" fill="none" d="m29 17c0 9-2 11-12 12" stroke="#f00" stroke-linecap="round" stroke-width=".2"/>
+					<text id="etext" x="26" y="25.5" opacity="0.6" font-size="1.1px" text-align="end" text-anchor="end" style="font-variant-caps: normal; font-variant-east-asian: normal; font-variant-ligatures: normal; font-variant-numeric: normal; white-space: pre;">{{ fSolarToGrid }} Watt</text>
+				</g>
+
+				<path id="SolarToHome" fill="none" d="m31 17c0 9 2 11 12 12" stroke="#ffd050" stroke-width=".6"/>
+				<g ng-show="fSolarToHome>0">
+					<text id="etext" x="34" y="25.5" opacity="0.6" font-size="1.1px" style="font-variant-caps: normal; font-variant-east-asian: normal; font-variant-ligatures: normal; font-variant-numeric: normal; white-space: pre;">{{ fSolarToHome }} Watt</text>
+					<path id="SolarToHome-flow" fill="none" d="m31 17c0 9 2 11 12 12" stroke="#f00" stroke-linecap="round" stroke-width=".2"/>
+					<ellipse2
+						id="path2555"
+						style="fill:#d050ff;fill-opacity:1"
+						cx="0"
+						cy="0"
+						rx="0.4"
+						ry="0.4">
+						<animateMotion
+							id="myanim"
+							dur="2s"
+							path="m31 17c0 9 2 11 12 12"
+							repeatCount="indefinite" />
+					</ellipse>
+				</g>
+				<g>
+					<text id="etext" x="30" y="11.5" font-size="1.6px" text-anchor="middle" style="font-variant-caps: normal; font-variant-east-asian: normal; font-variant-ligatures: normal; font-variant-numeric: normal; white-space: pre;">{{ fDaySolar | number:3 }} kWh</text>
+					<text id="etext" x="30" y="14" font-size="1.6px" text-anchor="middle" style="font-variant-caps: normal; font-variant-east-asian: normal; font-variant-ligatures: normal; font-variant-numeric: normal; font-weight: bold; white-space: pre;">{{ fActualSolar }} Watt</text>
+				</g>
+				<rect id="rectSolar" x="23" y="3" width="14" height="14" ry="7" fill="none" stroke="#ffd000" stroke-linecap="round" stroke-width=".3"/>
+			</g>
+			<line id="lineRT1" x1="50" y1="19" x2="50" y2="23" style="stroke:#777;stroke-width:0.2" ng-show="bDisplayRT1"/>
+			<line id="lineRB1" x1="50" y1="37" x2="50" y2="41" style="stroke:#777;stroke-width:0.2" ng-show="bDisplayRB1"/>
+			<g id="groupGas" ng-show="idGas != -1">
+				<g transform="matrix(0.12, 0, 0, 0.12, 48, 10.5)">
+					<path id="eicon" d="M27.588 19.604q1.297 6.002-4.072 10.285-1.659 1.297-3.951 2.021-0.362 0.090-0.392 0.090 1.96-0.754 3.499-2.564 1.598-1.87 1.764-4.177t-1.041-4.358q-1.297-2.232-3.876-6.168t-3.484-5.384l-0.030 0.030q0-0.030-0.030-0.030-0.905 1.448-3.484 5.384t-3.876 6.168q-1.206 2.051-1.041 4.358t1.764 4.177q1.538 1.81 3.499 2.564-0.030 0-0.392-0.090-2.262-0.694-3.951-2.021-5.399-4.313-4.072-10.285 0.603-2.624 2.745-5.911 0.754-1.206 3.318-5.052t3.861-5.987q0.271-0.483 1.659-2.654 1.387 2.172 1.659 2.654 1.327 2.232 4.087 6.379t3.091 4.66q2.172 3.408 2.745 5.911zM19.596 28.2q-1.478 1.87-3.589 1.9-2.081-0.030-3.619-1.9-1.749-2.202-0.392-4.795 0.905-1.659 4.011-6.877 3.016 5.097 3.981 6.877 1.387 2.594-0.392 4.795z"></path>
+				</g>
+				<text id="etext" x="50" y="16.4" font-size="1.6px" text-anchor="middle" style="font-variant-caps: normal; font-variant-east-asian: normal; font-variant-ligatures: normal; font-variant-numeric: normal; white-space: pre; font-weight: bold;">{{ txtDayGasUsage }}</text>
+				<rect id="rectGas" x="45" y="9" width="10" height="10" ry="5" fill="none" stroke="#e06040" stroke-linecap="round" stroke-width=".3"/>
+				<text id="etext" x="50" y="17.9" opacity="0.4" font-size="1.2px" text-anchor="middle" style="white-space: pre;" ng-show="gasPrice!=1000">{{ gasPrice | number:2 }} {{ lblCurrency }}</text>
+			</g>
+			<g id="groupWater" ng-attr-transform="{{ water_transform }}" ng-show="idWater!=-1">
+				<g id="eicon" transform="matrix(0.25, 0, 0, 0.25, 48.55, 42.5)">
+					<path d="M11.08,6.06,6.58.19a.52.52,0,0,0-.8,0L1.28,6.06a6.18,6.18,0,1,0,10.44,6.49A6.13,6.13,0,0,0,11.08,6.06Zm-.26,6A5.07,5.07,0,0,1,6.18,15,5.08,5.08,0,0,1,1.54,12.1a5.08,5.08,0,0,1,.53-5.43L6.18,1.31l4.11,5.36A5.08,5.08,0,0,1,10.82,12.1ZM10.18,10a4,4,0,0,1-4,4,.5.5,0,0,1,0-1,3,3,0,0,0,3-3,.5.5,0,0,1,1,0Z"/>
+				</g>
+				<text id="etext" x="50" y="48.4" font-size="1.6px" text-anchor="middle" style="font-variant-caps: normal; font-variant-east-asian: normal; font-variant-ligatures: normal; font-variant-numeric: normal; white-space: pre; font-weight: bold;">{{ txtDayWaterUsage }}</text>
+				<rect id="rectWater" x="45" y="41" width="10" height="10" ry="5" fill="none" stroke="#80c0f0" stroke-linecap="round" stroke-width=".3"/>
+				<text id="etext" x="50" y="49.9" opacity="0.4" font-size="1.2px" text-anchor="middle" style="white-space: pre;" ng-show="waterPrice!=1000">{{ waterPrice | number:2 }} {{ lblCurrency }}</text>
+			</g>
+			<g id="groupH1" transform="matrix(1, 0, 0, 1, 54.5, 15)" ng-show="idItemH1 != -1">
+				<g id="eicon" transform="matrix(1, 0, 0, 1, 0, 0)">
+					<path ng-attr-d="{{ iconItemH1 }}"/>
+				</g>
+				<line x1="0" y1="9.7" x2="1.5" y2="8.4" style="stroke:#777;stroke-width:0.2"/>
+				
+				<text id="etext" x="5" y="5.2" opacity="0.6" font-size="1.0px" text-anchor="middle" style="font-variant-caps: normal; font-variant-east-asian: normal; font-variant-ligatures: normal; font-variant-numeric: normal; white-space: pre; font-weight: bold;" ng-show="txtKwhItemH1">{{ txtKwhItemH1 }}</text>
+				<text id="etext" x="5" y="6.7" font-size="1.5px" text-anchor="middle" style="font-variant-caps: normal; font-variant-east-asian: normal; font-variant-ligatures: normal; font-variant-numeric: normal; white-space: pre; font-weight: bold;">{{ txtItemH1 }}</text>
+				<text id="etext" x="5" y="8.7" opacity="0.4" font-size="1.2px" text-anchor="middle" style="white-space: pre;" ng-show="h1Price!=1000">{{ h1Price | number:2 }} {{ lblCurrency }}</text>
+				<rect x="0" y="0" width="10" height="10" ry="5" fill="none" stroke="#668044" stroke-linecap="round" stroke-width=".3"/>
+			</g>
+			<g id="groupH2" transform="matrix(1, 0, 0, 1, 59, 25)" ng-show="idItemH2 != -1">
+				<g id="eicon" transform="matrix(1, 0, 0, 1, 0, 0)">
+					<path ng-attr-d="{{ iconItemH2 }}"></path>
+				</g>
+				<line x1="-2" y1="5" x2="0" y2="5" style="stroke:#777;stroke-width:0.2"/>
+				<text id="etext" x="5" y="5.2" opacity="0.6" font-size="1.0px" text-anchor="middle" style="font-variant-caps: normal; font-variant-east-asian: normal; font-variant-ligatures: normal; font-variant-numeric: normal; white-space: pre; font-weight: bold;" ng-show="txtKwhItemH2">{{ txtKwhItemH2 }}</text>
+				<text id="etext" x="5" y="6.7" font-size="1.5px" text-anchor="middle" style="font-variant-caps: normal; font-variant-east-asian: normal; font-variant-ligatures: normal; font-variant-numeric: normal; white-space: pre; font-weight: bold;">{{ txtItemH2 }}</text>
+				<text id="etext" x="5" y="8.7" opacity="0.4" font-size="1.2px" text-anchor="middle" style="white-space: pre;" ng-show="h2Price!=1000">{{ h2Price | number:2 }} {{ lblCurrency }}</text>
+				<rect x="0" y="0" width="10" height="10" ry="5" fill="none" stroke="#668044" stroke-linecap="round" stroke-width=".3"/>
+			</g>
+			<g id="groupH3" transform="matrix(1, 0, 0, 1, 54.5, 35)" ng-show="idItemH3 != -1">
+				<g id="eicon" transform="matrix(1, 0, 0, 1, 0, 0)">
+					<path ng-attr-d="{{ iconItemH3 }}"></path>
+				</g>
+				<line x1="0" y1="0.2" x2="1.3" y2="1.4" style="stroke:#777;stroke-width:0.2"/>
+				<text id="etext" x="5" y="5.2" opacity="0.6" font-size="1.0px" text-anchor="middle" style="font-variant-caps: normal; font-variant-east-asian: normal; font-variant-ligatures: normal; font-variant-numeric: normal; white-space: pre; font-weight: bold;" ng-show="txtKwhItemH3">{{ txtKwhItemH3 }}</text>
+				<text id="etext" x="5" y="6.7" font-size="1.5px" text-anchor="middle" style="font-variant-caps: normal; font-variant-east-asian: normal; font-variant-ligatures: normal; font-variant-numeric: normal; white-space: pre; font-weight: bold;">{{ txtItemH3 }}</text>
+				<text id="etext" x="5" y="8.7" opacity="0.4" font-size="1.2px" text-anchor="middle" style="white-space: pre;" ng-show="h3Price!=1000">{{ h3Price | number:2 }} {{ lblCurrency }}</text>
+				<rect x="0" y="0" width="10" height="10" ry="5" fill="none" stroke="#668044" stroke-linecap="round" stroke-width=".3"/>
+			</g>
+			<g id="groupHome">
+				<g id="eicon" transform="matrix(0.07, 0, 0, 0.07, 48, 24.5)">
+					<path id="pathIconHome" d="M 12.6251 52.6445 L 43.3986 52.6445 C 46.7267 52.6445 48.6722 50.7695 48.6722 47.4648 L 48.6722 26.0664 L 51.6952 28.8320 C 52.1877 29.3008 52.7267 29.6289 53.3829 29.6289 C 54.4845 29.6289 55.3749 28.9492 55.3749 27.8242 C 55.3749 27.1211 55.1171 26.6758 54.6722 26.2774 L 46.5391 18.8476 L 46.5391 5.0430 C 46.5391 4.0117 45.8829 3.3555 44.8519 3.3555 L 41.7813 3.3555 C 40.7735 3.3555 40.0704 4.0117 40.0704 5.0430 L 40.0704 12.9648 L 30.8126 4.5274 C 29.9923 3.7774 29.0079 3.3555 28.0001 3.3555 C 26.9923 3.3555 26.0079 3.7774 25.1876 4.5274 L 1.3282 26.2774 C .9064 26.6758 .6251 27.1211 .6251 27.8242 C .6251 28.9492 1.5157 29.6289 2.6173 29.6289 C 3.2970 29.6289 3.8360 29.3008 4.3048 28.8320 L 7.3282 26.0898 L 7.3282 47.4648 C 7.3282 50.7695 9.2735 52.6445 12.6251 52.6445 Z M 34.7501 33.3086 C 34.7501 32.2305 34.0470 31.5508 32.9689 31.5508 L 23.0313 31.5508 C 21.9532 31.5508 21.2267 32.2305 21.2267 33.3086 L 21.2267 48.8711 L 13.4220 48.8711 C 11.9220 48.8711 11.1017 48.0508 11.1017 46.5273 L 11.1017 22.6445 L 27.1798 7.9961 C 27.4142 7.7617 27.6954 7.6211 28.0001 7.6211 C 28.3048 7.6211 28.5860 7.7383 28.8439 7.9961 L 44.8984 22.6445 L 44.8984 46.5273 C 44.8984 48.0508 44.0781 48.8711 42.6017 48.8711 L 34.7501 48.8711 Z"/>
+				</g>
+				<line id="GridToHome" x1="17" y1="30" x2="43" y2="30" style="stroke:#10d6ea;stroke-width:0.6"/>
+				<g ng-show="fGridToHome>0">
+					<line id="GridToHome-flow" x1="17" y1="30" x2="43" y2="30" style="stroke:red;stroke-width:0.2"/>
+					<text id="etext" x="30.5" y="31.5" opacity="0.6" font-size="1.1px" text-anchor="start" style="font-variant-caps: normal; font-variant-east-asian: normal; font-variant-ligatures: normal; font-variant-numeric: normal; white-space: pre;">{{ fGridToHome }} Watt</text>
+				</g>
+				<text id="etext" x="50" y="30.5" font-size="1.6px" text-anchor="middle" style="font-variant-caps: normal; font-variant-east-asian: normal; font-variant-ligatures: normal; font-variant-numeric: normal; white-space: pre;">{{ fTotalHomeUsage | number:3 }} kWh</text>
+				<text id="etext" x="50" y="33" font-size="1.6px" text-anchor="middle" style="font-variant-caps: normal; font-variant-east-asian: normal; font-variant-ligatures: normal; font-variant-numeric: normal; font-weight: bold; white-space: pre;">{{ finalHomeUsage }} Watt</text>
+				<rect id="rectHome" x="43" y="23" width="14" height="14" ry="7" fill="none" stroke="#ff7bff" stroke-linecap="round" stroke-width=".3"/>
+			</g>
+			<g id="groupNet">
+				<g id="eicon" transform="matrix(0.006, 0, 0, 0.007, 8.6, 24)">
+					<path d="M456.855,72.488L290.673,0h-124.49L0,72.488v62.348h149.276l-85.707,292.02H0.928v30h455v-30h-62.641l-85.707-292.02
+						h149.276V72.488z M184.312,30h88.232v74.836h-88.232V30z M180.542,134.836h95.772l14.531,49.508l-62.417,67.988l-62.417-67.988
+						L180.542,134.836z M30,104.836V92.133l124.312-54.225v66.928H30z M156.145,217.958l51.92,56.554L107.347,384.221L156.145,217.958z
+						M108.933,426.855l119.495-130.162l119.495,130.162H108.933z M349.508,384.221L248.791,274.513l51.919-56.554L349.508,384.221z
+						M426.855,104.836H302.544V37.908l124.312,54.225V104.836z"/>
+				</g>
+				<text id="etext" x="10" y="29" font-size="1.6px" text-anchor="middle" style="font-variant-caps: normal; font-variant-east-asian: normal; font-variant-ligatures: normal; font-variant-numeric: normal; white-space: pre;">⇨ {{ fDayNetUsage | number:3 }} kWh</text>
+				<text id="etext" x="10" y="33.6" font-size="1.6px" text-anchor="middle" style="font-variant-caps: normal; font-variant-east-asian: normal; font-variant-ligatures: normal; font-variant-numeric: normal; font-weight: bold; white-space: pre;">{{ fActualNet }} Watt</text>
+				<text id="etext" x="10" y="35.8" opacity="0.4" font-size="1.2px" text-anchor="middle" style="white-space: pre;" ng-show="p1Price!=1000">{{ p1Price | number:2 }} {{ lblCurrency }}</text>
+				<rect id="rectNet" x="3" y="23" width="14" height="14" ry="7" fill="none" stroke="#00c6da" stroke-linecap="round" stroke-width=".3"/>
+			</g>
+		</svg>
+	</div>
+</div>

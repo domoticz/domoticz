@@ -1,7 +1,9 @@
 Version 2024.xxxxx (xxxxx 2024)
+- Implemented: Currency Symbol in Location Settings
 - Implemented: dzVents, Added historical data helper 'med' to calculate the median value
 - Implemented: Enever, Added Budget Energy and Eneco
 - Implemented: Enphase, Option for more Inverter details (ac/dc voltage, temperature, lastupdate)
+- Implemented: Energy Dashboard
 - Implemented: Event Editor, storing/loading opened events
 - Implemented: Hour chart for P1 log
 - Implemented: OpenWeatherMap, API 3.0 support
@@ -11,11 +13,12 @@ Version 2024.xxxxx (xxxxx 2024)
 - Fixed: Hardware Setup, hiding extra parameters when selecting a python plugin
 - Fixed: PythonEx framework, two notifications where send for switch type devices
 - Fixed: Python framework, custom image loading
+- Removed: Cereal Proxy (not needed anymore)
 - Changed: Custom Templates are not cached in browser
 - Changed: EvoHome, now making use of general logging system
 - Changed: MQTT-AD, now also handles brightness scale number values as string
 - Changed: SBFSpot, disabled error 28 error
-- Removed: Cereal Proxy (not needed anymore)
+- Changed: Selector switch now displays correct state in Data field (and devices overview)
 
 Version 2024.4 (January 30th 2024)
 - Fixed: cWebm, fixing high CPU load caused by time jumps

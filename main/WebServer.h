@@ -306,6 +306,7 @@ private:
 	void Cmd_DeleteApplication(WebEmSession & session, const request& req, Json::Value &root);
 
 	void Cmd_GetDynamicPriceDevices(WebEmSession& session, const request& req, Json::Value& root);
+	void Cmd_GetEnergyDashboardDevices(WebEmSession& session, const request& req, Json::Value& root);
 
 	// Plugin functions
 	void Cmd_PluginCommand(WebEmSession & session, const request& req, Json::Value &root);
