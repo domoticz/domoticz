@@ -409,12 +409,12 @@ define(['app'], function (app) {
 
 		$scope.UpdateScreen = function () {
 			//for debugging purposes
-			$scope.fActualNet = 2545;
-			$scope.fActualSolar = 1146;
-			$scope.fActualBattWatt = 2994;
-			$scope.fBattSoc = 62.4;
-			$scope.txtDayGasUsage = '0.417 m3';
-			$scope.txtDayWaterUsage = '294 L';
+			//$scope.fActualNet = 2545;
+			//$scope.fActualSolar = 1146;
+			//$scope.fActualBattWatt = 2994;
+			//$scope.fBattSoc = 62.4;
+			//$scope.txtDayGasUsage = '0.417 m3';
+			//$scope.txtDayWaterUsage = '294 L';
 			
 			// Total Home usage: Calculated
 			$scope.fTotalHomeUsage = $scope.fDayNetUsage + $scope.fDaySolar - $scope.fDayNetDeliv;
