@@ -14149,12 +14149,5 @@ void MainWorker::HandleHourPrice()
 
 	int nWaterPrice = 0;
 	m_sql.GetPreferencesVar("CostWater", nWaterPrice);
-	float WaterDivider = 100.0F;
-	int tValue = 100;
-	if (m_sql.GetPreferencesVar("MeterDividerWater", tValue))
-	{
-		WaterDivider = float(tValue);
-	}
-
-	m_hourPriceWater.price = static_cast<float>(nWaterPrice) / WaterDivider;
+	m_hourPriceWater.price = static_cast<float>(nWaterPrice) / 10000.0F;
 }
