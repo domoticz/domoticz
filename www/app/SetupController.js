@@ -835,6 +835,9 @@ define(['app'], function (app) {
 
 						$("#EConvertWaterM3ToLiter").prop('checked', data.ESettings.ConvertWaterM3ToLiter == 1);
 						$("#EDisplayTime").prop('checked', data.ESettings.DisplayTime == 1);
+						if (typeof data.ESettings.DisplayFlowWithLines != 'undefined') {
+							$("#EDisplayFlowWithLines").prop('checked', data.ESettings.DisplayFlowWithLines == 1);
+						}
 					}
 				}
 			});

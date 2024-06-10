@@ -4,13 +4,11 @@ define(['app'], function (app) {
 		$scope.idP1 = -1;
 		$scope.idGas = -1;
 		$scope.idWater = -1;
-		$scope.convertWaterM3ToLiter = true;
 		$scope.idSolar = -1;
 		$scope.idBattWatt = -1;
 		$scope.idBattSoc = -1;
 		$scope.idTextObj = -1;
 		$scope.lblCurrency = "€";
-		$scope.bEnableServerTime = true;
 		$scope.idItemH1 = -1;
 		$scope.fieldH1 = "Usage";		// See output of JSON API /json.htm?type=command&param=getdevices&rid=xx
 		$scope.iconH1 = "car";
@@ -20,6 +18,10 @@ define(['app'], function (app) {
 		$scope.idItemH3 = -1;
 		$scope.fieldH3 = "Data";
 		$scope.iconH3 = "other";
+		
+		$scope.convertWaterM3ToLiter = true;
+		$scope.bEnableServerTime = true;
+		$scope.flowAsLines = true;
 
 		$scope.fDayNetUsage = 0;
 		$scope.fDayNetDeliv = 0;
@@ -63,6 +65,8 @@ define(['app'], function (app) {
 		$scope.Grid2HomeFlowAnim = "";
 		$scope.BattToGridflowAnim="";
 		$scope.BattToHomeflowAnim="";
+		
+		$scope.flowStrokeBack = ($scope.flowAsLines) ? 0.6 : 0.2;
 		
 		$scope.iconCar = "m6.5216 2.8645-.2976-.2765-.264-.528a.252.252 90 00-.216-.12h-1.488a.252.252 90 00-.216.12l-.264.528-.2976.2765a.12.12 90 00-.0384.0881v1.0274a.12.12 90 00.12.12h.48c.048 0 .12-.048.12-.096v-.144h1.68v.12c0 .048.048.12.096.12h.504a.12.12 90 00.12-.12v-1.0274a.12.12 90 00-.0384-.0881zm-2.2416-.6845h1.44l.24.48h-1.92zm.12 1.104c0 .048-.072.096-.12.096h-.504c-.048 0-.096-.072-.096-.12v-.264c.024-.072.072-.12.144-.096l.48.096c.048 0 .096.072.096.12zm1.92-.024c0 .048-.048.12-.096.12h-.504c-.048 0-.12-.048-.12-.096v-.168c0-.048.048-.12.096-.12l.48-.096c.072-.024.12.024.144.096z";
 		$scope.iconHeater = "M5.9529 4.6828c-.163 0-.2964-.1289-.3038-.29h-.0886c-.0074.1612-.1409.29-.3038.29s-.2964-.1289-.3038-.29h-.0886c-.0074.1612-.1409.29-.3038.29s-.2964-.1289-.3038-.29h-.0886c-.0074.1612-.1409.29-.3038.29C3.6964 4.6828 3.56 4.5464 3.56 4.3786V2.067C3.56 1.8993 3.6964 1.7629 3.8642 1.7629s.3042.1364.3042.3042v.0493h.088v-.0493c0-.1678.1364-.3042.3042-.3042s.3042.1364.3042.3042v.0493h.088v-.0493c0-.1678.1364-.3042.3042-.3042s.3042.1364.3042.3042v.0493h.088v-.0493c0-.1678.1364-.3042.3042-.3042s.3042.1364.3042.3042v.0499h.133c.0016 0 .003.0001.0044.0002.1169.0024.2112.0982.2112.2156 0 .1174-.0942.2131-.211.2156-.0016.0001-.0031.0002-.0047.0002h-.133v1.4123h.133c.0016 0 .0031.0001.0047.0002.1168.0025.211.0983.211.2156s-.0942.2131-.211.2156c-.0016.0001-.0031.0002-.0047.0002h-.1332C6.2493 4.554 6.1159 4.6828 5.9529 4.6828zM5.7387 4.3478v.031c0 .1181.0961.2142.2142.2142s.2142-.0961.2142-.2142V2.067c0-.1181-.0961-.2142-.2142-.2142s-.2142.0961-.2142.2142V4.3478zM5.0425 4.3478v.031c0 .1181.0961.2142.2142.2142s.2142-.0961.2142-.2142V2.067c0-.1181-.0961-.2142-.2142-.2142s-.2142.0961-.2142.2142V4.3478zM4.3462 4.3478v.031c0 .1181.0961.2142.2142.2142s.2142-.0961.2142-.2142V2.067c0-.1181-.0961-.2142-.2142-.2142S4.3462 1.9489 4.3462 2.067V4.3478zM3.8642 1.8528C3.7461 1.8528 3.65 1.9489 3.65 2.067v2.3117c0 .1181.0961.2142.2142.2142s.2142-.0961.2142-.2142V2.067C4.0783 1.9489 3.9823 1.8528 3.8642 1.8528zM6.257 4.3028h.1288c.0014-.0001.0028-.0002.0042-.0002.0694 0 .1256-.0564.1256-.1256s-.0564-.1256-.1256-.1256c-.0014 0-.0028-.0001-.0042-.0002h-.1288V4.3028zM5.5608 4.3028h.088v-.2518h-.088V4.3028zM4.8645 4.3028h.088v-.2518h-.088V4.3028zM4.1683 4.3028h.088v-.2518h-.088V4.3028zM5.5608 3.961h.088v-1.413h-.088V3.961zM4.8645 3.961h.088v-1.413h-.088V3.961zM4.1683 3.961h.088v-1.413h-.088V3.961zM6.257 2.4586h.1288c.0014-.0001.0028-.0002.0042-.0002.0694 0 .1256-.0564.1256-.1256s-.0564-.1256-.1256-.1256c-.0013 0-.0026 0-.004-.0001h-.1289V2.4586zM5.5608 2.458h.088V2.2063h-.088V2.458zM4.8645 2.458h.088V2.2063h-.088V2.458zM4.1683 2.458h.088V2.2063h-.088V2.458z";
@@ -134,12 +138,10 @@ define(['app'], function (app) {
 						$scope.idP1 = data.result.ESettings.idP1;
 						$scope.idGas = data.result.ESettings.idGas;
 						$scope.idWater = data.result.ESettings.idWater;
-						$scope.convertWaterM3ToLiter = data.result.ESettings.ConvertWaterM3ToLiter;
 						$scope.idSolar = data.result.ESettings.idSolar;
 						$scope.idBattWatt = data.result.ESettings.idBatteryWatt;
 						$scope.idBattSoc = data.result.ESettings.idBatterySoc;
 						$scope.idTextObj = data.result.ESettings.idTextSensor;
-						$scope.bEnableServerTime = data.result.ESettings.DisplayTime;
 						$scope.idItemH1 = data.result.ESettings.idExtra1;
 						$scope.fieldH1 = data.result.ESettings.Extra1Field;
 						$scope.iconH1 = data.result.ESettings.Extra1Icon;
@@ -149,6 +151,13 @@ define(['app'], function (app) {
 						$scope.idItemH3 = data.result.ESettings.idExtra3;
 						$scope.fieldH3 = data.result.ESettings.Extra3Field;
 						$scope.iconH3 = data.result.ESettings.Extra3Icon;
+						
+						$scope.convertWaterM3ToLiter = data.result.ESettings.ConvertWaterM3ToLiter;
+						$scope.bEnableServerTime = data.result.ESettings.DisplayTime;
+						if (data.result.ESettings.DisplayFlowWithLines != 'undefined') {
+							$scope.flowAsLines = (data.result.ESettings.DisplayFlowWithLines == true);
+							$scope.flowStrokeBack = ($scope.flowAsLines) ? 0.6 : 0.2;
+						}
 						
 						$scope.iconItemH1 = $scope.assignIcon($scope.iconH1);
 						$scope.iconItemH2 = $scope.assignIcon($scope.iconH2);
@@ -371,8 +380,8 @@ define(['app'], function (app) {
 			$scope.ServerTimeRaw++;
 			$scope.UpdateTime();
 		}
-
-		$scope.GetAnim = function(fPower, isReverse = false) {
+		
+		$scope.GetAnimDuration = function(fPower) {
 			let aPower = Math.abs(fPower);
 			let fSec = 5;
 			if (aPower < 250)
@@ -387,13 +396,27 @@ define(['app'], function (app) {
 				fSec = 2;
 			else
 				fSec = 1.5;
-			//let fSec = 5 - fPower / 2000;
-			//fSec = (fSec<0.5) ? 0.5 : fSec;
+			return fSec;
+		}
+
+		$scope.GetAnim = function(fPower, isReverse = false) {
+			let fSec = $scope.GetAnimDuration(fPower);
 			let ret = 'flow '+fSec.toFixed(1)+'s linear infinite';
 			if (isReverse == true) {
 				ret += " reverse";
 			}
 			return ret;
+		}
+		
+		$scope.SetEclipseAnim = function(item, fPower, isReverse = false) {
+			let fSec = $scope.GetAnimDuration(fPower);
+			let dElement=document.getElementById(item);
+			dElement.setAttribute('dur',fSec);
+			if (isReverse == false) {
+				dElement.setAttribute('keyPoints','0;1');
+			} else {
+				dElement.setAttribute('keyPoints','1;0');
+			}
 		}
 
 		$scope.makeTextLines = function() {
@@ -409,9 +432,9 @@ define(['app'], function (app) {
 
 		$scope.UpdateScreen = function () {
 			//for debugging purposes
-			//$scope.fActualNet = 2545;
-			//$scope.fActualSolar = 1146;
-			//$scope.fActualBattWatt = 2994;
+			//$scope.fActualNet = 545;
+			//$scope.fActualSolar = 4146;
+			//$scope.fActualBattWatt = -2294;
 			//$scope.fBattSoc = 62.4;
 			//$scope.txtDayGasUsage = '0.417 m3';
 			//$scope.txtDayWaterUsage = '294 L';
@@ -521,8 +544,12 @@ define(['app'], function (app) {
 				let anim = $scope.GetAnim($scope.fSolarToHome);
 				if ($scope.SolarToHomeflowAnim != anim) {
 					$scope.SolarToHomeflowAnim = anim;
-					let SolarToHomeflow=document.getElementById('SolarToHome-flow');
-					SolarToHomeflow.style.animation = anim;
+					if ($scope.flowAsLines == true) {
+						let SolarToHomeflow=document.getElementById('SolarToHome-flow');
+						SolarToHomeflow.style.animation = anim;
+					} else {
+						$scope.SetEclipseAnim("SolarToHome-sphere", $scope.fSolarToHome);
+					}
 				}
 			}
 
@@ -530,8 +557,12 @@ define(['app'], function (app) {
 				let anim = $scope.GetAnim($scope.fSolarToBatt);
 				if ($scope.SolarToBattflowAnim != anim) {
 					$scope.SolarToBattflowAnim = anim;
-					let SolarToBattflow=document.getElementById('SolarToBatt-flow');
-					SolarToBattflow.style.animation = anim;
+					if ($scope.flowAsLines == true) {
+						let SolarToBattflow=document.getElementById('SolarToBatt-flow');
+						SolarToBattflow.style.animation = anim;
+					} else {
+						$scope.SetEclipseAnim("SolarToBatt-sphere", $scope.fSolarToBatt);
+					}
 				}
 			}
 
@@ -539,8 +570,12 @@ define(['app'], function (app) {
 				let anim = $scope.GetAnim($scope.fSolarToGrid);
 				if ($scope.SolarToGridflowAnim != anim) {
 					$scope.SolarToGridflowAnim = anim;
-					let SolarToGridflow=document.getElementById('SolarToGrid-flow');
-					SolarToGridflow.style.animation = anim;	
+					if ($scope.flowAsLines == true) {
+						let SolarToGridflow=document.getElementById('SolarToGrid-flow');
+						SolarToGridflow.style.animation = anim;	
+					} else {
+						$scope.SetEclipseAnim("SolarToGrid-sphere", $scope.fSolarToGrid);
+					}
 				}
 			}
 
@@ -548,8 +583,12 @@ define(['app'], function (app) {
 				let anim = $scope.GetAnim($scope.fBattToNet, ($scope.fBattToNet<0));
 				if ($scope.BattToGridflowAnim != anim) {
 					$scope.BattToGridflowAnim = anim;
-					let BattNetflow=document.getElementById('BattNet-flow');
-					BattNetflow.style.animation = anim;
+					if ($scope.flowAsLines == true) {
+						let BattNetflow=document.getElementById('BattNet-flow');
+						BattNetflow.style.animation = anim;
+					} else {
+						$scope.SetEclipseAnim("BattHome-sphere", $scope.fBattToNet, ($scope.fBattToNet<0));
+					}
 				}
 			}
 
@@ -557,8 +596,12 @@ define(['app'], function (app) {
 				let anim = $scope.GetAnim($scope.fBattToHome);
 				if ($scope.BattToHomeflowAnim != anim) {
 					$scope.BattToHomeflowAnim = anim;
-					let BattHomeflow=document.getElementById('BattHome-flow');
-					BattHomeflow.style.animation = anim;
+					if ($scope.flowAsLines == true) {
+						let BattHomeflow=document.getElementById('BattHome-flow');
+						BattHomeflow.style.animation = anim;
+					} else {
+						$scope.SetEclipseAnim("BattHome-sphere", $scope.fBattToHome);
+					}
 				}
 			}
 
@@ -566,8 +609,12 @@ define(['app'], function (app) {
 				let anim = $scope.GetAnim($scope.fGridToHome, ($scope.fGridToHome<0));
 				if ($scope.Grid2HomeFlowAnim != anim) {
 					$scope.Grid2HomeFlowAnim = anim;
-					let Grid2HomeFlow = document.getElementById('GridToHome-flow');
-					Grid2HomeFlow.style.animation = anim;
+					if ($scope.flowAsLines == true) {
+						let Grid2HomeFlow = document.getElementById('GridToHome-flow');
+						Grid2HomeFlow.style.animation = anim;
+					} else {
+						$scope.SetEclipseAnim("GridToHome-sphere", $scope.fGridToHome, ($scope.fGridToHome<0));
+					}
 				}
 			}
 

@@ -2755,6 +2755,7 @@ namespace http
 				std::string EExtra3Icon = request::findValue(&req, "EExtra3Icon");
 				bool bConvertWaterM3ToLiter = (request::findValue(&req, "EConvertWaterM3ToLiter") == "on" ? 1 : 0);
 				bool bDisplayTime = (request::findValue(&req, "EDisplayTime") == "on" ? 1 : 0);
+				bool bDisplayFlowWithLines = (request::findValue(&req, "EDisplayFlowWithLines") == "on" ? 1 : 0);
 
 				Json::Value ESettings;
 				ESettings["idP1"] = EP1;
@@ -2775,6 +2776,7 @@ namespace http
 				ESettings["Extra3Icon"] = EExtra3Icon;
 				ESettings["ConvertWaterM3ToLiter"] = bConvertWaterM3ToLiter;
 				ESettings["DisplayTime"] = bDisplayTime;
+				ESettings["DisplayFlowWithLines"] = bDisplayFlowWithLines;
 
 				std::string szESettings = JSonToRawString(ESettings);
 				m_sql.UpdatePreferencesVar("ESettings", szESettings);
