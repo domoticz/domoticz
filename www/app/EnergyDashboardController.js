@@ -317,7 +317,9 @@ define(['app'], function (app) {
 				$scope.h1Price = parseFloat(item["price"]);
 			}
 			if ((item.hasOwnProperty("CounterToday"))&&($scope.fieldH1!="CounterToday")) {
-				$scope.txtKwhItemH1 = item["CounterToday"];
+				if ((item["CounterToday"].search("kWh") != -1) || (item["CounterToday"].search("m3") != -1)) {
+					$scope.txtKwhItemH1 = item["CounterToday"];
+				}
 			}
 			return true;
 		}
@@ -327,7 +329,9 @@ define(['app'], function (app) {
 				$scope.h2Price = parseFloat(item["price"]);
 			}
 			if ((item.hasOwnProperty("CounterToday"))&&($scope.fieldH2!="CounterToday")) {
-				$scope.txtKwhItemH2 = item["CounterToday"];
+				if ((item["CounterToday"].search("kWh") != -1) || (item["CounterToday"].search("m3") != -1)) {
+					$scope.txtKwhItemH2 = item["CounterToday"];
+				}
 			}
 			return true;
 		}
@@ -337,7 +341,9 @@ define(['app'], function (app) {
 				$scope.h3Price = parseFloat(item["price"]);
 			}
 			if ((item.hasOwnProperty("CounterToday"))&&($scope.fieldH3!="CounterToday")) {
-				$scope.txtKwhItemH3 = item["CounterToday"];
+				if ((item["CounterToday"].search("kWh") != -1) || (item["CounterToday"].search("m3") != -1)) {
+					$scope.txtKwhItemH3 = item["CounterToday"];
+				}
 			}
 			return true;
 		}
