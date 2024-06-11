@@ -593,7 +593,7 @@ define(['app'], function (app) {
 						let BattNetflow=document.getElementById('BattNet-flow');
 						BattNetflow.style.animation = anim;
 					} else {
-						$scope.SetEclipseAnim("BattHome-sphere", $scope.fBattToNet, ($scope.fBattToNet<0));
+						$scope.SetEclipseAnim("BattNet-sphere", $scope.fBattToNet, ($scope.fBattToNet<0));
 					}
 				}
 			}
