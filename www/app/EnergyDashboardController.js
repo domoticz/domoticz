@@ -22,6 +22,7 @@ define(['app'], function (app) {
 		$scope.bEnableServerTime = true;
 		$scope.flowAsLines = true;
 
+		$scope.P1InkWh = false;
 		$scope.fDayNetUsage = 0;
 		$scope.fDayNetDeliv = 0;
 		$scope.fTotalHomeUsage = 0;
@@ -236,10 +237,21 @@ define(['app'], function (app) {
 				console.log("Error with Power meter results. Check ID!");
 				return false;
 			}
+			if (item.Type != "P1 Smart Meter") {
+				$scope.P1InkWh = true;
+				console.log(item);
+			}
+			
+			let fActualNetDeliv = 0;
+			
 			$scope.fDayNetUsage = parseFloat(item["CounterToday"].replace(' kWh',''));
-			$scope.fDayNetDeliv = parseFloat(item["CounterDelivToday"].replace(' kWh',''));
 			let fActualNetUsage = parseFloat(item["Usage"].replace(' Watt',''));
-			let fActualNetDeliv = parseFloat(item["UsageDeliv"].replace(' Watt',''));
+			if ($scope.P1InkWh == false) {
+				$scope.fDayNetDeliv = parseFloat(item["CounterDelivToday"].replace(' kWh',''));
+				fActualNetDeliv = parseFloat(item["UsageDeliv"].replace(' Watt',''));
+			} else {
+				$scope.fDayNetDeliv = 0;
+			}
 			$scope.fActualNet = Math.round(fActualNetUsage - fActualNetDeliv);
 			if (item.hasOwnProperty("price")) {
 				$scope.p1Price = parseFloat(item["price"]);

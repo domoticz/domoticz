@@ -212,7 +212,7 @@ History:
 					<polygon points="311.702,408.668 266.449,408.668 264.02,448.271 218.358,470.897 218.358,499.187 359.794,499.187 
 						359.794,470.897 314.131,448.271 	"/>
 				</g>
-				<text x="10" y="31" fill="#ba88ff" font-size="1.6px" text-anchor="middle" style="font-variant-caps: normal; font-variant-east-asian: normal; font-variant-ligatures: normal; font-variant-numeric: normal; white-space: pre;">⇦ {{ fDayNetDeliv | number:3 }} kWh</text>
+				<text x="10" y="31" fill="#ba88ff" font-size="1.6px" text-anchor="middle" style="font-variant-caps: normal; font-variant-east-asian: normal; font-variant-ligatures: normal; font-variant-numeric: normal; white-space: pre;" ng-show="!P1InkWh">⇦ {{ fDayNetDeliv | number:3 }} kWh</text>
 				<path id="SolarToGrid" fill="none" d="m29 17c0 9-2 11-12 12" stroke="#ffd050" stroke-width="{{flowStrokeBack}}"/>
 				<g ng-show="fSolarToGrid>0">
 					<path id="SolarToGrid-flow" fill="none" d="m29 17c0 9-2 11-12 12" stroke="#f00" stroke-linecap="round" stroke-width=".2" ng-show="flowAsLines"/>

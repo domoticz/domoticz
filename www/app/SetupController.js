@@ -335,7 +335,7 @@ define(['app'], function (app) {
 							}
 
 							if ((item.Type == "P1 Smart Meter")&&(item.SubType == "Energy")) {
-								listP1.push({"idx": item.idx, "name": item.Name});
+								listP1.push({"idx": item.idx, "name": " " + item.Name});
 							}
 							else if ((item.Type == "P1 Smart Meter")&&(item.SubType == "Gas")) {
 								listGas.push({"idx": item.idx, "name": item.Name});
@@ -376,6 +376,7 @@ define(['app'], function (app) {
 									listExtra.push({"idx": item.idx, "name": item.Name});
 								}
 								else if (item.SubType == "kWh") {
+									listP1.push({"idx": item.idx, "name": item.Name});
 									listSolar.push({"idx": item.idx, "name": item.Name});
 									listBatteryWatt.push({"idx": item.idx, "name": item.Name});
 									listExtra.push({"idx": item.idx, "name": item.Name});
