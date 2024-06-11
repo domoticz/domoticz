@@ -105,22 +105,27 @@ define(['app'], function (app) {
 			if ($scope.idItemH2 != -1) devArray.push($scope.idItemH2);
 			if ($scope.idItemH3 != -1) devArray.push($scope.idItemH3);
 			
-
-			livesocket.getJson("json.htm?type=command&param=getdevices&rid=" + devArray.toString(), function (data) {
-				if (typeof data.ServerTime != 'undefined') {
-					$scope.SetTime(data);
-				}
-
-				if (typeof data.result != 'undefined') {
-
-					if (typeof data.ActTime != 'undefined') {
-						$.LastUpdateTime = parseInt(data.ActTime);
+			if (devArray.length > 0) {
+				livesocket.getJson("json.htm?type=command&param=getdevices&rid=" + devArray.toString(), function (data) {
+					if (typeof data.ServerTime != 'undefined') {
+						$scope.SetTime(data);
 					}
-					$.each(data.result, function (i, item) {
-						$scope.RefreshItem(item);
-					});
-				}
-			});
+
+					if (typeof data.result != 'undefined') {
+
+						if (typeof data.ActTime != 'undefined') {
+							$.LastUpdateTime = parseInt(data.ActTime);
+						}
+						$.each(data.result, function (i, item) {
+							$scope.RefreshItem(item);
+						});
+					}
+				});
+			} else {
+				//Not configured
+				$scope.txtObjText=$.t("Please configure the Energy Dashboard\nin the application Settings!");
+				$scope.makeTextLines();
+			}
 			$scope.mytimer = $interval(function () {
 								$scope.UpdateClockTick();
 							}, 1000);
@@ -133,41 +138,38 @@ define(['app'], function (app) {
 				dataType: 'json'
 			}).then(function successCallback(response) {
 				var data = response.data;
-				if (typeof data.status != 'undefined') {
-					if (typeof data.result.ESettings != 'undefined') {
-						$scope.idP1 = data.result.ESettings.idP1;
-						$scope.idGas = data.result.ESettings.idGas;
-						$scope.idWater = data.result.ESettings.idWater;
-						$scope.idSolar = data.result.ESettings.idSolar;
-						$scope.idBattWatt = data.result.ESettings.idBatteryWatt;
-						$scope.idBattSoc = data.result.ESettings.idBatterySoc;
-						$scope.idTextObj = data.result.ESettings.idTextSensor;
-						$scope.idItemH1 = data.result.ESettings.idExtra1;
-						$scope.fieldH1 = data.result.ESettings.Extra1Field;
-						$scope.iconH1 = data.result.ESettings.Extra1Icon;
-						$scope.idItemH2 = data.result.ESettings.idExtra2;
-						$scope.fieldH2 = data.result.ESettings.Extra2Field;
-						$scope.iconH2 = data.result.ESettings.Extra2Icon;
-						$scope.idItemH3 = data.result.ESettings.idExtra3;
-						$scope.fieldH3 = data.result.ESettings.Extra3Field;
-						$scope.iconH3 = data.result.ESettings.Extra3Icon;
-						
-						$scope.convertWaterM3ToLiter = data.result.ESettings.ConvertWaterM3ToLiter;
-						$scope.bEnableServerTime = data.result.ESettings.DisplayTime;
-						if (data.result.ESettings.DisplayFlowWithLines != 'undefined') {
-							$scope.flowAsLines = (data.result.ESettings.DisplayFlowWithLines == true);
-							$scope.flowStrokeBack = ($scope.flowAsLines) ? 0.6 : 0.2;
-						}
-						
-						$scope.iconItemH1 = $scope.assignIcon($scope.iconH1);
-						$scope.iconItemH2 = $scope.assignIcon($scope.iconH2);
-						$scope.iconItemH3 = $scope.assignIcon($scope.iconH3);
-						
-						$scope.calculateViewport();
-						$scope.UpdateScreen();
-						$scope.GetInitialDevices();
+				if ((typeof data.status != 'undefined') && (typeof data.result != 'undefined') && (typeof data.result.ESettings != 'undefined')) {
+					$scope.idP1 = data.result.ESettings.idP1;
+					$scope.idGas = data.result.ESettings.idGas;
+					$scope.idWater = data.result.ESettings.idWater;
+					$scope.idSolar = data.result.ESettings.idSolar;
+					$scope.idBattWatt = data.result.ESettings.idBatteryWatt;
+					$scope.idBattSoc = data.result.ESettings.idBatterySoc;
+					$scope.idTextObj = data.result.ESettings.idTextSensor;
+					$scope.idItemH1 = data.result.ESettings.idExtra1;
+					$scope.fieldH1 = data.result.ESettings.Extra1Field;
+					$scope.iconH1 = data.result.ESettings.Extra1Icon;
+					$scope.idItemH2 = data.result.ESettings.idExtra2;
+					$scope.fieldH2 = data.result.ESettings.Extra2Field;
+					$scope.iconH2 = data.result.ESettings.Extra2Icon;
+					$scope.idItemH3 = data.result.ESettings.idExtra3;
+					$scope.fieldH3 = data.result.ESettings.Extra3Field;
+					$scope.iconH3 = data.result.ESettings.Extra3Icon;
+					
+					$scope.convertWaterM3ToLiter = data.result.ESettings.ConvertWaterM3ToLiter;
+					$scope.bEnableServerTime = data.result.ESettings.DisplayTime;
+					if (data.result.ESettings.DisplayFlowWithLines != 'undefined') {
+						$scope.flowAsLines = (data.result.ESettings.DisplayFlowWithLines == true);
+						$scope.flowStrokeBack = ($scope.flowAsLines) ? 0.6 : 0.2;
 					}
+					
+					$scope.iconItemH1 = $scope.assignIcon($scope.iconH1);
+					$scope.iconItemH2 = $scope.assignIcon($scope.iconH2);
+					$scope.iconItemH3 = $scope.assignIcon($scope.iconH3);
 				}
+				$scope.GetInitialDevices();
+				$scope.calculateViewport();
+				$scope.UpdateScreen();
 			});
 		}
 		
@@ -361,18 +363,19 @@ define(['app'], function (app) {
 				$scope.ServerTimeRaw = data.ActTime;
 				$scope.SunRise = data.Sunrise;
 				$scope.SunSet = data.Sunset;
+				$scope.UpdateTime();
 			} else {
 				$scope.ServerTimeRaw = Date.parse(data.serverTime) / 1000;
+				$scope.UpdateTime();
 				$scope.SunRise = data.sunrise;
 				$scope.SunSet = data.sunset;
 				$scope.$apply();
 			}
-			$scope.UpdateTime();
 		}
 		
 		$scope.UpdateTime = function() {
 			let date = new Date($scope.ServerTimeRaw * 1000);
-			let szTime = date.toTimeString().split(' ')[0];
+			let szTime = date.toTimeString().substring(0,8);
 			$scope.ServerTime = szTime;
 		}
 
