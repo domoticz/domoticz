@@ -467,6 +467,7 @@ public:
 	_eWeightUnit m_weightunit;
 	std::string m_tempsign;
 	std::string m_weightsign;
+	std::string m_currencysign;
 	float m_tempscale;
 	float m_weightscale;
 	bool m_bAcceptNewHardware;

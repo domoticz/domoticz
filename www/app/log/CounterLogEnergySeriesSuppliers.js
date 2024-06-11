@@ -223,7 +223,7 @@ define(['app', 'log/Chart', 'log/CounterLogSeriesSupplier'], function (app) {
                             name: $.t('Costs'),
                             zIndex: 3,
 							tooltip: {
-								valueSuffix: ' ' + '&#8364;'
+								valueSuffix: ' ' + $.myglobals.currencysign
 							},
 							color: 'rgba(190,252,60,0.8)',
 							showInLegend: false,
@@ -450,7 +450,7 @@ define(['app', 'log/Chart', 'log/CounterLogSeriesSupplier'], function (app) {
                         name: (deviceType === chart.deviceTypes.EnergyUsed ? $.t('Costs') : deviceType === chart.deviceTypes.EnergyGenerated ? $.t('Earned') : $.t('Earned')),
                         zIndex: 4,
                         tooltip: {
-                            valueSuffix: ' ' + '&#8364;'
+                            valueSuffix: ' ' + $.myglobals.currencysign
                         },
                         color: 'rgba(190,252,60,0.8)',
 						showInLegend: false,

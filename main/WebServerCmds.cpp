@@ -1704,6 +1704,7 @@ namespace http
 			root["WindSign"] = m_sql.m_windsign;
 			root["TempScale"] = m_sql.m_tempscale;
 			root["TempSign"] = m_sql.m_tempsign;
+			root["CurrencySign"] = m_sql.m_currencysign;
 
 			int iUser = -1;
 			if (!session.username.empty() && (iUser = FindUser(session.username.c_str())) != -1)
@@ -2557,8 +2558,6 @@ namespace http
 				m_sql.m_weightunit = (_eWeightUnit)nUnit;
 				m_sql.UpdatePreferencesVar("WeightUnit", m_sql.m_weightunit); cntSettings++;
 
-				m_sql.SetUnitsAndScale();
-
 				/* Update Preferences and call other functions as well due to changes */
 				/* ------------------------------------------------------------------ */
 
@@ -2780,6 +2779,8 @@ namespace http
 
 				std::string szESettings = JSonToRawString(ESettings);
 				m_sql.UpdatePreferencesVar("ESettings", szESettings);
+
+				m_sql.SetUnitsAndScale();
 
 				/* To wrap up everything */
 				m_notifications.ConfigFromGetvars(req, true);

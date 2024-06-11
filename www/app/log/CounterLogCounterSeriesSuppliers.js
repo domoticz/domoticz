@@ -130,7 +130,7 @@ define(['app', 'log/Chart'], function (app) {
                             name: $.t('Costs'),
                             zIndex: 3,
 							tooltip: {
-								valueSuffix: ' ' + '&#8364;'
+								valueSuffix: ' ' + $.myglobals.currencysign
 							},
 							color: 'rgba(190,252,60,0.8)',
 							showInLegend: false,

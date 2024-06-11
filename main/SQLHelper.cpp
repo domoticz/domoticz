@@ -3441,8 +3441,6 @@ bool CSQLHelper::OpenDatabase()
 		m_weightunit = (_eWeightUnit)nValue;
 
 	}
-	SetUnitsAndScale();
-
 	if (!GetPreferencesVar("SecStatus", nValue))
 	{
 		UpdatePreferencesVar("SecStatus", 0);
@@ -3661,6 +3659,8 @@ bool CSQLHelper::OpenDatabase()
 		std::string sstring = "â‚¬"; //€
 		UpdatePreferencesVar("Currency", sstring);
 	}
+
+	SetUnitsAndScale();
 
 	//Update version in database
 	UpdatePreferencesVar("Domoticz_Version", szAppVersion);
@@ -8888,6 +8888,7 @@ void CSQLHelper::SetUnitsAndScale()
 		m_weightsign = "lb";
 		m_weightscale = 2.20462F;
 	}
+	GetPreferencesVar("Currency", m_currencysign);
 }
 
 bool CSQLHelper::HandleOnOffAction(const bool bIsOn, const std::string& OnAction, const std::string& OffAction)

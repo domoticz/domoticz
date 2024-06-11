@@ -8,7 +8,6 @@ define(['app'], function (app) {
 		$scope.idBattWatt = -1;
 		$scope.idBattSoc = -1;
 		$scope.idTextObj = -1;
-		$scope.lblCurrency = "€";
 		$scope.idItemH1 = -1;
 		$scope.fieldH1 = "Usage";		// See output of JSON API /json.htm?type=command&param=getdevices&rid=xx
 		$scope.iconH1 = "car";
