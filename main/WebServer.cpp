@@ -2028,15 +2028,15 @@ namespace http
 							std::string levelActions = options["LevelActions"];
 							if (selectorStyle.empty())
 							{
-								selectorStyle.assign("0"); // default is 'button set'
+								selectorStyle = "0"; // default is 'button set'
 							}
 							if (levelOffHidden.empty())
 							{
-								levelOffHidden.assign("false"); // default is 'not hidden'
+								levelOffHidden = "false"; // default is 'not hidden'
 							}
 							if (levelNames.empty())
 							{
-								levelNames.assign("Off"); // default is Off only
+								levelNames = "Off"; // default is Off only
 							}
 							root["result"][ii]["TypeImg"] = "Light";
 							root["result"][ii]["SelectorStyle"] = atoi(selectorStyle.c_str());
@@ -2046,10 +2046,10 @@ namespace http
 
 							std::vector<std::string> strarray;
 							StringSplit(levelNames, "|", strarray);
-							int isLevel = llevel / 10;
-							if (static_cast<int>(strarray.size()) >= isLevel)
+							const size_t isLevel = llevel / 10;
+							if (strarray.size() >= isLevel)
 							{
-								lstatus = strarray[isLevel];
+								lstatus = strarray.at(isLevel);
 							}
 						}
 						root["result"][ii]["Data"] = lstatus;

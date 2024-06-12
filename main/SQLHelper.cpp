@@ -9963,7 +9963,7 @@ std::string CSQLHelper::FormatDeviceOptions(const std::map<std::string, std::str
 				ssoptions << ";";
 			}
 		}
-		options.assign(ssoptions.str());
+		options = ssoptions.str();
 	}
 
 	return options;

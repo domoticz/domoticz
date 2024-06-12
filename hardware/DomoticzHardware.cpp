@@ -1145,7 +1145,7 @@ int CDomoticzHardwareBase::MigrateSelectorSwitch(const int NodeID, const uint8_t
 			if (i < count) {
 				ssoptions << ";";
 			}
-			options.assign(ssoptions.str());
+			options = ssoptions.str();
 		}
 	}
     if( bUpdated ) // the options map has been migrated do we migrate to warn? 

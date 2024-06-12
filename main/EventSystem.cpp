@@ -395,8 +395,6 @@ void CEventSystem::UpdateJsonMap(_tDeviceStatus &item, const uint64_t ulDevID)
 	if (rsize > 0)
 	{
 		uint8_t index = 0;
-		std::string l_JsonValueString;
-		l_JsonValueString.reserve(50);
 
 		while (JsonMap[index].szOriginal != nullptr)
 		{
@@ -407,10 +405,10 @@ void CEventSystem::UpdateJsonMap(_tDeviceStatus &item, const uint64_t ulDevID)
 				switch (JsonMap[index].eType)
 				{
 				case JTYPE_STRING:
-					item.JsonMapString[index] = l_JsonValueString.assign(value);
+					item.JsonMapString[index] = value;
 					break;
 				case JTYPE_FLOAT:
-					item.JsonMapFloat[index] = (float)atof(value.c_str());
+					item.JsonMapFloat[index] = static_cast<float>(atof(value.c_str()));
 					break;
 				case JTYPE_INT:
 					item.JsonMapInt[index] = atoi(value.c_str());
@@ -422,7 +420,8 @@ void CEventSystem::UpdateJsonMap(_tDeviceStatus &item, const uint64_t ulDevID)
 						item.JsonMapBool[index] = false;
 					break;
 				default:
-					item.JsonMapString[index] = l_JsonValueString.assign("unknown_type");
+					item.JsonMapString[index] = "unknown_type";
+					break;
 				}
 			}
 			index++;

@@ -290,7 +290,7 @@ void reply::add_header_if_absent(reply *rep, const std::string &name, const std:
 
 void reply::set_content(reply *rep, const std::string &content)
 {
-	rep->content.assign(content);
+	rep->content = content;
 }
 
 void reply::set_content(reply *rep, const std::wstring &content_w)
