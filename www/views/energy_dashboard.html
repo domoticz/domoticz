@@ -279,8 +279,11 @@ History:
 				<text id="etext" x="50" y="49.9" opacity="0.4" font-size="1.2px" text-anchor="middle" style="white-space: pre;" ng-show="waterPrice!=1000">{{ waterPrice | number:2 }} {{ config.CurrencySign }}</text>
 			</g>
 			<g id="groupH1" transform="matrix(1, 0, 0, 1, 54.5, 15)" ng-show="idItemH1 != -1">
-				<g id="eicon" transform="matrix(1, 0, 0, 1, 0, 0)">
+				<g id="eicon" transform="matrix(1, 0, 0, 1, 0, 0)" ng-show="!customIconH1">
 					<path ng-attr-d="{{ iconItemH1 }}"/>
+				</g>
+				<g transform="matrix(0.075, 0, 0, 0.075, 3, 1)" ng-show="customIconH1">
+				 <image width="48" height="48" xlink:href="{{customIconH1}}" />
 				</g>
 				<line x1="0" y1="9.7" x2="1.5" y2="8.4" style="stroke:#777;stroke-width:0.2"/>
 				
@@ -290,8 +293,11 @@ History:
 				<rect x="0" y="0" width="10" height="10" ry="5" fill="none" stroke="#668044" stroke-linecap="round" stroke-width=".3"/>
 			</g>
 			<g id="groupH2" transform="matrix(1, 0, 0, 1, 59, 25)" ng-show="idItemH2 != -1">
-				<g id="eicon" transform="matrix(1, 0, 0, 1, 0, 0)">
+				<g id="eicon" transform="matrix(1, 0, 0, 1, 0, 0)" ng-show="!customIconH2">
 					<path ng-attr-d="{{ iconItemH2 }}"></path>
+				</g>
+				<g transform="matrix(0.075, 0, 0, 0.075, 3, 1)" ng-show="customIconH2">
+				 <image width="48" height="48" xlink:href="{{customIconH2}}" />
 				</g>
 				<line x1="-2" y1="5" x2="0" y2="5" style="stroke:#777;stroke-width:0.2"/>
 				<text id="etext" x="5" y="5.7" opacity="0.6" font-size="1.0px" text-anchor="middle" style="font-variant-caps: normal; font-variant-east-asian: normal; font-variant-ligatures: normal; font-variant-numeric: normal; white-space: pre; font-weight: bold;" ng-show="txtKwhItemH2">{{ txtKwhItemH2 }}</text>
@@ -300,8 +306,11 @@ History:
 				<rect x="0" y="0" width="10" height="10" ry="5" fill="none" stroke="#668044" stroke-linecap="round" stroke-width=".3"/>
 			</g>
 			<g id="groupH3" transform="matrix(1, 0, 0, 1, 54.5, 35)" ng-show="idItemH3 != -1">
-				<g id="eicon" transform="matrix(1, 0, 0, 1, 0, 0)">
+				<g id="eicon" transform="matrix(1, 0, 0, 1, 0, 0)" ng-show="!customIconH3">
 					<path ng-attr-d="{{ iconItemH3 }}"></path>
+				</g>
+				<g transform="matrix(0.075, 0, 0, 0.075, 3, 1)" ng-show="customIconH3">
+				 <image width="48" height="48" xlink:href="{{customIconH3}}" />
 				</g>
 				<line x1="0" y1="0.2" x2="1.3" y2="1.4" style="stroke:#777;stroke-width:0.2"/>
 				<text id="etext" x="5" y="5.7" opacity="0.6" font-size="1.0px" text-anchor="middle" style="font-variant-caps: normal; font-variant-east-asian: normal; font-variant-ligatures: normal; font-variant-numeric: normal; white-space: pre; font-weight: bold;" ng-show="txtKwhItemH3">{{ txtKwhItemH3 }}</text>

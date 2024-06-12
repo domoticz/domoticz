@@ -58,6 +58,9 @@ define(['app'], function (app) {
 		$scope.txtKwhItemH1 = "";
 		$scope.txtKwhItemH2 = "";
 		$scope.txtKwhItemH3 = "";
+		$scope.customIconH1 = "";
+		$scope.customIconH2 = "";
+		$scope.customIconH3 = "";
 		$scope.lastClockSet = 0;
 		$scope.SolarToHomeflowAnim = "";
 		$scope.SolarToGridflowAnim = "";
@@ -104,7 +107,7 @@ define(['app'], function (app) {
 			if ($scope.idItemH1 != -1) devArray.push($scope.idItemH1);
 			if ($scope.idItemH2 != -1) devArray.push($scope.idItemH2);
 			if ($scope.idItemH3 != -1) devArray.push($scope.idItemH3);
-			
+
 			if (devArray.length > 0) {
 				livesocket.getJson("json.htm?type=command&param=getdevices&rid=" + devArray.toString(), function (data) {
 					if (typeof data.ServerTime != 'undefined') {
@@ -334,6 +337,10 @@ define(['app'], function (app) {
 					$scope.txtKwhItemH1 = item["CounterToday"];
 				}
 			}
+			let customIcon = item.CustomImage;
+			if (customIcon != 0) {
+				$scope.customIconH1 = "images/" + item.Image + "48_On.png";
+			}
 			return true;
 		}
 		$scope.handleItemH2 = function(item) {
@@ -346,6 +353,10 @@ define(['app'], function (app) {
 					$scope.txtKwhItemH2 = item["CounterToday"];
 				}
 			}
+			let customIcon = item.CustomImage;
+			if (customIcon != 0) {
+				$scope.customIconH2 = "images/" + item.Image + "48_On.png";
+			}
 			return true;
 		}
 		$scope.handleItemH3 = function(item) {
@@ -357,6 +368,10 @@ define(['app'], function (app) {
 				if ((item["CounterToday"].search("kWh") != -1) || (item["CounterToday"].search("m3") != -1)) {
 					$scope.txtKwhItemH3 = item["CounterToday"];
 				}
+			}
+			let customIcon = item.CustomImage;
+			if (customIcon != 0) {
+				$scope.customIconH3 = "images/" + item.Image + "48_On.png";
 			}
 			return true;
 		}
