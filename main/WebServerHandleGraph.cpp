@@ -1920,13 +1920,7 @@ namespace http
 
 							//Calculate price
 							float fPrice = 0;
-							std::vector<float> prices = m_sql.CalcMultiMeterPrice(idx, static_cast<const float>(divider), szDateStart, szDateEnd);
-							if (!prices.empty())
-							{
-								float price_usage = prices[0] + prices[4];
-								float price_deliver = prices[1] + prices[5];
-								fPrice = price_usage - price_deliver;
-							}
+							m_sql.CalcMultiMeterPrice(idx, static_cast<const float>(divider), szDateStart, szDateEnd, fPrice);
 							sprintf(szTmp, "%.4f", fPrice);
 							root["result"][ii]["p"] = szTmp;
 
@@ -3561,13 +3555,7 @@ namespace http
 								strcpy(szDateStart, szDateEnd);
 								strcat(szDateEnd, " 23:59:59");
 								float fPrice = 0;
-								std::vector<float> prices = m_sql.CalcMultiMeterPrice(idx, static_cast<const float>(divider), szDateStart, szDateEnd);
-								if (!prices.empty())
-								{
-									float price_usage = prices[0] + prices[4];
-									float price_deliver = prices[1] + prices[5];
-									fPrice = price_usage - price_deliver;
-								}
+								m_sql.CalcMultiMeterPrice(idx, static_cast<const float>(divider), szDateStart, szDateEnd, fPrice);
 								sprintf(szTmp, "%.4f", fPrice);
 								root["result"][ii]["p"] = szTmp;
 

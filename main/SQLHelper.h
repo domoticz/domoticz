@@ -455,7 +455,7 @@ public:
 	float GetCounterDivider(int metertype, int dType, float DefaultValue);
 
 	bool CalcMeterPrice(const uint64_t idx, const float divider, const char* szDateStart, const char* szDateEnd, float &price);
-	std::vector<float> CalcMultiMeterPrice(const uint64_t idx, const float divider, const char* szDateStart, const char* szDateEnd);
+	bool CalcMultiMeterPrice(const uint64_t idx, const float divider, const char* szDateStart, const char* szDateEnd, float& price);
 public:
 	std::string m_LastSwitchID; // for learning command
 	std::string m_UniqueID;
