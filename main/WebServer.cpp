@@ -2047,9 +2047,13 @@ namespace http
 							std::vector<std::string> strarray;
 							StringSplit(levelNames, "|", strarray);
 							const size_t isLevel = llevel / 10;
-							if (strarray.size() >= isLevel)
+							if (isLevel < strarray.size())
 							{
 								lstatus = strarray.at(isLevel);
+							}
+							else
+							{
+								lstatus = "Invalid?";
 							}
 						}
 						root["result"][ii]["Data"] = lstatus;
