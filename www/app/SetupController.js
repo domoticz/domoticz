@@ -329,34 +329,18 @@ define(['app'], function (app) {
 						let $comboEExtra3 = $("#comboEExtra3");
 						
 						$.each(data.result, function (i, item) {
-							let SwitchTypeVal = 0;
-							if (item.hasOwnProperty("SwitchTypeVal")) {
-								SwitchTypeVal = parseInt(item["SwitchTypeVal"]);
-							}
+							if (item.Type != "Group") {
+								if (item.hasOwnProperty("SwitchTypeVal")) {
+									SwitchTypeVal = parseInt(item["SwitchTypeVal"]);
+								}
 
-							if ((item.Type == "P1 Smart Meter")&&(item.SubType == "Energy")) {
-								listP1.push({"idx": item.idx, "name": " " + item.Name});
-							}
-							else if ((item.Type == "P1 Smart Meter")&&(item.SubType == "Gas")) {
-								listGas.push({"idx": item.idx, "name": item.Name});
-							}
-							else if (item.Type == "RFXMeter") {
-								if (SwitchTypeVal == 1) {
+								if ((item.Type == "P1 Smart Meter")&&(item.SubType == "Energy")) {
+									listP1.push({"idx": item.idx, "name": " " + item.Name});
+								}
+								else if ((item.Type == "P1 Smart Meter")&&(item.SubType == "Gas")) {
 									listGas.push({"idx": item.idx, "name": item.Name});
 								}
-								else if (SwitchTypeVal == 2) {
-									listWater.push({"idx": item.idx, "name": item.Name});
-								}
-								else {
-									listExtra.push({"idx": item.idx, "name": item.Name});
-								}
-							}
-							else if (item.Type == "Setpoint") {
-								listBatteryWatt.push({"idx": item.idx, "name": item.Name});
-								listExtra.push({"idx": item.idx, "name": item.Name});
-							}
-							else if (item.Type == "General") {
-								if (item.SubType == "Counter Incremental") {
+								else if (item.Type == "RFXMeter") {
 									if (SwitchTypeVal == 1) {
 										listGas.push({"idx": item.idx, "name": item.Name});
 									}
@@ -367,29 +351,46 @@ define(['app'], function (app) {
 										listExtra.push({"idx": item.idx, "name": item.Name});
 									}
 								}
-								else if (item.SubType == "Percentage") {
-									listBatterySoc.push({"idx": item.idx, "name": item.Name});
+								else if (item.Type == "Setpoint") {
+									listBatteryWatt.push({"idx": item.idx, "name": item.Name});
 									listExtra.push({"idx": item.idx, "name": item.Name});
 								}
-								else if (item.SubType == "Text") {
-									listText.push({"idx": item.idx, "name": item.Name});
-									listExtra.push({"idx": item.idx, "name": item.Name});
+								else if (item.Type == "General") {
+									if (item.SubType == "Counter Incremental") {
+										if (SwitchTypeVal == 1) {
+											listGas.push({"idx": item.idx, "name": item.Name});
+										}
+										else if (SwitchTypeVal == 2) {
+											listWater.push({"idx": item.idx, "name": item.Name});
+										}
+										else {
+											listExtra.push({"idx": item.idx, "name": item.Name});
+										}
+									}
+									else if (item.SubType == "Percentage") {
+										listBatterySoc.push({"idx": item.idx, "name": item.Name});
+										listExtra.push({"idx": item.idx, "name": item.Name});
+									}
+									else if (item.SubType == "Text") {
+										listText.push({"idx": item.idx, "name": item.Name});
+										listExtra.push({"idx": item.idx, "name": item.Name});
+									}
+									else if (item.SubType == "kWh") {
+										listP1.push({"idx": item.idx, "name": item.Name});
+										listSolar.push({"idx": item.idx, "name": item.Name});
+										listBatteryWatt.push({"idx": item.idx, "name": item.Name});
+										listExtra.push({"idx": item.idx, "name": item.Name});
+									} else {
+										listExtra.push({"idx": item.idx, "name": item.Name});
+									}
 								}
-								else if (item.SubType == "kWh") {
-									listP1.push({"idx": item.idx, "name": item.Name});
+								else if ((item.Type == "Usage")&&(item.SubType == "Electric")) {
 									listSolar.push({"idx": item.idx, "name": item.Name});
 									listBatteryWatt.push({"idx": item.idx, "name": item.Name});
 									listExtra.push({"idx": item.idx, "name": item.Name});
 								} else {
 									listExtra.push({"idx": item.idx, "name": item.Name});
 								}
-							}
-							else if ((item.Type == "Usage")&&(item.SubType == "Electric")) {
-								listSolar.push({"idx": item.idx, "name": item.Name});
-								listBatteryWatt.push({"idx": item.idx, "name": item.Name});
-								listExtra.push({"idx": item.idx, "name": item.Name});
-							} else {
-								listExtra.push({"idx": item.idx, "name": item.Name});
 							}
 						});
 						listP1.sort((a,b) => (a.name.toLowerCase() > b.name.toLowerCase()) ? 1 : ((b.name.toLowerCase() > a.name.toLowerCase()) ? -1 : 0));
