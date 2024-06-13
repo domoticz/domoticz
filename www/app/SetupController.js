@@ -840,6 +840,9 @@ define(['app'], function (app) {
 						if (typeof data.ESettings.DisplayFlowWithLines != 'undefined') {
 							$("#EDisplayFlowWithLines").prop('checked', data.ESettings.DisplayFlowWithLines == 1);
 						}
+						if (typeof data.ESettings.UseCustomIcons != 'undefined') {
+							$("#EUseCustomIcons").prop('checked', data.ESettings.UseCustomIcons == 1);
+						}
 					}
 				}
 			});

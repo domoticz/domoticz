@@ -21,6 +21,7 @@ define(['app'], function (app) {
 		$scope.convertWaterM3ToLiter = true;
 		$scope.bEnableServerTime = true;
 		$scope.flowAsLines = true;
+		$scope.useCustomIcons = false;
 
 		$scope.P1InkWh = false;
 		$scope.fDayNetUsage = 0;
@@ -58,6 +59,12 @@ define(['app'], function (app) {
 		$scope.txtKwhItemH1 = "";
 		$scope.txtKwhItemH2 = "";
 		$scope.txtKwhItemH3 = "";
+		
+		$scope.customIconGrid = "";
+		$scope.customIconWater = "";
+		$scope.customIconGas = "";
+		$scope.customIconSolar = "";
+		$scope.customIconBatt = "";
 		$scope.customIconH1 = "";
 		$scope.customIconH2 = "";
 		$scope.customIconH3 = "";
@@ -165,6 +172,9 @@ define(['app'], function (app) {
 						$scope.flowAsLines = (data.result.ESettings.DisplayFlowWithLines == true);
 						$scope.flowStrokeBack = ($scope.flowAsLines) ? 0.6 : 0.2;
 					}
+					if (data.result.ESettings.UseCustomIcons != 'undefined') {
+						$scope.useCustomIcons = (data.result.ESettings.UseCustomIcons == true);
+					}
 					
 					$scope.iconItemH1 = $scope.assignIcon($scope.iconH1);
 					$scope.iconItemH2 = $scope.assignIcon($scope.iconH2);
@@ -235,6 +245,35 @@ define(['app'], function (app) {
 			}
 		}
 		
+		$scope.GetIconForItem = function(item) {
+			if ($scope.useCustomIcons == false) {
+				return "";
+			}
+			if (item.CustomImage != 0) {
+				return "images/" + item.Image + "48_On.png";
+			} else {
+				let ficon = "";
+				if (item.TypeImg == "counter") {
+					ficon = "Counter48";
+				}
+				else if (item.TypeImg == "gas") {
+					ficon = "Gas48";
+				}
+				else if (item.TypeImg == "water") {
+					ficon = "Water48_On";
+				}
+				else if (item.TypeImg == "current") {
+					ficon = "current48";
+				}
+				else if (item.TypeImg == "pv") {
+					ficon = "PV48";
+				}
+				if (ficon == "")
+					return "";
+				return "images/" + ficon + ".png";
+			}
+		}
+		
 		$scope.handlePower = function(item) {
 			if (!item.hasOwnProperty("CounterToday")) {
 				console.log("Error with Power meter results. Check ID!");
@@ -259,6 +298,7 @@ define(['app'], function (app) {
 			if (item.hasOwnProperty("price")) {
 				$scope.p1Price = parseFloat(item["price"]);
 			}
+			$scope.customIconGrid = $scope.GetIconForItem(item);
 			return true;
 		}
 		
@@ -271,6 +311,8 @@ define(['app'], function (app) {
 			if (item.hasOwnProperty("price")) {
 				$scope.gasPrice = parseFloat(item["price"]);
 			}
+			item.TypeImg = "gas";
+			$scope.customIconGas = $scope.GetIconForItem(item);
 			return true;
 		}
 
@@ -293,6 +335,8 @@ define(['app'], function (app) {
 			if (item.hasOwnProperty("price")) {
 				$scope.waterPrice = parseFloat(item["price"]);
 			}
+			item.TypeImg = "water";
+			$scope.customIconWater = $scope.GetIconForItem(item);
 			return true;
 		}
 
@@ -303,6 +347,8 @@ define(['app'], function (app) {
 			}
 			$scope.fDaySolar = parseFloat(item["CounterToday"].replace(' kWh',''));
 			$scope.fActualSolar = Math.round(Math.abs(parseFloat(item["Usage"].replace(' Watt',''))));
+			item.TypeImg = "pv";
+			$scope.customIconSolar = $scope.GetIconForItem(item);
 			return true;
 		}
 
@@ -314,11 +360,13 @@ define(['app'], function (app) {
 				data = parseFloat(item["Usage"].replace(' Watt',''));
 			}
 			$scope.fActualBattWatt = Math.round(data);
+			$scope.customIconBatt = $scope.GetIconForItem(item);
 			return true;
 		}
 		
 		$scope.handleBattSoc = function(item) {
 			$scope.fBattSoc = parseFloat(item["Data"].replace('%',''));
+			$scope.customIconBatt = $scope.GetIconForItem(item);
 			return true;
 		}
 
@@ -337,10 +385,7 @@ define(['app'], function (app) {
 					$scope.txtKwhItemH1 = item["CounterToday"];
 				}
 			}
-			let customIcon = item.CustomImage;
-			if (customIcon != 0) {
-				$scope.customIconH1 = "images/" + item.Image + "48_On.png";
-			}
+			$scope.customIconH1 = $scope.GetIconForItem(item);
 			return true;
 		}
 		$scope.handleItemH2 = function(item) {
@@ -353,10 +398,7 @@ define(['app'], function (app) {
 					$scope.txtKwhItemH2 = item["CounterToday"];
 				}
 			}
-			let customIcon = item.CustomImage;
-			if (customIcon != 0) {
-				$scope.customIconH2 = "images/" + item.Image + "48_On.png";
-			}
+			$scope.customIconH2 = $scope.GetIconForItem(item);
 			return true;
 		}
 		$scope.handleItemH3 = function(item) {
@@ -369,10 +411,7 @@ define(['app'], function (app) {
 					$scope.txtKwhItemH3 = item["CounterToday"];
 				}
 			}
-			let customIcon = item.CustomImage;
-			if (customIcon != 0) {
-				$scope.customIconH3 = "images/" + item.Image + "48_On.png";
-			}
+			$scope.customIconH3 = $scope.GetIconForItem(item);
 			return true;
 		}
 		
