@@ -249,10 +249,23 @@ define(['app'], function (app) {
 			if ($scope.useCustomIcons == false) {
 				return "";
 			}
+			let ficon = "";
 			if (item.CustomImage != 0) {
-				return "images/" + item.Image + "48_On.png";
+				if ((item.TypeImg == "lightbulb") || (item.TypeImg == "dimmer")) {
+					ficon = "images/" + item.Image + "48_";
+					if ((item.Data == "On"||(item.Data.search("%") != -1))) {
+						ficon += "On";
+					} else if (item.Data == "Off") {
+						ficon += "Off";
+					} else {
+						ficon += "On";
+					}
+					ficon += ".png";
+				} else {
+					ficon = "images/" + item.Image + "48_On.png";
+				}
+				return ficon;
 			} else {
-				let ficon = "";
 				if (item.TypeImg == "counter") {
 					ficon = "Counter48";
 				}
@@ -267,6 +280,48 @@ define(['app'], function (app) {
 				}
 				else if (item.TypeImg == "pv") {
 					ficon = "PV48";
+				}
+				else if (item.TypeImg == "override_mini") {
+					ficon = "override";
+				}
+				else if (item.SubType == "Percentage") {
+					ficon = "Percentage48";
+				}
+				else if (item.TypeImg == "Custom") {
+					ficon = "Custom48_On";
+				}
+				else if (item.TypeImg == "lux") {
+					ficon = "lux48";
+				}
+				else if (item.TypeImg == "text") {
+					ficon = "text48";
+				}
+				else if (item.TypeImg == "gauge") {
+					ficon = "gauge48";
+				}
+				else if (item.TypeImg == "Alert") {
+					ficon = "Alert48_1";
+				}
+				else if (item.TypeImg == "temperature") {
+					return "images/" + GetTemp48Item(item.Temp);
+				}
+				else if (item.TypeImg == "wind") {
+					if (typeof item.Direction != 'undefined') {
+						ficon = 'Wind' + item.DirectionStr;
+					} else {
+						ficon = "wind";
+					}
+				}
+				else if ((item.TypeImg == "lightbulb")||(item.TypeImg == "dimmer")) {
+					if (item.Data == "On") {
+						ficon = "Light48_On";
+					} else if (item.Data == "Off") {
+						ficon = "Light48_Off";
+					} else if (item.Data.search("%") != -1) {
+						return "images/Dimmer48_On.png";
+					} else {
+						ficon = "Light48_On";
+					}
 				}
 				if (ficon == "")
 					return "";
@@ -360,7 +415,9 @@ define(['app'], function (app) {
 				data = parseFloat(item["Usage"].replace(' Watt',''));
 			}
 			$scope.fActualBattWatt = Math.round(data);
-			$scope.customIconBatt = $scope.GetIconForItem(item);
+			if ($scope.idBattSoc == -1) {
+				$scope.customIconBatt = $scope.GetIconForItem(item);
+			}
 			return true;
 		}
 		
