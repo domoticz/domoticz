@@ -81,6 +81,13 @@ define(['app', 'lodash', 'log/Chart', 'log/CounterLogParams', 'log/CounterLogCou
                         title: {
                             text: $.t('Gas') + ' (' + chart.valueUnits.gas(chart.valueMultipliers.m1) + ')'
                         }
+                    },
+                    {
+						visible: false,
+						max: 1000,
+                        title: {
+                            text: $.t('Price')
+                        }
                     }
                 ];
             },
@@ -101,7 +108,8 @@ define(['app', 'lodash', 'log/Chart', 'log/CounterLogParams', 'log/CounterLogCou
                 return []
                     .concat(counterLogCounterSeriesSuppliers.counterSeriesSuppliers(deviceTypeIndex, chart.valueMultipliers.m1))
                     .concat(counterLogCounterSeriesSuppliers.counterTrendlineSeriesSuppliers(deviceTypeIndex, chart.valueMultipliers.m1))
-                    .concat(counterLogCounterSeriesSuppliers.counterPreviousSeriesSupplier(deviceTypeIndex, chart.valueMultipliers.m1));
+                    .concat(counterLogCounterSeriesSuppliers.counterPreviousSeriesSupplier(deviceTypeIndex, chart.valueMultipliers.m1))
+					.concat(counterLogCounterSeriesSuppliers.counterPriceSeriesSuppliers());
             },
             extendDataRequestCompare: function (dataRequest) {
                 return dataRequest;
@@ -136,6 +144,13 @@ define(['app', 'lodash', 'log/Chart', 'log/CounterLogParams', 'log/CounterLogCou
                         title: {
                             text: $.t('Water') + ' (' + chart.valueUnits.water(chart.valueMultipliers.m1) + ')'
                         }
+                    },
+                    {
+						visible: false,
+						max: 1000,
+                        title: {
+                            text: $.t('Price')
+                        }
                     }
                 ];
             },
@@ -156,7 +171,8 @@ define(['app', 'lodash', 'log/Chart', 'log/CounterLogParams', 'log/CounterLogCou
                 return []
                     .concat(counterLogCounterSeriesSuppliers.counterSeriesSuppliers(deviceTypeIndex, chart.valueMultipliers.m1, times1000, 0))
                     .concat(counterLogCounterSeriesSuppliers.counterTrendlineSeriesSuppliers(deviceTypeIndex, chart.valueMultipliers.m1, times1000, 0))
-                    .concat(counterLogCounterSeriesSuppliers.counterPreviousSeriesSupplier(deviceTypeIndex, chart.valueMultipliers.m1, times1000, 0));
+                    .concat(counterLogCounterSeriesSuppliers.counterPreviousSeriesSupplier(deviceTypeIndex, chart.valueMultipliers.m1, times1000, 0))
+					.concat(counterLogCounterSeriesSuppliers.counterPriceSeriesSuppliers());
             },
             extendDataRequestCompare: function (dataRequest) {
                 return dataRequest;

@@ -5,7 +5,8 @@ define(['app', 'log/Chart'], function (app) {
             counterSeriesDaySuppliers: counterSeriesDaySuppliers,
             counterSeriesSuppliers: counterSeriesSuppliers,
             counterTrendlineSeriesSuppliers: counterTrendlineSeriesSuppliers,
-            counterPreviousSeriesSupplier: counterPreviousSeriesSupplier
+            counterPreviousSeriesSupplier: counterPreviousSeriesSupplier,
+            counterPriceSeriesSuppliers: counterPriceSeriesSuppliers,
         };
 
         function deviceTypeCounterName(deviceTypeIndex) {
@@ -117,12 +118,16 @@ define(['app', 'log/Chart'], function (app) {
                             yAxis: 0
                         };
                     }
-                },
+                }
+            ];
+        }
+
+        function counterPriceSeriesSuppliers() {
+            return [
                 {
                     id: 'price',
                     dataItemKeys: ['p'],
                     convertZeroToNull: true,
-                    postprocessDataItemValue: postprocessDataItemValue,
                     label: '2',
                     template: function (seriesSupplier) {
                         return {
@@ -134,7 +139,7 @@ define(['app', 'log/Chart'], function (app) {
 							},
 							color: 'rgba(190,252,60,0.8)',
 							showInLegend: false,
-                            yAxis: 0
+                            yAxis: 1
                         };
                     }
                 }
