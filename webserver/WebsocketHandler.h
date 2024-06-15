@@ -10,6 +10,11 @@
 #include <map>
 #include <string>
 
+namespace Json
+{
+	class Value;
+} // namespace Json
+
 namespace http
 {
 	namespace server
@@ -22,7 +27,7 @@ namespace http
 		public:
 			CWebsocketHandler(cWebem* pWebem, std::function<void(const std::string& packet_data)> _MyWrite);
 			~CWebsocketHandler();
-			bool Handle(const std::string& packet_data, bool outbound);
+			bool Handle(const std::string& packet_data, const bool outbound);
 			void Start();
 			void Stop();
 			void OnDeviceChanged(uint64_t DeviceRowIdx);
@@ -31,8 +36,8 @@ namespace http
 			void SendLogMessage(const int iLevel, const std::string& szMessage);
 			void store_session_id(const request& req, const reply& rep);
 
-			bool subscribeTo(const std::string& szTopic, const std::string& szSessionID);
-			bool unsubscribeTo(const std::string& szTopic, const std::string& szSessionID);
+			bool subscribeTo(const std::string& szTopic);
+			bool unsubscribeFrom(const std::string& szTopic);
 
 		protected:
 			std::function<void(const std::string& packet_data)> MyWrite;
@@ -41,6 +46,9 @@ namespace http
 			CWebSocketPush m_Push;
 
 		private:
+			bool HandleRequest(const std::string & szEvent, const Json::Value& value, const bool outbound);
+			bool HandleSubscribe(const std::string& szEvent, const Json::Value& value, const bool outbound);
+			bool HandleUnsubscribe(const std::string& szEvent, const Json::Value& value, const bool outbound);
 			bool isSubscribed(const std::string& szTopic);
 			std::map<std::string, bool> m_subscribed_topics;
 			std::mutex m_subscribe_mutex;
