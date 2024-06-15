@@ -4,6 +4,7 @@
 #include <list>
 #include <string>
 #include <fstream>
+#include "lsignal.h"
 
 enum _eLogLevel : uint32_t
 {
@@ -37,54 +38,53 @@ enum _eLogACLF : uint8_t
 
 class CLogger
 {
-      public:
+public:
 	struct _tLogLineStruct
 	{
 		time_t logtime;
 		_eLogLevel level;
 		std::string logmessage;
-		_tLogLineStruct(_eLogLevel nlevel, const std::string &nlogmessage);
+		_tLogLineStruct(_eLogLevel nlevel, const std::string& nlogmessage);
 	};
 
 	CLogger();
 	~CLogger();
 
-	bool SetLogFlags(const std::string &sFlags);
+	bool SetLogFlags(const std::string& sFlags);
 	void SetLogFlags(const uint32_t iFlags);
 	bool IsLogLevelEnabled(const _eLogLevel level);
 
-	bool SetDebugFlags(const std::string &sFlags);
+	bool SetDebugFlags(const std::string& sFlags);
 	void SetDebugFlags(const uint32_t iFlags);
 	bool IsDebugLevelEnabled(const _eDebugLevel level);
 
 	void SetACLFlogFlags(const uint8_t iFlags);
 	bool IsACLFlogEnabled();
 
-	void SetOutputFile(const char *OutputFile);
-	void SetACLFOutputFile(const char *OutputFile);
+	void SetOutputFile(const char* OutputFile);
+	void SetACLFOutputFile(const char* OutputFile);
 	void OpenACLFOutputFile();
 
-	void Log(_eLogLevel level, const std::string &sLogline);
-	void Log(_eLogLevel level, const char *logline, ...)
+	void Log(_eLogLevel level, const std::string& sLogline);
+	void Log(_eLogLevel level, const char* logline, ...);
+
+	lsignal::signal<void(const _eLogLevel, const std::string& sLogline)> sOnLogMessage;
+
+	void Debug(_eDebugLevel level, const std::string& sLogline);
+	void Debug(_eDebugLevel level, const char* logline, ...)
 #ifdef __GNUC__
 		__attribute__((format(printf, 3, 4)))
 #endif
 		;
-	void Debug(_eDebugLevel level, const std::string &sLogline);
-	void Debug(_eDebugLevel level, const char *logline, ...)
-#ifdef __GNUC__
-		__attribute__((format(printf, 3, 4)))
-#endif
-		;
-	void ACLFlog(const char *logline, ...)
+	void ACLFlog(const char* logline, ...)
 #ifdef __GNUC__
 		__attribute__((format(printf, 2, 3)))
 #endif
 		;
 
 	void LogSequenceStart();
-	void LogSequenceAdd(const char *logline);
-	void LogSequenceAddNoLF(const char *logline);
+	void LogSequenceAdd(const char* logline);
+	void LogSequenceAddNoLF(const char* logline);
 	void LogSequenceEnd(_eLogLevel level);
 
 	void EnableLogTimestamps(bool bEnableTimestamps);
@@ -98,7 +98,7 @@ class CLogger
 	std::list<_tLogLineStruct> GetNotificationLogs();
 	bool NotificationLogsEnabled();
 
-      private:
+private:
 	uint32_t m_log_flags = 0;
 	uint32_t m_debug_flags = 0;
 	uint8_t m_aclf_flags = 0;
@@ -106,7 +106,7 @@ class CLogger
 
 	std::mutex m_mutex;
 	std::ofstream m_outputfile;
-	const char *m_aclflogfile = nullptr;
+	const char* m_aclflogfile = nullptr;
 	std::ofstream m_aclfoutputfile;
 	std::map<_eLogLevel, std::deque<_tLogLineStruct>> m_lastlog;
 	std::deque<_tLogLineStruct> m_notification_log;

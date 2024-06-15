@@ -25,7 +25,7 @@ namespace http {
 			Stop();
 		}
 
-		boost::tribool CWebsocketHandler::Handle(const std::string &packet_data, bool outbound)
+		bool CWebsocketHandler::Handle(const std::string &packet_data, bool outbound)
 		{
 			Json::Value jsonValue;
 			try
@@ -171,6 +171,31 @@ namespace http {
 			}
 		}
 
+		bool CWebsocketHandler::subscribeTo(const std::string& szTopic, const std::string& szSessionID)
+		{
+			std::unique_lock<std::mutex> lock(m_subscribe_mutex);
+			m_subscribed_topics[szTopic] = true;
+			return true;
+		}
+
+		bool CWebsocketHandler::unsubscribeTo(const std::string& szTopic, const std::string& szSessionID)
+		{
+			std::unique_lock<std::mutex> lock(m_subscribe_mutex);
+			//check if we are already subscribed;
+			if (m_subscribed_topics.find(szTopic) != m_subscribed_topics.end())
+			{
+				m_subscribed_topics.erase(m_subscribed_topics.find(szTopic));
+				return true;
+			}
+			return false;
+		}
+
+		bool CWebsocketHandler::isSubscribed(const std::string& szTopic)
+		{
+			std::unique_lock<std::mutex> lock(m_subscribe_mutex);
+			return (m_subscribed_topics.find(szTopic) != m_subscribed_topics.end());
+		}
+
 		void CWebsocketHandler::OnDeviceChanged(const uint64_t DeviceRowIdx)
 		{
 			try
@@ -211,7 +236,6 @@ namespace http {
 		void CWebsocketHandler::SendNotification(const std::string &Subject, const std::string &Text, const std::string &ExtraData, const int Priority, const std::string &Sound, const bool bFromNotification)
 		{
 			Json::Value json;
-
 			json["event"] = "notification";
 			json["Subject"] = Subject;
 			json["Text"] = Text;
@@ -250,5 +274,16 @@ namespace http {
 			}
 		}
 
+		void CWebsocketHandler::SendLogMessage(const int iLevel, const std::string& szMessage)
+		{
+			if (!isSubscribed("log"))
+				return;
+			Json::Value json;
+			json["event"] = "log";
+			json["level"] = iLevel;
+			json["message"] = szMessage;
+			std::string response = json.toStyledString();
+			MyWrite(response);
+		}
 	} // namespace server
 } // namespace http

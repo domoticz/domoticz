@@ -46,7 +46,7 @@ option(GIT_SUBMODULE "Check submodules during build" ON)
 ### COMPILER SETTINGS
 #
 #
-set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
@@ -151,6 +151,7 @@ main/HTMLSanitizer.cpp
 main/IFTTT.cpp
 main/json_helper.cpp
 main/localtime_r.cpp
+main/lsignal.cpp
 main/Logger.cpp
 main/LuaCommon.cpp
 main/LuaHandler.cpp

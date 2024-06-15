@@ -2255,6 +2255,9 @@
     <ClInclude Include="..\hardware\ZWaveCommands.h">
       <Filter>Devices\ZWave</Filter>
     </ClInclude>
+    <ClInclude Include="..\main\lsignal.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\webserver\Base64.cpp">
@@ -3042,6 +3045,9 @@
     </ClCompile>
     <ClCompile Include="..\hardware\ZWaveBase.cpp">
       <Filter>Devices\ZWave</Filter>
+    </ClCompile>
+    <ClCompile Include="..\main\lsignal.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
