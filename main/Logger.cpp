@@ -298,6 +298,8 @@ void CLogger::Log(const _eLogLevel level, const char *logline, ...)
 
 	std::string szIntLog = sstr.str();
 
+	sOnLogMessage(level, szIntLog);
+
 	{
 		// Locked region to allow multiple threads to print at the same time
 		std::unique_lock<std::mutex> lock(m_mutex);
