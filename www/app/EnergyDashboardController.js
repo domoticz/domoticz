@@ -48,6 +48,7 @@ define(['app'], function (app) {
 		$scope.SunRise = "";
 		$scope.SunSet = "";
 		$scope.p1Price = 1000;
+		$scope.solarPrice = 1000;
 		$scope.gasPrice = 1000;
 		$scope.waterPrice = 1000;
 		$scope.h1Price = 1000;
@@ -402,6 +403,9 @@ define(['app'], function (app) {
 			}
 			$scope.fDaySolar = parseFloat(item["CounterToday"].replace(' kWh',''));
 			$scope.fActualSolar = Math.round(Math.abs(parseFloat(item["Usage"].replace(' Watt',''))));
+			if (item.hasOwnProperty("price")) {
+				$scope.solarPrice = parseFloat(item["price"]);
+			}
 			item.TypeImg = "pv";
 			$scope.customIconSolar = $scope.GetIconForItem(item);
 			return true;

@@ -1,5 +1,8 @@
 <!--
 History:
+ v1.13 2024-06-15
+	- Added Solar Price
+
  v1.12 2024-06-14
 	- Added support for custom icons (enable via settings)
 
@@ -274,6 +277,7 @@ History:
 				<g>
 					<text id="etext" x="30" y="11.5" font-size="1.6px" text-anchor="middle" style="font-variant-caps: normal; font-variant-east-asian: normal; font-variant-ligatures: normal; font-variant-numeric: normal; white-space: pre;">{{ fDaySolar | number:3 }} kWh</text>
 					<text id="etext" x="30" y="14" font-size="1.6px" text-anchor="middle" style="font-variant-caps: normal; font-variant-east-asian: normal; font-variant-ligatures: normal; font-variant-numeric: normal; font-weight: bold; white-space: pre;">{{ fActualSolar }} Watt</text>
+					<text id="etext" x="30" y="15.8" opacity="0.4" font-size="1.2px" text-anchor="middle" style="white-space: pre;" ng-show="solarPrice!=1000">{{ solarPrice | number:2 }} {{ config.CurrencySign }}</text>
 				</g>
 				<rect id="rectSolar" x="23" y="3" width="14" height="14" ry="7" fill="none" stroke="#ffd000" stroke-linecap="round" stroke-width=".3"/>
 			</g>
