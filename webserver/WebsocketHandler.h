@@ -51,6 +51,7 @@ namespace http
 			bool HandleUnsubscribe(const std::string& szEvent, const Json::Value& value, const bool outbound);
 			bool isSubscribed(const std::string& szTopic);
 			std::map<std::string, bool> m_subscribed_topics;
+			std::map<uint64_t, bool> m_subscribed_devices;
 			std::mutex m_subscribe_mutex;
 
 			void SendDateTime();

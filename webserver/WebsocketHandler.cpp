@@ -134,6 +134,30 @@ namespace http {
 			reply rep;
 			if (myWebem->CheckForPageOverride(session, req, rep)) {
 				if (rep.status == reply::ok) {
+
+					if (querystring.find("param=getdevices") != std::string::npos)
+					{
+						m_subscribed_devices.clear();
+
+						if (querystring.find("rid=") != std::string::npos)
+						{
+							//We are interested in certain devices only
+							std::string tstring = querystring.substr(querystring.find("rid=") + 4);
+							size_t pos = tstring.find("&");
+							if (pos != std::string::npos)
+							{
+								tstring = tstring.substr(0, pos);
+							}
+							std::vector<std::string> strarray;
+							StringSplit(tstring, ",", strarray);
+							for (const auto& itt : strarray)
+							{
+								uint64_t devIDX = std::stoull(itt);
+								m_subscribed_devices[devIDX] = true;
+							}
+						}
+					}
+
 					Json::Value jsonValue;
 					jsonValue["request"] = szEvent;
 					jsonValue["event"] = "response";
@@ -302,6 +326,11 @@ namespace http {
 		{
 			try
 			{
+				if (!m_subscribed_devices.empty())
+				{
+					if (m_subscribed_devices.find(DeviceRowIdx) == m_subscribed_devices.end())
+						return; //not interested in you
+				}
 				std::string query = "type=command&param=getdevices&rid=" + std::to_string(DeviceRowIdx);
 				Json::Value request;
 				request["event"] = "device_request";
