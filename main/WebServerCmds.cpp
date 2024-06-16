@@ -358,13 +358,6 @@ namespace http
 				// USB/System
 				if (sport.empty())
 					return false; // need to have a serial port
-
-				if (htype == HTYPE_TeleinfoMeter)
-				{
-					// Teleinfo always has decimals. Chances to have a P1 and a Teleinfo device on the same
-					// Domoticz instance are very low as both are national standards (NL and FR)
-					m_sql.UpdatePreferencesVar("SmartMeterType", 0);
-				}
 			}
 			else if (IsNetworkDevice(htype))
 			{
@@ -381,12 +374,6 @@ namespace http
 				{
 					if (smode1.empty())
 						return false;
-				}
-				else if ((htype == HTYPE_ECODEVICES) || (htype == HTYPE_TeleinfoMeterTCP))
-				{
-					// EcoDevices and Teleinfo always have decimals. Chances to have a P1 and a EcoDevice/Teleinfo
-					//  device on the same Domoticz instance are very low as both are national standards (NL and FR)
-					m_sql.UpdatePreferencesVar("SmartMeterType", 0);
 				}
 				else if (htype == HTYPE_AlfenEveCharger)
 				{
@@ -2447,7 +2434,6 @@ namespace http
 				m_sql.UpdatePreferencesVar("CM113DisplayType", atoi(request::findValue(&req, "CM113DisplayType").c_str())); cntSettings++;
 				m_sql.UpdatePreferencesVar("MaxElectricPower", atoi(request::findValue(&req, "MaxElectricPower").c_str())); cntSettings++;
 				m_sql.UpdatePreferencesVar("DoorbellCommand", atoi(request::findValue(&req, "DoorbellCommand").c_str())); cntSettings++;
-				m_sql.UpdatePreferencesVar("SmartMeterType", atoi(request::findValue(&req, "SmartMeterType").c_str())); cntSettings++;
 				m_sql.UpdatePreferencesVar("SecOnDelay", atoi(request::findValue(&req, "SecOnDelay").c_str())); cntSettings++;
 				m_sql.UpdatePreferencesVar("FloorplanPopupDelay", atoi(request::findValue(&req, "FloorplanPopupDelay").c_str())); cntSettings++;
 				m_sql.UpdatePreferencesVar("FloorplanActiveOpacity", atoi(request::findValue(&req, "FloorplanActiveOpacity").c_str())); cntSettings++;
@@ -2476,6 +2462,7 @@ namespace http
 
 				m_sql.UpdatePreferencesVar("HourIdxElectricityDevice", atoi(request::findValue(&req, "HourIdxElectricityDevice").c_str())); cntSettings++;
 				m_sql.UpdatePreferencesVar("HourIdxGasDevice", atoi(request::findValue(&req, "HourIdxGasDevice").c_str())); cntSettings++;
+				m_sql.UpdatePreferencesVar("P1DisplayType", atoi(request::findValue(&req, "P1DisplayType").c_str())); cntSettings++;
 
 
 				/* More complex ones that need additional processing */
@@ -4770,10 +4757,6 @@ namespace http
 				{
 					root["DoorbellCommand"] = nValue;
 				}
-				else if (Key == "SmartMeterType")
-				{
-					root["SmartMeterType"] = nValue;
-				}
 				else if (Key == "EnableTabFloorplans")
 				{
 					root["EnableTabFloorplans"] = nValue;
@@ -4990,6 +4973,10 @@ namespace http
 					{
 						root["ESettings"] = jesettings;
 					}
+				}
+				else if (Key == "P1DisplayType")
+				{
+					root["P1DisplayType"] = nValue;
 				}
 			}
 		}

@@ -686,9 +686,6 @@ define(['app'], function (app) {
 					if (typeof data.DoorbellCommand != 'undefined') {
 						$("#doorbelltable #comboDoorbellCommand").val(data.DoorbellCommand);
 					}
-					if (typeof data.SmartMeterType != 'undefined') {
-						$("#p1metertable #comboP1MeterType").val(data.SmartMeterType);
-					}
 					if (typeof data.NotificationSensorInterval != 'undefined') {
 						$("#nitable #comboNotificationSensorInterval").val(data.NotificationSensorInterval);
 					}
@@ -816,6 +813,9 @@ define(['app'], function (app) {
 					if (typeof data.HourIdxGasDevice != 'undefined') {
 						$("#dpricetable #comboDPGas").val(data.HourIdxGasDevice);
 					}
+					if (typeof data.P1DisplayType != 'undefined') {
+						$("#dpricetable #comboP1DisplayType").val(data.P1DisplayType);
+					}					
 
 					if (typeof data.ESettings != 'undefined') {
 						$("#comboEP1").val(data.ESettings.idP1);

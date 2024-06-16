@@ -3382,10 +3382,6 @@ bool CSQLHelper::OpenDatabase()
 	{
 		UpdatePreferencesVar("DoorbellCommand", 0);
 	}
-	if (!GetPreferencesVar("SmartMeterType", nValue))	//0=meter has decimals, 1=meter does not have decimals, need this for the day graph
-	{
-		UpdatePreferencesVar("SmartMeterType", 0);
-	}
 	if (!GetPreferencesVar("NotificationSensorInterval", nValue))
 	{
 		UpdatePreferencesVar("NotificationSensorInterval", 12 * 60 * 60);
@@ -3658,6 +3654,10 @@ bool CSQLHelper::OpenDatabase()
 	{
 		std::string sstring = "â‚¬"; //€
 		UpdatePreferencesVar("Currency", sstring);
+	}
+	if (!GetPreferencesVar("P1DisplayType", nValue))
+	{
+		UpdatePreferencesVar("P1DisplayType", 0);
 	}
 
 	SetUnitsAndScale();

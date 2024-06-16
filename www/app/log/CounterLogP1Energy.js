@@ -123,7 +123,7 @@ define(['app', 'log/Chart', 'log/CounterLogParams', 'log/CounterLogEnergySeriesS
                     }
                 ];
             },
-            daySeriesSuppliers: function (deviceType) {
+            daySeriesSuppliers: function (deviceType, divider) {
                 return []
                     .concat(counterLogEnergySeriesSuppliers.p1DaySeriesSuppliers(deviceType))
                     .concat(counterLogEnergySeriesSuppliers.powerReturnedDaySeriesSuppliers(deviceType));

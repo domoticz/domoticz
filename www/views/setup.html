@@ -985,22 +985,7 @@
 							<br>
 							<div class="row-fluid">
 								<div class="span12">
-									<h2><span data-i18n="P1 Smart Meter Type"></span>:</h2>
-									<table class="display" id="p1metertable" border="0" cellpadding="0" cellspacing="0">
-										<tr>
-											<td align="right" style="width:60px"><label><span data-i18n="Type"></span>: </label></td>
-											<td><select id="comboP1MeterType" name="SmartMeterType" style="width:180px" class="combobox ui-corner-all">
-												<option data-i18n="With Decimals" value="0">With Decimals</option>
-												<option data-i18n="No Decimals" value="1">No Decimals</option>
-											</select></td>
-										</tr>
-									</table>
-								</div>
-							</div>
-							<br>
-							<div class="row-fluid">
-								<div class="span12">
-									<h2><span data-i18n="Dynamic price calculation"></span>:</h2>
+									<h2><span data-i18n="(Dynamic) Price calculation"></span>:</h2>
 									<table class="display" id="dpricetable" border="0" cellpadding="0" cellspacing="0">
 										<tr>
 											<td align="right" style="width:200px"><label><span data-i18n="Electricity Price Device"></span>: </label></td>
@@ -1012,6 +997,13 @@
 											<td align="right"><label><span data-i18n="Gas Price Device"></span>: </label></td>
 											<td><select id="comboDPGas" name="HourIdxGasDevice" style="width:380px" class="combobox ui-corner-all">
 												<option data-i18n="Disabled" value="0">Disabled</option>
+											</select></td>
+										</tr>
+										<tr>
+											<td align="right"><label><span data-i18n="P1 Electricity report display"></span>: </label></td>
+											<td><select id="comboP1DisplayType" name="P1DisplayType" style="width:380px" class="combobox ui-corner-all">
+												<option data-i18n="Low/High Tariff" value="0"></option>
+												<option data-i18n="Simple (Dynamic contract)" value="1"></option>
 											</select></td>
 										</tr>
 									</table>

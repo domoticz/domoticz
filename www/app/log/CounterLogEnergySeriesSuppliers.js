@@ -130,9 +130,25 @@ define(['app', 'log/Chart', 'log/CounterLogSeriesSupplier'], function (app) {
                     }
                 },
                 {
-                    id: 'p1PowerUsed',
+                    id: 'p1PowerUsage',
                     dataItemKeys: ['v'],
-                    label: 'L',
+                    showWithoutDatapoints: false,
+                    label: 'L0',
+                    template: {
+                        name: $.t('Usage'),
+                        tooltip: {
+                            valueSuffix: ' ' + chart.valueUnits.power(chart.valueMultipliers.m1)
+                        },
+                        color: 'rgba(3,190,252,0.8)',
+                        stack: 'susage',
+                        yAxis: 1
+                    }
+                },
+                {
+                    id: 'p1PowerUsage1',
+                    dataItemKeys: ['v1'],
+                    showWithoutDatapoints: false,
+                    label: '<=',
                     template: {
                         name: $.t('Usage') + ' 1',
                         tooltip: {
@@ -144,7 +160,7 @@ define(['app', 'log/Chart', 'log/CounterLogSeriesSupplier'], function (app) {
                     }
                 },
                 {
-                    id: 'p1PowerGenerated',
+                    id: 'p1PowerUsage2',
                     dataItemKeys: ['v2'],
                     showWithoutDatapoints: false,
                     label: 'M',
@@ -237,6 +253,24 @@ define(['app', 'log/Chart', 'log/CounterLogSeriesSupplier'], function (app) {
         function powerReturnedDaySeriesSuppliers(deviceType) {
             return [
                 {
+                    id: 'powerReturned',
+                    dataItemKeys: ['r'],
+                    dataIsValid: function (data) {
+                        return data.delivered === true;
+                    },
+                    showWithoutDatapoints: false,
+                    label: 'R',
+                    template: {
+                        name: $.t('Return'),
+                        tooltip: {
+                            valueSuffix: ' ' + chart.valueUnits.power(chart.valueMultipliers.m1)
+                        },
+                        color: 'rgba(3,252,190,0.8)',
+                        stack: 'sreturn',
+                        yAxis: 1
+                    }
+                },
+                {
                     id: 'powerReturned1',
                     dataItemKeys: ['r1'],
                     dataIsValid: function (data) {
@@ -280,7 +314,7 @@ define(['app', 'log/Chart', 'log/CounterLogSeriesSupplier'], function (app) {
             return [
                 counterLogSeriesSupplier.summingSeriesSupplier({
                     id: 'counterEnergyUsedOrGeneratedTotal',
-                    dataItemKeys: ['v', 'v2'],
+                    dataItemKeys: ['v1', 'v2'],
                     convertZeroToNull: true,
                     label: 'C',
                     series: {
@@ -302,7 +336,7 @@ define(['app', 'log/Chart', 'log/CounterLogSeriesSupplier'], function (app) {
             return [
                 counterLogSeriesSupplier.summingSeriesSupplier({
                     id: 'counterEnergyUsedOrGeneratedTotalTrendline',
-                    dataItemKeys: ['v', 'v2'],
+                    dataItemKeys: ['v1', 'v2'],
                     postprocessDatapoints: chart.aggregateTrendline,
                     label: 'E',
                     series: {
@@ -325,7 +359,7 @@ define(['app', 'log/Chart', 'log/CounterLogSeriesSupplier'], function (app) {
             return [
                 counterLogSeriesSupplier.summingSeriesSupplier({
                     id: 'counterEnergyUsedOrGeneratedPrevious',
-                    dataItemKeys: ['v', 'v2'],
+                    dataItemKeys: ['v1', 'v2'],
                     useDataItemsFromPrevious: true,
                     convertZeroToNull: true,
                     label: 'D',

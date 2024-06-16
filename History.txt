@@ -9,6 +9,7 @@ Version 2024.xxxxx (xxxxx 2024)
 - Implemented: OpenWeatherMap, API 3.0 support
 - Implemented: Event Editor, Close/Close All menu dropdown
 - Implemented: Possible to query a range of device states via JSON
+- Implemented: P1 Meter, option to specify view (low/high tariff or simple (dynamic contract))
 - Fixed: Floorplan, better detection of switches
 - Fixed: Hardware Setup, hiding extra parameters when selecting a python plugin
 - Fixed: PythonEx framework, two notifications where send for switch type devices
