@@ -81,6 +81,8 @@ Enever::Enever(int ID, const std::string& szToken, const std::string& szProvider
 			m_szProviderGas = strarray[1];
 		}
 	}
+	if (m_szProviderElectricity == "Stock")
+		m_szProviderElectricity.clear();
 
 	std::vector<std::vector<std::string> > result;
 
