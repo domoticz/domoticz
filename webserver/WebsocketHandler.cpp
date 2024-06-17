@@ -135,7 +135,11 @@ namespace http {
 			if (myWebem->CheckForPageOverride(session, req, rep)) {
 				if (rep.status == reply::ok) {
 
-					if (querystring.find("param=getdevices") != std::string::npos)
+					bool bInternal = false;
+					if (value.isMember("internal"))
+						bInternal = value["internal"].asBool();
+
+					if ((!bInternal) && (querystring.find("param=getdevices") != std::string::npos))
 					{
 						m_subscribed_devices.clear();
 
@@ -326,7 +330,6 @@ namespace http {
 		{
 			try
 			{
-/*
 				if (!m_subscribed_devices.empty())
 				{
 					if (m_subscribed_devices.find(DeviceRowIdx) == m_subscribed_devices.end())
@@ -334,10 +337,10 @@ namespace http {
 						return; //not interested in you
 					}
 				}
-*/
 				std::string query = "type=command&param=getdevices&rid=" + std::to_string(DeviceRowIdx);
 				Json::Value request;
 				request["event"] = "device_request";
+				request["internal"] = true;
 				request["requestid"] = -1;
 				request["query"] = query;
 				std::string packet = JSonToFormatString(request);
