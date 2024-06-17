@@ -7225,7 +7225,6 @@ void CSQLHelper::UpdateMultiMeter()
 
 			if (dType == pTypeP1Power)
 			{
-				//counters are values 1(u1), 5(u2), 2(d1), 6(d2)
 				float price;
 				if (CalcMultiMeterPrice(ID, EnergyDivider, szDateStart, szDateEnd, price))
 				{
@@ -10054,6 +10053,14 @@ bool CSQLHelper::CalcMeterPrice(const uint64_t idx, const float divider, const c
 	if (result.empty())
 		return false;
 
+	//Add last value
+	auto result2 = m_sql.safe_query("SELECT Date, Value, Price FROM Meter WHERE (DeviceRowID=%" PRIu64 " AND Date>='%q' AND Date<='%q 00:00:00') ORDER BY ROWID DESC LIMIT 1",
+		idx, szDateStart, szDateEnd);
+	if (!result2.empty())
+	{
+		result.push_back(result2.at(0));
+	}
+
 	bool bResult = false;
 
 	uint64_t last_cntr = (uint64_t)-1;
@@ -10089,6 +10096,14 @@ bool CSQLHelper::CalcMultiMeterPrice(const uint64_t idx, const float divider, co
 		idx, szDateStart, szDateEnd);
 	if (result.empty())
 		return false;
+
+	//Add last value
+	auto result2 = m_sql.safe_query("SELECT Date, Value1, Value2, Value3, Value4, Value5, Value6, Price FROM MultiMeter WHERE (DeviceRowID=%" PRIu64 " AND Date>='%q' AND Date<='%q 00:00:00') ORDER BY ROWID DESC LIMIT 1",
+		idx, szDateStart, szDateEnd);
+	if (!result2.empty())
+	{
+		result.push_back(result2.at(0));
+	}
 
 	bool bResult = false;
 
@@ -10233,8 +10248,6 @@ void CSQLHelper::RefreshActualPrices()
 		for (const auto& sd : result)
 		{
 			uint64_t ID = std::stoull(sd[0]);
-
-			//counters are values 1(u1), 5(u2), 2(d1), 6(d2)
 			float price;
 			if (CalcMultiMeterPrice(ID, EnergyDivider, szDateStart, szDateEnd, price))
 			{

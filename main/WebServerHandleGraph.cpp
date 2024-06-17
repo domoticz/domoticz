@@ -1924,7 +1924,10 @@ namespace http
 
 							//Calculate price
 							float fPrice = 0;
-							m_sql.CalcMultiMeterPrice(idx, static_cast<const float>(divider), szDateStart, szDateEnd, fPrice);
+							if (m_sql.m_actual_prices.find(idx) != m_sql.m_actual_prices.end())
+							{
+								fPrice = m_sql.m_actual_prices[idx];
+							}
 							sprintf(szTmp, "%.4f", fPrice);
 							root["result"][ii]["p"] = szTmp;
 
@@ -1987,7 +1990,10 @@ namespace http
 							root["result"][ii]["v"] = szValue;
 
 							float fPrice = 0;
-							m_sql.CalcMeterPrice(idx, static_cast<const float>(divider), szDateStart, szDateEnd, fPrice);
+							if (m_sql.m_actual_prices.find(idx) != m_sql.m_actual_prices.end())
+							{
+								fPrice = m_sql.m_actual_prices[idx];
+							}
 							sprintf(szTmp, "%.4f", fPrice);
 							root["result"][ii]["p"] = szTmp;
 
@@ -3566,10 +3572,11 @@ namespace http
 									root["result"][ii]["c4"] = szTmp;
 								}
 
-								strcpy(szDateStart, szDateEnd);
-								strcat(szDateEnd, " 23:59:59");
 								float fPrice = 0;
-								m_sql.CalcMultiMeterPrice(idx, static_cast<const float>(divider), szDateStart, szDateEnd, fPrice);
+								if (m_sql.m_actual_prices.find(idx) != m_sql.m_actual_prices.end())
+								{
+									fPrice = m_sql.m_actual_prices[idx];
+								}
 								sprintf(szTmp, "%.4f", fPrice);
 								root["result"][ii]["p"] = szTmp;
 
@@ -3787,10 +3794,11 @@ namespace http
 										break;
 									}
 
-									strcpy(szDateStart, szDateEnd);
-									strcat(szDateEnd, " 23:59:59");
 									float fPrice = 0;
-									m_sql.CalcMeterPrice(idx, static_cast<const float>(divider), szDateStart, szDateEnd, fPrice);
+									if (m_sql.m_actual_prices.find(idx) != m_sql.m_actual_prices.end())
+									{
+										fPrice = m_sql.m_actual_prices[idx];
+									}
 									sprintf(szTmp, "%.4f", fPrice);
 									root["result"][ii]["p"] = szTmp;
 
