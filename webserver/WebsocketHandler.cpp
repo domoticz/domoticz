@@ -326,11 +326,15 @@ namespace http {
 		{
 			try
 			{
+/*
 				if (!m_subscribed_devices.empty())
 				{
 					if (m_subscribed_devices.find(DeviceRowIdx) == m_subscribed_devices.end())
+					{
 						return; //not interested in you
+					}
 				}
+*/
 				std::string query = "type=command&param=getdevices&rid=" + std::to_string(DeviceRowIdx);
 				Json::Value request;
 				request["event"] = "device_request";
