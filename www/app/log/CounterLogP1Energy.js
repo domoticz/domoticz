@@ -136,12 +136,12 @@ define(['app', 'log/Chart', 'log/CounterLogParams', 'log/CounterLogEnergySeriesS
             },
             monthYearSeriesSuppliers: function (deviceType) {
                 return []
-                    .concat(counterLogEnergySeriesSuppliers.counterMonthYearSeriesSuppliers(deviceType))
+                    .concat(counterLogEnergySeriesSuppliers.p1MonthYearSeriesSuppliers(deviceType))
                     .concat(counterLogEnergySeriesSuppliers.trendlineMonthYearSeriesSuppliers(deviceType))
 					.concat(counterLogEnergySeriesSuppliers.powerReturnedMonthYearSeriesSuppliers(deviceType))
 					.concat(counterLogEnergySeriesSuppliers.powerTrendlineReturnedMonthYearSeriesSuppliers(deviceType))
                     .concat(counterLogEnergySeriesSuppliers.priceMonthYearSeriesSuppliers(deviceType))
-					.concat(counterLogEnergySeriesSuppliers.pastMonthYearSeriesSuppliers(deviceType))
+					.concat(counterLogEnergySeriesSuppliers.p1PastMonthYearSeriesSuppliers(deviceType))
 					.concat(counterLogEnergySeriesSuppliers.powerPastReturnedMonthYearSeriesSuppliers(deviceType));
             },
             preprocessCompareData: function (data) {
