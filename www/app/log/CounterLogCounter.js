@@ -84,7 +84,8 @@ define(['app', 'lodash', 'log/Chart', 'log/CounterLogParams', 'log/CounterLogCou
                     },
                     {
 						visible: false,
-						max: 1000,
+						max: 10000,
+						min: 0,
                         title: {
                             text: $.t('Price')
                         }

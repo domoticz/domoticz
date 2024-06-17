@@ -137,12 +137,12 @@ define(['app', 'log/Chart', 'log/CounterLogParams', 'log/CounterLogEnergySeriesS
             monthYearSeriesSuppliers: function (deviceType) {
                 return []
                     .concat(counterLogEnergySeriesSuppliers.p1MonthYearSeriesSuppliers(deviceType))
-                    .concat(counterLogEnergySeriesSuppliers.trendlineMonthYearSeriesSuppliers(deviceType))
+                    .concat(counterLogEnergySeriesSuppliers.p1TrendlineMonthYearSeriesSuppliers(deviceType))
 					.concat(counterLogEnergySeriesSuppliers.powerReturnedMonthYearSeriesSuppliers(deviceType))
 					.concat(counterLogEnergySeriesSuppliers.powerTrendlineReturnedMonthYearSeriesSuppliers(deviceType))
-                    .concat(counterLogEnergySeriesSuppliers.priceMonthYearSeriesSuppliers(deviceType))
 					.concat(counterLogEnergySeriesSuppliers.p1PastMonthYearSeriesSuppliers(deviceType))
-					.concat(counterLogEnergySeriesSuppliers.powerPastReturnedMonthYearSeriesSuppliers(deviceType));
+					.concat(counterLogEnergySeriesSuppliers.powerPastReturnedMonthYearSeriesSuppliers(deviceType))
+                    .concat(counterLogEnergySeriesSuppliers.priceMonthYearSeriesSuppliers(deviceType));
             },
             preprocessCompareData: function (data) {
                 this.dataContainsDelivery = data.delivered ? true : false;

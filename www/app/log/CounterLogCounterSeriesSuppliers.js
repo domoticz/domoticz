@@ -138,7 +138,7 @@ define(['app', 'log/Chart'], function (app) {
 								valueSuffix: ' ' + $.myglobals.currencysign
 							},
 							color: 'rgba(190,252,60,0.8)',
-							showInLegend: false,
+							showInLegend: true,
                             yAxis: 1
                         };
                     }

@@ -62,8 +62,9 @@ define(['app', 'log/Chart', 'log/CounterLogParams', 'log/CounterLogEnergySeriesS
                 return []
                     .concat(counterLogEnergySeriesSuppliers.counterMonthYearSeriesSuppliers(deviceType))
                     .concat(counterLogEnergySeriesSuppliers.trendlineMonthYearSeriesSuppliers(deviceType))
-                    .concat(counterLogEnergySeriesSuppliers.priceMonthYearSeriesSuppliers(deviceType))
-					.concat(counterLogEnergySeriesSuppliers.pastMonthYearSeriesSuppliers(deviceType));
+					.concat(counterLogEnergySeriesSuppliers.pastMonthYearSeriesSuppliers(deviceType))
+					.concat(counterLogEnergySeriesSuppliers.priceMonthYearSeriesSuppliers(deviceType));
+                    
             },
             extendDataRequestCompare: function (dataRequest) {
                 return dataRequest;

@@ -1,4 +1,4 @@
-define(['app', 'log/Chart', 'log/CounterLogSeriesSupplier'], function (app) {
+	define(['app', 'log/Chart', 'log/CounterLogSeriesSupplier'], function (app) {
 
     function DoesContain(key) {
         this.key = key;
@@ -35,8 +35,7 @@ define(['app', 'log/Chart', 'log/CounterLogSeriesSupplier'], function (app) {
             p1MonthYearSeriesSuppliers: p1MonthYearSeriesSuppliers,
 			p1PastMonthYearSeriesSuppliers: p1PastMonthYearSeriesSuppliers,
             p1PriceHourSeriesSuppliers: p1PriceHourSeriesSuppliers,
-			
-
+			p1TrendlineMonthYearSeriesSuppliers: p1TrendlineMonthYearSeriesSuppliers,
         };
 
         function counterDaySeriesSuppliers(deviceType) {
@@ -250,6 +249,30 @@ define(['app', 'log/Chart', 'log/CounterLogSeriesSupplier'], function (app) {
                 })
             ];
         }
+
+        function p1TrendlineMonthYearSeriesSuppliers(deviceType) {
+            return [
+                counterLogSeriesSupplier.summingSeriesSupplier({
+                    id: 'P1TMYSS',
+                    dataItemKeys: ['v1', 'v2'],
+                    postprocessDatapoints: chart.aggregateTrendline,
+                    label: 'E',
+                    series: {
+                        name: $.t('Trendline') + ' ' + (deviceType === chart.deviceTypes.EnergyUsed ? $.t('Usage') : deviceType === chart.deviceTypes.EnergyGenerated ? $.t('Generated') : $.t('Return')),
+                        zIndex: 3,
+                        tooltip: {
+                            valueSuffix: ' ' + chart.valueUnits.energy(chart.valueMultipliers.m1000),
+                            valueDecimals: 3
+                        },
+                        color: 'rgba(252,3,3,0.8)',
+                        dashStyle: 'LongDash',
+                        yAxis: 0,
+                        visible: false
+                    }
+                })
+            ];
+        }
+
         function powerReturnedHourSeriesSuppliers(deviceType) {
 			return [
 				counterLogSeriesSupplier.summingSeriesSupplier({
@@ -386,7 +409,7 @@ define(['app', 'log/Chart', 'log/CounterLogSeriesSupplier'], function (app) {
             return [
                 counterLogSeriesSupplier.summingSeriesSupplier({
                     id: 'TMYSS',
-                    dataItemKeys: ['v1', 'v2'],
+                    dataItemKeys: ['v'],
                     postprocessDatapoints: chart.aggregateTrendline,
                     label: 'E',
                     series: {
@@ -409,7 +432,7 @@ define(['app', 'log/Chart', 'log/CounterLogSeriesSupplier'], function (app) {
             return [
                 counterLogSeriesSupplier.summingSeriesSupplier({
                     id: 'PMYSS',
-                    dataItemKeys: ['v', 'v2'],
+                    dataItemKeys: ['v'],
                     useDataItemsFromPrevious: true,
                     convertZeroToNull: true,
                     label: 'D',
@@ -524,7 +547,7 @@ define(['app', 'log/Chart', 'log/CounterLogSeriesSupplier'], function (app) {
         function priceMonthYearSeriesSuppliers(deviceType) {
             return [
                 counterLogSeriesSupplier.dataItemsKeysPredicatedSeriesSupplier('p', new DoesNotContain('eu'), {
-                    id: 'PMYSS',
+                    id: 'PRMYSS',
                     convertZeroToNull: true,
                     valueDecimals: 4,
                     label: 'B',
@@ -537,8 +560,8 @@ define(['app', 'log/Chart', 'log/CounterLogSeriesSupplier'], function (app) {
                             valueSuffix: ' ' + $.myglobals.currencysign
                         },
                         color: 'rgba(190,252,60,0.8)',
-						showInLegend: false,
-                        yAxis: 0
+                        yAxis: 0,
+                        visible: true
                     }
                 })
             ];
