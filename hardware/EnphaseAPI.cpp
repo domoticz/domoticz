@@ -38,6 +38,8 @@ Example
 #define ENPHASE_API_POWER_SET "{ip}/ivp/mod/603980032/mode/power"
 #define ENPHASE_API_INST_DETAILS "{ip}/ivp/peb/devstatus"
 #define ENPAHSE_API_INVENTORY_DETAILS "{ip}/ivp/ensemble/inventory"
+#define ENPAHSE_API_REPORT_PRODUCTION "{ip}ivp/meters/reports/production"
+#define ENPAHSE_API_REPORT_CONSUMPTION "{ip}ivp/meters/reports/consumption"
 
 #ifdef DEBUG_EnphaseAPI_W
 void SaveString2Disk(std::string str, std::string filename)
