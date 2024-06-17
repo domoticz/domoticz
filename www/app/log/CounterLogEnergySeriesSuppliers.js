@@ -44,8 +44,8 @@ define(['app', 'log/Chart', 'log/CounterLogSeriesSupplier'], function (app) {
                 counterLogSeriesSupplier.dataItemsKeysPredicatedSeriesSupplier('v', new DoesNotContain('eu'), {
                     id: 'CDSS',
                     convertZeroToNull: true,
-                    label: 'A',
                     showWithoutDatapoints: false,
+                    label: 'A',
                     series: {
                         type: 'column',
                         name: deviceType === chart.deviceTypes.EnergyUsed ? $.t('Energy Usage') : $.t('Energy Generated'),
@@ -65,6 +65,7 @@ define(['app', 'log/Chart', 'log/CounterLogSeriesSupplier'], function (app) {
                 counterLogSeriesSupplier.dataItemsKeysPredicatedSeriesSupplier('eu', new DoesContain('eu'), {
                     id: 'IACDSS',
                     convertZeroToNull: true,
+                    showWithoutDatapoints: false,
                     label: 'F',
                     series: {
                         type: 'column',
