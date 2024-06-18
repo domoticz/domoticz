@@ -10063,24 +10063,24 @@ bool CSQLHelper::CalcMeterPrice(const uint64_t idx, const float divider, const c
 
 	bool bResult = false;
 
-	uint64_t last_cntr = (uint64_t)-1;
+	int64_t last_cntr = INT64_MAX;
 	float last_price = 0;
 	float total_price = 0;
 	for (const auto& itt : result)
 	{
-		uint64_t cntr = std::stoull(itt[1]);
-		float price = std::stof(itt[2]);
+		const int64_t cntr = std::stoull(itt.at(1));
+		const float price = std::stof(itt.at(2));
 
-		if (last_cntr != (uint64_t)-1)
+		if (last_cntr != INT64_MAX)
 		{
-			uint64_t total = cntr - last_cntr;
+			const int64_t total = cntr - last_cntr;
 			total_price += ((static_cast<float>(total) / divider) * last_price);
 			bResult = true;
 		}
 		last_cntr = cntr;
 		last_price = price;
 	}
-	if (total_price > 100000)
+	if ((total_price > 100000) || (total_price < -100000))
 		return false;
 	price = total_price;
 	return bResult;
