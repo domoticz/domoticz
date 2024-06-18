@@ -76,9 +76,6 @@ define(['app', 'log/Chart'], function (app) {
             return _.merge(
                 {
                     highchartTemplate: {
-                        chart: {
-                            marginRight: 10
-                        },
                         xAxis: {
                             dateTimeLabelFormats: {
                                 hour: '%H:00',
@@ -134,9 +131,6 @@ define(['app', 'log/Chart'], function (app) {
             return _.merge(
                 {
                     highchartTemplate: {
-                        chart: {
-                            marginRight: 10
-                        },
                         tooltip: {
                             crosshairs: false
                         },

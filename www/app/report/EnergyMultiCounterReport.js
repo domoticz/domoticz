@@ -108,7 +108,6 @@ define(['app', 'report/helpers'], function (app, reportHelpers) {
                 }
 
                 dayRecord.totalUsage = dayRecord.usage1.usage + dayRecord.usage2.usage;
-				dayRecord.totalPrice = dayRecord.price;
                 dayRecord.usage = dayRecord.totalUsage -
                     (includeReturn ? dayRecord.totalReturn : 0);
                 dayRecord.cost = (dayRecord.price!=0) ? dayRecord.price : (dayRecord.usage1.cost + dayRecord.usage2.cost -
@@ -164,7 +163,6 @@ define(['app', 'report/helpers'], function (app, reportHelpers) {
 
                 acc.totalUsage = (acc.totalUsage || 0) + item.totalUsage;
                 acc.totalReturn = (acc.totalReturn || 0) + item.totalReturn;
-				acc.totalPrice = (acc.totalPrice || 0) + item.price;
                 acc.usage = (acc.usage || 0) + item.usage;
                 acc.cost = (acc.cost || 0) + item.cost;
                 return acc;
@@ -423,22 +421,28 @@ define(['app', 'report/helpers'], function (app, reportHelpers) {
 			}
 
 			series.push({
+				id: 'CP1RP',
 				type: 'spline',
 				name: $.t('Costs'),
-				color: 'rgba(190,252,60,0.8)',
 				zIndex: 3,
 				tooltip: {
 					valueSuffix: ' ' + $.myglobals.currencysign,
 					pointFormat: '<span style="color: {point.color}">●</span> {series.name}: <b>{point.y}</b><br>',
 					valueDecimals: 4
 				},
-				yAxis: 0,
-				showInLegend: false,
+				marker: {
+					enabled: false
+				},
+				lineWidth: 2,
+				color: 'rgba(190,252,60,0.8)',
+				showInLegend: true,
+				convertZeroToNull: true,
 				showWithoutDatapoints: false,
+				yAxis: 1,
 				data: data.items.map(function (item) {
 					return {
 						x: +(new Date(item.date)),
-						y: (item.totalPrice != 0) ? item.totalPrice : null
+						y: item.cost
 					}
 				})
 			});
@@ -454,17 +458,27 @@ define(['app', 'report/helpers'], function (app, reportHelpers) {
                     type: 'datetime',
                     minTickInterval: vm.isMonthView ? 24 * 3600 * 1000 : 28 * 24 * 3600 * 1000
                 },
-                yAxis: {
-					labels: {
-						formatter: function () {
-							return Math.abs(Highcharts.numberFormat(this.value, 0));
-						}
+                yAxis: [
+					{
+						labels: {
+							formatter: function () {
+								return Highcharts.numberFormat(this.value, 0, '', '');
+							}
+						},
+						title: {
+							text: $.t('Energy') + ' (' + vm.unit + ')'
+						},
+						maxPadding: 0.2,
 					},
-                    title: {
-                        text: $.t('Energy') + ' (' + vm.unit + ')'
-                    },
-                    maxPadding: 0.2,
-                },
+                    {
+						visible: true,
+						showEmpty: false,
+						opposite: true,
+                        title: {
+                            text: $.t('Price') + ' (' + $.myglobals.currencysign + ')'
+                        }
+                    }
+				],
                 tooltip: {
 					headerFormat: '{point.x:%A, %B %d, %Y}<br/>',
 					pointFormat: '<span style="color: {point.color}">●</span> {series.name}: <b>{abs3 point.y} {point.series.tooltipOptions.valueSuffix}</b> ( {point.percentage:.0f}% )<br>',

@@ -40,7 +40,15 @@ define(['app', 'log/Chart', 'log/CounterLogParams', 'log/CounterLogEnergySeriesS
                     {
                         title: {
                             text: $.t('Energy') + ' (' + chart.valueUnits.energy(chart.valueMultipliers.m1000) + ')'
-                        }
+                        },
+                    },
+                    {
+                        title: {
+                            text: $.t('Price') + ' (' + $.myglobals.currencysign + ')'
+                        },
+						visible: true,
+						showEmpty: false,
+						opposite: true
                     }
                 ];
             },

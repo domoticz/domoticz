@@ -97,6 +97,14 @@ define(['app', 'log/Chart', 'log/CounterLogParams', 'log/CounterLogEnergySeriesS
                             text: $.t('Energy') + ' (' + chart.valueUnits.energy(chart.valueMultipliers.m1) + ')'
                         },
 						min: 0
+                    },
+                    {
+                        title: {
+                            text: $.t('Price') + ' (' + $.myglobals.currencysign + ')'
+                        },
+						visible: true,
+						showEmpty: false,
+						opposite: true
                     }
                 ];
             },
@@ -111,6 +119,14 @@ define(['app', 'log/Chart', 'log/CounterLogParams', 'log/CounterLogEnergySeriesS
                         title: {
                             text: $.t('Energy') + ' (' + chart.valueUnits.energy(chart.valueMultipliers.m1000) + ')'
                         },
+                    },
+                    {
+                        title: {
+                            text: $.t('Price') + ' (' + $.myglobals.currencysign + ')'
+                        },
+						visible: true,
+						showEmpty: false,
+						opposite: true
                     }
                 ];
             },
@@ -132,7 +148,7 @@ define(['app', 'log/Chart', 'log/CounterLogParams', 'log/CounterLogEnergySeriesS
                 return []
                     .concat(counterLogEnergySeriesSuppliers.p1HourSeriesSuppliers(deviceType))
                     .concat(counterLogEnergySeriesSuppliers.powerReturnedHourSeriesSuppliers(deviceType))
-                    .concat(counterLogEnergySeriesSuppliers.p1PriceHourSeriesSuppliers(deviceType));
+                    .concat(counterLogEnergySeriesSuppliers.p1PriceSeriesSuppliers(deviceType));
             },
             monthYearSeriesSuppliers: function (deviceType) {
                 return []
@@ -142,7 +158,7 @@ define(['app', 'log/Chart', 'log/CounterLogParams', 'log/CounterLogEnergySeriesS
 					.concat(counterLogEnergySeriesSuppliers.powerTrendlineReturnedMonthYearSeriesSuppliers(deviceType))
 					.concat(counterLogEnergySeriesSuppliers.p1PastMonthYearSeriesSuppliers(deviceType))
 					.concat(counterLogEnergySeriesSuppliers.powerPastReturnedMonthYearSeriesSuppliers(deviceType))
-                    .concat(counterLogEnergySeriesSuppliers.priceMonthYearSeriesSuppliers(deviceType));
+                    .concat(counterLogEnergySeriesSuppliers.p1PriceSeriesSuppliers(deviceType));
             },
             preprocessCompareData: function (data) {
                 this.dataContainsDelivery = data.delivered ? true : false;

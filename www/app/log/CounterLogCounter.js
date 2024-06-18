@@ -83,12 +83,12 @@ define(['app', 'lodash', 'log/Chart', 'log/CounterLogParams', 'log/CounterLogCou
                         }
                     },
                     {
-						visible: false,
-						max: 10000,
-						min: 0,
                         title: {
-                            text: $.t('Price')
-                        }
+                            text: $.t('Price') + ' (' + $.myglobals.currencysign + ')'
+                        },
+						visible: true,
+						showEmpty: false,
+						opposite: true
                     }
                 ];
             },
@@ -147,11 +147,12 @@ define(['app', 'lodash', 'log/Chart', 'log/CounterLogParams', 'log/CounterLogCou
                         }
                     },
                     {
-						visible: false,
-						max: 1000,
                         title: {
-                            text: $.t('Price')
-                        }
+                            text: $.t('Price') + ' (' + $.myglobals.currencysign + ')'
+                        },
+						visible: true,
+						showEmpty: false,
+						opposite: true
                     }
                 ];
             },

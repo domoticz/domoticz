@@ -34,7 +34,7 @@
             p1HourSeriesSuppliers: p1HourSeriesSuppliers,
             p1MonthYearSeriesSuppliers: p1MonthYearSeriesSuppliers,
 			p1PastMonthYearSeriesSuppliers: p1PastMonthYearSeriesSuppliers,
-            p1PriceHourSeriesSuppliers: p1PriceHourSeriesSuppliers,
+            p1PriceSeriesSuppliers: p1PriceSeriesSuppliers,
 			p1TrendlineMonthYearSeriesSuppliers: p1TrendlineMonthYearSeriesSuppliers,
         };
 
@@ -299,13 +299,14 @@
 				})
             ];
         }
-        function p1PriceHourSeriesSuppliers(deviceType) {
+        function p1PriceSeriesSuppliers(deviceType) {
             return [
                 {
                     id: 'P1PHSS',
                     dataItemKeys: ['p'],
-                    convertZeroToNull: true,
                     label: '2',
+                    convertZeroToNull: true,
+                    showWithoutDatapoints: false,
                     template: function (seriesSupplier) {
                         return {
 							type: 'spline',
@@ -314,9 +315,13 @@
 							tooltip: {
 								valueSuffix: ' ' + $.myglobals.currencysign
 							},
+							marker: {
+								enabled: false
+							},
+							lineWidth: 2,
 							color: 'rgba(190,252,60,0.8)',
-							showInLegend: false,
-                            yAxis: 0
+							showInLegend: true,
+                            yAxis: 1
                         };
                     }
                 }
@@ -548,9 +553,9 @@
             return [
                 counterLogSeriesSupplier.dataItemsKeysPredicatedSeriesSupplier('p', new DoesNotContain('eu'), {
                     id: 'PRMYSS',
-                    convertZeroToNull: true,
                     valueDecimals: 4,
                     label: 'B',
+                    convertZeroToNull: true,
                     showWithoutDatapoints: false,
                     series: {
                         type: 'spline',
@@ -560,11 +565,18 @@
                             valueSuffix: ' ' + $.myglobals.currencysign
                         },
                         color: 'rgba(190,252,60,0.8)',
-                        yAxis: 0,
-                        visible: true
+						marker: {
+							enabled: false
+						},
+						lineWidth: 2,
+						color: 'rgba(190,252,60,0.8)',
+						showInLegend: true,
+						yAxis: 1,
+						visible: true
                     }
                 })
             ];
+			
         }
 		
     });
