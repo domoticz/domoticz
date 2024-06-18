@@ -5,8 +5,7 @@
 #include "../main/SQLHelper.h"
 #include "../main/json_helper.h"
 
-#define GAPI_POST_URL "https://fcm.googleapis.com/fcm/send"
-#define GAPI "AIzaSyBnRMroiDaXCKbwPeOmoxkNiQfjWkGMre8"
+#define GAPI_POST_URL "https://fcm.googleapis.com/v1/projects/##PROJECTID##/messages:send"
 
 constexpr const char *FCMMessage = R"FCM(
 {
@@ -139,7 +138,7 @@ bool CNotificationFCM::SendMessageImplementation(
 		std::vector<std::string> ExtraHeaders;
 		ExtraHeaders.push_back("Content-Type: application/json");
 
-		sstr2 << "Authorization: key=" << GAPI;
+		sstr2 << "Authorization: key=" << GAPI_bearer_token;
 		ExtraHeaders.push_back(sstr2.str());
 
 		if (!HTTPClient::POST(GAPI_POST_URL, szPostdata, ExtraHeaders, sResult))
@@ -183,7 +182,7 @@ bool CNotificationFCM::SendMessageImplementation(
 		std::vector<std::string> ExtraHeaders;
 		ExtraHeaders.push_back("Content-Type: application/json");
 
-		sstr2 << "Authorization: key=" << GAPI;
+		sstr2 << "Authorization: Bearer " << GAPI_bearer_token;
 		ExtraHeaders.push_back(sstr2.str());
 
 		if (!HTTPClient::POST(GAPI_POST_URL, szPostdata, ExtraHeaders, sResult))
@@ -211,4 +210,3 @@ bool CNotificationFCM::SendMessageImplementation(
 	}
 	return true;
 }
-
