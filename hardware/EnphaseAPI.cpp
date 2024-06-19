@@ -1538,27 +1538,21 @@ void EnphaseAPI::parseLivedata(const Json::Value& root)
 		//No meter details available
 		return;
 	}
+
+	int phase_count = root["meters"]["phase_count"].asInt();
+
 	int soc = root["meters"]["soc"].asInt();
 
-	int enc_agg_soc = root["meters"]["enc_agg_soc"].asInt();
+//	int enc_agg_soc = root["meters"]["enc_agg_soc"].asInt();
 	int enc_agg_energy = root["meters"]["enc_agg_energy"].asInt();
-	int acb_agg_soc = root["meters"]["acb_agg_soc"].asInt();
+//	int acb_agg_soc = root["meters"]["acb_agg_soc"].asInt();
 	int acb_agg_energy = root["meters"]["acb_agg_energy"].asInt();
 
-	bool bHaveENC = (enc_agg_soc > 0) || (enc_agg_energy > 0);
-	bool bHaveACB = (acb_agg_soc > 0) || (acb_agg_energy > 0);
+	bool bHaveStorage = (enc_agg_energy > 0) || (acb_agg_energy > 0);
 
-	if (bHaveENC)
+	if (bHaveStorage)
 	{
-		SendPercentageSensor(50, 1, 255, static_cast<float>(enc_agg_soc), "Enphase ENC SOC");
-	}
-	if (bHaveACB)
-	{
-		SendPercentageSensor(50, 2, 255, static_cast<float>(acb_agg_soc), "Enphase ACB SOC");
-	}
-	if (bHaveENC || bHaveACB)
-	{
-		SendPercentageSensor(50, 3, 255, static_cast<float>(enc_agg_soc), "Enphase Average SOC");
+		SendPercentageSensor(50, 3, 255, static_cast<float>(soc), "Enphase Storage SOC");
 
 		float chargePwr = static_cast<float>(root["meters"]["storage"]["agg_p_mw"].asInt()) / 1000.0F;
 		chargePwr *= -1; //negative value is discharging
