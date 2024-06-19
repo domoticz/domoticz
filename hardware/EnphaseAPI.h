@@ -39,12 +39,14 @@ private:
 	bool getPowerStatus();
 	bool getInverterDetails();
 	bool getInventoryDetails(Json::Value& result);
+	bool getLivedataDetails(Json::Value& result);
 	bool getDevStatusDetails(Json::Value& result);
 
 	void parseProduction(const Json::Value& root);
 	void parseConsumption(const Json::Value& root);
 	void parseStorage(const Json::Value& root);
 	void parseInventory(const Json::Value& root);
+	void parseLivedata(const Json::Value& root);
 	void parseDevStatus(const Json::Value& root);
 
 	bool SetPowerActive(const bool bActive);
@@ -87,6 +89,8 @@ private:
 	bool m_bHaveInventory = false;
 
 	bool m_bHaveDevStatus = false;
+
+	bool m_bHaveLiveData = true;
 
 	CounterHelper m_ProductionCounter;
 

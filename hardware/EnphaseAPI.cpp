@@ -40,6 +40,7 @@ Example
 #define ENPAHSE_API_INVENTORY_DETAILS "{ip}/ivp/ensemble/inventory"
 #define ENPAHSE_API_REPORT_PRODUCTION "{ip}ivp/meters/reports/production"
 #define ENPAHSE_API_REPORT_CONSUMPTION "{ip}ivp/meters/reports/consumption"
+#define ENPAHSE_API_LIVEDATA_STATUS "{ip}ivp/livedata/status"
 
 #ifdef DEBUG_EnphaseAPI_W
 void SaveString2Disk(std::string str, std::string filename)
@@ -251,6 +252,14 @@ void EnphaseAPI::Do_Work()
 									parseDevStatus(result);
 								}
 							}
+						}
+					}
+					if (m_bHaveLiveData)
+					{
+						Json::Value livedata;
+						if (getLivedataDetails(livedata))
+						{
+							parseLivedata(livedata);
 						}
 					}
 				}
@@ -1453,4 +1462,106 @@ bool EnphaseAPI::getInverterDetails()
 		}
 		}
 	return true;
+}
+
+bool EnphaseAPI::getLivedataDetails(Json::Value& result)
+{
+	std::string sResult;
+
+#ifdef DEBUG_EnphaseAPI_R
+	sResult = ReadFile("E:\\EnphaseAPI_livedata_status.json");
+#else
+	std::vector<std::string> ExtraHeaders;
+	if (!m_szToken.empty())
+	{
+		if (!CheckAuthJWT(m_szToken, false))
+		{
+			//we probably need to get a new token
+			if (!GetOwnerToken())
+				return false;
+			if (!CheckAuthJWT(m_szToken, true))
+			{
+				return false;
+			}
+		}
+
+		ExtraHeaders.push_back("Authorization: Bearer " + m_szToken);
+		ExtraHeaders.push_back("Content-Type:application/json");
 	}
+
+	if (!HTTPClient::GET(MakeURL(ENPAHSE_API_LIVEDATA_STATUS), ExtraHeaders, sResult))
+	{
+		if (!m_szToken.empty())
+		{
+			return false;
+		}
+		else
+		{
+			Log(LOG_ERROR, "Error getting http data! (production)");
+			return false;
+		}
+	}
+#ifdef DEBUG_EnphaseAPI_W
+	SaveString2Disk(sResult, "E:\\EnphaseAPI_livedata_status.json");
+#endif
+#endif
+	Debug(DEBUG_RECEIVED, "livedata_status: %s", sResult.c_str());
+
+	bool ret = ParseJSon(sResult, result);
+	if ((!ret) || (!result.isObject()))
+	{
+		m_szToken.clear();
+		Log(LOG_ERROR, "Invalid data received! (production/json)");
+		return false;
+	}
+	if (
+		(result["connection"].empty())
+		|| (result["meters"].empty())
+		)
+	{
+		m_bHaveLiveData = false;
+		return false;
+	}
+	if (result["meters"]["phase_count"].asInt() < 1)
+	{
+		m_bHaveLiveData = false;
+		return false;
+	}
+
+	return true;
+}
+
+void EnphaseAPI::parseLivedata(const Json::Value& root)
+{
+	if (root["meters"].empty() == true)
+	{
+		//No meter details available
+		return;
+	}
+	int soc = root["meters"]["soc"].asInt();
+
+	int enc_agg_soc = root["meters"]["enc_agg_soc"].asInt();
+	int enc_agg_energy = root["meters"]["enc_agg_energy"].asInt();
+	int acb_agg_soc = root["meters"]["acb_agg_soc"].asInt();
+	int acb_agg_energy = root["meters"]["acb_agg_energy"].asInt();
+
+	bool bHaveENC = (enc_agg_soc > 0) || (enc_agg_energy > 0);
+	bool bHaveACB = (acb_agg_soc > 0) || (acb_agg_energy > 0);
+
+	if (bHaveENC)
+	{
+		SendPercentageSensor(50, 1, 255, static_cast<float>(enc_agg_soc), "Enphase ENC SOC");
+	}
+	if (bHaveACB)
+	{
+		SendPercentageSensor(50, 2, 255, static_cast<float>(acb_agg_soc), "Enphase ACB SOC");
+	}
+	if (bHaveENC || bHaveACB)
+	{
+		SendPercentageSensor(50, 3, 255, static_cast<float>(enc_agg_soc), "Enphase Average SOC");
+
+		float chargePwr = static_cast<float>(root["meters"]["storage"]["agg_p_mw"].asInt()) / 1000.0F;
+		chargePwr *= -1; //negative value is discharging
+		SendWattMeter(50, 1, 255, static_cast<float>(chargePwr), "Enphase Battery Charge Power");
+	}
+}
