@@ -1552,7 +1552,7 @@ void EnphaseAPI::parseLivedata(const Json::Value& root)
 
 	if (bHaveStorage)
 	{
-		SendPercentageSensor(50, 3, 255, static_cast<float>(soc), "Enphase Storage SOC");
+		SendPercentageSensor(50, 1, 255, static_cast<float>(soc), "Enphase Storage SOC");
 
 		float chargePwr = static_cast<float>(root["meters"]["storage"]["agg_p_mw"].asInt()) / 1000.0F;
 		chargePwr *= -1; //negative value is discharging
