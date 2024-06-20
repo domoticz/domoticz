@@ -1588,7 +1588,7 @@ namespace http {
 		{
 			std::stringstream sstr;
 			sstr << "DMZSID=" << session.id << "_" << session.auth_token << "." << session.expires;
-			sstr << "; HttpOnly; path=/; Expires=" << make_web_time(session.expires);
+			sstr << "; HttpOnly; SameSite=strict; path=/; Expires=" << make_web_time(session.expires);
 			reply::add_header(&rep, "Set-Cookie", sstr.str(), false);
 		}
 
@@ -1596,8 +1596,8 @@ namespace http {
 		{
 			std::stringstream sstr;
 			sstr << "DMZSID=none";
-			// RK, we removed path=/ so you can be logged in to two Domoticz's at the same time on https://my.domoticz.com/.
-			sstr << "; HttpOnly; Expires=" << make_web_time(0);
+			// RK, we removed path=/ so you can be logged in to two Domoticz instances
+			sstr << "; HttpOnly; SameSite=strict; Expires=" << make_web_time(0);
 			reply::add_header(&rep, "Set-Cookie", sstr.str(), false);
 		}
 
