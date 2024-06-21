@@ -118,6 +118,7 @@ bool SMTPClient::SendEmail()
 	struct curl_slist* slist1;
 
 	smtp_upload_status smtp_ctx;
+	smtp_ctx.pDataBytes = nullptr;
 	smtp_ctx.bytes_read = 0;
 
 	slist1 = nullptr;
@@ -206,6 +207,8 @@ bool SMTPClient::SendEmail()
 	}
 	catch (...)
 	{
+		if (smtp_ctx.pDataBytes != nullptr)
+			delete[] smtp_ctx.pDataBytes;
 		_log.Log(LOG_ERROR, "SMTP Mailer: Error sending Email to: %s !", m_Recipients[0].c_str());
 		return false;
 	}
