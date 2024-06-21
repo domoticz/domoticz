@@ -1475,17 +1475,17 @@ namespace http
 
 					if ((rused == "false") && (used))
 						continue;
-					if (!rfilter.empty())
+					if ((!rfilter.empty()) && (rfilter != "all"))
 					{
 						if (rfilter == "light")
 						{
 							if (!
 								(
-								IsLightOrSwitch(dType, dSubType)
-								|| (dType == pTypeEvohome)
-								|| (dType == pTypeEvohomeRelay)
-								|| ((dType == pTypeRego6XXValue) && (dSubType == sTypeRego6XXStatus))
-								)
+									IsLightOrSwitch(dType, dSubType)
+									|| (dType == pTypeEvohome)
+									|| (dType == pTypeEvohomeRelay)
+									|| ((dType == pTypeRego6XXValue) && (dSubType == sTypeRego6XXStatus))
+									)
 								)
 								continue;
 						}
