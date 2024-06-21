@@ -1118,7 +1118,7 @@ void BleBox::AddNode(const std::string& name, const std::string& IPAddress, bool
 
 	if (deviceType.bleBoxTypeId == 4) // gatebox
 	{
-		auto idx = m_sql.InsertDevice(m_HwdID, 0, id, 1, deviceType.rfxType, deviceType.subType, deviceType.switchType, 0, "Unavailable", deviceName, signalQuality, 255, 0);
+		int idx = (int)m_sql.InsertDevice(m_HwdID, 0, id, 1, deviceType.rfxType, deviceType.subType, deviceType.switchType, 0, "Unavailable", deviceName, signalQuality, 255, 0);
 		_log.Debug(DEBUG_HARDWARE, "BleBox: new device Id: '%d'", idx);
 		m_sql.safe_query("UPDATE DeviceStatus SET StrParam1='%d', StrParam2='%q' WHERE (ID==%d)", deviceTypeID, IPAddress.c_str(), idx);
 
@@ -1131,7 +1131,7 @@ void BleBox::AddNode(const std::string& name, const std::string& IPAddress, bool
 	else
 		if (deviceType.bleBoxTypeId == 6) // switchboxd
 		{
-			auto idx = m_sql.InsertDevice(m_HwdID, 0, id, 0, deviceType.rfxType, deviceType.subType, deviceType.switchType, 0, "Unavailable", deviceName, signalQuality, 255, 0);
+			int idx = (int)m_sql.InsertDevice(m_HwdID, 0, id, 0, deviceType.rfxType, deviceType.subType, deviceType.switchType, 0, "Unavailable", deviceName, signalQuality, 255, 0);
 			_log.Debug(DEBUG_HARDWARE, "BleBox: new device Id: '%d'", idx);
 			m_sql.safe_query("UPDATE DeviceStatus SET StrParam1='%d', StrParam2='%q' WHERE (ID==%d)", deviceTypeID, IPAddress.c_str(), idx);
 
@@ -1141,7 +1141,7 @@ void BleBox::AddNode(const std::string& name, const std::string& IPAddress, bool
 		else
 			if (deviceType.bleBoxTypeId == 7) // airbox
 			{
-				auto idx = m_sql.InsertDevice(m_HwdID, 0, id, 1, deviceType.rfxType, deviceType.subType, deviceType.switchType, 0, "Unavailable", "Unknown", signalQuality, 255, 0);
+				int idx = (int)m_sql.InsertDevice(m_HwdID, 0, id, 1, deviceType.rfxType, deviceType.subType, deviceType.switchType, 0, "Unavailable", "Unknown", signalQuality, 255, 0);
 				_log.Debug(DEBUG_HARDWARE, "BleBox: new device Id: '%d'", idx);
 				m_sql.safe_query("UPDATE DeviceStatus SET StrParam1='%d', StrParam2='%q' WHERE (ID==%d)", deviceTypeID, IPAddress.c_str(), idx);
 
@@ -1153,7 +1153,7 @@ void BleBox::AddNode(const std::string& name, const std::string& IPAddress, bool
 			}
 			else
 			{
-				auto idx = m_sql.InsertDevice(m_HwdID, 0, id, unit, deviceType.rfxType, deviceType.subType, deviceType.switchType, 0, "Unavailable", deviceName, signalQuality, 255, 0);
+				int idx = (int)m_sql.InsertDevice(m_HwdID, 0, id, unit, deviceType.rfxType, deviceType.subType, deviceType.switchType, 0, "Unavailable", deviceName, signalQuality, 255, 0);
 				_log.Debug(DEBUG_HARDWARE, "BleBox: new device Id: '%d'", idx);
 				m_sql.safe_query("UPDATE DeviceStatus SET StrParam1='%d', StrParam2='%q' WHERE (ID==%d)", deviceTypeID, IPAddress.c_str(), idx);
 			}

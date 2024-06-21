@@ -4562,7 +4562,7 @@ void MQTTAutoDiscover::UpdateBlindPosition(_tMQTTASensor* pSensor)
 		else
 		{
 #ifdef _DEBUG
-			_log.Debug(DEBUG_NORM, "ERROR: Cover, unknown how to interpretate position/state", pSensor->unique_id.c_str(), szDeviceName.c_str());
+			_log.Debug(DEBUG_NORM, "ERROR: Cover, unknown how to interpretate position/state (%s/%s)", pSensor->unique_id.c_str(), szDeviceName.c_str());
 #endif
 			return;
 		}

@@ -100,7 +100,7 @@ class eHouseTCP : public CDomoticzHardwareBase
 	void eHType(int devtype, char *dta);
 
       private:
-	unsigned char m_eHEnableAutoDiscovery; // enable eHouse Controllers Auto Discovery
+	unsigned char m_eHEnableAutoDiscovery; // enable eHouse Controllers Auto Discovery //GizMoCuz: Please made these boolean types! (and name them right: m_bHEnableAutoDiscovery)
 	unsigned char m_eHEnableProDiscovery;  // enable eHouse PRO Discovery
 	unsigned char m_eHEnableAlarmInputs;   // Future - Alarm inputs
 	char m_NoDetectTCPPack;
