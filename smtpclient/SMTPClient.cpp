@@ -209,7 +209,7 @@ bool SMTPClient::SendEmail()
 	{
 		if (smtp_ctx.pDataBytes != nullptr)
 			delete[] smtp_ctx.pDataBytes;
-		_log.Log(LOG_ERROR, "SMTP Mailer: Error sending Email to: %s !", m_Recipients[0].c_str());
+		_log.Log(LOG_ERROR, "SMTP Mailer: Exception! Error sending Email to: %s !", m_Recipients[0].c_str());
 		return false;
 	}
 	return true;
