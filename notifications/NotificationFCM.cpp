@@ -102,18 +102,25 @@ bool CNotificationFCM::SendMessageImplementation(
 	const bool bFromNotification)
 {
 	//send message to FCM
-	//ExtraData should be empty, is only filled currently when hitting the test button from the mobile devices setup page in the web gui
-
-	//Get All Devices
-	std::vector<std::vector<std::string> > result;
 
 	std::string sMidx;
 	std::vector<std::string> vDevices;
+	std::vector<std::string> vExtraData;
 	if (ExtraData.find("midx_") != std::string::npos) {
 		sMidx = ExtraData.substr(5);
 		boost::split(vDevices, sMidx, boost::is_any_of(";"));
 	}
+	else if (ExtraData.find("|") != std::string::npos) {
+		std::string temp;
+		std::stringstream tempssstr { ExtraData };
 
+		while (std::getline(tempssstr, temp, '|')) {
+			vExtraData.push_back(temp);
+		}
+	}
+
+	//Get All Devices
+	std::vector<std::vector<std::string> > result;
 	std::string szQuery("SELECT SenderID, DeviceType FROM MobileDevices");
 	if (!vDevices.empty()) {
 		szQuery += " WHERE (ID IN (" + boost::algorithm::join(vDevices, ",") + "))";
@@ -136,22 +143,22 @@ bool CNotificationFCM::SendMessageImplementation(
 	// Build the message
 	std::stringstream sstr;
 
-	sstr << "{ \"registration_ids\": [";
+	sstr << R"({ "validate_only": true, "message": {)";	// Open Send Message struct
 
-	int ii = 0;
-
-	for (const auto &device : mobileDevices)
+	if (!vExtraData.empty())
 	{
-		if (ii != 0)
-			sstr << ", ";
-		sstr << "\"" << device << "\"";
-		ii++;
+		sstr << R"("data": { "ExtraData": ")" << ExtraData << R"("}, )";
 	}
 
-	sstr << R"(], "data" : { "subject": ")" << Subject << R"(", "body": ")" << Text << R"(", "extradata": ")" << ExtraData << R"(", "priority": ")" << std::to_string(Priority) << "\", ";
-	sstr << R"("deviceid": ")" << std::to_string(Idx) << R"(", "message": ")" << Subject << "\" } }";
+	if (bFromNotification)
+	{
+		sstr << R"("notification": { "title": ")" << Subject << R"(", "body": ")" << Text << R"("}, )";
+	}
+
+	sstr << R"("token": ")" << mobileDevices[0] << R"(")";		// Add where to send
+	sstr << R"(} })";											// Close Send Message struct
 	std::string szPostdata = sstr.str();
-	_log.Debug(DEBUG_EVENTSYSTEM, "FCM: Generated message for %d devices: .%s.", ii, szPostdata.c_str());
+	_log.Debug(DEBUG_EVENTSYSTEM, "FCM: Generated message for %ld devices: .%s.", mobileDevices.size(), szPostdata.c_str());
 
 	std::vector<std::string> ExtraHeaders;
 	std::stringstream sstr2;
@@ -164,7 +171,7 @@ bool CNotificationFCM::SendMessageImplementation(
 
 	if (HTTPClient::POST(GAPI_FCM_PostURL, szPostdata, ExtraHeaders, sResult))
 	{
-		_log.Debug(DEBUG_EVENTSYSTEM, "FCM: Message sent to %d devices (%s)", ii, sResult.c_str());
+		_log.Debug(DEBUG_EVENTSYSTEM, "FCM: Message sent to %ld devices (%s)", mobileDevices.size(), sResult.c_str());
 
 		Json::Value root;
 
