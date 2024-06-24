@@ -237,7 +237,6 @@ void EnphaseAPI::Do_Work()
 				{
 					parseProduction(result);
 					parseConsumption(result);
-					parseStorage(result);
 
 					if (m_bGetInverterDetails)
 					{
@@ -879,39 +878,6 @@ void EnphaseAPI::parseConsumption(const Json::Value& root)
 			SendKwhMeter(m_HwdID, iIndex++, 255, musage, mtotal / 1000.0, szName);
 		}
 	}
-}
-
-void EnphaseAPI::parseStorage(const Json::Value& root)
-{
-	if (root["storage"].empty())
-	{
-		return;
-	}
-
-	if (root["storage"][0].empty())
-	{
-		Log(LOG_ERROR, "Invalid data received (storage)");
-		return;
-	}
-
-	Json::Value reading = root["storage"][0];
-
-	int activeCount = reading["activeCount"].asInt();
-	if (activeCount == 0)
-		return;
-
-	int musage = reading["wNow"].asInt();
-	SendWattMeter(m_HwdID, 1, 255, static_cast<float>(musage), "Enphase Storage wNow");
-	//int whNow = reading["whNow"].asInt();
-	//SendWattMeter(m_HwdID, 2, 255, static_cast<float>(musage), "Enphase Storage whNow");
-
-	int percentageFull = reading["percentFull"].asInt();
-	SendPercentageSensor(m_HwdID, 1, 255, static_cast<float>(percentageFull), "Enphase Storage Percent Full");
-
-	std::string szState = reading["state"].asString();
-	SendTextSensor(m_HwdID, 1, 255, szState, "Enphase Storage State");
-
-	m_bHaveStorage = true;
 }
 
 bool EnphaseAPI::getInventoryDetails(Json::Value& result)
@@ -1557,5 +1523,7 @@ void EnphaseAPI::parseLivedata(const Json::Value& root)
 		float chargePwr = static_cast<float>(root["meters"]["storage"]["agg_p_mw"].asInt()) / 1000.0F;
 		chargePwr *= -1; //negative value is discharging
 		SendWattMeter(50, 1, 255, static_cast<float>(chargePwr), "Enphase Battery Charge Power");
+
+		m_bHaveStorage = true;
 	}
 }

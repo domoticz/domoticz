@@ -44,7 +44,6 @@ private:
 
 	void parseProduction(const Json::Value& root);
 	void parseConsumption(const Json::Value& root);
-	void parseStorage(const Json::Value& root);
 	void parseInventory(const Json::Value& root);
 	void parseLivedata(const Json::Value& root);
 	void parseDevStatus(const Json::Value& root);
