@@ -67,6 +67,7 @@ local function EventHelpers(domoticz, mainMethod)
 		}
 	}
 	_G.logLevel = settings['Log level']
+	_G.logVerboseLevel = settings['Log level']
 
 	if settings.webRoot ~= nil and settings.webRoot ~= '' then
 		settings['Domoticz url'] = settings['Domoticz url'] .. '/' .. settings.webRoot
@@ -473,18 +474,23 @@ local function EventHelpers(domoticz, mainMethod)
 			local clockTimeStampAtStart = os.clock()
 			local timeStampAtStart = os.time()
 
-			utils.log('------ Start ' .. scriptType .. moduleLabel ..':' .. moduleLabelInfo .. triggerInfo, utils.LOG_MODULE_EXEC_INFO)
+			if (_G.logVerboseLevel > 2) then
+				utils.log('------ Start ' .. scriptType .. moduleLabel ..':' .. moduleLabelInfo .. triggerInfo, utils.LOG_MODULE_EXEC_INFO)
+			end
+
 			self.callEventHandler(eventHandler, subject)
 
 			local clockTimeSpend = os.clock() - clockTimeStampAtStart
 			local realTimeSpend = os.time() - timeStampAtStart
 
-			if realTimeSpend > 9 or clockTimeSpend > 7 then
-				utils.log('------ Finished ' .. moduleLabel .. ' after >' .. realTimeSpend .. ' seconds. (using '.. tostring(clockTimeSpend):sub(1,5) .. ' seconds CPU time !)' , utils.LOG_ERROR)
-			elseif realTimeSpend > 6 or clockTimeSpend > 5 then
-				utils.log('------ Finished ' .. moduleLabel .. ' after >' .. realTimeSpend .. ' seconds. (using '.. tostring(clockTimeSpend):sub(1,5) .. ' seconds CPU time !)' , utils.LOG_FORCE)
-			else
-				utils.log('------ Finished ' .. moduleLabel , utils.LOG_MODULE_EXEC_INFO)
+			if (_G.logVerboseLevel > 2) then
+				if realTimeSpend > 9 or clockTimeSpend > 7 then
+					utils.log('------ Finished ' .. moduleLabel .. ' after >' .. realTimeSpend .. ' seconds. (using '.. tostring(clockTimeSpend):sub(1,5) .. ' seconds CPU time !)' , utils.LOG_ERROR)
+				elseif realTimeSpend > 6 or clockTimeSpend > 5 then
+					utils.log('------ Finished ' .. moduleLabel .. ' after >' .. realTimeSpend .. ' seconds. (using '.. tostring(clockTimeSpend):sub(1,5) .. ' seconds CPU time !)' , utils.LOG_FORCE)
+				else
+					utils.log('------ Finished ' .. moduleLabel , utils.LOG_MODULE_EXEC_INFO)
+				end
 			end
 
 			if (tonumber(_gv['dzVents_log_level']) == utils.LOG_DEBUG or TESTMODE ) then
@@ -975,7 +981,9 @@ local function EventHelpers(domoticz, mainMethod)
 			end
 
 			if (scriptsToExecute ~= nil) then
-				utils.log('Handling events for: "' .. device.name .. '", value: "' .. tostring(device.state) .. '"', utils.LOG_MODULE_EXEC_INFO)
+				if (_G.logVerboseLevel > 2) then
+					utils.log('Handling events for: "' .. device.name .. '", value: "' .. tostring(device.state) .. '"', utils.LOG_MODULE_EXEC_INFO)
+				end
 				self.handleEvents(scriptsToExecute, device)
 				self.dumpCommandArray(self.domoticz.commandArray, caSize + 1)
 			end
@@ -1011,7 +1019,9 @@ local function EventHelpers(domoticz, mainMethod)
 			end
 
 			if (scriptsToExecute ~= nil) then
-				utils.log('Handling events for: "' .. item.name .. '", value: "' .. tostring(item.state) .. '"', utils.LOG_MODULE_EXEC_INFO)
+				if (_G.logVerboseLevel > 2) then
+					utils.log('Handling events for: "' .. item.name .. '", value: "' .. tostring(item.state) .. '"', utils.LOG_MODULE_EXEC_INFO)
+				end
 				self.handleEvents(scriptsToExecute, item)
 				self.dumpCommandArray(self.domoticz.commandArray, caSize + 1)
 			end
