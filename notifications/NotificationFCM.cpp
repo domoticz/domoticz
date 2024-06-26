@@ -102,7 +102,7 @@ bool CNotificationFCM::IsConfigured()
 		result = m_sql.safe_query("SELECT ID, Value FROM UserVariables WHERE (Name=='GAPI_FCM_privkey')");
 		if (!result.empty())
 		{
-			GAPI_FCM_privkey = result[0][1];
+			GAPI_FCM_privkey = base64_decode(result[0][1]);		// The Priv key should be base64 encoded to get stored correctly in the DB (newlines)
 		}
 		else
 		{
@@ -142,8 +142,8 @@ bool CNotificationFCM::SendMessageImplementation(
 	}
 
 	//Get All Devices
-	std::vector<std::vector<std::string> > result;
-	std::string szQuery("SELECT SenderID, DeviceType FROM MobileDevices");
+	std::vector<std::vector<std::string>> mobileDevices;
+	std::string szQuery("SELECT ID,Active,Name,DeviceType,SenderID FROM MobileDevices");
 	if (!vDevices.empty()) {
 		szQuery += " WHERE (ID IN (" + boost::algorithm::join(vDevices, ",") + "))";
 	}
@@ -151,37 +151,12 @@ bool CNotificationFCM::SendMessageImplementation(
 		szQuery += " WHERE (Active == 1)";
 	}
 
-	result = m_sql.safe_query(szQuery.c_str());
-	if (result.empty())
+	mobileDevices = m_sql.safe_query(szQuery.c_str());
+	if (mobileDevices.empty())
 		return true;
 
-	std::vector<std::string> mobileDevices;
-
-	for (const auto &r : result)
-	{
-		mobileDevices.push_back(r[0]);	//Store the SenderID for later use
-	}
-
-	// Build the message
-	std::stringstream sstr;
-
-	sstr << R"({ "validate_only": true, "message": {)";	// Open Send Message struct
-
-	if (!vExtraData.empty())
-	{
-		sstr << R"("data": { "ExtraData": ")" << ExtraData << R"("}, )";
-	}
-
-	if (bFromNotification)
-	{
-		sstr << R"("notification": { "title": ")" << Subject << R"(", "body": ")" << Text << R"("}, )";
-	}
-
-	sstr << R"("token": ")" << mobileDevices[0] << R"(")";		// Add where to send
-	sstr << R"(} })";											// Close Send Message struct
-	std::string szPostdata = sstr.str();
-	_log.Debug(DEBUG_EVENTSYSTEM, "FCM: Generated message for %ld devices: .%s.", mobileDevices.size(), szPostdata.c_str());
-
+	// Get an access token to send the message
+	// First create a JWT with the FCM issuer and correct scope
 	std::string sFCMjwt, slAccessToken;
 	if (!createFCMjwt(GAPI_FCM_issuer, sFCMjwt))
 	{
@@ -196,39 +171,72 @@ bool CNotificationFCM::SendMessageImplementation(
 
 	std::vector<std::string> ExtraHeaders;
 	std::stringstream sstr2;
-	std::string sResult;
+	uint8_t iSend = 0;
 
 	sstr2 << "Authorization: Bearer " << slAccessToken;
 	ExtraHeaders.push_back(sstr2.str());
 	ExtraHeaders.push_back("Content-Type: application/json");
 
-	if (HTTPClient::POST(GAPI_FCM_PostURL, szPostdata, ExtraHeaders, sResult))
+	// Send the message to all devices
+	for (auto &mobileDevice : mobileDevices)
 	{
-		_log.Debug(DEBUG_EVENTSYSTEM, "FCM: Message sent to %ld devices (%s)", mobileDevices.size(), sResult.c_str());
-
-		Json::Value root;
-
-		bool ret = ParseJSon(sResult, root);
-		if (!ret)
+		if (mobileDevice[4].empty())
 		{
-			_log.Log(LOG_ERROR, "FCM: Can not connect to FCM API URL");
-			return false;
+			_log.Debug(DEBUG_EVENTSYSTEM, "FCM: No SenderID for device %s", mobileDevice[2].c_str());
+			continue;
+		}
+		// Build the message
+		std::stringstream sstr;
+
+		sstr << R"({ "validate_only": false, "message": {)";	// Open Send Message struct
+
+		if (!vExtraData.empty())
+		{
+			sstr << R"("data": { "ExtraData": ")" << ExtraData << R"("}, )";
 		}
 
-		if (!root["error"].empty())
+		if (bFromNotification)
 		{
-			Json::Value jsonError = root["error"];
-			_log.Log(LOG_ERROR, "FCM: Could not send message! Errorcode %d (%s)", jsonError["code"].asInt(), jsonError["message"].asCString());
-			return false;
+			sstr << R"("notification": { "title": ")" << Subject << R"(", "body": ")" << Text << R"("}, )";
+		}
+
+		sstr << R"("token": ")" << mobileDevice[4] << R"(")";		// Add where to send
+		sstr << R"(} })";											// Close Send Message struct
+		std::string szPostdata = sstr.str();
+		
+		_log.Debug(DEBUG_EVENTSYSTEM, "FCM: Generated message for device (%s): .%s.", mobileDevice[2].c_str(), szPostdata.c_str());
+
+		std::string sResult;
+		if (HTTPClient::POST(GAPI_FCM_PostURL, szPostdata, ExtraHeaders, sResult))
+		{
+			Json::Value root;
+			bool ret = ParseJSon(sResult, root);
+			if (ret)
+			{
+				if (!root["error"].empty())
+				{
+					Json::Value jsonError = root["error"];
+					_log.Log(LOG_ERROR, "FCM: Could not send message! Errorcode %d (%s)", jsonError["code"].asInt(), jsonError["message"].asCString());
+				}
+				else
+				{
+					iSend++;
+					_log.Debug(DEBUG_EVENTSYSTEM, "FCM: Message sent to device (%s): .%s.", mobileDevice[2].c_str(), sResult.c_str());
+				}
+			}
+			else
+			{
+				_log.Log(LOG_ERROR, "FCM: Can not connect to FCM API URL");
+				_log.Debug(DEBUG_EVENTSYSTEM, "FCM: API call failed, JSON Error! (%s)", sResult.c_str());
+			}
+		}
+		else
+		{
+			_log.Log(LOG_ERROR, "FCM: Could not send message, HTTP Error");
 		}
 	}
-	else
-	{
-		_log.Log(LOG_ERROR, "FCM: Could not send message, HTTP Error");
-		return false;
-	}
 
-	return true;
+	return (iSend == mobileDevices.size());
 }
 
 bool CNotificationFCM::getSlAccessToken(const std::string &bearer_token, std::string &slAccessToken)
@@ -252,7 +260,7 @@ bool CNotificationFCM::getSlAccessToken(const std::string &bearer_token, std::st
 			if (!root["access_token"].empty())
 			{
 				slAccessToken = root["access_token"].asString();
-				_log.Debug(DEBUG_EVENTSYSTEM, "FCM: AccessToken retrieved (%s)", slAccessToken.c_str());
+				_log.Debug(DEBUG_EVENTSYSTEM, "FCM: AccessToken retrieved (%s...)", slAccessToken.substr(0,10).c_str());
 				return true;
 			}
 		}
