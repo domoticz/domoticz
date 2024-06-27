@@ -16,6 +16,9 @@ public:
 	std::string GAPI_FCM_issuer;
 	std::string GAPI_FCM_privkey;
 
+	std::string slAccesToken_cached;
+	std::chrono::_V2::system_clock::time_point slAccessToken_exp_time;
+
 	bool getSlAccessToken(const std::string &bearer_token, std::string &slAccessToken);
 	bool createFCMjwt(const std::string &FCMissuer, std::string &sFCMjwt);
 };
