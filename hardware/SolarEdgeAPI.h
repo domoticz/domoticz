@@ -13,28 +13,32 @@ class SolarEdgeAPI : public CDomoticzHardwareBase
 		std::string SN;
 	};
 
-      public:
-	SolarEdgeAPI(int ID, const std::string &APIKey);
+public:
+	SolarEdgeAPI(int ID, const std::string& APIKey);
 	~SolarEdgeAPI() override = default;
-	bool WriteToHardware(const char *pdata, unsigned char length) override;
+	bool WriteToHardware(const char* pdata, unsigned char length) override;
 
-      private:
+private:
 	bool StartHardware() override;
 	bool StopHardware() override;
 	void Do_Work();
 	bool GetSite();
 	void GetInverters();
 	void GetMeterDetails();
-	void GetInverterDetails(const _tInverterSettings *pInverterSettings, int iInverterNumber);
+	void GetInverterDetails(const _tInverterSettings* pInverterSettings, int iInverterNumber);
 	int getSunRiseSunSetMinutes(bool bGetSunRise);
 
-      private:
+	void GetBatteryDetails();
+
+private:
 	int m_SiteID;
 	std::string m_APIKey;
 	std::vector<_tInverterSettings> m_inverters;
 
 	double m_totalActivePower;
 	double m_totalEnergy;
+
+	bool m_bPollBattery = true;
 
 	std::shared_ptr<std::thread> m_thread;
 };
