@@ -28,7 +28,7 @@
 
 #ifdef _DEBUG
 //	#define DEBUG_SolarEdgeAPIR
-//	#define DEBUG_SolarEdgeAPIW
+	#define DEBUG_SolarEdgeAPIW
 #endif
 
 #ifdef DEBUG_SolarEdgeAPIW
@@ -353,8 +353,14 @@ void SolarEdgeAPI::GetInverterDetails(const _tInverterSettings* pInverterSetting
 		return;
 	}
 
+	int rsize = (int)root["data"]["telemetries"].size();
+	if (rsize < 1)
+	{
+		return;
+	}
+
 	//We could have multiple sites here
-	Json::Value reading = root["data"]["telemetries"][0];
+	Json::Value reading = root["data"]["telemetries"][rsize - 1];
 	if ((!reading["totalActivePower"].empty()) && (!reading["totalEnergy"].empty()))
 	{
 		double curActivePower = reading["totalActivePower"].asDouble();
