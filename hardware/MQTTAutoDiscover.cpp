@@ -2708,7 +2708,7 @@ void MQTTAutoDiscover::handle_auto_discovery_fan(_tMQTTASensor* pSensor, const s
 			current_mode = GetValueFromTemplate(root, pSensor->preset_mode_value_template);
 			if ((pSensor->preset_mode_state_topic == topic) && current_mode.empty())
 			{
-				Log(LOG_ERROR, "Climate device no idea how to interpretate preset_mode_state value (%s)", pSensor->unique_id.c_str());
+				Log(LOG_ERROR, "Climate device no idea how to interpret preset_mode_state value (%s)", pSensor->unique_id.c_str());
 				bValid = false;
 			}
 		}
@@ -2822,7 +2822,7 @@ void MQTTAutoDiscover::handle_auto_discovery_select(_tMQTTASensor* pSensor, cons
 			current_mode = GetValueFromTemplate(root, pSensor->value_template);
 			if ((pSensor->state_topic == topic) && current_mode.empty())
 			{
-				Log(LOG_ERROR, "Select device no idea how to interpretate state values (%s)", pSensor->unique_id.c_str());
+				Log(LOG_ERROR, "Select device no idea how to interpret state values (%s)", pSensor->unique_id.c_str());
 				return;
 			}
 		}
@@ -3001,14 +3001,14 @@ void MQTTAutoDiscover::handle_auto_discovery_climate(_tMQTTASensor* pSensor, con
 					if ((pSensor->mode_state_topic == topic) && current_mode.empty())
 					{
 						//Mode not provided
-						//Log(LOG_ERROR, "Climate device no idea how to interpretate state values (%s)", pSensor->unique_id.c_str());
+						//Log(LOG_ERROR, "Climate device no idea how to interpret state values (%s)", pSensor->unique_id.c_str());
 						bValid = false;
 					}
 				}
 				else
 				{
 					//should have a template for a json value!
-					Log(LOG_ERROR, "Climate device no idea how to interpretate state values (no state template!)(%s)", pSensor->unique_id.c_str());
+					Log(LOG_ERROR, "Climate device no idea how to interpret state values (no state template!)(%s)", pSensor->unique_id.c_str());
 					bValid = false;
 				}
 			}
@@ -3021,7 +3021,7 @@ void MQTTAutoDiscover::handle_auto_discovery_climate(_tMQTTASensor* pSensor, con
 					{
 						//silence error for now
 						current_mode = qMessage;
-						//Log(LOG_ERROR, "Climate device no idea how to interpretate state values (%s)", pSensor->unique_id.c_str());
+						//Log(LOG_ERROR, "Climate device no idea how to interpret state values (%s)", pSensor->unique_id.c_str());
 						//bValid = false;
 					}
 				}
@@ -3130,7 +3130,7 @@ void MQTTAutoDiscover::handle_auto_discovery_climate(_tMQTTASensor* pSensor, con
 				if ((pSensor->preset_mode_state_topic == topic) && current_mode.empty())
 				{
 					//No preset mode provided
-					//Log(LOG_ERROR, "Climate device no idea how to interpretate preset_mode_state value (%s)", pSensor->unique_id.c_str());
+					//Log(LOG_ERROR, "Climate device no idea how to interpret preset_mode_state value (%s)", pSensor->unique_id.c_str());
 					bValid = false;
 				}
 			}
@@ -4562,7 +4562,7 @@ void MQTTAutoDiscover::UpdateBlindPosition(_tMQTTASensor* pSensor)
 		else
 		{
 #ifdef _DEBUG
-			_log.Debug(DEBUG_NORM, "ERROR: Cover, unknown how to interpretate position/state (%s/%s)", pSensor->unique_id.c_str(), szDeviceName.c_str());
+			_log.Debug(DEBUG_NORM, "ERROR: Cover, unknown how to interpret position/state (%s/%s)", pSensor->unique_id.c_str(), szDeviceName.c_str());
 #endif
 			return;
 		}
