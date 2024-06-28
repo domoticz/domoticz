@@ -511,6 +511,13 @@ void SolarEdgeAPI::GetBatteryDetails()
 		SendTextSensor(200, SE_STORAGE_STATUS, 255, status, "Battery Status");
 
 		power = root["STORAGE"]["currentPower"].asFloat();
+
+		if (status == "Discharging")
+		{
+			if (power > 0)
+				power = -power;
+		}
+
 		SendWattMeter(200, SE_STORAGE_POWER, 255, power * 1000, "Battery Power");
 
 		float chargeLevel = root["STORAGE"]["chargeLevel"].asFloat();
