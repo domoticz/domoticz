@@ -55,6 +55,8 @@
 
 CNotificationFCM::CNotificationFCM() : CNotificationBase(std::string("fcm"), OPTIONS_NONE)
 {
+	m_slAccessToken_exp_time = std::chrono::duration_cast<std::chrono::seconds>(std::chrono::time_point_cast<std::chrono::seconds>(std::chrono::system_clock::now()).time_since_epoch()).count();
+
 	SetupConfig(std::string("FCMEnabled"), &m_IsEnabled);
 }
 
@@ -66,16 +68,15 @@ bool CNotificationFCM::IsConfigured()
 
 	if (ParseJSon(base64_decode(FCMKeyB64), root))
 	{
-		GAPI_FCM_privkey = root["private_key"].asString();
-		GAPI_FCM_ProjectID = root["project_id"].asString();
-		GAPI_FCM_issuer = root["client_email"].asString();
+		std::string sGAPI_FCM_ProjectID;
 
-		GAPI_FCM_PostURL = GAPI_FCM_POST_URL_BASE;
-		stdreplace(GAPI_FCM_PostURL, "##PROJECTID##", GAPI_FCM_ProjectID);
+		m_GAPI_FCM_issuer = root["client_email"].asString();
+		m_GAPI_FCM_privkey = root["private_key"].asString();
+		sGAPI_FCM_ProjectID = root["project_id"].asString();
 
-		slAccessToken_exp_time = std::chrono::system_clock::now();
+		m_GAPI_FCM_PostURL = GAPI_FCM_POST_URL_BASE;
+		stdreplace(m_GAPI_FCM_PostURL, "##PROJECTID##", sGAPI_FCM_ProjectID);
 
-		//_log.Debug(DEBUG_EVENTSYSTEM, "FCM: Parsed FCM project data (Project URL %s)!", GAPI_FCM_PostURL.c_str());
 		return true;
 	}
 
@@ -127,7 +128,7 @@ bool CNotificationFCM::SendMessageImplementation(
 	// Get an access token to send the message
 	// First create a JWT with the FCM issuer and correct scope
 	std::string sFCMjwt, slAccessToken;
-	if (!createFCMjwt(GAPI_FCM_issuer, sFCMjwt))
+	if (!createFCMjwt(m_GAPI_FCM_issuer, sFCMjwt))
 	{
 		_log.Log(LOG_ERROR, "FCM: Unable to create JWT!");
 		return false;
@@ -176,7 +177,7 @@ bool CNotificationFCM::SendMessageImplementation(
 		_log.Debug(DEBUG_EVENTSYSTEM, "FCM: Generated message for device (%s): .%s.", mobileDevice[2].c_str(), szPostdata.c_str());
 
 		std::string sResult;
-		if (HTTPClient::POST(GAPI_FCM_PostURL, szPostdata, ExtraHeaders, sResult))
+		if (HTTPClient::POST(m_GAPI_FCM_PostURL, szPostdata, ExtraHeaders, sResult))
 		{
 			Json::Value root;
 			bool ret = ParseJSon(sResult, root);
@@ -210,13 +211,13 @@ bool CNotificationFCM::SendMessageImplementation(
 
 bool CNotificationFCM::getSlAccessToken(const std::string &bearer_token, std::string &slAccessToken)
 {
-	if (!slAccesToken_cached.empty())
+	if (!m_slAccesToken_cached.empty())
 	{
-		_log.Debug(DEBUG_EVENTSYSTEM, "FCM: Cached Token found! (%ld - %ld)", slAccessToken_exp_time.time_since_epoch().count(), std::chrono::system_clock::now().time_since_epoch().count());
-		if (std::chrono::system_clock::now() < slAccessToken_exp_time)
+		uint64_t cur_time = std::chrono::duration_cast<std::chrono::seconds>(std::chrono::time_point_cast<std::chrono::seconds>(std::chrono::system_clock::now()).time_since_epoch()).count();
+		if (cur_time < m_slAccessToken_exp_time)
 		{
-			_log.Debug(DEBUG_EVENTSYSTEM, "FCM: Using Cached Token!");
-			slAccessToken = slAccesToken_cached;
+			_log.Debug(DEBUG_EVENTSYSTEM, "FCM: Using Cached Token! (Expires at %ld)", m_slAccessToken_exp_time);
+			slAccessToken = m_slAccesToken_cached;
 			return true;
 		}
 	}
@@ -242,11 +243,12 @@ bool CNotificationFCM::getSlAccessToken(const std::string &bearer_token, std::st
 				uint64_t slAccessToken_exp_seconds = 0;
 				if (!root["expires_in"].empty())
 				{
-					slAccessToken_exp_seconds = (root["expires_in"].asInt() - 120) * 1000000;		// 2 minutes before expiration
-					slAccessToken_exp_time = std::chrono::system_clock::now() + std::chrono::seconds{slAccessToken_exp_seconds};
-					slAccesToken_cached = slAccessToken;
+					slAccessToken_exp_seconds = (root["expires_in"].asInt() - 120);		// 2 minutes before expiration
+					m_slAccessToken_exp_time = std::chrono::duration_cast<std::chrono::seconds>(std::chrono::time_point_cast<std::chrono::milliseconds>(std::chrono::system_clock::now()).time_since_epoch()).count();
+					m_slAccessToken_exp_time = m_slAccessToken_exp_time + slAccessToken_exp_seconds;
+					m_slAccesToken_cached = slAccessToken;
 				}
-				_log.Debug(DEBUG_EVENTSYSTEM, "FCM: AccessToken retrieved (%s...) expires in %ld seconds", slAccessToken.substr(0,10).c_str(), slAccessToken_exp_seconds);
+				_log.Debug(DEBUG_EVENTSYSTEM, "FCM: AccessToken retrieved (%s...) expires in %ld seconds (at %ld)", slAccessToken.substr(0,10).c_str(), slAccessToken_exp_seconds, m_slAccessToken_exp_time);
 				return true;
 			}
 		}
@@ -271,12 +273,8 @@ bool CNotificationFCM::createFCMjwt(const std::string &FCMissuer, std::string &s
 		.set_audience(GAPI_OAUTH2_TOKEN_URL)
 		.set_issued_at(std::chrono::system_clock::now())
 		.set_expires_at(std::chrono::system_clock::now() + std::chrono::seconds{600})
-		//.set_not_before(std::chrono::system_clock::now())
-		//.set_subject(user)
-		//.set_key_id(std::to_string(keyID))
-		//.set_id(GenerateUUID())
 		.set_payload_claim("scope", jwt::claim(std::string{GAPI_FCM_SCOPE}));
-		sFCMjwt = JWT.sign(jwt::algorithm::rs256{"", GAPI_FCM_privkey, "", ""}, &base64url_encode);
+		sFCMjwt = JWT.sign(jwt::algorithm::rs256{"", m_GAPI_FCM_privkey, "", ""}, &base64url_encode);
 	}
 	catch(const std::exception& err)
 	{
