@@ -170,13 +170,14 @@ bool CCameraHandler::TakeSnapshot(const std::string &CamID, std::vector<unsigned
 		return TakeSnapshot(CamID, camimage);
 }
 
-bool CCameraHandler::TakeRaspberrySnapshot(std::vector<unsigned char> &camimage)
+bool CCameraHandler::TakeRaspberrySnapshotRaspiStill(std::vector<unsigned char>& camimage)
 {
 	std::string raspparams = "-w 800 -h 600 -t 1";
 	m_sql.GetPreferencesVar("RaspCamParams", raspparams);
 
 	std::string OutputFileName = szUserDataFolder + "tempcam.jpg";
 
+	//GizMoCuz: Bookwork has replaced this with libcamera-still
 	std::string raspistillcmd = "raspistill " + raspparams + " -o " + OutputFileName;
 	std::remove(OutputFileName.c_str());
 
@@ -210,6 +211,58 @@ bool CCameraHandler::TakeRaspberrySnapshot(std::vector<unsigned char> &camimage)
 	}
 
 	return false;
+}
+
+bool CCameraHandler::TakeRaspberrySnapshotRPICamStill(std::vector<unsigned char>& camimage)
+{
+	std::string raspparams = "--width 800 --height 600 -t 1000";
+	m_sql.GetPreferencesVar("RaspCamParams", raspparams);
+
+	std::string OutputFileName = szUserDataFolder + "tempcam.jpg";
+
+	//GizMoCuz: Bookwork has replaced this with libcamera-still
+	std::string raspistillcmd = "rpicam-still " + raspparams + " -o " + OutputFileName;
+	std::remove(OutputFileName.c_str());
+
+	//Get our image
+	int ret = system(raspistillcmd.c_str());
+	if (ret != 0)
+	{
+		_log.Log(LOG_ERROR, "Error executing licamera-still command. returned: %d", ret);
+		return false;
+	}
+	//If all went correct, we should have our file
+	try
+	{
+		std::ifstream is(OutputFileName.c_str(), std::ios::in | std::ios::binary);
+		if (is)
+		{
+			if (is.is_open())
+			{
+				char buf[512];
+				while (is.read(buf, sizeof(buf)).gcount() > 0)
+					camimage.insert(camimage.end(), buf, buf + (unsigned int)is.gcount());
+				is.close();
+				std::remove(OutputFileName.c_str());
+				return true;
+			}
+		}
+	}
+	catch (...)
+	{
+
+	}
+
+	return false;
+}
+
+bool CCameraHandler::TakeRaspberrySnapshot(std::vector<unsigned char> &camimage)
+{
+	bool bUseLibCameraStill = file_exist("/bin/rpicam-still");
+	if (bUseLibCameraStill)
+		return TakeRaspberrySnapshotRPICamStill(camimage);
+	else
+		return TakeRaspberrySnapshotRaspiStill(camimage);
 }
 
 bool CCameraHandler::TakeUVCSnapshot(const std::string &device, std::vector<unsigned char> &camimage)
