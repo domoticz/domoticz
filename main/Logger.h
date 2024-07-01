@@ -44,6 +44,7 @@ public:
 		time_t logtime;
 		_eLogLevel level;
 		std::string logmessage;
+		uint64_t line_counter;
 		_tLogLineStruct(_eLogLevel nlevel, const std::string& nlogmessage);
 	};
 

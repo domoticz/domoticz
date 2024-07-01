@@ -32,29 +32,31 @@ define(['app'], function (app) {
 				}
 				var logclass = "";
 				logclass = getLogClass(item.level);
+
+				//All
+				if ($scope.logitems.length >= 300)
+					$scope.logitems.splice(0, ($scope.logitems.length - 300));
 				$scope.logitems = $scope.logitems.concat({
 					mclass: logclass,
 					text: lmessage
 				});
-				if ($scope.logitems.length >= 300)
-					$scope.logitems.splice(0, ($scope.logitems.length - 300));
 				if (item.level == LOG_ERROR) {
 					//Error
+					if ($scope.logitems_error.length >= 300)
+						$scope.logitems_error.splice(0, ($scope.logitems_error.length - 300));
 					$scope.logitems_error = $scope.logitems_error.concat({
 						mclass: logclass,
 						text: lmessage
 					});
-					if ($scope.logitems_error.length >= 300)
-						$scope.logitems_error.splice(0, ($scope.logitems_error.length - 300));
 				}
 				else if (item.level == LOG_STATUS) {
 					//Status
+					if ($scope.logitems_status.length >= 300)
+						$scope.logitems_status.splice(0, ($scope.logitems_status.length - 300));
 					$scope.logitems_status = $scope.logitems_status.concat({
 						mclass: logclass,
 						text: lmessage
 					});
-					if ($scope.logitems_status.length >= 300)
-						$scope.logitems_status.splice(0, ($scope.logitems_status.length - 300));
 				}
 				else if (item.level == LOG_DEBUG) {
 					//Debug
@@ -62,8 +64,6 @@ define(['app'], function (app) {
 						mclass: logclass,
 						text: lmessage
 					});
-					if ($scope.logitems_debug.length >= 300)
-						$scope.logitems_debug.splice(0, ($scope.logitems_debug.length - 300));
 				}
 			}
 		}
@@ -152,6 +152,7 @@ define(['app'], function (app) {
 
 		$scope.$on('log', function (event, data) {
 			$scope.addLogLine(data);
+			$scope.$digest();
 		});
 
 		$scope.$on('$destroy', function () {
