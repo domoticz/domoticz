@@ -1,41 +1,55 @@
 __NOTOC__
+<span id="section"></span>
+== [3.1.10] ==
+
+* Added LOG_STATUS, adds a status log message into the system
+* Log levels are now handled internally as normal levels, meaning for example that error logs will be logged as errors, debug logs will be handles as debug logs (you have to enable debug logs as startup parameter)
+
+<span id="section-1"></span>
 == [3.1.9] ==
 
 * Added historical data helper <code>med(fromIndex, toIndex, default)</code> to calculate the median
 
+<span id="section-2"></span>
 == [3.1.8] ==
 
 * Add option to deserialize serialized JSON strings
 * Add keyword or in time rules
 * Add utils.splitLine
 
+<span id="section-3"></span>
 == [3.1.7] ==
 
 * Fix for race condition at midnight when internal scripts are refreshed
 * Allow both abbreviated and full names for days in time rules
 * Better protection for battery and signal levels outside valid ranges
 
+<span id="section-4"></span>
 == [3.1.6] ==
 
 * Add astronomical times. Now every -start, -end, -xx minutes before, -xx minutes after, -at and between aa and bb can be done for all available astronomical times. (AstronomicalTwilight. NauticalTwilight, CivilTwilight, sunrise, sunset, solarNoon, midnight)
 * limited output of dump() so it will only show attributes. (fullDump() available for complete overview)
 * Suppress error message when application/json return is empty
 
+<span id="section-5"></span>
 == [3.1.5] ==
 
 * Add two new system-events triggers as option to the on = { … } section. Scripts can now also be triggered based on these system-events:
 ** resetAllDeviceStatus ; when the name, description or used / unused state of a device, variable or scene changes
 ** resetAllEvents ; When a dzVents script in the internal editor changed
 
+<span id="section-6"></span>
 == [3.1.4] ==
 
 * Fixed issue that prevented dzVents from accessing the domoticz API when using -wwwbind
 
+<span id="section-7"></span>
 == [3.1.3] ==
 
 * Add method updateHistory for managed counter devices
 * Added NSS_CLICKATELL as notification subsystem
 
+<span id="section-8"></span>
 == [3.1.2] ==
 
 * Fixed issue with icon name
@@ -43,33 +57,40 @@ __NOTOC__
 * Use level as brightness in getColor function
 * Allow booleans as value in header field of openURL
 
+<span id="section-9"></span>
 == [3.1.1] ==
 
 * Fixed issue that prevented dzVents from accessing the domoticz API when used in sslwww only mode
 
+<span id="section-10"></span>
 == [3.1.0] ==
 
 * Added shell command event triggers to be used in combination with <code>executeShellCommand</code>. You can now execute shell commands and handle the response in your dzVents scripts '''ASYNCHRONICALLY'''. See the documentation. No more json parsing needed or complex <code>popen()</code> or ‘system()’ shizzle.
 * add inActive attribute to devices.
 
+<span id="section-11"></span>
 == [3.0.19] ==
 
 * Add thermostat Operating State device adapter
 
+<span id="section-12"></span>
 == [3.0.18] ==
 
 * Add isdst as (boolean) attribute to time object
 * Add updateQuiet() method to generic device
 * Fixed bug in dumpTable that caused infinite loop for table with self-reference
 
+<span id="section-13"></span>
 == [3.0.17] ==
 
 * Add timestampTodate, dateToTimestamp and dateToDate functions in Time
 
+<span id="section-14"></span>
 == [3.0.16] ==
 
 * Add except as keyword in timeRules
 
+<span id="section-15"></span>
 == [3.0.15] ==
 
 * Fixed bug in domoticz.time.matchesRule (daterange was ignored when “on mon, tue” was also part of the rule)
@@ -77,11 +98,13 @@ __NOTOC__
 * Add utils.humidityStatus
 * Add option to have dzVents compute humidity status
 
+<span id="section-16"></span>
 == [3.0.14] ==
 
 * Add utils.fuzzyLookup
 * Made eventHelpers more resilient to coding errors in the on = section
 
+<span id="section-17"></span>
 == [3.0.13] ==
 
 * Add utils.osCommand (caption)
@@ -89,26 +112,31 @@ __NOTOC__
 * Made log function more resilient when logitem is table with embedded function(s)
 * Improved domoticz.snapshot() to enable snapshot of multiple cameras (in one Email)
 
+<span id="section-18"></span>
 == [3.0.12] ==
 
 * Add option to use device, camera, group, scene and variable objects as parm to deviceExists(), groupExists(), sceneExists(), variableExists(), cameraExists() methods.
 
+<span id="section-19"></span>
 == [3.0.11] ==
 
 * Add sensorValue attribute to custom sensor
 * Add solarnoon as moment in time (like sunrise / sunset )
 
+<span id="section-20"></span>
 == [3.0.10] ==
 
 * Add NSS_GOOGLE_DEVICES for notification casting to Google home / Google chromecast
 * Add optional parm delay to domoticz.sendCommand, domoticz.email, domoticz.sms and domoticz.notify
 
+<span id="section-21"></span>
 == [3.0.9] ==
 
 * Add dump() as function to object types: camera-, customEvent, hardware, systemEvent, HTTPResponse, security and time.
 * Add function toUTC to time object.
 * Allow table as parm to function makeTime
 
+<span id="section-22"></span>
 == [3.0.8] ==
 
 * Allow IPv6 ::1 as localhost in domoticz settings
@@ -116,39 +144,47 @@ __NOTOC__
 * Implement optional use of parsetrigger parm in setValues to trigger any subsequent eventscripts
 * Updated round.utils to correctly handle negative numbers and round to zero decimals
 
+<span id="section-23"></span>
 == [3.0.7] ==
 
 * Add domoticz.hardware() as separate object class
 
+<span id="section-24"></span>
 == [3.0.6] ==
 
 * Add hardwareInfo() function
 
+<span id="section-25"></span>
 == [3.0.5] ==
 
 * Add dumpSelection() method
 * Fixed settings.url
 
+<span id="section-26"></span>
 == [3.0.4] ==
 
 * Convert HTTPResponse data to JSON / XML even when HTTPResponse does not fully comply with RFC
 * add isJSON, isXML functions to Utils
 
+<span id="section-27"></span>
 == [3.0.3] ==
 
 * add isJSON, isXML, json, xml and customEvent attributes to customEvent object (consistent with response object)
 
+<span id="section-28"></span>
 == [3.0.2] ==
 
 * Add <code>PUT</code> and <code>DELETE</code> support to <code>openURL</code>
 * Ensure sending integer in nValue in update function
 * Fix sValue for custom sensor
 
+<span id="section-29"></span>
 == [3.0.1] ==
 
 * Add option <code>at()</code> to the various commands/methods
 * Add stringToSeconds() function
 
+<span id="section-30"></span>
 == [3.0.0] ==
 
 * Add system-events triggers as option to the on = { … } section. Scripts can now be triggered based on these system-events:
@@ -166,20 +202,24 @@ __NOTOC__
 * Add attribute <code>mode</code> to Evohome controller
 * Add option to dumpTable() and ([device][uservariable][scene][group].dump() to os file
 
+<span id="section-31"></span>
 == [2.5.7] ==
 
 * Add option checkFirst to switchSelector method
 
+<span id="section-32"></span>
 == [2.5.6] ==
 
 * Add dayName, monthName, monthAbbrName and time as time attributes
 * Add _.round, _.isEqual functions to lodash.lua
 * Add testLodash.lua as testModule for lodash
 
+<span id="section-33"></span>
 == [2.5.5] ==
 
 * Add Zwave fan to Zwave mode device adapter
 
+<span id="section-34"></span>
 == [2.5.4] ==
 
 * Add minutesSinceMidnight to domoticz Time object
@@ -187,11 +227,13 @@ __NOTOC__
 * Add string.sMatch to utils
 * Made wildcard handling more resilient when magic chars are part of script triggers
 
+<span id="section-35"></span>
 == [2.5.3] ==
 
 * Add timealert / errors for long running scripts
 * Add triggerHTTPResponse()
 
+<span id="section-36"></span>
 == [2.5.2] ==
 
 * Add actualWatt to replace WhActual (left in WhActual for compatibility reasons)
@@ -199,15 +241,18 @@ __NOTOC__
 * Add setLogMarker function in utils
 * Deprecated increaseBrightness(), decreaseBrightness(), discomode methods (only available for Yeelight and left devices stateless)
 
+<span id="section-37"></span>
 == [2.5.1] ==
 
 * Added <code>toXML</code> and <code>fromXML</code> methods to domoticz.utils.
 * Add attributes isXML, xmlVersion, xmlEncoding
 
+<span id="section-38"></span>
 == [2.5.0] ==
 
 * Prepared for Lua 5.3
 
+<span id="section-39"></span>
 == [2.4.29] ==
 
 * Add error message including affected module when module got corrupted on disk.
@@ -216,31 +261,37 @@ __NOTOC__
 * Use native domoticz command for increaseCounter method.
 * Set inverse of “set color” to Off to enable use of toggleSwitch for RGB type of devices.
 
+<span id="section-40"></span>
 == [2.4.28] ==
 
 * Add deviceExists(), groupExists(), sceneExists(), variableExists(), cameraExists() methods in utils
 * increased httpResponse resilience against different use of Upper-, Lowercase in headers[‘content-type’] to ensure JSON conversion to Lua table
 
+<span id="section-41"></span>
 == [2.4.27] ==
 
 * Add attribute protected for devices / scenes and groups
 * Add methods protectionOn and protectionOff for devices / scenes and groups
 * Add functions rightPad, leftPad, centerPad, leadingZeros, numDecimals in utils
 
+<span id="section-42"></span>
 == [2.4.26] ==
 
 * Add Smoke Detector device (activate and reset functions )
 
+<span id="section-43"></span>
 == [2.4.25] ==
 
 * Add rawDateTime
 * fix for combined device / civil[day|night]time trigger rule
 * fix for checkFirst on stopped status
 
+<span id="section-44"></span>
 == [2.4.24] ==
 
 * Add method rename for devices, user-variables , scenes and groups
 
+<span id="section-45"></span>
 == [2.4.23] ==
 
 * Add method setMode for evohome device
@@ -248,37 +299,44 @@ __NOTOC__
 * Prepared for Firebase notifications. Firebase (fcm) is the replacement for Google Cloud Messaging gcm)
 * fix wildcard device
 
+<span id="section-46"></span>
 == [2.4.22] ==
 
 * selector.switchSelector method accepts levelNames
 * increased selector.switchSelector resilience
 * fix wildcard timerule
 
+<span id="section-47"></span>
 == [2.4.21] ==
 
 * fixed wrong direction for open() and close() for some types of blinds
 * Add inTable function to domoticz.utils
 * Add sValue attribute to devices
 
+<span id="section-48"></span>
 == [2.4.20] ==
 
 * Add quietOn() and quietOff() method to switchType devices
 
+<span id="section-49"></span>
 == [2.4.19] ==
 
 * Add stringSplit function to domoticz.utils.
 * Add statusText and protocol to HTTPResponse
 
+<span id="section-50"></span>
 == [2.4.18] ==
 
 * Add triggerIFTTT() to domoticz
 
+<span id="section-51"></span>
 == [2.4.17] ==
 
 * Add dumpTable() to domoticz.utils
 * Add setValues for devices
 * Add setIcon for devices
 
+<span id="section-52"></span>
 == [2.4.16] ==
 
 * Add method dump() to domoticz (dumps settings)
@@ -287,12 +345,14 @@ __NOTOC__
 * Add volumeUp / volumeDown for Logitech Media Server (LMS)
 * Changed domoticz.utils.fromJSON (add optional fallback param)
 
+<span id="section-53"></span>
 == [2.4.15] ==
 
 * Add option to use camera name in snapshot command
 * Add domoticz.settings.domoticzVersion
 * Add domoticz.settings.dzVentsVersion
 
+<span id="section-54"></span>
 == [2.4.14] ==
 
 * Added domoticz.settings.location.longitude and domoticz.settings.location.latitude
@@ -300,24 +360,29 @@ __NOTOC__
 * '''BREAKING CHANGE''' :Changed domoticz.settings.location to domoticz.settings.location.name (domoticz settings location Name)
 * prevent call to updateCounter with table
 
+<span id="section-55"></span>
 == [2.4.13] ==
 
 * Added domoticz.settings.location (domoticz settings location Name)
 * Added domoticz.utils.urlDecode method to convert a string with escaped chars (%20, %3A and the likes) to human readable format
 
+<span id="section-56"></span>
 == [2.4.12] ==
 
 * Added managed Counter (to counter)
 
+<span id="section-57"></span>
 == [2.4.11] ==
 
 * Added snapshot command to send Email with camera snapshot ( afterAAA() and withinAAA() options available)
 
+<span id="section-58"></span>
 == [2.4.10] ==
 
 * Added option to use afterAAA() and withinAAA() functions to updateSetPoint() <sup>needs domoticz V4.10360 or newer</sup>
 * Changed function updateMode to display mode as string in domoticz log
 
+<span id="section-59"></span>
 == [2.4.9] ==
 
 * Added evohome hotwater device (state, mode, untilDate and setHotWater function)
@@ -328,46 +393,55 @@ __NOTOC__
 * bugfix for time ( twilightstart and twilightend handling)
 * Fixed some date-range rule checking
 
+<span id="section-60"></span>
 == [2.4.8] ==
 
 * Added telegram as option for domoticz.notify
 
+<span id="section-61"></span>
 == [2.4.7] ==
 
 * Added support for civil twilight in rules
 
+<span id="section-62"></span>
 == [2.4.6] ==
 
 * Added Youless device
 * Added more to the documentation section for http requests
 * Made sure global_data is the first module to process. This fixes some unexpected issues if you need some globals initialized before the other scripts are loaded.
 
+<span id="section-63"></span>
 == [2.4.5] ==
 
 * Fixed a bug in date ranges for timer triggers (http://domoticz.com/forum/viewtopic.php?f=59&amp;t=23109).
 
+<span id="section-64"></span>
 == [2.4.4] ==
 
 * Fixed rawTime and rawData so it shows leading zeros when values are below 10.
 * Fixed one wildcard issue. Should now work as expected.
 * Fixed a problem in Domoticz where you couldn’t change the state of some door contact-like switches using the API or dzVents. That seems to work now.
 
+<span id="section-65"></span>
 == [2.4.3] ==
 
 * Fixed trigger wildcards. Now you can do <code>*aa*bb*cc</code> or <code>a*</code> which will require the target to start with an <code>a</code>
 * Added more EvoHome device types to the EvoHome device adapter.
 
+<span id="section-66"></span>
 == [2.4.2] ==
 
 * Fixed RGBW device adapter
 * Fixed EvoHome device adapter
 * Changed param ordering opentherm gateway command (https://www.domoticz.com/forum/viewtopic.php?f=59&amp;t=21620&amp;p=170469#p170469)
 
+<span id="section-67"></span>
 == [2.4.1] ==
 
 * Fixed week number problems on Windows
 * Fixed ‘on date’ rules to support dd/mm format (e.g. 01/02)
 
+<span id="section-68"></span>
 == [2.4.0] ==
 
 * '''BREAKING CHANGE''': The second parameter passed to the execute function is no longer <code>nil</code> when the script was triggered by a timer or a security event. Please check your scripts. The second parameter has checks to determine the type. E.g. <code>execute = function(domoticz, item) .. end</code>. You can inspect <code>item</code> using: <code>item.isDevice</code>, <code>item.isTimer</code>, <code>item.isVariable</code>, <code>item.isScene</code>, <code>item.isGroup</code>, <code>item.isSecurity</code>, <code>item.isHTTPResponse</code>. Please read the documentation about the execute function.
@@ -397,6 +471,7 @@ __NOTOC__
 * Added and documented <code>domoticz.settings.url</code>, <code>domoticz.settings.webRoot</code> and <code>domoticz.settings.serverPort</code>.
 * Removed fixed limit on historical variables if there is a limit specified.
 
+<span id="section-69"></span>
 == [2.3.0] ==
 
 * Added <code>active</code> attribute to devices (more logical naming than the attribute ‘bState’). <code>myDevice.active</code> is true or false depending on a set of known state values (like On, Off, Open, Closed etc). Use like <code>if mySwitch.active then .. end</code>
@@ -427,6 +502,7 @@ __NOTOC__
 * Fixed the confusing setting for enabling/disabling dzVents event system in Domoticz settings.
 * Fixed a problem where if you have two scripts for a device and one script uses the name and the other uses the id as trigger, the id-based script wasn’t executed.
 
+<span id="section-70"></span>
 == [2.2.0] ==
 
 * Fixed typo in the doc WActual &gt; WhActual.
@@ -444,6 +520,7 @@ __NOTOC__
 * Fixed bug in check battery levels example.
 * Fixed some irregularities with dimmer levels.
 
+<span id="section-71"></span>
 == [2.1.1] ==
 
 * Fixed typo in the doc WActual &gt; WhActual.
@@ -451,6 +528,7 @@ __NOTOC__
 * Added Z-Wave Thermostat mode device adapter.
 * Fixed a problem with thermostat setpoint devices to issue the proper url when updating.
 
+<span id="section-72"></span>
 == [2.1.0] ==
 
 * Added support for switching RGB(W) devices (including Philips/Hue) to have toggleSwitch(), switchOn() and switchOff() and a proper level attribute.
@@ -473,6 +551,7 @@ __NOTOC__
 * Fixed boiler example to fallback to the current temperature when there is no history data yet when it calculates the average temperature.
 * Use different api command for setting setPoints in the Thermostat setpoint device adapter.
 
+<span id="domoticz-integration"></span>
 == [2.0.0] Domoticz integration ==
 
 * Almost a complete rewrite.
@@ -504,17 +583,20 @@ __NOTOC__
 * Add support for subsystem selection for domoticz.notify function.
 * Fixed a bug where a new persistent variable wasn’t picked up when that variable was added to an already existing data section.
 
+<span id="section-73"></span>
 == [1.1.2] ==
 
 * More robust way of updating devices.lua
 * Added device level information for non-dimmer-like devices
 
+<span id="section-74"></span>
 == [1.1.1] ==
 
 * Added support for a devices table in the ‘on’ section.
 * Added extra log level for only showing information about the execution of a script module.
 * Added example script for System-alive checker notifications (preventing false negatives).
 
+<span id="section-75"></span>
 == [1.1] ==
 
 * Added example script for controlling the temperature in a room with hysteresis control.
@@ -523,6 +605,7 @@ __NOTOC__
 * Fixed updateCounter
 * Added counterToday and counterTotal attributes for counter devices. Only available when http fetching is enabled. See [[#Using_dzVents_with_Domoticz|Using dzVents with Domoticz]].
 
+<span id="section-76"></span>
 == [1.0.2] ==
 
 * Added device description attribute.
@@ -530,11 +613,13 @@ __NOTOC__
 * Added timedOut boolean attribute to devices. Requires http data fetching to be enabled. See [[#Using_dzVents_with_Domoticz|Using dzVents with Domoticz]].
 * Properly detects usage devices and their Wattage.
 
+<span id="section-77"></span>
 == [1.0.1] ==
 
 * Added updateCustomSensor(value) method.
 * Fixed reset() for historical data.
 
+<span id="beta2"></span>
 == [1.0][1.0-beta2] ==
 
 * Deprecated setNew(). Use add() instead. You can now add multiple values at once in a script by calling multiple add()s in succession.
@@ -544,6 +629,7 @@ __NOTOC__
 * Added couple of helper properties on Time object. See README.
 * Renamed the file dzVents_settings.lua to dzVents_settings_example.lua so you don’t overwrite your settings when you copy over a new version of dzVents to your system.
 
+<span id="beta1"></span>
 == [1.0-beta1] ==
 
 * Added data persistence for scripts between script runs (see readme for more info)
@@ -562,15 +648,18 @@ __NOTOC__
 * Added scenes and groups collections to the domoticz object
 * Added Quick Reference Guide.
 
+<span id="section-78"></span>
 == [0.9.13] ==
 
 * Fixed some timer functions
 
+<span id="section-79"></span>
 == [0.9.12] ==
 
 * Fixed a bug with log level printing. Now errors are printed.
 * Added setPoint, heatingMode, lux, WhTotal, WhToday, WActual attributes to devices that support it. No need to access rawData for these anymore.
 
+<span id="section-80"></span>
 == [0.9.11] ==
 
 * Added log method to domoticz object. Using this to log message in the Domoticz log will respect the log level setting in the settings file. [dannybloe] ##
@@ -578,16 +667,19 @@ __NOTOC__
 * Added iterator functions (forEach and filter) to domoticz.devices, domoticz.changedDevices and domoticz.variables to iterate or filter more easily over these collections.
 * Added a couple of example scripts.
 
+<span id="section-81"></span>
 == [0.9.10] ==
 
 * A little less verbose debug logging. Domoticz seems not to print all message in the log. If there are too many they may get lost. [dannybloe] ##
 * Added method fetchHttpDomoticzData to domoticz object so you can manually trigger getting device information from Domoticz through http. [dannybloe] ##
 * Added support for sounds in domoticz.notify(). [WebStarVenlo] ##
 
+<span id="section-82"></span>
 == [0.9.9] ==
 
 * Fixed a bug where every trigger name was treated as a wild-carded name. Oopsidayzy…
 
+<span id="section-83"></span>
 == [0.9.8] ==
 
 * Fixed a bug where a device can have underscores in its name.
@@ -598,6 +690,7 @@ __NOTOC__
 * Added http request data from Domoticz to devices. Now you can check the battery level and switch type and more. Make sure to edit dzVents_settings.lua file first and check the readme for install instructions!!!
 * Added log level setting in dzVents_settings.lua
 
+<span id="section-84"></span>
 == [0.9.7] ==
 
 * Added domoticz object resource structure. Updated readme accordingly. No more (or hardly any) need for juggling with all the Domoticz Lua tables and commandArrays.

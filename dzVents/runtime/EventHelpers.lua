@@ -639,6 +639,7 @@ local function EventHelpers(domoticz, mainMethod)
 				LOG_INFO = utils.LOG_INFO,
 				LOG_MODULE_EXEC_INFO = utils.LOG_MODULE_EXEC_INFO,
 				LOG_DEBUG = utils.LOG_DEBUG,
+				LOG_STATUS = utils.LOG_STATUS,
 				LOG_ERROR = utils.LOG_ERROR,
 				LOG_FORCE = utils.LOG_FORCE,
 				SECURITY_DISARMED = self.domoticz.SECURITY_DISARMED,

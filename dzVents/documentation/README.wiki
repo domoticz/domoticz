@@ -1,18 +1,13 @@
 '''Note''': This document is maintained on [https://github.com/domoticz/domoticz/blob/development/dzVents/documentation/README.md github], and the wiki version is automatically generated. Edits should be performed on github, or they may be suggested on the wiki article’s [https://www.domoticz.com/wiki/Talk:DzVents:_next_generation_LUA_scripting Discussion page]. Editing can be done by any editor but if you are looking for a specialized markDown editor; [https://stackedit.io/app# stackedit.io] would be a good choice.
 
-Documentation for dzVents 2.4.0 - 2.5.7 (Domoticz v4.11652) can be found [https://github.com/domoticz/domoticz/blob/a0a6069e40744df222e889474032439476b7ecfb/dzVents/documentation/README.md here].
-
-Documentation for dzVents 2.3.0 (Domoticz v3.8153) can be found [https://github.com/domoticz/domoticz/blob/2f6ba5c5a8978a010d6867228ad84eab762c5936/dzVents/documentation/README.md here].
-
-Documentation for dzVents 2.2.0 (Domoticz v3.5876) can be found [https://github.com/domoticz/domoticz/blob/9f75e45f994f87c8d8ce9cb39eaab85886df0be4/scripts/dzVents/documentation/README.md here].
-
+<span id="about-dzvents"></span>
 = About dzVents =
 
 dzVents /diː ziː vɛnts/, short for Domoticz Easy Events, brings Lua scripting in Domoticz to a whole new level. Writing scripts for Domoticz has never been so easy. Not only can you define triggers more easily, and have full control over timer-based scripts with extensive scheduling support, dzVents presents you with an easy to use API to all necessary information in Domoticz. No longer do you have to combine all kinds of information given to you by Domoticz in many different data tables. You don’t have to construct complex commandArrays anymore. dzVents encapsulates all the Domoticz peculiarities regarding controlling and querying your devices. And on top of that, script performance has increased a lot if you have many scripts because Domoticz will fetch all device information only once for all your device scripts and timer scripts. And … '''it is 100% Lua'''! So if you already have a bunch of event scripts for Domoticz, upgrading should be fairly easy.
 
 Let’s start with an example. Say you have a switch that when activated, it should activate another switch but only if the room temperature is above a certain level. And when done, it should send a notification. This is how it looks in dzVents:
 
-<source lang="lua">return
+<syntaxhighlight lang="lua">return
 {
     on =
     {
@@ -27,10 +22,10 @@ Let’s start with an example. Say you have a switch that when activated, it sho
                         domoticz.PRIORITY_LOW)
         end
 
-}</source>
+}</syntaxhighlight>
 Or you have a timer script that should be executed every 10 minutes, but only on weekdays, and have it do something with some user variables and only during daytime:
 
-<source lang="lua">return
+<syntaxhighlight lang="lua">return
 {
     on =
     {
@@ -48,10 +43,10 @@ Or you have a timer script that should be executed every 10 minutes, but only on
             end
         end
     end
-}</source>
+}</syntaxhighlight>
 Or you want to detect a humidity rise within the past 5 minutes:
 
-<source lang="lua">return
+<syntaxhighlight lang="lua">return
 {
     on =
     {
@@ -70,9 +65,10 @@ Or you want to detect a humidity rise within the past 5 minutes:
         -- store current value for next cycle
         domoticz.data.previousHumidity = bathroomSensor.humidity
     end
-}</source>
+}</syntaxhighlight>
 Just to give you an idea! Everything in your Domoticz system is now logically available in the domoticz object structure. With this domoticz object, you can get to all the information in your system and manipulate your devices.
 
+<span id="using-dzvents-with-domoticz"></span>
 = Using dzVents with Domoticz =
 
 In Domoticz go to '''Setup &gt; Settings &gt; Other''' and in the section EventSystem make sure the check-box ‘dzVents disabled’ is not checked. Also make sure that in the Security section in the settings '''(Setup &gt; Settings &gt; System &gt; Local Networks (no username/password)''' you allow 127.0.0.1 (and / or ::1 when using IPv6 ) to not need a password. dzVents does use this port to get the location settings and to send certain commands to Domoticz. Finally make sure you have set your current location in '''Setup &gt; Settings &gt; System &gt; Location''', otherwise there is no way to determine nighttime/daytime state.
@@ -86,6 +82,7 @@ There are two ways of creating dzVents event scripts in Domoticz:
 
 '''Note: Scripts created in the internal editor are stored in the domoticz database and are all written to <code>/path/to/domoticz/scripts/dzVents/generated_scripts</code> on every domoticz restart and every “EventSystem: reset all events…”. Scripts in <code>/path/to/domoticz/scripts/dzVents/scripts</code> are not stored in the database and should be backed-up separately. '''
 
+<span id="quickstart"></span>
 == Quickstart ==
 
 If you made sure that dzVents system is active, we can do a quick test if everything works:
@@ -94,7 +91,7 @@ If you made sure that dzVents system is active, we can do a quick test if everyt
 * Create a new file in the <code>/path/to/domoticz/scripts/dzVents/scripts/</code> folder (or using the web-editor in Domoticz, switch to dzVents mode first.). Call the file <code>test.lua</code>. ''Note: when you create a script in the web-editor you do '''not''' add the .lua extension!'' Also, valid script names follow the same rules as [https://en.wikipedia.org/wiki/Filename#Reserved_characters_and_words filesystem names].
 * Open <code>test.lua</code> in an editor and fill it with this code and change <code>&lt;exact name of the switch&gt;</code> with the .. you guessed it… exact name of the switch device:
 
-<source lang="lua">    return {
+<syntaxhighlight lang="lua">    return {
         on = {
             devices = {
             '<exact name of the switch>'
@@ -107,7 +104,7 @@ If you made sure that dzVents system is active, we can do a quick test if everyt
                 domoticz.log('Hey! I am off!')
             end
         end
-    }</source>
+    }</syntaxhighlight>
 * Save the script
 * Open the Domoticz log in the browser
 * In Domoticz GUI perhaps in another browser tab) press the switch.
@@ -115,11 +112,12 @@ If you made sure that dzVents system is active, we can do a quick test if everyt
 
 See the examples folder <code>/path/to/domoticz/scripts/dzVents/examples</code> for more examples. This folder includes templates you can use to get started as well. And, if you use the GUI web editor to write your script, you will find boilerplate examples in the drop-down below the script type setting.
 
+<span id="writing-scripts"></span>
 = Writing scripts =
 
 In order for your scripts to work with dzVents, they have to be turned into a Lua module with a specific structure. Basically you make sure it returns a Lua table (object) with predefined keys like <code>on</code> and <code>execute</code>. Here is an example:
 
-<source lang="lua">return
+<syntaxhighlight lang="lua">return
 {
     on =
     {
@@ -132,14 +130,15 @@ In order for your scripts to work with dzVents, they have to be turned into a Lu
             domoticz.log('I am on!', domoticz.LOG_INFO)
         end
     end
-}</source>
+}</syntaxhighlight>
 Simply said, the <code>on</code>-part defines the trigger and the <code>execute</code> part is what should be done if the trigger matches with the current Domoticz event. So all your logic is inside the <code>execute</code> function.
 
+<span id="sections-in-the-script"></span>
 == Sections in the script ==
 
 Each dzVents event script has this structure:
 
-<source lang="lua">return
+<syntaxhighlight lang="lua">return
 {
     active = true, -- optional
     on =
@@ -162,7 +161,8 @@ Each dzVents event script has this structure:
     execute = function(domoticz, item, triggerInfo)
     -- your code here
     end
-}</source>
+}</syntaxhighlight>
+<span id="active-truefalse-optional"></span>
 === active = true/false (optional) ===
 
 If <code>active = false</code>, then the script is not activated: ''dzVents will ignore the script completely''. If you don’t have <code>active</code> specified, <code>true</code> is assumed (default value). If you write scripts with Domoticz’ internal script editor then you don’t need this part as the editor has its own way of enabling and disabling scripts.
@@ -173,14 +173,17 @@ So, <code>active</code> can either be:
 * '''false''': the script file is ignored.
 * '''function(domoticz) … end''': A function returning <code>true</code> or <code>false</code>. The function will receive the domoticz object with all the information about your domoticz instance: <code>active = function(domoticz) .... end</code>. For example you could check for a Domoticz variable or switch and prevent the script from being executed. '''However, be aware that for ''every script'' in your scripts folder, this active function will be called, every cycle!! Therefore, it is better to put all your logic in the execute function instead of in the active function.'''
 
+<span id="on"></span>
 === on = { … } ===
 
 The <code>on</code> section tells dzVents ''when'' the execute function has to be executed. It holds all the events/'''triggers''' that are monitored by dzVents. If any of the events or triggers match with the current event coming from Domoticz, then the <code>execute</code> part of the script is executed by dzVents. The <code>on</code> section has many kinds of subsections that ''can all be used simultaneously'' :
 
+<span id="customevents-3.0.0"></span>
 ==== customEvents = { … } <sup>3.0.0</sup> ====
 
 A list of one or more custom event triggers. This eventTrigger can be activate by a json/api call, a MQTT message (when domoticz is setup to listen to such messages on the hardware tab) or by the dzVents internal command domoticz.emitEvent - The name of the custom-event - The name of the custom-event followed by a time constraint, such as: <code>['start'] = { 'at 15:*', 'at 22:* on sat, sun' }</code> The script will be executed if domoticz is started, '''and''' it is either between 15:00 and 16:00 or between 22:00 and 23:00 in the weekend. See [[#timer_trigger_rules|See time trigger rules]].
 
+<span id="api"></span>
 ===== API =====
 
 <pre>- curl: curl -d &quot;{ 'a':10, 'b':20, 'some':'text', 'sub' : { 'x':10, 'y':20 } }&quot; &quot;http://&lt;domoticzIP:domoticz port&gt;/json.htm?type=command&amp;param=customevent&amp;event=&lt;myCustomEvent&gt;&quot;
@@ -191,6 +194,7 @@ A list of one or more custom event triggers. This eventTrigger can be activate b
     `domoticz.emitEvent('myEvent') -- no data`
     `domoticz.emitEvent('another event', 'some data')`
     `domoticz.emitEvent('hugeEvent', { a = 10, b = 20, some = 'text', sub = { x = 10, y = 20 } })`</pre>
+<span id="attributes"></span>
 ===== Attributes =====
 
 The customEvent object (second parameter in your execute function) has these attributes:
@@ -206,6 +210,7 @@ The customEvent object (second parameter in your execute function) has these att
 * '''xmlEncoding'''. ''String''. When the response data is <code>text/xml</code> See [ xml encoding] ( https://en.wikipedia.org/wiki/XML ).
 * '''xmlVersion'''. ''String''. When the response data is <code>text/xml</code> See [ xml versions ] ( https://en.wikipedia.org/wiki/XML ).
 
+<span id="devices"></span>
 ==== devices = { … } ====
 
 A list of device-names or indexes. If a device in your system was updated (e.g. a switch was triggered or a new temperature was received) and it is listed in this section then the execute function is executed. '''Note''': update does not necessarily means the device state or value has changed. Each device can be:
@@ -214,22 +219,27 @@ A list of device-names or indexes. If a device in your system was updated (e.g.�
 * The index (idx) of your device (as the name may change, the index will usually stay the same, the index can be found in the devices section in Domoticz). '''Note that idx is a number;'''
 * The name or idx of your device followed by a time constraint, such as: <code>['myDevice'] = { 'at 15:*', 'at 22:* on sat, sun' }</code> The script will be executed if <code>myDevice</code> was changed, '''and''' it is either between 15:00 and 16:00 or between 22:00 and 23:00 in the weekend. See [[#timer_trigger_rules|time trigger rules]].
 
+<span id="groups"></span>
 ==== groups = { …} ====
 
 A list of one or more group-names or indexes. The same rules as devices apply.
 
+<span id="httpresponses"></span>
 ==== httpResponses = { …} ====
 
 A list of one or more http callback triggers. Use this in conjunction with <code>domoticz.openURL()</code> where you will provide Domoticz with the callback trigger. See [[#Asynchronous_HTTP_requests|asynchronous http requests]] for more information.
 
+<span id="shellcommandresponses-3.1.0"></span>
 ==== shellCommandResponses = { …} <sup>3.1.0</sup> ====
 
 A list of one or more scriptcommand callback triggers. Use this in conjunction with <code>domoticz.executeShellCommand()</code> where you will provide Domoticz with the callback trigger. See [[#Asynchronous_shell_command_execution|Asynchronous shell commands]] for more information.
 
+<span id="scenes"></span>
 ==== scenes = { … } ====
 
 A list of one or more scene-names or indexes. The same rules as devices apply. So if your scene is listed in this table then the executed function will be triggered, e.g.: <code>on = { scenes = { 'myScene', 'anotherScene' } },</code>.
 
+<span id="security"></span>
 ==== security = { … } ====
 
 A list of one or more of these security states:
@@ -240,6 +250,7 @@ A list of one or more of these security states:
 
 If the security state in Domoticz changes and it matches with any of the states listed here, the script will be executed. See <code>/path/to/domoticz/scripts/dzVents/examples/templates/security.lua</code> for an example see [[#Security_Panel|Security Panel]] for information about how to create a security panel device.
 
+<span id="system-3.0.0"></span>
 ==== system = { …} <sup>3.0.0</sup> ====
 
 A list of one or more system triggers.
@@ -250,28 +261,33 @@ A list of one or more system triggers.
 ** '''stop''' - fired when Domoticz is shutting down. As you probably can imagine you have only a limited amount of time - also depending on the load on your system - to have Domoticz do stuff when your script has been completed. Some commands will probably not be executed. Just give it a try.
 ** '''Backups''' - the trigger item (2nd parameter of the execute function) is a table that holds information about the newly created backup (location, duration in seconds and type). You could use this information to copy the file to some other location or for another purpose.
 *** '''dailyBackupFinished''' - automatic backup when set in domoticz
-*** '''hourlyBackupFinished''' - &quot; &quot;
-*** '''monthlyBackupFinished''' - &quot; &quot;
+*** '''hourlyBackupFinished''' - ” ”
+*** '''monthlyBackupFinished''' - ” ”
 *** '''manualBackupFinished''' - fired when you start a backup using the Domoticz GUI or via '''&lt; domoticz IP:domoticz port &gt;'''/backupdatabase.php
 *** '''resetAllDeviceStatus''' <sup>3.1.5</sup>- fired when the name, description or used / unused state of a device, variable or scene is updated.
 *** '''resetAllEvents''' <sup>3.1.5</sup>- fired when a dzVents script in the internal editor changed.
 
+<span id="timer"></span>
 ==== timer = { … } ====
 
 A list of one ore more time ‘rules’ like <code>every minute</code> or <code>at 17:*</code>. See [[#timer_trigger_rules|''timer'' trigger rules]]. If any or the rules matches with the current time/date then your execute function is called. E.g.: <code>on = { timer = { 'between 30 minutes before sunset and 30 minutes after sunrise' } }</code>.
 
+<span id="variables"></span>
 ==== variables = { … } ====
 
 A list of one or more user variable-names as defined in Domoticz ( ''Setup &gt; More options &gt; User variables''). If any of the variables listed here is updated, ( '''Note''': update does not necessarily means the variable value or type changed ).the script is executed. '''Note''': Script will only execute when this variable is updated directly by dzVents or by a JSON. If updated with a standard Lua script (using commandArray) or in combination with a time option like afterAAA no event will be triggered.
 
+<span id="execute-functiondomoticz-item-triggerinfo-end"></span>
 === execute = function('''domoticz, item, triggerInfo''') … end ===
 
 When all the above conditions are met (active == true and the on section has at least one matching rule), then this <code>execute</code> function is called. This is the heart of your script. The function has three parameters:
 
+<span id="domoticz-item-triggerinfo"></span>
 ==== 1. ('''domoticz''', item, triggerInfo) ====
 
 The [[#Domoticz_object_API_.28Application_Programming_Interface.29|domoticz object]]. This object gives you access to almost everything in your Domoticz system, including all methods to manipulate them—like modifying switches or sending notifications. More about the [[#Domoticz_object_API_.28Application_Programming_Interface.29|domoticz object]] below.
 
+<span id="domoticz-item-triggerinfo-1"></span>
 ==== 2. (domoticz, '''item''', triggerInfo) ====
 
 Depending on what actually triggered the script, <code>item</code> is either a:
@@ -301,6 +317,7 @@ Since you can define multiple on-triggers in your script, it is not always clear
 * '''isVariable''': . returns <code>true</code> if the item is a Variable object.
 * '''trigger''': . ''string''. the timer rule, the security state, the customEvent or the http response callback string that actually triggered your script. E.g. if you have multiple timer rules can inspect <code>trigger</code> which exact timer rule was fired.
 
+<span id="domoticz-item-triggerinfo-2"></span>
 ==== 3. (domoticz, item, '''triggerInfo''') ====
 
 '''Note''': as of version 2.4.0, <code>triggerInfo</code> has become more or less obsolete and is left in here for backward compatibility. All information is now available on the <code>item</code> parameter (second parameter of the execute function, see point 2 above).
@@ -311,11 +328,12 @@ Since you can define multiple on-triggers in your script, it is not always clear
 # '''trigger''': the timer rule that triggered the script if the script was called due to a timer event, or the security state that triggered the security trigger rule. See [[#timer_trigger_rules|below]] for the possible timer trigger rules.
 # '''scriptName''': the name of the current script.
 
+<span id="tip-rename-the-parameters-to-better-fit-your-needs"></span>
 ==== Tip: rename the parameters to better fit your needs ====
 
 The names of the execute parameters are actually something you can change to your convenience. For instance, if you only have one trigger for a specific switch device, you can rename <code>item</code> it to <code>switch</code>. Or if you think <code>domoticz</code> is too long you can rename it to <code>d</code> or <code>dz</code> (might save you a lot of typing and may make your code more readable):
 
-<source lang="lua">return
+<syntaxhighlight lang="lua">return
 {
     on =
     {
@@ -324,31 +342,35 @@ The names of the execute parameters are actually something you can change to you
     execute = function(dz, mySwitch)
         dz.log(mySwitch.state, dz.LOG_INFO)
     end
-}</source>
+}</syntaxhighlight>
+<span id="data-optional"></span>
 === data = { … } (optional) ===
 
 The optional data section allows you to define local variables that will hold their values ''between'' script runs. These variables can get a value in your execute function and the next time the script is executed these variables will have their previous state restored. For more information see the section [[#Persistent_data|Persistent data]].
 
+<span id="logging-optional"></span>
 === logging = { … } (optional) ===
 
 The optional logging section allows you to override the global logging setting of dzVents as set in ''Setup &gt; Settings &gt; Other &gt; EventSystem &gt; dzVents Log Level''. This can be handy when you only want this script to have extensive debug logging while the rest of your script executes silently. You have these options:
 
-* '''level''': This is the log level you want for this script. Can be domoticz.LOG_INFO, domoticz.LOG_MODULE_EXEC_INFO, domoticz.LOG_DEBUG or domoticz.LOG_ERROR
+* '''level''': This is the log level you want for this script. Can be domoticz.LOG_INFO, domoticz.LOG_STATUS, domoticz.LOG_MODULE_EXEC_INFO, domoticz.LOG_DEBUG or domoticz.LOG_ERROR
 * '''marker''': A string that is prefixed before each log message. That way you can easily create a filter in the Domoticz log to see just these messages. '''marker''' defaults to scriptname
 
 Example:
 
-<source lang="lua">logging = {
+<syntaxhighlight lang="lua">logging = {
     level = domoticz.LOG_DEBUG,
     marker = "Hey you"
-    },</source>
+    },</syntaxhighlight>
+<span id="some-trigger-examples"></span>
 == Some trigger examples ==
 
+<span id="custom-events"></span>
 === Custom events ===
 
 Suppose you want to trigger a script not on the minute but 30 seconds later.
 
-<source lang="lua">return
+<syntaxhighlight lang="lua">return
 {
     on =
     {
@@ -369,12 +391,13 @@ Suppose you want to trigger a script not on the minute but 30 seconds later.
             domoticz.notify('Delayed', 'Event was emitted at ' .. item.data, domoticz.PRIORITY_LOW)
         end
     end
-}</source>
+}</syntaxhighlight>
+<span id="device-changes"></span>
 === Device changes ===
 
 Suppose you have two devices—a smoke detector ‘myDetector’ and a room temperature sensor ‘roomTemp’, and you want to send a notification when either the detector detects smoke or the temperature is too high:
 
-<source lang="lua">return
+<syntaxhighlight lang="lua">return
 {
     on =
     {
@@ -389,12 +412,13 @@ Suppose you have two devices—a smoke detector ‘myDetector’ and a room temp
             domoticz.notify('Fire', 'The room is on fire', domoticz.PRIORITY_EMERGENCY)
         end
     end
-}</source>
+}</syntaxhighlight>
+<span id="scene-group-changes"></span>
 === Scene / group changes ===
 
 Suppose you have a scene ‘myScene’ and a group ‘myGroup’, and you want to turn on the group as soon as myScene is activated:
 
-<source lang="lua">return {
+<syntaxhighlight lang="lua">return {
     on = {
         scenes = { 'myScene' }
     },
@@ -403,10 +427,10 @@ Suppose you have a scene ‘myScene’ and a group ‘myGroup’, and you want t
             domoticz.groups('myGroup').switchOn()
         end
     end
-}</source>
+}</syntaxhighlight>
 Or, if you want to send an email when a group is activated at night:
 
-<source lang="lua">return {
+<syntaxhighlight lang="lua">return {
     on = {
         groups = { ['myGroup'] = {'at nighttime'} }
     },
@@ -415,12 +439,13 @@ Or, if you want to send an email when a group is activated at night:
             domoticz.email('Hey', 'The group is on', 'someone@the.world.org')
         end
     end
-}</source>
+}</syntaxhighlight>
+<span id="timer-events"></span>
 === Timer events ===
 
 Suppose you want to check the soil humidity every 30 minutes during the day and every hour during the night:
 
-<source lang="lua">return {
+<syntaxhighlight lang="lua">return {
     on = {
         timer = {
             'every 30 minutes at daytime',
@@ -433,12 +458,13 @@ Suppose you want to check the soil humidity every 30 minutes during the day and 
             domoticz.devices('irrigation').switchOn().forMin(60)
         end
     end
-}</source>
+}</syntaxhighlight>
+<span id="variable-changes"></span>
 === Variable changes ===
 
 Suppose you have a script that updates a variable ‘myAmountOfMoney’, and if that variable reaches a certain level you want to be notified:
 
-<source lang="lua">return
+<syntaxhighlight lang="lua">return
 {
     on =
     {
@@ -450,12 +476,13 @@ Suppose you have a script that updates a variable ‘myAmountOfMoney’, and if 
             domoticz.notify('Rich', 'You can stop working now', domoticz.PRIORITY_HIGH)
         end
     end
-}</source>
+}</syntaxhighlight>
+<span id="security-changes"></span>
 === Security changes ===
 
 Suppose you have a group holding all the lights in your house, and you want to switch it off as soon as the alarm is activated:
 
-<source lang="lua">return
+<syntaxhighlight lang="lua">return
 {
     on =
     {
@@ -464,12 +491,13 @@ Suppose you have a group holding all the lights in your house, and you want to s
     execute = function(domoticz, security)
         domoticz.groups('All lights').switchOff()
     end
-}</source>
+}</syntaxhighlight>
+<span id="asynchronous-http-request-and-handling"></span>
 === Asynchronous HTTP Request and handling ===
 
 Suppose you have some external web service that will tell you what the current energy consumption is and you want that information in Domoticz:
 
-<source lang="lua">return {
+<syntaxhighlight lang="lua">return {
     on = {
         timer = { 'every 5 minutes' },
         httpResponses = { 'energyRetrieved' }
@@ -488,14 +516,15 @@ Suppose you have some external web service that will tell you what the current e
             end
         end
     end
-}</source>
+}</syntaxhighlight>
 See[[#Asynchronous_HTTP_requests|asynchronous http requests]] for more information.
 
+<span id="asynchronous-shell-command-execution-3.1.0"></span>
 === Asynchronous shell command execution <sup>3.1.0</sup> ===
 
 Suppose you have some local shellcommand to measure the speed of your internet connection and you want that information in Domoticz:
 
-<source lang="lua">return {
+<syntaxhighlight lang="lua">return {
     on = {
         timer = { 'every 5 minutes' },
         shellCommandResponses = { 'internetspeedRetrieved' }
@@ -513,14 +542,15 @@ Suppose you have some local shellcommand to measure the speed of your internet c
             end
         end
     end
-}</source>
+}</syntaxhighlight>
 See[[#Asynchronous_shell_command_execution|asynchronous shell commands]] for more information.
 
+<span id="system-changes"></span>
 === System changes ===
 
 Do some initial work when domoticz starts
 
-<source lang="lua">return
+<syntaxhighlight lang="lua">return
 {
     on =
     {
@@ -542,12 +572,13 @@ Do some initial work when domoticz starts
             domoticz.notify('Domoticz backup', 'Ended. Backupfile ' .. system.data.location , domoticz.PRIORITY_LOW)
         end
     end
-}</source>
+}</syntaxhighlight>
+<span id="combined-rules"></span>
 === Combined rules ===
 
 Let’s say you have a script that checks the status of a lamp and is triggered by motion detector:
 
-<source lang="lua">return {
+<syntaxhighlight lang="lua">return {
     on = {
             timer = { 'every 5 minutes' },
             devices = { 'myDetector' }
@@ -561,7 +592,8 @@ Let’s say you have a script that checks the status of a lamp and is triggered 
             domoticz.devices('myLamp').switchOn()
         end
     end
-}</source>
+}</syntaxhighlight>
+<span id="timer-trigger-rules"></span>
 == ''timer'' trigger rules ==
 
 There are several options for time triggers. It is important to know that Domoticz timer events only trigger once every minute, so one minute is the smallest interval for your timer scripts. However, dzVents gives you many options to have full control over when and how often your timer scripts are called (all times are in 24hr format and all dates in dd/mm): Keywords recognized are “at, between, every, except, in, on, or” ( except supported from version <sup>3.0.16</sup>, or supported from version <sup>3.1.8</sup> ).
@@ -572,7 +604,7 @@ Full daynames are allowed in dzVents &gt;= 3.1.7
 
 * <sup>3.1.16</sup>
 
-<source lang="lua">    on = {
+<syntaxhighlight lang="lua">    on = {
         timer = {
             'every minute',             -- causes the script to be called every minute
             'every other minute',       -- minutes: xx:00, xx:02, xx:04, ..., xx:58
@@ -631,7 +663,7 @@ Full daynames are allowed in dzVents &gt;= 3.1.7
                 ...
             end
         },
-    }</source>
+    }</syntaxhighlight>
 The timer events are triggered every minute. If such a trigger occurs, dzVents will scan all timer-based events and will evaluate the timer rules. So, if you have a rule <code>on mon</code> then the script will be executed ''every minute'' but only on Monday.
 
 Be mindful of the logic if using multiple types of timer triggers. It may not make sense to combine a trigger for a specific or instantaneous time with a trigger for a span or sequence of times (like ‘at sunset’ with ‘every 6 minutes’) in the same construct. Similarly, <code>'between aa and bb'</code> only makes sense with instantaneous times for <code>aa</code> and <code>bb</code>.
@@ -640,6 +672,7 @@ Be mindful of the logic if using multiple types of timer triggers. It may not ma
 
 Another important issue: the way it is implemented right now, the <code>every xx minutes</code> and <code>every xx hours</code> is a bit limited. The interval resets at every *:00 (for minutes) or 00:* for hours. You need an interval that is an integer divider of 60 (or 24 for the hours). So you can do every 1, 2, 3, 4, 5, 6, 10, 12, 15, 20 and 30 minutes only.
 
+<span id="the-domoticz-object"></span>
 = The domoticz object =
 
 The domoticz object passed as the first parameter to the <code>execute</code> function contains everything you need to interact with your domotica system. It provides all information made available by the domoticz event system about your custom- and system events, devices, scenes, groups, hardware modules and variables and has methods needed to inspect and manipulate them. Getting this information is easy:
@@ -652,10 +685,12 @@ Some more examples: <code>domoticz.devices(123).switchOn().forMin(5).afterSec(10
 
 One tip before you get started: '''Make sure that all your devices have unique names. dzVents will give you warnings in the logs if device names are not unique.'''
 
+<span id="domoticz-object-api-application-programming-interface"></span>
 == Domoticz object API (Application Programming Interface) ==
 
 The domoticz object holds all information about your Domoticz system. It has global attributes and methods to query and manipulate your system. It also has a collection of '''devices''', '''variables''' (user variables in Domoticz), '''scenes''', '''groups''', '''hardware'''. Each of these collections has four iterator functions: <code>find(), forEach()</code>, <code>filter()</code> and <code>reduce()</code> to make searching for devices easier. See [[#Looping_through_the_collections:_iterators|Looping through the collections: iterators]].
 
+<span id="domoticz-attributes-and-methods"></span>
 === Domoticz attributes and methods ===
 
 * '''devices(idx/name)''': ''Function''. A function returning a device by idx or name: <code>domoticz.devices(123)</code> or <code>domoticz.devices('My switch')</code>. For the device API see [[#Device_object_API|Device object API]]. To iterate over all devices do: <code>domoticz.devices().forEach(..)</code>. See [[#Looping_through_the_collections:_iterators|Looping through the collections: iterators]]. Note that you cannot do <code>for i, j in pairs(domoticz.devices()) do .. end</code>.
@@ -667,7 +702,7 @@ The domoticz object holds all information about your Domoticz system. It has glo
 * '''hardwareInfo(idx/name)''': <sup>3.0.6</sup> ''Function'': A function returning hardwareInfo of a hardware module by name or idx. The return of the function is a table with attributes name, type, typeValue, deviceNames (table with names of all active devices defined on this hardware) and deviceIds (table with idx of all active devices defined on this hardware)
 * '''hardware(idx/name)''': <sup>3.0.7</sup> ''Function'': A function returning a hardware module by name or idx. Each hardware has an interface comparable to group. To iterate over all hardware do: <code>domoticz.hardware().forEach(..)</code>. See [[#Looping_through_the_collections:_iterators|Looping through the collections: iterators]]. Note that you cannot do <code>for i, j in pairs(domoticz.hardware()) do .. end</code>. Read more about [[#Hardware|Hardware]].
 * '''helpers''': ''Table''. Collection of shared helper functions available to all your dzVents scripts. See [[#Shared_helper_functions|Shared helper functions]].
-* '''log(message, [level])''': ''Function''. Creates a logging entry in the Domoticz log but respects the log level settings. You can provide the loglevel: <code>domoticz.LOG_INFO</code>, <code>domoticz.LOG_DEBUG</code>, <code>domoticz.LOG_ERROR</code> or <code>domoticz.LOG_FORCE</code>. In Domoticz settings you can set the log level for dzVents.
+* '''log(message, [level])''': ''Function''. Creates a logging entry in the Domoticz log but respects the log level settings. You can provide the loglevel: <code>domoticz.LOG_INFO</code>, <code>domoticz.LOG_STATUS</code>, <code>domoticz.LOG_DEBUG</code>, <code>domoticz.LOG_ERROR</code> or <code>domoticz.LOG_FORCE</code>. In Domoticz settings you can set the log level for dzVents.
 * '''moduleLabel''': <sup>3.0.3</sup> Module (script) name without extension.
 * '''notify(subject, message [,priority][,sound][,extra][,subsystem][,delay]<sup>3.0.10</sup> )''': ''Function''. Send a notification (like Prowl). Priority can be like <code>domoticz.PRIORITY_LOW, PRIORITY_MODERATE, PRIORITY_NORMAL, PRIORITY_HIGH, PRIORITY_EMERGENCY</code>. <code>extra</code> is notification subsystem specific. For NSS_FIREBASE you can use this field to specify the target mobile (‘midx_1’, midx_2, etc..). For sound see [[#Constants|list of dzVents Constants]] for the SOUND constants below. <code>subsystem</code> defaults to all subsystems but can be one subsystem or a table containing one or more notification subsystems. See [[#Constants|list of dzVents Constants]] for <code>domoticz.NSS_subsystem</code> types. Delay is delay in seconds
 * '''openURL(url/options)''': ''Function''. Have Domoticz ‘call’ a URL. If you just pass a url then Domoticz will execute the url after your script has finished but you will not get notified. If you pass a table with options then you have to possibility to receive the results of the request in a dzVents script. Read more about [[#Asynchronous_HTTP_requests|asynchronous http requests]] with dzVents. Supports [[#Command_options_.28delay.2C_duration.2C_event_triggering.29|command options]].
@@ -689,12 +724,12 @@ The domoticz object holds all information about your Domoticz system. It has glo
 * '''sms(message [, delay] <sup>3.0.10</sup> )''': ''Function''. Sends an sms if it is configured in Domoticz. Optional parm delay is delay in seconds.
 * '''snapshot(cameraID(s) or camera Name(s)<sup>3.0.13</sup>,subject)''': ''Function''. Sends email with a camera snapshots if email is configured and set for attachments in Domoticz. Send 1 or multiple camerIDs -names in ; separated string or array.
 
-<source lang="lua">    dz.snapshot()                  -- defaults to id = 1, subject domoticz
+<syntaxhighlight lang="lua">    dz.snapshot()                  -- defaults to id = 1, subject domoticz
     dz.snapshot(1,'dz')            -- subject dz
     dz.snapshot('1;2;3')           -- ; separated string
     dz.snapshot({1,4,7})           -- table
     dz.snapshot('test;test2')      -- ; separated string
-    dz.snapshot({'test', 'test2'}) -- table</source>
+    dz.snapshot({'test', 'test2'}) -- table</syntaxhighlight>
 <ul>
 <li><p>'''startTime''': ''[[#Time_object|Time Object]]''. Returns the startup time of the Domoticz service.</p></li>
 <li><p>'''systemUptime''': ''Number''. Number of seconds the system is up.</p></li>
@@ -713,13 +748,13 @@ The domoticz object holds all information about your Domoticz system. It has glo
 <li><p>'''triggerHTTPResponse([httpResponse], [delay], [message])''': ''Function''. Creates a callback by sending a logmessage. httpResponse defaults to scriptname, delay defaults to 0 (immediate), message defaults to httpResponse. Left in for backward compatibility only. You can use emitEvent / customEvents now.</p></li>
 <li><p>'''triggerIFTTT(makerName [,sValue1, sValue2, sValue3])''': ''Function''. Have Domoticz ‘call’ an IFTTT maker event. makerName is required, 0-3 sValue’s are optional. Supports [[#Command_options_.28delay.2C_duration.2C_event_triggering.29|command options]].</p></li>
 <li><p>'''utils''': . A subset of handy utilities: Note that these functions must be preceded by domoticz.utils. If you use more then a few declare something like local _u = domoticz.utils at the beginning of your script and use _u.functionName in the remainder. Example:</p>
-<source lang="lua">    _u = domoticz.utils
-    print(_u.rightPad('test',10) .. '|||') -- => test       |||</source>
+<syntaxhighlight lang="lua">    _u = domoticz.utils
+    print(_u.rightPad('test',10) .. '|||') -- => test       |||</syntaxhighlight>
 <ul>
 <li><p>'''_.lodashFunctions''': This is an entire collection with very handy Luafunctions. Read more about [[#lodash_for_Lua|lodash]]. E.g.: <code>{.lua}      domoticz.utils._.size({'abc', 'def'}))` Returns 2.</code></p></li>
 <li><p>'''cameraExists(parm)''': ''Function'': returns name when entered with a valid camera <sup>3.0.12</sup> or cameraID and return ID when entered with valid cameraName or false when not a camera, cameraID or cameraName of an existing camera</p></li>
 <li><p>'''deviceExists(parm)''': ''Function'': returns name when entered with a valid device <sup>3.0.12</sup> or deviceID and returns ID when entered with valid deviceName or false when not a device, deviceID or deviceName of an existing (and active) device. Example:</p>
-<source lang="lua">local dz = domoticz
+<syntaxhighlight lang="lua">local dz = domoticz
 local _u = dz.utils
 if _u.deviceExists('myDevice') then
     dz.devices('myDevice').switchOn()
@@ -732,7 +767,7 @@ if myName then
     dz.log('Device 123 is ' .. myName, dz.LOG_INFO)
 else
     dz.log('Device 123 does not exist', dz.LOG_ERROR)
-end</source></li>
+end</syntaxhighlight></li>
 <li><p>'''dumpTable(table,[levelIndicator],[osfile]<sup>3.0.0</sup>))''': ''Function'': print table structure and contents to log</p></li>
 <li><p>'''fileExists(path)''': ''Function'': Returns <code>true</code> if the file (with full path) exists.</p></li>
 <li><p>'''fromBase64(string)''': ''Function'': Decode a base64 string</p></li>
@@ -748,9 +783,9 @@ end</source></li>
 <li><p>'''centerPad(string, length [, character])''': ''Function'': Center string by preceding and succeeding with given character(s) (default = space) to given length.</p></li>
 <li><p>'''numDecimals(number [, integer [, decimals ]])''': ''Function'': Format number to float representation. ''Examples:''</p></li></ul>
 
-<source lang="lua">        domoticz.utils.numDecimals(12.23, 4, 4) -- => 12.2300,
+<syntaxhighlight lang="lua">        domoticz.utils.numDecimals(12.23, 4, 4) -- => 12.2300,
         domoticz.utils.numDecimals (12.23,1,1) -- => 12.2,
-        domoticz.utils.leadingZeros(domoticz.utils.numDecimals (12.23,4,4),9) -- => 0012.2300</source>
+        domoticz.utils.leadingZeros(domoticz.utils.numDecimals (12.23,4,4),9) -- => 0012.2300</syntaxhighlight>
 <ul>
 <li><p>'''osCommand(cmd)''': ''Function'': <sup>3.0.13</sup> Execute an OS command and return result and returncode. Note: For long running scripts <code>domoticz.executeShellCommand()</code> should be used, See [[#Asynchronous_shell_command_execution|Asynchronous shell commands]] for more information.</p></li>
 <li><p>'''osExecute(cmd)''': ''Function'': Execute an OS command (no return). Note: For long running scripts <code>executeShellCommand()</code> should be used. See [[#Asynchronous_shell_command_execution|Asynchronous shell commands]] for more information.</p></li>
@@ -761,9 +796,9 @@ end</source></li>
 <li><p>'''splitLine(string , splitOnWord ) <sup>3.1.8</sup>)''':''Function''. Helper function to split a line. Return is a table with line-segments.</p></li>
 <li><p>'''stringSplit(string [,separator ] [,convertNumber ][,convertNil ]<sup>3.0.17</sup>)''':''Function''. Helper function to split a line in separate words. Default separator is space. Return is a table with separated words. Default convertNumber is false when set to true it will convert strings to number where possible. Word is ignored when nil, unless convertNil is set; in that case word will be set to the convertNil value.</p></li>
 <li><p>'''stringToSeconds(str)''': ''Function'': <sup>3.0.1</sup> Returns number of seconds between now and str. ''Examples:''</p>
-<source lang="lua">domoticz.utils.stringToSeconds('09:00')                 -- number of seconds between now and 09:00 hr.
+<syntaxhighlight lang="lua">domoticz.utils.stringToSeconds('09:00')                 -- number of seconds between now and 09:00 hr.
 domoticz.utils.stringToSeconds('08:53:30 on fri')       -- number of seconds between now and Friday at 08:53:30
-domoticz.utils.stringToSeconds('08:53:30 on sat, sun')  -- number of seconds between now and Saturday or Sunday at 08:53:30 ;whatever comes first</source></li>
+domoticz.utils.stringToSeconds('08:53:30 on sat, sun')  -- number of seconds between now and Saturday or Sunday at 08:53:30 ;whatever comes first</syntaxhighlight></li>
 <li><p>'''toBase64(string)''': ''Function'': ) Encode a string to base64</p></li>
 <li><p>'''toCelsius(f, relative)''': ''Function''. Converts temperature from Fahrenheit to Celsius along the temperature scale or when relative == true it uses the fact that 1F = 0.56C. So <code>toCelsius(5, true)</code> returns 5F*(1/1.8) = 2.78C.</p></li>
 <li><p>'''toJSON(luaTable)''': ''Function''. Converts a Lua table to a json string.</p></li>
@@ -775,6 +810,7 @@ domoticz.utils.stringToSeconds('08:53:30 on sat, sun')  -- number of seconds bet
 <li><p>'''variables(idx/name)''': ''Function''. A function returning a variable by it’s name or idx. See [Variable object API] (#Variable_object_API_.28user_variables.29) for the attributes. To iterate over all variables do: <code>domoticz.variables().forEach(..)</code>. See [[#Looping_through_the_collections:_iterators|Looping through the collections: iterators]]. '''Note that you cannot do <code>for i, j in pairs(domoticz.variables()) do .. end</code>'''.</p></li></ul>
 </li></ul>
 
+<span id="looping-through-the-collections-iterators"></span>
 === Looping through the collections: iterators ===
 
 The domoticz object has these collections (tables): devices, scenes, groups, variables, changedDevices and changedVariables. You cannot use the <code>pairs()</code> or <code>ipairs()</code> functions. Therefore dzVents has four iterator methods:
@@ -784,32 +820,33 @@ The domoticz object has these collections (tables): devices, scenes, groups, var
 # '''filter(function / table)''': returns items in the collection for which the function returns true. You can also provide a table with names and/or ids.
 # '''reduce(function, initial)''': Loop over all items in the collection and do some calculation with it. You call it with the function and the initial value. Each iteration the function is called with the accumulator and the item in the collection. The function does something with the accumulator and returns a new value for it.
 
+<span id="examples"></span>
 ==== Examples: ====
 
 find():
 
-<source lang="lua">    local myDevice = domoticz.devices().find(function(device)
+<syntaxhighlight lang="lua">    local myDevice = domoticz.devices().find(function(device)
         return device.name == 'myDevice'
     end)
-    domoticz.log('Id: ' .. myDevice.id)</source>
+    domoticz.log('Id: ' .. myDevice.id)</syntaxhighlight>
 forEach():
 
-<source lang="lua">    domoticz.devices().forEach(function(device)
+<syntaxhighlight lang="lua">    domoticz.devices().forEach(function(device)
         if (device.batteryLevel < 20) then
         -- do something
         end
-    end)</source>
+    end)</syntaxhighlight>
 filter():
 
-<source lang="lua">    local deadDevices = domoticz.devices().filter(function(device)
+<syntaxhighlight lang="lua">    local deadDevices = domoticz.devices().filter(function(device)
         return (device.lastUpdate.minutesAgo > 60)
     end)
     deadDevices.forEach(function(zombie)
         -- do something
-    end)</source>
+    end)</syntaxhighlight>
 or
 
-<source lang="lua">    local livingLights = {
+<syntaxhighlight lang="lua">    local livingLights = {
         'window',
         'couch',
         33, -- kitchen light id
@@ -818,22 +855,23 @@ or
     lights.forEach(function(light)
         -- do something
         light.switchOn()
-    end)</source>
+    end)</syntaxhighlight>
 Of course you can chain:
 
-<source lang="lua">    domoticz.devices().filter(function(device)
+<syntaxhighlight lang="lua">    domoticz.devices().filter(function(device)
         return (device.lastUpdate.minutesAgo > 60)
     end).forEach(function(zombie)
         -- do something with the zombie
-    end)</source>
+    end)</syntaxhighlight>
 Using a reducer to count all devices that are switched on:
 
-<source lang="lua">    local count = domoticz.devices().reduce(function(acc, device)
+<syntaxhighlight lang="lua">    local count = domoticz.devices().reduce(function(acc, device)
         if (device.state == 'On') then
             acc = acc + 1 -- increase the accumulator
         end
         return acc -- always return the accumulator
-    end, 0) -- 0 is the initial value for the accumulator</source>
+    end, 0) -- 0 is the initial value for the accumulator</syntaxhighlight>
+<span id="constants"></span>
 === Constants ===
 
 The domoticz object has these constants available for use in your code e.g. <code>domoticz.LOG_INFO</code>.
@@ -848,17 +886,19 @@ The domoticz object has these constants available for use in your code e.g. <co
 * '''EVOHOME_MODE_AUTO, EVOHOME_MODE_AUTOWITHRESET, EVOHOME_MODE_AUTOWITHECO, EVOHOME_MODE_AWAY, EVOHOME_MODE_DAYOFF, EVOHOME_MODE_CUSTOM, EVOHOME_MODE_HEATINGOFF''' : mode for EvoHome controller
 * '''HUM_COMFORTABLE, HUM_DRY, HUM_NORMAL, HUM_WET, HUM_COMPUTE''' <sup>3.0.15</sup>: constant for humidity status.
 * '''INTEGER, FLOAT, STRING, DATE, TIME''': variable types.
-* **LOG_DEBUG, LOG_ERROR, LOG_INFO, LOG_FORCE: for logging messages. LOG_FORCE is at the same level as LOG_ERROR.
+* **LOG_DEBUG, LOG_ERROR, LOG_INFO, LOG_STATUS, LOG_FORCE: for logging messages. LOG_FORCE is at the same level as LOG_ERROR.
 * '''NSS_CLICKATELL''' <sup>3.1.3</sup>, '''NSS_FIREBASE, NSS_FIREBASE_CLOUD_MESSAGING, NSS_GOOGLE_DEVICES,''' <sup>3.0.10</sup> <sup>Only with installed casting plugin</sup>, '''NSS_HTTP, NSS_KODI, NSS_LOGITECH_MEDIASERVER, NSS_NMA,NSS_PROWL, NSS_PUSHALOT, NSS_PUSHBULLET, NSS_PUSHOVER, NSS_PUSHSAFER, NSS_TELEGRAM, NSS_GOOGLE_CLOUD_MESSAGING''' <sup>deprecated by Google and replaced by firebase</sup>: for notification subsystem
 * '''PRIORITY_LOW, PRIORITY_MODERATE, PRIORITY_NORMAL, PRIORITY_HIGH, PRIORITY_EMERGENCY''': for notification priority.
 * '''SECURITY_ARMEDAWAY, SECURITY_ARMEDHOME, SECURITY_DISARMED''': for security state.
 * '''STATE_IDLE, STATE_COOLING, STATE_HEATING''': for thermostat operating state.
 * '''SOUND_ALIEN , SOUND_BIKE, SOUND_BUGLE, SOUND_CASH_REGISTER, SOUND_CLASSICAL, SOUND_CLIMB , SOUND_COSMIC, SOUND_DEFAULT, SOUND_ECHO, SOUND_FALLING, SOUND_GAMELAN, SOUND_INCOMING, SOUND_INTERMISSION, SOUND_MAGIC, SOUND_MECHANICAL, SOUND_NONE, SOUND_PERSISTENT, SOUND_PIANOBAR , SOUND_SIREN, SOUND_SPACEALARM, SOUND_TUGBOAT, SOUND_UPDOWN''': for notification sounds.
 
+<span id="custom-event-api"></span>
 == Custom event API ==
 
 If you have a dzVents script that is triggered by a customEvent in Domoticz then the second parameter passed to the execute function will be a ''notification'' object. The object.type = customEvent (isCustomEvent: true) and object.data contains the passed data to this script. object.trigger is the name of the customEvent that triggered the script.
 
+<span id="device-object-api"></span>
 == Device object API ==
 
 If you have a dzVents script that is triggered by switching a device in Domoticz then the second parameter passed to the execute function will be a ''device'' object. Also, each device in Domoticz can be found in the <code>domoticz.devices()</code> collection (see above). The device object has a set of fixed attributes like ''name'' and ''idx''. Many devices, however, have different attributes and methods depending on their (hardware)type, subtype and other device specific identifiers. It is possible that you will get an error if you call a method on a device that doesn’t support it, so please check the device properties for your specific hardware to see which are supported (can also be done in your script code!).
@@ -867,6 +907,7 @@ dzVents recognizes most of the different device types in Domoticz and creates th
 
 If for some reason you miss a specific attribute or data for a device, then likely the <code>rawData</code> attribute will have that information.
 
+<span id="device-attributes-and-methods-for-all-devices"></span>
 == Device attributes and methods for all devices ==
 
 * '''active''': ''Boolean''. Is true for some common states like ‘On’ or ‘Open’ or ‘Motion’. Same as bState.
@@ -912,32 +953,38 @@ If for some reason you miss a specific attribute or data for a device, then like
 * '''update(&lt; params &gt;)''': ''Function''. Generic update method. Accepts any number of parameters that will be sent back to Domoticz. There is no need to pass the device.id here. It will be passed for you. Example to update a temperature: <code>device.update(0,12)</code>. This will eventually result in a commandArray entry <code>['UpdateDevice']='&lt;idx&gt;|0|12'</code>. Supports [[#Command_options_.28delay.2C_duration.2C_event_triggering.29|command options]].
 * '''updateQuiet(nValue, sValue)''': ''Function''. <sup>3.0.18</sup> Uses the JSON/API to send nValue and/or sValue to domoticz (at least one should be supplied). Will update the device status in the GUI and trigger events but will not execute the action on the device. Only useful when the status in the GUI is not in line with the actual status. Supports [[#Command_options_.28delay.2C_duration.2C_event_triggering.29|command options]].
 
+<span id="device-attributes-and-methods-for-specific-devices"></span>
 === Device attributes and methods for specific devices ===
 
 Note that if you do not find your specific device type here you can always inspect what is in the <code>rawData</code> attribute. Please let us know that it is missing so we can write an adapter for it (or you can write your own and submit it). Calling <code>myDevice.dump()</code> will dump all attributes and values for myDevice to the Domoticz log.
 
+<span id="air-quality"></span>
 ==== Air quality ====
 
 * '''co2''': ''Number''. PPM
 * '''quality''': ''String''. Air quality string.
 * '''updateAirQuality(ppm)''': Pass the CO<sub>2</sub> concentration. Supports [[#Command_options_.28delay.2C_duration.2C_event_triggering.29|command options]].
 
+<span id="alert-sensor"></span>
 ==== Alert sensor ====
 
 * '''color''': ''Number''. Color of the alert. See domoticz color constants for possible values.
 * '''text''': ''String''
 * '''updateAlertSensor(level, text)''': ''Function''. Level can be domoticz.ALERTLEVEL_GREY, ALERTLEVEL_GREEN, ALERTLEVEL_YELLOW, ALERTLEVEL_ORANGE, ALERTLEVEL_RED. Supports [[#Command_options_.28delay.2C_duration.2C_event_triggering.29|command options]].
 
+<span id="ampère-1-phase"></span>
 ==== Ampère, 1-phase ====
 
 * '''current''': ''Number''. Ampère.
 * '''updateCurrent(current)''': ''Function''. Current in Ampère. Supports [[#Command_options_.28delay.2C_duration.2C_event_triggering.29|command options]].
 
+<span id="ampère-3-phase"></span>
 ==== Ampère, 3-phase ====
 
 * '''current1''', '''current2''', '''current3''' : ''Number''. Ampère.
 * '''updateCurrent(current1, current2, current3)''': ''Function''. Currents in Ampère. Supports [[#Command_options_.28delay.2C_duration.2C_event_triggering.29|command options]].
 
+<span id="barometer-sensor"></span>
 ==== Barometer sensor ====
 
 * '''barometer'''. ''Number''. Barometric pressure.
@@ -945,6 +992,7 @@ Note that if you do not find your specific device type here you can always inspe
 * '''forecastString''': ''String''.
 * '''updateBarometer(pressure, forecast)''': ''Function''. Update barometric pressure. Forecast can be domoticz.BARO_STABLE, BARO_SUNNY, BARO_CLOUDY, BARO_UNSTABLE, BARO_THUNDERSTORM. Supports [[#Command_options_.28delay.2C_duration.2C_event_triggering.29|command options]].
 
+<span id="counter-managed-counter-counter-incremental"></span>
 ==== Counter, managed Counter, counter incremental ====
 
 * '''counter''': ''Number''
@@ -952,18 +1000,19 @@ Note that if you do not find your specific device type here you can always inspe
 * '''updateCounter(value)''': ''Function''. '''Overwrite current value for managed and standard counters; increment for incremental counters !!'''. Supports [[#Command_options_.28delay.2C_duration.2C_event_triggering.29|command options]].
 * '''updateHistory( date, sValues )''': ''Strings'' <sup>3.1.3</sup> ''function'' Managed counter only! Used to write values to short or long term storage.
 
-<source lang="lua">    local mCounter = domoticz.devices('device name')
+<syntaxhighlight lang="lua">    local mCounter = domoticz.devices('device name')
     mCounter.updateHistory('2021-01-22', '10;1777193') -- Write to long term storage (meter_calendar table)
-    mCounter.updateHistory('2021-01-22 10:05:02', '10;1777193') -- Write to short term storage (meter table)</source>
+    mCounter.updateHistory('2021-01-22 10:05:02', '10;1777193') -- Write to short term storage (meter table)</syntaxhighlight>
 * '''incrementCounter(value)''': ''Function''. (counter incremental) Supports [[#Command_options_.28delay.2C_duration.2C_event_triggering.29|command options]]. To update with a complete new value you will have to do some calculation and take the counter divider into account.
 
-<source lang="lua">    local newValue = value
+<syntaxhighlight lang="lua">    local newValue = value
     local iCounter = domoticz.devices('device name')
     local counterDivider = x -- x is depending on the counter divider set for the device
-    iCounter.incrementCounter( ( -1 * iCounter.counter * counterDivider ) + newValue )</source>
+    iCounter.incrementCounter( ( -1 * iCounter.counter * counterDivider ) + newValue )</syntaxhighlight>
 * '''valueQuantity''': ''String''. For counters.
 * '''valueUnits''': ''String''.
 
+<span id="custom-sensor"></span>
 ==== Custom sensor ====
 
 * '''sensorType''': ''Number''.
@@ -971,22 +1020,26 @@ Note that if you do not find your specific device type here you can always inspe
 * '''sensorValue''': <sup>3.0.11</sup> ''Number'' where applicable; else ''String'':
 * '''updateCustomSensor(value)''': ''Function''. Supports [[#Command_options_.28delay.2C_duration.2C_event_triggering.29|command options]].
 
+<span id="distance-sensor"></span>
 ==== Distance sensor ====
 
 * '''distance''': ''Number''.
 * '''updateDistance(distance)''': ''Function''. Supports [[#Command_options_.28delay.2C_duration.2C_event_triggering.29|command options]].
 
+<span id="electric-usage"></span>
 ==== Electric usage ====
 
 * '''actualWatt''': ''Number''. Current Watt usage.
 * '''WhActual''': ''Number''. Current Watt usage. (please use actualWatt)
 * '''updateEnergy(energy)''': ''Function''. In Watt. Supports [[#Command_options_.28delay.2C_duration.2C_event_triggering.29|command options]].
 
+<span id="evohome-controller"></span>
 ==== Evohome (controller) ====
 
 * '''mode''': ''string'' <sup>3.0.0</sup>.
 * '''setMode(mode, dparm, action, ooc )''': ''Function''. set mode for controller. Mode can be domoticz.EVOHOME_MODE_AUTO, domoticz.EVOHOME_MODE_AUTOWITHRESET, domoticz.EVOHOME_MODE_AUTOWITHECO, domoticz.EVOHOME_MODE_AWAY, domoticz.EVOHOME_MODE_DAYOFF, domoticz.EVOHOME_MODE_CUSTOM or domoticz.EVOHOME_MODE_HEATINGOFF. dParm <optional> can be a future time string (in ISO 8601 format e.g.: <code>os.date(&quot;!%Y-%m-%dT%TZ&quot;)</code>), a future time object, a future time as number of seconds since epoch or a number representing a positive offset in minutes (max 1 year). action <optional> (1 = run on action script, 0 = disable), ooc <optional> (1 = only trigger the event &amp; log on change, 0 = always trigger &amp; log)
 
+<span id="evohome-hotwater"></span>
 ==== Evohome (hotWater) ====
 
 * '''state''': ''string'' (‘On’ or ‘Off’)
@@ -994,12 +1047,14 @@ Note that if you do not find your specific device type here you can always inspe
 * '''untilDate''': ''string in ISO 8601 format'' or n/a.
 * '''setHotWater(state, mode, until)''': ''Function''. set HotWater Mode can be domoticz.EVOHOME_MODE_AUTO, domoticz.EVOHOME_MODE_TEMPORARY_OVERRIDE, domoticz.EVOHOME_MODE_FOLLOW_SCHEDULE or domoticz.EVOHOME_MODE_PERMANENT_OVERRIDE You can provide an until date (in ISO 8601 format for domoticz.EVOHOME_MODE_TEMPORARY_OVERRIDE e.g.: <code>os.date(&quot;!%Y-%m-%dT%TZ&quot;)</code>).
 
+<span id="evohome-relay"></span>
 ==== Evohome (relay) ====
 
 * '''state''': ''string'' (‘On’ or ‘Off’)
 * '''level''': ''number'' (level percentage)
 * '''active''': ''boolean'' (true when state is not equal to ‘Off’, false otherwise)
 
+<span id="evohome-zones"></span>
 ==== Evohome (zones) ====
 
 * '''setPoint''': ''Number''.
@@ -1007,12 +1062,14 @@ Note that if you do not find your specific device type here you can always inspe
 * '''untilDate''': ''string in ISO 8601 format'' or n/a .
 * '''updateSetPoint(setPoint, mode, until)''': ''Function''. Update set point. Mode can be domoticz.EVOHOME_MODE_AUTO, domoticz.EVOHOME_MODE_TEMPORARY_OVERRIDE, domoticz.EVOHOME_MODE_FOLLOW_SCHEDULE or domoticz.EVOHOME_MODE_PERMANENT_OVERRIDE. You can provide an until date (in ISO 8601 format e.g.: <code>os.date(&quot;!%Y-%m-%dT%TZ&quot;)</code>). When leaving out untilDate for mode domoticz.EVOHOME_MODE_TEMPORARY_OVERRIDE the untilDate will be the next scheduled zone-update time/date. Supports [[#Command_options_.28delay.2C_duration.2C_event_triggering.29|command options]].
 
+<span id="gas"></span>
 ==== Gas ====
 
 * '''counter''': ''Number''. Value in m<sup>3</sup>
 * '''counterToday''': ''Number''. Value in m<sup>3</sup>
 * '''updateGas(usage)''': ''Function''. Usage in '''dm<sup>3</sup>''' (liters). Supports [[#Command_options_.28delay.2C_duration.2C_event_triggering.29|command options]].
 
+<span id="group"></span>
 ==== Group ====
 
 * '''devices()''': ''Function''. Returns the collection of associated devices. Supports the same iterators as for <code>domoticz.devices()</code>: <code>forEach()</code>, <code>filter()</code>, <code>find()</code>, <code>reduce()</code>. See [[#Looping_through_the_collections:_iterators|Looping through the collections: iterators]]. Note that the function doesn’t allow you to get a device by its name or id. Use <code>domoticz.devices()</code> for that.
@@ -1023,6 +1080,7 @@ Note that if you do not find your specific device type here you can always inspe
 * '''switchOn()''': Supports [[#Command_options_.28delay.2C_duration.2C_event_triggering.29|command options]].
 * '''toggleGroup()''': Toggles the state of a group. Supports [[#Command_options_.28delay.2C_duration.2C_event_triggering.29|command options]].
 
+<span id="hardware-3.0.7"></span>
 ==== Hardware <sup>3.0.7</sup> ====
 
 * '''devices()''': ''Function''. Returns the collection of associated devices. Supports the same iterators as for <code>domoticz.devices()</code>: <code>forEach()</code>, <code>filter()</code>, <code>find()</code>, <code>reduce()</code>. See [[#Looping_through_the_collections:_iterators|Looping through the collections: iterators]]. Note that the function doesn’t allow you to get a device by its name or id. Use <code>domoticz.devices()</code> for that.
@@ -1031,6 +1089,7 @@ Note that if you do not find your specific device type here you can always inspe
 * '''type''': : ''String''
 * '''typeValue''': : ''Number''
 
+<span id="humidity-sensor"></span>
 ==== Humidity sensor ====
 
 * '''humidity''': ''Number''
@@ -1038,6 +1097,7 @@ Note that if you do not find your specific device type here you can always inspe
 * '''humidityStatusValue''': ''Number''. Value matches with domoticz.HUM_NORMAL, -HUM_DRY, HUM_COMFORTABLE, -HUM_WET.
 * '''updateHumidity(humidity, status)''': Update humidity. status can be domoticz.HUM_NORMAL, HUM_COMFORTABLE, HUM_DRY, HUM_WET. Supports [[#Command_options_.28delay.2C_duration.2C_event_triggering.29|command options]].
 
+<span id="kodi"></span>
 ==== Kodi ====
 
 * '''kodiExecuteAddOn(addonId)''': ''Function''. Will send an Execute Addon command sending no parameters. Addon IDs are embedded in the addon configuration and are not to be confused with the Addon Name. For example: http://forums.homeseer.com/showthread.php?p=1213403.
@@ -1049,6 +1109,7 @@ Note that if you do not find your specific device type here you can always inspe
 * '''kodiStop()''': ''Function''. Will send a Stop command, only effective if the device is streaming.
 * '''kodiSwitchOff()''': ''Function''. Will turn the device off if this is supported in settings on the device.
 
+<span id="kwh-electricity-instant-and-counter"></span>
 ==== kWh, Electricity (instant and counter) ====
 
 * '''actualWatt''': ''Number''. Actual usage in Watt.
@@ -1059,11 +1120,13 @@ Note that if you do not find your specific device type here you can always inspe
 * '''WhTotal''': ''Number''. Total Wh usage.
 * '''WhActual''': ''Number''. Actual reading in Watt. Please use actualWatt
 
+<span id="leaf-wetness"></span>
 ==== Leaf wetness ====
 
 * '''wetness''': ''Number''. Wetness value
 * '''updateWetness(wetness)''': ''Function''. Supports [[#Command_options_.28delay.2C_duration.2C_event_triggering.29|command options]].
 
+<span id="logitech-media-server"></span>
 ==== Logitech Media Server ====
 
 * '''pause()''': ''Function''. Will pause the device if it was streaming. Supports [[#Command_options_.28delay.2C_duration.2C_event_triggering.29|command options]].
@@ -1076,20 +1139,24 @@ Note that if you do not find your specific device type here you can always inspe
 * '''volumeUp()''': ''Function''. Will turn the device volume up with 2 points. Supports [[#Command_options_.28delay.2C_duration.2C_event_triggering.29|command options]].
 * '''volumeDown()''': ''Function''. Will turn the device volume down with 2 points. Supports [[#Command_options_.28delay.2C_duration.2C_event_triggering.29|command options]].
 
+<span id="lux-sensor"></span>
 ==== Lux sensor ====
 
 * '''lux''': ''Number''. Lux level for light sensors.
 * '''updateLux(lux)''': ''Function''. Supports [[#Command_options_.28delay.2C_duration.2C_event_triggering.29|command options]].
 
+<span id="onkyo-receiver"></span>
 ==== Onkyo receiver ====
 
 * '''onkyoEISCPCommand(command)'''. ''Function''. Sends an EISP command to the Onkyo receiver.
 
+<span id="opentherm-gateway"></span>
 ==== OpenTherm gateway ====
 
 * '''setPoint''': ''Number''.
 * '''updateSetPoint(setPoint)''': ''Function''. Supports [[#Command_options_.28delay.2C_duration.2C_event_triggering.29|command options]].
 
+<span id="p1-smart-meter"></span>
 ==== P1 Smart meter ====
 
 * '''counterDeliveredToday''': ''Number''.
@@ -1100,26 +1167,31 @@ Note that if you do not find your specific device type here you can always inspe
 * '''usage''': ''Number''.
 * '''usageDelivered''': ''Number''.
 
+<span id="percentage"></span>
 ==== Percentage ====
 
 * '''percentage''': ''Number''.
 * '''updatePercentage(percentage)''': ''Function''. Supports [[#Command_options_.28delay.2C_duration.2C_event_triggering.29|command options]].
 
+<span id="philips-hue-light"></span>
 ==== Philips Hue Light ====
 
 See switch below.
 
+<span id="pressure"></span>
 ==== Pressure ====
 
 * '''pressure''': ''Number''.
 * '''updatePressure(pressure)''': ''Function''. Supports [[#Command_options_.28delay.2C_duration.2C_event_triggering.29|command options]].
 
+<span id="rain-meter"></span>
 ==== Rain meter ====
 
 * '''rain''': ''Number'' (please note that this does return the rain total for today)
 * '''rainRate''': ''Number''
 * '''updateRain(rate, counter)''': ''Function''. (rate in mm * 100 per hour, counter is total in mm) Supports [[#Command_options_.28delay.2C_duration.2C_event_triggering.29|command options]].
 
+<span id="rgbww-lighting-limitlessapplamp"></span>
 ==== RGBW(W) / Lighting Limitless/Applamp ====
 
 * '''decreaseBrightness()''': deprecated because only very limited supported and will be removed from API
@@ -1135,11 +1207,13 @@ See switch below.
 * '''setRGB(red, green, blue)''': ''Function''. Set the lamps RGB color. Values are from 0-255. Supports [[#Command_options_.28delay.2C_duration.2C_event_triggering.29|command options]].
 * '''setWhiteMode()''': ''Function''. Sets the lamp to white mode. Supports [[#Command_options_.28delay.2C_duration.2C_event_triggering.29|command options]].
 
+<span id="scale-weight"></span>
 ==== Scale weight ====
 
 * '''weight''': ''Number''
 * '''udateWeight()''': ''Function''. Supports [[#Command_options_.28delay.2C_duration.2C_event_triggering.29|command options]].
 
+<span id="scene"></span>
 ==== Scene ====
 
 * '''devices()''': ''Function''. Returns the collection of associated devices. Supports the same iterators as for <code>domoticz.devices()</code>: <code>forEach()</code>, <code>filter()</code>, <code>find()</code>, <code>reduce()</code>. See [[#Looping_through_the_collections:_iterators|Looping through the collections: iterators]]. Note that the function doesn’t allow you to get a device by its name or id. Use <code>domoticz.devices()</code> for that.
@@ -1149,6 +1223,7 @@ See switch below.
 * '''switchOn()''': ''Function''. Supports [[#Command_options_.28delay.2C_duration.2C_event_triggering.29|command options]].
 * '''switchOff()''': ''Function''. Supports [[#Command_options_.28delay.2C_duration.2C_event_triggering.29|command options]].
 
+<span id="security-panel"></span>
 ==== Security Panel ====
 
 Create a security device:
@@ -1165,26 +1240,31 @@ Methods/attributes:
 * '''disarm()''': Disarms a security device. Supports [[#Command_options_.28delay.2C_duration.2C_event_triggering.29|command options]].
 * '''state''': ''String'': Same values as domoticz.security value.
 
+<span id="smoke-detection"></span>
 ==== Smoke detection ====
 
 * '''activate()''': ''Function''. Supports [[#Command_options_.28delay.2C_duration.2C_event_triggering.29|command options]].
 * '''reset()''': ''Function''. Supports [[#Command_options_.28delay.2C_duration.2C_event_triggering.29|command options]].
 
+<span id="solar-radiation"></span>
 ==== Solar radiation ====
 
 * '''radiation'''. ''Number''. In Watt/m<sup>2</sup>.
 * '''updateRadiation(radiation)''': ''Function''. Supports [[#Command_options_.28delay.2C_duration.2C_event_triggering.29|command options]].
 
+<span id="soil-moisture"></span>
 ==== Soil moisture ====
 
 * '''moisture'''. ''Number''. In centibars (cB).
 * '''updateSoilMoisture(moisture)''': ''Function''. Supports [[#Command_options_.28delay.2C_duration.2C_event_triggering.29|command options]].
 
+<span id="sound-level"></span>
 ==== Sound level ====
 
 * '''level'''. ''Number''. In dB.
 * '''updateSoundLevel(level)''': ''Function''. Supports [[#Command_options_.28delay.2C_duration.2C_event_triggering.29|command options]].
 
+<span id="switch-dimmer-selector-etc."></span>
 ==== Switch (dimmer, selector etc.) ====
 
 There are many switch-like devices. Not all methods are applicable for all switch-like devices. You can always use the generic <code>setState(newState)</code> method.
@@ -1208,11 +1288,13 @@ There are many switch-like devices. Not all methods are applicable for all switc
 * '''switchSelector(&lt;[level]|[levelname] &gt;)''' : ''Function''. Switches a selector switch to a specific level ( levelname or level(numeric) required ) levelname must be exact, for level the closest fit will be picked. See the edit page in Domoticz for such a switch to get a list of the values). Levelname is only supported when level 0 (“Off”) is not removed Supports [[#Command_options_.28delay.2C_duration.2C_event_triggering.29|command options]].
 * '''toggleSwitch()''': ''Function''. Toggles the state of the switch (if it is togglable) like On/Off, Open/Close etc.
 
+<span id="temperature-sensor"></span>
 ==== Temperature sensor ====
 
 * '''temperature''': ''Number''
 * '''updateTemperature(temperature)''': ''Function''. Note: temperature must be in Celsius. Use <code>domoticz.toCelsius()</code> to convert a Fahrenheit temperature to Celsius. Supports [[#Command_options_.28delay.2C_duration.2C_event_triggering.29|command options]].
 
+<span id="temperature-barometer-sensor"></span>
 ==== Temperature, Barometer sensor ====
 
 * '''barometer''': ''Number''
@@ -1221,6 +1303,7 @@ There are many switch-like devices. Not all methods are applicable for all switc
 * '''temperature''': ''Number''
 * '''updateTempBaro(temperature, pressure, forecast)''': ''Function''. Forecast can be domoticz.BARO_STABLE, BARO_SUNNY, BARO_CLOUDY, BARO_UNSTABLE, BARO_THUNDERSTORM. Note: temperature must be in Celsius. Use <code>domoticz.toCelsius()</code> to convert a Fahrenheit temperature to Celsius. Supports [[#Command_options_.28delay.2C_duration.2C_event_triggering.29|command options]].
 
+<span id="temperature-humidity-barometer-sensor"></span>
 ==== Temperature, Humidity, Barometer sensor ====
 
 * '''barometer''': ''Number''
@@ -1233,6 +1316,7 @@ There are many switch-like devices. Not all methods are applicable for all switc
 * '''temperature''': ''Number''
 * '''updateTempHumBaro(temperature, humidity, status, pressure, forecast)''': ''Function''. forecast can be domoticz.BARO_NOINFO, BARO_SUNNY, BARO_PARTLY_CLOUDY, BARO_CLOUDY, BARO_RAIN. status can be domoticz.HUM_NORMAL, HUM_COMFORTABLE, HUM_DRY, HUM_WET, HUM_COMPUTE (let dzVents do the math)<sup>3.0.15</sup>. Note: temperature must be in Celsius. Use <code>domoticz.toCelsius()</code> to convert a Fahrenheit temperature to Celsius. Supports [[#Command_options_.28delay.2C_duration.2C_event_triggering.29|command options]].
 
+<span id="temperature-humidity"></span>
 ==== Temperature, Humidity ====
 
 * '''dewPoint''': ''Number''
@@ -1242,16 +1326,19 @@ There are many switch-like devices. Not all methods are applicable for all switc
 * '''temperature''': ''Number''
 * '''updateTempHum(temperature, humidity [, status] )''': ''Function''. status can be domoticz.HUM_NORMAL, HUM_COMFORTABLE, HUM_DRY, HUM_WET or HUM_COMPUTE (let dzVents do the math)<sup>3.0.15</sup>. Note: temperature must be in Celsius. Use <code>domoticz.toCelsius()</code> to convert a Fahrenheit temperature to Celsius. Supports [[#Command_options_.28delay.2C_duration.2C_event_triggering.29|command options]].
 
+<span id="text"></span>
 ==== Text ====
 
 * '''text''': ''String''
 * '''updateText(text)''': Function*. Supports [[#Command_options_.28delay.2C_duration.2C_event_triggering.29|command options]].
 
+<span id="thermostat-set-point"></span>
 ==== Thermostat set point ====
 
 * '''setPoint''': ''Number''.
 * '''updateSetPoint(setPoint)''':''Function''. Supports [[#Command_options_.28delay.2C_duration.2C_event_triggering.29|command options]].
 
+<span id="thermostat-operating-state-3.0.19"></span>
 ==== Thermostat Operating state <sup>3.0.19</sup> ====
 
 * '''mode''': ''Number''. Current mode
@@ -1259,6 +1346,7 @@ There are many switch-like devices. Not all methods are applicable for all switc
 * '''modeString''': ''String''. Current mode
 * '''updateMode(mode)''':''Function''. Supports [[#Command_options_.28delay.2C_duration.2C_event_triggering.29|command options]].
 
+<span id="thermostat-type-3-mertik-3.0.15"></span>
 ==== Thermostat type 3 (Mertik) <sup>3.0.15</sup> ====
 
 * '''mode''': ''Number''. Current mode
@@ -1266,26 +1354,31 @@ There are many switch-like devices. Not all methods are applicable for all switc
 * '''modeString''': ''String''. Current mode
 * '''updateMode(mode)''':''Function''. Supports [[#Command_options_.28delay.2C_duration.2C_event_triggering.29|command options]].
 
+<span id="uv-sensor"></span>
 ==== UV sensor ====
 
 * '''uv''': ''Number''. UV index.
 * '''updateUV(uv)''': ''Function''. UV index. Supports [[#Command_options_.28delay.2C_duration.2C_event_triggering.29|command options]].
 
+<span id="visibility"></span>
 ==== Visibility ====
 
 * '''visibility''': ''Number''. In km.
 * '''updateVisibility(distance)''':Function*. In km. Supports [[#Command_options_.28delay.2C_duration.2C_event_triggering.29|command options]].
 
+<span id="voltage"></span>
 ==== Voltage ====
 
 * '''voltage''': ''Number''.
 * '''updateVoltage(voltage)''':Function*. Supports [[#Command_options_.28delay.2C_duration.2C_event_triggering.29|command options]].
 
+<span id="waterflow"></span>
 ==== Waterflow ====
 
 * '''flow''': ''Number''. In L/m.
 * '''updateWaterflow(flow)''':Function*. In L/m. Supports [[#Command_options_.28delay.2C_duration.2C_event_triggering.29|command options]].
 
+<span id="wind"></span>
 ==== Wind ====
 
 * '''chill''': ''Number''.
@@ -1298,6 +1391,7 @@ There are many switch-like devices. Not all methods are applicable for all switc
 * '''speedMs''': ''Number''. Windspeed ( in meters / second )
 * '''updateWind(bearing, direction, speed, gust, temperature, chill)''': ''Function''. Bearing in degrees, direction in N, S, NNW etc, speed in m/s, gust in m/s, temperature and chill in Celsius. Use <code>domoticz.toCelsius()</code> to convert a Fahrenheit temperature to Celsius. Supports [[#Command_options_.28delay.2C_duration.2C_event_triggering.29|command options]].
 
+<span id="youless-meter"></span>
 ==== Youless meter ====
 
 * '''counterDeliveredToday''': ''Number''.
@@ -1305,11 +1399,13 @@ There are many switch-like devices. Not all methods are applicable for all switc
 * '''powerYield''': ''String''.
 * '''updateYouless(total, actual)''': ''Function''.
 
+<span id="zone-heating"></span>
 ==== Zone heating ====
 
 * '''setPoint''': ''Number''.
 * '''heatingMode''': ''String''.
 
+<span id="z-wave-fan-mode"></span>
 ==== Z-Wave Fan mode ====
 
 * '''mode''': ''Number''. Current mode number.
@@ -1317,6 +1413,7 @@ There are many switch-like devices. Not all methods are applicable for all switc
 * '''modes''': ''Table''. Lists all available modes.
 * '''updateMode(modeString)''': ''Function''. Set new mode. Supports [[#Command_options_.28delay.2C_duration.2C_event_triggering.29|command options]].
 
+<span id="z-wave-thermostat-mode"></span>
 ==== Z-Wave Thermostat mode ====
 
 * '''mode''': ''Number''. Current mode number.
@@ -1324,11 +1421,12 @@ There are many switch-like devices. Not all methods are applicable for all switc
 * '''modes''': ''Table''. Lists all available modes.
 * '''updateMode(modeString)''': ''Function''. Set new mode. Supports [[#Command_options_.28delay.2C_duration.2C_event_triggering.29|command options]].
 
+<span id="command-options-delay-duration-event-triggering"></span>
 === Command options (delay, duration, event triggering) ===
 
 Many dzVents device methods support extra options, like controlling a delay or a duration:
 
-<source lang="lua">
+<syntaxhighlight lang="lua">
     -- switch on for 2 minutes after 10 seconds
     device.switchOn().afterSec(10).forMin(2)
 
@@ -1354,7 +1452,8 @@ Many dzVents device methods support extra options, like controlling a delay or a
     -- this is a short for:
     if (device.state == 'Off') then
         devices.switchOn()
-    end</source>
+    end</syntaxhighlight>
+<span id="options"></span>
 ==== Options ====
 
 * '''at(hh:mm[:ss][ on [ ddd|dddd ] )''': ''Function''.<sup>3.0.1</sup> Activates the command at a certain time [ on a certain day]
@@ -1376,15 +1475,16 @@ At t<sub>2</sub> Domoticz receives the <code>switchOn().forMin(5)</code> command
 
 That’s just how it works and you will have to deal with it in your script. So, instead of simply re-issuing <code>switchOn().forMin(5)</code> you have to check the switch’s state first:
 
-<source lang="lua">if (light.active) then
+<syntaxhighlight lang="lua">if (light.active) then
     light.switchOff().afterMin(5)
 else
     light.switchOn().forMin(5)
-end</source>
+end</syntaxhighlight>
 or issue these two commands ''both'' as they are mutually exclusive:
 
-<source lang="lua">light.switchOff().checkFirst().afterMin(5)
-light.switchOn().checkFirst().forMin(5)</source>
+<syntaxhighlight lang="lua">light.switchOff().checkFirst().afterMin(5)
+light.switchOn().checkFirst().forMin(5)</syntaxhighlight>
+<span id="availability"></span>
 ==== Availability ====
 
 Some options are not available to all commands. All the options are available to device switch-like commands like <code>myDevice.switchOff()</code>, <code>myGroup.switchOn()</code> or <code>myBlinds.open()</code>. For updating (usually Dummy ) devices like a text device <code>myTextDevice.updateText('zork')</code> you can only use <code>silent()</code>. For thermostat setpoint devices and snapshot command silent() is not available. For commands for which dzVents must use openURL, only <code>at()</code> and <code>afterAAA()</code> methods are available. These commands are mainly the setAaaaa() commands for RGBW type devices.
@@ -1485,6 +1585,7 @@ See table below
 
 |}
 
+<span id="notes-on-table"></span>
 ==== Notes on table ====
 
 * '''Note 1''': AAA is a placeholder for <code>Min/Sec/Hour</code> affix e.g. <code>afterMin()</code>.
@@ -1492,18 +1593,22 @@ See table below
 * '''Note 3''': Note 2 also applies for all commands depending on openURL (like rgbwwDevice.setAaa() commands).
 * '''Note 4''': Including dimTo, switchSelector, setLevel and similar methods.
 
+<span id="follow-up-event-triggers"></span>
 ==== Follow-up event triggers ====
 
 Normally if you issue a command, Domoticz will immediately trigger follow-up events, and dzVents will automatically trigger defined event scripts. If you trigger a scene, all devices in that scene will issue a change event. If you have event triggers for these devices, they will be executed by dzVents. If you don’t want this to happen, add <code>.silent()</code> to your commands (exception is updateSetPoint).
 
+<span id="create-your-own-device-adapter"></span>
 === Create your own device adapter ===
 
 If your device is not recognized by dzVents, you can still operate it using the generic device attributes and methods. It is much nicer, however, to have device specific attributes and methods. Existing recognized adapters are in <code>/path/to/domoticz/dzVents/runtime/device-adapters</code>. Copy an existing adapter and adapt it to your needs. You can turn debug logging on and inspect the file <code>domoticzData.lua</code> in the dzVents folder. There you will find the unique signature for your device type. Usually it is a combination of deviceType and deviceSubType, but you can use any of the device attributes in the <code>matches</code> function. The matches function checks if the device type is suitable for your adapter and the <code>process</code> function actually creates your specific attributes and methods. Also, if you call <code>myDevice.dump()</code> you will see all attributes and methods and the attribute <code>_adapters</code> shows you a list of applied adapters for that device. Finally, register your adapter in <code>Adapters.lua</code>. Please share your adapter when it is ready and working.
 
+<span id="variable-object-api-user-variables"></span>
 == Variable object API (user variables) ==
 
 User variables created in Domoticz have these attributes and methods:
 
+<span id="variable-attributes-and-methods"></span>
 === Variable attributes and methods ===
 
 * '''changed''': ''Boolean''. Was the variable updated. '''Note''': update does not necessarily means the variable value or type changed.
@@ -1517,26 +1622,27 @@ User variables created in Domoticz have these attributes and methods:
 * '''type''': ''String''. Can be domoticz.INTEGER, domoticz.FLOAT, domoticz.STRING, domoticz.DATE, domoticz.TIME.
 * '''value''': ''String|Number|Date|Time''. Value of the variable.
 
+<span id="time-object"></span>
 == Time object ==
 
 Many attributes represent a moment in time, like <code>myDevice.lastUpdate</code> or <code>domoticz.time</code>. In dzVents, a time-like attribute is an object with properties and methods which make your life easier.
 
-<source lang="lua">    print(myDevice.lastUpdate.minutesAgo)
+<syntaxhighlight lang="lua">    print(myDevice.lastUpdate.minutesAgo)
     print(myDevice.lastUpdate.daysAgo)
 
     -- compare two times
-    print(domoticz.time.compare(myDevice.lastUpdate).secs))</source>
+    print(domoticz.time.compare(myDevice.lastUpdate).secs))</syntaxhighlight>
 You can also create your own:
 
-<source lang="lua">    local Time = require('Time')
-    local t = Time('2016-12-12 07:35:00') -- must be this format!!</source>
+<syntaxhighlight lang="lua">    local Time = require('Time')
+    local t = Time('2016-12-12 07:35:00') -- must be this format!!</syntaxhighlight>
 If you don’t pass a time string:
 
-<source lang="lua">    local Time = require('Time')
-    local currentTime = Time()</source>
+<syntaxhighlight lang="lua">    local Time = require('Time')
+    local currentTime = Time()</syntaxhighlight>
 Use this in combination with the various dzVents time attributes:
 
-<source lang="lua">    local Time = require('Time')
+<syntaxhighlight lang="lua">    local Time = require('Time')
     local t = Time('2016-12-12 07:35:00')
 
     local tonight = Time(domoticz.time.rawDate .. ' 20:00:00')
@@ -1552,23 +1658,25 @@ Use this in combination with the various dzVents time attributes:
 
     -- very powerful if you want to compare two time instances:
     local anotherTime = Time('...') -- fill-in some time here
-    print(t.compare(anotherTime).secs) -- diff in seconds between t and anotherTime.</source>
+    print(t.compare(anotherTime).secs) -- diff in seconds between t and anotherTime.</syntaxhighlight>
+<span id="system-event-api"></span>
 === System event API ===
 
 If you have a dzVents script that is triggered by a system-event in Domoticz then the second parameter passed to the execute function will be a ''system'' object. The object.type = system-event that triggered the script. ( object.isSystemEvent: true) For backups the object also contains location and durationin seconds.
 
+<span id="time-properties-and-methods"></span>
 === Time properties and methods ===
 
 Creation:
 
-<source lang="lua">local Time = require('Time')
+<syntaxhighlight lang="lua">local Time = require('Time')
 local now = Time() -- current time
 local someTime = Time('2017-12-31 22:19:15')
-local utcTime = Time('2017-12-31 22:19:15', true)</source>
+local utcTime = Time('2017-12-31 22:19:15', true)</syntaxhighlight>
 Creation:
 
-<source lang="lua">local someTime = domoticz.time.addMinutes(30) -- someTime = domoticz time object for now + 30 minutes
-local someTime = domoticz.time.makeTime() -- someTime = new domoticz time object.</source>
+<syntaxhighlight lang="lua">local someTime = domoticz.time.addMinutes(30) -- someTime = domoticz time object for now + 30 minutes
+local someTime = domoticz.time.makeTime() -- someTime = new domoticz time object.</syntaxhighlight>
 * '''addAAA(offset)''': ''time object''. time object with given offset (positive or negative. AAA is a placeholder for <code>Seconds, Minutes, Hours or Days</code> affix e.g. `addHours(-2)
 * '''civTwilightEndInMinutes''': ''Number''. Minutes from midnight until civTwilightEnd.
 * '''civTwilightStartInMinutes''':''Number''. Minutes from midnight until civTwilightStart.
@@ -1581,12 +1689,12 @@ local someTime = domoticz.time.makeTime() -- someTime = new domoticz time object
 ** '''compare''': 0 = both are equal, 1 = ''time'' is in the future, -1 = ''time'' is in the past.
 * '''dateToDate( dateString, sourceFormat, targetFormat[ , offSet] )''':<sup>3.0.17</sup> ''Function'': Returns a reformatted datestring. dateString is a formatted date and source- and targetFormat are representations of the dateString elements and their locations in the string (see examples in dateToTimestamp) . Offset is a number (default = 0 )
 
-<source lang="lua">        -- examples:
+<syntaxhighlight lang="lua">        -- examples:
         domoticz.time.dateToDate('31/12/2021 23:31:05','dd/mm/yyyy hh:MM:ss', 'dddd dd mmmm hh:MM:ss', 1 )              -- > 'Friday 31 December 23:31:06'
-        domoticz.time.dateToDate('31/12/2021 23:31:05','dd/mm/yyyy hh:MM:ss', 'ddd dd mmm hh:MM:ss', -3600 * 24 - 3 ))  -- > 'Thu 30 Dec 23:31:02'</source>
+        domoticz.time.dateToDate('31/12/2021 23:31:05','dd/mm/yyyy hh:MM:ss', 'ddd dd mmm hh:MM:ss', -3600 * 24 - 3 ))  -- > 'Thu 30 Dec 23:31:02'</syntaxhighlight>
 * '''dateToTimestamp([ dateString [,control] ] )''': ''Function'': Returns ''Number'' representing time since epoch in seconds. dateString is a formatted date and control is a representation of the dateString elements and their location in the string. Default control is ‘yyyy-mm-dd hh:MM’. recognized controls are either a Lua pattern string or a string containing following codes:
 
-<source lang="lua">        dddd -- full weekdayname(e.g. Wednesday) language depends on locale
+<syntaxhighlight lang="lua">        dddd -- full weekdayname(e.g. Wednesday) language depends on locale
         ddd  -- abbreviated weekdayname(e.g. Wed) language depends on locale
         dd   -- day of the month {[01-31]
         mmmm -- full monthname(e.g September) language depends on locale
@@ -1610,7 +1718,7 @@ local someTime = domoticz.time.makeTime() -- someTime = new domoticz time object
         domoticz.time.dateToTimestamp('2020-12-31 23:59:01','yyyy-mm-dd hh:MM:ss'))                             -- > 1609455541
         domoticz.time.dateToTimestamp('December 31, 23:59:02','mmmm dd, hh:MM:ss'))                             -- > 1609455542
         domoticz.time.dateToTimestamp('2020-12-31 23:59:03','(%d+)%D+(%d+)%D+(%d+)%D+(%d+)%D+(%d+)%D+(%d+)' ))  -- > 1609455543
-        domoticz.time.dateToTimestamp('20201231235904','(%d%d%d%d)(%d%d)(%d%d)(%d%d)(%d%d)(%d%d)'))             -- > 1609455544</source>
+        domoticz.time.dateToTimestamp('20201231235904','(%d%d%d%d)(%d%d)(%d%d)(%d%d)(%d%d)(%d%d)'))             -- > 1609455544</syntaxhighlight>
 * '''day''': ''Number''
 * '''dayAbbrOfWeek''': ''String''. sun,mon,tue,wed,thu,fri or sat
 * '''daysAgo''': ''Number''
@@ -1645,10 +1753,10 @@ local someTime = domoticz.time.makeTime() -- someTime = new domoticz time object
 * '''time''': ''String''. Returns the time part of the raw data as HH:MM
 * '''timestampToDate([ [ timestamp ] , [ pattern ] ,[ offSet ] )''': ''function''. Returns a datestring. timestamp is number of seconds since epoch (default = now) , pattern is a string as explained in this wiki at the description of the domoticz.time.dateToTimestamp function (default = ‘yyyy-mm-dd hh:MM:ss’). Offset is a number (default = 0 )
 
-<source lang="lua">        -- examples:
+<syntaxhighlight lang="lua">        -- examples:
         domoticz.time.timestampToDate(10,'date time')                               --> '01/01/70 01:00:10'
         domoticz.time.timestampToDate(60,'ddd mm mmm yyyy ii:MM mer','date time')   --> 'Thu 01 Jan 1970 01:01 AM''
-        domoticz.time.timestampToDate(1598077445,'dd/mm/yy ii:MM mer nZero')        --> '22/08/20 8:24 AM'</source>
+        domoticz.time.timestampToDate(1598077445,'dd/mm/yy ii:MM mer nZero')        --> '22/08/20 8:24 AM'</syntaxhighlight>
 * '''toUTC(string | table,[offset])''': ''domoticz time object''. <sup>3.0.9</sup> returns domoticz time object based on first parameter (time as table or string) string format must be ‘yyyy-mm-dd hh:mm:ss’. offset defaults to 0.
 * '''utcSystemTime''': ''Table''. UTC system time (only when in UTC mode):
 ** '''day''': ''Number''
@@ -1670,68 +1778,72 @@ local someTime = domoticz.time.makeTime() -- someTime = new domoticz time object
 
 '''Note: it is currently not possible to change the domoticz.time object instance.''' ( but you can create a new one with- or without an offset)
 
+<span id="shared-helper-functions"></span>
 == Shared helper functions ==
 
 It is not unlikely that at some point you want to share Lua code among your scripts. Normally in Lua you would have to create a module and require that module in all you scripts. But dzVents makes that easier for you: Inside your scripts folder or in Domoticz’ GUI web editor, create a <code>global_data.lua</code> script (same as for global persistent data) and feed it with this code:
 
-<source lang="lua">return {
+<syntaxhighlight lang="lua">return {
     helpers = {
         myHandyFunction = function(param1, param2)
             -- do your stuff
         end,
         MY_CONSTANT = 100 -- doesn't have to be a function
     }
-}</source>
+}</syntaxhighlight>
 Save the file and then you can use myHandyFunction everywhere in your event scripts:
 
-<source lang="lua">return {
+<syntaxhighlight lang="lua">return {
     ...
     execute = function(domoticz, device)
         local results = domoticz.helpers.myHandyFunction('bla', 'boo')
         print(domoticz.helpers.MY_CONSTANT)
     end
-}</source>
+}</syntaxhighlight>
 No <code>require</code> or <code>dofile</code> is needed.
 
 '''Important note: if you need to access the domoticz object in your helper function you have to pass it as a parameter:'''
 
 Example:
 
-<source lang="lua">return {
+<syntaxhighlight lang="lua">return {
     helpers = {
         myHandyFunction = function(domoticz, param1, param2)
             -- do your stuff
             domoticz.log('Hey')
         end
     }
-}</source>
+}</syntaxhighlight>
 And pass it along:
 
-<source lang="lua">return {
+<syntaxhighlight lang="lua">return {
     ...
     execute = function(domoticz, device)
         local results = domoticz.helpers.myHandyFunction(domoticz, 'bla', 'boo')
     end
-}</source>
+}</syntaxhighlight>
 '''Note''': there can be only '''one''' <code>global_data.lua</code> on your system. Either in <code>/path/to/domoticz/scripts/dzVents/script</code> or in Domoticz’ internal GUI web editor.
 
+<span id="requiring-your-own-modules"></span>
 == Requiring your own modules ==
 
 If you don’t want to use the helpers support, but you want to require your own modules, place them either in <code>/path/to/domoticz/scripts/dzVents/modules</code> or <code>/path/to/domoticz/scripts/dzVents/scripts/modules</code> as these folders are already added to the Lua package path. You can just require those modules: <code>local myModule = require('myModule')</code>
 
+<span id="persistent-data"></span>
 = Persistent data =
 
 In many situations you need to store a device state or other information in your scripts for later use. Like knowing what the state was of a device the previous time the script was executed or what the temperature in a room was 10 minutes ago. Without dzVents, you had to resort to user variables. These are global variables that you create in the Domoticz GUI and that you can access in your scripts like: domoticz.variables(‘previousTemperature’).
 
 Now, for some this is rather inconvenient and they want to control this state information in the event scripts themselves or want to use all of Lua’s variable types. dzVents has a solution for that: '''persistent script data'''. This can either be on the script level or on a global level.
 
+<span id="script-level-persistent-variables"></span>
 == Script level persistent variables ==
 
 The values in persistent script variables persist and can be retrieved in the next script run.
 
 For example, send a notification if a switch has been activated 5 times:
 
-<source lang="lua">    return {
+<syntaxhighlight lang="lua">    return {
         on = {
             devices = { 'MySwitch' }
         },
@@ -1746,12 +1858,12 @@ For example, send a notification if a switch has been activated 5 times:
             domoticz.data.counter = domoticz.data.counter + 1
         end
     end
-    }</source>
+    }</syntaxhighlight>
 The <code>data</code> section defines a persistent variable called <code>counter</code>. It also defines an initial value. From then on you can read and set the variable in your script.
 
 You do not have to provide an initial value though. In that case the initial value is ''nil'':
 
-<source lang="lua">    return {
+<syntaxhighlight lang="lua">    return {
         --
         data = {
             'x', 'y', 'z' -- note the quotes
@@ -1759,18 +1871,20 @@ You do not have to provide an initial value though. In that case the initial val
         execute = function(domoticz, item)
             print(tostring(domoticz.data.x)) -- prints nil
         end
-    }</source>
+    }</syntaxhighlight>
 You can define as many variables as you like and put whatever value in there that you like. It doesn’t have to be just a number. Just don’t put something in there with functions (well, they are filtered out actually).
 
+<span id="size-matters-and-watch-your-speed"></span>
 === Size matters and watch your speed!! ===
 
 If you include tables (or arrays) in the persistent data, beware to not let them grow. It will definitely slow down script execution because dzVents has to serialize and deserialize the data. It is better to use the historical option as described below.
 
+<span id="re-initializing-a-variable"></span>
 === Re-initializing a variable ===
 
 You can re-initialize a persistent variable and re-apply the initial value as defined in the data section:
 
-<source lang="lua">return {
+<syntaxhighlight lang="lua">return {
     on = { .. },
     data = {
         x = { initial = 'initial value' }
@@ -1781,23 +1895,24 @@ You can re-initialize a persistent variable and re-apply the initial value as de
             print(domoticz.data.x) -- will print 'initial value'
         end
     end
-}</source>
+}</syntaxhighlight>
 Note that <code>domoticz.data.initialize('&lt;varname&gt;')</code> is just a convenience method. You can of course create a local variable in your module holding the initial value and use it in your data section and your execute function.
 
+<span id="global-persistent-variables"></span>
 == Global persistent variables ==
 
 Script level variables are only available in the scripts that define them, but global variables can be accessed and changed in every script. To utilize global persistent variables, create a script file called <code>global_data.lua</code> in your scripts folder with this content (same file where you can also put your shared helper functions):
 
-<source lang="lua">    return {
+<syntaxhighlight lang="lua">    return {
         helpers = {},
         data = {
             peopleAtHome = { initial = false },
             heatingProgramActive = { initial = false }
         }
-    }</source>
+    }</syntaxhighlight>
 Just define the variables that you need and access them in your scripts:
 
-<source lang="lua">    return {
+<syntaxhighlight lang="lua">    return {
         on = {
             devices = {'WindowSensor'}
         },
@@ -1807,16 +1922,17 @@ Just define the variables that you need and access them in your scripts:
                 domoticz.notify("Hey don't open the window when the heating is on!")
             end
         end
-    }</source>
+    }</syntaxhighlight>
 '''Note''': there can be only one <code>global_data.lua</code> on your system. Either in <code>/path/to/domoticz/scripts/dzVents/script</code> or in Domoticz’ internal GUI web editor.
 
 You can use <code>domoticz.globalData.initialize('&lt;varname&gt;')</code> just as like <code>domoticz.data.initialize('&lt;varname&gt;')</code>.
 
+<span id="a-special-kind-of-persistent-variables-history-true-historical-variables-api"></span>
 == A special kind of persistent variables: ''history = true'' (Historical variables API) ==
 
 In some situations, storing a previous value for a sensor is not enough, and you would like to have more previous values. For example, you want to calculate an average over several readings. Of course you can define a persistent variable holding a table:
 
-<source lang="lua">    return {
+<syntaxhighlight lang="lua">    return {
         active = true,
         on = {
             devices = {'MyTempSensor'}
@@ -1836,10 +1952,10 @@ In some situations, storing a previous value for a sensor is not enough, and you
             end
             local average = sum / count
         end
-    }</source>
+    }</syntaxhighlight>
 The problem with this is that you have to do a lot of bookkeeping to make sure that there isn’t too much data to store (see [[#How_does_the_storage_stuff_work.3F|below for how it works]]) . Fortunately, dzVents has done this for you:
 
-<source lang="lua">    return {
+<syntaxhighlight lang="lua">    return {
         active = true,
         on = {
             devices = {'MyTempSensor'}
@@ -1857,19 +1973,21 @@ The problem with this is that you have to do a lot of bookkeeping to make sure t
             -- maximum value in the past hour:
             local max = domoticz.data.temperatures.maxSince('01:00:00')
         end
-    }</source>
+    }</syntaxhighlight>
+<span id="defining"></span>
 === Defining ===
 
 Define a script variable or global variable in the data section and set <code>history = true</code>:
 
-<source lang="lua">    …
+<syntaxhighlight lang="lua">    …
     data = {
         var1 = { history = true, maxItems = 10, maxHours = 1, maxMinutes = 5 }
-    }</source>
+    }</syntaxhighlight>
 * '''maxItems''': ''Number''. Controls how many items are stored in the variable. maxItems has precedence over maxHours and maxMinutes.
 * '''maxHours''': ''Number''. Data older than <code>maxHours</code> from now will be discarded. E.g., if set to 2, then data older than 2 hours will be removed at the beginning of the script.
 * '''maxMinutes''': ''Number''. Same as maxHours but, you guessed it: for minutes this time.. All these options can be combined. '''Reminder: don’t store too much data. Only put in what you really need!'''
 
+<span id="adding-data"></span>
 === Adding data ===
 
 Add new values to a historical variable:
@@ -1879,6 +1997,7 @@ As soon as this new value is put on top of the list, the older values shift one 
 
 Any kind of data may be stored in the historical variable: numbers, strings, but also more complex data like tables. However, in order to use the [[#Statistical_functions|statistical methods]], numeric values are required.
 
+<span id="accessing-values-in-historical-variables"></span>
 === Accessing values in historical variables ===
 
 Values in a historical variable are indexed, where index 1 is the newest value, 2 is the second newest, and so on:
@@ -1892,10 +2011,12 @@ print(item.time.secondsAgo) -- access the time stamp
 print(item.data) -- access the data</pre>
 The time attribute by itself is a table with many properties that help you inspect the data points more easily. See [[#Time_object|Time Object]] for all attributes and methods.
 
+<span id="index"></span>
 ==== Index ====
 
 All data in the set can be addressed using an index. The item with index = 1 is the youngest, and the item with the highest index is the oldest. Beware, if you have called <code>add()</code> first, then the first item is that new value! You can always check the size of the set by inspecting <code>myVar.size</code>.
 
+<span id="time-specification-timeago"></span>
 ==== Time specification (''timeAgo'') ====
 
 Every data point in the set has a timestamp and the set is ordered so that the youngest item is the first and the oldest item the last. Many functions require a moment in the past to be specified by passing a string in the format '''<code>hh:mm:ss</code>''', where ''hh'' is the number of hours ago, ''mm'' the number of minutes and ''ss'' the number of seconds. The times are added together, so you don’t have to consider 60 minute boundaries, etc. A time specification of <code>12:88:03</code> is valid, and points to the data point at or around <code>12*3600 + 88*60 + 3 = 48.483 seconds</code> in the past.
@@ -1904,6 +2025,7 @@ Example:
 
 <pre>-- get average for the past 30 minutes:
 local avg = myVar.avgSince('00:30:00')</pre>
+<span id="getting-data-points"></span>
 ==== Getting data points ====
 
 * '''get(idx)''': Returns the idx-th item in the set. Same as <code>myVar.storage[idx]</code>.
@@ -1915,6 +2037,7 @@ local avg = myVar.avgSince('00:30:00')</pre>
 * '''subsetSince( [[#Time_specification_.28timeAgo.29|timeAgo]] )''': Returns a subset of the stored data since the relative time specified by timeAgo. So calling <code>myVar.subsetSince('00:60:00')</code> returns all items that have been added to the list in the past 60 minutes. The result set supports [[#Looping_through_the_data:_iterators|iterators]] <code>forEach</code>, <code>filter</code>, <code>find</code> and <code>reduce</code>.
 * '''reset( )''': Removes all the items from the set. It could be a good practice to do this often when you know you don’t need older data. For instance, when you turn on a heater and you just want to monitor rising temperatures starting from this moment when the heater is activated. If you don’t need data points from before, then you may call reset.
 
+<span id="looping-through-the-data-iterators"></span>
 ==== Looping through the data: iterators ====
 
 Similar to the iterators as described [[#Looping_through_the_collections:_iterators|above]], there are convenience methods to make looping through the data set easier.
@@ -1924,13 +2047,13 @@ Similar to the iterators as described [[#Looping_through_the_collections:_iterat
 * '''find(function)''': Search for a specific item in the set: E.g. find the first item with a value higher than 20: <code>local item = myVar.find( function (item) return (item.data &gt; 20) end )</code>.
 * '''reduce(function, initial)''': Loop over all items in the set and do some calculation with it. You call reduce with the function and the initial value. Each iteration the function is called with the accumulator. The function does something with the accumulator and returns a new value for it. Once you get the hang of it, it is very powerful. Best to give an example. To sum all values:
 
-<source lang="lua">        local sum = myVar.reduce(function(acc, item)
+<syntaxhighlight lang="lua">        local sum = myVar.reduce(function(acc, item)
             local value = item.data
         return acc + value
-        end, 0)</source>
+        end, 0)</syntaxhighlight>
 Suppose you want to get data points older than 45 minutes and count the values that are higher than 20 (of course there are more ways to do this):
 
-<source lang="lua">    local myVar = domoticz.data.myVar
+<syntaxhighlight lang="lua">    local myVar = domoticz.data.myVar
 
     local olderItems = myVar.filter(function (item)
         return (item.time.minutesAgo > 45)
@@ -1943,7 +2066,8 @@ Suppose you want to get data points older than 45 minutes and count the values t
         return acc
     end, 0)
 
-    print('Found ' .. tostring(count) .. ' items')</source>
+    print('Found ' .. tostring(count) .. ' items')</syntaxhighlight>
+<span id="statistical-functions"></span>
 ==== Statistical functions ====
 
 Statistical functions require ''numerical'' data in the set. If the set is just numbers you can do this:
@@ -1957,7 +2081,7 @@ Where <code>u</code> is a variable that got its value earlier. If you want to ca
 
 To make this work you have to provide a '''getValue function''' in the data section when you define the historical variable:
 
-<source lang="lua">    return {
+<syntaxhighlight lang="lua">    return {
         active = true,
         on = {...},
         data = {
@@ -1970,7 +2094,7 @@ To make this work you have to provide a '''getValue function''' in the data sect
         }
         },
         execute = function()...end
-    }</source>
+    }</syntaxhighlight>
 This function tells dzVents how to get the numeric value for a data item. '''Note: the <code>getValue</code> function has to return a number!'''.
 
 Of course, if you don’t intend to use any of these statistical functions you can put whatever you want in the set.
@@ -1996,6 +2120,7 @@ Of course, if you don’t intend to use any of these statistical functions you c
 <li><p>'''localMax([smoothRange], default)''': Same as '''localMin''' but for the maximum value. [[#Data_smoothing|Supports data smoothing]] when providing a <code>smoothRange</code> value.</p></li>
 <li><p>'''smoothItem(itemIdx, [smoothRange])''': Returns a the value of <code>itemIdx</code> in the set but smoothed by averaging with its neighbors. The number of neighbors is set by <code>smoothRange</code>. See [[#Data_smoothing|Data smoothing]].</p></li></ul>
 
+<span id="data-smoothing"></span>
 ==== Data smoothing ====
 
 Example: Suppose you store temperatures in the historical variable. These temperatures may have extremes. Perhaps these extremes could be due to sensor reading errors. In order to reduce the effect of these so-called spikes, you could smooth out values. It is like blurring the data. The Raw column is your temperatures. The other columns are calculated by averaging the neighbors. For item 10 the calculations are:
@@ -2116,6 +2241,7 @@ A chart illustrates it more clearly. The red line is not smoothed and has more s
 
 Usually a range of 1 or 2 is sufficient when providing a smoothing range to statistical functions. I suggest smoothing when checking deltas, local minimums and maximums.
 
+<span id="how-does-the-storage-stuff-work"></span>
 == How does the storage stuff work? ==
 
 For every script file that defines persisted variables (using the <code>data={ … }</code> section), dzVents will create storage file with the name <code>__data_scriptname.lua</code> in a subfolder called <code>data</code>. You can always delete these data files or the entire storage folder if there is a problem with it:
@@ -2135,18 +2261,19 @@ For every script file that defines persisted variables (using the <code>data={ �
                 global_data.lua</pre>
 If you dare to, you can watch inside these files. Every time some data are changed, dzVents will stream the changes back into the data files. '''Again, make sure you don’t put too much stuff in your persistent data as it may slow things down too much.'''
 
+<span id="asynchronous-http-requests"></span>
 = Asynchronous HTTP requests =
 
 dzVents allows you to make asynchronous HTTP request and handle the results. Asynchronous means that you don’t block the system while waiting for the response. Earlier you had to use os functions like <code>curl</code> or <code>wget</code> and some magic to make sure that you didn’t block the system for too long after which Domoticz will terminate the script with a message that it took more than 10 seconds.
 
 dzVents to the rescue. With dzVents there are two ways to make an http call and it is determined by how you use the <code>domoticz.openURL()</code> command. The simplest form simply calls <code>openURL</code> on the domoticz object with only the url as the parameter (a string value):
 
-<source lang="lua">domoticz.openURL('http://domain/path/to/something?withparameters=1')</source>
+<syntaxhighlight lang="lua">domoticz.openURL('http://domain/path/to/something?withparameters=1')</syntaxhighlight>
 After your script is finished, Domoticz will make the request that’s where it ends. No callback. Nothing.
 
 The second way is different. Instead of passing a url you pass in a table with all the parameters to make the request '''and''' your provide a ''callback trigger'' which is just a string or a name:
 
-<source lang="lua">return {
+<syntaxhighlight lang="lua">return {
     on = { ... }, -- some trigger
     execute = function(domoticz)
     domoticz.openURL({
@@ -2159,10 +2286,10 @@ The second way is different. Instead of passing a url you pass in a table with a
         }
     })
     end
-}</source>
+}</syntaxhighlight>
 In this case, Domoticz will make the request (a POST in this case), and when done it will trigger an event. dzVents will capture that event and will execute all scripts listening for this callback trigger (''mycallbackstring''):
 
-<source lang="lua">return {
+<syntaxhighlight lang="lua">return {
     on = {
     httpResponses = { 'mycallbackstring' }
     },
@@ -2175,10 +2302,10 @@ In this case, Domoticz will make the request (a POST in this case), and when don
         domoticz.log('There was an error', domoticz.LOG_ERROR)
     end
     end
-}</source>
+}</syntaxhighlight>
 Of course you can combine the script that issues the request and handles the response in one script:
 
-<source lang="lua">return {
+<syntaxhighlight lang="lua">return {
     on = {
     timer = {'every 5 seconds'},
     httpResponses = { 'trigger' }
@@ -2196,9 +2323,11 @@ Of course you can combine the script that issues the request and handles the res
         end
     end
     end
-}</source>
+}</syntaxhighlight>
+<span id="api-1"></span>
 == API ==
 
+<span id="making-the-request"></span>
 === Making the request: ===
 
 '''domoticz.openURL(options)''': ''options'' is a Lua table:
@@ -2209,6 +2338,7 @@ Of course you can combine the script that issues the request and handles the res
 * '''headers''': ''Table / String''. Optional. A Lua table or JSON string with additional http request-headers.
 * '''postData''': ''Table / String''. Optional. When doing a <code>POST</code>, <code>PUT</code> <sup>3.0.2</sup> or <code>DELETE</code><sup>3.0.2</sup> this data will be the payload of the request (body). If you provide a Lua table then this will automatically be converted to json and the request-header <code>application/json</code> is set. So no need to do that manually. Supports [[#Command_options_.28delay.2C_duration.2C_event_triggering.29|command options]].
 
+<span id="the-response-object"></span>
 === The response object ===
 
 The response object (second parameter in your execute function) has these attributes:
@@ -2229,24 +2359,27 @@ The response object (second parameter in your execute function) has these attrib
 * '''xmlEncoding'''. ''String''. When the response data is <code>text/xml</code> See [ xml encoding] ( https://en.wikipedia.org/wiki/XML ).
 * '''xmlVersion'''. ''String''. When the response data is <code>text/xml</code> See [ xml versions ] ( https://en.wikipedia.org/wiki/XML ).
 
+<span id="more-about-request-and-response-headers"></span>
 === More about request and response headers ===
 
 Whenever you do an http request it is not just some data that is sent. Along with the request a bunch of so-called headers are sent along with it. HTTP headers allow the client and the server to pass additional information with the request or the response. Also, in the response there are also headers (response header). These response headers usually tell you what kind of data is returned, if it is compressed, if the request was successful etc.
 
+<span id="request-headers"></span>
 ==== request headers ====
 
 dzVents allow you to set custom request headers that will accompany the data in the request. Sometimes it is necessary to set these headers like for instance when a API or webservice require a security token or key or when the service needs to know what the format of the response data is. Check the documentation of the web service.
 
 So, let’s say you need to call a web service that requires an api key in the headers and the documentation states it needs to be passed in an x-access-token header. Your openURL command then may look like this:
 
-<source lang="lua">domoticz.openURL({
+<syntaxhighlight lang="lua">domoticz.openURL({
     url = 'https://somedomain.com/service/getInfo',
     headers = { ['x-access-token'] = '<api-key>' },
     method = 'GET',
     callback = 'info'
-})</source>
+})</syntaxhighlight>
 Check google for more information about request headers. All you need to know here is that dzVents allow you to set these headers.
 
+<span id="response-headers"></span>
 ==== response headers ====
 
 As said earlier, the response also contains a bunch of headers. You can inspect those headers with dzVents but ususally you don’t have to. For starters, dzVents already checks the <code>Content-Type</code> header which usually states what kind of data format the response is. If it is <code>application/json</code> then it automatically converts the json data to a Lua table. Also, it checks the <code>Status</code> header to see if the request was successful. If so, then it sets the <code>ok</code> attribute on the response object. So normally you don’t have to inspect the headers. However, sometimes the web service puts a session token in the response header that you have to use in follow-up requests.
@@ -2255,7 +2388,7 @@ So here an example where we have to log in before we can fetch data. It uses two
 
 That would look like this:
 
-<source lang="lua">return {
+<syntaxhighlight lang="lua">return {
     on = {
         timer = {'every hour'},
         httpResponses = { 'loggedin', 'data' }
@@ -2290,10 +2423,10 @@ That would look like this:
             end
         end
     end
-}</source>
+}</syntaxhighlight>
 Some remarks about the response header <code>Content-Type</code>. If a service is a good web-citizen then it tells you what the format of the data is in this header. So, if the data is a json object then the header should be <code>application/json</code>. Unfortunately, there are lot of lazy programmers out there who don’t set this header properly. If that is the case, dzVents cannot detect the format and will not turn it into a Lua table for you automatically. So, if you know it is json but the header is not properly set, then you can easily convert it into a Lua table in your code:
 
-<source lang="lua">return {
+<syntaxhighlight lang="lua">return {
     on = {
         timer = {'every hour'},
         httpResponses = { 'trigger' }
@@ -2314,19 +2447,20 @@ Some remarks about the response header <code>Content-Type</code>. If a service i
             print(json.result.title) -- just an example
         end
     end
-}</source>
+}</syntaxhighlight>
+<span id="asynchronous-shell-command-execution"></span>
 = Asynchronous shell command execution =
 
 dzVents allows you to make asynchronous shell commands and handle the results. Asynchronous means that you don’t block the system while waiting for the response. Earlier you had to use functions like <code>utils.osCommand()</code> or <code>os.Execute()</code> and some magic to make sure that you didn’t block the system for too long after which Domoticz comes with a message that the script took more than 10 seconds.
 
 dzVents to the rescue. With dzVents there are two ways to execute a shell command asynchronously and it is determined by how you use the <code>domoticz.executeShellCommand()</code> command. The simplest form simply calls <code>executeShellCommand</code> on the domoticz object with only the command as the parameter (a string value):
 
-<source lang="lua">domoticz.executeShellCommand('some shell command')</source>
+<syntaxhighlight lang="lua">domoticz.executeShellCommand('some shell command')</syntaxhighlight>
 After your script is finished, Domoticz will execute the request in a separate thread and that’s where it ends. No callback. Nothing.
 
 The second way is different. Instead of passing a command you pass in a table with the command to be executed '''and''' a ''callback trigger'' which is just a string or a name:
 
-<source lang="lua">return {
+<syntaxhighlight lang="lua">return {
     on = { ... }, -- some trigger
     execute = function(domoticz)
         domoticz.executeShellCommand({
@@ -2335,10 +2469,10 @@ The second way is different. Instead of passing a command you pass in a table wi
             timeout = timeoutinseconds,
         })
     end
-}</source>
+}</syntaxhighlight>
 In this case, Domoticz will execute the command and when done it will trigger an event. dzVents will capture that event and will execute all scripts listening for this callback trigger (''mycallbackstring''):
 
-<source lang="lua">return {
+<syntaxhighlight lang="lua">return {
     on = {
         shellCommandResponses = { 'mycallbackstring' }
     },
@@ -2351,10 +2485,10 @@ In this case, Domoticz will execute the command and when done it will trigger an
             domoticz.log('There was an error', domoticz.LOG_ERROR)
         end
     end
-}</source>
+}</syntaxhighlight>
 Of course you can combine the script that issues the request and handles the response in one script:
 
-<source lang="lua">return
+<syntaxhighlight lang="lua">return
 {
     on =
     {
@@ -2383,9 +2517,11 @@ Of course you can combine the script that issues the request and handles the res
         end
     end
 }
-</source>
+</syntaxhighlight>
+<span id="api-2"></span>
 == API ==
 
+<span id="making-the-request-1"></span>
 === Making the request: ===
 
 '''domoticz.executeShellCommand(options)''': ''options'' is a Lua table:
@@ -2396,6 +2532,7 @@ Of course you can combine the script that issues the request and handles the res
 
 Supports [[#Command_options_.28delay.2C_duration.2C_event_triggering.29|command options]].
 
+<span id="the-response-object-1"></span>
 === The response object ===
 
 The response object (second parameter in your execute function) has these attributes:
@@ -2415,6 +2552,7 @@ The response object (second parameter in your execute function) has these attrib
 * '''xmlEncoding'''. ''String''. When the response data is <code>text/xml</code> See [ xml encoding] ( https://en.wikipedia.org/wiki/XML ).
 * '''xmlVersion'''. ''String''. When the response data is <code>text/xml</code> See [ xml versions ] ( https://en.wikipedia.org/wiki/XML ).
 
+<span id="settings"></span>
 = Settings =
 
 Settings for dzVents are found in the Domoticz GUI: '''Setup &gt; Settings &gt; Other &gt; EventSystem''':
@@ -2427,18 +2565,22 @@ Settings for dzVents are found in the Domoticz GUI: '''Setup &gt; Settings &gt; 
 ** ''Debug''. Shows everything and dzVents will create the files <code>domoticzData.lua</code> and <code>module.log</code> in the scripts/dzVents folder. <code>domoticzData.lua</code> is a dump of all the data received by dzVents from Domoticz and <code>module.log</code> is a summary of the execution time and CPU usage of the user scripts active during the debug period.
 ** ''No logging''. As silent as possible.
 
+<span id="troubleshooting"></span>
 = Troubleshooting =
 
 So, you think if you have done everything correctly but things do not work (in some way) as you expected. Here are a couple steps you can do to find the cause.
 
+<span id="is-dzvents-enabled"></span>
 === Is dzVents enabled? ===
 
 Check the settings (see above) and make sure the checkbox '''dzVents disabled''' is not checked.
 
+<span id="is-your-script-enabled"></span>
 === Is your script enabled? ===
 
 Make sure the active section in your script is set to <code>true</code>: <code>active = true</code>. And, on top of that, if you are using the internal web editor to write your script, make sure that your script is active there and you have clicked Save! “Event active” is a separate checkbox that must be ticked for every active script. When not active, the script name will be red in the list on the right.
 
+<span id="turn-on-debug-logging"></span>
 === Turn on debug logging ===
 
 Activate debug logging in the settings (see above). This will produce a lot of extra messages in the Domoticz log (don’t forget to turn it off when you are done troubleshooting!). It is best to monitor the log through the command line, as the log in the browser sometimes tends to not always show all log messages. See the Domoticz manual for how to do that.
@@ -2461,6 +2603,7 @@ Every time Domoticz starts dzVents and debug logging is enabled you should see t
 Event trigger type: aaaa</pre>
 Where aaaa can be time, custom event, system event, device, uservariable, security or scenegroup. That should give you a clue what kind of event is active. If you don’t see this information then dzVents is not active (or debug logging is not active).
 
+<span id="script-is-still-not-executed"></span>
 === Script is still not executed ===
 
 If for some reason your script is not executed while all of the above is done, it is possible that your triggers are not correct. Either the time rule is not matching with the current time (try to set the rule to <code>every minute</code> or something simple), or the device name is not correct (check casing), or you use an id that doesn’t exist. Note that in the <code>on</code> section, you cannot use the dzVents domoticz object!
@@ -2471,188 +2614,34 @@ Also, make sure that your device names are unique! dzVents will throw a warning 
 
 If your script is still not triggered, you can try to create a classic Lua event script and see if that does work.
 
+<span id="debugging-your-script"></span>
 === Debugging your script ===
 
 A simple way to inspect a device in your script is to dump it to the log: <code>myDevice.dump()</code>. This will dump everything known to dzVents of the device so you can inspect what its state is. If you only need to see a subset you can use dumpSelection(‘attributes’), dumpSelection(‘functions’) or dumpSelection(‘tables’) Use print statements or domoticz.log() statements in your script at cricital locations to see if the Lua interpreter reaches that line. Don’t try to print a device object though; use the <code>myDevice.dump()</code> method for that. It wil log all attributes of the device in the Domoticz log.
 
 If you place a print statement all the way at the top of your script file it will be printed every time dzVents loads your script (that is done at the beginning of each event cycle). Sometimes that is handy to see if your script gets loaded in the first place. If you don’t see your print statement in the log, then likely dzVents didn’t load it and it will not work.
 
+<span id="get-help"></span>
 === Get help ===
 
 The Domoticz forum is a great resource for help and solutions. Check the [https://www.domoticz.com/forum/viewforum.php?f=59 dzVents forum].
 
+<span id="other-interesting-stuff"></span>
 = Other interesting stuff =
 
+<span id="lodash-for-lua"></span>
 == lodash for Lua ==
 
 lodash is a well known and very popular Javascript library filled with dozens of handy helper functions that really make you life a lot easier. Fortunately there is also a Lua version. This is directly available through the domoticz object:
 
-<source lang="lua">local _ = domoticz.utils._
-_.print(_.indexOf({2, 3, 'x', 4}, 'x'))</source>
+<syntaxhighlight lang="lua">local _ = domoticz.utils._
+_.print(_.indexOf({2, 3, 'x', 4}, 'x'))</syntaxhighlight>
 <!--- (Removed because link is dead. Hopefully only temporarily) Check out the great documentation [here](http://axmat.github.io/lodash.lua/). --->
 Check out the documentation [https://htmlpreview.github.io/?https://github.com/rwaaren/lodash.lua/blob/master/doc/index.html here].
 
+<span id="history-link-to-changes-in-previous-versions."></span>
 = History [https://www.domoticz.com/wiki/DzVents_version_History link to changes in previous versions]. =
 
-== [3.1.8] ==
+See link for the complete list of changes
 
-* Add option to deserialize serialized JSON strings
-* Add keyword or in time rules
-* Add utils.splitLine
-
-== [3.1.7] ==
-
-* Fix for race condition at midnight when internal scripts are refreshed
-* Allow both abbreviated and full names for days in time rules
-* Better protection for battery and signal levels outside valid ranges
-
-== [3.1.6] ==
-
-* Add astronomical times. Now every -start, -end, - xx minutes before, -xx minutes after, -at and between aa and bb can be done for all available astronomical times. (AstronomicalTwilight. NauticalTwilight, CivilTwilight, sunrise, sunset, solarNoon, midnight)
-* limited output of dump() so it will only show attributes. (fullDump() available for complete overview)
-* Suppress error message when application/json return is empty
-
-== [3.1.5] ==
-
-* Add two new system-events triggers as option to the on = { … } section. Scripts can now also be triggered based on these system-events:
-** resetAllDeviceStatus ; when the name, description or used / unused state of a device, variable or scene changes
-** resetAllEvents ; When a dzVents script in the internal editor changed
-
-== [3.1.4] ==
-
-* Fixed issue that prevented dzVents from accessing the domoticz API when using -wwwbind
-
-== [3.1.3] ==
-
-* Add method updateHistory for managed counter devices
-* Added NSS_CLICKATELL as notification subsystem
-
-== [3.1.2] ==
-
-* Fixed issue with icon name
-* Add attribute customImage (icon number or 0)
-* Use level as brightness in getColor function
-* Allow booleans as value in header field of openURL
-
-== [3.1.1] ==
-
-* Fixed issue that prevented dzVents from accessing the domoticz API when used in sslwww only mode
-
-== [3.1.0] ==
-
-* Added shell command event triggers to be used in combination with <code>executeShellCommand</code>. You can now execute shell commands and handle the response in your dzVents scripts '''ASYNCHRONICALLY'''. See the documentation. No more json parsing needed or complex <code>popen()</code> or ‘system()’ shizzle.
-* add inActive attribute to devices
-
-== [3.0.19] ==
-
-* Add thermostat Operating State device adapter
-
-== [3.0.18] ==
-
-* Add isdst as (boolean) attribute to time object
-* Add updateQuiet() method to generic device
-* Fixed bug in dumpTable that caused infinite loop for table with self-reference
-
-== [3.0.17] ==
-
-* Add timestampTodate, dateToTimestamp and dateToDate functions in Time
-
-== [3.0.16] ==
-
-* Add except as keyword in timeRules
-
-== [3.0.15] ==
-
-* Fixed bug in domoticz.time.matchesRule (daterange was ignored when “on mon, tue” was also part of the rule)
-* Add device adapter for Thermostat type 3 devices (Mertik)
-* Add utils.humidityStatus
-* Add option to have dzVents compute humidity status
-
-== [3.0.14] ==
-
-* Add utils.fuzzyLookup
-* Made eventHelpers more resilient to coding errors in the on = section
-
-== [3.0.13] ==
-
-* Add utils.osCommand (caption)
-* Improved utils.stringSplit (implicit conversion to number on request)
-* Made log function more resilient when logitem is table with embedded function(s)
-* Improved domoticz.snapshot() to enable snapshot of multiple cameras (in one Email)
-
-== [3.0.12] ==
-
-* Add option to use device, camera, group, scene and variable objects as parm to deviceExists(), groupExists(), sceneExists(), variableExists(), cameraExists() methods.
-
-== [3.0.11] ==
-
-* Add sensorValue attribute to custom sensor
-* Add solarnoon as moment in time (like sunrise / sunset )
-
-== [3.0.10] ==
-
-* Add NSS_GOOGLE_DEVICES for notification casting to Google home / Google chromecast
-* Add optional parm delay to domoticz.sendCommand, domoticz.email, domoticz.sms and domoticz.notify
-
-== [3.0.9] ==
-
-* Add dump() as function to object types: camera-, customEvent, hardware, systemEvent, HTTPResponse, security and time.
-* Add function toUTC to time object.
-* Allow table as parm to function makeTime
-
-== [3.0.8] ==
-
-* Allow IPv6 ::1 as localhost in domoticz settings
-* Fixed bug that occurred when using a decimal number in afterSec (openURL and emitEvent)
-* Implement optional use of parsetrigger parm in setValues to trigger any subsequent eventscripts
-* Updated round.utils to correctly handle negative numbers and round to zero decimals
-
-== [3.0.7] ==
-
-* Add domoticz.hardware() as separate object class
-
-== [3.0.6] ==
-
-* Add hardwareInfo() function
-
-== [3.0.5] ==
-
-* Add dumpSelection() method
-* Fixed settings.url
-
-== [3.0.4] ==
-
-* Convert HTTPResponse data to JSON / XML even when HTTPResponse does not fully comply with RFC
-* add isJSON, isXML functions to Utils
-
-== [3.0.3] ==
-
-* add isJSON, isXML, json, xml and customEvent attributes to customEvent object (consistent with response object)
-
-== [3.0.2] ==
-
-* Add <code>PUT</code> and <code>DELETE</code> support to <code>openURL</code>
-* Ensure sending integer in nValue in update function
-* Fix sValue for custom sensor
-
-== [3.0.1] ==
-
-* Add option <code>at()</code> to the various commands/methods
-* Add stringToSeconds() function
-
-== [3.0.0] ==
-
-* Add system-events triggers as option to the on = { … } section. Scripts can now be triggered based on these system-events:
-** start
-** stop
-** manualBackupFinished,
-** dailyBackupFinished
-** hourlyBackupFinished
-** monthlyBackupFinished
-* Add custom-events triggers as option to the on = { … } section. You can now send an event trigger to start subscribed dzVents scripts. customEvents can be triggered by:
-** dzVents domoticz.emitEvent(name, data ) – command (data = optional)
-** JSON: json.htm?type=command&amp;param=customevent&amp;event=MyEvent&amp;data=myData ( data = optional )
-** MQTT: {“command” : “customevent”, “event” : “MyEvent” , “data” : “myData” } ( data = opt ional )
-* Add method domoticz.emitEvent()
-* Add attribute <code>mode</code> to Evohome controller
-* Add option to dumpTable() and ([device][uservariable][[#group|scene]].dump() to os file
+https://www.domoticz.com/wiki/DzVents_version_History

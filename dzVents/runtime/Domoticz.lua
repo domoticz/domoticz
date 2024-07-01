@@ -64,6 +64,7 @@ local function Domoticz(settings)
 		['LOG_DEBUG'] = utils.LOG_DEBUG,
 		['LOG_ERROR'] = utils.LOG_ERROR,
 		['LOG_FORCE'] = utils.LOG_FORCE,
+		['LOG_STATUS'] = utils.LOG_STATUS,
 		utils = {
 			_ = _
 		}

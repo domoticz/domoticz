@@ -1,6 +1,13 @@
 ```{=mediawiki}
 __NOTOC__
 ```
+## [3.1.10] ##
+- Added LOG_STATUS, adds a status log message into the system
+- Log levels are now handled internally as normal levels, meaning for example that error logs will be logged as errors, debug logs will be handles as debug logs (you have to enable debug logs as startup parameter)
+
+## [3.1.9] ##
+- Added historical data helper <code>med(fromIndex, toIndex, default)</code> to calculate the median
+
 ## [3.1.8] ##
 - Add option to deserialize serialized JSON strings
 - Add keyword or in time rules

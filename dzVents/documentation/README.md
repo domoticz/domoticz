@@ -1,12 +1,6 @@
 ﻿**Note**: This document is maintained on [github](https://github.com/domoticz/domoticz/blob/development/dzVents/documentation/README.md), and the wiki version is automatically generated. Edits should be performed on github, or they may be suggested on the wiki article's [Discussion page](https://www.domoticz.com/wiki/Talk:DzVents:_next_generation_LUA_scripting).
 Editing can be done by any editor but if you are looking for a specialized markDown editor; [stackedit.io](https://stackedit.io/app#) would be a good choice.
 
-Documentation for dzVents 2.4.0 - 2.5.7 (Domoticz v4.11652) can be found [here](https://github.com/domoticz/domoticz/blob/a0a6069e40744df222e889474032439476b7ecfb/dzVents/documentation/README.md).
-
-Documentation for dzVents 2.3.0 (Domoticz v3.8153) can be found [here](https://github.com/domoticz/domoticz/blob/2f6ba5c5a8978a010d6867228ad84eab762c5936/dzVents/documentation/README.md).
-
-Documentation for dzVents 2.2.0 (Domoticz v3.5876) can be found [here](https://github.com/domoticz/domoticz/blob/9f75e45f994f87c8d8ce9cb39eaab85886df0be4/scripts/dzVents/documentation/README.md).
-
 # About dzVents
 dzVents /diː ziː vɛnts/, short for Domoticz Easy Events, brings Lua scripting in Domoticz to a whole new level. Writing scripts for Domoticz has never been so easy. Not only can you define triggers more easily, and have full control over timer-based scripts with extensive scheduling support, dzVents presents you with an easy to use API to all necessary information in Domoticz. No longer do you have to combine all kinds of information given to you by Domoticz in many different data tables. You don't have to construct complex commandArrays anymore. dzVents encapsulates all the Domoticz peculiarities regarding controlling and querying your devices. And on top of that, script performance has increased a lot if you have many scripts because Domoticz will fetch all device information only once for all your device scripts and timer scripts. And ... **it is 100% Lua**! So if you already have a bunch of event scripts for Domoticz, upgrading should be fairly easy.
 
@@ -352,7 +346,7 @@ The optional data section allows you to define local variables that will hold th
 ### logging = { ... } (optional)
 The optional logging section allows you to override the global logging setting of dzVents as set in *Setup > Settings > Other > EventSystem > dzVents Log Level*. This can be handy when you only want this script to have extensive debug logging while the rest of your script executes silently. You have these options:
 
- - **level**: This is the log level you want for this script. Can be domoticz.LOG_INFO, domoticz.LOG_MODULE_EXEC_INFO, domoticz.LOG_DEBUG or domoticz.LOG_ERROR
+ - **level**: This is the log level you want for this script. Can be domoticz.LOG_INFO, domoticz.LOG_STATUS, domoticz.LOG_MODULE_EXEC_INFO, domoticz.LOG_DEBUG or domoticz.LOG_ERROR
  - **marker**: A string that is prefixed before each log message. That way you can easily create a filter in the Domoticz log to see just these messages. **marker** defaults to scriptname
 
 Example:
@@ -702,7 +696,7 @@ The domoticz object holds all information about your Domoticz system. It has glo
  - **hardwareInfo(idx/name)**: <sup>3.0.6</sup> *Function*: A function returning hardwareInfo of a hardware module by name or idx. The return of the function is a table with attributes name, type, typeValue, deviceNames (table with names of all active devices defined on this hardware) and deviceIds (table with idx of all active devices defined on this hardware)
  - **hardware(idx/name)**: <sup>3.0.7</sup> *Function*: A function returning a hardware module by name or idx. Each hardware has an interface comparable to group. To iterate over all hardware do: `domoticz.hardware().forEach(..)`. See [Looping through the collections: iterators](#Looping_through_the_collections:_iterators). Note that you cannot do `for i, j in pairs(domoticz.hardware()) do .. end`. Read more about [Hardware](#Hardware).
  - **helpers**: *Table*. Collection of shared helper functions available to all your dzVents scripts. See [Shared helper functions](#Shared_helper_functions).
- - **log(message, [level])**: *Function*. Creates a logging entry in the Domoticz log but respects the log level settings. You can provide the loglevel: `domoticz.LOG_INFO`, `domoticz.LOG_DEBUG`, `domoticz.LOG_ERROR` or `domoticz.LOG_FORCE`. In Domoticz settings you can set the log level for dzVents.
+ - **log(message, [level])**: *Function*. Creates a logging entry in the Domoticz log but respects the log level settings. You can provide the loglevel: `domoticz.LOG_INFO`, `domoticz.LOG_STATUS`, `domoticz.LOG_DEBUG`, `domoticz.LOG_ERROR` or `domoticz.LOG_FORCE`. In Domoticz settings you can set the log level for dzVents.
 - **moduleLabel**: <sup>3.0.3</sup> Module (script) name without extension.
  - **notify(subject, message [,priority][,sound][,extra][,subsystem][,delay]<sup>3.0.10</sup> )**: *Function*. Send a notification (like Prowl). Priority can be like `domoticz.PRIORITY_LOW, PRIORITY_MODERATE, PRIORITY_NORMAL, PRIORITY_HIGH, PRIORITY_EMERGENCY`. `extra` is notification subsystem specific. For NSS_FIREBASE you can use this field to specify the target mobile ('midx_1', midx_2, etc..). For sound see [list of dzVents Constants](#Constants) for the SOUND constants below. `subsystem` defaults to all subsystems but can be one subsystem or a table containing one or more notification subsystems. See [list of dzVents Constants](#Constants) for `domoticz.NSS_subsystem` types. Delay is delay in seconds
  - **openURL(url/options)**: *Function*. Have Domoticz 'call' a URL. If you just pass a url then Domoticz will execute the url after your script has finished but you will not get notified. If you pass a table with options then you have to possibility to receive the results of the request in a dzVents script. Read more about [asynchronous http requests](#Asynchronous_HTTP_requests) with dzVents. Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
@@ -912,7 +906,7 @@ The domoticz object has these constants available for use in your code e.g. `dom
  - **EVOHOME_MODE_AUTO, EVOHOME_MODE_AUTOWITHRESET, EVOHOME_MODE_AUTOWITHECO, EVOHOME_MODE_AWAY, EVOHOME_MODE_DAYOFF, EVOHOME_MODE_CUSTOM, EVOHOME_MODE_HEATINGOFF** : mode for EvoHome controller
  - **HUM_COMFORTABLE, HUM_DRY, HUM_NORMAL, HUM_WET, HUM_COMPUTE** <sup>3.0.15</sup>: constant for humidity status.
  - **INTEGER, FLOAT, STRING, DATE, TIME**: variable types.
- - **LOG_DEBUG, LOG_ERROR, LOG_INFO, LOG_FORCE: for logging messages. LOG_FORCE is at the same level as LOG_ERROR.
+ - **LOG_DEBUG, LOG_ERROR, LOG_INFO, LOG_STATUS, LOG_FORCE: for logging messages. LOG_FORCE is at the same level as LOG_ERROR.
  - **NSS_CLICKATELL** <sup>3.1.3</sup>, **NSS_FIREBASE, NSS_FIREBASE_CLOUD_MESSAGING, NSS_GOOGLE_DEVICES,** <sup>3.0.10</sup> <sup>Only with installed casting plugin</sup>, **NSS_HTTP, NSS_KODI, NSS_LOGITECH_MEDIASERVER, NSS_NMA,NSS_PROWL, NSS_PUSHALOT, NSS_PUSHBULLET, NSS_PUSHOVER, NSS_PUSHSAFER, NSS_TELEGRAM, NSS_GOOGLE_CLOUD_MESSAGING** <sup>deprecated by Google and replaced by firebase</sup>: for notification subsystem
  - **PRIORITY_LOW, PRIORITY_MODERATE, PRIORITY_NORMAL, PRIORITY_HIGH, PRIORITY_EMERGENCY**: for notification priority.
  - **SECURITY_ARMEDAWAY, SECURITY_ARMEDHOME, SECURITY_DISARMED**: for security state.
@@ -2575,138 +2569,7 @@ Check out the documentation [here](https://htmlpreview.github.io/?https://github
 
 # History [link to changes in previous versions](https://www.domoticz.com/wiki/DzVents_version_History).
 
-## [3.1.8] ##
-- Add option to deserialize serialized JSON strings
-- Add keyword or in time rules
-- Add utils.splitLine
+See link for the complete list of changes
 
-## [3.1.7] ##
-- Fix for race condition at midnight when internal scripts are refreshed
-- Allow both abbreviated and full names for days in time rules
-- Better protection for battery and signal levels outside valid ranges
+https://www.domoticz.com/wiki/DzVents_version_History
 
-## [3.1.6] ##
-- Add astronomical times. Now every -start, -end, - xx minutes before, -xx minutes after, -at and between aa and bb can be done for all available
-astronomical times. (AstronomicalTwilight. NauticalTwilight, CivilTwilight, sunrise, sunset, solarNoon, midnight)
-- limited output of dump() so it will only show attributes. (fullDump() available for complete overview)
-- Suppress error message when application/json return is empty
-
-## [3.1.5] ##
-- Add two new system-events triggers as option to the on = { ... } section. Scripts can now also be triggered based on these system-events:
-	 - resetAllDeviceStatus ; when the name, description or used / unused state of a device, variable or scene changes
-	 - resetAllEvents ; When a dzVents script in the internal editor changed
-
-## [3.1.4] ##
-- Fixed issue that prevented dzVents from accessing the domoticz API when using -wwwbind
-
-## [3.1.3] ##
-- Add method updateHistory for managed counter devices
-- Added NSS_CLICKATELL as notification subsystem
-
-## [3.1.2] ##
-- Fixed issue with icon name
-- Add attribute customImage (icon number or 0)
-- Use level as brightness in getColor function
-- Allow booleans as value in header field of openURL
-
-## [3.1.1] ##
-- Fixed issue that prevented dzVents from accessing the domoticz API when used in sslwww only mode
-
-## [3.1.0]
-- Added shell command event triggers to be used in combination with `executeShellCommand`. You can now execute shell commands and handle the response in your dzVents scripts **ASYNCHRONICALLY**. See the documentation. No more json parsing needed or complex `popen()` or 'system()' shizzle.
-- add inActive attribute to devices
-
-## [3.0.19]
-- Add thermostat Operating State device adapter
-
-## [3.0.18]
-- Add isdst as (boolean) attribute to time object
-- Add updateQuiet() method to generic device
-- Fixed bug in dumpTable that caused infinite loop for table with self-reference
-
-## [3.0.17]
-- Add timestampTodate, dateToTimestamp and dateToDate functions in Time
-
-## [3.0.16]
-- Add except as keyword in timeRules
-
-## [3.0.15]
-- Fixed bug in domoticz.time.matchesRule (daterange was ignored when "on mon, tue" was also part of the rule)
-- Add device adapter for Thermostat type 3 devices (Mertik)
-- Add utils.humidityStatus
-- Add option to have dzVents compute humidity status
-
-## [3.0.14]
-- Add utils.fuzzyLookup
-- Made eventHelpers more resilient to coding errors in the on = section
-
-## [3.0.13]
-- Add utils.osCommand (caption)
-- Improved utils.stringSplit (implicit conversion to number on request)
-- Made log function more resilient when logitem is table with embedded function(s)
-- Improved domoticz.snapshot() to enable snapshot of multiple cameras (in one Email)
-
-## [3.0.12]
-- Add option to use device, camera, group, scene and variable objects as parm to deviceExists(), groupExists(), sceneExists(), variableExists(), cameraExists() methods.
-
-## [3.0.11]
-- Add sensorValue attribute to custom sensor
-- Add solarnoon as moment in time (like sunrise / sunset )
-
-## [3.0.10]
-- Add NSS_GOOGLE_DEVICES for notification casting to Google home / Google chromecast
-- Add optional parm delay to domoticz.sendCommand, domoticz.email, domoticz.sms and domoticz.notify
-
-## [3.0.9]
-- Add dump() as function to object types: camera-, customEvent, hardware, systemEvent, HTTPResponse, security and time.
-- Add function toUTC to time object.
-- Allow table as parm to function makeTime
-
-## [3.0.8]
-- Allow IPv6 ::1 as localhost in domoticz settings
-- Fixed bug that occurred when using a decimal number in afterSec (openURL and emitEvent)
-- Implement optional use of parsetrigger parm in setValues to trigger any subsequent eventscripts
-- Updated round.utils to correctly handle negative numbers and round to zero decimals
-
-## [3.0.7]
-- Add domoticz.hardware() as separate object class
-
-## [3.0.6]
-- Add hardwareInfo() function
-
-## [3.0.5]
-- Add dumpSelection() method
-- Fixed settings.url
-
-## [3.0.4]
-- Convert HTTPResponse data to JSON / XML even when HTTPResponse does not fully comply with RFC
-- add isJSON, isXML functions to Utils
-
-## [3.0.3]
-- add isJSON, isXML, json, xml and customEvent attributes to customEvent object (consistent with response object)
-
-## [3.0.2]
-- Add `PUT` and `DELETE` support to `openURL`
-- Ensure sending integer in nValue in update function
-- Fix sValue for custom sensor
-
-## [3.0.1]
-- Add option `at()` to the various commands/methods
-- Add stringToSeconds() function
-
-## [3.0.0]
- - Add system-events triggers as option to the on = { ... } section. Scripts can now be triggered based on these system-events:
-	 - start
-	 - stop
-	 - manualBackupFinished,
-	 - dailyBackupFinished
-	 - hourlyBackupFinished
-	 - monthlyBackupFinished
-
- - Add custom-events triggers as option to the on = { ... } section. You can now send an event trigger to start subscribed dzVents scripts. customEvents can be triggered by:
-	 - dzVents domoticz.emitEvent(name, data ) -- command (data = optional)
-	 - JSON: json.htm?type=command&param=customevent&event=MyEvent&data=myData ( data = optional )
-	 - MQTT: {"command" : "customevent", "event" :	"MyEvent" , "data" : "myData" } ( data = opt ional )
- - Add method domoticz.emitEvent()
- - Add attribute `mode` to Evohome controller
- - Add option to dumpTable() and ([device][uservariable][scene][group].dump() to os file

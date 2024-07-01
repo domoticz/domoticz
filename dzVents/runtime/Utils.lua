@@ -6,9 +6,10 @@ local self = {
 	LOG_FORCE = 0.5,
 	LOG_MODULE_EXEC_INFO = 2,
 	LOG_INFO = 3,
-	LOG_WARNING = 3,
-	LOG_DEBUG = 4,
-	DZVERSION = '3.1.8',
+	LOG_STATUS = 4,
+	LOG_WARNING = 5,
+	LOG_DEBUG = 6,
+	DZVERSION = '3.1.10',
 }
 
 function jsonParser:unsupportedTypeEncoder(value_of_unsupported_type)
@@ -478,7 +479,7 @@ function self.toJSON(luaTable)
 end
 
 function self.log(msg, level)
-
+    -- self.print(msg .. ', level=' .. level)
 	if (level == nil) then level = self.LOG_INFO end
 
 	if (type(level) ~= 'number') then
@@ -490,7 +491,9 @@ function self.log(msg, level)
 	local marker = ''
 
 	if (level == self.LOG_ERROR) then
-		marker = marker .. 'Error: (' .. self.DZVERSION .. ') '
+		marker = marker .. 'Error: '
+	elseif (level == self.LOG_STATUS) then
+		marker = marker .. 'Status: '
 	elseif (level == self.LOG_DEBUG) then
 		marker = marker .. 'Debug: '
 	elseif (level == self.LOG_INFO or level == self.LOG_MODULE_EXEC_INFO) then

@@ -756,15 +756,31 @@ int CdzVents::l_domoticz_print(lua_State* lua_state)
 	{
 		if (lua_isstring(lua_state, i))
 		{
+			_eLogLevel log_level = LOG_NORM;
+
 			std::string lstring = lua_tostring(lua_state, i);
-			if (lstring.find("Error: ") != std::string::npos)
+			if (lstring.find("Info:") == 0)
 			{
-				_log.Log(LOG_ERROR, "dzVents: %s", lstring.c_str());
+				log_level = LOG_NORM;
+				lstring = lstring.substr(6);
 			}
-			else
+			else if (lstring.find("Status:") == 0)
 			{
-				_log.Log(LOG_STATUS, "dzVents: %s", lstring.c_str());
+				log_level = LOG_STATUS;
+				lstring = lstring.substr(8);
 			}
+			else if (lstring.find("Error:") == 0)
+			{
+				log_level = LOG_ERROR;
+				lstring = lstring.substr(7);
+			}
+			else if (lstring.find("Debug:") == 0)
+			{
+				lstring = lstring.substr(7);
+				_log.Debug(DEBUG_EVENTSYSTEM, "dzVents: %s", lstring.c_str());
+				return 0;
+			}
+			_log.Log(log_level, "dzVents: %s", lstring.c_str());
 		}
 		else
 		{
