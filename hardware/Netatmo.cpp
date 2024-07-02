@@ -1263,7 +1263,7 @@ bool CNetatmo::ParseDashboard(const Json::Value& root, const int DevIdx, const i
 	if (bHaveSetpoint)
 	{
 		std::string sName = name + " - SetPoint ";
-		SendSetPointSensor((uint8_t)((ID & 0x00FF0000) >> 16), (ID & 0XFF00) >> 8, ID & 0XFF, sp_temp, sName);
+		SendSetPointSensor(0, (uint8_t)((ID & 0x00FF0000) >> 16), (ID & 0XFF00) >> 8, ID & 0XFF, 1, sp_temp, sName);
 	}
 
 	//Rain meter
@@ -1518,7 +1518,7 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult)
 				if (!room["therm_measured_temperature"].empty())
 					SendTempSensor((roomID & 0x00FFFFFF) | 0x03000000, 255, room["therm_measured_temperature"].asFloat(), roomName);
 				if (!room["therm_setpoint_temperature"].empty())
-					SendSetPointSensor((uint8_t)(((roomID & 0x00FF0000) | 0x02000000) >> 16), (roomID & 0XFF00) >> 8, roomID & 0XFF, room["therm_setpoint_temperature"].asFloat(), roomName);
+					SendSetPointSensor(0, (uint8_t)(((roomID & 0x00FF0000) | 0x02000000) >> 16), (roomID & 0XFF00) >> 8, roomID & 0XFF, 1, room["therm_setpoint_temperature"].asFloat(), roomName);
 
 				if (!setModeSwitch)
 				{

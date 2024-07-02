@@ -10,6 +10,8 @@
 
 #include "../tinyxpath/tinyxml.h"
 
+//GizMoCuz: Whoever is maintaining this class, please make use of the internal functions (like SendTempSensor) and remove them internal functions in here
+
 // Plugwise Anna Thermostat
 // Anna Sensors
 // Anna Switches
@@ -156,19 +158,6 @@ void CAnnaThermostat::Do_Work()
 
 	}
 	Log(LOG_STATUS, "AnnaTherm: Worker stopped...");
-}
-
-void CAnnaThermostat::SendSetPointSensor(const unsigned char Idx, const float Temp, const std::string& defaultname)
-{
-	_tSetpoint thermos;
-	thermos.subtype = sTypeSetpoint;
-	thermos.id1 = 0;
-	thermos.id2 = 0;
-	thermos.id3 = 0;
-	thermos.id4 = Idx;
-	thermos.dunit = 1;
-	thermos.value = Temp;
-	sDecodeRXMessage(this, (const unsigned char *)&thermos, defaultname.c_str(), 255, nullptr);
 }
 
 bool CAnnaThermostat::WriteToHardware(const char* pdata, const unsigned char /*length*/)
@@ -532,7 +521,7 @@ void CAnnaThermostat::GetMeterDetails()
 				if (!tmpstr.empty())
 				{
 					float temperature = (float)atof(tmpstr.c_str());
-					SendSetPointSensor(sAnnaThermostat, temperature, sname);
+					SendSetPointSensor(0, 0, 0, sAnnaThermostat, 1, temperature, sname);
 				}
 			}
 			else if (sname == "intended_boiler_temperature")

@@ -12,7 +12,6 @@ class CThermosmart : public CDomoticzHardwareBase
 	void SetSetpoint(int idx, float temp);
 
       private:
-	void SendSetPointSensor(unsigned char Idx, float Temp, const std::string &defaultname);
 	void SetPauseStatus(bool bIsPause);
 	void SetOutsideTemp(float temp);
 	bool GetOutsideTemperatureFromDomoticz(float &tvalue);

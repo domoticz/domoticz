@@ -24,7 +24,6 @@ class CICYThermostat : public CDomoticzHardwareBase
 	bool StopHardware() override;
 	void Do_Work();
 	void GetMeterDetails();
-	void SendSetPointSensor(unsigned char Idx, float Temp, const std::string &defaultname);
 	bool GetSerialAndToken();
 
       private:

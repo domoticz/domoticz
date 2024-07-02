@@ -678,7 +678,7 @@ void COpenWebNetTCP::UpdateSetPoint(const int who, const int where, float fval, 
 
 				where is setpoint zone (1 - 99)
 	**/
-	SendSetPointSensor((who & 0xFF), (iInterface & 0xff), (where & 0xFF), fval, devname);
+	SendSetPointSensor(0, (who & 0xFF), (iInterface & 0xff), (where & 0xFF), 1, fval, devname);
 }
 
 /**

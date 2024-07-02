@@ -944,7 +944,7 @@ void MitsubishiWF::ParseAirconStat(const _tAircoStatus& aircoStatus)
 {
 	SendSwitch(1, 2, 255, aircoStatus.Operation, 0, "Airco Power", "MitsubishiWF");
 
-	SendSetPointSensor(20, 1, 1, static_cast<float>(aircoStatus.PresetTemp), "Target Setpoint");
+	SendSetPointSensor(0, 20, 1, 1, 1, static_cast<float>(aircoStatus.PresetTemp), "Target Setpoint");
 
 	std::string szDeviceName = "Operation Mode";
 	ParseModeSwitch(2, (const char**)&szOperationMode, szOperationMode.size(), aircoStatus.OperationMode, true, szDeviceName);
@@ -1394,7 +1394,7 @@ bool MitsubishiWF::SetSetpoint(const int /*idx*/, const float temp)
 	//If we are powered off, we need to power as well
 	m_AircoStatus.Operation = true;
 
-	SendSetPointSensor(20, 1, 1, temp, "Target Temperature"); // Suppose request succeed to keep reactive web interface
+	SendSetPointSensor(0, 20, 1, 1, 1, temp, "Target Temperature"); // Suppose request succeed to keep reactive web interface
 
 	return SendAircoStatus(m_AircoStatus);
 }

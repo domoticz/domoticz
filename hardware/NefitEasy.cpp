@@ -403,7 +403,7 @@ bool CNefitEasy::GetStatusDetails()
 		if (tmpstr != "null")
 		{
 			float temp = static_cast<float>(atof(tmpstr.c_str()));
-			SendSetPointSensor(1, 1, 1, temp, "Setpoint");
+			SendSetPointSensor(0, 1, 1, 1, 1, temp, "Setpoint");
 		}
 	}
 	if (!root2["IHT"].empty())

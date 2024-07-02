@@ -219,19 +219,6 @@ void CToonThermostat::Do_Work()
 	Log(LOG_STATUS, "Worker stopped...");
 }
 
-void CToonThermostat::SendSetPointSensor(const unsigned char Idx, const float Temp, const std::string &defaultname)
-{
-	_tSetpoint thermos;
-	thermos.subtype = sTypeSetpoint;
-	thermos.id1 = 0;
-	thermos.id2 = 0;
-	thermos.id3 = 0;
-	thermos.id4 = Idx;
-	thermos.dunit = 0;
-	thermos.value = Temp;
-	sDecodeRXMessage(this, (const unsigned char *)&thermos, defaultname.c_str(), 255, nullptr);
-}
-
 void CToonThermostat::UpdateSwitch(const unsigned char Idx, const bool bOn, const std::string &defaultname)
 {
 	char szIdx[10];
@@ -787,7 +774,7 @@ bool CToonThermostat::ParseThermostatData(const Json::Value &root)
 
 	float currentTemp = root["thermostatInfo"]["currentTemp"].asFloat() / 100.0F;
 	float currentSetpoint = root["thermostatInfo"]["currentSetpoint"].asFloat() / 100.0F;
-	SendSetPointSensor(1, currentSetpoint, "Room Setpoint");
+	SendSetPointSensor(0, 0, 0, 1, 0, currentSetpoint, "Room Setpoint");
 	SendTempSensor(1, 255, currentTemp, "Room Temperature");
 
 	// int programState = root["thermostatInfo"]["programState"].asInt();
@@ -894,7 +881,7 @@ void CToonThermostat::SetSetpoint(const int idx, const float temp)
 			m_bDoLogin = true;
 			return;
 		}
-		SendSetPointSensor(idx, temp, "Room Setpoint");
+		SendSetPointSensor(0, 0, 0, idx, 0, temp, "Room Setpoint");
 		m_retry_counter = 0;
 		m_poll_counter = TOON_POLL_INTERVAL_SHORT;
 	}

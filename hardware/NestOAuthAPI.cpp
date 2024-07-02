@@ -90,19 +90,6 @@ void CNestOAuthAPI::Do_Work()
 	Log(LOG_STATUS, "Worker stopped...");
 }
 
-void CNestOAuthAPI::SendSetPointSensor(const unsigned char Idx, const float Temp, const std::string &defaultname)
-{
-	_tSetpoint thermos;
-	thermos.subtype = sTypeSetpoint;
-	thermos.id1 = 0;
-	thermos.id2 = 0;
-	thermos.id3 = 0;
-	thermos.id4 = Idx;
-	thermos.dunit = 0;
-	thermos.value = Temp;
-	sDecodeRXMessage(this, (const unsigned char *)&thermos, defaultname.c_str(), 255, nullptr);
-}
-
 // Creates and updates switch used to log Heating and/or Cooling.
 void CNestOAuthAPI::UpdateSwitch(const unsigned char Idx, const bool bOn, const std::string &defaultname)
 {
@@ -564,7 +551,7 @@ void CNestOAuthAPI::GetMeterDetails()
 			if (!ndevice["target_temperature_" + temperatureScale].empty())
 			{
 				float currentSetpoint = ndevice["target_temperature_" + temperatureScale].asFloat();
-				SendSetPointSensor((const unsigned char)(iThermostat * 3) + 1, currentSetpoint, Name + " Setpoint");
+				SendSetPointSensor(0, 0, 0, (const unsigned char)(iThermostat * 3) + 1, 0, currentSetpoint, Name + " Setpoint");
 			}
 			// Room Temperature/Humidity
 			if (!ndevice["ambient_temperature_" + temperatureScale].empty())

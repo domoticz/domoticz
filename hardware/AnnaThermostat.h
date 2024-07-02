@@ -27,7 +27,6 @@ class CAnnaThermostat : public CDomoticzHardwareBase
 	void OnError(const std::exception &e);
 	bool CheckLoginData();
 	void GetMeterDetails();
-	void SendSetPointSensor(unsigned char Idx, float Temp, const std::string &defaultname);
 	bool SetAway(bool bIsAway);
 	bool AnnaToggleProximity(bool bToggle);
 	bool AnnaGetLocation();

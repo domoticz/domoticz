@@ -986,11 +986,11 @@ void MySensorsBase::SendSensor2Domoticz(_tMySensorNode* pNode, _tMySensorChild* 
 		break;
 	case V_HVAC_SETPOINT_HEAT:
 		if (pChild->GetValue(vType, floatValue))
-			SendSetPointSensor((uint8_t)pNode->nodeID, (uint8_t)pChild->childID, (unsigned char)vType, floatValue, (!pChild->childName.empty()) ? pChild->childName : "Setpoint Heat");
+			SendSetPointSensor(0, (uint8_t)pNode->nodeID, (uint8_t)pChild->childID, (unsigned char)vType, 1, floatValue, (!pChild->childName.empty()) ? pChild->childName : "Setpoint Heat");
 		break;
 	case V_HVAC_SETPOINT_COOL:
 		if (pChild->GetValue(vType, floatValue))
-			SendSetPointSensor((uint8_t)pNode->nodeID, (uint8_t)pChild->childID, (unsigned char)vType, floatValue, (!pChild->childName.empty()) ? pChild->childName : "Setpoint Cool");
+			SendSetPointSensor(0, (uint8_t)pNode->nodeID, (uint8_t)pChild->childID, (unsigned char)vType, 1, floatValue, (!pChild->childName.empty()) ? pChild->childName : "Setpoint Cool");
 		break;
 	case V_TEXT:
 		if (pChild->GetValue(vType, stringValue))

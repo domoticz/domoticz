@@ -29,7 +29,6 @@ class CToonThermostat : public CDomoticzHardwareBase
 	bool ParsePowerUsage(const Json::Value &root);
 	bool ParseGasUsage(const Json::Value &root);
 
-	void SendSetPointSensor(unsigned char Idx, float Temp, const std::string &defaultname);
 	void UpdateSwitch(unsigned char Idx, bool bOn, const std::string &defaultname);
 
 	bool GetUUIDIdx(const std::string &UUID, int &idx);

@@ -284,9 +284,9 @@ void CHoneywell::GetThermostatData()
 			desc = kSetPointDesc;
 			stdreplace(desc, "[devicename]", deviceName);
 			if(units == "Fahrenheit") {
-				SendSetPointSensor((uint8_t)(10 * devNr + 4), (float)ConvertToCelsius(temperature), desc);
+				SendSetPointSensor(0, 0, 0, (uint8_t)(10 * devNr + 4), 0, (float)ConvertToCelsius(temperature), desc);
 			}else{
-				SendSetPointSensor((uint8_t)(10 * devNr + 4), temperature, desc);
+				SendSetPointSensor(0, 0, 0, (uint8_t)(10 * devNr + 4), 0, temperature, desc);
 			}
 			
 			std::string operationstatus = device["operationStatus"]["mode"].asString();
@@ -338,22 +338,6 @@ void CHoneywell::GetThermostatData()
 			SendSwitch(10 * devNr + 6, 1, 255, bAway, 0, desc, m_Name);
 		}
 	}
-}
-
-//
-// send the temperature from honeywell to domoticz backend
-//
-void CHoneywell::SendSetPointSensor(const unsigned char Idx, const float Temp, const std::string &defaultname)
-{
-	_tSetpoint thermos;
-	thermos.subtype = sTypeSetpoint;
-	thermos.id1 = 0;
-	thermos.id2 = 0;
-	thermos.id3 = 0;
-	thermos.id4 = Idx;
-	thermos.dunit = 0;
-	thermos.value = Temp;
-	sDecodeRXMessage(this, (const unsigned char *)&thermos, defaultname.c_str(), 255, nullptr);
 }
 
 //
@@ -428,9 +412,9 @@ void CHoneywell::SetPauseStatus(const int idx, bool bCommand, const int nodeID)
 		desc = kSetPointDesc;
 		stdreplace(desc, "[devicename]", mDeviceList[idx]["name"].asString());
 		if(units == "Fahrenheit") {
-			SendSetPointSensor((uint8_t)(10 * idx + 4), (float)ConvertToCelsius(temperature), desc);
+			SendSetPointSensor(0, 0, 0, (uint8_t)(10 * idx + 4), 0, (float)ConvertToCelsius(temperature), desc);
 		}else{
-			SendSetPointSensor((uint8_t)(10 * idx + 4), temperature, desc);
+			SendSetPointSensor(0, 0, 0, (uint8_t)(10 * idx + 4), 0, temperature, desc);
 		}
 	}
 
@@ -491,7 +475,7 @@ void CHoneywell::SetSetpoint(const int idx, const float temp, const int nodeid)
 
 		std::string desc = kSetPointDesc;
 		stdreplace(desc, "[devicename]", mDeviceList[idx]["name"].asString());
-		SendSetPointSensor((uint8_t)(10 * idx + 4), temp, desc);
+		SendSetPointSensor(0, 0, 0, (uint8_t)(10 * idx + 4), 0, temp, desc);
 	}
 	//desc = kHeatingDesc;
 	//stdreplace(desc, "[devicename]", mDeviceList[idx]["name"].asString());

@@ -142,19 +142,6 @@ bool CThermosmart::GetOutsideTemperatureFromDomoticz(float &tvalue)
 	return true;
 }
 
-void CThermosmart::SendSetPointSensor(const unsigned char Idx, const float Temp, const std::string &defaultname)
-{
-	_tSetpoint thermos;
-	thermos.subtype=sTypeSetpoint;
-	thermos.id1=0;
-	thermos.id2=0;
-	thermos.id3=0;
-	thermos.id4=Idx;
-	thermos.dunit=0;
-	thermos.value=Temp;
-	sDecodeRXMessage(this, (const unsigned char *)&thermos, "Setpoint", 255, nullptr);
-}
-
 bool CThermosmart::Login()
 {
 	if (!m_AccessToken.empty())
@@ -350,7 +337,7 @@ void CThermosmart::GetMeterDetails()
 
 	float temperature;
 	temperature = (float)root["target_temperature"].asFloat();
-	SendSetPointSensor(1, temperature, "target temperature");
+	SendSetPointSensor(0, 0, 0, 1, 0, temperature, "target temperature");
 
 	temperature = (float)root["room_temperature"].asFloat();
 	SendTempSensor(2, 255, temperature, "room temperature");
@@ -393,7 +380,7 @@ void CThermosmart::SetSetpoint(const int idx, const float temp)
 		m_bDoLogin = true;
 		return;
 	}
-	SendSetPointSensor(1, temp, "target temperature");
+	SendSetPointSensor(0, 0, 0, 1, 0, temp, "target temperature");
 }
 
 void CThermosmart::SetPauseStatus(const bool bIsPause)
