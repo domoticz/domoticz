@@ -1,0 +1,29 @@
+-- This example shows you how to work with various log levels
+--
+-- The script is triggered by a dummy switch called 'test'
+--
+-- when no log level is specified, the level is taken from the default application settings (dzVents)
+--
+-- when you specify LOG_STATUS as minimum log level, no logs will be displayed when using LOG_INFO or LOG_DEBUG
+--
+-- Order is: LOG_DEBUG, LOG_INFO, LOG_STATUS, LOG_ERROR
+--
+-- LOG_DEBUG will only be displayed when Domoticz is started with debug logging enabled
+--
+return {
+	on = {
+		devices = {
+			'test'
+		}
+	},
+	logging = {
+		marker = 'log_script',
+		level = domoticz.LOG_INFO
+	},
+	execute = function(domoticz, device)
+		domoticz.log('INFO log line!', domoticz.LOG_INFO)
+		domoticz.log('STATUS log line!', domoticz.LOG_STATUS)
+		domoticz.log('ERROR log line!', domoticz.LOG_ERROR)
+		domoticz.log('DEBUG log line!', domoticz.LOG_DEBUG)
+	end
+}
