@@ -96,11 +96,10 @@ bool CNotificationFCM::SendMessageImplementation(
 	//send message to FCM
 
 	std::string sMidx;
-	std::vector<std::string> vDevices;
 	std::vector<std::string> vExtraData;
 	if (ExtraData.find("midx_") != std::string::npos) {
 		sMidx = ExtraData.substr(5);
-		boost::split(vDevices, sMidx, boost::is_any_of(";"));
+		stdreplace(sMidx, ";", ",");
 	}
 	else if (ExtraData.find("|") != std::string::npos) {
 		std::string temp;
@@ -114,8 +113,8 @@ bool CNotificationFCM::SendMessageImplementation(
 	//Get All Devices
 	std::vector<std::vector<std::string>> mobileDevices;
 	std::string szQuery("SELECT ID,Active,Name,DeviceType,SenderID FROM MobileDevices");
-	if (!vDevices.empty()) {
-		szQuery += " WHERE (ID IN (" + boost::algorithm::join(vDevices, ",") + "))";
+	if (!sMidx.empty()) {
+		szQuery += " WHERE (ID IN (" + sMidx + "))";
 	}
 	else {
 		szQuery += " WHERE (Active == 1)";
