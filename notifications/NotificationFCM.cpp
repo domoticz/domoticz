@@ -154,6 +154,7 @@ bool CNotificationFCM::SendMessageImplementation(
 			_log.Debug(DEBUG_EVENTSYSTEM, "FCM: No SenderID for device %s", mobileDevice[2].c_str());
 			continue;
 		}
+
 		// Build the message
 		std::stringstream sstr;
 
@@ -161,7 +162,20 @@ bool CNotificationFCM::SendMessageImplementation(
 
 		if (!vExtraData.empty())
 		{
-			sstr << R"("data": { "ExtraData": ")" << ExtraData << R"("}, )";
+			uint8_t iKVs = 0;
+			sstr << R"("data": { )";
+			for (std::string &extraDataKV : vExtraData)
+			{
+				if (extraDataKV.find("=") == std::string::npos)
+					continue;
+				if (iKVs > 0)
+					sstr << R"(, )";
+				std::vector<std::string> aKV;
+				StringSplit(extraDataKV, "=", aKV);
+				sstr << R"(")" << aKV[0] << R"(": ")" << aKV[1] << R"(")";
+				iKVs++;
+			}
+			sstr << R"(}, )";
 		}
 
 		if (bFromNotification)
