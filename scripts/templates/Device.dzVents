@@ -5,7 +5,7 @@ return {
 		}
 	},
 	logging = {
-		level = domoticz.LOG_INFO,
+		level = domoticz.LOG_DEBUG,
 		marker = 'template',
 	},
 	execute = function(domoticz, device)
