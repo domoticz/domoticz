@@ -31,6 +31,7 @@ define(['app', 'events/factories', 'events/EventViewer', 'events/CurrentStates']
                 { id: 'ExecuteShellCommand', name: 'Async OS command' },
                 { id: 'Group', name: 'Group' },
                 { id: 'HTTPRequest', name: 'HTTP request' },
+                { id: 'Logging', name: 'Logging' },
                 { id: 'Scene', name: 'Scene' },
                 { id: 'Security', name: 'Security' },
                 { id: 'System', name: 'System events' },

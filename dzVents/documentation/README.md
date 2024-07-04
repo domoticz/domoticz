@@ -346,8 +346,10 @@ The optional data section allows you to define local variables that will hold th
 ### logging = { ... } (optional)
 The optional logging section allows you to override the global logging setting of dzVents as set in *Setup > Settings > Other > EventSystem > dzVents Log Level*. This can be handy when you only want this script to have extensive debug logging while the rest of your script executes silently. You have these options:
 
- - **level**: This is the log level you want for this script. Can be domoticz.LOG_INFO, domoticz.LOG_STATUS, domoticz.LOG_MODULE_EXEC_INFO, domoticz.LOG_DEBUG or domoticz.LOG_ERROR
+ - **level**: This is the minimum log level you want for this script. This can be domoticz.LOG_INFO, domoticz.LOG_STATUS, domoticz.LOG_ERROR or domoticz.LOG_DEBUG
  - **marker**: A string that is prefixed before each log message. That way you can easily create a filter in the Domoticz log to see just these messages. **marker** defaults to scriptname
+
+*For Debug to work, you have to start Domoticz with debug logging enabled!
 
 Example:
 ```Lua
@@ -696,7 +698,7 @@ The domoticz object holds all information about your Domoticz system. It has glo
  - **hardwareInfo(idx/name)**: <sup>3.0.6</sup> *Function*: A function returning hardwareInfo of a hardware module by name or idx. The return of the function is a table with attributes name, type, typeValue, deviceNames (table with names of all active devices defined on this hardware) and deviceIds (table with idx of all active devices defined on this hardware)
  - **hardware(idx/name)**: <sup>3.0.7</sup> *Function*: A function returning a hardware module by name or idx. Each hardware has an interface comparable to group. To iterate over all hardware do: `domoticz.hardware().forEach(..)`. See [Looping through the collections: iterators](#Looping_through_the_collections:_iterators). Note that you cannot do `for i, j in pairs(domoticz.hardware()) do .. end`. Read more about [Hardware](#Hardware).
  - **helpers**: *Table*. Collection of shared helper functions available to all your dzVents scripts. See [Shared helper functions](#Shared_helper_functions).
- - **log(message, [level])**: *Function*. Creates a logging entry in the Domoticz log but respects the log level settings. You can provide the loglevel: `domoticz.LOG_INFO`, `domoticz.LOG_STATUS`, `domoticz.LOG_DEBUG`, `domoticz.LOG_ERROR` or `domoticz.LOG_FORCE`. In Domoticz settings you can set the log level for dzVents.
+ - **log(message, [level])**: *Function*. Creates a log entry in the Domoticz log but respects the log minimum level settings. You can provide the loglevel: `domoticz.LOG_INFO`, `domoticz.LOG_STATUS`, `domoticz.LOG_ERROR`, `domoticz.LOG_DEBUG` or `domoticz.LOG_FORCE`. In Domoticz settings you can set the default log level for dzVents.
 - **moduleLabel**: <sup>3.0.3</sup> Module (script) name without extension.
  - **notify(subject, message [,priority][,sound][,extra][,subsystem][,delay]<sup>3.0.10</sup> )**: *Function*. Send a notification (like Prowl). Priority can be like `domoticz.PRIORITY_LOW, PRIORITY_MODERATE, PRIORITY_NORMAL, PRIORITY_HIGH, PRIORITY_EMERGENCY`. `extra` is notification subsystem specific. For NSS_FIREBASE you can use this field to specify the target mobile ('midx_1', midx_2, etc..). For sound see [list of dzVents Constants](#Constants) for the SOUND constants below. `subsystem` defaults to all subsystems but can be one subsystem or a table containing one or more notification subsystems. See [list of dzVents Constants](#Constants) for `domoticz.NSS_subsystem` types. Delay is delay in seconds
  - **openURL(url/options)**: *Function*. Have Domoticz 'call' a URL. If you just pass a url then Domoticz will execute the url after your script has finished but you will not get notified. If you pass a table with options then you have to possibility to receive the results of the request in a dzVents script. Read more about [asynchronous http requests](#Asynchronous_HTTP_requests) with dzVents. Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
@@ -906,7 +908,7 @@ The domoticz object has these constants available for use in your code e.g. `dom
  - **EVOHOME_MODE_AUTO, EVOHOME_MODE_AUTOWITHRESET, EVOHOME_MODE_AUTOWITHECO, EVOHOME_MODE_AWAY, EVOHOME_MODE_DAYOFF, EVOHOME_MODE_CUSTOM, EVOHOME_MODE_HEATINGOFF** : mode for EvoHome controller
  - **HUM_COMFORTABLE, HUM_DRY, HUM_NORMAL, HUM_WET, HUM_COMPUTE** <sup>3.0.15</sup>: constant for humidity status.
  - **INTEGER, FLOAT, STRING, DATE, TIME**: variable types.
- - **LOG_DEBUG, LOG_ERROR, LOG_INFO, LOG_STATUS, LOG_FORCE: for logging messages. LOG_FORCE is at the same level as LOG_ERROR.
+ - **LOG_INFO, LOG_STATUS, LOG_ERROR, LOG_DEBUG, LOG_FORCE: for logging messages. LOG_FORCE will always be displayed.
  - **NSS_CLICKATELL** <sup>3.1.3</sup>, **NSS_FIREBASE, NSS_FIREBASE_CLOUD_MESSAGING, NSS_GOOGLE_DEVICES,** <sup>3.0.10</sup> <sup>Only with installed casting plugin</sup>, **NSS_HTTP, NSS_KODI, NSS_LOGITECH_MEDIASERVER, NSS_NMA,NSS_PROWL, NSS_PUSHALOT, NSS_PUSHBULLET, NSS_PUSHOVER, NSS_PUSHSAFER, NSS_TELEGRAM, NSS_GOOGLE_CLOUD_MESSAGING** <sup>deprecated by Google and replaced by firebase</sup>: for notification subsystem
  - **PRIORITY_LOW, PRIORITY_MODERATE, PRIORITY_NORMAL, PRIORITY_HIGH, PRIORITY_EMERGENCY**: for notification priority.
  - **SECURITY_ARMEDAWAY, SECURITY_ARMEDHOME, SECURITY_DISARMED**: for security state.

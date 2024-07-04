@@ -1462,22 +1462,12 @@
 									<tr>
 										<td align="right"><label>Log Level:</label></td>
 										<td>
-											<select class="combobox ui-corner-all" id="comboDzVentsLogLevel" name="DzVentsLogLevel">
-												<option data-i18n="Silent" value="0">
-													Silent
-												</option>
-												<option data-i18n="Errors only" value="1">
-													Errors + forced messages
-												</option>
-												<option data-i18n="Errors + minimal execution info" value="2">
-													Errors + minimal execution info
-												</option>
-												<option data-i18n="Errors + minimal execution info + generic info" value="3">
-													Errors + minimal execution info + generic info
-												</option>
-												<option data-i18n="Debug (everything)" value="4">
-													Debug (everything)
-												</option>
+											<select class="combobox ui-corner-all" id="comboDzVentsLogLevel" name="DzVentsLogLevel" style="width:300px">
+												<option data-i18n="Errors" value="0">Errors</option>
+												<option data-i18n="Status, Errors" value="1">Status, Errors</option>
+												<option data-i18n="Info, Status, Errors" value="2">Info, Status, Errors</option>
+												<option data-i18n="Info, Status, Errors, Execution Info" value="3">Info, Status, Errors, Execution Info</option>
+												<option data-i18n="Debug (everything)" value="4">Debug (everything)</option>
 											</select>
 										</td>
 									</tr>

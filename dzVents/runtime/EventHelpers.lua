@@ -67,7 +67,6 @@ local function EventHelpers(domoticz, mainMethod)
 		}
 	}
 	_G.logLevel = settings['Log level']
-	_G.logVerboseLevel = settings['Log level']
 
 	if settings.webRoot ~= nil and settings.webRoot ~= '' then
 		settings['Domoticz url'] = settings['Domoticz url'] .. '/' .. settings.webRoot
@@ -474,7 +473,7 @@ local function EventHelpers(domoticz, mainMethod)
 			local clockTimeStampAtStart = os.clock()
 			local timeStampAtStart = os.time()
 
-			if (_G.logVerboseLevel > 2) then
+			if (_G.logLevel <= utils.LOG_MODULE_EXEC_INFO) then
 				utils.log('------ Start ' .. scriptType .. moduleLabel ..':' .. moduleLabelInfo .. triggerInfo, utils.LOG_MODULE_EXEC_INFO)
 			end
 
@@ -483,12 +482,12 @@ local function EventHelpers(domoticz, mainMethod)
 			local clockTimeSpend = os.clock() - clockTimeStampAtStart
 			local realTimeSpend = os.time() - timeStampAtStart
 
-			if (_G.logVerboseLevel > 2) then
-				if realTimeSpend > 9 or clockTimeSpend > 7 then
-					utils.log('------ Finished ' .. moduleLabel .. ' after >' .. realTimeSpend .. ' seconds. (using '.. tostring(clockTimeSpend):sub(1,5) .. ' seconds CPU time !)' , utils.LOG_ERROR)
-				elseif realTimeSpend > 6 or clockTimeSpend > 5 then
-					utils.log('------ Finished ' .. moduleLabel .. ' after >' .. realTimeSpend .. ' seconds. (using '.. tostring(clockTimeSpend):sub(1,5) .. ' seconds CPU time !)' , utils.LOG_FORCE)
-				else
+			if realTimeSpend > 9 or clockTimeSpend > 7 then
+				utils.log('------ Finished ' .. moduleLabel .. ' after >' .. realTimeSpend .. ' seconds. (using '.. tostring(clockTimeSpend):sub(1,5) .. ' seconds CPU time !)' , utils.LOG_ERROR)
+			elseif realTimeSpend > 6 or clockTimeSpend > 5 then
+				utils.log('------ Finished ' .. moduleLabel .. ' after >' .. realTimeSpend .. ' seconds. (using '.. tostring(clockTimeSpend):sub(1,5) .. ' seconds CPU time !)' , utils.LOG_FORCE)
+			else
+				if (_G.logLevel <= utils.LOG_MODULE_EXEC_INFO) then
 					utils.log('------ Finished ' .. moduleLabel , utils.LOG_MODULE_EXEC_INFO)
 				end
 			end
@@ -982,7 +981,7 @@ local function EventHelpers(domoticz, mainMethod)
 			end
 
 			if (scriptsToExecute ~= nil) then
-				if (_G.logVerboseLevel > 2) then
+				if (_G.logLevel <= utils.LOG_MODULE_EXEC_INFO) then
 					utils.log('Handling events for: "' .. device.name .. '", value: "' .. tostring(device.state) .. '"', utils.LOG_MODULE_EXEC_INFO)
 				end
 				self.handleEvents(scriptsToExecute, device)
@@ -1020,7 +1019,7 @@ local function EventHelpers(domoticz, mainMethod)
 			end
 
 			if (scriptsToExecute ~= nil) then
-				if (_G.logVerboseLevel > 2) then
+				if (_G.logLevel <= utils.LOG_MODULE_EXEC_INFO) then
 					utils.log('Handling events for: "' .. item.name .. '", value: "' .. tostring(item.state) .. '"', utils.LOG_MODULE_EXEC_INFO)
 				end
 				self.handleEvents(scriptsToExecute, item)
@@ -1097,7 +1096,9 @@ local function EventHelpers(domoticz, mainMethod)
 			end
 
 			if (scriptsToExecute ~= nil) then
-				utils.log('Handling variable-events for: "' .. variable.name .. '", value: "' .. tostring(variable.value) .. '"', utils.LOG_MODULE_EXEC_INFO)
+				if (_G.logLevel <= utils.LOG_MODULE_EXEC_INFO) then
+					utils.log('Handling variable-events for: "' .. variable.name .. '", value: "' .. tostring(variable.value) .. '"', utils.LOG_MODULE_EXEC_INFO)
+				end
 				self.handleEvents(scriptsToExecute, variable)
 				self.dumpCommandArray(self.domoticz.commandArray, caSize + 1)
 			end
@@ -1124,7 +1125,9 @@ local function EventHelpers(domoticz, mainMethod)
 				local scriptsToExecute = self.findScriptForTarget(callback, shellcommandResponseScripts)
 
 				if (scriptsToExecute ~= nil) then
-					utils.log('Handling shellcommandResponse-events for: "' .. callback .. '"', utils.LOG_MODULE_EXEC_INFO)
+					if (_G.logLevel <= utils.LOG_MODULE_EXEC_INFO) then
+						utils.log('Handling shellcommandResponse-events for: "' .. callback .. '"', utils.LOG_MODULE_EXEC_INFO)
+					end
 					self.handleEvents(scriptsToExecute, response)
 					self.dumpCommandArray(self.domoticz.commandArray, caSize + 1)
 				end
@@ -1156,7 +1159,9 @@ local function EventHelpers(domoticz, mainMethod)
 				local scriptsToExecute = self.findScriptForTarget(callback, httpResponseScripts)
 
 				if (scriptsToExecute ~= nil) then
-					utils.log('Handling httpResponse-events for: "' .. callback .. '"', utils.LOG_MODULE_EXEC_INFO)
+					if (_G.logLevel <= utils.LOG_MODULE_EXEC_INFO) then
+						utils.log('Handling httpResponse-events for: "' .. callback .. '"', utils.LOG_MODULE_EXEC_INFO)
+					end
 					self.handleEvents(scriptsToExecute, response)
 					self.dumpCommandArray(self.domoticz.commandArray, caSize + 1)
 				end
@@ -1195,7 +1200,9 @@ local function EventHelpers(domoticz, mainMethod)
 					local scriptsToExecute = self.findScriptForTarget(event.name, systemEventScripts)
 
 					if (scriptsToExecute ~= nil) then
-						utils.log('Handling system event for: "' .. event.name .. '"', utils.LOG_MODULE_EXEC_INFO)
+						if (_G.logLevel <= utils.LOG_MODULE_EXEC_INFO) then
+							utils.log('Handling system event for: "' .. event.name .. '"', utils.LOG_MODULE_EXEC_INFO)
+						end
 						self.handleEvents(scriptsToExecute, event)
 						self.dumpCommandArray(self.domoticz.commandArray, caSize + 1)
 					end
@@ -1236,7 +1243,9 @@ local function EventHelpers(domoticz, mainMethod)
 				local scriptsToExecute = self.findScriptForTarget(customEvent.name, customEventScripts)
 
 				if (scriptsToExecute ~= nil) then
-					utils.log('Handling Domoticz custom event for: "' .. customEvent.name .. '"', utils.LOG_MODULE_EXEC_INFO)
+					if (_G.logLevel <= utils.LOG_MODULE_EXEC_INFO) then
+						utils.log('Handling Domoticz custom event for: "' .. customEvent.name .. '"', utils.LOG_MODULE_EXEC_INFO)
+					end
 					self.handleEvents(scriptsToExecute, customEvent)
 					self.dumpCommandArray(self.domoticz.commandArray, caSize + 1)
 				end

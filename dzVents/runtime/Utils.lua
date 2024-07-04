@@ -2,13 +2,12 @@ local jsonParser = require('JSON')
 local _ = require('lodash')
 
 local self = {
-	LOG_ERROR = 1,
 	LOG_FORCE = 0.5,
+	LOG_DEBUG = 1,
 	LOG_MODULE_EXEC_INFO = 2,
 	LOG_INFO = 3,
 	LOG_STATUS = 4,
-	LOG_WARNING = 5,
-	LOG_DEBUG = 6,
+	LOG_ERROR = 5,
 	DZVERSION = '3.1.10',
 }
 
@@ -480,7 +479,9 @@ end
 
 function self.log(msg, level)
     -- self.print(msg .. ', level=' .. level)
-	if (level == nil) then level = self.LOG_INFO end
+	if (level == nil) then
+		level = self.LOG_INFO
+	end
 
 	if (type(level) ~= 'number') then
 		self.print('Error: log level is not a number. Got: ' .. tostring(level) .. ', type: ' .. type(level))
@@ -488,31 +489,36 @@ function self.log(msg, level)
 	end
 
 	local lLevel = _G.logLevel == nil and 1 or _G.logLevel
-	local marker = ''
 
-	if (level == self.LOG_ERROR) then
-		marker = marker .. 'Error: '
+	msg = self.toStr(msg)
+
+	-- print('level: ' .. level .. ',lLevel: ' .. lLevel .. ', msg: ' .. msg)
+
+	if (level < lLevel) then
+		return
+	end
+
+	local marker = ''
+	
+	if (level == self.LOG_INFO) then
+		marker = 'Info: '
 	elseif (level == self.LOG_STATUS) then
-		marker = marker .. 'Status: '
+		marker = 'Status: '
+	elseif (level == self.LOG_ERROR) then
+		marker = 'Error: '
 	elseif (level == self.LOG_DEBUG) then
-		marker = marker .. 'Debug: '
-	elseif (level == self.LOG_INFO or level == self.LOG_MODULE_EXEC_INFO) then
-		marker = marker .. 'Info: '
+		marker = 'Debug: '
+	elseif (level == self.LOG_MODULE_EXEC_INFO) then
+		marker = 'Exec: '
 	elseif (level == self.LOG_FORCE) then
-		marker = marker .. '!Info: '
+		marker = '!Info: '
 	end
 
 	if (_G.logMarker ~= nil) then
 		marker = marker .. _G.logMarker .. ': '
 	end
 
-	if (level <= lLevel) then
-		local maxLength = 6000 -- limit 3 * 2048 hardCoded in main/Logger.cpp
-		msg = self.toStr(msg)
-		for i = 1, #msg, maxLength do
-			self.print( marker .. msg:sub(i, i + maxLength - 1 ) )
-		end
-	end
+	self.print( marker .. msg )
 end
 
 function self.rgbToHSB(r, g, b)
