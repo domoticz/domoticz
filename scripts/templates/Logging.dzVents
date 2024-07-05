@@ -8,7 +8,7 @@
 --
 -- Order is: LOG_DEBUG, LOG_INFO, LOG_STATUS, LOG_ERROR
 --
--- LOG_DEBUG will cause Execution Info to be displayed (start/finished), but actual messages will only be displayed when Domoticz is started with debug logging enabled
+-- LOG_DEBUG will also cause Execution Info to be displayed (start/finished)
 --
 return {
 	on = {

@@ -356,7 +356,7 @@ The optional logging section allows you to override the global logging setting o
 * '''level''': This is the minimum log level you want for this script. This can be domoticz.LOG_INFO, domoticz.LOG_STATUS, domoticz.LOG_ERROR or domoticz.LOG_DEBUG
 * '''marker''': A string that is prefixed before each log message. That way you can easily create a filter in the Domoticz log to see just these messages. '''marker''' defaults to scriptname
 
-*LOG_DEBUG will cause Execution Info to be displayed (start/finished), but actual messages will only be displayed when Domoticz is started with debug logging enabled
+*LOG_DEBUG will also cause Execution Info to be displayed (start/finished)
 
 Example:
 

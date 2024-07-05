@@ -790,9 +790,10 @@ int CdzVents::l_domoticz_print(lua_State* lua_state)
 			}
 			else if (lstring.find("Debug:") == 0)
 			{
-				lstring = lstring.substr(7);
-				_log.Debug(DEBUG_EVENTSYSTEM, "dzVents: %s", lstring.c_str());
-				return 0;
+				log_level = LOG_NORM;
+				//lstring = lstring.substr(7);
+				//_log.Debug(DEBUG_EVENTSYSTEM, "dzVents: %s", lstring.c_str());
+				//return 0;
 			}
 			_log.Log(log_level, "dzVents: %s", lstring.c_str());
 		}
