@@ -110,6 +110,18 @@ bool CNotificationFCM::SendMessageImplementation(
 		}
 	}
 
+	// Add the default 'data' fields we always want to send if available
+	vExtraData.push_back("deviceid=" + std::to_string(Idx));
+	vExtraData.push_back("priority=" + std::to_string(Priority));
+	if (!Name.empty())
+		vExtraData.push_back("message=" + Name);
+	if (!Subject.empty())
+		vExtraData.push_back("subject=" + Subject);
+	if (!Text.empty())
+		vExtraData.push_back("body=" + Text);
+	if (!Sound.empty())
+		vExtraData.push_back("sound=" + Sound);
+
 	//Get All Devices
 	std::vector<std::vector<std::string>> mobileDevices;
 	std::string szQuery("SELECT ID,Active,Name,DeviceType,SenderID FROM MobileDevices");
@@ -178,10 +190,13 @@ bool CNotificationFCM::SendMessageImplementation(
 			sstr << R"(}, )";
 		}
 
+		/* For now, we do NOT use this as a Notification is handled by the device OS itself
+		 * and the app itself is not aware of the notification
 		if (bFromNotification)
 		{
 			sstr << R"("notification": { "title": ")" << Subject << R"(", "body": ")" << Text << R"("}, )";
 		}
+		*/
 
 		sstr << R"("token": ")" << mobileDevice[4] << R"(")";		// Add where to send
 		sstr << R"(} })";											// Close Send Message struct
