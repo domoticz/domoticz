@@ -1,3 +1,6 @@
+Version 2024.xxxxx (xxxxx 2024)
+- Changed: Google Cloud Messaging (GCM) now uses the new v1 API of Google's Firebase Cloud Messaging (FCM)
+
 Version 2024.5 (July 7th 2024)
 - Implemented: Currency Symbol in Location Settings
 - Implemented: dzVents, Added historical data helper 'med' to calculate the median value
