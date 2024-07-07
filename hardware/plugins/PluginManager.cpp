@@ -348,7 +348,7 @@ namespace Plugins {
 			return;
 		//std::vector<std::string> sd = result[0];
 		//GizMoCuz: Why does this work with UNIT ? Why not use the device idx which is always unique ?
-		_log.Debug(DEBUG_NORM, "CPluginSystem::DeviceModified: Notifying plugin %u about modification of device %u", atoi(sHwdID.c_str()), atoi(Unit.c_str()));
+		_log.Debug(DEBUG_NORM, "CPluginSystem::DeviceModified: Notifying plugin %s about modification of device %s", sHwdID.c_str(), Unit.c_str());
 		Plugins::CPlugin *pPlugin = (Plugins::CPlugin*)pHardware;
 		pPlugin->DeviceModified(sd[1], atoi(Unit.c_str()));
 	}

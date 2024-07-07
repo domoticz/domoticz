@@ -60,8 +60,6 @@ History :
 
 #include <bitset> // This is necessary to compile on Windows
 
-#define round(a) (int)(a + .5)
-
 #define MULTIBLOC_V8_VERSION "04.00.00"
 
 #define TIME_1sec 1000
@@ -1271,7 +1269,7 @@ bool USBtin_MultiblocV8::WriteToHardware(const char* pdata, const unsigned char 
 	if (packettype == pTypeLighting2)
 	{
 		// if it's light command
-		// retreive the ID information of the blocs (Rebloc+Codage+Ssréseau ):
+		// retrieve the ID information of the blocs (Rebloc+Codage+Ssréseau ):
 		sID_EnBase = (pSen->LIGHTING2.id1 << 24) + (pSen->LIGHTING2.id2 << 16) + (pSen->LIGHTING2.id3 << 8) + (pSen->LIGHTING2.id4);
 		FrameType = (sID_EnBase & MSK_TYPE_TRAME) >> SHIFT_TYPE_TRAME;
 		ReferenceBloc = (sID_EnBase & MSK_INDEX_MODULE) >> SHIFT_INDEX_MODULE;
@@ -1467,7 +1465,7 @@ void USBtin_MultiblocV8::USBtin_MultiblocV8_Send_SFSP_LearnCommand_OnCAN(long ba
 	}
 	writeFrame(szTrameToSend);
 	/*
-	char RefBloc = (baseID_ToSend & MSK_INDEX_MODULE) >> SHIFT_INDEX_MODULE; //retreive the refblock
+	char RefBloc = (baseID_ToSend & MSK_INDEX_MODULE) >> SHIFT_INDEX_MODULE; //retrieve the refblock
 
 	switch(RefBloc){
 		case BLOC_SFSP_M :
@@ -1688,7 +1686,7 @@ void USBtin_MultiblocV8::SendIBTemperatureSensor(const int NodeID, const uint8_t
 	tsen.TEMP.id1 = (NodeID & 0xff00) >> 8;
 	tsen.TEMP.id2 = NodeID & 0xff;
 	tsen.TEMP.tempsign = (Temp >= 0) ? 0 : 1;
-	int at10 = round(std::abs(Temp * 10.0F));
+	int at10 = ground(std::abs(Temp * 10.0F));
 	tsen.TEMP.temperatureh = (BYTE)(at10 / 256);
 	at10 -= (tsen.TEMP.temperatureh * 256);
 	tsen.TEMP.temperaturel = (BYTE)(at10);

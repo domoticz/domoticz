@@ -5,10 +5,6 @@ local _ = require 'lodash'
 local scriptPath = ''
 package.path = ";../?.lua;" .. scriptPath .. '/?.lua;../device-adapters/?.lua;../../../scripts/lua/?.lua;' .. package.path
 
-local LOG_INFO = 2
-local LOG_DEBUG = 3
-local LOG_ERROR = 1
-
 describe('event helpers', function()
 	local utils
 
@@ -100,7 +96,7 @@ describe('event helpers', function()
 			_G.logLevel = utils.LOG_ERROR
 			utils.log('error', utils.LOG_INFO)
 			assert.is_nil(printed)
-			utils.log('error', utils.LOG_WARNING)
+			utils.log('error', utils.LOG_STATUS)
 			assert.is_nil(printed)
 
 			_G.logLevel = 0

@@ -395,8 +395,6 @@ void CEventSystem::UpdateJsonMap(_tDeviceStatus &item, const uint64_t ulDevID)
 	if (rsize > 0)
 	{
 		uint8_t index = 0;
-		std::string l_JsonValueString;
-		l_JsonValueString.reserve(50);
 
 		while (JsonMap[index].szOriginal != nullptr)
 		{
@@ -407,10 +405,10 @@ void CEventSystem::UpdateJsonMap(_tDeviceStatus &item, const uint64_t ulDevID)
 				switch (JsonMap[index].eType)
 				{
 				case JTYPE_STRING:
-					item.JsonMapString[index] = l_JsonValueString.assign(value);
+					item.JsonMapString[index] = value;
 					break;
 				case JTYPE_FLOAT:
-					item.JsonMapFloat[index] = (float)atof(value.c_str());
+					item.JsonMapFloat[index] = static_cast<float>(atof(value.c_str()));
 					break;
 				case JTYPE_INT:
 					item.JsonMapInt[index] = atoi(value.c_str());
@@ -422,7 +420,8 @@ void CEventSystem::UpdateJsonMap(_tDeviceStatus &item, const uint64_t ulDevID)
 						item.JsonMapBool[index] = false;
 					break;
 				default:
-					item.JsonMapString[index] = l_JsonValueString.assign("unknown_type");
+					item.JsonMapString[index] = "unknown_type";
+					break;
 				}
 			}
 			index++;
@@ -693,7 +692,7 @@ void CEventSystem::GetCurrentMeasurementStates()
 			if (splitresults.size() > 1)
 			{
 				temp = static_cast<float>(atof(splitresults[0].c_str()));
-				humidity = atoi(splitresults[1].c_str());
+				humidity = ground(atof(splitresults[1].c_str()));
 				dewpoint = (float)CalculateDewPoint(temp, humidity);
 				isTemp = true;
 				isHum = true;
@@ -706,7 +705,7 @@ void CEventSystem::GetCurrentMeasurementStates()
 				continue;
 			}
 			temp = static_cast<float>(atof(splitresults[0].c_str()));
-			humidity = atoi(splitresults[1].c_str());
+			humidity = ground(atof(splitresults[1].c_str()));
 			barometer = static_cast<float>(atof(splitresults[3].c_str()));
 			dewpoint = (float)CalculateDewPoint(temp, humidity);
 			isTemp = true;
@@ -4301,6 +4300,22 @@ namespace http {
 					return;
 				m_sql.DeleteEvent(idx);
 				m_mainworker.m_eventsystem.LoadEvents();
+				root["status"] = "OK";
+			}
+			else if (cparam == "load_recents")
+			{
+				root["title"] = "LoadRecentEvents";
+				std::string recent_list;
+				m_sql.GetPreferencesVar("events_recent_list", recent_list);
+				root["status"] = "OK";
+				root["result"] = recent_list;
+
+			}
+			else if (cparam == "store_recents")
+			{
+				root["title"] = "StoreRecentEvents";
+				std::string recent_list = request::findValue(&req, "recent_list");
+				m_sql.UpdatePreferencesVar("events_recent_list", recent_list);
 				root["status"] = "OK";
 			}
 			else if (cparam == "currentstates")

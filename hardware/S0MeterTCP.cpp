@@ -46,7 +46,7 @@ bool S0MeterTCP::StopHardware()
 
 void S0MeterTCP::OnConnect()
 {
-	Log(LOG_STATUS,"connected to: %s:%d", m_szIPAddress.c_str(), m_usIPPort);
+	Log(LOG_STATUS,"Connected to: %s:%d", m_szIPAddress.c_str(), m_usIPPort);
 	m_bIsStarted=true;
 	m_bufferpos = 0;
 	sOnConnected(this);
@@ -54,13 +54,13 @@ void S0MeterTCP::OnConnect()
 
 void S0MeterTCP::OnDisconnect()
 {
-	Log(LOG_STATUS,"disconnected");
+	Log(LOG_STATUS,"Disconnected");
 }
 
 void S0MeterTCP::Do_Work()
 {
 	int sec_counter = 0;
-	Log(LOG_ERROR, "trying to connect to %s:%d", m_szIPAddress.c_str(), m_usIPPort);
+	Log(LOG_ERROR, "Trying to connect to %s:%d", m_szIPAddress.c_str(), m_usIPPort);
 	connect(m_szIPAddress,m_usIPPort);
 	while (!IsStopRequested(1000))
 	{
@@ -72,7 +72,7 @@ void S0MeterTCP::Do_Work()
 	}
 	terminate();
 
-	Log(LOG_STATUS,"TCP/IP Worker stopped...");
+	Log(LOG_STATUS,"Worker stopped...");
 }
 
 bool S0MeterTCP::WriteToHardware(const char *pdata, const unsigned char length)

@@ -22,8 +22,8 @@
         <tr>
           <td align="right"><label for="longitude">Longitude: </label></td>
           <td><input type="text" id="longitude" style="width: 90px; padding: .2em;" class="text ui-widget-content ui-corner-all"></td>
-		    </tr>
-		    </table>
+		</tr>
+		</table>
     </form>
 </div>
 <script>
@@ -42,6 +42,7 @@
 					<li><a data-target="#tabnotifications" data-toggle="tab" data-i18n="Notifications"></a></li>
 					<li><a data-target="#tabemail" data-toggle="tab" data-i18n="Email">Email</a></li>
 					<li><a data-target="#tabmeters" data-toggle="tab" data-i18n="Meters/Counters">Meters/Counters</a></li>
+					<li><a data-target="#tabenergydashboard" data-toggle="tab" data-i18n="Energy Dashboard">Energy Dashboard</a></li>
 					<li><a data-target="#tabfloorplan" data-toggle="tab" data-i18n="Floorplan"></a></li>
 					<li><a data-target="#tabsecurity" data-toggle="tab" data-i18n="Security"></a></li>
 					<li><a data-target="#tabother" data-toggle="tab" data-i18n="Other">Other</a></li>
@@ -101,11 +102,11 @@
 									<label id="sunriseset"></label>
 									<table class="display" id="locationtable" border="0" cellpadding="0" cellspacing="0">
 									<tr>
-										<td align="right" style="width:60px"><label for="Title"><span data-i18n="Name">Name</span>: </label></td>
+										<td align="right" style="width:80px"><label for="Title"><span data-i18n="Name">Name</span>: </label></td>
 										<td><input type="input" id="Title" name="Title" style="width: 200px; padding: .2em;" class="text ui-widget-content ui-corner-all"></td>
 									</tr>
 									<tr>
-										<td align="right" style="width:60px"><label for="Latitude"><span data-i18n="Latitude"></span>: </label></td>
+										<td align="right"><label for="Latitude"><span data-i18n="Latitude"></span>: </label></td>
 										<td><input type="text" id="Latitude" name="Latitude" style="width: 150px; padding: .2em;" class="text ui-widget-content ui-corner-all"></td>
 									</tr>
 									<tr>
@@ -114,6 +115,30 @@
 											<input type="text" id="Longitude" name="Longitude" style="width: 150px; padding: .2em;" class="text ui-widget-content ui-corner-all"><br>
 											<span data-i18n="ToFindGeo"></span> <a class="norm-link" ng-click="GetGeoLocation();"><span class="norm-link" data-i18n="Here"></span></a>
 										</td>
+									</tr>
+									<tr>
+										<td align="right"><label><span data-i18n="Currency"></span>: </label></td>
+										<td><select id="CurrencySymbol" name="CurrencySymbol" style="width:40px" class="combobox ui-corner-all">
+											<option value="€" selected="selected">€</option>
+											<option value="$">$</option>
+											<option value="£">£</option>
+											<option value="¥">¥</option>
+											<option value="CHF">CHF</option>
+											<option value="₹">₹</option>
+											<option value="₽">₽</option>
+											<option value="₩">₩</option>
+											<option value="R">R</option>
+											<option value="﷼">﷼</option>
+											<option value="د.إ">د.إ</option>
+											<option value="₪">₪</option>
+											<option value="₺">₺</option>
+											<option value="kr">kr</option>
+											<option value="RM">RM</option>
+											<option value="p">p</option>
+											<option value="₦">₦</option>
+											<option value="KSh">KSh</option>
+											<option value="MKD">MKD</option>
+										</select></td>
 									</tr>
 									</table>
 								</div>
@@ -167,34 +192,6 @@
 												<td colspan="2"><input type="checkbox" id="ShowUpdateEffect" name="ShowUpdateEffect"> <label for="ShowUpdateEffect" data-i18n="Flash sensor when an update is received">Flash sensor when an update is received</label></td>
 											</tr>
 										</table>
-									</div>
-								</div>
-								<div class="span6">
-									<div id="MyDomoticzTab">
-										<h2><span data-i18n="MyDomoticzSettings">MyDomoticz settings</span>:</h2>
-										<table class="display" id="mydomoticztable" border="0" cellpadding="0" cellspacing="0">
-											<tr>
-												<td align="right" style="width:180px"><label><span data-i18n="MyInstanceId">MyDomoticz Instance ID</span>:</label></td>
-												<td><span id="mydomoticzinstanceidid">(none)</span></td>
-											</tr>
-											<tr>
-												<td align="right" style="width:180px">MyDomoticz <label><span data-i18n="API Key"></span>:</label></td>
-												<td><span id="mydomoticzuseridid"><input type="text" name="MyDomoticzUserId" id="MyDomoticzUserId" style="width: 200px; padding: .2em;" value="" class="text ui-widget-content ui-corner-all"></span></td>
-											</tr>
-											<tr>
-												<td align="right" style="width:180px">MyDomoticz <label><span data-i18n="Password">MyDomoticz password</span>:</label></td>
-												<td><span id="mydomoticzpasswordid"><input type="password" name="MyDomoticzPassword" id="MyDomoticzPassword" style="width: 200px; padding: .2em;" value="" class="text ui-widget-content ui-corner-all"></span></td>
-											</tr>
-											<tr>
-												<td colspan="2">
-													<input type="checkbox" name="SubsystemHttp" id="SubsystemHttp" value="1"> <label for="SubsystemHttp" data-i18n="Enabled"></label><br>
-													<input type="checkbox" name="SubsystemShared" id="SubsystemShared" value="2"> <label for="SubsystemShared" data-i18n="SharedDomoticzAllowed">Shared Domoticz Allowed</label><br>
-													<input type="checkbox" name="SubsystemApps" id="SubsystemApps" value="4"> <label for="SubsystemApps" data-i18n="AppsAllowed">Apps Allowed</label>
-												</td>
-											</tr>
-										</table>
-										<br>
-										<span data-i18n="To register for a MyDomoticz account, click">To register for a MyDomoticz account, click</span> <a href="https://my.domoticz.com/login" class="norm-link" target="_blank"><span class="norm-link" data-i18n="Here"></span></a>
 									</div>
 								</div>
 							</div>
@@ -961,14 +958,200 @@
 							<br>
 							<div class="row-fluid">
 								<div class="span12">
-									<h2><span data-i18n="P1 Smart Meter Type"></span>:</h2>
-									<table class="display" id="p1metertable" border="0" cellpadding="0" cellspacing="0">
+									<h2><span data-i18n="(Dynamic) Price calculation"></span>:</h2>
+									<table class="display" id="dpricetable" border="0" cellpadding="0" cellspacing="0">
 										<tr>
-											<td align="right" style="width:60px"><label><span data-i18n="Type"></span>: </label></td>
-											<td><select id="comboP1MeterType" name="SmartMeterType" style="width:180px" class="combobox ui-corner-all">
-												<option data-i18n="With Decimals" value="0">With Decimals</option>
-												<option data-i18n="No Decimals" value="1">No Decimals</option>
+											<td align="right" style="width:200px"><label><span data-i18n="Electricity Price Device"></span>: </label></td>
+											<td><select id="comboDPElectricity" name="HourIdxElectricityDevice" style="width:380px" class="combobox ui-corner-all">
+												<option data-i18n="Disabled" value="0">Disabled</option>
 											</select></td>
+										</tr>
+										<tr>
+											<td align="right"><label><span data-i18n="Gas Price Device"></span>: </label></td>
+											<td><select id="comboDPGas" name="HourIdxGasDevice" style="width:380px" class="combobox ui-corner-all">
+												<option data-i18n="Disabled" value="0">Disabled</option>
+											</select></td>
+										</tr>
+										<tr>
+											<td align="right"><label><span data-i18n="P1 Electricity report display"></span>: </label></td>
+											<td><select id="comboP1DisplayType" name="P1DisplayType" style="width:380px" class="combobox ui-corner-all">
+												<option data-i18n="Low/High Tariff" value="0"></option>
+												<option data-i18n="Simple (Dynamic contract)" value="1"></option>
+											</select></td>
+										</tr>
+									</table>
+								</div>
+							</div>
+						</section>
+					</div>
+					<div class="tab-pane" id="tabenergydashboard">
+						<!-- Energy Dashboard Settings
+						================================================== -->
+						<section id="metercounters">
+							<div class="page-header-small">
+								<h1 data-i18n="Energy Dashboard Setup">Energy Dashboard Setup</h1>
+							</div>
+							<div class="row-fluid">
+								<div class="span12">
+									<h2><span data-i18n="Device Assignment"></span>:</h2>
+									<table class="display" id="dedevices" border="0" cellpadding="0" cellspacing="0">
+										<tr>
+											<td align="right" style="width:250px"><label><span data-i18n="P1/Grid"></span>: </label></td>
+											<td><select id="comboEP1" name="EP1" style="width:380px" class="combobox ui-corner-all">
+												<option data-i18n="Disabled" value="-1" selected="selected">Disabled</option>
+											</select>&nbsp;kWh</td>
+										</tr>
+										<tr>
+											<td align="right"><label><span data-i18n="Gas"></span>: </label></td>
+											<td><select id="comboEGas" name="EGas" style="width:380px" class="combobox ui-corner-all">
+												<option data-i18n="Disabled" value="-1" selected="selected">Disabled</option>
+											</select>&nbsp;m3</td>
+										</tr>
+										<tr>
+											<td align="right"><label><span data-i18n="Water"></span>: </label></td>
+											<td><select id="comboEWater" name="EWater" style="width:380px" class="combobox ui-corner-all">
+												<option data-i18n="Disabled" value="-1" selected="selected">Disabled</option>
+											</select>&nbsp;m3/Liter/Gallons</td>
+										</tr>
+										<tr>
+											<td align="right"><span data-i18n="Convert Water m3 To Liter"></span>:</td>
+											<td><input type="checkbox" id="EConvertWaterM3ToLiter" name="EConvertWaterM3ToLiter"><label for="EConvertWaterM3ToLiter"></label></td>
+										</tr>
+										<tr>
+											<td align="right"><label><span data-i18n="Solar"></span>: </label></td>
+											<td><select id="comboESolar" name="ESolar" style="width:380px" class="combobox ui-corner-all">
+												<option data-i18n="Disabled" value="-1" selected="selected">Disabled</option>
+											</select>&nbsp;Watt</td>
+										</tr>
+										<tr>
+											<td align="right"><label><span data-i18n="Battery"></span>: </label></td>
+											<td><select id="comboEBatteryWatt" name="EBatteryWatt" style="width:380px" class="combobox ui-corner-all">
+												<option data-i18n="Disabled" value="-1" selected="selected">Disabled</option>
+											</select>&nbsp;Watt</td>
+										</tr>
+										<tr>
+											<td align="right"><label><span data-i18n="Battery SOC"></span>: </label></td>
+											<td><select id="comboEBatterySoc" name="EBatterySoc" style="width:380px" class="combobox ui-corner-all">
+												<option data-i18n="Disabled" value="-1" selected="selected">Disabled</option>
+											</select>&nbsp;%</td>
+										</tr>
+										<tr>
+											<td align="right" style="width:200px"><label><span data-i18n="Text Device"></span>: </label></td>
+											<td><select id="comboETextSensor" name="ETextSensor" style="width:380px" class="combobox ui-corner-all">
+												<option data-i18n="Disabled" value="-1" selected="selected">Disabled</option>
+											</select></td>
+										</tr>
+									</table>
+								</div>
+							</div>
+							<div class="row-fluid">
+								<div class="span12">
+									<table class="display" id="dedevicesextra1" border="0" cellpadding="0" cellspacing="0">
+										<tr>
+											<td align="right" style="width:250px"><label><span data-i18n="Custom Widget"></span>&nbsp;1: </label></td>
+											<td><select id="comboEExtra1" name="EExtra1" style="width:380px" class="combobox ui-corner-all">
+												<option data-i18n="Disabled" value="-1" selected="selected">Disabled</option>
+											</select></td>
+										</tr>
+										<tr>
+											<td align="right"><label><span data-i18n="Field"></span>: </label></td>
+											<td><select id="comboEExtra1Field" name="EExtra1Field" style="width:380px" class="combobox ui-corner-all">
+												<option value="Data" selected="selected">Data</option>
+												<option value="Usage">Usage</option>
+												<option value="CounterToday">CounterToday</option>
+												<option value="Counter">Counter</option>
+											</select></td>
+										</tr>
+										<tr>
+											<td align="right"><label><span data-i18n="Icon"></span>: </label></td>
+											<td><select id="comboEExtra1Icon" name="EExtra1Icon" style="width:380px" class="combobox ui-corner-all">
+												<option data-i18n="Car" value="car" selected="selected">Car</option>
+												<option data-i18n="Heater" value="heater">Heater</option>
+												<option data-i18n="Power" value="power">power</option>
+												<option data-i18n="Wave" value="wave">Wave</option>
+												<option data-i18n="Other" value="other">Other</option>
+											</select></td>
+										</tr>
+									</table>
+								</div>
+							</div>
+							<div class="row-fluid">
+								<div class="span12">
+									<table class="display" id="dedevicesextra2" border="0" cellpadding="0" cellspacing="0">
+										<tr>
+											<td align="right" style="width:250px"><label><span data-i18n="Custom Widget"></span>&nbsp;2: </label></td>
+											<td><select id="comboEExtra2" name="EExtra2" style="width:380px" class="combobox ui-corner-all">
+												<option data-i18n="Disabled" value="-1" selected="selected">Disabled</option>
+											</select></td>
+										</tr>
+										<tr>
+											<td align="right"><label><span data-i18n="Field"></span>: </label></td>
+											<td><select id="comboEExtra2Field" name="EExtra2Field" style="width:380px" class="combobox ui-corner-all">
+												<option value="Data" selected="selected">Data</option>
+												<option value="Usage">Usage</option>
+												<option value="CounterToday">CounterToday</option>
+												<option value="Counter">Counter</option>
+											</select></td>
+										</tr>
+										<tr>
+											<td align="right"><label><span data-i18n="Icon"></span>: </label></td>
+											<td><select id="comboEExtra2Icon" name="EExtra2Icon" style="width:380px" class="combobox ui-corner-all">
+												<option data-i18n="Car" value="car">Car</option>
+												<option data-i18n="Heater" value="heater">Heater</option>
+												<option data-i18n="Power" value="power" selected="selected">power</option>
+												<option data-i18n="Wave" value="wave">Wave</option>
+												<option data-i18n="Other" value="other">Other</option>
+											</select></td>
+										</tr>
+									</table>
+								</div>
+							</div>
+							<div class="row-fluid">
+								<div class="span12">
+									<table class="display" id="dedevicesextra3" border="0" cellpadding="0" cellspacing="0">
+										<tr>
+											<td align="right" style="width:250px"><label><span data-i18n="Custom Widget"></span>&nbsp;3: </label></td>
+											<td><select id="comboEExtra3" name="EExtra3" style="width:380px" class="combobox ui-corner-all">
+												<option data-i18n="Disabled" value="-1" selected="selected">Disabled</option>
+											</select></td>
+										</tr>
+										<tr>
+											<td align="right"><label><span data-i18n="Field"></span>: </label></td>
+											<td><select id="comboEExtra3Field" name="EExtra3Field" style="width:380px" class="combobox ui-corner-all">
+												<option value="Data" selected="selected">Data</option>
+												<option value="Usage">Usage</option>
+												<option value="CounterToday">CounterToday</option>
+												<option value="Counter">Counter</option>
+											</select></td>
+										</tr>
+										<tr>
+											<td align="right"><label><span data-i18n="Icon"></span>: </label></td>
+											<td><select id="comboEExtra3Icon" name="EExtra3Icon" style="width:380px" class="combobox ui-corner-all">
+												<option data-i18n="Car" value="car">Car</option>
+												<option data-i18n="Heater" value="heater">Heater</option>
+												<option data-i18n="Power" value="power">power</option>
+												<option data-i18n="Wave" value="wave" selected="selected">Wave</option>
+												<option data-i18n="Other" value="other">Other</option>
+											</select></td>
+										</tr>
+									</table>
+								</div>
+							</div>
+							<div class="row-fluid">
+								<div class="span12">
+									<h2><span data-i18n="Additional Settings"></span>:</h2>
+									<table class="display" id="desettings" border="0" cellpadding="0" cellspacing="0">
+										<tr>
+											<td align="right" style="width:250px"><span data-i18n="Display Server Time"></span>:</td>
+											<td><input type="checkbox" id="EDisplayTime" name="EDisplayTime"><label for="EDisplayTime"></label></td>
+										</tr>
+										<tr>
+											<td align="right"><span data-i18n="Display Flow with Lines"></span>:</td>
+											<td><input type="checkbox" id="EDisplayFlowWithLines" name="EDisplayFlowWithLines" checked><label for="EDisplayFlowWithLines"></label></td>
+										</tr>
+										<tr>
+											<td align="right"><span data-i18n="Custom Icons"></span>:</td>
+											<td><input type="checkbox" id="EUseCustomIcons" name="EUseCustomIcons"><label for="EUseCustomIcons"></label></td>
 										</tr>
 									</table>
 								</div>
@@ -1279,22 +1462,12 @@
 									<tr>
 										<td align="right"><label>Log Level:</label></td>
 										<td>
-											<select class="combobox ui-corner-all" id="comboDzVentsLogLevel" name="DzVentsLogLevel">
-												<option data-i18n="Silent" value="0">
-													Silent
-												</option>
-												<option data-i18n="Errors only" value="1">
-													Errors + forced messages
-												</option>
-												<option data-i18n="Errors + minimal execution info" value="2">
-													Errors + minimal execution info
-												</option>
-												<option data-i18n="Errors + minimal execution info + generic info" value="3">
-													Errors + minimal execution info + generic info
-												</option>
-												<option data-i18n="Debug (everything)" value="4">
-													Debug (everything)
-												</option>
+											<select class="combobox ui-corner-all" id="comboDzVentsLogLevel" name="DzVentsLogLevel" style="width:300px">
+												<option data-i18n="Errors" value="0">Errors</option>
+												<option data-i18n="Status, Errors" value="1">Status, Errors</option>
+												<option data-i18n="Info, Status, Errors" value="2">Info, Status, Errors</option>
+												<option data-i18n="Info, Status, Errors, Execution Info" value="3">Info, Status, Errors, Execution Info</option>
+												<option data-i18n="Debug (everything)" value="4">Debug (everything)</option>
 											</select>
 										</td>
 									</tr>

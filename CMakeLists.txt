@@ -46,7 +46,7 @@ option(GIT_SUBMODULE "Check submodules during build" ON)
 ### COMPILER SETTINGS
 #
 #
-set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
@@ -151,6 +151,7 @@ main/HTMLSanitizer.cpp
 main/IFTTT.cpp
 main/json_helper.cpp
 main/localtime_r.cpp
+main/lsignal.cpp
 main/Logger.cpp
 main/LuaCommon.cpp
 main/LuaHandler.cpp
@@ -704,17 +705,6 @@ IF(CURL_FOUND)
 ELSE()
   MESSAGE(FATAL_ERROR "cURL not found! try 'sudo apt-get install curl libcurl4-gnutls-dev'")
 ENDIF(CURL_FOUND)
-
-#
-# CEREAL
-#
-find_path(CEREAL_INCLUDE_DIRS NAMES cereal/cereal.hpp)
-IF(CEREAL_INCLUDE_DIRS)
-  MESSAGE(STATUS "CEREAL includes found at: ${CEREAL_INCLUDE_DIRS}")
-  include_directories(${CEREAL_INCLUDE_DIRS})
-ELSE()
-  MESSAGE(FATAL_ERROR "CEREAL not found on your system! try 'sudo apt-get install libcereal-dev'")
-ENDIF(CEREAL_INCLUDE_DIRS)
 
 #
 # USB

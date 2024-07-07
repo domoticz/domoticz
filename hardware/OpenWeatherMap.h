@@ -9,7 +9,15 @@
 class COpenWeatherMap : public CDomoticzHardwareBase
 {
       public:
-	COpenWeatherMap(int ID, const std::string &APIKey, const std::string &Location, int adddayforecast, int addhourforecast, int adddescdev, int owmforecastscreen);
+	COpenWeatherMap(
+		const int ID,
+		const std::string &APIKey,
+		const std::string &Location,
+		const int adddayforecast,
+		const int addhourforecast,
+		const int adddescdev,
+		const int owmforecastscreen,
+		const bool bUseAPIv3);
 	~COpenWeatherMap() override = default;
 	bool WriteToHardware(const char *pdata, unsigned char length) override;
 	std::string GetForecastURL();
@@ -38,6 +46,7 @@ class COpenWeatherMap : public CDomoticzHardwareBase
 	bool m_add_hourforecast = false;
 	bool m_add_descriptiondevices = false;
 	bool m_use_owminforecastscreen = false;
+	bool m_bUseAPIv3 = false;
 	double m_Lat = 0;
 	double m_Lon = 0;
 	uint32_t m_CityID = 0;

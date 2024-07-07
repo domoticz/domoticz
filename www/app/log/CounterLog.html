@@ -2,9 +2,10 @@
         class="device-log-chart"
         device="::$ctrl.device"></counter-day-chart>
 
-<counter-week-chart
+<counter-hour-chart
+		ng-if="$ctrl.subtype=='p1Energy'"
         class="device-log-chart"
-        device="::$ctrl.device"></counter-week-chart>
+        device="::$ctrl.device"></counter-hour-chart>
 
 <counter-month-chart
         class="device-log-chart"

@@ -91,7 +91,7 @@ bool AlfenEve::StartHardware()
 	if (m_szPassword.empty())
 		return false;
 
-	//Retreive last bootcount
+	//Retrieve last bootcount
 	bool bExits = false;
 	std::string sValue = GetTextSensorText(1, 1, bExits);
 	if (bExits)
@@ -1039,7 +1039,7 @@ void AlfenEve::parseProperties(const Json::Value& root)
 		{
 			int socket1_StateLeds = itt["value"].asInt();
 			SendTextSensor(1, 2, 255, szSocket1_Status(socket1_StateLeds), "Socket 1 State");
-			//shall we also retreive status for possible second socket?
+			//shall we also retrieve status for possible second socket?
 
 			//Are we charging?
 			bool bCharging = (
@@ -1055,7 +1055,7 @@ void AlfenEve::parseProperties(const Json::Value& root)
 		else if (id == "2129_0")
 		{
 			int maxCurrent = itt["value"].asInt();
-			SendSetPointSensor(1, 1, SP_MAX_CHARGE_CURRENT, static_cast<float>(maxCurrent), "Max Charge Current (A)");
+			SendSetPointSensor(0, 1, 1, SP_MAX_CHARGE_CURRENT, 1, static_cast<float>(maxCurrent), "Max Charge Current (A)");
 		}
 		else if (id == "3280_1")
 		{
@@ -1070,12 +1070,12 @@ void AlfenEve::parseProperties(const Json::Value& root)
 		else if (id == "3280_2")
 		{
 			//Green share (%)
-			SendSetPointSensor(1, 1, SP_SOLAR_GREEN_SHARE, static_cast<float>(itt["value"].asInt()), "Solar Green Share %");
+			SendSetPointSensor(0, 1, 1, SP_SOLAR_GREEN_SHARE, 1, static_cast<float>(itt["value"].asInt()), "Solar Green Share %");
 		}
 		else if (id == "3280_3")
 		{
 			//Comfort Level
-			SendSetPointSensor(1, 1, SP_SOLAR_COMFORT_LEVEL, static_cast<float>(itt["value"].asInt()), "Solar Comfort Level Watt");
+			SendSetPointSensor(0, 1, 1, SP_SOLAR_COMFORT_LEVEL, 1, static_cast<float>(itt["value"].asInt()), "Solar Comfort Level Watt");
 		}
 	}
 	SendCurrentSensor(1, 255, CurrentL1, CurrentL2, CurrentL3, "Current L1/L2/L3");

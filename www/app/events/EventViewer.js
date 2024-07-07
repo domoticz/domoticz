@@ -33,7 +33,7 @@ define(['app', 'events/factories'], function (app) {
                 $q
                     .resolve(vm.event.interpreter
                         ? Object.assign({}, vm.event)
-                        : domoticzEventsApi.fetchEvent(vm.event.id)
+                        : domoticzEventsApi.loadEvent(vm.event.id)
                     )
                     .then(function (eventData) {
                         vm.eventData = eventData;

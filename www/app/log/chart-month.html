@@ -6,6 +6,7 @@
     </div>
     <div class="chartarea">
         <div class="zoom-buttons-container">
+            <button class="zoom-button" ng-click="zoomDays(1*7)" ng-bind="zoomLabel('1w')"></button>
             <button class="zoom-reset" ng-click="zoomreset()" ng-bind="zoomLabel('Reset')" ng-show="zoomed"></button>
         </div>
         <div class="chartcontainer"></div>

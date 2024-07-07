@@ -133,9 +133,20 @@ public:
 	std::map<uint64_t, _tTrendCalculator> m_trend_calculator;
 
 	time_t m_LastHeartbeat = 0;
+
+	struct _tHourPrice
+	{
+		time_t timestamp = 0;
+		float price = 0;
+	};
+	_tHourPrice m_hourPriceElectricity;
+	_tHourPrice m_hourPriceGas;
+	_tHourPrice m_hourPriceWater;
+	void HandleHourPrice();
 private:
 	void HandleAutomaticBackups();
 	void HandleLogNotifications();
+
 	std::map<std::string, std::pair<time_t, bool> > m_componentheartbeats;
 	std::mutex m_heartbeatmutex;
 
@@ -147,14 +158,6 @@ private:
 
 	int m_SecCountdown;
 	int m_SecStatus;
-
-	int m_ScheduleLastMinute;
-	int m_ScheduleLastHour;
-	//fix for hardware clock that sets time back/ford
-	time_t m_ScheduleLastMinuteTime;
-	time_t m_ScheduleLastHourTime;
-	time_t m_ScheduleLastDayTime;
-
 
 	std::mutex m_devicemutex;
 

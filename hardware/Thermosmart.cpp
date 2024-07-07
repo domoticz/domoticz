@@ -10,8 +10,6 @@
 #include "../main/mainworker.h"
 #include "../main/json_helper.h"
 
-#define round(a) ( int ) ( a + .5 )
-
 const std::string THERMOSMART_LOGIN_PATH = "https://api.thermosmart.com/login";
 const std::string THERMOSMART_AUTHORISE_PATH = "https://api.thermosmart.com/oauth2/authorize?response_type=code&client_id=client123&redirect_uri=http://clientapp.com/done";
 const std::string THERMOSMART_DECISION_PATH = "https://api.thermosmart.com/oauth2/authorize/decision";
@@ -142,19 +140,6 @@ bool CThermosmart::GetOutsideTemperatureFromDomoticz(float &tvalue)
 		return false;
 	tvalue = tempjson["result"][0]["Temp"].asFloat();
 	return true;
-}
-
-void CThermosmart::SendSetPointSensor(const unsigned char Idx, const float Temp, const std::string &defaultname)
-{
-	_tSetpoint thermos;
-	thermos.subtype=sTypeSetpoint;
-	thermos.id1=0;
-	thermos.id2=0;
-	thermos.id3=0;
-	thermos.id4=Idx;
-	thermos.dunit=0;
-	thermos.value=Temp;
-	sDecodeRXMessage(this, (const unsigned char *)&thermos, "Setpoint", 255, nullptr);
 }
 
 bool CThermosmart::Login()
@@ -352,7 +337,7 @@ void CThermosmart::GetMeterDetails()
 
 	float temperature;
 	temperature = (float)root["target_temperature"].asFloat();
-	SendSetPointSensor(1, temperature, "target temperature");
+	SendSetPointSensor(0, 0, 0, 1, 0, temperature, "target temperature");
 
 	temperature = (float)root["room_temperature"].asFloat();
 	SendTempSensor(2, 255, temperature, "room temperature");
@@ -395,7 +380,7 @@ void CThermosmart::SetSetpoint(const int idx, const float temp)
 		m_bDoLogin = true;
 		return;
 	}
-	SendSetPointSensor(1, temp, "target temperature");
+	SendSetPointSensor(0, 0, 0, 1, 0, temp, "target temperature");
 }
 
 void CThermosmart::SetPauseStatus(const bool bIsPause)

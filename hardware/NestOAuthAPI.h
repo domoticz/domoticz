@@ -42,7 +42,6 @@ class CNestOAuthAPI : public CDomoticzHardwareBase
 	bool StopHardware() override;
 	void Do_Work();
 	void GetMeterDetails();
-	void SendSetPointSensor(unsigned char Idx, float Temp, const std::string &defaultname);
 	void UpdateSwitch(unsigned char Idx, bool bOn, const std::string &defaultname);
 	void UpdateSmokeSensor(unsigned char Idx, bool bOn, const std::string &defaultname);
 	bool SetAway(unsigned char Idx, bool bIsAway);

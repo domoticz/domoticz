@@ -1,5 +1,5 @@
 define(['app'], function (app) {
-	app.controller('LogController', ['$scope', '$rootScope', '$location', '$http', '$interval', '$sce', function ($scope, $rootScope, $location, $http, $interval, $sce) {
+	app.controller('LogController', ['$scope', '$rootScope', '$location', '$http', '$interval', '$sce', 'livesocket', function ($scope, $rootScope, $location, $http, $interval, $sce, livesocket) {
 
 		$scope.LastLogTime = 0;
 		$scope.logitems = [];
@@ -12,12 +12,63 @@ define(['app'], function (app) {
 		var LOG_DEBUG = 0x0000008;
 		var LOG_ALL = 0xFFFFFFF;
 
-		$scope.RefreshLog = function () {
-			if (typeof $scope.mytimer != 'undefined') {
-				$interval.cancel($scope.mytimer);
-				$scope.mytimer = undefined;
-			}
+		$scope.addLogLine = function(item) {
+			var message = item.message.replace(/\n/gi, "<br>");
+			var lines = message.split("<br>")
+			if (lines.length < 1) return;
+			var fline = lines[0].split(" ")
+			if (fline.length < 3) return;
 
+			var sdate = fline[0];
+			var stime = fline[1];
+
+			for (i = 0; i < lines.length; i++) {
+				var lmessage = "";
+				if (i == 0) {
+					lmessage = lines[i];
+				}
+				else {
+					lmessage = sdate + " " + stime + " " + lines[i];
+				}
+				var logclass = "";
+				logclass = getLogClass(item.level);
+
+				//All
+				if ($scope.logitems.length >= 300)
+					$scope.logitems.splice(0, ($scope.logitems.length - 300));
+				$scope.logitems = $scope.logitems.concat({
+					mclass: logclass,
+					text: lmessage
+				});
+				if (item.level == LOG_ERROR) {
+					//Error
+					if ($scope.logitems_error.length >= 300)
+						$scope.logitems_error.splice(0, ($scope.logitems_error.length - 300));
+					$scope.logitems_error = $scope.logitems_error.concat({
+						mclass: logclass,
+						text: lmessage
+					});
+				}
+				else if (item.level == LOG_STATUS) {
+					//Status
+					if ($scope.logitems_status.length >= 300)
+						$scope.logitems_status.splice(0, ($scope.logitems_status.length - 300));
+					$scope.logitems_status = $scope.logitems_status.concat({
+						mclass: logclass,
+						text: lmessage
+					});
+				}
+				else if (item.level == LOG_DEBUG) {
+					//Debug
+					$scope.logitems_debug = $scope.logitems_debug.concat({
+						mclass: logclass,
+						text: lmessage
+					});
+				}
+			}
+		}
+
+		$scope.RefreshLog = function () {
 			var bWasAtBottom = true;
 			var div = $("#logcontent #logdata");
 			if (div != null) {
@@ -41,76 +92,15 @@ define(['app'], function (app) {
 						$scope.LastLogTime = parseInt(data.LastLogTime);
 					}
 					$.each(data.result, function (i, item) {
-					    var message = item.message.replace(/\n/gi, "<br>");
-					    var lines = message.split("<br>")
-					    if (lines.length < 1) return;
-					    var fline = lines[0].split(" ")
-					    if (fline.length < 3) return;
-
-					    var sdate = fline[0];
-					    var stime = fline[1];
-
-					    for (i = 0; i < lines.length; i++) {
-					        var lmessage = "";
-					        if (i == 0) {
-					            lmessage = lines[i];
-					        }
-					        else {
-					            lmessage = sdate + " " + stime + " " + lines[i];
-					        }
-					        var logclass = "";
-					        logclass = getLogClass(item.level);
-					        $scope.logitems = $scope.logitems.concat({
-					            mclass: logclass,
-					            text: lmessage
-					        });
-					        if ($scope.logitems.length >= 300)
-					            $scope.logitems.splice(0, ($scope.logitems.length - 300));
-					        if (item.level == LOG_ERROR) {
-					            //Error
-					            $scope.logitems_error = $scope.logitems_error.concat({
-					                mclass: logclass,
-					                text: lmessage
-					            });
-					            if ($scope.logitems_error.length >= 300)
-					                $scope.logitems_error.splice(0, ($scope.logitems_error.length - 300));
-                            }
-					        else if (item.level == LOG_STATUS) {
-					            //Status
-					            $scope.logitems_status = $scope.logitems_status.concat({
-					                mclass: logclass,
-					                text: lmessage
-					            });
-					            if ($scope.logitems_status.length >= 300)
-					                $scope.logitems_status.splice(0, ($scope.logitems_status.length - 300));
-                            }
-					        else if (item.level == LOG_DEBUG) {
-					            //Debug
-					            $scope.logitems_debug = $scope.logitems_debug.concat({
-					                mclass: logclass,
-					                text: lmessage
-					            });
-					            if ($scope.logitems_debug.length >= 300)
-					                $scope.logitems_debug.splice(0, ($scope.logitems_debug.length - 300));
-                            }
-                        }
+						$scope.addLogLine(item);
 					});
 				}
-				$scope.mytimer = $interval(function () {
-					$scope.RefreshLog();
-				}, 5000);
 			}, function errorCallback(response) {
-				$scope.mytimer = $interval(function () {
-					$scope.RefreshLog();
-				}, 5000);
 			});
 		}
 
 		$scope.ClearLog = function () {
-			if (typeof $scope.mytimer != 'undefined') {
-				$interval.cancel($scope.mytimer);
-				$scope.mytimer = undefined;
-			}
+			livesocket.unsubscribeFrom("log");
 			$http({
 				url: "json.htm?type=command&param=clearlog",
 				async: false,
@@ -121,13 +111,9 @@ define(['app'], function (app) {
 				$scope.logitems_error = [];
 				$scope.logitems_status = [];
 				$scope.logitems_debug = [];
-				$scope.mytimer = $interval(function () {
-					$scope.RefreshLog();
-				}, 5000);
+				livesocket.subscribeTo("log");
 			}, function errorCallback(response) {
-				$scope.mytimer = $interval(function () {
-					$scope.RefreshLog();
-				}, 5000);
+				livesocket.subscribeTo("log");
 			});
 		}
 
@@ -147,6 +133,7 @@ define(['app'], function (app) {
 			$scope.RefreshLog();
 			$(window).resize(function () { $scope.ResizeLogWindow(); });
 			$scope.ResizeLogWindow();
+			livesocket.subscribeTo("log");
 		};
 
 		function getLogClass(level) {
@@ -163,12 +150,14 @@ define(['app'], function (app) {
 			return (logclass);
 		}
 
+		$scope.$on('log', function (event, data) {
+			$scope.addLogLine(data);
+			$scope.$digest();
+		});
+
 		$scope.$on('$destroy', function () {
-			if (typeof $scope.mytimer != 'undefined') {
-				$interval.cancel($scope.mytimer);
-				$scope.mytimer = undefined;
-			}
 			$(window).off("resize");
+			livesocket.unsubscribeFrom("log");
 		});
 
 	}]);

@@ -13,6 +13,7 @@ class Enever : public CDomoticzHardwareBase
 public:
 	Enever(int ID, const std::string& szToken, const std::string& szProvider);
 	~Enever() override = default;
+	void ActualizePrices();
 	bool WriteToHardware(const char* pdata, unsigned char length) override;
 	std::string m_szSoftwareVersion;
 private:

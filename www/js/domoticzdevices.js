@@ -840,14 +840,21 @@ Device.initialise = function () {
 Device.create = function (item) {
     var dev;
     var type = '';
-
     // if we got a string instead of an object then convert it
     if (typeof item === 'string') {
         item = JSON.parse(item);
     }
-    // Anomalies in device pattern (Scenes & Dusk sensors say they are  lights(???)
+
     if (item.Type === 'Scene') {
         type = 'scene';
+    } else if (
+        (item.SwitchType === 'Dimmer')
+        || (item.SwitchType === 'Dusk Sensor')
+        || (item.SwitchType === 'Selector')
+	  ) {
+        type = item.SwitchType.toLowerCase();
+	} else if ((typeof item.SwitchType !== 'undefined') && (item.SwitchType.startsWith('On/Off'))) {
+        type = 'light';
     } else if (item.Type === 'Group') {
         type = 'group';
     } else if ((item.Type === 'General') && (item.SubType === 'Barometer')) {
@@ -858,12 +865,6 @@ Device.create = function (item) {
         type = 'setpoint';
 	} else if ((item.Type === 'General') && (item.SubType === 'Percentage')) {
 		type = 'percentage';
-    } else if (
-        (item.SwitchType === 'Dimmer') ||
-        (item.SwitchType === 'Dusk Sensor') ||
-        (item.SwitchType === 'Selector')
-	  ) {
-        type = item.SwitchType.toLowerCase()
     } else if (item.Type === 'RFXMeter') {
         type = 'counter'; 
     } else {
@@ -882,6 +883,10 @@ Device.create = function (item) {
     }
 	//alert(item.Name + '-' + type);
     switch (type) {
+        case "light":
+        case "lightbulb":
+            dev = new Lightbulb(item);
+            break;
         case "alert":
             dev = new Alert(item);
             break;
@@ -925,9 +930,6 @@ Device.create = function (item) {
             break;
         case "humidity":
             dev = new Humidity(item);
-            break;
-        case "lightbulb":
-            dev = new Lightbulb(item);
             break;
         case "lux":
             dev = new VariableSensor(item);
@@ -1499,8 +1501,9 @@ function Contact(item) {
         this.parent.constructor(item);
         this.image = (this.status == "Closed") ? "images/" + item.Image + "48_Off.png" : "images/" + item.Image + "48_On.png";
         this.data = '';
+        this.NotifyLink = this.onClick = "";
         this.smallStatus = this.status;
-        this.LogLink = this.onClick = "window.location.href = '#/Devices/" + this.index + "/Log'";
+        this.LogLink = "window.location.href = '#/Devices/" + this.index + "/Log'";
     }
 }
 Contact.inheritsFrom(BinarySensor);

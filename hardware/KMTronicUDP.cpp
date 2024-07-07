@@ -179,7 +179,7 @@ void KMTronicUDP::GetMeterDetails()
 
 	//	Debug(DEBUG_HARDWARE, "response %s",buf);
 
-	m_TotRelais = n;
+	m_TotRelais = static_cast<int>(n);
 	int jj;
 
 	for (jj = 0; jj < m_TotRelais; jj++)

@@ -1,5 +1,4 @@
 boost
-cereal
 curl
 jsoncpp
 lua

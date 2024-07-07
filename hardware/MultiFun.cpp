@@ -17,8 +17,6 @@
 #define BUFFER_LENGHT 100
 #define MULTIFUN_POLL_INTERVAL 10 //TODO - to settings on www
 
-#define round(a) ( int ) ( a + .5 )
-
 #define sensorsCount 16
 #define registersCount 34
 
@@ -480,13 +478,13 @@ void MultiFun::GetRegisters(bool firstTime)
 						temp = (float)((value & 0x0FFF) * 0.2);
 					}
 					m_isWeatherWork[i - 0x1C] = (value & 0x8000) == 0x8000;
-					SendSetPointSensor((uint8_t)i, 1, 1, temp, name);
+					SendSetPointSensor(0, (uint8_t)i, 1, 1, 1, temp, name);
 					break;
 				}
 
 				case 0x1E:
 				{
-					SendSetPointSensor(0x1E, 1, 1, (float)value, "H.W.U. Temperature");
+					SendSetPointSensor(0, 0x1E, 1, 1, 1, (float)value, "H.W.U. Temperature");
 					break;
 				}
 
@@ -499,7 +497,7 @@ void MultiFun::GetRegisters(bool firstTime)
 					if (m_isSensorExists[i - 0x1F])
 					{
 						float temp = (float)((value & 0x0FFF) * 0.2);
-						SendSetPointSensor((uint8_t)i, 1, 1, temp, name);
+						SendSetPointSensor(0, (uint8_t)i, 1, 1, 1, temp, name);
 					}
 					else
 					{

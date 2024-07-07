@@ -496,12 +496,13 @@ std::string CBasePush::ProcessSendValue(
 		else if (vType == "Forecast")
 		{
 			int forecast = std::stoi(rawsendValue);
-			if (forecast != baroForecastNoInfo)
+
+			if (devSubType == sTypeTHBFloat)
 			{
-				sprintf(szData, "%s", RFX_Forecast_Desc(forecast));
+				sprintf(szData, "%s", RFX_WSForecast_Desc(forecast));
 			}
 			else {
-				sprintf(szData, "%d", forecast);
+				sprintf(szData, "%s", RFX_Forecast_Desc(forecast));
 			}
 		}
 		else if (vType == "Altitude")

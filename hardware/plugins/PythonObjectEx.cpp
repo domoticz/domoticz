@@ -142,7 +142,10 @@ namespace Plugins {
 		// Populate the unit dictionary if there are any
 		std::string DeviceID = PyBorrowedRef(self->DeviceID);
 		std::vector<std::vector<std::string>> result;
+		
+		Py_BEGIN_ALLOW_THREADS
 		result = m_sql.safe_query("SELECT Name, Unit FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%s')", pModState->pPlugin->m_HwdID, DeviceID.c_str());
+		Py_END_ALLOW_THREADS
 		if (!result.empty())
 		{
 
@@ -481,9 +484,12 @@ namespace Plugins {
 			std::string sDevice = PyBorrowedRef(pDevice->DeviceID);
 			// load associated devices to make them available to python
 			std::vector<std::vector<std::string>> result;
+			
+			Py_BEGIN_ALLOW_THREADS
 			result = m_sql.safe_query("SELECT Unit, ID, Name, nValue, sValue, Type, SubType, SwitchType, LastLevel, CustomImage, SignalLevel, BatteryLevel, LastUpdate, Options, "
 						  "Description, Color, Used, AddjValue, AddjMulti FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%s') AND (Unit==%d) ORDER BY Unit ASC",
 						  pModState->pPlugin->m_HwdID, sDevice.c_str(), self->Unit);
+			Py_END_ALLOW_THREADS
 			if (!result.empty())
 			{
 				for (const auto &sd : result)
@@ -514,8 +520,10 @@ namespace Plugins {
 						else
 						{
 							std::map<std::string, std::string> mpOptions;
-							Py_BEGIN_ALLOW_THREADS mpOptions = m_sql.BuildDeviceOptions(sd[13], true);
-							Py_END_ALLOW_THREADS for (const auto &opt : mpOptions)
+							Py_BEGIN_ALLOW_THREADS 
+							mpOptions = m_sql.BuildDeviceOptions(sd[13], true);
+							Py_END_ALLOW_THREADS
+							for (const auto &opt : mpOptions)
 							{
 								PyNewRef pKeyDict = PyUnicode_FromString(opt.first.c_str());
 								PyNewRef pValueDict = PyUnicode_FromString(opt.second.c_str());
@@ -718,13 +726,16 @@ namespace Plugins {
 		{
 			char *TypeName = nullptr;
 			int bWriteLog = false;
+			int bUpdateProperties = false;
+			int bUpdateOptions = false;
+			int bSuppressTriggers = false;
 
-			static char *kwlist[] = { "Log", "TypeName", nullptr };
+			static char *kwlist[] = { "Log", "TypeName", "UpdateProperties", "UpdateOptions", "SuppressTriggers", nullptr };
 
 			// Try to extract parameters needed to update device settings
-			if (!PyArg_ParseTupleAndKeywords(args, kwds, "|ps", kwlist, &bWriteLog, &TypeName))
+			if (!PyArg_ParseTupleAndKeywords(args, kwds, "|psppp", kwlist, &bWriteLog, &TypeName, &bUpdateProperties, &bUpdateOptions, &bSuppressTriggers))
 			{
-				pModState->pPlugin->Log(LOG_ERROR, "(%s) Failed to parse parameters: 'Log' and/or 'TypeName' expected.", __func__);
+				pModState->pPlugin->Log(LOG_ERROR, "(%s) Failed to parse parameters: 'Log' and/or 'TypeName' and/or 'UpdateProperties' and/or 'UpdateOptions' and/or 'SuppressTriggers' expected.", __func__);
 				pModState->pPlugin->LogPythonException(__func__);
 				Py_RETURN_NONE;
 			}
@@ -740,6 +751,10 @@ namespace Plugins {
 			std::string sColor = PyBorrowedRef(self->Color);
 			sColor = _tColor(sColor).toJSONString();
 			int nValue = self->nValue;
+			int iImage = self->Image;
+			int iBatteryLevel = self->BatteryLevel;
+			int iSignalLevel = self->SignalLevel;
+			int iUsed = self->Used;
 			int iType = self->Type;
 			int iSubType = self->SubType;
 			int iSwitchType = self->SwitchType;
@@ -756,86 +771,200 @@ namespace Plugins {
 				sValue = stdsValue;
 			}
 
-			uint64_t DevRowIdx = -1;
+			if (bUpdateProperties) {
+				// Grab state in db
+				CUnitEx_refresh(self);
 
-			Py_BEGIN_ALLOW_THREADS
-			std::string devname = sName.c_str();
-
-			DevRowIdx = m_sql.UpdateValue(
-				pModState->pPlugin->m_HwdID,
-				0,
-				sDeviceID.c_str(),
-				self->Unit,
-				iType,
-				iSubType,
-				self->SignalLevel,
-				self->BatteryLevel,
-				nValue,
-				sValue.c_str(),
-				devname,
-				true,
-				pModState->pPlugin->m_Name.c_str()
-			);
-			Py_END_ALLOW_THREADS
-
-			if (DevRowIdx == (uint64_t)-1)
-			{
-				pModState->pPlugin->Log(LOG_ERROR, "Update to 'UnitEx' failed to update any DeviceStatus records for key %d/%s/%d", pModState->pPlugin->m_HwdID, sDeviceID.c_str(), self->Unit);
-				Py_RETURN_NONE;
-			}
-
-			m_mainworker.sOnDeviceReceived(pModState->pPlugin->m_HwdID, self->ID, pModState->pPlugin->m_Name, NULL);
-
-			// Only trigger notifications if a used value is changed
-			if (self->Used)
-			{
-				// if this is an internal Security Panel then there are some extra updates required if state has changed
-				if ((self->Type == pTypeSecurity1) && (self->SubType == sTypeDomoticzSecurity) && (self->nValue != nValue))
+				// Then compare to object saved states and change only if different
+				// Name change
+				if (sName.compare(PyBorrowedRef(self->Name)) != 0)
 				{
 					Py_BEGIN_ALLOW_THREADS
-						switch (nValue)
-						{
-						case sStatusArmHome:
-						case sStatusArmHomeDelayed:
-							m_sql.UpdatePreferencesVar("SecStatus", SECSTATUS_ARMEDHOME);
-							m_mainworker.UpdateDomoticzSecurityStatus(SECSTATUS_ARMEDHOME, "Python");
-							break;
-						case sStatusArmAway:
-						case sStatusArmAwayDelayed:
-							m_sql.UpdatePreferencesVar("SecStatus", SECSTATUS_ARMEDAWAY);
-							m_mainworker.UpdateDomoticzSecurityStatus(SECSTATUS_ARMEDAWAY, "Python");
-							break;
-						case sStatusDisarm:
-						case sStatusNormal:
-						case sStatusNormalDelayed:
-						case sStatusNormalTamper:
-						case sStatusNormalDelayedTamper:
-							m_sql.UpdatePreferencesVar("SecStatus", SECSTATUS_DISARMED);
-							m_mainworker.UpdateDomoticzSecurityStatus(SECSTATUS_DISARMED, "Python");
-							break;
-						}
+					m_sql.UpdateDeviceValue("Name", sName, sID);
 					Py_END_ALLOW_THREADS
 				}
 
-				// Notifications
-				if (!IsLightOrSwitch(iType, iSubType))
+				// Description change
+				if (sDescription.compare(PyBorrowedRef(self->Description)) != 0)
 				{
-					m_notifications.CheckAndHandleNotification(DevRowIdx, pModState->pPlugin->m_HwdID, sDeviceID, sName, self->Unit, iType, iSubType, nValue, sValue);
+					Py_BEGIN_ALLOW_THREADS
+					m_sql.UpdateDeviceValue("Description", sDescription, sID);
+					Py_END_ALLOW_THREADS
 				}
-				else
+
+				// Image change
+				if (iImage != self->Image)
 				{
-					std::string lstatus;
-					int llevel;
-					bool bHaveDimmer;
-					int maxDimLevel;
-					bool bHaveGroupCmd;
-					GetLightStatus(iType, iSubType, (_eSwitchType)iSwitchType, nValue, sValue, lstatus, llevel, bHaveDimmer, maxDimLevel, bHaveGroupCmd);
-					if (self->SwitchType == STYPE_Selector)
-						m_notifications.CheckAndHandleSwitchNotification(DevRowIdx, sName, (IsLightSwitchOn(lstatus)) ? NTYPE_SWITCH_ON : NTYPE_SWITCH_OFF, llevel);
-					else
-						m_notifications.CheckAndHandleSwitchNotification(DevRowIdx, sName, (IsLightSwitchOn(lstatus)) ? NTYPE_SWITCH_ON : NTYPE_SWITCH_OFF);
+					Py_BEGIN_ALLOW_THREADS
+					m_sql.UpdateDeviceValue("CustomImage", iImage, sID);
+					Py_END_ALLOW_THREADS
+				}
+
+				// BatteryLevel change
+				if (iBatteryLevel != self->BatteryLevel)
+				{
+					Py_BEGIN_ALLOW_THREADS
+					m_sql.UpdateDeviceValue("BatteryLevel", iBatteryLevel, sID);
+					Py_END_ALLOW_THREADS
+				}
+
+				// SignalLevel change
+				if (iSignalLevel != self->SignalLevel)
+				{
+					Py_BEGIN_ALLOW_THREADS
+					m_sql.UpdateDeviceValue("SignalLevel", iSignalLevel, sID);
+					Py_END_ALLOW_THREADS
+				}
+
+				// Used change
+				if (iUsed != self->Used)
+				{
+					Py_BEGIN_ALLOW_THREADS
+					m_sql.UpdateDeviceValue("Used", iUsed, sID);
+					Py_END_ALLOW_THREADS
+				}
+
+				// Color change
+				if (sColor.compare(PyBorrowedRef(self->Color)) != 0)
+				{
+					Py_BEGIN_ALLOW_THREADS
+					m_sql.UpdateDeviceValue("Color", sColor, sID);
+					Py_END_ALLOW_THREADS
 				}
 			}
+
+			// Type change
+			if (iType != self->Type)
+			{
+				Py_BEGIN_ALLOW_THREADS
+				m_sql.UpdateDeviceValue("Type", iType, sID);
+				Py_END_ALLOW_THREADS
+			}
+
+			// SubType change
+			if (iSubType != self->SubType)
+			{
+				Py_BEGIN_ALLOW_THREADS
+				m_sql.UpdateDeviceValue("SubType", iSubType, sID);
+				Py_END_ALLOW_THREADS
+			}
+
+			// SwitchType change
+			if (iSwitchType != self->SwitchType)
+			{
+				Py_BEGIN_ALLOW_THREADS
+				m_sql.UpdateDeviceValue("SwitchType", iSwitchType, sID);
+				Py_END_ALLOW_THREADS
+			}
+
+			if (bUpdateOptions) {
+				// Options provided, assume change
+				if (pOptionsDict && PyBorrowedRef(pOptionsDict).IsDict())
+				{
+					if (self->SubType != sTypeCustom)
+					{
+						PyBorrowedRef	pKeyDict, pValueDict;
+						Py_ssize_t pos = 0;
+						std::map<std::string, std::string> mpOptions;
+						while (PyDict_Next(pOptionsDict, &pos, &pKeyDict, &pValueDict))
+						{
+							std::string sOptionName = pKeyDict;
+							std::string sOptionValue = pValueDict;
+							mpOptions.insert(std::pair<std::string, std::string>(sOptionName, sOptionValue));
+						}
+						Py_BEGIN_ALLOW_THREADS
+						m_sql.SetDeviceOptions(self->ID, mpOptions);
+						Py_END_ALLOW_THREADS
+					}
+					else
+					{
+						std::string sOptionValue;
+						PyBorrowedRef	pValue = PyDict_GetItemString(pOptionsDict, "Custom");
+						if (pValue)
+						{
+							sOptionValue = PyUnicode_AsUTF8(pValue);
+						}
+
+						std::string sLastUpdate = TimeToString(nullptr, TF_DateTime);
+						Py_BEGIN_ALLOW_THREADS
+						m_sql.UpdateDeviceValue("Options", iUsed, sID);
+						m_sql.safe_query("UPDATE DeviceStatus SET Options='%q', LastUpdate='%q' WHERE (HardwareID==%d) and (Unit==%d)",
+							sOptionValue.c_str(), sLastUpdate.c_str(), pModState->pPlugin->m_HwdID, self->Unit);
+						Py_END_ALLOW_THREADS
+					}
+				}
+			}
+
+			if (!bSuppressTriggers) {
+				uint64_t DevRowIdx = -1;
+
+				Py_BEGIN_ALLOW_THREADS
+				std::string devname = sName.c_str();
+
+				DevRowIdx = m_sql.UpdateValue(
+					pModState->pPlugin->m_HwdID,
+					0,
+					sDeviceID.c_str(),
+					self->Unit,
+					iType,
+					iSubType,
+					iSignalLevel,
+					iBatteryLevel,
+					nValue,
+					sValue.c_str(),
+					devname,
+					true,
+					pModState->pPlugin->m_Name.c_str()
+				);
+				Py_END_ALLOW_THREADS
+
+				if (DevRowIdx == (uint64_t)-1)
+				{
+					pModState->pPlugin->Log(LOG_ERROR, "Update to 'UnitEx' failed to update any DeviceStatus records for key %d/%s/%d", pModState->pPlugin->m_HwdID, sDeviceID.c_str(), self->Unit);
+					Py_RETURN_NONE;
+				}
+
+				m_mainworker.sOnDeviceReceived(pModState->pPlugin->m_HwdID, self->ID, pModState->pPlugin->m_Name, NULL);
+
+				// Only trigger notifications if a used value is changed
+				if (self->Used)
+				{
+					// if this is an internal Security Panel then there are some extra updates required if state has changed
+					if ((self->Type == pTypeSecurity1) && (self->SubType == sTypeDomoticzSecurity) && (self->nValue != nValue))
+					{
+						Py_BEGIN_ALLOW_THREADS
+							switch (nValue)
+							{
+							case sStatusArmHome:
+							case sStatusArmHomeDelayed:
+								m_sql.UpdatePreferencesVar("SecStatus", SECSTATUS_ARMEDHOME);
+								m_mainworker.UpdateDomoticzSecurityStatus(SECSTATUS_ARMEDHOME, "Python");
+								break;
+							case sStatusArmAway:
+							case sStatusArmAwayDelayed:
+								m_sql.UpdatePreferencesVar("SecStatus", SECSTATUS_ARMEDAWAY);
+								m_mainworker.UpdateDomoticzSecurityStatus(SECSTATUS_ARMEDAWAY, "Python");
+								break;
+							case sStatusDisarm:
+							case sStatusNormal:
+							case sStatusNormalDelayed:
+							case sStatusNormalTamper:
+							case sStatusNormalDelayedTamper:
+								m_sql.UpdatePreferencesVar("SecStatus", SECSTATUS_DISARMED);
+								m_mainworker.UpdateDomoticzSecurityStatus(SECSTATUS_DISARMED, "Python");
+								break;
+							}
+						Py_END_ALLOW_THREADS
+					}
+
+					// Notifications
+					if (!IsLightOrSwitch(iType, iSubType))
+					{
+						m_notifications.CheckAndHandleNotification(DevRowIdx, pModState->pPlugin->m_HwdID, sDeviceID, sName, self->Unit, iType, iSubType, nValue, sValue);
+					}
+				}
+			}
+
 			PyNewRef	pRetVal = CUnitEx_refresh(self);
 		}
 		else

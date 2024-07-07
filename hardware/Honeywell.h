@@ -18,7 +18,6 @@ class CHoneywell : public CDomoticzHardwareBase
       private:
 	void SetSetpoint(int idx, float temp, int nodeid);
 	void SetPauseStatus(int idx, bool bHeating, int nodeid);
-	void SendSetPointSensor(unsigned char Idx, float Temp, const std::string &defaultname);
 	bool refreshToken();
 	void Init();
 	bool StartHardware() override;

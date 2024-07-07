@@ -469,7 +469,7 @@ MyValue *MyNode::lookup(const std::string &data)
  */
 int32 MyNode::getValueCount()
 {
-	return values.size();
+	return static_cast<int32>(values.size());
 }
 
 /*
@@ -968,7 +968,7 @@ void COpenZWaveControlPanel::web_get_groups(int n, TiXmlElement* ep)
 
 /*
 * web_get_values
-* Retreive class values based on genres
+* Retrieve class values based on genres
 */
 void COpenZWaveControlPanel::web_get_values(int i, TiXmlElement* ep)
 {
@@ -999,7 +999,7 @@ void COpenZWaveControlPanel::web_get_values(int i, TiXmlElement* ep)
 			if (id.GetType() == OpenZWave::ValueID::ValueType_List) {
 				std::vector<std::string> strs;
 				OpenZWave::Manager::Get()->GetValueListItems(id, &strs);
-				valueElement->SetAttribute("count", strs.size());
+				valueElement->SetAttribute("count", static_cast<int>(strs.size()));
 				std::string str;
 				OpenZWave::Manager::Get()->GetValueListSelection(id, &str);
 				valueElement->SetAttribute("current", str.c_str());
@@ -1101,7 +1101,7 @@ std::string COpenZWaveControlPanel::SendPollResponse()
 					bcnt = buf.st_size - 100;
 			}
 			if (fseek(fp, bcnt, SEEK_SET) != -1) {
-				logread = fread(logbuffer, 1, logbufsz, fp);
+				logread = static_cast<int32>(fread(logbuffer, 1, logbufsz, fp));
 				while (logread > 0 && logbuffer[--logread] != '\n')
 					;
 				logbytes = bcnt + logread;

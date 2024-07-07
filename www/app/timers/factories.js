@@ -76,10 +76,14 @@ define(['app'], function (app) {
                 var pickedDate = new Date(config.date);
                 var checkDate = new Date(pickedDate.getFullYear(), pickedDate.getMonth(), pickedDate.getDate(), config.hour, config.min, 0, 0);
                 var nowDate = new Date();
-
+/*
+GizMoCuz: This does not seem to work when working from a remote location with a different timezone (like UTC-6.00)
                 if (checkDate < nowDate) {
-                    return $.t('Invalid Date selected!');
+                    var ret = $.t('Invalid Date selected!');
+                    ret+=" (" + checkDate.toLocaleString() + " < " + nowDate.toLocaleString() + ")";
+                    return ret;
                 }
+*/                
             }
 
             if (config.timertype == 12) {

@@ -51,8 +51,6 @@
 
 #include "../hardware/Limitless.h"
 
-#define round(a) (int)(a + .5)
-
 extern std::string szStartupFolder;
 extern std::string szUserDataFolder;
 extern std::string szWWWFolder;
@@ -406,7 +404,6 @@ namespace http
 			RegisterCommandCode("getmyprofile", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetMyProfile(session, req, root); });
 			RegisterCommandCode("updatemyprofile", [this](auto&& session, auto&& req, auto&& root) { Cmd_UpdateMyProfile(session, req, root); });
 
-			RegisterCommandCode("getlocation", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetLocation(session, req, root); });
 			RegisterCommandCode("getforecastconfig", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetForecastConfig(session, req, root); });
 			RegisterCommandCode("sendnotification", [this](auto&& session, auto&& req, auto&& root) { Cmd_SendNotification(session, req, root); });
 			RegisterCommandCode("emailcamerasnapshot", [this](auto&& session, auto&& req, auto&& root) { Cmd_EmailCameraSnapshot(session, req, root); });
@@ -610,6 +607,13 @@ namespace http
 			RegisterCommandCode("esp3updatenode", [this](auto&& session, auto&& req, auto&& root) { Cmd_EnOceanESP3UpdateNode(session, req, root); });
 			RegisterCommandCode("esp3deletenode", [this](auto&& session, auto&& req, auto&& root) { Cmd_EnOceanESP3DeleteNode(session, req, root); });
 			RegisterCommandCode("esp3getnodes", [this](auto&& session, auto&& req, auto&& root) { Cmd_EnOceanESP3GetNodes(session, req, root); });
+
+			//Dynamic Price
+			RegisterCommandCode("getdynamicpricedevices", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetDynamicPriceDevices(session, req, root); });
+
+			//EnergyDashboard
+			RegisterCommandCode("getenergydashboarddevices", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetEnergyDashboardDevices(session, req, root); });
+			
 
 			//Whitelist
 			m_pWebEm->RegisterWhitelistURLString("/images/floorplans/plan");
@@ -1049,7 +1053,7 @@ namespace http
 							" A.Protected, B.XOffset, B.YOffset, B.PlanID, A.Description"
 							" FROM Scenes as A"
 							" LEFT OUTER JOIN DeviceToPlansMap as B ON (B.DeviceRowID==a.ID) AND (B.DevSceneType==1)"
-							" WHERE (A.ID=='%q')",
+							" WHERE (A.ID IN (%q))",
 							rowid.c_str());
 					else if ((!planID.empty()) && (planID != "0"))
 						result = m_sql.safe_query("SELECT A.ID, A.Name, A.nValue, A.LastUpdate, A.Favorite, A.SceneType,"
@@ -1182,7 +1186,7 @@ namespace http
 						" A.Protected, IFNULL(B.XOffset,0), IFNULL(B.YOffset,0), IFNULL(B.PlanID,0), A.Description,"
 						" A.Options, A.Color "
 						"FROM DeviceStatus A LEFT OUTER JOIN DeviceToPlansMap as B ON (B.DeviceRowID==a.ID) "
-						"WHERE (A.ID=='%q')",
+						"WHERE (A.ID IN (%q))",
 						rowid.c_str());
 				}
 				else if ((!planID.empty()) && (planID != "0"))
@@ -1297,7 +1301,7 @@ namespace http
 						" A.Options, A.Color "
 						"FROM DeviceStatus as A, SharedDevices as B "
 						"WHERE (B.DeviceRowID==a.ID)"
-						" AND (B.SharedUserID==%lu) AND (A.ID=='%q')",
+						" AND (B.SharedUserID==%lu) AND (A.ID IN (%q))",
 						m_users[iUser].ID, rowid.c_str());
 				}
 				else if ((!planID.empty()) && (planID != "0"))
@@ -1399,6 +1403,8 @@ namespace http
 
 					std::string sDeviceName = sd[3];
 
+					uint64_t devIDX = std::stoull(sd[0]);
+
 					if (!bDisplayHidden)
 					{
 						if (_HiddenDevices.find(sd[0]) != _HiddenDevices.end())
@@ -1469,17 +1475,17 @@ namespace http
 
 					if ((rused == "false") && (used))
 						continue;
-					if (!rfilter.empty())
+					if ((!rfilter.empty()) && (rfilter != "all"))
 					{
 						if (rfilter == "light")
 						{
 							if (!
 								(
-								IsLightOrSwitch(dType, dSubType)
-								|| (dType == pTypeEvohome)
-								|| (dType == pTypeEvohomeRelay)
-								|| ((dType == pTypeRego6XXValue) && (dSubType == sTypeRego6XXStatus))
-								)
+									IsLightOrSwitch(dType, dSubType)
+									|| (dType == pTypeEvohome)
+									|| (dType == pTypeEvohomeRelay)
+									|| ((dType == pTypeRego6XXValue) && (dSubType == sTypeRego6XXStatus))
+									)
 								)
 								continue;
 						}
@@ -1766,7 +1772,7 @@ namespace http
 						if (switchtype == STYPE_Dimmer)
 						{
 							root["result"][ii]["Level"] = LastLevel;
-							int iLevel = round((float(maxDimLevel) / 100.0F) * LastLevel);
+							int iLevel = ground((float(maxDimLevel) / 100.0F) * LastLevel);
 							root["result"][ii]["LevelInt"] = iLevel;
 							if ((dType == pTypeColorSwitch) || (dType == pTypeLighting5 && dSubType == sTypeTRC02) ||
 								(dType == pTypeLighting5 && dSubType == sTypeTRC02_2) || (dType == pTypeGeneralSwitch && dSubType == sSwitchTypeTRC02) ||
@@ -2000,7 +2006,7 @@ namespace http
 							root["result"][ii]["Status"] = lstatus;
 
 							root["result"][ii]["Level"] = LastLevel;
-							int iLevel = round((float(maxDimLevel) / 100.0F) * LastLevel);
+							int iLevel = ground((float(maxDimLevel) / 100.0F) * LastLevel);
 							root["result"][ii]["LevelInt"] = iLevel;
 
 							root["result"][ii]["ReverseState"] = bReverseState;
@@ -2022,21 +2028,33 @@ namespace http
 							std::string levelActions = options["LevelActions"];
 							if (selectorStyle.empty())
 							{
-								selectorStyle.assign("0"); // default is 'button set'
+								selectorStyle = "0"; // default is 'button set'
 							}
 							if (levelOffHidden.empty())
 							{
-								levelOffHidden.assign("false"); // default is 'not hidden'
+								levelOffHidden = "false"; // default is 'not hidden'
 							}
 							if (levelNames.empty())
 							{
-								levelNames.assign("Off"); // default is Off only
+								levelNames = "Off"; // default is Off only
 							}
 							root["result"][ii]["TypeImg"] = "Light";
 							root["result"][ii]["SelectorStyle"] = atoi(selectorStyle.c_str());
 							root["result"][ii]["LevelOffHidden"] = (levelOffHidden == "true");
 							root["result"][ii]["LevelNames"] = base64_encode(levelNames);
 							root["result"][ii]["LevelActions"] = base64_encode(levelActions);
+
+							std::vector<std::string> strarray;
+							StringSplit(levelNames, "|", strarray);
+							const size_t isLevel = llevel / 10;
+							if (isLevel < strarray.size())
+							{
+								lstatus = strarray.at(isLevel);
+							}
+							else
+							{
+								lstatus = "Invalid?";
+							}
 						}
 						root["result"][ii]["Data"] = lstatus;
 					}
@@ -2252,7 +2270,7 @@ namespace http
 
 							// Calculate dew point
 
-							sprintf(szTmp, "%.2f", ConvertTemperature(CalculateDewPoint(tempCelcius, round(humidity)), tempsign));
+							sprintf(szTmp, "%.2f", ConvertTemperature(CalculateDewPoint(tempCelcius, ground(humidity)), tempsign));
 							root["result"][ii]["DewPoint"] = szTmp;
 
 							_tTrendCalculator::_eTendencyType tstate = _tTrendCalculator::_eTendencyType::TENDENCY_UNKNOWN;
@@ -2279,7 +2297,7 @@ namespace http
 							root["result"][ii]["HumidityStatus"] = RFX_Humidity_Status_Desc(atoi(strarray[2].c_str()));
 							root["result"][ii]["Forecast"] = atoi(strarray[4].c_str());
 
-							sprintf(szTmp, "%.2f", ConvertTemperature(CalculateDewPoint(tempCelcius, round(humidity)), tempsign));
+							sprintf(szTmp, "%.2f", ConvertTemperature(CalculateDewPoint(tempCelcius, ground(humidity)), tempsign));
 							root["result"][ii]["DewPoint"] = szTmp;
 
 							if (dSubType == sTypeTHBFloat)
@@ -2542,7 +2560,7 @@ namespace http
 								break;
 							case MTYPE_WATER:
 								musage = double(total_real) / (divider / 1000.0F);
-								sprintf(szTmp, "%d Liter", round(musage));
+								sprintf(szTmp, "%d Liter", ground(musage));
 								break;
 							case MTYPE_COUNTER:
 								musage = double(total_real) / divider;
@@ -2822,6 +2840,9 @@ namespace http
 							localtime_r(&now, &ltime);
 							char szDate[40];
 							sprintf(szDate, "%04d-%02d-%02d", ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday);
+							char szDateEndofToday[40];
+							strcpy(szDateEndofToday, szDate);
+							strcat(szDateEndofToday, " 23:59:59");
 
 							std::vector<std::vector<std::string>> result2;
 							strcpy(szTmp, "0");
@@ -3456,7 +3477,7 @@ namespace http
 							sprintf(szDate, "%04d-%02d-%02d", ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday);
 
 							std::vector<std::vector<std::string>> result2;
-							strcpy(szTmp, "0");
+							strcpy(szTmp, "0.000");
 							result2 = m_sql.safe_query("SELECT Value FROM Meter WHERE (DeviceRowID='%q' AND Date>='%q') ORDER BY Date LIMIT 1", sd[0].c_str(), szDate);
 							if (!result2.empty())
 							{
@@ -3727,6 +3748,13 @@ namespace http
 						break;
 						}
 					}
+					//Add calculated price if known
+					if (m_sql.m_actual_prices.find(devIDX) != m_sql.m_actual_prices.end())
+					{
+						sprintf(szTmp, "%.4f", m_sql.m_actual_prices[devIDX]);
+						root["result"][ii]["price"] = szTmp;
+					}
+
 #ifdef ENABLE_PYTHON
 					if (pHardware != nullptr)
 					{
@@ -3924,6 +3952,10 @@ namespace http
 				{
 					const int year = atoi(sd[0].c_str());
 					const double fsum = atof(sd[1].c_str());
+
+					if ((!bUseValuesOrCounter) && (fsum > 20000000))
+						continue;
+
 					const int previousIndex = sgroupby == "year" ? 0 : sgroupby == "quarter" ? sd[2][1] - '0' - 1 : atoi(sd[2].c_str()) - 1;
 					const double* sumPrevious = year - 1 != yearPrevious[previousIndex] ? NULL : &yearSumPrevious[previousIndex];
 					const char* trend = !sumPrevious ? "" : *sumPrevious < fsum ? "up" : *sumPrevious > fsum ? "down" : "equal";

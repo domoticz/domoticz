@@ -345,10 +345,10 @@ namespace Plugins {
 		vData.insert(vData.end(), Message->m_Buffer.begin(), Message->m_Buffer.end());		// add the new data
 
 		std::string		sData(vData.begin(), vData.end());
-		int iPos = 1;
+		size_t iPos = 1;
 		while (iPos) {
 			Json::Value		root;
-			iPos = sData.find("}{", 0) + 1;		//  Look for message separater in case there is more than one
+			iPos = sData.find("}{", 0) + 1;		//  Look for message separator in case there is more than one
 			if (!iPos) // no, just one or part of one
 			{
 				if ((sData.substr(sData.length() - 1, 1) == "}") &&
@@ -410,11 +410,11 @@ namespace Plugins {
 				{
 					if (sData.find("<?xml") != std::string::npos)	// step over '<?xml version="1.0" encoding="utf-8"?>' if present
 					{
-						int iEnd = sData.find("?>");
+						size_t iEnd = sData.find("?>");
 						sData = sData.substr(iEnd + 2);
 					}
 
-					int iStart = sData.find_first_of('<');
+					size_t iStart = sData.find_first_of('<');
 					if (iStart == std::string::npos)
 					{
 						// start of a tag not found so discard
@@ -422,17 +422,17 @@ namespace Plugins {
 						break;
 					}
 					if (iStart) sData = sData.substr(iStart);		// remove any leading data
-					int iEnd = sData.find_first_of(" >");
+					size_t iEnd = sData.find_first_of(" >");
 					if (iEnd != std::string::npos)
 					{
 						m_Tag = sData.substr(1, (iEnd - 1));
 					}
 				}
 
-				int	iPos = sData.find("</" + m_Tag + ">");
+				size_t iPos = sData.find("</" + m_Tag + ">");
 				if (iPos != std::string::npos)
 				{
-					int iEnd = iPos + m_Tag.length() + 3;
+					size_t iEnd = iPos + m_Tag.length() + 3;
 					Message->m_pConnection->pPlugin->MessagePlugin(new onMessageCallback(Message->m_pConnection, sData.substr(0, iEnd)));
 
 					if (iEnd == sData.length())
@@ -1001,7 +1001,7 @@ namespace Plugins {
 		// Chunks require hex encoded chunk length instead of normal response
 		if (pChunk)
 		{
-			long	lChunkLength = 0;
+			size_t lChunkLength = 0;
 			if (pData.IsString())
 				lChunkLength = PyUnicode_GetLength(pData);
 			else if (pData.IsByteArray())
@@ -1026,8 +1026,8 @@ namespace Plugins {
 			retVal.reserve(sHttp.length() + PyByteArray_Size(pData) + 2);
 			retVal.assign(sHttp.c_str(), sHttp.c_str() + sHttp.length());
 			const char* pByteArray = PyByteArray_AsString(pData);
-			int iStop = PyByteArray_Size(pData);
-			for (int i = 0; i < iStop; i++)
+			size_t iStop = PyByteArray_Size(pData);
+			for (size_t i = 0; i < iStop; i++)
 			{
 				retVal.push_back(pByteArray[i]);
 			}
@@ -1037,8 +1037,8 @@ namespace Plugins {
 			retVal.reserve(sHttp.length() + PyBytes_Size(pData) + 2);
 			retVal.assign(sHttp.c_str(), sHttp.c_str() + sHttp.length());
 			const char* pBytes = PyBytes_AsString(pData);
-			int iStop = PyBytes_Size(pData);
-			for (int i = 0; i < iStop; i++)
+			size_t iStop = PyBytes_Size(pData);
+			for (size_t i = 0; i < iStop; i++)
 			{
 				retVal.push_back(pBytes[i]);
 			}
@@ -1235,7 +1235,7 @@ namespace Plugins {
 
 	static void MQTTPushBackStringWLen(const std::string& sString, std::vector<byte>& vVector)
 	{
-		MQTTPushBackNumber(sString.length(), vVector);
+		MQTTPushBackNumber(static_cast<int>(sString.length()), vVector);
 		vVector.insert(vVector.end(), sString.begin(), sString.end());
 	}
 
@@ -2180,7 +2180,7 @@ namespace Plugins {
 		}
 
 		// Build final message
-		unsigned long	iRemainingLength = vVariableHeader.size() + vPayload.size();
+		size_t iRemainingLength = vVariableHeader.size() + vPayload.size();
 		do
 		{
 			byte	encodedByte = iRemainingLength % 128;
@@ -2461,7 +2461,7 @@ namespace Plugins {
 			}
 			int iOpCode = 0;
 			int64_t llMaskingKey = 0;
-			long lPayloadLength = 0;
+			size_t lPayloadLength = 0;
 			byte bMaskBit = 0x00;
 
 			PyBorrowedRef pOperation = PyDict_GetItemString(WriteMessage->m_Object, "Operation");
@@ -2541,10 +2541,11 @@ namespace Plugins {
 			else
 			{
 				retVal.push_back(bMaskBit | 126);
-				retVal.push_back(lPayloadLength >> 24);
-				retVal.push_back((lPayloadLength >> 16) & 0xFF);
-				retVal.push_back((lPayloadLength >> 8) & 0xFF);
-				retVal.push_back(lPayloadLength & 0xFF); // Longer length
+				uint32_t dwPL = static_cast<uint32_t>(lPayloadLength);
+				retVal.push_back(dwPL >> 24);
+				retVal.push_back((dwPL >> 16) & 0xFF);
+				retVal.push_back((dwPL >> 8) & 0xFF);
+				retVal.push_back(dwPL & 0xFF); // Longer length
 			}
 
 			byte* pbMask = nullptr;
@@ -2560,7 +2561,7 @@ namespace Plugins {
 			if (pPayload.IsString())
 			{
 				std::string sPayload = PyUnicode_AsUTF8(pPayload);
-				for (int i = 0; i < lPayloadLength; i++)
+				for (size_t i = 0; i < lPayloadLength; i++)
 				{
 					if (bMaskBit)
 						retVal.push_back(sPayload[i] ^ pbMask[i % 4]);
@@ -2571,7 +2572,7 @@ namespace Plugins {
 			else if (pPayload.IsBytes())
 			{
 				byte* pByte = (byte*)PyBytes_AsString(pPayload);
-				for (int i = 0; i < lPayloadLength; i++)
+				for (size_t i = 0; i < lPayloadLength; i++)
 				{
 					if (bMaskBit)
 						retVal.push_back(pByte[i] ^ pbMask[i % 4]);
@@ -2582,7 +2583,7 @@ namespace Plugins {
 			else if (pPayload.IsByteArray())
 			{
 				byte* pByte = (byte*)PyByteArray_AsString(pPayload);
-				for (int i = 0; i < lPayloadLength; i++)
+				for (size_t i = 0; i < lPayloadLength; i++)
 				{
 					if (bMaskBit)
 						retVal.push_back(pByte[i] ^ pbMask[i % 4]);

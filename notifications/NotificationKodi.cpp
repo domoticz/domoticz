@@ -283,13 +283,13 @@ bool CNotificationKodi::SendMessageImplementation(
 		_Address = my_addr;
 		_Sock = -1;
 		if (bMulticast) {
-			_Sock = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
+			_Sock = static_cast<int>(socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP));
 			setsockopt(_Sock, IPPROTO_IP, IP_MULTICAST_TTL, (const char*)&_TTL, sizeof(_TTL));
 			u_char loop = 1;
 			setsockopt(_Sock, IPPROTO_IP, IP_MULTICAST_LOOP, (const char*) &loop, sizeof(loop));
 		}
 		else {
-			_Sock = socket(AF_INET, SOCK_DGRAM, 0);
+			_Sock = static_cast<int>(socket(AF_INET, SOCK_DGRAM, 0));
 		}
 		
 		if (_Sock < 0)

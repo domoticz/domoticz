@@ -15,7 +15,7 @@ define(['app', 'log/Chart'], function (app) {
     app.factory('counterLogParams', function (chart) {
         return {
             chartParamsDay: chartParamsDay,
-            chartParamsWeek: chartParamsWeek,
+            chartParamsHour: chartParamsHour,
             chartParamsMonthYear: chartParamsMonthYear,
             chartParamsCompare: chartParamsCompare,
             chartParamsCompareTemplate: chartParamsCompareTemplate
@@ -28,11 +28,24 @@ define(['app', 'log/Chart'], function (app) {
                         xAxis: {
                             dateTimeLabelFormats: {
                                 day: '%a'
-                            }
+                            },
+							events: {
+								afterSetExtremes: function (event) {
+									var xMin = event.min;
+									var xMax = event.max;
+/*	
+									var chart = Highcharts.charts[4]; //need_some_help: this is not always the hour chart!?
+									var ex = chart.xAxis[0].getExtremes();
+									if (ex.min != xMin || ex.max != xMax) {
+										chart.xAxis[0].setExtremes(xMin, xMax, true, false);
+									}
+*/
+								}
+							}
                         },
                         plotOptions: {
 							column: {
-								pointPlacement: 0
+								pointPlacement: 'between'
 							},
                             series: {
                                 matchExtremes: true
@@ -59,41 +72,46 @@ define(['app', 'log/Chart'], function (app) {
             );
         }
 
-        function chartParamsWeek(domoticzGlobals, ctrl, chartParamsTemplate, dataSupplierTemplate, seriesSuppliers) {
+        function chartParamsHour(domoticzGlobals, ctrl, chartParamsTemplate, dataSupplierTemplate, seriesSuppliers) {
             return _.merge(
                 {
                     highchartTemplate: {
-                        chart: {
-                            type: 'column',
-                            zoomType: false,
-                            marginRight: 10
-                        },
                         xAxis: {
                             dateTimeLabelFormats: {
-                                day: '%a'
+                                hour: '%H:00',
+                                day: '%H:00'
                             },
-                            tickInterval: 24 * 3600 * 1000
-                        },
-                        plotOptions: {
-                            column: {
-                                pointPlacement: 0,
-                                stacking: undefined
-                            },
-                            series: {
-                                // colorByPoint: true
-                                stacking: undefined
-                            }
+							events: {
+								afterSetExtremes: function (event) {
+									var xMin = event.min;
+									var xMax = event.max;
+/*									
+									var chart = Highcharts.charts[0]; //need_some_help: this is not always the day chart!?
+									var ex = chart.xAxis[0].getExtremes();
+									if (ex.min != xMin || ex.max != xMax) {
+										chart.xAxis[0].setExtremes(xMin, xMax, true, false);
+									}
+*/
+								}
+							},
+                            tickInterval: 1 * 3600 * 1000
                         },
                         tooltip: {
-                            shared: false,
                             crosshairs: false
-                        }
+                        },
+						plotOptions: {
+							column: {
+								grouping: false,
+								shadow: false,
+								borderWidth: 0
+							}
+						}
                     },
                     ctrl: ctrl,
                     range: ctrl.range,
                     device: ctrl.device,
                     sensorType: 'counter',
-                    chartName: ctrl.device.SwitchTypeVal === chart.deviceTypes.EnergyGenerated ? $.t('Generated') : $.t('Usage'),
+                    chartName: $.t('Usage') + ' / ' + $.t('Hour'),
                     autoRefreshIsEnabled: function () {
                         return ctrl.logCtrl.autoRefresh;
                     },
@@ -113,9 +131,6 @@ define(['app', 'log/Chart'], function (app) {
             return _.merge(
                 {
                     highchartTemplate: {
-                        chart: {
-                            marginRight: 10
-                        },
                         tooltip: {
                             crosshairs: false
                         },

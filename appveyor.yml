@@ -26,7 +26,7 @@ platform: x86
 #- .\bootstrap-vcpkg.bat
 #- .\vcpkg update
 #- .\vcpkg upgrade --no-dry-run
-#- .\vcpkg install --triplet %PLATFORM%-windows boost cereal curl jsoncpp lua minizip mosquitto openssl pthreads sqlite3 zlib
+#- .\vcpkg install --triplet %PLATFORM%-windows boost curl jsoncpp lua minizip mosquitto openssl pthreads sqlite3 zlib
 #- .\vcpkg integrate install
 #- cd %APPVEYOR_BUILD_FOLDER%
 

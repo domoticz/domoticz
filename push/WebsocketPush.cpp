@@ -2,14 +2,13 @@
 #include "WebsocketPush.h"
 #include "../webserver/WebsocketHandler.h"
 #include "../main/mainworker.h"
+#include "../main/Logger.h"
 
 extern boost::signals2::signal<void(const std::string &Subject, const std::string &Text, const std::string &ExtraData, const int Priority, const std::string & Sound, const bool bFromNotification)> sOnNotificationReceived;
 
 CWebSocketPush::CWebSocketPush(http::server::CWebsocketHandler *sock)
 {
 	m_PushType = PushType::PUSHTYPE_WEBSOCKET;
-	listenRoomplan = false;
-	listenDeviceTable = false;
 	m_sock = sock;
 	isStarted = false;
 }
@@ -23,6 +22,9 @@ void CWebSocketPush::Start()
 	m_sDeviceUpdate = m_mainworker.sOnDeviceUpdate.connect([this](auto id, auto idx) { OnDeviceUpdate(id, idx); });
 	m_sNotification = sOnNotificationReceived.connect([this](auto &&s, auto &&t, auto &&e, auto p, auto &&sound, auto n) { OnNotificationReceived(s, t, e, p, sound, n); });
 	m_sSceneChanged = m_mainworker.sOnSwitchScene.connect([this](auto idx, auto &&name) { OnSceneChange(idx, name); });
+
+	_log.sOnLogMessage.connect(this, &CWebSocketPush::OnLogMessage, &m_sLogMessage);
+
 	isStarted = true;
 }
 
@@ -45,69 +47,9 @@ void CWebSocketPush::Stop()
 	if (m_sSceneChanged.connected())
 		m_sSceneChanged.disconnect();
 
+	m_sLogMessage.disconnect();
+
 	isStarted = false;
-	ClearListenTable();
-}
-
-void CWebSocketPush::ListenTo(const uint64_t DeviceRowIdx)
-{
-	std::unique_lock<std::mutex> lock(listenMutex);
-	bool bExists = std::find(listenIdxs.begin(), listenIdxs.end(), DeviceRowIdx) != listenIdxs.end();
-	if (!bExists) {
-		listenIdxs.push_back(DeviceRowIdx);
-	}
-}
-
-void CWebSocketPush::UnlistenTo(const uint64_t DeviceRowIdx)
-{
-	std::unique_lock<std::mutex> lock(listenMutex);
-	listenIdxs.erase(std::remove(listenIdxs.begin(), listenIdxs.end(), DeviceRowIdx), listenIdxs.end());
-}
-
-void CWebSocketPush::ClearListenTable()
-{
-	std::unique_lock<std::mutex> lock(listenMutex);
-	listenIdxs.clear();
-}
-
-void CWebSocketPush::ListenToRoomplan()
-{
-	listenRoomplan = true;
-}
-
-void CWebSocketPush::UnlistenToRoomplan()
-{
-	listenRoomplan = false;
-}
-
-void CWebSocketPush::ListenToDeviceTable()
-{
-	listenDeviceTable = true;
-}
-
-void CWebSocketPush::UnlistenToDeviceTable()
-{
-	listenDeviceTable = false;
-}
-
-void CWebSocketPush::onRoomplanChanged()
-{
-	if (listenRoomplan) {
-		// send notification to web socket
-	}
-}
-
-void CWebSocketPush::onDeviceTableChanged()
-{
-	if (listenDeviceTable) {
-		// send notification to web socket
-	}
-}
-
-bool CWebSocketPush::WeListenTo(const uint64_t DeviceRowIdx)
-{
-	std::unique_lock<std::mutex> lock(listenMutex);
-	return std::find(listenIdxs.begin(), listenIdxs.end(), DeviceRowIdx) != listenIdxs.end();
 }
 
 void CWebSocketPush::OnDeviceReceived(const int m_HwdID, const uint64_t DeviceRowIdx, const std::string &DeviceName, const unsigned char *pRXCommand)
@@ -118,9 +60,6 @@ void CWebSocketPush::OnDeviceReceived(const int m_HwdID, const uint64_t DeviceRo
 	}
 
 	m_sock->OnDeviceChanged(DeviceRowIdx);
-	if (WeListenTo(DeviceRowIdx)) {
-		// push notification to web socket
-	}
 }
 
 void CWebSocketPush::OnDeviceUpdate(const int m_HwdID, const uint64_t DeviceRowIdx)
@@ -131,9 +70,6 @@ void CWebSocketPush::OnDeviceUpdate(const int m_HwdID, const uint64_t DeviceRowI
 	}
 
 	m_sock->OnDeviceChanged(DeviceRowIdx);
-	if (WeListenTo(DeviceRowIdx)) {
-		// push notification to web socket
-	}
 }
 
 void CWebSocketPush::OnSceneChange(const uint64_t SceneRowIdx, const std::string& SceneName)
@@ -154,4 +90,13 @@ void CWebSocketPush::OnNotificationReceived(const std::string & Subject, const s
 
 	// push message to websocket
 	m_sock->SendNotification(Subject, Text, ExtraData, Priority, Sound, bFromNotification);
+}
+
+void CWebSocketPush::OnLogMessage(const _eLogLevel level, const std::string& sLogline)
+{
+	std::unique_lock<std::mutex> lock(handlerMutex);
+	if (!isStarted) {
+		return;
+	}
+	m_sock->SendLogMessage(static_cast<int>(level), sLogline);
 }

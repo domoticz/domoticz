@@ -88,6 +88,7 @@ class MQTTAutoDiscover : public MQTT
 		std::string mode_state_topic;
 		std::string mode_state_template;
 		std::vector<std::string> climate_modes;
+
 		std::string temperature_command_topic;
 		std::string temperature_command_template;
 		std::string temperature_state_topic;
@@ -95,11 +96,26 @@ class MQTTAutoDiscover : public MQTT
 		std::string temperature_unit = "C";
 		std::string current_temperature_topic;
 		std::string current_temperature_template;
+
 		std::vector<std::string> preset_modes;
 		std::string preset_mode_command_topic;
 		std::string preset_mode_command_template;
 		std::string preset_mode_state_topic;
 		std::string preset_mode_value_template;
+
+		std::string fan_command_topic;
+		std::string fan_command_template;
+		std::string fan_state_topic;
+		std::string fan_state_template;
+		std::vector<std::string> fan_modes;
+
+		std::string swing_command_topic;
+		std::string swing_command_template;
+		std::string swing_state_topic;
+		std::string swing_state_template;
+		std::vector<std::string> swing_modes;
+
+
 		double temp_step = 1;
 		double temp_max = 35;
 		double temp_min = 7;
@@ -184,6 +200,7 @@ private:
 	void handle_auto_discovery_light(_tMQTTASensor* pSensor, const struct mosquitto_message* message);
 	void handle_auto_discovery_button(_tMQTTASensor* pSensor, const struct mosquitto_message* message);
 	void handle_auto_discovery_binary_sensor(_tMQTTASensor* pSensor, const struct mosquitto_message* message);
+	void handle_auto_discovery_device_autiomation_sensor(_tMQTTASensor* pSensor, const struct mosquitto_message* message);
 	void handle_auto_discovery_camera(_tMQTTASensor* pSensor, const struct mosquitto_message* message);
 	void handle_auto_discovery_cover(_tMQTTASensor* pSensor, const struct mosquitto_message* message);
 	void handle_auto_discovery_climate(_tMQTTASensor* pSensor, const struct mosquitto_message* message);

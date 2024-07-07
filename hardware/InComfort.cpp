@@ -10,8 +10,6 @@
 #include "../main/mainworker.h"
 #include "../main/json_helper.h"
 
-#define round(a) ( int ) ( a + .5 )
-
 #ifdef _DEBUG
 //#define DEBUG_InComfort
 #endif
@@ -238,7 +236,7 @@ void CInComfort::ParseAndUpdateDevices(const std::string &jsonData)
 	if ((m_LastRoom1OverrideTemperature != room1OverrideTemperature) || updateSlowChangingValues)
 	{
 		m_LastRoom1OverrideTemperature = room1OverrideTemperature;
-		SendSetPointSensor(3, 1, 0, m_LastRoom1OverrideTemperature, "Room Override Setpoint");
+		SendSetPointSensor(0, 3, 1, 0, 1, m_LastRoom1OverrideTemperature, "Room Override Setpoint");
 	}
 
 	// room2temperature is 300+ the room 2 is not configured/in use in the LAN2RF gateway.
@@ -257,7 +255,7 @@ void CInComfort::ParseAndUpdateDevices(const std::string &jsonData)
 		if ((m_LastRoom2OverrideTemperature != room2OverrideTemperature) || updateSlowChangingValues)
 		{
 			m_LastRoom2OverrideTemperature = room2OverrideTemperature;
-			SendSetPointSensor(5, 0, 3, m_LastRoom2OverrideTemperature, "Room-2 Override Setpoint");
+			SendSetPointSensor(0, 5, 0, 3, 1, m_LastRoom2OverrideTemperature, "Room-2 Override Setpoint");
 		}
 	}
 

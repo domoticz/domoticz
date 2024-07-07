@@ -93,8 +93,7 @@ CRFLinkMQTT::CRFLinkMQTT(const int ID, const std::string &IPAddress, const unsig
 		m_CAFilename = strarray[0];
 	}
 
-	// _log.Debug(DEBUG_HARDWARE, ">>> RFLINK MQTT: user: %s password: %s extra: %s" , m_UserName.c_str() , m_Password.c_str() , m_CAFilename.c_str() );
-	_log.Debug(DEBUG_HARDWARE, ">>> RFLINK MQTT: m_bMultidomonodesync: %s" , m_bMultidomonodesync == true ? "true" : "false" );
+	_log.Debug(DEBUG_HARDWARE, "m_bMultidomonodesync: %s" , m_bMultidomonodesync == true ? "true" : "false" );
 
 	m_TLS_Version = (TLS_Version < 3) ? TLS_Version : 0; // see szTLSVersions
 
@@ -105,7 +104,7 @@ CRFLinkMQTT::CRFLinkMQTT(const int ID, const std::string &IPAddress, const unsig
 
 	threaded_set(true);
 
-	_log.Log(LOG_STATUS, ">>> RFLINK MQTT: Device initiated...");
+	_log.Log(LOG_STATUS, "Device initiated...");
 }
 
 CRFLinkMQTT::~CRFLinkMQTT(void)
@@ -119,7 +118,7 @@ void CRFLinkMQTT::selectNextIPAdress( void )
 	// Scan the IP address list and select the next oneto connect MQTT server
 	std::vector<std::string>	ipadresses;
     StringSplit(m_szIPAddressList, ";", ipadresses);
-	_log.Log(LOG_STATUS, ">>> RFLINK MQTT: available IPs (%d): %s" , (int)ipadresses.size() , m_szIPAddressList.c_str() );
+	_log.Log(LOG_STATUS, "available IPs (%d): %s" , (int)ipadresses.size() , m_szIPAddressList.c_str() );
 
 	if( ipadresses.size() > 1 )
 	{
@@ -144,13 +143,13 @@ void CRFLinkMQTT::selectNextIPAdress( void )
 		m_szIPAddress = m_szIPAddressList;
 	}
 
-	_log.Log(LOG_STATUS, ">>> RFLINK MQTT: Set MQTT target to: %s" , m_szIPAddress.c_str() );
+	_log.Log(LOG_STATUS, "Set MQTT target to: %s" , m_szIPAddress.c_str() );
 
 }
 
 bool CRFLinkMQTT::StartHardware()
 {
-	_log.Log(LOG_STATUS, ">>> RFLINK MQTT: StartHardware started");
+	_log.Log(LOG_STATUS, "StartHardware started");
 
 	RequestStart();
 
@@ -175,7 +174,7 @@ void CRFLinkMQTT::StopMQTT()
 
 bool CRFLinkMQTT::StopHardware()
 {
-	_log.Log(LOG_STATUS, ">>> RFLINK MQTT: StopHardware started");
+	_log.Log(LOG_STATUS, "StopHardware started");
 
 	StopHeartbeatThread();
 	try {
@@ -189,7 +188,7 @@ bool CRFLinkMQTT::StopHardware()
 	catch (...)
 	{
 		//Don't throw from a Stop command
-		_log.Log(LOG_ERROR, ">>> RFLINK MQTT: Something awkward is happened...");
+		_log.Log(LOG_ERROR, "Something awkward is happened...");
 	}
 
 	if (m_sDeviceReceivedConnection.connected())
@@ -204,7 +203,7 @@ bool CRFLinkMQTT::StopHardware()
 
 void CRFLinkMQTT::on_subscribe(int mid, int qos_count, const int *granted_qos)
 {
-	_log.Log(LOG_STATUS, ">>> RFLINK MQTT: Subscribed");
+	_log.Log(LOG_STATUS, "Subscribed");
 	m_IsConnected = true;
 }
 
@@ -223,11 +222,11 @@ void CRFLinkMQTT::on_connect(int rc)
 	{
 		if (m_IsConnected)
 		{
-			_log.Log(LOG_STATUS, ">>> RFLINK MQTT: re-connected to: %s:%d", m_szIPAddress.c_str(), m_usIPPort);
+			_log.Log(LOG_STATUS, "Re-connected to: %s:%d", m_szIPAddress.c_str(), m_usIPPort);
 		}
 		else
 		{
-			_log.Log(LOG_NORM, ">>> RFLINK MQTT: connected to: %s:%d", m_szIPAddress.c_str(), m_usIPPort);
+			_log.Log(LOG_NORM, "Connected to: %s:%d", m_szIPAddress.c_str(), m_usIPPort);
 			m_IsConnected = true;
 			sOnConnected(this);
 		}
@@ -238,7 +237,7 @@ void CRFLinkMQTT::on_connect(int rc)
 	}
 	else
 	{
-		_log.Log(LOG_ERROR, ">>> RFLINK MQTT: Connection failed!, restarting (rc=%d)",rc);
+		_log.Log(LOG_ERROR, "Connection failed!, restarting (rc=%d)",rc);
 		m_bDoReconnect = true;
 	}
 }
@@ -249,7 +248,7 @@ void CRFLinkMQTT::on_message(const struct mosquitto_message *message)
 	std::string topic = message->topic;
 	std::string qMessage = std::string((char*)message->payload, (char*)message->payload + message->payloadlen);
 
-	_log.Log(LOG_NORM, ">>> RFLINK MQTT: Topic: %s, Message: %s", topic.c_str(), qMessage.c_str());
+	_log.Log(LOG_NORM, "Topic: %s, Message: %s", topic.c_str(), qMessage.c_str());
 	// Add newwline to end of the buffer
 	qMessage += '\n';
 
@@ -259,10 +258,10 @@ void CRFLinkMQTT::on_message(const struct mosquitto_message *message)
     std::stringstream   filter;
     filter << "SYNCID=" << std::hex << m_syncid;
 
-    //_log.Log(LOG_NORM, ">>> RFLINK MQTT: Checking syncback (%s)", filter.str().c_str());
+    //_log.Log(LOG_NORM, "Checking syncback (%s)", filter.str().c_str());
     if ( qMessage.find( filter.str() ) != std::string::npos )
     {
-        _log.Log(LOG_NORM, ">>> RFLINK MQTT: Syncback message filtered..." );
+        _log.Log(LOG_NORM, "Syncback message filtered..." );
         return;
     }
 
@@ -289,12 +288,12 @@ void CRFLinkMQTT::on_message(const struct mosquitto_message *message)
 			gettimeofday(&tnow, nullptr);
 			time_t msecs = (tnow.tv_sec * 1000) + (tnow.tv_usec / 1000);
 
-			// _log.Log(LOG_NORM, ">>> RFLINK MQTT: Message to chksum: %s CRC: %x time diff: %ld" , cpofmsg.c_str() , crc , msecs-m_lastmsgTime );
+			// _log.Log(LOG_NORM, "Message to chksum: %s CRC: %x time diff: %ld" , cpofmsg.c_str() , crc , msecs-m_lastmsgTime );
 
 			if( m_lastmsgCRC == crc && (msecs-m_lastmsgTime) < 420 )
 			{
 				// if the CRC is equal in the specified period it should be ignored
-				_log.Log(LOG_NORM, ">>> RFLINK MQTT: SKIP duplicated payload!" );
+				_log.Log(LOG_NORM, "SKIP duplicated payload!" );
 				return;
 			}
 
@@ -317,12 +316,12 @@ void CRFLinkMQTT::on_disconnect(int rc)
 			// MOSQ_ERR_CONN_REFUSED = 5
 			if( rc == MOSQ_ERR_CONN_REFUSED )
 			{
-				_log.Log(LOG_ERROR, ">>> RFLINK MQTT: disconnected, Invalid Username/Password (rc=%d)", rc);
+				_log.Log(LOG_ERROR, "Disconnected, Invalid Username/Password (rc=%d)", rc);
 			}
 			else if( rc == MOSQ_ERR_ERRNO )
 			{
 				// // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-				// _log.Log(LOG_ERROR, ">>> RFLINK MQTT: disconnected, !!! 4.11554 workaround !!! ERRNO: %d)", errno );
+				// _log.Log(LOG_ERROR, "disconnected, !!! 4.11554 workaround !!! ERRNO: %d)", errno );
 				// // WORKAROUND
 				// // 2019.12.08. After MQTT replaced in domoticz I experienced
 				// // this error very frequently. This error is causing miss behave of devices!
@@ -331,11 +330,11 @@ void CRFLinkMQTT::on_disconnect(int rc)
 				// return;
 				// // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-				_log.Log(LOG_ERROR, ">>> RFLINK MQTT: MOSQ_ERR_ERRNO detected with value: %d)", errno );
+				_log.Log(LOG_ERROR, "MOSQ_ERR_ERRNO detected with value: %d)", errno );
 			}
 			else
 			{
-				_log.Log(LOG_ERROR, ">>> RFLINK MQTT: disconnected, restarting (rc=%d)", rc);
+				_log.Log(LOG_ERROR, "Disconnected, restarting (rc=%d)", rc);
 			}
 			m_bDoReconnect = true;
 		}
@@ -351,7 +350,7 @@ bool CRFLinkMQTT::ConnectInt()
 bool CRFLinkMQTT::ConnectIntEx()
 {
 	m_bDoReconnect = false;
-	_log.Log(LOG_STATUS, ">>> RFLINK MQTT: Connecting to %s:%d", m_szIPAddress.c_str(), m_usIPPort);
+	_log.Log(LOG_STATUS, "Connecting to %s:%d", m_szIPAddress.c_str(), m_usIPPort);
 
 	int rc;
 	int keepalive = 60;
@@ -376,7 +375,7 @@ bool CRFLinkMQTT::ConnectIntEx()
 
 	if ( rc != MOSQ_ERR_SUCCESS)
 	{
-		_log.Log(LOG_ERROR, ">>> RFLINK MQTT: Failed to start, return code: %d (Check IP/Port)", rc);
+		_log.Log(LOG_ERROR, "Failed to start, return code: %d (Check IP/Port)", rc);
 		// Try to another MQTT server if it is available
 		selectNextIPAdress();
 		m_bDoReconnect = true;
@@ -390,7 +389,7 @@ void CRFLinkMQTT::Do_Work()
 	bool bFirstTime=true;
 	int msec_counter = 0;
 	int sec_counter = 0;
-	_log.Log(LOG_STATUS, ">>> RFLINK MQTT: main loop started");
+	_log.Log(LOG_STATUS, "main loop started");
 
 	while (!IsStopRequested(100))
 	{
@@ -407,7 +406,7 @@ void CRFLinkMQTT::Do_Work()
 						{
 							if (!m_bDoReconnect)
 							{
-								_log.Log(LOG_STATUS, ">>> RFLINK MQTT: trying to reconnect to %s:%d", m_szIPAddress.c_str(), m_usIPPort);
+								_log.Log(LOG_STATUS, "Trying to reconnect to %s:%d", m_szIPAddress.c_str(), m_usIPPort);
 								reconnect();
 							}
 						}
@@ -462,7 +461,7 @@ void CRFLinkMQTT::Do_Work()
 	if (isConnected())
 		disconnect();
 
-	_log.Log(LOG_STATUS,">>> RFLINK MQTT: Worker stopped...");
+	_log.Log(LOG_STATUS,"Worker stopped...");
 }
 
 void CRFLinkMQTT::SendHeartbeat()
@@ -475,7 +474,7 @@ void CRFLinkMQTT::SendMessage(const std::string &Topic, const std::string &Messa
 	try {
 		if (!m_IsConnected)
 		{
-			_log.Log(LOG_ERROR, ">>> RFLINK MQTT: Not Connected, failed to send message: %s:%s", Topic.c_str(), Message.substr(0, Message.size()-1).c_str());
+			_log.Log(LOG_ERROR, "Not Connected, failed to send message: %s:%s", Topic.c_str(), Message.substr(0, Message.size()-1).c_str());
 			return;
 		}
         // Add Syncbak filter ID to the message
@@ -511,7 +510,7 @@ void CRFLinkMQTT::SendMessage(const std::string &Topic, const std::string &Messa
 	}
 	catch (...)
 	{
-		_log.Log(LOG_ERROR, ">>> RFLINK MQTT: Failed to send message: %s::%s", Topic.c_str() , Message.c_str());
+		_log.Log(LOG_ERROR, "Failed to send message: %s::%s", Topic.c_str() , Message.c_str());
 	}
 }
 

@@ -16,8 +16,6 @@
 #define SATEL_TEMP_POLL_INTERVAL_MS 120*1000 // 120 sec
 #define HEARTBEAT_INTERVAL_MS 12*1000 // 12 sec
 
-#define round(a) ( int ) ( a + .5 )
-
 using SatelModel = struct
 {
 	unsigned int id;
@@ -277,7 +275,7 @@ bool SatelIntegra::ConnectToIntegra()
 #else
 	fcntl(m_socket, F_SETFL, O_NONBLOCK);
 #endif
-	Log(LOG_STATUS, "connected to %s:%d", m_IPAddress.c_str(), m_IPPort);
+	Log(LOG_STATUS, "Connected to %s:%d", m_IPAddress.c_str(), m_IPPort);
 
 	return true;
 }

@@ -55,6 +55,8 @@ public:
 
 private:
 	void ReloadCameraActiveDevices(const std::string &CamID);
+	bool TakeRaspberrySnapshotRaspiStill(std::vector<unsigned char>& camimage);
+	bool TakeRaspberrySnapshotRPICamStill(std::vector<unsigned char>& camimage);
 
 	std::mutex m_mutex;
 	unsigned char m_seconds_counter;

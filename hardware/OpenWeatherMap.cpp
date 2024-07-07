@@ -45,19 +45,29 @@ std::string ReadFile(std::string filename)
 }
 #endif
 
-#define OWM_onecall_URL "https://api.openweathermap.org/data/2.5/onecall?"
+#define OWM_v2_onecall_URL "https://api.openweathermap.org/data/2.5/onecall?"
+#define OWM_v3_onecall_URL "https://api.openweathermap.org/data/3.0/onecall?"
 #define OWM_Get_City_Details "https://api.openweathermap.org/data/2.5/weather?"
 #define OWM_icon_URL "https://openweathermap.org/img/wn/"	// for example 10d@4x.png
 #define OWM_forecast_URL "https://openweathermap.org/city/"
 
-COpenWeatherMap::COpenWeatherMap(const int ID, const std::string &APIKey, const std::string &Location, const int adddayforecast, const int addhourforecast, const int adddescdev, const int owmforecastscreen) :
+COpenWeatherMap::COpenWeatherMap(
+	const int ID,
+	const std::string &APIKey,
+	const std::string &Location,
+	const int adddayforecast,
+	const int addhourforecast,
+	const int adddescdev,
+	const int owmforecastscreen,
+	const bool bUseAPIv3) :
 	m_APIKey(APIKey),
 	m_Location(Location),
 	m_Language("en"),
 	m_add_dayforecast(adddayforecast),
 	m_add_hourforecast(addhourforecast),
 	m_add_descriptiondevices(adddescdev),
-	m_use_owminforecastscreen(owmforecastscreen)
+	m_use_owminforecastscreen(owmforecastscreen),
+	m_bUseAPIv3(bUseAPIv3)
 {
 	m_HwdID=ID;
 
@@ -104,8 +114,6 @@ bool COpenWeatherMap::ResolveLocation(const std::string& Location, double& latit
 bool COpenWeatherMap::ResolveOWMCityLonLat(const std::string sURL, double& latitude, double& longitude, uint32_t& cityid)
 {
 	std::string sResult;
-
-	Debug(DEBUG_NORM, "Get data from %s", sURL.c_str());
 
 	try
 	{
@@ -164,8 +172,8 @@ bool COpenWeatherMap::StartHardware()
 	std::string sValue, sLatitude, sLongitude;
 	std::vector<std::string> strarray;
 	uint32_t cityid;
-	Debug(DEBUG_NORM, "Got location parameter %s", m_Location.c_str());
-	Debug(DEBUG_NORM, "Starting with setting %d, %d, %d, %d", m_add_dayforecast, m_add_hourforecast, m_add_descriptiondevices, m_use_owminforecastscreen);
+	Debug(DEBUG_HARDWARE, "Got location parameter %s", m_Location.c_str());
+	Debug(DEBUG_HARDWARE, "Starting with setting %d, %d, %d, %d", m_add_dayforecast, m_add_hourforecast, m_add_descriptiondevices, m_use_owminforecastscreen);
 
 	if (m_Location.empty())
 	{
@@ -403,7 +411,7 @@ Json::Value COpenWeatherMap::GetForecastData()
 	root["appid"] = m_APIKey;
 	root["cityid"] = m_CityID;
 
-	Debug(DEBUG_NORM, "GetForecastData: \n%s", root.toStyledString().c_str());
+	Debug(DEBUG_HARDWARE, "GetForecastData: \n%s", root.toStyledString().c_str());
 	return root;
 }
 
@@ -434,7 +442,7 @@ std::string COpenWeatherMap::GetHourFromUTCtimestamp(const uint8_t hournr, const
 	}
 
 	sHour = strarray[0];
-	Debug(DEBUG_NORM, "Determining hour for hour %d from timestamp %s (string %s)", hournr, UTCtimestamp.c_str(), sHour.c_str());
+	Debug(DEBUG_HARDWARE, "Determining hour for hour %d from timestamp %s (string %s)", hournr, UTCtimestamp.c_str(), sHour.c_str());
 
 	return sHour;
 }
@@ -622,11 +630,11 @@ bool COpenWeatherMap::ProcessForecast(Json::Value &forecast, const std::string &
 			SendPercentageSensor(NodeID, 1, 255, (pop * 100), sName.str());
 
 			bResult = true;
-			Debug(DEBUG_NORM, "Processed forecast for period %d: %s - %f - %f - %f",count, wdesc.c_str(), maxtemp, mintemp, pop);
+			Debug(DEBUG_HARDWARE, "Processed forecast for period %d: %s - %f - %f - %f",count, wdesc.c_str(), maxtemp, mintemp, pop);
 		}
 		catch(const std::exception& e)
 		{
-			Debug(DEBUG_NORM, "Processing forecast crashed for period %d on %s",count, e.what());
+			Debug(DEBUG_HARDWARE, "Processing forecast crashed for period %d on %s",count, e.what());
 		}
 	}
 
@@ -663,13 +671,16 @@ void COpenWeatherMap::GetMeterDetails()
 	std::string sResult;
 	std::stringstream sURL;
 
-	sURL << OWM_onecall_URL;
+	if (!m_bUseAPIv3)
+		sURL << OWM_v2_onecall_URL;
+	else
+		sURL << OWM_v3_onecall_URL;
 	sURL << "lat=" << m_Lat << "&lon=" << m_Lon;
 	sURL << "&exclude=minutely";
 	sURL << "&appid=" << m_APIKey;
 	sURL << "&units=metric" << "&lang=" << m_Language;
 
-	Debug(DEBUG_NORM, "Get data from %s", sURL.str().c_str());
+	Debug(DEBUG_HARDWARE, "Get data from %s", sURL.str().c_str());
 
 	try
 	{
@@ -873,7 +884,7 @@ void COpenWeatherMap::GetMeterDetails()
 				break;
 			}
 			std::string sDay = GetDayFromUTCtimestamp(iDay, dailyfc[iDay]["dt"].asString());
-			Debug(DEBUG_NORM, "Processing daily forecast for %s (%s)", dailyfc[iDay]["dt"].asString().c_str(), sDay.c_str());
+			Debug(DEBUG_HARDWARE, "Processing daily forecast for %s (%s)", dailyfc[iDay]["dt"].asString().c_str(), sDay.c_str());
 
 			Json::Value curday = dailyfc[iDay];
 
@@ -884,7 +895,7 @@ void COpenWeatherMap::GetMeterDetails()
 			iDay++;
 		}
 		while (!dailyfc[iDay].empty());
-		Debug(DEBUG_NORM, "Processed %d daily forecasts",iDay);
+		Debug(DEBUG_HARDWARE, "Processed %d daily forecasts",iDay);
 	}
 
 	// Process hourly forecast data if available
@@ -907,7 +918,7 @@ void COpenWeatherMap::GetMeterDetails()
 				break;
 			}
 			std::string sHour = GetHourFromUTCtimestamp(iHour, hourlyfc[iHour]["dt"].asString());
-			Debug(DEBUG_NORM, "Processing hourly forecast for %s (%s)", hourlyfc[iHour]["dt"].asString().c_str(), sHour.c_str());
+			Debug(DEBUG_HARDWARE, "Processing hourly forecast for %s (%s)", hourlyfc[iHour]["dt"].asString().c_str(), sHour.c_str());
 
 			Json::Value curhour = hourlyfc[iHour];
 
@@ -918,6 +929,6 @@ void COpenWeatherMap::GetMeterDetails()
 			iHour++;
 		}
 		while (!hourlyfc[iHour].empty());
-		Debug(DEBUG_NORM, "Processed %d hourly forecasts",iHour);
+		Debug(DEBUG_HARDWARE, "Processed %d hourly forecasts",iHour);
 	}
 }

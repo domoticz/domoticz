@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "DavisLoggerSerial.h"
+#include "../main/Helper.h"
 #include "../main/Logger.h"
 #include "hardwaretypes.h"
 #include "../main/RFXtrx.h"
@@ -19,8 +20,6 @@
 
 #define RETRY_DELAY 30
 #define DAVIS_READ_INTERVAL 30
-
-#define round(a) ( int ) ( a + .5 )
 
 CDavisLoggerSerial::CDavisLoggerSerial(const int ID, const std::string& devname, unsigned int baud_rate) :
 	m_szSerialPort(devname)
@@ -441,14 +440,14 @@ bool CDavisLoggerSerial::HandleLoopData(const unsigned char *data, size_t len)
 		tsen.WIND.id1 = 0;
 		tsen.WIND.id2 = 1;
 
-		int aw = round(WindDirection);
+		int aw = ground(WindDirection);
 		tsen.WIND.directionh = (BYTE)(aw / 256);
 		aw -= (tsen.WIND.directionh * 256);
 		tsen.WIND.directionl = (BYTE)(aw);
 
 		tsen.WIND.av_speedh = 0;
 		tsen.WIND.av_speedl = 0;
-		int sw = round(WindSpeed * 10.0F);
+		int sw = ground(WindSpeed * 10.0F);
 		tsen.WIND.av_speedh = (BYTE)(sw / 256);
 		sw -= (tsen.WIND.av_speedh * 256);
 		tsen.WIND.av_speedl = (BYTE)(sw);
@@ -465,7 +464,7 @@ bool CDavisLoggerSerial::HandleLoopData(const unsigned char *data, size_t len)
 		{
 			tsen.WIND.tempsign = (OutsideTemperature >= 0) ? 0 : 1;
 			tsen.WIND.chillsign = (OutsideTemperature >= 0) ? 0 : 1;
-			int at10 = round(std::abs(OutsideTemperature * 10.0F));
+			int at10 = ground(std::abs(OutsideTemperature * 10.0F));
 			tsen.WIND.temperatureh = (BYTE)(at10 / 256);
 			tsen.WIND.chillh = (BYTE)(at10 / 256);
 			at10 -= (tsen.WIND.chillh * 256);

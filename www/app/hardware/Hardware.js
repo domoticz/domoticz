@@ -593,6 +593,11 @@ define(['app'], function (app) {
 					Mode2 = 0;
 					if ($("#hardwarecontent #divenphase #readinverters").prop("checked"))
 						Mode2 = 1;
+					Mode3 = 0;
+					Mode4 = $("#hardwarecontent #divenphase #inverterdetails").val();
+					
+					if ($("#hardwarecontent #divenphase #dontreadmeteredvalues").prop("checked"))
+						Mode3 = 1;
 					username = $("#hardwarecontent #divlogin #username").val();
 					password = $("#hardwarecontent #divlogin #password").val();
 					extra = $("#hardwarecontent #divenphase #siteid").val();
@@ -1069,6 +1074,8 @@ define(['app'], function (app) {
 				var addhourforecast = $("#hardwarecontent #divopenweathermap #addhourforecast").prop("checked") ? 1 : 0;
 				var adddescdev = $("#hardwarecontent #divopenweathermap #adddescdev").prop("checked") ? 1 : 0;
 				var useowmforecast = $("#hardwarecontent #divopenweathermap #useowmforecast").prop("checked") ? 1 : 0;
+				var apiversion = $("#hardwarecontent #divopenweathermap #comboapiversion").val();
+
 				$.ajax({
 					url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype +
 					"&loglevel=" + logLevel +
@@ -1078,7 +1085,7 @@ define(['app'], function (app) {
 					"&enabled=" + bEnabled +
 					"&idx=" + idx +
 					"&datatimeout=" + datatimeout +
-					"&Mode1=" + adddayforecast + "&Mode2=" + addhourforecast + "&Mode3=" + adddescdev + "&Mode4=" + useowmforecast + "&Mode5=" + Mode5 + "&Mode6=" + Mode6,
+					"&Mode1=" + adddayforecast + "&Mode2=" + addhourforecast + "&Mode3=" + adddescdev + "&Mode4=" + useowmforecast + "&Mode5=" + apiversion + "&Mode6=" + Mode6,
 					async: false,
 					dataType: 'json',
 					success: function (data) {
@@ -1815,6 +1822,10 @@ define(['app'], function (app) {
 					Mode2 = 0;
 					if ($("#hardwarecontent #divenphase #readinverters").prop("checked"))
 						Mode2 = 1;
+					Mode3 = 0;
+					if ($("#hardwarecontent #divenphase #dontreadmeteredvalues").prop("checked"))
+						Mode3 = 1;
+					Mode4 = $("#hardwarecontent #divenphase #inverterdetails").val();
 					username = $("#hardwarecontent #divlogin #username").val();
 					password = $("#hardwarecontent #divlogin #password").val();
 					extra = $("#hardwarecontent #divenphase #siteid").val();
@@ -2487,13 +2498,16 @@ define(['app'], function (app) {
 				var addhourforecast = $("#hardwarecontent #divopenweathermap #addhourforecast").prop("checked") ? 1 : 0;
 				var adddescdev = $("#hardwarecontent #divopenweathermap #adddescdev").prop("checked") ? 1 : 0;
 				var useowmforecast = $("#hardwarecontent #divopenweathermap #useowmforecast").prop("checked") ? 1 : 0;
+				var apiversion = $("#hardwarecontent #divopenweathermap #comboapiversion").val();
+				
 				$.ajax({
 					url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype + 
 					"&loglevel=" + logLevel +
 					"&username=" + encodeURIComponent(apikey) + "&password=" + encodeURIComponent(location) + 
 					"&name=" + encodeURIComponent(name) + "&enabled=" + bEnabled + "&datatimeout=" + datatimeout +
 					"&Mode1=" + adddayforecast + "&Mode2=" + addhourforecast +
-					"&Mode3=" + adddescdev + "&Mode4=" + useowmforecast,
+					"&Mode3=" + adddescdev + "&Mode4=" + useowmforecast +
+					"&Mode5=" + apiversion,
 					async: false,
 					dataType: 'json',
 					success: function (data) {
@@ -4280,7 +4294,9 @@ define(['app'], function (app) {
 									pollInterval=120;
 								$("#hardwarecontent #divenphase #pollinterval").val(pollInterval);
 								$("#hardwarecontent #divenphase #readinverters").prop('checked', parseInt(data["Mode2"]) != 0);
+								$("#hardwarecontent #divenphase #dontreadmeteredvalues").prop('checked', parseInt(data["Mode3"]) != 0);
 								$("#hardwarecontent #divenphase #siteid").val(data["Extra"]);
+								$("#hardwarecontent #divenphase #inverterdetails").val(parseInt(data["Mode4"]));
 							}
 						}
 						else if (
@@ -4361,6 +4377,7 @@ define(['app'], function (app) {
 							$("#hardwarecontent #hardwareparamsopenweathermap #addhourforecast").prop("checked", data["Mode2"] == 1);
 							$("#hardwarecontent #hardwareparamsopenweathermap #adddescdev").prop("checked", data["Mode3"] == 1);
 							$("#hardwarecontent #hardwareparamsopenweathermap #useowmforecast").prop("checked", data["Mode4"] == 1);
+							$("#hardwarecontent #divopenweathermap #comboapiversion").val(data["Mode5"]);
 						}
 						else if (data["Type"].indexOf("Buienradar") >= 0) {
 							var timeframe = parseInt(data["Mode1"]);
@@ -4746,6 +4763,8 @@ define(['app'], function (app) {
 			// Handle plugins 1st because all the text indexof logic below will have unpredictable impacts for plugins
 			// Python Plugins have the plugin name, not the hardware type id, as the value
 			if (!$.isNumeric($("#hardwarecontent #hardwareparamstable #combotype option:selected").val())) {
+				$("#hardwarecontent #extrahw").val("");
+				$("#hardwarecontent #divextrahwparams").empty();
 				$("#hardwarecontent #divpythonplugin .plugin").hide();
 				var plugin = $("#hardwarecontent #hardwareparamstable #combotype option:selected").attr("id");
 				$("#hardwarecontent #divpythonplugin .plugin").each(function () { if ($(this).attr("id") === plugin) $(this).show(); });

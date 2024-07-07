@@ -251,8 +251,6 @@ void CRFLinkBase::ParseData(const char *data, size_t len)
 
 }
 
-#define round(a) ( int ) ( a + .5 )
-
 void GetSwitchType(const char* ID, const unsigned char unit, const unsigned char devType, const unsigned char subType, int &switchType)
 {
 	switchType = 0;
@@ -275,7 +273,7 @@ bool CRFLinkBase::WriteToHardware(const char *pdata, const unsigned char length)
 	std::string switchtype = GetGeneralRFLinkFromInt(rfswitches, pSwitch->subtype);
 	if (switchtype.empty())
 	{
-		Log(LOG_ERROR, "trying to send unknown switch type: %d", pSwitch->subtype);
+		Log(LOG_ERROR, "Trying to send unknown switch type: %d", pSwitch->subtype);
 		return false;
 	}
 	//Log(LOG_ERROR, "id: %d", pSwitch->id);
@@ -320,7 +318,7 @@ bool CRFLinkBase::WriteToHardware(const char *pdata, const unsigned char length)
 		   float fvalue = (15.0F / 100.0F) * float(pSwitch->level);
 		   if (fvalue > 15.0F)
 			   fvalue = 15.0F; // 99 is fully on
-		   int svalue = round(fvalue);
+		   int svalue = ground(fvalue);
 		   //Log(LOG_ERROR, "level: %d", svalue);
 		   char buffer[50] = { 0 };
 		   sprintf(buffer, "%d", svalue);
@@ -328,7 +326,7 @@ bool CRFLinkBase::WriteToHardware(const char *pdata, const unsigned char length)
 	    }
 
 		if (switchcmnd.empty()) {
-			Log(LOG_ERROR, "trying to send unknown switch command: %d", pSwitch->cmnd);
+			Log(LOG_ERROR, "Trying to send unknown switch command: %d", pSwitch->cmnd);
 			return false;
 		}
 
@@ -485,7 +483,7 @@ bool CRFLinkBase::WriteToHardware(const char *pdata, const unsigned char length)
 			bSendOn = true;
 			break;
 		default:
-			Log(LOG_ERROR, "trying to send unknown led switch command: %d", pLed->command);
+			Log(LOG_ERROR, "Trying to send unknown led switch command: %d", pLed->command);
 			return false;
 	}
 
@@ -1063,7 +1061,7 @@ bool CRFLinkBase::ParseLine(const std::string &sLine)
 		}
 #endif
 		if (bHaveWindDir)
-			twindir = round(float(windir) * 22.5F);
+			twindir = ground(float(windir) * 22.5F);
 		if (!bHaveWindSpeed) windspeed = twindspeed;
 		if (!bHaveWindGust) windgust = twindgust;
 		if (!bHaveWindTemp) windtemp = twindtemp;

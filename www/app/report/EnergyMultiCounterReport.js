@@ -14,7 +14,7 @@ define(['app', 'report/helpers'], function (app, reportHelpers) {
                 actyear: year,
                 actmonth: month
             });
-
+			
             return $q.all([costs, stats]).then(function (responses) {
                 var costs = responses[0];
                 var stats = responses[1];
@@ -25,6 +25,8 @@ define(['app', 'report/helpers'], function (app, reportHelpers) {
 
                 var includeReturn = typeof stats.delivered !== 'undefined';
                 var data = getGroupedData(stats.result, costs, includeReturn);
+				var P1DisplayType = stats.P1DisplayType;
+			
                 var source = month
                     ? data.years[year].months.find(function (item) {
                         return (new Date(item.date)).getMonth() + 1 === month;
@@ -36,7 +38,8 @@ define(['app', 'report/helpers'], function (app, reportHelpers) {
                 }
 
                 return Object.assign({}, source, {
-                    items: month ? source.days : source.months
+                    items: month ? source.days : source.months,
+					P1DisplayType: P1DisplayType
                 });
             });
         }
@@ -66,9 +69,14 @@ define(['app', 'report/helpers'], function (app, reportHelpers) {
 
                 var dayRecord = {
                     date: item.d,
-                    usage1: {
+                    usage: {
                         usage: parseFloat(item.v),
                         cost: parseFloat(item.v) * costs.CostEnergy / 10000,
+                        counter: parseFloat(item.c1) || 0
+                    },
+                    usage1: {
+                        usage: parseFloat(item.v1),
+                        cost: parseFloat(item.v1) * costs.CostEnergy / 10000,
                         counter: parseFloat(item.c1) || 0
                     },
                     usage2: {
@@ -76,15 +84,20 @@ define(['app', 'report/helpers'], function (app, reportHelpers) {
                         cost: parseFloat(item.v2) * costs.CostEnergyT2 / 10000,
                         counter: parseFloat(item.c3) || 0
                     },
+					price: parseFloat(item.p)
                 };
 
                 if (includeReturn) {
+                    dayRecord.return = {
+                        usage: parseFloat(item.r),
+                        cost: parseFloat(item.r) * costs.CostEnergyR1 / 10000,
+                        counter: parseFloat(item.c2) || 0,
+                    };
                     dayRecord.return1 = {
                         usage: parseFloat(item.r1),
                         cost: parseFloat(item.r1) * costs.CostEnergyR1 / 10000,
                         counter: parseFloat(item.c2) || 0
                     };
-
                     dayRecord.return2 = {
                         usage: parseFloat(item.r2),
                         cost: parseFloat(item.r2) * costs.CostEnergyR2 / 10000,
@@ -97,8 +110,8 @@ define(['app', 'report/helpers'], function (app, reportHelpers) {
                 dayRecord.totalUsage = dayRecord.usage1.usage + dayRecord.usage2.usage;
                 dayRecord.usage = dayRecord.totalUsage -
                     (includeReturn ? dayRecord.totalReturn : 0);
-                dayRecord.cost = dayRecord.usage1.cost + dayRecord.usage2.cost -
-                    (includeReturn ? (dayRecord.return1.cost + dayRecord.return2.cost) : 0);
+                dayRecord.cost = (dayRecord.price!=0) ? dayRecord.price : (dayRecord.usage1.cost + dayRecord.usage2.cost -
+                    (includeReturn ? (dayRecord.return1.cost + dayRecord.return2.cost) : 0));
                 result.years[year].months[month].days[day] = dayRecord
             });
 
@@ -206,6 +219,7 @@ define(['app', 'report/helpers'], function (app, reportHelpers) {
         }
 
         function showTable(data) {
+			//console.log(data);
             var table = $element.find('table');
             var columns = [];
 
@@ -214,7 +228,7 @@ define(['app', 'report/helpers'], function (app, reportHelpers) {
             };
 
             var costRenderer = function (data) {
-                return data.toFixed(2);
+                return data.toFixed(2) + " " + $.myglobals.currencysign;
             };
 
             if (vm.isMonthView) {
@@ -246,22 +260,28 @@ define(['app', 'report/helpers'], function (app, reportHelpers) {
                 });
             }
 
-            [
-                ['usage1', 'Usage T1', 'Counter T1'],
-                ['usage2', 'Usage T2', 'Counter T2'],
-                ['return1', 'Return T1', 'Counter R1'],
-                ['return2', 'Return T2', 'Counter R2']
-            ].forEach(function (item) {
-                if (!checkDataKey(data, item[0])) {
-                    return;
-                }
-                if (vm.isMonthView) {
-                    columns.push({ title: $.t(item[2]), data: item[0]+'.counter', render: counterRenderer });
-                }
+			if (data.P1DisplayType == 0) {
+				[
+					['usage1', 'Usage T1', 'Counter T1'],
+					['usage2', 'Usage T2', 'Counter T2'],
+					['return1', 'Return T1', 'Counter R1'],
+					['return2', 'Return T2', 'Counter R2']
+				].forEach(function (item) {
+					if (!checkDataKey(data, item[0])) {
+						return;
+					}
+					if (vm.isMonthView) {
+						columns.push({ title: $.t(item[2]), data: item[0]+'.counter', render: counterRenderer });
+					}
 
-                columns.push({ title: $.t(item[1]), data: item[0]+'.usage', render: counterRenderer });
-                columns.push({ title: $.t('Costs'), data: item[0]+'.cost', render: costRenderer });
-            });
+					columns.push({ title: $.t(item[1]), data: item[0]+'.usage', render: counterRenderer });
+					columns.push({ title: $.t('Costs'), data: item[0]+'.cost', render: costRenderer });
+				});
+			} else {
+				columns.push({ title: $.t("Usage"), data: 'totalUsage', render: counterRenderer });
+				columns.push({ title: $.t("Return"), data: 'totalReturn', render: counterRenderer });
+			}
+
 
             columns.push({ title: $.t('Total'), data: 'cost', render: costRenderer });
 
@@ -291,80 +311,141 @@ define(['app', 'report/helpers'], function (app, reportHelpers) {
 		}
 
         function showUsageChart(data) {
+			console.log(data);
+			let P1DisplayType = data.P1DisplayType;
             var chartElement = $element.find('#usagegraph');
             var hasUsage2 = checkDataKey(data, 'usage2');
 
             var series = [];
 
-            series.push({
-                name: hasUsage2 ? $.t('Usage') + ' 1' : $.t('Usage'),
-                color: hasUsage2 ? 'rgba(60,130,252,0.8)' : 'rgba(3,190,252,0.8)',
-                stack: 'susage',
+			if (P1DisplayType == 0) {
+				series.push({
+					name: hasUsage2 ? $.t('Usage') + ' 1' : $.t('Usage'),
+					color: hasUsage2 ? 'rgba(60,130,252,0.8)' : 'rgba(3,190,252,0.8)',
+					stack: 'susage',
+					tooltip: {
+						valueSuffix: 'kWh'
+					},
+					yAxis: 0,
+					data: data.items.map(function (item) {
+						return {
+							x: +(new Date(item.date)),
+							y: item.usage1.usage
+						}
+					})
+				});
+				if (hasUsage2) {
+					series.push({
+						name: $.t('Usage') + ' 2',
+						color: 'rgba(3,190,252,0.8)',
+						stack: 'susage',
+						tooltip: {
+							valueSuffix: 'kWh'
+						},
+						yAxis: 0,
+						data: data.items.map(function (item) {
+							return {
+								x: +(new Date(item.date)),
+								y: item.usage2.usage
+							}
+						})
+					});
+				}
+				if (checkDataKey(data, 'return1')) {
+					series.push({
+						name: $.t('Return') + ' 1',
+						color: 'rgba(30,242,110,0.8)',
+						stack: 'susage',
+						tooltip: {
+							valueSuffix: 'kWh'
+						},
+						yAxis: 0,
+						data: data.items.map(function (item) {
+							return {
+								x: +(new Date(item.date)),
+								y: -item.return1.usage
+							}
+						})
+					});
+				}
+				if (checkDataKey(data, 'return2')) {
+					series.push({
+						name: $.t('Return') + ' 2',
+						color: 'rgba(3,252,190,0.8)',
+						stack: 'susage',
+						tooltip: {
+							valueSuffix: 'kWh'
+						},
+						yAxis: 0,
+						data: data.items.map(function (item) {
+							return {
+								x: +(new Date(item.date)),
+								y: -item.return2.usage
+							}
+						})
+					});
+				}
+			} else {
+				series.push({
+					name: $.t('Usage'),
+					color: 'rgba(3,190,252,0.8)',
+					stack: 'susage',
+					tooltip: {
+						valueSuffix: 'kWh'
+					},
+					yAxis: 0,
+					data: data.items.map(function (item) {
+						return {
+							x: +(new Date(item.date)),
+							y: item.totalUsage
+						}
+					})
+				});
+				if (checkDataKey(data, 'return1')) {
+					series.push({
+						name: $.t('Return'),
+						color: 'rgba(3,252,190,0.8)',
+						stack: 'susage',
+						tooltip: {
+							valueSuffix: 'kWh'
+						},
+						yAxis: 0,
+						data: data.items.map(function (item) {
+							return {
+								x: +(new Date(item.date)),
+								y: -item.totalReturn
+							}
+						})
+					});
+				}
+			}
+
+			series.push({
+				id: 'CP1RP',
+				type: 'spline',
+				name: $.t('Costs'),
+				zIndex: 3,
 				tooltip: {
-					valueSuffix: 'kWh'
+					valueSuffix: ' ' + $.myglobals.currencysign,
+					pointFormat: '<span style="color: {point.color}">●</span> {series.name}: <b>{point.y}</b><br>',
+					valueDecimals: 4
 				},
-                yAxis: 0,
-                data: data.items.map(function (item) {
-                    return {
-                        x: +(new Date(item.date)),
-                        y: item.usage1.usage
-                    }
-                })
-            });
-
-            if (hasUsage2) {
-                series.push({
-                    name: $.t('Usage') + ' 2',
-                    color: 'rgba(3,190,252,0.8)',
-                    stack: 'susage',
-					tooltip: {
-						valueSuffix: 'kWh'
-					},
-                    yAxis: 0,
-                    data: data.items.map(function (item) {
-                        return {
-                            x: +(new Date(item.date)),
-                            y: item.usage2.usage
-                        }
-                    })
-                });
-            }
-
-            if (checkDataKey(data, 'return1')) {
-                series.push({
-                    name: $.t('Return') + ' 1',
-                    color: 'rgba(30,242,110,0.8)',
-                    stack: 'susage',
-					tooltip: {
-						valueSuffix: 'kWh'
-					},
-                    yAxis: 0,
-                    data: data.items.map(function (item) {
-                        return {
-                            x: +(new Date(item.date)),
-                            y: -item.return1.usage
-                        }
-                    })
-                });
-            }
-
-            if (checkDataKey(data, 'return2')) {
-                series.push({
-                    name: $.t('Return') + ' 2',
-                    color: 'rgba(3,252,190,0.8)',
-                    stack: 'susage',
-					tooltip: {
-						valueSuffix: 'kWh'
-					},
-                    yAxis: 0,
-                    data: data.items.map(function (item) {
-                        return {
-                            x: +(new Date(item.date)),
-                            y: -item.return2.usage
-                        }
-                    })
-                });
-            }
+				marker: {
+					enabled: false
+				},
+				lineWidth: 2,
+				color: 'rgba(190,252,60,0.8)',
+				showInLegend: true,
+				convertZeroToNull: true,
+				showWithoutDatapoints: false,
+				yAxis: 1,
+				data: data.items.map(function (item) {
+					return {
+						x: +(new Date(item.date)),
+						y: item.cost
+					}
+				})
+			});
 
             chartElement.highcharts({
                 chart: {
@@ -377,21 +458,30 @@ define(['app', 'report/helpers'], function (app, reportHelpers) {
                     type: 'datetime',
                     minTickInterval: vm.isMonthView ? 24 * 3600 * 1000 : 28 * 24 * 3600 * 1000
                 },
-                yAxis: {
-					labels: {
-						formatter: function () {
-							return Math.abs(Highcharts.numberFormat(this.value, 0));
-						}
+                yAxis: [
+					{
+						labels: {
+							formatter: function () {
+								return Highcharts.numberFormat(this.value, 0, '', '');
+							}
+						},
+						title: {
+							text: $.t('Energy') + ' (' + vm.unit + ')'
+						},
+						maxPadding: 0.2,
 					},
-                    title: {
-                        text: $.t('Energy') + ' (' + vm.unit + ')'
-                    },
-                    maxPadding: 0.2,
-                },
+                    {
+						visible: true,
+						showEmpty: false,
+						opposite: true,
+                        title: {
+                            text: $.t('Price') + ' (' + $.myglobals.currencysign + ')'
+                        }
+                    }
+				],
                 tooltip: {
 					headerFormat: '{point.x:%A, %B %d, %Y}<br/>',
 					pointFormat: '<span style="color: {point.color}">●</span> {series.name}: <b>{abs3 point.y} {point.series.tooltipOptions.valueSuffix}</b> ( {point.percentage:.0f}% )<br>',
-					footerFormat: '<span style="color: #aaa">●</span> Usage Total: {point.total:,.f} {series.tooltipOptions.valueSuffix}',
 					outside: true,
 					crosshairs: true,
 					shared: true,

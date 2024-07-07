@@ -93,7 +93,7 @@ if [ -x "$(command -v apt-get)" ]; then
 	# grep -c will return 1 retVal on 0 matches, block this throwing the set -e with an OR TRUE
 	PKG_COUNT="${PKG_MANAGER} -s -o Debug::NoLocking=true upgrade | grep -c ^Inst || true"
 	INSTALLER_DEPS=( apt-utils whiptail git)
-	domoticz_DEPS=( curl unzip wget sudo cron libudev-dev)
+	domoticz_DEPS=( curl unzip wget sudo cron libudev-dev libssl1.1 )
 
         DEBIAN_ID=$(grep -oP '(?<=^ID=).+' /etc/*-release | tr -d '"')
         DEBIAN_VERSION=$(grep -oP '(?<=^VERSION_ID=).+' /etc/*-release | tr -d '"')

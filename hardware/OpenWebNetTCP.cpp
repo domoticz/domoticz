@@ -162,7 +162,7 @@ void COpenWebNetTCP::disconnect()
 {
 	if (m_pStatusSocket != nullptr)
 	{
-		Log(LOG_STATUS, "disconnect");
+		Log(LOG_STATUS, "Disconnect");
 		m_pStatusSocket->close();
 		delete m_pStatusSocket;
 		m_pStatusSocket = nullptr;
@@ -593,7 +593,7 @@ void COpenWebNetTCP::MonitorFrames()
 				}
 				else
 				{
-					Log(LOG_STATUS, "TCP/IP monitor not connected, retrying in %d seconds...", OPENWEBNET_RETRY_DELAY);
+					Log(LOG_STATUS, "Monitor not connected, retrying in %d seconds...", OPENWEBNET_RETRY_DELAY);
 					sleep_seconds(1);
 				}
 			}
@@ -612,7 +612,7 @@ void COpenWebNetTCP::MonitorFrames()
 					break;
 
 				if ((bread == 0) || (bread < 0)) {
-					Log(LOG_ERROR, "TCP/IP monitor connection closed!");
+					Log(LOG_ERROR, "monitor connection closed!");
 					disconnect();  // disconnet socket if present
 				}
 				else
@@ -648,7 +648,7 @@ void COpenWebNetTCP::MonitorFrames()
 		}
 	}
 
-	Log(LOG_STATUS, "TCP/IP monitor worker stopped...");
+	Log(LOG_STATUS, "monitor worker stopped...");
 }
 
 /**
@@ -678,7 +678,7 @@ void COpenWebNetTCP::UpdateSetPoint(const int who, const int where, float fval, 
 
 				where is setpoint zone (1 - 99)
 	**/
-	SendSetPointSensor((who & 0xFF), (iInterface & 0xff), (where & 0xFF), fval, devname);
+	SendSetPointSensor(0, (who & 0xFF), (iInterface & 0xff), (where & 0xFF), 1, fval, devname);
 }
 
 /**

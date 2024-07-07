@@ -329,6 +329,9 @@ define(['angularAMD', 'app.routes', 'app.constants', 'app.notifications', 'app.p
 			if (typeof $rootScope.config.DegreeDaysBaseTemperature != 'undefined') {
 				$.myglobals.DegreeDaysBaseTemperature = $rootScope.config.DegreeDaysBaseTemperature;
 			}
+			if (typeof $rootScope.config.CurrencySign != 'undefined') {
+				$.myglobals.currencysign = $rootScope.config.CurrencySign;
+			}
 		}
 		$rootScope.currentyear = new Date().getFullYear();
 		$rootScope.config = {
@@ -350,6 +353,7 @@ define(['angularAMD', 'app.routes', 'app.constants', 'app.notifications', 'app.p
 			WindScale: 3.600000143051148,
 			WindSign: "km/h",
 			language: "en",
+			CurrencySign: "€",
 			HaveUpdate: false,
 			UseUpdate: true,
 			appversion: 0,
@@ -380,6 +384,7 @@ define(['angularAMD', 'app.routes', 'app.constants', 'app.notifications', 'app.p
 						$rootScope.config.WindScale = data.WindScale;
 						$rootScope.config.WindSign = data.WindSign;
 						$rootScope.config.language = data.language;
+						$rootScope.config.CurrencySign = data.CurrencySign;
 						$rootScope.config.DegreeDaysBaseTemperature = data.DegreeDaysBaseTemperature;
 						$rootScope.config.EnableTabDashboard = data.result.EnableTabDashboard,
 						$rootScope.config.EnableTabFloorplans = data.result.EnableTabFloorplans;

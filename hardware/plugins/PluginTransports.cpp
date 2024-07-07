@@ -370,14 +370,14 @@ namespace Plugins {
 		{
 			try
 			{
-				int	iSentBytes = boost::asio::write(*m_Socket, boost::asio::buffer(pMessage, pMessage.size()));
+				size_t iSentBytes = boost::asio::write(*m_Socket, boost::asio::buffer(pMessage, pMessage.size()));
 				m_iTotalBytes += iSentBytes;
 				if (iSentBytes != pMessage.size())
 				{
 					CPlugin* pPlugin = ((CConnection*)m_pConnection)->pPlugin;
 					if (!pPlugin)
 						return;
-					pPlugin->Log(LOG_ERROR, "Not all data written to socket (%s:%s). %d expected, %d written", m_IP.c_str(), m_Port.c_str(), int(pMessage.size()), iSentBytes);
+					pPlugin->Log(LOG_ERROR, "Not all data written to socket (%s:%s). %d expected, %d written", m_IP.c_str(), m_Port.c_str(), int(pMessage.size()), int(iSentBytes));
 				}
 			}
 			catch (std::exception & e)
@@ -444,7 +444,7 @@ namespace Plugins {
 		{
 			try
 			{
-				int		iSentBytes = boost::asio::write(*m_TLSSock, boost::asio::buffer(pMessage, pMessage.size()));
+				size_t iSentBytes = boost::asio::write(*m_TLSSock, boost::asio::buffer(pMessage, pMessage.size()));
 				m_iTotalBytes += iSentBytes;
 				if (iSentBytes != pMessage.size())
 				{
@@ -452,7 +452,7 @@ namespace Plugins {
 					if (!pPlugin)
 						return;
 					pPlugin->Log(LOG_ERROR, "Not all data written to secure socket (%s:%s). %d expected, %d written", m_IP.c_str(), m_Port.c_str(), int(pMessage.size()),
-						     iSentBytes);
+						     int(iSentBytes));
 				}
 			}
 			catch (std::exception & e)
@@ -760,12 +760,12 @@ namespace Plugins {
 			{
 				m_Socket->set_option(boost::asio::socket_base::broadcast(true));
 				boost::asio::ip::udp::endpoint destination(boost::asio::ip::address_v4::broadcast(), atoi(m_Port.c_str()));
-				int bytes_transferred = m_Socket->send_to(boost::asio::buffer(pMessage, pMessage.size()), destination);
+				size_t bytes_transferred = m_Socket->send_to(boost::asio::buffer(pMessage, pMessage.size()), destination);
 			}
 			else
 			{
 				boost::asio::ip::udp::endpoint destination(boost::asio::ip::address::from_string(m_IP.c_str()), atoi(m_Port.c_str()));
-				int bytes_transferred = m_Socket->send_to(boost::asio::buffer(pMessage, pMessage.size()), destination);
+				size_t bytes_transferred = m_Socket->send_to(boost::asio::buffer(pMessage, pMessage.size()), destination);
 			}
 		}
 		catch (boost::system::system_error err)

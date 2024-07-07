@@ -483,7 +483,7 @@ define(['app', 'components/rgbw-picker/RgbwPicker'], function (app) {
         }
     });
 
-    app.controller('DeviceLightEditController', function ($timeout, $routeParams, $window, domoticzApi, deviceApi) {
+    app.controller('DeviceLightEditController', function ($timeout, $routeParams, $window, domoticzApi, deviceApi, dzApiHelper) {
         var vm = this;
         var $element = $('.js-view:last');
 
@@ -503,6 +503,8 @@ define(['app', 'components/rgbw-picker/RgbwPicker'], function (app) {
 		vm.isBlind = isBlind;
 		vm.onActionLabel = onActionLabel;
 		vm.offActionLabel = offActionLabel;
+		vm.addDeviceToPlan = addDeviceToPlan;
+		vm.removeDeviceFromPlan = removeDeviceFromPlan;
 
         init();
 
@@ -528,12 +530,36 @@ define(['app', 'components/rgbw-picker/RgbwPicker'], function (app) {
                 });
         }
 
+		function populatedeviceroomplans() {
+            domoticzApi.sendCommand('getplans', {})
+                .then(function (data) {
+                    if ( data.status === 'OK' ) {
+						$("#device-roomplan-template").html("");
+						$.each(data.result, function (stcode, stdesc) {
+							if (stdesc != null) {
+								var option = $('<option />');
+								option.attr('value', stdesc.idx).text(stdesc.Name);
+								$("#device-roomplan-template").append(option);
+							}
+						});
+                    }
+                    $element.find('#device-roomplan-template > option').each(function () {
+                        vm.planIDsOptions.push({
+                            label: $(this).text(),
+                            value: $(this).val()
+                        });
+                    });
+                });
+        }
+
         function init() {
             vm.deviceIdx = $routeParams.id;
             vm.switchTypeOptions = [];
-
+			vm.planIDsOptions = [];
+			
             populatedevicetypes();
-
+			populatedeviceroomplans();
+			
             deviceApi.getDeviceInfo(vm.deviceIdx).then(function (device) {
                 vm.device = device;
                 vm.device.StrParam1 = b64DecodeUnicode(vm.device.StrParam1);
@@ -674,6 +700,41 @@ define(['app', 'components/rgbw-picker/RgbwPicker'], function (app) {
 			else {
 				return $.t('Off Action');
 			}
+		}
+		function getPlanDevices(planId) {
+			return domoticzApi.sendCommand('getplandevices',{
+				idx: planId
+			})
+				.then(domoticzApi.errorHandler)
+				.then(function(response) {
+					return response.result || []
+				})
+		}
+		function removeDeviceFromPlan(deviceIdx, planId) {
+			return getPlanDevices(planId).then(function(devices) {
+				Object.keys(devices).forEach(function(key) {
+					if(devices[key]['devidx'] == deviceIdx) {
+						return dzApiHelper.checkAdminPermissions().then(function () {
+							return domoticzApi.sendCommand('deleteplandevice', {
+								idx: parseInt(devices[key]['idx']),
+							}).then(function () {
+								$window.location.reload();
+							});
+						});
+					}
+				});
+			});
+		}
+		function addDeviceToPlan() {
+			return dzApiHelper.checkAdminPermissions().then(function () {
+				return domoticzApi.sendCommand('addplanactivedevice', {
+					idx: vm.device.PlanID,
+					activeidx: vm.deviceIdx,
+					activetype: 0
+				}).then(function () {
+                    $window.location.reload();
+                });
+			});
 		}
     });
 });

@@ -16,7 +16,6 @@
 #include "../webserver/cWebem.h"
 #include <json/json.h>
 
-#define round(a) ( int ) ( a + .5 )
 #define MAX_PAYLOAD_LENGTH 25 //https://www.mysensors.org/download/serial_api_20
 
 std::string MySensorsBase::GetMySensorsValueTypeStr(const enum _eSetType vType)
@@ -987,11 +986,11 @@ void MySensorsBase::SendSensor2Domoticz(_tMySensorNode* pNode, _tMySensorChild* 
 		break;
 	case V_HVAC_SETPOINT_HEAT:
 		if (pChild->GetValue(vType, floatValue))
-			SendSetPointSensor((uint8_t)pNode->nodeID, (uint8_t)pChild->childID, (unsigned char)vType, floatValue, (!pChild->childName.empty()) ? pChild->childName : "Setpoint Heat");
+			SendSetPointSensor(0, (uint8_t)pNode->nodeID, (uint8_t)pChild->childID, (unsigned char)vType, 1, floatValue, (!pChild->childName.empty()) ? pChild->childName : "Setpoint Heat");
 		break;
 	case V_HVAC_SETPOINT_COOL:
 		if (pChild->GetValue(vType, floatValue))
-			SendSetPointSensor((uint8_t)pNode->nodeID, (uint8_t)pChild->childID, (unsigned char)vType, floatValue, (!pChild->childName.empty()) ? pChild->childName : "Setpoint Cool");
+			SendSetPointSensor(0, (uint8_t)pNode->nodeID, (uint8_t)pChild->childID, (unsigned char)vType, 1, floatValue, (!pChild->childName.empty()) ? pChild->childName : "Setpoint Cool");
 		break;
 	case V_TEXT:
 		if (pChild->GetValue(vType, stringValue))
@@ -1338,7 +1337,7 @@ bool MySensorsBase::WriteToHardware(const char* pdata, const unsigned char /*len
 				float fvalue = (100.0F / 15.0F) * float(pCmd->LIGHTING2.level);
 				if (fvalue > 100.0F)
 					fvalue = 100.0F; // 99 is fully on
-				int svalue = round(fvalue);
+				int svalue = ground(fvalue);
 				return SendNodeSetCommand(node_id, child_sensor_id, MT_Set, V_PERCENTAGE, std::to_string(svalue), pChild->useAck, pChild->ackTimeout);
 			}
 		}
@@ -1487,7 +1486,7 @@ bool MySensorsBase::WriteToHardware(const char* pdata, const unsigned char /*len
 			{
 				std::stringstream sstr;
 				int Brightness = 100;
-				int wWhite = round((255.0F / 100.0F) * float(Brightness));
+				int wWhite = ground((255.0F / 100.0F) * float(Brightness));
 				if (!bIsRGBW)
 				{
 					sstr << std::setw(2) << std::uppercase << std::hex << std::setfill('0') << std::hex << wWhite
@@ -1980,7 +1979,7 @@ void MySensorsBase::ParseLine(const std::string& sLine)
 			bHaveValue = true;
 			break;
 		case V_DIRECTION:
-			pChild->SetValue(vType, round(atof(payload.c_str())));
+			pChild->SetValue(vType, ground(atof(payload.c_str())));
 			bHaveValue = true;
 			break;
 		case V_LIGHT_LEVEL:

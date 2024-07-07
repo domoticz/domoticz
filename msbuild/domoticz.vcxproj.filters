@@ -2114,9 +2114,6 @@
     <ClInclude Include="..\main\TrendCalculator.h">
       <Filter>Helpers</Filter>
     </ClInclude>
-    <ClInclude Include="..\hardware\HardwareCereal.h">
-      <Filter>Devices</Filter>
-    </ClInclude>
     <ClInclude Include="..\main\dzVents.h">
       <Filter>EventSystem\dzVents</Filter>
     </ClInclude>
@@ -2257,6 +2254,9 @@
     </ClInclude>
     <ClInclude Include="..\hardware\ZWaveCommands.h">
       <Filter>Devices\ZWave</Filter>
+    </ClInclude>
+    <ClInclude Include="..\main\lsignal.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -3045,6 +3045,9 @@
     </ClCompile>
     <ClCompile Include="..\hardware\ZWaveBase.cpp">
       <Filter>Devices\ZWave</Filter>
+    </ClCompile>
+    <ClCompile Include="..\main\lsignal.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

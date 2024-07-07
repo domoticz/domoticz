@@ -118,6 +118,7 @@ bool SMTPClient::SendEmail()
 	struct curl_slist* slist1;
 
 	smtp_upload_status smtp_ctx;
+	smtp_ctx.pDataBytes = nullptr;
 	smtp_ctx.bytes_read = 0;
 
 	slist1 = nullptr;
@@ -142,7 +143,7 @@ bool SMTPClient::SendEmail()
 
 		curl_easy_setopt(curl, CURLOPT_CONNECTTIMEOUT, 10);
 
-		curl_easy_setopt(curl, CURLOPT_INFILESIZE_LARGE, (curl_off_t)177);
+		//curl_easy_setopt(curl, CURLOPT_INFILESIZE_LARGE, (curl_off_t)177);
 		curl_easy_setopt(curl, CURLOPT_URL, szURL.c_str());
 		curl_easy_setopt(curl, CURLOPT_UPLOAD, 1L);
 		if (!m_Username.empty())
@@ -206,7 +207,9 @@ bool SMTPClient::SendEmail()
 	}
 	catch (...)
 	{
-		_log.Log(LOG_ERROR, "SMTP Mailer: Error sending Email to: %s !", m_Recipients[0].c_str());
+		if (smtp_ctx.pDataBytes != nullptr)
+			delete[] smtp_ctx.pDataBytes;
+		_log.Log(LOG_ERROR, "SMTP Mailer: Exception! Error sending Email to: %s !", m_Recipients[0].c_str());
 		return false;
 	}
 	return true;

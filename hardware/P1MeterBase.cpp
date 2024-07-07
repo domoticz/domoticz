@@ -3,6 +3,7 @@
 #include "hardwaretypes.h"
 #include "../main/SQLHelper.h"
 #include "../main/Logger.h"
+#include "../main/mainworker.h"
 
 #include <openssl/bio.h>
 #include <openssl/evp.h>
@@ -69,6 +70,7 @@ enum _eP1Type {
 	P1TYPE_VERSION,
 	P1TYPE_POWERUSAGE,
 	P1TYPE_POWERDELIV,
+	P1TYPE_TARIFF_INDICATOR,
 	P1TYPE_USAGECURRENT,
 	P1TYPE_DELIVCURRENT,
 	P1TYPE_NUMPWRFAIL,
@@ -107,7 +109,7 @@ using P1Match = struct
 	uint8_t width;
 };
 
-constexpr std::array<P1Match, 32> p1_matchlist{
+constexpr std::array<P1Match, 33> p1_matchlist{
 	{
 		{ _eP1MatchType::ID, P1TYPE_SMID, P1SMID, "", 0, 0 },
 		{ _eP1MatchType::EXCLMARK, P1TYPE_END, P1EOT, "", 0, 0 },
@@ -115,6 +117,7 @@ constexpr std::array<P1Match, 32> p1_matchlist{
 		{ _eP1MatchType::STD, P1TYPE_VERSION, P1VERBE, "versionBE", 11, 5 },
 		{ _eP1MatchType::STD, P1TYPE_POWERUSAGE, P1PUSG, "powerusage", 10, 9 },
 		{ _eP1MatchType::STD, P1TYPE_POWERDELIV, P1PDLV, "powerdeliv", 10, 9 },
+		{ _eP1MatchType::STD, P1TYPE_TARIFF_INDICATOR, P1TIP, "tariffind", 12, 4 },
 		{ _eP1MatchType::STD, P1TYPE_USAGECURRENT, P1PUC, "powerusagec", 10, 7 },
 		{ _eP1MatchType::STD, P1TYPE_DELIVCURRENT, P1PDC, "powerdelivc", 10, 7 },
 		{ _eP1MatchType::STD, P1TYPE_NUMPWRFAIL, P1NOPF, "numpwrfail", 12, 5 },
@@ -800,6 +803,20 @@ bool P1MeterBase::MatchLine()
 						else if (temp_usage - m_power.powerdeliv2 < P1MAXPHASEPOWER)
 							m_power.powerdeliv2 = temp_usage;
 					}
+					break;
+				case P1TYPE_TARIFF_INDICATOR:
+					{
+						int act_tariff = std::stoi(sValue);
+						bool bReloadHourPrice = false;
+						if (m_current_tariff != act_tariff)
+						{
+							Log(LOG_STATUS, "Current electricity tariff: %s", (act_tariff == 1) ? "Low" : "High");
+							bReloadHourPrice = true;
+						}
+						m_current_tariff = act_tariff;
+						if (bReloadHourPrice)
+							m_mainworker.HandleHourPrice();
+				}
 					break;
 				case P1TYPE_USAGECURRENT:
 					temp_usage = (unsigned long)(std::stof(sValue) * 1000.0F); // Watt

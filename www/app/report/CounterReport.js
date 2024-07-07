@@ -5,7 +5,7 @@ define(['app', 'report/helpers'], function (app, reportHelpers) {
         };
 
         function fetch(device, year, month) {
-            var costs = domoticzApi.sendCommand('getcosts', { idx: device.idx });
+			var costs = domoticzApi.sendCommand('getcosts', { idx: device.idx });
 
             var stats = domoticzApi.sendCommand('graph', {
                 sensor: 'counter',
@@ -17,6 +17,7 @@ define(['app', 'report/helpers'], function (app, reportHelpers) {
 
             return $q.all([costs, stats]).then(function (responses) {
                 var cost = getCost(device, responses[0]);
+
                 var stats = responses[1];
 
                 if (!stats.result || !stats.result.length) {
@@ -33,7 +34,7 @@ define(['app', 'report/helpers'], function (app, reportHelpers) {
                 if (!source) {
                     return null;
                 }
-
+				
                 return {
                     cost: source.cost,
                     usage: source.usage,
@@ -79,13 +80,16 @@ define(['app', 'report/helpers'], function (app, reportHelpers) {
                     }
                 }
 
+				let cprice = parseFloat(item.p);
+
                 result.years[year].months[month].days[day] = {
                     date: item.d,
                     usage: parseFloat(item.v),
                     counter: parseFloat(item.c),
-                    cost: parseFloat(item.v) * cost
+                    cost: (cprice) != 0 ? cprice : parseFloat(item.v) * cost
                 }
             });
+			console.log(result);
 
             Object.keys(result.years).forEach(function (year) {
                 var yearsData = result.years[year];
@@ -183,7 +187,7 @@ define(['app', 'report/helpers'], function (app, reportHelpers) {
             };
 
             var costRenderer = function (data) {
-                return data.toFixed(2);
+                return data.toFixed(2) + ' ' + $.myglobals.currencysign;
             };
 
             if (vm.isMonthView) {
@@ -220,7 +224,7 @@ define(['app', 'report/helpers'], function (app, reportHelpers) {
 
             columns.push({ title: (vm.device.SwitchTypeVal === 4) ? $.t('Generated') : $.t('Usage'), data: 'usage', render: (vm.device.SwitchTypeVal === 3) ? counterRenderer : counterRendererDecimals });
 
-            if (!['Counter Incremental'].includes(vm.device.SubType) && (vm.device.SwitchTypeVal != 3))
+            if (vm.device.SwitchTypeVal != 3)
                 columns.push({ title: (vm.device.SwitchTypeVal === 4) ? $.t('Earnings') : $.t('Costs'), data: 'cost', render: costRenderer });
 
             columns.push({
@@ -274,6 +278,32 @@ define(['app', 'report/helpers'], function (app, reportHelpers) {
                     }
                 })
             });
+			if (vm.device.SwitchTypeVal != 3) {
+				series.push({
+					id: 'CRP',
+					type: 'spline',
+					name: $.t('Costs'),
+					zIndex: 3,
+					tooltip: {
+						valueSuffix: ' ' + $.myglobals.currencysign
+					},
+					marker: {
+						enabled: false
+					},
+					lineWidth: 2,
+					color: 'rgba(190,252,60,0.8)',
+					showInLegend: true,
+					convertZeroToNull: true,
+					showWithoutDatapoints: false,
+					yAxis: 1,
+					data: data.items.map(function (item) {
+						return {
+							x: +(new Date(item.date)),
+							y: parseFloat(item.cost.toFixed(vm.decimals))
+						}
+					})
+				});
+			}
 
             chartElement.highcharts({
                 chart: {
@@ -285,16 +315,33 @@ define(['app', 'report/helpers'], function (app, reportHelpers) {
                 xAxis: {
                     type: 'datetime'
                 },
-                yAxis: {
-                    title: {
-                        text: $.t(yAxisName) + ' (' + vm.unit + ')'
-                    },
-                    maxPadding: 0.2,
-                    min: 0
-                },
+                yAxis: [{
+						labels: {
+							formatter: function () {
+								return Highcharts.numberFormat(this.value, 0, '', '');
+							}
+						},
+						title: {
+							text: $.t(yAxisName) + ' (' + vm.unit + ')'
+						},
+						maxPadding: 0.2,
+						//min: 0
+					},
+                    {
+						visible: true,
+						showEmpty: false,
+						opposite: true,
+                        title: {
+                            text: $.t('Price') + ' (' + $.myglobals.currencysign + ')'
+                        }
+                    }
+				],
                 tooltip: {
                     valueSuffix: ' ' + vm.unit,
-                    valueDecimals: vm.decimals
+                    valueDecimals: vm.decimals,
+					outside: true,
+					crosshairs: true,
+					shared: true
                 },
                 plotOptions: {
 					series: {
@@ -313,7 +360,7 @@ define(['app', 'report/helpers'], function (app, reportHelpers) {
                         pointPadding: 0.1,
                         groupPadding: 0,
                         dataLabels: {
-                            enabled: true,
+                            enabled: !vm.isMonthView,
                             color: 'white'
                         }
                     }

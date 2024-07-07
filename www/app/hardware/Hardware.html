@@ -39,9 +39,9 @@
 				<button class="btn btn-warning" id="btnimportolddata">Import old Month Data</button>
 				<br><br>
 				<p>
-					You can retreive old month records by running SBFSpot/SMASpot with commandline parameter -v -amXX,<br>
-					where XX is the amount of months you would like to retreive, for example:<br>
-					<b>./SBFSpot -v -am12</b> , this will retreive up to 2 years from now.<br><br>
+					You can retrieve old month records by running SBFSpot/SMASpot with commandline parameter -v -amXX,<br>
+					where XX is the amount of months you would like to retrieve, for example:<br>
+					<b>./SBFSpot -v -am12</b> , this will retrieve up to 2 years from now.<br><br>
 					This process can take a while, when pressing the above button, please wait until the dashboard is shown again!.
 				</p>
 				<input type="hidden" id="idx" name="idx" value="-1">
@@ -994,6 +994,15 @@
 				<td><input type="text" id="apikey" style="width: 250px; padding: .2em;" class="text ui-widget-content ui-corner-all"></td>
 			</tr>
 			<tr>
+				<td align="right" style="width:110px"><label for="comboapiversion"><span data-i18n="API Version"></span>:</label></td>
+				<td>
+					<select id="comboapiversion" style="width:60px" class="combobox ui-corner-all">
+						<option value="0">2.5</option>
+						<option value="1" selected="selected">3.0</option>
+					</select>
+				</td>
+			</tr>
+			<tr>
 				<td align="right" style="width:110px"><label><span data-i18n="Location"></span>:</label></td>
 				<td>
 					<input type="text" id="location" style="width: 250px; padding: .2em;" class="text ui-widget-content ui-corner-all"><br>
@@ -1305,6 +1314,22 @@
 				<td>
 					<input type="checkbox" id="readinverters" name="readinverters"><label for="readinverters"></label><br>
 					<span data-i18n="When enabled this will also collect individual inverter details.">When enabled this will also collect individual inverter details.</span>
+					<p>
+						<br/>
+						<label for="inverterdetails"><span data-i18n="Inverter Details"></span>:</label>
+						<select id="inverterdetails" name="inverterdetails" style="width:90px" class="combobox ui-corner-all">
+							<option value="0">Normal</option>
+							<option value="1">Detailed</option>
+						</select>
+						&nbsp;<span>(Detailed needs Site ID / Installer account)</span>
+					</p>
+				</td>
+			</tr>
+			<tr>
+				<td align="right" style="vertical-align:top;"><span data-i18n="Don't read metered values">Don't read metered values</span>:</td>
+				<td>
+					<input type="checkbox" id="dontreadmeteredvalues" name="dontreadmeteredvalues"><label for="dontreadmeteredvalues"></label><br>
+					<span data-i18n="Enable this in case an Envoy-S Metered is not reporting.">Enable this in case an Envoy-S Metered is not reporting.</span>
 				</td>
 			
 			</tr>
@@ -1330,10 +1355,13 @@
 				<td align="right" <label><span data-i18n="Provider Electricity"></span>:</label></td>
 				<td>
 					<select id="providerAC" name="providerAC" style="width:200px" class="combobox ui-corner-all">
+						<option value="Stock">Stock</option>
 						<option value="AA">Atoom Alliantie</option>
 						<option value="AIP">All in power</option>
 						<option value="ANWB">ANWB Energie</option>
+						<option value="BE">Budget Energie</option>
 						<option value="EE">EasyEnergy</option>
+						<option value="EN">Eneco</option>
 						<option value="EVO">Energie van Ons</option>
 						<option value="EZ">Energy Zero</option>
 						<option value="FR">Frank Energie</option>
@@ -1353,17 +1381,18 @@
 				<td align="right" <label><span data-i18n="Provider Gas"></span>:</label></td>
 				<td>
 					<select id="providerGas" name="providerGas" style="width:200px" class="combobox ui-corner-all">
+						<option value="EGSI">Stock EGSI</option>
 						<option value="AA">Atoom Alliantie</option>
 						<option value="AIP">All in power</option>
 						<option value="ANWB">ANWB Energie</option>
+						<option value="BE">Budget Energie</option>
 						<option value="EE">EasyEnergy</option>
+						<option value="EN">Eneco</option>
 						<option value="EVO">Energie van Ons</option>
 						<option value="EZ">Energy Zero</option>
-						<option value="FR">Frank Energie</option>
 						<option value="GSL">Groenestroom Lokaal</option>
 						<option value="MDE">Mijndomein Energie</option>
 						<option value="NE">NextEnergy</option>
-						<option value="TI">Tibber</option>
 						<option value="VDB">Vandebron</option>
 						<option value="VON">Vrij op naam</option>
 						<option value="WE">Wout Energie</option>

@@ -2,7 +2,7 @@
  * WebServerHandleGraph.cpp
  *
  *  Created on: 7 August 2023
- * 
+ *
  * This file is NOT a separate class but is part of 'main/WebServer.cpp'
  * It contains the 'HandleGraph' Cmd that is part of the WebServer class, but for sourcecode management
  * reasons separated out into its own file. The definitions are still in 'main/Webserver.h'
@@ -86,7 +86,7 @@ namespace http
 			double meteroffset = AddjValue;
 
 			std::string dbasetable;
-			if (srange == "day")
+			if ((srange == "day") || (srange == "hour"))
 			{
 				if (sensor == "temp")
 					dbasetable = "Temperature";
@@ -167,7 +167,114 @@ namespace http
 
 			int iPrev;
 
-			if (srange == "day")
+			if (srange == "hour")
+			{
+				if (sensor == "counter")
+				{
+					if (dType == pTypeP1Power)
+					{
+						root["status"] = "OK";
+						root["title"] = "Graph " + sensor + " " + srange;
+/*
+						char szDateStart[40];
+						char szDateEnd[40];
+						sprintf(szDateEnd, "%04d-%02d-%02d %02d:%02d:%02d", tm1.tm_year + 1900, tm1.tm_mon + 1, tm1.tm_mday, tm1.tm_hour, tm1.tm_min, tm1.tm_sec);
+
+						// Subtract a day
+						time_t daybefore;
+						struct tm tm2;
+						getNoon(daybefore, tm2, tm1.tm_year + 1900, tm1.tm_mon + 1, tm1.tm_mday - 1); // We only want one day
+						sprintf(szDateStart, "%04d-%02d-%02d %02d:%02d:%02d", tm2.tm_year + 1900, tm2.tm_mon + 1, tm2.tm_mday, tm1.tm_hour, tm1.tm_min, tm1.tm_sec);
+
+						result = m_sql.safe_query("SELECT strftime('%%Y-%%m-%%d %%H:00:00', Date) as ymd, MIN(Value1) as u1, MIN(Value5) as u2, MIN(Value2) as d1, MIN(Value6) as d2 FROM %s WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q' AND Date<='%q') GROUP BY ymd",
+							dbasetable.c_str(), idx, szDateStart, szDateEnd);
+*/
+
+						result = m_sql.safe_query("SELECT strftime('%%Y-%%m-%%d %%H:00:00', Date) as ymd, MIN(Value1) as u1, MIN(Value5) as u2, MIN(Value2) as d1, MIN(Value6) as d2, Price FROM %s WHERE (DeviceRowID==%" PRIu64 ") GROUP BY ymd",
+							dbasetable.c_str(), idx);
+						if (!result.empty())
+						{
+							int ii = 0;
+							bool bHaveDeliverd = false;
+							bool bHaveFirstValue = false;
+							int64_t lastUsage, lastDeliv;
+							time_t lastTime = 0;
+
+							int lastDay = 0;
+
+							for (const auto& sd : result)
+							{
+								int64_t actUsage1 = std::stoll(sd[1]);
+								int64_t actUsage2 = std::stoll(sd[2]);
+								int64_t actDeliv1 = std::stoll(sd[3]);
+								int64_t actDeliv2 = std::stoll(sd[4]);
+								actDeliv1 = (actDeliv1 < 10) ? 0 : actDeliv1;
+								actDeliv2 = (actDeliv2 < 10) ? 0 : actDeliv2;
+
+								int64_t actUsage = actUsage1 + actUsage2;
+								int64_t actDeliv = actDeliv1 + actDeliv2;
+
+								std::string stime = sd[0];
+								struct tm ntime;
+								time_t atime;
+								ParseSQLdatetime(atime, ntime, stime, -1);
+								if (lastDay != ntime.tm_mday)
+								{
+									lastDay = ntime.tm_mday;
+								}
+
+								if (bHaveFirstValue)
+								{
+									if (
+										(actUsage < lastUsage)
+										|| (actDeliv < lastDeliv)
+										|| (atime <= lastTime)
+										)
+									{
+										//daylight change happened, meter changed?, ignoring  for now
+										lastUsage = actUsage;
+										lastDeliv = actDeliv;
+										lastTime = atime;
+										continue;
+									}
+
+									long curUsage = (long)(actUsage - lastUsage);
+									long curDeliv = (long)(actDeliv - lastDeliv);
+
+									std::string stime = sd[0].substr(0, 16);
+									root["result"][ii]["d"] = stime;
+
+									if (curDeliv != 0)
+										bHaveDeliverd = true;
+
+									sprintf(szTmp, "%ld", curUsage);
+									root["result"][ii]["v"] = szTmp;
+									sprintf(szTmp, "%ld", curDeliv);
+									root["result"][ii]["r"] = szTmp;
+
+									float total = (curUsage - curDeliv) / 1000.0F;
+									float fPrice = std::stof(sd[5]) * total;
+									sprintf(szTmp, "%.4f", fPrice);
+									root["result"][ii]["p"] = szTmp;
+									ii++;
+								}
+								else
+								{
+									bHaveFirstValue = true;
+								}
+								lastUsage = actUsage;
+								lastDeliv = actDeliv;
+								lastTime = atime;
+							}
+							if (bHaveDeliverd)
+							{
+								root["delivered"] = true;
+							}
+						}
+					}
+				}
+			}
+			else if (srange == "day")
 			{
 				if (sensor == "temp")
 				{
@@ -300,6 +407,10 @@ namespace http
 						root["status"] = "OK";
 						root["title"] = "Graph " + sensor + " " + srange;
 
+						int P1DisplayType = 0; //0=Low/High tariff, 1=simple (for dynamic contracts)
+						m_sql.GetPreferencesVar("P1DisplayType", P1DisplayType);
+						root["P1DisplayType"] = P1DisplayType;
+
 						result = m_sql.safe_query("SELECT Value1, Value2, Value3, Value4, Value5, Value6, Date FROM %s WHERE (DeviceRowID==%" PRIu64 ") ORDER BY Date ASC",
 							dbasetable.c_str(), idx);
 						if (!result.empty())
@@ -315,152 +426,146 @@ namespace http
 							int64_t firstDeliv1 = 0;
 							int64_t firstDeliv2 = 0;
 
-							int nMeterType = 0;
-							m_sql.GetPreferencesVar("SmartMeterType", nMeterType);
-
 							int lastDay = 0;
 
 							for (const auto& sd : result)
 							{
-								if (nMeterType == 0)
-								{
-									int64_t actUsage1 = std::stoll(sd[0]);
-									int64_t actUsage2 = std::stoll(sd[4]);
-									int64_t actDeliv1 = std::stoll(sd[1]);
-									int64_t actDeliv2 = std::stoll(sd[5]);
-									actDeliv1 = (actDeliv1 < 10) ? 0 : actDeliv1;
-									actDeliv2 = (actDeliv2 < 10) ? 0 : actDeliv2;
+								int64_t actUsage1 = std::stoll(sd[0]);
+								int64_t actUsage2 = std::stoll(sd[4]);
+								int64_t actDeliv1 = std::stoll(sd[1]);
+								int64_t actDeliv2 = std::stoll(sd[5]);
+								actDeliv1 = (actDeliv1 < 10) ? 0 : actDeliv1;
+								actDeliv2 = (actDeliv2 < 10) ? 0 : actDeliv2;
 
-									std::string stime = sd[6];
-									struct tm ntime;
-									time_t atime;
-									ParseSQLdatetime(atime, ntime, stime, -1);
-									if (lastDay != ntime.tm_mday)
+								std::string stime = sd[6];
+								struct tm ntime;
+								time_t atime;
+								ParseSQLdatetime(atime, ntime, stime, -1);
+								if (lastDay != ntime.tm_mday)
+								{
+									lastDay = ntime.tm_mday;
+									firstUsage1 = actUsage1;
+									firstUsage2 = actUsage2;
+									firstDeliv1 = actDeliv1;
+									firstDeliv2 = actDeliv2;
+								}
+
+								if (bHaveFirstValue)
+								{
+									if (
+										(actUsage1 < lastUsage1)
+										|| (actUsage2 < lastUsage2)
+										|| (actDeliv1 < lastDeliv1)
+										|| (actDeliv2 < lastDeliv2)
+										|| (atime <= lastTime)
+										)
 									{
-										lastDay = ntime.tm_mday;
-										firstUsage1 = actUsage1;
-										firstUsage2 = actUsage2;
-										firstDeliv1 = actDeliv1;
-										firstDeliv2 = actDeliv2;
+										//daylight change happened, meter changed?, ignoring  for now
+										lastUsage1 = actUsage1;
+										lastUsage2 = actUsage2;
+										lastDeliv1 = actDeliv1;
+										lastDeliv2 = actDeliv2;
+										lastTime = atime;
+										continue;
 									}
 
-									if (bHaveFirstValue)
+									long curUsage1 = (long)(actUsage1 - lastUsage1);
+									long curUsage2 = (long)(actUsage2 - lastUsage2);
+									long curDeliv1 = (long)(actDeliv1 - lastDeliv1);
+									long curDeliv2 = (long)(actDeliv2 - lastDeliv2);
+
+									float tdiff = static_cast<float>(difftime(atime, lastTime));
+									if (tdiff == 0)
+										tdiff = 1;
+									float tlaps = 3600.0F / tdiff;
+									curUsage1 *= int(tlaps);
+									curUsage2 *= int(tlaps);
+									curDeliv1 *= int(tlaps);
+									curDeliv2 *= int(tlaps);
+
+									if ((curUsage1 < 0) || (curUsage1 > 100000))
+										curUsage1 = 0;
+									if ((curUsage2 < 0) || (curUsage2 > 100000))
+										curUsage2 = 0;
+									if ((curDeliv1 < 0) || (curDeliv1 > 100000))
+										curDeliv1 = 0;
+									if ((curDeliv2 < 0) || (curDeliv2 > 100000))
+										curDeliv2 = 0;
+
+									root["result"][ii]["d"] = sd[6].substr(0, 16);
+
+									if ((curDeliv1 != 0) || (curDeliv2 != 0))
+										bHaveDeliverd = true;
+
+									if (P1DisplayType == 0)
 									{
-										if (
-											(actUsage1 < lastUsage1)
-											|| (actUsage2 < lastUsage2)
-											|| (actDeliv1 < lastDeliv1)
-											|| (actDeliv2 < lastDeliv2)
-											|| (atime <= lastTime)
-											)
-										{
-											//daylight change happened, meter changed?, ignoring  for now
-											lastUsage1 = actUsage1;
-											lastUsage2 = actUsage2;
-											lastDeliv1 = actDeliv1;
-											lastDeliv2 = actDeliv2;
-											lastTime = atime;
-											continue;
-										}
-
-										long curUsage1 = (long)(actUsage1 - lastUsage1);
-										long curUsage2 = (long)(actUsage2 - lastUsage2);
-										long curDeliv1 = (long)(actDeliv1 - lastDeliv1);
-										long curDeliv2 = (long)(actDeliv2 - lastDeliv2);
-
-										float tdiff = static_cast<float>(difftime(atime, lastTime));
-										if (tdiff == 0)
-											tdiff = 1;
-										float tlaps = 3600.0F / tdiff;
-										curUsage1 *= int(tlaps);
-										curUsage2 *= int(tlaps);
-										curDeliv1 *= int(tlaps);
-										curDeliv2 *= int(tlaps);
-
-										if ((curUsage1 < 0) || (curUsage1 > 100000))
-											curUsage1 = 0;
-										if ((curUsage2 < 0) || (curUsage2 > 100000))
-											curUsage2 = 0;
-										if ((curDeliv1 < 0) || (curDeliv1 > 100000))
-											curDeliv1 = 0;
-										if ((curDeliv2 < 0) || (curDeliv2 > 100000))
-											curDeliv2 = 0;
-
-										root["result"][ii]["d"] = sd[6].substr(0, 16);
-
-										if ((curDeliv1 != 0) || (curDeliv2 != 0))
-											bHaveDeliverd = true;
-
+										//Low/High Tarrif
 										sprintf(szTmp, "%ld", curUsage1);
-										root["result"][ii]["v"] = szTmp;
+										root["result"][ii]["v1"] = szTmp;
 										sprintf(szTmp, "%ld", curUsage2);
 										root["result"][ii]["v2"] = szTmp;
 										sprintf(szTmp, "%ld", curDeliv1);
 										root["result"][ii]["r1"] = szTmp;
 										sprintf(szTmp, "%ld", curDeliv2);
 										root["result"][ii]["r2"] = szTmp;
-
-										long pUsage1 = (long)(actUsage1 - firstUsage1);
-										long pUsage2 = (long)(actUsage2 - firstUsage2);
-
-										sprintf(szTmp, "%ld", pUsage1 + pUsage2);
-										root["result"][ii]["eu"] = szTmp;
-										if (bHaveDeliverd)
-										{
-											long pDeliv1 = (long)(actDeliv1 - firstDeliv1);
-											long pDeliv2 = (long)(actDeliv2 - firstDeliv2);
-											sprintf(szTmp, "%ld", pDeliv1 + pDeliv2);
-											root["result"][ii]["eg"] = szTmp;
-										}
-
-										ii++;
 									}
 									else
 									{
-										bHaveFirstValue = true;
-										if ((ntime.tm_hour != 0) && (ntime.tm_min != 0))
-										{
-											struct tm ltime;
-											localtime_r(&atime, &tm1);
-											getNoon(atime, ltime, ntime.tm_year + 1900, ntime.tm_mon + 1,
-												ntime.tm_mday - 1); // We're only interested in finding the date
-											int year = ltime.tm_year + 1900;
-											int mon = ltime.tm_mon + 1;
-											int day = ltime.tm_mday;
-											sprintf(szTmp, "%04d-%02d-%02d", year, mon, day);
-											std::vector<std::vector<std::string>> result2;
-											result2 = m_sql.safe_query(
-												"SELECT Counter1, Counter2, Counter3, Counter4 FROM Multimeter_Calendar WHERE (DeviceRowID==%" PRIu64
-												") AND (Date=='%q')",
-												idx, szTmp);
-											if (!result2.empty())
-											{
-												std::vector<std::string> sd = result2[0];
-												firstUsage1 = std::stoll(sd[0]);
-												firstDeliv1 = std::stoll(sd[1]);
-												firstUsage2 = std::stoll(sd[2]);
-												firstDeliv2 = std::stoll(sd[3]);
-												lastDay = ntime.tm_mday;
-											}
-										}
+										//Simple
+										sprintf(szTmp, "%ld", curUsage1 + curUsage2);
+										root["result"][ii]["v"] = szTmp;
+										sprintf(szTmp, "%ld", curDeliv1 + curDeliv2);
+										root["result"][ii]["r"] = szTmp;
 									}
-									lastUsage1 = actUsage1;
-									lastUsage2 = actUsage2;
-									lastDeliv1 = actDeliv1;
-									lastDeliv2 = actDeliv2;
-									lastTime = atime;
+									long pUsage1 = (long)(actUsage1 - firstUsage1);
+									long pUsage2 = (long)(actUsage2 - firstUsage2);
+
+									sprintf(szTmp, "%ld", pUsage1 + pUsage2);
+									root["result"][ii]["eu"] = szTmp;
+									if (bHaveDeliverd)
+									{
+										long pDeliv1 = (long)(actDeliv1 - firstDeliv1);
+										long pDeliv2 = (long)(actDeliv2 - firstDeliv2);
+										sprintf(szTmp, "%ld", pDeliv1 + pDeliv2);
+										root["result"][ii]["eg"] = szTmp;
+									}
+
+									ii++;
 								}
 								else
 								{
-									// this meter has no decimals, so return the use peaks
-									root["result"][ii]["d"] = sd[6].substr(0, 16);
-
-									if (sd[3] != "0")
-										bHaveDeliverd = true;
-									root["result"][ii]["v"] = sd[2];
-									root["result"][ii]["r1"] = sd[3];
-									ii++;
+									bHaveFirstValue = true;
+									if ((ntime.tm_hour != 0) && (ntime.tm_min != 0))
+									{
+										struct tm ltime;
+										localtime_r(&atime, &tm1);
+										getNoon(atime, ltime, ntime.tm_year + 1900, ntime.tm_mon + 1,
+											ntime.tm_mday - 1); // We're only interested in finding the date
+										int year = ltime.tm_year + 1900;
+										int mon = ltime.tm_mon + 1;
+										int day = ltime.tm_mday;
+										sprintf(szTmp, "%04d-%02d-%02d", year, mon, day);
+										std::vector<std::vector<std::string>> result2;
+										result2 = m_sql.safe_query(
+											"SELECT Counter1, Counter2, Counter3, Counter4 FROM Multimeter_Calendar WHERE (DeviceRowID==%" PRIu64
+											") AND (Date=='%q')",
+											idx, szTmp);
+										if (!result2.empty())
+										{
+											std::vector<std::string> sd = result2[0];
+											firstUsage1 = std::stoll(sd[0]);
+											firstDeliv1 = std::stoll(sd[1]);
+											firstUsage2 = std::stoll(sd[2]);
+											firstDeliv2 = std::stoll(sd[3]);
+											lastDay = ntime.tm_mday;
+										}
+									}
 								}
+								lastUsage1 = actUsage1;
+								lastUsage2 = actUsage2;
+								lastDeliv1 = actDeliv1;
+								lastDeliv2 = actDeliv2;
+								lastTime = atime;
 							}
 							if (bHaveDeliverd)
 							{
@@ -998,7 +1103,7 @@ namespace http
 
 											// prevents graph from going crazy if the meter counter resets
 											// removed because it breaks  negative increments
-											double TotalValue=double(actValue - ulFirstValue);
+											double TotalValue = double(actValue - ulFirstValue);
 											//if (actValue < ulFirstValue) TotalValue=actValue;
 
 											// if (TotalValue != 0)
@@ -1118,7 +1223,7 @@ namespace http
 										{
 											curValue = actValue;
 										}
-										
+
 										curValue *= int(tlaps);
 
 										root["result"][ii]["d"] = sd[1].substr(0, 16);
@@ -1666,7 +1771,11 @@ namespace http
 					int ii = 0;
 					if (dType == pTypeP1Power)
 					{
-						result = m_sql.safe_query("SELECT Value1,Value2,Value5,Value6,Date FROM %s WHERE (DeviceRowID==%" PRIu64
+						int P1DisplayType = 0; //0=Low/High tariff, 1=simple (for dynamic contracts)
+						m_sql.GetPreferencesVar("P1DisplayType", P1DisplayType);
+						root["P1DisplayType"] = P1DisplayType;
+
+						result = m_sql.safe_query("SELECT Value1,Value2,Value5,Value6,Price,Date FROM %s WHERE (DeviceRowID==%" PRIu64
 							" AND Date>='%q' AND Date<='%q') ORDER BY Date ASC",
 							dbasetable.c_str(), idx, szDateStart, szDateEnd);
 						if (!result.empty())
@@ -1674,11 +1783,13 @@ namespace http
 							bool bHaveDeliverd = false;
 							for (const auto& sd : result)
 							{
-								root["result"][ii]["d"] = sd[4].substr(0, 16);
+								root["result"][ii]["d"] = sd[5].substr(0, 16);
 								std::string szValueUsage1 = sd[0];
 								std::string szValueDeliv1 = sd[1];
 								std::string szValueUsage2 = sd[2];
 								std::string szValueDeliv2 = sd[3];
+
+								float fPrice = std::stof(sd[4]);
 
 								float fUsage1 = (float)(atof(szValueUsage1.c_str()));
 								float fUsage2 = (float)(atof(szValueUsage2.c_str()));
@@ -1691,13 +1802,16 @@ namespace http
 								if ((fDeliv1 != 0) || (fDeliv2 != 0))
 									bHaveDeliverd = true;
 								sprintf(szTmp, "%.3f", fUsage1 / divider);
-								root["result"][ii]["v"] = szTmp;
+								root["result"][ii]["v1"] = szTmp;
 								sprintf(szTmp, "%.3f", fUsage2 / divider);
 								root["result"][ii]["v2"] = szTmp;
 								sprintf(szTmp, "%.3f", fDeliv1 / divider);
 								root["result"][ii]["r1"] = szTmp;
 								sprintf(szTmp, "%.3f", fDeliv2 / divider);
 								root["result"][ii]["r2"] = szTmp;
+
+								sprintf(szTmp, "%.4f", fPrice);
+								root["result"][ii]["p"] = szTmp;
 								ii++;
 							}
 							if (bHaveDeliverd)
@@ -1708,14 +1822,16 @@ namespace http
 					}
 					else
 					{
-						result = m_sql.safe_query("SELECT Value, Date FROM %s WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q' AND Date<='%q') ORDER BY Date ASC",
+						result = m_sql.safe_query("SELECT Value, Price, Date FROM %s WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q' AND Date<='%q') ORDER BY Date ASC",
 							dbasetable.c_str(), idx, szDateStart, szDateEnd);
 						if (!result.empty())
 						{
 							for (const auto& sd : result)
 							{
-								root["result"][ii]["d"] = sd[1].substr(0, 16);
+								root["result"][ii]["d"] = sd[2].substr(0, 16);
 								std::string szValue = sd[0];
+								float fPrice = std::stof(sd[1]);
+
 								switch (metertype)
 								{
 								case MTYPE_ENERGY:
@@ -1740,16 +1856,25 @@ namespace http
 									break;
 								}
 								root["result"][ii]["v"] = szValue;
+
+								sprintf(szTmp, "%.4f", fPrice);
+								root["result"][ii]["p"] = szTmp;
 								ii++;
 							}
 						}
 					}
 					// add today (have to calculate it)
+					strcpy(szDateStart, szDateEnd);
+					strcat(szDateEnd, " 23:59:59");
 					if (dType == pTypeP1Power)
 					{
+						int P1DisplayType = 0; //0=Low/High tariff, 1=simple (for dynamic contracts)
+						m_sql.GetPreferencesVar("P1DisplayType", P1DisplayType);
+						root["P1DisplayType"] = P1DisplayType;
+
 						result = m_sql.safe_query("SELECT MIN(Value1), MAX(Value1), MIN(Value2), MAX(Value2),MIN(Value5), MAX(Value5), MIN(Value6), MAX(Value6) FROM "
 							"MultiMeter WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q')",
-							idx, szDateEnd);
+							idx, szDateStart);
 						if (!result.empty())
 						{
 							std::vector<std::string> sd = result[0];
@@ -1775,12 +1900,12 @@ namespace http
 							if ((total_real_deliv_1 != 0) || (total_real_deliv_2 != 0))
 								bHaveDeliverd = true;
 
-							root["result"][ii]["d"] = szDateEnd;
+							root["result"][ii]["d"] = szDateStart;
 
 							sprintf(szTmp, "%" PRIu64, total_real_usage_1);
 							std::string szValue = szTmp;
 							sprintf(szTmp, "%.3f", atof(szValue.c_str()) / divider);
-							root["result"][ii]["v"] = szTmp;
+							root["result"][ii]["v1"] = szTmp;
 
 							sprintf(szTmp, "%" PRIu64, total_real_usage_2);
 							szValue = szTmp;
@@ -1797,6 +1922,15 @@ namespace http
 							sprintf(szTmp, "%.3f", atof(szValue.c_str()) / divider);
 							root["result"][ii]["r2"] = szTmp;
 
+							//Calculate price
+							float fPrice = 0;
+							if (m_sql.m_actual_prices.find(idx) != m_sql.m_actual_prices.end())
+							{
+								fPrice = m_sql.m_actual_prices[idx];
+							}
+							sprintf(szTmp, "%.4f", fPrice);
+							root["result"][ii]["p"] = szTmp;
+
 							ii++;
 							if (bHaveDeliverd)
 							{
@@ -1807,7 +1941,7 @@ namespace http
 					else if (!bIsManagedCounter)
 					{
 						// get the first value of the day
-						result = m_sql.safe_query("SELECT Value FROM Meter WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q') ORDER BY Date ASC LIMIT 1", idx, szDateEnd);
+						result = m_sql.safe_query("SELECT Value FROM Meter WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q') ORDER BY Date ASC LIMIT 1", idx, szDateStart);
 						if (!result.empty())
 						{
 							std::vector<std::string> sd = result[0];
@@ -1817,7 +1951,7 @@ namespace http
 							int64_t total_real;
 
 							// get the last value of the day
-							result = m_sql.safe_query("SELECT Value FROM Meter WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q') ORDER BY Date DESC LIMIT 1", idx, szDateEnd);
+							result = m_sql.safe_query("SELECT Value FROM Meter WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q') ORDER BY Date DESC LIMIT 1", idx, szDateStart);
 							if (!result.empty())
 							{
 								std::vector<std::string> sd = result[0];
@@ -1852,14 +1986,23 @@ namespace http
 								break;
 							}
 
-							root["result"][ii]["d"] = szDateEnd;
+							root["result"][ii]["d"] = szDateStart;
 							root["result"][ii]["v"] = szValue;
+
+							float fPrice = 0;
+							if (m_sql.m_actual_prices.find(idx) != m_sql.m_actual_prices.end())
+							{
+								fPrice = m_sql.m_actual_prices[idx];
+							}
+							sprintf(szTmp, "%.4f", fPrice);
+							root["result"][ii]["p"] = szTmp;
+
 							ii++;
 						}
 					}
 				}
 			} // week
-			else if (srange == "month" || srange	== "year" || !sgroupby.empty())
+			else if (srange == "month" || srange == "year" || !sgroupby.empty())
 			{
 				char szDateStart[40];
 				char szDateEnd[40];
@@ -1928,7 +2071,7 @@ namespace http
 
 						if (tempsign == 'F')
 						{
-							for (auto & itt : root["result"])
+							for (auto& itt : root["result"])
 							{
 								itt["s"] = ConvertTemperature(itt["s"].asDouble(), tempsign);
 							}
@@ -2503,12 +2646,16 @@ namespace http
 
 					std::function<std::string(std::string, std::string)> tableColumn = [](std::string table, std::string expr) {
 						return (table.empty() ? "" : table + ".") + expr;
-					};
+						};
 
 					int ii = 0;
 					iPrev = 0;
 					if (dType == pTypeP1Power)
 					{
+						int P1DisplayType = 0; //0=Low/High tariff, 1=simple (for dynamic contracts)
+						m_sql.GetPreferencesVar("P1DisplayType", P1DisplayType);
+						root["P1DisplayType"] = P1DisplayType;
+
 						if (!sgroupby.empty()) {
 							if (sensorarea.empty())
 							{
@@ -2526,20 +2673,20 @@ namespace http
 									return std_format(expr, deliveryLow, deliveryNormal);
 								}
 								return std::string(expr);
-							};
+								};
 							std::function<std::string(std::string)> counterExpr = [sensorareaExpr](std::string expr) {
 								return sensorareaExpr(expr.c_str(), "1", "3", "2", "4");
-							};
+								};
 							std::function<std::string(std::string)> valueExpr = [sensorareaExpr](std::string expr) {
 								return sensorareaExpr(expr.c_str(), "1", "5", "2", "6");
-							};
+								};
 							GroupBy(
 								root, dbasetable, idx, sgroupby, bIsManagedCounter,
 								[counterExpr, tableColumn](std::string table) {
 									return counterExpr(tableColumn(table, "Counter%s") + "+" + tableColumn(table, "Counter%s"));
 								},
 								[valueExpr, tableColumn](std::string table) { return valueExpr(tableColumn(table, "Value%s") + "+" + tableColumn(table, "Value%s")); },
-									[divider, this](double sum) {
+								[divider, this](double sum) {
 									if (sum == 0)
 									{
 										return std::string("0");
@@ -2552,7 +2699,7 @@ namespace http
 						{
 							// Actual Year
 							result = m_sql.safe_query("SELECT Value1,Value2,Value5,Value6, Date,"
-								" Counter1, Counter2, Counter3, Counter4 "
+								" Counter1, Counter2, Counter3, Counter4, Price "
 								"FROM %s WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q'"
 								" AND Date<='%q') ORDER BY Date ASC",
 								dbasetable.c_str(), idx, szDateStart, szDateEnd);
@@ -2580,14 +2727,20 @@ namespace http
 									{
 										bHaveDeliverd = true;
 									}
+
+									//P1DisplayType
 									sprintf(szTmp, "%.3f", fUsage_1 / divider);
-									root["result"][ii]["v"] = szTmp;
+									root["result"][ii]["v1"] = szTmp;
 									sprintf(szTmp, "%.3f", fUsage_2 / divider);
 									root["result"][ii]["v2"] = szTmp;
 									sprintf(szTmp, "%.3f", fDeliv_1 / divider);
 									root["result"][ii]["r1"] = szTmp;
 									sprintf(szTmp, "%.3f", fDeliv_2 / divider);
 									root["result"][ii]["r2"] = szTmp;
+
+									float fPrice = std::stof(sd[9]);
+									sprintf(szTmp, "%.4f", fPrice);
+									root["result"][ii]["p"] = szTmp;
 
 									if (counter_1 != 0)
 									{
@@ -2658,7 +2811,7 @@ namespace http
 										bHaveDeliverd = true;
 									}
 									sprintf(szTmp, "%.3f", fUsage_1 / divider);
-									root["resultprev"][iPrev]["v"] = szTmp;
+									root["resultprev"][iPrev]["v1"] = szTmp;
 									sprintf(szTmp, "%.3f", fUsage_2 / divider);
 									root["resultprev"][iPrev]["v2"] = szTmp;
 									sprintf(szTmp, "%.3f", fDeliv_1 / divider);
@@ -3188,24 +3341,24 @@ namespace http
 								root, dbasetable, idx, sgroupby, bIsManagedCounter, [tableColumn](std::string table) { return tableColumn(table, "Counter"); },
 								[tableColumn](std::string table) { return tableColumn(table, "Value"); },
 								[metertype, AddjValue, divider, this](double sum) {
-								if (sum == 0)
-								{
-									return std::string("0");
-								}
-								switch (metertype)
-								{
-								case MTYPE_ENERGY:
-								case MTYPE_ENERGY_GENERATED:
-									return std_format("%.3f", sum / divider);
-								case MTYPE_GAS:
-									return std_format("%.2f", sum / divider);
-								case MTYPE_WATER:
-									return std_format("%.3f", sum / divider);
-								case MTYPE_COUNTER:
-									return std_format("%.10g", sum / divider);
-								}
-								return std::string("");
-							});
+									if (sum == 0)
+									{
+										return std::string("0");
+									}
+									switch (metertype)
+									{
+									case MTYPE_ENERGY:
+									case MTYPE_ENERGY_GENERATED:
+										return std_format("%.3f", sum / divider);
+									case MTYPE_GAS:
+										return std_format("%.2f", sum / divider);
+									case MTYPE_WATER:
+										return std_format("%.3f", sum / divider);
+									case MTYPE_COUNTER:
+										return std_format("%.10g", sum / divider);
+									}
+									return std::string("");
+								});
 							ii = root["result"].size();
 						}
 						else
@@ -3213,7 +3366,7 @@ namespace http
 
 							// Actual Year
 							result =
-								m_sql.safe_query("SELECT Value, Date, Counter FROM %s WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q' AND Date<='%q') ORDER BY Date ASC",
+								m_sql.safe_query("SELECT Value, Date, Counter, Price FROM %s WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q' AND Date<='%q') ORDER BY Date ASC",
 									dbasetable.c_str(), idx, szDateStart, szDateEnd);
 							if (!result.empty())
 							{
@@ -3224,6 +3377,7 @@ namespace http
 									std::string szValue = sd[0];
 
 									double fcounter = atof(sd[2].c_str());
+									float fPrice = std::stof(sd[3]);
 
 									switch (metertype)
 									{
@@ -3265,12 +3419,14 @@ namespace http
 										root["result"][ii]["c"] = szTmp;
 										break;
 									}
+									sprintf(szTmp, "%.4f", fPrice);
+									root["result"][ii]["p"] = szTmp; // Json::Value::null;
 									ii++;
 								}
 							}
 							// Past Year
 							result =
-								m_sql.safe_query("SELECT Value, Date, Counter FROM %s WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q' AND Date<='%q') ORDER BY Date ASC",
+								m_sql.safe_query("SELECT Value, Date, Counter, Price FROM %s WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q' AND Date<='%q') ORDER BY Date ASC",
 									dbasetable.c_str(), idx, szDateStartPrev, szDateEndPrev);
 							if (!result.empty())
 							{
@@ -3280,6 +3436,8 @@ namespace http
 									root["resultprev"][iPrev]["d"] = sd[1].substr(0, 16);
 
 									std::string szValue = sd[0];
+									float fPrice = std::stof(sd[3]);
+
 									switch (metertype)
 									{
 									case MTYPE_ENERGY:
@@ -3300,6 +3458,8 @@ namespace http
 										root["resultprev"][iPrev]["v"] = szTmp;
 										break;
 									}
+									sprintf(szTmp, "%.4f", fPrice);
+									root["resultprev"][iPrev]["p"] = szTmp;
 									iPrev++;
 								}
 							}
@@ -3331,6 +3491,10 @@ namespace http
 
 					if (dType == pTypeP1Power)
 					{
+						int P1DisplayType = 0; //0=Low/High tariff, 1=simple (for dynamic contracts)
+						m_sql.GetPreferencesVar("P1DisplayType", P1DisplayType);
+						root["P1DisplayType"] = P1DisplayType;
+
 						result = m_sql.safe_query("SELECT "
 							" MIN(Value1) as levering_laag_min,"
 							" MAX(Value1) as levering_laag_max,"
@@ -3380,7 +3544,7 @@ namespace http
 								root["result"][ii]["d"] = szDateEnd;
 
 								sprintf(szTmp, "%.3f", (float)(total_real_usage_1 / divider));
-								root["result"][ii]["v"] = szTmp;
+								root["result"][ii]["v1"] = szTmp;
 								sprintf(szTmp, "%.3f", (float)(total_real_usage_2 / divider));
 								root["result"][ii]["v2"] = szTmp;
 
@@ -3407,6 +3571,14 @@ namespace http
 									root["result"][ii]["c2"] = szTmp;
 									root["result"][ii]["c4"] = szTmp;
 								}
+
+								float fPrice = 0;
+								if (m_sql.m_actual_prices.find(idx) != m_sql.m_actual_prices.end())
+								{
+									fPrice = m_sql.m_actual_prices[idx];
+								}
+								sprintf(szTmp, "%.4f", fPrice);
+								root["result"][ii]["p"] = szTmp;
 
 								ii++;
 							}
@@ -3621,6 +3793,15 @@ namespace http
 										root["result"][ii]["c"] = szTmp;
 										break;
 									}
+
+									float fPrice = 0;
+									if (m_sql.m_actual_prices.find(idx) != m_sql.m_actual_prices.end())
+									{
+										fPrice = m_sql.m_actual_prices[idx];
+									}
+									sprintf(szTmp, "%.4f", fPrice);
+									root["result"][ii]["p"] = szTmp;
+
 									ii++;
 								}
 							}
@@ -4113,6 +4294,10 @@ namespace http
 					int ii = 0;
 					if (dType == pTypeP1Power)
 					{
+						int P1DisplayType = 0; //0=Low/High tariff, 1=simple (for dynamic contracts)
+						m_sql.GetPreferencesVar("P1DisplayType", P1DisplayType);
+						root["P1DisplayType"] = P1DisplayType;
+
 						result = m_sql.safe_query("SELECT Value1,Value2,Value5,Value6, Date "
 							"FROM %s WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q'"
 							" AND Date<='%q') ORDER BY Date ASC",
@@ -4135,7 +4320,7 @@ namespace http
 								if (fDeliv != 0)
 									bHaveDeliverd = true;
 								sprintf(szTmp, "%.3f", fUsage / divider);
-								root["result"][ii]["v"] = szTmp;
+								root["result"][ii]["v1"] = szTmp;
 								sprintf(szTmp, "%.3f", fDeliv / divider);
 								root["result"][ii]["v2"] = szTmp;
 								ii++;
@@ -4218,13 +4403,13 @@ namespace http
 							sprintf(szTmp, "%" PRIu64, total_real_usage);
 							std::string szValue = szTmp;
 							sprintf(szTmp, "%.3f", atof(szValue.c_str()) / divider);
-							root["result"][ii]["v"] = szTmp;
+							root["result"][ii]["v1"] = szTmp;
 
 							sprintf(szTmp, "%" PRIu64, total_real_deliv);
 							szValue = szTmp;
 							sprintf(szTmp, "%.3f", atof(szValue.c_str()) / divider);
 							root["result"][ii]["v2"] = szTmp;
-							
+
 							ii++;
 							if (bHaveDeliverd)
 							{
