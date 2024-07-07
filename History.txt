@@ -1,25 +1,25 @@
-Version 2024.xxxxx (xxxxx 2024)
+Version 2024.5 (July 7th 2024)
 - Implemented: Currency Symbol in Location Settings
 - Implemented: dzVents, Added historical data helper 'med' to calculate the median value
-- Implemented: Enever, Added Budget Energy and Eneco
-- Implemented: Enphase, Option for more Inverter details (ac/dc voltage, temperature, lastupdate)
-- Implemented: Enphase, Live storage data
 - Implemented: Energy Dashboard
-- Implemented: Event Editor, storing/loading opened events
+- Implemented: Enever, Added Budget Energy and Eneco
+- Implemented: Enphase, Live storage data
+- Implemented: Enphase, Option for more Inverter details (ac/dc voltage, temperature, lastupdate)
+- Implemented: Event Editor, Close/Close All menu dropdown
+- Implemented: Event Editor, Storing/Loading opened events
 - Implemented: Hour chart for P1 log
 - Implemented: MQTT-AD Climate Fan Mode
 - Implemented: MQTT-AD Climate Swing Mode
 - Implemented: OpenWeatherMap, API 3.0 support
-- Implemented: Event Editor, Close/Close All menu dropdown
-- Implemented: Possible to query a range of device states via JSON
 - Implemented: P1 Meter, option to specify view (low/high tariff or simple (dynamic contract))
+- Implemented: Possible to query a range of device states via JSON
 - Implemented: SolarEdge, polling Storage devices
+- Fixed: Data Pushers, Forecast for Weather Station subtypes
 - Fixed: Floorplan, better detection of switches
 - Fixed: Hardware Setup, hiding extra parameters when selecting a python plugin
 - Fixed: PythonEx framework, two notifications where send for switch type devices
 - Fixed: Python framework, custom image loading
-- Fixed: Data Pushers, Forecast for Weather Station subtypes
-- Removed: Cereal Proxy (not needed anymore)
+- Removed: Cereal Proxy (not used anymore)
 - Changed: Custom Templates are not cached in browser
 - Changed: EvoHome, now making use of general logging system
 - Changed: MQTT-AD, now also handles brightness scale number values as string
