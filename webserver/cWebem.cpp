@@ -19,8 +19,10 @@
 #include "../main/Helper.h"
 #include "../main/Logger.h"
 
+#define JWT_DISABLE_PICOJSON
 #define JWT_DISABLE_BASE64
-#include "../jwt-cpp/jwt.h"
+//#include "../jwt-cpp/jwt.h"
+#include "../jwt-cpp/traits/open-source-parsers-jsoncpp/traits.h"
 
 #define SHORT_SESSION_TIMEOUT 600 // 10 minutes
 #define LONG_SESSION_TIMEOUT (30 * 86400) // 30 days
@@ -1303,7 +1305,9 @@ namespace http {
 					{
 						// We found the text JWT, now let's really check if it as a valid JWT Token
 						// Step 1: Check if the JWT has an algorithm in the header AND an issuer (iss) claim in the payload
-						auto decodedJWT = jwt::decode(sToken, &base64url_decode);
+						using traits = jwt::traits::open_source_parsers_jsoncpp;
+
+						auto decodedJWT = jwt::decode<traits>(sToken, &base64url_decode);
 						if(!decodedJWT.has_algorithm())
 						{
 							_log.Debug(DEBUG_AUTH,"[JWT] Token does not contain an algorithm!");
@@ -1346,7 +1350,7 @@ namespace http {
 						// Step 3: Using the (hashed :( ) password of the ClientID as our ClientSecret to verify the JWT signature
 						std::string JWTalgo = decodedJWT.get_algorithm();
 						std::error_code ec;
-						auto JWTverifyer = jwt::verify().with_issuer(myWebem->m_DigistRealm).with_audience(clientid);
+						auto JWTverifyer = jwt::verify<traits>().with_issuer(myWebem->m_DigistRealm).with_audience(clientid);
 						if (JWTalgo.compare("HS256") == 0)
 						{
 							JWTverifyer.allow_algorithm(jwt::algorithm::hs256{ clientsecret });
@@ -1454,7 +1458,9 @@ namespace http {
 						if ((my.Password == hashedsecret) || (my.ActiveTabs == 1))	// We 'abuse' the Users ActiveTabs as the Application Public 'boolean'
 						{
 							_log.Debug(DEBUG_AUTH, "[JWT] Generate Token for %s using clientid %s (privKey %d)!", user.c_str(), clientid.c_str(), my.ActiveTabs);
-							auto JWT = jwt::create()
+							using traits = jwt::traits::open_source_parsers_jsoncpp;
+
+							auto JWT = jwt::create<traits>()
 								.set_type("JWT")
 								.set_key_id(std::to_string(my.ID))
 								.set_issuer(m_DigistRealm)
@@ -1473,19 +1479,19 @@ namespace http {
 										if(jwtpayload[id].isNumeric())
 										{
 											double dVal(jwtpayload[id].asDouble());
-											JWT.set_payload_claim(id, picojson::value(dVal));
+											JWT.set_payload_claim(id, dVal);
 										}
 										else if(jwtpayload[id].isString())
 										{
 											std::string sVal(jwtpayload[id].asString());
-											JWT.set_payload_claim(id, picojson::value(sVal));
+											JWT.set_payload_claim(id, sVal);
 										}
 										else if(jwtpayload[id].isArray())
 										{
 											std::vector<std::string> aStrList;
 											aStrList.reserve(jwtpayload[id].size());
 											std::transform(jwtpayload[id].begin(), jwtpayload[id].end(), std::back_inserter(aStrList),[](const auto& s) { return s.asString(); });
-											JWT.set_payload_claim(id, jwt::claim(aStrList.begin(), aStrList.end()));
+											JWT.set_payload_claim(id, jwt::basic_claim<traits>(aStrList.begin(), aStrList.end()));
 										}
 									}
 								}
