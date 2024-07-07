@@ -5,8 +5,10 @@
 #include "../main/SQLHelper.h"
 #include "../main/json_helper.h"
 
+#define JWT_DISABLE_PICOJSON
 #define JWT_DISABLE_BASE64
-#include "../jwt-cpp/jwt.h"
+//#include "../jwt-cpp/jwt.h"
+#include "../jwt-cpp/traits/open-source-parsers-jsoncpp/traits.h"
 #include "../webserver/Base64.h"
 
 #define GAPI_FCM_POST_URL_BASE "https://fcm.googleapis.com/v1/projects/##PROJECTID##/messages:send"
@@ -303,17 +305,19 @@ bool CNotificationFCM::getSlAccessToken(const std::string &bearer_token, std::st
 
 bool CNotificationFCM::createFCMjwt(const std::string &FCMissuer, std::string &sFCMjwt)
 {
+	using traits = jwt::traits::open_source_parsers_jsoncpp;
+
 	sFCMjwt.clear();
 
 	try
 	{
-	auto JWT = jwt::create()
+	auto JWT = jwt::create<traits>()
 		.set_type("JWT")
 		.set_issuer(FCMissuer)
 		.set_audience(GAPI_OAUTH2_TOKEN_URL)
 		.set_issued_at(std::chrono::system_clock::now())
 		.set_expires_at(std::chrono::system_clock::now() + std::chrono::seconds{600})
-		.set_payload_claim("scope", jwt::claim(std::string{GAPI_FCM_SCOPE}));
+		.set_payload_claim("scope", (std::string{GAPI_FCM_SCOPE}));
 		sFCMjwt = JWT.sign(jwt::algorithm::rs256{"", m_GAPI_FCM_privkey, "", ""}, &base64url_encode);
 	}
 	catch(const std::exception& err)
