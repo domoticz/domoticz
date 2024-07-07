@@ -1,5 +1,8 @@
 <!--
 History:
+ v1.14 2024-07-07
+	- Replaced circle rects with circles
+
  v1.13 2024-06-15
 	- Added Solar Price
 
@@ -208,7 +211,7 @@ History:
 				
 				<text id="etext" x="30" y="51.7" font-size="2.1px" text-anchor="middle" style="font-variant-caps: normal; font-variant-east-asian: normal; font-variant-ligatures: normal; font-variant-numeric: normal; font-weight: bold; white-space: pre;">{{ fBattSoc }}%</text>
 				<text id="etext" x="30" y="54" font-size="1.6px" text-anchor="middle" style="font-variant-caps: normal; font-variant-east-asian: normal; font-variant-ligatures: normal; font-variant-numeric: normal; font-weight: bold; white-space: pre;">{{ fActualBattWatt }} Watt</text>
-				<rect id="rectBatt" x="23" y="43" width="14" height="14" ry="7" fill="none" stroke="#90e090" stroke-linecap="round" stroke-width=".3"/>
+				<circle r="7" cx="30" cy="50" fill="none" stroke="#90e090" stroke-width=".3"/>
 			</g>
 			<g id="groupSolar">
 				<g id="eicon" transform="matrix(0.0095, 0, 0, 0.0095, 27, 4.5)" ng-show="!customIconSolar">
@@ -279,7 +282,8 @@ History:
 					<text id="etext" x="30" y="14" font-size="1.6px" text-anchor="middle" style="font-variant-caps: normal; font-variant-east-asian: normal; font-variant-ligatures: normal; font-variant-numeric: normal; font-weight: bold; white-space: pre;">{{ fActualSolar }} Watt</text>
 					<text id="etext" x="30" y="15.8" opacity="0.4" font-size="1.2px" text-anchor="middle" style="white-space: pre;" ng-show="solarPrice!=1000">{{ solarPrice | number:2 }} {{ config.CurrencySign }}</text>
 				</g>
-				<rect id="rectSolar" x="23" y="3" width="14" height="14" ry="7" fill="none" stroke="#ffd000" stroke-linecap="round" stroke-width=".3"/>
+				<circle r="7" cx="30" cy="10" fill="none" stroke="#ffd000" stroke-width=".3"/>
+
 			</g>
 			<line id="lineRT1" x1="50" y1="19" x2="50" y2="23" style="stroke:#777;stroke-width:0.2" ng-show="bDisplayRT1"/>
 			<line id="lineRB1" x1="50" y1="37" x2="50" y2="41" style="stroke:#777;stroke-width:0.2" ng-show="bDisplayRB1"/>
@@ -291,7 +295,7 @@ History:
 					<image width="48" height="48" xlink:href="{{customIconGas}}" />
 				</g>
 				<text id="etext" x="50" y="16.4" font-size="1.6px" text-anchor="middle" style="font-variant-caps: normal; font-variant-east-asian: normal; font-variant-ligatures: normal; font-variant-numeric: normal; white-space: pre; font-weight: bold;">{{ txtDayGasUsage }}</text>
-				<rect id="rectGas" x="45" y="9" width="10" height="10" ry="5" fill="none" stroke="#e06040" stroke-linecap="round" stroke-width=".3"/>
+				<circle r="5" cx="50" cy="14" fill="none" stroke="#e06040" stroke-width=".3"/>
 				<text id="etext" x="50" y="17.9" opacity="0.4" font-size="1.2px" text-anchor="middle" style="white-space: pre;" ng-show="gasPrice!=1000">{{ gasPrice | number:2 }} {{ config.CurrencySign }}</text>
 			</g>
 			<g id="groupWater" ng-attr-transform="{{ water_transform }}" ng-show="idWater!=-1">
@@ -302,7 +306,7 @@ History:
 					<image width="48" height="48" xlink:href="{{customIconWater}}" />
 				</g>
 				<text id="etext" x="50" y="48.4" font-size="1.6px" text-anchor="middle" style="font-variant-caps: normal; font-variant-east-asian: normal; font-variant-ligatures: normal; font-variant-numeric: normal; white-space: pre; font-weight: bold;">{{ txtDayWaterUsage }}</text>
-				<rect id="rectWater" x="45" y="41" width="10" height="10" ry="5" fill="none" stroke="#80c0f0" stroke-linecap="round" stroke-width=".3"/>
+				<circle r="5" cx="50" cy="46" fill="none" stroke="#80c0f0" stroke-width=".3"/>
 				<text id="etext" x="50" y="49.9" opacity="0.4" font-size="1.2px" text-anchor="middle" style="white-space: pre;" ng-show="waterPrice!=1000">{{ waterPrice | number:2 }} {{ config.CurrencySign }}</text>
 			</g>
 			<g id="groupH1" transform="matrix(1, 0, 0, 1, 54.5, 15)" ng-show="idItemH1 != -1">
@@ -317,7 +321,7 @@ History:
 				<text id="etext" x="5" y="5.7" opacity="0.6" font-size="1.0px" text-anchor="middle" style="font-variant-caps: normal; font-variant-east-asian: normal; font-variant-ligatures: normal; font-variant-numeric: normal; white-space: pre; font-weight: bold;" ng-show="txtKwhItemH1">{{ txtKwhItemH1 }}</text>
 				<text id="etext" x="5" y="7.2" font-size="1.5px" text-anchor="middle" style="font-variant-caps: normal; font-variant-east-asian: normal; font-variant-ligatures: normal; font-variant-numeric: normal; white-space: pre; font-weight: bold;">{{ txtItemH1 }}</text>
 				<text id="etext" x="5" y="8.7" opacity="0.4" font-size="1.2px" text-anchor="middle" style="white-space: pre;" ng-show="h1Price!=1000">{{ h1Price | number:2 }} {{ config.CurrencySign }}</text>
-				<rect x="0" y="0" width="10" height="10" ry="5" fill="none" stroke="#668044" stroke-linecap="round" stroke-width=".3"/>
+				<circle r="5" cx="5" cy="5" fill="none" stroke="#668044" stroke-width=".3"/>
 			</g>
 			<g id="groupH2" transform="matrix(1, 0, 0, 1, 59, 25)" ng-show="idItemH2 != -1">
 				<g id="eicon" transform="matrix(1, 0, 0, 1, 0, 0)" ng-show="!customIconH2">
@@ -330,7 +334,7 @@ History:
 				<text id="etext" x="5" y="5.7" opacity="0.6" font-size="1.0px" text-anchor="middle" style="font-variant-caps: normal; font-variant-east-asian: normal; font-variant-ligatures: normal; font-variant-numeric: normal; white-space: pre; font-weight: bold;" ng-show="txtKwhItemH2">{{ txtKwhItemH2 }}</text>
 				<text id="etext" x="5" y="7.2" font-size="1.5px" text-anchor="middle" style="font-variant-caps: normal; font-variant-east-asian: normal; font-variant-ligatures: normal; font-variant-numeric: normal; white-space: pre; font-weight: bold;">{{ txtItemH2 }}</text>
 				<text id="etext" x="5" y="8.7" opacity="0.4" font-size="1.2px" text-anchor="middle" style="white-space: pre;" ng-show="h2Price!=1000">{{ h2Price | number:2 }} {{ config.CurrencySign }}</text>
-				<rect x="0" y="0" width="10" height="10" ry="5" fill="none" stroke="#668044" stroke-linecap="round" stroke-width=".3"/>
+				<circle r="5" cx="5" cy="5" fill="none" stroke="#668044" stroke-width=".3"/>
 			</g>
 			<g id="groupH3" transform="matrix(1, 0, 0, 1, 54.5, 35)" ng-show="idItemH3 != -1">
 				<g id="eicon" transform="matrix(1, 0, 0, 1, 0, 0)" ng-show="!customIconH3">
@@ -343,7 +347,7 @@ History:
 				<text id="etext" x="5" y="5.7" opacity="0.6" font-size="1.0px" text-anchor="middle" style="font-variant-caps: normal; font-variant-east-asian: normal; font-variant-ligatures: normal; font-variant-numeric: normal; white-space: pre; font-weight: bold;" ng-show="txtKwhItemH3">{{ txtKwhItemH3 }}</text>
 				<text id="etext" x="5" y="7.2" font-size="1.5px" text-anchor="middle" style="font-variant-caps: normal; font-variant-east-asian: normal; font-variant-ligatures: normal; font-variant-numeric: normal; white-space: pre; font-weight: bold;">{{ txtItemH3 }}</text>
 				<text id="etext" x="5" y="8.7" opacity="0.4" font-size="1.2px" text-anchor="middle" style="white-space: pre;" ng-show="h3Price!=1000">{{ h3Price | number:2 }} {{ config.CurrencySign }}</text>
-				<rect x="0" y="0" width="10" height="10" ry="5" fill="none" stroke="#668044" stroke-linecap="round" stroke-width=".3"/>
+				<circle r="5" cx="5" cy="5" fill="none" stroke="#668044" stroke-width=".3"/>
 			</g>
 			<g id="groupHome">
 				<g id="eicon" transform="matrix(0.07, 0, 0, 0.07, 48, 24.5)" ng-show="!useCustomIcons">
@@ -375,7 +379,7 @@ History:
 				</g>
 				<text id="etext" x="50" y="30.5" font-size="1.6px" text-anchor="middle" style="font-variant-caps: normal; font-variant-east-asian: normal; font-variant-ligatures: normal; font-variant-numeric: normal; white-space: pre;">{{ fTotalHomeUsage | number:3 }} kWh</text>
 				<text id="etext" x="50" y="33" font-size="1.6px" text-anchor="middle" style="font-variant-caps: normal; font-variant-east-asian: normal; font-variant-ligatures: normal; font-variant-numeric: normal; font-weight: bold; white-space: pre;">{{ finalHomeUsage }} Watt</text>
-				<rect id="rectHome" x="43" y="23" width="14" height="14" ry="7" fill="none" stroke="#ff7bff" stroke-linecap="round" stroke-width=".3"/>
+				<circle r="7" cx="50" cy="30" fill="none" stroke="#ff7bff" stroke-width=".3"/>
 			</g>
 			<g id="groupNet">
 				<g id="eicon" transform="matrix(0.006, 0, 0, 0.007, 8.6, 24)" ng-show="!customIconGrid">
@@ -391,7 +395,7 @@ History:
 				<text id="etext" x="10" y="29" font-size="1.6px" text-anchor="middle" style="font-variant-caps: normal; font-variant-east-asian: normal; font-variant-ligatures: normal; font-variant-numeric: normal; white-space: pre;">⇨ {{ fDayNetUsage | number:3 }} kWh</text>
 				<text id="etext" x="10" y="33.6" font-size="1.6px" text-anchor="middle" style="font-variant-caps: normal; font-variant-east-asian: normal; font-variant-ligatures: normal; font-variant-numeric: normal; font-weight: bold; white-space: pre;">{{ fActualNet }} Watt</text>
 				<text id="etext" x="10" y="35.8" opacity="0.4" font-size="1.2px" text-anchor="middle" style="white-space: pre;" ng-show="p1Price!=1000">{{ p1Price | number:2 }} {{ config.CurrencySign }}</text>
-				<rect id="rectNet" x="3" y="23" width="14" height="14" ry="7" fill="none" stroke="#00c6da" stroke-linecap="round" stroke-width=".3"/>
+				<circle r="7" cx="10" cy="30" fill="none" stroke="#00c6da" stroke-width=".3"/>
 			</g>
 		</svg>
 	</div>
