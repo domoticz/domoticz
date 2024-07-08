@@ -2,12 +2,12 @@ local jsonParser = require('JSON')
 local _ = require('lodash')
 
 local self = {
-	LOG_FORCE = 0.5,
 	LOG_DEBUG = 1,
 	LOG_MODULE_EXEC_INFO = 2,
 	LOG_INFO = 3,
 	LOG_STATUS = 4,
 	LOG_ERROR = 5,
+	LOG_FORCE = 6,
 	DZVERSION = '3.1.10',
 }
 
