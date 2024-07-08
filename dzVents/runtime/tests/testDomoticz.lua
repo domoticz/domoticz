@@ -166,12 +166,12 @@ describe('Domoticz', function()
 		end)
 
 		it('should have log constants', function()
-			assert.is_same(domoticz['LOG_FORCE'], 0.5)
 			assert.is_same(domoticz['LOG_DEBUG'], 1)
 			assert.is_same(domoticz['LOG_MODULE_EXEC_INFO'], 2)
 			assert.is_same(domoticz['LOG_INFO'], 3)
 			assert.is_same(domoticz['LOG_STATUS'], 4)
 			assert.is_same(domoticz['LOG_ERROR'], 5)
+			assert.is_same(domoticz['LOG_FORCE'], 6)
 		end)
 
 		it('should have NSS constants', function()

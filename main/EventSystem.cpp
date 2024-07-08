@@ -304,9 +304,7 @@ void CEventSystem::LoadEvents()
 		}
 	}
 	m_mainworker.m_notificationsystem.Notify(Notification::DZ_ALLEVENTRESET, Notification::STATUS_INFO);
-#ifdef _DEBUG
-	_log.Log(LOG_STATUS, "EventSystem: Events (re)loaded");
-#endif
+	_log.Debug(DEBUG_EVENTSYSTEM, "EventSystem: Events (re)loaded");
 }
 
 void CEventSystem::Do_Work()
@@ -520,7 +518,6 @@ void CEventSystem::GetCurrentUserVariables()
 {
 	boost::unique_lock<boost::shared_mutex> uservariablesMutexLock(m_uservariablesMutex);
 
-	//_log.Log(LOG_STATUS, "EventSystem: reset all user variables...");
 	m_uservariables.clear();
 
 	std::vector<std::vector<std::string> > result;
@@ -1336,7 +1333,6 @@ std::string CEventSystem::UpdateSingleState(
 	auto itt = m_devicestates.find(ulDevID);
 	if (itt != m_devicestates.end())
 	{
-		//_log.Log(LOG_STATUS,"EventSystem: update device %" PRIu64 "",ulDevID);
 		_tDeviceStatus replaceitem = itt->second;
 		replaceitem.deviceName = l_deviceName;
 		//replaceitem.batteryLevel = batteryLevel;
@@ -1359,7 +1355,6 @@ std::string CEventSystem::UpdateSingleState(
 	}
 	else
 	{
-		//_log.Log(LOG_STATUS,"EventSystem: insert device %" PRIu64 "",ulDevID);
 		_tDeviceStatus newitem;
 		newitem.devType = devType;
 		newitem.subType = subType;
@@ -1404,10 +1399,7 @@ void CEventSystem::EventQueueThread()
 
 		if (m_TaskQueue.IsStopRequested(0))
 			break;
-#ifdef _DEBUG
-		//_log.Log(LOG_STATUS, "EventSystem: \n reason => %d\n id => %" PRIu64 "\n devname => %s\n nValue => %d\n sValue => %s\n nValueWording => %s\n lastUpdate => %s\n lastLevel => %d\n",
-			//item.reason, item.id, item.devname.c_str(), item.nValue, item.sValue.c_str(), item.nValueWording.c_str(), item.lastUpdate.c_str(), item.lastLevel);
-#endif
+
 		for (const auto &i : items)
 		{
 			if (i.id == item.id && i.reason <= REASON_SCENEGROUP && i.reason == item.reason)
@@ -1599,7 +1591,6 @@ void CEventSystem::EvaluateEvent(const std::vector<_tEventQueue> &items)
 					EvaluateLua(item, m_lua_Dir + filename, "");
 				}
 			}
-			// else _log.Log(LOG_STATUS,"EventSystem: ignore file not .lua or is demo file: %s", filename.c_str());
 		}
 
 #ifdef ENABLE_PYTHON
@@ -1620,7 +1611,6 @@ void CEventSystem::EvaluateEvent(const std::vector<_tEventQueue> &items)
 						EvaluatePython(item, m_python_Dir + filename, "");
 					}
 				}
-				// else _log.Log(LOG_STATUS,"EventSystem: ignore file not .py or is demo file: %s", filename.c_str());
 			}
 		}
 		catch (...)
@@ -1670,7 +1660,7 @@ lua_State *CEventSystem::CreateBlocklyLuaState()
 		lua_settop(lua_state, 0);
 	}
 
-	// reroute print library to domoticz logger
+	// reroute print library to Domoticz logger
 	luaL_openlibs(lua_state);
 	lua_pushcfunction(lua_state, l_domoticz_print);
 	lua_setglobal(lua_state, "print");
@@ -1848,7 +1838,6 @@ lua_State *CEventSystem::ParseBlocklyLua(lua_State *lua_state, const _tEventItem
 			return nullptr;
 	}
 
-	//_log.Log(LOG_STATUS,"EventSystem: ifc: %s",ifCondition.c_str());
 	if (luaL_dostring(lua_state, ifCondition.c_str()))
 	{
 		_log.Log(LOG_ERROR, "EventSystem: Lua script error (Blockly), Name: %s => %s", item.Name.c_str(), lua_tostring(lua_state, -1));
@@ -2116,7 +2105,6 @@ bool CEventSystem::parseBlocklyActions(const _tEventItem &item)
 {
 	if (isEventscheduled(item.Name))
 	{
-		//_log.Log(LOG_NORM,"Already scheduled this event, skipping");
 		return false;
 	}
 	bool actionsDone = false;
@@ -2507,9 +2495,9 @@ void CEventSystem::ParseActionString(const std::string &oAction_, _tActionParseR
 			}
 		}
 	}
-#ifdef _DEBUG
-	_log.Log(
-		LOG_NORM, "Command=%s, FOR=%.2f, AFTER=%.2f, RANDOM=%.2f, REPEAT=%d INTERVAL %.2f",
+	_log.Debug(
+		DEBUG_EVENTSYSTEM,
+		"Command=%s, FOR=%.2f, AFTER=%.2f, RANDOM=%.2f, REPEAT=%d INTERVAL %.2f",
 		oResults_.sCommand.c_str(),
 		oResults_.fForSec,
 		oResults_.fAfterSec,
@@ -2517,7 +2505,6 @@ void CEventSystem::ParseActionString(const std::string &oAction_, _tActionParseR
 		oResults_.iRepeat,
 		oResults_.fRepeatSec
 	);
-#endif
 }
 
 #ifdef ENABLE_PYTHON
@@ -2588,9 +2575,6 @@ bool CEventSystem::PythonScheduleEvent(const std::string &ID, const std::string 
 
 void CEventSystem::EvaluatePython(const _tEventQueue &item, const std::string &filename, const std::string &PyString)
 {
-	//_log.Log(LOG_NORM, "EventSystem: Already scheduled this event, skipping");
-	// _log.Log(LOG_STATUS, "EventSystem: script %s trigger, file: %s, script: %s, deviceName: %s" , reason.c_str(), filename.c_str(), PyString.c_str(), devname.c_str());
-
 	Plugins::PythonEventsProcessPython(m_szReason[item.reason], filename, PyString, item.id, m_devicestates, m_uservariables, getSunRiseSunSetMinutes("Sunrise"),
 		getSunRiseSunSetMinutes("Sunset"));
 
@@ -3002,9 +2986,7 @@ void CEventSystem::EvaluateLua(const std::vector<_tEventQueue> &items, const std
 	lua_pushcfunction(lua_state, l_domoticz_applyXPath);
 	lua_setglobal(lua_state, "domoticz_applyXPath");
 
-#ifdef _DEBUG
-	_log.Log(LOG_STATUS, "EventSystem: script %s trigger (%s)", m_szReason[items[0].reason].c_str(), filename.c_str());
-#endif
+	_log.Debug(DEBUG_EVENTSYSTEM, "EventSystem: script %s trigger (%s)", m_szReason[items[0].reason].c_str(), filename.c_str());
 
 	int sunTimers[10];
 	if (m_mainworker.m_SunRiseSetMins.size() == 10)
@@ -3085,10 +3067,6 @@ void CEventSystem::EvaluateLua(const std::vector<_tEventQueue> &items, const std
 		{
 			_log.Log(LOG_ERROR, "EventSystem: Warning!, lua script %s has been running for more than 10 seconds", filename.c_str());
 		}
-		else
-		{
-			//_log.Log(LOG_ERROR, "EventSystem: lua script completed");
-		}
 	}
 	else
 	{
@@ -3096,37 +3074,6 @@ void CEventSystem::EvaluateLua(const std::vector<_tEventQueue> &items, const std
 		lua_close(lua_state);
 		return;
 	}
-
-	/*
-	if (status == 0)
-	{
-		lua_sethook(lua_state, luaStop, LUA_MASKCOUNT, 10000000);
-		status = lua_pcall(lua_state, 0, LUA_MULTRET, 0);
-	}
-
-	report_errors(lua_state, status);
-
-	bool scriptTrue = false;
-	lua_getglobal(lua_state, "commandArray");
-	if (lua_istable(lua_state, -1))
-	{
-		int tIndex = lua_gettop(lua_state);
-		scriptTrue = iterateLuaTable(lua_state, tIndex, filename);
-	}
-	else
-	{
-		if (status == 0)
-		{
-			_log.Log(LOG_ERROR, "EventSystem: Lua script did not return a commandArray");
-		}
-	}
-
-	if (scriptTrue)
-	{
-		_log.Log(LOG_STATUS, "EventSystem: Script event triggered: %s", filename.c_str());
-	}
-	lua_close(lua_state);
-	*/
 }
 
 void CEventSystem::luaThread(lua_State *lua_state, const std::string &filename)
@@ -3703,9 +3650,7 @@ bool CEventSystem::ScheduleEvent(int deviceID, const std::string &Action, bool i
 			tItem = _tTaskItem::SwitchLightEvent(fDelayTime, deviceID, oParseResults.sCommand, level, NoColor, eventName, "EventSystem/" + eventName);
 		}
 		m_sql.AddTaskItem(tItem);
-#ifdef _DEBUG
-		_log.Log(LOG_STATUS, "EventSystem: Scheduled %s after %0.2f.", tItem._command.c_str(), tItem._DelayTime);
-#endif
+		_log.Debug(DEBUG_EVENTSYSTEM, "EventSystem: Scheduled %s after %0.2f.", tItem._command.c_str(), tItem._DelayTime);
 
 		if (
 			oParseResults.fForSec > (1. / timer_resolution_hz / 2)
@@ -3732,9 +3677,8 @@ bool CEventSystem::ScheduleEvent(int deviceID, const std::string &Action, bool i
 				tDelayedtItem = _tTaskItem::SwitchLightEvent(fDelayTime, deviceID, previousState, previousLevel, NoColor, eventName, "EventSystem/" + eventName);
 			}
 			m_sql.AddTaskItem(tDelayedtItem);
-#ifdef _DEBUG
-			_log.Log(LOG_STATUS, "EventSystem: Scheduled %s after %0.2f.", tDelayedtItem._command.c_str(), tDelayedtItem._DelayTime);
-#endif
+
+			_log.Debug(DEBUG_EVENTSYSTEM, "EventSystem: Scheduled %s after %0.2f.", tDelayedtItem._command.c_str(), tDelayedtItem._DelayTime);
 		}
 	}
 	return true;
