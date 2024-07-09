@@ -113,10 +113,10 @@ bool CNotificationFCM::SendMessageImplementation(
 	// Add the default 'data' fields we always want to send if available
 	vExtraData.push_back("deviceid=" + std::to_string(Idx));
 	vExtraData.push_back("priority=" + std::to_string(Priority));
-	if (!Name.empty())
-		vExtraData.push_back("message=" + Name);
-	if (!Subject.empty())
+	if (!Subject.empty()) {
 		vExtraData.push_back("subject=" + Subject);
+		vExtraData.push_back("message=" + Subject);
+	}
 	if (!Text.empty())
 		vExtraData.push_back("body=" + Text);
 	if (!Sound.empty())
