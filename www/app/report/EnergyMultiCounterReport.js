@@ -206,6 +206,7 @@ define(['app', 'report/helpers'], function (app, reportHelpers) {
 
                     vm.data = data;
                     vm.hasReturn = checkDataKey(data, 'return1');
+					vm.P1DisplayType = data.P1DisplayType;
 
                     showTable(data);
                     showUsageChart(data)
