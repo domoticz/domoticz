@@ -4,7 +4,7 @@ _Applies to version: 2023.1 and up_
 
 This document describes the security options within Domoticz.
 
-By default, any Domoticz installation gets a default User/Password for an _admin_ user as basic protection for the netwerk it is placed in. 
+By default, any Domoticz installation gets a default User/Password for an _admin_ user as basic protection for the network it is placed in. 
 
 __NOTE__: _First thing to do is changing the default password into something else!_
 
