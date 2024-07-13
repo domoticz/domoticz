@@ -1,3 +1,7 @@
+Version 2024.7 (July 13th 2024)
+- Implemented: P1 Meter, Report, Header now also supports simple mode (No T1/T2/R1/R2 but just total)
+- Fixed: Google Cloud Messaging (GCM/FCM) possible crash when notification needed to be send
+
 Version 2024.6 (July 8th 2024)
 - Fixed: EventSystem, LOG_FORCE now always logged
 - Changed: Google Cloud Messaging (GCM) now uses the new v1 API of Google's Firebase Cloud Messaging (FCM)

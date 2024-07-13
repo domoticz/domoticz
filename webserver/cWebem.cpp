@@ -2213,7 +2213,7 @@ namespace http {
 			else if (!realHost.empty())
 			{
 				if (AreWeInTrustedNetwork(session.remote_host))
-				{	// We only use Proxy header information if the connection Domotic receives comes from a Trusted network
+				{	// We only use Proxy header information if the connection Domoticz receives comes from a Trusted network
 					session.remote_host = realHost;		// replace the host of the connection with the originating host behind the proxies
 					rep.originHost = realHost;
 					bUseRealHost = true;

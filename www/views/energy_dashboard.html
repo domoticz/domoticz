@@ -1,5 +1,8 @@
 <!--
 History:
+ v1.15 2024-07-010
+	- Now possible to use without PV system
+
  v1.14 2024-07-07
 	- Replaced circle rects with circles
 
@@ -146,7 +149,7 @@ History:
 				<g transform="matrix(0.075, 0, 0, 0.075, 28.2, 45)" ng-show="customIconBatt">
 					<image width="48" height="48" xlink:href="{{customIconBatt}}" />
 				</g>
-				<line id="SolarToBatt" x1="30" y1="17" x2="30" y2="43" style="stroke:#ffd050;stroke-width:{{flowStrokeBack}}"/>
+				<line id="SolarToBatt" x1="30" y1="17" x2="30" y2="43" style="stroke:#ffd050;stroke-width:{{flowStrokeBack}}" ng-show="idSolar != -1"/>
 				<g ng-show="fSolarToBatt>0">
 					<line id="SolarToBatt-flow" x1="30" y1="17" x2="30" y2="43" style="stroke:red;stroke-width:0.2" ng-show="flowAsLines"/>
 					<ellipse
@@ -213,7 +216,7 @@ History:
 				<text id="etext" x="30" y="54" font-size="1.6px" text-anchor="middle" style="font-variant-caps: normal; font-variant-east-asian: normal; font-variant-ligatures: normal; font-variant-numeric: normal; font-weight: bold; white-space: pre;">{{ fActualBattWatt }} Watt</text>
 				<circle r="7" cx="30" cy="50" fill="none" stroke="#90e090" stroke-width=".3"/>
 			</g>
-			<g id="groupSolar">
+			<g id="groupSolar" ng-show="idSolar != -1">
 				<g id="eicon" transform="matrix(0.0095, 0, 0, 0.0095, 27, 4.5)" ng-show="!customIconSolar">
 					<path d="M77.604,241.753l10.047-41.623c-21.697-9.842-38.879-39.91-38.879-65.383c0-40.4,32.761-73.162,73.162-73.162
 						c31.978,0,59.097,20.563,69.049,49.153h28.136c4.574-7.435,17.672-17.408,15.484-22.67c-2.766-6.681-27.566-1.566-31.546-7.515
