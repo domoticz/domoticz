@@ -110,21 +110,6 @@ bool CNotificationFCM::SendMessageImplementation(
 		}
 	}
 
-	// Add the default 'data' fields we always want to send if available
-	vExtraData.push_back("deviceid=" + std::to_string(Idx));
-	vExtraData.push_back("priority=" + std::to_string(Priority));
-	if (!ExtraData.empty()) {
-		vExtraData.push_back("extradata=" + ExtraData);
-	}
-	if (!Subject.empty()) {
-		vExtraData.push_back("subject=" + Subject);
-		vExtraData.push_back("message=" + Subject);
-	}
-	if (!Text.empty())
-		vExtraData.push_back("body=" + Text);
-	if (!Sound.empty())
-		vExtraData.push_back("sound=" + Sound);
-
 	//Get All Devices
 	std::vector<std::vector<std::string>> mobileDevices;
 	std::string szQuery("SELECT ID,Active,Name,DeviceType,SenderID FROM MobileDevices");
@@ -153,6 +138,21 @@ bool CNotificationFCM::SendMessageImplementation(
 		return false;
 	}
 
+	// Add the default 'data' fields we always want to send if available
+	vExtraData.push_back("deviceid=" + std::to_string(Idx));
+	vExtraData.push_back("priority=" + std::to_string(Priority));
+	if (!ExtraData.empty()) {
+		vExtraData.push_back("extradata=" + ExtraData);
+	}
+	if (!Subject.empty()) {
+		vExtraData.push_back("subject=" + Subject);
+		vExtraData.push_back("message=" + Subject);		// To-Do: Depricated - This is not needed anymore for the updated mobile App. Will be removed soon
+	}
+	if (!Text.empty())
+		vExtraData.push_back("body=" + Text);
+	if (!Sound.empty())
+		vExtraData.push_back("sound=" + Sound);
+
 	std::vector<std::string> ExtraHeaders;
 	std::stringstream sstr2;
 	uint8_t iSend = 0;
@@ -175,23 +175,22 @@ bool CNotificationFCM::SendMessageImplementation(
 
 		sstr << R"({ "validate_only": false, "message": {)";	// Open Send Message struct
 
-		if (!vExtraData.empty())
+		uint8_t iKVs = 0;
+		sstr << R"("data": { )";
+		for (std::string &extraDataKV : vExtraData)
 		{
-			uint8_t iKVs = 0;
-			sstr << R"("data": { )";
-			for (std::string &extraDataKV : vExtraData)
-			{
-				if (extraDataKV.find("=") == std::string::npos)
-					continue;
-				if (iKVs > 0)
-					sstr << R"(, )";
-				std::vector<std::string> aKV;
-				StringSplit(extraDataKV, "=", aKV);
-				sstr << R"(")" << aKV[0] << R"(": ")" << aKV[1] << R"(")";
-				iKVs++;
-			}
-			sstr << R"(}, )";
+			if (extraDataKV.find("=") == std::string::npos)
+				continue;
+			std::vector<std::string> aKV;
+			StringSplit(extraDataKV, "=", aKV);
+			if (aKV.size() != 2)
+				continue;	// Skip invalid key-value pairs
+			if (iKVs > 0)
+				sstr << R"(, )";
+			sstr << R"(")" << aKV[0] << R"(": ")" << aKV[1] << R"(")";
+			iKVs++;
 		}
+		sstr << R"(}, )";
 
 		/* For now, we do NOT use this as a Notification is handled by the device OS itself
 		 * and the app itself is not aware of the notification
