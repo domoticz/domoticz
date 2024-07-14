@@ -95,18 +95,24 @@ bool CNotificationFCM::SendMessageImplementation(
 {
 	//send message to FCM
 
-	std::string sMidx;
+	std::string sMidx, sExtraData;
 	std::vector<std::string> vExtraData;
-	if (ExtraData.find("midx_") != std::string::npos) {
-		sMidx = ExtraData.substr(5);
-		stdreplace(sMidx, ";", ",");
-	}
-	else if (ExtraData.find("|") != std::string::npos) {
-		std::string temp;
-		std::stringstream tempssstr { ExtraData };
+	if (!ExtraData.empty()) {
+		_log.Debug(DEBUG_EVENTSYSTEM, "FCM: ExtraData found! (%s)", ExtraData.c_str());
+		if (ExtraData.find("midx_") != std::string::npos) {
+			sMidx = ExtraData.substr(5);
+			stdreplace(sMidx, ";", ",");
+		}
+		else if (ExtraData.find("|") != std::string::npos) {
+			std::string temp;
+			std::stringstream tempssstr { ExtraData };
 
-		while (std::getline(tempssstr, temp, '|')) {
-			vExtraData.push_back(temp);
+			while (std::getline(tempssstr, temp, '|')) {
+				vExtraData.push_back(temp);
+			}
+		}
+		else {
+			sExtraData = ExtraData;
 		}
 	}
 
@@ -141,17 +147,18 @@ bool CNotificationFCM::SendMessageImplementation(
 	// Add the default 'data' fields we always want to send if available
 	vExtraData.push_back("deviceid=" + std::to_string(Idx));
 	vExtraData.push_back("priority=" + std::to_string(Priority));
-	if (!ExtraData.empty()) {
-		vExtraData.push_back("extradata=" + ExtraData);
-	}
 	if (!Subject.empty()) {
 		vExtraData.push_back("subject=" + Subject);
 		vExtraData.push_back("message=" + Subject);		// To-Do: Depricated - This is not needed anymore for the updated mobile App. Will be removed soon
 	}
+	if (!Name.empty())
+		vExtraData.push_back("message=" + Name);
 	if (!Text.empty())
 		vExtraData.push_back("body=" + Text);
 	if (!Sound.empty())
 		vExtraData.push_back("sound=" + Sound);
+	if (!sExtraData.empty())
+		vExtraData.push_back("extradata=" + sExtraData);
 
 	std::vector<std::string> ExtraHeaders;
 	std::stringstream sstr2;
@@ -171,12 +178,10 @@ bool CNotificationFCM::SendMessageImplementation(
 		}
 
 		// Build the message
-		std::stringstream sstr;
+		Json::Value root;
 
-		sstr << R"({ "validate_only": false, "message": {)";	// Open Send Message struct
+		root["validate_only"] = false;
 
-		uint8_t iKVs = 0;
-		sstr << R"("data": { )";
 		for (std::string &extraDataKV : vExtraData)
 		{
 			if (extraDataKV.find("=") == std::string::npos)
@@ -185,24 +190,20 @@ bool CNotificationFCM::SendMessageImplementation(
 			StringSplit(extraDataKV, "=", aKV);
 			if (aKV.size() != 2)
 				continue;	// Skip invalid key-value pairs
-			if (iKVs > 0)
-				sstr << R"(, )";
-			sstr << R"(")" << aKV[0] << R"(": ")" << aKV[1] << R"(")";
-			iKVs++;
+			root["message"]["data"][aKV[0]] = aKV[1];
 		}
-		sstr << R"(}, )";
 
 		/* For now, we do NOT use this as a Notification is handled by the device OS itself
 		 * and the app itself is not aware of the notification
 		if (bFromNotification)
 		{
-			sstr << R"("notification": { "title": ")" << Subject << R"(", "body": ")" << Text << R"("}, )";
+			root["message"]["notification"]["title"] = Subject;
+			root["message"]["notification"]["body"] = Text;
 		}
 		*/
 
-		sstr << R"("token": ")" << mobileDevice[4] << R"(")";		// Add where to send
-		sstr << R"(} })";											// Close Send Message struct
-		std::string szPostdata = sstr.str();
+		root["message"]["token"] = mobileDevice[4];
+		std::string szPostdata { root.toStyledString() };
 		
 		_log.Debug(DEBUG_EVENTSYSTEM, "FCM: Generated message for device (%s): .%s.", mobileDevice[2].c_str(), szPostdata.c_str());
 
