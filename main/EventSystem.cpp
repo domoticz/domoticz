@@ -3170,12 +3170,13 @@ bool CEventSystem::processLuaCommand(lua_State *lua_state, const std::string &fi
 		if (aParam.size() > 3) {
 			sound = aParam[3];
 		}
-		if (aParam.size() > 4) {
-			if (aParam[4].find("midx_") != std::string::npos) {
-				extraData = aParam[4];
+		if (aParam.size() > 4 && !aParam[4].empty()) {
+			if (isInt(aParam[4]) && aParam.size() > 5 && !aParam[5].empty() && aParam[5] == "fcm") {
+					// Only FCM notification Subsystem handles extraData "|Device=<deviceIdx>"
+					extraData = "|Device=" + aParam[4];
 			}
 			else {
-				extraData = "|Device=" + aParam[4];
+				extraData = aParam[4];
 			}
 		}
 		if (aParam.size() > 5) {
