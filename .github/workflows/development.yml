@@ -96,7 +96,7 @@ jobs:
       # Artifact upload
       - name: Upload artifacts
         #if: ${{ false }}
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: domoticz_linux_x86_64-${{ env.BUILDNR }}
           path: package/
