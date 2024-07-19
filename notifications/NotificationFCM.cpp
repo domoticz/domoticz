@@ -95,20 +95,29 @@ bool CNotificationFCM::SendMessageImplementation(
 {
 	//send message to FCM
 
+	uint64_t AltIdx = Idx;
 	std::string sMidx, sExtraData;
 	std::vector<std::string> vExtraData;
 	if (!ExtraData.empty()) {
-		_log.Debug(DEBUG_EVENTSYSTEM, "FCM: ExtraData found! (%s)", ExtraData.c_str());
+		_log.Debug(DEBUG_EVENTSYSTEM, "FCM: ExtraData found! (%s) (deviceid %ld)", ExtraData.c_str(), static_cast<unsigned long>(Idx));
 		if (ExtraData.find("midx_") != std::string::npos) {
 			sMidx = ExtraData.substr(5);
 			stdreplace(sMidx, ";", ",");
 		}
 		else if (ExtraData.find("|") != std::string::npos) {
-			std::string temp;
-			std::stringstream tempssstr { ExtraData };
+			if (ExtraData.find("|Device=") == 0) {
+				std::string sAltIdx = ExtraData.substr(8);
+				if (Idx == 0 && isInt(sAltIdx)) {
+					AltIdx = std::stoull(sAltIdx);
+				}
+			}
+			else {
+				std::string temp;
+				std::stringstream tempssstr { ExtraData };
 
-			while (std::getline(tempssstr, temp, '|')) {
-				vExtraData.push_back(temp);
+				while (std::getline(tempssstr, temp, '|')) {
+					vExtraData.push_back(temp);
+				}
 			}
 		}
 		else {
@@ -145,7 +154,7 @@ bool CNotificationFCM::SendMessageImplementation(
 	}
 
 	// Add the default 'data' fields we always want to send if available
-	vExtraData.push_back("deviceid=" + std::to_string(Idx));
+	vExtraData.push_back("deviceid=" + std::to_string(AltIdx));
 	vExtraData.push_back("priority=" + std::to_string(Priority));
 	if (!Subject.empty()) {
 		vExtraData.push_back("subject=" + Subject);
@@ -247,7 +256,7 @@ bool CNotificationFCM::getSlAccessToken(const std::string &bearer_token, std::st
 		uint64_t cur_time = std::chrono::duration_cast<std::chrono::seconds>(std::chrono::time_point_cast<std::chrono::seconds>(std::chrono::system_clock::now()).time_since_epoch()).count();
 		if (cur_time < m_slAccessToken_exp_time)
 		{
-			_log.Debug(DEBUG_EVENTSYSTEM, "FCM: Using Cached Token! (Expires at %ld)", m_slAccessToken_exp_time);
+			_log.Debug(DEBUG_EVENTSYSTEM, "FCM: Using Cached Token! (Expires at %ld)", static_cast<unsigned long>(m_slAccessToken_exp_time));
 			slAccessToken = m_slAccesToken_cached;
 			return true;
 		}
@@ -279,7 +288,7 @@ bool CNotificationFCM::getSlAccessToken(const std::string &bearer_token, std::st
 					m_slAccessToken_exp_time = m_slAccessToken_exp_time + slAccessToken_exp_seconds;
 					m_slAccesToken_cached = slAccessToken;
 				}
-				_log.Debug(DEBUG_EVENTSYSTEM, "FCM: AccessToken retrieved (%s...) expires in %ld seconds (at %ld)", slAccessToken.substr(0,10).c_str(), slAccessToken_exp_seconds, m_slAccessToken_exp_time);
+				_log.Debug(DEBUG_EVENTSYSTEM, "FCM: AccessToken retrieved (%s...) expires in %ld seconds (at %ld)", slAccessToken.substr(0,10).c_str(), static_cast<unsigned long>(slAccessToken_exp_seconds), static_cast<unsigned long>(m_slAccessToken_exp_time));
 				return true;
 			}
 		}
