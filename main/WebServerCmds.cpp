@@ -2574,7 +2574,7 @@ namespace http
 				bool AllowPlainBasicAuth = (request::findValue(&req, "AllowPlainBasicAuth") == "on" ? 1 : 0);
 				m_sql.UpdatePreferencesVar("AllowPlainBasicAuth", AllowPlainBasicAuth);
 
-				m_pWebEm->SetAllowPlainBasicAuth(AllowPlainBasicAuth);
+				m_webservers.SetAllowPlainBasicAuth(AllowPlainBasicAuth);
 				cntSettings++;
 
 				std::string WebLocalNetworks = CURLEncode::URLDecode(request::findValue(&req, "WebLocalNetworks"));
