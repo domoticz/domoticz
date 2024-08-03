@@ -160,6 +160,13 @@ bool CYouLess::GetP1Details()
 		m_bHaveP1OrS0 = true;
 	}
 
+	if (!root["wtr"].empty())
+	{
+		//Water Meter
+		float mcntr = root["wtr"].asFloat();
+		SendMeterSensor(m_HwdID, 1, 255, mcntr, "Water");
+	}
+
 	if (!root["cs0"].empty())
 	{
 		//S0 Meter
@@ -171,6 +178,7 @@ bool CYouLess::GetP1Details()
 			m_bHaveP1OrS0 = true;
 		}
 	}
+
 	return m_bHaveP1OrS0;
 }
 
