@@ -196,7 +196,6 @@ void CNetatmo::Do_Work()
 			}
 		}
 	}
-	RefreshToken(true);
 	Log(LOG_STATUS, "Worker stopped...");
 }
 
@@ -221,6 +220,8 @@ bool CNetatmo::Login()
 			return true;
 		}
 	}
+
+	Log (LOG_STATUS, "Requesting new tokens using authorization code");
 
 	//Loggin on the API
 	std::stringstream sstr;
@@ -269,7 +270,7 @@ bool CNetatmo::Login()
 	m_refreshToken = root["refresh_token"].asString();
 
 	int expires = root["expires_in"].asInt();
-	m_nextRefreshTs = mytime(nullptr) + expires;
+	m_nextRefreshTs = mytime(nullptr) + expires * 2 / 3;
 
 	//Store the token in database in case
 	//of domoticz restart
@@ -300,6 +301,8 @@ bool CNetatmo::RefreshToken(const bool bForce)
 		if ((mytime(nullptr) - 15) < m_nextRefreshTs)
 			return true; //no need to refresh the token yet
 	}
+
+	Log (LOG_STATUS, "Requesting refreshed tokens");
 
 	// Time to refresh the token
 	std::stringstream sstr;
@@ -350,7 +353,7 @@ bool CNetatmo::RefreshToken(const bool bForce)
 	m_refreshToken = root["refresh_token"].asString();
 	int expires = root["expires_in"].asInt();
 	//Store the duration of validity of the token
-	m_nextRefreshTs = mytime(nullptr) + expires;
+	m_nextRefreshTs = mytime(nullptr) + expires * 2 / 3;
 
 	StoreRefreshToken();
 	return true;
