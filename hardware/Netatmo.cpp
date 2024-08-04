@@ -221,7 +221,7 @@ bool CNetatmo::Login()
 		}
 	}
 
-	Log (LOG_STATUS, "Requesting new tokens using authorization code");
+	Log (LOG_NORM, "Requesting new tokens using authorization code");
 
 	//Loggin on the API
 	std::stringstream sstr;
@@ -302,7 +302,7 @@ bool CNetatmo::RefreshToken(const bool bForce)
 			return true; //no need to refresh the token yet
 	}
 
-	Log (LOG_STATUS, "Requesting refreshed tokens");
+	Log (LOG_NORM, "Requesting refreshed tokens");
 
 	// Time to refresh the token
 	std::stringstream sstr;
