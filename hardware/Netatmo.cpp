@@ -12,6 +12,11 @@
 #define NETATMO_SCOPES "read_station read_thermostat write_thermostat read_homecoach read_smokedetector read_presence read_camera"
 #define NETATMO_REDIRECT_URI "http://localhost/netatmo"
 
+
+// 03/03/2022 - PP Changing the Weather polling from 600 to 900s. This has reduce the number of server errors, 
+// 08/05/2024 - Give the poll interfval a defined name:
+#define NETAMO_POLL_INTERVALL 900
+
 #ifdef _DEBUG
 //#define DEBUG_NetatmoWeatherStationR
 #endif
@@ -164,23 +169,17 @@ void CNetatmo::Do_Work()
 		{
 			if (RefreshToken())
 			{
-				//Weather / HomeCoach data is updated every 10 minutes
-				// 03/03/2022 - PP Changing the Weather polling from 600 to 900s. This has reduce the number of server errors, 
-				// but do not prevennt to have one time to time
-				if ((sec_counter % 900 == 0) || (bFirstTimeWS))
+				//Weather, HomeCoach, and Thernistat data is updated every  NETAMO_POLL_INTERVALL  seconds 
+				if ((sec_counter % NETAMO_POLL_INTERVALL == 0) || (bFirstTimeTH) || (bFirstTimeWS))
 				{
 					bFirstTimeWS = false;
-					if ((m_bPollWeatherData) || (sec_counter % 1200 == 0))
-						GetMeterDetails();
-				}
-
-				//Thermostat data is updated every 10 minutes
-				if ((sec_counter % 900 == 0) || (bFirstTimeTH))
-				{
 					bFirstTimeTH = false;
+					if (m_bPollWeatherData)
+						GetMeterDetails();
 					if (m_bPollThermostat)
 						GetThermostatDetails();
 				}
+
 				//Update Thermostat data when the
 				//manual set point reach its end
 				if (m_bForceSetpointUpdate)
