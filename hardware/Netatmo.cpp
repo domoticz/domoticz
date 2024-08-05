@@ -12,6 +12,11 @@
 #define NETATMO_SCOPES "read_station read_thermostat write_thermostat read_homecoach read_smokedetector read_presence read_camera"
 #define NETATMO_REDIRECT_URI "http://localhost/netatmo"
 
+
+// 03/03/2022 - PP Changing the Weather polling from 600 to 900s. This has reduce the number of server errors, 
+// 08/05/2024 - Give the poll interfval a defined name:
+#define NETAMO_POLL_INTERVALL 900
+
 #ifdef _DEBUG
 //#define DEBUG_NetatmoWeatherStationR
 #endif
@@ -164,23 +169,17 @@ void CNetatmo::Do_Work()
 		{
 			if (RefreshToken())
 			{
-				//Weather / HomeCoach data is updated every 10 minutes
-				// 03/03/2022 - PP Changing the Weather polling from 600 to 900s. This has reduce the number of server errors, 
-				// but do not prevennt to have one time to time
-				if ((sec_counter % 900 == 0) || (bFirstTimeWS))
+				//Weather, HomeCoach, and Thernistat data is updated every  NETAMO_POLL_INTERVALL  seconds 
+				if ((sec_counter % NETAMO_POLL_INTERVALL == 0) || (bFirstTimeTH) || (bFirstTimeWS))
 				{
 					bFirstTimeWS = false;
-					if ((m_bPollWeatherData) || (sec_counter % 1200 == 0))
-						GetMeterDetails();
-				}
-
-				//Thermostat data is updated every 10 minutes
-				if ((sec_counter % 900 == 0) || (bFirstTimeTH))
-				{
 					bFirstTimeTH = false;
+					if (m_bPollWeatherData)
+						GetMeterDetails();
 					if (m_bPollThermostat)
 						GetThermostatDetails();
 				}
+
 				//Update Thermostat data when the
 				//manual set point reach its end
 				if (m_bForceSetpointUpdate)
@@ -221,6 +220,8 @@ bool CNetatmo::Login()
 		}
 	}
 
+	Log (LOG_NORM, "Requesting new tokens using authorization code");
+
 	//Loggin on the API
 	std::stringstream sstr;
 	sstr << "grant_type=authorization_code&";
@@ -243,7 +244,7 @@ bool CNetatmo::Login()
 	//Check for returned data
 	if (!ret)
 	{
-		Log(LOG_ERROR, "Error connecting to Server...");
+		Log(LOG_ERROR, "Error connecting to Server (login)...");
 		return false;
 	}
 
@@ -252,14 +253,14 @@ bool CNetatmo::Login()
 	ret = ParseJSon(sResult, root);
 	if ((!ret) || (!root.isObject()))
 	{
-		Log(LOG_ERROR, "Invalid/no data received...");
+		Log(LOG_ERROR, "Invalid/no data received (login)...");
 		return false;
 	}
 	//Check if access was granted
 	if (root["access_token"].empty() || root["expires_in"].empty() || root["refresh_token"].empty())
 	{
-		Log(LOG_ERROR, "No access granted, check credentials...");
-		Debug(DEBUG_HARDWARE, "No access granted, check credentials...(%s)(%s)", httpData.c_str(), root.toStyledString().c_str());
+		Log(LOG_ERROR, "No access granted, check credentials (Login)...");
+		Debug(DEBUG_HARDWARE, "No access granted, check credentials (Login)...(%s)(%s)", httpData.c_str(), root.toStyledString().c_str());
 		return false;
 	}
 
@@ -268,7 +269,7 @@ bool CNetatmo::Login()
 	m_refreshToken = root["refresh_token"].asString();
 
 	int expires = root["expires_in"].asInt();
-	m_nextRefreshTs = mytime(nullptr) + expires;
+	m_nextRefreshTs = mytime(nullptr) + expires * 2 / 3;
 
 	//Store the token in database in case
 	//of domoticz restart
@@ -300,6 +301,8 @@ bool CNetatmo::RefreshToken(const bool bForce)
 			return true; //no need to refresh the token yet
 	}
 
+	Log (LOG_NORM, "Requesting refreshed tokens");
+
 	// Time to refresh the token
 	std::stringstream sstr;
 	sstr << "grant_type=refresh_token&";
@@ -320,7 +323,7 @@ bool CNetatmo::RefreshToken(const bool bForce)
 	//Check for returned data
 	if (!ret)
 	{
-		Log(LOG_ERROR, "Error connecting to Server...");
+		Log(LOG_ERROR, "Error connecting to Server (refresh tokens)...");
 		return false;
 	}
 
@@ -329,7 +332,7 @@ bool CNetatmo::RefreshToken(const bool bForce)
 	ret = ParseJSon(sResult, root);
 	if ((!ret) || (!root.isObject()))
 	{
-		Log(LOG_ERROR, "Invalid/no data received...");
+		Log(LOG_ERROR, "Invalid/no data received (refresh tokens)...");
 		//Force login next time
 		m_isLogged = false;
 		return false;
@@ -339,7 +342,7 @@ bool CNetatmo::RefreshToken(const bool bForce)
 	if (root["access_token"].empty() || root["expires_in"].empty() || root["refresh_token"].empty())
 	{
 		//Force login next time
-		Log(LOG_ERROR, "No access granted, forcing login again...");
+		Log(LOG_ERROR, "No access granted, forcing login again (Refresh tokens)...");
 		m_isLogged = false;
 		return false;
 	}
@@ -349,8 +352,9 @@ bool CNetatmo::RefreshToken(const bool bForce)
 	m_refreshToken = root["refresh_token"].asString();
 	int expires = root["expires_in"].asInt();
 	//Store the duration of validity of the token
-	m_nextRefreshTs = mytime(nullptr) + expires;
+	m_nextRefreshTs = mytime(nullptr) + expires * 2 / 3;
 
+	StoreRefreshToken();
 	return true;
 }
 
@@ -750,7 +754,7 @@ void CNetatmo::GetMeterDetails()
 		httpUrl = MakeRequestURL(NETYPE_ENERGY);
 		if (!HTTPClient::GET(httpUrl, ExtraHeaders, sResult))
 		{
-			Log(LOG_ERROR, "Error connecting to Server...");
+			Log(LOG_ERROR, "Error connecting to Server (GetMeterDetails)...");
 			return;
 		}
 
@@ -758,7 +762,7 @@ void CNetatmo::GetMeterDetails()
 		bRet = ParseJSon(sResult, root);
 		if ((!bRet) || (!root.isObject()))
 		{
-			Log(LOG_ERROR, "Invalid data received...");
+			Log(LOG_ERROR, "Invalid data received (GetMeterDetails)...");
 			return;
 		}
 		if (!root["error"].empty())
@@ -782,7 +786,7 @@ void CNetatmo::GetMeterDetails()
 	httpUrl = MakeRequestURL(m_weatherType);
 	if (!HTTPClient::GET(httpUrl, ExtraHeaders, sResult))
 	{
-		Log(LOG_ERROR, "Error connecting to Server...");
+		Log(LOG_ERROR, "Error connecting to Server (GetMeterDetails)...");
 		return;
 	}
 
@@ -790,7 +794,7 @@ void CNetatmo::GetMeterDetails()
 	bRet = ParseJSon(sResult, root);
 	if ((!bRet) || (!root.isObject()))
 	{
-		Log(LOG_ERROR, "Invalid data received...");
+		Log(LOG_ERROR, "Invalid data received(GetMeterDetails)...");
 		return;
 	}
 	if (!root["error"].empty())
@@ -812,7 +816,7 @@ void CNetatmo::GetMeterDetails()
 			httpUrl = MakeRequestURL(NETYPE_HOMECOACH);
 			if (!HTTPClient::GET(httpUrl, ExtraHeaders, sResult))
 			{
-				Log(LOG_ERROR, "Error connecting to Server...");
+				Log(LOG_ERROR, "Error connecting to Server (ParseStationData)...");
 				return;
 			}
 
@@ -820,7 +824,7 @@ void CNetatmo::GetMeterDetails()
 			bool bRet = ParseJSon(sResult, root);
 			if ((!bRet) || (!root.isObject()))
 			{
-				Log(LOG_ERROR, "Invalid data received...");
+				Log(LOG_ERROR, "Invalid data received (ParseStationData)...");
 				return;
 			}
 			if (!root["error"].empty())
@@ -875,7 +879,7 @@ void CNetatmo::GetThermostatDetails()
 
 	if (!ret)
 	{
-		Log(LOG_ERROR, "Error connecting to Server...");
+		Log(LOG_ERROR, "Error connecting to Server (GetThermostatDetails)...");
 		return;
 	}
 	if (m_energyType != NETYPE_ENERGY)

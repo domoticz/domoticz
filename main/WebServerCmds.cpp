@@ -578,9 +578,9 @@ namespace http
 					name.c_str(), (senabled == "true") ? 1 : 0, htype, iLogLevelEnabled, address.c_str(), port, sport.c_str(), username.c_str(), password.c_str(),
 					extra.c_str(), mode1Str.c_str(), mode2Str.c_str(), mode3Str.c_str(), mode4Str.c_str(), mode5Str.c_str(), mode6Str.c_str(), iDataTimeout);
 			}
-			else if ((htype == HTYPE_RFXtrx433) || (htype == HTYPE_RFXtrx868))
+			else if ((htype == HTYPE_RFXtrx433) || (htype == HTYPE_RFXtrx868) || (htype == HTYPE_Netatmo))
 			{
-				// No Extra field here, handled in CWebServer::SetRFXCOMMode
+				// No Extra field here, handled in CWebServer::SetRFXCOMMode and in CNetatmo::CNetatmo for Netatmo devices
 				m_sql.safe_query("INSERT INTO Hardware (Name, Enabled, Type, LogLevel, Address, Port, SerialPort, Username, Password, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6, "
 					"DataTimeout) VALUES ('%q',%d, %d, %d,'%q',%d,'%q','%q','%q',%d,%d,%d,%d,%d,%d,%d)",
 					name.c_str(), (senabled == "true") ? 1 : 0, htype, iLogLevelEnabled, address.c_str(), port, sport.c_str(), username.c_str(), password.c_str(), mode1,
@@ -664,6 +664,7 @@ namespace http
 			if (!ValidateHardware(htype, sport, address, port, username, password, mode1Str, mode2Str, mode3Str, mode4Str, mode5Str, mode6Str, extra, idx))
 				return;
 
+
 			root["status"] = "OK";
 			root["title"] = "UpdateHardware";
 
@@ -698,9 +699,9 @@ namespace http
 						extra.c_str(), mode1Str.c_str(), mode2Str.c_str(), mode3Str.c_str(), mode4Str.c_str(), mode5Str.c_str(), mode6Str.c_str(), iDataTimeout,
 						idx.c_str());
 				}
-				else if ((htype == HTYPE_RFXtrx433) || (htype == HTYPE_RFXtrx868))
+				else if ((htype == HTYPE_RFXtrx433) || (htype == HTYPE_RFXtrx868) || (htype == HTYPE_Netatmo))
 				{
-					// No Extra field here, handled in CWebServer::SetRFXCOMMode
+					// No Extra field here, handled in CWebServer::SetRFXCOMMode and CNetatmo::CNetatmo( for Netatmo
 					m_sql.safe_query("UPDATE Hardware SET Name='%q', Enabled=%d, Type=%d, LogLevel=%d, Address='%q', Port=%d, SerialPort='%q', Username='%q', Password='%q', "
 						"Mode1=%d, Mode2=%d, Mode3=%d, Mode4=%d, Mode5=%d, Mode6=%d, DataTimeout=%d WHERE (ID == '%q')",
 						name.c_str(), (bEnabled == true) ? 1 : 0, htype, iLogLevelEnabled, address.c_str(), port, sport.c_str(), username.c_str(), password.c_str(),
