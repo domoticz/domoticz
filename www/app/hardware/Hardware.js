@@ -1313,9 +1313,8 @@ define(['app'], function (app) {
 				(text.indexOf("Atag") >= 0) ||
 				(text.indexOf("Nest Th") >= 0 && text.indexOf("OAuth") === -1) ||
 				(text.indexOf("PVOutput") >= 0) ||
-				(text.indexOf("Netatmo") >= 0) ||
 				(text.indexOf("Thermosmart") >= 0) ||
-                (text.indexOf("Tado") >= 0)
+                		(text.indexOf("Tado") >= 0)
 			) {
 				var username = $("#hardwarecontent #divlogin #username").val();
 				var password = encodeURIComponent($("#hardwarecontent #divlogin #password").val());
@@ -1436,10 +1435,10 @@ define(['app'], function (app) {
 				});
 			}
 			else if (text.indexOf("Netatmo") >= 0) {
-				var clientId = $("#hardwarecontent #divhnetatmo #hwClientId").val();
-				var clientSecret = $("#hardwarecontent #divhnetatmo #hwClientSecret").val();
-				var scope = $("#hardwarecontent #divhnetatmo #hwScope").val();
-				var refreshToken = $("#hardwarecontent #divhnetatmo #hwToken").val();
+				var clientId = $("#hardwarecontent #divhnetatmo #ClientId").val();
+				var clientSecret = $("#hardwarecontent #divhnetatmo #ClientSecret").val();
+				var scope = $("#hardwarecontent #divhnetatmo #Scope").val();
+				var refreshToken = $("#hardwarecontent #divhnetatmo #Token").val();
 				var extra = btoa(scope) + ":" + btoa(refreshToken);
 
 				$.ajax({
@@ -2733,10 +2732,10 @@ define(['app'], function (app) {
 				});
 			}
 			else if (text.indexOf("Netatmo") >= 0) {
-				var clientId = $("#hardwarecontent #divnetatmo #hwClientId").val();
-				var clientSecret = $("#hardwarecontent #divnetatmo #hwClientSecret").val();
-				var scope = $("#hardwarecontent #divnetatmo #hwScope").val();
-				var refreshToken = $("#hardwarecontent #divnetatmo #hwToken").val();
+				var clientId = $("#hardwarecontent #divnetatmo #ClientId").val();
+				var clientSecret = $("#hardwarecontent #divnetatmo #ClientSecret").val();
+				var scope = $("#hardwarecontent #divnetatmo wScope").val();
+				var refreshToken = $("#hardwarecontent #divnetatmo #Token").val();
 				var extra = btoa(scope) + ":" + btoa(refreshToken);
 
 				$.ajax({
