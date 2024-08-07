@@ -1438,8 +1438,7 @@ define(['app'], function (app) {
 				var clientId = $("#hardwarecontent #divhnetatmo #ClientId").val();
 				var clientSecret = $("#hardwarecontent #divhnetatmo #ClientSecret").val();
 				var scope = $("#hardwarecontent #divhnetatmo #Scope").val();
-				var refreshToken = $("#hardwarecontent #divhnetatmo #Token").val();
-				var extra = btoa(scope) + ":" + btoa(refreshToken);
+				var extra = btoa(Scope);
 
 				$.ajax({
 					url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype +
@@ -2734,9 +2733,8 @@ define(['app'], function (app) {
 			else if (text.indexOf("Netatmo") >= 0) {
 				var clientId = $("#hardwarecontent #divnetatmo #ClientId").val();
 				var clientSecret = $("#hardwarecontent #divnetatmo #ClientSecret").val();
-				var scope = $("#hardwarecontent #divnetatmo wScope").val();
-				var refreshToken = $("#hardwarecontent #divnetatmo #Token").val();
-				var extra = btoa(scope) + ":" + btoa(refreshToken);
+				var scope = $("#hardwarecontent #divnetatmo Scope").val();
+				var extra = btoa(Scope);
 
 				$.ajax({
 					url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype +
@@ -2916,9 +2914,8 @@ define(['app'], function (app) {
 				(text.indexOf("Atag") >= 0) ||
 				(text.indexOf("Nest Th") >= 0 && text.indexOf("OAuth") === -1) ||
 				(text.indexOf("PVOutput") >= 0) ||
-				(text.indexOf("Netatmo") >= 0) ||
 				(text.indexOf("Thermosmart") >= 0) ||
-                (text.indexOf("Tado") >= 0) ||
+                		(text.indexOf("Tado") >= 0) ||
 				(text.indexOf("HTTP") >= 0)
 			) {
 				var username = $("#hardwarecontent #divlogin #username").val();
@@ -4312,8 +4309,8 @@ define(['app'], function (app) {
 								$("#hardwarecontent #divusbtin #combodebugusbtin").val( data["Mode2"] );
 
 							} else if (data["Type"].indexOf("Denkovi") >= 0) {
-                                $("#hardwarecontent #divmodeldenkoviusbdevices #combomodeldenkoviusbdevices").val(data["Mode1"]);
-                            }
+                                				$("#hardwarecontent #divmodeldenkoviusbdevices #combomodeldenkoviusbdevices").val(data["Mode1"]);
+        						}
 						}
 						else if ((((data["Type"].indexOf("LAN") >= 0) || (data["Type"].indexOf("Eco Devices") >= 0) || data["Type"].indexOf("MySensors Gateway with MQTT") >= 0 || data["Type"].indexOf("RFLink Gateway MQTT") >= 0) &&
 						 		(data["Type"].indexOf("YouLess") == -1) && (data["Type"].indexOf("Denkovi") == -1) && (data["Type"].indexOf("Relay-Net") == -1) && (data["Type"].indexOf("Satel Integra") == -1) && (data["Type"].indexOf("eHouse") == -1) &&
@@ -4379,7 +4376,7 @@ define(['app'], function (app) {
                                 }
                                 $("#hardwarecontent #hardwareparamsratelimitp1 #ratelimitp1").val(RateLimit);
 
-								var ensynchro = parseInt(data["Mode2"]);
+				var ensynchro = parseInt(data["Mode2"]);
                                 if (ensynchro && (ensynchro < 5)) {
                                     ensynchro = 5;
                                 }
@@ -4508,7 +4505,7 @@ define(['app'], function (app) {
 							$("#hardwarecontent #hardwareparamspollinterval #pollinterval").val(data["Mode1"]);
 						}
 						else if (data["Type"].indexOf("eHouse") >= 0) {
-                            $("#hardwarecontent #hardwareparamspollinterval #pollinterval").val(data["Mode1"]);
+                            				$("#hardwarecontent #hardwareparamspollinterval #pollinterval").val(data["Mode1"]);
 					 		$('#hardwarecontent #hardwareparamsehouse #ehouseautodiscovery').prop("checked",data["Mode2"] == 1);
 							$('#hardwarecontent #hardwareparamsehouse #ehouseaddalarmin').prop("checked",data["Mode3"] == 1);
 							$('#hardwarecontent #hardwareparamsehouse #ehouseprodiscovery').prop("checked",data["Mode4"] == 1);
@@ -4554,6 +4551,12 @@ define(['app'], function (app) {
 							if (tmparray.length == 2) {
 								$("#hardwarecontent #hardwareparamshoneywell #hwApiKey").val(atob(tmparray[0]));
 								$("#hardwarecontent #hardwareparamshoneywell #hwApiSecret").val(atob(tmparray[1]));
+							}
+						}
+						else if (data["Type"].indexOf("NetAtm0") >= 0) {
+							$("#hardwarecontent #hardwareparamsnetatmo #ClientId").val(data["Username"]);
+							$("#hardwarecontent #hardwareparamsnetatmo #ClientSecret").val(data["Password"]);
+							$("#hardwarecontent #hardwareparamsnetatmo #Scope").val(data["Extra"]);
 							}
 						}
 						if (data["Type"].indexOf("MySensors Gateway with MQTT") >= 0) {
@@ -4611,12 +4614,11 @@ define(['app'], function (app) {
 							(data["Type"].indexOf("Anna") >= 0) ||
 							(data["Type"].indexOf("KMTronic") >= 0) ||
 							(data["Type"].indexOf("MySensors Gateway with MQTT") >= 0) ||
-							(data["Type"].indexOf("Netatmo") >= 0) ||
 							(data["Type"].indexOf("HTTP") >= 0) ||
 							(data["Type"].indexOf("Thermosmart") >= 0) ||
-                            (data["Type"].indexOf("Tado") >= 0) ||
-                            (data["Type"].indexOf("Tesla") >= 0) ||
-                            (data["Type"].indexOf("Mercedes") >= 0) ||
+                            				(data["Type"].indexOf("Tado") >= 0) ||
+                            				(data["Type"].indexOf("Tesla") >= 0) ||
+                            				(data["Type"].indexOf("Mercedes") >= 0) ||
 							(data["Type"].indexOf("Logitech Media Server") >= 0) ||
 							(data["Type"].indexOf("HEOS by DENON") >= 0) ||
 							(data["Type"].indexOf("Razberry") >= 0) ||
@@ -5025,9 +5027,8 @@ define(['app'], function (app) {
 				(text.indexOf("Atag") >= 0) ||
 				(text.indexOf("Nest Th") >= 0 && text.indexOf("OAuth") === -1) ||
 				(text.indexOf("PVOutput") >= 0) ||
-				(text.indexOf("Netatmo") >= 0) ||
 				(text.indexOf("Thermosmart") >= 0) ||
-                (text.indexOf("Tado") >= 0)
+                		(text.indexOf("Tado") >= 0)
 			) {
 				$("#hardwarecontent #divlogin").show();
 			}
