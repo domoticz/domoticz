@@ -1083,30 +1083,6 @@ void MitsubishiWF::ParseModeSwitch(const uint8_t id, const char** vModes, const 
 	}
 }
 
-uint16_t crc16ccitt(const char* ptr, int count)
-{
-	int i = 65535;
-	for (int ll = 0; ll < count; ll++)
-	{
-		const char b = ptr[ll];
-		for (int i2 = 0; i2 < 8; i2++)
-		{
-			bool z = true;
-			bool z2 = ((b >> (7 - i2)) & 1) == 1;
-			if (((i >> 15) & 1) != 1)
-			{
-				z = false;
-			}
-			i <<= 1;
-			if (z2 ^ z) {
-				i ^= 4129;
-			}
-		}
-	}
-	return i & 65535;
-}
-
-
 bool MitsubishiWF::command_to_byte(const _tAircoStatus& aircon_stat, std::string& sResult)
 {
 	//uint8_t stat_byte[18 + 2] = { 0, 0, 0, 0, 0, 255, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0xFF, 0xFF };
@@ -1246,7 +1222,7 @@ bool MitsubishiWF::command_to_byte(const _tAircoStatus& aircon_stat, std::string
 			stat_byte[10] |= 128;
 	}
 
-	uint16_t crc = crc16ccitt((char*)stat_byte, sizeof(stat_byte) - 2);
+	uint16_t crc = crc16ccitt((const uint8_t*)stat_byte, sizeof(stat_byte) - 2);
 	stat_byte[sizeof(stat_byte) - 2] = crc & 0xFF;
 	stat_byte[sizeof(stat_byte) - 1] = (crc >> 8) & 0xFF;
 
@@ -1344,7 +1320,7 @@ bool MitsubishiWF::recieve_to_bytes(const _tAircoStatus& aircon_stat, std::strin
 			stat_byte[15] |= 1;
 	}
 
-	uint16_t crc = crc16ccitt((char*)stat_byte, sizeof(stat_byte) - 2);
+	uint16_t crc = crc16ccitt((const uint8_t*)stat_byte, sizeof(stat_byte) - 2);
 	stat_byte[sizeof(stat_byte) - 2] = crc & 0xFF;
 	stat_byte[sizeof(stat_byte) - 1] = (crc >> 8) & 0xFF;
 
