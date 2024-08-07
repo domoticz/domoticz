@@ -1895,14 +1895,11 @@ void MainWorker::CheckAndPushRxMessage(const CDomoticzHardwareBase* pHardware, c
 	rxMessage.rxMessageIdx = m_rxMessageIdx++;
 	rxMessage.hardwareId = pHardware->m_HwdID;
 	// defensive copy of the command
-	rxMessage.vrxCommand.resize(pRXCommand[0] + 1);
 	rxMessage.vrxCommand.insert(rxMessage.vrxCommand.begin(), pRXCommand, pRXCommand + pRXCommand[0] + 1);
 	rxMessage.crc = 0x0;
 #ifdef DEBUG_RXQUEUE
 	// CRC
-	boost::crc_optimal<16, 0x1021, 0xFFFF, 0, false, false> crc_ccitt2;
-	crc_ccitt2 = std::for_each(pRXCommand, pRXCommand + pRXCommand[0] + 1, crc_ccitt2);
-	rxMessage.crc = crc_ccitt2();
+	rxMessage.crc = crc16ccitt(pRXCommand, pRXCommand[0] + 1);
 #endif
 
 	if (m_TaskRXMessage.IsStopRequested(0)) {
@@ -1921,7 +1918,7 @@ void MainWorker::CheckAndPushRxMessage(const CDomoticzHardwareBase* pHardware, c
 		rxMessage.rxMessageIdx,
 		pHardware->m_HwdID,
 		pHardware->HwdType,
-		pHardware->Name.c_str(),
+		pHardware->m_Name.c_str(),
 		pRXCommand[1],
 		pRXCommand[2]);
 #endif
@@ -1944,7 +1941,7 @@ void MainWorker::CheckAndPushRxMessage(const CDomoticzHardwareBase* pHardware, c
 			}
 		}
 #ifdef DEBUG_RXQUEUE
-		if (moreThanTimeout) {
+		if (wait) {
 			_log.Log(LOG_STATUS, "RxQueue: rxMessage(%lu) processed", rxMessage.rxMessageIdx);
 		}
 #endif
@@ -2020,10 +2017,8 @@ void MainWorker::Do_Work_On_Rx_Messages()
 
 #ifdef DEBUG_RXQUEUE
 		// CRC
-		boost::uint16_t crc = rxQItem.crc;
-		boost::crc_optimal<16, 0x1021, 0xFFFF, 0, false, false> crc_ccitt2;
-		crc_ccitt2 = std::for_each(pRXCommand, pRXCommand + rxQItem.vrxCommand.size(), crc_ccitt2);
-		if (crc != crc_ccitt2()) {
+		uint16_t crc = crc16ccitt(pRXCommand, rxQItem.vrxCommand.size());
+		if (rxQItem.crc != crc) {
 			_log.Log(LOG_ERROR, "RxQueue: cannot process invalid rxMessage(%lu) from hardware with id=%d (type %d)",
 				rxQItem.rxMessageIdx,
 				rxQItem.hardwareId,
@@ -2036,7 +2031,7 @@ void MainWorker::Do_Work_On_Rx_Messages()
 			rxQItem.rxMessageIdx,
 			pHardware->m_HwdID,
 			pHardware->HwdType,
-			pHardware->Name.c_str(),
+			pHardware->m_Name.c_str(),
 			pRXCommand[1],
 			pRXCommand[2]);
 #endif
