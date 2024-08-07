@@ -1435,6 +1435,35 @@ define(['app'], function (app) {
 					}
 				});
 			}
+			else if (text.indexOf("Netatmo") >= 0) {
+				var clientId = $("#hardwarecontent #divhnetatmo #hwClientId").val();
+				var clientSecret = $("#hardwarecontent #divhnetatmo #hwClientSecret").val();
+				var scope = $("#hardwarecontent #divhnetatmo #hwScope").val();
+				var refreshToken = $("#hardwarecontent #divhnetatmo #hwToken").val();
+				var extra = btoa(scope) + ":" + btoa(refreshToken);
+
+				$.ajax({
+					url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype +
+					"&loglevel=" + logLevel +
+					"&name=" + encodeURIComponent(name) +
+					"&username=" + encodeURIComponent(clientId) +
+					"&password=" + encodeURIComponent(clientSecret) +
+					"&Mode1=" + Mode1 +
+					"&enabled=" + bEnabled +
+					"&idx=" + idx +
+					"&extra=" + extra +
+					"&datatimeout=" + datatimeout +
+					"&Mode2=" + Mode2 + "&Mode3=" + Mode3 + "&Mode4=" + Mode4 + "&Mode5=" + Mode5 + "&Mode6=" + Mode6,
+					async: false,
+					dataType: 'json',
+					success: function (data) {
+						RefreshHardwareTable();
+					},
+					error: function () {
+						ShowNotify($.t('Problem updating hardware!'), 2500, true);
+					}
+				});
+			}
 			else if (text.indexOf("Logitech Media Server") >= 0) {
 				var address = $("#hardwarecontent #divremote #tcpaddress").val();
 				if (address == "") {
@@ -2690,6 +2719,32 @@ define(['app'], function (app) {
 					"&name=" + encodeURIComponent(name) +
 					"&username=" + encodeURIComponent(accessToken) +
 					"&password=" + encodeURIComponent(refreshToken) +
+					"&enabled=" + bEnabled +
+					"&extra=" + extra +
+					"&datatimeout=" + datatimeout,
+					async: false,
+					dataType: 'json',
+					success: function (data) {
+						RefreshHardwareTable();
+					},
+					error: function () {
+						ShowNotify($.t('Problem adding hardware!'), 2500, true);
+					}
+				});
+			}
+			else if (text.indexOf("Netatmo") >= 0) {
+				var clientId = $("#hardwarecontent #divnetatmo #hwClientId").val();
+				var clientSecret = $("#hardwarecontent #divnetatmo #hwClientSecret").val();
+				var scope = $("#hardwarecontent #divnetatmo #hwScope").val();
+				var refreshToken = $("#hardwarecontent #divnetatmo #hwToken").val();
+				var extra = btoa(scope) + ":" + btoa(refreshToken);
+
+				$.ajax({
+					url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype +
+					"&loglevel=" + logLevel +
+					"&name=" + encodeURIComponent(name) +
+					"&username=" + encodeURIComponent(clientId) +
+					"&password=" + encodeURIComponent(clientSecret) +
 					"&enabled=" + bEnabled +
 					"&extra=" + extra +
 					"&datatimeout=" + datatimeout,
@@ -4732,6 +4787,7 @@ define(['app'], function (app) {
 			$("#hardwarecontent #divenphase").hide();
 			$("#hardwarecontent #divenever").hide();
 			$("#hardwarecontent #divhoneywell").hide();
+			$("#hardwarecontent #divnetatmo").hide();
 			$("#hardwarecontent #divmqtt").hide();
 			$("#hardwarecontent #divmysensorsmqtt").hide();
 			$("#hardwarecontent #divsolaredgeapi").hide();
@@ -5015,6 +5071,9 @@ define(['app'], function (app) {
 			}
 			else if (text.indexOf("Honeywell") >= 0) {
 				$("#hardwarecontent #divhoneywell").show();
+			}
+			else if (text.indexOf("Netatmo") >= 0) {
+				$("#hardwarecontent #divnetatmo").show();
 			}
 			else if (text.indexOf("Logitech Media Server") >= 0) {
 				$("#hardwarecontent #divremote").show();
