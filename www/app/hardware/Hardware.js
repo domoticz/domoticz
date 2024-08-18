@@ -3897,7 +3897,9 @@ define(['app'], function (app) {
 			$('#modal').show();
 
 			$('#updelclr #hardwareupdate').attr("class", "btnstyle3-dis");
+			$("#updelclr #hardwareupdate").removeAttr("href");
 			$('#updelclr #hardwaredelete').attr("class", "btnstyle3-dis");
+			$("#updelclr #hardwaredelete").removeAttr("href");
 
 			var oTable = $('#hardwaretable').dataTable();
 			oTable.fnClearTable();
@@ -4165,7 +4167,9 @@ define(['app'], function (app) {
 				if ($(this).hasClass('row_selected')) {
 					$(this).removeClass('row_selected');
 					$('#updelclr #hardwareupdate').attr("class", "btnstyle3-dis");
+					$("#updelclr #hardwareupdate").removeAttr("href");
 					$('#updelclr #hardwaredelete').attr("class", "btnstyle3-dis");
+					$("#updelclr #hardwaredelete").removeAttr("href");
 				}
 				else {
 					var oTable = $('#hardwaretable').dataTable();
