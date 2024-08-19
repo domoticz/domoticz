@@ -94,7 +94,7 @@ void CWebSocketPush::OnNotificationReceived(const std::string & Subject, const s
 
 void CWebSocketPush::OnLogMessage(const _eLogLevel level, const std::string& sLogline)
 {
-	std::unique_lock<std::mutex> lock(handlerMutex);
+	std::unique_lock<std::mutex> lock(logMutex);
 	if (!isStarted) {
 		return;
 	}

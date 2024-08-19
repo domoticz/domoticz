@@ -9775,7 +9775,8 @@ uint64_t CSQLHelper::InsertCustomIconFromZipFile(const std::string& szZipFile, s
 					{
 						// std::string TableField = db.first;
 						std::string IconFile = rpath + db.second;
-						if (in.find(IconFile) == in.end())
+						auto ittFile = in.find(IconFile);
+						if (ittFile == in.end())
 						{
 							ErrorMessage = "Icon File: " + IconFile + " is not present";
 							if (iTotalAdded > 0)
@@ -9784,6 +9785,19 @@ uint64_t CSQLHelper::InsertCustomIconFromZipFile(const std::string& szZipFile, s
 							}
 							return 0;
 						}
+						//extract and check size
+						fsize = 0;
+						pFBuf = (unsigned char*)in.find(IconFile).Extract(fsize);
+						if ((pFBuf == nullptr) || (fsize < 1))
+						{
+							ErrorMessage = "Icon File: " + IconFile + " is to small or issue with extraction";
+							if (iTotalAdded > 0)
+							{
+								m_webservers.ReloadCustomSwitchIcons();
+							}
+							return 0;
+						}
+						free(pFBuf);
 					}
 
 					//All good, now lets add it to the database

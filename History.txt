@@ -1,6 +1,8 @@
 Version 2024.x
 - Changed: Google Firebase Cloud Messaging (FCM) alternative way to pass a Domoticz device ID through the extra field ('|Device=<devidx>')
 - Changed: dzVents, possible to pass a Domoticz device ID in notify() through the extra parameter
+- Changed: Energy Dashboard now also available for non-admin users
+- Fixed: Custom Icons, making sure they are valid and loaded OK
 - Implemented: YouLess, added Water meter
 
 Version 2024.7 (July 13th 2024)
