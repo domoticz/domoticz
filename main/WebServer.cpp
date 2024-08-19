@@ -4121,11 +4121,13 @@ namespace http
 							}
 						}
 					}
-					if (!bError)
+					if (bError)
 					{
-						m_custom_light_icons.push_back(cImage);
-						m_custom_light_icons_lookup[cImage.idx] = (int)m_custom_light_icons.size() - 1;
+						cImage.Title += " (INVALID!!)";
+						cImage.Description = "probably invalid characters in Title/Descriptionn!";
 					}
+					m_custom_light_icons.push_back(cImage);
+					m_custom_light_icons_lookup[cImage.idx] = (int)m_custom_light_icons.size() - 1;
 				}
 			}
 		}
