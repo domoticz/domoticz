@@ -4073,7 +4073,6 @@ namespace http
 			result = m_sql.safe_query("SELECT ID,Base,Name,Description FROM CustomImages");
 			if (!result.empty())
 			{
-				int ii = 0;
 				for (const auto& sd : result)
 				{
 					int ID = atoi(sd[0].c_str());
@@ -4094,6 +4093,9 @@ namespace http
 					_dbImageFiles["IconOff"] = szWWWFolder + "/images/" + IconFile48Off;
 
 					// Check if files are on disk, else add them
+
+					bool bError = false;
+
 					for (const auto& db : _dbImageFiles)
 					{
 						std::string TableField = db.first;
@@ -4109,17 +4111,21 @@ namespace http
 								std::ofstream file;
 								file.open(IconFile.c_str(), std::ios::out | std::ios::binary);
 								if (!file.is_open())
-									return;
+								{
+									bError = true;
+									continue;
+								}
 
 								file << result2[0][0];
 								file.close();
 							}
 						}
 					}
-
-					m_custom_light_icons.push_back(cImage);
-					m_custom_light_icons_lookup[cImage.idx] = (int)m_custom_light_icons.size() - 1;
-					ii++;
+					if (!bError)
+					{
+						m_custom_light_icons.push_back(cImage);
+						m_custom_light_icons_lookup[cImage.idx] = (int)m_custom_light_icons.size() - 1;
+					}
 				}
 			}
 		}
