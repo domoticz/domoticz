@@ -3852,9 +3852,9 @@ define(['app'], function (app) {
 
 		EnableUpdateAndDeleteButtons = function (hrefUpdate, hrefDelete) {
 			$('#updelclr #hardwareupdate').attr("class", "btnstyle3");
-			$("#updelclr #hardwareupdate").attr("href", hrefUpdate));
+			$("#updelclr #hardwareupdate").attr("href", hrefUpdate);
 			$('#updelclr #hardwaredelete').attr("class", "btnstyle3");
-			$("#updelclr #hardwaredelete").attr("href", hrefDelete));
+			$("#updelclr #hardwaredelete").attr("href", hrefDelete);
 		}
 
 		RefreshHardwareTable = function () {
@@ -4126,7 +4126,7 @@ define(['app'], function (app) {
 			$("#hardwaretable tbody").on('click', 'tr', function () {
 				if ($(this).hasClass('row_selected')) {
 					$(this).removeClass('row_selected');
-					disableUpdateAndDeleteButtons();
+					DisableUpdateAndDeleteButtons();
 				}
 				else {
 					var oTable = $('#hardwaretable').dataTable();
