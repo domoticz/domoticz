@@ -3843,11 +3843,23 @@ define(['app'], function (app) {
 			});
 		}
 
+		DisableUpdateAndDeleteButtons = function () {
+			$('#updelclr #hardwareupdate').attr("class", "btnstyle3-dis");
+			$("#updelclr #hardwareupdate").removeAttr("href");
+			$('#updelclr #hardwaredelete').attr("class", "btnstyle3-dis");
+			$("#updelclr #hardwaredelete").removeAttr("href");
+		}
+
+		EnableUpdateAndDeleteButtons = function (hrefUpdate, hrefDelete) {
+			$('#updelclr #hardwareupdate').attr("class", "btnstyle3");
+			$("#updelclr #hardwareupdate").attr("href", hrefUpdate));
+			$('#updelclr #hardwaredelete').attr("class", "btnstyle3");
+			$("#updelclr #hardwaredelete").attr("href", hrefDelete));
+		}
+
 		RefreshHardwareTable = function () {
 			$('#modal').show();
-
-			$('#updelclr #hardwareupdate').attr("class", "btnstyle3-dis");
-			$('#updelclr #hardwaredelete').attr("class", "btnstyle3-dis");
+			DisableUpdateAndDeleteButtons();
 
 			var oTable = $('#hardwaretable').dataTable();
 			oTable.fnClearTable();
@@ -4114,26 +4126,28 @@ define(['app'], function (app) {
 			$("#hardwaretable tbody").on('click', 'tr', function () {
 				if ($(this).hasClass('row_selected')) {
 					$(this).removeClass('row_selected');
-					$('#updelclr #hardwareupdate').attr("class", "btnstyle3-dis");
-					$('#updelclr #hardwaredelete').attr("class", "btnstyle3-dis");
+					disableUpdateAndDeleteButtons();
 				}
 				else {
 					var oTable = $('#hardwaretable').dataTable();
 					oTable.$('tr.row_selected').removeClass('row_selected');
 					$(this).addClass('row_selected');
-					$('#updelclr #hardwareupdate').attr("class", "btnstyle3");
-					$('#updelclr #hardwaredelete').attr("class", "btnstyle3");
 					var anSelected = fnGetSelected(oTable);
 					if (anSelected.length !== 0) {
 						var data = oTable.fnGetData(anSelected[0]);
 						var idx = data["DT_RowId"];
 						if (data["Type"] != "PLUGIN") { // Plugins can have non-numeric Mode data
-							$("#updelclr #hardwareupdate").attr("href", "javascript:UpdateHardware(" + idx + "," + data["Mode1"] + "," + data["Mode2"] + "," + data["Mode3"] + "," + data["Mode4"] + "," + data["Mode5"] + "," + data["Mode6"] + ")");
+							EnableUpdateAndDeleteButtons(
+								"javascript:UpdateHardware(" + idx + "," + data["Mode1"] + "," + data["Mode2"] + "," + data["Mode3"] + "," + data["Mode4"] + "," + data["Mode5"] + "," + data["Mode6"] + ")",
+								"javascript:DeleteHardware(" + idx + ")"
+							);
 						}
 						else {
-							$("#updelclr #hardwareupdate").attr("href", "javascript:UpdateHardware(" + idx + ",'" + data["Mode1"] + "','" + data["Mode2"] + "','" + data["Mode3"] + "','" + data["Mode4"] + "','" + data["Mode5"] + "','" + data["Mode6"] + "')");
+							EnableUpdateAndDeleteButtons(
+								"javascript:UpdateHardware(" + idx + ",'" + data["Mode1"] + "','" + data["Mode2"] + "','" + data["Mode3"] + "','" + data["Mode4"] + "','" + data["Mode5"] + "','" + data["Mode6"] + "')",
+								"javascript:DeleteHardware(" + idx + ")"
+							);
 						}
-						$("#updelclr #hardwaredelete").attr("href", "javascript:DeleteHardware(" + idx + ")");
 						$("#hardwarecontent #hardwareparamstable #hardwarename").val(data["Name"]);
 						if (data["Type"] != "PLUGIN")
 							$("#hardwarecontent #hardwareparamstable #combotype").val(jQuery.inArray(data["Type"], $.myglobals.HardwareTypesStr));
