@@ -1,4 +1,5 @@
 define(['app'], function (app) {
+
 	/**
 	 * Table of hardware using the new structure.
 	 * This should really be auto-generated.
@@ -3459,6 +3460,7 @@ define(['app'], function (app) {
 				SwitchLayout('Dashboard');
 			});
 		}
+
 		SetRFXCOMMode868 = function () {
 			HideNotify();
 			ShowNotify($.t('This should (for now) be set via the RFXmngr application!'), 2500, true);
@@ -3896,7 +3898,6 @@ define(['app'], function (app) {
 			});
 		}
 
-
 		DisableUpdateAndDeleteButtons = function () {
 			$('#updelclr #hardwareupdate').attr("class", "btnstyle3-dis");
 			$("#updelclr #hardwareupdate").removeAttr("href");
@@ -3928,6 +3929,11 @@ define(['app'], function (app) {
 			$('#modal').show();
 			DisableUpdateAndDeleteButtons();
 
+=======
+		RefreshHardwareTable = function () {
+			$('#modal').show();
+			DisableUpdateAndDeleteButtons();
+>>>>>>> a580a6b1feed22bd7e80fd62f30530b5cb84d456
 
 			var oTable = $('#hardwaretable').dataTable();
 			oTable.fnClearTable();
@@ -4672,31 +4678,108 @@ define(['app'], function (app) {
 						else if (data["Type"].indexOf("Evohome via Web") >= 0) {
 							$("#hardwarecontent #hardwareparamslogin #username").val(data["Username"]);
 							$("#hardwarecontent #hardwareparamslogin #password").val(data["Password"]);
+=======
+// Missing bracket???					}
+					if (data["Type"].indexOf("MySensors Gateway with MQTT") >= 0) {
 
-							var Pollseconds = parseInt(data["Mode1"]);
-							if ( Pollseconds < 10 ) {
-								Pollseconds = 60;
-							}
-							$("#hardwarecontent #divevohomeweb #updatefrequencyevohomeweb").val(Pollseconds);
+						// Break out any possible topic prefix pieces.
+						var CAfilenameParts = data["Extra"].split("#");
 
-							var UseFlags = parseInt(data["Mode2"]);
-							$("#hardwarecontent #divevohomeweb #disableautoevohomeweb").prop("checked",((UseFlags & 1) ^ 1));
-							$("#hardwarecontent #divevohomeweb #showscheduleevohomeweb").prop("checked",((UseFlags & 2) >>> 1));
-							$("#hardwarecontent #divevohomeweb #showlocationevohomeweb").prop("checked",((UseFlags & 4) >>> 2));
-							$("#hardwarecontent #divevohomeweb #comboevoprecision").val((UseFlags & 24));
-
-							var Location = parseInt(data["Mode3"]);
-							for (var i=1;i<10;i++){
-								$("#hardwarecontent #divevohomeweb #comboevolocation")[0].options[i]=new Option(i,i);
-								$("#hardwarecontent #divevohomeweb #comboevogateway")[0].options[i]=new Option(i,i);
-								$("#hardwarecontent #divevohomeweb #comboevotcs")[0].options[i]=new Option(i,i);
-							}
-							$("#hardwarecontent #divevohomeweb #comboevolocation").val(Location >>> 12);
-							$("#hardwarecontent #divevohomeweb #comboevogateway").val((Location >>> 8) & 15);
-							$("#hardwarecontent #divevohomeweb #comboevotcs").val((Location >>> 4) & 15);
+						// There should be 1 piece or 3 pieces.
+						switch (CAfilenameParts.length) {
+							case 2:
+								console.log("MySensorsMQTT: Truncating CAfilename; Stray topic was present.");
+								$("#hardwarecontent #hardwareparamsmysensorsmqtt #filename").val(CAfilenameParts[0]);
+								$("#hardwarecontent #hardwareparamsmysensorsmqtt #mqtttopicin").val("");
+								$("#hardwarecontent #hardwareparamsmysensorsmqtt #mqtttopicout").val("");
+								break;
+							case 1:
+							case 0:
+								console.log("MySensorsMQTT: Only a CAfilename present.");
+								$("#hardwarecontent #hardwareparamsmysensorsmqtt #filename").val(data["Extra"]);
+								$("#hardwarecontent #hardwareparamsmysensorsmqtt #mqtttopicin").val("");
+								$("#hardwarecontent #hardwareparamsmysensorsmqtt #mqtttopicout").val("");
+								break;
+							default:
+								console.log("MySensorsMQTT: Stacked data in CAfilename present. Separating out topic prefixes.");
+								$("#hardwarecontent #hardwareparamsmysensorsmqtt #filename").val(CAfilenameParts[0]);
+								$("#hardwarecontent #hardwareparamsmysensorsmqtt #mqtttopicin").val(CAfilenameParts[1]);
+								$("#hardwarecontent #hardwareparamsmysensorsmqtt #mqtttopicout").val(CAfilenameParts[2]);
+								break;
 						}
+>>>>>>> a580a6b1feed22bd7e80fd62f30530b5cb84d456
+
+						$("#hardwarecontent #hardwareparamsmysensorsmqtt #combotopicselect").val(data["Mode1"]);
+						$("#hardwarecontent #hardwareparamsmysensorsmqtt #combotlsversion").val(data["Mode2"]);
+						$("#hardwarecontent #hardwareparamsmysensorsmqtt #combopreventloop").val(data["Mode3"]);
+					}
+					else if (data["Type"].indexOf("Rtl433") >= 0) {
+						$("#hardwarecontent #hardwareparamsrtl433 #rtl433cmdline").val(data["Extra"]);
+					}
+					else if (data["Type"].indexOf("AirconWithMe") >= 0) {
+						$("#hardwarecontent #hardwareparamsremote #tcpaddress").val(data["Address"]);
+						$("#hardwarecontent #hardwareparamslogin #username").val(data["Username"]);
+						$("#hardwarecontent #hardwareparamslogin #password").val(data["Password"]);
+					}
+					if (
+						(data["Type"].indexOf("Domoticz") >= 0) ||
+						(data["Type"].indexOf("ICY") >= 0) ||
+						(data["Type"].indexOf("Eco Devices") >= 0) ||
+						(data["Type"].indexOf("Toon") >= 0) ||
+						(data["Type"].indexOf("Atag") >= 0) ||
+						(data["Type"].indexOf("Nest Th") >= 0 && data["Type"].indexOf("OAuth") === -1) ||
+						(data["Type"].indexOf("PVOutput") >= 0) ||
+						(data["Type"].indexOf("ETH8020") >= 0) ||
+						(data["Type"].indexOf("Daikin") >= 0) ||
+						(data["Type"].indexOf("Alfen") >= 0) ||
+						(data["Type"].indexOf("Sterbox") >= 0) ||
+						(data["Type"].indexOf("Anna") >= 0) ||
+						(data["Type"].indexOf("KMTronic") >= 0) ||
+						(data["Type"].indexOf("MySensors Gateway with MQTT") >= 0) ||
+						(data["Type"].indexOf("Netatmo") >= 0) ||
+						(data["Type"].indexOf("HTTP") >= 0) ||
+						(data["Type"].indexOf("Thermosmart") >= 0) ||
+						(data["Type"].indexOf("Tado") >= 0) ||
+						(data["Type"].indexOf("Tesla") >= 0) ||
+						(data["Type"].indexOf("Mercedes") >= 0) ||
+						(data["Type"].indexOf("Logitech Media Server") >= 0) ||
+						(data["Type"].indexOf("HEOS by DENON") >= 0) ||
+						(data["Type"].indexOf("Razberry") >= 0) ||
+						(data["Type"].indexOf("Comm5") >= 0) ||
+						(data["Type"].indexOf("Intergas InComfort") >= 0) ||
+						(data["Type"].indexOf("Enphase") >= 0)
+					) {
+						$("#hardwarecontent #hardwareparamslogin #username").val(data["Username"]);
+						$("#hardwarecontent #hardwareparamslogin #password").val(data["Password"]);
+					}
+					else if (data["Type"].indexOf("Evohome via Web") >= 0) {
+						$("#hardwarecontent #hardwareparamslogin #username").val(data["Username"]);
+						$("#hardwarecontent #hardwareparamslogin #password").val(data["Password"]);
+
+						var Pollseconds = parseInt(data["Mode1"]);
+						if ( Pollseconds < 10 ) {
+							Pollseconds = 60;
+						}
+						$("#hardwarecontent #divevohomeweb #updatefrequencyevohomeweb").val(Pollseconds);
+
+						var UseFlags = parseInt(data["Mode2"]);
+						$("#hardwarecontent #divevohomeweb #disableautoevohomeweb").prop("checked",((UseFlags & 1) ^ 1));
+						$("#hardwarecontent #divevohomeweb #showscheduleevohomeweb").prop("checked",((UseFlags & 2) >>> 1));
+						$("#hardwarecontent #divevohomeweb #showlocationevohomeweb").prop("checked",((UseFlags & 4) >>> 2));
+						$("#hardwarecontent #divevohomeweb #comboevoprecision").val((UseFlags & 24));
+
+						var Location = parseInt(data["Mode3"]);
+						for (var i=1;i<10;i++){
+							$("#hardwarecontent #divevohomeweb #comboevolocation")[0].options[i]=new Option(i,i);
+							$("#hardwarecontent #divevohomeweb #comboevogateway")[0].options[i]=new Option(i,i);
+							$("#hardwarecontent #divevohomeweb #comboevotcs")[0].options[i]=new Option(i,i);
+						}
+						$("#hardwarecontent #divevohomeweb #comboevolocation").val(Location >>> 12);
+						$("#hardwarecontent #divevohomeweb #comboevogateway").val((Location >>> 8) & 15);
+						$("#hardwarecontent #divevohomeweb #comboevotcs").val((Location >>> 4) & 15);
 					}
 				}
+			}
 			});
 
 			$('#modal').hide();
@@ -5091,8 +5174,8 @@ define(['app'], function (app) {
 					else if (text.indexOf("Mitsubishi WF") >= 0) {
 						$("#hardwarecontent #hardwareparamsremote #tcpport").val(51443);
 					}
-			}
-			else if (
+				}
+				else if (
 					(text.indexOf("LAN") >= 0 || text.indexOf("MySensors Gateway with MQTT") >= 0) &&
 					(text.indexOf("YouLess") >= 0 ||
 					text.indexOf("Denkovi") >= 0 ||
@@ -5358,8 +5441,6 @@ define(['app'], function (app) {
 			RefreshHardwareTable();
 			UpdateHardwareParamControls();
 		}
-
-
 
 		function SortByName(a, b) {
 			var aName = a.name.toLowerCase();
