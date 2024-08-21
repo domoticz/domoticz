@@ -1436,17 +1436,30 @@
 		<br>
 		<table class="display" id="hardwareparamsnetatmo" border="0" cellpadding="0" cellspacing="20">
  			<tr>
-				<td align="right" style="width:190px"><label><span data-i18n="Client ID">APP client ID</span>:</label></td>
+				<td align="right" style="width:110px"></td>
+				<td>
+					You need to sign up at Netatmo to get the API's Client ID and secret. <br>
+					Please follow the instructions on <a href="https://www.domoticz.com/wiki/Netatmo" target="_blank">www.domoticz.com/wiki/Netatmo</a>
+					<br><br>
+					Press and hold the control key (Windows) or the Command key (Apple) to select multiple scope items.
+					Please select only those scope items that are approiate for your devives.
+					<br><br>
+					The scopes ending with * are not tested yet! Use at your own risk.
+					<br><br>
+ 				</td>
+			</tr>
+ 			<tr>
+				<td align="right" style="width:110px"><label><span data-i18n="Client ID">APP client ID</span>:</label></td>
 				<td><input type="text" id="clientid" onchange="javascript:NetatmoEnableLogin()" style="width: 250px; padding: .2em;" class="text ui-widget-content ui-corner->-all"></td>
 			</tr>
  			<tr>
-				<td align="right" style="width:190px"><label><span data-i18n="Client Secret">APP client Secret</span>:</label></td>
+				<td align="right" style="width:110px"><label><span data-i18n="Client Secret">APP client Secret</span>:</label></td>
 				<td><input type="password" id="clientsecret" onchange="javascript:NetatmoEnableLogin()" style="width: 250px; padding: .2em;" class="text ui-widget-content ui-corner->-all"></td>
 			</tr>
 			<tr>
-				<td align="right" <label><span data-i18n="Scope"></span>:</label></td>
+				<td align="right" style="width:110px"<label><span data-i18n="Scope"></span>:</label></td>
 				<td>
-					<select id="scope" name="Scope" onchange="javascript:NetatmoEnableLogin()" size="6" style="width:252px" class="combobox ui-corner-all" multiple >
+					<select id="scope" name="Scope" onchange="javascript:NetatmoEnableLogin()" size="6" style="width:255px" class="combobox ui-corner-all" multiple >
 						<option value="read_station">Read Weather Station</option>
 						<option value="read_thermostat">Read Thermostat</option>
 						<option value="write_thermostat">Write Thermostat</option>
@@ -1477,20 +1490,14 @@
 			<tr>
 				<td align="right"><button type="button" class="btnstyle3-dis" id="netatmologin"  data-i18n="Login">Login</button></td>
 				<td>
-					You need to sign up at Netatmo to get the API's Client ID and secret. <br>
-					Please follow the instructions on <a href="https://www.domoticz.com/wiki/Netatmo" target="_blank">www.domoticz.com/wiki/Netatmo</a>
-					The scopes ending with * are not tested yet! Use at your own risk.
-				</td>
-			</tr>
-			<tr>
-				<td  align="right"  style="width:160px"><font color="orange"  id="netatmologinrequired">
-					Tokens are invalid or expired; please login to obtain new tokens!
-				</td>
-				<td>
-				<td><input type="hidden" id="refreshtoken" style="width: 250px; padding: .2em;" class="text ui-widget-content ui-corner->-all"></td>
+					<div style="width:250px">
+						<font  color="orange"  id="netatmologinrequired">
+						Tokens are invalid or expired; please login to obtain new tokens!
+					</div>
 				</td>
 			</tr>
 		</table>
+		<input type="hidden" id="refreshtoken">
 	</div>
 	<div id="divwinddelen">
 		<br>

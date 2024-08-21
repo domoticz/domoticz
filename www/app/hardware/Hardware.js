@@ -1440,6 +1440,15 @@ define(['app'], function (app) {
 				var scope = $("#hardwarecontent #divnetatmo #scope").val();
 				var refreshToken = $("#hardwarecontent #divnetatmo #refreshtoken").val();
 
+				if (clientid == "" || clientsecret == "") {
+					alert("Please enter a valid client ID and secret for your app from the Netatmo website!");
+					return;
+				}
+				if (scope  == "") {
+					alert("Plese enter one or more scopes, appropriate for the devices you own!");
+					return;
+				}
+
 				$.ajax({
 					url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype +
 					"&loglevel=" + logLevel +
@@ -2737,6 +2746,15 @@ define(['app'], function (app) {
 				var scope = $("#hardwarecontent #divnetatmo scope").val();
 				var refreshToken = $("#hardwarecontent #divnetatmo #refreshtoken").val();
 
+				if (clientid == "" || clientsecret == "") {
+					alert("Please enter a valid client ID and secret for your app from the Netatmo website!");
+					return;
+				}
+				if (scope  == "") {
+					alert("Plese enter one or more scopes, appropriate for the devices you own!");
+					return;
+				}
+
 				$.ajax({
 					url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype +
 					"&loglevel=" + logLevel +
@@ -3902,7 +3920,6 @@ define(['app'], function (app) {
 			$('#updelclr #hardwareupdate').attr("class", "btnstyle3-dis");
 			$("#updelclr #hardwareupdate").removeAttr("href");
 			$('#updelclr #hardwaredelete').attr("class", "btnstyle3-dis");
-			$("#updelclr #hardwaredelete").removeAttr("href");
 		}
 
 		EnableUpdateAndDeleteButtons = function (hrefUpdate, hrefDelete) {
@@ -4588,7 +4605,13 @@ define(['app'], function (app) {
 						else if (data["Type"].indexOf("Netatmo") >= 0) {
 
 							var splittedUserName = data["Username"].split(":");
-							var scopes  = data["Password"].split(",");
+							var scopes = data["Password"];;
+
+							if (scopes.indexOf("_") > 0) 	// Old or new format?
+								scopes = scopes.split(",");	// New format: This field contains one or more scopes
+							else 
+								scopes = "";	// Old format: This field contained the authorization code
+
 
 							$("#hardwarecontent #hardwareparamsnetatmo #clientid").val(splittedUserName[0]);
 							$("#hardwarecontent #hardwareparamsnetatmo #clientsecret").val(splittedUserName[1]);
@@ -4705,7 +4728,12 @@ define(['app'], function (app) {
 		NetatmoEnableLogin = function () {
 			// Enable login option when the user has changed the client credentials or the  skope
 			// This function may also called when the back-end lost its token and sets the mode1 flag
-			EnableNetatmoLoginButton(true);
+
+			var href = $("#updelclr #hardwareupdate").attr("href");
+			if (typeof href == 'undefined')
+				EnableNetatmoLoginButton(false);
+			else
+				EnableNetatmoLoginButton(true);
 		}
 
 		decodeJsonValues = function (JsonString) {
@@ -4721,6 +4749,14 @@ define(['app'], function (app) {
 		}
 
 		OnNetatmoLogin = function (idx) {
+			var href = $("#updelclr #hardwareupdate").attr("href");
+			if (typeof href == 'undefined')
+			{
+				EnableNetatmoLoginButton(false);
+				alert("Please select an existing device or add a new device first");
+				return;
+			}
+
 			var pwidth = 800;
 			var pheight = 600;
 
@@ -4757,8 +4793,9 @@ define(['app'], function (app) {
 
 				// Note: The followng code will run asynchronic
 
-				if (win.closed !== false) { // !== is required for compatibility with Opera
+				if (win.closed == true) { // !== is required for compatibility with Opera
 					window.clearInterval(pollTimer);
+					alert('Login aborted: Window closed before completion');
 				}
 				else if (win.document.URL.indexOf(redirectUri) != -1) {
 					window.clearInterval(pollTimer);
@@ -4816,7 +4853,6 @@ define(['app'], function (app) {
 					};
 				}
 			}, 500);
-
 		}
 
 
