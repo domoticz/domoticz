@@ -3929,12 +3929,6 @@ define(['app'], function (app) {
 			$('#modal').show();
 			DisableUpdateAndDeleteButtons();
 
-=======
-		RefreshHardwareTable = function () {
-			$('#modal').show();
-			DisableUpdateAndDeleteButtons();
->>>>>>> a580a6b1feed22bd7e80fd62f30530b5cb84d456
-
 			var oTable = $('#hardwaretable').dataTable();
 			oTable.fnClearTable();
 
@@ -4605,80 +4599,6 @@ define(['app'], function (app) {
 							if (data["Mode1"]== 1)
 								NetatmoEnableLogin();
 						}
-						if (data["Type"].indexOf("MySensors Gateway with MQTT") >= 0) {
-
-							// Break out any possible topic prefix pieces.
-							var CAfilenameParts = data["Extra"].split("#");
-
-							// There should be 1 piece or 3 pieces.
-							switch (CAfilenameParts.length) {
-								case 2:
-									console.log("MySensorsMQTT: Truncating CAfilename; Stray topic was present.");
-									$("#hardwarecontent #hardwareparamsmysensorsmqtt #filename").val(CAfilenameParts[0]);
-									$("#hardwarecontent #hardwareparamsmysensorsmqtt #mqtttopicin").val("");
-									$("#hardwarecontent #hardwareparamsmysensorsmqtt #mqtttopicout").val("");
-									break;
-								case 1:
-								case 0:
-									console.log("MySensorsMQTT: Only a CAfilename present.");
-									$("#hardwarecontent #hardwareparamsmysensorsmqtt #filename").val(data["Extra"]);
-									$("#hardwarecontent #hardwareparamsmysensorsmqtt #mqtttopicin").val("");
-									$("#hardwarecontent #hardwareparamsmysensorsmqtt #mqtttopicout").val("");
-									break;
-								default:
-									console.log("MySensorsMQTT: Stacked data in CAfilename present. Separating out topic prefixes.");
-									$("#hardwarecontent #hardwareparamsmysensorsmqtt #filename").val(CAfilenameParts[0]);
-									$("#hardwarecontent #hardwareparamsmysensorsmqtt #mqtttopicin").val(CAfilenameParts[1]);
-									$("#hardwarecontent #hardwareparamsmysensorsmqtt #mqtttopicout").val(CAfilenameParts[2]);
-									break;
-							}
-
-							$("#hardwarecontent #hardwareparamsmysensorsmqtt #combotopicselect").val(data["Mode1"]);
-							$("#hardwarecontent #hardwareparamsmysensorsmqtt #combotlsversion").val(data["Mode2"]);
-							$("#hardwarecontent #hardwareparamsmysensorsmqtt #combopreventloop").val(data["Mode3"]);
-						}
-						else if (data["Type"].indexOf("Rtl433") >= 0) {
-							$("#hardwarecontent #hardwareparamsrtl433 #rtl433cmdline").val(data["Extra"]);
-						}
-						else if (data["Type"].indexOf("AirconWithMe") >= 0) {
-							$("#hardwarecontent #hardwareparamsremote #tcpaddress").val(data["Address"]);
-							$("#hardwarecontent #hardwareparamslogin #username").val(data["Username"]);
-							$("#hardwarecontent #hardwareparamslogin #password").val(data["Password"]);
-						}
-						if (
-							(data["Type"].indexOf("Domoticz") >= 0) ||
-							(data["Type"].indexOf("ICY") >= 0) ||
-							(data["Type"].indexOf("Eco Devices") >= 0) ||
-							(data["Type"].indexOf("Toon") >= 0) ||
-							(data["Type"].indexOf("Atag") >= 0) ||
-							(data["Type"].indexOf("Nest Th") >= 0 && data["Type"].indexOf("OAuth") === -1) ||
-							(data["Type"].indexOf("PVOutput") >= 0) ||
-							(data["Type"].indexOf("ETH8020") >= 0) ||
-							(data["Type"].indexOf("Daikin") >= 0) ||
-							(data["Type"].indexOf("Alfen") >= 0) ||
-							(data["Type"].indexOf("Sterbox") >= 0) ||
-							(data["Type"].indexOf("Anna") >= 0) ||
-							(data["Type"].indexOf("KMTronic") >= 0) ||
-							(data["Type"].indexOf("MySensors Gateway with MQTT") >= 0) ||
-							(data["Type"].indexOf("HTTP") >= 0) ||
-							(data["Type"].indexOf("Thermosmart") >= 0) ||
-							(data["Type"].indexOf("Tado") >= 0) ||
-							(data["Type"].indexOf("Tesla") >= 0) ||
-							(data["Type"].indexOf("Mercedes") >= 0) ||
-							(data["Type"].indexOf("Logitech Media Server") >= 0) ||
-							(data["Type"].indexOf("HEOS by DENON") >= 0) ||
-							(data["Type"].indexOf("Razberry") >= 0) ||
-							(data["Type"].indexOf("Comm5") >= 0) ||
-							(data["Type"].indexOf("Intergas InComfort") >= 0) ||
-							(data["Type"].indexOf("Enphase") >= 0)
-						) {
-							$("#hardwarecontent #hardwareparamslogin #username").val(data["Username"]);
-							$("#hardwarecontent #hardwareparamslogin #password").val(data["Password"]);
-						}
-						else if (data["Type"].indexOf("Evohome via Web") >= 0) {
-							$("#hardwarecontent #hardwareparamslogin #username").val(data["Username"]);
-							$("#hardwarecontent #hardwareparamslogin #password").val(data["Password"]);
-=======
 // Missing bracket???					}
 					if (data["Type"].indexOf("MySensors Gateway with MQTT") >= 0) {
 
@@ -4707,8 +4627,6 @@ define(['app'], function (app) {
 								$("#hardwarecontent #hardwareparamsmysensorsmqtt #mqtttopicout").val(CAfilenameParts[2]);
 								break;
 						}
->>>>>>> a580a6b1feed22bd7e80fd62f30530b5cb84d456
-
 						$("#hardwarecontent #hardwareparamsmysensorsmqtt #combotopicselect").val(data["Mode1"]);
 						$("#hardwarecontent #hardwareparamsmysensorsmqtt #combotlsversion").val(data["Mode2"]);
 						$("#hardwarecontent #hardwareparamsmysensorsmqtt #combopreventloop").val(data["Mode3"]);
