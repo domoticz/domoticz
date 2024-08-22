@@ -1058,6 +1058,7 @@ bool IsLightOrSwitch(const int dType, const int dSubType)
 	case pTypeFS20:
 	case pTypeHunter:
 	case pTypeDDxxxx:
+	case pTypeHoneywell_AL:
 		bIsLightSwitch = true;
 		break;
 	case pTypeRadiator1:

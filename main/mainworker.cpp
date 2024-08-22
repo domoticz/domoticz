@@ -173,7 +173,7 @@
 #include <inttypes.h>
 
 #ifdef _DEBUG
-//#define PARSE_RFXCOM_DEVICE_LOG
+#define PARSE_RFXCOM_DEVICE_LOG
 //#define DEBUG_DOWNLOAD
 //#define DEBUG_RXQUEUE
 #endif
@@ -2272,6 +2272,9 @@ void MainWorker::ProcessRXMessage(const CDomoticzHardwareBase* pHardware, const 
 			break;
 		case pTypeDDxxxx:
 			decode_DDxxxx(pHardware, reinterpret_cast<const tRBUF*>(pRXCommand), procResult);
+			break;
+		case pTypeHoneywell_AL:
+			decode_Honeywell(pHardware, reinterpret_cast<const tRBUF*>(pRXCommand), procResult);
 			break;
 		default:
 			_log.Log(LOG_ERROR, "UNHANDLED PACKET TYPE:      FS20 %02X", pRXCommand[1]);
@@ -11252,6 +11255,81 @@ void MainWorker::decode_DDxxxx(const CDomoticzHardwareBase* pHardware, const tRB
 	procResult.DeviceRowIdx = DevRowIdx;
 }
 
+void MainWorker::decode_Honeywell(const CDomoticzHardwareBase* pHardware, const tRBUF* pResponse, _tRxMessageProcessingResult& procResult)
+{
+	char szTmp[100];
+	uint8_t devType = pResponse->HONEYWELL_AL.packettype;
+	uint8_t subType = pResponse->HONEYWELL_AL.subtype;
+
+	sprintf(szTmp, "%02X%02X%02X", pResponse->HONEYWELL_AL.id1, pResponse->HONEYWELL_AL.id2, pResponse->HONEYWELL_AL.id3);
+
+	std::string ID = szTmp;
+	uint8_t Unit = (pResponse->HONEYWELL_AL.knock << 4) | pResponse->HONEYWELL_AL.alert;
+	uint8_t cmnd = 1;
+	uint8_t SignalLevel = pResponse->HONEYWELL_AL.rssi;
+
+	sprintf(szTmp, "%d", 0);
+	uint64_t DevRowIdx = m_sql.UpdateValue(pHardware->m_HwdID, 0, ID.c_str(), Unit, devType, subType, SignalLevel, -1, cmnd, szTmp, procResult.DeviceName, true, procResult.Username.c_str());
+	if (DevRowIdx == (uint64_t)-1)
+		return;
+	CheckSceneCode(DevRowIdx, devType, subType, cmnd, szTmp, procResult.DeviceName);
+
+	if (_log.IsDebugLevelEnabled(DEBUG_RECEIVED))
+	{
+		WriteMessageStart();
+		char szTmp[100];
+
+		switch (pResponse->HONEYWELL_AL.subtype)
+		{
+		case sTypeSeries5:
+			WriteMessage("subtype       = Series5");
+			break;
+		case sTypePIR:
+			WriteMessage("subtype       = PIR");
+			break;
+		default:
+			sprintf(szTmp, "ERROR: Unknown Sub type for Packet type= %02X:%02X:", pResponse->HONEYWELL_AL.packettype, pResponse->HONEYWELL_AL.subtype);
+			WriteMessage(szTmp);
+			break;
+		}
+		sprintf(szTmp, "Sequence nbr  = %d", pResponse->HONEYWELL_AL.seqnbr);
+		WriteMessage(szTmp);
+
+		sprintf(szTmp, "id1-3         = %02X%02X%02X", pResponse->HONEYWELL_AL.id1, pResponse->HONEYWELL_AL.id2, pResponse->HONEYWELL_AL.id3);
+		WriteMessage(szTmp);
+
+		switch (pResponse->HONEYWELL_AL.alert)
+		{
+		case 0:
+			WriteMessage("Alert       = Normal");
+			break;
+		case 1:
+			WriteMessage("Alert       = Right halo light pattern");
+			break;
+		case 2:
+			WriteMessage("Alert       = Left halo light pattern");
+			break;
+		case 3:
+			WriteMessage("Alert       = High volume alarm");
+			break;
+		}
+
+		switch (pResponse->HONEYWELL_AL.knock)
+		{
+		case 0:
+			WriteMessage("Knock       = Yes");
+			break;
+		case 1:
+			WriteMessage("Knock       = No");
+			break;
+		}
+
+		sprintf(szTmp, "Signal level  = %d", pResponse->HONEYWELL_AL.rssi);
+		WriteMessage(szTmp);
+		WriteMessageEnd();
+	}
+	procResult.DeviceRowIdx = DevRowIdx;
+}
 
 bool MainWorker::GetSensorData(const uint64_t idx, int& nValue, std::string& sValue)
 {
@@ -12471,6 +12549,26 @@ MainWorker::eSwitchLightReturnCode MainWorker::SwitchLightInt(const std::vector<
 		if (!IsTesting) {
 			//send to internal for now (later we use the ACK)
 			lcmd.RADIATOR1.subtype = sTypeSmartwaresSwitchRadiator;
+			PushAndWaitRxMessage(m_hardwaredevices[hindex], (const uint8_t*)&lcmd, nullptr, -1, User.c_str());
+		}
+		return SL_OK;
+	}
+	break;
+	case pTypeHoneywell_AL:
+	{
+		level = 15;
+		tRBUF lcmd;
+		lcmd.HONEYWELL_AL.packetlength = sizeof(lcmd.HONEYWELL_AL) - 1;
+		lcmd.HONEYWELL_AL.packettype = dType;
+		lcmd.HONEYWELL_AL.subtype = dSubType;
+		lcmd.HONEYWELL_AL.seqnbr = m_hardwaredevices[hindex]->m_SeqNr++;
+		lcmd.HONEYWELL_AL.knock = (Unit & 0xF0) >> 4;
+		lcmd.HONEYWELL_AL.alert = Unit & 0x0F;
+		lcmd.CHIME.rssi = 12;
+		if (!WriteToHardware(HardwareID, (const char*)&lcmd, sizeof(lcmd.HONEYWELL_AL)))
+			return SL_ERROR;
+		if (!IsTesting) {
+			//send to internal for now (later we use the ACK)
 			PushAndWaitRxMessage(m_hardwaredevices[hindex], (const uint8_t*)&lcmd, nullptr, -1, User.c_str());
 		}
 		return SL_OK;
