@@ -1438,7 +1438,6 @@ define(['app'], function (app) {
 				var clientid = $("#hardwarecontent #divnetatmo #clientid").val();
 				var clientsecret = $("#hardwarecontent #divnetatmo #clientsecret").val();
 				var scope = $("#hardwarecontent #divnetatmo #scope").val();
-				var refreshToken = $("#hardwarecontent #divnetatmo #refreshtoken").val();
 
 				if (clientid == "" || clientsecret == "") {
 					alert("Please enter a valid client ID and secret for your app from the Netatmo website!");
@@ -1457,18 +1456,18 @@ define(['app'], function (app) {
 					"&password=" + encodeURIComponent(scope) +
 					"&enabled=" + bEnabled +
 					"&idx=" + idx +
-					"&extra=" + encodeURIComponent(refreshToken) +
+					"&extra=" + encodeURIComponent($scope.refreshToken) +
 					"&datatimeout=" + datatimeout +
-					"&Mode1=" + Mode1 + "&Mode2=" + Mode2 + "&Mode3=" + Mode3 + "&Mode4=" + Mode4 + "&Mode5=" + Mode5 + "&Mode6=" + Mode6,
+					"&Mode1=" + $scope.loginRequired + "&Mode2=" + Mode2 + "&Mode3=" + Mode3 + "&Mode4=" + Mode4 + "&Mode5=" + Mode5 + "&Mode6=" + Mode6,
 					async: false,
 					dataType: 'json',
 					success: function (data) {
-						refreshToken = "";
-						$("#hardwarecontent #divnetatmo #refreshtoken").val(refreshToken);
+						$scope.refreshToken = "";
 						EnableNetatmoLoginButton(Mode1);
 						RefreshHardwareTable();
 					},
 					error: function () {
+						$scope.refreshToken = "";	// Don't leave this lying around
 						ShowNotify($.t('Problem updating hardware!'), 2500, true);
 					}
 				});
@@ -2744,7 +2743,6 @@ define(['app'], function (app) {
 				var clientid = $("#hardwarecontent #divnetatmo #clientid").val();
 				var clientsecret = $("#hardwarecontent #divnetatmo #clientsecret").val();
 				var scope = $("#hardwarecontent #divnetatmo scope").val();
-				var refreshToken = $("#hardwarecontent #divnetatmo #refreshtoken").val();
 
 				if (clientid == "" || clientsecret == "") {
 					alert("Please enter a valid client ID and secret for your app from the Netatmo website!");
@@ -2755,6 +2753,11 @@ define(['app'], function (app) {
 					return;
 				}
 
+				if (typeof $scope.refreshToken == 'undefined' || $scope.refreshToken == "") {
+					alert("Plese login before adding a new Netatmo device");
+					return;
+				}
+
 				$.ajax({
 					url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype +
 					"&loglevel=" + logLevel +
@@ -2762,17 +2765,18 @@ define(['app'], function (app) {
 					"&username=" + encodeURIComponent(clientid) + ":" +  encodeURIComponent(clientsecret) +
 					"&password=" + encodeURIComponent(scope) +
 					"&enabled=" + bEnabled +
-					"&extra=" + encodeURIComponent(refreshToken) +
+					"&extra=" + encodeURIComponent($scope.refreshToken) +
 					"&datatimeout=" + datatimeout +
-					"&Mode1=" + Mode1,
+					"&Mode1=" + $scope.loginRequired,
 					async: false,
 					dataType: 'json',
 					success: function (data) {
-						refreshToken = "";
-						$("#hardwarecontent #divnetatmo #refreshtoken").val(refreshToken);
+						$scope.refreshToken = "";
+						EnableNetatmoLoginButton(false);
 						RefreshHardwareTable();
 					},
 					error: function () {
+						$scope.refreshToken = "";	// Don't leave this lying around
 						ShowNotify($.t('Problem adding hardware!'), 2500, true);
 					}
 				});
@@ -3920,6 +3924,7 @@ define(['app'], function (app) {
 			$('#updelclr #hardwareupdate').attr("class", "btnstyle3-dis");
 			$("#updelclr #hardwareupdate").removeAttr("href");
 			$('#updelclr #hardwaredelete').attr("class", "btnstyle3-dis");
+			$("#updelclr #hardwaredelete").removeAttr("href");
 		}
 
 		EnableUpdateAndDeleteButtons = function (hrefUpdate, hrefDelete) {
@@ -3933,12 +3938,12 @@ define(['app'], function (app) {
 			if (enableFlag) {
 				$("#hardwarecontent #hardwareparamsnetatmo #netatmologin").attr("class", "btnstyle3");
 				$("#hardwarecontent #hardwareparamsnetatmo #netatmologin").prop("disabled", false);
-				$("#hardwarecontent #hardwareparamsnetatmo #netatmologinrequired").show();
+				$("#hardwarecontent #hardwareparamsnetatmo #netatmologinrequiredtext").show();
 			}
 			else {
 				$("#hardwarecontent #hardwareparamsnetatmo #netatmologin").attr("class", "btnstyle3-dis");
 				$("#hardwarecontent #hardwareparamsnetatmo #netatmologin").prop("disabled", true);
-				$("#hardwarecontent #hardwareparamsnetatmo #netatmologinrequired").hide();
+				$("#hardwarecontent #hardwareparamsnetatmo #netatmologinrequiredtext").hide();
 			}
 		}
 
@@ -4729,11 +4734,7 @@ define(['app'], function (app) {
 			// Enable login option when the user has changed the client credentials or the  skope
 			// This function may also called when the back-end lost its token and sets the mode1 flag
 
-			var href = $("#updelclr #hardwareupdate").attr("href");
-			if (typeof href == 'undefined')
-				EnableNetatmoLoginButton(false);
-			else
-				EnableNetatmoLoginButton(true);
+			EnableNetatmoLoginButton(true);
 		}
 
 		decodeJsonValues = function (JsonString) {
@@ -4749,14 +4750,6 @@ define(['app'], function (app) {
 		}
 
 		OnNetatmoLogin = function (idx) {
-			var href = $("#updelclr #hardwareupdate").attr("href");
-			if (typeof href == 'undefined')
-			{
-				EnableNetatmoLoginButton(false);
-				alert("Please select an existing device or add a new device first");
-				return;
-			}
-
 			var pwidth = 800;
 			var pheight = 600;
 
@@ -4811,33 +4804,36 @@ define(['app'], function (app) {
 
 						//Exchange the authorization code for tokens
 						var urlToken = "https://api.netatmo.net/oauth2/token";
-						var loginRequired = true;
+						$scope.loginRequired = true;
 
 						const xhr = new XMLHttpRequest();
 						xhr.onload = () => {
-							var refreshToken = "";
+							$scope.refreshToken = "";
 
 							if (xhr.readyState == 4 && xhr.status == 200) {
 								const data = xhr.response;
 								console.log('Success: $(data)');
 
 								const parsedJsonData = JSON.parse(data);
-								refreshToken = parsedJsonData.refresh_token;
-								if (refreshToken == "") {
+								$scope.refreshToken = parsedJsonData.refresh_token;
+								if ($scope.refreshToken == "") {
 									alert('Access denied: Failed to rerreive a valid token from server: ' + decodeJsonValues(xhr.responseText));
 									console.log('Error: Access denied: Failed to rerreive a valid token from server: ' + data);
-									loginRequired = true; //Still need to login
+									$scope.loginRequired = true; //Still need to login
 								}
 								else
-									loginRequired = false //Login done: Notify server
+									$scope.loginRequired = false //Login done: Notify server
 							} else {
 								alert('Access denied: Failed to rerreive a valid reponse from server (' + xhr.status + "): " + decodeJsonValues(xhr.responseText));
 								console.log(`Error: ${xhr.status}`);
-								loginRequired = true; //Still need to login
+								$scope.loginRequired = true; //Still need to login
 							}
-
-							$("#hardwarecontent #divnetatmo #refreshtoken").val(refreshToken);
-							UpdateHardware (idx, loginRequired, 0, 0, 0, 0, 0);
+							var href = $("#updelclr #hardwareupdate").attr("href");
+							if (typeof href == 'undefined') {
+								AddHardware ();	//Is Selected device, update
+							}
+							else
+								UpdateHardware (idx, 0, 0, 0, 0, 0, 0);	//Is not a selected device. so must be new
 						}
 
 						var body = "grant_type=authorization_code"
