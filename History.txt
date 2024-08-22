@@ -1,5 +1,6 @@
 Version 2024.x
 - Changed: Improved and automated login process for Netatmo devices (to obtain client ID and Password with user selectable scopes)
+- Implemented: Support for Honeywell Series 5/PIR
 - Changed: Google Firebase Cloud Messaging (FCM) alternative way to pass a Domoticz device ID through the extra field ('|Device=<devidx>')
 - Changed: dzVents, possible to pass a Domoticz device ID in notify() through the extra parameter
 - Changed: Energy Dashboard now also available for non-admin users
