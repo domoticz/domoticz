@@ -857,7 +857,7 @@ define(['app'], function (app) {
 							return;
 						}
 						extra += "#";
-					 extra += $("#hardwarecontent #divmysensorsmqtt #mqtttopicin").val();
+					 	extra += $("#hardwarecontent #divmysensorsmqtt #mqtttopicin").val();
 						extra += "#";
 						extra += $("#hardwarecontent #divmysensorsmqtt #mqtttopicout").val();
 					}
@@ -1786,7 +1786,7 @@ define(['app'], function (app) {
 						ShowNotify($.t('Problem adding hardware!'), 2500, true);
 					}
 				});
-		 }
+			}
 			else if (
 				(text.indexOf("LAN") >= 0 &&
 					text.indexOf("YouLess") == -1 &&
@@ -4364,7 +4364,7 @@ define(['app'], function (app) {
 
 							} else if (data["Type"].indexOf("Denkovi") >= 0) {
 								$("#hardwarecontent #divmodeldenkoviusbdevices #combomodeldenkoviusbdevices").val(data["Mode1"]);
- 							}
+							}
 						}
 						else if ((((data["Type"].indexOf("LAN") >= 0) || (data["Type"].indexOf("Eco Devices") >= 0) || data["Type"].indexOf("MySensors Gateway with MQTT") >= 0 || data["Type"].indexOf("RFLink Gateway MQTT") >= 0) &&
 						 		(data["Type"].indexOf("YouLess") == -1) && (data["Type"].indexOf("Denkovi") == -1) && (data["Type"].indexOf("Relay-Net") == -1) && (data["Type"].indexOf("Satel Integra") == -1) && (data["Type"].indexOf("eHouse") == -1) &&
@@ -4597,7 +4597,7 @@ define(['app'], function (app) {
 								$("#hardwarecontent #divenever #providerGas").val(ProviderParts[1]);
 							}
 						}
-						else if (data["Type"].indexOf("Honeywell")>= 0) {
+						else if (data["Type"].indexOf("Honeywell") >= 0) {
 							$("#hardwarecontent #hardwareparamshoneywell #hwAccessToken").val(data["Username"]);
 							$("#hardwarecontent #hardwareparamshoneywell #hwRefreshToken").val(data["Password"]);
 							var tmp = data["Extra"];
