@@ -259,18 +259,24 @@ bool CNetatmo::RefreshToken(const bool bForce)
 
 	std::string httpData = sstr.str();
 	std::vector<std::string> ExtraHeaders;
+	std::vector<std::string> returnHeaders;
 
 	ExtraHeaders.push_back("Host: api.netatmo.net");
 	ExtraHeaders.push_back("Content-Type: application/x-www-form-urlencoded;charset=UTF-8");
 
 	std::string httpUrl(NETATMO_OAUTH2_TOKEN_URI);
 	std::string sResult;
-	bool ret = HTTPClient::POST(httpUrl, httpData, ExtraHeaders, sResult);
+	bool ret = HTTPClient::POST(httpUrl, httpData, ExtraHeaders, sResult, returnHeaders);
 
 	//Check for returned data
 	if (!ret)
 	{
-		Log(LOG_ERROR, "Error connecting to Server (refresh tokens)...");
+		std::string sReturnHeaders = "Undefined";
+		if (returnHeaders.size() > 0) {
+			for (const auto returnHeader : returnHeaders)
+				sReturnHeaders += returnHeader;
+		}
+		Log(LOG_ERROR, "Error connecting to Server (refresh tokens)...: %s", sReturnHeaders.c_str());
 		return false;
 	}
 
@@ -707,15 +713,20 @@ void CNetatmo::GetMeterDetails()
 	Json::Value root; // root JSON object
 	bool bRet; //Parsing status
 	std::vector<std::string> ExtraHeaders; // HTTP Headers
-
+	std::vector<std::string> returnHeaders; // HTTP returned headers
 	//check if user has an energy device (only once)
 	if (m_bFirstTimeWeatherData)
 	{
 		//URI for energy device
 		httpUrl = MakeRequestURL(NETYPE_ENERGY);
-		if (!HTTPClient::GET(httpUrl, ExtraHeaders, sResult))
+		if (!HTTPClient::GET(httpUrl, ExtraHeaders, sResult, returnHeaders))
 		{
-			Log(LOG_ERROR, "Error connecting to Server (GetMeterDetails)...");
+			std::string sReturnHeaders = "Undefined";
+			if (returnHeaders.size() > 0) {
+				for (const auto returnHeader : returnHeaders)
+					sReturnHeaders += returnHeader;
+			}
+			Log(LOG_ERROR, "Error connecting to Server (GetMeterDetails)...: %s", sReturnHeaders.c_str());
 			return;
 		}
 
@@ -745,9 +756,14 @@ void CNetatmo::GetMeterDetails()
 
 	//Check if user has a weather or homecoach device
 	httpUrl = MakeRequestURL(m_weatherType);
-	if (!HTTPClient::GET(httpUrl, ExtraHeaders, sResult))
+	if (!HTTPClient::GET(httpUrl, ExtraHeaders, sResult, returnHeaders))
 	{
-		Log(LOG_ERROR, "Error connecting to Server (GetMeterDetails)...");
+		std::string sReturnHeaders = "Undefined";
+		if (returnHeaders.size() > 0) {
+			for (const auto returnHeader : returnHeaders)
+				sReturnHeaders += returnHeader;
+		}
+		Log(LOG_ERROR, "Error connecting to Server (GetMeterDetails)...: %s", sReturnHeaders.c_str());
 		return;
 	}
 
@@ -775,9 +791,14 @@ void CNetatmo::GetMeterDetails()
 		{
 			// URI for homecoach device
 			httpUrl = MakeRequestURL(NETYPE_HOMECOACH);
-			if (!HTTPClient::GET(httpUrl, ExtraHeaders, sResult))
+			if (!HTTPClient::GET(httpUrl, ExtraHeaders, sResult, returnHeaders))
 			{
-				Log(LOG_ERROR, "Error connecting to Server (ParseStationData)...");
+				std::string sReturnHeaders = "Undefined";
+				if (returnHeaders.size() > 0) {
+					for (const auto returnHeader : returnHeaders)
+						sReturnHeaders += returnHeader;
+				}
+				Log(LOG_ERROR, "Error connecting to Server (ParseStationData)...: %s", sReturnHeaders.c_str());
 				return;
 			}
 
@@ -823,24 +844,30 @@ void CNetatmo::GetThermostatDetails()
 	std::string sResult;
 	std::stringstream sstr2;
 	std::vector<std::string> ExtraHeaders;
+	std::vector<std::string> returnHeaders;
 	bool ret;
 
 	if (m_energyType != NETYPE_ENERGY)
 	{
 		sstr2 << "https://api.netatmo.net/api/getthermostatsdata";
 		sstr2 << "?access_token=" << m_accessToken;
-		ret = HTTPClient::GET(sstr2.str(), ExtraHeaders, sResult);
+		ret = HTTPClient::GET(sstr2.str(), ExtraHeaders, sResult, returnHeaders);
 	}
 	else
 	{
 		sstr2 << "https://api.netatmo.net/api/homestatus";
 		std::string sPostData = "access_token=" + m_accessToken + "&home_id=" + m_Home_ID;
-		ret = HTTPClient::POST(sstr2.str(), sPostData, ExtraHeaders, sResult);
+		ret = HTTPClient::POST(sstr2.str(), sPostData, ExtraHeaders, sResult, returnHeaders);
 	}
 
 	if (!ret)
 	{
-		Log(LOG_ERROR, "Error connecting to Server (GetThermostatDetails)...");
+		std::string sReturnHeaders;
+		if (returnHeaders.size() > 0) {
+			for (const auto returnHeader : returnHeaders)
+				sReturnHeaders += returnHeader;
+		}
+		Log(LOG_ERROR, "Error connecting to Server (GetThermostatDetails)...: %s", sReturnHeaders.c_str());
 		return;
 	}
 	if (m_energyType != NETYPE_ENERGY)

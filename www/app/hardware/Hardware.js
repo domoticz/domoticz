@@ -4737,14 +4737,41 @@ define(['app'], function (app) {
 			EnableNetatmoLoginButton(true);
 		}
 
-		decodeJsonValues = function (JsonString) {
+		decodeJsonValues = function (JsonString, separator) {
 			const obj = JSON.parse(JsonString);
 			var result = "";
 
 			for (const [key, value] of Object.entries(obj)) {
- 				if (result != "")
-					result += ', ';
+				if (result != "")
+					result += separator;
 				result += `${key} = ${value}`;
+			}
+			return result;
+		}
+
+		expandScope = function (scopeArray, separator) {
+			var scopeGroups = { station_R :	'read_station',
+				thermostat_RW :			'read_thermostat write_thermostat',
+				camera_RWA :			'read_camera write_camera access_camera',
+				doorbell_RA :			'read_doorbell access_doorbell',
+				presence_RWA :			'read_presence write_presence access_presence',
+				carbonmonoxidedetector_R :	'read_carbonmonoxidedetector',
+				read_smokedetector_R :		'read_smokedetector',
+				read_homecoach_R :		'read_homecoach',
+				read_magellan_RW :		'read_magellan write_magellan',
+				read_bubendorff_RW :		'read_bubendorff write_bubendorff',
+				read_smarther_RW :		'read_smarther write_smarther',
+				read_mx_RW :			'read_mx write_mx',
+				read_mhs1_RW :			'read_mhs1 write_mhs1'
+			};
+
+			var result = "";
+
+			for (const element of scopeArray) {
+				if (result !== "")
+					result += separator;
+				const value = scopeGroups[element];
+				result += value;
 			}
 			return result;
 		}
@@ -4773,8 +4800,11 @@ define(['app'], function (app) {
 			var clientSecret = $("#hardwarecontent #hardwareparamsnetatmo #clientsecret").val();
 			var date = new Date();
 			var state = date.getTime() + '_' + idx;
+
+			var expandedScope = expandScope(scope, ' ');
+
 			var _url = 'https://api.netatmo.net/oauth2/authorize?client_id='+clientId
-				+ '&scope=' + scope
+				+ '&scope=' + expandedScope
 				+ '&state=' + state
 				+ '&redirect_uri=' + redirectUri;
 
@@ -4817,14 +4847,14 @@ define(['app'], function (app) {
 								const parsedJsonData = JSON.parse(data);
 								$scope.refreshToken = parsedJsonData.refresh_token;
 								if ($scope.refreshToken == "") {
-									alert('Access denied: Failed to rerreive a valid token from server: ' + decodeJsonValues(xhr.responseText));
+									alert('Access denied: Failed to rerreive a valid token from server: ' + decodeJsonValues(xhr.responseText), ', ');
 									console.log('Error: Access denied: Failed to rerreive a valid token from server: ' + data);
 									$scope.loginRequired = true; //Still need to login
 								}
 								else
 									$scope.loginRequired = false //Login done: Notify server
 							} else {
-								alert('Access denied: Failed to rerreive a valid reponse from server (' + xhr.status + "): " + decodeJsonValues(xhr.responseText));
+								alert('Access denied: Failed to rerreive a valid reponse from server (' + xhr.status + "): " + decodeJsonValues(xhr.responseText), ', ');
 								console.log(`Error: ${xhr.status}`);
 								$scope.loginRequired = true; //Still need to login
 							}
@@ -4841,7 +4871,7 @@ define(['app'], function (app) {
 							+ "&client_secret=" + clientSecret
 							+ "&code=" + authorizationCode
 							+ "&redirect_uri=" + redirectUri
-							+ "&scope=" + scope;
+							+ "&scope=" + expandedScope;
 
 						xhr.open("POST", urlToken);
 						xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded;charset=UTF-8");
