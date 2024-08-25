@@ -164,6 +164,8 @@ bool CRFXBase::CheckValidRFXData(const uint8_t *pData)
 		return (pLen == 0x0C);
 	case pTypeDDxxxx:
 		return (pLen == 0x0C);
+	case pTypeHoneywell_AL:
+		return (pLen == 0x0A);
 	default:
 		return false;//unknown Type
 	}

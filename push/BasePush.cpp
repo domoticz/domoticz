@@ -365,6 +365,8 @@ const char* RFX_Type_SubType_Values(const unsigned char dType, const unsigned ch
 		{ pTypeGeneralSwitch, sSwitchTypeForest, "Status,Level" },
 
 		{ pTypeDDxxxx, sTypeDDxxxx, "Status,Level" },
+		{ pTypeHoneywell_AL, sTypeSeries5, "Status" },
+		{ pTypeHoneywell_AL, sTypePIR, "Status" },
 
 		{ 0, 0, nullptr },
 	};
