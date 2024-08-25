@@ -49,7 +49,7 @@ install_manifest.txt
 /www/images/floorplans/*.jpg
 .vscode
 sqlite3_config.h
-/extern/
+extern/
 /node_modules/
 /domoticz.iml
 __pycache__
