@@ -4217,6 +4217,7 @@ define(['app'], function (app) {
 				if ($(this).hasClass('row_selected')) {
 					$(this).removeClass('row_selected');
 					DisableUpdateAndDeleteButtons();
+					EnableNetatmoLoginButton(false);
 				}
 				else {
 					var oTable = $('#hardwaretable').dataTable();
@@ -4734,7 +4735,8 @@ define(['app'], function (app) {
 			// Enable login option when the user has changed the client credentials or the  skope
 			// This function may also called when the back-end lost its token and sets the mode1 flag
 
-			EnableNetatmoLoginButton(true);
+			if ($("#hardwaretable tbody tr").hasClass('row_selected'))
+				EnableNetatmoLoginButton(true);
 		}
 
 		decodeJsonValues = function (JsonString, separator) {

@@ -56,6 +56,7 @@ class CNetatmo : public CDomoticzHardwareBase
 	bool StartHardware() override;
 	bool StopHardware() override;
 	void Do_Work();
+	std::string ExtractHtmlStatusCode(const std::vector<std::string>& headers, const std::string& separator);
 	std::string MakeRequestURL(_eNetatmoType NetatmoType);
 	void GetMeterDetails();
 	void GetThermostatDetails();

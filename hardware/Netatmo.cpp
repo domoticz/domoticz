@@ -139,6 +139,25 @@ bool CNetatmo::StopHardware()
 	return true;
 }
 
+std::string CNetatmo::ExtractHtmlStatusCode(const std::vector<std::string>& headers, const std::string& separator = ", ")
+{
+	std::string sReturn;
+
+	std::string sHeaders;
+	if (headers.size() > 0)
+		for (const auto header : headers)
+			if (header.find("HTTP") == 0)
+			{
+				if (!sHeaders.empty())
+					sHeaders.append(separator);
+				sHeaders.append( header);
+			}
+	if (sHeaders.empty())
+		sHeaders =  "Not defined";
+
+	return sHeaders;
+}
+
 void CNetatmo::Do_Work()
 {
 	int sec_counter = 600 - 5;
@@ -271,12 +290,7 @@ bool CNetatmo::RefreshToken(const bool bForce)
 	//Check for returned data
 	if (!ret)
 	{
-		std::string sReturnHeaders = "Undefined";
-		if (returnHeaders.size() > 0) {
-			for (const auto returnHeader : returnHeaders)
-				sReturnHeaders += returnHeader;
-		}
-		Log(LOG_ERROR, "Error connecting to Server (refresh tokens)...: %s", sReturnHeaders.c_str());
+		Log(LOG_ERROR, "Error connecting to Server (refresh tokens): %s", ExtractHtmlStatusCode(returnHeaders).c_str());
 		return false;
 	}
 
@@ -295,9 +309,11 @@ bool CNetatmo::RefreshToken(const bool bForce)
 	//Check if token was refreshed and access granted
 	if (root["access_token"].empty() || root["expires_in"].empty() || root["refresh_token"].empty())
 	{
-		//Force login next time
-		Log(LOG_ERROR, "No access granted, forcing login again (Refresh tokens)...: %s", sResult.c_str());
+		if (!root["error"].empty())
+			sResult = root["error"].asString();
+		Log(LOG_ERROR, "No access granted, forcing login again (Refresh tokens): %s", sResult.c_str());
 
+		//Force login next time
 		StoreRefreshToken();
 		m_isLogged = false;
 		StoreRequestTokenFlag(true);
@@ -721,12 +737,7 @@ void CNetatmo::GetMeterDetails()
 		httpUrl = MakeRequestURL(NETYPE_ENERGY);
 		if (!HTTPClient::GET(httpUrl, ExtraHeaders, sResult, returnHeaders))
 		{
-			std::string sReturnHeaders = "Undefined";
-			if (returnHeaders.size() > 0) {
-				for (const auto returnHeader : returnHeaders)
-					sReturnHeaders += returnHeader;
-			}
-			Log(LOG_ERROR, "Error connecting to Server (GetMeterDetails)...: %s", sReturnHeaders.c_str());
+			Log(LOG_ERROR, "Error connecting to Server (GetMeterDetails): %s", ExtractHtmlStatusCode(returnHeaders).c_str());
 			return;
 		}
 
@@ -758,12 +769,7 @@ void CNetatmo::GetMeterDetails()
 	httpUrl = MakeRequestURL(m_weatherType);
 	if (!HTTPClient::GET(httpUrl, ExtraHeaders, sResult, returnHeaders))
 	{
-		std::string sReturnHeaders = "Undefined";
-		if (returnHeaders.size() > 0) {
-			for (const auto returnHeader : returnHeaders)
-				sReturnHeaders += returnHeader;
-		}
-		Log(LOG_ERROR, "Error connecting to Server (GetMeterDetails)...: %s", sReturnHeaders.c_str());
+		Log(LOG_ERROR, "Error connecting to Server (GetMeterDetails): %s", ExtractHtmlStatusCode(returnHeaders).c_str());
 		return;
 	}
 
@@ -793,12 +799,7 @@ void CNetatmo::GetMeterDetails()
 			httpUrl = MakeRequestURL(NETYPE_HOMECOACH);
 			if (!HTTPClient::GET(httpUrl, ExtraHeaders, sResult, returnHeaders))
 			{
-				std::string sReturnHeaders = "Undefined";
-				if (returnHeaders.size() > 0) {
-					for (const auto returnHeader : returnHeaders)
-						sReturnHeaders += returnHeader;
-				}
-				Log(LOG_ERROR, "Error connecting to Server (ParseStationData)...: %s", sReturnHeaders.c_str());
+				Log(LOG_ERROR, "Error connecting to Server (ParseStationData): %s", ExtractHtmlStatusCode(returnHeaders).c_str());
 				return;
 			}
 
@@ -862,12 +863,7 @@ void CNetatmo::GetThermostatDetails()
 
 	if (!ret)
 	{
-		std::string sReturnHeaders;
-		if (returnHeaders.size() > 0) {
-			for (const auto returnHeader : returnHeaders)
-				sReturnHeaders += returnHeader;
-		}
-		Log(LOG_ERROR, "Error connecting to Server (GetThermostatDetails)...: %s", sReturnHeaders.c_str());
+		Log(LOG_ERROR, "Error connecting to Server (GetThermostatDetails): %s", ExtractHtmlStatusCode(returnHeaders).c_str());
 		return;
 	}
 	if (m_energyType != NETYPE_ENERGY)
