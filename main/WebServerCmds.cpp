@@ -578,9 +578,9 @@ namespace http
 					name.c_str(), (senabled == "true") ? 1 : 0, htype, iLogLevelEnabled, address.c_str(), port, sport.c_str(), username.c_str(), password.c_str(),
 					extra.c_str(), mode1Str.c_str(), mode2Str.c_str(), mode3Str.c_str(), mode4Str.c_str(), mode5Str.c_str(), mode6Str.c_str(), iDataTimeout);
 			}
-			else if ((htype == HTYPE_RFXtrx433) || (htype == HTYPE_RFXtrx868) || (htype == HTYPE_Netatmo))
+			else if ((htype == HTYPE_RFXtrx433) || (htype == HTYPE_RFXtrx868))
 			{
-				// No Extra field here, handled in CWebServer::SetRFXCOMMode and in CNetatmo::CNetatmo for Netatmo devices
+				// No Extra field here, handled in CWebServer::SetRFXCOMMode
 				m_sql.safe_query("INSERT INTO Hardware (Name, Enabled, Type, LogLevel, Address, Port, SerialPort, Username, Password, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6, "
 					"DataTimeout) VALUES ('%q',%d, %d, %d,'%q',%d,'%q','%q','%q',%d,%d,%d,%d,%d,%d,%d)",
 					name.c_str(), (senabled == "true") ? 1 : 0, htype, iLogLevelEnabled, address.c_str(), port, sport.c_str(), username.c_str(), password.c_str(), mode1,
@@ -668,6 +668,15 @@ namespace http
 			root["status"] = "OK";
 			root["title"] = "UpdateHardware";
 
+			if (htype == HTYPE_Netatmo && extra == "") {
+				//Extra contains  private data (client sectret), and is not sent to the front-end because of security reason
+				//Avoid overwriting existing datas
+				std::vector<std::vector<std::string>> result;
+				result = m_sql.safe_query("SELECT Extra FROM Hardware WHERE ID=%q", idx.c_str());
+				if (!result.empty())
+					extra = result[0][0];
+			}
+
 			if (htype == HTYPE_Domoticz)
 			{
 				if (password.size() != 32)
@@ -699,9 +708,9 @@ namespace http
 						extra.c_str(), mode1Str.c_str(), mode2Str.c_str(), mode3Str.c_str(), mode4Str.c_str(), mode5Str.c_str(), mode6Str.c_str(), iDataTimeout,
 						idx.c_str());
 				}
-				else if ((htype == HTYPE_RFXtrx433) || (htype == HTYPE_RFXtrx868) || (htype == HTYPE_Netatmo))
+				else if ((htype == HTYPE_RFXtrx433) || (htype == HTYPE_RFXtrx868))
 				{
-					// No Extra field here, handled in CWebServer::SetRFXCOMMode and CNetatmo::CNetatmo( for Netatmo
+					// No Extra field here, handled in CWebServer::SetRFXCOMMode 
 					m_sql.safe_query("UPDATE Hardware SET Name='%q', Enabled=%d, Type=%d, LogLevel=%d, Address='%q', Port=%d, SerialPort='%q', Username='%q', Password='%q', "
 						"Mode1=%d, Mode2=%d, Mode3=%d, Mode4=%d, Mode5=%d, Mode6=%d, DataTimeout=%d WHERE (ID == '%q')",
 						name.c_str(), (bEnabled == true) ? 1 : 0, htype, iLogLevelEnabled, address.c_str(), port, sport.c_str(), username.c_str(), password.c_str(),
@@ -3205,7 +3214,12 @@ namespace http
 					root["result"][ii]["SerialPort"] = sd[6];
 					root["result"][ii]["Username"] = sd[7];
 					root["result"][ii]["Password"] = sd[8];
-					root["result"][ii]["Extra"] = sd[9];
+					if (hType == HTYPE_Netatmo) {
+						root["result"][ii]["Extra"] = "";	//Don't pass the refresh token to the front-end because of security reasons
+					}
+					else {
+						root["result"][ii]["Extra"] = sd[9];
+					}
 
 					if (hType == HTYPE_PythonPlugin)
 					{
