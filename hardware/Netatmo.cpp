@@ -2297,7 +2297,7 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 						if (wifi_status > 10)
 							wifi_status = 10;
 						m_wifi_status[module_id] = (int)wifi_status;
-						mrf_status = wifi_status; // Device has Wifi- or RF-strength not both
+						mrf_status = int(wifi_status); // Device has Wifi- or RF-strength not both
 					}
 
 					UpdateValueInt(Hardware_int, ID.c_str(), 1, pTypeGeneral, sTypeTextStatus, mrf_status, batteryLevel, '0', sValue.c_str(), module_Name, 0, m_Name);  // MAC-adres  Parse Home Status
