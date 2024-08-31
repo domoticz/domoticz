@@ -9,7 +9,7 @@
 
 /*
                                                                    
-Copyright 2011-2023, RFXCOM
+Copyright 2011-2024, RFXCOM
 
 ALL RIGHTS RESERVED. This code is owned by RFXCOM, and is protected under
 Netherlands Copyright Laws and Treaties and shall be subject to the 
@@ -24,434 +24,447 @@ express written permission from RFXCOM.
 The above copyright notice shall be included in all copies or substantial
 portions of this file.
 '----------------------------------------------------------------------------
-*/
+ */
 
 /*
+SDK version 9.44	August 30, 2024
+    Somfy RTS stop-down >2sec command added
+    fan_LucciDC names corrected
+
+SDK version 9.43	November 27, 2023
+    Thermostat3 Mertik G6R_H4TB commands changed
+
+SDK version 9.42	October 01, 2023
+    HONEYWELL_AL rfu changed to relay
+
+SDK version 9.41	September 13, 2023
+    BlindsT21 DDxxxx added for compatibility (DDxxxx packettype 0x31 is preferred)
+
 SDK version 9.40	June 21, 2023
-	msg3_868 ALECTO5500enabled changed to FINEOFFSETenabled
-	FWtypeRFX310 added
-	Brel bi-directional updated
+    msg3_868 ALECTO5500enabled changed to FINEOFFSETenabled
+    FWtypeRFX310 added
+    Brel bi-directional updated
 
 SDK version 9.39	February 27, 2023
-	Orcon struct FANEXT added
-	lightning WH57 added
-	Ecowitt WS90 added
+    Orcon struct FANEXT added
+    lightning WH57 added
+    Ecowitt WS90 added
 
 SDK version 9.38	February 1, 2023
-	Honeywell ActiveLink updated
+    Honeywell ActiveLink updated
 
 SDK version 9.37	January 4, 2023
-	msg3_868_Alecto5500 changed to FineOffset
-	FWtypeProXL69 changed to FWtypeRFX433
-	FWtypeRFX868 added
-	sTypeRAIN10  FineOffset WH5360,EcoWitt WH40 added
+    msg3_868_Alecto5500 changed to FineOffset
+    FWtypeProXL69 changed to FWtypeRFX433
+    FWtypeRFX868 added
+    sTypeRAIN10  FineOffset WH5360,EcoWitt WH40 added
 
 SDK version 9.36	December 17, 2022
-	FAN sTypeIthoHRU400 added
-	868 config bits updated
+    FAN sTypeIthoHRU400 added
+    868 config bits updated
 
 SDK version 9.35	November 15, 2022
-	FWtypeProXL69/95 added
+    FWtypeProXL69/95 added
 
 SDK version 9.34	November 3, 2022
-	Orcon fan added
-	IthoECO fan added
-	Davis ID added
-	Itho and Orcon Undecoded added
+    Orcon fan added
+    IthoECO fan added
+    Davis ID added
+    Itho and Orcon Undecoded added
 
 SDK version 9.33	April 11, 2022
-	Thermostat5 - Gazco added
-	Chime - ByronDBY added
-	Chime stucture changed
-	Novy Filter and Mood added
+    Thermostat5 - Gazco added
+    Chime - ByronDBY added
+    Chime stucture changed
+    Novy Filter and Mood added
 
 SDK version 9.32	July 12, 2021
-	Brel bi-directional added
+    Brel bi-directional added
 
 SDK version 9.31	April 6, 2021
-	BlindsT19 Louvolite vertical added (not yet operational)
-	BlindsT20 Ozroll E-Trans added
-	FWtypeProXL2 added
-	Water level sensor added
-	Chime structure - filler changed to id4
-	Chime 1byOne QH A19 rev10 added
-	undecode byronsx added
+    BlindsT19 Louvolite vertical added (not yet operational)
+    BlindsT20 Ozroll E-Trans added
+    FWtypeProXL2 added
+    Water level sensor added
+    Chime structure - filler changed to id4
+    Chime 1byOne QH A19 rev10 added
+    undecode byronsx added
 
 SDK Version 9.30 June 2, 2020
-	BlindsT11 – unit code all, 1-6 added
+    BlindsT11   unit code all, 1-6 added
 
 SDK version 9.29	February 27, 2020
-	LucciAirDC Speed 1 to 6 added
-	BlindsT18 Cherubini blinds added
+    LucciAirDC Speed 1 to 6 added
+    BlindsT18 Cherubini blinds added
 
 SDK version 9.28	January 11, 2020
-	Rain9 TFA 30.3233.01 added
-	BlindsT17 Gaposa blinds added
+    Rain9 TFA 30.3233.01 added
+    BlindsT17 Gaposa blinds added
 
 SDK version 9.27	August 12, 2019
-	Hunter fan added
-	Novy fan added
-	BlindsT6 Light added
+    Hunter fan added
+    Novy fan added
+    BlindsT6 Light added
 
 SDK version 9.26	March 28, 2019
-	sTypeBlindsT15 = Motostar
+    sTypeBlindsT15 = Motostar
 
 SDK version 9.25	March 18, 2019
-	no change in .h
+    no change in .h
 
 SDK version 9.24	March 16, 2019
-	Chime Alfawise, dBell added
-	SelectPlus3 changed to ByronBY
-	Async Get Settings added
-	868 protocol selection bits updated and changed
-	WEATHER & SOLAR structures added
-	ACH2010 moved to WEATHER
-	WS5500 added
+    Chime Alfawise, dBell added
+    SelectPlus3 changed to ByronBY
+    Async Get Settings added
+    868 protocol selection bits updated and changed
+    WEATHER & SOLAR structures added
+    ACH2010 moved to WEATHER
+    WS5500 added
 
 SDK version 9.23	Oct 10, 2018
-	Async data subtypes changed
+    Async data subtypes changed
 
 SDK version 9.22	Aug 18, 2018
-	Falmec added
-	Fan LucciAir DCII added
-	Zemismart blinds added
-	Async port added
-	Firmware types added
-	Livolo 1-10 device changed 
+    Falmec added
+    Fan LucciAir DCII added
+    Zemismart blinds added
+    Async port added
+    Firmware types added
+    Livolo 1-10 device changed 
 
 SDK version 9.21	June 18, 2018
-	Fan LucciAir DC added
-	Casafan added
-	FT1211R fan controller added
-	Hualite blind added
-	Lighting1 Oase added
+    Fan LucciAir DC added
+    Casafan added
+    FT1211R fan controller added
+    Hualite blind added
+    Lighting1 Oase added
 
 SDK version 9.20	May 29, 2018
-	Lighting6 Cuveo added
+    Lighting6 Cuveo added
 
 SDK version 9.19a	May 27, 2018
-	FS20 commands added
+    FS20 commands added
 
 SDK version 9.19	May 26, 2018
-	IRESPONSE868 added
-	IRESPONSE updated
-	433 & 868 config bits updated
+    IRESPONSE868 added
+    IRESPONSE updated
+    433 & 868 config bits updated
 
 SDK version 9.18	May 11, 2018
-	RAW transmit/receive added
-	BlindsT6 intermediate position added
+    RAW transmit/receive added
+    BlindsT6 intermediate position added
 
 SDK version 9.17	April 30, 2018
-	868 config bits added (changed)
-	Interface Control Freq commands removed (use freqsel instead)
-	FunkBus (Gira, Jung, Berker, Insta) added
+    868 config bits added (changed)
+    Interface Control Freq commands removed (use freqsel instead)
+    FunkBus (Gira, Jung, Berker, Insta) added
 
 SDK version 9.16	July 30, 2017
-	RAIN8 and RAIN9 added
-	WIND8 added
-	Cartelectronic - Linky added
+    RAIN8 and RAIN9 added
+    WIND8 added
+    Cartelectronic - Linky added
 
 SDK version 9.15	March 29, 2017
-	BlindsT13 - Screenline angle change added
+    BlindsT13 - Screenline angle change added
 
 SDK version 9.14	Jan 12, 2017
-	Lighting5 - Kangtai added
+    Lighting5 - Kangtai added
 
 SDK version 9.13
-	BlindsT13 - Screenline added
+    BlindsT13 - Screenline added
 
 SDK version 9.12
-	Thermostat4 updated
+    Thermostat4 updated
 
 SDK version 9.11
-	FAN - Westinghouse fan added
-	Security1 - RM174RF added
-	Thermostat4 added
+    FAN - Westinghouse fan added
+    Security1 - RM174RF added
+    Thermostat4 added
 
 SDK version 9.10
-	FAN - SEAV remote added
+    FAN - SEAV remote added
 
 SDK version 9.09
-	Lighting5 - MDremote108 added
+    Lighting5 - MDremote108 added
 
 SDK version 9.08
-	CARTELECTRONIC TIC and Encoder added
-	Lighting5 - Livolo dim/scene added
+    CARTELECTRONIC TIC and Encoder added
+    Lighting5 - Livolo dim/scene added
 
 SDK version 9.07
-	Lighting5 IT added
-	BlindsT12 Confexx added
+    Lighting5 IT added
+    BlindsT12 Confexx added
 
 SDK version 9.06
-	Lighting1 HQ COCO-20 added
-	Lighting5 Avantek added
-	BlindsT11 ASP added
+    Lighting1 HQ COCO-20 added
+    Lighting5 Avantek added
+    BlindsT11 ASP added
 
 SDK version 9.05
-	Itho CVE RFT fan added
-	LucciAir fan added
-	HUM3 Inovalley S80 plant humidity sensor added
+    Itho CVE RFT fan added
+    LucciAir fan added
+    HUM3 Inovalley S80 plant humidity sensor added
 
 SDK version 9.04A
-	Lighting5 Legrand CAD added
-	msg6-HC HomeConfort protocol enable added
+    Lighting5 Legrand CAD added
+    msg6-HC HomeConfort protocol enable added
 
 SDK version 9.03
-	MDremote version 107 added
+    MDremote version 107 added
 
 SDK version 9.02
-	Home Confort added
+    Home Confort added
 
 SDK version 9.01
-	RFY - ASA blinds added
+    RFY - ASA blinds added
 
 SDK version 9.00
-	Lighting5 - sTypeRGB432W added
-	ICMND - msg1 changed to freqsel
-	ICMND - msg2 changed to xmitpwr
+    Lighting5 - sTypeRGB432W added
+    ICMND - msg1 changed to freqsel
+    ICMND - msg2 changed to xmitpwr
 
 SDK version 8.03A
-	Thermostat3 - Mertik G6R-H4S added
+    Thermostat3 - Mertik G6R-H4S added
 
 SDK version 8.03
-	Subtype for Dolat blinds corrected, was 0x10 changed to 0xA
+    Subtype for Dolat blinds corrected, was 0x10 changed to 0xA
 
 SDK version 8.02
-	Blinds Dolat added
-	Thermostat3 - Mertik G6R_H4TD added
+    Blinds Dolat added
+    Thermostat3 - Mertik G6R_H4TD added
 
 SDK version 8.01
-	Blinds Sunpery changed
+    Blinds Sunpery changed
 
 SDK version 8.00
-	Security2 - KeeLoq added
-	Envivo Chime added
-	msg6 - mode bits added
-	sTypeUselectplus added
-	Blinds Sunpery added
-	TH14,RAIN7,WIND7 - Alecto WS4500 added
+    Security2 - KeeLoq added
+    Envivo Chime added
+    msg6 - mode bits added
+    sTypeUselectplus added
+    Blinds Sunpery added
+    TH14,RAIN7,WIND7 - Alecto WS4500 added
 
 SDK version 7.02/7.03
-	msg3_RFU changed to msg3_IMAGINTRONIX
-	IRESPONSE.RFU6enabled changed to IRESPONSE.IMAGINTRONIXenabled
+    msg3_RFU changed to msg3_IMAGINTRONIX
+    IRESPONSE.RFU6enabled changed to IRESPONSE.IMAGINTRONIXenabled
 
 SDK version 7.01
-	SelectPlus200689103 Black Chime added
+    SelectPlus200689103 Black Chime added
 
 SDK version 7.00
-	TEMP7 - TSS330 added and TH9 – TSS320 added
-	BlindsT8 = Chamberlain CS4330CN added
-	SelectPlus200689101 White Chime added
-	Interface command - start receiver added
-	IRESPONSE size increased to 0x14
+    TEMP7 - TSS330 added and TH9   TSS320 added
+    BlindsT8 = Chamberlain CS4330CN added
+    SelectPlus200689101 White Chime added
+    Interface command - start receiver added
+    IRESPONSE size increased to 0x14
 
 SDK version 6.27
-	Livolo Appliance 1-10 added
-	Somfy RFY commands: Enable sun+wind & Disable sun added
-	Smartwares radiator valve added
+    Livolo Appliance 1-10 added
+    Somfy RFY commands: Enable sun+wind & Disable sun added
+    Smartwares radiator valve added
 
 SDK version 6.26
-	TH13 - Alecto WS1700 and compatibles added
+    TH13 - Alecto WS1700 and compatibles added
 
 SDK version 6.25
-	sTypeByronMP001 added
-	sTypeTEMP11 added
-	sTypeTRC02_2 added
-	THB1 also used for BTHGN129
+    sTypeByronMP001 added
+    sTypeTEMP11 added
+    sTypeTRC02_2 added
+    THB1 also used for BTHGN129
 
 SDK version 6.24
-	Lighting5 - Aoke realy added
+    Lighting5 - Aoke realy added
 
 SDK version 6.23
-	RFY List remotes added
+    RFY List remotes added
 
 SDK version 6.22
-	RFY venetian commands added < 0.5 and > 2 sec up/down)
+    RFY venetian commands added < 0.5 and > 2 sec up/down)
 
 SDK version 6.21
-	Temp/Humidity - TH12 soil sensor added
+    Temp/Humidity - TH12 soil sensor added
 
 SDK version 6.20
-	Lighting2 - Kambrook added
+    Lighting2 - Kambrook added
 
 SDK version 6.19
-	msg3_RFY reversed back to msg3_RFU
+    msg3_RFY reversed back to msg3_RFU
 
 SDK version 6.18
-	RFY structure added
-	BlindsT8 moved to RFY
-	msg3_RFY added (not used)
-	undecoded sTypeUrfy added
-	Interface response "sTypeUnknownRFYremote" and "sTypeExtError" added
+    RFY structure added
+    BlindsT8 moved to RFY
+    msg3_RFY added (not used)
+    undecoded sTypeUrfy added
+    Interface response "sTypeUnknownRFYremote" and "sTypeExtError" added
 
 SDK version 6.17
-	Blinds1 unitcode and id4 corrected
+    Blinds1 unitcode and id4 corrected
 
 SDK version 6.16
-	BlindsT8 RFY added with commands 0 to 9
+    BlindsT8 RFY added with commands 0 to 9
 
 SDK version 6.15
-	BLINDS1 id4 added
+    BLINDS1 id4 added
 
 SDK version 6.14
-	BlindsT7 - Forest added
+    BlindsT7 - Forest added
 
 SDK version 6.13
-	(skipped, to make version equal to SDK.pdf)
+    (skipped, to make version equal to SDK.pdf)
 
 SDK version 6.12
-	Lighting1 - Energenie5 added
-	Lighting1 - COCO GDR2-2000R added
-	sTypeBlindsT6 - DC106, YOOHA, Rohrmotor24 RMF added
-	RAW transmit added
+    Lighting1 - Energenie5 added
+    Lighting1 - COCO GDR2-2000R added
+    sTypeBlindsT6 - DC106, YOOHA, Rohrmotor24 RMF added
+    RAW transmit added
 
 SDK version 6.11
-	Lighting5 - RGB driver TRC02 added
-	Lighting6 - Blyss rfu replaced by seqnbr2
-	Endian check added
+    Lighting5 - RGB driver TRC02 added
+    Lighting6 - Blyss rfu replaced by seqnbr2
+    Endian check added
 
 SDK version 6.10
-	Security1 - SA30 added
-	TEMP_HUM - TH11 EW109 added
-	POWER - Revolt added
+    Security1 - SA30 added
+    TEMP_HUM - TH11 EW109 added
+    POWER - Revolt added
 
 SDK version 6.09
-	BBQ structure added
+    BBQ structure added
 
 SDK version 6.08
-	FAN structure and pTypeFan and sTypeSiemensSF01 added
-	Lighting5 - Livolo added
+    FAN structure and pTypeFan and sTypeSiemensSF01 added
+    Lighting5 - Livolo added
 
 SDK version 6.07b
-	in the IRESPONSE struct: RFU5enabled changed to SXenabled
+    in the IRESPONSE struct: RFU5enabled changed to SXenabled
 SDK version 6.07a
-	#define msg3_RFU5 0x20   changed to   #define msg3_SX 0x20
+    #define msg3_RFU5 0x20   changed to   #define msg3_SX 0x20
 
 SDK version 6.07
-	Lighting5 colour modes added for LWRF
-	TEMP_RAIN structure and pTypeTEMP_RAIN added for WS1200 - Temperature and rain sensor
-	CHIME structure and pTypeChime added for Byron SX Chime
+    Lighting5 colour modes added for LWRF
+    TEMP_RAIN structure and pTypeTEMP_RAIN added for WS1200 - Temperature and rain sensor
+    CHIME structure and pTypeChime added for Byron SX Chime
 
 SDK version 6.06a
     RFU4 changed to RSLenabled in IRESPONSE
 
 SDK version 6.06
-	Lighting1 Energenie added
-	Lighting5 MDREMOTE LED dimmer added
-	Lighting5 RSL2 added
-	msg3_RSL - Enable RSL protocol added
-	#define sTypeUrsl 0x0E = un-decoded Conrad RSL added
+    Lighting1 Energenie added
+    Lighting5 MDREMOTE LED dimmer added
+    Lighting5 RSL2 added
+    msg3_RSL - Enable RSL protocol added
+    #define sTypeUrsl 0x0E = un-decoded Conrad RSL added
 
 SDK version 6.02b
-	msg3-5 replaced by MODEbits in IRESPONSE structure
-	LIGHTING4 enabled added in struct MODEbits
+    msg3-5 replaced by MODEbits in IRESPONSE structure
+    LIGHTING4 enabled added in struct MODEbits
 
 SDK version 6.02a
-	#define sTypeBlindsT5 0x5  added
+    #define sTypeBlindsT5 0x5  added
 
 SDK version 6.02
-	sTypeTH10 0xA   //Rubicson added
+    sTypeTH10 0xA   //Rubicson added
 
 SDK version 6.01
   Copyright message updated
 
 SDK version 5.03
-	RAIN6 added
-	Raex BlindsT4 added
-	protocol enable/disable msg3_LIGHTING4 added
-	Interface Message - Wrong Command added
+    RAIN6 added
+    Raex BlindsT4 added
+    protocol enable/disable msg3_LIGHTING4 added
+    Interface Message - Wrong Command added
 
 SDK version 5.01
-	baroForecast values added
+    baroForecast values added
 
 SDK version 5.00
-	Commands removed from Interface control:
-		cmdENABLEALL 0x04, cmdUNDEC 0x05
-		cmdDISX10 0x10   to    cmdDISFS20 0x1C
-	CM180i CURRENT_ENERGY - ELEC4 added
-	code for pTypeGAS and pTypeWATER changed (not yet used) 
+    Commands removed from Interface control:
+        cmdENABLEALL 0x04, cmdUNDEC 0x05
+        cmdDISX10 0x10   to    cmdDISFS20 0x1C
+    CM180i CURRENT_ENERGY - ELEC4 added
+    code for pTypeGAS and pTypeWATER changed (not yet used) 
 
 SDK version 4.36
-	security - #define sStatusIRbeam 0x8 added
+    security - #define sStatusIRbeam 0x8 added
 
 SDK version 4.35
-	defines added for commands
-	union tRBUF is now typedef
-	filler in REMOTE changed to cmndtype
-	sTypeDigimax1 changed to sTypeDigimaxShort
+    defines added for commands
+    union tRBUF is now typedef
+    filler in REMOTE changed to cmndtype
+    sTypeDigimax1 changed to sTypeDigimaxShort
 
 SDK version 4.34
-	BlindsT2 BlindsT3 added
+    BlindsT2 BlindsT3 added
 
 SDK version 4.32
-	BBSB new type added
+    BBSB new type added
 
 SDK version 4.31
-	Modebits updated
+    Modebits updated
 
 SDK version 4.30
-	Energy sensor ELEC3 - CM180 added
+    Energy sensor ELEC3 - CM180 added
 
 SDK version 4.29
   sTypeTEMP10 for TFA 30.3133 added
-	#define sTypeATI2 0x1   changed to    #define sTypeATIplus 0x1
-	#define sTypeATIrw2 0x4  added
+    #define sTypeATI2 0x1   changed to    #define sTypeATIplus 0x1
+    #define sTypeATIrw2 0x4  added
 
 SDK version 4.28
   undecoded types 0x0F-0x12 added
 
 SDK version 4.27
   Lighting1 - Philips SBC added
-	Lighting6 - Blyss added
-	BLINDS1 Rollertrol renamed to BlindsT0 and BlindsT1 added
-	msg4_ROLLERTROL renamed to msg4_BLINDST0
-	msg4_BLINDST1 added
-	MODEbits.rollertrolenabled renamed to MODEbits.BLINDST0enabled
-	MODEbits.BLINDST1enabled added
+    Lighting6 - Blyss added
+    BLINDS1 Rollertrol renamed to BlindsT0 and BlindsT1 added
+    msg4_ROLLERTROL renamed to msg4_BLINDST0
+    msg4_BLINDST1 added
+    MODEbits.rollertrolenabled renamed to MODEbits.BLINDST0enabled
+    MODEbits.BLINDST1enabled added
   undecoded types:
-		sTypeUrollertrol renamed to sTypeUblinds
-		sTypeUrubicson,sTypeUfineoffset and sTypeUae added
+        sTypeUrollertrol renamed to sTypeUblinds
+        sTypeUrubicson,sTypeUfineoffset and sTypeUae added
 
 SDK version 4.26
-	TEMP-HUM TH9 Viking 02035,02038 added
-	TEMP TEMP9 RUBiCSON added
-	Security tamper status changed
-	Security1 Meiantech, msg5_MEI and cmdDISMEI added
-	Disable Koppla removed
+    TEMP-HUM TH9 Viking 02035,02038 added
+    TEMP TEMP9 RUBiCSON added
+    Security tamper status changed
+    Security1 Meiantech, msg5_MEI and cmdDISMEI added
+    Disable Koppla removed
 
 SDK version 4.23
-	4 sensors WS2300 added
+    4 sensors WS2300 added
 
 SDK version 4.22
-	Viking temperature sensor TEMP7 added
-	Blinds1 - RollerTrol added
+    Viking temperature sensor TEMP7 added
+    Blinds1 - RollerTrol added
 
 SDK version 4.21
   Lighting1 - RisingSun added
 
 SDK version 4.19
-	TS15C added
+    TS15C added
 
 SDK version 4.18
-	UPM wind and rain added
+    UPM wind and rain added
 
 SDK version 4.17
-	FS20 added
+    FS20 added
 
 SDK version 4.15
-	Lighting5 - EMW100 added
+    Lighting5 - EMW100 added
 
 SDK version 4.14
-	Lighting5 - level added
+    Lighting5 - level added
 
 SDK version 4.13
-	added sTypeTH8 Esic Temp-Hum sensor
-	Lighting6 - Novatis removed
+    added sTypeTH8 Esic Temp-Hum sensor
+    Lighting6 - Novatis removed
 
 SDK version 4.9
-	added: #define recType43392 0x52
-	changed; #define recType43392 0x53  to   #define trxType43392 0x53
-*/
+    added: #define recType43392 0x52
+    changed; #define recType43392 0x53  to   #define trxType43392 0x53
+ */
 
 //types for Interface Control
 #define pTypeInterfaceControl 0x00
@@ -477,7 +490,11 @@ SDK version 4.9
 #define trxType315 0x51
 #define recType43392 0x52
 #define trxType43392 0x53
+#define trxType43342 0x54
 #define trxType868 0x55
+
+#define trxType43415 0x5E
+#define trxType43450 0x5F
 
 #define FWtyperec 0x0
 #define FWtype1 0x1
@@ -524,7 +541,7 @@ SDK version 4.9
 
 #define msg6_KeeLoq 0x01		//Keeloq
 #define msg6_HC	0x02			//HomeConfort
-#define msg6_RFU2 0x04			//RFU
+#define msg6_DDxxxx 0x04 //Dooya bi-directional
 #define msg6_RFU3 0x08			//RFU
 #define msg6_RFU4 0x10			//RFU
 #define msg6_RFU5 0x20			//RFU
@@ -532,19 +549,19 @@ SDK version 4.9
 #define msg6_Funkbus 0x80		//Funkbus
 
 //868 config bits
-#define msg3_868_RFU0 0x01		//RFU
+#define msg3_868_CAVIUS 0x01	//Cavius,HomeWizard
 #define msg3_868_DAVISAU 0x02	//Davis AU
 #define msg3_868_DAVISUS 0x04	//Davis US
 #define msg3_868_DAVISEU 0x08	//Davis EU
 #define msg3_868_LACROSSE 0x10  //LACROSSE
-#define msg3_868_FINEOFFSET 0x20	//FINEOFFSET
+#define msg3_868_FINEOFFSET 0x20	//FINEOFFSET,Alecto WS5500
 #define msg3_868_ALECTO 0x40	//Alecto ACH2010
 #define msg3_868_UNDEC 0x80		//Enable undecoded
 
 #define msg4_868_EDISIO 0x01	//EDISIO
 #define msg4_868_LWRF 0x02		//LightwaveRF
 #define msg4_868_FS20 0x04		//FS20
-#define msg4_868_RFU3  0x08		//RFU
+#define msg4_868_GAPOSA  0x08     //BlindsT17 Gaposa
 #define msg4_868_RFU4 0x10		//RFU
 #define msg4_868_RFU5 0x20		//RFU
 #define msg4_868_RFU6 0x40		//RFU
@@ -731,6 +748,13 @@ SDK version 4.9
 #define light5_sLivoloGang1Toggle 0x01
 #define light5_sLivoloGang2Toggle 0x02
 #define light5_sLivoloGang3Toggle 0x03
+#define light5_sLivoloGang4Toggle 0x04
+#define light5_sLivoloGang5Toggle 0x05
+#define light5_sLivoloGang6Toggle 0x06
+#define light5_sLivoloGang7Toggle 0x07
+#define light5_sLivoloGang8Toggle 0x08
+#define light5_sLivoloGang9Toggle 0x09
+#define light5_sLivoloGang10Toggle 0x0A
 
 //Livolo dimmer
 //#define light5_sLivoloToggle1 0x01
@@ -757,7 +781,6 @@ SDK version 4.9
 #define light5_sLivoloScene3 0x11
 #define light5_sLivoloScene4 0x12
 #define light5_sLivoloOkSet 0x13
-
 #define light5_sRGBoff 0x00
 #define light5_sRGBon 0x01
 #define light5_sRGBbright 0x02
@@ -792,6 +815,7 @@ SDK version 4.9
 #define sTypeAlfawise 0x5
 #define sType1byOne 0x6
 #define sTypeByronDBY 0x7
+#define sTypeFriedland 0x8 //reserved for Friedland
 #define chime_sound0 0x1
 #define chime_sound1 0x3
 #define chime_sound2 0x5
@@ -856,12 +880,12 @@ SDK version 4.9
 #define fan_LucciDCReverse 0x5
 #define fan_LucciDCNaturalflow 0x6
 #define fan_LucciDCPair 0x7
-#define LucciDCSpeed1 0x8
-#define LucciDCSpeed2 0x9
-#define LucciDCSpeed3 0xA
-#define LucciDCSpeed4 0xB
-#define LucciDCSpeed5 0xC
-#define LucciDCSpeed6 0xD
+#define fan_LucciDCSpeed1 0x8
+#define fan_LucciDCSpeed2 0x9
+#define fan_LucciDCSpeed3 0xA
+#define fan_LucciDCSpeed4 0xB
+#define fan_LucciDCSpeed5 0xC
+#define fan_LucciDCSpeed6 0xD
 
 #define fan_CasafanHi 0x1
 #define fan_CasafanMed 0x2
@@ -950,34 +974,37 @@ SDK version 4.9
 
 //types for Blinds
 #define pTypeBlinds 0x19
-#define sTypeBlindsT0 0x0	//RollerTrol, Hasta new
+#define sTypeBlindsT0 0x0	//RollerTrol, Louvolite, Hasta new
 #define sTypeBlindsT1 0x1	//Hasta old
 #define sTypeBlindsT2 0x2	//A-OK RF01
 #define sTypeBlindsT3 0x3	//A-OK AC114
 #define sTypeBlindsT4 0x4	//RAEX YR1326
 #define sTypeBlindsT5 0x5	//Media Mount
-#define sTypeBlindsT6 0x6	//DC106, YOOHA, Rohrmotor24 RMF
+#define sTypeBlindsT6 0x6	//DC106, YOODA, Rohrmotor24 RMF,ESMO, Brel
 #define sTypeBlindsT7 0x7	//Forest
 #define sTypeBlindsT8 0x8	//Chamberlain CS4330CN
 #define sTypeBlindsT9 0x9	//Sunpery
 #define sTypeBlindsT10 0xA	//Dolat DLM-1
-#define sTypeBlindsT11 0xB	//ASP
+#define sTypeBlindsT11 0xB	//ASP, Louvolite new
 #define sTypeBlindsT12 0xC	//Confexx
 #define sTypeBlindsT13 0xD	//Screenline
 #define sTypeBlindsT14 0xE	//Hualite
-#define sTypeBlindsT15 0xF	//Motostar
+#define sTypeBlindsT15 0xF	//Motostar,Motivia
 #define sTypeBlindsT16 0x10	//Zemismart
 #define sTypeBlindsT17 0x11	//Gaposa
 #define sTypeBlindsT18 0x12	//Cherubini
 #define sTypeBlindsT19 0x13	//Louvolite vertical
 #define sTypeBlindsT20 0x14	//Ozroll E-Trans
+#define sTypeBlindsT21 0x15	//DDxxxx compatibility
 
 #define blinds_sOpen 0x0
+#define blinds_sUp 0x0
 #define blinds_sClose 0x1
+#define blinds_sDown 0x1
 #define blinds_sStop 0x2
 #define blinds_sConfirm 0x3
 #define blinds_sLimit 0x4
-#define blinds_slowerLimit 0x5
+#define blinds_sLowerLimit 0x5
 #define blinds_sDeleteLimits 0x6
 #define blinds_sChangeDirection 0x7
 #define blinds_sLeft 0x8
@@ -1013,7 +1040,6 @@ SDK version 4.9
 #define blinds_s20EraseThis 0x5
 #define blinds_s20EraseAll 0x6
 
-
 //types for RFY
 #define pTypeRFY 0x1A
 #define sTypeRFY 0x0	//RFY
@@ -1040,6 +1066,7 @@ SDK version 4.9
 #define rfy_s2SecDown 0x12
 #define rfy_sEnableSunWind 0x13
 #define rfy_sDisableSun 0x14
+#define rfy_s2SecDownStop 0x15
 
 //types for Home Confort
 #define pTypeHomeConfort 0x1B
@@ -1060,6 +1087,7 @@ SDK version 4.9
 #define Funkbus_sScene 0x04
 #define Funkbus_sMasterMin 0x05
 #define Funkbus_sMasterPlus 0x06
+#define Funkbus_sStop 0x07
 
 //types for Hunter Fan
 #define pTypeHunter 0x1F
@@ -1121,6 +1149,7 @@ SDK version 4.9
 #define sTypeMeiantech 0x8			//Meiantech
 #define sTypeSA30 0x9				//SA30 smoke detector
 #define sTypeRM174RF 0xA			//RM174RF smoke detector
+#define sTypeFerport 0xB
 
 //status security
 #define sStatusNormal 0x0
@@ -1221,15 +1250,16 @@ SDK version 4.9
 #define sTypeMertikG6RH4TB 0x1	//Mertik G6R-H4TB
 #define sTypeMertikG6RH4TD 0x2	//Mertik G6R-H4TD
 #define sTypeMertikG6RH4S 0x3	//Mertik G6R-H4S
+#define sTypeMertikG6RH3T1 0x4
 #define thermostat3_sOff 0x0
 #define thermostat3_sOn 0x1
 #define thermostat3_sUp 0x2
 #define thermostat3_sDown 0x3
 #define thermostat3_sRunUp 0x4
-#define thermostat3_Off2nd 0x4
 #define thermostat3_sRunDown 0x5
-#define thermostat3_On2nd 0x5
 #define thermostat3_sStop 0x6
+#define thermostat3_Off2nd 0x7
+#define thermostat3_On2nd 0x8
 
 #define pTypeThermostat4 0x43
 #define sTypeMCZ1 0x0	//MCZ 1 fan model
@@ -1256,6 +1286,11 @@ SDK version 4.9
 #define Radiator1_sDay 0x1
 #define Radiator1_sSetTemp 0x2
 
+//types for Davis
+#define pTypeDAVIS 0x4D
+#define sTypeDavisTemp 0x1
+#define sTypeDavisHum 0x2
+#define sTypeDavisRain 0x3
 //types for BBQ temperature
 #define pTypeBBQ 0x4E
 #define sTypeBBQ1 0x1  //Maverick ET-732
@@ -1271,7 +1306,7 @@ SDK version 4.9
 #define sTypeTEMP3 0x3  //THWR800
 #define sTypeTEMP4 0x4	//RTHN318
 #define sTypeTEMP5 0x5  //LaCrosse TX3
-#define sTypeTEMP6 0x6  //TS15C
+#define sTypeTEMP6 0x6  //TS15C, UPM temp only
 #define sTypeTEMP7 0x7  //Viking 02811,TSS330
 #define sTypeTEMP8 0x8  //LaCrosse WS2300
 #define sTypeTEMP9 0x9  //RUBiCSON
@@ -1305,7 +1340,7 @@ SDK version 4.9
 #define sTypeTH11 0xB   //EW109
 #define sTypeTH12 0xC   //Imagintronix
 #define sTypeTH13 0xD   //Alecto WS1700 and compatibles
-#define sTypeTH14 0xE   //Alecto
+#define sTypeTH14 0xE   //Alecto WS4500
 
 //types for barometric
 #define pTypeBARO 0x53
@@ -1420,6 +1455,7 @@ SDK version 4.9
 //types for Async data
 #define pTypeASYNCDATA 0x62
 #define sTypeASYNCoverrun 0xFF
+#define sTypeASYNCparerror 0xFE
 #define sTypeASYNCp1 0x01
 #define sTypeASYNCteleinfo 0x02
 #define sTypeASYNCraw 0x03
@@ -1480,7 +1516,7 @@ SDK version 4.9
 
 //Water level sensor
 #define pTypeLEVELSENSOR 0x73
-#define sType0 0x0
+#define sTypeFT002 0x0
 
 //LIGHTNING SENSOR
 #define pTypeLIGHTNING 0x74
@@ -1490,7 +1526,7 @@ SDK version 4.9
 #define pTypeWEATHER 0x76
 #define sTypeWEATHER0 0x0   //Ecowitt WS90
 #define sTypeWEATHER1 0x1   //Alecto ACH2010
-#define sTypeWEATHER2 0x2   //Alecto WS5500
+#define sTypeWEATHER2 0x2   //FineOffset,WS5500
 
 //types for Solar
 #define pTypeSOLAR 0x77
@@ -1504,1669 +1540,1667 @@ SDK version 4.9
 #define sTypeRAW4 0x3
 
 typedef union tRBUF {
-	struct {
-		BYTE	packetlength;
-		BYTE	packettype;
-		BYTE	subtype;
-		BYTE	seqnbr;
-		BYTE	cmnd;
-		BYTE	freqsel;
-		BYTE	xmitpwr;
-		BYTE	msg3;
-		BYTE	msg4;
-		BYTE	msg5;
-		BYTE	msg6;
-		BYTE	msg7;
-		BYTE	msg8;
-		BYTE	msg9;
-	} ICMND;
 
-	struct {	//response on a mode command from the application
-		BYTE	packetlength;
-		BYTE	packettype;
-		BYTE	subtype;
-		BYTE	seqnbr;
-		BYTE	cmnd;
-		BYTE	msg1;	//receiver/transceiver type
-		BYTE	msg2;	//firmware version
+    struct {
+        BYTE packetlength;
+        BYTE packettype;
+        BYTE subtype;
+        BYTE seqnbr;
+        BYTE cmnd;
+        BYTE freqsel;
+        BYTE xmitpwr;
+        BYTE msg3;
+        BYTE msg4;
+        BYTE msg5;
+        BYTE msg6;
+        BYTE msg7;
+        BYTE msg8;
+        BYTE msg9;
+    } ICMND;
+
+    struct { //response on a mode command from the application
+        BYTE packetlength;
+        BYTE packettype;
+        BYTE subtype;
+        BYTE seqnbr;
+        BYTE cmnd;
+        BYTE msg1; //receiver/transceiver type
+        BYTE msg2; //firmware version
 
 #ifdef IS_BIG_ENDIAN
-		//BYTE	msg3;
-		BYTE	UNDECODEDenabled : 1;
-		BYTE	IMAGINTRONIXenabled : 1;
-		BYTE	SXenabled : 1;
-		BYTE	RSLenabled : 1;
-		BYTE	LIGHTING4enabled : 1;
-		BYTE	FINEOFFSETenabled : 1;
-		BYTE	RUBICSONenabled : 1;
-		BYTE	AEenabled : 1;
+        //BYTE	msg3;
+        BYTE UNDECODEDenabled : 1;
+        BYTE IMAGINTRONIXenabled : 1;
+        BYTE SXenabled : 1;
+        BYTE RSLenabled : 1;
+        BYTE LIGHTING4enabled : 1;
+        BYTE FINEOFFSETenabled : 1;
+        BYTE RUBICSONenabled : 1;
+        BYTE AEenabled : 1;
 
-		//BYTE	msg4;
-		BYTE	BLINDST1enabled : 1;
-		BYTE	BLINDST0enabled : 1;
-		BYTE	MSG4Reserved5 : 1;
-		BYTE	LEGRANDenabled : 1;
-		BYTE	LACROSSEenabled : 1;
-		BYTE	HIDEKIenabled : 1;
-		BYTE	LWRFenabled : 1;
-		BYTE	MERTIKenabled : 1;
+        //BYTE	msg4;
+        BYTE BLINDST1enabled : 1;
+        BYTE BLINDST0enabled : 1;
+        BYTE MSG4Reserved5 : 1;
+        BYTE LEGRANDenabled : 1;
+        BYTE LACROSSEenabled : 1;
+        BYTE HIDEKIenabled : 1;
+        BYTE LWRFenabled : 1;
+        BYTE MERTIKenabled : 1;
 
-		//BYTE	msg5;
-		BYTE	VISONICenabled : 1;
-		BYTE	ATIenabled : 1;
-		BYTE	OREGONenabled : 1;
-		BYTE	MEIANTECHenabled : 1;
-		BYTE	HEEUenabled : 1;
-		BYTE	ACenabled : 1;
-		BYTE	ARCenabled : 1;
-		BYTE	X10enabled : 1; //note: keep this order
+        //BYTE	msg5;
+        BYTE VISONICenabled : 1;
+        BYTE ATIenabled : 1;
+        BYTE OREGONenabled : 1;
+        BYTE MEIANTECHenabled : 1;
+        BYTE HEEUenabled : 1;
+        BYTE ACenabled : 1;
+        BYTE ARCenabled : 1;
+        BYTE X10enabled : 1; //note: keep this order
 
-		//BYTE    msg6;
-        BYTE    MSG6Reserved7 : 1;
-        BYTE    MSG6Reserved6 : 1;
-        BYTE    MSG6Reserved5 : 1;
-        BYTE    MSG6Reserved4 : 1;
-        BYTE    MSG6Reserved3 : 1;
-        BYTE    MSG6Reserved2 : 1;
-		BYTE    HCEnabled : 1;
-        BYTE    KEELOQenabled : 1;
+        //BYTE    msg6;
+        BYTE MSG6Reserved7 : 1;
+        BYTE MSG6Reserved6 : 1;
+        BYTE MSG6Reserved5 : 1;
+        BYTE MSG6Reserved4 : 1;
+        BYTE MSG6Reserved3 : 1;
+        BYTE MSG6Reserved2 : 1;
+        BYTE HCEnabled : 1;
+        BYTE KEELOQenabled : 1;
 #else
-		//BYTE	msg3;
-		BYTE	AEenabled : 1;
-		BYTE	RUBICSONenabled : 1;
-		BYTE	FINEOFFSETenabled : 1;
-		BYTE	LIGHTING4enabled : 1;
-		BYTE	RSLenabled : 1;
-		BYTE	SXenabled : 1;
-		BYTE	IMAGINTRONIXenabled : 1;
-		BYTE	UNDECODEDenabled : 1;
+        //BYTE	msg3;
+        BYTE AEenabled : 1;
+        BYTE RUBICSONenabled : 1;
+        BYTE FINEOFFSETenabled : 1;
+        BYTE LIGHTING4enabled : 1;
+        BYTE RSLenabled : 1;
+        BYTE SXenabled : 1;
+        BYTE IMAGINTRONIXenabled : 1;
+        BYTE UNDECODEDenabled : 1;
 
-		//BYTE	msg4;
-		BYTE	MERTIKenabled : 1;
-		BYTE	LWRFenabled : 1;
-		BYTE	HIDEKIenabled : 1;
-		BYTE	LACROSSEenabled : 1;
-		BYTE	LEGRANDenabled : 1;
-		BYTE	MSG4Reserved5 : 1;
-		BYTE	BLINDST0enabled : 1;
-		BYTE	BLINDST1enabled : 1;
+        //BYTE	msg4;
+        BYTE MERTIKenabled : 1;
+        BYTE LWRFenabled : 1;
+        BYTE HIDEKIenabled : 1;
+        BYTE LACROSSEenabled : 1;
+        BYTE LEGRANDenabled : 1;
+        BYTE MSG4Reserved5 : 1;
+        BYTE BLINDST0enabled : 1;
+        BYTE BLINDST1enabled : 1;
 
-		//BYTE	msg5;
-		BYTE	X10enabled : 1; //note: keep this order
-		BYTE	ARCenabled : 1;
-		BYTE	ACenabled : 1;
-		BYTE	HEEUenabled : 1;
-		BYTE	MEIANTECHenabled : 1;
-		BYTE	OREGONenabled : 1;
-		BYTE	ATIenabled : 1;
-		BYTE	VISONICenabled : 1;
+        //BYTE	msg5;
+        BYTE X10enabled : 1; //note: keep this order
+        BYTE ARCenabled : 1;
+        BYTE ACenabled : 1;
+        BYTE HEEUenabled : 1;
+        BYTE MEIANTECHenabled : 1;
+        BYTE OREGONenabled : 1;
+        BYTE ATIenabled : 1;
+        BYTE VISONICenabled : 1;
 
         //BYTE	msg6;
-        BYTE    KEELOQenabled : 1;
-		BYTE    HCEnabled : 1;
-        BYTE    DDenabled : 1;
-        BYTE    MSG6Reserved3 : 1;
-        BYTE    MSG6Reserved4 : 1;
-        BYTE    MSG6Reserved5 : 1;
-        BYTE    MSG6Reserved6 : 1;
-        BYTE    MSG6Reserved7 : 1;
+        BYTE KEELOQenabled : 1;
+        BYTE HCEnabled : 1;
+        BYTE DDenabled : 1;
+        BYTE MSG6Reserved3 : 1;
+        BYTE MSG6Reserved4 : 1;
+        BYTE MSG6Reserved5 : 1;
+        BYTE MSG6Reserved6 : 1;
+        BYTE MSG6Reserved7 : 1;
 #endif
 
-		BYTE	msg7;	//major version
-		BYTE	msg8;	//minor version
-		BYTE	msg9;	//RF power
-		BYTE	msg10;	//FW type
-        BYTE	msg11;	//noise level
-        BYTE	msg12;
-        BYTE	msg13;
-        BYTE	msg14;
-        BYTE	msg15;
-        BYTE	msg16;
-	} IRESPONSE;
+        BYTE msg7; //major version
+        BYTE msg8; //minor version
+        BYTE msg9; //RF power
+        BYTE msg10; //FW type
+        BYTE msg11; //noise level
+        BYTE msg12;
+        BYTE msg13;
+        BYTE msg14;
+        BYTE msg15;
+        BYTE msg16;
+    } IRESPONSE;
 
-	struct {	//response on a mode command from the application
-		BYTE	packetlength;
-		BYTE	packettype;
-		BYTE	subtype;
-		BYTE	seqnbr;
-		BYTE	cmnd;
-		BYTE	msg1;	//receiver/transceiver type
-		BYTE	msg2;	//firmware version
+    struct { //response on a mode command from the application
+        BYTE packetlength;
+        BYTE packettype;
+        BYTE subtype;
+        BYTE seqnbr;
+        BYTE cmnd;
+        BYTE msg1; //receiver/transceiver type
+        BYTE msg2; //firmware version
 
 #ifdef IS_BIG_ENDIAN
-		//BYTE	msg3;
-		BYTE	UNDECODEDenabled : 1;
-		BYTE	ALECTOenabled : 1;
-		BYTE	FINEOFFSETenabled : 1;
-		BYTE	LACROSSEenabled : 1;
-		BYTE	DAVISEUenabled : 1;
-		BYTE	DAVISUSenabled : 1;
-		BYTE	DAVISAUenabled : 1;
-		BYTE	MSG3Reserved0 : 1;
+        //BYTE	msg3;
+        BYTE UNDECODEDenabled : 1;
+        BYTE ALECTOenabled : 1;
+        BYTE FINEOFFSETenabled : 1;
+        BYTE LACROSSEenabled : 1;
+        BYTE DAVISEUenabled : 1;
+        BYTE DAVISUSenabled : 1;
+        BYTE DAVISAUenabled : 1;
+        BYTE CAVIUSenabled : 1;
 
-		//BYTE	msg4;
-		BYTE	MSG4Reserved7 : 1;
-		BYTE	MSG4Reserved6 : 1;
-		BYTE	MSG4Reserved5 : 1;
-		BYTE	MSG4Reserved4 : 1;
-		BYTE	MSG4Reserved3 : 1;
-		BYTE	FS20enabled : 1;
-		BYTE	LWRFenabled : 1;
-		BYTE	EDISIOenabled : 1;
+        //BYTE	msg4;
+        BYTE MSG4Reserved7 : 1;
+        BYTE MSG4Reserved6 : 1;
+        BYTE MSG4Reserved5 : 1;
+        BYTE MSG4Reserved4 : 1;
+        BYTE GAPOSAenabled : 1;
+        BYTE FS20enabled : 1;
+        BYTE LWRFenabled : 1;
+        BYTE EDISIOenabled : 1;
 
-		//BYTE	msg5;
-		BYTE	VISONICenabled : 1;
-		BYTE	MEIANTECHenabled : 1;
-		BYTE	KEELOQenabled : 1;
-		BYTE	PROGUARDenabled : 1;
-		BYTE	MSG5Reserved3 : 1;
-		BYTE	MSG5Reserved2 : 1;
-		BYTE	MSG5Reserved1 : 1;
-		BYTE	MSG5Reserved0 : 1; //note: keep this order
+        //BYTE	msg5;
+        BYTE VISONICenabled : 1;
+        BYTE MEIANTECHenabled : 1;
+        BYTE MSG5Reserved5 : 1;
+        BYTE PROGUARDenabled : 1;
+        BYTE MSG5Reserved3 : 1;
+        BYTE MSG5Reserved2 : 1;
+        BYTE MSG5Reserved1 : 1;
+        BYTE MSG5Reserved0 : 1; //note: keep this order
 
-		//BYTE    msg6;
-		BYTE    ITHOenabled : 1;
-		BYTE    ITHOecoenabled : 1;
-		BYTE    ORCONenabled : 1;
-		BYTE    HONEYWELLenabled : 1;
-		BYTE    MSG6Reserved3 : 1;
-		BYTE    MSG6Reserved2 : 1;
-		BYTE    MSG6Reserved1 : 1;
-		BYTE    MSG6Reserved0 : 1;
+        //BYTE    msg6;
+        BYTE ITHOenabled : 1;
+        BYTE ITHOecoenabled : 1;
+        BYTE ORCONenabled : 1;
+        BYTE HONEYWELLenabled : 1;
+        BYTE MSG6Reserved3 : 1;
+        BYTE MSG6Reserved2 : 1;
+        BYTE MSG6Reserved1 : 1;
+        BYTE KEELOQenabled : 1;
 
-		//BYTE	msg7;
-		BYTE    MSG7Reserved7 : 1;
-		BYTE    MSG7Reserved6 : 1;
-		BYTE    MSG7Reserved5 : 1;
-		BYTE    MSG7Reserved4 : 1;
-		BYTE    MSG7Reserved3 : 1;
-		BYTE    DAVISID2 : 1;
-		BYTE    DAVISID1 : 1;
-		BYTE    DAVISID0 : 1;
+        //BYTE	msg7;
+        BYTE MSG7Reserved7 : 1;
+        BYTE MSG7Reserved6 : 1;
+        BYTE MSG7Reserved5 : 1;
+        BYTE MSG7Reserved4 : 1;
+        BYTE MSG7Reserved3 : 1;
+        BYTE DAVISID2 : 1;
+        BYTE DAVISID1 : 1;
+        BYTE DAVISID0 : 1;
 
-		//BYTE	msg8;
-		BYTE	msg8;
+        //BYTE	msg8;
+        BYTE msg8;
 
-		//BYTE	msg9;
-		BYTE	msg9;
+        //BYTE	msg9;
+        BYTE msg9;
 #else
-		//BYTE	msg3;
-		BYTE	MSG3Reserved0 : 1;
-		BYTE	DAVISAUenabled : 1;
-		BYTE	DAVISUSenabled : 1;
-		BYTE	DAVISEUenabled : 1;
-		BYTE	LACROSSEenabled : 1;
-		BYTE	FINEOFFSETenabled : 1;
-		BYTE	ALECTOenabled : 1;
-		BYTE	UNDECODEDenabled : 1;
+        //BYTE	msg3;
+        BYTE CAVIUSenabled : 1;
+        BYTE DAVISAUenabled : 1;
+        BYTE DAVISUSenabled : 1;
+        BYTE DAVISEUenabled : 1;
+        BYTE LACROSSEenabled : 1;
+        BYTE FINEOFFSETenabled : 1;
+        BYTE ALECTOenabled : 1;
+        BYTE UNDECODEDenabled : 1;
 
-		//BYTE	msg4;
-		BYTE	EDISIOenabled : 1;
-		BYTE	LWRFenabled : 1;
-		BYTE	FS20enabled : 1;
-		BYTE	MSG4Reserved3 : 1;
-		BYTE	MSG4Reserved4 : 1;
-		BYTE	MSG4Reserved5 : 1;
-		BYTE	MSG4Reserved6 : 1;
-		BYTE	MSG4Reserved7 : 1;
+        //BYTE	msg4;
+        BYTE EDISIOenabled : 1;
+        BYTE LWRFenabled : 1;
+        BYTE FS20enabled : 1;
+        BYTE GAPOSAenabled : 1;
+        BYTE MSG4Reserved4 : 1;
+        BYTE MSG4Reserved5 : 1;
+        BYTE MSG4Reserved6 : 1;
+        BYTE MSG4Reserved7 : 1;
 
-		//BYTE	msg5;
-		BYTE	MSG5Reserved0 : 1; //note: keep this order
-		BYTE	MSG5Reserved1 : 1;
-		BYTE	MSG5Reserved2 : 1;
-		BYTE	MSG5Reserved3 : 1;
-		BYTE	PROGUARDenabled : 1;
-		BYTE    MSG5Reserved5 : 1;
-		BYTE	MEIANTECHenabled : 1;
-		BYTE	VISONICenabled : 1;
+        //BYTE	msg5;
+        BYTE MSG5Reserved0 : 1; //note: keep this order
+        BYTE MSG5Reserved1 : 1;
+        BYTE MSG5Reserved2 : 1;
+        BYTE MSG5Reserved3 : 1;
+        BYTE PROGUARDenabled : 1;
+        BYTE MSG5Reserved5 : 1;
+        BYTE MEIANTECHenabled : 1;
+        BYTE VISONICenabled : 1;
 
-		//BYTE	msg6;
-		BYTE    KEELOQenabled : 1;
-		BYTE    MSG6Reserved1 : 1;
-		BYTE    MSG6Reserved2 : 1;
-		BYTE    MSG6Reserved3 : 1;
-		BYTE    HONEYWELLenabled : 1;
-		BYTE    ORCONenabled : 1;
-		BYTE    ITHOecoenabled : 1;
-		BYTE    ITHOenabled : 1;
+        //BYTE	msg6;
+        BYTE KEELOQenabled : 1;
+        BYTE MSG6Reserved1 : 1;
+        BYTE MSG6Reserved2 : 1;
+        BYTE MSG6Reserved3 : 1;
+        BYTE HONEYWELLenabled : 1;
+        BYTE ORCONenabled : 1;
+        BYTE ITHOecoenabled : 1;
+        BYTE ITHOenabled : 1;
 
-		//BYTE	msg7;
-		BYTE    DAVISID0 : 1;
-		BYTE    DAVISID1 : 1;
-		BYTE    DAVISID2 : 1;
-		BYTE    MSG7Reserved3 : 1;
-		BYTE    MSG7Reserved4 : 1;
-		BYTE    MSG7Reserved5 : 1;
-		BYTE    MSG7Reserved6 : 1;
-		BYTE    MSG7Reserved7 : 1;
+        //BYTE	msg7;
+        BYTE DAVISID0 : 1;
+        BYTE DAVISID1 : 1;
+        BYTE DAVISID2 : 1;
+        BYTE MSG7Reserved3 : 1;
+        BYTE MSG7Reserved4 : 1;
+        BYTE MSG7Reserved5 : 1;
+        BYTE MSG7Reserved6 : 1;
+        BYTE MSG7Reserved7 : 1;
 
-		//BYTE	msg8;
-		BYTE	msg8;
+        //BYTE	msg8;
+        BYTE msg8;
 
-		//BYTE	msg9;
-		BYTE	msg9;
+        //BYTE	msg9;
+        BYTE msg9;
 #endif
 
-		BYTE	msg10;
-		BYTE	msg11;
-		BYTE	msg12;	//major version
-		BYTE	msg13;	//minor version
-		BYTE	msg14;	//RF power
-		BYTE	msg15;	//FW type
-		BYTE	msg16;	//noise level
-	} IRESPONSE868;
+        BYTE msg10;
+        BYTE msg11;
+        BYTE msg12; //major version
+        BYTE msg13; //minor version
+        BYTE msg14; //RF power
+        BYTE msg15; //FW type
+        BYTE msg16; //noise level
+    } IRESPONSE868;
 
-	struct {
-		BYTE	packetlength;
-		BYTE	packettype;
-		BYTE	subtype;
-		BYTE	seqnbr;
-		BYTE	msg1;
-		BYTE	msg2;
-		BYTE	msg3;
-		BYTE	msg4;
-		BYTE	msg5;
-		BYTE	msg6;
-		BYTE	msg7;
-		BYTE	msg8;
-		BYTE	msg9;
-		BYTE	msg10;
-		BYTE	msg11;
-		BYTE	msg12;
-		BYTE	msg13;
-		BYTE	msg14;
-		BYTE	msg15;
-		BYTE	msg16;
-		BYTE	msg17;
-		BYTE	msg18;
-		BYTE	msg19;
-		BYTE	msg20;
-		BYTE	msg21;
-		BYTE	msg22;
-		BYTE	msg23;
-		BYTE	msg24;
-		BYTE	msg25;
-		BYTE	msg26;
-		BYTE	msg27;
-		BYTE	msg28;
-		BYTE	msg29;
-		BYTE	msg30;
-		BYTE	msg31;
-		BYTE	msg32;
-		BYTE	msg33;
-	} UNDECODED;
+    struct {
+        BYTE packetlength;
+        BYTE packettype;
+        BYTE subtype;
+        BYTE seqnbr;
+        BYTE msg1;
+        BYTE msg2;
+        BYTE msg3;
+        BYTE msg4;
+        BYTE msg5;
+        BYTE msg6;
+        BYTE msg7;
+        BYTE msg8;
+        BYTE msg9;
+        BYTE msg10;
+        BYTE msg11;
+        BYTE msg12;
+        BYTE msg13;
+        BYTE msg14;
+        BYTE msg15;
+        BYTE msg16;
+        BYTE msg17;
+        BYTE msg18;
+        BYTE msg19;
+        BYTE msg20;
+        BYTE msg21;
+        BYTE msg22;
+        BYTE msg23;
+        BYTE msg24;
+        BYTE msg25;
+        BYTE msg26;
+        BYTE msg27;
+        BYTE msg28;
+        BYTE msg29;
+        BYTE msg30;
+        BYTE msg31;
+        BYTE msg32;
+        BYTE msg33;
+    } UNDECODED;
 
-	struct {	//receiver/transmitter messages
-		BYTE	packetlength;
-		BYTE	packettype;
-		BYTE	subtype;
-		BYTE	seqnbr;
-		BYTE	msg;
-	} RXRESPONSE;
+    struct { //receiver/transmitter messages
+        BYTE packetlength;
+        BYTE packettype;
+        BYTE subtype;
+        BYTE seqnbr;
+        BYTE msg;
+    } RXRESPONSE;
 
-	struct {
-		BYTE	packetlength;
-		BYTE	packettype;
-		BYTE	subtype;
-		BYTE	seqnbr;
-		BYTE	housecode;
-		BYTE	unitcode;
-		BYTE	cmnd;
+    struct {
+        BYTE packetlength;
+        BYTE packettype;
+        BYTE subtype;
+        BYTE seqnbr;
+        BYTE housecode;
+        BYTE unitcode;
+        BYTE cmnd;
 #ifdef IS_BIG_ENDIAN
-		BYTE	rssi : 4;
-		BYTE	filler : 4;
+        BYTE rssi : 4;
+        BYTE filler : 4;
 #else
-		BYTE	filler : 4;
-		BYTE	rssi : 4;
+        BYTE filler : 4;
+        BYTE rssi : 4;
 #endif
-	} LIGHTING1;
+    } LIGHTING1;
 
-	struct {
-		BYTE	packetlength;
-		BYTE	packettype;
-		BYTE	subtype;
-		BYTE	seqnbr;
-		BYTE	id1;
-		BYTE	id2;
-		BYTE	id3;
-		BYTE	id4;
-		BYTE	unitcode;
-		BYTE	cmnd;
-		BYTE	level;
+    struct {
+        BYTE packetlength;
+        BYTE packettype;
+        BYTE subtype;
+        BYTE seqnbr;
+        BYTE id1;
+        BYTE id2;
+        BYTE id3;
+        BYTE id4;
+        BYTE unitcode;
+        BYTE cmnd;
+        BYTE level;
 #ifdef IS_BIG_ENDIAN
-		BYTE	rssi : 4;
-		BYTE	filler : 4;
+        BYTE rssi : 4;
+        BYTE filler : 4;
 #else
-		BYTE	filler : 4;
-		BYTE	rssi : 4;
+        BYTE filler : 4;
+        BYTE rssi : 4;
 #endif
-	} LIGHTING2;
+    } LIGHTING2;
 
-	struct {
-		BYTE	packetlength;
-		BYTE	packettype;
-		BYTE	subtype;
-		BYTE	seqnbr;
-		BYTE	system;
-		BYTE	channel8_1;
-		BYTE	channel10_9;
-		BYTE	cmnd;
+    struct {
+        BYTE packetlength;
+        BYTE packettype;
+        BYTE subtype;
+        BYTE seqnbr;
+        BYTE system;
+        BYTE channel8_1;
+        BYTE channel10_9;
+        BYTE cmnd;
 #ifdef IS_BIG_ENDIAN
-		BYTE	rssi : 4;
-		BYTE	filler : 4;
+        BYTE rssi : 4;
+        BYTE filler : 4;
 #else
-		BYTE	filler : 4;
-		BYTE	rssi : 4;
+        BYTE filler : 4;
+        BYTE rssi : 4;
 #endif
-	} LIGHTING3;
+    } LIGHTING3;
 
-	struct {
-		BYTE	packetlength;
-		BYTE	packettype;
-		BYTE	subtype;
-		BYTE	seqnbr;
-		BYTE	cmd1;
-		BYTE	cmd2;
-		BYTE	cmd3;
-		BYTE	pulseHigh;
-		BYTE	pulseLow;
+    struct {
+        BYTE packetlength;
+        BYTE packettype;
+        BYTE subtype;
+        BYTE seqnbr;
+        BYTE cmd1;
+        BYTE cmd2;
+        BYTE cmd3;
+        BYTE pulseHigh;
+        BYTE pulseLow;
 #ifdef IS_BIG_ENDIAN
-		BYTE	rssi : 4;
-		BYTE	filler : 4;
+        BYTE rssi : 4;
+        BYTE filler : 4;
 #else
-		BYTE	filler : 4;
-		BYTE	rssi : 4;
+        BYTE filler : 4;
+        BYTE rssi : 4;
 #endif
-	} LIGHTING4;
+    } LIGHTING4;
 
-	struct {
-		BYTE	packetlength;
-		BYTE	packettype;
-		BYTE	subtype;
-		BYTE	seqnbr;
-		BYTE	id1;
-		BYTE	id2;
-		BYTE	id3;
-		BYTE	unitcode;
-		BYTE	cmnd;
-		BYTE	level;
+    struct {
+        BYTE packetlength;
+        BYTE packettype;
+        BYTE subtype;
+        BYTE seqnbr;
+        BYTE id1;
+        BYTE id2;
+        BYTE id3;
+        BYTE unitcode;
+        BYTE cmnd;
+        BYTE level;
 #ifdef IS_BIG_ENDIAN
-		BYTE	rssi : 4;
-		BYTE	filler : 4;
+        BYTE rssi : 4;
+        BYTE filler : 4;
 #else
-		BYTE	filler : 4;
-		BYTE	rssi : 4;
+        BYTE filler : 4;
+        BYTE rssi : 4;
 #endif
-	} LIGHTING5;
+    } LIGHTING5;
 
-	struct {
-		BYTE	packetlength;
-		BYTE	packettype;
-		BYTE	subtype;
-		BYTE	seqnbr;
-		BYTE	id1;
-		BYTE	id2;
-		BYTE	groupcode;
-		BYTE	unitcode;
-		BYTE	cmnd;
-		BYTE	cmndseqnbr;
-		BYTE	seqnbr2;
+    struct {
+        BYTE packetlength;
+        BYTE packettype;
+        BYTE subtype;
+        BYTE seqnbr;
+        BYTE id1;
+        BYTE id2;
+        BYTE groupcode;
+        BYTE unitcode;
+        BYTE cmnd;
+        BYTE cmndseqnbr;
+        BYTE seqnbr2;
 #ifdef IS_BIG_ENDIAN
-		BYTE	rssi : 4;
-		BYTE	filler : 4;
+        BYTE rssi : 4;
+        BYTE filler : 4;
 #else
-		BYTE	filler : 4;
-		BYTE	rssi : 4;
+        BYTE filler : 4;
+        BYTE rssi : 4;
 #endif
-	} LIGHTING6;
+    } LIGHTING6;
 
-	struct {
-		BYTE	packetlength;
-		BYTE	packettype;
-		BYTE	subtype;
-		BYTE	seqnbr;
-		BYTE	id1;
-		BYTE	id2;
-		BYTE	sound;
-		BYTE	id4;
+    struct {
+        BYTE packetlength;
+        BYTE packettype;
+        BYTE subtype;
+        BYTE seqnbr;
+        BYTE id1;
+        BYTE id2;
+        BYTE sound;
 #ifdef IS_BIG_ENDIAN
-		BYTE	rssi : 4;
-		BYTE	filler : 4;
+        BYTE rssi : 4;
+        BYTE id4 : 4;
 #else
-		BYTE	filler  : 4;
-		BYTE	rssi : 4;
+        BYTE id4 : 4;
+        BYTE rssi : 4;
 #endif
-	} CHIME;
+    } CHIME;
 
-	struct {
-		BYTE	packetlength;
-		BYTE	packettype;
-		BYTE	subtype;
-		BYTE	seqnbr;
-		BYTE	id1;
-		BYTE	id2;
-		BYTE	id3;
-		BYTE	cmnd;
+    struct {
+        BYTE packetlength;
+        BYTE packettype;
+        BYTE subtype;
+        BYTE seqnbr;
+        BYTE id1;
+        BYTE id2;
+        BYTE id3;
+        BYTE cmnd;
 #ifdef IS_BIG_ENDIAN
-		BYTE	rssi : 4;
-		BYTE	filler : 4;
+        BYTE rssi : 4;
+        BYTE filler : 4;
 #else
-		BYTE	filler  : 4;
-		BYTE	rssi : 4;
+        BYTE filler : 4;
+        BYTE rssi : 4;
 #endif
-	} FAN;
+    } FAN;
 
-	struct {
-		BYTE	packetlength;
-		BYTE	packettype;
-		BYTE	subtype;
-		BYTE	seqnbr;
-		BYTE	id1;
-		BYTE	id2;
-		BYTE	id3;
-		BYTE	cmnd;
+    struct {
+        BYTE packetlength;
+        BYTE packettype;
+        BYTE subtype;
+        BYTE seqnbr;
+        BYTE id1;
+        BYTE id2;
+        BYTE id3;
+        BYTE cmnd;
 #ifdef IS_BIG_ENDIAN
-		BYTE	rssi : 4;
-		BYTE	filler : 4;
+        BYTE rssi : 4;
+        BYTE filler : 4;
 #else
-		BYTE	filler  : 4;
-		BYTE	rssi : 4;
+        BYTE filler : 4;
+        BYTE rssi : 4;
 #endif
-		BYTE did1;
-		BYTE did2;
-		BYTE did3;
-		BYTE ext1;
-		BYTE ext2;
-		BYTE ext3;
-		BYTE ext4;
-		BYTE ext5;
-		BYTE ext6;
-	} FAN2;
+        BYTE did1;
+        BYTE did2;
+        BYTE did3;
+        BYTE ext1;
+        BYTE ext2;
+        BYTE ext3;
+        BYTE ext4;
+        BYTE ext5;
+        BYTE ext6;
+    } FAN2;
 
-	struct {
-		BYTE packetlength;
-		BYTE packettype;
-		BYTE subtype;
-		BYTE seqnbr;
-		BYTE id1;
-		BYTE id2;
-		BYTE id3;
-		BYTE cmnd;
+    struct {
+        BYTE packetlength;
+        BYTE packettype;
+        BYTE subtype;
+        BYTE seqnbr;
+        BYTE id1;
+        BYTE id2;
+        BYTE id3;
+        BYTE cmnd;
 #ifdef IS_BIG_ENDIAN
-		BYTE	rssi : 4;
-		BYTE	filler : 4;
+        BYTE rssi : 4;
+        BYTE filler : 4;
 #else
-		BYTE	filler : 4;
-		BYTE	rssi : 4;
+        BYTE filler : 4;
+        BYTE rssi : 4;
 #endif
-		BYTE did1;
-		BYTE did2;
-		BYTE did3;
-		BYTE ext1;
-		BYTE ext2;
-		BYTE ext3;
-		BYTE ext4;
-		BYTE ext5;
-		BYTE ext6;
-		BYTE ext7;
-		BYTE ext8;
-		BYTE ext9;
-		BYTE ext10;
-		BYTE ext11;
-		BYTE ext12;
-		BYTE ext13;
-		BYTE ext14;
-		BYTE ext15;
-		BYTE ext16;
-		BYTE ext17;
-		BYTE ext18;
-		BYTE ext19;
-		BYTE ext20;
-		BYTE ext21;
-		BYTE ext22;
-		BYTE ext23;
-		BYTE ext24;
-		BYTE ext25;
-		BYTE ext26;
-		BYTE ext27;
-		BYTE ext28;
-		BYTE ext29;
-		BYTE ext30;
-		BYTE ext31;
-	} FANEXT;
+        BYTE did1;
+        BYTE did2;
+        BYTE did3;
+        BYTE ext1;
+        BYTE ext2;
+        BYTE ext3;
+        BYTE ext4;
+        BYTE ext5;
+        BYTE ext6;
+        BYTE ext7;
+        BYTE ext8;
+        BYTE ext9;
+        BYTE ext10;
+        BYTE ext11;
+        BYTE ext12;
+        BYTE ext13;
+        BYTE ext14;
+        BYTE ext15;
+        BYTE ext16;
+        BYTE ext17;
+        BYTE ext18;
+        BYTE ext19;
+        BYTE ext20;
+        BYTE ext21;
+        BYTE ext22;
+        BYTE ext23;
+        BYTE ext24;
+        BYTE ext25;
+        BYTE ext26;
+        BYTE ext27;
+        BYTE ext28;
+        BYTE ext29;
+        BYTE ext30;
+        BYTE ext31;
+    } FANEXT;
 
-	struct {
-		BYTE	packetlength;
-		BYTE	packettype;
-		BYTE	subtype;
-		BYTE	seqnbr;
-		BYTE	housecode;
-		BYTE	unitcode;
-		BYTE	cmnd;
-		BYTE	filler;
-	} CURTAIN1;
+    struct {
+        BYTE packetlength;
+        BYTE packettype;
+        BYTE subtype;
+        BYTE seqnbr;
+        BYTE housecode;
+        BYTE unitcode;
+        BYTE cmnd;
+        BYTE filler;
+    } CURTAIN1;
 
-	struct {
-		BYTE	packetlength;
-		BYTE	packettype;
-		BYTE	subtype;
-		BYTE	seqnbr;
-		BYTE	id1;
-		BYTE	id2;
-		BYTE	id3;
+    struct {
+        BYTE packetlength;
+        BYTE packettype;
+        BYTE subtype;
+        BYTE seqnbr;
+        BYTE id1;
+        BYTE id2;
+        BYTE id3;
 #ifdef IS_BIG_ENDIAN
-		BYTE	id4 : 4;
-		BYTE	unitcode : 4;
-		BYTE	cmnd;
-		BYTE	rssi : 4;
-		BYTE	filler : 4;
+        BYTE id4 : 4;
+        BYTE unitcode : 4;
+        BYTE cmnd;
+        BYTE rssi : 4;
+        BYTE filler : 4;
 #else
-		BYTE	unitcode : 4;
-		BYTE	id4 : 4;
-		BYTE	cmnd;
-		BYTE	filler : 4;
-		BYTE	rssi : 4;
+        BYTE unitcode : 4;
+        BYTE id4 : 4;
+        BYTE cmnd;
+        BYTE filler : 4;
+        BYTE rssi : 4;
 #endif
-	} BLINDS1;
+    } BLINDS1;
 
-	struct {
-		BYTE	packetlength;
-		BYTE	packettype;
-		BYTE	subtype;
-		BYTE	seqnbr;
-		BYTE	id1;
-		BYTE	id2;
-		BYTE	id3;
-		BYTE	unitcode;
-		BYTE	cmnd;
-		BYTE	rfu1;
-		BYTE	rfu2;
-		BYTE	rfu3;
+    struct {
+        BYTE packetlength;
+        BYTE packettype;
+        BYTE subtype;
+        BYTE seqnbr;
+        BYTE id1;
+        BYTE id2;
+        BYTE id3;
+        BYTE unitcode;
+        BYTE cmnd;
+        BYTE rfu1;
+        BYTE rfu2;
+        BYTE rfu3;
 #ifdef IS_BIG_ENDIAN
-		BYTE	rssi : 4;
-		BYTE	filler : 4;
+        BYTE rssi : 4;
+        BYTE filler : 4;
 #else
-		BYTE	filler : 4;
-		BYTE	rssi : 4;
+        BYTE filler : 4;
+        BYTE rssi : 4;
 #endif
-	} RFY;
+    } RFY;
 
-	struct {
-		BYTE packetlength;
-		BYTE packettype;
-		BYTE subtype;
-		BYTE seqnbr;
-		BYTE id1;
-		BYTE id2;
-		BYTE id3;
-		BYTE housecode;
-		BYTE unitcode;
-		BYTE cmnd;
-		BYTE rfu1;
-		BYTE rfu2;
+    struct {
+        BYTE packetlength;
+        BYTE packettype;
+        BYTE subtype;
+        BYTE seqnbr;
+        BYTE id1;
+        BYTE id2;
+        BYTE id3;
+        BYTE housecode;
+        BYTE unitcode;
+        BYTE cmnd;
+        BYTE rfu1;
+        BYTE rfu2;
 #ifdef IS_BIG_ENDIAN
-		BYTE    rssi : 4;
-		BYTE    filler : 4;
+        BYTE rssi : 4;
+        BYTE filler : 4;
 #else
-		BYTE    filler : 4;
-		BYTE    rssi : 4;
+        BYTE filler : 4;
+        BYTE rssi : 4;
 #endif
-	} HOMECONFORT;
+    } HOMECONFORT;
 
-	struct {
-		BYTE packetlength;
-		BYTE packettype;
-		BYTE subtype;
-		BYTE seqnbr;
-		BYTE id1;
-		BYTE id2;
-		BYTE id3;
-		BYTE id4;
-		BYTE unitcode;
-		BYTE cmnd;
-		BYTE level;
-		BYTE R; //or temperatureh
-		BYTE G; //or temperaturel
-		BYTE B;
-		BYTE maxrepeat;
-		BYTE repeatcnt;
+    struct {
+        BYTE packetlength;
+        BYTE packettype;
+        BYTE subtype;
+        BYTE seqnbr;
+        BYTE id1;
+        BYTE id2;
+        BYTE id3;
+        BYTE id4;
+        BYTE unitcode;
+        BYTE cmnd;
+        BYTE level;
+        BYTE R; //or temperatureh
+        BYTE G; //or temperaturel
+        BYTE B;
+        BYTE maxrepeat;
+        BYTE repeatcnt;
 #ifdef IS_BIG_ENDIAN
-		BYTE	rssi : 4;
-		BYTE	battery_level : 4;
+        BYTE rssi : 4;
+        BYTE battery_level : 4;
 #else
-		BYTE	battery_level : 4;
-		BYTE	rssi : 4;
+        BYTE battery_level : 4;
+        BYTE rssi : 4;
 #endif
-	} EDISIO;
+    } EDISIO;
 
-	struct {
-		BYTE packetlength;
-		BYTE packettype;
-		BYTE subtype;
-		BYTE seqnbr;
-		BYTE id1;
-		BYTE id2;
-		BYTE id3;
-		BYTE alert;
-		BYTE knock;
-		BYTE rfu;
+    struct {
+        BYTE packetlength;
+        BYTE packettype;
+        BYTE subtype;
+        BYTE seqnbr;
+        BYTE id1;
+        BYTE id2;
+        BYTE id3;
+        BYTE alert;
+        BYTE knock;
+        BYTE relay;
 #ifdef IS_BIG_ENDIAN
-		BYTE	rssi : 4;
-		BYTE	battery_level : 4;
+        BYTE rssi : 4;
+        BYTE battery_level : 4;
 #else
-		BYTE	battery_level : 4;
-		BYTE	rssi : 4;
+        BYTE battery_level : 4;
+        BYTE rssi : 4;
 #endif
-	} HONEYWELL_AL;
+    } HONEYWELL_AL;
 
-	struct {
-		BYTE	packetlength;
-		BYTE	packettype;
-		BYTE	subtype;
-		BYTE	seqnbr;
-		BYTE	id1;
-		BYTE	id2;
-		BYTE	groupcode;
-		BYTE	unitcode;
-		BYTE	cmnd;
-		BYTE	cmndtime;
+    struct {
+        BYTE packetlength;
+        BYTE packettype;
+        BYTE subtype;
+        BYTE seqnbr;
+        BYTE id1;
+        BYTE id2;
+        BYTE groupcode;
+        BYTE unitcode;
+        BYTE cmnd;
+        BYTE cmndtime;
 #ifdef IS_BIG_ENDIAN
-		BYTE	filler1 : 4;
-		BYTE	devtype : 4;
+        BYTE filler1 : 4;
+        BYTE devtype : 4;
+        BYTE rssi : 4;
+        BYTE battery_level : 4;
 #else
-		BYTE	devtype : 4;
-		BYTE	filler1 : 4;
+        BYTE devtype : 4;
+        BYTE filler1 : 4;
+        BYTE battery_level : 4;
+        BYTE rssi : 4;
 #endif
+    } FUNKBUS;
+
+    struct {
+        BYTE packetlength;
+        BYTE packettype;
+        BYTE subtype;
+        BYTE seqnbr;
+        BYTE id1;
+        BYTE id2;
+        BYTE id3;
+        BYTE id4;
+        BYTE id5;
+        BYTE id6;
+        BYTE cmnd;
 #ifdef IS_BIG_ENDIAN
-		BYTE	rssi : 4;
-		BYTE	battery_level : 4;
+        BYTE rssi : 4;
+        BYTE filler : 4;
 #else
-		BYTE	battery_level : 4;
-		BYTE	rssi : 4;
+        BYTE filler : 4;
+        BYTE rssi : 4;
 #endif
-	} FUNKBUS;
+    } HUNTER;
 
-	struct {
-		BYTE	packetlength;
-		BYTE	packettype;
-		BYTE	subtype;
-		BYTE	seqnbr;
-		BYTE	id1;
-		BYTE	id2;
-		BYTE	id3;
-		BYTE	id4;
-		BYTE	id5;
-		BYTE	id6;
-		BYTE	cmnd;
+    struct {
+        BYTE packetlength;
+        BYTE packettype;
+        BYTE subtype;
+        BYTE seqnbr;
+        BYTE id1;
+        BYTE id2;
+        BYTE id3;
+        BYTE status;
 #ifdef IS_BIG_ENDIAN
-		BYTE	rssi : 4;
-		BYTE	filler : 4;
+        BYTE rssi : 4;
+        BYTE battery_level : 4;
 #else
-		BYTE	filler : 4;
-		BYTE	rssi : 4;
+        BYTE battery_level : 4;
+        BYTE rssi : 4;
 #endif
-	} HUNTER;
+    } SECURITY1;
 
-	struct {
-		BYTE	packetlength;
-		BYTE	packettype;
-		BYTE	subtype;
-		BYTE	seqnbr;
-		BYTE	id1;
-		BYTE	id2;
-		BYTE	id3;
-		BYTE	status;
+    struct {
+        BYTE packetlength;
+        BYTE packettype;
+        BYTE subtype;
+        BYTE seqnbr;
+        BYTE id1;
+        BYTE id2;
+        BYTE id3;
+        BYTE id4;
+        BYTE id5;
+        BYTE id6;
+        BYTE id7;
+        BYTE id8;
+        BYTE id9;
+        BYTE id10;
+        BYTE id11;
+        BYTE id12;
+        BYTE id13;
+        BYTE id14;
+        BYTE id15;
+        BYTE id16;
+        BYTE id17;
+        BYTE id18;
+        BYTE id19;
+        BYTE id20;
+        BYTE id21;
+        BYTE id22;
+        BYTE id23;
+        BYTE id24;
 #ifdef IS_BIG_ENDIAN
-		BYTE	rssi : 4;
-		BYTE	battery_level : 4;
+        BYTE rssi : 4;
+        BYTE battery_level : 4;
 #else
-		BYTE	battery_level : 4;
-		BYTE	rssi : 4;
+        BYTE battery_level : 4;
+        BYTE rssi : 4;
 #endif
-	} SECURITY1;
+    } SECURITY2;
 
-	struct {
-		BYTE	packetlength;
-		BYTE	packettype;
-		BYTE	subtype;
-		BYTE	seqnbr;
-		BYTE	id1;
-		BYTE	id2;
-		BYTE	id3;
-		BYTE	id4;
-		BYTE	id5;
-		BYTE	id6;
-		BYTE	id7;
-		BYTE	id8;
-		BYTE	id9;
-		BYTE	id10;
-		BYTE	id11;
-		BYTE	id12;
-		BYTE	id13;
-		BYTE	id14;
-		BYTE	id15;
-		BYTE	id16;
-		BYTE	id17;
-		BYTE	id18;
-		BYTE	id19;
-		BYTE	id20;
-		BYTE	id21;
-		BYTE	id22;
-		BYTE	id23;
-		BYTE	id24;
+    struct {
+        BYTE packetlength;
+        BYTE packettype;
+        BYTE subtype;
+        BYTE seqnbr;
+        BYTE housecode;
+        BYTE cmnd;
 #ifdef IS_BIG_ENDIAN
-		BYTE	rssi : 4;
-		BYTE	battery_level : 4;
+        BYTE rssi : 4;
+        BYTE filler : 4;
 #else
-		BYTE	battery_level : 4;
-		BYTE	rssi : 4;
+        BYTE filler : 4;
+        BYTE rssi : 4;
 #endif
-	} SECURITY2;
+    } CAMERA1;
 
-	struct {
-		BYTE	packetlength;
-		BYTE	packettype;
-		BYTE	subtype;
-		BYTE	seqnbr;
-		BYTE	housecode;
-		BYTE	cmnd;
+    struct {
+        BYTE packetlength;
+        BYTE packettype;
+        BYTE subtype;
+        BYTE seqnbr;
+        BYTE id;
+        BYTE cmnd;
 #ifdef IS_BIG_ENDIAN
-		BYTE	rssi : 4;
-		BYTE	filler : 4;
+        BYTE rssi : 4;
+        BYTE cmndtype : 3;
+        BYTE toggle : 1;
 #else
-		BYTE	filler : 4;
-		BYTE	rssi : 4;
+        BYTE toggle : 1;
+        BYTE cmndtype : 3;
+        BYTE rssi : 4;
 #endif
-	} CAMERA1;
+    } REMOTE;
 
-	struct {
-		BYTE	packetlength;
-		BYTE	packettype;
-		BYTE	subtype;
-		BYTE	seqnbr;
-		BYTE	id;
-		BYTE	cmnd;
+    struct {
+        BYTE packetlength;
+        BYTE packettype;
+        BYTE subtype;
+        BYTE seqnbr;
+        BYTE id1;
+        BYTE id2;
+        BYTE id3;
+        BYTE id4;
+        BYTE unitcode;
+        BYTE cmnd;
+        BYTE percent;
+        BYTE angle;
 #ifdef IS_BIG_ENDIAN
-		BYTE	rssi : 4;
-		BYTE	cmndtype : 3;
-		BYTE	toggle : 1;
+        BYTE rssi : 4;
+        BYTE filler : 4;
 #else
-		BYTE	toggle : 1;
-		BYTE	cmndtype : 3;
-		BYTE	rssi : 4;
+        BYTE filler : 4;
+        BYTE rssi : 4;
 #endif
-	} REMOTE;
+    } DDXXXX;
 
-	struct {
-		BYTE packetlength;
-		BYTE packettype;
-		BYTE subtype;
-		BYTE seqnbr;
-		BYTE id1;
-		BYTE id2;
-		BYTE id3;
-		BYTE id4;
-		BYTE unitcode;
-		BYTE cmnd;
-		BYTE percent;
-		BYTE angle;
+    struct {
+        BYTE packetlength;
+        BYTE packettype;
+        BYTE subtype;
+        BYTE seqnbr;
+        BYTE id1;
+        BYTE id2;
+        BYTE temperature;
+        BYTE set_point;
 #ifdef IS_BIG_ENDIAN
-		BYTE	rssi : 4;
-		BYTE	filler : 4;
+        BYTE mode : 1;
+        BYTE filler : 5;
+        BYTE status : 2;
+
+        BYTE rssi : 4;
+        BYTE filler1 : 4;
 #else
-		BYTE	filler : 4;
-		BYTE	rssi : 4;
+        BYTE status : 2;
+        BYTE filler : 5;
+        BYTE mode : 1;
+
+        BYTE filler1 : 4;
+        BYTE rssi : 4;
 #endif
-	} DDXXXX;
+    } THERMOSTAT1;
 
-	struct {
-		BYTE	packetlength;
-		BYTE	packettype;
-		BYTE	subtype;
-		BYTE	seqnbr;
-		BYTE	id1;
-		BYTE	id2;
-		BYTE	temperature;
-		BYTE	set_point;
+    struct {
+        BYTE packetlength;
+        BYTE packettype;
+        BYTE subtype;
+        BYTE seqnbr;
+        BYTE unitcode;
+        BYTE cmnd;
 #ifdef IS_BIG_ENDIAN
-		BYTE	mode : 1;
-		BYTE	filler : 5;
-		BYTE	status : 2;
-
-		BYTE	rssi : 4;
-		BYTE	filler1 : 4;
+        BYTE rssi : 4;
+        BYTE filler : 4;
 #else
-		BYTE	status : 2;
-		BYTE	filler : 5;
-		BYTE	mode : 1;
-
-		BYTE	filler1 : 4;
-		BYTE	rssi : 4;
+        BYTE filler : 4;
+        BYTE rssi : 4;
 #endif
-	} THERMOSTAT1;
+    } THERMOSTAT2;
 
-	struct {
-		BYTE	packetlength;
-		BYTE	packettype;
-		BYTE	subtype;
-		BYTE	seqnbr;
-		BYTE	unitcode;
-		BYTE	cmnd;
+    struct {
+        BYTE packetlength;
+        BYTE packettype;
+        BYTE subtype;
+        BYTE seqnbr;
+        BYTE unitcode1;
+        BYTE unitcode2;
+        BYTE unitcode3;
+        BYTE cmnd;
 #ifdef IS_BIG_ENDIAN
-		BYTE	rssi : 4;
-		BYTE	filler : 4;
+        BYTE rssi : 4;
+        BYTE filler : 4;
 #else
-		BYTE	filler : 4;
-		BYTE	rssi : 4;
+        BYTE filler : 4;
+        BYTE rssi : 4;
 #endif
-	} THERMOSTAT2;
+    } THERMOSTAT3;
 
-	struct {
-		BYTE	packetlength;
-		BYTE	packettype;
-		BYTE	subtype;
-		BYTE	seqnbr;
-		BYTE	unitcode1;
-		BYTE	unitcode2;
-		BYTE	unitcode3;
-		BYTE	cmnd;
+    struct {
+        BYTE packetlength;
+        BYTE packettype;
+        BYTE subtype;
+        BYTE seqnbr;
+        BYTE unitcode1;
+        BYTE unitcode2;
+        BYTE unitcode3;
+        BYTE beep;
+        BYTE fan1_speed;
 #ifdef IS_BIG_ENDIAN
-		BYTE	rssi : 4;
-		BYTE	filler : 4;
+        BYTE fan3_speed : 4;
+        BYTE fan2_speed : 4;
 #else
-		BYTE	filler : 4;
-		BYTE	rssi : 4;
+        BYTE fan2_speed : 4;
+        BYTE fan3_speed : 4;
 #endif
-	} THERMOSTAT3;
-
-	struct {
-		BYTE	packetlength;
-		BYTE	packettype;
-		BYTE	subtype;
-		BYTE	seqnbr;
-		BYTE	unitcode1;
-		BYTE	unitcode2;
-		BYTE	unitcode3;
-		BYTE	beep;
-		BYTE	fan1_speed;
+        BYTE flame_power;
+        BYTE mode;
 #ifdef IS_BIG_ENDIAN
-		BYTE	fan3_speed : 4;
-		BYTE	fan2_speed : 4;
+        BYTE rssi : 4;
+        BYTE filler : 4;
 #else
-		BYTE	fan2_speed : 4;
-		BYTE	fan3_speed : 4;
+        BYTE filler : 4;
+        BYTE rssi : 4;
 #endif
-		BYTE	flame_power;
-		BYTE	mode;
+    } THERMOSTAT4;
+
+    struct {
+        BYTE packetlength;
+        BYTE packettype;
+        BYTE subtype;
+        BYTE seqnbr;
+        BYTE unitcode1;
+        BYTE unitcode2;
+        BYTE cmnd;
+        BYTE flame_colour;
+        BYTE flame_brightness;
+        BYTE fuel_colour;
+        BYTE fuel_brightness;
+        BYTE rfu1;
+        BYTE rfu2;
 #ifdef IS_BIG_ENDIAN
-		BYTE	rssi : 4;
-		BYTE	filler : 4;
+        BYTE rssi : 4;
+        BYTE filler : 4;
 #else
-		BYTE	filler : 4;
-		BYTE	rssi : 4;
+        BYTE filler : 4;
+        BYTE rssi : 4;
 #endif
-	} THERMOSTAT4;
+    } THERMOSTAT5;
 
-	struct {
-		BYTE packetlength;
-		BYTE packettype;
-		BYTE subtype;
-		BYTE seqnbr;
-		BYTE unitcode1;
-		BYTE unitcode2;
-		BYTE cmnd;
-		BYTE flame_colour;
-		BYTE flame_brightness;
-		BYTE fuel_colour;
-		BYTE fuel_brightness;
-		BYTE rfu1;
-		BYTE rfu2;
+    struct {
+        BYTE packetlength;
+        BYTE packettype;
+        BYTE subtype;
+        BYTE seqnbr;
+        BYTE id1;
+        BYTE id2;
+        BYTE id3;
+        BYTE id4;
+        BYTE unitcode;
+        BYTE cmnd;
+        BYTE temperature;
+        BYTE tempPoint5;
 #ifdef IS_BIG_ENDIAN
-		BYTE	rssi : 4;
-		BYTE	filler : 4;
+        BYTE rssi : 4;
+        BYTE filler : 4;
 #else
-		BYTE	filler : 4;
-		BYTE	rssi : 4;
+        BYTE filler : 4;
+        BYTE rssi : 4;
 #endif
-	} THERMOSTAT5;
+    } RADIATOR1;
 
-	struct {
-		BYTE	packetlength;
-		BYTE	packettype;
-		BYTE	subtype;
-		BYTE	seqnbr;
-		BYTE	id1;
-		BYTE	id2;
-		BYTE	id3;
-		BYTE	id4;
-		BYTE	unitcode;
-		BYTE	cmnd;
-		BYTE	temperature;
-		BYTE	tempPoint5;
+    struct {
+        BYTE packetlength;
+        BYTE packettype;
+        BYTE subtype;
+        BYTE seqnbr;
+        BYTE id1;
+        BYTE id2;
+        BYTE sensor1h;
+        BYTE sensor1l;
+        BYTE sensor2h;
+        BYTE sensor2l;
 #ifdef IS_BIG_ENDIAN
-		BYTE	rssi : 4;
-		BYTE	filler : 4;
+        BYTE rssi : 4;
+        BYTE battery_level : 4;
 #else
-		BYTE	filler : 4;
-		BYTE	rssi : 4;
+        BYTE battery_level : 4;
+        BYTE rssi : 4;
 #endif
-	} RADIATOR1;
+    } BBQ;
 
-	struct {
-		BYTE	packetlength;
-		BYTE	packettype;
-		BYTE	subtype;
-		BYTE	seqnbr;
-		BYTE	id1;
-		BYTE	id2;
-		BYTE	sensor1h;
-		BYTE	sensor1l;
-		BYTE	sensor2h;
-		BYTE	sensor2l;
+    struct {
+        BYTE packetlength;
+        BYTE packettype;
+        BYTE subtype;
+        BYTE seqnbr;
+        BYTE id1;
+        BYTE id2;
 #ifdef IS_BIG_ENDIAN
-		BYTE	rssi : 4;
-		BYTE	battery_level : 4;
+        BYTE tempsign : 1;
+        BYTE temperatureh : 7;
+
+        BYTE temperaturel;
+        BYTE raintotal1;
+        BYTE raintotal2;
+
+        BYTE rssi : 4;
+        BYTE battery_level : 4;
 #else
-		BYTE	battery_level : 4;
-		BYTE	rssi : 4;
+        BYTE temperatureh : 7;
+        BYTE tempsign : 1;
+
+        BYTE temperaturel;
+        BYTE raintotal1;
+        BYTE raintotal2;
+
+        BYTE battery_level : 4;
+        BYTE rssi : 4;
 #endif
-	} BBQ;
+    } TEMP_RAIN;
 
-	struct {
-		BYTE	packetlength;
-		BYTE	packettype;
-		BYTE	subtype;
-		BYTE	seqnbr;
-		BYTE	id1;
-		BYTE	id2;
+    struct {
+        BYTE packetlength;
+        BYTE packettype;
+        BYTE subtype;
+        BYTE seqnbr;
+        BYTE id1;
+        BYTE id2;
 #ifdef IS_BIG_ENDIAN
-		BYTE	tempsign : 1;
-		BYTE	temperatureh : 7;
+        BYTE tempsign : 1;
+        BYTE temperatureh : 7;
 
-		BYTE	temperaturel;
-		BYTE	raintotal1;
-		BYTE	raintotal2;
+        BYTE temperaturel;
 
-		BYTE	rssi : 4;
-		BYTE	battery_level : 4;
+        BYTE rssi : 4;
+        BYTE battery_level : 4;
 #else
-		BYTE	temperatureh : 7;
-		BYTE	tempsign : 1;
+        BYTE temperatureh : 7;
+        BYTE tempsign : 1;
 
-		BYTE	temperaturel;
-		BYTE	raintotal1;
-		BYTE	raintotal2;
+        BYTE temperaturel;
 
-		BYTE	battery_level : 4;
-		BYTE	rssi : 4;
+        BYTE battery_level : 4;
+        BYTE rssi : 4;
 #endif
-	} TEMP_RAIN;
+    } TEMP;
 
-	struct {
-		BYTE	packetlength;
-		BYTE	packettype;
-		BYTE	subtype;
-		BYTE	seqnbr;
-		BYTE	id1;
-		BYTE	id2;
+    struct {
+        BYTE packetlength;
+        BYTE packettype;
+        BYTE subtype;
+        BYTE seqnbr;
+        BYTE id1;
+        BYTE id2;
+        BYTE humidity;
+        BYTE humidity_status;
 #ifdef IS_BIG_ENDIAN
-		BYTE	tempsign : 1;
-		BYTE	temperatureh : 7;
-
-		BYTE	temperaturel;
-
-		BYTE	rssi : 4;
-		BYTE	battery_level : 4;
+        BYTE rssi : 4;
+        BYTE battery_level : 4;
 #else
-		BYTE	temperatureh : 7;
-		BYTE	tempsign : 1;
-
-		BYTE	temperaturel;
-
-		BYTE	battery_level : 4;
-		BYTE	rssi : 4;
+        BYTE battery_level : 4;
+        BYTE rssi : 4;
 #endif
-	} TEMP;
+    } HUM;
 
-	struct {
-		BYTE	packetlength;
-		BYTE	packettype;
-		BYTE	subtype;
-		BYTE	seqnbr;
-		BYTE	id1;
-		BYTE	id2;
-		BYTE	humidity; 
-		BYTE	humidity_status;
+    struct {
+        BYTE packetlength;
+        BYTE packettype;
+        BYTE subtype;
+        BYTE seqnbr;
+        BYTE id1;
+        BYTE id2;
 #ifdef IS_BIG_ENDIAN
-		BYTE	rssi : 4;
-		BYTE	battery_level : 4;
+        BYTE tempsign : 1;
+        BYTE temperatureh : 7;
+
+        BYTE temperaturel;
+        BYTE humidity;
+        BYTE humidity_status;
+
+        BYTE rssi : 4;
+        BYTE battery_level : 4;
 #else
-		BYTE	battery_level : 4;
-		BYTE	rssi : 4;
+        BYTE temperatureh : 7;
+        BYTE tempsign : 1;
+
+        BYTE temperaturel;
+        BYTE humidity;
+        BYTE humidity_status;
+
+        BYTE battery_level : 4;
+        BYTE rssi : 4;
 #endif
-	} HUM;
+    } TEMP_HUM;
 
-	struct {
-		BYTE	packetlength;
-		BYTE	packettype;
-		BYTE	subtype;
-		BYTE	seqnbr;
-		BYTE	id1;
-		BYTE	id2;
+    struct {
+        BYTE packetlength;
+        BYTE packettype;
+        BYTE subtype;
+        BYTE seqnbr;
+        BYTE id1;
+        BYTE id2;
+        BYTE baro1;
+        BYTE baro2;
+        BYTE forecast;
 #ifdef IS_BIG_ENDIAN
-		BYTE	tempsign : 1;
-		BYTE	temperatureh : 7;
-
-		BYTE	temperaturel;
-		BYTE	humidity; 
-		BYTE	humidity_status;
-
-		BYTE	rssi : 4;
-		BYTE	battery_level : 4;
+        BYTE rssi : 4;
+        BYTE battery_level : 4;
 #else
-		BYTE	temperatureh : 7;
-		BYTE	tempsign : 1;
-
-		BYTE	temperaturel;
-		BYTE	humidity; 
-		BYTE	humidity_status;
-
-		BYTE	battery_level : 4;
-		BYTE	rssi : 4;
+        BYTE battery_level : 4;
+        BYTE rssi : 4;
 #endif
-	} TEMP_HUM;
+    } BARO;
 
-	struct {
-		BYTE	packetlength;
-		BYTE	packettype;
-		BYTE	subtype;
-		BYTE	seqnbr;
-		BYTE	id1;
-		BYTE	id2;
-		BYTE	baro1;
-		BYTE	baro2;
-		BYTE	forecast;
+    struct {
+        BYTE packetlength;
+        BYTE packettype;
+        BYTE subtype;
+        BYTE seqnbr;
+        BYTE id1;
+        BYTE id2;
 #ifdef IS_BIG_ENDIAN
-		BYTE	rssi : 4;
-		BYTE	battery_level : 4;
+        BYTE tempsign : 1;
+        BYTE temperatureh : 7;
 #else
-		BYTE	battery_level : 4;
-		BYTE	rssi : 4;
+        BYTE temperatureh : 7;
+        BYTE tempsign : 1;
 #endif
-	} BARO;
-
-	struct {
-		BYTE	packetlength;
-		BYTE	packettype;
-		BYTE	subtype;
-		BYTE	seqnbr;
-		BYTE	id1;
-		BYTE	id2;
+        BYTE temperaturel;
+        BYTE humidity;
+        BYTE humidity_status;
+        BYTE baroh;
+        BYTE barol;
+        BYTE forecast;
 #ifdef IS_BIG_ENDIAN
-		BYTE	tempsign : 1;
-		BYTE	temperatureh : 7;
+        BYTE rssi : 4;
+        BYTE battery_level : 4;
 #else
-		BYTE	temperatureh : 7;
-		BYTE	tempsign : 1;
+        BYTE battery_level : 4;
+        BYTE rssi : 4;
 #endif
-		BYTE	temperaturel;
-		BYTE	humidity; 
-		BYTE	humidity_status;
-		BYTE	baroh;
-		BYTE	barol;
-		BYTE	forecast;
+    } TEMP_HUM_BARO;
+
+    struct {
+        BYTE packetlength;
+        BYTE packettype;
+        BYTE subtype;
+        BYTE seqnbr;
+        BYTE id1;
+        BYTE id2;
+        BYTE rainrateh;
+        BYTE rainratel;
+        BYTE raintotal1;
+        BYTE raintotal2;
+        BYTE raintotal3;
 #ifdef IS_BIG_ENDIAN
-		BYTE	rssi : 4;
-		BYTE	battery_level : 4;
+        BYTE rssi : 4;
+        BYTE battery_level : 4;
 #else
-		BYTE	battery_level : 4;
-		BYTE	rssi : 4;
+        BYTE battery_level : 4;
+        BYTE rssi : 4;
 #endif
-	} TEMP_HUM_BARO;
+    } RAIN;
 
-	struct {
-		BYTE	packetlength;
-		BYTE	packettype;
-		BYTE	subtype;
-		BYTE	seqnbr;
-		BYTE	id1;
-		BYTE	id2;
-		BYTE	rainrateh;
-		BYTE	rainratel;
-		BYTE	raintotal1;
-		BYTE	raintotal2;
-		BYTE	raintotal3;
+    struct {
+        BYTE packetlength;
+        BYTE packettype;
+        BYTE subtype;
+        BYTE seqnbr;
+        BYTE id1;
+        BYTE id2;
+        BYTE directionh;
+        BYTE directionl;
+        BYTE av_speedh;
+        BYTE av_speedl;
+        BYTE gusth;
+        BYTE gustl;
 #ifdef IS_BIG_ENDIAN
-		BYTE	rssi : 4;
-		BYTE	battery_level : 4;
+        BYTE tempsign : 1;
+        BYTE temperatureh : 7;
+
+        BYTE temperaturel;
+
+        BYTE chillsign : 1;
+        BYTE chillh : 7;
+
+        BYTE chilll;
+
+        BYTE rssi : 4;
+        BYTE battery_level : 4;
 #else
-		BYTE	battery_level : 4;
-		BYTE	rssi : 4;
+        BYTE temperatureh : 7;
+        BYTE tempsign : 1;
+
+        BYTE temperaturel;
+
+        BYTE chillh : 7;
+        BYTE chillsign : 1;
+
+        BYTE chilll;
+
+        BYTE battery_level : 4;
+        BYTE rssi : 4;
 #endif
-	} RAIN;
+    } WIND;
 
-	struct {
-		BYTE	packetlength;
-		BYTE	packettype;
-		BYTE	subtype;
-		BYTE	seqnbr;
-		BYTE	id1;
-		BYTE	id2;
-		BYTE	directionh;
-		BYTE	directionl;
-		BYTE	av_speedh;
-		BYTE	av_speedl;
-		BYTE	gusth;
-		BYTE	gustl;
+    struct {
+        BYTE packetlength;
+        BYTE packettype;
+        BYTE subtype;
+        BYTE seqnbr;
+        BYTE id1;
+        BYTE id2;
+        BYTE uv;
 #ifdef IS_BIG_ENDIAN
-		BYTE	tempsign : 1;
-		BYTE	temperatureh : 7;
+        BYTE tempsign : 1;
+        BYTE temperatureh : 7;
 
-		BYTE	temperaturel;
+        BYTE temperaturel;
 
-		BYTE	chillsign : 1;
-		BYTE	chillh : 7;
-
-		BYTE	chilll;
-
-		BYTE	rssi : 4;
-		BYTE	battery_level : 4;
+        BYTE rssi : 4;
+        BYTE battery_level : 4;
 #else
-		BYTE	temperatureh : 7;
-		BYTE	tempsign : 1;
+        BYTE temperatureh : 7;
+        BYTE tempsign : 1;
 
-		BYTE	temperaturel;
+        BYTE temperaturel;
 
-		BYTE	chillh : 7;
-		BYTE	chillsign : 1;
-
-		BYTE	chilll;
-
-		BYTE	battery_level : 4;
-		BYTE	rssi : 4;
+        BYTE battery_level : 4;
+        BYTE rssi : 4;
 #endif
-	} WIND;
+    } UV;
 
-	struct {
-		BYTE	packetlength;
-		BYTE	packettype;
-		BYTE	subtype;
-		BYTE	seqnbr;
-		BYTE	id1;
-		BYTE	id2;
-		BYTE	uv;
+    struct {
+        BYTE packetlength;
+        BYTE packettype;
+        BYTE subtype;
+        BYTE seqnbr;
+        BYTE id1;
+        BYTE id2;
+        BYTE yy;
+        BYTE mm;
+        BYTE dd;
+        BYTE dow;
+        BYTE hr;
+        BYTE min;
+        BYTE sec;
 #ifdef IS_BIG_ENDIAN
-		BYTE	tempsign : 1;
-		BYTE	temperatureh : 7;
-
-		BYTE	temperaturel;
-
-		BYTE	rssi : 4;
-		BYTE	battery_level : 4;
+        BYTE rssi : 4;
+        BYTE battery_level : 4;
 #else
-		BYTE	temperatureh : 7;
-		BYTE	tempsign : 1;
-
-		BYTE	temperaturel;
-
-		BYTE	battery_level : 4;
-		BYTE	rssi : 4;
+        BYTE battery_level : 4;
+        BYTE rssi : 4;
 #endif
-	} UV;
+    } DT;
 
-	struct {
-		BYTE	packetlength;
-		BYTE	packettype;
-		BYTE	subtype;
-		BYTE	seqnbr;
-		BYTE	id1;
-		BYTE	id2;
-		BYTE	yy;
-		BYTE	mm;
-		BYTE	dd;
-		BYTE	dow;
-		BYTE	hr;
-		BYTE	min;
-		BYTE	sec;
+    struct {
+        BYTE packetlength;
+        BYTE packettype;
+        BYTE subtype;
+        BYTE seqnbr;
+        BYTE id1;
+        BYTE id2;
+        BYTE count;
+        BYTE ch1h;
+        BYTE ch1l;
+        BYTE ch2h;
+        BYTE ch2l;
+        BYTE ch3h;
+        BYTE ch3l;
 #ifdef IS_BIG_ENDIAN
-		BYTE	rssi : 4;
-		BYTE	battery_level : 4;
+        BYTE rssi : 4;
+        BYTE battery_level : 4;
 #else
-		BYTE	battery_level : 4;
-		BYTE	rssi : 4;
+        BYTE battery_level : 4;
+        BYTE rssi : 4;
 #endif
-	} DT;
+    } CURRENT;
 
-	struct {
-		BYTE	packetlength;
-		BYTE	packettype;
-		BYTE	subtype;
-		BYTE	seqnbr;
-		BYTE	id1;
-		BYTE	id2;
-		BYTE	count;
-		BYTE	ch1h;
-		BYTE	ch1l;
-		BYTE	ch2h;
-		BYTE	ch2l;
-		BYTE	ch3h;
-		BYTE	ch3l;
+    struct {
+        BYTE packetlength;
+        BYTE packettype;
+        BYTE subtype;
+        BYTE seqnbr;
+        BYTE id1;
+        BYTE id2;
+        BYTE count;
+        BYTE instant1;
+        BYTE instant2;
+        BYTE instant3;
+        BYTE instant4;
+        BYTE total1;
+        BYTE total2;
+        BYTE total3;
+        BYTE total4;
+        BYTE total5;
+        BYTE total6;
 #ifdef IS_BIG_ENDIAN
-		BYTE	rssi : 4;
-		BYTE	battery_level : 4;
+        BYTE rssi : 4;
+        BYTE battery_level : 4;
 #else
-		BYTE	battery_level : 4;
-		BYTE	rssi : 4;
+        BYTE battery_level : 4;
+        BYTE rssi : 4;
 #endif
-	} CURRENT;
+    } ENERGY;
 
-	struct {
-		BYTE	packetlength;
-		BYTE	packettype;
-		BYTE	subtype;
-		BYTE	seqnbr;
-		BYTE	id1;
-		BYTE	id2;
-		BYTE	count;
-		BYTE	instant1;
-		BYTE	instant2;
-		BYTE	instant3;
-		BYTE	instant4;
-		BYTE	total1;
-		BYTE	total2;
-		BYTE	total3;
-		BYTE	total4;
-		BYTE	total5;
-		BYTE	total6;
+    struct {
+        BYTE packetlength;
+        BYTE packettype;
+        BYTE subtype;
+        BYTE seqnbr;
+        BYTE id1;
+        BYTE id2;
+        BYTE count;
+        BYTE ch1h;
+        BYTE ch1l;
+        BYTE ch2h;
+        BYTE ch2l;
+        BYTE ch3h;
+        BYTE ch3l;
+        BYTE total1;
+        BYTE total2;
+        BYTE total3;
+        BYTE total4;
+        BYTE total5;
+        BYTE total6;
 #ifdef IS_BIG_ENDIAN
-		BYTE	rssi : 4;
-		BYTE	battery_level : 4;
+        BYTE rssi : 4;
+        BYTE battery_level : 4;
 #else
-		BYTE	battery_level : 4;
-		BYTE	rssi : 4;
+        BYTE battery_level : 4;
+        BYTE rssi : 4;
 #endif
-	} ENERGY;
+    } CURRENT_ENERGY;
 
-	struct {
-		BYTE	packetlength;
-		BYTE	packettype;
-		BYTE	subtype;
-		BYTE	seqnbr;
-		BYTE	id1;
-		BYTE	id2;
-		BYTE	count;
-		BYTE	ch1h;
-		BYTE	ch1l;
-		BYTE	ch2h;
-		BYTE	ch2l;
-		BYTE	ch3h;
-		BYTE	ch3l;
-		BYTE	total1;
-		BYTE	total2;
-		BYTE	total3;
-		BYTE	total4;
-		BYTE	total5;
-		BYTE	total6;
+    struct {
+        BYTE packetlength;
+        BYTE packettype;
+        BYTE subtype;
+        BYTE seqnbr;
+        BYTE id1;
+        BYTE id2;
+        BYTE voltage;
+        BYTE currentH;
+        BYTE currentL;
+        BYTE powerH;
+        BYTE powerL;
+        BYTE energyH;
+        BYTE energyL;
+        BYTE pf;
+        BYTE freq;
 #ifdef IS_BIG_ENDIAN
-		BYTE	rssi : 4;
-		BYTE	battery_level : 4;
+        BYTE rssi : 4;
+        BYTE filler : 4;
 #else
-		BYTE	battery_level : 4;
-		BYTE	rssi : 4;
-#endif
-	} CURRENT_ENERGY;
-
-	struct {
-        BYTE	packetlength;
-        BYTE	packettype;
-        BYTE	subtype;
-        BYTE	seqnbr;
-        BYTE	id1;
-        BYTE	id2;
-        BYTE	voltage;
-        BYTE	currentH;
-        BYTE	currentL;
-        BYTE	powerH;
-        BYTE	powerL;
-        BYTE	energyH;
-        BYTE	energyL;
-        BYTE	pf;
-        BYTE	freq;
-#ifdef IS_BIG_ENDIAN
-        BYTE	rssi : 4;
-        BYTE	filler : 4;
-#else
-        BYTE	filler : 4;
-        BYTE	rssi : 4;
+        BYTE filler : 4;
+        BYTE rssi : 4;
 #endif
     } POWER;
 
-	struct {
-		BYTE	packetlength;
-		BYTE	packettype;
-		BYTE	subtype;
-		BYTE	seqnbr;
-		BYTE	id1;
-		BYTE	id2;
-		BYTE	weighthigh;
-		BYTE	weightlow;
+    struct {
+        BYTE packetlength;
+        BYTE packettype;
+        BYTE subtype;
+        BYTE seqnbr;
+        BYTE id1;
+        BYTE id2;
+        BYTE weighthigh;
+        BYTE weightlow;
 #ifdef IS_BIG_ENDIAN
-		BYTE	rssi : 4;
-		BYTE	filler : 4;
+        BYTE rssi : 4;
+        BYTE filler : 4;
 #else
-		BYTE	filler : 4;
-		BYTE	rssi : 4;
+        BYTE filler : 4;
+        BYTE rssi : 4;
 #endif
-	} WEIGHT;
+    } WEIGHT;
 
-	struct {
-		BYTE	packetlength;
-		BYTE	packettype;
-		BYTE	subtype;
-		BYTE	seqnbr;
-		BYTE	id1;
-		BYTE	id2;
-		BYTE	id3;
-		BYTE	id4;
-		BYTE	id5;
-		BYTE	contract_type;
-		BYTE	counter1_0;
-		BYTE	counter1_1;
-		BYTE	counter1_2;
-		BYTE	counter1_3;
-		BYTE	counter2_0;
-		BYTE	counter2_1;
-		BYTE	counter2_2;
-		BYTE	counter2_3;
-		BYTE	power_H;
-		BYTE	power_L;
-		BYTE	state;
+    struct {
+        BYTE packetlength;
+        BYTE packettype;
+        BYTE subtype;
+        BYTE seqnbr;
+        BYTE id1;
+        BYTE id2;
+        BYTE id3;
+        BYTE id4;
+        BYTE id5;
+        BYTE contract_type;
+        BYTE counter1_0;
+        BYTE counter1_1;
+        BYTE counter1_2;
+        BYTE counter1_3;
+        BYTE counter2_0;
+        BYTE counter2_1;
+        BYTE counter2_2;
+        BYTE counter2_3;
+        BYTE power_H;
+        BYTE power_L;
+        BYTE state;
 #ifdef IS_BIG_ENDIAN
-		BYTE	rssi : 4;
-		BYTE	battery_level : 4;
+        BYTE rssi : 4;
+        BYTE battery_level : 4;
 #else
-		BYTE	battery_level : 4;
-		BYTE	rssi : 4;
+        BYTE battery_level : 4;
+        BYTE rssi : 4;
 #endif
-	} TIC;
+    } TIC;
 
-	struct {
-		BYTE	packetlength;
-		BYTE	packettype;
-		BYTE	subtype;
-		BYTE	seqnbr;
-		BYTE	id1;
-		BYTE	id2;
-		BYTE	id3;
-		BYTE	id4;
-		BYTE	counter1_0;
-		BYTE	counter1_1;
-		BYTE	counter1_2;
-		BYTE	counter1_3;
-		BYTE	counter2_0;
-		BYTE	counter2_1;
-		BYTE	counter2_2;
-		BYTE	counter2_3;
-		BYTE	state;
+    struct {
+        BYTE packetlength;
+        BYTE packettype;
+        BYTE subtype;
+        BYTE seqnbr;
+        BYTE id1;
+        BYTE id2;
+        BYTE id3;
+        BYTE id4;
+        BYTE counter1_0;
+        BYTE counter1_1;
+        BYTE counter1_2;
+        BYTE counter1_3;
+        BYTE counter2_0;
+        BYTE counter2_1;
+        BYTE counter2_2;
+        BYTE counter2_3;
+        BYTE state;
 #ifdef IS_BIG_ENDIAN
-		BYTE	rssi : 4;
-		BYTE	battery_level : 4;
+        BYTE rssi : 4;
+        BYTE battery_level : 4;
 #else
-		BYTE	battery_level : 4;
-		BYTE	rssi : 4;
+        BYTE battery_level : 4;
+        BYTE rssi : 4;
 #endif
-	} CEENCODER;
+    } CEENCODER;
 
-	struct {
-		BYTE packetlength;
-		BYTE packettype;
-		BYTE subtype;
-		BYTE seqnbr;
-		BYTE id1;
-		BYTE id2;
-		BYTE id3;
-		BYTE id4;
-		BYTE runidx_0;
-		BYTE runidx_1;
-		BYTE runidx_2;
-		BYTE runidx_3;
-		BYTE prodidx1_0;
-		BYTE prodidx1_1;
-		BYTE prodidx1_2;
-		BYTE prodidx1_3;
+    struct {
+        BYTE packetlength;
+        BYTE packettype;
+        BYTE subtype;
+        BYTE seqnbr;
+        BYTE id1;
+        BYTE id2;
+        BYTE id3;
+        BYTE id4;
+        BYTE runidx_0;
+        BYTE runidx_1;
+        BYTE runidx_2;
+        BYTE runidx_3;
+        BYTE prodidx1_0;
+        BYTE prodidx1_1;
+        BYTE prodidx1_2;
+        BYTE prodidx1_3;
 #ifdef IS_BIG_ENDIAN
-		BYTE rfu : 4;
-		BYTE currentidx : 4;
+        BYTE rfu : 4;
+        BYTE currentidx : 4;
 #else
-		BYTE currentidx : 4;
-		BYTE rfu : 4;
+        BYTE currentidx : 4;
+        BYTE rfu : 4;
 #endif
-		BYTE av_voltage;
-		BYTE power_H;
-		BYTE power_L;
-		BYTE state;
+        BYTE av_voltage;
+        BYTE power_H;
+        BYTE power_L;
+        BYTE state;
 #ifdef IS_BIG_ENDIAN
-		BYTE	rssi : 4;
-		BYTE	battery_level : 4;
+        BYTE rssi : 4;
+        BYTE battery_level : 4;
 #else
-		BYTE	battery_level : 4;
-		BYTE	rssi : 4;
+        BYTE battery_level : 4;
+        BYTE rssi : 4;
 #endif
-	} LINKY;
+    } LINKY;
 
-	struct {
-		BYTE packetlength;
-		BYTE packettype;
-		BYTE subtype;
-		BYTE seqnbr;
-		BYTE cmnd;
-		BYTE baudrate;
-		BYTE parity;
-		BYTE databits;
-		BYTE stopbits;
-		BYTE polarity;
-		BYTE filler1;
-		BYTE filler2;
-	} ASYNCPORT;
+    struct {
+        BYTE packetlength;
+        BYTE packettype;
+        BYTE subtype;
+        BYTE seqnbr;
+        BYTE cmnd;
+        BYTE baudrate;
+        BYTE parity;
+        BYTE databits;
+        BYTE stopbits;
+        BYTE polarity;
+        BYTE filler1;
+        BYTE filler2;
+    } ASYNCPORT;
 
-	struct {
-		BYTE packetlength;
-		BYTE packettype;
-		BYTE subtype;
-		BYTE seqnbr;
-		BYTE datachar[252];
-	} ASYNCDATA;
+    struct {
+        BYTE packetlength;
+        BYTE packettype;
+        BYTE subtype;
+        BYTE seqnbr;
+        BYTE datachar[252];
+    } ASYNCDATA;
 
-	struct {
-		BYTE	packetlength;
-		BYTE	packettype;
-		BYTE	subtype;
-		BYTE	seqnbr;
-		BYTE	id;
-		BYTE	msg1;
-		BYTE	msg2;
+    struct {
+        BYTE packetlength;
+        BYTE packettype;
+        BYTE subtype;
+        BYTE seqnbr;
+        BYTE id;
+        BYTE msg1;
+        BYTE msg2;
 #ifdef IS_BIG_ENDIAN
-		BYTE	rssi : 4;
-		BYTE	filler : 4;
+        BYTE rssi : 4;
+        BYTE filler : 4;
 #else
-		BYTE	filler : 4;
-		BYTE	rssi : 4;
+        BYTE filler : 4;
+        BYTE rssi : 4;
 #endif
-	} RFXSENSOR;
+    } RFXSENSOR;
 
-	struct {
-		BYTE	packetlength;
-		BYTE	packettype;
-		BYTE	subtype;
-		BYTE	seqnbr;
-		BYTE	id1;
-		BYTE	id2;
-		BYTE	count1;
-		BYTE	count2;
-		BYTE	count3;
-		BYTE	count4;
+    struct {
+        BYTE packetlength;
+        BYTE packettype;
+        BYTE subtype;
+        BYTE seqnbr;
+        BYTE id1;
+        BYTE id2;
+        BYTE count1;
+        BYTE count2;
+        BYTE count3;
+        BYTE count4;
 #ifdef IS_BIG_ENDIAN
-		BYTE	rssi : 4;
-		BYTE	filler : 4;
+        BYTE rssi : 4;
+        BYTE filler : 4;
 #else
-		BYTE	filler : 4;
-		BYTE	rssi : 4;
+        BYTE filler : 4;
+        BYTE rssi : 4;
 #endif
-	} RFXMETER;
+    } RFXMETER;
 
-	struct {
-	BYTE	packetlength;
-	BYTE	packettype;
-	BYTE	subtype;
-	BYTE	seqnbr;
-	BYTE	hc1;
-	BYTE	hc2;
-	BYTE	addr;
-	BYTE	cmd1;
-	BYTE	cmd2;
+    struct {
+        BYTE packetlength;
+        BYTE packettype;
+        BYTE subtype;
+        BYTE seqnbr;
+        BYTE hc1;
+        BYTE hc2;
+        BYTE addr;
+        BYTE cmd1;
+        BYTE cmd2;
 #ifdef IS_BIG_ENDIAN
-	BYTE	rssi : 4;
-	BYTE	filler : 4;
+        BYTE rssi : 4;
+        BYTE filler : 4;
 #else
-	BYTE	filler : 4;
-	BYTE	rssi : 4;
+        BYTE filler : 4;
+        BYTE rssi : 4;
 #endif
     } FS20;
 
-	struct {
-		BYTE	packetlength;
-		BYTE	packettype;
-		BYTE	subtype;
-		BYTE	seqnbr;
-		BYTE	id1;
-		BYTE	id2;
-		BYTE	message;
-		BYTE	depth1;
-		BYTE	depth2;
+    struct {
+        BYTE packetlength;
+        BYTE packettype;
+        BYTE subtype;
+        BYTE seqnbr;
+        BYTE id1;
+        BYTE id2;
+        BYTE message;
+        BYTE depth1;
+        BYTE depth2;
 #ifdef IS_BIG_ENDIAN
-		BYTE	temperaturesign : 1;
-		BYTE	temperaturehigh : 7;
+        BYTE temperaturesign : 1;
+        BYTE temperaturehigh : 7;
 #else
-		BYTE	temperaturehigh : 7;
-		BYTE	temperaturesign : 1;
+        BYTE temperaturehigh : 7;
+        BYTE temperaturesign : 1;
 #endif
-		BYTE	temperaturelow;
-		BYTE	rfu1;
-		BYTE	rfu2;
+        BYTE temperaturelow;
+        BYTE rfu1;
+        BYTE rfu2;
 #ifdef IS_BIG_ENDIAN
-		BYTE	rssi : 4;
-		BYTE	battery_level : 4;
+        BYTE rssi : 4;
+        BYTE battery_level : 4;
 #else
-		BYTE	battery_level : 4;
-		BYTE	rssi : 4;
+        BYTE battery_level : 4;
+        BYTE rssi : 4;
 #endif
-	} LEVELSENSOR;
+    } LEVELSENSOR;
 
-	struct {
-		BYTE packetlength;
-		BYTE packettype;
-		BYTE subtype;
-		BYTE seqnbr;
-		BYTE id1;
-		BYTE id2;
-		BYTE id3;
-		BYTE status;
-		BYTE distance;
-		BYTE strike_cnt;
-		BYTE rfu1;
-		BYTE rfu2;
+    struct {
+        BYTE packetlength;
+        BYTE packettype;
+        BYTE subtype;
+        BYTE seqnbr;
+        BYTE id1;
+        BYTE id2;
+        BYTE id3;
+        BYTE status;
+        BYTE distance;
+        BYTE strike_cnt;
+        BYTE rfu1;
+        BYTE rfu2;
 #ifdef IS_BIG_ENDIAN
-		BYTE	rssi : 4;
-		BYTE	battery_level : 4;
+        BYTE rssi : 4;
+        BYTE battery_level : 4;
 #else
-		BYTE	battery_level : 4;
-		BYTE	rssi : 4;
+        BYTE battery_level : 4;
+        BYTE rssi : 4;
 #endif
-	} LIGHTNING;
+    } LIGHTNING;
 
-	struct {
-		BYTE packetlength;
-		BYTE packettype;
-		BYTE subtype;
-		BYTE seqnbr;
-		BYTE id1;
-		BYTE id2;
-		BYTE directionhigh;
-		BYTE directionlow;
-		BYTE av_speedhigh;
-		BYTE av_speedlow;
-		BYTE gusthigh;
-		BYTE gustlow;
+    struct {
+        BYTE packetlength;
+        BYTE packettype;
+        BYTE subtype;
+        BYTE seqnbr;
+        BYTE id1;
+        BYTE id2;
+        BYTE directionhigh;
+        BYTE directionlow;
+        BYTE av_speedhigh;
+        BYTE av_speedlow;
+        BYTE gusthigh;
+        BYTE gustlow;
 #ifdef IS_BIG_ENDIAN
-		BYTE	temperaturesign : 1;
-		BYTE	temperaturehigh : 7;
+        BYTE temperaturesign : 1;
+        BYTE temperaturehigh : 7;
 #else
-		BYTE	temperaturehigh : 7;
-		BYTE	temperaturesign : 1;
+        BYTE temperaturehigh : 7;
+        BYTE temperaturesign : 1;
 #endif
-		BYTE temperaturelow;
+        BYTE temperaturelow;
 #ifdef IS_BIG_ENDIAN
-		BYTE	chillsign : 1;
-		BYTE	chillhigh : 7;
+        BYTE chillsign : 1;
+        BYTE chillhigh : 7;
 #else
-		BYTE	chillhigh : 7;
-		BYTE	chillsign : 1;
+        BYTE chillhigh : 7;
+        BYTE chillsign : 1;
 #endif
-		BYTE chilllow;
-		BYTE humidity;
-		BYTE humidity_status;
-		BYTE rainratehigh;
-		BYTE rainratelow;
-		BYTE raintotal1; //high byte
-		BYTE raintotal2;
-		BYTE raintotal3; //low byte
-		BYTE uv;
-		BYTE solarhigh;
-		BYTE solarlow;
-		BYTE barohigh;
-		BYTE barolow;
-		BYTE forecast;
-		BYTE rfu1;
-		BYTE rfu2;
+        BYTE chilllow;
+        BYTE humidity;
+        BYTE humidity_status;
+        BYTE rainratehigh;
+        BYTE rainratelow;
+        BYTE raintotal1; //high byte
+        BYTE raintotal2;
+        BYTE raintotal3; //low byte
+        BYTE uv;
+        BYTE solarhigh;
+        BYTE solarlow;
+        BYTE barohigh;
+        BYTE barolow;
+        BYTE forecast;
+        BYTE rfu1;
+        BYTE rfu2;
 #ifdef IS_BIG_ENDIAN
-		BYTE	rssi : 4;
-		BYTE	battery_level : 4;
+        BYTE rssi : 4;
+        BYTE battery_level : 4;
 #else
-		BYTE battery_level : 4;
-		BYTE rssi : 4;
+        BYTE battery_level : 4;
+        BYTE rssi : 4;
 #endif
-	} WEATHER;
+    } WEATHER;
 
-	struct {
-		BYTE	packetlength;
-		BYTE	packettype;
-		BYTE	subtype;
-		BYTE	seqnbr;
-		BYTE	id1;
-		BYTE	id2;
-		BYTE	solarhigh;
-		BYTE	solarlow;
-		BYTE	rfu1;
-		BYTE	rfu2;
+    struct {
+        BYTE packetlength;
+        BYTE packettype;
+        BYTE subtype;
+        BYTE seqnbr;
+        BYTE id1;
+        BYTE id2;
+        BYTE solarhigh;
+        BYTE solarlow;
+        BYTE rfu1;
+        BYTE rfu2;
 #ifdef IS_BIG_ENDIAN
-		BYTE	rssi : 4;
-		BYTE	battery_level : 4;
+        BYTE rssi : 4;
+        BYTE battery_level : 4;
 #else
-		BYTE battery_level : 4;
-		BYTE rssi : 4;
+        BYTE battery_level : 4;
+        BYTE rssi : 4;
 #endif
-	} SOLAR;
+    } SOLAR;
 
-	struct {
-	BYTE	packetlength;
-	BYTE	packettype;
-	BYTE	subtype;
-	BYTE	seqnbr;
-	BYTE	repeat;
-	struct{
-		BYTE	uint_msb;
-		BYTE	uint_lsb;
-	} pulse[124];
+    struct {
+        BYTE packetlength;
+        BYTE packettype;
+        BYTE subtype;
+        BYTE seqnbr;
+        BYTE repeat;
+
+        struct {
+            BYTE uint_msb;
+            BYTE uint_lsb;
+        } pulse[124];
     } RAW;
 } RBUF;
 
