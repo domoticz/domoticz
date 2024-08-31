@@ -1,10 +1,13 @@
 Version 2024.x
+- Implemented: RFXCom, Updated SDK
 - Implemented: Support for Honeywell Series 5/PIR
-- Changed: Google Firebase Cloud Messaging (FCM) alternative way to pass a Domoticz device ID through the extra field ('|Device=<devidx>')
+- Implemented: YouLess, added Water meter
 - Changed: dzVents, possible to pass a Domoticz device ID in notify() through the extra parameter
 - Changed: Energy Dashboard now also available for non-admin users
+- Changed: Google Firebase Cloud Messaging (FCM) alternative way to pass a Domoticz device ID through the extra field ('|Device=<devidx>')
+- Changed: Improved and automated login process for Netatmo devices (to obtain client ID and Password with user selectable scopes)
 - Fixed: Custom Icons, making sure they are valid and loaded OK
-- Implemented: YouLess, added Water meter
+- Fixed: RFXCom 868 MHz Weather device
 
 Version 2024.7 (July 13th 2024)
 - Implemented: P1 Meter, Report, Header now also supports simple mode (No T1/T2/R1/R2 but just total)

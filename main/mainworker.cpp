@@ -173,7 +173,7 @@
 #include <inttypes.h>
 
 #ifdef _DEBUG
-#define PARSE_RFXCOM_DEVICE_LOG
+//#define PARSE_RFXCOM_DEVICE_LOG
 //#define DEBUG_DOWNLOAD
 //#define DEBUG_RXQUEUE
 #endif
@@ -6358,7 +6358,7 @@ void MainWorker::decode_BLINDS1(const CDomoticzHardwareBase* pHardware, const tR
 			else
 				WriteMessage("Set Limit");
 			break;
-		case blinds_slowerLimit:
+		case blinds_sLowerLimit:
 			WriteMessage("Set Lower Limit");
 			break;
 		case blinds_sDeleteLimits:
@@ -10906,41 +10906,41 @@ void MainWorker::decode_Weather(const CDomoticzHardwareBase* pHardware, const tR
 	}
 	pRFXDevice->SendWind(windID, BatteryLevel, intDirection, intSpeed, intGust, temp, chill, true, bHaveChill, procResult.DeviceName, SignalLevel);
 
-	if (subType == sTypeWEATHER2)
-	{
-		int Humidity = (int)pResponse->WEATHER.humidity;
-		pRFXDevice->SendTempHumSensor(windID, BatteryLevel, temp, Humidity, procResult.DeviceName, SignalLevel);
-	}
+	int Humidity = (int)pResponse->WEATHER.humidity;
+	pRFXDevice->SendTempHumSensor(windID, BatteryLevel, temp, Humidity, procResult.DeviceName, SignalLevel);
 
 	//Rain
-	if ((subType == sTypeWEATHER1) || (subType == sTypeWEATHER2))
-	{
-		float TotalRain = 0;
+	float TotalRain = 0;
 
-		if (subType == sTypeWEATHER1)
-		{
-			TotalRain = float((pResponse->WEATHER.raintotal2 * 256) + (pResponse->WEATHER.raintotal3)) * 0.3F;
-		}
-		else if (subType == sTypeWEATHER2)
-		{
-			TotalRain = float((pResponse->WEATHER.raintotal2 * 256) + (pResponse->WEATHER.raintotal3)) * 0.254F;
-		}
-		pRFXDevice->SendRainSensor(windID, BatteryLevel, TotalRain, procResult.DeviceName, SignalLevel);
+	if (subType == sTypeWEATHER1)
+	{
+		TotalRain = float((pResponse->WEATHER.raintotal2 * 256) + (pResponse->WEATHER.raintotal3)) * 0.3F;
 	}
+	else if (subType == sTypeWEATHER2)
+	{
+		TotalRain = float((pResponse->WEATHER.raintotal2 * 256) + (pResponse->WEATHER.raintotal3)) * 0.254F;
+	}
+	pRFXDevice->SendRainSensor(windID, BatteryLevel, TotalRain, procResult.DeviceName, SignalLevel);
 
 	//UV
-	if (subType == sTypeWEATHER2)
+	float UV = (float)pResponse->WEATHER.uv;
+	switch (subType)
 	{
-		float UV = (float)pResponse->WEATHER.uv;
-		pRFXDevice->SendUVSensor(windID, 1, BatteryLevel, UV, procResult.DeviceName, SignalLevel);
+	case sTypeWEATHER0:
+	case sTypeWEATHER2:
+		UV = UV / 10.0F;
+		break;
 	}
+	pRFXDevice->SendUVSensor(windID, 1, BatteryLevel, UV, procResult.DeviceName, SignalLevel);
 
 	//Solar
-	if (subType == sTypeWEATHER2)
-	{
-		float radiation = (float)((pResponse->WEATHER.solarhigh * 256) + pResponse->WEATHER.solarlow);
+	float radiation = -1;
+	if (subType == sTypeWEATHER0)
+		radiation = (float)((pResponse->WEATHER.solarhigh * 256) + pResponse->WEATHER.solarlow) * 0.078925F;
+	else if (subType == sTypeWEATHER2)
+		radiation = (float)((pResponse->WEATHER.solarhigh * 256) + pResponse->WEATHER.solarlow);
+	if (radiation != -1)
 		pRFXDevice->SendSolarRadiationSensor((const uint8_t)windID, BatteryLevel, radiation, procResult.DeviceName);
-	}
 }
 
 void MainWorker::decode_Solar(const CDomoticzHardwareBase* pHardware, const tRBUF* pResponse, _tRxMessageProcessingResult& procResult)
