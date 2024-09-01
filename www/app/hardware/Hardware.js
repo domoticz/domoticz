@@ -3920,18 +3920,19 @@ define(['app'], function (app) {
 			});
 		}
 
-		DisableUpdateAndDeleteButtons = function () {
-			$('#updelclr #hardwareupdate').attr("class", "btnstyle3-dis");
-			$("#updelclr #hardwareupdate").removeAttr("href");
-			$('#updelclr #hardwaredelete').attr("class", "btnstyle3-dis");
-			$("#updelclr #hardwaredelete").removeAttr("href");
-		}
-
-		EnableUpdateAndDeleteButtons = function (hrefUpdate, hrefDelete) {
-			$('#updelclr #hardwareupdate').attr("class", "btnstyle3");
-			$("#updelclr #hardwareupdate").attr("href", hrefUpdate);
-			$('#updelclr #hardwaredelete').attr("class", "btnstyle3");
-			$("#updelclr #hardwaredelete").attr("href", hrefDelete);
+		EnableUpdateAndDeleteButtons = function (enableFlag,hrefUpdate = "", hrefDelete = "") {
+			if (enableFlag){
+				$('#updelclr #hardwareupdate').attr("class", "btnstyle3");
+				$("#updelclr #hardwareupdate").attr("href", hrefUpdate);
+				$('#updelclr #hardwaredelete').attr("class", "btnstyle3");
+				$("#updelclr #hardwaredelete").attr("href", hrefDelete);
+			}
+			else {
+				$('#updelclr #hardwareupdate').attr("class", "btnstyle3-dis");
+				$("#updelclr #hardwareupdate").removeAttr("href");
+				$('#updelclr #hardwaredelete').attr("class", "btnstyle3-dis");
+				$("#updelclr #hardwaredelete").removeAttr("href");
+			}
 		}
 
 		EnableNetatmoLoginButton= function(enableFlag) {
@@ -3949,7 +3950,7 @@ define(['app'], function (app) {
 
 		RefreshHardwareTable = function () {
 			$('#modal').show();
-			DisableUpdateAndDeleteButtons();
+			EnableUpdateAndDeleteButtons(false);
 
 			var oTable = $('#hardwaretable').dataTable();
 			oTable.fnClearTable();
@@ -4216,7 +4217,7 @@ define(['app'], function (app) {
 			$("#hardwaretable tbody").on('click', 'tr', function () {
 				if ($(this).hasClass('row_selected')) {
 					$(this).removeClass('row_selected');
-					DisableUpdateAndDeleteButtons();
+					EnableUpdateAndDeleteButtons(false);
 					EnableNetatmoLoginButton(false);
 				}
 				else {
@@ -4229,12 +4230,14 @@ define(['app'], function (app) {
 						var idx = data["DT_RowId"];
 						if (data["Type"] != "PLUGIN") { // Plugins can have non-numeric Mode data
 							EnableUpdateAndDeleteButtons(
+								true,
 								"javascript:UpdateHardware(" + idx + "," + data["Mode1"] + "," + data["Mode2"] + "," + data["Mode3"] + "," + data["Mode4"] + "," + data["Mode5"] + "," + data["Mode6"] + ")",
 								"javascript:DeleteHardware(" + idx + ")"
 							);
 						}
 						else {
 							EnableUpdateAndDeleteButtons(
+								true,
 								"javascript:UpdateHardware(" + idx + ",'" + data["Mode1"] + "','" + data["Mode2"] + "','" + data["Mode3"] + "','" + data["Mode4"] + "','" + data["Mode5"] + "','" + data["Mode6"] + "')",
 								"javascript:DeleteHardware(" + idx + ")"
 							);
@@ -4849,15 +4852,15 @@ define(['app'], function (app) {
 								const parsedJsonData = JSON.parse(data);
 								$scope.refreshToken = parsedJsonData.refresh_token;
 								if ($scope.refreshToken == "") {
-									alert('Access denied: Failed to rerreive a valid token from server: ' + decodeJsonValues(xhr.responseText), ', ');
-									console.log('Error: Access denied: Failed to rerreive a valid token from server: ' + data);
+									alert('Access denied: Failed to receive a valid token from server: ' + decodeJsonValues(xhr.responseText), ', ');
+									console.log('Error: Access denied: Failed to receive a valid token from server: ' + data);
 									$scope.loginRequired = true; //Still need to login
 								}
 								else
 									$scope.loginRequired = false //Login done: Notify server
 							} else {
-								alert('Access denied: Failed to rerreive a valid reponse from server (' + xhr.status + "): " + decodeJsonValues(xhr.responseText), ', ');
-								console.log(`Error: ${xhr.status}`);
+								alert('Access denied: Failed to receive a valid reponse from server (' + xhr.status + "): " + decodeJsonValues(xhr.responseText), ', ');
+								console.log(`Error: Access denied: Failed to receive a valid reponse from server:  ${xhr.status}`);
 								$scope.loginRequired = true; //Still need to login
 							}
 							var href = $("#updelclr #hardwareupdate").attr("href");
