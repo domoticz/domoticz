@@ -1741,21 +1741,21 @@ bool CNetatmo::ParseDashboard(const Json::Value& root, const int DevIdx, const i
 		if (!root["time_utc"].empty())
 			tNetatmoLastUpdate = root["time_utc"].asUInt();
 		Debug(DEBUG_HARDWARE, "Module [%s] last update = %s", name.c_str(), ctime(&tNetatmoLastUpdate));
-		// check if Netatmo data was updated in the past 10 mins (+1 min for sync time lags)... if not means sensors failed to send to cloud
+		// check if Netatmo data was updated in the past NETAMO_POLL_INTERVALL (+1 min for sync time lags)... if not means sensors failed to send to cloud
 		int Interval = NETAMO_POLL_INTERVALL + 60;
 		Debug(DEBUG_HARDWARE, "Module [%s] Interval = %d", name.c_str(), Interval);
 		if (tNetatmoLastUpdate > (tNow - Interval))
 		{
 			if (!m_bNetatmoRefreshed[ID])
 			{
-				Log(LOG_STATUS, "cloud data for module [%s] is now updated again", name.c_str());
+				Log(LOG_STATUS, "cloud Dashboard for module [%s] is now updated again", name.c_str());
 				m_bNetatmoRefreshed[ID] = true;
 			}
 		}
 		else
 		{
 			if (m_bNetatmoRefreshed[ID])
-				Log(LOG_ERROR, "cloud data for module [%s] no longer updated (module possibly disconnected)", name.c_str());
+				Log(LOG_ERROR, "cloud Dashboard for module [%s] no longer updated (module possibly disconnected)", name.c_str());
 			m_bNetatmoRefreshed[ID] = false;
 			return false;
 		}
@@ -2209,7 +2209,7 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 				if (!root["time_utc"].empty())
 					tNetatmoLastUpdate = root["time_utc"].asUInt();
 				Debug(DEBUG_HARDWARE, "Module [%s] last update = %s", moduleName.c_str(), ctime(&tNetatmoLastUpdate));
-				// check if Netatmo data was updated in the past 15 mins (+1 min for sync time lags)... if not means sensors failed to send to cloud
+				// check if Netatmo data was updated in the past NETAMO_POLL_INTERVALL (+1 min for sync time lags)... if not means sensors failed to send to cloud
 				int Interval = NETAMO_POLL_INTERVALL + 60;
 				Debug(DEBUG_HARDWARE, "Module [%s] Interval = %d %lu", moduleName.c_str(), Interval, tNetatmoLastUpdate);
 				if (tNetatmoLastUpdate > (tNow - Interval))
