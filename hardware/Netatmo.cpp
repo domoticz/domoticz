@@ -81,8 +81,17 @@ CNetatmo::CNetatmo(const int ID, const std::string& username, const std::string&
 	m_ActHome = 0;
 
 	m_bPollThermostat = true;
-	m_bPollWeatherData = true;
-	m_bPollHomecoachData = true;
+	
+	if(m_scopes.find("read_station") != std::string::npos)
+		m_bPollWeatherData = true;
+	else
+		m_bPollWeatherData = false;
+
+	if(m_scopes.find("read_homecoach") != std::string::npos)
+		m_bPollHomecoachData = true;
+	else
+		m_bPollHomecoachData = false;
+
 	m_bPollHomeStatus = true;
 	m_bPollHome = true;
 	m_bFirstTimeThermostat = true;
@@ -119,9 +128,9 @@ void CNetatmo::Init()
 	m_DeviceHomeID.clear();
 	m_PersonsNames.clear();
 
-        m_bPollThermostat = true;
-	m_bPollWeatherData = true;
-	m_bPollHomecoachData = true;
+        m_bPollThermostat = false;
+	m_bPollWeatherData = false;
+	m_bPollHomecoachData = false;
 	m_bPollHomeStatus = true;
 	m_bPollHome = true;
 	m_bFirstTimeThermostat = true;
@@ -1276,7 +1285,7 @@ void CNetatmo::GetWeatherDetails()
 			// Data was parsed with success so we have our device
 			//m_weatherType = NETYPE_WEATHER_STATION;
 		//}
-		m_bPollWeatherData = false;
+		//m_bPollWeatherData = false;
 	}
 //	m_bFirstTimeWeatherData = false;
 }
@@ -1307,7 +1316,7 @@ void CNetatmo::GetHomecoachDetails()
 		//	// Data was parsed with success so we have our device
 		//	m_homecoachType = NETYPE_AIRCARE;
 		//}
-		m_bPollHomecoachData = false;
+		//m_bPollHomecoachData = false;
 	}
 }
 
