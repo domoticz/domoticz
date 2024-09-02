@@ -1037,7 +1037,7 @@ void CNetatmo::Get_Respons_API(const m_eNetatmoType& NType, std::string& sResult
 	if (!root["error"].empty())
         {
 		//We received an error
-		Log(LOG_ERROR, "Error %s", root["error"]["message"].asString().c_str());
+		Log(LOG_ERROR, "Error %s", root.asString().c_str());  // possible; 'error'  'errors'  'error [message]'
 		m_isLogged = false;
 		return ;
 	}
