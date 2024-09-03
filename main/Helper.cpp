@@ -1645,7 +1645,7 @@ std::string sha256raw(const std::string &input)
 {
     unsigned char digest[33] = {0};
     SHA256((const unsigned char *)input.c_str(), input.length(), digest);
-	return std::string((const char *)digest, 32);
+    return std::string((const char *)digest, 32);
 }
 
 #ifdef _WIN32
