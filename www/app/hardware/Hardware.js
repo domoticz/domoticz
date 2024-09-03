@@ -4802,14 +4802,14 @@ define(['app'], function (app) {
 				redirectUri = redirectUri.substr(0, pos);
 			}
 
+			if (typeof(idx) == "undefined")
+				idx = -1;
+
 			var scope = $("#hardwarecontent #hardwareparamsnetatmo #scope").val();
 			var clientId = $("#hardwarecontent #hardwareparamsnetatmo #clientid").val();
 			var clientSecret = $("#hardwarecontent #hardwareparamsnetatmo #clientsecret").val();
 			var date = new Date();
 			var state = date.getTime() + '_' + idx;
-
-			if (clientId.empty()) {
-			}
 
 			if (clientId == "" || clientSecret == "") {
 				alert("Please enter a valid client ID and secret for your app from the Netatmo website!");
@@ -4823,7 +4823,7 @@ define(['app'], function (app) {
 
 			var expandedScope = expandScope(scope, ' ');
 
-			var _url = 'https://api.netatmo.net/oauth2/authorize?client_id='+clientId
+			var _url = 'https://api.netatmo.com/oauth2/authorize?client_id='+clientId
 				+ '&scope=' + expandedScope
 				+ '&state=' + state
 				+ '&redirect_uri=' + redirectUri;
@@ -4853,7 +4853,7 @@ define(['app'], function (app) {
 						win.close();
 
 						//Exchange the authorization code for tokens
-						var urlToken = "https://api.netatmo.net/oauth2/token";
+						var urlToken = "https://api.netatmo.com/oauth2/token";
 						$scope.loginRequired = true;
 
 						const xhr = new XMLHttpRequest();
@@ -5313,6 +5313,8 @@ define(['app'], function (app) {
 			}
 			else if (text.indexOf("Netatmo") >= 0) {
 				$("#hardwarecontent #divnetatmo").show();
+				$("#hardwarecontent #hardwareparamsnetatmo #netatmologin").off("click");
+				$("#hardwarecontent #hardwareparamsnetatmo #netatmologin").on("click", function(){javascript:OnNetatmoLogin()});
 			}
 			else if (text.indexOf("Logitech Media Server") >= 0) {
 				$("#hardwarecontent #divremote").show();
