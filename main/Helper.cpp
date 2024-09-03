@@ -1017,11 +1017,17 @@ void rgb2hsb(const int r, const int g, const int b, float hsbvals[3])
 	hsbvals[2] = brightness;
 }
 
-bool is_number(const std::string& s)
+bool is_number(const std::string &s)
 {
 	std::string::const_iterator it = s.begin();
-	while (it != s.end() && (isdigit(*it) || (*it == '.') || (*it == '-') || (*it == ' ') || (*it == 0x00))) ++it;
-	return !s.empty() && it == s.end();
+	int iNbDots = 0;
+	while (it != s.end() && (isdigit(*it) || (*it == '.') || (*it == '-') || (*it == ' ') || (*it == 0x00)))
+	{
+		if (*it == '.')
+			iNbDots++;
+		++it;
+	}
+	return !s.empty() && it == s.end() && iNbDots <= 1;
 }
 
 void padLeft(std::string &str, const size_t num, const char paddingChar)
