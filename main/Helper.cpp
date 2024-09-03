@@ -391,7 +391,7 @@ std::vector<std::string> GetSerialPorts(bool &bUseDirectPath)
 	//scan /dev for /dev/ttyUSB* or /dev/ttyS* or /dev/tty.usbserial* or /dev/ttyAMA* or /dev/ttySAC* or /dev/ttymxc*
 	//also scan /dev/serial/by-id/* on Linux
 
-	bool bHaveTtyAMAfree=false;
+	bool bHaveTtyAMAfree = false;
 	std::string sLine;
 	std::ifstream infile;
 
@@ -401,12 +401,12 @@ std::vector<std::string> GetSerialPorts(bool &bUseDirectPath)
 		if (!infile.eof())
 		{
 			getline(infile, sLine);
-			bHaveTtyAMAfree=(sLine.find("ttyAMA0")==std::string::npos);
+			bHaveTtyAMAfree = (sLine.find("ttyAMA0") == std::string::npos);
 		}
 	}
 
 	DIR *d = nullptr;
-	d=opendir("/dev");
+	d = opendir("/dev");
 	if (d != nullptr)
 	{
 		struct dirent *de = nullptr;
@@ -414,73 +414,73 @@ std::vector<std::string> GetSerialPorts(bool &bUseDirectPath)
 		while ((de = readdir(d)))
 		{
 			// Only consider character devices and symbolic links
-                        if ((de->d_type == DT_CHR) || (de->d_type == DT_LNK))
-                        {
-			std::string fname = de->d_name;
-			if (fname.find("ttyUSB")!=std::string::npos)
+			if ((de->d_type == DT_CHR) || (de->d_type == DT_LNK))
 			{
-				ret.push_back("/dev/" + fname);
-			}
-			else if (fname.find("tty.usbserial")!=std::string::npos)
-			{
-				bUseDirectPath=true;
-				ret.push_back("/dev/" + fname);
-			}
-			else if (fname.find("ttyACM")!=std::string::npos)
-			{
-				bUseDirectPath=true;
-				ret.push_back("/dev/" + fname);
-			}
-			else if (fname.find("ttySAC") != std::string::npos)
-			{
-				bUseDirectPath = true;
-				ret.push_back("/dev/" + fname);
-			}
-			else if (fname.find("ttymxc") != std::string::npos)
-			{
-				bUseDirectPath = true;
-				ret.push_back("/dev/" + fname);
-			}
-#if defined (__FreeBSD__) || defined (__OpenBSD__) || defined (__NetBSD__)
-			else if (fname.find("ttyU")!=std::string::npos)
-			{
-				bUseDirectPath=true;
-				ret.push_back("/dev/" + fname);
-			}
-			else if (fname.find("cuaU")!=std::string::npos)
-			{
-				bUseDirectPath=true;
-				ret.push_back("/dev/" + fname);
-			}
-#endif
-#ifdef __APPLE__
-			else if (fname.find("cu.")!=std::string::npos)
-			{
-				bUseDirectPath=true;
-				ret.push_back("/dev/" + fname);
-			}
-#endif
-			if (bHaveTtyAMAfree)
-			{
-				if (fname.find("ttyAMA0")!=std::string::npos)
+				std::string fname = de->d_name;
+				if (fname.find("ttyUSB") != std::string::npos)
 				{
 					ret.push_back("/dev/" + fname);
-					bUseDirectPath=true;
 				}
-				// By default, this is the "small UART" on Rasberry 3 boards
-                                        if (fname.find("ttyS0")!=std::string::npos)
-                                        {
-                                                ret.push_back("/dev/" + fname);
-                                                bUseDirectPath=true;
-                                        }
-                                        // serial0 and serial1 are new with Rasbian Jessie
-                                        // Avoids confusion between Raspberry 2 and 3 boards
-                                        // More info at http://spellfoundry.com/2016/05/29/configuring-gpio-serial-port-raspbian-jessie-including-pi-3/
-                                        if (fname.find("serial")!=std::string::npos)
-                                        {
-                                                ret.push_back("/dev/" + fname);
-                                                bUseDirectPath=true;
-                                        }
+				else if (fname.find("tty.usbserial") != std::string::npos)
+				{
+					bUseDirectPath = true;
+					ret.push_back("/dev/" + fname);
+				}
+				else if (fname.find("ttyACM") != std::string::npos)
+				{
+					bUseDirectPath = true;
+					ret.push_back("/dev/" + fname);
+				}
+				else if (fname.find("ttySAC") != std::string::npos)
+				{
+					bUseDirectPath = true;
+					ret.push_back("/dev/" + fname);
+				}
+				else if (fname.find("ttymxc") != std::string::npos)
+				{
+					bUseDirectPath = true;
+					ret.push_back("/dev/" + fname);
+				}
+#if defined (__FreeBSD__) || defined (__OpenBSD__) || defined (__NetBSD__)
+				else if (fname.find("ttyU")!=std::string::npos)
+				{
+					bUseDirectPath=true;
+					ret.push_back("/dev/" + fname);
+				}
+				else if (fname.find("cuaU")!=std::string::npos)
+				{
+					bUseDirectPath=true;
+					ret.push_back("/dev/" + fname);
+				}
+#endif
+#ifdef __APPLE__
+				else if (fname.find("cu.")!=std::string::npos)
+				{
+					bUseDirectPath=true;
+					ret.push_back("/dev/" + fname);
+				}
+#endif
+				if (bHaveTtyAMAfree)
+				{
+					if (fname.find("ttyAMA0") != std::string::npos)
+					{
+						ret.push_back("/dev/" + fname);
+						bUseDirectPath = true;
+					}
+					// By default, this is the "small UART" on Rasberry 3 boards
+					if (fname.find("ttyS0") != std::string::npos)
+					{
+						ret.push_back("/dev/" + fname);
+						bUseDirectPath = true;
+					}
+					// serial0 and serial1 are new with Rasbian Jessie
+					// Avoids confusion between Raspberry 2 and 3 boards
+					// More info at http://spellfoundry.com/2016/05/29/configuring-gpio-serial-port-raspbian-jessie-including-pi-3/
+					if (fname.find("serial") != std::string::npos)
+					{
+						ret.push_back("/dev/" + fname);
+						bUseDirectPath = true;
+					}
 				}
 			}
 		}
@@ -505,7 +505,7 @@ std::vector<std::string> GetSerialPorts(bool &bUseDirectPath)
 	}
 
 #if defined(__linux__) || defined(__linux) || defined(linux)
-	d=opendir("/dev/serial/by-id");
+	d = opendir("/dev/serial/by-id");
 	if (d != nullptr)
 	{
 		struct dirent *de = nullptr;
@@ -513,8 +513,8 @@ std::vector<std::string> GetSerialPorts(bool &bUseDirectPath)
 		while ((de = readdir(d)))
 		{
 			// Only consider symbolic links
-                        if (de->d_type == DT_LNK)
-                        {
+			if (de->d_type == DT_LNK)
+			{
 				std::string fname = de->d_name;
 				ret.push_back("/dev/serial/by-id/" + fname);
 			}
@@ -1625,11 +1625,11 @@ std::string sha256hex(const std::string &input)
 {
 	const std::string hexCHARS = "0123456789abcdef";
 
-    unsigned char digest[33] = {0};
+	unsigned char digest[33] = {0};
 	char hexdigest[65] = {0};
 	size_t idxb, idxh;
 
-    SHA256((const unsigned char *)input.c_str(), input.length(), digest);
+	SHA256((const unsigned char *)input.c_str(), input.length(), digest);
 
 	for (idxb = 0, idxh = 0; idxb < 32; idxb++, idxh += 2)
 	{
@@ -1638,14 +1638,14 @@ std::string sha256hex(const std::string &input)
 		hexdigest[idxh + 1] = hexCHARS[bval & 0xF];
 	}
 	hexdigest[idxh] = 0;
-	return(std::string(hexdigest));
+	return std::string(hexdigest);
 }
 
 std::string sha256raw(const std::string &input)
 {
-    unsigned char digest[33] = {0};
-    SHA256((const unsigned char *)input.c_str(), input.length(), digest);
-    return std::string((const char *)digest, 32);
+	unsigned char digest[33] = {0};
+	SHA256((const unsigned char *)input.c_str(), input.length(), digest);
+	return std::string((const char *)digest, 32);
 }
 
 #ifdef _WIN32
