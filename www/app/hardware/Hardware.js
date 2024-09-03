@@ -1444,7 +1444,7 @@ define(['app'], function (app) {
 					return;
 				}
 				if (scope  == "") {
-					alert("Plese enter one or more scopes, appropriate for the devices you own!");
+					alert("Please enter one or more scopes, appropriate for the devices you own!");
 					return;
 				}
 
@@ -2749,12 +2749,12 @@ define(['app'], function (app) {
 					return;
 				}
 				if (scope  == "") {
-					alert("Plese enter one or more scopes, appropriate for the devices you own!");
+					alert("Please enter one or more scopes, appropriate for the devices you own!");
 					return;
 				}
 
 				if (typeof $scope.refreshToken == 'undefined' || $scope.refreshToken == "") {
-					alert("Plese login before adding a new Netatmo device");
+					alert("Please login before adding a new Netatmo device");
 					return;
 				}
 
