@@ -2742,7 +2742,7 @@ define(['app'], function (app) {
 			else if (text.indexOf("Netatmo") >= 0) {
 				var clientid = $("#hardwarecontent #divnetatmo #clientid").val();
 				var clientsecret = $("#hardwarecontent #divnetatmo #clientsecret").val();
-				var scope = $("#hardwarecontent #divnetatmo scope").val();
+				var scope = $("#hardwarecontent #divnetatmo #scope").val();
 
 				if (clientid == "" || clientsecret == "") {
 					alert("Please enter a valid client ID and secret for your app from the Netatmo website!");
