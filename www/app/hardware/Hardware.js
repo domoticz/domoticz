@@ -4820,9 +4820,13 @@ define(['app'], function (app) {
 				return;
 			}
 
+			var href = $("#updelclr #hardwareupdate").attr("href");
+			if (typeof href == 'undefined') {
+				if (!confirm('No device selected, this data will be added as a new device; Do you want to Continue?'))
+					return;
+			}
 
 			var expandedScope = expandScope(scope, ' ');
-
 			var _url = 'https://api.netatmo.com/oauth2/authorize?client_id='+clientId
 				+ '&scope=' + expandedScope
 				+ '&state=' + state
