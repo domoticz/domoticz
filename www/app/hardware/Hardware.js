@@ -4218,7 +4218,6 @@ define(['app'], function (app) {
 				if ($(this).hasClass('row_selected')) {
 					$(this).removeClass('row_selected');
 					EnableUpdateAndDeleteButtons(false);
-					EnableNetatmoLoginButton(false);
 				}
 				else {
 					var oTable = $('#hardwaretable').dataTable();
@@ -4618,7 +4617,7 @@ define(['app'], function (app) {
 
 							if (scopes.indexOf("_") > 0) 	// Old or new format?
 								scopes = scopes.split(",");	// New format: This field contains one or more scopes
-							else 
+							else
 								scopes = "";	// Old format: This field contained the authorization code
 
 
@@ -4735,10 +4734,10 @@ define(['app'], function (app) {
 		}
 
 		NetatmoEnableLogin = function () {
-			// Enable login option when the user has changed the client credentials or the  skope
+			// Enable login option when the user has changed the client credentials or the  scope
 			// This function may also called when the back-end lost its token and sets the mode1 flag
 
-			if ($("#hardwaretable tbody tr").hasClass('row_selected'))
+			// if ($("#hardwaretable tbody tr").hasClass('row_selected'))
 				EnableNetatmoLoginButton(true);
 		}
 
@@ -4755,7 +4754,8 @@ define(['app'], function (app) {
 		}
 
 		expandScope = function (scopeArray, separator) {
-			var scopeGroups = { station_R :	'read_station',
+			var scopeGroups = { 
+				station_R :			'read_station',
 				thermostat_RW :			'read_thermostat write_thermostat',
 				camera_RWA :			'read_camera write_camera access_camera',
 				doorbell_RA :			'read_doorbell access_doorbell',
@@ -4782,6 +4782,7 @@ define(['app'], function (app) {
 		}
 
 		OnNetatmoLogin = function (idx) {
+
 			var pwidth = 800;
 			var pheight = 600;
 
@@ -4800,11 +4801,25 @@ define(['app'], function (app) {
 			if (pos >= 0) {
 				redirectUri = redirectUri.substr(0, pos);
 			}
+
 			var scope = $("#hardwarecontent #hardwareparamsnetatmo #scope").val();
 			var clientId = $("#hardwarecontent #hardwareparamsnetatmo #clientid").val();
 			var clientSecret = $("#hardwarecontent #hardwareparamsnetatmo #clientsecret").val();
 			var date = new Date();
 			var state = date.getTime() + '_' + idx;
+
+			if (clientId.empty()) {
+			}
+
+			if (clientId == "" || clientSecret == "") {
+				alert("Please enter a valid client ID and secret for your app from the Netatmo website!");
+				return;
+			}
+			if (scope  == "") {
+				alert("Please enter one or more scopes, appropriate for the devices you own!");
+				return;
+			}
+
 
 			var expandedScope = expandScope(scope, ' ');
 
