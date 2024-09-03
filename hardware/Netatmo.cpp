@@ -81,10 +81,10 @@ CNetatmo::CNetatmo(const int ID, const std::string& username, const std::string&
 	m_ActHome = 0;
 
 	m_bPollThermostat = true;
-	
-	if(m_scopes.find("read_station") != std::string::npos)
-		m_bPollWeatherData = true;
-	else
+
+        if(m_scopes.find("read_station") != std::string::npos)
+                m_bPollWeatherData = true;
+        else
 		m_bPollWeatherData = false;
 
 	if(m_scopes.find("read_homecoach") != std::string::npos)
@@ -128,7 +128,7 @@ void CNetatmo::Init()
 	m_DeviceHomeID.clear();
 	m_PersonsNames.clear();
 
-        m_bPollThermostat = false;
+        m_bPollThermostat = true;
 	m_bPollWeatherData = false;
 	m_bPollHomecoachData = false;
 	m_bPollHomeStatus = true;
@@ -1732,7 +1732,7 @@ bool CNetatmo::ParseDashboard(const Json::Value& root, const int DevIdx, const i
         uint64_t Hardware_convert = convert_mac(Hardware_ID);
         int Hardware_int = (int)Hardware_convert;
 	std::stringstream hardware;
-        hardware << ID;
+        hardware << std::hex << ID;
         hardware >> str_ID;
         //converting ID to char const
         char const* pchar_ID = str_ID.c_str();
@@ -1848,8 +1848,9 @@ bool CNetatmo::ParseDashboard(const Json::Value& root, const int DevIdx, const i
 	std::string sValue;
 	std::string roomNetatmoID = m_RoomIDs[Hardware_ID];
 	//Debug(DEBUG_HARDWARE, "Hardware_int (%d) %s [%s] %s", Hardware_int, str_ID.c_str(), name.c_str(), Hardware_ID.c_str());
+	sValue = Hardware_ID.c_str();
 	std::string Module_Name  = name + " - MAC-adres";
-	UpdateValueInt(Hardware_int, str_ID.c_str(), 1, pTypeGeneral, sTypeTextStatus, rssiLevel, batValue, '0', Hardware_ID.c_str(), Module_Name, 0, m_Name); //MAC-adres  Parse DashBoard
+	UpdateValueInt(Hardware_int, str_ID.c_str(), 1, pTypeGeneral, sTypeTextStatus, rssiLevel, batValue, '0', sValue.c_str(), Module_Name, 0, m_Name); //MAC-adres  Parse DashBoard
 	std::stringstream RF_level;
 	RF_level << rssiLevel;
 	RF_level >> sValue;
@@ -1947,20 +1948,20 @@ bool CNetatmo::ParseDashboard(const Json::Value& root, const int DevIdx, const i
 		std::string sValue = v.str().c_str();
 		//SendRainSensor(ID, batValue, m_RainOffset[ID] + m_OldRainCounter[ID], name, rssiLevel);
                 ///Debug(DEBUG_HARDWARE, "(%d) %s (%s) [%s] rain %s %s %d %d", Hardware_int, str_ID.c_str(), pchar_ID, name.c_str(), sValue.c_str(), m_Name.c_str(), rssiLevel, batValue);
-		UpdateValueInt(Hardware_int, str_ID.c_str(), 0, pTypeRAIN, sTypeRAINByRate, rssiLevel, batValue, '0', sValue.c_str(), name, 0, m_Name);
+		UpdateValueInt(Hardware_int, str_ID.c_str(), 0, pTypeRAIN, sTypeRAINByRate, rssiLevel, batValue, '0', v.str().c_str(), name, 0, m_Name);
 	}
 
 	if (bHaveCO2)
 	{
-		//SendAirQualitySensor(ID, DevIdx, batValue, co2, name);
-		//Debug(DEBUG_HARDWARE, "(%d) %s (%s) [%s] co2 %s %s %d %d", Hardware_int, str_ID.c_str(), pchar_ID, name.c_str(), sValue.c_str(), m_Name.c_str(), rssiLevel, batValue);
+		SendAirQualitySensor(ID, DevIdx, batValue, co2, name);
+		Debug(DEBUG_HARDWARE, "(%d) %s (%s) [%s] co2 %s %s %d %d", Hardware_int, str_ID.c_str(), pchar_ID, name.c_str(), std::to_string(co2).c_str(), m_Name.c_str(), rssiLevel, batValue);
 		UpdateValueInt(Hardware_int, str_ID.c_str(), 0, pTypeAirQuality, sTypeVoc, rssiLevel, batValue, '0', std::to_string(co2).c_str(), name, 0, m_Name);
 	}
 
 	if (bHaveSound)
 	{
-		//SendSoundSensor(ID, batValue, sound, name);
-		//Debug(DEBUG_HARDWARE, "(%d) %s (%s) [%s] sound %s %s %d %d", Hardware_int, str_ID.c_str(), pchar_ID, name.c_str(), sValue.c_str(), m_Name.c_str(), rssiLevel, batValue);
+		SendSoundSensor(ID, batValue, sound, name);
+		//Debug(DEBUG_HARDWARE, "(%d) %s (%s) [%s] sound %s %s %d %d", Hardware_int, str_ID.c_str(), pchar_ID, name.c_str(), std::to_string(sound).c_str(), m_Name.c_str(), rssiLevel, batValue);
 		UpdateValueInt(Hardware_int, str_ID.c_str(), 0, pTypeGeneral, sTypeSoundLevel, rssiLevel, batValue, '0', std::to_string(sound).c_str(), name, 0, m_Name);
 	}
 
@@ -2165,7 +2166,7 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 
 				std::string ID;
 				std::stringstream moduleid;
-				moduleid << crcId;
+				moduleid << std::hex << crcId;
 				moduleid >> ID;
 				std::string sValue;
 				sValue = module_id;
@@ -2220,7 +2221,7 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 				Debug(DEBUG_HARDWARE, "Module [%s] last update = %s", moduleName.c_str(), ctime(&tNetatmoLastUpdate));
 				// check if Netatmo data was updated in the past NETAMO_POLL_INTERVALL (+1 min for sync time lags)... if not means sensors failed to send to cloud
 				int Interval = NETAMO_POLL_INTERVALL + 60;
-				Debug(DEBUG_HARDWARE, "Module [%s] Interval = %d %lu", moduleName.c_str(), Interval, tNetatmoLastUpdate);
+				Debug(DEBUG_HARDWARE, "Module [%s] Interval = %d %u", moduleName.c_str(), Interval, tNetatmoLastUpdate);
 				if (tNetatmoLastUpdate > (tNow - Interval))
 				{
 					Log(LOG_STATUS, "cloud data for module [%s] is now updated again", moduleName.c_str());
@@ -2585,7 +2586,7 @@ bool CNetatmo::ParseEvents(const std::string& sResult, Json::Value& root )
 				crcId = Crc32(0, (const unsigned char*)events_Module_ID.c_str(), events_Module_ID.length());
 
 				std::stringstream events;
-				events << crcId;
+				events << std::hex << crcId;
 				events >> str_id;
 
 				pchar_ID = str_id.c_str();
