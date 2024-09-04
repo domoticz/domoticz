@@ -2133,7 +2133,7 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 				std::string module_id = module["id"].asString();
 				std::string bat_percentage;
 				std::string batName;
-				int batteryLevel = 255;
+				int batteryLevel;
 				float mrf_percentage = 12;
 				int mrf_status;
 				float rf_strength = 0;
@@ -2191,6 +2191,8 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 					bat_str << std::setprecision(2) << battery_Level;
 					bat_str >> bat_percentage;
 				}
+				else
+					batteryLevel = 255;
 				if (!module["rf_state"].empty())
 				{
 					std::string rf_state = module["rf_state"].asString();
@@ -2232,7 +2234,7 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 					Log(LOG_ERROR, "cloud data for module [%s] no longer updated (module possibly disconnected)", moduleName.c_str());
 					connected = false;
 				}
-
+				
 				if (connected)
 				{
 					if (!module["rf_strength"].empty())
