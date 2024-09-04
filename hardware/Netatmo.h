@@ -10,8 +10,46 @@ namespace Json
 
 class CNetatmo : public CDomoticzHardwareBase
 {
+      public:
+        enum m_eNetatmoType
+        {
+                NETYPE_WEATHER_STATION = 0,
+                NETYPE_AIRCARE,
+                NETYPE_ENERGY,
+
+                NETYPE_MEASURE,
+                NETYPE_SETTHERMPOINT,
+
+                NETYPE_THERMOSTAT,                   //OLD API
+                NETYPE_HOME,                         //OLD API
+                NETYPE_CAMERAS,                      //OLD API
+                NETYPE_HOMESDATA,
+                NETYPE_STATUS,
+
+                NETYPE_EVENTS,
+                NETYPE_SETSTATE,
+                NETYPE_SETROOMTHERMPOINT,
+                NETYPE_SETTHERMMODE,
+                NETYPE_SETPERSONSAWAY,
+                NETYPE_SETPERSONSHOME,
+                NETYPE_NEWHOMESCHEDULE,
+                NETYPE_SYNCHOMESCHEDULE,
+                NETYPE_SWITCHHOMESCHEDULE,
+                NETYPE_ADDWEBHOOK,
+                NETYPE_DROPWEBHOOK,
+                NETYPE_PUBLICDATA,
+        };
+
+        CNetatmo(int ID, const std::string &username, const std::string &password);
+        ~CNetatmo() override = default;
+
+        bool WriteToHardware(const char *, unsigned char) override;
+        void SetSetpoint(unsigned long ID, const float temp);
+        bool SetProgramState(const int uid, const int newState);
+        void Get_Respons_API(const m_eNetatmoType& NType, std::string& sResult, std::string& home_id, bool& bRet, Json::Value& root, std::string extra_data);
+
       private:
-        struct _tNetatmoDevice
+        struct m_tNetatmoDevice
         {
                 std::string ID;
                 std::string ModuleName;
@@ -24,34 +62,7 @@ class CNetatmo : public CDomoticzHardwareBase
                 std::string MAC;
                 //Json::Value Modules;
         };
-	enum _eNetatmoType
-	{
-		NETYPE_WEATHER_STATION = 0,
-		NETYPE_AIRCARE,
-		NETYPE_ENERGY,
 
-		NETYPE_MEASURE,
-		NETYPE_SETTHERMPOINT,
-
-		NETYPE_THERMOSTAT,                   //OLD API
-		NETYPE_HOME,                         //OLD API
-		NETYPE_CAMERAS,                      //OLD API
-		NETYPE_HOMESDATA,
-		NETYPE_STATUS,
-
-		NETYPE_EVENTS,
-		NETYPE_SETSTATE,
-		NETYPE_SETROOMTHERMPOINT,
-		NETYPE_SETTHERMMODE,
-		NETYPE_SETPERSONSAWAY,
-		NETYPE_SETPERSONSHOME,
-		NETYPE_NEWHOMESCHEDULE,
-		NETYPE_SYNCHOMESCHEDULE,
-		NETYPE_SWITCHHOMESCHEDULE,
-		NETYPE_ADDWEBHOOK,
-		NETYPE_DROPWEBHOOK,
-		NETYPE_PUBLICDATA,
-	};
 	std::string m_clientId;
 	std::string m_clientSecret;
 	std::string m_scopes;
@@ -61,7 +72,7 @@ class CNetatmo : public CDomoticzHardwareBase
 	std::string m_password;
 	std::string m_accessToken;
 	std::string m_refreshToken;
-	std::vector<_tNetatmoDevice> m_known_thermotats;
+	std::vector<m_tNetatmoDevice> m_known_thermotats;
 	std::map<int, std::string> m_thermostatModuleID;
 	bool m_bPollThermostat;
 	bool m_bPollWeatherData;
@@ -89,7 +100,7 @@ class CNetatmo : public CDomoticzHardwareBase
 	bool StopHardware() override;
 	void Do_Work();
 	std::string ExtractHtmlStatusCode(const std::vector<std::string>& headers, const std::string& separator);
-	std::string MakeRequestURL(_eNetatmoType NetatmoType, std::string data);
+	std::string MakeRequestURL(m_eNetatmoType NetatmoType, std::string data);
 
 	void GetWeatherDetails();
 	void GetHomecoachDetails();
@@ -114,9 +125,9 @@ class CNetatmo : public CDomoticzHardwareBase
 	bool m_isLogged;
 	bool m_bForceLogin;
 
-	_eNetatmoType m_weatherType;
-	_eNetatmoType m_homecoachType;
-	_eNetatmoType m_energyType;
+	m_eNetatmoType m_weatherType;
+	m_eNetatmoType m_homecoachType;
+	m_eNetatmoType m_energyType;
 
 	int m_ActHome;
 	std::vector<std::string> m_homeid;
@@ -153,13 +164,4 @@ class CNetatmo : public CDomoticzHardwareBase
 
 	uint64_t UpdateValueInt(int HardwareID, const char* ID, unsigned char unit, unsigned char devType, unsigned char subType, unsigned char signallevel, unsigned char batterylevel, int nValue, const char* sValue, std::string& devname, bool bUseOnOffAction, const std::string& user);
 	bool ParseDashboard(const Json::Value &root, int DevIdx, int ID, std::string& name, const std::string &ModuleType, int battery_percent, int rf_status, std::string& Hardware_ID, std::string& home_id);
-
-      public:
-	CNetatmo(int ID, const std::string &username, const std::string &password);
-	~CNetatmo() override = default;
-
-	bool WriteToHardware(const char *, unsigned char) override;
-	void SetSetpoint(unsigned long ID, const float temp);
-	bool SetProgramState(const int uid, const int newState);
-	void Get_Respons_API(const _eNetatmoType& NType, std::string& sResult, std::string& home_id, bool& bRet, Json::Value& root, std::string extra_data);
 };
