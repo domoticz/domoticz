@@ -2193,6 +2193,7 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 				}
 				else
 					batteryLevel = 255;
+				
 				if (!module["rf_state"].empty())
 				{
 					std::string rf_state = module["rf_state"].asString();
@@ -2232,7 +2233,7 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 				else
 				{
 					Log(LOG_ERROR, "cloud data for module [%s] no longer updated (module possibly disconnected)", moduleName.c_str());
-					connected = false;
+					//connected = false;
 				}
 				
 				if (connected)
