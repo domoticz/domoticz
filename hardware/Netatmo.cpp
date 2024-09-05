@@ -2224,7 +2224,7 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 				Debug(DEBUG_HARDWARE, "Module [%s] last update = %s", moduleName.c_str(), ctime(&tNetatmoLastUpdate));
 				// check if Netatmo data was updated in the past NETAMO_POLL_INTERVALL (+1 min for sync time lags)... if not means sensors failed to send to cloud
 				int Interval = NETAMO_POLL_INTERVALL + 60;
-				Debug(DEBUG_HARDWARE, "Module [%s] Interval = %d %u", moduleName.c_str(), Interval, tNetatmoLastUpdate);
+				Debug(DEBUG_HARDWARE, "Module [%s] Interval = %d %lu", moduleName.c_str(), Interval, tNetatmoLastUpdate);
 				if (tNetatmoLastUpdate > (tNow - Interval))
 				{
 					Log(LOG_STATUS, "cloud data for module [%s] is now updated again", moduleName.c_str());
