@@ -2204,6 +2204,8 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 				std::string module_Name = moduleName + " - MAC-adres";
 				bool reachable;
 				bool connected = true;
+				std::time_t tNetatmoLastUpdate = 0;
+				std::time_t tNow = time(nullptr);
 
 				//battery_state
 				if (!module["battery_state"].empty())
@@ -2230,7 +2232,7 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 				}
 				if (!module["last_seen"].empty())
 				{
-					last_seen = module["last_seen"].asFloat();
+					tNetatmoLastUpdate = module["last_seen"].asFloat();
 					// Check when module last updated values
 
 				}
@@ -2244,28 +2246,27 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 					last_activity = module["last_activity"].asFloat();
 					//
 				}
-				// check for Netatmo cloud data timeout
-				std::time_t tNetatmoLastUpdate = 0;
-				std::time_t tNow = time(nullptr);
-
-				// Check when Netatmo data was last updated
-				if (!root["time_utc"].empty())
-					tNetatmoLastUpdate = root["time_utc"].asUInt();
+				
 				Debug(DEBUG_HARDWARE, "Module [%s] last update = %s", moduleName.c_str(), ctime(&tNetatmoLastUpdate));
 				// check if Netatmo data was updated in the past NETAMO_POLL_INTERVALL (+1 min for sync time lags)... if not means sensors failed to send to cloud
 				int Interval = NETAMO_POLL_INTERVALL + 60;
 				Debug(DEBUG_HARDWARE, "Module [%s] Interval = %d %lu", moduleName.c_str(), Interval, tNetatmoLastUpdate);
-				if (tNetatmoLastUpdate > (tNow - Interval))
-				{
-					Log(LOG_STATUS, "cloud data for module [%s] is now updated again", moduleName.c_str());
 
-				}
-				else
+				//Not All devices have a "last seen" so no check for Cloud data possible
+				if (tNetatmoLastUpdate != 0)
 				{
-					Log(LOG_ERROR, "cloud data for module [%s] no longer updated (module possibly disconnected)", moduleName.c_str());
-					//connected = false;
+					if (tNetatmoLastUpdate > (tNow - Interval))
+					{
+						Log(LOG_STATUS, "cloud data for module [%s] is now updated again", moduleName.c_str());
+					
+					}
+					else
+					{
+						Log(LOG_ERROR, "cloud data for module [%s] no longer updated (module possibly disconnected)", moduleName.c_str());
+						//connected = false;
+					}
 				}
-				
+	
 				if (connected)
 				{
 					if (!module["rf_strength"].empty())
