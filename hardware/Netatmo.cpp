@@ -818,7 +818,7 @@ void CNetatmo::SetSetpoint(unsigned long ID, const float temp)
 
 		if (module_MAC.empty())
 		{
-			Log(LOG_ERROR, "NetatmoThermostat: No thermostat or valve found in online devices!");
+			Log(LOG_ERROR, "NetatmoThermostat: No thermostat or valve found in online devices !");
 			return;
 		}
 
@@ -1056,7 +1056,7 @@ void CNetatmo::Get_Respons_API(const m_eNetatmoType& NType, std::string& sResult
 	if (pos != std::string::npos)
 	{
 		std::string e_str = s_Sresult.substr(0, pos);
-		Log(LOG_ERROR, "Error %s", e_str.c_str());
+		
 		std::size_t found = e_str.find("error");
 		if (found!=std::string::npos)
 		{
