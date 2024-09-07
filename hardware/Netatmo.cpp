@@ -82,29 +82,29 @@ CNetatmo::CNetatmo(const int ID, const std::string& username, const std::string&
 	Debug(DEBUG_HARDWARE, "Netatmo Actif Scopes %s ", m_scopes.c_str());
 	m_bPollThermostat = true;
 
-        std::size_t found_W = m_scopes.find("station_R");
-        if (found_W != std::string::npos)
-        {
-                Log(LOG_STATUS, "read weatherstation active");
-                m_bPollWeatherData = true;
-        }
-        else
-        {
+	std::size_t found_W = m_scopes.find("station_R");
+	if (found_W != std::string::npos)
+	{
+		Log(LOG_STATUS, "read weatherstation active");
+		m_bPollWeatherData = true;
+	}
+	else
+	{
 
-                m_bPollWeatherData = false;
-        }
+		m_bPollWeatherData = false;
+	}
 
-        std::size_t found_H = m_scopes.find("homecoach_R");
-        if (found_H != std::string::npos)
-        {
-                Log(LOG_STATUS, "read homecoach active");
-                m_bPollHomecoachData = true;
-        }
-        else
-        {
+	std::size_t found_H = m_scopes.find("homecoach_R");
+	if (found_H != std::string::npos)
+	{
+		Log(LOG_STATUS, "read homecoach active");
+		m_bPollHomecoachData = true;
+	}
+	else
+	{
 
-                m_bPollHomecoachData = false;
-        }
+		m_bPollHomecoachData = false;
+	}
 
 	m_bPollHomeStatus = true;
 	m_bPollHome = true;
@@ -1051,28 +1051,28 @@ void CNetatmo::Get_Respons_API(const m_eNetatmoType& NType, std::string& sResult
 
 	//Check for error
 	std::string s_Sresult = sResult;
-        size_t pos = s_Sresult.find(":");
+	size_t pos = s_Sresult.find(":");
 
-        if (pos != std::string::npos)
-        {
-                std::string e_str = s_Sresult.substr(0, pos);
-                Log(LOG_ERROR, "Error %s", e_str.c_str());
-                std::size_t found = e_str.find("error");
-                if (found!=std::string::npos)
-                {
-                        Log(LOG_ERROR, "Error data ...  %s", sResult.c_str());
-                        return ;     // This prevents JSON Logic Error in case off Error respons.
-                }
-        }
-	
+	if (pos != std::string::npos)
+	{
+		std::string e_str = s_Sresult.substr(0, pos);
+		Log(LOG_ERROR, "Error %s", e_str.c_str());
+		std::size_t found = e_str.find("error");
+		if (found!=std::string::npos)
+		{
+			Log(LOG_ERROR, "Error data ...  %s", sResult.c_str());
+			return ;     // This prevents JSON Logic Error in case off Error respons.
+		}
+	}
+
 	bRet = ParseJSon(sResult, root);
-	
+
 	if ((!bRet) || (!root.isObject()))
 	{
 		Log(LOG_ERROR, "Invalid data received...J");
 		return ;
 	}
-	
+
 	if (!root["error"].empty())
         {
 		//We received an error
@@ -2232,7 +2232,7 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 				}
 				if (!module["last_seen"].empty())
 				{
-					tNetatmoLastUpdate = module["last_seen"].asFloat();
+					tNetatmoLastUpdate = static_cast<size_t>(module["last_seen"].asFloat());
 					// Check when module last updated values
 
 				}
@@ -2246,7 +2246,7 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 					last_activity = module["last_activity"].asFloat();
 					//
 				}
-				
+
 				Debug(DEBUG_HARDWARE, "Module [%s] last update = %s", moduleName.c_str(), ctime(&tNetatmoLastUpdate));
 				// check if Netatmo data was updated in the past NETAMO_POLL_INTERVALL (+1 min for sync time lags)... if not means sensors failed to send to cloud
 				int Interval = NETAMO_POLL_INTERVALL + 60;
@@ -2258,7 +2258,7 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 					if (tNetatmoLastUpdate > (tNow - Interval))
 					{
 						Log(LOG_STATUS, "cloud data for module [%s] is now updated again", moduleName.c_str());
-					
+
 					}
 					else
 					{
@@ -2266,7 +2266,7 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 						//connected = false;
 					}
 				}
-	
+
 				if (connected)
 				{
 					if (!module["rf_strength"].empty())
