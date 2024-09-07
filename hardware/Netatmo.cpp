@@ -143,8 +143,7 @@ void CNetatmo::Init()
 	m_PersonsNames.clear();
 
         m_bPollThermostat = true;
-	m_bPollWeatherData = false;
-	m_bPollHomecoachData = false;
+	
 	m_bPollHomeStatus = true;
 	m_bPollHome = true;
 	m_bFirstTimeThermostat = true;
@@ -235,7 +234,7 @@ void CNetatmo::Do_Work()
 			if (RefreshToken())
 			{
                                 // Thermostat is accessable through Homestatus / Homesdata in New API
-                                //Weather, HomeCoach, and Thernistat data is updated every  NETAMO_POLL_INTERVALL  seconds
+                                //Weather, HomeCoach, and Thermostat data is updated every  NETAMO_POLL_INTERVALL  seconds
 				if ((sec_counter % NETAMO_POLL_INTERVALL == 0) || (bFirstTimeWS) || (bFirstTimeHS) || (bFirstTimeSS))
 				{
 					bFirstTimeWS = false;
@@ -661,7 +660,7 @@ bool CNetatmo::SetProgramState(const int uid, const int newState)
 
 		if (!bRet)
 		{
-			Log(LOG_ERROR, "NetatmoThermostat: Error setting Thermostat Mode!");
+			Log(LOG_ERROR, "NetatmoThermostat: Error setting Thermostat Mode !");
 			return false;
 		}
 		bHaveDevice = true;
@@ -1051,12 +1050,29 @@ void CNetatmo::Get_Respons_API(const m_eNetatmoType& NType, std::string& sResult
 	}
 
 	//Check for error
+	std::string s_Sresult = sResult;
+        size_t pos = s_Sresult.find(":");
+
+        if (pos != std::string::npos)
+        {
+                std::string e_str = s_Sresult.substr(0, pos);
+                Log(LOG_ERROR, "Error %s", e_str.c_str());
+                std::size_t found = e_str.find("error");
+                if (found!=std::string::npos)
+                {
+                        Log(LOG_ERROR, "Error data ...  %s", sResult.c_str());
+                        return ;     // This prevents JSON Logic Error in case off Error respons.
+                }
+        }
+	
 	bRet = ParseJSon(sResult, root);
+	
 	if ((!bRet) || (!root.isObject()))
 	{
 		Log(LOG_ERROR, "Invalid data received...J");
 		return ;
 	}
+	
 	if (!root["error"].empty())
         {
 		//We received an error
@@ -1967,9 +1983,9 @@ bool CNetatmo::ParseDashboard(const Json::Value& root, const int DevIdx, const i
 
 	if (bHaveCO2)
 	{
-		SendAirQualitySensor(ID, DevIdx, batValue, co2, name);
-		Debug(DEBUG_HARDWARE, "(%d) %s (%s) [%s] co2 %s %s %d %d", Hardware_int, str_ID.c_str(), pchar_ID, name.c_str(), std::to_string(co2).c_str(), m_Name.c_str(), rssiLevel, batValue);
-		UpdateValueInt(Hardware_int, str_ID.c_str(), 0, pTypeAirQuality, sTypeVoc, rssiLevel, batValue, '0', std::to_string(co2).c_str(), name, 0, m_Name);
+		//SendAirQualitySensor(ID, DevIdx, batValue, co2, name);
+		Debug(DEBUG_HARDWARE, "(%d) %s (%s) [%s] co2 rssiLevel %d batValue %d nValue %d sValue %s %s ", Hardware_int, str_ID.c_str(), pchar_ID, name.c_str(), rssiLevel, batValue, co2, std::to_string(co2).c_str(), m_Name.c_str());
+		UpdateValueInt(Hardware_int, str_ID.c_str(), 0, pTypeAirQuality, sTypeVoc, rssiLevel, batValue, co2, "", name, 0, m_Name);
 	}
 
 	if (bHaveSound)
