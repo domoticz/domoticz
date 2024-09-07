@@ -79,18 +79,32 @@ CNetatmo::CNetatmo(const int ID, const std::string& username, const std::string&
 //	m_energyType = NETYPE_ENERGY;
 //	m_Home_ID = "";
 	m_ActHome = 0;
-
+	Debug(DEBUG_HARDWARE, "Netatmo Actif Scopes %s ", m_scopes.c_str());
 	m_bPollThermostat = true;
 
-        if(m_scopes.find("read_station") != std::string::npos)
+        std::size_t found_W = m_scopes.find("station_R");
+        if (found_W != std::string::npos)
+        {
+                Log(LOG_STATUS, "read weatherstation active");
                 m_bPollWeatherData = true;
+        }
         else
-		m_bPollWeatherData = false;
+        {
 
-	if(m_scopes.find("read_homecoach") != std::string::npos)
-		m_bPollHomecoachData = true;
-	else
-		m_bPollHomecoachData = false;
+                m_bPollWeatherData = false;
+        }
+
+        std::size_t found_H = m_scopes.find("homecoach_R");
+        if (found_H != std::string::npos)
+        {
+                Log(LOG_STATUS, "read homecoach active");
+                m_bPollHomecoachData = true;
+        }
+        else
+        {
+
+                m_bPollHomecoachData = false;
+        }
 
 	m_bPollHomeStatus = true;
 	m_bPollHome = true;
