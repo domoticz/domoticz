@@ -79,21 +79,15 @@ CNetatmo::CNetatmo(const int ID, const std::string& username, const std::string&
 //	m_energyType = NETYPE_ENERGY;
 //	m_Home_ID = "";
 	m_ActHome = 0;
+	Debug(DEBUG_HARDWARE, "Netatmo Actif Scopes %s ", m_scopes.c_str());
 
-	m_bPollThermostat = true;
-
-        if(m_scopes.find("read_station") != std::string::npos)
-                m_bPollWeatherData = true;
-        else
-		m_bPollWeatherData = false;
-
-	if(m_scopes.find("read_homecoach") != std::string::npos)
-		m_bPollHomecoachData = true;
-	else
-		m_bPollHomecoachData = false;
+	m_bPollWeatherData = (m_scopes.find("station_R") != std::string::npos);      //read_station
+	m_bPollHomecoachData = (m_scopes.find("homecoach_R") != std::string::npos);  //read_homecoach
 
 	m_bPollHomeStatus = true;
 	m_bPollHome = true;
+
+	m_bPollThermostat = true;
 	m_bFirstTimeThermostat = true;
 	m_bFirstTimeWeatherData = true;
 	m_tSetpointUpdateTime = time(nullptr);
@@ -129,8 +123,7 @@ void CNetatmo::Init()
 	m_PersonsNames.clear();
 
         m_bPollThermostat = true;
-	m_bPollWeatherData = false;
-	m_bPollHomecoachData = false;
+	
 	m_bPollHomeStatus = true;
 	m_bPollHome = true;
 	m_bFirstTimeThermostat = true;
@@ -221,7 +214,7 @@ void CNetatmo::Do_Work()
 			if (RefreshToken())
 			{
                                 // Thermostat is accessable through Homestatus / Homesdata in New API
-                                //Weather, HomeCoach, and Thernistat data is updated every  NETAMO_POLL_INTERVALL  seconds
+                                //Weather, HomeCoach, and Thermostat data is updated every  NETAMO_POLL_INTERVALL  seconds
 				if ((sec_counter % NETAMO_POLL_INTERVALL == 0) || (bFirstTimeWS) || (bFirstTimeHS) || (bFirstTimeSS))
 				{
 					bFirstTimeWS = false;
@@ -647,7 +640,7 @@ bool CNetatmo::SetProgramState(const int uid, const int newState)
 
 		if (!bRet)
 		{
-			Log(LOG_ERROR, "NetatmoThermostat: Error setting Thermostat Mode!");
+			Log(LOG_ERROR, "NetatmoThermostat: Error setting Thermostat Mode !");
 			return false;
 		}
 		bHaveDevice = true;
@@ -805,7 +798,7 @@ void CNetatmo::SetSetpoint(unsigned long ID, const float temp)
 
 		if (module_MAC.empty())
 		{
-			Log(LOG_ERROR, "NetatmoThermostat: No thermostat or valve found in online devices!");
+			Log(LOG_ERROR, "NetatmoThermostat: No thermostat or valve found in online devices !");
 			return;
 		}
 
@@ -1037,12 +1030,29 @@ void CNetatmo::Get_Respons_API(const m_eNetatmoType& NType, std::string& sResult
 	}
 
 	//Check for error
+	std::string s_Sresult = sResult;
+	size_t pos = s_Sresult.find(":");
+
+	if (pos != std::string::npos)
+	{
+		std::string e_str = s_Sresult.substr(0, pos);
+		
+		std::size_t found = e_str.find("error");
+		if (found!=std::string::npos)
+		{
+			Log(LOG_ERROR, "Error data ...  %s", sResult.c_str());
+			return ;     // This prevents JSON Logic Error in case off Error respons.
+		}
+	}
+
 	bRet = ParseJSon(sResult, root);
+
 	if ((!bRet) || (!root.isObject()))
 	{
 		Log(LOG_ERROR, "Invalid data received...J");
 		return ;
 	}
+
 	if (!root["error"].empty())
         {
 		//We received an error
@@ -1953,14 +1963,14 @@ bool CNetatmo::ParseDashboard(const Json::Value& root, const int DevIdx, const i
 
 	if (bHaveCO2)
 	{
-		SendAirQualitySensor(ID, DevIdx, batValue, co2, name);
-		Debug(DEBUG_HARDWARE, "(%d) %s (%s) [%s] co2 %s %s %d %d", Hardware_int, str_ID.c_str(), pchar_ID, name.c_str(), std::to_string(co2).c_str(), m_Name.c_str(), rssiLevel, batValue);
-		UpdateValueInt(Hardware_int, str_ID.c_str(), 0, pTypeAirQuality, sTypeVoc, rssiLevel, batValue, '0', std::to_string(co2).c_str(), name, 0, m_Name);
+		//SendAirQualitySensor(ID, DevIdx, batValue, co2, name);
+		//Debug(DEBUG_HARDWARE, "(%d) %s (%s) [%s] co2 rssiLevel %d batValue %d nValue %d sValue %s %s ", Hardware_int, str_ID.c_str(), pchar_ID, name.c_str(), rssiLevel, batValue, co2, std::to_string(co2).c_str(), m_Name.c_str());
+		UpdateValueInt(Hardware_int, str_ID.c_str(), 0, pTypeAirQuality, sTypeVoc, rssiLevel, batValue, co2, "", name, 0, m_Name);
 	}
 
 	if (bHaveSound)
 	{
-		SendSoundSensor(ID, batValue, sound, name);
+		//SendSoundSensor(ID, batValue, sound, name);
 		//Debug(DEBUG_HARDWARE, "(%d) %s (%s) [%s] sound %s %s %d %d", Hardware_int, str_ID.c_str(), pchar_ID, name.c_str(), std::to_string(sound).c_str(), m_Name.c_str(), rssiLevel, batValue);
 		UpdateValueInt(Hardware_int, str_ID.c_str(), 0, pTypeGeneral, sTypeSoundLevel, rssiLevel, batValue, '0', std::to_string(sound).c_str(), name, 0, m_Name);
 	}
@@ -2174,6 +2184,8 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 				std::string module_Name = moduleName + " - MAC-adres";
 				bool reachable;
 				bool connected = true;
+				std::time_t tNetatmoLastUpdate = 0;
+				std::time_t tNow = time(nullptr);
 
 				//battery_state
 				if (!module["battery_state"].empty())
@@ -2200,7 +2212,7 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 				}
 				if (!module["last_seen"].empty())
 				{
-					last_seen = module["last_seen"].asFloat();
+					tNetatmoLastUpdate = static_cast<size_t>(module["last_seen"].asFloat());
 					// Check when module last updated values
 
 				}
@@ -2214,28 +2226,27 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 					last_activity = module["last_activity"].asFloat();
 					//
 				}
-				// check for Netatmo cloud data timeout
-				std::time_t tNetatmoLastUpdate = 0;
-				std::time_t tNow = time(nullptr);
 
-				// Check when Netatmo data was last updated
-				if (!root["time_utc"].empty())
-					tNetatmoLastUpdate = root["time_utc"].asUInt();
 				Debug(DEBUG_HARDWARE, "Module [%s] last update = %s", moduleName.c_str(), ctime(&tNetatmoLastUpdate));
 				// check if Netatmo data was updated in the past NETAMO_POLL_INTERVALL (+1 min for sync time lags)... if not means sensors failed to send to cloud
 				int Interval = NETAMO_POLL_INTERVALL + 60;
 				Debug(DEBUG_HARDWARE, "Module [%s] Interval = %d %lu", moduleName.c_str(), Interval, tNetatmoLastUpdate);
-				if (tNetatmoLastUpdate > (tNow - Interval))
-				{
-					Log(LOG_STATUS, "cloud data for module [%s] is now updated again", moduleName.c_str());
 
-				}
-				else
+				//Not All devices have a "last seen" so no check for Cloud data possible
+				if (tNetatmoLastUpdate != 0)
 				{
-					Log(LOG_ERROR, "cloud data for module [%s] no longer updated (module possibly disconnected)", moduleName.c_str());
-					//connected = false;
+					if (tNetatmoLastUpdate > (tNow - Interval))
+					{
+						Log(LOG_STATUS, "cloud data for module [%s] is now updated again", moduleName.c_str());
+
+					}
+					else
+					{
+						Log(LOG_ERROR, "cloud data for module [%s] no longer updated (module possibly disconnected)", moduleName.c_str());
+						//connected = false;
+					}
 				}
-				
+
 				if (connected)
 				{
 					if (!module["rf_strength"].empty())
