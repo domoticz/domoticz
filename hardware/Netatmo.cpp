@@ -123,9 +123,6 @@ void CNetatmo::Init()
 	m_PersonsNames.clear();
 
         m_bPollThermostat = true;
-	
-	m_bPollHomeStatus = true;
-	m_bPollHome = true;
 	m_bFirstTimeThermostat = true;
 	m_bFirstTimeWeatherData = true;
 	m_bForceSetpointUpdate = false;
@@ -798,7 +795,7 @@ void CNetatmo::SetSetpoint(unsigned long ID, const float temp)
 
 		if (module_MAC.empty())
 		{
-			Log(LOG_ERROR, "NetatmoThermostat: No thermostat or valve found in online devices !");
+			Log(LOG_ERROR, "NetatmoThermostat: No thermostat or valve found in online devices!");
 			return;
 		}
 
@@ -1031,19 +1028,19 @@ void CNetatmo::Get_Respons_API(const m_eNetatmoType& NType, std::string& sResult
 
 	//Check for error
 	std::string s_Sresult = sResult;
-	size_t pos = s_Sresult.find(":");
+        size_t pos = s_Sresult.find(":");
 
-	if (pos != std::string::npos)
-	{
-		std::string e_str = s_Sresult.substr(0, pos);
-		
-		std::size_t found = e_str.find("error");
-		if (found!=std::string::npos)
-		{
-			Log(LOG_ERROR, "Error data ...  %s", sResult.c_str());
-			return ;     // This prevents JSON Logic Error in case off Error respons.
-		}
-	}
+        if (pos != std::string::npos)
+        {
+                std::string e_str = s_Sresult.substr(0, pos);
+
+                std::size_t found = e_str.find("error");
+                if (found!=std::string::npos)
+                {
+                        Log(LOG_ERROR, "Error data ...  %s", sResult.c_str());
+                        return ;     // This prevents JSON Logic Error in case off Error respons.
+                }
+        }
 
 	bRet = ParseJSon(sResult, root);
 
@@ -2154,6 +2151,35 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 				int moduleIndex = iModuleIndex;
 				int crcId = 0;
 				bool bIsActive;
+
+				bool bHaveTemp = false;
+				bool bHaveHum = false;
+				bool bHaveBaro = false;
+				bool bHaveCO2 = false;
+				bool bHaveRain = false;
+				bool bHaveSound = false;
+				bool bHaveWind = false;
+				bool bHaveSetpoint = false;
+
+				int temp = 0, sp_temp = 0;
+				float Temp = 0, SP_temp = 0;
+				int hum = 0;
+				int baro = 0;
+				int abs_baro = 0;
+				int co2 = 0;
+				int rain = 0;
+				int rain_1 = 0;
+				int rain_24 = 0;
+				int sound = 0;
+				std::stringstream t_str;
+
+				int wind_angle = 0;
+				float wind_strength = 0;
+				float wind_gust = 0;
+				float wind_gust_angle = 0;
+				int Temp_outdoor = 0;
+				int WindChill_c = 0;
+
 				//uint64_t DeviceRowIdx;
 				iModuleIndex ++;
 				// Hardware_ID hex to int
@@ -2205,7 +2231,7 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 				}
 				else
 					batteryLevel = 255;
-				
+
 				if (!module["rf_state"].empty())
 				{
 					std::string rf_state = module["rf_state"].asString();
@@ -2418,6 +2444,197 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 						m_LightDeviceID[crcId] = lName;
 						SendSelectorSwitch(crcId, NETATMO_PRESET_UNIT, Selector, lName, 0, true, "off|on|auto", "", false, m_Name);
 					}
+					// Sensors from new API
+					if (!module["temperature"].empty())
+					{
+						bHaveTemp = true;
+						Temp = module["temperature"].asFloat();
+						t_str << std::setprecision(2) << Temp;
+						temp = static_cast<int>(Temp);
+						if(type == "NAModule1")
+							Temp_outdoor = temp;
+						//Debug(DEBUG_HARDWARE, "HomeStatus Module Temperature [%s]", t_str.str().c_str());
+					}
+					if (!module["co2"].empty())
+					{
+						bHaveCO2 = true;
+						co2 = module["CO2"].asInt();
+						//Debug(DEBUG_HARDWARE, "HomeStatus Module CO2 [%d]", co2);
+					}
+					if (!module["humidity"].empty())
+					{
+						bHaveHum = true;
+						hum = module["Humidity"].asInt();
+						//Debug(DEBUG_HARDWARE, "HomeStatus Module hum [%d]", hum);
+					}
+					if (!module["noise"].empty())
+					{
+						bHaveSound = true;
+						sound = module["Noise"].asInt();
+						//Debug(DEBUG_HARDWARE, "HomeStatus Module Noise [%d]", sound);
+					}
+					if (!module["pressure"].empty())
+					{
+						bHaveBaro = true;
+						baro = module["Pressure"].asInt();
+						//Debug(DEBUG_HARDWARE, "HomeStatus Module Pressure [%d]", baro);
+					}
+					if (!module["absolute_pressure"].empty())
+					{
+						bHaveBaro = true;
+						abs_baro = module["Pressure"].asInt();
+						//Debug(DEBUG_HARDWARE, "HomeStatus Module Pressure [%d]", baro);
+					}
+					if (!module["rain"].empty())
+					{
+						bHaveRain = true;
+						rain = module["rain"].asInt();
+						//Debug(DEBUG_HARDWARE, "HomeStatus Module Rain [%d]", rain);
+					}
+					if (!module["sum_rain_1"].empty())
+					{
+						bHaveRain = true;
+						rain_1 = module["sum_rain_1"].asInt();
+						//Debug(DEBUG_HARDWARE, "HomeStatus Module Rain [%d]", rain_1);
+					}
+					if (!module["sum_rain_24"].empty())
+					{
+						bHaveRain = true;
+						rain_24 = module["sum_rain_24"].asInt();
+						//Debug(DEBUG_HARDWARE, "HomeStatus Module Rain [%d]", rain_24);
+					}
+					if (!module["wind_strength"].empty())
+					{
+						bHaveWind = true;
+						wind_strength = module["wind_strength"].asFloat() / 3.6F;
+						//Debug(DEBUG_HARDWARE, "HomeStatus Module Wind strength [%d]", wind_strength);
+					}
+					if (!module["wind_angle"].empty())
+					{
+						bHaveWind = true;
+						wind_angle = module["wind_angle"].asInt();
+						//Debug(DEBUG_HARDWARE, "HomeStatus Module Wind Agle [%d]", wind_angle);
+					}
+					if (!module["wind_gust"].empty())
+					{
+						bHaveWind = true;
+						wind_gust = module["wind_gust"].asFloat() / 3.6F;
+						//Debug(DEBUG_HARDWARE, "HomeStatus Module Wind gust [%d]", wind_gust);
+					}
+					if (!module["wind_gust_angle"].empty())
+					{
+						bHaveWind = true;
+						wind_gust_angle = module["wind_gust_angle"].asFloat() / 3.6F;
+						//Debug(DEBUG_HARDWARE, "HomeStatus Module Wind gust angle [%d]", wind_gust_angle);
+					}
+					//Data retrieved create / update appropriate domoticz devices
+					if (bHaveTemp && bHaveHum && bHaveBaro)
+					{
+						int nforecast = m_forecast_calculators[crcId].CalculateBaroForecast(Temp, baro); //float temp, double pressure
+						//Debug(DEBUG_HARDWARE, "%s name Temp & Hum & Baro %d [%s] %d %d %d - %d / %d ", Hardware_int, Hardware_ID.c_str(), name.c_str(), temp, hum, baro, batValue, rssiLevel);
+						// Humidity status: 0 - Normal, 1 - Comfort, 2 - Dry, 3 - Wet
+						const char status = '0';
+						std::stringstream r;
+						r << Temp;
+						r << ";";
+						r << hum;
+						r << ";";
+						r << status;
+						r << ";";
+						r << baro;
+						r << ";";
+						r << nforecast;
+
+						// sValue is string with values separated by semicolon: Temperature;Humidity;Humidity Status;Barometer;Forecast
+						//Debug(DEBUG_HARDWARE, "(%d) %s (%s) [%s] Temp & Humidity & Baro %s %s %d %d", Hardware_int, str_ID.c_str(), pchar_ID, name.c_str(), r.str().c_str(), m_Name.c_str(), rssiLevel, batValue);
+						UpdateValueInt(Hardware_int, ID.c_str(), 0, pTypeTEMP_HUM_BARO, sTypeTHBFloat, mrf_status, batteryLevel, '0', r.str().c_str(), moduleName,  0, m_Name);
+					}
+					else if (bHaveTemp && bHaveHum)
+					{
+						//Debug(DEBUG_HARDWARE, "name Temp & Hum [%s] %d %d - %d / %d ", name.c_str(), temp, hum, batValue, rssiLevel);
+						const char status = '0';
+						std::stringstream s;
+						s << Temp;
+						s << ";";
+						s << hum;
+						s << ";";
+						s << status;
+
+						// sValue is string with values separated by semicolon: Temperature;Humidity
+						//Debug(DEBUG_HARDWARE, "(%d) %s (%s) [%s] Temp & Humidity %s %s %d %d", Hardware_int, str_ID.c_str(), pchar_ID, name.c_str(), s.str().c_str(), m_Name.c_str(), rssiLevel, batValue);
+						UpdateValueInt(Hardware_int, ID.c_str(), 0, pTypeTEMP_HUM, sTypeTH_LC_TC, mrf_status, batteryLevel, '0', s.str().c_str(), moduleName, 0, m_Name);
+					}
+					else if (bHaveTemp)
+					{
+						//Debug(DEBUG_HARDWARE, "name Temp [%s] %d - %d / %d ", name.c_str(), temp, batValue, rssiLevel);
+						std::stringstream t;
+						t << Temp;
+						std::string sValue = "";
+						//Debug(DEBUG_HARDWARE, "(%d) %s (%s) [%s] temp %s %s %d %d", Hardware_int, str_ID.c_str(), pchar_ID, name.c_str(), sValue.c_str(), m_Name.c_str(), rssiLevel, batValue);
+						UpdateValueInt(Hardware_int, ID.c_str(), 0, pTypeGeneral, sTypeTemperature, mrf_status, batteryLevel, temp, sValue.c_str(), moduleName, 0, m_Name);
+					}
+					//Rain meter
+					if (bHaveRain)
+					{
+						bool bRefetchData = (m_RainOffset.find(crcId) == m_RainOffset.end());
+						if (!bRefetchData)
+							bRefetchData = ((m_RainOffset[crcId] == 0) && (m_OldRainCounter[crcId] == 0));
+						if (bRefetchData)
+						{
+							// get last rain counter from the database
+							bool bExists = false;
+							m_RainOffset[crcId] = GetRainSensorValue(crcId, bExists);
+							m_RainOffset[crcId] -= rain;
+							if (m_RainOffset[crcId] < 0)
+								m_RainOffset[crcId] = 0;
+							if (m_OldRainCounter.find(crcId) == m_OldRainCounter.end())
+								m_OldRainCounter[crcId] = 0;
+						}
+						// daily counter went to zero ?
+						if (rain < m_OldRainCounter[crcId])
+							m_RainOffset[crcId] += m_OldRainCounter[crcId];
+
+						m_OldRainCounter[crcId] = rain;
+						std::stringstream v;
+						v << rain_1;
+						v << ";";
+						v << rain;
+
+						//Debug(DEBUG_HARDWARE, "(%d) %s (%s) [%s] rain %s %s %d %d", Hardware_int, str_ID.c_str(), pchar_ID, name.c_str(), v.str().c_str(), m_Name.c_str(), rssiLevel, batValue);
+						UpdateValueInt(Hardware_int, ID.c_str(), 0, pTypeRAIN, sTypeRAINByRate, mrf_status, batteryLevel, '0', v.str().c_str(), moduleName, 0, m_Name);
+					}
+					if (bHaveCO2)
+					{
+						//Debug(DEBUG_HARDWARE, "(%d) %s (%s) [%s] co2 rssiLevel %d batValue %d nValue %d sValue %s %s ", Hardware_int, str_ID.c_str(), pchar_ID, name.c_str(), rssiLevel, batValue, co2, std::to_string(co2).c_str(), m_Name.c_str());
+						UpdateValueInt(Hardware_int, ID.c_str(), 0, pTypeAirQuality, sTypeVoc, mrf_status, batteryLevel, co2, "", moduleName, 0, m_Name);
+					}
+
+					if (bHaveSound)
+					{
+						//Debug(DEBUG_HARDWARE, "(%d) %s (%s) [%s] sound %s %s %d %d", Hardware_int, str_ID.c_str(), pchar_ID, name.c_str(), std::to_string(sound).c_str(), m_Name.c_str(), rssiLevel, batValue);
+						UpdateValueInt(Hardware_int, ID.c_str(), 0, pTypeGeneral, sTypeSoundLevel, mrf_status, batteryLevel, '0', std::to_string(sound).c_str(), moduleName, 0, m_Name);
+					}
+					if (bHaveWind)
+					{
+						const char status = '0';
+						std::stringstream y;
+						y << wind_angle;
+						y << ";";
+						y << '0';
+						y << ";";
+						y << wind_strength;
+						y << ";";
+						y << wind_gust;
+						y << ";";
+						y << Temp_outdoor;
+						y << ";";
+						y << WindChill_c;
+
+						// sValue: "<WindDirDegrees>;<WindDirText>;<WindAveMeterPerSecond*10>;<WindGustMeterPerSecond*10>;<Temp_c>;<WindChill_c>"
+						//Debug(DEBUG_HARDWARE, "(%d) %s (%s) [%s] wind %s %s %d %d", Hardware_int, str_ID.c_str(), pchar_ID, name.c_str(), y.str().c_str(), m_Name.c_str(), rssiLevel, batValue);
+						UpdateValueInt(Hardware_int, ID.c_str(), 0, pTypeWIND, sTypeWINDNoTemp, mrf_status, batteryLevel, '0', y.str().c_str(), moduleName, 0, m_Name);
+					}
+
 					if ((type == "NATherm1") || (type == "NRV"))
 					{
 						int roomIndex = 0;
