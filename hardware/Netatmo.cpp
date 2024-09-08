@@ -81,9 +81,7 @@ CNetatmo::CNetatmo(const int ID, const std::string& username, const std::string&
 	m_ActHome = 0;
 	Debug(DEBUG_HARDWARE, "Netatmo Actif Scopes %s ", m_scopes.c_str());
 
-	m_bPollWeatherData = false;
 	m_bPollWeatherData = (m_scopes.find("station_R") != std::string::npos);      //read_station
-	m_bPollHomecoachData = false;
 	m_bPollHomecoachData = (m_scopes.find("homecoach_R") != std::string::npos);  //read_homecoach
 
 	m_bPollHomeStatus = true;
