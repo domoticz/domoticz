@@ -1028,19 +1028,19 @@ void CNetatmo::Get_Respons_API(const m_eNetatmoType& NType, std::string& sResult
 
 	//Check for error
 	std::string s_Sresult = sResult;
-        size_t pos = s_Sresult.find(":");
+	size_t pos = s_Sresult.find(":");
 
-        if (pos != std::string::npos)
-        {
-                std::string e_str = s_Sresult.substr(0, pos);
+	if (pos != std::string::npos)
+	{
+		std::string e_str = s_Sresult.substr(0, pos);
 
-                std::size_t found = e_str.find("error");
-                if (found!=std::string::npos)
-                {
-                        Log(LOG_ERROR, "Error data ...  %s", sResult.c_str());
-                        return ;     // This prevents JSON Logic Error in case off Error respons.
-                }
-        }
+		std::size_t found = e_str.find("error");
+		if (found!=std::string::npos)
+		{
+			Log(LOG_ERROR, "Error data ...  %s", sResult.c_str());
+			return ;     // This prevents JSON Logic Error in case off Error respons.
+		}
+	}
 
 	bRet = ParseJSon(sResult, root);
 
