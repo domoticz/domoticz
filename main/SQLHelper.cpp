@@ -10276,11 +10276,8 @@ void CSQLHelper::RefreshActualPrices()
 
 bool CSQLHelper::TransferDevice(const std::string& sOldIdx, const std::string& sNewIdx)
 {
-	const int oldIdx = std::atoi(sOldIdx.c_str());
-	const int newIdx = std::atoi(sNewIdx.c_str());
-
 	std::vector<std::vector<std::string>> result;
-	result = m_sql.safe_query("SELECT HardwareID, OrgHardwareID, DeviceID, Unit, Type, SubType FROM DeviceStatus WHERE (ID == '%d')", newIdx);
+	result = m_sql.safe_query("SELECT HardwareID, OrgHardwareID, DeviceID, Unit, Type, SubType FROM DeviceStatus WHERE (ID == '%q')", sNewIdx.c_str());
 	if (result.empty())
 		return false;
 
@@ -10292,52 +10289,54 @@ bool CSQLHelper::TransferDevice(const std::string& sOldIdx, const std::string& s
 	int subType = std::stoi(result[0].at(5));
 
 	//get last update date from old device
-	result = m_sql.safe_query("SELECT LastUpdate FROM DeviceStatus WHERE (ID == '%d')", oldIdx);
+	result = m_sql.safe_query("SELECT LastUpdate FROM DeviceStatus WHERE (ID == '%q')", sOldIdx.c_str());
 	if (result.empty())
 		return false;
+
 	std::string szLastOldDate = result[0][0];
 
 	_log.Log(LOG_STATUS, "Replace old device %s to new device %s from %s.", sOldIdx.c_str(), sNewIdx.c_str(), szLastOldDate.c_str());
 
-	m_sql.safe_query("UPDATE DeviceStatus SET HardwareID = %d, OrgHardwareID = %d, DeviceID = '%q', Unit = %d, Type = %d, SubType = %d WHERE ID == '%d'",
-		newHardwareID, newOrgHardwareID, newDeviceID.c_str(), newUnit, devType, subType, oldIdx);
+	m_sql.safe_query("UPDATE DeviceStatus SET HardwareID = %d, OrgHardwareID = %d, DeviceID = '%q', Unit = %d, Type = %d, SubType = %d WHERE ID == '%q'",
+		newHardwareID, newOrgHardwareID, newDeviceID.c_str(), newUnit, devType, subType, sOldIdx.c_str());
 
 	//new device could already have some logging, so let's keep this data
 	//Rain
-	m_sql.safe_query("UPDATE Rain SET DeviceRowID='%d' WHERE (DeviceRowID == '%d') AND (Date>'%q')", oldIdx, newIdx, szLastOldDate.c_str());
-	m_sql.safe_query("UPDATE Rain_Calendar SET DeviceRowID='%d' WHERE (DeviceRowID == '%d') AND (Date>'%q')", oldIdx, newIdx, szLastOldDate.c_str());
+	m_sql.safe_query("UPDATE Rain SET DeviceRowID='%q' WHERE (DeviceRowID == '%q') AND (Date>'%q')", sOldIdx.c_str(), sNewIdx.c_str(), szLastOldDate.c_str());
+	m_sql.safe_query("UPDATE Rain_Calendar SET DeviceRowID='%q' WHERE (DeviceRowID == '%q') AND (Date>'%q')", sOldIdx.c_str(), sNewIdx.c_str(), szLastOldDate.c_str());
 
 	//Temperature
-	m_sql.safe_query("UPDATE Temperature SET DeviceRowID='%d' WHERE (DeviceRowID == '%d') AND (Date>'%q')", oldIdx, newIdx, szLastOldDate.c_str());
-	m_sql.safe_query("UPDATE Temperature_Calendar SET DeviceRowID='%d' WHERE (DeviceRowID == '%d') AND (Date>'%q')", oldIdx, newIdx, szLastOldDate.c_str());
+	m_sql.safe_query("UPDATE Temperature SET DeviceRowID='%q' WHERE (DeviceRowID == '%q') AND (Date>'%q')", sOldIdx.c_str(), sNewIdx.c_str(), szLastOldDate.c_str());
+	m_sql.safe_query("UPDATE Temperature_Calendar SET DeviceRowID='%q' WHERE (DeviceRowID == '%q') AND (Date>'%q')", sOldIdx.c_str(), sNewIdx.c_str(), szLastOldDate.c_str());
 
 	//UV
-	m_sql.safe_query("UPDATE UV SET DeviceRowID='%d' WHERE (DeviceRowID == '%d') AND (Date>'%q')", oldIdx, newIdx, szLastOldDate.c_str());
-	m_sql.safe_query("UPDATE UV_Calendar SET DeviceRowID='%d' WHERE (DeviceRowID == '%d') AND (Date>'%q')", oldIdx, newIdx, szLastOldDate.c_str());
+	m_sql.safe_query("UPDATE UV SET DeviceRowID='%q' WHERE (DeviceRowID == '%q') AND (Date>'%q')", sOldIdx.c_str(), sNewIdx.c_str(), szLastOldDate.c_str());
+	m_sql.safe_query("UPDATE UV_Calendar SET DeviceRowID='%q' WHERE (DeviceRowID == '%q') AND (Date>'%q')", sOldIdx.c_str(), sNewIdx.c_str(), szLastOldDate.c_str());
 
 	//Wind
-	m_sql.safe_query("UPDATE Wind SET DeviceRowID='%d' WHERE (DeviceRowID == '%d') AND (Date>'%q')", oldIdx, newIdx, szLastOldDate.c_str());
-	m_sql.safe_query("UPDATE Wind_Calendar SET DeviceRowID='%d' WHERE (DeviceRowID == '%d') AND (Date>'%q')", oldIdx, newIdx, szLastOldDate.c_str());
+	m_sql.safe_query("UPDATE Wind SET DeviceRowID='%q' WHERE (DeviceRowID == '%q') AND (Date>'%q')", sOldIdx.c_str(), sNewIdx.c_str(), szLastOldDate.c_str());
+	m_sql.safe_query("UPDATE Wind_Calendar SET DeviceRowID='%q' WHERE (DeviceRowID == '%q') AND (Date>'%q')", sOldIdx.c_str(), sNewIdx.c_str(), szLastOldDate.c_str());
 
 	//Meter
-	m_sql.safe_query("UPDATE Meter SET DeviceRowID='%d' WHERE (DeviceRowID == '%d') AND (Date>'%q')", oldIdx, newIdx, szLastOldDate.c_str());
-	m_sql.safe_query("UPDATE Meter_Calendar SET DeviceRowID='%d' WHERE (DeviceRowID == '%d') AND (Date>'%q')", oldIdx, newIdx, szLastOldDate.c_str());
+	m_sql.safe_query("UPDATE Meter SET DeviceRowID='%q' WHERE (DeviceRowID == '%q') AND (Date>'%q')", sOldIdx.c_str(), sNewIdx.c_str(), szLastOldDate.c_str());
+	m_sql.safe_query("UPDATE Meter_Calendar SET DeviceRowID='%q' WHERE (DeviceRowID == '%q') AND (Date>'%q')", sOldIdx.c_str(), sNewIdx.c_str(), szLastOldDate.c_str());
 
 	//Multimeter
-	m_sql.safe_query("UPDATE MultiMeter SET DeviceRowID='%d' WHERE (DeviceRowID == '%d') AND (Date>'%q')", oldIdx, newIdx, szLastOldDate.c_str());
-	m_sql.safe_query("UPDATE MultiMeter_Calendar SET DeviceRowID='%d' WHERE (DeviceRowID == '%d') AND (Date>'%q')", oldIdx, newIdx, szLastOldDate.c_str());
+	m_sql.safe_query("UPDATE MultiMeter SET DeviceRowID='%q' WHERE (DeviceRowID == '%q') AND (Date>'%q')", sOldIdx.c_str(), sNewIdx.c_str(), szLastOldDate.c_str());
+	m_sql.safe_query("UPDATE MultiMeter_Calendar SET DeviceRowID='%q' WHERE (DeviceRowID == '%q') AND (Date>'%q')", sOldIdx.c_str(), sNewIdx.c_str(), szLastOldDate.c_str());
 
 	//Fan
-	m_sql.safe_query("UPDATE Fan SET DeviceRowID='%d' WHERE (DeviceRowID == '%d') AND (Date>'%q')", oldIdx, newIdx, szLastOldDate.c_str());
-	m_sql.safe_query("UPDATE Fan_Calendar SET DeviceRowID='%d' WHERE (DeviceRowID == '%d') AND (Date>'%q')", oldIdx, newIdx, szLastOldDate.c_str());
+	m_sql.safe_query("UPDATE Fan SET DeviceRowID='%q' WHERE (DeviceRowID == '%q') AND (Date>'%q')", sOldIdx.c_str(), sNewIdx.c_str(), szLastOldDate.c_str());
+	m_sql.safe_query("UPDATE Fan_Calendar SET DeviceRowID='%q' WHERE (DeviceRowID == '%q') AND (Date>'%q')", sOldIdx.c_str(), sNewIdx.c_str(), szLastOldDate.c_str());
 
 	//Percentage
-	m_sql.safe_query("UPDATE Percentage SET DeviceRowID='%d' WHERE (DeviceRowID == '%d') AND (Date>'%q')", oldIdx, newIdx, szLastOldDate.c_str());
-	m_sql.safe_query("UPDATE Percentage_Calendar SET DeviceRowID='%d' WHERE (DeviceRowID == '%d') AND (Date>'%q')", oldIdx, newIdx, szLastOldDate.c_str());
+	m_sql.safe_query("UPDATE Percentage SET DeviceRowID='%q' WHERE (DeviceRowID == '%q') AND (Date>'%q')", sOldIdx.c_str(), sNewIdx.c_str(), szLastOldDate.c_str());
+	m_sql.safe_query("UPDATE Percentage_Calendar SET DeviceRowID='%q' WHERE (DeviceRowID == '%q') AND (Date>'%q')", sOldIdx.c_str(), sNewIdx.c_str(), szLastOldDate.c_str());
 
 	m_sql.DeleteDevices(sNewIdx);
 
-	m_mainworker.m_scheduler.ReloadSchedules();
+ 	m_mainworker.m_scheduler.ReloadSchedules();
+
 	return true;
 }
 
