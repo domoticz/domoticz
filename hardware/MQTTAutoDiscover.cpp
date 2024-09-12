@@ -1850,17 +1850,17 @@ bool MQTTAutoDiscover::GuessSensorTypeValue(_tMQTTASensor* pSensor, uint8_t& dev
 		devType = pTypeGeneral;
 		subType = sTypeKwh;
 
-		float fUsage = 0;
-		float multiply = 1000.0F;
+		double fUsage = 0;
+		double multiply = 1000.0;
 
 		if (szUnit == "wh")
-			multiply = 1.0F;
+			multiply = 1.0;
 		else if (szUnit == "wm")
-			multiply = 1.0F / 60.0F;
+			multiply = 1.0 / 60.0;
 
-		float fkWh = static_cast<float>(atof(pSensor->last_value.c_str())) * multiply;
+		double dkWh = atof(pSensor->last_value.c_str()) * multiply;
 
-		if (fkWh < -1000000)
+		if (dkWh < -1000000)
 		{
 			//Way too negative, probably a bug in the sensor
 			return false;
@@ -1868,9 +1868,9 @@ bool MQTTAutoDiscover::GuessSensorTypeValue(_tMQTTASensor* pSensor, uint8_t& dev
 
 		// Zero could be the first ever value received.
 		// Or it could also be that the middleware sends 0 when it has not received it before
-		if (fkWh == 0 || pSensor->state_class == "total_increasing")
+		if (dkWh == 0 || pSensor->state_class == "total_increasing")
 		{
-			float fPrevkWh = pSensor->prev_value;
+			double dPrevkWh = pSensor->prev_value;
 
 			if (!pSensor->last_received != 0)
 			{
@@ -1880,44 +1880,44 @@ bool MQTTAutoDiscover::GuessSensorTypeValue(_tMQTTASensor* pSensor, uint8_t& dev
 					std::vector<std::string> strarray;
 					StringSplit(result[0][0], ";", strarray);
 					if (strarray.size() == 2)
-						fPrevkWh = static_cast<float>(atof(strarray[1].c_str()));
+						dPrevkWh = atof(strarray[1].c_str());
 
 					// For total_increasing sensors, the epoch is stored in StrParam1
 					if (!result[0][1].empty())
-						pSensor->epoch = static_cast<float>(atof(result[0][1].c_str()));
+						pSensor->epoch = atof(result[0][1].c_str());
 				}
 			}
 
 			// GuessSensorTypeValue() is sometimes invoked with empty sValue to do
 			// only what its name implies, nothing more. Do not bump the epoch when
 			// when that happens; just use the previous value.
-			if (fkWh == 0)
+			if (dkWh == 0)
 			{
-				fkWh = fPrevkWh;
+				dkWh = dPrevkWh;
 			}
 			else if (pSensor->state_class == "total_increasing")
 			{
 				// If the value resulting from this reading would be lower than the
 				// previous value, the sensor must have reset. Bump its epoch, which
 				// we store in StrParam1.
-				if (fkWh + pSensor->epoch < fPrevkWh)
+				if (dkWh + pSensor->epoch < dPrevkWh)
 				{
-					pSensor->epoch = fPrevkWh;
+					pSensor->epoch = dPrevkWh;
 					m_sql.safe_query("UPDATE DeviceStatus SET StrParam1='%f' WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Type==%d) AND (Subtype==%d)",
 							 pSensor->epoch, m_HwdID, pSensor->unique_id.c_str(), devType, subType);
 				}
 
-				fkWh += pSensor->epoch;
+				dkWh += pSensor->epoch;
 			}
 		}
-		pSensor->prev_value = fkWh;
+		pSensor->prev_value = dkWh;
 
 		_tMQTTASensor* pWattSensor = get_auto_discovery_sensor_WATT_unit(pSensor);
 		if (pWattSensor && pWattSensor->last_received != 0)
 		{
-			fUsage = static_cast<float>(atof(pWattSensor->sValue.c_str()));
+			fUsage = atof(pWattSensor->sValue.c_str());
 		}
-		sValue = std_format("%.3f;%.3f", fUsage, fkWh);
+		sValue = std_format("%.3f;%.3f", fUsage, dkWh);
 	}
 	else if (
 		(szUnit == "lx")
