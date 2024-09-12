@@ -1800,7 +1800,10 @@ bool MQTTAutoDiscover::GuessSensorTypeValue(_tMQTTASensor* pSensor, uint8_t& dev
 		subType = sTypeCurrent;
 		sValue = std_format("%.3f", static_cast<float>(atof(pSensor->last_value.c_str())));
 	}
-	else if (szUnit == "w")
+	else if (
+		 (szUnit == "w")
+		 || (szUnit == "kw")
+		 )
 	{
 		devType = pTypeUsage;
 		subType = sTypeElectric;
@@ -1812,6 +1815,9 @@ bool MQTTAutoDiscover::GuessSensorTypeValue(_tMQTTASensor* pSensor, uint8_t& dev
 			//Way too negative, probably a bug in the sensor
 			return false;
 		}
+
+		if (szUnit == "kw")
+			fUsage *= 1000;
 
 		sValue = std_format("%.3f", fUsage);
 
@@ -2269,13 +2275,19 @@ MQTTAutoDiscover::_tMQTTASensor* MQTTAutoDiscover::get_auto_discovery_sensor_WAT
 	if (pDevice == nullptr)
 		return nullptr; //device not found!?
 
-	if (pSensor->unique_id.find("zwave") != 0)
-		return get_auto_discovery_sensor_unit(pSensor, "w"); //not ZWave
+	_tMQTTASensor* pSensor2Return = nullptr;
+
+	if (pSensor->unique_id.find("zwave") != 0) {
+		//not ZWave
+		pSensor2Return = get_auto_discovery_sensor_unit(pSensor, "w");
+		if (!pSensor2Return)
+			pSensor2Return = get_auto_discovery_sensor_unit(pSensor, "kw");
+		return pSensor2Return;
+	}
 
 	std::vector<std::string> strarraySensor;
 	StringSplit(pSensor->unique_id, "-", strarraySensor);
 
-	_tMQTTASensor* pSensor2Return = nullptr;
 
 	// Check for the correct sensor with the largest match in the UID
 	for (const auto ittSensorID : pDevice->sensor_ids)
@@ -2287,7 +2299,7 @@ MQTTAutoDiscover::_tMQTTASensor* MQTTAutoDiscover::get_auto_discovery_sensor_WAT
 			std::string szUnit = utf8_to_string(pTmpDeviceSensor->unit_of_measurement);
 			stdlower(szUnit);
 
-			if (szUnit == "w")
+			if (szUnit == "w" || szUnit == "kw")
 			{
 				if (pSensor->unique_id == pTmpDeviceSensor->unique_id)
 					return pTmpDeviceSensor; //non-zwave?
