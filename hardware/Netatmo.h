@@ -119,11 +119,13 @@ class CNetatmo : public CDomoticzHardwareBase
 
 	bool Login();
 	bool RefreshToken(bool bForce = false);
+	bool LoadConvertFlag();
 	bool LoadRefreshToken();
 	void StoreRefreshToken();
 	void StoreRequestTokenFlag(bool bFlag = false);
 	bool m_isLogged;
 	bool m_bForceLogin;
+	bool m_ConvertFlag;
 
 	m_eNetatmoType m_weatherType;
 	m_eNetatmoType m_homecoachType;
