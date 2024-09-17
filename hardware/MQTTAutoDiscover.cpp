@@ -736,6 +736,7 @@ void MQTTAutoDiscover::on_auto_discovery_message(const struct mosquitto_message*
 
 		pDevice->identifiers = device_identifiers;
 
+		// This is the name of the *device* to which this sensor happens to be attached
 		std::string dev_name("");
 		if (!root["device"]["name"].empty())
 		{
@@ -745,32 +746,35 @@ void MQTTAutoDiscover::on_auto_discovery_message(const struct mosquitto_message*
 		{
 			dev_name = root["dev"]["name"].asString();
 		}
+		else
+		{
+			dev_name = pDevice->identifiers;
+		}
+		if (pDevice->name.empty())
+			pDevice->name = dev_name;
 
+		std::string sensor_name("");
+		if (root["name"].empty())
+		{
+			root["name"] = sensor_unique_id;
+		}
 		if (!dev_name.empty())
 		{
-			if (root["name"].empty())
-			{
-				root["name"] = (dev_name.empty()) ? sensor_unique_id : dev_name;
-			}
 			std::string subname = root["name"].asString();
 			if (subname.find("0x") != 0)
 			{
-				pDevice->name = dev_name;
 				if (dev_name != subname)
-					pDevice->name += " (" + subname + ")";
+					sensor_name = dev_name + " (" + subname + ")";
 			}
 			else
 			{
-				pDevice->name = dev_name;
+				sensor_name = subname;
 			}
-		}
-		else if (!root["name"].empty())
+                }
+		else
 		{
-			pDevice->name = root["name"].asString();
+			sensor_name = root["name"].asString();
 		}
-
-		if (pDevice->name.empty())
-			pDevice->name = pDevice->identifiers;
 
 		if (!root["device"]["sw_version"].empty())
 			pDevice->sw_version = root["device"]["sw_version"].asString();
@@ -853,7 +857,7 @@ void MQTTAutoDiscover::on_auto_discovery_message(const struct mosquitto_message*
 		pSensor->config = qMessage;
 		pSensor->component_type = component;
 		pSensor->device_identifiers = device_identifiers;
-		pSensor->name = pDevice->name;
+		pSensor->name = sensor_name;
 
 		if (!root["enabled_by_default"].empty())
 			pSensor->bEnabled_by_default = root["enabled_by_default"].asBool();
