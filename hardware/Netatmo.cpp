@@ -671,7 +671,7 @@ bool CNetatmo::SetProgramState(const int uid, const int newState)
 		//Debug(DEBUG_HARDWARE, "Home_Data = %s ", _data.c_str());
 		Get_Respons_API(NETYPE_STATUS, sResult, _data, bRet, root, "");
 		//Parse API response
-		bRet = ParseHomeStatus(sResult, root, Home_id);
+		//bRet = ParseHomeStatus(sResult, root, Home_id);
 		if (!bRet)
 		{
 			Log(LOG_ERROR, "NetatmoThermostat: Error setting setpoint state!");
