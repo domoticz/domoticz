@@ -4769,13 +4769,13 @@ define(['app'], function (app) {
 				doorbell_RA :			'read_doorbell access_doorbell',
 				presence_RWA :			'read_presence write_presence access_presence',
 				carbonmonoxidedetector_R :	'read_carbonmonoxidedetector',
-				read_smokedetector_R :		'read_smokedetector',
-				read_homecoach_R :		'read_homecoach',
-				read_magellan_RW :		'read_magellan write_magellan',
-				read_bubendorff_RW :		'read_bubendorff write_bubendorff',
-				read_smarther_RW :		'read_smarther write_smarther',
-				read_mx_RW :			'read_mx write_mx',
-				read_mhs1_RW :			'read_mhs1 write_mhs1'
+				smokedetector_R :		'read_smokedetector',
+				homecoach_R :			'read_homecoach',
+				magellan_RW :			'read_magellan write_magellan',
+				bubendorff_RW :			'read_bubendorff write_bubendorff',
+				smarther_RW :			'read_smarther write_smarther',
+				mx_RW :				'read_mx write_mx',
+				mhs1_RW :			'read_mhs1 write_mhs1'
 			};
 
 			var result = "";
