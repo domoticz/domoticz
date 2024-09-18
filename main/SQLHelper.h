@@ -456,7 +456,7 @@ public:
 
 	bool CalcMeterPrice(const uint64_t idx, const float divider, const char* szDateStart, const char* szDateEnd, float &price);
 	bool CalcMultiMeterPrice(const uint64_t idx, const float divider, const char* szDateStart, const char* szDateEnd, float& price);
-	bool TransferDevice(const std::string& sOldIdx, const std::string&  sNewIdx);
+	bool TransferDevice(const std::string& sOldIdx, const std::string&  sNewIdx, const bool bForceAllDataCopied = false);
 public:
 	std::string m_LastSwitchID; // for learning command
 	std::string m_UniqueID;
