@@ -77,6 +77,7 @@ class CNetatmo : public CDomoticzHardwareBase
 	bool m_bPollThermostat;
 	bool m_bPollWeatherData;
 	bool m_bPollHomecoachData;
+	bool m_bPollGetEvents;
 	bool m_bPollHomeData;
 	bool m_bPollHomesData;
 	bool m_bPollHomeStatus;
