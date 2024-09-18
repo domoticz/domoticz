@@ -304,7 +304,7 @@ std::string MQTTAutoDiscover::GetValueFromTemplate(Json::Value root, std::string
 			if (root.isDouble())
 			{
 				//until we have c++20 where we can use std::format
-				retVal = std_format("%g", root.asDouble());
+				retVal = std_format("%.*g", FLT_DECIMAL_DIG, root.asDouble());
 			}
 			else
 				retVal = root.asString();
