@@ -1118,6 +1118,7 @@ void MQTTAutoDiscover::on_auto_discovery_message(const struct mosquitto_message*
 			{
 				pSensor->supported_color_modes[itt.asString()] = 1;
 			}
+
 			if (pSensor->supported_color_modes.find("brightness") != pSensor->supported_color_modes.end())
 			{
 				pSensor->bBrightness = true;
@@ -1125,6 +1126,16 @@ void MQTTAutoDiscover::on_auto_discovery_message(const struct mosquitto_message*
 				if (pSensor->supported_color_modes.size() == 1)
 				{
 					//we only support brightness, so it is a normal dimmer and does not support setting a color
+					pSensor->bColor_mode = false;
+					pSensor->supported_color_modes.clear();
+				}
+			}
+
+			if (pSensor->supported_color_modes.find("onoff") != pSensor->supported_color_modes.end())
+			{
+				if (pSensor->supported_color_modes.size() == 1)
+				{
+					//we only support onoff, so it is a normal switch and does not support setting a color
 					pSensor->bColor_mode = false;
 					pSensor->supported_color_modes.clear();
 				}
