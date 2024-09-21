@@ -304,7 +304,10 @@ std::string MQTTAutoDiscover::GetValueFromTemplate(Json::Value root, std::string
 			if (root.isDouble())
 			{
 				//until we have c++20 where we can use std::format
-				retVal = std_format("%g", root.asDouble());
+#ifndef FLT_DECIMAL_DIG
+	#define FLT_DECIMAL_DIG 9
+#endif
+				retVal = std_format("%.*g", FLT_DECIMAL_DIG, root.asDouble());
 			}
 			else
 				retVal = root.asString();
@@ -1115,6 +1118,7 @@ void MQTTAutoDiscover::on_auto_discovery_message(const struct mosquitto_message*
 			{
 				pSensor->supported_color_modes[itt.asString()] = 1;
 			}
+
 			if (pSensor->supported_color_modes.find("brightness") != pSensor->supported_color_modes.end())
 			{
 				pSensor->bBrightness = true;
@@ -1122,6 +1126,16 @@ void MQTTAutoDiscover::on_auto_discovery_message(const struct mosquitto_message*
 				if (pSensor->supported_color_modes.size() == 1)
 				{
 					//we only support brightness, so it is a normal dimmer and does not support setting a color
+					pSensor->bColor_mode = false;
+					pSensor->supported_color_modes.clear();
+				}
+			}
+
+			if (pSensor->supported_color_modes.find("onoff") != pSensor->supported_color_modes.end())
+			{
+				if (pSensor->supported_color_modes.size() == 1)
+				{
+					//we only support onoff, so it is a normal switch and does not support setting a color
 					pSensor->bColor_mode = false;
 					pSensor->supported_color_modes.clear();
 				}
@@ -1797,7 +1811,10 @@ bool MQTTAutoDiscover::GuessSensorTypeValue(_tMQTTASensor* pSensor, uint8_t& dev
 		subType = sTypeCurrent;
 		sValue = std_format("%.3f", static_cast<float>(atof(pSensor->last_value.c_str())));
 	}
-	else if (szUnit == "w")
+	else if (
+		 (szUnit == "w")
+		 || (szUnit == "kw")
+		 )
 	{
 		devType = pTypeUsage;
 		subType = sTypeElectric;
@@ -1806,38 +1823,34 @@ bool MQTTAutoDiscover::GuessSensorTypeValue(_tMQTTASensor* pSensor, uint8_t& dev
 
 		if (fUsage < -1000000)
 		{
-			//Way to negative, probably a bug in the sensor
+			//Way too negative, probably a bug in the sensor
 			return false;
 		}
 
+		if (szUnit == "kw")
+			fUsage *= 1000;
+
+		sValue = std_format("%.3f", fUsage);
+
 		float fkWh = 0.0F;
 		_tMQTTASensor* pkWhSensor = get_auto_discovery_sensor_unit(pSensor, "kwh");
-		if (pkWhSensor)
-			fkWh = static_cast<float>(atof(pkWhSensor->last_value.c_str())) * 1000.0F;
-		else
-		{
+		if (!pkWhSensor)
 			pkWhSensor = get_auto_discovery_sensor_unit(pSensor, "wh");
-			if (pkWhSensor)
-				fkWh = static_cast<float>(atof(pkWhSensor->last_value.c_str()));
-			else
-			{
-				pkWhSensor = get_auto_discovery_sensor_unit(pSensor, "wm");
-				if (pkWhSensor)
-					fkWh = static_cast<float>(atof(pkWhSensor->last_value.c_str())) / 60.0F;
-			}
-		}
+		if (!pkWhSensor)
+			pkWhSensor = get_auto_discovery_sensor_unit(pSensor, "wm");
+
 		if (pkWhSensor)
 		{
 			if (pkWhSensor->last_received != 0)
 			{
-				pkWhSensor->sValue = std_format("%.3f;%.3f", fUsage, fkWh);
+				pkWhSensor->sValue = std_format("%.3f;%.3f", fUsage, pkWhSensor->prev_value);
+
 				mosquitto_message xmessage;
 				xmessage.retain = false;
 				// Trigger extra update for the kWh sensor with the new W value
 				handle_auto_discovery_sensor(pkWhSensor, &xmessage);
 			}
 		}
-		sValue = std_format("%.3f", fUsage);
 	}
 	else if (
 		(szUnit == "kwh")
@@ -1848,45 +1861,74 @@ bool MQTTAutoDiscover::GuessSensorTypeValue(_tMQTTASensor* pSensor, uint8_t& dev
 		devType = pTypeGeneral;
 		subType = sTypeKwh;
 
-		float fUsage = 0;
-		float multiply = 1000.0F;
+		double fUsage = 0;
+		double multiply = 1000.0;
 
 		if (szUnit == "wh")
-			multiply = 1.0F;
+			multiply = 1.0;
 		else if (szUnit == "wm")
-			multiply = 1.0F / 60.0F;
+			multiply = 1.0 / 60.0;
 
-		float fkWh = static_cast<float>(atof(pSensor->last_value.c_str())) * multiply;
+		double dkWh = atof(pSensor->last_value.c_str()) * multiply;
 
-		if (fkWh < -1000000)
+		if (dkWh < -1000000)
 		{
-			//Way to negative, probably a bug in the sensor
+			//Way too negative, probably a bug in the sensor
 			return false;
 		}
 
-		if (fkWh == 0)
+		// Zero could be the first ever value received.
+		// Or it could also be that the middleware sends 0 when it has not received it before
+		if (dkWh == 0 || pSensor->state_class == "total_increasing")
 		{
-			//could be the first every value received.
-			//could also be that this the middleware sends 0 when it has not received it before
-			auto result = m_sql.safe_query("SELECT sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Type==%d) AND (Subtype==%d)",
-				m_HwdID, pSensor->unique_id.c_str(), devType, subType);
-			if (!result.empty())
+			double dPrevkWh = pSensor->prev_value;
+
+			if (!pSensor->last_received != 0)
 			{
-				std::vector<std::string> strarray;
-				StringSplit(result[0][0], ";", strarray);
-				if (strarray.size() == 2)
-				{
-					fkWh = static_cast<float>(atof(strarray[1].c_str()));
+				auto result = m_sql.safe_query("SELECT sValue,StrParam1 FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Type==%d) AND (Subtype==%d)",
+					m_HwdID, pSensor->unique_id.c_str(), devType, subType);
+				if (!result.empty()) {
+					std::vector<std::string> strarray;
+					StringSplit(result[0][0], ";", strarray);
+					if (strarray.size() == 2)
+						dPrevkWh = atof(strarray[1].c_str());
+
+					// For total_increasing sensors, the epoch is stored in StrParam1
+					if (!result[0][1].empty())
+						pSensor->epoch = atof(result[0][1].c_str());
 				}
 			}
+
+			// GuessSensorTypeValue() is sometimes invoked with empty sValue to do
+			// only what its name implies, nothing more. Do not bump the epoch when
+			// when that happens; just use the previous value.
+			if (dkWh == 0)
+			{
+				dkWh = dPrevkWh;
+			}
+			else if (pSensor->state_class == "total_increasing")
+			{
+				// If the value resulting from this reading would be lower than the
+				// previous value, the sensor must have reset. Bump its epoch, which
+				// we store in StrParam1.
+				if (dkWh + pSensor->epoch < dPrevkWh)
+				{
+					pSensor->epoch = dPrevkWh;
+					m_sql.safe_query("UPDATE DeviceStatus SET StrParam1='%f' WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Type==%d) AND (Subtype==%d)",
+							 pSensor->epoch, m_HwdID, pSensor->unique_id.c_str(), devType, subType);
+				}
+
+				dkWh += pSensor->epoch;
+			}
 		}
+		pSensor->prev_value = dkWh;
 
 		_tMQTTASensor* pWattSensor = get_auto_discovery_sensor_WATT_unit(pSensor);
-		if (pWattSensor)
+		if (pWattSensor && pWattSensor->last_received != 0)
 		{
-			fUsage = static_cast<float>(atof(pWattSensor->last_value.c_str()));
+			fUsage = atof(pWattSensor->sValue.c_str());
 		}
-		sValue = std_format("%.3f;%.3f", fUsage, fkWh);
+		sValue = std_format("%.3f;%.3f", fUsage, dkWh);
 	}
 	else if (
 		(szUnit == "lx")
@@ -2244,13 +2286,19 @@ MQTTAutoDiscover::_tMQTTASensor* MQTTAutoDiscover::get_auto_discovery_sensor_WAT
 	if (pDevice == nullptr)
 		return nullptr; //device not found!?
 
-	if (pSensor->unique_id.find("zwave") != 0)
-		return get_auto_discovery_sensor_unit(pSensor, "w"); //not ZWave
+	_tMQTTASensor* pSensor2Return = nullptr;
+
+	if (pSensor->unique_id.find("zwave") != 0) {
+		//not ZWave
+		pSensor2Return = get_auto_discovery_sensor_unit(pSensor, "w");
+		if (!pSensor2Return)
+			pSensor2Return = get_auto_discovery_sensor_unit(pSensor, "kw");
+		return pSensor2Return;
+	}
 
 	std::vector<std::string> strarraySensor;
 	StringSplit(pSensor->unique_id, "-", strarraySensor);
 
-	_tMQTTASensor* pSensor2Return = nullptr;
 
 	// Check for the correct sensor with the largest match in the UID
 	for (const auto ittSensorID : pDevice->sensor_ids)
@@ -2262,7 +2310,7 @@ MQTTAutoDiscover::_tMQTTASensor* MQTTAutoDiscover::get_auto_discovery_sensor_WAT
 			std::string szUnit = utf8_to_string(pTmpDeviceSensor->unit_of_measurement);
 			stdlower(szUnit);
 
-			if (szUnit == "w")
+			if (szUnit == "w" || szUnit == "kw")
 			{
 				if (pSensor->unique_id == pTmpDeviceSensor->unique_id)
 					return pTmpDeviceSensor; //non-zwave?
