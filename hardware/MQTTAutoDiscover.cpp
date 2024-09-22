@@ -1883,7 +1883,7 @@ bool MQTTAutoDiscover::GuessSensorTypeValue(_tMQTTASensor* pSensor, uint8_t& dev
 		{
 			double dPrevkWh = pSensor->prev_value;
 
-			if (!pSensor->last_received != 0)
+			if (pSensor->last_received != 0)
 			{
 				auto result = m_sql.safe_query("SELECT sValue,StrParam1 FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Type==%d) AND (Subtype==%d)",
 					m_HwdID, pSensor->unique_id.c_str(), devType, subType);
