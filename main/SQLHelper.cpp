@@ -10276,8 +10276,7 @@ void CSQLHelper::RefreshActualPrices()
 
 bool CSQLHelper::TransferDevice(const std::string& sOldIdx, const std::string& sNewIdx)
 {
-	std::vector<std::vector<std::string>> result;
-	result = m_sql.safe_query("SELECT HardwareID, OrgHardwareID, DeviceID, Unit, Type, SubType FROM DeviceStatus WHERE (ID == '%q')", sNewIdx.c_str());
+	auto result = m_sql.safe_query("SELECT HardwareID, OrgHardwareID, DeviceID, Unit, Type, SubType FROM DeviceStatus WHERE (ID == '%q')", sNewIdx.c_str());
 	if (result.empty())
 		return false;
 
