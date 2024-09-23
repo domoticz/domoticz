@@ -2337,13 +2337,13 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 				{
 					if (tNetatmoLastUpdate > (tNow - Interval))
 					{
-						Log(LOG_STATUS, "cloud data for module [%s] is now updated again", moduleName.c_str());
-
+						//Log(LOG_STATUS, "cloud data for module [%s] is now updated again", moduleName.c_str());
+						Debug(DEBUG_HARDWARE, "cloud data for module [%s] is now updated again", moduleName.c_str());
 					}
 					else
 					{
 						Log(LOG_ERROR, "cloud data for module [%s] no longer updated (module possibly disconnected)", moduleName.c_str());
-						//connected = false;
+						connected = false;
 					}
 				}
 
