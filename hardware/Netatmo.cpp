@@ -488,7 +488,7 @@ bool CNetatmo::WriteToHardware(const char* pdata, const unsigned char /*length*/
 
 	if (packettype == pTypeLighting2)
 	{
-		Debug(DEBUG_HARDWARE, "Packettype pTypeLighting2 ");
+		//Debug(DEBUG_HARDWARE, "Packettype pTypeLighting2 ");
 		return true;
 	}
 	//This is the selector switch for setting the thermostat schedule
@@ -510,7 +510,7 @@ bool CNetatmo::WriteToHardware(const char* pdata, const unsigned char /*length*/
 	}
 	if (packettype == pTypeGeneralSwitch)
 	{
-		Debug(DEBUG_HARDWARE, "Packettype pTypeGeneralSwitch ");
+		//Debug(DEBUG_HARDWARE, "Packettype pTypeGeneralSwitch ");
 		//
 		// Recast raw data to get switch specific data
 		const _tGeneralSwitch* xcmd = reinterpret_cast<const _tGeneralSwitch*>(pdata);
@@ -565,7 +565,7 @@ bool CNetatmo::WriteToHardware(const char* pdata, const unsigned char /*length*/
 		int switchType = STYPE_Selector;
 		int devType = packettype;  //unsigned char
 		int subType = sSwitchTypeSelector;
-		Debug(DEBUG_HARDWARE, "Netatmo uid %08X", uid);
+		//Debug(DEBUG_HARDWARE, "Netatmo uid %08X", uid);
 
 		return SetProgramState(uid, xcmd->level);
 		//return true;
@@ -575,7 +575,7 @@ bool CNetatmo::WriteToHardware(const char* pdata, const unsigned char /*length*/
 		int node_id = pCmd->LIGHTING2.id4;
 		const _tGeneralSwitch* xcmd = reinterpret_cast<const _tGeneralSwitch*>(pdata);
 
-		Debug(DEBUG_HARDWARE, "Packettype unKnown ");
+		//Debug(DEBUG_HARDWARE, "Packettype unKnown ");
 	}
 	return false;
 }
@@ -589,7 +589,7 @@ bool CNetatmo::WriteToHardware(const char* pdata, const unsigned char /*length*/
 /// <returns>success status</returns>
 bool CNetatmo::SetAway(const int id, const bool bIsAway)
 {
-	Debug(DEBUG_HARDWARE, "NetatmoThermostat Away id = %d", id);
+	//Debug(DEBUG_HARDWARE, "NetatmoThermostat Away id = %d", id);
 	int uid = id;
 
 	return SetProgramState(uid, (bIsAway == true) ? 1 : 0);
@@ -611,7 +611,7 @@ bool CNetatmo::SetProgramState(const int uid, const int newState)
 			return false;
 	}
 
-	Debug(DEBUG_HARDWARE, "SetProgramState");
+	//Debug(DEBUG_HARDWARE, "SetProgramState");
 	std::vector<std::string> ExtraHeaders;
 	std::string sResult;
 	Json::Value root;       // root JSON object
@@ -623,7 +623,7 @@ bool CNetatmo::SetProgramState(const int uid, const int newState)
 	std::string name = m_ModuleNames[module_id];
 	std::string roomNetatmoID = m_RoomIDs[module_id];
 	std::string Home_id = m_DeviceHomeID[roomNetatmoID];      // Home_ID
-	Debug(DEBUG_HARDWARE, "Device MAC %s", module_id.c_str());
+	//Debug(DEBUG_HARDWARE, "Device MAC %s", module_id.c_str());
 
 	if (!m_thermostatModuleID[uid].empty())
 	{
@@ -755,7 +755,7 @@ void CNetatmo::SetSetpoint(unsigned long ID, const float temp)
 	//Debug(DEBUG_HARDWARE, "NetatmoThermostat %s = %s", name.c_str(), module_id.c_str());
 	std::string roomNetatmoID = m_RoomIDs[module_id];
 	std::string Home_id = m_DeviceHomeID[roomNetatmoID];      // Home_ID
-	Debug(DEBUG_HARDWARE, "Netatmo Thermostat MAC; %s in Room ID = %s in Home: %s", module_id.c_str(), roomNetatmoID.c_str(), Home_id.c_str());
+	//Debug(DEBUG_HARDWARE, "Netatmo Thermostat MAC; %s in Room ID = %s in Home: %s", module_id.c_str(), roomNetatmoID.c_str(), Home_id.c_str());
 	// mode of Room "manual" / "max" / "home"
 	//std::string Mode = m_Room_mode[roomID]; //schedule
 	std::string Mode = "manual";
@@ -854,7 +854,7 @@ bool CNetatmo::SetSchedule(int uId, int selected)
 
 	std::string scheduleId = m_ScheduleIDs[selected];
 	std::string Home_id = m_DeviceHomeID[scheduleId];            // Home_ID
-	Debug(DEBUG_HARDWARE, "Schedule id = %s %d", scheduleId.c_str(), uId);
+	//Debug(DEBUG_HARDWARE, "Schedule id = %s %d", scheduleId.c_str(), uId);
 	std::stringstream bstr;
 	std::string sResult;
 	Json::Value root;       // root JSON object
@@ -1072,7 +1072,7 @@ void CNetatmo::Get_Respons_API(const m_eNetatmoType& NType, std::string& sResult
 
 	httpUrl = MakeRequestURL(NType, home_data);
 	std::string sPostData = sstr.str();
-	Debug(DEBUG_HARDWARE, "Respons URL   %s", httpUrl.c_str());
+	//Debug(DEBUG_HARDWARE, "Respons URL   %s", httpUrl.c_str());
 
 	if (!HTTPClient::POST(httpUrl, sPostData, ExtraHeaders, sResult, returnHeaders))
 	{
@@ -1262,7 +1262,7 @@ void CNetatmo::GetHomesDataDetails()
 				//Get the schedules
 				if (!home["schedules"].empty())
 				{
-					Debug(DEBUG_HARDWARE, "Get the schedules from %s", homeID.c_str());
+					//Debug(DEBUG_HARDWARE, "Get the schedules from %s", homeID.c_str());
 					std::stringstream schedules;
 					std::string allSchName = "Off";
 					std::string allSchAction = "00";
@@ -1827,10 +1827,10 @@ bool CNetatmo::ParseDashboard(const Json::Value& root, const int DevIdx, const i
 		// Check when dashboard data was last updated
 		if (!root["time_utc"].empty())
 			tNetatmoLastUpdate = root["time_utc"].asUInt();
-		Debug(DEBUG_HARDWARE, "Module [%s] last update = %s", name.c_str(), ctime(&tNetatmoLastUpdate));
+		//Debug(DEBUG_HARDWARE, "Module [%s] last update = %s", name.c_str(), ctime(&tNetatmoLastUpdate));
 		// check if Netatmo data was updated in the past NETAMO_POLL_INTERVALL (+1 min for sync time lags)... if not means sensors failed to send to cloud
 		int Interval = NETAMO_POLL_INTERVALL + 60;
-		Debug(DEBUG_HARDWARE, "Module [%s] Interval = %d", name.c_str(), Interval);
+		//Debug(DEBUG_HARDWARE, "Module [%s] Interval = %d", name.c_str(), Interval);
 		if (tNetatmoLastUpdate > (tNow - Interval))
 		{
 			if (!m_bNetatmoRefreshed[ID])
@@ -1994,7 +1994,7 @@ bool CNetatmo::ParseDashboard(const Json::Value& root, const int DevIdx, const i
 		const uint8_t Unit = 7;
 		sp_temp = static_cast<int>(SP_temp);
 		std::string sValue = sp_str.str();
-		Debug(DEBUG_HARDWARE, "(%d) %s (%s) [%s] parsedashboard  %s %s %d %d", Hardware_int, str_ID.c_str(), pchar_ID, name.c_str(), sValue.c_str(), m_Name.c_str(), rssiLevel, batValue);
+		//Debug(DEBUG_HARDWARE, "(%d) %s (%s) [%s] parsedashboard  %s %s %d %d", Hardware_int, str_ID.c_str(), pchar_ID, name.c_str(), sValue.c_str(), m_Name.c_str(), rssiLevel, batValue);
 		SendSetPointSensor(ID, (uint8_t)((ID & 0x00FF0000) >> 16), (ID & 0XFF00) >> 8, ID & 0XFF, Unit, SP_temp, sName);
 	}
 
@@ -2089,7 +2089,7 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 
 	//Parse Rooms
 	// First pars Rooms for Thermostat
-	Debug(DEBUG_HARDWARE, "Home ID = %s ", home_id.c_str());
+	//Debug(DEBUG_HARDWARE, "Home ID = %s ", home_id.c_str());
 	std::string setpoint_mode_str;
 	int setpoint_mode_i;
 	int iDevIndex = 0;
@@ -2327,10 +2327,10 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 					//
 				}
 
-				Debug(DEBUG_HARDWARE, "Module [%s] last update = %s", moduleName.c_str(), ctime(&tNetatmoLastUpdate));
+				//Debug(DEBUG_HARDWARE, "Module [%s] last update = %s", moduleName.c_str(), ctime(&tNetatmoLastUpdate));
 				// check if Netatmo data was updated in the past NETAMO_POLL_INTERVALL (+1 min for sync time lags)... if not means sensors failed to send to cloud
 				int Interval = NETAMO_POLL_INTERVALL + 60;
-				Debug(DEBUG_HARDWARE, "Module [%s] Interval = %d %lu", moduleName.c_str(), Interval, tNetatmoLastUpdate);
+				//Debug(DEBUG_HARDWARE, "Module [%s] Interval = %d %lu", moduleName.c_str(), Interval, tNetatmoLastUpdate);
 
 				//Not All devices have a "last seen" so no check for Cloud data possible
 				if (tNetatmoLastUpdate != 0)
@@ -2516,7 +2516,7 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 						//Debug(DEBUG_HARDWARE, "Floodlight name %s  mode %s, %s .", lName.c_str(), setpoint_mode.c_str(), sValue.c_str());
 						m_DeviceModuleID[crcId] = module_id;
 						m_LightDeviceID[crcId] = lName;
-						Debug(DEBUG_HARDWARE, "Floodlight =  %s -  %d", lName.c_str(), crcId);
+						//Debug(DEBUG_HARDWARE, "Floodlight =  %s -  %d", lName.c_str(), crcId);
 						SendSelectorSwitch(crcId, NETATMO_PRESET_UNIT, Selector, lName, 0, true, "off|on|auto", "", false, m_Name);
 					}
 					// Sensors from new API
