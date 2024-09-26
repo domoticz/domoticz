@@ -1902,13 +1902,23 @@ bool CNetatmo::ParseDashboard(const Json::Value& root, const int DevIdx, const i
 		co2 = root["CO2"].asInt();
 		//Debug(DEBUG_HARDWARE, "ParseDashBoard Module CO2 [%d]", co2);
 	}
-	if (!root["sum_rain_24"].empty())
+	if (!root["Rain"].empty())
 	{
 		bHaveRain = true;
 		rain = root["Rain"].asInt();
-		rain_24 = root["sum_rain_24"].asInt();
-		rain_1 = root["sum_rain_1"].asInt();
 		//Debug(DEBUG_HARDWARE, "ParseDashBoard Module Rain [%d]", rain);
+	}
+	if (!root["sum_rain_1"].empty())
+	{
+		bHaveRain = true;
+		rain_1 = root["sum_rain_1"].asFloat();
+		//Debug(DEBUG_HARDWARE, "ParseDashBoard Module Rain_1 [%f]", rain_1);
+	}
+	if (!root["sum_rain_24"].empty())
+	{
+		bHaveRain = true;
+		rain_24 = root["sum_rain_24"].asFloat();
+		//Debug(DEBUG_HARDWARE, "ParseDashBoard Module Rain_24 [%f]", rain_24);
 	}
 	if (!root["WindAngle"].empty())
 	{
@@ -2023,7 +2033,7 @@ bool CNetatmo::ParseDashboard(const Json::Value& root, const int DevIdx, const i
 		std::stringstream v;
 		v << rain_1;
 		v << ";";
-		v << rain;
+		v << rain_24;
 		std::string sValue = v.str().c_str();
 		//SendRainSensor(ID, batValue, m_RainOffset[ID] + m_OldRainCounter[ID], name, rssiLevel);
                 ///Debug(DEBUG_HARDWARE, "(%d) %s (%s) [%s] rain %s %s %d %d", Hardware_int, str_ID.c_str(), pchar_ID, name.c_str(), sValue.c_str(), m_Name.c_str(), rssiLevel, batValue);
@@ -2677,7 +2687,7 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 						std::stringstream v;
 						v << rain_1;
 						v << ";";
-						v << rain;
+						v << rain_24;
 
 						//Debug(DEBUG_HARDWARE, "(%d) %s (%s) [%s] rain %s %s %d %d", Hardware_int, str_ID.c_str(), pchar_ID, name.c_str(), v.str().c_str(), m_Name.c_str(), mrf_status, batteryLevel);
 						UpdateValueInt(0, ID.c_str(), 0, pTypeRAIN, sTypeRAINByRate, mrf_status, batteryLevel, '0', v.str().c_str(), moduleName, 0, m_Name);
