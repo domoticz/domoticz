@@ -1927,8 +1927,8 @@ bool CNetatmo::ParseDashboard(const Json::Value& root, const int DevIdx, const i
 		{
 			bHaveWind = true;
 			wind_angle = root["WindAngle"].asInt();
-			wind_strength = root["WindStrength"].asFloat() / 3.6F;
-			wind_gust = root["GustStrength"].asFloat() / 3.6F;
+			wind_strength = root["WindStrength"].asFloat();
+			wind_gust = root["GustStrength"].asFloat();
 		}
 	}
 
@@ -2062,9 +2062,9 @@ bool CNetatmo::ParseDashboard(const Json::Value& root, const int DevIdx, const i
 		y << ";";
 		y << '0';
 		y << ";";
-		y << wind_strength;
+		y << wind_strength *10 / 3.6;
 		y << ";";
-		y << wind_gust;
+		y << wind_gust *10 / 3.6;
 		y << ";";
 		y << Temp_outdoor;
 		y << ";";
@@ -2073,7 +2073,7 @@ bool CNetatmo::ParseDashboard(const Json::Value& root, const int DevIdx, const i
 		// sValue: "<WindDirDegrees>;<WindDirText>;<WindAveMeterPerSecond*10>;<WindGustMeterPerSecond*10>;<Temp_c>;<WindChill_c>"
 		//SendWind(ID, batValue, wind_angle, wind_strength, wind_gust, 0, 0, false, false, name, rssiLevel);
 		//Debug(DEBUG_HARDWARE, "(%d) %s (%s) [%s] wind %s %s %d %d", Hardware_int, str_ID.c_str(), pchar_ID, name.c_str(), sValue.c_str(), m_Name.c_str(), rssiLevel, batValue);
-		UpdateValueInt(0, str_ID.c_str(), 0, pTypeWIND, sTypeWINDNoTemp, rssiLevel, batValue, '0', sValue.c_str(), name, 0, m_Name);
+		UpdateValueInt(0, str_ID.c_str(), 0, pTypeWIND, sTypeWINDNoTempNoChill, rssiLevel, batValue, '0', sValue.c_str(), name, 0, m_Name);
 	}
 
 	return true;
@@ -2596,7 +2596,7 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 					{
 						bHaveWind = true;
 						wind_strength = module["wind_strength"].asFloat(); // / 3.6F;
-						//Debug(DEBUG_HARDWARE, "HomeStatus Module Wind strength [%d]", wind_strength);
+						//Debug(DEBUG_HARDWARE, "HomeStatus Module Wind strength [%f] km/h", wind_strength);
 					}
 					if (!module["wind_angle"].empty())
 					{
@@ -2608,13 +2608,13 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 					{
 						bHaveWind = true;
 						wind_gust = module["wind_gust"].asFloat(); // / 3.6F;
-						//Debug(DEBUG_HARDWARE, "HomeStatus Module Wind gust [%d]", wind_gust);
+						//Debug(DEBUG_HARDWARE, "HomeStatus Module Wind gust [%f] km/h", wind_gust);
 					}
 					if (!module["wind_gust_angle"].empty())
 					{
 						bHaveWind = true;
 						wind_gust_angle = module["wind_gust_angle"].asFloat(); // / 3.6F;
-						//Debug(DEBUG_HARDWARE, "HomeStatus Module Wind gust angle [%d]", wind_gust_angle);
+						//Debug(DEBUG_HARDWARE, "HomeStatus Module Wind gust angle [%f]", wind_gust_angle);
 					}
 					//Data retrieved create / update appropriate domoticz devices
 					if (bHaveTemp && bHaveHum && bHaveBaro)
@@ -2711,9 +2711,9 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 						y << ";";
 						y << '0';
 						y << ";";
-						y << wind_strength;
+						y << wind_strength *10 / 3.6;
 						y << ";";
-						y << wind_gust;
+						y << wind_gust *10 / 3.6;
 						y << ";";
 						y << Temp_outdoor;
 						y << ";";
@@ -2721,7 +2721,7 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 
 						// sValue: "<WindDirDegrees>;<WindDirText>;<WindAveMeterPerSecond*10>;<WindGustMeterPerSecond*10>;<Temp_c>;<WindChill_c>"
 						//Debug(DEBUG_HARDWARE, "(%d) %s (%s) [%s] wind %s %s %d %d", Hardware_int, str_ID.c_str(), pchar_ID, name.c_str(), y.str().c_str(), m_Name.c_str(), mrf_status, batteryLevel);
-						UpdateValueInt(0, ID.c_str(), 0, pTypeWIND, sTypeWINDNoTemp, mrf_status, batteryLevel, '0', y.str().c_str(), moduleName, 0, m_Name);
+						UpdateValueInt(0, ID.c_str(), 0, pTypeWIND, sTypeWINDNoTempNoChill, mrf_status, batteryLevel, '0', y.str().c_str(), moduleName, 0, m_Name);
 					}
 
 					if ((type == "NATherm1") || (type == "NRV"))
