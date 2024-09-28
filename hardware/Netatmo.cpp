@@ -419,6 +419,51 @@ void CNetatmo::StoreRefreshToken()
 
 
 /// <summary>
+/// Function to identify the Wind Direction
+///
+/// </summary>
+std::string CNetatmo::WindDirection(float dDirection)
+{
+	std::string strDirection;
+	if (dDirection > 348.75 || dDirection < 11.26)
+		strDirection = "N";
+	else if (dDirection < 33.76)
+		strDirection = "NNE";
+	else if (dDirection < 56.26)
+		strDirection = "NE";
+	else if (dDirection < 78.76)
+		strDirection = "ENE";
+	else if (dDirection < 101.26)
+		strDirection = "E";
+	else if (dDirection < 123.76)
+		strDirection = "ESE";
+	else if (dDirection < 146.26)
+		strDirection = "SE";
+	else if (dDirection < 168.76)
+		strDirection = "SSE";
+	else if (dDirection < 191.26)
+		strDirection = "S";
+	else if (dDirection < 213.76)
+		strDirection = "SSW";
+	else if (dDirection < 236.26)
+		strDirection = "SW";
+	else if (dDirection < 258.76)
+		strDirection = "WSW";
+	else if (dDirection < 281.26)
+		strDirection = "W";
+	else if (dDirection < 303.76)
+		strDirection = "WNW";
+	else if (dDirection < 326.26)
+		strDirection = "NW";
+	else if (dDirection < 348.76)
+		strDirection = "NNW";
+	else
+		strDirection = "---";
+	return strDirection;
+}
+
+
+/// <summary>
 /// Function to change bool to text
 ///
 /// </summary>
@@ -2056,11 +2101,12 @@ bool CNetatmo::ParseDashboard(const Json::Value& root, const int DevIdx, const i
 
 	if (bHaveWind)
 	{
+		std::string wind_direction = WindDirection(wind_angle);
 		const char status = '0';
 		std::stringstream y;
 		y << wind_angle;
 		y << ";";
-		y << '0';
+		y << wind_direction;
 		y << ";";
 		y << wind_strength *10 / 3.6;
 		y << ";";
@@ -2705,11 +2751,12 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 					}
 					if (bHaveWind)
 					{
+						std::string wind_direction = WindDirection(wind_angle);
 						const char status = '0';
 						std::stringstream y;
 						y << wind_angle;
 						y << ";";
-						y << '0';
+						y << wind_direction;
 						y << ";";
 						y << wind_strength *10 / 3.6;
 						y << ";";
