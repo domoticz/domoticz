@@ -6036,7 +6036,7 @@ bool CSQLHelper::HasSceneTimers(const uint64_t Idx)
 
 	std::vector<std::vector<std::string> > result;
 
-	result = safe_query("SELECT COUNT(*) FROM SceneTimers WHERE (SceneRowID==%" PRIu64 ") AND (TimerPlan==%d)", Idx, m_ActiveTimerPlan);
+	result = safe_query("SELECT COUNT(*) FROM SceneTimers WHERE (SceneRowID==%" PRIu64 ") AND ((TimerPlan==%d) OR (TimerPlan==9999))", Idx, m_ActiveTimerPlan);
 	if (result.empty())
 		return false;
 	std::vector<std::string> sd = result[0];
