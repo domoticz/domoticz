@@ -162,6 +162,7 @@ class CNetatmo : public CDomoticzHardwareBase
 
 	uint64_t convert_mac(std::string mac);
 	std::string bool_as_text(bool b);
+	std::string WindDirection(float dDirection);
 
 	uint64_t UpdateValueInt(int HardwareID, const char* ID, unsigned char unit, unsigned char devType, unsigned char subType, unsigned char signallevel, unsigned char batterylevel, int nValue, const char* sValue, std::string& devname, bool bUseOnOffAction, const std::string& user);
 	bool ParseDashboard(const Json::Value &root, int DevIdx, int ID, std::string& name, const std::string &ModuleType, int battery_percent, int rf_status, std::string& Hardware_ID, std::string& home_id);
