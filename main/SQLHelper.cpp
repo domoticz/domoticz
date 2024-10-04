@@ -10274,10 +10274,9 @@ void CSQLHelper::RefreshActualPrices()
 }
 
 
-bool CSQLHelper::TransferDevice(const std::string& sOldIdx, const std::string& sNewIdx, const bool bForceAllDataCopied)
+bool CSQLHelper::TransferDevice(const std::string& sOldIdx, const std::string& sNewIdx)
 {
-	std::vector<std::vector<std::string>> result;
-	result = m_sql.safe_query("SELECT HardwareID, OrgHardwareID, DeviceID, Unit, Type, SubType FROM DeviceStatus WHERE (ID == '%q')", sNewIdx.c_str());
+	auto result = m_sql.safe_query("SELECT HardwareID, OrgHardwareID, DeviceID, Unit, Type, SubType FROM DeviceStatus WHERE (ID == '%q')", sNewIdx.c_str());
 	if (result.empty())
 		return false;
 
@@ -10294,9 +10293,6 @@ bool CSQLHelper::TransferDevice(const std::string& sOldIdx, const std::string& s
 		return false;
 
 	std::string szLastOldDate = result[0][0];
-
-	if (bForceAllDataCopied)
-		szLastOldDate = "1-jan-1970";
 
 	_log.Log(LOG_STATUS, "Replace old device %s to new device %s from %s.", sOldIdx.c_str(), sNewIdx.c_str(), szLastOldDate.c_str());
 
