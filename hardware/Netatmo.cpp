@@ -659,7 +659,7 @@ bool CNetatmo::MergeDeviceLogs (const std::string& spTableName, const std::strin
 /// Send sensors to Main worker
 ///
 /// </summary>
-uint64_t CNetatmo::UpdateValueInt(int HardwareID, const char* deviceID, unsigned char unit, unsigned char devType, unsigned char subType, unsigned char signallevel, unsigned char batterylevel, int nValue, 
+uint64_t CNetatmo::UpdateValueInt(int HardwareID, const char* deviceID, unsigned char unit, unsigned char devType, unsigned char subType, unsigned char signallevel, unsigned char batterylevel, int nValue,
 	const char* sValue, std::string& devname, bool bUseOnOffAction, const std::string& user)
 {
 	std::string sDeviceID = deviceID;
@@ -2199,7 +2199,6 @@ bool CNetatmo::ParseDashboard(const Json::Value& root, const int DevIdx, const i
 		// initialize the relevant device flag
 		if (m_bNetatmoRefreshed.find(ID) == m_bNetatmoRefreshed.end())
 			m_bNetatmoRefreshed[ID] = true;
-
 		// Check when dashboard data was last updated
 		if (!root["time_utc"].empty())
 			tNetatmoLastUpdate = root["time_utc"].asUInt();
@@ -2208,12 +2207,12 @@ bool CNetatmo::ParseDashboard(const Json::Value& root, const int DevIdx, const i
 //			Log(LOG_STATUS, "No time stamp in received data; using current time");
 //			tNetatmoLastUpdate = tNow;
 //		}
-//		Debug(DEBUG_HARDWARE, "Module [%s] last update = %s (%d)", name.c_str(), ctime(&tNetatmoLastUpdate), tNetatmoLastUpdate);
+		//Debug(DEBUG_HARDWARE, "Module [%s] last update = %s (%d)", name.c_str(), ctime(&tNetatmoLastUpdate), tNetatmoLastUpdate);
 		Log(LOG_STATUS, "Module [%s] last update = %s (%d)", name.c_str(), ctime(&tNetatmoLastUpdate), tNetatmoLastUpdate);
 
 		// check if Netatmo data was updated in the past NETAMO_POLL_INTERVALL (+1 min for sync time lags)... if not means sensors failed to send to cloud
 		int Interval = NETAMO_POLL_INTERVALL + 60;
-//		Debug(DEBUG_HARDWARE, "Module [%s] Interval = %d", name.c_str(), Interval);
+		//Debug(DEBUG_HARDWARE, "Module [%s] Interval = %d", name.c_str(), Interval);
 		Log(LOG_STATUS, "Module [%s] Interval = %d", name.c_str(), Interval);
 
 		if (tNetatmoLastUpdate > (tNow - Interval))
