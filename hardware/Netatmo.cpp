@@ -1839,8 +1839,9 @@ bool CNetatmo::ParseDashboard(const Json::Value& root, const int DevIdx, const i
 	int wind_angle = 0;
 	float wind_strength = 0;
 	float wind_gust = 0;
+	float wind_Temp = 0;
+	float wind_Chill = 0;
 	std::string Temp_outdoor = "0";
-	std::string WindChill_c = "0";
 
 	int batValue = battery_percent;
 	bool action = 0;
@@ -1972,8 +1973,10 @@ bool CNetatmo::ParseDashboard(const Json::Value& root, const int DevIdx, const i
 		{
 			bHaveWind = true;
 			wind_angle = root["WindAngle"].asInt();
-			wind_strength = root["WindStrength"].asFloat();
-			wind_gust = root["GustStrength"].asFloat();
+			float windstrength = root["WindStrength"].asFloat();
+			wind_strength = windstrength / 3.6F;
+			float windgust = root["GustStrength"].asFloat();
+			wind_gust = windgust / 3.6F;
 		}
 	}
 
@@ -2117,16 +2120,16 @@ bool CNetatmo::ParseDashboard(const Json::Value& root, const int DevIdx, const i
 		y << ";";
 		y << wind_direction;
 		y << ";";
-		y << wind_strength *10 / 3.6;
+		y << wind_strength *10;
 		y << ";";
-		y << wind_gust *10 / 3.6;
+		y << wind_gust *10;
 		y << ";";
 		y << Temp_outdoor;
 		y << ";";
 		y << WindChill_c;
 		std::string sValue = y.str().c_str();
 		// sValue: "<WindDirDegrees>;<WindDirText>;<WindAveMeterPerSecond*10>;<WindGustMeterPerSecond*10>;<Temp_c>;<WindChill_c>"
-		SendWind(ID, batValue, wind_angle, wind_strength, wind_gust, 0, 0, false, false, name, rssiLevel);
+		SendWind(ID, batValue, wind_angle, wind_strength, wind_gust, wind_Temp, wind_Chill, false, false, name, rssiLevel);
 		//Debug(DEBUG_HARDWARE, "(%d) %s (%s) [%s] wind %s %s %d %d", Hardware_int, str_ID.c_str(), pchar_ID, name.c_str(), sValue.c_str(), m_Name.c_str(), rssiLevel, batValue);
 		//UpdateValueInt(0, str_ID.c_str(), 0, pTypeWIND, sTypeWINDNoTempNoChill, rssiLevel, batValue, '0', sValue.c_str(), name, 0, m_Name);
 	}
@@ -2657,8 +2660,9 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 					if (!module["wind_strength"].empty())
 					{
 						bHaveWind = true;
-						wind_strength = module["wind_strength"].asFloat(); // / 3.6F;
-						//Debug(DEBUG_HARDWARE, "HomeStatus Module Wind strength [%f] km/h", wind_strength);
+						float windstrength = module["wind_strength"].asFloat();
+						wind_strength = windstrength / 3.6F;
+						//Debug(DEBUG_HARDWARE, "HomeStatus Module Wind strength [%f] km/h", windstrength);
 					}
 					if (!module["wind_angle"].empty())
 					{
@@ -2669,8 +2673,9 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 					if (!module["wind_gust"].empty())
 					{
 						bHaveWind = true;
-						wind_gust = module["wind_gust"].asFloat(); // / 3.6F;
-						//Debug(DEBUG_HARDWARE, "HomeStatus Module Wind gust [%f] km/h", wind_gust);
+						float windgust = module["wind_gust"].asFloat();
+						wind_gust = windgust / 3.6F;
+						//Debug(DEBUG_HARDWARE, "HomeStatus Module Wind gust [%f] km/h", windgust);
 					}
 					if (!module["wind_gust_angle"].empty())
 					{
@@ -2780,9 +2785,9 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 						y << ";";
 						y << wind_direction;
 						y << ";";
-						y << wind_strength *10 / 3.6;
+						y << wind_strength *10;
 						y << ";";
-						y << wind_gust *10 / 3.6;
+						y << wind_gust *10;
 						y << ";";
 						y << Temp_outdoor;
 						y << ";";
@@ -2791,7 +2796,7 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 						// sValue: "<WindDirDegrees>;<WindDirText>;<WindAveMeterPerSecond*10>;<WindGustMeterPerSecond*10>;<Temp_c>;<WindChill_c>"
 						//Debug(DEBUG_HARDWARE, "(%d) %s (%s) [%s] wind %s %s %d %d", Hardware_int, str_ID.c_str(), pchar_ID, name.c_str(), y.str().c_str(), m_Name.c_str(), mrf_status, batteryLevel);
 						//UpdateValueInt(0, ID.c_str(), 0, pTypeWIND, sTypeWINDNoTempNoChill, mrf_status, batteryLevel, '0', y.str().c_str(), moduleName, 0, m_Name);
-						SendWind(crcId, batteryLevel, wind_angle, (wind_strength / 3.6), (wind_gust / 3.6), wind_Temp, wind_Chill, false, false, moduleName, mrf_status);
+						SendWind(crcId, batteryLevel, wind_angle, wind_strength, wind_gust, wind_Temp, wind_Chill, false, false, moduleName, mrf_status);
 					}
 
 					if ((type == "NATherm1") || (type == "NRV"))
