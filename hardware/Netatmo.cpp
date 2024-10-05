@@ -1871,11 +1871,11 @@ bool CNetatmo::ParseDashboard(const Json::Value& root, const int DevIdx, const i
 			m_bNetatmoRefreshed[ID] = true;
 		// Check when dashboard data was last updated
 		if (!root["time_utc"].empty())
-			tNetatmoLastUpdate = root["time_utc"].asUInt(); //["dashboard_data"]["time_utc"].asUInt();
-		Debug(DEBUG_HARDWARE, "Module [%s] last update = %s", name.c_str(), ctime(&tNetatmoLastUpdate));
+			tNetatmoLastUpdate = root["time_utc"].asUInt();
+		//Debug(DEBUG_HARDWARE, "Module [%s] last update = %s", name.c_str(), ctime(&tNetatmoLastUpdate));
 		// check if Netatmo data was updated in the past NETAMO_POLL_INTERVALL (+1 min for sync time lags)... if not means sensors failed to send to cloud
 		int Interval = NETAMO_POLL_INTERVALL + 60;
-		Debug(DEBUG_HARDWARE, "Module [%s] Interval = %d", name.c_str(), Interval);
+		//Debug(DEBUG_HARDWARE, "Module [%s] Interval = %d", name.c_str(), Interval);
 		if (tNetatmoLastUpdate > (tNow - Interval))
 		{
 			if (!m_bNetatmoRefreshed[ID])
@@ -2093,8 +2093,7 @@ bool CNetatmo::ParseDashboard(const Json::Value& root, const int DevIdx, const i
 
 	if (bHaveCO2)
 	{
-		//SendAirQualitySensor(uint8_t NodeID, uint8_t ChildID, int BatteryLevel, int AirQuality, const std::string &defaultname);
-		Debug(DEBUG_HARDWARE, "(%d) %s (%d)", co2, name.c_str(), batValue);
+		//Debug(DEBUG_HARDWARE, "(%d) %s (%d)", co2, name.c_str(), batValue);
 		SendAirQualitySensor(ID, DevIdx, batValue, co2, name);  // No RF-level
 		//Debug(DEBUG_HARDWARE, "(%d) %s (%s) [%s] co2 rssiLevel %d batValue %d nValue %d sValue %s %s ", Hardware_int, str_ID.c_str(), pchar_ID, name.c_str(), rssiLevel, batValue, co2, std::to_string(co2).c_str(), m_Name.c_str());
 		//UpdateValueInt(0, str_ID.c_str(), 0, pTypeAirQuality, sTypeVoc, rssiLevel, batValue, co2, "", name, 0, m_Name);
@@ -2102,6 +2101,7 @@ bool CNetatmo::ParseDashboard(const Json::Value& root, const int DevIdx, const i
 
 	if (bHaveSound)
 	{
+		//Debug(DEBUG_HARDWARE, "(%d) %s (%d)", sound, name.c_str(), batValue);
 		SendSoundSensor(ID, batValue, sound, name);  // No RF-level
 		//Debug(DEBUG_HARDWARE, "(%d) %s (%s) [%s] sound %s %s %d %d", Hardware_int, str_ID.c_str(), pchar_ID, name.c_str(), std::to_string(sound).c_str(), m_Name.c_str(), rssiLevel, batValue);
 		//UpdateValueInt(0, str_ID.c_str(), 0, pTypeGeneral, sTypeSoundLevel, rssiLevel, batValue, '0', std::to_string(sound).c_str(), name, 0, m_Name);
@@ -2125,7 +2125,7 @@ bool CNetatmo::ParseDashboard(const Json::Value& root, const int DevIdx, const i
 		y << WindChill_c;
 		std::string sValue = y.str().c_str();
 		// sValue: "<WindDirDegrees>;<WindDirText>;<WindAveMeterPerSecond*10>;<WindGustMeterPerSecond*10>;<Temp_c>;<WindChill_c>"
-		SendWind(ID, batValue, wind_angle, wind_strength, wind_gust, 0, 0, false, false, name, rssiLevel);   // Wind-angle as Text ?
+		SendWind(ID, batValue, wind_angle, wind_strength, wind_gust, 0, 0, false, false, name, rssiLevel);
 		//Debug(DEBUG_HARDWARE, "(%d) %s (%s) [%s] wind %s %s %d %d", Hardware_int, str_ID.c_str(), pchar_ID, name.c_str(), sValue.c_str(), m_Name.c_str(), rssiLevel, batValue);
 		//UpdateValueInt(0, str_ID.c_str(), 0, pTypeWIND, sTypeWINDNoTempNoChill, rssiLevel, batValue, '0', sValue.c_str(), name, 0, m_Name);
 	}
