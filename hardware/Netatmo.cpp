@@ -1989,8 +1989,9 @@ bool CNetatmo::ParseDashboard(const Json::Value& root, const int DevIdx, const i
 	RF_level << rssiLevel;
 	RF_level >> sValue;
 	std::string module_name  = name + " RF. Lvl";
-	SendCustomSensor(ID, 3, batValue, rssiLevel, name + " - RF-level, ", "% ", rssiLevel);
-        SendPercentageSensor(ID, 3, batValue, batValue, name + " - Bat. Level");
+	SendCustomSensor(ID, 3, batValue, static_cast<float>(rssiLevel), name + " - RF-level, ", "% ", rssiLevel);
+	if (batValue != 255)
+		SendPercentageSensor(ID, 3, batValue, static_cast<float>(batValue), name + " - Bat. Level");
 	//UpdateValueInt(0, str_ID.c_str(), 2, pTypeGeneral, sTypePercentage, rssiLevel, batValue, '0', sValue.c_str(), module_name, 0, m_Name); // RF Percentage
 
 	//Temperature and humidity sensors
@@ -2015,7 +2016,7 @@ bool CNetatmo::ParseDashboard(const Json::Value& root, const int DevIdx, const i
 		// sValue is string with values separated by semicolon: Temperature;Humidity;Humidity Status;Barometer;Forecast
 		//Debug(DEBUG_HARDWARE, "(%d) %s (%s) [%s] Temp & Humidity & Baro %s %s %d %d", Hardware_int, str_ID.c_str(), pchar_ID, name.c_str(), sValue.c_str(), m_Name.c_str(), rssiLevel, batValue);
 		//UpdateValueInt(0, str_ID.c_str(), 0, pTypeTEMP_HUM_BARO, sTypeTHBFloat, rssiLevel, batValue, '0', sValue.c_str(), name,  0, m_Name);
-		SendTempHumBaroSensorFloat(ID, batValue, Temp, hum, baro, (uint8_t)nforecast, name, rssiLevel);
+		SendTempHumBaroSensorFloat(ID, batValue, Temp, hum, static_cast<float>(baro), (uint8_t)nforecast, name, rssiLevel);
 	}
 	else if (bHaveTemp && bHaveHum)
 	{
@@ -2314,8 +2315,9 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 				float wind_strength = 0;
 				float wind_gust = 0;
 				float wind_gust_angle = 0;
+				float wind_Temp = 0;
+				float wind_Chill = 0;
 				std::string Temp_outdoor = "0";
-				int WindChill_c = 0;
 
 				//uint64_t DeviceRowIdx;
 				iModuleIndex ++;
@@ -2472,7 +2474,7 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 					{
 						std::string bat_Name = " " + moduleName + " - Bat. Lvl";
 						//UpdateValueInt(0, ID.c_str(), 2, pTypeGeneral, sTypeCustom, mrf_status, batteryLevel, '0', bat_percentage.c_str(), batName,  0, m_Name); // Battery level
-						SendPercentageSensor(crcId, 3, batteryLevel, batteryLevel, bat_Name);
+						SendPercentageSensor(crcId, 3, batteryLevel, static_cast<float>(batteryLevel), bat_Name);
 					}
 					if (!module["ts"].empty())
 					{
@@ -2697,7 +2699,7 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 						// sValue is string with values separated by semicolon: Temperature;Humidity;Humidity Status;Barometer;Forecast
 						//Debug(DEBUG_HARDWARE, "(%d) %s (%s) [%s] Temp & Humidity & Baro %s %s %d %d", Hardware_int, str_ID.c_str(), pchar_ID, name.c_str(), r.str().c_str(), m_Name.c_str(), mrf_status, batteryLevel);
 						//UpdateValueInt(0, ID.c_str(), 0, pTypeTEMP_HUM_BARO, sTypeTHBFloat, mrf_status, batteryLevel, '0', r.str().c_str(), moduleName,  0, m_Name);
-						SendTempHumBaroSensorFloat(crcId, batteryLevel, Temp, hum, baro, (uint8_t)nforecast, moduleName, mrf_status);
+						SendTempHumBaroSensorFloat(crcId, batteryLevel, Temp, hum, static_cast<float>(baro), (uint8_t)nforecast, moduleName, mrf_status);
 					}
 					else if (bHaveTemp && bHaveHum)
 					{
@@ -2784,12 +2786,12 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 						y << ";";
 						y << Temp_outdoor;
 						y << ";";
-						y << WindChill_c;
+						y << wind_Chill;
 
 						// sValue: "<WindDirDegrees>;<WindDirText>;<WindAveMeterPerSecond*10>;<WindGustMeterPerSecond*10>;<Temp_c>;<WindChill_c>"
 						//Debug(DEBUG_HARDWARE, "(%d) %s (%s) [%s] wind %s %s %d %d", Hardware_int, str_ID.c_str(), pchar_ID, name.c_str(), y.str().c_str(), m_Name.c_str(), mrf_status, batteryLevel);
 						//UpdateValueInt(0, ID.c_str(), 0, pTypeWIND, sTypeWINDNoTempNoChill, mrf_status, batteryLevel, '0', y.str().c_str(), moduleName, 0, m_Name);
-						SendWind(crcId, batteryLevel, wind_angle, (wind_strength / 3.6), (wind_gust / 3.6), 0, 0, false, false, moduleName, mrf_status);
+						SendWind(crcId, batteryLevel, wind_angle, (wind_strength / 3.6), (wind_gust / 3.6), wind_Temp, wind_Chill, false, false, moduleName, mrf_status);
 					}
 
 					if ((type == "NATherm1") || (type == "NRV"))
