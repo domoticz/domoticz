@@ -2407,7 +2407,7 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 					else
 					{
 						Log(LOG_ERROR, "cloud data for module [%s] no longer updated (module possibly disconnected) since %s", moduleName.c_str(), ctime(&tNetatmoLastUpdate));
-						//connected = false;
+						connected = false;  //Block update, create sensor if cloud data is older then Interval.
 					}
 				}
 
