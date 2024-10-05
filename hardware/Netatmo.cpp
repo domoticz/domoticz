@@ -2126,7 +2126,7 @@ bool CNetatmo::ParseDashboard(const Json::Value& root, const int DevIdx, const i
 		y << ";";
 		y << Temp_outdoor;
 		y << ";";
-		y << WindChill_c;
+		y << wind_Chill;
 		std::string sValue = y.str().c_str();
 		// sValue: "<WindDirDegrees>;<WindDirText>;<WindAveMeterPerSecond*10>;<WindGustMeterPerSecond*10>;<Temp_c>;<WindChill_c>"
 		SendWind(ID, batValue, wind_angle, wind_strength, wind_gust, wind_Temp, wind_Chill, false, false, name, rssiLevel);
