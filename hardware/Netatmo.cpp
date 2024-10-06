@@ -526,21 +526,6 @@ uint64_t CNetatmo::convert_mac(std::string mac)
 }
 
 
-uint64_t getValueFromString(const std::string& value)
-{
-	uint64_t result;
-	std::istringstream iss( value );
-	iss >> result;
-	return result;
-}
-
-std::string getStringFromValue(const uint64_t value)
-{
-	std::stringstream stream;
-	stream << value;
-	std::string string (stream.str());
-	return string;
-}
 
 /// <summery>
 /// Merge old and new devices, bu deleting duplicate log records and
@@ -548,29 +533,12 @@ std::string getStringFromValue(const uint64_t value)
 /// updating the old device to the new devices and finaly remove the new device.
 /// Note: the old device will become the new device.
 /// </summary>
-bool CNetatmo::MergeDevices (const uint64_t ipOldDeviceId, const uint64_t ipNewDeviceId)
+bool CNetatmo::MergeDevices(const uint64_t ipOldDeviceId, const uint64_t ipNewDeviceId)
 {
 //	Log(LOG_STATUS, "MergeDevices: Merge old device %" PRIu64 " with new device %" PRIu64 ".", ipOldDeviceId, ipNewDeviceId);
 
-	std::string sOldDeviceId = getStringFromValue(ipOldDeviceId);
-	std::string sNewDeviceId = getStringFromValue(ipNewDeviceId);
-
-	Log(LOG_STATUS, "MergeDevices: Merge old device %s with new device %s", sOldDeviceId.c_str(), sNewDeviceId.c_str());
-
-	auto result = m_sql.safe_query
-	(
-		"SELECT id FROM DeviceStatus  WHERE Id='%q' OR Id = '%q';",
-		sOldDeviceId.c_str(),
-		sNewDeviceId.c_str()
-	);
-	if (result.empty())
-		return false;
-
-	if (result.size() < 2)
-	{
-		Log(LOG_ERROR, "MergeDevices: One or both of the devices to be merged does not exist (anymore)");
-		return false;
-	}
+	std::string sOldDeviceId = std::to_string(ipOldDeviceId);
+	std::string sNewDeviceId = std::to_string(ipNewDeviceId);
 
 	MergeDeviceLogs("Fan", sOldDeviceId, sNewDeviceId);
 	MergeDeviceLogs("Fan_Calendar", sOldDeviceId, sNewDeviceId);
@@ -606,7 +574,7 @@ bool CNetatmo::MergeDeviceLogs (const std::string& spTableName, const std::strin
 {
 	auto logResult = m_sql.safe_query
 	(
-		"SELECT COUNT(*) FROM %q as a  WHERE a.deviceRowId='%q' AND  EXISTS (SELECT date FROM %q as b WHERE b.DeviceRowID = '%q' AND b.date == a.date);",
+		"SELECT COUNT(*) FROM %q AS a  WHERE a.DeviceRowID='%q' AND  EXISTS (SELECT date FROM %q AS b WHERE b.DeviceRowID == '%q' AND b.Date == a.Date);",
 		spTableName.c_str(),
 		spOldDeviceId.c_str(),
 		spTableName.c_str(),
@@ -622,7 +590,7 @@ bool CNetatmo::MergeDeviceLogs (const std::string& spTableName, const std::strin
 
 		auto result = m_sql.safe_query
 		(
-			"DELETE FROM %q as a  WHERE a.deviceRowId='%q' AND  EXISTS (SELECT date FROM %q as b WHERE b.DeviceRowID ='%q' AND b.date == a.date);",
+			"DELETE FROM %q as a  WHERE a.DeviceRowID='%q' AND  EXISTS (SELECT Date FROM %q AS b WHERE b.DeviceRowID == '%q' AND b.Date == a.Date);",
 			spTableName.c_str(),
 			spOldDeviceId.c_str(),
 			spTableName.c_str(),
@@ -632,7 +600,7 @@ bool CNetatmo::MergeDeviceLogs (const std::string& spTableName, const std::strin
 
 	logResult = m_sql.safe_query
 	(
-		"SELECT COUNT(*) FROM %q as a  WHERE a.deviceRowId='%q';",
+		"SELECT COUNT(*) FROM %q AS a  WHERE a.DeviceRowID='%q';",
 		spTableName.c_str(),
 		spOldDeviceId.c_str()
 	);
@@ -646,7 +614,7 @@ bool CNetatmo::MergeDeviceLogs (const std::string& spTableName, const std::strin
 
 		auto result = m_sql.safe_query
 		(
-			"UPDATE %q as a  SET deviceRowId = '%q' WHERE a.deviceRowId='%q';",
+			"UPDATE %q AS a  SET DeviceRowID = '%q' WHERE a.DeviceRowID='%q';",
 			spTableName.c_str(),
 			spOldDeviceId.c_str(),
 			spNewDeviceId.c_str()
@@ -674,7 +642,7 @@ uint64_t CNetatmo::UpdateValueInt(int HardwareID, const char* deviceID, unsigned
                 Log(LOG_NORM, szLogString);
         }
         m_mainworker.sOnDeviceReceived(m_HwdID, DeviceRowIdx, devname, nullptr);
-        m_notifications.CheckAndHandleNotification(DeviceRowIdx, m_HwdID, sDeviceID.c_str(), devname, unit, devType, subType, nValue, sValue);
+        m_notifications.CheckAndHandleNotification(DeviceRowIdx, m_HwdID, sDeviceID, devname, unit, devType, subType, nValue, sValue);
         m_mainworker.CheckSceneCode(DeviceRowIdx, devType, subType, nValue, sValue, "MQTT Auto");
 
 	if (m_bMigrationFlag) {
@@ -710,15 +678,15 @@ uint64_t CNetatmo::UpdateValueInt(int HardwareID, const char* deviceID, unsigned
 		std::string searchString = sDeviceID.substr(sDeviceID.length()-2,2);
 
 		result = m_sql.safe_query(
-			"SELECT ID, DeviceID, Name, type, subtype, unit, used, LastUpdate "\
+			"SELECT ID, DeviceID, Name, Type, SubType, Unit, Used, LastUpdate "\
 			"FROM DeviceStatus "\
 			"WHERE (HardwareID=%d "\
 				"AND ID <> %" PRIu64 " "\
-				"AND substr(iif("\
-					"deviceID==cast(deviceId as decimal) AND (length(deviceID)!=2 OR length(deviceID)!=4 OR length(deviceID)!=8) ,"\
-					"printf('%s',deviceID),"\
-					"upper(deviceID)), -2,2) =='%q' "\
-				"AND Type=%d) "\
+				"AND SUBSTR(IIF("\
+					"DeviceID == CAST(DeviceID AS DECIMAL) AND (LENGTH(DeviceID) != 2 OR LENGTH(DeviceID) != 4 OR LENGTH(DeviceID) !=8) ,"\
+					"PRINTF('%s', DeviceID),"\
+					"UPPER(DeviceID)), -2,2) == '%q' "\
+				"AND Type = %d) "\
 			"ORDER BY ID DESC",
 			m_HwdID, 
 			DeviceRowIdx,
@@ -733,13 +701,13 @@ uint64_t CNetatmo::UpdateValueInt(int HardwareID, const char* deviceID, unsigned
 			for (const auto& device : result)
 			{
 				if (!device.empty()) {
-					uint64_t  oldID = getValueFromString(device[0]);
+					uint64_t  oldID = std::stoll(device[0], nullptr, 10);
 					std::string  oldDeviceID = device[1];
 					std::transform(oldDeviceID.begin(), oldDeviceID.end(), oldDeviceID.begin(), ::toupper);
-					unsigned char oldDevType = getValueFromString(device[3]);
-					unsigned char oldSubType = getValueFromString(device[4]);
-					unsigned char oldUnit = getValueFromString(device[5]);
-					unsigned char oldUsed = getValueFromString(device[6]);
+					unsigned char oldDevType = std::stoul(device[3], nullptr, 10);
+					unsigned char oldSubType = std::stoul(device[4], nullptr, 10);
+					unsigned char oldUnit = std::stoul(device[5], nullptr, 10);
+					unsigned char oldUsed = std::stoul(device[6], nullptr, 10);
 					std::string oldLastUpdate = device[7];
 
 					if (oldID == DeviceRowIdx)
@@ -755,7 +723,11 @@ uint64_t CNetatmo::UpdateValueInt(int HardwareID, const char* deviceID, unsigned
 							oldLastUpdate.c_str()
 						);
 					}
-					else if (oldUnit == unit && oldDevType == devType && oldSubType == subType)
+					else if (
+						oldUnit == unit
+						&& oldDevType == devType
+						&& oldSubType == subType
+					)
 					{
 						Log(LOG_STATUS, "Case 1 (full match): Device: ID=%" PRIu64 ", DeviceID=0x%s, Name=%s, Type=%d, SubType=%d, unit=%d, used=%d, lastUpdate=%s",
 							oldID,
@@ -770,7 +742,13 @@ uint64_t CNetatmo::UpdateValueInt(int HardwareID, const char* deviceID, unsigned
 						MergeDevices(oldID, DeviceRowIdx);
 						break; 	//One device per cycle
 					}
-					else if (oldUnit == unit && oldDevType == 82 && oldDevType == devType && oldSubType == 5 && subType == 113)
+					else if (
+						oldUnit == unit
+						&& oldDevType == pTypeTEMP_HUM
+						&& oldDevType == devType
+						&& oldSubType == sTypeSystemTemp
+						&& subType == sTypeTH_LC_TC
+					)
 					{
 						Log(LOG_STATUS, "Case 2 (new subtype (82:5->82:160): Device: ID=%" PRIu64 ", DeviceID=0x%s, Name=%s, Type=%d, SubType=%d, unit=%d, used=%d, lastUpdate=%s",
 							oldID,
@@ -785,7 +763,13 @@ uint64_t CNetatmo::UpdateValueInt(int HardwareID, const char* deviceID, unsigned
 						MergeDevices(oldID, DeviceRowIdx);
 						break; 	//One device per cycle
 					}
-					else if (oldUnit == unit && oldDevType == 85 && oldDevType == devType && oldSubType == 3 && subType == 113)
+					else if (
+						oldUnit == unit
+						&& oldDevType == pTypeRAIN
+						&& oldDevType == devType
+						&& oldSubType == sTypeSoilMoisture
+						&& subType == sTypeRAINByRate
+					)
 					{
 						Log(LOG_STATUS, "Case 3 (new subtype (85:3->85:113): Device: ID=%" PRIu64 ", DeviceID=0x%s, Name=%s, Type=%d, SubType=%d, unit=%d, used=%d, lastUpdate=%s",
 							oldID,
@@ -800,7 +784,13 @@ uint64_t CNetatmo::UpdateValueInt(int HardwareID, const char* deviceID, unsigned
 						MergeDevices(oldID, DeviceRowIdx);
 						break; 	//One device per cycle
 					}
-					else if (unit == 0 && oldDevType == 243 && oldDevType == devType && oldSubType == 24 && oldSubType == subType)
+					else if (
+						unit == 0
+						&& oldDevType == pTypeGeneral
+						&& oldDevType == devType
+						&& oldSubType == sTypeSoundLevel
+						&& oldSubType == subType
+					)
 					{
 						Log(LOG_STATUS, "Case 4 (new unit number for sound): Device: ID=%" PRIu64 ", DeviceID=0x%s, Name=%s, Type=%d, SubType=%d, unit=%d, used=%d, lastUpdate=%s",
 							oldID,
@@ -815,7 +805,14 @@ uint64_t CNetatmo::UpdateValueInt(int HardwareID, const char* deviceID, unsigned
 						MergeDevices(oldID, DeviceRowIdx);
 						break; 	//One device per cycle
 					}
-					else if (oldUnit != unit && oldUnit == 140 && oldDevType == devType && oldDevType == 84 && oldSubType == oldSubType && oldSubType == 16) 
+					else if (
+						oldUnit != unit
+						&& oldUnit == 140
+						&& oldDevType == devType
+						&& oldDevType == pTypeTEMP_HUM_BARO
+						&& oldSubType == oldSubType
+						&& oldSubType == sTypeTHBFloat
+					) 
 					{
 						Log(LOG_STATUS, "case 5 (New unit number for weather station): Device: ID=%" PRIu64 ", DeviceID=0x%s), Name=%s, Type=%d, SubType=%d, unit=%d, used=%d, lastUpdate=%s",
 							oldID,
@@ -1934,7 +1931,7 @@ bool CNetatmo::ParseStationData(const std::string& sResult, const bool bIsThermo
 	bool ret = ParseJSon(sResult, root);
 	if ((!ret) || (!root.isObject()))
 	{
-		Log(LOG_STATUS, "Invalid data received...");
+		Log(LOG_STATUS, "Invalid data received (ParseStationData) ...");
 		return false;
 	}
 	bool bHaveDevices = true;

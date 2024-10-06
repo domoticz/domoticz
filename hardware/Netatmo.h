@@ -169,6 +169,6 @@ class CNetatmo : public CDomoticzHardwareBase
 	uint64_t UpdateValueInt(int HardwareID, const char* ID, unsigned char unit, unsigned char devType, unsigned char subType, unsigned char signallevel, unsigned char batterylevel, int nValue, const char* sValue, std::string& devname, bool bUseOnOffAction, const std::string& user);
 	bool ParseDashboard(const Json::Value &root, int DevIdx, int ID, std::string& name, const std::string &ModuleType, int battery_percent, int rf_status, std::string& Hardware_ID, std::string& home_id);
 
-	bool MergeDevices (const uint64_t ipOldDeviceId, const uint64_t ipNewDeviceId);
-	bool MergeDeviceLogs (const std::string& spTableName, const std::string& spOldDeviceId, const std::string& spNewDeviceId);
+	bool MergeDevices(const uint64_t ipOldDeviceId, const uint64_t ipNewDeviceId);
+	bool MergeDeviceLogs(const std::string& spTableName, const std::string& spOldDeviceId, const std::string& spNewDeviceId);
 };
