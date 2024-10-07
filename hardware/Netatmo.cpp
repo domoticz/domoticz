@@ -574,7 +574,7 @@ bool CNetatmo::MergeDeviceLogs (const std::string& spTableName, const std::strin
 {
 	auto logResult = m_sql.safe_query
 	(
-		"SELECT COUNT(*) FROM %q AS a  WHERE a.DeviceRowID='%q' AND  EXISTS (SELECT date FROM %q AS b WHERE b.DeviceRowID == '%q' AND b.Date == a.Date);",
+		"SELECT COUNT(*) FROM %q AS a  WHERE a.DeviceRowID='%q' AND  EXISTS (SELECT date FROM %q AS b WHERE b.DeviceRowID == '%q' AND b.Date == a.Date)",
 		spTableName.c_str(),
 		spOldDeviceId.c_str(),
 		spTableName.c_str(),
@@ -590,7 +590,7 @@ bool CNetatmo::MergeDeviceLogs (const std::string& spTableName, const std::strin
 
 		auto result = m_sql.safe_query
 		(
-			"DELETE FROM %q as a  WHERE a.DeviceRowID='%q' AND  EXISTS (SELECT Date FROM %q AS b WHERE b.DeviceRowID == '%q' AND b.Date == a.Date);",
+			"DELETE FROM %q as a  WHERE a.DeviceRowID='%q' AND  EXISTS (SELECT Date FROM %q AS b WHERE b.DeviceRowID == '%q' AND b.Date == a.Date)",
 			spTableName.c_str(),
 			spOldDeviceId.c_str(),
 			spTableName.c_str(),
@@ -600,7 +600,7 @@ bool CNetatmo::MergeDeviceLogs (const std::string& spTableName, const std::strin
 
 	logResult = m_sql.safe_query
 	(
-		"SELECT COUNT(*) FROM %q AS a  WHERE a.DeviceRowID='%q';",
+		"SELECT COUNT(*) FROM %q AS a  WHERE a.DeviceRowID='%q'",
 		spTableName.c_str(),
 		spOldDeviceId.c_str()
 	);
@@ -614,7 +614,7 @@ bool CNetatmo::MergeDeviceLogs (const std::string& spTableName, const std::strin
 
 		auto result = m_sql.safe_query
 		(
-			"UPDATE %q AS a  SET DeviceRowID = '%q' WHERE a.DeviceRowID='%q';",
+			"UPDATE %q AS a  SET DeviceRowID = '%q' WHERE a.DeviceRowID='%q'",
 			spTableName.c_str(),
 			spOldDeviceId.c_str(),
 			spNewDeviceId.c_str()
@@ -630,10 +630,7 @@ bool CNetatmo::MergeDeviceLogs (const std::string& spTableName, const std::strin
 uint64_t CNetatmo::UpdateValueInt(int HardwareID, const char* deviceID, unsigned char unit, unsigned char devType, unsigned char subType, unsigned char signallevel, unsigned char batterylevel, int nValue,
 	const char* sValue, std::string& devname, bool bUseOnOffAction, const std::string& user)
 {
-	std::string sDeviceID = deviceID;
-	std::transform(sDeviceID.begin(), sDeviceID.end(), sDeviceID.begin(), ::toupper);
-
-        uint64_t DeviceRowIdx = m_sql.UpdateValue(m_HwdID, HardwareID, sDeviceID.c_str(), unit, devType, subType, signallevel, batterylevel, nValue, sValue, devname, bUseOnOffAction, user.c_str());
+        uint64_t DeviceRowIdx = m_sql.UpdateValue(m_HwdID, HardwareID, deviceID, unit, devType, subType, signallevel, batterylevel, nValue, sValue, devname, bUseOnOffAction, user.c_str());
         if (DeviceRowIdx == (uint64_t)-1)
                 return -1;
         if (m_bOutputLog)
@@ -642,10 +639,13 @@ uint64_t CNetatmo::UpdateValueInt(int HardwareID, const char* deviceID, unsigned
                 Log(LOG_NORM, szLogString);
         }
         m_mainworker.sOnDeviceReceived(m_HwdID, DeviceRowIdx, devname, nullptr);
-        m_notifications.CheckAndHandleNotification(DeviceRowIdx, m_HwdID, sDeviceID, devname, unit, devType, subType, nValue, sValue);
+        m_notifications.CheckAndHandleNotification(DeviceRowIdx, m_HwdID, std::string(deviceID), devname, unit, devType, subType, nValue, sValue);
         m_mainworker.CheckSceneCode(DeviceRowIdx, devType, subType, nValue, sValue, "MQTT Auto");
 
 	if (m_bMigrationFlag) {
+		std::string sDeviceID = deviceID;
+		std::transform(sDeviceID.begin(), sDeviceID.end(), sDeviceID.begin(), ::toupper);
+
 //		Log(LOG_STATUS, "UpdateValueInt: DeviceRowIdx=%d, HardwareID=%d (%X), ID=%s (%s), unit=%d, devType=%d, subType=%d, signallevel=%d, batterylevel=%d, nValue=%d, sValue=%s, devname=%s, bUseOnOffAction=%d, user=%s", 
 //			(int)DeviceRowIdx,
 //			HardwareID, 
@@ -744,7 +744,7 @@ uint64_t CNetatmo::UpdateValueInt(int HardwareID, const char* deviceID, unsigned
 					}
 					else if (
 						oldUnit == unit
-						&& oldDevType == pTypeTEMP_HUM
+						&& oldDevType == pTypeTEMP_HUM	// (from RFXtrx.h)
 						&& oldDevType == devType
 						&& oldSubType == sTypeSystemTemp
 						&& subType == sTypeTH_LC_TC
@@ -765,7 +765,7 @@ uint64_t CNetatmo::UpdateValueInt(int HardwareID, const char* deviceID, unsigned
 					}
 					else if (
 						oldUnit == unit
-						&& oldDevType == pTypeRAIN
+						&& oldDevType == pTypeRAIN	// (from RFXtrx.h)
 						&& oldDevType == devType
 						&& oldSubType == sTypeSoilMoisture
 						&& subType == sTypeRAINByRate
@@ -786,7 +786,7 @@ uint64_t CNetatmo::UpdateValueInt(int HardwareID, const char* deviceID, unsigned
 					}
 					else if (
 						unit == 0
-						&& oldDevType == pTypeGeneral
+						&& oldDevType == pTypeGeneral	// (from HardwareTypes.h)
 						&& oldDevType == devType
 						&& oldSubType == sTypeSoundLevel
 						&& oldSubType == subType
@@ -809,7 +809,7 @@ uint64_t CNetatmo::UpdateValueInt(int HardwareID, const char* deviceID, unsigned
 						oldUnit != unit
 						&& oldUnit == 140
 						&& oldDevType == devType
-						&& oldDevType == pTypeTEMP_HUM_BARO
+						&& oldDevType == pTypeTEMP_HUM_BARO	// (from RFXtrx.h)
 						&& oldSubType == oldSubType
 						&& oldSubType == sTypeTHBFloat
 					) 
