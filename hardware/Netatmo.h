@@ -120,13 +120,17 @@ class CNetatmo : public CDomoticzHardwareBase
 
 	bool Login();
 	bool RefreshToken(bool bForce = false);
-	bool LoadMigrationFlag();
 	bool LoadRefreshToken();
 	void StoreRefreshToken();
 	void StoreRequestTokenFlag(bool bFlag = false);
 	bool m_isLogged;
 	bool m_bForceLogin;
+
 	bool m_bMigrationFlag;
+	int m_iMigrationsDone;
+	int m_iTotalMigrationsDone;
+	int m_iNetatmoProtVersion;
+	std::string m_sNetatmoProtVersionPrefName;
 
 	m_eNetatmoType m_weatherType;
 	m_eNetatmoType m_homecoachType;

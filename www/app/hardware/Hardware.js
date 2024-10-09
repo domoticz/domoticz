@@ -1438,7 +1438,6 @@ define(['app'], function (app) {
 				var clientid = $("#hardwarecontent #divnetatmo #clientid").val();
 				var clientsecret = $("#hardwarecontent #divnetatmo #clientsecret").val();
 				var scope = $("#hardwarecontent #divnetatmo #scope").val();
-				var migrationtool = $("#hardwarecontent #divnetatmo #migrationtool").is(":checked");
 				var refreshtoken = (typeof $scope.refreshToken == 'undefined' ? "" : $scope.refreshToken);
 
 				if (clientid == "" || clientsecret == "") {
@@ -1460,7 +1459,7 @@ define(['app'], function (app) {
 					"&idx=" + idx +
 					"&extra=" + encodeURIComponent(refreshtoken) +
 					"&datatimeout=" + datatimeout +
-					"&Mode1=" + $scope.loginRequired + "&Mode2=" + (migrationtool ? 1 : 0) + "&Mode3=" + Mode3 + "&Mode4=" + Mode4 + "&Mode5=" + Mode5 + "&Mode6=" + Mode6,
+					"&Mode1=" + $scope.loginRequired + "&Mode2=" + Mode2 + "&Mode3=" + Mode3 + "&Mode4=" + Mode4 + "&Mode5=" + Mode5 + "&Mode6=" + Mode6,
 					async: false,
 					dataType: 'json',
 					success: function (data) {
@@ -2745,7 +2744,6 @@ define(['app'], function (app) {
 				var clientid = $("#hardwarecontent #divnetatmo #clientid").val();
 				var clientsecret = $("#hardwarecontent #divnetatmo #clientsecret").val();
 				var scope = $("#hardwarecontent #divnetatmo #scope").val();
-				var migrationtool = $("#hardwarecontent #divnetatmo #migrationtool").is(":checked");
 				var refreshtoken = (typeof $scope.refreshToken == 'undefined' ? "" : $scope.refreshToken);
 
 				if (clientid == "" || clientsecret == "") {
@@ -2771,8 +2769,7 @@ define(['app'], function (app) {
 					"&enabled=" + bEnabled +
 					"&extra=" + encodeURIComponent($scope.refreshToken) +
 					"&datatimeout=" + datatimeout +
-					"&Mode1=" + $scope.loginRequired +
-					"&Mode2=" + (migrationtool ? 1 : 0),
+					"&Mode1=" + $scope.loginRequired,
 					async: false,
 					dataType: 'json',
 					success: function (data) {
@@ -4619,7 +4616,6 @@ define(['app'], function (app) {
 
 							var splittedUserName = data["Username"].split(":");
 							var scopes = data["Password"];
-							var migrationtool =  data["Mode2"];
 
 							if (scopes.indexOf("_") > 0) 	// Old or new format?
 								scopes = scopes.split(",");	// New format: This field contains one or more scopes
@@ -4630,7 +4626,6 @@ define(['app'], function (app) {
 							$("#hardwarecontent #hardwareparamsnetatmo #clientid").val(splittedUserName[0]);
 							$("#hardwarecontent #hardwareparamsnetatmo #clientsecret").val(splittedUserName[1]);
 							$("#hardwarecontent #hardwareparamsnetatmo #scope").val(scopes);
-							$("#hardwarecontent #hardwareparamsnetatmo #migrationtool").prop('checked', (migrationtool == 1));
 
 							$("#hardwarecontent #hardwareparamsnetatmo #netatmologin").off("click");
 							$("#hardwarecontent #hardwareparamsnetatmo #netatmologin").on("click", function(){javascript:OnNetatmoLogin(idx)});

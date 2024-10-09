@@ -108,6 +108,21 @@ CNetatmo::CNetatmo(const int ID, const std::string& username, const std::string&
 	m_bFirstTimeThermostat = true;
 	m_bFirstTimeWeatherData = true;
 	m_tSetpointUpdateTime = time(nullptr);
+
+
+	m_sNetatmoProtVersionPrefName = "NetamoProtVersion_ID_" + std::to_string(m_HwdID);
+	m_iMigrationsDone = 0;
+	m_iTotalMigrationsDone = 0;
+
+	if (!m_sql.GetPreferencesVar(m_sNetatmoProtVersionPrefName, m_iNetatmoProtVersion))
+		m_iNetatmoProtVersion = 0;
+
+	if (m_iNetatmoProtVersion < 1)
+	{
+		m_bMigrationFlag = true;
+		Log(LOG_STATUS, "New naming protocol detected; start migration old and new mathing devices.");
+	}
+
 	Init();
 }
 
@@ -210,7 +225,6 @@ void CNetatmo::Do_Work()
         std::string home_id;
 	Log(LOG_STATUS, "Worker started...");
 
-	LoadMigrationFlag();
 	while (!IsStopRequested(1000))
 	{
 		sec_counter++;
@@ -253,6 +267,22 @@ void CNetatmo::Do_Work()
 						// GetHomesDataDetails
 						GetHomeStatusDetails();
 						Log(LOG_STATUS,"Status %d",  m_isLogged);
+					}
+
+					if (m_bMigrationFlag)
+					{
+						if (m_iMigrationsDone == m_iTotalMigrationsDone)
+						{
+							m_bMigrationFlag = false;
+							m_iNetatmoProtVersion++;
+							m_sql.UpdatePreferencesVar(m_sNetatmoProtVersionPrefName, m_iNetatmoProtVersion);
+							Log(LOG_STATUS, "Migrations completed and disabled after %d megrations.", m_iTotalMigrationsDone);
+						}
+						else
+						{
+							Log(LOG_STATUS, "So far %d megrations done this run.", m_iMigrationsDone);
+							m_iTotalMigrationsDone =  m_iMigrationsDone;
+						}
 					}
 				}
 
@@ -398,25 +428,6 @@ bool CNetatmo::RefreshToken(const bool bForce)
 
 
 /// <summary>
-/// Load the convert flag from the database
-/// </summary>
-/// <returns>true if flag retrieved, store the flag in megrationFlag variable</returns>
-bool CNetatmo::LoadMigrationFlag()
-{
-	std::vector<std::vector<std::string> > result;
-	result = m_sql.safe_query("SELECT Mode2 FROM Hardware WHERE (ID==%d)", m_HwdID);
-	if (result.empty())
-		return false;
-	std::string migrationFlag = result[0][0];
-	if (migrationFlag.empty())
-		return false;
-	m_bMigrationFlag = (migrationFlag == "1") ? true : false;
-
-	return true;
-}
-
-
-/// <summary>
 /// Load the refresh token from the database
 /// </summary>
 /// <returns>true if token retrieved, store the token in member variables</returns>
@@ -536,6 +547,8 @@ uint64_t CNetatmo::convert_mac(std::string mac)
 bool CNetatmo::MergeDevices(const uint64_t ipOldDeviceId, const uint64_t ipNewDeviceId)
 {
 //	Log(LOG_STATUS, "MergeDevices: Merge old device %" PRIu64 " with new device %" PRIu64 ".", ipOldDeviceId, ipNewDeviceId);
+
+	m_iMigrationsDone++;
 
 	std::string sOldDeviceId = std::to_string(ipOldDeviceId);
 	std::string sNewDeviceId = std::to_string(ipNewDeviceId);
