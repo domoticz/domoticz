@@ -109,20 +109,6 @@ CNetatmo::CNetatmo(const int ID, const std::string& username, const std::string&
 	m_bFirstTimeWeatherData = true;
 	m_tSetpointUpdateTime = time(nullptr);
 
-
-	m_sNetatmoProtVersionPrefName = "NetamoProtVersion_ID_" + std::to_string(m_HwdID);
-	m_iMigrationsDone = 0;
-	m_iTotalMigrationsDone = 0;
-
-	if (!m_sql.GetPreferencesVar(m_sNetatmoProtVersionPrefName, m_iNetatmoProtVersion))
-		m_iNetatmoProtVersion = 0;
-
-	if (m_iNetatmoProtVersion < 1)
-	{
-		m_bMigrationFlag = true;
-		Log(LOG_STATUS, "New naming protocol detected; start migration old and new mathing devices.");
-	}
-
 	Init();
 }
 
@@ -216,6 +202,21 @@ std::string CNetatmo::ExtractHtmlStatusCode(const std::vector<std::string>& head
 
 void CNetatmo::Do_Work()
 {
+	m_sNetatmoProtVersionPrefName = "NetamoProtVersion_ID_" + std::to_string(m_HwdID);
+	m_iMigrationsDone = 0;
+	m_iTotalMigrationsDone = 0;
+
+	if (!m_sql.GetPreferencesVar(m_sNetatmoProtVersionPrefName, m_iNetatmoProtVersion))
+		m_iNetatmoProtVersion = 0;
+
+	if (m_iNetatmoProtVersion < 1)
+	{
+		m_bMigrationFlag = true;
+		Log(LOG_STATUS, "New naming protocol detected; start migration old and new mathing devices.");
+	}
+	else
+		m_bMigrationFlag = false;
+
 	int sec_counter = 600 - 5;
 	bool bFirstTimeWS = true;
 	bool bFirstTimeHS = true;
@@ -537,105 +538,6 @@ uint64_t CNetatmo::convert_mac(std::string mac)
 }
 
 
-
-/// <summery>
-/// Merge old and new devices, bu deleting duplicate log records and
-/// copy all other log records from the new to the old device before
-/// updating the old device to the new devices and finaly remove the new device.
-/// Note: the old device will become the new device.
-/// </summary>
-bool CNetatmo::MergeDevices(const uint64_t ipOldDeviceId, const uint64_t ipNewDeviceId)
-{
-//	Log(LOG_STATUS, "MergeDevices: Merge old device %" PRIu64 " with new device %" PRIu64 ".", ipOldDeviceId, ipNewDeviceId);
-
-	m_iMigrationsDone++;
-
-	std::string sOldDeviceId = std::to_string(ipOldDeviceId);
-	std::string sNewDeviceId = std::to_string(ipNewDeviceId);
-
-	MergeDeviceLogs("Fan", sOldDeviceId, sNewDeviceId);
-	MergeDeviceLogs("Fan_Calendar", sOldDeviceId, sNewDeviceId);
-
-	MergeDeviceLogs("Meter", sOldDeviceId, sNewDeviceId);
-	MergeDeviceLogs("Meter_Calendar", sOldDeviceId, sNewDeviceId);
-
-	MergeDeviceLogs("MultiMeter", sOldDeviceId, sNewDeviceId);
-	MergeDeviceLogs("MultiMeter_Calendar", sOldDeviceId, sNewDeviceId);
-
-	MergeDeviceLogs("Percentage", sOldDeviceId, sNewDeviceId);
-	MergeDeviceLogs("Percentage_Calendar", sOldDeviceId, sNewDeviceId);
-
-	MergeDeviceLogs("Rain", sOldDeviceId, sNewDeviceId);
-	MergeDeviceLogs("Rain_Calendar", sOldDeviceId, sNewDeviceId);
-
-	MergeDeviceLogs("Temperature", sOldDeviceId, sNewDeviceId);
-	MergeDeviceLogs("Temperature_Calendar", sOldDeviceId, sNewDeviceId);
-
-	MergeDeviceLogs("UV", sOldDeviceId, sNewDeviceId);
-	MergeDeviceLogs("UV_Calendar", sOldDeviceId, sNewDeviceId);
-
-	MergeDeviceLogs("Wind", sOldDeviceId, sNewDeviceId);
-	MergeDeviceLogs("Wind_Calendar", sOldDeviceId, sNewDeviceId);
-
-	return m_sql.TransferDevice(sOldDeviceId, sNewDeviceId);
-}
-
-/// <summary>
-/// Merge logs in all log tables
-/// </summary>
-bool CNetatmo::MergeDeviceLogs (const std::string& spTableName, const std::string& spOldDeviceId, const std::string& spNewDeviceId)
-{
-	auto logResult = m_sql.safe_query
-	(
-		"SELECT COUNT(*) FROM %q AS a  WHERE a.DeviceRowID='%q' AND  EXISTS (SELECT date FROM %q AS b WHERE b.DeviceRowID == '%q' AND b.Date == a.Date)",
-		spTableName.c_str(),
-		spOldDeviceId.c_str(),
-		spTableName.c_str(),
-		spNewDeviceId.c_str()
-	);
-	if (logResult.empty())
-		return false;
-
-	int nbrOfRecords = std::stoi(logResult[0][0]);
-	if (nbrOfRecords > 0)
-	{
-		Log(LOG_STATUS, "Deleting %d duplicate lines from old Device: ID='%s' in table %s", nbrOfRecords,  spOldDeviceId.c_str(), spTableName.c_str());
-
-		auto result = m_sql.safe_query
-		(
-			"DELETE FROM %q as a  WHERE a.DeviceRowID='%q' AND  EXISTS (SELECT Date FROM %q AS b WHERE b.DeviceRowID == '%q' AND b.Date == a.Date)",
-			spTableName.c_str(),
-			spOldDeviceId.c_str(),
-			spTableName.c_str(),
-			spNewDeviceId.c_str()
-		);
-	}
-
-	logResult = m_sql.safe_query
-	(
-		"SELECT COUNT(*) FROM %q AS a  WHERE a.DeviceRowID='%q'",
-		spTableName.c_str(),
-		spOldDeviceId.c_str()
-	);
-	if (logResult.empty())
-		return false;
-
-	nbrOfRecords = std::stoi(logResult[0][0]);
-	if (nbrOfRecords > 0)
-	{
-		Log(LOG_STATUS, "Moving %d log lines from new device with ID='%s' to old device with ID='%s' in table %s", nbrOfRecords,  spNewDeviceId.c_str(), spOldDeviceId.c_str(), spTableName.c_str());
-
-		auto result = m_sql.safe_query
-		(
-			"UPDATE %q AS a  SET DeviceRowID = '%q' WHERE a.DeviceRowID='%q'",
-			spTableName.c_str(),
-			spOldDeviceId.c_str(),
-			spNewDeviceId.c_str()
-		);
-	}
-	return true;
-}
-
 /// <summary>
 /// Send sensors to Main worker
 ///
@@ -655,28 +557,21 @@ uint64_t CNetatmo::UpdateValueInt(int HardwareID, const char* deviceID, unsigned
         m_notifications.CheckAndHandleNotification(DeviceRowIdx, m_HwdID, std::string(deviceID), devname, unit, devType, subType, nValue, sValue);
         m_mainworker.CheckSceneCode(DeviceRowIdx, devType, subType, nValue, sValue, "MQTT Auto");
 
+	CNetatmo::MigrateDevices(deviceID, unit, devType, subType, devname, DeviceRowIdx);
+
+        return DeviceRowIdx;
+}
+
+
+/// <summary>
+/// When enabled, this function will match the same (old and new) devices based on the
+/// (HEX formatted) deviceID
+/// </summary>
+void CNetatmo::MigrateDevices(const char* deviceID, unsigned char unit, unsigned char devType, unsigned char subType, std::string& devname, uint64_t DeviceRowIdx)
+{
 	if (m_bMigrationFlag) {
 		std::string sDeviceID = deviceID;
 		std::transform(sDeviceID.begin(), sDeviceID.end(), sDeviceID.begin(), ::toupper);
-
-//		Log(LOG_STATUS, "UpdateValueInt: DeviceRowIdx=%d, HardwareID=%d (%X), ID=%s (%s), unit=%d, devType=%d, subType=%d, signallevel=%d, batterylevel=%d, nValue=%d, sValue=%s, devname=%s, bUseOnOffAction=%d, user=%s", 
-//			(int)DeviceRowIdx,
-//			HardwareID, 
-//			HardwareID, 
-//			deviceID, 
-//			sDeviceID.c_str(), 
-//			unit, 
-//			devType, 
-//			subType, 
-//			signallevel, 
-//			batterylevel, 
-//			nValue, 
-//			sValue, 
-//			devname.c_str(), 
-//			bUseOnOffAction, 
-//			user.c_str());
-//
-//		Log(LOG_STATUS,"Record added/updated with DeviceRowIdx = %d", (int)DeviceRowIdx);
 
 //		Log(LOG_STATUS, "UpdateValueInt: DeviceRowIdx=%d, ID=%s (%s), unit=%d, devType=%d, subType=%d, devname=%s", 
 //			(int)DeviceRowIdx,
@@ -685,7 +580,9 @@ uint64_t CNetatmo::UpdateValueInt(int HardwareID, const char* deviceID, unsigned
 //			unit, 
 //			devType, 
 //			subType, 
-//			devname.c_str());
+//			devname.c_str()
+//		);
+//
 
 		std::vector<std::vector<std::string> > result;
 		std::string searchString = sDeviceID.substr(sDeviceID.length()-2,2);
@@ -844,9 +741,108 @@ uint64_t CNetatmo::UpdateValueInt(int HardwareID, const char* deviceID, unsigned
 			}
 		}
 	}
-
-        return DeviceRowIdx;
 }
+
+
+/// <summery>
+/// Merge old and new devices, bu deleting duplicate log records and
+/// copy all other log records from the new to the old device before
+/// updating the old device to the new devices and finaly remove the new device.
+/// Note: the old device will become the new device.
+/// </summary>
+bool CNetatmo::MergeDevices(const uint64_t ipOldDeviceId, const uint64_t ipNewDeviceId)
+{
+//	Log(LOG_STATUS, "MergeDevices: Merge old device %" PRIu64 " with new device %" PRIu64 ".", ipOldDeviceId, ipNewDeviceId);
+
+	m_iMigrationsDone++;
+
+	std::string sOldDeviceId = std::to_string(ipOldDeviceId);
+	std::string sNewDeviceId = std::to_string(ipNewDeviceId);
+
+	MergeDeviceLogs("Fan", sOldDeviceId, sNewDeviceId);
+	MergeDeviceLogs("Fan_Calendar", sOldDeviceId, sNewDeviceId);
+
+	MergeDeviceLogs("Meter", sOldDeviceId, sNewDeviceId);
+	MergeDeviceLogs("Meter_Calendar", sOldDeviceId, sNewDeviceId);
+
+	MergeDeviceLogs("MultiMeter", sOldDeviceId, sNewDeviceId);
+	MergeDeviceLogs("MultiMeter_Calendar", sOldDeviceId, sNewDeviceId);
+
+	MergeDeviceLogs("Percentage", sOldDeviceId, sNewDeviceId);
+	MergeDeviceLogs("Percentage_Calendar", sOldDeviceId, sNewDeviceId);
+
+	MergeDeviceLogs("Rain", sOldDeviceId, sNewDeviceId);
+	MergeDeviceLogs("Rain_Calendar", sOldDeviceId, sNewDeviceId);
+
+	MergeDeviceLogs("Temperature", sOldDeviceId, sNewDeviceId);
+	MergeDeviceLogs("Temperature_Calendar", sOldDeviceId, sNewDeviceId);
+
+	MergeDeviceLogs("UV", sOldDeviceId, sNewDeviceId);
+	MergeDeviceLogs("UV_Calendar", sOldDeviceId, sNewDeviceId);
+
+	MergeDeviceLogs("Wind", sOldDeviceId, sNewDeviceId);
+	MergeDeviceLogs("Wind_Calendar", sOldDeviceId, sNewDeviceId);
+
+	return m_sql.TransferDevice(sOldDeviceId, sNewDeviceId);
+}
+
+
+/// <summary>
+/// Merge logs in all log tables
+/// </summary>
+bool CNetatmo::MergeDeviceLogs (const std::string& spTableName, const std::string& spOldDeviceId, const std::string& spNewDeviceId)
+{
+	auto logResult = m_sql.safe_query
+	(
+		"SELECT COUNT(*) FROM %q AS a  WHERE a.DeviceRowID='%q' AND  EXISTS (SELECT date FROM %q AS b WHERE b.DeviceRowID == '%q' AND b.Date == a.Date)",
+		spTableName.c_str(),
+		spOldDeviceId.c_str(),
+		spTableName.c_str(),
+		spNewDeviceId.c_str()
+	);
+	if (logResult.empty())
+		return false;
+
+	int nbrOfRecords = std::stoi(logResult[0][0]);
+	if (nbrOfRecords > 0)
+	{
+		Log(LOG_STATUS, "Deleting %d duplicate lines from old Device: ID='%s' in table %s", nbrOfRecords,  spOldDeviceId.c_str(), spTableName.c_str());
+
+		auto result = m_sql.safe_query
+		(
+			"DELETE FROM %q as a  WHERE a.DeviceRowID='%q' AND  EXISTS (SELECT Date FROM %q AS b WHERE b.DeviceRowID == '%q' AND b.Date == a.Date)",
+			spTableName.c_str(),
+			spOldDeviceId.c_str(),
+			spTableName.c_str(),
+			spNewDeviceId.c_str()
+		);
+	}
+
+	logResult = m_sql.safe_query
+	(
+		"SELECT COUNT(*) FROM %q AS a  WHERE a.DeviceRowID='%q'",
+		spTableName.c_str(),
+		spOldDeviceId.c_str()
+	);
+	if (logResult.empty())
+		return false;
+
+	nbrOfRecords = std::stoi(logResult[0][0]);
+	if (nbrOfRecords > 0)
+	{
+		Log(LOG_STATUS, "Moving %d log lines from new device with ID='%s' to old device with ID='%s' in table %s", nbrOfRecords,  spNewDeviceId.c_str(), spOldDeviceId.c_str(), spTableName.c_str());
+
+		auto result = m_sql.safe_query
+		(
+			"UPDATE %q AS a  SET DeviceRowID = '%q' WHERE a.DeviceRowID='%q'",
+			spTableName.c_str(),
+			spOldDeviceId.c_str(),
+			spNewDeviceId.c_str()
+		);
+	}
+	return true;
+}
+
 
 
 /// <summary>
