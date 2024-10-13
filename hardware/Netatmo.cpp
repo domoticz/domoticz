@@ -2094,7 +2094,7 @@ bool CNetatmo::ParseDashboard(const Json::Value& root, const int DevIdx, const i
 		std::string Name = name + "-updatevalueint";
                 ///Debug(DEBUG_HARDWARE, "(%d) %s (%s) [%s] rain %s %s %d %d", Hardware_int, str_ID.c_str(), pchar_ID, name.c_str(), sValue.c_str(), m_Name.c_str(), rssiLevel, batValue);
 		//UpdateValueInt(0, str_ID.c_str(), 0, pTypeRAIN, sTypeRAINByRate, rssiLevel, batValue, '0', v.str().c_str(), Name, 0, m_Name);
-		SendRainSensor(ID, batValue, rain_1 + rain_24, name + "- rain", mrf_status);
+		SendRainSensor(ID, batValue, rain_1 + rain_24, name + "- rain", rssiLevel);
 		//SendRainSensorWU(ID, batValue, rain_24, rain_1, name + "- WU", rssiLevel);
 	}
 
