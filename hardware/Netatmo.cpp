@@ -2094,8 +2094,8 @@ bool CNetatmo::ParseDashboard(const Json::Value& root, const int DevIdx, const i
 		std::string Name = name + "-updatevalueint";
                 ///Debug(DEBUG_HARDWARE, "(%d) %s (%s) [%s] rain %s %s %d %d", Hardware_int, str_ID.c_str(), pchar_ID, name.c_str(), sValue.c_str(), m_Name.c_str(), rssiLevel, batValue);
 		//UpdateValueInt(0, str_ID.c_str(), 0, pTypeRAIN, sTypeRAINByRate, rssiLevel, batValue, '0', v.str().c_str(), Name, 0, m_Name);
-		SendRainSensor(ID, batteryLevel, rain_1 + rain_24, moduleName, mrf_status);
-		//SendRainSensorWU(ID, batValue, rain_24, rain_1, name, rssiLevel);
+		SendRainSensor(ID, batValue, rain_1 + rain_24, name + "- rain", mrf_status);
+		//SendRainSensorWU(ID, batValue, rain_24, rain_1, name + "- WU", rssiLevel);
 	}
 
 	if (bHaveCO2)
@@ -2768,7 +2768,7 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 						//UpdateValueInt(0, ID.c_str(), 0, pTypeRAIN, sTypeRAINByRate, mrf_status, batteryLevel, '0', v.str().c_str(), moduleName, 0, m_Name);
 						SendRainSensor(crcId, batteryLevel, m_RainOffset[crcId] + m_OldRainCounter[crcId], moduleName, mrf_status);
 						SendRainSensor(crcId, batteryLevel, rain_1 + rain_24, moduleName + "-rain", mrf_status);
-						//SendRainSensorWU(crcId, batteryLevel, rain_24, rain_1, moduleName, mrf_status);
+						//SendRainSensorWU(crcId, batteryLevel, rain_24, rain_1, moduleName + "-WU", mrf_status);
 					}
 					if (bHaveCO2)
 					{
@@ -2852,8 +2852,9 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 						{
 							//information switch for active Boiler only when we have a Thermostat
 							// Valves don't have Boiler status
-							UpdateValueInt(0, ID.c_str(), 9, pTypeGeneralSwitch, sSwitchGeneralSwitch, mrf_status, batteryLevel, bIsActive, sValue.c_str(), aName,  0, m_Name);
-							
+							std::string bName = moduleName + " - Boiler Status";
+							//UpdateValueInt(0, ID.c_str(), 9, pTypeGeneralSwitch, sSwitchGeneralSwitch, mrf_status, batteryLevel, bIsActive, sValue.c_str(), bName,  0, m_Name);
+							SendGeneralSwitch(crcId, 9, batteryLevel, bIsActive, bIsActive, bName, m_Name, mrf_status);
 						}
 
 						//Thermostat schedule switch (actively changing thermostat schedule)
