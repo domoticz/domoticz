@@ -490,7 +490,7 @@ uint64_t CNetatmo::convert_mac(std::string mac)
 
 /// <summary>
 /// Send sensors to Main worker
-///
+/// This gives a long thread runtime on some occasions
 /// </summary>
 uint64_t CNetatmo::UpdateValueInt(int HardwareID, const char* ID, unsigned char unit, unsigned char devType, unsigned char subType, unsigned char signallevel, unsigned char batterylevel, int nValue,
         const char* sValue, std::string& devname, bool bUseOnOffAction, const std::string& user)
@@ -1987,12 +1987,13 @@ bool CNetatmo::ParseDashboard(const Json::Value& root, const int DevIdx, const i
 	//Debug(DEBUG_HARDWARE, "Hardware_int (%d) %s [%s] %s", Hardware_int, str_ID.c_str(), name.c_str(), Hardware_ID.c_str());
 	sValue = Hardware_ID.c_str();
 	std::string Module_Name  = name + " - MAC-adres";
-	UpdateValueInt(0, str_ID.c_str(), 1, pTypeGeneral, sTypeTextStatus, rssiLevel, batValue, '0', sValue.c_str(), Module_Name, 0, m_Name); //MAC-adres  Parse DashBoard
+	//UpdateValueInt(0, str_ID.c_str(), 1, pTypeGeneral, sTypeTextStatus, rssiLevel, batValue, '0', sValue.c_str(), Module_Name, 0, m_Name); //MAC-adres  Parse DashBoard
+	SendTextSensor(ID, 1, batValue, sValue.c_str(), Module_Name.c_str());
 	std::stringstream RF_level;
 	RF_level << rssiLevel;
 	RF_level >> sValue;
 	std::string module_name  = name + " RF. Lvl";
-	SendCustomSensor(ID, 3, batValue, static_cast<float>(rssiLevel), name + " - RF-level, ", "% ", rssiLevel);
+	SendCustomSensor(ID, 3, batValue, static_cast<float>(rssiLevel), name + " - RF-level, ", " ", rssiLevel);
 	if (batValue != 255)
 		SendPercentageSensor(ID, 3, batValue, static_cast<float>(batValue), name + " - Bat. Level");
 	//UpdateValueInt(0, str_ID.c_str(), 2, pTypeGeneral, sTypePercentage, rssiLevel, batValue, '0', sValue.c_str(), module_name, 0, m_Name); // RF Percentage
@@ -2093,6 +2094,8 @@ bool CNetatmo::ParseDashboard(const Json::Value& root, const int DevIdx, const i
 		std::string Name = name + "-updatevalueint";
                 ///Debug(DEBUG_HARDWARE, "(%d) %s (%s) [%s] rain %s %s %d %d", Hardware_int, str_ID.c_str(), pchar_ID, name.c_str(), sValue.c_str(), m_Name.c_str(), rssiLevel, batValue);
 		//UpdateValueInt(0, str_ID.c_str(), 0, pTypeRAIN, sTypeRAINByRate, rssiLevel, batValue, '0', v.str().c_str(), Name, 0, m_Name);
+		SendRainSensor(ID, batteryLevel, rain_1 + rain_24, moduleName, mrf_status);
+		//SendRainSensorWU(ID, batValue, rain_24, rain_1, name, rssiLevel);
 	}
 
 	if (bHaveCO2)
@@ -2452,7 +2455,7 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 							nDevice.BatteryLevel = batteryLevel;
 							//SendPercentageSensor(int NodeID, uint8_t ChildID, int BatteryLevel, float Percentage, const std::string &defaultname);
 							//SendCustomSensor(int NodeID, uint8_t ChildID, int BatteryLevel, float CustomValue, const std::string &defaultname, const std::string &defaultLabel, int RssiLevel = 12);
-							SendCustomSensor(crcId, 3, batteryLevel, mrf_percentage, pName, " % ", mrf_status);   // RF-level
+							SendCustomSensor(crcId, 3, batteryLevel, mrf_percentage, pName, "  ", mrf_status);   // RF-level
 							//SendPercentageSensor(crcId, 3, batteryLevel, mrf_percentage, pName);
 							//UpdateValueInt(0, ID.c_str(), 3, pTypeGeneral, sTypePercentage, mrf_status, batteryLevel, '0', sigValue.c_str(), pName,  0, m_Name);  // RF- level
 						}
@@ -2471,8 +2474,9 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 						mrf_status = static_cast<int>(wifi_status); // Device has Wifi- or RF-strength not both
 					}
 
-					UpdateValueInt(0, ID.c_str(), 1, pTypeGeneral, sTypeTextStatus, mrf_status, batteryLevel, '0', sValue.c_str(), module_Name, 0, m_Name);  // MAC-adres  Parse Home Status
-
+					//UpdateValueInt(0, ID.c_str(), 1, pTypeGeneral, sTypeTextStatus, mrf_status, batteryLevel, '0', sValue.c_str(), module_Name, 0, m_Name);  // MAC-adres  Parse Home Status
+					SendTextSensor(crcId, 1, batteryLevel, sValue.c_str(), module_Name.c_str());
+					
 					if (!module["battery_level"].empty())
 					{
 						std::string bat_Name = " " + moduleName + " - Bat. Lvl";
@@ -2516,7 +2520,8 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 						std::string bridgeValue = bridge_ + " " + Bridge_Name;
 						nDevice.StationName = Bridge_Name;
 						int mrf_status_bridge = m_wifi_status[bridge_];
-						UpdateValueInt(0, ID.c_str(), 4, pTypeGeneral, sTypeTextStatus, mrf_status_bridge, 255, '0', bridge_.c_str(), Module_Name, 0, m_Name); // MAC-adres Bridge
+						//UpdateValueInt(0, ID.c_str(), 4, pTypeGeneral, sTypeTextStatus, mrf_status_bridge, 255, '0', bridge_.c_str(), Module_Name, 0, m_Name); // MAC-adres Bridge
+						SendTextSensor(crcId, 1, 255, bridge_.c_str(), Module_Name.c_str());
 					}
 					if (!module["boiler_valve_comfort_boost"].empty())
 					{
@@ -2760,8 +2765,10 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 						v << rain_24;
 
 						//Debug(DEBUG_HARDWARE, "(%d) %s (%s) [%s] rain %s %s %d %d", Hardware_int, str_ID.c_str(), pchar_ID, name.c_str(), v.str().c_str(), m_Name.c_str(), mrf_status, batteryLevel);
-						UpdateValueInt(0, ID.c_str(), 0, pTypeRAIN, sTypeRAINByRate, mrf_status, batteryLevel, '0', v.str().c_str(), moduleName, 0, m_Name);
+						//UpdateValueInt(0, ID.c_str(), 0, pTypeRAIN, sTypeRAINByRate, mrf_status, batteryLevel, '0', v.str().c_str(), moduleName, 0, m_Name);
 						SendRainSensor(crcId, batteryLevel, m_RainOffset[crcId] + m_OldRainCounter[crcId], moduleName, mrf_status);
+						SendRainSensor(crcId, batteryLevel, rain_1 + rain_24, moduleName + "-rain", mrf_status);
+						//SendRainSensorWU(crcId, batteryLevel, rain_24, rain_1, moduleName, mrf_status);
 					}
 					if (bHaveCO2)
 					{
@@ -2846,6 +2853,7 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 							//information switch for active Boiler only when we have a Thermostat
 							// Valves don't have Boiler status
 							UpdateValueInt(0, ID.c_str(), 9, pTypeGeneralSwitch, sSwitchGeneralSwitch, mrf_status, batteryLevel, bIsActive, sValue.c_str(), aName,  0, m_Name);
+							
 						}
 
 						//Thermostat schedule switch (actively changing thermostat schedule)
@@ -2993,7 +3001,8 @@ bool CNetatmo::ParseEvents(const std::string& sResult, Json::Value& root )
 				pchar_ID = str_id.c_str();
 				std::string sValue = events_Module_ID;
 				std::string module_Name = e_Name + " - MAC-adres events";
-				UpdateValueInt(0, str_id.c_str(), 11, pTypeGeneral, sTypeTextStatus, '0', 255, '0', sValue.c_str(), module_Name, 0, m_Name); //Events
+				//UpdateValueInt(0, str_id.c_str(), 11, pTypeGeneral, sTypeTextStatus, '0', 255, '0', sValue.c_str(), module_Name, 0, m_Name); //Events
+				SendTextSensor(Hardware_int, 11, 255, sValue.c_str(), module_Name.c_str());
 			}
 			if (!events["message"].empty())
 			{
