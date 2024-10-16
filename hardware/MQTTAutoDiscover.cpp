@@ -390,57 +390,6 @@ std::string MQTTAutoDiscover::GetValueFromTemplate(Json::Value root, std::string
 	return "";
 }
 
-std::string MQTTAutoDiscover::GetValueFromTemplate(const std::string& szValue, std::string szValueTemplate)
-{
-	try
-	{
-		std::map<std::string, std::string> value_keys;
-
-		stdreplace(szValueTemplate, " ", "");
-		stdreplace(szValueTemplate, "%", "");
-
-		//we only support if/else/endif
-		if (szValueTemplate.find("ifvalue==") != 0)
-			return "";
-		szValueTemplate = szValueTemplate.substr(strlen("ifvalue=="));
-		size_t pos;
-
-		pos = szValueTemplate.find("elseif");
-		if (pos != std::string::npos)
-		{
-			Log(LOG_ERROR, "This template is not (yet) support, please report to us (Template: %s)", szValueTemplate.c_str());
-			return ""; //not supported
-		}
-
-		pos = szValueTemplate.find("else");
-		if (pos == std::string::npos)
-			return "";
-
-		std::string szKey = szValueTemplate.substr(0, pos);
-
-		szValueTemplate = szValueTemplate.substr(pos + strlen("else"));
-		pos = szValueTemplate.find("endif");
-		if (pos == std::string::npos)
-			return "";
-
-		szValueTemplate = szValueTemplate.substr(0, pos);
-
-		std::string szValElse = szValueTemplate;
-
-		if (szKey.find(szValue) == 0)
-		{
-			return szKey.substr(szValue.size());
-		}
-
-		return szValElse;
-	}
-	catch (const std::exception& e)
-	{
-		Log(LOG_ERROR, "Exception (GetValueFromTemplate): %s! (Template: %s)", e.what(), szValueTemplate.c_str());
-	}
-	return "";
-}
-
 //Returns true if value is set in JSon object
 bool MQTTAutoDiscover::SetValueWithTemplate(Json::Value& root, std::string szValueTemplate, std::string szValue)
 {
