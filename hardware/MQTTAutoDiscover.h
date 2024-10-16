@@ -137,6 +137,7 @@ class MQTTAutoDiscover : public MQTT
 		std::string last_value;
 		std::string last_topic;
 		bool bIsJSON = false;
+		bool bIsNull = false;
 		std::string last_json_value;
 		uint8_t devType = 0;
 		uint8_t subType = 0;
@@ -187,7 +188,7 @@ private:
 	void CleanValueTemplate(std::string& szValueTemplate);
 	void FixCommandTopicStateTemplate(std::string& command_topic, std::string& state_template);
 	std::string GetValueTemplateKey(const std::string& szValueTemplate);
-	std::string GetValueFromTemplate(Json::Value root, std::string szValueTemplate);
+	std::string GetValueFromTemplate(Json::Value root, std::string szValueTemplate, bool &isNull);
 	bool SetValueWithTemplate(Json::Value& root, std::string szValueTemplate, std::string szValue);
 	bool GuessSensorTypeValue(_tMQTTASensor* pSensor, uint8_t& devType, uint8_t& subType, std::string& szOptions, int& nValue, std::string& sValue);
 	void ApplySignalLevelDevice(const _tMQTTASensor* pSensor);
