@@ -492,7 +492,7 @@ uint64_t CNetatmo::convert_mac(std::string mac)
 /// Send sensors to Main worker
 /// This gives a long thread runtime on some occasions
 /// </summary>
-uint64_t CNetatmo::UpdateValueInt(int HardwareID, const char* ID, unsigned char unit, unsigned char devType, unsigned char subType, unsigned char signallevel, unsigned char batterylevel, int nValue,
+uint64_t CNetatmo::(int HardwareID, const char* ID, unsigned char unit, unsigned char devType, unsigned char subType, unsigned char signallevel, unsigned char batterylevel, int nValue,
         const char* sValue, std::string& devname, bool bUseOnOffAction, const std::string& user)
 {
         uint64_t DeviceRowIdx = m_sql.UpdateValue(m_HwdID, HardwareID, ID, unit, devType, subType, signallevel, batterylevel, nValue, sValue, devname, bUseOnOffAction, user.c_str());
@@ -1993,7 +1993,7 @@ bool CNetatmo::ParseDashboard(const Json::Value& root, const int DevIdx, const i
 	RF_level << rssiLevel;
 	RF_level >> sValue;
 	std::string module_name  = name + " RF. Lvl";
-	SendCustomSensor(ID, 3, batValue, static_cast<float>(rssiLevel), name + " - RF-level, ", " ", rssiLevel);
+	SendCustomSensor(ID, 2, batValue, static_cast<float>(rssiLevel), name + " - RF-level, ", " ", rssiLevel); // RF Percentage
 	if (batValue != 255)
 		SendPercentageSensor(ID, 3, batValue, static_cast<float>(batValue), name + " - Bat. Level");
 	//UpdateValueInt(0, str_ID.c_str(), 2, pTypeGeneral, sTypePercentage, rssiLevel, batValue, '0', sValue.c_str(), module_name, 0, m_Name); // RF Percentage
@@ -2090,11 +2090,11 @@ bool CNetatmo::ParseDashboard(const Json::Value& root, const int DevIdx, const i
 		v << ";";
 		v << rain_24;
 		std::string sValue = v.str().c_str();
-		SendRainSensor(ID, batValue, m_RainOffset[ID] + m_OldRainCounter[ID], name, rssiLevel);
+		SendRainSensor(5, batValue, m_RainOffset[ID] + m_OldRainCounter[ID], name, rssiLevel);
 		std::string Name = name + "-updatevalueint";
                 ///Debug(DEBUG_HARDWARE, "(%d) %s (%s) [%s] rain %s %s %d %d", Hardware_int, str_ID.c_str(), pchar_ID, name.c_str(), sValue.c_str(), m_Name.c_str(), rssiLevel, batValue);
 		//UpdateValueInt(0, str_ID.c_str(), 0, pTypeRAIN, sTypeRAINByRate, rssiLevel, batValue, '0', v.str().c_str(), Name, 0, m_Name);
-		SendRainSensor(ID, batValue, rain_1 + rain_24, name + "- rain", rssiLevel);
+		SendRainSensor(ID, batValue, rain_24 + rain_1, name + "- rain", rssiLevel);
 		//SendRainSensorWU(ID, batValue, rain_24, rain_1, name + "- WU", rssiLevel);
 	}
 
@@ -2453,11 +2453,10 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 							//Debug(DEBUG_HARDWARE, "mrf_status =  %s -  %d", pName.c_str(), mrf_status);
 							nDevice.SignalLevel = mrf_status;
 							nDevice.BatteryLevel = batteryLevel;
-							//SendPercentageSensor(int NodeID, uint8_t ChildID, int BatteryLevel, float Percentage, const std::string &defaultname);
-							//SendCustomSensor(int NodeID, uint8_t ChildID, int BatteryLevel, float CustomValue, const std::string &defaultname, const std::string &defaultLabel, int RssiLevel = 12);
-							SendCustomSensor(crcId, 3, batteryLevel, mrf_percentage, pName, "  ", mrf_status);   // RF-level
-							//SendPercentageSensor(crcId, 3, batteryLevel, mrf_percentage, pName);
-							//UpdateValueInt(0, ID.c_str(), 3, pTypeGeneral, sTypePercentage, mrf_status, batteryLevel, '0', sigValue.c_str(), pName,  0, m_Name);  // RF- level
+							
+							SendCustomSensor(crcId, 2, batteryLevel, mrf_percentage, pName, "  ", mrf_status);   // RF-level
+							//SendPercentageSensor(crcId, 3, batteryLevel, batteryLevel, pName);
+							//UpdateValueInt(0, ID.c_str(), 2, pTypeGeneral, sTypePercentage, mrf_status, batteryLevel, '0', sigValue.c_str(), pName,  0, m_Name);  // RF- level
 						}
 					}
 					if (!module["wifi_state"].empty())
@@ -2480,7 +2479,7 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 					if (!module["battery_level"].empty())
 					{
 						std::string bat_Name = " " + moduleName + " - Bat. Lvl";
-						//UpdateValueInt(0, ID.c_str(), 2, pTypeGeneral, sTypeCustom, mrf_status, batteryLevel, '0', bat_percentage.c_str(), batName,  0, m_Name); // Battery level
+						//UpdateValueInt(0, ID.c_str(), 3, pTypeGeneral, sTypeCustom, mrf_status, batteryLevel, '0', bat_percentage.c_str(), batName,  0, m_Name); // Battery level
 						SendPercentageSensor(crcId, 3, batteryLevel, static_cast<float>(batteryLevel), bat_Name);
 					}
 					if (!module["ts"].empty())
@@ -2766,8 +2765,8 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 
 						//Debug(DEBUG_HARDWARE, "(%d) %s (%s) [%s] rain %s %s %d %d", Hardware_int, str_ID.c_str(), pchar_ID, name.c_str(), v.str().c_str(), m_Name.c_str(), mrf_status, batteryLevel);
 						//UpdateValueInt(0, ID.c_str(), 0, pTypeRAIN, sTypeRAINByRate, mrf_status, batteryLevel, '0', v.str().c_str(), moduleName, 0, m_Name);
-						SendRainSensor(crcId, batteryLevel, m_RainOffset[crcId] + m_OldRainCounter[crcId], moduleName, mrf_status);
-						SendRainSensor(crcId, batteryLevel, rain_1 + rain_24, moduleName + "-rain", mrf_status);
+						SendRainSensor(7, batteryLevel, m_RainOffset[crcId] + m_OldRainCounter[crcId], moduleName, mrf_status);
+						SendRainSensor(crcId, batteryLevel, rain_24 + rain_1, moduleName + "-rain", mrf_status);
 						//SendRainSensorWU(crcId, batteryLevel, rain_24, rain_1, moduleName + "-WU", mrf_status);
 					}
 					if (bHaveCO2)
