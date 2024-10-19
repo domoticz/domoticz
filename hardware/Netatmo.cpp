@@ -2890,7 +2890,7 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 						m_bPollGetEvents = true;
 					}
 					Debug(DEBUG_HARDWARE, "Poll Get Events (%d)", m_bPollGetEvents);
-					//m_bPollGetEvents = false;  // Blocking GetEvents because off Error "User Usage"
+					m_bPollGetEvents = false;  // Blocking GetEvents because off Error "User Usage"
 				}
 			//m_tNetatmoDevice.push_back(nDevice);
 			m_netatmo_devices.push_back(nDevice);
