@@ -81,6 +81,11 @@ namespace http
 			std::string sOptions = result[0][6];
 			std::map<std::string, std::string> options = m_sql.BuildDeviceOptions(sOptions);
 
+			if (options["AddDBLogEntry"] == "true")
+			{
+				bIsManagedCounter = true;
+			}
+
 			double divider = m_sql.GetCounterDivider(int(metertype), int(dType), float(AddjValue2));
 
 			double meteroffset = AddjValue;
