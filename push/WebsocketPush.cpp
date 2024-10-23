@@ -33,6 +33,8 @@ void CWebSocketPush::Stop()
 	if (!isStarted) 
 		return;
 
+	isStarted = false;
+
 	std::unique_lock<std::mutex> lock(handlerMutex);
 
 	if (m_sConnection.connected())
@@ -48,8 +50,6 @@ void CWebSocketPush::Stop()
 		m_sSceneChanged.disconnect();
 
 	m_sLogMessage.disconnect();
-
-	isStarted = false;
 }
 
 void CWebSocketPush::OnDeviceReceived(const int m_HwdID, const uint64_t DeviceRowIdx, const std::string &DeviceName, const unsigned char *pRXCommand)
@@ -94,7 +94,7 @@ void CWebSocketPush::OnNotificationReceived(const std::string & Subject, const s
 
 void CWebSocketPush::OnLogMessage(const _eLogLevel level, const std::string& sLogline)
 {
-	std::unique_lock<std::mutex> lock(logMutex);
+	//std::unique_lock<std::mutex> lock(logMutex);
 	if (!isStarted) {
 		return;
 	}
