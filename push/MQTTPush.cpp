@@ -213,10 +213,7 @@ void CMQTTPush::DoMQTTPush(const uint64_t DeviceRowIdx, const bool bForced)
 
 		if (is_number(sendValue))
 		{
-			if (sendValue.find('.') == std::string::npos)
-				root[vType] = atoi(sendValue.c_str());
-			else
-				root[vType] = atof(sendValue.c_str());
+			root[vType] = std::stod(sendValue);
 		}
 		else
 			root[vType] = sendValue;
