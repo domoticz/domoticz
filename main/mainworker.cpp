@@ -12988,8 +12988,8 @@ bool MainWorker::SetSetPointInt(const std::vector<std::string>& sd, const float 
 
 		if (
 			(value_unit.empty())
-			|| (value_unit == "°C")
-			|| (value_unit == "°F")
+			|| (value_unit == "Â°C")
+			|| (value_unit == "Â°F")
 			|| (value_unit == "C")
 			|| (value_unit == "F")
 			)
@@ -13805,16 +13805,11 @@ void MainWorker::HeartbeatCheck()
 			if (bDoCheck)
 			{
 				double diff = difftime(now, pHardware->m_LastHeartbeat);
-				//_log.Log(LOG_STATUS, "%d last checking  %.2lf seconds ago", iterator->first, dif);
+				//_log.Log(LOG_STATUS, "%s last checking  %.2lf seconds ago", pHardware->m_Name.c_str(), diff);
 				if (diff > 60)
 				{
-					std::vector<std::vector<std::string> > result;
-					result = m_sql.safe_query("SELECT Name FROM Hardware WHERE (ID='%d')", pHardware->m_HwdID);
-					if (result.size() == 1)
-					{
-						std::vector<std::string> sd = result[0];
-						_log.Log(LOG_ERROR, "%s hardware (%d) thread seems to have ended unexpectedly", sd[0].c_str(), pHardware->m_HwdID);
-					}
+					_log.Log(LOG_ERROR, "%s hardware (%d) thread seems to have ended unexpectedly", pHardware->m_Name.c_str(), pHardware->m_HwdID);
+
 				}
 			}
 
