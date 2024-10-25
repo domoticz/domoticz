@@ -126,6 +126,12 @@ class CNetatmo : public CDomoticzHardwareBase
 	bool m_isLogged;
 	bool m_bForceLogin;
 
+	bool m_bMigrationFlag;
+	int m_iMigrationsDone;
+	int m_iTotalMigrationsDone;
+	int m_iNetatmoProtVersion;
+	std::string m_sNetatmoProtVersionPrefName;
+
 	m_eNetatmoType m_weatherType;
 	m_eNetatmoType m_homecoachType;
 	m_eNetatmoType m_energyType;
@@ -166,4 +172,8 @@ class CNetatmo : public CDomoticzHardwareBase
 
 	uint64_t UpdateValueInt(int HardwareID, const char* ID, unsigned char unit, unsigned char devType, unsigned char subType, unsigned char signallevel, unsigned char batterylevel, int nValue, const char* sValue, std::string& devname, bool bUseOnOffAction, const std::string& user);
 	bool ParseDashboard(const Json::Value &root, int DevIdx, int ID, std::string& name, const std::string &ModuleType, int battery_percent, int rf_status, std::string& Hardware_ID, std::string& home_id);
+
+	void MigrateDevices(const char* deviceID, unsigned char unit, unsigned char devType, unsigned char subType, std::string& devname, uint64_t DeviceRowIdx);
+	bool MergeDevices(const uint64_t ipOldDeviceId, const uint64_t ipNewDeviceId);
+	bool MergeDeviceLogs(const std::string& spTableName, const std::string& spOldDeviceId, const std::string& spNewDeviceId);
 };

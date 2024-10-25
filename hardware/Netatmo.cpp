@@ -53,6 +53,23 @@ std::string ReadFile(std::string filename)
 }
 #endif
 
+std::string prettifyJson(const Json::Value value)
+{
+	using namespace Json;
+
+	std::stringstream result;
+	StreamWriterBuilder builder;
+
+	builder["commentStyle"] = "All";
+	builder["indentation"] = ".\t";
+
+	std::unique_ptr<Json::StreamWriter> writer(builder.newStreamWriter());
+	writer->write(value, &result);
+	result << std::endl;  // add lf and flush
+
+	return result.str();
+}
+
 
 CNetatmo::CNetatmo(const int ID, const std::string& username, const std::string& password)
 	: m_username(CURLEncode::URLDecode(username))
@@ -91,6 +108,7 @@ CNetatmo::CNetatmo(const int ID, const std::string& username, const std::string&
 	m_bFirstTimeThermostat = true;
 	m_bFirstTimeWeatherData = true;
 	m_tSetpointUpdateTime = time(nullptr);
+
 	Init();
 }
 
@@ -184,6 +202,21 @@ std::string CNetatmo::ExtractHtmlStatusCode(const std::vector<std::string>& head
 
 void CNetatmo::Do_Work()
 {
+	m_sNetatmoProtVersionPrefName = "NetamoProtVersion_ID_" + std::to_string(m_HwdID);
+	m_iMigrationsDone = 0;
+	m_iTotalMigrationsDone = 0;
+
+	if (!m_sql.GetPreferencesVar(m_sNetatmoProtVersionPrefName, m_iNetatmoProtVersion))
+		m_iNetatmoProtVersion = 0;
+
+	if (m_iNetatmoProtVersion < 1)
+	{
+		m_bMigrationFlag = true;
+		Log(LOG_STATUS, "New naming protocol detected; start migration old and new mathing devices.");
+	}
+	else
+		m_bMigrationFlag = false;
+
 	int sec_counter = 600 - 5;
 	bool bFirstTimeWS = true;
 	bool bFirstTimeHS = true;
@@ -192,6 +225,7 @@ void CNetatmo::Do_Work()
 	bool bFirstTimeTH = true;
         std::string home_id;
 	Log(LOG_STATUS, "Worker started...");
+
 	while (!IsStopRequested(1000))
 	{
 		sec_counter++;
@@ -234,6 +268,22 @@ void CNetatmo::Do_Work()
 						// GetHomesDataDetails
 						GetHomeStatusDetails();
 						Log(LOG_STATUS,"Status %d",  m_isLogged);
+					}
+
+					if (m_bMigrationFlag)
+					{
+						if (m_iMigrationsDone == m_iTotalMigrationsDone)
+						{
+							m_bMigrationFlag = false;
+							m_iNetatmoProtVersion++;
+							m_sql.UpdatePreferencesVar(m_sNetatmoProtVersionPrefName, m_iNetatmoProtVersion);
+							Log(LOG_STATUS, "Migrations completed and disabled after %d megrations.", m_iTotalMigrationsDone);
+						}
+						else
+						{
+							Log(LOG_STATUS, "So far %d megrations done this run.", m_iMigrationsDone);
+							m_iTotalMigrationsDone =  m_iMigrationsDone;
+						}
 					}
 				}
 
@@ -379,7 +429,7 @@ bool CNetatmo::RefreshToken(const bool bForce)
 
 
 /// <summary>
-/// Load an access token from the database
+/// Load the refresh token from the database
 /// </summary>
 /// <returns>true if token retrieved, store the token in member variables</returns>
 bool CNetatmo::LoadRefreshToken()
@@ -492,10 +542,10 @@ uint64_t CNetatmo::convert_mac(std::string mac)
 /// Send sensors to Main worker
 ///
 /// </summary>
-uint64_t CNetatmo::UpdateValueInt(int HardwareID, const char* ID, unsigned char unit, unsigned char devType, unsigned char subType, unsigned char signallevel, unsigned char batterylevel, int nValue,
-        const char* sValue, std::string& devname, bool bUseOnOffAction, const std::string& user)
+uint64_t CNetatmo::UpdateValueInt(int HardwareID, const char* deviceID, unsigned char unit, unsigned char devType, unsigned char subType, unsigned char signallevel, unsigned char batterylevel, int nValue,
+	const char* sValue, std::string& devname, bool bUseOnOffAction, const std::string& user)
 {
-        uint64_t DeviceRowIdx = m_sql.UpdateValue(m_HwdID, HardwareID, ID, unit, devType, subType, signallevel, batterylevel, nValue, sValue, devname, bUseOnOffAction, user.c_str());
+        uint64_t DeviceRowIdx = m_sql.UpdateValue(m_HwdID, HardwareID, deviceID, unit, devType, subType, signallevel, batterylevel, nValue, sValue, devname, bUseOnOffAction, user.c_str());
         if (DeviceRowIdx == (uint64_t)-1)
                 return -1;
         if (m_bOutputLog)
@@ -504,10 +554,295 @@ uint64_t CNetatmo::UpdateValueInt(int HardwareID, const char* ID, unsigned char 
                 Log(LOG_NORM, szLogString);
         }
         m_mainworker.sOnDeviceReceived(m_HwdID, DeviceRowIdx, devname, nullptr);
-        m_notifications.CheckAndHandleNotification(DeviceRowIdx, m_HwdID, ID, devname, unit, devType, subType, nValue, sValue);
+        m_notifications.CheckAndHandleNotification(DeviceRowIdx, m_HwdID, std::string(deviceID), devname, unit, devType, subType, nValue, sValue);
         m_mainworker.CheckSceneCode(DeviceRowIdx, devType, subType, nValue, sValue, "MQTT Auto");
+
+	CNetatmo::MigrateDevices(deviceID, unit, devType, subType, devname, DeviceRowIdx);
+
         return DeviceRowIdx;
 }
+
+
+/// <summary>
+/// When enabled, this function will match the same (old and new) devices based on the
+/// (HEX formatted) deviceID
+/// </summary>
+void CNetatmo::MigrateDevices(const char* deviceID, unsigned char unit, unsigned char devType, unsigned char subType, std::string& devname, uint64_t DeviceRowIdx)
+{
+	if (m_bMigrationFlag) {
+		std::string sDeviceID = deviceID;
+		std::transform(sDeviceID.begin(), sDeviceID.end(), sDeviceID.begin(), ::toupper);
+
+//		Log(LOG_STATUS, "UpdateValueInt: DeviceRowIdx=%d, ID=%s (%s), unit=%d, devType=%d, subType=%d, devname=%s", 
+//			(int)DeviceRowIdx,
+//			deviceID, 
+//			sDeviceID.c_str(), 
+//			unit, 
+//			devType, 
+//			subType, 
+//			devname.c_str()
+//		);
+//
+
+		std::vector<std::vector<std::string> > result;
+		std::string searchString = sDeviceID.substr(sDeviceID.length()-2,2);
+
+		result = m_sql.safe_query(
+			"SELECT ID, DeviceID, Name, Type, SubType, Unit, Used, LastUpdate "\
+			"FROM DeviceStatus "\
+			"WHERE (HardwareID=%d "\
+				"AND ID <> %" PRIu64 " "\
+				"AND SUBSTR(IIF("\
+					"DeviceID == CAST(DeviceID AS DECIMAL) AND (LENGTH(DeviceID) != 2 OR LENGTH(DeviceID) != 4 OR LENGTH(DeviceID) !=8) ,"\
+					"PRINTF('%s', DeviceID),"\
+					"UPPER(DeviceID)), -2,2) == '%q' "\
+				"AND Type = %d) "\
+			"ORDER BY ID DESC",
+			m_HwdID, 
+			DeviceRowIdx,
+			"%X", 
+			searchString.c_str(), 
+			devType);
+		if (!result.empty()) {
+//			Log(LOG_STATUS, "Possible conversion found: %d matches found for %s (0x%s):",
+//				result.size(), 
+//				deviceID, 
+//				sDeviceID.c_str());
+			for (const auto& device : result)
+			{
+				if (!device.empty()) {
+					uint64_t  oldID = std::stoll(device[0], nullptr, 10);
+					std::string  oldDeviceID = device[1];
+					std::transform(oldDeviceID.begin(), oldDeviceID.end(), oldDeviceID.begin(), ::toupper);
+					unsigned char oldDevType = std::stoul(device[3], nullptr, 10);
+					unsigned char oldSubType = std::stoul(device[4], nullptr, 10);
+					unsigned char oldUnit = std::stoul(device[5], nullptr, 10);
+					unsigned char oldUsed = std::stoul(device[6], nullptr, 10);
+					std::string oldLastUpdate = device[7];
+
+					if (oldID == DeviceRowIdx)
+					{
+						Log(LOG_STATUS, "Case 0 (New device): Device: ID=%" PRIu64 ", DeviceID=0x%s, Name=%s, Type=%d, SubType=%d, unit=%d, used=%d, lastUpdate=%s",
+							oldID,
+							oldDeviceID.c_str(),
+							device[2].c_str(),
+							oldDevType,
+							oldSubType,
+							oldUnit,
+							oldUsed,
+							oldLastUpdate.c_str()
+						);
+					}
+					else if (
+						oldUnit == unit
+						&& oldDevType == devType
+						&& oldSubType == subType
+					)
+					{
+						Log(LOG_STATUS, "Case 1 (full match): Device: ID=%" PRIu64 ", DeviceID=0x%s, Name=%s, Type=%d, SubType=%d, unit=%d, used=%d, lastUpdate=%s",
+							oldID,
+							oldDeviceID.c_str(),
+							device[2].c_str(),
+							oldDevType,
+							oldSubType,
+							oldUnit,
+							oldUsed,
+							oldLastUpdate.c_str()
+						);
+						MergeDevices(oldID, DeviceRowIdx);
+						break; 	//One device per cycle
+					}
+					else if (
+						oldUnit == unit
+						&& oldDevType == pTypeTEMP_HUM	// (from RFXtrx.h)
+						&& oldDevType == devType
+						&& oldSubType == sTypeSystemTemp
+						&& subType == sTypeTH_LC_TC
+					)
+					{
+						Log(LOG_STATUS, "Case 2 (new subtype (82:5->82:160): Device: ID=%" PRIu64 ", DeviceID=0x%s, Name=%s, Type=%d, SubType=%d, unit=%d, used=%d, lastUpdate=%s",
+							oldID,
+							oldDeviceID.c_str(),
+							device[2].c_str(),
+							oldDevType,
+							oldSubType,
+							oldUnit,
+							oldUsed,
+							oldLastUpdate.c_str()
+						);
+						MergeDevices(oldID, DeviceRowIdx);
+						break; 	//One device per cycle
+					}
+					else if (
+						oldUnit == unit
+						&& oldDevType == pTypeRAIN	// (from RFXtrx.h)
+						&& oldDevType == devType
+						&& oldSubType == sTypeSoilMoisture
+						&& subType == sTypeRAINByRate
+					)
+					{
+						Log(LOG_STATUS, "Case 3 (new subtype (85:3->85:113): Device: ID=%" PRIu64 ", DeviceID=0x%s, Name=%s, Type=%d, SubType=%d, unit=%d, used=%d, lastUpdate=%s",
+							oldID,
+							oldDeviceID.c_str(),
+							device[2].c_str(),
+							oldDevType,
+							oldSubType,
+							oldUnit,
+							oldUsed,
+							oldLastUpdate.c_str()
+						);
+						MergeDevices(oldID, DeviceRowIdx);
+						break; 	//One device per cycle
+					}
+					else if (
+						unit == 0
+						&& oldDevType == pTypeGeneral	// (from HardwareTypes.h)
+						&& oldDevType == devType
+						&& oldSubType == sTypeSoundLevel
+						&& oldSubType == subType
+					)
+					{
+						Log(LOG_STATUS, "Case 4 (new unit number for sound): Device: ID=%" PRIu64 ", DeviceID=0x%s, Name=%s, Type=%d, SubType=%d, unit=%d, used=%d, lastUpdate=%s",
+							oldID,
+							oldDeviceID.c_str(),
+							device[2].c_str(),
+							oldDevType,
+							oldSubType,
+							oldUnit,
+							oldUsed,
+							oldLastUpdate.c_str()
+						);
+						MergeDevices(oldID, DeviceRowIdx);
+						break; 	//One device per cycle
+					}
+					else if (
+						oldUnit != unit
+						&& oldUnit == 140
+						&& oldDevType == devType
+						&& oldDevType == pTypeTEMP_HUM_BARO	// (from RFXtrx.h)
+						&& oldSubType == oldSubType
+						&& oldSubType == sTypeTHBFloat
+					) 
+					{
+						Log(LOG_STATUS, "case 5 (New unit number for weather station): Device: ID=%" PRIu64 ", DeviceID=0x%s), Name=%s, Type=%d, SubType=%d, unit=%d, used=%d, lastUpdate=%s",
+							oldID,
+							oldDeviceID.c_str(),
+							device[2].c_str(),
+							oldDevType,
+							oldSubType,
+							oldUnit,
+							oldUsed,
+							oldLastUpdate.c_str()
+						);
+						MergeDevices(oldID, DeviceRowIdx);
+						break; 	//One device per cycle
+					}
+				}
+			}
+		}
+	}
+}
+
+
+/// <summery>
+/// Merge old and new devices, bu deleting duplicate log records and
+/// copy all other log records from the new to the old device before
+/// updating the old device to the new devices and finaly remove the new device.
+/// Note: the old device will become the new device.
+/// </summary>
+bool CNetatmo::MergeDevices(const uint64_t ipOldDeviceId, const uint64_t ipNewDeviceId)
+{
+//	Log(LOG_STATUS, "MergeDevices: Merge old device %" PRIu64 " with new device %" PRIu64 ".", ipOldDeviceId, ipNewDeviceId);
+
+	m_iMigrationsDone++;
+
+	std::string sOldDeviceId = std::to_string(ipOldDeviceId);
+	std::string sNewDeviceId = std::to_string(ipNewDeviceId);
+
+	MergeDeviceLogs("Fan", sOldDeviceId, sNewDeviceId);
+	MergeDeviceLogs("Fan_Calendar", sOldDeviceId, sNewDeviceId);
+
+	MergeDeviceLogs("Meter", sOldDeviceId, sNewDeviceId);
+	MergeDeviceLogs("Meter_Calendar", sOldDeviceId, sNewDeviceId);
+
+	MergeDeviceLogs("MultiMeter", sOldDeviceId, sNewDeviceId);
+	MergeDeviceLogs("MultiMeter_Calendar", sOldDeviceId, sNewDeviceId);
+
+	MergeDeviceLogs("Percentage", sOldDeviceId, sNewDeviceId);
+	MergeDeviceLogs("Percentage_Calendar", sOldDeviceId, sNewDeviceId);
+
+	MergeDeviceLogs("Rain", sOldDeviceId, sNewDeviceId);
+	MergeDeviceLogs("Rain_Calendar", sOldDeviceId, sNewDeviceId);
+
+	MergeDeviceLogs("Temperature", sOldDeviceId, sNewDeviceId);
+	MergeDeviceLogs("Temperature_Calendar", sOldDeviceId, sNewDeviceId);
+
+	MergeDeviceLogs("UV", sOldDeviceId, sNewDeviceId);
+	MergeDeviceLogs("UV_Calendar", sOldDeviceId, sNewDeviceId);
+
+	MergeDeviceLogs("Wind", sOldDeviceId, sNewDeviceId);
+	MergeDeviceLogs("Wind_Calendar", sOldDeviceId, sNewDeviceId);
+
+	return m_sql.TransferDevice(sOldDeviceId, sNewDeviceId);
+}
+
+
+/// <summary>
+/// Merge logs in all log tables
+/// </summary>
+bool CNetatmo::MergeDeviceLogs (const std::string& spTableName, const std::string& spOldDeviceId, const std::string& spNewDeviceId)
+{
+	auto logResult = m_sql.safe_query
+	(
+		"SELECT COUNT(*) FROM %q AS a  WHERE a.DeviceRowID='%q' AND  EXISTS (SELECT date FROM %q AS b WHERE b.DeviceRowID == '%q' AND b.Date == a.Date)",
+		spTableName.c_str(),
+		spOldDeviceId.c_str(),
+		spTableName.c_str(),
+		spNewDeviceId.c_str()
+	);
+	if (logResult.empty())
+		return false;
+
+	int nbrOfRecords = std::stoi(logResult[0][0]);
+	if (nbrOfRecords > 0)
+	{
+		Log(LOG_STATUS, "Deleting %d duplicate lines from old Device: ID='%s' in table %s", nbrOfRecords,  spOldDeviceId.c_str(), spTableName.c_str());
+
+		auto result = m_sql.safe_query
+		(
+			"DELETE FROM %q as a  WHERE a.DeviceRowID='%q' AND  EXISTS (SELECT Date FROM %q AS b WHERE b.DeviceRowID == '%q' AND b.Date == a.Date)",
+			spTableName.c_str(),
+			spOldDeviceId.c_str(),
+			spTableName.c_str(),
+			spNewDeviceId.c_str()
+		);
+	}
+
+	logResult = m_sql.safe_query
+	(
+		"SELECT COUNT(*) FROM %q AS a  WHERE a.DeviceRowID='%q'",
+		spTableName.c_str(),
+		spOldDeviceId.c_str()
+	);
+	if (logResult.empty())
+		return false;
+
+	nbrOfRecords = std::stoi(logResult[0][0]);
+	if (nbrOfRecords > 0)
+	{
+		Log(LOG_STATUS, "Moving %d log lines from new device with ID='%s' to old device with ID='%s' in table %s", nbrOfRecords,  spNewDeviceId.c_str(), spOldDeviceId.c_str(), spTableName.c_str());
+
+		auto result = m_sql.safe_query
+		(
+			"UPDATE %q AS a  SET DeviceRowID = '%q' WHERE a.DeviceRowID='%q'",
+			spTableName.c_str(),
+			spOldDeviceId.c_str(),
+			spNewDeviceId.c_str()
+		);
+	}
+	return true;
+}
+
 
 
 /// <summary>
@@ -1142,17 +1477,18 @@ void CNetatmo::Get_Respons_API(const m_eNetatmoType& NType, std::string& sResult
 	}
 
 	bRet = ParseJSon(sResult, root);
-
 	if ((!bRet) || (!root.isObject()))
 	{
-		Log(LOG_ERROR, "Invalid data received...J");
+		Log(LOG_ERROR, "Invalid data received (Get_Respons_API) ...");
 		return ;
 	}
+
+//	Log(LOG_STATUS, "Get_Respons_API message returned from POST(%s): \n%s", httpUrl.c_str(), prettifyJson(root).c_str());
 
 	if (!root["error"].empty())
         {
 		//We received an error
-		Log(LOG_ERROR, "Error %s", root.asString().c_str());  // possible; 'error'  'errors'  'error [message]'
+		Log(LOG_ERROR, "Get_Respons_API: Error = %s", root.asString().c_str());  // possible; 'error'  'errors'  'error [message]'
 		m_isLogged = false;
 		return ;
 	}
@@ -1604,7 +1940,7 @@ bool CNetatmo::ParseStationData(const std::string& sResult, const bool bIsThermo
 	bool ret = ParseJSon(sResult, root);
 	if ((!ret) || (!root.isObject()))
 	{
-		Log(LOG_STATUS, "Invalid data received...");
+		Log(LOG_STATUS, "Invalid data received (ParseStationData) ...");
 		return false;
 	}
 	bool bHaveDevices = true;
@@ -1872,10 +2208,19 @@ bool CNetatmo::ParseDashboard(const Json::Value& root, const int DevIdx, const i
 		// Check when dashboard data was last updated
 		if (!root["time_utc"].empty())
 			tNetatmoLastUpdate = root["time_utc"].asUInt();
-		//Debug(DEBUG_HARDWARE, "Module [%s] last update = %s", name.c_str(), ctime(&tNetatmoLastUpdate));
+//		else
+//		{
+//			Log(LOG_STATUS, "No time stamp in received data; using current time");
+//			tNetatmoLastUpdate = tNow;
+//		}
+		//Debug(DEBUG_HARDWARE, "Module [%s] last update = %s (%d)", name.c_str(), ctime(&tNetatmoLastUpdate), tNetatmoLastUpdate);
+		Log(LOG_STATUS, "Module [%s] last update = %s (%d)", name.c_str(), ctime(&tNetatmoLastUpdate), tNetatmoLastUpdate);
+
 		// check if Netatmo data was updated in the past NETAMO_POLL_INTERVALL (+1 min for sync time lags)... if not means sensors failed to send to cloud
 		int Interval = NETAMO_POLL_INTERVALL + 60;
 		//Debug(DEBUG_HARDWARE, "Module [%s] Interval = %d", name.c_str(), Interval);
+		Log(LOG_STATUS, "Module [%s] Interval = %d", name.c_str(), Interval);
+
 		if (tNetatmoLastUpdate > (tNow - Interval))
 		{
 			if (!m_bNetatmoRefreshed[ID])
@@ -2136,6 +2481,8 @@ bool CNetatmo::ParseDashboard(const Json::Value& root, const int DevIdx, const i
 /// <returns></returns>
 bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, std::string& home_id)
 {
+	//Log(LOG_STATUS, "ParseHomeStatus for device: \n%s", prettifyJson(root).c_str());
+
 	//Check if JSON is Ok to parse
 	if (root["body"].empty())
 		return false;
