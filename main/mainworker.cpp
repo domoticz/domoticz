@@ -12988,8 +12988,8 @@ bool MainWorker::SetSetPointInt(const std::vector<std::string>& sd, const float 
 
 		if (
 			(value_unit.empty())
-			|| (value_unit == "Â°C")
-			|| (value_unit == "Â°F")
+			|| (value_unit == "°C")
+			|| (value_unit == "°F")
 			|| (value_unit == "C")
 			|| (value_unit == "F")
 			)
@@ -13809,7 +13809,7 @@ void MainWorker::HeartbeatCheck()
 				if (diff > 60)
 				{
 					_log.Log(LOG_ERROR, "%s hardware (%d) thread seems to have ended unexpectedly", pHardware->m_Name.c_str(), pHardware->m_HwdID);
-
+					
 				}
 			}
 
