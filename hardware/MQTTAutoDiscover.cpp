@@ -1779,7 +1779,7 @@ bool MQTTAutoDiscover::GuessSensorTypeValue(_tMQTTASensor* pSensor, uint8_t& dev
 
 		if (fUsage < -1000000)
 		{
-			//Way to negative, probably a bug in the sensor
+			//Way too negative, probably a bug in the sensor
 			return false;
 		}
 
@@ -1833,7 +1833,7 @@ bool MQTTAutoDiscover::GuessSensorTypeValue(_tMQTTASensor* pSensor, uint8_t& dev
 
 		if (fkWh < -1000000)
 		{
-			//Way to negative, probably a bug in the sensor
+			//Way too negative, probably a bug in the sensor
 			return false;
 		}
 
