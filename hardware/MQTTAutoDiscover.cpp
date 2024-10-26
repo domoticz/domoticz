@@ -2229,10 +2229,10 @@ MQTTAutoDiscover::_tMQTTASensor* MQTTAutoDiscover::get_auto_discovery_sensor_WAT
 	if (pSensor->unique_id.find("zwave") != 0)
 	{
 		//not ZWave
-		_tMQTTASensor* pSensor = get_auto_discovery_sensor_unit(pSensor, "w");
-		if (pSensor == nullptr)
-			pSensor = get_auto_discovery_sensor_unit(pSensor, "kw");
-		return pSensor;
+		_tMQTTASensor* pSensorReturn = get_auto_discovery_sensor_unit(pSensor, "w");
+		if (pSensorReturn == nullptr)
+			pSensorReturn = get_auto_discovery_sensor_unit(pSensor, "kw");
+		return pSensorReturn;
 	}
 
 	std::vector<std::string> strarraySensor;
