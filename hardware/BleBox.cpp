@@ -1119,43 +1119,43 @@ void BleBox::AddNode(const std::string& name, const std::string& IPAddress, bool
 	if (deviceType.bleBoxTypeId == 4) // gatebox
 	{
 		uint64_t idx = m_sql.InsertDevice(m_HwdID, 0, id, 1, deviceType.rfxType, deviceType.subType, deviceType.switchType, 0, "Unavailable", deviceName, signalQuality, 255, 0);
-		_log.Debug(DEBUG_HARDWARE, "BleBox: new device Id: '%n'", idx);
-		m_sql.safe_query("UPDATE DeviceStatus SET StrParam1='%d', StrParam2='%q' WHERE (ID==%n)", deviceTypeID, IPAddress.c_str(), idx);
+		_log.Debug(DEBUG_HARDWARE, "BleBox: new device Id: '%'" PRIu64, idx);
+		m_sql.safe_query("UPDATE DeviceStatus SET StrParam1='%d', StrParam2='%q' WHERE (ID==%" PRIu64 ")", deviceTypeID, IPAddress.c_str(), idx);
 
 		idx = m_sql.InsertDevice(m_HwdID, 0, id, 2, pTypeGeneralSwitch, sTypeAC, STYPE_PushOn, 0, "Unavailable", deviceName, signalQuality, 255, 0);
-		m_sql.safe_query("UPDATE DeviceStatus SET StrParam1='%d', StrParam2='%q' WHERE (ID==%n)", deviceTypeID, IPAddress.c_str(), idx);
+		m_sql.safe_query("UPDATE DeviceStatus SET StrParam1='%d', StrParam2='%q' WHERE (ID==%" PRIu64 ")", deviceTypeID, IPAddress.c_str(), idx);
 
 		idx = m_sql.InsertDevice(m_HwdID, 0, id, 3, pTypeGeneralSwitch, sTypeAC, STYPE_PushOn, 0, "Unavailable", deviceName, signalQuality, 255, 0);
-		m_sql.safe_query("UPDATE DeviceStatus SET StrParam1='%d', StrParam2='%q' WHERE (ID==%n)", deviceTypeID, IPAddress.c_str(), idx);
+		m_sql.safe_query("UPDATE DeviceStatus SET StrParam1='%d', StrParam2='%q' WHERE (ID==%" PRIu64 ")", deviceTypeID, IPAddress.c_str(), idx);
 	}
 	else
 		if (deviceType.bleBoxTypeId == 6) // switchboxd
 		{
 			uint64_t idx = m_sql.InsertDevice(m_HwdID, 0, id, 0, deviceType.rfxType, deviceType.subType, deviceType.switchType, 0, "Unavailable", deviceName, signalQuality, 255, 0);
-			_log.Debug(DEBUG_HARDWARE, "BleBox: new device Id: '%n'", idx);
-			m_sql.safe_query("UPDATE DeviceStatus SET StrParam1='%d', StrParam2='%q' WHERE (ID==%n)", deviceTypeID, IPAddress.c_str(), idx);
+			_log.Debug(DEBUG_HARDWARE, "BleBox: new device Id: '%'" PRIu64, idx);
+			m_sql.safe_query("UPDATE DeviceStatus SET StrParam1='%d', StrParam2='%q' WHERE (ID==%" PRIu64 ")", deviceTypeID, IPAddress.c_str(), idx);
 
 			idx = m_sql.InsertDevice(m_HwdID, 0, id, 1, deviceType.rfxType, deviceType.subType, deviceType.switchType, 0, "Unavailable", deviceName, signalQuality, 255, 0);
-			m_sql.safe_query("UPDATE DeviceStatus SET StrParam1='%d', StrParam2='%q' WHERE (ID==%n)", deviceTypeID, IPAddress.c_str(), idx);
+			m_sql.safe_query("UPDATE DeviceStatus SET StrParam1='%d', StrParam2='%q' WHERE (ID==%" PRIu64 ")", deviceTypeID, IPAddress.c_str(), idx);
 		}
 		else
 			if (deviceType.bleBoxTypeId == 7) // airbox
 			{
 				uint64_t idx = m_sql.InsertDevice(m_HwdID, 0, id, 1, deviceType.rfxType, deviceType.subType, deviceType.switchType, 0, "Unavailable", "Unknown", signalQuality, 255, 0);
-				_log.Debug(DEBUG_HARDWARE, "BleBox: new device Id: '%n'", idx);
-				m_sql.safe_query("UPDATE DeviceStatus SET StrParam1='%d', StrParam2='%q' WHERE (ID==%n)", deviceTypeID, IPAddress.c_str(), idx);
+				_log.Debug(DEBUG_HARDWARE, "BleBox: new device Id: '%'" PRIu64, idx);
+				m_sql.safe_query("UPDATE DeviceStatus SET StrParam1='%d', StrParam2='%q' WHERE (ID==%" PRIu64 ")", deviceTypeID, IPAddress.c_str(), idx);
 
 				idx = m_sql.InsertDevice(m_HwdID, 0, id, 2, deviceType.rfxType, deviceType.subType, deviceType.switchType, 0, "Unavailable", "Unknown", signalQuality, 255, 0);
-				m_sql.safe_query("UPDATE DeviceStatus SET StrParam1='%d', StrParam2='%q' WHERE (ID==%n)", deviceTypeID, IPAddress.c_str(), idx);
+				m_sql.safe_query("UPDATE DeviceStatus SET StrParam1='%d', StrParam2='%q' WHERE (ID==%" PRIu64 ")", deviceTypeID, IPAddress.c_str(), idx);
 
 				idx = m_sql.InsertDevice(m_HwdID, 0, id, 3, deviceType.rfxType, deviceType.subType, deviceType.switchType, 0, "Unavailable", "Unknown", signalQuality, 255, 0);
-				m_sql.safe_query("UPDATE DeviceStatus SET StrParam1='%d', StrParam2='%q' WHERE (ID==%n)", deviceTypeID, IPAddress.c_str(), idx);
+				m_sql.safe_query("UPDATE DeviceStatus SET StrParam1='%d', StrParam2='%q' WHERE (ID==%" PRIu64 ")", deviceTypeID, IPAddress.c_str(), idx);
 			}
 			else
 			{
 				uint64_t idx = m_sql.InsertDevice(m_HwdID, 0, id, unit, deviceType.rfxType, deviceType.subType, deviceType.switchType, 0, "Unavailable", deviceName, signalQuality, 255, 0);
-				_log.Debug(DEBUG_HARDWARE, "BleBox: new device Id: '%n'", idx);
-				m_sql.safe_query("UPDATE DeviceStatus SET StrParam1='%d', StrParam2='%q' WHERE (ID==%n)", deviceTypeID, IPAddress.c_str(), idx);
+				_log.Debug(DEBUG_HARDWARE, "BleBox: new device Id: '%'" PRIu64, idx);
+				m_sql.safe_query("UPDATE DeviceStatus SET StrParam1='%d', StrParam2='%q' WHERE (ID==%" PRIu64 ")", deviceTypeID, IPAddress.c_str(), idx);
 			}
 
 	if (reloadNodes)
