@@ -1438,6 +1438,7 @@ define(['app'], function (app) {
 				var clientid = $("#hardwarecontent #divnetatmo #clientid").val();
 				var clientsecret = $("#hardwarecontent #divnetatmo #clientsecret").val();
 				var scope = $("#hardwarecontent #divnetatmo #scope").val();
+				var refreshtoken = (typeof $scope.refreshToken == 'undefined' ? "" : $scope.refreshToken);
 
 				if (clientid == "" || clientsecret == "") {
 					alert("Please enter a valid client ID and secret for your app from the Netatmo website!");
@@ -1456,7 +1457,7 @@ define(['app'], function (app) {
 					"&password=" + encodeURIComponent(scope) +
 					"&enabled=" + bEnabled +
 					"&idx=" + idx +
-					"&extra=" + encodeURIComponent($scope.refreshToken) +
+					"&extra=" + encodeURIComponent(refreshtoken) +
 					"&datatimeout=" + datatimeout +
 					"&Mode1=" + $scope.loginRequired + "&Mode2=" + Mode2 + "&Mode3=" + Mode3 + "&Mode4=" + Mode4 + "&Mode5=" + Mode5 + "&Mode6=" + Mode6,
 					async: false,
@@ -2743,6 +2744,7 @@ define(['app'], function (app) {
 				var clientid = $("#hardwarecontent #divnetatmo #clientid").val();
 				var clientsecret = $("#hardwarecontent #divnetatmo #clientsecret").val();
 				var scope = $("#hardwarecontent #divnetatmo #scope").val();
+				var refreshtoken = (typeof $scope.refreshToken == 'undefined' ? "" : $scope.refreshToken);
 
 				if (clientid == "" || clientsecret == "") {
 					alert("Please enter a valid client ID and secret for your app from the Netatmo website!");
@@ -2753,7 +2755,7 @@ define(['app'], function (app) {
 					return;
 				}
 
-				if (typeof $scope.refreshToken == 'undefined' || $scope.refreshToken == "") {
+				if (refreshtoken == "") {
 					alert("Please login before adding a new Netatmo device");
 					return;
 				}
@@ -4613,7 +4615,7 @@ define(['app'], function (app) {
 						else if (data["Type"].indexOf("Netatmo") >= 0) {
 
 							var splittedUserName = data["Username"].split(":");
-							var scopes = data["Password"];;
+							var scopes = data["Password"];
 
 							if (scopes.indexOf("_") > 0) 	// Old or new format?
 								scopes = scopes.split(",");	// New format: This field contains one or more scopes
@@ -4624,6 +4626,7 @@ define(['app'], function (app) {
 							$("#hardwarecontent #hardwareparamsnetatmo #clientid").val(splittedUserName[0]);
 							$("#hardwarecontent #hardwareparamsnetatmo #clientsecret").val(splittedUserName[1]);
 							$("#hardwarecontent #hardwareparamsnetatmo #scope").val(scopes);
+
 							$("#hardwarecontent #hardwareparamsnetatmo #netatmologin").off("click");
 							$("#hardwarecontent #hardwareparamsnetatmo #netatmologin").on("click", function(){javascript:OnNetatmoLogin(idx)});
 							EnableNetatmoLoginButton (false);
