@@ -2002,7 +2002,10 @@ bool MQTTAutoDiscover::GuessSensorTypeValue(_tMQTTASensor* pSensor, uint8_t& dev
 
 			sValue = std_format("%d;%.1f", Rainrate, TotalRain * 1000.0F);
 		}
-		else if (pSensor->icon.find("gas") != std::string::npos)
+		else if (
+			(pSensor->icon.find("gas") != std::string::npos)
+			|| (pSensor->device_class == "gas")
+			)
 		{
 			devType = pTypeP1Gas;
 			subType = sTypeP1Gas;
