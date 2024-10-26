@@ -314,7 +314,7 @@ std::string MQTTAutoDiscover::GetValueFromTemplate(Json::Value root, std::string
 			{
 				//until we have c++20 where we can use std::format
 #ifndef FLT_DECIMAL_DIG
-	#define FLT_DECIMAL_DIG 9
+#define FLT_DECIMAL_DIG 9
 #endif
 				retVal = std_format("%.*g", FLT_DECIMAL_DIG, root.asDouble());
 			}
@@ -1770,12 +1770,18 @@ bool MQTTAutoDiscover::GuessSensorTypeValue(_tMQTTASensor* pSensor, uint8_t& dev
 		subType = sTypeCurrent;
 		sValue = std_format("%.3f", static_cast<float>(atof(pSensor->last_value.c_str())));
 	}
-	else if (szUnit == "w")
+	else if (
+		(szUnit == "w")
+		|| (szUnit == "kw")
+		)
 	{
 		devType = pTypeUsage;
 		subType = sTypeElectric;
 
 		float fUsage = static_cast<float>(atof(pSensor->last_value.c_str()));
+
+		if (szUnit == "kw")
+			fUsage *= 1000.F;
 
 		if (fUsage < -1000000)
 		{
@@ -2221,7 +2227,13 @@ MQTTAutoDiscover::_tMQTTASensor* MQTTAutoDiscover::get_auto_discovery_sensor_WAT
 		return nullptr; //device not found!?
 
 	if (pSensor->unique_id.find("zwave") != 0)
-		return get_auto_discovery_sensor_unit(pSensor, "w"); //not ZWave
+	{
+		//not ZWave
+		_tMQTTASensor* pSensor = get_auto_discovery_sensor_unit(pSensor, "w");
+		if (pSensor == nullptr)
+			pSensor = get_auto_discovery_sensor_unit(pSensor, "kw");
+		return pSensor;
+	}
 
 	std::vector<std::string> strarraySensor;
 	StringSplit(pSensor->unique_id, "-", strarraySensor);
@@ -2238,7 +2250,7 @@ MQTTAutoDiscover::_tMQTTASensor* MQTTAutoDiscover::get_auto_discovery_sensor_WAT
 			std::string szUnit = utf8_to_string(pTmpDeviceSensor->unit_of_measurement);
 			stdlower(szUnit);
 
-			if (szUnit == "w")
+			if ((szUnit == "w") || (szUnit == "kw"))
 			{
 				if (pSensor->unique_id == pTmpDeviceSensor->unique_id)
 					return pTmpDeviceSensor; //non-zwave?
@@ -2476,7 +2488,7 @@ void MQTTAutoDiscover::handle_auto_discovery_sensor(_tMQTTASensor* pSensor, cons
 			//we have multiple temperature, humidity and/or baro sensors, threat them all standalone
 			bTreatStandAlone = true;
 		}
-		
+
 
 		if (!bTreatStandAlone)
 		{
@@ -4030,42 +4042,42 @@ void MQTTAutoDiscover::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 					}
 				}
 			}
-/*
-			if (pSensor->brightness_state_topic == pSensor->last_topic)
-			{
-				std::string szValue;
-				if (!pSensor->brightness_value_template.empty())
-				{
-					szValue = GetValueFromTemplate(root, pSensor->brightness_value_template, isNull);
-					if (!szValue.empty())
-					{
-						bHandledValue = true;
-					}
-				}
-				if (!bHandledValue)
-				{
-					if (!root["value"].empty())
-					{
-						szValue = root["value"].asString();
-						bHandledValue = true;
-					}
-				}
-				if (bHandledValue)
-				{
-					level = atoi(szValue.c_str());
+			/*
+						if (pSensor->brightness_state_topic == pSensor->last_topic)
+						{
+							std::string szValue;
+							if (!pSensor->brightness_value_template.empty())
+							{
+								szValue = GetValueFromTemplate(root, pSensor->brightness_value_template, isNull);
+								if (!szValue.empty())
+								{
+									bHandledValue = true;
+								}
+							}
+							if (!bHandledValue)
+							{
+								if (!root["value"].empty())
+								{
+									szValue = root["value"].asString();
+									bHandledValue = true;
+								}
+							}
+							if (bHandledValue)
+							{
+								level = atoi(szValue.c_str());
 
-					if (pSensor->bHave_brightness_scale)
-						level = (int)round((100.0 / pSensor->brightness_scale) * level);
+								if (pSensor->bHave_brightness_scale)
+									level = (int)round((100.0 / pSensor->brightness_scale) * level);
 
-					if (level == 0)
-						szSwitchCmd = "off";
-					else if (level == 100)
-						szSwitchCmd = "on";
-					else
-						szSwitchCmd = "Set Level";
-				}
-			}
-*/
+								if (level == 0)
+									szSwitchCmd = "off";
+								else if (level == 100)
+									szSwitchCmd = "on";
+								else
+									szSwitchCmd = "Set Level";
+							}
+						}
+			*/
 			if (!root["brightness"].empty())
 			{
 				float dLevel = (100.F / pSensor->brightness_scale) * root["brightness"].asInt();
@@ -4521,7 +4533,7 @@ bool MQTTAutoDiscover::SendSwitchCommand(const std::string& DeviceID, const std:
 
 			bool bCouldUseBrightness = false;
 
-			if (color.mode == ColorModeRGB || 
+			if (color.mode == ColorModeRGB ||
 				color.mode == ColorModeCustom)
 			{
 				if (pSensor->supported_color_modes.find("xy") != pSensor->supported_color_modes.end())
