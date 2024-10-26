@@ -1827,23 +1827,23 @@ bool MQTTAutoDiscover::GuessSensorTypeValue(_tMQTTASensor* pSensor, uint8_t& dev
 		devType = pTypeGeneral;
 		subType = sTypeKwh;
 
-		float fUsage = 0;
-		float multiply = 1000.0F;
+		double dUsage = 0;
+		double multiply = 1000.0F;
 
 		if (szUnit == "wh")
-			multiply = 1.0F;
+			multiply = 1.0;
 		else if (szUnit == "wm")
-			multiply = 1.0F / 60.0F;
+			multiply = 1.0 / 60.0;
 
-		float fkWh = static_cast<float>(atof(pSensor->last_value.c_str())) * multiply;
+		double dkWh = atof(pSensor->last_value.c_str()) * multiply;
 
-		if (fkWh < -1000000)
+		if (dkWh < -1000000)
 		{
 			//Way too negative, probably a bug in the sensor
 			return false;
 		}
 
-		if (fkWh == 0)
+		if (dkWh == 0)
 		{
 			//could be the first every value received.
 			//could also be that this the middleware sends 0 when it has not received it before
@@ -1855,7 +1855,7 @@ bool MQTTAutoDiscover::GuessSensorTypeValue(_tMQTTASensor* pSensor, uint8_t& dev
 				StringSplit(result[0][0], ";", strarray);
 				if (strarray.size() == 2)
 				{
-					fkWh = static_cast<float>(atof(strarray[1].c_str()));
+					dkWh = atof(strarray[1].c_str());
 				}
 			}
 		}
@@ -1863,9 +1863,9 @@ bool MQTTAutoDiscover::GuessSensorTypeValue(_tMQTTASensor* pSensor, uint8_t& dev
 		_tMQTTASensor* pWattSensor = get_auto_discovery_sensor_WATT_unit(pSensor);
 		if (pWattSensor)
 		{
-			fUsage = static_cast<float>(atof(pWattSensor->last_value.c_str()));
+			dUsage = atof(pWattSensor->last_value.c_str());
 		}
-		sValue = std_format("%.3f;%.3f", fUsage, fkWh);
+		sValue = std_format("%.3f;%.3f", dUsage, dkWh);
 	}
 	else if (
 		(szUnit == "lx")
