@@ -235,10 +235,12 @@ std::string MQTTAutoDiscover::GetValueTemplateKey(const std::string& szValueTemp
 }
 
 //returns empty if value is not found
-std::string MQTTAutoDiscover::GetValueFromTemplate(Json::Value root, std::string szValueTemplate)
+std::string MQTTAutoDiscover::GetValueFromTemplate(Json::Value root, std::string szValueTemplate, bool& isNull)
 {
 	std::string szKey;
 	std::vector<std::string> strarray;
+
+	isNull = false;
 
 	try
 	{
@@ -274,8 +276,15 @@ std::string MQTTAutoDiscover::GetValueFromTemplate(Json::Value root, std::string
 
 				if (szKey.find('[') == std::string::npos)
 				{
-					if (root[szKey].empty())
+					if (!root.isMember(szKey))
+					{
 						return ""; //key not found!
+					}
+					if (root[szKey].isNull())
+					{
+						isNull = true;
+						return ""; //key not found!
+					}
 					root = root[szKey];
 				}
 				else
@@ -305,7 +314,7 @@ std::string MQTTAutoDiscover::GetValueFromTemplate(Json::Value root, std::string
 			{
 				//until we have c++20 where we can use std::format
 #ifndef FLT_DECIMAL_DIG
-	#define FLT_DECIMAL_DIG 9
+#define FLT_DECIMAL_DIG 9
 #endif
 				retVal = std_format("%.*g", FLT_DECIMAL_DIG, root.asDouble());
 			}
@@ -382,57 +391,6 @@ std::string MQTTAutoDiscover::GetValueFromTemplate(Json::Value root, std::string
 		stdstring_trim(szKey);
 		if (!root[szKey].empty())
 			return root[szKey].asString();
-	}
-	catch (const std::exception& e)
-	{
-		Log(LOG_ERROR, "Exception (GetValueFromTemplate): %s! (Template: %s)", e.what(), szValueTemplate.c_str());
-	}
-	return "";
-}
-
-std::string MQTTAutoDiscover::GetValueFromTemplate(const std::string& szValue, std::string szValueTemplate)
-{
-	try
-	{
-		std::map<std::string, std::string> value_keys;
-
-		stdreplace(szValueTemplate, " ", "");
-		stdreplace(szValueTemplate, "%", "");
-
-		//we only support if/else/endif
-		if (szValueTemplate.find("ifvalue==") != 0)
-			return "";
-		szValueTemplate = szValueTemplate.substr(strlen("ifvalue=="));
-		size_t pos;
-
-		pos = szValueTemplate.find("elseif");
-		if (pos != std::string::npos)
-		{
-			Log(LOG_ERROR, "This template is not (yet) support, please report to us (Template: %s)", szValueTemplate.c_str());
-			return ""; //not supported
-		}
-
-		pos = szValueTemplate.find("else");
-		if (pos == std::string::npos)
-			return "";
-
-		std::string szKey = szValueTemplate.substr(0, pos);
-
-		szValueTemplate = szValueTemplate.substr(pos + strlen("else"));
-		pos = szValueTemplate.find("endif");
-		if (pos == std::string::npos)
-			return "";
-
-		szValueTemplate = szValueTemplate.substr(0, pos);
-
-		std::string szValElse = szValueTemplate;
-
-		if (szKey.find(szValue) == 0)
-		{
-			return szKey.substr(szValue.size());
-		}
-
-		return szValElse;
 	}
 	catch (const std::exception& e)
 	{
@@ -1607,6 +1565,7 @@ void MQTTAutoDiscover::handle_auto_discovery_sensor_message(const struct mosquit
 			)
 		{
 			std::string szValue;
+			bool isNull = false;
 			if (bIsJSON)
 			{
 				if (!root["linkquality"].empty())
@@ -1624,7 +1583,7 @@ void MQTTAutoDiscover::handle_auto_discovery_sensor_message(const struct mosquit
 							&& (pSensor->value_template.find("battery") != std::string::npos)
 							)
 						{
-							szValue = GetValueFromTemplate(root, pSensor->value_template);
+							szValue = GetValueFromTemplate(root, pSensor->value_template, isNull);
 							if (!szValue.empty())
 							{
 								pSensor->BatteryLevel = std::stoi(szValue);
@@ -1635,11 +1594,11 @@ void MQTTAutoDiscover::handle_auto_discovery_sensor_message(const struct mosquit
 
 				if (!pSensor->position_template.empty())
 				{
-					szValue = GetValueFromTemplate(root, pSensor->position_template);
+					szValue = GetValueFromTemplate(root, pSensor->position_template, isNull);
 				}
 				else if (!pSensor->value_template.empty())
 				{
-					szValue = GetValueFromTemplate(root, pSensor->value_template);
+					szValue = GetValueFromTemplate(root, pSensor->value_template, pSensor->bIsNull);
 					if (szValue.empty())
 					{
 						// key not found or value 'null'!
@@ -1812,14 +1771,17 @@ bool MQTTAutoDiscover::GuessSensorTypeValue(_tMQTTASensor* pSensor, uint8_t& dev
 		sValue = std_format("%.3f", static_cast<float>(atof(pSensor->last_value.c_str())));
 	}
 	else if (
-		 (szUnit == "w")
-		 || (szUnit == "kw")
-		 )
+		(szUnit == "w")
+		|| (szUnit == "kw")
+		)
 	{
 		devType = pTypeUsage;
 		subType = sTypeElectric;
 
 		float fUsage = static_cast<float>(atof(pSensor->last_value.c_str()));
+
+		if (szUnit == "kw")
+			fUsage *= 1000.F;
 
 		if (fUsage < -1000000)
 		{
@@ -1827,30 +1789,34 @@ bool MQTTAutoDiscover::GuessSensorTypeValue(_tMQTTASensor* pSensor, uint8_t& dev
 			return false;
 		}
 
-		if (szUnit == "kw")
-			fUsage *= 1000;
-
-		sValue = std_format("%.3f", fUsage);
-
 		float fkWh = 0.0F;
 		_tMQTTASensor* pkWhSensor = get_auto_discovery_sensor_unit(pSensor, "kwh");
-		if (!pkWhSensor)
+		if (pkWhSensor)
+			fkWh = static_cast<float>(atof(pkWhSensor->last_value.c_str())) * 1000.0F;
+		else
+		{
 			pkWhSensor = get_auto_discovery_sensor_unit(pSensor, "wh");
-		if (!pkWhSensor)
-			pkWhSensor = get_auto_discovery_sensor_unit(pSensor, "wm");
-
+			if (pkWhSensor)
+				fkWh = static_cast<float>(atof(pkWhSensor->last_value.c_str()));
+			else
+			{
+				pkWhSensor = get_auto_discovery_sensor_unit(pSensor, "wm");
+				if (pkWhSensor)
+					fkWh = static_cast<float>(atof(pkWhSensor->last_value.c_str())) / 60.0F;
+			}
+		}
 		if (pkWhSensor)
 		{
 			if (pkWhSensor->last_received != 0)
 			{
-				pkWhSensor->sValue = std_format("%.3f;%.3f", fUsage, pkWhSensor->prev_value);
-
+				pkWhSensor->sValue = std_format("%.3f;%.3f", fUsage, fkWh);
 				mosquitto_message xmessage;
 				xmessage.retain = false;
 				// Trigger extra update for the kWh sensor with the new W value
 				handle_auto_discovery_sensor(pkWhSensor, &xmessage);
 			}
 		}
+		sValue = std_format("%.3f", fUsage);
 	}
 	else if (
 		(szUnit == "kwh")
@@ -1861,8 +1827,8 @@ bool MQTTAutoDiscover::GuessSensorTypeValue(_tMQTTASensor* pSensor, uint8_t& dev
 		devType = pTypeGeneral;
 		subType = sTypeKwh;
 
-		double fUsage = 0;
-		double multiply = 1000.0;
+		double dUsage = 0;
+		double multiply = 1000.0F;
 
 		if (szUnit == "wh")
 			multiply = 1.0;
@@ -1877,58 +1843,29 @@ bool MQTTAutoDiscover::GuessSensorTypeValue(_tMQTTASensor* pSensor, uint8_t& dev
 			return false;
 		}
 
-		// Zero could be the first ever value received.
-		// Or it could also be that the middleware sends 0 when it has not received it before
-		if (dkWh == 0 || pSensor->state_class == "total_increasing")
+		if (dkWh == 0)
 		{
-			double dPrevkWh = pSensor->prev_value;
-
-			if (!pSensor->last_received != 0)
+			//could be the first every value received.
+			//could also be that this the middleware sends 0 when it has not received it before
+			auto result = m_sql.safe_query("SELECT sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Type==%d) AND (Subtype==%d)",
+				m_HwdID, pSensor->unique_id.c_str(), devType, subType);
+			if (!result.empty())
 			{
-				auto result = m_sql.safe_query("SELECT sValue,StrParam1 FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Type==%d) AND (Subtype==%d)",
-					m_HwdID, pSensor->unique_id.c_str(), devType, subType);
-				if (!result.empty()) {
-					std::vector<std::string> strarray;
-					StringSplit(result[0][0], ";", strarray);
-					if (strarray.size() == 2)
-						dPrevkWh = atof(strarray[1].c_str());
-
-					// For total_increasing sensors, the epoch is stored in StrParam1
-					if (!result[0][1].empty())
-						pSensor->epoch = atof(result[0][1].c_str());
-				}
-			}
-
-			// GuessSensorTypeValue() is sometimes invoked with empty sValue to do
-			// only what its name implies, nothing more. Do not bump the epoch when
-			// when that happens; just use the previous value.
-			if (dkWh == 0)
-			{
-				dkWh = dPrevkWh;
-			}
-			else if (pSensor->state_class == "total_increasing")
-			{
-				// If the value resulting from this reading would be lower than the
-				// previous value, the sensor must have reset. Bump its epoch, which
-				// we store in StrParam1.
-				if (dkWh + pSensor->epoch < dPrevkWh)
+				std::vector<std::string> strarray;
+				StringSplit(result[0][0], ";", strarray);
+				if (strarray.size() == 2)
 				{
-					pSensor->epoch = dPrevkWh;
-					m_sql.safe_query("UPDATE DeviceStatus SET StrParam1='%f' WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Type==%d) AND (Subtype==%d)",
-							 pSensor->epoch, m_HwdID, pSensor->unique_id.c_str(), devType, subType);
+					dkWh = atof(strarray[1].c_str());
 				}
-
-				dkWh += pSensor->epoch;
 			}
 		}
-		pSensor->prev_value = dkWh;
 
 		_tMQTTASensor* pWattSensor = get_auto_discovery_sensor_WATT_unit(pSensor);
-		if (pWattSensor && pWattSensor->last_received != 0)
+		if (pWattSensor)
 		{
-			fUsage = atof(pWattSensor->sValue.c_str());
+			dUsage = atof(pWattSensor->last_value.c_str());
 		}
-		sValue = std_format("%.3f;%.3f", fUsage, dkWh);
+		sValue = std_format("%.3f;%.3f", dUsage, dkWh);
 	}
 	else if (
 		(szUnit == "lx")
@@ -2043,7 +1980,10 @@ bool MQTTAutoDiscover::GuessSensorTypeValue(_tMQTTASensor* pSensor, uint8_t& dev
 
 			sValue = std_format("%d;%.1f", Rainrate, TotalRain * 1000.0F);
 		}
-		else if (pSensor->icon.find("gas") != std::string::npos)
+		else if (
+			(pSensor->icon.find("gas") != std::string::npos)
+			|| (pSensor->device_class == "gas")
+			)
 		{
 			devType = pTypeP1Gas;
 			subType = sTypeP1Gas;
@@ -2286,19 +2226,19 @@ MQTTAutoDiscover::_tMQTTASensor* MQTTAutoDiscover::get_auto_discovery_sensor_WAT
 	if (pDevice == nullptr)
 		return nullptr; //device not found!?
 
-	_tMQTTASensor* pSensor2Return = nullptr;
-
-	if (pSensor->unique_id.find("zwave") != 0) {
+	if (pSensor->unique_id.find("zwave") != 0)
+	{
 		//not ZWave
-		pSensor2Return = get_auto_discovery_sensor_unit(pSensor, "w");
-		if (!pSensor2Return)
-			pSensor2Return = get_auto_discovery_sensor_unit(pSensor, "kw");
-		return pSensor2Return;
+		_tMQTTASensor* pSensorReturn = get_auto_discovery_sensor_unit(pSensor, "w");
+		if (pSensorReturn == nullptr)
+			pSensorReturn = get_auto_discovery_sensor_unit(pSensor, "kw");
+		return pSensorReturn;
 	}
 
 	std::vector<std::string> strarraySensor;
 	StringSplit(pSensor->unique_id, "-", strarraySensor);
 
+	_tMQTTASensor* pSensor2Return = nullptr;
 
 	// Check for the correct sensor with the largest match in the UID
 	for (const auto ittSensorID : pDevice->sensor_ids)
@@ -2310,7 +2250,7 @@ MQTTAutoDiscover::_tMQTTASensor* MQTTAutoDiscover::get_auto_discovery_sensor_WAT
 			std::string szUnit = utf8_to_string(pTmpDeviceSensor->unit_of_measurement);
 			stdlower(szUnit);
 
-			if (szUnit == "w" || szUnit == "kw")
+			if ((szUnit == "w") || (szUnit == "kw"))
 			{
 				if (pSensor->unique_id == pTmpDeviceSensor->unique_id)
 					return pTmpDeviceSensor; //non-zwave?
@@ -2548,14 +2488,27 @@ void MQTTAutoDiscover::handle_auto_discovery_sensor(_tMQTTASensor* pSensor, cons
 			//we have multiple temperature, humidity and/or baro sensors, threat them all standalone
 			bTreatStandAlone = true;
 		}
-		
+
 
 		if (!bTreatStandAlone)
 		{
 			if (!pTempSensor)
 				pTempSensor = get_auto_discovery_sensor_unit(pSensor, pTypeTEMP, sTypeTEMP1);
 			if (!pHumSensor)
+			{
 				pHumSensor = get_auto_discovery_sensor_unit(pSensor, pTypeHUM, sTypeHUM2);
+				if (pHumSensor != nullptr)
+				{
+					if (pHumSensor->last_received == 0)
+					{
+						if (pHumSensor->bIsNull)
+						{
+							//special case where sensors report it has temp+hum, but send 'null' as value
+							pHumSensor = nullptr;
+						}
+					}
+				}
+			}
 			if (!pBaroSensor)
 				pBaroSensor = get_auto_discovery_sensor_unit(pSensor, pTypeGeneral, sTypeBaro);
 		}
@@ -2807,7 +2760,8 @@ void MQTTAutoDiscover::handle_auto_discovery_fan(_tMQTTASensor* pSensor, const s
 			&& (bIsJSON)
 			)
 		{
-			current_mode = GetValueFromTemplate(root, pSensor->preset_mode_value_template);
+			bool isNull = false;
+			current_mode = GetValueFromTemplate(root, pSensor->preset_mode_value_template, isNull);
 			if ((pSensor->preset_mode_state_topic == topic) && current_mode.empty())
 			{
 				Log(LOG_ERROR, "Climate device no idea how to interpret preset_mode_state value (%s)", pSensor->unique_id.c_str());
@@ -2921,7 +2875,8 @@ void MQTTAutoDiscover::handle_auto_discovery_select(_tMQTTASensor* pSensor, cons
 	{
 		if (!pSensor->value_template.empty())
 		{
-			current_mode = GetValueFromTemplate(root, pSensor->value_template);
+			bool isNull = false;
+			current_mode = GetValueFromTemplate(root, pSensor->value_template, isNull);
 			if ((pSensor->state_topic == topic) && current_mode.empty())
 			{
 				Log(LOG_ERROR, "Select device no idea how to interpret state values (%s)", pSensor->unique_id.c_str());
@@ -3058,6 +3013,7 @@ void MQTTAutoDiscover::handle_auto_discovery_climate(_tMQTTASensor* pSensor, con
 
 	// Create/update Selector device for config and update payloads 
 	bool bValid = true;
+	bool isNull = false;
 	if (!pSensor->climate_modes.empty())
 	{
 		pSensor->devType = pTypeGeneralSwitch;
@@ -3101,7 +3057,7 @@ void MQTTAutoDiscover::handle_auto_discovery_climate(_tMQTTASensor* pSensor, con
 				{
 					if (!pSensor->mode_state_template.empty())
 					{
-						current_mode = GetValueFromTemplate(root, pSensor->mode_state_template);
+						current_mode = GetValueFromTemplate(root, pSensor->mode_state_template, isNull);
 						if ((pSensor->mode_state_topic == topic) && current_mode.empty())
 						{
 							//Mode not provided
@@ -3120,7 +3076,7 @@ void MQTTAutoDiscover::handle_auto_discovery_climate(_tMQTTASensor* pSensor, con
 				{
 					if (!pSensor->mode_state_template.empty())
 					{
-						current_mode = GetValueFromTemplate(qMessage, pSensor->mode_state_template);
+						current_mode = GetValueFromTemplate(qMessage, pSensor->mode_state_template, isNull);
 						if ((pSensor->mode_state_topic == topic) && current_mode.empty())
 						{
 							//silence error for now
@@ -3233,7 +3189,7 @@ void MQTTAutoDiscover::handle_auto_discovery_climate(_tMQTTASensor* pSensor, con
 					&& (bIsJSON)
 					)
 				{
-					current_mode = GetValueFromTemplate(root, pSensor->preset_mode_value_template);
+					current_mode = GetValueFromTemplate(root, pSensor->preset_mode_value_template, isNull);
 					if ((pSensor->preset_mode_state_topic == topic) && current_mode.empty())
 					{
 						//No preset mode provided
@@ -3343,7 +3299,7 @@ void MQTTAutoDiscover::handle_auto_discovery_climate(_tMQTTASensor* pSensor, con
 				{
 					if (!pSensor->fan_state_template.empty())
 					{
-						current_mode = GetValueFromTemplate(root, pSensor->fan_state_template);
+						current_mode = GetValueFromTemplate(root, pSensor->fan_state_template, isNull);
 						if ((pSensor->fan_state_topic == topic) && current_mode.empty())
 						{
 							//Mode not provided
@@ -3361,7 +3317,7 @@ void MQTTAutoDiscover::handle_auto_discovery_climate(_tMQTTASensor* pSensor, con
 				{
 					if (!pSensor->fan_state_template.empty())
 					{
-						current_mode = GetValueFromTemplate(qMessage, pSensor->fan_state_template);
+						current_mode = GetValueFromTemplate(qMessage, pSensor->fan_state_template, isNull);
 						if ((pSensor->fan_state_topic == topic) && current_mode.empty())
 						{
 							//silence error for now
@@ -3473,7 +3429,7 @@ void MQTTAutoDiscover::handle_auto_discovery_climate(_tMQTTASensor* pSensor, con
 				{
 					if (!pSensor->swing_state_template.empty())
 					{
-						current_mode = GetValueFromTemplate(root, pSensor->swing_state_template);
+						current_mode = GetValueFromTemplate(root, pSensor->swing_state_template, isNull);
 						if ((pSensor->swing_state_topic == topic) && current_mode.empty())
 						{
 							//Mode not provided
@@ -3491,7 +3447,7 @@ void MQTTAutoDiscover::handle_auto_discovery_climate(_tMQTTASensor* pSensor, con
 				{
 					if (!pSensor->swing_state_template.empty())
 					{
-						current_mode = GetValueFromTemplate(qMessage, pSensor->swing_state_template);
+						current_mode = GetValueFromTemplate(qMessage, pSensor->swing_state_template, isNull);
 						if ((pSensor->swing_state_topic == topic) && current_mode.empty())
 						{
 							//silence error for now
@@ -3572,7 +3528,7 @@ void MQTTAutoDiscover::handle_auto_discovery_climate(_tMQTTASensor* pSensor, con
 				//Current Setpoint
 				if (!pSensor->temperature_state_template.empty())
 				{
-					std::string tstring = GetValueFromTemplate(root, pSensor->temperature_state_template);
+					std::string tstring = GetValueFromTemplate(root, pSensor->temperature_state_template, isNull);
 					if (tstring.empty())
 					{
 						//No temperature_state provided
@@ -3654,7 +3610,7 @@ void MQTTAutoDiscover::handle_auto_discovery_climate(_tMQTTASensor* pSensor, con
 			//Current temperature
 			if (!pSensor->current_temperature_template.empty())
 			{
-				std::string tstring = GetValueFromTemplate(root, pSensor->current_temperature_template);
+				std::string tstring = GetValueFromTemplate(root, pSensor->current_temperature_template, isNull);
 				if (tstring.empty())
 				{
 					//No current temperature provided
@@ -4040,7 +3996,8 @@ void MQTTAutoDiscover::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 			{
 				if (pSensor->state_topic == pSensor->last_topic)
 				{
-					std::string szValue = GetValueFromTemplate(root, pSensor->state_value_template);
+					bool isNull = false;
+					std::string szValue = GetValueFromTemplate(root, pSensor->state_value_template, isNull);
 					if (!szValue.empty())
 					{
 						bHandledValue = true;
@@ -4085,42 +4042,42 @@ void MQTTAutoDiscover::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 					}
 				}
 			}
-/*
-			if (pSensor->brightness_state_topic == pSensor->last_topic)
-			{
-				std::string szValue;
-				if (!pSensor->brightness_value_template.empty())
-				{
-					szValue = GetValueFromTemplate(root, pSensor->brightness_value_template);
-					if (!szValue.empty())
-					{
-						bHandledValue = true;
-					}
-				}
-				if (!bHandledValue)
-				{
-					if (!root["value"].empty())
-					{
-						szValue = root["value"].asString();
-						bHandledValue = true;
-					}
-				}
-				if (bHandledValue)
-				{
-					level = atoi(szValue.c_str());
+			/*
+						if (pSensor->brightness_state_topic == pSensor->last_topic)
+						{
+							std::string szValue;
+							if (!pSensor->brightness_value_template.empty())
+							{
+								szValue = GetValueFromTemplate(root, pSensor->brightness_value_template, isNull);
+								if (!szValue.empty())
+								{
+									bHandledValue = true;
+								}
+							}
+							if (!bHandledValue)
+							{
+								if (!root["value"].empty())
+								{
+									szValue = root["value"].asString();
+									bHandledValue = true;
+								}
+							}
+							if (bHandledValue)
+							{
+								level = atoi(szValue.c_str());
 
-					if (pSensor->bHave_brightness_scale)
-						level = (int)round((100.0 / pSensor->brightness_scale) * level);
+								if (pSensor->bHave_brightness_scale)
+									level = (int)round((100.0 / pSensor->brightness_scale) * level);
 
-					if (level == 0)
-						szSwitchCmd = "off";
-					else if (level == 100)
-						szSwitchCmd = "on";
-					else
-						szSwitchCmd = "Set Level";
-				}
-			}
-*/
+								if (level == 0)
+									szSwitchCmd = "off";
+								else if (level == 100)
+									szSwitchCmd = "on";
+								else
+									szSwitchCmd = "Set Level";
+							}
+						}
+			*/
 			if (!root["brightness"].empty())
 			{
 				float dLevel = (100.F / pSensor->brightness_scale) * root["brightness"].asInt();
@@ -4576,7 +4533,7 @@ bool MQTTAutoDiscover::SendSwitchCommand(const std::string& DeviceID, const std:
 
 			bool bCouldUseBrightness = false;
 
-			if (color.mode == ColorModeRGB || 
+			if (color.mode == ColorModeRGB ||
 				color.mode == ColorModeCustom)
 			{
 				if (pSensor->supported_color_modes.find("xy") != pSensor->supported_color_modes.end())
