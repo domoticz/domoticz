@@ -1472,6 +1472,7 @@ void CNetatmo::GetHomeStatusDetails()
 	std::string locale;
 	std::string home_data;
 	std::string home_id;
+	m_homeid.clear();
 
 	GetHomesDataDetails();                 //Homes Data
 
