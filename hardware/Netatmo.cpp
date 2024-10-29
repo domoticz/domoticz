@@ -117,7 +117,7 @@ void CNetatmo::Init()
 	m_ScheduleHome.clear();
 	m_DeviceModuleID.clear();
 	m_LightDeviceID.clear();
-
+	m_homeid.clear();
 	m_wifi_status.clear();
 	m_DeviceHomeID.clear();
 	m_PersonsNames.clear();
@@ -1183,7 +1183,17 @@ void CNetatmo::GetHomesDataDetails()
 				// Home ID from Homesdata
 				homeID = home["id"].asString();
 				m_homeid.push_back(homeID);
-				//Debug(DEBUG_HARDWARE, "Get Homes ID %s", homeID.c_str());
+				//Debug(DEBUG_HARDWARE, "Get Home ID %s", homeID.c_str());
+				std::stringstream stream_homeid;
+				for(size_t i = 0; i < m_homeid.size(); ++i)
+				{
+					if(i != 0)
+						stream_homeid << ",";
+					stream_homeid << m_homeid[i];
+				}
+				std::string st_homeid = stream_homeid.str();
+				Debug(DEBUG_HARDWARE, "Get Homes ID %s", st_homeid.c_str());
+				
 				m_Home_ID = home["id"].asString();
 				std::string Home_Name = home["name"].asString();
 				// home["altitude"];
@@ -1462,11 +1472,13 @@ void CNetatmo::GetHomeStatusDetails()
 	std::string locale;
 	std::string home_data;
 	std::string home_id;
+	m_homeid.clear();
 
 	GetHomesDataDetails();                 //Homes Data
 
 	Debug(DEBUG_HARDWARE, "Home Status Details");   // Multiple Homes possible
 	size = (int)m_homeid.size();
+	Log(LOG_STATUS, "Home_ID size = %d", size);
 	for (int i = 0; i < size; i++)
 	{
 		home_id = m_homeid[i];
