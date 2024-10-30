@@ -2005,8 +2005,8 @@ bool CNetatmo::ParseDashboard(const Json::Value& root, const int DevIdx, const i
 	RF_level << rssiLevel;
 	RF_level >> sValue;
 	std::string module_name  = name + " RF. Lvl";
-	//SendCustomSensor(ID, 2, batValue, static_cast<float>(rssiLevel), name + " - RF-level, ", " ", rssiLevel); // RF Percentage
-	SendPercentageSensor(ID, 2, batValue, static_cast<float>(rssiLevel), name + " - RF-level"); // RF Percentage
+	SendCustomSensor(ID, 2, batValue, static_cast<float>(rssiLevel), name + " - RF-level, ", " ", rssiLevel); // RF Percentage
+	//SendPercentageSensor(ID, 2, batValue, static_cast<float>(rssiLevel), name + " - RF-level"); // RF Percentage
 	if (batValue != 255)
 		SendPercentageSensor(ID, 3, batValue, static_cast<float>(batValue), name + " - Bat. Level");
 	//UpdateValueInt(0, str_ID.c_str(), 2, pTypeGeneral, sTypePercentage, rssiLevel, batValue, '0', sValue.c_str(), module_name, 0, m_Name); // RF Percentage
@@ -2464,9 +2464,9 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 							nDevice.SignalLevel = mrf_status;
 							nDevice.BatteryLevel = batteryLevel;
 
-							//SendCustomSensor(crcId, 2, batteryLevel, mrf_percentage, pName, "  ", mrf_status);   // RF-level
-							SendPercentageSensor(crcId, 2, batteryLevel, mrf_percentage, moduleName + " - RF-level, ");   // RF-level
-							//SendPercentageSensor(crcId, 3, batteryLevel, batteryLevel, pName);
+							SendCustomSensor(crcId, 2, batteryLevel, mrf_percentage, pName, "  ", mrf_status);   // RF-level
+							//SendPercentageSensor(crcId, 2, batteryLevel, mrf_percentage, moduleName + " - RF-level, ");   // RF-level
+							//SendPercentageSensor(crcId, 3, batteryLevel, batteryLevel, pName);                            // Battery level
 							//UpdateValueInt(0, ID.c_str(), 2, pTypeGeneral, sTypePercentage, mrf_status, batteryLevel, '0', sigValue.c_str(), pName,  0, m_Name);  // RF- level
 						}
 					}
