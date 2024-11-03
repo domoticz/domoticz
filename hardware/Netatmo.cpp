@@ -2425,7 +2425,7 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 					else
 					{
 						Log(LOG_ERROR, "cloud data for module [%s] no longer updated (module possibly disconnected) since %s", moduleName.c_str(), ctime(&tNetatmoLastUpdate));
-						connected = false;  //Block update, create sensor if cloud data is older then Interval.
+						connected = false;  //update, create sensor Blocked if cloud data is older then Interval.
 					}
 				}
 
@@ -2893,14 +2893,14 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 						m_thermostatModuleID[uid] = module_id;                // mac-adres
 						m_DeviceHomeID[roomNetatmoID] = home_id;              // Home_ID
 					}
-					if ((type =="NACamera") || (type == "NCO") || (type == "NDB") || (type == "NOC") || (type == "NSD") || (type == "NIS"))
+					if ((type =="NACamera") || (type == "NCO") || (type == "NDB") || (type == "NOC") || (type == "NSD") || (type == "NIS") || (type == "NDL"))
 					{
 						//Only use Get Events when correct device is presend
 
 						m_bPollGetEvents = true;
 					}
 					Debug(DEBUG_HARDWARE, "Poll Get Events (%d)", m_bPollGetEvents);
-					m_bPollGetEvents = false;  // Blocking GetEvents because off Error "User Usage"
+					//m_bPollGetEvents = false;  // Blocking GetEvents because off Error
 				}
 			//m_tNetatmoDevice.push_back(nDevice);
 			m_netatmo_devices.push_back(nDevice);
