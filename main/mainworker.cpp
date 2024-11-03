@@ -1555,8 +1555,8 @@ void MainWorker::ParseRFXLogFile()
 	{
 		if (hexstring.size() % 2 != 0)
 			continue;//illegal
-		int totbytes = hexstring.size() / 2;
-		int ii = 0;
+		size_t totbytes = hexstring.size() / 2;
+		size_t ii = 0;
 		for (ii = 0; ii < totbytes; ii++)
 		{
 			std::string hbyte = hexstring.substr((ii * 2), 2);
@@ -1569,7 +1569,7 @@ void MainWorker::ParseRFXLogFile()
 			const char* q = std::lower_bound(lut, lut + 16, b);
 			if (*q != b) throw std::invalid_argument("not a hex digit");
 
-			unsigned char uchar = ((p - lut) << 4) | (q - lut);
+			unsigned char uchar = static_cast<unsigned char>(((p - lut) << 4) | (q - lut));
 			rxbuffer[ii] = uchar;
 		}
 		if (ii == 0)
@@ -10911,14 +10911,17 @@ void MainWorker::decode_Weather(const CDomoticzHardwareBase* pHardware, const tR
 
 	//Rain
 	float TotalRain = 0;
-
-	if (subType == sTypeWEATHER1)
+	switch (subType)
 	{
+	case sTypeWEATHER0:
+		TotalRain = float((pResponse->WEATHER.raintotal2 * 256) + (pResponse->WEATHER.raintotal3)) * 0.1F;
+		break;
+	case sTypeWEATHER1:
 		TotalRain = float((pResponse->WEATHER.raintotal2 * 256) + (pResponse->WEATHER.raintotal3)) * 0.3F;
-	}
-	else if (subType == sTypeWEATHER2)
-	{
+		break;
+	case sTypeWEATHER2:
 		TotalRain = float((pResponse->WEATHER.raintotal2 * 256) + (pResponse->WEATHER.raintotal3)) * 0.254F;
+		break;
 	}
 	pRFXDevice->SendRainSensor(windID, BatteryLevel, TotalRain, procResult.DeviceName, SignalLevel);
 
@@ -13802,16 +13805,11 @@ void MainWorker::HeartbeatCheck()
 			if (bDoCheck)
 			{
 				double diff = difftime(now, pHardware->m_LastHeartbeat);
-				//_log.Log(LOG_STATUS, "%d last checking  %.2lf seconds ago", iterator->first, dif);
+				//_log.Log(LOG_STATUS, "%s last checking  %.2lf seconds ago", pHardware->m_Name.c_str(), diff);
 				if (diff > 60)
 				{
-					std::vector<std::vector<std::string> > result;
-					result = m_sql.safe_query("SELECT Name FROM Hardware WHERE (ID='%d')", pHardware->m_HwdID);
-					if (result.size() == 1)
-					{
-						std::vector<std::string> sd = result[0];
-						_log.Log(LOG_ERROR, "%s hardware (%d) thread seems to have ended unexpectedly", sd[0].c_str(), pHardware->m_HwdID);
-					}
+					_log.Log(LOG_ERROR, "%s hardware (%d) thread seems to have ended unexpectedly", pHardware->m_Name.c_str(), pHardware->m_HwdID);
+					
 				}
 			}
 

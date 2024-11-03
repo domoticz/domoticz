@@ -1731,7 +1731,6 @@ namespace http
 						|| ((dType == pTypeRego6XXValue) && (dSubType == sTypeRego6XXStatus))
 						|| (dType == pTypeHunter)
 						|| (dType == pTypeDDxxxx)
-						|| (dType == pTypeHoneywell_AL)
 						)
 					{
 						// add light details

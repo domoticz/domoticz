@@ -410,7 +410,7 @@ define(['angularAMD', 'app.routes', 'app.constants', 'app.notifications', 'app.p
 						//Translate Highcharts (partly)
 						const formattedNumber = Intl.NumberFormat().format(1234.5);
 						const decimalPoint = formattedNumber[5] === '.' || formattedNumber[5] === ',' ? formattedNumber[5] : '.';
-						const thousandsSep = formattedNumber[1] === ',' || formattedNumber[1] === '.' ? formattedNumber[1] : ',';
+						const thousandsSep = formattedNumber[1] === ',' || formattedNumber[1] === '.' || formattedNumber[1] === '\u00A0' ? formattedNumber[1] : ',';
 						Highcharts.Templating.helpers.abs3 = value => Math.abs(value).toFixed(3);
 						Highcharts.setOptions({
 							noData: {
