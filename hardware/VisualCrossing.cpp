@@ -125,7 +125,7 @@ void CVisualCrossing::GetMeterDetails()
 #else
 	std::stringstream sURL;
 	std::string szLoc = CURLEncode::URLEncode(m_Location);
-	sURL << "https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/" << "966sddsd6sdsd" << "?key=" << m_APIKey << "&unitGroup=metric&include=current";
+	sURL << "https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/" << szLoc << "?key=" << m_APIKey << "&unitGroup=metric&include=current";
 	try
 	{
 		if (!HTTPClient::GET(sURL.str(), sResult))
