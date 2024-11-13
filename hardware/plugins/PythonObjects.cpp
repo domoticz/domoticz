@@ -415,7 +415,7 @@ namespace Plugins {
 		else if (sTypeName == "Leaf Wetness")			SubType = sTypeLeafWetness;
 		else if (sTypeName == "kWh")
 		{
-			sValue = "0; 0.0";
+			sValue = "0;0.0";
 			SubType = sTypeKwh;
 		}
 		else if (sTypeName == "Current (Single)")		SubType = sTypeCurrent;

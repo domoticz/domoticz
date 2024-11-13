@@ -6,6 +6,7 @@ Version 2024.x
 - Changed: Energy Dashboard now also available for non-admin users
 - Changed: Google Firebase Cloud Messaging (FCM) alternative way to pass a Domoticz device ID through the extra field ('|Device=<devidx>')
 - Changed: Improved and automated login process for Netatmo devices (to obtain client ID and Password with user selectable scopes)
+- Changed: Removed Highcharts 'Download PNG/JPG/SVG' buttons until export server is fixed
 - Fixed: Custom Icons, making sure they are valid and loaded OK
 - Fixed: RFXCom 868 MHz Weather device
 
