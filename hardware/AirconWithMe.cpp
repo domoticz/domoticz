@@ -347,7 +347,7 @@ void CAirconWithMe::UpdateDomoticzWithValue(int32_t uid, int32_t value)
 		break;
 
 	case NDT_THERMOSTAT:
-		SendSetPointSensor(0, 0, uid / 256, uid % 256, 1, static_cast<float>(value) / 10.0F, valueInfo.mDefaultName);
+		SendSetPointSensor(0, 0, uid / 256, uid % 256, 1, 255, static_cast<float>(value) / 10.0F, valueInfo.mDefaultName);
 		break;
 
 	case NDT_SELECTORSWITCH:

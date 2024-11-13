@@ -337,7 +337,7 @@ void CThermosmart::GetMeterDetails()
 
 	float temperature;
 	temperature = (float)root["target_temperature"].asFloat();
-	SendSetPointSensor(0, 0, 0, 1, 0, temperature, "target temperature");
+	SendSetPointSensor(0, 0, 0, 1, 0, 255, temperature, "target temperature");
 
 	temperature = (float)root["room_temperature"].asFloat();
 	SendTempSensor(2, 255, temperature, "room temperature");
@@ -380,7 +380,7 @@ void CThermosmart::SetSetpoint(const int idx, const float temp)
 		m_bDoLogin = true;
 		return;
 	}
-	SendSetPointSensor(0, 0, 0, 1, 0, temp, "target temperature");
+	SendSetPointSensor(0, 0, 0, 1, 0, 255, temp, "target temperature");
 }
 
 void CThermosmart::SetPauseStatus(const bool bIsPause)

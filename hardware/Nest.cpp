@@ -572,7 +572,7 @@ void CNest::GetMeterDetails()
 			if (!nshared["target_temperature"].empty())
 			{
 				float currentSetpoint = nshared["target_temperature"].asFloat();
-				SendSetPointSensor(0, 0, 0, (const unsigned char)(iThermostat * 3) + 1, 0, currentSetpoint, Name + " Setpoint");
+				SendSetPointSensor(0, 0, 0, (const unsigned char)(iThermostat * 3) + 1, 0, 255, currentSetpoint, Name + " Setpoint");
 			}
 			// Room Temperature/Humidity
 			if (!nshared["current_temperature"].empty())
