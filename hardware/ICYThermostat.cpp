@@ -228,7 +228,7 @@ void CICYThermostat::GetMeterDetails()
 		Log(LOG_ERROR, "Invalid data received!");
 		return;
 	}
-	SendSetPointSensor(0, 0, 0, 1, 0, root["temperature1"].asFloat(), "Room Setpoint");
+	SendSetPointSensor(0, 0, 0, 1, 0, 255, root["temperature1"].asFloat(), "Room Setpoint");
 	if (root["temperature2"].empty() == true)
 	{
 		Log(LOG_ERROR, "Invalid data received!");

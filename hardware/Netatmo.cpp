@@ -2072,7 +2072,7 @@ bool CNetatmo::ParseDashboard(const Json::Value& root, const int DevIdx, const i
 		sp_temp = static_cast<int>(SP_temp);
 		std::string sValue = sp_str.str();
 		//Debug(DEBUG_HARDWARE, "(%d) %s (%s) [%s] parsedashboard  %s %s %d %d", Hardware_int, str_ID.c_str(), pchar_ID, name.c_str(), sValue.c_str(), m_Name.c_str(), rssiLevel, batValue);
-		SendSetPointSensor(ID, (uint8_t)((ID & 0x00FF0000) >> 16), (ID & 0XFF00) >> 8, ID & 0XFF, Unit, SP_temp, sName);    // No RF-level and Battery level
+		SendSetPointSensor(ID, (uint8_t)((ID & 0x00FF0000) >> 16), (ID & 0XFF00) >> 8, ID & 0XFF, Unit, batValue, SP_temp, sName);    // No RF-level
 	}
 
 	//Rain meter
@@ -2831,7 +2831,7 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 						float SP_temp = std::stof(room_setpoint);
 						int uid = crcId;
 
-						SendSetPointSensor(crcId, (uint8_t)((crcId & 0x00FF0000) >> 16), (crcId & 0XFF00) >> 8, crcId & 0XFF, Unit, SP_temp, moduleName); // No RF-level and Battery-level
+						SendSetPointSensor(crcId, (uint8_t)((crcId & 0x00FF0000) >> 16), (crcId & 0XFF00) >> 8, crcId & 0XFF, Unit, batteryLevel, SP_temp, moduleName); // No RF-level and Battery-level
 
 						// thermostatModuleID
 						uint64_t mid = convert_mac(module_id);
