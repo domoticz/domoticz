@@ -688,7 +688,7 @@ void CDomoticzHardwareBase::SendSwitch(const int NodeID, const uint8_t ChildID, 
 
 	std::string sIdx = std_format("%X%02X%02X%02X", ID1, ID2, ID3, ID4);
 	std::vector<std::vector<std::string> > result;
-	result = m_sql.safe_query("SELECT Name,nValue,sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit == %d) AND (Type==%d) AND (Subtype==%d)", m_HwdID, sIdx.c_str(), ChildID,
+	result = m_sql.safe_query("SELECT ID,nValue,sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit == %d) AND (Type==%d) AND (Subtype==%d)", m_HwdID, sIdx.c_str(), ChildID,
 				  int(pTypeLighting2), int(sTypeAC));
 	if (!result.empty())
 	{
@@ -707,10 +707,7 @@ void CDomoticzHardwareBase::SendSwitch(const int NodeID, const uint8_t ChildID, 
 		if (bNoChange)
 		{
 			if (bForceLastUpdate)
-			{
-				std::string sLastUpdate = TimeToString(nullptr, TF_DateTime);
-				m_sql.safe_query("UPDATE DeviceStatus SET LastUpdate='%q' WHERE (HardwareID == %d) AND (DeviceID == '%q')", sLastUpdate.c_str(), m_HwdID, sIdx.c_str());
-			}
+				m_sql.UpdateLastUpdate(result[0][0]);
 			return;
 		}
 	}
