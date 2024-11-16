@@ -2114,7 +2114,7 @@ bool CNetatmo::ParseDashboard(const Json::Value& root, const int DevIdx, const i
 	if (bHaveSound)
 	{
 		//Debug(DEBUG_HARDWARE, "(%d) %s (%d)", sound, name.c_str(), batValue);
-		SendSoundSensor(ID, batValue, sound, name);  // No RF-level - Battery level visible
+		SendSoundSensor(ID, batValue, sound, name);  // No RF-level
 		//Debug(DEBUG_HARDWARE, "(%d) %s (%s) [%s] sound %s %s %d %d", Hardware_int, str_ID.c_str(), pchar_ID, name.c_str(), std::to_string(sound).c_str(), m_Name.c_str(), rssiLevel, batValue);
 		//UpdateValueInt(0, str_ID.c_str(), 0, pTypeGeneral, sTypeSoundLevel, rssiLevel, batValue, '0', std::to_string(sound).c_str(), name, 0, m_Name);
 	}
@@ -2778,7 +2778,7 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 					{
 						//Debug(DEBUG_HARDWARE, "(%d) %s (%s) [%s] sound %s %s %d %d", Hardware_int, str_ID.c_str(), pchar_ID, name.c_str(), std::to_string(sound).c_str(), m_Name.c_str(), mrf_status, batteryLevel);
 						//UpdateValueInt(0, ID.c_str(), 0, pTypeGeneral, sTypeSoundLevel, mrf_status, batteryLevel, '0', std::to_string(sound).c_str(), moduleName, 0, m_Name);
-						SendSoundSensor(crcId, batteryLevel, sound, moduleName);    // No RF-level - Battery level visible
+						SendSoundSensor(crcId, batteryLevel, sound, moduleName);    // No RF-level
 					}
 					if (bHaveWind)
 					{
@@ -2821,7 +2821,7 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 						float SP_temp = std::stof(room_setpoint);
 						int uid = crcId;
 
-						SendSetPointSensor(crcId, (uint8_t)((crcId & 0x00FF0000) >> 16), (crcId & 0XFF00) >> 8, crcId & 0XFF, Unit, batteryLevel, SP_temp, moduleName);   // No RF-level - Battery level visible
+						SendSetPointSensor(crcId, (uint8_t)((crcId & 0x00FF0000) >> 16), (crcId & 0XFF00) >> 8, crcId & 0XFF, Unit, batteryLevel, SP_temp, moduleName);   // No RF-level
 						
 						// thermostatModuleID
 						uint64_t mid = convert_mac(module_id);
