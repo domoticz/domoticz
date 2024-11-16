@@ -246,7 +246,7 @@ bool CAtagOne::GetDeviceDetails(const std::string& ThermostatID)
 	//Handle the Values
 	float temperature;
 	temperature = (float)root["targetTemperature"].asFloat();
-	SendSetPointSensor(0, 0, 0, 1, 1, temperature, "Room Setpoint");
+	SendSetPointSensor(0, 0, 0, 1, 1, 255, temperature, "Room Setpoint");
 
 	temperature = (float)root["roomTemperature"].asFloat();
 	SendTempSensor(2, 255, temperature, "room Temperature");
@@ -261,7 +261,7 @@ bool CAtagOne::GetDeviceDetails(const std::string& ThermostatID)
 	if (!root["dhwSetpoint"].empty())
 	{
 		temperature = (float)root["dhwSetpoint"].asFloat();
-		SendSetPointSensor(0, 0, 0, 2, 1, temperature, "DHW Setpoint");
+		SendSetPointSensor(0, 0, 0, 2, 1, 255, temperature, "DHW Setpoint");
 	}
 	if (!root["dhwWaterTemperature"].empty())
 	{
@@ -272,7 +272,7 @@ bool CAtagOne::GetDeviceDetails(const std::string& ThermostatID)
 	if (!root["chSetpoint"].empty())
 	{
 		temperature = (float)root["chSetpoint"].asFloat();
-		SendSetPointSensor(0, 0, 0, 3, 1, temperature, "CH Setpoint");
+		SendSetPointSensor(0, 0, 0, 3, 1, 255, temperature, "CH Setpoint");
 	}
 	if (!root["chWaterTemperature"].empty())
 	{
@@ -592,7 +592,7 @@ void CAtagOne::SetSetpoint(const int idx, const float temp)
 #ifdef DEBUG_AtagOneThermostat
 	SaveString2Disk(sResult, "E:\\AtagOne_setsetpoint.txt");
 #endif
-	SendSetPointSensor(0, 0, 0, (const uint8_t)idx, 1, dtemp, "");
+	SendSetPointSensor(0, 0, 0, (const uint8_t)idx, 1, 255, dtemp, "");
 }
 
 void CAtagOne::SetPauseStatus(const bool /*bIsPause*/)

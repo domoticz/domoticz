@@ -1,13 +1,25 @@
 Version 2024.x
+- Implemented: Battery level for Setpoint sensors
 - Implemented: RFXCom, Updated SDK
 - Implemented: Support for Honeywell Series 5/PIR
 - Implemented: YouLess, added Water meter
+- Implemented: MQTT-AD, added support for Gas device class
+- Implemented: MQTT-AD, better precission for kWh sensors
+- Implemented: MQTT-AD, handling single onoff colormode as a normal light/switch
+- Implemented: MQTT-AD, power sensors for the Tuya SPM02
+- Implemented: MQTT-AD, support sensors that report humidity but sends 'null' values
 - Changed: dzVents, possible to pass a Domoticz device ID in notify() through the extra parameter
 - Changed: Energy Dashboard now also available for non-admin users
 - Changed: Google Firebase Cloud Messaging (FCM) alternative way to pass a Domoticz device ID through the extra field ('|Device=<devidx>')
 - Changed: Improved and automated login process for Netatmo devices (to obtain client ID and Password with user selectable scopes)
+- Changed: Removed Highcharts 'Download PNG/JPG/SVG' buttons until export server is fixed
+- Changed: Energy Dashboard, Text object clipping rectangle
 - Fixed: Custom Icons, making sure they are valid and loaded OK
+- Fixed: Possible mutex lock issue when logging
+- Fixed: Pushers, corrected Gas value rounding
+- Fixed: Python framework, invalid sValue when creating a General/kWh sensor
 - Fixed: RFXCom 868 MHz Weather device
+- Fixed: RFXCom, WS90 Weather device
 
 Version 2024.7 (July 13th 2024)
 - Implemented: P1 Meter, Report, Header now also supports simple mode (No T1/T2/R1/R2 but just total)
