@@ -478,13 +478,13 @@ void MultiFun::GetRegisters(bool firstTime)
 						temp = (float)((value & 0x0FFF) * 0.2);
 					}
 					m_isWeatherWork[i - 0x1C] = (value & 0x8000) == 0x8000;
-					SendSetPointSensor(0, (uint8_t)i, 1, 1, 1, temp, name);
+					SendSetPointSensor(0, (uint8_t)i, 1, 1, 1, 255, temp, name);
 					break;
 				}
 
 				case 0x1E:
 				{
-					SendSetPointSensor(0, 0x1E, 1, 1, 1, (float)value, "H.W.U. Temperature");
+					SendSetPointSensor(0, 0x1E, 1, 1, 1, 255, (float)value, "H.W.U. Temperature");
 					break;
 				}
 
@@ -497,7 +497,7 @@ void MultiFun::GetRegisters(bool firstTime)
 					if (m_isSensorExists[i - 0x1F])
 					{
 						float temp = (float)((value & 0x0FFF) * 0.2);
-						SendSetPointSensor(0, (uint8_t)i, 1, 1, 1, temp, name);
+						SendSetPointSensor(0, (uint8_t)i, 1, 1, 1, 255, temp, name);
 					}
 					else
 					{
