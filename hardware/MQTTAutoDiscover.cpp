@@ -2140,6 +2140,18 @@ MQTTAutoDiscover::_tMQTTASensor* MQTTAutoDiscover::get_auto_discovery_sensor_uni
 				)
 				continue; //ignore sensor
 
+			if (szMeasurementUnit == "w")
+			{
+				//some devices have multiple power sensors, we need to find the correct one
+				//for instance power_a, power_b, power_c
+				if (
+					(pTmpDeviceSensor->object_id.find("power_a") == 0)
+					|| (pTmpDeviceSensor->object_id.find("power_b") == 0)
+					|| (pTmpDeviceSensor->object_id.find("power_c") == 0)
+					)
+					continue; //ignore these sensors
+			}
+
 			std::string szUnit = utf8_to_string(pTmpDeviceSensor->unit_of_measurement);
 			stdlower(szUnit);
 

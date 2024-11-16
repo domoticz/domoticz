@@ -774,7 +774,7 @@ bool CToonThermostat::ParseThermostatData(const Json::Value &root)
 
 	float currentTemp = root["thermostatInfo"]["currentTemp"].asFloat() / 100.0F;
 	float currentSetpoint = root["thermostatInfo"]["currentSetpoint"].asFloat() / 100.0F;
-	SendSetPointSensor(0, 0, 0, 1, 0, currentSetpoint, "Room Setpoint");
+	SendSetPointSensor(0, 0, 0, 1, 0, 255, currentSetpoint, "Room Setpoint");
 	SendTempSensor(1, 255, currentTemp, "Room Temperature");
 
 	// int programState = root["thermostatInfo"]["programState"].asInt();
@@ -881,7 +881,7 @@ void CToonThermostat::SetSetpoint(const int idx, const float temp)
 			m_bDoLogin = true;
 			return;
 		}
-		SendSetPointSensor(0, 0, 0, idx, 0, temp, "Room Setpoint");
+		SendSetPointSensor(0, 0, 0, idx, 0, 255, temp, "Room Setpoint");
 		m_retry_counter = 0;
 		m_poll_counter = TOON_POLL_INTERVAL_SHORT;
 	}

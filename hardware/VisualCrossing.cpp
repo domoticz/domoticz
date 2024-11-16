@@ -132,7 +132,7 @@ void CVisualCrossing::GetMeterDetails()
 		{
 			Log(LOG_ERROR, "Error getting http data!.");
 			if (!sResult.empty())
-				Log(LOG_ERROR, sResult.c_str());
+				Log(LOG_ERROR, sResult);
 			return;
 		}
 	}
