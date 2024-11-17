@@ -2410,12 +2410,10 @@ bool CNetatmo::ParseDashboard(const Json::Value& root, const int DevIdx, const i
 //			tNetatmoLastUpdate = tNow;
 //		}
 		//Debug(DEBUG_HARDWARE, "Module [%s] last update = %s (%d)", name.c_str(), ctime(&tNetatmoLastUpdate), tNetatmoLastUpdate);
-		Log(LOG_STATUS, "Module [%s] last update = %s (%d)", name.c_str(), ctime(&tNetatmoLastUpdate), tNetatmoLastUpdate);
 
 		// check if Netatmo data was updated in the past NETAMO_POLL_INTERVALL (+1 min for sync time lags)... if not means sensors failed to send to cloud
 		int Interval = NETAMO_POLL_INTERVALL + 60;
 		//Debug(DEBUG_HARDWARE, "Module [%s] Interval = %d", name.c_str(), Interval);
-		Log(LOG_STATUS, "Module [%s] Interval = %d", name.c_str(), Interval);
 
 		if (tNetatmoLastUpdate > (tNow - Interval))
 		{
@@ -2525,17 +2523,10 @@ bool CNetatmo::ParseDashboard(const Json::Value& root, const int DevIdx, const i
 	std::string sValue;
 	std::string roomNetatmoID = m_RoomIDs[Hardware_ID];
 	//Debug(DEBUG_HARDWARE, "Hardware_int (%d) %s [%s] %s", Hardware_int, str_ID.c_str(), name.c_str(), Hardware_ID.c_str());
-	sValue = Hardware_ID.c_str();
-	std::string Module_Name  = name + " - MAC-adres";
-	//UpdateValueInt(0, str_ID.c_str(), 1, pTypeGeneral, sTypeTextStatus, rssiLevel, batValue, '0', sValue.c_str(), Module_Name, 0, m_Name); //MAC-adres  Parse DashBoard
-	SendTextSensor(ID, 1, batValue, sValue.c_str(), Module_Name.c_str());
-	CNetatmo::MigrateDevices(str_ID.c_str(), 1,  pTypeGeneral, sTypeTextStatus, Module_Name);
 	std::stringstream RF_level;
 	RF_level << rssiLevel;
 	RF_level >> sValue;
 	std::string module_name  = name + " RF. Lvl";
-	SendCustomSensor(ID, 2, batValue, static_cast<float>(rssiLevel), name + " - RF-level, ", " ", rssiLevel); // RF Percentage
-	CNetatmo::MigrateDevices(str_ID.c_str(), 2, pTypeGeneral, sTypeCustom, name  + " - RF-level");
 	if (batValue != 255)
 	{
 		SendPercentageSensor(ID, 3, batValue, static_cast<float>(batValue), name + " - Bat. Level");
@@ -3010,9 +3001,6 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 							//Debug(DEBUG_HARDWARE, "mrf_status =  %s -  %d", pName.c_str(), mrf_status);
 							nDevice.SignalLevel = mrf_status;
 							nDevice.BatteryLevel = batteryLevel;
-							SendCustomSensor(crcId, 2, batteryLevel, mrf_percentage, pName, "  ", mrf_status);   // RF-level
-							//UpdateValueInt(0, ID.c_str(), 2, pTypeGeneral, sTypePercentage, mrf_status, batteryLevel, '0', sigValue.c_str(), pName,  0, m_Name);  // RF- level
-							CNetatmo::MigrateDevices(ID.c_str(), 2, pTypeGeneral, sTypeCustom, pName);
 						}
 					}
 					if (!module["wifi_state"].empty())
@@ -3029,10 +3017,6 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 						mrf_status = static_cast<int>(wifi_status); // Device has Wifi- or RF-strength not both
 					}
 
-					//UpdateValueInt(0, ID.c_str(), 1, pTypeGeneral, sTypeTextStatus, mrf_status, batteryLevel, '0', sValue.c_str(), module_Name, 0, m_Name);  // MAC-adres  Parse Home Status
-					//SendTextSensor(crcId, 1, batteryLevel, sValue.c_str(), module_Name.c_str());
-					SendPercentageSensor(crcId, 2, batteryLevel, mrf_status, module_Name.c_str());
-					CNetatmo::MigrateDevices(ID.c_str(), 2,  pTypeGeneral, sTypeTextStatus, module_Name.c_str());
 
 					if (!module["battery_level"].empty())
 					{
@@ -3079,8 +3063,8 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 						nDevice.StationName = Bridge_Name;
 						int mrf_status_bridge = m_wifi_status[bridge_];
 						//UpdateValueInt(0, ID.c_str(), 4, pTypeGeneral, sTypeTextStatus, mrf_status_bridge, 255, '0', bridge_.c_str(), Module_Name, 0, m_Name); // MAC-adres Bridge
-						SendTextSensor(crcId, 4, 255, bridge_.c_str(), Module_Name.c_str());
-						CNetatmo::MigrateDevices(ID.c_str(), 4,  pTypeGeneral, sTypeTextStatus, Module_Name.c_str());
+						//SendTextSensor(crcId, 4, 255, bridge_.c_str(), Module_Name.c_str());
+						//CNetatmo::MigrateDevices(ID.c_str(), 4,  pTypeGeneral, sTypeTextStatus, Module_Name.c_str());
 					}
 					if (!module["boiler_valve_comfort_boost"].empty())
 					{
@@ -3470,7 +3454,7 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 						m_bPollGetEvents = true;
 					}
 					Debug(DEBUG_HARDWARE, "Poll Get Events (%d)", m_bPollGetEvents);
-					m_bPollGetEvents = false;  // Blocking GetEvents because off Error "User Usage"
+					//m_bPollGetEvents = false;  // Blocking GetEvents because off Error "User Usage"
 				}
 			//m_tNetatmoDevice.push_back(nDevice);
 			m_netatmo_devices.push_back(nDevice);
@@ -3582,8 +3566,8 @@ bool CNetatmo::ParseEvents(const std::string& sResult, Json::Value& root )
 				std::string sValue = events_Module_ID;
 				std::string module_Name = e_Name + " - MAC-adres events";
 				//UpdateValueInt(0, str_id.c_str(), 11, pTypeGeneral, sTypeTextStatus, '0', 255, '0', sValue.c_str(), module_Name, 0, m_Name); //Events
-				SendTextSensor(Hardware_int, 11, 255, sValue.c_str(), module_Name.c_str());
-				CNetatmo::MigrateDevices(str_id.c_str(), 11, pTypeGeneral, sTypeTextStatus, module_Name.c_str());
+				//SendTextSensor(Hardware_int, 11, 255, sValue.c_str(), module_Name.c_str());
+				//CNetatmo::MigrateDevices(str_id.c_str(), 11, pTypeGeneral, sTypeTextStatus, module_Name.c_str());
 			}
 			if (!events["message"].empty())
 			{
