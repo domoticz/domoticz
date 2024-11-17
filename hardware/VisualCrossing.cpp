@@ -130,7 +130,7 @@ void CVisualCrossing::GetMeterDetails()
 	{
 		if (!HTTPClient::GET(sURL.str(), sResult))
 		{
-			Log(LOG_ERROR, "Error getting http data!.");
+			Log(LOG_ERROR, "Error getting http data for location `" + szLoc + "`!.");
 			if (!sResult.empty())
 				Log(LOG_ERROR, sResult);
 			return;
