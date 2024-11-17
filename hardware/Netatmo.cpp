@@ -3012,7 +3012,7 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 							nDevice.BatteryLevel = batteryLevel;
 							SendCustomSensor(crcId, 2, batteryLevel, mrf_percentage, pName, "  ", mrf_status);   // RF-level
 							//UpdateValueInt(0, ID.c_str(), 2, pTypeGeneral, sTypePercentage, mrf_status, batteryLevel, '0', sigValue.c_str(), pName,  0, m_Name);  // RF- level
-							CNetatmo::MigrateDevices(ID.c_str(), 2, pTypeGeneral, sTypePercentage, pName);
+							CNetatmo::MigrateDevices(ID.c_str(), 2, pTypeGeneral, sTypeCustom, pName);
 						}
 					}
 					if (!module["wifi_state"].empty())
