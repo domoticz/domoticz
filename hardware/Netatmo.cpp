@@ -211,8 +211,12 @@ void CNetatmo::Do_Work()
 
 	if (m_iNetatmoProtVersion < 2)
 	{
-		m_bMigrationFlag = true;
-		Log(LOG_STATUS, "New naming protocol detected; start migration old and new mathing devices.");
+		//m_bMigrationFlag = true;
+		LoadMigrationFlag();
+		if (m_bMigrationFlag)
+			Log(LOG_STATUS, "New naming protocol detected; starting migration old and new mathing devices.");
+		else
+			Log(LOG_STATUS, "New naming protocol detected; migration of old and new matching devices is available (please enable in UI).");
 	}
 	else
 		m_bMigrationFlag = false;
@@ -424,6 +428,24 @@ bool CNetatmo::RefreshToken(const bool bForce)
 
 	StoreRequestTokenFlag(false);
 	StoreRefreshToken();
+	return true;
+}
+
+
+/// <summary>
+/// Load the migration fiag from the database
+/// </summary>
+/// <returns>true if flag retrieved, store the flag in member variables</returns>
+bool CNetatmo::LoadMigrationFlag()
+{
+	std::vector<std::vector<std::string> > result;
+	result = m_sql.safe_query("SELECT Mode2 FROM Hardware WHERE (ID==%d)", m_HwdID);
+	if (result.empty())
+		return false;
+	std::string migrationFlag  = result[0][0];
+	if (migrationFlag .empty())
+		return false;
+	m_bMigrationFlag = (migrationFlag == "1") ? true : false;
 	return true;
 }
 
@@ -2512,8 +2534,7 @@ bool CNetatmo::ParseDashboard(const Json::Value& root, const int DevIdx, const i
 	RF_level << rssiLevel;
 	RF_level >> sValue;
 	std::string module_name  = name + " RF. Lvl";
-	//??? SendCustomSensor(ID, 2, batValue, static_cast<float>(rssiLevel), name + " - RF-level, ", " ", rssiLevel); // RF Percentage
-	SendPercentageSensor(ID, 2, batValue, static_cast<float>(rssiLevel), name + " - RF-level, "); // RF Percentage
+	SendCustomSensor(ID, 2, batValue, static_cast<float>(rssiLevel), name + " - RF-level, ", " ", rssiLevel); // RF Percentage
 	CNetatmo::MigrateDevices(str_ID.c_str(), 2, pTypeGeneral, sTypeCustom, name  + " - RF-level");
 	if (batValue != 255)
 	{
@@ -2989,8 +3010,7 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 							//Debug(DEBUG_HARDWARE, "mrf_status =  %s -  %d", pName.c_str(), mrf_status);
 							nDevice.SignalLevel = mrf_status;
 							nDevice.BatteryLevel = batteryLevel;
-							//SendCustomSensor(crcId, 2, batteryLevel, mrf_percentage, pName, "  ", mrf_status);   // RF-level
-							SendPercentageSensor(crcId, 2, batteryLevel, mrf_percentage, pName);
+							SendCustomSensor(crcId, 2, batteryLevel, mrf_percentage, pName, "  ", mrf_status);   // RF-level
 							//UpdateValueInt(0, ID.c_str(), 2, pTypeGeneral, sTypePercentage, mrf_status, batteryLevel, '0', sigValue.c_str(), pName,  0, m_Name);  // RF- level
 							CNetatmo::MigrateDevices(ID.c_str(), 2, pTypeGeneral, sTypePercentage, pName);
 						}
@@ -3423,7 +3443,6 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 						ssv << m_selectedScheduleID;
 
 						//create update / domoticz device
-						//??? Why using a different module here???
 						SendSelectorSwitch(Hardware_int, 2, ssv.str(), moduleName + " - Schedule", 15, true, allSchName, allSchAction, true, m_Name); // No RF-level and Battery level
 
 						std::stringstream Hardware_Stream;

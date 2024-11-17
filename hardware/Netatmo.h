@@ -119,6 +119,7 @@ class CNetatmo : public CDomoticzHardwareBase
 	bool SetSchedule(int scheduleId, int state);
 
 	bool Login();
+	bool LoadMigrationFlag();
 	bool RefreshToken(bool bForce = false);
 	bool LoadRefreshToken();
 	void StoreRefreshToken();
