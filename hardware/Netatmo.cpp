@@ -265,7 +265,7 @@ void CNetatmo::Do_Work()
 					}
 					if (m_bPollHomeStatus)
 					{
-						// GetHomeStatusDetails
+						// GetHomesDataDetails
 						GetHomeStatusDetails();
 						Log(LOG_STATUS,"Status %d",  m_isLogged);
 					}
