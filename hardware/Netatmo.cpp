@@ -53,6 +53,7 @@ std::string ReadFile(std::string filename)
 }
 #endif
 
+#ifdef _DEBUG
 std::string prettifyJson(const Json::Value value)
 {
 	using namespace Json;
@@ -69,6 +70,7 @@ std::string prettifyJson(const Json::Value value)
 
 	return result.str();
 }
+#endif
 
 
 CNetatmo::CNetatmo(const int ID, const std::string& username, const std::string& password)
@@ -960,7 +962,7 @@ bool CNetatmo::MergeDevices(const uint64_t ipOldDeviceId, const uint64_t ipNewDe
 /// <summary>
 /// Merge logs in all log tables
 /// </summary>
-bool CNetatmo::MergeDeviceLogs (const std::string& spTableName, const std::string& spOldDeviceId, const std::string& spNewDeviceId)
+bool CNetatmo::MergeDeviceLogs(const std::string& spTableName, const std::string& spOldDeviceId, const std::string& spNewDeviceId)
 {
 	auto logResult = m_sql.safe_query
 	(
