@@ -435,7 +435,7 @@ bool CNetatmo::RefreshToken(const bool bForce)
 
 
 /// <summary>
-/// Load the migration fiag from the database
+/// Load the migration flag from the database
 /// </summary>
 /// <returns>true if flag retrieved, store the flag in member variables</returns>
 bool CNetatmo::LoadMigrationFlag()
@@ -2902,7 +2902,7 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 				ID4 = std::to_string(crcId & 0xFFFF);	// ID.substr(ID.length()-4, 4);
 				std::string sValue;
 				sValue = module_id;
-				//---uint8_t ID4 = (uint8_t)((crcId & 0x000000FF));	// Not uses
+				//---uint8_t ID4 = (uint8_t)((crcId & 0x000000FF));	// Not used
 				std::string module_Name = moduleName + " - MAC-adres";
 				bool reachable;
 				bool connected = true;
@@ -3025,7 +3025,7 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 						std::string bat_Name = " " + moduleName + " - Bat. Lvl";
 						//UpdateValueInt(0, ID.c_str(), 3, pTypeGeneral, sTypeCustom, mrf_status, batteryLevel, '0', bat_percentage.c_str(), batName,  0, m_Name); // Battery level
 						SendPercentageSensor(crcId, 3, batteryLevel, static_cast<float>(batteryLevel), bat_Name);
-						CNetatmo::MigrateDevices(ID.c_str(), 3,  pTypeGeneral, sTypeCustom, bat_Name);
+						CNetatmo::MigrateDevices(ID.c_str(), 3,  pTypeGeneral, sTypeCustom, bat_Name);	//??? sTypeCustom -> sTypePercentage ???
 					}
 					if (!module["ts"].empty())
 					{
@@ -3456,7 +3456,7 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 						m_bPollGetEvents = true;
 					}
 					Debug(DEBUG_HARDWARE, "Poll Get Events (%d)", m_bPollGetEvents);
-					//m_bPollGetEvents = false;  // Blocking GetEvents because off Error "User Usage"
+					//m_bPollGetEvents = false;  // Possible to Block GetEvents because off Error
 				}
 			//m_tNetatmoDevice.push_back(nDevice);
 			m_netatmo_devices.push_back(nDevice);
