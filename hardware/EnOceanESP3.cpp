@@ -4035,7 +4035,7 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 			return;
 
 		default:
-			Log(LOG_ERROR, "ERP1: Node %08X RORG %s (%s) not supported", senderID, GetRORGLabel(RORG), GetRORGDescription(RORG));
+			Log(LOG_ERROR, "ERP1: Node %08X RORG %02X:%s (%s) not supported", senderID, RORG, GetRORGLabel(RORG), GetRORGDescription(RORG));
 	}
 }
 
