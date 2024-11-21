@@ -792,7 +792,7 @@ void CNetatmo::MigrateDevices(const char* deviceID, const unsigned char unit, co
 					}
 					else if (
 						unit == 0
-						&& oldUnit == 140
+						&& oldUnit == (oldID & 0xFF)
 						&& oldDevType == devType
 						&& oldDevType == pTypeTEMP_HUM_BARO	// (from RFXtrx.h)
 						&& oldDevSubType == sTypeTHBFloat
@@ -801,7 +801,7 @@ void CNetatmo::MigrateDevices(const char* deviceID, const unsigned char unit, co
 						//&& oldLastUpdate < lastUpdate
 					) 
 					{
-						Log(LOG_STATUS, "case 5 (New unit number for weather station): Device: ID=%" PRIu64 ", DeviceID=0x%s), Name=%s, Type=%d, devSubType=%d, unit=%d, used=%d, lastUpdate=%s",
+						Log(LOG_STATUS, "case 5 (New unit number for e.g. weather station): Device: ID=%" PRIu64 ", DeviceID=0x%s), Name=%s, Type=%d, devSubType=%d, unit=%d, used=%d, lastUpdate=%s",
 							oldID,
 							oldDeviceID.c_str(),
 							device[2].c_str(),
@@ -885,7 +885,7 @@ void CNetatmo::MigrateDevices(const char* deviceID, const unsigned char unit, co
 						break; 	//One device per cycle
 					}
 					else if (
-						unit == 140
+						unit == (oldID& 0xFF)
 						&& oldUnit == 0
 						&& oldDevType == devType
 						&& oldDevType == pTypeTEMP_HUM_BARO	// (from RFXtrx.h)
@@ -895,7 +895,7 @@ void CNetatmo::MigrateDevices(const char* deviceID, const unsigned char unit, co
 						//&& oldLastUpdate < lastUpdate
 					) 
 					{
-						Log(LOG_STATUS, "case 9 (Back to old  unit number for weather station): Device: ID=%" PRIu64 ", DeviceID=0x%s), Name=%s, Type=%d, devSubType=%d, unit=%d, used=%d, lastUpdate=%s",
+						Log(LOG_STATUS, "case 9 (Back to old  unit number for e.g. weather station): Device: ID=%" PRIu64 ", DeviceID=0x%s), Name=%s, Type=%d, devSubType=%d, unit=%d, used=%d, lastUpdate=%s",
 							oldID,
 							oldDeviceID.c_str(),
 							device[2].c_str(),
@@ -1703,7 +1703,7 @@ void CNetatmo::GetHomesDataDetails()
 				}
 				std::string st_homeid = stream_homeid.str();
 				Debug(DEBUG_HARDWARE, "Get Homes ID %s", st_homeid.c_str());
-				
+
 				m_Home_ID = home["id"].asString();
 				std::string Home_Name = home["name"].asString();
 				// home["altitude"];
@@ -2560,7 +2560,7 @@ bool CNetatmo::ParseDashboard(const Json::Value& root, const int DevIdx, const i
 		//Debug(DEBUG_HARDWARE, "(%d) %s (%s) [%s] Temp & Humidity & Baro %s %s %d %d", Hardware_int, str_ID.c_str(), pchar_ID, name.c_str(), sValue.c_str(), m_Name.c_str(), rssiLevel, batValue);
 		//UpdateValueInt(0, str_ID.c_str(), 0, pTypeTEMP_HUM_BARO, sTypeTHBFloat, rssiLevel, batValue, '0', sValue.c_str(), name,  0, m_Name);
 		SendTempHumBaroSensorFloat(ID, batValue, Temp, hum, static_cast<float>(baro), (uint8_t)nforecast, name, rssiLevel);
-		CNetatmo::MigrateDevices(str_ID4.c_str(), 140,  pTypeTEMP_HUM_BARO, sTypeTHBFloat, name);
+		CNetatmo::MigrateDevices(str_ID4.c_str(), (ID & 0xFF),  pTypeTEMP_HUM_BARO, sTypeTHBFloat, name);
 	}
 	else if (bHaveTemp && bHaveHum)
 	{
@@ -2591,7 +2591,7 @@ bool CNetatmo::ParseDashboard(const Json::Value& root, const int DevIdx, const i
 		//Debug(DEBUG_HARDWARE, "(%d) %s (%s) [%s] temp %f %s %d %d", temp, str_ID.c_str(), pchar_ID, name.c_str(), Temp, m_Name.c_str(), rssiLevel, batValue);
 		//UpdateValueInt(0, str_ID.c_str(), 0, pTypeGeneral, sTypeTemperature, rssiLevel, batValue, temp, sValue.c_str(), name, 0, m_Name);
 		SendTempSensor(ID, batValue, Temp, name, rssiLevel);
-		CNetatmo::MigrateDevices(str_ID4.c_str(), 0,  pTypeTEMP, sTypeTEMP5, name);
+		CNetatmo::MigrateDevices(str_ID4.c_str(), (ID & 0xFF),  pTypeTEMP, sTypeTEMP5, name);
 	}
 
 	//Thermostat device
@@ -3260,7 +3260,7 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 						//Debug(DEBUG_HARDWARE, "(%d) %s (%s) [%s] Temp & Humidity & Baro %s %s %d %d", Hardware_int, str_ID.c_str(), pchar_ID, name.c_str(), r.str().c_str(), m_Name.c_str(), mrf_status, batteryLevel);
 						//UpdateValueInt(0, ID.c_str(), 0, pTypeTEMP_HUM_BARO, sTypeTHBFloat, mrf_status, batteryLevel, '0', r.str().c_str(), moduleName,  0, m_Name);
 						SendTempHumBaroSensorFloat(crcId, batteryLevel, Temp, hum, static_cast<float>(baro), (uint8_t)nforecast, moduleName, mrf_status);
-						CNetatmo::MigrateDevices(ID4.c_str(), 140,  pTypeTEMP_HUM_BARO, sTypeTHBFloat, moduleName);
+						CNetatmo::MigrateDevices(ID4.c_str(), (crcId & 0xFF),  pTypeTEMP_HUM_BARO, sTypeTHBFloat, moduleName);
 					}
 					else if (bHaveTemp && bHaveHum)
 					{
@@ -3288,7 +3288,7 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 						//Debug(DEBUG_HARDWARE, "(%d) %s (%s) [%s] temp %s %s %d %d", Hardware_int, str_ID.c_str(), pchar_ID, name.c_str(), sValue.c_str(), m_Name.c_str(), mrf_status, batteryLevel);
 						//UpdateValueInt(0, ID.c_str(), 0, pTypeGeneral, sTypeTemperature, mrf_status, batteryLevel, temp, sValue.c_str(), moduleName, 0, m_Name);
 						SendTempSensor(crcId, batteryLevel, Temp, moduleName, mrf_status);
-						CNetatmo::MigrateDevices(ID4.c_str(), 0,  pTypeTEMP, pTypeTEMP, moduleName);
+						CNetatmo::MigrateDevices(ID4.c_str(), (crcId & 0xFF),  pTypeTEMP, pTypeTEMP, moduleName);
 					}
 					//Rain meter
 					if (bHaveRain)
@@ -3398,7 +3398,7 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 						t_R << room_temp;
 						t_R >> Temp;
 						SendTempSensor(crcId, batteryLevel, Temp, moduleName, mrf_status);
-						CNetatmo::MigrateDevices(ID4.c_str(), 0, pTypeTEMP, sTypeTEMP5, moduleName);
+						CNetatmo::MigrateDevices(ID4.c_str(), (crcId & 0xFF), pTypeTEMP, sTypeTEMP5, moduleName);
 
 						std::string sValue;
 						std::stringstream h;
