@@ -2537,6 +2537,7 @@ bool CNetatmo::ParseDashboard(const Json::Value& root, const int DevIdx, const i
 		CNetatmo::MigrateDevices(str_ID.c_str(), 3,  pTypeGeneral, sTypePercentage, name + " - Bat. Level");
 	}
 
+	//Temperature and humidity sensors
 	if (bHaveTemp && bHaveHum && bHaveBaro)
 	{
 		int nforecast = m_forecast_calculators[ID].CalculateBaroForecast(Temp, baro); //float temp, double pressure
