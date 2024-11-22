@@ -680,10 +680,10 @@ void CNetatmo::MigrateDevices(const char* deviceID, const unsigned char unit, co
 					uint64_t  oldID = std::stoll(device[0], nullptr, 10);
 					std::string  oldDeviceID = device[1];
 					std::transform(oldDeviceID.begin(), oldDeviceID.end(), oldDeviceID.begin(), ::toupper);
-					unsigned char oldDevType = std::stoul(device[3], nullptr, 10);
-					unsigned char oldDevSubType = std::stoul(device[4], nullptr, 10);
-					unsigned char oldUnit = std::stoul(device[5], nullptr, 10);
-					unsigned char oldUsed = std::stoul(device[6], nullptr, 10);
+					unsigned char oldDevType = (unsigned char)std::stoul(device[3], nullptr, 10);
+					unsigned char oldDevSubType = (unsigned char)std::stoul(device[4], nullptr, 10);
+					unsigned char oldUnit = (unsigned char)std::stoul(device[5], nullptr, 10);
+					unsigned char oldUsed = (unsigned char)std::stoul(device[6], nullptr, 10);
 					std::string oldLastUpdate = device[7];
 
 					if (oldID == deviceRowIdx)
@@ -3026,7 +3026,7 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 						std::string bat_Name = " " + moduleName + " - Bat. Lvl";
 						//UpdateValueInt(0, ID.c_str(), 3, pTypeGeneral, sTypeCustom, mrf_status, batteryLevel, '0', bat_percentage.c_str(), batName,  0, m_Name); // Battery level
 						SendPercentageSensor(crcId, 3, batteryLevel, static_cast<float>(batteryLevel), bat_Name);
-						CNetatmo::MigrateDevices(ID.c_str(), 3,  pTypeGeneral, sTypeCustom, bat_Name);	//??? sTypeCustom -> sTypePercentage ???
+						CNetatmo::MigrateDevices(ID.c_str(), 3,  pTypeGeneral, sTypePercentage, bat_Name);
 					}
 					if (!module["ts"].empty())
 					{
@@ -3393,7 +3393,7 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 						m_ModuleIDs[mid] = crcId;
 						//float room_measured = std::stof(room_temp);
 						m_thermostatModuleID[crcId] = module_id;     // mac-adres
-						//UpdateValueInt(0, ID.c_str(), 8???, pTypeTEMP, sTypeTEMP5, mrf_status, batteryLevel, '0', room_temp.c_str(), moduleName, 0, m_Name);
+						//UpdateValueInt(0, ID.c_str(), 8, pTypeTEMP, sTypeTEMP5, mrf_status, batteryLevel, '0', room_temp.c_str(), moduleName, 0, m_Name);
 						std::stringstream t_R;
 						t_R << room_temp;
 						t_R >> Temp;
