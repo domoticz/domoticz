@@ -1683,7 +1683,6 @@ void CNetatmo::GetHomesDataDetails()
 	Get_Respons_API(NETYPE_HOMESDATA, sResult, home_data, bRet, root, "");
 	//Log(LOG_STATUS, "GetHomesDataDetails HOMESDATA received: \n%s", prettifyJson(root).c_str());
 
-	m_homeid.clear();
 	if (!root["body"]["homes"].empty())
 	{
 		for (auto home : root["body"]["homes"])
@@ -3081,7 +3080,6 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 						b << boiler_boost;
 						std::string sValue = b.str().c_str();
 						//UpdateValueInt(0, ID.c_str(), 0, pTypeGeneralSwitch, sSwitchGeneralSwitch, '0', 255, '0', sValue.c_str(), bName,  bIsActive, m_Name);
-						//??? No send function to replace the line above???
 					}
 					if (!module["boiler_status"].empty())
 					{
@@ -3097,7 +3095,6 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 						std::string a_Name = moduleName + " - Status"; //m_[id];
 						std::string sValue = module["status"].asString();
 						//UpdateValueInt(0, ID.c_str(), 6, pTypeGeneral, sTypeAlert, mrf_status, batteryLevel, '0', sValue.c_str(), a_Name, 0, m_Name);
-						//??? No send function to replace the line above???
 						int bIsActive;
 						if (module["status"].asString() == "closed")
 							bIsActive = 0;
