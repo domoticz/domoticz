@@ -1069,10 +1069,17 @@ void MQTTAutoDiscover::on_auto_discovery_message(const struct mosquitto_message*
 
 		if (!root["color_mode"].empty()) // documentation is a bit unclear, color_mode = true, hs, rgb
 			pSensor->bColor_mode = (root["color_mode"].asString() != "false");
-		if (!root["supported_color_modes"].empty())
+		if (
+			(!root["supported_color_modes"].empty())
+			|| (!root["sup_clrm"].empty())
+			)
 		{
 			// onoff, brightness, color_temp, hs, xy, rgb, rgbw, rgbww.
 			for (const auto& itt : root["supported_color_modes"])
+			{
+				pSensor->supported_color_modes[itt.asString()] = 1;
+			}
+			for (const auto& itt : root["sup_clrm"])
 			{
 				pSensor->supported_color_modes[itt.asString()] = 1;
 			}
