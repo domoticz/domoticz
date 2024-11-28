@@ -4319,9 +4319,9 @@ namespace http
 				return;
 
 			std::string deviceid = request::findValue(&req, "deviceid");
-			std::string name = stdstring_trim(HTMLSanitizer::Sanitize(request::findValue(&req, "name")));
-			std::string text = stdstring_trim(HTMLSanitizer::Sanitize(request::findValue(&req, "text")));
-			std::string description = stdstring_trim(HTMLSanitizer::Sanitize(request::findValue(&req, "description")));
+			std::string name = HTMLSanitizer::Sanitize(request::findValue(&req, "name")); stdstring_trim(name);
+			std::string text = HTMLSanitizer::Sanitize(request::findValue(&req, "text")); stdstring_trim(text);
+			std::string description = HTMLSanitizer::Sanitize(request::findValue(&req, "description")); stdstring_trim(description);
 			std::string sswitchtype = request::findValue(&req, "switchtype");
 			std::string maindeviceidx = request::findValue(&req, "maindeviceidx");
 			std::string addjvalue = request::findValue(&req, "addjvalue");
