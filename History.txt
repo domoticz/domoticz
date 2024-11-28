@@ -2,8 +2,10 @@ Version 2024.x
 - Implemented: Battery level for Setpoint sensors
 - Implemented: RFXCom, Updated SDK
 - Implemented: Support for Honeywell Series 5/PIR
+- Implemented: Text sensor, now posible to edit direct from the GUI
 - Implemented: YouLess, added Water meter
 - Implemented: MQTT-AD, added support for Gas device class
+- Implemented: MQTT-AD, added support for Text device class
 - Implemented: MQTT-AD, better precission for kWh sensors
 - Implemented: MQTT-AD, handling single onoff colormode as a normal light/switch
 - Implemented: MQTT-AD, power sensors for the Tuya SPM02

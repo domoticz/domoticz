@@ -4319,8 +4319,9 @@ namespace http
 				return;
 
 			std::string deviceid = request::findValue(&req, "deviceid");
-			std::string name = HTMLSanitizer::Sanitize(request::findValue(&req, "name"));
-			std::string description = HTMLSanitizer::Sanitize(request::findValue(&req, "description"));
+			std::string name = stdstring_trim(HTMLSanitizer::Sanitize(request::findValue(&req, "name")));
+			std::string text = stdstring_trim(HTMLSanitizer::Sanitize(request::findValue(&req, "text")));
+			std::string description = stdstring_trim(HTMLSanitizer::Sanitize(request::findValue(&req, "description")));
 			std::string sswitchtype = request::findValue(&req, "switchtype");
 			std::string maindeviceidx = request::findValue(&req, "maindeviceidx");
 			std::string addjvalue = request::findValue(&req, "addjvalue");
@@ -4373,12 +4374,6 @@ namespace http
 
 			int CustomImage = (!sCustomImage.empty()) ? std::stoi(sCustomImage) : OldCustomImage;
 
-			// Strip trailing spaces in 'name'
-			name = stdstring_trim(name);
-
-			// Strip trailing spaces in 'description'
-			description = stdstring_trim(description);
-
 			if (!setPoint.empty() || !state.empty())
 			{
 				double tempcelcius = atof(setPoint.c_str());
@@ -4410,6 +4405,13 @@ namespace http
 					m_sql.safe_query("UPDATE DeviceStatus SET Used=%d, Name='%q', Description='%q', SwitchType=%d, CustomImage=%d WHERE (ID == '%q')", used, name.c_str(),
 						description.c_str(), switchtype, CustomImage, idx.c_str());
 				}
+			}
+
+			if ((dType == pTypeGeneral) && (dSubType == sTypeTextStatus))
+			{
+				m_sql.safe_query("UPDATE DeviceStatus SET sValue='%q' WHERE (ID == '%q')", text.c_str(), idx.c_str());
+				m_mainworker.SetTextDevice(idx, text);
+				m_sql.UpdateLastUpdate(idx);
 			}
 
 			if (bHasstrParam1)

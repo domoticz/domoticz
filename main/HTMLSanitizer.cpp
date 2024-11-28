@@ -43,6 +43,9 @@ std::string HTMLSanitizer::Sanitize(const std::string& szText)
 	std::string ret;
 	std::string tmpstr(szText);
 
+	stdreplace(tmpstr, "<", "");
+	stdreplace(tmpstr, ">", "");
+
 	do
 	{
 		size_t pos_start = tmpstr.find('<');
@@ -81,6 +84,9 @@ std::wstring HTMLSanitizer::Sanitize(const std::wstring& szText)
 {
 	std::wstring ret;
 	std::wstring tmpstr(szText);
+
+	stdreplace(tmpstr, L"<", L"");
+	stdreplace(tmpstr, L">", L"");
 
 	do
 	{

@@ -24,7 +24,8 @@ std::set<std::string> allowed_components = {
 		"select",
 		"sensor",
 		"switch",
-		"fan"
+		"fan",
+		"text"
 };
 
 enum SwitchCommands {
@@ -875,6 +876,10 @@ void MQTTAutoDiscover::on_auto_discovery_message(const struct mosquitto_message*
 		else if (!root["cmd_t"].empty())
 			pSensor->command_topic = root["cmd_t"].asString();
 
+		if (!root["command_template"].empty())
+			pSensor->command_template = root["command_template"].asString();
+		
+
 		if (!root["position_topic"].empty())
 			pSensor->position_topic = root["position_topic"].asString();
 		if (!root["pos_t"].empty())
@@ -1173,6 +1178,8 @@ void MQTTAutoDiscover::on_auto_discovery_message(const struct mosquitto_message*
 			pSensor->color_temp_value_template = root["clr_temp_val_tpl"].asString();
 		CleanValueTemplate(pSensor->color_temp_value_template);
 
+		if (!root["mode"].empty())
+			pSensor->mode = root["mode"].asString();
 
 		//Select
 		if (!root["options"].empty())
@@ -1501,6 +1508,7 @@ void MQTTAutoDiscover::on_auto_discovery_message(const struct mosquitto_message*
 				|| (pSensor->component_type == "number")
 				|| (pSensor->component_type == "device_automation")
 				|| (pSensor->component_type == "fan")
+				|| (pSensor->component_type == "text")
 				);
 
 		if (bDoSubscribe)
@@ -1665,6 +1673,8 @@ void MQTTAutoDiscover::handle_auto_discovery_sensor_message(const struct mosquit
 				handle_auto_discovery_number(pSensor, message);
 			else if (pSensor->component_type == "fan")
 				handle_auto_discovery_fan(pSensor, message, subscribed_topic);
+			else if (pSensor->component_type == "text")
+				handle_auto_discovery_text(pSensor, message);
 		}
 		else if (pSensor->availability_topic == topic)
 		{
@@ -3697,6 +3707,41 @@ void MQTTAutoDiscover::handle_auto_discovery_climate(_tMQTTASensor* pSensor, con
 	}
 }
 
+void MQTTAutoDiscover::handle_auto_discovery_text(_tMQTTASensor* pSensor, const struct mosquitto_message* message)
+{
+	pSensor->devType = pTypeGeneral;
+	pSensor->subType = sTypeTextStatus;
+	pSensor->nValue = 0;
+	pSensor->sValue = pSensor->last_value;
+
+	auto result = m_sql.safe_query("SELECT Name,nValue,sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit == %d) AND (Type==%d) AND (Subtype==%d)", m_HwdID,
+		pSensor->unique_id.c_str(), 1, pSensor->devType, pSensor->subType);
+	if (result.empty())
+	{
+		// Insert
+		if (!m_sql.m_bAcceptNewHardware)
+		{
+			Log(LOG_NORM, "Accept new hardware disabled. Ignoring new sensor %s", pSensor->name.c_str());
+			return;
+		}
+		int iUsed = (pSensor->bEnabled_by_default) ? 1 : 0;
+		m_sql.safe_query("INSERT INTO DeviceStatus (HardwareID, OrgHardwareID, DeviceID, Unit, Type, SubType, SignalLevel, BatteryLevel, Name, Used, nValue, sValue) "
+			"VALUES (%d, %d, '%q', 1, %d, %d, %d, %d, '%q', %d, %d, '%q')",
+			m_HwdID, 0, pSensor->unique_id.c_str(), pSensor->devType, pSensor->subType, pSensor->SignalLevel, pSensor->BatteryLevel, pSensor->name.c_str(), iUsed,
+			pSensor->nValue, pSensor->sValue.c_str());
+	}
+	else
+	{
+		// Update
+		std::string oldsValue = result[0].at(2);
+		if (oldsValue != pSensor->sValue)
+		{
+			UpdateValueInt(m_HwdID, pSensor->unique_id.c_str(), 1, pSensor->devType, pSensor->subType, pSensor->SignalLevel, pSensor->BatteryLevel, pSensor->nValue,
+				pSensor->sValue.c_str(), result[0][0]);
+		}
+	}
+}
+
 void MQTTAutoDiscover::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 {
 	pSensor->devUnit = 1;
@@ -5153,6 +5198,42 @@ bool MQTTAutoDiscover::SetSetpoint(const std::string& DeviceID, float Temp)
 	UpdateValueInt(m_HwdID, pSensor->unique_id.c_str(), 1, pTypeSetpoint, sTypeSetpoint, pSensor->SignalLevel, pSensor->BatteryLevel,
 		pSensor->nValue, pSensor->sValue.c_str(),
 		result[0][0]);
+
+	return true;
+}
+
+bool MQTTAutoDiscover::SetTextDevice(const std::string& DeviceID, const std::string& text)
+{
+	if (m_discovered_sensors.find(DeviceID) == m_discovered_sensors.end())
+	{
+		return false;
+	}
+	_tMQTTASensor* pSensor = &m_discovered_sensors[DeviceID];
+	if (pSensor->component_type != "text")
+	{
+		return false;
+	}
+	Json::Value root;
+	std::string szSendValue;
+	if (!pSensor->command_template.empty())
+	{
+		std::string szKey = GetValueTemplateKey(pSensor->command_template);
+		if (!szKey.empty())
+			root[szKey] = text;
+		else
+		{
+			Log(LOG_ERROR, "Text device unhandled command_template (%s/%s)", DeviceID.c_str(), pSensor->name.c_str());
+			return false;
+		}
+		szSendValue = JSonToRawString(root);
+	}
+	else
+		szSendValue = text;
+
+	std::string szTopic = pSensor->state_topic;
+	if (!pSensor->temperature_command_topic.empty())
+		szTopic = pSensor->temperature_command_topic;
+	SendMessage(szTopic, szSendValue);
 
 	return true;
 }

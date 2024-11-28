@@ -13239,6 +13239,43 @@ bool MainWorker::SetThermostatState(const std::string& idx, const int newState)
 	return false;
 }
 
+
+bool MainWorker::SetTextDevice(const std::string& idx, const std::string& text)
+{
+	//Get Device details
+	auto result = m_sql.safe_query(
+		"SELECT HardwareID, DeviceID,Unit,Type,SubType,SwitchType FROM DeviceStatus WHERE (ID == '%q')",
+		idx.c_str());
+	if (result.empty())
+		return false;
+
+	std::vector<std::string> sd = result[0];
+
+	int HardwareID = atoi(sd[0].c_str());
+	int hindex = FindDomoticzHardware(HardwareID);
+	if (hindex == -1)
+		return false;
+
+	CDomoticzHardwareBase* pHardware = GetHardware(HardwareID);
+	if (pHardware == nullptr)
+		return false;
+
+	if (pHardware->HwdType == HTYPE_Domoticz)
+	{
+		DomoticzTCP* pDomoticz = static_cast<DomoticzTCP*>(pHardware);
+		return pDomoticz->SetTextDevice(idx, text);
+	}
+	else if (pHardware->HwdType == HTYPE_MQTTAutoDiscovery)
+	{
+		MQTTAutoDiscover* pGateway = dynamic_cast<MQTTAutoDiscover*>(pHardware);
+		return pGateway->SetTextDevice(sd[1], text);
+	}
+	m_sql.safe_query("UPDATE DeviceStatus SET sValue='%q' WHERE (ID == '%q')", text.c_str(), idx.c_str());
+	m_sql.UpdateLastUpdate(idx);
+
+	return false;
+}
+
 #ifdef WITH_OPENZWAVE
 bool MainWorker::SetZWaveThermostatMode(const std::string& idx, const int tMode)
 {

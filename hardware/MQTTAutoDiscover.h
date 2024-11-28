@@ -24,6 +24,7 @@ class MQTTAutoDiscover : public MQTT
 		std::string state_off;
 
 		std::string command_topic;
+		std::string command_template;
 		std::string position_topic;
 		std::string set_position_topic;
 		std::string brightness_command_topic;
@@ -126,6 +127,9 @@ class MQTTAutoDiscover : public MQTT
 		std::string state_locked = "LOCKED";
 		std::string state_unlocked = "UNLOCKED";
 
+		//Text
+		std::string mode = "text";
+
 		int qos = 1;
 
 		std::map<std::string, std::string> keys;
@@ -170,6 +174,7 @@ public:
 		const char* sValue, std::string& devname, bool bUseOnOffAction = true, const std::string& user = "");
 	bool SendSwitchCommand(const std::string& DeviceID, const std::string& DeviceName, int Unit, std::string command, int level, _tColor color, const std::string& user);
 	bool SetSetpoint(const std::string& DeviceID, const float Temp);
+	bool SetTextDevice(const std::string& DeviceID, const std::string& text);
 
 	void GetConfig(Json::Value& root);
 	bool UpdateNumber(const std::string &sName, const std::string &sValue);
@@ -209,7 +214,8 @@ private:
 	void handle_auto_discovery_lock(_tMQTTASensor* pSensor, const struct mosquitto_message* message);
 	void handle_auto_discovery_battery(_tMQTTASensor* pSensor, const struct mosquitto_message* message);
 	void handle_auto_discovery_number(_tMQTTASensor* pSensor, const struct mosquitto_message* message);
-	void handle_auto_discovery_fan(_tMQTTASensor* pSensor, const struct mosquitto_message* message, const std::string &topic);
+	void handle_auto_discovery_fan(_tMQTTASensor* pSensor, const struct mosquitto_message* message, const std::string& topic);
+	void handle_auto_discovery_text(_tMQTTASensor* pSensor, const struct mosquitto_message* message);
 	_tMQTTASensor* get_auto_discovery_sensor_unit(const _tMQTTASensor* pSensor, const std::string& szMeasurementUnit);
 	_tMQTTASensor* get_auto_discovery_sensor_unit(const _tMQTTASensor* pSensor, const uint8_t devType, const int subType = -1, const int devUnit = -1);
 	_tMQTTASensor* get_auto_discovery_sensor_WATT_unit(const _tMQTTASensor* pSensor);
