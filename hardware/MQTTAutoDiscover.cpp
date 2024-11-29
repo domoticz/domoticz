@@ -5204,8 +5204,6 @@ bool MQTTAutoDiscover::SetSetpoint(const std::string& DeviceID, float Temp)
 
 bool MQTTAutoDiscover::SetTextDevice(const std::string& DeviceID, const std::string& text)
 {
-	if (pSensor->command_topic.empty())
-		return false;
 	if (m_discovered_sensors.find(DeviceID) == m_discovered_sensors.end())
 	{
 		return false;
@@ -5215,6 +5213,9 @@ bool MQTTAutoDiscover::SetTextDevice(const std::string& DeviceID, const std::str
 	{
 		return false;
 	}
+	if (pSensor->command_topic.empty())
+		return false;
+
 	Json::Value root;
 	std::string szSendValue;
 	if (!pSensor->command_template.empty())
