@@ -4512,9 +4512,7 @@ bool MQTTAutoDiscover::SendSwitchCommand(const std::string& DeviceID, const std:
 		if (eCommand == SwitchCommands::COMMAND_SET_LEVEL ||
 			eCommand == SwitchCommands::COMMAND_SET_LEVEL_AND_COLOR)
 		{
-			int slevel = level;
-			if (pSensor->bHave_brightness_scale)
-				slevel = (int)round((pSensor->brightness_scale / 100.F) * level);
+			int slevel = ground((pSensor->brightness_scale / 100.F) * level);
 
 			if (pSensor->brightness_value_template.empty())
 			{

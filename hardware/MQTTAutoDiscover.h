@@ -66,7 +66,7 @@ class MQTTAutoDiscover : public MQTT
 
 		bool bBrightness = false;
 		bool bHave_brightness_scale = false;
-		float brightness_scale = 254.0F;
+		float brightness_scale = 255.0F;
 
 		bool bColor_mode = false;
 		std::map<std::string, uint8_t> supported_color_modes;
