@@ -10,6 +10,7 @@ Version 2024.x
 - Implemented: MQTT-AD, handling single onoff colormode as a normal light/switch
 - Implemented: MQTT-AD, power sensors for the Tuya SPM02
 - Implemented: MQTT-AD, support sensors that report humidity but sends 'null' values
+- Implemented: MQTT-AD, support for string field state objects
 - Changed: dzVents, possible to pass a Domoticz device ID in notify() through the extra parameter
 - Changed: Energy Dashboard now also available for non-admin users
 - Changed: Google Firebase Cloud Messaging (FCM) alternative way to pass a Domoticz device ID through the extra field ('|Device=<devidx>')

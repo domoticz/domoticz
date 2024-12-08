@@ -303,9 +303,33 @@ std::string MQTTAutoDiscover::GetValueFromTemplate(Json::Value root, std::string
 					int iIndex = std::stoi(szIndex);
 					if (root[szKey].empty())
 						return ""; //key not found!
-					if (static_cast<int>(root[szKey].size()) <= iIndex)
-						return ""; //index out of range!
-					root = root[szKey][iIndex];
+
+					bool bIsNumber = is_number(szIndex);
+
+					if (
+						(root[szKey].isArray())
+						&& (bIsNumber)
+						)
+					{
+						if (static_cast<int>(root[szKey].size()) <= iIndex)
+							return ""; //index out of range!
+						root = root[szKey][iIndex];
+					}
+					else
+					{
+						//Not an array, we need a field value
+						root = root[szKey];
+						if (!root.isMember(szIndex))
+						{
+							return ""; //key not found!
+						}
+						if (root[szIndex].isNull())
+						{
+							isNull = true;
+							return ""; //key not found!
+						}
+						root = root[szIndex];
+					}
 				}
 			}
 			if (root.isObject())
