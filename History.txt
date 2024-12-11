@@ -7,6 +7,7 @@ Version 2024.x
 - Implemented: MQTT-AD, added support for Gas device class
 - Implemented: MQTT-AD, added support for Text device class
 - Implemented: MQTT-AD, better precission for kWh sensors
+- Implemented: MQTT-AD, enabled 'device_automation' component to be compatible with upcoming (2025) Zigbee2MQTT version
 - Implemented: MQTT-AD, handling single onoff colormode as a normal light/switch
 - Implemented: MQTT-AD, power sensors for the Tuya SPM02
 - Implemented: MQTT-AD, support sensors that report humidity but sends 'null' values
