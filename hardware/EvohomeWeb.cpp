@@ -848,7 +848,7 @@ std::string CEvohomeWeb::local_to_utc(const std::string& local_time)
   */
 
 
-#define EVOHOME_HOST "https://tccna.honeywell.com"
+#define EVOHOME_HOST "https://tccna.resideo.com"
 
 
   /************************************************************************
