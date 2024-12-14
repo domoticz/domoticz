@@ -7,6 +7,11 @@
 #include "Helper.h"
 #include "appversion.h"
 #include "localtime_r.h"
+#include "../webserver/Base64.h"
+
+#define JWT_DISABLE_PICOJSON
+#define JWT_DISABLE_BASE64
+#include "../jwt-cpp/traits/open-source-parsers-jsoncpp/traits.h"
 
 #ifndef WIN32
 	#include <sys/stat.h>
@@ -32,7 +37,7 @@ constexpr const char *szHelp
 	"\n"
 	"Available modules:\n"
 	"\thelper\n"
-	"\tbaroforecastcalculator\n"
+	"\tjwt\n"
 	""
 };
 
@@ -208,6 +213,57 @@ bool helper_tester(const std::string szFunction, std::string &szInput, std::stri
 }
 
 /* **********
+JWT-cpp
+********** */
+bool jwt_tester(const std::string szFunction, std::string &szInput, std::string &szOutput)
+{
+	bool bSuccess = false;
+
+	std::vector<std::string> svInputs;
+	StringSplit(szInput, INPUTSEPERATOR, svInputs);
+
+	// stdstring_ltrim
+	if (szFunction == "jwt_decode")
+	{
+		using traits = jwt::traits::open_source_parsers_jsoncpp;
+
+		auto decodedJWT = jwt::decode<traits>(szInput, &base64url_decode);
+		if(!decodedJWT.has_algorithm())
+		{
+			szOutput = "Token does not contain an algorithm!";
+			bSuccess = false;
+		}
+		else if(!decodedJWT.has_audience())
+		{
+			szOutput = "Token does not contain an intended audience!";
+			bSuccess = false;
+		}
+		else if(!decodedJWT.has_issuer())
+		{
+			szOutput = "Token does not contain an intended issuer!";
+			bSuccess = false;
+		}
+		else if(!decodedJWT.has_subject())
+		{
+			szOutput = "Token does not contain an intended subject!";
+			bSuccess = false;
+		}
+		else
+		{
+			std::string clientid = decodedJWT.get_audience().cbegin()->data();
+
+			szOutput = clientid;
+			bSuccess = true;
+		}
+	}
+	else
+	{
+		szOutput = "NOT FOUND!";
+	}
+	return bSuccess;
+}
+
+/* **********
 Main function
 ********** */
 int main(int argc, char**argv)
@@ -317,9 +373,17 @@ int main(int argc, char**argv)
 			return 1;
 		}
 	}
-	else if (false)
+	else if (szTestModule == "jwt")
 	{
-		/* code */
+		try
+		{
+			bSuccess = jwt_tester(szTestFunction, szTestInput, szTestOutput);
+		}
+		catch(const std::exception& e)
+		{
+			Log("Executing : %s (%s) | Crashed! (%s)", szTestFunction.c_str(), szTestModule.c_str(), e.what());
+			return 1;
+		}
 	}
 	else
 	{

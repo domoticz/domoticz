@@ -419,6 +419,7 @@ main/TrendCalculator.cpp
 main/WindCalculation.cpp
 main/json_helper.cpp
 hardware/ColorSwitch.cpp
+webserver/Base64.cpp
 )
 
 #main/IFTTT.cpp
