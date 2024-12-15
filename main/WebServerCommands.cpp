@@ -78,9 +78,19 @@ namespace http
 			// Initialize different varables, like status to ERROR. If the command is successful, it will be changed to OK
 			root["status"] = "ERROR";
 
-			std::string Username = "Admin";
+			int urights = URIGHTS_VIEWER;
+			int iUser = -1;
+			std::string Username = "Unknown";
 			if (!session.username.empty())
+			{
 				Username = session.username;
+				iUser = FindUser(session.username.c_str());
+				if (iUser != -1)
+				{
+					urights = (int)m_users[iUser].userrights;
+					Username = m_users[iUser].Username;
+				}
+			}
 			std::string szSwitchUser = Username + " (IP: " + session.remote_host + ")";
 
 			if (1 == 2)
@@ -2958,7 +2968,6 @@ namespace http
 				std::string Order1, Order2;
 				if (roomid == 0)
 				{
-					const int iUser = FindUser(session.username.c_str());
 					bool bIsUser = false;
 					if (iUser != -1)
 					{
@@ -3498,7 +3507,6 @@ namespace http
 					return false;
 				int isfavorite = atoi(sisfavorite.c_str());
 
-				const int iUser = FindUser(session.username.c_str());
 				bool bIsUser = false;
 				if (iUser != -1)
 				{
@@ -3536,15 +3544,12 @@ namespace http
 			else if (cparam == "switchmodal")
 			{
 				root["title"] = "Modal";
-				int urights = 3;
-				const int iUser = FindUser(session.username.c_str());
-				if (iUser != -1)
-				{
-					urights = (int)m_users[iUser].userrights;
-					_log.Log(LOG_STATUS, "User: %s initiated a modal command", m_users[iUser].Username.c_str());
-				}
 				if (urights < 1)
 					return false;
+				if (iUser != -1)
+				{
+					_log.Log(LOG_STATUS, "User: %s initiated a modal command", m_users[iUser].Username.c_str());
+				}
 
 				std::string idx = request::findValue(&req, "idx");
 				std::string switchcmd = request::findValue(&req, "status");
@@ -4198,7 +4203,8 @@ namespace http
 				m_mainworker.SwitchLight(ID, "Set White", 0, NoColor, false, 0, szSwitchUser);
 				root["status"] = "OK";
 			}
-			else
+
+			if(!root.isMember("title"))
 			{
 				_log.Log(LOG_NORM, "Invalid API command received! (%s)", cparam.c_str());
 				return false;
