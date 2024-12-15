@@ -75,7 +75,14 @@ namespace http
 			return true;
 			*/
 
-			root["status"] = "ERR";		// Initialize status to ERR. If the command is successful, it will be changed to OK
+			// Initialize different varables, like status to ERR. If the command is successful, it will be changed to OK
+			root["status"] = "ERR";
+
+			std::string Username = "Admin";
+			if (!session.username.empty())
+				Username = session.username;
+			std::string szSwitchUser = Username + " (IP: " + session.remote_host + ")";
+
 			if (1 == 2)
 			{
 				// bogus if to make the else if's below work
@@ -660,11 +667,6 @@ namespace http
 			}
 			else if (cparam == "setsecstatus")
 			{
-				std::string Username = "Admin";
-				if (!session.username.empty())
-					Username = session.username;
-				std::string szSwitchUser = Username + " (IP: " + session.remote_host + ")";
-
 				std::string ssecstatus = request::findValue(&req, "secstatus");
 				std::string seccode = request::findValue(&req, "seccode");
 				if ((ssecstatus.empty()) || (seccode.empty()))
@@ -1738,19 +1740,10 @@ namespace http
 					if (switchtype == STYPE_Dimmer)
 						level = 5;
 				}
-				std::string Username = "Admin";
-				if (!session.username.empty())
-					Username = session.username;
-				std::string szSwitchUser = Username + " (IP: " + session.remote_host + ")";
 				m_mainworker.SwitchLightInt(sd, switchcmd, level, NoColor, true, Username);
 			}
 			else if (cparam == "addswitch")
 			{
-				std::string Username = "Admin";
-				if (!session.username.empty())
-					Username = session.username;
-				std::string szSwitchUser = Username + " (IP: " + session.remote_host + ")";
-
 				if (session.rights < 2)
 				{
 					session.reply_status = reply::forbidden;
@@ -3611,9 +3604,6 @@ namespace http
 					session.reply_status = reply::forbidden;
 					return false; // Only user/admin allowed
 				}
-				std::string Username = "Admin";
-				if (!session.username.empty())
-					Username = session.username;
 
 				std::string idx = request::findValue(&req, "idx");
 
@@ -3645,8 +3635,6 @@ namespace http
 						return false;
 					}
 				}
-
-				std::string szSwitchUser = Username + " (IP: " + session.remote_host + ")";
 
 				if (bIsProtected)
 				{
@@ -3708,11 +3696,6 @@ namespace http
 					session.reply_status = reply::forbidden;
 					return false; // Only user/admin allowed
 				}
-				std::string Username = "Admin";
-				if (!session.username.empty())
-					Username = session.username;
-
-				std::string szSwitchUser = Username + " (IP: " + session.remote_host + ")";
 
 				std::string idx = request::findValue(&req, "idx");
 				std::string switchcmd = request::findValue(&req, "switchcmd");
@@ -3766,10 +3749,6 @@ namespace http
 					session.reply_status = reply::forbidden;
 					return false; // Only user/admin allowed
 				}
-
-				std::string Username = "Admin";
-				if (!session.username.empty())
-					Username = session.username;
 
 				std::string idx = request::findValue(&req, "idx");
 
@@ -3886,7 +3865,6 @@ namespace http
 				ival = std::min(ival, 100);
 
 				_log.Log(LOG_STATUS, "setcolbrightnessvalue: ID: %" PRIx64 ", bri: %d, color: '%s'", ID, ival, color.toString().c_str());
-				std::string szSwitchUser = Username + " (IP: " + session.remote_host + ")";
 				m_mainworker.SwitchLight(ID, "Set Color", (unsigned char)ival, color, false, 0, szSwitchUser);
 
 				root["status"] = "OK";
@@ -3899,10 +3877,6 @@ namespace http
 					session.reply_status = reply::forbidden;
 					return false; // Only user/admin allowed
 				}
-
-				std::string Username = "Admin";
-				if (!session.username.empty())
-					Username = session.username;
 
 				root["status"] = "OK";
 				root["title"] = "Set Kelvin Level";
@@ -3923,7 +3897,6 @@ namespace http
 				_tColor color = _tColor((int)round(ival * 255.0F / 100.0F), ColorModeTemp);
 				_log.Log(LOG_STATUS, "setkelvinlevel: t: %f, color: '%s'", ival, color.toString().c_str());
 
-				std::string szSwitchUser = Username + " (IP: " + session.remote_host + ")";
 				m_mainworker.SwitchLight(ID, "Set Color", -1, color, false, 0, szSwitchUser);
 			}
 			else if (cparam == "brightnessup")
@@ -3933,10 +3906,6 @@ namespace http
 					session.reply_status = reply::forbidden;
 					return false; // Only user/admin allowed
 				}
-
-				std::string Username = "Admin";
-				if (!session.username.empty())
-					Username = session.username;
 
 				root["status"] = "OK";
 				root["title"] = "Set brightness up!";
@@ -3949,7 +3918,6 @@ namespace http
 				}
 
 				uint64_t ID = std::stoull(idx);
-				std::string szSwitchUser = Username + " (IP: " + session.remote_host + ")";
 				m_mainworker.SwitchLight(ID, "Bright Up", 0, NoColor, false, 0, szSwitchUser);
 			}
 			else if (cparam == "brightnessdown")
@@ -3959,10 +3927,6 @@ namespace http
 					session.reply_status = reply::forbidden;
 					return false; // Only user/admin allowed
 				}
-
-				std::string Username = "Admin";
-				if (!session.username.empty())
-					Username = session.username;
 
 				root["status"] = "OK";
 				root["title"] = "Set brightness down!";
@@ -3975,7 +3939,6 @@ namespace http
 				}
 
 				uint64_t ID = std::stoull(idx);
-				std::string szSwitchUser = Username + " (IP: " + session.remote_host + ")";
 				m_mainworker.SwitchLight(ID, "Bright Down", 0, NoColor, false, 0, szSwitchUser);
 			}
 			else if (cparam == "discomode")
@@ -3985,10 +3948,6 @@ namespace http
 					session.reply_status = reply::forbidden;
 					return false; // Only user/admin allowed
 				}
-
-				std::string Username = "Admin";
-				if (!session.username.empty())
-					Username = session.username;
 
 				root["status"] = "OK";
 				root["title"] = "Set to last known disco mode!";
@@ -4001,7 +3960,6 @@ namespace http
 				}
 
 				uint64_t ID = std::stoull(idx);
-				std::string szSwitchUser = Username + " (IP: " + session.remote_host + ")";
 				m_mainworker.SwitchLight(ID, "Disco Mode", 0, NoColor, false, 0, szSwitchUser);
 			}
 			else if (cparam.find("discomodenum") == 0 && cparam != "discomode" && cparam.size() == 13)
@@ -4011,10 +3969,6 @@ namespace http
 					session.reply_status = reply::forbidden;
 					return false; // Only user/admin allowed
 				}
-
-				std::string Username = "Admin";
-				if (!session.username.empty())
-					Username = session.username;
 
 				root["status"] = "OK";
 				root["title"] = "Set to disco mode!";
@@ -4029,7 +3983,6 @@ namespace http
 				uint64_t ID = std::stoull(idx);
 				char szTmp[40];
 				sprintf(szTmp, "Disco Mode %s", cparam.substr(12).c_str());
-				std::string szSwitchUser = Username + " (IP: " + session.remote_host + ")";
 				m_mainworker.SwitchLight(ID, szTmp, 0, NoColor, false, 0, szSwitchUser);
 			}
 			else if (cparam == "discoup")
@@ -4039,10 +3992,6 @@ namespace http
 					session.reply_status = reply::forbidden;
 					return false; // Only user/admin allowed
 				}
-
-				std::string Username = "Admin";
-				if (!session.username.empty())
-					Username = session.username;
 
 				root["status"] = "OK";
 				root["title"] = "Set to next disco mode!";
@@ -4055,7 +4004,6 @@ namespace http
 				}
 
 				uint64_t ID = std::stoull(idx);
-				std::string szSwitchUser = Username + " (IP: " + session.remote_host + ")";
 				m_mainworker.SwitchLight(ID, "Disco Up", 0, NoColor, false, 0, szSwitchUser);
 			}
 			else if (cparam == "discodown")
@@ -4065,10 +4013,6 @@ namespace http
 					session.reply_status = reply::forbidden;
 					return false; // Only user/admin allowed
 				}
-
-				std::string Username = "Admin";
-				if (!session.username.empty())
-					Username = session.username;
 
 				root["status"] = "OK";
 				root["title"] = "Set to previous disco mode!";
@@ -4081,7 +4025,6 @@ namespace http
 				}
 
 				uint64_t ID = std::stoull(idx);
-				std::string szSwitchUser = Username + " (IP: " + session.remote_host + ")";
 				m_mainworker.SwitchLight(ID, "Disco Down", 0, NoColor, false, 0, szSwitchUser);
 			}
 			else if (cparam == "speedup")
@@ -4091,10 +4034,6 @@ namespace http
 					session.reply_status = reply::forbidden;
 					return false; // Only user/admin allowed
 				}
-
-				std::string Username = "Admin";
-				if (!session.username.empty())
-					Username = session.username;
 
 				root["status"] = "OK";
 				root["title"] = "Set disco speed up!";
@@ -4107,7 +4046,6 @@ namespace http
 				}
 
 				uint64_t ID = std::stoull(idx);
-				std::string szSwitchUser = Username + " (IP: " + session.remote_host + ")";
 				m_mainworker.SwitchLight(ID, "Speed Up", 0, NoColor, false, 0, szSwitchUser);
 			}
 			else if (cparam == "speeduplong")
@@ -4117,10 +4055,6 @@ namespace http
 					session.reply_status = reply::forbidden;
 					return false; // Only user/admin allowed
 				}
-
-				std::string Username = "Admin";
-				if (!session.username.empty())
-					Username = session.username;
 
 				root["status"] = "OK";
 				root["title"] = "Set speed long!";
@@ -4133,7 +4067,6 @@ namespace http
 				}
 
 				uint64_t ID = std::stoull(idx);
-				std::string szSwitchUser = Username + " (IP: " + session.remote_host + ")";
 				m_mainworker.SwitchLight(ID, "Speed Up Long", 0, NoColor, false, 0, szSwitchUser);
 			}
 			else if (cparam == "speeddown")
@@ -4143,10 +4076,6 @@ namespace http
 					session.reply_status = reply::forbidden;
 					return false; // Only user/admin allowed
 				}
-
-				std::string Username = "Admin";
-				if (!session.username.empty())
-					Username = session.username;
 
 				root["status"] = "OK";
 				root["title"] = "Set disco speed down!";
@@ -4159,7 +4088,6 @@ namespace http
 				}
 
 				uint64_t ID = std::stoull(idx);
-				std::string szSwitchUser = Username + " (IP: " + session.remote_host + ")";
 				m_mainworker.SwitchLight(ID, "Speed Down", 0, NoColor, false, 0, szSwitchUser);
 			}
 			else if (cparam == "speedmin")
@@ -4169,10 +4097,6 @@ namespace http
 					session.reply_status = reply::forbidden;
 					return false; // Only user/admin allowed
 				}
-
-				std::string Username = "Admin";
-				if (!session.username.empty())
-					Username = session.username;
 
 				root["status"] = "OK";
 				root["title"] = "Set disco speed minimal!";
@@ -4185,7 +4109,6 @@ namespace http
 				}
 
 				uint64_t ID = std::stoull(idx);
-				std::string szSwitchUser = Username + " (IP: " + session.remote_host + ")";
 				m_mainworker.SwitchLight(ID, "Speed Minimal", 0, NoColor, false, 0, szSwitchUser);
 			}
 			else if (cparam == "speedmax")
@@ -4195,10 +4118,6 @@ namespace http
 					session.reply_status = reply::forbidden;
 					return false; // Only user/admin allowed
 				}
-
-				std::string Username = "Admin";
-				if (!session.username.empty())
-					Username = session.username;
 
 				root["status"] = "OK";
 				root["title"] = "Set disco speed maximal!";
@@ -4211,7 +4130,6 @@ namespace http
 				}
 
 				uint64_t ID = std::stoull(idx);
-				std::string szSwitchUser = Username + " (IP: " + session.remote_host + ")";
 				m_mainworker.SwitchLight(ID, "Speed Maximal", 0, NoColor, false, 0, szSwitchUser);
 			}
 			else if (cparam == "warmer")
@@ -4221,10 +4139,6 @@ namespace http
 					session.reply_status = reply::forbidden;
 					return false; // Only user/admin allowed
 				}
-
-				std::string Username = "Admin";
-				if (!session.username.empty())
-					Username = session.username;
 
 				root["status"] = "OK";
 				root["title"] = "Set Kelvin up!";
@@ -4237,7 +4151,6 @@ namespace http
 				}
 
 				uint64_t ID = std::stoull(idx);
-				std::string szSwitchUser = Username + " (IP: " + session.remote_host + ")";
 				m_mainworker.SwitchLight(ID, "Warmer", 0, NoColor, false, 0, szSwitchUser);
 			}
 			else if (cparam == "cooler")
@@ -4247,10 +4160,6 @@ namespace http
 					session.reply_status = reply::forbidden;
 					return false; // Only user/admin allowed
 				}
-
-				std::string Username = "Admin";
-				if (!session.username.empty())
-					Username = session.username;
 
 				root["status"] = "OK";
 				root["title"] = "Set Kelvin down!";
@@ -4263,7 +4172,6 @@ namespace http
 				}
 
 				uint64_t ID = std::stoull(idx);
-				std::string szSwitchUser = Username + " (IP: " + session.remote_host + ")";
 				m_mainworker.SwitchLight(ID, "Cooler", 0, NoColor, false, 0, szSwitchUser);
 			}
 			else if (cparam == "fulllight")
@@ -4273,10 +4181,6 @@ namespace http
 					session.reply_status = reply::forbidden;
 					return false; // Only user/admin allowed
 				}
-
-				std::string Username = "Admin";
-				if (!session.username.empty())
-					Username = session.username;
 
 				root["status"] = "OK";
 				root["title"] = "Set Full!";
@@ -4289,7 +4193,6 @@ namespace http
 				}
 
 				uint64_t ID = std::stoull(idx);
-				std::string szSwitchUser = Username + " (IP: " + session.remote_host + ")";
 				m_mainworker.SwitchLight(ID, "Set Full", 0, NoColor, false, 0, szSwitchUser);
 			}
 			else if (cparam == "nightlight")
@@ -4299,10 +4202,6 @@ namespace http
 					session.reply_status = reply::forbidden;
 					return false; // Only user/admin allowed
 				}
-
-				std::string Username = "Admin";
-				if (!session.username.empty())
-					Username = session.username;
 
 				root["status"] = "OK";
 				root["title"] = "Set to nightlight!";
@@ -4315,7 +4214,6 @@ namespace http
 				}
 
 				uint64_t ID = std::stoull(idx);
-				std::string szSwitchUser = Username + " (IP: " + session.remote_host + ")";
 				m_mainworker.SwitchLight(ID, "Set Night", 0, NoColor, false, 0, szSwitchUser);
 			}
 			else if (cparam == "whitelight")
@@ -4325,10 +4223,6 @@ namespace http
 					session.reply_status = reply::forbidden;
 					return false; // Only user/admin allowed
 				}
-
-				std::string Username = "Admin";
-				if (!session.username.empty())
-					Username = session.username;
 
 				root["status"] = "OK";
 				root["title"] = "Set to clear white!";
@@ -4342,7 +4236,6 @@ namespace http
 
 				uint64_t ID = std::stoull(idx);
 				// TODO: Change to color with mode=ColorModeWhite and level=100?
-				std::string szSwitchUser = Username + " (IP: " + session.remote_host + ")";
 				m_mainworker.SwitchLight(ID, "Set White", 0, NoColor, false, 0, szSwitchUser);
 			}
 			else
