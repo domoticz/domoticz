@@ -3847,7 +3847,7 @@ namespace http
 
 				root["status"] = "OK";
 			}
-			else if (cparam.find("setkelvinlevel") == 0)
+			else if (cparam == "setkelvinlevel")
 			{
 				root["title"] = "Set Kelvin Level";
 				if (session.rights < 1)
