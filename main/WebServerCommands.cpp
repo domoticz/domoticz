@@ -75,8 +75,8 @@ namespace http
 			return true;
 			*/
 
-			// Initialize different varables, like status to ERR. If the command is successful, it will be changed to OK
-			root["status"] = "ERR";
+			// Initialize different varables, like status to ERROR. If the command is successful, it will be changed to OK
+			root["status"] = "ERROR";
 
 			std::string Username = "Admin";
 			if (!session.username.empty())
