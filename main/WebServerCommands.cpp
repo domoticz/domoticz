@@ -90,12 +90,11 @@ namespace http
 			// Non privelidged commands
 			else if (cparam == "getsubdevices")
 			{
+				root["title"] = "GetSubDevices";
 				std::string idx = request::findValue(&req, "idx");
 				if (idx.empty())
 					return false;
 
-				root["status"] = "OK";
-				root["title"] = "GetSubDevices";
 				result = m_sql.safe_query("SELECT a.ID, b.Name FROM LightSubDevices a, DeviceStatus b WHERE (a.ParentID=='%q') AND (b.ID == a.DeviceRowID)", idx.c_str());
 				if (!result.empty())
 				{
@@ -106,18 +105,17 @@ namespace http
 						root["result"][ii]["Name"] = sd[1];
 						ii++;
 					}
+					root["status"] = "OK";
 				}
 			}
 			else if (cparam == "getscenedevices")
 			{
+				root["title"] = "GetSceneDevices";
 				std::string idx = request::findValue(&req, "idx");
 				std::string isscene = request::findValue(&req, "isscene");
 
 				if ((idx.empty()) || (isscene.empty()))
 					return false;
-
-				root["status"] = "OK";
-				root["title"] = "GetSceneDevices";
 
 				result = m_sql.safe_query("SELECT a.ID, b.Name, a.DeviceRowID, b.Type, b.SubType, b.nValue, b.sValue, a.Cmd, a.Level, b.ID, a.[Order], a.Color, a.OnDelay, a.OffDelay, "
 					"b.SwitchType FROM SceneDevices a, DeviceStatus b WHERE (a.SceneRowID=='%q') AND (b.ID == a.DeviceRowID) ORDER BY a.[Order]",
@@ -179,12 +177,12 @@ namespace http
 						root["result"][ii]["SubType"] = RFX_Type_SubType_Desc(devType, subType);
 						ii++;
 					}
+					root["status"] = "OK";
 				}
 			}
 			else if (cparam == "getmanualhardware")
 			{
 				// used by Add Manual Light/Switch dialog
-				root["status"] = "OK";
 				root["title"] = "GetManualHardware";
 				result = m_sql.safe_query("SELECT ID, Name, Type, Enabled FROM Hardware ORDER BY ID ASC");
 				if (!result.empty())
@@ -233,6 +231,7 @@ namespace http
 						}
 					}
 				}
+				root["status"] = "OK";
 			}
 			else if (cparam == "getgpio")
 			{
@@ -242,7 +241,6 @@ namespace http
 				std::vector<CGpioPin> pins = CGpio::GetPinList();
 				if (pins.empty())
 				{
-					root["status"] = "ERROR";
 					root["result"][0]["idx"] = 0;
 					root["result"][0]["Name"] = "GPIO INIT ERROR";
 				}
@@ -251,11 +249,11 @@ namespace http
 					int ii = 0;
 					for (auto& pin : pins)
 					{
-						root["status"] = "OK";
 						root["result"][ii]["idx"] = pin.GetPin();
 						root["result"][ii]["Name"] = pin.ToString();
 						ii++;
 					}
+					root["status"] = "OK";
 				}
 #else
 				root["status"] = "OK";
@@ -273,7 +271,6 @@ namespace http
 
 				if (gpio_ids.empty())
 				{
-					root["status"] = "ERROR";
 					root["result"][0]["idx"] = 0;
 					root["result"][0]["Name"] = "No sysfs-gpio exports";
 				}
@@ -281,10 +278,10 @@ namespace http
 				{
 					for (int ii = 0; ii < gpio_ids.size(); ii++)
 					{
-						root["status"] = "OK";
 						root["result"][ii]["idx"] = gpio_ids[ii];
 						root["result"][ii]["Name"] = gpio_names[ii];
 					}
+					root["status"] = "OK";
 				}
 #else
 				root["status"] = "OK";
@@ -294,7 +291,6 @@ namespace http
 			}
 			else if (cparam == "getlightswitches")
 			{
-				root["status"] = "OK";
 				root["title"] = "GetLightSwitches";
 				result = m_sql.safe_query("SELECT ID, Name, Type, SubType, Used, SwitchType, Options FROM DeviceStatus ORDER BY Name COLLATE NOCASE ASC");
 				if (!result.empty())
@@ -423,10 +419,10 @@ namespace http
 						}
 					}
 				}
+				root["status"] = "OK";
 			}
 			else if (cparam == "getlightswitchesscenes")
 			{
-				root["status"] = "OK";
 				root["title"] = "GetLightSwitchesScenes";
 				int ii = 0;
 
@@ -505,14 +501,14 @@ namespace http
 						ii++;
 					}
 				} // end light/switches
+				root["status"] = "OK";
 			}
 			else if (cparam == "getcamactivedevices")
 			{
+				root["title"] = "GetCameraActiveDevices";
 				std::string idx = request::findValue(&req, "idx");
 				if (idx.empty())
 					return false;
-				root["status"] = "OK";
-				root["title"] = "GetCameraActiveDevices";
 				// First List/Switch Devices
 				result = m_sql.safe_query("SELECT ID, DevSceneType, DevSceneRowID, DevSceneWhen, DevSceneDelay FROM CamerasActiveDevices WHERE (CameraRowID=='%q') ORDER BY ID",
 					idx.c_str());
@@ -558,17 +554,16 @@ namespace http
 						}
 					}
 				}
+				root["status"] = "OK";
 			}
 			else if (cparam == "resetsecuritystatus")
 			{
+				root["title"] = "ResetSecurityStatus";
 				std::string idx = request::findValue(&req, "idx");
 				std::string switchcmd = request::findValue(&req, "switchcmd");
 
 				if ((idx.empty()) || (switchcmd.empty()))
 					return false;
-
-				root["status"] = "OK";
-				root["title"] = "ResetSecurityStatus";
 
 				int nValue = -1;
 
@@ -589,9 +584,11 @@ namespace http
 					root["status"] = "OK";
 					root["title"] = "SwitchLight";
 				}
+				root["status"] = "OK";
 			}
 			else if (cparam == "verifypasscode")
 			{
+				root["title"] = "VerifyPasscode";
 				std::string passcode = request::findValue(&req, "passcode");
 				if (passcode.empty())
 					return false;
@@ -602,13 +599,12 @@ namespace http
 				m_sql.GetPreferencesVar("ProtectionPassword", nValue, rpassword);
 				if (passcode == rpassword)
 				{
-					root["title"] = "VerifyPasscode";
 					root["status"] = "OK";
-					return true;
 				}
 			}
 			else if (cparam == "getSunRiseSet")
 			{
+				root["title"] = "getSunRiseSet";
 				if (!m_mainworker.m_LastSunriseSet.empty())
 				{
 					std::vector<std::string> strarray;
@@ -623,7 +619,6 @@ namespace http
 						strftime(szTmp, 80, "%Y-%m-%d %X", &loctime);
 
 						root["status"] = "OK";
-						root["title"] = "getSunRiseSet";
 						root["ServerTime"] = szTmp;
 						root["Sunrise"] = strarray[0];
 						root["Sunset"] = strarray[1];
@@ -640,6 +635,7 @@ namespace http
 			}
 			else if (cparam == "getServerTime")
 			{
+				root["title"] = "getServerTime";
 
 				struct tm loctime;
 				time_t now = mytime(nullptr);
@@ -649,12 +645,10 @@ namespace http
 				strftime(szTmp, 80, "%Y-%m-%d %X", &loctime);
 
 				root["status"] = "OK";
-				root["title"] = "getServerTime";
 				root["ServerTime"] = szTmp;
 			}
 			else if (cparam == "getsecstatus")
 			{
-				root["status"] = "OK";
 				root["title"] = "GetSecStatus";
 
 				int secstatus = 0;
@@ -664,9 +658,11 @@ namespace http
 				int secondelay = 30;
 				m_sql.GetPreferencesVar("SecOnDelay", secondelay);
 				root["secondelay"] = secondelay;
+				root["status"] = "OK";
 			}
 			else if (cparam == "setsecstatus")
 			{
+				root["title"] = "SetSecStatus";
 				std::string ssecstatus = request::findValue(&req, "secstatus");
 				std::string seccode = request::findValue(&req, "seccode");
 				if ((ssecstatus.empty()) || (seccode.empty()))
@@ -674,7 +670,6 @@ namespace http
 					root["message"] = "WRONG CODE";
 					return false;
 				}
-				root["title"] = "SetSecStatus";
 				std::string rpassword;
 				int nValue = 1;
 				m_sql.GetPreferencesVar("SecPassword", nValue, rpassword);
@@ -684,13 +679,12 @@ namespace http
 					root["message"] = "WRONG CODE";
 					return false;
 				}
-				root["status"] = "OK";
 				int iSecStatus = atoi(ssecstatus.c_str());
 				m_mainworker.UpdateDomoticzSecurityStatus(iSecStatus, szSwitchUser);
+				root["status"] = "OK";
 			}
 			else if (cparam == "getfloorplanimages")
 			{
-				root["status"] = "OK";
 				root["title"] = "GetFloorplanImages";
 
 				bool bReturnUnused = atoi(request::findValue(&req, "unused").c_str()) != 0;
@@ -710,14 +704,14 @@ namespace http
 						ii++;
 					}
 				}
+				root["status"] = "OK";
 			}
 			else if (cparam == "getfloorplanplans")
 			{
+				root["title"] = "GetFloorplanPlans";
 				std::string idx = request::findValue(&req, "idx");
 				if (idx.empty())
 					return false;
-				root["status"] = "OK";
-				root["title"] = "GetFloorplanPlans";
 				int ii = 0;
 				result = m_sql.safe_query("SELECT ID, Name, Area FROM Plans WHERE (FloorplanID=='%q') ORDER BY Name COLLATE NOCASE ASC", idx.c_str());
 				if (!result.empty())
@@ -730,10 +724,12 @@ namespace http
 						ii++;
 					}
 				}
+				root["status"] = "OK";
 			}
 			// Admin only commands
 			else if (cparam == "deleteallsubdevices")
 			{
+				root["title"] = "DeleteAllSubDevices";
 				if (session.rights < 2)
 				{
 					session.reply_status = reply::forbidden;
@@ -743,12 +739,12 @@ namespace http
 				std::string idx = request::findValue(&req, "idx");
 				if (idx.empty())
 					return false;
-				root["status"] = "OK";
-				root["title"] = "DeleteAllSubDevices";
 				result = m_sql.safe_query("DELETE FROM LightSubDevices WHERE (ParentID == '%q')", idx.c_str());
+				root["status"] = "OK";
 			}
 			else if (cparam == "deletesubdevice")
 			{
+				root["title"] = "DeleteSubDevice";
 				if (session.rights < 2)
 				{
 					session.reply_status = reply::forbidden;
@@ -758,12 +754,12 @@ namespace http
 				std::string idx = request::findValue(&req, "idx");
 				if (idx.empty())
 					return false;
-				root["status"] = "OK";
-				root["title"] = "DeleteSubDevice";
 				result = m_sql.safe_query("DELETE FROM LightSubDevices WHERE (ID == '%q')", idx.c_str());
+				root["status"] = "OK";
 			}
 			else if (cparam == "addsubdevice")
 			{
+				root["title"] = "AddSubDevice";
 				if (session.rights < 2)
 				{
 					session.reply_status = reply::forbidden;
@@ -781,14 +777,14 @@ namespace http
 				result = m_sql.safe_query("SELECT ID FROM LightSubDevices WHERE (DeviceRowID=='%q') AND (ParentID =='%q')", subidx.c_str(), idx.c_str());
 				if (result.empty())
 				{
-					root["status"] = "OK";
-					root["title"] = "AddSubDevice";
 					// no it is not, add it
 					result = m_sql.safe_query("INSERT INTO LightSubDevices (DeviceRowID, ParentID) VALUES ('%q','%q')", subidx.c_str(), idx.c_str());
+					root["status"] = "OK";
 				}
 			}
 			else if (cparam == "addscenedevice")
 			{
+				root["title"] = "AddSceneDevice";
 				if (session.rights < 2)
 				{
 					session.reply_status = reply::forbidden;
@@ -860,8 +856,6 @@ namespace http
 				}
 				if (result.empty())
 				{
-					root["status"] = "OK";
-					root["title"] = "AddSceneDevice";
 					// no it is not, add it
 					if (isscene == "true")
 					{
@@ -875,10 +869,12 @@ namespace http
 					}
 					if (m_sql.m_bEnableEventSystem)
 						m_mainworker.m_eventsystem.GetCurrentScenesGroups();
+					root["status"] = "OK";
 				}
 			}
 			else if (cparam == "updatescenedevice")
 			{
+				root["title"] = "UpdateSceneDevice";
 				if (session.rights < 2)
 				{
 					session.reply_status = reply::forbidden;
@@ -909,13 +905,13 @@ namespace http
 				if (request::hasValue(&req, "level"))
 					level = atoi(request::findValue(&req, "level").c_str());
 				std::string color = _tColor(request::findValue(&req, "color")).toJSONString(); // Parse the color to detect incorrectly formatted color data
-				root["status"] = "OK";
-				root["title"] = "UpdateSceneDevice";
 				result = m_sql.safe_query("UPDATE SceneDevices SET Cmd=%d, Level=%d, Color='%q', OnDelay=%d, OffDelay=%d  WHERE (ID == '%q')", command, level, color.c_str(), ondelay,
 					offdelay, idx.c_str());
+				root["status"] = "OK";
 			}
 			else if (cparam == "deletescenedevice")
 			{
+				root["title"] = "DeleteSceneDevice";
 				if (session.rights < 2)
 				{
 					session.reply_status = reply::forbidden;
@@ -925,15 +921,15 @@ namespace http
 				std::string idx = request::findValue(&req, "idx");
 				if (idx.empty())
 					return false;
-				root["status"] = "OK";
-				root["title"] = "DeleteSceneDevice";
 				m_sql.safe_query("DELETE FROM SceneDevices WHERE (ID == '%q')", idx.c_str());
 				m_sql.safe_query("DELETE FROM CamerasActiveDevices WHERE (DevSceneType==1) AND (DevSceneRowID == '%q')", idx.c_str());
 				if (m_sql.m_bEnableEventSystem)
 					m_mainworker.m_eventsystem.GetCurrentScenesGroups();
+				root["status"] = "OK";
 			}
 			else if (cparam == "changescenedeviceorder")
 			{
+				root["title"] = "ChangeSceneDeviceOrder";
 				if (session.rights < 2)
 				{
 					session.reply_status = reply::forbidden;
@@ -978,14 +974,13 @@ namespace http
 					oOrder = result[0][1];
 				}
 				// Swap them
-				root["status"] = "OK";
-				root["title"] = "ChangeSceneDeviceOrder";
-
 				result = m_sql.safe_query("UPDATE SceneDevices SET [Order] = '%q' WHERE (ID='%q')", oOrder.c_str(), idx.c_str());
 				result = m_sql.safe_query("UPDATE SceneDevices SET [Order] = '%q' WHERE (ID='%q')", aOrder.c_str(), oID.c_str());
+				root["status"] = "OK";
 			}
 			else if (cparam == "deleteallscenedevices")
 			{
+				root["title"] = "DeleteAllSceneDevices";
 				if (session.rights < 2)
 				{
 					session.reply_status = reply::forbidden;
@@ -995,12 +990,12 @@ namespace http
 				std::string idx = request::findValue(&req, "idx");
 				if (idx.empty())
 					return false;
-				root["status"] = "OK";
-				root["title"] = "DeleteAllSceneDevices";
 				result = m_sql.safe_query("DELETE FROM SceneDevices WHERE (SceneRowID == %q)", idx.c_str());
+				root["status"] = "OK";
 			}
 			else if (cparam == "addcamactivedevice")
 			{
+				root["title"] = "AddCameraActiveDevice";
 				if (session.rights < 2)
 				{
 					session.reply_status = reply::forbidden;
@@ -1029,17 +1024,17 @@ namespace http
 					idx.c_str(), activetype, activeidx.c_str(), activewhen);
 				if (result.empty())
 				{
-					root["status"] = "OK";
-					root["title"] = "AddCameraActiveDevice";
 					// no it is not, add it
 					result =
 						m_sql.safe_query("INSERT INTO CamerasActiveDevices (CameraRowID, DevSceneType, DevSceneRowID, DevSceneWhen, DevSceneDelay) VALUES ('%q',%d,'%q',%d,%d)",
 							idx.c_str(), activetype, activeidx.c_str(), activewhen, activedelay);
 					m_mainworker.m_cameras.ReloadCameras();
+					root["status"] = "OK";
 				}
 			}
 			else if (cparam == "deleteamactivedevice")
 			{
+				root["title"] = "DeleteCameraActiveDevice";
 				if (session.rights < 2)
 				{
 					session.reply_status = reply::forbidden;
@@ -1049,13 +1044,13 @@ namespace http
 				std::string idx = request::findValue(&req, "idx");
 				if (idx.empty())
 					return false;
-				root["status"] = "OK";
-				root["title"] = "DeleteCameraActiveDevice";
 				result = m_sql.safe_query("DELETE FROM CamerasActiveDevices WHERE (ID == '%q')", idx.c_str());
 				m_mainworker.m_cameras.ReloadCameras();
+				root["status"] = "OK";
 			}
 			else if (cparam == "deleteallactivecamdevices")
 			{
+				root["title"] = "DeleteAllCameraActiveDevices";
 				if (session.rights < 2)
 				{
 					session.reply_status = reply::forbidden;
@@ -1065,13 +1060,13 @@ namespace http
 				std::string idx = request::findValue(&req, "idx");
 				if (idx.empty())
 					return false;
-				root["status"] = "OK";
-				root["title"] = "DeleteAllCameraActiveDevices";
 				result = m_sql.safe_query("DELETE FROM CamerasActiveDevices WHERE (CameraRowID == '%q')", idx.c_str());
 				m_mainworker.m_cameras.ReloadCameras();
+				root["status"] = "OK";
 			}
 			else if (cparam == "testnotification")
 			{
+				root["title"] = "testnotification";
 				if (session.rights < 2)
 				{
 					session.reply_status = reply::forbidden;
@@ -1095,6 +1090,7 @@ namespace http
 			}
 			else if (cparam == "testswitch")
 			{
+				root["title"] = "TestSwitch";
 				if (session.rights < 2)
 				{
 					session.reply_status = reply::forbidden;
@@ -1712,9 +1708,6 @@ namespace http
 				}
 				// -----------------------------------------------
 
-				root["status"] = "OK";
-				root["message"] = "OK";
-				root["title"] = "TestSwitch";
 				std::vector<std::string> sd;
 
 				sd.push_back(hwdid);
@@ -1741,9 +1734,12 @@ namespace http
 						level = 5;
 				}
 				m_mainworker.SwitchLightInt(sd, switchcmd, level, NoColor, true, Username);
+				root["status"] = "OK";
+				root["message"] = "OK";
 			}
 			else if (cparam == "addswitch")
 			{
+				root["title"] = "AddSwitch";
 				if (session.rights < 2)
 				{
 					session.reply_status = reply::forbidden;
@@ -1825,7 +1821,6 @@ namespace http
 					}
 
 					root["status"] = "OK";
-					root["title"] = "AddSwitch";
 					return true;
 				}
 #ifdef ENABLE_PYTHON
@@ -2526,10 +2521,10 @@ namespace http
 				}
 
 				root["status"] = "OK";
-				root["title"] = "AddSwitch";
 			}
 			else if (cparam == "getnotificationtypes")
 			{
+				root["title"] = "GetNotificationTypes";
 				if (session.rights < 2)
 				{
 					session.reply_status = reply::forbidden;
@@ -2544,8 +2539,6 @@ namespace http
 				if (result.empty())
 					return false;
 
-				root["status"] = "OK";
-				root["title"] = "GetNotificationTypes";
 				unsigned char dType = atoi(result[0][0].c_str());
 				unsigned char dSubType = atoi(result[0][1].c_str());
 				unsigned char switchtype = atoi(result[0][2].c_str());
@@ -2946,9 +2939,11 @@ namespace http
 					root["result"][ii]["ptag"] = Notification_Type_Desc(NTYPE_LASTUPDATE, 1);
 					ii++;
 				}
+				root["status"] = "OK";
 			}
 			else if (cparam == "switchdeviceorder")
 			{
+				root["title"] = "SwitchDeviceOrder";
 				if (session.rights < 1)
 				{
 					session.reply_status = reply::forbidden;
@@ -3000,9 +2995,6 @@ namespace http
 							return false;
 						Order2 = result[0][0];
 
-						root["status"] = "OK";
-						root["title"] = "SwitchDeviceOrder";
-
 						if (atoi(Order1.c_str()) < atoi(Order2.c_str()))
 						{
 							m_sql.safe_query("UPDATE SharedDevices SET [Order] = [Order]+1 WHERE ([Order] >= '%q' AND [Order] < '%q')", Order1.c_str(), Order2.c_str());
@@ -3013,6 +3005,7 @@ namespace http
 						}
 
 						m_sql.safe_query("UPDATE SharedDevices SET [Order] = '%q' WHERE (ID == '%q')", Order1.c_str(), idx2.c_str());
+						root["status"] = "OK";
 					}
 					else {
 						// get device order 1
@@ -3027,9 +3020,6 @@ namespace http
 							return false;
 						Order2 = result[0][0];
 
-						root["status"] = "OK";
-						root["title"] = "SwitchDeviceOrder";
-
 						if (atoi(Order1.c_str()) < atoi(Order2.c_str()))
 						{
 							m_sql.safe_query("UPDATE DeviceStatus SET [Order] = [Order]+1 WHERE ([Order] >= '%q' AND [Order] < '%q')", Order1.c_str(), Order2.c_str());
@@ -3040,6 +3030,7 @@ namespace http
 						}
 
 						m_sql.safe_query("UPDATE DeviceStatus SET [Order] = '%q' WHERE (ID == '%q')", Order1.c_str(), idx2.c_str());
+						root["status"] = "OK";
 					}
 				}
 				else
@@ -3057,9 +3048,6 @@ namespace http
 						return false;
 					Order2 = result[0][0];
 
-					root["status"] = "OK";
-					root["title"] = "SwitchDeviceOrder";
-
 					if (atoi(Order1.c_str()) < atoi(Order2.c_str()))
 					{
 						m_sql.safe_query("UPDATE DeviceToPlansMap SET [Order] = [Order]+1 WHERE ([Order] >= '%q' AND [Order] < '%q') AND (PlanID==%d)", Order1.c_str(),
@@ -3072,10 +3060,12 @@ namespace http
 					}
 
 					m_sql.safe_query("UPDATE DeviceToPlansMap SET [Order] = '%q' WHERE (DeviceRowID == '%q') AND (PlanID==%d)", Order1.c_str(), idx2.c_str(), roomid);
+					root["status"] = "OK";
 				}
 			}
 			else if (cparam == "switchsceneorder")
 			{
+				root["title"] = "SwitchSceneOrder";
 				if (session.rights < 2)
 				{
 					session.reply_status = reply::forbidden;
@@ -3100,9 +3090,6 @@ namespace http
 					return false;
 				Order2 = result[0][0];
 
-				root["status"] = "OK";
-				root["title"] = "SwitchSceneOrder";
-
 				if (atoi(Order1.c_str()) < atoi(Order2.c_str()))
 				{
 					m_sql.safe_query("UPDATE Scenes SET [Order] = [Order]+1 WHERE ([Order] >= '%q' AND [Order] < '%q')", Order1.c_str(), Order2.c_str());
@@ -3113,9 +3100,11 @@ namespace http
 				}
 
 				m_sql.safe_query("UPDATE Scenes SET [Order] = '%q' WHERE (ID == '%q')", Order1.c_str(), idx2.c_str());
+				root["status"] = "OK";
 			}
 			else if (cparam == "clearnotifications")
 			{
+				root["title"] = "ClearNotification";
 				if (session.rights < 2)
 				{
 					session.reply_status = reply::forbidden;
@@ -3126,13 +3115,12 @@ namespace http
 				if (idx.empty())
 					return false;
 
-				root["status"] = "OK";
-				root["title"] = "ClearNotification";
-
 				m_notifications.RemoveDeviceNotifications(idx);
+				root["status"] = "OK";
 			}
 			else if (cparam == "adduser" || cparam == "updateuser" || cparam == "deleteuser")
 			{	// C(R)UD operations for Users. Read is done by Cmd_GetUsers
+				root["title"] = "Add/Update/DeleteUser";
 				if (session.rights != URIGHTS_ADMIN)
 				{
 					session.reply_status = reply::forbidden;
@@ -3248,6 +3236,7 @@ namespace http
 			}
 			else if (cparam == "updatefloorplan")
 			{
+				root["title"] = "UpdateFloorplan";
 				if (session.rights < 2)
 				{
 					session.reply_status = reply::forbidden;
@@ -3262,13 +3251,12 @@ namespace http
 				if ((name.empty()) || (scalefactor.empty()))
 					return false;
 
-				root["status"] = "OK";
-				root["title"] = "UpdateFloorplan";
-
 				m_sql.safe_query("UPDATE Floorplans SET Name='%q',ScaleFactor='%q' WHERE (ID == '%q')", name.c_str(), scalefactor.c_str(), idx.c_str());
+				root["status"] = "OK";
 			}
 			else if (cparam == "deletefloorplan")
 			{
+				root["title"] = "DeleteFloorplan";
 				if (session.rights < 2)
 				{
 					session.reply_status = reply::forbidden;
@@ -3278,14 +3266,14 @@ namespace http
 				std::string idx = request::findValue(&req, "idx");
 				if (idx.empty())
 					return false;
-				root["status"] = "OK";
-				root["title"] = "DeleteFloorplan";
 				m_sql.safe_query("UPDATE DeviceToPlansMap SET XOffset=0,YOffset=0 WHERE (PlanID IN (SELECT ID from Plans WHERE (FloorplanID == '%q')))", idx.c_str());
 				m_sql.safe_query("UPDATE Plans SET FloorplanID=0,Area='' WHERE (FloorplanID == '%q')", idx.c_str());
 				m_sql.safe_query("DELETE FROM Floorplans WHERE (ID == '%q')", idx.c_str());
+				root["status"] = "OK";
 			}
 			else if (cparam == "changefloorplanorder")
 			{
+				root["title"] = "ChangeFloorPlanOrder";
 				if (session.rights < 2)
 				{
 					session.reply_status = reply::forbidden;
@@ -3326,22 +3314,19 @@ namespace http
 					oOrder = result[0][1];
 				}
 				// Swap them
-				root["status"] = "OK";
-				root["title"] = "ChangeFloorPlanOrder";
-
 				m_sql.safe_query("UPDATE Floorplans SET [Order] = '%q' WHERE (ID='%q')", oOrder.c_str(), idx.c_str());
 				m_sql.safe_query("UPDATE Floorplans SET [Order] = '%q' WHERE (ID='%q')", aOrder.c_str(), oID.c_str());
+				root["status"] = "OK";
 			}
 			else if (cparam == "getunusedfloorplanplans")
 			{
+				root["title"] = "GetUnusedFloorplanPlans";
 				if (session.rights < 2)
 				{
 					session.reply_status = reply::forbidden;
 					return false; // Only admin user allowed
 				}
 
-				root["status"] = "OK";
-				root["title"] = "GetUnusedFloorplanPlans";
 				int ii = 0;
 
 				result = m_sql.safe_query("SELECT ID, Name FROM Plans WHERE (FloorplanID==0) ORDER BY Name COLLATE NOCASE ASC");
@@ -3355,9 +3340,11 @@ namespace http
 						ii++;
 					}
 				}
+				root["status"] = "OK";
 			}
 			else if (cparam == "addfloorplanplan")
 			{
+				root["title"] = "AddFloorplanPlan";
 				if (session.rights < 2)
 				{
 					session.reply_status = reply::forbidden;
@@ -3368,14 +3355,14 @@ namespace http
 				std::string planidx = request::findValue(&req, "planidx");
 				if ((idx.empty()) || (planidx.empty()))
 					return false;
-				root["status"] = "OK";
-				root["title"] = "AddFloorplanPlan";
 
 				m_sql.safe_query("UPDATE Plans SET FloorplanID='%q' WHERE (ID == '%q')", idx.c_str(), planidx.c_str());
 				_log.Log(LOG_STATUS, "(Floorplan) Plan '%s' added to floorplan '%s'.", planidx.c_str(), idx.c_str());
+				root["status"] = "OK";
 			}
 			else if (cparam == "updatefloorplanplan")
 			{
+				root["title"] = "UpdateFloorplanPlan";
 				if (session.rights < 2)
 				{
 					session.reply_status = reply::forbidden;
@@ -3386,14 +3373,14 @@ namespace http
 				std::string planarea = request::findValue(&req, "area");
 				if (planidx.empty())
 					return false;
-				root["status"] = "OK";
-				root["title"] = "UpdateFloorplanPlan";
 
 				m_sql.safe_query("UPDATE Plans SET Area='%q' WHERE (ID == '%q')", planarea.c_str(), planidx.c_str());
 				_log.Log(LOG_STATUS, "(Floorplan) Plan '%s' floor area updated to '%s'.", planidx.c_str(), planarea.c_str());
+				root["status"] = "OK";
 			}
 			else if (cparam == "deletefloorplanplan")
 			{
+				root["title"] = "DeleteFloorplanPlan";
 				if (session.rights < 2)
 				{
 					session.reply_status = reply::forbidden;
@@ -3403,15 +3390,15 @@ namespace http
 				std::string idx = request::findValue(&req, "idx");
 				if (idx.empty())
 					return false;
-				root["status"] = "OK";
-				root["title"] = "DeleteFloorplanPlan";
 				m_sql.safe_query("UPDATE DeviceToPlansMap SET XOffset=0,YOffset=0 WHERE (PlanID == '%q')", idx.c_str());
 				_log.Log(LOG_STATUS, "(Floorplan) Device coordinates reset for plan '%s'.", idx.c_str());
 				m_sql.safe_query("UPDATE Plans SET FloorplanID=0,Area='' WHERE (ID == '%q')", idx.c_str());
 				_log.Log(LOG_STATUS, "(Floorplan) Plan '%s' floorplan data reset.", idx.c_str());
+				root["status"] = "OK";
 			}
 			else if (cparam == "clearlightlog")
 			{
+				root["title"] = "ClearLightLog";
 				if (session.rights < 2)
 				{
 					session.reply_status = reply::forbidden;
@@ -3439,13 +3426,13 @@ namespace http
 					)
 					return false; // no light device! we should not be here!
 
-				root["status"] = "OK";
-				root["title"] = "ClearLightLog";
 
 				result = m_sql.safe_query("DELETE FROM LightingLog WHERE (DeviceRowID=='%q')", idx.c_str());
+				root["status"] = "OK";
 			}
 			else if (cparam == "clearscenelog")
 			{
+				root["title"] = "ClearSceneLog";
 				if (session.rights < 2)
 				{
 					session.reply_status = reply::forbidden;
@@ -3455,13 +3442,13 @@ namespace http
 				std::string idx = request::findValue(&req, "idx");
 				if (idx.empty())
 					return false;
-				root["status"] = "OK";
-				root["title"] = "ClearSceneLog";
 
 				result = m_sql.safe_query("DELETE FROM SceneLog WHERE (SceneRowID=='%q')", idx.c_str());
+				root["status"] = "OK";
 			}
 			else if (cparam == "learnsw")
 			{
+				root["title"] = "LearnSW";
 				if (session.rights < 2)
 				{
 					session.reply_status = reply::forbidden;
@@ -3490,7 +3477,6 @@ namespace http
 					if (!result.empty())
 					{
 						root["status"] = "OK";
-						root["title"] = "LearnSW";
 						root["ID"] = m_sql.m_LastSwitchID;
 						root["idx"] = Json::Value::UInt64(m_sql.m_LastSwitchRowID);
 						root["Name"] = result[0][0];
@@ -3502,6 +3488,7 @@ namespace http
 			// Commands for ADMINS or SWITCHERS (not Viewers)
 			else if (cparam == "makefavorite")
 			{
+				root["title"] = "MakeFavorite";
 				if (session.rights < 1)
 				{
 					session.reply_status = reply::forbidden;
@@ -3513,9 +3500,6 @@ namespace http
 					return false;
 				int isfavorite = atoi(sisfavorite.c_str());
 
-				root["status"] = "OK";
-				root["title"] = "MakeFavorite";
-
 				const int iUser = FindUser(session.username.c_str());
 				bool bIsUser = false;
 				if (iUser != -1)
@@ -3525,6 +3509,7 @@ namespace http
 					else
 						bIsUser = (m_users[iUser].TotSensors > 0); //admin users with devices are also allowed
 				}
+				root["status"] = "OK";
 				if ((bIsUser) && (m_users[iUser].ID != 0xFFFF))
 				{
 					m_sql.safe_query("UPDATE SharedDevices SET Favorite=%d WHERE (DeviceRowID == '%q') AND (SharedUserID == %d)", isfavorite, idx.c_str(),
@@ -3535,6 +3520,7 @@ namespace http
 			} // makefavorite
 			else if (cparam == "makescenefavorite")
 			{
+				root["title"] = "MakeSceneFavorite";
 				if (session.rights < 1)
 				{
 					session.reply_status = reply::forbidden;
@@ -3548,10 +3534,10 @@ namespace http
 				int isfavorite = atoi(sisfavorite.c_str());
 				m_sql.safe_query("UPDATE Scenes SET Favorite=%d WHERE (ID == '%q')", isfavorite, idx.c_str());
 				root["status"] = "OK";
-				root["title"] = "MakeSceneFavorite";
 			} // makescenefavorite
 			else if (cparam == "switchmodal")
 			{
+				root["title"] = "Modal";
 				int urights = 3;
 				const int iUser = FindUser(session.username.c_str());
 				if (iUser != -1)
@@ -3583,7 +3569,6 @@ namespace http
 					m_sql.GetPreferencesVar("ProtectionPassword", nValue, rpassword);
 					if (passcode != rpassword)
 					{
-						root["title"] = "Modal";
 						root["status"] = "ERROR";
 						root["message"] = "WRONG CODE";
 						return false;
@@ -3594,11 +3579,11 @@ namespace http
 					true) // FIXME we need to return a status of already set / no update if ooc=="1" and no status update was performed
 				{
 					root["status"] = "OK";
-					root["title"] = "Modal";
 				}
 			}
 			else if (cparam == "switchlight")
 			{
+				root["title"] = "SwitchLight";
 				if (session.rights < 1)
 				{
 					session.reply_status = reply::forbidden;
@@ -3641,7 +3626,6 @@ namespace http
 					if (passcode.empty())
 					{
 						// Switch is protected, but no passcode has been
-						root["title"] = "SwitchLight";
 						root["status"] = "ERROR";
 						root["message"] = "WRONG CODE";
 						return false;
@@ -3654,14 +3638,11 @@ namespace http
 					if (passcode != rpassword)
 					{
 						_log.Log(LOG_ERROR, "User: %s initiated a switch command (Wrong code!)", szSwitchUser.c_str());
-						root["title"] = "SwitchLight";
 						root["status"] = "ERROR";
 						root["message"] = "WRONG CODE";
 						return false;
 					}
 				}
-
-				root["title"] = "SwitchLight";
 
 				const bool bIsOOC = atoi(onlyonchange.c_str()) != 0;
 
@@ -3691,6 +3672,7 @@ namespace http
 			} //(rtype=="switchlight")
 			else if (cparam == "switchscene")
 			{
+				root["title"] = "SwitchScene";
 				if (session.rights < 1)
 				{
 					session.reply_status = reply::forbidden;
@@ -3715,7 +3697,6 @@ namespace http
 				{
 					if (passcode.empty())
 					{
-						root["title"] = "SwitchScene";
 						root["status"] = "ERROR";
 						root["message"] = "WRONG CODE";
 						return false;
@@ -3727,7 +3708,6 @@ namespace http
 					m_sql.GetPreferencesVar("ProtectionPassword", nValue, rpassword);
 					if (passcode != rpassword)
 					{
-						root["title"] = "SwitchScene";
 						root["status"] = "ERROR";
 						root["message"] = "WRONG CODE";
 						_log.Log(LOG_ERROR, "User: %s initiated a scene/group command (Wrong code!)", szSwitchUser.c_str());
@@ -3739,11 +3719,11 @@ namespace http
 				if (m_mainworker.SwitchScene(idx, switchcmd, szSwitchUser) == true)
 				{
 					root["status"] = "OK";
-					root["title"] = "SwitchScene";
 				}
 			} //(rtype=="switchscene")
 			else if (cparam == "setcolbrightnessvalue")
 			{
+				root["title"] = "SetColBrightnessValue";
 				if (session.rights < 1)
 				{
 					session.reply_status = reply::forbidden;
@@ -3868,18 +3848,15 @@ namespace http
 				m_mainworker.SwitchLight(ID, "Set Color", (unsigned char)ival, color, false, 0, szSwitchUser);
 
 				root["status"] = "OK";
-				root["title"] = "SetColBrightnessValue";
 			}
 			else if (cparam.find("setkelvinlevel") == 0)
 			{
+				root["title"] = "Set Kelvin Level";
 				if (session.rights < 1)
 				{
 					session.reply_status = reply::forbidden;
 					return false; // Only user/admin allowed
 				}
-
-				root["status"] = "OK";
-				root["title"] = "Set Kelvin Level";
 
 				std::string idx = request::findValue(&req, "idx");
 
@@ -3898,17 +3875,16 @@ namespace http
 				_log.Log(LOG_STATUS, "setkelvinlevel: t: %f, color: '%s'", ival, color.toString().c_str());
 
 				m_mainworker.SwitchLight(ID, "Set Color", -1, color, false, 0, szSwitchUser);
+				root["status"] = "OK";
 			}
 			else if (cparam == "brightnessup")
 			{
+				root["title"] = "Set brightness up!";
 				if (session.rights < 1)
 				{
 					session.reply_status = reply::forbidden;
 					return false; // Only user/admin allowed
 				}
-
-				root["status"] = "OK";
-				root["title"] = "Set brightness up!";
 
 				std::string idx = request::findValue(&req, "idx");
 
@@ -3919,17 +3895,16 @@ namespace http
 
 				uint64_t ID = std::stoull(idx);
 				m_mainworker.SwitchLight(ID, "Bright Up", 0, NoColor, false, 0, szSwitchUser);
+				root["status"] = "OK";
 			}
 			else if (cparam == "brightnessdown")
 			{
+				root["title"] = "Set brightness down!";
 				if (session.rights < 1)
 				{
 					session.reply_status = reply::forbidden;
 					return false; // Only user/admin allowed
 				}
-
-				root["status"] = "OK";
-				root["title"] = "Set brightness down!";
 
 				std::string idx = request::findValue(&req, "idx");
 
@@ -3940,17 +3915,16 @@ namespace http
 
 				uint64_t ID = std::stoull(idx);
 				m_mainworker.SwitchLight(ID, "Bright Down", 0, NoColor, false, 0, szSwitchUser);
+				root["status"] = "OK";
 			}
 			else if (cparam == "discomode")
 			{
+				root["title"] = "Set to last known disco mode!";
 				if (session.rights < 1)
 				{
 					session.reply_status = reply::forbidden;
 					return false; // Only user/admin allowed
 				}
-
-				root["status"] = "OK";
-				root["title"] = "Set to last known disco mode!";
 
 				std::string idx = request::findValue(&req, "idx");
 
@@ -3961,17 +3935,16 @@ namespace http
 
 				uint64_t ID = std::stoull(idx);
 				m_mainworker.SwitchLight(ID, "Disco Mode", 0, NoColor, false, 0, szSwitchUser);
+				root["status"] = "OK";
 			}
 			else if (cparam.find("discomodenum") == 0 && cparam != "discomode" && cparam.size() == 13)
 			{
+				root["title"] = "Set to disco mode!";
 				if (session.rights < 1)
 				{
 					session.reply_status = reply::forbidden;
 					return false; // Only user/admin allowed
 				}
-
-				root["status"] = "OK";
-				root["title"] = "Set to disco mode!";
 
 				std::string idx = request::findValue(&req, "idx");
 
@@ -3984,17 +3957,16 @@ namespace http
 				char szTmp[40];
 				sprintf(szTmp, "Disco Mode %s", cparam.substr(12).c_str());
 				m_mainworker.SwitchLight(ID, szTmp, 0, NoColor, false, 0, szSwitchUser);
+				root["status"] = "OK";
 			}
 			else if (cparam == "discoup")
 			{
+				root["title"] = "Set to next disco mode!";
 				if (session.rights < 1)
 				{
 					session.reply_status = reply::forbidden;
 					return false; // Only user/admin allowed
 				}
-
-				root["status"] = "OK";
-				root["title"] = "Set to next disco mode!";
 
 				std::string idx = request::findValue(&req, "idx");
 
@@ -4005,17 +3977,16 @@ namespace http
 
 				uint64_t ID = std::stoull(idx);
 				m_mainworker.SwitchLight(ID, "Disco Up", 0, NoColor, false, 0, szSwitchUser);
+				root["status"] = "OK";
 			}
 			else if (cparam == "discodown")
 			{
+				root["title"] = "Set to previous disco mode!";
 				if (session.rights < 1)
 				{
 					session.reply_status = reply::forbidden;
 					return false; // Only user/admin allowed
 				}
-
-				root["status"] = "OK";
-				root["title"] = "Set to previous disco mode!";
 
 				std::string idx = request::findValue(&req, "idx");
 
@@ -4026,17 +3997,16 @@ namespace http
 
 				uint64_t ID = std::stoull(idx);
 				m_mainworker.SwitchLight(ID, "Disco Down", 0, NoColor, false, 0, szSwitchUser);
+				root["status"] = "OK";
 			}
 			else if (cparam == "speedup")
 			{
+				root["title"] = "Set disco speed up!";
 				if (session.rights < 1)
 				{
 					session.reply_status = reply::forbidden;
 					return false; // Only user/admin allowed
 				}
-
-				root["status"] = "OK";
-				root["title"] = "Set disco speed up!";
 
 				std::string idx = request::findValue(&req, "idx");
 
@@ -4047,17 +4017,16 @@ namespace http
 
 				uint64_t ID = std::stoull(idx);
 				m_mainworker.SwitchLight(ID, "Speed Up", 0, NoColor, false, 0, szSwitchUser);
+				root["status"] = "OK";
 			}
 			else if (cparam == "speeduplong")
 			{
+				root["title"] = "Set speed long!";
 				if (session.rights < 1)
 				{
 					session.reply_status = reply::forbidden;
 					return false; // Only user/admin allowed
 				}
-
-				root["status"] = "OK";
-				root["title"] = "Set speed long!";
 
 				std::string idx = request::findValue(&req, "idx");
 
@@ -4068,17 +4037,16 @@ namespace http
 
 				uint64_t ID = std::stoull(idx);
 				m_mainworker.SwitchLight(ID, "Speed Up Long", 0, NoColor, false, 0, szSwitchUser);
+				root["status"] = "OK";
 			}
 			else if (cparam == "speeddown")
 			{
+				root["title"] = "Set disco speed down!";
 				if (session.rights < 1)
 				{
 					session.reply_status = reply::forbidden;
 					return false; // Only user/admin allowed
 				}
-
-				root["status"] = "OK";
-				root["title"] = "Set disco speed down!";
 
 				std::string idx = request::findValue(&req, "idx");
 
@@ -4089,17 +4057,16 @@ namespace http
 
 				uint64_t ID = std::stoull(idx);
 				m_mainworker.SwitchLight(ID, "Speed Down", 0, NoColor, false, 0, szSwitchUser);
+				root["status"] = "OK";
 			}
 			else if (cparam == "speedmin")
 			{
+				root["title"] = "Set disco speed minimal!";
 				if (session.rights < 1)
 				{
 					session.reply_status = reply::forbidden;
 					return false; // Only user/admin allowed
 				}
-
-				root["status"] = "OK";
-				root["title"] = "Set disco speed minimal!";
 
 				std::string idx = request::findValue(&req, "idx");
 
@@ -4110,17 +4077,16 @@ namespace http
 
 				uint64_t ID = std::stoull(idx);
 				m_mainworker.SwitchLight(ID, "Speed Minimal", 0, NoColor, false, 0, szSwitchUser);
+				root["status"] = "OK";
 			}
 			else if (cparam == "speedmax")
 			{
+				root["title"] = "Set disco speed maximal!";
 				if (session.rights < 1)
 				{
 					session.reply_status = reply::forbidden;
 					return false; // Only user/admin allowed
 				}
-
-				root["status"] = "OK";
-				root["title"] = "Set disco speed maximal!";
 
 				std::string idx = request::findValue(&req, "idx");
 
@@ -4131,17 +4097,16 @@ namespace http
 
 				uint64_t ID = std::stoull(idx);
 				m_mainworker.SwitchLight(ID, "Speed Maximal", 0, NoColor, false, 0, szSwitchUser);
+				root["status"] = "OK";
 			}
 			else if (cparam == "warmer")
 			{
+				root["title"] = "Set Kelvin up!";
 				if (session.rights < 1)
 				{
 					session.reply_status = reply::forbidden;
 					return false; // Only user/admin allowed
 				}
-
-				root["status"] = "OK";
-				root["title"] = "Set Kelvin up!";
 
 				std::string idx = request::findValue(&req, "idx");
 
@@ -4152,17 +4117,16 @@ namespace http
 
 				uint64_t ID = std::stoull(idx);
 				m_mainworker.SwitchLight(ID, "Warmer", 0, NoColor, false, 0, szSwitchUser);
+				root["status"] = "OK";
 			}
 			else if (cparam == "cooler")
 			{
+				root["title"] = "Set Kelvin down!";
 				if (session.rights < 1)
 				{
 					session.reply_status = reply::forbidden;
 					return false; // Only user/admin allowed
 				}
-
-				root["status"] = "OK";
-				root["title"] = "Set Kelvin down!";
 
 				std::string idx = request::findValue(&req, "idx");
 
@@ -4173,17 +4137,16 @@ namespace http
 
 				uint64_t ID = std::stoull(idx);
 				m_mainworker.SwitchLight(ID, "Cooler", 0, NoColor, false, 0, szSwitchUser);
+				root["status"] = "OK";
 			}
 			else if (cparam == "fulllight")
 			{
+				root["title"] = "Set Full!";
 				if (session.rights < 1)
 				{
 					session.reply_status = reply::forbidden;
 					return false; // Only user/admin allowed
 				}
-
-				root["status"] = "OK";
-				root["title"] = "Set Full!";
 
 				std::string idx = request::findValue(&req, "idx");
 
@@ -4194,17 +4157,16 @@ namespace http
 
 				uint64_t ID = std::stoull(idx);
 				m_mainworker.SwitchLight(ID, "Set Full", 0, NoColor, false, 0, szSwitchUser);
+				root["status"] = "OK";
 			}
 			else if (cparam == "nightlight")
 			{
+				root["title"] = "Set to nightlight!";
 				if (session.rights < 1)
 				{
 					session.reply_status = reply::forbidden;
 					return false; // Only user/admin allowed
 				}
-
-				root["status"] = "OK";
-				root["title"] = "Set to nightlight!";
 
 				std::string idx = request::findValue(&req, "idx");
 
@@ -4215,17 +4177,16 @@ namespace http
 
 				uint64_t ID = std::stoull(idx);
 				m_mainworker.SwitchLight(ID, "Set Night", 0, NoColor, false, 0, szSwitchUser);
+				root["status"] = "OK";
 			}
 			else if (cparam == "whitelight")
 			{
+				root["title"] = "Set to clear white!";
 				if (session.rights < 1)
 				{
 					session.reply_status = reply::forbidden;
 					return false; // Only user/admin allowed
 				}
-
-				root["status"] = "OK";
-				root["title"] = "Set to clear white!";
 
 				std::string idx = request::findValue(&req, "idx");
 
@@ -4237,6 +4198,7 @@ namespace http
 				uint64_t ID = std::stoull(idx);
 				// TODO: Change to color with mode=ColorModeWhite and level=100?
 				m_mainworker.SwitchLight(ID, "Set White", 0, NoColor, false, 0, szSwitchUser);
+				root["status"] = "OK";
 			}
 			else
 			{
