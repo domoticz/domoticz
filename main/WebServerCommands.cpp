@@ -3915,27 +3915,7 @@ namespace http
 				m_mainworker.SwitchLight(ID, "Bright Down", 0, NoColor, false, 0, szSwitchUser);
 				root["status"] = "OK";
 			}
-			else if (cparam == "discomode")
-			{
-				root["title"] = "Set to last known disco mode!";
-				if (session.rights < 1)
-				{
-					session.reply_status = reply::forbidden;
-					return false; // Only user/admin allowed
-				}
-
-				std::string idx = request::findValue(&req, "idx");
-
-				if (idx.empty())
-				{
-					return false;
-				}
-
-				uint64_t ID = std::stoull(idx);
-				m_mainworker.SwitchLight(ID, "Disco Mode", 0, NoColor, false, 0, szSwitchUser);
-				root["status"] = "OK";
-			}
-			else if (cparam.find("discomodenum") == 0 && cparam != "discomode" && cparam.size() == 13)
+			else if (cparam =="discomodenum")
 			{
 				root["title"] = "Set to disco mode!";
 				if (session.rights < 1)
@@ -3955,6 +3935,26 @@ namespace http
 				char szTmp[40];
 				sprintf(szTmp, "Disco Mode %s", cparam.substr(12).c_str());
 				m_mainworker.SwitchLight(ID, szTmp, 0, NoColor, false, 0, szSwitchUser);
+				root["status"] = "OK";
+			}
+			else if (cparam == "discomode")
+			{
+				root["title"] = "Set to last known disco mode!";
+				if (session.rights < 1)
+				{
+					session.reply_status = reply::forbidden;
+					return false; // Only user/admin allowed
+				}
+
+				std::string idx = request::findValue(&req, "idx");
+
+				if (idx.empty())
+				{
+					return false;
+				}
+
+				uint64_t ID = std::stoull(idx);
+				m_mainworker.SwitchLight(ID, "Disco Mode", 0, NoColor, false, 0, szSwitchUser);
 				root["status"] = "OK";
 			}
 			else if (cparam == "discoup")
