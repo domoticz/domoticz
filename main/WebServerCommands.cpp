@@ -581,8 +581,6 @@ namespace http
 				if (nValue >= 0)
 				{
 					m_sql.safe_query("UPDATE DeviceStatus SET nValue=%d WHERE (ID == '%q')", nValue, idx.c_str());
-					root["status"] = "OK";
-					root["title"] = "SwitchLight";
 				}
 				root["status"] = "OK";
 			}
