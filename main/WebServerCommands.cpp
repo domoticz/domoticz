@@ -75,11 +75,12 @@ namespace http
 			return true;
 			*/
 
+			root["status"] = "ERR";		// Initialize status to ERR. If the command is successful, it will be changed to OK
 			if (1 == 2)
 			{
 				// bogus if to make the else if's below work
 			}
-			// Non admin commands
+			// Non privelidged commands
 			else if (cparam == "getsubdevices")
 			{
 				std::string idx = request::findValue(&req, "idx");
@@ -1092,9 +1093,6 @@ namespace http
 			}
 			else if (cparam == "testswitch")
 			{
-				std::string Username = "Admin";
-				if (!session.username.empty())
-					Username = session.username;
 				if (session.rights < 2)
 				{
 					session.reply_status = reply::forbidden;
@@ -1164,38 +1162,32 @@ namespace http
 
 					if (sunitcode.empty())
 					{
-						root["status"] = "ERROR";
 						root["message"] = "No GPIO number given";
 						return false;
 					}
 					CGpio* pGpio = dynamic_cast<CGpio*>(m_mainworker.GetHardware(atoi(hwdid.c_str())));
 					if (pGpio == nullptr)
 					{
-						root["status"] = "ERROR";
 						root["message"] = "Could not retrieve GPIO hardware pointer";
 						return false;
 					}
 					if (pGpio->HwdType != HTYPE_RaspberryGPIO)
 					{
-						root["status"] = "ERROR";
 						root["message"] = "Given hardware is not GPIO";
 						return false;
 					}
 					CGpioPin* pPin = CGpio::GetPPinById(atoi(sunitcode.c_str()));
 					if (pPin == nullptr)
 					{
-						root["status"] = "ERROR";
 						root["message"] = "Given pin does not exist on this GPIO hardware";
 						return false;
 					}
 					if (pPin->GetIsInput())
 					{
-						root["status"] = "ERROR";
 						root["message"] = "Given pin is not configured for output";
 						return false;
 					}
 #else
-					root["status"] = "ERROR";
 					root["message"] = "GPIO support is disabled";
 					return false;
 #endif
@@ -1220,7 +1212,6 @@ namespace http
 
 					if (sunitcode.empty())
 					{
-						root["status"] = "ERROR";
 						root["message"] = "No GPIO number given";
 						return false;
 					}
@@ -1228,19 +1219,16 @@ namespace http
 					CSysfsGpio* pSysfsGpio = dynamic_cast<CSysfsGpio*>(m_mainworker.GetHardware(atoi(hwdid.c_str())));
 					if (pSysfsGpio == nullptr)
 					{
-						root["status"] = "ERROR";
 						root["message"] = "Could not retrieve SysfsGpio hardware pointer";
 						return false;
 					}
 
 					if (pSysfsGpio->HwdType != HTYPE_SysfsGpio)
 					{
-						root["status"] = "ERROR";
 						root["message"] = "Given hardware is not SysfsGpio";
 						return false;
 					}
 #else
-					root["status"] = "ERROR";
 					root["message"] = "GPIO support is disabled";
 					return false;
 #endif
@@ -1750,6 +1738,9 @@ namespace http
 					if (switchtype == STYPE_Dimmer)
 						level = 5;
 				}
+				std::string Username = "Admin";
+				if (!session.username.empty())
+					Username = session.username;
 				std::string szSwitchUser = Username + " (IP: " + session.remote_host + ")";
 				m_mainworker.SwitchLightInt(sd, switchcmd, level, NoColor, true, Username);
 			}
@@ -3149,7 +3140,6 @@ namespace http
 			}
 			else if (cparam == "adduser" || cparam == "updateuser" || cparam == "deleteuser")
 			{	// C(R)UD operations for Users. Read is done by Cmd_GetUsers
-				root["status"] = "ERR";
 				if (session.rights != URIGHTS_ADMIN)
 				{
 					session.reply_status = reply::forbidden;
@@ -3263,6 +3253,170 @@ namespace http
 				LoadUsers();
 				root["status"] = "OK";
 			}
+			else if (cparam == "updatefloorplan")
+			{
+				if (session.rights < 2)
+				{
+					session.reply_status = reply::forbidden;
+					return false; // Only admin user allowed
+				}
+
+				std::string idx = request::findValue(&req, "idx");
+				if (idx.empty())
+					return false;
+				std::string name = HTMLSanitizer::Sanitize(request::findValue(&req, "name"));
+				std::string scalefactor = request::findValue(&req, "scalefactor");
+				if ((name.empty()) || (scalefactor.empty()))
+					return false;
+
+				root["status"] = "OK";
+				root["title"] = "UpdateFloorplan";
+
+				m_sql.safe_query("UPDATE Floorplans SET Name='%q',ScaleFactor='%q' WHERE (ID == '%q')", name.c_str(), scalefactor.c_str(), idx.c_str());
+			}
+			else if (cparam == "deletefloorplan")
+			{
+				if (session.rights < 2)
+				{
+					session.reply_status = reply::forbidden;
+					return false; // Only admin user allowed
+				}
+
+				std::string idx = request::findValue(&req, "idx");
+				if (idx.empty())
+					return false;
+				root["status"] = "OK";
+				root["title"] = "DeleteFloorplan";
+				m_sql.safe_query("UPDATE DeviceToPlansMap SET XOffset=0,YOffset=0 WHERE (PlanID IN (SELECT ID from Plans WHERE (FloorplanID == '%q')))", idx.c_str());
+				m_sql.safe_query("UPDATE Plans SET FloorplanID=0,Area='' WHERE (FloorplanID == '%q')", idx.c_str());
+				m_sql.safe_query("DELETE FROM Floorplans WHERE (ID == '%q')", idx.c_str());
+			}
+			else if (cparam == "changefloorplanorder")
+			{
+				if (session.rights < 2)
+				{
+					session.reply_status = reply::forbidden;
+					return false; // Only admin user allowed
+				}
+
+				std::string idx = request::findValue(&req, "idx");
+				if (idx.empty())
+					return false;
+				std::string sway = request::findValue(&req, "way");
+				if (sway.empty())
+					return false;
+				bool bGoUp = (sway == "0");
+
+				std::string aOrder, oID, oOrder;
+
+				result = m_sql.safe_query("SELECT [Order] FROM Floorplans WHERE (ID=='%q')", idx.c_str());
+				if (result.empty())
+					return false;
+				aOrder = result[0][0];
+
+				if (!bGoUp)
+				{
+					// Get next device order
+					result = m_sql.safe_query("SELECT ID, [Order] FROM Floorplans WHERE ([Order]>'%q') ORDER BY [Order] ASC", aOrder.c_str());
+					if (result.empty())
+						return false;
+					oID = result[0][0];
+					oOrder = result[0][1];
+				}
+				else
+				{
+					// Get previous device order
+					result = m_sql.safe_query("SELECT ID, [Order] FROM Floorplans WHERE ([Order]<'%q') ORDER BY [Order] DESC", aOrder.c_str());
+					if (result.empty())
+						return false;
+					oID = result[0][0];
+					oOrder = result[0][1];
+				}
+				// Swap them
+				root["status"] = "OK";
+				root["title"] = "ChangeFloorPlanOrder";
+
+				m_sql.safe_query("UPDATE Floorplans SET [Order] = '%q' WHERE (ID='%q')", oOrder.c_str(), idx.c_str());
+				m_sql.safe_query("UPDATE Floorplans SET [Order] = '%q' WHERE (ID='%q')", aOrder.c_str(), oID.c_str());
+			}
+			else if (cparam == "getunusedfloorplanplans")
+			{
+				if (session.rights < 2)
+				{
+					session.reply_status = reply::forbidden;
+					return false; // Only admin user allowed
+				}
+
+				root["status"] = "OK";
+				root["title"] = "GetUnusedFloorplanPlans";
+				int ii = 0;
+
+				result = m_sql.safe_query("SELECT ID, Name FROM Plans WHERE (FloorplanID==0) ORDER BY Name COLLATE NOCASE ASC");
+				if (!result.empty())
+				{
+					for (const auto& sd : result)
+					{
+						root["result"][ii]["type"] = 0;
+						root["result"][ii]["idx"] = sd[0];
+						root["result"][ii]["Name"] = sd[1];
+						ii++;
+					}
+				}
+			}
+			else if (cparam == "addfloorplanplan")
+			{
+				if (session.rights < 2)
+				{
+					session.reply_status = reply::forbidden;
+					return false; // Only admin user allowed
+				}
+
+				std::string idx = request::findValue(&req, "idx");
+				std::string planidx = request::findValue(&req, "planidx");
+				if ((idx.empty()) || (planidx.empty()))
+					return false;
+				root["status"] = "OK";
+				root["title"] = "AddFloorplanPlan";
+
+				m_sql.safe_query("UPDATE Plans SET FloorplanID='%q' WHERE (ID == '%q')", idx.c_str(), planidx.c_str());
+				_log.Log(LOG_STATUS, "(Floorplan) Plan '%s' added to floorplan '%s'.", planidx.c_str(), idx.c_str());
+			}
+			else if (cparam == "updatefloorplanplan")
+			{
+				if (session.rights < 2)
+				{
+					session.reply_status = reply::forbidden;
+					return false; // Only admin user allowed
+				}
+
+				std::string planidx = request::findValue(&req, "planidx");
+				std::string planarea = request::findValue(&req, "area");
+				if (planidx.empty())
+					return false;
+				root["status"] = "OK";
+				root["title"] = "UpdateFloorplanPlan";
+
+				m_sql.safe_query("UPDATE Plans SET Area='%q' WHERE (ID == '%q')", planarea.c_str(), planidx.c_str());
+				_log.Log(LOG_STATUS, "(Floorplan) Plan '%s' floor area updated to '%s'.", planidx.c_str(), planarea.c_str());
+			}
+			else if (cparam == "deletefloorplanplan")
+			{
+				if (session.rights < 2)
+				{
+					session.reply_status = reply::forbidden;
+					return false; // Only admin user allowed
+				}
+
+				std::string idx = request::findValue(&req, "idx");
+				if (idx.empty())
+					return false;
+				root["status"] = "OK";
+				root["title"] = "DeleteFloorplanPlan";
+				m_sql.safe_query("UPDATE DeviceToPlansMap SET XOffset=0,YOffset=0 WHERE (PlanID == '%q')", idx.c_str());
+				_log.Log(LOG_STATUS, "(Floorplan) Device coordinates reset for plan '%s'.", idx.c_str());
+				m_sql.safe_query("UPDATE Plans SET FloorplanID=0,Area='' WHERE (ID == '%q')", idx.c_str());
+				_log.Log(LOG_STATUS, "(Floorplan) Plan '%s' floorplan data reset.", idx.c_str());
+			}
 			else if (cparam == "clearlightlog")
 			{
 				if (session.rights < 2)
@@ -3352,6 +3506,7 @@ namespace http
 					}
 				}
 			} // learnsw
+			// Commands for ADMINS or SWITCHERS (not Viewers)
 			else if (cparam == "makefavorite")
 			{
 				if (session.rights < 1)
@@ -3387,7 +3542,7 @@ namespace http
 			} // makefavorite
 			else if (cparam == "makescenefavorite")
 			{
-				if (session.rights < 2)
+				if (session.rights < 1)
 				{
 					session.reply_status = reply::forbidden;
 					return false; // Only admin user allowed
@@ -4189,170 +4344,6 @@ namespace http
 				// TODO: Change to color with mode=ColorModeWhite and level=100?
 				std::string szSwitchUser = Username + " (IP: " + session.remote_host + ")";
 				m_mainworker.SwitchLight(ID, "Set White", 0, NoColor, false, 0, szSwitchUser);
-			}
-			else if (cparam == "updatefloorplan")
-			{
-				if (session.rights < 2)
-				{
-					session.reply_status = reply::forbidden;
-					return false; // Only admin user allowed
-				}
-
-				std::string idx = request::findValue(&req, "idx");
-				if (idx.empty())
-					return false;
-				std::string name = HTMLSanitizer::Sanitize(request::findValue(&req, "name"));
-				std::string scalefactor = request::findValue(&req, "scalefactor");
-				if ((name.empty()) || (scalefactor.empty()))
-					return false;
-
-				root["status"] = "OK";
-				root["title"] = "UpdateFloorplan";
-
-				m_sql.safe_query("UPDATE Floorplans SET Name='%q',ScaleFactor='%q' WHERE (ID == '%q')", name.c_str(), scalefactor.c_str(), idx.c_str());
-			}
-			else if (cparam == "deletefloorplan")
-			{
-				if (session.rights < 2)
-				{
-					session.reply_status = reply::forbidden;
-					return false; // Only admin user allowed
-				}
-
-				std::string idx = request::findValue(&req, "idx");
-				if (idx.empty())
-					return false;
-				root["status"] = "OK";
-				root["title"] = "DeleteFloorplan";
-				m_sql.safe_query("UPDATE DeviceToPlansMap SET XOffset=0,YOffset=0 WHERE (PlanID IN (SELECT ID from Plans WHERE (FloorplanID == '%q')))", idx.c_str());
-				m_sql.safe_query("UPDATE Plans SET FloorplanID=0,Area='' WHERE (FloorplanID == '%q')", idx.c_str());
-				m_sql.safe_query("DELETE FROM Floorplans WHERE (ID == '%q')", idx.c_str());
-			}
-			else if (cparam == "changefloorplanorder")
-			{
-				if (session.rights < 2)
-				{
-					session.reply_status = reply::forbidden;
-					return false; // Only admin user allowed
-				}
-
-				std::string idx = request::findValue(&req, "idx");
-				if (idx.empty())
-					return false;
-				std::string sway = request::findValue(&req, "way");
-				if (sway.empty())
-					return false;
-				bool bGoUp = (sway == "0");
-
-				std::string aOrder, oID, oOrder;
-
-				result = m_sql.safe_query("SELECT [Order] FROM Floorplans WHERE (ID=='%q')", idx.c_str());
-				if (result.empty())
-					return false;
-				aOrder = result[0][0];
-
-				if (!bGoUp)
-				{
-					// Get next device order
-					result = m_sql.safe_query("SELECT ID, [Order] FROM Floorplans WHERE ([Order]>'%q') ORDER BY [Order] ASC", aOrder.c_str());
-					if (result.empty())
-						return false;
-					oID = result[0][0];
-					oOrder = result[0][1];
-				}
-				else
-				{
-					// Get previous device order
-					result = m_sql.safe_query("SELECT ID, [Order] FROM Floorplans WHERE ([Order]<'%q') ORDER BY [Order] DESC", aOrder.c_str());
-					if (result.empty())
-						return false;
-					oID = result[0][0];
-					oOrder = result[0][1];
-				}
-				// Swap them
-				root["status"] = "OK";
-				root["title"] = "ChangeFloorPlanOrder";
-
-				m_sql.safe_query("UPDATE Floorplans SET [Order] = '%q' WHERE (ID='%q')", oOrder.c_str(), idx.c_str());
-				m_sql.safe_query("UPDATE Floorplans SET [Order] = '%q' WHERE (ID='%q')", aOrder.c_str(), oID.c_str());
-			}
-			else if (cparam == "getunusedfloorplanplans")
-			{
-				if (session.rights < 2)
-				{
-					session.reply_status = reply::forbidden;
-					return false; // Only admin user allowed
-				}
-
-				root["status"] = "OK";
-				root["title"] = "GetUnusedFloorplanPlans";
-				int ii = 0;
-
-				result = m_sql.safe_query("SELECT ID, Name FROM Plans WHERE (FloorplanID==0) ORDER BY Name COLLATE NOCASE ASC");
-				if (!result.empty())
-				{
-					for (const auto& sd : result)
-					{
-						root["result"][ii]["type"] = 0;
-						root["result"][ii]["idx"] = sd[0];
-						root["result"][ii]["Name"] = sd[1];
-						ii++;
-					}
-				}
-			}
-			else if (cparam == "addfloorplanplan")
-			{
-				if (session.rights < 2)
-				{
-					session.reply_status = reply::forbidden;
-					return false; // Only admin user allowed
-				}
-
-				std::string idx = request::findValue(&req, "idx");
-				std::string planidx = request::findValue(&req, "planidx");
-				if ((idx.empty()) || (planidx.empty()))
-					return false;
-				root["status"] = "OK";
-				root["title"] = "AddFloorplanPlan";
-
-				m_sql.safe_query("UPDATE Plans SET FloorplanID='%q' WHERE (ID == '%q')", idx.c_str(), planidx.c_str());
-				_log.Log(LOG_STATUS, "(Floorplan) Plan '%s' added to floorplan '%s'.", planidx.c_str(), idx.c_str());
-			}
-			else if (cparam == "updatefloorplanplan")
-			{
-				if (session.rights < 2)
-				{
-					session.reply_status = reply::forbidden;
-					return false; // Only admin user allowed
-				}
-
-				std::string planidx = request::findValue(&req, "planidx");
-				std::string planarea = request::findValue(&req, "area");
-				if (planidx.empty())
-					return false;
-				root["status"] = "OK";
-				root["title"] = "UpdateFloorplanPlan";
-
-				m_sql.safe_query("UPDATE Plans SET Area='%q' WHERE (ID == '%q')", planarea.c_str(), planidx.c_str());
-				_log.Log(LOG_STATUS, "(Floorplan) Plan '%s' floor area updated to '%s'.", planidx.c_str(), planarea.c_str());
-			}
-			else if (cparam == "deletefloorplanplan")
-			{
-				if (session.rights < 2)
-				{
-					session.reply_status = reply::forbidden;
-					return false; // Only admin user allowed
-				}
-
-				std::string idx = request::findValue(&req, "idx");
-				if (idx.empty())
-					return false;
-				root["status"] = "OK";
-				root["title"] = "DeleteFloorplanPlan";
-				m_sql.safe_query("UPDATE DeviceToPlansMap SET XOffset=0,YOffset=0 WHERE (PlanID == '%q')", idx.c_str());
-				_log.Log(LOG_STATUS, "(Floorplan) Device coordinates reset for plan '%s'.", idx.c_str());
-				m_sql.safe_query("UPDATE Plans SET FloorplanID=0,Area='' WHERE (ID == '%q')", idx.c_str());
-				_log.Log(LOG_STATUS, "(Floorplan) Plan '%s' floorplan data reset.", idx.c_str());
 			}
 			else
 			{
