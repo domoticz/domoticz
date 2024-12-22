@@ -71,7 +71,7 @@ jobs:
       # Boost
       - name: build boost libraries
         run: |
-          wget https://github.com/boostorg/boost/releases/download/boost-1.87.0/boost-1.87.0.tar.gz >> /dev/null 2>&1
+          wget https://github.com/boostorg/boost/archive/refs/tags/boost-1.87.0.tar.gz >> /dev/null 2>&1
           tar xfz boost-1.87.0.tar.gz
           cd boost-1.87.0/
           ./bootstrap.sh
