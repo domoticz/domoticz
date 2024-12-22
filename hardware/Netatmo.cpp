@@ -2796,7 +2796,7 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 							// get last rain counter from the database
 							bool bExists = false;
 							m_RainOffset[crcId] = GetRainSensorValue(crcId, bExists);
-							m_RainOffset[crcId] -= rain;
+							m_RainOffset[crcId] -= rain_1;
 							if (m_RainOffset[crcId] < 0)
 								m_RainOffset[crcId] = 0;
 							if (m_OldRainCounter.find(crcId) == m_OldRainCounter.end())
@@ -2814,7 +2814,7 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 
 						//Debug(DEBUG_HARDWARE, "(%d) %s (%s) [%s] rain %s %s %d %d", Hardware_int, str_ID.c_str(), pchar_ID, name.c_str(), v.str().c_str(), m_Name.c_str(), mrf_status, batteryLevel);
 						//UpdateValueInt(0, ID.c_str(), 0, pTypeRAIN, sTypeRAINByRate, mrf_status, batteryLevel, '0', v.str().c_str(), moduleName, 0, m_Name);
-						SendRainSensor(crcId, batteryLevel, m_RainOffset[ID] + m_OldRainCounter[ID], moduleName, mrf_status);
+						SendRainSensor(crcId, batteryLevel, m_RainOffset[crcId] + m_OldRainCounter[crcId], moduleName, mrf_status);
 						//SendRainSensorWU(crcId, batteryLevel, rain_24, rain_1, moduleName + "-WU", mrf_status);
 					}
 					if (bHaveCO2)
