@@ -110,6 +110,7 @@ void CNetatmo::Init()
 	m_Module_Bat_Level.clear();
 	m_Module_RF_Level.clear();
 	m_Types.clear();
+	m_Device_types.clear();
 	m_Module_category.clear();
 	m_thermostatModuleID.clear();
 	m_ScheduleNames.clear();
@@ -665,7 +666,8 @@ bool CNetatmo::SetProgramState(const int uid, const int newState)
 	std::string home_data;
 	bool bRet;              //Parsing status
 	bool bHaveDevice;
-	std::string module_id = m_DeviceModuleID[uid];
+	std::string module_id = m_DeviceModuleID[uid];            // mac-adres
+	std::string type_module = m_Device_types[module_id];
 	std::string type_module = m_thermostatModuleID[uid];
 	std::string name = m_ModuleNames[module_id];
 	std::string roomNetatmoID = m_RoomIDs[module_id];
@@ -706,15 +708,24 @@ bool CNetatmo::SetProgramState(const int uid, const int newState)
 			return false;
 		}
 		bHaveDevice = true;
+		// Energy        {NAPlug, OTH, BNS}
+		// Home+control  {NLG,    OTH, BNS, NBG,              BNMH}
+		// Home+security {NACamera, NOC, NDB, NSD, NCO, BNCX, BNMH}
+
 		// NAPlug = Netatmo Thermostat
-		// OTH = Opentherm Thermostat Relay
 		// BNS = Smarther with Netatmo Thermostat
+		// NLG = Gateway
+		// OTH = Opentherm Thermostat Relay
+		// NBG = 
+		// BNMH = Bticino MyHome server 1
 		//
+		std::string Type = "NAPlug";
+		Debug(DEBUG_HARDWARE, "Device Type %s =  %s ??", Type.c_str(), type_module.c_str());
 		// When a thermostat mode is changed all thermostat/valves in Home are changed by Netatmo
 		// So we have to update the corresponding devices       Device_Types {NAPlug, OTH, BNS}
 		// https://api.netatmo.com/api/homestatus?home_id=xxxxx&device_types=NAPlug
-		std::string Type = "NAPlug";
-		std::string _data = "home_id=" + Home_id + "&device_types=" + Type ;
+		//
+		std::string _data = "home_id=" + Home_id + "&device_types=" + type_module ;
 		//Debug(DEBUG_HARDWARE, "Home_Data = %s ", _data.c_str());
 		Get_Respons_API(NETYPE_STATUS, sResult, _data, bRet, root, "");
 		//Parse API response
@@ -1256,6 +1267,7 @@ void CNetatmo::GetHomesDataDetails()
 							std::string type = module["type"].asString();
 							std::string macID = module["id"].asString();
 							std::string roomNetatmoID;
+							m_Device_types[macID] = type;
 							uint64_t moduleID = convert_mac(macID);
 							int Hardware_int = (int)moduleID;
 							//Debug(DEBUG_HARDWARE, "Homedata modules %lu -  %s in Home = %s" , moduleID, macID.c_str(), homeID.c_str());
@@ -1776,6 +1788,7 @@ bool CNetatmo::ParseStationData(const std::string& sResult, const bool bIsThermo
 							int crcId = Crc32(0, (const unsigned char*)mid.c_str(), mid.length());
 							uint64_t moduleID = convert_mac(mid);
 							int Hardware_int = (int)moduleID;
+							m_Device_types[mid] = mtype;
 							m_ModuleIDs[moduleID] = crcId;
 							//Debug(DEBUG_HARDWARE, "%d %lu -  %s " , Hardware_int, moduleID, mid.c_str());
 
@@ -2366,7 +2379,7 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 				crcId = Crc32(0, (const unsigned char*)module_id.c_str(), module_id.length());
 				m_ModuleIDs[Hardware_int] = crcId;
 				std::string type = module["type"].asString();
-
+				m_Device_types[module_id] = type;
 				//SaveJson2Disk(module, std::string("./") + moduleName.c_str() + ".txt");
 
 				//Debug(DEBUG_HARDWARE, " %d -  %s in Home; %s" , Hardware_int, module_id.c_str(), home_id.c_str());
