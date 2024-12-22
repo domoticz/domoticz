@@ -668,7 +668,7 @@ bool CNetatmo::SetProgramState(const int uid, const int newState)
 	bool bHaveDevice;
 	std::string module_id = m_DeviceModuleID[uid];            // mac-adres
 	std::string type_module = m_Device_types[module_id];
-	std::string type_module = m_thermostatModuleID[uid];
+	std::string module_MAC  = m_thermostatModuleID[uid];
 	std::string name = m_ModuleNames[module_id];
 	std::string roomNetatmoID = m_RoomIDs[module_id];
 	std::string Home_id = m_DeviceHomeID[roomNetatmoID];      // Home_ID
@@ -1375,7 +1375,9 @@ void CNetatmo::GetHomesDataDetails()
 						m_ScheduleNames[index] = schedule["name"].asString();
 						m_ScheduleIDs[index] = schedule_id;
 						m_DeviceHomeID[schedule_id] = homeID;
-						if (!schedule["selected"].empty() && schedule["selected"].asBool())
+						Debug(DEBUG_HARDWARE, "Schedule empty %d", !schedule["selected"].empty());
+						Debug(DEBUG_HARDWARE, "Schedule Bool %d", schedule_selected);
+						if (!schedule["selected"].empty() && schedule["selected"].asBool() && schedule_type == "therm")
 							m_selectedScheduleID = index;
 					}
 				}
