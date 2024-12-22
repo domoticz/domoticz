@@ -719,13 +719,17 @@ bool CNetatmo::SetProgramState(const int uid, const int newState)
 		// NBG = 
 		// BNMH = Bticino MyHome server 1
 		//
-		std::string Type = "NAPlug";
+		std::string Type;             // Only parse devices off current selected Device bridge
+		if (type_module == "NRV")
+			Type = "NAPlug";
+		else
+			Type = type_module;
 		Debug(DEBUG_HARDWARE, "Device Type %s =  %s ??", Type.c_str(), type_module.c_str());
 		// When a thermostat mode is changed all thermostat/valves in Home are changed by Netatmo
 		// So we have to update the corresponding devices       Device_Types {NAPlug, OTH, BNS}
 		// https://api.netatmo.com/api/homestatus?home_id=xxxxx&device_types=NAPlug
 		//
-		std::string _data = "home_id=" + Home_id + "&device_types=" + type_module ;
+		std::string _data = "home_id=" + Home_id + "&device_types=" + Type ;
 		//Debug(DEBUG_HARDWARE, "Home_Data = %s ", _data.c_str());
 		Get_Respons_API(NETYPE_STATUS, sResult, _data, bRet, root, "");
 		//Parse API response
