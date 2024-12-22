@@ -71,9 +71,9 @@ jobs:
       # Boost
       - name: build boost libraries
         run: |
-          wget https://github.com/boostorg/boost/archive/refs/tags/boost-1.87.0.tar.gz -O boost.tar.gz >> /dev/null 2>&1
+          wget https://github.com/boostorg/boost/releases/download/boost-1.87.0/boost-1.87.0-cmake.tar.gz -O boost.tar.gz >> /dev/null 2>&1
           tar xfz boost.tar.gz
-          cd boost-boost-1.87.0/
+          cd `ls -d -1 boost-*`
           ./bootstrap.sh
           ./b2 stage threading=multi link=static --with-thread --with-system --with-chrono >> /dev/null 2>&1
           sudo ./b2 install threading=multi link=static --with-thread --with-system --with-chrono >> /dev/null 2>&1
