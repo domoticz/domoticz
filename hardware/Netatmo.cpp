@@ -2580,7 +2580,9 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 						b << ";";
 						b << boiler_boost;
 						std::string sValue = b.str().c_str();
+						const double Level = module["boiler_valve_comfort_boost"].asDouble();
 						//UpdateValueInt(0, ID.c_str(), 0, pTypeGeneralSwitch, sSwitchGeneralSwitch, '0', 255, '0', sValue.c_str(), bName,  bIsActive, m_Name);
+						//SendSwitch(crcId, 9, batteryLevel, bIsActive, Level, bName, m_Name, mrf_status);
 					}
 					if (!module["boiler_status"].empty())
 					{
