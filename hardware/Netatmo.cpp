@@ -2806,7 +2806,7 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 						if (rain < m_OldRainCounter[crcId])
 							m_RainOffset[crcId] += m_OldRainCounter[crcId];
 
-						m_OldRainCounter[crcId] = rain;
+						m_OldRainCounter[crcId] = rain_1;
 						std::stringstream v;
 						v << rain_1;
 						v << ";";
@@ -2814,7 +2814,7 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 
 						//Debug(DEBUG_HARDWARE, "(%d) %s (%s) [%s] rain %s %s %d %d", Hardware_int, str_ID.c_str(), pchar_ID, name.c_str(), v.str().c_str(), m_Name.c_str(), mrf_status, batteryLevel);
 						//UpdateValueInt(0, ID.c_str(), 0, pTypeRAIN, sTypeRAINByRate, mrf_status, batteryLevel, '0', v.str().c_str(), moduleName, 0, m_Name);
-						SendRainSensor(crcId, batteryLevel, rain_24 + rain_1, moduleName, mrf_status);
+						SendRainSensor(crcId, batteryLevel, m_RainOffset[ID] + m_OldRainCounter[ID], moduleName, mrf_status);
 						//SendRainSensorWU(crcId, batteryLevel, rain_24, rain_1, moduleName + "-WU", mrf_status);
 					}
 					if (bHaveCO2)
