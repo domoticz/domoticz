@@ -112,6 +112,7 @@ void CNetatmo::Init()
 	m_Types.clear();
 	m_Device_types.clear();
 	m_Module_category.clear();
+	m_DeviceBridge.clear();
 	m_thermostatModuleID.clear();
 	m_ScheduleNames.clear();
 	m_ScheduleIDs.clear();
@@ -670,6 +671,7 @@ bool CNetatmo::SetProgramState(const int uid, const int newState)
 	std::string type_module = m_Device_types[module_id];
 	std::string module_MAC  = m_thermostatModuleID[uid];
 	std::string name = m_ModuleNames[module_id];
+	std::string Device_bridge = m_DeviceBridge[module_id];
 	std::string roomNetatmoID = m_RoomIDs[module_id];
 	std::string Home_id = m_DeviceHomeID[roomNetatmoID];      // Home_ID
 	//Debug(DEBUG_HARDWARE, "Device MAC %s", module_id.c_str());
@@ -714,11 +716,13 @@ bool CNetatmo::SetProgramState(const int uid, const int newState)
 
 		// NAPlug = Netatmo Thermostat
 		// BNS = Smarther with Netatmo Thermostat
-		// NLG = Gateway
+		// NLG = Legrand Gateway
 		// OTH = Opentherm Thermostat Relay
 		// NBG = 
 		// BNMH = Bticino MyHome server 1
 		//
+		std::string Type_bridge = m_Device_types[Device_bridge];
+		Debug(DEBUG_HARDWARE, "Type Device bridge = %s", Type_bridge.c_str());
 		std::string Type;             // Only parse devices off current selected Device bridge
 		if (type_module == "NRV")
 			Type = "NAPlug";
@@ -2141,8 +2145,8 @@ bool CNetatmo::ParseDashboard(const Json::Value& root, const int DevIdx, const i
 		std::string sValue = v.str().c_str();
                 ///Debug(DEBUG_HARDWARE, "(%d) %s (%s) [%s] rain %s %s %d %d", Hardware_int, str_ID.c_str(), pchar_ID, name.c_str(), sValue.c_str(), m_Name.c_str(), rssiLevel, batValue);
 		//UpdateValueInt(0, str_ID.c_str(), 0, pTypeRAIN, sTypeRAINByRate, rssiLevel, batValue, '0', v.str().c_str(), Name, 0, m_Name);
-		SendRainSensor(ID, batValue, m_RainOffset[ID] + m_OldRainCounter[ID], name, rssiLevel);
-		//SendRainSensorWU(ID, batValue, rain_24, rain_1, name + "- WU", rssiLevel);
+		//SendRainSensor(ID, batValue, m_RainOffset[ID] + m_OldRainCounter[ID], name, rssiLevel);
+		SendRainSensorWU(ID, batValue, rain_24, rain_1, name, rssiLevel);
 	}
 
 	if (bHaveCO2)
@@ -2562,6 +2566,7 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 					{
 						std::string bridge_ = module["bridge"].asString();
 						std::string Bridge_Name = m_ModuleNames[bridge_];
+						m_DeviceBridge[module_id] = bridge_;
 						std::string Module_Name = moduleName + " - Bridge";
 						std::string bridgeValue = Bridge_Name + " " + bridge_;
 						nDevice.StationName = Bridge_Name;
