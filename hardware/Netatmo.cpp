@@ -1383,8 +1383,6 @@ void CNetatmo::GetHomesDataDetails()
 						m_ScheduleNames[index] = schedule["name"].asString();
 						m_ScheduleIDs[index] = schedule_id;
 						m_DeviceHomeID[schedule_id] = homeID;
-						Debug(DEBUG_HARDWARE, "Schedule empty %d", !schedule["selected"].empty());
-						Debug(DEBUG_HARDWARE, "Schedule Bool %d", schedule_selected);
 						if (!schedule["selected"].empty() && schedule["selected"].asBool() && schedule_type == "therm")
 							m_selectedScheduleID = index;
 					}
