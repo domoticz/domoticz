@@ -92,7 +92,7 @@ class CNetatmo : public CDomoticzHardwareBase
 	time_t m_nextRefreshTs;
 
 	std::map<int, float> m_RainOffset;
-	std::map<int, int> m_OldRainCounter;
+	std::map<int, float> m_OldRainCounter;
 
 	std::map<int, bool> m_bNetatmoRefreshed;
 
