@@ -2578,14 +2578,7 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 						std::string bName = moduleName + " - Boost";
 						//Debug(DEBUG_HARDWARE, "Boiler Boost %s - %s", bName.c_str(), boiler_boost.c_str() );
 						bool bIsActive = module["boiler_valve_comfort_boost"].asBool();
-						std::stringstream b;
-						b << boiler_boost;
-						b << ";";
-						b << boiler_boost;
-						std::string sValue = b.str().c_str();
-						const double Level = module["boiler_valve_comfort_boost"].asDouble();
-						//UpdateValueInt(0, ID.c_str(), 0, pTypeGeneralSwitch, sSwitchGeneralSwitch, '0', 255, '0', sValue.c_str(), bName,  bIsActive, m_Name);
-						//SendSwitch(crcId, 9, batteryLevel, bIsActive, Level, bName, m_Name, mrf_status);
+						
 					}
 					if (!module["boiler_status"].empty())
 					{
@@ -2817,8 +2810,8 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 
 						//Debug(DEBUG_HARDWARE, "(%d) %s (%s) [%s] rain %s %s %d %d", Hardware_int, str_ID.c_str(), pchar_ID, name.c_str(), v.str().c_str(), m_Name.c_str(), mrf_status, batteryLevel);
 						//UpdateValueInt(0, ID.c_str(), 0, pTypeRAIN, sTypeRAINByRate, mrf_status, batteryLevel, '0', v.str().c_str(), moduleName, 0, m_Name);
-						SendRainSensor(crcId, batteryLevel, m_RainOffset[crcId] + m_OldRainCounter[crcId], moduleName, mrf_status);
-						//SendRainSensorWU(crcId, batteryLevel, rain_24, rain_1, moduleName + "-WU", mrf_status);
+						//SendRainSensor(crcId, batteryLevel, m_RainOffset[crcId] + m_OldRainCounter[crcId], moduleName, mrf_status);
+						SendRainSensorWU(crcId, batteryLevel, rain_24, rain_1, moduleName + "-WU", mrf_status);
 					}
 					if (bHaveCO2)
 					{
