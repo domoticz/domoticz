@@ -4299,6 +4299,7 @@ namespace http
 			}
 
 			reply::set_content(&rep, root.toStyledString());
+			rep.status = static_cast<http::server::reply::status_type>(session.reply_status);
 		}
 
 		void CWebServer::UploadFloorplanImage(WebEmSession& session, const request& req, std::string& redirect_uri)
