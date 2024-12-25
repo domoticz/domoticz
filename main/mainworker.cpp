@@ -90,7 +90,6 @@
 #include "../hardware/Pinger.h"
 #include "../hardware/Nest.h"
 #include "../hardware/NestOAuthAPI.h"
-#include "../hardware/Thermosmart.h"
 #include "../hardware/Tado.h"
 #include "../hardware/eVehicles/eVehicle.h"
 #include "../hardware/Kodi.h"
@@ -937,9 +936,6 @@ bool MainWorker::AddHardwareFromParams(
 		break;
 	case HTYPE_ANNATHERMOSTAT:
 		pHardware = new CAnnaThermostat(ID, Address, Port, Username, Password);
-		break;
-	case HTYPE_THERMOSMART:
-		pHardware = new CThermosmart(ID, Username, Password, Mode1);
 		break;
 	case HTYPE_Tado:
 		pHardware = new CTado(ID, Username, Password);
@@ -12988,8 +12984,8 @@ bool MainWorker::SetSetPointInt(const std::vector<std::string>& sd, const float 
 
 		if (
 			(value_unit.empty())
-			|| (value_unit == "°C")
-			|| (value_unit == "°F")
+			|| (value_unit == "ï¿½C")
+			|| (value_unit == "ï¿½F")
 			|| (value_unit == "C")
 			|| (value_unit == "F")
 			)
@@ -13021,7 +13017,6 @@ bool MainWorker::SetSetPointInt(const std::vector<std::string>& sd, const float 
 		|| (pHardware->HwdType == HTYPE_NEST)
 		|| (pHardware->HwdType == HTYPE_Nest_OAuthAPI)
 		|| (pHardware->HwdType == HTYPE_ANNATHERMOSTAT)
-		|| (pHardware->HwdType == HTYPE_THERMOSMART)
 		|| (pHardware->HwdType == HTYPE_Tado)
 		|| (pHardware->HwdType == HTYPE_EVOHOME_SCRIPT)
 		|| (pHardware->HwdType == HTYPE_EVOHOME_SERIAL)
@@ -13074,11 +13069,6 @@ bool MainWorker::SetSetPointInt(const std::vector<std::string>& sd, const float 
 		else if (pHardware->HwdType == HTYPE_ANNATHERMOSTAT)
 		{
 			CAnnaThermostat* pGateway = dynamic_cast<CAnnaThermostat*>(pHardware);
-			pGateway->SetSetpoint(ID4, TempValue);
-		}
-		else if (pHardware->HwdType == HTYPE_THERMOSMART)
-		{
-			CThermosmart* pGateway = dynamic_cast<CThermosmart*>(pHardware);
 			pGateway->SetSetpoint(ID4, TempValue);
 		}
 		else if (pHardware->HwdType == HTYPE_Tado)
@@ -13215,12 +13205,6 @@ bool MainWorker::SetThermostatState(const std::string& idx, const int newState)
 	{
 		CAnnaThermostat* pGateway = dynamic_cast<CAnnaThermostat*>(pHardware);
 		pGateway->SetProgramState(newState);
-		return true;
-	}
-	if (pHardware->HwdType == HTYPE_THERMOSMART)
-	{
-		//CThermosmart *pGateway = dynamic_cast<CThermosmart *>(pHardware);
-		//pGateway->SetProgramState(newState);
 		return true;
 	}
 	if (pHardware->HwdType == HTYPE_Netatmo)
