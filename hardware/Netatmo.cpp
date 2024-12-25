@@ -901,9 +901,10 @@ bool CNetatmo::SetSchedule(int uId, int selected)
 			return false;
 	}
 
+	std::string scheduleName = m_ScheduleNames[selected];
 	std::string scheduleId = m_ScheduleIDs[selected];
 	std::string Home_id = m_DeviceHomeID[scheduleId];            // Home_ID
-	//Debug(DEBUG_HARDWARE, "Schedule id = %s %d", scheduleId.c_str(), uId);
+	Debug(DEBUG_HARDWARE, "Schedule id = %s %d %s %d", scheduleId.c_str(), uId, scheduleName.c_str(), selected);
 	std::stringstream bstr;
 	std::string sResult;
 	Json::Value root;       // root JSON object
@@ -942,7 +943,7 @@ bool CNetatmo::SetSchedule(int uId, int selected)
 	}
 	//store the selected schedule in our local data to avoid
 	//changing back the schedule when using away mode
-	m_selectedScheduleID = uId;
+	m_selectedScheduleID = selected;
 
 	// When a thermostat mode is changed all thermostat/valves in Home are changed by Netatmo
 	// So we have to update the corresponding devices       Device_Types {NAPlug, OTH, BNS}
@@ -1356,7 +1357,8 @@ void CNetatmo::GetHomesDataDetails()
 						std::string schedule_type = schedule["type"].asString();
 						bool schedule_selected = schedule["selected"].asBool();                // true / false
 						index += 10;
-						m_ScheduleNames[index] = schedule["name"].asString();
+						if (schedule_type == "therm")
+							m_ScheduleNames[index] = schedule["name"].asString();
 						m_ScheduleIDs[index] = schedule_id;
 						m_DeviceHomeID[schedule_id] = homeID;
 						if (!schedule["selected"].empty() && schedule["selected"].asBool() && schedule_type == "therm")
