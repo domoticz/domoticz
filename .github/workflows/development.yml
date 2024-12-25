@@ -46,7 +46,7 @@ jobs:
           sudo apt-mark hold grub-efi-amd64-signed
           sudo apt-get update --fix-missing
           sudo apt-get update || true
-          sudo apt-get install make gcc cmake g++ libssl-dev git libcurl4-gnutls-dev libusb-dev python3-dev zlib1g-dev liblua5.3-dev uthash-dev
+          sudo apt-get install make gcc cmake g++ libssl-dev git libcurl4-gnutls-dev libusb-dev python3-dev zlib1g-dev liblua5.3-dev uthash-dev libsqlite3-dev
           sudo apt-get install libboost-chrono-dev libboost-system-dev libboost-thread-dev
           sudo apt-get install python3-pytest python3-pytest-bdd
 
