@@ -44,6 +44,90 @@
 #include "../hardware/GpioPin.h"
 #endif // WITH_GPIO
 
+constexpr inline std::array<std::string_view,16> sViewerCommands = {
+	"getsubdevices",
+	"getscenedevices",
+	"getmanualhardware",
+	"getgpio",
+	"getsysfsgpio",
+	"getlightswitches",
+	"getlightswitchesscenes",
+	"getcamactivedevices",
+	"resetsecuritystatus",
+	"verifypasscode",
+	"getSunRiseSet",
+	"getServerTime",
+	"getsecstatus",
+	"setsecstatus",
+	"getfloorplanimages",
+	"getfloorplanplans"
+};
+constexpr inline std::array<std::string_view,31> sAdminCommands = {
+	"deleteallsubdevices",
+	"deletesubdevice",
+	"addsubdevice",
+	"addscenedevice",
+	"updatescenedevice",
+	"deletescenedevice",
+	"changescenedeviceorder",
+	"deleteallscenedevices",
+	"addcamactivedevice",
+	"deleteamactivedevice",
+	"deleteallactivecamdevices",
+	"testnotification",
+	"testswitch",
+	"addswitch",
+	"getnotificationtypes",
+	"switchdeviceorder",
+	"switchsceneorder",
+	"clearnotifications",
+	"adduser",
+	"updateuser",
+	"deleteuser",
+	"updatefloorplan",
+	"deletefloorplan",
+	"changefloorplanorder",
+	"getunusedfloorplanplans",
+	"addfloorplanplan",
+	"updatefloorplanplan",
+	"deletefloorplanplan",
+	"clearlightlog",
+	"clearscenelog",
+	"learnsw"
+};
+constexpr inline std::array<std::string_view,23> sSwitcherCommands = {
+	"makefavorite",
+	"makescenefavorite",
+	"switchmodal",
+	"switchlight",
+	"switchscene",
+	"setcolbrightnessvalue",
+	"setkelvinlevel",
+	"brightnessup",
+	"brightnessdown",
+	"discomodenum",
+	"discomode",
+	"discoup",
+	"discodown",
+	"speedup",
+	"speeduplong",
+	"speeddown",
+	"speedmin",
+	"speedmax",
+	"warmer",
+	"cooler",
+	"fulllight",
+	"nightlight",
+	"whitelight"
+};
+
+constexpr inline uint64_t hash(char const * str, int h = 0)
+{
+	return (!str[h] ? 5381 : (hash(str, h+1)*33) ^ str[h] );
+}
+
+constexpr inline uint64_t operator "" _(char const * p, size_t) { return hash(p); }
+
 namespace http
 {
 	namespace server
@@ -51,30 +135,6 @@ namespace http
 
 		bool CWebServer::HandleCommandParam(const std::string& cparam, WebEmSession& session, const request& req, Json::Value& root)
 		{
-			std::vector<std::vector<std::string>> result;
-			char szTmp[300];
-
-			/* Possible rewrite for readability
-			switch (hash(cparam.c_str()))
-			{
-				case "getsubdevices"_hash:
-				{
-					...
-				    break;
-				}
-				case "getscenedevices"_hash:
-				{
-					...
-				    break;
-				}
-				default:
-					_log.Log(LOG_NORM, "Invalid API command received! (%s)", cparam.c_str());
-					return false;
-			}
-
-			return true;
-			*/
-
 			// Initialize different varables, like status to ERROR. If the command is successful, it will be changed to OK
 			root["status"] = "ERROR";
 
@@ -91,104 +151,143 @@ namespace http
 					Username = m_users[iUser].Username;
 				}
 			}
+
+			// Check if user has the proper access rights for the command (so we don't have to check this in every command)
+			bool bFoundAndAllowed = false;
+			if (std::find(sViewerCommands.begin(), sViewerCommands.end(), cparam) != sViewerCommands.end())
+			{
+				bFoundAndAllowed = true;
+			}
+			else if (std::find(sSwitcherCommands.begin(), sSwitcherCommands.end(), cparam) != sSwitcherCommands.end())
+			{
+				if (urights < URIGHTS_SWITCHER)
+					session.reply_status = reply::forbidden;
+				else
+					bFoundAndAllowed = true;
+			}
+			else if (std::find(sAdminCommands.begin(), sAdminCommands.end(), cparam) != sAdminCommands.end())
+			{
+				if (urights < URIGHTS_ADMIN)
+					session.reply_status = reply::forbidden;
+				else
+					bFoundAndAllowed = true;
+			}
+			else
+			{
+				_log.Log(LOG_NORM, "Invalid API command received! (%s)", cparam.c_str());
+			}
+
+			if (!bFoundAndAllowed)
+				return false;
+
+			_log.Debug(DEBUG_WEBSERVER, "Valid API WebServerCommand received! (%s) for user (%s) with rights (%d)", cparam.c_str(), Username.c_str(), urights);
+
+			std::vector<std::vector<std::string>> result;
+			char szTmp[300];
 			std::string szSwitchUser = Username + " (IP: " + session.remote_host + ")";
+
+			switch (hash(cparam.c_str()))
+			{
+				// Non privelidged commands
+				case "getsubdevices"_:	//else if (cparam == "getsubdevices")
+				{
+					root["title"] = "GetSubDevices";
+					std::string idx = request::findValue(&req, "idx");
+					if (idx.empty())
+						return false;
+
+					result = m_sql.safe_query("SELECT a.ID, b.Name FROM LightSubDevices a, DeviceStatus b WHERE (a.ParentID=='%q') AND (b.ID == a.DeviceRowID)", idx.c_str());
+					if (!result.empty())
+					{
+						int ii = 0;
+						for (const auto& sd : result)
+						{
+							root["result"][ii]["ID"] = sd[0];
+							root["result"][ii]["Name"] = sd[1];
+							ii++;
+						}
+						root["status"] = "OK";
+						break;
+					}
+				}
+				case "getscenedevices"_:	//else if (cparam == "getscenedevices")
+				{
+					root["title"] = "GetSceneDevices";
+					std::string idx = request::findValue(&req, "idx");
+					std::string isscene = request::findValue(&req, "isscene");
+
+					if ((idx.empty()) || (isscene.empty()))
+						return false;
+
+					result = m_sql.safe_query("SELECT a.ID, b.Name, a.DeviceRowID, b.Type, b.SubType, b.nValue, b.sValue, a.Cmd, a.Level, b.ID, a.[Order], a.Color, a.OnDelay, a.OffDelay, "
+						"b.SwitchType FROM SceneDevices a, DeviceStatus b WHERE (a.SceneRowID=='%q') AND (b.ID == a.DeviceRowID) ORDER BY a.[Order]",
+						idx.c_str());
+					if (!result.empty())
+					{
+						int ii = 0;
+						for (const auto& sd : result)
+						{
+							root["result"][ii]["ID"] = sd[0];
+							root["result"][ii]["Name"] = sd[1];
+							root["result"][ii]["DevID"] = sd[2];
+							root["result"][ii]["DevRealIdx"] = sd[9];
+							root["result"][ii]["Order"] = atoi(sd[10].c_str());
+							root["result"][ii]["OnDelay"] = atoi(sd[12].c_str());
+							root["result"][ii]["OffDelay"] = atoi(sd[13].c_str());
+
+							_eSwitchType switchtype = (_eSwitchType)atoi(sd[14].c_str());
+
+							unsigned char devType = atoi(sd[3].c_str());
+
+							bool bIsBlinds = (
+								switchtype == STYPE_Blinds
+								|| switchtype == STYPE_BlindsPercentage
+								|| switchtype == STYPE_BlindsPercentageWithStop
+								|| switchtype == STYPE_VenetianBlindsEU
+								|| switchtype == STYPE_VenetianBlindsUS
+								);
+
+							// switchtype seemed not to be used down with the GetLightStatus command,
+							// causing RFY to go wrong, fixing here
+							if (devType != pTypeRFY)
+								switchtype = STYPE_OnOff;
+
+							unsigned char subType = atoi(sd[4].c_str());
+							// unsigned char nValue = (unsigned char)atoi(sd[5].c_str());
+							std::string sValue = sd[6];
+							int command = atoi(sd[7].c_str());
+							int level = atoi(sd[8].c_str());
+
+							std::string lstatus;
+							int llevel = 0;
+							bool bHaveDimmer = false;
+							bool bHaveGroupCmd = false;
+							int maxDimLevel = 0;
+							GetLightStatus(devType, subType, switchtype, command, sValue, lstatus, llevel, bHaveDimmer, maxDimLevel, bHaveGroupCmd);
+							if (bIsBlinds)
+							{
+								if (lstatus == "On")
+									lstatus = "Open";
+								else if (lstatus == "Off")
+									lstatus = "Close";
+							}
+
+							root["result"][ii]["Command"] = lstatus;
+							root["result"][ii]["Level"] = level;
+							root["result"][ii]["Color"] = _tColor(sd[11]).toJSONString();
+							root["result"][ii]["Type"] = RFX_Type_Desc(devType, 1);
+							root["result"][ii]["SubType"] = RFX_Type_SubType_Desc(devType, subType);
+							ii++;
+						}
+						root["status"] = "OK";
+						break;
+					}
+				}
+			}
 
 			if (1 == 2)
 			{
 				// bogus if to make the else if's below work
-			}
-			// Non privelidged commands
-			else if (cparam == "getsubdevices")
-			{
-				root["title"] = "GetSubDevices";
-				std::string idx = request::findValue(&req, "idx");
-				if (idx.empty())
-					return false;
-
-				result = m_sql.safe_query("SELECT a.ID, b.Name FROM LightSubDevices a, DeviceStatus b WHERE (a.ParentID=='%q') AND (b.ID == a.DeviceRowID)", idx.c_str());
-				if (!result.empty())
-				{
-					int ii = 0;
-					for (const auto& sd : result)
-					{
-						root["result"][ii]["ID"] = sd[0];
-						root["result"][ii]["Name"] = sd[1];
-						ii++;
-					}
-					root["status"] = "OK";
-				}
-			}
-			else if (cparam == "getscenedevices")
-			{
-				root["title"] = "GetSceneDevices";
-				std::string idx = request::findValue(&req, "idx");
-				std::string isscene = request::findValue(&req, "isscene");
-
-				if ((idx.empty()) || (isscene.empty()))
-					return false;
-
-				result = m_sql.safe_query("SELECT a.ID, b.Name, a.DeviceRowID, b.Type, b.SubType, b.nValue, b.sValue, a.Cmd, a.Level, b.ID, a.[Order], a.Color, a.OnDelay, a.OffDelay, "
-					"b.SwitchType FROM SceneDevices a, DeviceStatus b WHERE (a.SceneRowID=='%q') AND (b.ID == a.DeviceRowID) ORDER BY a.[Order]",
-					idx.c_str());
-				if (!result.empty())
-				{
-					int ii = 0;
-					for (const auto& sd : result)
-					{
-						root["result"][ii]["ID"] = sd[0];
-						root["result"][ii]["Name"] = sd[1];
-						root["result"][ii]["DevID"] = sd[2];
-						root["result"][ii]["DevRealIdx"] = sd[9];
-						root["result"][ii]["Order"] = atoi(sd[10].c_str());
-						root["result"][ii]["OnDelay"] = atoi(sd[12].c_str());
-						root["result"][ii]["OffDelay"] = atoi(sd[13].c_str());
-
-						_eSwitchType switchtype = (_eSwitchType)atoi(sd[14].c_str());
-
-						unsigned char devType = atoi(sd[3].c_str());
-
-						bool bIsBlinds = (
-							switchtype == STYPE_Blinds
-							|| switchtype == STYPE_BlindsPercentage
-							|| switchtype == STYPE_BlindsPercentageWithStop
-							|| switchtype == STYPE_VenetianBlindsEU
-							|| switchtype == STYPE_VenetianBlindsUS
-							);
-
-						// switchtype seemed not to be used down with the GetLightStatus command,
-						// causing RFY to go wrong, fixing here
-						if (devType != pTypeRFY)
-							switchtype = STYPE_OnOff;
-
-						unsigned char subType = atoi(sd[4].c_str());
-						// unsigned char nValue = (unsigned char)atoi(sd[5].c_str());
-						std::string sValue = sd[6];
-						int command = atoi(sd[7].c_str());
-						int level = atoi(sd[8].c_str());
-
-						std::string lstatus;
-						int llevel = 0;
-						bool bHaveDimmer = false;
-						bool bHaveGroupCmd = false;
-						int maxDimLevel = 0;
-						GetLightStatus(devType, subType, switchtype, command, sValue, lstatus, llevel, bHaveDimmer, maxDimLevel, bHaveGroupCmd);
-						if (bIsBlinds)
-						{
-							if (lstatus == "On")
-								lstatus = "Open";
-							else if (lstatus == "Off")
-								lstatus = "Close";
-						}
-
-						root["result"][ii]["Command"] = lstatus;
-						root["result"][ii]["Level"] = level;
-						root["result"][ii]["Color"] = _tColor(sd[11]).toJSONString();
-						root["result"][ii]["Type"] = RFX_Type_Desc(devType, 1);
-						root["result"][ii]["SubType"] = RFX_Type_SubType_Desc(devType, subType);
-						ii++;
-					}
-					root["status"] = "OK";
-				}
 			}
 			else if (cparam == "getmanualhardware")
 			{
