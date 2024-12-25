@@ -1313,7 +1313,6 @@ define(['app'], function (app) {
 				(text.indexOf("Atag") >= 0) ||
 				(text.indexOf("Nest Th") >= 0 && text.indexOf("OAuth") === -1) ||
 				(text.indexOf("PVOutput") >= 0) ||
-				(text.indexOf("Thermosmart") >= 0) ||
 				(text.indexOf("Tado") >= 0)
 			) {
 				var username = $("#hardwarecontent #divlogin #username").val();
@@ -2942,7 +2941,6 @@ define(['app'], function (app) {
 				(text.indexOf("Atag") >= 0) ||
 				(text.indexOf("Nest Th") >= 0 && text.indexOf("OAuth") === -1) ||
 				(text.indexOf("PVOutput") >= 0) ||
-				(text.indexOf("Thermosmart") >= 0) ||
 				(text.indexOf("Tado") >= 0) ||
 				(text.indexOf("HTTP") >= 0)
 			) {
@@ -4059,7 +4057,7 @@ define(['app'], function (app) {
 								HwTypeStr += '<br>Version: ' + item.version;
 								HwTypeStr += ' ' + hardwareSetupLink;
 							}
-							else if ((HwTypeStr.indexOf("OpenTherm") >= 0) || (HwTypeStr.indexOf("Thermosmart") >= 0)) {
+							else if (HwTypeStr.indexOf("OpenTherm") >= 0) {
 								HwTypeStr += '<br>Version: ' + item.version;
 								HwTypeStr += ' <span class="label label-info lcursor" onclick="EditOpenTherm(' + item.idx + ',\'' + item.Name + '\',' + item.Mode1 + ',' + item.Mode2 + ',' + item.Mode3 + ',' + item.Mode4 + ',' + item.Mode5 + ',' + item.Mode6 + ');">' + $.t("Setup") + '</span>';
 							}
@@ -4689,7 +4687,6 @@ define(['app'], function (app) {
 							(data["Type"].indexOf("MySensors Gateway with MQTT") >= 0) ||
 							(data["Type"].indexOf("Netatmo") >= 0) ||
 							(data["Type"].indexOf("HTTP") >= 0) ||
-							(data["Type"].indexOf("Thermosmart") >= 0) ||
 							(data["Type"].indexOf("Tado") >= 0) ||
 							(data["Type"].indexOf("Tesla") >= 0) ||
 							(data["Type"].indexOf("Mercedes") >= 0) ||
@@ -5273,7 +5270,6 @@ define(['app'], function (app) {
 				(text.indexOf("Atag") >= 0) ||
 				(text.indexOf("Nest Th") >= 0 && text.indexOf("OAuth") === -1) ||
 				(text.indexOf("PVOutput") >= 0) ||
-				(text.indexOf("Thermosmart") >= 0) ||
 				(text.indexOf("Tado") >= 0)
 			) {
 				$("#hardwarecontent #divlogin").show();
