@@ -327,7 +327,6 @@ hardware/TeleinfoSerial.cpp
 hardware/TeleinfoTCP.cpp
 hardware/Tellstick.cpp
 hardware/TellstickFactory.cpp
-hardware/Thermosmart.cpp
 hardware/ToonThermostat.cpp
 hardware/TTNMQTT.cpp
 hardware/USBtin.cpp
