@@ -959,7 +959,7 @@ define(['app'], function (app) {
 			$("#dialog-findlatlong").dialog({
 				autoOpen: false,
 				width: 480,
-				height: 280,
+				height: 200,
 				modal: true,
 				resizable: false,
 				buttons: {
@@ -980,35 +980,6 @@ define(['app'], function (app) {
 					}
 				},
 				open: function () {
-					$('#getlatlong').click(function () {
-						var address = $('#dialog-findlatlong #address').val();
-						if (address == "") {
-							bootbox.alert($.t('Please enter a Address to search for!...'), 3500, true);
-							return false;
-						}
-						var url = "https://www.mapquestapi.com/geocoding/v1/address?key=XN5Eyt9GjLaRPG6T2if7VtUueRLckR8b&inFormat=kvp&outFormat=json&thumbMaps=false&location=" + address;
-						$http({
-							url: url,
-							async: true,
-							dataType: 'json'
-						}).then(function successCallback(response) {
-							var data = response.data;
-							var bIsOK = false;
-							if(data.hasOwnProperty('results')) {
-								if (data['results'][0]['locations'].length > 0) {
-									$('#dialog-findlatlong #latitude').val(data['results'][0]['locations'][0]['displayLatLng']['lat']);
-									$('#dialog-findlatlong #longitude').val(data['results'][0]['locations'][0]['displayLatLng']['lng']);//.toFixed(6)
-									bIsOK = true;
-								}
-							} 
-							if (!bIsOk) {
-								bootbox.alert($.t('Geocode was not successful for the following reason') + ': Invalid/No data returned!');
-							}
-						}, function errorCallback(response) {
-							bootbox.alert($.t('Geocode was not successful for the following reason') + ': ' + response.statusText);
-						});
-						return false;
-					});
 					if ('geolocation' in navigator) {
 						$('#geodetect').click(function () {
 							navigator.geolocation.getCurrentPosition(function (location) {
