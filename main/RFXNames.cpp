@@ -211,7 +211,6 @@ static const STR_TABLE_SINGLE HardwareTypeTable[] = {
 	{ HTYPE_Pinger, "System Alive Checker (Ping)", "Pinger" },
 	{ HTYPE_NEST, "Nest Thermostat/Protect", "Nest" },
 	{ HTYPE_Nest_OAuthAPI, "Nest Thermostat/Protect OAuth", "Nest" },
-	{ HTYPE_THERMOSMART, "Thermosmart Thermostat", "ThermoSmart" },
 	{ HTYPE_Netatmo, "Netatmo", "Netatmo" },
 	{ HTYPE_Kodi, "Kodi Media Server", "Kodi" },
 	{ HTYPE_PanasonicTV, "PanasonicTV", "PanasonicTV" },
