@@ -704,7 +704,6 @@
     <ClInclude Include="..\hardware\TeleinfoTCP.h" />
     <ClInclude Include="..\hardware\TelldusFunctions.h" />
     <ClInclude Include="..\hardware\Tellstick.h" />
-    <ClInclude Include="..\hardware\Thermosmart.h" />
     <ClInclude Include="..\hardware\ToonThermostat.h" />
     <ClInclude Include="..\hardware\TTNMQTT.h" />
     <ClInclude Include="..\hardware\USBtin.h" />
@@ -1009,7 +1008,6 @@
     <ClCompile Include="..\hardware\TeleinfoTCP.cpp" />
     <ClCompile Include="..\hardware\Tellstick.cpp" />
     <ClCompile Include="..\hardware\TellstickFactory.cpp" />
-    <ClCompile Include="..\hardware\Thermosmart.cpp" />
     <ClCompile Include="..\hardware\ToonThermostat.cpp" />
     <ClCompile Include="..\hardware\TTNMQTT.cpp" />
     <ClCompile Include="..\hardware\USBtin.cpp" />

@@ -171,9 +171,6 @@
     <Filter Include="Devices\Nest">
       <UniqueIdentifier>{358e4bcd-21c6-47e5-b7e3-7d9bbb9b4e90}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Devices\Thermosmart">
-      <UniqueIdentifier>{21b14472-4757-4ef4-b27f-107a322f5ef3}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Devices\RFXCom">
       <UniqueIdentifier>{48ca3895-ba95-40f6-8441-e2911263a66f}</UniqueIdentifier>
     </Filter>
@@ -1790,9 +1787,6 @@
     <ClInclude Include="..\hardware\Pinger.h">
       <Filter>Devices\Ping</Filter>
     </ClInclude>
-    <ClInclude Include="..\hardware\Thermosmart.h">
-      <Filter>Devices\Thermosmart</Filter>
-    </ClInclude>
     <ClInclude Include="..\hardware\RFXComSerial.h">
       <Filter>Devices\RFXCom</Filter>
     </ClInclude>
@@ -2574,9 +2568,6 @@
     </ClCompile>
     <ClCompile Include="..\hardware\Pinger.cpp">
       <Filter>Devices\Ping</Filter>
-    </ClCompile>
-    <ClCompile Include="..\hardware\Thermosmart.cpp">
-      <Filter>Devices\Thermosmart</Filter>
     </ClCompile>
     <ClCompile Include="..\hardware\RFXComSerial.cpp">
       <Filter>Devices\RFXCom</Filter>
