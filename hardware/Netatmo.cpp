@@ -1732,6 +1732,7 @@ bool CNetatmo::ParseStationData(const std::string& sResult, const bool bIsThermo
 				if (device["modules"].isArray())
 				{
 					// Add modules for this device
+					int iModulIndex = 0;
 					for (auto module : device["modules"])
 					{
 						if (module.isObject())
@@ -1770,7 +1771,7 @@ bool CNetatmo::ParseStationData(const std::string& sResult, const bool bIsThermo
 							if (!module["dashboard_data"].empty())
 							{
 								//SaveJson2Disk(module["dashboard_data"], std::string("./") + mname.c_str() + ".txt");
-								ParseDashboard(module["dashboard_data"], iDevIndex, crcId, mname, mtype, mbattery_percent, mrf_status, mid, home_id);
+								ParseDashboard(module["dashboard_data"], iModulIndex, crcId, mname, mtype, mbattery_percent, mrf_status, mid, home_id);
 								nDevice.SignalLevel = mrf_status;
 								nDevice.BatteryLevel = mbattery_percent;
 							}
@@ -2674,7 +2675,13 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 					{
 						//Debug(DEBUG_HARDWARE, "(%d) %s (%s) [%s] co2 rssiLevel %d batValue %d nValue %d sValue %s %s ", Hardware_int, str_ID.c_str(), pchar_ID, name.c_str(), mrf_status, batteryLevel, co2, std::to_string(co2).c_str(), m_Name.c_str());
 						//UpdateValueInt(0, ID.c_str(), 0, pTypeAirQuality, sTypeVoc, mrf_status, batteryLevel, co2, "", moduleName, 0, m_Name);
-						SendAirQualitySensor(crcId, iDevIndex, batteryLevel, co2, moduleName);
+						int unit;
+						if ((type =="NAMain") || (type == "NAModule4"))
+							unit = 0;
+						else
+							unit = iDevIndex;
+
+						SendAirQualitySensor(crcId, unit, batteryLevel, co2, moduleName);
 					}
 
 					if (bHaveSound)
