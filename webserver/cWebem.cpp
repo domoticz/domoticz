@@ -1552,7 +1552,7 @@ namespace http {
 
 			std::string sessionId = GenerateMD5Hash(base64_encode(randomValue));
 
-			_log.Debug(DEBUG_WEBSERVER, "[web:%s] generate new session id token %s", myWebem->GetPort().c_str(), sessionId.c_str());
+			_log.Debug(DEBUG_WEBSERVER, "[web:%s] generate new session id token (%s)", myWebem->GetPort().c_str(), sessionId.c_str());
 
 			return sessionId;
 		}
@@ -1564,7 +1564,7 @@ namespace http {
 
 			std::string authToken = base64_encode(randomValue);
 
-			_log.Debug(DEBUG_WEBSERVER, "[web:%s] generate new authentication token %s for user %s", myWebem->GetPort().c_str(), authToken.c_str(), session.username.c_str());
+			_log.Debug(DEBUG_WEBSERVER, "[web:%s] generate new authentication token (%s) for user (%s)", myWebem->GetPort().c_str(), authToken.c_str(), session.username.c_str());
 
 			session_store_impl_ptr sstore = myWebem->GetSessionStore();
 			if (sstore != nullptr)
@@ -2061,9 +2061,10 @@ namespace http {
 				return false;
 			}
 
-			_log.Debug(DEBUG_AUTH, "[web:%s] CheckAuthToken(%s_%s_%s) : user authenticated", myWebem->GetPort().c_str(), session.id.c_str(), session.auth_token.c_str(), session.username.c_str());
+			_log.Debug(DEBUG_AUTH, "[web:%s] CheckAuthToken(%s_%s_%s) : Session found & Token authenticated", myWebem->GetPort().c_str(), session.id.c_str(), session.auth_token.c_str(), session.username.c_str());
 
-			if (session.rights == 2)
+			/*
+			if (session.rights == 2)	// Why do we do this for Admins (or at all)? Can this be removed?
 			{
 				// we are already admin - restore session from db
 				session.expires = storedSession.expires;
@@ -2077,6 +2078,7 @@ namespace http {
 				myWebem->AddSession(session);
 				return true;
 			}
+			*/
 
 			if (session.username.empty())
 			{
@@ -2226,8 +2228,13 @@ namespace http {
 
 			bool isPage = myWebem->IsPageOverride(req, rep);
 			bool isAction = myWebem->IsAction(req);		// This is used but will be removed in the future and replaced by the JSON API commands
+			bool isAuthenticated = CheckAuthentication(session, req, rep);	// This check also restores the session if an active session is found
 
-			if (isPage && (req.uri.find("dologout") != std::string::npos))
+			bool isAPI = (isPage && (req.uri.find("json.htm") != std::string::npos));
+			bool isLogout = (isAPI && (req.uri.find("dologout") != std::string::npos));
+			bool isLogin = (isAPI && (req.uri.find("logincheck") != std::string::npos));
+
+			if (isLogout)
 			{
 				//Remove session id based on cookie
 				std::string sSID;
@@ -2237,8 +2244,10 @@ namespace http {
 
 				_log.Debug(DEBUG_AUTH, "[web:%s] Logout : Logging out User %s (%d)", myWebem->GetPort().c_str(), session.username.c_str(), session.rights);
 
+				session.id = "";
 				session.username = "";
 				session.rights = -1;
+				session.expires = mytime(nullptr);
 				rep = reply::stock_reply(reply::no_content);
 				if(bUseRealHost)
 					rep.originHost = realHost;
@@ -2255,8 +2264,7 @@ namespace http {
 			// Check if this is an upgrade request to a websocket connection
 			bool isUpgradeRequest = is_upgrade_request(session, req, rep);
 
-			bool isAuthenticated = CheckAuthentication(session, req, rep);	// This check also restores the session if an active session is found
-			bool needsAuthentication = (!CheckAuthByPass(req));		// Does the request needs to be Authorized?
+			bool needsAuthentication = (isPage ? !CheckAuthByPass(req) : false);		// Does the request needs to be Authorized?
 
 			_log.Debug(DEBUG_AUTH,"[web:%s] isPage %d isAction %d isUpgrade %d needsAuthentication %d isAuthenticated %d (%s) isNew %d", myWebem->GetPort().c_str(), isPage, isAction, isUpgradeRequest, needsAuthentication, isAuthenticated, session.username.c_str(), session.isnew);
 
@@ -2358,21 +2366,24 @@ namespace http {
 			// Set timeout to make session in use
 			session.timeout = mytime(nullptr) + SHORT_SESSION_TIMEOUT;
 
-			if (session.isnew == true && req.uri.find("json.htm") == std::string::npos)	// No session found and we need a session (not for API calls), create a new one
+			if (session.isnew == true)	// No session found and we need a session (not for API calls), create a new one
 			{
-				_log.Log(LOG_STATUS, "[web:%s] Incoming connection from: %s", myWebem->GetPort().c_str(), session.remote_host.c_str());
-				// Create a new session ID
-				session.id = generateSessionID();
-				session.expires = session.timeout;
-				if (session.rememberme)
+				_log.Log(LOG_NORM, "[web:%s] Incoming connection from: %s", myWebem->GetPort().c_str(), session.remote_host.c_str());
+				if (isLogin && !session.username.empty())	// Make sure the login was succesfull
 				{
-					// Extend session by 30 days
-					session.expires += LONG_SESSION_TIMEOUT;
+					// Create a new session ID
+					session.id = generateSessionID();
+					session.expires = session.timeout;
+					if (session.rememberme)
+					{
+						// Extend session by 30 days
+						session.expires += LONG_SESSION_TIMEOUT;
+					}
+					session.auth_token = generateAuthToken(session, req); // do it after expires to save it also
+					session.isnew = false;
+					myWebem->AddSession(session);
+					send_cookie(rep, session);
 				}
-				session.auth_token = generateAuthToken(session, req); // do it after expires to save it also
-				session.isnew = false;
-				myWebem->AddSession(session);
-				send_cookie(rep, session);
 			}
 			else if (!session.id.empty())	// Session found, Renew session expiration and authentication token
 			{
