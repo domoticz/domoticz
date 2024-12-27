@@ -126,7 +126,7 @@ constexpr inline uint64_t djb2hash(char const * str, int h = 0)
 	return (!str[h] ? 5381 : (djb2hash(str, h+1)*33) ^ str[h] );
 }
 
-constexpr inline uint64_t operator "" _(char const * p, size_t) { return djb2hash(p); }
+constexpr inline uint64_t operator ""_sh(char const * p, size_t) { return djb2hash(p); }
 
 namespace http
 {
@@ -188,7 +188,7 @@ namespace http
 
 			switch (djb2hash(cparam.c_str()))
 			{
-				case "getsubdevices"_:
+				case "getsubdevices"_sh:
 				{
 					root["title"] = "GetSubDevices";
 					std::string idx = request::findValue(&req, "idx");
@@ -209,7 +209,7 @@ namespace http
 					}
 					break;
 				}
-				case "getscenedevices"_:
+				case "getscenedevices"_sh:
 				{
 					root["title"] = "GetSceneDevices";
 					std::string idx = request::findValue(&req, "idx");
@@ -282,7 +282,7 @@ namespace http
 					}
 					break;
 				}
-				case "getmanualhardware"_:	// used by Add Manual Light/Switch dialog
+				case "getmanualhardware"_sh:	// used by Add Manual Light/Switch dialog
 				{
 					root["title"] = "GetManualHardware";
 					result = m_sql.safe_query("SELECT ID, Name, Type, Enabled FROM Hardware ORDER BY ID ASC");
@@ -335,7 +335,7 @@ namespace http
 					root["status"] = "OK";
 					break;
 				}
-				case "getgpio"_:	// used by Add Manual Light/Switch dialog
+				case "getgpio"_sh:	// used by Add Manual Light/Switch dialog
 				{
 					root["title"] = "GetGpio";
 	#ifdef WITH_GPIO
@@ -363,7 +363,7 @@ namespace http
 	#endif
 					break;
 				}
-				case "getsysfsgpio"_:	// used by Add Manual Light/Switch dialog
+				case "getsysfsgpio"_sh:	// used by Add Manual Light/Switch dialog
 				{
 					root["title"] = "GetSysfsGpio";
 	#ifdef WITH_GPIO
@@ -391,7 +391,7 @@ namespace http
 	#endif
 					break;
 				}
-				case "getlightswitches"_:
+				case "getlightswitches"_sh:
 				{
 					root["title"] = "GetLightSwitches";
 					result = m_sql.safe_query("SELECT ID, Name, Type, SubType, Used, SwitchType, Options FROM DeviceStatus ORDER BY Name COLLATE NOCASE ASC");
@@ -523,7 +523,7 @@ namespace http
 					root["status"] = "OK";
 					break;
 				}
-				case "getlightswitchesscenescase"_:
+				case "getlightswitchesscenescase"_sh:
 				{
 					root["title"] = "GetLightSwitchesScenes";
 					int ii = 0;
@@ -606,7 +606,7 @@ namespace http
 					root["status"] = "OK";
 					break;
 				}
-				case "getcamactivedevicescase"_:
+				case "getcamactivedevicescase"_sh:
 				{
 					root["title"] = "GetCameraActiveDevices";
 					std::string idx = request::findValue(&req, "idx");
@@ -660,7 +660,7 @@ namespace http
 					root["status"] = "OK";
 					break;
 				}
-				case "resetsecuritystatuscase"_:
+				case "resetsecuritystatuscase"_sh:
 				{
 					root["title"] = "ResetSecurityStatus";
 					std::string idx = request::findValue(&req, "idx");
@@ -688,7 +688,7 @@ namespace http
 					root["status"] = "OK";
 					break;
 				}
-				case "verifypasscode"_:
+				case "verifypasscode"_sh:
 				{
 					root["title"] = "VerifyPasscode";
 					std::string passcode = request::findValue(&req, "passcode");
@@ -705,7 +705,7 @@ namespace http
 					}
 					break;
 				}
-				case "getSunRiseSet"_:
+				case "getSunRiseSet"_sh:
 				{
 					root["title"] = "getSunRiseSet";
 					if (!m_mainworker.m_LastSunriseSet.empty())
@@ -737,7 +737,7 @@ namespace http
 					}
 					break;
 				}
-				case "getServerTime"_:
+				case "getServerTime"_sh:
 				{
 					root["title"] = "getServerTime";
 
@@ -751,7 +751,7 @@ namespace http
 					root["ServerTime"] = szTmp;
 					break;
 				}
-				case "getsecstatus"_:
+				case "getsecstatus"_sh:
 				{
 					root["title"] = "GetSecStatus";
 
@@ -765,7 +765,7 @@ namespace http
 					root["status"] = "OK";
 					break;
 				}
-				case "setsecstatus"_:
+				case "setsecstatus"_sh:
 				{
 					root["title"] = "SetSecStatus";
 					std::string ssecstatus = request::findValue(&req, "secstatus");
@@ -788,7 +788,7 @@ namespace http
 					root["status"] = "OK";
 					break;
 				}
-				case "getfloorplanimages"_:
+				case "getfloorplanimages"_sh:
 				{
 					root["title"] = "GetFloorplanImages";
 
@@ -812,7 +812,7 @@ namespace http
 					root["status"] = "OK";
 					break;
 				}
-				case "getfloorplanplans"_:
+				case "getfloorplanplans"_sh:
 				{
 					root["title"] = "GetFloorplanPlans";
 					std::string idx = request::findValue(&req, "idx");
@@ -833,7 +833,7 @@ namespace http
 					root["status"] = "OK";
 					break;
 				}
-				case "deleteallsubdevices"_:
+				case "deleteallsubdevices"_sh:
 				{
 					root["title"] = "DeleteAllSubDevices";
 					std::string idx = request::findValue(&req, "idx");
@@ -843,7 +843,7 @@ namespace http
 					root["status"] = "OK";
 					break;
 				}
-				case "deletesubdevice"_:
+				case "deletesubdevice"_sh:
 				{
 					root["title"] = "DeleteSubDevice";
 					std::string idx = request::findValue(&req, "idx");
@@ -853,7 +853,7 @@ namespace http
 					root["status"] = "OK";
 					break;
 				}
-				case "addsubdevice"_:
+				case "addsubdevice"_sh:
 				{
 					root["title"] = "AddSubDevice";
 					std::string idx = request::findValue(&req, "idx");
@@ -873,7 +873,7 @@ namespace http
 					}
 					break;
 				}
-				case "addscenedevice"_:
+				case "addscenedevice"_sh:
 				{
 					root["title"] = "AddSceneDevice";
 					std::string idx = request::findValue(&req, "idx");
@@ -956,7 +956,7 @@ namespace http
 					}
 					break;
 				}
-				case "updatescenedevice"_:
+				case "updatescenedevice"_sh:
 				{
 					root["title"] = "UpdateSceneDevice";
 					std::string idx = request::findValue(&req, "idx");
@@ -988,7 +988,7 @@ namespace http
 					root["status"] = "OK";
 					break;
 				}
-				case "deletescenedevice"_:
+				case "deletescenedevice"_sh:
 				{
 					root["title"] = "DeleteSceneDevice";
 					std::string idx = request::findValue(&req, "idx");
@@ -1001,7 +1001,7 @@ namespace http
 					root["status"] = "OK";
 					break;
 				}
-				case "changescenedeviceorder"_:
+				case "changescenedeviceorder"_sh:
 				{
 					root["title"] = "ChangeSceneDeviceOrder";
 					std::string idx = request::findValue(&req, "idx");
@@ -1047,7 +1047,7 @@ namespace http
 					root["status"] = "OK";
 					break;
 				}
-				case "deleteallscenedevices"_:
+				case "deleteallscenedevices"_sh:
 				{
 					root["title"] = "DeleteAllSceneDevices";
 					std::string idx = request::findValue(&req, "idx");
@@ -1057,7 +1057,7 @@ namespace http
 					root["status"] = "OK";
 					break;
 				}
-				case "addcamactivedevice"_:
+				case "addcamactivedevice"_sh:
 				{
 					root["title"] = "AddCameraActiveDevice";
 					std::string idx = request::findValue(&req, "idx");
@@ -1091,7 +1091,7 @@ namespace http
 					}
 					break;
 				}
-				case "deleteamactivedevice"_:
+				case "deleteamactivedevice"_sh:
 				{
 					root["title"] = "DeleteCameraActiveDevice";
 					std::string idx = request::findValue(&req, "idx");
@@ -1102,7 +1102,7 @@ namespace http
 					root["status"] = "OK";
 					break;
 				}
-				case "deleteallactivecamdevices"_:
+				case "deleteallactivecamdevices"_sh:
 				{
 					root["title"] = "DeleteAllCameraActiveDevices";
 					std::string idx = request::findValue(&req, "idx");
@@ -1113,7 +1113,7 @@ namespace http
 					root["status"] = "OK";
 					break;
 				}
-				case "testnotification"_:
+				case "testnotification"_sh:
 				{
 					root["title"] = "testnotification";
 					std::string notification_Title = "Domoticz test";
@@ -1132,7 +1132,7 @@ namespace http
 					m_notifications.LoadConfig();
 					break;
 				}
-				case "testswitch"_:
+				case "testswitch"_sh:
 				{
 					root["title"] = "TestSwitch";
 					std::string hwdid = request::findValue(&req, "hwdid");
@@ -1776,7 +1776,7 @@ namespace http
 					root["message"] = "OK";
 					break;
 				}
-				case "addswitch"_:
+				case "addswitch"_sh:
 				{
 					root["title"] = "AddSwitch";
 					std::string hwdid = request::findValue(&req, "hwdid");
@@ -2556,7 +2556,7 @@ namespace http
 					root["status"] = "OK";
 					break;
 				}
-				case "getnotificationtypes"_:
+				case "getnotificationtypes"_sh:
 				{
 					root["title"] = "GetNotificationTypes";
 					std::string idx = request::findValue(&req, "idx");
@@ -2970,7 +2970,7 @@ namespace http
 					root["status"] = "OK";
 					break;
 				}
-				case "switchdeviceorder"_:
+				case "switchdeviceorder"_sh:
 				{
 					root["title"] = "SwitchDeviceOrder";
 					std::string idx1 = request::findValue(&req, "idx1");
@@ -3086,7 +3086,7 @@ namespace http
 					}
 					break;
 				}
-				case "switchsceneorder"_:
+				case "switchsceneorder"_sh:
 				{
 					root["title"] = "SwitchSceneOrder";
 					std::string idx1 = request::findValue(&req, "idx1");
@@ -3120,7 +3120,7 @@ namespace http
 					root["status"] = "OK";
 					break;
 				}
-				case "clearnotifications"_:
+				case "clearnotifications"_sh:
 				{
 					root["title"] = "ClearNotification";
 					std::string idx = request::findValue(&req, "idx");
@@ -3130,9 +3130,9 @@ namespace http
 					m_notifications.RemoveDeviceNotifications(idx);
 					root["status"] = "OK";
 				}
-				case "adduser"_:
-				case "updateuser"_:
-				case "deleteuser"_:
+				case "adduser"_sh:
+				case "updateuser"_sh:
+				case "deleteuser"_sh:
 				{	// C(R)UD operations for Users. Read is done by Cmd_GetUsers
 					root["title"] = "Add/Update/DeleteUser";
 					std::string idx = request::findValue(&req, "idx");
@@ -3243,7 +3243,7 @@ namespace http
 					root["status"] = "OK";
 					break;
 				}
-				case "updatefloorplan"_:
+				case "updatefloorplan"_sh:
 				{
 					root["title"] = "UpdateFloorplan";
 					std::string idx = request::findValue(&req, "idx");
@@ -3258,7 +3258,7 @@ namespace http
 					root["status"] = "OK";
 					break;
 				}
-				case "deletefloorplan"_:
+				case "deletefloorplan"_sh:
 				{
 					root["title"] = "DeleteFloorplan";
 					std::string idx = request::findValue(&req, "idx");
@@ -3270,7 +3270,7 @@ namespace http
 					root["status"] = "OK";
 					break;
 				}
-				case "changefloorplanorder"_:
+				case "changefloorplanorder"_sh:
 				{
 					root["title"] = "ChangeFloorPlanOrder";
 					std::string idx = request::findValue(&req, "idx");
@@ -3312,7 +3312,7 @@ namespace http
 					root["status"] = "OK";
 					break;
 				}
-				case "getunusedfloorplanplans"_:
+				case "getunusedfloorplanplans"_sh:
 				{
 					root["title"] = "GetUnusedFloorplanPlans";
 					int ii = 0;
@@ -3331,7 +3331,7 @@ namespace http
 					root["status"] = "OK";
 					break;
 				}
-				case "addfloorplanplan"_:
+				case "addfloorplanplan"_sh:
 				{
 					root["title"] = "AddFloorplanPlan";
 					std::string idx = request::findValue(&req, "idx");
@@ -3344,7 +3344,7 @@ namespace http
 					root["status"] = "OK";
 					break;
 				}
-				case "updatefloorplanplan"_:
+				case "updatefloorplanplan"_sh:
 				{
 					root["title"] = "UpdateFloorplanPlan";
 					std::string planidx = request::findValue(&req, "planidx");
@@ -3357,7 +3357,7 @@ namespace http
 					root["status"] = "OK";
 					break;
 				}
-				case "deletefloorplanplan"_:
+				case "deletefloorplanplan"_sh:
 				{
 					root["title"] = "DeleteFloorplanPlan";
 					std::string idx = request::findValue(&req, "idx");
@@ -3370,7 +3370,7 @@ namespace http
 					root["status"] = "OK";
 					break;
 				}
-				case "clearlightlog"_:
+				case "clearlightlog"_sh:
 				{
 					root["title"] = "ClearLightLog";
 					std::string idx = request::findValue(&req, "idx");
@@ -3399,7 +3399,7 @@ namespace http
 					root["status"] = "OK";
 					break;
 				}
-				case "clearscenelog"_:
+				case "clearscenelog"_sh:
 				{
 					root["title"] = "ClearSceneLog";
 					std::string idx = request::findValue(&req, "idx");
@@ -3410,7 +3410,7 @@ namespace http
 					root["status"] = "OK";
 					break;
 				}
-				case "learnsw"_:
+				case "learnsw"_sh:
 				{
 					root["title"] = "LearnSW";
 					m_sql.AllowNewHardwareTimer(5);
@@ -3444,7 +3444,7 @@ namespace http
 					}
 					break;
 				} // learnsw
-				case "makefavorite"_:
+				case "makefavorite"_sh:
 				{
 					root["title"] = "MakeFavorite";
 					std::string idx = request::findValue(&req, "idx");
@@ -3471,7 +3471,7 @@ namespace http
 					m_sql.safe_query("UPDATE DeviceStatus SET Favorite=%d WHERE (ID == '%q')", isfavorite, idx.c_str());
 					break;
 				} // makefavorite
-				case "makescenefavorite"_:
+				case "makescenefavorite"_sh:
 				{
 					root["title"] = "MakeSceneFavorite";
 					std::string idx = request::findValue(&req, "idx");
@@ -3483,7 +3483,7 @@ namespace http
 					root["status"] = "OK";
 					break;
 				} // makescenefavorite
-				case "switchmodal"_:
+				case "switchmodal"_sh:
 				{
 					root["title"] = "Modal";
 					if (iUser != -1)
@@ -3525,7 +3525,7 @@ namespace http
 					}
 					break;
 				}
-				case "switchlight"_:
+				case "switchlight"_sh:
 				{
 					root["title"] = "SwitchLight";
 					std::string idx = request::findValue(&req, "idx");
@@ -3609,7 +3609,7 @@ namespace http
 					}
 					break;
 				}
-				case "switchscene"_:
+				case "switchscene"_sh:
 				{
 					root["title"] = "SwitchScene";
 					std::string idx = request::findValue(&req, "idx");
@@ -3655,7 +3655,7 @@ namespace http
 					}
 					break;
 				}
-				case "setcolbrightnessvalue"_:
+				case "setcolbrightnessvalue"_sh:
 				{
 					root["title"] = "SetColBrightnessValue";
 					std::string idx = request::findValue(&req, "idx");
@@ -3772,7 +3772,7 @@ namespace http
 					root["status"] = "OK";
 					break;
 				}
-				case "setkelvinlevel"_:
+				case "setkelvinlevel"_sh:
 				{
 					root["title"] = "Set Kelvin Level";
 					std::string idx = request::findValue(&req, "idx");
@@ -3795,7 +3795,7 @@ namespace http
 					root["status"] = "OK";
 					break;
 				}
-				case "brightnessup"_:
+				case "brightnessup"_sh:
 				{
 					root["title"] = "Set brightness up!";
 					std::string idx = request::findValue(&req, "idx");
@@ -3810,7 +3810,7 @@ namespace http
 					root["status"] = "OK";
 					break;
 				}
-				case "brightnessdown"_:
+				case "brightnessdown"_sh:
 				{
 					root["title"] = "Set brightness down!";
 					std::string idx = request::findValue(&req, "idx");
@@ -3825,7 +3825,7 @@ namespace http
 					root["status"] = "OK";
 					break;
 				}
-				case"discomodenum"_:
+				case"discomodenum"_sh:
 				{
 					root["title"] = "Set to disco mode!";
 					std::string idx = request::findValue(&req, "idx");
@@ -3842,7 +3842,7 @@ namespace http
 					root["status"] = "OK";
 					break;
 				}
-				case "discomode"_:
+				case "discomode"_sh:
 				{
 					root["title"] = "Set to last known disco mode!";
 					std::string idx = request::findValue(&req, "idx");
@@ -3857,7 +3857,7 @@ namespace http
 					root["status"] = "OK";
 					break;
 				}
-				case "discoup"_:
+				case "discoup"_sh:
 				{
 					root["title"] = "Set to next disco mode!";
 					std::string idx = request::findValue(&req, "idx");
@@ -3872,7 +3872,7 @@ namespace http
 					root["status"] = "OK";
 					break;
 				}
-				case "discodown"_:
+				case "discodown"_sh:
 				{
 					root["title"] = "Set to previous disco mode!";
 					std::string idx = request::findValue(&req, "idx");
@@ -3887,7 +3887,7 @@ namespace http
 					root["status"] = "OK";
 					break;
 				}
-				case "speedup"_:
+				case "speedup"_sh:
 				{
 					root["title"] = "Set disco speed up!";
 					std::string idx = request::findValue(&req, "idx");
@@ -3902,7 +3902,7 @@ namespace http
 					root["status"] = "OK";
 					break;
 				}
-				case "speeduplong"_:
+				case "speeduplong"_sh:
 				{
 					root["title"] = "Set speed long!";
 					std::string idx = request::findValue(&req, "idx");
@@ -3917,7 +3917,7 @@ namespace http
 					root["status"] = "OK";
 					break;
 				}
-				case "speeddown"_:
+				case "speeddown"_sh:
 				{
 					root["title"] = "Set disco speed down!";
 					std::string idx = request::findValue(&req, "idx");
@@ -3932,7 +3932,7 @@ namespace http
 					root["status"] = "OK";
 					break;
 				}
-				case "speedmin"_:
+				case "speedmin"_sh:
 				{
 					root["title"] = "Set disco speed minimal!";
 					std::string idx = request::findValue(&req, "idx");
@@ -3947,7 +3947,7 @@ namespace http
 					root["status"] = "OK";
 					break;
 				}
-				case "speedmax"_:
+				case "speedmax"_sh:
 				{
 					root["title"] = "Set disco speed maximal!";
 					std::string idx = request::findValue(&req, "idx");
@@ -3962,7 +3962,7 @@ namespace http
 					root["status"] = "OK";
 					break;
 				}
-				case "warmer"_:
+				case "warmer"_sh:
 				{
 					root["title"] = "Set Kelvin up!";
 					std::string idx = request::findValue(&req, "idx");
@@ -3977,7 +3977,7 @@ namespace http
 					root["status"] = "OK";
 					break;
 				}
-				case "cooler"_:
+				case "cooler"_sh:
 				{
 					root["title"] = "Set Kelvin down!";
 					std::string idx = request::findValue(&req, "idx");
@@ -3992,7 +3992,7 @@ namespace http
 					root["status"] = "OK";
 					break;
 				}
-				case "fulllight"_:
+				case "fulllight"_sh:
 				{
 					root["title"] = "Set Full!";
 					std::string idx = request::findValue(&req, "idx");
@@ -4007,7 +4007,7 @@ namespace http
 					root["status"] = "OK";
 					break;
 				}
-				case "nightlight"_:
+				case "nightlight"_sh:
 				{
 					root["title"] = "Set to nightlight!";
 					std::string idx = request::findValue(&req, "idx");
@@ -4022,7 +4022,7 @@ namespace http
 					root["status"] = "OK";
 					break;
 				}
-				case "whitelight"_:
+				case "whitelight"_sh:
 				{
 					root["title"] = "Set to clear white!";
 					std::string idx = request::findValue(&req, "idx");
