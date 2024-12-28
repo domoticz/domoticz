@@ -5,35 +5,38 @@
 namespace
 {
 	// https://html5sec.org/
-	const auto szForbiddenContent = std::array<std::string, 28>{
-		"script",		 // noscript/onbeforescriptexecute
-		"style",		 //
-		"svg",			 //
-		"audio",		 //
-		"video",		 //
-		"head",			 //
-		"math",			 //
-		"template",		 //
-		"form",			 // formaction
-		"input",		 // oninput
-		"onerror",		 //
-		"frame",		 // iframe/noframe/frameset
-		"img",			 //
-		"marquee",		 //
-		"applet",		 //
-		"object",		 //
-		"embed",		 //
-		"math",			 //
-		"href",			 //
-		"onfocus",		 //
-		"onresize",		 //
-		"onactivate",		 //
-		"onscroll",		 //
-		"onwebkittransitionend", //
-		"onanimationstart",	 //
-		"ontoggle",		 //
-		"details",		 //
-		"table",		 //
+	const auto szForbiddenContent = std::array<std::string, 31>{
+		"script",
+		"style",
+		"svg",
+		"audio",
+		"video",
+		"head",
+		"math",
+		"template",
+		"form",
+		"input",
+		"onerror",
+		"frame",
+		"img",
+		"marquee",
+		"applet",
+		"object",
+		"embed",
+		"math",
+		"href",
+		"onfocus",
+		"onresize",
+		"onactivate",
+		"onscroll",
+		"onwebkittransitionend",
+		"onanimationstart",
+		"ontoggle",
+		"details",
+		"table",
+		"alert",
+		"onerror",
+		"onmouseover",
 	};
 } // namespace
 

@@ -799,7 +799,7 @@ namespace http
 				return; // Only admin user allowed
 			}
 			std::string variablename = HTMLSanitizer::Sanitize(request::findValue(&req, "vname"));
-			std::string variablevalue = request::findValue(&req, "vvalue");
+			std::string variablevalue = HTMLSanitizer::Sanitize(request::findValue(&req, "vvalue"));
 			std::string variabletype = request::findValue(&req, "vtype");
 
 			root["title"] = "AddUserVariable";
@@ -872,7 +872,7 @@ namespace http
 
 			std::string idx = request::findValue(&req, "idx");
 			std::string variablename = HTMLSanitizer::Sanitize(request::findValue(&req, "vname"));
-			std::string variablevalue = request::findValue(&req, "vvalue");
+			std::string variablevalue = HTMLSanitizer::Sanitize(request::findValue(&req, "vvalue"));
 			std::string variabletype = request::findValue(&req, "vtype");
 
 			root["title"] = "UpdateUserVariable";
