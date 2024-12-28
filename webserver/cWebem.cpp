@@ -20,7 +20,7 @@
 #include "../main/Logger.h"
 
 #define JWT_DISABLE_BASE64
-#include "../jwt-cpp/jwt.h"
+#include <jwt-cpp/jwt.h>
 
 #define SHORT_SESSION_TIMEOUT 600 // 10 minutes
 #define LONG_SESSION_TIMEOUT (30 * 86400) // 30 days

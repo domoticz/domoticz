@@ -6,7 +6,7 @@
 #include "../main/json_helper.h"
 
 #define JWT_DISABLE_BASE64
-#include "../jwt-cpp/jwt.h"
+#include <jwt-cpp/jwt.h>
 #include "../webserver/Base64.h"
 
 #define GAPI_FCM_POST_URL_BASE "https://fcm.googleapis.com/v1/projects/##PROJECTID##/messages:send"
