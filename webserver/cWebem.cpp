@@ -565,7 +565,7 @@ namespace http {
 
 			// Determine the file extension.
 			std::string extension;
-			if (req.uri.find("json.htm") != std::string::npos)
+			if (req.uri.find("/json.htm?") != std::string::npos)
 			{
 				extension = "json";
 			}
@@ -1934,7 +1934,7 @@ namespace http {
 				}
 				else if (_ah.method == "BASIC")
 				{
-					if (req.uri.find("json.htm") != std::string::npos)	// Exception for the main API endpoint so scripts can execute them with 'just' Basic AUTH
+					if (req.uri.find("/json.htm?") != std::string::npos)	// Exception for the main API endpoint so scripts can execute them with 'just' Basic AUTH
 					{
 						if (AllowBasicAuth())	// Check if Basic Auth is allowed either over HTTPS or when explicitly enabled
 						{
@@ -2140,6 +2140,7 @@ namespace http {
 
 		void cWebemRequestHandler::handle_request(const request& req, reply& rep)
 		{
+			// 0) If extended Webserver debugging is turned on, than log the request details
 			if(_log.IsDebugLevelEnabled(DEBUG_WEBSERVER))
 			{
 				_log.Debug(DEBUG_WEBSERVER, "[web:%s] Host:%s Uri:%s", myWebem->GetPort().c_str(), req.host_remote_address.c_str(), req.uri.c_str());
@@ -2154,13 +2155,14 @@ namespace http {
 				}
 			}
 
+			// 1) Is the incoming request ment for this Virtual Host?
 			if(!myWebem->CheckVHost(req))
 			{
 				rep = reply::stock_reply(reply::bad_request);
 				return;
 			}
 
-			// Decode url to path.
+			// 2) Decode url to path and check for invalid characters
 			std::string request_path;
 			if (!request_handler::url_decode(req.uri, request_path))
 			{
@@ -2182,7 +2184,7 @@ namespace http {
 			rep.status = reply::ok;
 			rep.bIsGZIP = false;
 
-			// Let's examine possible proxies, etc.
+			// 3a) Let's examine possible proxies, etc.
 			std::string realHost;
 			bool bUseRealHost = false;
 			if(!myWebem->findRealHostBehindProxies(req, realHost))
@@ -2194,7 +2196,7 @@ namespace http {
 			else if (!realHost.empty())
 			{
 				if (AreWeInTrustedNetwork(session.remote_host))
-				{	// We only use Proxy header information if the connection Domoticz receives comes from a Trusted network
+				{	// 3b) We only use Proxy header information if the connection Domoticz receives comes from a Trusted network
 					session.remote_host = realHost;		// replace the host of the connection with the originating host behind the proxies
 					rep.originHost = realHost;
 					bUseRealHost = true;
@@ -2214,7 +2216,7 @@ namespace http {
 			itt_rc->second.last_seen = mytime(nullptr);
 			itt_rc->second.host_last_request_uri_ = req.uri;
 
-			// Respond to CORS Preflight request (for JSON API)
+			// 4) Respond to CORS Preflight request (for JSON API)
 			if (req.method == "OPTIONS")
 			{
 				reply::add_header(&rep, "Content-Length", "0");
@@ -2226,14 +2228,16 @@ namespace http {
 				return;
 			}
 
+			// 5) Check if the request is a page (or an action) or that is 'just' a normal resources being requested
 			bool isPage = myWebem->IsPageOverride(req, rep);
 			bool isAction = myWebem->IsAction(req);		// This is used but will be removed in the future and replaced by the JSON API commands
 			bool isAuthenticated = CheckAuthentication(session, req, rep);	// This check also restores the session if an active session is found
 
-			bool isAPI = (isPage && (req.uri.find("json.htm") != std::string::npos));
-			bool isLogout = (isAPI && (req.uri.find("dologout") != std::string::npos));
-			bool isLogin = (isAPI && (req.uri.find("logincheck") != std::string::npos));
+			bool isAPI = (isPage && (req.uri.find("/json.htm?") != std::string::npos));
+			bool isLogout = (isAPI && (req.uri.find("param=dologout") != std::string::npos));
+			bool isLogin = (isAPI && (req.uri.find("param=logincheck") != std::string::npos));
 
+			// 6) If the LogOut API is called, we will remove the session and the cookie
 			if (isLogout)
 			{
 				//Remove session id based on cookie
@@ -2261,14 +2265,15 @@ namespace http {
 				return;
 			}
 
-			// Check if this is an upgrade request to a websocket connection
+			// 7) Check if this is an upgrade request to a websocket connection
 			bool isUpgradeRequest = is_upgrade_request(session, req, rep);
 
-			bool needsAuthentication = (isPage ? !CheckAuthByPass(req) : false);		// Does the request needs to be Authorized?
+			// 8) Check if the request needs to be authenticated, only for pages (and actions)
+			bool needsAuthentication = (isPage ? !CheckAuthByPass(req) : false);
 
 			_log.Debug(DEBUG_AUTH,"[web:%s] isPage %d isAction %d isUpgrade %d needsAuthentication %d isAuthenticated %d (%s) isNew %d", myWebem->GetPort().c_str(), isPage, isAction, isUpgradeRequest, needsAuthentication, isAuthenticated, session.username.c_str(), session.isnew);
 
-			// Check user authentication on each page or action, if it exists.
+			// 9) Check if the request has proper user authentication for those pages (or actions) that require it. If not, send an Authorization request
 			if ((isPage || isAction || isUpgradeRequest) && needsAuthentication && !isAuthenticated)
 			{
 				_log.Debug(DEBUG_WEBSERVER, "[web:%s] Did not find suitable Authorization!", myWebem->GetPort().c_str());
@@ -2277,6 +2282,8 @@ namespace http {
 					rep.originHost = realHost;
 				return;
 			}
+
+			// 10) If this is an upgrade request, we are done
 			if (isUpgradeRequest)	// And authorized, which has been checked above
 			{
 				return;
@@ -2285,8 +2292,8 @@ namespace http {
 			// Copy the request to be able to fill its parameters attribute
 			request requestCopy = req;
 
+			// 11a) Run action if exists. NOTE: This is used but will be removed in the future and replaced by the JSON API commands.
 			bool bHandledAction = false;
-			// Run action if exists
 			if (isAction)
 			{
 				// Post actions only allowed when authenticated and user has admin rights
@@ -2311,6 +2318,7 @@ namespace http {
 				}
 			}
 
+			// 11b) If it wasn't an action (removed soon), it is either a page or a resource request
 			if (!bHandledAction)
 			{
 				if (myWebem->CheckForPageOverride(session, requestCopy, rep))
@@ -2325,13 +2333,13 @@ namespace http {
 				}
 				else
 				{
-					// do normal handling
+					// 11c) do normal handling
 					modify_info mInfo;
 					try
 					{
 						if (myWebem->m_actTheme.find("default") == std::string::npos)
 						{
-							// A theme is being used (not default) so some theme specific processing might be neccessary
+							// MOTE: A theme is being used (not default) so some theme specific processing might be neccessary
 							std::string uri = myWebem->ExtractRequestPath(requestCopy.uri);
 							if (uri.find("/images/") == 0)
 							{
@@ -2362,6 +2370,8 @@ namespace http {
 					}
 				}
 			}
+
+			// 12) We handled the request, now we need to check if we need to create a new session or renew the existing one
 
 			// Set timeout to make session in use
 			session.timeout = mytime(nullptr) + SHORT_SESSION_TIMEOUT;
