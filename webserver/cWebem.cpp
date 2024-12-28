@@ -1975,23 +1975,6 @@ namespace http {
 
 			_log.Debug(DEBUG_AUTH, "[web:%s] CheckAuthToken(%s_%s_%s) : Session found & Token authenticated", myWebem->GetPort().c_str(), session.id.c_str(), session.auth_token.c_str(), session.username.c_str());
 
-			/*
-			if (session.rights == 2)	// Why do we do this for Admins (or at all)? Can this be removed?
-			{
-				// we are already admin - restore session from db
-				session.expires = storedSession.expires;
-				time_t now = mytime(nullptr);
-				if (session.expires < now)
-				{
-					removeAuthToken(session.id);
-					return false;
-				}
-				session.timeout = now + SHORT_SESSION_TIMEOUT;
-				myWebem->AddSession(session);
-				return true;
-			}
-			*/
-
 			if (session.username.empty())
 			{
 				// Restore session if user exists and session does not already exist
