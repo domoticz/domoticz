@@ -73,11 +73,7 @@ CNetatmo::CNetatmo(const int ID, const std::string& username, const std::string&
 
 	m_nextRefreshTs = mytime(nullptr);
 	m_isLogged = false;
-//	m_weatherType = NETYPE_WEATHER_STATION;
-//	m_homecoachType = NETYPE_AIRCARE;
-//	m_energyType = NETYPE_ENERGY;
-//	m_Home_ID = "";
-	m_ActHome = 0;
+
 	Debug(DEBUG_HARDWARE, "Netatmo Actif Scopes %s ", m_scopes.c_str());
 
 	m_bPollWeatherData = (m_scopes.find("station_R") != std::string::npos);      //read_station
@@ -110,7 +106,9 @@ void CNetatmo::Init()
 	m_Module_Bat_Level.clear();
 	m_Module_RF_Level.clear();
 	m_Types.clear();
+	m_Device_types.clear();
 	m_Module_category.clear();
+	m_DeviceBridge.clear();
 	m_thermostatModuleID.clear();
 	m_ScheduleNames.clear();
 	m_ScheduleIDs.clear();
@@ -126,10 +124,6 @@ void CNetatmo::Init()
 	m_bFirstTimeThermostat = true;
 	m_bFirstTimeWeatherData = true;
 	m_bForceSetpointUpdate = false;
-
-//        m_energyType = NETYPE_ENERGY;
-//        m_weatherType = NETYPE_WEATHER_STATION;
-//        m_homecoachType = NETYPE_AIRCARE;
 
 	m_bForceLogin = false;
 }
@@ -583,7 +577,7 @@ bool CNetatmo::WriteToHardware(const char* pdata, const unsigned char /*length*/
 		//Debug(DEBUG_HARDWARE, "Netatmo level %d", level);
 		//Debug(DEBUG_HARDWARE, "Netatmo filler %d", filler);
 		//Debug(DEBUG_HARDWARE, "Netatmo rssi %d", rssi);
-		//xcmd;
+
 		int length = xcmd->len;
 		int uid = xcmd->id;
 		int unitcode = xcmd->unitcode;
@@ -596,9 +590,6 @@ bool CNetatmo::WriteToHardware(const char* pdata, const unsigned char /*length*/
 		//Debug(DEBUG_HARDWARE, "Netatmo subType ( %" PRIu64 ") %08X ", ulId1, uid);
 		//Debug(DEBUG_HARDWARE, "Netatmo length %d", length);
 		//Debug(DEBUG_HARDWARE, "Netatmo uid %d", uid);
-		//std::stringstream sw_id;
-		//sw_id << std::uppercase << std::hex << uid;
-		//std::string uid_hex = sw_id.str();
 		//Debug(DEBUG_HARDWARE, "Netatmo uid_hex %d", uid_hex);
 		//Debug(DEBUG_HARDWARE, "Netatmo unitcode %d", unitcode);
 		//Debug(DEBUG_HARDWARE, "Netatmo xcmdType %d", xcmdType);
@@ -615,7 +606,6 @@ bool CNetatmo::WriteToHardware(const char* pdata, const unsigned char /*length*/
 		//Debug(DEBUG_HARDWARE, "Netatmo uid %08X", uid);
 
 		return SetProgramState(uid, xcmd->level);
-		//return true;
 	}
 	else
 	{
@@ -638,7 +628,6 @@ bool CNetatmo::SetAway(const int id, const bool bIsAway)
 {
 	//Debug(DEBUG_HARDWARE, "NetatmoThermostat Away id = %d", id);
 	int uid = id;
-
 	return SetProgramState(uid, (bIsAway == true) ? 1 : 0);
 }
 
@@ -665,17 +654,18 @@ bool CNetatmo::SetProgramState(const int uid, const int newState)
 	std::string home_data;
 	bool bRet;              //Parsing status
 	bool bHaveDevice;
-	std::string module_id = m_DeviceModuleID[uid];
-	std::string type_module = m_thermostatModuleID[uid];
+	std::string module_id = m_DeviceModuleID[uid];            // mac-adres
+	std::string type_module = m_Device_types[module_id];
+	std::string module_MAC  = m_thermostatModuleID[uid];
 	std::string name = m_ModuleNames[module_id];
+	std::string Device_bridge = m_DeviceBridge[module_id];
 	std::string roomNetatmoID = m_RoomIDs[module_id];
 	std::string Home_id = m_DeviceHomeID[roomNetatmoID];      // Home_ID
 	//Debug(DEBUG_HARDWARE, "Device MAC %s", module_id.c_str());
 
 	if (!m_thermostatModuleID[uid].empty())
 	{
-		//
-		Debug(DEBUG_HARDWARE, "Set Thermostat State MAC = %s - %d", module_id.c_str(), newState);
+		//Debug(DEBUG_HARDWARE, "Set Thermostat State MAC = %s - %d", module_id.c_str(), newState);
 
 		std::string thermState;
 		switch (newState)
@@ -706,16 +696,31 @@ bool CNetatmo::SetProgramState(const int uid, const int newState)
 			return false;
 		}
 		bHaveDevice = true;
+		// Energy        {NAPlug, OTH, BNS}
+		// Home+control  {NLG,    OTH, BNS, NBG,              BNMH}
+		// Home+security {NACamera, NOC, NDB, NSD, NCO, BNCX, BNMH}
+
 		// NAPlug = Netatmo Thermostat
-		// OTH = Opentherm Thermostat Relay
 		// BNS = Smarther with Netatmo Thermostat
+		// NLG = Legrand Gateway
+		// OTH = Opentherm Thermostat Relay
+		// NBG = 
+		// BNMH = Bticino MyHome server 1
 		//
+		std::string Type_bridge = m_Device_types[Device_bridge];
+		Debug(DEBUG_HARDWARE, "Type Device bridge = %s", Type_bridge.c_str());
+		std::string Type;             // Only parse devices off current selected Device bridge
+		if (type_module == "NRV")
+			Type = "NAPlug";
+		else
+			Type = type_module;
+		Debug(DEBUG_HARDWARE, "Device Type %s =  %s ??", Type.c_str(), type_module.c_str());
 		// When a thermostat mode is changed all thermostat/valves in Home are changed by Netatmo
 		// So we have to update the corresponding devices       Device_Types {NAPlug, OTH, BNS}
 		// https://api.netatmo.com/api/homestatus?home_id=xxxxx&device_types=NAPlug
-		std::string Type = "NAPlug";
+		//
 		std::string _data = "home_id=" + Home_id + "&device_types=" + Type ;
-		//Debug(DEBUG_HARDWARE, "Home_Data = %s ", _data.c_str());
+
 		Get_Respons_API(NETYPE_STATUS, sResult, _data, bRet, root, "");
 		//Parse API response
 		bRet = ParseHomeStatus(sResult, root, Home_id);
@@ -799,7 +804,6 @@ void CNetatmo::SetSetpoint(unsigned long ID, const float temp)
 	Json::Value root;
 	std::string module_id = m_DeviceModuleID[uid];             //uid
 	std::string name = m_ModuleNames[module_id];
-	//Debug(DEBUG_HARDWARE, "NetatmoThermostat %s = %s", name.c_str(), module_id.c_str());
 	std::string roomNetatmoID = m_RoomIDs[module_id];
 	std::string Home_id = m_DeviceHomeID[roomNetatmoID];      // Home_ID
 	//Debug(DEBUG_HARDWARE, "Netatmo Thermostat MAC; %s in Room ID = %s in Home: %s", module_id.c_str(), roomNetatmoID.c_str(), Home_id.c_str());
@@ -836,7 +840,6 @@ void CNetatmo::SetSetpoint(unsigned long ID, const float temp)
 	std::string sResult;
 	std::stringstream sstr;
 	std::stringstream bstr;
-	//Json::Value root;       // root JSON object
 	std::string home_data;
 	bool ret = false;
 	bool bRet;              //Parsing status
@@ -853,7 +856,6 @@ void CNetatmo::SetSetpoint(unsigned long ID, const float temp)
 		home_data = "home_id=" + Home_id + "&room_id=" + roomNetatmoID.c_str() + "&mode=" + Mode  + "&temp=" + std::to_string(temp)  + "&endtime=" + std::to_string(end_time) + "&get_favorites=true&";
 		// https://api.netatmo.com/api/setroomthermpoint?home_id=xxxxxx&room_id=xxxxxxx&mode=manual&temp=22&endtime=xxxxxxxxx
 		Get_Respons_API(NETYPE_SETROOMTHERMPOINT, sResult, home_data, bRet, root, "");
-		///Debug(DEBUG_HARDWARE, "Netatmo Energytype Energy ");
 	}
 	else         // Not used ??
 	{
@@ -899,9 +901,10 @@ bool CNetatmo::SetSchedule(int uId, int selected)
 			return false;
 	}
 
+	std::string scheduleName = m_ScheduleNames[selected];
 	std::string scheduleId = m_ScheduleIDs[selected];
 	std::string Home_id = m_DeviceHomeID[scheduleId];            // Home_ID
-	//Debug(DEBUG_HARDWARE, "Schedule id = %s %d", scheduleId.c_str(), uId);
+	Debug(DEBUG_HARDWARE, "Schedule id = %s %d %s %d", scheduleId.c_str(), uId, scheduleName.c_str(), selected);
 	std::stringstream bstr;
 	std::string sResult;
 	Json::Value root;       // root JSON object
@@ -940,23 +943,22 @@ bool CNetatmo::SetSchedule(int uId, int selected)
 	}
 	//store the selected schedule in our local data to avoid
 	//changing back the schedule when using away mode
-	m_selectedScheduleID = uId;
+	m_selectedScheduleID = selected;
 
 	// When a thermostat mode is changed all thermostat/valves in Home are changed by Netatmo
 	// So we have to update the corresponding devices       Device_Types {NAPlug, OTH, BNS}
 	// https://api.netatmo.com/api/homestatus?home_id=xxxxx&device_types=NAPlug
 	std::string Type = "NAPlug";
 	std::string _data = "home_id=" + Home_id + "&device_types=" + Type;
-	//Debug(DEBUG_HARDWARE, "Home_Data = %s ", _data.c_str());
+
 	Get_Respons_API(NETYPE_STATUS, sResult, _data, bRet, root, "");
 	//Parse API response
-	//bRet = ParseHomeStatus(sResult, root, Home_id);
+	bRet = ParseHomeStatus(sResult, root, Home_id);
 	if (!bRet)
 	{
 		Log(LOG_ERROR, "NetatmoThermostat: Error setting setpoint state!");
 		return false;
 	}
-
 	return true;
 }
 
@@ -1080,10 +1082,6 @@ std::string CNetatmo::MakeRequestURL(const m_eNetatmoType NType, std::string dat
 
 	sstr << "?";
 	sstr << data;
-	//sstr << "&";
-	//sstr << "access_token=" << m_accessToken;
-	//sstr << "&";
-	//sstr << "get_favorites=" << "true";
 	return sstr.str();
 }
 
@@ -1214,7 +1212,6 @@ void CNetatmo::GetHomesDataDetails()
 				{
 					for (auto room : home["rooms"])
 					{
-						//Json::Value room = home["rooms"];
 						std::string roomNetatmoID = room["id"].asString();
 						std::stringstream stream_id;
 						stream_id << roomNetatmoID;
@@ -1256,6 +1253,7 @@ void CNetatmo::GetHomesDataDetails()
 							std::string type = module["type"].asString();
 							std::string macID = module["id"].asString();
 							std::string roomNetatmoID;
+							m_Device_types[macID] = type;
 							uint64_t moduleID = convert_mac(macID);
 							int Hardware_int = (int)moduleID;
 							//Debug(DEBUG_HARDWARE, "Homedata modules %lu -  %s in Home = %s" , moduleID, macID.c_str(), homeID.c_str());
@@ -1358,12 +1356,12 @@ void CNetatmo::GetHomesDataDetails()
 						std::string schedule_id = schedule["id"].asString();
 						std::string schedule_type = schedule["type"].asString();
 						bool schedule_selected = schedule["selected"].asBool();                // true / false
-						//int schedule_int = schedule["id"].asInt();
 						index += 10;
-						m_ScheduleNames[index] = schedule["name"].asString();
+						if (schedule_type == "therm")
+							m_ScheduleNames[index] = schedule["name"].asString();
 						m_ScheduleIDs[index] = schedule_id;
 						m_DeviceHomeID[schedule_id] = homeID;
-						if (!schedule["selected"].empty() && schedule["selected"].asBool())
+						if (!schedule["selected"].empty() && schedule["selected"].asBool() && schedule_type == "therm")
 							m_selectedScheduleID = index;
 					}
 				}
@@ -1382,7 +1380,6 @@ void CNetatmo::GetHomesDataDetails()
 						std::string user_id = user["id"].asString();
 					}
 				}
-				//return homeid;
 			}
 		}
 	}
@@ -1411,14 +1408,7 @@ void CNetatmo::GetWeatherDetails()
 
 		//Parse API response
 		bRet = ParseStationData(sResult, false);
-		//if (bRet)
-		//{
-			// Data was parsed with success so we have our device
-			//m_weatherType = NETYPE_WEATHER_STATION;
-		//}
-		//m_bPollWeatherData = false;
 	}
-//	m_bFirstTimeWeatherData = false;
 }
 
 
@@ -1443,12 +1433,6 @@ void CNetatmo::GetHomecoachDetails()
 
 		//Parse API response
 		bRet = ParseStationData(sResult, false);
-		//if (bRet)
-		//{
-		//	// Data was parsed with success so we have our device
-		//	m_homecoachType = NETYPE_AIRCARE;
-		//}
-		//m_bPollHomecoachData = false;
 	}
 }
 
@@ -1498,12 +1482,6 @@ void CNetatmo::GetHomeStatusDetails()
 		if (m_bPollGetEvents)
 			Get_Events(home_data, device_types, event_id, person_id, bridge_id, module_id, offset, size, locale);
 	}
-	//if (bRet)
-	//{
-	//	// Data was parsed with success so we have our device
-	//	m_energyType = NETYPE_STATUS;
-	//}
-	//m_bPollHomeStatus = false;
 }
 
 
@@ -1551,12 +1529,8 @@ void CNetatmo::Get_Measure(std::string gateway, std::string module_id, std::stri
 	if (!root["body"].empty())
 	{
 		//https://api.netatmo.com/api/getmeasure?device_id=xxxxx&module_id=xxxxx&scale=30min&type=sum_boiler_off&type=sum_boiler_on&type=boileroff&type=boileron&optimize=false&real_time=false
-		//bRet = ParseData(sResult);
-		//if (bRet)
-		//{
 		//	// Data was parsed with success
 		Log(LOG_STATUS, "Measure Data parsed");
-		//}
 	}
 }
 
@@ -1699,8 +1673,6 @@ bool CNetatmo::ParseStationData(const std::string& sResult, const bool bIsThermo
 			else if (!device["name"].empty())
 				station_name = device["name"].asString();
 
-			//stdreplace(name, "'", "");
-			//stdreplace(station_name, "'", "");
 			int crcId = Crc32(0, (const unsigned char*)id.c_str(), id.length());
 			m_ModuleIDs[module_id] = crcId;
 			bool bHaveFoundND = false;
@@ -1760,6 +1732,7 @@ bool CNetatmo::ParseStationData(const std::string& sResult, const bool bIsThermo
 				if (device["modules"].isArray())
 				{
 					// Add modules for this device
+					int iModulIndex = 0;
 					for (auto module : device["modules"])
 					{
 						if (module.isObject())
@@ -1776,6 +1749,7 @@ bool CNetatmo::ParseStationData(const std::string& sResult, const bool bIsThermo
 							int crcId = Crc32(0, (const unsigned char*)mid.c_str(), mid.length());
 							uint64_t moduleID = convert_mac(mid);
 							int Hardware_int = (int)moduleID;
+							m_Device_types[mid] = mtype;
 							m_ModuleIDs[moduleID] = crcId;
 							//Debug(DEBUG_HARDWARE, "%d %lu -  %s " , Hardware_int, moduleID, mid.c_str());
 
@@ -1797,7 +1771,7 @@ bool CNetatmo::ParseStationData(const std::string& sResult, const bool bIsThermo
 							if (!module["dashboard_data"].empty())
 							{
 								//SaveJson2Disk(module["dashboard_data"], std::string("./") + mname.c_str() + ".txt");
-								ParseDashboard(module["dashboard_data"], iDevIndex, crcId, mname, mtype, mbattery_percent, mrf_status, mid, home_id);
+								ParseDashboard(module["dashboard_data"], iModulIndex, crcId, mname, mtype, mbattery_percent, mrf_status, mid, home_id);
 								nDevice.SignalLevel = mrf_status;
 								nDevice.BatteryLevel = mbattery_percent;
 							}
@@ -1900,11 +1874,7 @@ bool CNetatmo::ParseDashboard(const Json::Value& root, const int DevIdx, const i
 		// Check when dashboard data was last updated
 		if (!root["time_utc"].empty())
 			tNetatmoLastUpdate = root["time_utc"].asUInt();
-//		else
-//		{
-//			Log(LOG_STATUS, "No time stamp in received data; using current time");
-//			tNetatmoLastUpdate = tNow;
-//		}
+
 		//Debug(DEBUG_HARDWARE, "Module [%s] last update = %s (%d)", name.c_str(), ctime(&tNetatmoLastUpdate), tNetatmoLastUpdate);
 
 		// check if Netatmo data was updated in the past NETAMO_POLL_INTERVALL (+1 min for sync time lags)... if not means sensors failed to send to cloud
@@ -2035,50 +2005,16 @@ bool CNetatmo::ParseDashboard(const Json::Value& root, const int DevIdx, const i
 		//Debug(DEBUG_HARDWARE, "%s name Temp & Hum & Baro %d [%s] %d %d %d - %d / %d ", Hardware_int, Hardware_ID.c_str(), name.c_str(), temp, hum, baro, batValue, rssiLevel);
 
 		// Humidity status: 0 - Normal, 1 - Comfort, 2 - Dry, 3 - Wet
-		const char status = '0';
-		std::stringstream r;
-		r << Temp;
-		r << ";";
-		r << hum;
-		r << ";";
-		r << status;
-		r << ";";
-		r << baro;
-		r << ";";
-		r << nforecast;
-		sValue = r.str().c_str();
-		// sValue is string with values separated by semicolon: Temperature;Humidity;Humidity Status;Barometer;Forecast
-		//Debug(DEBUG_HARDWARE, "(%d) %s (%s) [%s] Temp & Humidity & Baro %s %s %d %d", Hardware_int, str_ID.c_str(), pchar_ID, name.c_str(), sValue.c_str(), m_Name.c_str(), rssiLevel, batValue);
-		//UpdateValueInt(0, str_ID.c_str(), 0, pTypeTEMP_HUM_BARO, sTypeTHBFloat, rssiLevel, batValue, '0', sValue.c_str(), name,  0, m_Name);
 		SendTempHumBaroSensorFloat(ID, batValue, Temp, hum, static_cast<float>(baro), (uint8_t)nforecast, name, rssiLevel);
 	}
 	else if (bHaveTemp && bHaveHum)
 	{
 		//Debug(DEBUG_HARDWARE, "name Temp & Hum [%s] %d %d - %d / %d ", name.c_str(), temp, hum, batValue, rssiLevel);
-
-		const char status = '0';
-		std::stringstream s;
-		s << Temp;
-		s << ";";
-		s << hum;
-		s << ";";
-		s << status;
-		std::string sValue = s.str().c_str();
-		// sValue is string with values separated by semicolon: Temperature;Humidity
-		//Debug(DEBUG_HARDWARE, "(%d) %s (%s) [%s] Temp & Humidity %s %s %d %d", Hardware_int, str_ID.c_str(), pchar_ID, name.c_str(), sValue.c_str(), m_Name.c_str(), rssiLevel, batValue);
-		//UpdateValueInt(0, str_ID.c_str(), 0, pTypeTEMP_HUM, sTypeTH_LC_TC, rssiLevel, batValue, '0', sValue.c_str(), name, 0, m_Name);
 		SendTempHumSensor(ID, batValue, Temp, hum, name, rssiLevel);
 	}
 	else if (bHaveTemp)
 	{
 		//Debug(DEBUG_HARDWARE, "name Temp [%s] %d - %d / %d ", name.c_str(), temp, batValue, rssiLevel);
-
-		//std::stringstream t;
-		//t << Temp;
-		//std::string sValue = "";
-
-		//Debug(DEBUG_HARDWARE, "(%d) %s (%s) [%s] temp %f %s %d %d", temp, str_ID.c_str(), pchar_ID, name.c_str(), Temp, m_Name.c_str(), rssiLevel, batValue);
-		//UpdateValueInt(0, str_ID.c_str(), 0, pTypeGeneral, sTypeTemperature, rssiLevel, batValue, temp, sValue.c_str(), name, 0, m_Name);
 		SendTempSensor(ID, batValue, Temp, name, rssiLevel);
 	}
 
@@ -2096,73 +2032,24 @@ bool CNetatmo::ParseDashboard(const Json::Value& root, const int DevIdx, const i
 	//Rain meter
 	if (bHaveRain)
 	{
-		bool bRefetchData = (m_RainOffset.find(ID) == m_RainOffset.end());
-		if (!bRefetchData)
-			bRefetchData = ((m_RainOffset[ID] == 0) && (m_OldRainCounter[ID] == 0));
-		if (bRefetchData)
-		{
-			// get last rain counter from the database
-			bool bExists = false;
-			m_RainOffset[ID] = GetRainSensorValue(ID, bExists);
-			m_RainOffset[ID] -= rain;
-			if (m_RainOffset[ID] < 0)
-				m_RainOffset[ID] = 0;
-			if (m_OldRainCounter.find(ID) == m_OldRainCounter.end())
-				m_OldRainCounter[ID] = 0;
-		}
-		// daily counter went to zero ?
-		if (rain < m_OldRainCounter[ID])
-			m_RainOffset[ID] += m_OldRainCounter[ID];
-
-		m_OldRainCounter[ID] = rain;
-		std::stringstream v;
-		v << rain_1;
-		v << ";";
-		v << rain_24;
-		std::string sValue = v.str().c_str();
-                ///Debug(DEBUG_HARDWARE, "(%d) %s (%s) [%s] rain %s %s %d %d", Hardware_int, str_ID.c_str(), pchar_ID, name.c_str(), sValue.c_str(), m_Name.c_str(), rssiLevel, batValue);
-		//UpdateValueInt(0, str_ID.c_str(), 0, pTypeRAIN, sTypeRAINByRate, rssiLevel, batValue, '0', v.str().c_str(), Name, 0, m_Name);
-		SendRainSensor(ID, batValue, rain_24 + rain_1, name, rssiLevel);
-		//SendRainSensorWU(ID, batValue, rain_24, rain_1, name + "- WU", rssiLevel);
+		//SendRainSensor(ID, batValue, rain_24 + rain_1, name, rssiLevel);
+		SendRainSensorWU(ID, batValue, rain_24, rain_1, name, rssiLevel);
 	}
 
 	if (bHaveCO2)
 	{
-		//Debug(DEBUG_HARDWARE, "(%d) %s (%d)", co2, name.c_str(), batValue);
+		Debug(DEBUG_HARDWARE, "(%d) DevIdx = %d (%d) co2 = %d %s bHaveCO2 = %d", ID, DevIdx, batValue, co2, name.c_str(), bHaveCO2);
 		SendAirQualitySensor(ID, DevIdx, batValue, co2, name);  // No RF-level
-		//Debug(DEBUG_HARDWARE, "(%d) %s (%s) [%s] co2 rssiLevel %d batValue %d nValue %d sValue %s %s ", Hardware_int, str_ID.c_str(), pchar_ID, name.c_str(), rssiLevel, batValue, co2, std::to_string(co2).c_str(), m_Name.c_str());
-		//UpdateValueInt(0, str_ID.c_str(), 0, pTypeAirQuality, sTypeVoc, rssiLevel, batValue, co2, "", name, 0, m_Name);
 	}
 
 	if (bHaveSound)
 	{
-		//Debug(DEBUG_HARDWARE, "(%d) %s (%d)", sound, name.c_str(), batValue);
 		SendSoundSensor(ID, batValue, sound, name);  // No RF-level
-		//Debug(DEBUG_HARDWARE, "(%d) %s (%s) [%s] sound %s %s %d %d", Hardware_int, str_ID.c_str(), pchar_ID, name.c_str(), std::to_string(sound).c_str(), m_Name.c_str(), rssiLevel, batValue);
-		//UpdateValueInt(0, str_ID.c_str(), 0, pTypeGeneral, sTypeSoundLevel, rssiLevel, batValue, '0', std::to_string(sound).c_str(), name, 0, m_Name);
 	}
 
 	if (bHaveWind)
 	{
-		std::string wind_direction = WindDirection(static_cast<float>(wind_angle));
-		const char status = '0';
-		std::stringstream y;
-		y << wind_angle;
-		y << ";";
-		y << wind_direction;
-		y << ";";
-		y << wind_strength *10;
-		y << ";";
-		y << wind_gust *10;
-		y << ";";
-		y << Temp_outdoor;
-		y << ";";
-		y << wind_Chill;
-		std::string sValue = y.str().c_str();
-		// sValue: "<WindDirDegrees>;<WindDirText>;<WindAveMeterPerSecond*10>;<WindGustMeterPerSecond*10>;<Temp_c>;<WindChill_c>"
 		SendWind(ID, batValue, wind_angle, wind_strength, wind_gust, wind_Temp, wind_Chill, false, false, name, rssiLevel);
-		//Debug(DEBUG_HARDWARE, "(%d) %s (%s) [%s] wind %s %s %d %d", Hardware_int, str_ID.c_str(), pchar_ID, name.c_str(), sValue.c_str(), m_Name.c_str(), rssiLevel, batValue);
-		//UpdateValueInt(0, str_ID.c_str(), 0, pTypeWIND, sTypeWINDNoTempNoChill, rssiLevel, batValue, '0', sValue.c_str(), name, 0, m_Name);
 	}
 
 	return true;
@@ -2366,7 +2253,7 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 				crcId = Crc32(0, (const unsigned char*)module_id.c_str(), module_id.length());
 				m_ModuleIDs[Hardware_int] = crcId;
 				std::string type = module["type"].asString();
-
+				m_Device_types[module_id] = type;
 				//SaveJson2Disk(module, std::string("./") + moduleName.c_str() + ".txt");
 
 				//Debug(DEBUG_HARDWARE, " %d -  %s in Home; %s" , Hardware_int, module_id.c_str(), home_id.c_str());
@@ -2386,8 +2273,6 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 				ID4 = std::to_string(crcId & 0xFFFF);	// ID.substr(ID.length()-4, 4);
 				std::string sValue;
 				sValue = module_id;
-				//---uint8_t ID4 = (uint8_t)((crcId & 0x000000FF));	// Not used
-				std::string module_Name = moduleName + " - MAC-adres";
 				bool reachable;
 				bool connected = true;
 				std::time_t tNetatmoLastUpdate = 0;
@@ -2507,7 +2392,6 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 					if (!module["battery_level"].empty())
 					{
 						std::string bat_Name = " " + moduleName + " - Bat. Lvl";
-						//UpdateValueInt(0, ID.c_str(), 3, pTypeGeneral, sTypeCustom, mrf_status, batteryLevel, '0', bat_percentage.c_str(), batName,  0, m_Name); // Battery level
 						SendPercentageSensor(crcId, 3, batteryLevel, static_cast<float>(batteryLevel), bat_Name);
 					}
 					if (!module["ts"].empty())
@@ -2543,12 +2427,10 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 					{
 						std::string bridge_ = module["bridge"].asString();
 						std::string Bridge_Name = m_ModuleNames[bridge_];
+						m_DeviceBridge[module_id] = bridge_;
 						std::string Module_Name = moduleName + " - Bridge";
 						std::string bridgeValue = Bridge_Name + " " + bridge_;
 						nDevice.StationName = Bridge_Name;
-						int mrf_status_bridge = m_wifi_status[bridge_];
-						//UpdateValueInt(0, ID.c_str(), 4, pTypeGeneral, sTypeTextStatus, mrf_status_bridge, 255, '0', bridge_.c_str(), Module_Name, 0, m_Name); // MAC-adres Bridge
-						//SendTextSensor(crcId, 4, 255, bridgeValue.c_str(), Module_Name.c_str());
 					}
 					if (!module["boiler_valve_comfort_boost"].empty())
 					{
@@ -2556,12 +2438,7 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 						std::string bName = moduleName + " - Boost";
 						//Debug(DEBUG_HARDWARE, "Boiler Boost %s - %s", bName.c_str(), boiler_boost.c_str() );
 						bool bIsActive = module["boiler_valve_comfort_boost"].asBool();
-						std::stringstream b;
-						b << boiler_boost;
-						b << ";";
-						b << boiler_boost;
-						std::string sValue = b.str().c_str();
-						//UpdateValueInt(0, ID.c_str(), 0, pTypeGeneralSwitch, sSwitchGeneralSwitch, '0', 255, '0', sValue.c_str(), bName,  bIsActive, m_Name);
+						
 					}
 					if (!module["boiler_status"].empty())
 					{
@@ -2588,8 +2465,8 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 							bIsActive = 3;
 						else
 							bIsActive = 4;
+
 						SendAlertSensor(crcId, batteryLevel, bIsActive, sValue.c_str(), a_Name.c_str()); // no RF-status
-						//UpdateValueInt(0, ID.c_str(), 5, pTypeGeneralSwitch, sSwitchGeneralSwitch, mrf_status, batteryLevel, '0', sValue.c_str(), a_Name, bIsActive, m_Name);
 					}
 					if (!module["floodlight"].empty())
 					{
@@ -2619,11 +2496,9 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 							Selector = "20";
 						}
 
-						std::string setpoint_mode = module["monitoring"].asString();     // "on"
-						//Debug(DEBUG_HARDWARE, "Floodlight name %s  mode %s, %s .", lName.c_str(), setpoint_mode.c_str(), Selector.c_str());
+						std::string setpoint_mode = module["monitoring"].asString();
 						m_DeviceModuleID[crcId] = module_id;
 						m_LightDeviceID[crcId] = lName;
-						//Debug(DEBUG_HARDWARE, "Floodlight =  %s -  %d", lName.c_str(), crcId);
 						SendSelectorSwitch(crcId, NETATMO_PRESET_UNIT, Selector, lName, 0, true, "off|on|auto", "", false, m_Name);   // No RF-level - Battery level
 					}
 					// Sensors from new API
@@ -2775,7 +2650,7 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 							// get last rain counter from the database
 							bool bExists = false;
 							m_RainOffset[crcId] = GetRainSensorValue(crcId, bExists);
-							m_RainOffset[crcId] -= rain;
+							m_RainOffset[crcId] -= rain_1;
 							if (m_RainOffset[crcId] < 0)
 								m_RainOffset[crcId] = 0;
 							if (m_OldRainCounter.find(crcId) == m_OldRainCounter.end())
@@ -2785,7 +2660,7 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 						if (rain < m_OldRainCounter[crcId])
 							m_RainOffset[crcId] += m_OldRainCounter[crcId];
 
-						m_OldRainCounter[crcId] = rain;
+						m_OldRainCounter[crcId] = rain_1;
 						std::stringstream v;
 						v << rain_1;
 						v << ";";
@@ -2793,14 +2668,20 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 
 						//Debug(DEBUG_HARDWARE, "(%d) %s (%s) [%s] rain %s %s %d %d", Hardware_int, str_ID.c_str(), pchar_ID, name.c_str(), v.str().c_str(), m_Name.c_str(), mrf_status, batteryLevel);
 						//UpdateValueInt(0, ID.c_str(), 0, pTypeRAIN, sTypeRAINByRate, mrf_status, batteryLevel, '0', v.str().c_str(), moduleName, 0, m_Name);
-						SendRainSensor(crcId, batteryLevel, rain_24 + rain_1, moduleName, mrf_status);
-						//SendRainSensorWU(crcId, batteryLevel, rain_24, rain_1, moduleName + "-WU", mrf_status);
+						//SendRainSensor(crcId, batteryLevel, m_RainOffset[crcId] + m_OldRainCounter[crcId], moduleName, mrf_status);
+						SendRainSensorWU(crcId, batteryLevel, rain_24, rain_1, moduleName + "-WU", mrf_status);
 					}
 					if (bHaveCO2)
 					{
 						//Debug(DEBUG_HARDWARE, "(%d) %s (%s) [%s] co2 rssiLevel %d batValue %d nValue %d sValue %s %s ", Hardware_int, str_ID.c_str(), pchar_ID, name.c_str(), mrf_status, batteryLevel, co2, std::to_string(co2).c_str(), m_Name.c_str());
 						//UpdateValueInt(0, ID.c_str(), 0, pTypeAirQuality, sTypeVoc, mrf_status, batteryLevel, co2, "", moduleName, 0, m_Name);
-						SendAirQualitySensor(crcId, iDevIndex, batteryLevel, co2, moduleName);
+						int unit;
+						if ((type =="NAMain") || (type == "NAModule4"))
+							unit = 0;
+						else
+							unit = iDevIndex;
+
+						SendAirQualitySensor(crcId, unit, batteryLevel, co2, moduleName);
 					}
 
 					if (bHaveSound)
@@ -2868,17 +2749,11 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 						t_R >> Temp;
 						SendTempSensor(crcId, batteryLevel, Temp, moduleName, mrf_status);
 
-						std::string sValue;
-						std::stringstream h;
-						h << bIsActive;
-						h >> sValue;
-
 						if (type == "NATherm1")
 						{
 							//information switch for active Boiler only when we have a Thermostat
 							// Valves don't have Boiler status
 							std::string bName = moduleName + " - Boiler Status";
-							//UpdateValueInt(0, ID.c_str(), 9, pTypeGeneralSwitch, sSwitchGeneralSwitch, mrf_status, batteryLevel, bIsActive, sValue.c_str(), bName,  0, m_Name);
 							SendGeneralSwitch(crcId, 9, batteryLevel, bIsActive, bIsActive, bName, m_Name, mrf_status);
 						}
 
@@ -2898,13 +2773,7 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 						//create update / domoticz device
 						SendSelectorSwitch(Hardware_int, 2, ssv.str(), moduleName + " - Schedule", 15, true, allSchName, allSchAction, true, m_Name);   // No RF-level - Battery level visible
 
-						std::stringstream Hardware_Stream;
-						Hardware_Stream << std::uppercase << std::hex << Hardware_int;
-						std::string Hardware_str;
-						Hardware_Stream >> Hardware_str;
-
 						std::string sName = moduleName + " - mode";
-						//Debug(DEBUG_HARDWARE, "setpoint_mode_str = %s", setpoint_mode_str.c_str());
 						SendSelectorSwitch(crcId, NETATMO_PRESET_UNIT, setpoint_mode_str, sName, 15, true, "Off|On|Away|Frost Guard", "", true, m_Name);   // No RF-level - Battery level visible
 
 						std::vector<std::vector<std::string> > result;
@@ -2917,13 +2786,11 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 					if ((type =="NACamera") || (type == "NCO") || (type == "NDB") || (type == "NOC") || (type == "NSD") || (type == "NIS") || (type == "NDL"))
 					{
 						//Only use Get Events when correct device is presend
-
 						m_bPollGetEvents = true;
 					}
 					Debug(DEBUG_HARDWARE, "Poll Get Events (%d)", m_bPollGetEvents);
-					//m_bPollGetEvents = false;  // Blocking GetEvents because off Error
+					//m_bPollGetEvents = false;  // Possible to Block GetEvents
 				}
-			//m_tNetatmoDevice.push_back(nDevice);
 			m_netatmo_devices.push_back(nDevice);
 			}
 		}
@@ -3023,27 +2890,10 @@ bool CNetatmo::ParseEvents(const std::string& sResult, Json::Value& root )
 				e_Name = m_ModuleNames[events_Module_ID] + " - events";
 				//converting ID to char const
 				crcId = Crc32(0, (const unsigned char*)events_Module_ID.c_str(), events_Module_ID.length());
-
-				std::stringstream events;
-
-				events << std::uppercase << std::hex << crcId;
-				events >> str_id;
-
-				pchar_ID = str_id.c_str();
-				std::string sValue = events_Module_ID;
-				std::string module_Name = e_Name + " - MAC-adres events";
-				//UpdateValueInt(0, str_id.c_str(), 11, pTypeGeneral, sTypeTextStatus, '0', 255, '0', sValue.c_str(), module_Name, 0, m_Name); //Events
-				//SendTextSensor(Hardware_int, 11, 255, sValue.c_str(), module_Name.c_str());
 			}
 			if (!events["message"].empty())
 			{
 				events_Message = events["message"].asString();
-				std::stringstream y;
-				y << events_Message;
-				y << ";";
-				y << events_Type;
-				std::string sValue = y.str().c_str();
-				//Debug(DEBUG_HARDWARE, "Message %s from %s %d %d", sValue.c_str(), e_Name.c_str(), Hardware_int, crcId);
 			}
 			if (!events["video_id"].empty())
 			{
@@ -3104,13 +2954,7 @@ bool CNetatmo::ParseEvents(const std::string& sResult, Json::Value& root )
 					if (!sub_events["message"].empty())
 					{
 						std::string events_subevents_Message = sub_events["message"].asString();
-						std::stringstream z;
-						z << events_subevents_type;
-						z << ";";
-						z << events_subevents_Message;
 						events_Message = events_subevents_Message;
-						std::string sValue = z.str().c_str();
-						//Debug(DEBUG_HARDWARE, "Sub Message %s from %s %d", sValue.c_str(), e_Name.c_str(), Hardware_int);
 					}
 				}
 			}
@@ -3147,7 +2991,6 @@ bool CNetatmo::ParseEvents(const std::string& sResult, Json::Value& root )
 			{
 				event_Text = events_Message + " - " + events_Type;
 				std::string sValue = event_Text.c_str();
-				//UpdateValueInt(0, str_id.c_str(), 12, pTypeGeneral, sTypeAlert, RF_status, 255, nValue, sValue.c_str(), e_Name, 0, m_Name);
 				SendAlertSensor(crcId, batteryLevel, alertLevel, sValue.c_str(), e_Name.c_str());
 			}
 		}
