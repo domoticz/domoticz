@@ -133,25 +133,6 @@ namespace http {
 
 		Create a link between a string ID and a function to calculate the dynamic content of the string
 
-		The function should return a pointer to a character buffer.  This should be contain only ASCII characters
-		( Unicode code points 1 to 127 )
-
-		@param[in] idname  string identifier
-		@param[in] fun pointer to function which calculates the string to be displayed
-
-		*/
-		/* 20230525 No Longer in Use! Will be removed Soon!
-
-		void cWebem::RegisterIncludeCode(const char *idname, const webem_include_function &fun)
-		{
-			myIncludes.insert(std::pair<std::string, webem_include_function >(std::string(idname), fun));
-		}
-		*/
-
-		/**
-
-		Create a link between a string ID and a function to calculate the dynamic content of the string
-
 		The function should return a pointer to wide character buffer.  This should contain a wide character UTF-16 encoded unicode string.
 		WEBEM will convert the string to UTF-8 encoding before sending to the browser.
 
@@ -198,70 +179,6 @@ namespace http {
 			_log.Debug(DEBUG_WEBSERVER, "cWebEm Registration: %d pages, %d actions, %d whitelist urls, %d whitelist commands",
 				(int)myPages.size(), (int)myActions.size(), (int)myWhitelistURLs.size(), (int)myWhitelistCommands.size());
 		}
-
-		/**
-
-		  Do not call from application code, used by server to include generated text.
-
-		  @param[in/out] reply  text to include generated
-
-		  The text is searched for "<!--#cWebemX-->".
-		  The X can be any string not containing "-->"
-
-		  If X has been registered with cWebem then the associated function
-		  is called to generate text to be inserted.
-
-		  returns true if any text is replaced
-
-
-		*/
-		/* 20230525 No longer in Use! Will be removed soon!
-		bool cWebem::Include(std::string& reply)
-		{
-			bool res = false;
-			size_t p = 0;
-			while (true)
-			{
-				// find next request for generated text
-				p = reply.find("<!--#embed", p);
-				if (p == std::string::npos)
-				{
-					break;
-				}
-				size_t q = reply.find("-->", p);
-				if (q == std::string::npos)
-					break;
-				q += 3;
-
-				size_t reply_len = reply.length();
-
-				// code identifying text generator
-				std::string code = reply.substr(p + 11, q - p - 15);
-
-				// find the function associated with this code
-				auto pf = myIncludes.find(code);
-				if (pf != myIncludes.end())
-				{
-					// insert generated text
-					std::string content_part;
-					try
-					{
-						pf->second(content_part);
-					}
-					catch (...)
-					{
-
-					}
-					reply.insert(p, content_part);
-					res = true;
-				}
-
-				// adjust pointer into text for insertion
-				p = q + reply.length() - reply_len;
-			}
-			return res;
-		}
-		*/
 
 		std::istream & safeGetline(std::istream & is, std::string & line)
 		{

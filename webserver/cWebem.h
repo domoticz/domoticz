@@ -149,7 +149,6 @@ namespace http
 			bool parse_cookie(const request &req, std::string &sSID, std::string &sAuthToken, std::string &szTime, bool &expired);
 			bool AreWeInTrustedNetwork(const std::string &sHost);
 			bool IsIPInRange(const std::string &ip, const _tIPNetwork &ipnetwork, const bool &bIsIPv6);
-			void Logout();
 			int parse_auth_header(const request &req, struct ah *ah);
 			std::string generateAuthToken(const WebEmSession &session, const request &req);
 			bool checkAuthToken(WebEmSession &session);
@@ -167,10 +166,6 @@ namespace http
 			~cWebem();
 			void Run();
 			void Stop();
-
-			// 20230525 No longer in Use! Will be removed soon!
-			//void RegisterIncludeCode(const char *idname, const webem_include_function &fun);
-			//bool Include(std::string &reply);
 
 			void RegisterPageCode(const char *pageurl, const webem_page_function &fun, bool bypassAuthentication = false);
 
