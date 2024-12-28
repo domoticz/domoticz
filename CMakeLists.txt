@@ -631,12 +631,8 @@ ENDIF(USE_BUILTIN_MINIZIP)
 # jwtcpp
 IF(USE_BUILTIN_JWTCPP)
   MESSAGE(STATUS "Using builtin jwt-cpp library")
-  #set(JWT_BUILD_EXAMPLES OFF CACHE BOOL "Enable jwt-cpp examples" FORCE)
-  #set(JWT_DISABLE_BASE64 OFF CACHE BOOL "Enable jwt-cpp buildin base64" FORCE)
-  #add_subdirectory (extern/jwtcpp EXCLUDE_FROM_ALL)
-  INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/extern/jwtcpp/include)
+  target_include_directories(domoticz PRIVATE ${CMAKE_SOURCE_DIR}/extern/jwtcpp/include)
 ENDIF(USE_BUILTIN_JSONCPP)
-
 
 #
 # Find MD5/RMD160/SHA library
