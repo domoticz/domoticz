@@ -632,7 +632,7 @@ ENDIF(USE_BUILTIN_MINIZIP)
 IF(USE_BUILTIN_JWTCPP)
   MESSAGE(STATUS "Using builtin jwt-cpp library")
   target_include_directories(domoticz PRIVATE ${CMAKE_SOURCE_DIR}/extern/jwtcpp/include)
-ENDIF(USE_BUILTIN_JSONCPP)
+ENDIF(USE_BUILTIN_JWTCPP)
 
 #
 # Find MD5/RMD160/SHA library
