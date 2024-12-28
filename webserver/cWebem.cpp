@@ -1618,7 +1618,6 @@ namespace http {
 				size_t fpos = scookie.find("DMZSID=");
 				if (fpos != std::string::npos)
 				{
-					bCookie = true;
 					scookie = scookie.substr(fpos);
 					fpos = 0;
 					size_t epos = scookie.find(';');	// Check if there are more cookies in this Header (and ignore those)
@@ -1641,6 +1640,8 @@ namespace http {
 						sstr >> stime;
 
 						expired = stime < now;
+						bCookie = true;
+						_log.Debug(DEBUG_AUTH, "[web:%s] Found cookie (%s) with expiration time (%s)(%d)", myWebem->GetPort().c_str(), sSID.c_str(), szTime.c_str(), expired);
 					}
 				}
 			}
@@ -1886,12 +1887,11 @@ namespace http {
 
 		bool cWebemRequestHandler::CheckAuthentication(WebEmSession & session, const request& req, reply& rep)
 		{
-			bool bTrustedNetwork = false;
-
 			session.rights = -1; // no rights
 			session.id = "";
 			session.username = "";
 			session.auth_token = "";
+			session.istrustednetwork = false;
 
 			if (myWebem->m_userpasswords.empty())
 			{
@@ -1916,7 +1916,7 @@ namespace http {
 					session.username = "{admin}";
 					session.rights = URIGHTS_ADMIN;
 				}
-				bTrustedNetwork = true;
+				session.istrustednetwork = true;
 			}
 
 			//Check for valid Authorization headers (JWT Token, Basis Authentication, etc.) and use these offered credentials
@@ -1977,10 +1977,9 @@ namespace http {
 			bool expired = false;
 			if(parse_cookie(req, sSID, sAuthToken, szTime, expired))
 			{
-				time_t now = mytime(nullptr);
-
 				if (!(sSID.empty() || sAuthToken.empty() || szTime.empty()))
 				{
+					time_t now = mytime(nullptr);
 					WebEmSession* oldSession = myWebem->GetSession(sSID);
 					if ((oldSession != nullptr) && (oldSession->expires < now))
 					{
@@ -2016,16 +2015,12 @@ namespace http {
 						// user is authenticated
 						return true;
 					}
-
-					return false;
 				}
-
-				return false;
 			}
 			else	// No session cookie found
 				session.isnew = true;
 
-			if (bTrustedNetwork)
+			if (session.istrustednetwork)
 				return true;
 
 			return false;
@@ -2172,14 +2167,17 @@ namespace http {
 
 			// Initialize session
 			WebEmSession session;
-			session.remote_host = req.host_remote_address;
-			session.remote_port = req.host_remote_port;
-			session.local_host = req.host_local_address;
-			session.local_port = req.host_local_port;
+			session.id = "";
+			session.username = "";
 			session.rights = -1;
 			session.reply_status = reply::ok;
 			session.isnew = false;
 			session.rememberme = false;
+			session.istrustednetwork = false;
+			session.remote_host = req.host_remote_address;
+			session.remote_port = req.host_remote_port;
+			session.local_host = req.host_local_address;
+			session.local_port = req.host_local_port;
 
 			rep.status = reply::ok;
 			rep.bIsGZIP = false;
@@ -2240,22 +2238,15 @@ namespace http {
 			// 6) If the LogOut API is called, we will remove the session and the cookie
 			if (isLogout)
 			{
-				//Remove session id based on cookie
-				std::string sSID;
-				std::string sAuthToken;
-				std::string szTime;
-				bool expired = false;
-
 				_log.Debug(DEBUG_AUTH, "[web:%s] Logout : Logging out User %s (%d)", myWebem->GetPort().c_str(), session.username.c_str(), session.rights);
 
-				session.id = "";
-				session.username = "";
-				session.rights = -1;
-				session.expires = mytime(nullptr);
 				rep = reply::stock_reply(reply::no_content);
 				if(bUseRealHost)
 					rep.originHost = realHost;
-				if(parse_cookie(req, sSID, sAuthToken, szTime, expired))
+
+				//Remove session id based on id found before in cookie
+				std::string sSID = session.id;
+				if(!sSID.empty())
 				{
 					_log.Debug(DEBUG_AUTH, "[web:%s] Logout : remove session %s", myWebem->GetPort().c_str(), sSID.c_str());
 					myWebem->RemoveSession(sSID);
@@ -2376,7 +2367,7 @@ namespace http {
 			// Set timeout to make session in use
 			session.timeout = mytime(nullptr) + SHORT_SESSION_TIMEOUT;
 
-			if (session.isnew == true)	// No session found and we need a session (not for API calls), create a new one
+			if (session.isnew == true && session.istrustednetwork == false)	// No session found and if we need a session (not for API calls or Trusted Network), create a new one
 			{
 				_log.Log(LOG_NORM, "[web:%s] Incoming connection from: %s", myWebem->GetPort().c_str(), session.remote_host.c_str());
 				if (isLogin && !session.username.empty())	// Make sure the login was succesfull

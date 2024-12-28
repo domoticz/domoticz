@@ -52,9 +52,10 @@ namespace http
 			int reply_status = 0;
 			time_t timeout = 0;
 			time_t expires = 0;
-			int rights = 0;
+			int16_t rights = URIGHTS_VIEWER;
 			bool rememberme = false;
 			bool isnew = false;
+			bool istrustednetwork = false;
 		} WebEmSession;
 
 		typedef struct _tIPNetwork
