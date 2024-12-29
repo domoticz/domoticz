@@ -5748,7 +5748,7 @@ uint64_t CSQLHelper::UpdateValueInt(
 		break;
 	}
 
-	_log.Debug(DEBUG_NORM, "SQLH UpdateValueInt %s HwID:%d  DevID:%s Type:%d  sType:%d nValue:%d sValue:%s ", devname.c_str(), HardwareID, ID, devType, subType, nValue, sValue);
+	_log.Debug(DEBUG_NORM, "SQLH UpdateValueInt %s HwID:%d  DevID:%s Type:%d  sType:%d nValue:%d sValue:%s IDX: %" PRIu64, devname.c_str(), HardwareID, ID, devType, subType, nValue, sValue, ulID);
 
 	if (bDeviceUsed)
 	{
