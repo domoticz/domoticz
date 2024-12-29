@@ -1,7 +1,7 @@
 --[[
 
 From the domoticz examples online:
-http://www.domoticz.com/wiki/Event_script_examples
+https://wiki.domoticz.com/Event_script_examples
 
 Send a warning when the garage door has been open for more than 10 minutes
 
