@@ -1,7 +1,7 @@
 # Building Domoticz
 
 ## Command line (CLI) ##
-Instructions for building Domoticz from CLI can be found here:https://www.domoticz.com/wiki/Build_Domoticz_from_source
+Instructions for building Domoticz from CLI can be found here:https://wiki.domoticz.com/Build_Domoticz_from_source
 
 ## Docker ##
 Domoticz can be build via CLI or via docker.
