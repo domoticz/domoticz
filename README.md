@@ -42,7 +42,7 @@ If you like the product or encourage the development, please use the link:
 # More information
 * Website: http://www.domoticz.com
 * Forum http://www.domoticz.com/forum
-* Wiki http://www.domoticz.com/wiki
+* Wiki https://wiki.domoticz.com/Main_Page
 
 <p>
   <a href="https://www.digitalocean.com/?refcode=323b5500715a&utm_campaign=Referral_Invite&utm_medium=Referral_Program&utm_source=badge">
