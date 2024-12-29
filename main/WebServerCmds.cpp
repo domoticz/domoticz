@@ -1427,7 +1427,7 @@ namespace http
 		{
 			root["status"] = "OK";
 			root["title"] = "GetVersion";
-			if (session.rights != -1 )
+			if (session.rights != URIGHTS_NONE)
 			{
 				root["version"] = szAppVersion;
 				root["hash"] = szAppHash;
@@ -1452,7 +1452,7 @@ namespace http
 		{
 			root["status"] = "OK";
 			root["title"] = "GetAuth";
-			if (session.rights != -1)
+			if (session.rights != URIGHTS_NONE)
 			{
 				root["user"] = session.username;
 				root["rights"] = session.rights;
@@ -1796,7 +1796,7 @@ namespace http
 
 		void CWebServer::Cmd_GetForecastConfig(WebEmSession& session, const request& req, Json::Value& root)
 		{
-			if (session.rights == -1)
+			if (session.rights == URIGHTS_NONE)
 			{
 				session.reply_status = reply::forbidden;
 				return; // Only auth user allowed
@@ -2585,7 +2585,7 @@ namespace http
 				if (session.username.empty())
 				{
 					// Local network could be changed so lets force a check here
-					session.rights = -1;
+					session.rights = URIGHTS_NONE;
 				}
 
 				std::string SecPassword = request::findValue(&req, "SecPassword");
