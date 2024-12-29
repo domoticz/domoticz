@@ -1802,7 +1802,7 @@ namespace http {
 			return false;
 		}
 
-		bool cWebemRequestHandler::CheckAuthentication(WebEmSession & session, const request& req, reply& rep)
+		bool cWebemRequestHandler::CheckAuthentication(WebEmSession &session, const request &req, bool &authErr)
 		{
 			session.rights = URIGHTS_NONE; // no rights
 			session.id = "";
@@ -1812,8 +1812,8 @@ namespace http {
 
 			if (myWebem->m_userpasswords.empty())
 			{
-				_log.Log(LOG_ERROR, "No (active) users in the system! There should be at least 1 active Admin user!");
-				session.reply_status = reply::internal_server_error;
+				_log.Log(LOG_ERROR, "[Auth Check] No (active) users in the system! There should be at least 1 active Admin user! Please add an Admin user to the system!");
+				authErr = true;
 				return false; // No users in the system!
 			}
 			else if (AreWeInTrustedNetwork(session.remote_host))
@@ -1829,9 +1829,9 @@ namespace http {
 				}
 				if (session.rights == URIGHTS_NONE)
 				{
-					_log.Debug(DEBUG_AUTH, "[Auth Check] Trusted network exception detected, but no Admin User found!");
+					_log.Log(LOG_STATUS, "[Auth Check] Trusted network exception detected, but no Admin User found! Please add an Admin user to the system!");
 					//If the User database table is without an Admin, we will create a temporary Admin user (we are in trusted network anyway)
-					session.username = "{admin}";
+					session.username = "tmp_admin";
 					session.rights = URIGHTS_ADMIN;
 				}
 				session.istrustednetwork = true;
@@ -2096,7 +2096,7 @@ namespace http {
 			}
 
 			// 3c) Check if the remote client is known and update the last seen time
-			session.seenbefore = true;
+			bool bSeenBefore = true;
 			std::string remoteClientKey = session.remote_host + session.local_port;
 			auto itt_rc = m_remote_web_clients.find(remoteClientKey);
 			if (itt_rc == m_remote_web_clients.end())
@@ -2106,10 +2106,10 @@ namespace http {
 				rc.host_local_endpoint_port_ = session.local_port;
 				m_remote_web_clients[remoteClientKey] = rc;
 				itt_rc = m_remote_web_clients.find(remoteClientKey);
-				session.seenbefore = false;
+				bSeenBefore = false;
 			}
 			else if (itt_rc->second.last_seen < (mytime(nullptr) - SHORT_SESSION_TIMEOUT))
-				session.seenbefore = false;
+				bSeenBefore = false;
 			itt_rc->second.last_seen = mytime(nullptr);
 			itt_rc->second.host_last_request_uri_ = req.uri;
 
@@ -2126,8 +2126,9 @@ namespace http {
 			}
 
 			// 5) Check Authentication and in case something unexpected went wrong with the authentication, we will return an internal server error and stop processing
-			bool isAuthenticated = CheckAuthentication(session, req, rep);	// This check also restores the session if an active session is found
-			if (session.reply_status != http::server::reply::ok)
+			bool bAuthErr = false;
+			bool isAuthenticated = CheckAuthentication(session, req, bAuthErr);	// This check also restores the session if an active session is found
+			if (bAuthErr)
 			{
 				rep = reply::stock_reply(reply::internal_server_error);
 				return;
@@ -2269,7 +2270,7 @@ namespace http {
 			}
 
 			// 13) Check if we have seen the client before (recently), if not, log it for security purposes
-			if (!session.seenbefore)
+			if (!bSeenBefore)
 				_log.Log(LOG_STATUS, "[web:%s] Incoming connection from: %s", myWebem->GetPort().c_str(), session.remote_host.c_str());
 
 			// 14) We handled the request, now we need to check if we need to create a new session or renew the existing one

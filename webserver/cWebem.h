@@ -50,14 +50,13 @@ namespace http
 			std::string local_port;
 			std::string auth_token;
 			std::string username;
-			int reply_status = http::server::reply::ok;
+			uint16_t reply_status = http::server::reply::ok;
 			time_t timeout = 0;
 			time_t expires = 0;
 			_eUserRights rights = URIGHTS_NONE;
 			bool rememberme = false;
 			bool isnew = false;
 			bool istrustednetwork = false;
-			bool seenbefore = false;
 		} WebEmSession;
 
 		typedef struct _tIPNetwork
@@ -141,7 +140,7 @@ namespace http
 			bool is_upgrade_request(WebEmSession &session, const request &req, reply &rep);
 			std::string compute_accept_header(const std::string &websocket_key);
 			bool CheckAuthByPass(const request& req);
-			bool CheckAuthentication(WebEmSession &session, const request &req, reply &rep);
+			bool CheckAuthentication(WebEmSession &session, const request &req, bool &authErr);
 			bool CheckUserAuthorization(std::string &user, struct ah *ah);
 			bool AllowBasicAuth();
 			void send_authorization_request(reply &rep);
