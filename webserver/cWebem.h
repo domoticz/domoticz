@@ -14,6 +14,7 @@ namespace http
 			URIGHTS_VIEWER = 0,
 			URIGHTS_SWITCHER,
 			URIGHTS_ADMIN,
+			URIGHTS_NONE=254,
 			URIGHTS_CLIENTID=255
 		};
 		enum _eAuthenticationMethod
@@ -49,13 +50,14 @@ namespace http
 			std::string local_port;
 			std::string auth_token;
 			std::string username;
-			int reply_status = 0;
+			int reply_status = http::server::reply::ok;
 			time_t timeout = 0;
 			time_t expires = 0;
-			int16_t rights = URIGHTS_VIEWER;
+			_eUserRights rights = URIGHTS_NONE;
 			bool rememberme = false;
 			bool isnew = false;
 			bool istrustednetwork = false;
+			bool seenbefore = false;
 		} WebEmSession;
 
 		typedef struct _tIPNetwork

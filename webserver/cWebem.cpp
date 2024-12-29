@@ -176,8 +176,8 @@ namespace http {
 		// Show a Debug line with the registered functions, actions, includes, whitelist urls and commands
 		void cWebem::DebugRegistrations()
 		{
-			_log.Debug(DEBUG_WEBSERVER, "cWebEm Registration: %d pages, %d actions, %d whitelist urls, %d whitelist commands",
-				(int)myPages.size(), (int)myActions.size(), (int)myWhitelistURLs.size(), (int)myWhitelistCommands.size());
+			_log.Debug(DEBUG_WEBSERVER, "cWebEm Registration: %zu pages, %zu actions, %zu whitelist urls, %zu whitelist commands",
+				myPages.size(), myActions.size(), myWhitelistURLs.size(), myWhitelistCommands.size());
 		}
 
 		std::istream & safeGetline(std::istream & is, std::string & line)
@@ -1804,7 +1804,7 @@ namespace http {
 
 		bool cWebemRequestHandler::CheckAuthentication(WebEmSession & session, const request& req, reply& rep)
 		{
-			session.rights = -1; // no rights
+			session.rights = URIGHTS_NONE; // no rights
 			session.id = "";
 			session.username = "";
 			session.auth_token = "";
@@ -1813,6 +1813,7 @@ namespace http {
 			if (myWebem->m_userpasswords.empty())
 			{
 				_log.Log(LOG_ERROR, "No (active) users in the system! There should be at least 1 active Admin user!");
+				session.reply_status = reply::internal_server_error;
 				return false; // No users in the system!
 			}
 			else if (AreWeInTrustedNetwork(session.remote_host))
@@ -1826,7 +1827,7 @@ namespace http {
 						break;
 					}
 				}
-				if (session.rights == -1)
+				if (session.rights == URIGHTS_NONE)
 				{
 					_log.Debug(DEBUG_AUTH, "[Auth Check] Trusted network exception detected, but no Admin User found!");
 					//If the User database table is without an Admin, we will create a temporary Admin user (we are in trusted network anyway)
@@ -1846,7 +1847,7 @@ namespace http {
 					session.isnew = false;
 					session.rememberme = false;
 					session.username = _ah.user;
-					session.rights = std::atoi(_ah.qop.c_str());
+					session.rights = static_cast<_eUserRights>(std::atoi(_ah.qop.c_str()));
 					return true;
 				}
 				else if (_ah.method == "BASIC")
@@ -1861,14 +1862,14 @@ namespace http {
 								session.isnew = false;
 								session.rememberme = false;
 								session.username = _ah.user;
-								session.rights = std::atoi(_ah.qop.c_str());
+								session.rights = static_cast<_eUserRights>(std::atoi(_ah.qop.c_str()));
 								return true;
 							}
 							else
 							{	// Clear the session as we could be in a Trusted Network BUT have invalid Basic Auth
 								_log.Debug(DEBUG_AUTH, "[Auth Check] Invalid Basic Authorization for API call!");
 								session.username = "";
-								session.rights = -1;
+								session.rights = URIGHTS_NONE;
 								return false;
 							}
 						}
@@ -1876,7 +1877,7 @@ namespace http {
 						{	// Clear the session as we could be in a Trusted Network BUT rejected Basic Auth
 							_log.Debug(DEBUG_AUTH, "[Auth Check] Basic Authorization rejected as it is not done over HTTPS or not explicitly allowed over HTTP!");
 							session.username = "";
-							session.rights = -1;
+							session.rights = URIGHTS_NONE;
 							return false;
 						}
 					}
@@ -2067,13 +2068,6 @@ namespace http {
 
 			// Initialize session
 			WebEmSession session;
-			session.id = "";
-			session.username = "";
-			session.rights = -1;
-			session.reply_status = reply::ok;
-			session.isnew = false;
-			session.rememberme = false;
-			session.istrustednetwork = false;
 			session.remote_host = req.host_remote_address;
 			session.remote_port = req.host_remote_port;
 			session.local_host = req.host_local_address;
@@ -2101,6 +2095,8 @@ namespace http {
 				}
 			}
 
+			// 3c) Check if the remote client is known and update the last seen time
+			session.seenbefore = true;
 			std::string remoteClientKey = session.remote_host + session.local_port;
 			auto itt_rc = m_remote_web_clients.find(remoteClientKey);
 			if (itt_rc == m_remote_web_clients.end())
@@ -2110,7 +2106,10 @@ namespace http {
 				rc.host_local_endpoint_port_ = session.local_port;
 				m_remote_web_clients[remoteClientKey] = rc;
 				itt_rc = m_remote_web_clients.find(remoteClientKey);
+				session.seenbefore = false;
 			}
+			else if (itt_rc->second.last_seen < (mytime(nullptr) - SHORT_SESSION_TIMEOUT))
+				session.seenbefore = false;
 			itt_rc->second.last_seen = mytime(nullptr);
 			itt_rc->second.host_last_request_uri_ = req.uri;
 
@@ -2126,16 +2125,23 @@ namespace http {
 				return;
 			}
 
-			// 5) Check if the request is a page (or an action) or that is 'just' a normal resources being requested
+			// 5) Check Authentication and in case something unexpected went wrong with the authentication, we will return an internal server error and stop processing
+			bool isAuthenticated = CheckAuthentication(session, req, rep);	// This check also restores the session if an active session is found
+			if (session.reply_status != http::server::reply::ok)
+			{
+				rep = reply::stock_reply(reply::internal_server_error);
+				return;
+			}
+
+			// 6) Check the type of request. Is it a page (or an action) or is it 'just' a normal resources being requested
 			bool isPage = myWebem->IsPageOverride(req, rep);
 			bool isAction = myWebem->IsAction(req);		// This is used but will be removed in the future and replaced by the JSON API commands
-			bool isAuthenticated = CheckAuthentication(session, req, rep);	// This check also restores the session if an active session is found
 
 			bool isAPI = (isPage && (req.uri.find("/json.htm?") != std::string::npos));
 			bool isLogout = (isAPI && (req.uri.find("param=dologout") != std::string::npos));
 			bool isLogin = (isAPI && (req.uri.find("param=logincheck") != std::string::npos));
 
-			// 6) If the LogOut API is called, we will remove the session and the cookie
+			// 7) If the LogOut API is called, we will remove the session and the cookie
 			if (isLogout)
 			{
 				_log.Debug(DEBUG_AUTH, "[web:%s] Logout : Logging out User %s (%d)", myWebem->GetPort().c_str(), session.username.c_str(), session.rights);
@@ -2156,15 +2162,15 @@ namespace http {
 				return;
 			}
 
-			// 7) Check if this is an upgrade request to a websocket connection
+			// 8) Check if this is an upgrade request to a websocket connection
 			bool isUpgradeRequest = is_upgrade_request(session, req, rep);
 
-			// 8) Check if the request needs to be authenticated, only for pages (and actions)
+			// 9) Check if the request needs to be authenticated, only for pages (and actions)
 			bool needsAuthentication = (isPage ? !CheckAuthByPass(req) : false);
 
 			_log.Debug(DEBUG_AUTH,"[web:%s] isPage %d isAction %d isUpgrade %d needsAuthentication %d isAuthenticated %d (%s) isNew %d", myWebem->GetPort().c_str(), isPage, isAction, isUpgradeRequest, needsAuthentication, isAuthenticated, session.username.c_str(), session.isnew);
 
-			// 9) Check if the request has proper user authentication for those pages (or actions) that require it. If not, send an Authorization request
+			// 10) Check if the request has proper user authentication for those pages (or actions) that require it. If not, send an Authorization request
 			if ((isPage || isAction || isUpgradeRequest) && needsAuthentication && !isAuthenticated)
 			{
 				_log.Debug(DEBUG_WEBSERVER, "[web:%s] Did not find suitable Authorization!", myWebem->GetPort().c_str());
@@ -2174,7 +2180,7 @@ namespace http {
 				return;
 			}
 
-			// 10) If this is an upgrade request, we are done
+			// 11) If this is an upgrade request, we are done
 			if (isUpgradeRequest)	// And authorized, which has been checked above
 			{
 				return;
@@ -2183,7 +2189,7 @@ namespace http {
 			// Copy the request to be able to fill its parameters attribute
 			request requestCopy = req;
 
-			// 11a) Run action if exists. NOTE: This is used but will be removed in the future and replaced by the JSON API commands.
+			// 12a) Run action if exists. NOTE: This is used but will be removed in the future and replaced by the JSON API commands.
 			bool bHandledAction = false;
 			if (isAction)
 			{
@@ -2209,7 +2215,7 @@ namespace http {
 				}
 			}
 
-			// 11b) If it wasn't an action (removed soon), it is either a page or a resource request
+			// 12b) If it wasn't an action (removed soon), it is either a page or a resource request
 			if (!bHandledAction)
 			{
 				if (myWebem->CheckForPageOverride(session, requestCopy, rep))
@@ -2262,14 +2268,17 @@ namespace http {
 				}
 			}
 
-			// 12) We handled the request, now we need to check if we need to create a new session or renew the existing one
+			// 13) Check if we have seen the client before (recently), if not, log it for security purposes
+			if (!session.seenbefore)
+				_log.Log(LOG_STATUS, "[web:%s] Incoming connection from: %s", myWebem->GetPort().c_str(), session.remote_host.c_str());
+
+			// 14) We handled the request, now we need to check if we need to create a new session or renew the existing one
 
 			// Set timeout to make session in use
 			session.timeout = mytime(nullptr) + SHORT_SESSION_TIMEOUT;
 
 			if (session.isnew == true && session.istrustednetwork == false)	// No session found and if we need a session (not for API calls or Trusted Network), create a new one
 			{
-				_log.Log(LOG_NORM, "[web:%s] Incoming connection from: %s", myWebem->GetPort().c_str(), session.remote_host.c_str());
 				if (isLogin && !session.username.empty())	// Make sure the login was succesfull
 				{
 					// Create a new session ID
