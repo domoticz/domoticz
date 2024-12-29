@@ -1,6 +1,6 @@
 --[[
     This script can be used to get notification message when plant sensor exceed specified tresholds.
-    It is specifically build to be used with the Xiaomi Mi Flora (https://www.domoticz.com/wiki/Mi_Flora_Bluetooth_LE), but can also be used with similar sensors
+    It is specifically build to be used with the Xiaomi Mi Flora (https://wiki.domoticz.com/Mi_Flora_Bluetooth_LE), but can also be used with similar sensors
 
     For the script to work correctly it is recommended your device names have the following convention:
 
