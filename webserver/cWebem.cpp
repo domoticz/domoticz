@@ -869,7 +869,7 @@ namespace http {
 			time_t now = mytime(nullptr);
 			for (const auto &session : m_sessions)
 			{
-				if (session.second.timeout < now)
+				if (session.second.expires < now)
 					ret.push_back(session.second.id);
 			}
 			return ret;
@@ -2275,16 +2275,13 @@ namespace http {
 
 			// 14) We handled the request, now we need to check if we need to create a new session or renew the existing one
 
-			// Set timeout to make session in use
-			session.timeout = mytime(nullptr) + SHORT_SESSION_TIMEOUT;
-
 			if (session.isnew == true && session.istrustednetwork == false)	// No session found and if we need a session (not for API calls or Trusted Network), create a new one
 			{
 				if (isLogin && !session.username.empty())	// Make sure the login was succesfull
 				{
 					// Create a new session ID
 					session.id = generateSessionID();
-					session.expires = session.timeout;
+					session.expires = mytime(nullptr) + SHORT_SESSION_TIMEOUT;
 					if (session.rememberme)
 					{
 						// Extend session by 30 days

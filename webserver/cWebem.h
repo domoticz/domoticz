@@ -50,9 +50,8 @@ namespace http
 			std::string local_port;
 			std::string auth_token;
 			std::string username;
-			uint16_t reply_status = http::server::reply::ok;
-			time_t timeout = 0;
 			time_t expires = 0;
+			uint16_t reply_status = http::server::reply::ok;
 			_eUserRights rights = URIGHTS_NONE;
 			bool rememberme = false;
 			bool isnew = false;
