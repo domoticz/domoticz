@@ -1,6 +1,6 @@
 //------------------------------------------------------------------------------
 // Add hardware plugin:
-//  https://www.domoticz.com/wiki/Developing_a_hardware_plugin
+//  https://wiki.domoticz.com/Developing_a_hardware_plugin
 // + Add type to herdware type selection function:
 // RFXNames.cpp
 // IsSerialDevice / IsNetworkDevice
