@@ -1,4 +1,4 @@
-'''Note''': This document is maintained on [https://github.com/domoticz/domoticz/blob/development/dzVents/documentation/README.md github], and the wiki version is automatically generated. Edits should be performed on github, or they may be suggested on the wiki article’s [https://wiki.domoticz.com/Talk:DzVents:_next_generation_Lua_scripting]. Editing can be done by any editor but if you are looking for a specialized markDown editor; [https://stackedit.io/app# stackedit.io] would be a good choice.
+'''Note''': This document is maintained on [https://github.com/domoticz/domoticz/blob/development/dzVents/documentation/README.md github], and the wiki version is automatically generated. Edits should be performed on github, or they may be suggested on the wiki article’s [DzVents:_next_generation_Lua_scripting Discussion page](https://wiki.domoticz.com/Talk:DzVents:_next_generation_Lua_scripting). Editing can be done by any editor but if you are looking for a specialized markDown editor; [https://stackedit.io/app# stackedit.io] would be a good choice.
 
 <span id="about-dzvents"></span>
 = About dzVents =
@@ -2626,7 +2626,7 @@ If you place a print statement all the way at the top of your script file it wil
 <span id="get-help"></span>
 === Get help ===
 
-The Domoticz forum is a great resource for help and solutions. Check the [https://www.domoticz.com/forum/viewforum.php?f=59 dzVents forum].
+The Domoticz forum is a great resource for help and solutions. Check the [https://forum.domoticz.com/viewforum.php?f=59 dzVents forum].
 
 <span id="other-interesting-stuff"></span>
 = Other interesting stuff =
@@ -2642,8 +2642,8 @@ _.print(_.indexOf({2, 3, 'x', 4}, 'x'))</syntaxhighlight>
 Check out the documentation [https://htmlpreview.github.io/?https://github.com/rwaaren/lodash.lua/blob/master/doc/index.html here].
 
 <span id="history-link-to-changes-in-previous-versions."></span>
-= History [https://wiki.domoticz.com/DzVents_version_History link to changes in previous versions]. =
+# History [link to changes in previous versions](https://wiki.domoticz.com/DzVents_version_History).
 
 See link for the complete list of changes
+http://www.domoticz.com/wiki/DzVents_version_History
 
-https://wiki.domoticz.com/DzVents_version_History
