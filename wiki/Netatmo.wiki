@@ -18,6 +18,7 @@ Features supported:
 
 
 <span id="Install :"></span>
+= Install =
 
 Enable "Accept new Hardware Devices" in Setup/Setting
 Add a "Netatmo" Hardware in Setup/Hardware. Input your Netatmo login and password. 5 minutes Data Timeout(not sure about that).
@@ -25,7 +26,8 @@ Turned the Thermostat up and down via the iPhone app and it showed up in Domotic
 In Setup/Devices, display the "not used" and "add" the new devices.
 [https://forum.domoticz.com Forum Domoticz].
 
-
+<span id="Authentication"></span>
+= Authentication =
 New Netatmo Authentication method implemented from 2024.1
 
 step 1:
@@ -59,8 +61,9 @@ if you take too long and Domoticz says it cannot login, error: No access granted
 
 Please try again....
 
-NOTE:
 
+<span id="supported Devices"></span>
+= supported Devices =
 At the moment, the supported Devices are;
 
 * Weather station,
