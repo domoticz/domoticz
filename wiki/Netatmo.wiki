@@ -1,0 +1,94 @@
+'''Note''': This document is maintained on [https://github.com/domoticz/domoticz/blob/development/dzVents/documentation/README.md github], and the wiki version is automatically generated. Edits should be performed on github, or they may be suggested on the wiki article’s [https://www.domoticz.com/wiki/Talk:DzVents:_next_generation_LUA_scripting Discussion page]. Editing can be done by any editor but if you are looking for a specialized markDown editor; [https://stackedit.io/app# stackedit.io] would be a good choice.
+
+<span id="Netatmo"></span>
+= About Netatmo Hardware =
+
+Features supported:
+
+Temperature sensor
+Set point switch
+"away" mode switch
+
+<span id="Install :"></span>
+
+Enable "Accept new Hardware Devices" in Setup/Setting
+Add a "Netatmo" Hardware in Setup/Hardware. Input your Netatmo login and password. 5 minutes Data Timeout(not sure about that).
+Turned the Thermostat up and down via the iPhone app and it showed up in Domoticz!
+In Setup/Devices, display the "not used" and "add" the 3 news devices.
+Forum : [Forum Domoticz](https://forum.domoticz.com).
+
+
+New Netatmo Authentication method implemented from 2024.1
+
+step 1:
+
+Setup an App under MyApps in the Netatmo developers portal (https://dev.netatmo.com/)
+
+The Redirect_URI has to contain
+
+http://localhost/netatmo
+Once configured correctly, the Client_ID and Client_Secret will be generated and shown.
+
+step 2:
+
+In the domoticz hardware setup:
+
+Create/modify the Netatmo hardware
+the username should contain <client_id>:<client_secret>
+the password should contain the retrieved <SOMECODE> as instructed below:
+To retrieve the code (a.k.a. authorisation_code), use the browser and type the following URL. Make sure to fill in the <YOURCLIENTID> with your clientid!
+
+https://api.netatmo.com/oauth2/authorize?client_id=<YOURCLIENTID>&redirect_uri=http%3A%2F%2Flocalhost%2Fnetatmo&state=teststate&scope=read_station%20read_thermostat%20write_thermostat%20read_homecoach%20read_smokedetector%20read_presence%20read_camera
+This URL brings you to the My Netatmo page where you have to identify yourself and are asked for permission to grant access to certain devices and types (based on the scope provided).
+
+After confirmation, your browser will try to redirect you to a page it cannot find so you will get an error. But the URL of that page is visible in the browser and looks like
+
+http://localhost/netatmo?state=teststate&code=<SOMECODE>
+You need to copy this SOMECODE as the password in the domoticz hardware screen. The <SOMECODE> you retrieved is only valid for a few minutes, so if you take too long and Domoticz says it cannot login, error: No access granted, check credentials...
+
+Please retrieve a new code and be a little quicker....
+
+NOTE:
+
+At the moment, the scopes are fixed to
+
+read_station
+read_thermostat
+write_thermostat
+read_homecoach
+read_smokedetector
+read_presence
+read_camera
+
+<span id="settings"></span>
+= Settings =
+
+Settings for Netatmo are found in the Domoticz GUI: '''Name: &gt; Client ID: &gt; Client Secret: &gt; Scope:''':
+
+*  '''Name''': This is the name you wan't for your Hardware module.
+*  '''Log level''',
+*  '''Data Timeout''',
+** '''Client ID''': Client ID obtained from Netatmo Development Site
+** '''Client Secret''': Client Secret obtained from Netatmo Development Site.
+** '''Scope''': Select here the Scope for your Netatmo Devices, make sure you only select scopes compatible with your devices!
+
+<span id="troubleshooting"></span>
+= Troubleshooting =
+
+So, you think if you have done everything correctly but things do not work (in some way) as you expected. Here are a couple steps you can do to find the cause.
+
+<span id="turn-on-debug-logging"></span>
+=== Turn on debug logging ===
+Edit your /etc/systemd/system/domoticz.service file to;
+
+ExecStart=/home/domoticz/domoticz -www 8484 -sslwww 8443 -log "/var/log/domoticz.log" -loglevel all -debuglevel normal,hardware,received,eventsystem
+WorkingDirectory=/home/domoticz
+
+
+=== Get help ===
+
+The Domoticz forum is a great resource for help and solutions. Check the [https://forum.domoticz.com].
+
+<span id="wiki Netamo Domoticz."></span>
+= History [link to wiki](https://wiki.domoticz.com/Netatmo) =
+
