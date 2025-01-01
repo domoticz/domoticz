@@ -19,8 +19,8 @@
 #include <algorithm>
 #include <set>
 
-#include <mdns_cpp/logger.hpp>
-#include <mdns_cpp/mdns.hpp>
+#include "mdns_cpp/logger.hpp"
+#include "mdns_cpp/mdns.hpp"
 
 //Hardware Devices
 #include "../hardware/hardwaretypes.h"
@@ -1235,7 +1235,8 @@ bool MainWorker::Stop()
 #ifdef ENABLE_PYTHON
 		m_pluginsystem.StopPluginSystem();
 #endif
-		//m_mdns.stopService();
+		if (m_mdns.isServiceRunning())	// Stop mDNS service
+			m_mdns.stopService();
 
 		//    m_cameras.StopCameraGrabber();
 
