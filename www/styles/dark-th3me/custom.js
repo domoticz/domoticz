@@ -8,7 +8,7 @@ Some useful things to get you started:
 
 1.
 To find out which classes are available to you, have a look at the page on the WIKI about theming.
-http://domoticz.com/wiki/How_to_theme_Domoticz
+https://wiki.domoticz.com/How_to_theme_Domoticz
 
 
 2.

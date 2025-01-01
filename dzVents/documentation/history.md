@@ -546,4 +546,4 @@ astronomical times. (AstronomicalTwilight. NauticalTwilight, CivilTwilight, sunr
 
  - Added domoticz object resource structure. Updated readme accordingly. No more (or hardly any) need for juggling with all the Domoticz Lua tables and commandArrays.
 
-= [Back to dzVents wiki](https://www.domoticz.com/wiki/DzVents:_next_generation_LUA_scripting) =
+= [Back to dzVents wiki](https://wiki.domoticz.com/DzVents:_next_generation_Lua_scripting) =
