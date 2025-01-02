@@ -145,6 +145,7 @@ CLogger _log;
 http::server::CWebServerHelper m_webservers;
 CSQLHelper m_sql;
 CNotificationHelper m_notifications;
+mdns_cpp::mDNS m_mdns;
 
 std::string logfile;
 std::string weblogfile;

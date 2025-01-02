@@ -196,7 +196,11 @@ extern bool g_bUseUpdater;
 extern http::server::_eWebCompressionMode g_wwwCompressMode;
 extern http::server::CWebServerHelper m_webservers;
 extern bool g_bUseEventTrigger;
+<<<<<<< HEAD
 extern bool bNoCleanupDev;
+=======
+extern mdns_cpp::mDNS m_mdns;
+>>>>>>> 03fb02e3f... Set correct scope for mDNS thread
 
 CFibaroPush m_fibaropush;
 CGooglePubSubPush m_googlepubsubpush;
@@ -1187,8 +1191,6 @@ bool MainWorker::Start()
 	mdns_cpp::Logger::setLoggerSink([](const std::string& log_msg) {
 		_log.Debug(DEBUG_WEBSERVER, "mDNS: %s", log_msg.c_str());
 	});
-
-	mdns_cpp::mDNS m_mdns;
 
 	m_mdns.setServiceHostname("airforce1");
 	m_mdns.setServicePort(8080);
