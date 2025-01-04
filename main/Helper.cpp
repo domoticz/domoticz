@@ -1035,12 +1035,20 @@ bool is_number(const std::string &s)
 {
 	std::string::const_iterator it = s.begin();
 	int iNbDots = 0;
-	while (it != s.end() && (isdigit(*it) || (*it == '.') || (*it == '-') || (*it == ' ') || (*it == 0x00)))
+	while (it != s.end() && *it == ' ')
+		++it;
+	if (it != s.end() && (*it == '-' || *it == '+'))
+		++it;
+	while (it != s.end() && (isdigit(*it) || *it == '.'))
 	{
 		if (*it == '.')
 			iNbDots++;
 		++it;
 	}
+	while (it != s.end() && *it == ' ')
+		++it;
+	if (it != s.end() && *it == 0x00)
+		++it;
 	return !s.empty() && it == s.end() && iNbDots <= 1;
 }
 
