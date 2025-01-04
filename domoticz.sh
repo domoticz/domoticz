@@ -25,6 +25,7 @@ DAEMON_ARGS="$DAEMON_ARGS -www 8080"
 DAEMON_ARGS="$DAEMON_ARGS -sslwww 443"
 #DAEMON_ARGS="$DAEMON_ARGS -log /tmp/domoticz.txt"
 #DAEMON_ARGS="$DAEMON_ARGS -syslog"
+#export PYTHONPATH=/home/pi/Domoticz_Python_Env:$PYTHONPATH
 
 # Exit if the package is not installed
 [ -x "$DAEMON" ] || exit 0

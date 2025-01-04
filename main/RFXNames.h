@@ -147,7 +147,7 @@ enum _eHardwareTypes {
 	HTYPE_KMTronic433,			//50
 	HTYPE_Pinger,				//51
 	HTYPE_NEST,					//52
-	HTYPE_THERMOSMART,			//53
+	HTYPE_NOT_USED,				//53
 	HTYPE_Netatmo,				//54
 	HTYPE_Kodi,					//55
 	HTYPE_ANNATHERMOSTAT,		//56

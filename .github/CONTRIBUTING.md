@@ -5,7 +5,7 @@ Thanks for considering to contribute to the Domoticz Development!
 Here are a few tips to help you get started:
 
 ### Contributing New Hardware to Domoticz
-Please consult http://www.domoticz.com/wiki/Developing_a_hardware_plugin
+Please consult http://wiki.domoticz.com/Developing_a_hardware_plugin
 for the steps and instructions on how to add new hardware to Domoticz
 
 ### Fixing Bugs

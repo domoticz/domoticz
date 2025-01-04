@@ -551,7 +551,7 @@ void CNestOAuthAPI::GetMeterDetails()
 			if (!ndevice["target_temperature_" + temperatureScale].empty())
 			{
 				float currentSetpoint = ndevice["target_temperature_" + temperatureScale].asFloat();
-				SendSetPointSensor(0, 0, 0, (const unsigned char)(iThermostat * 3) + 1, 0, currentSetpoint, Name + " Setpoint");
+				SendSetPointSensor(0, 0, 0, (const unsigned char)(iThermostat * 3) + 1, 0, 255, currentSetpoint, Name + " Setpoint");
 			}
 			// Room Temperature/Humidity
 			if (!ndevice["ambient_temperature_" + temperatureScale].empty())

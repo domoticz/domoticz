@@ -13,8 +13,10 @@ done
 # and after installation (first time) ssh to sourceforge so the key is accepted
 # ssh USERNAME@web.sourceforge.net
 
-SVN_UPLOAD_USER="USERNAME"
-SVN_UPLOAD_PASSWORD="PASSWORD"
+UPLOAD_USER="USERNAME"
+UPLOAD_PASSWORD="PASSWORD"
+UPLOAD_SERVER="SERVER"
+UPLOAD_PORT=PORT
 
 lowercase(){
     echo "$1" | sed "y/ABCDEFGHIJKLMNOPQRSTUVWXYZ/abcdefghijklmnopqrstuvwxyz/"
@@ -86,7 +88,7 @@ fi
 
 #################################
 echo "Uploading to SourceForge...";
-sshpass -p ${SVN_UPLOAD_PASSWORD} scp ${archive_file} ${archive_file}.sha256sum ${version_file} ${history_file} ${SVN_UPLOAD_USER}@web.sourceforge.net:/home/project-web/domoticz/htdocs/beta
+curl -k -T "{${archive_file},${archive_file}.sha256sum,${version_file},${history_file},History.txt}" -u ${UPLOAD_USER}:${UPLOAD_PASSWORD} sftp://${UPLOAD_SERVER}:${UPLOAD_PORT}/beta/
 if [ $? -ne 0 ]
 then
         echo "Error uploading to SourceForge!...";

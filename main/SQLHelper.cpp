@@ -1484,8 +1484,8 @@ bool CSQLHelper::OpenDatabase()
 		}
 		if (dbversion < 75)
 		{
-			safe_query("UPDATE Hardware SET Username='%q', Password='%q' WHERE ([Type]=%d)",
-				"Change_user_pass", "", HTYPE_THERMOSMART);
+			//safe_query("UPDATE Hardware SET Username='%q', Password='%q' WHERE ([Type]=%d)",
+			//	"Change_user_pass", "", HTYPE_THERMOSMART);
 			if (!DoesColumnExistsInTable("Description", "DeviceStatus"))
 			{
 				query("ALTER TABLE DeviceStatus ADD COLUMN [Description] VARCHAR(200) DEFAULT ''");
@@ -3652,7 +3652,7 @@ bool CSQLHelper::OpenDatabase()
 	}
 	if ((!GetPreferencesVar("Currency", sValue)) || (sValue.empty()))
 	{
-		std::string sstring = "€"; //�
+		std::string sstring = "€"; //�
 		UpdatePreferencesVar("Currency", sstring);
 	}
 	if (!GetPreferencesVar("P1DisplayType", nValue))
@@ -5748,7 +5748,7 @@ uint64_t CSQLHelper::UpdateValueInt(
 		break;
 	}
 
-	_log.Debug(DEBUG_NORM, "SQLH UpdateValueInt %s HwID:%d  DevID:%s Type:%d  sType:%d nValue:%d sValue:%s ", devname.c_str(), HardwareID, ID, devType, subType, nValue, sValue);
+	_log.Debug(DEBUG_NORM, "SQLH UpdateValueInt %s HwID:%d  DevID:%s Type:%d  sType:%d nValue:%d sValue:%s IDX: %" PRIu64, devname.c_str(), HardwareID, ID, devType, subType, nValue, sValue, ulID);
 
 	if (bDeviceUsed)
 	{

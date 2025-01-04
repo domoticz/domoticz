@@ -309,7 +309,7 @@ void CDomoticzHardwareBase::SendTempBaroSensor(const uint8_t NodeID, const int B
 	sDecodeRXMessage(this, (const unsigned char *)&tsensor, defaultname.c_str(), BatteryLevel, nullptr);
 }
 
-void CDomoticzHardwareBase::SendSetPointSensor(const uint8_t ID1, const uint8_t ID2, const uint8_t ID3, const uint8_t ID4, const uint8_t Unit, const float Value, const std::string& defaultname)
+void CDomoticzHardwareBase::SendSetPointSensor(const uint8_t ID1, const uint8_t ID2, const uint8_t ID3, const uint8_t ID4, const uint8_t Unit, const int BatteryLevel, const float Value, const std::string& defaultname)
 {
 	_tSetpoint setpoint;
 	setpoint.subtype = sTypeSetpoint;
@@ -319,6 +319,7 @@ void CDomoticzHardwareBase::SendSetPointSensor(const uint8_t ID1, const uint8_t 
 	setpoint.id4 = ID4;
 	setpoint.dunit = Unit;
 	setpoint.value = Value;
+	setpoint.battery_level = BatteryLevel;
 	sDecodeRXMessage(this, (const unsigned char *)&setpoint, defaultname.c_str(), -1, nullptr);
 }
 

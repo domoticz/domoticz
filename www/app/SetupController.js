@@ -1,16 +1,8 @@
 define(['app'], function (app) {
 	app.controller('SetupController', ['$scope', '$rootScope', '$window', '$location', '$http', '$interval', 'md5', function ($scope, $rootScope, $window, $location, $http, $interval, md5) {
 		
-		googleMapsCallback = function () {
-			$("#dialog-findlatlong").dialog("open");
-		};
-
 		$scope.GetGeoLocation = function () {
-			$.ajax({
-				url: "https://maps.googleapis.com/maps/api/js?v=3&callback=googleMapsCallback&sensor=false",
-				dataType: "script",
-				cache: true
-			});
+			$("#dialog-findlatlong").dialog("open");
 		}
 
 		$scope.AllowNewHardware = function (minutes) {
@@ -986,23 +978,21 @@ define(['app'], function (app) {
 							bootbox.alert($.t('Please enter a Address to search for!...'), 3500, true);
 							return false;
 						}
-						var url = "https://www.mapquestapi.com/geocoding/v1/address?key=XN5Eyt9GjLaRPG6T2if7VtUueRLckR8b&inFormat=kvp&outFormat=json&thumbMaps=false&location=" + address;
+						let url = "https://nominatim.openstreetmap.org/search?q="+encodeURIComponent(address)+"&format=json&addressdetails=1";
 						$http({
 							url: url,
 							async: true,
 							dataType: 'json'
 						}).then(function successCallback(response) {
 							var data = response.data;
-							var bIsOK = false;
-							if(data.hasOwnProperty('results')) {
-								if (data['results'][0]['locations'].length > 0) {
-									$('#dialog-findlatlong #latitude').val(data['results'][0]['locations'][0]['displayLatLng']['lat']);
-									$('#dialog-findlatlong #longitude').val(data['results'][0]['locations'][0]['displayLatLng']['lng']);//.toFixed(6)
-									bIsOK = true;
-								}
-							} 
-							if (!bIsOk) {
-								bootbox.alert($.t('Geocode was not successful for the following reason') + ': Invalid/No data returned!');
+
+							if (data.length > 0) {
+								const location = data[0];
+								const lat = location.lat;
+								const lon = location.lon;
+								//console.log(`Latitude: ${lat}, Longitude: ${lon}`);
+								$('#dialog-findlatlong #latitude').val(lat);
+								$('#dialog-findlatlong #longitude').val(lon);//.toFixed(6)
 							}
 						}, function errorCallback(response) {
 							bootbox.alert($.t('Geocode was not successful for the following reason') + ': ' + response.statusText);

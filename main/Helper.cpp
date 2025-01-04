@@ -222,6 +222,20 @@ void stdreplace(
 	}
 }
 
+void stdreplace(
+	std::wstring& inoutstring,
+	const std::wstring& replaceWhat,
+	const std::wstring& replaceWithWhat)
+{
+	size_t pos = 0;
+	while (std::wstring::npos != (pos = inoutstring.find(replaceWhat, pos)))
+	{
+		inoutstring.replace(pos, replaceWhat.size(), replaceWithWhat);
+		pos += replaceWithWhat.size();
+	}
+}
+
+
 bool std_ends_with(const std::string& str, const std::string& suffix)
 {
 	return str.size() >= suffix.size() && 0 == str.compare(str.size() - suffix.size(), suffix.size(), suffix);

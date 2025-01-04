@@ -396,7 +396,7 @@ namespace http
 			}
 			else if ((htype == HTYPE_Wunderground) || (htype == HTYPE_DarkSky) || (htype == HTYPE_VisualCrossing) || (htype == HTYPE_AccuWeather) || (htype == HTYPE_OpenWeatherMap) || (htype == HTYPE_ICYTHERMOSTAT) ||
 				(htype == HTYPE_TOONTHERMOSTAT) || (htype == HTYPE_AtagOne) || (htype == HTYPE_PVOUTPUT_INPUT) || (htype == HTYPE_NEST) || (htype == HTYPE_ANNATHERMOSTAT) ||
-				(htype == HTYPE_THERMOSMART) || (htype == HTYPE_Tado) || (htype == HTYPE_Tesla) || (htype == HTYPE_Mercedes) || (htype == HTYPE_Netatmo))
+				(htype == HTYPE_Tado) || (htype == HTYPE_Tesla) || (htype == HTYPE_Mercedes) || (htype == HTYPE_Netatmo))
 			{
 				if ((username.empty()) || (password.empty()))
 					return false;
@@ -799,7 +799,7 @@ namespace http
 				return; // Only admin user allowed
 			}
 			std::string variablename = HTMLSanitizer::Sanitize(request::findValue(&req, "vname"));
-			std::string variablevalue = request::findValue(&req, "vvalue");
+			std::string variablevalue = HTMLSanitizer::Sanitize(request::findValue(&req, "vvalue"));
 			std::string variabletype = request::findValue(&req, "vtype");
 
 			root["title"] = "AddUserVariable";
@@ -872,7 +872,7 @@ namespace http
 
 			std::string idx = request::findValue(&req, "idx");
 			std::string variablename = HTMLSanitizer::Sanitize(request::findValue(&req, "vname"));
-			std::string variablevalue = request::findValue(&req, "vvalue");
+			std::string variablevalue = HTMLSanitizer::Sanitize(request::findValue(&req, "vvalue"));
 			std::string variabletype = request::findValue(&req, "vtype");
 
 			root["title"] = "UpdateUserVariable";
@@ -2574,7 +2574,7 @@ namespace http
 				bool AllowPlainBasicAuth = (request::findValue(&req, "AllowPlainBasicAuth") == "on" ? 1 : 0);
 				m_sql.UpdatePreferencesVar("AllowPlainBasicAuth", AllowPlainBasicAuth);
 
-				m_pWebEm->SetAllowPlainBasicAuth(AllowPlainBasicAuth);
+				m_webservers.SetAllowPlainBasicAuth(AllowPlainBasicAuth);
 				cntSettings++;
 
 				std::string WebLocalNetworks = CURLEncode::URLDecode(request::findValue(&req, "WebLocalNetworks"));
@@ -4319,8 +4319,9 @@ namespace http
 				return;
 
 			std::string deviceid = request::findValue(&req, "deviceid");
-			std::string name = HTMLSanitizer::Sanitize(request::findValue(&req, "name"));
-			std::string description = HTMLSanitizer::Sanitize(request::findValue(&req, "description"));
+			std::string name = HTMLSanitizer::Sanitize(request::findValue(&req, "name")); stdstring_trim(name);
+			std::string text = HTMLSanitizer::Sanitize(request::findValue(&req, "text")); stdstring_trim(text);
+			std::string description = HTMLSanitizer::Sanitize(request::findValue(&req, "description")); stdstring_trim(description);
 			std::string sswitchtype = request::findValue(&req, "switchtype");
 			std::string maindeviceidx = request::findValue(&req, "maindeviceidx");
 			std::string addjvalue = request::findValue(&req, "addjvalue");
@@ -4373,12 +4374,6 @@ namespace http
 
 			int CustomImage = (!sCustomImage.empty()) ? std::stoi(sCustomImage) : OldCustomImage;
 
-			// Strip trailing spaces in 'name'
-			name = stdstring_trim(name);
-
-			// Strip trailing spaces in 'description'
-			description = stdstring_trim(description);
-
 			if (!setPoint.empty() || !state.empty())
 			{
 				double tempcelcius = atof(setPoint.c_str());
@@ -4410,6 +4405,13 @@ namespace http
 					m_sql.safe_query("UPDATE DeviceStatus SET Used=%d, Name='%q', Description='%q', SwitchType=%d, CustomImage=%d WHERE (ID == '%q')", used, name.c_str(),
 						description.c_str(), switchtype, CustomImage, idx.c_str());
 				}
+			}
+
+			if ((dType == pTypeGeneral) && (dSubType == sTypeTextStatus))
+			{
+				m_sql.safe_query("UPDATE DeviceStatus SET sValue='%q' WHERE (ID == '%q')", text.c_str(), idx.c_str());
+				m_mainworker.SetTextDevice(idx, text);
+				m_sql.UpdateLastUpdate(idx);
 			}
 
 			if (bHasstrParam1)

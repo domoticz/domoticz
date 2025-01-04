@@ -440,6 +440,11 @@ namespace tcp {
 
 				m_mainworker.SwitchEvoModal(szIdx, status, action, ooc, until);
 			}
+			else if (szAction == "SetTextDevice")
+			{
+				std::string text = root["text"].asString();
+				m_mainworker.SetTextDevice(szIdx, text);
+			}
 #ifdef WITH_OPENZWAVE
 			else if (szAction == "SetZWaveThermostatMode")
 			{

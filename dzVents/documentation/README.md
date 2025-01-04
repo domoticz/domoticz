@@ -1,4 +1,4 @@
-﻿**Note**: This document is maintained on [github](https://github.com/domoticz/domoticz/blob/development/dzVents/documentation/README.md), and the wiki version is automatically generated. Edits should be performed on github, or they may be suggested on the wiki article's [Discussion page](https://www.domoticz.com/wiki/Talk:DzVents:_next_generation_LUA_scripting).
+﻿**Note**: This document is maintained on [github](https://github.com/domoticz/domoticz/blob/development/dzVents/documentation/README.md), and the wiki version is automatically generated. Edits should be performed on github, or they may be suggested on the wiki article's [Discussion page](https://wiki.domoticz.com/Talk:DzVents:_next_generation_Lua_scripting).
 Editing can be done by any editor but if you are looking for a specialized markDown editor; [stackedit.io](https://stackedit.io/app#) would be a good choice.
 
 # About dzVents
@@ -1155,7 +1155,7 @@ See switch below.
  - **decreaseBrightness()**: deprecated because only very limited supported and will be removed from API
  - **getColor()**; *Function*. Returns table with color attributes or nil when color field of device is not set.
  - **increaseBrightness()**: deprecated because only very limited supported and will be removed from API
- - **setColor(r, g, b, br, cw, ww, m, t)**: *Function*. Sets the light to requested color. r, g, b required, others optional. Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29). Meaning and limits of parms can be found [here](https://www.domoticz.com/wiki/Domoticz_API/JSON_URL's#Set_a_light_to_a_certain_color_or_color_temperature).
+ - **setColor(r, g, b, br, cw, ww, m, t)**: *Function*. Sets the light to requested color. r, g, b required, others optional. Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29). Meaning and limits of parms can be found [here](https://wiki.domoticz.com/Domoticz_API/JSON_URL's#Set_a_light_to_a_certain_color_or_color_temperature).
  - **setColorBrightness()**: same as setColor
  - **setDiscoMode(modeNum)**: deprecated because only very limited supported and will be removed from API
 - **setHex(r, g, b)**: *Function*. Sets the light to requested color. r, g, b required (decimal Values 0-255). Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
@@ -2569,9 +2569,9 @@ _.print(_.indexOf({2, 3, 'x', 4}, 'x'))
 <!--- (Removed because link is dead. Hopefully only temporarily) Check out the great documentation [here](http://axmat.github.io/lodash.lua/). --->
 Check out the documentation [here](https://htmlpreview.github.io/?https://github.com/rwaaren/lodash.lua/blob/master/doc/index.html).
 
-# History [link to changes in previous versions](https://www.domoticz.com/wiki/DzVents_version_History).
+# History [link to changes in previous versions](https://wiki.domoticz.com/DzVents_version_History).
 
 See link for the complete list of changes
 
-https://www.domoticz.com/wiki/DzVents_version_History
+https://wiki.domoticz.com/DzVents_version_History
 

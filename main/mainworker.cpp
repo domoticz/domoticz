@@ -90,7 +90,6 @@
 #include "../hardware/Pinger.h"
 #include "../hardware/Nest.h"
 #include "../hardware/NestOAuthAPI.h"
-#include "../hardware/Thermosmart.h"
 #include "../hardware/Tado.h"
 #include "../hardware/eVehicles/eVehicle.h"
 #include "../hardware/Kodi.h"
@@ -937,9 +936,6 @@ bool MainWorker::AddHardwareFromParams(
 		break;
 	case HTYPE_ANNATHERMOSTAT:
 		pHardware = new CAnnaThermostat(ID, Address, Port, Username, Password);
-		break;
-	case HTYPE_THERMOSMART:
-		pHardware = new CThermosmart(ID, Username, Password, Mode1);
 		break;
 	case HTYPE_Tado:
 		pHardware = new CTado(ID, Username, Password);
@@ -12988,8 +12984,8 @@ bool MainWorker::SetSetPointInt(const std::vector<std::string>& sd, const float 
 
 		if (
 			(value_unit.empty())
-			|| (value_unit == "°C")
-			|| (value_unit == "°F")
+			|| (value_unit == "ï¿½C")
+			|| (value_unit == "ï¿½F")
 			|| (value_unit == "C")
 			|| (value_unit == "F")
 			)
@@ -13021,7 +13017,6 @@ bool MainWorker::SetSetPointInt(const std::vector<std::string>& sd, const float 
 		|| (pHardware->HwdType == HTYPE_NEST)
 		|| (pHardware->HwdType == HTYPE_Nest_OAuthAPI)
 		|| (pHardware->HwdType == HTYPE_ANNATHERMOSTAT)
-		|| (pHardware->HwdType == HTYPE_THERMOSMART)
 		|| (pHardware->HwdType == HTYPE_Tado)
 		|| (pHardware->HwdType == HTYPE_EVOHOME_SCRIPT)
 		|| (pHardware->HwdType == HTYPE_EVOHOME_SERIAL)
@@ -13074,11 +13069,6 @@ bool MainWorker::SetSetPointInt(const std::vector<std::string>& sd, const float 
 		else if (pHardware->HwdType == HTYPE_ANNATHERMOSTAT)
 		{
 			CAnnaThermostat* pGateway = dynamic_cast<CAnnaThermostat*>(pHardware);
-			pGateway->SetSetpoint(ID4, TempValue);
-		}
-		else if (pHardware->HwdType == HTYPE_THERMOSMART)
-		{
-			CThermosmart* pGateway = dynamic_cast<CThermosmart*>(pHardware);
 			pGateway->SetSetpoint(ID4, TempValue);
 		}
 		else if (pHardware->HwdType == HTYPE_Tado)
@@ -13217,12 +13207,6 @@ bool MainWorker::SetThermostatState(const std::string& idx, const int newState)
 		pGateway->SetProgramState(newState);
 		return true;
 	}
-	if (pHardware->HwdType == HTYPE_THERMOSMART)
-	{
-		//CThermosmart *pGateway = dynamic_cast<CThermosmart *>(pHardware);
-		//pGateway->SetProgramState(newState);
-		return true;
-	}
 	if (pHardware->HwdType == HTYPE_Netatmo)
 	{
 		CNetatmo* pGateway = dynamic_cast<CNetatmo*>(pHardware);
@@ -13236,6 +13220,43 @@ bool MainWorker::SetThermostatState(const std::string& idx, const int newState)
 		pGateway->SetProgramState(newState);
 		return true;
 	}
+	return false;
+}
+
+
+bool MainWorker::SetTextDevice(const std::string& idx, const std::string& text)
+{
+	//Get Device details
+	auto result = m_sql.safe_query(
+		"SELECT HardwareID, DeviceID,Unit,Type,SubType,SwitchType FROM DeviceStatus WHERE (ID == '%q')",
+		idx.c_str());
+	if (result.empty())
+		return false;
+
+	std::vector<std::string> sd = result[0];
+
+	int HardwareID = atoi(sd[0].c_str());
+	int hindex = FindDomoticzHardware(HardwareID);
+	if (hindex == -1)
+		return false;
+
+	CDomoticzHardwareBase* pHardware = GetHardware(HardwareID);
+	if (pHardware == nullptr)
+		return false;
+
+	if (pHardware->HwdType == HTYPE_Domoticz)
+	{
+		DomoticzTCP* pDomoticz = static_cast<DomoticzTCP*>(pHardware);
+		return pDomoticz->SetTextDevice(idx, text);
+	}
+	else if (pHardware->HwdType == HTYPE_MQTTAutoDiscovery)
+	{
+		MQTTAutoDiscover* pGateway = dynamic_cast<MQTTAutoDiscover*>(pHardware);
+		return pGateway->SetTextDevice(sd[1], text);
+	}
+	m_sql.safe_query("UPDATE DeviceStatus SET sValue='%q' WHERE (ID == '%q')", text.c_str(), idx.c_str());
+	m_sql.UpdateLastUpdate(idx);
+
 	return false;
 }
 

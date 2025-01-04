@@ -13,8 +13,6 @@
 #include "../webserver/Base64.h"
 #include "hardwaretypes.h"
 #include <iostream>
-//#define JWT_DISABLE_BASE64
-//#include "../jwt-cpp/jwt.h"
 
 //https://enphase.com/en-us/products-and-services/envoy
 
