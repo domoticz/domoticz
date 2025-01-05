@@ -21,6 +21,7 @@ Version 2024.x
 - Changed: Using OpenStreetMap for Latitude/Longitude query in settings
 - Fixed: Custom Icons, making sure they are valid and loaded OK
 - Fixed: Computed Meter summation
+- Fixed: Floorplan, corrected open/close icon behaviour
 - Fixed: Possible mutex lock issue when logging
 - Fixed: Pushers, corrected Gas value rounding
 - Fixed: Python framework, invalid sValue when creating a General/kWh sensor

@@ -1391,30 +1391,18 @@ function Blinds(item) {
     this.parent.constructor(item);
     this.data = '';
 
+	this.image2 = '';
+
     if (item.SwitchType.match(/percentage/i)) {
         this.haveDimmer = true;
-        this.image2 = '';
-        this.onClick2 = '';
-
-        if (item.Status == 'Open') {
-            this.image = 'images/blindsopen48sel.png';
-            this.onClick = 'SwitchLight(' + this.index + ",'Close'," + this.protected + ');';
-        } else {
-            this.image = 'images/blinds48sel.png';
-            this.onClick = 'SwitchLight(' + this.index + ",'Open'," + this.protected + ');';
-        }
-    } else {
-        if (item.Status == 'Open') {
-            this.image = 'images/blindsopen48sel.png';
-            this.image2 = 'images/blinds48.png';
-        }
-        else {
-            this.image = 'images/blinds48sel.png';
-            this.image2 = 'images/blindsopen48.png';
-        }
-        this.onClick = 'SwitchLight(' + this.index + ",'Open'," + this.protected + ');';
-        this.onClick2 = 'SwitchLight(' + this.index + ",'Close'," + this.protected + ');';
     }
+	if ((item.Status == 'Open') || (item.Status.startsWith('Set Level'))) {
+		this.image = 'images/blindsopen48sel.png';
+		this.onClick = 'SwitchLight(' + this.index + ",'Close'," + this.protected + ');';
+	} else {
+		this.image = 'images/blinds48sel.png';
+		this.onClick = 'SwitchLight(' + this.index + ",'Open'," + this.protected + ');';
+	}
 }
 Blinds.inheritsFrom(Switch);
 
