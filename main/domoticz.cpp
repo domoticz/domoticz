@@ -32,6 +32,9 @@
 #include "appversion.h"
 #include "SignalHandler.h"
 
+#include <mdns_cpp/logger.hpp>
+#include <mdns_cpp/mdns.hpp>
+
 #if defined WIN32
 	#include "../msbuild/WindowsHelper.h"
 	#include <Shlobj.h>
@@ -75,6 +78,7 @@ namespace
 #endif
 		"\t-webroot additional web root, useful with proxy servers (for example domoticz)\n"
 		"\t-nocache ask browser not to cache pages\n"
+		"\t-nomdns do not enable mDNS broadcast and listening\n"
 		"\t-startupdelay seconds (default=0)\n"
 		"\t-nowwwpwd (in case you forgot the web server username/password)\n"
 		"\t-wwwcompress mode (on = always compress [default], off = always decompress, static = no processing but try precompressed first)\n"
@@ -130,6 +134,7 @@ std::string dbasefile;
 std::string szCertFile = "./server_cert.pem";
 bool bDoCachePages = true;
 bool bNoCleanupDev = false;
+bool bEnableMDNS = true;
 
 std::string szAppVersion="???";
 int iAppRevision=0;
@@ -1049,6 +1054,11 @@ int main(int argc, char**argv)
 	{
 		bNoCleanupDev = true;
 	}
+	if (cmdLine.HasSwitch("-nomdns"))
+	{
+		bEnableMDNS = false;
+	}
+
 #if defined WIN32
 	if (!bUseConfigFile) {
 		if (cmdLine.HasSwitch("-nobrowser"))

@@ -19,8 +19,8 @@
 #include <algorithm>
 #include <set>
 
-#include "mdns_cpp/logger.hpp"
-#include "mdns_cpp/mdns.hpp"
+#include <mdns_cpp/logger.hpp>
+#include <mdns_cpp/mdns.hpp>
 
 //Hardware Devices
 #include "../hardware/hardwaretypes.h"
@@ -196,11 +196,9 @@ extern bool g_bUseUpdater;
 extern http::server::_eWebCompressionMode g_wwwCompressMode;
 extern http::server::CWebServerHelper m_webservers;
 extern bool g_bUseEventTrigger;
-<<<<<<< HEAD
 extern bool bNoCleanupDev;
-=======
 extern mdns_cpp::mDNS m_mdns;
->>>>>>> 03fb02e3f... Set correct scope for mDNS thread
+extern bool bEnableMDNS;
 
 CFibaroPush m_fibaropush;
 CGooglePubSubPush m_googlepubsubpush;
@@ -1117,6 +1115,18 @@ bool MainWorker::Start()
 		return false;
 	}
 
+	std::string sValue;
+	std::string szInstanceName = "domoticz";
+	if(m_sql.GetPreferencesVar("Title", sValue))
+	{
+		stdlower(sValue);
+		szInstanceName += "-" + sValue;
+	}
+	else
+	{
+		szInstanceName += "-" + GenerateUUID();
+	}
+
 	HTTPClient::SetUserAgent(GenerateUserAgent());
 	m_notifications.Init();
 	GetSunSettings();
@@ -1164,7 +1174,7 @@ bool MainWorker::Start()
 	{
 		m_webservers.SetAllowPlainBasicAuth(static_cast<bool>(nValue));
 	}
-	std::string sValue;
+	sValue = "";	// Reset sValue
 	if (m_sql.GetPreferencesVar("WebTheme", sValue))
 	{
 		m_webservers.SetWebTheme(sValue);
@@ -1189,13 +1199,21 @@ bool MainWorker::Start()
 	}
 
 	mdns_cpp::Logger::setLoggerSink([](const std::string& log_msg) {
-		_log.Debug(DEBUG_WEBSERVER, "mDNS: %s", log_msg.c_str());
+		_log.Debug(DEBUG_RECEIVED, "mDNS: %s", log_msg.c_str());
 	});
 
-	m_mdns.setServiceHostname("airforce1");
-	m_mdns.setServicePort(8080);
-	m_mdns.setServiceName("_http._tcp.local");
-	m_mdns.startService();
+	if (bEnableMDNS)
+	{
+		m_mdns.setServiceHostname(szInstanceName);
+		m_mdns.setServicePort(std::stoi(m_webserver_settings.listening_port));
+#ifdef WWW_ENABLE_SSL
+		if (m_secure_webserver_settings.is_enabled())
+			m_mdns.setServicePort(std::stoi(m_secure_webserver_settings.listening_port));
+#endif
+		m_mdns.setServiceName("_http._tcp.local");
+		m_mdns.startService();
+		_log.Log(LOG_STATUS, "mDNS enabled!");
+	}
 
 	HandleHourPrice();
 
