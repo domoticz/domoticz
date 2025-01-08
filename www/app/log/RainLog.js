@@ -254,7 +254,6 @@ define(['app', 'lodash', 'RefreshingChart', 'DataLoader', 'ChartLoader', 'log/Ch
 					highchartTemplate: {
 						chart: {
 							type: 'column',
-							zoomType: false,
 							marginRight: 10
 						},
 						plotOptions: {
