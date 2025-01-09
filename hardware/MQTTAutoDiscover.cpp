@@ -3492,7 +3492,7 @@ void MQTTAutoDiscover::handle_auto_discovery_climate(_tMQTTASensor* pSensor, con
 					else
 					{
 						//should have a template for a json value!
-						Log(LOG_ERROR, "Climate device no idea how to interpret fan state values (no fan state template!)(%s)", pSensor->unique_id.c_str());
+						Log(LOG_ERROR, "Climate device no idea how to interpret swing state values (no swing state template!)(%s)", pSensor->unique_id.c_str());
 						bValid = false;
 					}
 				}
@@ -3540,7 +3540,7 @@ void MQTTAutoDiscover::handle_auto_discovery_climate(_tMQTTASensor* pSensor, con
 
 				if (iActualIndex == -1)
 				{
-					Log(LOG_ERROR, "Climate device invalid/unknown fan mode received! (%s: %s)", pSensor->unique_id.c_str(), current_mode.c_str());
+					Log(LOG_ERROR, "Climate device invalid/unknown swing mode received! (%s: %s)", pSensor->unique_id.c_str(), current_mode.c_str());
 					bValid = false;
 				}
 
