@@ -1391,7 +1391,12 @@ function Blinds(item) {
     this.parent.constructor(item);
     this.data = '';
 
-	if (item.SwitchType == 'Blinds + Stop') {
+	var bHaveStopped = (
+						(item.SwitchType == 'Blinds + Stop')
+						|| (item.SwitchType == 'Venetian Blinds US')
+						|| (item.SwitchType == 'Venetian Blinds EU')
+						);
+	if (bHaveStopped) {
 		this.image2 = 'images/blindsstop.png';
 		this.onClick2 = 'SwitchLight(' + this.index + ",'Stop'," + this.protected + ');';
 	} else {
