@@ -156,35 +156,49 @@ namespace Plugins {
 			shared_lib_ = nullptr;
 			if (!shared_lib_) {
 #ifdef WIN32
-				if (!shared_lib_) shared_lib_ = LoadLibrary("python312.dll");
-				if (!shared_lib_) shared_lib_ = LoadLibrary("python311.dll");
-				if (!shared_lib_) shared_lib_ = LoadLibrary("python310.dll");
-				if (!shared_lib_) shared_lib_ = LoadLibrary("python39.dll");
-				if (!shared_lib_) shared_lib_ = LoadLibrary("python38.dll");
-				if (!shared_lib_) shared_lib_ = LoadLibrary("python37.dll");
-				if (!shared_lib_) shared_lib_ = LoadLibrary("python36.dll");
-				if (!shared_lib_) shared_lib_ = LoadLibrary("python35.dll");
-				if (!shared_lib_) shared_lib_ = LoadLibrary("python34.dll");
+                const char* python_versions[] = {
+                    "python313.dll", "python312.dll", "python311.dll",
+                    "python310.dll", "python39.dll", "python38.dll",
+                    "python37.dll", "python36.dll", "python35.dll",
+                    "python34.dll"
+                };
+
+                for (const char* version : python_versions) {
+                    if (!shared_lib_) {
+                        shared_lib_ = LoadLibrary(version);
+                    } else {
+                        break;
+                    }
+                }
 #else
-				if (!shared_lib_) FindLibrary("python3.12", true);
-				if (!shared_lib_) FindLibrary("python3.11", true);
-				if (!shared_lib_) FindLibrary("python3.10", true);
-				if (!shared_lib_) FindLibrary("python3.9", true);
-				if (!shared_lib_) FindLibrary("python3.8", true);
-				if (!shared_lib_) FindLibrary("python3.7", true);
-				if (!shared_lib_) FindLibrary("python3.6", true);
-				if (!shared_lib_) FindLibrary("python3.5", true);
-				if (!shared_lib_) FindLibrary("python3.4", true);
+                const char* python_versions[] = {
+                    "python3.13", "python3.12", "python3.11", "python3.10",
+                    "python3.9", "python3.8", "python3.7", "python3.6",
+                    "python3.5", "python3.4"
+                };
+
+                for (const char* version : python_versions) {
+                    if (!shared_lib_) {
+                        FindLibrary(version, true);
+                    } else {
+                        break;
+                    }
+                }
+
 #ifdef __FreeBSD__
-				if (!shared_lib_) FindLibrary("python3.12m", true);
-				if (!shared_lib_) FindLibrary("python3.11m", true);
-				if (!shared_lib_) FindLibrary("python3.10m", true);
-				if (!shared_lib_) FindLibrary("python3.9m", true);
-				if (!shared_lib_) FindLibrary("python3.8m", true);
-				if (!shared_lib_) FindLibrary("python3.7m", true);
-				if (!shared_lib_) FindLibrary("python3.6m", true);
-				if (!shared_lib_) FindLibrary("python3.5m", true);
-				if (!shared_lib_) FindLibrary("python3.4m", true);
+                const char* python_versions_freebsd[] = {
+                    "python3.13m", "python3.12m", "python3.11m", "python3.10m",
+                    "python3.9m", "python3.8m", "python3.7m", "python3.6m",
+                    "python3.5m", "python3.4m"
+                };
+
+                for (const char* version : python_versions_freebsd) {
+                    if (!shared_lib_) {
+                        FindLibrary(version, true);
+                    } else {
+                        break;
+                    }
+                }
 #endif /* FreeBSD */
 #endif
 				if (shared_lib_)
