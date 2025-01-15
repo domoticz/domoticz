@@ -1,5 +1,9 @@
 #pragma once
 #ifdef ENABLE_PYTHON
+#include <set>
+#include <string>
+#include <functional> // Required for std::greater
+
 #ifdef WIN32
 #	define MS_NO_COREDLL 1
 #else
@@ -151,56 +155,38 @@ namespace Plugins {
 		DECLARE_PYTHON_SYMBOL(long, PyType_GetFlags, PyTypeObject*);
 		DECLARE_PYTHON_SYMBOL(void, _Py_Dealloc, PyObject*);
 
-		SharedLibraryProxy() {
-			Py_None = nullptr;
-			shared_lib_ = nullptr;
-			if (!shared_lib_) {
+        SharedLibraryProxy() {
+            Py_None = nullptr;
+            shared_lib_ = nullptr;
+
+            // Define the base Python versions in descending order (latest to oldest)
+            std::set<std::string, std::greater<std::string>> python_versions = {
+                "python3.13", "python3.12", "python3.11", "python3.10",
+                "python3.9", "python3.8", "python3.7", "python3.6",
+                "python3.5", "python3.4"
+            };
+            // Platform-specific suffixes
 #ifdef WIN32
-                const char* python_versions[] = {
-                    "python313.dll", "python312.dll", "python311.dll",
-                    "python310.dll", "python39.dll", "python38.dll",
-                    "python37.dll", "python36.dll", "python35.dll",
-                    "python34.dll"
-                };
-
-                for (const char* version : python_versions) {
-                    if (!shared_lib_) {
-                        shared_lib_ = LoadLibrary(version);
-                    } else {
-                        break;
-                    }
-                }
+            const char* extension = ".dll"; // Windows uses .dll
+#elif defined(__FreeBSD__)
+            const char* extension = "m";    // FreeBSD uses 'm' suffix
 #else
-                const char* python_versions[] = {
-                    "python3.13", "python3.12", "python3.11", "python3.10",
-                    "python3.9", "python3.8", "python3.7", "python3.6",
-                    "python3.5", "python3.4"
-                };
-
-                for (const char* version : python_versions) {
-                    if (!shared_lib_) {
-                        FindLibrary(version, true);
-                    } else {
-                        break;
-                    }
-                }
-
-#ifdef __FreeBSD__
-                const char* python_versions_freebsd[] = {
-                    "python3.13m", "python3.12m", "python3.11m", "python3.10m",
-                    "python3.9m", "python3.8m", "python3.7m", "python3.6m",
-                    "python3.5m", "python3.4m"
-                };
-
-                for (const char* version : python_versions_freebsd) {
-                    if (!shared_lib_) {
-                        FindLibrary(version, true);
-                    } else {
-                        break;
-                    }
-                }
-#endif /* FreeBSD */
+            const char* extension = "";     // Other platforms (Unix-like) have no suffix
 #endif
+            // Loop through the set (it is already sorted in descending order)
+            for (const auto& version : python_versions) {
+                if (!shared_lib_) {
+                    std::string lib_name = version + extension;
+#ifdef WIN32
+                    shared_lib_ = LoadLibrary(lib_name.c_str());
+#else
+                    FindLibrary(lib_name.c_str(), true);
+#endif
+                } else {
+                    break;
+                }
+
+
 				if (shared_lib_)
 				{
 					RESOLVE_PYTHON_SYMBOL(Py_GetVersion);
