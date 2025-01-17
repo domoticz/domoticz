@@ -3,6 +3,7 @@
 #include <set>
 #include <string>
 #include <functional> // Required for std::greater
+#include "../../main/Helper.h"
 
 #ifdef WIN32
 #	define MS_NO_COREDLL 1
@@ -160,33 +161,29 @@ namespace Plugins {
             shared_lib_ = nullptr;
 
             // Define the base Python versions in descending order (latest to oldest)
-            std::set<std::string, std::greater<std::string>> python_versions = {
+			constexpr std::array<const char*, 10> python_versions = {
                 "python3.13", "python3.12", "python3.11", "python3.10",
                 "python3.9", "python3.8", "python3.7", "python3.6",
                 "python3.5", "python3.4"
             };
             // Platform-specific suffixes
+			std::string extension;
 #ifdef WIN32
-            const char* extension = ".dll"; // Windows uses .dll
+			extension = ".dll"; // Windows uses .dll
 #elif defined(__FreeBSD__)
-            const char* extension = "m";    // FreeBSD uses 'm' suffix
-#else
-            const char* extension = "";     // Other platforms (Unix-like) have no suffix
+			extension = "m";    // FreeBSD uses 'm' suffix
 #endif
-            // Loop through the set (it is already sorted in descending order)
+			// Loop through the set (it is already sorted in descending order)
             for (const auto& version : python_versions) {
-                if (!shared_lib_) {
-                    std::string lib_name = version + extension;
+				std::string lib_name = version;
 #ifdef WIN32
-                    shared_lib_ = LoadLibrary(lib_name.c_str());
+				stdreplace(lib_name, ".", "");
+				lib_name += extension;
+				shared_lib_ = LoadLibrary(lib_name.c_str());
 #else
-                    FindLibrary(lib_name.c_str(), true);
+				lib_name += extension;
+				FindLibrary(lib_name.c_str(), true);
 #endif
-                } else {
-                    break;
-                }
-
-
 				if (shared_lib_)
 				{
 					RESOLVE_PYTHON_SYMBOL(Py_GetVersion);
@@ -289,6 +286,7 @@ namespace Plugins {
 					RESOLVE_PYTHON_SYMBOL(PyEval_EvalCode);
 					RESOLVE_PYTHON_SYMBOL(PyType_GetFlags);
 					RESOLVE_PYTHON_SYMBOL(_Py_Dealloc);
+					break;
 				}
 			}
 		};
