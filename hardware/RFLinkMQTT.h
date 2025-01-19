@@ -46,7 +46,7 @@ protected:
 	boost::signals2::connection m_sDeviceReceivedConnection;
 	boost::signals2::connection m_sSwitchSceneConnection;
 	void selectNextIPAdress( void );
-	virtual bool WriteInt(const std::string &sendString); // override;
+	bool WriteInt(const std::string &sendString) override;
 	void Do_Work();
 	virtual void SendHeartbeat();
 	void StopMQTT();
