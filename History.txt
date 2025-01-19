@@ -13,6 +13,7 @@ Version 2024.x
 - Implemented: MQTT-AD, power sensors for the Tuya SPM02
 - Implemented: MQTT-AD, support sensors that report humidity but sends 'null' values
 - Implemented: MQTT-AD, support for string field state objects
+- Implemented: MQTT Push 'Retained' mode option
 - Changed: dzVents, possible to pass a Domoticz device ID in notify() through the extra parameter
 - Changed: Energy Dashboard now also available for non-admin users
 - Changed: Energy Dashboard, Text object clipping rectangle

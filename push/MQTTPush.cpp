@@ -131,6 +131,10 @@ void CMQTTPush::UpdateSettings()
 	m_sql.GetPreferencesVar("MQTTPushCAFile", m_CAFilename);
 	m_sql.GetPreferencesVar("MQTTPushTLSVersion", nValue);
 	m_TLS_Version = nValue;
+	nValue = 0;
+	m_sql.GetPreferencesVar("MQTTPushRetain", nValue);
+	m_RetainedMode = (nValue != 0);
+
 
 	if (m_bLinkActive)
 	{
@@ -268,7 +272,8 @@ void CMQTTPush::Do_Work()
 		for (const auto& item : _items2do)
 		{
 			std::string sTopic = m_TopicOut + "/" + std::to_string(item.idx) + "/state";
-			SendMessage(sTopic, item.json);
+			//SendMessage(sTopic, item.json);
+			SendMessageEx(sTopic, item.json, 0, m_RetainedMode);
 		}
 	}
 	while (1 == 0);
@@ -295,6 +300,7 @@ namespace http
 			std::string topic_out = request::findValue(&req, "topicout");
 			std::string cafile = request::findValue(&req, "cafile");
 			std::string tls_version = request::findValue(&req, "tlsversion");
+			std::string retained_mode = request::findValue(&req, "retained_mode");
 
 			if ((linkactive.empty()) || (ipaddress.empty()) || (port.empty()) || (topic_out.empty()) || (tls_version.empty()))
 				return;
@@ -302,6 +308,7 @@ namespace http
 			int ilinkactive = atoi(linkactive.c_str());
 			int iTLSVersion = atoi(tls_version.c_str());
 			if (iTLSVersion == 0) iTLSVersion = 2;
+			int iRetainedMode = atoi(retained_mode.c_str());
 
 			m_sql.UpdatePreferencesVar("MQTTPushActive", ilinkactive);
 			m_sql.UpdatePreferencesVar("MQTTPushIP", ipaddress);
@@ -311,6 +318,7 @@ namespace http
 			m_sql.UpdatePreferencesVar("MQTTPushTopicOut", topic_out);
 			m_sql.UpdatePreferencesVar("MQTTPushCAFile", cafile);
 			m_sql.UpdatePreferencesVar("MQTTPushTLSVersion", iTLSVersion);
+			m_sql.UpdatePreferencesVar("MQTTPushRetain", iRetainedMode);
 
 			m_mqttpush.UpdateSettings();
 			root["status"] = "OK";
@@ -366,6 +374,9 @@ namespace http
 			{
 				root["tlsversion"] = nValue;
 			}
+			nValue = 0;
+			m_sql.GetPreferencesVar("MQTTPushRetain", nValue);
+			root["retained_mode"] = nValue;
 
 			root["status"] = "OK";
 			root["title"] = "GetMQTTLinkConfig";
