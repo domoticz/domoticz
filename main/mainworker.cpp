@@ -1314,7 +1314,7 @@ bool MainWorker::IsUpdateAvailable(const bool bIsForced)
 	ExtraHeaders.push_back("App_Revision: " + std::to_string(iAppRevision));
 	ExtraHeaders.push_back("System_Name: " + m_szSystemName);
 	ExtraHeaders.push_back("Machine: " + machine);
-	ExtraHeaders.push_back("Type: " + (!bIsBetaChannel) ? "Stable" : "Beta");
+	ExtraHeaders.push_back("Type: " + std::string(!bIsBetaChannel ? "Stable" : "Beta"));
 
 	if (!HTTPClient::GET(szURL, ExtraHeaders, revfile))
 		return false;
