@@ -18,12 +18,12 @@
 #if BOOST_VERSION >= 107000
 #define GET_IO_SERVICE(s) ((boost::asio::io_context&)(s).get_executor().context())
 #else
-#define GET_IO_SERVICE(s) ((s).get_io_service())
+#define GET_IO_SERVICE(s) ((s).get_io_context())
 #endif
 
 namespace tcp_proxy
 {
-	bridge::bridge(boost::asio::io_service& ios)
+	bridge::bridge(boost::asio::io_context& ios)
       : downstream_socket_(ios),
         upstream_socket_(ios)
 	{
@@ -44,7 +44,7 @@ namespace tcp_proxy
 		boost::asio::ip::tcp::endpoint end;
 
 
-		boost::asio::io_service &ios= GET_IO_SERVICE(downstream_socket_);
+		boost::asio::io_context &ios= GET_IO_SERVICE(downstream_socket_);
 		boost::asio::ip::tcp::resolver resolver(ios);
 		boost::asio::ip::tcp::resolver::query query(upstream_host, upstream_port, boost::asio::ip::resolver_query_base::numeric_service);
 		auto i = resolver.resolve(query);
@@ -137,10 +137,10 @@ namespace tcp_proxy
 	}
 //Acceptor Class
 	acceptor::acceptor(const std::string &local_host, unsigned short local_port, const std::string &upstream_host, const std::string &upstream_port)
-		: io_service_()
+		: io_context_()
 		, m_bDoStop(false)
 		, localhost_address(boost::asio::ip::address_v4::from_string(local_host))
-		, acceptor_(io_service_, boost::asio::ip::tcp::endpoint(localhost_address, local_port))
+		, acceptor_(io_context_, boost::asio::ip::tcp::endpoint(localhost_address, local_port))
 		, upstream_host_(upstream_host)
 		, upstream_port_(upstream_port)
 	{
@@ -151,7 +151,7 @@ namespace tcp_proxy
 	{
 		try
 		{
-			session_ = std::make_shared<bridge>(io_service_);
+			session_ = std::make_shared<bridge>(io_context_);
 			session_->sDownstreamData.connect([this](auto d, auto l) { OnDownstreamData(d, l); });
 			session_->sUpstreamData.connect([this](auto d, auto l) { OnUpstreamData(d, l); });
 
@@ -169,11 +169,11 @@ namespace tcp_proxy
 		m_bDoStop=false;
 
 		accept_connections();
-		// The io_service::run() call will block until all asynchronous operations
+		// The io_context::run() call will block until all asynchronous operations
 		// have finished. While the server is running, there is always at least one
 		// asynchronous operation outstanding: the asynchronous accept call waiting
 		// for new incoming connections.
-		io_service_.run();
+		io_context_.run();
 		return true;
 	}
 	bool acceptor::stop()
@@ -181,14 +181,14 @@ namespace tcp_proxy
 		m_bDoStop=true;
 		// Post a call to the stop function so that server::stop() is safe to call
 		// from any thread.
-		io_service_.post([this] { handle_stop(); });
+		io_context_.post([this] { handle_stop(); });
 		return true;
 	}
 
 	void acceptor::handle_stop()
 	{
 		// The server is stopped by canceling all outstanding asynchronous
-		// operations. Once all operations have finished the io_service::run() call
+		// operations. Once all operations have finished the io_context::run() call
 		// will exit.
 		acceptor_.close();
 		//connection_manager_.stop_all();

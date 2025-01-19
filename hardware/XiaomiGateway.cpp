@@ -538,12 +538,12 @@ bool XiaomiGateway::SendMessageToGateway(const std::string &controlmessage)
 {
 	std::string message = controlmessage;
 	bool result = true;
-	boost::asio::io_service io_service;
-	boost::asio::ip::udp::socket socket_(io_service, boost::asio::ip::udp::endpoint(boost::asio::ip::udp::v4(), 0));
+	boost::asio::io_context io_context;
+	boost::asio::ip::udp::socket socket_(io_context, boost::asio::ip::udp::endpoint(boost::asio::ip::udp::v4(), 0));
 	stdreplace(message, "@gatewaykey", GetGatewayKey());
 	std::shared_ptr<std::string> message1(new std::string(message));
 	boost::asio::ip::udp::endpoint remote_endpoint_;
-	remote_endpoint_ = boost::asio::ip::udp::endpoint(boost::asio::ip::address::from_string(m_GatewayIp), 9898);
+	remote_endpoint_ = boost::asio::ip::udp::endpoint(boost::asio::ip::make_address_v4(m_GatewayIp), 9898);
 	socket_.send_to(boost::asio::buffer(*message1), remote_endpoint_);
 	sleep_milliseconds(150); // TODO: reduce or remove sleep
 	std::array<char, 512> recv_buffer_;
@@ -1015,15 +1015,14 @@ bool XiaomiGateway::StopHardware()
 void XiaomiGateway::Do_Work()
 {
 	Log(LOG_STATUS, "XiaomiGateway (ID=%d): Worker started...", m_HwdID);
-	boost::asio::io_service io_service;
+	boost::asio::io_context io_context;
 	// Find the local ip address that is similar to the xiaomi gateway
 	try
 	{
-		boost::asio::ip::udp::resolver resolver(io_service);
-		boost::asio::ip::udp::resolver::query query(boost::asio::ip::udp::v4(), m_GatewayIp, "");
-		auto endpoints = resolver.resolve(query);
-		boost::asio::ip::udp::endpoint ep = *endpoints;
-		boost::asio::ip::udp::socket socket(io_service);
+		boost::asio::ip::udp::resolver resolver(io_context);
+		auto endpoints = resolver.resolve(boost::asio::ip::udp::v4(), m_GatewayIp, "");
+		boost::asio::ip::udp::endpoint ep = *endpoints.begin();
+		boost::asio::ip::udp::socket socket(io_context);
 		socket.connect(ep);
 		boost::asio::ip::address addr = socket.local_endpoint().address();
 		std::string compareIp = m_GatewayIp.substr(0, (m_GatewayIp.length() - 3));
@@ -1073,11 +1072,11 @@ void XiaomiGateway::Do_Work()
 		}
 	}
 
-	XiaomiGateway::xiaomi_udp_server udp_server(io_service, m_HwdID, m_GatewayIp, m_LocalIp, m_ListenPort9898, m_OutputMessage, m_IncludeVoltage, this);
+	XiaomiGateway::xiaomi_udp_server udp_server(io_context, m_HwdID, m_GatewayIp, m_LocalIp, m_ListenPort9898, m_OutputMessage, m_IncludeVoltage, this);
 	boost::thread bt;
 	if (m_ListenPort9898)
 	{
-		bt = boost::thread([p = &io_service] { p->run(); });
+		bt = boost::thread([p = &io_context] { p->run(); });
 		SetThreadName(bt.native_handle(), "XiaomiGatewayIO");
 	}
 
@@ -1094,7 +1093,7 @@ void XiaomiGateway::Do_Work()
 			// Log(LOG_STATUS, "sec_counter %d", sec_counter);
 		}
 	}
-	io_service.stop();
+	io_context.stop();
 	if (bt.joinable())
 	{
 		bt.join();
@@ -1178,9 +1177,9 @@ unsigned int XiaomiGateway::GetShortID(const std::string &nodeid)
 	return sID;
 }
 
-XiaomiGateway::xiaomi_udp_server::xiaomi_udp_server(boost::asio::io_service &io_service, int m_HwdID, const std::string &gatewayIp, const std::string &localIp, const bool listenPort9898,
+XiaomiGateway::xiaomi_udp_server::xiaomi_udp_server(boost::asio::io_context &io_context, int m_HwdID, const std::string &gatewayIp, const std::string &localIp, const bool listenPort9898,
 						    const bool outputMessage, const bool includeVoltage, XiaomiGateway *parent)
-	: socket_(io_service, boost::asio::ip::udp::v4())
+	: socket_(io_context, boost::asio::ip::udp::v4())
 {
 	m_HardwareID = m_HwdID;
 	m_XiaomiGateway = parent;
@@ -1196,8 +1195,8 @@ XiaomiGateway::xiaomi_udp_server::xiaomi_udp_server(boost::asio::io_service &io_
 			if (!m_localip.empty())
 			{
 				boost::system::error_code ec;
-				boost::asio::ip::address listen_addr = boost::asio::ip::address::from_string(m_localip, ec);
-				boost::asio::ip::address mcast_addr = boost::asio::ip::address::from_string("224.0.0.50", ec);
+				boost::asio::ip::address listen_addr = boost::asio::ip::make_address_v4(m_localip, ec);
+				boost::asio::ip::address mcast_addr = boost::asio::ip::make_address_v4("224.0.0.50", ec);
 				boost::asio::ip::udp::endpoint listen_endpoint(mcast_addr, 9898);
 
 				socket_.bind(boost::asio::ip::udp::endpoint(boost::asio::ip::udp::v4(), 9898));
@@ -1213,9 +1212,9 @@ XiaomiGateway::xiaomi_udp_server::xiaomi_udp_server(boost::asio::io_service &io_
 				socket_.bind(boost::asio::ip::udp::endpoint(boost::asio::ip::udp::v4(), 9898));
 				std::shared_ptr<std::string> message(new std::string(R"({"cmd":"whois"})"));
 				boost::asio::ip::udp::endpoint remote_endpoint;
-				remote_endpoint = boost::asio::ip::udp::endpoint(boost::asio::ip::address::from_string("224.0.0.50"), 4321);
+				remote_endpoint = boost::asio::ip::udp::endpoint(boost::asio::ip::make_address_v4("224.0.0.50"), 4321);
 				socket_.send_to(boost::asio::buffer(*message), remote_endpoint);
-				socket_.set_option(boost::asio::ip::multicast::join_group(boost::asio::ip::address::from_string("224.0.0.50")));
+				socket_.set_option(boost::asio::ip::multicast::join_group(boost::asio::ip::make_address_v4("224.0.0.50")));
 			}
 		}
 		catch (const boost::system::system_error &ex)
@@ -1720,7 +1719,7 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 					message.append("\"}");
 					std::shared_ptr<std::string> message1(new std::string(message));
 					boost::asio::ip::udp::endpoint remote_endpoint;
-					remote_endpoint = boost::asio::ip::udp::endpoint(boost::asio::ip::address::from_string(TrueGateway->GetGatewayIp().c_str()), 9898);
+					remote_endpoint = boost::asio::ip::udp::endpoint(boost::asio::ip::make_address_v4(TrueGateway->GetGatewayIp().c_str()), 9898);
 					socket_.send_to(boost::asio::buffer(*message1), remote_endpoint);
 				}
 			}
@@ -1746,7 +1745,7 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 					std::string message = R"({"cmd" : "get_id_list"})";
 					std::shared_ptr<std::string> message2(new std::string(message));
 					boost::asio::ip::udp::endpoint remote_endpoint;
-					remote_endpoint = boost::asio::ip::udp::endpoint(boost::asio::ip::address::from_string(TrueGateway->GetGatewayIp().c_str()), 9898);
+					remote_endpoint = boost::asio::ip::udp::endpoint(boost::asio::ip::make_address_v4(TrueGateway->GetGatewayIp().c_str()), 9898);
 					socket_.send_to(boost::asio::buffer(*message2), remote_endpoint);
 				}
 			}

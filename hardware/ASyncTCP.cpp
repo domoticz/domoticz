@@ -14,9 +14,10 @@ struct hostent;
 
 #define STATUS_OK(err) !err
 
-ASyncTCP::ASyncTCP(const bool secure)
+ASyncTCP::ASyncTCP(const bool secure) :
+	mTcpwork(boost::asio::make_work_guard(mIoc))
 #ifdef WWW_ENABLE_SSL
-	: mSecure(secure)
+	,mSecure(secure)
 #endif
 {
 	m_pRXBuffer = new uint8_t[MAX_TCP_BUFFER_SIZE];
@@ -24,7 +25,7 @@ ASyncTCP::ASyncTCP(const bool secure)
 	mContext.set_verify_mode(boost::asio::ssl::verify_none);
 	if (mSecure) 
 	{
-		mSslSocket.reset(new boost::asio::ssl::stream<boost::asio::ip::tcp::socket>(mIos, mContext));
+		mSslSocket.reset(new boost::asio::ssl::stream<boost::asio::ip::tcp::socket>(mIoc, mContext));
 	}
 #endif
 }
@@ -37,7 +38,7 @@ ASyncTCP::~ASyncTCP()
 	{
 		//This should never happen. terminate() never called!!
 		_log.Log(LOG_ERROR, "ASyncTCP: Workerthread not closed. terminate() never called!!!");
-		mIos.stop();
+		mIoc.stop();
 		if (mTcpthread)
 		{
 			mTcpthread->join();
@@ -62,28 +63,28 @@ void ASyncTCP::connect(const std::string& ip, uint16_t port)
 		terminate();
 	}
 
-	// RK: We reset mIos here because it might have been stopped in terminate()
-	mIos.reset();
+	// RK: We restart mIoc here because it might have been stopped in terminate()
+	mIoc.restart();
 	// RK: After the reset, we need to provide it work anew
-	mTcpwork = std::make_shared<boost::asio::io_service::work>(mIos);
+	mTcpwork.reset();
+	mTcpwork.emplace(boost::asio::make_work_guard(mIoc));
 	if (!mTcpthread)
-		mTcpthread = std::make_shared<std::thread>([p = &mIos] { p->run(); });
+		mTcpthread = std::make_shared<std::thread>([p = &mIoc] { p->run(); });
 
 	mIp = ip;
 	mPort = port;
 	std::string port_str = std::to_string(port);
-	boost::asio::ip::tcp::resolver::query query(ip, port_str);
 	timeout_start_timer();
-	mResolver.async_resolve(query, [this](auto &&err, auto &&iter) { cb_resolve_done(err, iter); });
+	mResolver.async_resolve(ip, port_str, [this](auto &&err, auto endpoints) { cb_resolve_done(err, endpoints); });
 }
 
-void ASyncTCP::cb_resolve_done(const boost::system::error_code& error, boost::asio::ip::tcp::resolver::iterator endpoint_iterator)
+void ASyncTCP::cb_resolve_done(const boost::system::error_code& error, boost::asio::ip::tcp::resolver::results_type endpoints)
 {
 	if (mIsTerminating) return;
 
 	if (STATUS_OK(error))
 	{
-		connect_start(endpoint_iterator);
+		connect_start(endpoints);
 	}
 	else
 	{
@@ -91,28 +92,26 @@ void ASyncTCP::cb_resolve_done(const boost::system::error_code& error, boost::as
 	}
 }
 
-void ASyncTCP::connect_start(boost::asio::ip::tcp::resolver::iterator& endpoint_iterator)
+void ASyncTCP::connect_start(boost::asio::ip::tcp::resolver::results_type& endpoints)
 {
 	if (mIsConnected) return;
-
-	mEndPoint = *endpoint_iterator++;
 
 	timeout_start_timer();
 #ifdef WWW_ENABLE_SSL
 	if (mSecure)
 	{
 		// we reset the ssl socket, because the ssl context needs to be reinitialized after a reconnect
-		mSslSocket.reset(new boost::asio::ssl::stream<boost::asio::ip::tcp::socket>(mIos, mContext));
-		mSslSocket->lowest_layer().async_connect(mEndPoint, [this, endpoint_iterator](auto &&err) mutable { cb_connect_done(err, endpoint_iterator); });
+		mSslSocket.reset(new boost::asio::ssl::stream<boost::asio::ip::tcp::socket>(mIoc, mContext));
+		boost::asio::async_connect(mSslSocket->lowest_layer(), endpoints, [this](auto &&err, auto &endpoint) mutable { cb_connect_done(err, endpoint); });
 	}
 	else
 #endif
 	{
-		mSocket.async_connect(mEndPoint, [this, endpoint_iterator](auto &&err) mutable { cb_connect_done(err, endpoint_iterator); });
+		boost::asio::async_connect(mSocket, endpoints, [this](auto &&err, auto &endpoint) mutable { cb_connect_done(err, endpoint); });
 	}
 }
 
-void ASyncTCP::cb_connect_done(const boost::system::error_code& error, boost::asio::ip::tcp::resolver::iterator &endpoint_iterator)
+void ASyncTCP::cb_connect_done(const boost::system::error_code& error, const boost::asio::ip::tcp::endpoint &)
 {
 	if (mIsTerminating) return;
 
@@ -132,12 +131,6 @@ void ASyncTCP::cb_connect_done(const boost::system::error_code& error, boost::as
 	}
 	else 
 	{
-		if (endpoint_iterator != boost::asio::ip::tcp::resolver::iterator()) 
-		{
-			// The connection failed. Try the next endpoint in the list.
-			connect_start(endpoint_iterator);
-			return;
-		}
 		process_error(error);
 	}
 }
@@ -190,7 +183,7 @@ void ASyncTCP::terminate(const bool silent)
 	mIsTerminating = true;
 	disconnect(silent);
 	mTcpwork.reset();
-	mIos.stop();
+	mIoc.stop();
 	if (mTcpthread)
 	{
 		mTcpthread->join();
@@ -210,7 +203,7 @@ void ASyncTCP::disconnect(const bool silent)
 
 	try
 	{
-		mIos.post([this] { do_close(); });
+		boost::asio::post(mIoc, [this] { do_close(); });
 	}
 	catch (...)
 	{
@@ -290,7 +283,7 @@ void ASyncTCP::write(const std::string& msg)
 {
 	if (!mTcpthread) return;
 
-	mSendStrand.post([this, msg]() { cb_write_queue(msg); });
+	boost::asio::post(mSendStrand, [this, msg]() { cb_write_queue(msg); });
 }
 
 void ASyncTCP::cb_write_queue(const std::string& msg)

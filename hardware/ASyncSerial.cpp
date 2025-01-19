@@ -54,7 +54,7 @@ public:
   {
   }
 
-    boost::asio::io_service io; ///< Io service object
+    boost::asio::io_context io; ///< Io service object
     boost::asio::serial_port port; ///< Serial port object
     boost::thread backgroundThread; ///< Thread that runs read/write operations
     bool open{ false };		    ///< True if port open
@@ -117,10 +117,10 @@ void AsyncSerial::open(const std::string& devname, unsigned int baud_rate,
 		throw;
 	}
 
-	pimpl->io.reset();
+	pimpl->io.restart();
 
-	// This gives some work to the io_service before it is started
-	pimpl->io.post([this] { return doRead(); });
+	// This gives some work to the io_context before it is started
+	boost::asio::post(pimpl->io, [this] { return doRead(); });
 
 	boost::thread t([p = &pimpl->io] { p->run(); });
 	pimpl->backgroundThread.swap(t);
@@ -149,10 +149,10 @@ void AsyncSerial::openOnlyBaud(const std::string& devname, unsigned int baud_rat
 		throw;
 	}
 
-	pimpl->io.reset();
+	pimpl->io.restart();
 
-	//This gives some work to the io_service before it is started
-	pimpl->io.post([this] { return doRead(); });
+	//This gives some work to the io_context before it is started
+	boost::asio::post(pimpl->io, [this] { return doRead(); });
 
 	boost::thread t([p = &pimpl->io] { p->run(); });
 	pimpl->backgroundThread.swap(t);
@@ -176,9 +176,9 @@ void AsyncSerial::close()
     if(!isOpen()) return;
 
     pimpl->open = false;
-    pimpl->io.post([this] { doClose(); });
+    boost::asio::post(pimpl->io, [this] { doClose(); });
     pimpl->backgroundThread.join();
-    pimpl->io.reset();
+    pimpl->io.restart();
     if(errorStatus())
     {
         throw(boost::system::system_error(boost::system::error_code(),
@@ -192,7 +192,7 @@ void AsyncSerial::write(const char *data, size_t size)
         std::lock_guard<std::mutex> l(pimpl->writeQueueMutex);
         pimpl->writeQueue.insert(pimpl->writeQueue.end(),data,data+size);
     }
-    pimpl->io.post([this] { doWrite(); });
+    boost::asio::post(pimpl->io, [this] { doWrite(); });
 }
 
 void AsyncSerial::write(const std::string &data)
@@ -201,7 +201,7 @@ void AsyncSerial::write(const std::string &data)
 		std::lock_guard<std::mutex> l(pimpl->writeQueueMutex);
 		pimpl->writeQueue.insert(pimpl->writeQueue.end(), data.c_str(), data.c_str()+data.size());
 	}
-	pimpl->io.post([this] { doWrite(); });
+	boost::asio::post(pimpl->io, [this] { doWrite(); });
 }
 
 void AsyncSerial::write(const std::vector<char>& data)
@@ -211,7 +211,7 @@ void AsyncSerial::write(const std::vector<char>& data)
         pimpl->writeQueue.insert(pimpl->writeQueue.end(),data.begin(),
                 data.end());
     }
-    pimpl->io.post([this] { doWrite(); });
+    boost::asio::post(pimpl->io, [this] { doWrite(); });
 }
 
 void AsyncSerial::writeString(const std::string& s)
@@ -220,7 +220,7 @@ void AsyncSerial::writeString(const std::string& s)
         std::lock_guard<std::mutex> l(pimpl->writeQueueMutex);
         pimpl->writeQueue.insert(pimpl->writeQueue.end(),s.begin(),s.end());
     }
-    pimpl->io.post([this] { doWrite(); });
+    boost::asio::post(pimpl->io, [this] { doWrite(); });
 }
 
 void AsyncSerial::doRead()

@@ -79,7 +79,7 @@ void Arilux::InsertUpdateSwitch(const std::string &lightName, const int subType,
 {
 	uint32_t sID;
 	try {
-		sID = boost::asio::ip::address_v4::from_string(location).to_ulong();
+		sID = boost::asio::ip::make_address_v4(location).to_uint();
 	} catch (const std::exception &e) {
 		Log(LOG_ERROR, "Bad IP address: %s (%s)", location.c_str(), e.what());
 		return;
@@ -112,8 +112,8 @@ bool Arilux::SendTCPCommand(uint32_t ip,std::vector<unsigned char> &command)
 	sum = sum & 0xFF;
 	command.push_back((unsigned char)sum);
 
-	boost::asio::io_service io_service;
-	boost::asio::ip::tcp::socket sendSocket(io_service);
+	boost::asio::io_context io_context;
+	boost::asio::ip::tcp::socket sendSocket(io_context);
 	boost::asio::ip::address_v4 address(ip);
 	boost::asio::ip::tcp::endpoint endpoint(address, 5577);
 	try

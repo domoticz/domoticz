@@ -10,7 +10,7 @@ namespace tcp_proxy
 	class bridge : public std::enable_shared_from_this<bridge>
 	{
 	public:
-		explicit bridge(boost::asio::io_service& ios);
+		explicit bridge(boost::asio::io_context& ios);
 		boost::asio::ip::tcp::socket& downstream_socket();
 		boost::asio::ip::tcp::socket& upstream_socket();
 
@@ -52,8 +52,8 @@ namespace tcp_proxy
 		void OnUpstreamData(const unsigned char *pData, size_t Len);
 		void OnDownstreamData(const unsigned char *pData, size_t Len);
 
-		/// The io_service used to perform asynchronous operations.
-		boost::asio::io_service io_service_;
+		/// The io_context used to perform asynchronous operations.
+		boost::asio::io_context io_context_;
 		bool m_bDoStop;
 		boost::asio::ip::address_v4 localhost_address;
 		boost::asio::ip::tcp::acceptor acceptor_;

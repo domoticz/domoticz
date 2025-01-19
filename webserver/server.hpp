@@ -31,7 +31,7 @@ namespace http
 			explicit server_base(const server_settings &settings, request_handler &user_request_handler);
 			virtual ~server_base() = default;
 
-			/// Run the server's io_service loop.
+			/// Run the server's io_context loop.
 			void run();
 
 			/// Stop the server.
@@ -46,8 +46,8 @@ namespace http
 		      protected:
 			void init(const init_connectionhandler_func &init_connection_handler, accept_handler_func accept_handler);
 
-			/// The io_service used to perform asynchronous operations.
-			boost::asio::io_service io_service_;
+			/// The io_context used to perform asynchronous operations.
+			boost::asio::io_context io_context_;
 
 			/// Acceptor used to listen for incoming connections.
 			boost::asio::ip::tcp::acceptor acceptor_;
