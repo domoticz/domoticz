@@ -231,9 +231,9 @@ void CMQTTPush::DoMQTTPush(const uint64_t DeviceRowIdx, const bool bForced)
 				if (sendValue == itt->second)
 					continue;
 			}
-			bHaveChanges = true;
-			m_PushedItems[szKey] = sendValue;
 		}
+		bHaveChanges = true;
+		m_PushedItems[szKey] = sendValue;
 	}
 
 	if (!bHaveChanges)
