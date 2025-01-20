@@ -2242,6 +2242,9 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 				float wind_Chill = 0;
 				std::string Temp_outdoor = "0";
 
+				int ionflag = 0;
+				double powerflag = 0;
+
 				//uint64_t DeviceRowIdx;
 				iModuleIndex ++;
 				// Hardware_ID hex to int
@@ -2590,6 +2593,16 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 						wind_gust_angle = module["wind_gust_angle"].asFloat(); // / 3.6F;
 						//Debug(DEBUG_HARDWARE, "HomeStatus Module Wind gust angle [%f]", wind_gust_angle);
 					}
+					if (!module["on"].empty())
+					{
+						ionflag = module["on"].asInt();
+						//Debug(DEBUG_HARDWARE, "HomeStatus Module On [%d]", ionflag);
+					}
+					if (!module["power"].empty())
+					{
+						powerflag = module["power"].asDouble();
+						//Debug(DEBUG_HARDWARE, "HomeStatus Module Power [%d]", powerflag);
+					}
 					//Data retrieved create / update appropriate domoticz devices
 					if (bHaveTemp && bHaveHum && bHaveBaro)
 					{
@@ -2782,6 +2795,22 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 						m_DeviceModuleID[uId] = module_id;
 						m_thermostatModuleID[uid] = module_id;                // mac-adres
 						m_DeviceHomeID[roomNetatmoID] = home_id;              // Home_ID
+					}
+					if (type=="NLF"|| type == "NLP" || type == "NLPO")
+					{
+						std::string bName = moduleName + " - Switch";
+						SendGeneralSwitch(crcId, 0, batteryLevel, ionflag, ionflag, bName, m_Name, mrf_status);
+						
+						std::string cName = moduleName + " - Kwh";
+						SendKwhMeter(crcId, 5, batteryLevel, powerflag, 0, cName, mrf_status);
+					}
+					if (type=="NLLF")
+					{
+						continue;
+					}
+					if (type=="NLE")
+					{
+						continue;
 					}
 					if ((type =="NACamera") || (type == "NCO") || (type == "NDB") || (type == "NOC") || (type == "NSD") || (type == "NIS") || (type == "NDL"))
 					{
