@@ -115,6 +115,7 @@ void CNetatmo::Init()
 	m_ScheduleHome.clear();
 	m_DeviceModuleID.clear();
 	m_LightDeviceID.clear();
+	m_PowerDeviceID.clear();
 	m_homeid.clear();
 	m_wifi_status.clear();
 	m_DeviceHomeID.clear();
@@ -529,7 +530,7 @@ bool CNetatmo::WriteToHardware(const char* pdata, const unsigned char /*length*/
 
 	if (packettype == pTypeLighting2)
 	{
-		//Debug(DEBUG_HARDWARE, "Packettype pTypeLighting2 ");
+		Debug(DEBUG_HARDWARE, "Packettype pTypeLighting2 ");
 		return true;
 	}
 	//This is the selector switch for setting the thermostat schedule
@@ -551,7 +552,7 @@ bool CNetatmo::WriteToHardware(const char* pdata, const unsigned char /*length*/
 	}
 	if (packettype == pTypeGeneralSwitch)
 	{
-		//Debug(DEBUG_HARDWARE, "Packettype pTypeGeneralSwitch ");
+		Debug(DEBUG_HARDWARE, "Packettype pTypeGeneralSwitch ");
 		//
 		// Recast raw data to get switch specific data
 		const _tGeneralSwitch* xcmd = reinterpret_cast<const _tGeneralSwitch*>(pdata);
@@ -661,7 +662,7 @@ bool CNetatmo::SetProgramState(const int uid, const int newState)
 	std::string Device_bridge = m_DeviceBridge[module_id];
 	std::string roomNetatmoID = m_RoomIDs[module_id];
 	std::string Home_id = m_DeviceHomeID[roomNetatmoID];      // Home_ID
-	//Debug(DEBUG_HARDWARE, "Device MAC %s", module_id.c_str());
+	Debug(DEBUG_HARDWARE, "SetProgramState - Device MAC %s", module_id.c_str());
 
 	if (!m_thermostatModuleID[uid].empty())
 	{
@@ -771,6 +772,28 @@ bool CNetatmo::SetProgramState(const int uid, const int newState)
 		bHaveDevice = true;
 	}
 
+	if(!m_PowerDeviceID[uid].empty())
+	{
+		//
+		std::string State;
+		switch (newState)
+		{
+		case 0:
+			State = "off";
+			break;
+		case 10:
+			State = "on";
+			break;
+		case 20:
+			State = "auto";
+			break;
+		default:
+			Log(LOG_ERROR, "Netatmo: Invalid Device state!");
+			return false;
+		}
+		//
+	}
+	
 	//Return error if no device are found
 	if (!bHaveDevice)
 	{
@@ -1186,6 +1209,7 @@ void CNetatmo::GetHomesDataDetails()
 				homeID = home["id"].asString();
 				m_homeid.push_back(homeID);
 				//Debug(DEBUG_HARDWARE, "Get Home ID %s", homeID.c_str());
+				SaveJson2Disk(home, std::string("./room_") + homeID.c_str() + ".txt");
 				std::stringstream stream_homeid;
 				for(size_t i = 0; i < m_homeid.size(); ++i)
 				{
@@ -2113,7 +2137,7 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 				// from Homesdata
 				roomName = m_RoomNames[roomNetatmoID];
 				std::string roomType = m_Types[roomNetatmoID];
-				//SaveJson2Disk(room, std::string("./room_") + roomName.c_str() + ".txt");
+				SaveJson2Disk(room, std::string("./room_") + roomName.c_str() + ".txt");
 
 				if (!room["reachable"].empty())
 				{
@@ -2796,13 +2820,14 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 						m_thermostatModuleID[uid] = module_id;                // mac-adres
 						m_DeviceHomeID[roomNetatmoID] = home_id;              // Home_ID
 					}
-					if (type=="NLF"|| type == "NLP" || type == "NLPO")
+					if (type=="NLF"|| type == "NLP" || type == "NLPO" || type == "NLM")
 					{
 						std::string bName = moduleName + " - Switch";
 						SendGeneralSwitch(crcId, 0, batteryLevel, ionflag, ionflag, bName, m_Name, mrf_status);
 						
 						std::string cName = moduleName + " - Kwh";
 						SendKwhMeter(crcId, 5, batteryLevel, powerflag, 0, cName, mrf_status);
+						m_PowerDeviceID[crcId] = bName;
 					}
 					if (type=="NLLF")
 					{
