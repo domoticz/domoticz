@@ -154,6 +154,7 @@ class CNetatmo : public CDomoticzHardwareBase
 	std::map<uint64_t, int> m_ModuleIDs;
 	std::map<uint8_t, std::string> m_DeviceModuleID;
 	std::map<uint8_t, std::string> m_LightDeviceID;
+	std::map<uint8_t, std::string> m_PowerDeviceID;
 	std::map<std::string, std::string> m_DeviceHomeID;
 	std::map<std::string, std::string> m_PersonsNames;
 	std::map<int, std::string> m_ScheduleNames;
