@@ -20,6 +20,22 @@
 //#define DEBUG_NetatmoWeatherStationR
 #endif
 
+//Logic ChildID
+// 0	Sensor data
+// 1	MAC-adres
+// 2	RF-Level
+// 3	Battery-Level
+// 4	Bridge MAC-adres
+// 5	Kwh sensor
+// 6	Doorsensor Alert
+// 7	Setpoint
+// 8	Temperature Thermostat
+// 9	Boiler Status Switch
+//10	Selector Switch
+//11	Events Text
+//12	Events Alert
+// 
+
 // Some testfunctions for debugging
 void SaveJson2Disk(Json::Value str, std::string filename)
 {
@@ -662,7 +678,7 @@ bool CNetatmo::SetProgramState(const int uid, const int newState)
 	std::string Device_bridge = m_DeviceBridge[module_id];
 	std::string roomNetatmoID = m_RoomIDs[module_id];
 	std::string Home_id = m_DeviceHomeID[roomNetatmoID];      // Home_ID
-	Debug(DEBUG_HARDWARE, "SetProgramState - Device MAC %s", module_id.c_str());
+	Debug(DEBUG_HARDWARE, "SetProgramState - Device MAC %s - Type %s", module_id.c_str(), type_module.c_str());
 
 	if (!m_thermostatModuleID[uid].empty())
 	{
@@ -734,33 +750,103 @@ bool CNetatmo::SetProgramState(const int uid, const int newState)
 
 	if(!m_LightDeviceID[uid].empty())
 	{
-		//
+		// Home+control  {NLG,    OTH, BNS, NBG,              BNMH, NLF, NLP, NLPO, NLM}
+		// Home+security {NACamera, NOC, NDB, NSD, NCO, BNCX, BNMH}
 		Debug(DEBUG_HARDWARE, "Set Program State MAC = %s - %d", module_id.c_str(), newState);
-		//
+		std::string _data
 		std::string State;
-		switch (newState)
+		
+		if (type_module == "NOC")
 		{
-		case 0:
-			State = "off";
-			break;
-		case 10:
-			State = "on";
-			break;
-		case 20:
-			State = "auto";
-			break;
-		default:
-			Log(LOG_ERROR, "Netatmo: Invalid Device state!");
-			return false;
+			std::string State;
+			switch (newState)
+			{
+			case 0:
+				State = "off";
+				break;
+			case 10:
+				State = "on";
+				break;
+			case 20:
+				State = "auto";
+				break;
+			default:
+				Log(LOG_ERROR, "Netatmo: Invalid Device state!");
+				return false;
+			}
+			//
+			Json::Value json_data;
+			//json_data {"body":{"home":{"id":
+			json_data["home"]["id"] = Home_id;
+			json_data["home"]["modules"][0]["floodlight"] = State;
+			json_data["home"]["modules"][0]["id"] = module_id;
+			std::string extra_data = json_data.toStyledString();
+			_data = "{\"home\":{\"id\":\"" + Home_id + "\",\"modules\":[{\"id\":\"" + module_id + "\",\"floodlight\":\"" + State + "\"}]}}" ;
 		}
-		//
-		Json::Value json_data;
-		//json_data {"body":{"home":{"id":
-		json_data["home"]["id"] = Home_id;
-		json_data["home"]["modules"][0]["floodlight"] = State;
-		json_data["home"]["modules"][0]["id"] = module_id;
-		std::string extra_data = json_data.toStyledString();
-		std::string _data = "{\"home\":{\"id\":\"" + Home_id + "\",\"modules\":[{\"id\":\"" + module_id + "\",\"floodlight\":\"" + State + "\"}]}}" ;
+		else if (type_module == "NLF" || type_module == "NLP" || type_module == "NLPO" || type_module == "NLM" || type_module == "NLC" || type_module == "NLL" || type_module == "NLF" || type_module == "NLPM" || type_module == "NLPT" || type_module == "BNIL" || type_module == "BNCS")
+		{
+			std::string State;
+			switch (newState)
+			{
+			case 0:
+				State = "false";
+				break;
+			case 1:
+				State = "true";
+				break;
+			default:
+				Log(LOG_ERROR, "Netatmo: Invalid Device state!");
+				return false;
+			}
+			//module NLP NLPM NLC BNCS NLF NLM NLL NLPT BNIL
+			_data = "{\"home\":{\"id\":\"" + Home_id + "\",\"modules\":[{\"id\":\"" + module_id + "\",\"on\":\"" + State + "\",\"bridge\":\"" + Device_bridge + "\"}]}}" ;
+		}
+		else if (type_module == "NLV" || type_module == "NLLV"  || type_module == "NLIV"  || type_module == "Z3V" || type_module == "BNAS")
+		{
+			//open shutter NLV BNAS NLLV NLIV Z3V
+			//_data = "{\"home\":{\"id\":\"" + Home_id + "\",\"modules\":[{\"id\":\"" + module_id + "\",\"target_position\":\"" + newState + "\"}]}}" ;
+		}
+			//Scenario NLG
+			//_data = "{\"home\":{\"id\":\"" + Home_id + "\",\"modules\":[{\"id\":\"" + module_id + "\",\"scenario\":\"" + "home" + "\"}]}}" ;
+
+			//Brightness NLF
+			//_data = "{\"home\":{\"id\":\"" + Home_id + "\",\"modules\":[{\"id\":\"" + module_id + "\",\"brightness\":\"" + 50 + "\",\"bridge\":\"" + Device_bridge + "\"}]}}" ;
+
+			//setpoint of the room to away or comfort NLC
+			//_data = "{\"home\":{\"id\":\"" + Home_id + "\",\"rooms\":[{\"id\":\"" + module_id + "\",\"therm_setpoint_mode\":\"" + "manual" + "\",\"therm_setpoint_fp\":\"" + "away" + "\",\"therm_setpoint_end_time\":\"" + 1505368800 + "\"}]}}" ;
+
+			//setpoint of the room to Frost Guard NLC
+			//_data = "{\"home\":{\"id\":\"" + Home_id + "\",\"rooms\":[{\"id\":\"" + module_id + "\",\"therm_setpoint_mode\":\"" + "hg" + "\"}]}}" ;
+
+			//temperatuur of the room BNS BNTH
+			//_data = "{\"home\":{\"id\":\"" + Home_id + "\",\"rooms\":[{\"id\":\"" + module_id + "\",\"therm_setpoint_end_time\":\"" + 1505368800 + "\",\"therm_setpoint_mode\":\"" + "manual" + "\",\"therm_setpoint_temperature\":\"" + 20 + "\"}]}}" ;
+
+			//BOOST of the room (SMARTHER in heating)
+			//_data = "{\"home\":{\"id\":\"" + Home_id + "\",\"rooms\":[{\"id\":\"" + module_id + "\",\"therm_setpoint_end_time\":\"" + 1505368800 + "\",\"therm_setpoint_mode\":\"" + "max" + "\"}]}}" ;
+
+			//frostguard of the room (SMARTHER in heating)
+			//_data = "{\"home\":{\"id\":\"" + Home_id + "\",\"rooms\":[{\"id\":\"" + module_id + "\",\"therm_setpoint_mode\":\"" + "hg" + "\"}]}}" ;
+
+			//home schedule of the room (SMARTHER in heating)
+			//_data = "{\"home\":{\"id\":\"" + Home_id + "\",\"rooms\":[{\"id\":\"" + module_id + "\",\"therm_setpoint_mode\":\"" + "home" + "\"}]}}" ;
+
+			//Temperature setpoint of the room (SMARTHER in heating)
+			//_data = "{\"home\":{\"id\":\"" + Home_id + "\",\"rooms\":[{\"id\":\"" + module_id + "\",\"cooling_setpoint_end_time\":\"" + 1505368800 + "\",\"cooling_setpoint_mode\":\"" + "manual" + "\", "cooling_setpoint_temperature\":\"" + 20 + "\"}]}}" ;
+
+			//BOOST of the room (SMARTHER in heating)
+			//_data = "{\"home\":{\"id\":\"" + Home_id + "\",\"rooms\":[{\"id\":\"" + module_id + "\",\"cooling_setpoint_end_time\":\"" + 1505368800 + "\",\"cooling_setpoint_mode\":\"" + "max" + "\"}]}}" ;
+
+			//frostguard of the room (SMARTHER in cooling)
+			//_data = "{\"home\":{\"id\":\"" + Home_id + "\",\"rooms\":[{\"id\":\"" + module_id + "\",\"cooling_setpoint_mode\":\"" + "off" + "\"}]}}" ;
+
+			//Home schedule of the room (SMARTHER in cooling)
+			//_data = "{\"home\":{\"id\":\"" + Home_id + "\",\"rooms\":[{\"id\":\"" + module_id + "\",\"cooling_setpoint_mode\":\"" + "home" + "\"}]}}" ;
+
+		else
+		{
+			Log(LOG_ERROR, "Netatmo: Invalid Device state!");
+			_data = "";
+		}
 		home_data = "&";
 
 		Get_Respons_API(NETYPE_SETSTATE, sResult, home_data, bRet, root, _data);
@@ -779,19 +865,26 @@ bool CNetatmo::SetProgramState(const int uid, const int newState)
 		switch (newState)
 		{
 		case 0:
-			State = "off";
+			State = "false";
 			break;
-		case 10:
-			State = "on";
-			break;
-		case 20:
-			State = "auto";
+		case 1:
+			State = "true";
 			break;
 		default:
 			Log(LOG_ERROR, "Netatmo: Invalid Device state!");
 			return false;
 		}
 		//
+		std::string _data = "{\"home\":{\"id\":\"" + Home_id + "\",\"modules\":[{\"id\":\"" + module_id + "\",\"on\":\"" + State + "\",\"bridge\":\"" + Device_bridge + "\"}]}}" ;
+		home_data = "&";
+
+		Get_Respons_API(NETYPE_SETSTATE, sResult, home_data, bRet, root, _data);
+		if (!bRet)
+		{
+			Log(LOG_ERROR, "Netatmo: Error setting Selector !");
+			return false;
+		}
+		bHaveDevice = true;
 	}
 	
 	//Return error if no device are found
@@ -2497,7 +2590,7 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 					}
 					if (!module["floodlight"].empty())
 					{
-						//Light Outdoor Camera Presence
+						//Light Outdoor Camera Presence - NOC
 						//      AUTO / ON / OFF
 						std::string lName = moduleName + " - Light";
 						bool bIsActive = module["is_local"].asBool();
