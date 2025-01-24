@@ -87,9 +87,6 @@
     <Filter Include="zlib">
       <UniqueIdentifier>{96351f00-f848-4e75-84be-0bccaecc2a02}</UniqueIdentifier>
     </Filter>
-    <Filter Include="TCPProxy">
-      <UniqueIdentifier>{242d77c7-709a-4c87-8d92-a87a489af891}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Devices\ICY Thermostat">
       <UniqueIdentifier>{76dbad7a-fef9-4b45-94f2-82670e7ff061}</UniqueIdentifier>
     </Filter>
@@ -1640,9 +1637,6 @@
     <ClInclude Include="..\hardware\ASyncTCP.h">
       <Filter>Devices\SerialTCP</Filter>
     </ClInclude>
-    <ClInclude Include="..\hardware\TCPProxy\tcpproxy_server.h">
-      <Filter>TCPProxy</Filter>
-    </ClInclude>
     <ClInclude Include="..\hardware\ICYThermostat.h">
       <Filter>Devices\ICY Thermostat</Filter>
     </ClInclude>
@@ -2421,9 +2415,6 @@
     </ClCompile>
     <ClCompile Include="..\hardware\ColorSwitch.cpp">
       <Filter>Devices</Filter>
-    </ClCompile>
-    <ClCompile Include="..\hardware\TCPProxy\tcpproxy_server.cpp">
-      <Filter>TCPProxy</Filter>
     </ClCompile>
     <ClCompile Include="..\hardware\ICYThermostat.cpp">
       <Filter>Devices\ICY Thermostat</Filter>
