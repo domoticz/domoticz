@@ -119,7 +119,11 @@ namespace Plugins {
 				//
 				//	Async resolve/connect based on http://www.boost.org/doc/libs/1_45_0/doc/html/boost_asio/example/http/client/async_client.cpp
 				//
-				m_Resolver.async_resolve(m_IP, m_Port, [this](auto &&err, auto endpoints) { handleAsyncResolve(err, endpoints); });
+				m_Resolver.async_resolve(m_IP, m_Port,
+					[this](auto &&err, auto endpoints) {
+						handleAsyncResolve(err, endpoints);
+					}
+				);
 			}
 		}
 		catch (std::exception& e)
@@ -823,8 +827,10 @@ namespace Plugins {
 	{
 		if (!ec)
 		{
+			m_Endpoint = endpoints.begin()->endpoint();
+			m_IP = m_Endpoint.address().to_string();
+
 			m_bConnected = true;
-			m_IP = endpoints.begin()->endpoint().address().to_string();
 
 			// Listen will fail (10022 - bad parameter) unless something has been sent(?)
 			std::string body("ping");
@@ -851,14 +857,11 @@ namespace Plugins {
 				m_bConnecting = true;
 				m_Socket = new boost::asio::ip::icmp::socket(ios, boost::asio::ip::icmp::v4());
 
-				boost::system::error_code ec;
-				auto iter = m_Resolver.resolve(boost::asio::ip::icmp::v4(), m_IP, "");
-				m_Endpoint = iter.begin()->endpoint();
-
-				//
-				//	Async resolve/connect based on http://www.boost.org/doc/libs/1_51_0/doc/html/boost_asio/example/icmp/ping.cpp
-				//
-				m_Resolver.async_resolve(boost::asio::ip::icmp::v4(), m_IP, "", [this](auto &&err, auto endpoints) { handleAsyncResolve(err, endpoints); });
+				m_Resolver.async_resolve(boost::asio::ip::icmp::v4(), m_IP, "",
+					[this](auto &&err, auto endpoints) {
+						handleAsyncResolve(err, endpoints);
+					}
+				);
 			}
 			else
 			{
