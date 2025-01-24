@@ -753,7 +753,7 @@ bool CNetatmo::SetProgramState(const int uid, const int newState)
 		// Home+control  {NLG,    OTH, BNS, NBG,              BNMH, NLF, NLP, NLPO, NLM}
 		// Home+security {NACamera, NOC, NDB, NSD, NCO, BNCX, BNMH}
 		Debug(DEBUG_HARDWARE, "Set Program State MAC = %s - %d", module_id.c_str(), newState);
-		std::string _data
+		std::string _data;
 		std::string State;
 		
 		if (type_module == "NOC")
@@ -783,7 +783,25 @@ bool CNetatmo::SetProgramState(const int uid, const int newState)
 			std::string extra_data = json_data.toStyledString();
 			_data = "{\"home\":{\"id\":\"" + Home_id + "\",\"modules\":[{\"id\":\"" + module_id + "\",\"floodlight\":\"" + State + "\"}]}}" ;
 		}
-		else if (type_module == "NLF" || type_module == "NLP" || type_module == "NLPO" || type_module == "NLM" || type_module == "NLC" || type_module == "NLL" || type_module == "NLF" || type_module == "NLPM" || type_module == "NLPT" || type_module == "BNIL" || type_module == "BNCS")
+		if (type_module == "NLF")
+		{
+			std::string State;
+			switch (newState)
+			{
+			case 0:
+				State = "false";
+				break;
+			case 1:
+				State = "true";
+				break;
+			default:
+				Log(LOG_ERROR, "Netatmo: Invalid Device state!");
+				return false;
+			}
+			//
+			_data = "{\"home\":{\"id\":\"" + Home_id + "\",\"modules\":[{\"id\":\"" + module_id + "\",\"brightness\":\"" + newState + "\",\"bridge\":\"" + Device_bridge + "\"}]}}" ;
+		}
+		else if (type_module == "NLP" || type_module == "NLPO" || type_module == "NLM" || type_module == "NLC" || type_module == "NLL" || type_module == "NLPM" || type_module == "NLPT" || type_module == "BNIL" || type_module == "BNCS")
 		{
 			std::string State;
 			switch (newState)
@@ -806,12 +824,26 @@ bool CNetatmo::SetProgramState(const int uid, const int newState)
 			//open shutter NLV BNAS NLLV NLIV Z3V
 			//_data = "{\"home\":{\"id\":\"" + Home_id + "\",\"modules\":[{\"id\":\"" + module_id + "\",\"target_position\":\"" + newState + "\"}]}}" ;
 		}
+		else if (type_module == "NLG")
+		{
+			std::string State;
+			switch (newState)
+			{
+			case 0:
+				State = "";
+				break;
+			case 1:
+				State = "home";
+				break;
+			default:
+				Log(LOG_ERROR, "Netatmo: Invalid Device state!");
+				return false;
+			}
 			//Scenario NLG
-			//_data = "{\"home\":{\"id\":\"" + Home_id + "\",\"modules\":[{\"id\":\"" + module_id + "\",\"scenario\":\"" + "home" + "\"}]}}" ;
+			//_data = "{\"home\":{\"id\":\"" + Home_id + "\",\"modules\":[{\"id\":\"" + module_id + "\",\"scenario\":\"" + State + "\"}]}}" ;
+		}
 
-			//Brightness NLF
-			//_data = "{\"home\":{\"id\":\"" + Home_id + "\",\"modules\":[{\"id\":\"" + module_id + "\",\"brightness\":\"" + 50 + "\",\"bridge\":\"" + Device_bridge + "\"}]}}" ;
-
+			
 			//setpoint of the room to away or comfort NLC
 			//_data = "{\"home\":{\"id\":\"" + Home_id + "\",\"rooms\":[{\"id\":\"" + module_id + "\",\"therm_setpoint_mode\":\"" + "manual" + "\",\"therm_setpoint_fp\":\"" + "away" + "\",\"therm_setpoint_end_time\":\"" + 1505368800 + "\"}]}}" ;
 
@@ -861,21 +893,6 @@ bool CNetatmo::SetProgramState(const int uid, const int newState)
 	if(!m_PowerDeviceID[uid].empty())
 	{
 		//
-		std::string State;
-		switch (newState)
-		{
-		case 0:
-			State = "false";
-			break;
-		case 1:
-			State = "true";
-			break;
-		default:
-			Log(LOG_ERROR, "Netatmo: Invalid Device state!");
-			return false;
-		}
-		//
-		std::string _data = "{\"home\":{\"id\":\"" + Home_id + "\",\"modules\":[{\"id\":\"" + module_id + "\",\"on\":\"" + State + "\",\"bridge\":\"" + Device_bridge + "\"}]}}" ;
 		home_data = "&";
 
 		Get_Respons_API(NETYPE_SETSTATE, sResult, home_data, bRet, root, _data);
@@ -2920,7 +2937,7 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 						
 						std::string cName = moduleName + " - Kwh";
 						SendKwhMeter(crcId, 5, batteryLevel, powerflag, 0, cName, mrf_status);
-						m_PowerDeviceID[crcId] = bName;
+						m_LightDeviceID[crcId] = bName;
 					}
 					if (type=="NLLF")
 					{
