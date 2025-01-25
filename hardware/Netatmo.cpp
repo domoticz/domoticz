@@ -756,7 +756,7 @@ bool CNetatmo::SetProgramState(const int uid, const int newState)
 		std::string _state;
 		std::string _data;
 		std::string State;
-		std::stringstream d
+		std::stringstream d;
 		d << newState;
 		d >> _state;
 		
@@ -845,9 +845,9 @@ bool CNetatmo::SetProgramState(const int uid, const int newState)
 			}
 			//Scenario NLG
 			_data = "{\"home\":{\"id\":\"" + Home_id + "\",\"modules\":[{\"id\":\"" + module_id + "\",\"scenario\":\"" + State + "\"}]}}" ;
-		}
-
-			
+		//}
+		//else if (type_module == "")
+		//{	
 			//setpoint of the room to away or comfort NLC
 			//_data = "{\"home\":{\"id\":\"" + Home_id + "\",\"rooms\":[{\"id\":\"" + module_id + "\",\"therm_setpoint_mode\":\"" + "manual" + "\",\"therm_setpoint_fp\":\"" + "away" + "\",\"therm_setpoint_end_time\":\"" + 1505368800 + "\"}]}}" ;
 
@@ -877,7 +877,7 @@ bool CNetatmo::SetProgramState(const int uid, const int newState)
 
 			//Home schedule of the room (SMARTHER in cooling)
 			//_data = "{\"home\":{\"id\":\"" + Home_id + "\",\"rooms\":[{\"id\":\"" + module_id + "\",\"cooling_setpoint_mode\":\"" + "home" + "\"}]}}" ;
-
+		}
 		else
 		{
 			Log(LOG_ERROR, "Netatmo: Invalid Device state!");
@@ -1727,7 +1727,7 @@ void CNetatmo::Get_Events(std::string home_id, std::string device_types, std::st
 /// Get Scenarios
 /// <param name="home_id">ID-number of the NetatmoHome</param>
 /// </summary>
-void CNetatmo::Get_Scenarios(std::string home_id)
+Json::Value CNetatmo::Get_Scenarios(std::string home_id)
 {
 	//Check if connected to the API
 	if (!m_isLogged)
@@ -2360,6 +2360,42 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 		}
 	}
 
+	Json::Value scenarios = Get_Scenarios(home_id);
+	int index = 0;
+
+	if (!scenarios["id"].empty())
+	{
+		for (auto scenario : scenarios)
+		{
+			//Debug(DEBUG_HARDWARE, "Get the scenarios from %s", homeID.c_str());
+			std::string scenario_type;
+			std::string scenario_id;
+			std::string scenario_category;
+			bool scenario_custom;
+			bool scenario_edit;
+			bool scenario_del;
+				
+			if (!scenario["type"].empty())
+				scenario_type = scenario["type"].asString();
+					
+			if (!scenario["id"].empty())
+				scenario_id = scenario["id"].asString();
+					
+			if (!scenario["category"].empty())
+				scenario_category = scenario["category"].asString();
+					
+			if (!scenario["customizable"].empty())
+				scenario_custom = scenario["customizable"].asBool();
+					
+			if (!scenario["editable"].empty())
+				scenario_edit = scenario["editable"].asBool();
+				
+			if (!scenario["deletable"].empty())
+				scenario_del = scenario["deletable"].asBool();
+			Debug(DEBUG_HARDWARE, "Scenario %s : %s %s", scenario_id.c_str(), scenario_type.c_str(), scenario_category.c_str());
+			index = +10;
+		}
+	}
 	//Parse module and create / update domoticz devices
 	if (!root["body"]["home"]["modules"].empty())
 	{
@@ -2367,44 +2403,7 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 			return false;
 		Json::Value mRoot = root["body"]["home"]["modules"];
 		int iModuleIndex = 0;
-
-		Json::Value scenarios;
-		int index = 0;
-
-		scenarios = Get_Scenarios(home_id);
-		if (!scenarios["id"].empty())
-		{
-			for (auto scenario : scenarios)
-			{
-				//Debug(DEBUG_HARDWARE, "Get the scenarios from %s", homeID.c_str());
-				std::string scenario_type;
-				std::string scenario_id;
-				std::string scenario_category;
-				bool scenario_custom;
-				bool scenario_edit;
-				bool scenario_del;
-				
-				if (!scenario["type"].empty())
-					scenario_type = scenario["type"].asString();
-					
-				if (!scenario["id"].empty())
-					scenario_id = scenario["id"].asString();
-					
-				if (!scenario["category"].empty())
-					scenario_category = scenario["category"].asString();
-					
-				if (!scenario["customizable"].empty())
-					scenario_custom = scenario["customizable"].asBool();
-					
-				if (!scenario["editable"].empty())
-					scenario_edit = scenario["editable"].asBool();
-				
-				if (!scenario["deletable"].empty())
-					scenario_del = scenario["deletable"].asBool();
-				index = +10;
-			}
-		}
-
+		
 		for (auto module : mRoot)
 		{
 			if (!module["id"].empty())
@@ -2660,7 +2659,7 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 						std::string boiler_boost = module["boiler_valve_comfort_boost"].asString();
 						std::string bName = moduleName + " - Boost";
 						//Debug(DEBUG_HARDWARE, "Boiler Boost %s - %s", bName.c_str(), boiler_boost.c_str() );
-						bool bIsActive = module["boiler_valve_comfort_boost"].();
+						bool bIsActive = module["boiler_valve_comfort_boost"].asBool();
 						
 					}
 					if (!module["boiler_status"].empty())
