@@ -897,6 +897,7 @@ bool CNetatmo::SetProgramState(const int uid, const int newState)
 	if(!m_PowerDeviceID[uid].empty())
 	{
 		//
+		std::string _data;
 		home_data = "&";
 
 		Get_Respons_API(NETYPE_SETSTATE, sResult, home_data, bRet, root, _data);
@@ -1729,13 +1730,14 @@ void CNetatmo::Get_Events(std::string home_id, std::string device_types, std::st
 /// </summary>
 Json::Value CNetatmo::Get_Scenarios(std::string home_id)
 {
-	//Check if connected to the API
-	if (!m_isLogged)
-		return ;
-
 	//Locals
 	std::string sResult; // text returned by API
 	Json::Value root;    // root JSON object
+	Json::Value scenarios;
+	//Check if connected to the API
+	if (!m_isLogged)
+		return scenarios;
+
 	// https://api.netatmo.com/api/getscenarios
 	std::string home_data = "home_id=" + home_id;
 	bool bRet;           //Parsing status
@@ -1746,7 +1748,7 @@ Json::Value CNetatmo::Get_Scenarios(std::string home_id)
 	{
 		if (!root["body"]["home"].empty())
 		{
-			Json::Value scenarios = root["body"]["home"];
+			scenarios = root["body"]["home"];
 			
 			// Data was recieved with success
 			Log(LOG_STATUS, "Scenarios Data Recieved");
