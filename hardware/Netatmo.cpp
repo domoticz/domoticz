@@ -753,8 +753,12 @@ bool CNetatmo::SetProgramState(const int uid, const int newState)
 		// Home+control  {NLG,    OTH, BNS, NBG,              BNMH, NLF, NLP, NLPO, NLM}
 		// Home+security {NACamera, NOC, NDB, NSD, NCO, BNCX, BNMH}
 		Debug(DEBUG_HARDWARE, "Set Program State MAC = %s - %d", module_id.c_str(), newState);
+		std::string _state;
 		std::string _data;
 		std::string State;
+		std::stringstream d
+		d << newState;
+		d >> _state;
 		
 		if (type_module == "NOC")
 		{
@@ -799,7 +803,7 @@ bool CNetatmo::SetProgramState(const int uid, const int newState)
 				return false;
 			}
 			//
-			_data = "{\"home\":{\"id\":\"" + Home_id + "\",\"modules\":[{\"id\":\"" + module_id + "\",\"brightness\":\"" + newState + "\",\"bridge\":\"" + Device_bridge + "\"}]}}" ;
+			_data = "{\"home\":{\"id\":\"" + Home_id + "\",\"modules\":[{\"id\":\"" + module_id + "\",\"brightness\":\"" + _state + "\",\"bridge\":\"" + Device_bridge + "\"}]}}" ;
 		}
 		else if (type_module == "NLP" || type_module == "NLPO" || type_module == "NLM" || type_module == "NLC" || type_module == "NLL" || type_module == "NLPM" || type_module == "NLPT" || type_module == "BNIL" || type_module == "BNCS")
 		{
@@ -822,7 +826,7 @@ bool CNetatmo::SetProgramState(const int uid, const int newState)
 		else if (type_module == "NLV" || type_module == "NLLV"  || type_module == "NLIV"  || type_module == "Z3V" || type_module == "BNAS")
 		{
 			//open shutter NLV BNAS NLLV NLIV Z3V
-			//_data = "{\"home\":{\"id\":\"" + Home_id + "\",\"modules\":[{\"id\":\"" + module_id + "\",\"target_position\":\"" + newState + "\"}]}}" ;
+			//_data = "{\"home\":{\"id\":\"" + Home_id + "\",\"modules\":[{\"id\":\"" + module_id + "\",\"target_position\":\"" + _state + "\"}]}}" ;
 		}
 		else if (type_module == "NLG")
 		{
@@ -840,7 +844,7 @@ bool CNetatmo::SetProgramState(const int uid, const int newState)
 				return false;
 			}
 			//Scenario NLG
-			//_data = "{\"home\":{\"id\":\"" + Home_id + "\",\"modules\":[{\"id\":\"" + module_id + "\",\"scenario\":\"" + State + "\"}]}}" ;
+			_data = "{\"home\":{\"id\":\"" + Home_id + "\",\"modules\":[{\"id\":\"" + module_id + "\",\"scenario\":\"" + State + "\"}]}}" ;
 		}
 
 			
@@ -884,7 +888,7 @@ bool CNetatmo::SetProgramState(const int uid, const int newState)
 		Get_Respons_API(NETYPE_SETSTATE, sResult, home_data, bRet, root, _data);
 		if (!bRet)
 		{
-			Log(LOG_ERROR, "Netatmo: Error setting Selector !");
+			Log(LOG_ERROR, "Netatmo: Error setting Light Device !");
 			return false;
 		}
 		bHaveDevice = true;
@@ -898,7 +902,7 @@ bool CNetatmo::SetProgramState(const int uid, const int newState)
 		Get_Respons_API(NETYPE_SETSTATE, sResult, home_data, bRet, root, _data);
 		if (!bRet)
 		{
-			Log(LOG_ERROR, "Netatmo: Error setting Selector !");
+			Log(LOG_ERROR, "Netatmo: Error setting Power Device !");
 			return false;
 		}
 		bHaveDevice = true;
@@ -2376,9 +2380,9 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 				std::string scenario_type;
 				std::string scenario_id;
 				std::string scenario_category;
-				std::bool scenario_custom;
-				std::bool scenario_edit;
-				std::bool scenario_del;
+				bool scenario_custom;
+				bool scenario_edit;
+				bool scenario_del;
 				
 				if (!scenario["type"].empty())
 					scenario_type = scenario["type"].asString();
@@ -2453,6 +2457,7 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 				int fan_speed = 0;
 				double powerflag = 0;
 				bool offload = 0;
+				int swlevel = 0;
 
 				//uint64_t DeviceRowIdx;
 				iModuleIndex ++;
@@ -2824,6 +2829,11 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 						powerflag = module["power"].asDouble();
 						//Debug(DEBUG_HARDWARE, "HomeStatus Module Power [%d]", powerflag);
 					}
+					if (!module["brightness"].empty())
+					{
+						swlevel = module["brightness"].asInt();
+						//Debug(DEBUG_HARDWARE, "HomeStatus Module brightness [%d]", swlevel);
+					}
 					if (!module["offload"].empty())
 					{
 						offload = module["offload"].asBool();
@@ -3026,21 +3036,29 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 					if (type == "NLP" || type == "NLC" || type == "NLPD" || type == "NLPO" || type == "NLPM" || type == "NLPC" || type == "NLPT" || type == "NLPS" || type == "BNCS" || type == "BNXM")
 					{
 						std::string bName = moduleName + " - Power";
-						SendGeneralSwitch(crcId, 0, batteryLevel, ionflag, ionflag, bName, m_Name, mrf_status);
+						SendGeneralSwitch(crcId, 0, batteryLevel, ionflag, swlevel, bName, m_Name, mrf_status);
 						
 						std::string cName = moduleName + " - Kwh";
-						SendKwhMeter(crcId, 5, batteryLevel, powerflag, 0, cName, mrf_status);
+						//calculation mTotal kWh - TODO
+						double mTotal = 0;
+						SendKwhMeter(crcId, 5, batteryLevel, powerflag, mTotal, cName, mrf_status);
 						m_LightDeviceID[crcId] = bName;
 					}
 					if (type == "NLF" || type == "NLM" || type == "NLFN" || type == "NLIS" || type == "NLL" || type == "NLFE" || type == "NLD" || type == "Z3L" || type == "BNLD" || type == "BNIL" || type == "BN3L")
 					{
 						std::string bName = moduleName + " - Switch";
-						SendGeneralSwitch(crcId, 0, batteryLevel, ionflag, ionflag, bName, m_Name, mrf_status);
+						SendGeneralSwitch(crcId, 0, batteryLevel, ionflag, swlevel, bName, m_Name, mrf_status);
 					}
 					if (type == "NLLF")
 					{
 						std::string bName = moduleName + " - Fan";
-						SendGeneralSwitch(crcId, 0, batteryLevel, powerflag, fan_speed, bName, m_Name, mrf_status);
+						SendFanSensor(crcId, batteryLevel, fan_speed, bName);
+						
+						std::string cName = moduleName + " - Kwh";
+						// Calculation mTotal kWh - TODO
+						double mTotal = 0;
+						SendKwhMeter(crcId, 5, batteryLevel, powerflag, mTotal, cName, mrf_status);
+		
 						m_LightDeviceID[crcId] = bName;
 					}
 					if (type == "NLE")
