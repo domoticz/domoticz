@@ -26,6 +26,7 @@ class CNetatmo : public CDomoticzHardwareBase
                 NETYPE_HOMESDATA,
                 NETYPE_STATUS,
 
+		NETYPE_SCENARIOS,
                 NETYPE_EVENTS,
                 NETYPE_SETSTATE,
                 NETYPE_SETROOMTHERMPOINT,
@@ -110,6 +111,7 @@ class CNetatmo : public CDomoticzHardwareBase
 	void Get_Picture();
 	void Get_Measure(std::string gateway, std::string module_id, std::string scale, std::string type);
 	void Get_Events(std::string home_id, std::string device_types, std::string event_id, std::string person_id, std::string device_id, std::string module_id, bool offset, bool size, std::string locale);
+	void Get_Scenarios(std::string home_id)
 
 	bool ParseStationData(const std::string &sResult, bool bIsThermostat);
 	bool ParseHomeStatus(const std::string &sResult, Json::Value& root, std::string& home_id);
