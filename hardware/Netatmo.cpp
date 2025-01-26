@@ -2362,14 +2362,14 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 	}
 
 	Json::Value scenarios;
-	Get_Scenarios(home_id, scenarios);
+	//Get_Scenarios(home_id, scenarios);
 	int index = 0;
 
 	if (!scenarios.empty())
 	{
 		for (auto scenario : scenarios)
 		{
-			Debug(DEBUG_HARDWARE, "Get the scenarios from %s", homeID.c_str());
+			Debug(DEBUG_HARDWARE, "Get the scenarios from %s", home_id.c_str());
 			std::string scenario_type;
 			std::string scenario_id;
 			std::string scenario_category;
