@@ -775,7 +775,7 @@ bool CNetatmo::SetProgramState(const int uid, const int newState)
 				State = "auto";
 				break;
 			default:
-				Log(LOG_ERROR, "Netatmo: Invalid Device state!");
+				Log(LOG_ERROR, "Netatmo: Invalid Floodlight state!");
 				return false;
 			}
 			//
@@ -787,7 +787,7 @@ bool CNetatmo::SetProgramState(const int uid, const int newState)
 			std::string extra_data = json_data.toStyledString();
 			_data = "{\"home\":{\"id\":\"" + Home_id + "\",\"modules\":[{\"id\":\"" + module_id + "\",\"floodlight\":\"" + State + "\"}]}}" ;
 		}
-		if (type_module == "NLF")
+		else if (type_module == "NLF")
 		{
 			std::string State;
 			switch (newState)
@@ -799,7 +799,7 @@ bool CNetatmo::SetProgramState(const int uid, const int newState)
 				State = "true";
 				break;
 			default:
-				Log(LOG_ERROR, "Netatmo: Invalid Device state!");
+				Log(LOG_ERROR, "Netatmo: Invalid NLF Device state!");
 				return false;
 			}
 			//
@@ -817,7 +817,7 @@ bool CNetatmo::SetProgramState(const int uid, const int newState)
 				State = "true";
 				break;
 			default:
-				Log(LOG_ERROR, "Netatmo: Invalid Device state!");
+				Log(LOG_ERROR, "Netatmo: Invalid Power Device state!");
 				return false;
 			}
 			//module NLP NLPM NLC BNCS NLF NLM NLL NLPT BNIL
@@ -840,7 +840,7 @@ bool CNetatmo::SetProgramState(const int uid, const int newState)
 				State = "home";
 				break;
 			default:
-				Log(LOG_ERROR, "Netatmo: Invalid Device state!");
+				Log(LOG_ERROR, "Netatmo: Invalid Gateway Device state!");
 				return false;
 			}
 			//Scenario NLG
