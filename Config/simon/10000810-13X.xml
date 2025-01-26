@@ -1,0 +1,275 @@
+<!--
+Simon S100 Thermostat
+https://products.z-wavealliance.org/products/2669
+-->
+<Product Revision="1" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem id="0000" name="ZWProductPage" type="000b">https://products.z-wavealliance.org/products/3904/</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://products.z-wavealliance.org/ProductManual/File?folder=&filename=product_documents/3904/1000081X.pdf</MetaDataItem>
+    <MetaDataItem name="Name">S100 Thermostat</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Jordi Andújar - jordi.andujar@gmail.com" date="26 Jan 2025" revision="1">Added support for Simon S100 Thermostat.</Entry>
+    </ChangeLog>
+  </MetaData>
+  <!-- Configuration -->
+  <CommandClass id="112">
+    <Value type="byte" index="3" genre="config" label="Display brightness" units="" min="1" max="100" value="20" size="1">
+      <Help>
+        Display brightness from 1% to 100%. Default is 20%.
+      </Help>
+    </Value>
+    <Value genre="config" index="13" instance="1" label="Lock buttons" max="255" min="0" size="1" type="list" value="0">
+      <Help>
+        Locks the buttons in the device.
+      </Help>
+      <Item label="Unlocked (default)" value="0"/>
+      <Item label="Locked" value="255"/>
+    </Value>
+    <Value genre="config" index="15" instance="1" label="Reset default values (read only)" max="39015" min="17170" size="2" type="list" value="" write_only="true">
+      <Help>
+        Restore factory values to default (read only).
+      </Help>
+      <Item label="Parameters, Groups, and Z-Wave status are restored to default" value="39015"/>
+      <Item label="Parameters, except 'Long key press lock', are restored to default" value="17170"/>
+    </Value>
+    <Value genre="config" index="17" instance="1" label="Post reset state" max="255" min="0" size="1" type="list" value="0">
+      <Help>
+        Post reset state.
+      </Help>
+      <Item label="After the reset, the load is deactivated (default)" value="0"/>
+      <Item label="After the reset, the load is activated" value="1"/>
+      <Item label="After the reset, the load retrieves the state" value="255"/>
+    </Value>
+    <Value genre="config" index="27" instance="1" label="Long key press lock" max="255" min="0" size="1" type="list" value="0">
+      <Help>
+        Long key press of P5 button (temperature down button).
+        In "Unlocked" mode acts as described in the user manual (default).
+        In "Locked" mode:
+          - When key press time is between 2s and 10s does not send Node Info.
+          - When key press time is greater than 30s and the buttons are NOT locked (see 'Lock buttons' configuration), it sends a Node Info.
+          - When key press time is greater than 30s and the buttons are locked (see 'Lock buttons' configuration), the Node Info is only sent when thermostat is ON.
+      </Help>
+      <Item label="Unlocked (default)" value="0"/>
+      <Item label="Locked" value="255"/>
+    </Value>
+    <Value genre="config" index="29" instance="1" label="Lock manual scheduling" max="255" min="0" size="1" type="list" value="0">
+      <Help>
+        Locks the manual scheduling heating times.
+      </Help>
+      <Item label="Unlocked (default)" value="0"/>
+      <Item label="Locked" value="255"/>
+    </Value>
+    <Value genre="config" index="30" instance="1" label="Celsius/Fahrenheit" max="1" min="0" size="1" type="list" value="0">
+      <Help>
+        Display Celsius or Fahrenheit temperature values. The configurations are always made in Celsius.
+      </Help>
+      <Item label="Celsius (default)" value="0"/>
+      <Item label="Fahrenheit" value="1"/>
+    </Value>
+    <Value genre="config" index="31" instance="1" label="Upload temperature and humidity automatically" max="3" min="0" size="1" type="list" units="" value="3">
+      <Help>Upload temperature and humidity automatically</Help>
+      <Item label="OFF" value="0"/>
+      <Item label="Upload only when temperature difference condition is met" value="1"/>
+      <Item label="Upload only when timing difference condition is met" value="2"/>
+      <Item label="Upload when temperature difference and timing conditions are met (default)" value="3"/>
+    </Value>
+    <Value genre="config" index="32" instance="1" label="Upload temperature difference condition" max="100" min="3" size="2" type="short" units="" value="5">
+      <Help>Base on 0.1C unit, 5 by default, 5*0.1C=0.5C. Minimum 3 (0.3C), maximum 100 (10.0C). Default is 5 (0.5C).</Help>
+    </Value>
+    <Value genre="config" index="33" instance="1" label="Upload timing difference condition" max="1000" min="10" size="1" type="short" units="" value="60">
+      <Help>Base on 1s unit. Minimum 10s, maximum 1000s. 60s by default.</Help>
+    </Value>
+    <Value genre="config" index="34" instance="1" label="Upload humidity difference condition" max="100" min="2" size="1" type="byte" units="" value="3">
+      <Help>Upload when percent difference exceeded. 3% by default.</Help>
+    </Value>
+    <Value genre="config" index="35" instance="1" label="Temperature (Celsius)" max="500" min="0" size="2" type="byte" units="" value="">
+      <Help>
+        - Maximum temperature: 0 - 500 Maximum Setpoint temperature. Temperatures above are discarded (370 is 37C, default value).
+        - Minimum temperature: 0 - 500 Minimum Setpoint temperature. Temperatures below are discarded (50 is 5C, default).
+        - Offset temperature: -10 ... 10 Offset applied to the internal temperature sensor with an accuracy of 0.1C (0 is 0C, default value).
+      </Help>
+    </Value>
+
+    <Value genre="config" index="36" instance="1" label="Time Condition 1 for Monday" max="4294967295" min="0" size="4" type="int" value="">
+      <Help>
+        The thermostat's time conditions are formed by structures with 4 configurations, where each configuration establishes one of the 4 possible time conditions for each day of the week.
+        B0 Hour // B1 Minute // B2, B3 Temperature in Celsius with 0.1C resolution
+      </Help>
+    </Value>
+    <Value genre="config" index="37" instance="1" label="Time Condition 2 for Monday" max="4294967295" min="0" size="4" type="int" value="">
+      <Help>
+        The thermostat's time conditions are formed by structures with 4 configurations, where each configuration establishes one of the 4 possible time conditions for each day of the week.
+        B0 Hour // B1 Minute // B2, B3 Temperature in Celsius with 0.1C resolution
+      </Help>
+    </Value>
+    <Value genre="config" index="38" instance="1" label="Time Condition 3 for Monday" max="4294967295" min="0" size="4" type="int" value="">
+      <Help>
+        The thermostat's time conditions are formed by structures with 4 configurations, where each configuration establishes one of the 4 possible time conditions for each day of the week.
+        B0 Hour // B1 Minute // B2, B3 Temperature in Celsius with 0.1C resolution
+      </Help>
+    </Value>
+    <Value genre="config" index="39" instance="1" label="Time Condition 4 for Monday" max="4294967295" min="0" size="4" type="int" value="">
+      <Help>
+        The thermostat's time conditions are formed by structures with 4 configurations, where each configuration establishes one of the 4 possible time conditions for each day of the week.
+        B0 Hour // B1 Minute // B2, B3 Temperature in Celsius with 0.1C resolution
+      </Help>
+    </Value>
+
+    <Value genre="config" index="40" instance="1" label="Time Condition 1 for Tuesday" max="4294967295" min="0" size="4" type="int" value="">
+      <Help>
+        The thermostat's time conditions are formed by structures with 4 configurations, where each configuration establishes one of the 4 possible time conditions for each day of the week.
+        B0 Hour // B1 Minute // B2, B3 Temperature in Celsius with 0.1C resolution
+      </Help>
+    </Value>
+    <Value genre="config" index="41" instance="1" label="Time Condition 2 for Tuesday" max="4294967295" min="0" size="4" type="int" value="">
+      <Help>
+        The thermostat's time conditions are formed by structures with 4 configurations, where each configuration establishes one of the 4 possible time conditions for each day of the week.
+        B0 Hour // B1 Minute // B2, B3 Temperature in Celsius with 0.1C resolution
+      </Help>
+    </Value>
+    <Value genre="config" index="42" instance="1" label="Time Condition 3 for Tuesday" max="4294967295" min="0" size="4" type="int" value="">
+      <Help>
+        The thermostat's time conditions are formed by structures with 4 configurations, where each configuration establishes one of the 4 possible time conditions for each day of the week.
+        B0 Hour // B1 Minute // B2, B3 Temperature in Celsius with 0.1C resolution
+      </Help>
+    </Value>
+    <Value genre="config" index="43" instance="1" label="Time Condition 4 for Tuesday" max="4294967295" min="0" size="4" type="int" value="">
+      <Help>
+        The thermostat's time conditions are formed by structures with 4 configurations, where each configuration establishes one of the 4 possible time conditions for each day of the week.
+        B0 Hour // B1 Minute // B2, B3 Temperature in Celsius with 0.1C resolution
+      </Help>
+    </Value>
+
+    <Value genre="config" index="44" instance="1" label="Time Condition 1 for Wednesday" max="4294967295" min="0" size="4" type="int" value="">
+      <Help>
+        The thermostat's time conditions are formed by structures with 4 configurations, where each configuration establishes one of the 4 possible time conditions for each day of the week.
+        B0 Hour // B1 Minute // B2, B3 Temperature in Celsius with 0.1C resolution
+      </Help>
+    </Value>
+    <Value genre="config" index="45" instance="1" label="Time Condition 2 for Wednesday" max="4294967295" min="0" size="4" type="int" value="">
+      <Help>
+        The thermostat's time conditions are formed by structures with 4 configurations, where each configuration establishes one of the 4 possible time conditions for each day of the week.
+        B0 Hour // B1 Minute // B2, B3 Temperature in Celsius with 0.1C resolution
+      </Help>
+    </Value>
+    <Value genre="config" index="46" instance="1" label="Time Condition 3 for Wednesday" max="4294967295" min="0" size="4" type="int" value="">
+      <Help>
+        The thermostat's time conditions are formed by structures with 4 configurations, where each configuration establishes one of the 4 possible time conditions for each day of the week.
+        B0 Hour // B1 Minute // B2, B3 Temperature in Celsius with 0.1C resolution
+      </Help>
+    </Value>
+    <Value genre="config" index="47" instance="1" label="Time Condition 4 for Wednesday" max="4294967295" min="0" size="4" type="int" value="">
+      <Help>
+        The thermostat's time conditions are formed by structures with 4 configurations, where each configuration establishes one of the 4 possible time conditions for each day of the week.
+        B0 Hour // B1 Minute // B2, B3 Temperature in Celsius with 0.1C resolution
+      </Help>
+    </Value>
+
+    <Value genre="config" index="48" instance="1" label="Time Condition 1 for Thursday" max="4294967295" min="0" size="4" type="int" value="">
+      <Help>
+        The thermostat's time conditions are formed by structures with 4 configurations, where each configuration establishes one of the 4 possible time conditions for each day of the week.
+        B0 Hour // B1 Minute // B2, B3 Temperature in Celsius with 0.1C resolution
+      </Help>
+    </Value>
+    <Value genre="config" index="49" instance="1" label="Time Condition 2 for Thursday" max="4294967295" min="0" size="4" type="int" value="">
+      <Help>
+        The thermostat's time conditions are formed by structures with 4 configurations, where each configuration establishes one of the 4 possible time conditions for each day of the week.
+        B0 Hour // B1 Minute // B2, B3 Temperature in Celsius with 0.1C resolution
+      </Help>
+    </Value>
+    <Value genre="config" index="50" instance="1" label="Time Condition 3 for Thursday" max="4294967295" min="0" size="4" type="int" value="">
+      <Help>
+        The thermostat's time conditions are formed by structures with 4 configurations, where each configuration establishes one of the 4 possible time conditions for each day of the week.
+        B0 Hour // B1 Minute // B2, B3 Temperature in Celsius with 0.1C resolution
+      </Help>
+    </Value>
+    <Value genre="config" index="51" instance="1" label="Time Condition 4 for Thursday" max="4294967295" min="0" size="4" type="int" value="">
+      <Help>
+        The thermostat's time conditions are formed by structures with 4 configurations, where each configuration establishes one of the 4 possible time conditions for each day of the week.
+        B0 Hour // B1 Minute // B2, B3 Temperature in Celsius with 0.1C resolution
+      </Help>
+    </Value>
+
+    <Value genre="config" index="52" instance="1" label="Time Condition 1 for Friday" max="4294967295" min="0" size="4" type="int" value="">
+      <Help>
+        The thermostat's time conditions are formed by structures with 4 configurations, where each configuration establishes one of the 4 possible time conditions for each day of the week.
+        B0 Hour // B1 Minute // B2, B3 Temperature in Celsius with 0.1C resolution
+      </Help>
+    </Value>
+    <Value genre="config" index="53" instance="1" label="Time Condition 2 for Friday" max="4294967295" min="0" size="4" type="int" value="">
+      <Help>
+        The thermostat's time conditions are formed by structures with 4 configurations, where each configuration establishes one of the 4 possible time conditions for each day of the week.
+        B0 Hour // B1 Minute // B2, B3 Temperature in Celsius with 0.1C resolution
+      </Help>
+    </Value>
+    <Value genre="config" index="54" instance="1" label="Time Condition 3 for Friday" max="4294967295" min="0" size="4" type="int" value="">
+      <Help>
+        The thermostat's time conditions are formed by structures with 4 configurations, where each configuration establishes one of the 4 possible time conditions for each day of the week.
+        B0 Hour // B1 Minute // B2, B3 Temperature in Celsius with 0.1C resolution
+      </Help>
+    </Value>
+    <Value genre="config" index="55" instance="1" label="Time Condition 4 for Friday" max="4294967295" min="0" size="4" type="int" value="">
+      <Help>
+        The thermostat's time conditions are formed by structures with 4 configurations, where each configuration establishes one of the 4 possible time conditions for each day of the week.
+        B0 Hour // B1 Minute // B2, B3 Temperature in Celsius with 0.1C resolution
+      </Help>
+    </Value>
+
+    <Value genre="config" index="56" instance="1" label="Time Condition 1 for Saturday" max="4294967295" min="0" size="4" type="int" value="">
+      <Help>
+        The thermostat's time conditions are formed by structures with 4 configurations, where each configuration establishes one of the 4 possible time conditions for each day of the week.
+        B0 Hour // B1 Minute // B2, B3 Temperature in Celsius with 0.1C resolution
+      </Help>
+    </Value>
+    <Value genre="config" index="57" instance="1" label="Time Condition 2 for Saturday" max="4294967295" min="0" size="4" type="int" value="">
+      <Help>
+        The thermostat's time conditions are formed by structures with 4 configurations, where each configuration establishes one of the 4 possible time conditions for each day of the week.
+        B0 Hour // B1 Minute // B2, B3 Temperature in Celsius with 0.1C resolution
+      </Help>
+    </Value>
+    <Value genre="config" index="58" instance="1" label="Time Condition 3 for Saturday" max="4294967295" min="0" size="4" type="int" value="">
+      <Help>
+        The thermostat's time conditions are formed by structures with 4 configurations, where each configuration establishes one of the 4 possible time conditions for each day of the week.
+        B0 Hour // B1 Minute // B2, B3 Temperature in Celsius with 0.1C resolution
+      </Help>
+    </Value>
+    <Value genre="config" index="59" instance="1" label="Time Condition 4 for Saturday" max="4294967295" min="0" size="4" type="int" value="">
+      <Help>
+        The thermostat's time conditions are formed by structures with 4 configurations, where each configuration establishes one of the 4 possible time conditions for each day of the week.
+        B0 Hour // B1 Minute // B2, B3 Temperature in Celsius with 0.1C resolution
+      </Help>
+    </Value>
+
+    <Value genre="config" index="60" instance="1" label="Time Condition 1 for Sunday" max="4294967295" min="0" size="4" type="int" value="">
+      <Help>
+        The thermostat's time conditions are formed by structures with 4 configurations, where each configuration establishes one of the 4 possible time conditions for each day of the week.
+        B0 Hour // B1 Minute // B2, B3 Temperature in Celsius with 0.1C resolution
+      </Help>
+    </Value>
+    <Value genre="config" index="61" instance="1" label="Time Condition 2 for Sunday" max="4294967295" min="0" size="4" type="int" value="">
+      <Help>
+        The thermostat's time conditions are formed by structures with 4 configurations, where each configuration establishes one of the 4 possible time conditions for each day of the week.
+        B0 Hour // B1 Minute // B2, B3 Temperature in Celsius with 0.1C resolution
+      </Help>
+    </Value>
+    <Value genre="config" index="62" instance="1" label="Time Condition 3 for Sunday" max="4294967295" min="0" size="4" type="int" value="">
+      <Help>
+        The thermostat's time conditions are formed by structures with 4 configurations, where each configuration establishes one of the 4 possible time conditions for each day of the week.
+        B0 Hour // B1 Minute // B2, B3 Temperature in Celsius with 0.1C resolution
+      </Help>
+    </Value>
+    <Value genre="config" index="63" instance="1" label="Time Condition 4 for Sunday" max="4294967295" min="0" size="4" type="int" value="">
+      <Help>
+        The thermostat's time conditions are formed by structures with 4 configurations, where each configuration establishes one of the 4 possible time conditions for each day of the week.
+        B0 Hour // B1 Minute // B2, B3 Temperature in Celsius with 0.1C resolution
+      </Help>
+    </Value>
+  </CommandClass>
+
+  <!-- Association Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="1">
+      <Group index="1" label="Lifeline" max_associations="3"/>
+    </Associations>
+  </CommandClass>
+</Product>

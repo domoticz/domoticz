@@ -1689,6 +1689,7 @@
     <Product config="simon/10002034-13X.xml" id="00da" name="S100 Socket iO" type="0001"/>
     <Product config="simon/10002041-13X.xml" id="0022" name="S100 Socket iO" type="0009"/>
     <Product config="simon/10002080-13X.xml" id="0000" name="S100 Rocker iO for Roller Blind" type="0004"/>
+    <Product config="simon/10000810-13X.xml" id="0000" name="S100 Thermostat" type="000b"/>
   </Manufacturer>
   <Manufacturer id="0045" name="Sine Wireless"></Manufacturer>
   <Manufacturer id="0266" name="Siterwell Technology HK"></Manufacturer>
