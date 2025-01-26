@@ -1728,7 +1728,7 @@ void CNetatmo::Get_Events(std::string home_id, std::string device_types, std::st
 /// Get Scenarios
 /// <param name="home_id">ID-number of the NetatmoHome</param>
 /// </summary>
-void CNetatmo::Get_Scenarios(std::string home_id, scenarios)
+void CNetatmo::Get_Scenarios(std::string home_id, Json::Value& scenarios)
 {
 	//Locals
 	std::string sResult; // text returned by API
