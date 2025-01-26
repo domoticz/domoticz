@@ -2365,7 +2365,7 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 	Json::Value scenarios = Get_Scenarios(home_id);
 	int index = 0;
 
-	if (!scenarios["id"].empty())
+	if (!scenarios.empty())
 	{
 		for (auto scenario : scenarios)
 		{
