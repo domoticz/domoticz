@@ -2362,40 +2362,53 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 	}
 
 	Json::Value scenarios;
-	//Get_Scenarios(home_id, scenarios);
+	Get_Scenarios(home_id, scenarios);
 	int index = 0;
 
 	if (!scenarios.empty())
 	{
 		for (auto scenario : scenarios)
 		{
-			Debug(DEBUG_HARDWARE, "Get the scenarios from %s", home_id.c_str());
-			std::string scenario_type;
-			std::string scenario_id;
-			std::string scenario_category;
-			bool scenario_custom;
-			bool scenario_edit;
-			bool scenario_del;
-				
-			if (!scenario["type"].empty())
-				scenario_type = scenario["type"].asString();
-					
-			if (!scenario["id"].empty())
+			if (scenario.isArray())
+			{
+				Debug(DEBUG_HARDWARE, "Get the scenarios from %s", home_id.c_str());
+				std::string scenario_type;
+				std::string scenario_id;
+				std::string scenario_category;
+				bool scenario_custom;
+				bool scenario_edit;
+				bool scenario_del;
+
+				if (!scenario["type"].empty())
+				{
+					scenario_type = scenario["type"].asString();
+				}		
+				if (!scenario["id"].empty())
+				{
 				scenario_id = scenario["id"].asString();
-					
-			if (!scenario["category"].empty())
-				scenario_category = scenario["category"].asString();
-					
-			if (!scenario["customizable"].empty())
-				scenario_custom = scenario["customizable"].asBool();
-					
-			if (!scenario["editable"].empty())
-				scenario_edit = scenario["editable"].asBool();
-				
-			if (!scenario["deletable"].empty())
-				scenario_del = scenario["deletable"].asBool();
-			Debug(DEBUG_HARDWARE, "Scenario %s : %s %s", scenario_id.c_str(), scenario_type.c_str(), scenario_category.c_str());
-			index = +10;
+				}		
+				if (!scenario["category"].empty())
+				{
+					scenario_category = scenario["category"].asString();
+				}		
+				if (!scenario["customizable"].empty())
+				{
+					scenario_custom = scenario["customizable"].asBool();
+				}			
+				if (!scenario["editable"].empty())
+				{
+					scenario_edit = scenario["editable"].asBool();
+				}	
+				if (!scenario["deletable"].empty())
+				{
+					scenario_del = scenario["deletable"].asBool();
+				}
+				if (!scenario_type.empty())
+				{
+					Debug(DEBUG_HARDWARE, "Scenario %s : %s %s", scenario_id.c_str(), scenario_type.c_str(), scenario_category.c_str());
+				}
+				index = +10;
+			}
 		}
 	}
 	//Parse module and create / update domoticz devices
