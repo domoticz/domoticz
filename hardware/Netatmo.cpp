@@ -1728,7 +1728,7 @@ void CNetatmo::Get_Events(std::string home_id, std::string device_types, std::st
 /// Get Scenarios
 /// <param name="home_id">ID-number of the NetatmoHome</param>
 /// </summary>
-Json::Value CNetatmo::Get_Scenarios(std::string home_id)
+void CNetatmo::Get_Scenarios(std::string home_id, scenarios)
 {
 	//Locals
 	std::string sResult; // text returned by API
@@ -1736,7 +1736,7 @@ Json::Value CNetatmo::Get_Scenarios(std::string home_id)
 	Json::Value scenarios;
 	//Check if connected to the API
 	if (!m_isLogged)
-		return scenarios;
+		return;
 
 	// https://api.netatmo.com/api/getscenarios
 	std::string home_data = "home_id=" + home_id;
@@ -1754,7 +1754,6 @@ Json::Value CNetatmo::Get_Scenarios(std::string home_id)
 			Log(LOG_STATUS, "Scenarios Data Recieved");
 		}		
 	}
-	return scenarios;
 }
 
 /// <summary>
@@ -2362,7 +2361,8 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 		}
 	}
 
-	Json::Value scenarios = Get_Scenarios(home_id);
+	Json::Value scenarios;
+	Get_Scenarios(home_id, scenarios);
 	int index = 0;
 
 	if (!scenarios.empty())
