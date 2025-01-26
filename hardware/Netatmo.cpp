@@ -1733,7 +1733,7 @@ void CNetatmo::Get_Scenarios(std::string home_id, Json::Value& scenarios)
 	//Locals
 	std::string sResult; // text returned by API
 	Json::Value root;    // root JSON object
-	Json::Value scenarios;
+
 	//Check if connected to the API
 	if (!m_isLogged)
 		return;
