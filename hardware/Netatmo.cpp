@@ -2369,7 +2369,7 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 	{
 		for (auto scenario : scenarios)
 		{
-			//Debug(DEBUG_HARDWARE, "Get the scenarios from %s", homeID.c_str());
+			Debug(DEBUG_HARDWARE, "Get the scenarios from %s", homeID.c_str());
 			std::string scenario_type;
 			std::string scenario_id;
 			std::string scenario_category;
