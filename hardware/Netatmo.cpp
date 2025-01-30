@@ -678,7 +678,7 @@ bool CNetatmo::SetProgramState(const int uid, const int newState)
 	std::string Device_bridge = m_DeviceBridge[module_id];
 	std::string roomNetatmoID = m_RoomIDs[module_id];
 	std::string Home_id = m_DeviceHomeID[roomNetatmoID];      // Home_ID
-	Debug(DEBUG_HARDWARE, "SetProgramState - Device MAC %s - Type %s", module_id.c_str(), type_module.c_str());
+	Log(LOG_STATUS, "SetProgramState - Device MAC %s - Type %s", module_id.c_str(), type_module.c_str());
 
 	if (!m_thermostatModuleID[uid].empty())
 	{
