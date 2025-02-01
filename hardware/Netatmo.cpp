@@ -2577,6 +2577,7 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 
 				if (connected)
 				{
+					m_DeviceModuleID[crcId] = module_id;
 					if (!module["rf_strength"].empty())
 					{
 						rf_strength = module["rf_strength"].asFloat();
@@ -2734,7 +2735,6 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 						}
 
 						std::string setpoint_mode = module["monitoring"].asString();
-						m_DeviceModuleID[crcId] = module_id;
 						m_LightDeviceID[crcId] = lName;
 						SendSelectorSwitch(crcId, NETATMO_PRESET_UNIT, Selector, lName, 0, true, "off|on|auto", "", false, m_Name);   // No RF-level - Battery level
 					}
@@ -3000,7 +3000,6 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 						uint64_t mid = convert_mac(module_id);
 						int Hardware_int = (int)mid;
 						//Debug(DEBUG_HARDWARE, "roomNetatmoID %d  %d -  %s %s in Home; %s ", crcId , Hardware_int, module_id.c_str(), roomNetatmoID.c_str(), home_id.c_str());
-						m_DeviceModuleID[uid] = module_id;                    // mac-adres
 						m_thermostatModuleID[crcId] = module_id;              // mac-adres
 						//m_RoomIDs[module_id] = roomNetatmoID;                 // Room Netatmo ID
 						//m_DeviceHomeID[roomNetatmoID] = home_id;            // Home_ID
@@ -3043,7 +3042,6 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 						std::vector<std::vector<std::string> > result;
 						result = m_sql.safe_query("SELECT ID, sValue, Options FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%08X') AND (Unit == '%d')", m_HwdID, crcId, NETATMO_PRESET_UNIT);
 						int uId = std::stoi(result[0][0]);
-						m_DeviceModuleID[uId] = module_id;
 						m_thermostatModuleID[uid] = module_id;                // mac-adres
 						m_DeviceHomeID[roomNetatmoID] = home_id;              // Home_ID
 					}
