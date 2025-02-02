@@ -754,7 +754,7 @@ bool CNetatmo::SetProgramState(const int uid, const int newState)
 		// Home+security {NACamera, NOC, NDB, NSD, NCO, BNCX, BNMH}
 		Debug(DEBUG_HARDWARE, "Set Program State MAC = %s - %d", module_id.c_str(), newState);
 		std::string _state;
-		std::string _data;
+		int _data;
 		std::string State;
 		std::stringstream d;
 		d << newState;
@@ -803,6 +803,7 @@ bool CNetatmo::SetProgramState(const int uid, const int newState)
 				return false;
 			}
 			//
+			_state = newState;
 			_data = "{\"home\":{\"id\":\"" + Home_id + "\",\"modules\":[{\"id\":\"" + module_id + "\",\"brightness\":\"" + _state + "\",\"bridge\":\"" + Device_bridge + "\"}]}}" ;
 		}
 		else if (type_module == "NLP" || type_module == "NLPO" || type_module == "NLM" || type_module == "NLC" || type_module == "NLL" || type_module == "NLPM" || type_module == "NLPT" || type_module == "BNIL" || type_module == "BNCS")
@@ -821,11 +822,12 @@ bool CNetatmo::SetProgramState(const int uid, const int newState)
 				return false;
 			}
 			//module NLP NLPM NLC BNCS NLF NLM NLL NLPT BNIL
-			_data = "{\"home\":{\"id\":\"" + Home_id + "\",\"modules\":[{\"id\":\"" + module_id + "\",\"on\":\"" + State + "\",\"bridge\":\"" + Device_bridge + "\"}]}}" ;
+			_data = "{"home":{"id":"" + Home_id + "","modules":[{"id":"" + module_id + "","on":" + State + ","bridge":"" + Device_bridge + ""}]}}" ;
 		}
 		else if (type_module == "NLV" || type_module == "NLLV"  || type_module == "NLIV"  || type_module == "Z3V" || type_module == "BNAS")
 		{
 			//open shutter NLV BNAS NLLV NLIV Z3V
+			_state = newState;
 			//_data = "{\"home\":{\"id\":\"" + Home_id + "\",\"modules\":[{\"id\":\"" + module_id + "\",\"target_position\":\"" + _state + "\"}]}}" ;
 		}
 		else if (type_module == "NLG")
