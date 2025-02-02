@@ -789,14 +789,14 @@ bool CNetatmo::SetProgramState(const int uid, const int newState)
 		}
 		else if (type_module == "NLF")
 		{
-			std::string State;
+			bool State;
 			switch (newState)
 			{
 			case 0:
-				State = "false";
+				State = false;
 				break;
 			case 1:
-				State = "true";
+				State = true;
 				break;
 			default:
 				Log(LOG_ERROR, "Netatmo: Invalid NLF Device state!");
@@ -815,14 +815,14 @@ bool CNetatmo::SetProgramState(const int uid, const int newState)
 		}
 		else if (type_module == "NLP" || type_module == "NLPO" || type_module == "NLM" || type_module == "NLC" || type_module == "NLL" || type_module == "NLPM" || type_module == "NLPT" || type_module == "BNIL" || type_module == "BNCS")
 		{
-			std::string State;
+			bool State;
 			switch (newState)
 			{
 			case 0:
-				State = "false";
+				State = false;
 				break;
 			case 1:
-				State = "true";
+				State = true;
 				break;
 			default:
 				Log(LOG_ERROR, "Netatmo: Invalid Power Device state!");
