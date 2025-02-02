@@ -570,6 +570,7 @@ bool CNetatmo::WriteToHardware(const char* pdata, const unsigned char /*length*/
 	{
 		Debug(DEBUG_HARDWARE, "Packettype pTypeGeneralSwitch ");
 		//
+		int set_level = 0;
 		// Recast raw data to get switch specific data
 		const _tGeneralSwitch* xcmd = reinterpret_cast<const _tGeneralSwitch*>(pdata);
 		int subtype = pCmd->LIGHTING2.subtype;
@@ -585,15 +586,16 @@ bool CNetatmo::WriteToHardware(const char* pdata, const unsigned char /*length*/
 		std::string name = "";
 		uint64_t ulId1 = id1; // PRIu64
 		bool bIsNewDevice = false;
-		//Debug(DEBUG_HARDWARE, "Netatmo subType %d", subtype);
-		//Debug(DEBUG_HARDWARE, "Netatmo id1 %d", id1);
-		//Debug(DEBUG_HARDWARE, "Netatmo id2 %d", id2);
-		//Debug(DEBUG_HARDWARE, "Netatmo id3 %d", id3);
-		//Debug(DEBUG_HARDWARE, "Netatmo id4 %d", id4);
-		//Debug(DEBUG_HARDWARE, "Netatmo bIsOn %d", bIsOn);
-		//Debug(DEBUG_HARDWARE, "Netatmo level %d", level);
-		//Debug(DEBUG_HARDWARE, "Netatmo filler %d", filler);
-		//Debug(DEBUG_HARDWARE, "Netatmo rssi %d", rssi);
+		Log(LOG_STATUS, "Netatmo WriteToHardware");
+		Log(LOG_STATUS, "Netatmo subType %d", subtype);
+		Log(LOG_STATUS, "Netatmo id1 %d", id1);
+		Log(LOG_STATUS, "Netatmo id2 %d", id2);
+		Log(LOG_STATUS, "Netatmo id3 %d", id3);
+		Log(LOG_STATUS, "Netatmo id4 %d", id4);
+		Log(LOG_STATUS, "Netatmo bIsOn %d", bIsOn);
+		Log(LOG_STATUS, "Netatmo level %d", level);
+		Log(LOG_STATUS, "Netatmo filler %d", filler);
+		Log(LOG_STATUS, "Netatmo rssi %d", rssi);
 
 		int length = xcmd->len;
 		int uid = xcmd->id;
@@ -604,25 +606,31 @@ bool CNetatmo::WriteToHardware(const char* pdata, const unsigned char /*length*/
 		int cmnd_SetLevel = xcmd->cmnd;
 		int selectorLevel = xcmd->level;
 		int _rssi_ = xcmd->rssi;
-		//Debug(DEBUG_HARDWARE, "Netatmo subType ( %" PRIu64 ") %08X ", ulId1, uid);
-		//Debug(DEBUG_HARDWARE, "Netatmo length %d", length);
-		//Debug(DEBUG_HARDWARE, "Netatmo uid %d", uid);
-		//Debug(DEBUG_HARDWARE, "Netatmo uid_hex %d", uid_hex);
-		//Debug(DEBUG_HARDWARE, "Netatmo unitcode %d", unitcode);
-		//Debug(DEBUG_HARDWARE, "Netatmo xcmdType %d", xcmdType);
-		//Debug(DEBUG_HARDWARE, "Netatmo SUB_Type %d", SUB_Type);
-		//Debug(DEBUG_HARDWARE, "Netatmo battery_level %d", battery_level);
-		//Debug(DEBUG_HARDWARE, "Netatmo gswitch_sSetLevel %d", cmnd_SetLevel);
-		//Debug(DEBUG_HARDWARE, "Netatmo selectorLevel %d", selectorLevel);
-		//Debug(DEBUG_HARDWARE, "Netatmo rssi %d", _rssi_);
+		Log(LOG_STATUS, "Netatmo Write xcmd");
+		Log(LOG_STATUS, "Netatmo subType  %"( PRIu64 ") %08X ", ulId1, uid);
+		Log(LOG_STATUS, "Netatmo length %d", length);
+		Log(LOG_STATUS, "Netatmo uid %d", uid);
+		Log(LOG_STATUS, "Netatmo uid_hex %d", uid_hex);
+		Log(LOG_STATUS, "Netatmo unitcode %d", unitcode);
+		Log(LOG_STATUS, "Netatmo xcmdType %d", xcmdType);
+		Log(LOG_STATUS, "Netatmo SUB_Type %d", SUB_Type);
+		Log(LOG_STATUS, "Netatmo battery_level %d", battery_level);
+		Log(LOG_STATUS, "Netatmo gswitch_sSetLevel %d", cmnd_SetLevel);
+		Log(LOG_STATUS, "Netatmo selectorLevel %d", selectorLevel);
+		Log(LOG_STATUS, "Netatmo rssi %d", _rssi_);
 
 		uint8_t unit = NETATMO_PRESET_UNIT; //preset mode
 		int switchType = STYPE_Selector;
 		int devType = packettype;  //unsigned char
 		int subType = sSwitchTypeSelector;
 		//Debug(DEBUG_HARDWARE, "Netatmo uid %08X", uid);
+		
+		if (SUB_Type == STYPE_Selector)
+			set_level = selectorLevel;
+		else
+			set_level = cmnd_SetLevel;
 
-		return SetProgramState(uid, xcmd->level);
+		return SetProgramState(uid, set_level);
 	}
 	else
 	{
@@ -759,7 +767,7 @@ bool CNetatmo::SetProgramState(const int uid, const int newState)
 		std::stringstream d;
 		d << newState;
 		d >> _state;
-		
+
 		if (type_module == "NOC")
 		{
 			std::string State;
@@ -784,8 +792,8 @@ bool CNetatmo::SetProgramState(const int uid, const int newState)
 			json_data["home"]["id"] = Home_id;
 			json_data["home"]["modules"][0]["floodlight"] = State;
 			json_data["home"]["modules"][0]["id"] = module_id;
-			std::string extra_data = json_data.toStyledString();
-			_data = "{\"home\":{\"id\":\"" + Home_id + "\",\"modules\":[{\"id\":\"" + module_id + "\",\"floodlight\":\"" + State + "\"}]}}" ;
+			_data = json_data.toStyledString();
+			//_data = "{\"home\":{\"id\":\"" + Home_id + "\",\"modules\":[{\"id\":\"" + module_id + "\",\"floodlight\":\"" + State + "\"}]}}" ;
 		}
 		else if (type_module == "NLF")
 		{
@@ -873,11 +881,10 @@ bool CNetatmo::SetProgramState(const int uid, const int newState)
 			json_data["home"]["modules"][0]["id"] = module_id;
 			json_data["home"]["modules"][0]["scenario"] = State;
 			_data = json_data.toStyledString();
-			
 			//_data = "{\"home\":{\"id\":\"" + Home_id + "\",\"modules\":[{\"id\":\"" + module_id + "\",\"scenario\":\"" + State + "\"}]}}" ;
 		//}
 		//else if (type_module == "")
-		//{	
+		//{
 			//setpoint of the room to away or comfort NLC
 			//_data = "{\"home\":{\"id\":\"" + Home_id + "\",\"rooms\":[{\"id\":\"" + module_id + "\",\"therm_setpoint_mode\":\"" + "manual" + "\",\"therm_setpoint_fp\":\"" + "away" + "\",\"therm_setpoint_end_time\":\"" + 1505368800 + "\"}]}}" ;
 
@@ -939,7 +946,7 @@ bool CNetatmo::SetProgramState(const int uid, const int newState)
 		}
 		bHaveDevice = true;
 	}
-	
+
 	//Return error if no device are found
 	if (!bHaveDevice)
 	{
@@ -1780,10 +1787,10 @@ void CNetatmo::Get_Scenarios(std::string home_id, Json::Value& scenarios)
 		if (!root["body"]["home"].empty())
 		{
 			scenarios = root["body"]["home"];
-			
+
 			// Data was recieved with success
 			Log(LOG_STATUS, "Scenarios Data Recieved");
-		}		
+		}
 	}
 }
 
@@ -2413,23 +2420,23 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 				if (!scenario["type"].empty())
 				{
 					scenario_type = scenario["type"].asString();
-				}		
+				}
 				if (!scenario["id"].empty())
 				{
 				scenario_id = scenario["id"].asString();
-				}		
+				}
 				if (!scenario["category"].empty())
 				{
 					scenario_category = scenario["category"].asString();
-				}		
+				}
 				if (!scenario["customizable"].empty())
 				{
 					scenario_custom = scenario["customizable"].asBool();
-				}			
+				}
 				if (!scenario["editable"].empty())
 				{
 					scenario_edit = scenario["editable"].asBool();
-				}	
+				}
 				if (!scenario["deletable"].empty())
 				{
 					scenario_del = scenario["deletable"].asBool();
@@ -2449,7 +2456,7 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 			return false;
 		Json::Value mRoot = root["body"]["home"]["modules"];
 		int iModuleIndex = 0;
-		
+
 		for (auto module : mRoot)
 		{
 			if (!module["id"].empty())
@@ -2707,7 +2714,7 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 						std::string bName = moduleName + " - Boost";
 						//Debug(DEBUG_HARDWARE, "Boiler Boost %s - %s", bName.c_str(), boiler_boost.c_str() );
 						bool bIsActive = module["boiler_valve_comfort_boost"].asBool();
-						
+
 					}
 					if (!module["boiler_status"].empty())
 					{
@@ -2884,7 +2891,7 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 						offload = module["offload"].asBool();
 						//Debug(DEBUG_HARDWARE, "HomeStatus Module On [%d]", offload);
 					}
-					
+
 					//Data retrieved create / update appropriate domoticz devices
 					if (bHaveTemp && bHaveHum && bHaveBaro)
 					{
@@ -3080,7 +3087,7 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 					{
 						std::string bName = moduleName + " - Power";
 						SendGeneralSwitch(crcId, 0, batteryLevel, ionflag, swlevel, bName, m_Name, mrf_status);
-						
+
 						std::string cName = moduleName + " - Kwh";
 						//calculation mTotal kWh - TODO
 						double mTotal = 0;
@@ -3097,12 +3104,12 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 					{
 						std::string bName = moduleName + " - Fan";
 						SendFanSensor(crcId, batteryLevel, fan_speed, bName);
-						
+
 						std::string cName = moduleName + " - Kwh";
 						// Calculation mTotal kWh - TODO
 						double mTotal = 0;
 						SendKwhMeter(crcId, 5, batteryLevel, powerflag, mTotal, cName, mrf_status);
-		
+
 						m_LightDeviceID[crcId] = bName;
 					}
 					if (type == "NLE")
