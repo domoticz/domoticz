@@ -752,9 +752,9 @@ bool CNetatmo::SetProgramState(const int uid, const int newState)
 	{
 		// Home+control  {NLG,    OTH, BNS, NBG,              BNMH, NLF, NLP, NLPO, NLM}
 		// Home+security {NACamera, NOC, NDB, NSD, NCO, BNCX, BNMH}
-		Debug(DEBUG_HARDWARE, "Set Program State MAC = %s - %d", module_id.c_str(), newState);
-		std::string _state;
-		int _data;
+		//Debug(DEBUG_HARDWARE, "Set Program State MAC = %s - %d", module_id.c_str(), newState);
+		int _state;
+		std::string _data;
 		std::string State;
 		std::stringstream d;
 		d << newState;
@@ -822,7 +822,7 @@ bool CNetatmo::SetProgramState(const int uid, const int newState)
 				return false;
 			}
 			//module NLP NLPM NLC BNCS NLF NLM NLL NLPT BNIL
-			_data = "{"home":{"id":"" + Home_id + "","modules":[{"id":"" + module_id + "","on":" + State + ","bridge":"" + Device_bridge + ""}]}}" ;
+			//_data = "{"home":{"id":"" + Home_id + "","modules":[{"id":"" + module_id + "","on":" + State + ","bridge":"" + Device_bridge + ""}]}}" ;
 			_data = "{\"home\":{\"id\":\"" + Home_id + "\",\"module\":[{\"id\":\"" + module_id + "\",\"on\":\"" + State + "\",\"bridge\":\"" + Device_bridge + "\"}]}}" ;
 		}
 		else if (type_module == "NLV" || type_module == "NLLV"  || type_module == "NLIV"  || type_module == "Z3V" || type_module == "BNAS")
