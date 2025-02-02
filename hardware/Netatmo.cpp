@@ -804,7 +804,14 @@ bool CNetatmo::SetProgramState(const int uid, const int newState)
 			}
 			//
 			_state = newState;
-			_data = "{\"home\":{\"id\":\"" + Home_id + "\",\"modules\":[{\"id\":\"" + module_id + "\",\"brightness\":\"" + _state + "\",\"bridge\":\"" + Device_bridge + "\"}]}}" ;
+			Json::Value json_data;
+			//json_data {"body":{"home":{"id":
+			json_data["home"]["id"] = Home_id;
+			json_data["home"]["modules"][0]["id"] = module_id;
+			json_data["home"]["modules"][0]["brightness"] = _state;
+			json_data["home"]["modules"][0]["bridge"] = Device_bridge;
+			_data = json_data.toStyledString();
+			//_data = "{\"home\":{\"id\":\"" + Home_id + "\",\"modules\":[{\"id\":\"" + module_id + "\",\"brightness\":\"" + _state + "\",\"bridge\":\"" + Device_bridge + "\"}]}}" ;
 		}
 		else if (type_module == "NLP" || type_module == "NLPO" || type_module == "NLM" || type_module == "NLC" || type_module == "NLL" || type_module == "NLPM" || type_module == "NLPT" || type_module == "BNIL" || type_module == "BNCS")
 		{
@@ -822,13 +829,26 @@ bool CNetatmo::SetProgramState(const int uid, const int newState)
 				return false;
 			}
 			//module NLP NLPM NLC BNCS NLF NLM NLL NLPT BNIL
+			Json::Value json_data;
+			//json_data {"body":{"home":{"id":
+			json_data["home"]["id"] = Home_id;
+			json_data["home"]["modules"][0]["id"] = module_id;
+			json_data["home"]["modules"][0]["on"] = State;
+			json_data["home"]["modules"][0]["bridge"] = Device_bridge;
+			_data = json_data.toStyledString();
 			//_data = "{"home":{"id":"" + Home_id + "","modules":[{"id":"" + module_id + "","on":" + State + ","bridge":"" + Device_bridge + ""}]}}" ;
-			_data = "{\"home\":{\"id\":\"" + Home_id + "\",\"module\":[{\"id\":\"" + module_id + "\",\"on\":\"" + State + "\",\"bridge\":\"" + Device_bridge + "\"}]}}" ;
+			//_data = "{\"home\":{\"id\":\"" + Home_id + "\",\"module\":[{\"id\":\"" + module_id + "\",\"on\":\"" + State + "\",\"bridge\":\"" + Device_bridge + "\"}]}}" ;
 		}
 		else if (type_module == "NLV" || type_module == "NLLV"  || type_module == "NLIV"  || type_module == "Z3V" || type_module == "BNAS")
 		{
 			//open shutter NLV BNAS NLLV NLIV Z3V
 			_state = newState;
+			Json::Value json_data;
+			//json_data {"body":{"home":{"id":
+			json_data["home"]["id"] = Home_id;
+			json_data["home"]["modules"][0]["id"] = module_id;
+			json_data["home"]["modules"][0]["target_position"] = _state;
+			_data = json_data.toStyledString();
 			//_data = "{\"home\":{\"id\":\"" + Home_id + "\",\"modules\":[{\"id\":\"" + module_id + "\",\"target_position\":\"" + _state + "\"}]}}" ;
 		}
 		else if (type_module == "NLG")
@@ -847,7 +867,14 @@ bool CNetatmo::SetProgramState(const int uid, const int newState)
 				return false;
 			}
 			//Scenario NLG
-			_data = "{\"home\":{\"id\":\"" + Home_id + "\",\"modules\":[{\"id\":\"" + module_id + "\",\"scenario\":\"" + State + "\"}]}}" ;
+			Json::Value json_data;
+			//json_data {"body":{"home":{"id":
+			json_data["home"]["id"] = Home_id;
+			json_data["home"]["modules"][0]["id"] = module_id;
+			json_data["home"]["modules"][0]["scenario"] = State;
+			_data = json_data.toStyledString();
+			
+			//_data = "{\"home\":{\"id\":\"" + Home_id + "\",\"modules\":[{\"id\":\"" + module_id + "\",\"scenario\":\"" + State + "\"}]}}" ;
 		//}
 		//else if (type_module == "")
 		//{	
@@ -887,6 +914,7 @@ bool CNetatmo::SetProgramState(const int uid, const int newState)
 			_data = "";
 		}
 		home_data = "&";
+		Log(LOG_STATUS, "SetProgramState - JSON_data = %s", _data.c_str());
 
 		Get_Respons_API(NETYPE_SETSTATE, sResult, home_data, bRet, root, _data);
 		if (!bRet)
