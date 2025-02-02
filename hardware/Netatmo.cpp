@@ -823,6 +823,7 @@ bool CNetatmo::SetProgramState(const int uid, const int newState)
 			}
 			//module NLP NLPM NLC BNCS NLF NLM NLL NLPT BNIL
 			_data = "{"home":{"id":"" + Home_id + "","modules":[{"id":"" + module_id + "","on":" + State + ","bridge":"" + Device_bridge + ""}]}}" ;
+			_data = "{\"home\":{\"id\":\"" + Home_id + "\",\"module\":[{\"id\":\"" + module_id + "\",\"on\":\"" + State + "\",\"bridge\":\"" + Device_bridge + "\"}]}}" ;
 		}
 		else if (type_module == "NLV" || type_module == "NLLV"  || type_module == "NLIV"  || type_module == "Z3V" || type_module == "BNAS")
 		{
@@ -3062,6 +3063,7 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 					{
 						std::string bName = moduleName + " - Switch";
 						SendGeneralSwitch(crcId, 0, batteryLevel, ionflag, swlevel, bName, m_Name, mrf_status);
+						m_LightDeviceID[crcId] = bName;
 					}
 					if (type == "NLLF")
 					{
