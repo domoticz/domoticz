@@ -609,9 +609,10 @@ bool CNetatmo::WriteToHardware(const char* pdata, const unsigned char /*length*/
 		int uid_hex = uid;
 		Log(LOG_STATUS, "Netatmo Write xcmd");
 		Log(LOG_STATUS, "Netatmo subType   %(", PRIu64 ,") %08X ", ulId1, uid);
+		Log(LOG_STATUS, "Netatmo subType   %(", uint64_t ,") %08X ", ulId1, uid);
 		Log(LOG_STATUS, "Netatmo length %d", length);
 		Log(LOG_STATUS, "Netatmo uid %d", uid);
-		Debug(DEBUG_HARDWARE, "Netatmo uid_hex %d", uid_hex);
+		Debug(DEBUG_HARDWARE, "Netatmo uid_hex %08X", uid_hex);
 		Log(LOG_STATUS, "Netatmo unitcode %d", unitcode);
 		Log(LOG_STATUS, "Netatmo xcmdType %d", xcmdType);
 		Log(LOG_STATUS, "Netatmo SUB_Type %d", SUB_Type);
@@ -626,7 +627,7 @@ bool CNetatmo::WriteToHardware(const char* pdata, const unsigned char /*length*/
 		int subType = sSwitchTypeSelector;
 		//Debug(DEBUG_HARDWARE, "Netatmo uid %08X", uid);
 		
-		if (SUB_Type == STYPE_Selector)
+		if (SUB_Type == 62)
 			set_level = selectorLevel;
 		else
 			set_level = cmnd_SetLevel;
@@ -687,7 +688,7 @@ bool CNetatmo::SetProgramState(const int uid, const int newState)
 	std::string Device_bridge = m_DeviceBridge[module_id];
 	std::string roomNetatmoID = m_RoomIDs[module_id];
 	std::string Home_id = m_DeviceHomeID[roomNetatmoID];      // Home_ID
-	Log(LOG_STATUS, "SetProgramState - Device MAC %s - Type %s", module_id.c_str(), type_module.c_str());
+	Log(LOG_STATUS, "SetProgramState - Device MAC %s - Type %s State: %d", module_id.c_str(), type_module.c_str(), newState);
 
 	if (!m_thermostatModuleID[uid].empty())
 	{
