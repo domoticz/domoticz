@@ -609,7 +609,7 @@ bool CNetatmo::WriteToHardware(const char* pdata, const unsigned char /*length*/
 		int uid_hex = uid;
 		Log(LOG_STATUS, "Netatmo Write xcmd");
 		Log(LOG_STATUS, "Netatmo subType   %(", PRIu64 ,") %08X ", ulId1, uid);
-		Log(LOG_STATUS, "Netatmo subType   %(", uint64_t ,") %08X ", ulId1, uid);
+		Log(LOG_STATUS, "Netatmo subType   %(" uint64_t ") %08X ", ulId1, uid);
 		Log(LOG_STATUS, "Netatmo length %d", length);
 		Log(LOG_STATUS, "Netatmo uid %d", uid);
 		Debug(DEBUG_HARDWARE, "Netatmo uid_hex %08X", uid_hex);
