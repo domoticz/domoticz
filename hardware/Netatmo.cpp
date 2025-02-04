@@ -627,9 +627,17 @@ bool CNetatmo::WriteToHardware(const char* pdata, const unsigned char /*length*/
 		//Debug(DEBUG_HARDWARE, "Netatmo uid %08X", uid);
 		
 		if (SUB_Type == 62)
+		{
 			set_level = selectorLevel;
+		}
+		else if (SUB_Type == 11 && cmnd_SetLevel == 2)
+		{
+			set_level = selectorLevel;
+		}
 		else
+		{
 			set_level = cmnd_SetLevel;
+		}
 
 		return SetProgramState(uid, set_level);
 	}
@@ -799,26 +807,29 @@ bool CNetatmo::SetProgramState(const int uid, const int newState)
 		else if (type_module == "NLF")
 		{
 			bool State;
-			switch (newState)
-			{
-			case 0:
-				State = false;
-				break;
-			case 1:
-				State = true;
-				break;
-			default:
-				Log(LOG_ERROR, "Netatmo: Invalid NLF Device state!");
-				return false;
-			}
-			//
-			_state = newState;
 			Json::Value json_data;
 			//json_data {"body":{"home":{"id":
 			json_data["home"]["id"] = Home_id;
 			json_data["home"]["modules"][0]["id"] = module_id;
-			json_data["home"]["modules"][0]["brightness"] = _state;
 			json_data["home"]["modules"][0]["bridge"] = Device_bridge;
+			
+			switch (newState)
+			{
+			case 0:
+				State = false;
+				json_data["home"]["modules"][0]["on"] = State;
+				break;
+			case 1:
+				State = true;
+				json_data["home"]["modules"][0]["on"] = State;
+				break;
+			default:
+				_state = newState;
+				json_data["home"]["modules"][0]["brightness"] = _state;
+				//Log(LOG_ERROR, "Netatmo: Invalid NLF Device state!");
+				//return false;
+			}
+			//
 			_data = json_data.toStyledString();
 			//_data = "{\"home\":{\"id\":\"" + Home_id + "\",\"modules\":[{\"id\":\"" + module_id + "\",\"brightness\":\"" + _state + "\",\"bridge\":\"" + Device_bridge + "\"}]}}" ;
 		}
