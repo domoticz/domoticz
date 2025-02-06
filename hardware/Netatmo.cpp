@@ -3110,8 +3110,8 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 					{
 						std::string bName = moduleName + " - Switch";
 						int ChildID = 0;
-						int Type = 244;   // Light/Switch
-						int SubType = 11; // AC
+						int Type = pTypeGeneralSwitch; // 244;   // Light/Switch
+						int SubType = sSwitchTypeAC; // 11; // AC
 						SendGeneralSwitch(crcId, ChildID, batteryLevel, ionflag, swlevel, bName, m_Name, mrf_status);
 						m_LightDeviceID[crcId] = bName;
 
@@ -3125,7 +3125,7 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 							std::string sValue = result[0][2];
 							if (result.empty())
 							{
-								m_sql.InsertDevice(m_HwdID, Hardware_int, crcId, Unit, int(pTypeGeneralSwitch), int(sSwitchTypeAC), STYPE_Dimmer, nValue, sValue, devname, mrf_status, batteryLevel);
+								m_sql.InsertDevice(m_HwdID, Hardware_int, crcId, ChildID, Type, SubType, STYPE_Dimmer, nValue, sValue, bName, mrf_status, batteryLevel);
 								return false;
 							}
 						}
