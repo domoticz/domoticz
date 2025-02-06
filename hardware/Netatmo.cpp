@@ -546,7 +546,7 @@ bool CNetatmo::WriteToHardware(const char* pdata, const unsigned char /*length*/
 
 	if (packettype == pTypeLighting2)
 	{
-		Debug(DEBUG_HARDWARE, "Packettype pTypeLighting2 ");
+		Log(LOG_STATUS, "Packettype pTypeLighting2 ");
 		return true;
 	}
 	//This is the selector switch for setting the thermostat schedule
@@ -568,7 +568,7 @@ bool CNetatmo::WriteToHardware(const char* pdata, const unsigned char /*length*/
 	}
 	if (packettype == pTypeGeneralSwitch)
 	{
-		Debug(DEBUG_HARDWARE, "Packettype pTypeGeneralSwitch ");
+		Log(LOG_STATUS, "Packettype pTypeGeneralSwitch ");
 		//
 		int set_level = 0;
 		// Recast raw data to get switch specific data
@@ -625,7 +625,7 @@ bool CNetatmo::WriteToHardware(const char* pdata, const unsigned char /*length*/
 		int devType = packettype;  //unsigned char
 		int subType = sSwitchTypeSelector;
 		//Debug(DEBUG_HARDWARE, "Netatmo uid %08X", uid);
-		
+		// Fantype 243 - 7 ?
 		if (SUB_Type == 62)
 		{
 			set_level = selectorLevel;
