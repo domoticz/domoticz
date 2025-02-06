@@ -3109,8 +3109,26 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 					if (type == "NLF" || type == "NLM" || type == "NLFN" || type == "NLIS" || type == "NLL" || type == "NLFE" || type == "NLD" || type == "Z3L" || type == "BNLD" || type == "BNIL" || type == "BN3L")
 					{
 						std::string bName = moduleName + " - Switch";
-						SendGeneralSwitch(crcId, 0, batteryLevel, ionflag, swlevel, bName, m_Name, mrf_status);
+						int ChildID = 0;
+						int Type = 244;   // Light/Switch
+						int SubType = 11; // AC
+						SendGeneralSwitch(crcId, ChildID, batteryLevel, ionflag, swlevel, bName, m_Name, mrf_status);
 						m_LightDeviceID[crcId] = bName;
+
+						// Set option SwitchType to STYPE_Dimmer only if we have "brightness"
+						if (!module["brightness"].empty())
+						{
+							std::vector<std::vector<std::string> > result;
+							result = m_sql.safe_query("SELECT ID, nValue, sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%08X') AND (Unit==%d) AND (Type==%d) AND (SubType==%d)", m_HwdID, crcId, ChildID, Type, SubType);
+							int uId = std::stoi(result[0][0]);
+							int nValue = std::stoi(result[0][1]);
+							std::string sValue = result[0][2];
+							if (result.empty())
+							{
+								m_sql.InsertDevice(m_HwdID, Hardware_int, crcId, Unit, int(pTypeGeneralSwitch), int(sSwitchTypeAC), STYPE_Dimmer, nValue, sValue, devname, mrf_status, batteryLevel);
+								return false;
+							}
+						}
 					}
 					if (type == "NLLF")
 					{
