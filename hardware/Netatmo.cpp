@@ -3125,7 +3125,7 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 							std::string sValue = result[0][2];
 							if (result.empty())
 							{
-								m_sql.InsertDevice(m_HwdID, Hardware_int, crcId, ChildID, Type, SubType, STYPE_Dimmer, nValue, sValue, bName, mrf_status, batteryLevel);
+								m_sql.InsertDevice(m_HwdID, Hardware_int, std::to_string(crcId).c_str(), ChildID, Type, SubType, STYPE_Dimmer, nValue, sValue.c_str(), bName, mrf_status, batteryLevel);
 								return false;
 							}
 						}
