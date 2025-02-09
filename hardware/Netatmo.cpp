@@ -3168,7 +3168,7 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 							
 							// Set option SwitchType to STYPE_Contact
 							std::vector<std::vector<std::string> > result;
-							result = m_sql.safe_query("SELECT ID, nValue, sValue, IDX FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%08X') AND (Unit==%d) AND (Type==%d) AND (SubType==%d)", m_HwdID, crcId, ChildID, Type, SubType);
+							result = m_sql.safe_query("SELECT ID, nValue, sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%08X') AND (Unit==%d) AND (Type==%d) AND (SubType==%d)", m_HwdID, crcId, ChildID, Type, SubType);
 							int uId = std::stoi(result[0][0]);
 							int nValue = std::stoi(result[0][1]);
 							std::string sValue = result[0][2];
@@ -3237,7 +3237,7 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 						{
 							m_LightDeviceID[crcId] = bName;
 							std::vector<std::vector<std::string> > result;
-							result = m_sql.safe_query("SELECT ID, nValue, sValue, IDX FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%08X') AND (Unit==%d) AND (Type==%d) AND (SubType==%d)", m_HwdID, crcId, ChildID, Type, SubType);
+							result = m_sql.safe_query("SELECT ID, nValue, sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%08X') AND (Unit==%d) AND (Type==%d) AND (SubType==%d)", m_HwdID, crcId, ChildID, Type, SubType);
 							int uId = std::stoi(result[0][0]);
 							int nValue = std::stoi(result[0][1]);
 							std::string sValue = result[0][2];
