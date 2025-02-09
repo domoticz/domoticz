@@ -608,7 +608,7 @@ bool CNetatmo::WriteToHardware(const char* pdata, const unsigned char /*length*/
 		int _rssi_ = xcmd->rssi;
 		int uid_hex = uid;
 		Log(LOG_STATUS, "Netatmo Write xcmd");
-		Log(LOG_STATUS, "Netatmo subType   %(", PRIu64 ,") %08X ", ulId1, uid);
+		Log(LOG_STATUS, "Netatmo subType   %(", PRIu64 ,") ", ulId1);
 		Log(LOG_STATUS, "Netatmo length %d", length);
 		Log(LOG_STATUS, "Netatmo uid %d", uid);
 		Debug(DEBUG_HARDWARE, "Netatmo uid_hex %08X", uid_hex);
@@ -3167,7 +3167,7 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 							if (!result.empty())
                                                         {
                                                                 m_sql.UpdateDeviceValue("SwitchType", STYPE_Contact, std::to_string(uId));
-								m_sql.UpdateDeviceValue("CustomImage", 15, uId);
+								m_sql.UpdateDeviceValue("CustomImage", 15, std::to_string(uId));
                                                         }
 
 							//if (result.empty())
@@ -3236,7 +3236,7 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 							if (!result.empty())
                                                         {
                                                                 m_sql.UpdateDeviceValue("SwitchType", STYPE_Dimmer, std::to_string(uId));
-								m_sql.UpdateDeviceValue("CustomImage", 7, uId);
+								m_sql.UpdateDeviceValue("CustomImage", 7, std::to_string(uId));
                                                         }
 
 						}
