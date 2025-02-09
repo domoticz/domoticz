@@ -687,6 +687,11 @@ bool CNetatmo::SetProgramState(const int uid, const int newState)
 	std::string sResult;
 	Json::Value root;       // root JSON object
 	std::string home_data;
+	int _state;
+	std::string _data;
+	std::stringstream d;
+	d << newState;
+	d >> _state;
 	bool bRet;              //Parsing status
 	bool bHaveDevice;
 	std::string module_id = m_DeviceModuleID[uid];            // mac-adres
@@ -771,12 +776,8 @@ bool CNetatmo::SetProgramState(const int uid, const int newState)
 		// Home+control  {NLG,    OTH, BNS, NBG,              BNMH, NLF, NLP, NLPO, NLM}
 		// Home+security {NACamera, NOC, NDB, NSD, NCO, BNCX, BNMH}
 		//Debug(DEBUG_HARDWARE, "Set Program State MAC = %s - %d", module_id.c_str(), newState);
-		int _state;
 		std::string _data;
 		std::string State;
-		std::stringstream d;
-		d << newState;
-		d >> _state;
 
 		if (type_module == "NOC")
 		{
@@ -946,10 +947,10 @@ bool CNetatmo::SetProgramState(const int uid, const int newState)
 	if(!m_LightDeviceID[uid].empty())
 	{
 		std::string _data;
+		_state = newState;
 		
 		if (type_module == "NLF")
 		{
-			bool State;
 			Json::Value json_data;
 			//json_data {"body":{"home":{"id":
 			json_data["home"]["id"] = Home_id;
@@ -1002,6 +1003,10 @@ bool CNetatmo::SetDimmerState(const int uid, const int newState)
 	std::string sResult;
 	Json::Value root;       // root JSON object
 	std::string home_data;
+	int _state;
+	std::stringstream d;
+	d << newState;
+	d >> _state;
 	bool bRet;              //Parsing status
 	bool bHaveDevice;
 	std::string module_id = m_DeviceModuleID[uid];            // mac-adres
@@ -1016,16 +1021,10 @@ bool CNetatmo::SetDimmerState(const int uid, const int newState)
 	if(!m_LightDeviceID[uid].empty())
 	{
 		// Home+control  {NLG,    OTH, BNS, NBG,              BNMH, NLF, NLP, NLPO, NLM}
-
-		int _state;
 		std::string _data;
-		std::stringstream d;
-		d << newState;
-		d >> _state;
 
 		if (type_module == "NLF")
 		{
-			bool State;
 			Json::Value json_data;
 			//json_data {"body":{"home":{"id":
 			json_data["home"]["id"] = Home_id;
