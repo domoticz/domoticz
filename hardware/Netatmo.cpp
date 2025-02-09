@@ -2628,6 +2628,9 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 				if (connected)
 				{
 					m_DeviceModuleID[crcId] = module_id;
+					int Type = pTypeGeneralSwitch; // 244;   // Light/Switch
+					int SubType = sSwitchTypeAC;   // 11;    // AC
+
 					if (!module["rf_strength"].empty())
 					{
 						rf_strength = module["rf_strength"].asFloat();
@@ -3066,8 +3069,32 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 						{
 							//information switch for active Boiler only when we have a Thermostat
 							// Valves don't have Boiler status
+							int ChildID = 9;
 							std::string bName = moduleName + " - Boiler Status";
-							SendGeneralSwitch(crcId, 9, batteryLevel, bIsActive, bIsActive, bName, m_Name, mrf_status);
+							SendGeneralSwitch(crcId, ChildID, batteryLevel, bIsActive, bIsActive, bName, m_Name, mrf_status);
+							
+							// Set option SwitchType to STYPE_Contact
+							std::vector<std::vector<std::string> > result;
+							result = m_sql.safe_query("SELECT ID, nValue, sValue, IDX FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%08X') AND (Unit==%d) AND (Type==%d) AND (SubType==%d)", m_HwdID, crcId, ChildID, Type, SubType);
+							int uId = std::stoi(result[0][0]);
+							int nValue = std::stoi(result[0][1]);
+							std::string sValue = result[0][2];
+
+							if (!result.empty())
+                                                        {
+                                                                m_sql.UpdateDeviceValue("SwitchType", STYPE_Contact, std::to_string(uId));
+								m_sql.UpdateDeviceValue("CustomImage", 15, uId);
+                                                        }
+
+							//if (result.empty())
+							//{
+							//	m_sql.InsertDevice(m_HwdID, Hardware_int, std::to_string(crcId).c_str(), ChildID, Type, SubType, STYPE_Contact, nValue, sValue.c_str(), bName, mrf_status, batteryLevel);
+							//	continue;
+							//}
+							//else
+							//{
+							//	m_sql.UpdateDeviceValue("SwitchType", STYPE_Contact, std::to_string(idx));
+							//}
 						}
 
 						//Thermostat schedule switch (actively changing thermostat schedule)
@@ -3110,8 +3137,6 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 					{
 						std::string bName = moduleName + " - Switch";
 						int ChildID = 0;
-						int Type = pTypeGeneralSwitch; // 244;   // Light/Switch
-						int SubType = sSwitchTypeAC; // 11; // AC
 						SendGeneralSwitch(crcId, ChildID, batteryLevel, ionflag, swlevel, bName, m_Name, mrf_status);
 						m_LightDeviceID[crcId] = bName;
 
@@ -3119,15 +3144,17 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 						if (!module["brightness"].empty())
 						{
 							std::vector<std::vector<std::string> > result;
-							result = m_sql.safe_query("SELECT ID, nValue, sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%08X') AND (Unit==%d) AND (Type==%d) AND (SubType==%d)", m_HwdID, crcId, ChildID, Type, SubType);
+							result = m_sql.safe_query("SELECT ID, nValue, sValue, IDX FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%08X') AND (Unit==%d) AND (Type==%d) AND (SubType==%d)", m_HwdID, crcId, ChildID, Type, SubType);
 							int uId = std::stoi(result[0][0]);
 							int nValue = std::stoi(result[0][1]);
 							std::string sValue = result[0][2];
-							if (result.empty())
-							{
-								m_sql.InsertDevice(m_HwdID, Hardware_int, std::to_string(crcId).c_str(), ChildID, Type, SubType, STYPE_Dimmer, nValue, sValue.c_str(), bName, mrf_status, batteryLevel);
-								continue;
-							}
+
+							if (!result.empty())
+                                                        {
+                                                                m_sql.UpdateDeviceValue("SwitchType", STYPE_Dimmer, std::to_string(uId));
+								m_sql.UpdateDeviceValue("CustomImage", 7, uId);
+                                                        }
+
 						}
 					}
 					if (type == "NLLF")
