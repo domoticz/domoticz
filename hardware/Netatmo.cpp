@@ -633,6 +633,7 @@ bool CNetatmo::WriteToHardware(const char* pdata, const unsigned char /*length*/
 		else if (SUB_Type == 11 && cmnd_SetLevel == 2)
 		{
 			set_level = selectorLevel;
+			return SetDimmerState(uid, set_level);
 		}
 		else
 		{
@@ -825,9 +826,9 @@ bool CNetatmo::SetProgramState(const int uid, const int newState)
 				break;
 			default:
 				_state = newState;
-				json_data["home"]["modules"][0]["brightness"] = _state;
-				//Log(LOG_ERROR, "Netatmo: Invalid NLF Device state!");
-				//return false;
+				//json_data["home"]["modules"][0]["brightness"] = _state;
+				Log(LOG_ERROR, "Netatmo: Invalid NLF Device state!");
+				return false;
 			}
 			//
 			_data = json_data.toStyledString();
@@ -963,6 +964,89 @@ bool CNetatmo::SetProgramState(const int uid, const int newState)
 	if (!bHaveDevice)
 	{
 		Log(LOG_ERROR, "Netatmo: Online device not available !");
+		return false;
+	}
+	return true;
+}
+
+
+/// <summary>
+/// Set the Dimmer State
+/// </summary>
+/// <param name="uid">id of the device to put in away mode</param>
+/// <param name="newState">Mode of the device </param>
+/// <returns>success status</returns>
+bool CNetatmo::SetDimmerState(const int uid, const int newState)
+{
+	//Check if logged, logging if needed
+	if (!m_isLogged == true)
+	{
+		if (!Login())
+			return false;
+	}
+
+	//Debug(DEBUG_HARDWARE, "SetDimmerState");
+	std::vector<std::string> ExtraHeaders;
+	std::string sResult;
+	Json::Value root;       // root JSON object
+	std::string home_data;
+	bool bRet;              //Parsing status
+	bool bHaveDevice;
+	std::string module_id = m_DeviceModuleID[uid];            // mac-adres
+	std::string type_module = m_Device_types[module_id];
+	std::string module_MAC  = m_thermostatModuleID[uid];
+	std::string name = m_ModuleNames[module_id];
+	std::string Device_bridge = m_DeviceBridge[module_id];
+	std::string roomNetatmoID = m_RoomIDs[module_id];
+	std::string Home_id = m_DeviceHomeID[roomNetatmoID];      // Home_ID
+	Log(LOG_STATUS, "SetDimmerState - Device MAC %s - Type %s State: %d", module_id.c_str(), type_module.c_str(), newState);
+
+	if(!m_LightDeviceID[uid].empty())
+	{
+		// Home+control  {NLG,    OTH, BNS, NBG,              BNMH, NLF, NLP, NLPO, NLM}
+		// Home+security {NACamera, NOC, NDB, NSD, NCO, BNCX, BNMH}
+		//Debug(DEBUG_HARDWARE, "Set Program State MAC = %s - %d", module_id.c_str(), newState);
+		int _state;
+		std::string _data;
+		std::stringstream d;
+		d << newState;
+		d >> _state;
+
+		if (type_module == "NLF")
+		{
+			bool State;
+			Json::Value json_data;
+			//json_data {"body":{"home":{"id":
+			json_data["home"]["id"] = Home_id;
+			json_data["home"]["modules"][0]["id"] = module_id;
+			json_data["home"]["modules"][0]["bridge"] = Device_bridge;
+			json_data["home"]["modules"][0]["brightness"] = _state;
+			//Log(LOG_ERROR, "Netatmo: Invalid NLF Device state!");
+			//return false;
+			_data = json_data.toStyledString();
+			//_data = "{\"home\":{\"id\":\"" + Home_id + "\",\"modules\":[{\"id\":\"" + module_id + "\",\"brightness\":\"" + _state + "\",\"bridge\":\"" + Device_bridge + "\"}]}}" ;
+		}
+		else
+		{
+			Log(LOG_ERROR, "Netatmo: Invalid Dimmer Type !");
+			_data = "";
+		}
+		home_data = "&";
+		Log(LOG_STATUS, "SetProgramState - JSON_data = %s", _data.c_str());
+
+		Get_Respons_API(NETYPE_SETSTATE, sResult, home_data, bRet, root, _data);
+		if (!bRet)
+		{
+			Log(LOG_ERROR, "Netatmo: Error setting Dimmer Device !");
+			return false;
+		}
+		bHaveDevice = true;
+	}
+
+	//Return error if no device are found
+	if (!bHaveDevice)
+	{
+		Log(LOG_ERROR, "Netatmo: Online Dimmer not available !");
 		return false;
 	}
 	return true;
