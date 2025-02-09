@@ -766,7 +766,7 @@ bool CNetatmo::SetProgramState(const int uid, const int newState)
 		}
 	}
 
-	if(!m_LightDeviceID[uid].empty())
+	if(!m_PowerDeviceID[uid].empty())
 	{
 		// Home+control  {NLG,    OTH, BNS, NBG,              BNMH, NLF, NLP, NLPO, NLM}
 		// Home+security {NACamera, NOC, NDB, NSD, NCO, BNCX, BNMH}
@@ -825,8 +825,6 @@ bool CNetatmo::SetProgramState(const int uid, const int newState)
 				json_data["home"]["modules"][0]["on"] = State;
 				break;
 			default:
-				_state = newState;
-				//json_data["home"]["modules"][0]["brightness"] = _state;
 				Log(LOG_ERROR, "Netatmo: Invalid NLF Device state!");
 				return false;
 			}
@@ -945,10 +943,24 @@ bool CNetatmo::SetProgramState(const int uid, const int newState)
 		bHaveDevice = true;
 	}
 
-	if(!m_PowerDeviceID[uid].empty())
+	if(!m_LightDeviceID[uid].empty())
 	{
-		//
 		std::string _data;
+		
+		if (type_module == "NLF")
+		{
+			bool State;
+			Json::Value json_data;
+			//json_data {"body":{"home":{"id":
+			json_data["home"]["id"] = Home_id;
+			json_data["home"]["modules"][0]["id"] = module_id;
+			json_data["home"]["modules"][0]["bridge"] = Device_bridge;
+			json_data["home"]["modules"][0]["brightness"] = _state;
+
+			_data = json_data.toStyledString();
+			//_data = "{\"home\":{\"id\":\"" + Home_id + "\",\"modules\":[{\"id\":\"" + module_id + "\",\"brightness\":\"" + _state + "\",\"bridge\":\"" + Device_bridge + "\"}]}}" ;
+		}
+
 		home_data = "&";
 
 		Get_Respons_API(NETYPE_SETSTATE, sResult, home_data, bRet, root, _data);
@@ -1004,8 +1016,7 @@ bool CNetatmo::SetDimmerState(const int uid, const int newState)
 	if(!m_LightDeviceID[uid].empty())
 	{
 		// Home+control  {NLG,    OTH, BNS, NBG,              BNMH, NLF, NLP, NLPO, NLM}
-		// Home+security {NACamera, NOC, NDB, NSD, NCO, BNCX, BNMH}
-		//Debug(DEBUG_HARDWARE, "Set Program State MAC = %s - %d", module_id.c_str(), newState);
+
 		int _state;
 		std::string _data;
 		std::stringstream d;
@@ -1021,8 +1032,7 @@ bool CNetatmo::SetDimmerState(const int uid, const int newState)
 			json_data["home"]["modules"][0]["id"] = module_id;
 			json_data["home"]["modules"][0]["bridge"] = Device_bridge;
 			json_data["home"]["modules"][0]["brightness"] = _state;
-			//Log(LOG_ERROR, "Netatmo: Invalid NLF Device state!");
-			//return false;
+
 			_data = json_data.toStyledString();
 			//_data = "{\"home\":{\"id\":\"" + Home_id + "\",\"modules\":[{\"id\":\"" + module_id + "\",\"brightness\":\"" + _state + "\",\"bridge\":\"" + Device_bridge + "\"}]}}" ;
 		}
@@ -1032,7 +1042,7 @@ bool CNetatmo::SetDimmerState(const int uid, const int newState)
 			_data = "";
 		}
 		home_data = "&";
-		Log(LOG_STATUS, "SetProgramState - JSON_data = %s", _data.c_str());
+		Debug(DEBUG_HARDWARE, "SetProgramState - JSON_data = %s", _data.c_str());
 
 		Get_Respons_API(NETYPE_SETSTATE, sResult, home_data, bRet, root, _data);
 		if (!bRet)
@@ -2872,7 +2882,7 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 						}
 
 						std::string setpoint_mode = module["monitoring"].asString();
-						m_LightDeviceID[crcId] = lName;
+						m_PowerDeviceID[crcId] = lName;
 						SendSelectorSwitch(crcId, NETATMO_PRESET_UNIT, Selector, lName, 0, true, "off|on|auto", "", false, m_Name);   // No RF-level - Battery level
 					}
 					// Sensors from new API
@@ -3215,18 +3225,18 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 						//calculation mTotal kWh - TODO
 						double mTotal = 0;
 						SendKwhMeter(crcId, 5, batteryLevel, powerflag, mTotal, cName, mrf_status);
-						m_LightDeviceID[crcId] = bName;
+						m_PowerDeviceID[crcId] = bName;
 					}
 					if (type == "NLF" || type == "NLM" || type == "NLFN" || type == "NLIS" || type == "NLL" || type == "NLFE" || type == "NLD" || type == "Z3L" || type == "BNLD" || type == "BNIL" || type == "BN3L")
 					{
 						std::string bName = moduleName + " - Switch";
 						int ChildID = 0;
 						SendGeneralSwitch(crcId, ChildID, batteryLevel, ionflag, swlevel, bName, m_Name, mrf_status);
-						m_LightDeviceID[crcId] = bName;
 
 						// Set option SwitchType to STYPE_Dimmer only if we have "brightness"
 						if (!module["brightness"].empty())
 						{
+							m_LightDeviceID[crcId] = bName;
 							std::vector<std::vector<std::string> > result;
 							result = m_sql.safe_query("SELECT ID, nValue, sValue, IDX FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%08X') AND (Unit==%d) AND (Type==%d) AND (SubType==%d)", m_HwdID, crcId, ChildID, Type, SubType);
 							int uId = std::stoi(result[0][0]);
@@ -3240,6 +3250,10 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
                                                         }
 
 						}
+						else
+						{
+							m_PowerDeviceID[crcId] = bName;
+						}
 					}
 					if (type == "NLLF")
 					{
@@ -3251,7 +3265,7 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 						double mTotal = 0;
 						SendKwhMeter(crcId, 5, batteryLevel, powerflag, mTotal, cName, mrf_status);
 
-						m_LightDeviceID[crcId] = bName;
+						m_PowerDeviceID[crcId] = bName;
 					}
 					if (type == "NLE")
 					{
