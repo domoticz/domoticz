@@ -2977,7 +2977,7 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 					if (!module["fan_speed"].empty())
 					{
 						fan_speed = module["fan_speed"].asInt();
-						//Debug(DEBUG_HARDWARE, "HomeStatus Module On [%d]", fan_speed);
+						//Debug(DEBUG_HARDWARE, "HomeStatus Module fan_speed [%d]", fan_speed);
 					}
 					if (!module["on"].empty())
 					{
@@ -3257,6 +3257,8 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 					if (type == "NLLF")
 					{
 						std::string bName = moduleName + " - Fan";
+						int ChildID = 0;
+						SendGeneralSwitch(crcId, ChildID, batteryLevel, 1, fan_speed, bName, m_Name, mrf_status);
 						SendFanSensor(crcId, batteryLevel, fan_speed, bName);
 
 						std::string cName = moduleName + " - Kwh";
