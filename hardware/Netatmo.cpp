@@ -3275,7 +3275,7 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 
 						if (!result.empty())
                                                 {
-                                                        //m_sql.UpdateDeviceValue("SwitchType", STYPE_Dimmer, std::to_string(uId));
+                                                        m_sql.UpdateDeviceValue("SwitchType", STYPE_Dimmer, std::to_string(uId));
 							m_sql.UpdateDeviceValue("CustomImage", 7, std::to_string(uId));
                                                 }
 					}
