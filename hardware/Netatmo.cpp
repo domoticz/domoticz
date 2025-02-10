@@ -2505,7 +2505,7 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 	}
 
 	Json::Value scenarios;
-	Get_Scenarios(home_id, scenarios);
+	//Get_Scenarios(home_id, scenarios);
 	int index = 0;
 
 	if (!scenarios.empty())
@@ -3245,7 +3245,7 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 							if (!result.empty())
                                                         {
                                                                 m_sql.UpdateDeviceValue("SwitchType", STYPE_Dimmer, std::to_string(uId));
-								m_sql.UpdateDeviceValue("CustomImage", 7, std::to_string(uId));
+								//m_sql.UpdateDeviceValue("CustomImage", 7, std::to_string(uId));
                                                         }
 
 						}
@@ -3265,6 +3265,17 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 						SendKwhMeter(crcId, 5, batteryLevel, powerflag, mTotal, cName, mrf_status);
 
 						m_PowerDeviceID[crcId] = bName;
+						std::vector<std::vector<std::string> > result;
+						result = m_sql.safe_query("SELECT ID, nValue, sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%08X') AND (Unit==%d) AND (Type==%d) AND (SubType==%d)", m_HwdID, crcId, ChildID, Type, SubType);
+						int uId = std::stoi(result[0][0]);
+						int nValue = std::stoi(result[0][1]);
+						std::string sValue = result[0][2];
+
+						if (!result.empty())
+                                                {
+                                                        //m_sql.UpdateDeviceValue("SwitchType", STYPE_Dimmer, std::to_string(uId));
+							m_sql.UpdateDeviceValue("CustomImage", 7, std::to_string(uId));
+                                                }
 					}
 					if (type == "NLE")
 					{
