@@ -833,6 +833,37 @@ bool CNetatmo::SetProgramState(const int uid, const int newState)
 			_data = json_data.toStyledString();
 			//_data = "{\"home\":{\"id\":\"" + Home_id + "\",\"modules\":[{\"id\":\"" + module_id + "\",\"brightness\":\"" + _state + "\",\"bridge\":\"" + Device_bridge + "\"}]}}" ;
 		}
+		else if (type_module == "NLLF")
+		{
+			bool State;
+			Json::Value json_data;
+			//json_data {"body":{"home":{"id":
+			json_data["home"]["id"] = Home_id;
+			json_data["home"]["modules"][0]["id"] = module_id;
+			json_data["home"]["modules"][0]["bridge"] = Device_bridge;
+			
+			switch (newState)
+			{
+			case 0:
+				State = false;
+				json_data["home"]["modules"][0]["fan_speed"] = State;        //The Fan is off (Not Supported by API)
+				break;
+			case 1:
+				State = true;
+				json_data["home"]["modules"][0]["fan_speed"] = State;        //The Fan is set to speedselection 1
+				break;
+			case 2:
+				State = true;
+				json_data["home"]["modules"][0]["fan_speed"] = State;        //The Fan is set to speedselection 2
+				break;
+			default:
+				Log(LOG_ERROR, "Netatmo: Invalid NLF Device state!");
+				return false;
+			}
+			//
+			_data = json_data.toStyledString();
+			//_data = "{\"home\":{\"id\":\"" + Home_id + "\",\"modules\":[{\"id\":\"" + module_id + "\",\"brightness\":\"" + _state + "\",\"bridge\":\"" + Device_bridge + "\"}]}}" ;
+		}
 		else if (type_module == "NLP" || type_module == "NLPO" || type_module == "NLM" || type_module == "NLC" || type_module == "NLL" || type_module == "NLPM" || type_module == "NLPT" || type_module == "BNIL" || type_module == "BNCS")
 		{
 			bool State;
@@ -3258,7 +3289,10 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 					{
 						std::string bName = moduleName + " - Fan";
 						int ChildID = 0;
-						SendGeneralSwitch(crcId, ChildID, batteryLevel, 1, fan_speed, bName, m_Name, mrf_status);
+						//SendGeneralSwitch(crcId, ChildID, batteryLevel, 1, fan_speed, bName, m_Name, mrf_status);
+						//Fan is preset with 2 speeds
+						SendSelectorSwitch(crcId, NETATMO_PRESET_UNIT, setpoint_mode_str, sName, 7, true, "Off|1|2", "", true, m_Name);   // No RF-level - Battery level visible
+
 						SendFanSensor(crcId, batteryLevel, fan_speed, bName);
 
 						std::string cName = moduleName + " - Kwh";
@@ -3268,14 +3302,14 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 
 						m_PowerDeviceID[crcId] = bName;
 						std::vector<std::vector<std::string> > result;
-						result = m_sql.safe_query("SELECT ID, nValue, sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%08X') AND (Unit==%d) AND (Type==%d) AND (SubType==%d)", m_HwdID, crcId, ChildID, Type, SubType);
+						result = m_sql.safe_query("SELECT ID, nValue, sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%08X') AND (Unit==%d) AND (Type==%d) AND (SubType==%d)", m_HwdID, crcId, NETATMO_PRESET_UNIT, Type, SubType);
 						int uId = std::stoi(result[0][0]);
 						int nValue = std::stoi(result[0][1]);
 						std::string sValue = result[0][2];
 
 						if (!result.empty())
                                                 {
-                                                        m_sql.UpdateDeviceValue("SwitchType", STYPE_Dimmer, std::to_string(uId));
+                                                        //m_sql.UpdateDeviceValue("SwitchType", STYPE_Dimmer, std::to_string(uId));
 							m_sql.UpdateDeviceValue("CustomImage", 7, std::to_string(uId));
                                                 }
 					}
