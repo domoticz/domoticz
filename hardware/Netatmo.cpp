@@ -608,7 +608,7 @@ bool CNetatmo::WriteToHardware(const char* pdata, const unsigned char /*length*/
 		int _rssi_ = xcmd->rssi;
 		int uid_hex = uid;
 		Log(LOG_STATUS, "Netatmo Write xcmd");
-		Log(LOG_STATUS, "Netatmo subType   %(", PRIu64 ,") ", ulId1);
+		Log(LOG_STATUS, "Netatmo subType   %", PRIu64 ," ", ulId1);
 		Log(LOG_STATUS, "Netatmo length %d", length);
 		Log(LOG_STATUS, "Netatmo uid %d", uid);
 		Debug(DEBUG_HARDWARE, "Netatmo uid_hex %08X", uid_hex);
@@ -1922,7 +1922,7 @@ void CNetatmo::Get_Scenarios(std::string home_id, Json::Value& scenarios)
 	{
 		if (!root["body"]["home"].empty())
 		{
-			SaveJson2Disk(root, std::string("./scenario-s.txt");
+			SaveJson2Disk(root, std::string("./scenario-s.txt"));
 			scenarios = root["body"]["home"];
 
 			// Data was recieved with success
