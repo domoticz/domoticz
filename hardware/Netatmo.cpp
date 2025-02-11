@@ -553,7 +553,7 @@ bool CNetatmo::WriteToHardware(const char* pdata, const unsigned char /*length*/
 	// unitcode == 0x02 ### means schedule switch
 	if ((int)(pCmd->LIGHTING2.unitcode) == 2)
 	{
-		//Debug(DEBUG_HARDWARE, "Schedule");
+		Log(LOG_STATUS, "Schedule");
 		//Recast raw data to get switch specific data
 		const _tGeneralSwitch* xcmd = reinterpret_cast<const _tGeneralSwitch*>(pdata);
 		int uid = xcmd->id;       //switch ID
@@ -625,7 +625,7 @@ bool CNetatmo::WriteToHardware(const char* pdata, const unsigned char /*length*/
 		int devType = packettype;  //unsigned char
 		int subType = sSwitchTypeSelector;
 		//Debug(DEBUG_HARDWARE, "Netatmo uid %08X", uid);
-		// Fantype 243 - 7 ?
+		//
 		if (SUB_Type == 62)
 		{
 			set_level = selectorLevel;
@@ -633,7 +633,7 @@ bool CNetatmo::WriteToHardware(const char* pdata, const unsigned char /*length*/
 		else if (SUB_Type == 11 && cmnd_SetLevel == 2)
 		{
 			set_level = selectorLevel;
-			return SetDimmerState(uid, set_level);
+			//return SetDimmerState(uid, set_level);
 		}
 		else
 		{
@@ -647,7 +647,7 @@ bool CNetatmo::WriteToHardware(const char* pdata, const unsigned char /*length*/
 		int node_id = pCmd->LIGHTING2.id4;
 		const _tGeneralSwitch* xcmd = reinterpret_cast<const _tGeneralSwitch*>(pdata);
 
-		//Debug(DEBUG_HARDWARE, "Packettype unKnown ");
+		Log(LOG_STATUS, "Packettype unKnown ");
 	}
 	return false;
 }
@@ -846,15 +846,15 @@ bool CNetatmo::SetProgramState(const int uid, const int newState)
 			{
 			case 0:
 				State = false;
-				json_data["home"]["modules"][0]["fan_speed"] = State;        //The Fan is off (Not Supported by API)
+				json_data["home"]["modules"][0]["fan_speed"] = 0;        //The Fan is off (Not Supported by API)
 				break;
-			case 1:
+			case 10:
 				State = true;
-				json_data["home"]["modules"][0]["fan_speed"] = State;        //The Fan is set to speedselection 1
+				json_data["home"]["modules"][0]["fan_speed"] = 1;        //The Fan is set to speedselection 1
 				break;
-			case 2:
+			case 20:
 				State = true;
-				json_data["home"]["modules"][0]["fan_speed"] = State;        //The Fan is set to speedselection 2
+				json_data["home"]["modules"][0]["fan_speed"] = 2;        //The Fan is set to speedselection 2
 				break;
 			default:
 				Log(LOG_ERROR, "Netatmo: Invalid NLF Device state!");
@@ -1922,6 +1922,7 @@ void CNetatmo::Get_Scenarios(std::string home_id, Json::Value& scenarios)
 	{
 		if (!root["body"]["home"].empty())
 		{
+			SaveJson2Disk(root, std::string("./scenario-s.txt");
 			scenarios = root["body"]["home"];
 
 			// Data was recieved with success
@@ -2545,43 +2546,46 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 		{
 			if (scenario.isArray())
 			{
-				Debug(DEBUG_HARDWARE, "Get the scenarios from %s", home_id.c_str());
-				std::string scenario_type;
-				std::string scenario_id;
-				std::string scenario_category;
-				bool scenario_custom;
-				bool scenario_edit;
-				bool scenario_del;
+				if (!scenario.empty())
+				{
+					Debug(DEBUG_HARDWARE, "Get the scenarios from %s", home_id.c_str());
+					std::string scenario_type;
+					std::string scenario_id;
+					std::string scenario_category;
+					bool scenario_custom;
+					bool scenario_edit;
+					bool scenario_del;
 
-				if (!scenario["type"].empty())
-				{
-					scenario_type = scenario["type"].asString();
+					if (!scenario["type"].empty())
+					{
+						scenario_type = scenario["type"].asString();
+					}
+					if (!scenario["id"].empty())
+					{
+						scenario_id = scenario["id"].asString();
+					}
+					if (!scenario["category"].empty())
+					{
+						scenario_category = scenario["category"].asString();
+					}
+					if (!scenario["customizable"].empty())
+					{
+						scenario_custom = scenario["customizable"].asBool();
+					}
+					if (!scenario["editable"].empty())
+					{
+						scenario_edit = scenario["editable"].asBool();
+					}
+					if (!scenario["deletable"].empty())
+					{
+						scenario_del = scenario["deletable"].asBool();
+					}
+					if (!scenario_type.empty())
+					{
+						Debug(DEBUG_HARDWARE, "Scenario %s : %s %s", scenario_id.c_str(), scenario_type.c_str(), scenario_category.c_str());
+					}
+					index = +10;
 				}
-				if (!scenario["id"].empty())
-				{
-				scenario_id = scenario["id"].asString();
-				}
-				if (!scenario["category"].empty())
-				{
-					scenario_category = scenario["category"].asString();
-				}
-				if (!scenario["customizable"].empty())
-				{
-					scenario_custom = scenario["customizable"].asBool();
-				}
-				if (!scenario["editable"].empty())
-				{
-					scenario_edit = scenario["editable"].asBool();
-				}
-				if (!scenario["deletable"].empty())
-				{
-					scenario_del = scenario["deletable"].asBool();
-				}
-				if (!scenario_type.empty())
-				{
-					Debug(DEBUG_HARDWARE, "Scenario %s : %s %s", scenario_id.c_str(), scenario_type.c_str(), scenario_category.c_str());
-				}
-				index = +10;
 			}
 		}
 	}
@@ -2913,7 +2917,7 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 
 						std::string setpoint_mode = module["monitoring"].asString();
 						m_PowerDeviceID[crcId] = lName;
-						SendSelectorSwitch(crcId, NETATMO_PRESET_UNIT, Selector, lName, 0, true, "off|on|auto", "", false, m_Name);   // No RF-level - Battery level
+						SendSelectorSwitch(crcId, NETATMO_PRESET_UNIT, Selector, lName, Image, bDropdown, "off|on|auto", "", bHideOff, m_Name);   // No RF-level - Battery level
 					}
 					// Sensors from new API
 					if (!module["temperature"].empty())
@@ -3289,9 +3293,12 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 					{
 						std::string bName = moduleName + " - Fan";
 						int ChildID = 0;
+						int Image = 7;
+						bool bDropdown = true;
+						bool bHideOff = true;
 						//SendGeneralSwitch(crcId, ChildID, batteryLevel, 1, fan_speed, bName, m_Name, mrf_status);
 						//Fan is preset with 2 speeds
-						SendSelectorSwitch(crcId, NETATMO_PRESET_UNIT, setpoint_mode_str, sName, 7, true, "Off|1|2", "", true, m_Name);   // No RF-level - Battery level visible
+						SendSelectorSwitch(crcId, NETATMO_PRESET_UNIT, setpoint_mode_str, sName, Image, bDropdown, "Off|Low Speed|High Speed", "", bHideOff, m_Name);   // No RF-level - Battery level visible
 
 						SendFanSensor(crcId, batteryLevel, fan_speed, bName);
 
