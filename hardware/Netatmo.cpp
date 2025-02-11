@@ -3298,7 +3298,7 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 						bool bHideOff = true;
 						//SendGeneralSwitch(crcId, ChildID, batteryLevel, 1, fan_speed, bName, m_Name, mrf_status);
 						//Fan is preset with 2 speeds
-						SendSelectorSwitch(crcId, NETATMO_PRESET_UNIT, setpoint_mode_str, sName, Image, bDropdown, "Off|Low Speed|High Speed", "", bHideOff, m_Name);   // No RF-level - Battery level visible
+						SendSelectorSwitch(crcId, NETATMO_PRESET_UNIT, setpoint_mode_str, bName, Image, bDropdown, "Off|Low Speed|High Speed", "", bHideOff, m_Name);   // No RF-level - Battery level visible
 
 						SendFanSensor(crcId, batteryLevel, fan_speed, bName);
 
