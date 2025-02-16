@@ -161,8 +161,8 @@ namespace Plugins {
             shared_lib_ = nullptr;
 
             // Define the base Python versions in descending order (latest to oldest)
-			constexpr std::array<const char*, 10> python_versions = {
-                "python3.13", "python3.12", "python3.11", "python3.10",
+			constexpr std::array<const char*, 11> python_versions = {
+				"python3.14", "python3.13", "python3.12", "python3.11", "python3.10",
                 "python3.9", "python3.8", "python3.7", "python3.6",
                 "python3.5", "python3.4"
             };
