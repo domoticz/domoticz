@@ -904,7 +904,9 @@ bool CNetatmo::SetProgramState(const int uid, const int newState)
 		}
 		else if (type_module == "NLG")
 		{
-			std::string State = m_test[newState];
+			std::string SchName = m_ModuleNames["999"];
+			
+			std::string State = m_ModuleNames["999"];
 
 			//Scenario NLG
 			Json::Value json_data;
@@ -2535,27 +2537,28 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 	std::string scenario_index;
 	std::string scenario_SchName;
 	bool status_mod;
+	bool target_position;
 	int index = 0;
 
 	//Json::Value root;
-	bool ret = ParseJSon(scenarios, scenarios);
-	if ((!ret) || (!scenarios.isObject()))
+	//bool ret = ParseJSon(scenarios, scenarios);
+	if (!scenarios.isObject()))
 	{
 		if (!scenarios["id"].empty())
 		{
 			scenario_id = scenarios["id"].asString();
-			Debug(DEBUG_HARDWARE, "Get the scenarios from Home %s", home_id.c_str());
+			//Debug(DEBUG_HARDWARE, "Get the scenarios from Home %s", home_id.c_str());
 
 		}
 		if (!scenarios["modules"].empty())
 		{
-			Debug(DEBUG_HARDWARE, "Get the scenarios modules from %s", scenario_id.c_str());
+			Log(LOG_STATUS, "Get the scenarios modules from %s in home %s", scenario_id.c_str(), home_id.c_str());
 			for (auto moduless : scenarios["modules"])
 			{
 				if (!moduless["id"].empty())
 				{
 					id_mod = moduless["id"].asString();
-					Debug(DEBUG_HARDWARE, "Scenarios Module id %s", id_mod.c_str());
+					//Debug(DEBUG_HARDWARE, "Scenarios Module id %s", id_mod.c_str());
 				}
 				if (!moduless["scenarios"].empty())
 				{
@@ -2569,6 +2572,10 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 						if (!scenarios_mod["on"].empty())
 						{
 							status_mod = scenarios_mod["on"].asBool();
+						}
+						if (!scenarios_mod["target_position"].empty())
+						{
+							target_position = scenarios_mod["target_position"].asBool();
 						}
 					}
 				}
@@ -2587,7 +2594,7 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 				if (scenarioss["category"].empty())
 				{
 					scenario_category = scenarioss["category"].asString();
-					Debug(DEBUG_HARDWARE, "Scenarios category %s", scenario_category.c_str());
+					//Debug(DEBUG_HARDWARE, "Scenarios category %s", scenario_category.c_str());
 				}
 				if (!scenarioss["customizable"].empty())
 				{
