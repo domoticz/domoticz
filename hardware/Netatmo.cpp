@@ -2542,7 +2542,7 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 
 	//Json::Value root;
 	//bool ret = ParseJSon(scenarios, scenarios);
-	if (!scenarios.isObject()))
+	if (!scenarios.isObject())
 	{
 		if (!scenarios["id"].empty())
 		{
