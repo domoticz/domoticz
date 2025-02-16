@@ -904,19 +904,8 @@ bool CNetatmo::SetProgramState(const int uid, const int newState)
 		}
 		else if (type_module == "NLG")
 		{
-			std::string State;
-			switch (newState)
-			{
-			case 0:
-				State = "";
-				break;
-			case 1:
-				State = "home";
-				break;
-			default:
-				Log(LOG_ERROR, "Netatmo: Invalid Gateway Device state!");
-				return false;
-			}
+			std::string State = m_test[newState];
+
 			//Scenario NLG
 			Json::Value json_data;
 			//json_data {"body":{"home":{"id":
@@ -2549,7 +2538,7 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 	int index = 0;
 
 	//Json::Value root;
-	ret = ParseJSon(scenarios, scenarios);
+	bool ret = ParseJSon(scenarios, scenarios);
 	if ((!ret) || (!scenarios.isObject()))
 	{
 		if (!scenarios["id"].empty())
@@ -2600,30 +2589,30 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 					scenario_category = scenarioss["category"].asString();
 					Debug(DEBUG_HARDWARE, "Scenarios category %s", scenario_category.c_str());
 				}
+				if (!scenarioss["customizable"].empty())
+				{
+					scenario_custom = scenarioss["customizable"].asBool();
+				}
+				if (!scenarioss["deletable"].empty())
+				{
+					scenario_del = scenarioss["deletable"].asBool();
+				}
+				if (!scenarioss["editable"].empty())
+				{
+					scenario_edit = scenarioss["editable"].asBool();
+				}
+				if (!scenarioss["id"].empty())
+				{
+					scenario_id = scenarioss["id"].asString();
+				}
+				if (!scenarioss["type"].empty())
+				{
+					scenario_type = scenarioss["type"].asString();
+					scenario_SchName = scenario_SchName + scenario_type + "|";
+					Debug(DEBUG_HARDWARE, "Scenario %s : %s %s", scenario_id.c_str(), scenario_type.c_str(), scenario_category.c_str());
+				}
+				index = +10;
 			}
-			if (!scenarioss["customizable"].empty())
-			{
-				scenario_custom = scenarioss["customizable"].asBool();
-			}
-			if (!scenarioss["deletable"].empty())
-			{
-				scenario_del = scenarioss["deletable"].asBool();
-			}
-			if (!scenarioss["editable"].empty())
-			{
-				scenario_edit = scenarioss["editable"].asBool();
-			}
-			if (!scenarioss["id"].empty())
-			{
-				scenario_id = scenarioss["id"].asString();
-			}
-			if (!scenarioss["type"].empty())
-			{
-				scenario_type = scenarioss["type"].asString();
-				scenario_SchName = scenario_SchName + scenario_type + "|";
-				Debug(DEBUG_HARDWARE, "Scenario %s : %s %s", scenario_id.c_str(), scenario_type.c_str(), scenario_category.c_str());
-			}
-			index = +10;
 			scenario_SchName = scenario_SchName + "|";
 		}
 		if (!scenario_type.empty())
