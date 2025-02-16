@@ -2534,59 +2534,108 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 				}
 			}
 		}
+		Debug(DEBUG_HARDWARE, "Rooms Parsed");
 	}
 
 	Json::Value scenarios;
 	Get_Scenarios(home_id, scenarios);
+	std::string scenario_id;
+	std::string scenario_category;
+	std::string scenario_type;
+	std::string id_mod;
+	std::string scenario_index;
+	std::string scenario_SchName;
+	bool status_mod;
 	int index = 0;
 
-	if (!scenarios.empty())
+	//Json::Value root;
+	ret = ParseJSon(scenarios, scenarios);
+	if ((!ret) || (!scenarios.isObject()))
 	{
-		for (auto scenario : scenarios)
+		if (!scenarios["id"].empty())
 		{
-			if (scenario.isArray())
-			{
-				if (!scenario.empty())
-				{
-					Debug(DEBUG_HARDWARE, "Get the scenarios from %s", home_id.c_str());
-					std::string scenario_type;
-					std::string scenario_id;
-					std::string scenario_category;
-					bool scenario_custom;
-					bool scenario_edit;
-					bool scenario_del;
+			scenario_id = scenarios["id"].asString();
+			Debug(DEBUG_HARDWARE, "Get the scenarios from Home %s", home_id.c_str());
 
-					if (!scenario["type"].empty())
+		}
+		if (!scenarios["modules"].empty())
+		{
+			Debug(DEBUG_HARDWARE, "Get the scenarios modules from %s", scenario_id.c_str());
+			for (auto moduless : scenarios["modules"])
+			{
+				if (!moduless["id"].empty())
+				{
+					id_mod = moduless["id"].asString();
+					Debug(DEBUG_HARDWARE, "Scenarios Module id %s", id_mod.c_str());
+				}
+				if (!moduless["scenarios"].empty())
+				{
+					for (auto scenarios_mod : moduless["scenarios"])
 					{
-						scenario_type = scenario["type"].asString();
+						if (!scenarios_mod["id"].empty())
+						{
+							scenario_index = scenarios_mod["id"].asString();
+							//Debug(DEBUG_HARDWARE, "Scenarios index %s", scenario_index.c_str());
+						}
+						if (!scenarios_mod["on"].empty())
+						{
+							status_mod = scenarios_mod["on"].asBool();
+						}
 					}
-					if (!scenario["id"].empty())
-					{
-						scenario_id = scenario["id"].asString();
-					}
-					if (!scenario["category"].empty())
-					{
-						scenario_category = scenario["category"].asString();
-					}
-					if (!scenario["customizable"].empty())
-					{
-						scenario_custom = scenario["customizable"].asBool();
-					}
-					if (!scenario["editable"].empty())
-					{
-						scenario_edit = scenario["editable"].asBool();
-					}
-					if (!scenario["deletable"].empty())
-					{
-						scenario_del = scenario["deletable"].asBool();
-					}
-					if (!scenario_type.empty())
-					{
-						Debug(DEBUG_HARDWARE, "Scenario %s : %s %s", scenario_id.c_str(), scenario_type.c_str(), scenario_category.c_str());
-					}
-					index = +10;
+				}
+						
+			}
+		}
+		if (!scenarios["scenarios"].empty())
+		{
+			for (auto scenarioss : scenarios["scenarios"])
+			{
+				std::string scenario_id;
+				bool scenario_custom;
+				bool scenario_edit;
+				bool scenario_del;
+
+				if (scenarioss["category"].empty())
+				{
+					scenario_category = scenarioss["category"].asString();
+					Debug(DEBUG_HARDWARE, "Scenarios category %s", scenario_category.c_str());
 				}
 			}
+			if (!scenarioss["customizable"].empty())
+			{
+				scenario_custom = scenarioss["customizable"].asBool();
+			}
+			if (!scenarioss["deletable"].empty())
+			{
+				scenario_del = scenarioss["deletable"].asBool();
+			}
+			if (!scenarioss["editable"].empty())
+			{
+				scenario_edit = scenarioss["editable"].asBool();
+			}
+			if (!scenarioss["id"].empty())
+			{
+				scenario_id = scenarioss["id"].asString();
+			}
+			if (!scenarioss["type"].empty())
+			{
+				scenario_type = scenarioss["type"].asString();
+				scenario_SchName = scenario_SchName + scenario_type + "|";
+				Debug(DEBUG_HARDWARE, "Scenario %s : %s %s", scenario_id.c_str(), scenario_type.c_str(), scenario_category.c_str());
+			}
+			index = +10;
+			scenario_SchName = scenario_SchName + "|";
+		}
+		if (!scenario_type.empty())
+		{
+			std::string lName = "Scenario";
+			bool bIsActive = 0;
+			int Image = 0;
+			bool bDropdown = true;
+			bool bHideOff = false;
+			int crcId = Crc32(0, (const unsigned char*)home_id.c_str(), home_id.length());;
+			std::string Selector = "0"; //Active selecting TODO
+			SendSelectorSwitch(crcId, NETATMO_PRESET_UNIT, Selector, lName, Image, bDropdown, scenario_SchName, "", bHideOff, m_Name);   // No RF-level - Battery level
 		}
 	}
 	//Parse module and create / update domoticz devices
