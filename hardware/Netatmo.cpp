@@ -55,7 +55,7 @@ std::string ReadFile(std::string filename)
 {
 	std::ifstream file;
 	std::string sResult;
-	file.open(filename.c_str());
+	file.open(.c_str());
 	if (!file.is_open())
 		return "";
 	std::string sLine;
@@ -2537,7 +2537,7 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 	}
 
 	Json::Value scenarios;
-	//Get_Scenarios(home_id, scenarios);
+	Get_Scenarios(home_id, scenarios);
 	int index = 0;
 
 	if (!scenarios.empty())
@@ -3204,6 +3204,7 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 							// Set option SwitchType to STYPE_Contact
 							std::vector<std::vector<std::string> > result;
 							result = m_sql.safe_query("SELECT ID, nValue, sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%08X') AND (Unit==%d) AND (Type==%d) AND (SubType==%d)", m_HwdID, crcId, ChildID, Type, SubType);
+							Log(LOG_STATUS, "NATherm1 result %s", result);
 							int uId = std::stoi(result[0][0]);
 							int nValue = std::stoi(result[0][1]);
 							std::string sValue = result[0][2];
