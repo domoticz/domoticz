@@ -906,7 +906,7 @@ bool CNetatmo::SetProgramState(const int uid, const int newState)
 		{
 			std::string SchName = m_ModuleNames["999"];
 			
-			std::string State = newState.asString();
+			std::string State = "";
 
 			//Scenario NLG
 			Json::Value json_data;
