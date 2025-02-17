@@ -55,7 +55,7 @@ std::string ReadFile(std::string filename)
 {
 	std::ifstream file;
 	std::string sResult;
-	file.open(.c_str());
+	file.open(filename.c_str());
 	if (!file.is_open())
 		return "";
 	std::string sLine;
@@ -906,7 +906,7 @@ bool CNetatmo::SetProgramState(const int uid, const int newState)
 		{
 			std::string SchName = m_ModuleNames["999"];
 			
-			std::string State = m_ModuleNames["999"];
+			std::string State = newState;
 
 			//Scenario NLG
 			Json::Value json_data;
@@ -2542,7 +2542,7 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 
 	//Json::Value root;
 	//bool ret = ParseJSon(scenarios, scenarios);
-	if (!scenarios.isObject())
+	if (scenarios.isObject())
 	{
 		if (!scenarios["id"].empty())
 		{
@@ -2579,7 +2579,7 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 						}
 					}
 				}
-						
+
 			}
 		}
 		if (!scenarios["scenarios"].empty())
@@ -2620,10 +2620,12 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 				}
 				index = +10;
 			}
-			scenario_SchName = scenario_SchName + "|";
+			if (scenario_SchName.size() > 0)  scenario_SchName.resize(scenario_SchName.size() - 1);
+			m_ModuleNames["999"] = scenario_SchName;
 		}
 		if (!scenario_type.empty())
 		{
+			Log(LOG_STATUS, "Send the scenarios Selector Switch")
 			std::string lName = "Scenario";
 			bool bIsActive = 0;
 			int Image = 0;
