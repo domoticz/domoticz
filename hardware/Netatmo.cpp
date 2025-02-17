@@ -906,7 +906,7 @@ bool CNetatmo::SetProgramState(const int uid, const int newState)
 		{
 			std::string SchName = m_ModuleNames["999"];
 			
-			std::string State = newState;
+			std::string State = newState.asString();
 
 			//Scenario NLG
 			Json::Value json_data;
@@ -2625,7 +2625,7 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 		}
 		if (!scenario_type.empty())
 		{
-			Log(LOG_STATUS, "Send the scenarios Selector Switch")
+			Log(LOG_STATUS, "Send the scenarios Selector Switch");
 			std::string lName = "Scenario";
 			bool bIsActive = 0;
 			int Image = 0;
