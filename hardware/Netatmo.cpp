@@ -3289,7 +3289,7 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 								int uId = std::stoi(result[0][0]);
 								int nValue = std::stoi(result[0][1]);
 								std::string sValue = result[0][2];
-								Log(LOG_STATUS, "Brightness uId %d", uId);
+								Log(LOG_STATUS, "NATherm1 uId %d", uId);
                                                                 m_sql.UpdateDeviceValue("SwitchType", STYPE_Contact, std::to_string(uId));
 								m_sql.UpdateDeviceValue("CustomImage", 15, std::to_string(uId));
                                                         }
@@ -3355,6 +3355,7 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 								int uId = std::stoi(result[0][0]);
 								int nValue = std::stoi(result[0][1]);
 								std::string sValue = result[0][2];
+								Log(LOG_STATUS, "Brightness uId %d", uId);
                                                                 m_sql.UpdateDeviceValue("SwitchType", STYPE_Dimmer, std::to_string(uId));
 								//m_sql.UpdateDeviceValue("CustomImage", 7, std::to_string(uId));
                                                         }
@@ -3394,7 +3395,11 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 						
 						result = m_sql.safe_query("SELECT ID, nValue, sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%08X') AND (Unit==%d) AND (Type==%d) AND (SubType==%d)", m_HwdID, crcId, NETATMO_PRESET_UNIT, Type, SubType);
 						Log(LOG_STATUS, "FAN Result %s", result.c_str());
-
+						if (!result.empty())
+                                                {
+							int uId = std::stoi(result[0][0]);
+							Log(LOG_STATUS, "Fan uId %d", uId);
+						}
 
 					}
 					if (type == "NLE")
