@@ -608,7 +608,7 @@ bool CNetatmo::WriteToHardware(const char* pdata, const unsigned char /*length*/
 		int _rssi_ = xcmd->rssi;
 		int uid_hex = uid;
 		Log(LOG_STATUS, "Netatmo Write xcmd");
-		Log(LOG_STATUS, "Netatmo subType   %", PRIu64 ," ", ulId1);
+		Log(LOG_STATUS, "Netatmo subType ", PRIu64 ," ", ulId1);
 		Log(LOG_STATUS, "Netatmo length %d", length);
 		Log(LOG_STATUS, "Netatmo uid %d", uid);
 		Debug(DEBUG_HARDWARE, "Netatmo uid_hex %08X", uid_hex);
@@ -2432,7 +2432,7 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 		if (!root["body"]["home"]["rooms"].isArray())
 			return false;
 		Json::Value mRoot = root["body"]["home"]["rooms"];
-		SaveJson2Disk(room, std::string("./HomeStatus_") + home_id.c_str() + ".txt");
+		SaveJson2Disk(root, std::string("./HomeStatus_") + home_id.c_str() + ".txt");
 
 		for (auto room : mRoot)
 		{
@@ -2631,7 +2631,7 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 						scenario_type = scenarioss["type"].asString();
 						scenario_SchName = scenario_SchName + scenario_type + "|";
 					}
-					Debug(DEBUG_HARDWARE, "Scenario %s : %s %s", scenario_id.c_str(), scenario_name.c_str(), scenario_type.c_str(), scenario_category.c_str());
+					Debug(DEBUG_HARDWARE, "Scenario %s : %s %s %s", scenario_id.c_str(), scenario_name.c_str(), scenario_type.c_str(), scenario_category.c_str());
 				}
 				index = +10;
 			}
@@ -3282,7 +3282,7 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 							Log(LOG_STATUS, "NATherm1 SubType %d", SubType);
 							
 							result = m_sql.safe_query("SELECT ID, nValue, sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%08X') AND (Unit==%d) AND (Type==%d) AND (SubType==%d)", m_HwdID, crcId, ChildID, Type, SubType);
-							Log(LOG_STATUS, "NATherm1 result %s", result);
+							Log(LOG_STATUS, "NATherm1 result %s", result.c_str());
 
 							if (!result.empty())
                                                         {
@@ -3348,7 +3348,7 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 							Log(LOG_STATUS, "Brightness SubType %d", SubType);
 
 							result = m_sql.safe_query("SELECT ID, nValue, sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%08X') AND (Unit==%d) AND (Type==%d) AND (SubType==%d)", m_HwdID, crcId, ChildID, Type, SubType);
-							Log(LOG_STATUS, "Brightness result %s", result);
+							Log(LOG_STATUS, "Brightness result %s", result.c_str());
 
 							if (!result.empty())
                                                         {
@@ -3393,7 +3393,7 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 						Log(LOG_STATUS, "Fan SubType %d", SubType);
 						
 						result = m_sql.safe_query("SELECT ID, nValue, sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%08X') AND (Unit==%d) AND (Type==%d) AND (SubType==%d)", m_HwdID, crcId, NETATMO_PRESET_UNIT, Type, SubType);
-						Log(LOG_STATUS, "FAN Result %s", result);
+						Log(LOG_STATUS, "FAN Result %s", result.c_str());
 
 
 					}
