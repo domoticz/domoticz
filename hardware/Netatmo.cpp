@@ -3223,6 +3223,11 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 						int sp_temp = stoi(room_setpoint);           // string to int
 						float SP_temp = std::stof(room_setpoint);
 						int uid = crcId;
+						Log(LOG_STATUS, "Thermostat HardwareID %d", m_HwdID);
+						Log(LOG_STATUS, "Thermostat crcId %d", crcId);
+						Log(LOG_STATUS, "Thermostat ChildID %d", ChildID);
+						Log(LOG_STATUS, "Thermostat Type %d", Type);
+						Log(LOG_STATUS, "Thermostat SubType %d", SubType);
 
 						SendSetPointSensor(crcId, (uint8_t)((crcId & 0x00FF0000) >> 16), (crcId & 0XFF00) >> 8, crcId & 0XFF, Unit, batteryLevel, SP_temp, moduleName);   // No RF-level
 						// thermostatModuleID
@@ -3251,14 +3256,22 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 							
 							// Set option SwitchType to STYPE_Contact
 							std::vector<std::vector<std::string> > result;
+							Log(LOG_STATUS, "NATherm1 HardwareID %d", m_HwdID);
+							Log(LOG_STATUS, "NATherm1 crcId %d", crcId);
+							Log(LOG_STATUS, "NATherm1 crcId %08X", crcId);
+							Log(LOG_STATUS, "NATherm1 ChildID %d", ChildID);
+							Log(LOG_STATUS, "NATherm1 Type %d", Type);
+							Log(LOG_STATUS, "NATherm1 SubType %d", SubType);
+							
 							result = m_sql.safe_query("SELECT ID, nValue, sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%08X') AND (Unit==%d) AND (Type==%d) AND (SubType==%d)", m_HwdID, crcId, ChildID, Type, SubType);
 							Log(LOG_STATUS, "NATherm1 result %s", result);
-							int uId = std::stoi(result[0][0]);
-							int nValue = std::stoi(result[0][1]);
-							std::string sValue = result[0][2];
 
 							if (!result.empty())
                                                         {
+								int uId = std::stoi(result[0][0]);
+								int nValue = std::stoi(result[0][1]);
+								std::string sValue = result[0][2];
+								Log(LOG_STATUS, "Brightness uId %d", uId);
                                                                 m_sql.UpdateDeviceValue("SwitchType", STYPE_Contact, std::to_string(uId));
 								m_sql.UpdateDeviceValue("CustomImage", 15, std::to_string(uId));
                                                         }
@@ -3309,6 +3322,13 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 						{
 							m_LightDeviceID[crcId] = bName;
 							std::vector<std::vector<std::string> > result;
+							Log(LOG_STATUS, "Brightness HardwareID %d", m_HwdID);
+							Log(LOG_STATUS, "Brightness crcId %d", crcId);
+							Log(LOG_STATUS, "Brightness crcId %08X", crcId);
+							Log(LOG_STATUS, "Brightness ChildID %d", ChildID);
+							Log(LOG_STATUS, "Brightness Type %d", Type);
+							Log(LOG_STATUS, "Brightness SubType %d", SubType);
+								
 							result = m_sql.safe_query("SELECT ID, nValue, sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%08X') AND (Unit==%d) AND (Type==%d) AND (SubType==%d)", m_HwdID, crcId, ChildID, Type, SubType);
 							Log(LOG_STATUS, "Brightness result %s", result);
 
@@ -3347,6 +3367,13 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 
 						m_PowerDeviceID[crcId] = bName;
 						std::vector<std::vector<std::string> > result;
+						Log(LOG_STATUS, "Fan HardwareID %d", m_HwdID);
+						Log(LOG_STATUS, "Fan crcId %d", crcId);
+						Log(LOG_STATUS, "Fan crcId %08X", crcId);
+						Log(LOG_STATUS, "Fan ChildID %d", ChildID);
+						Log(LOG_STATUS, "Fan Type %d", Type);
+						Log(LOG_STATUS, "Fan SubType %d", SubType);
+						
 						result = m_sql.safe_query("SELECT ID, nValue, sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%08X') AND (Unit==%d) AND (Type==%d) AND (SubType==%d)", m_HwdID, crcId, NETATMO_PRESET_UNIT, Type, SubType);
 						Log(LOG_STATUS, "FAN Result %s", result);
 
