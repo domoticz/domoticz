@@ -3208,6 +3208,7 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 
 					if ((type == "NATherm1") || (type == "NRV"))
 					{
+						int ChildID = 0;
 						int roomIndex = 0;
 						//Find the room info
 						std::string roomNetatmoID = m_RoomIDs[module_id];
