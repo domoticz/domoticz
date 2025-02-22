@@ -3330,7 +3330,7 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 							Log(LOG_STATUS, "Brightness ChildID %d", ChildID);
 							Log(LOG_STATUS, "Brightness Type %d", Type);
 							Log(LOG_STATUS, "Brightness SubType %d", SubType);
-								
+
 							result = m_sql.safe_query("SELECT ID, nValue, sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%08X') AND (Unit==%d) AND (Type==%d) AND (SubType==%d)", m_HwdID, crcId, ChildID, Type, SubType);
 							Log(LOG_STATUS, "Brightness result %s", result);
 
