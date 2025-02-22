@@ -1494,7 +1494,7 @@ void CNetatmo::GetHomesDataDetails()
 				homeID = home["id"].asString();
 				m_homeid.push_back(homeID);
 				//Debug(DEBUG_HARDWARE, "Get Home ID %s", homeID.c_str());
-				SaveJson2Disk(home, std::string("./room_") + homeID.c_str() + ".txt");
+				SaveJson2Disk(home, std::string("./HomesData_") + homeID.c_str() + ".txt");
 				std::stringstream stream_homeid;
 				for(size_t i = 0; i < m_homeid.size(); ++i)
 				{
@@ -2432,6 +2432,7 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 		if (!root["body"]["home"]["rooms"].isArray())
 			return false;
 		Json::Value mRoot = root["body"]["home"]["rooms"];
+		SaveJson2Disk(room, std::string("./HomeStatus_") + home_id.c_str() + ".txt");
 
 		for (auto room : mRoot)
 		{
@@ -2930,7 +2931,7 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 					}
 					if (!module["status"].empty())
 					{
-						// Door sensor
+						// Door sensor & Sirene
 						std::string a_Name = moduleName + " - Status"; //m_[id];
 						std::string sValue = module["status"].asString();
 						//UpdateValueInt(0, ID.c_str(), 6, pTypeGeneral, sTypeAlert, mrf_status, batteryLevel, '0', sValue.c_str(), a_Name, 0, m_Name);
@@ -2943,6 +2944,8 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 							bIsActive = 2;
 						else if (module["status"].asString() == "no_news")
 							bIsActive = 3;
+						else if (module["status"].asString() == "no_sound") //Status Sirene (NIS)
+							bIsActive = 0;
 						else
 							bIsActive = 4;
 
