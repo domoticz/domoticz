@@ -2588,6 +2588,7 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 			for (auto scenarioss : scenarios["scenarios"])
 			{
 				std::string scenario_id;
+				std::string scenario_name;
 				bool scenario_custom;
 				bool scenario_edit;
 				bool scenario_del;
@@ -2613,11 +2614,23 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 				{
 					scenario_id = scenarioss["id"].asString();
 				}
+				if (!scenarioss["name"].empty())
+				{
+					scenario_name = scenarioss["name"].asString();
+				}
 				if (!scenarioss["type"].empty())
 				{
-					scenario_type = scenarioss["type"].asString();
-					scenario_SchName = scenario_SchName + scenario_type + "|";
-					Debug(DEBUG_HARDWARE, "Scenario %s : %s %s", scenario_id.c_str(), scenario_type.c_str(), scenario_category.c_str());
+					if (!scenario_name.empty())
+					{
+						
+						scenario_SchName = scenario_SchName + scenario_name + "|";
+					}
+					else
+					{
+						scenario_type = scenarioss["type"].asString();
+						scenario_SchName = scenario_SchName + scenario_type + "|";
+					}
+					Debug(DEBUG_HARDWARE, "Scenario %s : %s %s", scenario_id.c_str(), scenario_name.c_str(), scenario_type.c_str(), scenario_category.c_str());
 				}
 				index = +10;
 			}
