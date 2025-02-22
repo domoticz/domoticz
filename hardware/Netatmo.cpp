@@ -3226,6 +3226,7 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 						int uid = crcId;
 						Log(LOG_STATUS, "Thermostat HardwareID %d", m_HwdID);
 						Log(LOG_STATUS, "Thermostat crcId %d", crcId);
+						Log(LOG_STATUS, "Thermostat crcId %08X", crcId);
 						Log(LOG_STATUS, "Thermostat ChildID %d", ChildID);
 						Log(LOG_STATUS, "Thermostat Type %d", Type);
 						Log(LOG_STATUS, "Thermostat SubType %d", SubType);
