@@ -816,7 +816,7 @@ bool CNetatmo::SetProgramState(const int uid, const int newState)
 			json_data["home"]["id"] = Home_id;
 			json_data["home"]["modules"][0]["id"] = module_id;
 			json_data["home"]["modules"][0]["bridge"] = Device_bridge;
-			
+
 			switch (newState)
 			{
 			case 0:
@@ -843,7 +843,7 @@ bool CNetatmo::SetProgramState(const int uid, const int newState)
 			json_data["home"]["id"] = Home_id;
 			json_data["home"]["modules"][0]["id"] = module_id;
 			json_data["home"]["modules"][0]["bridge"] = Device_bridge;
-			
+
 			switch (newState)
 			{
 			case 0:
@@ -907,7 +907,7 @@ bool CNetatmo::SetProgramState(const int uid, const int newState)
 		else if (type_module == "NLG")
 		{
 			std::string SchName = m_ModuleNames["999"];
-			
+
 			std::string State = "";
 
 			//Scenario NLG
@@ -972,7 +972,7 @@ bool CNetatmo::SetProgramState(const int uid, const int newState)
 	{
 		std::string _data;
 		_state = newState;
-		
+
 		if (type_module == "NLF")
 		{
 			Json::Value json_data;
@@ -2625,7 +2625,7 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 				{
 					if (!scenario_name.empty())
 					{
-						
+
 						scenario_SchName = scenario_SchName + scenario_name + "|";
 					}
 					else
@@ -3288,7 +3288,7 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 							int ChildID = 9;
 							std::string bName = moduleName + " - Boiler Status";
 							SendGeneralSwitch(crcId, ChildID, batteryLevel, bIsActive, bIsActive, bName, m_Name, mrf_status);
-							
+
 							// Set option SwitchType to STYPE_Contact
 							std::vector<std::vector<std::string> > result;
 							Log(LOG_STATUS, "NATherm1 HardwareID %d", m_HwdID);
@@ -3297,18 +3297,22 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 							Log(LOG_STATUS, "NATherm1 ChildID %d", ChildID);
 							Log(LOG_STATUS, "NATherm1 Type %d", Type);
 							Log(LOG_STATUS, "NATherm1 SubType %d", SubType);
-							
+
 							result = m_sql.safe_query("SELECT ID, nValue, sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%08X') AND (Unit==%d)", m_HwdID, crcId, ChildID);
 							Log(LOG_STATUS, "NATherm1 result %s", result);
 
 							if (!result.empty())
                                                         {
-								int uId = std::stoi(result[0][0]);
-								int nValue = std::stoi(result[0][1]);
-								std::string sValue = result[0][2];
-								Log(LOG_STATUS, "NATherm1 uId %d", uId);
-                                                                m_sql.UpdateDeviceValue("SwitchType", STYPE_Contact, std::to_string(uId));
-								m_sql.UpdateDeviceValue("CustomImage", 15, std::to_string(uId));
+								if (bFirstTimeCS)
+								{
+									int uId = std::stoi(result[0][0]);
+									int nValue = std::stoi(result[0][1]);
+									std::string sValue = result[0][2];
+									Log(LOG_STATUS, "NATherm1 uId %d", uId);
+                                	                                m_sql.UpdateDeviceValue("SwitchType", STYPE_Dusk, std::to_string(uId));      //12
+									//m_sql.UpdateDeviceValue("SwitchType", STYPE_Contact, std::to_string(uId)); // 2
+									//m_sql.UpdateDeviceValue("CustomImage", 15, std::to_string(uId));           //15
+								}
                                                         }
 
 						}
@@ -3373,8 +3377,11 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 								int nValue = std::stoi(result[0][1]);
 								std::string sValue = result[0][2];
 								Log(LOG_STATUS, "Brightness uId %d", uId);
-                                                                m_sql.UpdateDeviceValue("SwitchType", STYPE_Dimmer, std::to_string(uId));
-								//m_sql.UpdateDeviceValue("CustomImage", 7, std::to_string(uId));
+								if (bFirstTimeCS)
+								{
+                                                                	m_sql.UpdateDeviceValue("SwitchType", STYPE_Dimmer, std::to_string(uId)); // 7
+									//m_sql.UpdateDeviceValue("CustomImage", 7, std::to_string(uId));         // 7
+								}
                                                         }
 
 						}
@@ -3416,6 +3423,11 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
                                                 {
 							int uId = std::stoi(result[0][0]);
 							Log(LOG_STATUS, "Fan uId %d", uId);
+							if (bFirstTimeCS)
+							{
+								//m_sql.UpdateDeviceValue("SwitchType", STYPE_Contact, std::to_string(uId)); // 2
+								//m_sql.UpdateDeviceValue("CustomImage", 7, std::to_string(uId));            // 7
+							}
 						}
 
 					}
@@ -3463,6 +3475,7 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 		}
 	}
 	Log(LOG_STATUS, "HomeStatus parsed");
+	bFirstTimeCS = false;
 	return true;
 }
 
