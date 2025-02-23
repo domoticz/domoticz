@@ -2422,6 +2422,7 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 	// First pars Rooms for Thermostat
 	//Debug(DEBUG_HARDWARE, "Home ID = %s ", home_id.c_str());
 	std::string setpoint_mode_str;
+	std::string setpoint_mode_fan;
 	int setpoint_mode_i;
 	int iDevIndex = 0;
 	bool setModeSwitch = false;
@@ -3397,9 +3398,25 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 						int Image = 7;
 						bool bDropdown = true;
 						bool bHideOff = true;
+						std::string Selector;
 						//SendGeneralSwitch(crcId, ChildID, batteryLevel, 1, fan_speed, bName, m_Name, mrf_status);
 						//Fan is preset with 2 speeds
-						SendSelectorSwitch(crcId, NETATMO_PRESET_UNIT, setpoint_mode_str, bName, Image, bDropdown, "Off|Low Speed|High Speed", "", bHideOff, m_Name);   // No RF-level - Battery level visible
+						if (fan_speed == 0)
+						{
+							nValue = 0;
+							Selector = "0";
+						}
+						else if (fan_speed == 1)
+						{
+							nValue = 10;
+							Selector = "10";
+						}
+						else if (fan_speed == 2)
+						{
+							nValue = 20;
+							Selector = "20";
+						}
+						SendSelectorSwitch(crcId, NETATMO_PRESET_UNIT, Selector, bName, Image, bDropdown, "Off|Low Speed|High Speed", "", bHideOff, m_Name);   // No RF-level - Battery level visible
 
 						SendFanSensor(crcId, batteryLevel, fan_speed, bName);
 
