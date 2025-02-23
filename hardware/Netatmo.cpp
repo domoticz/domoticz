@@ -23,7 +23,7 @@
 //Logic ChildID
 // 0	Sensor data
 // 1	MAC-adres
-// 2	RF-Level
+// 2	thermostat schedule
 // 3	Battery-Level
 // 4	Bridge MAC-adres
 // 5	Kwh sensor
@@ -34,7 +34,7 @@
 //10	Selector Switch
 //11	Events Text
 //12	Events Alert
-// 
+//13    RF-Level
 
 // Some testfunctions for debugging
 void SaveJson2Disk(Json::Value str, std::string filename)
@@ -626,10 +626,12 @@ bool CNetatmo::WriteToHardware(const char* pdata, const unsigned char /*length*/
 		int subType = sSwitchTypeSelector;
 		//Debug(DEBUG_HARDWARE, "Netatmo uid %08X", uid);
 		//
+		//Selector Switch Thermostat Mode
 		if (SUB_Type == 62)
 		{
 			set_level = selectorLevel;
 		}
+		//Dimmer Switch
 		else if (SUB_Type == 11 && cmnd_SetLevel == 2)
 		{
 			set_level = selectorLevel;
@@ -2820,6 +2822,7 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 					m_DeviceModuleID[crcId] = module_id;
 					int Type = pTypeGeneralSwitch; // 244;   // Light/Switch
 					int SubType = sSwitchTypeAC;   // 11;    // AC
+					//62; // Selector Switch
 
 					if (!module["rf_strength"].empty())
 					{
@@ -2980,6 +2983,20 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 						}
 
 						std::string setpoint_mode = module["monitoring"].asString();
+						Log(LOG_STATUS, "Floodlight HardwareID %d", m_HwdID);
+						Log(LOG_STATUS, "Floodlight crcId %d", crcId);
+						Log(LOG_STATUS, "Floodlight crcId %08X", crcId);
+						Log(LOG_STATUS, "Floodlight ChildID %d", ChildID);
+						Log(LOG_STATUS, "Floodlight Type %d", Type);
+						Log(LOG_STATUS, "Floodlight SubType %d", SubType);
+						std::vector<std::vector<std::string> > result;
+						result = m_sql.safe_query("SELECT ID, nValue, sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%08X') AND (Unit==%d) AND (Type==%d)", m_HwdID, crcId, NETATMO_PRESET_UNIT, Type);
+						Log(LOG_STATUS, "FAN Result %s", result);
+						if (!result.empty())
+                                                {
+							int uId = std::stoi(result[0][0]);
+							Log(LOG_STATUS, "Floodlight uId %d", uId);
+						}
 						m_PowerDeviceID[crcId] = lName;
 						SendSelectorSwitch(crcId, NETATMO_PRESET_UNIT, Selector, lName, Image, bDropdown, "off|on|auto", "", bHideOff, m_Name);   // No RF-level - Battery level
 					}
@@ -3281,7 +3298,7 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 							Log(LOG_STATUS, "NATherm1 Type %d", Type);
 							Log(LOG_STATUS, "NATherm1 SubType %d", SubType);
 							
-							result = m_sql.safe_query("SELECT ID, nValue, sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%08X') AND (Unit==%d) AND (Type==%d) AND (SubType==%d)", m_HwdID, crcId, ChildID, Type, SubType);
+							result = m_sql.safe_query("SELECT ID, nValue, sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%08X') AND (Unit==%d) AND (Type==%d)", m_HwdID, crcId, ChildID, Type);
 							Log(LOG_STATUS, "NATherm1 result %s", result);
 
 							if (!result.empty())
@@ -3347,7 +3364,7 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 							Log(LOG_STATUS, "Brightness Type %d", Type);
 							Log(LOG_STATUS, "Brightness SubType %d", SubType);
 
-							result = m_sql.safe_query("SELECT ID, nValue, sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%08X') AND (Unit==%d) AND (Type==%d) AND (SubType==%d)", m_HwdID, crcId, ChildID, Type, SubType);
+							result = m_sql.safe_query("SELECT ID, nValue, sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%08X') AND (Unit==%d) AND (Type==%d)", m_HwdID, crcId, ChildID, Type);
 							Log(LOG_STATUS, "Brightness result %s", result);
 
 							if (!result.empty())
@@ -3393,7 +3410,7 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 						Log(LOG_STATUS, "Fan Type %d", Type);
 						Log(LOG_STATUS, "Fan SubType %d", SubType);
 						
-						result = m_sql.safe_query("SELECT ID, nValue, sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%08X') AND (Unit==%d) AND (Type==%d) AND (SubType==%d)", m_HwdID, crcId, NETATMO_PRESET_UNIT, Type, SubType);
+						result = m_sql.safe_query("SELECT ID, nValue, sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%08X') AND (Unit==%d) AND (Type==%d)", m_HwdID, crcId, NETATMO_PRESET_UNIT, Type);
 						Log(LOG_STATUS, "FAN Result %s", result);
 						if (!result.empty())
                                                 {
