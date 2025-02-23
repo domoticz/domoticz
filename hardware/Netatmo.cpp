@@ -3301,17 +3301,18 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 							Log(LOG_STATUS, "NATherm1 SubType %d", SubType);
 
 							result = m_sql.safe_query("SELECT ID, nValue, sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%08X') AND (Unit==%d)", m_HwdID, crcId, ChildID);
-							Log(LOG_STATUS, "NATherm1 result %s", result);
 
 							if (!result.empty())
                                                         {
+								
+								//
+								int uId = std::stoi(result[0][0]);
+								int nValue = std::stoi(result[0][1]);
+								std::string sValue = result[0][2];
+								Log(LOG_STATUS, "NATherm1 uId %d", uId);
 								if (m_bFirstTimeHomeStatus)
 								{
-									int uId = std::stoi(result[0][0]);
-									int nValue = std::stoi(result[0][1]);
-									std::string sValue = result[0][2];
-									Log(LOG_STATUS, "NATherm1 uId %d", uId);
-                                	                                //m_sql.UpdateDeviceValue("SwitchType", STYPE_Dusk, std::to_string(uId));      //12
+                                	                                //m_sql.UpdateDeviceValue("SwitchType", STYPE_Dusk, std::to_string(uId));  //12
 									m_sql.UpdateDeviceValue("SwitchType", STYPE_Contact, std::to_string(uId)); // 2
 									m_sql.UpdateDeviceValue("CustomImage", 15, std::to_string(uId));           //15
 								}
@@ -3371,7 +3372,6 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 							Log(LOG_STATUS, "Brightness SubType %d", SubType);
 
 							result = m_sql.safe_query("SELECT ID, nValue, sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%08X') AND (Unit==%d)", m_HwdID, crcId, ChildID);
-							Log(LOG_STATUS, "Brightness result %s", result);
 
 							if (!result.empty())
                                                         {
@@ -3436,7 +3436,7 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 						Log(LOG_STATUS, "Fan SubType %d", SubType);
 						
 						result = m_sql.safe_query("SELECT ID, nValue, sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%08X') AND (Unit==%d)", m_HwdID, crcId, NETATMO_PRESET_UNIT);
-						Log(LOG_STATUS, "FAN Result %s", result);
+
 						if (!result.empty())
                                                 {
 							int uId = std::stoi(result[0][0]);
@@ -3536,7 +3536,7 @@ bool CNetatmo::ParseEvents(const std::string& sResult, Json::Value& root )
 			// Domoticz Device for Events ? / Camera's ?
 			{
 				events_ID = events["id"].asString();
-				//SaveJson2Disk(events, std::string("./events_") + events_ID.c_str() + ".txt");
+				SaveJson2Disk(events, std::string("./events_") + events_ID.c_str() + ".txt");
 			}
 			// Using Textstatus / Alert for now
 			if (!events["id"].empty())
