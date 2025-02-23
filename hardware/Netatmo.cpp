@@ -3311,9 +3311,9 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 									int nValue = std::stoi(result[0][1]);
 									std::string sValue = result[0][2];
 									Log(LOG_STATUS, "NATherm1 uId %d", uId);
-                                	                                m_sql.UpdateDeviceValue("SwitchType", STYPE_Dusk, std::to_string(uId));      //12
-									//m_sql.UpdateDeviceValue("SwitchType", STYPE_Contact, std::to_string(uId)); // 2
-									//m_sql.UpdateDeviceValue("CustomImage", 15, std::to_string(uId));           //15
+                                	                                //m_sql.UpdateDeviceValue("SwitchType", STYPE_Dusk, std::to_string(uId));      //12
+									m_sql.UpdateDeviceValue("SwitchType", STYPE_Contact, std::to_string(uId)); // 2
+									m_sql.UpdateDeviceValue("CustomImage", 15, std::to_string(uId));           //15
 								}
                                                         }
 
