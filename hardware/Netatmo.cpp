@@ -99,6 +99,7 @@ CNetatmo::CNetatmo(const int ID, const std::string& username, const std::string&
 	m_bPollHome = true;
 
 	m_bPollThermostat = true;
+	m_bFirstTimeHomeStatus = true;
 	m_bFirstTimeThermostat = true;
 	m_bFirstTimeWeatherData = true;
 	m_tSetpointUpdateTime = time(nullptr);
@@ -199,7 +200,6 @@ void CNetatmo::Do_Work()
 	bool bFirstTimeWS = true;
 	bool bFirstTimeHS = true;
 	bool bFirstTimeSS = true;
-	bool bFirstTimeCS = true;
 	bool bFirstTimeTH = true;
         std::string home_id;
 	Log(LOG_STATUS, "Worker started...");
@@ -3304,7 +3304,7 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 
 							if (!result.empty())
                                                         {
-								if (bFirstTimeCS)
+								if (m_bFirstTimeHomeStatus)
 								{
 									int uId = std::stoi(result[0][0]);
 									int nValue = std::stoi(result[0][1]);
@@ -3378,7 +3378,7 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 								int nValue = std::stoi(result[0][1]);
 								std::string sValue = result[0][2];
 								Log(LOG_STATUS, "Brightness uId %d", uId);
-								if (bFirstTimeCS)
+								if (m_bFirstTimeHomeStatus)
 								{
                                                                 	m_sql.UpdateDeviceValue("SwitchType", STYPE_Dimmer, std::to_string(uId)); // 7
 									//m_sql.UpdateDeviceValue("CustomImage", 7, std::to_string(uId));         // 7
@@ -3440,7 +3440,7 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
                                                 {
 							int uId = std::stoi(result[0][0]);
 							Log(LOG_STATUS, "Fan uId %d", uId);
-							if (bFirstTimeCS)
+							if (m_bFirstTimeHomeStatus)
 							{
 								//m_sql.UpdateDeviceValue("SwitchType", STYPE_Contact, std::to_string(uId)); // 2
 								//m_sql.UpdateDeviceValue("CustomImage", 7, std::to_string(uId));            // 7
@@ -3492,7 +3492,7 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 		}
 	}
 	Log(LOG_STATUS, "HomeStatus parsed");
-	bFirstTimeCS = false;
+	m_bFirstTimeHomeStatus = false;
 	return true;
 }
 
