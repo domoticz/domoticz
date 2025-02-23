@@ -2990,8 +2990,8 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 						Log(LOG_STATUS, "Floodlight Type %d", Type);
 						Log(LOG_STATUS, "Floodlight SubType %d", SubType);
 						std::vector<std::vector<std::string> > result;
-						result = m_sql.safe_query("SELECT ID, nValue, sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%08X') AND (Unit==%d) AND (Type==%d)", m_HwdID, crcId, NETATMO_PRESET_UNIT, Type);
-						Log(LOG_STATUS, "FAN Result %s", result);
+						result = m_sql.safe_query("SELECT ID, nValue, sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%08X') AND (Unit==%d)", m_HwdID, crcId, NETATMO_PRESET_UNIT);
+						Log(LOG_STATUS, "Floodlight Result %s", result);
 						if (!result.empty())
                                                 {
 							int uId = std::stoi(result[0][0]);
@@ -3298,7 +3298,7 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 							Log(LOG_STATUS, "NATherm1 Type %d", Type);
 							Log(LOG_STATUS, "NATherm1 SubType %d", SubType);
 							
-							result = m_sql.safe_query("SELECT ID, nValue, sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%08X') AND (Unit==%d) AND (Type==%d)", m_HwdID, crcId, ChildID, Type);
+							result = m_sql.safe_query("SELECT ID, nValue, sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%08X') AND (Unit==%d)", m_HwdID, crcId, ChildID);
 							Log(LOG_STATUS, "NATherm1 result %s", result);
 
 							if (!result.empty())
@@ -3364,7 +3364,7 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 							Log(LOG_STATUS, "Brightness Type %d", Type);
 							Log(LOG_STATUS, "Brightness SubType %d", SubType);
 
-							result = m_sql.safe_query("SELECT ID, nValue, sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%08X') AND (Unit==%d) AND (Type==%d)", m_HwdID, crcId, ChildID, Type);
+							result = m_sql.safe_query("SELECT ID, nValue, sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%08X') AND (Unit==%d)", m_HwdID, crcId, ChildID);
 							Log(LOG_STATUS, "Brightness result %s", result);
 
 							if (!result.empty())
@@ -3410,7 +3410,7 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 						Log(LOG_STATUS, "Fan Type %d", Type);
 						Log(LOG_STATUS, "Fan SubType %d", SubType);
 						
-						result = m_sql.safe_query("SELECT ID, nValue, sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%08X') AND (Unit==%d) AND (Type==%d)", m_HwdID, crcId, NETATMO_PRESET_UNIT, Type);
+						result = m_sql.safe_query("SELECT ID, nValue, sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%08X') AND (Unit==%d)", m_HwdID, crcId, NETATMO_PRESET_UNIT);
 						Log(LOG_STATUS, "FAN Result %s", result);
 						if (!result.empty())
                                                 {
