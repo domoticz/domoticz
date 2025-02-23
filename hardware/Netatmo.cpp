@@ -2986,7 +2986,7 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 						Log(LOG_STATUS, "Floodlight HardwareID %d", m_HwdID);
 						Log(LOG_STATUS, "Floodlight crcId %d", crcId);
 						Log(LOG_STATUS, "Floodlight crcId %08X", crcId);
-						Log(LOG_STATUS, "Floodlight ChildID %d", ChildID);
+						Log(LOG_STATUS, "Floodlight ChildID %d", NETATMO_PRESET_UNIT);
 						Log(LOG_STATUS, "Floodlight Type %d", Type);
 						Log(LOG_STATUS, "Floodlight SubType %d", SubType);
 						std::vector<std::vector<std::string> > result;
