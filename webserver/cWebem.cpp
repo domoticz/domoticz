@@ -47,13 +47,13 @@ namespace http {
 			, myRequestHandler(doc_root, this)
 			// Rene, make sure we initialize m_sessions first, before starting a server
 			, myServer(server_factory::create(settings, myRequestHandler))
-			, m_io_service()
-			, m_session_clean_timer(m_io_service, boost::posix_time::minutes(1))
+			, m_io_context()
+			, m_session_clean_timer(m_io_context, boost::posix_time::minutes(1))
 		{
 			// associate handler to timer and schedule the first iteration
 			m_session_clean_timer.async_wait([this](auto &&) { CleanSessions(); });
-			m_io_service_thread = std::make_shared<std::thread>([p = &m_io_service] { p->run(); });
-			SetThreadName(m_io_service_thread->native_handle(), "Webem_ssncleaner");
+			m_io_context_thread = std::make_shared<std::thread>([p = &m_io_context] { p->run(); });
+			SetThreadName(m_io_context_thread->native_handle(), "Webem_ssncleaner");
 		}
 
 		cWebem::~cWebem()
@@ -93,14 +93,14 @@ namespace http {
 			// Stop session cleaner
 			try
 			{
-				if (!m_io_service.stopped())
+				if (!m_io_context.stopped())
 				{
-					m_io_service.stop();
+					m_io_context.stop();
 				}
-				if (m_io_service_thread)
+				if (m_io_context_thread)
 				{
-					m_io_service_thread->join();
-					m_io_service_thread.reset();
+					m_io_context_thread->join();
+					m_io_context_thread.reset();
 				}
 			}
 			catch (...)

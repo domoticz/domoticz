@@ -15,6 +15,7 @@
 class XiaomiDeviceSupport
 {
       public:
+	virtual ~XiaomiDeviceSupport() = default;
 	/**
 	 * Method to get 'model' corresponding to the ID of the device in case the Gateway API didn't provide it.
 	 *

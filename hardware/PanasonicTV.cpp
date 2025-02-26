@@ -356,18 +356,17 @@ std::string CPanasonicNode::handleWriteAndRead(const std::string& pMessageToSend
 {
 
 	_log.Debug(DEBUG_HARDWARE, "Panasonic Plugin: (%s) Handling message: '%s'.", m_Name.c_str(), pMessageToSend.c_str());
-	boost::asio::io_service io_service;
+	boost::asio::io_context io_context;
 	// Get a list of endpoints corresponding to the server name.
-	boost::asio::ip::tcp::resolver resolver(io_service);
-	boost::asio::ip::tcp::resolver::query query(m_IP, (m_Port[0] != '-' ? m_Port : m_Port.substr(1)));
-	auto iter = resolver.resolve(query);
+	boost::asio::ip::tcp::resolver resolver(io_context);
+	auto endpoints = resolver.resolve(m_IP, (m_Port[0] != '-' ? m_Port : m_Port.substr(1)));
+	auto iter = endpoints.begin();
 	boost::asio::ip::tcp::endpoint endpoint = *iter;
-	boost::asio::ip::tcp::resolver::iterator end;
 
 	// Try each endpoint until we successfully establish a connection.
-	boost::asio::ip::tcp::socket socket(io_service);
+	boost::asio::ip::tcp::socket socket(io_context);
 	boost::system::error_code error = boost::asio::error::host_not_found;
-	while (error && iter != end)
+	while (error && iter != endpoints.end())
 	{
 		socket.close();
 		if (handleConnect(socket, *iter, error))
@@ -1060,7 +1059,7 @@ void CPanasonic::ReloadNodes()
 {
 	UnloadNodes();
 
-	//m_ios.reset();	// in case this is not the first time in
+	//m_ioc.reset();	// in case this is not the first time in
 
 	std::vector<std::vector<std::string> > result;
 	result = m_sql.safe_query("SELECT ID,Name,MacAddress,Timeout FROM WOLNodes WHERE (HardwareID==%d)", m_HwdID);
@@ -1088,10 +1087,10 @@ void CPanasonic::UnloadNodes()
 {
 	std::lock_guard<std::mutex> l(m_mutex);
 
-	m_ios.stop();	// stop the service if it is running
+	m_ioc.stop();	// stop the service if it is running
 	sleep_milliseconds(100);
 
-	while (((!m_pNodes.empty()) || (!m_ios.stopped())))
+	while (((!m_pNodes.empty()) || (!m_ioc.stopped())))
 	{
 		for (auto itt = m_pNodes.begin(); itt != m_pNodes.end(); ++itt)
 		{

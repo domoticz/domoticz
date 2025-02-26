@@ -116,15 +116,14 @@ namespace Plugins {
 				m_bConnected = false;
 				m_Socket = new boost::asio::ip::tcp::socket(ios);
 
-				boost::system::error_code ec;
-				boost::asio::ip::tcp::resolver::query query(m_IP, m_Port);
-				auto iter = m_Resolver.resolve(query);
-				boost::asio::ip::tcp::endpoint endpoint = *iter;
-
 				//
 				//	Async resolve/connect based on http://www.boost.org/doc/libs/1_45_0/doc/html/boost_asio/example/http/client/async_client.cpp
 				//
-				m_Resolver.async_resolve(query, [this](auto &&err, auto end) { handleAsyncResolve(err, end); });
+				m_Resolver.async_resolve(m_IP, m_Port,
+					[this](auto &&err, auto endpoints) {
+						handleAsyncResolve(err, endpoints);
+					}
+				);
 			}
 		}
 		catch (std::exception& e)
@@ -139,15 +138,14 @@ namespace Plugins {
 		return true;
 	}
 
-	void CPluginTransportTCP::handleAsyncResolve(const boost::system::error_code & err, boost::asio::ip::tcp::resolver::iterator endpoint_iterator)
+	void CPluginTransportTCP::handleAsyncResolve(const boost::system::error_code & err, boost::asio::ip::tcp::resolver::results_type endpoints)
 	{
 		CPlugin*		pPlugin = ((CConnection*)m_pConnection)->pPlugin;
 		AccessPython	Guard(pPlugin, "CPluginTransportTCP::handleAsyncResolve");
 
 		if (!err)
 		{
-			boost::asio::ip::tcp::endpoint endpoint = *endpoint_iterator;
-			m_Socket->async_connect(endpoint, [this, endpoint_iterator](auto &&err) mutable { handleAsyncConnect(err, ++endpoint_iterator); });
+			boost::asio::async_connect(*m_Socket, endpoints, [this](auto &&err, const boost::asio::ip::tcp::endpoint &endpoint) mutable { handleAsyncConnect(err, endpoint); });
 		}
 		else
 		{
@@ -169,7 +167,7 @@ namespace Plugins {
 		}
 	}
 
-	void CPluginTransportTCP::handleAsyncConnect(const boost::system::error_code &err, const boost::asio::ip::tcp::resolver::iterator &endpoint_iterator)
+	void CPluginTransportTCP::handleAsyncConnect(const boost::system::error_code &err, const boost::asio::ip::tcp::endpoint &endpoint)
 	{
 		CPlugin*		pPlugin = ((CConnection*)m_pConnection)->pPlugin;
 		AccessPython	Guard(pPlugin, "CPluginTransportTCP::handleAsyncResolve");
@@ -481,7 +479,7 @@ namespace Plugins {
 		}
 	};
 
-	void CPluginTransportTCPSecure::handleAsyncConnect(const boost::system::error_code &err, const boost::asio::ip::tcp::resolver::iterator &endpoint_iterator)
+	void CPluginTransportTCPSecure::handleAsyncConnect(const boost::system::error_code &err, const boost::asio::ip::tcp::endpoint &endpoint)
 	{
 		CPlugin* pPlugin = ((CConnection*)m_pConnection)->pPlugin;
 		if (!pPlugin) return;
@@ -498,7 +496,7 @@ namespace Plugins {
 			SSL_set_tlsext_host_name(m_TLSSock->native_handle(), m_IP.c_str());			// Enable SNI
 
 			m_TLSSock->set_verify_mode(boost::asio::ssl::verify_none);
-			m_TLSSock->set_verify_callback(boost::asio::ssl::rfc2818_verification(m_IP));
+			m_TLSSock->set_verify_callback(boost::asio::ssl::host_name_verification(m_IP));
 			// m_TLSSock->set_verify_callback([this](auto v, auto &c){ VerifyCertificate(v, c);});
 			try
 			{
@@ -648,7 +646,7 @@ namespace Plugins {
 					// Hanlde multicast
 					if (((m_IP.substr(0, 4) >= "224.") && (m_IP.substr(0, 4) <= "239.")) || (m_IP.substr(0, 4) == "255."))
 					{
-						m_Socket->set_option(boost::asio::ip::multicast::join_group(boost::asio::ip::address::from_string(m_IP.c_str())), ec);
+						m_Socket->set_option(boost::asio::ip::multicast::join_group(boost::asio::ip::make_address_v4(m_IP.c_str())), ec);
 						m_Socket->set_option(boost::asio::ip::multicast::hops(2), ec);
 					}
 				}
@@ -764,7 +762,7 @@ namespace Plugins {
 			}
 			else
 			{
-				boost::asio::ip::udp::endpoint destination(boost::asio::ip::address::from_string(m_IP.c_str()), atoi(m_Port.c_str()));
+				boost::asio::ip::udp::endpoint destination(boost::asio::ip::make_address_v4(m_IP.c_str()), atoi(m_Port.c_str()));
 				size_t bytes_transferred = m_Socket->send_to(boost::asio::buffer(pMessage, pMessage.size()), destination);
 			}
 		}
@@ -825,12 +823,14 @@ namespace Plugins {
 		}
 	};
 
-	void CPluginTransportICMP::handleAsyncResolve(const boost::system::error_code &ec, const boost::asio::ip::icmp::resolver::iterator &endpoint_iterator)
+	void CPluginTransportICMP::handleAsyncResolve(const boost::system::error_code &ec, boost::asio::ip::icmp::resolver::results_type endpoints)
 	{
 		if (!ec)
 		{
+			m_Endpoint = endpoints.begin()->endpoint();
+			m_IP = m_Endpoint.address().to_string();
+
 			m_bConnected = true;
-			m_IP = endpoint_iterator->endpoint().address().to_string();
 
 			// Listen will fail (10022 - bad parameter) unless something has been sent(?)
 			std::string body("ping");
@@ -857,15 +857,11 @@ namespace Plugins {
 				m_bConnecting = true;
 				m_Socket = new boost::asio::ip::icmp::socket(ios, boost::asio::ip::icmp::v4());
 
-				boost::system::error_code ec;
-				boost::asio::ip::icmp::resolver::query query(boost::asio::ip::icmp::v4(), m_IP, "");
-				auto iter = m_Resolver.resolve(query);
-				m_Endpoint = *iter;
-
-				//
-				//	Async resolve/connect based on http://www.boost.org/doc/libs/1_51_0/doc/html/boost_asio/example/icmp/ping.cpp
-				//
-				m_Resolver.async_resolve(query, [this](auto &&err, auto i) { handleAsyncResolve(err, i); });
+				m_Resolver.async_resolve(boost::asio::ip::icmp::v4(), m_IP, "",
+					[this](auto &&err, auto endpoints) {
+						handleAsyncResolve(err, endpoints);
+					}
+				);
 			}
 			else
 			{

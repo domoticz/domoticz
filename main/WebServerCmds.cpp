@@ -1642,7 +1642,7 @@ namespace http
 			ExtraHeaders.push_back("App_Revision: " + std::to_string(iAppRevision));
 			ExtraHeaders.push_back("System_Name: " + systemname);
 			ExtraHeaders.push_back("Machine: " + machine);
-			ExtraHeaders.push_back("Type: " + (!bIsBetaChannel) ? "Stable" : "Beta");
+			ExtraHeaders.push_back("Type: " + std::string(!bIsBetaChannel ? "Stable" : "Beta"));
 
 			if (!HTTPClient::GET(szHistoryURL, ExtraHeaders, historyfile))
 			{

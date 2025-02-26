@@ -39,7 +39,7 @@ class CPanasonic : public CDomoticzHardwareBase
 	bool m_bTryIfOff;
 	std::shared_ptr<std::thread> m_thread;
 	std::mutex m_mutex;
-	boost::asio::io_service m_ios;
+	boost::asio::io_context m_ioc;
 
 	friend class CPanasonicNode; 
 };

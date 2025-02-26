@@ -64,7 +64,7 @@ namespace Plugins {
 	// PyMODINIT_FUNC PyInit_DomoticzEvents(void);
 
 	std::mutex PluginMutex;	// controls accessto the message queue and m_pPlugins map
-	boost::asio::io_service ios;
+	boost::asio::io_context ios;
 
 	std::map<int, CDomoticzHardwareBase*>	CPluginSystem::m_pPlugins;
 	std::map<std::string, std::string>		CPluginSystem::m_PluginXml;
@@ -315,7 +315,7 @@ namespace Plugins {
 		// Create initial IO Service thread
 		ios.restart();
 		// Create some work to keep IO Service alive
-		auto work = boost::asio::io_service::work(ios);
+		auto work = boost::asio::make_work_guard(ios);
 		boost::thread_group BoostThreads;
 		for (int i = 0; i < 1; i++)
 		{

@@ -150,7 +150,7 @@ class CKodiNode : public std::enable_shared_from_this<CKodiNode>, StoppableTask
 	};
 
       public:
-	CKodiNode(boost::asio::io_service *, int, int, int, const std::string &, const std::string &, const std::string &, const std::string &);
+	CKodiNode(boost::asio::io_context *, int, int, int, const std::string &, const std::string &, const std::string &, const std::string &);
 	~CKodiNode();
 	void Do_Work();
 	void SendCommand(const std::string &);
@@ -207,7 +207,7 @@ class CKodiNode : public std::enable_shared_from_this<CKodiNode>, StoppableTask
 	int m_iPollIntSec;
 	int m_iMissedPongs;
 	std::string m_sLastMessage;
-	boost::asio::io_service *m_Ios;
+	boost::asio::io_context *m_Ioc;
 	boost::asio::ip::tcp::socket *m_Socket;
 	std::array<char, 256> m_Buffer;
 };
@@ -243,5 +243,5 @@ class CKodi : public CDomoticzHardwareBase
 	int m_iPingTimeoutms;
 	std::shared_ptr<std::thread> m_thread;
 	std::mutex m_mutex;
-	boost::asio::io_service m_ios;
+	boost::asio::io_context m_ioc;
 };
