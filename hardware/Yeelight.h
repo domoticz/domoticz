@@ -25,7 +25,7 @@ class Yeelight : public CDomoticzHardwareBase
 	class udp_server
 	{
 	      public:
-		udp_server(boost::asio::io_service &io_service, int m_HwdID);
+		udp_server(boost::asio::io_context &io_context, int m_HwdID);
 		boost::asio::ip::udp::socket socket_;
 		boost::asio::ip::udp::endpoint remote_endpoint_;
 		void start_send();

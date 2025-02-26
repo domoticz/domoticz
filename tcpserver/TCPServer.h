@@ -70,8 +70,8 @@ private:
 	/// Handle a request to stop the server.
 	void handle_stop();
 
-	/// The io_service used to perform asynchronous operations.
-	boost::asio::io_service io_service_;
+	/// The io_context used to perform asynchronous operations.
+	boost::asio::io_context io_context_;
 
 	boost::asio::ip::tcp::acceptor acceptor_;
 

@@ -13,15 +13,15 @@ namespace http {
 namespace server {
 
 	server_base::server_base(const server_settings &settings, request_handler &user_request_handler)
-		: io_service_()
-		, acceptor_(io_service_)
+		: io_context_()
+		, acceptor_(io_context_)
 		, request_handler_(user_request_handler)
 		, settings_(settings)
 		, timeout_(20)
 		, // default read timeout in seconds
 		is_running(false)
 		, is_stop_complete(false)
-		, m_heartbeat_timer(io_service_)
+		, m_heartbeat_timer(io_context_)
 	{
 		if (!settings.is_enabled())
 		{
@@ -39,10 +39,10 @@ namespace server {
 		}
 
 		// Open the acceptor with the option to reuse the address (i.e. SO_REUSEADDR).
-		boost::asio::ip::tcp::resolver resolver(io_service_);
-		boost::asio::ip::tcp::resolver::query query(settings_.listening_address, settings_.listening_port);
-		boost::asio::ip::tcp::endpoint endpoint = *resolver.resolve(query);
-		acceptor_.open(endpoint.protocol());
+		boost::asio::ip::tcp::resolver resolver(io_context_);
+		boost::asio::ip::basic_resolver<boost::asio::ip::tcp>::results_type endpoints = resolver.resolve(settings_.listening_address, settings_.listening_port);
+		auto endpoint = *endpoints.begin();
+		acceptor_.open(endpoint.endpoint().protocol());
 		acceptor_.set_option(boost::asio::ip::tcp::acceptor::reuse_address(true));
 		// bind to both ipv6 and ipv4 sockets for the "::" address only
 		if (settings_.listening_address == "::")
@@ -59,28 +59,28 @@ namespace server {
 	}
 
 void server_base::run() {
-	// The io_service::run() call will block until all asynchronous operations
+	// The io_context::run() call will block until all asynchronous operations
 	// have finished. While the server is running, there is always at least one
 	// asynchronous operation outstanding: the asynchronous accept call waiting
 	// for new incoming connections.
 	try {
 		is_running = true;
 		heart_beat(boost::system::error_code());
-		io_service_.run();
+		io_context_.run();
 		is_running = false;
 	} catch (std::exception& e) {
 		_log.Log(LOG_ERROR, "[web:%s] exception occurred : '%s' (need to run again)", settings_.listening_port.c_str(), e.what());
 		is_running = false;
 		// Note: if acceptor is up everything is OK, we can call run() again
 		//       but if the exception has broken the acceptor we cannot stop/start it and the next run() will exit immediatly.
-		io_service_.reset(); // this call is needed before calling run() again
+		io_context_.restart(); // this call is needed before calling run() again
 		throw;
 	} catch (...) {
 		_log.Log(LOG_ERROR, "[web:%s] unknown exception occurred (need to run again)", settings_.listening_port.c_str());
 		is_running = false;
 		// Note: if acceptor is up everything is OK, we can call run() again
 		//       but if the exception has broken the acceptor we cannot stop/start it and the next run() will exit immediatly.
-		io_service_.reset(); // this call is needed before calling run() again
+		io_context_.restart(); // this call is needed before calling run() again
 		throw;
 	}
 }
@@ -89,12 +89,12 @@ void server_base::run() {
 void server_base::stop() {
 	if (is_running) {
 		// Post a call to the stop function so that server_base::stop() is safe to call from any thread.
-		// Rene, set is_running to false, because the following is an io_service call, which makes is_running
+		// Rene, set is_running to false, because the following is an io_context call, which makes is_running
 		// never set to false whilst in the call itself
 		is_running = false;
-		io_service_.post([this] { handle_stop(); });
+		boost::asio::post(io_context_, [this] { handle_stop(); });
 	} else {
-		// if io_service is not running then the post call will not be performed
+		// if io_context is not running then the post call will not be performed
 		handle_stop();
 	}
 
@@ -112,7 +112,7 @@ void server_base::stop() {
 		}
 		sleep_milliseconds(500);
 	}
-	io_service_.stop();
+	io_context_.stop();
 
 	// Deregister heartbeat
 	m_mainworker.HeartbeatRemove(std::string("WebServer:") + settings_.listening_port);
@@ -136,7 +136,7 @@ void server_base::heart_beat(const boost::system::error_code& error)
 		m_mainworker.HeartbeatUpdate(std::string("WebServer:") + settings_.listening_port);
 
 		// Schedule next heartbeat
-		m_heartbeat_timer.expires_from_now(std::chrono::seconds(4));
+		m_heartbeat_timer.expires_after(std::chrono::seconds(4));
 		m_heartbeat_timer.async_wait([this](auto &&err) { heart_beat(err); });
 	}
 }
@@ -148,7 +148,7 @@ server::server(const server_settings &settings, request_handler &user_request_ha
 }
 
 void server::init_connection() {
-	new_connection_.reset(new connection(io_service_, connection_manager_, request_handler_, timeout_));
+	new_connection_.reset(new connection(io_context_, connection_manager_, request_handler_, timeout_));
 }
 
 /**
@@ -157,7 +157,7 @@ void server::init_connection() {
 void server::handle_accept(const boost::system::error_code& e) {
 	if (!e) {
 		connection_manager_.start(new_connection_);
-		new_connection_.reset(new connection(io_service_,
+		new_connection_.reset(new connection(io_context_,
 				connection_manager_, request_handler_, timeout_));
 		// listen for a subsequent request
 		acceptor_.async_accept(new_connection_->socket(), [this](auto &&err) { handle_accept(err); });
@@ -267,7 +267,7 @@ void ssl_server::init_connection() {
 	} else {
 		_log.Log(LOG_ERROR, "[web:%s] missing SSL DH parameters file %s!", settings_.listening_port.c_str(), settings_.tmp_dh_file_path.c_str());
 	}
-	new_connection_.reset(new connection(io_service_, connection_manager_, request_handler_, timeout_, context_));
+	new_connection_.reset(new connection(io_context_, connection_manager_, request_handler_, timeout_, context_));
 }
 
 void ssl_server::reinit_connection()
@@ -305,7 +305,7 @@ void ssl_server::reinit_connection()
 			_log.Log(LOG_ERROR, "[web:%s] missing SSL DH parameters from file %s", settings_.listening_port.c_str(), settings_.tmp_dh_file_path.c_str());
 		}
 	}
-	new_connection_.reset(new connection(io_service_, connection_manager_, request_handler_, timeout_, context_));
+	new_connection_.reset(new connection(io_context_, connection_manager_, request_handler_, timeout_, context_));
 }
 
 /**

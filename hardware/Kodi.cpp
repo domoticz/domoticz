@@ -143,14 +143,14 @@ _eNotificationTypes	CKodiNode::CKodiStatus::NotificationType()
 	}
 }
 
-CKodiNode::CKodiNode(boost::asio::io_service *pIos, const int pHwdID, const int PollIntervalsec, const int pTimeoutMs,
+CKodiNode::CKodiNode(boost::asio::io_context *pIoc, const int pHwdID, const int PollIntervalsec, const int pTimeoutMs,
 	const std::string& pID, const std::string& pName, const std::string& pIP, const std::string& pPort)
 {
 	m_Busy = false;
 	m_Stoppable = false;
 	m_PlaylistPosition = 0;
 
-	m_Ios = pIos;
+	m_Ioc = pIoc;
 	m_HwdID = pHwdID;
 	m_DevID = atoi(pID.c_str());
 	sprintf(m_szDevID, "%X%02X%02X%02X", 0, 0, (m_DevID & 0xFF00) >> 8, m_DevID & 0xFF);
@@ -581,11 +581,10 @@ void CKodiNode::handleConnect()
 		{
 			m_iMissedPongs = 0;
 			boost::system::error_code ec;
-			boost::asio::ip::tcp::resolver resolver(*m_Ios);
-			boost::asio::ip::tcp::resolver::query query(m_IP, (m_Port[0] != '-' ? m_Port : m_Port.substr(1)));
-			auto iter = resolver.resolve(query);
-			boost::asio::ip::tcp::endpoint endpoint = *iter;
-			m_Socket = new boost::asio::ip::tcp::socket(*m_Ios);
+			boost::asio::ip::tcp::resolver resolver(*m_Ioc);
+			auto iter = resolver.resolve(m_IP, (m_Port[0] != '-' ? m_Port : m_Port.substr(1)));
+			boost::asio::ip::tcp::endpoint endpoint = *iter.begin();
+			m_Socket = new boost::asio::ip::tcp::socket(*m_Ioc);
 			m_Socket->connect(endpoint, ec);
 			if (!ec)
 			{
@@ -975,19 +974,19 @@ void CKodi::Do_Work()
 					_log.Log(LOG_NORM, "Kodi: (%s) - Restarting thread.", node->m_Name.c_str());
 					boost::thread *tAsync = new boost::thread(&CKodiNode::Do_Work, node);
 					SetThreadName(tAsync->native_handle(), "KodiNode");
-					m_ios.stop();
+					m_ioc.stop();
 				}
 				if (node->IsOn())
 					bWorkToDo = true;
 			}
 
-			if (bWorkToDo && m_ios.stopped())  // make sure that there is a boost thread to service i/o operations
+			if (bWorkToDo && m_ioc.stopped())  // make sure that there is a boost thread to service i/o operations
 			{
-				m_ios.reset();
+				m_ioc.restart();
 				// Note that this is the only thread that handles async i/o so we don't
 				// need to worry about locking or concurrency issues when processing messages
 				_log.Log(LOG_NORM, "Kodi: Restarting I/O service thread.");
-				boost::thread bt([p = &m_ios] { p->run(); });
+				boost::thread bt([p = &m_ioc] { p->run(); });
 				SetThreadName(bt.native_handle(), "KodiIO");
 			}
 		}
@@ -1138,7 +1137,7 @@ void CKodi::ReloadNodes()
 {
 	UnloadNodes();
 
-	m_ios.reset();	// in case this is not the first time in
+	m_ioc.restart();	// in case this is not the first time in
 
 	std::vector<std::vector<std::string> > result;
 	result = m_sql.safe_query("SELECT ID,Name,MacAddress,Timeout FROM WOLNodes WHERE (HardwareID==%d)", m_HwdID);
@@ -1149,7 +1148,7 @@ void CKodi::ReloadNodes()
 		// create a vector to hold the nodes
 		for (const auto &sd : result)
 		{
-			auto pNode = std::make_shared<CKodiNode>(&m_ios, m_HwdID, m_iPollInterval, m_iPingTimeoutms, sd[0], sd[1], sd[2], sd[3]);
+			auto pNode = std::make_shared<CKodiNode>(&m_ioc, m_HwdID, m_iPollInterval, m_iPingTimeoutms, sd[0], sd[1], sd[2], sd[3]);
 			m_pNodes.push_back(pNode);
 		}
 		// start the threads to control each kodi
@@ -1161,7 +1160,7 @@ void CKodi::ReloadNodes()
 		}
 		sleep_milliseconds(100);
 		_log.Log(LOG_NORM, "Kodi: Starting I/O service thread.");
-		boost::thread bt([p = &m_ios] { p->run(); });
+		boost::thread bt([p = &m_ioc] { p->run(); });
 		SetThreadName(bt.native_handle(), "KodiIO");
 	}
 }
@@ -1170,10 +1169,10 @@ void CKodi::UnloadNodes()
 {
 	std::lock_guard<std::mutex> l(m_mutex);
 
-	m_ios.stop();	// stop the service if it is running
+	m_ioc.stop();	// stop the service if it is running
 	sleep_milliseconds(100);
 
-	while (((!m_pNodes.empty()) || (!m_ios.stopped())))
+	while (((!m_pNodes.empty()) || (!m_ioc.stopped())))
 	{
 		for (auto itt = m_pNodes.begin(); itt != m_pNodes.end(); ++itt)
 		{

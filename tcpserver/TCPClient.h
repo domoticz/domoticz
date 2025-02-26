@@ -38,7 +38,7 @@ class CTCPClient : public CTCPClientBase,
 	public std::enable_shared_from_this<CTCPClient>
 {
 public:
-	CTCPClient(boost::asio::io_service& ios, CTCPServerIntBase *pManager);
+	CTCPClient(boost::asio::io_context& ios, CTCPServerIntBase *pManager);
 	~CTCPClient() = default;
 	void start() override;
 	void stop() override;
