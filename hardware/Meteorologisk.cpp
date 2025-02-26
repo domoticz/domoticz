@@ -11,8 +11,8 @@
 #include "../main/SQLHelper.h"
 
 #ifdef _DEBUG
-#define DEBUG_MeteorologiskR
-#define DEBUG_MeteorologiskW
+//#define DEBUG_MeteorologiskR
+//#define DEBUG_MeteorologiskW
 #endif
 
 #ifdef DEBUG_MeteorologiskW
