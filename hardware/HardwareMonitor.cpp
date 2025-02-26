@@ -937,21 +937,34 @@ void CHardwareMonitor::FetchUnixDisk()
 				std::string hddname = "HDD " + dusage.MountPoint;
 				dindex=0;
 				std::vector<std::vector<std::string> > listOfHdd;
-				listOfHdd = m_sql.safe_query("SELECT ID, DeviceID, Name FROM DeviceStatus WHERE (HardwareID=%d AND DeviceID>'0000044D' AND DeviceID<'000004B0')", m_HwdID);
+				listOfHdd = m_sql.safe_query("SELECT ID, DeviceID, Name, Options FROM DeviceStatus WHERE (HardwareID=%d AND DeviceID>'0000044D' AND DeviceID<'000004B0')", m_HwdID);
 				if (!listOfHdd.empty())
 				{
 					for (const auto& sd : listOfHdd)
 					{
-						std::string idx = sd[0];
+						std::string szIdx = sd[0];
 						std::string szDeviceId = sd[1];
 						std::string Name = sd[2];
 						int deviceId;
 						sscanf(szDeviceId.c_str(), "%x", &deviceId);
-						if (!strcmp(Name.c_str(),hddname.c_str()))
+						std::string sOptions = sd[3];
+						std::map<std::string, std::string> optionsMap = m_sql.BuildDeviceOptions(sOptions);
+						if (!optionsMap.empty() and !strcmp(optionsMap["hdd"].c_str(),hddname.c_str()))
 						{	
 							dindex=deviceId;
 							break;
 						}	
+						else
+						{
+							if (!strcmp(Name.c_str(),hddname.c_str()))
+							{
+								dindex=deviceId;
+								uint64_t idx = std::stoull(szIdx);
+								optionsMap["hdd"] = hddname;
+								m_sql.SetDeviceOptions(idx, optionsMap);
+								break;
+							}	
+						}
 					}
 				}
 				if (dindex==0)					
