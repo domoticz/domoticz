@@ -553,7 +553,7 @@ bool CNetatmo::WriteToHardware(const char* pdata, const unsigned char /*length*/
 	// unitcode == 0x02 ### means schedule switch
 	if ((int)(pCmd->LIGHTING2.unitcode) == 2)
 	{
-		Log(LOG_STATUS, "Schedule");
+		Log(LOG_STATUS, "Schedule id %d - %d", xcmd->id, xcmd->level);
 		//Recast raw data to get switch specific data
 		const _tGeneralSwitch* xcmd = reinterpret_cast<const _tGeneralSwitch*>(pdata);
 		int uid = xcmd->id;       //switch ID
@@ -586,16 +586,7 @@ bool CNetatmo::WriteToHardware(const char* pdata, const unsigned char /*length*/
 		std::string name = "";
 		uint64_t ulId1 = id1; // PRIu64
 		bool bIsNewDevice = false;
-		//Log(LOG_STATUS, "Netatmo WriteToHardware");
-		//Log(LOG_STATUS, "Netatmo subType %d", subtype);
-		//Log(LOG_STATUS, "Netatmo id1 %d", id1);
-		//Log(LOG_STATUS, "Netatmo id2 %d", id2);
-		//Log(LOG_STATUS, "Netatmo id3 %d", id3);
-		//Log(LOG_STATUS, "Netatmo id4 %d", id4);
-		//Log(LOG_STATUS, "Netatmo bIsOn %d", bIsOn);
-		//Log(LOG_STATUS, "Netatmo level %d", level);
-		//Log(LOG_STATUS, "Netatmo filler %d", filler);
-		//Log(LOG_STATUS, "Netatmo rssi %d", rssi);
+		Log(LOG_STATUS, "Netatmo WriteToHardware subType %d id1 %d id2 %d id3 %d id4 %d bIsOn %d level %d filler %d rssi %d", subType, id1, id2, id3, id4, bIsOn, level, filler, rssi);
 
 		int length = xcmd->len;
 		int uid = xcmd->id;
@@ -607,18 +598,7 @@ bool CNetatmo::WriteToHardware(const char* pdata, const unsigned char /*length*/
 		int selectorLevel = xcmd->level;
 		int _rssi_ = xcmd->rssi;
 		int uid_hex = uid;
-		//Log(LOG_STATUS, "Netatmo Write xcmd");
-		//Log(LOG_STATUS, "Netatmo subType ", PRIu64 ," ", ulId1);
-		//Log(LOG_STATUS, "Netatmo length %d", length);
-		//Log(LOG_STATUS, "Netatmo uid %d", uid);
-		Debug(DEBUG_HARDWARE, "Netatmo uid_hex %08X", uid_hex);
-		//Log(LOG_STATUS, "Netatmo unitcode %d", unitcode);
-		//Log(LOG_STATUS, "Netatmo xcmdType %d", xcmdType);
-		//Log(LOG_STATUS, "Netatmo SUB_Type %d", SUB_Type);
-		//Log(LOG_STATUS, "Netatmo battery_level %d", battery_level);
-		//Log(LOG_STATUS, "Netatmo gswitch_sSetLevel %d", cmnd_SetLevel);
-		//Log(LOG_STATUS, "Netatmo selectorLevel %d", selectorLevel);
-		//Log(LOG_STATUS, "Netatmo rssi %d", _rssi_);
+		Log(LOG_STATUS, "Netatmo Write xcmd subType ", PRIu64 ," length %d uid %d %08X unitcode %d xcmdType %d SUB_Type %d battery_level %d gswitch_sSetLevel %d selectorLevel %d rssi %d", ulId1, length, uid, uid, unitcode, xcmdType, SUB_Type, battery_level, cmnd_SetLevel, selectorLevel, _rssi_);
 
 		uint8_t unit = NETATMO_PRESET_UNIT; //preset mode
 		int switchType = STYPE_Selector;
@@ -649,7 +629,7 @@ bool CNetatmo::WriteToHardware(const char* pdata, const unsigned char /*length*/
 		int node_id = pCmd->LIGHTING2.id4;
 		const _tGeneralSwitch* xcmd = reinterpret_cast<const _tGeneralSwitch*>(pdata);
 
-		Log(LOG_STATUS, "Packettype unKnown ");
+		Log(LOG_STATUS, "Packettype %d", packettype);
 	}
 	return false;
 }
@@ -2983,12 +2963,7 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 						}
 
 						std::string setpoint_mode = module["monitoring"].asString();
-						Log(LOG_STATUS, "Floodlight HardwareID %d", m_HwdID);
-						Log(LOG_STATUS, "Floodlight crcId %d", crcId);
-						Log(LOG_STATUS, "Floodlight crcId %08X", crcId);
-						Log(LOG_STATUS, "Floodlight ChildID %d", NETATMO_PRESET_UNIT);
-						Log(LOG_STATUS, "Floodlight Type %d", Type);
-						Log(LOG_STATUS, "Floodlight SubType %d", SubType);
+
 						std::vector<std::vector<std::string> > result;
 						result = m_sql.safe_query("SELECT ID, nValue, sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%08X') AND (Unit==%d)", m_HwdID, crcId, NETATMO_PRESET_UNIT);
 
@@ -3257,12 +3232,6 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 						int sp_temp = stoi(room_setpoint);           // string to int
 						float SP_temp = std::stof(room_setpoint);
 						int uid = crcId;
-						Log(LOG_STATUS, "Thermostat HardwareID %d", m_HwdID);
-						Log(LOG_STATUS, "Thermostat crcId %d", crcId);
-						Log(LOG_STATUS, "Thermostat crcId %08X", crcId);
-						Log(LOG_STATUS, "Thermostat ChildID %d", ChildID);
-						Log(LOG_STATUS, "Thermostat Type %d", Type);
-						Log(LOG_STATUS, "Thermostat SubType %d", SubType);
 
 						SendSetPointSensor(crcId, (uint8_t)((crcId & 0x00FF0000) >> 16), (crcId & 0XFF00) >> 8, crcId & 0XFF, Unit, batteryLevel, SP_temp, moduleName);   // No RF-level
 						// thermostatModuleID
@@ -3291,13 +3260,6 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 
 							// Set option SwitchType to STYPE_Contact
 							std::vector<std::vector<std::string> > result;
-							Log(LOG_STATUS, "NATherm1 HardwareID %d", m_HwdID);
-							Log(LOG_STATUS, "NATherm1 crcId %d", crcId);
-							Log(LOG_STATUS, "NATherm1 crcId %08X", crcId);
-							Log(LOG_STATUS, "NATherm1 ChildID %d", ChildID);
-							Log(LOG_STATUS, "NATherm1 Type %d", Type);
-							Log(LOG_STATUS, "NATherm1 SubType %d", SubType);
-
 							result = m_sql.safe_query("SELECT ID, nValue, sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%08X') AND (Unit==%d)", m_HwdID, crcId, ChildID);
 
 							if (!result.empty())
@@ -3362,13 +3324,6 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 						{
 							m_LightDeviceID[crcId] = bName;
 							std::vector<std::vector<std::string> > result;
-							Log(LOG_STATUS, "Brightness HardwareID %d", m_HwdID);
-							Log(LOG_STATUS, "Brightness crcId %d", crcId);
-							Log(LOG_STATUS, "Brightness crcId %08X", crcId);
-							Log(LOG_STATUS, "Brightness ChildID %d", ChildID);
-							Log(LOG_STATUS, "Brightness Type %d", Type);
-							Log(LOG_STATUS, "Brightness SubType %d", SubType);
-
 							result = m_sql.safe_query("SELECT ID, nValue, sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%08X') AND (Unit==%d)", m_HwdID, crcId, ChildID);
 
 							if (!result.empty())
@@ -3376,7 +3331,7 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 								int uId = std::stoi(result[0][0]);
 								int nValue = std::stoi(result[0][1]);
 								std::string sValue = result[0][2];
-								Log(LOG_STATUS, "Brightness uId %d", uId);
+
 								if (m_bFirstTimeHomeStatus)
 								{
                                                                 	m_sql.UpdateDeviceValue("SwitchType", STYPE_Dimmer, std::to_string(uId)); // 7
@@ -3426,13 +3381,6 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 
 						m_PowerDeviceID[crcId] = bName;
 						std::vector<std::vector<std::string> > result;
-						Log(LOG_STATUS, "Fan HardwareID %d", m_HwdID);
-						Log(LOG_STATUS, "Fan crcId %d", crcId);
-						Log(LOG_STATUS, "Fan crcId %08X", crcId);
-						Log(LOG_STATUS, "Fan ChildID %d", ChildID);
-						Log(LOG_STATUS, "Fan Type %d", Type);
-						Log(LOG_STATUS, "Fan SubType %d", SubType);
-						
 						result = m_sql.safe_query("SELECT ID, nValue, sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%08X') AND (Unit==%d)", m_HwdID, crcId, NETATMO_PRESET_UNIT);
 
 						if (!result.empty())
