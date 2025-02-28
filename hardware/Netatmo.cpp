@@ -553,9 +553,9 @@ bool CNetatmo::WriteToHardware(const char* pdata, const unsigned char /*length*/
 	// unitcode == 0x02 ### means schedule switch
 	if ((int)(pCmd->LIGHTING2.unitcode) == 2)
 	{
-		Log(LOG_STATUS, "Schedule id %d - %d", xcmd->id, xcmd->level);
 		//Recast raw data to get switch specific data
 		const _tGeneralSwitch* xcmd = reinterpret_cast<const _tGeneralSwitch*>(pdata);
+		Log(LOG_STATUS, "Schedule id %d - %d", xcmd->id, xcmd->level);
 		int uid = xcmd->id;       //switch ID
 		int level = xcmd->level;  //Level selected on the switch
 		int cmnd_SetLevel = xcmd->cmnd;
@@ -586,7 +586,7 @@ bool CNetatmo::WriteToHardware(const char* pdata, const unsigned char /*length*/
 		std::string name = "";
 		uint64_t ulId1 = id1; // PRIu64
 		bool bIsNewDevice = false;
-		Log(LOG_STATUS, "Netatmo WriteToHardware subType %d id1 %d id2 %d id3 %d id4 %d bIsOn %d level %d filler %d rssi %d", subType, id1, id2, id3, id4, bIsOn, level, filler, rssi);
+		Log(LOG_STATUS, "Netatmo WriteToHardware subType %d id1 %d id2 %d id3 %d id4 %d bIsOn %d level %d filler %d rssi %d", subtype, id1, id2, id3, id4, bIsOn, level, filler, rssi);
 
 		int length = xcmd->len;
 		int uid = xcmd->id;
@@ -598,7 +598,7 @@ bool CNetatmo::WriteToHardware(const char* pdata, const unsigned char /*length*/
 		int selectorLevel = xcmd->level;
 		int _rssi_ = xcmd->rssi;
 		int uid_hex = uid;
-		Log(LOG_STATUS, "Netatmo Write xcmd subType ", PRIu64 ," length %d uid %d %08X unitcode %d xcmdType %d SUB_Type %d battery_level %d gswitch_sSetLevel %d selectorLevel %d rssi %d", ulId1, length, uid, uid, unitcode, xcmdType, SUB_Type, battery_level, cmnd_SetLevel, selectorLevel, _rssi_);
+		Log(LOG_STATUS, "Netatmo Write xcmd subType %", PRIu64 ," length %d uid %d %08X unitcode %d xcmdType %d SUB_Type %d battery_level %d gswitch_sSetLevel %d selectorLevel %d rssi %d", ulId1, length, uid, uid, unitcode, xcmdType, SUB_Type, battery_level, cmnd_SetLevel, selectorLevel, _rssi_);
 
 		uint8_t unit = NETATMO_PRESET_UNIT; //preset mode
 		int switchType = STYPE_Selector;
