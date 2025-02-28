@@ -1396,7 +1396,9 @@ void MQTTAutoDiscover::on_auto_discovery_message(const struct mosquitto_message*
 
 		CleanValueTemplate(pSensor->mode_state_template);
 		CleanValueTemplate(pSensor->mode_command_template);
+		CleanValueTemplate(pSensor->fan_state_template);
 		CleanValueTemplate(pSensor->fan_command_template);
+		CleanValueTemplate(pSensor->swing_state_template);
 		CleanValueTemplate(pSensor->swing_command_template);
 		CleanValueTemplate(pSensor->temperature_state_template);
 		CleanValueTemplate(pSensor->current_temperature_template);
@@ -1404,8 +1406,8 @@ void MQTTAutoDiscover::on_auto_discovery_message(const struct mosquitto_message*
 		CleanValueTemplate(pSensor->preset_mode_command_template);
 
 		FixCommandTopicStateTemplate(pSensor->mode_command_topic, pSensor->mode_state_template);
-		FixCommandTopicStateTemplate(pSensor->fan_command_topic, pSensor->fan_state_template);
-		FixCommandTopicStateTemplate(pSensor->swing_command_topic, pSensor->swing_state_template);
+		FixCommandTopicStateTemplate(pSensor->fan_command_topic, pSensor->fan_command_template);
+		FixCommandTopicStateTemplate(pSensor->swing_command_topic, pSensor->swing_command_template);
 		FixCommandTopicStateTemplate(pSensor->temperature_command_topic, pSensor->temperature_command_template);
 		FixCommandTopicStateTemplate(pSensor->preset_mode_command_topic, pSensor->preset_mode_value_template);
 
@@ -4792,8 +4794,6 @@ bool MQTTAutoDiscover::SendSwitchCommand(const std::string& DeviceID, const std:
 				szCommandTopic = pSensor->fan_command_topic;
 				if (!pSensor->fan_command_template.empty())
 					state_template = pSensor->fan_command_template;
-				else if (!pSensor->fan_state_template.empty())
-					state_template = pSensor->fan_state_template;
 			}
 			else if ((!pSensor->swing_modes.empty()) && (Unit == CLIMATE_SWING_MODE_UNIT))
 			{
@@ -4802,8 +4802,6 @@ bool MQTTAutoDiscover::SendSwitchCommand(const std::string& DeviceID, const std:
 				szCommandTopic = pSensor->swing_command_topic;
 				if (!pSensor->swing_command_template.empty())
 					state_template = pSensor->swing_command_template;
-				else if (!pSensor->swing_state_template.empty())
-					state_template = pSensor->swing_state_template;
 			}
 		}
 		else if (
