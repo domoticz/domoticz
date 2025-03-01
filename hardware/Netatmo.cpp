@@ -536,9 +536,9 @@ bool CNetatmo::WriteToHardware(const char* pdata, const unsigned char /*length*/
 	//the user has selected in domoticz (actionning a switch....)
 	//Here a LIGHTING2 is used as we have selector switch for
 	//our thermostat / valve devices
+	// To Debug the Hardware on normal setup, uncomment lines "Log(LOG_STATUS" (on line 560 - 590 - 602 - 690)
 	const tRBUF* pCmd = reinterpret_cast<const tRBUF*>(pdata);
 	unsigned char packettype = pCmd->ICMND.packettype;
-	//
 	Debug(DEBUG_HARDWARE, "Netatmo Write to Hardware " );
 	// Create/update Selector device for preset_modes
 	int packetlength = pCmd->LIGHTING2.packetlength;
@@ -555,15 +555,15 @@ bool CNetatmo::WriteToHardware(const char* pdata, const unsigned char /*length*/
 	{
 		//Recast raw data to get switch specific data
 		const _tGeneralSwitch* xcmd = reinterpret_cast<const _tGeneralSwitch*>(pdata);
-		Log(LOG_STATUS, "Schedule id %d - %d", xcmd->id, xcmd->level);
+		Debug(DEBUG_HARDWARE, "Schedule id %d - %d", xcmd->id, xcmd->level);
 		int uid = xcmd->id;       //switch ID
+		//Log(LOG_STATUS, "Schedule uid %d - %d", uid, xcmd->level);
 		int level = xcmd->level;  //Level selected on the switch
 		int cmnd_SetLevel = xcmd->cmnd;
 		int _rssi_ = xcmd->rssi;
 
 		//Set the schedule on the thermostat
 		SetSchedule(uid, level);
-
 		return true;
 	}
 	if (packettype == pTypeGeneralSwitch)
@@ -586,8 +586,9 @@ bool CNetatmo::WriteToHardware(const char* pdata, const unsigned char /*length*/
 		std::string name = "";
 		uint64_t ulId1 = id1; // PRIu64
 		bool bIsNewDevice = false;
-		Log(LOG_STATUS, "Netatmo WriteToHardware subType %d id1 %d id2 %d id3 %d id4 %d bIsOn %d level %d filler %d rssi %d", subtype, id1, id2, id3, id4, bIsOn, level, filler, rssi);
-
+		
+		//Log(LOG_STATUS, "Netatmo WriteToHardware subType %d id1 %d id2 %d id3 %d id4 %d bIsOn %d level %d filler %d rssi %d", subtype, id1, id2, id3, id4, bIsOn, level, filler, rssi);
+		Debug(DEBUG_HARDWARE, "Netatmo WriteToHardware subType %d id1 %d id2 %d id3 %d id4 %d bIsOn %d level %d filler %d rssi %d", subtype, id1, id2, id3, id4, bIsOn, level, filler, rssi);
 		int length = xcmd->len;
 		int uid = xcmd->id;
 		int unitcode = xcmd->unitcode;
@@ -598,7 +599,8 @@ bool CNetatmo::WriteToHardware(const char* pdata, const unsigned char /*length*/
 		int selectorLevel = xcmd->level;
 		int _rssi_ = xcmd->rssi;
 		int uid_hex = uid;
-		Log(LOG_STATUS, "Netatmo Write xcmd subType %", PRIu64 ," length %d uid %d %08X unitcode %d xcmdType %d SUB_Type %d battery_level %d gswitch_sSetLevel %d selectorLevel %d rssi %d", ulId1, length, uid, uid, unitcode, xcmdType, SUB_Type, battery_level, cmnd_SetLevel, selectorLevel, _rssi_);
+		//Log(LOG_STATUS, "Netatmo Write xcmd subType %", PRIu64 ," length %d uid %d %08X unitcode %d xcmdType %d SUB_Type %d battery_level %d gswitch_sSetLevel %d selectorLevel %d rssi %d", ulId1, length, uid, uid, unitcode, xcmdType, SUB_Type, battery_level, cmnd_SetLevel, selectorLevel, _rssi_);
+		Debug(DEBUG_HARDWARE, "Netatmo Write xcmd subType %", PRIu64 ," length %d uid %d %08X unitcode %d xcmdType %d SUB_Type %d battery_level %d gswitch_sSetLevel %d selectorLevel %d rssi %d", ulId1, length, uid, uid, unitcode, xcmdType, SUB_Type, battery_level, cmnd_SetLevel, selectorLevel, _rssi_);
 
 		uint8_t unit = NETATMO_PRESET_UNIT; //preset mode
 		int switchType = STYPE_Selector;
@@ -629,7 +631,7 @@ bool CNetatmo::WriteToHardware(const char* pdata, const unsigned char /*length*/
 		int node_id = pCmd->LIGHTING2.id4;
 		const _tGeneralSwitch* xcmd = reinterpret_cast<const _tGeneralSwitch*>(pdata);
 
-		Log(LOG_STATUS, "Packettype %d", packettype);
+		Log(LOG_STATUS, "Packettype unKnown %d", packettype);
 	}
 	return false;
 }
@@ -683,7 +685,9 @@ bool CNetatmo::SetProgramState(const int uid, const int newState)
 	std::string Device_bridge = m_DeviceBridge[module_id];
 	std::string roomNetatmoID = m_RoomIDs[module_id];
 	std::string Home_id = m_DeviceHomeID[roomNetatmoID];      // Home_ID
-	Log(LOG_STATUS, "SetProgramState - Device MAC %s - Type %s State: %d", module_id.c_str(), type_module.c_str(), newState);
+	Debug(DEBUG_HARDWARE, "SetProgramState - Device MAC %s - Type %s State: %d", module_id.c_str(), type_module.c_str(), newState);
+
+	//Log(LOG_STATUS, "SetProgramState - Device MAC %s - Type %s State: %d", module_id.c_str(), type_module.c_str(), newState);
 
 	if (!m_thermostatModuleID[uid].empty())
 	{
@@ -2622,7 +2626,7 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 		}
 		if (!scenario_type.empty())
 		{
-			Log(LOG_STATUS, "Send the scenarios Selector Switch");
+			Log(LOG_STATUS, "Scenarios Selector Switch");
 			std::string lName = "Scenario";
 			bool bIsActive = 0;
 			int Image = 0;
