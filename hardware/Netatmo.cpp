@@ -2974,7 +2974,7 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 						if (!result.empty())
                                                 {
 							int uId = std::stoi(result[0][0]);
-							Log(LOG_STATUS, "Floodlight uId %d", uId);
+							Debug(DEBUG_HARDWARE, "Floodlight uId %d", uId);
 						}
 						m_PowerDeviceID[crcId] = lName;
 						SendSelectorSwitch(crcId, NETATMO_PRESET_UNIT, Selector, lName, Image, bDropdown, "off|on|auto", "", bHideOff, m_Name);   // No RF-level - Battery level
@@ -3273,7 +3273,7 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 								int uId = std::stoi(result[0][0]);
 								int nValue = std::stoi(result[0][1]);
 								std::string sValue = result[0][2];
-								Log(LOG_STATUS, "NATherm1 uId %d", uId);
+								Debug(DEBUG_HARDWARE, "NATherm1 uId %d", uId);
 								if (m_bFirstTimeHomeStatus)
 								{
                                 	                                //m_sql.UpdateDeviceValue("SwitchType", STYPE_Dusk, std::to_string(uId));  //12
