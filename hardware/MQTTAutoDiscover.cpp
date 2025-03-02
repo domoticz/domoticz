@@ -500,12 +500,12 @@ The result will be:
   "mode_command_topic": "zigbee2mqtt/My-ThermControl1/set",
   "temperature_command_topic": "zigbee2mqtt/My-ThermControl1/set",
 */
-void MQTTAutoDiscover::FixCommandTopicStateTemplate(std::string& command_topic, std::string& state_template)
+void MQTTAutoDiscover::FixCommandTopic(std::string& command_topic, std::string& command_template)
 {
-	size_t pos = state_template.find("value_json.");
+	size_t pos = command_template.find("value_json.");
 	if (pos == std::string::npos)
 		return; //no fixing needed
-	std::string value_json = state_template.substr(pos + std::string("value_json.").size());
+	std::string value_json = command_template.substr(pos + std::string("value_json.").size());
 	stdreplace(value_json, "]", "");
 
 	std::string svalue = "/" + value_json;
@@ -1405,11 +1405,11 @@ void MQTTAutoDiscover::on_auto_discovery_message(const struct mosquitto_message*
 		CleanValueTemplate(pSensor->preset_mode_value_template);
 		CleanValueTemplate(pSensor->preset_mode_command_template);
 
-		FixCommandTopicStateTemplate(pSensor->mode_command_topic, pSensor->mode_state_template);
-		FixCommandTopicStateTemplate(pSensor->fan_command_topic, pSensor->fan_command_template);
-		FixCommandTopicStateTemplate(pSensor->swing_command_topic, pSensor->swing_command_template);
-		FixCommandTopicStateTemplate(pSensor->temperature_command_topic, pSensor->temperature_command_template);
-		FixCommandTopicStateTemplate(pSensor->preset_mode_command_topic, pSensor->preset_mode_value_template);
+		FixCommandTopic(pSensor->mode_command_topic, pSensor->mode_command_template);
+		FixCommandTopic(pSensor->fan_command_topic, pSensor->fan_command_template);
+		FixCommandTopic(pSensor->swing_command_topic, pSensor->swing_command_template);
+		FixCommandTopic(pSensor->temperature_command_topic, pSensor->temperature_command_template);
+		FixCommandTopic(pSensor->preset_mode_command_topic, pSensor->preset_mode_command_template);
 
 		//number (some configs use strings instead of numbers)
 		if (!root["min"].empty())
@@ -4776,16 +4776,14 @@ bool MQTTAutoDiscover::SendSwitchCommand(const std::string& DeviceID, const std:
 				szCommandTopic = pSensor->mode_command_topic;
 				if (!pSensor->mode_command_template.empty())
 					state_template = pSensor->mode_command_template;
-				else if (!pSensor->mode_state_template.empty())
-					state_template = pSensor->mode_state_template;
 			}
 			else if ((!pSensor->preset_modes.empty()) && (Unit == CLIMATE_PRESET_UNIT))
 			{
 				if (iLevel < (int)pSensor->preset_modes.size())
 					newState = pSensor->preset_modes.at(iLevel);
 				szCommandTopic = pSensor->preset_mode_command_topic;
-				if (!pSensor->preset_mode_value_template.empty())
-					state_template = pSensor->preset_mode_value_template;
+				if (!pSensor->preset_mode_command_template.empty())
+					state_template = pSensor->preset_mode_command_template;
 			}
 			else if ((!pSensor->fan_modes.empty()) && (Unit == CLIMATE_FAN_MODE_UNIT))
 			{
