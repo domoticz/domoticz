@@ -22,3 +22,14 @@ Rain;Rain;Rain
 clock;Clock;Chronological device
 Irrigation;Irrigation;Irrigation Zone
 AC;Air Conditioner/HVAC;Air Conditioner/HVAC
+MotorLinear;MotorLinear;Linear motor actuator
+Pump;Pump;Pump / Ventilation
+PumpWater;PumpWater;Water pump
+Radiator;Radiator;Radiator
+Solarmeter;Solarmeter;Solar meter
+Tap;Tap;Tap / Valve
+Valve2ways;Valve2ways;2 ways Valve
+Valve3ways;Valve3ways;3 ways Valve
+Venting;Venting;Ventilation / Fan
+WashingMachine;WashingMachine;Washing machine
+Window;Window;Window
