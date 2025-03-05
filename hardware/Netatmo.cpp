@@ -3372,9 +3372,11 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 
 						for (auto level : json_data)
 						{
-							if (!level[index].empty())
+							std::stringstream ssv;
+							ssv << index;
+							if (!level[ssv.str()].empty())
 							{
-								allSchName = allSchName + "|" + level[index].asString();
+								allSchName = allSchName + "|" + level[ssv.str()].asString();
 							}
 							index += 10;
 						}
