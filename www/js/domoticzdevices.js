@@ -1965,7 +1965,7 @@ function Selector(item) {
         };
         this.onSelectorValueChange = function (idx, levelname, level) {
             // Send device command
-            SwitchSelectorLevel(idx, unescape(levelname), level, this.onRefreshEvent, this.isprotected);
+            SwitchSelectorLevel(idx, unescape(levelname), level, this.protected);
         };
         this.toggleSelectorList = function (selector$) {
             var deviceDetails$ = selector$.parents('.DeviceDetails'),
