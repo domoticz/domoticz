@@ -1203,8 +1203,8 @@ bool CNetatmo::SetSchedule(int uId, int selected)
 
 	std::stringstream uid;
 	uid << uId;
-	std::string Home_id = m_ScheduleHomes[uid.str()];                    // home_id from crcId
-	std::string module_id = m_thermostatModuleID[uId];             // mac-adres
+	std::string Home_id = m_ScheduleHomes[uId];                          // home_id from crcId
+	std::string module_id = m_thermostatModuleID[uId];                   // mac-adres
 	Json::Value Schedules = m_Schedule_Names[Home_id];
 	std::string module_type = m_Device_types[module_id];
 	std::string schedule_Name;
@@ -2420,6 +2420,21 @@ bool CNetatmo::ParseDashboard(const Json::Value& root, const int DevIdx, const i
 	{
 		//Debug(DEBUG_HARDWARE, "(%d) DevIdx = %d (%d) co2 = %d %s bHaveCO2 = %d", ID, DevIdx, batValue, co2, name.c_str(), bHaveCO2);
 		SendAirQualitySensor(ID, DevIdx, batValue, co2, name);  // No RF-level
+		int ChildID = 2;
+		std::vector<std::vector<std::string> > result;
+		result = m_sql.safe_query("SELECT ID, nValue, sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%08X') AND (Unit==%d)", m_HwdID, crcId, ChildID);
+
+		if (m_bFirstTimeHomeStatus)
+		{
+			if (!result.empty())
+			{
+				int uId = std::stoi(result[0][0]);
+				int nValue = std::stoi(result[0][1]);
+				std::string sValue = result[0][2];
+				Debug(DEBUG_HARDWARE, "AirQuality uId %d", uId);
+				m_sql.UpdateDeviceValue("CustomImage", 27, std::to_string(uId));           //27
+	                }
+		}
 	}
 
 	if (bHaveSound)
@@ -2693,7 +2708,7 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 			std::stringstream uid;
 			uid << crcId;
 			std::string Selector = "0"; //Active selecting TODO
-			m_ScheduleHomes[uid.str()] = home_id;
+			m_ScheduleHomes[crcId] = home_id;
 			//SendSelectorSwitch(crcId, NETATMO_PRESET_UNIT, Selector, lName, Image, bDropdown, scenario_SchName, "", bHideOff, m_Name);   // No RF-level - Battery level
 		}
 	}
@@ -3347,10 +3362,10 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 						//Store Home_ID from crcID
 						std::stringstream uid;
                                                 uid << crcId;
-						m_ScheduleHomes[uid.str()] = home_id;
+						m_ScheduleHomes[crcId] = home_id;
 						std::stringstream Hardware_str;
                                                 Hardware_str << Hardware_int;
-						m_ScheduleHomes[Hardware_str.str()] = home_id;
+						m_ScheduleHomes[Hardware_int] = home_id;
 
 						Json::Value json_data;
 						int index = 10;
@@ -3374,18 +3389,23 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 						std::string sName = moduleName + " - mode";
 						SendSelectorSwitch(crcId, NETATMO_PRESET_UNIT, setpoint_mode_str, sName, 15, true, "Off|On|Away|Frost Guard", "", true, m_Name);   // No RF-level - Battery level visible
 
-						m_thermostatModuleID[uid] = module_id;                // mac-adres
+						m_thermostatModuleID[crcId] = module_id;                // mac-adres
 						m_DeviceHomeID[roomNetatmoID] = home_id;              // Home_ID
 					}
 					if (type == "NRV")
 					{
-							std::vector<std::vector<std::string> > result;
-							result = m_sql.safe_query("SELECT ID, nValue, sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%08X') AND (Unit==%d)", m_HwdID, crcId, ChildID);
+						int ChildID = 2;
+						std::vector<std::vector<std::string> > result;
+						result = m_sql.safe_query("SELECT ID, nValue, sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%08X') AND (Unit==%d)", m_HwdID, crcId, ChildID);
 
-							if (!result.empty())
-                                                        {
-								m_sql.UpdateDeviceValue("CustomImage", 36, std::to_string(uId));           //36
-                                                        }
+						if (!result.empty())
+						{
+							int uId = std::stoi(result[0][0]);
+							int nValue = std::stoi(result[0][1]);
+							std::string sValue = result[0][2];
+							Debug(DEBUG_HARDWARE, "NRV uId %d", uId);
+							m_sql.UpdateDeviceValue("CustomImage", 36, std::to_string(uId));           //36
+                                                }
 
 					}
 					if (type == "NLP" || type == "NLC" || type == "NLPD" || type == "NLPO" || type == "NLPM" || type == "NLPC" || type == "NLPT" || type == "NLPS" || type == "BNCS" || type == "BNXM")
