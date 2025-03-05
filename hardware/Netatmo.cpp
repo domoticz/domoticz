@@ -23,7 +23,7 @@
 //Logic ChildID
 // 0	Sensor data
 // 1	MAC-adres
-// 2	thermostat schedule
+// 2	Thermostat Schedule Switch
 // 3	Battery-Level
 // 4	Bridge MAC-adres
 // 5	Kwh sensor
@@ -35,6 +35,7 @@
 //11	Events Text
 //12	Events Alert
 //13    RF-Level
+//14    Scenario Switch
 
 // Some testfunctions for debugging
 void SaveJson2Disk(Json::Value str, std::string filename)
@@ -129,6 +130,7 @@ void CNetatmo::Init()
 	m_thermostatModuleID.clear();
 	m_ScheduleNames.clear();
 	m_ScheduleIDs.clear();
+	
 	m_ScheduleHome.clear();
 	m_DeviceModuleID.clear();
 	m_LightDeviceID.clear();
@@ -1191,9 +1193,34 @@ bool CNetatmo::SetSchedule(int uId, int selected)
 	}
 
 	std::string scheduleName = m_ScheduleNames[selected];
-	std::string scheduleId = m_ScheduleIDs[selected];
-	std::string Home_id = m_DeviceHomeID[scheduleId];            // Home_ID
-	Debug(DEBUG_HARDWARE, "Schedule id = %s %d %s %d", scheduleId.c_str(), uId, scheduleName.c_str(), selected);
+	std::string schedule_Id = m_ScheduleIDs[selected];
+	std::string homeid = m_DeviceHomeID[scheduleId];            // Home_ID
+	Debug(DEBUG_HARDWARE, "Schedule id = %s %d %s %d", schedule_Id.c_str(), uId, scheduleName.c_str(), selected);
+
+	std::string Home_id = m_ScheduleHomes[uId];                    // home_id from crcId
+	std::string module_id = m_thermostatModuleID[uId];             // mac-adres
+	Json::Value Schedules = m_Schedule_Names[home_id];
+	std::string module_type = m_Device_types[module_id];
+	std::string schedule_Name;
+	std::string scheduleId;
+
+	if (!Schedules.empty())
+	{
+		for (auto schedule : Schedules)
+		{
+			if (!schedule[selected].empty())
+			{
+				schedule_Name = Schedule[selected].asString();
+			}
+			if (!schedule[schedule_Name].empty())
+			{
+				scheduleId = Schedule[schedule_Name].asString();
+			}
+		}
+
+	}
+	
+	Debug(DEBUG_HARDWARE, "Schedule id = %s %s %d %s %d", module_type.c_str(), scheduleId.c_str(), uId, schedule_Name.c_str(), Home_id.c_str(), selected);
 	std::stringstream bstr;
 	std::string sResult;
 	Json::Value root;       // root JSON object
@@ -1233,11 +1260,15 @@ bool CNetatmo::SetSchedule(int uId, int selected)
 	//store the selected schedule in our local data to avoid
 	//changing back the schedule when using away mode
 	m_selectedScheduleID = selected;
+	m_selected_Schedule[homeID] = selected;
 
 	// When a thermostat mode is changed all thermostat/valves in Home are changed by Netatmo
-	// So we have to update the corresponding devices       Device_Types {NAPlug, OTH, BNS}
+	// So we have to update the corresponding devices
+	// Valves (NRV) can also change the mode but the API oly accept Device_Types {NAPlug, OTH, BNS}
 	// https://api.netatmo.com/api/homestatus?home_id=xxxxx&device_types=NAPlug
 	std::string Type = "NAPlug";
+	if ((module_type == "NAPlug") || (module_type == "OTH") || (module_type == "BNS"))
+		Type = module_type;
 	std::string _data = "home_id=" + Home_id + "&device_types=" + Type;
 
 	Get_Respons_API(NETYPE_STATUS, sResult, _data, bRet, root, "");
@@ -1619,6 +1650,8 @@ void CNetatmo::GetHomesDataDetails()
 					std::string allSchName = "Off";
 					std::string allSchAction = "00";
 					int index = 0;
+					Json::Value json_data;
+
 					for (auto schedule : home["schedules"])
 					{
 						for (auto timetable : schedule["timetable"])
@@ -1652,13 +1685,23 @@ void CNetatmo::GetHomesDataDetails()
 						std::string schedule_type = schedule["type"].asString();
 						bool schedule_selected = schedule["selected"].asBool();                // true / false
 						index += 10;
+						json_data[schedule_name] = schedule_id;
+
 						if (schedule_type == "therm")
+						{
+							json_data[index] = schedule_name;
 							m_ScheduleNames[index] = schedule["name"].asString();
-						m_ScheduleIDs[index] = schedule_id;
+						}
+						m_ScheduleIDs[index] = schedule_id; //Not possible with multiple Homes
+
 						m_DeviceHomeID[schedule_id] = homeID;
 						if (!schedule["selected"].empty() && schedule["selected"].asBool() && schedule_type == "therm")
+						{
 							m_selectedScheduleID = index;
+							m_selected_Schedule[homeID] = index;
+						}
 					}
+					m_Schedule_Names[homeID] = json_data;
 				}
 				//Get the user info
 				if (!home["user"].empty())
@@ -1901,6 +1944,9 @@ void CNetatmo::Get_Scenarios(std::string home_id, Json::Value& scenarios)
 		{
 			//SaveJson2Disk(root, std::string("./scenario-s.txt"));
 			scenarios = root["body"]["home"];
+
+			//Selected Scenario ?
+			m_selectedScenario = home_id[10];
 
 			// Data was recieved with success
 			Log(LOG_STATUS, "Scenarios Data Recieved");
@@ -2579,6 +2625,7 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 				bool scenario_custom;
 				bool scenario_edit;
 				bool scenario_del;
+				Json::Value json_data;
 
 				if (scenarioss["category"].empty())
 				{
@@ -2609,19 +2656,21 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 				{
 					if (!scenario_name.empty())
 					{
-
+						json_data[index] = scenario_name;
 						scenario_SchName = scenario_SchName + scenario_name + "|";
 					}
 					else
 					{
 						scenario_type = scenarioss["type"].asString();
 						scenario_SchName = scenario_SchName + scenario_type + "|";
+						json_data[index] = scenario_type;
 					}
 					Debug(DEBUG_HARDWARE, "Scenario %s : %s %s %s", scenario_id.c_str(), scenario_name.c_str(), scenario_type.c_str(), scenario_category.c_str());
 				}
 				index = +10;
 			}
-			if (scenario_SchName.size() > 0)  scenario_SchName.resize(scenario_SchName.size() - 1);
+			m_Scenarios[home_id] = json_data;
+			if (scenario_SchName.size() > 0)  scenario_SchName.resize(scenario_SchName.size() - 1); 
 			m_ModuleNames["999"] = scenario_SchName;
 		}
 		if (!scenario_type.empty())
@@ -2634,6 +2683,7 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 			bool bHideOff = false;
 			int crcId = Crc32(0, (const unsigned char*)home_id.c_str(), home_id.length());;
 			std::string Selector = "0"; //Active selecting TODO
+			m_ScheduleHomes[crcId] = home_id;
 			//SendSelectorSwitch(crcId, NETATMO_PRESET_UNIT, Selector, lName, Image, bDropdown, scenario_SchName, "", bHideOff, m_Name);   // No RF-level - Battery level
 		}
 	}
@@ -3287,7 +3337,14 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 						//Thermostat schedule switch (actively changing thermostat schedule)
 						std::string allSchName = "Off";
 						std::string allSchAction = "";
-						for (std::map<int, std::string>::const_iterator itt = m_ScheduleNames.begin(); itt != m_ScheduleNames.end(); ++itt)
+						//Store Home_ID from crcID
+						m_ScheduleHomes[crcId] = home_id;
+						m_ScheduleHomes[Hardware_int] = home_id;
+
+						Json::Value json_data;
+						json_data = m_Schedule_Names[home_id];
+
+						for (std::map<int, std::string>::const_iterator itt = json_data.begin(); itt != json_data.end(); ++itt)
 						{
 							allSchName = allSchName + "|" + itt->second;
 							std::stringstream ss;
@@ -3295,7 +3352,7 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 						}
 						//Selected Index for the dropdown list
 						std::stringstream ssv;
-						ssv << m_selectedScheduleID;
+						ssv << m_selected_Schedule[home_id];
 
 						//create update / domoticz device
 						SendSelectorSwitch(Hardware_int, 2, ssv.str(), moduleName + " - Schedule", 15, true, allSchName, allSchAction, true, m_Name);   // No RF-level - Battery level visible
