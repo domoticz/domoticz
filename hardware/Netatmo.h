@@ -164,6 +164,8 @@ class CNetatmo : public CDomoticzHardwareBase
 	std::map<int, std::string> m_ScheduleNames;
 	std::map<int, std::string> m_ScheduleIDs;
 	int m_selectedScheduleID;
+	std::map<std::string, Json::Value> m_Scenarios;
+	std::map<std::string, int> m_selectedScenario;
 
 	std::map<int, CBaroForecastCalculator> m_forecast_calculators;
 
