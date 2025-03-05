@@ -130,16 +130,19 @@ void CNetatmo::Init()
 	m_thermostatModuleID.clear();
 	m_ScheduleNames.clear();
 	m_ScheduleIDs.clear();
+	m_Scenarios.clear();
 	m_selectedScenario.clear();
 	m_ScheduleHome.clear();
 	m_DeviceModuleID.clear();
+	m_Schedule_Names.clear();
 	m_LightDeviceID.clear();
 	m_PowerDeviceID.clear();
 	m_homeid.clear();
 	m_wifi_status.clear();
 	m_DeviceHomeID.clear();
 	m_PersonsNames.clear();
-
+	m_ScheduleHomes.clear();
+	m_selected_Schedule.clear();
         m_bPollThermostat = true;
 	m_bFirstTimeThermostat = true;
 	m_bFirstTimeWeatherData = true;
@@ -248,6 +251,7 @@ void CNetatmo::Do_Work()
 						// GetHomesDataDetails
 						GetHomeStatusDetails();
 						Log(LOG_STATUS,"Status %d",  m_isLogged);
+						m_bFirstTimeHomeStatus = false;
 					}
 				}
 
@@ -588,7 +592,7 @@ bool CNetatmo::WriteToHardware(const char* pdata, const unsigned char /*length*/
 		std::string name = "";
 		uint64_t ulId1 = id1; // PRIu64
 		bool bIsNewDevice = false;
-		
+
 		//Log(LOG_STATUS, "Netatmo WriteToHardware subType %d id1 %d id2 %d id3 %d id4 %d bIsOn %d level %d filler %d rssi %d", subtype, id1, id2, id3, id4, bIsOn, level, filler, rssi);
 		Debug(DEBUG_HARDWARE, "Netatmo WriteToHardware subType %d id1 %d id2 %d id3 %d id4 %d bIsOn %d level %d filler %d rssi %d", subtype, id1, id2, id3, id4, bIsOn, level, filler, rssi);
 		int length = xcmd->len;
@@ -1197,7 +1201,9 @@ bool CNetatmo::SetSchedule(int uId, int selected)
 	std::string homeid = m_DeviceHomeID[schedule_Id];            // Home_ID
 	Debug(DEBUG_HARDWARE, "Schedule id = %s %d %s %d", schedule_Id.c_str(), uId, scheduleName.c_str(), selected);
 
-	std::string Home_id = m_ScheduleHomes[uId];                    // home_id from crcId
+	std::stringstream uid;
+	uid << uId;
+	std::string Home_id = m_ScheduleHomes[uid.str()];                    // home_id from crcId
 	std::string module_id = m_thermostatModuleID[uId];             // mac-adres
 	Json::Value Schedules = m_Schedule_Names[Home_id];
 	std::string module_type = m_Device_types[module_id];
@@ -1219,7 +1225,7 @@ bool CNetatmo::SetSchedule(int uId, int selected)
 		}
 
 	}
-	
+
 	Debug(DEBUG_HARDWARE, "Schedule id = %s %s %d %s %s %d", module_type.c_str(), scheduleId.c_str(), uId, schedule_Name.c_str(), Home_id.c_str(), selected);
 	std::stringstream bstr;
 	std::string sResult;
@@ -1645,7 +1651,7 @@ void CNetatmo::GetHomesDataDetails()
 				//Get the schedules
 				if (!home["schedules"].empty())
 				{
-					//Debug(DEBUG_HARDWARE, "Get the schedules from %s", homeID.c_str());
+					Debug(DEBUG_HARDWARE, "Get the schedules from %s", homeID.c_str());
 					std::stringstream schedules;
 					std::string allSchName = "Off";
 					std::string allSchAction = "00";
@@ -1689,7 +1695,9 @@ void CNetatmo::GetHomesDataDetails()
 
 						if (schedule_type == "therm")
 						{
-							json_data[index] = schedule_name;
+							std::stringstream ssv;
+							ssv << index;
+							json_data[ssv.str()] = schedule_name;
 							m_ScheduleNames[index] = schedule["name"].asString();
 						}
 						m_ScheduleIDs[index] = schedule_id; //Not possible with multiple Homes
@@ -2681,9 +2689,11 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 			int Image = 0;
 			bool bDropdown = true;
 			bool bHideOff = false;
-			int crcId = Crc32(0, (const unsigned char*)home_id.c_str(), home_id.length());;
+			int crcId = Crc32(0, (const unsigned char*)home_id.c_str(), home_id.length());
+			std::stringstream uid;
+			uid << crcId;
 			std::string Selector = "0"; //Active selecting TODO
-			m_ScheduleHomes[crcId] = home_id;
+			m_ScheduleHomes[uid.str()] = home_id;
 			//SendSelectorSwitch(crcId, NETATMO_PRESET_UNIT, Selector, lName, Image, bDropdown, scenario_SchName, "", bHideOff, m_Name);   // No RF-level - Battery level
 		}
 	}
@@ -3285,7 +3295,6 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 						nDevice.roomNetatmoID = roomNetatmoID;
 						int sp_temp = stoi(room_setpoint);           // string to int
 						float SP_temp = std::stof(room_setpoint);
-						int uid = crcId;
 
 						SendSetPointSensor(crcId, (uint8_t)((crcId & 0x00FF0000) >> 16), (crcId & 0XFF00) >> 8, crcId & 0XFF, Unit, batteryLevel, SP_temp, moduleName);   // No RF-level
 						// thermostatModuleID
@@ -3318,7 +3327,6 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 
 							if (!result.empty())
                                                         {
-								
 								//
 								int uId = std::stoi(result[0][0]);
 								int nValue = std::stoi(result[0][1]);
@@ -3330,16 +3338,19 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 									m_sql.UpdateDeviceValue("SwitchType", STYPE_Contact, std::to_string(uId)); // 2
 									m_sql.UpdateDeviceValue("CustomImage", 15, std::to_string(uId));           //15
 								}
-                                                        }
-
+							}
 						}
 
 						//Thermostat schedule switch (actively changing thermostat schedule)
 						std::string allSchName = "Off";
 						std::string allSchAction = "";
 						//Store Home_ID from crcID
-						m_ScheduleHomes[crcId] = home_id;
-						m_ScheduleHomes[Hardware_int] = home_id;
+						std::stringstream uid;
+                                                uid << crcId;
+						m_ScheduleHomes[uid.str()] = home_id;
+						std::stringstream Hardware_str;
+                                                Hardware_str << Hardware_int;
+						m_ScheduleHomes[Hardware_str.str()] = home_id;
 
 						Json::Value json_data;
 						int index = 10;
@@ -3365,6 +3376,17 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 
 						m_thermostatModuleID[uid] = module_id;                // mac-adres
 						m_DeviceHomeID[roomNetatmoID] = home_id;              // Home_ID
+					}
+					if (type == "NRV")
+					{
+							std::vector<std::vector<std::string> > result;
+							result = m_sql.safe_query("SELECT ID, nValue, sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%08X') AND (Unit==%d)", m_HwdID, crcId, ChildID);
+
+							if (!result.empty())
+                                                        {
+								m_sql.UpdateDeviceValue("CustomImage", 36, std::to_string(uId));           //36
+                                                        }
+
 					}
 					if (type == "NLP" || type == "NLC" || type == "NLPD" || type == "NLPO" || type == "NLPM" || type == "NLPC" || type == "NLPT" || type == "NLPS" || type == "BNCS" || type == "BNXM")
 					{
@@ -3503,7 +3525,6 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 		}
 	}
 	Log(LOG_STATUS, "HomeStatus parsed");
-	m_bFirstTimeHomeStatus = false;
 	return true;
 }
 
