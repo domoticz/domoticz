@@ -3369,6 +3369,7 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 						Json::Value json_data;
 						int index = 10;
 						json_data = m_Schedule_Names[home_id];
+						Debug(DEBUG_HARDWARE, "JSON Data");
 
 						for (auto level : json_data)
 						{
@@ -3383,6 +3384,7 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 						//Selected Index for the dropdown list
 						std::stringstream ssv;
 						ssv << m_selected_Schedule[home_id];
+						Debug(DEBUG_HARDWARE, "selected schedule");
 
 						//create update / domoticz device
 						SendSelectorSwitch(Hardware_int, 2, ssv.str(), moduleName + " - Schedule", 15, true, allSchName, allSchAction, true, m_Name);   // No RF-level - Battery level visible
@@ -3390,12 +3392,14 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 						std::string sName = moduleName + " - mode";
 						SendSelectorSwitch(crcId, NETATMO_PRESET_UNIT, setpoint_mode_str, sName, 15, true, "Off|On|Away|Frost Guard", "", true, m_Name);   // No RF-level - Battery level visible
 
+						Debug(DEBUG_HARDWARE, "Thermostat");
 						m_thermostatModuleID[crcId] = module_id;                // mac-adres
 						m_DeviceHomeID[roomNetatmoID] = home_id;              // Home_ID
 					}
 					if (type == "NRV")
 					{
-						int ChildID = 2;
+						Debug(DEBUG_HARDWARE, "NRV");
+						int ChildID = NETATMO_PRESET_UNIT;
 						std::vector<std::vector<std::string> > result;
 						result = m_sql.safe_query("SELECT ID, nValue, sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%08X') AND (Unit==%d)", m_HwdID, crcId, ChildID);
 
@@ -3409,6 +3413,7 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
                                                 }
 
 					}
+					Debug(DEBUG_HARDWARE, "Done");
 					if (type == "NLP" || type == "NLC" || type == "NLPD" || type == "NLPO" || type == "NLPM" || type == "NLPC" || type == "NLPT" || type == "NLPS" || type == "BNCS" || type == "BNXM")
 					{
 						std::string bName = moduleName + " - Power";
