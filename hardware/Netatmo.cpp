@@ -130,7 +130,7 @@ void CNetatmo::Init()
 	m_thermostatModuleID.clear();
 	m_ScheduleNames.clear();
 	m_ScheduleIDs.clear();
-	
+	m_selectedScenario.clear();
 	m_ScheduleHome.clear();
 	m_DeviceModuleID.clear();
 	m_LightDeviceID.clear();
@@ -1194,12 +1194,12 @@ bool CNetatmo::SetSchedule(int uId, int selected)
 
 	std::string scheduleName = m_ScheduleNames[selected];
 	std::string schedule_Id = m_ScheduleIDs[selected];
-	std::string homeid = m_DeviceHomeID[scheduleId];            // Home_ID
+	std::string homeid = m_DeviceHomeID[schedule_Id];            // Home_ID
 	Debug(DEBUG_HARDWARE, "Schedule id = %s %d %s %d", schedule_Id.c_str(), uId, scheduleName.c_str(), selected);
 
 	std::string Home_id = m_ScheduleHomes[uId];                    // home_id from crcId
 	std::string module_id = m_thermostatModuleID[uId];             // mac-adres
-	Json::Value Schedules = m_Schedule_Names[home_id];
+	Json::Value Schedules = m_Schedule_Names[Home_id];
 	std::string module_type = m_Device_types[module_id];
 	std::string schedule_Name;
 	std::string scheduleId;
@@ -1210,11 +1210,11 @@ bool CNetatmo::SetSchedule(int uId, int selected)
 		{
 			if (!schedule[selected].empty())
 			{
-				schedule_Name = Schedule[selected].asString();
+				schedule_Name = schedule[selected].asString();
 			}
 			if (!schedule[schedule_Name].empty())
 			{
-				scheduleId = Schedule[schedule_Name].asString();
+				scheduleId = schedule[schedule_Name].asString();
 			}
 		}
 
@@ -1260,7 +1260,7 @@ bool CNetatmo::SetSchedule(int uId, int selected)
 	//store the selected schedule in our local data to avoid
 	//changing back the schedule when using away mode
 	m_selectedScheduleID = selected;
-	m_selected_Schedule[homeID] = selected;
+	m_selected_Schedule[Home_id] = selected;
 
 	// When a thermostat mode is changed all thermostat/valves in Home are changed by Netatmo
 	// So we have to update the corresponding devices
@@ -1946,7 +1946,7 @@ void CNetatmo::Get_Scenarios(std::string home_id, Json::Value& scenarios)
 			scenarios = root["body"]["home"];
 
 			//Selected Scenario ?
-			m_selectedScenario = home_id[10];
+			m_selectedScenario[home_id] = 10;
 
 			// Data was recieved with success
 			Log(LOG_STATUS, "Scenarios Data Recieved");
@@ -2571,6 +2571,7 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 	std::string scenario_SchName;
 	bool status_mod;
 	bool target_position;
+	Json::Value json_data;
 	int index = 0;
 
 	//Json::Value root;
@@ -2625,7 +2626,6 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 				bool scenario_custom;
 				bool scenario_edit;
 				bool scenario_del;
-				Json::Value json_data;
 
 				if (scenarioss["category"].empty())
 				{
@@ -3342,13 +3342,16 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 						m_ScheduleHomes[Hardware_int] = home_id;
 
 						Json::Value json_data;
+						int index = 10;
 						json_data = m_Schedule_Names[home_id];
 
-						for (std::map<int, std::string>::const_iterator itt = json_data.begin(); itt != json_data.end(); ++itt)
+						for (auto level : json_data)
 						{
-							allSchName = allSchName + "|" + itt->second;
-							std::stringstream ss;
-							ss << itt->first;
+							if (!level[index].empty())
+							{
+								allSchName = allSchName + "|" + level[index].asString();
+							}
+							index += 10;
 						}
 						//Selected Index for the dropdown list
 						std::stringstream ssv;
