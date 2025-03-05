@@ -1220,7 +1220,7 @@ bool CNetatmo::SetSchedule(int uId, int selected)
 
 	}
 	
-	Debug(DEBUG_HARDWARE, "Schedule id = %s %s %d %s %d", module_type.c_str(), scheduleId.c_str(), uId, schedule_Name.c_str(), Home_id.c_str(), selected);
+	Debug(DEBUG_HARDWARE, "Schedule id = %s %s %d %s %s %d", module_type.c_str(), scheduleId.c_str(), uId, schedule_Name.c_str(), Home_id.c_str(), selected);
 	std::stringstream bstr;
 	std::string sResult;
 	Json::Value root;       // root JSON object
