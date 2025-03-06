@@ -1687,7 +1687,9 @@ void CNetatmo::GetHomesDataDetails()
 						bool schedule_selected = schedule["selected"].asBool();                // true / false
 						index += 10;
 						json_data[schedule_name] = schedule_id;
-						std::map<int, std::string> Schedule_Names = m_ScheduleNames[homeID];
+						
+						std::map<int, std::string> Schedule_Names;
+						
 
 						if (schedule_type == "therm")
 						{
@@ -1697,6 +1699,7 @@ void CNetatmo::GetHomesDataDetails()
 							Schedule_Names[index] = schedule["name"].asString();
 						}
 						m_ScheduleIDs[index] = schedule_id; //Not possible with multiple Homes
+						m_ScheduleNames[homeID] = Schedule_Names;
 
 						m_DeviceHomeID[schedule_id] = homeID;
 						if (!schedule["selected"].empty() && schedule["selected"].asBool() && schedule_type == "therm")
@@ -3363,6 +3366,8 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 						m_ScheduleHomes[Hardware_int] = home_id;
 
 						std::map<int, std::string> Schedule_Names = m_ScheduleNames[home_id];
+						f
+
 						for (std::map<int, std::string>::const_iterator itt = Schedule_Names.begin(); itt != Schedule_Names.end(); ++itt)
 						{
 							allSchName = allSchName + "|" + itt->second;
