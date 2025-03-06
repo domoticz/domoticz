@@ -3366,7 +3366,6 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 						m_ScheduleHomes[Hardware_int] = home_id;
 
 						std::map<int, std::string> Schedule_Names = m_ScheduleNames[home_id];
-						f
 
 						for (std::map<int, std::string>::const_iterator itt = Schedule_Names.begin(); itt != Schedule_Names.end(); ++itt)
 						{
