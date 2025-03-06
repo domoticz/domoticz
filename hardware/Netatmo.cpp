@@ -3368,11 +3368,12 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 							allSchName = allSchName + "|" + itt->second;
 							std::stringstream ss;
 							ss << itt->first;
+							Debug(DEBUG_HARDWARE, "Data itt %s", allSchName.c_str());
 						}
 						
 						//Json::Value json_data = m_Schedule_Names[home_id];
 						int index = 10;
-						Debug(DEBUG_HARDWARE, "Data %s", allSchName.c_str());
+						Debug(DEBUG_HARDWARE, "allSchName Data %s", allSchName.c_str());
 
 						//Selected Index for the dropdown list
 						std::stringstream ssv;
