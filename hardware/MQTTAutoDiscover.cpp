@@ -4623,7 +4623,10 @@ bool MQTTAutoDiscover::SendSwitchCommand(const std::string& DeviceID, const std:
 
 				//This seems to cause issues for Tuya 2 gang dimmers... not sure why
 				//not sure if this is needed for other devices
-				if (m_discovered_devices[pSensor->device_identifiers].manufacturer == "TuYa")
+				if (
+					(m_discovered_devices[pSensor->device_identifiers].manufacturer == "TuYa")
+					|| (m_discovered_devices[pSensor->device_identifiers].manufacturer == "Tuya")
+					)
 				{
 					root["state"] = (slevel > 0) ? "ON" : "OFF";
 				}
