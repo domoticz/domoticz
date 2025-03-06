@@ -3372,7 +3372,7 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 						
 						//Json::Value json_data = m_Schedule_Names[home_id];
 						int index = 10;
-						Debug(DEBUG_HARDWARE, "Data");
+						Debug(DEBUG_HARDWARE, "Data %s", allSchName.c_str());
 
 						//Selected Index for the dropdown list
 						std::stringstream ssv;
@@ -3406,7 +3406,7 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
                                                 }
 
 					}
-					Debug(DEBUG_HARDWARE, "Done");
+
 					if (type == "NLP" || type == "NLC" || type == "NLPD" || type == "NLPO" || type == "NLPM" || type == "NLPC" || type == "NLPT" || type == "NLPS" || type == "BNCS" || type == "BNXM")
 					{
 						std::string bName = moduleName + " - Power";
