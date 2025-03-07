@@ -2417,25 +2417,12 @@ bool CNetatmo::ParseDashboard(const Json::Value& root, const int DevIdx, const i
 
 	if (bHaveCO2)
 	{
-		Debug(DEBUG_HARDWARE, "(%d) DevIdx = %d (%d) co2 = %d %s bHaveCO2 = %d", ID, DevIdx, batValue, co2, name.c_str(), bHaveCO2);
+		//Debug(DEBUG_HARDWARE, "(%d) DevIdx = %d (%d) co2 = %d %s bHaveCO2 = %d", ID, DevIdx, batValue, co2, name.c_str(), bHaveCO2);
 		SendAirQualitySensor(ID, DevIdx, batValue, co2, name);  // No RF-level
-		std::string str_D4;
-		std::string str_D2;
-		std::stringstream hardware_4;
-		std::stringstream hardware_2;
-		
-		//Only the last 4 degits:
-		str_ID4 = std::to_string(ID & 0xFFFF);	//str_ID.substr(str_ID.length() - 4, 4);
-		//Only the last 2 degits:
-		str_ID2 = std::to_string(ID & 0xFF);
-		
-		hardware_4 << std::uppercase << std::hex << str_ID4;
-		hardware_2 << std::uppercase << std::hex << str_ID2;
-		hardware_4 >> str_D4;
-		hardware_2 >> str_D2;
-		Debug(DEBUG_HARDWARE, "last 4 degits %s - last 2 degits %s in HEX %s %s", str_ID4.c_str(), str_ID2.c_str(), str_D4.c_str(), str_D2.c_str());
+		Debug(DEBUG_HARDWARE, "AirQuality DeviceID = %04x", ID & 0xff);
+
 		std::vector<std::vector<std::string> > result;
-		result = m_sql.safe_query("SELECT ID, nValue, sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%d') AND (Unit==%d)", m_HwdID, ID, DevIdx);
+		result = m_sql.safe_query("SELECT ID, nValue, sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%04x') AND (Unit==%d)", m_HwdID, ID & 0xff, DevIdx);
 
 		if (m_bFirstTimeHomeStatus)
 		{
@@ -3274,26 +3261,12 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 						else
 							unit = iDevIndex;
 
-						Debug(DEBUG_HARDWARE, "(%d) %d (%s) [%s] co2 rssiLevel %d batValue %d nValue %d sValue %s %s ", Hardware_int, crcId, pchar_ID, moduleName.c_str(), mrf_status, batteryLevel, co2, std::to_string(co2).c_str(), m_Name.c_str());
+						//Debug(DEBUG_HARDWARE, "(%d) %d (%s) [%s] co2 rssiLevel %d batValue %d nValue %d sValue %s %s ", Hardware_int, crcId, pchar_ID, moduleName.c_str(), mrf_status, batteryLevel, co2, std::to_string(co2).c_str(), m_Name.c_str());
 						SendAirQualitySensor(crcId, unit, batteryLevel, co2, moduleName);
-						std::string str_ID4;
-						std::string str_ID2;
-						std::string str_D4;
-						std::string str_D2;
-						std::stringstream hardware_4;
-						std::stringstream hardware_2;
-						//Only the last 4 degits:
-						str_ID4 = std::to_string(crcId & 0xFFFF);	//str_ID.substr(str_ID.length() - 4, 4);
-						//Only the last 2 degits:
-						str_ID2 = std::to_string(crcId & 0xFF);
-						hardware_4 << std::uppercase << std::hex << str_ID4;
-						hardware_2 << std::uppercase << std::hex << str_ID2;
-						hardware_4 >> str_D4;
-						hardware_2 >> str_D2;
-						Debug(DEBUG_HARDWARE, "last 4 degits %s - last 2 degits %s in HEX %s %s", str_ID4.c_str(), str_ID2.c_str(), str_D4.c_str(), str_D2.c_str());
-						
+						Debug(DEBUG_HARDWARE, "AirQuality DeviceID = %04x", crcId & 0xff);
+
 						std::vector<std::vector<std::string> > result;
-						result = m_sql.safe_query("SELECT ID, nValue, sValue FROM DeviceStatus WHERE (HardwareID==%d)  AND (DeviceID=='%d') AND (Unit==%d)", m_HwdID, crcId, unit);
+						result = m_sql.safe_query("SELECT ID, nValue, sValue FROM DeviceStatus WHERE (HardwareID==%d)  AND (DeviceID=='%04x') AND (Unit==%d)", m_HwdID, crcId & 0xff, unit);
 
 						if (m_bFirstTimeHomeStatus)
 						{
