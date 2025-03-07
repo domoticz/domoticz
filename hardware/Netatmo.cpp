@@ -2419,20 +2419,20 @@ bool CNetatmo::ParseDashboard(const Json::Value& root, const int DevIdx, const i
 	{
 		//Debug(DEBUG_HARDWARE, "(%d) DevIdx = %d (%d) co2 = %d %s bHaveCO2 = %d", ID, DevIdx, batValue, co2, name.c_str(), bHaveCO2);
 		SendAirQualitySensor(ID, DevIdx, batValue, co2, name);  // No RF-level
-		Debug(DEBUG_HARDWARE, "AirQuality DeviceID = %04X %d", ID & 0xff, ID & 0xff);
-
-		std::vector<std::vector<std::string> > result;
-		result = m_sql.safe_query("SELECT ID, nValue, sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%d') AND (Unit==%d)", m_HwdID, ID & 0xff, DevIdx);
+		Debug(DEBUG_HARDWARE, "AirQuality DeviceID = %04X %d %s %d", ID & 0xff, ID & 0xff, name.c_str(), DevIdx);
 
 		if (m_bFirstTimeHomeStatus)
 		{
+			std::vector<std::vector<std::string> > result;
+			result = m_sql.safe_query("SELECT ID, nValue, sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%d') AND (Unit==%d)", m_HwdID, ID & 0xff, DevIdx);
+
 			if (!result.empty())
 			{
 				int uId = std::stoi(result[0][0]);
 				int nValue = std::stoi(result[0][1]);
 				std::string sValue = result[0][2];
 				Debug(DEBUG_HARDWARE, "AirQuality uId %d %s", uId, name.c_str());
-				//m_sql.UpdateDeviceValue("CustomImage", 27, std::to_string(uId));           //27
+				m_sql.UpdateDeviceValue("CustomImage", 27, std::to_string(uId));           //27
 	                }
 		}
 	}
@@ -3368,7 +3368,8 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 								{
                                 	                                //m_sql.UpdateDeviceValue("SwitchType", STYPE_Dusk, std::to_string(uId));  //12
 									m_sql.UpdateDeviceValue("SwitchType", STYPE_Contact, std::to_string(uId)); // 2
-									m_sql.UpdateDeviceValue("CustomImage", 15, std::to_string(uId));           //15
+									//m_sql.UpdateDeviceValue("CustomImage", 15, std::to_string(uId));         //15 Thermometer
+									m_sql.UpdateDeviceValue("CustomImage", 19, std::to_string(uId));           //19 Sun
 								}
 							}
 						}
@@ -3419,6 +3420,11 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 						int ChildID = NETATMO_PRESET_UNIT;
 						std::vector<std::vector<std::string> > result;
 						result = m_sql.safe_query("SELECT ID, nValue, sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%08X') AND (Unit==%d)", m_HwdID, crcId, ChildID);
+
+						Debug(DEBUG_HARDWARE, "NRV ID1 %X", crcId);
+						Debug(DEBUG_HARDWARE, "NRV ID2 %X",(uint8_t)((crcId & 0x00FF0000) >> 16));
+						Debug(DEBUG_HARDWARE, "NRV ID3 %04X", (crcId & 0XFF00) >> 8);
+						Debug(DEBUG_HARDWARE, "NRV ID4 %04X", crcId & 0XFF);
 
 						if (!result.empty())
 						{
