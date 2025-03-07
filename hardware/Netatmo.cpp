@@ -1213,6 +1213,7 @@ bool CNetatmo::SetSchedule(int uId, int selected)
 		std::stringstream ss;
 		ss << itt->first;
 		ss >> i;
+		Debug(DEBUG_HARDWARE, "Data itt %d %s", i, itt->second.c_str());
 		if (i == selected)
 			schedule_Name = itt->second;
 		i += 10;
@@ -3371,7 +3372,7 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 							allSchName = allSchName + "|" + itt->second;
 							std::stringstream ss;
 							ss << itt->first;
-							Debug(DEBUG_HARDWARE, "Data itt %s", allSchName.c_str());
+							//
 						}
 						
 						//Json::Value json_data = m_Schedule_Names[home_id];
