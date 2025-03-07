@@ -3261,7 +3261,7 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 
 						SendAirQualitySensor(crcId, unit, batteryLevel, co2, moduleName);
 						std::vector<std::vector<std::string> > result;
-						result = m_sql.safe_query("SELECT ID, nValue, sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%08X') AND (Unit==%d)", m_HwdID, ID, DevIdx);
+						result = m_sql.safe_query("SELECT ID, nValue, sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%08X') AND (Unit==%d)", m_HwdID, ID, unit);
 
 						if (m_bFirstTimeHomeStatus)
 						{
@@ -3270,7 +3270,7 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 								int uId = std::stoi(result[0][0]);
 								int nValue = std::stoi(result[0][1]);
 								std::string sValue = result[0][2];
-								Debug(DEBUG_HARDWARE, "AirQualitySensor uId %d %s", uId, name.c_str());
+								Debug(DEBUG_HARDWARE, "AirQualitySensor uId %d %s", uId, moduleName.c_str());
 								m_sql.UpdateDeviceValue("CustomImage", 27, std::to_string(uId));           //27
 	        				        }
 						}
