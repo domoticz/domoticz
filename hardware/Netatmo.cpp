@@ -1651,7 +1651,8 @@ void CNetatmo::GetHomesDataDetails()
 					std::string allSchName = "Off";
 					std::string allSchAction = "00";
 					int index = 0;
-					Json::Value json_data;
+					std::map<std::string, std::string> _data;
+					std::map<int, std::string> Schedule_Names;
 
 					for (auto schedule : home["schedules"])
 					{
@@ -1686,20 +1687,17 @@ void CNetatmo::GetHomesDataDetails()
 						std::string schedule_type = schedule["type"].asString();
 						bool schedule_selected = schedule["selected"].asBool();                // true / false
 						index += 10;
-						json_data[schedule_name] = schedule_id;
-						
-						std::map<int, std::string> Schedule_Names;
-						
+						_data[schedule_name] = schedule_id;
 
 						if (schedule_type == "therm")
 						{
 							std::stringstream ssv;
 							ssv << index;
-							json_data[ssv.str()] = schedule_name;
+							//json_data[ssv.str()] = schedule_name;
 							Schedule_Names[index] = schedule["name"].asString();
 						}
 						m_ScheduleIDs[index] = schedule_id; //Not possible with multiple Homes
-						m_ScheduleNames[homeID] = Schedule_Names;
+						
 
 						m_DeviceHomeID[schedule_id] = homeID;
 						if (!schedule["selected"].empty() && schedule["selected"].asBool() && schedule_type == "therm")
@@ -1709,6 +1707,7 @@ void CNetatmo::GetHomesDataDetails()
 						}
 					}
 					//m_Schedule_Names[homeID] = json_data;
+					m_ScheduleNames[homeID] = Schedule_Names;
 				}
 				//Get the user info
 				if (!home["user"].empty())
