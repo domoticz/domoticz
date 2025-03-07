@@ -2419,10 +2419,10 @@ bool CNetatmo::ParseDashboard(const Json::Value& root, const int DevIdx, const i
 	{
 		//Debug(DEBUG_HARDWARE, "(%d) DevIdx = %d (%d) co2 = %d %s bHaveCO2 = %d", ID, DevIdx, batValue, co2, name.c_str(), bHaveCO2);
 		SendAirQualitySensor(ID, DevIdx, batValue, co2, name);  // No RF-level
-		Debug(DEBUG_HARDWARE, "AirQuality DeviceID = %04X", ID & 0xff);
+		Debug(DEBUG_HARDWARE, "AirQuality DeviceID = %04X %d", ID & 0xff, ID & 0xff);
 
 		std::vector<std::vector<std::string> > result;
-		result = m_sql.safe_query("SELECT ID, nValue, sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%04X') AND (Unit==%d)", m_HwdID, ID & 0xff, DevIdx);
+		result = m_sql.safe_query("SELECT ID, nValue, sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%d') AND (Unit==%d)", m_HwdID, ID & 0xff, DevIdx);
 
 		if (m_bFirstTimeHomeStatus)
 		{
@@ -3263,10 +3263,10 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 
 						//Debug(DEBUG_HARDWARE, "(%d) %d (%s) [%s] co2 rssiLevel %d batValue %d nValue %d sValue %s %s ", Hardware_int, crcId, pchar_ID, moduleName.c_str(), mrf_status, batteryLevel, co2, std::to_string(co2).c_str(), m_Name.c_str());
 						SendAirQualitySensor(crcId, unit, batteryLevel, co2, moduleName);
-						Debug(DEBUG_HARDWARE, "AirQuality DeviceID = %04X", crcId & 0xff);
+						Debug(DEBUG_HARDWARE, "AirQuality DeviceID = %04X %d", crcId & 0xff, crcId & 0xff);
 
 						std::vector<std::vector<std::string> > result;
-						result = m_sql.safe_query("SELECT ID, nValue, sValue FROM DeviceStatus WHERE (HardwareID==%d)  AND (DeviceID=='%04X') AND (Unit==%d)", m_HwdID, crcId & 0xff, unit);
+						result = m_sql.safe_query("SELECT ID, nValue, sValue FROM DeviceStatus WHERE (HardwareID==%d)  AND (DeviceID=='%d') AND (Unit==%d)", m_HwdID, crcId & 0xff, unit);
 
 						if (m_bFirstTimeHomeStatus)
 						{
