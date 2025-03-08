@@ -915,7 +915,7 @@ bool CNetatmo::SetProgramState(const int uid, const int newState)
 
 			//Scenario NLG
 			Debug(DEBUG_HARDWARE, "Gateway set scenario %s", scenario_Name.c_str());
-			m_selectedScenario[home_id] = newState;
+			m_selectedScenario[Home_id] = newState;
 			Json::Value json_data;
 			//json_data {"body":{"home":{"id":
 			json_data["home"]["id"] = Home_id;
