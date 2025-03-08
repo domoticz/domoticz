@@ -901,13 +901,14 @@ bool CNetatmo::SetProgramState(const int uid, const int newState)
 			std::map<int, std::string> scenarios_names;
 			scenarios_names = m_Scenarios[Home_id];
 			std::string scenario_Name;
+			int i = 0;
 
 			for (std::map<int, std::string>::const_iterator itt = scenarios_names.begin(); itt != scenarios_names.end(); ++itt)
 			{
 				std::stringstream ss;
 				ss << itt->first;
 				ss >> i;
-				if (i == selected)
+				if (i == newState)
 					scenario_Name = itt->second;
 				i += 10;
 			}
