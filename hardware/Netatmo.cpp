@@ -1968,7 +1968,7 @@ void CNetatmo::Get_Scenarios(std::string home_id, Json::Value& scenarios)
 			scenarios = root["body"]["home"];
 
 			//Selected Scenario ?
-			m_selectedScenario[home_id] = 10;
+			m_selectedScenario[home_id] = int(10);
 
 			// Data was recieved with success
 			Log(LOG_STATUS, "Scenarios Data Recieved");
