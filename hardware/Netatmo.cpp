@@ -1528,7 +1528,7 @@ void CNetatmo::GetHomesDataDetails()
 				homeID = home["id"].asString();
 				m_homeid.push_back(homeID);
 				//Debug(DEBUG_HARDWARE, "Get Home ID %s", homeID.c_str());
-				SaveJson2Disk(home, std::string("./HomesData_" + homeID.c_str() + ".txt"));
+				SaveJson2Disk(home, std::string("./HomesData_" + homeID + ".txt"));
 				std::stringstream stream_homeid;
 				for(size_t i = 0; i < m_homeid.size(); ++i)
 				{
@@ -2122,7 +2122,7 @@ bool CNetatmo::ParseStationData(const std::string& sResult, const bool bIsThermo
 			// Homecoach
 			if (!device["dashboard_data"].empty())
 			{
-				SaveJson2Disk(device["dashboard_data"], std::string("./" + name.c_str() + ".txt"));
+				SaveJson2Disk(device["dashboard_data"], std::string("./" + name + ".txt"));
 				ParseDashboard(device["dashboard_data"], iDevIndex, crcId, name, type, mbattery_percent, RF_status, id, home_id);
 			}
 			//Weather modules (Temp sensor, Wind Sensor, Rain Sensor)
@@ -2144,7 +2144,7 @@ bool CNetatmo::ParseStationData(const std::string& sResult, const bool bIsThermo
 							std::string mid = module["_id"].asString();
 							std::string mtype = module["type"].asString();
 							std::string mname = module["module_name"].asString();
-							SaveJson2Disk(module, std::string("./" + mname.c_str() + ".txt"));
+							SaveJson2Disk(module, std::string("./" + mname + ".txt"));
 							int crcId = Crc32(0, (const unsigned char*)mid.c_str(), mid.length());
 							uint64_t moduleID = convert_mac(mid);
 							int Hardware_int = (int)moduleID;
@@ -2169,7 +2169,7 @@ bool CNetatmo::ParseStationData(const std::string& sResult, const bool bIsThermo
 
 							if (!module["dashboard_data"].empty())
 							{
-								SaveJson2Disk(module["dashboard_data"], std::string("./" + mname.c_str() + ".txt"));
+								SaveJson2Disk(module["dashboard_data"], std::string("./" + mname + ".txt"));
 								ParseDashboard(module["dashboard_data"], iModulIndex, crcId, mname, mtype, mbattery_percent, mrf_status, mid, home_id);
 								nDevice.SignalLevel = mrf_status;
 								nDevice.BatteryLevel = mbattery_percent;
