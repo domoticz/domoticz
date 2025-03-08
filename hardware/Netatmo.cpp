@@ -897,7 +897,7 @@ bool CNetatmo::SetProgramState(const int uid, const int newState)
 		else if (type_module == "NLG")
 		{
 			std::string SchName = m_ModuleNames["999"];
-			Debug(DEBUG_HARDWARE, "Gateway");
+
 			std::map<int, std::string> scenarios_names;
 			scenarios_names = m_Scenarios[Home_id];
 			std::string scenario_Name;
@@ -914,6 +914,8 @@ bool CNetatmo::SetProgramState(const int uid, const int newState)
 			}
 
 			//Scenario NLG
+			Debug(DEBUG_HARDWARE, "Gateway set scenario %s", scenario_Name.c_str());
+			m_selectedScenario[home_id] = newState;
 			Json::Value json_data;
 			//json_data {"body":{"home":{"id":
 			json_data["home"]["id"] = Home_id;
@@ -1962,7 +1964,7 @@ void CNetatmo::Get_Scenarios(std::string home_id, Json::Value& scenarios)
 	{
 		if (!root["body"]["home"].empty())
 		{
-			//SaveJson2Disk(root, std::string("./scenario-s.txt"));
+			SaveJson2Disk(root, std::string("./scenario-s" + home_id + ".txt"));
 			scenarios = root["body"]["home"];
 
 			//Selected Scenario ?
@@ -2500,7 +2502,7 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 		if (!root["body"]["home"]["rooms"].isArray())
 			return false;
 		Json::Value mRoot = root["body"]["home"]["rooms"];
-		//SaveJson2Disk(root, std::string("./HomeStatus_") + home_id.c_str() + ".txt");
+		SaveJson2Disk(root, std::string("./HomeStatus_") + home_id.c_str() + ".txt");
 
 		for (auto room : mRoot)
 		{
@@ -2715,14 +2717,14 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 			std::string lName = "Scenario";
 			bool bIsActive = 0;
 			int Image = 0;
-			bool bDropdown = true;
+			bool bDropdown = false;
 			bool bHideOff = false;
 			int crcId = Crc32(0, (const unsigned char*)home_id.c_str(), home_id.length());
 			std::stringstream uid;
 			uid << crcId;
-			std::string Selector = "0"; //Active selecting TODO
+			std::string Selector = m_selectedScenario[home_id]; //Active selecting
 			m_ScheduleHomes[crcId] = home_id;
-			//SendSelectorSwitch(crcId, NETATMO_PRESET_UNIT, Selector, lName, Image, bDropdown, scenario_SchName, "", bHideOff, m_Name);   // No RF-level - Battery level
+			SendSelectorSwitch(crcId, 14, Selector, lName, Image, bDropdown, scenario_SchName, "", bHideOff, m_Name);   // No RF-level - Battery level
 		}
 	}
 	//Parse module and create / update domoticz devices
