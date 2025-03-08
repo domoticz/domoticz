@@ -1528,7 +1528,7 @@ void CNetatmo::GetHomesDataDetails()
 				homeID = home["id"].asString();
 				m_homeid.push_back(homeID);
 				//Debug(DEBUG_HARDWARE, "Get Home ID %s", homeID.c_str());
-				//SaveJson2Disk(home, std::string("./HomesData_" + homeID.c_str() + ".txt"));
+				SaveJson2Disk(home, std::string("./HomesData_" + homeID.c_str() + ".txt"));
 				std::stringstream stream_homeid;
 				for(size_t i = 0; i < m_homeid.size(); ++i)
 				{
@@ -1839,7 +1839,7 @@ void CNetatmo::GetHomeStatusDetails()
 
 		//Parse API response
 		bRet = ParseHomeStatus(sResult, root, home_id);
-		Debug(DEBUG_HARDWARE, "Parse Home Status %s", home_id);
+		Debug(DEBUG_HARDWARE, "Parse Home Status %s", home_id.c_str());
 		if (m_bPollGetEvents)
 		{
 			Get_Events(home_data, device_types, event_id, person_id, bridge_id, module_id, offset, size, locale);
@@ -1968,7 +1968,7 @@ void CNetatmo::Get_Scenarios(std::string home_id, Json::Value& scenarios)
 	{
 		if (!root["body"]["home"].empty())
 		{
-			SaveJson2Disk(root, std::string("./scenario-s" + home_id + ".txt"));
+			SaveJson2Disk(root, std::string("./scenario-s " + m_Name + " : " + home_id + ".txt"));
 			scenarios = root["body"]["home"];
 
 			//Selected Scenario ?
@@ -2055,7 +2055,7 @@ bool CNetatmo::ParseStationData(const std::string& sResult, const bool bIsThermo
 			else
 				name = "UNKNOWN NAME";
 
-			//SaveJson2Disk(device, std::string("./" + name.c_str() + ".txt"));
+			SaveJson2Disk(device, std::string("./" + name + ".txt"));
 
 			//get Home ID from Weatherstation
 			if (type == "NAMain")
@@ -2122,7 +2122,7 @@ bool CNetatmo::ParseStationData(const std::string& sResult, const bool bIsThermo
 			// Homecoach
 			if (!device["dashboard_data"].empty())
 			{
-				//SaveJson2Disk(device["dashboard_data"], std::string("./") + name.c_str() + ".txt");
+				SaveJson2Disk(device["dashboard_data"], std::string("./" + name.c_str() + ".txt"));
 				ParseDashboard(device["dashboard_data"], iDevIndex, crcId, name, type, mbattery_percent, RF_status, id, home_id);
 			}
 			//Weather modules (Temp sensor, Wind Sensor, Rain Sensor)
@@ -2144,7 +2144,7 @@ bool CNetatmo::ParseStationData(const std::string& sResult, const bool bIsThermo
 							std::string mid = module["_id"].asString();
 							std::string mtype = module["type"].asString();
 							std::string mname = module["module_name"].asString();
-							//SaveJson2Disk(module, std::string("./") + mname.c_str() + ".txt");
+							SaveJson2Disk(module, std::string("./" + mname.c_str() + ".txt"));
 							int crcId = Crc32(0, (const unsigned char*)mid.c_str(), mid.length());
 							uint64_t moduleID = convert_mac(mid);
 							int Hardware_int = (int)moduleID;
@@ -2169,7 +2169,7 @@ bool CNetatmo::ParseStationData(const std::string& sResult, const bool bIsThermo
 
 							if (!module["dashboard_data"].empty())
 							{
-								//SaveJson2Disk(module["dashboard_data"], std::string("./") + mname.c_str() + ".txt");
+								SaveJson2Disk(module["dashboard_data"], std::string("./" + mname.c_str() + ".txt"));
 								ParseDashboard(module["dashboard_data"], iModulIndex, crcId, mname, mtype, mbattery_percent, mrf_status, mid, home_id);
 								nDevice.SignalLevel = mrf_status;
 								nDevice.BatteryLevel = mbattery_percent;
@@ -2506,7 +2506,7 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 		if (!root["body"]["home"]["rooms"].isArray())
 			return false;
 		Json::Value mRoot = root["body"]["home"]["rooms"];
-		SaveJson2Disk(root, std::string("./HomeStatus_" + home_id.c_str() + ".txt"));
+		SaveJson2Disk(root, std::string("./HomeStatus_" + home_id + ".txt"));
 
 		for (auto room : mRoot)
 		{
@@ -2529,7 +2529,7 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 				// from Homesdata
 				roomName = m_RoomNames[roomNetatmoID];
 				std::string roomType = m_Types[roomNetatmoID];
-				//SaveJson2Disk(room, std::string("./room_") + roomName.c_str() + ".txt");
+				SaveJson2Disk(room, std::string("./room_") + roomName.c_str() + ".txt");
 
 				if (!room["reachable"].empty())
 				{
@@ -2807,7 +2807,7 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 				m_ModuleIDs[Hardware_int] = crcId;
 				std::string type = module["type"].asString();
 				m_Device_types[module_id] = type;
-				//SaveJson2Disk(module, std::string("./") + moduleName.c_str() + ".txt");
+				SaveJson2Disk(module, std::string("./") + moduleName.c_str() + ".txt");
 
 				//Debug(DEBUG_HARDWARE, " %d -  %s in Home; %s" , Hardware_int, module_id.c_str(), home_id.c_str());
 				nDevice.ID = crcId;
@@ -3589,7 +3589,7 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 				//Find the Person name
 				PersonName = m_PersonsNames[PersonNetatmoID];
 
-				//SaveJson2Disk(person, std::string("./person_") + PersonName.c_str() + ".txt");
+				SaveJson2Disk(person, std::string("./person_") + PersonName.c_str() + ".txt");
 
 				std::string PersonLastSeen = person["last_seen"].asString();
 				std::string PersonAway = person["out_of_sight"].asString();
@@ -3639,7 +3639,7 @@ bool CNetatmo::ParseEvents(const std::string& sResult, Json::Value& root )
 			// Domoticz Device for Events ? / Camera's ?
 			{
 				events_ID = events["id"].asString();
-				//SaveJson2Disk(events, std::string("./events_") + events_ID.c_str() + ".txt");
+				SaveJson2Disk(events, std::string("./events_") + events_ID.c_str() + ".txt");
 			}
 			// Using Textstatus / Alert for now
 			if (!events["id"].empty())
