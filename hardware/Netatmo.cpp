@@ -897,15 +897,27 @@ bool CNetatmo::SetProgramState(const int uid, const int newState)
 		else if (type_module == "NLG")
 		{
 			std::string SchName = m_ModuleNames["999"];
+			Debug(DEBUG_HARDWARE, "Gateway");
+			std::map<int, std::string> scenarios_names;
+			scenarios_names = m_Scenarios[Home_id];
+			std::string scenario_Name;
 
-			std::string State = "";
+			for (std::map<int, std::string>::const_iterator itt = scenarios_names.begin(); itt != scenarios_names.end(); ++itt)
+			{
+				std::stringstream ss;
+				ss << itt->first;
+				ss >> i;
+				if (i == selected)
+					scenario_Name = itt->second;
+				i += 10;
+			}
 
 			//Scenario NLG
 			Json::Value json_data;
 			//json_data {"body":{"home":{"id":
 			json_data["home"]["id"] = Home_id;
 			json_data["home"]["modules"][0]["id"] = module_id;
-			json_data["home"]["modules"][0]["scenario"] = State;
+			json_data["home"]["modules"][0]["scenario"] = scenario_Name;
 			_data = json_data.toStyledString();
 			//_data = "{\"home\":{\"id\":\"" + Home_id + "\",\"modules\":[{\"id\":\"" + module_id + "\",\"scenario\":\"" + State + "\"}]}}" ;
 		//}
@@ -943,7 +955,7 @@ bool CNetatmo::SetProgramState(const int uid, const int newState)
 		}
 		else
 		{
-			Log(LOG_ERROR, "Netatmo: Invalid Device state!");
+			Log(LOG_ERROR, "Netatmo: Invalid Power Device state!");
 			_data = "";
 		}
 		home_data = "&";
@@ -952,7 +964,7 @@ bool CNetatmo::SetProgramState(const int uid, const int newState)
 		Get_Respons_API(NETYPE_SETSTATE, sResult, home_data, bRet, root, _data);
 		if (!bRet)
 		{
-			Log(LOG_ERROR, "Netatmo: Error setting Light Device !");
+			Log(LOG_ERROR, "Netatmo: Error setting Power Device !");
 			return false;
 		}
 		bHaveDevice = true;
@@ -981,7 +993,7 @@ bool CNetatmo::SetProgramState(const int uid, const int newState)
 		Get_Respons_API(NETYPE_SETSTATE, sResult, home_data, bRet, root, _data);
 		if (!bRet)
 		{
-			Log(LOG_ERROR, "Netatmo: Error setting Power Device !");
+			Log(LOG_ERROR, "Netatmo: Error setting Light Device !");
 			return false;
 		}
 		bHaveDevice = true;
@@ -2594,7 +2606,7 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 	std::string scenario_SchName;
 	bool status_mod;
 	bool target_position;
-	Json::Value json_data;
+	std::map<int, std::string> _data;
 	int index = 0;
 
 	//Json::Value root;
@@ -2679,20 +2691,20 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 				{
 					if (!scenario_name.empty())
 					{
-						json_data[index] = scenario_name;
+						_data[index] = scenario_name;
 						scenario_SchName = scenario_SchName + scenario_name + "|";
 					}
 					else
 					{
 						scenario_type = scenarioss["type"].asString();
 						scenario_SchName = scenario_SchName + scenario_type + "|";
-						json_data[index] = scenario_type;
+						_data[index] = scenario_type;
 					}
 					Debug(DEBUG_HARDWARE, "Scenario %s : %s %s %s", scenario_id.c_str(), scenario_name.c_str(), scenario_type.c_str(), scenario_category.c_str());
 				}
 				index = +10;
 			}
-			//m_Scenarios[home_id] = json_data;
+			m_Scenarios[home_id] = _data;
 			if (scenario_SchName.size() > 0)  scenario_SchName.resize(scenario_SchName.size() - 1); 
 			m_ModuleNames["999"] = scenario_SchName;
 		}
