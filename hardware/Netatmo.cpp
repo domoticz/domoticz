@@ -1528,7 +1528,7 @@ void CNetatmo::GetHomesDataDetails()
 				homeID = home["id"].asString();
 				m_homeid.push_back(homeID);
 				//Debug(DEBUG_HARDWARE, "Get Home ID %s", homeID.c_str());
-				//SaveJson2Disk(home, std::string("./HomesData_") + homeID.c_str() + ".txt");
+				//SaveJson2Disk(home, std::string("./HomesData_" + homeID.c_str() + ".txt"));
 				std::stringstream stream_homeid;
 				for(size_t i = 0; i < m_homeid.size(); ++i)
 				{
@@ -2055,7 +2055,7 @@ bool CNetatmo::ParseStationData(const std::string& sResult, const bool bIsThermo
 			else
 				name = "UNKNOWN NAME";
 
-			//SaveJson2Disk(device, std::string("./") + name.c_str() + ".txt");
+			//SaveJson2Disk(device, std::string("./" + name.c_str() + ".txt"));
 
 			//get Home ID from Weatherstation
 			if (type == "NAMain")
@@ -2506,7 +2506,7 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 		if (!root["body"]["home"]["rooms"].isArray())
 			return false;
 		Json::Value mRoot = root["body"]["home"]["rooms"];
-		SaveJson2Disk(root, std::string("./HomeStatus_") + home_id.c_str() + ".txt");
+		SaveJson2Disk(root, std::string("./HomeStatus_" + home_id.c_str() + ".txt"));
 
 		for (auto room : mRoot)
 		{
