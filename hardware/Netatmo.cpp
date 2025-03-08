@@ -919,7 +919,7 @@ bool CNetatmo::SetProgramState(const int uid, const int newState)
 			Json::Value json_data;
 			//json_data {"body":{"home":{"id":
 			json_data["home"]["id"] = Home_id;
-			//json_data["home"]["modules"][0]["id"] = module_id;
+			json_data["home"]["modules"][0]["id"] = module_id;
 			json_data["home"]["modules"][0]["scenario"] = scenario_Name;
 			_data = json_data.toStyledString();
 			//_data = "{\"home\":{\"id\":\"" + Home_id + "\",\"modules\":[{\"id\":\"" + module_id + "\",\"scenario\":\"" + State + "\"}]}}" ;
@@ -1968,7 +1968,7 @@ void CNetatmo::Get_Scenarios(std::string home_id, Json::Value& scenarios)
 	{
 		if (!root["body"]["home"].empty())
 		{
-			SaveJson2Disk(root, std::string("./scenario-s " + m_Name + " : " + home_id + ".txt"));
+			SaveJson2Disk(root, std::string("./scenario-s " + m_Name + "_:_" + home_id + ".txt"));
 			scenarios = root["body"]["home"];
 
 			//Selected Scenario ?
@@ -2506,7 +2506,7 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 		if (!root["body"]["home"]["rooms"].isArray())
 			return false;
 		Json::Value mRoot = root["body"]["home"]["rooms"];
-		SaveJson2Disk(root, std::string("./HomeStatus_" + home_id + ".txt"));
+		SaveJson2Disk(root, std::string("./HomeStatus_" + m_Name + "_:_" + home_id + ".txt"));
 
 		for (auto room : mRoot)
 		{
@@ -2866,8 +2866,11 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 				if (!module["last_seen"].empty())
 				{
 					tNetatmoLastUpdate = static_cast<size_t>(module["last_seen"].asFloat());
-					// Check when module last updated values
-
+					// Check when module last updated values unless for Gateway and Wireless Switch
+					if (type_module == "NLG")
+						tNetatmoLastUpdate = 0;
+					else if (type_module == "NLG")
+						tNetatmoLastUpdate = 0;
 				}
 				if (!module["reachable"].empty())
 				{
