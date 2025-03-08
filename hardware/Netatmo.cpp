@@ -2716,6 +2716,7 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 			Log(LOG_STATUS, "Scenarios Selector Switch");
 			std::string lName = "Scenario";
 			bool bIsActive = 0;
+			int ChildID = 14;
 			int Image = 0;
 			bool bDropdown = false;
 			bool bHideOff = false;
@@ -2724,7 +2725,7 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 			uid << crcId;
 			std::string Selector = std::to_string(m_selectedScenario[home_id]); //Active selecting
 			m_ScheduleHomes[crcId] = home_id;
-			SendSelectorSwitch(crcId, 14, Selector, lName, Image, bDropdown, scenario_SchName, "", bHideOff, m_Name);   // No RF-level - Battery level
+			SendSelectorSwitch(crcId, ChildID, Selector, lName, Image, bDropdown, scenario_SchName, "", bHideOff, m_Name);   // No RF-level - Battery level
 		}
 	}
 	//Parse module and create / update domoticz devices
@@ -3563,6 +3564,7 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 	}
 
 	//Parse Persons
+	Log(LOG_STATUS, "Parse Persons");
 	int iPersonIndex = 0;
 	if (!root["body"]["home"]["persons"].empty())
 	{
