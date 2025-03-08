@@ -2722,7 +2722,7 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 			int crcId = Crc32(0, (const unsigned char*)home_id.c_str(), home_id.length());
 			std::stringstream uid;
 			uid << crcId;
-			std::string Selector = m_selectedScenario[home_id]; //Active selecting
+			std::string Selector = std::to_string(m_selectedScenario[home_id]); //Active selecting
 			m_ScheduleHomes[crcId] = home_id;
 			SendSelectorSwitch(crcId, 14, Selector, lName, Image, bDropdown, scenario_SchName, "", bHideOff, m_Name);   // No RF-level - Battery level
 		}
