@@ -2867,9 +2867,9 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 				{
 					tNetatmoLastUpdate = static_cast<size_t>(module["last_seen"].asFloat());
 					// Check when module last updated values unless for Gateway and Wireless Switch
-					if (type_module == "NLG")
+					if (type == "NLG")
 						tNetatmoLastUpdate = 0;
-					else if (type_module == "NLG")
+					else if (type == "NLG")
 						tNetatmoLastUpdate = 0;
 				}
 				if (!module["reachable"].empty())
@@ -2898,7 +2898,7 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 					}
 					else
 					{
-						Log(LOG_ERROR, "cloud data for module [%s] no longer updated (module possibly disconnected) since %s", moduleName.c_str(), ctime(&tNetatmoLastUpdate));
+						Log(LOG_ERROR, "cloud data for module [%s] no longer updated (module possibly disconnected) since %s type = %s", moduleName.c_str(), ctime(&tNetatmoLastUpdate), type.c_str());
 						connected = false;  //update, create sensor Blocked if cloud data is older then Interval.
 					}
 				}
