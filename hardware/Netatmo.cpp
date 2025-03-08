@@ -1740,6 +1740,7 @@ void CNetatmo::GetHomesDataDetails()
 						std::string user_id = user["id"].asString();
 					}
 				}
+				Debug(DEBUG_HARDWARE, "Get HomeStatus Details");
 			}
 		}
 	}
@@ -1838,9 +1839,12 @@ void CNetatmo::GetHomeStatusDetails()
 
 		//Parse API response
 		bRet = ParseHomeStatus(sResult, root, home_id);
-
+		Debug(DEBUG_HARDWARE, "Parse Home Status %s", home_id);
 		if (m_bPollGetEvents)
+		{
 			Get_Events(home_data, device_types, event_id, person_id, bridge_id, module_id, offset, size, locale);
+			Debug(DEBUG_HARDWARE, "Parse Home Status %d index %d", m_bPollGetEvents, i);
+		}
 	}
 }
 
@@ -2487,7 +2491,7 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 
 	//Parse Rooms
 	// First pars Rooms for Thermostat
-	//Debug(DEBUG_HARDWARE, "Home ID = %s ", home_id.c_str());
+	Debug(DEBUG_HARDWARE, "Home ID = %s ", home_id.c_str());
 	std::string setpoint_mode_str;
 	std::string setpoint_mode_fan;
 	int setpoint_mode_i;
