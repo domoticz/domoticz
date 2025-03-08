@@ -18,14 +18,14 @@ namespace tcp {
 
 		CTCPServerInt::CTCPServerInt(const std::string& address, const std::string& port, CTCPServer* pRoot) :
 			CTCPServerIntBase(pRoot),
-			io_service_(),
-			acceptor_(io_service_)
+			io_context_(),
+			acceptor_(io_context_)
 		{
 			// Open the acceptor with the option to reuse the address (i.e. SO_REUSEADDR).
-			boost::asio::ip::tcp::resolver resolver(io_service_);
-			boost::asio::ip::tcp::resolver::query query(address, port);
-			boost::asio::ip::tcp::endpoint endpoint = *resolver.resolve(query);
-			acceptor_.open(endpoint.protocol());
+			boost::asio::ip::tcp::resolver resolver(io_context_);
+			boost::asio::ip::basic_resolver<boost::asio::ip::tcp>::results_type endpoints = resolver.resolve(address, port);
+			auto endpoint = *endpoints.begin();
+			acceptor_.open(endpoint.endpoint().protocol());
 			acceptor_.set_option(boost::asio::ip::tcp::acceptor::reuse_address(true));
 			// bind to both ipv6 and ipv4 sockets for the "::" address only
 			if (address == "::")
@@ -35,7 +35,7 @@ namespace tcp {
 			acceptor_.bind(endpoint);
 			acceptor_.listen();
 
-			new_connection_ = std::make_shared<CTCPClient>(io_service_, this);
+			new_connection_ = std::make_shared<CTCPClient>(io_context_, this);
 			if (new_connection_ == nullptr)
 			{
 				_log.Log(LOG_ERROR, "Error creating new client!");
@@ -47,24 +47,24 @@ namespace tcp {
 
 		void CTCPServerInt::start()
 		{
-			// The io_service::run() call will block until all asynchronous operations
+			// The io_context::run() call will block until all asynchronous operations
 			// have finished. While the server is running, there is always at least one
 			// asynchronous operation outstanding: the asynchronous accept call waiting
 			// for new incoming connections.
-			io_service_.run();
+			io_context_.run();
 		}
 
 		void CTCPServerInt::stop()
 		{
 			// Post a call to the stop function so that server::stop() is safe to call
 			// from any thread.
-			io_service_.post([this] { handle_stop(); });
+			boost::asio::post([this] { handle_stop(); });
 		}
 
 		void CTCPServerInt::handle_stop()
 		{
 			// The server is stopped by cancelling all outstanding asynchronous
-			// operations. Once all operations have finished the io_service::run() call
+			// operations. Once all operations have finished the io_context::run() call
 			// will exit.
 			acceptor_.close();
 			stopAllClients();
@@ -88,7 +88,7 @@ namespace tcp {
 			connections_.insert(new_connection_);
 			new_connection_->start();
 
-			new_connection_.reset(new CTCPClient(io_service_, this));
+			new_connection_.reset(new CTCPClient(io_context_, this));
 
 			acceptor_.async_accept(*(new_connection_->socket()), [this](auto&& err) { handleAccept(err); });
 		}

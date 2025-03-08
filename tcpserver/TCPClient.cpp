@@ -19,7 +19,7 @@ namespace tcp {
 			delete socket_;
 		}
 
-		CTCPClient::CTCPClient(boost::asio::io_service& ios, CTCPServerIntBase* pManager)
+		CTCPClient::CTCPClient(boost::asio::io_context& ios, CTCPServerIntBase* pManager)
 			: CTCPClientBase(pManager)
 		{
 			socket_ = new boost::asio::ip::tcp::socket(ios);

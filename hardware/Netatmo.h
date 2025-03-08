@@ -26,6 +26,7 @@ class CNetatmo : public CDomoticzHardwareBase
                 NETYPE_HOMESDATA,
                 NETYPE_STATUS,
 
+		NETYPE_SCENARIOS,
                 NETYPE_EVENTS,
                 NETYPE_SETSTATE,
                 NETYPE_SETROOMTHERMPOINT,
@@ -46,6 +47,7 @@ class CNetatmo : public CDomoticzHardwareBase
         bool WriteToHardware(const char *, unsigned char) override;
         void SetSetpoint(unsigned long ID, const float temp);
         bool SetProgramState(const int uid, const int newState);
+	bool SetDimmerState(const int uid, const int newState);
         void Get_Respons_API(const m_eNetatmoType& NType, std::string& sResult, std::string& home_id, bool& bRet, Json::Value& root, std::string extra_data);
 
       private:
@@ -82,6 +84,7 @@ class CNetatmo : public CDomoticzHardwareBase
 	bool m_bPollHomesData;
 	bool m_bPollHomeStatus;
 	bool m_bPollHome;
+	bool m_bFirstTimeHomeStatus;
 	bool m_bFirstTimeThermostat;
 	bool m_bFirstTimeWeatherData;
 	bool m_bForceSetpointUpdate;
@@ -110,6 +113,7 @@ class CNetatmo : public CDomoticzHardwareBase
 	void Get_Picture();
 	void Get_Measure(std::string gateway, std::string module_id, std::string scale, std::string type);
 	void Get_Events(std::string home_id, std::string device_types, std::string event_id, std::string person_id, std::string device_id, std::string module_id, bool offset, bool size, std::string locale);
+	void Get_Scenarios(std::string home_id, Json::Value& scenarios);
 
 	bool ParseStationData(const std::string &sResult, bool bIsThermostat);
 	bool ParseHomeStatus(const std::string &sResult, Json::Value& root, std::string& home_id);
@@ -154,6 +158,7 @@ class CNetatmo : public CDomoticzHardwareBase
 	std::map<uint64_t, int> m_ModuleIDs;
 	std::map<uint8_t, std::string> m_DeviceModuleID;
 	std::map<uint8_t, std::string> m_LightDeviceID;
+	std::map<uint8_t, std::string> m_PowerDeviceID;
 	std::map<std::string, std::string> m_DeviceHomeID;
 	std::map<std::string, std::string> m_PersonsNames;
 	std::map<int, std::string> m_ScheduleNames;

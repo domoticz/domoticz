@@ -66,7 +66,7 @@ protected:
 	int m_TLS_Version = 0;
 	std::string m_TopicIn;
 	std::string m_TopicOut;
-
+	bool m_RetainedMode = false;
 private:
 	bool ConnectInt();
 	bool ConnectIntEx();

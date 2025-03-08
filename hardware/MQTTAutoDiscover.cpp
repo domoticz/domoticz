@@ -500,12 +500,12 @@ The result will be:
   "mode_command_topic": "zigbee2mqtt/My-ThermControl1/set",
   "temperature_command_topic": "zigbee2mqtt/My-ThermControl1/set",
 */
-void MQTTAutoDiscover::FixCommandTopicStateTemplate(std::string& command_topic, std::string& state_template)
+void MQTTAutoDiscover::FixCommandTopic(std::string& command_topic, std::string& command_template)
 {
-	size_t pos = state_template.find("value_json.");
+	size_t pos = command_template.find("value_json.");
 	if (pos == std::string::npos)
 		return; //no fixing needed
-	std::string value_json = state_template.substr(pos + std::string("value_json.").size());
+	std::string value_json = command_template.substr(pos + std::string("value_json.").size());
 	stdreplace(value_json, "]", "");
 
 	std::string svalue = "/" + value_json;
@@ -1396,18 +1396,20 @@ void MQTTAutoDiscover::on_auto_discovery_message(const struct mosquitto_message*
 
 		CleanValueTemplate(pSensor->mode_state_template);
 		CleanValueTemplate(pSensor->mode_command_template);
+		CleanValueTemplate(pSensor->fan_state_template);
 		CleanValueTemplate(pSensor->fan_command_template);
+		CleanValueTemplate(pSensor->swing_state_template);
 		CleanValueTemplate(pSensor->swing_command_template);
 		CleanValueTemplate(pSensor->temperature_state_template);
 		CleanValueTemplate(pSensor->current_temperature_template);
 		CleanValueTemplate(pSensor->preset_mode_value_template);
 		CleanValueTemplate(pSensor->preset_mode_command_template);
 
-		FixCommandTopicStateTemplate(pSensor->mode_command_topic, pSensor->mode_state_template);
-		FixCommandTopicStateTemplate(pSensor->fan_command_topic, pSensor->fan_state_template);
-		FixCommandTopicStateTemplate(pSensor->swing_command_topic, pSensor->swing_state_template);
-		FixCommandTopicStateTemplate(pSensor->temperature_command_topic, pSensor->temperature_command_template);
-		FixCommandTopicStateTemplate(pSensor->preset_mode_command_topic, pSensor->preset_mode_value_template);
+		FixCommandTopic(pSensor->mode_command_topic, pSensor->mode_command_template);
+		FixCommandTopic(pSensor->fan_command_topic, pSensor->fan_command_template);
+		FixCommandTopic(pSensor->swing_command_topic, pSensor->swing_command_template);
+		FixCommandTopic(pSensor->temperature_command_topic, pSensor->temperature_command_template);
+		FixCommandTopic(pSensor->preset_mode_command_topic, pSensor->preset_mode_command_template);
 
 		//number (some configs use strings instead of numbers)
 		if (!root["min"].empty())
@@ -3150,7 +3152,17 @@ void MQTTAutoDiscover::handle_auto_discovery_climate(_tMQTTASensor* pSensor, con
 				std::string szDeviceName = result[0][1];
 				int nValue = atoi(result[0][2].c_str());
 				std::string sValue = result[0][3];
-				std::string sOptions = result[0][4];
+				std::string sOldOptions = result[0][4];
+				std::map<std::string, std::string> oldOptionsMap = m_sql.BuildDeviceOptions(sOldOptions);
+
+				std::vector<std::string> strarray;
+
+				size_t totalOldOptions = 0;
+				if (oldOptionsMap.find("LevelNames") != oldOptionsMap.end())
+				{
+					StringSplit(oldOptionsMap["LevelNames"], "|", strarray);
+					totalOldOptions = strarray.size();
+				}
 
 				int iActualIndex = current_mode.empty() ? 0 : -1;
 
@@ -3178,10 +3190,20 @@ void MQTTAutoDiscover::handle_auto_discovery_climate(_tMQTTASensor* pSensor, con
 					std::map<std::string, std::string> optionsMap;
 					optionsMap["SelectorStyle"] = "0";
 					optionsMap["LevelOffHidden"] = "false";
-					optionsMap["LevelNames"] = tmpOptionString;
+
+					StringSplit(tmpOptionString, "|", strarray);
+					size_t totalOptions = strarray.size();
+
+					if (totalOptions != totalOldOptions)
+					{
+						//Avoid renamed level names by user in Domoticz
+						optionsMap["LevelNames"] = tmpOptionString;
+					}
+					else
+						optionsMap["LevelNames"] = oldOptionsMap["LevelNames"];
 
 					std::string newOptions = m_sql.FormatDeviceOptions(optionsMap);
-					if (newOptions != sOptions)
+					if (newOptions != sOldOptions)
 						m_sql.SetDeviceOptions(DevRowIdx, optionsMap);
 
 					pSensor->nValue = (iActualIndex == 0) ? 0 : 2;
@@ -3261,7 +3283,18 @@ void MQTTAutoDiscover::handle_auto_discovery_climate(_tMQTTASensor* pSensor, con
 				std::string szDeviceName = result[0][1];
 				int nValue = atoi(result[0][2].c_str());
 				std::string sValue = result[0][3];
-				std::string sOptions = result[0][4];
+				std::string sOldOptions = result[0][4];
+
+				std::map<std::string, std::string> oldOptionsMap = m_sql.BuildDeviceOptions(sOldOptions);
+
+				std::vector<std::string> strarray;
+
+				size_t totalOldOptions = 0;
+				if (oldOptionsMap.find("LevelNames") != oldOptionsMap.end())
+				{
+					StringSplit(oldOptionsMap["LevelNames"], "|", strarray);
+					totalOldOptions = strarray.size();
+				}
 
 				int iActualIndex = current_mode.empty() ? 0 : -1;
 
@@ -3289,10 +3322,20 @@ void MQTTAutoDiscover::handle_auto_discovery_climate(_tMQTTASensor* pSensor, con
 					std::map<std::string, std::string> optionsMap;
 					optionsMap["SelectorStyle"] = "0";
 					optionsMap["LevelOffHidden"] = "false";
-					optionsMap["LevelNames"] = tmpOptionString;
+
+					StringSplit(tmpOptionString, "|", strarray);
+					size_t totalOptions = strarray.size();
+
+					if (totalOptions != totalOldOptions)
+					{
+						//Avoid renamed level names by user in Domoticz
+						optionsMap["LevelNames"] = tmpOptionString;
+					}
+					else
+						optionsMap["LevelNames"] = oldOptionsMap["LevelNames"];
 
 					std::string newOptions = m_sql.FormatDeviceOptions(optionsMap);
-					if (newOptions != sOptions)
+					if (newOptions != sOldOptions)
 						m_sql.SetDeviceOptions(DevRowIdx, optionsMap);
 
 					pSensor->nValue = (iActualIndex == 0) ? 0 : 2;
@@ -3391,7 +3434,18 @@ void MQTTAutoDiscover::handle_auto_discovery_climate(_tMQTTASensor* pSensor, con
 				std::string szDeviceName = result[0][1];
 				int nValue = atoi(result[0][2].c_str());
 				std::string sValue = result[0][3];
-				std::string sOptions = result[0][4];
+				std::string sOldOptions = result[0][4];
+
+				std::map<std::string, std::string> oldOptionsMap = m_sql.BuildDeviceOptions(sOldOptions);
+
+				std::vector<std::string> strarray;
+
+				size_t totalOldOptions = 0;
+				if (oldOptionsMap.find("LevelNames") != oldOptionsMap.end())
+				{
+					StringSplit(oldOptionsMap["LevelNames"], "|", strarray);
+					totalOldOptions = strarray.size();
+				}
 
 				int iActualIndex = current_mode.empty() ? 0 : -1;
 
@@ -3414,25 +3468,32 @@ void MQTTAutoDiscover::handle_auto_discovery_climate(_tMQTTASensor* pSensor, con
 					bValid = false;
 				}
 
-				if (bValid)
+				std::map<std::string, std::string> optionsMap;
+				optionsMap["SelectorStyle"] = "0";
+				optionsMap["LevelOffHidden"] = "false";
+
+				StringSplit(tmpOptionString, "|", strarray);
+				size_t totalOptions = strarray.size();
+
+				if (totalOptions != totalOldOptions)
 				{
-					std::map<std::string, std::string> optionsMap;
-					optionsMap["SelectorStyle"] = "0";
-					optionsMap["LevelOffHidden"] = "false";
+					//Avoid renamed level names by user in Domoticz
 					optionsMap["LevelNames"] = tmpOptionString;
+				}
+				else
+					optionsMap["LevelNames"] = oldOptionsMap["LevelNames"];
 
-					std::string newOptions = m_sql.FormatDeviceOptions(optionsMap);
-					if (newOptions != sOptions)
-						m_sql.SetDeviceOptions(DevRowIdx, optionsMap);
+				std::string newOptions = m_sql.FormatDeviceOptions(optionsMap);
+				if (newOptions != sOldOptions)
+					m_sql.SetDeviceOptions(DevRowIdx, optionsMap);
 
-					pSensor->nValue = (iActualIndex == 0) ? 0 : 2;
-					pSensor->sValue = std_format("%d", iActualIndex);
+				pSensor->nValue = (iActualIndex == 0) ? 0 : 2;
+				pSensor->sValue = std_format("%d", iActualIndex);
 
-					if ((pSensor->nValue != nValue) || (pSensor->sValue != sValue))
-					{
-						UpdateValueInt(m_HwdID, pSensor->unique_id.c_str(), unit, pSensor->devType, pSensor->subType, pSensor->SignalLevel, pSensor->BatteryLevel, pSensor->nValue,
-							pSensor->sValue.c_str(), szDeviceName);
-					}
+				if ((pSensor->nValue != nValue) || (pSensor->sValue != sValue))
+				{
+					UpdateValueInt(m_HwdID, pSensor->unique_id.c_str(), unit, pSensor->devType, pSensor->subType, pSensor->SignalLevel, pSensor->BatteryLevel, pSensor->nValue,
+						pSensor->sValue.c_str(), szDeviceName);
 				}
 			}
 		}
@@ -3492,7 +3553,7 @@ void MQTTAutoDiscover::handle_auto_discovery_climate(_tMQTTASensor* pSensor, con
 					else
 					{
 						//should have a template for a json value!
-						Log(LOG_ERROR, "Climate device no idea how to interpret fan state values (no fan state template!)(%s)", pSensor->unique_id.c_str());
+						Log(LOG_ERROR, "Climate device no idea how to interpret swing state values (no swing state template!)(%s)", pSensor->unique_id.c_str());
 						bValid = false;
 					}
 				}
@@ -3521,7 +3582,17 @@ void MQTTAutoDiscover::handle_auto_discovery_climate(_tMQTTASensor* pSensor, con
 				std::string szDeviceName = result[0][1];
 				int nValue = atoi(result[0][2].c_str());
 				std::string sValue = result[0][3];
-				std::string sOptions = result[0][4];
+				std::string sOldOptions = result[0][4];
+				std::map<std::string, std::string> oldOptionsMap = m_sql.BuildDeviceOptions(sOldOptions);
+
+				std::vector<std::string> strarray;
+
+				size_t totalOldOptions = 0;
+				if (oldOptionsMap.find("LevelNames") != oldOptionsMap.end())
+				{
+					StringSplit(oldOptionsMap["LevelNames"], "|", strarray);
+					totalOldOptions = strarray.size();
+				}
 
 				int iActualIndex = current_mode.empty() ? 0 : -1;
 
@@ -3540,29 +3611,37 @@ void MQTTAutoDiscover::handle_auto_discovery_climate(_tMQTTASensor* pSensor, con
 
 				if (iActualIndex == -1)
 				{
-					Log(LOG_ERROR, "Climate device invalid/unknown fan mode received! (%s: %s)", pSensor->unique_id.c_str(), current_mode.c_str());
+					Log(LOG_ERROR, "Climate device invalid/unknown swing mode received! (%s: %s)", pSensor->unique_id.c_str(), current_mode.c_str());
 					bValid = false;
 				}
 
-				if (bValid)
+				std::map<std::string, std::string> optionsMap;
+				optionsMap["SelectorStyle"] = "0";
+				optionsMap["LevelOffHidden"] = "false";
+
+				StringSplit(tmpOptionString, "|", strarray);
+				size_t totalOptions = strarray.size();
+
+				if (totalOptions != totalOldOptions)
 				{
-					std::map<std::string, std::string> optionsMap;
-					optionsMap["SelectorStyle"] = "0";
-					optionsMap["LevelOffHidden"] = "false";
+					//Avoid renamed level names by user in Domoticz
 					optionsMap["LevelNames"] = tmpOptionString;
+				}
+				else
+					optionsMap["LevelNames"] = oldOptionsMap["LevelNames"];
 
-					std::string newOptions = m_sql.FormatDeviceOptions(optionsMap);
-					if (newOptions != sOptions)
-						m_sql.SetDeviceOptions(DevRowIdx, optionsMap);
 
-					pSensor->nValue = (iActualIndex == 0) ? 0 : 2;
-					pSensor->sValue = std_format("%d", iActualIndex);
+				std::string newOptions = m_sql.FormatDeviceOptions(optionsMap);
+				if (newOptions != sOldOptions)
+					m_sql.SetDeviceOptions(DevRowIdx, optionsMap);
 
-					if ((pSensor->nValue != nValue) || (pSensor->sValue != sValue))
-					{
-						UpdateValueInt(m_HwdID, pSensor->unique_id.c_str(), unit, pSensor->devType, pSensor->subType, pSensor->SignalLevel, pSensor->BatteryLevel, pSensor->nValue,
-							pSensor->sValue.c_str(), szDeviceName);
-					}
+				pSensor->nValue = (iActualIndex == 0) ? 0 : 2;
+				pSensor->sValue = std_format("%d", iActualIndex);
+
+				if ((pSensor->nValue != nValue) || (pSensor->sValue != sValue))
+				{
+					UpdateValueInt(m_HwdID, pSensor->unique_id.c_str(), unit, pSensor->devType, pSensor->subType, pSensor->SignalLevel, pSensor->BatteryLevel, pSensor->nValue,
+						pSensor->sValue.c_str(), szDeviceName);
 				}
 			}
 		}
@@ -4073,10 +4152,10 @@ void MQTTAutoDiscover::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 				int c = root["color"]["c"].asInt();
 				if (r == 0 && g == 0 && b == 0 && w == 0 && c == 0)
 				{
-					root["state"] = "OFF";
+					root["state"] = pSensor->payload_off;
 				}
 				else
-					root["state"] = "ON";
+					root["state"] = pSensor->payload_on;
 			}
 
 			bool bHandledValue = false;
@@ -4544,9 +4623,12 @@ bool MQTTAutoDiscover::SendSwitchCommand(const std::string& DeviceID, const std:
 
 				//This seems to cause issues for Tuya 2 gang dimmers... not sure why
 				//not sure if this is needed for other devices
-				if (m_discovered_devices[pSensor->device_identifiers].manufacturer == "TuYa")
+				if (
+					(m_discovered_devices[pSensor->device_identifiers].manufacturer == "TuYa")
+					|| (m_discovered_devices[pSensor->device_identifiers].manufacturer == "Tuya")
+					)
 				{
-					root["state"] = (slevel > 0) ? "ON" : "OFF";
+					root["state"] = (slevel > 0) ? pSensor->payload_on : pSensor->payload_off;
 				}
 			}
 			else
@@ -4774,16 +4856,14 @@ bool MQTTAutoDiscover::SendSwitchCommand(const std::string& DeviceID, const std:
 				szCommandTopic = pSensor->mode_command_topic;
 				if (!pSensor->mode_command_template.empty())
 					state_template = pSensor->mode_command_template;
-				else if (!pSensor->mode_state_template.empty())
-					state_template = pSensor->mode_state_template;
 			}
 			else if ((!pSensor->preset_modes.empty()) && (Unit == CLIMATE_PRESET_UNIT))
 			{
 				if (iLevel < (int)pSensor->preset_modes.size())
 					newState = pSensor->preset_modes.at(iLevel);
 				szCommandTopic = pSensor->preset_mode_command_topic;
-				if (!pSensor->preset_mode_value_template.empty())
-					state_template = pSensor->preset_mode_value_template;
+				if (!pSensor->preset_mode_command_template.empty())
+					state_template = pSensor->preset_mode_command_template;
 			}
 			else if ((!pSensor->fan_modes.empty()) && (Unit == CLIMATE_FAN_MODE_UNIT))
 			{
@@ -4792,8 +4872,6 @@ bool MQTTAutoDiscover::SendSwitchCommand(const std::string& DeviceID, const std:
 				szCommandTopic = pSensor->fan_command_topic;
 				if (!pSensor->fan_command_template.empty())
 					state_template = pSensor->fan_command_template;
-				else if (!pSensor->fan_state_template.empty())
-					state_template = pSensor->fan_state_template;
 			}
 			else if ((!pSensor->swing_modes.empty()) && (Unit == CLIMATE_SWING_MODE_UNIT))
 			{
@@ -4802,8 +4880,6 @@ bool MQTTAutoDiscover::SendSwitchCommand(const std::string& DeviceID, const std:
 				szCommandTopic = pSensor->swing_command_topic;
 				if (!pSensor->swing_command_template.empty())
 					state_template = pSensor->swing_command_template;
-				else if (!pSensor->swing_state_template.empty())
-					state_template = pSensor->swing_state_template;
 			}
 		}
 		else if (

@@ -498,10 +498,11 @@ void Enever::parseElectricity(const std::string& szElectricityData, const bool b
 			bDoesMeterExitstInSystem = true;
 		}
 
+		std::string szLastProviderPrice = "";
+
 		for (const auto& itt : root["data"])
 		{
 			std::string szDate = itt["datum"].asString();
-			std::string szPrice = itt["prijs"].asString();
 
 			time_t rtime = 0;
 			struct tm lltime;
@@ -512,10 +513,26 @@ void Enever::parseElectricity(const std::string& szElectricityData, const bool b
 			}
 
 			std::string szProviderPriceName = "prijs" + m_szProviderElectricity;
-			if (itt[szProviderPriceName].empty())
-				return; //no price for this provider
+			std::string szProviderPrice;
+			if (
+				(itt[szProviderPriceName].empty())
+				|| (itt[szProviderPriceName].isNull())
+				)
+			{
+				//no price for this provider
+				//Should not happen!
+				Log(LOG_ERROR, "No price for provider '%s' at %s!! (null)", m_szProviderElectricity.c_str(), szDate.c_str());
+				if (szLastProviderPrice.empty())
+					continue; //can't work with this!
+				szProviderPrice = szLastProviderPrice;
+			}
+			else {
+				szProviderPrice = itt[szProviderPriceName].asString();
+			}
 
-			std::string szProviderPrice = itt[szProviderPriceName].asString();
+			szLastProviderPrice = szProviderPrice;
+
+
 			float fProviderPrice = std::stof(szProviderPrice);
 
 			int64_t iRate = (int64_t)round(fProviderPrice * 10000); //4 digts after comma!
@@ -698,7 +715,6 @@ void Enever::parseGas()
 		localtime_r(&atime, &ltime);
 
 		std::string szDate = root["data"][0]["datum"].asString();
-		std::string szPrice = root["data"][0]["prijs"].asString();
 
 		time_t rtime;
 		struct tm lltime;

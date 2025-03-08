@@ -1,9 +1,11 @@
 Version 2024.x
 - Implemented: Battery level for Setpoint sensors
+- Implemented: Floorplan, Add support for stop button
 - Implemented: RFXCom, Updated SDK
 - Implemented: Support for Honeywell Series 5/PIR
 - Implemented: Text sensor, now posible to edit direct from the GUI
 - Implemented: YouLess, added Water meter
+- Implemented: More default icons
 - Implemented: MQTT-AD, added support for Gas device class
 - Implemented: MQTT-AD, added support for Text device class
 - Implemented: MQTT-AD, better precission for kWh sensors
@@ -12,6 +14,8 @@ Version 2024.x
 - Implemented: MQTT-AD, power sensors for the Tuya SPM02
 - Implemented: MQTT-AD, support sensors that report humidity but sends 'null' values
 - Implemented: MQTT-AD, support for string field state objects
+- Implemented: MQTT Push 'Retained' mode option
+- Implemented: RFXCom, Falmec Support
 - Changed: dzVents, possible to pass a Domoticz device ID in notify() through the extra parameter
 - Changed: Energy Dashboard now also available for non-admin users
 - Changed: Energy Dashboard, Text object clipping rectangle
@@ -21,6 +25,8 @@ Version 2024.x
 - Changed: Using OpenStreetMap for Latitude/Longitude query in settings
 - Fixed: Custom Icons, making sure they are valid and loaded OK
 - Fixed: Computed Meter summation
+- Fixed: Floorplan, corrected open/close icon behaviour
+- Fixed: MQTT Push, making sure direct push is working
 - Fixed: Possible mutex lock issue when logging
 - Fixed: Pushers, corrected Gas value rounding
 - Fixed: Python framework, invalid sValue when creating a General/kWh sensor

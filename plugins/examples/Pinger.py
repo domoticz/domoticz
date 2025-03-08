@@ -3,7 +3,7 @@
 #           Author:     Dnpwwo, 2017 - 2018
 #
 """
-<plugin key="ICMP" name="Pinger (ICMP)" author="dnpwwo" version="3.1.4">
+<plugin key="ICMP" name="Pinger (ICMP)" author="dnpwwo" version="3.1.5">
     <description>
 ICMP Pinger Plugin.<br/><br/>
 Specify comma delimted addresses (IP or DNS names) of devices that are to be pinged.<br/>
@@ -144,8 +144,9 @@ class BasePlugin:
             for Device in Devices:
                 if (("Name" in Devices[Device].Options) and (Devices[Device].Options["Name"] == Connection.Name)):
                     UpdateDevice(Device, 0, "Off", TimedOut)
-        self.icmpConn.Close()
-        self.icmpConn = None
+        if (self.icmpConn != None):
+            self.icmpConn.Close()
+            self.icmpConn = None
 
     def onHeartbeat(self):
         Domoticz.Debug("Heartbeating...")

@@ -6,7 +6,7 @@
 
 namespace Plugins {
 
-	extern boost::asio::io_service ios;
+	extern boost::asio::io_context ios;
 
 	class CPluginTransport
 	{
@@ -85,8 +85,8 @@ namespace Plugins {
 		  , m_Socket(nullptr){};
 	  bool handleConnect() override;
 	  bool handleListen() override;
-	  virtual void handleAsyncResolve(const boost::system::error_code &err, boost::asio::ip::tcp::resolver::iterator endpoint_iterator);
-	  virtual void handleAsyncConnect(const boost::system::error_code &err, const boost::asio::ip::tcp::resolver::iterator &endpoint_iterator);
+	  virtual void handleAsyncResolve(const boost::system::error_code &err, boost::asio::ip::tcp::resolver::results_type endpoints);
+	  virtual void handleAsyncConnect(const boost::system::error_code &err, const boost::asio::ip::tcp::endpoint &endpoint);
 	  virtual void handleAsyncAccept(boost::asio::ip::tcp::socket *pSocket, const boost::system::error_code &error);
 	  void handleRead(const boost::system::error_code &e, std::size_t bytes_transferred) override;
 	  void handleWrite(const std::vector<byte> &pMessage) override;
@@ -111,7 +111,7 @@ namespace Plugins {
 		  : CPluginTransportTCP(HwdID, pConnection, Address, Port)
 		  , m_Context(nullptr)
 		  , m_TLSSock(nullptr){};
-	  void handleAsyncConnect(const boost::system::error_code &err, const boost::asio::ip::tcp::resolver::iterator &endpoint_iterator) override;
+	  void handleAsyncConnect(const boost::system::error_code &err, const boost::asio::ip::tcp::endpoint &endpoint) override;
 	  void handleRead(const boost::system::error_code &e, std::size_t bytes_transferred) override;
 	  void handleWrite(const std::vector<byte> &pMessage) override;
 	  ~CPluginTransportTCPSecure() override;
@@ -151,7 +151,7 @@ namespace Plugins {
 		  , m_Socket(nullptr)
 		  , m_Timer(nullptr)
 		  , m_SequenceNo(-1){};
-	  void handleAsyncResolve(const boost::system::error_code &err, const boost::asio::ip::icmp::resolver::iterator &endpoint_iterator);
+	  void handleAsyncResolve(const boost::system::error_code &err, boost::asio::ip::icmp::resolver::results_type endpoints);
 	  bool handleListen() override;
 	  void handleTimeout(const boost::system::error_code &) override;
 	  void handleRead(const boost::system::error_code &e, std::size_t bytes_transferred) override;

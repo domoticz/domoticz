@@ -599,6 +599,7 @@ define(['app', 'livesocket'], function (app) {
 			else if (
 				(item.SubType.indexOf("Itho") == 0) ||
 				(item.SubType.indexOf("Lucci") == 0) ||
+				(item.SubType.indexOf("Falmec") == 0) ||
 				(item.SubType.indexOf("Westinghouse") == 0)
 			) {
 				img = $(id + " #img").html();
@@ -1113,6 +1114,10 @@ define(['app', 'livesocket'], function (app) {
 							) {
 								bAddTimer = false;
 								xhtm += '\t      <td id="img"><img src="images/Fan48_On.png" height="48" width="48" class="lcursor" onclick="ShowLucciPopup(event, ' + item.idx + ', ' + item.Protected + ', ' + window.myglobals.ismobile + ');"></td>\n';
+							}
+							else if (item.SubType.indexOf("Falmec") == 0) {
+								bAddTimer = false;
+								xhtm += '\t      <td id="img"><img src="images/Fan48_On.png" height="48" width="48" class="lcursor" onclick="ShowFalmecPopup(event, ' + item.idx + ', ' + item.Protected + ', ' + window.myglobals.ismobile + ');"></td>\n';
 							}
 							else {
 								if (

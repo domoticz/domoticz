@@ -22,3 +22,17 @@ Rain;Rain;Rain
 clock;Clock;Chronological device
 Irrigation;Irrigation;Irrigation Zone
 AC;Air Conditioner/HVAC;Air Conditioner/HVAC
+Coffee;Coffee Machine;Coffee Machine
+GLight;Garden Light;Garden Light
+Strip;LED Strip;LED Strip
+AirMeasure;Air Quality;Air Quality Measurement
+WashingMachine;Washer/Dryer;Washing or Drying Machine
+pool;Pool;Pool
+Charger;Charger;Charger
+Inverter;Inverter;Inverter
+Solar;Solar Panels;Solar Panels
+Soil;Soil;Soil Moisture Sensor
+Window;Window;Window
+Tap;Tap;Tap / Valve
+Radiator;Radiator;Radiator
+Pump;Pump;Pump / Ventilation

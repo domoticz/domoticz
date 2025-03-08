@@ -25,6 +25,11 @@ define(['app'], function (app) {
 							if (tls_version == 0)
 								tls_version = 2;
 							$("#mqttremote #combotlsversion").val(tls_version);
+
+							$('#mqttremote #retained_mode').prop('checked', false);
+							if (data.retained_mode) {
+								$('#mqttremote #retained_mode').prop('checked', true);
+							}
 						}
 					}
 				},
@@ -50,6 +55,11 @@ define(['app'], function (app) {
 			var topicout = $('#mqttremote #topicout').val();
 			var cafile = $('#mqttremote #cafile').val();
 			var tlsversion = $("#mqttremote #combotlsversion").val();
+			var retained_mode = 0;	
+			if ($('#mqttremote #retained_mode').is(":checked"))
+			{
+				retained_mode = 1;
+			}
 
 			$.ajax({
 				 url:
@@ -61,7 +71,8 @@ define(['app'], function (app) {
 					"&password=" + encodeURIComponent(password) +
 					"&topicout=" + encodeURIComponent(topicout) +
 					"&cafile=" + encodeURIComponent(cafile) +
-					"&tlsversion=" + tlsversion,
+					"&tlsversion=" + tlsversion +
+					"&retained_mode=" + retained_mode,
 				 async: false, 
 				 dataType: 'json',
 				 success: function(data) {

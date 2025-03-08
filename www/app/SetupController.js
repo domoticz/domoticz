@@ -291,7 +291,7 @@ define(['app'], function (app) {
 			
 			//Populate Energy Dashboard Devices
 			$.ajax({
-				url: "json.htm?displaydisabled=0&displayhidden=0&filter=all&param=getdevices&type=command&used=true&order=Name",
+				url: "json.htm?displaydisabled=1&displayhidden=1&filter=all&param=getdevices&type=command&used=true&order=Name",
 				async: false,
 				dataType: 'json',
 				success: function (data) {

@@ -100,7 +100,7 @@ class XiaomiGateway : public CDomoticzHardwareBase
 	class xiaomi_udp_server
 	{
 	      public:
-		xiaomi_udp_server(boost::asio::io_service &io_service, int m_HwdID, const std::string &gatewayIp, const std::string &localIp, bool listenPort9898, bool outputMessage,
+		xiaomi_udp_server(boost::asio::io_context &io_context, int m_HwdID, const std::string &gatewayIp, const std::string &localIp, bool listenPort9898, bool outputMessage,
 				  bool includeVolage, XiaomiGateway *parent);
 		~xiaomi_udp_server() = default;
 
