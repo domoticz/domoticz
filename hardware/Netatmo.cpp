@@ -1210,7 +1210,7 @@ bool CNetatmo::SetSchedule(int uId, int selected)
 		if (!Login())
 			return false;
 	}
-	
+
 	//std::string scheduleName = m_ScheduleNames[selected];
 	std::string schedule_Id = m_ScheduleIDs[selected];
 	std::string homeid = m_DeviceHomeID[schedule_Id];            // Home_ID
@@ -1713,7 +1713,6 @@ void CNetatmo::GetHomesDataDetails()
 							Schedule_Names[index] = schedule["name"].asString();
 						}
 						m_ScheduleIDs[index] = schedule_id; //Not possible with multiple Homes
-						
 
 						m_DeviceHomeID[schedule_id] = homeID;
 						if (!schedule["selected"].empty() && schedule["selected"].asBool() && schedule_type == "therm")
@@ -2715,6 +2714,8 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 			if (scenario_SchName.size() > 0)  scenario_SchName.resize(scenario_SchName.size() - 1); 
 			m_ModuleNames["999"] = scenario_SchName;
 		}
+		scenario_type.clear();         //Blocking Scenarios Selector Switch
+
 		if (!scenario_type.empty())
 		{
 			Log(LOG_STATUS, "Scenarios Selector Switch");
@@ -2869,7 +2870,7 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 					// Check when module last updated values unless for Gateway and Wireless Switch
 					if (type == "NLG")
 						tNetatmoLastUpdate = 0;
-					else if (type == "NLG")
+					else if (type == "NLT")
 						tNetatmoLastUpdate = 0;
 				}
 				if (!module["reachable"].empty())
@@ -3421,7 +3422,7 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 							ss << itt->first;
 							//
 						}
-						
+
 						//Json::Value json_data = m_Schedule_Names[home_id];
 						int index = 10;
 						Debug(DEBUG_HARDWARE, "allSchName Data %s", allSchName.c_str());
@@ -3581,7 +3582,7 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 	{
 		if (!root["body"]["home"]["persons"].isArray())
 			return false;
-		
+
 		Json::Value mRoot = root["body"]["home"]["persons"];
 
 		for (auto person : mRoot)
