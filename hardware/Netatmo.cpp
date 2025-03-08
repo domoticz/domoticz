@@ -2730,6 +2730,7 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 			std::string Selector;
 			Selector = std::to_string(m_selectedScenario[home_id]); //Active selecting
 			m_ScheduleHomes[crcId] = home_id;
+			m_PowerDeviceID[crcId] = lName;
 			SendSelectorSwitch(crcId, ChildID, Selector, lName, Image, bDropdown, scenario_SchName, "", bHideOff, m_Name);   // No RF-level - Battery level
 		}
 	}
