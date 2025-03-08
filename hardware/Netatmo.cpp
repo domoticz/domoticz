@@ -897,7 +897,7 @@ bool CNetatmo::SetProgramState(const int uid, const int newState)
 		else if (type_module == "NLG")
 		{
 			std::string SchName = m_ModuleNames["999"];
-
+			Home_id = module_id;
 			std::map<int, std::string> scenarios_names;
 			scenarios_names = m_Scenarios[Home_id];
 			std::string scenario_Name;
@@ -919,7 +919,7 @@ bool CNetatmo::SetProgramState(const int uid, const int newState)
 			Json::Value json_data;
 			//json_data {"body":{"home":{"id":
 			json_data["home"]["id"] = Home_id;
-			json_data["home"]["modules"][0]["id"] = module_id;
+			//json_data["home"]["modules"][0]["id"] = module_id;
 			json_data["home"]["modules"][0]["scenario"] = scenario_Name;
 			_data = json_data.toStyledString();
 			//_data = "{\"home\":{\"id\":\"" + Home_id + "\",\"modules\":[{\"id\":\"" + module_id + "\",\"scenario\":\"" + State + "\"}]}}" ;
@@ -958,7 +958,7 @@ bool CNetatmo::SetProgramState(const int uid, const int newState)
 		}
 		else
 		{
-			Log(LOG_ERROR, "Netatmo: Invalid Power Device state!");
+			Log(LOG_ERROR, "Netatmo: Invalid Device state!");
 			_data = "";
 		}
 		home_data = "&";
@@ -2722,7 +2722,7 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 			bool bIsActive = 0;
 			int ChildID = 14;
 			int Image = 0;
-			bool bDropdown = false;
+			bool bDropdown = true;
 			bool bHideOff = false;
 			int crcId = Crc32(0, (const unsigned char*)home_id.c_str(), home_id.length());
 			std::stringstream uid;
@@ -2731,6 +2731,8 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 			Selector = std::to_string(m_selectedScenario[home_id]); //Active selecting
 			m_ScheduleHomes[crcId] = home_id;
 			m_PowerDeviceID[crcId] = lName;
+			m_DeviceModuleID[crcId] = home_id;
+			m_Device_types[module_id] = "NLG";
 			SendSelectorSwitch(crcId, ChildID, Selector, lName, Image, bDropdown, scenario_SchName, "", bHideOff, m_Name);   // No RF-level - Battery level
 		}
 	}
