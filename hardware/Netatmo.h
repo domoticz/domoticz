@@ -115,6 +115,7 @@ class CNetatmo : public CDomoticzHardwareBase
 	void Get_Events(std::string home_id, std::string device_types, std::string event_id, std::string person_id, std::string device_id, std::string module_id, bool offset, bool size, std::string locale);
 	void Get_Scenarios(std::string home_id, Json::Value& scenarios);
 
+	bool ParseScenarios(const std::string& sResult, Json::Value& scenarios, std::string home_id);
 	bool ParseStationData(const std::string &sResult, bool bIsThermostat);
 	bool ParseHomeStatus(const std::string &sResult, Json::Value& root, std::string& home_id);
 	bool ParseEvents(const std::string& sResult, Json::Value& root );
