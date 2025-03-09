@@ -3596,8 +3596,8 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 						Debug(DEBUG_HARDWARE, "SendBlindSensor (%d) %d %d command %d %d %s %s %d", crcId, ChildID, batteryLevel, Command, level, moduleName, m_Name, mrf_status);
 						bool bDeviceUsed = true;
 						bool bReversePosition = false;
-						bool bReverseState = false;
-						CreateBlindSwitch(crcId, ChildID, STYPE_BlindsPercentageWithStop, bDeviceUsed, bReversePosition, bReverseState, Command, level, moduleName, m_Name, batteryLevel, mrf_status);
+						bool bReverseState = false; 
+						CreateBlindSwitch(crcId, ChildID, STYPE_Blinds, bDeviceUsed, bReversePosition, bReverseState, Command, level, moduleName, m_Name, batteryLevel, mrf_status); // STYPE_BlindsPercentageWithStop
 						m_PowerDeviceID[crcId] = moduleName;
 					}
 					if (type == "NLE")
