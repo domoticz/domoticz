@@ -889,10 +889,10 @@ bool CNetatmo::SetProgramState(const int uid, const int newState)
 			switch (newState)
 			{
 			case 0:
-				b_state = 0;
+				b_state = 100;
 				break;
 			case 1:
-				b_state = 100;
+				b_state = 0;
 				break;
 			case 17:
 				_state = -1; //Stop command
@@ -906,6 +906,7 @@ bool CNetatmo::SetProgramState(const int uid, const int newState)
 			json_data["home"]["id"] = Home_id;
 			json_data["home"]["modules"][0]["id"] = module_id;
 			json_data["home"]["modules"][0]["target_position"] = b_state;
+			json_data["home"]["modules"][0]["bridge"] = Device_bridge;
 			_data = json_data.toStyledString();
 			//_data = "{\"home\":{\"id\":\"" + Home_id + "\",\"modules\":[{\"id\":\"" + module_id + "\",\"target_position\":\"" + _state + "\"}]}}" ;
 		}
