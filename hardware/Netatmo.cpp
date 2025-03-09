@@ -890,10 +890,10 @@ bool CNetatmo::SetProgramState(const int uid, const int newState)
 			switch (newState)
 			{
 			case 0:
-				b_state = 100;
+				b_state = 0;
 				break;
 			case 1:
-				b_state = 0;
+				b_state = 100;
 				break;
 			case 17:
 				_state = -1; //Stop command
