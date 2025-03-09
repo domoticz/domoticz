@@ -886,6 +886,7 @@ bool CNetatmo::SetProgramState(const int uid, const int newState)
 		}
 		else if (type_module == "NLV" || type_module == "NLLV"  || type_module == "NLIV"  || type_module == "Z3V" || type_module == "BNAS")
 		{
+			Debug(DEBUG_HARDWARE, "SendBlindSensor (%s) %s command %d bridge %s", Home_id.c_str(), module_id.c_str(), _state, Device_bridge.c_str());
 			//open shutter NLV BNAS NLLV NLIV Z3V
 			Json::Value json_data;
 			//json_data {"body":{"home":{"id":
@@ -3578,11 +3579,11 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 						int level = current_position;
 						int Command = target_position;
 						//target_step;
-						Debug(DEBUG_HARDWARE, "SendBlindSensor (%d) %d %d command %d %d %s %s %d", crcId, ChildID, batteryLevel, Command, level, moduleName, m_Name, mrf_status);
+						Debug(DEBUG_HARDWARE, "SendBlindSensor (%d) %d %d command %d %d %s %s %d", crcId, ChildID, batteryLevel, Command, level, moduleName.c_str(), m_Name.c_str(), mrf_status);
 						bool bDeviceUsed = true;
 						bool bReversePosition = false;
 						bool bReverseState = false;
-						CreateBlindSwitch(crcId, ChildID, STYPE_BlindsPercentageWithStop, bDeviceUsed, bReversePosition, bReverseState, Command, level, moduleName, m_Name, batteryLevel, mrf_status);
+						CreateBlindSwitch(crcId, ChildID, STYPE_BlindsPercentage, bDeviceUsed, bReversePosition, bReverseState, Command, level, moduleName, m_Name, batteryLevel, mrf_status);
 						m_PowerDeviceID[crcId] = moduleName;
 					}
 					if (type == "NLE")
