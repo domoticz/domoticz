@@ -616,8 +616,8 @@ bool CNetatmo::WriteToHardware(const char* pdata, const unsigned char /*length*/
 		int subType = sSwitchTypeSelector;
 		//Debug(DEBUG_HARDWARE, "Netatmo uid %08X", uid);
 		//
-		//Selector Switch Thermostat Mode
-		if (SUB_Type == 62)
+		//Selector Switch for Thermostat Mode and Blinds
+		if ((SUB_Type == 62) || (SUB_Type == 73))
 		{
 			set_level = selectorLevel;
 		}
