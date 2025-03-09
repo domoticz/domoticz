@@ -1464,17 +1464,19 @@ namespace http
 		{
 			root["status"] = "ERR";
 			root["title"] = "GetMyProfile";
-			if (!(session.rights == URIGHTS_VIEWER || session.rights == URIGHTS_NONE))	// Viewer cannot change his profile
+			if (session.rights == URIGHTS_VIEWER || session.rights == URIGHTS_NONE)	// Viewer cannot change his profile
 			{
-				int iUser = FindUser(session.username.c_str());
-				if (iUser != -1)
-				{
-					root["user"] = session.username;
-					root["rights"] = session.rights;
-					if (!m_users[iUser].Mfatoken.empty())
-						root["mfasecret"] = m_users[iUser].Mfatoken;
-					root["status"] = "OK";
-				}
+				return;
+			}
+
+			int iUser = FindUser(session.username.c_str());
+			if (iUser != -1)
+			{
+				root["user"] = session.username;
+				root["rights"] = session.rights;
+				if (!m_users[iUser].Mfatoken.empty())
+					root["mfasecret"] = m_users[iUser].Mfatoken;
+				root["status"] = "OK";
 			}
 		}
 
@@ -1483,74 +1485,76 @@ namespace http
 			root["status"] = "ERR";
 			root["title"] = "UpdateMyProfile";
 
-			if (req.method == "POST" && !(session.rights == URIGHTS_VIEWER || session.rights == URIGHTS_NONE))	// Viewer cannot change his profile
+			if (req.method != "POST" || session.rights == URIGHTS_VIEWER || session.rights == URIGHTS_NONE)	// Viewer cannot change his profile
 			{
-				std::string sUsername = request::findValue(&req, "username");
-				int iUser = FindUser(session.username.c_str());
-				if (iUser == -1)
-				{
-					root["error"] = "User not found!";
-					return;
-				}
-				if (m_users[iUser].Username != sUsername)
-				{
-					root["error"] = "User mismatch!";
-					return;
-				}
+				return;
+			}
 
-				std::string sOldPwd = request::findValue(&req, "oldpwd");
-				std::string sNewPwd = request::findValue(&req, "newpwd");
-				if (!sOldPwd.empty() && !sNewPwd.empty())
-				{
-					if (m_users[iUser].Password == sOldPwd)
-					{
-						m_users[iUser].Password = sNewPwd;
-						m_sql.safe_query("UPDATE Users SET Password='%q' WHERE (ID=%d)", sNewPwd.c_str(), m_users[iUser].ID);
-						LoadUsers();	// Make sure the new password is loaded in memory
-						root["status"] = "OK";
-					}
-					else
-					{
-						root["error"] = "Old password mismatch!";
-						return;
-					}
-				}
+			std::string sUsername = request::findValue(&req, "username");
+			int iUser = FindUser(session.username.c_str());
+			if (iUser == -1)
+			{
+				root["error"] = "User not found!";
+				return;
+			}
+			if (m_users[iUser].Username != sUsername)
+			{
+				root["error"] = "User mismatch!";
+				return;
+			}
 
-				std::string sTotpsecret = request::findValue(&req, "totpsecret");
-				std::string sTotpCode = request::findValue(&req, "totpcode");
-				bool bEnablemfa = (request::findValue(&req, "enablemfa") == "true" ? true : false);
-				if (bEnablemfa && sTotpsecret.empty())
+			std::string sOldPwd = request::findValue(&req, "oldpwd");
+			std::string sNewPwd = request::findValue(&req, "newpwd");
+			if (!sOldPwd.empty() && !sNewPwd.empty())
+			{
+				if (m_users[iUser].Password == sOldPwd)
 				{
-					root["error"] = "Not a valid TOTP secret!";
-					return;
-				}
-				// Update the User Profile
-				if (!bEnablemfa)
-				{
-					sTotpsecret = "";
+					m_users[iUser].Password = sNewPwd;
+					m_sql.safe_query("UPDATE Users SET Password='%q' WHERE (ID=%d)", sNewPwd.c_str(), m_users[iUser].ID);
+					LoadUsers();	// Make sure the new password is loaded in memory
+					root["status"] = "OK";
 				}
 				else
 				{
-					//verify code
-					if (!sTotpCode.empty())
+					root["error"] = "Old password mismatch!";
+					return;
+				}
+			}
+
+			std::string sTotpsecret = request::findValue(&req, "totpsecret");
+			std::string sTotpCode = request::findValue(&req, "totpcode");
+			bool bEnablemfa = (request::findValue(&req, "enablemfa") == "true" ? true : false);
+			if (bEnablemfa && sTotpsecret.empty())
+			{
+				root["error"] = "Not a valid TOTP secret!";
+				return;
+			}
+			// Update the User Profile
+			if (!bEnablemfa)
+			{
+				sTotpsecret = "";
+			}
+			else
+			{
+				//verify code
+				if (!sTotpCode.empty())
+				{
+					std::string sTotpKey = "";
+					if (base32_decode(sTotpsecret, sTotpKey))
 					{
-						std::string sTotpKey = "";
-						if (base32_decode(sTotpsecret, sTotpKey))
+						if (!VerifySHA1TOTP(sTotpCode, sTotpKey))
 						{
-							if (!VerifySHA1TOTP(sTotpCode, sTotpKey))
-							{
-								root["error"] = "Incorrect/expired 6 digit code!";
-								return;
-							}
+							root["error"] = "Incorrect/expired 6 digit code!";
+							return;
 						}
 					}
 				}
-				m_users[iUser].Mfatoken = sTotpsecret;
-				m_sql.safe_query("UPDATE Users SET MFAsecret='%q' WHERE (ID=%d)", sTotpsecret.c_str(), m_users[iUser].ID);
-
-				LoadUsers();
-				root["status"] = "OK";
 			}
+			m_users[iUser].Mfatoken = sTotpsecret;
+			m_sql.safe_query("UPDATE Users SET MFAsecret='%q' WHERE (ID=%d)", sTotpsecret.c_str(), m_users[iUser].ID);
+
+			LoadUsers();
+			root["status"] = "OK";
 		}
 
 		void CWebServer::Cmd_GetUptime(WebEmSession& session, const request& req, Json::Value& root)
