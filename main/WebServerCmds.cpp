@@ -266,7 +266,7 @@ namespace http
 
 		void CWebServer::Cmd_GetHardwareTypes(WebEmSession& session, const request& req, Json::Value& root)
 		{
-			if (session.rights != 2)
+			if (session.rights != URIGHTS_ADMIN)
 			{
 				session.reply_status = reply::forbidden;
 				return; // Only admin user allowed
@@ -737,7 +737,7 @@ namespace http
 
 		void CWebServer::Cmd_GetDeviceValueOptions(WebEmSession& session, const request& req, Json::Value& root)
 		{
-			if (session.rights != 2)
+			if (session.rights != URIGHTS_ADMIN)
 			{
 				session.reply_status = reply::forbidden;
 				return; // Only admin user allowed
@@ -767,7 +767,7 @@ namespace http
 
 		void CWebServer::Cmd_GetDeviceValueOptionWording(WebEmSession& session, const request& req, Json::Value& root)
 		{
-			if (session.rights != 2)
+			if (session.rights != URIGHTS_ADMIN)
 			{
 				session.reply_status = reply::forbidden;
 				return; // Only admin user allowed
@@ -792,7 +792,7 @@ namespace http
 
 		void CWebServer::Cmd_AddUserVariable(WebEmSession& session, const request& req, Json::Value& root)
 		{
-			if (session.rights != 2)
+			if (session.rights != URIGHTS_ADMIN)
 			{
 				session.reply_status = reply::forbidden;
 				_log.Log(LOG_ERROR, "User: %s tried to add a uservariable!", session.username.c_str());
@@ -846,7 +846,7 @@ namespace http
 
 		void CWebServer::Cmd_DeleteUserVariable(WebEmSession& session, const request& req, Json::Value& root)
 		{
-			if (session.rights != 2)
+			if (session.rights != URIGHTS_ADMIN)
 			{
 				_log.Log(LOG_ERROR, "User: %s tried to delete a uservariable!", session.username.c_str());
 				session.reply_status = reply::forbidden;
@@ -863,7 +863,7 @@ namespace http
 
 		void CWebServer::Cmd_UpdateUserVariable(WebEmSession& session, const request& req, Json::Value& root)
 		{
-			if (session.rights != 2)
+			if (session.rights != URIGHTS_ADMIN)
 			{
 				_log.Log(LOG_ERROR, "User: %s tried to update a uservariable!", session.username.c_str());
 				session.reply_status = reply::forbidden;
@@ -991,7 +991,7 @@ namespace http
 
 		void CWebServer::Cmd_AllowNewHardware(WebEmSession& session, const request& req, Json::Value& root)
 		{
-			if (session.rights != 2)
+			if (session.rights != URIGHTS_ADMIN)
 			{
 				session.reply_status = reply::forbidden;
 				return; // Only admin user allowed
@@ -1007,7 +1007,7 @@ namespace http
 
 		void CWebServer::Cmd_DeleteHardware(WebEmSession& session, const request& req, Json::Value& root)
 		{
-			if (session.rights != 2)
+			if (session.rights != URIGHTS_ADMIN)
 			{
 				session.reply_status = reply::forbidden;
 				return; // Only admin user allowed
@@ -1078,7 +1078,7 @@ namespace http
 		// Plan Functions
 		void CWebServer::Cmd_AddPlan(WebEmSession& session, const request& req, Json::Value& root)
 		{
-			if (session.rights != 2)
+			if (session.rights != URIGHTS_ADMIN)
 			{
 				session.reply_status = reply::forbidden;
 				return; // Only admin user allowed
@@ -1106,7 +1106,7 @@ namespace http
 
 		void CWebServer::Cmd_UpdatePlan(WebEmSession& session, const request& req, Json::Value& root)
 		{
-			if (session.rights != 2)
+			if (session.rights != URIGHTS_ADMIN)
 			{
 				session.reply_status = reply::forbidden;
 				return; // Only admin user allowed
@@ -1130,7 +1130,7 @@ namespace http
 
 		void CWebServer::Cmd_DeletePlan(WebEmSession& session, const request& req, Json::Value& root)
 		{
-			if (session.rights != 2)
+			if (session.rights != URIGHTS_ADMIN)
 			{
 				session.reply_status = reply::forbidden;
 				return; // Only admin user allowed
@@ -1211,7 +1211,7 @@ namespace http
 
 		void CWebServer::Cmd_AddPlanActiveDevice(WebEmSession& session, const request& req, Json::Value& root)
 		{
-			if (session.rights != 2)
+			if (session.rights != URIGHTS_ADMIN)
 			{
 				session.reply_status = reply::forbidden;
 				return; // Only admin user allowed
@@ -1290,7 +1290,7 @@ namespace http
 
 		void CWebServer::Cmd_DeletePlanDevice(WebEmSession& session, const request& req, Json::Value& root)
 		{
-			if (session.rights != 2)
+			if (session.rights != URIGHTS_ADMIN)
 			{
 				session.reply_status = reply::forbidden;
 				return; // Only admin user allowed
@@ -1323,7 +1323,7 @@ namespace http
 
 		void CWebServer::Cmd_DeleteAllPlanDevices(WebEmSession& session, const request& req, Json::Value& root)
 		{
-			if (session.rights != 2)
+			if (session.rights != URIGHTS_ADMIN)
 			{
 				session.reply_status = reply::forbidden;
 				return; // Only admin user allowed
@@ -1464,7 +1464,7 @@ namespace http
 		{
 			root["status"] = "ERR";
 			root["title"] = "GetMyProfile";
-			if (session.rights > 0)	// Viewer cannot change his profile
+			if (!(session.rights == URIGHTS_VIEWER || session.rights == URIGHTS_NONE))	// Viewer cannot change his profile
 			{
 				int iUser = FindUser(session.username.c_str());
 				if (iUser != -1)
@@ -1483,7 +1483,7 @@ namespace http
 			root["status"] = "ERR";
 			root["title"] = "UpdateMyProfile";
 
-			if (req.method == "POST" && session.rights > 0)	// Viewer cannot change his profile
+			if (req.method == "POST" && !(session.rights == URIGHTS_VIEWER || session.rights == URIGHTS_NONE))	// Viewer cannot change his profile
 			{
 				std::string sUsername = request::findValue(&req, "username");
 				int iUser = FindUser(session.username.c_str());
@@ -1943,7 +1943,7 @@ namespace http
 			if (!session.username.empty())
 				Username = session.username;
 
-			if (session.rights < 1)
+			if (session.rights == URIGHTS_VIEWER || session.rights == URIGHTS_NONE)
 			{
 				session.reply_status = reply::forbidden;
 				return; // only user or higher allowed
@@ -2060,7 +2060,7 @@ namespace http
 
 		void CWebServer::Cmd_CustomEvent(WebEmSession& session, const request& req, Json::Value& root)
 		{
-			if (session.rights < 1)
+			if (session.rights == URIGHTS_VIEWER || session.rights == URIGHTS_NONE)
 			{
 				session.reply_status = reply::forbidden;
 				return; // only user or higher allowed
@@ -2115,7 +2115,7 @@ namespace http
 
 		void CWebServer::Cmd_SystemShutdown(WebEmSession& session, const request& req, Json::Value& root)
 		{
-			if (session.rights != 2)
+			if (session.rights != URIGHTS_ADMIN)
 			{
 				session.reply_status = reply::forbidden;
 				return; // Only admin user allowed
@@ -2136,7 +2136,7 @@ namespace http
 
 		void CWebServer::Cmd_SystemReboot(WebEmSession& session, const request& req, Json::Value& root)
 		{
-			if (session.rights != 2)
+			if (session.rights != URIGHTS_ADMIN)
 			{
 				session.reply_status = reply::forbidden;
 				return; // Only admin user allowed
@@ -2157,7 +2157,7 @@ namespace http
 
 		void CWebServer::Cmd_ExcecuteScript(WebEmSession& session, const request& req, Json::Value& root)
 		{
-			if (session.rights != 2)
+			if (session.rights != URIGHTS_ADMIN)
 			{
 				session.reply_status = reply::forbidden;
 				return; // Only admin user allowed
@@ -2211,7 +2211,7 @@ namespace http
 		// Only for Unix systems
 		void CWebServer::Cmd_ApplicationUpdate(WebEmSession& session, const request& req, Json::Value& root)
 		{
-			if (session.rights != 2)
+			if (session.rights != URIGHTS_ADMIN)
 			{
 				session.reply_status = reply::forbidden;
 				return; // Only admin user allowed
@@ -2340,7 +2340,7 @@ namespace http
 			root["HaveUpdate"] = false;
 			root["Revision"] = m_mainworker.m_iRevision;
 
-			if (session.rights != 2)
+			if (session.rights != URIGHTS_ADMIN)
 			{
 				session.reply_status = reply::forbidden;
 				return; // Only admin users may update
@@ -2383,7 +2383,7 @@ namespace http
 
 		void CWebServer::Cmd_DeleteDateRange(WebEmSession& session, const request& req, Json::Value& root)
 		{
-			if (session.rights != 2)
+			if (session.rights != URIGHTS_ADMIN)
 			{
 				session.reply_status = reply::forbidden;
 				return; // Only admin user allowed
@@ -2400,7 +2400,7 @@ namespace http
 
 		void CWebServer::Cmd_DeleteDataPoint(WebEmSession& session, const request& req, Json::Value& root)
 		{
-			if (session.rights != 2)
+			if (session.rights != URIGHTS_ADMIN)
 			{
 				session.reply_status = reply::forbidden;
 				return; // Only admin user allowed
@@ -2419,7 +2419,7 @@ namespace http
 		// PostSettings
 		void CWebServer::Cmd_PostSettings(WebEmSession& session, const request& req, Json::Value& root)
 		{
-			if (session.rights != 2)
+			if (session.rights != URIGHTS_ADMIN)
 			{
 				session.reply_status = reply::forbidden;
 				return; // Only admin user allowed
@@ -2811,7 +2811,7 @@ namespace http
 
 		void CWebServer::Cmd_DeleteDevice(WebEmSession& session, const request& req, Json::Value& root)
 		{
-			if (session.rights != 2)
+			if (session.rights != URIGHTS_ADMIN)
 			{
 				session.reply_status = reply::forbidden;
 				return; // Only admin user allowed
@@ -2829,7 +2829,7 @@ namespace http
 
 		void CWebServer::Cmd_AddScene(WebEmSession& session, const request& req, Json::Value& root)
 		{
-			if (session.rights != 2)
+			if (session.rights != URIGHTS_ADMIN)
 			{
 				session.reply_status = reply::forbidden;
 				return; // Only admin user allowed
@@ -2867,7 +2867,7 @@ namespace http
 
 		void CWebServer::Cmd_DeleteScene(WebEmSession& session, const request& req, Json::Value& root)
 		{
-			if (session.rights != 2)
+			if (session.rights != URIGHTS_ADMIN)
 			{
 				session.reply_status = reply::forbidden;
 				return; // Only admin user allowed
@@ -2883,7 +2883,7 @@ namespace http
 
 		void CWebServer::Cmd_UpdateScene(WebEmSession& session, const request& req, Json::Value& root)
 		{
-			if (session.rights != 2)
+			if (session.rights != URIGHTS_ADMIN)
 			{
 				session.reply_status = reply::forbidden;
 				return; // Only admin user allowed
@@ -3363,7 +3363,7 @@ namespace http
 		void CWebServer::Cmd_GetApplications(WebEmSession & session, const request& req, Json::Value &root)
 		{
 			root["title"] = "GetApplications";
-			if (session.rights < URIGHTS_ADMIN)
+			if (session.rights != URIGHTS_ADMIN)
 			{
 				session.reply_status = reply::forbidden;
 			}
@@ -3393,7 +3393,7 @@ namespace http
 		void CWebServer::Cmd_AddApplication(WebEmSession & session, const request& req, Json::Value &root)
 		{
 			root["title"] = "AddApplication";
-			if (session.rights < URIGHTS_ADMIN)
+			if (session.rights != URIGHTS_ADMIN)
 			{
 				session.reply_status = reply::forbidden;
 			}
@@ -3441,7 +3441,7 @@ namespace http
 		void CWebServer::Cmd_UpdateApplication(WebEmSession & session, const request& req, Json::Value &root)
 		{
 			root["title"] = "UpdateApplication";
-			if (session.rights < URIGHTS_ADMIN)
+			if (session.rights != URIGHTS_ADMIN)
 			{
 				session.reply_status = reply::forbidden;
 			}
@@ -3494,7 +3494,7 @@ namespace http
 		void CWebServer::Cmd_DeleteApplication(WebEmSession & session, const request& req, Json::Value &root)
 		{
 			root["title"] = "DeleteApplication";
-			if (session.rights < URIGHTS_ADMIN)
+			if (session.rights != URIGHTS_ADMIN)
 			{
 				session.reply_status = reply::forbidden;
 			}
@@ -3581,7 +3581,7 @@ namespace http
 
 		void CWebServer::Cmd_GetSceneActivations(WebEmSession& session, const request& req, Json::Value& root)
 		{
-			if (session.rights != 2)
+			if (session.rights != URIGHTS_ADMIN)
 			{
 				session.reply_status = reply::forbidden;
 				return; // Only admin user allowed
@@ -3649,7 +3649,7 @@ namespace http
 
 		void CWebServer::Cmd_AddSceneCode(WebEmSession& session, const request& req, Json::Value& root)
 		{
-			if (session.rights != 2)
+			if (session.rights != URIGHTS_ADMIN)
 			{
 				session.reply_status = reply::forbidden;
 				return; // Only admin user allowed
@@ -3709,7 +3709,7 @@ namespace http
 
 		void CWebServer::Cmd_RemoveSceneCode(WebEmSession& session, const request& req, Json::Value& root)
 		{
-			if (session.rights != 2)
+			if (session.rights != URIGHTS_ADMIN)
 			{
 				session.reply_status = reply::forbidden;
 				return; // Only admin user allowed
@@ -3779,7 +3779,7 @@ namespace http
 
 		void CWebServer::Cmd_ClearSceneCodes(WebEmSession& session, const request& req, Json::Value& root)
 		{
-			if (session.rights != 2)
+			if (session.rights != URIGHTS_ADMIN)
 			{
 				session.reply_status = reply::forbidden;
 				return; // Only admin user allowed
@@ -3839,7 +3839,7 @@ namespace http
 		{
 			root["title"] = "UploadCustomIcon";
 			// Only admin user allowed
-			if (session.rights != 2)
+			if (session.rights != URIGHTS_ADMIN)
 			{
 				session.reply_status = reply::forbidden;
 				return; // Only admin user allowed
@@ -3886,7 +3886,7 @@ namespace http
 
 		void CWebServer::Cmd_DeleteCustomIcon(WebEmSession& session, const request& req, Json::Value& root)
 		{
-			if (session.rights != 2)
+			if (session.rights != URIGHTS_ADMIN)
 			{
 				session.reply_status = reply::forbidden;
 				return; // Only admin user allowed
@@ -3920,7 +3920,7 @@ namespace http
 
 		void CWebServer::Cmd_UpdateCustomIcon(WebEmSession& session, const request& req, Json::Value& root)
 		{
-			if (session.rights != 2)
+			if (session.rights != URIGHTS_ADMIN)
 			{
 				session.reply_status = reply::forbidden;
 				return; // Only admin user allowed
@@ -3942,7 +3942,7 @@ namespace http
 
 		void CWebServer::Cmd_RenameDevice(WebEmSession& session, const request& req, Json::Value& root)
 		{
-			if (session.rights != 2)
+			if (session.rights != URIGHTS_ADMIN)
 			{
 				session.reply_status = reply::forbidden;
 				return; // Only admin user allowed
@@ -3968,7 +3968,7 @@ namespace http
 
 		void CWebServer::Cmd_RenameScene(WebEmSession& session, const request& req, Json::Value& root)
 		{
-			if (session.rights != 2)
+			if (session.rights != URIGHTS_ADMIN)
 			{
 				session.reply_status = reply::forbidden;
 				return; // Only admin user allowed
@@ -3989,7 +3989,7 @@ namespace http
 
 		void CWebServer::Cmd_SetDeviceUsed(WebEmSession& session, const request& req, Json::Value& root)
 		{
-			if (session.rights != 2)
+			if (session.rights != URIGHTS_ADMIN)
 			{
 				session.reply_status = reply::forbidden;
 				return; // Only admin user allowed
@@ -4067,7 +4067,7 @@ namespace http
 
 		void CWebServer::Cmd_ClearShortLog(WebEmSession& session, const request& req, Json::Value& root)
 		{
-			if (session.rights != 2)
+			if (session.rights != URIGHTS_ADMIN)
 			{
 				session.reply_status = reply::forbidden;
 				return; // Only admin user allowed
@@ -4084,7 +4084,7 @@ namespace http
 
 		void CWebServer::Cmd_VacuumDatabase(WebEmSession& session, const request& req, Json::Value& root)
 		{
-			if (session.rights != 2)
+			if (session.rights != URIGHTS_ADMIN)
 			{
 				session.reply_status = reply::forbidden;
 				return; // Only admin user allowed
@@ -4137,7 +4137,7 @@ namespace http
 
 		void CWebServer::Cmd_UpdateMobileDevice(WebEmSession& session, const request& req, Json::Value& root)
 		{
-			if (session.rights != 2)
+			if (session.rights != URIGHTS_ADMIN)
 			{
 				session.reply_status = reply::forbidden;
 				return; // Only admin user allowed
@@ -4158,7 +4158,7 @@ namespace http
 
 		void CWebServer::Cmd_DeleteMobileDevice(WebEmSession& session, const request& req, Json::Value& root)
 		{
-			if (session.rights != 2)
+			if (session.rights != URIGHTS_ADMIN)
 			{
 				session.reply_status = reply::forbidden;
 				return; // Only admin user allowed
@@ -4260,7 +4260,7 @@ namespace http
 
 		void CWebServer::Cmd_SetSharedUserDevices(WebEmSession& session, const request& req, Json::Value& root)
 		{
-			if (session.rights != 2)
+			if (session.rights != URIGHTS_ADMIN)
 			{
 				session.reply_status = reply::forbidden;
 				return; // Only admin user allowed
@@ -4291,7 +4291,7 @@ namespace http
 
 		void CWebServer::Cmd_ClearSharedUserDevices(WebEmSession& session, const request& req, Json::Value& root)
 		{
-			if (session.rights != 2)
+			if (session.rights != URIGHTS_ADMIN)
 			{
 				session.reply_status = reply::forbidden;
 				return; // Only admin user allowed
@@ -4307,7 +4307,7 @@ namespace http
 
 		void CWebServer::Cmd_SetUsed(WebEmSession& session, const request& req, Json::Value& root)
 		{
-			if (session.rights != 2)
+			if (session.rights != URIGHTS_ADMIN)
 			{
 				session.reply_status = reply::forbidden;
 				return; // Only admin user allowed
@@ -5126,7 +5126,7 @@ namespace http
 
 		void CWebServer::Cmd_RemoteWebClientsLog(WebEmSession& session, const request& req, Json::Value& root)
 		{
-			if (session.rights != 2)
+			if (session.rights != URIGHTS_ADMIN)
 			{
 				session.reply_status = reply::forbidden;
 				return; // Only admin user allowed
@@ -5154,7 +5154,7 @@ namespace http
 
 		void CWebServer::Cmd_GetDynamicPriceDevices(WebEmSession& session, const request& req, Json::Value& root)
 		{
-			if (session.rights != 2)
+			if (session.rights != URIGHTS_ADMIN)
 			{
 				session.reply_status = reply::forbidden;
 				return; //Only admin user allowed
