@@ -2605,7 +2605,7 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 	}
 
 	Json::Value scenarios;
-	Get_Scenarios(home_id, scenarios);
+	//Get_Scenarios(home_id, scenarios);
 	std::string scenario_id;
 	std::string scenario_category;
 	std::string scenario_type;
