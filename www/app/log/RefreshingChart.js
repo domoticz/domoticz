@@ -568,7 +568,7 @@ define(['lodash', 'Base', 'DomoticzBase', 'DataLoader', 'ChartLoader', 'ChartZoo
 				if (hours == 1)
 					cLabel = $.t('Hour');
 				else
-					cLabel += $.t('Hour');
+					cLabel += $.t('Hours');
                 zoom(right - hours * 3600 * 1000, right, $.t('Last') + ' ' + cLabel);
             }
 
@@ -745,7 +745,11 @@ define(['lodash', 'Base', 'DomoticzBase', 'DataLoader', 'ChartLoader', 'ChartZoo
 				self.$scope.chartTitle = chartTitle();
 			} else {
                 let chartName = fromInstanceOrFunction()(self.chartName);
-				self.$scope.chartTitle=chartName + ' ' + period;
+				let title = '';
+				if (chartName !== undefined) {
+					title = chartName + ' ';
+				}
+				self.$scope.chartTitle= title + period;
 			}
             self.chart.redraw();
             self.chart.tooltip.hide();
