@@ -135,14 +135,13 @@ void CNetatmo::Init()
 	m_selectedScenario.clear();
 	m_ScheduleHome.clear();
 	m_DeviceModuleID.clear();
-
 	m_LightDeviceID.clear();
-
 	m_PowerDeviceID.clear();
 	m_homeid.clear();
 	m_wifi_status.clear();
 	m_DeviceHomeID.clear();
 	m_PersonsNames.clear();
+
 	m_ScheduleHomes.clear();
 	m_selected_Schedule.clear();
         m_bPollThermostat = true;
@@ -2493,7 +2492,7 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 
 	//Parse Rooms
 	// First pars Rooms for Thermostat
-	Debug(DEBUG_HARDWARE, "Home ID = %s ", home_id.c_str());
+	//Debug(DEBUG_HARDWARE, "Home ID = %s ", home_id.c_str());
 	std::string setpoint_mode_str;
 	std::string setpoint_mode_fan;
 	int setpoint_mode_i;
