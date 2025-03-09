@@ -24,8 +24,9 @@ Version 2024.x
 - Changed: Improved and automated login process for Netatmo devices (to obtain client ID and Password with user selectable scopes)
 - Changed: Removed Highcharts 'Download PNG/JPG/SVG' buttons until export server is fixed
 - Changed: Using OpenStreetMap for Latitude/Longitude query in settings
-- Fixed: Custom Icons, making sure they are valid and loaded OK
+- Fixed: Charts, dynamic title based on selected range
 - Fixed: Computed Meter summation
+- Fixed: Custom Icons, making sure they are valid and loaded OK
 - Fixed: Floorplan, corrected open/close icon behaviour
 - Fixed: MQTT Push, making sure direct push is working
 - Fixed: Possible mutex lock issue when logging
