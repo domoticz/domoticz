@@ -3197,6 +3197,21 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 						offload = module["offload"].asBool();
 						//Debug(DEBUG_HARDWARE, "HomeStatus Module On [%d]", offload);
 					}
+					if (!module["current_position"].empty())
+					{
+						current_position = module["current_position"].asInt();
+						//Debug(DEBUG_HARDWARE, "HomeStatus Module current_position [%d]", current_position);
+					}
+					if (!module["target_position"].empty())
+					{
+						target_position = module["target_position"].asInt();
+						//Debug(DEBUG_HARDWARE, "HomeStatus Module target_position [%d]", target_position);
+					}
+					if (!module["target_position:step"].empty())
+					{
+						target_step = module["target_position:step"].asInt();
+						//Debug(DEBUG_HARDWARE, "HomeStatus Module target_step [%d]", target_step);
+					}
 
 					//Data retrieved create / update appropriate domoticz devices
 					if (bHaveTemp && bHaveHum && bHaveBaro)
@@ -3437,7 +3452,6 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 						std::string sName = moduleName + " - mode";
 						SendSelectorSwitch(crcId, NETATMO_PRESET_UNIT, setpoint_mode_str, sName, 15, true, "Off|On|Away|Frost Guard", "", true, m_Name);   // No RF-level - Battery level visible
 
-						Debug(DEBUG_HARDWARE, "Thermostat");
 						m_thermostatModuleID[crcId] = module_id;                // mac-adres
 						m_DeviceHomeID[roomNetatmoID] = home_id;              // Home_ID
 					}
@@ -3551,6 +3565,18 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 							}
 						}
 
+					}
+					if (type == "NLV")
+					{
+						ChildID = 15;
+						level = current_position;
+						Command = target_position;
+						//target_step;
+						Debug(DEBUG_HARDWARE, "SendBlindSensor (%d) %d %d command %d %d %s %s %d", crcId, ChildID, batteryLevel, Command, level, moduleName, m_Name, mrf_status);
+						bool bDeviceUsed = true;
+						bool bReversePosition = false;
+						bool bReverseState = false;
+						CreateBlindSwitch(crcId, ChildID, STYPE_BlindsPercentageWithStop, bDeviceUsed, bReversePosition, bReverseState, Command, level, moduleName, m_Name, batteryLevel, mrf_status);
 					}
 					if (type == "NLE")
 					{
