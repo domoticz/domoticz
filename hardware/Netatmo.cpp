@@ -884,13 +884,28 @@ bool CNetatmo::SetProgramState(const int uid, const int newState)
 		}
 		else if (type_module == "NLV" || type_module == "NLLV"  || type_module == "NLIV"  || type_module == "Z3V" || type_module == "BNAS")
 		{
+			int b_state;
 			//open shutter NLV BNAS NLLV NLIV Z3V
-			_state = newState;
+			switch (newState)
+			{
+			case 0:
+				b_state = 0;
+				break;
+			case 1:
+				b_state = 100;
+				break;
+			case 17:
+				_state = -1; //Stop command
+				break;
+			default:
+				Log(LOG_ERROR, "Netatmo: Invalid Blinds state!");
+				return false;
+			}
 			Json::Value json_data;
 			//json_data {"body":{"home":{"id":
 			json_data["home"]["id"] = Home_id;
 			json_data["home"]["modules"][0]["id"] = module_id;
-			json_data["home"]["modules"][0]["target_position"] = _state;
+			json_data["home"]["modules"][0]["target_position"] = b_state;
 			_data = json_data.toStyledString();
 			//_data = "{\"home\":{\"id\":\"" + Home_id + "\",\"modules\":[{\"id\":\"" + module_id + "\",\"target_position\":\"" + _state + "\"}]}}" ;
 		}
