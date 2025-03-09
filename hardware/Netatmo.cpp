@@ -1817,8 +1817,8 @@ void CNetatmo::GetHomeStatusDetails()
 	std::string person_id;
 	std::string bridge_id;
 	std::string module_id;
-	int offset = ' ';
-	int size = ' ';
+	int offset = 0;
+	int size = 0;
 	std::string locale;
 	std::string home_data;
 	std::string home_id;
@@ -1912,7 +1912,7 @@ void CNetatmo::Get_Measure(std::string gateway, std::string module_id, std::stri
 /// <param name="size">Number of events when using event_id parameter (default value is 30)</param>
 /// <param name="locale">Localisation for language of the responding Message</param>
 /// </summary>
-void CNetatmo::Get_Events(std::string home_id, std::string device_types, std::string event_id, std::string person_id, std::string device_id, std::string module_id, bool offset, bool size, std::string locale)
+void CNetatmo::Get_Events(std::string home_id, std::string device_types, std::string event_id, std::string person_id, std::string device_id, std::string module_id, int offset, int size, std::string locale)
 {
 	//Check if connected to the API
 	if (!m_isLogged)
@@ -1921,8 +1921,8 @@ void CNetatmo::Get_Events(std::string home_id, std::string device_types, std::st
 	//Locals
 	std::string sResult; // text returned by API
 	Json::Value root;    // root JSON object
-	std::string offset_str = bool_as_text(offset);
-	std::string size_str = bool_as_text(size);
+	std::string offset_str = std::to_string(offset);
+	std::string size_str = std::to_string(size);
 	std::string home_events_data;
 	// https://api.netatmo.com/api/getevents?home_id=xxx&device_types=xxx&event_id=xxx&person_id=xxx&device_id=xxx&module_id=xxx&offset=15&size=15&locale=nl
 	if (!device_id.empty())
