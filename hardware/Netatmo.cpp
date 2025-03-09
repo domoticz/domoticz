@@ -36,6 +36,7 @@
 //12	Events Alert
 //13    RF-Level
 //14    Scenario Switch
+//15    Blinds
 
 // Some testfunctions for debugging
 void SaveJson2Disk(Json::Value str, std::string filename)
