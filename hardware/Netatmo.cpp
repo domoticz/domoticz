@@ -135,8 +135,9 @@ void CNetatmo::Init()
 	m_selectedScenario.clear();
 	m_ScheduleHome.clear();
 	m_DeviceModuleID.clear();
-	//m_Schedule_Names.clear();
+
 	m_LightDeviceID.clear();
+
 	m_PowerDeviceID.clear();
 	m_homeid.clear();
 	m_wifi_status.clear();
@@ -885,28 +886,12 @@ bool CNetatmo::SetProgramState(const int uid, const int newState)
 		}
 		else if (type_module == "NLV" || type_module == "NLLV"  || type_module == "NLIV"  || type_module == "Z3V" || type_module == "BNAS")
 		{
-			int b_state;
 			//open shutter NLV BNAS NLLV NLIV Z3V
-			switch (newState)
-			{
-			case 0:
-				b_state = 0;
-				break;
-			case 1:
-				b_state = 100;
-				break;
-			case 17:
-				_state = -1; //Stop command
-				break;
-			default:
-				Log(LOG_ERROR, "Netatmo: Invalid Blinds state!");
-				return false;
-			}
 			Json::Value json_data;
 			//json_data {"body":{"home":{"id":
 			json_data["home"]["id"] = Home_id;
 			json_data["home"]["modules"][0]["id"] = module_id;
-			json_data["home"]["modules"][0]["target_position"] = b_state;
+			json_data["home"]["modules"][0]["target_position"] = _state;
 			json_data["home"]["modules"][0]["bridge"] = Device_bridge;
 			_data = json_data.toStyledString();
 			//_data = "{\"home\":{\"id\":\"" + Home_id + "\",\"modules\":[{\"id\":\"" + module_id + "\",\"target_position\":\"" + _state + "\"}]}}" ;
@@ -1293,7 +1278,7 @@ bool CNetatmo::SetSchedule(int uId, int selected)
 	}
 	//store the selected schedule in our local data to avoid
 	//changing back the schedule when using away mode
-	m_selectedScheduleID[Home_id] = selected;
+	//m_selectedScheduleID = selected;
 	m_selected_Schedule[Home_id] = selected;
 
 	// When a thermostat mode is changed all thermostat/valves in Home are changed by Netatmo
@@ -1679,7 +1664,7 @@ void CNetatmo::GetHomesDataDetails()
 				//Get the schedules
 				if (!home["schedules"].empty())
 				{
-					Debug(DEBUG_HARDWARE, "Get the schedules from %s", homeID.c_str());
+					//Debug(DEBUG_HARDWARE, "Get the schedules from %s", homeID.c_str());
 					std::stringstream schedules;
 					std::string allSchName = "Off";
 					std::string allSchAction = "00";
@@ -1855,11 +1840,11 @@ void CNetatmo::GetHomeStatusDetails()
 
 		//Parse API response
 		bRet = ParseHomeStatus(sResult, root, home_id);
-		Debug(DEBUG_HARDWARE, "Parse Home Status %s", home_id.c_str());
+
 		if (m_bPollGetEvents)
 		{
 			Get_Events(home_data, device_types, event_id, person_id, bridge_id, module_id, offset, size, locale);
-			Debug(DEBUG_HARDWARE, "Parse Home Status %d index %d", m_bPollGetEvents, i);
+			Debug(DEBUG_HARDWARE, "Parsed Home Status %s index %d", home_id.c_str(), i);
 		}
 	}
 }
@@ -2920,7 +2905,7 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 					}
 					else
 					{
-						Log(LOG_ERROR, "cloud data for module [%s] no longer updated (module possibly disconnected) since %s type = %s", moduleName.c_str(), ctime(&tNetatmoLastUpdate), type.c_str());
+						Log(LOG_ERROR, "cloud data for module [%s] no longer updated (module possibly disconnected) since %s", moduleName.c_str(), ctime(&tNetatmoLastUpdate));
 						connected = false;  //update, create sensor Blocked if cloud data is older then Interval.
 					}
 				}
@@ -3587,7 +3572,7 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 						}
 
 					}
-					if (type == "NLV")
+					if ((type == "NLV") || (type == "BNAS") || (type == "NLLV") || (type == "NLIV") || (type == "Z3V"))
 					{
 						int ChildID = 15;
 						int level = current_position;
@@ -3596,8 +3581,8 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 						Debug(DEBUG_HARDWARE, "SendBlindSensor (%d) %d %d command %d %d %s %s %d", crcId, ChildID, batteryLevel, Command, level, moduleName, m_Name, mrf_status);
 						bool bDeviceUsed = true;
 						bool bReversePosition = false;
-						bool bReverseState = false; 
-						CreateBlindSwitch(crcId, ChildID, STYPE_Blinds, bDeviceUsed, bReversePosition, bReverseState, Command, level, moduleName, m_Name, batteryLevel, mrf_status); // STYPE_BlindsPercentageWithStop
+						bool bReverseState = false;
+						CreateBlindSwitch(crcId, ChildID, STYPE_BlindsPercentageWithStop, bDeviceUsed, bReversePosition, bReverseState, Command, level, moduleName, m_Name, batteryLevel, mrf_status);
 						m_PowerDeviceID[crcId] = moduleName;
 					}
 					if (type == "NLE")
