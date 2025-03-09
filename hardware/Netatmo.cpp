@@ -2799,6 +2799,10 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 				bool offload = 0;
 				int swlevel = 0;
 
+				int target_position;
+				int current_position;
+				int target_step;
+
 				//uint64_t DeviceRowIdx;
 				iModuleIndex ++;
 				// Hardware_ID hex to int
@@ -3568,9 +3572,9 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 					}
 					if (type == "NLV")
 					{
-						ChildID = 15;
-						level = current_position;
-						Command = target_position;
+						int ChildID = 15;
+						int level = current_position;
+						int Command = target_position;
 						//target_step;
 						Debug(DEBUG_HARDWARE, "SendBlindSensor (%d) %d %d command %d %d %s %s %d", crcId, ChildID, batteryLevel, Command, level, moduleName, m_Name, mrf_status);
 						bool bDeviceUsed = true;
