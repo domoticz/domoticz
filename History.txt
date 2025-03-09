@@ -1,5 +1,6 @@
 Version 2024.x
 - Implemented: Battery level for Setpoint sensors
+- Implemented: Charts, zoom option for 'Today'
 - Implemented: Floorplan, Add support for stop button
 - Implemented: RFXCom, Updated SDK
 - Implemented: Support for Honeywell Series 5/PIR
@@ -33,6 +34,7 @@ Version 2024.x
 - Fixed: RFXCom 868 MHz Weather device
 - Fixed: RFXCom, WS90 Weather device
 - Removed: Thermosmart thermostat (Product no longer supported/available by the manufacturer)
+- Updated: HighCharts
 - Updated: Translations
 
 Version 2024.7 (July 13th 2024)

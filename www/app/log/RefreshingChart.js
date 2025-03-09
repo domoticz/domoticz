@@ -592,6 +592,14 @@ define(['lodash', 'Base', 'DomoticzBase', 'DataLoader', 'ChartLoader', 'ChartZoo
                     return leftDate.getTime();
                 }
             }
+			
+			self.$scope.zoomToday = function() {
+				var dstart = new Date();
+				dstart.setHours(0,0,0,0);
+				var dend = new Date();
+				dend.setHours(23,59,59,999);
+				zoom(dstart.getTime(), dend.getTime());
+			}
 
             self.$scope.zoomreset = function () {
                 const xAxis = self.chart.xAxis[0];
@@ -714,7 +722,7 @@ define(['lodash', 'Base', 'DomoticzBase', 'DataLoader', 'ChartLoader', 'ChartZoo
         }
 
         function zoom(min, max) {
-            self.chart.xAxis[0].zoom(min, max);
+			self.chart.xAxis[0].setExtremes(min, max);
             synchronizeYaxes();
             self.chart.redraw();
             self.chart.tooltip.hide();
