@@ -1831,12 +1831,15 @@ void CNetatmo::GetHomeStatusDetails()
 	Log(LOG_STATUS, "Home Status Details, size (number of homes) is %d", size);   // Multiple Homes possible
 	for (int i = 0; i < size; i++)
 	{
+		Debug(DEBUG_HARDWARE, "index %d", i);
 		home_id = m_homeid[i];
 		home_data = "home_id=" + home_id + "&get_favorites=true&";
-		//Debug(DEBUG_HARDWARE, "Home_Data = %s ", home_data.c_str());
-		//Log(LOG_STATUS, "Home_Data = %s ", home_data.c_str());
+		//Debug(DEBUG_HARDWARE, "Home_Data : %s ", home_data.c_str());
+		//Log(LOG_STATUS, "Home_Data : %s ", home_data.c_str());
 
 		Get_Respons_API(NETYPE_STATUS, sResult, home_data, bRet, root, "");
+
+		Debug(DEBUG_HARDWARE, "sResult : %s ", sResult.c_str());
 
 		//Parse API response
 		bRet = ParseHomeStatus(sResult, root, home_id);
@@ -1844,8 +1847,8 @@ void CNetatmo::GetHomeStatusDetails()
 		if (m_bPollGetEvents)
 		{
 			Get_Events(home_data, device_types, event_id, person_id, bridge_id, module_id, offset, size, locale);
-			Debug(DEBUG_HARDWARE, "Parsed Home Status %s index %d", home_id.c_str(), i);
 		}
+		Debug(DEBUG_HARDWARE, "Parsed Home Status %s index %d", home_id.c_str(), i);
 	}
 }
 
