@@ -4152,10 +4152,10 @@ void MQTTAutoDiscover::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 				int c = root["color"]["c"].asInt();
 				if (r == 0 && g == 0 && b == 0 && w == 0 && c == 0)
 				{
-					root["state"] = "OFF";
+					root["state"] = pSensor->payload_off;
 				}
 				else
-					root["state"] = "ON";
+					root["state"] = pSensor->payload_on;
 			}
 
 			bool bHandledValue = false;
@@ -4623,9 +4623,12 @@ bool MQTTAutoDiscover::SendSwitchCommand(const std::string& DeviceID, const std:
 
 				//This seems to cause issues for Tuya 2 gang dimmers... not sure why
 				//not sure if this is needed for other devices
-				if (m_discovered_devices[pSensor->device_identifiers].manufacturer == "TuYa")
+				if (
+					(m_discovered_devices[pSensor->device_identifiers].manufacturer == "TuYa")
+					|| (m_discovered_devices[pSensor->device_identifiers].manufacturer == "Tuya")
+					)
 				{
-					root["state"] = (slevel > 0) ? "ON" : "OFF";
+					root["state"] = (slevel > 0) ? pSensor->payload_on : pSensor->payload_off;
 				}
 			}
 			else

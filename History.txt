@@ -1,5 +1,6 @@
 Version 2024.x
 - Implemented: Battery level for Setpoint sensors
+- Implemented: Charts, zoom option for 'Today'
 - Implemented: Floorplan, Add support for stop button
 - Implemented: RFXCom, Updated SDK
 - Implemented: Support for Honeywell Series 5/PIR
@@ -15,6 +16,7 @@ Version 2024.x
 - Implemented: MQTT-AD, support sensors that report humidity but sends 'null' values
 - Implemented: MQTT-AD, support for string field state objects
 - Implemented: MQTT Push 'Retained' mode option
+- Implemented: RFXCom, Falmec Support
 - Changed: dzVents, possible to pass a Domoticz device ID in notify() through the extra parameter
 - Changed: Energy Dashboard now also available for non-admin users
 - Changed: Energy Dashboard, Text object clipping rectangle
@@ -22,8 +24,9 @@ Version 2024.x
 - Changed: Improved and automated login process for Netatmo devices (to obtain client ID and Password with user selectable scopes)
 - Changed: Removed Highcharts 'Download PNG/JPG/SVG' buttons until export server is fixed
 - Changed: Using OpenStreetMap for Latitude/Longitude query in settings
-- Fixed: Custom Icons, making sure they are valid and loaded OK
+- Fixed: Charts, dynamic title based on selected range
 - Fixed: Computed Meter summation
+- Fixed: Custom Icons, making sure they are valid and loaded OK
 - Fixed: Floorplan, corrected open/close icon behaviour
 - Fixed: MQTT Push, making sure direct push is working
 - Fixed: Possible mutex lock issue when logging
@@ -32,6 +35,7 @@ Version 2024.x
 - Fixed: RFXCom 868 MHz Weather device
 - Fixed: RFXCom, WS90 Weather device
 - Removed: Thermosmart thermostat (Product no longer supported/available by the manufacturer)
+- Updated: HighCharts
 - Updated: Translations
 
 Version 2024.7 (July 13th 2024)
