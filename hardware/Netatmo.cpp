@@ -1841,6 +1841,9 @@ void CNetatmo::GetHomeStatusDetails()
 		//Parse API response
 		bRet = ParseHomeStatus(sResult, root, home_id);
 
+		Json::Value scenarios;
+		Get_Scenarios(home_id, scenarios)
+
 		if (m_bPollGetEvents)
 		{
 			Get_Events(home_data, device_types, event_id, person_id, bridge_id, module_id, offset, size, locale);
@@ -3468,9 +3471,6 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 			}
 		}
 	}
-
-	Json::Value scenarios;
-	//Get_Scenarios(home_id, scenarios);
 
 	//Parse Persons
 	Log(LOG_STATUS, "Parse Persons");
