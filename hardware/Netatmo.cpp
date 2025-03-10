@@ -1976,7 +1976,7 @@ void CNetatmo::Get_Scenarios(std::string home_id, Json::Value& scenarios)
 			scenarios = root["body"]["home"];
 
 			//Selected Scenario ?
-			m_selectedScenario[home_id] = std::to_string("0");
+			m_selectedScenario[home_id] = "0";
 
 			// Data was recieved with success
 			Log(LOG_STATUS, "Scenarios Data Recieved");
@@ -3808,7 +3808,7 @@ bool CNetatmo::ParseScenarios(const std::string& sResult, Json::Value& scenarios
 			std::stringstream uid;
 			uid << crcId;
 			std::string Selector;
-			Selector = std::to_string(m_selectedScenario[home_id]); //Active selecting
+			Selector = m_selectedScenario[home_id]; //Active selecting
 			m_ScheduleHomes[crcId] = home_id;
 			m_PowerDeviceID[crcId] = lName;
 			m_DeviceModuleID[crcId] = home_id;
