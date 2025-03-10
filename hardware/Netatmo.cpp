@@ -1976,7 +1976,7 @@ void CNetatmo::Get_Scenarios(std::string home_id, Json::Value& scenarios)
 			scenarios = root["body"]["home"];
 
 			//Selected Scenario ?
-			m_selectedScenario[home_id] = std::tostring("0");
+			m_selectedScenario[home_id] = std::to_string("0");
 
 			// Data was recieved with success
 			Log(LOG_STATUS, "Scenarios Data Recieved");
@@ -3680,7 +3680,7 @@ bool CNetatmo::ParseEvents(const std::string& sResult, Json::Value& root )
 /// Parse Scenarios
 /// <param name="home_id">ID-number of the NetatmoHome</param>
 /// </summary>
-bool CNetatmo::ParseScenarios(const std::string& sResult, Json::Value& scenarios, std::string home_id);
+bool CNetatmo::ParseScenarios(const std::string& sResult, Json::Value& scenarios, std::string home_id)
 {
 	//Locals
 	std::string scenario_id;
