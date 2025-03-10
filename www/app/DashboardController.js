@@ -197,7 +197,8 @@ define(['app', 'livesocket'], function (app) {
 					(item.SubType == "Relay") ||
 					((typeof item.SubType != 'undefined') && (item.SubType.indexOf('Itho') == 0)) ||
 					((typeof item.SubType != 'undefined') && (item.SubType.indexOf('Lucci') == 0)) ||
-					((typeof item.SubType != 'undefined') && (item.SubType.indexOf('Westinghouse') == 0))
+					((typeof item.SubType != 'undefined') && (item.SubType.indexOf('Westinghouse') == 0)) ||
+					((typeof item.SubType != 'undefined') && (item.SubType.indexOf('Falmec') == 0))
 				)
 			) {
 				id = "#light_" + item.idx;
@@ -471,6 +472,39 @@ define(['app', 'livesocket'], function (app) {
 								'<button class="' + class_4 + '" type="button" onclick="SwitchLight(' + item.idx + ',\'off\',' + item.Protected + ');">' + $.t("Off") + '</button> ' +
 								'<button class="' + class_light + '" type="button" onclick="SwitchLight(' + item.idx + ',\'light\',' + item.Protected + ');">' + $.t("Light") + '</button>';
 						}
+						else if (item.SubType.indexOf("Falmec") == 0) {
+							var class_light_on = "btn btn-mini";
+							var class_light_off = "btn btn-mini";
+							var class_1 = "btn btn-mini";
+							var class_2 = "btn btn-mini";
+							var class_3 = "btn btn-mini";
+							var class_4 = "btn btn-mini";
+							if (item.Status == "light on") {
+								class_light_on += " btn-info";
+							}
+							else if (item.Status == "light off") {
+								class_light_off += " btn-info";
+							}
+							else if (item.Status == "speed 1") {
+								class_1 += " btn-info";
+							}
+							else if (item.Status == "speed 2") {
+								class_2 += " btn-info";
+							}
+							else if (item.Status == "speed 3") {
+								class_3 += " btn-info";
+							}
+							else if (item.Status == "speed 4") {
+								class_4 += " btn-info";
+							}
+							status =
+								'<button class="' + class_light_on + '" type="button" onclick="SwitchLight(' + item.idx + ',\'light on\',' + item.Protected + ');">' + $.t("On") + '</button> ' +
+								'<button class="' + class_light_off + '" type="button" onclick="SwitchLight(' + item.idx + ',\'light off\',' + item.Protected + ');">' + $.t("Off") + '</button> ' +
+								'<button class="' + class_1 + '" type="button" onclick="SwitchLight(' + item.idx + ',\'speed 1\',' + item.Protected + ');">' + $.t("1") + '</button> ' +
+								'<button class="' + class_2 + '" type="button" onclick="SwitchLight(' + item.idx + ',\'speed 2\',' + item.Protected + ');">' + $.t("2") + '</button> ' +
+								'<button class="' + class_3 + '" type="button" onclick="SwitchLight(' + item.idx + ',\'speed 3\',' + item.Protected + ');">' + $.t("3") + '</button> ' +
+								'<button class="' + class_4 + '" type="button" onclick="SwitchLight(' + item.idx + ',\'speed 4\',' + item.Protected + ');">' + $.t("4") + '</button>';
+						}
 						else {
 							if (
 								(item.Status == 'On') ||
@@ -729,6 +763,7 @@ define(['app', 'livesocket'], function (app) {
 						else if (
 							(item.SubType.indexOf("Itho") == 0) ||
 							(item.SubType.indexOf("Lucci") == 0) ||
+							(item.SubType.indexOf("Falmec") == 0) ||
 							(item.SubType.indexOf("Westinghouse") == 0)
 						) {
 							img = $(id + " #img").html();
@@ -1788,6 +1823,7 @@ define(['app', 'livesocket'], function (app) {
 									((typeof item.SubType != 'undefined') && (item.SubType.indexOf('Itho') == 0)) ||
 									((typeof item.SubType != 'undefined') && (item.SubType.indexOf('Lucci') == 0)) ||
 									((typeof item.SubType != 'undefined') && (item.SubType.indexOf('Westinghouse') == 0)) ||
+									((typeof item.SubType != 'undefined') && (item.SubType.indexOf('Falmec') == 0)) ||
 									((item.Type.indexOf('Value') == 0) && (typeof item.SwitchType != 'undefined'))
 								)
 							) {
@@ -2066,6 +2102,39 @@ define(['app', 'livesocket'], function (app) {
 											'<button class="' + class_2 + '" type="button" onclick="SwitchLight(' + item.idx + ',\'plus\',' + item.Protected + ');">' + $.t("plus") + '</button> ' +
 											'<button class="' + class_3 + '" type="button" onclick="SwitchLight(' + item.idx + ',\'min\',' + item.Protected + ');">' + $.t("min") + '</button> ' +
 											'<button class="' + class_4 + '" type="button" onclick="SwitchLight(' + item.idx + ',\'light\',' + item.Protected + ');">' + $.t("light") + '</button>';
+									}
+									else if (item.SubType.indexOf("Falmec") == 0) {
+										var class_light_on = "btn btn-mini";
+										var class_light_off = "btn btn-mini";
+										var class_1 = "btn btn-mini";
+										var class_2 = "btn btn-mini";
+										var class_3 = "btn btn-mini";
+										var class_4 = "btn btn-mini";
+										if (item.Status == "light on") {
+											class_light_on += " btn-info";
+										}
+										else if (item.Status == "light off") {
+											class_light_off += " btn-info";
+										}
+										else if (item.Status == "speed 1") {
+											class_1 += " btn-info";
+										}
+										else if (item.Status == "speed 2") {
+											class_2 += " btn-info";
+										}
+										else if (item.Status == "speed 3") {
+											class_3 += " btn-info";
+										}
+										else if (item.Status == "speed 4") {
+											class_4 += " btn-info";
+										}
+										status =
+											'<button class="' + class_light_on + '" type="button" onclick="SwitchLight(' + item.idx + ',\'light on\',' + item.Protected + ');">' + $.t("On") + '</button> ' +
+											'<button class="' + class_light_off + '" type="button" onclick="SwitchLight(' + item.idx + ',\'light off\',' + item.Protected + ');">' + $.t("Off") + '</button> ' +
+											'<button class="' + class_1 + '" type="button" onclick="SwitchLight(' + item.idx + ',\'speed 1\',' + item.Protected + ');">' + $.t("1") + '</button> ' +
+											'<button class="' + class_2 + '" type="button" onclick="SwitchLight(' + item.idx + ',\'speed 2\',' + item.Protected + ');">' + $.t("2") + '</button> ' +
+											'<button class="' + class_3 + '" type="button" onclick="SwitchLight(' + item.idx + ',\'speed 3\',' + item.Protected + ');">' + $.t("3") + '</button> ' +
+											'<button class="' + class_4 + '" type="button" onclick="SwitchLight(' + item.idx + ',\'speed 4\',' + item.Protected + ');">' + $.t("4") + '</button>';
 									}
 									else {
 										if (
@@ -2425,6 +2494,9 @@ define(['app', 'livesocket'], function (app) {
 										(item.SubType.indexOf("Westinghouse") == 0)
 									) {
 										xhtm += '\t      <td id="img" class="img img1"><img src="images/Fan48_On.png" height="40" width="40" class="lcursor" onclick="ShowLucciPopup(event, ' + item.idx + ', ' + item.Protected + ', ' + window.myglobals.ismobile + ');"></td>\n';
+									}
+									else if (item.SubType.indexOf("Falmec") == 0) {
+										xhtm += '\t      <td id="img" class="img img1"><img src="images/Fan48_On.png" height="40" width="40" class="lcursor" onclick="ShowFalmecPopup(event, ' + item.idx + ', ' + item.Protected + ', ' + window.myglobals.ismobile + ');"></td>\n';
 									}
 									else {
 										if (

@@ -14,6 +14,7 @@ namespace http
 			URIGHTS_VIEWER = 0,
 			URIGHTS_SWITCHER,
 			URIGHTS_ADMIN,
+			URIGHTS_NONE=254,
 			URIGHTS_CLIENTID=255
 		};
 		enum _eAuthenticationMethod
@@ -49,12 +50,12 @@ namespace http
 			std::string local_port;
 			std::string auth_token;
 			std::string username;
-			int reply_status = 0;
-			time_t timeout = 0;
 			time_t expires = 0;
-			int rights = 0;
+			uint16_t reply_status = http::server::reply::ok;
+			_eUserRights rights = URIGHTS_NONE;
 			bool rememberme = false;
 			bool isnew = false;
+			bool istrustednetwork = false;
 		} WebEmSession;
 
 		typedef struct _tIPNetwork
@@ -138,7 +139,7 @@ namespace http
 			bool is_upgrade_request(WebEmSession &session, const request &req, reply &rep);
 			std::string compute_accept_header(const std::string &websocket_key);
 			bool CheckAuthByPass(const request& req);
-			bool CheckAuthentication(WebEmSession &session, const request &req, reply &rep);
+			bool CheckAuthentication(WebEmSession &session, const request &req, bool &authErr);
 			bool CheckUserAuthorization(std::string &user, struct ah *ah);
 			bool AllowBasicAuth();
 			void send_authorization_request(reply &rep);
@@ -148,7 +149,6 @@ namespace http
 			bool parse_cookie(const request &req, std::string &sSID, std::string &sAuthToken, std::string &szTime, bool &expired);
 			bool AreWeInTrustedNetwork(const std::string &sHost);
 			bool IsIPInRange(const std::string &ip, const _tIPNetwork &ipnetwork, const bool &bIsIPv6);
-			void Logout();
 			int parse_auth_header(const request &req, struct ah *ah);
 			std::string generateAuthToken(const WebEmSession &session, const request &req);
 			bool checkAuthToken(WebEmSession &session);
@@ -166,10 +166,6 @@ namespace http
 			~cWebem();
 			void Run();
 			void Stop();
-
-			// 20230525 No longer in Use! Will be removed soon!
-			//void RegisterIncludeCode(const char *idname, const webem_include_function &fun);
-			//bool Include(std::string &reply);
 
 			void RegisterPageCode(const char *pageurl, const webem_page_function &fun, bool bypassAuthentication = false);
 

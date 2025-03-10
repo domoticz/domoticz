@@ -124,7 +124,8 @@
 		<script charset="utf-8" src="js/highcharts/modules/exporting.js"></script>
 		<script charset="utf-8" src="js/highcharts/modules/export-data.js"></script>
 		<script charset="utf-8" src="js/highcharts/modules/xrange.js"></script>
-		<script charset="utf-8" src="js/highcharts/themes/dark-unica.js"></script>
+		<!--<script charset="utf-8" src="js/highcharts/themes/dark-unica.js"></script>-->
+		<script charset="utf-8" src="js/highcharts/themes/brand-dark.js"></script>
 		<script src="js/base64.min.js"></script>
 		<script src="js/qrcode.js"></script>
 		<script charset="utf-8" src="js/domoticz.js"></script>
@@ -335,11 +336,11 @@ $(document).ready(function() {
 		'viewFullscreen',
 		'printChart',
 		'separator',
-		//'downloadPNG',
-		//'downloadJPEG',
-		//'downloadPDF',
-		//'downloadSVG',
-		//'separator',
+		'downloadPNG',
+		'downloadJPEG',
+		'downloadPDF',
+		'downloadSVG',
+		'separator',
 		'downloadCSV',
 		'downloadXLS'
 	];
@@ -566,6 +567,26 @@ $(document).ready(function() {
 						<button class="btn btn-info" onclick="LucciSendCommand('plus')">Plus</button><br>
 						<button class="btn btn-info" onclick="LucciSendCommand('min')">Min</button><br>
 						<button data-i18n="Light" class="btn btn-info" onclick="LucciSendCommand('light')">Light</button><br>
+					</center>
+					<br>
+				</td>
+			</tr>
+		</table>
+	</div>
+	<div id="falmec_popup" class="ui-popup ui-body-b ui-overlay-shadow ui-corner-all pop">
+		<div class="ui-close" onclick="CloseFalmecPopup()"></div>
+		<table class="display" border="0" cellpadding="0" cellspacing="0">
+			<tr>
+				<td>
+					<center>
+						<br><br>
+						<button class="btn btn-info" onclick="FalmecSendCommand('power')"><span data-i18n="Power">Power</span>&nbsp;<span data-i18n="Off">Off</span></button><br>
+						<button class="btn btn-info" onclick="FalmecSendCommand('light on')"><span data-i18n="Light">Light</span>&nbsp;<span data-i18n="On">On</span></button><br>
+						<button class="btn btn-info" onclick="FalmecSendCommand('light off')"><span data-i18n="Light">Light</span>&nbsp;<span data-i18n="Off">Off</span></button><br>
+						<button class="btn btn-info" onclick="FalmecSendCommand('speed 1')"><span data-i18n="Speed"></span>&nbsp;1</button><br>
+						<button class="btn btn-info" onclick="FalmecSendCommand('speed 2')"><span data-i18n="Speed"></span>&nbsp;2</button><br>
+						<button class="btn btn-info" onclick="FalmecSendCommand('speed 3')"><span data-i18n="Speed"></span>&nbsp;3</button><br>
+						<button class="btn btn-info" onclick="FalmecSendCommand('speed 4')"><span data-i18n="Speed"></span>&nbsp;4</button><br>
 					</center>
 					<br>
 				</td>

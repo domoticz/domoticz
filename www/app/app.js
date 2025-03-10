@@ -593,7 +593,7 @@ define(['angularAMD', 'app.routes', 'app.constants', 'app.notifications', 'app.p
                     fontFamily: 'Trebuchet MS, Verdana, sans-serif',
                     fontWeight: 'normal'
                 },
-				backgroundColor: '#373739'
+				//backgroundColor: '#373739'
             }
 		});
 
