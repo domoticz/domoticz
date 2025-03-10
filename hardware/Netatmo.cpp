@@ -1842,7 +1842,7 @@ void CNetatmo::GetHomeStatusDetails()
 		bRet = ParseHomeStatus(sResult, root, home_id);
 
 		Json::Value scenarios;
-		Get_Scenarios(home_id, scenarios)
+		Get_Scenarios(home_id, scenarios);
 
 		if (m_bPollGetEvents)
 		{
