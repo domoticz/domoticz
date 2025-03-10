@@ -3693,6 +3693,8 @@ bool CNetatmo::ParseScenarios(const std::string& sResult, Json::Value& scenarios
 	bool target_position;
 	std::map<int, std::string> _data;
 	int index = 0;
+	if (!scenarios.isObject())
+		return false;
 
 	//Json::Value root;
 	//std::string File = ReadFile("./jsoncreated/scenario.txt");
