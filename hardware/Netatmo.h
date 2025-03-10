@@ -112,7 +112,7 @@ class CNetatmo : public CDomoticzHardwareBase
 	void GetHomeStatusDetails();
 	void Get_Picture();
 	void Get_Measure(std::string gateway, std::string module_id, std::string scale, std::string type);
-	void Get_Events(std::string home_id, std::string device_types, std::string event_id, std::string person_id, std::string device_id, std::string module_id, bool offset, bool size, std::string locale);
+	void Get_Events(std::string home_id, std::string device_types, std::string event_id, std::string person_id, std::string device_id, std::string module_id, int offset, int size, std::string locale);
 	void Get_Scenarios(std::string home_id, Json::Value& scenarios);
 
 	bool ParseStationData(const std::string &sResult, bool bIsThermostat);
@@ -161,9 +161,13 @@ class CNetatmo : public CDomoticzHardwareBase
 	std::map<uint8_t, std::string> m_PowerDeviceID;
 	std::map<std::string, std::string> m_DeviceHomeID;
 	std::map<std::string, std::string> m_PersonsNames;
-	std::map<int, std::string> m_ScheduleNames;
+	std::map<std::string, std::map<int, std::string>> m_ScheduleNames;
 	std::map<int, std::string> m_ScheduleIDs;
-	int m_selectedScheduleID;
+	std::map<std::string, int> m_selectedScheduleID;
+	std::map<int, std::string> m_ScheduleHomes;
+	std::map<std::string, int> m_selected_Schedule;
+	std::map<std::string, std::map<int, std::string>> m_Scenarios;
+	std::map<std::string, int> m_selectedScenario;
 
 	std::map<int, CBaroForecastCalculator> m_forecast_calculators;
 
