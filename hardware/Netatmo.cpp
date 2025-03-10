@@ -3793,7 +3793,6 @@ bool CNetatmo::ParseScenarios(const std::string& sResult, Json::Value& scenarios
 			if (scenario_SchName.size() > 0)  scenario_SchName.resize(scenario_SchName.size() - 1); 
 			m_ModuleNames["999"] = scenario_SchName;
 		}
-		scenario_type.clear();         //Blocking Scenarios Selector Switch
 
 		if (!scenario_type.empty())
 		{
@@ -3814,6 +3813,9 @@ bool CNetatmo::ParseScenarios(const std::string& sResult, Json::Value& scenarios
 			m_DeviceModuleID[crcId] = home_id;
 			m_Device_types[home_id] = "NLG";
 			SendSelectorSwitch(crcId, ChildID, Selector, lName, Image, bDropdown, scenario_SchName, "", bHideOff, m_Name);   // No RF-level - Battery level
+			return true;
 		}
+		else
+			return false;
 	}
 }
