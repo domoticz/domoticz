@@ -364,6 +364,7 @@ bool CNetatmo::RefreshToken(const bool bForce)
 	ret = ParseJSon(sResult, root);
 	if ((!ret) || (!root.isObject()))
 	{
+		Debug(DEBUG_HARDWARE, "Netatmo Invalid ... %s", sResult.c_str());
 		Log(LOG_ERROR, "Invalid/no data received (refresh tokens)...");
 		//Force login next time
 		m_isLogged = false;
@@ -3818,9 +3819,9 @@ bool CNetatmo::ParseScenarios(const std::string& sResult, Json::Value& scenarios
 			m_DeviceModuleID[crcId] = home_id;
 			m_Device_types[home_id] = "NLG";
 			SendSelectorSwitch(crcId, ChildID, Selector, lName, Image, bDropdown, scenario_SchName, "", bHideOff, m_Name);   // No RF-level - Battery level
-			return true;
 		}
 		else
 			return false;
 	}
+	return true;
 }
