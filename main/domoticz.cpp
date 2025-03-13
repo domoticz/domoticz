@@ -121,6 +121,7 @@ namespace
 	std::string logfacname = "user";
 #endif
 } // namespace
+
 std::string szStartupFolder;
 std::string szUserDataFolder;
 std::string szWWWFolder;
@@ -128,6 +129,7 @@ std::string szWebRoot;
 std::string dbasefile;
 std::string szCertFile = "./server_cert.pem";
 bool bDoCachePages = true;
+bool bNoCleanupDev = false;
 
 std::string szAppVersion="???";
 int iAppRevision=0;
@@ -1042,6 +1044,10 @@ int main(int argc, char**argv)
 		bDoCachePages = false;
 	}
 
+	if (cmdLine.HasSwitch("-nodevcleanup"))
+	{
+		bNoCleanupDev = true;
+	}
 #if defined WIN32
 	if (!bUseConfigFile) {
 		if (cmdLine.HasSwitch("-nobrowser"))

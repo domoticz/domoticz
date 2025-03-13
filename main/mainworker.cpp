@@ -193,6 +193,7 @@ extern bool g_bUseUpdater;
 extern http::server::_eWebCompressionMode g_wwwCompressMode;
 extern http::server::CWebServerHelper m_webservers;
 extern bool g_bUseEventTrigger;
+extern bool bNoCleanupDev;
 
 CFibaroPush m_fibaropush;
 CGooglePubSubPush m_googlepubsubpush;
@@ -1712,7 +1713,8 @@ void MainWorker::Do_Work()
 				if (ltime.tm_min % m_sql.m_ShortLogInterval == 0)
 				{
 					HandleHourPrice();
-					m_sql.ScheduleShortlog();
+					if (!bNoCleanupDev)
+						m_sql.ScheduleShortlog();
 				}
 				std::string szPwdResetFile = szStartupFolder + "resetpwd";
 				if (file_exist(szPwdResetFile.c_str()))
@@ -1752,7 +1754,8 @@ void MainWorker::Do_Work()
 						if (atime - _ScheduleLastDayTime > 12 * 60 * 60)
 						{
 							_ScheduleLastDayTime = atime;
-							m_sql.ScheduleDay();
+							if (!bNoCleanupDev)
+								m_sql.ScheduleDay();
 						}
 					}
 #ifdef WITH_OPENZWAVE
