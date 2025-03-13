@@ -364,6 +364,7 @@ bool CNetatmo::RefreshToken(const bool bForce)
 	ret = ParseJSon(sResult, root);
 	if ((!ret) || (!root.isObject()))
 	{
+		Debug(DEBUG_HARDWARE, "Netatmo Invalid ... %s", sResult.c_str());
 		Log(LOG_ERROR, "Invalid/no data received (refresh tokens)...");
 		//Force login next time
 		m_isLogged = false;
