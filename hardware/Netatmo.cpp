@@ -365,7 +365,7 @@ bool CNetatmo::RefreshToken(const bool bForce)
 	if ((!ret) || (!root.isObject()))
 	{
 		Debug(DEBUG_HARDWARE, "Netatmo Invalid ... %s", sResult.c_str());
-		Log(LOG_ERROR, "Invalid/no data received (refresh tokens)...");
+		Log(LOG_ERROR, "Invalid/no data received (refresh tokens)... %s", ExtractHtmlStatusCode(returnHeaders).c_str());
 		//Force login next time
 		m_isLogged = false;
 		StoreRequestTokenFlag(true);
