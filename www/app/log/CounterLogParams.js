@@ -232,7 +232,7 @@ define(['app', 'log/Chart'], function (app) {
                         formatter: function () {
                             return ''
                                 + '<table>'
-                                + '<tr><td colspan="2"><b>' + categoryKeyToString(this.x) + '</b></td></tr>'
+                                + '<tr><td colspan="2"><b>' + categoryKeyToStringEx(this.x) + '</b></td></tr>'
                                 + this.points.reduce(
                                     function (rowsHtml, point) {
                                         return rowsHtml
@@ -308,27 +308,42 @@ define(['app', 'log/Chart'], function (app) {
             };
             return template;
 
-            function categoryKeyToString(categoryKey) {
-                return ctrl.groupingBy === 'month' ? monthToString(categoryKey) : categoryKey;
-            }
+			function categoryKeyToString(categoryKey) {
+				if (ctrl.groupingBy === 'month') {
+					return monthToString(parseInt(categoryKey));
+				}
+				return categoryKey;
+			}
 
-            function monthToString(month) {
-                const months = {
-                    '01': $.t('Jan'),
-                    '02': $.t('Feb'),
-                    '03': $.t('Mar'),
-                    '04': $.t('Apr'),
-                    '05': $.t('May'),
-                    '06': $.t('Jun'),
-                    '07': $.t('Jul'),
-                    '08': $.t('Aug'),
-                    '09': $.t('Sep'),
-                    '10': $.t('Oct'),
-                    '11': $.t('Nov'),
-                    '12': $.t('Dec'),
-                };
-                return months[month];
-            }
+			function categoryKeyToStringEx(categoryKey) {
+				if (ctrl.groupingBy === 'month') {
+					return monthToString(parseInt(categoryKey)+1);
+				} else if (ctrl.groupingBy === 'quarter') {
+					return 'Q' + (parseInt(categoryKey)+1).toString();
+				} else if (ctrl.groupingBy === 'year') {
+					return parseInt(ctrl.chart.seriesSuppliers[0].id) + parseInt(categoryKey);
+				} else {
+					return categoryKey;
+				}
+			}
+
+			function monthToString(month) {
+				const months = {
+					1: $.t('Jan'),
+					2: $.t('Feb'),
+					3: $.t('Mar'),
+					4: $.t('Apr'),
+					5: $.t('May'),
+					6: $.t('Jun'),
+					7: $.t('Jul'),
+					8: $.t('Aug'),
+					9: $.t('Sep'),
+					10: $.t('Oct'),
+					11: $.t('Nov'),
+					12: $.t('Dec'),
+				};
+				return months[month];
+			}
         }
     });
 });
