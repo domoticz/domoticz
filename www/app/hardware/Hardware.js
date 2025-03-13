@@ -4808,6 +4808,7 @@ define(['app'], function (app) {
 			var scope = $("#hardwarecontent #hardwareparamsnetatmo #scope").val();
 			var clientId = $("#hardwarecontent #hardwareparamsnetatmo #clientid").val();
 			var clientSecret = $("#hardwarecontent #hardwareparamsnetatmo #clientsecret").val();
+			var $("#hardwarecontent #hardwareparamsnetatmo #SerialPort").val() = redirectUri;
 			var date = new Date();
 			var state = date.getTime() + '_' + idx;
 
