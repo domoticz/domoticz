@@ -331,7 +331,7 @@ bool CNetatmo::RefreshToken(const bool bForce)
 			return true; //no need to refresh the token yet
 	}
 
-	Log (LOG_STATUS, "Requesting refreshed tokens");
+	Log (LOG_STATUS, "%s Requesting refreshed tokens", m_Name.c_str());
 
 	// Time to refresh the token
 	std::stringstream sstr;
@@ -355,7 +355,7 @@ bool CNetatmo::RefreshToken(const bool bForce)
 	//Check for returned data
 	if (!ret)
 	{
-		Log(LOG_ERROR, "Error connecting to Server (refresh tokens): %s", ExtractHtmlStatusCode(returnHeaders).c_str());
+		Log(LOG_ERROR, "%s Error connecting to Server (refresh tokens): %s", m_Name.c_str(), ExtractHtmlStatusCode(returnHeaders).c_str());
 		return false;
 	}
 
@@ -365,7 +365,7 @@ bool CNetatmo::RefreshToken(const bool bForce)
 	if ((!ret) || (!root.isObject()))
 	{
 		Debug(DEBUG_HARDWARE, "Netatmo Invalid ... %s", sResult.c_str());
-		Log(LOG_ERROR, "Invalid/no data received (refresh tokens)... %s", ExtractHtmlStatusCode(returnHeaders).c_str());
+		Log(LOG_ERROR, "%s Invalid/no data received (refresh tokens)... %s", m_Name.c_str(), ExtractHtmlStatusCode(returnHeaders).c_str());
 		//Force login next time
 		m_isLogged = false;
 		StoreRequestTokenFlag(true);
@@ -1832,7 +1832,7 @@ void CNetatmo::GetHomeStatusDetails()
 	Log(LOG_STATUS, "Home Status Details, size (number of homes) is %d", size);   // Multiple Homes possible
 	for (int i = 0; i < size; i++)
 	{
-		Debug(DEBUG_HARDWARE, "index %d", i);
+		Debug(DEBUG_HARDWARE, "index %d of homes", i);
 		home_id = m_homeid[i];
 		home_data = "home_id=" + home_id + "&get_favorites=true&";
 		//Debug(DEBUG_HARDWARE, "Home_Data : %s ", home_data.c_str());
@@ -1840,7 +1840,7 @@ void CNetatmo::GetHomeStatusDetails()
 
 		Get_Respons_API(NETYPE_STATUS, sResult, home_data, bRet, root, "");
 
-		Debug(DEBUG_HARDWARE, "sResult : %s ", sResult.c_str());
+		//Debug(DEBUG_HARDWARE, "sResult : %s ", sResult.c_str());
 
 		//Parse API response
 		bRet = ParseHomeStatus(sResult, root, home_id);
@@ -1849,7 +1849,7 @@ void CNetatmo::GetHomeStatusDetails()
 		{
 			Get_Events(home_data, device_types, event_id, person_id, bridge_id, module_id, offset, size, locale);
 		}
-		Debug(DEBUG_HARDWARE, "Parsed Home Status %s index %d", home_id.c_str(), i);
+		Debug(DEBUG_HARDWARE, "Parsed index %d Home Status of HomeID %s", i, home_id.c_str());
 	}
 }
 
@@ -3454,7 +3454,7 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 						bool bDeviceUsed = true;
 						bool bReversePosition = false;
 						bool bReverseState = false;
-						CreateBlindSwitch(crcId, ChildID, STYPE_BlindsPercentage, bDeviceUsed, bReversePosition, bReverseState, Command, level, moduleName, m_Name, batteryLevel, mrf_status);
+						CreateBlindSwitch(crcId, ChildID, STYPE_BlindsPercentage, bDeviceUsed, bReversePosition, bReverseState, Command, level, moduleName.c_str(), m_Name.c_str(), batteryLevel, mrf_status);
 						m_PowerDeviceID[crcId] = moduleName;
 					}
 					if (type == "NLE")
