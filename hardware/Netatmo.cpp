@@ -366,6 +366,7 @@ bool CNetatmo::RefreshToken(const bool bForce)
 	{
 		Debug(DEBUG_HARDWARE, "Netatmo Invalid ... %s", sResult.c_str());
 		Log(LOG_ERROR, "Invalid/no data received (refresh tokens)... %s", ExtractHtmlStatusCode(returnHeaders).c_str());
+
 		//Force login next time
 		m_isLogged = false;
 		StoreRequestTokenFlag(true);
@@ -1845,6 +1846,9 @@ void CNetatmo::GetHomeStatusDetails()
 		//Parse API response
 		bRet = ParseHomeStatus(sResult, root, home_id);
 
+		Json::Value scenarios;
+		Get_Scenarios(home_id, scenarios);
+
 		if (m_bPollGetEvents)
 		{
 			Get_Events(home_data, device_types, event_id, person_id, bridge_id, module_id, offset, size, locale);
@@ -1977,12 +1981,14 @@ void CNetatmo::Get_Scenarios(std::string home_id, Json::Value& scenarios)
 			scenarios = root["body"]["home"];
 
 			//Selected Scenario ?
-			m_selectedScenario[home_id] = int(10);
+			m_selectedScenario[home_id] = "0";
 
 			// Data was recieved with success
 			Log(LOG_STATUS, "Scenarios Data Recieved");
 		}
 	}
+	//Parse API response
+	bRet = ParseScenarios(sResult, scenarios, home_id);
 }
 
 /// <summary>
@@ -2607,9 +2613,6 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 		}
 		Debug(DEBUG_HARDWARE, "Rooms Parsed");
 	}
-
-	Json::Value scenarios;
-	//Get_Scenarios(home_id, scenarios);
 
 	//Parse module and create / update domoticz devices
 	if (!root["body"]["home"]["modules"].empty())
@@ -3674,6 +3677,152 @@ bool CNetatmo::ParseEvents(const std::string& sResult, Json::Value& root )
 				SendAlertSensor(crcId, batteryLevel, alertLevel, sValue.c_str(), e_Name.c_str());
 			}
 		}
+	}
+	return true;
+}
+
+/// <summary>
+/// Parse Scenarios
+/// <param name="home_id">ID-number of the NetatmoHome</param>
+/// </summary>
+bool CNetatmo::ParseScenarios(const std::string& sResult, Json::Value& scenarios, std::string home_id)
+{
+	//Locals
+	std::string scenario_id;
+	std::string scenario_category;
+	std::string scenario_type;
+	std::string id_mod;
+	std::string scenario_index;
+	std::string scenario_SchName;
+	bool status_mod;
+	bool target_position;
+	std::map<int, std::string> _data;
+	int index = 0;
+	if (!scenarios.isObject())
+		return false;
+
+	//Json::Value root;
+	//std::string File = ReadFile("./jsoncreated/scenario.txt");
+	//bool ret = ParseJSon(File, scenarios);
+	if (scenarios.isObject())
+	{
+		if (!scenarios["id"].empty())
+		{
+			scenario_id = scenarios["id"].asString();
+			//Debug(DEBUG_HARDWARE, "Get the scenarios from Home %s", home_id.c_str());
+
+		}
+		if (!scenarios["modules"].empty())
+		{
+			Log(LOG_STATUS, "Get the scenarios modules from %s in home %s", scenario_id.c_str(), home_id.c_str());
+			for (auto moduless : scenarios["modules"])
+			{
+				if (!moduless["id"].empty())
+				{
+					id_mod = moduless["id"].asString();
+					//Debug(DEBUG_HARDWARE, "Scenarios Module id %s", id_mod.c_str());
+				}
+				if (!moduless["scenarios"].empty())
+				{
+					for (auto scenarios_mod : moduless["scenarios"])
+					{
+						if (!scenarios_mod["id"].empty())
+						{
+							scenario_index = scenarios_mod["id"].asString();
+							//Debug(DEBUG_HARDWARE, "Scenarios index %s", scenario_index.c_str());
+						}
+						if (!scenarios_mod["on"].empty())
+						{
+							status_mod = scenarios_mod["on"].asBool();
+						}
+						if (!scenarios_mod["target_position"].empty())
+						{
+							target_position = scenarios_mod["target_position"].asBool();
+						}
+					}
+				}
+
+			}
+		}
+		if (!scenarios["scenarios"].empty())
+		{
+			for (auto scenarioss : scenarios["scenarios"])
+			{
+				std::string scenario_id;
+				std::string scenario_name;
+				bool scenario_custom;
+				bool scenario_edit;
+				bool scenario_del;
+
+				if (scenarioss["category"].empty())
+				{
+					scenario_category = scenarioss["category"].asString();
+					//Debug(DEBUG_HARDWARE, "Scenarios category %s", scenario_category.c_str());
+				}
+				if (!scenarioss["customizable"].empty())
+				{
+					scenario_custom = scenarioss["customizable"].asBool();
+				}
+				if (!scenarioss["deletable"].empty())
+				{
+					scenario_del = scenarioss["deletable"].asBool();
+				}
+				if (!scenarioss["editable"].empty())
+				{
+					scenario_edit = scenarioss["editable"].asBool();
+				}
+				if (!scenarioss["id"].empty())
+				{
+					scenario_id = scenarioss["id"].asString();
+				}
+				if (!scenarioss["name"].empty())
+				{
+					scenario_name = scenarioss["name"].asString();
+				}
+				if (!scenarioss["type"].empty())
+				{
+					if (!scenario_name.empty())
+					{
+						_data[index] = scenario_name;
+						scenario_SchName = scenario_SchName + scenario_name + "|";
+					}
+					else
+					{
+						scenario_type = scenarioss["type"].asString();
+						scenario_SchName = scenario_SchName + scenario_type + "|";
+						_data[index] = scenario_type;
+					}
+					//Debug(DEBUG_HARDWARE, "Scenario %s : %s %s %s", scenario_id.c_str(), scenario_name.c_str(), scenario_type.c_str(), scenario_category.c_str());
+				}
+				index = +10;
+			}
+			m_Scenarios[home_id] = _data;
+			if (scenario_SchName.size() > 0)  scenario_SchName.resize(scenario_SchName.size() - 1); 
+			m_ModuleNames["999"] = scenario_SchName;
+		}
+
+		if (!scenario_type.empty())
+		{
+			Log(LOG_STATUS, "Scenarios Selector Switch");
+			std::string lName = "Scenario";
+			bool bIsActive = 0;
+			int ChildID = 14;
+			int Image = 0;
+			bool bDropdown = true;
+			bool bHideOff = false;
+			int crcId = Crc32(0, (const unsigned char*)home_id.c_str(), home_id.length());
+			std::stringstream uid;
+			uid << crcId;
+			std::string Selector;
+			Selector = m_selectedScenario[home_id]; //Active selecting
+			m_ScheduleHomes[crcId] = home_id;
+			m_PowerDeviceID[crcId] = lName;
+			m_DeviceModuleID[crcId] = home_id;
+			m_Device_types[home_id] = "NLG";
+			SendSelectorSwitch(crcId, ChildID, Selector, lName, Image, bDropdown, scenario_SchName, "", bHideOff, m_Name);   // No RF-level - Battery level
+		}
+		else
+			return false;
 	}
 	return true;
 }
