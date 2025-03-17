@@ -195,12 +195,12 @@ void CGooglePubSubPush::DoGooglePubSubPush(const uint64_t DeviceRowIdx)
 			if (int(strarray.size()) >= delpos)
 			{
 				std::string rawsendValue = strarray[delpos - 1];
-				sendValue = ProcessSendValue(DeviceRowIdx, rawsendValue, delpos, nValue, false, dType, dSubType, metertype);
+				sendValue = ProcessSendValue(DeviceRowIdx, rawsendValue, delpos, nValue, sValue, false, dType, dSubType, metertype);
 			}
 		}
 		else
 		{
-			sendValue = ProcessSendValue(DeviceRowIdx, sendValue, delpos, nValue, false, dType, dSubType, metertype);
+			sendValue = ProcessSendValue(DeviceRowIdx, sendValue, delpos, nValue, sValue, false, dType, dSubType, metertype);
 		}
 		if (sendValue.empty())
 			continue;

@@ -199,11 +199,11 @@ void CMQTTPush::DoMQTTPush(const uint64_t DeviceRowIdx, const bool bForced)
 			if (int(strarray.size()) >= delpos)
 			{
 				std::string rawsendValue = strarray[delpos - 1];
-				sendValue = ProcessSendValue(DeviceRowIdx, rawsendValue, delpos, nValue, includeUnit, dType, dSubType, metertype);
+				sendValue = ProcessSendValue(DeviceRowIdx, rawsendValue, delpos, nValue, sValue, includeUnit, dType, dSubType, metertype);
 			}
 		}
 		else
-			sendValue = ProcessSendValue(DeviceRowIdx, sValue, delpos, nValue, includeUnit, dType, dSubType, metertype);
+			sendValue = ProcessSendValue(DeviceRowIdx, sValue, delpos, nValue, sValue, includeUnit, dType, dSubType, metertype);
 
 		if (sendValue.empty())
 			continue;

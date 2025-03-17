@@ -4873,21 +4873,21 @@ define(['app'], function (app) {
 								if ($scope.refreshToken == "") {
 									alert('Access denied: Failed to receive a valid token from server: ' + decodeJsonValues(xhr.responseText), ', ');
 									console.log('Error: Access denied: Failed to receive a valid token from server: ' + data);
-									$scope.loginRequired = true; //Still need to login
+									$scope.loginRequired = true;     //Still need to login
 								}
 								else
-									$scope.loginRequired = false //Login done: Notify server
+									$scope.loginRequired = false     //Login done: Notify server
 							} else {
 								alert('Access denied: Failed to receive a valid reponse from server (' + xhr.status + "): " + decodeJsonValues(xhr.responseText), ', ');
 								console.log(`Error: Access denied: Failed to receive a valid reponse from server:  ${xhr.status}`);
-								$scope.loginRequired = true; //Still need to login
+								$scope.loginRequired = true;             //Still need to login
 							}
 							var href = $("#updelclr #hardwareupdate").attr("href");
 							if (typeof href == 'undefined') {
-								AddHardware ();	//Is Selected device, update
+								AddHardware ();	                         //Is not a selected device. so must be new
 							}
 							else
-								UpdateHardware (idx, 0, 0, 0, 0, 0, 0);	//Is not a selected device. so must be new
+								UpdateHardware (idx, 0, 0, 0, 0, 0, 0);	 //Is Selected device, update
 						}
 
 						var body = "grant_type=authorization_code"
