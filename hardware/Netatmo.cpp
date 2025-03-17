@@ -2192,7 +2192,7 @@ bool CNetatmo::ParseStationData(const std::string& sResult, const bool bIsThermo
 					}
 				}
 			}
-			Log(LOG_STATUS, "Station Data parsed");
+			Log(LOG_STATUS, "Station Data parsed %s", name.c_str());
 			m_netatmo_devices.push_back(nDevice);
 			m_known_thermotats.push_back(nDevice);
 		}
