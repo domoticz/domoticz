@@ -13925,7 +13925,6 @@ bool MainWorker::UpdateDevice(const int HardwareID, const int OrgHardwareID, con
 			|| ((devType == pTypeRadiator1) && (subType == sTypeSmartwares))
 			)
 		{
-			_log.Log(LOG_NORM, "Updating SetPoint device....");
 			SetSetPoint(sidx.str(), static_cast<float>(atof(sValue.c_str())));
 
 #ifdef ENABLE_PYTHON
