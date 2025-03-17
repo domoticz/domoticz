@@ -331,7 +331,7 @@ bool CNetatmo::RefreshToken(const bool bForce)
 			return true; //no need to refresh the token yet
 	}
 
-	Log (LOG_STATUS, "%s Requesting refreshed tokens", m_Name.c_str());
+	Log (LOG_STATUS, "Requesting refreshed tokens");
 
 	// Time to refresh the token
 	std::stringstream sstr;
