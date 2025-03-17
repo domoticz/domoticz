@@ -128,32 +128,34 @@ void CInfluxPush::DoInfluxPush(const uint64_t DeviceRowIdx, const bool bForced)
 	if (result.empty())
 		return;
 
+	int dType = atoi(result[0][3].c_str());
+	int dSubType = atoi(result[0][4].c_str());
+	int nValue = atoi(result[0][5].c_str());
+	std::string sValue = result[0][6];
+	std::string name = result[0][9];
+	int metertype = atoi(result[0][10].c_str());
+
 	time_t atime = mytime(nullptr);
 	for (const auto &sd : result)
 	{
 		std::string sendValue;
 		int delpos = atoi(sd[1].c_str());
-		int dType = atoi(sd[3].c_str());
-		int dSubType = atoi(sd[4].c_str());
-		int nValue = atoi(sd[5].c_str());
-		std::string sValue = sd[6];
 		int targetType = atoi(sd[7].c_str());
 		int includeUnit = atoi(sd[8].c_str());
-		std::string name = sd[9];
-		int metertype = atoi(sd[10].c_str());
 
 		std::vector<std::string> strarray;
 		if (sValue.find(';') != std::string::npos)
 		{
+			std::string rawsendValue("");
 			StringSplit(sValue, ";", strarray);
 			if (int(strarray.size()) >= delpos)
 			{
-				std::string rawsendValue = strarray[delpos - 1];
-				sendValue = ProcessSendValue(DeviceRowIdx, rawsendValue, delpos, nValue, includeUnit, dType, dSubType, metertype);
+				rawsendValue = strarray[delpos - 1];
 			}
+			sendValue = ProcessSendValue(DeviceRowIdx, rawsendValue, delpos, nValue, sValue, includeUnit, dType, dSubType, metertype);
 		}
 		else
-			sendValue = ProcessSendValue(DeviceRowIdx, sValue, delpos, nValue, includeUnit, dType, dSubType, metertype);
+			sendValue = ProcessSendValue(DeviceRowIdx, sValue, delpos, nValue, sValue, includeUnit, dType, dSubType, metertype);
 
 		if (sendValue.empty())
 			continue;
