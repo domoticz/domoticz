@@ -355,7 +355,7 @@ bool CNetatmo::RefreshToken(const bool bForce)
 	//Check for returned data
 	if (!ret)
 	{
-		Log(LOG_ERROR, "%s Error connecting to Server (refresh tokens): %s", m_Name.c_str(), ExtractHtmlStatusCode(returnHeaders).c_str());
+		Log(LOG_ERROR, "Error connecting to Server (refresh tokens): %s", ExtractHtmlStatusCode(returnHeaders).c_str());
 		return false;
 	}
 
@@ -365,7 +365,7 @@ bool CNetatmo::RefreshToken(const bool bForce)
 	if ((!ret) || (!root.isObject()))
 	{
 		Debug(DEBUG_HARDWARE, "Netatmo Invalid ... %s", sResult.c_str());
-		Log(LOG_ERROR, "%s Invalid/no data received (refresh tokens)... %s", m_Name.c_str(), ExtractHtmlStatusCode(returnHeaders).c_str());
+		Log(LOG_ERROR, "Invalid/no data received (refresh tokens)... %s", ExtractHtmlStatusCode(returnHeaders).c_str());
 		//Force login next time
 		m_isLogged = false;
 		StoreRequestTokenFlag(true);
