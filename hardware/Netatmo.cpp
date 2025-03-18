@@ -16,6 +16,7 @@
 // 08/05/2024 - Give the poll interfval a defined name:
 #define NETAMO_POLL_INTERVALL 900
 #define NETAMO_LOGIN_INTERVALL 30
+#define NETAMO_ERROR_INTERVALL 2700
 
 #ifdef _DEBUG
 //#define DEBUG_NetatmoWeatherStationR
@@ -204,6 +205,7 @@ std::string CNetatmo::ExtractHtmlStatusCode(const std::vector<std::string>& head
 void CNetatmo::Do_Work()
 {
 	int sec_counter = 600 - 5;
+	int new_login_interval;
 	bool bFirstTimeWS = true;
 	bool bFirstTimeHS = true;
 	bool bFirstTimeSS = true;
@@ -216,6 +218,15 @@ void CNetatmo::Do_Work()
 		sec_counter++;
 		if (sec_counter % 12 == 0) {
 			m_LastHeartbeat = mytime(nullptr);
+		}
+
+		if (m_ErrorFlag)
+		{
+			new_login_interval = NETAMO_ERROR_INTERVALL;
+		}
+		else
+		{
+			new_login_interval = NETAMO_LOGIN_INTERVALL;
 		}
 
 		if (!m_isLogged)
@@ -333,6 +344,7 @@ bool CNetatmo::RefreshToken(const bool bForce)
 	}
 
 	Log (LOG_STATUS, "Requesting refreshed tokens");
+	m_ErrorFlag = false;
 
 	// Time to refresh the token
 	std::stringstream sstr;
@@ -368,7 +380,7 @@ bool CNetatmo::RefreshToken(const bool bForce)
 		Debug(DEBUG_HARDWARE, "Netatmo Invalid ... %s", sResult.c_str());
 		Log(LOG_ERROR, "Invalid/no data received (refresh tokens)... %s", ExtractHtmlStatusCode(returnHeaders).c_str());
 
-		NETAMO_LOGIN_INTERVALL = NETAMO_LOGIN_INTERVALL + 2700;
+		m_ErrorFlag = true;
 		Log (LOG_STATUS, "Wait 45 min and renew LOGIN");
 
 		//Force login next time
