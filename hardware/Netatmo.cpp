@@ -15,6 +15,7 @@
 // 03/03/2022 - PP Changing the Weather polling from 600 to 900s. This has reduce the number of server errors,
 // 08/05/2024 - Give the poll interfval a defined name:
 #define NETAMO_POLL_INTERVALL 900
+#define NETAMO_LOGIN_INTERVALL 30
 
 #ifdef _DEBUG
 //#define DEBUG_NetatmoWeatherStationR
@@ -219,7 +220,7 @@ void CNetatmo::Do_Work()
 
 		if (!m_isLogged)
 		{
-			if (sec_counter % 30 == 0)
+			if (sec_counter % NETAMO_LOGIN_INTERVALL == 0)
 			{
 				Login();
 			}
@@ -366,6 +367,9 @@ bool CNetatmo::RefreshToken(const bool bForce)
 	{
 		Debug(DEBUG_HARDWARE, "Netatmo Invalid ... %s", sResult.c_str());
 		Log(LOG_ERROR, "Invalid/no data received (refresh tokens)... %s", ExtractHtmlStatusCode(returnHeaders).c_str());
+
+		NETAMO_LOGIN_INTERVALL = NETAMO_LOGIN_INTERVALL + 2700;
+		Log (LOG_STATUS, "Wait 45 min and renew LOGIN");
 
 		//Force login next time
 		m_isLogged = false;
