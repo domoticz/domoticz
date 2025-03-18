@@ -364,6 +364,11 @@ bool CRtl433::ParseData(std::map<std::string, std::string>& data)
 		}
 	}
 
+	if (model == "Generic-Remote") {
+		// prevent "Unhandled sensor reading" logging
+		bDone = true; 
+	}
+
 	if (bDone)
 		return true;
 
