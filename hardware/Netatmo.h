@@ -129,6 +129,7 @@ class CNetatmo : public CDomoticzHardwareBase
 	void StoreRefreshToken();
 	void StoreRequestTokenFlag(bool bFlag = false);
 	bool m_isLogged;
+	bool m_ErrorFlag;
 	bool m_bForceLogin;
 
 	m_eNetatmoType m_weatherType;
