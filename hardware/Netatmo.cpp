@@ -152,6 +152,8 @@ void CNetatmo::Init()
 	m_bForceSetpointUpdate = false;
 
 	m_bForceLogin = false;
+	m_refreshToken.clear();
+	LoadRefreshToken = false;
 }
 
 
@@ -220,20 +222,9 @@ void CNetatmo::Do_Work()
 			m_LastHeartbeat = mytime(nullptr);
 		}
 
-		if (m_ErrorFlag)
-		{
-			Log(LOG_STATUS,"Netatmo Interval %d",  new_login_interval);
-			new_login_interval = NETAMO_ERROR_INTERVALL;
-		}
-		else
-		{
-			new_login_interval = NETAMO_LOGIN_INTERVALL;
-			Log(LOG_STATUS,"Netatmo Interval %d",  new_login_interval);
-		}
-
 		if (!m_isLogged)
 		{
-			if (sec_counter % new_login_interval == 0)
+			if (sec_counter % NETAMO_LOGIN_INTERVALL == 0)
 			{
 				Login();
 			}
@@ -299,6 +290,13 @@ bool CNetatmo::Login()
 	if (m_isLogged)
 		return true;
 
+	if (m_refreshToken.empty())
+	{
+		Log (LOG_ERROR, "No refresh token available; please login to retreive a new one from Netatmo");
+		StoreRequestTokenFlag(true);
+		return false;
+	}
+
 	//Check if a stored token is available
 	if (LoadRefreshToken())
 	{
@@ -310,13 +308,6 @@ bool CNetatmo::Login()
 			m_bPollThermostat = true;
 			return true;
 		}
-	}
-
-	if (m_refreshToken.empty())
-	{
-		Log (LOG_ERROR, "No refresh token available; please login to retreive a new one from Netatmo");
-		StoreRequestTokenFlag(true);
-		return false;
 	}
 	return true;
 }
