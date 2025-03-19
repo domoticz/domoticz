@@ -231,7 +231,7 @@ void CNetatmo::Do_Work()
 
 		if (!m_isLogged)
 		{
-			if (sec_counter % NETAMO_LOGIN_INTERVALL == 0)
+			if (sec_counter % new_login_interval == 0)
 			{
 				Login();
 			}
