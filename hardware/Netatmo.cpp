@@ -153,7 +153,7 @@ void CNetatmo::Init()
 
 	m_bForceLogin = false;
 	m_refreshToken.clear();
-	LoadRefreshToken = false;
+	LoadRefreshToken.clear();
 }
 
 
