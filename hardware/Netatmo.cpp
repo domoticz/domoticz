@@ -222,11 +222,13 @@ void CNetatmo::Do_Work()
 
 		if (m_ErrorFlag)
 		{
+			Log(LOG_STATUS,"Netatmo Interval %d",  new_login_interval);
 			new_login_interval = NETAMO_ERROR_INTERVALL;
 		}
 		else
 		{
 			new_login_interval = NETAMO_LOGIN_INTERVALL;
+			Log(LOG_STATUS,"Netatmo Interval %d",  new_login_interval);
 		}
 
 		if (!m_isLogged)
