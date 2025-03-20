@@ -221,11 +221,19 @@ void CNetatmo::Do_Work()
 			m_LastHeartbeat = mytime(nullptr);
 		}
 
+		if (sec_counter % NETAMO_ERROR_INTERVALL == 0)
+		{
+			m_ErrorFlag = false;
+		}
 		if (!m_isLogged)
 		{
-			if (sec_counter % NETAMO_LOGIN_INTERVALL == 0)
+			if (!m_ErrorFlag)
 			{
-				Login();
+				if (sec_counter % NETAMO_LOGIN_INTERVALL == 0)
+				{
+					Login();
+					Log(LOG_STATUS,"Login %d",  m_isLogged);
+				}
 			}
 		}
 		if (m_isLogged)
@@ -374,7 +382,7 @@ bool CNetatmo::RefreshToken(const bool bForce)
 		Log(LOG_ERROR, "Invalid/no data received (refresh tokens)... %s", ExtractHtmlStatusCode(returnHeaders).c_str());
 
 		m_ErrorFlag = true;
-		Log (LOG_STATUS, "Wait 45 min and renew LOGIN");
+		Log (LOG_STATUS, "Wait 45 min to LOGIN");
 
 		//Force login next time
 		m_isLogged = false;
@@ -1856,7 +1864,7 @@ void CNetatmo::GetHomeStatusDetails()
 		bRet = ParseHomeStatus(sResult, root, home_id);
 
 		Json::Value scenarios;
-		Get_Scenarios(home_id, scenarios);
+		//Get_Scenarios(home_id, scenarios);
 
 		if (m_bPollGetEvents)
 		{
