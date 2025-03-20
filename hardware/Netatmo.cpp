@@ -289,13 +289,6 @@ bool CNetatmo::Login()
 	if (m_isLogged)
 		return true;
 
-	if (m_refreshToken.empty())
-	{
-		Log (LOG_ERROR, "No refresh token available; please login to retreive a new one from Netatmo");
-		StoreRequestTokenFlag(true);
-		return false;
-	}
-
 	//Check if a stored token is available
 	if (LoadRefreshToken())
 	{
@@ -308,6 +301,14 @@ bool CNetatmo::Login()
 			return true;
 		}
 	}
+
+	if (m_refreshToken.empty())
+	{
+		Log (LOG_ERROR, "No refresh token available; please login to retreive a new one from Netatmo");
+		StoreRequestTokenFlag(true);
+		return false;
+	}
+	
 	return true;
 }
 
