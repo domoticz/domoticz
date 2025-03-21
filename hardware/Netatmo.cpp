@@ -238,46 +238,49 @@ void CNetatmo::Do_Work()
 		}
 		if (m_isLogged)
 		{
-			if (RefreshToken())
+			if (!m_ErrorFlag)
 			{
-                                // Thermostat is accessable through Homestatus / Homesdata in New API
-                                //Weather, HomeCoach, and Thermostat data is updated every  NETAMO_POLL_INTERVALL  seconds
-				if ((sec_counter % NETAMO_POLL_INTERVALL == 0) || (bFirstTimeWS) || (bFirstTimeHS) || (bFirstTimeSS))
+				if (RefreshToken())
 				{
-					bFirstTimeWS = false;
-                                        bFirstTimeHS = false;
-                                        bFirstTimeSS = false;
-					if (m_bPollWeatherData)
+                                	// Thermostat is accessable through Homestatus / Homesdata in New API
+                                	//Weather, HomeCoach, and Thermostat data is updated every  NETAMO_POLL_INTERVALL  seconds
+					if ((sec_counter % NETAMO_POLL_INTERVALL == 0) || (bFirstTimeWS) || (bFirstTimeHS) || (bFirstTimeSS))
 					{
-						// ParseStationData
-						GetWeatherDetails();
-						Log(LOG_STATUS,"Weather %d",  m_isLogged);
-					}
-					if (m_bPollHomecoachData)
-					{
-						// ParseStationData
-						GetHomecoachDetails();
-						Log(LOG_STATUS,"HomeCoach %d",  m_isLogged);
-					}
-					if (m_bPollHomeStatus)
-					{
-						// GetHomesDataDetails
-						GetHomeStatusDetails();
-						Log(LOG_STATUS,"Status %d",  m_isLogged);
-						m_bFirstTimeHomeStatus = false;
-					}
-				}
-
-				//Update Thermostat data when the
-				//manual set point reach its end
-				if (m_bForceSetpointUpdate)
-				{
-					time_t atime = time(nullptr);
-					if (atime >= m_tSetpointUpdateTime)
-					{
-						m_bForceSetpointUpdate = false;
-						if (m_bPollThermostat)
+						bFirstTimeWS = false;
+                                        	bFirstTimeHS = false;
+                                        	bFirstTimeSS = false;
+						if (m_bPollWeatherData)
+						{
+							// ParseStationData
+							GetWeatherDetails();
+							Log(LOG_STATUS,"Weather %d",  m_isLogged);
+						}
+						if (m_bPollHomecoachData)
+						{
+							// ParseStationData
+							GetHomecoachDetails();
+							Log(LOG_STATUS,"HomeCoach %d",  m_isLogged);
+						}
+						if (m_bPollHomeStatus)
+						{
+							// GetHomesDataDetails
 							GetHomeStatusDetails();
+							Log(LOG_STATUS,"Status %d",  m_isLogged);
+							m_bFirstTimeHomeStatus = false;
+						}
+					}
+
+					//Update Thermostat data when the
+					//manual set point reach its end
+					if (m_bForceSetpointUpdate)
+					{
+						time_t atime = time(nullptr);
+						if (atime >= m_tSetpointUpdateTime)
+						{
+							m_bForceSetpointUpdate = false;
+							if (m_bPollThermostat)
+								GetHomeStatusDetails();
+						}
 					}
 				}
 			}
