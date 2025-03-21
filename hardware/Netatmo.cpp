@@ -385,7 +385,7 @@ bool CNetatmo::RefreshToken(const bool bForce)
 		Log(LOG_ERROR, "Invalid/no data received (refresh tokens)... %s", ExtractHtmlStatusCode(returnHeaders).c_str());
 
 		m_ErrorFlag = true;
-		Log (LOG_STATUS, "Wait 45 min to LOGIN");
+		Log (LOG_STATUS, "Wait %d min. to LOGIN", (NETAMO_ERROR_INTERVALL / 60));
 
 		//Force login next time
 		m_isLogged = false;
