@@ -154,7 +154,6 @@ void CNetatmo::Init()
 	m_bForceSetpointUpdate = false;
 
 	m_bForceLogin = false;
-	m_accessToken = "";
 }
 
 
@@ -934,8 +933,8 @@ bool CNetatmo::SetProgramState(const int uid, const int newState)
 			for (std::map<int, std::string>::const_iterator itt = scenarios_names.begin(); itt != scenarios_names.end(); ++itt)
 			{
 				std::stringstream ss;
-				Debug(DEBUG_HARDWARE, "Gateway first  %d", itt->first);
-				Debug(DEBUG_HARDWARE, "Gateway second %s", itt->second.c_str());
+				Debug(DEBUG_HARDWARE, "Gateway first  ; %d", itt->first);
+				Debug(DEBUG_HARDWARE, "Gateway second ; %s", itt->second.c_str());
 				ss << itt->first;
 				ss >> i;
 				if (i == newState)
