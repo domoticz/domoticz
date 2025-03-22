@@ -1518,7 +1518,7 @@ void CNetatmo::Get_Respons_API(const m_eNetatmoType& NType, std::string& sResult
 		return ;
 	}
 
-	Log(LOG_STATUS, "Get_Respons_API message returned from POST(%s): \n%s", httpUrl.c_str(), JSonToFormatString(root).c_str().c_str()); // prettifyJson(root);
+	Log(LOG_STATUS, "Get_Respons_API message returned from POST(%s): \n%s", httpUrl.c_str(), JSonToFormatString(root).c_str()); // prettifyJson(root);
 
 	if (!root["error"].empty())
         {
