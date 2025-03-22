@@ -931,6 +931,8 @@ bool CNetatmo::SetProgramState(const int uid, const int newState)
 			for (std::map<int, std::string>::const_iterator itt = scenarios_names.begin(); itt != scenarios_names.end(); ++itt)
 			{
 				std::stringstream ss;
+				Debug(DEBUG_HARDWARE, "Gateway first  %d", itt->first);
+				Debug(DEBUG_HARDWARE, "Gateway second %d", itt->second);
 				ss << itt->first;
 				ss >> i;
 				if (i == newState)
@@ -941,10 +943,11 @@ bool CNetatmo::SetProgramState(const int uid, const int newState)
 			//Scenario NLG
 			Debug(DEBUG_HARDWARE, "Gateway set scenario %s", scenario_Name.c_str());
 			m_selectedScenario[Home_id] = newState;
+			Debug(DEBUG_HARDWARE, "Gateway test Bridge %s module %s newState %d ", m_DeviceBridge[module_id], m_DeviceModuleID[uid], newState);
 			Json::Value json_data;
 			//json_data {"body":{"home":{"id":
 			json_data["home"]["id"] = Home_id;
-			json_data["home"]["modules"][0]["id"] = module_id;
+			json_data["home"]["modules"][0]["id"] = Device_bridge; // module_id;
 			json_data["home"]["modules"][0]["scenario"] = scenario_Name;
 			_data = json_data.toStyledString();
 			//_data = "{\"home\":{\"id\":\"" + Home_id + "\",\"modules\":[{\"id\":\"" + module_id + "\",\"scenario\":\"" + State + "\"}]}}" ;
@@ -987,7 +990,7 @@ bool CNetatmo::SetProgramState(const int uid, const int newState)
 			_data = "";
 		}
 		home_data = "&";
-		//Log(LOG_STATUS, "SetProgramState - JSON_data = %s", _data.c_str());
+		Log(LOG_STATUS, "SetProgramState - JSON_data = %s", _data.c_str());
 
 		Get_Respons_API(NETYPE_SETSTATE, sResult, home_data, bRet, root, _data);
 		if (!bRet)
