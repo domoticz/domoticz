@@ -1438,6 +1438,7 @@ define(['app'], function (app) {
 				var clientsecret = $("#hardwarecontent #divnetatmo #clientsecret").val();
 				var scope = $("#hardwarecontent #divnetatmo #scope").val();
 				var refreshtoken = (typeof $scope.refreshToken == 'undefined' ? "" : $scope.refreshToken);
+				var accesstoken = (typeof $scope.accessToken == 'undefined' ? "" : $scope.accessToken);
 
 				if (clientid == "" || clientsecret == "") {
 					alert("Please enter a valid client ID and secret for your app from the Netatmo website!");
@@ -1456,7 +1457,7 @@ define(['app'], function (app) {
 					"&password=" + encodeURIComponent(scope) +
 					"&enabled=" + bEnabled +
 					"&idx=" + idx +
-					"&extra=" + encodeURIComponent(refreshtoken) +
+					"&extra=" + encodeURIComponent(accesstoken) + ":" + encodeURIComponent(refreshtoken) +
 					"&datatimeout=" + datatimeout +
 					"&Mode1=" + $scope.loginRequired + "&Mode2=" + Mode2 + "&Mode3=" + Mode3 + "&Mode4=" + Mode4 + "&Mode5=" + Mode5 + "&Mode6=" + Mode6,
 					async: false,
@@ -2744,6 +2745,7 @@ define(['app'], function (app) {
 				var clientsecret = $("#hardwarecontent #divnetatmo #clientsecret").val();
 				var scope = $("#hardwarecontent #divnetatmo #scope").val();
 				var refreshtoken = (typeof $scope.refreshToken == 'undefined' ? "" : $scope.refreshToken);
+				var accesstoken = (typeof $scope.accessToken == 'undefined' ? "" : $scope.accessToken);
 
 				if (clientid == "" || clientsecret == "") {
 					alert("Please enter a valid client ID and secret for your app from the Netatmo website!");
@@ -2766,7 +2768,7 @@ define(['app'], function (app) {
 					"&username=" + encodeURIComponent(clientid) + ":" +  encodeURIComponent(clientsecret) +
 					"&password=" + encodeURIComponent(scope) +
 					"&enabled=" + bEnabled +
-					"&extra=" + encodeURIComponent($scope.refreshToken) +
+					"&extra=" + encodeURIComponent($scope.accessToken) + ":" + encodeURIComponent($scope.refreshToken) +
 					"&datatimeout=" + datatimeout +
 					"&Mode1=" + $scope.loginRequired,
 					async: false,
@@ -4870,6 +4872,7 @@ define(['app'], function (app) {
 
 								const parsedJsonData = JSON.parse(data);
 								$scope.refreshToken = parsedJsonData.refresh_token;
+								$scope.accessToken  = parsedJsonData.access_token;
 								if ($scope.refreshToken == "") {
 									alert('Access denied: Failed to receive a valid token from server: ' + decodeJsonValues(xhr.responseText), ', ');
 									console.log('Error: Access denied: Failed to receive a valid token from server: ' + data);
@@ -5013,6 +5016,7 @@ define(['app'], function (app) {
 			var text = $("#hardwarecontent #hardwareparamstable #combotype option:selected").text();
 			$("#hardwarecontent #username").show();
 			$("#hardwarecontent #lblusername").show();
+			$("#hardwarecontent #AddHardware").show();
 			$("#hardwarecontent #divehouse").hide();
 			$("#hardwarecontent #divevohome").hide();
 			$("#hardwarecontent #divevohometcp").hide();
@@ -5316,6 +5320,7 @@ define(['app'], function (app) {
 			}
 			else if (text.indexOf("Netatmo") >= 0) {
 				$("#hardwarecontent #divnetatmo").show();
+				$("#hardwarecontent #AddHardware").hide();
 				$("#hardwarecontent #hardwareparamsnetatmo #netatmologin").off("click");
 				$("#hardwarecontent #hardwareparamsnetatmo #netatmologin").on("click", function(){javascript:OnNetatmoLogin()});
 			}
