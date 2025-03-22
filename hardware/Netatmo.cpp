@@ -93,6 +93,7 @@ CNetatmo::CNetatmo(const int ID, const std::string& username, const std::string&
 
 	m_nextRefreshTs = mytime(nullptr);
 	m_isLogged = false;
+	m_ErrorFlag = false;
 
 	Debug(DEBUG_HARDWARE, "Netatmo Actif Scopes %s ", m_scopes.c_str());
 
