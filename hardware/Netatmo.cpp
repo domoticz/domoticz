@@ -388,7 +388,7 @@ bool CNetatmo::RefreshToken(const bool bForce)
 		Log(LOG_ERROR, "Invalid/no data received (refresh tokens)... %s", ExtractHtmlStatusCode(returnHeaders).c_str());
 
 		m_ErrorFlag = true;
-		Log (LOG_STATUS, "max %d min. Wait to LOGIN", (NETAMO_ERROR_INTERVALL / 60));
+		Log (LOG_STATUS, "Retry LOGIN within %d min. ", (NETAMO_ERROR_INTERVALL / 60));
 
 		//Force login next time
 		m_isLogged = false;
@@ -396,6 +396,7 @@ bool CNetatmo::RefreshToken(const bool bForce)
 		//Access is Blocked so we clear AccessToken - Ready for renew
 		m_accessToken = "";
 		m_bForceLogin = false;
+		m_nextRefreshTs = mytime(nullptr);
 		//StoreRequestTokenFlag(true);
 		return false;
 	}
