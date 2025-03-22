@@ -79,19 +79,13 @@ CNetatmo::CNetatmo(const int ID, const std::string& username, const std::string&
 {
 	m_HwdID = ID;
 
-	Debug(DEBUG_HARDWARE, "Netatmo pass %s ", password.c_str());
-
 	size_t pos = m_username.find(":");
-	size_t p_pos = password.find(":");
+
 	if (pos != std::string::npos)
 	{
 		m_clientId = m_username.substr(0, pos);
 		m_clientSecret = m_username.substr(pos + 1);
-		if (p_pos != std::string::npos)
-		{
-			m_scopes = m_password.substr(0, pos);
-			m_accessToken = m_password.substr(pos + 1);
-		}
+		m_scopes = m_password;
 	}
 	else
 	{
