@@ -1518,7 +1518,7 @@ void CNetatmo::Get_Respons_API(const m_eNetatmoType& NType, std::string& sResult
 		return ;
 	}
 
-	Log(LOG_STATUS, "Get_Respons_API message returned from POST(%s): \n%s", httpUrl.c_str(), prettifyJson(root).c_str());
+	Log(LOG_STATUS, "Get_Respons_API message returned from POST(%s): \n%s", httpUrl.c_str(), root.asString().c_str()); // JSonToFormatString(str); // prettifyJson(root).c_str()
 
 	if (!root["error"].empty())
         {
@@ -1544,7 +1544,7 @@ void CNetatmo::GetHomesDataDetails()
 	Log(LOG_STATUS, "Get HomesData Details ");
 
 	Get_Respons_API(NETYPE_HOMESDATA, sResult, home_data, bRet, root, "");
-	//Log(LOG_STATUS, "GetHomesDataDetails HOMESDATA received: \n%s", prettifyJson(root).c_str());
+	//Log(LOG_STATUS, "GetHomesDataDetails HOMESDATA received: \n%s", root.asString().c_str()); // JSonToFormatString(str); // prettifyJson(root).c_str()
 
 	if (!root["body"]["homes"].empty())
 	{
@@ -2515,7 +2515,7 @@ bool CNetatmo::ParseDashboard(const Json::Value& root, const int DevIdx, const i
 /// <returns></returns>
 bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, std::string& home_id)
 {
-	//Log(LOG_STATUS, "ParseHomeStatus for device: \n%s", prettifyJson(root).c_str());
+	//Log(LOG_STATUS, "ParseHomeStatus for device: \n%s", root.asString().c_str()); // JSonToFormatString(str); // prettifyJson(root).c_str()
 
 	//Check if JSON is Ok to parse
 	if (root["body"].empty())
