@@ -79,6 +79,8 @@ CNetatmo::CNetatmo(const int ID, const std::string& username, const std::string&
 {
 	m_HwdID = ID;
 
+	Debug(DEBUG_HARDWARE, "Netatmo pass %s ", password.c_str());
+
 	size_t pos = m_username.find(":");
 	size_t p_pos = password.find(":");
 	if (pos != std::string::npos)
