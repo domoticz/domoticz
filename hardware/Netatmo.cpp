@@ -1572,6 +1572,7 @@ void CNetatmo::GetHomesDataDetails()
 
 				m_Home_ID = home["id"].asString();
 				std::string Home_Name = home["name"].asString();
+				m_RoomNames[homeID] = Home_Name;
 				// home["altitude"];
 				// home["coordinates"]; //List [5.590753555297852, 51.12159997589948]
 				// home["country"].asString();
@@ -1869,6 +1870,7 @@ void CNetatmo::GetHomeStatusDetails()
 		Get_Respons_API(NETYPE_STATUS, sResult, home_data, bRet, root, "");
 
 		//Debug(DEBUG_HARDWARE, "sResult : %s ", sResult.c_str());
+		Home_Name = m_RoomNames[home_id];
 
 		//Parse API response
 		bRet = ParseHomeStatus(sResult, root, home_id);
@@ -1880,7 +1882,7 @@ void CNetatmo::GetHomeStatusDetails()
 		{
 			Get_Events(home_data, device_types, event_id, person_id, bridge_id, module_id, offset, size, locale);
 		}
-		Debug(DEBUG_HARDWARE, "Parsed index %d Home Status of HomeID %s", i, home_id.c_str());
+		Debug(DEBUG_HARDWARE, "Parsed index %d Home Status of HomeID %s %s", i, home_id.c_str(), Home_Name.c_str());
 	}
 }
 
