@@ -1438,6 +1438,7 @@ define(['app'], function (app) {
 				var clientsecret = $("#hardwarecontent #divnetatmo #clientsecret").val();
 				var scope = $("#hardwarecontent #divnetatmo #scope").val();
 				var refreshtoken = (typeof $scope.refreshToken == 'undefined' ? "" : $scope.refreshToken);
+				var accesstoken = (typeof $scope.refreshToken == 'undefined' ? "" : $scope.refreshToken);
 
 				if (clientid == "" || clientsecret == "") {
 					alert("Please enter a valid client ID and secret for your app from the Netatmo website!");
@@ -1453,7 +1454,7 @@ define(['app'], function (app) {
 					"&loglevel=" + logLevel +
 					"&name=" + encodeURIComponent(name) +
 					"&username=" + encodeURIComponent(clientid) + ":" +  encodeURIComponent(clientsecret) +
-					"&password=" + encodeURIComponent(scope) +
+					"&password=" + encodeURIComponent(scope) + ":" +  encodeURIComponent(accesstoken) +
 					"&enabled=" + bEnabled +
 					"&idx=" + idx +
 					"&extra=" + encodeURIComponent(refreshtoken) +
@@ -4613,7 +4614,9 @@ define(['app'], function (app) {
 						else if (data["Type"].indexOf("Netatmo") >= 0) {
 
 							var splittedUserName = data["Username"].split(":");
-							var scopes = data["Password"];
+							var splitted_Data = data["Password"].split(":");
+							var scopes = splitted_Data[0];
+							var accesstoken = splitted_Data[1];
 
 							if (scopes.indexOf("_") > 0) 	// Old or new format?
 								scopes = scopes.split(",");	// New format: This field contains one or more scopes
