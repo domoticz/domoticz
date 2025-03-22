@@ -367,6 +367,8 @@ bool CNetatmo::RefreshToken(const bool bForce)
 
 //        std::string httpUrl(NETATMO_API_URI + "oauth2/token?")
 	std::string httpUrl(NETATMO_OAUTH2_TOKEN_URI);
+	Debug(DEBUG_HARDWARE, "Netatmo URL %s with Data %s", httpUrl.c_str(), httpData.c_str());
+
 	std::string sResult;
 	bool ret = HTTPClient::POST(httpUrl, httpData, ExtraHeaders, sResult, returnHeaders);
 
