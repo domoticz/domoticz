@@ -207,7 +207,6 @@ std::string CNetatmo::ExtractHtmlStatusCode(const std::vector<std::string>& head
 void CNetatmo::Do_Work()
 {
 	int sec_counter = 600 - 5;
-	int new_login_interval;
 	bool bFirstTimeWS = true;
 	bool bFirstTimeHS = true;
 	bool bFirstTimeSS = true;
@@ -320,7 +319,6 @@ bool CNetatmo::Login()
 		StoreRequestTokenFlag(true);
 		return false;
 	}
-	
 	return true;
 }
 
@@ -367,7 +365,7 @@ bool CNetatmo::RefreshToken(const bool bForce)
 
 //        std::string httpUrl(NETATMO_API_URI + "oauth2/token?")
 	std::string httpUrl(NETATMO_OAUTH2_TOKEN_URI);
-	Debug(DEBUG_HARDWARE, "Netatmo URL %s with Data %s", httpUrl.c_str(), httpData.c_str());
+	//Debug(DEBUG_HARDWARE, "Netatmo URL %s with Data %s", httpUrl.c_str(), httpData.c_str());
 
 	std::string sResult;
 	bool ret = HTTPClient::POST(httpUrl, httpData, ExtraHeaders, sResult, returnHeaders);
@@ -938,8 +936,8 @@ bool CNetatmo::SetProgramState(const int uid, const int newState)
 			for (std::map<int, std::string>::const_iterator itt = scenarios_names.begin(); itt != scenarios_names.end(); ++itt)
 			{
 				std::stringstream ss;
-				Debug(DEBUG_HARDWARE, "Gateway first  ; %d", itt->first);
-				Debug(DEBUG_HARDWARE, "Gateway second ; %s", itt->second.c_str());
+				//Debug(DEBUG_HARDWARE, "Gateway first  ; %d", itt->first);
+				//Debug(DEBUG_HARDWARE, "Gateway second ; %s", itt->second.c_str());
 				ss << itt->first;
 				ss >> i;
 				if (i == newState)
@@ -954,7 +952,7 @@ bool CNetatmo::SetProgramState(const int uid, const int newState)
 			Json::Value json_data;
 			//json_data {"body":{"home":{"id":
 			json_data["home"]["id"] = Home_id;
-			json_data["home"]["modules"][0]["id"] = Device_bridge; // module_id;
+			json_data["home"]["modules"][0]["id"] = Device_bridge;
 			json_data["home"]["modules"][0]["scenario"] = scenario_Name;
 			_data = json_data.toStyledString();
 			//_data = "{\"home\":{\"id\":\"" + Home_id + "\",\"modules\":[{\"id\":\"" + module_id + "\",\"scenario\":\"" + State + "\"}]}}" ;
@@ -997,7 +995,7 @@ bool CNetatmo::SetProgramState(const int uid, const int newState)
 			_data = "";
 		}
 		home_data = "&";
-		Log(LOG_STATUS, "SetProgramState - JSON_data = %s", _data.c_str());
+		//Log(LOG_STATUS, "SetProgramState - JSON_data = %s", _data.c_str());
 
 		Get_Respons_API(NETYPE_SETSTATE, sResult, home_data, bRet, root, _data);
 		if (!bRet)
