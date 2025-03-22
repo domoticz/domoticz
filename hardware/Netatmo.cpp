@@ -938,7 +938,7 @@ bool CNetatmo::SetProgramState(const int uid, const int newState)
 				ss << itt->first;
 				ss >> i;
 				if (i == newState)
-					scenario_Name = itt->second;
+					scenario_Name = itt->second.c_str();
 				i += 10;
 			}
 
@@ -3823,10 +3823,11 @@ bool CNetatmo::ParseScenarios(const std::string& sResult, Json::Value& scenarios
 						scenario_SchName = scenario_SchName + scenario_type + "|";
 						_data[index] = scenario_type;
 					}
-					//Debug(DEBUG_HARDWARE, "Scenario %s : %s %s %s", scenario_id.c_str(), scenario_name.c_str(), scenario_type.c_str(), scenario_category.c_str());
+					Debug(DEBUG_HARDWARE, "Scenario %s : %s %s %s", scenario_id.c_str(), scenario_name.c_str(), scenario_type.c_str(), scenario_category.c_str());
 				}
 				index = +10;
 			}
+			Debug(DEBUG_HARDWARE, "Scenario %s", _data.asstring().c_str();
 			m_Scenarios[home_id] = _data;
 			if (scenario_SchName.size() > 0)  scenario_SchName.resize(scenario_SchName.size() - 1); 
 			m_ModuleNames["999"] = scenario_SchName;
