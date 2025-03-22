@@ -1648,10 +1648,7 @@ void CNetatmo::GetHomesDataDetails()
 
 							//Store thermostate name for later naming switch / sensor
 							if (type == "NAPlug")
-							{
-								Log(LOG_STATUS, "NAPlug HomesData %s %s", macID.c_str(), Module_Name.c_str());
-								m_DeviceBridge[homeID] = moduleID;
-							}
+								m_DeviceBridge[homeID] = macID;
 							if (module["type"] == "NATherm1")
 								m_ThermostatName[macID] = module["name"].asString();
 							if (module["type"] == "NRV")
@@ -2789,12 +2786,6 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 					// Check when module last updated values unless for Gateway and Wireless Switch
 					if (type == "NLG")
 					{
-						tNetatmoLastUpdate = 0;
-						m_DeviceBridge[home_id] = module_id;
-					}
-					else if (type == "NAPlug")
-					{
-						Log(LOG_STATUS, "NAPlug %s %s", module_id.c_str(), moduleName.c_str());
 						tNetatmoLastUpdate = 0;
 						m_DeviceBridge[home_id] = module_id;
 					}
