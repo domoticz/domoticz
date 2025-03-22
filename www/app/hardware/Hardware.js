@@ -1454,7 +1454,7 @@ define(['app'], function (app) {
 					"&loglevel=" + logLevel +
 					"&name=" + encodeURIComponent(name) +
 					"&username=" + encodeURIComponent(clientid) + ":" +  encodeURIComponent(clientsecret) +
-					"&password=" + encodeURIComponent(scope) + ":" +  encodeURIComponent(accesstoken) +
+					"&password=" + encodeURIComponent(scope) +
 					"&enabled=" + bEnabled +
 					"&idx=" + idx +
 					"&extra=" + encodeURIComponent(refreshtoken) +
@@ -4614,9 +4614,7 @@ define(['app'], function (app) {
 						else if (data["Type"].indexOf("Netatmo") >= 0) {
 
 							var splittedUserName = data["Username"].split(":");
-							var splitted_Data = data["Password"].split(":");
-							var scopes = splitted_Data[0];
-							var accesstoken = splitted_Data[1];
+							var scopes = data["Password"];
 
 							if (scopes.indexOf("_") > 0) 	// Old or new format?
 								scopes = scopes.split(",");	// New format: This field contains one or more scopes
