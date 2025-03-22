@@ -950,7 +950,7 @@ bool CNetatmo::SetProgramState(const int uid, const int newState)
 			//Scenario NLG
 			Debug(DEBUG_HARDWARE, "Gateway set scenario %s", scenario_Name.c_str());
 			m_selectedScenario[Home_id] = newState;
-			Debug(DEBUG_HARDWARE, "Gateway test %d Bridge %s module %s newState %d ", uid, m_DeviceBridge[module_id].c_str(), m_DeviceModuleID[uid].c_str(), newState);
+			Debug(DEBUG_HARDWARE, "Gateway Bridge %s Home_id %s newState %d ", m_DeviceBridge[module_id].c_str(), m_DeviceModuleID[uid].c_str(), newState);
 			Json::Value json_data;
 			//json_data {"body":{"home":{"id":
 			json_data["home"]["id"] = Home_id;
@@ -2782,6 +2782,7 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 					// Check when module last updated values unless for Gateway and Wireless Switch
 					if (type == "NLG")
 						tNetatmoLastUpdate = 0;
+						m_DeviceBridge[home_id] = module_id;
 					else if (type == "NLT")
 						tNetatmoLastUpdate = 0;
 				}
