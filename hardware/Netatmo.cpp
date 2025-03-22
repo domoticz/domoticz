@@ -2781,10 +2781,14 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 					tNetatmoLastUpdate = static_cast<size_t>(module["last_seen"].asFloat());
 					// Check when module last updated values unless for Gateway and Wireless Switch
 					if (type == "NLG")
+					{
 						tNetatmoLastUpdate = 0;
 						m_DeviceBridge[home_id] = module_id;
+					}
 					else if (type == "NLT")
+					{
 						tNetatmoLastUpdate = 0;
+					}
 				}
 				if (!module["reachable"].empty())
 				{
