@@ -1870,7 +1870,7 @@ void CNetatmo::GetHomeStatusDetails()
 		Get_Respons_API(NETYPE_STATUS, sResult, home_data, bRet, root, "");
 
 		//Debug(DEBUG_HARDWARE, "sResult : %s ", sResult.c_str());
-		Home_Name = m_RoomNames[home_id];
+		std::string Home_Name = m_RoomNames[home_id];
 
 		//Parse API response
 		bRet = ParseHomeStatus(sResult, root, home_id);
