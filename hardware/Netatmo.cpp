@@ -392,7 +392,10 @@ bool CNetatmo::RefreshToken(const bool bForce)
 
 		//Force login next time
 		m_isLogged = false;
+
+		//Access is Blocked so we clear AccessToken - Ready for renew
 		m_accessToken = "";
+		m_bForceLogin = false;
 		//StoreRequestTokenFlag(true);
 		return false;
 	}
@@ -2721,6 +2724,7 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 				m_ModuleIDs[Hardware_int] = crcId;
 				std::string type = module["type"].asString();
 				m_Device_types[module_id] = type;
+				if (type == 
 				//SaveJson2Disk(module, std::string("./") + moduleName.c_str() + ".txt");
 
 				//Debug(DEBUG_HARDWARE, " %d -  %s in Home; %s" , Hardware_int, module_id.c_str(), home_id.c_str());
@@ -2779,6 +2783,11 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 					tNetatmoLastUpdate = static_cast<size_t>(module["last_seen"].asFloat());
 					// Check when module last updated values unless for Gateway and Wireless Switch
 					if (type == "NLG")
+					{
+						tNetatmoLastUpdate = 0;
+						m_DeviceBridge[home_id] = module_id;
+					}
+					else if (type == "NAPlug")
 					{
 						tNetatmoLastUpdate = 0;
 						m_DeviceBridge[home_id] = module_id;
