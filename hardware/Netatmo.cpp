@@ -1465,7 +1465,7 @@ void CNetatmo::Get_Respons_API(const m_eNetatmoType& NType, std::string& sResult
 	if (!m_isLogged)
 		return;
 	//Locals
-	std::string httpUrl;                             //URI to be tested
+	std::string httpUrl;                             //URI
 	//
 	std::stringstream sstr;
 	sstr << extra_data.c_str();
@@ -1487,7 +1487,7 @@ void CNetatmo::Get_Respons_API(const m_eNetatmoType& NType, std::string& sResult
 
 	httpUrl = MakeRequestURL(NType, home_data);
 	std::string sPostData = sstr.str();
-	//Debug(DEBUG_HARDWARE, "Respons URL   %s", httpUrl.c_str());
+	Debug(DEBUG_HARDWARE, "Respons URL   %s", httpUrl.c_str()); // URI to be tested
 
 	if (!HTTPClient::POST(httpUrl, sPostData, ExtraHeaders, sResult, returnHeaders))
 	{
@@ -1518,7 +1518,7 @@ void CNetatmo::Get_Respons_API(const m_eNetatmoType& NType, std::string& sResult
 		return ;
 	}
 
-//	Log(LOG_STATUS, "Get_Respons_API message returned from POST(%s): \n%s", httpUrl.c_str(), prettifyJson(root).c_str());
+	Log(LOG_STATUS, "Get_Respons_API message returned from POST(%s): \n%s", httpUrl.c_str(), prettifyJson(root).c_str());
 
 	if (!root["error"].empty())
         {
