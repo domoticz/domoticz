@@ -2789,6 +2789,7 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 					}
 					else if (type == "NAPlug")
 					{
+						Log(LOG_STATUS, "NAPlug %s %s", module_id.c_str(), moduleName.c_str());
 						tNetatmoLastUpdate = 0;
 						m_DeviceBridge[home_id] = module_id;
 					}
