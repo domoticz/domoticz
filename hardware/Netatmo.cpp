@@ -3831,6 +3831,7 @@ bool CNetatmo::ParseScenarios(const std::string& sResult, Json::Value& scenarios
 				index += 10;
 			}
 			std::stringstream ss;
+			ss << "\n";
 			for (const auto& pair : _data)
 			{
 				ss << pair.first << ": " << pair.second << "\n";
