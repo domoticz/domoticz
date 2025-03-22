@@ -1521,7 +1521,7 @@ void CNetatmo::Get_Respons_API(const m_eNetatmoType& NType, std::string& sResult
 		return ;
 	}
 
-	Log(LOG_STATUS, "Get_Respons_API message returned from POST(%s): \n%s", httpUrl.c_str(), JSonToFormatString(root).c_str()); // prettifyJson(root);
+	//Log(LOG_STATUS, "Get_Respons_API message returned from POST(%s): \n%s", httpUrl.c_str(), JSonToFormatString(root).c_str()); // prettifyJson(root);
 
 	if (!root["error"].empty())
         {
@@ -3826,7 +3826,7 @@ bool CNetatmo::ParseScenarios(const std::string& sResult, Json::Value& scenarios
 						scenario_SchName = scenario_SchName + scenario_type + "|";
 						_data[index] = scenario_type;
 					}
-					Debug(DEBUG_HARDWARE, "Scenario %s : %s %s %s", scenario_id.c_str(), scenario_name.c_str(), scenario_type.c_str(), scenario_category.c_str());
+					//Debug(DEBUG_HARDWARE, "Scenario %s : %s %s %s", scenario_id.c_str(), scenario_name.c_str(), scenario_type.c_str(), scenario_category.c_str());
 				}
 				index += 10;
 			}
