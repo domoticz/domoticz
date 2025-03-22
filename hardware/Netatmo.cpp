@@ -1649,7 +1649,7 @@ void CNetatmo::GetHomesDataDetails()
 							//Store thermostate name for later naming switch / sensor
 							if (type == "NAPlug")
 							{
-								Log(LOG_STATUS, "NAPlug HomesData %s %s", moduleID.c_str(), Module_Name.c_str());
+								Log(LOG_STATUS, "NAPlug HomesData %s %s", macID.c_str(), Module_Name.c_str());
 								m_DeviceBridge[homeID] = moduleID;
 							}
 							if (module["type"] == "NATherm1")
