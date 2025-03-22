@@ -3825,7 +3825,7 @@ bool CNetatmo::ParseScenarios(const std::string& sResult, Json::Value& scenarios
 					}
 					Debug(DEBUG_HARDWARE, "Scenario %s : %s %s %s", scenario_id.c_str(), scenario_name.c_str(), scenario_type.c_str(), scenario_category.c_str());
 				}
-				index = +10;
+				index += 10;
 			}
 			std::stringstream ss;
 			for (const auto& pair : _data)
