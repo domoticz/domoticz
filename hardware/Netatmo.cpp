@@ -3827,7 +3827,7 @@ bool CNetatmo::ParseScenarios(const std::string& sResult, Json::Value& scenarios
 				}
 				index = +10;
 			}
-			Debug(DEBUG_HARDWARE, "Scenario %s", _data.asstring().c_str();
+			Debug(DEBUG_HARDWARE, "Scenario %s", _data.str().c_str();
 			m_Scenarios[home_id] = _data;
 			if (scenario_SchName.size() > 0)  scenario_SchName.resize(scenario_SchName.size() - 1); 
 			m_ModuleNames["999"] = scenario_SchName;
