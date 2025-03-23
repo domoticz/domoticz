@@ -131,6 +131,7 @@ class CNetatmo : public CDomoticzHardwareBase
 	bool m_isLogged;
 	bool m_ErrorFlag;
 	bool m_bForceLogin;
+	bool find_scopes();
 
 	m_eNetatmoType m_weatherType;
 	m_eNetatmoType m_homecoachType;
