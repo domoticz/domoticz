@@ -16,7 +16,7 @@
 // 08/05/2024 - Give the poll interfval a defined name:
 #define NETAMO_POLL_INTERVALL 900
 #define NETAMO_LOGIN_INTERVALL 30
-#define NETAMO_ERROR_INTERVALL 1800
+#define NETAMO_ERROR_INTERVALL 2700
 
 #ifdef _DEBUG
 //#define DEBUG_NetatmoWeatherStationR
@@ -101,7 +101,7 @@ CNetatmo::CNetatmo(const int ID, const std::string& username, const std::string&
 	m_bPollWeatherData = (m_scopes.find("station_R") != std::string::npos);      //read_station
 	m_bPollHomecoachData = (m_scopes.find("homecoach_R") != std::string::npos);  //read_homecoach
 
-	m_bPollHomeStatus = true;
+	m_bPollHomeStatus = find_scopes(); //"thermostat_RW","camera_RWA","presence_RWA","carbonmonoxidedetector_R","smokedetector_R","magellan_RW","bubendorff_RW","smarther_RW","mx_RW","mhs1_RW"
 	m_bPollHome = true;
 
 	m_bPollThermostat = true;
@@ -148,7 +148,7 @@ void CNetatmo::Init()
 
 	m_ScheduleHomes.clear();
 	m_selected_Schedule.clear();
-        m_bPollThermostat = true;
+	m_bPollThermostat = true;
 	m_bFirstTimeThermostat = true;
 	m_bFirstTimeWeatherData = true;
 	m_bForceSetpointUpdate = false;
@@ -211,7 +211,7 @@ void CNetatmo::Do_Work()
 	bool bFirstTimeHS = true;
 	bool bFirstTimeSS = true;
 	bool bFirstTimeTH = true;
-        std::string home_id;
+
 	Log(LOG_STATUS, "Worker started...");
 
 	while (!IsStopRequested(1000))
@@ -365,7 +365,7 @@ bool CNetatmo::RefreshToken(const bool bForce)
 
 //        std::string httpUrl(NETATMO_API_URI + "oauth2/token?")
 	std::string httpUrl(NETATMO_OAUTH2_TOKEN_URI);
-	//Debug(DEBUG_HARDWARE, "Netatmo URL %s with Data %s", httpUrl.c_str(), httpData.c_str());
+	Debug(DEBUG_HARDWARE, "Netatmo URL %s with %s", httpUrl.c_str(), httpData.c_str());
 
 	std::string sResult;
 	bool ret = HTTPClient::POST(httpUrl, httpData, ExtraHeaders, sResult, returnHeaders);
@@ -532,6 +532,37 @@ std::string CNetatmo::bool_as_text(bool b)
                 std::stringstream converter;
                 converter << std::boolalpha << b;   // flag boolalpha calls converter.setf(std::ios_base::boolalpha)
                 return converter.str();
+}
+
+
+/// <summary>
+/// Function to find the correct scopes
+///
+/// </summary>
+bool CNetatmo::find_scopes()
+{
+	if (m_scopes.find("thermostat_RW") != std::string::npos);            //
+		return true;
+	if (m_scopes.find("camera_RWA") != std::string::npos);               //
+		return true;
+	if (m_scopes.find("presence_RWA") != std::string::npos);             //
+		return true;
+	if (m_scopes.find("carbonmonoxidedetector_R") != std::string::npos); //
+		return true;
+	if (m_scopes.find("smokedetector_R") != std::string::npos);          //
+		return true;
+	if (m_scopes.find("magellan_RW") != std::string::npos);              //
+		return true;
+	if (m_scopes.find("bubendorff_RW") != std::string::npos);            //
+		return true;
+	if (m_scopes.find("smarther_RW") != std::string::npos);              //
+		return true;
+	if (m_scopes.find("mx_RW") != std::string::npos);                    //
+		return true;
+	if (m_scopes.find("mhs1_RW") != std::string::npos);                  //
+		return true;
+	//"thermostat_RW","camera_RWA","presence_RWA","carbonmonoxidedetector_R","smokedetector_R","magellan_RW","bubendorff_RW","smarther_RW","mx_RW","mhs1_RW"
+	return false;
 }
 
 
