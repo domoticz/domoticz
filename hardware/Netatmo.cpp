@@ -303,10 +303,10 @@ bool CNetatmo::Login()
 	//Check if a stored token is available
 	if (LoadRefreshToken())
 	{
-		Log(LOG_STATUS, "Use refresh token from database...");
 		//Yes : we refresh our take
 		if (RefreshToken(true))
 		{
+			Log(LOG_STATUS, "We refresh our token ...");
 			m_isLogged = true;
 			m_bPollThermostat = true;
 			return true;
@@ -449,6 +449,7 @@ bool CNetatmo::LoadRefreshToken()
 		return false;
 	}
 	m_refreshToken = refreshToken;
+	Log(LOG_STATUS, "Use refresh token from database...");
 	return true;
 }
 
@@ -459,7 +460,7 @@ bool CNetatmo::LoadRefreshToken()
 /// </summary>
 void CNetatmo::StoreRequestTokenFlag(bool flag)
 {
-	Debug(DEBUG_HARDWARE, "Refresh Token Flag ... %d", flag?1:0);
+	Debug(DEBUG_HARDWARE, "Refresh Token Flag %d ...", flag?1:0);
 	m_sql.safe_query("UPDATE Hardware SET Mode1='%d' WHERE (ID == %d)", flag?1:0, m_HwdID);
 }
 
