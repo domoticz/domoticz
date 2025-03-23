@@ -394,8 +394,12 @@ bool CNetatmo::RefreshToken(const bool bForce)
 		//Access is Blocked so we clear AccessToken - Ready for renew
 		m_accessToken = "";
 		m_bForceLogin = false;
+		m_bForceSetpointUpdate = false;
+
+		m_tSetpointUpdateTime = time(nullptr);
 		m_nextRefreshTs = mytime(nullptr);
-		//StoreRequestTokenFlag(true);
+		//Init();
+		StoreRequestTokenFlag(true);
 		return false;
 	}
 
@@ -434,10 +438,16 @@ bool CNetatmo::LoadRefreshToken()
 	std::vector<std::vector<std::string> > result;
 	result = m_sql.safe_query("SELECT Extra FROM Hardware WHERE (ID==%d)", m_HwdID);
 	if (result.empty())
+	{
+		Debug(DEBUG_HARDWARE, "Result Token Not found ... ");
 		return false;
+	}
 	std::string refreshToken = result[0][0];
 	if (refreshToken.empty())
+	{
+		Debug(DEBUG_HARDWARE, "No Refresh Token Found ... ");
 		return false;
+	}
 	m_refreshToken = refreshToken;
 	return true;
 }
@@ -449,6 +459,7 @@ bool CNetatmo::LoadRefreshToken()
 /// </summary>
 void CNetatmo::StoreRequestTokenFlag(bool flag)
 {
+	Debug(DEBUG_HARDWARE, "Refresh Token Flag ... %d", flag?1:0);
 	m_sql.safe_query("UPDATE Hardware SET Mode1='%d' WHERE (ID == %d)", flag?1:0, m_HwdID);
 }
 
