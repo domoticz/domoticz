@@ -393,12 +393,13 @@ bool CNetatmo::RefreshToken(const bool bForce)
 
 		//Access is Blocked so we clear AccessToken - Ready for renew
 		m_accessToken = "";
+		root.clear();
 		m_bForceLogin = false;
 		m_bForceSetpointUpdate = false;
 
 		m_tSetpointUpdateTime = time(nullptr);
 		m_nextRefreshTs = mytime(nullptr);
-		//Init();
+
 		StoreRequestTokenFlag(true);
 		return false;
 	}
