@@ -17,6 +17,7 @@ Version 2024.x
 - Implemented: MQTT-AD, support for string field state objects
 - Implemented: MQTT Push 'Retained' mode option
 - Implemented: RFXCom, Falmec Support
+- Implemented: RTL433, Support Generic Switch (Door) sensor
 - Changed: dzVents, possible to pass a Domoticz device ID in notify() through the extra parameter
 - Changed: Energy Dashboard now also available for non-admin users
 - Changed: Energy Dashboard, Text object clipping rectangle
