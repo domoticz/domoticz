@@ -115,6 +115,7 @@ class CNetatmo : public CDomoticzHardwareBase
 	void Get_Events(std::string home_id, std::string device_types, std::string event_id, std::string person_id, std::string device_id, std::string module_id, int offset, int size, std::string locale);
 	void Get_Scenarios(std::string home_id, Json::Value& scenarios);
 
+	bool ParseScenarios(const std::string& sResult, Json::Value& scenarios, std::string home_id);
 	bool ParseStationData(const std::string &sResult, bool bIsThermostat);
 	bool ParseHomeStatus(const std::string &sResult, Json::Value& root, std::string& home_id);
 	bool ParseEvents(const std::string& sResult, Json::Value& root );
@@ -128,7 +129,9 @@ class CNetatmo : public CDomoticzHardwareBase
 	void StoreRefreshToken();
 	void StoreRequestTokenFlag(bool bFlag = false);
 	bool m_isLogged;
+	bool m_ErrorFlag;
 	bool m_bForceLogin;
+	bool find_scopes();
 
 	m_eNetatmoType m_weatherType;
 	m_eNetatmoType m_homecoachType;
@@ -167,7 +170,7 @@ class CNetatmo : public CDomoticzHardwareBase
 	std::map<int, std::string> m_ScheduleHomes;
 	std::map<std::string, int> m_selected_Schedule;
 	std::map<std::string, std::map<int, std::string>> m_Scenarios;
-	std::map<std::string, int> m_selectedScenario;
+	std::map<std::string, std::string> m_selectedScenario;
 
 	std::map<int, CBaroForecastCalculator> m_forecast_calculators;
 
