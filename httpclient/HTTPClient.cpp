@@ -257,6 +257,7 @@ bool HTTPClient::GETBinary(const std::string &url, const std::vector<std::string
 			curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
 		}
 
+		curl_easy_setopt(curl, CURLOPT_VERBOSE, 1L);
 		curl_easy_setopt(curl, CURLOPT_HEADERFUNCTION, write_curl_headerdata);
 		curl_easy_setopt(curl, CURLOPT_HEADERDATA, &vHeaderData);
 		curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void *)&response);
@@ -320,11 +321,13 @@ bool HTTPClient::POSTBinary(const std::string &url, const std::string &postdata,
 		if (!bFollowRedirect)
 			curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 0L);
 
+		curl_easy_setopt(curl, CURLOPT_VERBOSE, 1L);
 		curl_easy_setopt(curl, CURLOPT_HEADERFUNCTION, write_curl_headerdata);
 		curl_easy_setopt(curl, CURLOPT_HEADERDATA, &vHeaderData);
 		curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void *)&response);
 		curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
 		curl_easy_setopt(curl, CURLOPT_POST, 1);
+		_log.Debug("...CURL vHeaderData %s", vHeaderData.str().c_str())
 
 		struct curl_slist *headers = nullptr;
 		if (!ExtraHeaders.empty())
