@@ -523,7 +523,7 @@ namespace http
 					root["status"] = "OK";
 					break;
 				}
-				case "getlightswitchesscenescase"_sh:
+				case "getlightswitchesscenes"_sh:
 				{
 					root["title"] = "GetLightSwitchesScenes";
 					int ii = 0;
@@ -606,7 +606,7 @@ namespace http
 					root["status"] = "OK";
 					break;
 				}
-				case "getcamactivedevicescase"_sh:
+				case "getcamactivedevices"_sh:
 				{
 					root["title"] = "GetCameraActiveDevices";
 					std::string idx = request::findValue(&req, "idx");
