@@ -541,8 +541,6 @@ std::string CNetatmo::bool_as_text(bool b)
 /// </summary>
 bool CNetatmo::find_scopes()
 {
-	(m_scopes.find("station_R") != std::string::npos)                   //
-		return true;
 	if (m_scopes.find("thermostat_RW") != std::string::npos)            //
 		return true;
 	if (m_scopes.find("camera_RWA") != std::string::npos)               //
@@ -562,6 +560,8 @@ bool CNetatmo::find_scopes()
 	if (m_scopes.find("mx_RW") != std::string::npos)                    //
 		return true;
 	if (m_scopes.find("mhs1_RW") != std::string::npos)                  //
+		return true;
+	if (m_scopes.find("station_R") != std::string::npos)                //
 		return true;
 	//"thermostat_RW","camera_RWA","presence_RWA","carbonmonoxidedetector_R","smokedetector_R","magellan_RW","bubendorff_RW","smarther_RW","mx_RW","mhs1_RW"
 	return false;
