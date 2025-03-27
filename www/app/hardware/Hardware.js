@@ -3923,15 +3923,15 @@ define(['app'], function (app) {
 
 		EnableUpdateAndDeleteButtons = function (enableFlag,hrefUpdate = "", hrefDelete = "") {
 			if (enableFlag){
-				$('#updelclr #hardwareupdate').attr("class", "btnstyle3");
+				$('#updelclr #hardwareupdate').attr("class", "btn btn-info");
 				$("#updelclr #hardwareupdate").attr("href", hrefUpdate);
 				$('#updelclr #hardwaredelete').attr("class", "btn btn-danger");
 				$("#updelclr #hardwaredelete").attr("href", hrefDelete);
 			}
 			else {
-				$('#updelclr #hardwareupdate').attr("class", "btnstyle3-dis");
+				$('#updelclr #hardwareupdate').attr("class", "btn btn-info disabled");
 				$("#updelclr #hardwareupdate").removeAttr("href");
-				$('#updelclr #hardwaredelete').attr("class", "btnstyle3-dis");
+				$('#updelclr #hardwaredelete').attr("class", "btn btn-danger disabled");
 				$("#updelclr #hardwaredelete").removeAttr("href");
 			}
 		}
