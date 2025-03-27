@@ -3925,7 +3925,7 @@ define(['app'], function (app) {
 			if (enableFlag){
 				$('#updelclr #hardwareupdate').attr("class", "btnstyle3");
 				$("#updelclr #hardwareupdate").attr("href", hrefUpdate);
-				$('#updelclr #hardwaredelete').attr("class", "btnstyle3");
+				$('#updelclr #hardwaredelete').attr("class", "btn btn-danger");
 				$("#updelclr #hardwaredelete").attr("href", hrefDelete);
 			}
 			else {
