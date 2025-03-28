@@ -939,7 +939,7 @@ bool MainWorker::AddHardwareFromParams(
 		pHardware = new CAnnaThermostat(ID, Address, Port, Username, Password);
 		break;
 	case HTYPE_Tado:
-		pHardware = new CTado(ID, Username, Password);
+		pHardware = new CTado(ID);
 		break;
 	case HTYPE_Tesla:
 		pHardware = new CeVehicle(ID, CeVehicle::Tesla, Username, Password, Mode1, Mode2, Mode3, Extra);
