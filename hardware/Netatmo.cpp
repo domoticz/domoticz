@@ -2062,6 +2062,7 @@ void CNetatmo::Get_Scenarios(std::string home_id, Json::Value& scenarios)
 
 			//Selected Scenario ?
 			int ChildID = 14;
+			int crcId = Crc32(0, (const unsigned char*)home_id.c_str(), home_id.length());
 			std::vector<std::vector<std::string> > result;
 			result = m_sql.safe_query("SELECT ID, nValue, sValue, LastLevel FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%08X') AND (Unit==%d)", m_HwdID, crcId, ChildID);
 
@@ -3911,7 +3912,7 @@ bool CNetatmo::ParseScenarios(const std::string& sResult, Json::Value& scenarios
 		{
 			Log(LOG_STATUS, "Scenarios Selector Switch");
 			std::string Home_Name = m_RoomNames[home_id];
-			std::string lName = "Scenario %s", Home_Name.c_str();
+			std::string lName = "Scenario " + Home_Name;
 			bool bIsActive = 0;
 			int ChildID = 14;
 			int Image = 0;
