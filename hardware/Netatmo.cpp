@@ -994,11 +994,12 @@ bool CNetatmo::SetProgramState(const int uid, const int newState)
 			//Scenario NLG
 			Debug(DEBUG_HARDWARE, "Gateway set scenario %s", scenario_Name.c_str());
 			m_selectedScenario[Home_id] = newState;
-			Debug(DEBUG_HARDWARE, "Gateway Bridge %s Home_id %s newState %d ", m_DeviceBridge[module_id].c_str(), m_DeviceModuleID[uid].c_str(), newState);
+			std::string DeviceBridge = m_DeviceBridge[Home_id];
+			Debug(DEBUG_HARDWARE, "Gateway Bridge %s Home_id %s newState %d ", DeviceBridge.c_str(), Home_id.c_str(), newState);
 			Json::Value json_data;
 			//json_data {"body":{"home":{"id":
 			json_data["home"]["id"] = Home_id;
-			json_data["home"]["modules"][0]["id"] = Device_bridge;
+			json_data["home"]["modules"][0]["id"] = DeviceBridge;
 			json_data["home"]["modules"][0]["scenario"] = scenario_Name;
 			_data = json_data.toStyledString();
 			//_data = "{\"home\":{\"id\":\"" + Home_id + "\",\"modules\":[{\"id\":\"" + module_id + "\",\"scenario\":\"" + State + "\"}]}}" ;
@@ -1692,7 +1693,7 @@ void CNetatmo::GetHomesDataDetails()
 
 							//Store thermostate name for later naming switch / sensor
 							if (type == "NAPlug")
-								m_DeviceBridge[homeID] = macID;
+								m_ModuleNames[homeID] = macID;
 							if (module["type"] == "NATherm1")
 								m_ThermostatName[macID] = module["name"].asString();
 							if (module["type"] == "NRV")
@@ -2060,7 +2061,20 @@ void CNetatmo::Get_Scenarios(std::string home_id, Json::Value& scenarios)
 			scenarios = root["body"]["home"];
 
 			//Selected Scenario ?
-			m_selectedScenario[home_id] = "0";
+			int ChildID = 14;
+			std::vector<std::vector<std::string> > result;
+			result = m_sql.safe_query("SELECT ID, nValue, sValue, LastLevel FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%08X') AND (Unit==%d)", m_HwdID, crcId, ChildID);
+
+			if (!result.empty())
+			{
+				int uId = std::stoi(result[0][0]);
+				int nValue = std::stoi(result[0][1]);
+				std::string sValue = result[0][2];
+				std::string LastLevel = result[0][3];
+				m_selectedScenario[home_id] = LastLevel;
+			}
+			else
+				m_selectedScenario[home_id] = "0";
 
 			// Data was recieved with success
 			Log(LOG_STATUS, "Scenarios Data Recieved");
@@ -3360,6 +3374,7 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 							int ChildID = 9;
 							std::string bName = moduleName + " - Boiler Status";
 							SendGeneralSwitch(crcId, ChildID, batteryLevel, bIsActive, bIsActive, bName, m_Name, mrf_status);
+							m_ModuleNames[home_id] = module_id;
 
 							// Set option SwitchType to STYPE_Contact
 							std::vector<std::vector<std::string> > result;
@@ -3520,7 +3535,7 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 						result = m_sql.safe_query("SELECT ID, nValue, sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%08X') AND (Unit==%d)", m_HwdID, crcId, NETATMO_PRESET_UNIT);
 
 						if (!result.empty())
-                                                {
+						{
 							int uId = std::stoi(result[0][0]);
 							Log(LOG_STATUS, "Fan uId %d", uId);
 							if (m_bFirstTimeHomeStatus)
@@ -3895,7 +3910,8 @@ bool CNetatmo::ParseScenarios(const std::string& sResult, Json::Value& scenarios
 		if (!scenario_type.empty())
 		{
 			Log(LOG_STATUS, "Scenarios Selector Switch");
-			std::string lName = "Scenario";
+			std::string Home_Name = m_RoomNames[home_id];
+			std::string lName = "Scenario %s", Home_Name.c_str();
 			bool bIsActive = 0;
 			int ChildID = 14;
 			int Image = 0;
