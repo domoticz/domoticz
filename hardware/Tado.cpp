@@ -36,49 +36,24 @@ CTado::CTado(const int ID)
 {
 	m_HwdID = ID;
 
-	Init();
-
-	//Retrieve stored Device-Code and Refresh Token
-	std::string szName = "Tado_" + std::to_string(m_HwdID) + "_DeviceCode";
-	auto result = m_sql.safe_query("SELECT ID, Value FROM UserVariables WHERE (Name=='%q')", szName.c_str());
+	//Retrieve stored Refresh Token
+	auto result = m_sql.safe_query("SELECT Extra FROM Hardware WHERE (ID==%d)", m_HwdID);
 	if (!result.empty())
 	{
-		m_szDeviceCode = result[0][1];
+		m_szRefreshToken = result[0][0];
 	}
-	else
-		m_sql.safe_query("INSERT INTO UserVariables (Name, ValueType, Value) VALUES ('%q',%d,'%q')", szName.c_str(), USERVARTYPE_STRING, "");
-
-	szName = "Tado_" + std::to_string(m_HwdID) + "_RefreshToken";
-	result = m_sql.safe_query("SELECT ID, Value FROM UserVariables WHERE (Name=='%q')", szName.c_str());
-	if (!result.empty())
-	{
-		m_szRefreshToken = result[0][1];
-	}
-	else
-		m_sql.safe_query("INSERT INTO UserVariables (Name, ValueType, Value) VALUES ('%q',%d,'%q')", szName.c_str(), USERVARTYPE_STRING, "");
 }
 
 bool CTado::StartHardware()
 {
 	RequestStart();
 
-	Init();
 	//Start worker thread
 	m_thread = std::make_shared<std::thread>([this] { Do_Work(); });
 	SetThreadNameInt(m_thread->native_handle());
 	m_bIsStarted = true;
 	sOnConnected(this);
 	return (m_thread != nullptr);
-}
-
-void CTado::Init()
-{
-	m_bDoGetHomes = true;
-	m_bDoGetZones = false;
-	m_bDoGetEnvironment = true;
-
-	stdstring_trim(m_TadoUsername);
-	stdstring_trim(m_TadoPassword);
 }
 
 bool CTado::StopHardware()
@@ -266,7 +241,6 @@ bool CTado::GetAccessToken()
 		//we need to login again
 		m_szAccessToken.clear();
 		m_szRefreshToken.clear();
-		m_szDeviceCode.clear(); //force a login again
 
 		Log(LOG_ERROR, "Going to start Login procedure in %d seconds", TADO_POLL_INTERVAL);
 
@@ -276,8 +250,8 @@ bool CTado::GetAccessToken()
 	m_szAccessToken = root["access_token"].asString();
 	m_szRefreshToken = root["refresh_token"].asString();
 
-	std::string szName = "Tado_" + std::to_string(m_HwdID) + "_RefreshToken";
-	m_sql.safe_query("UPDATE UserVariables SET Value='%q', LastUpdate='%s' WHERE (Name=='%q')", m_szRefreshToken.c_str(), TimeToString(nullptr, TF_DateTime).c_str(), szName.c_str());
+	//Store refresh_token
+	m_sql.safe_query("UPDATE Hardware SET Extra='%q' WHERE (ID==%d)", m_szRefreshToken.c_str(), m_HwdID);
 
 	return true;
 }
@@ -521,6 +495,15 @@ bool CTado::CancelOverlay(const int Idx)
 	return true;
 }
 
+void CTado::Print_Login_URL(const std::string& url)
+{
+	Log(LOG_STATUS, "Copy and paste the below URL in your browser and follow the steps in your browser.");
+	Log(LOG_STATUS, "Domoticz will poll every 10 seconds to see if you have complete all the steps and continue.");
+	Log(LOG_STATUS, "------------------------------");
+	Log(LOG_STATUS, "%s", url.c_str());
+	Log(LOG_STATUS, "------------------------------");
+}
+
 bool CTado::Do_Login_Work()
 {
 	Log(LOG_STATUS, "We need to authenticate ourselfs");
@@ -563,17 +546,15 @@ bool CTado::Do_Login_Work()
 	std::string device_code = root["device_code"].asString();
 	int iPollInterval = root["interval"].asInt();
 
-	Log(LOG_STATUS, "Copy and paste the below URL in your browser and follew the steps.");
-	Log(LOG_STATUS, "Domoticz will poll every 10 seconds to see if you have complete all the steps and continue.");
-	Log(LOG_STATUS, "------------------------------");
-	Log(LOG_STATUS, "%s", verification_uri_complete.c_str());
-	Log(LOG_STATUS, "------------------------------");
-
 	//Let's find out if the user completed the authorization
 	int iSecCounter = 0;
 
 	while (!IsStopRequested(1000))
 	{
+		if (iSecCounter % 60 == 0)
+		{
+			Print_Login_URL(verification_uri_complete);
+		}
 		iSecCounter++;
 		if (iSecCounter % 12 == 0) {
 			m_LastHeartbeat = mytime(nullptr);
@@ -608,13 +589,8 @@ bool CTado::Do_Login_Work()
 			m_szAccessToken = root["access_token"].asString();
 			m_szRefreshToken = root["refresh_token"].asString();
 
-			std::string szName = "Tado_" + std::to_string(m_HwdID) + "_RefreshToken";
-			m_sql.safe_query("UPDATE UserVariables SET Value='%q', LastUpdate='%s' WHERE (Name=='%q')", m_szRefreshToken.c_str(), TimeToString(nullptr, TF_DateTime).c_str(), szName.c_str());
-
-			m_szDeviceCode = device_code;
-
-			szName = "Tado_" + std::to_string(m_HwdID) + "_DeviceCode";
-			m_sql.safe_query("UPDATE UserVariables SET Value='%q', LastUpdate='%s' WHERE (Name=='%q')", m_szDeviceCode.c_str(), TimeToString(nullptr, TF_DateTime).c_str(), szName.c_str());
+			//Store refresh_token
+			m_sql.safe_query("UPDATE Hardware SET Extra='%q' WHERE (ID==%d)", m_szRefreshToken.c_str(), m_HwdID);
 			return true;
 		}
 	}
@@ -648,7 +624,7 @@ void CTado::Do_Work()
 			continue;
 
 		// Only login if we should.
-		if (m_szDeviceCode.empty())
+		if (m_szRefreshToken.empty())
 		{
 			if (!Do_Login_Work())
 			{

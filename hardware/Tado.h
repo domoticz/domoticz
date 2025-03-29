@@ -19,11 +19,11 @@ public:
 	void SetSetpoint(int id2, int id3, int id4, float temp);
 
 private:
-	void Init();
 	bool StartHardware() override;
 	bool StopHardware() override;
 	void Do_Work();
 	bool Do_Login_Work();
+	void Print_Login_URL(const std::string& url);
 
 	std::shared_ptr<std::thread> m_thread;
 	struct _tTadoZone
@@ -78,16 +78,12 @@ private:
 	std::vector<std::string> StringSplitEx(const std::string& inputString, const std::string& delimiter, int maxelements = 0);
 
 private:
-	std::string m_TadoUsername;
-	std::string m_TadoPassword;
-
-	std::string m_szDeviceCode;
 	std::string m_szAccessToken;
 	std::string m_szRefreshToken;
 
-	bool m_bDoGetHomes;
-	bool m_bDoGetZones;
-	bool m_bDoGetEnvironment;
+	bool m_bDoGetEnvironment = true;
+	bool m_bDoGetHomes = true;
+	bool m_bDoGetZones = false;
 
 	std::vector<_tTadoHome> m_TadoHomes;
 };
