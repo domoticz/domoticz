@@ -110,6 +110,8 @@ CNetatmo::CNetatmo(const int ID, const std::string& username, const std::string&
 	m_bFirstTimeWeatherData = true;
 	m_tSetpointUpdateTime = time(nullptr);
 
+	LoadRefreshToken();
+
 	Init();
 }
 
@@ -236,52 +238,52 @@ void CNetatmo::Do_Work()
 				}
 			}
 		}
-		if (m_isLogged)
-		{
-			if (!m_ErrorFlag)
-			{
-				if (RefreshToken())
-				{
-                                	// Thermostat is accessable through Homestatus / Homesdata in New API
-                                	//Weather, HomeCoach, and Thermostat data is updated every  NETAMO_POLL_INTERVALL  seconds
-					if ((sec_counter % NETAMO_POLL_INTERVALL == 0) || (bFirstTimeWS) || (bFirstTimeHS) || (bFirstTimeSS))
-					{
-						bFirstTimeWS = false;
-                                        	bFirstTimeHS = false;
-                                        	bFirstTimeSS = false;
-						if (m_bPollWeatherData)
-						{
-							// ParseStationData
-							GetWeatherDetails();
-							Log(LOG_STATUS,"Weather %d",  m_isLogged);
-						}
-						if (m_bPollHomecoachData)
-						{
-							// ParseStationData
-							GetHomecoachDetails();
-							Log(LOG_STATUS,"HomeCoach %d",  m_isLogged);
-						}
-						if (m_bPollHomeStatus)
-						{
-							// GetHomesDataDetails
-							GetHomeStatusDetails();
-							Log(LOG_STATUS,"Status %d",  m_isLogged);
-							m_bFirstTimeHomeStatus = false;
-						}
-					}
+		if (!m_isLogged)
+			continue;
 
-					//Update Thermostat data when the
-					//manual set point reach its end
-					if (m_bForceSetpointUpdate)
-					{
-						time_t atime = time(nullptr);
-						if (atime >= m_tSetpointUpdateTime)
-						{
-							m_bForceSetpointUpdate = false;
-							if (m_bPollThermostat)
-								GetHomeStatusDetails();
-						}
-					}
+		if (m_ErrorFlag)
+			continue;
+
+		if (RefreshToken())
+		{
+            // Thermostat is accessable through Homestatus / Homesdata in New API
+            //Weather, HomeCoach, and Thermostat data is updated every  NETAMO_POLL_INTERVALL  seconds
+			if ((sec_counter % NETAMO_POLL_INTERVALL == 0) || (bFirstTimeWS) || (bFirstTimeHS) || (bFirstTimeSS))
+			{
+				bFirstTimeWS = false;
+                bFirstTimeHS = false;
+                bFirstTimeSS = false;
+				if (m_bPollWeatherData)
+				{
+					// ParseStationData
+					GetWeatherDetails();
+					Log(LOG_STATUS,"Weather %d",  m_isLogged);
+				}
+				if (m_bPollHomecoachData)
+				{
+					// ParseStationData
+					GetHomecoachDetails();
+					Log(LOG_STATUS,"HomeCoach %d",  m_isLogged);
+				}
+				if (m_bPollHomeStatus)
+				{
+					// GetHomesDataDetails
+					GetHomeStatusDetails();
+					Log(LOG_STATUS,"Status %d",  m_isLogged);
+					m_bFirstTimeHomeStatus = false;
+				}
+			}
+
+			//Update Thermostat data when the
+			//manual set point reach its end
+			if (m_bForceSetpointUpdate)
+			{
+				time_t atime = time(nullptr);
+				if (atime >= m_tSetpointUpdateTime)
+				{
+					m_bForceSetpointUpdate = false;
+					if (m_bPollThermostat)
+						GetHomeStatusDetails();
 				}
 			}
 		}
@@ -300,26 +302,22 @@ bool CNetatmo::Login()
 	if (m_isLogged)
 		return true;
 
-	//Check if a stored token is available
-	if (LoadRefreshToken())
-	{
-		//Yes : we refresh our take
-		if (RefreshToken(true))
-		{
-			Log(LOG_STATUS, "We refresh our token ...");
-			m_isLogged = true;
-			m_bPollThermostat = true;
-			return true;
-		}
-	}
-
 	if (m_refreshToken.empty())
 	{
-		Log (LOG_ERROR, "No refresh token available; please login to retreive a new one from Netatmo");
+		Log(LOG_ERROR, "No refresh token available; please login to retreive a new one from Netatmo");
 		StoreRequestTokenFlag(true);
 		return false;
 	}
-	return true;
+
+	if (RefreshToken(true))
+	{
+		Log(LOG_STATUS, "We refreshed our token ...");
+		m_isLogged = true;
+		m_bPollThermostat = true;
+		return true;
+	}
+
+	return false;
 }
 
 
@@ -331,14 +329,9 @@ bool CNetatmo::Login()
 /// <returns>true if token refreshed, false otherwise</returns>
 bool CNetatmo::RefreshToken(const bool bForce)
 {
-	//To refresh a token, we must have
-	//one to refresh...
-	if (m_refreshToken.empty())
-		return false;
-
 	//Check if we need to refresh the
 	//token (token is valid for a fixed duration)
-	if (!bForce)
+	if ((!bForce) && (!m_accessToken.empty()))
 	{
 		if (!m_isLogged)
 			return false;
@@ -346,15 +339,20 @@ bool CNetatmo::RefreshToken(const bool bForce)
 			return true; //no need to refresh the token yet
 	}
 
-	Log (LOG_STATUS, "Requesting refreshed tokens");
+	//To refresh a access_token, we must have a refresh_token
+	if (m_refreshToken.empty())
+		return false;
+
+	Log (LOG_STATUS, "Requesting new access_token");
+
 	m_ErrorFlag = false;
 
 	// Time to refresh the token
 	std::stringstream sstr;
-	sstr << "grant_type=refresh_token&";
-	sstr << "refresh_token=" << m_refreshToken << "&";
-	sstr << "client_id=" << m_clientId << "&";
-	sstr << "client_secret=" << m_clientSecret;
+	sstr << "grant_type=refresh_token"
+		<< "&refresh_token=" << m_refreshToken
+		<< "&client_id=" << m_clientId
+		<< "&client_secret=" << m_clientSecret;
 
 	std::string httpData = sstr.str();
 	std::vector<std::string> ExtraHeaders;
@@ -393,7 +391,6 @@ bool CNetatmo::RefreshToken(const bool bForce)
 
 		//Access is Blocked so we clear AccessToken - Ready for renew
 		m_accessToken = "";
-		root.clear();
 		m_bForceLogin = false;
 		m_bForceSetpointUpdate = false;
 
@@ -440,17 +437,10 @@ bool CNetatmo::LoadRefreshToken()
 	result = m_sql.safe_query("SELECT Extra FROM Hardware WHERE (ID==%d)", m_HwdID);
 	if (result.empty())
 	{
-		Debug(DEBUG_HARDWARE, "Result Token Not found ... ");
+		Debug(DEBUG_HARDWARE, "No refresh_token found in database ... ");
 		return false;
 	}
-	std::string refreshToken = result[0][0];
-	if (refreshToken.empty())
-	{
-		Debug(DEBUG_HARDWARE, "No Refresh Token Found ... ");
-		return false;
-	}
-	m_refreshToken = refreshToken;
-	Log(LOG_STATUS, "Use refresh token from database...");
+	m_refreshToken = result[0][0];
 	return true;
 }
 
