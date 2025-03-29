@@ -195,8 +195,8 @@ define(['app'], function (app) {
 
 			$.devIdx = -1;
 
-			$('#updelclr #userupdate').attr("class", "btnstyle3-dis");
-			$('#updelclr #userdelete').attr("class", "btnstyle3-dis");
+			$('#updelclr #userupdate').hide();
+			$('#updelclr #userdelete').hide();
 
 			var oTable = $('#usertable').dataTable();
 			oTable.fnClearTable();
@@ -257,15 +257,15 @@ define(['app'], function (app) {
 
 				if ($(this).hasClass('row_selected')) {
 					$(this).removeClass('row_selected');
-					$('#updelclr #userupdate').attr("class", "btnstyle3-dis");
-					$('#updelclr #userdelete').attr("class", "btnstyle3-dis");
+					$('#updelclr #userupdate').show();
+					$('#updelclr #userdelete').show();
 				}
 				else {
 					var oTable = $('#usertable').dataTable();
 					oTable.$('tr.row_selected').removeClass('row_selected');
 					$(this).addClass('row_selected');
-					$('#updelclr #userupdate').attr("class", "btnstyle3");
-					$('#updelclr #userdelete').attr("class", "btnstyle3");
+					$('#updelclr #userupdate').show();
+					$('#updelclr #userdelete').show();
 					var anSelected = fnGetSelected(oTable);
 					if (anSelected.length !== 0) {
 						var data = oTable.fnGetData(anSelected[0]);
