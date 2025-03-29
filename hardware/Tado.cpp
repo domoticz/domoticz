@@ -221,7 +221,7 @@ bool CTado::GetAccessToken()
 
 	Json::Value root;
 	if (!ParseJSon(sResponse, root)) {
-		Log(LOG_ERROR, "GetAccessToken: Failed to decode Json response from Api.", sResponse.c_str());
+		Log(LOG_ERROR, "GetAccessToken: Failed to decode Json response from Api.");
 		return false;
 	}
 
