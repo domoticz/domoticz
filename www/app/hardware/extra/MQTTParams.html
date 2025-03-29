@@ -1,16 +1,15 @@
-<br>
 <table class="display" id="hardwareparamsmqtt" border="0" cellpadding="0" cellspacing="20">
 	<tr id="mqtt_preventloop" valign="top">
 		<td align="right" style="width:110px"><label for="combopreventloop"><span data-i18n="Prevent Loop">Prevent Loop</span>:</label></td>
 		<td>
 			<select id="combopreventloop" style="width:200px" class="combobox ui-corner-all">
-				<option value="0">False</option>
-				<option value="1" selected>True</option>
+				<option data-i18n="No" value="0">No</option>
+				<option data-i18n="Yes" value="1" selected>Yes</option>
 			</select>
-			<br>
+			<br><br>
 			<span>
-				If 'False' this will cause the MQTT message to be echoed back. <br>
-				In most cases this is a bad scenario and should be avoided.<br>
+				If '<span data-i18n="No">No</span>' is selected it may cause the MQTT message to be echoed back. <br>
+				In most cases this is a bad scenario and should be avoided.<br><br>
 		</td>
 	</tr>
 	<tr id="mqtt_publish" valign="top" hidden>
@@ -26,17 +25,17 @@
 				<option value="136">Name (with Retain)</option>
 				<option value="0">None</option>
 			</select>
-			<br>
+			<br><br>
 			<span>
 				Select the Topic('s) Domoticz will use to publish outgoing messages. <br>
 				<b>Flat</b> - publish outgoing messages on topic <i>{domoticz/out}</i>.<br>
-				<b>Hierarchical</b> - publish outgoing messages on topic <i>{domoticz/out}/{$floorplan name}/{$plan name}</i>.<br>
-				<b>Combined</b> - Use both <b>Flat</b> and <b>Hierarchical</b> topic schemes.<br>
+				<b>Floor/Room</b> - publish outgoing messages on topic <i>{domoticz/out}/{$floorplan name}/{$plan name}</i>.<br>
+				<b>Flat + Floor/Room</b> - Use both <b>Flat</b> and <b>Floor/Room</b> topic schemes.<br>
 				<b>Index</b> - publish outgoing messages on topic <i>{domoticz/out}/{$idx}</i>.&nbsp;(with or without Retain bit)<br>
 				<b>Name</b> - publish outgoing messages on topic <i>{domoticz/out}/{$name}</i>.&nbsp;(with or without Retain bit)<br>
 				<b>None</b> - disable outgoing messages.<br>
 				<br>
-				Note that <b>Hierarchical</b> only reports sensor updates for sensors that are placed on a floorplan/plan.<br>
+				Note that <b>Floor/Room</b> only reports sensor updates for sensors that are placed on a floorplan/plan.<br>
 				<br>
 		</td>
 	</tr>
