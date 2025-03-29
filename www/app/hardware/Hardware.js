@@ -333,7 +333,8 @@ define(['app'], function (app) {
 				(text.indexOf("Evohome") >= 0 && text.indexOf("script") >= 0) ||
 				(text.indexOf("YeeLight") >= 0) ||
 				(text.indexOf("Arilux AL-LC0x") >= 0) ||
-				(text.indexOf("sysfs GPIO") >= 0)
+				(text.indexOf("sysfs GPIO") >= 0) ||
+				(text.indexOf("Tado") >= 0)
 				)
 			 {
 				// if hardwaretype == 1000 => I2C sensors grouping
@@ -1312,8 +1313,7 @@ define(['app'], function (app) {
 				(text.indexOf("ICY") >= 0) ||
 				(text.indexOf("Atag") >= 0) ||
 				(text.indexOf("Nest Th") >= 0 && text.indexOf("OAuth") === -1) ||
-				(text.indexOf("PVOutput") >= 0) ||
-				(text.indexOf("Tado") >= 0)
+				(text.indexOf("PVOutput") >= 0)
 			) {
 				var username = $("#hardwarecontent #divlogin #username").val();
 				var password = encodeURIComponent($("#hardwarecontent #divlogin #password").val());
@@ -1922,7 +1922,8 @@ define(['app'], function (app) {
 				(text.indexOf("Tellstick") >= 0) ||
 				(text.indexOf("Motherboard") >= 0) ||
 				(text.indexOf("YeeLight") >= 0) ||
-				(text.indexOf("Arilux AL-LC0x") >= 0)
+				(text.indexOf("Arilux AL-LC0x") >= 0) ||
+				(text.indexOf("Tado") >= 0)
 			) {
 				$.ajax({
 					url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype +
@@ -2942,7 +2943,6 @@ define(['app'], function (app) {
 				(text.indexOf("Atag") >= 0) ||
 				(text.indexOf("Nest Th") >= 0 && text.indexOf("OAuth") === -1) ||
 				(text.indexOf("PVOutput") >= 0) ||
-				(text.indexOf("Tado") >= 0) ||
 				(text.indexOf("HTTP") >= 0)
 			) {
 				var username = $("#hardwarecontent #divlogin #username").val();
@@ -3923,16 +3923,16 @@ define(['app'], function (app) {
 
 		EnableUpdateAndDeleteButtons = function (enableFlag,hrefUpdate = "", hrefDelete = "") {
 			if (enableFlag){
-				$('#updelclr #hardwareupdate').attr("class", "btn btn-info");
 				$("#updelclr #hardwareupdate").attr("href", hrefUpdate);
-				$('#updelclr #hardwaredelete').attr("class", "btn btn-danger");
 				$("#updelclr #hardwaredelete").attr("href", hrefDelete);
+				$('#updelclr #hardwareupdate').show();
+				$('#updelclr #hardwaredelete').show();
 			}
 			else {
-				$('#updelclr #hardwareupdate').attr("class", "btn btn-info disabled");
 				$("#updelclr #hardwareupdate").removeAttr("href");
-				$('#updelclr #hardwaredelete').attr("class", "btn btn-danger disabled");
 				$("#updelclr #hardwaredelete").removeAttr("href");
+				$('#updelclr #hardwareupdate').hide();
+				$('#updelclr #hardwaredelete').hide();
 			}
 		}
 
@@ -4295,7 +4295,8 @@ define(['app'], function (app) {
 							(data["Type"].indexOf("PiFace") >= 0) ||
 							(data["Type"].indexOf("Tellstick") >= 0) ||
 							(data["Type"].indexOf("Yeelight") >= 0) ||
-							(data["Type"].indexOf("Arilux AL-LC0x") >= 0)
+							(data["Type"].indexOf("Arilux AL-LC0x") >= 0) ||
+							(data["Type"].indexOf("Tado") >= 0)
 						) {
 							//nothing to be set
 						}
@@ -4688,7 +4689,6 @@ define(['app'], function (app) {
 							(data["Type"].indexOf("MySensors Gateway with MQTT") >= 0) ||
 							(data["Type"].indexOf("Netatmo") >= 0) ||
 							(data["Type"].indexOf("HTTP") >= 0) ||
-							(data["Type"].indexOf("Tado") >= 0) ||
 							(data["Type"].indexOf("Tesla") >= 0) ||
 							(data["Type"].indexOf("Mercedes") >= 0) ||
 							(data["Type"].indexOf("Logitech Media Server") >= 0) ||
@@ -5068,6 +5068,7 @@ define(['app'], function (app) {
 			if (!$.isNumeric($("#hardwarecontent #hardwareparamstable #combotype option:selected").val())) {
 				$("#hardwarecontent #extrahw").val("");
 				$("#hardwarecontent #divextrahwparams").empty();
+				$("#hardwarecontent #divextrahwparams").hide();
 				$("#hardwarecontent #divpythonplugin .plugin").hide();
 				var plugin = $("#hardwarecontent #hardwareparamstable #combotype option:selected").attr("id");
 				$("#hardwarecontent #divpythonplugin .plugin").each(function () { if ($(this).attr("id") === plugin) $(this).show(); });
@@ -5077,10 +5078,12 @@ define(['app'], function (app) {
 
 			if (extraHWTable[text]) {
 				loadExtraHWCode(extraHWTable[text], data);
+				$("#hardwarecontent #divextrahwparams").show();
 				return;
 			} else {
 				$("#hardwarecontent #extrahw").val("");
 				$("#hardwarecontent #divextrahwparams").empty();
+				$("#hardwarecontent #divextrahwparams").hide();
 			}
 
 			if (text.indexOf("eHouse") >= 0) {
@@ -5271,8 +5274,7 @@ define(['app'], function (app) {
 				(text.indexOf("ICY") >= 0) ||
 				(text.indexOf("Atag") >= 0) ||
 				(text.indexOf("Nest Th") >= 0 && text.indexOf("OAuth") === -1) ||
-				(text.indexOf("PVOutput") >= 0) ||
-				(text.indexOf("Tado") >= 0)
+				(text.indexOf("PVOutput") >= 0)
 			) {
 				$("#hardwarecontent #divlogin").show();
 			}
