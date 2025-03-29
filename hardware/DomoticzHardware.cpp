@@ -675,7 +675,7 @@ void CDomoticzHardwareBase::SendSwitchUnchecked(int NodeID, uint8_t ChildID, int
 
 
 void CDomoticzHardwareBase::SendSwitch(const int NodeID, const uint8_t ChildID, const int BatteryLevel, const bool bOn, const double Level, const std::string &defaultname, const std::string &userName,
-				       const int RssiLevel /* =12 */, const bool bForceLastUpdate /* =false */)
+				       const int RssiLevel /* =12 */, const bool bForceDbUpdate /* =false */)
 {
 	double rlevel = (16.0 / 100.0) * Level;
 	int level = int(rlevel);
@@ -692,7 +692,7 @@ void CDomoticzHardwareBase::SendSwitch(const int NodeID, const uint8_t ChildID, 
 				  int(pTypeLighting2), int(sTypeAC));
 	if (!result.empty())
 	{
-		//check if we have a change, if not only update the LastUpdate field if forceLastUpdate
+		//check if we have a change, and if not only update the BatteryLevel and LastUpdate fields if bForceDbUpdate
 		bool bNoChange = false;
 		int nvalue = atoi(result[0][1].c_str());
 		if ((!bOn) && (nvalue == light2_sOff))
@@ -706,8 +706,8 @@ void CDomoticzHardwareBase::SendSwitch(const int NodeID, const uint8_t ChildID, 
 		}
 		if (bNoChange)
 		{
-			if (bForceLastUpdate)
-				m_sql.UpdateLastUpdate(result[0][0]);
+			if (bForceDbUpdate)
+				m_sql.UpdateDeviceValue("BatteryLevel", BatteryLevel, result[0][0]);
 			return;
 		}
 	}
