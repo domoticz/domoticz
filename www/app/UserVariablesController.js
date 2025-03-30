@@ -62,8 +62,8 @@ define(['app'], function (app) {
 
 		$scope.RefreshUserVariablesTable = function () {
 			$('#modal').show();
-			$('#uservariableupdate').attr("class", "btnstyle3-dis");
-			$('#uservariabledelete').attr("class", "btnstyle3-dis");
+			$('#uservariableupdate').hide();
+			$('#uservariabledelete').hide();
 			$("#uservariableupdate").attr("href", "");
 			$("#uservariabledelete").attr("href", "");
 
@@ -120,8 +120,8 @@ define(['app'], function (app) {
 			$("#uservariablestable tbody").on('click', 'tr', function () {
 				if ($(this).hasClass('row_selected')) {
 					$(this).removeClass('row_selected');
-					$('#uservariableupdate').attr("class", "btnstyle3-dis");
-					$('#uservariabledelete').attr("class", "btnstyle3-dis");
+					$('#uservariableupdate').hide();
+					$('#uservariabledelete').hide();
 					$("#uservariableupdate").attr("href", "");
 					$("#uservariabledelete").attr("href", "");
 				}
@@ -135,8 +135,8 @@ define(['app'], function (app) {
 						var idx = data["DT_RowId"];
 						$("#uservariableupdate").attr("href", "javascript:AddUpdateVariable('u', " + idx + ")");
 						$("#uservariabledelete").attr("href", "javascript:DeleteVariable(" + idx + ")");
-						$('#uservariableupdate').attr("class", "btnstyle3");
-						$('#uservariabledelete').attr("class", "btnstyle3");
+						$('#uservariableupdate').show();
+						$('#uservariabledelete').show();
 						$("#uservariablesedittable #uservariablename").val(data["1"]);
 						$("#uservariablesedittable #uservariabletype").val(data["DT_ItemType"]);
 						$("#uservariablesedittable #uservariablevalue").val(data["DT_Value"]);

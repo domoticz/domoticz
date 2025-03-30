@@ -11,14 +11,6 @@
 			</tr>
 		</thead>
 	</table>
-	<table id="updelclr" border="0" cellpadding="0" cellspacing="0" width="100%">
-		<tr>
-			<td>
-				<a class="btnstyle3-dis" id="applicationupdate" data-i18n="Update">Update</a>&nbsp;&nbsp;&nbsp;
-				<a class="btnstyle3-dis" id="applicationdelete" data-i18n="Delete">Delete</a>
-			</td>
-		</tr>
-	</table>
 	<br>
 	<table class="display" id="applicationparamstable" border="0" cellpadding="0" cellspacing="20">
 		<tr>
@@ -41,10 +33,14 @@
 			<td align="right" style="width:200px"><label for="applicationpemfile"><span data-i18n="applicationpemfile">Application keys PEM-file</span>:</label></td>
 			<td><input type="text" id="applicationpemfile" name="applicationpemfile" style="width: 200px; padding: .2em;" class="text ui-widget-content ui-corner-all"></td>
 		</tr>
+	</table>
+	<table class="display" id="updelclr" border="0" cellpadding="0" cellspacing="0" width="100%">
 		<tr>
 			<td></td>
 			<td>
-				<a class="btnstyle3" onclick="AddApplication();" data-i18n="Add">Add</a>
+				<a class="btn btn-warning" id="applicationupdate" data-i18n="Update">Update</a>
+				<a class="btn btn-danger" id="applicationdelete" data-i18n="Delete">Delete</a>
+				<a class="btn btn-info" onclick="AddApplication();" data-i18n="Add">Add</a>
 			</td>
 		</tr>
 	</table>
