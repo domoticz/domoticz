@@ -484,6 +484,10 @@ define(['app'], function (app) {
 					Mode1 = $("#hardwarecontent #divmodeldenkoviusbdevices #combomodeldenkoviusbdevices option:selected").val();
 				}
 
+				if (text.indexOf("EnOcean") >= 0 && text.indexOf("(ESP3)") >= 0) {
+					Mode1 = $("#hardwarecontent #divenocean #usebaseid").prop("checked") ? 1 : 0;
+				}
+
 				if (text.indexOf("USBtin") >= 0) {
 					//var Typecan = $("#hardwarecontent #divusbtin #combotypecanusbtin option:selected").val();
 					var ActivateMultiblocV8 = $("#hardwarecontent #divusbtin #activateMultiblocV8").prop("checked") ? 1 : 0;
@@ -2110,6 +2114,10 @@ define(['app'], function (app) {
 
 				if (text.indexOf("Denkovi") >= 0) {
 					Mode1 = $("#hardwarecontent #divmodeldenkoviusbdevices #combomodeldenkoviusbdevices option:selected").val();
+				}
+
+				if (text.indexOf("EnOcean") >= 0 && text.indexOf("(ESP3)") >= 0) {
+					Mode1 = $("#hardwarecontent #divenocean #usebaseid").prop("checked") ? 1 : 0;
 				}
 
 				$.ajax({
@@ -4369,6 +4377,8 @@ define(['app'], function (app) {
 
 							} else if (data["Type"].indexOf("Denkovi") >= 0) {
 								$("#hardwarecontent #divmodeldenkoviusbdevices #combomodeldenkoviusbdevices").val(data["Mode1"]);
+							} else if (data["Type"].indexOf("EnOcean") >= 0 && data["Type"].indexOf("(ESP3)") >= 0) {
+								$("#hardwarecontent #divenocean #usebaseid").prop("checked", data["Mode1"] > 0 );
 							}
 						}
 						else if ((((data["Type"].indexOf("LAN") >= 0) || (data["Type"].indexOf("Eco Devices") >= 0) || data["Type"].indexOf("MySensors Gateway with MQTT") >= 0 || data["Type"].indexOf("RFLink Gateway MQTT") >= 0) &&
@@ -5062,6 +5072,7 @@ define(['app'], function (app) {
 			$("#hardwarecontent #divremote").hide();
 			$("#hardwarecontent #divlogin").hide();
 			$("#hardwarecontent #divhttppoller").hide();
+			$("#hardwarecontent #divenocean").hide();
 
 			// Handle plugins 1st because all the text indexof logic below will have unpredictable impacts for plugins
 			// Python Plugins have the plugin name, not the hardware type id, as the value
@@ -5133,6 +5144,9 @@ define(['app'], function (app) {
 				}
 				if (text.indexOf("Denkovi") >= 0) {
 					$("#hardwarecontent #divmodeldenkoviusbdevices").show();
+				}
+				if (text.indexOf("EnOcean") >= 0 && text.indexOf("(ESP3)") >= 0) {
+					$("#hardwarecontent #divenocean").show();
 				}
 				$("#hardwarecontent #divserial").show();
 			}
