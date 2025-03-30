@@ -935,8 +935,66 @@ void CHardwareMonitor::FetchUnixDisk()
 				char szTmp[300];
 				sprintf(szTmp, "%.2f", UsagedPercentage);
 				std::string hddname = "HDD " + dusage.MountPoint;
+				dindex=0;
+				std::vector<std::vector<std::string> > listOfHdd;
+				listOfHdd = m_sql.safe_query("SELECT ID, DeviceID, Name, Options FROM DeviceStatus WHERE (HardwareID=%d AND DeviceID>'0000044D' AND DeviceID<'000004B0')", m_HwdID);
+				if (!listOfHdd.empty())
+				{
+					for (const auto& sd : listOfHdd)
+					{
+						std::string szIdx = sd[0];
+						std::string szDeviceId = sd[1];
+						std::string Name = sd[2];
+						int deviceId;
+						sscanf(szDeviceId.c_str(), "%x", &deviceId);
+						std::string sOptions = sd[3];
+						std::map<std::string, std::string> optionsMap = m_sql.BuildDeviceOptions(sOptions);
+						if (!optionsMap.empty() and !strcmp(optionsMap["hdd"].c_str(),hddname.c_str()))
+						{	
+							dindex=deviceId;
+							break;
+						}	
+						else
+						{
+							if (!strcmp(Name.c_str(),hddname.c_str()))
+							{
+								dindex=deviceId;
+								uint64_t idx = std::stoull(szIdx);
+								optionsMap["hdd"] = hddname;
+								m_sql.SetDeviceOptions(idx, optionsMap);
+								break;
+							}	
+						}
+					}
+				}
+				if (dindex==0)					
+				{
+					// new HDD
+					std::vector<std::vector<std::string> > listOfHdd;
+					listOfHdd = m_sql.safe_query("SELECT ID, DeviceID, Name FROM DeviceStatus WHERE (HardwareID=%d AND DeviceID>'0000044D' AND DeviceID<'000004B0')", m_HwdID);
+					int firstFreedeviceId=1102;
+					if (!listOfHdd.empty())
+					{
+						for (int i=0; i<listOfHdd.size() ; i++)
+						{
+							for (const auto& sd : listOfHdd)
+							{
+								std::string szDeviceId = sd[1];
+								int deviceId;
+								sscanf(szDeviceId.c_str(), "%x", &deviceId);
+								if (firstFreedeviceId==deviceId)
+								{	
+									firstFreedeviceId++;
+									break;
+								}	
+							}
+						}
+					}
+					dindex=firstFreedeviceId;
+				}
+				dindex-=1102;	
+
 				UpdateSystemSensor("Load", 2 + dindex, hddname, szTmp);
-				dindex++;
 			}
 		}
 	}
