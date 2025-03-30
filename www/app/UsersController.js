@@ -195,8 +195,8 @@ define(['app'], function (app) {
 
 			$.devIdx = -1;
 
-			$('#updelclr #userupdate').hide();
-			$('#updelclr #userdelete').hide();
+			$('#userupdate').hide();
+			$('#userdelete').hide();
 
 			var oTable = $('#usertable').dataTable();
 			oTable.fnClearTable();
@@ -257,22 +257,23 @@ define(['app'], function (app) {
 
 				if ($(this).hasClass('row_selected')) {
 					$(this).removeClass('row_selected');
-					$('#updelclr #userupdate').show();
-					$('#updelclr #userdelete').show();
+					$('#userupdate').hide();
+					$('#userdelete').hide();
 				}
 				else {
+					$('#userupdate').show();
+					$('#userdelete').show();
+					
 					var oTable = $('#usertable').dataTable();
 					oTable.$('tr.row_selected').removeClass('row_selected');
 					$(this).addClass('row_selected');
-					$('#updelclr #userupdate').show();
-					$('#updelclr #userdelete').show();
 					var anSelected = fnGetSelected(oTable);
 					if (anSelected.length !== 0) {
 						var data = oTable.fnGetData(anSelected[0]);
 						var idx = data["DT_RowId"];
 						$.devIdx = idx;
-						$("#updelclr #userupdate").attr("href", "javascript:UpdateUser(" + idx + ")");
-						$("#updelclr #userdelete").attr("href", "javascript:DeleteUser(" + idx + ")");
+						$("#userupdate").attr("href", "javascript:UpdateUser(" + idx + ")");
+						$("#userdelete").attr("href", "javascript:DeleteUser(" + idx + ")");
 						$('#usercontent #userparamstable #enabled').prop('checked', (data["Enabled"] == "true"));
 						$("#usercontent #userparamstable #username").val(data["Username"]);
 						$("#usercontent #userparamstable #userpassword").val(data["Password"]);
