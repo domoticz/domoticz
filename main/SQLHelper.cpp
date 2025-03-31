@@ -5410,10 +5410,11 @@ uint64_t CSQLHelper::UpdateValueInt(
 		else
 		{
 			if (
-				(stype == STYPE_DoorContact) ||
-				(stype == STYPE_DoorLock) ||
-				(stype == STYPE_DoorLockInverted) ||
-				(stype == STYPE_Contact)
+				(stype == STYPE_DoorContact)
+				|| (stype == STYPE_DoorLock)
+				|| (stype == STYPE_DoorLockInverted)
+				|| (stype == STYPE_Contact)
+				|| (stype == STYPE_SMOKEDETECTOR)
 				)
 			{
 				//Check if we received the same state as before, if yes, don't do anything (only update)
