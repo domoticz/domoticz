@@ -1,7 +1,9 @@
-Version 2024.x
+Version 2025.x
 - Implemented: Battery level for Setpoint sensors
-- Implemented: Charts, zoom option for 'Today'
-- Implemented: Floorplan, Add support for stop button
+- Implemented: Charts, zoom option for 'Day' view
+- Implemented: Data Pushers, added P1 actual value
+- Implemented: EnOcean, now able to choose a optional base_id as sender_id instead of the chip_id (#6213)
+- Implemented: Floorplan, Add support for stop button (Ventation blinds)
 - Implemented: RFXCom, Updated SDK
 - Implemented: Support for Honeywell Series 5/PIR
 - Implemented: Text sensor, now posible to edit direct from the GUI
@@ -16,6 +18,7 @@ Version 2024.x
 - Implemented: MQTT-AD, support sensors that report humidity but sends 'null' values
 - Implemented: MQTT-AD, support for string field state objects
 - Implemented: MQTT Push 'Retained' mode option
+- Implemented: Rain devices can now be replacement with different types of rain devices
 - Implemented: RFXCom, Falmec Support
 - Implemented: RTL433, Support Generic Switch (Door) sensor
 - Implemented: Tado, oauth2 support
@@ -23,14 +26,18 @@ Version 2024.x
 - Changed: Energy Dashboard now also available for non-admin users
 - Changed: Energy Dashboard, Text object clipping rectangle
 - Changed: Google Firebase Cloud Messaging (FCM) alternative way to pass a Domoticz device ID through the extra field ('|Device=<devidx>')
-- Changed: Improved and automated login process for Netatmo devices (to obtain client ID and Password with user selectable scopes)
+- Changed: Internal webserver refactoring 
+- Changed: Netatmo Improved and automated login process for devices (to obtain client ID and Password with user selectable scopes)
 - Changed: Removed Highcharts 'Download PNG/JPG/SVG' buttons until export server is fixed
 - Changed: Using OpenStreetMap for Latitude/Longitude query in settings
 - Changed: Hardware/User/Application/Variables setup page (update/delete/add buttons)
+- Changed: Smoke Detectors are now able (internally) to use keep-alive timestamps
+- Fixed: AtagOne, fixed getting device_id and better debuginfo
 - Fixed: Charts, dynamic title based on selected range
 - Fixed: Computed Meter summation
 - Fixed: Custom Icons, making sure they are valid and loaded OK
 - Fixed: Floorplan, corrected open/close icon behaviour
+- Fixed: Floorplan, now handles protected selectors
 - Fixed: MQTT Push, making sure direct push is working
 - Fixed: Possible mutex lock issue when logging
 - Fixed: Pushers, corrected Gas value rounding
