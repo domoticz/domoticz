@@ -785,7 +785,7 @@ bool CNetatmo::SetProgramState(const int uid, const int newState)
 		}
 		//https://api.netatmo.com/api/setthermmode?home_id=xxxxx&mode=schedule/away/hg
 		home_data = "home_id=" + Home_id + "&mode=" + thermState ;
-		Get_Respons_API(NETYPE_SETTHERMMODE, sResult, home_data, bRet, root, "");
+		Get_Response_API(NETYPE_SETTHERMMODE, sResult, home_data, bRet, root, "");
 
 		if (!bRet)
 		{
@@ -818,7 +818,7 @@ bool CNetatmo::SetProgramState(const int uid, const int newState)
 		//
 		std::string _data = "home_id=" + Home_id + "&device_types=" + Type ;
 
-		Get_Respons_API(NETYPE_STATUS, sResult, _data, bRet, root, "");
+		Get_Response_API(NETYPE_STATUS, sResult, _data, bRet, root, "");
 		//Parse API response
 		bRet = ParseHomeStatus(sResult, root, Home_id);
 		if (!bRet)
@@ -1034,7 +1034,7 @@ bool CNetatmo::SetProgramState(const int uid, const int newState)
 		home_data = "&";
 		//Log(LOG_STATUS, "SetProgramState - JSON_data = %s", _data.c_str());
 
-		Get_Respons_API(NETYPE_SETSTATE, sResult, home_data, bRet, root, _data);
+		Get_Response_API(NETYPE_SETSTATE, sResult, home_data, bRet, root, _data);
 		if (!bRet)
 		{
 			Log(LOG_ERROR, "Netatmo: Error setting Power Device !");
@@ -1063,7 +1063,7 @@ bool CNetatmo::SetProgramState(const int uid, const int newState)
 
 		home_data = "&";
 
-		Get_Respons_API(NETYPE_SETSTATE, sResult, home_data, bRet, root, _data);
+		Get_Response_API(NETYPE_SETSTATE, sResult, home_data, bRet, root, _data);
 		if (!bRet)
 		{
 			Log(LOG_ERROR, "Netatmo: Error setting Light Device !");
@@ -1142,7 +1142,7 @@ bool CNetatmo::SetDimmerState(const int uid, const int newState)
 		home_data = "&";
 		Debug(DEBUG_HARDWARE, "SetProgramState - JSON_data = %s", _data.c_str());
 
-		Get_Respons_API(NETYPE_SETSTATE, sResult, home_data, bRet, root, _data);
+		Get_Response_API(NETYPE_SETSTATE, sResult, home_data, bRet, root, _data);
 		if (!bRet)
 		{
 			Log(LOG_ERROR, "Netatmo: Error setting Dimmer Device !");
@@ -1235,7 +1235,7 @@ void CNetatmo::SetSetpoint(unsigned long ID, const float temp)
 
 		home_data = "home_id=" + Home_id + "&room_id=" + roomNetatmoID.c_str() + "&mode=" + Mode  + "&temp=" + std::to_string(temp)  + "&endtime=" + std::to_string(end_time) + "&get_favorites=true&";
 		// https://api.netatmo.com/api/setroomthermpoint?home_id=xxxxxx&room_id=xxxxxxx&mode=manual&temp=22&endtime=xxxxxxxxx
-		Get_Respons_API(NETYPE_SETROOMTHERMPOINT, sResult, home_data, bRet, root, "");
+		Get_Response_API(NETYPE_SETROOMTHERMPOINT, sResult, home_data, bRet, root, "");
 	}
 	else         // Not used ??
 	{
@@ -1250,7 +1250,7 @@ void CNetatmo::SetSetpoint(unsigned long ID, const float temp)
 
 		home_data = "home_id=" + Home_id + "&room_id=" + roomNetatmoID.c_str() + "&mode=" + Mode  + "&temp=" + std::to_string(temp)  + "&endtime=" + std::to_string(end_time) + "&get_favorites=true&";
 		// https://api.netatmo.com/api/setroomthermpoint?home_id=xxxxxx&room_id=xxxxxxx&mode=manual&temp=22&endtime=xxxxxxxxx
-		Get_Respons_API(NETYPE_SETROOMTHERMPOINT, sResult, home_data, bRet, root, "");
+		Get_Response_API(NETYPE_SETROOMTHERMPOINT, sResult, home_data, bRet, root, "");
 		Log(LOG_STATUS, "Netatmo module SetSetpoint else ? ");
 	}
 
@@ -1337,7 +1337,7 @@ bool CNetatmo::SetSchedule(int uId, int selected)
 
 	//https://api.netatmo.com/api/switchhomeschedule?home_id=xxxxxxxx&schedule_id=xxxxxxxx
 	std::string home_data = "home_id=" + Home_id + "&schedule_id=" + scheduleId;
-	Get_Respons_API(NETYPE_SWITCHHOMESCHEDULE, sResult, home_data, bRet, root, "");
+	Get_Response_API(NETYPE_SWITCHHOMESCHEDULE, sResult, home_data, bRet, root, "");
 
 	if (!bRet)
 	{
@@ -1358,7 +1358,7 @@ bool CNetatmo::SetSchedule(int uId, int selected)
 		Type = module_type;
 	std::string _data = "home_id=" + Home_id + "&device_types=" + Type;
 
-	Get_Respons_API(NETYPE_STATUS, sResult, _data, bRet, root, "");
+	Get_Response_API(NETYPE_STATUS, sResult, _data, bRet, root, "");
 	//Parse API response
 	bRet = ParseHomeStatus(sResult, root, Home_id);
 	if (!bRet)
@@ -1501,7 +1501,7 @@ std::string CNetatmo::MakeRequestURL(const m_eNetatmoType NType, std::string dat
 /// <summary>
 /// Get API
 /// </summary>
-void CNetatmo::Get_Respons_API(const m_eNetatmoType& NType, std::string& sResult, std::string& home_data, bool& bRet, Json::Value& root, std::string extra_data)
+void CNetatmo::Get_Response_API(const m_eNetatmoType& NType, std::string& sResult, std::string& home_data, bool& bRet, Json::Value& root, std::string extra_data)
 {
 	//Check if connected to the API
 	if (!m_isLogged)
@@ -1529,11 +1529,11 @@ void CNetatmo::Get_Respons_API(const m_eNetatmoType& NType, std::string& sResult
 
 	httpUrl = MakeRequestURL(NType, home_data);
 	std::string sPostData = sstr.str();
-	//Debug(DEBUG_HARDWARE, "Respons URL   %s", httpUrl.c_str()); // URI to be tested
+	//Debug(DEBUG_HARDWARE, "Response URL   %s", httpUrl.c_str()); // URI to be tested
 
 	if (!HTTPClient::POST(httpUrl, sPostData, ExtraHeaders, sResult, returnHeaders))
 	{
-		Log(LOG_ERROR, "Error connecting to Server (Get_Respons_API): %s", ExtractHtmlStatusCode(returnHeaders).c_str());
+		Log(LOG_ERROR, "Error connecting to Server (Get_Response_API): %s", ExtractHtmlStatusCode(returnHeaders).c_str());
 		return ;
 	}
 
@@ -1548,24 +1548,24 @@ void CNetatmo::Get_Respons_API(const m_eNetatmoType& NType, std::string& sResult
 		std::size_t found = e_str.find("error");
 		if (found!=std::string::npos)
 		{
-			Log(LOG_ERROR, "Error data ...  %s", sResult.c_str());
-			return ;     // This prevents JSON Logic Error in case off Error respons.
+			Log(LOG_ERROR, "Error data ...  url: %s, response: %s", httpUrl.c_str(), sResult.c_str());
+			return ;     // This prevents JSON Logic Error in case off Error response.
 		}
 	}
 
 	bRet = ParseJSon(sResult, root);
 	if ((!bRet) || (!root.isObject()))
 	{
-		Log(LOG_ERROR, "Invalid data received (Get_Respons_API) ...");
+		Log(LOG_ERROR, "Invalid data received (Get_Response_API) ...");
 		return ;
 	}
 
-	//Log(LOG_STATUS, "Get_Respons_API message returned from POST(%s): \n%s", httpUrl.c_str(), JSonToFormatString(root).c_str()); // prettifyJson(root);
+	//Log(LOG_STATUS, "Get_Response_API message returned from POST(%s): \n%s", httpUrl.c_str(), JSonToFormatString(root).c_str()); // prettifyJson(root);
 
 	if (!root["error"].empty())
         {
 		//We received an error
-		Log(LOG_ERROR, "Get_Respons_API: Error = %s", root.asString().c_str());  // possible; 'error'  'errors'  'error [message]'
+		Log(LOG_ERROR, "Get_Response_API: Error = %s", root.asString().c_str());  // possible; 'error'  'errors'  'error [message]'
 		m_isLogged = false;
 		return ;
 	}
@@ -1585,7 +1585,7 @@ void CNetatmo::GetHomesDataDetails()
 	Json::Value root;     // root JSON object
 	Log(LOG_STATUS, "Get HomesData Details ");
 
-	Get_Respons_API(NETYPE_HOMESDATA, sResult, home_data, bRet, root, "");
+	Get_Response_API(NETYPE_HOMESDATA, sResult, home_data, bRet, root, "");
 	//Log(LOG_STATUS, "GetHomesDataDetails HOMESDATA received: \n%s", JSonToFormatString(root).c_str()); // prettifyJson(root)
 
 	if (!root["body"]["homes"].empty())
@@ -1837,7 +1837,7 @@ void CNetatmo::GetWeatherDetails()
 	if (m_bFirstTimeWeatherData)
 	{
 		//
-		Get_Respons_API(NETYPE_WEATHER_STATION, sResult, home_data, bRet, root, "");
+		Get_Response_API(NETYPE_WEATHER_STATION, sResult, home_data, bRet, root, "");
 
 		//Parse API response
 		bRet = ParseStationData(sResult, false);
@@ -1862,7 +1862,7 @@ void CNetatmo::GetHomecoachDetails()
 		Json::Value root;    // root JSON object
 		Debug(DEBUG_HARDWARE, "Poll Get Homecoach (%d)", m_bFirstTimeWeatherData);
 
-		Get_Respons_API(NETYPE_AIRCARE, sResult, home_data, bRet, root, "");
+		Get_Response_API(NETYPE_AIRCARE, sResult, home_data, bRet, root, "");
 
 		//Parse API response
 		bRet = ParseStationData(sResult, false);
@@ -1908,7 +1908,7 @@ void CNetatmo::GetHomeStatusDetails()
 		//Debug(DEBUG_HARDWARE, "Home_Data : %s ", home_data.c_str());
 		//Log(LOG_STATUS, "Home_Data : %s ", home_data.c_str());
 
-		Get_Respons_API(NETYPE_STATUS, sResult, home_data, bRet, root, "");
+		Get_Response_API(NETYPE_STATUS, sResult, home_data, bRet, root, "");
 
 		//Debug(DEBUG_HARDWARE, "sResult : %s ", sResult.c_str());
 		std::string Home_Name = m_RoomNames[home_id];
@@ -1967,7 +1967,7 @@ void CNetatmo::Get_Measure(std::string gateway, std::string module_id, std::stri
 	std::string home_data = "device_id=" + gateway + "&module_id=" + module_id + "&scale=" + scale + "&type=" + type + "boileron" + "&date_begin=" + date_begin + "&date_end=" + date_end + "&limit=" + limit  + "&optimize=" + "false" + "&real_time="  + "false" ;
 	bool bRet;           //Parsing status
 
-	Get_Respons_API(NETYPE_MEASURE, sResult, home_data, bRet, root, "");
+	Get_Response_API(NETYPE_MEASURE, sResult, home_data, bRet, root, "");
 
 	if (!root["body"].empty())
 	{
@@ -2010,7 +2010,7 @@ void CNetatmo::Get_Events(std::string home_id, std::string device_types, std::st
 
 	bool bRet;           //Parsing status
 
-	Get_Respons_API(NETYPE_EVENTS, sResult, home_events_data, bRet, root, "");
+	Get_Response_API(NETYPE_EVENTS, sResult, home_events_data, bRet, root, "");
 
 	if (!root["body"]["home"].empty())
 	{
@@ -2041,7 +2041,7 @@ void CNetatmo::Get_Scenarios(std::string home_id, Json::Value& scenarios)
 	std::string home_data = "home_id=" + home_id;
 	bool bRet;           //Parsing status
 
-	Get_Respons_API(NETYPE_SCENARIOS, sResult, home_data, bRet, root, "");
+	Get_Response_API(NETYPE_SCENARIOS, sResult, home_data, bRet, root, "");
 
 	if (!root["body"].empty())
 	{

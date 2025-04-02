@@ -48,7 +48,7 @@ class CNetatmo : public CDomoticzHardwareBase
         void SetSetpoint(unsigned long ID, const float temp);
         bool SetProgramState(const int uid, const int newState);
 	bool SetDimmerState(const int uid, const int newState);
-        void Get_Respons_API(const m_eNetatmoType& NType, std::string& sResult, std::string& home_id, bool& bRet, Json::Value& root, std::string extra_data);
+        void Get_Response_API(const m_eNetatmoType& NType, std::string& sResult, std::string& home_id, bool& bRet, Json::Value& root, std::string extra_data);
 
       private:
         struct m_tNetatmoDevice
