@@ -45,6 +45,7 @@ Version 2025.x
 - Fixed: RFXCom 868 MHz Weather device
 - Fixed: RFXCom, WS90 Weather device
 - Removed: Thermosmart thermostat (Product no longer supported/available by the manufacturer)
+- Removed: API: Old RType calls have been replaced
 - Updated: HighCharts
 - Updated: Translations
 
