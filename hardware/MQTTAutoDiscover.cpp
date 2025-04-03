@@ -4626,6 +4626,7 @@ bool MQTTAutoDiscover::SendSwitchCommand(const std::string& DeviceID, const std:
 				if (
 					(m_discovered_devices[pSensor->device_identifiers].manufacturer == "TuYa")
 					|| (m_discovered_devices[pSensor->device_identifiers].manufacturer == "Tuya")
+					|| (m_discovered_devices[pSensor->device_identifiers].manufacturer == "AVATTO")
 					)
 				{
 					root["state"] = (slevel > 0) ? pSensor->payload_on : pSensor->payload_off;
