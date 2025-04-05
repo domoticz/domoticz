@@ -354,7 +354,7 @@ bool CNetatmo::RefreshToken(const bool bForce)
 	std::vector<std::string> returnHeaders;
 
 	//ExtraHeaders.push_back("Host: api.netatmo.com");
-	//ExtraHeaders.push_back("Content-Type: application/x-www-form-urlencoded;charset=UTF-8");
+	ExtraHeaders.push_back("Content-Type: application/x-www-form-urlencoded;charset=UTF-8");
 
 	std::string httpUrl(m_netatmo_api_uri + "oauth2/token?");
 	Debug(DEBUG_HARDWARE, "Netatmo URL %s with %s", httpUrl.c_str(), httpData.c_str());
@@ -1505,7 +1505,7 @@ void CNetatmo::Get_Response_API(const m_eNetatmoType& NType, std::string& sResul
 
 	// Following line gives always the return RAW-String from Netatmo server
 	// uncomment for Debug situation.
-	Debug(DEBUG_HARDWARE, "Respons sResult %s", sResult.c_str());
+	Debug(DEBUG_HARDWARE, "Response sResult %s", sResult.c_str());
 
 	//Check for error
 	std::string s_Sresult = sResult;
@@ -1519,7 +1519,7 @@ void CNetatmo::Get_Response_API(const m_eNetatmoType& NType, std::string& sResul
 		if (found!=std::string::npos)
 		{
 			Log(LOG_ERROR, "Error data ...  url: %s, response: %s", httpUrl.c_str(), sResult.c_str());
-			return ;     // This prevents JSON Logic Error in case off Error respons.
+			return ;     // This prevents JSON Logic Error in case off Error response.
 		}
 	}
 
