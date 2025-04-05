@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "Netatmo.h"
+#include "../main/appversion.h"
 #include "../main/Logger.h"
 #include "../main/SQLHelper.h"
 #include "../main/mainworker.h"
@@ -12,6 +13,8 @@
 #define NETATMO_OAUTH2_TOKEN_URI "https://api.netatmo.com/oauth2/token?"
 #define NETATMO_API_URI "https://api.netatmo.com/"
 #define NETATMO_PRESET_UNIT 10
+#define USER_AGENT_STRING "User-Agent: Domoticz/Version "
+#define NETATMO_USER_AGENT_STRING USER_AGENT_STRING VERSION_STRING
 // 03/03/2022 - PP Changing the Weather polling from 600 to 900s. This has reduce the number of server errors,
 // 08/05/2024 - Give the poll interfval a defined name:
 #define NETAMO_POLL_INTERVALL 900
@@ -359,6 +362,7 @@ bool CNetatmo::RefreshToken(const bool bForce)
 	std::vector<std::string> returnHeaders;
 
 //	ExtraHeaders.push_back("Host: api.netatmo.com");
+	ExtraHeaders.push_back(NETATMO_USER_AGENT_STRING);		// User agent to fix issue #6280
 	ExtraHeaders.push_back("Content-Type: application/x-www-form-urlencoded;charset=UTF-8");
 
 //        std::string httpUrl(NETATMO_API_URI + "oauth2/token?")
@@ -374,6 +378,18 @@ bool CNetatmo::RefreshToken(const bool bForce)
 		Log(LOG_ERROR, "Error connecting to Server (refresh tokens): %s", ExtractHtmlStatusCode(returnHeaders).c_str());
 		return false;
 	}
+	//*****************************************************************************
+	// Shows content of the request and headers
+	//*****************************************************************************
+	Debug(DEBUG_HARDWARE, "HttpUrl: %s", httpUrl.c_str());
+	Debug(DEBUG_HARDWARE, "HttpData: %s", httpData.c_str());
+    for (const std::string& header : ExtraHeaders) {
+		Debug(DEBUG_HARDWARE, "ExtraHeaders: %s", header.c_str());
+	}
+    for (const std::string& returnheader : returnHeaders) {
+		Debug(DEBUG_HARDWARE, "returnHeader: %s", returnheader.c_str());
+	}
+	//*****************************************************************************
 
 	//Check for valid JSON
 	Json::Value root;
@@ -1516,6 +1532,7 @@ void CNetatmo::Get_Response_API(const m_eNetatmoType& NType, std::string& sResul
 	ExtraHeaders.push_back("accept: application/json;charset=UTF-8");
 	ExtraHeaders.push_back("Content-Type: application/json;charset=UTF-8");
 	ExtraHeaders.push_back("Authorization: Bearer " + m_accessToken);
+	ExtraHeaders.push_back(NETATMO_USER_AGENT_STRING);	// User agent to fix issue #6280
 	//             //extra_data = "{\"home\":{\"id\":\"" + Home_id + "\",\"modules\":[{\"id\":\"" + module_id + "\",\"floodlight\":\"" + State + "\"}]}}" ;
 	std::vector<std::string> returnHeaders;         // HTTP returned headers
 	//https://api.netatmo.com/api/homestatus?home_id=
