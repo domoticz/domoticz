@@ -221,7 +221,8 @@ void CNetatmo::Do_Work()
 		if (sec_counter % 12 == 0) {
 			m_LastHeartbeat = mytime(nullptr);
 		}
-		if (mytime(nullptr) == m_nextRefreshTs)
+		if (mytime(nullptr) > m_nextRefreshTs)
+			//Time is bigger than 2/3 off duration access token
 			m_isLogged = false;
 		
 		if (sec_counter % NETAMO_ERROR_INTERVALL == 0)
@@ -429,7 +430,7 @@ bool CNetatmo::RefreshToken(const bool bForce)
 	m_accessToken = root["access_token"].asString();
 	m_refreshToken = root["refresh_token"].asString();
 	int expires = root["expires_in"].asInt();
-	//Store the duration of validity of the token
+	//Store the duration off validity of the token
 	m_nextRefreshTs = mytime(nullptr) + expires * 2 / 3;
 	Debug(DEBUG_HARDWARE, "Next RefreshToken time %s = expires * 2 / 3", ctime(& m_nextRefreshTs));
 
