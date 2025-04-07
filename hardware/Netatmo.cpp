@@ -226,16 +226,13 @@ void CNetatmo::Do_Work()
 		{
 			m_ErrorFlag = false;
 		}
-		if (!m_isLogged)
+		if (!m_ErrorFlag)
 		{
-			if (!m_ErrorFlag)
-			{
 				if (sec_counter % NETAMO_LOGIN_INTERVALL == 0)
 				{
 					Login();
 					Log(LOG_STATUS,"Login %d",  m_isLogged);
 				}
-			}
 		}
 		if (!m_isLogged)
 			continue;
