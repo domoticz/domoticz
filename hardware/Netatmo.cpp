@@ -366,6 +366,7 @@ bool CNetatmo::RefreshToken(const bool bForce)
 	if (!bret)
 	{
 		Log(LOG_ERROR, "Error connecting to Server (refresh tokens): %s", ExtractHtmlStatusCode(returnHeaders).c_str());
+		m_isLogged = false;
 		return false;
 	}
 	//*****************************************************************************
