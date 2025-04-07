@@ -969,14 +969,14 @@ bool CZiBlueBase::ParseBinary(const uint8_t SDQ, const uint8_t *data, size_t len
 					Log(LOG_NORM, "subtype: %d, idPHY: %04X, idChannel: %04X, qualifier: %04X, power: %d, p1: %d, p2: %d, p3: %d", pSen->subtype, pSen->idPHY, pSen->idChannel,
 					    pSen->qualifier, pSen->power, pSen->powerI1, pSen->powerI2, pSen->powerI3);
 #endif
-					SendWattMeter(pSen->idPHY ^ pSen->idChannel, 0, (pSen->qualifier & 0x01) ? 0 : 100, float(pSen->power) / 10, "Power");
+					SendWattMeter((uint8_t)(pSen->idPHY ^ pSen->idChannel), 0, (pSen->qualifier & 0x01) ? 0 : 100, float(pSen->power) / 10, "Power");
 					int energy = (pSen->energyMsb << 16) + pSen->energyLsb;
 					SendKwhMeter(pSen->idPHY ^ pSen->idChannel, 1, (pSen->qualifier & 0x01) ? 0 : 100, float(pSen->power), float(energy) / 1000, "Energy");
 					if ((pSen->qualifier & 0x02) != 0)
 					{
-						SendWattMeter(pSen->idPHY ^ pSen->idChannel, 2, (pSen->qualifier & 0x01) ? 0 : 100, float(pSen->power) / 10, "Power I1");
-						SendWattMeter(pSen->idPHY ^ pSen->idChannel, 3, (pSen->qualifier & 0x01) ? 0 : 100, float(pSen->power) / 10, "Power I2");
-						SendWattMeter(pSen->idPHY ^ pSen->idChannel, 4, (pSen->qualifier & 0x01) ? 0 : 100, float(pSen->power) / 10, "Power I3");
+						SendWattMeter((uint8_t)(pSen->idPHY ^ pSen->idChannel), 2, (pSen->qualifier & 0x01) ? 0 : 100, float(pSen->power) / 10, "Power I1");
+						SendWattMeter((uint8_t)(pSen->idPHY ^ pSen->idChannel), 3, (pSen->qualifier & 0x01) ? 0 : 100, float(pSen->power) / 10, "Power I2");
+						SendWattMeter((uint8_t)(pSen->idPHY ^ pSen->idChannel), 4, (pSen->qualifier & 0x01) ? 0 : 100, float(pSen->power) / 10, "Power I3");
 					}
 				}
 				break;
@@ -1082,7 +1082,7 @@ bool CZiBlueBase::ParseBinary(const uint8_t SDQ, const uint8_t *data, size_t len
 					}
 					SendKwhMeter(pSen->idLsb ^ pSen->idMsb, 1, (pSen->qualifier & 0x01) ? 0 : 100, power1, total1 / 1000.0, "HC");
 					SendKwhMeter(pSen->idLsb ^ pSen->idMsb, 2, (pSen->qualifier & 0x01) ? 0 : 100, power2, total2 / 1000.0, "HP");
-					SendWattMeter(pSen->idLsb ^ pSen->idMsb, 3, (pSen->qualifier & 0x01) ? 0 : 100, (float)pSen->apparentPower, "Apparent Power");
+					SendWattMeter((uint8_t)(pSen->idLsb ^ pSen->idMsb), 3, (pSen->qualifier & 0x01) ? 0 : 100, (float)pSen->apparentPower, "Apparent Power");
 					m_LastReceivedKWhMeterTime[pSen->idLsb ^ pSen->idMsb ^ 1] = m_LastReceivedTime;
 					m_LastReceivedKWhMeterValue[pSen->idLsb ^ pSen->idMsb ^ 1] = total1;
 					m_LastReceivedKWhMeterTime[pSen->idLsb ^ pSen->idMsb ^ 2] = m_LastReceivedTime;
