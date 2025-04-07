@@ -221,20 +221,23 @@ void CNetatmo::Do_Work()
 		if (sec_counter % 12 == 0) {
 			m_LastHeartbeat = mytime(nullptr);
 		}
-		if ((mytime(nullptr) - 15) < m_nextRefreshTs)
+		if (mytime(nullptr) == m_nextRefreshTs)
 			m_isLogged = false;
 		
 		if (sec_counter % NETAMO_ERROR_INTERVALL == 0)
 		{
 			m_ErrorFlag = false;
 		}
-		if (!m_ErrorFlag)
+		if (!m_isLogged)
 		{
+			if (!m_ErrorFlag)
+			{
 				if (sec_counter % NETAMO_LOGIN_INTERVALL == 0)
 				{
 					Login();
 					Log(LOG_STATUS,"Login %d",  m_isLogged);
 				}
+			}
 		}
 		if (!m_isLogged)
 			continue;
