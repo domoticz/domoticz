@@ -1513,6 +1513,7 @@ void CNetatmo::Get_Response_API(const m_eNetatmoType& NType, std::string& sResul
 	if (!HTTPClient::POST(httpUrl, sPostData, ExtraHeaders, sResult, returnHeaders))
 	{
 		Log(LOG_ERROR, "Error connecting to Server (Get_Response_API): %s", ExtractHtmlStatusCode(returnHeaders).c_str());
+		m_isLogged = false;
 		return ;
 	}
 
@@ -1532,6 +1533,7 @@ void CNetatmo::Get_Response_API(const m_eNetatmoType& NType, std::string& sResul
 		if (found!=std::string::npos)
 		{
 			Log(LOG_ERROR, "Error data ...  url: %s, response: %s", httpUrl.c_str(), sResult.c_str());
+			m_isLogged = false;
 			return ;     // This prevents JSON Logic Error in case off Error response.
 		}
 	}
@@ -1540,6 +1542,7 @@ void CNetatmo::Get_Response_API(const m_eNetatmoType& NType, std::string& sResul
 	if ((!bRet) || (!root.isObject()))
 	{
 		Log(LOG_ERROR, "Invalid data received (Get_Response_API) ...");
+		m_isLogged = false;
 		return ;
 	}
 
