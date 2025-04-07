@@ -221,7 +221,9 @@ void CNetatmo::Do_Work()
 		if (sec_counter % 12 == 0) {
 			m_LastHeartbeat = mytime(nullptr);
 		}
-
+		if ((mytime(nullptr) - 15) < m_nextRefreshTs)
+			m_isLogged = false;
+		
 		if (sec_counter % NETAMO_ERROR_INTERVALL == 0)
 		{
 			m_ErrorFlag = false;
