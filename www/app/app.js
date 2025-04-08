@@ -423,13 +423,8 @@ define(['angularAMD', 'app.routes', 'app.constants', 'app.notifications', 'app.p
 							accessibility: {
 								enabled: false
 							},
-							xAxis: {
-								dateTimeLabelFormats: {
-									minute: '%H:%M',
-									hour: '%H:%M'
-								}
-							},
 							lang: {
+								locale: $rootScope.config.language,
 								noData: $.t('No data to display'),
 								decimalPoint: decimalPoint,
 								thousandsSep: thousandsSep,
