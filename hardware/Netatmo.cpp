@@ -1670,11 +1670,16 @@ void CNetatmo::GetHomesDataDetails()
 							std::string type = module["type"].asString();
 							std::string macID = module["id"].asString();
 							std::string roomNetatmoID;
+							std::string module_id;
 							m_Device_types[macID] = type;
 							uint64_t moduleID = convert_mac(macID);
 							int Hardware_int = (int)moduleID;
 							//Debug(DEBUG_HARDWARE, "Homedata modules %lu -  %s in Home = %s" , moduleID, macID.c_str(), homeID.c_str());
 							m_ModuleNames[macID] = module["name"].asString();
+							for (auto device : module["modules_bridged"])
+							{
+								module_id = device.asString();
+							}
 							roomNetatmoID = m_RoomIDs[macID];
 
 							std::string roomName = m_RoomNames[roomNetatmoID];
@@ -1686,7 +1691,7 @@ void CNetatmo::GetHomesDataDetails()
 
 							//Store thermostate name for later naming switch / sensor
 							if (type == "NAPlug")
-								m_ModuleNames[homeID] = macID;
+								m_DeviceBridge[homeID] = module_id;
 							if (module["type"] == "NATherm1")
 								m_ThermostatName[macID] = module["name"].asString();
 							if (module["type"] == "NRV")
@@ -2030,7 +2035,7 @@ void CNetatmo::Get_Events(std::string home_id, std::string device_types, std::st
 /// Get Scenarios
 /// <param name="home_id">ID-number of the NetatmoHome</param>
 /// </summary>
-void CNetatmo::Get_Scenarios(std::string home_id, Json::Value& scenarios)
+void CNetatmo::Get_Scenarios(std::string& home_id, Json::Value& scenarios)
 {
 	//Locals
 	std::string sResult; // text returned by API
@@ -3773,7 +3778,7 @@ bool CNetatmo::ParseEvents(const std::string& sResult, Json::Value& root )
 /// Parse Scenarios
 /// <param name="home_id">ID-number of the NetatmoHome</param>
 /// </summary>
-bool CNetatmo::ParseScenarios(const std::string& sResult, Json::Value& scenarios, std::string home_id)
+bool CNetatmo::ParseScenarios(const std::string& sResult, Json::Value& scenarios, std::string& home_id)
 {
 	//Locals
 	std::string scenario_id;
