@@ -343,15 +343,17 @@ bool CNetatmo::RefreshToken(const bool bForce)
 		}
 		if ((mytime(nullptr) - 15) < m_nextRefreshTs)
 		{
-			Debug(DEBUG_HARDWARE, " RefreshToken m_isLogged %s,  ", ctime(& m_nextRefreshTs));
+			Debug(DEBUG_HARDWARE, " RefreshToken m_nextRefreshTs %s,  ", ctime(& m_nextRefreshTs));
 			return true; //no need to refresh the token yet
 		}
 	}
 
 	//To refresh a access_token, we must have a refresh_token
 	if (m_refreshToken.empty())
+	{
 		Log(LOG_ERROR, "No refresh token available; please login to retreive a new one from Netatmo");
 		return false;
+	}
 
 	Log (LOG_STATUS, "Requesting new access_token");
 
@@ -442,7 +444,8 @@ bool CNetatmo::RefreshToken(const bool bForce)
 	Debug(DEBUG_HARDWARE, "Next RefreshToken time %s = expires * 2 / 3", ctime(& m_nextRefreshTs));
 
 	StoreRefreshToken(false);
-	Log(LOG_STATUS, "We refreshed our token ...");
+
+	Log(LOG_STATUS, "We refreshed our tokens ....");
 	m_isLogged = true;
 	m_bPollThermostat = true;
 	return true;
