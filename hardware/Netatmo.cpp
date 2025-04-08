@@ -1,4 +1,4 @@
-#include "stdafx.h"
+      #include "stdafx.h"
 #include "Netatmo.h"
 #include "../main/appversion.h"
 #include "../main/Logger.h"
@@ -235,7 +235,7 @@ void CNetatmo::Do_Work()
 			{
 				if (sec_counter % NETAMO_LOGIN_INTERVALL == 0)
 				{
-					Login();
+					RefreshToken(true);
 					Log(LOG_STATUS,"Login %d",  m_isLogged);
 				}
 			}
@@ -344,6 +344,7 @@ bool CNetatmo::RefreshToken(const bool bForce)
 
 	//To refresh a access_token, we must have a refresh_token
 	if (m_refreshToken.empty())
+		Log(LOG_ERROR, "No refresh token available; please login to retreive a new one from Netatmo");
 		return false;
 
 	Log (LOG_STATUS, "Requesting new access_token");
@@ -435,6 +436,9 @@ bool CNetatmo::RefreshToken(const bool bForce)
 	Debug(DEBUG_HARDWARE, "Next RefreshToken time %s = expires * 2 / 3", ctime(& m_nextRefreshTs));
 
 	StoreRefreshToken(false);
+	Log(LOG_STATUS, "We refreshed our token ...");
+	m_isLogged = true;
+	m_bPollThermostat = true;
 	return true;
 }
 
@@ -741,12 +745,11 @@ bool CNetatmo::SetProgramState(const int uid, const int newState)
 	//Check if logged, logging if needed
 	if (!m_isLogged == true)
 	{
-		if (!Login())
+		if (!RefreshToken(false))
 			return false;
 	}
 
 	//Debug(DEBUG_HARDWARE, "SetProgramState");
-	std::vector<std::string> ExtraHeaders;
 	std::string sResult;
 	Json::Value root;       // root JSON object
 	std::string home_data;
@@ -1103,12 +1106,11 @@ bool CNetatmo::SetDimmerState(const int uid, const int newState)
 	//Check if logged, logging if needed
 	if (!m_isLogged == true)
 	{
-		if (!Login())
+		if (!RefreshToken(false))
 			return false;
 	}
 
 	//Debug(DEBUG_HARDWARE, "SetDimmerState");
-	std::vector<std::string> ExtraHeaders;
 	std::string sResult;
 	Json::Value root;       // root JSON object
 	std::string home_data;
@@ -1183,7 +1185,7 @@ void CNetatmo::SetSetpoint(unsigned long ID, const float temp)
 	//connect to it if needed
 	if (!m_isLogged == true)
 	{
-		if (!Login())
+		if (!RefreshToken(false))
 			return;
 	}
 
@@ -1226,7 +1228,6 @@ void CNetatmo::SetSetpoint(unsigned long ID, const float temp)
 			localtime_r(&now, &etime);
 	}
 
-	std::vector<std::string> ExtraHeaders;
 	std::string sResult;
 	std::stringstream sstr;
 	std::stringstream bstr;
@@ -1287,7 +1288,7 @@ bool CNetatmo::SetSchedule(int uId, int selected)
 	//Checking if we are still connected to the API
 	if (!m_isLogged == true)
 	{
-		if (!Login())
+		if (!RefreshToken(false))
 			return false;
 	}
 
