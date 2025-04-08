@@ -342,7 +342,10 @@ bool CNetatmo::RefreshToken(const bool bForce)
 			return false;
 		}
 		if ((mytime(nullptr) - 15) < m_nextRefreshTs)
+		{
+			Debug(DEBUG_HARDWARE, " RefreshToken m_isLogged %s,  ", ctime(& m_nextRefreshTs));
 			return true; //no need to refresh the token yet
+		}
 	}
 
 	//To refresh a access_token, we must have a refresh_token
