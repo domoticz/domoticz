@@ -1943,7 +1943,7 @@ void CNetatmo::GetHomeStatusDetails()
 		Json::Value scenarios;
 		Get_Scenarios(home_id, scenarios);
 	}
-	Debug(DEBUG_HARDWARE, "Parsed Home Status %s - %s |", home_id.c_str(), m_DeviceBridge[home_id]);
+	Debug(DEBUG_HARDWARE, "Parsed Home Status %s - %s |", home_id.c_str(), m_DeviceBridge[home_id].c_str());
 }
 
 
