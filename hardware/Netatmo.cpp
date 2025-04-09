@@ -3913,7 +3913,7 @@ bool CNetatmo::ParseScenarios(const std::string& sResult, Json::Value& scenarios
 			m_ModuleNames["999"] = scenario_SchName;
 		}
 
-		if (!scenario_type.empty())
+		if (!scenario_type.empty() && !m_DeviceBridge[home_id].empty())
 		{
 			Log(LOG_STATUS, "Scenarios Selector Switch");
 			std::string Home_Name = m_RoomNames[home_id];
