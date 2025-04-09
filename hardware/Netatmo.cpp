@@ -1928,6 +1928,7 @@ void CNetatmo::GetHomeStatusDetails()
 		{
 			Get_Events(home_data, device_types, event_id, person_id, bridge_id, module_id, offset, size, locale);
 		}
+		Debug(DEBUG_HARDWARE, "Parsed index %d Home Status of HomeID %s %s", i, home_id.c_str(), Home_Name.c_str());
 	}
 	// Scenarios in separated loop
 	for (int i = 0; i < size; i++)
@@ -1937,7 +1938,7 @@ void CNetatmo::GetHomeStatusDetails()
 		Json::Value scenarios;
 		Get_Scenarios(home_id, scenarios);
 	}
-	Debug(DEBUG_HARDWARE, "Parsed index %d Home Status of HomeID %s %s", i, home_id.c_str(), Home_Name.c_str());
+	Debug(DEBUG_HARDWARE, "Parsed Home Status %s", home_id.c_str());
 }
 
 
