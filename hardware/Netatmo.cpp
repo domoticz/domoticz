@@ -303,8 +303,8 @@ void CNetatmo::Do_Work()
 /// <returns>true if logged in, false otherwise</returns>
 bool CNetatmo::Login()
 {
-	Debug(DEBUG_HARDWARE, "Login test");
-	//Already logged noting
+	Debug(DEBUG_HARDWARE, "Login Login");
+	//Already logged noting to do
 	if (m_isLogged)
 		return true;
 
@@ -400,7 +400,7 @@ bool CNetatmo::RefreshToken(const bool bForce)
 		Debug(DEBUG_HARDWARE, "returnHeader: %s", returnheader.c_str());
 	}
 	//*****************************************************************************
-	
+
 	//Check for valid JSON
 	Json::Value root;
 	bool ret = ParseJSon(sResult, root);
@@ -462,7 +462,7 @@ bool CNetatmo::RefreshToken(const bool bForce)
 /// <returns>true if token retrieved, store the token in member variables</returns>
 bool CNetatmo::LoadRefreshToken()
 {
-	auto result = m_sql.safe_query("SELECT Extra, Address, Mode1 FROM Hardware WHERE (ID==%d)", m_HwdID);
+	auto result = m_sql.safe_query("SELECT Extra, Address, SerialPort, Mode1 FROM Hardware WHERE (ID==%d)", m_HwdID);
 	if (result.empty())
 	{
 		Debug(DEBUG_HARDWARE, "No refresh_token found in database ... ");
@@ -475,6 +475,10 @@ bool CNetatmo::LoadRefreshToken()
 		m_nextRefreshTs = std::stol(result[0][1]);
 		Debug(DEBUG_HARDWARE, "Next RefreshToken time %s", ctime(& m_nextRefreshTs));
 	}
+	if (!result[0][2].empty())
+		std::string Data = result[0][2];
+	if (!result[0][3].empty())
+		std::string Flag = result[0][3];
 	return true;
 }
 
@@ -1570,6 +1574,7 @@ void CNetatmo::Get_Response_API(const m_eNetatmoType& NType, std::string& sResul
         {
 		//We received an error
 		Log(LOG_ERROR, "Get_Response_API: Error = %s", root.asString().c_str());  // possible; 'error'  'errors'  'error [message]'
+		m_isLogged = false;
 		return ;
 	}
 }
@@ -1691,7 +1696,7 @@ void CNetatmo::GetHomesDataDetails()
 
 							//Store thermostate name for later naming switch / sensor
 							if (type == "NAPlug")
-								m_DeviceBridge[homeID] = module_id;
+								m_DeviceBridge[homeID] = macID;
 							if (module["type"] == "NATherm1")
 								m_ThermostatName[macID] = module["name"].asString();
 							if (module["type"] == "NRV")
@@ -1938,7 +1943,7 @@ void CNetatmo::GetHomeStatusDetails()
 		Json::Value scenarios;
 		Get_Scenarios(home_id, scenarios);
 	}
-	Debug(DEBUG_HARDWARE, "Parsed Home Status %s", home_id.c_str());
+	Debug(DEBUG_HARDWARE, "Parsed Home Status %s", home_id.c_str(), m_DeviceBridge[home_id]);
 }
 
 
@@ -2052,6 +2057,7 @@ void CNetatmo::Get_Scenarios(std::string& home_id, Json::Value& scenarios)
 		return;
 
 	// https://api.netatmo.com/api/getscenarios
+	Debug(DEBUG_HARDWARE, "Get_Scenarios Status %s device %s |", home_id.c_str(), m_DeviceBridge[home_id].c_str());
 	std::string home_data = "home_id=" + home_id;
 	bool bRet;           //Parsing status
 
