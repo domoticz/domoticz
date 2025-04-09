@@ -1,4 +1,4 @@
-      #include "stdafx.h"
+#include "stdafx.h"
 #include "Netatmo.h"
 #include "../main/appversion.h"
 #include "../main/Logger.h"
@@ -222,9 +222,13 @@ void CNetatmo::Do_Work()
 			m_LastHeartbeat = mytime(nullptr);
 		}
 		if (mytime(nullptr) > m_nextRefreshTs)
+		{
 			//Time is bigger than 2/3 off duration access token
-			m_isLogged = false;
-		
+			if (RefreshToken(true))
+				Log(LOG_STATUS,"Refresh token %d",  m_isLogged);
+			else
+				Log(LOG_ERROR, "Refresh token %d",  m_isLogged);
+		}
 		if (sec_counter % NETAMO_ERROR_INTERVALL == 0)
 		{
 			m_ErrorFlag = false;
@@ -235,7 +239,7 @@ void CNetatmo::Do_Work()
 			{
 				if (sec_counter % NETAMO_LOGIN_INTERVALL == 0)
 				{
-					RefreshToken(true);
+					Login();
 					Log(LOG_STATUS,"Login %d",  m_isLogged);
 				}
 			}
@@ -1530,7 +1534,6 @@ void CNetatmo::Get_Response_API(const m_eNetatmoType& NType, std::string& sResul
 	if (!HTTPClient::POST(httpUrl, sPostData, ExtraHeaders, sResult, returnHeaders))
 	{
 		Log(LOG_ERROR, "Error connecting to Server (Get_Response_API): %s", ExtractHtmlStatusCode(returnHeaders).c_str());
-		m_isLogged = false;
 		return ;
 	}
 
@@ -1550,7 +1553,6 @@ void CNetatmo::Get_Response_API(const m_eNetatmoType& NType, std::string& sResul
 		if (found!=std::string::npos)
 		{
 			Log(LOG_ERROR, "Error data ...  url: %s, response: %s", httpUrl.c_str(), sResult.c_str());
-			m_isLogged = false;
 			return ;     // This prevents JSON Logic Error in case off Error response.
 		}
 	}
@@ -1559,7 +1561,6 @@ void CNetatmo::Get_Response_API(const m_eNetatmoType& NType, std::string& sResul
 	if ((!bRet) || (!root.isObject()))
 	{
 		Log(LOG_ERROR, "Invalid data received (Get_Response_API) ...");
-		m_isLogged = false;
 		return ;
 	}
 
@@ -1569,7 +1570,6 @@ void CNetatmo::Get_Response_API(const m_eNetatmoType& NType, std::string& sResul
         {
 		//We received an error
 		Log(LOG_ERROR, "Get_Response_API: Error = %s", root.asString().c_str());  // possible; 'error'  'errors'  'error [message]'
-		m_isLogged = false;
 		return ;
 	}
 }
@@ -1924,15 +1924,20 @@ void CNetatmo::GetHomeStatusDetails()
 		//Parse API response
 		bRet = ParseHomeStatus(sResult, root, home_id);
 
-		Json::Value scenarios;
-		Get_Scenarios(home_id, scenarios);
-
 		if (m_bPollGetEvents)
 		{
 			Get_Events(home_data, device_types, event_id, person_id, bridge_id, module_id, offset, size, locale);
 		}
-		Debug(DEBUG_HARDWARE, "Parsed index %d Home Status of HomeID %s %s", i, home_id.c_str(), Home_Name.c_str());
 	}
+	// Scenarios in separated loop
+	for (int i = 0; i < size; i++)
+	{
+		Debug(DEBUG_HARDWARE, "index %d of Scenarios", i);
+		home_id = m_homeid[i];
+		Json::Value scenarios;
+		Get_Scenarios(home_id, scenarios);
+	}
+	Debug(DEBUG_HARDWARE, "Parsed index %d Home Status of HomeID %s %s", i, home_id.c_str(), Home_Name.c_str());
 }
 
 
