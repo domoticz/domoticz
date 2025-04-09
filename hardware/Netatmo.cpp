@@ -1606,7 +1606,7 @@ void CNetatmo::GetHomesDataDetails()
 				homeID = home["id"].asString();
 				m_homeid.push_back(homeID);
 				//Debug(DEBUG_HARDWARE, "Get Home ID %s", homeID.c_str());
-				//SaveJson2Disk(home, std::string("./HomesData_" + homeID + ".txt"));
+				//SaveJson2Disk(home, std::string("./HomesData_" + m_Name + "-" + homeID + ".txt"));
 				std::stringstream stream_homeid;
 				for(size_t i = 0; i < m_homeid.size(); ++i)
 				{
@@ -1696,7 +1696,7 @@ void CNetatmo::GetHomesDataDetails()
 
 							//Store thermostate name for later naming switch / sensor
 							if (type == "NAPlug")
-								m_DeviceBridge[homeID] = macID;
+								m_DeviceBridge[module_id] = macID;
 							if (module["type"] == "NATherm1")
 								m_ThermostatName[macID] = module["name"].asString();
 							if (module["type"] == "NRV")
