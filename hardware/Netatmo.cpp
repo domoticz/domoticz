@@ -227,7 +227,7 @@ void CNetatmo::Do_Work()
 			if (RefreshToken(true))
 				Log(LOG_STATUS,"Refresh token %d",  m_isLogged);
 			else
-				Log(LOG_ERROR, "Refresh token %d",  m_isLogged);
+				Log(LOG_ERROR, "Refresh token false %d",  m_isLogged);
 		}
 		if (sec_counter % NETAMO_ERROR_INTERVALL == 0)
 		{
@@ -1696,7 +1696,7 @@ void CNetatmo::GetHomesDataDetails()
 
 							//Store thermostate name for later naming switch / sensor
 							if (type == "NAPlug")
-								m_DeviceBridge[module_id] = macID;
+								m_ModuleNames[homeID] = macID;
 							if (module["type"] == "NATherm1")
 								m_ThermostatName[macID] = module["name"].asString();
 							if (module["type"] == "NRV")
@@ -1943,7 +1943,7 @@ void CNetatmo::GetHomeStatusDetails()
 		Json::Value scenarios;
 		Get_Scenarios(home_id, scenarios);
 	}
-	Debug(DEBUG_HARDWARE, "Parsed Home Status %s - %s |", home_id.c_str(), m_DeviceBridge[home_id].c_str());
+	Debug(DEBUG_HARDWARE, "Parsed Home Status |");
 }
 
 
