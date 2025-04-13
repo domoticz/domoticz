@@ -1781,7 +1781,7 @@ void CNetatmo::GetHomesDataDetails()
 							//json_data[ssv.str()] = schedule_name;
 							Schedule_Names[index] = schedule["name"].asString();
 						}
-						Schedule_ids[index] = schedule_id;
+						m_ScheduleIDs[schedule_name] = schedule_id;
 
 						m_DeviceHomeID[schedule_id] = homeID;
 						if (!schedule["selected"].empty() && schedule["selected"].asBool() && schedule_type == "therm")
@@ -1790,8 +1790,6 @@ void CNetatmo::GetHomesDataDetails()
 							m_selected_Schedule[homeID] = index;
 						}
 					}
-					//m_Schedule_Names[homeID] = json_data;
-					//m_ScheduleIDs[homeID] = Schedule_ids;
 					m_ScheduleNames[homeID] = Schedule_Names;
 				}
 				//Get the user info
