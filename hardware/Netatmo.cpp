@@ -1316,7 +1316,7 @@ bool CNetatmo::SetSchedule(int uId, int selected)
 		if (itt->first == selected)
 			schedule_Name = itt->second;
 	}
-	std::string schedule_Id = m_schedule_id[schedule_name];
+	std::string schedule_Id = m_ScheduleIDs[schedule_Name];
 	std::string module_type = m_Device_types[module_id];
 
 	Debug(DEBUG_HARDWARE, "Schedule id = %s %s %d %s %s %d", module_type.c_str(), schedule_Id.c_str(), uId, schedule_Name.c_str(), Home_id.c_str(), selected);
@@ -1791,7 +1791,7 @@ void CNetatmo::GetHomesDataDetails()
 						}
 					}
 					//m_Schedule_Names[homeID] = json_data;
-					m_ScheduleIDs[homeID] = Schedule_ids;
+					//m_ScheduleIDs[homeID] = Schedule_ids;
 					m_ScheduleNames[homeID] = Schedule_Names;
 				}
 				//Get the user info
@@ -3390,7 +3390,7 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 						{
 							allSchName = allSchName + "|" + itt->second;
 							std::stringstream ss;
-							ss = itt->first;
+							ss << itt->first;
 						}
 
 						int index = 10;
