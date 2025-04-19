@@ -137,8 +137,8 @@ void CNetatmo::Init()
 	m_Module_category.clear();
 	m_DeviceBridge.clear();
 	m_thermostatModuleID.clear();
-	m_ScheduleNames.clear();
-	m_ScheduleIDs.clear();
+	m_ScheduleID_s.clear();
+	m_Schedule_Names.clear();
 	m_Scenarios.clear();
 	m_selectedScenario.clear();
 	m_ScheduleHome.clear();
@@ -1305,18 +1305,20 @@ bool CNetatmo::SetSchedule(int uId, int selected)
 	}
 
 	std::string schedule_Name;
+	std::string schedule_Id;
 	std::string Home_id = m_ScheduleHomes[uId];                          // home_id from crcId
 	std::string module_id = m_thermostatModuleID[uId];                   // mac-adres
-	std::map<int, std::string> Schedule_Names = m_ScheduleNames[Home_id];
+	std::map<int, std::string> Schedule_ID = m_ScheduleID_s[Home_id];
 	Debug(DEBUG_HARDWARE, "Hardware_int %08X (%d) %s", uId, uId, Home_id.c_str());
 
-	for (std::map<int, std::string>::const_iterator itt = Schedule_Names.begin(); itt != Schedule_Names.end(); ++itt)
+	for (std::map<int, std::string>::const_iterator itt = Schedule_ID.begin(); itt != Schedule_ID.end(); ++itt)
 	{
 		//Debug(DEBUG_HARDWARE, "Data itt %d %s", itt->first, itt->second.c_str());
 		if (itt->first == selected)
-			schedule_Name = itt->second;
+			schedule_Id = itt->second;
+			schedule_Name = m_Schedule_Names[schedule_Id];
 	}
-	std::string schedule_Id = m_ScheduleIDs[schedule_Name];
+
 	std::string module_type = m_Device_types[module_id];
 
 	Debug(DEBUG_HARDWARE, "Schedule id = %s %s %d %s %s %d", module_type.c_str(), schedule_Id.c_str(), uId, schedule_Name.c_str(), Home_id.c_str(), selected);
@@ -1737,7 +1739,7 @@ void CNetatmo::GetHomesDataDetails()
 					std::string allSchName = "Off";
 					std::string allSchAction = "00";
 					int index = 0;
-					std::map<int, std::string> Schedule_ids;
+					std::map<int, std::string> Schedule_ID;
 					std::map<int, std::string> Schedule_Names;
 
 					for (auto schedule : home["schedules"])
@@ -1779,9 +1781,9 @@ void CNetatmo::GetHomesDataDetails()
 							std::stringstream ssv;
 							ssv << index;
 							//json_data[ssv.str()] = schedule_name;
-							Schedule_Names[index] = schedule["name"].asString();
+							Schedule_ID[index] = schedule_id;
 						}
-						m_ScheduleIDs[schedule_name] = schedule_id;
+						m_Schedule_Names[schedule_id] = schedule_name;
 
 						m_DeviceHomeID[schedule_id] = homeID;
 						if (!schedule["selected"].empty() && schedule["selected"].asBool() && schedule_type == "therm")
@@ -1790,7 +1792,7 @@ void CNetatmo::GetHomesDataDetails()
 							m_selected_Schedule[homeID] = index;
 						}
 					}
-					m_ScheduleNames[homeID] = Schedule_Names;
+					m_ScheduleID_s[homeID] = Schedule_ID;
 				}
 				//Get the user info
 				if (!home["user"].empty())
@@ -3382,17 +3384,19 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 						m_ScheduleHomes[Hardware_int] = home_id;
 						Debug(DEBUG_HARDWARE, "Hardware_int %08X %s (%d) %s", Hardware_int, Hardware_str.str().c_str(), Hardware_int, home_id.c_str());
 
-						std::map<int, std::string> Schedule_Names = m_ScheduleNames[home_id];
+						std::map<int, std::string> Schedule_ID = m_ScheduleID_s[home_id];
 
-						for (std::map<int, std::string>::const_iterator itt = Schedule_Names.begin(); itt != Schedule_Names.end(); ++itt)
+						for (std::map<int, std::string>::const_iterator itt = Schedule_ID.begin(); itt != Schedule_ID.end(); ++itt)
 						{
-							allSchName = allSchName + "|" + itt->second;
+							std::string id = itt->second;
+							Debug(DEBUG_HARDWARE, "Schedule %s Name %s", id.c_str(), m_Schedule_Names[id].c_str());
+							allSchName = allSchName + "|" + m_Schedule_Names[id];
 							std::stringstream ss;
 							ss << itt->first;
 						}
 
 						int index = 10;
-						//Debug(DEBUG_HARDWARE, "allSchName Data %s", allSchName.c_str());
+						Debug(DEBUG_HARDWARE, "allSchName Data %s", allSchName.c_str());
 
 						//Selected Index for the dropdown list
 						std::stringstream ssv;
