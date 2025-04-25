@@ -650,8 +650,8 @@ std::string CBasePush::ProcessSendValue(
 			//uint64_t powerusage = powerusage1 + powerusage2;
 			//uint64_t powerdeliv = powerdeliv1 + powerdeliv2;
 
-			int64_t powerusagecurrent = usagecurrent - delivcurrent;
-			sprintf(szData, "%" PRIu64, powerusagecurrent);
+			int powerusagecurrent = static_cast<int>(usagecurrent - delivcurrent);
+			sprintf(szData, "%d", powerusagecurrent);
 		}
 		else if (vType == "Gas usage")
 		{
