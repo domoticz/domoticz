@@ -1060,14 +1060,12 @@ namespace Plugins {
                         if (TypeName) {
                                 std::string stdsValue;
                                 maptypename(std::string(TypeName), iType, iSubType, iSwitchType, stdsValue, pOptionsDict, pOptionsDict);
-				if (SuppressTriggers)
-				{
-	                                // Reset nValue and sValue when changing device types
-        	                        Py_BEGIN_ALLOW_THREADS
-                	                m_sql.UpdateDeviceValue("nValue", 0, sID);
-                        	        m_sql.UpdateDeviceValue("sValue", stdsValue, sID);
-                                	Py_END_ALLOW_THREADS
-				}
+
+                                // Reset nValue and sValue when changing device types
+                                Py_BEGIN_ALLOW_THREADS
+                                m_sql.UpdateDeviceValue("nValue", 0, sID);
+                                m_sql.UpdateDeviceValue("sValue", stdsValue, sID);
+                                Py_END_ALLOW_THREADS
                         }
 
                         // Type change
