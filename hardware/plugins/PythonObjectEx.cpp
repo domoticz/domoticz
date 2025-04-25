@@ -925,7 +925,6 @@ namespace Plugins {
 				}
 
 				m_mainworker.sOnDeviceReceived(pModState->pPlugin->m_HwdID, self->ID, pModState->pPlugin->m_Name, NULL);
-				m_mainworker.CheckSceneCode(DevRowIdx, (const unsigned char)self->Type, (const unsigned char)self->SubType, nValue, sValue.c_str(), "Python");
 
 				// Only trigger notifications if a used value is changed
 				if (self->Used)
