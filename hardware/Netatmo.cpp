@@ -376,7 +376,7 @@ bool CNetatmo::RefreshToken(const bool bForce)
 	ExtraHeaders.push_back("Content-Type: application/x-www-form-urlencoded;charset=UTF-8");
 
 	std::string httpUrl(m_netatmo_api_uri + "oauth2/token?");
-	Debug(DEBUG_HARDWARE, "Netatmo URL %s with %s", httpUrl.c_str(), httpData.c_str());
+	//Debug(DEBUG_HARDWARE, "Netatmo URL %s with %s", httpUrl.c_str(), httpData.c_str());
 
 	std::string sResult;
 	bool bret = HTTPClient::POST(httpUrl, httpData, ExtraHeaders, sResult, returnHeaders);
@@ -1529,7 +1529,7 @@ void CNetatmo::Get_Response_API(const m_eNetatmoType& NType, std::string& sResul
 
 	// Following line gives always the return RAW-String from Netatmo server
 	// uncomment for Debug situation.
-	Debug(DEBUG_HARDWARE, "Response sResult %s", sResult.c_str());
+	//Debug(DEBUG_HARDWARE, "Response sResult %s", sResult.c_str());
 
 	//Check for error
 	std::string s_Sresult = sResult;
