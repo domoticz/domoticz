@@ -317,7 +317,7 @@ bool CNetatmo::Login()
 
 	if (RefreshToken(true))
 	{
-		Log(LOG_STATUS, "We refreshed our token ...");
+		Log(LOG_STATUS, "We refreshed our login token ...");
 		m_isLogged = true;
 		m_bPollThermostat = true;
 		return true;
@@ -654,7 +654,7 @@ bool CNetatmo::WriteToHardware(const char* pdata, const unsigned char /*length*/
 	{
 		//Recast raw data to get switch specific data
 		const _tGeneralSwitch* xcmd = reinterpret_cast<const _tGeneralSwitch*>(pdata);
-		Debug(DEBUG_HARDWARE, "Schedule id %d - %d", xcmd->id, xcmd->level);
+		//Debug(DEBUG_HARDWARE, "Schedule id %d - %d", xcmd->id, xcmd->level);
 		int uid = xcmd->id;       //switch ID
 		//Log(LOG_STATUS, "Schedule uid %d - %d", uid, xcmd->level);
 		int level = xcmd->level;  //Level selected on the switch
@@ -2483,7 +2483,7 @@ bool CNetatmo::ParseDashboard(const Json::Value& root, const int DevIdx, const i
 	//Data retrieved create / update appropriate domoticz devices
 	std::string sValue;
 	std::string roomNetatmoID = m_RoomIDs[Hardware_ID];
-	//Debug(DEBUG_HARDWARE, "Hardware_int (%d) %s [%s] %s", Hardware_int, str_ID.c_str(), name.c_str(), Hardware_ID.c_str());
+	//Debug(DEBUG_HARDWARE, "Hardware_int %08X (%d) %s [%s] %s", Hardware_int, Hardware_int, str_ID.c_str(), name.c_str(), Hardware_ID.c_str());
 
 	std::stringstream RF_level;
 	RF_level << rssiLevel;
@@ -3382,14 +3382,14 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 						std::stringstream Hardware_str;
                                                 Hardware_str << Hardware_int;
 						m_ScheduleHomes[Hardware_int] = home_id;
-						Debug(DEBUG_HARDWARE, "Hardware_int %08X %s (%d) %s", Hardware_int, Hardware_str.str().c_str(), Hardware_int, home_id.c_str());
+						Debug(DEBUG_HARDWARE, "Hardware_int (%d) %s", Hardware_int, Hardware_int, home_id.c_str());
 
 						std::map<int, std::string> Schedule_ID = m_ScheduleID_s[home_id];
 
 						for (std::map<int, std::string>::const_iterator itt = Schedule_ID.begin(); itt != Schedule_ID.end(); ++itt)
 						{
 							std::string id = itt->second;
-							Debug(DEBUG_HARDWARE, "Schedule %s Name %s", id.c_str(), m_Schedule_Names[id].c_str());
+							//Debug(DEBUG_HARDWARE, "Schedule %s Name %s", id.c_str(), m_Schedule_Names[id].c_str());
 							allSchName = allSchName + "|" + m_Schedule_Names[id];
 							std::stringstream ss;
 							ss << itt->first;
