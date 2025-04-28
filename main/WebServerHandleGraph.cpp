@@ -620,7 +620,7 @@ namespace http
 						root["status"] = "OK";
 						root["title"] = "Graph " + sensor + " " + srange;
 						float vdiv = 10.0F;
-						if (((dType == pTypeGeneral) && (dSubType == sTypeVoltage)) || ((dType == pTypeGeneral) && (dSubType == sTypeCurrent)))
+						if (((dType == pTypeGeneral) && (dSubType == sTypeVoltage)) || ((dType == pTypeGeneral) && (dSubType == sTypeCurrent)) || ((dType == pTypeGeneral) && (dSubType == sTypePressure)))
 						{
 							vdiv = 1000.0F;
 						}
@@ -642,6 +642,8 @@ namespace http
 								if ((dType == pTypeGeneral) && (dSubType == sTypeVoltage))
 									sprintf(szTmp, "%.3f", fValue);
 								else if ((dType == pTypeGeneral) && (dSubType == sTypeCurrent))
+									sprintf(szTmp, "%.3f", fValue);
+								else if ((dType == pTypeGeneral) && (dSubType == sTypePressure))
 									sprintf(szTmp, "%.3f", fValue);
 								else
 									sprintf(szTmp, "%.1f", fValue);
@@ -2907,7 +2909,7 @@ namespace http
 						root["status"] = "OK";
 
 						float vdiv = 10.0F;
-						if (((dType == pTypeGeneral) && (dSubType == sTypeVoltage)) || ((dType == pTypeGeneral) && (dSubType == sTypeCurrent)))
+						if (((dType == pTypeGeneral) && (dSubType == sTypeVoltage)) || ((dType == pTypeGeneral) && (dSubType == sTypeCurrent)) || ((dType == pTypeGeneral) && (dSubType == sTypePressure)))
 						{
 							vdiv = 1000.0F;
 						}
@@ -2947,7 +2949,7 @@ namespace http
 										fValue2 *= 0.6214F;
 									}
 								}
-								if (((dType == pTypeGeneral) && (dSubType == sTypeVoltage)) || ((dType == pTypeGeneral) && (dSubType == sTypeCurrent)))
+								if (((dType == pTypeGeneral) && (dSubType == sTypeVoltage)) || ((dType == pTypeGeneral) && (dSubType == sTypeCurrent)) || ((dType == pTypeGeneral) && (dSubType == sTypePressure)))
 								{
 									sprintf(szTmp, "%.3f", fValue1);
 									root["result"][ii]["v_min"] = szTmp;
@@ -3624,7 +3626,7 @@ namespace http
 						((dType == pTypeGeneral) && (dSubType == sTypeSoundLevel)))
 					{
 						float vdiv = 10.0F;
-						if (((dType == pTypeGeneral) && (dSubType == sTypeVoltage)) || ((dType == pTypeGeneral) && (dSubType == sTypeCurrent)))
+						if (((dType == pTypeGeneral) && (dSubType == sTypeVoltage)) || ((dType == pTypeGeneral) && (dSubType == sTypeCurrent)) || ((dType == pTypeGeneral) && (dSubType == sTypePressure)))
 						{
 							vdiv = 1000.0F;
 						}
@@ -3655,12 +3657,16 @@ namespace http
 								sprintf(szTmp, "%.3f", fValue1);
 							else if ((dType == pTypeGeneral) && (dSubType == sTypeCurrent))
 								sprintf(szTmp, "%.3f", fValue1);
+							else if ((dType == pTypeGeneral) && (dSubType == sTypePressure))
+								sprintf(szTmp, "%.3f", fValue1);
 							else
 								sprintf(szTmp, "%.1f", fValue1);
 							root["result"][ii]["v_min"] = szTmp;
 							if ((dType == pTypeGeneral) && (dSubType == sTypeVoltage))
 								sprintf(szTmp, "%.3f", fValue2);
 							else if ((dType == pTypeGeneral) && (dSubType == sTypeCurrent))
+								sprintf(szTmp, "%.3f", fValue2);
+							else if ((dType == pTypeGeneral) && (dSubType == sTypePressure))
 								sprintf(szTmp, "%.3f", fValue2);
 							else
 								sprintf(szTmp, "%.1f", fValue2);
