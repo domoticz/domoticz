@@ -423,7 +423,6 @@ define(['angularAMD', 'app.routes', 'app.constants', 'app.notifications', 'app.p
 							accessibility: {
 								enabled: false
 							},
-/*							
 							tooltip: {
 								xDateFormat: '%a %d %b, %H:%M',
 							},							
@@ -433,9 +432,8 @@ define(['angularAMD', 'app.routes', 'app.constants', 'app.notifications', 'app.p
 									hour: '%H:%M'
 								}
 							},
-*/							
 							lang: {
-								locale: $rootScope.config.language, //either this or the above?
+								//locale: $rootScope.config.language,
 								noData: $.t('No data to display'),
 								decimalPoint: decimalPoint,
 								thousandsSep: thousandsSep,
