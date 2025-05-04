@@ -98,7 +98,7 @@ public:
 	void DoDecodeMessage(const CTCPClientBase *pClient, const uint8_t* pData, size_t len);
 private:
 	std::mutex m_server_mutex;
-	CTCPServerInt *m_pTCPServer;
+	std::shared_ptr <CTCPServerInt> m_TCPServer;
 	std::shared_ptr<std::thread> m_thread;
 	bool StartHardware() override
 	{
