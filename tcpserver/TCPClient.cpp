@@ -63,6 +63,7 @@ namespace tcp {
 								return;
 							}
 							m_username = strarray[1];
+							_log.Log(LOG_STATUS, "Authentication succeeded for user %s on %s", m_username.c_str(), m_endpoint.c_str());
 						}
 					}
 					else
