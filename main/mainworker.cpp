@@ -201,13 +201,6 @@ CHttpPush m_httppush;
 CInfluxPush m_influxpush;
 CMQTTPush m_mqttpush;
 
-
-namespace tcp {
-	namespace server {
-		class CTCPClient;
-	} //namespace server
-} //namespace tcp
-
 MainWorker::MainWorker()
 {
 	m_SecCountdown = -1;
