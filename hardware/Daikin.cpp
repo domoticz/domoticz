@@ -423,7 +423,7 @@ void CDaikin::GetControlInfo()
 			if (m_stemp != results2[1])
 			{
 				m_stemp = results2[1];
-				SendSetPointSensor(0, 20, 1, 1, 1, static_cast<float>(atof(results2[1].c_str())), "Target Temperature");
+				SendSetPointSensor(0, 20, 1, 1, 1, 255, static_cast<float>(atof(results2[1].c_str())), "Target Temperature");
 			}
 		}
 		else if (results2[0] == "f_rate")
@@ -785,7 +785,7 @@ bool CDaikin::SetSetpoint(const int /*idx*/, const float temp)
 	std::string sTmp = std_format("%.1f", temp);
 	AggregateSetControlInfo(sTmp.c_str(), nullptr, nullptr, nullptr, nullptr, nullptr);
 
-	SendSetPointSensor(0, 20, 1, 1, 1, temp, "Target Temperature"); // Suppose request succeed to keep reactive web interface
+	SendSetPointSensor(0, 20, 1, 1, 1, 255, temp, "Target Temperature"); // Suppose request succeed to keep reactive web interface
 	return true;
 }
 

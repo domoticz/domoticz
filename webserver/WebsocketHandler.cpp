@@ -115,7 +115,6 @@ namespace http {
 				if (outbound)
 				{
 					time_t nowAnd1Day = ((time_t)mytime(nullptr)) + WEBSOCKET_SESSION_TIMEOUT;
-					session.timeout = nowAnd1Day;
 					session.expires = nowAnd1Day;
 					session.isnew = false;
 					session.rememberme = false;
@@ -191,7 +190,6 @@ namespace http {
 				if (outbound)
 				{
 					time_t nowAnd1Day = ((time_t)mytime(nullptr)) + WEBSOCKET_SESSION_TIMEOUT;
-					session.timeout = nowAnd1Day;
 					session.expires = nowAnd1Day;
 					session.isnew = false;
 					session.rememberme = false;
@@ -231,7 +229,6 @@ namespace http {
 				if (outbound)
 				{
 					time_t nowAnd1Day = ((time_t)mytime(nullptr)) + WEBSOCKET_SESSION_TIMEOUT;
-					session.timeout = nowAnd1Day;
 					session.expires = nowAnd1Day;
 					session.isnew = false;
 					session.rememberme = false;

@@ -284,9 +284,9 @@ void CHoneywell::GetThermostatData()
 			desc = kSetPointDesc;
 			stdreplace(desc, "[devicename]", deviceName);
 			if(units == "Fahrenheit") {
-				SendSetPointSensor(0, 0, 0, (uint8_t)(10 * devNr + 4), 0, (float)ConvertToCelsius(temperature), desc);
+				SendSetPointSensor(0, 0, 0, (uint8_t)(10 * devNr + 4), 0, 255, (float)ConvertToCelsius(temperature), desc);
 			}else{
-				SendSetPointSensor(0, 0, 0, (uint8_t)(10 * devNr + 4), 0, temperature, desc);
+				SendSetPointSensor(0, 0, 0, (uint8_t)(10 * devNr + 4), 0, 255, temperature, desc);
 			}
 			
 			std::string operationstatus = device["operationStatus"]["mode"].asString();
@@ -412,9 +412,9 @@ void CHoneywell::SetPauseStatus(const int idx, bool bCommand, const int nodeID)
 		desc = kSetPointDesc;
 		stdreplace(desc, "[devicename]", mDeviceList[idx]["name"].asString());
 		if(units == "Fahrenheit") {
-			SendSetPointSensor(0, 0, 0, (uint8_t)(10 * idx + 4), 0, (float)ConvertToCelsius(temperature), desc);
+			SendSetPointSensor(0, 0, 0, (uint8_t)(10 * idx + 4), 0, 255, (float)ConvertToCelsius(temperature), desc);
 		}else{
-			SendSetPointSensor(0, 0, 0, (uint8_t)(10 * idx + 4), 0, temperature, desc);
+			SendSetPointSensor(0, 0, 0, (uint8_t)(10 * idx + 4), 0, 255, temperature, desc);
 		}
 	}
 
@@ -475,7 +475,7 @@ void CHoneywell::SetSetpoint(const int idx, const float temp, const int nodeid)
 
 		std::string desc = kSetPointDesc;
 		stdreplace(desc, "[devicename]", mDeviceList[idx]["name"].asString());
-		SendSetPointSensor(0, 0, 0, (uint8_t)(10 * idx + 4), 0, temp, desc);
+		SendSetPointSensor(0, 0, 0, (uint8_t)(10 * idx + 4), 0, 255, temp, desc);
 	}
 	//desc = kHeatingDesc;
 	//stdreplace(desc, "[devicename]", mDeviceList[idx]["name"].asString());

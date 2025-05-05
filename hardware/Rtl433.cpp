@@ -27,14 +27,15 @@ CRtl433::CRtl433(const int ID, const std::string& cmdline) :
 	removeCharsFromString(m_cmdline, ";/$()`<>|&");
 	m_HwdID = ID;
 	/*
-			#ifdef _DEBUG
-				std::string line = "{\"time\" : \"2023-05-17 15:26:52\", \"model\" : \"Flowis\", \"id\" : 240259236, \"type\" : 1, \"volume_m3\" : 759.420, \"device_time\" : \"2055-05-17T15:19:32\", \"alarm\" : 0, \"backflow\" : 64, \"mic\" : \"CRC\", \"mod\" : \"FSK\", \"freq1\" : 867.960, \"freq2\" : 868.050, \"rssi\" : -0.129, \"snr\" : 26.218, \"noise\" : -26.346}";
-				if (!ParseJsonLine(line))
-				{
-					// this is also logged when parsed data is invalid
-					Log(LOG_STATUS, "Unhandled sensor reading, please report: (%s)", line.c_str());
-				}
-			#endif
+const char* szRTLTest = R"rtl_test(
+{"time" : "2025-03-12 09:59:23", "model" : "Generic-Remote", "id" : 37418, "cmd" : 10, "tristate" : "XZ0X0XXX00XX", "mod" : "ASK", "freq" : 433.976, "rssi" : -0.124, "snr" : 17.206, "noise" : -17.330}
+)rtl_test";
+
+	if (!ParseJsonLine(szRTLTest))
+	{
+		// this is also logged when parsed data is invalid
+		Log(LOG_STATUS, "Unhandled sensor reading, please report: (%s)", szRTLTest);
+	}
 	*/
 }
 
@@ -340,7 +341,7 @@ bool CRtl433::ParseData(std::map<std::string, std::string>& data)
 			0, model, m_Name, snr);
 		bDone = true;
 	}
-	if (FindField(data, "switch1") && FindField(data, "id"))
+	else if (FindField(data, "switch1") && FindField(data, "id"))
 	{
 		std::stringstream sstr;
 		sstr << std::hex << data["id"];
@@ -360,6 +361,24 @@ bool CRtl433::ParseData(std::map<std::string, std::string>& data)
 					bOn,
 					0, model, m_Name, snr);
 			}
+			bDone = true;
+		}
+	}
+	else if (!strcmp(model.c_str(), "Generic-Remote"))
+	{
+		//This could be anything, for now I only received the cmd's of a door opener
+		//10 = open, 14 = closed
+
+		if (FindField(data, "cmd"))
+		{
+			int cmd = atoi(data["cmd"].c_str());
+			bool bOn = (cmd != 10);
+			unsigned int switchidx = (id & 0xfffffff) | ((channel & 0xf) << 28);
+			SendSwitch(switchidx,
+				(const uint8_t)unit,
+				batterylevel,
+				bOn,
+				0, model, m_Name, snr);
 			bDone = true;
 		}
 	}

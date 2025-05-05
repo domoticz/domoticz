@@ -107,11 +107,6 @@ local function Domoticz(settings)
 			end
 		end
 
-		if _subSystem:find('gcm') then
-			utils.log('Notification subsystem Google Cloud Messaging (gcm) has been deprecated by Google. Switch to Firebase now!', utils.LOG_ERROR)
-			_subSystem = _subSystem:gsub('gcm','fcm')
-		end
-
 		 local function strip(str)
 			local stripped = tostring(str):gsub('#','')
 			return stripped

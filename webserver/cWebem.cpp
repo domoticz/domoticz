@@ -20,7 +20,7 @@
 #include "../main/Logger.h"
 
 #define JWT_DISABLE_BASE64
-#include "../jwt-cpp/jwt.h"
+#include <jwt-cpp/jwt.h>
 
 #define SHORT_SESSION_TIMEOUT 600 // 10 minutes
 #define LONG_SESSION_TIMEOUT (30 * 86400) // 30 days
@@ -47,13 +47,13 @@ namespace http {
 			, myRequestHandler(doc_root, this)
 			// Rene, make sure we initialize m_sessions first, before starting a server
 			, myServer(server_factory::create(settings, myRequestHandler))
-			, m_io_service()
-			, m_session_clean_timer(m_io_service, boost::posix_time::minutes(1))
+			, m_io_context()
+			, m_session_clean_timer(m_io_context, boost::posix_time::minutes(1))
 		{
 			// associate handler to timer and schedule the first iteration
 			m_session_clean_timer.async_wait([this](auto &&) { CleanSessions(); });
-			m_io_service_thread = std::make_shared<std::thread>([p = &m_io_service] { p->run(); });
-			SetThreadName(m_io_service_thread->native_handle(), "Webem_ssncleaner");
+			m_io_context_thread = std::make_shared<std::thread>([p = &m_io_context] { p->run(); });
+			SetThreadName(m_io_context_thread->native_handle(), "Webem_ssncleaner");
 		}
 
 		cWebem::~cWebem()
@@ -93,14 +93,14 @@ namespace http {
 			// Stop session cleaner
 			try
 			{
-				if (!m_io_service.stopped())
+				if (!m_io_context.stopped())
 				{
-					m_io_service.stop();
+					m_io_context.stop();
 				}
-				if (m_io_service_thread)
+				if (m_io_context_thread)
 				{
-					m_io_service_thread->join();
-					m_io_service_thread.reset();
+					m_io_context_thread->join();
+					m_io_context_thread.reset();
 				}
 			}
 			catch (...)
@@ -128,25 +128,6 @@ namespace http {
 		{
 			m_AllowPlainBasicAuth = bAllow;
 		}
-
-		/**
-
-		Create a link between a string ID and a function to calculate the dynamic content of the string
-
-		The function should return a pointer to a character buffer.  This should be contain only ASCII characters
-		( Unicode code points 1 to 127 )
-
-		@param[in] idname  string identifier
-		@param[in] fun pointer to function which calculates the string to be displayed
-
-		*/
-		/* 20230525 No Longer in Use! Will be removed Soon!
-
-		void cWebem::RegisterIncludeCode(const char *idname, const webem_include_function &fun)
-		{
-			myIncludes.insert(std::pair<std::string, webem_include_function >(std::string(idname), fun));
-		}
-		*/
 
 		/**
 
@@ -195,73 +176,9 @@ namespace http {
 		// Show a Debug line with the registered functions, actions, includes, whitelist urls and commands
 		void cWebem::DebugRegistrations()
 		{
-			_log.Debug(DEBUG_WEBSERVER, "cWebEm Registration: %d pages, %d actions, %d whitelist urls, %d whitelist commands",
-				(int)myPages.size(), (int)myActions.size(), (int)myWhitelistURLs.size(), (int)myWhitelistCommands.size());
+			_log.Debug(DEBUG_WEBSERVER, "cWebEm Registration: %zu pages, %zu actions, %zu whitelist urls, %zu whitelist commands",
+				myPages.size(), myActions.size(), myWhitelistURLs.size(), myWhitelistCommands.size());
 		}
-
-		/**
-
-		  Do not call from application code, used by server to include generated text.
-
-		  @param[in/out] reply  text to include generated
-
-		  The text is searched for "<!--#cWebemX-->".
-		  The X can be any string not containing "-->"
-
-		  If X has been registered with cWebem then the associated function
-		  is called to generate text to be inserted.
-
-		  returns true if any text is replaced
-
-
-		*/
-		/* 20230525 No longer in Use! Will be removed soon!
-		bool cWebem::Include(std::string& reply)
-		{
-			bool res = false;
-			size_t p = 0;
-			while (true)
-			{
-				// find next request for generated text
-				p = reply.find("<!--#embed", p);
-				if (p == std::string::npos)
-				{
-					break;
-				}
-				size_t q = reply.find("-->", p);
-				if (q == std::string::npos)
-					break;
-				q += 3;
-
-				size_t reply_len = reply.length();
-
-				// code identifying text generator
-				std::string code = reply.substr(p + 11, q - p - 15);
-
-				// find the function associated with this code
-				auto pf = myIncludes.find(code);
-				if (pf != myIncludes.end())
-				{
-					// insert generated text
-					std::string content_part;
-					try
-					{
-						pf->second(content_part);
-					}
-					catch (...)
-					{
-
-					}
-					reply.insert(p, content_part);
-					res = true;
-				}
-
-				// adjust pointer into text for insertion
-				p = q + reply.length() - reply_len;
-			}
-			return res;
-		}
-		*/
 
 		std::istream & safeGetline(std::istream & is, std::string & line)
 		{
@@ -565,7 +482,7 @@ namespace http {
 
 			// Determine the file extension.
 			std::string extension;
-			if (req.uri.find("json.htm") != std::string::npos)
+			if (req.uri.find("/json.htm?") != std::string::npos)
 			{
 				extension = "json";
 			}
@@ -952,7 +869,7 @@ namespace http {
 			time_t now = mytime(nullptr);
 			for (const auto &session : m_sessions)
 			{
-				if (session.second.timeout < now)
+				if (session.second.expires < now)
 					ret.push_back(session.second.id);
 			}
 			return ret;
@@ -1552,7 +1469,7 @@ namespace http {
 
 			std::string sessionId = GenerateMD5Hash(base64_encode(randomValue));
 
-			_log.Debug(DEBUG_WEBSERVER, "[web:%s] generate new session id token %s", myWebem->GetPort().c_str(), sessionId.c_str());
+			_log.Debug(DEBUG_WEBSERVER, "[web:%s] generate new session id token (%s)", myWebem->GetPort().c_str(), sessionId.c_str());
 
 			return sessionId;
 		}
@@ -1564,7 +1481,7 @@ namespace http {
 
 			std::string authToken = base64_encode(randomValue);
 
-			_log.Debug(DEBUG_WEBSERVER, "[web:%s] generate new authentication token %s for user %s", myWebem->GetPort().c_str(), authToken.c_str(), session.username.c_str());
+			_log.Debug(DEBUG_WEBSERVER, "[web:%s] generate new authentication token (%s) for user (%s)", myWebem->GetPort().c_str(), authToken.c_str(), session.username.c_str());
 
 			session_store_impl_ptr sstore = myWebem->GetSessionStore();
 			if (sstore != nullptr)
@@ -1618,7 +1535,6 @@ namespace http {
 				size_t fpos = scookie.find("DMZSID=");
 				if (fpos != std::string::npos)
 				{
-					bCookie = true;
 					scookie = scookie.substr(fpos);
 					fpos = 0;
 					size_t epos = scookie.find(';');	// Check if there are more cookies in this Header (and ignore those)
@@ -1641,6 +1557,8 @@ namespace http {
 						sstr >> stime;
 
 						expired = stime < now;
+						bCookie = true;
+						_log.Debug(DEBUG_AUTH, "[web:%s] Found cookie (%s) with expiration time (%s)(%d)", myWebem->GetPort().c_str(), sSID.c_str(), szTime.c_str(), expired);
 					}
 				}
 			}
@@ -1884,18 +1802,19 @@ namespace http {
 			return false;
 		}
 
-		bool cWebemRequestHandler::CheckAuthentication(WebEmSession & session, const request& req, reply& rep)
+		bool cWebemRequestHandler::CheckAuthentication(WebEmSession &session, const request &req, bool &authErr)
 		{
-			bool bTrustedNetwork = false;
-
-			session.rights = -1; // no rights
+			session.rights = URIGHTS_NONE; // no rights
 			session.id = "";
 			session.username = "";
 			session.auth_token = "";
+			session.istrustednetwork = false;
 
 			if (myWebem->m_userpasswords.empty())
 			{
-				_log.Log(LOG_ERROR, "No (active) users in the system! There should be at least 1 active Admin user!");
+				_log.Log(LOG_ERROR, "[Auth Check] No (active) users in the system! There should be at least 1 active Admin user! Please add an Admin user to the system!");
+				authErr = true;
+				return false; // No users in the system!
 			}
 			else if (AreWeInTrustedNetwork(session.remote_host))
 			{
@@ -1908,14 +1827,14 @@ namespace http {
 						break;
 					}
 				}
-				if (session.rights == -1)
+				if (session.rights == URIGHTS_NONE)
 				{
-					_log.Debug(DEBUG_AUTH, "[Auth Check] Trusted network exception detected, but no Admin User found!");
-					//If the User database table is empty, we will create a default Admin user (we are in trusted network anyway)
-					session.username = "{admin}";
+					_log.Log(LOG_STATUS, "[Auth Check] Trusted network exception detected, but no Admin User found! Please add an Admin user to the system!");
+					//If the User database table is without an Admin, we will create a temporary Admin user (we are in trusted network anyway)
+					session.username = "tmp_admin";
 					session.rights = URIGHTS_ADMIN;
 				}
-				bTrustedNetwork = true;
+				session.istrustednetwork = true;
 			}
 
 			//Check for valid Authorization headers (JWT Token, Basis Authentication, etc.) and use these offered credentials
@@ -1928,12 +1847,12 @@ namespace http {
 					session.isnew = false;
 					session.rememberme = false;
 					session.username = _ah.user;
-					session.rights = std::atoi(_ah.qop.c_str());
+					session.rights = static_cast<_eUserRights>(std::atoi(_ah.qop.c_str()));
 					return true;
 				}
 				else if (_ah.method == "BASIC")
 				{
-					if (req.uri.find("json.htm") != std::string::npos)	// Exception for the main API endpoint so scripts can execute them with 'just' Basic AUTH
+					if (req.uri.find("/json.htm?") != std::string::npos)	// Exception for the main API endpoint so scripts can execute them with 'just' Basic AUTH
 					{
 						if (AllowBasicAuth())	// Check if Basic Auth is allowed either over HTTPS or when explicitly enabled
 						{
@@ -1943,14 +1862,14 @@ namespace http {
 								session.isnew = false;
 								session.rememberme = false;
 								session.username = _ah.user;
-								session.rights = std::atoi(_ah.qop.c_str());
+								session.rights = static_cast<_eUserRights>(std::atoi(_ah.qop.c_str()));
 								return true;
 							}
 							else
 							{	// Clear the session as we could be in a Trusted Network BUT have invalid Basic Auth
 								_log.Debug(DEBUG_AUTH, "[Auth Check] Invalid Basic Authorization for API call!");
 								session.username = "";
-								session.rights = -1;
+								session.rights = URIGHTS_NONE;
 								return false;
 							}
 						}
@@ -1958,7 +1877,7 @@ namespace http {
 						{	// Clear the session as we could be in a Trusted Network BUT rejected Basic Auth
 							_log.Debug(DEBUG_AUTH, "[Auth Check] Basic Authorization rejected as it is not done over HTTPS or not explicitly allowed over HTTP!");
 							session.username = "";
-							session.rights = -1;
+							session.rights = URIGHTS_NONE;
 							return false;
 						}
 					}
@@ -1976,31 +1895,9 @@ namespace http {
 			bool expired = false;
 			if(parse_cookie(req, sSID, sAuthToken, szTime, expired))
 			{
-				time_t now = mytime(nullptr);
-				if (session.rights == 2)
-				{
-					if (!sSID.empty())
-					{
-						WebEmSession* oldSession = myWebem->GetSession(sSID);
-						if (oldSession == nullptr)
-						{
-							session.id = sSID;
-							session.auth_token = sAuthToken;
-							expired = (!checkAuthToken(session));
-						}
-						else
-						{
-							session = *oldSession;
-							expired = (oldSession->expires < now);
-						}
-					}
-					if (sSID.empty() || expired)
-						session.isnew = true;
-					return true;
-				}
-
 				if (!(sSID.empty() || sAuthToken.empty() || szTime.empty()))
 				{
+					time_t now = mytime(nullptr);
 					WebEmSession* oldSession = myWebem->GetSession(sSID);
 					if ((oldSession != nullptr) && (oldSession->expires < now))
 					{
@@ -2036,24 +1933,13 @@ namespace http {
 						// user is authenticated
 						return true;
 					}
-
-					return false;
-
 				}
-				// invalid cookie
-				if (CheckAuthByPass(req))
-					return true;
-
-				// Force login form
-				return false;
 			}
-
-			// Not sure why this is here? Isn't this the case for all situation where the session ID is empty? Not only with admins
-			if ((session.rights == URIGHTS_ADMIN) && (session.id.empty()))
-			{
+			else	// No session cookie found
 				session.isnew = true;
+
+			if (session.istrustednetwork)
 				return true;
-			}
 
 			return false;
 		}
@@ -2088,22 +1974,7 @@ namespace http {
 				return false;
 			}
 
-			_log.Debug(DEBUG_AUTH, "[web:%s] CheckAuthToken(%s_%s_%s) : user authenticated", myWebem->GetPort().c_str(), session.id.c_str(), session.auth_token.c_str(), session.username.c_str());
-
-			if (session.rights == 2)
-			{
-				// we are already admin - restore session from db
-				session.expires = storedSession.expires;
-				time_t now = mytime(nullptr);
-				if (session.expires < now)
-				{
-					removeAuthToken(session.id);
-					return false;
-				}
-				session.timeout = now + SHORT_SESSION_TIMEOUT;
-				myWebem->AddSession(session);
-				return true;
-			}
+			_log.Debug(DEBUG_AUTH, "[web:%s] CheckAuthToken(%s_%s_%s) : Session found & Token authenticated", myWebem->GetPort().c_str(), session.id.c_str(), session.auth_token.c_str(), session.username.c_str());
 
 			if (session.username.empty())
 			{
@@ -2127,7 +1998,7 @@ namespace http {
 
 				if (!userExists || sessionExpires)
 				{
-					_log.Debug(DEBUG_AUTH, "[web:%s] CheckAuthToken(%s_%s) : cannot restore session, user not found or session expired", myWebem->GetPort().c_str(), session.id.c_str(), session.auth_token.c_str());
+					_log.Debug(DEBUG_AUTH, "[web:%s] CheckAuthToken(%s_%s) : cannot restore session, user not found or session expired (%d)", myWebem->GetPort().c_str(), session.id.c_str(), session.auth_token.c_str(), sessionExpires);
 					removeAuthToken(session.id);
 					return false;
 				}
@@ -2165,6 +2036,7 @@ namespace http {
 
 		void cWebemRequestHandler::handle_request(const request& req, reply& rep)
 		{
+			// 0) If extended Webserver debugging is turned on, than log the request details
 			if(_log.IsDebugLevelEnabled(DEBUG_WEBSERVER))
 			{
 				_log.Debug(DEBUG_WEBSERVER, "[web:%s] Host:%s Uri:%s", myWebem->GetPort().c_str(), req.host_remote_address.c_str(), req.uri.c_str());
@@ -2179,13 +2051,14 @@ namespace http {
 				}
 			}
 
+			// 1) Is the incoming request ment for this Virtual Host?
 			if(!myWebem->CheckVHost(req))
 			{
 				rep = reply::stock_reply(reply::bad_request);
 				return;
 			}
 
-			// Decode url to path.
+			// 2) Decode url to path and check for invalid characters
 			std::string request_path;
 			if (!request_handler::url_decode(req.uri, request_path))
 			{
@@ -2199,9 +2072,11 @@ namespace http {
 			session.remote_port = req.host_remote_port;
 			session.local_host = req.host_local_address;
 			session.local_port = req.host_local_port;
-			session.rights = -1;
 
-			// Let's examine possible proxies, etc.
+			rep.status = reply::ok;
+			rep.bIsGZIP = false;
+
+			// 3a) Let's examine possible proxies, etc.
 			std::string realHost;
 			bool bUseRealHost = false;
 			if(!myWebem->findRealHostBehindProxies(req, realHost))
@@ -2213,13 +2088,15 @@ namespace http {
 			else if (!realHost.empty())
 			{
 				if (AreWeInTrustedNetwork(session.remote_host))
-				{	// We only use Proxy header information if the connection Domoticz receives comes from a Trusted network
+				{	// 3b) We only use Proxy header information if the connection Domoticz receives comes from a Trusted network
 					session.remote_host = realHost;		// replace the host of the connection with the originating host behind the proxies
 					rep.originHost = realHost;
 					bUseRealHost = true;
 				}
 			}
 
+			// 3c) Check if the remote client is known and update the last seen time
+			bool bSeenBefore = true;
 			std::string remoteClientKey = session.remote_host + session.local_port;
 			auto itt_rc = m_remote_web_clients.find(remoteClientKey);
 			if (itt_rc == m_remote_web_clients.end())
@@ -2229,18 +2106,14 @@ namespace http {
 				rc.host_local_endpoint_port_ = session.local_port;
 				m_remote_web_clients[remoteClientKey] = rc;
 				itt_rc = m_remote_web_clients.find(remoteClientKey);
+				bSeenBefore = false;
 			}
+			else if (itt_rc->second.last_seen < (mytime(nullptr) - SHORT_SESSION_TIMEOUT))
+				bSeenBefore = false;
 			itt_rc->second.last_seen = mytime(nullptr);
 			itt_rc->second.host_last_request_uri_ = req.uri;
 
-			session.reply_status = reply::ok;
-			session.isnew = false;
-			session.rememberme = false;
-
-			rep.status = reply::ok;
-			rep.bIsGZIP = false;
-
-			// Respond to CORS Preflight request (for JSON API)
+			// 4) Respond to CORS Preflight request (for JSON API)
 			if (req.method == "OPTIONS")
 			{
 				reply::add_header(&rep, "Content-Length", "0");
@@ -2252,23 +2125,35 @@ namespace http {
 				return;
 			}
 
+			// 5) Check Authentication and in case something unexpected went wrong with the authentication, we will return an internal server error and stop processing
+			bool bAuthErr = false;
+			bool isAuthenticated = CheckAuthentication(session, req, bAuthErr);	// This check also restores the session if an active session is found
+			if (bAuthErr)
+			{
+				rep = reply::stock_reply(reply::internal_server_error);
+				return;
+			}
+
+			// 6) Check the type of request. Is it a page (or an action) or is it 'just' a normal resources being requested
 			bool isPage = myWebem->IsPageOverride(req, rep);
 			bool isAction = myWebem->IsAction(req);		// This is used but will be removed in the future and replaced by the JSON API commands
 
-			if (isPage && (req.uri.find("dologout") != std::string::npos))
-			{
-				//Remove session id based on cookie
-				std::string sSID;
-				std::string sAuthToken;
-				std::string szTime;
-				bool expired = false;
+			bool isAPI = (isPage && (req.uri.find("/json.htm?") != std::string::npos));
+			bool isLogout = (isAPI && (req.uri.find("param=dologout") != std::string::npos));
+			bool isLogin = (isAPI && (req.uri.find("param=logincheck") != std::string::npos));
 
-				session.username = "";
-				session.rights = -1;
+			// 7) If the LogOut API is called, we will remove the session and the cookie
+			if (isLogout)
+			{
+				_log.Debug(DEBUG_AUTH, "[web:%s] Logout : Logging out User %s (%d)", myWebem->GetPort().c_str(), session.username.c_str(), session.rights);
+
 				rep = reply::stock_reply(reply::no_content);
 				if(bUseRealHost)
 					rep.originHost = realHost;
-				if(parse_cookie(req, sSID, sAuthToken, szTime, expired))
+
+				//Remove session id based on id found before in cookie
+				std::string sSID = session.id;
+				if(!sSID.empty())
 				{
 					_log.Debug(DEBUG_AUTH, "[web:%s] Logout : remove session %s", myWebem->GetPort().c_str(), sSID.c_str());
 					myWebem->RemoveSession(sSID);
@@ -2278,16 +2163,15 @@ namespace http {
 				return;
 			}
 
-			// Check if this is an upgrade request to a websocket connection
+			// 8) Check if this is an upgrade request to a websocket connection
 			bool isUpgradeRequest = is_upgrade_request(session, req, rep);
 
-			// Does the request needs to be Authorized?
-			bool needsAuthentication = (!CheckAuthByPass(req));
-			bool isAuthenticated = CheckAuthentication(session, req, rep);
+			// 9) Check if the request needs to be authenticated, only for pages (and actions)
+			bool needsAuthentication = (isPage ? !CheckAuthByPass(req) : false);
 
-			_log.Debug(DEBUG_AUTH,"[web:%s] isPage %d isAction %d isUpgrade %d needsAuthentication %d isAuthenticated %d (%s)", myWebem->GetPort().c_str(), isPage, isAction, isUpgradeRequest, needsAuthentication, isAuthenticated, session.username.c_str());
+			_log.Debug(DEBUG_AUTH,"[web:%s] isPage %d isAction %d isUpgrade %d needsAuthentication %d isAuthenticated %d (%s) isNew %d", myWebem->GetPort().c_str(), isPage, isAction, isUpgradeRequest, needsAuthentication, isAuthenticated, session.username.c_str(), session.isnew);
 
-			// Check user authentication on each page or action, if it exists.
+			// 10) Check if the request has proper user authentication for those pages (or actions) that require it. If not, send an Authorization request
 			if ((isPage || isAction || isUpgradeRequest) && needsAuthentication && !isAuthenticated)
 			{
 				_log.Debug(DEBUG_WEBSERVER, "[web:%s] Did not find suitable Authorization!", myWebem->GetPort().c_str());
@@ -2296,6 +2180,8 @@ namespace http {
 					rep.originHost = realHost;
 				return;
 			}
+
+			// 11) If this is an upgrade request, we are done
 			if (isUpgradeRequest)	// And authorized, which has been checked above
 			{
 				return;
@@ -2304,8 +2190,8 @@ namespace http {
 			// Copy the request to be able to fill its parameters attribute
 			request requestCopy = req;
 
+			// 12a) Run action if exists. NOTE: This is used but will be removed in the future and replaced by the JSON API commands.
 			bool bHandledAction = false;
-			// Run action if exists
 			if (isAction)
 			{
 				// Post actions only allowed when authenticated and user has admin rights
@@ -2330,6 +2216,7 @@ namespace http {
 				}
 			}
 
+			// 12b) If it wasn't an action (removed soon), it is either a page or a resource request
 			if (!bHandledAction)
 			{
 				if (myWebem->CheckForPageOverride(session, requestCopy, rep))
@@ -2344,13 +2231,13 @@ namespace http {
 				}
 				else
 				{
-					// do normal handling
+					// 11c) do normal handling
 					modify_info mInfo;
 					try
 					{
 						if (myWebem->m_actTheme.find("default") == std::string::npos)
 						{
-							// A theme is being used (not default) so some theme specific processing might be neccessary
+							// MOTE: A theme is being used (not default) so some theme specific processing might be neccessary
 							std::string uri = myWebem->ExtractRequestPath(requestCopy.uri);
 							if (uri.find("/images/") == 0)
 							{
@@ -2382,70 +2269,32 @@ namespace http {
 				}
 			}
 
-			// Set timeout to make session in use
-			session.timeout = mytime(nullptr) + SHORT_SESSION_TIMEOUT;
-
-			if ((session.isnew == true) &&
-				(session.rights == URIGHTS_ADMIN) &&
-				(req.uri.find("json.htm") != std::string::npos) &&
-				(req.uri.find("logincheck") == std::string::npos)
-				)
-			{
-				// client is possibly a script that does not send cookies - see if we have the IP address registered as a session ID
-				WebEmSession* memSession = myWebem->GetSession(session.remote_host);
-				time_t now = mytime(nullptr);
-				if (memSession != nullptr)
-				{
-					if (memSession->expires < now)
-					{
-						myWebem->RemoveSession(session.remote_host);
-					}
-					else
-					{
-						session.isnew = false;
-						if (memSession->expires - (SHORT_SESSION_TIMEOUT / 2) < now)
-						{
-							memSession->expires = now + SHORT_SESSION_TIMEOUT;
-
-							// unsure about the point of the forced removal of 'live' sessions and restore from
-							// database but these 'fake' sessions are memory only and can't be restored that way.
-							// Should I do a RemoveSession() followed by a AddSession()?
-							// For now: keep 'timeout' in sync with 'expires'
-							memSession->timeout = memSession->expires;
-						}
-					}
-				}
-
-				if (session.isnew == true)
-				{
-					// register a 'fake' IP based session so we can reference that if the client returns here
-					session.id = session.remote_host;
-					session.rights = -1; // predictable session ID must have no rights
-					session.expires = session.timeout;
-					myWebem->AddSession(session);
-					session.rights = 2; // restore session rights
-				}
-			}
-
-			if (session.isnew == true)
-			{
+			// 13) Check if we have seen the client before (recently), if not, log it for security purposes
+			if (!bSeenBefore)
 				_log.Log(LOG_STATUS, "[web:%s] Incoming connection from: %s", myWebem->GetPort().c_str(), session.remote_host.c_str());
-				// Create a new session ID
-				session.id = generateSessionID();
-				session.expires = session.timeout;
-				if (session.rememberme)
-				{
-					// Extend session by 30 days
-					session.expires += LONG_SESSION_TIMEOUT;
-				}
-				session.auth_token = generateAuthToken(session, req); // do it after expires to save it also
-				session.isnew = false;
-				myWebem->AddSession(session);
-				send_cookie(rep, session);
-			}
-			else if (!session.id.empty())
+
+			// 14) We handled the request, now we need to check if we need to create a new session or renew the existing one
+
+			if (session.isnew == true && session.istrustednetwork == false)	// No session found and if we need a session (not for API calls or Trusted Network), create a new one
 			{
-				// Renew session expiration and authentication token
+				if (isLogin && !session.username.empty())	// Make sure the login was succesfull
+				{
+					// Create a new session ID
+					session.id = generateSessionID();
+					session.expires = mytime(nullptr) + SHORT_SESSION_TIMEOUT;
+					if (session.rememberme)
+					{
+						// Extend session by 30 days
+						session.expires += LONG_SESSION_TIMEOUT;
+					}
+					session.auth_token = generateAuthToken(session, req); // do it after expires to save it also
+					session.isnew = false;
+					myWebem->AddSession(session);
+					send_cookie(rep, session);
+				}
+			}
+			else if (!session.id.empty())	// Session found, Renew session expiration and authentication token
+			{
 				WebEmSession* memSession = myWebem->GetSession(session.id);
 				if (memSession != nullptr)
 				{

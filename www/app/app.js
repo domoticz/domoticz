@@ -410,7 +410,7 @@ define(['angularAMD', 'app.routes', 'app.constants', 'app.notifications', 'app.p
 						//Translate Highcharts (partly)
 						const formattedNumber = Intl.NumberFormat().format(1234.5);
 						const decimalPoint = formattedNumber[5] === '.' || formattedNumber[5] === ',' ? formattedNumber[5] : '.';
-						const thousandsSep = formattedNumber[1] === ',' || formattedNumber[1] === '.' ? formattedNumber[1] : ',';
+						const thousandsSep = formattedNumber[1] === ',' || formattedNumber[1] === '.' || formattedNumber[1] === '\u00A0' ? formattedNumber[1] : ',';
 						Highcharts.Templating.helpers.abs3 = value => Math.abs(value).toFixed(3);
 						Highcharts.setOptions({
 							noData: {
@@ -423,7 +423,17 @@ define(['angularAMD', 'app.routes', 'app.constants', 'app.notifications', 'app.p
 							accessibility: {
 								enabled: false
 							},
+							tooltip: {
+								xDateFormat: '%a %d %b, %H:%M',
+							},							
+							xAxis: {
+								dateTimeLabelFormats: {
+									minute: '%H:%M',
+									hour: '%H:%M'
+								}
+							},
 							lang: {
+								//locale: $rootScope.config.language,
 								noData: $.t('No data to display'),
 								decimalPoint: decimalPoint,
 								thousandsSep: thousandsSep,
@@ -593,7 +603,7 @@ define(['angularAMD', 'app.routes', 'app.constants', 'app.notifications', 'app.p
                     fontFamily: 'Trebuchet MS, Verdana, sans-serif',
                     fontWeight: 'normal'
                 },
-				backgroundColor: '#373739'
+				//backgroundColor: '#373739'
             }
 		});
 

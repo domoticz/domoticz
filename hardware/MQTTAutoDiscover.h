@@ -24,6 +24,7 @@ class MQTTAutoDiscover : public MQTT
 		std::string state_off;
 
 		std::string command_topic;
+		std::string command_template;
 		std::string position_topic;
 		std::string set_position_topic;
 		std::string brightness_command_topic;
@@ -65,7 +66,7 @@ class MQTTAutoDiscover : public MQTT
 
 		bool bBrightness = false;
 		bool bHave_brightness_scale = false;
-		float brightness_scale = 254.0F;
+		float brightness_scale = 255.0F;
 
 		bool bColor_mode = false;
 		std::map<std::string, uint8_t> supported_color_modes;
@@ -126,6 +127,9 @@ class MQTTAutoDiscover : public MQTT
 		std::string state_locked = "LOCKED";
 		std::string state_unlocked = "UNLOCKED";
 
+		//Text
+		std::string mode = "text";
+
 		int qos = 1;
 
 		std::map<std::string, std::string> keys;
@@ -135,6 +139,7 @@ class MQTTAutoDiscover : public MQTT
 		std::string last_value;
 		std::string last_topic;
 		bool bIsJSON = false;
+		bool bIsNull = false;
 		std::string last_json_value;
 		uint8_t devType = 0;
 		uint8_t subType = 0;
@@ -169,6 +174,7 @@ public:
 		const char* sValue, std::string& devname, bool bUseOnOffAction = true, const std::string& user = "");
 	bool SendSwitchCommand(const std::string& DeviceID, const std::string& DeviceName, int Unit, std::string command, int level, _tColor color, const std::string& user);
 	bool SetSetpoint(const std::string& DeviceID, const float Temp);
+	bool SetTextDevice(const std::string& DeviceID, const std::string& text);
 
 	void GetConfig(Json::Value& root);
 	bool UpdateNumber(const std::string &sName, const std::string &sValue);
@@ -176,17 +182,16 @@ public:
 	void on_message(const struct mosquitto_message *message) override;
 	void on_connect(int rc) override;
 	void on_disconnect(int rc) override;
-	void on_going_down();
+	void on_going_down() override;
 private:
 	void InsertUpdateSwitch(_tMQTTASensor* pSensor);
 
 	void UpdateBlindPosition(_tMQTTASensor* pSensor);
 	bool SendCoverCommand(_tMQTTASensor* pSensor, const std::string& DeviceName, std::string command, int level, const std::string& user);
 	void CleanValueTemplate(std::string& szValueTemplate);
-	void FixCommandTopicStateTemplate(std::string& command_topic, std::string& state_template);
+	void FixCommandTopic(std::string& command_topic, std::string& state_template);
 	std::string GetValueTemplateKey(const std::string& szValueTemplate);
-	std::string GetValueFromTemplate(Json::Value root, std::string szValueTemplate);
-	std::string GetValueFromTemplate(const std::string &szValue, std::string szValueTemplate);
+	std::string GetValueFromTemplate(Json::Value root, std::string szValueTemplate, bool &isNull);
 	bool SetValueWithTemplate(Json::Value& root, std::string szValueTemplate, std::string szValue);
 	bool GuessSensorTypeValue(_tMQTTASensor* pSensor, uint8_t& devType, uint8_t& subType, std::string& szOptions, int& nValue, std::string& sValue);
 	void ApplySignalLevelDevice(const _tMQTTASensor* pSensor);
@@ -209,7 +214,8 @@ private:
 	void handle_auto_discovery_lock(_tMQTTASensor* pSensor, const struct mosquitto_message* message);
 	void handle_auto_discovery_battery(_tMQTTASensor* pSensor, const struct mosquitto_message* message);
 	void handle_auto_discovery_number(_tMQTTASensor* pSensor, const struct mosquitto_message* message);
-	void handle_auto_discovery_fan(_tMQTTASensor* pSensor, const struct mosquitto_message* message, const std::string &topic);
+	void handle_auto_discovery_fan(_tMQTTASensor* pSensor, const struct mosquitto_message* message, const std::string& topic);
+	void handle_auto_discovery_text(_tMQTTASensor* pSensor, const struct mosquitto_message* message);
 	_tMQTTASensor* get_auto_discovery_sensor_unit(const _tMQTTASensor* pSensor, const std::string& szMeasurementUnit);
 	_tMQTTASensor* get_auto_discovery_sensor_unit(const _tMQTTASensor* pSensor, const uint8_t devType, const int subType = -1, const int devUnit = -1);
 	_tMQTTASensor* get_auto_discovery_sensor_WATT_unit(const _tMQTTASensor* pSensor);

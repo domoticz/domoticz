@@ -944,7 +944,7 @@ void MitsubishiWF::ParseAirconStat(const _tAircoStatus& aircoStatus)
 {
 	SendSwitch(1, 2, 255, aircoStatus.Operation, 0, "Airco Power", "MitsubishiWF");
 
-	SendSetPointSensor(0, 20, 1, 1, 1, static_cast<float>(aircoStatus.PresetTemp), "Target Setpoint");
+	SendSetPointSensor(0, 20, 1, 1, 1, 255, static_cast<float>(aircoStatus.PresetTemp), "Target Setpoint");
 
 	std::string szDeviceName = "Operation Mode";
 	ParseModeSwitch(2, (const char**)&szOperationMode, szOperationMode.size(), aircoStatus.OperationMode, true, szDeviceName);
@@ -1082,30 +1082,6 @@ void MitsubishiWF::ParseModeSwitch(const uint8_t id, const char** vModes, const 
 		}
 	}
 }
-
-uint16_t crc16ccitt(const char* ptr, int count)
-{
-	int i = 65535;
-	for (int ll = 0; ll < count; ll++)
-	{
-		const char b = ptr[ll];
-		for (int i2 = 0; i2 < 8; i2++)
-		{
-			bool z = true;
-			bool z2 = ((b >> (7 - i2)) & 1) == 1;
-			if (((i >> 15) & 1) != 1)
-			{
-				z = false;
-			}
-			i <<= 1;
-			if (z2 ^ z) {
-				i ^= 4129;
-			}
-		}
-	}
-	return i & 65535;
-}
-
 
 bool MitsubishiWF::command_to_byte(const _tAircoStatus& aircon_stat, std::string& sResult)
 {
@@ -1246,7 +1222,7 @@ bool MitsubishiWF::command_to_byte(const _tAircoStatus& aircon_stat, std::string
 			stat_byte[10] |= 128;
 	}
 
-	uint16_t crc = crc16ccitt((char*)stat_byte, sizeof(stat_byte) - 2);
+	uint16_t crc = crc16ccitt((const uint8_t*)stat_byte, sizeof(stat_byte) - 2);
 	stat_byte[sizeof(stat_byte) - 2] = crc & 0xFF;
 	stat_byte[sizeof(stat_byte) - 1] = (crc >> 8) & 0xFF;
 
@@ -1344,7 +1320,7 @@ bool MitsubishiWF::recieve_to_bytes(const _tAircoStatus& aircon_stat, std::strin
 			stat_byte[15] |= 1;
 	}
 
-	uint16_t crc = crc16ccitt((char*)stat_byte, sizeof(stat_byte) - 2);
+	uint16_t crc = crc16ccitt((const uint8_t*)stat_byte, sizeof(stat_byte) - 2);
 	stat_byte[sizeof(stat_byte) - 2] = crc & 0xFF;
 	stat_byte[sizeof(stat_byte) - 1] = (crc >> 8) & 0xFF;
 
@@ -1394,7 +1370,7 @@ bool MitsubishiWF::SetSetpoint(const int /*idx*/, const float temp)
 	//If we are powered off, we need to power as well
 	m_AircoStatus.Operation = true;
 
-	SendSetPointSensor(0, 20, 1, 1, 1, temp, "Target Temperature"); // Suppose request succeed to keep reactive web interface
+	SendSetPointSensor(0, 20, 1, 1, 1, 255, temp, "Target Temperature"); // Suppose request succeed to keep reactive web interface
 
 	return SendAircoStatus(m_AircoStatus);
 }

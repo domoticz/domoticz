@@ -93,8 +93,8 @@ void Yeelight::Do_Work()
 
 	try
 	{
-		boost::asio::io_service io_service;
-		udp_server server(io_service, m_HwdID);
+		boost::asio::io_context io_context;
+		udp_server server(io_context, m_HwdID);
 		int sec_counter = YEELIGHT_POLL_INTERVAL - 5;
 		while (!IsStopRequested(1000))
 		{
@@ -105,7 +105,7 @@ void Yeelight::Do_Work()
 			if (sec_counter % 60 == 0) //poll YeeLights every minute
 			{
 				server.start_send();
-				io_service.run();
+				io_context.run();
 			}
 		}
 	}
@@ -227,12 +227,11 @@ bool Yeelight::WriteToHardware(const char *pdata, const unsigned char length)
 
 	try
 	{
-		boost::asio::io_service io_service;
-		boost::asio::ip::tcp::socket sendSocket(io_service);
-		boost::asio::ip::tcp::resolver resolver(io_service);
-		boost::asio::ip::tcp::resolver::query query(boost::asio::ip::tcp::v4(), szTmp, "55443");
-		auto iterator = resolver.resolve(query);
-		boost::asio::connect(sendSocket, iterator);
+		boost::asio::io_context io_context;
+		boost::asio::ip::tcp::socket sendSocket(io_context);
+		boost::asio::ip::tcp::resolver resolver(io_context);
+		auto endpoints = resolver.resolve(boost::asio::ip::tcp::v4(), szTmp, "55443");
+		boost::asio::connect(sendSocket, endpoints);
 
 		std::string message;
 		std::string message2;
@@ -404,8 +403,8 @@ bool Yeelight::WriteToHardware(const char *pdata, const unsigned char length)
 std::array<char, 1024> recv_buffer_;
 int hardwareId;
 
-Yeelight::udp_server::udp_server(boost::asio::io_service& io_service, int m_HwdID)
-	: socket_(io_service, boost::asio::ip::udp::endpoint(boost::asio::ip::udp::v4(), 0))
+Yeelight::udp_server::udp_server(boost::asio::io_context& io_context, int m_HwdID)
+	: socket_(io_context, boost::asio::ip::udp::endpoint(boost::asio::ip::udp::v4(), 0))
 {
 	socket_.set_option(boost::asio::ip::udp::socket::reuse_address(true));
 	socket_.set_option(boost::asio::socket_base::broadcast(true));
@@ -421,7 +420,7 @@ void Yeelight::udp_server::start_send()
 		//Log(LOG_STATUS, "start_send..................");
 		std::shared_ptr<std::string> message(
 			new std::string(testMessage));
-		remote_endpoint_ = boost::asio::ip::udp::endpoint(boost::asio::ip::address::from_string("239.255.255.250"), 1982);
+		remote_endpoint_ = boost::asio::ip::udp::endpoint(boost::asio::ip::make_address_v4("239.255.255.250"), 1982);
 		socket_.send_to(boost::asio::buffer(*message), remote_endpoint_);
 		sleep_milliseconds(150);
 		start_receive();

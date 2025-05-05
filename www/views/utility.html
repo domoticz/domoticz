@@ -23,6 +23,35 @@
 		</table>
 	</form>
 </div>
+<div id="dialog-edittextdevice" title="Edit Device">
+	<form>
+		<table class="display" id="metertable" border="0" cellpadding="0" cellspacing="0">
+		<tr>
+			<td align="right" style="width:120px"><label>Idx: </label></td>
+			<td><span id="deviceidx"></span></td>
+		</tr>
+		<tr>
+			<td align="right"><label for="devicename"><span data-i18n="Name">Name</span>: </label></td>
+			<td><input type="text" id="devicename" style="width: 250px; padding: .4em;" class="text ui-widget-content ui-corner-all"></td>
+		</tr>
+		<tr>
+			<td align="right"><label for="combosensoricon"><span data-i18n="Sensor Icon"></span>: </label></td>
+			<td>
+			<select id="combosensoricon" style="width:200px" class="combobox ui-corner-all">
+			</select>
+			</td>
+		</tr>
+		<tr>
+			<td align="right" style="vertical-align:top"><label for="devicetext"><span data-i18n="Text"></span>: </label></td>
+			<td><textarea id="devicetext" name="devicetext" rows="4" style="width: 356px; padding: .2em;" class="text ui-widget-content ui-corner-all"></textarea></td>
+		</tr>
+		<tr>
+			<td align="right"><label for="devicedescription"><span data-i18n="Description"></span>: </label></td>
+			<td><textarea id="devicedescription" name="devicedescription" rows="4" style="width: 356px; padding: .2em;" class="text ui-widget-content ui-corner-all"></textarea></td>
+		</tr>
+		</table>
+	</form>
+</div>
 <div id="dialog-editcustomsensordevice" title="Edit Device">
 	<form>
 		<table class="display" id="metertable" border="0" cellpadding="0" cellspacing="0">

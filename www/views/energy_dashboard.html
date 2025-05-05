@@ -1,5 +1,9 @@
 <!--
 History:
+ v1.16 2024-10-26
+	- Adjusted Text object clipping
+	- Main view enlarged a bit
+
  v1.15 2024-07-010
 	- Now possible to use without PV system
 
@@ -76,8 +80,8 @@ History:
 	border-style: solid;
 	border-width: 3px;
 	text-align: center;
-	width: 90vw; 
-	height: calc(100vh - 140px);
+	width: calc(100vw - 50px); 
+	height: calc(100vh - 110px);
 	margin: 0 auto auto auto;
 }
 
@@ -117,10 +121,9 @@ History:
 			<g id="groupText" ng-show="txtObjText">
 				<defs>
 					<clipPath id="pfad">
-						<rect x="0" y="3" width="20" height="13.8" ry="2" stroke-linecap="round" stroke-width=".2"/>
+						<rect x="0" y="3" width="21" height="19.2"/>
 					</clipPath>
 				</defs>
-				<rect id="rectText" x="0" y="5" width="20" height="14" ry="0" fill="none" stroke="#ccc" stroke-linecap="round" stroke-width=".0"/>
 				<text id="ltext" x="1" y="5.2" font-size="1.0px" text-anchor="left" dy="0" style="font-weight: normal; white-space: pre;"></text>
 			</g>
 			<text id="etext" x="46" y="6" opacity="0.35" font-size="2.0px" text-anchor="center" dy="0" style="font-weight: normal; white-space: pre;" ng-show="ServerTime">{{ ServerTime }}</text>

@@ -308,6 +308,8 @@ bool CNotificationKodi::SendMessageImplementation(
 			_log.Log(LOG_ERROR, "%s", logline.str().c_str());
 			return false;
 		}
+
+		closesocket(_Sock);
 	}
 	return true;
 }

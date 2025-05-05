@@ -15,6 +15,8 @@ done
 
 UPLOAD_USER="USERNAME"
 UPLOAD_PASSWORD="PASSWORD"
+UPLOAD_SERVER="SERVER"
+UPLOAD_PORT=PORT
 
 lowercase(){
     echo "$1" | sed "y/ABCDEFGHIJKLMNOPQRSTUVWXYZ/abcdefghijklmnopqrstuvwxyz/"
@@ -86,7 +88,7 @@ fi
 
 #################################
 echo "Uploading to Cloud...";
-sshpass -p ${UPLOAD_PASSWORD} scp -o User=${UPLOAD_USER} ${archive_file} ${archive_file}.sha256sum ${version_file} ${history_file} 146.185.159.228:/home/uploads@domoticz.com/release
+curl -k -T "{${archive_file},${archive_file}.sha256sum,${version_file},${history_file},History.txt}" -u ${UPLOAD_USER}:${UPLOAD_PASSWORD} sftp://${UPLOAD_SERVER}:${UPLOAD_PORT}/release/
 if [ $? -ne 0 ]
 then
         echo "Error uploading to Cloud!...";

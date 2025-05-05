@@ -70,8 +70,8 @@ private:
 	/// Handle a request to stop the server.
 	void handle_stop();
 
-	/// The io_service used to perform asynchronous operations.
-	boost::asio::io_service io_service_;
+	/// The io_context used to perform asynchronous operations.
+	boost::asio::io_context io_context_;
 
 	boost::asio::ip::tcp::acceptor acceptor_;
 
@@ -98,7 +98,7 @@ public:
 	void DoDecodeMessage(const CTCPClientBase *pClient, const uint8_t* pData, size_t len);
 private:
 	std::mutex m_server_mutex;
-	CTCPServerInt *m_pTCPServer;
+	std::shared_ptr <CTCPServerInt> m_TCPServer;
 	std::shared_ptr<std::thread> m_thread;
 	bool StartHardware() override
 	{

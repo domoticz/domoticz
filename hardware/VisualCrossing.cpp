@@ -89,7 +89,7 @@ void CVisualCrossing::Do_Work()
 {
 	Log(LOG_STATUS, "Started...");
 
-	int sec_counter = 290;
+	int sec_counter = 295;
 	while (!IsStopRequested(1000))
 	{
 		sec_counter++;
@@ -130,7 +130,9 @@ void CVisualCrossing::GetMeterDetails()
 	{
 		if (!HTTPClient::GET(sURL.str(), sResult))
 		{
-			Log(LOG_ERROR, "Error getting http data!.");
+			Log(LOG_ERROR, "Error getting http data for location `" + m_Location + "`!.");
+			if (!sResult.empty())
+				Log(LOG_ERROR, sResult);
 			return;
 		}
 	}

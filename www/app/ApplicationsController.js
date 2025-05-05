@@ -107,8 +107,8 @@ define(['app'], function (app) {
 
 			$.devIdx = -1;
 
-			$('#updelclr #applicationupdate').attr("class", "btnstyle3-dis");
-			$('#updelclr #applicationdelete').attr("class", "btnstyle3-dis");
+			$('#applicationupdate').hide();
+			$('#applicationdelete').hide();
 
 			var oTable = $('#applicationtable').dataTable();
 			oTable.fnClearTable();
@@ -153,22 +153,22 @@ define(['app'], function (app) {
 
 				if ($(this).hasClass('row_selected')) {
 					$(this).removeClass('row_selected');
-					$('#updelclr #applicationupdate').attr("class", "btnstyle3-dis");
-					$('#updelclr #applicationdelete').attr("class", "btnstyle3-dis");
+					$('#applicationupdate').hide();
+					$('#applicationdelete').hide();
 				}
 				else {
 					var oTable = $('#applicationtable').dataTable();
 					oTable.$('tr.row_selected').removeClass('row_selected');
 					$(this).addClass('row_selected');
-					$('#updelclr #applicationupdate').attr("class", "btnstyle3");
-					$('#updelclr #applicationdelete').attr("class", "btnstyle3");
+					$('#applicationupdate').show();
+					$('#applicationdelete').show();
 					var anSelected = fnGetSelected(oTable);
 					if (anSelected.length !== 0) {
 						var data = oTable.fnGetData(anSelected[0]);
 						var idx = data["DT_RowId"];
 						$.devIdx = idx;
-						$("#updelclr #applicationupdate").attr("href", "javascript:UpdateApplication(" + idx + ")");
-						$("#updelclr #applicationdelete").attr("href", "javascript:DeleteApplication(" + idx + ")");
+						$("#applicationupdate").attr("href", "javascript:UpdateApplication(" + idx + ")");
+						$("#applicationdelete").attr("href", "javascript:DeleteApplication(" + idx + ")");
 						$('#applicationcontent #applicationparamstable #enabled').prop('checked', (data["Enabled"] == "true"));
 						$("#applicationcontent #applicationparamstable #applicationname").val(data["Applicationname"]);
 						$("#applicationcontent #applicationparamstable #applicationsecret").val(data["Applicationsecret"]);

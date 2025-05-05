@@ -216,7 +216,7 @@ const char* RFX_Type_SubType_Values(const unsigned char dType, const unsigned ch
 
 		{ pTypeRFXMeter, sTypeRFXMeterCount, "Counter" },
 
-		{ pTypeP1Power, sTypeP1Power, "Usage 1,Usage 2,Delivery 1,Delivery 2,Usage current,Delivery current" },
+		{ pTypeP1Power, sTypeP1Power, "Usage 1,Usage 2,Delivery 1,Delivery 2,Usage current,Delivery current,P1Actual" },
 		{ pTypeP1Gas, sTypeP1Gas, "Gas usage" },
 
 		{ pTypeYouLess, sTypeYouLess, "Usage,Usage current" },
@@ -365,6 +365,8 @@ const char* RFX_Type_SubType_Values(const unsigned char dType, const unsigned ch
 		{ pTypeGeneralSwitch, sSwitchTypeForest, "Status,Level" },
 
 		{ pTypeDDxxxx, sTypeDDxxxx, "Status,Level" },
+		{ pTypeHoneywell_AL, sTypeSeries5, "Status" },
+		{ pTypeHoneywell_AL, sTypePIR, "Status" },
 
 		{ 0, 0, nullptr },
 	};
@@ -453,6 +455,7 @@ std::string CBasePush::ProcessSendValue(
 	const std::string& rawsendValue,
 	const int delpos,
 	const int nValue,
+	const std::string &sValue,
 	const int includeUnit,
 	const int devType,
 	const int devSubType,
@@ -632,9 +635,27 @@ std::string CBasePush::ProcessSendValue(
 		{
 			strcpy(szData, rawsendValue.c_str());
 		}
+		else if (vType == "P1Actual")
+		{
+			std::vector<std::string> splitresults;
+			StringSplit(sValue, ";", splitresults);
+
+			//uint64_t powerusage1 = std::stoull(splitresults[0]);
+			//uint64_t powerusage2 = std::stoull(splitresults[1]);
+			//uint64_t powerdeliv1 = std::stoull(splitresults[2]);
+			//uint64_t powerdeliv2 = std::stoull(splitresults[3]);
+			uint64_t usagecurrent = std::stoull(splitresults[4]);
+			uint64_t delivcurrent = std::stoull(splitresults[5]);
+
+			//uint64_t powerusage = powerusage1 + powerusage2;
+			//uint64_t powerdeliv = powerdeliv1 + powerdeliv2;
+
+			int powerusagecurrent = static_cast<int>(usagecurrent - delivcurrent);
+			sprintf(szData, "%d", powerusagecurrent);
+		}
 		else if (vType == "Gas usage")
 		{
-			sprintf(szData, "%g", std::stof(rawsendValue) / 1000.0F);
+			sprintf(szData, "%.3f", std::stod(rawsendValue) / 1000.0);
 		}
 		else if (vType == "Weight")
 		{
@@ -826,6 +847,10 @@ std::string CBasePush::getUnit(const int devType, const int devSubType, const in
 		strcpy(szData, "Watt");
 	}
 	else if (vType == "Delivery current")
+	{
+		strcpy(szData, "Watt");
+	}
+	else if (vType == "P1Actual")
 	{
 		strcpy(szData, "Watt");
 	}

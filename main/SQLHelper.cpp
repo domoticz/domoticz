@@ -1484,8 +1484,8 @@ bool CSQLHelper::OpenDatabase()
 		}
 		if (dbversion < 75)
 		{
-			safe_query("UPDATE Hardware SET Username='%q', Password='%q' WHERE ([Type]=%d)",
-				"Change_user_pass", "", HTYPE_THERMOSMART);
+			//safe_query("UPDATE Hardware SET Username='%q', Password='%q' WHERE ([Type]=%d)",
+			//	"Change_user_pass", "", HTYPE_THERMOSMART);
 			if (!DoesColumnExistsInTable("Description", "DeviceStatus"))
 			{
 				query("ALTER TABLE DeviceStatus ADD COLUMN [Description] VARCHAR(200) DEFAULT ''");
@@ -3652,7 +3652,7 @@ bool CSQLHelper::OpenDatabase()
 	}
 	if ((!GetPreferencesVar("Currency", sValue)) || (sValue.empty()))
 	{
-		std::string sstring = "€"; //�
+		std::string sstring = "€"; //�
 		UpdatePreferencesVar("Currency", sstring);
 	}
 	if (!GetPreferencesVar("P1DisplayType", nValue))
@@ -5410,10 +5410,11 @@ uint64_t CSQLHelper::UpdateValueInt(
 		else
 		{
 			if (
-				(stype == STYPE_DoorContact) ||
-				(stype == STYPE_DoorLock) ||
-				(stype == STYPE_DoorLockInverted) ||
-				(stype == STYPE_Contact)
+				(stype == STYPE_DoorContact)
+				|| (stype == STYPE_DoorLock)
+				|| (stype == STYPE_DoorLockInverted)
+				|| (stype == STYPE_Contact)
+				|| (stype == STYPE_SMOKEDETECTOR)
 				)
 			{
 				//Check if we received the same state as before, if yes, don't do anything (only update)
@@ -5477,6 +5478,7 @@ uint64_t CSQLHelper::UpdateValueInt(
 	case pTypeRadiator1:
 	case pTypeHunter:
 	case pTypeDDxxxx:
+	case pTypeHoneywell_AL:
 		if ((devType == pTypeRadiator1) && (subType != sTypeSmartwaresSwitchRadiator))
 			break;
 		m_LastSwitchID = ID;
@@ -5747,7 +5749,7 @@ uint64_t CSQLHelper::UpdateValueInt(
 		break;
 	}
 
-	_log.Debug(DEBUG_NORM, "SQLH UpdateValueInt %s HwID:%d  DevID:%s Type:%d  sType:%d nValue:%d sValue:%s ", devname.c_str(), HardwareID, ID, devType, subType, nValue, sValue);
+	_log.Debug(DEBUG_NORM, "SQLH UpdateValueInt %s HwID:%d  DevID:%s Type:%d  sType:%d nValue:%d sValue:%s IDX: %" PRIu64, devname.c_str(), HardwareID, ID, devType, subType, nValue, sValue, ulID);
 
 	if (bDeviceUsed)
 	{
@@ -6035,7 +6037,7 @@ bool CSQLHelper::HasSceneTimers(const uint64_t Idx)
 
 	std::vector<std::vector<std::string> > result;
 
-	result = safe_query("SELECT COUNT(*) FROM SceneTimers WHERE (SceneRowID==%" PRIu64 ") AND (TimerPlan==%d)", Idx, m_ActiveTimerPlan);
+	result = safe_query("SELECT COUNT(*) FROM SceneTimers WHERE (SceneRowID==%" PRIu64 ") AND ((TimerPlan==%d) OR (TimerPlan==9999))", Idx, m_ActiveTimerPlan);
 	if (result.empty())
 		return false;
 	std::vector<std::string> sd = result[0];
@@ -9033,7 +9035,7 @@ void CSQLHelper::CheckDeviceTimeout()
 	result = safe_query(
 		"SELECT ID, Name, LastUpdate FROM DeviceStatus WHERE (Used!=0 AND LastUpdate<='%04d-%02d-%02d %02d:%02d:%02d' "
 		"AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d "
-		"AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d) "
+		"AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d) "
 		"ORDER BY Name COLLATE NOCASE ASC",
 		ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, ltime.tm_sec,
 		pTypeLighting1,
@@ -9058,7 +9060,8 @@ void CSQLHelper::CheckDeviceTimeout()
 		pTypeHomeConfort,
 		pTypeFS20,
 		pTypeHunter,
-		pTypeDDxxxx
+		pTypeDDxxxx,
+		pTypeHoneywell_AL
 	);
 	if (result.empty())
 		return;
@@ -9775,7 +9778,8 @@ uint64_t CSQLHelper::InsertCustomIconFromZipFile(const std::string& szZipFile, s
 					{
 						// std::string TableField = db.first;
 						std::string IconFile = rpath + db.second;
-						if (in.find(IconFile) == in.end())
+						auto ittFile = in.find(IconFile);
+						if (ittFile == in.end())
 						{
 							ErrorMessage = "Icon File: " + IconFile + " is not present";
 							if (iTotalAdded > 0)
@@ -9784,6 +9788,19 @@ uint64_t CSQLHelper::InsertCustomIconFromZipFile(const std::string& szZipFile, s
 							}
 							return 0;
 						}
+						//extract and check size
+						fsize = 0;
+						pFBuf = (unsigned char*)in.find(IconFile).Extract(fsize);
+						if ((pFBuf == nullptr) || (fsize < 1))
+						{
+							ErrorMessage = "Icon File: " + IconFile + " is to small or issue with extraction";
+							if (iTotalAdded > 0)
+							{
+								m_webservers.ReloadCustomSwitchIcons();
+							}
+							return 0;
+						}
+						free(pFBuf);
 					}
 
 					//All good, now lets add it to the database
@@ -10256,3 +10273,72 @@ void CSQLHelper::RefreshActualPrices()
 		}
 	}
 }
+
+
+bool CSQLHelper::TransferDevice(const std::string& sOldIdx, const std::string& sNewIdx)
+{
+	auto result = m_sql.safe_query("SELECT HardwareID, OrgHardwareID, DeviceID, Unit, Type, SubType FROM DeviceStatus WHERE (ID == '%q')", sNewIdx.c_str());
+	if (result.empty())
+		return false;
+
+	int newHardwareID = std::stoi(result[0].at(0));
+	int newOrgHardwareID = std::stoi(result[0].at(1));
+	std::string newDeviceID = result[0].at(2);
+	int newUnit = std::stoi(result[0].at(3));
+	int devType = std::stoi(result[0].at(4));
+	int subType = std::stoi(result[0].at(5));
+
+	//get last update date from old device
+	result = m_sql.safe_query("SELECT LastUpdate FROM DeviceStatus WHERE (ID == '%q')", sOldIdx.c_str());
+	if (result.empty())
+		return false;
+
+	std::string szLastOldDate = result[0][0];
+
+	_log.Log(LOG_STATUS, "Replace old device %s to new device %s from %s.", sOldIdx.c_str(), sNewIdx.c_str(), szLastOldDate.c_str());
+
+	m_sql.safe_query("UPDATE DeviceStatus SET HardwareID = %d, OrgHardwareID = %d, DeviceID = '%q', Unit = %d, Type = %d, SubType = %d WHERE ID == '%q'",
+		newHardwareID, newOrgHardwareID, newDeviceID.c_str(), newUnit, devType, subType, sOldIdx.c_str());
+
+	//new device could already have some logging, so let's keep this data
+	//Rain
+	m_sql.safe_query("UPDATE Rain SET DeviceRowID='%q' WHERE (DeviceRowID == '%q') AND (Date>'%q')", sOldIdx.c_str(), sNewIdx.c_str(), szLastOldDate.c_str());
+	m_sql.safe_query("UPDATE Rain_Calendar SET DeviceRowID='%q' WHERE (DeviceRowID == '%q') AND (Date>'%q')", sOldIdx.c_str(), sNewIdx.c_str(), szLastOldDate.c_str());
+
+	//Temperature
+	m_sql.safe_query("UPDATE Temperature SET DeviceRowID='%q' WHERE (DeviceRowID == '%q') AND (Date>'%q')", sOldIdx.c_str(), sNewIdx.c_str(), szLastOldDate.c_str());
+	m_sql.safe_query("UPDATE Temperature_Calendar SET DeviceRowID='%q' WHERE (DeviceRowID == '%q') AND (Date>'%q')", sOldIdx.c_str(), sNewIdx.c_str(), szLastOldDate.c_str());
+
+	//UV
+	m_sql.safe_query("UPDATE UV SET DeviceRowID='%q' WHERE (DeviceRowID == '%q') AND (Date>'%q')", sOldIdx.c_str(), sNewIdx.c_str(), szLastOldDate.c_str());
+	m_sql.safe_query("UPDATE UV_Calendar SET DeviceRowID='%q' WHERE (DeviceRowID == '%q') AND (Date>'%q')", sOldIdx.c_str(), sNewIdx.c_str(), szLastOldDate.c_str());
+
+	//Wind
+	m_sql.safe_query("UPDATE Wind SET DeviceRowID='%q' WHERE (DeviceRowID == '%q') AND (Date>'%q')", sOldIdx.c_str(), sNewIdx.c_str(), szLastOldDate.c_str());
+	m_sql.safe_query("UPDATE Wind_Calendar SET DeviceRowID='%q' WHERE (DeviceRowID == '%q') AND (Date>'%q')", sOldIdx.c_str(), sNewIdx.c_str(), szLastOldDate.c_str());
+
+	//Meter
+	m_sql.safe_query("UPDATE Meter SET DeviceRowID='%q' WHERE (DeviceRowID == '%q') AND (Date>'%q')", sOldIdx.c_str(), sNewIdx.c_str(), szLastOldDate.c_str());
+	m_sql.safe_query("UPDATE Meter_Calendar SET DeviceRowID='%q' WHERE (DeviceRowID == '%q') AND (Date>'%q')", sOldIdx.c_str(), sNewIdx.c_str(), szLastOldDate.c_str());
+
+	//Multimeter
+	m_sql.safe_query("UPDATE MultiMeter SET DeviceRowID='%q' WHERE (DeviceRowID == '%q') AND (Date>'%q')", sOldIdx.c_str(), sNewIdx.c_str(), szLastOldDate.c_str());
+	m_sql.safe_query("UPDATE MultiMeter_Calendar SET DeviceRowID='%q' WHERE (DeviceRowID == '%q') AND (Date>'%q')", sOldIdx.c_str(), sNewIdx.c_str(), szLastOldDate.c_str());
+
+	//Fan
+	m_sql.safe_query("UPDATE Fan SET DeviceRowID='%q' WHERE (DeviceRowID == '%q') AND (Date>'%q')", sOldIdx.c_str(), sNewIdx.c_str(), szLastOldDate.c_str());
+	m_sql.safe_query("UPDATE Fan_Calendar SET DeviceRowID='%q' WHERE (DeviceRowID == '%q') AND (Date>'%q')", sOldIdx.c_str(), sNewIdx.c_str(), szLastOldDate.c_str());
+
+	//Percentage
+	m_sql.safe_query("UPDATE Percentage SET DeviceRowID='%q' WHERE (DeviceRowID == '%q') AND (Date>'%q')", sOldIdx.c_str(), sNewIdx.c_str(), szLastOldDate.c_str());
+	m_sql.safe_query("UPDATE Percentage_Calendar SET DeviceRowID='%q' WHERE (DeviceRowID == '%q') AND (Date>'%q')", sOldIdx.c_str(), sNewIdx.c_str(), szLastOldDate.c_str());
+
+	m_sql.DeleteDevices(sNewIdx);
+
+ 	m_mainworker.m_scheduler.ReloadSchedules();
+
+	return true;
+}
+
+
+

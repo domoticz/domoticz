@@ -365,7 +365,9 @@ textarea:focus {
 #userparamstable, #activeparamstable, #lightcontent paramstable,
 #scenecontent #paramstable,
 #notificationparamstable, #hardwareparamstable,
-#profiletable, #passwdtable,
+#profiletable, #passwdtable,#updelclr,
+#applicationparamstable,
+#mobileparamstable,
 #eventparamstable {
 	background-color: #11213d;
 	border-top: 10px solid #11213d;

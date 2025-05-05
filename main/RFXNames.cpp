@@ -211,7 +211,6 @@ static const STR_TABLE_SINGLE HardwareTypeTable[] = {
 	{ HTYPE_Pinger, "System Alive Checker (Ping)", "Pinger" },
 	{ HTYPE_NEST, "Nest Thermostat/Protect", "Nest" },
 	{ HTYPE_Nest_OAuthAPI, "Nest Thermostat/Protect OAuth", "Nest" },
-	{ HTYPE_THERMOSMART, "Thermosmart Thermostat", "ThermoSmart" },
 	{ HTYPE_Netatmo, "Netatmo", "Netatmo" },
 	{ HTYPE_Kodi, "Kodi Media Server", "Kodi" },
 	{ HTYPE_PanasonicTV, "PanasonicTV", "PanasonicTV" },
@@ -521,6 +520,7 @@ const char* RFX_Type_Desc(const unsigned char i, const unsigned char snum)
 		{ pTypeSOLAR, "Solar", "solar" },
 		{ pTypeHunter, "Hunter", "Hunter" },
 		{ pTypeDDxxxx, "Blinds", "blinds" },
+		{ pTypeHoneywell_AL, "Honeywell", "doorbell" },
 		{ 0, nullptr, nullptr },
 	};
 	if (snum == 1)
@@ -945,6 +945,10 @@ const char* RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 		{ pTypeGeneralSwitch, sSwitchTypeFaber, "Faber" },
 		{ pTypeGeneralSwitch, sSwitchTypeDrayton, "Drayton" },
 		{ pTypeGeneralSwitch, sSwitchTypeV2Phoenix, "V2Phoenix" },
+
+		{ pTypeHoneywell_AL, sTypeSeries5, "Honeywell Series 5" },
+		{ pTypeHoneywell_AL, sTypePIR, "Honeywell PIR" },
+
 		{ 0, 0, nullptr },
 	};
 	return findTableID1ID2(Table, dType, sType);
@@ -1759,7 +1763,7 @@ void GetLightStatus(
 		case blinds_sLimit:
 			lstatus = "Limit";
 			break;
-		case blinds_slowerLimit:
+		case blinds_sLowerLimit:
 			lstatus = "Lower Limit";
 			break;
 		case blinds_sDeleteLimits:
@@ -2254,6 +2258,9 @@ void GetLightStatus(
 			lstatus = "unknown/unsupported!";
 			break;
 		}
+		break;
+	case pTypeHoneywell_AL:
+		lstatus = "On";
 		break;
 	}
 

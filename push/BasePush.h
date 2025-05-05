@@ -32,7 +32,16 @@ public:
 
 	static std::vector<std::string> DropdownOptions(const int devType, const int devSubType);
 	static std::string DropdownOptionsValue(const int devType, const int devSubType, const int pos);
-	static std::string ProcessSendValue(const uint64_t DeviceRowIdx, const std::string& rawsendValue, int delpos, int nValue, int includeUnit, int devType, int devSubType, int metertype);
+	static std::string ProcessSendValue(
+		const uint64_t DeviceRowIdx,
+		const std::string& rawsendValue,
+		const int delpos,
+		const int nValue,
+		const std::string &sValue,
+		const int includeUnit,
+		const int devType,
+		const int devSubType,
+		const int metertype);
 
 	void ReloadPushLinks(const PushType PType);
 	bool GetPushLink(const uint64_t DeviceRowIdx, _tPushLinks& plink);

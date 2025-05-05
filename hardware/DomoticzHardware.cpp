@@ -309,7 +309,7 @@ void CDomoticzHardwareBase::SendTempBaroSensor(const uint8_t NodeID, const int B
 	sDecodeRXMessage(this, (const unsigned char *)&tsensor, defaultname.c_str(), BatteryLevel, nullptr);
 }
 
-void CDomoticzHardwareBase::SendSetPointSensor(const uint8_t ID1, const uint8_t ID2, const uint8_t ID3, const uint8_t ID4, const uint8_t Unit, const float Value, const std::string& defaultname)
+void CDomoticzHardwareBase::SendSetPointSensor(const uint8_t ID1, const uint8_t ID2, const uint8_t ID3, const uint8_t ID4, const uint8_t Unit, const int BatteryLevel, const float Value, const std::string& defaultname)
 {
 	_tSetpoint setpoint;
 	setpoint.subtype = sTypeSetpoint;
@@ -319,6 +319,7 @@ void CDomoticzHardwareBase::SendSetPointSensor(const uint8_t ID1, const uint8_t 
 	setpoint.id4 = ID4;
 	setpoint.dunit = Unit;
 	setpoint.value = Value;
+	setpoint.battery_level = BatteryLevel;
 	sDecodeRXMessage(this, (const unsigned char *)&setpoint, defaultname.c_str(), -1, nullptr);
 }
 
@@ -501,7 +502,7 @@ bool CDomoticzHardwareBase::GetWindSensorValue(const int NodeID, int& WindDir, f
 	return bExists;
 }
 
-void CDomoticzHardwareBase::SendWattMeter(const uint8_t NodeID, const uint8_t ChildID, const int BatteryLevel, const float musage, const std::string& defaultname, const int RssiLevel /* =12 */)
+void CDomoticzHardwareBase::SendWattMeter(const int NodeID, const uint8_t ChildID, const int BatteryLevel, const float musage, const std::string& defaultname, const int RssiLevel /* =12 */)
 {
 	if ((musage < -m_sql.m_max_kwh_usage) || (musage > m_sql.m_max_kwh_usage))
 	{
@@ -510,10 +511,11 @@ void CDomoticzHardwareBase::SendWattMeter(const uint8_t NodeID, const uint8_t Ch
 		return;
 	}
 	_tUsageMeter umeter;
-	umeter.id1 = 0;
-	umeter.id2 = 0;
-	umeter.id3 = 0;
-	umeter.id4 = NodeID;
+
+	umeter.id1 = (uint8_t)((NodeID & 0xFF000000) >> 24);
+	umeter.id2 = (uint8_t)((NodeID & 0xFF0000) >> 16);
+	umeter.id3 = (uint8_t)((NodeID & 0xFF00) >> 8);
+	umeter.id4 = (uint8_t)NodeID & 0xFF;
 	umeter.dunit = ChildID;
 	umeter.rssi = RssiLevel;
 	umeter.fusage = musage;

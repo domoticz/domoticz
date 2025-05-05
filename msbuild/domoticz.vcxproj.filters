@@ -87,9 +87,6 @@
     <Filter Include="zlib">
       <UniqueIdentifier>{96351f00-f848-4e75-84be-0bccaecc2a02}</UniqueIdentifier>
     </Filter>
-    <Filter Include="TCPProxy">
-      <UniqueIdentifier>{242d77c7-709a-4c87-8d92-a87a489af891}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Devices\ICY Thermostat">
       <UniqueIdentifier>{76dbad7a-fef9-4b45-94f2-82670e7ff061}</UniqueIdentifier>
     </Filter>
@@ -170,9 +167,6 @@
     </Filter>
     <Filter Include="Devices\Nest">
       <UniqueIdentifier>{358e4bcd-21c6-47e5-b7e3-7d9bbb9b4e90}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Devices\Thermosmart">
-      <UniqueIdentifier>{21b14472-4757-4ef4-b27f-107a322f5ef3}</UniqueIdentifier>
     </Filter>
     <Filter Include="Devices\RFXCom">
       <UniqueIdentifier>{48ca3895-ba95-40f6-8441-e2911263a66f}</UniqueIdentifier>
@@ -1643,9 +1637,6 @@
     <ClInclude Include="..\hardware\ASyncTCP.h">
       <Filter>Devices\SerialTCP</Filter>
     </ClInclude>
-    <ClInclude Include="..\hardware\TCPProxy\tcpproxy_server.h">
-      <Filter>TCPProxy</Filter>
-    </ClInclude>
     <ClInclude Include="..\hardware\ICYThermostat.h">
       <Filter>Devices\ICY Thermostat</Filter>
     </ClInclude>
@@ -1789,9 +1780,6 @@
     </ClInclude>
     <ClInclude Include="..\hardware\Pinger.h">
       <Filter>Devices\Ping</Filter>
-    </ClInclude>
-    <ClInclude Include="..\hardware\Thermosmart.h">
-      <Filter>Devices\Thermosmart</Filter>
     </ClInclude>
     <ClInclude Include="..\hardware\RFXComSerial.h">
       <Filter>Devices\RFXCom</Filter>
@@ -2428,9 +2416,6 @@
     <ClCompile Include="..\hardware\ColorSwitch.cpp">
       <Filter>Devices</Filter>
     </ClCompile>
-    <ClCompile Include="..\hardware\TCPProxy\tcpproxy_server.cpp">
-      <Filter>TCPProxy</Filter>
-    </ClCompile>
     <ClCompile Include="..\hardware\ICYThermostat.cpp">
       <Filter>Devices\ICY Thermostat</Filter>
     </ClCompile>
@@ -2574,9 +2559,6 @@
     </ClCompile>
     <ClCompile Include="..\hardware\Pinger.cpp">
       <Filter>Devices\Ping</Filter>
-    </ClCompile>
-    <ClCompile Include="..\hardware\Thermosmart.cpp">
-      <Filter>Devices\Thermosmart</Filter>
     </ClCompile>
     <ClCompile Include="..\hardware\RFXComSerial.cpp">
       <Filter>Devices\RFXCom</Filter>

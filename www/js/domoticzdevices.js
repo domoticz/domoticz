@@ -1391,30 +1391,28 @@ function Blinds(item) {
     this.parent.constructor(item);
     this.data = '';
 
+	var bHaveStopped = (
+						(item.SwitchType == 'Blinds + Stop')
+						|| (item.SwitchType == 'Venetian Blinds US')
+						|| (item.SwitchType == 'Venetian Blinds EU')
+						);
+	if (bHaveStopped) {
+		this.image2 = 'images/blindsstop.png';
+		this.onClick2 = 'SwitchLight(' + this.index + ",'Stop'," + this.protected + ');';
+	} else {
+		this.image2 = '';
+	}
+
     if (item.SwitchType.match(/percentage/i)) {
         this.haveDimmer = true;
-        this.image2 = '';
-        this.onClick2 = '';
-
-        if (item.Status == 'Open') {
-            this.image = 'images/blindsopen48sel.png';
-            this.onClick = 'SwitchLight(' + this.index + ",'Close'," + this.protected + ');';
-        } else {
-            this.image = 'images/blinds48sel.png';
-            this.onClick = 'SwitchLight(' + this.index + ",'Open'," + this.protected + ');';
-        }
-    } else {
-        if (item.Status == 'Open') {
-            this.image = 'images/blindsopen48sel.png';
-            this.image2 = 'images/blinds48.png';
-        }
-        else {
-            this.image = 'images/blinds48sel.png';
-            this.image2 = 'images/blindsopen48.png';
-        }
-        this.onClick = 'SwitchLight(' + this.index + ",'Open'," + this.protected + ');';
-        this.onClick2 = 'SwitchLight(' + this.index + ",'Close'," + this.protected + ');';
     }
+	if ((item.Status == 'Open') || (item.Status.startsWith('Set Level')) || (item.Status == 'Stopped')) {
+		this.image = 'images/blindsopen48sel.png';
+		this.onClick = 'SwitchLight(' + this.index + ",'Close'," + this.protected + ');';
+	} else {
+		this.image = 'images/blinds48sel.png';
+		this.onClick = 'SwitchLight(' + this.index + ",'Open'," + this.protected + ');';
+	}
 }
 Blinds.inheritsFrom(Switch);
 
@@ -1967,7 +1965,7 @@ function Selector(item) {
         };
         this.onSelectorValueChange = function (idx, levelname, level) {
             // Send device command
-            SwitchSelectorLevel(idx, unescape(levelname), level, this.onRefreshEvent, this.isprotected);
+            SwitchSelectorLevel(idx, unescape(levelname), level, this.protected);
         };
         this.toggleSelectorList = function (selector$) {
             var deviceDetails$ = selector$.parents('.DeviceDetails'),

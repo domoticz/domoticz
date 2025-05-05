@@ -2539,7 +2539,21 @@ namespace http
 						if (!result2.empty())
 						{
 							std::vector<std::string> sd2 = result2[0];
-
+							if (sd2[0].empty())
+							{
+								_log.Log(LOG_ERROR, "Empty Value in Meter table for device idx: '%q'", sd[0].c_str());
+								continue;
+							}
+							if (!is_number(sValue))
+							{
+								_log.Log(LOG_ERROR, "Invalid Number sValue: '%q' for device idx: '%q'", sValue.c_str(), sd[0].c_str());
+								continue;
+							}
+							if (!is_number(sd2[0]))
+							{
+								_log.Log(LOG_ERROR, "Invalid Number value: '%q' for device idx: '%q'", sd2[0].c_str(), sd[0].c_str());
+								continue;
+							}
 							int64_t total_first = std::stoll(sd2[0]);
 							int64_t total_last = std::stoll(sValue);
 							int64_t total_real = total_last - total_first;
@@ -3483,6 +3497,22 @@ namespace http
 							{
 								std::vector<std::string> sd2 = result2[0];
 
+								if (sd2[0].empty())
+								{
+									_log.Log(LOG_ERROR, "Empty Value in Meter table for device idx: '%q'", sd[0].c_str());
+									continue;
+								}
+								if (!is_number(sValue))
+								{
+									_log.Log(LOG_ERROR, "Invalid Number sValue: '%q' for device idx: '%q'", sValue.c_str(), sd[0].c_str());
+									continue;
+								}
+								if (!is_number(sd2[0]))
+								{
+									_log.Log(LOG_ERROR, "Invalid Number value: '%q' for device idx: '%q'", sd2[0].c_str(), sd[0].c_str());
+									continue;
+								}
+
 								int64_t total_first = std::stoll(sd2[0]);
 								int64_t total_last = std::stoll(sValue);
 								int64_t total_real = total_last - total_first;
@@ -4073,7 +4103,6 @@ namespace http
 			result = m_sql.safe_query("SELECT ID,Base,Name,Description FROM CustomImages");
 			if (!result.empty())
 			{
-				int ii = 0;
 				for (const auto& sd : result)
 				{
 					int ID = atoi(sd[0].c_str());
@@ -4094,6 +4123,9 @@ namespace http
 					_dbImageFiles["IconOff"] = szWWWFolder + "/images/" + IconFile48Off;
 
 					// Check if files are on disk, else add them
+
+					bool bError = false;
+
 					for (const auto& db : _dbImageFiles)
 					{
 						std::string TableField = db.first;
@@ -4109,17 +4141,23 @@ namespace http
 								std::ofstream file;
 								file.open(IconFile.c_str(), std::ios::out | std::ios::binary);
 								if (!file.is_open())
-									return;
+								{
+									bError = true;
+									continue;
+								}
 
 								file << result2[0][0];
 								file.close();
 							}
 						}
 					}
-
+					if (bError)
+					{
+						cImage.Title += " (INVALID!!)";
+						cImage.Description = "probably invalid characters in Title/Descriptionn!";
+					}
 					m_custom_light_icons.push_back(cImage);
 					m_custom_light_icons_lookup[cImage.idx] = (int)m_custom_light_icons.size() - 1;
-					ii++;
 				}
 			}
 		}
@@ -4154,113 +4192,14 @@ namespace http
 				}
 			} //(rtype=="command")
 			else
-			{	// TODO: remove this after next stable
-				// Could be a call to an old style RType, try to handle it and alert the user to update
+			{
 				_log.Debug(DEBUG_WEBSERVER, "CWebServer::GetJSonPage(rtype) :%s :%s ", rtype.c_str(), req.uri.c_str());
-
-				std::string altrtype;
-				if (rtype.compare("settings") == 0)
-				{
-					altrtype = "getsettings";
-				}
-				else if (rtype.compare("users") == 0)
-				{
-					altrtype = "getusers";
-				}
-				else if (rtype.compare("devices") == 0)
-				{
-					altrtype = "getdevices";
-				}
-				else if (rtype.compare("hardware") == 0)
-				{
-					altrtype = "gethardware";
-				}
-				else if (rtype.compare("scenes") == 0)
-				{
-					altrtype = "getscenes";
-				}
-				else if (rtype.compare("notifications") == 0)
-				{
-					altrtype = "getnotifications";
-				}
-				else if (rtype.compare("scenelog") == 0)
-				{
-					altrtype = "getscenelog";
-				}
-				else if (rtype.compare("mobiles") == 0)
-				{
-					altrtype = "getmobiles";
-				}
-				else if (rtype.compare("cameras") == 0)
-				{
-					altrtype = "getcameras";
-				}
-				else if (rtype.compare("cameras_user") == 0)
-				{
-					altrtype = "getcameras_user";
-				}
-				else if (rtype.compare("schedules") == 0)
-				{
-					altrtype = "getschedules";
-				}
-				else if (rtype.compare("timers") == 0)
-				{
-					altrtype = "gettimers";
-				}
-				else if (rtype.compare("scenetimers") == 0)
-				{
-					altrtype = "getscenetimers";
-				}
-				else if (rtype.compare("setpointtimers") == 0)
-				{
-					altrtype = "getsetpointtimers";
-				}
-				else if (rtype.compare("plans") == 0)
-				{
-					altrtype = "getplans";
-				}
-				else if (rtype.compare("floorplans") == 0)
-				{
-					altrtype = "getfloorplans";
-				}
-				else if (rtype.compare("lightlog") == 0)
-				{
-					altrtype = "getlightlog";
-				}
-				else if (rtype.compare("textlog") == 0)
-				{
-					altrtype = "gettextlog";
-				}
-				else if (rtype.compare("graph") == 0)
-				{
-					altrtype = "graph";
-				}
-				else if (rtype.compare("createdevice") == 0)
-				{
-					altrtype = "createdevice";
-				}
-				else if (rtype.compare("setused") == 0)
-				{
-					altrtype = "setused";
-				}
-
-				if (!altrtype.empty())
-				{
-					auto pf = m_webcommands.find(altrtype);
-					if (pf != m_webcommands.end())
-					{
-						_log.Log(LOG_NORM, "[WebServer] Deprecated RType (%s) for API request. Handled via fallback (%s), please use correct API Command! (%s)", rtype.c_str(), altrtype.c_str(), req.host_remote_address.c_str());
-						pf->second(session, req, root);
-					}
-				}
-				else
-				{
-					_log.Log(LOG_STATUS, "[WebServer] Deprecated RType (%s) for API request. Call ignored, please use correct API Command! (%s)", rtype.c_str(), req.host_remote_address.c_str());
-				}
-
+				rep.status = http::server::reply::not_found;
+				return;
 			}
 
 			reply::set_content(&rep, root.toStyledString());
+			rep.status = static_cast<http::server::reply::status_type>(session.reply_status);
 		}
 
 		void CWebServer::UploadFloorplanImage(WebEmSession& session, const request& req, std::string& redirect_uri)

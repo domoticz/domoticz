@@ -1,4 +1,4 @@
-﻿**Note**: This document is maintained on [github](https://github.com/domoticz/domoticz/blob/development/dzVents/documentation/README.md), and the wiki version is automatically generated. Edits should be performed on github, or they may be suggested on the wiki article's [Discussion page](https://www.domoticz.com/wiki/Talk:DzVents:_next_generation_LUA_scripting).
+﻿**Note**: This document is maintained on [github](https://github.com/domoticz/domoticz/blob/development/dzVents/documentation/README.md), and the wiki version is automatically generated. Edits should be performed on github, or they may be suggested on the wiki article's [Discussion page](https://wiki.domoticz.com/Talk:DzVents:_next_generation_Lua_scripting).
 Editing can be done by any editor but if you are looking for a specialized markDown editor; [stackedit.io](https://stackedit.io/app#) would be a good choice.
 
 # About dzVents
@@ -700,7 +700,7 @@ The domoticz object holds all information about your Domoticz system. It has glo
  - **helpers**: *Table*. Collection of shared helper functions available to all your dzVents scripts. See [Shared helper functions](#Shared_helper_functions).
  - **log(message, [level])**: *Function*. Creates a log entry in the Domoticz log but respects the log minimum level settings. You can provide the loglevel: `domoticz.LOG_INFO`, `domoticz.LOG_STATUS`, `domoticz.LOG_ERROR`, `domoticz.LOG_DEBUG` or `domoticz.LOG_FORCE`. In Domoticz settings you can set the default log level for dzVents.
 - **moduleLabel**: <sup>3.0.3</sup> Module (script) name without extension.
- - **notify(subject, message [,priority][,sound][,extra][,subsystem][,delay]<sup>3.0.10</sup> )**: *Function*. Send a notification (like Prowl). Priority can be like `domoticz.PRIORITY_LOW, PRIORITY_MODERATE, PRIORITY_NORMAL, PRIORITY_HIGH, PRIORITY_EMERGENCY`. `extra` is notification subsystem specific. For NSS_FIREBASE you can use this field to specify the target mobile ('midx_1', midx_2, etc..). For sound see [list of dzVents Constants](#Constants) for the SOUND constants below. `subsystem` defaults to all subsystems but can be one subsystem or a table containing one or more notification subsystems. See [list of dzVents Constants](#Constants) for `domoticz.NSS_subsystem` types. Delay is delay in seconds
+ - **notify(subject, message [,priority][,sound][,extra][,subsystem][,delay]<sup>3.0.10</sup> )**: *Function*. Send a notification (like Prowl). Priority can be like `domoticz.PRIORITY_LOW, PRIORITY_MODERATE, PRIORITY_NORMAL, PRIORITY_HIGH, PRIORITY_EMERGENCY`. `extra` is notification subsystem specific. For NSS_FIREBASE you can use this field to specify the target mobile ('midx_1', midx_2, etc..) or specify `device.id` so the receiver knows which device triggered the notification. For sound see [list of dzVents Constants](#Constants) for the SOUND constants below. `subsystem` defaults to all subsystems but can be one subsystem or a table containing one or more notification subsystems. See [list of dzVents Constants](#Constants) for `domoticz.NSS_subsystem` types. Delay is delay in seconds
  - **openURL(url/options)**: *Function*. Have Domoticz 'call' a URL. If you just pass a url then Domoticz will execute the url after your script has finished but you will not get notified. If you pass a table with options then you have to possibility to receive the results of the request in a dzVents script. Read more about [asynchronous http requests](#Asynchronous_HTTP_requests) with dzVents. Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
  - **scenes(idx/name)**: *Function*: A function returning a scene by name or id. Each scene has the same interface as a device. See [Device object API](#Device_object_API). To iterate over all scenes do: `domoticz.scenes().forEach(..)`. See [Looping through the collections: iterators]. (#Looping_through_the_collections:_iterators). Note that you cannot do `for i, j in pairs(domoticz.scenes()) do .. end`. Read more about [Scenes](#Scene).
  - **security**: Holds the state of the security system e.g. `Armed Home` or `Armed Away`.
@@ -1155,7 +1155,7 @@ See switch below.
  - **decreaseBrightness()**: deprecated because only very limited supported and will be removed from API
  - **getColor()**; *Function*. Returns table with color attributes or nil when color field of device is not set.
  - **increaseBrightness()**: deprecated because only very limited supported and will be removed from API
- - **setColor(r, g, b, br, cw, ww, m, t)**: *Function*. Sets the light to requested color. r, g, b required, others optional. Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29). Meaning and limits of parms can be found [here](https://www.domoticz.com/wiki/Domoticz_API/JSON_URL's#Set_a_light_to_a_certain_color_or_color_temperature).
+ - **setColor(r, g, b, br, cw, ww, m, t)**: *Function*. Sets the light to requested color. r, g, b required, others optional. Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29). Meaning and limits of parms can be found [here](https://wiki.domoticz.com/Domoticz_API/JSON_URL's#Set_a_light_to_a_certain_color_or_color_temperature).
  - **setColorBrightness()**: same as setColor
  - **setDiscoMode(modeNum)**: deprecated because only very limited supported and will be removed from API
 - **setHex(r, g, b)**: *Function*. Sets the light to requested color. r, g, b required (decimal Values 0-255). Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
@@ -2569,9 +2569,9 @@ _.print(_.indexOf({2, 3, 'x', 4}, 'x'))
 <!--- (Removed because link is dead. Hopefully only temporarily) Check out the great documentation [here](http://axmat.github.io/lodash.lua/). --->
 Check out the documentation [here](https://htmlpreview.github.io/?https://github.com/rwaaren/lodash.lua/blob/master/doc/index.html).
 
-# History [link to changes in previous versions](https://www.domoticz.com/wiki/DzVents_version_History).
+# History [link to changes in previous versions](https://wiki.domoticz.com/DzVents_version_History).
 
 See link for the complete list of changes
 
-https://www.domoticz.com/wiki/DzVents_version_History
+https://wiki.domoticz.com/DzVents_version_History
 

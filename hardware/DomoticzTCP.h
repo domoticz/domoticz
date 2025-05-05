@@ -19,6 +19,7 @@ public:
 	bool SetSetPointEvo(const std::string& idx, float TempValue, const std::string& newMode, const std::string& until);
 	bool SetThermostatState(const std::string& idx, int newState);
 	bool SwitchEvoModal(const std::string& idx, const std::string& status, const std::string& action, const std::string& ooc, const std::string& until);
+	bool SetTextDevice(const std::string& idx, const std::string& text);
 
 #ifdef WITH_OPENZWAVE
 	bool SetZWaveThermostatMode(const std::string& idx, int tMode);

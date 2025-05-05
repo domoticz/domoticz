@@ -113,11 +113,11 @@ void CFibaroPush::DoFibaroPush(const uint64_t DeviceRowIdx)
 					if (int(strarray.size()) >= delpos)
 					{
 						std::string rawsendValue = strarray[delpos - 1];
-						sendValue = ProcessSendValue(DeviceRowIdx, rawsendValue, delpos, nValue, includeUnit, dType, dSubType, metertype);
+						sendValue = ProcessSendValue(DeviceRowIdx, rawsendValue, delpos, nValue, sValue, includeUnit, dType, dSubType, metertype);
 					}
 				}
 				else
-					sendValue = ProcessSendValue(DeviceRowIdx, sValue, delpos, nValue, includeUnit, dType, dSubType, metertype);
+					sendValue = ProcessSendValue(DeviceRowIdx, sValue, delpos, nValue, sValue, includeUnit, dType, dSubType, metertype);
 			}
 		}
 		else { // scenes/reboot, only on/off

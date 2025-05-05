@@ -234,6 +234,9 @@ void CMeteorologisk::GetMeterDetails()
 
 	Json::Value timeseries = root["properties"]["timeseries"];
 
+	//First value is actual value
+	int iSelectedTimeserie = 0;
+/*
 	int iSelectedTimeserie = -1;
 	time_t now = mytime(nullptr);
 
@@ -254,7 +257,7 @@ void CMeteorologisk::GetMeterDetails()
 			iSelectedTimeserie = i;
 		}
 	}
-
+*/
 	if ((iSelectedTimeserie < 0) || (iSelectedTimeserie >= (int)timeseries.size()))
 	{
 		Log(LOG_ERROR, "Invalid data received, or unknown location!");

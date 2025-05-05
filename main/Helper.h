@@ -16,6 +16,7 @@ enum _eTimeFormat
 const std::string WHITESPACE = " \n\r\t\f\v";
 
 uint8_t Crc8(uint8_t crc, const uint8_t* buf, size_t size);
+uint16_t crc16ccitt(const uint8_t* buf, size_t size);
 unsigned int Crc32(unsigned int crc, const uint8_t* buf, size_t size);
 uint8_t Crc8_strMQ(uint8_t crc, const uint8_t* buf, size_t size);
 void StringSplit(std::string str, const std::string &delim, std::vector<std::string> &results);
@@ -26,6 +27,10 @@ void stdreplace(
 	std::string &inoutstring,
 	const std::string& replaceWhat,
 	const std::string& replaceWithWhat);
+void stdreplace(
+	std::wstring& inoutstring,
+	const std::wstring& replaceWhat,
+	const std::wstring& replaceWithWhat);
 bool std_ends_with(const std::string& str, const std::string& suffix);
 void stdupper(std::string& inoutstring);
 void stdlower(std::string& inoutstring);

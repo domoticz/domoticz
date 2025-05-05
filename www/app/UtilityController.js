@@ -68,7 +68,6 @@ define(['app', 'livesocket'], function (app) {
 				data: $.ddData,
 				width: 260,
 				height: 390,
-				height: 390,
 				selectText: "Sensor Icon",
 				imagePosition: "left"
 			});
@@ -80,6 +79,29 @@ define(['app', 'livesocket'], function (app) {
 			});
 			$("#dialog-editutilitydevice").i18n();
 			$("#dialog-editutilitydevice").dialog("open");
+		}
+
+		EditTextDevice = function (idx, name, text, description, customimage) {
+			$.devIdx = idx;
+			$("#dialog-edittextdevice #deviceidx").text(idx);
+			$("#dialog-edittextdevice #devicename").val(unescape(name));
+			$("#dialog-edittextdevice #devicetext").val(unescape(text));
+			$("#dialog-edittextdevice #devicedescription").val(unescape(description));
+			$('#dialog-edittextdevice #combosensoricon').ddslick({
+				data: $.ddData,
+				width: 260,
+				height: 490,
+				selectText: "Sensor Icon",
+				imagePosition: "left"
+			});
+			//find our custom image index and select it
+			$.each($.ddData, function (i, item) {
+				if (item.value == customimage) {
+					$('#dialog-edittextdevice #combosensoricon').ddslick('select', { index: i });
+				}
+			});
+			$("#dialog-edittextdevice").i18n();
+			$("#dialog-edittextdevice").dialog("open");
 		}
 
 		EditCustomSensorDevice = function (idx, name, description, customimage, sensortype, axislabel) {
@@ -940,7 +962,8 @@ define(['app', 'livesocket'], function (app) {
 
 								xhtm += '<a class="btnsmall" href="' + logLink + '" data-i18n="Log">Log</a> ';
 								if (permissions.hasPermission("Admin")) {
-									xhtm += '<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\', ' + item.CustomImage + ');" data-i18n="Edit">Edit</a> ';
+									let text = status.replaceAll("<br />", "");
+									xhtm += '<a class="btnsmall" onclick="EditTextDevice(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(text) + '\',\'' + escape(item.Description) + '\', ' + item.CustomImage + ');" data-i18n="Edit">Edit</a> ';
 								}
 							}
 							else if (item.SubType == "Thermostat Clock") {
@@ -1186,6 +1209,70 @@ define(['app', 'livesocket'], function (app) {
 				resizable: false,
 				title: $.t("Edit Device"),
 				buttons: dialog_editutilitydevice_buttons,
+				close: function () {
+					$(this).dialog("close");
+				}
+			});
+
+			var dialog_edittextdevice_buttons = {};
+
+			dialog_edittextdevice_buttons[$.t("Update")] = function () {
+				var bValid = true;
+				bValid = bValid && checkLength($("#dialog-edittextdevice #devicename"), 2, 100);
+				if (bValid) {
+					var cval = $('#dialog-edittextdevice #combosensoricon').data('ddslick').selectedIndex;
+					var CustomImage = $.ddData[cval].value;
+					$(this).dialog("close");
+					$.ajax({
+						url: "json.htm?type=command&param=setused&idx=" + $.devIdx +
+						'&name=' + encodeURIComponent($("#dialog-edittextdevice #devicename").val()) +
+						'&customimage=' + CustomImage +
+						'&text=' + encodeURIComponent($("#dialog-edittextdevice #devicetext").val()) +
+						'&description=' + encodeURIComponent($("#dialog-edittextdevice #devicedescription").val()) +
+						'&used=true',
+						async: false,
+						dataType: 'json',
+						success: function (data) {
+							ShowUtilities();
+						}
+					});
+
+				}
+			};
+			dialog_edittextdevice_buttons[$.t("Remove Device")] = function () {
+				$(this).dialog("close");
+				bootbox.confirm($.t("Are you sure to remove this Device?"), function (result) {
+					if (result == true) {
+						$.ajax({
+							url: "json.htm?type=command&param=setused&idx=" + $.devIdx +
+							'&name=' + encodeURIComponent($("#dialog-edittextdevice #devicename").val()) +
+							'&description=' + encodeURIComponent($("#dialog-edittextdevice #devicedescription").val()) +
+							'&used=false',
+							async: false,
+							dataType: 'json',
+							success: function (data) {
+								ShowUtilities();
+							}
+						});
+					}
+				});
+			};
+			dialog_edittextdevice_buttons[$.t("Replace")] = function () {
+				$(this).dialog("close");
+				ReplaceDevice($.devIdx, ShowUtilities);
+			};
+			dialog_edittextdevice_buttons[$.t("Cancel")] = function () {
+				$(this).dialog("close");
+			};
+
+			$("#dialog-edittextdevice").dialog({
+				autoOpen: false,
+				width: 'auto',
+				height: 'auto',
+				modal: true,
+				resizable: false,
+				title: $.t("Edit Device"),
+				buttons: dialog_edittextdevice_buttons,
 				close: function () {
 					$(this).dialog("close");
 				}
@@ -1697,6 +1784,12 @@ define(['app', 'livesocket'], function (app) {
 			//WatchLiveSearch();
 
 			$("#dialog-editutilitydevice").keydown(function (event) {
+				if (event.keyCode == 13) {
+					$(this).siblings('.ui-dialog-buttonpane').find('button:eq(0)').trigger("click");
+					return false;
+				}
+			});
+			$("#dialog-edittextdevice").keydown(function (event) {
 				if (event.keyCode == 13) {
 					$(this).siblings('.ui-dialog-buttonpane').find('button:eq(0)').trigger("click");
 					return false;

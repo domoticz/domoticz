@@ -3,7 +3,7 @@
 #           Author:     Dnpwwo, 2016 - 2017
 #
 """
-<plugin key="Kodi" name="Kodi Players" author="dnpwwo" version="1.8.0" wikilink="http://www.domoticz.com/wiki/plugins/Kodi.html" externallink="https://kodi.tv/">
+<plugin key="Kodi" name="Kodi Players" author="dnpwwo" version="1.8.0" wikilink="https://wiki.domoticz.com/Kodi" externallink="https://kodi.tv/">
     <params>
         <param field="Address" label="IP Address" width="200px" required="true" default="127.0.0.1"/>
         <param field="Port" label="Port" width="30px" required="true" default="9090"/>

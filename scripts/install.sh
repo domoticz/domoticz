@@ -179,8 +179,8 @@ HTTPS:	${IPv4_address%/*}:${HTTPS_port}
 User/Password:   admin/domoticz 
 Modify password asap in menu Setup - MyProfile
 
-Wiki:  https://www.domoticz.com/wiki
-Forum: https://www.domoticz.com/forum
+Wiki:  https://wiki.domoticz.com
+Forum: https://forum.domoticz.com
 
 The install log is in /etc/domoticz." ${r} ${c}
 }

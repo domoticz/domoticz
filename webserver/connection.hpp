@@ -43,11 +43,11 @@ namespace http {
 				std::string host_local_endpoint_port_;
 				std::string host_last_request_uri_;
 			};
-			/// Construct a connection with the given io_service.
-			explicit connection(boost::asio::io_service& io_service,
+			/// Construct a connection with the given io_context.
+			explicit connection(boost::asio::io_context& io_context,
 				connection_manager& manager, request_handler& handler, int timeout);
 #ifdef WWW_ENABLE_SSL
-			explicit connection(boost::asio::io_service& io_service,
+			explicit connection(boost::asio::io_context& io_context,
 				connection_manager& manager, request_handler& handler, int timeout, boost::asio::ssl::context& context);
 #endif
 			~connection() = default;

@@ -444,20 +444,8 @@
 			</tr>
 		</thead>
 	</table>
-	<table id="updelclr" border="0" cellpadding="0" cellspacing="0" width="100%">
-		<tr>
-			<td>
-				<a class="btnstyle3-dis" id="hardwareupdate" data-i18n="Update">Update</a>&nbsp;&nbsp;&nbsp;
-				<a class="btnstyle3-dis" id="hardwaredelete" data-i18n="Delete">Delete</a>
-			</td>
-		</tr>
-	</table>
 	<br>
 	<table class="display" id="hardwareparamstable" border="0" cellpadding="0" cellspacing="20">
-		<tr>
-			<td align="right" style="width:80px"><span data-i18n="Enabled"></span>:</td>
-			<td><input type="checkbox" id="enabled" checked><label for="enabled"></label></td>
-		</tr>
 		<tr>
 			<td align="right" style="width:110px"><label for="hardwarename"><span data-i18n="Name"></span>:</label></td>
 			<td><input type="text" id="hardwarename" style="width: 250px; padding: .2em;" class="text ui-widget-content ui-corner-all"></td>
@@ -509,11 +497,15 @@
 					<option data-i18n="23 Hours" value="82800">23 Hours</option>
 					<option data-i18n="24 Hours" value="86400">24 Hours</option>
 				</select>
-				<br>
+				<br><br>
 				<span data-i18n="Specifying a Data Timeout will restart the hardware device if no data is received for the specified time."></span>
 				<br>
 				<strong><font class="warning-text"><span data-i18n="Do not enable this option for devices that do not receive data!"></span></font></strong>
 			</td>
+		</tr>
+		<tr>
+			<td align="right" style="width:80px"><span data-i18n="Enabled"></span>:</td>
+			<td><input type="checkbox" id="enabled" checked><label for="enabled"></label></td>
 		</tr>
 	</table>
 	<div id="div1wire">
@@ -798,7 +790,6 @@
 		</table>
 	</div>
 	<div id="divremote">
-		<br>
 		<table class="display" id="hardwareparamsremote" border="0" cellpadding="0" cellspacing="20">
 			<tr>
 				<td align="right" style="width:110px"><label id="lblremoteaddress" for="name"><span data-i18n="Remote Address"></span>:</label></td>
@@ -1090,7 +1081,7 @@
 					<ul>
 						<li>If you enter an API key all the other fields are optional.</li>
 						<li>If you enter a Product Id, Secret and PIN but leave the API Key blank Domoticz will attempt to grab an API key from Nest using that information.</li>
-						<li>To obtain an API Key you will need to register with Nest. See the Domoticz Wiki (<a href="http://www.domoticz.com/wiki/NestDeveloperApiKey">NestDeveloperApiKey</a>) for more information.</li>
+						<li>To obtain an API Key you will need to register with Nest. See the Domoticz Wiki (<a href="https://wiki.domoticz.com/NestDeveloperApiKey">NestDeveloperApiKey</a>) for more information.</li>
 					</ul>
 				</td>
 			</tr>
@@ -1252,7 +1243,6 @@
 		</table>
 	</div>
 	<div id="divlogin">
-		<br>
 		<table class="display" id="hardwareparamslogin" border="0" cellpadding="0" cellspacing="20">
 			<tr>
 				<td align="right" style="width:110px"><label id="lblusername" for="name"><span data-i18n="Username"></span>:</label></td>
@@ -1390,6 +1380,7 @@
 						<option value="EN">Eneco</option>
 						<option value="EVO">Energie van Ons</option>
 						<option value="EZ">Energy Zero</option>
+						<option value="FR">Frank Energie</option>
 						<option value="GSL">Groenestroom Lokaal</option>
 						<option value="MDE">Mijndomein Energie</option>
 						<option value="NE">NextEnergy</option>
@@ -1426,7 +1417,62 @@
 				<td align="right" style="width:110px"></td>
 				<td>
 					You need to sign up at Honeywell to get the API key and secret. <br>
-					Please follow the instructions on <a href="https://www.domoticz.com/wiki/HoneywellDeveloperApiKey" target="_blank">domoticz.com/wiki/HoneywellDeveloperApiKey</a>
+					Please follow the instructions on <a href="https://wiki.domoticz.com/HoneywellDeveloperApiKey" target="_blank">wiki.domoticz.com/HoneywellDeveloperApiKey</a>
+				</td>
+			</tr>
+		</table>
+	</div>
+	<div id="divnetatmo">
+		<br>
+		<table class="display" id="hardwareparamsnetatmo" border="0" cellpadding="0" cellspacing="20">
+ 			<tr>
+				<td align="right" style="width:110px"></td>
+				<td>
+					You need to sign up at Netatmo to get the API's Client ID and secret. <br>
+					Please follow the instructions on <a href="https://wiki.domoticz.com/Netatmo" target="_blank">wiki.domoticz.com/Netatmo</a>
+					<br><br>
+					Press and hold the control key (Windows) or the Command key (Apple) to select multiple scope items.<br>
+					Please select only those scope items that are approiate for your devives.
+					<br><br>
+					The scopes ending with * are not tested yet! Use at your own risk.
+					<br><br>
+ 				</td>
+			</tr>
+ 			<tr>
+				<td align="right" style="width:110px"><label><span data-i18n="Client ID">APP client ID</span>:</label></td>
+				<td><input type="text" id="clientid" onchange="javascript:NetatmoEnableLogin()" style="width: 250px; padding: .2em;" class="text ui-widget-content ui-corner->-all"></td>
+			</tr>
+ 			<tr>
+				<td align="right" style="width:110px"><label><span data-i18n="Client Secret">APP client Secret</span>:</label></td>
+				<td><input type="password" id="clientsecret" onchange="javascript:NetatmoEnableLogin()" style="width: 250px; padding: .2em;" class="text ui-widget-content ui-corner->-all"></td>
+			</tr>
+			<tr>
+				<td align="right" style="width:110px"<label><span data-i18n="Scope"></span>:</label></td>
+				<td>
+					<select id="scope" name="Scope" onchange="javascript:NetatmoEnableLogin()" size="6" style="width:255px" class="combobox ui-corner-all" multiple >
+						<option value="station_R">Weather Station</option>
+						<option value="thermostat_RW">Thermostat </option>
+						<option value="camera_RWA">Indoor Camera</option>
+						<option value="doorbell_RA">Doorbell *</option>
+						<option value="presence_RWA">Presence</option>
+						<option value="carbonmonoxidedetector_R">CO2 Detector</option>
+						<option value="smokedetector_R">Smoke Detector</option>
+						<option value="homecoach_R">Home Coach</option>
+						<option value="magellan_RW">Magellan</option>
+						<option value="bubendorff_RW">Bubendorff *</option>
+						<option value="smarther_RW">Smarther *</option>
+						<option value="mx_RW">MX *</option>
+						<option value="mhs1_RW">My Home Server 1 *</option>
+					</select>
+				</td>
+			</tr>
+			<tr>
+				<td align="right"><button type="button" disabled class="btnstyle3-dis" id="netatmologin" data-i18n="Login">Login</button></td>
+				<td>
+					<div style="width:250px">
+						<font  color="orange"  id="netatmologinrequiredtext" style="display:none" >
+						Tokens are invalid or expired; please login to obtain new tokens!
+					</div>
 				</td>
 			</tr>
 		</table>
@@ -1601,12 +1647,23 @@
 			</tr>
 		</table>
 	</div>
-	<div>
+	<div id="divenocean">
 		<br>
-		<table border="0" cellpadding="0" cellspacing="14">
+		<table class="display" id="hardwareparamusebaseid" border="0" cellpadding="0" cellspacing="20">
+		<tr>
+				<td align="right" style="width:110px"><label for="usebaseid"><span data-i18n="Use base id as source"></span>:</label></td>
+				<td><input type="checkbox" id="usebaseid" name="usebaseid"><label for="usebaseid"></label></td>
+		</tr>
+		</table>
+	</div>
+	<div>
+		<table id="updelclr" border="0" cellpadding="0" cellspacing="14">
 			<tr>
 				<td align="right" style="width:110px"></td>
-				<td><a class="btnstyle3" onclick="AddHardware();" data-i18n="Add">Add</a></td>
+				<td><a class="btn btn-warning" id="hardwareupdate" data-i18n="Update">Update</a>
+					<a class="btn btn-danger" id="hardwaredelete" data-i18n="Delete">Delete</a>
+					<a class="btn btn-info" onclick="AddHardware();" data-i18n="Add">Add</a>
+				</td>
 			</tr>
 		</table>
 	</div>

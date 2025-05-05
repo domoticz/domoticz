@@ -11,7 +11,7 @@
 		<tr>
 			<td>
 				<br>
-				<a class="btnstyle3" onclick="SaveUserDevices();" data-i18n="Save">Save</a>
+				<a class="btn btn-info" onclick="SaveUserDevices();" data-i18n="Save">Save</a>
 				<a class="btn btn-danger" onclick="ClearUserDevices();" data-i18n="Clear">Clear</a>
 			</td>
 		</tr>
@@ -28,14 +28,6 @@
 				<th width="80" align="center" data-i18n="Devices">Devices</th>
 			</tr>
 		</thead>
-	</table>
-	<table id="updelclr" border="0" cellpadding="0" cellspacing="0" width="100%">
-		<tr>
-			<td>
-				<a class="btnstyle3-dis" id="userupdate" data-i18n="Update">Update</a>&nbsp;&nbsp;&nbsp;
-				<a class="btnstyle3-dis" id="userdelete" data-i18n="Delete">Delete</a>
-			</td>
-		</tr>
 	</table>
 	<br>
 	<table class="display" id="userparamstable" border="0" cellpadding="0" cellspacing="20">
@@ -74,12 +66,11 @@
 				<input type="checkbox" id="EnableTabWeather" name="EnableTabWeather"> <label for="EnableTabWeather"><span data-i18n="Weather"></span></label><br>
 				<input type="checkbox" id="EnableTabUtility" name="EnableTabUtility"> <label for="EnableTabUtility"><span data-i18n="Utility"></span></label><br>
 				<input type="checkbox" id="EnableTabCustom" name="EnableTabCustom"> <label for="EnableTabCustom"><span data-i18n="Custom"></span></label><br>
-			</td>
-		</tr>
-		<tr>
-			<td></td>
-			<td>
-				<a class="btnstyle3" onclick="AddUser();" data-i18n="Add">Add</a>
+				<br/>
+				<a class="btn btn-warning" id="userupdate" data-i18n="Update">Update</a>
+				<a class="btn btn-danger" id="userdelete" data-i18n="Delete">Delete</a>
+				<a class="btn btn-info" onclick="AddUser();" data-i18n="Add">Add</a>
+				
 			</td>
 		</tr>
 	</table>

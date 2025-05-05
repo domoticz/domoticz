@@ -18,3 +18,7 @@
 	path = extern/fmtlib
 	url = https://github.com/fmtlib/fmt.git
 	ignore = dirty
+[submodule "extern/jwtcpp"]
+	path = extern/jwtcpp
+	url = https://github.com/Thalhammer/jwt-cpp
+	ignore = dirty

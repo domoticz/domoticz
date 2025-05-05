@@ -1,5 +1,5 @@
-define(['app', 'timers/factories', 'timers/components', 'scenes/factories'], function (app) {
-    app.controller('SceneTimersController', function ($routeParams, sceneApi, sceneTimersApi, deviceTimerOptions, deviceTimerConfigUtils, utils) {
+define(['app', 'timers/factories', 'timers/components'], function (app) {
+    app.controller('SceneTimersController', function ($routeParams, sceneTimersApi, deviceTimerOptions, deviceTimerConfigUtils, utils, domoticzApi, dzTimeAndSun, permissions) {
         var vm = this;
 
         var deleteConfirmationMessage = $.t('Are you sure to delete this timers?\n\nThis action can not be undone...');
@@ -10,13 +10,37 @@ define(['app', 'timers/factories', 'timers/components', 'scenes/factories'], fun
         vm.deleteTimer = utils.confirmDecorator(deleteTimer, deleteConfirmationMessage);
         vm.clearTimers = utils.confirmDecorator(clearTimers, clearConfirmationMessage);
 
+        function getScenes() {
+            return domoticzApi
+                .sendCommand('getscenes',{})
+                .then(function (data) {
+                    dzTimeAndSun.updateData(data);
+
+                    return data && data.result
+                        ? data.result
+                        : $q.reject(data);
+                });
+        }
+
+        function getSceneInfo(idx) {
+            return getScenes().then(function (scenes) {
+                var scene = scenes.find(function (item) {
+                    return item.idx === idx.toString();
+                });
+
+                return scene
+                    ? scene
+                    : $q.reject('Scene not found');
+            });
+        }
+
         init();
 
         function init() {
             vm.sceneIdx = $routeParams.id;
             vm.selectedTimerIdx = null;
 
-            sceneApi.getSceneInfo(vm.sceneIdx).then(function (scene) {
+            getSceneInfo(vm.sceneIdx).then(function (scene) {
                 vm.isLoaded = true;
                 vm.itemName = scene.Name;
                 vm.colorSettingsType = 'Scene';

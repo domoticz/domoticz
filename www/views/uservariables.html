@@ -13,10 +13,10 @@
     <table class="display" border="0" cellpadding="0" cellspacing="0" width="100%">
 		<tr>
 			<td align="left">
-				<a class="btnstyle3-dis" id="uservariableupdate" data-i18n="Update">Update</a>&nbsp;
-				<a class="btnstyle3-dis" id="uservariabledelete" data-i18n="Delete">Delete</a>
 			</td>
-			<td align="right"><a class="btnstyle3" ng-click="RefreshUserVariablesTable();" data-i18n="Refresh">Refresh</a></td>
+			<td align="right">
+				<a class="btn btn-info" ng-click="RefreshUserVariablesTable();" data-i18n="Refresh">Refresh</a>
+			</td>
 		</tr>
     </table>
 	<p>
@@ -42,8 +42,14 @@
 			<td><input type="text" id="uservariablevalue" style="width: 250px; padding: .2em;" class="text ui-widget-content ui-corner-all"></td>
 		</tr>
 		<tr>
-			<td colspan="2">
-				<a class="btnstyle3" onclick="AddUpdateVariable('a',0);" data-i18n="Add">Add</a>
+		<td><br></td>
+		</tr>
+		<tr>
+			<td></td>
+			<td>
+				<a class="btn btn-warning" id="uservariableupdate" data-i18n="Update">Update</a>
+				<a class="btn btn-danger" id="uservariabledelete" data-i18n="Delete">Delete</a>
+				<a class="btn btn-info" onclick="AddUpdateVariable('a',0);" data-i18n="Add">Add</a>
 			</td>
 		</tr>	
 	</table>

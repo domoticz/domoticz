@@ -294,6 +294,22 @@ bool DomoticzTCP::SwitchEvoModal(const std::string& idx, const std::string& stat
 	return WriteToHardware(szEncrypted);
 }
 
+bool DomoticzTCP::SetTextDevice(const std::string& idx, const std::string& text)
+{
+	Json::Value root;
+	if (!AssambleDeviceInfo(idx, root))
+		return false;
+	root["action"] = "SetTextDevice";
+	root["text"] = text;
+
+	std::string szSend = JSonToRawString(root);
+	std::vector<char> uhash = HexToBytes(m_password);
+	std::string szEncrypted;
+	AESEncryptData(szSend, szEncrypted, (const uint8_t*)uhash.data());
+	return WriteToHardware(szEncrypted);
+}
+
+
 #ifdef WITH_OPENZWAVE
 bool DomoticzTCP::SetZWaveThermostatMode(const std::string& idx, int tMode)
 {

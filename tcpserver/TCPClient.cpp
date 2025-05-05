@@ -19,7 +19,7 @@ namespace tcp {
 			delete socket_;
 		}
 
-		CTCPClient::CTCPClient(boost::asio::io_service& ios, CTCPServerIntBase* pManager)
+		CTCPClient::CTCPClient(boost::asio::io_context& ios, CTCPServerIntBase* pManager)
 			: CTCPClientBase(pManager)
 		{
 			socket_ = new boost::asio::ip::tcp::socket(ios);
@@ -63,6 +63,7 @@ namespace tcp {
 								return;
 							}
 							m_username = strarray[1];
+							_log.Log(LOG_STATUS, "Authentication succeeded for user %s on %s", m_username.c_str(), m_endpoint.c_str());
 						}
 					}
 					else

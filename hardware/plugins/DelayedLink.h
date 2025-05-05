@@ -1,5 +1,10 @@
 #pragma once
 #ifdef ENABLE_PYTHON
+#include <set>
+#include <string>
+#include <functional> // Required for std::greater
+#include "../../main/Helper.h"
+
 #ifdef WIN32
 #	define MS_NO_COREDLL 1
 #else
@@ -151,41 +156,33 @@ namespace Plugins {
 		DECLARE_PYTHON_SYMBOL(long, PyType_GetFlags, PyTypeObject*);
 		DECLARE_PYTHON_SYMBOL(void, _Py_Dealloc, PyObject*);
 
-		SharedLibraryProxy() {
-			Py_None = nullptr;
-			shared_lib_ = nullptr;
-			if (!shared_lib_) {
+        SharedLibraryProxy() {
+            Py_None = nullptr;
+            shared_lib_ = nullptr;
+
+            // Define the base Python versions in descending order (latest to oldest)
+			constexpr std::array<const char*, 11> python_versions = {
+				"python3.14", "python3.13", "python3.12", "python3.11", "python3.10",
+                "python3.9", "python3.8", "python3.7", "python3.6",
+                "python3.5", "python3.4"
+            };
+            // Platform-specific suffixes
+			std::string extension;
 #ifdef WIN32
-				if (!shared_lib_) shared_lib_ = LoadLibrary("python312.dll");
-				if (!shared_lib_) shared_lib_ = LoadLibrary("python311.dll");
-				if (!shared_lib_) shared_lib_ = LoadLibrary("python310.dll");
-				if (!shared_lib_) shared_lib_ = LoadLibrary("python39.dll");
-				if (!shared_lib_) shared_lib_ = LoadLibrary("python38.dll");
-				if (!shared_lib_) shared_lib_ = LoadLibrary("python37.dll");
-				if (!shared_lib_) shared_lib_ = LoadLibrary("python36.dll");
-				if (!shared_lib_) shared_lib_ = LoadLibrary("python35.dll");
-				if (!shared_lib_) shared_lib_ = LoadLibrary("python34.dll");
+			extension = ".dll"; // Windows uses .dll
+#elif defined(__FreeBSD__)
+			extension = "m";    // FreeBSD uses 'm' suffix
+#endif
+			// Loop through the set (it is already sorted in descending order)
+            for (const auto& version : python_versions) {
+				std::string lib_name = version;
+#ifdef WIN32
+				stdreplace(lib_name, ".", "");
+				lib_name += extension;
+				shared_lib_ = LoadLibrary(lib_name.c_str());
 #else
-				if (!shared_lib_) FindLibrary("python3.12", true);
-				if (!shared_lib_) FindLibrary("python3.11", true);
-				if (!shared_lib_) FindLibrary("python3.10", true);
-				if (!shared_lib_) FindLibrary("python3.9", true);
-				if (!shared_lib_) FindLibrary("python3.8", true);
-				if (!shared_lib_) FindLibrary("python3.7", true);
-				if (!shared_lib_) FindLibrary("python3.6", true);
-				if (!shared_lib_) FindLibrary("python3.5", true);
-				if (!shared_lib_) FindLibrary("python3.4", true);
-#ifdef __FreeBSD__
-				if (!shared_lib_) FindLibrary("python3.12m", true);
-				if (!shared_lib_) FindLibrary("python3.11m", true);
-				if (!shared_lib_) FindLibrary("python3.10m", true);
-				if (!shared_lib_) FindLibrary("python3.9m", true);
-				if (!shared_lib_) FindLibrary("python3.8m", true);
-				if (!shared_lib_) FindLibrary("python3.7m", true);
-				if (!shared_lib_) FindLibrary("python3.6m", true);
-				if (!shared_lib_) FindLibrary("python3.5m", true);
-				if (!shared_lib_) FindLibrary("python3.4m", true);
-#endif /* FreeBSD */
+				lib_name += extension;
+				FindLibrary(lib_name.c_str(), true);
 #endif
 				if (shared_lib_)
 				{
@@ -289,6 +286,7 @@ namespace Plugins {
 					RESOLVE_PYTHON_SYMBOL(PyEval_EvalCode);
 					RESOLVE_PYTHON_SYMBOL(PyType_GetFlags);
 					RESOLVE_PYTHON_SYMBOL(_Py_Dealloc);
+					break;
 				}
 			}
 		};

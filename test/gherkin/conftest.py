@@ -1,5 +1,6 @@
 from pytest_bdd import scenario, given, when, then, parsers
 import requests, subprocess
+import re
 
 class Domoticz:
     sBaseURI = ""
@@ -62,6 +63,16 @@ def request_uri(test_domoticz,method):
     oResult = requests.get(test_domoticz.sBaseURI + uri, headers=test_domoticz.oReqHeaders)
     test_domoticz.oResponse = oResult
 
+@when('I submit wrong credentials to the loginpage')
+def submit_wrongcredentials(test_domoticz):
+    oResult = requests.post(test_domoticz.sBaseURI + '/json.htm?type=command&param=logincheck', headers=test_domoticz.oReqHeaders, data={'username': 'd3Jvbmc=', 'password': 'd3Jvbmd0b28='})
+    test_domoticz.oResponse = oResult
+
+@when('I submit correct credentials to the loginpage')
+def submit_credentials(test_domoticz):
+    oResult = requests.post(test_domoticz.sBaseURI + '/json.htm?type=command&param=logincheck', headers=test_domoticz.oReqHeaders, data={'username': 'YWRtaW4=', 'password': '59515f6b193071e263f14bfa94bef645'})
+    test_domoticz.oResponse = oResult
+
 @then(parsers.parse('the HTTP-return code should be "{returncode:d}"'))
 def check_returncode(test_domoticz,returncode):
     assert test_domoticz.oResponse.status_code == returncode
@@ -75,6 +86,16 @@ def check_header(test_domoticz,headername, headervalue):
         print(test_domoticz.oResponse.headers)
         assert False
 
+@then(parsers.parse('the HTTP-header "{headername}" should comply to pattern "{headerpattern}"'))
+def check_header(test_domoticz,headername, headerpattern):
+    bExists = headername in test_domoticz.oResponse.headers
+    if bExists:
+        headervalue = test_domoticz.oResponse.headers[headername]
+        assert re.match(headerpattern, headervalue)
+    else:
+        print(test_domoticz.oResponse.headers)
+        assert False
+
 @then(parsers.parse('the HTTP-header "{headername}" should be absent'))
-def check_noheader(test_domoticz,headername, headervalue):
+def check_noheader(test_domoticz,headername):
     assert not headername in test_domoticz.oResponse.headers

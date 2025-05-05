@@ -316,6 +316,7 @@ CEnOceanESP3::CEnOceanESP3(const int ID, const std::string &devname, const int t
 	m_Type = type;
 	m_id_base = 0;
 	m_id_chip = 0;
+	m_id_src = 0;
 }
 
 bool CEnOceanESP3::StartHardware()
@@ -2089,10 +2090,10 @@ bool CEnOceanESP3::WriteToHardware(const char *pdata, const unsigned char length
 		buf[1] = 0x01; // CMD 0x1, Actuator set output
 		buf[2] = tsen->LIGHTING2.unitcode - 1; // I/O Channel
 		buf[3] = (tsen->LIGHTING2.cmnd == light2_sOn) ? 0x64 : 0x00; // Output Value
-		buf[4] = bitrange(m_id_chip, 24, 0xFF); // Sender ID
-		buf[5] = bitrange(m_id_chip, 16, 0xFF);
-		buf[6] = bitrange(m_id_chip, 8, 0xFF);
-		buf[7] = bitrange(m_id_chip, 0, 0xFF);
+		buf[4] = bitrange(m_id_src, 24, 0xFF); // Sender ID
+		buf[5] = bitrange(m_id_src, 16, 0xFF);
+		buf[6] = bitrange(m_id_src, 8, 0xFF);
+		buf[7] = bitrange(m_id_src, 0, 0xFF);
 		buf[8] = 0x00; // Status
 
 		optbuf[0] = 0x03; // SubTelNum : Send = 0x03
@@ -2104,7 +2105,7 @@ bool CEnOceanESP3::WriteToHardware(const char *pdata, const unsigned char length
 		optbuf[6] = 0x00; // Seurity Level : Send = ignored
 
 		// Could be replaced by :
-		// sendVld(m_id_chip, nodeID, D20100_CMD1, 1,0, tsen->LIGHTING2.unitcode - 1, (tsen->LIGHTING2.cmnd == light2_sOn) ? 0x64 : 0x00 , END_ARG_DATA);
+		// sendVld(nodeID, D20100_CMD1, 1,0, tsen->LIGHTING2.unitcode - 1, (tsen->LIGHTING2.cmnd == light2_sOn) ? 0x64 : 0x00 , END_ARG_DATA);
 
 		Debug(DEBUG_NORM, "Send switch %s to Node %08X (%s)",
 			(tsen->LIGHTING2.cmnd == light2_sOn) ? "On" : "Off", nodeID, pNode->name.c_str());
@@ -2137,7 +2138,7 @@ bool CEnOceanESP3::WriteToHardware(const char *pdata, const unsigned char length
 		Debug(DEBUG_NORM, "Send Set Pilot Wire Mode %d (%s) to Node %08X (%s)",
 			PilotWireMode, PilotWireModeStr[PilotWireMode], nodeID, pNode->name.c_str());
 
-		sendVld(m_id_chip, nodeID, D20100_CMD8, 8, PilotWireMode, END_ARG_DATA);
+		sendVld(nodeID, D20100_CMD8, 8, PilotWireMode, END_ARG_DATA);
 		return true;
 	}
 	if ((pNode->RORG == RORG_VLD || pNode->RORG == UNKNOWN_RORG) && pNode->func == 0x05 && pNode->type >= 0x00 && pNode->type <= 0x05)
@@ -2165,10 +2166,10 @@ bool CEnOceanESP3::WriteToHardware(const char *pdata, const unsigned char length
 			m_last_blind_position = 0xFF;
 
 			// Send Stop Command
-			sendVld(m_id_chip, nodeID, D2050X_CMD2, CHN, 2, END_ARG_DATA);
+			sendVld(nodeID, D2050X_CMD2, CHN, 2, END_ARG_DATA);
 
 			// Query Position and Angle
-			sendVld(m_id_chip, nodeID, D2050X_CMD3, CHN, 3, END_ARG_DATA);
+			sendVld(nodeID, D2050X_CMD3, CHN, 3, END_ARG_DATA);
 			return true;
 
 		case gswitch_sOpen:
@@ -2189,7 +2190,7 @@ bool CEnOceanESP3::WriteToHardware(const char *pdata, const unsigned char length
 		}
 		m_last_blind_position = POS;
 
-		sendVld(m_id_chip, nodeID, D2050X_CMD1, POS, 127, 0, 0, CHN, 1, END_ARG_DATA);
+		sendVld(nodeID, D2050X_CMD1, POS, 127, 0, 0, CHN, 1, END_ARG_DATA);
 		return true;
 	}
 	Log(LOG_ERROR, "Node %08X (%s) can not be used as a switch", nodeID, pNode->name.c_str());
@@ -2360,6 +2361,11 @@ void CEnOceanESP3::ParseESP3Packet(uint8_t packettype, uint8_t *data, uint16_t d
 				m_id_chip = GetNodeID(data[9], data[10], data[11], data[12]);
 				Log(LOG_STATUS, "HwdID %d ChipID %08X ChipVersion %02X.%02X.%02X.%02X App %02X.%02X.%02X.%02X API %02X.%02X.%02X.%02X Description '%s'",
 					 m_HwdID, m_id_chip, data[13], data[14], data[15], data[16], data[1], data[2], data[3], data[4], data[5], data[6], data[7], data[8], (const char *)data + 17);
+				if (m_Type != 0)
+					m_id_src = m_id_base;
+				else
+					m_id_src = m_id_chip;
+				Log(LOG_STATUS, "Use ID %08X for communicating with devices", m_id_src);
 				return;
 			}
 			Debug(DEBUG_NORM, "HwdID %d, received response (%s)", m_HwdID, GetReturnCodeLabel(return_code));
@@ -3207,26 +3213,20 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 					uint8_t DT = bitrange(DATA_BYTE0, 2, 0x01); // 0 = cumulative count, 1 = current value / s
 					uint8_t DIV = bitrange(DATA_BYTE0, 0, 0x03);
 					float scaleMax = (DIV == 0) ? 16777215.000F : ((DIV == 1) ? 1677721.500F : ((DIV == 2) ? 167772.150F : 16777.215F));
-					uint32_t MR = ground(GetDeviceValue((DATA_BYTE3 << 16) | (DATA_BYTE2 << 8) | DATA_BYTE1, 0, 16777215, 0.0F, scaleMax));
+					float MR = GetDeviceValue((DATA_BYTE3 << 16) | (DATA_BYTE2 << 8) | DATA_BYTE1, 0, 16777215, 0.0F, scaleMax);
 
-					RBUF tsen;
-					memset(&tsen, 0, sizeof(RBUF));
-					tsen.RFXMETER.packetlength = sizeof(tsen.RFXMETER) - 1;
-					tsen.RFXMETER.packettype = pTypeRFXMeter;
-					tsen.RFXMETER.subtype = sTypeRFXMeterCount;
-					tsen.RFXMETER.seqnbr = 0;
-					tsen.RFXMETER.id1 = ID_BYTE2;
-					tsen.RFXMETER.id2 = ID_BYTE1;
-					tsen.RFXMETER.count1 = (BYTE) ((MR & 0xFF000000) >> 24);
-					tsen.RFXMETER.count2 = (BYTE) ((MR & 0x00FF0000) >> 16);
-					tsen.RFXMETER.count3 = (BYTE) ((MR & 0x0000FF00) >> 8);
-					tsen.RFXMETER.count4 = (BYTE) (MR & 0x000000FF);
-					tsen.RFXMETER.rssi = rssi;
+					if (DT == 0)
+					{ // comulated count
+						SendMeterSensor(senderID, CH, -1, MR, pNode->name.c_str(), rssi);
+					}
+					else
+					{ // instant value
+						SendWattMeter(senderID, CH, -1, MR, pNode->name.c_str(), rssi);
+					}
 
-					Debug(DEBUG_NORM, "4BS msg: Node %08X (%s) CH %u DT %u DIV %u (scaleMax %.3F) MR %u",
+					Debug(DEBUG_NORM, "4BS msg: Node %08X (%s) CH %u DT %u DIV %u (scaleMax %.3F) MR %f",
 						senderID, pNode->name.c_str(), CH, DT, DIV, scaleMax, MR);
 
-					sDecodeRXMessage(this, (const unsigned char *) &tsen.RFXMETER, pNode->name.c_str(), -1, m_Name.c_str());
 					return;
 				}
 				if (pNode->func == 0x12 && pNode->type == 0x01)
@@ -3552,7 +3552,7 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 					Debug(DEBUG_NORM, "RPS msg: Node %08X (%s) Smoke alarm %s Energy level %s",
 						senderID, pNode->name.c_str(), SMO ? "ON" : "OFF", (battery_level > 5) ? "OK" : "LOW");
 
-					SendSwitch(senderID, 1, battery_level, SMO, 0, pNode->name, m_Name, rssi);
+					SendSwitchUnchecked(senderID, 1, battery_level, SMO, 0, pNode->name, m_Name, rssi);
 					return;
 				}
 				Log(LOG_ERROR, "RPS msg: Node %08X (%s) EEP %02X-%02X-%02X not supported",
@@ -3741,7 +3741,7 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 							CreateBlindSwitch(senderID, nbc, STYPE_BlindsPercentageWithStop, true, false, false, gswitch_sOpen, 100, pNode->name, m_Name, 255, rssi);
 
 							// Make sure blind control is enabled
-							sendVld(m_id_chip, senderID, D2050X_CMD1, 127, 127, 0, 7, nbc - 1, 1, END_ARG_DATA);
+							sendVld(senderID, D2050X_CMD1, 127, 127, 0, 7, nbc - 1, 1, END_ARG_DATA);
 						}
 						return;
 					}
@@ -3870,7 +3870,7 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 						//Value: 0x04 = Power [KW]
 
 						//send CMD 0x9 - Actuator Pilot Wire Mode Query
-						//sendVld(m_id_chip, senderID, D20100_CMD9,  9 , END_ARG_DATA);
+						//sendVld(senderID, D20100_CMD9,  9 , END_ARG_DATA);
 						return;
 					}
 					if (CMD == 0xA)
@@ -4035,7 +4035,7 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 			return;
 
 		default:
-			Log(LOG_ERROR, "ERP1: Node %08X RORG %s (%s) not supported", senderID, GetRORGLabel(RORG), GetRORGDescription(RORG));
+			Log(LOG_ERROR, "ERP1: Node %08X RORG %02X:%s (%s) not supported", senderID, RORG, GetRORGLabel(RORG), GetRORGDescription(RORG));
 	}
 }
 
@@ -4360,7 +4360,7 @@ std::string CEnOceanESP3::GetDbValue(const char *tableName, const char *fieldNam
 		return result[0][0];
 }
 
-void CEnOceanESP3::sendVld(unsigned int sID, unsigned int destID, int channel, int value)
+void CEnOceanESP3::sendVld(unsigned int destID, int channel, int value)
 {
 	unsigned char buff[16];
 
@@ -4368,10 +4368,10 @@ void CEnOceanESP3::sendVld(unsigned int sID, unsigned int destID, int channel, i
 	buff[1] = 0x01;
 	buff[2] = channel;
 	buff[3] = value;
-	buff[4] = (sID >> 24) & 0xff; // Sender ID
-	buff[5] = (sID >> 16) & 0xff;
-	buff[6] = (sID >> 8) & 0xff;
-	buff[7] = sID & 0xff;
+	buff[4] = (m_id_src >> 24) & 0xff; // Sender ID
+	buff[5] = (m_id_src >> 16) & 0xff;
+	buff[6] = (m_id_src >> 8) & 0xff;
+	buff[7] = m_id_src & 0xff;
 	buff[8] = 0; //status
 
 	//optionnal data
@@ -4385,7 +4385,7 @@ void CEnOceanESP3::sendVld(unsigned int sID, unsigned int destID, int channel, i
 }
 
 // Send a VLD datagramm with payload : data to device Id sID
-void CEnOceanESP3::sendVld(unsigned int sID, unsigned int destID, unsigned char *data, int DataLen)
+void CEnOceanESP3::sendVld(unsigned int destID, unsigned char *data, int DataLen)
 {
 	unsigned char buffer[256];
 
@@ -4397,10 +4397,10 @@ void CEnOceanESP3::sendVld(unsigned int sID, unsigned int destID, unsigned char 
 	for (int i = 0; i < DataLen; i++)
 		*buff++ = *data++;
 
-	*buff++ = (sID >> 24) & 0xff; // Sender ID
-	*buff++ = (sID >> 16) & 0xff;
-	*buff++ = (sID >> 8) & 0xff;
-	*buff++ = sID & 0xff;
+	*buff++ = (m_id_src >> 24) & 0xff; // Sender ID
+	*buff++ = (m_id_src >> 16) & 0xff;
+	*buff++ = (m_id_src >> 8) & 0xff;
+	*buff++ = m_id_src & 0xff;
 	*buff++ = 0; //status
 
 	//optionnal data
@@ -4434,7 +4434,7 @@ void CEnOceanESP3::sendVld(unsigned int sID, unsigned int destID, unsigned char 
  * sendVld(nodeID, D2050X_CMD2, 0, 2, END_ARG_DATA);
  *   send a Stop command to destID channel 0
  */
-uint32_t CEnOceanESP3::sendVld(unsigned int srcID, unsigned int destID, T_DATAFIELD *OffsetDes, ...)
+uint32_t CEnOceanESP3::sendVld(unsigned int destID, T_DATAFIELD *OffsetDes, ...)
 {
 	uint8_t data[256 + 2];
 	va_list value;
@@ -4446,7 +4446,7 @@ uint32_t CEnOceanESP3::sendVld(unsigned int srcID, unsigned int destID, T_DATAFI
 
 	uint32_t DataSize = SetRawValues(data, OffsetDes, value);
 	if (DataSize)
-		sendVld(srcID, destID, data, DataSize);
+		sendVld(destID, data, DataSize);
 	else
 		Log(LOG_ERROR, "sendVld: invalid argument number, cmd %s : %s ", OffsetDes->ShortCut.c_str(), OffsetDes->description.c_str());
 

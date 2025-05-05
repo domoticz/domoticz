@@ -18,14 +18,14 @@ namespace tcp {
 
 		CTCPServerInt::CTCPServerInt(const std::string& address, const std::string& port, CTCPServer* pRoot) :
 			CTCPServerIntBase(pRoot),
-			io_service_(),
-			acceptor_(io_service_)
+			io_context_(),
+			acceptor_(io_context_)
 		{
 			// Open the acceptor with the option to reuse the address (i.e. SO_REUSEADDR).
-			boost::asio::ip::tcp::resolver resolver(io_service_);
-			boost::asio::ip::tcp::resolver::query query(address, port);
-			boost::asio::ip::tcp::endpoint endpoint = *resolver.resolve(query);
-			acceptor_.open(endpoint.protocol());
+			boost::asio::ip::tcp::resolver resolver(io_context_);
+			boost::asio::ip::basic_resolver<boost::asio::ip::tcp>::results_type endpoints = resolver.resolve(address, port);
+			auto endpoint = *endpoints.begin();
+			acceptor_.open(endpoint.endpoint().protocol());
 			acceptor_.set_option(boost::asio::ip::tcp::acceptor::reuse_address(true));
 			// bind to both ipv6 and ipv4 sockets for the "::" address only
 			if (address == "::")
@@ -35,10 +35,10 @@ namespace tcp {
 			acceptor_.bind(endpoint);
 			acceptor_.listen();
 
-			new_connection_ = std::make_shared<CTCPClient>(io_service_, this);
+			new_connection_ = std::make_shared<CTCPClient>(io_context_, this);
 			if (new_connection_ == nullptr)
 			{
-				_log.Log(LOG_ERROR, "Error creating new client!");
+				_log.Log(LOG_ERROR, "CTCPServerInt: Error creating new client!");
 				return;
 			}
 
@@ -47,24 +47,24 @@ namespace tcp {
 
 		void CTCPServerInt::start()
 		{
-			// The io_service::run() call will block until all asynchronous operations
+			// The io_context::run() call will block until all asynchronous operations
 			// have finished. While the server is running, there is always at least one
 			// asynchronous operation outstanding: the asynchronous accept call waiting
 			// for new incoming connections.
-			io_service_.run();
+			io_context_.run();
 		}
 
 		void CTCPServerInt::stop()
 		{
 			// Post a call to the stop function so that server::stop() is safe to call
 			// from any thread.
-			io_service_.post([this] { handle_stop(); });
+			boost::asio::post([this] { handle_stop(); });
 		}
 
 		void CTCPServerInt::handle_stop()
 		{
 			// The server is stopped by cancelling all outstanding asynchronous
-			// operations. Once all operations have finished the io_service::run() call
+			// operations. Once all operations have finished the io_context::run() call
 			// will exit.
 			acceptor_.close();
 			stopAllClients();
@@ -88,7 +88,7 @@ namespace tcp {
 			connections_.insert(new_connection_);
 			new_connection_->start();
 
-			new_connection_.reset(new CTCPClient(io_service_, this));
+			new_connection_.reset(new CTCPClient(io_context_, this));
 
 			acceptor_.async_accept(*(new_connection_->socket()), [this](auto&& err) { handleAccept(err); });
 		}
@@ -247,12 +247,10 @@ namespace tcp {
 		//Out main (wrapper) server
 		CTCPServer::CTCPServer()
 		{
-			m_pTCPServer = nullptr;
 		}
 
 		CTCPServer::CTCPServer(const int /*ID*/)
 		{
-			m_pTCPServer = nullptr;
 		}
 
 		CTCPServer::~CTCPServer()
@@ -271,11 +269,7 @@ namespace tcp {
 				{
 					exception = false;
 					StopServer();
-					if (m_pTCPServer != nullptr)
-					{
-						_log.Log(LOG_ERROR, "Stopping TCPServer should delete resources !");
-					}
-					m_pTCPServer = new CTCPServerInt(listen_address, port, this);
+					m_TCPServer = std::make_shared<CTCPServerInt>(listen_address, port, this);
 				}
 				catch (std::exception& e)
 				{
@@ -304,8 +298,8 @@ namespace tcp {
 		void CTCPServer::StopServer()
 		{
 			std::lock_guard<std::mutex> l(m_server_mutex);
-			if (m_pTCPServer) {
-				m_pTCPServer->stop();
+			if (m_TCPServer) {
+				m_TCPServer->stop();
 			}
 			if (m_thread)
 			{
@@ -313,48 +307,47 @@ namespace tcp {
 				m_thread.reset();
 			}
 			// This is the only time to delete it
-			if (m_pTCPServer) {
-				delete m_pTCPServer;
-				m_pTCPServer = nullptr;
+			if (m_TCPServer) {
+				m_TCPServer.reset();
 				_log.Log(LOG_STATUS, "TCPServer: shared server stopped");
 			}
 		}
 
 		void CTCPServer::Do_Work()
 		{
-			if (m_pTCPServer) {
+			if (m_TCPServer) {
 				_log.Log(LOG_STATUS, "TCPServer: shared server started...");
-				m_pTCPServer->start();
+				m_TCPServer->start();
 			}
 		}
 
 		void CTCPServer::SendToAll(const int HardwareID, const uint64_t DeviceRowID, const CTCPClientBase* pClient2Ignore)
 		{
 			std::lock_guard<std::mutex> l(m_server_mutex);
-			if (m_pTCPServer)
-				m_pTCPServer->SendToAll(HardwareID, DeviceRowID, pClient2Ignore);
+			if (m_TCPServer)
+				m_TCPServer->SendToAll(HardwareID, DeviceRowID, pClient2Ignore);
 		}
 
 		void CTCPServer::SetRemoteUsers(const std::vector<_tRemoteShareUser>& users)
 		{
 			std::lock_guard<std::mutex> l(m_server_mutex);
-			if (m_pTCPServer)
-				m_pTCPServer->SetRemoteUsers(users);
+			if (m_TCPServer)
+				m_TCPServer->SetRemoteUsers(users);
 		}
 
 		unsigned int CTCPServer::GetUserDevicesCount(const std::string& username)
 		{
 			std::lock_guard<std::mutex> l(m_server_mutex);
-			if (m_pTCPServer) {
-				return m_pTCPServer->GetUserDevicesCount(username);
+			if (m_TCPServer) {
+				return m_TCPServer->GetUserDevicesCount(username);
 			}
 			return 0;
 		}
 
 		void CTCPServer::stopAllClients()
 		{
-			if (m_pTCPServer)
-				m_pTCPServer->stopAllClients();
+			if (m_TCPServer)
+				m_TCPServer->stopAllClients();
 		}
 
 		void CTCPServer::DoDecodeMessage(const CTCPClientBase* pClient, const uint8_t* pData, size_t len)
@@ -362,7 +355,7 @@ namespace tcp {
 			std::string szEncoded = std::string((const char*)pData, len);
 			std::string szDecoded;
 
-			_tRemoteShareUser* pUser = m_pTCPServer->FindUser(pClient->m_username);
+			_tRemoteShareUser* pUser = m_TCPServer->FindUser(pClient->m_username);
 			if (pUser == nullptr)
 				return;
 
@@ -439,6 +432,11 @@ namespace tcp {
 				std::string until = root["until"].asString();
 
 				m_mainworker.SwitchEvoModal(szIdx, status, action, ooc, until);
+			}
+			else if (szAction == "SetTextDevice")
+			{
+				std::string text = root["text"].asString();
+				m_mainworker.SetTextDevice(szIdx, text);
 			}
 #ifdef WITH_OPENZWAVE
 			else if (szAction == "SetZWaveThermostatMode")

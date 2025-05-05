@@ -17,8 +17,8 @@
 --   timeofday['SunsetInMinutes'] = number
 --   globalvariables['Security'] = 'Disarmed', 'Armed Home' or 'Armed Away'
 --
--- To see examples of commands see: http://www.domoticz.com/wiki/LUA_commands#General
--- To get a list of available values see: http://www.domoticz.com/wiki/LUA_commands#Function_to_dump_all_variables_supplied_to_the_script
+-- To see examples of commands see: https://wiki.domoticz.com/LUA_commands#General
+-- To get a list of available values see: https://wiki.domoticz.com/LUA_commands#Function_to_dump_all_variables_supplied_to_the_script
 --
 -- Based on your logic, fill the commandArray with device commands. Device name is case sensitive. 
 --

@@ -10,6 +10,7 @@
             <button class="zoom-button" ng-click="zoomHours(3)" ng-bind="zoomLabel('3H')"></button>
             <button class="zoom-button" ng-click="zoomDays(1)" ng-bind="zoomLabel('1d')" ng-show="shortLogHistoryMaxDays > 1"></button>
             <button class="zoom-button" ng-click="zoomDays(3)" ng-bind="zoomLabel('3d')" ng-show="shortLogHistoryMaxDays > 3"></button>
+            <button class="zoom-button" ng-click="zoomToday()" ng-bind="zoomLabel('Day')"></button>
             <button class="zoom-reset" ng-click="zoomreset()" ng-bind="zoomLabel('Reset')" ng-show="zoomed"></button>
         </div>
         <div class="chartcontainer"></div>

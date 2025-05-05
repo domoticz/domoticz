@@ -116,7 +116,7 @@ class Device(object):
         if self.last_update_string:
             # from http://stackoverflow.com/questions/127803/how-to-parse-iso-formatted-date-in-python
             try:
-                self.last_update = datetime.datetime(*map(int, re.split('[^\d]', self.last_update_string)[:]))
+                self.last_update = datetime.datetime(*map(int, re.split(r'[^\d]', self.last_update_string)[:]))
                 if str(self.last_update_string) != str(self.last_update):
                     log("Error parsing date:", self.last_update_string, " parsed as",  str(self.last_update))
             except:
