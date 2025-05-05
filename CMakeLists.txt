@@ -176,6 +176,9 @@ main/WebServerCommands.cpp
 main/WebServerHandleGraph.cpp
 main/WebServerHelper.cpp
 main/WindCalculation.cpp
+mdns/mlogger.cpp
+mdns/mdns.cpp
+mdns/utils.cpp
 iamserver/IamService.cpp
 push/BasePush.cpp
 push/FibaroPush.cpp

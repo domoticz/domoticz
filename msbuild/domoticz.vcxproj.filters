@@ -510,6 +510,9 @@
     <Filter Include="Devices\ZWave\ControlPanel">
       <UniqueIdentifier>{dd597942-82d6-4aaf-aba7-da17ce1f9392}</UniqueIdentifier>
     </Filter>
+    <Filter Include="mDNS">
+      <UniqueIdentifier>{4868def8-573d-42a3-92e4-3a883023097e}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\CMakeLists.txt">
@@ -3030,6 +3033,15 @@
     </ClCompile>
     <ClCompile Include="..\main\lsignal.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\mdns\mlogger.cpp">
+      <Filter>mDNS</Filter>
+    </ClCompile>
+    <ClCompile Include="..\mdns\mdns.cpp">
+      <Filter>mDNS</Filter>
+    </ClCompile>
+    <ClCompile Include="..\mdns\utils.cpp">
+      <Filter>mDNS</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

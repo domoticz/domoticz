@@ -114,7 +114,7 @@
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>Setupapi.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;dnsapi.lib;../msbuild/Windows Libraries/openzwave/OpenZWaveD.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>Setupapi.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;dnsapi.lib;IPHLPAPI.lib;../msbuild/Windows Libraries/openzwave/OpenZWaveD.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <UACExecutionLevel>AsInvoker</UACExecutionLevel>
       <Profile>false</Profile>
     </Link>
@@ -143,7 +143,7 @@
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>Setupapi.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;dnsapi.lib;../msbuild/Windows Libraries/openzwave/x64/OpenZWaved.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>Setupapi.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;dnsapi.lib;IPHLPAPI.lib;../msbuild/Windows Libraries/openzwave/x64/OpenZWaved.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <UACExecutionLevel>AsInvoker</UACExecutionLevel>
       <Profile>false</Profile>
     </Link>
@@ -174,7 +174,7 @@
       <EnableCOMDATFolding>false</EnableCOMDATFolding>
       <OptimizeReferences>false</OptimizeReferences>
       <AdditionalLibraryDirectories>./Windows Libraries/lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>lua.lib;libcurl.lib;minizip.lib;jsoncpp.lib;libcrypto.lib;libssl.lib;Wldap32.lib;zlib.lib;pthreadVC3.lib;sqlite3.lib;mosquitto.lib;boost_thread-vc140-mt.lib;boost_chrono-vc140-mt.lib;boost_system-vc140-mt.lib;Crypt32.lib;Setupapi.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;dnsapi.lib;../msbuild/Windows Libraries/openzwave/OpenZWave.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>lua.lib;libcurl.lib;minizip.lib;jsoncpp.lib;libcrypto.lib;libssl.lib;Wldap32.lib;zlib.lib;pthreadVC3.lib;sqlite3.lib;mosquitto.lib;boost_thread-vc140-mt.lib;boost_chrono-vc140-mt.lib;boost_system-vc140-mt.lib;Crypt32.lib;Setupapi.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;dnsapi.lib;IPHLPAPI.lib;../msbuild/Windows Libraries/openzwave/OpenZWave.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <UACExecutionLevel>AsInvoker</UACExecutionLevel>
       <IgnoreSpecificDefaultLibraries>MSVCRT</IgnoreSpecificDefaultLibraries>
       <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
@@ -204,7 +204,7 @@
       <EnableCOMDATFolding>false</EnableCOMDATFolding>
       <OptimizeReferences>false</OptimizeReferences>
       <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>Setupapi.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;dnsapi.lib;../msbuild/Windows Libraries/openzwave/x64/OpenZWave.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>Setupapi.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;dnsapi.lib;IPHLPAPI.lib;../msbuild/Windows Libraries/openzwave/x64/OpenZWave.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <UACExecutionLevel>AsInvoker</UACExecutionLevel>
       <IgnoreSpecificDefaultLibraries>
       </IgnoreSpecificDefaultLibraries>
@@ -1067,6 +1067,9 @@
     <ClCompile Include="..\main\TrendCalculator.cpp" />
     <ClCompile Include="..\main\WebServerHelper.cpp" />
     <ClCompile Include="..\main\WindCalculation.cpp" />
+    <ClCompile Include="..\mdns\mlogger.cpp" />
+    <ClCompile Include="..\mdns\mdns.cpp" />
+    <ClCompile Include="..\mdns\utils.cpp" />
     <ClCompile Include="..\notifications\NotificationBase.cpp" />
     <ClCompile Include="..\notifications\NotificationBrowser.cpp" />
     <ClCompile Include="..\notifications\NotificationFCM.cpp" />
