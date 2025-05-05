@@ -1,4 +1,4 @@
-Version 2025.x
+Version 2025.1 (May 5th 2025)
 - Implemented: Battery level for Setpoint sensors
 - Implemented: Charts, zoom option for 'Day' view
 - Implemented: Data Pushers, added P1 actual value
