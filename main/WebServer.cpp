@@ -3902,7 +3902,7 @@ namespace http
 			}
 			else
 			{
-				queryString.append("  sum(Value) as Sum");
+				queryString.append("  sum(" + value("") + ") as Sum");
 			}
 
 			if (sgroupby == "quarter")
