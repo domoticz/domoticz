@@ -178,6 +178,7 @@ main/WebServerCommands.cpp
 main/WebServerHandleGraph.cpp
 main/WebServerHelper.cpp
 main/WindCalculation.cpp
+mdns/mdns.cpp
 iamserver/IamService.cpp
 push/BasePush.cpp
 push/FibaroPush.cpp
