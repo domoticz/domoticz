@@ -47,6 +47,8 @@ class CWebServer : public session_store, public std::enable_shared_from_this<CWe
 	void PostOauth2AccessToken(WebEmSession &session, const request &req, reply &rep);
 	void GetOpenIDConfiguration(WebEmSession &session, const request &req, reply &rep);
 
+	void GetMcpSse(WebEmSession &session, const request &req, reply &rep);
+
 	void SetRFXCOMMode(WebEmSession & session, const request& req, std::string & redirect_uri);
 	void UploadFloorplanImage(WebEmSession & session, const request& req, std::string & redirect_uri);
 	void SetRego6XXType(WebEmSession & session, const request& req, std::string & redirect_uri);

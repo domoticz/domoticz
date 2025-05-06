@@ -163,6 +163,7 @@ http::server::server_settings webserver_settings;
 http::server::ssl_server_settings secure_webserver_settings;
 #endif
 iamserver::iam_settings iamserver_settings;
+bool g_bLlmMCPSupport = true;
 
 bool bStartWebBrowser = true;
 bool g_bUseWatchdog = true;
