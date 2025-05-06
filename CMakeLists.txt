@@ -25,6 +25,7 @@ option(USE_BUILTIN_MINIZIP "Use builtin Minizip" YES)
 option(USE_BUILTIN_MQTT "Use builtin Mosquitto library" YES)
 option(USE_BUILTIN_SQLITE "Use builtin sqlite library" NO)
 option(USE_BUILTIN_JWTCPP "Use builtin JWT-CPP" YES)
+option(USE_BUILTIN_MDNS "Use builtin mDNS" YES)
 
 # Optional dependencies
 option(USE_PYTHON "Use Python for Plugins and Event-Scripts" YES)
@@ -135,6 +136,9 @@ IF(USE_BUILTIN_SQLITE AND NOT EXISTS "${PROJECT_SOURCE_DIR}/extern/sqlite-amalga
   message(FATAL_ERROR "The submodules were not downloaded! GIT_SUBMODULE was turned off or failed. Please update submodules and try again.")
 ENDIF()
 IF(USE_BUILTIN_JWTCPP AND NOT EXISTS "${PROJECT_SOURCE_DIR}/extern/jwtcpp/CMakeLists.txt")
+  message(FATAL_ERROR "The submodules were not downloaded! GIT_SUBMODULE was turned off or failed. Please update submodules and try again.")
+ENDIF()
+IF(USE_BUILTIN_MDNS AND NOT EXISTS "${PROJECT_SOURCE_DIR}/extern/mdns_cpp/CMakeLists.txt")
   message(FATAL_ERROR "The submodules were not downloaded! GIT_SUBMODULE was turned off or failed. Please update submodules and try again.")
 ENDIF()
 
@@ -633,6 +637,16 @@ IF(USE_BUILTIN_JWTCPP)
   MESSAGE(STATUS "Using builtin jwt-cpp library")
   target_include_directories(domoticz PRIVATE ${CMAKE_SOURCE_DIR}/extern/jwtcpp/include)
 ENDIF(USE_BUILTIN_JWTCPP)
+
+#
+# mDNS support (RFC6762)
+#
+IF(USE_BUILTIN_MDNS)
+  add_subdirectory (extern/mdns_cpp EXCLUDE_FROM_ALL)
+  target_link_libraries(domoticz mdns_cpp::mdns_cpp)
+  target_include_directories(domoticz PRIVATE ${CMAKE_SOURCE_DIR}/extern/mdns_cpp/include)
+  message(STATUS "Using builtin mDNS support")
+ENDIF(USE_BUILTIN_MDNS)
 
 #
 # Find MD5/RMD160/SHA library

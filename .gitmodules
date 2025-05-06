@@ -22,3 +22,7 @@
 	path = extern/jwtcpp
 	url = https://github.com/Thalhammer/jwt-cpp
 	ignore = dirty
+[submodule "extern/mdns_cpp"]
+	path = extern/mdns_cpp
+	url = https://github.com/domoticz/mdns_cpp
+	ignore = dirty
