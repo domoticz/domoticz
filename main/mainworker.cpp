@@ -19,6 +19,8 @@
 #include <algorithm>
 #include <set>
 
+#include "../mdns/mdns.hpp"
+
 //Hardware Devices
 #include "../hardware/hardwaretypes.h"
 #include "../hardware/RFXBase.h"
@@ -194,6 +196,8 @@ extern http::server::_eWebCompressionMode g_wwwCompressMode;
 extern http::server::CWebServerHelper m_webservers;
 extern bool g_bUseEventTrigger;
 extern bool bNoCleanupDev;
+extern domoticz_mdns::mDNS m_mdns;
+extern bool bEnableMDNS;
 
 CFibaroPush m_fibaropush;
 CGooglePubSubPush m_googlepubsubpush;
@@ -1110,6 +1114,14 @@ bool MainWorker::Start()
 		return false;
 	}
 
+	std::string sValue;
+	std::string szInstanceName = "domoticz";
+	if(m_sql.GetPreferencesVar("Title", sValue))
+	{
+		stdlower(sValue);
+		szInstanceName = sValue;
+	}
+
 	HTTPClient::SetUserAgent(GenerateUserAgent());
 	m_notifications.Init();
 	GetSunSettings();
@@ -1157,7 +1169,7 @@ bool MainWorker::Start()
 	{
 		m_webservers.SetAllowPlainBasicAuth(static_cast<bool>(nValue));
 	}
-	std::string sValue;
+	sValue = "";	// Reset sValue
 	if (m_sql.GetPreferencesVar("WebTheme", sValue))
 	{
 		m_webservers.SetWebTheme(sValue);
@@ -1179,6 +1191,19 @@ bool MainWorker::Start()
 		m_sharedserver.StartServer("::", sPort.c_str());
 
 		LoadSharedUsers();
+	}
+
+	if (bEnableMDNS)
+	{
+		m_mdns.setServiceHostname(szInstanceName);
+		m_mdns.setServicePort(std::stoi(m_webserver_settings.listening_port));
+#ifdef WWW_ENABLE_SSL
+		if (m_secure_webserver_settings.is_enabled())
+			m_mdns.setServicePort(std::stoi(m_secure_webserver_settings.listening_port));
+#endif
+		m_mdns.setServiceName("_http._tcp.local");
+		m_mdns.startService();
+		_log.Log(LOG_STATUS, "mDNS enabled!");
 	}
 
 	HandleHourPrice();
@@ -1221,6 +1246,8 @@ bool MainWorker::Stop()
 #ifdef ENABLE_PYTHON
 		m_pluginsystem.StopPluginSystem();
 #endif
+		if (m_mdns.isServiceRunning())	// Stop mDNS service
+			m_mdns.stopService();
 
 		//    m_cameras.StopCameraGrabber();
 
