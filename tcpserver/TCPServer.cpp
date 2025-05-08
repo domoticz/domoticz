@@ -58,6 +58,7 @@ namespace tcp {
 		{
 			// Post a call to the stop function so that server::stop() is safe to call
 			// from any thread.
+			flghandle_stop_Completed=false;
 			boost::asio::post([this] { handle_stop(); });
 		}
 
@@ -68,6 +69,7 @@ namespace tcp {
 			// will exit.
 			acceptor_.close();
 			stopAllClients();
+			flghandle_stop_Completed=true;
 		}
 
 		void CTCPServerInt::handleAccept(const boost::system::error_code& error)
@@ -306,8 +308,16 @@ namespace tcp {
 				m_thread->join();
 				m_thread.reset();
 			}
-			// This is the only time to delete it
 			if (m_TCPServer) {
+				// wait until completion of handle_stop with a 5 seconds timeout
+				int i=0;
+				for (; !m_TCPServer->flghandle_stop_Completed && i<50; i++)
+					sleep_milliseconds(100);
+				if (!m_TCPServer->flghandle_stop_Completed)
+					_log.Log(LOG_ERROR, "TCPServer: shared server handle_stop not completed");
+				else
+					_log.Log(LOG_STATUS, "TCPServer: shared server handle_stop completed after %d milliseconds", i*100);
+				// This is the only time to delete it
 				m_TCPServer.reset();
 				_log.Log(LOG_STATUS, "TCPServer: shared server stopped");
 			}
