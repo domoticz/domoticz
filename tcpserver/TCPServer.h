@@ -63,6 +63,7 @@ public:
 	void stop() override;
 	/// Stop the specified connection.
 	void stopClient(CTCPClient_ptr c) override;
+	bool flghandle_stop_Completed;
 
 private:
 	void handleAccept(const boost::system::error_code& error);
