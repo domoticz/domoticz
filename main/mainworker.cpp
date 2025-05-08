@@ -1201,9 +1201,9 @@ bool MainWorker::Start()
 		if (m_secure_webserver_settings.is_enabled())
 			m_mdns.setServicePort(std::stoi(m_secure_webserver_settings.listening_port));
 #endif
-		m_mdns.setServiceName("_http._tcp.local");
+		m_mdns.setServiceTxtRecord(std::string{"version"}, szAppVersion);
+		m_mdns.setServiceTxtRecord(std::string{"path"}, std::string{"/index.html"});
 		m_mdns.startService();
-		_log.Log(LOG_STATUS, "mDNS enabled!");
 	}
 
 	HandleHourPrice();
