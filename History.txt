@@ -1,4 +1,5 @@
 Version 2025.xxxx
+- Fixed: MQTT-AD, fix issue where brightness and RGB command topic are different
 - Updated: Windows libraries
 
 Version 2025.1 (May 5th 2025)

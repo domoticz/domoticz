@@ -4523,6 +4523,8 @@ bool MQTTAutoDiscover::SendSwitchCommand(const std::string& DeviceID, const std:
 	std::string command_topic = pSensor->command_topic;
 	SwitchCommands eCommand = SwitchCommands::COMMAND_UNKNOWN;
 
+	bool bSendBrightnessseparately = false;
+
 	if (
 		(pSensor->component_type != "climate")
 		&& (pSensor->component_type != "select")
@@ -4562,6 +4564,7 @@ bool MQTTAutoDiscover::SendSwitchCommand(const std::string& DeviceID, const std:
 			if (pSensor->rgb_command_topic != pSensor->brightness_command_topic)
 			{
 				eCommand = SwitchCommands::COMMAND_SET_LEVEL_AND_COLOR;
+				bSendBrightnessseparately = !pSensor->brightness_command_topic.empty();
 			}
 			else
 			{
@@ -4803,7 +4806,7 @@ bool MQTTAutoDiscover::SendSwitchCommand(const std::string& DeviceID, const std:
 			if (!pSensor->rgb_command_topic.empty())
 				command_topic = pSensor->rgb_command_topic;
 
-			if (bCouldUseBrightness && pSensor->bBrightness)
+			if (bCouldUseBrightness && pSensor->bBrightness && !bSendBrightnessseparately)
 			{
 				int slevel = (int)round((pSensor->brightness_scale / 100.0F) * level);
 
