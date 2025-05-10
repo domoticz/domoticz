@@ -39,7 +39,7 @@ option(USE_STATIC_BOOST "Build with static BOOST libraries" YES)
 option(USE_STATIC_OPENZWAVE "Build with static OpenZwave libraries" YES)
 
 # Disable updater functionality
-option(DISABLE_UPDATER "Disable updater functionalty" NO)
+option(DISABLE_UPDATER "Disable updater functionality" NO)
 
 # Developer-oriented options
 option(USE_PRECOMPILED_HEADER "Use precompiled header feature to speed up build time " YES)
