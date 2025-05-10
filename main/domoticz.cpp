@@ -780,6 +780,9 @@ int main(int argc, char**argv)
 
 	if (AreWeRunningInDocker())
 		g_bUseUpdater = false;
+#ifdef DISABLE_UPDATER
+		g_bUseUpdater = false;
+#endif
 
 	GetAppVersion();
 	DisplayAppVersion();
