@@ -457,6 +457,27 @@ void GetAppVersion()
 	szAppDate = szTmp;
 }
 
+bool AreWeRunningInDocker()
+{
+	std::ifstream dockerenv("/.dockerenv");
+	if (dockerenv.good())
+		return true;
+
+	std::ifstream cgroup("/proc/self/cgroup");
+	std::string line;
+	while (std::getline(cgroup, line))
+	{
+		if (
+			line.find("docker") != std::string::npos
+			|| line.find("containerd") != std::string::npos
+			)
+		{
+			return true;
+		}
+	}
+	return false;
+}
+
 bool GetConfigBool(std::string szValue)
 {
 	stdlower(szValue);
@@ -756,6 +777,9 @@ int main(int argc, char**argv)
 
 	/* call srand once for the entire app */
 	std::srand((unsigned int)std::time(nullptr));
+
+	if (AreWeRunningInDocker())
+		g_bUseUpdater = false;
 
 	GetAppVersion();
 	DisplayAppVersion();
