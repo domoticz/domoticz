@@ -10,6 +10,7 @@ lowercase(){
 OS=`lowercase \`uname -s\``
 MACH=`uname -m`
 ARCH=`dpkg --print-architecture`
+OPENSSL_VERSION=$(openssl version -v | awk '{print $2}' | sed 's/\..*//')
 
 if [ ${MACH} = "armv6l" ]
 then
@@ -20,6 +21,11 @@ fi
 if [ ${ARCH} = "armhf" ]
 then
  MACH="armv7l"
+fi
+
+if [  ${OPENSSL_VERSION} -ne 3 ]; then
+ echo "OpenSSL version 3 required!"
+ exit 1
 fi
 
 echo "Stopping Domoticz..."
