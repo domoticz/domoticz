@@ -114,8 +114,12 @@ namespace domoticz_mdns
 		// PTR record reverse mapping "<_service-name>._tcp.local." to
 		// "<hostname>.<_service-name>._tcp.local."
 		service_record.record_ptr.name = to_mdns_str_ref(service_record.service);
-		service_record.record_ptr.type = MDNS_RECORDTYPE_PTR,
-		service_record.record_ptr.data.ptr = mdns_record_ptr_t{.name = to_mdns_str_ref(service_record.service_instance)};
+		service_record.record_ptr.type = MDNS_RECORDTYPE_PTR;
+		{
+			mdns_record_ptr_t ptr;
+			ptr.name = to_mdns_str_ref(service_record.service_instance);
+			service_record.record_ptr.data.ptr = ptr;
+		}
 		service_record.record_ptr.rclass = 0;
 		service_record.record_ptr.ttl = 0;
 
@@ -123,17 +127,25 @@ namespace domoticz_mdns
 		// "<hostname>.local." with port. Set weight & priority to 0.
 		service_record.record_srv.name = to_mdns_str_ref(service_record.service_instance);
 		service_record.record_srv.type = MDNS_RECORDTYPE_SRV;
-		service_record.record_srv.data.srv = mdns_record_srv_t{.priority = 0,
-															.weight = 0,
-															.port = service_record.port,
-															.name = to_mdns_str_ref(service_record.hostname_qualified)};
+		{
+			mdns_record_srv_t srv_data;
+			srv_data.priority = 0;
+			srv_data.weight = 0;
+			srv_data.port = service_record.port;
+			srv_data.name = to_mdns_str_ref(service_record.hostname_qualified);
+			service_record.record_srv.data.srv = srv_data;
+		}
 		service_record.record_srv.rclass = 0;
 		service_record.record_srv.ttl = 0;
 
 		// A/AAAA records mapping "<hostname>.local." to IPv4/IPv6 addresses
 		service_record.record_a.name = to_mdns_str_ref(service_record.hostname_qualified);
 		service_record.record_a.type = MDNS_RECORDTYPE_A;
-		service_record.record_a.data.a = {mdns_record_a_t{.addr = service_record.address_ipv4}};
+		{
+			mdns_record_a_t a_record;
+			a_record.addr = service_record.address_ipv4;
+			service_record.record_a.data.a = a_record;
+		}
 		service_record.record_a.rclass = 0;
 		service_record.record_a.ttl = 0;
 
@@ -520,11 +532,12 @@ namespace domoticz_mdns
 				// service name we advertise, typically on the "<_service-name>._tcp.local." format
 				// Answer PTR record reverse mapping "<_service-name>._tcp.local." to
 				// "<hostname>.<_service-name>._tcp.local."
-				mdns_record_t answer = {.name = name,
-										.type = MDNS_RECORDTYPE_PTR,
-										.data = {mdns_record_ptr_t{name = to_mdns_str_ref(service_record->service)}},
-										.rclass = MDNS_CLASS_IN,
-										.ttl = 60};
+				mdns_record_t answer;
+				answer.name = name;
+				answer.type = MDNS_RECORDTYPE_PTR;
+				answer.data.ptr.name = to_mdns_str_ref(service_record->service);
+				answer.rclass = MDNS_CLASS_IN;
+				answer.ttl = 60;
 				// Send the answer, unicast or multicast depending on flag in query
 				uint16_t unicast = (rclass & MDNS_UNICAST_RESPONSE);
 				if (unicast)
