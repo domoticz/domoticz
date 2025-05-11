@@ -1,6 +1,5 @@
 #include "stdafx.h"
 #include "Netatmo.h"
-#include "../main/appversion.h"
 #include "../main/Logger.h"
 #include "../main/SQLHelper.h"
 #include "../main/mainworker.h"
@@ -12,8 +11,7 @@
 
 #define NETATMO_API_URI "https://api.netatmo.com/"
 #define NETATMO_PRESET_UNIT 10
-#define USER_AGENT_STRING "User-Agent: Domoticz/Version "
-#define NETATMO_USER_AGENT_STRING USER_AGENT_STRING VERSION_STRING
+#define NETATMO_USER_AGENT_STRING "User-Agent: Domoticz/Version 1.10"
 // 03/03/2022 - PP Changing the Weather polling from 600 to 900s. This has reduce the number of server errors,
 // 08/05/2024 - Give the poll interfval a defined name:
 #define NETAMO_POLL_INTERVALL 900
