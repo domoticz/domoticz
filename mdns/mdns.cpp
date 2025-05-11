@@ -1,3 +1,4 @@
+#include "stdafx.h"
 #include "mdns.hpp"
 
 #include "../main/Logger.h"
