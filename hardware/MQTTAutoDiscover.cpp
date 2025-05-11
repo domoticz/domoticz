@@ -4775,7 +4775,10 @@ bool MQTTAutoDiscover::SendSwitchCommand(const std::string& DeviceID, const std:
 					colorDef["red"] = root["color"]["r"];
 					colorDef["green"] = root["color"]["g"];
 					colorDef["blue"] = root["color"]["b"];
-					colorDef["warmWhite"] = root["color"]["c"];		// In Domoticz cw is used for RGB_W dimmers, but Zwavejs requires warmWhite
+					if (!root["color"]["c"].empty())
+					{
+						colorDef["warmWhite"] = root["color"]["c"];		// In Domoticz cw is used for RGB_W dimmers, but Zwavejs requires warmWhite
+					}
 					root["value"] = colorDef;
 					root.removeMember("color");
 				}
