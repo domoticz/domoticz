@@ -152,9 +152,7 @@ namespace domoticz_mdns
 			service_record.txt_record[i].ttl = 0;
 		}
 
-		_log.Log(LOG_NORM, "mDNS: Opened %d socket%s", num_sockets, (num_sockets > 1 ? "s" : ""));
-		_log.Log(LOG_NORM, "mDNS: Service: %s:%d", name_.c_str(), port_);
-		_log.Log(LOG_NORM, "mDNS: Hostname: %s", hostname_.c_str());
+		_log.Log(LOG_NORM, "mDNS: Service: %s:%d for Hostname: %s (%d socket%s)", name_.c_str(), port_, hostname_.c_str(), num_sockets, (num_sockets > 1 ? "s" : ""));
 
 		constexpr size_t capacity = 2048u;
 		std::shared_ptr<void> buffer(malloc(capacity), free);
@@ -261,6 +259,8 @@ namespace domoticz_mdns
 			if (sock >= 0)
 			{
 				sockets[num_sockets++] = sock;
+				const auto addr = sockaddrToString(reinterpret_cast<struct sockaddr *>(&sock_addr));
+				_log.Debug(DEBUG_NORM, "mDNS: Local IPv4 address: %s", addr.c_str());
 			}
 		}
 
@@ -276,6 +276,8 @@ namespace domoticz_mdns
 			int sock = mdns_socket_open_ipv6(&sock_addr);
 			if (sock >= 0)
 				sockets[num_sockets++] = sock;
+				const auto addr = sockaddrToString(reinterpret_cast<struct sockaddr *>(&sock_addr));
+				_log.Debug(DEBUG_NORM, "mDNS: Local IPv6 address: %s", addr.c_str());
 		}
 
 		return num_sockets;
@@ -337,12 +339,10 @@ namespace domoticz_mdns
 					if ((saddr->sin_addr.S_un.S_un_b.s_b1 != 127) || (saddr->sin_addr.S_un.S_un_b.s_b2 != 0) ||
 						(saddr->sin_addr.S_un.S_un_b.s_b3 != 0) || (saddr->sin_addr.S_un.S_un_b.s_b4 != 1))
 					{
-						int log_addr = 0;
 						if (first_ipv4)
 						{
 							service_address_ipv4_ = *saddr;
 							first_ipv4 = 0;
-							log_addr = 1;
 						}
 
 						if (num_sockets < max_sockets)
@@ -352,18 +352,7 @@ namespace domoticz_mdns
 							if (sock >= 0)
 							{
 								sockets[num_sockets++] = sock;
-								log_addr = 1;
 							}
-							else
-							{
-								log_addr = 0;
-							}
-						}
-						if (log_addr)
-						{
-							char buffer[128];
-							const auto addr = sockaddrToString((struct sockaddr *)&saddr);
-							_log.Debug(DEBUG_NORM, "mDNS: Local IPv4 address: %s", addr.c_str());
 						}
 					}
 				}
@@ -378,12 +367,10 @@ namespace domoticz_mdns
 					if ((unicast->DadState == NldsPreferred) && memcmp(saddr->sin6_addr.s6_addr, localhost, 16) &&
 						memcmp(saddr->sin6_addr.s6_addr, localhost_mapped, 16))
 					{
-						int log_addr = 0;
 						if (first_ipv6)
 						{
 							memcpy(&service_address_ipv6_, &saddr->sin6_addr, sizeof(saddr->sin6_addr));
 							first_ipv6 = 0;
-							log_addr = 1;
 						}
 
 						if (num_sockets < max_sockets)
@@ -393,18 +380,7 @@ namespace domoticz_mdns
 							if (sock >= 0)
 							{
 								sockets[num_sockets++] = sock;
-								log_addr = 1;
 							}
-							else
-							{
-								log_addr = 0;
-							}
-						}
-						if (log_addr)
-						{
-							char buffer[128];
-							const auto addr = sockaddrToString((struct sockaddr *)&saddr);
-							_log.Debug(DEBUG_NORM, "mDNS: Local IPv6 address: %s", addr.c_str());
 						}
 					}
 				}
@@ -441,12 +417,10 @@ namespace domoticz_mdns
 				struct sockaddr_in *saddr = (struct sockaddr_in *)ifa->ifa_addr;
 				if (saddr->sin_addr.s_addr != htonl(INADDR_LOOPBACK))
 				{
-					int log_addr = 0;
 					if (first_ipv4)
 					{
 						service_address_ipv4_ = *saddr;
 						first_ipv4 = 0;
-						log_addr = 1;
 					}
 
 					if (num_sockets < max_sockets)
@@ -456,18 +430,7 @@ namespace domoticz_mdns
 						if (sock >= 0)
 						{
 							sockets[num_sockets++] = sock;
-							log_addr = 1;
 						}
-						else
-						{
-							log_addr = 0;
-						}
-					}
-					if (log_addr)
-					{
-						char buffer[128];
-						const auto addr = sockaddrToString((struct sockaddr *)&saddr);
-						_log.Debug(DEBUG_NORM, "mDNS: Local IPv4 address: %s", addr.c_str());
 					}
 				}
 			}
@@ -481,12 +444,10 @@ namespace domoticz_mdns
 				static constexpr unsigned char localhost_mapped[] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0xff, 0xff, 0x7f, 0, 0, 1};
 				if (memcmp(saddr->sin6_addr.s6_addr, localhost, 16) && memcmp(saddr->sin6_addr.s6_addr, localhost_mapped, 16))
 				{
-					int log_addr = 0;
 					if (first_ipv6)
 					{
 						service_address_ipv6_ = *saddr;
 						first_ipv6 = 0;
-						log_addr = 1;
 					}
 
 					if (num_sockets < max_sockets)
@@ -496,18 +457,7 @@ namespace domoticz_mdns
 						if (sock >= 0)
 						{
 							sockets[num_sockets++] = sock;
-							log_addr = 1;
 						}
-						else
-						{
-							log_addr = 0;
-						}
-					}
-					if (log_addr)
-					{
-						char buffer[128] = {};
-						const auto addr = sockaddrToString((struct sockaddr *)&saddr);
-						_log.Debug(DEBUG_NORM, "mDNS: Local IPv6 address: %s", addr.c_str());
 					}
 				}
 			}
@@ -531,18 +481,15 @@ namespace domoticz_mdns
 			return 0;
 		}
 
+		// mDNS meta command to query for all servicetypes
 		const char dns_sd[] = "_services._dns-sd._udp.local.";
 		const ServiceRecord *service_record = (const ServiceRecord *)user_data;
 
-		char addrbuffer[64] = {0};
 		char namebuffer[256] = {0};
-
-		// const auto fromaddrstr = ipAddressToString(addrbuffer, sizeof(addrbuffer), from, addrlen);
-		const mdns_string_t service =
-			mdns_record_parse_ptr(data, size, record_offset, record_length, namebuffer, sizeof(namebuffer));
-		const size_t service_length = service_record->service.length();
 		char sendbuffer[1024] = {0};
 
+		const mdns_string_t service = mdns_record_parse_ptr(data, size, record_offset, record_length, namebuffer, sizeof(namebuffer));
+		const size_t service_length = service_record->service.length();
 		size_t offset = name_offset;
 		mdns_string_t name = mdns_string_extract(data, size, &offset, namebuffer, sizeof(namebuffer));
 
@@ -561,6 +508,7 @@ namespace domoticz_mdns
 			record_name = "ANY";
 		else
 			return 0;
+
 		//_log.Debug(DEBUG_RECEIVED, "mDNS: Query %s:%.*s", record_name, MDNS_STRING_FORMAT(name));
 		const int str_capacity = 1000;
 		if ((name.length == (sizeof(dns_sd) - 1)) && (strncmp(name.str, dns_sd, sizeof(dns_sd) - 1) == 0))
@@ -578,8 +526,6 @@ namespace domoticz_mdns
 										.ttl = 60};
 				// Send the answer, unicast or multicast depending on flag in query
 				uint16_t unicast = (rclass & MDNS_UNICAST_RESPONSE);
-				_log.Debug(DEBUG_RECEIVED, "mDNS: Query %s:%.*s --> answer %.*s (%s)", record_name, MDNS_STRING_FORMAT(name),
-						MDNS_STRING_FORMAT(answer.data.ptr.name), (unicast ? "unicast" : "multicast"));
 				if (unicast)
 				{
 					mdns_query_answer_unicast(sock, from, addrlen, sendbuffer, sizeof(sendbuffer), query_id,
@@ -589,9 +535,11 @@ namespace domoticz_mdns
 				{
 					mdns_query_answer_multicast(sock, sendbuffer, sizeof(sendbuffer), answer, 0, 0, 0, 0);
 				}
+				_log.Debug(DEBUG_RECEIVED, "mDNS: Query %s:%.*s --> answer %.*s (%s)", record_name, MDNS_STRING_FORMAT(name),
+						MDNS_STRING_FORMAT(answer.data.ptr.name), (unicast ? "unicast" : "multicast"));
 			}
 		}
-		else if ((service.length == service_length) &&
+		else if ((service.length == service_record->service.length()) &&
 				 (strncmp(service.str, service_record->service.c_str(), service_length) == 0))
 		{
 			if ((rtype == MDNS_RECORDTYPE_PTR) || (rtype == MDNS_RECORDTYPE_ANY))
@@ -621,8 +569,6 @@ namespace domoticz_mdns
 				additional[additional_count++] = service_record->txt_record[1];
 				// Send the answer, unicast or multicast depending on flag in query
 				uint16_t unicast = (rclass & MDNS_UNICAST_RESPONSE);
-				_log.Debug(DEBUG_RECEIVED, "mDNS: Query %s:%.*s --> answer %.*s port %d (%s)", record_name, MDNS_STRING_FORMAT(name),
-						MDNS_STRING_FORMAT(service_record->record_srv.data.srv.name), service_record->port, (unicast ? "unicast" : "multicast"));
 				if (unicast)
 				{
 					mdns_query_answer_unicast(sock, from, addrlen, sendbuffer, sizeof(sendbuffer), query_id,
@@ -633,6 +579,8 @@ namespace domoticz_mdns
 				{
 					mdns_query_answer_multicast(sock, sendbuffer, sizeof(sendbuffer), answer, 0, 0, additional, additional_count);
 				}
+				_log.Debug(DEBUG_RECEIVED, "mDNS: Query %s:%.*s --> answer %.*s port %d (%s)", record_name, MDNS_STRING_FORMAT(name),
+						MDNS_STRING_FORMAT(service_record->record_srv.data.srv.name), service_record->port, (unicast ? "unicast" : "multicast"));
 			}
 		}
 		else if ((name.length == service_record->service_instance.length()) &&
@@ -661,8 +609,6 @@ namespace domoticz_mdns
 				additional[additional_count++] = service_record->txt_record[1];
 				// Send the answer, unicast or multicast depending on flag in query
 				uint16_t unicast = (rclass & MDNS_UNICAST_RESPONSE);
-				_log.Debug(DEBUG_RECEIVED, "mDNS: Query %s:%.*s --> answer %.*s port %d (%s)", record_name, MDNS_STRING_FORMAT(name),
-						MDNS_STRING_FORMAT(service_record->record_srv.data.srv.name), service_record->port, (unicast ? "unicast" : "multicast"));
 				if (unicast)
 				{
 					mdns_query_answer_unicast(sock, from, addrlen, sendbuffer, sizeof(sendbuffer), query_id,
@@ -673,6 +619,8 @@ namespace domoticz_mdns
 				{
 					mdns_query_answer_multicast(sock, sendbuffer, sizeof(sendbuffer), answer, 0, 0, additional, additional_count);
 				}
+				_log.Debug(DEBUG_RECEIVED, "mDNS: Query %s:%.*s --> answer %.*s port %d (%s)", record_name, MDNS_STRING_FORMAT(name),
+						MDNS_STRING_FORMAT(service_record->record_srv.data.srv.name), service_record->port, (unicast ? "unicast" : "multicast"));
 			}
 		}
 		else if ((name.length == service_record->hostname_qualified.length()) &&
@@ -698,8 +646,6 @@ namespace domoticz_mdns
 				// Send the answer, unicast or multicast depending on flag in query
 				uint16_t unicast = (rclass & MDNS_UNICAST_RESPONSE);
 				const auto addrstr = sockaddrToString((struct sockaddr *)&service_record->record_a.data.a.addr);
-				_log.Debug(DEBUG_RECEIVED, "mDNS: Query %s:%.*s --> answer %.*s IPv4 %.*s (%s)", record_name, MDNS_STRING_FORMAT(name),
-						MDNS_STRING_FORMAT(service_record->record_a.name), (int)addrstr.length(), addrstr.c_str(), (unicast ? "unicast" : "multicast"));
 				if (unicast)
 				{
 					mdns_query_answer_unicast(sock, from, addrlen, sendbuffer, sizeof(sendbuffer), query_id,
@@ -710,6 +656,8 @@ namespace domoticz_mdns
 				{
 					mdns_query_answer_multicast(sock, sendbuffer, sizeof(sendbuffer), answer, 0, 0, additional, additional_count);
 				}
+				_log.Debug(DEBUG_RECEIVED, "mDNS: Query %s:%.*s --> answer %.*s IPv4 %.*s (%s)", record_name, MDNS_STRING_FORMAT(name),
+						MDNS_STRING_FORMAT(service_record->record_a.name), (int)addrstr.length(), addrstr.c_str(), (unicast ? "unicast" : "multicast"));
 			}
 			else if (((rtype == MDNS_RECORDTYPE_AAAA) || (rtype == MDNS_RECORDTYPE_ANY)) &&
 					 (service_record->address_ipv6.sin6_family == AF_INET6))
@@ -731,8 +679,6 @@ namespace domoticz_mdns
 				// Send the answer, unicast or multicast depending on flag in query
 				uint16_t unicast = (rclass & MDNS_UNICAST_RESPONSE);
 				auto addrstr = sockaddrToString((struct sockaddr *)&service_record->record_aaaa.data.aaaa.addr);
-				_log.Debug(DEBUG_RECEIVED, "mDNS: Query %s:%.*s --> answer %.*s IPv6 %.*s (%s)", record_name, MDNS_STRING_FORMAT(name), 
-						MDNS_STRING_FORMAT(service_record->record_aaaa.name), (int)addrstr.length(), addrstr.c_str(), (unicast ? "unicast" : "multicast"));
 				if (unicast)
 				{
 					mdns_query_answer_unicast(sock, from, addrlen, sendbuffer, sizeof(sendbuffer), query_id,
@@ -743,6 +689,8 @@ namespace domoticz_mdns
 				{
 					mdns_query_answer_multicast(sock, sendbuffer, sizeof(sendbuffer), answer, 0, 0, additional, additional_count);
 				}
+				_log.Debug(DEBUG_RECEIVED, "mDNS: Query %s:%.*s --> answer %.*s IPv6 %.*s (%s)", record_name, MDNS_STRING_FORMAT(name), 
+						MDNS_STRING_FORMAT(service_record->record_aaaa.name), (int)addrstr.length(), addrstr.c_str(), (unicast ? "unicast" : "multicast"));
 			}
 			// #endif
 		}
