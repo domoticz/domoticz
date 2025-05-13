@@ -6,7 +6,7 @@
 #include "include/mdns.h"
 
 #define DOMOTICZ_MDNS_SERVICE_TYPE "_http._tcp.local."
-#define MDNS_TXT_RECORD_COUNT 2
+#define MAX_MDNS_TXT_RECORD_COUNT 10
 
 namespace domoticz_mdns
 {
@@ -27,7 +27,7 @@ namespace domoticz_mdns
 		mdns_record_t record_srv;
 		mdns_record_t record_a;
 		mdns_record_t record_aaaa;
-		mdns_record_t txt_record[MDNS_TXT_RECORD_COUNT];
+		std::vector<mdns_record_t> txt_records;
 	};
 
 	class mDNS : public StoppableTask
@@ -42,7 +42,7 @@ namespace domoticz_mdns
 		void setServiceHostname(const std::string &hostname);
 		void setServicePort(std::uint16_t port);
 		void setServiceName(const std::string &name);
-		void setServiceTxtRecord(const std::string &text_record_key, const std::string &text_record_value);
+		void addServiceTxtRecord(const std::string &text_record_key, const std::string &text_record_value);
 
 		using ServiceQueries = std::vector<std::pair<std::string, int>>;
 		void executeQuery(ServiceQueries service);
@@ -52,7 +52,7 @@ namespace domoticz_mdns
 		std::string name_{DOMOTICZ_MDNS_SERVICE_TYPE};
 		std::string hostname_;
 		std::uint16_t port_;
-		std::array<std::pair<std::string, std::string>, MDNS_TXT_RECORD_COUNT> txt_key_pairs_;
+		std::map<std::string, std::string> txt_key_pairs_;
 
 		bool running_{false};
 		struct sockaddr_in service_address_ipv4_;
