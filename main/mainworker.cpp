@@ -1114,14 +1114,6 @@ bool MainWorker::Start()
 		return false;
 	}
 
-	std::string sValue;
-	std::string szInstanceName = "domoticz";
-	if(m_sql.GetPreferencesVar("Title", sValue))
-	{
-		stdlower(sValue);
-		szInstanceName = sValue;
-	}
-
 	HTTPClient::SetUserAgent(GenerateUserAgent());
 	m_notifications.Init();
 	GetSunSettings();
@@ -1169,7 +1161,7 @@ bool MainWorker::Start()
 	{
 		m_webservers.SetAllowPlainBasicAuth(static_cast<bool>(nValue));
 	}
-	sValue = "";	// Reset sValue
+	std::string sValue;
 	if (m_sql.GetPreferencesVar("WebTheme", sValue))
 	{
 		m_webservers.SetWebTheme(sValue);
@@ -1195,14 +1187,22 @@ bool MainWorker::Start()
 
 	if (bEnableMDNS)
 	{
+		std::string sValue;
+		std::string szInstanceName = "domoticz";
+		if(m_sql.GetPreferencesVar("Title", sValue))
+		{
+			szInstanceName = sValue;
+		}
+
 		m_mdns.setServiceHostname(szInstanceName);
 		m_mdns.setServicePort(std::stoi(m_webserver_settings.listening_port));
 #ifdef WWW_ENABLE_SSL
 		if (m_secure_webserver_settings.is_enabled())
 			m_mdns.setServicePort(std::stoi(m_secure_webserver_settings.listening_port));
 #endif
-		m_mdns.setServiceTxtRecord(std::string{"version"}, szAppVersion);
-		m_mdns.setServiceTxtRecord(std::string{"path"}, std::string{"/index.html"});
+		m_mdns.addServiceTxtRecord(std::string{"app"}, "domoticz");
+		m_mdns.addServiceTxtRecord(std::string{"version"}, szAppVersion);
+		m_mdns.addServiceTxtRecord(std::string{"path"}, "/");
 		m_mdns.startService();
 	}
 
