@@ -178,6 +178,7 @@ main/WebServerCommands.cpp
 main/WebServerHandleGraph.cpp
 main/WebServerHelper.cpp
 main/WindCalculation.cpp
+mdns/mdns.cpp
 iamserver/IamService.cpp
 push/BasePush.cpp
 push/FibaroPush.cpp
@@ -514,7 +515,7 @@ include_directories(${CMAKE_SOURCE_DIR}/main)
 ADD_CUSTOM_TARGET(revisiontag ALL)
 
 # creates appversion.h using cmake script
-ADD_CUSTOM_COMMAND(TARGET revisiontag COMMAND ${CMAKE_COMMAND}
+ADD_CUSTOM_COMMAND(TARGET revisiontag PRE_BUILD COMMAND ${CMAKE_COMMAND}
    -DSOURCE_DIR=${CMAKE_CURRENT_SOURCE_DIR}
    -P ${CMAKE_CURRENT_SOURCE_DIR}/getgit.cmake)
 
