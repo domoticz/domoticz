@@ -67,11 +67,6 @@ namespace domoticz_mdns
 		if (txt_record_key.empty() || txt_record_value.empty())
 			return;
 
-		if (txt_key_pairs_.size() >= MAX_MDNS_TXT_RECORD_COUNT)
-		{
-			_log.Debug(DEBUG_NORM, "mDNS: Too many TXT records! Max %d", MAX_MDNS_TXT_RECORD_COUNT);
-			return;
-		}
 		txt_key_pairs_[txt_record_key] = txt_record_value;
 	}
 
@@ -175,20 +170,18 @@ namespace domoticz_mdns
 		// Send an announcement on startup of service
 		{
 			_log.Debug(DEBUG_NORM, "mDNS: Sending mDNS announce");
-			mdns_record_t additional[MAX_MDNS_TXT_RECORD_COUNT] = {{}};
-			size_t additional_count = 0;
-			additional[additional_count++] = service_record.record_srv;
+			std::vector<mdns_record_t> additional;
+			additional.push_back(service_record.record_srv);
 			if (service_record.address_ipv4.sin_family == AF_INET)
-				additional[additional_count++] = service_record.record_a;
+				additional.push_back(service_record.record_a);
 			if (service_record.address_ipv6.sin6_family == AF_INET6)
-				additional[additional_count++] = service_record.record_aaaa;
+				additional.push_back(service_record.record_aaaa);
 			for (const auto &txt_record : service_record.txt_records)
 			{
-				additional[additional_count++] = txt_record;
+				additional.push_back(txt_record);
 			}
 			for (int isock = 0; isock < num_sockets; ++isock)
-				mdns_announce_multicast(sockets[isock], buffer.get(), capacity, service_record.record_ptr, 0, 0, additional,
-										additional_count);
+				mdns_announce_multicast(sockets[isock], buffer.get(), capacity, service_record.record_ptr, 0, 0, &additional[0], additional.size());
 		}
 
 		// This is a crude implementation that checks for incoming queries
@@ -227,21 +220,19 @@ namespace domoticz_mdns
 		// Send a goodbye on end of service
 		{
 			_log.Debug(DEBUG_NORM, "mDNS: Sending mDNS goodbye");
-			mdns_record_t additional[MAX_MDNS_TXT_RECORD_COUNT] = {{}};
-			size_t additional_count = 0;
-			additional[additional_count++] = service_record.record_srv;
+			std::vector<mdns_record_t> additional;
+			additional.push_back(service_record.record_srv);
 			if (service_record.address_ipv4.sin_family == AF_INET)
-				additional[additional_count++] = service_record.record_a;
+				additional.push_back(service_record.record_a);
 			if (service_record.address_ipv6.sin6_family == AF_INET6)
-				additional[additional_count++] = service_record.record_aaaa;
+				additional.push_back(service_record.record_aaaa);
 			for (const auto &txt_record : service_record.txt_records)
 			{
-				additional[additional_count++] = txt_record;
+				additional.push_back(txt_record);
 			}
 
 			for (int isock = 0; isock < num_sockets; ++isock)
-				mdns_goodbye_multicast(sockets[isock], buffer.get(), capacity, service_record.record_ptr, 0, 0, additional,
-									   additional_count);
+				mdns_goodbye_multicast(sockets[isock], buffer.get(), capacity, service_record.record_ptr, 0, 0, &additional[0], additional.size());
 		}
 
 		for (int isock = 0; isock < num_sockets; ++isock)
@@ -569,25 +560,24 @@ namespace domoticz_mdns
 				// (typically on the "<hostname>.<_service-name>._tcp.local." format), and add
 				// additional records containing the SRV record mapping the service instance name to our
 				// qualified hostname (typically "<hostname>.local.") and port, as well as any IPv4/IPv6
-				// address for the hostname as A/AAAA records, and two test TXT records
+				// address for the hostname as A/AAAA records, and all TXT records
 				// Answer PTR record reverse mapping "<_service-name>._tcp.local." to
 				// "<hostname>.<_service-name>._tcp.local."
 				mdns_record_t answer = service_record->record_ptr;
-				mdns_record_t additional[MAX_MDNS_TXT_RECORD_COUNT] = {{}};
-				size_t additional_count = 0;
+				std::vector<mdns_record_t> additional;
 				// SRV record mapping "<hostname>.<_service-name>._tcp.local." to
 				// "<hostname>.local." with port. Set weight & priority to 0.
-				additional[additional_count++] = service_record->record_srv;
+				additional.push_back(service_record->record_srv);
 				// A/AAAA records mapping "<hostname>.local." to IPv4/IPv6 addresses
 				if (service_record->address_ipv4.sin_family == AF_INET)
-					additional[additional_count++] = service_record->record_a;
+					additional.push_back(service_record->record_a);
 				if (service_record->address_ipv6.sin6_family == AF_INET6)
-					additional[additional_count++] = service_record->record_aaaa;
+					additional.push_back(service_record->record_aaaa);
 				// Add all TXT records for our service instance name, will be coalesced into
 				// one record with both key-value pair strings by the library
 				for (const auto &txt_record : service_record->txt_records)
 				{
-					additional[additional_count++] = txt_record;
+					additional.push_back(txt_record);
 				}
 				// Send the answer, unicast or multicast depending on flag in query
 				uint16_t unicast = (rclass & MDNS_UNICAST_RESPONSE);
@@ -595,11 +585,11 @@ namespace domoticz_mdns
 				{
 					mdns_query_answer_unicast(sock, from, addrlen, sendbuffer, sizeof(sendbuffer), query_id,
 											  static_cast<mdns_record_type_t>(rtype), name.str, name.length, answer, 0, 0,
-											  additional, additional_count);
+											  &additional[0], additional.size());
 				}
 				else
 				{
-					mdns_query_answer_multicast(sock, sendbuffer, sizeof(sendbuffer), answer, 0, 0, additional, additional_count);
+					mdns_query_answer_multicast(sock, sendbuffer, sizeof(sendbuffer), answer, 0, 0, &additional[0], additional.size());
 				}
 				_log.Debug(DEBUG_RECEIVED, "mDNS: Query %s:%.*s --> answer %.*s port %d (%s)", record_name, MDNS_STRING_FORMAT(name),
 						MDNS_STRING_FORMAT(service_record->record_srv.data.srv.name), service_record->port, (unicast ? "unicast" : "multicast"));
@@ -613,23 +603,22 @@ namespace domoticz_mdns
 				// The SRV query was for our service instance (usually
 				// "<hostname>.<_service-name._tcp.local"), answer a SRV record mapping the service
 				// instance name to our qualified hostname (typically "<hostname>.local.") and port, as
-				// well as any IPv4/IPv6 address for the hostname as A/AAAA records, and two test TXT
+				// well as any IPv4/IPv6 address for the hostname as A/AAAA records, and all TXT
 				// records
 				// Answer PTR record reverse mapping "<_service-name>._tcp.local." to
 				// "<hostname>.<_service-name>._tcp.local."
 				mdns_record_t answer = service_record->record_srv;
-				mdns_record_t additional[MAX_MDNS_TXT_RECORD_COUNT] = {{}};
-				size_t additional_count = 0;
+				std::vector<mdns_record_t> additional;
 				// A/AAAA records mapping "<hostname>.local." to IPv4/IPv6 addresses
 				if (service_record->address_ipv4.sin_family == AF_INET)
-					additional[additional_count++] = service_record->record_a;
+					additional.push_back(service_record->record_a);
 				if (service_record->address_ipv6.sin6_family == AF_INET6)
-					additional[additional_count++] = service_record->record_aaaa;
+					additional.push_back(service_record->record_aaaa);
 				// Add all TXT records for our service instance name, will be coalesced into
 				// one record with both key-value pair strings by the library
 				for (const auto &txt_record : service_record->txt_records)
 				{
-					additional[additional_count++] = txt_record;
+					additional.push_back(txt_record);
 				}
 				// Send the answer, unicast or multicast depending on flag in query
 				uint16_t unicast = (rclass & MDNS_UNICAST_RESPONSE);
@@ -637,11 +626,11 @@ namespace domoticz_mdns
 				{
 					mdns_query_answer_unicast(sock, from, addrlen, sendbuffer, sizeof(sendbuffer), query_id,
 											  static_cast<mdns_record_type_t>(rtype), name.str, name.length, answer, 0, 0,
-											  additional, additional_count);
+											  &additional[0], additional.size());
 				}
 				else
 				{
-					mdns_query_answer_multicast(sock, sendbuffer, sizeof(sendbuffer), answer, 0, 0, additional, additional_count);
+					mdns_query_answer_multicast(sock, sendbuffer, sizeof(sendbuffer), answer, 0, 0, &additional[0], additional.size());
 				}
 				_log.Debug(DEBUG_RECEIVED, "mDNS: Query %s:%.*s --> answer %.*s port %d (%s)", record_name, MDNS_STRING_FORMAT(name),
 						MDNS_STRING_FORMAT(service_record->record_srv.data.srv.name), service_record->port, (unicast ? "unicast" : "multicast"));
@@ -654,34 +643,33 @@ namespace domoticz_mdns
 				(service_record->address_ipv4.sin_family == AF_INET))
 			{
 				// The A query was for our qualified hostname (typically "<hostname>.local.") and we
-				// have an IPv4 address, answer with an A record mappiing the hostname to an IPv4
-				// address, as well as any IPv6 address for the hostname, and two test TXT records
+				// have an IPv4 address, answer with an A record mapping the hostname to an IPv4
+				// address, as well as any IPv6 address for the hostname, and all TXT records
 				// Answer A records mapping "<hostname>.local." to IPv4 address
 				mdns_record_t answer = service_record->record_a;
-				mdns_record_t additional[MAX_MDNS_TXT_RECORD_COUNT] = {{}};
-				size_t additional_count = 0;
+				std::vector<mdns_record_t> additional;
 				// AAAA record mapping "<hostname>.local." to IPv6 addresses
 				if (service_record->address_ipv6.sin6_family == AF_INET6)
-					additional[additional_count++] = service_record->record_aaaa;
+					additional.push_back(service_record->record_aaaa);
 				// Add all TXT records for our service instance name, will be coalesced into
 				// one record with both key-value pair strings by the library
 				for (const auto &txt_record : service_record->txt_records)
 				{
-					additional[additional_count++] = txt_record;
+					additional.push_back(txt_record);
 				}
 				// Send the answer, unicast or multicast depending on flag in query
 				uint16_t unicast = (rclass & MDNS_UNICAST_RESPONSE);
-				const auto addrstr = sockaddrToString((struct sockaddr *)&service_record->record_a.data.a.addr);
 				if (unicast)
 				{
 					mdns_query_answer_unicast(sock, from, addrlen, sendbuffer, sizeof(sendbuffer), query_id,
 											  static_cast<mdns_record_type_t>(rtype), name.str, name.length, answer, 0, 0,
-											  additional, additional_count);
+											  &additional[0], additional.size());
 				}
 				else
 				{
-					mdns_query_answer_multicast(sock, sendbuffer, sizeof(sendbuffer), answer, 0, 0, additional, additional_count);
+					mdns_query_answer_multicast(sock, sendbuffer, sizeof(sendbuffer), answer, 0, 0, &additional[0], additional.size());
 				}
+				const auto addrstr = sockaddrToString((struct sockaddr*)&service_record->record_a.data.a.addr);
 				_log.Debug(DEBUG_RECEIVED, "mDNS: Query %s:%.*s --> answer %.*s IPv4 %.*s (%s)", record_name, MDNS_STRING_FORMAT(name),
 						MDNS_STRING_FORMAT(service_record->record_a.name), (int)addrstr.length(), addrstr.c_str(), (unicast ? "unicast" : "multicast"));
 			}
@@ -690,34 +678,33 @@ namespace domoticz_mdns
 			{
 				// The AAAA query was for our qualified hostname (typically "<hostname>.local.") and we
 				// have an IPv6 address, answer with an AAAA record mappiing the hostname to an IPv6
-				// address, as well as any IPv4 address for the hostname, and two test TXT records
+				// address, as well as any IPv4 address for the hostname, and all TXT records
 				// Answer AAAA records mapping "<hostname>.local." to IPv6 address
 				mdns_record_t answer = service_record->record_aaaa;
-				mdns_record_t additional[MAX_MDNS_TXT_RECORD_COUNT] = {{}};
-				size_t additional_count = 0;
+				std::vector<mdns_record_t> additional;
 				// A record mapping "<hostname>.local." to IPv4 addresses
 				if (service_record->address_ipv4.sin_family == AF_INET)
-					additional[additional_count++] = service_record->record_a;
+					additional.push_back(service_record->record_a);
 				// Add all TXT records for our service instance name, will be coalesced into
 				// one record with both key-value pair strings by the library
 				for (const auto &txt_record : service_record->txt_records)
 				{
-					additional[additional_count++] = txt_record;
+					additional.push_back(txt_record);
 				}
 				// Send the answer, unicast or multicast depending on flag in query
 				uint16_t unicast = (rclass & MDNS_UNICAST_RESPONSE);
-				auto addrstr = sockaddrToString((struct sockaddr *)&service_record->record_aaaa.data.aaaa.addr);
 				if (unicast)
 				{
 					mdns_query_answer_unicast(sock, from, addrlen, sendbuffer, sizeof(sendbuffer), query_id,
 											  static_cast<mdns_record_type_t>(rtype), name.str, name.length, answer, 0, 0,
-											  additional, additional_count);
+											  &additional[0], additional.size());
 				}
 				else
 				{
-					mdns_query_answer_multicast(sock, sendbuffer, sizeof(sendbuffer), answer, 0, 0, additional, additional_count);
+					mdns_query_answer_multicast(sock, sendbuffer, sizeof(sendbuffer), answer, 0, 0, &additional[0], additional.size());
 				}
-				_log.Debug(DEBUG_RECEIVED, "mDNS: Query %s:%.*s --> answer %.*s IPv6 %.*s (%s)", record_name, MDNS_STRING_FORMAT(name), 
+				auto addrstr = sockaddrToString((struct sockaddr*)&service_record->record_aaaa.data.aaaa.addr);
+				_log.Debug(DEBUG_RECEIVED, "mDNS: Query %s:%.*s --> answer %.*s IPv6 %.*s (%s)", record_name, MDNS_STRING_FORMAT(name),
 						MDNS_STRING_FORMAT(service_record->record_aaaa.name), (int)addrstr.length(), addrstr.c_str(), (unicast ? "unicast" : "multicast"));
 			}
 			// #endif

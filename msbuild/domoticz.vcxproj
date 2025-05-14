@@ -723,6 +723,7 @@
     <ClInclude Include="..\hardware\ZWaveCommands.h" />
     <ClInclude Include="..\httpclient\HTTPClient.h" />
     <ClInclude Include="..\iamserver\iam_settings.hpp" />
+    <ClInclude Include="..\mdns\include\mdns.h" />
     <ClInclude Include="..\mdns\mdns.hpp" />
     <ClInclude Include="..\main\appversion.h" />
     <ClInclude Include="..\hardware\ASyncSerial.h" />

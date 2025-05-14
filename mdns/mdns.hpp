@@ -6,7 +6,6 @@
 #include "include/mdns.h"
 
 #define DOMOTICZ_MDNS_SERVICE_TYPE "_http._tcp.local."
-#define MAX_MDNS_TXT_RECORD_COUNT 10
 
 namespace domoticz_mdns
 {

@@ -1188,7 +1188,7 @@ bool MainWorker::Start()
 	if (bEnableMDNS)
 	{
 		std::string sValue;
-		std::string szInstanceName = "domoticz";
+		std::string szInstanceName = "Domoticz";
 		if(m_sql.GetPreferencesVar("Title", sValue))
 		{
 			szInstanceName = sValue;
@@ -1200,9 +1200,9 @@ bool MainWorker::Start()
 		if (m_secure_webserver_settings.is_enabled())
 			m_mdns.setServicePort(std::stoi(m_secure_webserver_settings.listening_port));
 #endif
-		m_mdns.addServiceTxtRecord(std::string{"app"}, "domoticz");
-		m_mdns.addServiceTxtRecord(std::string{"version"}, szAppVersion);
-		m_mdns.addServiceTxtRecord(std::string{"path"}, "/");
+		m_mdns.addServiceTxtRecord("app", "Domoticz");
+		m_mdns.addServiceTxtRecord("version", szAppVersion);
+		m_mdns.addServiceTxtRecord("path", "/");
 		m_mdns.startService();
 	}
 
