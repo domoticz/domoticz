@@ -4322,14 +4322,19 @@ namespace http
 			if ((idx.empty()) || (sused.empty()))
 				return;
 			std::vector<std::vector<std::string>> result;
-			result = m_sql.safe_query("SELECT Type,SubType,HardwareID,CustomImage FROM DeviceStatus WHERE (ID == '%q')", idx.c_str());
+			result = m_sql.safe_query("SELECT Type,SubType,HardwareID,CustomImage,Description FROM DeviceStatus WHERE (ID == '%q')", idx.c_str());
 			if (result.empty())
 				return;
 
 			std::string deviceid = request::findValue(&req, "deviceid");
 			std::string name = HTMLSanitizer::Sanitize(request::findValue(&req, "name")); stdstring_trim(name);
+
+			bool bHaveText = request::hasValue(&req, "text");
 			std::string text = HTMLSanitizer::Sanitize(request::findValue(&req, "text")); stdstring_trim(text);
+
+			bool bHaveDescription = request::hasValue(&req, "description");
 			std::string description = HTMLSanitizer::Sanitize(request::findValue(&req, "description")); stdstring_trim(description);
+
 			std::string sswitchtype = request::findValue(&req, "switchtype");
 			std::string maindeviceidx = request::findValue(&req, "maindeviceidx");
 			std::string addjvalue = request::findValue(&req, "addjvalue");
@@ -4379,6 +4384,9 @@ namespace http
 			int HwdID = atoi(sd[2].c_str());
 			std::string sHwdID = sd[2];
 			int OldCustomImage = atoi(sd[3].c_str());
+			std::string OldDescription = sd[4];
+			if (!bHaveDescription)
+				description = OldDescription;
 
 			int CustomImage = (!sCustomImage.empty()) ? std::stoi(sCustomImage) : OldCustomImage;
 
@@ -4417,9 +4425,12 @@ namespace http
 
 			if ((dType == pTypeGeneral) && (dSubType == sTypeTextStatus))
 			{
-				m_sql.safe_query("UPDATE DeviceStatus SET sValue='%q' WHERE (ID == '%q')", text.c_str(), idx.c_str());
-				m_mainworker.SetTextDevice(idx, text);
-				m_sql.UpdateLastUpdate(idx);
+				if (bHaveText)
+				{
+					m_sql.safe_query("UPDATE DeviceStatus SET sValue='%q' WHERE (ID == '%q')", text.c_str(), idx.c_str());
+					m_mainworker.SetTextDevice(idx, text);
+					m_sql.UpdateLastUpdate(idx);
+				}
 			}
 
 			if (bHasstrParam1)
