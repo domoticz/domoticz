@@ -808,7 +808,8 @@ ENDIF(EXECINFO_LIBRARIES)
 
 find_library(LIBRT rt)
 if(LIBRT)
-  target_link_libraries(domoticz ${LIBRT})
+  target_link_libraries(domoticz -lrt)
+  target_link_libraries(domoticztester -lrt)
 endif()
 
 IF(USE_PRECOMPILED_HEADER)
