@@ -4757,12 +4757,15 @@ bool MQTTAutoDiscover::SendSwitchCommand(const std::string& DeviceID, const std:
 					root["color"]["b"] = color.b;
 				}
 				if (
-					(pSensor->supported_color_modes.find("rgbw") != pSensor->supported_color_modes.end())
-					|| (pSensor->supported_color_modes.find("rgbww") != pSensor->supported_color_modes.end())
-					)
+					(pSensor->subType == sTypeColor_RGB_W_Z)
+					|| (pSensor->subType == sTypeColor_RGB_CW_WW_Z)
+					|| (pSensor->subType == sTypeColor_RGB_CW_WW)
+					) {
 					root["color"]["c"] = color.cw;
-				if (pSensor->supported_color_modes.find("rgbww") != pSensor->supported_color_modes.end())
+				}
+				if (pSensor->subType == sTypeColor_RGB_CW_WW_Z) {
 					root["color"]["w"] = color.ww;
+				}
 
 				// Check if the rgb_command_template suggests to use "red", "green"... instead of the default "r", "g"... (e.g. Fibaro FGRGBW)
 				if (!pSensor->rgb_command_template.empty() && pSensor->rgb_command_template.find("red: red") != std::string::npos)
