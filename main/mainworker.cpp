@@ -1193,6 +1193,7 @@ bool MainWorker::Start()
 		{
 			szInstanceName = sValue;
 		}
+		stdlower(szInstanceName);
 
 		m_mdns.setServiceHostname(szInstanceName);
 		m_mdns.setServicePort(std::stoi(m_webserver_settings.listening_port));
