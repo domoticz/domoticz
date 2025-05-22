@@ -25,6 +25,16 @@
 #define TADO_CLIENT_ID "1bb50063-6b0c-4d11-bd99-387f4a91cc46"
 #define TADO_API_DEVICE_AUTHORIZE "https://login.tado.com/oauth2/device_authorize"
 #define TADO_API_ENVIRONMENT_URL "https://app.tado.com/env.js"
+
+
+#define TADO_MY_API "https://my.tado.com/api/v2/"
+#define TADO_HOPS_API "https://hops.tado.com/"
+#define TADO_MOBILE "https://my.tado.com/mobile/1.9/"
+#define TADO_EIQ "https://energy-insights.tado.com/api/"
+#define TADO_TARIFF "https://tariff-experience.tado.com/api/"
+#define TADO_GENIE "https://genie.tado.com/api/v2/"
+#define TADO_MINDER "https://minder.tado.com/v1/"
+
 #define TADO_API_GET_TOKEN "https://login.tado.com/oauth2/token"
 
 #define TADO_POLL_LOGIN_INTERVAL 10
@@ -811,44 +821,9 @@ bool CTado::MatchValueFromJSKey(const std::string& sKeyName, const std::string& 
 // Grabs the web app environment file
 bool CTado::GetTadoApiEnvironment(const std::string& sUrl)
 {
-	Debug(DEBUG_HARDWARE, "GetTadoApiEnvironment called with sUrl=%s", sUrl.c_str());
-
-	// This is a bit of a special case. Since we pretend to be the web
-	// application (my.tado.com) we have to play by its rules. It works
-	// with some information like a client id and a client secret. We
-	// have to pluck that environment information from the web page and
-	// then parse it so we can use it in our future calls.
-
-	std::string _sResponse;
-
-	// Download the API environment file
-	if (!HTTPClient::GET(sUrl, _sResponse, false)) {
-		Log(LOG_ERROR, "Failed to retrieve API environment from %s", sUrl.c_str());
-		return false;
-	}
-
-	// Determine which keys we want to grab from the environment
-	std::vector<std::string> _vKeysToFetch;
-	_vKeysToFetch.push_back("clientId");
-	_vKeysToFetch.push_back("clientSecret");
-	_vKeysToFetch.push_back("apiEndpoint");
-	_vKeysToFetch.push_back("tgaRestApiV2Endpoint");
-
 	// The key values will be stored in a map, lets clean it out first.
 	m_TadoEnvironment.clear();
-
-	for (const auto& _sKeyName : _vKeysToFetch)
-	{
-		// Feed the function the javascript response, and have it attempt to grab the provided key's value from it.
-		// Value is stored in m_TadoEnvironment[keyName]
-		if (!MatchValueFromJSKey(_sKeyName, _sResponse, m_TadoEnvironment[_sKeyName])) {
-			Log(LOG_ERROR, "Failed to retrieve/match key '%s' from the API environment.", _sKeyName.c_str());
-			return false;
-		}
-	}
-
-	Log(LOG_STATUS, "Retrieved webapp environment from API.");
-
+	m_TadoEnvironment["tgaRestApiV2Endpoint"] = TADO_MY_API;
 	return true;
 }
 
