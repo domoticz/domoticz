@@ -1,5 +1,8 @@
 Version 2025.xxxx
 - Fixed: MQTT-AD, fix issue where brightness and RGB command topic are different
+- Changed: mDNS, hostname now lowercase
+- Changed: MQTT-AD, added support for color_temp_command_template
+- Changed: TADO, Added fixed API endpoint
 - Updated: Windows libraries
 
 Version 2025.1 (May 5th 2025)
