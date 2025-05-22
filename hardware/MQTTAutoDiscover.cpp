@@ -520,6 +520,7 @@ void MQTTAutoDiscover::FixCommandTopic(std::string& command_topic, std::string& 
 void MQTTAutoDiscover::on_auto_discovery_message(const struct mosquitto_message* message)
 {
 	std::string topic = message->topic;
+
 	std::string org_topic(topic);
 	std::string qMessage = std::string((char*)message->payload, (char*)message->payload + message->payloadlen);
 
@@ -1086,6 +1087,11 @@ void MQTTAutoDiscover::on_auto_discovery_message(const struct mosquitto_message*
 		if (!root["rgb_cmd_tpl"].empty())
 			pSensor->rgb_command_template = root["rgb_cmd_tpl"].asString();
 		CleanValueTemplate(pSensor->rgb_command_template);
+
+		if (!root["color_temp_command_template"].empty())
+			pSensor->color_temp_command_template = root["color_temp_command_template"].asString();
+		if (!root["color_temp_cmd_tpl"].empty())
+			pSensor->color_temp_command_template = root["color_temp_cmd_tpl"].asString();
 
 		if (!root["rgb_command_topic"].empty())
 			pSensor->rgb_command_topic = root["rgb_command_topic"].asString();
@@ -3884,15 +3890,25 @@ void MQTTAutoDiscover::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 
 		if (bHaveColor)
 		{
-			if (
-				(pSensor->supported_color_modes.find("rgbw") != pSensor->supported_color_modes.end())
-				|| (
-					(pSensor->supported_color_modes.find("rgb") != pSensor->supported_color_modes.end())
-					&& (pSensor->supported_color_modes.find("white") != pSensor->supported_color_modes.end())
-					)
-				)
+			if (pSensor->supported_color_modes.find("rgbw") != pSensor->supported_color_modes.end())
 			{
 				pSensor->subType = sTypeColor_RGB_W_Z;
+			}
+			else if ( (pSensor->supported_color_modes.find("rgb") != pSensor->supported_color_modes.end())
+				      && (pSensor->supported_color_modes.find("white") != pSensor->supported_color_modes.end()))
+			{
+				// if RGB and white, check if white contains coldWhite and warmWhite
+				if (
+					(pSensor->color_temp_command_template.find("coldWhite") != std::string::npos)
+					&& (pSensor->color_temp_command_template.find("warmWhite") != std::string::npos)
+					)
+				{
+					pSensor->subType = sTypeColor_RGB_CW_WW_Z;
+				}
+				else
+				{
+					pSensor->subType = sTypeColor_RGB_W_Z;
+				}
 			}
 			else if (
 				(pSensor->supported_color_modes.find("rgbww") != pSensor->supported_color_modes.end())
@@ -4760,15 +4776,20 @@ bool MQTTAutoDiscover::SendSwitchCommand(const std::string& DeviceID, const std:
 					(pSensor->subType == sTypeColor_RGB_W_Z)
 					|| (pSensor->subType == sTypeColor_RGB_CW_WW_Z)
 					|| (pSensor->subType == sTypeColor_RGB_CW_WW)
-					) {
+					) 
+				{
 					root["color"]["c"] = color.cw;
 				}
-				if (pSensor->subType == sTypeColor_RGB_CW_WW_Z) {
+				if (
+					(pSensor->subType == sTypeColor_RGB_CW_WW_Z)
+					|| (pSensor->subType == sTypeColor_RGB_CW_WW)
+					)
+				{
 					root["color"]["w"] = color.ww;
 				}
 
 				// Check if the rgb_command_template suggests to use "red", "green"... instead of the default "r", "g"... (e.g. Fibaro FGRGBW)
-				if (!pSensor->rgb_command_template.empty() && pSensor->rgb_command_template.find("red: red") != std::string::npos)
+				if (pSensor->rgb_command_template.find("red: red") != std::string::npos)
 				{
 					// For the Fibaro FGRGBW dimmer:
 					//  "rgb_command_template": "{{ {'red': red, 'green': green, 'blue': blue}|to_json }}",  
@@ -4778,10 +4799,30 @@ bool MQTTAutoDiscover::SendSwitchCommand(const std::string& DeviceID, const std:
 					colorDef["red"] = root["color"]["r"];
 					colorDef["green"] = root["color"]["g"];
 					colorDef["blue"] = root["color"]["b"];
-					if (!root["color"]["c"].empty())
+					
+					if (
+						(pSensor->subType == sTypeColor_RGB_CW_WW_Z)
+						|| (pSensor->subType == sTypeColor_RGB_CW_WW)
+						)
 					{
-						colorDef["warmWhite"] = root["color"]["c"];		// In Domoticz cw is used for RGB_W dimmers, but Zwavejs requires warmWhite
+						colorDef["coldWhite"] = root["color"]["c"];
+						colorDef["warmWhite"] = root["color"]["w"];
 					}
+					else if (pSensor->subType == sTypeColor_RGB_W_Z)
+					{
+						// only a single 'white'. check if this is warm or coldwhite. 
+						// If not coldwhite it is warmwhite
+						// Single white is stored as coldwhite within Domoticz
+						if (pSensor->color_temp_command_template.find("coldWhite"))
+						{
+							colorDef["coldWhite"] = root["color"]["c"];
+						}
+						else
+						{
+							colorDef["warmWhite"] = root["color"]["c"];
+						}
+					}
+
 					root["value"] = colorDef;
 					root.removeMember("color");
 				}
@@ -4806,6 +4847,16 @@ bool MQTTAutoDiscover::SendSwitchCommand(const std::string& DeviceID, const std:
 					}
 					else
 						root["color_temp"] = iCT;
+				}
+				else if (pSensor->supported_color_modes.find("white") != pSensor->supported_color_modes.end())
+				{
+					Json::Value colorDef;
+
+					colorDef["coldWhite"] = color.cw;
+					colorDef["warmWhite"] = color.ww;
+
+					root["value"] = colorDef;
+
 				}
 				bCouldUseBrightness = true;
 			}
