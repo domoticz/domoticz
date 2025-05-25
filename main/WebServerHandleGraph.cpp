@@ -509,9 +509,9 @@ namespace http
 										root["result"][ii]["v1"] = szTmp;
 										sprintf(szTmp, "%ld", curUsage2);
 										root["result"][ii]["v2"] = szTmp;
-										sprintf(szTmp, "%ld", curDeliv1);
+										sprintf(szTmp, "%ld", -curDeliv1);
 										root["result"][ii]["r1"] = szTmp;
-										sprintf(szTmp, "%ld", curDeliv2);
+										sprintf(szTmp, "%ld", -curDeliv2);
 										root["result"][ii]["r2"] = szTmp;
 									}
 									else
@@ -519,7 +519,7 @@ namespace http
 										//Simple
 										sprintf(szTmp, "%ld", curUsage1 + curUsage2);
 										root["result"][ii]["v"] = szTmp;
-										sprintf(szTmp, "%ld", curDeliv1 + curDeliv2);
+										sprintf(szTmp, "%ld", -(curDeliv1 + curDeliv2));
 										root["result"][ii]["r"] = szTmp;
 									}
 									long pUsage1 = (long)(actUsage1 - firstUsage1);
@@ -531,7 +531,7 @@ namespace http
 									{
 										long pDeliv1 = (long)(actDeliv1 - firstDeliv1);
 										long pDeliv2 = (long)(actDeliv2 - firstDeliv2);
-										sprintf(szTmp, "%ld", pDeliv1 + pDeliv2);
+										sprintf(szTmp, "%ld", -(pDeliv1 + pDeliv2));
 										root["result"][ii]["eg"] = szTmp;
 									}
 
