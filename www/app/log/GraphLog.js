@@ -42,7 +42,7 @@ define(['app', 'lodash', 'RefreshingChart', 'DataLoader', 'ChartLoader'],
                                 {
                                     id: 'power',
                                     valueKeySuffix: '',
-                                    colorIndex: 0,
+                                    colorIndex: 1,
                                     template: {
                                         name: domoticzGlobals.sensorNameForDevice(self.device),
                                         showInLegend: false
