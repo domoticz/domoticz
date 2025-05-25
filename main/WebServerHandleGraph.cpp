@@ -3043,15 +3043,16 @@ namespace http
 						}
 						root["title"] = "Graph " + sensor + " " + srange;
 
-						result = m_sql.safe_query("SELECT Value1,Value2, Date FROM %s WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q' AND Date<='%q') ORDER BY Date ASC",
+						result = m_sql.safe_query("SELECT Value1,Value2,Value3,Date FROM %s WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q' AND Date<='%q') ORDER BY Date ASC",
 							dbasetable.c_str(), idx, szDateStart, szDateEnd);
 						if (!result.empty())
 						{
 							for (const auto& sd : result)
 							{
-								root["result"][ii]["d"] = sd[2].substr(0, 16);
+								root["result"][ii]["d"] = sd[3].substr(0, 16);
 								root["result"][ii]["u_min"] = atof(sd[0].c_str()) / 10.0F;
 								root["result"][ii]["u_max"] = atof(sd[1].c_str()) / 10.0F;
+								root["result"][ii]["u_avg"] = static_cast<int>((atof(sd[2].c_str()) / 10.0F) + 0.5F);
 								ii++;
 							}
 						}
@@ -3694,12 +3695,13 @@ namespace http
 					}
 					else if (dType == pTypeUsage)
 					{
-						result = m_sql.safe_query("SELECT MIN(Value), MAX(Value) FROM Meter WHERE (DeviceRowID=%" PRIu64 " AND Date>='%q')", idx, szDateEnd);
+						result = m_sql.safe_query("SELECT MIN(Value), MAX(Value), AVG(Value) FROM Meter WHERE (DeviceRowID=%" PRIu64 " AND Date>='%q')", idx, szDateEnd);
 						if (!result.empty())
 						{
 							root["result"][ii]["d"] = szDateEnd;
 							root["result"][ii]["u_min"] = atof(result[0][0].c_str()) / 10.0F;
 							root["result"][ii]["u_max"] = atof(result[0][1].c_str()) / 10.0F;
+							root["result"][ii]["u_avg"] = static_cast<int>((atof(result[0][2].c_str()) / 10.0F) + 0.5F);
 							ii++;
 						}
 					}
