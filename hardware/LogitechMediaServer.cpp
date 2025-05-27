@@ -10,6 +10,15 @@
 #include "../notifications/NotificationHelper.h"
 #include "../httpclient/HTTPClient.h"
 
+#ifdef _DEBUG
+//#define DEBUG_LOGI
+#endif
+
+#ifdef DEBUG_LOGI
+//seems to be a new format for the Logitech Media Server JSON API, so we use a static string for testing
+const char* szLogiTest = R"logi_test([{"advice":{"interval":0},"timestamp":"Sat, 24 May 2025 12:37:22 GMT","id":"10","successful":true,"clientId":"d17d4f76","channel":"/meta/connect"},{"id":"8","channel":"/d17d4f76/slim/playerstatus/00:04:20:26:23:70","ext":{"priority":""},"data":{"playlist repeat":0,"mode":"stop","power":1,"alarm_snooze_seconds":540,"seq_no":"2","player_connected":1,"alarm_state":"none","player_name":"Squeezebox Radio","digital_volume_control":1,"playlist shuffle":0,"alarm_next":0,"alarm_timeout_seconds":3600,"playlist_tracks":0,"use_volume_control":1,"mixer volume":29,"alarm_version":2,"playlist mode":"off","randomplay":0,"player_ip":"192.168.1.115:37407","signalstrength":100}},{"channel":"/d17d4f76/slim/serverstatus","id":"3","data":{"version":"9.0.2","ip":"192.168.1.6","httpport":"9000","info total artists":1538,"lastscan":"1748070003","info total songs":9420,"mac":"00:0c:29:31:5a:73","players_loop":[{"playerid":"00:04:20:22:22:70","firmware":"8.5.3-r16974","uuid":"3d7e85e64e8eab1ebbde6c5320a96a8b","canpoweroff":1,"displaytype":"none","ip":"192.168.1.246:42327","isplayer":1,"playerindex":"0","model":"fab4","isplaying":0,"power":0,"name":"Squeezebox Touch","connected":1,"seq_no":"14","modelname":"Denon/Marantz AVR"},{"uuid":"58c97b85c7ec36e97583bfc3eb143948","firmware":"8.5.3-r16974","playerid":"00:04:20:26:23:70","modelname":"Squeezebox Radio","seq_no":"2","connected":1,"name":"Squeezebox Radio","power":1,"model":"baby","isplaying":0,"playerindex":1,"isplayer":1,"displaytype":"none","ip":"192.168.1.115:37407","canpoweroff":1}],"other player count":0,"info total albums":593,"info total duration":2854661.46000002,"info total genres":58,"uuid":"cf91dadc-2f9c-4d6a-9f1c-1df9dde096fe","player count":2},"ext":{"priority":""}}])logi_test";
+#endif
+
 CLogitechMediaServer::CLogitechMediaServer(const int ID, const std::string &IPAddress, const int Port, const std::string &User, const std::string &Pwd, const int PollIntervalsec)
 	: m_iThreadsRunning(0)
 	, m_IP(IPAddress)
@@ -52,11 +61,11 @@ CLogitechMediaServer::~CLogitechMediaServer()
 Json::Value CLogitechMediaServer::Query(const std::string &sIP, const int iPort, const std::string &sPostdata)
 {
 	Json::Value root;
-	std::vector<std::string> ExtraHeaders;
 	std::string sResult;
+#ifndef DEBUG_LOGI
+	std::vector<std::string> ExtraHeaders;
 	std::stringstream sURL;
 	std::stringstream sPostData;
-
 	if ((!m_User.empty()) && (!m_Pwd.empty()))
 		sURL << "http://" << m_User << ":" << m_Pwd << "@" << sIP << ":" << iPort << "/jsonrpc.js";
 	else
@@ -71,8 +80,12 @@ Json::Value CLogitechMediaServer::Query(const std::string &sIP, const int iPort,
 	{
 		return root;
 	}
+#else
+	bool bRetVal;
+	sResult = szLogiTest;
+#endif
 	bRetVal = ParseJSon(sResult, root);
-	if ((!bRetVal) || (!root.isObject()))
+	if (!bRetVal)
 	{
 		size_t aFind = sResult.find("401 Authorization Required");
 		if ((aFind > 0) && (aFind != std::string::npos))
@@ -81,9 +94,45 @@ Json::Value CLogitechMediaServer::Query(const std::string &sIP, const int iPort,
 			Log(LOG_ERROR, "PARSE ERROR: %s", sResult.c_str());
 		return root;
 	}
+	if (root.isArray())
+	{
+		//not supported for now
+		Log(LOG_ERROR, "PARSE ERROR_2: %s", sResult.c_str());
+		Json::Value rEmpty;
+		return rEmpty;
+
+		bool bFound = false;
+		for (const auto &item : root)
+		{
+			if (item.isObject() && !item["channel"].empty())
+			{
+				std::string channel = item["channel"].asString();
+				if (!item["data"].empty())
+				{
+					//check if it's the wanted channel
+					if (channel == "aaa")
+					{
+						bFound = true;
+						root = item["data"];
+						break;
+					}
+				}
+			}
+		}
+		if (!bFound)
+		{
+			//can't use it
+			Log(LOG_ERROR, "PARSE ERROR_2: %s", sResult.c_str());
+			Json::Value rEmpty;
+			return rEmpty;
+		}
+		return root;
+	}
 	if (root["method"].empty())
 	{
+#ifndef DEBUG_LOGI
 		Log(LOG_ERROR, "'%s' request '%s'", sURL.str().c_str(), sPostData.str().c_str());
+#endif
 		return root;
 	}
 	return root["result"];
