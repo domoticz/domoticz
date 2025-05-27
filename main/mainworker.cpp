@@ -1187,24 +1187,38 @@ bool MainWorker::Start()
 
 	if (bEnableMDNS)
 	{
-		std::string sValue;
-		std::string szInstanceName = "Domoticz";
-		if(m_sql.GetPreferencesVar("Title", sValue))
-		{
-			szInstanceName = sValue;
-		}
-		stdlower(szInstanceName);
-
-		m_mdns.setServiceHostname(szInstanceName);
-		m_mdns.setServicePort(std::stoi(m_webserver_settings.listening_port));
+		if (
+			m_webserver_settings.listening_port.empty()
 #ifdef WWW_ENABLE_SSL
-		if (m_secure_webserver_settings.is_enabled())
-			m_mdns.setServicePort(std::stoi(m_secure_webserver_settings.listening_port));
+			&& m_secure_webserver_settings.listening_port.empty()
 #endif
-		m_mdns.addServiceTxtRecord("app", "Domoticz");
-		m_mdns.addServiceTxtRecord("version", szAppVersion);
-		m_mdns.addServiceTxtRecord("path", "/");
-		m_mdns.startService();
+			)
+		{
+			_log.Log(LOG_STATUS, "Mainworker: mDNS enabled, but webserver ports are disabled. Not starting service!");
+		}
+		else
+		{
+			std::string sValue;
+			std::string szInstanceName = "Domoticz";
+			if (m_sql.GetPreferencesVar("Title", sValue))
+			{
+				szInstanceName = sValue;
+			}
+			stdlower(szInstanceName);
+
+			m_mdns.setServiceHostname(szInstanceName);
+			m_mdns.setServicePort(atoi(m_webserver_settings.listening_port.c_str()));
+#ifdef WWW_ENABLE_SSL
+			if (m_secure_webserver_settings.is_enabled())
+			{
+				m_mdns.setServicePort(atoi(m_secure_webserver_settings.listening_port.c_str()));
+			}
+#endif
+			m_mdns.addServiceTxtRecord("app", "Domoticz");
+			m_mdns.addServiceTxtRecord("version", szAppVersion);
+			m_mdns.addServiceTxtRecord("path", "/");
+			m_mdns.startService();
+		}
 	}
 
 	HandleHourPrice();

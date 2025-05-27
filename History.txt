@@ -3,6 +3,7 @@ Version 2025.xxxx
 - Changed: mDNS, hostname now lowercase
 - Changed: MQTT-AD, added support for color_temp_command_template
 - Changed: TADO, Added fixed API endpoint
+- Fixed: mDNS, possible crash when web server (non) SSL was disabled, or a invalid port was specified
 - Updated: Windows libraries
 
 Version 2025.1 (May 5th 2025)
