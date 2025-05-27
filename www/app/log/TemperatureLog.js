@@ -206,6 +206,7 @@ define(['app', 'RefreshingChart', 'DataLoader', 'ChartLoader', 'log/Chart', 'log
             template: {
                 name: $.t('Humidity'),
                 color: 'limegreen',
+				type: 'spline',
                 yAxis: 1,
                 tooltip: {
                     valueSuffix: ' %',
