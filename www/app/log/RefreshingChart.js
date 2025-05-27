@@ -176,7 +176,7 @@ define(['lodash', 'Base', 'DomoticzBase', 'DataLoader', 'ChartLoader', 'ChartZoo
                                                     self.dataSupplier.isShortLogChart,
                                                     Intl.DateTimeFormat().resolvedOptions().timeZone
                                                 ).then(function () {
-                                                    self.$route.reload();
+													window.location.reload();
                                                 });
                                             }
                                         }

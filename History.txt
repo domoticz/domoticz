@@ -4,6 +4,7 @@ Version 2025.xxxx
 - Changed: MQTT-AD, added support for color_temp_command_template
 - Changed: TADO, Added fixed API endpoint
 - Fixed: mDNS, possible crash when web server (non) SSL was disabled, or a invalid port was specified
+- Fixed: Charts, after deleting a datapoint, the browser was not correctly refreshed
 - Updated: Windows libraries
 
 Version 2025.1 (May 5th 2025)
