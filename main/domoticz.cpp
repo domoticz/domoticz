@@ -284,7 +284,7 @@ void daemonize(const char *rundir, const char *pidfile)
 
 	/* Open STDIN */
 	if (g_bredirect_stdin_stdout_stderr)	
-		i = open(redirect_stdin_stdout_stderr.c_str(), O_RDWR | O_APPEND | O_CREAT);
+		i = open(redirect_stdin_stdout_stderr.c_str(), O_RDWR | O_APPEND | O_CREAT, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
 	else
 		i = open("/dev/null", O_RDWR);
 
