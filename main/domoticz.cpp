@@ -156,6 +156,7 @@ std::string weblogfile;
 bool g_bStopApplication = false;
 bool g_bUseSyslog = false;
 bool g_bRunAsDaemon = false;
+bool g_bredirect_stdin_stdout_stderr = false;
 http::server::_eWebCompressionMode g_wwwCompressMode = http::server::WWW_USE_GZIP;
 bool g_bUseUpdater = true;
 http::server::server_settings webserver_settings;
@@ -168,9 +169,11 @@ bool bStartWebBrowser = true;
 bool g_bUseWatchdog = true;
 
 #define DAEMON_NAME "domoticz"
+#define REDIRECT_STDIN_STDOUT_STDERR_FILENAME "/var/log/stdin_stdout_stderr.log"
 #define PID_FILE "/var/run/domoticz.pid" 
 
 std::string daemonname = DAEMON_NAME;
+std::string redirect_stdin_stdout_stderr=REDIRECT_STDIN_STDOUT_STDERR_FILENAME;
 std::string pidfile = PID_FILE;
 int pidFilehandle = 0;
 
@@ -280,7 +283,10 @@ void daemonize(const char *rundir, const char *pidfile)
 	/* Route I/O connections */
 
 	/* Open STDIN */
-	i = open("/dev/null", O_RDWR);
+	if (g_bredirect_stdin_stdout_stderr)	
+		i = open(redirect_stdin_stdout_stderr.c_str(), O_RDWR | O_APPEND | O_CREAT);
+	else
+		i = open("/dev/null", O_RDWR);
 
 	/* STDOUT */
 	int dret = dup(i);
@@ -626,6 +632,12 @@ bool ParseConfigFile(const std::string &szConfigFile)
 		else if (szFlag == "userdata_path") {
 			szUserDataFolder = sLine;
 			FixFolderEnding(szUserDataFolder);
+		}
+		else if (szFlag == "redirect_stdin_stdout_stderr") {	
+			g_bredirect_stdin_stdout_stderr = GetConfigBool(sLine);
+		}
+		else if (szFlag == "redirect_stdin_stdout_stderr_filename") {	
+			redirect_stdin_stdout_stderr = sLine;
 		}
 		else if (szFlag == "daemon_name") {
 			daemonname = sLine;
@@ -1113,6 +1125,11 @@ int main(int argc, char**argv)
 
 #ifndef WIN32
 	if (!bUseConfigFile) {
+		if (cmdLine.HasSwitch("-redirect_stdin_stdout_stderr"))		
+		{
+			g_bredirect_stdin_stdout_stderr = true;
+			redirect_stdin_stdout_stderr = cmdLine.GetSafeArgument("-redirect_stdin_stdout_stderr", 0, REDIRECT_STDIN_STDOUT_STDERR_FILENAME);
+		}
 		if (cmdLine.HasSwitch("-daemon"))
 		{
 			g_bRunAsDaemon = true;
