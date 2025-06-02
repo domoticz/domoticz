@@ -2246,6 +2246,15 @@
     <ClInclude Include="..\main\lsignal.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\mdns\include\mdns.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\mdns\mdns.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\main\StdCallback.h">
+      <Filter>Helpers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\webserver\Base64.cpp">
@@ -3029,6 +3038,9 @@
       <Filter>Devices\ZWave</Filter>
     </ClCompile>
     <ClCompile Include="..\main\lsignal.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\mdns\mdns.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
