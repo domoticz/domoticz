@@ -33,7 +33,6 @@
 #include "SignalHandler.h"
 
 #include "../mdns/mdns.hpp"
-#include "StdCallback.h"
 
 #if defined WIN32
 	#include "../msbuild/WindowsHelper.h"
@@ -104,7 +103,6 @@ namespace
 		"\t-syslog [user|daemon|local0 .. local7] (use syslog as log output, defaults to facility 'user')\n"
 		"\t-f config_file (for example /etc/domoticz.conf)\n"
 #endif
-		"\t-redirect_std (redirect std::cerr to log)\n"
 		""
 	};
 
@@ -153,10 +151,6 @@ CSQLHelper m_sql;
 CNotificationHelper m_notifications;
 domoticz_mdns::mDNS m_mdns;
 
-bool g_bUseSTDCallbacks = false;
-callbackstream<> *m_pStdErrCallback = nullptr;
-callbackstream<> *m_pStdOutCallback = nullptr;
-
 std::string logfile;
 std::string weblogfile;
 bool g_bStopApplication = false;
@@ -179,6 +173,8 @@ bool g_bUseWatchdog = true;
 std::string daemonname = DAEMON_NAME;
 std::string pidfile = PID_FILE;
 int pidFilehandle = 0;
+
+time_t m_LastHeartbeat = 0;
 
 #ifndef WIN32
 void daemonShutdown()
@@ -657,22 +653,6 @@ void DisplayAppVersion()
 	_log.Log(LOG_STATUS, "Build Hash: %s, Date: %s", szAppHash.c_str(), szAppDate.c_str());
 }
 
-time_t m_LastHeartbeat = 0;
-
-void my_std_callback(const callbackstream<>::CB_TYPE ctype, const char* ptr, std::streamsize count)
-{
-	std::string szLogStr(ptr, ptr + count);
-	switch (ctype)
-	{
-	case callbackstream<>::STD_OUT:
-		_log.Log(LOG_STATUS, "%s", szLogStr.c_str());
-		break;
-	case callbackstream<>::STD_ERR:
-		_log.Log(LOG_ERROR, "%s", szLogStr.c_str());
-		break;
-	}
-}
-
 #if defined WIN32
 int WINAPI WinMain(_In_ HINSTANCE hInstance,_In_opt_ HINSTANCE hPrevInstance,_In_ LPSTR lpCmdLine,_In_ int nShowCmd)
 #else
@@ -1103,10 +1083,6 @@ int main(int argc, char**argv)
 	{
 		bEnableMDNS = false;
 	}
-	if (cmdLine.HasSwitch("-redirect_std"))
-	{
-		g_bUseSTDCallbacks = true;
-	}
 
 #if defined WIN32
 	if (!bUseConfigFile) {
@@ -1198,13 +1174,6 @@ int main(int argc, char**argv)
 #endif
 
 	m_mainworker.SetIamserverSettings(iamserver_settings);
-
-	if (g_bUseSTDCallbacks)
-	{
-		m_pStdErrCallback = new callbackstream<>(callbackstream<>::STD_ERR, std::cerr, my_std_callback);
-		//m_pStdOutCallback = new callbackstream<>(callbackstream<>::STD_OUT, std::cout, my_std_callback); -- this won't work because domoticz already redirects it's own logs to std::cout
-		std::cerr << "Hello std::cerr" << std::endl;
-	}
 
 	if (!g_bRunAsDaemon)
 	{
@@ -1299,11 +1268,6 @@ int main(int argc, char**argv)
 #endif
 	g_stop_watchdog = true;
 	thread_watchdog.join();
-
-	if (m_pStdErrCallback)
-		delete m_pStdErrCallback;
-	if (m_pStdOutCallback)
-		delete m_pStdOutCallback;
 	return 0;
 }
 
