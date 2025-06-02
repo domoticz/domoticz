@@ -207,10 +207,16 @@ namespace Plugins {
 				}
 				else if (pRef.isConvertibleTo(Json::stringValue))
 				{
-					std::string sString = pRef.asString();
-					PyBorrowedRef pObj = Py_BuildValue("s#", sString.c_str(), sString.length());
-					if (!pObj || (PyList_SetItem(pRetVal, Index++, pObj) == -1)) // steals the ref to pObj
-						_log.Log(LOG_ERROR, "(%s) failed to add item '%zd', to list for string.", __func__, Index - 1);
+    					std::string sString = pRef.asString();
+    					PyObject* pObj = Py_BuildValue("s", sString.c_str());  // new reference
+    					if (!pObj) {
+        					_log.Log(LOG_ERROR, "(%s) failed to build Python string object.", __func__);
+    					} else {
+        					if (PyList_SetItem(pRetVal, Index++, pObj) == -1) {  // steals reference only on success
+            						_log.Log(LOG_ERROR, "(%s) failed to add item '%zd' to list for string.", __func__, Index - 1);
+            						Py_DECREF(pObj);  // clean up because PyList_SetItem failed
+        					}
+    					}
 				}
 				else
 					_log.Log(LOG_ERROR, "(%s) failed to process entry.", __func__);
