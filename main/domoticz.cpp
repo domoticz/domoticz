@@ -172,7 +172,6 @@ bool g_bUseWatchdog = true;
 
 std::string daemonname = DAEMON_NAME;
 std::string m_sz_std_out_err_log_file="";
-#define STD_OUT_ERR_LOG_FILE "/var/log/std_out_err.log"
 std::string pidfile = PID_FILE;
 int pidFilehandle = 0;
 
@@ -282,7 +281,7 @@ void daemonize(const char *rundir, const char *pidfile)
 	/* Route I/O connections */
 
 	/* Open STDIN */
-	if (m_sz_std_out_err_log_file=="")	
+	if (m_sz_std_out_err_log_file.empty())	
 		i = open("/dev/null", O_RDWR);
 	else
 		i = open(m_sz_std_out_err_log_file.c_str(), O_RDWR | O_APPEND | O_CREAT, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
@@ -633,10 +632,7 @@ bool ParseConfigFile(const std::string &szConfigFile)
 			FixFolderEnding(szUserDataFolder);
 		}
 		else if (szFlag == "std_out_err_log_file") {	
-			if (sLine=="") 
-				m_sz_std_out_err_log_file = STD_OUT_ERR_LOG_FILE;
-			else
-				m_sz_std_out_err_log_file = sLine;
+			m_sz_std_out_err_log_file = sLine;
 		}
 		else if (szFlag == "daemon_name") {
 			daemonname = sLine;
@@ -1126,7 +1122,7 @@ int main(int argc, char**argv)
 	if (!bUseConfigFile) {
 		if (cmdLine.HasSwitch("-std_out_err_log_file"))		
 		{
-			m_sz_std_out_err_log_file = cmdLine.GetSafeArgument("-std_out_err_log_file", 0, STD_OUT_ERR_LOG_FILE);
+			m_sz_std_out_err_log_file = cmdLine.GetSafeArgument("-std_out_err_log_file", 0, "");
 		}
 		if (cmdLine.HasSwitch("-daemon"))
 		{
