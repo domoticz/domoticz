@@ -172,6 +172,7 @@ bool g_bUseWatchdog = true;
 
 std::string daemonname = DAEMON_NAME;
 std::string pidfile = PID_FILE;
+std::string m_sz_std_out_err_log_file="";
 int pidFilehandle = 0;
 
 time_t m_LastHeartbeat = 0;
@@ -282,7 +283,10 @@ void daemonize(const char *rundir, const char *pidfile)
 	/* Route I/O connections */
 
 	/* Open STDIN */
-	i = open("/dev/null", O_RDWR);
+	if (m_sz_std_out_err_log_file.empty())	
+		i = open("/dev/null", O_RDWR);
+	else
+		i = open(m_sz_std_out_err_log_file.c_str(), O_RDWR | O_APPEND | O_CREAT, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
 
 	/* STDOUT */
 	int dret = dup(i);
@@ -631,6 +635,9 @@ bool ParseConfigFile(const std::string &szConfigFile)
 		}
 		else if (szFlag == "daemon_name") {
 			daemonname = sLine;
+		}
+		else if (szFlag == "std_out_err_log_file") {	
+			m_sz_std_out_err_log_file = sLine;
 		}
 		else if (szFlag == "daemon") {
 			g_bRunAsDaemon = GetConfigBool(sLine);
@@ -1112,6 +1119,10 @@ int main(int argc, char**argv)
 
 #ifndef WIN32
 	if (!bUseConfigFile) {
+		if (cmdLine.HasSwitch("-std_out_err_log_file"))		
+		{
+			m_sz_std_out_err_log_file = cmdLine.GetSafeArgument("-std_out_err_log_file", 0, "");
+		}
 		if (cmdLine.HasSwitch("-daemon"))
 		{
 			g_bRunAsDaemon = true;
