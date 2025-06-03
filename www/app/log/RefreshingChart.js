@@ -223,6 +223,7 @@ define(['lodash', 'Base', 'DomoticzBase', 'DataLoader', 'ChartLoader', 'ChartZoo
                             }
                         },
                         area: {
+							threshold: null,
                             lineWidth: 1.4,
                             marker: {
                                 enabled: false
