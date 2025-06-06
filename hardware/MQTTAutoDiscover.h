@@ -117,6 +117,9 @@ class MQTTAutoDiscover : public MQTT
 		std::string swing_state_template;
 		std::vector<std::string> swing_modes;
 
+		std::string action_topic;
+		std::string action_template;
+		std::vector<std::tuple<std::string, std::string>> action_modes;
 
 		double temp_step = 1;
 		double temp_max = 35;
