@@ -11,6 +11,7 @@
 #include "../notifications/NotificationHelper.h"
 #include <iostream>
 #include <set>
+#include <regex>
 
 std::set<std::string> allowed_components = {
 		"binary_sensor",
@@ -516,6 +517,54 @@ void MQTTAutoDiscover::FixCommandTopic(std::string& command_topic, std::string& 
 		return; //no fixing needed
 
 	command_topic = command_topic.substr(0, pos);
+}
+
+// Function to parse and process the template string
+bool MQTTAutoDiscover::parseMapTemplate(const std::string& templateStr, std::vector<std::tuple<std::string, std::string>>& valuesMap, std::string& szKey)
+{
+	// Define a regex pattern to match the dictionary in the template string
+	std::regex dictPattern(R"(\{\% set values.*?=.*?\{(.*?)\} %\})");
+	std::smatch matches;
+
+	if (std::regex_search(templateStr, matches, dictPattern)) {
+		std::string dictString = matches[1].str();
+
+		// Define a regex pattern to match key-value pairs in the dictionary string
+		//std::regex kvPattern(R"((None|'.*?')\s*:\s*(None|'.*?'))");
+		//std::regex kvPattern(R"((\w+):(\w+))");
+		std::regex kvPattern(R"(('[^']*'|\"[^\"]*\"|[^,:]+):('[^']*'|\"[^\"]*\"|[^,]*))");
+
+		auto dictBegin = dictString.cbegin(); // Use cbegin() for const_iterator
+		auto dictEnd = dictString.cend();    // Use cend() for const_iterator
+
+		while (std::regex_search(dictBegin, dictEnd, matches, kvPattern)) {
+			std::string key = matches[1].str();
+			std::string value = matches[2].str();
+
+			// Remove surrounding spaces/quotes if present
+			key.erase(0, key.find_first_not_of(" \t\r\n'\""));
+			key.erase(key.find_last_not_of(" \t\r\n'\"") + 1);
+			value.erase(0, value.find_first_not_of(" \t\r\n'\""));
+			value.erase(value.find_last_not_of(" \t\r\n'\"") + 1);
+
+			valuesMap.push_back(std::make_tuple(key, value));
+			dictBegin = matches.suffix().first;
+		}
+
+		// Extract the placeholder in the template string
+		//std::regex placeholderPattern(R"(\{\{ values\[(.*?)\] \}\})");
+		std::regex placeholderPattern(R"(\{\{.*?values\[(.*?)\].*?\}\})");
+		if (std::regex_search(templateStr, matches, placeholderPattern)) {
+			szKey = matches[1].str();
+			szKey.erase(0, szKey.find_first_not_of(" \t\r\n'\""));
+			szKey.erase(szKey.find_last_not_of(" \t\r\n'\"") + 1);
+			return true;
+		}
+	}
+
+	// If no match or error, return an empty string or handle the error accordingly
+	valuesMap.clear();
+	return false;
 }
 
 void MQTTAutoDiscover::on_auto_discovery_message(const struct mosquitto_message* message)
@@ -1414,42 +1463,7 @@ void MQTTAutoDiscover::on_auto_discovery_message(const struct mosquitto_message*
 		{
 			if (!pSensor->action_template.empty())
 			{
-				size_t tpos;
-				if (pSensor->action_template.find("{%") == 0)
-				{
-					std::string tstring = pSensor->action_template.substr(2, pSensor->action_template.find("%}") - 2);
-					tpos = tstring.find("{");
-					if (tpos != std::string::npos)
-					{
-						tstring = tstring.substr(tpos + 1, tstring.find("}") - tpos - 1);
-						std::vector<std::string> strarray;
-						StringSplit(tstring, ",", strarray);
-
-						for (const auto& ittMode : strarray)
-						{
-							std::vector<std::string> strarray2;
-							StringSplit(ittMode, ":", strarray2);
-							if (strarray2.size() == 2)
-							{
-								std::string szKey = strarray2[0];
-								std::string szMode = strarray2[1];
-								stdreplace(szKey, "'", "");
-								stdreplace(szMode, "'", "");
-								pSensor->action_modes.push_back(std::make_tuple(szKey, szMode));
-							}
-						}
-					}
-				}
-				tpos = pSensor->action_template.find("{{");
-				if (tpos != std::string::npos)
-				{
-					std::string tstring = pSensor->action_template.substr(tpos + 2, pSensor->action_template.find("}}") - tpos - 2);
-					if (tstring.find("values[") != std::string::npos)
-					{
-						tstring = tstring.substr(tstring.find("values[") + 7, tstring.find("]") - tstring.find("values[") - 7);
-						pSensor->action_template = tstring;
-					}
-				}
+				parseMapTemplate(pSensor->action_template, pSensor->action_modes, pSensor->action_template);
 			}
 		}
 
