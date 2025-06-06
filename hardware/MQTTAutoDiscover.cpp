@@ -530,8 +530,6 @@ bool MQTTAutoDiscover::parseMapTemplate(const std::string& templateStr, std::vec
 		std::string dictString = matches[1].str();
 
 		// Define a regex pattern to match key-value pairs in the dictionary string
-		//std::regex kvPattern(R"((None|'.*?')\s*:\s*(None|'.*?'))");
-		//std::regex kvPattern(R"((\w+):(\w+))");
 		std::regex kvPattern(R"(('[^']*'|\"[^\"]*\"|[^,:]+):('[^']*'|\"[^\"]*\"|[^,]*))");
 
 		auto dictBegin = dictString.cbegin(); // Use cbegin() for const_iterator
@@ -552,7 +550,6 @@ bool MQTTAutoDiscover::parseMapTemplate(const std::string& templateStr, std::vec
 		}
 
 		// Extract the placeholder in the template string
-		//std::regex placeholderPattern(R"(\{\{ values\[(.*?)\] \}\})");
 		std::regex placeholderPattern(R"(\{\{.*?values\[(.*?)\].*?\}\})");
 		if (std::regex_search(templateStr, matches, placeholderPattern)) {
 			szKey = matches[1].str();
