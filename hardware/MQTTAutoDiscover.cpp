@@ -5238,6 +5238,15 @@ bool MQTTAutoDiscover::SendSwitchCommand(const std::string& DeviceID, const std:
 			command_topic = pSensor->preset_mode_command_topic;
 			if (!pSensor->preset_mode_value_template.empty())
 				state_template = pSensor->preset_mode_value_template;
+			if (state_template.find("value_json.") == 0)
+			{
+				std::string szKey = state_template.substr(state_template.find('.') + 1);
+				//check if command topic ends with szKey
+				if (command_topic.find(szKey) == command_topic.size() - szKey.size())
+				{
+					state_template.clear();
+				}
+			}
 
 			if (!state_template.empty())
 			{
