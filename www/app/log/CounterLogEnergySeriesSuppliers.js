@@ -106,6 +106,7 @@
                     label: 'J',
                     template: {
                         type: 'area',
+						threshold: 0,
                         name: $.t('Energy Usage'),
                         tooltip: {
                             valueSuffix: ' ' + chart.valueUnits.energy(chart.valueMultipliers.m1)
@@ -126,6 +127,7 @@
                     label: 'K',
                     template: {
                         type: 'area',
+						threshold: 0,
                         name: $.t('Energy Returned'),
                         tooltip: {
                             valueSuffix: ' ' + chart.valueUnits.energy(chart.valueMultipliers.m1)
@@ -147,6 +149,7 @@
                     label: 'L0',
                     template: {
                         type: 'area',
+						threshold: 0,
                         name: $.t('Usage'),
                         tooltip: {
                             valueSuffix: ' ' + chart.valueUnits.power(chart.valueMultipliers.m1)
@@ -177,6 +180,7 @@
                     label: '<=',
                     template: {
                         type: 'area',
+						threshold: 0,
                         name: $.t('Usage') + ' 1',
                         tooltip: {
                             valueSuffix: ' ' + chart.valueUnits.power(chart.valueMultipliers.m1)
@@ -197,6 +201,7 @@
                     label: 'M',
                     template: {
                         type: 'area',
+						threshold: 0,
                         name: $.t('Usage') + ' 2',
                         tooltip: {
                             valueSuffix: ' ' + chart.valueUnits.power(chart.valueMultipliers.m1)
@@ -373,6 +378,7 @@
                     label: 'R',
                     template: {
 						type: 'area',
+						threshold: 0,
                         name: $.t('Return'),
                         tooltip: {
                             valueSuffix: ' ' + chart.valueUnits.power(chart.valueMultipliers.m1)
@@ -406,6 +412,7 @@
                     label: 'R',
                     template: {
 						type: 'area',
+						threshold: 0,
                         name: $.t('Return') + ' 1',
                         tooltip: {
                             valueSuffix: ' ' + chart.valueUnits.power(chart.valueMultipliers.m1)
@@ -429,6 +436,7 @@
                     label: 'S',
                     template: {
 						type: 'area',
+						threshold: 0,
                         name: $.t('Return') + ' 2',
                         tooltip: {
                             valueSuffix: ' ' + chart.valueUnits.power(chart.valueMultipliers.m1)
