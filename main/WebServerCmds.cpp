@@ -2744,6 +2744,7 @@ namespace http
 				int EBatteryWatt = atoi(request::findValue(&req, "EBatteryWatt").c_str());
 				int EBatterySoc = atoi(request::findValue(&req, "EBatterySoc").c_str());
 				int ETextSensor = atoi(request::findValue(&req, "ETextSensor").c_str());
+				int EOutsideTempSensor = atoi(request::findValue(&req, "EOutsideTempSensor").c_str());
 				int EExtra1 = atoi(request::findValue(&req, "EExtra1").c_str());
 				int EExtra2 = atoi(request::findValue(&req, "EExtra2").c_str());
 				int EExtra3 = atoi(request::findValue(&req, "EExtra3").c_str());
@@ -2753,8 +2754,10 @@ namespace http
 				std::string EExtra1Icon = request::findValue(&req, "EExtra1Icon");
 				std::string EExtra2Icon = request::findValue(&req, "EExtra2Icon");
 				std::string EExtra3Icon = request::findValue(&req, "EExtra3Icon");
+
 				bool bConvertWaterM3ToLiter = (request::findValue(&req, "EConvertWaterM3ToLiter") == "on" ? 1 : 0);
 				bool bDisplayTime = (request::findValue(&req, "EDisplayTime") == "on" ? 1 : 0);
+				bool bDisplayOutsideTemp = (request::findValue(&req, "EDisplayOutsideTemp") == "on" ? 1 : 0);
 				bool bDisplayFlowWithLines = (request::findValue(&req, "EDisplayFlowWithLines") == "on" ? 1 : 0);
 				bool bUseCustomIcons = (request::findValue(&req, "EUseCustomIcons") == "on" ? 1 : 0);
 
@@ -2766,6 +2769,7 @@ namespace http
 				ESettings["idBatteryWatt"] = EBatteryWatt;
 				ESettings["idBatterySoc"] = EBatterySoc;
 				ESettings["idTextSensor"] = ETextSensor;
+				ESettings["idOutsideTempSensor"] = EOutsideTempSensor;
 				ESettings["idExtra1"] = EExtra1;
 				ESettings["idExtra2"] = EExtra2;
 				ESettings["idExtra3"] = EExtra3;
@@ -2775,8 +2779,10 @@ namespace http
 				ESettings["Extra1Icon"] = EExtra1Icon;
 				ESettings["Extra2Icon"] = EExtra2Icon;
 				ESettings["Extra3Icon"] = EExtra3Icon;
+
 				ESettings["ConvertWaterM3ToLiter"] = bConvertWaterM3ToLiter;
 				ESettings["DisplayTime"] = bDisplayTime;
+				ESettings["DisplayOutsideTemp"] = bDisplayOutsideTemp;
 				ESettings["DisplayFlowWithLines"] = bDisplayFlowWithLines;
 				ESettings["UseCustomIcons"] = bUseCustomIcons;
 

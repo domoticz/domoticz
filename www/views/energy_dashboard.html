@@ -1,5 +1,8 @@
 <!--
 History:
+ v1.17 2025-06-09
+	- Added support for outside temperature sensor
+
  v1.16 2024-10-26
 	- Adjusted Text object clipping
 	- Main view enlarged a bit
@@ -128,6 +131,10 @@ History:
 			</g>
 			<text id="etext" x="46" y="6" opacity="0.35" font-size="2.0px" text-anchor="center" dy="0" style="font-weight: normal; white-space: pre;" ng-show="ServerTime">{{ ServerTime }}</text>
 			<text id="etext" x="46" y="7.5" opacity="0.5" font-size="1.0px" text-anchor="center" dy="0" style="font-weight: normal; white-space: pre;" ng-show="SunRise">↑{{ SunRise }} ↓{{ SunSet }}</text>
+			<g transform="matrix(0.065, 0, 0, 0.065, 61, 6.4)" ng-show="imgOutsideTemp">
+				<image width="48" height="48" xlink:href="{{imgOutsideTemp}}" />
+			</g>
+			<text id="etext" x="56" y="6" opacity="1.0" font-size="2.0px" text-anchor="right" dy="0" style="font-weight: normal; white-space: pre;" ng-show="txtOutsideTemp">{{ txtOutsideTemp }}&deg; {{ config.TempSign }}</text>
 			<g id="groupBatt" ng-show="idBattWatt != -1">
 				<g id="eicon" ng-show="!customIconBatt">
 					<g transform="matrix(0.010083, 0, 0, 0.008335, 27.65, 45.2)">

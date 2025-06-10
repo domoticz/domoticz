@@ -8,6 +8,7 @@ define(['app'], function (app) {
 		$scope.idBattWatt = -1;
 		$scope.idBattSoc = -1;
 		$scope.idTextObj = -1;
+		$scope.idOutsideTemp = -1;
 		$scope.idItemH1 = -1;
 		$scope.fieldH1 = "Usage";		// See output of JSON API /json.htm?type=command&param=getdevices&rid=xx
 		$scope.iconH1 = "car";
@@ -60,6 +61,8 @@ define(['app'], function (app) {
 		$scope.txtKwhItemH1 = "";
 		$scope.txtKwhItemH2 = "";
 		$scope.txtKwhItemH3 = "";
+		$scope.txtOutsideTemp = "";
+		$scope.imgOutsideTemp = "";
 		
 		$scope.customIconGrid = "";
 		$scope.customIconWater = "";
@@ -112,6 +115,7 @@ define(['app'], function (app) {
 			if ($scope.idBattWatt != -1) devArray.push($scope.idBattWatt);
 			if ($scope.idBattSoc != -1) devArray.push($scope.idBattSoc);
 			if ($scope.idTextObj != -1) devArray.push($scope.idTextObj);
+			if ($scope.idOutsideTemp != -1) devArray.push($scope.idOutsideTemp);
 			if ($scope.idItemH1 != -1) devArray.push($scope.idItemH1);
 			if ($scope.idItemH2 != -1) devArray.push($scope.idItemH2);
 			if ($scope.idItemH3 != -1) devArray.push($scope.idItemH3);
@@ -157,6 +161,7 @@ define(['app'], function (app) {
 					$scope.idBattWatt = data.result.ESettings.idBatteryWatt;
 					$scope.idBattSoc = data.result.ESettings.idBatterySoc;
 					$scope.idTextObj = data.result.ESettings.idTextSensor;
+					$scope.idOutsideTemp = data.result.ESettings.idOutsideTempSensor;
 					$scope.idItemH1 = data.result.ESettings.idExtra1;
 					$scope.fieldH1 = data.result.ESettings.Extra1Field;
 					$scope.iconH1 = data.result.ESettings.Extra1Icon;
@@ -207,6 +212,7 @@ define(['app'], function (app) {
 		$scope.RefreshItem = function(item) {
 			let idx = parseInt(item.idx);
 			let bHandledData = false;
+
 			switch (idx)
 			{
 				case $scope.idP1:
@@ -229,6 +235,9 @@ define(['app'], function (app) {
 					break;
 				case $scope.idTextObj:
 					bHandledData = $scope.handleTextObj(item);
+					break;
+				case $scope.idOutsideTemp:
+					bHandledData = $scope.handleTempObj(item);
 					break;
 				case $scope.idItemH1:
 					bHandledData = $scope.handleItemH1(item);
@@ -433,6 +442,12 @@ define(['app'], function (app) {
 
 		$scope.handleTextObj = function(item) {
 			$scope.txtObjText = item["Data"];
+			return true;
+		}
+
+		$scope.handleTempObj = function(item) {
+			$scope.txtOutsideTemp = item["Temp"];
+			$scope.imgOutsideTemp = 'images/' + GetTemp48Item(item["Temp"]);
 			return true;
 		}
 
