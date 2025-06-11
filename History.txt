@@ -1,4 +1,5 @@
 Version 2025.xxxx
+- Implemented: EnergyDashboard, add option for (Outside) Temperature Sensor
 - Implemented: MQTT-AD, added support for Climate action_template/state
 - Fixed: MQTT-AD, fix issue where brightness and RGB command topic are different
 - Changed: mDNS, hostname now lowercase
