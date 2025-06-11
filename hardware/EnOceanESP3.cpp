@@ -4448,7 +4448,7 @@ uint32_t CEnOceanESP3::sendVld(unsigned int destID, T_DATAFIELD *OffsetDes, ...)
 	if (DataSize)
 		sendVld(destID, data, DataSize);
 	else
-		Log(LOG_ERROR, "sendVld: invalid argument number, cmd %s : %s ", OffsetDes->ShortCut.c_str(), OffsetDes->description.c_str());
+		Log(LOG_ERROR, "sendVld: invalid argument number, cmd %s : %s", OffsetDes->ShortCut.c_str(), OffsetDes->description.c_str());
 
 	va_end(value);
 

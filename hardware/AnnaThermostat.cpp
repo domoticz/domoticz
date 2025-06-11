@@ -496,7 +496,7 @@ void CAnnaThermostat::GetMeterDetails()
 		{
 			sname = GetElementChildValue(pElem, "type");
 			//tmpstr = GetPeriodMeasurement(pElem);
-			//Log (LOG_NORM,"%s : %s ", sname.c_str(), tmpstr.c_str());
+			//Log (LOG_NORM,"%s : %s", sname.c_str(), tmpstr.c_str());
 			if (sname == "temperature")
 			{
 				tmpstr = GetPeriodMeasurement(pElem);

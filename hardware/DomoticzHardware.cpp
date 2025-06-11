@@ -1051,7 +1051,7 @@ void CDomoticzHardwareBase::SendSelectorSwitch(const int NodeID, const uint8_t C
 {
 	/*if (std::size_t index = LevelActions.find(sValue) == std::string::npos)
 	{ 
-	   Log(LOG_ERROR,"Value %s not supported by Selector Switch %s, it needs %s ",sValue.c_str() , defaultname.c_str(), LevelActions.c_str() ); 
+	   Log(LOG_ERROR,"Value %s not supported by Selector Switch %s, it needs %s",sValue.c_str() , defaultname.c_str(), LevelActions.c_str() ); 
 	   return; // did not find sValue in LevelAction string so exit with warning
 	}*/
 

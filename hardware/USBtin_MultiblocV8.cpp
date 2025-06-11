@@ -887,7 +887,7 @@ bool USBtin_MultiblocV8::CheckOutputChange(unsigned long sID, int OutputNumber, 
 	}
 
 	sprintf(szDeviceID, "%07X", (unsigned int)IdFordbSearch);
-	// Log(LOG_NORM,"MultiblocV8: Check states for output: %d with hardwarId: %d and id: %s ",OutputNumber,m_HwdID,szDeviceID);
+	// Log(LOG_NORM,"MultiblocV8: Check states for output: %d with hardwarId: %d and id: %s",OutputNumber,m_HwdID,szDeviceID);
 	result = m_sql.safe_query("SELECT ID,nValue,sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Type==%d) AND (Subtype==%d) AND (Unit==%d)", m_HwdID, szDeviceID,
 		pTypeLighting2, sTypeAC, OutputNumber); // Unit = 1 = sortie n°1
 	if (!result.empty())

@@ -1246,7 +1246,7 @@ namespace http
 					{
 						sprintf(szOrderBy, "A.[Order],A.%s ASC", order.c_str());
 					}
-					//_log.Log(LOG_STATUS, "Getting all devices: order by %s ", szOrderBy);
+					//_log.Log(LOG_STATUS, "Getting all devices: order by %s", szOrderBy);
 					if (!hardwareid.empty())
 					{
 						szQuery = ("SELECT A.ID, A.DeviceID, A.Unit, A.Name, A.Used,A.Type, A.SubType,"
@@ -4175,7 +4175,7 @@ namespace http
 				std::string cparam = request::findValue(&req, "param");
 				if (!cparam.empty())
 				{
-					_log.Debug(DEBUG_WEBSERVER, "CWebServer::GetJSonPage :%s :%s ", cparam.c_str(), req.uri.c_str());
+					_log.Debug(DEBUG_WEBSERVER, "CWebServer::GetJSonPage: %s : %s", cparam.c_str(), req.uri.c_str());
 
 					auto pf = m_webcommands.find(cparam);
 					if (pf != m_webcommands.end())
@@ -4194,7 +4194,7 @@ namespace http
 			} //(rtype=="command")
 			else
 			{
-				_log.Debug(DEBUG_WEBSERVER, "CWebServer::GetJSonPage(rtype) :%s :%s ", rtype.c_str(), req.uri.c_str());
+				_log.Debug(DEBUG_WEBSERVER, "CWebServer::GetJSonPage(rtype) :%s :%s", rtype.c_str(), req.uri.c_str());
 				rep.status = http::server::reply::not_found;
 				return;
 			}
