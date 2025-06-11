@@ -152,14 +152,14 @@ uint8_t Crc8_strMQ(uint8_t crc, const uint8_t* buf, size_t size)
 	return crc;
 }
 
-void StringSplit(std::string str, const std::string &delim, std::vector<std::string> &results)
+void StringSplit(std::string str, const std::string& delim, std::vector<std::string>& results)
 {
 	results.clear();
 	size_t cutAt;
-	while( (cutAt = str.find(delim)) != std::string::npos )
+	while ((cutAt = str.find(delim)) != std::string::npos)
 	{
-		results.push_back(str.substr(0,cutAt));
-		str = str.substr(cutAt+ delim.size());
+		results.push_back(str.substr(0, cutAt));
+		str = str.substr(cutAt + delim.size());
 	}
 	if (!str.empty())
 	{
@@ -167,7 +167,7 @@ void StringSplit(std::string str, const std::string &delim, std::vector<std::str
 	}
 }
 
-uint64_t hexstrtoui64(const std::string &str)
+uint64_t hexstrtoui64(const std::string& str)
 {
 	uint64_t ul;
 	std::stringstream ss;
@@ -210,7 +210,7 @@ std::vector<char> HexToBytes(const std::string& hex) {
 }
 
 void stdreplace(
-	std::string &inoutstring,
+	std::string& inoutstring,
 	const std::string& replaceWhat,
 	const std::string& replaceWithWhat)
 {
@@ -241,20 +241,20 @@ bool std_ends_with(const std::string& str, const std::string& suffix)
 	return str.size() >= suffix.size() && 0 == str.compare(str.size() - suffix.size(), suffix.size(), suffix);
 }
 
-void stdupper(std::string &inoutstring)
+void stdupper(std::string& inoutstring)
 {
-	for (char &i : inoutstring)
+	for (char& i : inoutstring)
 		i = toupper(i);
 }
 
-void stdlower(std::string &inoutstring)
+void stdlower(std::string& inoutstring)
 {
 	std::transform(inoutstring.begin(), inoutstring.end(), inoutstring.begin(), ::tolower);
 }
 
 void stdupper(std::wstring& inoutstring)
 {
-	for (wchar_t &i : inoutstring)
+	for (wchar_t& i : inoutstring)
 		i = towupper(i);
 }
 
@@ -263,9 +263,9 @@ void stdlower(std::wstring& inoutstring)
 	std::transform(inoutstring.begin(), inoutstring.end(), inoutstring.begin(), ::towlower);
 }
 
-std::vector<std::string> GetSerialPorts(bool &bUseDirectPath)
+std::vector<std::string> GetSerialPorts(bool& bUseDirectPath)
 {
-	bUseDirectPath=false;
+	bUseDirectPath = false;
 
 	std::vector<std::string> ret;
 #if defined WIN32
@@ -281,7 +281,7 @@ std::vector<std::string> GetSerialPorts(bool &bUseDirectPath)
 	if (!ports.empty())
 	{
 		bFoundPort = true;
-		for (const auto &port : ports)
+		for (const auto& port : ports)
 		{
 			sprintf(szPortName, "COM%d", port);
 			ret.push_back(szPortName);
@@ -394,7 +394,7 @@ std::vector<std::string> GetSerialPorts(bool &bUseDirectPath)
 		EnumSerialPortsWindows(serialports);
 		if (!serialports.empty())
 		{
-			for (const auto &port : serialports)
+			for (const auto& port : serialports)
 			{
 				ret.push_back(port.szPortName); // add port
 			}
@@ -419,11 +419,11 @@ std::vector<std::string> GetSerialPorts(bool &bUseDirectPath)
 		}
 	}
 
-	DIR *d = nullptr;
+	DIR* d = nullptr;
 	d = opendir("/dev");
 	if (d != nullptr)
 	{
-		struct dirent *de = nullptr;
+		struct dirent* de = nullptr;
 		// Loop while not nullptr
 		while ((de = readdir(d)))
 		{
@@ -456,21 +456,21 @@ std::vector<std::string> GetSerialPorts(bool &bUseDirectPath)
 					ret.push_back("/dev/" + fname);
 				}
 #if defined (__FreeBSD__) || defined (__OpenBSD__) || defined (__NetBSD__)
-				else if (fname.find("ttyU")!=std::string::npos)
+				else if (fname.find("ttyU") != std::string::npos)
 				{
-					bUseDirectPath=true;
+					bUseDirectPath = true;
 					ret.push_back("/dev/" + fname);
 				}
-				else if (fname.find("cuaU")!=std::string::npos)
+				else if (fname.find("cuaU") != std::string::npos)
 				{
-					bUseDirectPath=true;
+					bUseDirectPath = true;
 					ret.push_back("/dev/" + fname);
 				}
 #endif
 #ifdef __APPLE__
-				else if (fname.find("cu.")!=std::string::npos)
+				else if (fname.find("cu.") != std::string::npos)
 				{
-					bUseDirectPath=true;
+					bUseDirectPath = true;
 					ret.push_back("/dev/" + fname);
 				}
 #endif
@@ -501,17 +501,17 @@ std::vector<std::string> GetSerialPorts(bool &bUseDirectPath)
 		closedir(d);
 	}
 	//also scan in /dev/usb
-	d=opendir("/dev/usb");
+	d = opendir("/dev/usb");
 	if (d != nullptr)
 	{
-		struct dirent *de = nullptr;
+		struct dirent* de = nullptr;
 		// Loop while not nullptr
 		while ((de = readdir(d)))
 		{
 			std::string fname = de->d_name;
-			if (fname.find("ttyUSB")!=std::string::npos)
+			if (fname.find("ttyUSB") != std::string::npos)
 			{
-				bUseDirectPath=true;
+				bUseDirectPath = true;
 				ret.push_back("/dev/usb/" + fname);
 			}
 		}
@@ -522,7 +522,7 @@ std::vector<std::string> GetSerialPorts(bool &bUseDirectPath)
 	d = opendir("/dev/serial/by-id");
 	if (d != nullptr)
 	{
-		struct dirent *de = nullptr;
+		struct dirent* de = nullptr;
 		// Loop while not nullptr
 		while ((de = readdir(d)))
 		{
@@ -541,16 +541,27 @@ std::vector<std::string> GetSerialPorts(bool &bUseDirectPath)
 	return ret;
 }
 
-bool file_exist (const char *filename)
+bool file_exist(const char* filename)
 {
 	struct stat sbuffer;
 	return (stat(filename, &sbuffer) == 0);
 }
 
+bool file_exist_not_empty(const char* filename)
+{
+	struct stat sbuffer;
+	if (stat(filename, &sbuffer) != 0)
+		return false;
+	if (sbuffer.st_size == 0)
+		return false;
+	return true;
+}
+
+
 double CalculateAltitudeFromPressure(double pressure)
 {
-	double seaLevelPressure=101325.0;
-	double altitude = 44330.0 * (1.0 - pow( (pressure / seaLevelPressure), 0.1903));
+	double seaLevelPressure = 101325.0;
+	double altitude = 44330.0 * (1.0 - pow((pressure / seaLevelPressure), 0.1903));
 	return altitude;
 }
 
@@ -637,45 +648,45 @@ double distanceEarth(double lat1d, double lon1d, double lat2d, double lon2d)
 }
 
 // trim only the space character
-std::string &stdstring_ltrim(std::string &s)
+std::string& stdstring_ltrim(std::string& s)
 {
 	return s.erase(0, s.find_first_not_of(' '));
 }
 
-std::string &stdstring_rtrim(std::string &s)
+std::string& stdstring_rtrim(std::string& s)
 {
 	return s.erase(s.find_last_not_of(' ') + 1);
 }
-std::string &stdstring_trim(std::string &s)
+std::string& stdstring_trim(std::string& s)
 {
 	return stdstring_ltrim(stdstring_rtrim(s));
 }
 // trim all whitespace
-std::string &stdstring_ltrimws(std::string &s)
+std::string& stdstring_ltrimws(std::string& s)
 {
 	return s.erase(0, s.find_first_not_of(WHITESPACE));
 }
-std::string &stdstring_rtrimws(std::string &s)
+std::string& stdstring_rtrimws(std::string& s)
 {
 	return s.erase(s.find_last_not_of(WHITESPACE) + 1);
 }
-std::string &stdstring_trimws(std::string &s)
+std::string& stdstring_trimws(std::string& s)
 {
 	return stdstring_ltrimws(stdstring_rtrimws(s));
 }
 
 double CalculateDewPoint(double temp, double humidity)
 {
-	if (humidity==0)
+	if (humidity == 0)
 		return temp;
-	double dew_numer = 243.04*(log(humidity/100.0)+((17.625*temp)/(temp+243.04)));
-	double dew_denom = 17.625-log(humidity/100.0)-((17.625*temp)/(temp+243.04));
-	if (dew_numer==0)
-		dew_numer=1;
-	return dew_numer/dew_denom;
+	double dew_numer = 243.04 * (log(humidity / 100.0) + ((17.625 * temp) / (temp + 243.04)));
+	double dew_denom = 17.625 - log(humidity / 100.0) - ((17.625 * temp) / (temp + 243.04));
+	if (dew_numer == 0)
+		dew_numer = 1;
+	return dew_numer / dew_denom;
 }
 
-uint32_t IPToUInt(const std::string &ip)
+uint32_t IPToUInt(const std::string& ip)
 {
 	int a, b, c, d;
 	uint32_t addr = 0;
@@ -690,7 +701,7 @@ uint32_t IPToUInt(const std::string &ip)
 	return addr;
 }
 
-bool isInt(const std::string &s)
+bool isInt(const std::string& s)
 {
 	return std::all_of(s.begin(), s.end(), ::isdigit);
 }
@@ -705,7 +716,7 @@ void sleep_milliseconds(const long milliseconds)
 	std::this_thread::sleep_for(std::chrono::milliseconds(milliseconds));
 }
 
-int createdir(const char *szDirName, int secattr)
+int createdir(const char* szDirName, int secattr)
 {
 	int ret = 0;
 #ifdef WIN32
@@ -716,18 +727,18 @@ int createdir(const char *szDirName, int secattr)
 	return ret;
 }
 
-int mkdir_deep(const char *szDirName, int secattr)
+int mkdir_deep(const char* szDirName, int secattr)
 {
 	char DirName[260];
 	DirName[0] = 0;
 	const char* p = szDirName;
 	char* q = DirName;
 	int ret = 0;
-	while(*p)
+	while (*p)
 	{
 		if (('\\' == *p) || ('/' == *p))
 		{
-			if ((p > szDirName) && (':' != *(p-1)))
+			if ((p > szDirName) && (':' != *(p - 1)))
 			{
 				ret = createdir(DirName, secattr);
 			}
@@ -742,7 +753,7 @@ int mkdir_deep(const char *szDirName, int secattr)
 	return ret;
 }
 
-int RemoveDir(const std::string &dirnames, std::string &errorPath)
+int RemoveDir(const std::string& dirnames, std::string& errorPath)
 {
 	std::vector<std::string> splitresults;
 	StringSplit(dirnames, "|", splitresults);
@@ -763,7 +774,7 @@ int RemoveDir(const std::string &dirnames, std::string &errorPath)
 
 				SHFILEOPSTRUCT shfo
 					= { nullptr, FO_DELETE, deletePath, nullptr, FOF_SILENT | FOF_NOERRORUI | FOF_NOCONFIRMATION,
-					    FALSE,   nullptr,	nullptr };
+						FALSE,   nullptr,	nullptr };
 				if (returncode = SHFileOperation(&shfo))
 				{
 					errorPath = splitresults[i];
@@ -772,7 +783,7 @@ int RemoveDir(const std::string &dirnames, std::string &errorPath)
 			}
 		}
 #else
-		for (auto &splitresult : splitresults)
+		for (auto& splitresult : splitresults)
 		{
 			if (!file_exist(splitresult.c_str()))
 				continue;
@@ -790,35 +801,35 @@ int RemoveDir(const std::string &dirnames, std::string &errorPath)
 
 double ConvertToCelsius(const double Fahrenheit)
 {
-	return (Fahrenheit-32.0) * 0.5556;
+	return (Fahrenheit - 32.0) * 0.5556;
 }
 
 double ConvertToFahrenheit(const double Celsius)
 {
-	return (Celsius*1.8)+32.0;
+	return (Celsius * 1.8) + 32.0;
 }
 
 double RoundDouble(const long double invalue, const short numberOfPrecisions)
 {
-	int64_t p = (int64_t) pow(10.0L, numberOfPrecisions);
-	double ret= (int64_t)(invalue * p + 0.5L) / (double)p;
+	int64_t p = (int64_t)pow(10.0L, numberOfPrecisions);
+	double ret = (int64_t)(invalue * p + 0.5L) / (double)p;
 	return ret;
 }
 
 double ConvertTemperature(const double tValue, const unsigned char tSign)
 {
-	if (tSign=='C')
+	if (tSign == 'C')
 		return tValue;
-	return RoundDouble(ConvertToFahrenheit(tValue),1);
+	return RoundDouble(ConvertToFahrenheit(tValue), 1);
 }
 
-std::vector<std::string> ExecuteCommandAndReturn(const std::string &szCommand, int &returncode)
+std::vector<std::string> ExecuteCommandAndReturn(const std::string& szCommand, int& returncode)
 {
 	std::vector<std::string> ret;
 
 	try
 	{
-		FILE *fp;
+		FILE* fp;
 
 		/* Open the command for reading. */
 #ifdef WIN32
@@ -863,7 +874,7 @@ time_t GetClockTicks()
 	return(tv.tv_sec * 1000 + tv.tv_usec / 1000);
 }
 
-void CurrentDateTimeMillisecond(tm &timeinfo, timeval &tv)
+void CurrentDateTimeMillisecond(tm& timeinfo, timeval& tv)
 {
 #ifdef CLOCK_REALTIME
 	struct timespec ts;
@@ -884,7 +895,7 @@ void CurrentDateTimeMillisecond(tm &timeinfo, timeval &tv)
 #endif
 }
 
-std::string TimeToString(const time_t *ltime, const _eTimeFormat format)
+std::string TimeToString(const time_t* ltime, const _eTimeFormat format)
 {
 	struct tm timeinfo;
 	struct timeval tv;
@@ -898,8 +909,8 @@ std::string TimeToString(const time_t *ltime, const _eTimeFormat format)
 	{
 		//Date
 		sstr << (timeinfo.tm_year + 1900) << "-"
-		<< std::setw(2)	<< std::setfill('0') << (timeinfo.tm_mon + 1) << "-"
-		<< std::setw(2) << std::setfill('0') << timeinfo.tm_mday;
+			<< std::setw(2) << std::setfill('0') << (timeinfo.tm_mon + 1) << "-"
+			<< std::setw(2) << std::setfill('0') << timeinfo.tm_mday;
 	}
 
 	if (format != TF_Date)
@@ -908,9 +919,9 @@ std::string TimeToString(const time_t *ltime, const _eTimeFormat format)
 		if (format > TF_Time)
 			sstr << " ";
 		sstr
-		<< std::setw(2) << std::setfill('0') << timeinfo.tm_hour << ":"
-		<< std::setw(2) << std::setfill('0') << timeinfo.tm_min << ":"
-		<< std::setw(2) << std::setfill('0') << timeinfo.tm_sec;
+			<< std::setw(2) << std::setfill('0') << timeinfo.tm_hour << ":"
+			<< std::setw(2) << std::setfill('0') << timeinfo.tm_min << ":"
+			<< std::setw(2) << std::setfill('0') << timeinfo.tm_sec;
 	}
 
 	if (format > TF_DateTime && ltime == nullptr)
@@ -919,7 +930,7 @@ std::string TimeToString(const time_t *ltime, const _eTimeFormat format)
 	return sstr.str();
 }
 
-std::string GenerateMD5Hash(const std::string &InputString, const std::string &Salt)
+std::string GenerateMD5Hash(const std::string& InputString, const std::string& Salt)
 {
 	std::string cstring = InputString + Salt;
 	unsigned char digest[EVP_MAX_MD_SIZE + 1];
@@ -940,15 +951,15 @@ std::string GenerateMD5Hash(const std::string &InputString, const std::string &S
 	return mdString;
 }
 
-void hsb2rgb(const float hue, const float saturation, const float vlue, int &outR, int &outG, int &outB, const double maxValue/* = 100.0 */)
+void hsb2rgb(const float hue, const float saturation, const float vlue, int& outR, int& outG, int& outB, const double maxValue/* = 100.0 */)
 {
 	double      hh, p, q, t, ff;
 	long        i;
 
-	if(saturation <= 0.0) {
-		outR = int(vlue*maxValue);
-		outG = int(vlue*maxValue);
-		outB = int(vlue*maxValue);
+	if (saturation <= 0.0) {
+		outR = int(vlue * maxValue);
+		outG = int(vlue * maxValue);
+		outB = int(vlue * maxValue);
 	}
 	hh = hue;
 	if (hh >= 360.0) hh = 0.0;
@@ -961,36 +972,36 @@ void hsb2rgb(const float hue, const float saturation, const float vlue, int &out
 
 	switch (i) {
 	case 0:
-		outR = int(vlue*maxValue);
-		outG = int(t*maxValue);
-		outB = int(p*maxValue);
+		outR = int(vlue * maxValue);
+		outG = int(t * maxValue);
+		outB = int(p * maxValue);
 		break;
 	case 1:
-		outR = int(q*maxValue);
-		outG = int(vlue*maxValue);
-		outB = int(p*maxValue);
+		outR = int(q * maxValue);
+		outG = int(vlue * maxValue);
+		outB = int(p * maxValue);
 		break;
 	case 2:
-		outR = int(p*maxValue);
-		outG = int(vlue*maxValue);
-		outB = int(t*maxValue);
+		outR = int(p * maxValue);
+		outG = int(vlue * maxValue);
+		outB = int(t * maxValue);
 		break;
 
 	case 3:
-		outR = int(p*maxValue);
-		outG = int(q*maxValue);
-		outB = int(vlue*maxValue);
+		outR = int(p * maxValue);
+		outG = int(q * maxValue);
+		outB = int(vlue * maxValue);
 		break;
 	case 4:
-		outR = int(t*maxValue);
-		outG = int(p*maxValue);
-		outB = int(vlue*maxValue);
+		outR = int(t * maxValue);
+		outG = int(p * maxValue);
+		outB = int(vlue * maxValue);
 		break;
 	case 5:
 	default:
-		outR = int(vlue*maxValue);
-		outG = int(p*maxValue);
-		outB = int(q*maxValue);
+		outR = int(vlue * maxValue);
+		outG = int(p * maxValue);
+		outB = int(q * maxValue);
 		break;
 	}
 }
@@ -1038,7 +1049,7 @@ bool is_number(const std::string& s)
 	return !s.empty() && it == s.end();
 }
 
-void padLeft(std::string &str, const size_t num, const char paddingChar)
+void padLeft(std::string& str, const size_t num, const char paddingChar)
 {
 	if (num > str.size())
 		str.insert(0, num - str.size(), paddingChar);
@@ -1184,7 +1195,7 @@ int MStoBeaufort(const float ms)
 	return 12;
 }
 
-void FixFolderEnding(std::string &folder)
+void FixFolderEnding(std::string& folder)
 {
 #if defined(WIN32)
 	if (folder.at(folder.length() - 1) != '\\')
@@ -1195,7 +1206,7 @@ void FixFolderEnding(std::string &folder)
 #endif
 }
 
-bool dirent_is_directory(const std::string &dir, struct dirent *ent)
+bool dirent_is_directory(const std::string& dir, struct dirent* ent)
 {
 	if (ent->d_type == DT_DIR)
 		return true;
@@ -1212,7 +1223,7 @@ bool dirent_is_directory(const std::string &dir, struct dirent *ent)
 	return false;
 }
 
-bool dirent_is_file(const std::string &dir, struct dirent *ent)
+bool dirent_is_file(const std::string& dir, struct dirent* ent)
 {
 	if (ent->d_type == DT_REG)
 		return true;
@@ -1234,10 +1245,10 @@ bool dirent_is_file(const std::string &dir, struct dirent *ent)
  * @param bInclDirs Boolean flag to include directories in the result
  * @param bInclFiles Boolean flag to include regular files in the result
  */
-void DirectoryListing(std::vector<std::string>& entries, const std::string &dir, bool bInclDirs, bool bInclFiles)
+void DirectoryListing(std::vector<std::string>& entries, const std::string& dir, bool bInclDirs, bool bInclFiles)
 {
-	DIR *d = nullptr;
-	struct dirent *ent;
+	DIR* d = nullptr;
+	struct dirent* ent;
 	if ((d = opendir(dir.c_str())) != nullptr)
 	{
 		while ((ent = readdir(d)) != nullptr)
@@ -1266,40 +1277,40 @@ std::string GenerateUserAgent()
 	int mversion = distrib_FFFF(gen) % 3;
 	int sversion = distrib_FFFF(gen) % 3;
 	std::stringstream sstr;
-	sstr << "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/" << (601 + sversion) << "." << (36+mversion) << " (KHTML, like Gecko) Chrome/" << (53 + mversion) << ".0." << cversion << ".0 Safari/" << (601 + sversion) << "." << (36+sversion);
+	sstr << "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/" << (601 + sversion) << "." << (36 + mversion) << " (KHTML, like Gecko) Chrome/" << (53 + mversion) << ".0." << cversion << ".0 Safari/" << (601 + sversion) << "." << (36 + sversion);
 	return sstr.str();
 }
 
-std::string MakeHtml(const std::string &txt)
+std::string MakeHtml(const std::string& txt)
 {
-        std::string sRet = txt;
+	std::string sRet = txt;
 
-        stdreplace(sRet, "&", "&amp;");
-        stdreplace(sRet, "\"", "&quot;");
-        stdreplace(sRet, "'", "&apos;");
-        stdreplace(sRet, "<", "&lt;");
-        stdreplace(sRet, ">", "&gt;");
-        stdreplace(sRet, "\r\n", "<br/>");
-        return sRet;
+	stdreplace(sRet, "&", "&amp;");
+	stdreplace(sRet, "\"", "&quot;");
+	stdreplace(sRet, "'", "&apos;");
+	stdreplace(sRet, "<", "&lt;");
+	stdreplace(sRet, ">", "&gt;");
+	stdreplace(sRet, "\r\n", "<br/>");
+	return sRet;
 }
 
 //Prevent against XSS (Cross Site Scripting)
-std::string SafeHtml(const std::string &txt)
+std::string SafeHtml(const std::string& txt)
 {
-    std::string sRet = txt;
+	std::string sRet = txt;
 
-    stdreplace(sRet, "\"", "&quot;");
-    stdreplace(sRet, "'", "&apos;");
-    stdreplace(sRet, "<", "&lt;");
-    stdreplace(sRet, ">", "&gt;");
-    return sRet;
+	stdreplace(sRet, "\"", "&quot;");
+	stdreplace(sRet, "'", "&apos;");
+	stdreplace(sRet, "<", "&lt;");
+	stdreplace(sRet, ">", "&gt;");
+	return sRet;
 }
 
 #if defined WIN32
 //FILETIME of Jan 1 1970 00:00:00
 static const uint64_t epoch = (const uint64_t)(116444736000000000);
 
-int gettimeofday( timeval * tp, void * tzp)
+int gettimeofday(timeval* tp, void* tzp)
 {
 	FILETIME    file_time;
 	SYSTEMTIME  system_time;
@@ -1314,49 +1325,49 @@ int gettimeofday( timeval * tp, void * tzp)
 }
 #endif
 
-int getclock(struct timeval *tv) {
+int getclock(struct timeval* tv) {
 #ifdef CLOCK_MONOTONIC
 	struct timespec ts;
-		if (!clock_gettime(CLOCK_MONOTONIC, &ts)) {
-			tv->tv_sec = ts.tv_sec;
-			tv->tv_usec = ts.tv_nsec / 1000;
-			return 0;
-		}
+	if (!clock_gettime(CLOCK_MONOTONIC, &ts)) {
+		tv->tv_sec = ts.tv_sec;
+		tv->tv_usec = ts.tv_nsec / 1000;
+		return 0;
+	}
 #endif
-		return gettimeofday(tv, nullptr);
+	return gettimeofday(tv, nullptr);
 }
-int timeval_subtract (struct timeval *result, struct timeval *x, struct timeval *y) {
+int timeval_subtract(struct timeval* result, struct timeval* x, struct timeval* y) {
 	/* Perform the carry for the later subtraction by updating y. */
-  if (x->tv_usec < y->tv_usec) {
+	if (x->tv_usec < y->tv_usec) {
 		int nsec = (y->tv_usec - x->tv_usec) / 1000000 + 1;
-    y->tv_usec -= 1000000 * nsec;
-    y->tv_sec += nsec;
-  }
-  if (x->tv_usec - y->tv_usec > 1000000) {
-    int nsec = (x->tv_usec - y->tv_usec) / 1000000;
-    y->tv_usec += 1000000 * nsec;
-    y->tv_sec -= nsec;
-  }
+		y->tv_usec -= 1000000 * nsec;
+		y->tv_sec += nsec;
+	}
+	if (x->tv_usec - y->tv_usec > 1000000) {
+		int nsec = (x->tv_usec - y->tv_usec) / 1000000;
+		y->tv_usec += 1000000 * nsec;
+		y->tv_sec -= nsec;
+	}
 
-  /* Compute the time remaining to wait.
-     tv_usec is certainly positive. */
-  result->tv_sec = x->tv_sec - y->tv_sec;
-  result->tv_usec = x->tv_usec - y->tv_usec;
+	/* Compute the time remaining to wait.
+	   tv_usec is certainly positive. */
+	result->tv_sec = x->tv_sec - y->tv_sec;
+	result->tv_usec = x->tv_usec - y->tv_usec;
 
-  /* Return 1 if result is negative. */
-  return x->tv_sec < y->tv_sec;
+	/* Return 1 if result is negative. */
+	return x->tv_sec < y->tv_sec;
 }
 
 namespace
 {
-	constexpr std::array<const char *, 13> szInsecureArgumentOptions{ "import", "socket", "process", "os", "|", ";", "&", "$", "<", ">", "`", "\n", "\r" };
+	constexpr std::array<const char*, 13> szInsecureArgumentOptions{ "import", "socket", "process", "os", "|", ";", "&", "$", "<", ">", "`", "\n", "\r" };
 } // namespace
 
-bool IsArgumentSecure(const std::string &arg)
+bool IsArgumentSecure(const std::string& arg)
 {
 	std::string larg(arg);
 	std::transform(larg.begin(), larg.end(), larg.begin(), ::tolower);
-	return std::all_of(szInsecureArgumentOptions.begin(), szInsecureArgumentOptions.end(), [&](const char *arg) { return larg.find(arg) == std::string::npos; });
+	return std::all_of(szInsecureArgumentOptions.begin(), szInsecureArgumentOptions.end(), [&](const char* arg) { return larg.find(arg) == std::string::npos; });
 }
 
 uint32_t SystemUptime()
@@ -1392,43 +1403,43 @@ static struct
 	time_t t;
 	clock_t c;
 	int counter;
-} entropy = { 0, (time_t) 0, (clock_t) 0, 0 };
+} entropy = { 0, (time_t)0, (clock_t)0, 0 };
 
-static unsigned char * p = (unsigned char *) (&entropy + 1);
+static unsigned char* p = (unsigned char*)(&entropy + 1);
 static int accSeed = 0;
 
 int GenerateRandomNumber(const int range)
 {
-	if (p == ((unsigned char *) (&entropy + 1)))
+	if (p == ((unsigned char*)(&entropy + 1)))
 	{
 		switch (entropy.which)
 		{
-			case 0:
-				entropy.t += time(nullptr);
-				accSeed ^= entropy.t;
-				break;
-			case 1:
-				entropy.c += clock();
-				break;
-			case 2:
-				entropy.counter++;
-				break;
+		case 0:
+			entropy.t += time(nullptr);
+			accSeed ^= entropy.t;
+			break;
+		case 1:
+			entropy.c += clock();
+			break;
+		case 2:
+			entropy.counter++;
+			break;
 		}
 		entropy.which = (entropy.which + 1) % 3;
-		p = (unsigned char *) &entropy.t;
+		p = (unsigned char*)&entropy.t;
 	}
-	accSeed = ((accSeed * (UCHAR_MAX + 2U)) | 1) + (int) *p;
+	accSeed = ((accSeed * (UCHAR_MAX + 2U)) | 1) + (int)*p;
 	p++;
-	srand (accSeed);
+	srand(accSeed);
 	return (rand() / (RAND_MAX / range));
 }
 
-int GetDirFilesRecursive(const std::string &DirPath, std::map<std::string, int> &_Files)
+int GetDirFilesRecursive(const std::string& DirPath, std::map<std::string, int>& _Files)
 {
 	DIR* dir;
 	if ((dir = opendir(DirPath.c_str())) != nullptr)
 	{
-		struct dirent *ent;
+		struct dirent* ent;
 		while ((ent = readdir(dir)) != nullptr)
 		{
 			if (dirent_is_directory(DirPath, ent))
@@ -1466,8 +1477,8 @@ typedef struct tagTHREADNAME_INFO
 	DWORD dwFlags; // Reserved for future use, must be zero.
 } THREADNAME_INFO;
 #pragma pack(pop)
-int SetThreadName(const std::thread::native_handle_type &thread, const char* threadName) {
-	DWORD dwThreadID = ::GetThreadId( static_cast<HANDLE>( thread ) );
+int SetThreadName(const std::thread::native_handle_type& thread, const char* threadName) {
+	DWORD dwThreadID = ::GetThreadId(static_cast<HANDLE>(thread));
 	THREADNAME_INFO info;
 	info.dwType = 0x1000;
 	info.szName = threadName;
@@ -1475,22 +1486,22 @@ int SetThreadName(const std::thread::native_handle_type &thread, const char* thr
 	info.dwFlags = 0;
 #pragma warning(push)
 #pragma warning(disable: 6320 6322)
-	__try{
+	__try {
 		RaiseException(MS_VC_EXCEPTION, 0, sizeof(info) / sizeof(ULONG_PTR), (ULONG_PTR*)&info);
 	}
-	__except (EXCEPTION_EXECUTE_HANDLER){
+	__except (EXCEPTION_EXECUTE_HANDLER) {
 	}
 #pragma warning(pop)
 	return 0;
 }
 #else
 // Based on https://stackoverflow.com/questions/2369738/how-to-set-the-name-of-a-thread-in-linux-pthreads
-int SetThreadName(const std::thread::native_handle_type &thread, const char *name)
+int SetThreadName(const std::thread::native_handle_type& thread, const char* name)
 {
 #if defined(__linux__) || defined(__linux) || defined(linux)
 	char name_trunc[16];
 	strncpy(name_trunc, name, sizeof(name_trunc));
-	name_trunc[sizeof(name_trunc)-1] = '\0';
+	name_trunc[sizeof(name_trunc) - 1] = '\0';
 	return pthread_setname_np(thread, name_trunc);
 #elif defined(macintosh) || defined(__APPLE__) || defined(__APPLE_CC__)
 	// Not possible to set name of other thread: https://stackoverflow.com/questions/2369738/how-to-set-the-name-of-a-thread-in-linux-pthreads
@@ -1498,18 +1509,18 @@ int SetThreadName(const std::thread::native_handle_type &thread, const char *nam
 #elif defined(__NetBSD__)
 	char name_trunc[PTHREAD_MAX_NAMELEN_NP];
 	strncpy(name_trunc, name, sizeof(name_trunc));
-	name_trunc[sizeof(name_trunc)-1] = '\0';
-	return pthread_setname_np(thread, "%s", (void *)name_trunc);
+	name_trunc[sizeof(name_trunc) - 1] = '\0';
+	return pthread_setname_np(thread, "%s", (void*)name_trunc);
 #elif defined(__OpenBSD__) || defined(__DragonFly__)
 	char name_trunc[PTHREAD_MAX_NAMELEN_NP];
 	strncpy(name_trunc, name, sizeof(name_trunc));
-	name_trunc[sizeof(name_trunc)-1] = '\0';
+	name_trunc[sizeof(name_trunc) - 1] = '\0';
 	pthread_setname_np(thread, name_trunc);
 	return 0;
 #elif defined(__FreeBSD__)
 	char name_trunc[PTHREAD_MAX_NAMELEN_NP];
 	strncpy(name_trunc, name, sizeof(name_trunc));
-	name_trunc[sizeof(name_trunc)-1] = '\0';
+	name_trunc[sizeof(name_trunc) - 1] = '\0';
 	pthread_set_name_np(thread, name_trunc);
 	return 0;
 #endif
@@ -1584,7 +1595,7 @@ std::string GenerateUUID() // DCE/RFC 4122
 	return uuid;
 }
 
-bool isHexRepresentation(const std::string &input)
+bool isHexRepresentation(const std::string& input)
 {
 	const std::string hexCHARS = "0123456789abcdef";
 	if (input.empty())
@@ -1635,15 +1646,15 @@ std::wstring utf8_to_wstring(const std::string& utf8str)
 	return wconv.from_bytes(utf8str);
 }
 
-std::string sha256hex(const std::string &input)
+std::string sha256hex(const std::string& input)
 {
 	const std::string hexCHARS = "0123456789abcdef";
 
-	unsigned char digest[33] = {0};
-	char hexdigest[65] = {0};
+	unsigned char digest[33] = { 0 };
+	char hexdigest[65] = { 0 };
 	size_t idxb, idxh;
 
-	SHA256((const unsigned char *)input.c_str(), input.length(), digest);
+	SHA256((const unsigned char*)input.c_str(), input.length(), digest);
 
 	for (idxb = 0, idxh = 0; idxb < 32; idxb++, idxh += 2)
 	{
@@ -1655,11 +1666,11 @@ std::string sha256hex(const std::string &input)
 	return std::string(hexdigest);
 }
 
-std::string sha256raw(const std::string &input)
+std::string sha256raw(const std::string& input)
 {
-	unsigned char digest[33] = {0};
-	SHA256((const unsigned char *)input.c_str(), input.length(), digest);
-	return std::string((const char *)digest, 32);
+	unsigned char digest[33] = { 0 };
+	SHA256((const unsigned char*)input.c_str(), input.length(), digest);
+	return std::string((const char*)digest, 32);
 }
 
 #ifdef _WIN32
@@ -1696,26 +1707,26 @@ char* make_web_time(const time_t rawtime)
 }
 
 const std::string base32RFC4648 = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567=";
-bool base32_decode(const std::string &input, std::string &output)
+bool base32_decode(const std::string& input, std::string& output)
 {
 	if ((input.size() % 8) != 0)
 		return false;
 
 	std::vector<uint8_t> outTotal;
 
-	for(uint16_t j = 0; j < (input.size() / 8); j++)
+	for (uint16_t j = 0; j < (input.size() / 8); j++)
 	{
 		// pack 8 bytes
 		uint64_t buffer = 0;
-		for(uint8_t i = 0; i < 8; i++)
+		for (uint8_t i = 0; i < 8; i++)
 		{
-			if(i != 0)
+			if (i != 0)
 			{
 				buffer = (buffer << 5);
 			}
 			// input check
-			size_t pos = base32RFC4648.find(input[(j*8) + i]);
-			if(pos == std::string::npos)
+			size_t pos = base32RFC4648.find(input[(j * 8) + i]);
+			if (pos == std::string::npos)
 			{
 				return false;
 			}
@@ -1725,11 +1736,11 @@ bool base32_decode(const std::string &input, std::string &output)
 			}
 			else
 			{
-				buffer = buffer | base32RFC4648.find(input[(j*8) + i]);
+				buffer = buffer | base32RFC4648.find(input[(j * 8) + i]);
 			}
 		}
 		// output 5 bytes
-		for(int8_t x = 4; x >= 0; x--)
+		for (int8_t x = 4; x >= 0; x--)
 		{
 			outTotal.push_back((unsigned char)(buffer >> (x * 8)));
 		}
@@ -1739,27 +1750,27 @@ bool base32_decode(const std::string &input, std::string &output)
 	return true;
 }
 
-bool base32_encode(const std::string &input, std::string &output)
+bool base32_encode(const std::string& input, std::string& output)
 {
 	if (input.empty())
 		return false;
 
 	std::vector<uint8_t> outTotal;
 
-	for(uint16_t j = 0; j < (input.size() / 5); j++)
+	for (uint16_t j = 0; j < (input.size() / 5); j++)
 	{
 		// pack 5 bytes
 		uint64_t buffer = 0;
-		for(uint8_t i = 0; i < 5; i++)
+		for (uint8_t i = 0; i < 5; i++)
 		{
-			if(i != 0)
+			if (i != 0)
 			{
 				buffer = (buffer << 8);
 			}
-			buffer = buffer | input[(j*5) + i];
+			buffer = buffer | input[(j * 5) + i];
 		}
 		// output 8 bytes
-		for(int8_t x = 7; x >= 0; x--)
+		for (int8_t x = 7; x >= 0; x--)
 		{
 			outTotal.push_back(base32RFC4648[(buffer >> (x * 5)) & 0x1F]);
 		}
@@ -1769,7 +1780,7 @@ bool base32_encode(const std::string &input, std::string &output)
 	return true;
 }
 
-std::string vector_2_string(std::vector<std::string> const& strings, const std::string &delim)
+std::string vector_2_string(std::vector<std::string> const& strings, const std::string& delim)
 {
 	std::stringstream ss;
 	for (const auto& itt : strings)
@@ -1831,7 +1842,7 @@ bool AESEncryptData(const std::string& szInputBuffer, std::string& szOutputBuffe
 		goto exit_sub;
 	}
 	EVP_CIPHER_CTX_set_padding(ctx, 0);
-	
+
 	fOk = EVP_EncryptUpdate(ctx, (uint8_t*)&szOutputBuffer[0], &nCLen, (const uint8_t*)&szInputBufffer[0], nLen);
 	if (!fOk)
 	{

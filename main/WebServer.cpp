@@ -4131,7 +4131,7 @@ namespace http
 						std::string TableField = db.first;
 						std::string IconFile = db.second;
 
-						if (!file_exist(IconFile.c_str()))
+						if (!file_exist_not_empty(IconFile.c_str()))
 						{
 							// Does not exists, extract it from the database and add it
 							std::vector<std::vector<std::string>> result2;
@@ -4142,6 +4142,7 @@ namespace http
 								file.open(IconFile.c_str(), std::ios::out | std::ios::binary);
 								if (!file.is_open())
 								{
+									_log.Log(LOG_ERROR, "Error writing custom image to disk: %s", IconFile.c_str());
 									bError = true;
 									continue;
 								}
@@ -4154,7 +4155,7 @@ namespace http
 					if (bError)
 					{
 						cImage.Title += " (INVALID!!)";
-						cImage.Description = "probably invalid characters in Title/Descriptionn!";
+						cImage.Description = "probably invalid characters in Title/Description!";
 					}
 					m_custom_light_icons.push_back(cImage);
 					m_custom_light_icons_lookup[cImage.idx] = (int)m_custom_light_icons.size() - 1;
