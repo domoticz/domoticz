@@ -161,7 +161,9 @@ define(['app'], function (app) {
 					$scope.idBattWatt = data.result.ESettings.idBatteryWatt;
 					$scope.idBattSoc = data.result.ESettings.idBatterySoc;
 					$scope.idTextObj = data.result.ESettings.idTextSensor;
-					$scope.idOutsideTemp = data.result.ESettings.idOutsideTempSensor;
+					if (typeof data.result.ESettings.idOutsideTempSensor != 'undefined') {
+						$scope.idOutsideTemp = data.result.ESettings.idOutsideTempSensor;
+					}
 					$scope.idItemH1 = data.result.ESettings.idExtra1;
 					$scope.fieldH1 = data.result.ESettings.Extra1Field;
 					$scope.iconH1 = data.result.ESettings.Extra1Icon;

@@ -5208,7 +5208,8 @@ namespace http
 			if (m_sql.GetPreferencesVar("ESettings", szESettings))
 			{
 				Json::Value jesettings;
-				bool ret = ParseJSon(szESettings, jesettings);
+				std::string sError;
+				bool ret = ParseJSon(szESettings, jesettings, &sError);
 				if (ret)
 				{
 					root["status"] = "OK";
