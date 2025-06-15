@@ -2523,7 +2523,10 @@ void MQTTAutoDiscover::handle_auto_discovery_sensor(_tMQTTASensor* pSensor, cons
 	}
 
 	if (
-		(pSensor->object_id.find("battery") != std::string::npos)
+		(
+			(pSensor->object_id == "battery")
+			|| (pSensor->object_id == "battery_low")
+		)
 		&& is_number(pSensor->last_value)
 		)
 	{
