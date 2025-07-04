@@ -525,42 +525,78 @@ bool MQTTAutoDiscover::parseMapTemplate(const std::string& templateStr, std::vec
 	// Define a regex pattern to match the dictionary in the template string
 	std::regex dictPattern(R"(\{\% set values.*?=.*?\{(.*?)\} %\})");
 	std::smatch matches;
+	
+	valuesMap.clear();
 
+	std::string dictString;
 	if (std::regex_search(templateStr, matches, dictPattern)) {
-		std::string dictString = matches[1].str();
-
-		// Define a regex pattern to match key-value pairs in the dictionary string
-		std::regex kvPattern(R"(('[^']*'|\"[^\"]*\"|[^,:]+):('[^']*'|\"[^\"]*\"|[^,]*))");
-
-		auto dictBegin = dictString.cbegin(); // Use cbegin() for const_iterator
-		auto dictEnd = dictString.cend();    // Use cend() for const_iterator
-
-		while (std::regex_search(dictBegin, dictEnd, matches, kvPattern)) {
-			std::string key = matches[1].str();
-			std::string value = matches[2].str();
-
-			// Remove surrounding spaces/quotes if present
-			key.erase(0, key.find_first_not_of(" \t\r\n'\""));
-			key.erase(key.find_last_not_of(" \t\r\n'\"") + 1);
-			value.erase(0, value.find_first_not_of(" \t\r\n'\""));
-			value.erase(value.find_last_not_of(" \t\r\n'\"") + 1);
-
-			valuesMap.push_back(std::make_tuple(key, value));
-			dictBegin = matches.suffix().first;
+		dictString = matches[1].str();
+	}
+	else {
+		std::vector<std::string> strarray;
+		StringSplit(templateStr, "[value_json.", strarray);
+		if (strarray.size() != 2)
+		{
+			szKey.clear();
+			return false;
 		}
 
-		// Extract the placeholder in the template string
-		std::regex placeholderPattern(R"(\{\{.*?values\[(.*?)\].*?\}\})");
-		if (std::regex_search(templateStr, matches, placeholderPattern)) {
-			szKey = matches[1].str();
-			szKey.erase(0, szKey.find_first_not_of(" \t\r\n'\""));
-			szKey.erase(szKey.find_last_not_of(" \t\r\n'\"") + 1);
-			return true;
+		std::string tstring = strarray[0];
+		tstring.erase(0, tstring.find_first_not_of(" {}"));
+		tstring.erase(tstring.find_last_not_of(" {}") + 1);
+		if (tstring.empty())
+		{
+			szKey.clear();
+			return false;
 		}
+		dictString = tstring;
+		tstring = strarray[1];
+		if (tstring.find(']') == std::string::npos)
+		{
+			szKey.clear();
+			return false;
+		}
+		tstring = tstring.substr(0, tstring.find(']'));
+		if (tstring.empty())
+		{
+			szKey.clear();
+			return false;
+		}
+		szKey = "value_json." + tstring;
 	}
 
-	// If no match or error, return an empty string or handle the error accordingly
-	valuesMap.clear();
+
+	// Define a regex pattern to match key-value pairs in the dictionary string
+	std::regex kvPattern(R"(('[^']*'|\"[^\"]*\"|[^,:]+):('[^']*'|\"[^\"]*\"|[^,]*))");
+
+	auto dictBegin = dictString.cbegin(); // Use cbegin() for const_iterator
+	auto dictEnd = dictString.cend();    // Use cend() for const_iterator
+
+	while (std::regex_search(dictBegin, dictEnd, matches, kvPattern)) {
+		std::string key = matches[1].str();
+		std::string value = matches[2].str();
+
+		// Remove surrounding spaces/quotes if present
+		key.erase(0, key.find_first_not_of(" \t\r\n'\""));
+		key.erase(key.find_last_not_of(" \t\r\n'\"") + 1);
+		value.erase(0, value.find_first_not_of(" \t\r\n'\""));
+		value.erase(value.find_last_not_of(" \t\r\n'\"") + 1);
+
+		valuesMap.push_back(std::make_tuple(key, value));
+		dictBegin = matches.suffix().first;
+	}
+
+	if (!szKey.empty())
+		return true;
+	// Extract the placeholder in the template string
+	std::regex placeholderPattern(R"(\{\{.*?values\[(.*?)\].*?\}\})");
+	if (std::regex_search(templateStr, matches, placeholderPattern)) {
+		szKey = matches[1].str();
+		szKey.erase(0, szKey.find_first_not_of(" \t\r\n'\""));
+		szKey.erase(szKey.find_last_not_of(" \t\r\n'\"") + 1);
+		return true;
+	}
+	szKey.clear();
 	return false;
 }
 
