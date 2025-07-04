@@ -2252,9 +2252,6 @@
     <ClInclude Include="..\mdns\mdns.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\main\StdCallback.h">
-      <Filter>Helpers</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\webserver\Base64.cpp">

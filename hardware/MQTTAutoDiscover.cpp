@@ -175,7 +175,20 @@ void MQTTAutoDiscover::CleanValueTemplate(std::string& szValueTemplate)
 
 	szValueTemplate = szValueTemplate.substr(0, szValueTemplate.find("|"));
 	szValueTemplate = szValueTemplate.substr(0, szValueTemplate.find(".split("));
-	szValueTemplate = szValueTemplate.substr(0, szValueTemplate.find("if value_json."));
+
+	if (
+		(szValueTemplate.find("% if value_json.") == 0)
+		|| (szValueTemplate.find("%if value_json.") == 0)
+		)
+	{
+		szValueTemplate = szValueTemplate.substr(szValueTemplate.find("value_json."));
+		szValueTemplate = szValueTemplate.substr(0, szValueTemplate.find(" "));
+	}
+	else
+	{
+		//still needed?
+		szValueTemplate = szValueTemplate.substr(0, szValueTemplate.find("if value_json."));
+	}
 
 	stdstring_trim(szValueTemplate);
 
@@ -4455,6 +4468,24 @@ void MQTTAutoDiscover::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 				{
 					bool isNull = false;
 					std::string szValue = GetValueFromTemplate(root, pSensor->state_value_template, isNull);
+					if (!szValue.empty())
+					{
+						bHandledValue = true;
+						if (szValue == pSensor->state_on)
+							szSwitchCmd = pSensor->payload_on;
+						else if (szValue == pSensor->state_off)
+							szSwitchCmd = pSensor->payload_off;
+						else
+							szSwitchCmd = szValue;
+					}
+				}
+			}
+			else if (!pSensor->value_template.empty())
+			{
+				if (pSensor->state_topic == pSensor->last_topic)
+				{
+					bool isNull = false;
+					std::string szValue = GetValueFromTemplate(root, pSensor->value_template, isNull);
 					if (!szValue.empty())
 					{
 						bHandledValue = true;
