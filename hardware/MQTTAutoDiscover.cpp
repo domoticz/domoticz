@@ -1727,6 +1727,7 @@ void MQTTAutoDiscover::handle_auto_discovery_sensor_message(const struct mosquit
 			|| (pSensor->current_temperature_topic == topic)
 			|| (pSensor->percentage_state_topic == topic)
 			|| (pSensor->preset_mode_state_topic == topic)
+			|| (pSensor->action_topic == topic)
 			)
 		{
 			std::string szValue;
