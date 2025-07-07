@@ -3172,7 +3172,11 @@ void MQTTAutoDiscover::handle_auto_discovery_select(_tMQTTASensor* pSensor, cons
 		optionsMap["LevelNames"] = tmpOptionString;
 	}
 	else
+	{
 		optionsMap["LevelNames"] = oldOptionsMap["LevelNames"];
+		if (oldOptionsMap.find("LevelActions") != oldOptionsMap.end())
+			optionsMap["LevelActions"] = oldOptionsMap["LevelActions"];
+	}
 
 	std::string newOptions = m_sql.FormatDeviceOptions(optionsMap);
 	if (newOptions != sOldOptions)
@@ -3326,7 +3330,7 @@ void MQTTAutoDiscover::handle_auto_discovery_climate(_tMQTTASensor* pSensor, con
 				if (bValid)
 				{
 					std::map<std::string, std::string> optionsMap;
-					optionsMap["SelectorStyle"] = "0";
+					optionsMap["SelectorStyle"] = (pSensor->climate_modes.size() > 5) ? "1" : "0";
 					optionsMap["LevelOffHidden"] = "false";
 
 					StringSplit(tmpOptionString, "|", strarray);
@@ -3338,7 +3342,13 @@ void MQTTAutoDiscover::handle_auto_discovery_climate(_tMQTTASensor* pSensor, con
 						optionsMap["LevelNames"] = tmpOptionString;
 					}
 					else
+					{
 						optionsMap["LevelNames"] = oldOptionsMap["LevelNames"];
+						if (oldOptionsMap.find("LevelActions") != oldOptionsMap.end())
+							optionsMap["LevelActions"] = oldOptionsMap["LevelActions"];
+						optionsMap["SelectorStyle"] = oldOptionsMap["SelectorStyle"];
+						optionsMap["LevelOffHidden"] = oldOptionsMap["LevelOffHidden"];
+					}
 
 					std::string newOptions = m_sql.FormatDeviceOptions(optionsMap);
 					if (newOptions != sOldOptions)
@@ -3458,7 +3468,7 @@ void MQTTAutoDiscover::handle_auto_discovery_climate(_tMQTTASensor* pSensor, con
 				if (bValid)
 				{
 					std::map<std::string, std::string> optionsMap;
-					optionsMap["SelectorStyle"] = "0";
+					optionsMap["SelectorStyle"] = (pSensor->preset_modes.size() > 5) ? "1" : "0";
 					optionsMap["LevelOffHidden"] = "false";
 
 					StringSplit(tmpOptionString, "|", strarray);
@@ -3470,7 +3480,13 @@ void MQTTAutoDiscover::handle_auto_discovery_climate(_tMQTTASensor* pSensor, con
 						optionsMap["LevelNames"] = tmpOptionString;
 					}
 					else
+					{
 						optionsMap["LevelNames"] = oldOptionsMap["LevelNames"];
+						if (oldOptionsMap.find("LevelActions") != oldOptionsMap.end())
+							optionsMap["LevelActions"] = oldOptionsMap["LevelActions"];
+						optionsMap["SelectorStyle"] = oldOptionsMap["SelectorStyle"];
+						optionsMap["LevelOffHidden"] = oldOptionsMap["LevelOffHidden"];
+					}
 
 					std::string newOptions = m_sql.FormatDeviceOptions(optionsMap);
 					if (newOptions != sOldOptions)
@@ -3607,7 +3623,7 @@ void MQTTAutoDiscover::handle_auto_discovery_climate(_tMQTTASensor* pSensor, con
 				}
 
 				std::map<std::string, std::string> optionsMap;
-				optionsMap["SelectorStyle"] = "0";
+				optionsMap["SelectorStyle"] = (pSensor->fan_modes.size() > 5) ? "1" : "0";
 				optionsMap["LevelOffHidden"] = "false";
 
 				StringSplit(tmpOptionString, "|", strarray);
@@ -3619,7 +3635,13 @@ void MQTTAutoDiscover::handle_auto_discovery_climate(_tMQTTASensor* pSensor, con
 					optionsMap["LevelNames"] = tmpOptionString;
 				}
 				else
+				{
 					optionsMap["LevelNames"] = oldOptionsMap["LevelNames"];
+					if (oldOptionsMap.find("LevelActions") != oldOptionsMap.end())
+						optionsMap["LevelActions"] = oldOptionsMap["LevelActions"];
+					optionsMap["SelectorStyle"] = oldOptionsMap["SelectorStyle"];
+					optionsMap["LevelOffHidden"] = oldOptionsMap["LevelOffHidden"];
+				}
 
 				std::string newOptions = m_sql.FormatDeviceOptions(optionsMap);
 				if (newOptions != sOldOptions)
@@ -3754,7 +3776,7 @@ void MQTTAutoDiscover::handle_auto_discovery_climate(_tMQTTASensor* pSensor, con
 				}
 
 				std::map<std::string, std::string> optionsMap;
-				optionsMap["SelectorStyle"] = "0";
+				optionsMap["SelectorStyle"] = (pSensor->swing_modes.size() > 5) ? "1" : "0";
 				optionsMap["LevelOffHidden"] = "false";
 
 				StringSplit(tmpOptionString, "|", strarray);
@@ -3766,7 +3788,13 @@ void MQTTAutoDiscover::handle_auto_discovery_climate(_tMQTTASensor* pSensor, con
 					optionsMap["LevelNames"] = tmpOptionString;
 				}
 				else
+				{
 					optionsMap["LevelNames"] = oldOptionsMap["LevelNames"];
+					if (oldOptionsMap.find("LevelActions") != oldOptionsMap.end())
+						optionsMap["LevelActions"] = oldOptionsMap["LevelActions"];
+					optionsMap["SelectorStyle"] = oldOptionsMap["SelectorStyle"];
+					optionsMap["LevelOffHidden"] = oldOptionsMap["LevelOffHidden"];
+				}
 
 
 				std::string newOptions = m_sql.FormatDeviceOptions(optionsMap);
@@ -3906,7 +3934,7 @@ void MQTTAutoDiscover::handle_auto_discovery_climate(_tMQTTASensor* pSensor, con
 				}
 
 				std::map<std::string, std::string> optionsMap;
-				optionsMap["SelectorStyle"] = "0";
+				optionsMap["SelectorStyle"] = (pSensor->action_modes.size() > 5) ? "1" : "0";
 				optionsMap["LevelOffHidden"] = "false";
 
 				StringSplit(tmpOptionString, "|", strarray);
@@ -3918,8 +3946,13 @@ void MQTTAutoDiscover::handle_auto_discovery_climate(_tMQTTASensor* pSensor, con
 					optionsMap["LevelNames"] = tmpOptionString;
 				}
 				else
+				{
 					optionsMap["LevelNames"] = oldOptionsMap["LevelNames"];
-
+					if (oldOptionsMap.find("LevelActions") != oldOptionsMap.end())
+						optionsMap["LevelActions"] = oldOptionsMap["LevelActions"];
+					optionsMap["SelectorStyle"] = oldOptionsMap["SelectorStyle"];
+					optionsMap["LevelOffHidden"] = oldOptionsMap["LevelOffHidden"];
+				}
 
 				std::string newOptions = m_sql.FormatDeviceOptions(optionsMap);
 				if (newOptions != sOldOptions)
