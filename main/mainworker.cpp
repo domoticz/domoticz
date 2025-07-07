@@ -1736,7 +1736,7 @@ void MainWorker::Do_Work()
 
 		if (ltime.tm_min != _ScheduleLastMinute)
 		{
-			minute_counter++;
+			bool bDoCleanupShortlog = false;
 			if (difftime(atime, _ScheduleLastMinuteTime) > 30) //avoid RTC/NTP clock drifts
 			{
 				_ScheduleLastMinuteTime = atime;
@@ -1748,8 +1748,8 @@ void MainWorker::Do_Work()
 				if (ltime.tm_min % m_sql.m_ShortLogInterval == 0)
 				{
 					HandleHourPrice();
-					if (!bNoCleanupDev)
-						m_sql.ScheduleShortlog();
+					m_sql.ScheduleShortlog();
+					bDoCleanupShortlog = !bNoCleanupDev;
 				}
 				std::string szPwdResetFile = szStartupFolder + "resetpwd";
 				if (file_exist(szPwdResetFile.c_str()))
@@ -1768,6 +1768,7 @@ void MainWorker::Do_Work()
 				}
 			}
 			//Check for updates every 12 hours (every 720 seconds)
+			minute_counter++;
 			if (minute_counter % 720 == 0)
 			{
 				IsUpdateAvailable(true);
@@ -1810,6 +1811,12 @@ void MainWorker::Do_Work()
 #endif
 					HandleAutomaticBackups();
 				}
+			}
+			if (bDoCleanupShortlog)
+			{
+				//Removing the line below could cause a very large database,
+				//and slow(large) data transfer (specially when working remote!!)
+				m_sql.CleanupShortLog();
 			}
 		}
 		if (heartbeat_counter++ > 12)

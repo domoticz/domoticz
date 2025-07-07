@@ -387,6 +387,7 @@ public:
 	void CheckSceneStatusWithDevice(const std::string &DevIdx);
 
 	void ScheduleShortlog();
+	void CleanupShortLog();
 	void ScheduleDay();
 
 	void ClearShortLog();
@@ -546,7 +547,6 @@ private:
 	void AddCalendarUpdateMultiMeter();
 	void AddCalendarUpdatePercentage();
 	void AddCalendarUpdateFan();
-	void CleanupShortLog();
 	bool CheckDate(const std::string &sDate, int &d, int &m, int &y);
 	bool CheckDateSQL(const std::string &sDate);
 	bool CheckDateTimeSQL(const std::string &sDateTime);

@@ -6072,9 +6072,6 @@ void CSQLHelper::ScheduleShortlog()
 		UpdateMultiMeter();
 		UpdatePercentageLog();
 		UpdateFanLog();
-		//Removing the line below could cause a very large database,
-		//and slow(large) data transfer (specially when working remote!!)
-		CleanupShortLog();
 	}
 	catch (boost::exception& e)
 	{
