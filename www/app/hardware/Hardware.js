@@ -1320,7 +1320,7 @@ define(['app'], function (app) {
 				(text.indexOf("PVOutput") >= 0)
 			) {
 				var username = $("#hardwarecontent #divlogin #username").val();
-				var password = encodeURIComponent($("#hardwarecontent #divlogin #password").val());
+				var password = $("#hardwarecontent #divlogin #password").val();
 				$.ajax({
 					url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype +
 					"&loglevel=" + logLevel +
@@ -2954,7 +2954,7 @@ define(['app'], function (app) {
 				(text.indexOf("HTTP") >= 0)
 			) {
 				var username = $("#hardwarecontent #divlogin #username").val();
-				var password = encodeURIComponent($("#hardwarecontent #divlogin #password").val());
+				var password = $("#hardwarecontent #divlogin #password").val();
 				$.ajax({
 					url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype +
 					"&loglevel=" + logLevel +
