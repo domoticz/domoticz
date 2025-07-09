@@ -243,7 +243,7 @@ namespace http
 
 			if (g_bLlmMCPSupport)
 			{
-				m_pWebEm->RegisterPageCode("/sse", [this](auto&& session, auto&& req, auto&& rep) { GetMcpSse(session, req, rep); }, true);
+				m_pWebEm->RegisterPageCode("/mcp", [this](auto&& session, auto&& req, auto&& rep) { PostMcp(session, req, rep); }, true);
 			}
 
 			m_pWebEm->RegisterPageCode("/json.htm", [this](auto&& session, auto&& req, auto&& rep) { GetJSonPage(session, req, rep); });
