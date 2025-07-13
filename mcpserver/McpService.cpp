@@ -124,6 +124,26 @@ namespace http
 			{
 				McpToolsList(jsonRequest, jsonRPCRep);
 			}
+			else if (sReqMethod == "tools/call")
+			{
+				McpToolsCall(jsonRequest, jsonRPCRep);
+			}
+			else if (sReqMethod == "resources/list")
+			{
+				McpResourcesList(jsonRequest, jsonRPCRep);
+			}
+			else if (sReqMethod == "resources/read")
+			{
+				McpResourcesRead(jsonRequest, jsonRPCRep);
+			}
+			else if (sReqMethod == "prompts/list")
+			{
+				McpPromptsList(jsonRequest, jsonRPCRep);
+			}
+			else if (sReqMethod == "prompts/get")
+			{
+				McpPromptsGet(jsonRequest, jsonRPCRep);
+			}
 			else
 			{
 				_log.Debug(DEBUG_WEBSERVER, "PostMcp: Unsupported method: %s", sReqMethod.c_str());
@@ -233,6 +253,176 @@ namespace http
 			tool["inputSchema"]["properties"]["switchname"]["description"] = "Name of the switch to query";
 			tool["inputSchema"]["required"].append("switchname");
 			jsonRPCRep["result"]["tools"].append(tool);
+		}
+
+		void CWebServer::McpToolsCall(const Json::Value &jsonRequest, Json::Value &jsonRPCRep)
+		{
+/*
+{
+  "jsonrpc": "2.0",
+  "id": 2,
+  "result": {
+    "content": [
+      {
+        "type": "text",
+        "text": "Current weather in New York:\nTemperature: 72°F\nConditions: Partly cloudy"
+      }
+    ],
+    "isError": false
+  }
+}*/
+			// Prepare the result for the tools/list method
+			jsonRPCRep["result"]["content"] = Json::Value(Json::arrayValue);
+			Json::Value tool;
+			tool["type"] = "text";
+			tool["text"] = "The current state of the switch is: Off";
+			jsonRPCRep["result"]["content"].append(tool);
+			jsonRPCRep["result"]["isError"] = false;
+		}
+
+		void CWebServer::McpResourcesList(const Json::Value &jsonRequest, Json::Value &jsonRPCRep)
+		{
+/*
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "result": {
+    "resources": [
+      {
+        "uri": "file:///project/src/main.rs",
+        "name": "main.rs",
+        "title": "Rust Software Application Main File",
+        "description": "Primary application entry point",
+        "mimeType": "text/x-rust"
+      }
+    ],
+    "nextCursor": "next-page-cursor"
+  }
+}
+idx	hardwareID	uniqueID	ena	name		type			subtype			value
+2	testmb		0000044C	1	Memory Usage	General			Percentage		57.96%
+3	testmb		000000DC	1	Process Usage	General			Custom Sensor	43.87 MB
+5	testmb		0000044D	1	CPU_Usage		General			Percentage		0.13%
+4	testmb		0000044E	1	HDD /			General			Percentage		26.31%
+6	testmb		0000044F	1	HDD /boot		General			Percentage		11.83%
+1	testdummy	00014051	1	dumswitch		Light/Switch	Switch			Off
+
+*/
+			// Prepare the result for the resources/list method
+			jsonRPCRep["result"]["resources"] = Json::Value(Json::arrayValue);
+			Json::Value resource;
+			resource["uri"] = "dom:///dom.local:8080/Light_Switch/Switch/1";
+			resource["name"] = "dumswitch";
+			resource["title"] = "dumswitch (testdummy - light switch - switch)";
+			resource["description"] = "A Sensor from the testdummy hardware of Type Light_switch and subtype Switch called dumswitch with ID 00014051 and IDX 1";
+			resource["mimeType"] = "plain/text";
+			jsonRPCRep["result"]["resources"].append(resource);
+		}
+
+		void CWebServer::McpResourcesRead(const Json::Value &jsonRequest, Json::Value &jsonRPCRep)
+		{
+/*
+{
+  "jsonrpc": "2.0",
+  "id": 2,
+  "result": {
+    "contents": [
+      {
+        "uri": "file:///project/src/main.rs",
+        "name": "main.rs",
+        "title": "Rust Software Application Main File",
+        "mimeType": "text/x-rust",
+        "text": "fn main() {\n    println!(\"Hello world!\");\n}"
+      }
+    ]
+  }
+}*/
+			// Prepare the result for the resources/read method
+			jsonRPCRep["result"]["contents"] = Json::Value(Json::arrayValue);
+			Json::Value resource;
+			resource["uri"] = "dom:///dom.local:8080/Light_Switch/Switch/1";
+			resource["name"] = "dumswitch";
+			resource["title"] = "dumswitch (testdummy - light switch - switch)";
+			resource["mimeType"] = "plain/text";
+			resource["text"] = "off";
+			jsonRPCRep["result"]["contents"].append(resource);
+		}
+
+		void CWebServer::McpPromptsList(const Json::Value &jsonRequest, Json::Value &jsonRPCRep)
+		{
+/*
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "result": {
+    "prompts": [
+      {
+        "name": "code_review",
+        "title": "Request Code Review",
+        "description": "Asks the LLM to analyze code quality and suggest improvements",
+        "arguments": [
+          {
+            "name": "code",
+            "description": "The code to review",
+            "required": true
+          }
+        ]
+      }
+    ],
+    "nextCursor": "next-page-cursor"
+  }
+}*/
+			// Prepare the result for the prompts/list method
+			jsonRPCRep["result"]["prompts"] = Json::Value(Json::arrayValue);
+			Json::Value prompt;
+			prompt["name"] = "status_check";
+			prompt["title"] = "Get the status overview";
+			prompt["description"] = "Asks the LLM to summarize the current status of all sensors and devices (either grouped by hardware, type or room)";
+			prompt["arguments"] = Json::Value(Json::arrayValue);
+			Json::Value arg;
+			arg["name"] = "hardware";
+			arg["description"] = "The hardware to summarize";
+			arg["required"] = false;
+			prompt["arguments"].append(arg);
+			arg["name"] = "type";
+			arg["description"] = "The type to summarize";
+			arg["required"] = false;
+			prompt["arguments"].append(arg);
+			arg["name"] = "room";
+			arg["description"] = "The room to summarize";
+			arg["required"] = false;
+			prompt["arguments"].append(arg);
+			jsonRPCRep["result"]["prompts"].append(prompt);
+		}
+
+		void CWebServer::McpPromptsGet(const Json::Value &jsonRequest, Json::Value &jsonRPCRep)
+		{
+/*
+{
+  "jsonrpc": "2.0",
+  "id": 2,
+  "result": {
+    "description": "Code review prompt",
+    "messages": [
+      {
+        "role": "user",
+        "content": {
+          "type": "text",
+          "text": "Please review this Python code:\ndef hello():\n    print('world')"
+        }
+      }
+    ]
+  }
+}*/
+			// Prepare the result for the prompts/get method
+			jsonRPCRep["result"]["description"] = "Asks the LLM to summarize the current status of all sensors and devices (either grouped by hardware, type or room)";
+			jsonRPCRep["result"]["messages"] = Json::Value(Json::arrayValue);
+			Json::Value message;
+			message["role"] = "user";
+			message["content"] = Json::Value(Json::objectValue);
+			message["content"]["type"] = "text";
+			message["content"]["text"] = "Please review this Python code:\ndef hello():\n    print('world')";
+			jsonRPCRep["result"]["messages"].append(message);
 		}
 
 	} // namespace server
