@@ -43,18 +43,20 @@ namespace http
 					rep = reply::stock_reply(reply::bad_request);
 					return;
 				}
-				if (req.get_req_header(&req, "mcp-protocol-version:") != nullptr)
+			}
+			// Check if the request has the MCP-PROTOCOL-VERSION header
+			// If not, we assume the client is using the latest version
+			// If it is present, we check if it matches the expected version
+			if (req.get_req_header(&req, "mcp-protocol-version:") != nullptr)
+			{
+				sProtocolRequestHeader = req.get_req_header(&req, "mcp-protocol-version:");
+				if (sProtocolRequestHeader != "2025-06-18")
 				{
-					sProtocolRequestHeader = req.get_req_header(&req, "mcp-protocol-version:");
-					if (sProtocolRequestHeader != "2025-06-18")
-					{
-						_log.Debug(DEBUG_WEBSERVER, "PostMcp: MCP-PROTOCOL-VERSION not supported: %s", sProtocolRequestHeader.c_str());
-						rep = reply::stock_reply(reply::bad_request);
-						return;
-					}
+					_log.Debug(DEBUG_WEBSERVER, "PostMcp: MCP-PROTOCOL-VERSION not supported: %s", sProtocolRequestHeader.c_str());
+					rep = reply::stock_reply(reply::bad_request);
+					return;
 				}
 			}
-
 			// Check if the request is a POST request
 			if (req.method != "POST")
 			{
@@ -207,6 +209,7 @@ namespace http
 			jsonRPCRep["result"]["serverInfo"]["name"] = "DomoticzMcp";
 			jsonRPCRep["result"]["serverInfo"]["title"] = "Domoticz MCP Server";
 			jsonRPCRep["result"]["serverInfo"]["version"] = "0.1.0";
+			jsonRPCRep["result"]["serverInfo"]["description"] = "Domoticz is a home automation system that lets you monitor, configure and control various devices from different hardware in your home. Devices like switches (for example light switches or smart plugs) can be used to control (other) devices and devices like sensors (for example temperature sensors or contact sensors) can provide information about their state.";
 
 			if (jsonRequest.isMember("params") && jsonRequest["params"].isMember("instructions"))
 			{
@@ -257,6 +260,37 @@ namespace http
 
 		void CWebServer::McpToolsCall(const Json::Value &jsonRequest, Json::Value &jsonRPCRep)
 		{
+			if (!jsonRequest.isMember("params") || !jsonRequest["params"].isMember("name"))
+			{
+				_log.Debug(DEBUG_WEBSERVER, "McpToolsCall: Missing required parameter 'name'");
+				jsonRPCRep["error"]["code"] = -32602; // Invalid params
+				jsonRPCRep["error"]["message"] = "Missing required parameter 'name'";
+				return;
+			}
+			std::string sMethodName = jsonRequest["params"]["name"].asString();
+			if (sMethodName != "get_switch_state")
+			{
+				_log.Debug(DEBUG_WEBSERVER, "McpToolsCall: Unsupported tool name: %s", sMethodName.c_str());
+				jsonRPCRep["error"]["code"] = -32601; // Method not found
+				jsonRPCRep["error"]["message"] = "Method not found";
+				return;
+			}
+			if (!jsonRequest["params"].isMember("arguments") || !jsonRequest["params"]["arguments"].isMember("switchname"))
+			{
+				_log.Debug(DEBUG_WEBSERVER, "McpToolsCall: Missing required parameter 'switchname'");
+				jsonRPCRep["error"]["code"] = -32602; // Invalid params
+				jsonRPCRep["error"]["message"] = "Missing required parameter 'switchname'";
+				return;
+			}
+			std::string sSwitchName = jsonRequest["params"]["arguments"]["switchname"].asString();
+			std::string sSwitchState = "No switch exists with the name " + sSwitchName;
+			// Here you would typically query your system/database for the actual switch state using sSwitchName.
+			// For demonstration, let's assume the switch is "Off" (replace with actual lookup logic as needed).
+			Json::Value jsonDevices;
+			GetJSonDevices(jsonDevices, "", "", "", "", "", "", false, false, false, 0, "", "");
+			_log.Debug(DEBUG_WEBSERVER, "McpToolsCall: Looking for switch with name: %s in (%s)", sSwitchName.c_str(), jsonDevices.toStyledString().c_str());
+			//GetLightStatus(0, 0, STYPE_OnOff, 0, "", sSwitchState, 0, false, 0, false);
+
 /*
 {
   "jsonrpc": "2.0",
@@ -275,7 +309,7 @@ namespace http
 			jsonRPCRep["result"]["content"] = Json::Value(Json::arrayValue);
 			Json::Value tool;
 			tool["type"] = "text";
-			tool["text"] = "The current state of the switch is: Off";
+			tool["text"] = sSwitchState;
 			jsonRPCRep["result"]["content"].append(tool);
 			jsonRPCRep["result"]["isError"] = false;
 		}
@@ -375,8 +409,8 @@ idx	hardwareID	uniqueID	ena	name		type			subtype			value
 			// Prepare the result for the prompts/list method
 			jsonRPCRep["result"]["prompts"] = Json::Value(Json::arrayValue);
 			Json::Value prompt;
-			prompt["name"] = "status_check";
-			prompt["title"] = "Get the status overview";
+			prompt["name"] = "housesummary";
+			prompt["title"] = "Get a status overview";
 			prompt["description"] = "Asks the LLM to summarize the current status of all sensors and devices (either grouped by hardware, type or room)";
 			prompt["arguments"] = Json::Value(Json::arrayValue);
 			Json::Value arg;
@@ -421,7 +455,7 @@ idx	hardwareID	uniqueID	ena	name		type			subtype			value
 			message["role"] = "user";
 			message["content"] = Json::Value(Json::objectValue);
 			message["content"]["type"] = "text";
-			message["content"]["text"] = "Please review this Python code:\ndef hello():\n    print('world')";
+			message["content"]["text"] = "As the friendly butler of the house, please summarize the current status of all sensors and devices preferably grouped by room. Please also include the current state of the switches and sensors in your summary.";
 			jsonRPCRep["result"]["messages"].append(message);
 		}
 
