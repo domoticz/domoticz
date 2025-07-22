@@ -244,6 +244,18 @@ namespace http
     "nextCursor": "next-page-cursor"
   }
 }
+
+{
+  "type": "resource_link",
+  "uri": "file:///project/src/main.rs",
+  "name": "main.rs",
+  "description": "Primary application entry point",
+  "mimeType": "text/x-rust",
+  "annotations": {
+    "audience": ["assistant"],
+    "priority": 0.9
+  }
+}
 */
 			// Prepare the result for the tools/list method
 			jsonRPCRep["result"]["tools"] = Json::Value(Json::arrayValue);
@@ -341,16 +353,85 @@ idx	hardwareID	uniqueID	ena	name		type			subtype			value
 6	testmb		0000044F	1	HDD /boot		General			Percentage		11.83%
 1	testdummy	00014051	1	dumswitch		Light/Switch	Switch			Off
 
+                {
+                        "AddjMulti" : 1.0,
+                        "AddjMulti2" : 1.0,
+                        "AddjValue" : 0.0,
+                        "AddjValue2" : 0.0,
+                        "BatteryLevel" : 255,
+                        "CustomImage" : 0,
+                        "Data" : "Off",
+                        "Description" : "",
+                        "DimmerType" : "none",
+                        "Favorite" : 1,
+                        "HardwareDisabled" : false,
+                        "HardwareID" : 2,
+                        "HardwareName" : "testdummy",
+                        "HardwareType" : "Dummy (Does nothing, use for virtual switches only)",
+                        "HardwareTypeVal" : 15,
+                        "HaveDimmer" : true,
+                        "HaveGroupCmd" : true,
+                        "HaveTimeout" : false,
+                        "ID" : "00014051",
+                        "Image" : "Light",
+                        "IsSubDevice" : false,
+                        "LastUpdate" : "2025-04-27 15:45:22",
+                        "Level" : 0,
+                        "LevelInt" : 0,
+                        "MaxDimLevel" : 100,
+                        "Name" : "dumswitch",
+                        "Notifications" : "false",
+                        "PlanID" : "0",
+                        "PlanIDs" :
+                        [
+                                0
+                        ],
+                        "Protected" : false,
+                        "ShowNotifications" : true,
+                        "SignalLevel" : "-",
+                        "Status" : "Off",
+                        "StrParam1" : "",
+                        "StrParam2" : "",
+                        "SubType" : "Switch",
+                        "SwitchType" : "On/Off",
+                        "SwitchTypeVal" : 0,
+                        "Timers" : "false",
+                        "Type" : "Light/Switch",
+                        "TypeImg" : "lightbulb",
+                        "Unit" : 1,
+                        "Used" : 1,
+                        "UsedByCamera" : false,
+                        "XOffset" : "0",
+                        "YOffset" : "0",
+                        "idx" : "1"
+                },
 */
 			// Prepare the result for the resources/list method
 			jsonRPCRep["result"]["resources"] = Json::Value(Json::arrayValue);
-			Json::Value resource;
-			resource["uri"] = "dom:///dom.local:8080/Light_Switch/Switch/1";
-			resource["name"] = "dumswitch";
-			resource["title"] = "dumswitch (testdummy - light switch - switch)";
-			resource["description"] = "A Sensor from the testdummy hardware of Type Light_switch and subtype Switch called dumswitch with ID 00014051 and IDX 1";
-			resource["mimeType"] = "plain/text";
-			jsonRPCRep["result"]["resources"].append(resource);
+
+			Json::Value jsonDevices;
+			GetJSonDevices(jsonDevices, "", "", "", "", "", "", false, false, false, 0, "", "");
+			if (jsonDevices.isObject() && jsonDevices.isMember("result"))
+			{
+				for (const auto &device : jsonDevices["result"])
+				{
+					_log.Debug(DEBUG_WEBSERVER, "McpResourcesList: Got device: %s", device.toStyledString().c_str());
+					if (device.isObject() && device.isMember("idx") && device.isMember("HardwareName") && device.isMember("ID") &&
+						device.isMember("Name") && device.isMember("Type") && device.isMember("SubType") && device.isMember("Data"))
+					{
+						Json::Value resource;
+						resource["uri"] = "dom:///dom.local:8080/" + device["Type"].asString() + "/" + device["SubType"].asString() + "/" + device["idx"].asString();
+						resource["name"] = device["Name"].asString();
+						resource["title"] = device["Name"].asString() + " (" + device["HardwareName"].asString() + " - " + device["Type"].asString() + " - " + device["SubType"].asString() + ")";
+						resource["description"] = "A Sensor from the " + device["HardwareName"].asString() + " hardware of Type " + device["Type"].asString() +
+												  " and subtype " + device["SubType"].asString() + " called " + device["Name"].asString() +
+												  " with ID " + device["ID"].asString() + " and IDX " + device["idx"].asString();
+						resource["mimeType"] = "plain/text";
+						jsonRPCRep["result"]["resources"].append(resource);
+					}
+				}
+			}
+			_log.Debug(DEBUG_WEBSERVER, "McpResourcesList: Following resources offered:\n%s", jsonRPCRep.toStyledString().c_str());
 		}
 
 		void CWebServer::McpResourcesRead(const Json::Value &jsonRequest, Json::Value &jsonRPCRep)
