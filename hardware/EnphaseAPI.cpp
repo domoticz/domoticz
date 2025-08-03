@@ -40,6 +40,24 @@ Example
 #define ENPAHSE_API_REPORT_CONSUMPTION "{ip}/ivp/meters/reports/consumption"
 #define ENPAHSE_API_LIVEDATA_STATUS "{ip}/ivp/livedata/status"
 
+/*
+#define ENPAHSE_API_LIMIT_POWER "{ip}/ivp/ss/dpel"
+with data:
+{
+	"dynamic_pel_settings": {
+		"enable": true,
+		"export_limit": true,
+		"limit_value_W": 250.0,
+		"slew_rate": 50.0,
+		"enable_dynamic_limiting": false.
+	},
+	"filename": "site_settings",
+	"version": "00.00.01".
+}
+*/
+
+//3 August 2025, found a great website with all the API endpoints: https://github.com/Matthew1471/Enphase-API
+
 #ifdef DEBUG_EnphaseAPI_W
 void SaveString2Disk(std::string str, std::string filename)
 {
