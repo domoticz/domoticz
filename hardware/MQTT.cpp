@@ -818,13 +818,19 @@ void MQTT::SendDeviceInfo(const int HwdID, const uint64_t DeviceRowIdx, const st
 	}
 
 	std::vector<std::vector<std::string>> result;
-	result = m_sql.safe_query("SELECT HardwareID, OrgHardwareID, DeviceID, Unit, Name, [Type], SubType, nValue, sValue, SwitchType, SignalLevel, BatteryLevel, Options, Description, LastLevel, Color, LastUpdate "
+	result = m_sql.safe_query("SELECT Used, HardwareID, OrgHardwareID, DeviceID, Unit, Name, [Type], SubType, nValue, sValue, SwitchType, SignalLevel, BatteryLevel, Options, Description, LastLevel, Color, LastUpdate "
 				  "FROM DeviceStatus WHERE (HardwareID==%d) AND (ID==%" PRIu64 ")",
 				  HwdID, DeviceRowIdx);
 	if (!result.empty())
 	{
 		int iIndex = 0;
 		std::vector<std::string> sd = result[0];
+		bool bUsed = (atoi(sd[iIndex++].c_str()) != 0);
+		if (!bUsed)
+		{
+			//Device is not used, not publishing information
+			return;
+		}
 		std::string hwid = sd[iIndex++];
 		std::string org_hwid = sd[iIndex++];
 		std::string did = sd[iIndex++];
