@@ -2778,16 +2778,40 @@ typedef union tRBUF {
         BYTE id1;
         BYTE id2;
         BYTE count;
-        BYTE ch1h;
-        BYTE ch1l;
-        BYTE ch2h;
-        BYTE ch2l;
-        BYTE ch3h;
-        BYTE ch3l;
 #ifdef IS_BIG_ENDIAN
+        BYTE temp1sign: 1;
+        BYTE ch1h : 7;
+
+        BYTE ch1l;
+
+        BYTE temp2sign: 1;
+        BYTE ch2h : 7;
+
+        BYTE ch2l;
+
+        BYTE temp3sign : 1;
+        BYTE ch3h : 7;
+
+        BYTE ch3l;
+
         BYTE rssi : 4;
         BYTE battery_level : 4;
 #else
+        BYTE ch1h : 7;
+        BYTE temp1sign: 1;
+
+        BYTE ch1l;
+
+        BYTE ch2h : 7;
+        BYTE temp2sign: 1;
+
+        BYTE ch2l;
+
+        BYTE ch3h : 7;
+        BYTE temp3sign : 1;
+
+        BYTE ch3l;
+
         BYTE battery_level : 4;
         BYTE rssi : 4;
 #endif

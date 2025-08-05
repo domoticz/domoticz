@@ -771,19 +771,22 @@ void CDomoticzHardwareBase::SendCurrentSensor(const int NodeID, const int Batter
 	tsen.CURRENT.battery_level = BatteryLevel;
 
 	int at10 = ground(std::abs(Current1 * 10.0F));
-	tsen.CURRENT.ch1h = (BYTE)(at10 / 256);
-	at10 -= (tsen.TEMP.temperatureh * 256);
+	tsen.CURRENT.ch1h = (BYTE)(at10 / 256 & 0x7f);
+	at10 -= (tsen.CURRENT.ch1h * 256);
 	tsen.CURRENT.ch1l = (BYTE)(at10);
+	tsen.CURRENT.temp1sign = (Current1 >= 0) ? 0 : 1;
 
 	at10 = ground(std::abs(Current2 * 10.0F));
-	tsen.CURRENT.ch2h = (BYTE)(at10 / 256);
-	at10 -= (tsen.TEMP.temperatureh * 256);
+	tsen.CURRENT.ch2h = (BYTE)(at10 / 256 & 0x7f);
+	at10 -= (tsen.CURRENT.ch2h * 256);
 	tsen.CURRENT.ch2l = (BYTE)(at10);
-
+	tsen.CURRENT.temp2sign = (Current2 >= 0) ? 0 : 1;
+	
 	at10 = ground(std::abs(Current3 * 10.0F));
-	tsen.CURRENT.ch3h = (BYTE)(at10 / 256);
-	at10 -= (tsen.TEMP.temperatureh * 256);
+	tsen.CURRENT.ch3h = (BYTE)(at10 / 256 & 0x7f);
+	at10 -= (tsen.CURRENT.ch3h * 256);
 	tsen.CURRENT.ch3l = (BYTE)(at10);
+	tsen.CURRENT.temp3sign = (Current3 >= 0) ? 0 : 1;
 
 	sDecodeRXMessage(this, (const unsigned char *)&tsen.CURRENT, defaultname.c_str(), BatteryLevel, nullptr);
 }

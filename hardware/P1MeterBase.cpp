@@ -561,14 +561,33 @@ bool P1MeterBase::MatchLine()
 						float I3 = avr_usage[2] / m_voltagel3;
 						SendCurrentSensor(0, 255, I1, I2, I3, "Current L1/L2/L3");
 
+						// Calculate net current (usage-delivery)
+						float net_I1 = I1;
+						float net_I2 = I2;
+						float net_I3 = I3;
+
 						//Do the same for delivered
 						if (m_powerdell1 || m_powerdell2 || m_powerdell3)
 						{
 							I1 = avr_deliv[0] / m_voltagel1;
 							I2 = avr_deliv[1] / m_voltagel2;
 							I3 = avr_deliv[2] / m_voltagel3;
-							SendCurrentSensor(1, 255, I1, I2, I3, "Delivery Current L1/L2/L3");
+						} else {
+							// Set values to zero
+							I1 = 0.0f;
+							I2 = 0.0f;
+							I3 = 0.0f;
 						}
+
+						SendCurrentSensor(1, 255, I1, I2, I3, "Delivery Current L1/L2/L3");
+
+						// calculate net current (usage-delivery)
+						net_I1 = net_I1 - I1;
+						net_I2 = net_I2 - I2;
+						net_I3 = net_I3 - I3; 
+						
+						// Send net current sensor
+						SendCurrentSensor(2, 255, net_I1, net_I2, net_I3, "Net Current L1/L2/L3");
 					}
 
 					if ((m_gas.gasusage > 0) && ((m_gas.gasusage != m_lastgasusage) || (difftime(atime, m_lastSharedSendGas) >= 300)))
@@ -723,14 +742,14 @@ bool P1MeterBase::MatchLine()
 					* Electricity meter 02h
 					* Gas meter 03h
 					* Heat meter 04h
-					* Warm water meter (30°C ... 90°C) 06h
+					* Warm water meter (30ï¿½C ... 90ï¿½C) 06h
 					* Water meter 07h
 					* Heat Cost Allocator 08h
 					* Cooling meter (Volume measured at return temperature: outlet) 0Ah
 					* Cooling meter (Volume measured at flow temperature: inlet) 0Bh
 					* Heat meter (Volume measured at flow temperature: inlet) 0Ch
 					* Combined Heat / Cooling meter 0Dh
-					* Hot water meter (= 90°C) 15h
+					* Hot water meter (= 90ï¿½C) 15h
 					* Cold water meter a 16h
 					* Breaker (electricity) 20h
 					* Valve (gas or water) 21h

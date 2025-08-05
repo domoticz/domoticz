@@ -8849,9 +8849,36 @@ void MainWorker::decode_Current(const CDomoticzHardwareBase* pHardware, const tR
 	uint8_t SignalLevel = pResponse->CURRENT.rssi;
 	uint8_t BatteryLevel = get_BateryLevel(pHardware->HwdType, false, pResponse->CURRENT.battery_level & 0x0F);
 
-	float CurrentChannel1 = float((pResponse->CURRENT.ch1h * 256) + pResponse->CURRENT.ch1l) / 10.0F;
-	float CurrentChannel2 = float((pResponse->CURRENT.ch2h * 256) + pResponse->CURRENT.ch2l) / 10.0F;
-	float CurrentChannel3 = float((pResponse->CURRENT.ch3h * 256) + pResponse->CURRENT.ch3l) / 10.0F;
+	float CurrentChannel1 = 0.0f;
+    if (!pResponse->CURRENT.temp1sign)
+	{
+		CurrentChannel1 = float((pResponse->CURRENT.ch1h * 256) + pResponse->CURRENT.ch1l) / 10.0F;
+	}
+	else
+	{
+		CurrentChannel1 = -(float(((pResponse->CURRENT.ch1h & 0x7F) * 256) + pResponse->CURRENT.ch1l) / 10.0F);
+	}
+
+	float CurrentChannel2 = 0.0f;
+    if (!pResponse->CURRENT.temp2sign)
+	{
+		CurrentChannel2 = float((pResponse->CURRENT.ch2h * 256) + pResponse->CURRENT.ch2l) / 10.0F;
+	}
+	else
+	{
+		CurrentChannel2 = -(float(((pResponse->CURRENT.ch2h & 0x7F) * 256) + pResponse->CURRENT.ch2l) / 10.0F);
+	}
+
+	float CurrentChannel3 = 0.0f;
+    if (!pResponse->CURRENT.temp3sign)
+	{
+		CurrentChannel3 = float((pResponse->CURRENT.ch3h * 256) + pResponse->CURRENT.ch3l) / 10.0F;
+	}
+	else
+	{
+		CurrentChannel3 = -(float(((pResponse->CURRENT.ch3h & 0x7F) * 256) + pResponse->CURRENT.ch3l) / 10.0F);
+	}
+
 	sprintf(szTmp, "%.1f;%.1f;%.1f", CurrentChannel1, CurrentChannel2, CurrentChannel3);
 	uint64_t DevRowIdx = m_sql.UpdateValue(pHardware->m_HwdID, 0, ID.c_str(), Unit, devType, subType, SignalLevel, BatteryLevel, cmnd, szTmp, procResult.DeviceName, true, procResult.Username.c_str());
 	if (DevRowIdx == (uint64_t)-1)
