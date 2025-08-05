@@ -790,11 +790,14 @@ int main(int argc, char**argv)
 	/* call srand once for the entire app */
 	std::srand((unsigned int)std::time(nullptr));
 
-	if (AreWeRunningInDocker())
-		g_bUseUpdater = false;
 #ifdef DISABLE_UPDATER
-		g_bUseUpdater = false;
+	g_bUseUpdater = false;
 #endif
+
+	if (AreWeRunningInDocker())
+	{
+		g_bUseUpdater = false;
+	}
 
 	GetAppVersion();
 	DisplayAppVersion();
