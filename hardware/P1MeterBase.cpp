@@ -562,7 +562,11 @@ bool P1MeterBase::MatchLine()
 						SendCurrentSensor(0, 255, I1, I2, I3, "Current L1/L2/L3");
 
 						//Do the same for delivered
-						if (m_powerdell1 || m_powerdell2 || m_powerdell3)
+						if (
+							(m_powerdell1 != -1)
+							|| (m_powerdell2 != -1)
+							|| (m_powerdell3 != -1)
+							)
 						{
 							I1 = avr_deliv[0] / m_voltagel1;
 							I2 = avr_deliv[1] / m_voltagel2;
@@ -805,19 +809,19 @@ bool P1MeterBase::MatchLine()
 					}
 					break;
 				case P1TYPE_TARIFF_INDICATOR:
+				{
+					int act_tariff = std::stoi(sValue);
+					bool bReloadHourPrice = false;
+					if (m_current_tariff != act_tariff)
 					{
-						int act_tariff = std::stoi(sValue);
-						bool bReloadHourPrice = false;
-						if (m_current_tariff != act_tariff)
-						{
-							Log(LOG_STATUS, "Current electricity tariff: %s", (act_tariff == 1) ? "Low" : "High");
-							bReloadHourPrice = true;
-						}
-						m_current_tariff = act_tariff;
-						if (bReloadHourPrice)
-							m_mainworker.HandleHourPrice();
+						Log(LOG_STATUS, "Current electricity tariff: %s", (act_tariff == 1) ? "Low" : "High");
+						bReloadHourPrice = true;
+					}
+					m_current_tariff = act_tariff;
+					if (bReloadHourPrice)
+						m_mainworker.HandleHourPrice();
 				}
-					break;
+				break;
 				case P1TYPE_USAGECURRENT:
 					temp_usage = (unsigned long)(std::stof(sValue) * 1000.0F); // Watt
 					if (temp_usage < P1MAXTOTALPOWER)
