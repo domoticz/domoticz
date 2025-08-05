@@ -1792,7 +1792,10 @@ void MQTTAutoDiscover::handle_auto_discovery_sensor_message(const struct mosquit
 				pSensor->last_json_value = qMessage;
 			}
 #ifdef _DEBUG
-			std::string szLogMessage = std_format("%s (value: %s", pSensor->name.c_str(), pSensor->last_value.c_str());
+			std::string lvalue = pSensor->last_value;
+			if (lvalue.size() > 100)
+				lvalue = lvalue.substr(0, 100);
+			std::string szLogMessage = std_format("%s (value: %s", pSensor->name.c_str(), lvalue.c_str());
 			if (!pSensor->unit_of_measurement.empty())
 			{
 				szLogMessage += " " + utf8_to_string(pSensor->unit_of_measurement);
@@ -2617,7 +2620,14 @@ void MQTTAutoDiscover::handle_auto_discovery_sensor(_tMQTTASensor* pSensor, cons
 		&& (pSensor->subType == sTypeTextStatus)
 		)
 	{
-		handle_auto_discovery_text(pSensor, message);
+		if (pSensor->object_id == "learned_ir_code")
+		{
+			pSensor->devType = pTypeGeneralSwitch;
+			pSensor->subType = sSwitchGeneralSwitch;
+			handle_auto_discovery_ir_code(pSensor);
+		}
+		else
+			handle_auto_discovery_text(pSensor, message);
 		return;
 	}
 
@@ -4172,6 +4182,35 @@ void MQTTAutoDiscover::handle_auto_discovery_text(_tMQTTASensor* pSensor, const 
 	}
 }
 
+void MQTTAutoDiscover::handle_auto_discovery_ir_code(_tMQTTASensor* pSensor)
+{
+	if (pSensor->last_value.empty())
+		return;
+
+	uint64_t c64 = Crc64((const uint8_t*)pSensor->last_value.c_str(), pSensor->last_value.size());
+	std::string c64_hex = int_to_hex(c64);
+	std::string devID = std_format("%s_ir:%s", pSensor->unique_id.c_str(), c64_hex.c_str());
+	std::string devName = std_format("IR Code: %s", c64_hex.c_str());
+
+	auto result = m_sql.safe_query("SELECT ID, Name, Options FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit == %d) AND (Type==%d) AND (Subtype==%d)", m_HwdID,
+		devID.c_str(), 1, pSensor->devType, pSensor->subType);
+	if (result.empty())
+	{
+		// Insert
+		if (!m_sql.m_bAcceptNewHardware)
+		{
+			Log(LOG_NORM, "Accept new hardware disabled. Ignoring new sensor %s", pSensor->name.c_str());
+			return;
+		}
+		int iUsed = (pSensor->bEnabled_by_default) ? 1 : 0;
+		m_sql.safe_query("INSERT INTO DeviceStatus (HardwareID, OrgHardwareID, DeviceID, Unit, Type, SubType, SignalLevel, BatteryLevel, Name, Used, nValue, Options) "
+			"VALUES (%d, %d, '%q', 1, %d, %d, %d, %d, '%q', %d, %d, '%q')",
+			m_HwdID, 0, devID.c_str(), pSensor->devType, pSensor->subType, pSensor->SignalLevel, pSensor->BatteryLevel, devName.c_str(), iUsed,
+			pSensor->nValue, pSensor->sValue.c_str());
+	}
+}
+
+
 void MQTTAutoDiscover::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 {
 	pSensor->devUnit = 1;
@@ -4852,6 +4891,10 @@ bool MQTTAutoDiscover::SendSwitchCommand(const std::string& DeviceID, const std:
 {
 	if (m_discovered_sensors.find(DeviceID) == m_discovered_sensors.end())
 	{
+		//could be an IR device
+		if (DeviceID.find("_ir:") != std::string::npos)
+			return SendIRCommand(DeviceID, DeviceName, Unit, command, level, color, user);
+
 		Log(LOG_ERROR, "Switch not found!? (%s/%s)", DeviceID.c_str(), DeviceName.c_str());
 		return false;
 	}
@@ -5750,6 +5793,68 @@ bool MQTTAutoDiscover::SetTextDevice(const std::string& DeviceID, const std::str
 
 	return true;
 }
+
+bool MQTTAutoDiscover::SendIRCommand(const std::string& DeviceID, const std::string& DeviceName, int Unit, std::string command, int level, _tColor color, const std::string& user)
+{
+	std::string sendDeviceID = DeviceID.substr(0, DeviceID.find('_'));
+	if (sendDeviceID.empty())
+		return false;
+	sendDeviceID += "_ir_code_to_send_zigbee2mqtt";
+
+	//Now try to find the sending sensor/topic
+	if (m_discovered_sensors.find(sendDeviceID) == m_discovered_sensors.end())
+	{
+		Log(LOG_ERROR, "IR sender not found!? (%s/%s/%s)", DeviceID.c_str(), DeviceName.c_str(), sendDeviceID.c_str());
+		return false;
+	}
+	_tMQTTASensor* pSensor = &m_discovered_sensors[sendDeviceID];
+
+	if (pSensor->component_type != "text")
+	{
+		Log(LOG_ERROR, "IR sender wrong component_type, expecting 'text");
+		return false;
+	}
+
+	if (pSensor->command_topic.empty())
+	{
+		Log(LOG_ERROR, "IR sender, no command topic!");
+		return false;
+	}
+
+	auto result = m_sql.safe_query("SELECT ID, Name, Options FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit == %d) AND (Type==%d) AND (Subtype==%d)", m_HwdID,
+		DeviceID.c_str(), 1, pTypeGeneralSwitch, sSwitchGeneralSwitch);
+
+	if (result.empty())
+	{
+		Log(LOG_ERROR, "IR sender, switch not found!");
+		return false;
+	}
+	std::string rawCode = result[0][2];
+
+	std::string szSendValue;
+	std::string command_topic = pSensor->command_topic;
+
+	if (!pSensor->value_template.empty())
+	{
+		FixCommandTopic(command_topic, pSensor->value_template);
+
+		Json::Value root;
+		if (SetValueWithTemplate(root, pSensor->value_template, rawCode))
+		{
+			szSendValue = JSonToRawString(root);
+		}
+		else
+		{
+			Log(LOG_ERROR, "%s device unhandled mode_state_template (%s/%s)", pSensor->component_type.c_str(), DeviceID.c_str(), DeviceName.c_str());
+			return false;
+		}
+	}
+	else
+		szSendValue = rawCode;
+	SendMessage(command_topic, szSendValue);
+	return true;
+}
+
 
 void MQTTAutoDiscover::GetConfig(Json::Value& root)
 {

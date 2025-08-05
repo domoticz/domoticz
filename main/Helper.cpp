@@ -142,6 +142,29 @@ unsigned int Crc32(unsigned int crc, const uint8_t* buf, size_t size)
 	return crc ^ ~0U;
 }
 
+
+// Simple CRC64 implementation (not using a table for simplicity)
+const uint64_t crc64_polynomial = 0xC96C5795D7870F42; // Example polynomial for CRC-64
+uint64_t Crc64(const uint8_t* buf, size_t size)
+{
+	uint64_t crc = 0xFFFFFFFFFFFFFFFF; // Initialize CRC to a known value
+
+	for (size_t i = 0; i < size; ++i) {
+		crc ^= static_cast<uint64_t>(buf[i]); // XOR the current byte with the CRC
+
+		for (int j = 0; j < 8; ++j) {
+			if (crc & 0x8000000000000000) {
+				crc = (crc << 1) ^ crc64_polynomial;
+			}
+			else {
+				crc <<= 1;
+			}
+		}
+
+	}
+	return (crc ^ 0xFFFFFFFFFFFFFFFF) & 0xFFFFFFFFFFFFFFFF; // Return the final CRC value
+}
+
 uint8_t Crc8_strMQ(uint8_t crc, const uint8_t* buf, size_t size)
 {
 	crc = 0xff;

@@ -18,6 +18,7 @@ const std::string WHITESPACE = " \n\r\t\f\v";
 uint8_t Crc8(uint8_t crc, const uint8_t* buf, size_t size);
 uint16_t crc16ccitt(const uint8_t* buf, size_t size);
 unsigned int Crc32(unsigned int crc, const uint8_t* buf, size_t size);
+uint64_t Crc64(const uint8_t* buf, size_t size);
 uint8_t Crc8_strMQ(uint8_t crc, const uint8_t* buf, size_t size);
 void StringSplit(std::string str, const std::string& delim, std::vector<std::string>& results);
 uint64_t hexstrtoui64(const std::string& str);
