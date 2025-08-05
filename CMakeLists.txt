@@ -41,6 +41,9 @@ option(USE_STATIC_OPENZWAVE "Build with static OpenZwave libraries" YES)
 
 # Disable updater functionality
 option(DISABLE_UPDATER "Disable updater functionality" NO)
+IF(DISABLE_UPDATER)
+  add_definitions(-DDISABLE_UPDATER)
+ENDIF()
 
 # Developer-oriented options
 option(USE_PRECOMPILED_HEADER "Use precompiled header feature to speed up build time " YES)
