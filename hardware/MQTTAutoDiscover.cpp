@@ -538,7 +538,7 @@ bool MQTTAutoDiscover::parseMapTemplate(const std::string& templateStr, std::vec
 	// Define a regex pattern to match the dictionary in the template string
 	std::regex dictPattern(R"(\{\% set values.*?=.*?\{(.*?)\} %\})");
 	std::smatch matches;
-	
+
 	valuesMap.clear();
 
 	std::string dictString;
@@ -999,7 +999,7 @@ void MQTTAutoDiscover::on_auto_discovery_message(const struct mosquitto_message*
 
 		if (!root["command_template"].empty())
 			pSensor->command_template = root["command_template"].asString();
-		
+
 
 		if (!root["position_topic"].empty())
 			pSensor->position_topic = root["position_topic"].asString();
@@ -1917,7 +1917,10 @@ bool MQTTAutoDiscover::GuessSensorTypeValue(_tMQTTASensor* pSensor, uint8_t& dev
 			nforecast = bmpbaroforecast_sunny;
 		sValue = std_format("%.02f;%d", pressure, nforecast);
 	}
-	else if (szUnit == "ppm")
+	else if (
+		(szUnit == "ppm")
+		|| (pSensor->icon.find("molecule") != std::string::npos)
+		)
 	{
 		devType = pTypeAirQuality;
 		subType = sTypeVoc;
@@ -2466,10 +2469,17 @@ void MQTTAutoDiscover::handle_auto_discovery_battery(_tMQTTASensor* pSensor, con
 {
 	if (pSensor->last_value.empty())
 		return;
-	if (!is_number(pSensor->last_value))
-		return;
 
-	int iLevel = atoi(pSensor->last_value.c_str());
+	int iLevel = 100;
+
+	if (is_number(pSensor->last_value))
+	{
+		iLevel = atoi(pSensor->last_value.c_str());
+	} else {
+		//could be a boolean isLow indicator
+		if (pSensor->last_value == "true")
+			iLevel = 0;
+	}
 
 	for (auto& itt : m_discovered_sensors)
 	{
@@ -2576,11 +2586,9 @@ void MQTTAutoDiscover::handle_auto_discovery_sensor(_tMQTTASensor* pSensor, cons
 	}
 
 	if (
-		(
-			(pSensor->object_id == "battery")
-			|| (pSensor->object_id == "battery_low")
-		)
-		&& is_number(pSensor->last_value)
+		(pSensor->object_id == "battery")
+		|| (pSensor->object_id == "battery_low")
+		|| (pSensor->object_id == "battery_level")
 		)
 	{
 		handle_auto_discovery_battery(pSensor, message);
@@ -4254,8 +4262,8 @@ void MQTTAutoDiscover::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 			{
 				pSensor->subType = sTypeColor_RGB_W_Z;
 			}
-			else if ( (pSensor->supported_color_modes.find("rgb") != pSensor->supported_color_modes.end())
-				      && (pSensor->supported_color_modes.find("white") != pSensor->supported_color_modes.end()))
+			else if ((pSensor->supported_color_modes.find("rgb") != pSensor->supported_color_modes.end())
+				&& (pSensor->supported_color_modes.find("white") != pSensor->supported_color_modes.end()))
 			{
 				// if RGB and white, check if white contains coldWhite and warmWhite
 				if (
@@ -5158,7 +5166,7 @@ bool MQTTAutoDiscover::SendSwitchCommand(const std::string& DeviceID, const std:
 					(pSensor->subType == sTypeColor_RGB_W_Z)
 					|| (pSensor->subType == sTypeColor_RGB_CW_WW_Z)
 					|| (pSensor->subType == sTypeColor_RGB_CW_WW)
-					) 
+					)
 				{
 					root["color"]["c"] = color.cw;
 				}
@@ -5181,7 +5189,7 @@ bool MQTTAutoDiscover::SendSwitchCommand(const std::string& DeviceID, const std:
 					colorDef["red"] = root["color"]["r"];
 					colorDef["green"] = root["color"]["g"];
 					colorDef["blue"] = root["color"]["b"];
-					
+
 					if (
 						(pSensor->subType == sTypeColor_RGB_CW_WW_Z)
 						|| (pSensor->subType == sTypeColor_RGB_CW_WW)
