@@ -257,6 +257,7 @@ define(['app', 'RefreshingChart', 'DataLoader', 'ChartLoader', 'log/Chart', 'log
         return {
             id: 'temperature',
             dataItemKeys: ['te'],
+            showWithoutDatapoints: false,
             label: 'Te',
             template: {
                 name: $.t('Temperature'),
@@ -316,6 +317,7 @@ define(['app', 'RefreshingChart', 'DataLoader', 'ChartLoader', 'log/Chart', 'log
         return {
             id: 'setpointrange',
             dataItemKeys: ['sm', 'sx'],
+            showWithoutDatapoints: false,
             dataItemIsComplete: function (dataItem) {
                 return dataItem.se !== undefined;
             },
@@ -342,6 +344,7 @@ define(['app', 'RefreshingChart', 'DataLoader', 'ChartLoader', 'log/Chart', 'log
         return {
             id: 'prev_setpoint',
             dataItemKeys: ['se'],
+            showWithoutDatapoints: false,
             useDataItemsFromPrevious: true,
             showWithoutDatapoints: false,
             label: 'Sp',
@@ -363,6 +366,7 @@ define(['app', 'RefreshingChart', 'DataLoader', 'ChartLoader', 'log/Chart', 'log
         return {
             id: 'temperature_avg',
             dataItemKeys: ['ta'],
+            showWithoutDatapoints: false,
             dataItemIsComplete: function (dataItem) {
                 return dataItem.te !== undefined && dataItem.ta !== undefined;
             },
@@ -385,6 +389,7 @@ define(['app', 'RefreshingChart', 'DataLoader', 'ChartLoader', 'log/Chart', 'log
         return {
             id: 'temperature',
             dataItemKeys: ['tm', 'te'],
+            showWithoutDatapoints: false,
             dataItemIsComplete: function (dataItem) {
                 return dataItem.te !== undefined;
             },
@@ -430,6 +435,7 @@ define(['app', 'RefreshingChart', 'DataLoader', 'ChartLoader', 'log/Chart', 'log
         return {
             id: 'temp_trendline',
             dataItemKeys: ['ta'],
+            showWithoutDatapoints: false,
             dataItemIsComplete: function (dataItem) {
                 return dataItem.te !== undefined && dataItem.ta !== undefined;
             },
