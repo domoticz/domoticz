@@ -6,7 +6,7 @@
     </div>
     <div class="chartarea">
         <div class="zoom-buttons-container">
-			<select id="comptype" class="combobox ui-corner-all" ng-init="comptype='Temp_Avg'" ng-model="comptype" ng-change="changeCompTypeTemp()">
+			<select ng-show="isTemp()" id="comptype" class="combobox ui-corner-all" ng-init="comptype='Temp_Avg'" ng-model="comptype" ng-change="changeCompTypeTemp()">
 				<option data-i18n="Min" value="Temp_Min">Min</option>
 				<option data-i18n="Max" value="Temp_Max">Max</option>
 				<option data-i18n="Average" value="Temp_Avg" selected="selected">Average</option>

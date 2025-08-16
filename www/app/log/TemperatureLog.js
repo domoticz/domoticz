@@ -100,10 +100,10 @@ define(['app', 'RefreshingChart', 'DataLoader', 'ChartLoader', 'log/Chart', 'log
                                 setpointAverageSeriesSupplier(),
                                 setpointRangeSeriesSupplier(),
                                 setpointPreviousSeriesSupplier(),
-                                temperatureAverageSeriesSupplier(),
-                                temperatureRangeSeriesSupplier(),
+                                temperatureAverageSeriesSupplier(self.device.Type),
+                                temperatureRangeSeriesSupplier(self.device.Type),
                                 temperaturePreviousSeriesSupplier(),
-                                temperatureTrendlineSeriesSupplier()
+                                temperatureTrendlineSeriesSupplier(self.device.Type)
                             ]
                         )
                     );
@@ -133,10 +133,20 @@ define(['app', 'RefreshingChart', 'DataLoader', 'ChartLoader', 'log/Chart', 'log
             controller: function ($location, $route, $scope, $timeout, $element, domoticzGlobals, domoticzApi, domoticzDataPointApi, chart) {
                 const self = this;
 				self.groupingBy = 'month';
+				//self.deviceType = this.device.Type;
+				//console.log(self.deviceType);
                 self.sensorType = 'temp';
 				self.var_name = 'Temp_Avg';
+				self.valueSuffix = degreeSuffix;
 
                 self.$onInit = function() {
+					let bIsHumidity = (this.device.Type === 'Humidity');
+					if (bIsHumidity) {
+						self.sensorType = 'hum';
+						self.var_name = 'Humidity';
+						self.valueSuffix = '%';
+					}
+					
                     self.chart = new RefreshingChart(
                         chart.baseParams($),
                         chart.angularParams($location, $route, $scope, $timeout, $element),
@@ -144,12 +154,12 @@ define(['app', 'RefreshingChart', 'DataLoader', 'ChartLoader', 'log/Chart', 'log
 						chart.chartParamsCompare(
 							domoticzGlobals,
 							self,
-							chart.chartParamsCompareTemplate(self, 'Temperature', degreeSuffix),
+							chart.chartParamsCompareTemplate(self, 'Temperature', self.valueSuffix),
                             {
                                 isShortLogChart: false,
                                 yAxes: [{
 											title: {
-												text: $.t('Degrees') + ' ' + degreeSuffix
+												text: (!bIsHumidity) ? $.t('Degrees') : $.t('Humidity') + ' ' + self.valueSuffix
 											}
 										}],
                                 extendDataRequest: function (dataRequest) {
@@ -257,7 +267,11 @@ define(['app', 'RefreshingChart', 'DataLoader', 'ChartLoader', 'log/Chart', 'log
         return {
             id: 'temperature',
             dataItemKeys: ['te'],
+			showWithoutDatapoints: (deviceType !== 'Humidity'),
             label: 'Te',
+			plotoptions: {
+				visible: false,
+			},
             template: {
                 name: $.t('Temperature'),
                 color: 'yellow',
@@ -359,10 +373,11 @@ define(['app', 'RefreshingChart', 'DataLoader', 'ChartLoader', 'log/Chart', 'log
         };
     }
 
-    function temperatureAverageSeriesSupplier() {
+    function temperatureAverageSeriesSupplier(deviceType) {
         return {
             id: 'temperature_avg',
             dataItemKeys: ['ta'],
+			showWithoutDatapoints: (deviceType !== 'Humidity'),
             dataItemIsComplete: function (dataItem) {
                 return dataItem.te !== undefined && dataItem.ta !== undefined;
             },
@@ -381,10 +396,11 @@ define(['app', 'RefreshingChart', 'DataLoader', 'ChartLoader', 'log/Chart', 'log
         };
     }
 
-    function temperatureRangeSeriesSupplier() {
+    function temperatureRangeSeriesSupplier(deviceType) {
         return {
             id: 'temperature',
             dataItemKeys: ['tm', 'te'],
+			showWithoutDatapoints: (deviceType !== 'Humidity'),
             dataItemIsComplete: function (dataItem) {
                 return dataItem.te !== undefined;
             },
@@ -426,10 +442,11 @@ define(['app', 'RefreshingChart', 'DataLoader', 'ChartLoader', 'log/Chart', 'log
         };
     }
 
-    function temperatureTrendlineSeriesSupplier() {
+    function temperatureTrendlineSeriesSupplier(deviceType) {
         return {
             id: 'temp_trendline',
             dataItemKeys: ['ta'],
+			showWithoutDatapoints: (deviceType !== 'Humidity'),
             dataItemIsComplete: function (dataItem) {
                 return dataItem.te !== undefined && dataItem.ta !== undefined;
             },
@@ -488,12 +505,13 @@ define(['app', 'RefreshingChart', 'DataLoader', 'ChartLoader', 'log/Chart', 'log
             range: ctrl.range,
             device: ctrl.device,
             sensorType: ctrl.sensorType,
-            chartName: ctrl.device.Type === 'Humidity' ? $.t('Humidity') : $.t('Temperature'),
+            chartName:  (ctrl.device.Type === 'Humidity') ? $.t('Humidity') : $.t('Temperature'),
             autoRefreshIsEnabled: function() { return ctrl.logCtrl.autoRefresh; },
             dataSupplier: {
                 yAxes:
                     [
                         {
+							visible: (ctrl.device.Type === 'humidity'),
                             title: {
                                 text: $.t('Degrees') + ' \u00B0' + ctrl.degreeType
                             },
