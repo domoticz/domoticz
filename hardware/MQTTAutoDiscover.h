@@ -55,7 +55,7 @@ class MQTTAutoDiscover : public MQTT
 		std::string payload_open = "OPEN";
 		std::string payload_close = "CLOSE";
 		std::string payload_stop = "STOP";
-		std::string payload_press = "1";
+		std::string payload_press = "PRESS";
 		int position_open = 100;
 		int position_closed = 0;
 
