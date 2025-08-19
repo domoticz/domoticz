@@ -4178,14 +4178,16 @@ void MQTTAutoDiscover::handle_auto_discovery_text(_tMQTTASensor* pSensor, const 
 	{
 		// Update
 		std::string szIdx = result[0].at(0);
+		std::string devname = result[0].at(1);
 		std::string oldsValue = result[0].at(3);
 		if (oldsValue != pSensor->sValue)
 		{
 			//Prevent log entry
-			m_sql.safe_query(
-				"UPDATE DeviceStatus SET sValue='%q', LastUpdate='%s' WHERE (ID = %s)", pSensor->sValue.c_str(), TimeToString(nullptr, TF_DateTime).c_str(), szIdx.c_str());
-			//UpdateValueInt(m_HwdID, pSensor->unique_id.c_str(), 1, pSensor->devType, pSensor->subType, pSensor->SignalLevel, pSensor->BatteryLevel, pSensor->nValue,
-				//pSensor->sValue.c_str(), result[0][0]);
+			//m_sql.safe_query(
+				//"UPDATE DeviceStatus SET sValue='%q', LastUpdate='%s' WHERE (ID = %s)", pSensor->sValue.c_str(), TimeToString(nullptr, TF_DateTime).c_str(), szIdx.c_str());
+
+			UpdateValueInt(m_HwdID, pSensor->unique_id.c_str(), 1, pSensor->devType, pSensor->subType, pSensor->SignalLevel, pSensor->BatteryLevel, pSensor->nValue,
+				pSensor->sValue.c_str(), result[0][0]);
 		}
 	}
 }
