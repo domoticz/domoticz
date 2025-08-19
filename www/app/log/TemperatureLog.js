@@ -269,9 +269,6 @@ define(['app', 'RefreshingChart', 'DataLoader', 'ChartLoader', 'log/Chart', 'log
             dataItemKeys: ['te'],
 			showWithoutDatapoints: (deviceType !== 'Humidity'),
             label: 'Te',
-			plotoptions: {
-				visible: false,
-			},
             template: {
                 name: $.t('Temperature'),
                 color: 'yellow',
@@ -511,7 +508,7 @@ define(['app', 'RefreshingChart', 'DataLoader', 'ChartLoader', 'log/Chart', 'log
                 yAxes:
                     [
                         {
-							visible: (ctrl.device.Type === 'humidity'),
+							visible: (ctrl.device.Type !== 'Humidity'),
                             title: {
                                 text: $.t('Degrees') + ' \u00B0' + ctrl.degreeType
                             },
@@ -535,7 +532,7 @@ define(['app', 'RefreshingChart', 'DataLoader', 'ChartLoader', 'log/Chart', 'log
                             ceiling: 100,			//max limit for auto zoom, bug in highcharts makes this sometimes not considered.
                             floor: 0,				//min limit for auto zoom
                             minRange: 10,			//min range for auto zoom
-                            opposite: true
+                            opposite: (ctrl.device.Type !== 'Humidity')
                         }
                     ],
                 timestampFromDataItem: timestampFromDataItem,
