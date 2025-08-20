@@ -885,7 +885,10 @@ void CScheduler::CheckSchedules()
 
 							GetLightStatus(dType, dSubType, switchtype, 0, "", lstatus, llevel, bHaveDimmer, maxDimLevel, bHaveGroupCmd);
 							int ilevel = maxDimLevel;
-							if (switchtype == STYPE_Blinds)
+							if (
+								(switchtype == STYPE_Blinds)
+								|| (switchtype == STYPE_BlindsWithStop)
+								)
 							{
 								if (item.timerCmd == TCMD_ON)
 									switchcmd = "Open";
@@ -1194,6 +1197,7 @@ namespace http {
 			_eSwitchType switchtype = (_eSwitchType)std::stoi(result[0][0]);
 			const bool bIsBlinds = (
 				switchtype == STYPE_Blinds
+				|| switchtype == STYPE_BlindsWithStop
 				|| switchtype == STYPE_BlindsPercentage
 				|| switchtype == STYPE_BlindsPercentageWithStop
 				|| switchtype == STYPE_VenetianBlindsEU

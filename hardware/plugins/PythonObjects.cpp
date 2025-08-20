@@ -557,6 +557,12 @@ namespace Plugins {
 			SubType = sSwitchGeneralSwitch;
 			SwitchType = STYPE_Blinds;
 		}
+		else if (sTypeName == "BlindsWithStop")
+		{
+			Type = pTypeGeneralSwitch;
+			SubType = sSwitchGeneralSwitch;
+			SwitchType = STYPE_BlindsWithStop;
+			}
 		else if (sTypeName == "BlindsPercentage")
 		{
 			Type = pTypeGeneralSwitch;

@@ -2667,6 +2667,7 @@ namespace Plugins
 					szTypeImage = "Contact48";
 					break;
 				case STYPE_Blinds:
+				case STYPE_BlindsWithStop:
 				case STYPE_BlindsPercentage:
 				case STYPE_BlindsPercentageWithStop:
 				case STYPE_VenetianBlindsUS:

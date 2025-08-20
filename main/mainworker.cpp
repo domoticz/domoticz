@@ -11593,6 +11593,7 @@ MainWorker::eSwitchLightReturnCode MainWorker::SwitchLightInt(const std::vector<
 
 	const bool bIsBlinds = (
 		switchtype == STYPE_Blinds
+		|| switchtype == STYPE_BlindsWithStop
 		|| switchtype == STYPE_BlindsPercentage
 		|| switchtype == STYPE_BlindsPercentageWithStop
 		|| switchtype == STYPE_VenetianBlindsEU

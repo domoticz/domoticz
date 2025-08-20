@@ -1393,6 +1393,7 @@ function Blinds(item) {
 
 	var bHaveStopped = (
 						(item.SwitchType == 'Blinds + Stop')
+						(item.SwitchType == 'Blinds % + Stop')
 						|| (item.SwitchType == 'Venetian Blinds US')
 						|| (item.SwitchType == 'Venetian Blinds EU')
 						);

@@ -1091,18 +1091,48 @@ void MQTTAutoDiscover::on_auto_discovery_message(const struct mosquitto_message*
 		else if (!root["pl_off"].empty())
 			pSensor->payload_off = root["pl_off"].asString();
 
-		if (!root["payload_open"].empty())
-			pSensor->payload_open = root["payload_open"].asString();
-		else if (!root["pl_open"].empty())
-			pSensor->payload_open = root["pl_open"].asString();
-		if (!root["payload_close"].empty())
-			pSensor->payload_close = root["payload_close"].asString();
-		else if (!root["pl_cls"].empty())
-			pSensor->payload_close = root["pl_cls"].asString();
-		if (!root["payload_stop"].empty())
-			pSensor->payload_stop = root["payload_stop"].asString();
-		else if (!root["pl_stop"].empty())
-			pSensor->payload_stop = root["pl_stop"].asString();
+		if (root.isMember("payload_open"))
+		{
+			if (root["payload_open"].isNull())
+				pSensor->payload_open = "";
+			else
+				pSensor->payload_open = root["payload_open"].asString();
+		}
+		else if (root.isMember("pl_open"))
+		{
+			if (root["pl_open"].isNull())
+				pSensor->payload_open = "";
+			else
+				pSensor->payload_open = root["pl_open"].asString();
+		}
+		if (root.isMember("payload_close"))
+		{
+			if (root["payload_close"].isNull())
+				pSensor->payload_close = "";
+			else
+				pSensor->payload_close = root["payload_close"].asString();
+		}
+		else if (root.isMember("pl_cls"))
+		{
+			if (root["pl_cls"].isNull())
+				pSensor->payload_close = "";
+			else
+				pSensor->payload_close = root["pl_cls"].asString();
+		}
+		if (root.isMember("payload_stop"))
+		{
+			if (root["payload_stop"].isNull())
+				pSensor->payload_stop = "";
+			else
+				pSensor->payload_stop = root["payload_stop"].asString();
+		}
+		else if (root.isMember("pl_stop"))
+		{
+			if (root["pl_stop"].isNull())
+				pSensor->payload_stop = "";
+			else
+				pSensor->payload_stop = root["pl_stop"].asString();
+		}
 		if (!root["position_open"].empty())
 			pSensor->position_open = root["position_open"].asInt();
 		else if (!root["pos_open"].empty())
@@ -5464,6 +5494,14 @@ void MQTTAutoDiscover::UpdateBlindPosition(_tMQTTASensor* pSensor)
 		else
 			switchType = STYPE_BlindsPercentageWithStop;
 	}
+	else
+	{
+		if (!pSensor->payload_stop.empty())
+		{
+			//We support stop
+			switchType = STYPE_BlindsWithStop;
+		}
+	}
 
 	std::vector<std::vector<std::string>> result;
 	result = m_sql.safe_query("SELECT ID, Name, nValue, sValue, SubType, SwitchType FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit==%d)", m_HwdID, pSensor->unique_id.c_str(), pSensor->devUnit);
@@ -5610,6 +5648,11 @@ bool MQTTAutoDiscover::SendCoverCommand(_tMQTTASensor* pSensor, const std::strin
 	if (command == "Open")
 	{
 		szValue = pSensor->payload_open;
+		if (szValue.empty())
+		{
+			Log(LOG_ERROR, "Cover device does not support 'Open' command (%s/%s)", pSensor->unique_id.c_str(), DeviceName.c_str());
+			return false;
+		}
 		level = 100;
 		if (!pSensor->set_position_topic.empty())
 			command = "Set Level";
@@ -5617,6 +5660,11 @@ bool MQTTAutoDiscover::SendCoverCommand(_tMQTTASensor* pSensor, const std::strin
 	else if (command == "Close")
 	{
 		szValue = pSensor->payload_close;
+		if (szValue.empty())
+		{
+			Log(LOG_ERROR, "Cover device does not support 'Close' command (%s/%s)", pSensor->unique_id.c_str(), DeviceName.c_str());
+			return false;
+		}
 		level = 0;
 		if (!pSensor->set_position_topic.empty())
 			command = "Set Level";
@@ -5625,6 +5673,11 @@ bool MQTTAutoDiscover::SendCoverCommand(_tMQTTASensor* pSensor, const std::strin
 	{
 		level = -1;
 		szValue = pSensor->payload_stop;
+		if (szValue.empty())
+		{
+			Log(LOG_ERROR, "Cover device does not support 'Stop' command (%s/%s)", pSensor->unique_id.c_str(), DeviceName.c_str());
+			return false;
+		}
 	}
 
 	if (command == "Set Level")

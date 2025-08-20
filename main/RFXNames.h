@@ -24,8 +24,9 @@ enum _eSwitchType
 	STYPE_DoorLock = 19,
 	STYPE_DoorLockInverted = 20,
 	STYPE_BlindsPercentageWithStop = 21,
+	STYPE_BlindsWithStop = 22,
 
-	STYPE_END = STYPE_BlindsPercentageWithStop + 1 //always set this to highest numer + 1
+	STYPE_END = STYPE_BlindsWithStop + 1 //always set this to highest numer + 1
 };
 
 enum _eMeterType

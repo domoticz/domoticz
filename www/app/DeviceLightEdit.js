@@ -681,7 +681,7 @@ define(['app', 'components/rgbw-picker/RgbwPicker'], function (app) {
         }
 		
 		function isBlind() {
-			return [3, 13, 14, 15, 21].includes(vm.device.SwitchTypeVal);
+			return [3, 13, 14, 15, 21, 22].includes(vm.device.SwitchTypeVal);
 		}
 		
 		function onActionLabel() {

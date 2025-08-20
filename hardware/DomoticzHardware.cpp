@@ -1168,7 +1168,7 @@ int CDomoticzHardwareBase::MigrateSelectorSwitch(const int NodeID, const uint8_t
  *
  * @param  {int} NodeID              : As normal, device ID
  * @param  {uint8_t} ChildID         : As normal, device unit code
- * @param  {_eSwitchType} switchtype : Blind switch type (STYPE_Blinds, STYPE_BlindsPercentage, STYPE_VenetianBlindsUS, STYPE_VenetianBlindsEU or STYPE_BlindsPercentageWithStop)
+ * @param  {_eSwitchType} switchtype : Blind switch type (STYPE_Blinds, STYPE_BlindsPercentage, STYPE_VenetianBlindsUS, STYPE_VenetianBlindsEU or STYPE_BlindsPercentageWithStop, or STYPE_BlindsWithStop)
  * @param  {bool} bDeviceUsed        : true : device appeard on switches screen
  * @param  {bool} bReversePosition   : true : reverse slider position
  * @param  {bool} bReverseState      : true : reverse Open/Closed state
@@ -1181,7 +1181,14 @@ int CDomoticzHardwareBase::MigrateSelectorSwitch(const int NodeID, const uint8_t
  */
 void CDomoticzHardwareBase::CreateBlindSwitch(int NodeID, uint8_t ChildID, _eSwitchType switchtype, bool bDeviceUsed, bool bReversePosition, bool bReverseState, uint8_t cmnd, uint8_t level, const std::string &defaultName, const std::string &userName, int32_t batteryLevel, uint8_t rssiLevel)
 {
-	if (switchtype != STYPE_Blinds && switchtype != STYPE_BlindsPercentage && switchtype != STYPE_VenetianBlindsUS && switchtype != STYPE_VenetianBlindsEU && switchtype != STYPE_BlindsPercentageWithStop)
+	if (
+		switchtype != STYPE_Blinds
+		&& switchtype != STYPE_BlindsWithStop
+		&& switchtype != STYPE_BlindsPercentage
+		&& switchtype != STYPE_VenetianBlindsUS
+		&& switchtype != STYPE_VenetianBlindsEU
+		&& switchtype != STYPE_BlindsPercentageWithStop
+		)
 	{
 	   Log(LOG_ERROR, "Node %08X (%s), invalid switch type %u", NodeID, defaultName.c_str(), uint32_t(switchtype));
 	   return;
