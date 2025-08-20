@@ -10274,7 +10274,7 @@ void CSQLHelper::RefreshActualPrices()
 
 bool CSQLHelper::TransferDevice(const std::string& sOldIdx, const std::string& sNewIdx)
 {
-	auto result = m_sql.safe_query("SELECT HardwareID, OrgHardwareID, DeviceID, Unit, Type, SubType FROM DeviceStatus WHERE (ID == '%q')", sNewIdx.c_str());
+	auto result = m_sql.safe_query("SELECT HardwareID, OrgHardwareID, DeviceID, Unit, Type, SubType, Options FROM DeviceStatus WHERE (ID == '%q')", sNewIdx.c_str());
 	if (result.empty())
 		return false;
 
@@ -10284,6 +10284,7 @@ bool CSQLHelper::TransferDevice(const std::string& sOldIdx, const std::string& s
 	int newUnit = std::stoi(result[0].at(3));
 	int devType = std::stoi(result[0].at(4));
 	int subType = std::stoi(result[0].at(5));
+	std::string sOptions = result[0].at(6);
 
 	//get last update date from old device
 	result = m_sql.safe_query("SELECT LastUpdate FROM DeviceStatus WHERE (ID == '%q')", sOldIdx.c_str());
@@ -10294,8 +10295,8 @@ bool CSQLHelper::TransferDevice(const std::string& sOldIdx, const std::string& s
 
 	_log.Log(LOG_STATUS, "Replace old device %s to new device %s from %s.", sOldIdx.c_str(), sNewIdx.c_str(), szLastOldDate.c_str());
 
-	m_sql.safe_query("UPDATE DeviceStatus SET HardwareID = %d, OrgHardwareID = %d, DeviceID = '%q', Unit = %d, Type = %d, SubType = %d WHERE ID == '%q'",
-		newHardwareID, newOrgHardwareID, newDeviceID.c_str(), newUnit, devType, subType, sOldIdx.c_str());
+	m_sql.safe_query("UPDATE DeviceStatus SET HardwareID=%d, OrgHardwareID=%d, DeviceID='%q', Unit=%d, Type=%d, SubType=%d, Options='%q' WHERE ID == '%q'",
+		newHardwareID, newOrgHardwareID, newDeviceID.c_str(), newUnit, devType, subType, sOptions.c_str(), sOldIdx.c_str());
 
 	//new device could already have some logging, so let's keep this data
 	//Rain

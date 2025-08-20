@@ -124,7 +124,10 @@ namespace http
 			else
 			{
 				// week,year,month
-				if (sensor == "temp")
+				if (
+					(sensor == "temp")
+					|| (sensor == "hum")
+					)
 					dbasetable = "Temperature_Calendar";
 				else if (sensor == "rain")
 					dbasetable = "Rain_Calendar";
@@ -2064,7 +2067,10 @@ namespace http
 					sprintf(szDateStartPrev, "%04d-%02d-%02d", tm2.tm_year + 1900 - 1, tm2.tm_mon + 1, tm2.tm_mday);
 				}
 
-				if (sensor == "temp")
+				if (
+					(sensor == "temp")
+					|| (sensor == "hum")
+					)
 				{
 					root["status"] = "OK";
 
@@ -2074,11 +2080,14 @@ namespace http
 						std::string var_name = request::findValue(&req, "var_name");
 						MakeCompareDataSensor(root, sgroupby, dbasetable, idx, var_name);
 
-						if (tempsign == 'F')
+						if (sensor == "temp")
 						{
-							for (auto& itt : root["result"])
+							if (tempsign == 'F')
 							{
-								itt["s"] = ConvertTemperature(itt["s"].asDouble(), tempsign);
+								for (auto& itt : root["result"])
+								{
+									itt["s"] = ConvertTemperature(itt["s"].asDouble(), tempsign);
+								}
 							}
 						}
 						return;

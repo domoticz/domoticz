@@ -3,8 +3,11 @@ Version 2025.xxxx
 - Implemented: Enever, Added Pure Energy, removed obsolete providers
 - Implemented: MQTT-AD, added support for Climate action_template/state
 - Implemented: MQTT-AD, added support for IR Blaster (Tuya iH-F8260)
+- Implemented: MQTT-AD, handling battery low boolean sensors
+- Implemented: Support for Humidity only graph
 - Fixed: MQTT-AD, fix issue where brightness and RGB command topic are different
 - Fixed: MQTT-AD, preserve select options when updating a device
+- Fixed: Replace device now also copies 'Options' field
 - Changed: mDNS, hostname now lowercase
 - Changed: MQTT-AD, added support for color_temp_command_template
 - Changed: TADO, Added fixed API endpoint
