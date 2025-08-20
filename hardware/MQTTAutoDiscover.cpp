@@ -975,7 +975,10 @@ void MQTTAutoDiscover::on_auto_discovery_message(const struct mosquitto_message*
 					pSensor->payload_not_available = rootAvailability["payload_not_available"].asString();
 			}
 		}
-		if (!root["state_topic"].empty())
+
+		if (!root["schema"].empty())
+			pSensor->schema = root["schema"].asString();
+		else if (!root["state_topic"].empty())
 			pSensor->state_topic = root["state_topic"].asString();
 		else if (!root["stat_t"].empty())
 			pSensor->state_topic = root["stat_t"].asString();
@@ -1111,6 +1114,9 @@ void MQTTAutoDiscover::on_auto_discovery_message(const struct mosquitto_message*
 			pSensor->position_closed = root["position_closed"].asInt();
 		else if (!root["pos_clsd"].empty())
 			pSensor->position_closed = root["pos_clsd"].asInt();
+
+		else if (!root["optimistic"].empty())
+			pSensor->bIsOptimistic = root["optimistic"].asBool();
 
 		if (!root["on_command_type"].empty())
 			pSensor->on_command_type = root["on_command_type"].asString();
@@ -4984,6 +4990,30 @@ bool MQTTAutoDiscover::SendSwitchCommand(const std::string& DeviceID, const std:
 			Log(LOG_ERROR, "Switch command not supported (%s - %s/%s)", command.c_str(), DeviceID.c_str(), DeviceName.c_str());
 			return false;
 		}
+		if (pSensor->bIsOptimistic == true)
+		{
+			//No feedback expected from device, set the new state in the database
+			auto result = m_sql.safe_query("SELECT ID, Name, SwitchType, Options FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Type=%d) AND (SubType=%d) AND (Unit==%d)", m_HwdID, pSensor->unique_id.c_str(),
+				pTypeGeneralSwitch, sSwitchGeneralSwitch, Unit);
+			if (result.empty())
+				return false;
+
+			std::string szIdx = result[0][0];
+			uint64_t DevRowIdx = std::stoull(szIdx);
+			std::string szDeviceName = result[0][1];
+			_eSwitchType switchtype = static_cast<_eSwitchType>(std::stoi(result[0][2]));
+			std::map<std::string, std::string> options = m_sql.BuildDeviceOptions(result[0][3]);
+
+			uint8_t nValue = 0;
+			if (GetLightCommand(pSensor->devType, pSensor->subType, switchtype, command, nValue, options))
+			{
+				pSensor->nValue = static_cast<int>(nValue);
+				//m_sql.safe_query(
+					//"UPDATE DeviceStatus SET LastLevel=%d, LastUpdate='%s' WHERE (ID = %s)", level, TimeToString(nullptr, TF_DateTime).c_str(), result[0][0].c_str());
+				UpdateValueInt(m_HwdID, pSensor->unique_id.c_str(), 1, pSensor->devType, pSensor->subType, pSensor->SignalLevel, pSensor->BatteryLevel,
+					pSensor->nValue, std::to_string(level).c_str(), szDeviceName, true, user);
+			}
+		}
 	}
 
 	if (pSensor->component_type == "button")
@@ -5004,7 +5034,10 @@ bool MQTTAutoDiscover::SendSwitchCommand(const std::string& DeviceID, const std:
 		if (eCommand == SwitchCommands::COMMAND_ON ||
 			eCommand == SwitchCommands::COMMAND_OFF)
 		{
-			if (!pSensor->brightness_value_template.empty())
+			if (
+				(!pSensor->brightness_value_template.empty()) //<-- GizMoCuz: this line could/should be removed?
+				|| (pSensor->schema == "basic")
+				)
 			{
 				SendMessage(pSensor->command_topic, szSendValue);
 				return true;
@@ -5027,6 +5060,13 @@ bool MQTTAutoDiscover::SendSwitchCommand(const std::string& DeviceID, const std:
 			eCommand == SwitchCommands::COMMAND_SET_LEVEL_AND_COLOR)
 		{
 			int slevel = ground((pSensor->brightness_scale / 100.F) * level);
+
+			if (pSensor->schema == "basic")
+			{
+				SendMessage(pSensor->command_topic, std::to_string(slevel));
+				return true;
+			}
+
 
 			if (pSensor->brightness_value_template.empty())
 			{

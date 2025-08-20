@@ -19,6 +19,7 @@ class MQTTAutoDiscover : public MQTT
 
 		std::string availability_topic;
 
+		std::string schema = "basic";
 		std::string state_topic;
 		std::string state_on;
 		std::string state_off;
@@ -58,6 +59,8 @@ class MQTTAutoDiscover : public MQTT
 		std::string payload_press = "PRESS";
 		int position_open = 100;
 		int position_closed = 0;
+
+		bool bIsOptimistic = false;
 
 		std::string on_command_type;
 
