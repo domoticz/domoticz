@@ -1,5 +1,6 @@
 Version 2025.xxxx
 - Implemented: EnergyDashboard, add option for (Outside) Temperature Sensor
+- Implemented: Enever, Added Pure Energy, removed obsolete providers
 - Implemented: MQTT-AD, added support for Climate action_template/state
 - Implemented: MQTT-AD, added support for IR Blaster (Tuya iH-F8260)
 - Fixed: MQTT-AD, fix issue where brightness and RGB command topic are different
