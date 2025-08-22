@@ -640,6 +640,18 @@ define(['lodash', 'Base', 'DomoticzBase', 'DataLoader', 'ChartLoader', 'ChartZoo
 				self.ctrl.var_name = self.$scope.comptype;
 				refreshChartData();
 			}
+			
+			self.$scope.isTemp = function() {
+				if (self.ctrl !== undefined) {
+					if (self.ctrl.sensorType !== undefined) {
+						let sensorType = self.ctrl.sensorType;
+						if (sensorType == "hum") {
+							return false;
+						}
+					}
+				}
+				return true;
+			}
 
             self.$scope.groupByLabel = function (label) {
                 const matcher = label.match(/^(?<letter>[yq])$/);
