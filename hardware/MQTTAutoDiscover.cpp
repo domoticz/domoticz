@@ -6031,5 +6031,48 @@ namespace http {
 
 			}
 		}
+
+		void CWebServer::Cmd_MQTTAD_PublishPayload(WebEmSession& session, const request& req, Json::Value& root)
+		{
+			if (session.rights != 2)
+			{
+				session.reply_status = reply::forbidden;
+				return; //Only admin user allowed
+			}
+
+			std::string hwid = request::findValue(&req, "idx");
+			std::string topic = HTMLSanitizer::Sanitize(CURLEncode::URLDecode(request::findValue(&req, "topic")));
+			std::string qos = request::findValue(&req, "qos");
+			std::string retain = request::findValue(&req, "retain");
+			std::string payload = HTMLSanitizer::Sanitize(CURLEncode::URLDecode(request::findValue(&req, "payload")));
+			if (
+				hwid.empty()
+				|| topic.empty()
+				|| qos.empty()
+				|| retain.empty()
+				)
+				return;
+
+			CDomoticzHardwareBase* pHardware = m_mainworker.GetHardware(std::stoi(hwid));
+			if (pHardware == nullptr)
+				return;
+			if (pHardware->HwdType != HTYPE_MQTTAutoDiscovery)
+				return;
+
+			MQTTAutoDiscover* pMQTT = reinterpret_cast<MQTTAutoDiscover*>(pHardware);
+			try
+			{
+				if (pMQTT->SendMessageEx(topic, payload, std::stoi(qos), (retain=="true")))
+				{
+					root["title"] = "GetMQTTPublishPayload";
+					root["status"] = "OK";
+				}
+			}
+			catch (const std::exception&)
+			{
+
+			}
+		}
+
 	} // namespace server
 } // namespace http

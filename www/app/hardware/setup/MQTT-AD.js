@@ -134,5 +134,37 @@ define(['app'], function (app) {
 
             $('#modal').hide();
         }
+		
+        PublishValue = function () {
+            var topic = $("#publishtable #publishtopic").val();
+            if (topic == "") {
+                ShowNotify($.t('Please enter a Topic!'), 2500, true);
+                return;
+            }
+			var QoS = $('#publishtable #publishqos').val();
+			var Retained = $('#publishtable #publishretain').is(":checked")
+            var payload = $("#publishtable #publishpayload").val();
+
+            $.ajax({
+                url: "json.htm?type=command&param=mqttpublishpayload" +
+                "&idx=" + $.devIdx +
+                "&topic=" + encodeURIComponent(topic) +
+                "&qos=" + QoS +
+                "&retain=" + Retained +
+                "&payload=" + encodeURIComponent(payload),
+                async: false,
+                dataType: 'json',
+                success: function (data) {
+					if (data.status == "OK") {
+						ShowNotify($.t('Message send!'), 5000);
+					} else {
+						ShowNotify($.t('Error communicating to server!'), 2500, true);
+					}
+                },
+                error: function () {
+                    ShowNotify($.t('Error communicating to server!'), 2500, true);
+                }
+            });
+		}
     }
 });

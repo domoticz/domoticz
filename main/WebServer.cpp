@@ -536,6 +536,7 @@ namespace http
 			//MQTT-AD
 			RegisterCommandCode("mqttadgetconfig", [this](auto&& session, auto&& req, auto&& root) { Cmd_MQTTAD_GetConfig(session, req, root); });
 			RegisterCommandCode("mqttupdatenumber", [this](auto&& session, auto&& req, auto&& root) { Cmd_MQTTAD_UpdateNumber(session, req, root); });
+			RegisterCommandCode("mqttpublishpayload", [this](auto&& session, auto&& req, auto&& root) { Cmd_MQTTAD_PublishPayload(session, req, root); });
 
 #ifdef WITH_OPENZWAVE
 			// ZWave

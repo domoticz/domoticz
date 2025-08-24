@@ -372,6 +372,7 @@ private:
 	//MQTT-AD
 	void Cmd_MQTTAD_GetConfig(WebEmSession& session, const request& req, Json::Value& root);
 	void Cmd_MQTTAD_UpdateNumber(WebEmSession& session, const request& req, Json::Value& root);
+	void Cmd_MQTTAD_PublishPayload(WebEmSession& session, const request& req, Json::Value& root);
 
 #ifdef WITH_OPENZWAVE
 	//ZWave

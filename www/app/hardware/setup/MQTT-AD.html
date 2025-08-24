@@ -30,4 +30,45 @@
             </td>
         </tr>
     </table>
+    <div class="page-header-small">
+        <table border="0" cellpadding="0" cellspacing="0" width="100%">
+            <tr>
+                <td>
+                    <h1 data-i18n="Publish Message">Publish Message</h1>
+                </td>
+            </tr>
+        </table>
+    </div>
+    <table id="publishtable" border="0" cellpadding="0" cellspacing="4" width="100%">
+        <tr>
+            <td align="right" style="width:80px"><label for="publishtopic"><span data-i18n="Topic"></span>:</label></td>
+            <td><input type="text" id="publishtopic" style="width: 360px; padding: .2em;" class="text ui-widget-content ui-corner-all"/>
+		</tr>
+        <tr>
+			<td align="right" style="width:80px"><label for="publishqos"><span data-i18n="QoS"></span>:</label></td>
+            <td>
+                <select id="publishqos" style="width:60px" class="combobox ui-corner-all">
+                    <option value="0">0</option>
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                </select>
+            </td>
+		</tr>
+		<tr>
+			<td align="right" style="vertical-align:top;"><span data-i18n="Retain"></span>:</td>
+			<td>
+				<input type="checkbox" id="publishretain" name="publishretain"/><label for="publishretain"></label><br>
+			</td>
+		</tr>
+        <tr>
+            <td align="right" style="width:80px"><label for="publishpayload"><span data-i18n="Payload"></span>:</label></td>
+            <td><textarea id="publishpayload" style="width: 360px; padding: .2em;" class="text ui-widget-content ui-corner-all" rows="4"></textarea>
+		</tr>
+		<tr>
+			<td></td>
+			<td>
+				<a class="btnstyle3" onclick="PublishValue();" data-i18n="Publish"></a></td>
+			</td>
+        </tr>
+    </table>
 </div>

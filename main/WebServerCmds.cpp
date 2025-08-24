@@ -4201,6 +4201,7 @@ namespace http
 			if (!result.empty())
 			{
 				int dType = atoi(result[0][0].c_str());
+				int sType = atoi(result[0][1].c_str());
 				if ((dType == pTypeTEMP) || (dType == pTypeTEMP_HUM) || (dType == pTypeTEMP_HUM_BARO))
 				{
 					//Allow old Temp or Temp+Hum or Temp+Hum+Baro devices to be replaced by new Temp or Temp+Hum or Temp+Hum+Baro
@@ -4214,6 +4215,13 @@ namespace http
 				{
 					result = m_sql.safe_query("SELECT ID, Name FROM DeviceStatus WHERE (Type=='%q') AND (SubType=='%q') AND (ID!=%" PRIu64 ")", result[0][0].c_str(),
 						result[0][1].c_str(), idx);
+
+					if ((dType == pTypeAirQuality) && (sType == sTypeVoc))
+					{
+						//Allow VOC sensors to be replaced by custom sensor
+						auto result2 = m_sql.safe_query("SELECT ID, Name FROM DeviceStatus WHERE (Type==%d) AND (SubType==%d) AND (ID!=%" PRIu64 ")", pTypeGeneral, sTypeCustom);
+						result.insert(result.end(), result2.begin(), result2.end());
+					}
 				}
 
 				std::sort(std::begin(result), std::end(result), [](std::vector<std::string> a, std::vector<std::string> b) { return a[1] < b[1]; });

@@ -759,28 +759,30 @@ void MQTT::SendHeartbeat()
 	// not necessary for normal MQTT servers
 }
 
-void MQTT::SendMessage(const std::string &Topic, const std::string &Message)
+bool MQTT::SendMessage(const std::string &Topic, const std::string &Message)
 {
-	SendMessageEx(Topic, Message, QOS, m_bRetain);
+	return SendMessageEx(Topic, Message, QOS, m_bRetain);
 }
 
-void MQTT::SendMessageEx(const std::string& Topic, const std::string& Message, int qos, bool retain)
+bool MQTT::SendMessageEx(const std::string& Topic, const std::string& Message, int qos, bool retain)
 {
 	if (!m_IsConnected)
 	{
 		Log(LOG_STATUS, "Not Connected, failed to send message: %s", Message.c_str());
-		return;
+		return false;
 	}
 	if (Topic.empty())
-		return;
+		return false;
 	try
 	{
-		publish(nullptr, Topic.c_str(), static_cast<int>(Message.size()), Message.c_str(), qos, retain);
+		int ret = publish(nullptr, Topic.c_str(), static_cast<int>(Message.size()), Message.c_str(), qos, retain);
+		return (ret == MOSQ_ERR_SUCCESS);
 	}
 	catch (...)
 	{
 		Log(LOG_ERROR, "Failed to send message: %s", Message.c_str());
 	}
+	return false;
 }
 
 void MQTT::WriteInt(const std::string &sendStr)
