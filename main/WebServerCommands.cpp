@@ -2682,6 +2682,10 @@ namespace http
 						root["result"][ii]["text"] = Notification_Type_Desc(NTYPE_RAIN, 0);
 						root["result"][ii]["ptag"] = Notification_Type_Desc(NTYPE_RAIN, 1);
 						ii++;
+						root["result"][ii]["val"] = NTYPE_RAINRATE;
+						root["result"][ii]["text"] = Notification_Type_Desc(NTYPE_RAINRATE, 0);
+						root["result"][ii]["ptag"] = Notification_Type_Desc(NTYPE_RAINRATE, 1);
+						ii++;
 					}
 					if (dType == pTypeWIND)
 					{

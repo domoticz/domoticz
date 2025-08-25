@@ -340,8 +340,11 @@ bool CNotificationHelper::CheckAndHandleNotification(const uint64_t DevRowIdx, c
 		case pTypeRAIN:
 			nexpected = 2;
 			if (nsize >= nexpected) {
+				float rainRate = std::stof(strarray[0].c_str());
 				fValue2 = (float)atof(strarray[1].c_str());
-				return CheckAndHandleRainNotification(DevRowIdx, sName, cType, cSubType, NTYPE_RAIN, fValue2);
+				r1 = CheckAndHandleRainNotification(DevRowIdx, sName, cType, cSubType, NTYPE_RAIN, fValue2);
+				r2 = CheckAndHandleRainNotification(DevRowIdx, sName, cType, cSubType, NTYPE_RAINRATE, rainRate);
+				return r1 && r2;
 			}
 			break;
 		case pTypeTEMP_BARO:
@@ -1249,27 +1252,35 @@ bool CNotificationHelper::CheckAndHandleRainNotification(
 	ltime.tm_mday = tm1.tm_mday;
 	sprintf(szDateEnd, "%04d-%02d-%02d", ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday);
 
-	if (subType == sTypeRAINWU || subType == sTypeRAINByRate)
+	if (ntype == NTYPE_RAIN)
 	{
-		//value is already total rain
-		double total_real = mvalue;
-		total_real *= AddjMulti;
-		CheckAndHandleNotification(Idx, devicename, devType, subType, NTYPE_RAIN, (float)total_real);
-	}
-	else
-	{
-		result = m_sql.safe_query("SELECT MIN(Total) FROM Rain WHERE (DeviceRowID=%" PRIu64 " AND Date>='%q')",
-			Idx, szDateEnd);
-		if (!result.empty())
+		if (subType == sTypeRAINWU || subType == sTypeRAINByRate)
 		{
-			std::vector<std::string> sd = result[0];
-
-			float total_min = static_cast<float>(atof(sd[0].c_str()));
-			float total_max = mvalue;
-			double total_real = total_max - total_min;
+			//value is already total rain
+			double total_real = mvalue;
 			total_real *= AddjMulti;
 			CheckAndHandleNotification(Idx, devicename, devType, subType, NTYPE_RAIN, (float)total_real);
 		}
+		else
+		{
+			result = m_sql.safe_query("SELECT MIN(Total) FROM Rain WHERE (DeviceRowID=%" PRIu64 " AND Date>='%q')",
+				Idx, szDateEnd);
+			if (!result.empty())
+			{
+				std::vector<std::string> sd = result[0];
+
+				float total_min = static_cast<float>(atof(sd[0].c_str()));
+				float total_max = mvalue;
+				double total_real = total_max - total_min;
+				total_real *= AddjMulti;
+				CheckAndHandleNotification(Idx, devicename, devType, subType, NTYPE_RAIN, (float)total_real);
+			}
+		}
+	}
+	else
+	{
+		//Rain Rate
+		CheckAndHandleNotification(Idx, devicename, devType, subType, NTYPE_RAINRATE, mvalue);
 	}
 	return false;
 }
