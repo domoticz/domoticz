@@ -4582,6 +4582,10 @@ void MQTTAutoDiscover::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 							szSwitchCmd = pSensor->payload_on;
 						else if (szValue == pSensor->state_off)
 							szSwitchCmd = pSensor->payload_off;
+						else if (szValue == pSensor->state_locked)
+							szSwitchCmd = pSensor->payload_on;
+						else if (szValue == pSensor->state_unlocked)
+							szSwitchCmd = pSensor->payload_off;
 						else
 							szSwitchCmd = szValue;
 					}
@@ -5026,6 +5030,17 @@ bool MQTTAutoDiscover::SendSwitchCommand(const std::string& DeviceID, const std:
 			szSendValue = pSensor->payload_lock;
 		else if (command == "Off")
 			szSendValue = pSensor->payload_unlock;
+
+		if (!pSensor->value_template.empty())
+		{
+			FixCommandTopic(command_topic, pSensor->value_template);
+
+			Json::Value root;
+			if (SetValueWithTemplate(root, pSensor->value_template, szSendValue))
+			{
+				szSendValue = JSonToRawString(root);
+			}
+		}
 	}
 	else if (pSensor->component_type == "light")
 	{
