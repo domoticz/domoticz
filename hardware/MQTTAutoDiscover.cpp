@@ -978,7 +978,8 @@ void MQTTAutoDiscover::on_auto_discovery_message(const struct mosquitto_message*
 
 		if (!root["schema"].empty())
 			pSensor->schema = root["schema"].asString();
-		else if (!root["state_topic"].empty())
+
+		if (!root["state_topic"].empty())
 			pSensor->state_topic = root["state_topic"].asString();
 		else if (!root["stat_t"].empty())
 			pSensor->state_topic = root["stat_t"].asString();
