@@ -17,7 +17,7 @@
 //https://enphase.com/en-us/products-and-services/envoy
 
 #ifdef _DEBUG
-//#define DEBUG_EnphaseAPI_R
+#define DEBUG_EnphaseAPI_R
 //#define DEBUG_EnphaseAPI_W
 #endif
 
@@ -1403,6 +1403,8 @@ bool EnphaseAPI::getInverterDetails()
 		return false;
 	}
 
+	time_t atime = time(nullptr);
+
 	for (const auto& itt : root)
 	{
 		if (itt["serialNumber"].empty())
@@ -1411,6 +1413,14 @@ bool EnphaseAPI::getInverterDetails()
 
 		int musage = itt["lastReportWatts"].asInt();
 		int mtotal = itt["maxReportWatts"].asInt();
+
+		time_t last_reported = static_cast<time_t>(itt["lastReportDate"].asInt());
+
+		bool bTimeout = false;
+
+		if (last_reported < atime - 3600) {
+			bTimeout = true;
+		}
 
 		std::string szDeviceID = szSerialNumber;
 		std::string sDeviceName = "Inv " + szSerialNumber;
@@ -1424,6 +1434,13 @@ bool EnphaseAPI::getInverterDetails()
 			m_HwdID, szDeviceID.c_str(), 1, devType, subType);
 		if (result.empty())
 		{
+			if (bTimeout)
+			{
+				//nothing received for the last hour!
+				std::string szLogMsg = "Last update more then 1 hour ago from inverter " + TimeToString(&last_reported, TF_DateTime) + ", serial: " + szSerialNumber + ")";
+				Log(LOG_ERROR, szLogMsg.c_str());
+				continue;
+			}
 			// Insert
 			int iUsed = 0;
 			m_sql.safe_query("INSERT INTO DeviceStatus (HardwareID, OrgHardwareID, DeviceID, Unit, Type, SubType, SignalLevel, BatteryLevel, Name, Used, nValue, sValue) "
@@ -1439,6 +1456,13 @@ bool EnphaseAPI::getInverterDetails()
 		}
 		else
 		{
+			if (bTimeout)
+			{
+				//nothing received for the last hour!
+				std::string szLogMsg = "Last update more then 1 hour ago from inverter: \"" + result[0][0] + "\" (" + TimeToString(&last_reported, TF_DateTime) + ", serial: " + szSerialNumber + ")";
+				Log(LOG_ERROR, szLogMsg.c_str());
+				continue;
+			}
 			// Update
 			UpdateValueInt(szDeviceID.c_str(), 1, devType, subType, 12, 255, nValue, sValue.c_str(), result[0][0]);
 		}
