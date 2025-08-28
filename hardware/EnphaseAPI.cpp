@@ -1438,7 +1438,7 @@ bool EnphaseAPI::getInverterDetails()
 			{
 				//nothing received for the last hour!
 				std::string szLogMsg = "Last update more then 1 hour ago from inverter " + TimeToString(&last_reported, TF_DateTime) + ", serial: " + szSerialNumber + ")";
-				Log(LOG_ERROR, szLogMsg.c_str());
+				Log(LOG_ERROR, "%s", szLogMsg.c_str());
 				continue;
 			}
 			// Insert
@@ -1460,7 +1460,7 @@ bool EnphaseAPI::getInverterDetails()
 			{
 				//nothing received for the last hour!
 				std::string szLogMsg = "Last update more then 1 hour ago from inverter: \"" + result[0][0] + "\" (" + TimeToString(&last_reported, TF_DateTime) + ", serial: " + szSerialNumber + ")";
-				Log(LOG_ERROR, szLogMsg.c_str());
+				Log(LOG_ERROR, "%s", szLogMsg.c_str());
 				continue;
 			}
 			// Update
