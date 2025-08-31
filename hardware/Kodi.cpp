@@ -244,6 +244,8 @@ void CKodiNode::handleMessage(std::string& pMessage)
 									m_CurrentStatus.Status(MSTAT_VIDEO);
 								else if (root["params"]["data"]["item"]["type"] == "movie")
 									m_CurrentStatus.Status(MSTAT_VIDEO);
+								else if (root["params"]["data"]["item"]["type"] == "tvshow")
+									m_CurrentStatus.Status(MSTAT_VIDEO);
 								else if (root["params"]["data"]["item"]["type"] == "song")
 									m_CurrentStatus.Status(MSTAT_AUDIO);
 								else if (root["params"]["data"]["item"]["type"] == "musicvideo")
