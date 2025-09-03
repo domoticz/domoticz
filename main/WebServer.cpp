@@ -3343,7 +3343,7 @@ namespace http
 						}
 						else if (dSubType == sTypePressure)
 						{
-							sprintf(szData, "%.1f Bar", atof(sValue.c_str()));
+							sprintf(szData, "%.2f Bar", atof(sValue.c_str()));
 							root["result"][ii]["Data"] = szData;
 							root["result"][ii]["TypeImg"] = "gauge";
 							root["result"][ii]["HaveTimeout"] = bHaveTimeout;
