@@ -12,6 +12,7 @@
 #define HTTP_CONNECTION_HPP
 
 #include <boost/asio.hpp>
+#include <boost/asio/deadline_timer.hpp> // for deadline_timer
 #include <deque>
 #include <fstream>
 #include "reply.hpp"
