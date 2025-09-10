@@ -13,7 +13,7 @@ INCLUDE(TestBigEndian)
 #
 #
 ## required min. libBoost version
-SET(DOMO_MIN_LIBBOOST_VERSION 1.66.0)
+SET(DOMO_MIN_LIBBOOST_VERSION 1.69.0)
 ##
 
 ### USER-SETTABLE OPTIONS
@@ -682,14 +682,14 @@ ELSE(USE_STATIC_BOOST)
    message(STATUS "Linking against boost dynamic libraries")
 ENDIF(USE_STATIC_BOOST)
 
-find_package(Boost REQUIRED COMPONENTS thread system)
+find_package(Boost REQUIRED COMPONENTS thread)
 IF(Boost_FOUND)
     MESSAGE(STATUS "BOOST includes found at: ${Boost_INCLUDE_DIR}")
 ELSE(Boost_FOUND)
-    MESSAGE(FATAL_ERROR "Boost thread/system library not found on your system, try to get this installed.")
+    MESSAGE(FATAL_ERROR "Boost thread library not found on your system, try to get this installed.")
 ENDIF(Boost_FOUND)
 
-target_link_libraries(domoticz Boost::thread Boost::system)
+target_link_libraries(domoticz Boost::thread)
 
 # compare found vs required libBoost version
 IF(Boost_VERSION VERSION_LESS DOMO_MIN_LIBBOOST_VERSION)
