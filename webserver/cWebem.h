@@ -1,6 +1,7 @@
 #pragma once
 
 #include <boost/asio.hpp>
+#include <boost/asio/deadline_timer.hpp> // for deadline_timer
 #include <boost/thread.hpp>
 #include "server.hpp"
 #include "session_store.hpp"
