@@ -2,7 +2,7 @@
 
 #include "../ASyncSerial.h"
 #include <boost/asio.hpp>
-#include <boost/asio/deadline_timer.hpp> // for deadline_timer
+#include <boost/asio/deadline_timer.hpp>
 #include <ctime>
 
 namespace Plugins {
