@@ -1418,7 +1418,7 @@ bool EnphaseAPI::getInverterDetails()
 
 		bool bTimeout = false;
 
-		if (last_reported < atime - 3600) {
+		if (last_reported < atime - 3600 * 24) {
 			bTimeout = true;
 		}
 
@@ -1437,7 +1437,7 @@ bool EnphaseAPI::getInverterDetails()
 			if (bTimeout)
 			{
 				//nothing received for the last hour!
-				std::string szLogMsg = "Last update more then 1 hour ago from inverter " + TimeToString(&last_reported, TF_DateTime) + ", serial: " + szSerialNumber + ")";
+				std::string szLogMsg = "Last update more then 1 day ago from inverter " + TimeToString(&last_reported, TF_DateTime) + ", serial: " + szSerialNumber + ")";
 				Log(LOG_ERROR, "%s", szLogMsg.c_str());
 				continue;
 			}
@@ -1459,7 +1459,7 @@ bool EnphaseAPI::getInverterDetails()
 			if (bTimeout)
 			{
 				//nothing received for the last hour!
-				std::string szLogMsg = "Last update more then 1 hour ago from inverter: \"" + result[0][0] + "\" (" + TimeToString(&last_reported, TF_DateTime) + ", serial: " + szSerialNumber + ")";
+				std::string szLogMsg = "Last update more then 1 day ago from inverter: \"" + result[0][0] + "\" (" + TimeToString(&last_reported, TF_DateTime) + ", serial: " + szSerialNumber + ")";
 				Log(LOG_ERROR, "%s", szLogMsg.c_str());
 				continue;
 			}
