@@ -1,6 +1,7 @@
 Version 2025.xxxx
 - Implemented: EnergyDashboard, add option for (Outside) Temperature Sensor
 - Implemented: Enever, Added Pure Energy, removed obsolete providers
+- Implemented: Enphase, display a error is a IQ inverter has not been received for more then a day
 - Implemented: Kodi, support for 'tvshow' type
 - Implemented: MQTT-AD, added support for Climate action_template/state
 - Implemented: MQTT-AD, added support for IR Blaster (Tuya iH-F8260)
