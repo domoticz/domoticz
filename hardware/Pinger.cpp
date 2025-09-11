@@ -12,7 +12,7 @@
 #include <json/json.h>
 
 #include <boost/asio.hpp>
-#include <boost/asio/deadline_timer.hpp> // for deadline_timer
+#include <boost/asio/deadline_timer.hpp>
 
 #include "pinger/icmp_header.h"
 #include "pinger/ipv4_header.h"
