@@ -17,7 +17,7 @@
 //https://enphase.com/en-us/products-and-services/envoy
 
 #ifdef _DEBUG
-#define DEBUG_EnphaseAPI_R
+//#define DEBUG_EnphaseAPI_R
 //#define DEBUG_EnphaseAPI_W
 #endif
 
