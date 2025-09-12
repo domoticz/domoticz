@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "ASyncTCP.h"
 #include <boost/asio.hpp>
-#include <boost/system/error_code.hpp>     // for error_code
+#include <boost/system/error_code.hpp>
 #include "../main/Logger.h"
 
 #define MAX_TCP_BUFFER_SIZE 4096

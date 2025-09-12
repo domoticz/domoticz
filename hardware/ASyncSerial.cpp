@@ -34,9 +34,9 @@
 #include <iostream>
 #include <boost/asio.hpp>
 #include <boost/thread.hpp>
-#include <boost/smart_ptr/shared_array.hpp>  // for shared_array
-#include <boost/system/error_code.hpp>       // for error_code
-#include <boost/system/system_error.hpp>     // for system_error
+#include <boost/smart_ptr/shared_array.hpp>
+#include <boost/system/error_code.hpp>
+#include <boost/system/system_error.hpp>
 
 #define BUFFER_SIZE 2048
 

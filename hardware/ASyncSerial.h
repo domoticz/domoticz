@@ -2,10 +2,10 @@
 #ifndef ASYNCSERIAL_H
 #define ASYNCSERIAL_H
 
-#include <stddef.h> // for size_t
+#include <stddef.h>
 #include "../main/Noncopyable.h"
-#include <boost/asio/serial_port_base.hpp>	      // for serial_port_base
-#include <boost/exception/diagnostic_information.hpp> //for exception printing
+#include <boost/asio/serial_port_base.hpp>
+#include <boost/exception/diagnostic_information.hpp>
 namespace boost
 {
 	namespace system

@@ -1,15 +1,15 @@
 #pragma once
 
-#include <stddef.h>			 // for size_t
-#include <deque>			 // for write queue
-#include <boost/asio/deadline_timer.hpp> // for deadline_timer
-#include <boost/asio/io_context.hpp>	 // for io_context
-#include <boost/asio/strand.hpp>	 // for strand
-#include <boost/asio/ip/tcp.hpp>	 // for tcp, tcp::endpoint, tcp::s...
-#include <boost/asio/ssl.hpp>		 // for secure sockets
-#include <boost/asio/ssl/stream.hpp>	 // for secure sockets
-#include <exception>			  // for exception
-#include <optional>			// for optional
+#include <stddef.h>
+#include <deque>
+#include <boost/asio/deadline_timer.hpp>
+#include <boost/asio/io_context.hpp>
+#include <boost/asio/strand.hpp>
+#include <boost/asio/ip/tcp.hpp>
+#include <boost/asio/ssl.hpp>
+#include <boost/asio/ssl/stream.hpp>
+#include <exception>
+#include <optional>
 
 #define ASYNCTCP_THREAD_NAME "ASyncTCP"
 #define DEFAULT_RECONNECT_TIME 30
