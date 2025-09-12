@@ -462,52 +462,59 @@ void CEventSystem::GetCurrentStates()
 			sitem.devType = atoi(sd[5].c_str());
 			sitem.subType = atoi(sd[6].c_str());
 
-			if ((sitem.devType == pTypeGeneral) && (sitem.subType == sTypeCounterIncremental))
+			try
 			{
-				//special case for incremental counter, need to calculate the actual count value
-
-				std::vector<std::vector<std::string> > result2;
-
-				result2 = m_sql.safe_query("SELECT sValue FROM DeviceStatus WHERE (ID=%" PRIu64 ")", sitem.ID);
-				uint64_t total_max = std::stoull(result2[0][0]);
-
-				//get value of today
-				std::string szDate = TimeToString(nullptr, TF_Date);
-				result2 = m_sql.safe_query("SELECT MIN(Value) FROM Meter WHERE (DeviceRowID=%" PRIu64 " AND Date>='%q')", sitem.ID, szDate.c_str());
-				if (!result2.empty())
+				if ((sitem.devType == pTypeGeneral) && (sitem.subType == sTypeCounterIncremental))
 				{
-					uint64_t total_min = std::stoull(result2[0][0]);
-					uint64_t total_real = total_max - total_min;
+					//special case for incremental counter, need to calculate the actual count value
 
-					sd[4] = std::to_string(total_real); //sitem.sValue = l_sValue.assign(sd[4]);
+					std::vector<std::vector<std::string> > result2;
+
+					result2 = m_sql.safe_query("SELECT sValue FROM DeviceStatus WHERE (ID=%" PRIu64 ")", sitem.ID);
+					uint64_t total_max = std::stoull(result2[0][0]);
+
+					//get value of today
+					std::string szDate = TimeToString(nullptr, TF_Date);
+					result2 = m_sql.safe_query("SELECT MIN(Value) FROM Meter WHERE (DeviceRowID=%" PRIu64 " AND Date>='%q')", sitem.ID, szDate.c_str());
+					if (!result2.empty())
+					{
+						uint64_t total_min = std::stoull(result2[0][0]);
+						uint64_t total_real = total_max - total_min;
+
+						sd[4] = std::to_string(total_real); //sitem.sValue = l_sValue.assign(sd[4]);
+					}
 				}
+
+				sitem.nValue = atoi(sd[3].c_str());
+				sitem.sValue = l_sValue.assign(sd[4]);
+
+				sitem.switchtype = atoi(sd[7].c_str());
+				_eSwitchType switchtype = (_eSwitchType)sitem.switchtype;
+				std::map<std::string, std::string> options = m_sql.BuildDeviceOptions(sd[10]);
+				sitem.nValueWording = l_nValueWording.assign(nValueToWording(sitem.devType, sitem.subType, switchtype, sitem.nValue, sitem.sValue, options));
+				sitem.lastUpdate = l_lastUpdate.assign(sd[8]);
+				sitem.lastLevel = atoi(sd[9].c_str());
+				sitem.description = l_description.assign(sd[11]);
+				sitem.batteryLevel = atoi(sd[12].c_str());
+				sitem.signalLevel = atoi(sd[13].c_str());
+				sitem.unit = atoi(sd[14].c_str());
+				sitem.deviceID = l_deviceID.assign(sd[15]);
+				sitem.protection = atoi(sd[16].c_str());
+				sitem.AddjValue = std::stof(sd[17]);
+				sitem.AddjMulti = std::stof(sd[18]);
+				sitem.AddjValue2 = std::stof(sd[19]);
+				sitem.AddjMulti2 = std::stof(sd[20]);
+
+				if (!m_sql.m_bDisableDzVentsSystem)
+				{
+					UpdateJsonMap(sitem, sitem.ID);
+				}
+				m_devicestates_temp[sitem.ID] = sitem;
 			}
-
-			sitem.nValue = atoi(sd[3].c_str());
-			sitem.sValue = l_sValue.assign(sd[4]);
-
-			sitem.switchtype = atoi(sd[7].c_str());
-			_eSwitchType switchtype = (_eSwitchType)sitem.switchtype;
-			std::map<std::string, std::string> options = m_sql.BuildDeviceOptions(sd[10]);
-			sitem.nValueWording = l_nValueWording.assign(nValueToWording(sitem.devType, sitem.subType, switchtype, sitem.nValue, sitem.sValue, options));
-			sitem.lastUpdate = l_lastUpdate.assign(sd[8]);
-			sitem.lastLevel = atoi(sd[9].c_str());
-			sitem.description = l_description.assign(sd[11]);
-			sitem.batteryLevel = atoi(sd[12].c_str());
-			sitem.signalLevel = atoi(sd[13].c_str());
-			sitem.unit = atoi(sd[14].c_str());
-			sitem.deviceID = l_deviceID.assign(sd[15]);
-			sitem.protection = atoi(sd[16].c_str());
-			sitem.AddjValue = std::stof(sd[17]);
-			sitem.AddjMulti = std::stof(sd[18]);
-			sitem.AddjValue2 = std::stof(sd[19]);
-			sitem.AddjMulti2 = std::stof(sd[20]);
-
-			if (!m_sql.m_bDisableDzVentsSystem)
+			catch (const std::exception& e)
 			{
-				UpdateJsonMap(sitem, sitem.ID);
+				_log.Log(LOG_ERROR, "EventSystem: Exception in GetCurrentStates, probably invalid device data! (Device: %s): %s", l_deviceName.c_str(), e.what());
 			}
-			m_devicestates_temp[sitem.ID] = sitem;
 		}
 		m_devicestates = m_devicestates_temp;
 	}
