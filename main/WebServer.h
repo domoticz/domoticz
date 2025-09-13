@@ -48,13 +48,6 @@ class CWebServer : public session_store, public std::enable_shared_from_this<CWe
 	void GetOpenIDConfiguration(WebEmSession &session, const request &req, reply &rep);
 
 	void PostMcp(WebEmSession &session, const request &req, reply &rep);
-	void McpInitialize(const Json::Value &jsonRequest, Json::Value &jsonRPCRep);
-	void McpToolsList(const Json::Value &jsonRequest, Json::Value &jsonRPCRep);
-	void McpToolsCall(const Json::Value &jsonRequest, Json::Value &jsonRPCRep);
-	void McpResourcesList(const Json::Value &jsonRequest, Json::Value &jsonRPCRep);
-	void McpResourcesRead(const Json::Value &jsonRequest, Json::Value &jsonRPCRep);
-	void McpPromptsList(const Json::Value &jsonRequest, Json::Value &jsonRPCRep);
-	void McpPromptsGet(const Json::Value &jsonRequest, Json::Value &jsonRPCRep);
 
 	void SetRFXCOMMode(WebEmSession & session, const request& req, std::string & redirect_uri);
 	void UploadFloorplanImage(WebEmSession & session, const request& req, std::string & redirect_uri);
