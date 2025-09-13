@@ -499,7 +499,7 @@ namespace Plugins
 				PyNewRef	pCode = Py_CompileString(PyString.c_str(), filename.c_str(), Py_file_input);
 				if (pCode)
 				{
-					PyNewRef	pEval = PyEval_EvalCode(pCode, global_dict, local_dict);
+					PyNewRef	pEval = PyEval_EvalCode(pCode, global_dict, global_dict);
 				}
 				else
 				{
@@ -524,7 +524,7 @@ namespace Plugins
 					PyNewRef	pCode = Py_CompileString(PyString.c_str(), filename.c_str(), Py_file_input);
 					if (pCode)
 					{
-						PyNewRef	pEval = PyEval_EvalCode(pCode, global_dict, local_dict);
+						PyNewRef	pEval = PyEval_EvalCode(pCode, global_dict, global_dict);
 					}
 					else
 					{
