@@ -19,12 +19,14 @@
 #include "../main/Helper.h"
 #include "../main/SQLHelper.h"
 #include "../main/json_helper.h"
-#include "../httpclient/UrlEncode.h"
 #include "../main/WebServer.h"
-#include "../webserver/Base64.h"
+#include "../main/WebServerHelper.h"
 
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
+
+extern http::server::CWebServerHelper m_webservers;
+extern CLogger _log;
 
 namespace http
 {
@@ -33,7 +35,7 @@ namespace http
 
 		void CWebServer::PostMcp(WebEmSession &session, const request &req, reply &rep)
 		{
-			_log.Debug(DEBUG_RECEIVED, "PostMcp (%d): %s (%s)", req.content_length, req.content.c_str(), req.uri.c_str());
+			_log.Debug(DEBUG_RECEIVED, "MCP: Post (%d): %s (%s)", req.content_length, req.content.c_str(), req.uri.c_str());
 			// Check if the request is valid
 			std::string sProtocolRequestHeader;
 			if (req.get_req_header(&req, "Accept") != nullptr)
@@ -41,7 +43,7 @@ namespace http
 				std::string accept = req.get_req_header(&req, "Accept");
 				if (accept.find("text/event-stream") == std::string::npos && accept.find("application/json") == std::string::npos)
 				{
-					_log.Debug(DEBUG_WEBSERVER, "PostMcp: Invalid Accept header: %s", accept.c_str());
+					_log.Debug(DEBUG_WEBSERVER, "MCP: Invalid Accept header: %s", accept.c_str());
 					rep = reply::stock_reply(reply::bad_request);
 					return;
 				}
@@ -54,7 +56,7 @@ namespace http
 				sProtocolRequestHeader = req.get_req_header(&req, "mcp-protocol-version:");
 				if (sProtocolRequestHeader != "2025-06-18")
 				{
-					_log.Debug(DEBUG_WEBSERVER, "PostMcp: MCP-PROTOCOL-VERSION not supported: %s", sProtocolRequestHeader.c_str());
+					_log.Debug(DEBUG_WEBSERVER, "MCP: MCP-PROTOCOL-VERSION not supported: %s", sProtocolRequestHeader.c_str());
 					rep = reply::stock_reply(reply::bad_request);
 					return;
 				}
@@ -62,7 +64,7 @@ namespace http
 			// Check if the request is a POST request
 			if (req.method != "POST")
 			{
-				_log.Debug(DEBUG_WEBSERVER, "PostMcp: Invalid method: %s", req.method.c_str());
+				_log.Debug(DEBUG_WEBSERVER, "MCP: Invalid method: %s", req.method.c_str());
 				rep = reply::stock_reply(reply::bad_request);
 				return;
 			}
@@ -70,7 +72,7 @@ namespace http
 			// Check if the request is a proper JSON-RPC request
 			if (req.content_length <= 0 || req.content.empty())
 			{
-				_log.Debug(DEBUG_WEBSERVER, "PostMcp: Invalid content length or empty content");
+				_log.Debug(DEBUG_WEBSERVER, "MCP: Invalid content length or empty content");
 				rep = reply::stock_reply(reply::bad_request);
 				return;
 			}
@@ -78,33 +80,33 @@ namespace http
 			std::string sParseErr;
 			if (!ParseJSon(req.content, jsonRequest, &sParseErr))
 			{
-				_log.Debug(DEBUG_WEBSERVER, "PostMcp: Failed to parse JSON content: %s", sParseErr.c_str());
+				_log.Debug(DEBUG_WEBSERVER, "MCP: Failed to parse JSON content: %s", sParseErr.c_str());
 				rep = reply::stock_reply(reply::bad_request);
 				return;
 			}
-			_log.Debug(DEBUG_RECEIVED, "PostMcp: Parsed JSON Request content: %s", jsonRequest.toStyledString().c_str());
+			_log.Debug(DEBUG_RECEIVED, "MCP: Parsed JSON Request content: %s", jsonRequest.toStyledString().c_str());
 			// Check if the parsed JSON is valid JSON-RPC 2.0 format
 			if (!jsonRequest.isObject() || !jsonRequest.isMember("jsonrpc") || !jsonRequest.isMember("method"))	//  || !jsonRequest.isMember("params") || !jsonRequest.isMember("id")
 			{
-				_log.Debug(DEBUG_WEBSERVER, "PostMcp: Invalid JSON-RPC request format");
+				_log.Debug(DEBUG_WEBSERVER, "MCP: Invalid JSON-RPC request format");
 				rep = reply::stock_reply(reply::bad_request);
 				return;
 			}
 			// Check if the JSON-RPC version is supported
 			if (jsonRequest["jsonrpc"].asString() != "2.0")
 			{
-				_log.Debug(DEBUG_WEBSERVER, "PostMcp: Unsupported JSON-RPC version: %s", jsonRequest["jsonrpc"].asString().c_str());
+				_log.Debug(DEBUG_WEBSERVER, "MCP: Unsupported JSON-RPC version: %s", jsonRequest["jsonrpc"].asString().c_str());
 				rep = reply::stock_reply(reply::bad_request);
 				return;
 			}
 			// Check if the method is supported and handle it
 			std::string sReqMethod = jsonRequest["method"].asString();
-			_log.Debug(DEBUG_WEBSERVER, "PostMcp: Request method: %s", sReqMethod.c_str());
+			_log.Debug(DEBUG_WEBSERVER, "MCP: Request method: %s", sReqMethod.c_str());
 
 			if (sReqMethod.find("notifications/") != std::string::npos)
 			{
 				// Handle notifications, notifications do not require a response
-				_log.Debug(DEBUG_WEBSERVER, "PostMcp: Notification: %s", sReqMethod.c_str());
+				_log.Debug(DEBUG_WEBSERVER, "MCP: Handling notification %s (do nothing).", sReqMethod.c_str());
 				rep = reply::stock_reply(reply::no_content);
 				return;
 			}
@@ -117,40 +119,40 @@ namespace http
 
 			if (sReqMethod == "ping")
 			{
-				_log.Debug(DEBUG_WEBSERVER, "PostMcp: Handling ping request");
+				_log.Debug(DEBUG_WEBSERVER, "MCP: Handling ping request (return empty result).");
 				jsonRPCRep["result"] = Json::Value(Json::objectValue);
 			}
 			else if (sReqMethod == "initialize")
 			{
-				McpInitialize(jsonRequest, jsonRPCRep);
+				mcp::McpInitialize(jsonRequest, jsonRPCRep);
 			}
 			else if (sReqMethod == "tools/list")
 			{
-				McpToolsList(jsonRequest, jsonRPCRep);
+				mcp::McpToolsList(jsonRequest, jsonRPCRep);
 			}
 			else if (sReqMethod == "tools/call")
 			{
-				McpToolsCall(jsonRequest, jsonRPCRep);
+				mcp::McpToolsCall(jsonRequest, jsonRPCRep);
 			}
 			else if (sReqMethod == "resources/list")
 			{
-				McpResourcesList(jsonRequest, jsonRPCRep);
+				mcp::McpResourcesList(jsonRequest, jsonRPCRep);
 			}
 			else if (sReqMethod == "resources/read")
 			{
-				McpResourcesRead(jsonRequest, jsonRPCRep);
+				mcp::McpResourcesRead(jsonRequest, jsonRPCRep);
 			}
 			else if (sReqMethod == "prompts/list")
 			{
-				McpPromptsList(jsonRequest, jsonRPCRep);
+				mcp::McpPromptsList(jsonRequest, jsonRPCRep);
 			}
 			else if (sReqMethod == "prompts/get")
 			{
-				McpPromptsGet(jsonRequest, jsonRPCRep);
+				mcp::McpPromptsGet(jsonRequest, jsonRPCRep);
 			}
 			else
 			{
-				_log.Debug(DEBUG_WEBSERVER, "PostMcp: Unsupported method: %s", sReqMethod.c_str());
+				_log.Debug(DEBUG_WEBSERVER, "MCP: Unsupported method: %s", sReqMethod.c_str());
 				rep = reply::stock_reply(reply::not_implemented);
 				return;
 			}
@@ -164,234 +166,255 @@ namespace http
 			//reply::add_header(&rep, "Connection", "keep-alive");
 		}
 
-		void CWebServer::McpInitialize(const Json::Value &jsonRequest, Json::Value &jsonRPCRep)
-		{
-			_log.Debug(DEBUG_WEBSERVER, "HandleMcpInitialize: Handling MCP initialization request");
-
-			// Prepare the result for the initialize method
-			jsonRPCRep["result"]["protocolVersion"] = "2025-06-18";
-			//jsonRPCRep["result"]["capabilities"]["logging"] = Json::Value(Json::objectValue);
-			//jsonRPCRep["result"]["capabilities"]["completion"] = Json::Value(Json::objectValue);
-			jsonRPCRep["result"]["capabilities"]["prompts"] = Json::Value(Json::objectValue);
-			//jsonRPCRep["result"]["capabilities"]["prompts"]["listChanged"] = true;
-			jsonRPCRep["result"]["capabilities"]["resources"] = Json::Value(Json::objectValue);
-			//jsonRPCRep["result"]["capabilities"]["resources"]["subscribe"] = true;
-			//jsonRPCRep["result"]["capabilities"]["resources"]["listChanged"] = true;
-			jsonRPCRep["result"]["capabilities"]["tools"] = Json::Value(Json::objectValue);
-			//jsonRPCRep["result"]["capabilities"]["tools"]["listChanged"] = true;
-
-			jsonRPCRep["result"]["serverInfo"]["name"] = "DomoticzMcp";
-			jsonRPCRep["result"]["serverInfo"]["title"] = "Domoticz MCP Server";
-			jsonRPCRep["result"]["serverInfo"]["version"] = "0.1.0";
-			jsonRPCRep["result"]["serverInfo"]["description"] = "Domoticz is a home automation system that lets you monitor, configure and control various devices from different hardware in your home. Devices like switches (for example light switches or smart plugs) can be used to control (other) devices and devices like sensors (for example temperature sensors or contact sensors) can provide information about their state.";
-
-			//jsonRPCRep["result"]["instructions"] = "Any additional instructions for the client can be provided here";
-		}
-
-		void CWebServer::McpToolsList(const Json::Value &jsonRequest, Json::Value &jsonRPCRep)
-		{
-			// Prepare the result for the tools/list method
-			jsonRPCRep["result"]["tools"] = Json::Value(Json::arrayValue);
-			Json::Value tool;
-			// Get Switch State tool
-			tool["name"] = "get_switch_state";
-			tool["title"] = "See the state of a switch in the system";
-			tool["description"] = "Get the current state of a given switch in the system";
-			tool["inputSchema"]["type"] = "object";
-			tool["inputSchema"]["properties"]["switchname"]["type"] = "string";
-			tool["inputSchema"]["properties"]["switchname"]["description"] = "Name of the switch to query";
-			tool["inputSchema"]["required"].append("switchname");
-			jsonRPCRep["result"]["tools"].append(tool);
-			// Toggle switch state tool
-			tool.clear();
-			tool["name"] = "toggle_switch_state";
-			tool["title"] = "Toggle the state of a switch in the system";
-			tool["description"] = "Toggle the state of a given switch in the system";
-			tool["inputSchema"]["type"] = "object";
-			tool["inputSchema"]["properties"]["switchname"]["type"] = "string";
-			tool["inputSchema"]["properties"]["switchname"]["description"] = "Name of the switch to toggle";
-			tool["inputSchema"]["required"].append("switchname");
-			jsonRPCRep["result"]["tools"].append(tool);
-			// Get Sensor Value tool
-			tool.clear();
-			tool["name"] = "get_sensor_value";
-			tool["title"] = "Get the value of a sensor in the system";
-			tool["description"] = "Retrieve the current value of a specified sensor in the system";
-			tool["inputSchema"]["type"] = "object";
-			tool["inputSchema"]["properties"]["sensorname"]["type"] = "string";
-			tool["inputSchema"]["properties"]["sensorname"]["description"] = "Name of the sensor to query";
-			tool["inputSchema"]["required"].append("sensorname");
-			jsonRPCRep["result"]["tools"].append(tool);
-		}
-
-		void CWebServer::McpToolsCall(const Json::Value &jsonRequest, Json::Value &jsonRPCRep)
-		{
-			// Check if the required parameters are present
-			if (!jsonRequest.isMember("params") || !jsonRequest["params"].isMember("name"))
-			{
-				_log.Debug(DEBUG_WEBSERVER, "McpToolsCall: Missing required parameter 'name'");
-				jsonRPCRep["error"]["code"] = -32602; // Invalid params
-				jsonRPCRep["error"]["message"] = "Missing required parameter 'name'";
-				return;
-			}
-			// Handle the tool call based on the name
-			std::string sMethodName = jsonRequest["params"]["name"].asString();
-			Json::Value jsonDevices;
-			GetJSonDevices(jsonDevices, "", "", "", "", "", "", false, false, false, 0, "", "");
-			if (sMethodName == "get_switch_state")
-			{
-				if(!mcp::getSwitchState(jsonRequest, jsonRPCRep, jsonDevices))
-				{
-					jsonRPCRep["error"]["code"] = -32602; // Invalid params
-					jsonRPCRep["error"]["message"] = "Error getting switch state";
-					return;
-				}
-			}
-			else if (sMethodName == "toggle_switch_state")
-			{
-				if(!mcp::toggleSwitchState(jsonRequest, jsonRPCRep, jsonDevices))
-				{
-					jsonRPCRep["error"]["code"] = -32602; // Invalid params
-					jsonRPCRep["error"]["message"] = "Error toggling switch state";
-					return;
-				}
-			}
-			else if (sMethodName == "get_sensor_value")
-			{
-				if(!mcp::getSensorValue(jsonRequest, jsonRPCRep, jsonDevices))
-				{
-					jsonRPCRep["error"]["code"] = -32602; // Invalid params
-					jsonRPCRep["error"]["message"] = "Error getting sensor value";
-					return;
-				}
-			}
-			else
-			{
-				_log.Debug(DEBUG_WEBSERVER, "McpToolsCall: Unsupported tool name: %s", sMethodName.c_str());
-				jsonRPCRep["error"]["code"] = -32601; // Method not found
-				jsonRPCRep["error"]["message"] = "Method not found";
-				return;
-			}
-			// std::string sLastMod = (device.isMember("LastUpdate") ? device["LastUpdate"].asString() : "");
-			// if (!sLastMod.empty())
-			// 	stdreplace(sLastMod, " ", "T");
-			// 	annotations["lastModified"] = sLastMod + "Z";	// To-Do: Properly convert to ISO 8601 format
-			// break;
-			// if (annotations.isMember("lastModified"))
-			// {
-			// 	tool["annotations"] = annotations;
-			// }
-			_log.Debug(DEBUG_WEBSERVER, "McpToolsCall: Returning result for method (%s): %s", sMethodName.c_str(), jsonRPCRep.toStyledString().c_str());
-		}
-
-		void CWebServer::McpResourcesList(const Json::Value &jsonRequest, Json::Value &jsonRPCRep)
-		{
-			// Prepare the result for the resources/list method
-			jsonRPCRep["result"]["resources"] = Json::Value(Json::arrayValue);
-
-			Json::Value jsonDevices;
-			GetJSonDevices(jsonDevices, "", "", "", "", "", "", false, false, false, 0, "", "");
-			if (jsonDevices.isObject() && jsonDevices.isMember("result"))
-			{
-				for (const auto &device : jsonDevices["result"])
-				{
-					//_log.Debug(DEBUG_WEBSERVER, "McpResourcesList: Got device: %s", device.toStyledString().c_str());
-					if (device.isObject() && device.isMember("idx") && device.isMember("HardwareName") && device.isMember("ID") &&
-						device.isMember("Name") && device.isMember("Type") && device.isMember("SubType") && device.isMember("Data"))
-					{
-						Json::Value resource;
-						//resource["uri"] = "dom:///dom.local:8080/" + device["Type"].asString() + "/" + device["SubType"].asString() + "/" + device["idx"].asString();
-						std::string sType = device["Type"].asString();
-						stdlower(sType);
-						// Replace spaces and slashes in sType to make it URL friendly
-						for (auto &ch : sType)
-						{
-							if (ch == ' ' || ch == '/')
-								ch = '-';
-						}
-						resource["uri"] = sType + ":///" + device["SubType"].asString() + "/" + device["idx"].asString();
-						resource["name"] = device["Name"].asString();
-						resource["title"] = device["Name"].asString() + " (" + device["HardwareName"].asString() + " - " + device["Type"].asString() + " - " + device["SubType"].asString() + ")";
-						resource["description"] = "A Sensor from the " + device["HardwareName"].asString() + " hardware of Type " + device["Type"].asString() +
-												  " and subtype " + device["SubType"].asString() + " called " + device["Name"].asString() +
-												  " with ID " + device["ID"].asString() + " and IDX " + device["idx"].asString();
-						resource["mimeType"] = "plain/text";
-						Json::Value meta;
-						meta["hardware"] = device["HardwareName"].asString();
-						meta["type"] = device["Type"].asString();
-						meta["subtype"] = device["SubType"].asString();
-						meta["idx"] = atoi(device["idx"].asString().c_str());
-						meta["id"] = device["ID"].asString();
-						resource["_meta"] = meta;
-						jsonRPCRep["result"]["resources"].append(resource);
-					}
-				}
-			}
-			_log.Debug(DEBUG_WEBSERVER, "McpResourcesList: Following resources offered:\n%s", jsonRPCRep.toStyledString().c_str());
-		}
-
-		void CWebServer::McpResourcesRead(const Json::Value &jsonRequest, Json::Value &jsonRPCRep)
-		{
-			// Prepare the result for the resources/read method
-			// TODO : Actually read the resource specified in the request
-			jsonRPCRep["result"]["contents"] = Json::Value(Json::arrayValue);
-			Json::Value resource;
-			resource["uri"] = "dom:///dom.local:8080/Light_Switch/Switch/1";
-			resource["name"] = "dumswitch";
-			resource["title"] = "dumswitch (testdummy - light switch - switch)";
-			resource["mimeType"] = "plain/text";
-			resource["text"] = "off";
-			jsonRPCRep["result"]["contents"].append(resource);
-		}
-
-		void CWebServer::McpPromptsList(const Json::Value &jsonRequest, Json::Value &jsonRPCRep)
-		{
-			// Prepare the result for the prompts/list method
-			jsonRPCRep["result"]["prompts"] = Json::Value(Json::arrayValue);
-			Json::Value prompt;
-			prompt["name"] = "housesummary";
-			prompt["title"] = "Get a status overview";
-			prompt["description"] = "Summarize the current status of all sensors and devices (either grouped by hardware, type or room)";
-			prompt["arguments"] = Json::Value(Json::arrayValue);
-			Json::Value arg;
-			arg["name"] = "hardware";
-			arg["description"] = "The hardware to summarize";
-			arg["required"] = false;
-			prompt["arguments"].append(arg);
-			arg["name"] = "type";
-			arg["description"] = "The type to summarize";
-			arg["required"] = false;
-			prompt["arguments"].append(arg);
-			arg["name"] = "room";
-			arg["description"] = "The room to summarize";
-			arg["required"] = false;
-			prompt["arguments"].append(arg);
-			jsonRPCRep["result"]["prompts"].append(prompt);
-		}
-
-		void CWebServer::McpPromptsGet(const Json::Value &jsonRequest, Json::Value &jsonRPCRep)
-		{
-			// Prepare the result for the prompts/get method
-			jsonRPCRep["result"]["description"] = "Summarize the current status of all sensors and devices (either grouped by hardware, type or room)";
-			jsonRPCRep["result"]["messages"] = Json::Value(Json::arrayValue);
-			Json::Value message;
-			message["role"] = "user";
-			message["content"] = Json::Value(Json::objectValue);
-			message["content"]["type"] = "text";
-			message["content"]["text"] = "As the friendly butler of the house, please summarize the current status of all sensors and devices preferably grouped by room. Please also include the current state of the switches and sensors in your summary.";
-			jsonRPCRep["result"]["messages"].append(message);
-		}
-
 	} // namespace server
 } // namespace http
 
 namespace mcp
 {
+	void McpInitialize(const Json::Value &jsonRequest, Json::Value &jsonRPCRep)
+	{
+		_log.Debug(DEBUG_WEBSERVER, "MCP: Handling initialize request.");
+
+		// Prepare the result for the initialize method
+		jsonRPCRep["result"]["protocolVersion"] = "2025-06-18";
+		//jsonRPCRep["result"]["capabilities"]["logging"] = Json::Value(Json::objectValue);
+		//jsonRPCRep["result"]["capabilities"]["completion"] = Json::Value(Json::objectValue);
+		jsonRPCRep["result"]["capabilities"]["prompts"] = Json::Value(Json::objectValue);
+		//jsonRPCRep["result"]["capabilities"]["prompts"]["listChanged"] = true;
+		jsonRPCRep["result"]["capabilities"]["resources"] = Json::Value(Json::objectValue);
+		//jsonRPCRep["result"]["capabilities"]["resources"]["subscribe"] = true;
+		//jsonRPCRep["result"]["capabilities"]["resources"]["listChanged"] = true;
+		jsonRPCRep["result"]["capabilities"]["tools"] = Json::Value(Json::objectValue);
+		//jsonRPCRep["result"]["capabilities"]["tools"]["listChanged"] = true;
+
+		jsonRPCRep["result"]["serverInfo"]["name"] = "DomoticzMcp";
+		jsonRPCRep["result"]["serverInfo"]["title"] = "Domoticz MCP Server";
+		jsonRPCRep["result"]["serverInfo"]["version"] = "0.1.0";
+		jsonRPCRep["result"]["serverInfo"]["description"] = "Domoticz is a home automation system that lets you monitor, configure and control various devices from different hardware in your home. Devices like switches (for example light switches or smart plugs) can be used to control (other) devices and devices like sensors (for example temperature sensors or contact sensors) can provide information about their state.";
+
+		//jsonRPCRep["result"]["instructions"] = "Any additional instructions for the client can be provided here";
+	}
+
+	void McpToolsList(const Json::Value &jsonRequest, Json::Value &jsonRPCRep)
+	{
+		_log.Debug(DEBUG_WEBSERVER, "MCP: Handling tools/list request.");
+
+		// Prepare the result for the tools/list method
+		jsonRPCRep["result"]["tools"] = Json::Value(Json::arrayValue);
+		Json::Value tool;
+		// Get Switch State tool
+		tool["name"] = "get_switch_state";
+		tool["title"] = "See the state of a switch in the system";
+		tool["description"] = "Get the current state of a given switch in the system";
+		tool["inputSchema"]["type"] = "object";
+		tool["inputSchema"]["properties"]["switchname"]["type"] = "string";
+		tool["inputSchema"]["properties"]["switchname"]["description"] = "Name of the switch to query";
+		tool["inputSchema"]["required"].append("switchname");
+		jsonRPCRep["result"]["tools"].append(tool);
+		// Toggle switch state tool
+		tool.clear();
+		tool["name"] = "toggle_switch_state";
+		tool["title"] = "Toggle the state of a switch in the system";
+		tool["description"] = "Toggle the state of a given switch in the system";
+		tool["inputSchema"]["type"] = "object";
+		tool["inputSchema"]["properties"]["switchname"]["type"] = "string";
+		tool["inputSchema"]["properties"]["switchname"]["description"] = "Name of the switch to toggle";
+		tool["inputSchema"]["required"].append("switchname");
+		jsonRPCRep["result"]["tools"].append(tool);
+		// Get Sensor Value tool
+		tool.clear();
+		tool["name"] = "get_sensor_value";
+		tool["title"] = "Get the value of a sensor in the system";
+		tool["description"] = "Retrieve the current value of a specified sensor in the system";
+		tool["inputSchema"]["type"] = "object";
+		tool["inputSchema"]["properties"]["sensorname"]["type"] = "string";
+		tool["inputSchema"]["properties"]["sensorname"]["description"] = "Name of the sensor to query";
+		tool["inputSchema"]["required"].append("sensorname");
+		jsonRPCRep["result"]["tools"].append(tool);
+	}
+
+	void McpToolsCall(const Json::Value &jsonRequest, Json::Value &jsonRPCRep)
+	{
+		// Check if the required parameters are present
+		if (!jsonRequest.isMember("params") || !jsonRequest["params"].isMember("name"))
+		{
+			_log.Debug(DEBUG_WEBSERVER, "MCP: Missing required tool parameter 'name' in tools/{tool} request.");
+			jsonRPCRep["error"]["code"] = -32602; // Invalid params
+			jsonRPCRep["error"]["message"] = "Missing required parameter 'name'";
+			return;
+		}
+		// Handle the tool call based on the name
+		std::string sMethodName = jsonRequest["params"]["name"].asString();
+
+		_log.Debug(DEBUG_WEBSERVER, "MCP: Handling tools/{%s} request.", sMethodName.c_str());
+
+		Json::Value jsonDevices;
+		m_webservers.GetJSonDevices(jsonDevices, "", "", "", "", "", "", false, false, false, 0, "", "");
+		if (sMethodName == "get_switch_state")
+		{
+			if(!mcp::getSwitchState(jsonRequest, jsonRPCRep, jsonDevices))
+			{
+				jsonRPCRep["error"]["code"] = -32602; // Invalid params
+				jsonRPCRep["error"]["message"] = "Error getting switch state";
+				return;
+			}
+		}
+		else if (sMethodName == "toggle_switch_state")
+		{
+			if(!mcp::toggleSwitchState(jsonRequest, jsonRPCRep, jsonDevices))
+			{
+				jsonRPCRep["error"]["code"] = -32602; // Invalid params
+				jsonRPCRep["error"]["message"] = "Error toggling switch state";
+				return;
+			}
+		}
+		else if (sMethodName == "get_sensor_value")
+		{
+			if(!mcp::getSensorValue(jsonRequest, jsonRPCRep, jsonDevices))
+			{
+				jsonRPCRep["error"]["code"] = -32602; // Invalid params
+				jsonRPCRep["error"]["message"] = "Error getting sensor value";
+				return;
+			}
+		}
+		else
+		{
+			_log.Debug(DEBUG_WEBSERVER, "MCP: Unsupported tool name: %s", sMethodName.c_str());
+			jsonRPCRep["error"]["code"] = -32601; // Method not found
+			jsonRPCRep["error"]["message"] = "Method not found";
+			return;
+		}
+		// std::string sLastMod = (device.isMember("LastUpdate") ? device["LastUpdate"].asString() : "");
+		// if (!sLastMod.empty())
+		// 	stdreplace(sLastMod, " ", "T");
+		// 	annotations["lastModified"] = sLastMod + "Z";	// To-Do: Properly convert to ISO 8601 format
+		// break;
+		// if (annotations.isMember("lastModified"))
+		// {
+		// 	tool["annotations"] = annotations;
+		// }
+		_log.Debug(DEBUG_WEBSERVER, "McpToolsCall: Returning result for method (%s): %s", sMethodName.c_str(), jsonRPCRep.toStyledString().c_str());
+	}
+
+	void McpResourcesList(const Json::Value &jsonRequest, Json::Value &jsonRPCRep)
+	{
+		_log.Debug(DEBUG_WEBSERVER, "MCP: Handling resources/list request.");
+
+		// Prepare the result for the resources/list method
+		jsonRPCRep["result"]["resources"] = Json::Value(Json::arrayValue);
+
+		Json::Value jsonDevices;
+		m_webservers.GetJSonDevices(jsonDevices, "", "", "", "", "", "", false, false, false, 0, "", "");
+		if (jsonDevices.isObject() && jsonDevices.isMember("result"))
+		{
+			for (const auto &device : jsonDevices["result"])
+			{
+				//_log.Debug(DEBUG_WEBSERVER, "MCP: ResourcesList: Got device: %s", device.toStyledString().c_str());
+				if (device.isObject() && device.isMember("idx") && device.isMember("HardwareName") && device.isMember("ID") &&
+					device.isMember("Name") && device.isMember("Type") && device.isMember("SubType") && device.isMember("Data"))
+				{
+					Json::Value resource;
+					//resource["uri"] = "dom:///dom.local:8080/" + device["Type"].asString() + "/" + device["SubType"].asString() + "/" + device["idx"].asString();
+					std::string sType = device["Type"].asString();
+					stdlower(sType);
+					// Replace spaces and slashes in sType to make it URL friendly
+					stdreplace(sType, " ", "-");
+					stdreplace(sType, "/", "-");
+					resource["uri"] = sType + ":///" + device["SubType"].asString() + "/" + device["idx"].asString();
+					resource["name"] = device["Name"].asString();
+					resource["title"] = device["Name"].asString() + " (" + device["HardwareName"].asString() + " - " + device["Type"].asString() + " - " + device["SubType"].asString() + ")";
+					resource["description"] = "A Sensor from the " + device["HardwareName"].asString() + " hardware of Type " + device["Type"].asString() +
+												" and subtype " + device["SubType"].asString() + " called " + device["Name"].asString() +
+												" with ID " + device["ID"].asString() + " and IDX " + device["idx"].asString();
+					resource["mimeType"] = "plain/text";
+					Json::Value meta;
+					meta["hardware"] = device["HardwareName"].asString();
+					meta["type"] = device["Type"].asString();
+					meta["subtype"] = device["SubType"].asString();
+					meta["idx"] = atoi(device["idx"].asString().c_str());
+					meta["id"] = device["ID"].asString();
+					resource["_meta"] = meta;
+					jsonRPCRep["result"]["resources"].append(resource);
+				}
+			}
+		}
+		_log.Debug(DEBUG_WEBSERVER, "McpResourcesList: Following resources offered:\n%s", jsonRPCRep.toStyledString().c_str());
+	}
+
+	void McpResourcesRead(const Json::Value &jsonRequest, Json::Value &jsonRPCRep)
+	{
+		// Check if the required parameters are present
+		if (!jsonRequest.isMember("params") || !jsonRequest["params"].isMember("uri"))
+		{
+			_log.Debug(DEBUG_WEBSERVER, "MCP: Missing required resource parameter 'uri' in resources/read request.");
+			jsonRPCRep["error"]["code"] = -32602; // Invalid params
+			jsonRPCRep["error"]["message"] = "Missing required parameter 'uri'";
+			return;
+		}
+		// Handle the tool call based on the name
+		std::string sReadURI = jsonRequest["params"]["uri"].asString();
+
+		_log.Debug(DEBUG_WEBSERVER, "MCP: Handling resources/read request for %s.", sReadURI.c_str());
+
+		// Prepare the result for the resources/read method
+		// TODO : Actually read the resource specified in the request
+		jsonRPCRep["result"]["contents"] = Json::Value(Json::arrayValue);
+		Json::Value resource;
+		resource["uri"] = "dom:///dom.local:8080/Light_Switch/Switch/1";
+		resource["name"] = "dumswitch";
+		resource["title"] = "dumswitch (testdummy - light switch - switch)";
+		resource["mimeType"] = "plain/text";
+		resource["text"] = "off";
+		jsonRPCRep["result"]["contents"].append(resource);
+	}
+
+	void McpPromptsList(const Json::Value &jsonRequest, Json::Value &jsonRPCRep)
+	{
+		_log.Debug(DEBUG_WEBSERVER, "MCP: Handling prompts/list request.");
+
+		// Prepare the result for the prompts/list method
+		jsonRPCRep["result"]["prompts"] = Json::Value(Json::arrayValue);
+		Json::Value prompt;
+		prompt["name"] = "housesummary";
+		prompt["title"] = "Get a status overview";
+		prompt["description"] = "Summarize the current status of all sensors and devices (either grouped by hardware, type or room)";
+		prompt["arguments"] = Json::Value(Json::arrayValue);
+		Json::Value arg;
+		arg["name"] = "hardware";
+		arg["description"] = "The hardware to summarize";
+		arg["required"] = false;
+		prompt["arguments"].append(arg);
+		arg["name"] = "type";
+		arg["description"] = "The type to summarize";
+		arg["required"] = false;
+		prompt["arguments"].append(arg);
+		arg["name"] = "room";
+		arg["description"] = "The room to summarize";
+		arg["required"] = false;
+		prompt["arguments"].append(arg);
+		jsonRPCRep["result"]["prompts"].append(prompt);
+	}
+
+	void McpPromptsGet(const Json::Value &jsonRequest, Json::Value &jsonRPCRep)
+	{
+		_log.Debug(DEBUG_WEBSERVER, "MCP: Handling prompts/get request.");
+
+		// Prepare the result for the prompts/get method
+		jsonRPCRep["result"]["description"] = "Summarize the current status of all sensors and devices (either grouped by hardware, type or room)";
+		jsonRPCRep["result"]["messages"] = Json::Value(Json::arrayValue);
+		Json::Value message;
+		message["role"] = "user";
+		message["content"] = Json::Value(Json::objectValue);
+		message["content"]["type"] = "text";
+		message["content"]["text"] = "As the friendly butler of the house, please summarize the current status of all sensors and devices preferably grouped by room. Please also include the current state of the switches and sensors in your summary.";
+		jsonRPCRep["result"]["messages"].append(message);
+	}
+
 	bool getSwitchState(const Json::Value &jsonRequest, Json::Value &jsonRPCRep, const Json::Value &jsonDevices)
 	{
 		if (!jsonRequest["params"].isMember("arguments") || !jsonRequest["params"]["arguments"].isMember("switchname"))
 		{
-			_log.Debug(DEBUG_WEBSERVER, "getSwitchState: Missing required parameter 'switchname'");
+			_log.Debug(DEBUG_WEBSERVER, "MCP: getSwitchState: Missing required parameter 'switchname'");
 			return false;
 		}
 		std::string sSwitchName = jsonRequest["params"]["arguments"]["switchname"].asString();
@@ -408,7 +431,6 @@ namespace mcp
 		jsonRPCRep["result"]["content"] = Json::Value(Json::arrayValue);
 		jsonRPCRep["result"]["content"].append(tool);
 		jsonRPCRep["result"]["isError"] = !bFound;
-		_log.Debug(DEBUG_WEBSERVER, "getSwitchState: Returning result for switch (%s): %s", sSwitchName.c_str(), jsonRPCRep.toStyledString().c_str());
 		return true;
 	}
 
@@ -416,7 +438,7 @@ namespace mcp
 	{
 		if (!jsonRequest["params"].isMember("arguments") || !jsonRequest["params"]["arguments"].isMember("switchname"))
 		{
-			_log.Debug(DEBUG_WEBSERVER, "toggleSwitchState: Missing required parameter 'switchname'");
+			_log.Debug(DEBUG_WEBSERVER, "MCP: toggleSwitchState: Missing required parameter 'switchname'");
 			return false;
 		}
 		std::string sSwitchName = jsonRequest["params"]["arguments"]["switchname"].asString();
@@ -436,7 +458,6 @@ namespace mcp
 		jsonRPCRep["result"]["content"] = Json::Value(Json::arrayValue);
 		jsonRPCRep["result"]["content"].append(tool);
 		jsonRPCRep["result"]["isError"] = !bFound;
-		_log.Debug(DEBUG_WEBSERVER, "toggleSwitchState: Returning result for switch (%s): %s", sSwitchName.c_str(), jsonRPCRep.toStyledString().c_str());
 		return true;
 	}
 
@@ -444,7 +465,7 @@ namespace mcp
 	{
 		if (!jsonRequest["params"].isMember("arguments") || !jsonRequest["params"]["arguments"].isMember("sensorname"))
 		{
-			_log.Debug(DEBUG_WEBSERVER, "getSensorValue: Missing required parameter 'sensorname'");
+			_log.Debug(DEBUG_WEBSERVER, "MCP: getSensorValue: Missing required parameter 'sensorname'");
 			return false;
 		}
 		std::string sSensorName = jsonRequest["params"]["arguments"]["sensorname"].asString();
@@ -461,7 +482,6 @@ namespace mcp
 		jsonRPCRep["result"]["content"] = Json::Value(Json::arrayValue);
 		jsonRPCRep["result"]["content"].append(tool);
 		jsonRPCRep["result"]["isError"] = !bFound;
-		_log.Debug(DEBUG_WEBSERVER, "getSensorValue: Returning result for sensor (%s): %s", sSensorName.c_str(), jsonRPCRep.toStyledString().c_str());
 		return true;
 	}
 
