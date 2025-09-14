@@ -2252,6 +2252,9 @@
     <ClInclude Include="..\mdns\mdns.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\mcpserver\McpService.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\webserver\Base64.cpp">
@@ -3038,6 +3041,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\mdns\mdns.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\mcpserver\McpService.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
