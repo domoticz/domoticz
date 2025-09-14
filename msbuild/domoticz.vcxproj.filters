@@ -2254,6 +2254,8 @@
     </ClInclude>
     <ClInclude Include="..\main\KWHStats.h">
       <Filter>Helpers</Filter>
+    <ClInclude Include="..\mcpserver\McpService.hpp">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -3045,6 +3047,8 @@
     </ClCompile>
     <ClCompile Include="..\main\KWHStats.cpp">
       <Filter>Helpers</Filter>
+    <ClCompile Include="..\mcpserver\McpService.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

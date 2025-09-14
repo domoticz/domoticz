@@ -728,6 +728,7 @@
     <ClInclude Include="..\main\KWHStats.h" />
     <ClInclude Include="..\mdns\include\mdns.h" />
     <ClInclude Include="..\mdns\mdns.hpp" />
+    <ClInclude Include="..\mcpserver\McpService.hpp" />
     <ClInclude Include="..\main\appversion.h" />
     <ClInclude Include="..\hardware\ASyncSerial.h" />
     <ClInclude Include="..\main\BaroForecastCalculator.h" />
@@ -1031,6 +1032,7 @@
     <ClCompile Include="..\iamserver\IamService.cpp" />
     <ClCompile Include="..\main\KWHStats.cpp" />
     <ClCompile Include="..\mdns\mdns.cpp" />
+    <ClCompile Include="..\mcpserver\McpService.cpp" />
     <ClCompile Include="..\main\BaroForecastCalculator.cpp" />
     <ClCompile Include="..\main\Camera.cpp" />
     <ClCompile Include="..\hardware\Rego6XXSerial.cpp" />
