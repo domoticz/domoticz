@@ -377,19 +377,11 @@ namespace mcp
 		Json::Value prompt;
 		prompt["name"] = "housesummary";
 		prompt["title"] = "Get a status overview";
-		prompt["description"] = "Summarize the current status of all sensors and devices (either grouped by hardware, type or room)";
+		prompt["description"] = "Summarize the current status of all sensors and devices in the house (optionally limited to a specific room)";
 		prompt["arguments"] = Json::Value(Json::arrayValue);
 		Json::Value arg;
-		arg["name"] = "hardware";
-		arg["description"] = "The hardware to summarize";
-		arg["required"] = false;
-		prompt["arguments"].append(arg);
-		arg["name"] = "type";
-		arg["description"] = "The type to summarize";
-		arg["required"] = false;
-		prompt["arguments"].append(arg);
 		arg["name"] = "room";
-		arg["description"] = "The room to summarize";
+		arg["description"] = "The room to limit the summary to (optional, if not provided the whole house is summarized)";
 		arg["required"] = false;
 		prompt["arguments"].append(arg);
 		jsonRPCRep["result"]["prompts"].append(prompt);
@@ -397,17 +389,44 @@ namespace mcp
 
 	void McpPromptsGet(const Json::Value &jsonRequest, Json::Value &jsonRPCRep)
 	{
-		_log.Debug(DEBUG_WEBSERVER, "MCP: Handling prompts/get request.");
+		std::string sPromptName = jsonRequest["params"]["name"].asString();
+		_log.Debug(DEBUG_WEBSERVER, "MCP: Handling prompts/get request (%s).", sPromptName.c_str());
 
-		// Prepare the result for the prompts/get method
-		jsonRPCRep["result"]["description"] = "Summarize the current status of all sensors and devices (either grouped by hardware, type or room)";
-		jsonRPCRep["result"]["messages"] = Json::Value(Json::arrayValue);
-		Json::Value message;
-		message["role"] = "user";
-		message["content"] = Json::Value(Json::objectValue);
-		message["content"]["type"] = "text";
-		message["content"]["text"] = "As the friendly butler of the house, please summarize the current status of all sensors and devices preferably grouped by room. Please also include the current state of the switches and sensors in your summary.";
-		jsonRPCRep["result"]["messages"].append(message);
+		if (sPromptName == "housesummary")
+		{
+			std::string sRoom = ((jsonRequest["params"].isMember("arguments") && jsonRequest["params"]["arguments"].isMember("room")) ? jsonRequest["params"]["arguments"]["room"].asString() : "");
+			// Prepare the result for the prompts/get method
+			jsonRPCRep["result"]["description"] = "Summarize the current status of all sensors and devices in the house (optionally limited to a specific room)";
+			jsonRPCRep["result"]["messages"] = Json::Value(Json::arrayValue);
+			Json::Value message;
+			message["role"] = "user";
+			message["content"] = Json::Value(Json::objectValue);
+			message["content"]["type"] = "text";
+			std::string sText = "As the friendly butler of the house, please summarize the current status of all sensors and devices preferably grouped by room. Please also include the current state of the switches and sensors in your summary.";
+			Json::Value jsonDevices;
+			m_webservers.GetJSonDevices(jsonDevices, "", "", "", "", "", "", false, false, false, 0, "", "");
+			sText += "Include the following devices in your summary:";
+			for(const auto &device : jsonDevices["result"])
+			{
+				if(device.isObject() && device.isMember("Name") && device.isMember("Data") && device.isMember("Type") && device.isMember("SubType"))
+				{
+					std::string sDevRoom = (device.isMember("Room") ? device["Room"].asString() : "");
+					if(sRoom.empty() || (!sRoom.empty() && sRoom == sDevRoom))
+					{
+						sText += device["Name"].asString() + ", ";
+					}
+				}
+			}
+			// To-do: add all known swtches and sensors to the prompt. Filter if needed by room if specified in the arguments
+			message["content"]["text"] = sText;
+			jsonRPCRep["result"]["messages"].append(message);
+		}
+		else
+		{
+			_log.Debug(DEBUG_WEBSERVER, "MCP: prompts/get: Unsupported prompt name: %s", sPromptName.c_str());
+			jsonRPCRep["error"]["code"] = -32601; // Method not found
+			jsonRPCRep["error"]["message"] = "Method not found";
+		}
 	}
 
 	bool getSwitchState(const Json::Value &jsonRequest, Json::Value &jsonRPCRep, const Json::Value &jsonDevices)
