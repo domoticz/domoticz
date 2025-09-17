@@ -1,6 +1,7 @@
 <div class="container">
-	<div ng-include="'views/inc_topbar.html'" ng-repeat="tb in [{hideFilters:true,hideTimeSun:true}]"></div>
-
+	<div class="page-header-small">
+		<h1 data-i18n="Timerplan">Timerplan</h1>
+	</div>
 	<div id="timerplancontent"></div>
 </div>
 
@@ -25,9 +26,10 @@
 	<table id="updelclr" border="0" cellpadding="0" cellspacing="0" width="100%">
 		<tr>
 			<td>
-				<a class="btnstyle3-dis" id="timerplanedit" data-i18n="Edit">Edit</a>&nbsp;&nbsp;&nbsp;
-				<a class="btnstyle3-dis" id="timerplancopy" data-i18n="Duplicate">Duplicate</a>&nbsp;&nbsp;&nbsp;
-				<a class="btnstyle3-dis" id="timerplandelete" data-i18n="Delete">Delete</a>
+				<a class="btn btn-info" onclick="AddNewTimerPlan();" data-i18n="Add">Add</a>
+				<a class="btn btn-info" id="timerplancopy" data-i18n="Duplicate">Duplicate</a>
+				<a class="btn btn-warning" id="timerplanedit" data-i18n="Edit">Edit</a>
+				<a class="btn btn-danger" id="timerplandelete" data-i18n="Delete">Delete</a>
 			</td>
 		</tr>
 	</table>
