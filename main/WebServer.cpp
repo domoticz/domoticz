@@ -61,6 +61,8 @@ extern std::string szAppHash;
 extern std::string szAppDate;
 extern std::string szPyVersion;
 
+extern bool g_bLlmMCPSupport;
+
 namespace http
 {
 	namespace server
@@ -136,8 +138,23 @@ namespace http
 
 			if (!settings.vhostname.empty())
 				sRealm += settings.vhostname;
+			else if (settings.listening_address != "::")
+				sRealm += settings.listening_address;
 			else
-				sRealm += (settings.listening_address == "::") ? "domoticz.local" : settings.listening_address;
+			{
+				std::string sValue;
+				std::string szInstanceName = "domoticz.local";
+				if (m_sql.GetPreferencesVar("Title", sValue))
+				{
+					if (!sValue.empty())
+					{
+						stdlower(sValue);
+						szInstanceName = sValue + ".local";
+					}
+				}
+
+				sRealm += szInstanceName;
+			}
 			if (settings.listening_port != "80" || settings.listening_port != "443")
 				sRealm += ":" + settings.listening_port;
 			sRealm += "/";
@@ -222,6 +239,11 @@ namespace http
 					m_iamsettings.token_url.c_str(), [this](auto&& session, auto&& req, auto&& rep) { PostOauth2AccessToken(session, req, rep); }, true);
 				m_pWebEm->RegisterPageCode(
 					m_iamsettings.discovery_url.c_str(), [this](auto&& session, auto&& req, auto&& rep) { GetOpenIDConfiguration(session, req, rep); }, true);
+			}
+
+			if (g_bLlmMCPSupport)
+			{
+				m_pWebEm->RegisterPageCode("/mcp", [this](auto&& session, auto&& req, auto&& rep) { PostMcp(session, req, rep); }, false);
 			}
 
 			m_pWebEm->RegisterPageCode("/json.htm", [this](auto&& session, auto&& req, auto&& rep) { GetJSonPage(session, req, rep); });
