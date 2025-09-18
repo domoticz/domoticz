@@ -66,56 +66,68 @@ namespace http
 			{
 				_log.Debug(DEBUG_WEBSERVER, "MCP: Invalid method: %s", req.method.c_str());
 				rep = reply::stock_reply(reply::bad_request);
+				// VScode MCP client does sends GET's
+				// It does this to look for asynchronous notifications support
+				// but we don't support that yet, so we return bad request
+				// And the MCP spec does not support GET for requests anyway
 				return;
 			}
 
-			// Check if the request is a proper JSON-RPC request
-			if (req.content_length <= 0 || req.content.empty())
-			{
-				_log.Debug(DEBUG_WEBSERVER, "MCP: Invalid content length or empty content");
-				rep = reply::stock_reply(reply::bad_request);
-				return;
-			}
 			Json::Value jsonRequest;
 			std::string sParseErr;
-			if (!ParseJSon(req.content, jsonRequest, &sParseErr))
+			if (!mcp::validRPC(req.content, jsonRequest, sParseErr))
 			{
-				_log.Debug(DEBUG_WEBSERVER, "MCP: Failed to parse JSON content: %s", sParseErr.c_str());
+				_log.Debug(DEBUG_WEBSERVER, "MCP: Invalid JSON-RPC request: %s", sParseErr.c_str());
 				rep = reply::stock_reply(reply::bad_request);
 				return;
 			}
+
 			_log.Debug(DEBUG_RECEIVED, "MCP: Parsed JSON Request content: %s", jsonRequest.toStyledString().c_str());
-			// Check if the parsed JSON is valid JSON-RPC 2.0 format
-			if (!jsonRequest.isObject() || !jsonRequest.isMember("jsonrpc") || !jsonRequest.isMember("method"))	//  || !jsonRequest.isMember("params") || !jsonRequest.isMember("id")
-			{
-				_log.Debug(DEBUG_WEBSERVER, "MCP: Invalid JSON-RPC request format");
-				rep = reply::stock_reply(reply::bad_request);
-				return;
-			}
-			// Check if the JSON-RPC version is supported
-			if (jsonRequest["jsonrpc"].asString() != "2.0")
-			{
-				_log.Debug(DEBUG_WEBSERVER, "MCP: Unsupported JSON-RPC version: %s", jsonRequest["jsonrpc"].asString().c_str());
-				rep = reply::stock_reply(reply::bad_request);
-				return;
-			}
+
 			// Check if the method is supported and handle it
 			std::string sReqMethod = jsonRequest["method"].asString();
 			_log.Debug(DEBUG_WEBSERVER, "MCP: Request method: %s", sReqMethod.c_str());
 
 			if (sReqMethod.find("notifications/") != std::string::npos)
 			{
-				// Handle notifications, notifications do not require a response
+				// Handle notifications, notifications don't have an ID and do not require a response
 				_log.Debug(DEBUG_WEBSERVER, "MCP: Handling notification %s (do nothing).", sReqMethod.c_str());
 				rep = reply::stock_reply(reply::no_content);
 				return;
 			}
-			// Check if the request has an ID
-			std::string sReqID = (jsonRequest.isMember("id") ? jsonRequest["id"].asString() : "");
 
 			Json::Value jsonRPCRep;
 			jsonRPCRep["jsonrpc"] = "2.0";
-			jsonRPCRep["id"] = sReqID;
+
+			// Check if the request has an ID
+			std::string sReqID;
+			int iReqID;
+			if (jsonRequest.isMember("id"))
+			{
+				if (jsonRequest["id"].isInt())
+				{
+					iReqID = jsonRequest["id"].asInt();
+					jsonRPCRep["id"] = iReqID;
+
+				}
+				else if (jsonRequest["id"].isString())
+				{
+					sReqID = jsonRequest["id"].asString();
+					jsonRPCRep["id"] = sReqID;
+				}
+				else
+				{
+					_log.Debug(DEBUG_WEBSERVER, "MCP: Invalid ID type in request (must be number or string).");
+					rep = reply::stock_reply(reply::bad_request);
+					return;
+				}
+			}
+			else
+			{
+				_log.Debug(DEBUG_WEBSERVER, "MCP: Missing ID in request!");
+				rep = reply::stock_reply(reply::bad_request);
+				return;
+			};
 
 			if (sReqMethod == "ping")
 			{
@@ -515,6 +527,34 @@ namespace mcp
 			}
 		}
 		return false;
+	}
+
+	bool validRPC(const std::string &sInput, Json::Value &jsonRequest, std::string &sError)
+	{
+		if (sInput.empty())
+		{
+			sError = "Empty input";
+			return false;
+		}
+		std::string sParseErr;
+		if (!ParseJSon(sInput, jsonRequest, &sParseErr))
+		{
+			sError = "Failed to parse JSON content: " + sParseErr;
+			return false;
+		}
+		// Check if the parsed JSON is valid JSON-RPC 2.0 format
+		if (!jsonRequest.isObject() || !jsonRequest.isMember("jsonrpc") || !jsonRequest.isMember("method"))
+		{
+			sError = "Invalid JSON-RPC request format";
+			return false;
+		}
+		// Check if the JSON-RPC version is supported
+		if (jsonRequest["jsonrpc"].asString() != "2.0")
+		{
+			sError = "Unsupported JSON-RPC version: " + jsonRequest["jsonrpc"].asString();
+			return false;
+		}
+		return true;
 	}
 
 } // namespace mcp
