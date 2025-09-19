@@ -1093,7 +1093,15 @@ div.log {
 .page-header-small {
 	padding-bottom: 4px;
 	margin: 20px 0 6px;
-	border-bottom: 1px solid #eeeeee;
+	border-bottom: 3px double var(--accent-color);
+}
+
+.page-content-container {
+	background: #11213d;
+	border: 1px solid var(--accent-color);
+	border-radius: 5px;
+	padding: 10px 0;
+	margin-top: 10px;
 }
 
 a:link {
@@ -1653,7 +1661,7 @@ span.evomobile {
 	-moz-user-select: none;
 	-ms-user-select: none;
 	user-select: none;
-	background-color: #FFF;
+	background-color: #283750;
 	min-width: 294px;
 	overflow: scroll;
 	overflow-x: hidden;

@@ -18,6 +18,10 @@ This theme generally tries not to set any colours, and leaves that to the sub-th
 
 /* GENERAL STYLING AND RESETS */
 
+:root {
+	--accent-color:			#283750;
+}
+
 body {
 	color: #ddd; /*!important;*/
 	background-color: #013 !important;
@@ -151,10 +155,10 @@ textarea:focus {
 }
 
 #settingscontent .sub-tabs li.active a {
-	background-color: #73b6ca;
+	background-color: var(--accent-color);
 	color: #fff;
 	border: none;
-	border-bottom: 4px solid #73b6ca;
+	border-bottom: 4px solid var(--accent-color);
 }
 
 #settingscontent .sub-tabs li:not(.active) {
@@ -188,10 +192,10 @@ textarea:focus {
 }
 
 #zwavesettingscontent .sub-tabs li.active a {
-	background-color: #73b6ca;
+	background-color: var(--accent-color);
 	color: #fff;
 	border: none;
-	border-bottom: 4px solid #73b6ca;
+	border-bottom: 4px solid var(--accent-color);
 }
 
 #zwavesettingscontent .sub-tabs li:not(.active) {
@@ -302,7 +306,7 @@ textarea:focus {
 #floorplans table,
 #settingscontent #ActiveTabs,
 #emailtable,*/
-#hardwarecontent > div:not(.page-header-small):not(.bannav):not(#bannav),
+#hardwarecontent > div:not(.page-header-small):not(.page-content-container):not(.bannav):not(#bannav),
 #hardwarecontent > table:not(.page-header-small):not(.bannav):not(#bannav),
 #hardwarecontent #ipnodeparamstable,
 #nodeparamstable,
@@ -328,9 +332,9 @@ textarea:focus {
 #eventparamstable, #mobileparamstable, #applicationparamstable,
 #customiconedittable 
 {
-	background-color: #11213d;
-	border-top: 10px solid #11213d;
-	border-bottom: 10px solid #11213d;
+	background-color: none;
+	border: none;
+	padding: 10px 0;
 }
 
 @media all and (min-width: 768px) {
