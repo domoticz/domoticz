@@ -1672,11 +1672,13 @@ span.evomobile {
 }
 
 .iconlist .iconlistitem {
-	padding: 0px;
-	width: 290px;
+	padding: 2px;
+	width: 289px;
 	overflow: auto;
-	margin: 2px 0px 0px 0px;
+	margin: 3px;
 	height: 52px;
+	background: #F2F1FA;
+	border-radius: 5px;
 }
 
 .iconlist .iconlistitem:hover {
@@ -1700,7 +1702,7 @@ span.evomobile {
 }
 
 .iconlist .iconlistitem img {
-	margin-top: 1px;
+	margin: 1px 10px 0 5px;
 	width: 48px;
 	height: 48px;
 	float: left;
@@ -1716,22 +1718,17 @@ span.evomobile {
 	overflow: hidden;
 }
 
-.inputbox {
-	background-color: #FFF;
-	border-color: #B4BAC0;
-	color: #333;
-}
-
 .autowidth {
 	width: auto !important;
 }
 
 .inputbox {
-	background-color: #FFF;
-	border: 1px solid #C0C0C0;
-	color: #333;
+	border: none;
+	background: #283750;
+	color: #eee;
 	padding: 2px;
 	cursor: text;
+	margin-right: 10px;
 }
 
 #timesun {
