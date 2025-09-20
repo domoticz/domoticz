@@ -106,6 +106,7 @@ private:
 	void InvalidateOAuth2RefreshToken(const std::string &refreshtoken);
 	void PresentOauth2LoginDialog(reply &rep, const std::string &sApp, const std::string &sError);
 	bool VerifySHA1TOTP(const std::string &code, const std::string &key);
+	bool ValidRedirectUri(const std::string &redirect_uri);
 
 	//Commands
 	void Cmd_GetTimerTypes(WebEmSession & session, const request& req, Json::Value &root);

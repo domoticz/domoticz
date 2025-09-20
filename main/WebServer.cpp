@@ -136,8 +136,23 @@ namespace http
 
 			if (!settings.vhostname.empty())
 				sRealm += settings.vhostname;
+			else if (settings.listening_address != "::")
+				sRealm += settings.listening_address;
 			else
-				sRealm += (settings.listening_address == "::") ? "domoticz.local" : settings.listening_address;
+			{
+				std::string sValue;
+				std::string szInstanceName = "domoticz.local";
+				if (m_sql.GetPreferencesVar("Title", sValue))
+				{
+					if (!sValue.empty())
+					{
+						stdlower(sValue);
+						szInstanceName = sValue + ".local";
+					}
+				}
+
+				sRealm += szInstanceName;
+			}
 			if (settings.listening_port != "80" || settings.listening_port != "443")
 				sRealm += ":" + settings.listening_port;
 			sRealm += "/";

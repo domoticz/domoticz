@@ -43,7 +43,7 @@ namespace http
 			std::string code_challenge = request::findValue(&req, "code_challenge");
 			std::string code_challenge_method = request::findValue(&req, "code_challenge_method");
 
-			if (!redirect_uri.empty() && redirect_uri.substr(0,8) == "https://")	// Absolute and (TLS)safe redirect URI expected
+			if (!redirect_uri.empty() && ValidRedirectUri(redirect_uri))
 			{
 				if (req.method == "GET" || req.method == "POST")
 				{
@@ -639,6 +639,29 @@ namespace http
 			_log.Debug(DEBUG_AUTH, "VerifySHA1TOTP: Code given .%s. -> calculated .%s. (%s)", code.c_str(), sCalcCode.c_str(), sha256hex(key).c_str());
 
 			return (sCalcCode.compare(code) == 0);
+		}
+
+		bool CWebServer::ValidRedirectUri(const std::string &redirect_uri)
+		{
+			if (redirect_uri.substr(0,8) == "https://")		// As per RFC 6749 section-3.1.2.1
+				return true;
+			else if (redirect_uri.substr(0,17) == "http://127.0.0.1:" || redirect_uri.substr(0,13) == "http://[::1]:")	// Allow loopback IPv4 or IPv6 as per RFC 8252 section-7.3
+				return true;
+			else if (redirect_uri.substr(0,16) == "http://localhost:")	// Disallow localhost as per RFC 8252 section-7.3
+				return false;
+			else if (redirect_uri.find(":/") != std::string::npos)	// Allow custom URI schemes as per RFC 8252 section-7.1
+			{
+				// But only if scheme is alphanumeric and starts with a letter
+				size_t pos = redirect_uri.find(":/");
+				std::string scheme = redirect_uri.substr(0,pos);
+				std::string rest = redirect_uri.substr(pos+2);
+				if (rest[0] == '/')	// No double slash (://) in custom schemes allowed
+					return false;
+				if (scheme.empty() || !isalpha(scheme[0]))
+					return false;
+				return true;
+			}
+			return false;
 		}
 
 	} // namespace server
