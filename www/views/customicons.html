@@ -22,38 +22,39 @@
                     </td>
                 </tr>
             </table>
-            <div ng-hide="selectedIcon.length==0">
-                <div class="page-header-small">
-                    <h3 data-i18n="Edit Custom Icon">Edit Custom Icon</h3>
-                </div>
-                <table id="customiconedittable" border="0" cellpadding="0" cellspacing="10" width="100%">
-                    <tr>
-                        <td align="right" style="width:110px"><label for="iconname"><span data-i18n="Name"></span>:</label></td>
-                        <td><input type="text" id="iconname" ng-model="selectedIcon.Title" style="width: 200px; padding: .2em;" class="text ui-widget-content ui-corner-all"></td>
-                    </tr>
-                    <tr>
-                        <td align="right"><label for="icondescription"><span data-i18n="Description"></span>:</label></td>
-                        <td><input type="text" id="icondescription" ng-model="selectedIcon.Description" style="width: 200px; padding: .2em;" class="text ui-widget-content ui-corner-all"></td>
-                    </tr>
-                    <tr>
-                        <td align="right"><label><span data-i18n="Icons"></span>:</label></td>
-                        <td>
-                            <div ng-hide="selectedIcon.length==0">
-                                <img ng-src="{{selectedIcon.IconFile16}}"> <img ng-src="{{selectedIcon.IconFile48On}}"> <img ng-src="{{selectedIcon.IconFile48Off}}">
-                            </div>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td></td>
-                        <td>
-                            <br>
-                            <button class="btn btn-info" ng-click="UpdateIconTitleDescription()" data-i18n="Update">Update</button>&nbsp;&nbsp;&nbsp;
-                            <button type="button" class="btn btn-danger" ng-click="DeleteIcon()" ng-disabled="selectedIcon.length==0" data-i18n="Delete">Delete</button>
-                        </td>
-                    </tr>
-                </table>
-                <br>
-            </div>
+        </div>
+    </div>
+
+	<div class="page-header-small" ng-hide="selectedIcon.length==0">
+		<h3 data-i18n="Edit Custom Icon">Edit Custom Icon</h3>
+	</div>
+    <div class="page-content-container" ng-hide="selectedIcon.length==0">
+        <div class="iconedit" ng-hide="selectedIcon.length==0">
+            <table id="customiconedittable" border="0" cellpadding="0" cellspacing="10" width="100%">
+                <tr>
+                    <td align="right" style="width:110px"><label for="iconname"><span data-i18n="Name"></span>:</label></td>
+                    <td><input type="text" id="iconname" ng-model="selectedIcon.Title" style="width: 200px; padding: .2em;" class="text ui-widget-content ui-corner-all"></td>
+                </tr>
+                <tr>
+                    <td align="right"><label for="icondescription"><span data-i18n="Description"></span>:</label></td>
+                    <td><input type="text" id="icondescription" ng-model="selectedIcon.Description" style="width: 200px; padding: .2em;" class="text ui-widget-content ui-corner-all"></td>
+                </tr>
+                <tr>
+                    <td align="right"><label><span data-i18n="Icons"></span>:</label></td>
+                    <td>
+                        <img ng-src="{{selectedIcon.IconFile16}}"> <img ng-src="{{selectedIcon.IconFile48On}}"> <img ng-src="{{selectedIcon.IconFile48Off}}">
+                    </td>
+                </tr>
+                <tr>
+                    <td></td>
+                    <td>
+                        <br>
+                        <button class="btn btn-info" ng-click="UpdateIconTitleDescription()" data-i18n="Update">Update</button>&nbsp;&nbsp;&nbsp;
+                        <button type="button" class="btn btn-danger" ng-click="DeleteIcon()" ng-disabled="selectedIcon.length==0" data-i18n="Delete">Delete</button>
+                    </td>
+                </tr>
+            </table>
+            <br>
         </div>
     </div>
 </div>
