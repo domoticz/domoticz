@@ -11,6 +11,7 @@ namespace mcp
 	void McpToolsList(const Json::Value &jsonRequest, Json::Value &jsonRPCRep);
 	void McpToolsCall(const Json::Value &jsonRequest, Json::Value &jsonRPCRep);
 	void McpResourcesList(const Json::Value &jsonRequest, Json::Value &jsonRPCRep);
+	void McpResourcesTemplatesList(const Json::Value &jsonRequest, Json::Value &jsonRPCRep);
 	void McpResourcesRead(const Json::Value &jsonRequest, Json::Value &jsonRPCRep);
 	void McpPromptsList(const Json::Value &jsonRequest, Json::Value &jsonRPCRep);
 	void McpPromptsGet(const Json::Value &jsonRequest, Json::Value &jsonRPCRep);

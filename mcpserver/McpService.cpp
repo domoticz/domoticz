@@ -150,6 +150,10 @@ namespace http
 			{
 				mcp::McpResourcesList(jsonRequest, jsonRPCRep);
 			}
+			else if (sReqMethod == "resources/templates/list")
+			{
+				mcp::McpResourcesTemplatesList(jsonRequest, jsonRPCRep);
+			}
 			else if (sReqMethod == "resources/read")
 			{
 				mcp::McpResourcesRead(jsonRequest, jsonRPCRep);
@@ -329,10 +333,13 @@ namespace mcp
 					//resource["uri"] = "dom:///dom.local:8080/" + device["Type"].asString() + "/" + device["SubType"].asString() + "/" + device["idx"].asString();
 					std::string sType = device["Type"].asString();
 					stdlower(sType);
-					// Replace spaces and slashes in sType to make it URL friendly
-					stdreplace(sType, " ", "-");
+					std::string sSubType = device["SubType"].asString();
+					stdlower(sSubType);
+					// Replace spaces and slashes to make it URL friendly
+					stdreplace(sType, " ", "_");
 					stdreplace(sType, "/", "-");
-					resource["uri"] = sType + ":///" + device["SubType"].asString() + "/" + device["idx"].asString();
+					stdreplace(sSubType, " ", "_");
+					resource["uri"] = sType + ":///" + sSubType + "/" + device["idx"].asString();
 					resource["name"] = device["Name"].asString();
 					resource["title"] = device["Name"].asString() + " (" + device["HardwareName"].asString() + " - " + device["Type"].asString() + " - " + device["SubType"].asString() + ")";
 					resource["description"] = "A Sensor from the " + device["HardwareName"].asString() + " hardware of Type " + device["Type"].asString() +
@@ -353,6 +360,17 @@ namespace mcp
 		_log.Debug(DEBUG_WEBSERVER, "McpResourcesList: Following resources offered:\n%s", jsonRPCRep.toStyledString().c_str());
 	}
 
+	void McpResourcesTemplatesList(const Json::Value &jsonRequest, Json::Value &jsonRPCRep)
+	{
+		_log.Debug(DEBUG_WEBSERVER, "MCP: Handling resources/templates/list request.");
+
+		// Prepare the result for the resources/templates/list method
+		jsonRPCRep["result"]["resourceTemplates"] = Json::Value(Json::arrayValue);
+		// Currently we do not have any resource templates to offer
+
+		_log.Debug(DEBUG_WEBSERVER, "McpResourcesTemplatesList: Following resource templates offered:\n%s", jsonRPCRep.toStyledString().c_str());
+	}
+
 	void McpResourcesRead(const Json::Value &jsonRequest, Json::Value &jsonRPCRep)
 	{
 		// Check if the required parameters are present
@@ -368,16 +386,57 @@ namespace mcp
 
 		_log.Debug(DEBUG_WEBSERVER, "MCP: Handling resources/read request for %s.", sReadURI.c_str());
 
-		// Prepare the result for the resources/read method
-		// TODO : Actually read the resource specified in the request
+		int nIdx = -1;
+		try
+		{
+			nIdx = std::stoi(sReadURI.substr(sReadURI.find_last_of("/") + 1));
+		}
+		catch (const std::exception &e)
+		{
+			_log.Debug(DEBUG_WEBSERVER, "MCP: resources/read: Invalid resource URI, cannot extract IDX: %s", e.what());
+			jsonRPCRep["error"]["code"] = -32603; // Internal error
+			jsonRPCRep["error"]["message"] = "Invalid resource URI, cannot extract IDX";
+			return;
+		}
+		auto result = m_sql.safe_query("SELECT Name, HardwareID, DeviceID, Type, SubType, nValue, sValue, LastUpdate from DeviceStatus WHERE ID=%d", nIdx);
+		if (result.empty() || result.size() != 1)
+		{
+			_log.Debug(DEBUG_WEBSERVER, "MCP: resources/read: No device found with IDX %d", nIdx);
+			jsonRPCRep["error"]["code"] = -32002; // Resource not found
+			jsonRPCRep["error"]["message"] = "No device found with the specified URI";
+			return;
+		}
+		auto &row = result[0];
+		std::string sName = row[0];
+		int iHardwareID = atoi(row[1].c_str());
+		std::string sDeviceID = row[2];
+		int iType = atoi(row[3].c_str());
+		int iSubType = atoi(row[4].c_str());
+		int nValue = atoi(row[5].c_str());
+		std::string sValue = row[6];
+		std::string sLastUpdate = row[7];
 		jsonRPCRep["result"]["contents"] = Json::Value(Json::arrayValue);
 		Json::Value resource;
-		resource["uri"] = "dom:///dom.local:8080/Light_Switch/Switch/1";
-		resource["name"] = "dumswitch";
-		resource["title"] = "dumswitch (testdummy - light switch - switch)";
+		resource["uri"] = sReadURI;
+		resource["name"] = sName;
+		resource["title"] = sName + " (" + std::to_string(iHardwareID) + " - " + std::to_string(iType) + " - " + std::to_string(iSubType) + ")";
 		resource["mimeType"] = "plain/text";
-		resource["text"] = "off";
+		resource["text"] = (sValue.empty() ? std::to_string(nValue) : sValue);
+		Json::Value meta;
+		meta["hardwareID"] = iHardwareID;
+		meta["type"] = iType;
+		meta["subtype"] = iSubType;
+		meta["idx"] = nIdx;
+		meta["id"] = sDeviceID;
+		resource["_meta"] = meta;
+		Json::Value annotations;
+		stdreplace(sLastUpdate, " ", "T");
+		annotations["lastModified"] = sLastUpdate + "Z";	// To-Do: Properly convert to ISO 8601 format (adjust for real timezone)
+		resource["annotations"] = annotations;
+
 		jsonRPCRep["result"]["contents"].append(resource);
+
+		_log.Debug(DEBUG_WEBSERVER, "MCP: Offering resources/read request result %s.", resource.toStyledString().c_str());
 	}
 
 	void McpPromptsList(const Json::Value &jsonRequest, Json::Value &jsonRPCRep)
