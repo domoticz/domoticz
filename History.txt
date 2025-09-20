@@ -16,6 +16,7 @@ Version 2025.xxxx
 - Changed: MQTT-AD, added support for color_temp_command_template
 - Changed: TADO, Added fixed API endpoint
 - Changed: MQTT, not publishing devices that are not used
+- Changed: Philips Hue now uses HTTPS to be compliant with new Hue Bridge
 - Fixed: mDNS, possible crash when web server (non) SSL was disabled, or a invalid port was specified
 - Fixed: Charts, after deleting a datapoint, the browser was not correctly refreshed
 - Updated: Windows libraries

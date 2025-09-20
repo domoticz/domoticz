@@ -382,7 +382,7 @@ bool CPhilipsHue::SwitchLight(const int nodeID, const std::string& LCmd, const i
 	if (nodeID < 1000)
 	{
 		//Light
-		sstr2 << "http://" << m_IPAddress
+		sstr2 << "https://" << m_IPAddress
 			<< ":" << m_Port
 			<< "/api/" << m_UserName
 			<< "/lights/" << nodeID << "/state";
@@ -390,7 +390,7 @@ bool CPhilipsHue::SwitchLight(const int nodeID, const std::string& LCmd, const i
 	else if (nodeID < 2000)
 	{
 		//Group
-		sstr2 << "http://" << m_IPAddress
+		sstr2 << "https://" << m_IPAddress
 			<< ":" << m_Port
 			<< "/api/" << m_UserName
 			<< "/groups/" << nodeID - 1000 << "/action";
@@ -411,7 +411,7 @@ bool CPhilipsHue::SwitchLight(const int nodeID, const std::string& LCmd, const i
 		sPostData.clear();
 		sPostData.str("");
 		sPostData << R"({"scene": ")" << result[0][0] << "\"}";
-		sstr2 << "http://" << m_IPAddress
+		sstr2 << "https://" << m_IPAddress
 			<< ":" << m_Port
 			<< "/api/" << m_UserName
 			<< "/groups/0/action";
@@ -453,7 +453,7 @@ std::string CPhilipsHue::RegisterUser(const std::string& IPAddress, const unsign
 	sPostData = R"({ "devicetype": "domoticz" })";
 
 	std::stringstream sstr2;
-	sstr2 << "http://" << IPAddress
+	sstr2 << "https://" << IPAddress
 		<< ":" << Port
 		<< "/api";
 	std::string sURL = sstr2.str();
@@ -720,7 +720,7 @@ bool CPhilipsHue::GetStates()
 	sResult = ReadFile("E:\\philipshue.json");
 #else
 	std::stringstream sstr2;
-	sstr2 << "http://" << m_IPAddress
+	sstr2 << "https://" << m_IPAddress
 		<< ":" << m_Port
 		<< "/api/" << m_UserName;
 	//Get Data
@@ -922,7 +922,7 @@ bool CPhilipsHue::GetGroups(const Json::Value& root)
 	}
 	//Special Request for Group0 (All Lights)
 	std::stringstream sstr2;
-	sstr2 << "http://" << m_IPAddress
+	sstr2 << "https://" << m_IPAddress
 		<< ":" << m_Port
 		<< "/api/" << m_UserName
 		<< "/groups/0";

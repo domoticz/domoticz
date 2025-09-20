@@ -41,7 +41,7 @@
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
 
-#define DB_VERSION 169
+#define DB_VERSION 170
 
 #define DEFAULT_ADMINUSER "admin"
 #define DEFAULT_ADMINPWD "domoticz"
@@ -3195,7 +3195,11 @@ bool CSQLHelper::OpenDatabase()
 				}
 			}
 		}
-
+		if (dbversion < 170)
+		{
+			// Update Philips Hue to use HTTPS
+			m_sql.safe_query("UPDATE HARDWARE SET Port=443, SerialPort=433 WHERE ([Type]==%d) AND Port=80", HTYPE_Philips_Hue);
+		}
 	}
 	else if (bNewInstall)
 	{
