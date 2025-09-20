@@ -78,6 +78,7 @@ namespace
 		"\t-webroot additional web root, useful with proxy servers (for example domoticz)\n"
 		"\t-nocache ask browser not to cache pages\n"
 		"\t-nomdns do not enable mDNS broadcast and listening\n"
+		"\t-mcp enable Model Context Protocol (/mcp) for use with LLM Agents\n"
 		"\t-startupdelay seconds (default=0)\n"
 		"\t-nowwwpwd (in case you forgot the web server username/password)\n"
 		"\t-wwwcompress mode (on = always compress [default], off = always decompress, static = no processing but try precompressed first)\n"
@@ -163,6 +164,7 @@ http::server::server_settings webserver_settings;
 http::server::ssl_server_settings secure_webserver_settings;
 #endif
 iamserver::iam_settings iamserver_settings;
+bool g_bLlmMCPSupport = false;
 
 bool bStartWebBrowser = true;
 bool g_bUseWatchdog = true;
@@ -1092,6 +1094,12 @@ int main(int argc, char**argv)
 	if (cmdLine.HasSwitch("-nomdns"))
 	{
 		bEnableMDNS = false;
+		_log.Log(LOG_STATUS, "mDNS Support disabled!");
+	}
+	if (cmdLine.HasSwitch("-mcp"))
+	{
+		g_bLlmMCPSupport = true;
+		_log.Log(LOG_STATUS, "Model Context Protocol (MCP) Support enabled (/mcp).");
 	}
 
 #if defined WIN32
