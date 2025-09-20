@@ -18,6 +18,10 @@ This theme generally tries not to set any colours, and leaves that to the sub-th
 
 /* GENERAL STYLING AND RESETS */
 
+:root {
+	--accent-color:			#283750;
+}
+
 body {
 	color: #ddd; /*!important;*/
 	background-color: #013 !important;
@@ -151,10 +155,10 @@ textarea:focus {
 }
 
 #settingscontent .sub-tabs li.active a {
-	background-color: #73b6ca;
+	background-color: var(--accent-color);
 	color: #fff;
 	border: none;
-	border-bottom: 4px solid #73b6ca;
+	border-bottom: 4px solid var(--accent-color);
 }
 
 #settingscontent .sub-tabs li:not(.active) {
@@ -188,10 +192,10 @@ textarea:focus {
 }
 
 #zwavesettingscontent .sub-tabs li.active a {
-	background-color: #73b6ca;
+	background-color: var(--accent-color);
 	color: #fff;
 	border: none;
-	border-bottom: 4px solid #73b6ca;
+	border-bottom: 4px solid var(--accent-color);
 }
 
 #zwavesettingscontent .sub-tabs li:not(.active) {
@@ -235,47 +239,6 @@ textarea:focus {
 
 	#settingscontent .span6 td span {
 		padding-top: 0;
-	}
-
-/* temporary fix for use of tables in odd places */
-#fibaromain > table > tbody > tr > td {
-	display: block;
-}
-
-	#fibaromain > table > tbody > tr > td > table {
-		margin-bottom: 20px
-	}
-
-#influxmain > table > tbody > tr > td {
-	display: block;
-}
-
-#influxmain > table > tbody > tr > td > table {
-	margin-bottom: 20px
-}
-
-#mqttmain > table > tbody > tr > td {
-	display: block;
-}
-
-#mqttmain > table > tbody > tr > td > table {
-	margin-bottom: 20px
-}
-
-#googlepubsubmain > table > tbody > tr > td {
-	display: block;
-}
-
-	#googlepubsubmain > table > tbody > tr > td > table {
-		margin-bottom: 20px
-	}
-
-#httpmain > table > tbody > tr > td {
-	display: block;
-}
-
-	#httpmain > table > tbody > tr > td > table {
-		margin-bottom: 20px
 	}
 
 #fibaromain #uservariablesedittable td {
@@ -343,7 +306,7 @@ textarea:focus {
 #floorplans table,
 #settingscontent #ActiveTabs,
 #emailtable,*/
-#hardwarecontent > div:not(.page-header-small):not(.bannav):not(#bannav),
+#hardwarecontent > div:not(.page-header-small):not(.page-content-container):not(.bannav):not(#bannav),
 #hardwarecontent > table:not(.page-header-small):not(.bannav):not(#bannav),
 #hardwarecontent #ipnodeparamstable,
 #nodeparamstable,
@@ -361,17 +324,17 @@ textarea:focus {
 #linkparamstable, #influxremote,
 #linkhttpparamstable, #httpremote,
 #linkgooglepubsubparamstable, #googlepubsubremote,
-#fibaromain #linkparamstable, #fibaromain #fibaroremote,
+#fibaromain #linkparamstable, #fibaromain #fibaroremote, #mqttremote,
 #userparamstable, #activeparamstable, #lightcontent paramstable,
 #scenecontent #paramstable,
 #notificationparamstable, #hardwareparamstable,
-#profiletable, #passwdtable,#updelclr,
-#applicationparamstable,
-#mobileparamstable,
-#eventparamstable {
-	background-color: #11213d;
-	border-top: 10px solid #11213d;
-	border-bottom: 10px solid #11213d;
+#profiletable, #passwdtable, #updelclr,
+#eventparamstable, #mobileparamstable, #applicationparamstable,
+#customiconedittable 
+{
+	background-color: none;
+	border: none;
+	padding: 10px 0;
 }
 
 @media all and (min-width: 768px) {

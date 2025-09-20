@@ -1,20 +1,25 @@
 <div class="container">
-	<table class="display" id="notificationtable" border="0" cellpadding="0" cellspacing="20">
-		<tr>
-			<td align="right" style="width:110px"><label><span data-i18n="Subject"></span>:</label></td>
-			<td><input type="text" id="subject" style="width: 250px; padding: .2em;" class="text ui-widget-content ui-corner-all"></td>
-		</tr>
-		<tr>
-			<td align="right" style="width:110px"><label><span data-i18n="Message"></span>:</label></td>
-			<td><textarea class="text ui-widget-content ui-corner-all" wrap="hard" id="body" name="body" cols="50" rows="7"></textarea></td>
-		</tr>
-		<tr>
-			<td></td>
-			<td>
-				<a class="btnstyle3" onclick="SendNotification();" data-i18n="Send">Send</a>
-			</td>
-		</tr>
-	</table>
+	<div class="page-header-small">
+		<h1 data-i18n="Send Notification">Send Notification</h1>
+	</div>
+    <div class="page-content-container">
+        <table class="display" id="notificationtable" border="0" cellpadding="0" cellspacing="20">
+            <tr>
+                <td align="right" style="width:110px"><label><span data-i18n="Subject"></span>:</label></td>
+                <td><input type="text" id="subject" style="width: 95%; max-width: 380px; padding: .2em;" class="text ui-widget-content ui-corner-all"></td>
+            </tr>
+            <tr>
+                <td align="right" style="width:110px"><label><span data-i18n="Message"></span>:</label></td>
+                <td><textarea class="text ui-widget-content ui-corner-all" wrap="hard" id="body" name="body" rows="7" style="width: 95%; max-width: 380px;"></textarea></td>
+            </tr>
+            <tr>
+                <td></td>
+                <td>
+                    <a class="btnstyle3" onclick="SendNotification();" data-i18n="Send">Send</a>
+                </td>
+            </tr>
+        </table>
+    </div>
 </div>
 
 <script type="text/javascript" charset="utf-8">
