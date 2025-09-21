@@ -226,6 +226,13 @@ constexpr auto sqlCreateMultiMeter_Calendar =
 "[Price] FLOAT DEFAULT 0, "
 "[Date] DATETIME DEFAULT (datetime('now','localtime')));";
 
+constexpr auto sqlCreateKWHStats =
+"CREATE TABLE IF NOT EXISTS [KWHStats] ("
+"[ID] INTEGER PRIMARY KEY, "
+"[DeviceRowID] BIGINT(10) NOT NULL, "
+"[Value] TEXT, "
+"[LastUpdate] DATETIME DEFAULT(datetime('now', 'localtime')));";
+
 constexpr auto sqlCreateNotifications =
 "CREATE TABLE IF NOT EXISTS [Notifications] ("
 "[ID] INTEGER PRIMARY KEY, "
@@ -705,6 +712,7 @@ bool CSQLHelper::OpenDatabase()
 	query(sqlCreateMeter_Calendar);
 	query(sqlCreateMultiMeter);
 	query(sqlCreateMultiMeter_Calendar);
+	query(sqlCreateKWHStats);
 	query(sqlCreateNotifications);
 	query(sqlCreateHardware);
 	query(sqlCreateUsers);
@@ -8284,6 +8292,7 @@ void CSQLHelper::DeleteDevices(const std::string& idx)
 			safe_exec_no_return("DELETE FROM Meter_Calendar WHERE (DeviceRowID == '%q')", str.c_str());
 			safe_exec_no_return("DELETE FROM MultiMeter WHERE (DeviceRowID == '%q')", str.c_str());
 			safe_exec_no_return("DELETE FROM MultiMeter_Calendar WHERE (DeviceRowID == '%q')", str.c_str());
+			safe_exec_no_return("DELETE FROM KWHStats WHERE (DeviceRowID == '%q')", str.c_str());
 			safe_exec_no_return("DELETE FROM Percentage WHERE (DeviceRowID == '%q')", str.c_str());
 			safe_exec_no_return("DELETE FROM Percentage_Calendar WHERE (DeviceRowID == '%q')", str.c_str());
 			safe_exec_no_return("DELETE FROM Fan WHERE (DeviceRowID == '%q')", str.c_str());

@@ -156,6 +156,8 @@
 // load notifications configuration
 #include "../notifications/NotificationHelper.h"
 
+#include "KWHStats.h"
+
 #ifdef WITH_GPIO
 #include "../hardware/Gpio.h"
 #include "../hardware/GpioPin.h"
@@ -1783,6 +1785,8 @@ void MainWorker::Do_Work()
 
 					m_sql.CheckDeviceTimeout();
 					m_sql.CheckBatteryLow();
+
+					CKWHStats::HandleKWHStatsHour();
 
 					//check for daily schedule
 					if (ltime.tm_hour == 0)

@@ -160,6 +160,7 @@ main/Helper.cpp
 main/HTMLSanitizer.cpp
 main/IFTTT.cpp
 main/json_helper.cpp
+main/KWHStats.cpp
 main/localtime_r.cpp
 main/lsignal.cpp
 main/Logger.cpp

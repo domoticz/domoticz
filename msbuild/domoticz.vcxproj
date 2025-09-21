@@ -725,6 +725,7 @@
     <ClInclude Include="..\hardware\ZWaveCommands.h" />
     <ClInclude Include="..\httpclient\HTTPClient.h" />
     <ClInclude Include="..\iamserver\iam_settings.hpp" />
+    <ClInclude Include="..\main\KWHStats.h" />
     <ClInclude Include="..\mdns\include\mdns.h" />
     <ClInclude Include="..\mdns\mdns.hpp" />
     <ClInclude Include="..\main\appversion.h" />
@@ -1028,6 +1029,7 @@
     <ClCompile Include="..\hardware\ZWaveBase.cpp" />
     <ClCompile Include="..\httpclient\HTTPClient.cpp" />
     <ClCompile Include="..\iamserver\IamService.cpp" />
+    <ClCompile Include="..\main\KWHStats.cpp" />
     <ClCompile Include="..\mdns\mdns.cpp" />
     <ClCompile Include="..\main\BaroForecastCalculator.cpp" />
     <ClCompile Include="..\main\Camera.cpp" />
