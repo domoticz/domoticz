@@ -1094,6 +1094,21 @@ div.log {
 	padding-bottom: 4px;
 	margin: 20px 0 6px;
 	border-bottom: 3px double var(--accent-color);
+	font-size: 9pt;
+}
+
+.page-header-with-button {
+	display: flex;
+}
+.page-header-with-button h1 {
+	flex: 1;
+}
+.page-header-with-button div {
+	flex: 0 1 100px;
+	text-align: right;
+}
+.page-header-with-button a {
+	padding: 4px 1.25em;
 }
 
 .page-content-container {

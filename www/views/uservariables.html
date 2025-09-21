@@ -1,6 +1,7 @@
 <div id="fibaromain" class="container">
-	<div class="page-header-small">
+	<div class="page-header-small page-header-with-button">
 		<h1 data-i18n="User variables">User variables</h1>
+        <div><a class="btnstyle3" ng-click="RefreshUserVariablesTable();"><i class="fa fa-refresh" title="Back"></i> <span data-i18n="Refresh">Refresh</span></a></div>
 	</div>
     <table class="display" id="uservariablestable" border="0" cellpadding="0" cellspacing="0" width="100%">
         <thead>
@@ -44,9 +45,6 @@
                     <a class="btn btn-info" onclick="AddUpdateVariable('a',0);" data-i18n="Add">Add</a>
                     <a class="btn btn-warning" id="uservariableupdate" data-i18n="Update">Update</a>
                     <a class="btn btn-danger" id="uservariabledelete" data-i18n="Delete">Delete</a>
-                </td>
-                <td align="right" style="width:110px">
-                    <a class="btn btn-info" ng-click="RefreshUserVariablesTable();" data-i18n="Refresh">Refresh</a>
                 </td>
             </tr>	
         </table>
