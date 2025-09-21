@@ -4,7 +4,7 @@
 		<h1 data-i18n="Custom Icons">Custom Icons</h1><span></span>
 	</div>
     <div class="page-content-container">
-        <div class="row">
+        <div class="row" style="margin: 0;">
             <div class="iconcell iconlist" style="margin: 0 10px; min-height: 200px; max-height: 400px;">
                 <div class="iconlistitem" data-ng-repeat="icon in iconset | orderBy:['name']" ng-class="{iconlistitemselected: icon.selected }" ng-click="OnIconSelected(icon)">
                         <img ng-src="{{icon.IconFile48On}}">
