@@ -3,6 +3,22 @@
 		<h1 data-i18n="Timerplan">Timerplan</h1>
 	</div>
 	<div id="timerplancontent"></div>
+
+    <div class="page-header-small">
+        <h3 data-i18n="Add/Edit Timerplan">Add/Edit timerplan</h3>
+    </div>
+    <div class="page-content-container">
+        <table id="updelclr" border="0" cellpadding="0" cellspacing="0" width="100%" style="margin-left: 20px;">
+            <tr>
+                <td>
+                    <a class="btn btn-info" onclick="AddNewTimerPlan();" data-i18n="Add">Add</a>
+                    <a class="btn btn-info" id="timerplancopy" data-i18n="Duplicate">Duplicate</a>
+                    <a class="btn btn-warning" id="timerplanedit" data-i18n="Edit">Edit</a>
+                    <a class="btn btn-danger" id="timerplandelete" data-i18n="Delete">Delete</a>
+                </td>
+            </tr>
+        </table>
+    </div>
 </div>
 
 <div id="dialog-add-edit-timerplan" style="display:none;">
@@ -13,24 +29,14 @@
 		</tr>
 	</table>
 </div>
-<div id="timerplanmain" style="display:none;">
 
-	<table class="display" id="timerplantable" border="0" cellpadding="0" cellspacing="0" width="100%">
-		<thead>
-			<tr valign="middle">
-				<th width="40" align="center" data-i18n="Idx">Idx</th>
-				<th align="left" data-i18n="Name">Name</th>
-			</tr>
-		</thead>
-	</table>
-	<table id="updelclr" border="0" cellpadding="0" cellspacing="0" width="100%">
-		<tr>
-			<td>
-				<a class="btn btn-info" onclick="AddNewTimerPlan();" data-i18n="Add">Add</a>
-				<a class="btn btn-info" id="timerplancopy" data-i18n="Duplicate">Duplicate</a>
-				<a class="btn btn-warning" id="timerplanedit" data-i18n="Edit">Edit</a>
-				<a class="btn btn-danger" id="timerplandelete" data-i18n="Delete">Delete</a>
-			</td>
-		</tr>
-	</table>
+<div id="timerplanmain" style="display:none;">
+    <table class="display" id="timerplantable" border="0" cellpadding="0" cellspacing="0" width="100%">
+        <thead>
+            <tr valign="middle">
+                <th width="40" align="center" data-i18n="Idx">Idx</th>
+                <th align="left" data-i18n="Name">Name</th>
+            </tr>
+        </thead>
+    </table>
 </div>
