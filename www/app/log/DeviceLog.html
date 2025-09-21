@@ -1,13 +1,11 @@
 <div class="container js-device-logs">
-    <a class="btnstylerev" back-button>{{ ::'Back' | translate }}</a>
-    <a class="btnstyle pull-right"
-       ng-if="::vm.isReportAvailable()"
-       ng-href="#/Devices/{{ ::vm.deviceIdx }}/Report"
-    >
-        {{ ::'Report' | translate }}
-    </a>
-
-    <h2 class="page-header">{{ ::vm.pageName }}</h2>
+	<div class="page-header-small page-header-with-button">
+		<h1><span data-i18n="Log">Log</span>: {{ ::vm.pageName }}</h1>
+        <div>
+            <a class="btnstyle3" back-button><i class="fa fa-reply" title="Back"></i> {{ ::'Back' | translate }}</a>
+            <a class="btnstyle3" ng-if="::vm.isReportAvailable()" ng-href="#/Devices/{{ ::vm.deviceIdx }}/Report">{{ ::'Report' | translate }} <i class="fa fa-arrow-right" title="Report"></i></a>
+        </div>
+	</div>
 
     <register-instant-and-counter></register-instant-and-counter>
     <register-p1-energy></register-p1-energy>

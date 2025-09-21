@@ -1104,7 +1104,7 @@ div.log {
 	flex: 1;
 }
 .page-header-with-button div {
-	flex: 0 1 100px;
+	flex: 1 0 100px;
 	text-align: right;
 }
 .page-header-with-button a {
@@ -1676,7 +1676,6 @@ span.evomobile {
 	-moz-user-select: none;
 	-ms-user-select: none;
 	user-select: none;
-	background-color: #283750;
 	min-width: 294px;
 	overflow: scroll;
 	overflow-x: hidden;
@@ -2178,6 +2177,9 @@ tspan {
 	display: block;
 	height: 300px;
 	margin-bottom: 38px;
+}
+device-light-log, .device-log-chart:first-child {
+	margin-top: 19px;
 }
 
 .device-log-chart_sm {

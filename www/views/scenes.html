@@ -1,7 +1,6 @@
 <div class="container">
 	<gz-back-to-top></gz-back-to-top>
 	<div ng-include="'views/inc_topbar.html'"></div>
-
 	<div id="scenecontent" class="devicesList"></div>
 </div>
 <div id="dialog-addscene">
@@ -46,6 +45,10 @@
     </form>
 </div>
 <div id="editscene" style="display:none;">
+	<div class="page-header-small">
+		<h3 data-i18n="General settings">General settings</h3>
+	</div>
+    <div class="page-content-container">
 		<table class="display" id="paramstable" border="0" cellpadding="0" cellspacing="20">
             <tr>
                 <td align="right" style="width:120px">
@@ -90,132 +93,136 @@
 				</td>
 			</tr>
 		</table>
-		<br>
-		<h2><span data-i18n="Activation Devices">Activation Devices</span>:</h2>
-		<br>
-		<table class="display" id="scenedactivationtable" border="0" cellpadding="0" cellspacing="0" width="100%">
-			<thead>
-				<tr valign="middle">
-					<th align="left" width="70">Idx</th>
-					<th align="left" data-i18n="Name">Name</th>
-					<th align="left" width="70" data-i18n="Code">Code</th>
-				</tr>
-			</thead>
-		</table>
-		<table id="delclract" border="0" cellpadding="0" cellspacing="0" width="100%">
-			<tr>
-				<td>
-					<a class="btnstyle3-dis" id="removecode" data-i18n="Remove Device">Remove Device</a>
-					<button id="addcode" class="btn btn-small btn-success" type="button" onclick="AddCode();" data-i18n="Add Device">Add Device</button>
-					<button id="addmanualcode" class="btn btn-small btn-info" type="button" onclick="AddManualCode();" data-i18n="Add Manual Light/Switch Device">Add Manual Device</button>
-				</td>
-				<td align="right">
-					<a class="btnstyle3" onclick="ClearCodes();" data-i18n="Clear">Clear</a>
-				</td>
-			</tr>
-		</table>
-		
-		<span id="learndevicename"></span>
-		<br>
-		<br>
-		<h2><span data-i18n="Devices">Devices</span>:</h2>
-		<br>
-		<table class="display" id="scenedevicestable" border="0" cellpadding="0" cellspacing="0" width="100%">
-				<thead>
-						<tr valign="middle">
-								<th align="left" data-i18n="Name">Name</th>
-								<th align="right" width="100" id="CommandHeader" data-i18n="Command">Command</th>
-								<th align="right" width="70" data-i18n="Level">Level</th>
-								<th align="center" width="90" data-i18n="On Delay">On Delay</th>
-								<th align="center" width="90" data-i18n="Off Delay">Off Delay</th>
-								<th align="center" width="40" data-i18n="Order">Order</th>
-						</tr>
-				</thead>
-		</table>
-		<table id="delclr" border="0" cellpadding="0" cellspacing="0" width="100%">
-			<tr>
-				<td>
-					<a class="btnstyle3-dis" id="updatedelete" data-i18n="Update">Update</a>
-					<a class="btnstyle3-dis" id="devicedelete" data-i18n="Delete">Delete</a>
-				</td>
-				<td align="right">
-					<a class="btnstyle3" onclick="ClearDevices();" data-i18n="Clear">Clear</a>
-				</td>
-			</tr>
-		</table>
-		<br>
-		<table class="display" id="paramstable" border="0" cellpadding="0" cellspacing="20">
-			<tr>
-				<td align="right" style="width:110px"><label for="combodevice"><span data-i18n="Device"></span>: </label></td>
-				<td>
-					<select id="combodevice" style="width:250px" class="combobox ui-corner-all">
-					</select>
-					<a class="btnstyle3" onclick="AddDevice();" data-i18n="Add">Add</a>
-				</td>
-			</tr>
-			<tr  id="CommandDiv">
-				<td align="right" style="width:80px"><label for="combocommand"><span data-i18n="Command"></span>:</label></td>
-				<td>
-					<select id="combocommand" style="width:90px" class="combobox ui-corner-all">
-					<option value="On" data-i18n="On">On</option>
-					<option value="Off" data-i18n="Off">Off</option>
-					<option value="Open" data-i18n="Open">Open</option>
-					<option value="Close" data-i18n="Close">Close</option>
-					<option value="Stop" data-i18n="Stop">Stop</option>
-					<option value="Toggle" data-i18n="Toggle">Toggle</option>
-					</select>
-				</td>
-			</tr>
-			<tr id="LevelDiv">
-				<td align="right" style="width:80px"><label for="combolevel"><span data-i18n="Level"></span>:</label></td>
-				<td>
-					<select id="combolevel" style="width:70px" class="combobox ui-corner-all">
-					</select>
-				</td>
-			</tr>
-			<tr  id="DelayOnDiv">
-				<td align="right" style="width:80px"><label for="ondelaytime"><span data-i18n="On Delay"></span>:</label></td>
-				<td><input type="text" id="ondelaytime" style="width: 50px; padding: .2em;" class="text ui-widget-content ui-corner-all">&nbsp;(<span data-i18n="Seconds"></span>)</td>
-			</tr>
-			<tr  id="DelayOffDiv">
-				<td align="right" style="width:80px"><label for="offdelaytime"><span data-i18n="Off Delay"></span>:</label></td>
-				<td><input type="text" id="offdelaytime" style="width: 50px; padding: .2em;" class="text ui-widget-content ui-corner-all">&nbsp;(<span data-i18n="Seconds"></span>)</td>
-			</tr>
-			<tr id="ScenesLedColor">
-				<td align="right">
-					<label>
-						<span data-i18n="Color">Color</span>:
-					</label>
-				</td>
-				<td>
-					<table class="display colorpicker" border="0" cellpadding="0" cellspacing="0">
-						<tr id="ColorMode">
-							<td style="padding-left:0px">
-								<a><img src="images/RGB48.png" class="lcursor pickermodergb unselected" height="48" width="48"></a>
-								<a><img src="images/RGB48_Sel.png" class="lcursor pickermodergb selected" height="48" width="48"></a>
-								<a><img src="images/Coltemp48.png" class="lcursor pickermodetemp unselected" height="48" width="48"></a>
-								<a><img src="images/Coltemp48_Sel.png" class="lcursor pickermodetemp selected" height="48" width="48"></a>
-								<a><img src="images/White48.png" class="lcursor pickermodewhite unselected" height="48" width="48"></a>
-								<a><img src="images/White48_Sel.png" class="lcursor pickermodewhite selected" height="48" width="48"></a>
-								<a><img src="images/Customw48.png" class="lcursor pickermodecustomw unselected" height="48" width="48"></a>
-								<a><img src="images/Customw48_Sel.png" class="lcursor pickermodecustomw selected" height="48" width="48"></a>
-								<a><img src="images/Customww48.png" class="lcursor pickermodecustomww unselected" height="48" width="48"></a>
-								<a><img src="images/Customww48_Sel.png" class="lcursor pickermodecustomww selected" height="48" width="48"></a>
-							</td>
-						</tr>
-						<tr>
-							<td align="left" style="width:200px;padding-left:0px">
-								<input type="text" id="popup_picker"  data-wheelcolorpicker="" data-wcp-layout="block" data-wcp-sliders="wvkl">
-							</td>
-						</tr>
-						<tr class="pickerrgbcolorrow">
-							<td align="left" style="width:200px;padding-left:0px">
-								{{:: 'RGB Color:' | translate }} <input type="text" class="pickerrgbcolorinput">
-							</td>
-						</tr>
-					</table>
-				</td>
-			</tr>
-		</table>
-		<br>
+    </div>
+
+	<div class="page-header-small">
+		<h3 data-i18n="Activation Devices">Activation Devices</h3>
+	</div>
+    <table class="display" id="scenedactivationtable" border="0" cellpadding="0" cellspacing="0" width="100%">
+        <thead>
+            <tr valign="middle">
+                <th align="left" width="70">Idx</th>
+                <th align="left" data-i18n="Name">Name</th>
+                <th align="left" width="70" data-i18n="Code">Code</th>
+            </tr>
+        </thead>
+    </table>
+    <table id="delclract" border="0" cellpadding="0" cellspacing="0" width="100%">
+        <tr>
+            <td>
+                <a class="btnstyle3-dis" id="removecode" data-i18n="Remove Device">Remove Device</a>
+                <button id="addcode" class="btn btn-small btn-success" type="button" onclick="AddCode();" data-i18n="Add Device">Add Device</button>
+                <button id="addmanualcode" class="btn btn-small btn-info" type="button" onclick="AddManualCode();" data-i18n="Add Manual Light/Switch Device">Add Manual Device</button>
+            </td>
+            <td align="right">
+                <a class="btnstyle3" onclick="ClearCodes();" data-i18n="Clear">Clear</a>
+            </td>
+        </tr>
+    </table>
+    
+    <span id="learndevicename"></span>
+    <br>
+    <br>
+
+	<div class="page-header-small">
+		<h3 data-i18n="Devices">Devices</h3>
+	</div>
+
+    <table class="display" id="scenedevicestable" border="0" cellpadding="0" cellspacing="0" width="100%">
+            <thead>
+                    <tr valign="middle">
+                            <th align="left" data-i18n="Name">Name</th>
+                            <th align="right" width="100" id="CommandHeader" data-i18n="Command">Command</th>
+                            <th align="right" width="70" data-i18n="Level">Level</th>
+                            <th align="center" width="90" data-i18n="On Delay">On Delay</th>
+                            <th align="center" width="90" data-i18n="Off Delay">Off Delay</th>
+                            <th align="center" width="40" data-i18n="Order">Order</th>
+                    </tr>
+            </thead>
+    </table>
+    <table id="delclr" border="0" cellpadding="0" cellspacing="0" width="100%">
+        <tr>
+            <td>
+                <a class="btnstyle3-dis" id="updatedelete" data-i18n="Update">Update</a>
+                <a class="btnstyle3-dis" id="devicedelete" data-i18n="Delete">Delete</a>
+            </td>
+            <td align="right">
+                <a class="btnstyle3" onclick="ClearDevices();" data-i18n="Clear">Clear</a>
+            </td>
+        </tr>
+    </table>
+    <br>
+    <table class="display" id="paramstable" border="0" cellpadding="0" cellspacing="20">
+        <tr>
+            <td align="right" style="width:110px"><label for="combodevice"><span data-i18n="Device"></span>: </label></td>
+            <td>
+                <select id="combodevice" style="width:250px" class="combobox ui-corner-all">
+                </select>
+                <a class="btnstyle3" onclick="AddDevice();" data-i18n="Add">Add</a>
+            </td>
+        </tr>
+        <tr  id="CommandDiv">
+            <td align="right" style="width:80px"><label for="combocommand"><span data-i18n="Command"></span>:</label></td>
+            <td>
+                <select id="combocommand" style="width:90px" class="combobox ui-corner-all">
+                <option value="On" data-i18n="On">On</option>
+                <option value="Off" data-i18n="Off">Off</option>
+                <option value="Open" data-i18n="Open">Open</option>
+                <option value="Close" data-i18n="Close">Close</option>
+                <option value="Stop" data-i18n="Stop">Stop</option>
+                <option value="Toggle" data-i18n="Toggle">Toggle</option>
+                </select>
+            </td>
+        </tr>
+        <tr id="LevelDiv">
+            <td align="right" style="width:80px"><label for="combolevel"><span data-i18n="Level"></span>:</label></td>
+            <td>
+                <select id="combolevel" style="width:70px" class="combobox ui-corner-all">
+                </select>
+            </td>
+        </tr>
+        <tr  id="DelayOnDiv">
+            <td align="right" style="width:80px"><label for="ondelaytime"><span data-i18n="On Delay"></span>:</label></td>
+            <td><input type="text" id="ondelaytime" style="width: 50px; padding: .2em;" class="text ui-widget-content ui-corner-all">&nbsp;(<span data-i18n="Seconds"></span>)</td>
+        </tr>
+        <tr  id="DelayOffDiv">
+            <td align="right" style="width:80px"><label for="offdelaytime"><span data-i18n="Off Delay"></span>:</label></td>
+            <td><input type="text" id="offdelaytime" style="width: 50px; padding: .2em;" class="text ui-widget-content ui-corner-all">&nbsp;(<span data-i18n="Seconds"></span>)</td>
+        </tr>
+        <tr id="ScenesLedColor">
+            <td align="right">
+                <label>
+                    <span data-i18n="Color">Color</span>:
+                </label>
+            </td>
+            <td>
+                <table class="display colorpicker" border="0" cellpadding="0" cellspacing="0">
+                    <tr id="ColorMode">
+                        <td style="padding-left:0px">
+                            <a><img src="images/RGB48.png" class="lcursor pickermodergb unselected" height="48" width="48"></a>
+                            <a><img src="images/RGB48_Sel.png" class="lcursor pickermodergb selected" height="48" width="48"></a>
+                            <a><img src="images/Coltemp48.png" class="lcursor pickermodetemp unselected" height="48" width="48"></a>
+                            <a><img src="images/Coltemp48_Sel.png" class="lcursor pickermodetemp selected" height="48" width="48"></a>
+                            <a><img src="images/White48.png" class="lcursor pickermodewhite unselected" height="48" width="48"></a>
+                            <a><img src="images/White48_Sel.png" class="lcursor pickermodewhite selected" height="48" width="48"></a>
+                            <a><img src="images/Customw48.png" class="lcursor pickermodecustomw unselected" height="48" width="48"></a>
+                            <a><img src="images/Customw48_Sel.png" class="lcursor pickermodecustomw selected" height="48" width="48"></a>
+                            <a><img src="images/Customww48.png" class="lcursor pickermodecustomww unselected" height="48" width="48"></a>
+                            <a><img src="images/Customww48_Sel.png" class="lcursor pickermodecustomww selected" height="48" width="48"></a>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td align="left" style="width:200px;padding-left:0px">
+                            <input type="text" id="popup_picker"  data-wheelcolorpicker="" data-wcp-layout="block" data-wcp-sliders="wvkl">
+                        </td>
+                    </tr>
+                    <tr class="pickerrgbcolorrow">
+                        <td align="left" style="width:200px;padding-left:0px">
+                            {{:: 'RGB Color:' | translate }} <input type="text" class="pickerrgbcolorinput">
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
 </div>

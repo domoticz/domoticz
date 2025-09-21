@@ -1,13 +1,8 @@
 <div class="container">
-    <table class="bannav" id="bannav" border="0" cellpadding="0" cellspacing="0" width="100%">
-        <tr>
-            <td>
-                <a class="btnstylerev" back-button>{{ ::'Back' | translate }}</a>
-            </td>
-        </tr>
-    </table>
-
-    <h2>{{ ::'Name'|translate }}: {{ ::vm.pageName }}</h2>
+	<div class="page-header-small page-header-with-button">
+		<h1><span data-i18n="Notifications">Notifications</span>: {{ ::vm.pageName }}</h1>
+        <div><a class="btnstyle3" back-button><i class="fa fa-reply" title="Back"></i> {{ ::'Back' | translate }}</a></div>
+	</div>
 
     <device-notifications-table
             device="vm.device"
@@ -15,40 +10,38 @@
             on-select="vm.selectNotification(value)"
     ></device-notifications-table>
 
-    <table id="updelclr" border="0" cellpadding="0" cellspacing="0" width="100%">
-        <tr>
-            <td>
-                <button class="btnstyle3"
-                        ng-disabled="!vm.notification.idx"
-                        ng-click="vm.updateNotification()">
-                    {{:: 'Update' | translate }}
-                </button>
-                &nbsp;&nbsp;
-                <button class="btnstyle3"
-                        ng-disabled="!vm.notification.idx"
-                        ng-click="vm.deleteNotification()">
-                    {{:: 'Delete' | translate }}
-                </button>
-            </td>
-            <td align="right">
-                <button class="btnstyle3" ng-click="vm.clearNotifications()">{{:: 'Clear' | translate }}</button>
-            </td>
-        </tr>
-    </table>
+    <div class="page-header-small">
+        <h3 data-i18n="Add/Edit Notification">Add/Edit notification</h3>
+    </div>
+    <div class="page-content-container">
+        <device-notification-form
+                ng-if="::vm.isLoaded"
+                notification-types="::vm.notificationTypes"
+                notifiers="::vm.notifiers"
+                device="::vm.device"
+                ng-model="vm.notification"
+        ></device-notification-form>
 
-    <br>
-
-    <device-notification-form
-            ng-if="::vm.isLoaded"
-            notification-types="::vm.notificationTypes"
-            notifiers="::vm.notifiers"
-            device="::vm.device"
-            ng-model="vm.notification"
-    ></device-notification-form>
-
-    <br>
-
-    <button class="btnstyle3" ng-click="vm.addNotification()">{{:: 'Add' | translate }}</button>
+        <table id="updelclr" border="0" cellpadding="0" cellspacing="0" width="100%">
+            <tr>
+                <td style="padding: 3px 10px; width: 160px;">&nbsp;</td>
+                <td style="padding: 3px 10px;">
+                    <button class="btnstyle3" ng-click="vm.addNotification()">
+                        {{:: 'Add' | translate }}
+                    </button>
+                    <button class="btnstyle3" ng-click="vm.updateNotification()" ng-disabled="!vm.notification.idx">
+                        {{:: 'Update' | translate }}
+                    </button>
+                    <button class="btnstyle3" ng-click="vm.deleteNotification()" ng-disabled="!vm.notification.idx">
+                        {{:: 'Delete' | translate }}
+                    </button>
+                </td>
+                <td align="right" style="padding-right: 10px;">
+                    <button class="btnstyle3" ng-click="vm.clearNotifications()">{{:: 'Clear' | translate }}</button>
+                </td>
+            </tr>
+        </table>
+    </div>
 </div>
 
 <script type="text/ng-template" id="app/notifications/notificationForm.html">

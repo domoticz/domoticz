@@ -1,5 +1,8 @@
 <div class="container">
-    <a class="btnstylerev" back-button>{{ :: 'Back'|translate }}</a>
+	<div class="page-header-small page-header-with-button">
+		<h1><span data-i18n="Log">Report</span>: {{ ::vm.pageName }}</h1>
+        <div><a class="btnstyle3" back-button><i class="fa fa-reply" title="Back"></i> {{ ::'Back' | translate }}</a></div>
+	</div>
 
     <div class="pull-right">
         <label for="comboyear">{{ :: 'Year' | translate }}: </label>
@@ -12,8 +15,6 @@
                 ng-options="year for year in ::vm.getYearsOptions()">
         </select>
     </div>
-
-    <h2 class="page-header">{{ ::vm.pageName }}</h2>
 
     <device-counter-report
             ng-if="::vm.isCounterReport()"

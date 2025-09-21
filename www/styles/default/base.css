@@ -187,6 +187,10 @@ textarea:focus {
 	margin-bottom: 80px;
 }
 
+#tabs.ui-widget-content {
+	border: none;
+}
+
 #zwavesettingscontent .sub-tabs {
 	border-bottom: 1px solid #fff;
 }

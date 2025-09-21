@@ -1,15 +1,16 @@
 <div class="container">
-	<div class="page-header-small">
+	<div class="page-header-small page-header-with-button">
 		<h1 data-i18n="Roomplan">Roomplan</h1>
+        <div><a class="btnstyle3" back-button><i class="fa fa-reply" title="Back"></i> {{ ::'Back' | translate }}</a></div>
 	</div>
-
-	<div ng-include="'views/inc_topbar.html'" ng-repeat="tb in [{hideFilters:true,hideTimeSun:true}]"></div>
 
 	<page-loading-indicator ng-hide="::$ctrl.plans"></page-loading-indicator>
 
 	<div ng-if="::$ctrl.plans">
 		<section>
-			<h2 class="page-header">{{:: 'Room Plans' | translate }}</h2>
+        	<div class="page-header-small">
+                <h3 data-i18n="Room Plans">Room Plans</h3>
+            </div>
 
 			<div class="btn-panel align-right">
 				<button class="btn btn-default" ng-click="$ctrl.addPlan()">{{:: 'Add Plan' | translate }}</button>
@@ -19,7 +20,9 @@
 		</section>
 
 		<section ng-show="$ctrl.selectedPlan">
-			<h2 class="page-header">{{:: 'Devices' | translate }}</h2>
+        	<div class="page-header-small">
+                <h3 data-i18n="Devices">Devices</h3>
+            </div>
 
 			<div class="btn-panel align-right">
 				<button

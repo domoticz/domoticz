@@ -1,11 +1,9 @@
 <div class="container js-view">
-   <table class="bannav" id="bannav" border="0" cellpadding="0" cellspacing="0" width="100%">
-      <tr>
-         <td>
-            <a class="btnstylerev" back-button>{{ ::'Back' | translate }}</a>
-         </td>
-      </tr>
-   </table>
+	<div class="page-header-small page-header-with-button">
+		<h1><span data-i18n="General">General</span>: {{ ::vm.device.Name }}</h1>
+        <div><a class="btnstyle3" back-button><i class="fa fa-reply" title="Back"></i> {{ ::'Back' | translate }}</a></div>
+	</div>
+
    <div style="display: none">
       <select id="switch-types-template">
       </select>
@@ -14,281 +12,288 @@
       <select id="device-roomplan-template">
       </select>
    </div>
-   <br>
-   <form name="deviceInfoForm" ng-submit="vm.updateDevice()">
-      <table class="display table-details" id="paramstable" ng-if="::vm.device">
-         <tr>
-            <td>
-               <label>Idx: </label>
-            </td>
-            <td>
-               <span>{{ vm.device.idx }}</span>
-            </td>
-         </tr>
-         <tr>
-            <td>
-               <label for="devicename">{{ :: 'Name' | translate}}: </label>
-            </td>
-            <td>
-               <input type="text"
-                  id="devicename"
-                  style="width: 356px; padding: .2em;"
-                  class="text ui-widget-content ui-corner-all"
-                  required
-                  minlength="2"
-                  maxlength="100"
-                  ng-model="vm.device.Name"
-                  >
-            </td>
-         </tr>
-         <tr ng-if="::!vm.isSecurityDevice()">
-            <td>
-               <label for="comboswitchtype">{{ :: 'Switch Type' | translate}}: </label>
-            </td>
-            <td>
-               <select id="comboswitchtype"
-                  style="width:200px"
-                  class="combobox ui-corner-all"
-                  ng-options="item.value as item.label for item in ::vm.switchTypeOptions"
-                  ng-model="vm.device.SwitchTypeVal">
-               </select>
-            </td>
-         </tr>
-         <tr ng-if="::!vm.isSecurityDevice()" ng-show="vm.isSwitchIconAvailable()">
-            <td>{{ :: 'Switch Icon' | translate}}:</td>
-            <td>
-               <device-icon-select ng-model="vm.device.CustomImage" switch-type="vm.device.SwitchTypeVal"></device-icon-select>
-            </td>
-         </tr>
-         <tr ng-if="::!vm.isSecurityDevice()" ng-show="vm.isMotionAvailable()">
-            <td>
-               <label for="motionoffdelay">{{ :: 'Off Delay' | translate}}:</label>
-            </td>
-            <td>
-               <input type="text"
-                  id="motionoffdelay"
-                  style="width: 40px; padding: .2em;"
-                  class="text ui-widget-content ui-corner-all"
-                  ng-model="vm.device.AddjValue">
-               <span>{{ :: '(Seconds) 0 = Use sensor time' | translate}}</span>
-            </td>
-         </tr>
-         <tr ng-if="::!vm.isSecurityDevice()" ng-show="vm.isOnDelayAvailable()">
-            <td>
-               <label for="ondelay">{{ :: 'On Delay' | translate}}:</label>
-            </td>
-            <td>
-               <input type="text"
-                  id="ondelay"
-                  style="width: 40px; padding: .2em;"
-                  class="text ui-widget-content ui-corner-all"
-                  ng-model="vm.device.AddjValue2"
-                  >
-               <span>{{ :: '(Seconds) 0 = Disabled' | translate}}</span>
-            </td>
-         </tr>
-         <tr ng-if="::!vm.isSecurityDevice()" ng-show="vm.isOffDelayAvailable()">
-            <td>
-               <label for="offdelay">{{ :: 'Off Delay' | translate}}:</label>
-            </td>
-            <td>
-               <input type="text"
-                  id="offdelay"
-                  style="width: 40px; padding: .2em;"
-                  class="text ui-widget-content ui-corner-all"
-                  ng-model="vm.device.AddjValue"
-                  >
-               <span>{{ :: '(Seconds) 0 = Disabled' | translate}}</span>
-            </td>
-         </tr>
-         <tr ng-show="vm.isOnActionAvailable()">
-            <td>
-               <label for="onaction">{{ vm.onActionLabel() }}:</label>
-            </td>
-            <td>
-               <input type="text"
-                  id="onaction"
-                  style="width: 356px; padding: .2em;"
-                  class="text ui-widget-content ui-corner-all"
-                  minlength="10"
-                  maxlength="500"
-                  pattern="^(http|https|script):\/\/.+"
-                  ng-model="vm.device.StrParam1"
-                  >
-               <span>{{ :: '(Should start with http://, https:// or script://)' | translate}}</span>
-            </td>
-         </tr>
-         <tr ng-show="vm.isOffActionAvailable()">
-            <td>
-               <label for="offaction">{{ vm.offActionLabel() }}:</label>
-            </td>
-            <td>
-               <input type="text"
-                  id="offaction"
-                  style="width: 356px; padding: .2em;"
-                  class="text ui-widget-content ui-corner-all"
-                  minlength="10"
-                  maxlength="500"
-                  pattern="^(http|https|script):\/\/.+"
-                  ng-model="vm.device.StrParam2"
-                  >
-               <span>{{ :: '(Should start with http://, https:// or script://)' | translate}}</span>
-            </td>
-         </tr>
-         <tr>
-            <td>
-               {{ :: 'Protected' | translate}}:
-            </td>
-            <td>
-               <input type="checkbox" id="protected" ng-model="vm.device.Protected"><label for="protected"></label>
-            </td>
-         </tr>
-         <tr ng-if="vm.isBlind()">
-            <td>
-               {{ :: 'Reverse Open/Close State' | translate}}:
-            </td>
-            <td>
-               <input type="checkbox" id="blind_reverse_state" ng-model="vm.device.ReverseState"><label for="blind_reverse_state"></label>
-            </td>
-         </tr>
-         <tr ng-if="vm.isBlind()">
-            <td>
-               {{ :: 'Reverse Position' | translate}}:
-            </td>
-            <td>
-               <input type="checkbox" id="blind_reverse_position" ng-model="vm.device.ReversePosition"><label for="blind_reverse_position"></label>
-            </td>
-         </tr>
-         <tr ng-if="vm.isColorSettingsAvailable()">
-            <td>
-               <label>{{ :: 'Color' | translate}}:</label>
-            </td>
-            <td>
-               <device-color-settings device="vm.device"></device-color-settings>
-            </td>
-         </tr>
-         <tr ng-if="vm.isLevelsAvailable()">
-            <td>
-               <label>{{ :: 'Selector Style' | translate}}:</label>
-            </td>
-            <td>
-               <input type="radio" id="selectorstyle0" name="selectorstyle" ng-model="vm.device.SelectorStyle"
-                  ng-value="{{:: 0 }}">
-               <label for="selectorstyle0">{{ :: 'Button set' | translate}}</label>
-               <input type="radio" id="selectorstyle1" name="selectorstyle" ng-model="vm.device.SelectorStyle"
-                  ng-value="{{:: 1 }}">
-               <label for="selectorstyle1">{{ :: 'Select menu' | translate}}</label>
-            </td>
-         </tr>
-         <tr ng-if="vm.isLevelsAvailable()">
-            <td>
-               {{ :: 'Hide Off level' | translate}}:
-            </td>
-            <td>
-               <input type="checkbox"
-                  id="selectorHiddenOff"
-                  name="selectorHiddenOff"
-                  ng-model="vm.device.LevelOffHidden"><label for="selectorHiddenOff"></label>
-            </td>
-         </tr>
-         <tr ng-if="vm.isLevelsAvailable()">
-            <td>
-               <label>{{ :: 'Selector Levels' | translate}}:</label>
-            </td>
-            <td>
-               <device-level-names-table ng-model="vm.levels"></device-level-names-table>
-            </td>
-         </tr>
-         <tr ng-if="vm.isLevelsAvailable()">
-            <td>
-               <label>{{ :: 'Selector actions' | translate}}:</label>
-            </td>
-            <td>
-               <device-level-actions-table ng-model="vm.levels"></device-level-actions-table>
-            </td>
-         </tr>
-         <tr>
-            <td>
-               <label for="devicedescription">{{ :: 'Description' | translate}}: </label>
-            </td>
-            <td>
-               <textarea
-                  id="devicedescription"
-                  name="devicedescription"
-                  rows="4" style="width: 356px; padding: .2em;"
-                  class="text ui-widget-content ui-corner-all"
-                  ng-model="vm.device.Description">
-               </textarea>
-            </td>
-         </tr>
-         <tr>
-            <td>
-               <label>{{ :: 'Roomplan' | translate}}:</label>
-            </td>
-            <td>
-               <div class="dataTables_wrapper">
-                  <table class="display dataTable no-footer" border="0" cellpadding="0" cellspacing="0" width="100%">
-                     <thead>
-                        <tr valign="middle">
-                           <th width="40" align="center">Idx</th>
-                           <th align="left">{{ :: 'Name' | translate}}</th>
-                           <th width="40" align="center"></th>
-                        </tr>
-                     </thead>
-                     <tbody>
-                        <tr role="row" ng-class="$even ? 'odd' : 'even'" ng-repeat="items in ::vm.device.PlanIDs">
-                           <td>{{ items }}</td>
-                           <td ng-repeat="i in ::vm.planIDsOptions" ng-if="items == i.value">{{ i.label }}</td>
-                           <td ng-if="items == 0">{{ :: 'No roomplan assigned' | translate }}</td>
-                           <td  ng-repeat="i in ::vm.planIDsOptions" ng-if="items == i.value" ng-click="vm.removeDeviceFromPlan(vm.device.idx, i.value)">
-                              <img src="images/delete.png" title="{{:: 'Delete' | translate}}" class="lcursor js-delete" width="16" height="16"></img>
-                           </td>
-                           <td ng-if="items == 0"></td>
-                        </tr>
-                     </tbody>
-                  </table>
-               </div>
-            </td>
-         </tr>
-         <tr>
-            <td>
-            </td>
-            <td>
-               {{ :: 'Room Plans' | translate}}:
-               <select id="roomplansoptions"
-                  style="width:200px"
-                  class="combobox ui-corner-all"
-                  ng-options="item.value as item.label for item in ::vm.planIDsOptions"
-                  ng-model="vm.device.PlanID">
-               </select>
-               <button type="button" class="btnstyle3" ng-click="vm.addDeviceToPlan()">
-               {{:: 'Add Plan' | translate }}
-               </button>
-            </td>
-         </tr>
-         <tr>
-            <td></td>
-            <td><br></td>
-         </tr>
-         <tr>
-            <td></td>
-            <td>
-               <button type="submit" class="btnstyle3" ng-disabled="deviceInfoForm.$invalid">
-               {{ :: 'Save' | translate}}
-               </button>
-               <button type="button" class="btnstyle3" ng-click="vm.removeDevice()">
-               {{ :: 'Delete' | translate}}
-               </button>
-               <button type="button" class="btnstyle3" ng-click="vm.replaceDevice()">
-               {{ :: 'Replace' | translate}}
-               </button>
-            </td>
-         </tr>
-      </table>
-   </form>
-   <br>
-   <device-subdevices-editor device-idx=":: vm.deviceIdx"></device-subdevices-editor>
-   <br>
+
+    <div class="page-header-small">
+        <h3 data-i18n="General settings">General settings</h3>
+    </div>
+    <div class="page-content-container">
+        <form name="deviceInfoForm" ng-submit="vm.updateDevice()">
+          <table class="display table-details" id="paramstable" ng-if="::vm.device">
+             <tr>
+                <td>
+                   <label>Idx: </label>
+                </td>
+                <td>
+                   <span>{{ vm.device.idx }}</span>
+                </td>
+             </tr>
+             <tr>
+                <td>
+                   <label for="devicename">{{ :: 'Name' | translate}}: </label>
+                </td>
+                <td>
+                   <input type="text"
+                      id="devicename"
+                      style="width: 356px; padding: .2em;"
+                      class="text ui-widget-content ui-corner-all"
+                      required
+                      minlength="2"
+                      maxlength="100"
+                      ng-model="vm.device.Name"
+                      >
+                </td>
+             </tr>
+             <tr ng-if="::!vm.isSecurityDevice()">
+                <td>
+                   <label for="comboswitchtype">{{ :: 'Switch Type' | translate}}: </label>
+                </td>
+                <td>
+                   <select id="comboswitchtype"
+                      style="width:200px"
+                      class="combobox ui-corner-all"
+                      ng-options="item.value as item.label for item in ::vm.switchTypeOptions"
+                      ng-model="vm.device.SwitchTypeVal">
+                   </select>
+                </td>
+             </tr>
+             <tr ng-if="::!vm.isSecurityDevice()" ng-show="vm.isSwitchIconAvailable()">
+                <td>{{ :: 'Switch Icon' | translate}}:</td>
+                <td>
+                   <device-icon-select ng-model="vm.device.CustomImage" switch-type="vm.device.SwitchTypeVal"></device-icon-select>
+                </td>
+             </tr>
+             <tr ng-if="::!vm.isSecurityDevice()" ng-show="vm.isMotionAvailable()">
+                <td>
+                   <label for="motionoffdelay">{{ :: 'Off Delay' | translate}}:</label>
+                </td>
+                <td>
+                   <input type="text"
+                      id="motionoffdelay"
+                      style="width: 40px; padding: .2em;"
+                      class="text ui-widget-content ui-corner-all"
+                      ng-model="vm.device.AddjValue">
+                   <span>{{ :: '(Seconds) 0 = Use sensor time' | translate}}</span>
+                </td>
+             </tr>
+             <tr ng-if="::!vm.isSecurityDevice()" ng-show="vm.isOnDelayAvailable()">
+                <td>
+                   <label for="ondelay">{{ :: 'On Delay' | translate}}:</label>
+                </td>
+                <td>
+                   <input type="text"
+                      id="ondelay"
+                      style="width: 40px; padding: .2em;"
+                      class="text ui-widget-content ui-corner-all"
+                      ng-model="vm.device.AddjValue2"
+                      >
+                   <span>{{ :: '(Seconds) 0 = Disabled' | translate}}</span>
+                </td>
+             </tr>
+             <tr ng-if="::!vm.isSecurityDevice()" ng-show="vm.isOffDelayAvailable()">
+                <td>
+                   <label for="offdelay">{{ :: 'Off Delay' | translate}}:</label>
+                </td>
+                <td>
+                   <input type="text"
+                      id="offdelay"
+                      style="width: 40px; padding: .2em;"
+                      class="text ui-widget-content ui-corner-all"
+                      ng-model="vm.device.AddjValue"
+                      >
+                   <span>{{ :: '(Seconds) 0 = Disabled' | translate}}</span>
+                </td>
+             </tr>
+             <tr ng-show="vm.isOnActionAvailable()">
+                <td>
+                   <label for="onaction">{{ vm.onActionLabel() }}:</label>
+                </td>
+                <td>
+                   <input type="text"
+                      id="onaction"
+                      style="width: 356px; padding: .2em;"
+                      class="text ui-widget-content ui-corner-all"
+                      minlength="10"
+                      maxlength="500"
+                      pattern="^(http|https|script):\/\/.+"
+                      ng-model="vm.device.StrParam1"
+                      >
+                   <span>{{ :: '(Should start with http://, https:// or script://)' | translate}}</span>
+                </td>
+             </tr>
+             <tr ng-show="vm.isOffActionAvailable()">
+                <td>
+                   <label for="offaction">{{ vm.offActionLabel() }}:</label>
+                </td>
+                <td>
+                   <input type="text"
+                      id="offaction"
+                      style="width: 356px; padding: .2em;"
+                      class="text ui-widget-content ui-corner-all"
+                      minlength="10"
+                      maxlength="500"
+                      pattern="^(http|https|script):\/\/.+"
+                      ng-model="vm.device.StrParam2"
+                      >
+                   <span>{{ :: '(Should start with http://, https:// or script://)' | translate}}</span>
+                </td>
+             </tr>
+             <tr>
+                <td>
+                   {{ :: 'Protected' | translate}}:
+                </td>
+                <td>
+                   <input type="checkbox" id="protected" ng-model="vm.device.Protected"><label for="protected"></label>
+                </td>
+             </tr>
+             <tr ng-if="vm.isBlind()">
+                <td>
+                   {{ :: 'Reverse Open/Close State' | translate}}:
+                </td>
+                <td>
+                   <input type="checkbox" id="blind_reverse_state" ng-model="vm.device.ReverseState"><label for="blind_reverse_state"></label>
+                </td>
+             </tr>
+             <tr ng-if="vm.isBlind()">
+                <td>
+                   {{ :: 'Reverse Position' | translate}}:
+                </td>
+                <td>
+                   <input type="checkbox" id="blind_reverse_position" ng-model="vm.device.ReversePosition"><label for="blind_reverse_position"></label>
+                </td>
+             </tr>
+             <tr ng-if="vm.isColorSettingsAvailable()">
+                <td>
+                   <label>{{ :: 'Color' | translate}}:</label>
+                </td>
+                <td>
+                   <device-color-settings device="vm.device"></device-color-settings>
+                </td>
+             </tr>
+             <tr ng-if="vm.isLevelsAvailable()">
+                <td>
+                   <label>{{ :: 'Selector Style' | translate}}:</label>
+                </td>
+                <td>
+                   <input type="radio" id="selectorstyle0" name="selectorstyle" ng-model="vm.device.SelectorStyle"
+                      ng-value="{{:: 0 }}">
+                   <label for="selectorstyle0">{{ :: 'Button set' | translate}}</label>
+                   <input type="radio" id="selectorstyle1" name="selectorstyle" ng-model="vm.device.SelectorStyle"
+                      ng-value="{{:: 1 }}">
+                   <label for="selectorstyle1">{{ :: 'Select menu' | translate}}</label>
+                </td>
+             </tr>
+             <tr ng-if="vm.isLevelsAvailable()">
+                <td>
+                   {{ :: 'Hide Off level' | translate}}:
+                </td>
+                <td>
+                   <input type="checkbox"
+                      id="selectorHiddenOff"
+                      name="selectorHiddenOff"
+                      ng-model="vm.device.LevelOffHidden"><label for="selectorHiddenOff"></label>
+                </td>
+             </tr>
+             <tr ng-if="vm.isLevelsAvailable()">
+                <td>
+                   <label>{{ :: 'Selector Levels' | translate}}:</label>
+                </td>
+                <td>
+                   <device-level-names-table ng-model="vm.levels"></device-level-names-table>
+                </td>
+             </tr>
+             <tr ng-if="vm.isLevelsAvailable()">
+                <td>
+                   <label>{{ :: 'Selector actions' | translate}}:</label>
+                </td>
+                <td>
+                   <device-level-actions-table ng-model="vm.levels"></device-level-actions-table>
+                </td>
+             </tr>
+             <tr>
+                <td>
+                   <label for="devicedescription">{{ :: 'Description' | translate}}: </label>
+                </td>
+                <td>
+                   <textarea
+                      id="devicedescription"
+                      name="devicedescription"
+                      rows="4" style="width: 356px; padding: .2em;"
+                      class="text ui-widget-content ui-corner-all"
+                      ng-model="vm.device.Description">
+                   </textarea>
+                </td>
+             </tr>
+             <tr>
+                <td>
+                   <label>{{ :: 'Roomplan' | translate}}:</label>
+                </td>
+                <td>
+                   <div class="dataTables_wrapper">
+                      <table class="display dataTable no-footer" border="0" cellpadding="0" cellspacing="0" width="100%">
+                         <thead>
+                            <tr valign="middle">
+                               <th width="40" align="center">Idx</th>
+                               <th align="left">{{ :: 'Name' | translate}}</th>
+                               <th width="40" align="center"></th>
+                            </tr>
+                         </thead>
+                         <tbody>
+                            <tr role="row" ng-class="$even ? 'odd' : 'even'" ng-repeat="items in ::vm.device.PlanIDs">
+                               <td>{{ items }}</td>
+                               <td ng-repeat="i in ::vm.planIDsOptions" ng-if="items == i.value">{{ i.label }}</td>
+                               <td ng-if="items == 0">{{ :: 'No roomplan assigned' | translate }}</td>
+                               <td  ng-repeat="i in ::vm.planIDsOptions" ng-if="items == i.value" ng-click="vm.removeDeviceFromPlan(vm.device.idx, i.value)">
+                                  <img src="images/delete.png" title="{{:: 'Delete' | translate}}" class="lcursor js-delete" width="16" height="16"></img>
+                               </td>
+                               <td ng-if="items == 0"></td>
+                            </tr>
+                         </tbody>
+                      </table>
+                   </div>
+                </td>
+             </tr>
+             <tr>
+                <td>
+                </td>
+                <td>
+                   {{ :: 'Room Plans' | translate}}:
+                   <select id="roomplansoptions"
+                      style="width:200px"
+                      class="combobox ui-corner-all"
+                      ng-options="item.value as item.label for item in ::vm.planIDsOptions"
+                      ng-model="vm.device.PlanID">
+                   </select>
+                   <button type="button" class="btnstyle3" ng-click="vm.addDeviceToPlan()">
+                   {{:: 'Add Plan' | translate }}
+                   </button>
+                </td>
+             </tr>
+             <tr>
+                <td></td>
+                <td><br></td>
+             </tr>
+             <tr>
+                <td></td>
+                <td>
+                   <button type="submit" class="btnstyle3" ng-disabled="deviceInfoForm.$invalid">
+                   {{ :: 'Save' | translate}}
+                   </button>
+                   <button type="button" class="btnstyle3" ng-click="vm.removeDevice()">
+                   {{ :: 'Delete' | translate}}
+                   </button>
+                   <button type="button" class="btnstyle3" ng-click="vm.replaceDevice()">
+                   {{ :: 'Replace' | translate}}
+                   </button>
+                </td>
+             </tr>
+          </table>
+        </form>
+    </div>
+
+    <div class="page-header-small">
+        <h3 data-i18n="Sub/Slave Devices">Sub/Slave Devices</h3>
+    </div>
+    <device-subdevices-editor device-idx=":: vm.deviceIdx"></device-subdevices-editor>
 </div>
 <script type="text/ng-template" id="views/device/levelNamesTable.html">
    <table class="display" border="0" cellpadding="0" cellspacing="0" width="100%">
@@ -383,9 +388,6 @@
    </div>
 </script>
 <script type="text/ng-template" id="views/device/editSubDevices.html">
-   <h2>{{ :: 'Sub/Slave Devices' | translate}}:</h2>
-   <br>
-   
    <table class="display" id="subdevicestable" border="0" cellpadding="0" cellspacing="0" width="100%">
    </table>
    
