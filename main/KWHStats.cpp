@@ -25,12 +25,12 @@ void CKWHStats::Init(const uint64_t deviceID)
 	LoadFromDB();
 }
 
-void CKWHStats::AddHourValue(int hour, double kwh)
+void CKWHStats::AddHourValue(const int hour, const int Watt)
 {
 	if (hour < 0 || hour > 23)
 		return;
-	daily_hour_kwh[hour] = (daily_hour_kwh[hour] + kwh) / 2.0;
-	weekday_hour_kwh_raw[hour] = kwh;
+	daily_hour_kwh[hour] = (daily_hour_kwh[hour] + Watt) / 2;
+	weekday_hour_kwh_raw[hour] = Watt;
 
 	const time_t atime = time(nullptr);
 	struct tm now;
@@ -38,7 +38,7 @@ void CKWHStats::AddHourValue(int hour, double kwh)
 	int wday = now.tm_wday; // days since Sunday [0-6]
 
 
-	weekday_hour_kwh[wday][hour] = (weekday_hour_kwh[wday][hour] + kwh) / 2.0;
+	weekday_hour_kwh[wday][hour] = (weekday_hour_kwh[wday][hour] + Watt) / 2;
 	SaveToDB();
 }
 
@@ -49,11 +49,11 @@ void CKWHStats::FinishDay()
 	localtime_r(&atime, &now);
 	int wday = now.tm_wday; // days since Sunday [0-6]
 
-	double total = 0;
+	int total = 0;
 	for (int hour = 0; hour < 24; hour++)
 		total += weekday_hour_kwh_raw[hour];
 
-	weekday_kwh[wday] = (weekday_kwh[wday] + total) / 2.0;
+	weekday_kwh[wday] = (weekday_kwh[wday] + total) / 2;
 	weekday_hour_kwh_raw.fill(0);
 	SaveToDB();
 }
@@ -82,28 +82,19 @@ bool CKWHStats::LoadFromDB()
 	if (root.isMember("daily_hour_kwh") && root["daily_hour_kwh"].isArray())
 	{
 		for (int hour = 0; hour < 24; hour++)
-		{
-			if (root["daily_hour_kwh"][hour].isDouble())
-				daily_hour_kwh[hour] = root["daily_hour_kwh"][hour].asDouble();
-		}
+			daily_hour_kwh[hour] = root["daily_hour_kwh"][hour].asInt();
 	}
 	// weekday_hour_kwh_raw
 	if (root.isMember("weekday_hour_kwh_raw") && root["weekday_hour_kwh_raw"].isArray())
 	{
 		for (int hour = 0; hour < 24; hour++)
-		{
-			if (root["weekday_hour_kwh"][hour].isDouble())
-				weekday_hour_kwh_raw[hour] = root["weekday_hour_kwh"][hour].asDouble();
-		}
+			weekday_hour_kwh_raw[hour] = root["weekday_hour_kwh"][hour].asInt();
 	}
 	// weekday_kwh
 	if (root.isMember("weekday_kwh") && root["weekday_kwh"].isArray())
 	{
 		for (int wday = 0; wday < 7; wday++)
-		{
-			if (root["weekday_kwh"][wday].isDouble())
-				weekday_kwh[wday] = root["weekday_kwh"][wday].asDouble();
-		}
+			weekday_kwh[wday] = root["weekday_kwh"][wday].asInt();
 	}
 	// weekday_hour_kwh
 	if (root.isMember("weekday_hour_kwh") && root["weekday_hour_kwh"].isArray())
@@ -113,10 +104,7 @@ bool CKWHStats::LoadFromDB()
 			if (root["weekday_hour_kwh"][wday].isArray())
 			{
 				for (int hour = 0; hour < 24; hour++)
-				{
-					if (root["weekday_hour_kwh"][wday][hour].isDouble())
-						weekday_hour_kwh[wday][hour] = root["weekday_hour_kwh"][wday][hour].asDouble();
-				}
+					weekday_hour_kwh[wday][hour] = root["weekday_hour_kwh"][wday][hour].asInt();
 			}
 		}
 	}
@@ -204,27 +192,27 @@ void CKWHStats::HandleKWHStatsHour()
 				g_kwhstats[device_id] = kwhs;
 			}
 
-			int64_t minUsage1 = std::stoll(result2[0][0]);
-			int64_t minUsage2 = std::stoll(result2[0][1]);
-			int64_t minDeliv1 = std::stoll(result2[0][2]);
-			int64_t minDeliv2 = std::stoll(result2[0][3]);
+			const int64_t minUsage1 = std::stoll(result2[0][0]);
+			const int64_t minUsage2 = std::stoll(result2[0][1]);
+			const int64_t minDeliv1 = std::stoll(result2[0][2]);
+			const int64_t minDeliv2 = std::stoll(result2[0][3]);
 
-			int64_t maxUsage1 = std::stoll(result2[0][4]);
-			int64_t maxUsage2 = std::stoll(result2[0][5]);
-			int64_t maxDeliv1 = std::stoll(result2[0][6]);
-			int64_t maxDeliv2 = std::stoll(result2[0][7]);
+			const int64_t maxUsage1 = std::stoll(result2[0][4]);
+			const int64_t maxUsage2 = std::stoll(result2[0][5]);
+			const int64_t maxDeliv1 = std::stoll(result2[0][6]);
+			const int64_t maxDeliv2 = std::stoll(result2[0][7]);
 
-			int64_t minUsage = minUsage1 + minUsage2;
-			int64_t minDeliv = minDeliv1 + minDeliv2;
-			int64_t maxUsage = maxUsage1 + maxUsage2;
-			int64_t maxDeliv = maxDeliv1 + maxDeliv2;
+			const int64_t minUsage = minUsage1 + minUsage2;
+			const int64_t minDeliv = minDeliv1 + minDeliv2;
+			const int64_t maxUsage = maxUsage1 + maxUsage2;
+			const int64_t maxDeliv = maxDeliv1 + maxDeliv2;
 
-			int64_t actUsage = (maxUsage - minUsage);
-			int64_t actDeliv = (maxDeliv - minDeliv);
+			const int64_t actUsage = (maxUsage - minUsage);
+			const int64_t actDeliv = (maxDeliv - minDeliv);
 
-			int64_t kwh = actUsage - actDeliv;
+			const int Wh = static_cast<int>(actUsage - actDeliv);
 
-			g_kwhstats[device_id].AddHourValue(hour, static_cast<double>(kwh * 0.001));
+			g_kwhstats[device_id].AddHourValue(hour, Wh);
 
 			if (actHour == 0)
 			{

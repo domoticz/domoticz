@@ -1741,6 +1741,9 @@ void MainWorker::Do_Work()
 			bool bDoCleanupShortlog = false;
 			if (difftime(atime, _ScheduleLastMinuteTime) > 30) //avoid RTC/NTP clock drifts
 			{
+#ifdef _DEBUG
+				//CKWHStats::HandleKWHStatsHour();
+#endif
 				_ScheduleLastMinuteTime = atime;
 				_ScheduleLastMinute = ltime.tm_min;
 
