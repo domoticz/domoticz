@@ -264,11 +264,9 @@ namespace mcp
 
 		_log.Debug(DEBUG_WEBSERVER, "MCP: Handling tools/{%s} request.", sMethodName.c_str());
 
-		Json::Value jsonDevices;
-		m_webservers.GetJSonDevices(jsonDevices, "", "", "", "", "", "", false, false, false, 0, "", "");
 		if (sMethodName == "get_switch_state")
 		{
-			if(!mcp::getSwitchState(jsonRequest, jsonRPCRep, jsonDevices))
+			if(!mcp::getSwitchState(jsonRequest, jsonRPCRep))
 			{
 				jsonRPCRep["error"]["code"] = -32602; // Invalid params
 				jsonRPCRep["error"]["message"] = "Error getting switch state";
@@ -277,7 +275,7 @@ namespace mcp
 		}
 		else if (sMethodName == "toggle_switch_state")
 		{
-			if(!mcp::toggleSwitchState(jsonRequest, jsonRPCRep, jsonDevices))
+			if(!mcp::toggleSwitchState(jsonRequest, jsonRPCRep))
 			{
 				jsonRPCRep["error"]["code"] = -32602; // Invalid params
 				jsonRPCRep["error"]["message"] = "Error toggling switch state";
@@ -286,7 +284,7 @@ namespace mcp
 		}
 		else if (sMethodName == "get_sensor_value")
 		{
-			if(!mcp::getSensorValue(jsonRequest, jsonRPCRep, jsonDevices))
+			if(!mcp::getSensorValue(jsonRequest, jsonRPCRep))
 			{
 				jsonRPCRep["error"]["code"] = -32602; // Invalid params
 				jsonRPCRep["error"]["message"] = "Error getting sensor value";
@@ -500,7 +498,7 @@ namespace mcp
 		}
 	}
 
-	bool getSwitchState(const Json::Value &jsonRequest, Json::Value &jsonRPCRep, const Json::Value &jsonDevices)
+	bool getSwitchState(const Json::Value &jsonRequest, Json::Value &jsonRPCRep)
 	{
 		if (!jsonRequest["params"].isMember("arguments") || !jsonRequest["params"]["arguments"].isMember("switchname"))
 		{
@@ -510,7 +508,7 @@ namespace mcp
 		std::string sSwitchName = jsonRequest["params"]["arguments"]["switchname"].asString();
 		std::string sSwitchState = "No switch exists with the name " + sSwitchName;
 		Json::Value device;
-		bool bFound = getDeviceByName(sSwitchName, device, jsonDevices);
+		bool bFound = getDeviceByName(sSwitchName, device);
 		if (bFound)
 		{
 			sSwitchState = "The current state of switch \"" + sSwitchName + "\" is: " + device["Data"].asString();
@@ -524,7 +522,7 @@ namespace mcp
 		return true;
 	}
 
-	bool toggleSwitchState(const Json::Value &jsonRequest, Json::Value &jsonRPCRep, const Json::Value &jsonDevices)
+	bool toggleSwitchState(const Json::Value &jsonRequest, Json::Value &jsonRPCRep)
 	{
 		if (!jsonRequest["params"].isMember("arguments") || !jsonRequest["params"]["arguments"].isMember("switchname"))
 		{
@@ -534,7 +532,7 @@ namespace mcp
 		std::string sSwitchName = jsonRequest["params"]["arguments"]["switchname"].asString();
 		std::string sSwitchState = "No switch exists with the name " + sSwitchName;
 		Json::Value device;
-		bool bFound = getDeviceByName(sSwitchName, device, jsonDevices);
+		bool bFound = getDeviceByName(sSwitchName, device);
 		if (bFound)
 		{
 			sSwitchState = "The state of switch \"" + sSwitchName + "\" before toggle was: " + device["Data"].asString() + ". ";
@@ -551,7 +549,7 @@ namespace mcp
 		return true;
 	}
 
-	bool getSensorValue(const Json::Value &jsonRequest, Json::Value &jsonRPCRep, const Json::Value &jsonDevices)
+	bool getSensorValue(const Json::Value &jsonRequest, Json::Value &jsonRPCRep)
 	{
 		if (!jsonRequest["params"].isMember("arguments") || !jsonRequest["params"]["arguments"].isMember("sensorname"))
 		{
@@ -561,7 +559,7 @@ namespace mcp
 		std::string sSensorName = jsonRequest["params"]["arguments"]["sensorname"].asString();
 		std::string sSensorValue = "No sensor exists with the name " + sSensorName;
 		Json::Value device;
-		bool bFound = getDeviceByName(sSensorName, device, jsonDevices);
+		bool bFound = getDeviceByName(sSensorName, device);
 		if (bFound)
 		{
 			sSensorValue = "The current value for sensor \"" + sSensorName + "\" is: " + device["Data"].asString();
@@ -575,8 +573,11 @@ namespace mcp
 		return true;
 	}
 
-	bool getDeviceByName(const std::string &sDeviceName, Json::Value &device, const Json::Value &jsonDevices)
+	bool getDeviceByName(const std::string &sDeviceName, Json::Value &device)
 	{
+		Json::Value jsonDevices;
+		m_webservers.GetJSonDevices(jsonDevices, "", "", "", "", "", "", false, false, false, 0, "", "");
+
 		for (const auto &dev : jsonDevices["result"])
 		{
 			if (dev.isObject() && dev.isMember("Name") && dev["Name"].asString() == sDeviceName)

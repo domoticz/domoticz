@@ -16,10 +16,10 @@ namespace mcp
 	void McpPromptsList(const Json::Value &jsonRequest, Json::Value &jsonRPCRep);
 	void McpPromptsGet(const Json::Value &jsonRequest, Json::Value &jsonRPCRep);
 
-	bool getSensorValue(const Json::Value &jsonRequest, Json::Value &jsonRPCRep, const Json::Value &jsonDevices);
-	bool toggleSwitchState(const Json::Value &jsonRequest, Json::Value &jsonRPCRep, const Json::Value &jsonDevices);
-	bool getSwitchState(const Json::Value &jsonRequest, Json::Value &jsonRPCRep, const Json::Value &jsonDevices);
-	bool getDeviceByName(const std::string &sDeviceName, Json::Value &device, const Json::Value &jsonDevices);
+	bool getSensorValue(const Json::Value &jsonRequest, Json::Value &jsonRPCRep);
+	bool toggleSwitchState(const Json::Value &jsonRequest, Json::Value &jsonRPCRep);
+	bool getSwitchState(const Json::Value &jsonRequest, Json::Value &jsonRPCRep);
+	bool getDeviceByName(const std::string &sDeviceName, Json::Value &device);
 
 	bool validRPC(const std::string &sInput, Json::Value &jsonRequest, std::string &sError);
 }
