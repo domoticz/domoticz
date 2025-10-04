@@ -1,13 +1,17 @@
 /*
  * McpService.cpp
+ * The MCP Service of domoticz implements the Model Context Protocol (currently version 2025-06-18)
+ * so domoticz can be used as a agent in a LLM (Large Language Model) AI Agent context.
  *
  *  Created on: 4 April 2025
  *      Author: kiddigital
  * 
  * 
- * It contains routines that are part of the WebServer class, but for sourcecode management
- * reasons separated out into its own file so it is easier to maintain the MCP related functions
- * of the WebServer. The definitions of the methods here are still in 'main/Webserver.h'
+ * It contains the PostMCP routine that is part of the WebServer class, but for sourcecode management
+ * reasons separated out into its own file so it is easier to maintain this MCP related function
+ * of the WebServer. The definition of this method here is still in 'main/Webserver.h'
+ * Also it contains the implementation of the other Model Context Protocol methods, which are defined
+ * in 'mcpserver/McpService.hpp'.
  *  
 */
 
@@ -185,7 +189,7 @@ namespace http
 	} // namespace server
 } // namespace http
 
-namespace mcp
+namespace mcp		// Model Context Protocol
 {
 	void McpInitialize(const Json::Value &jsonRequest, Json::Value &jsonRPCRep)
 	{
@@ -247,6 +251,15 @@ namespace mcp
 		tool["inputSchema"]["properties"]["sensorname"]["description"] = "Name of the sensor to query";
 		tool["inputSchema"]["required"].append("sensorname");
 		jsonRPCRep["result"]["tools"].append(tool);
+		// Get logging tool
+		tool.clear();
+		tool["name"] = "get_logging";
+		tool["title"] = "Get the logging information";
+		tool["description"] = "Retrieve the current logging information";
+		tool["inputSchema"]["type"] = "object";
+		tool["inputSchema"]["properties"]["logdate"]["type"] = "number";
+		tool["inputSchema"]["properties"]["logdate"]["description"] = "The (Unixtimestamp) date and time from which to retrieve the logs (optional, default is 0, which means all logs)";
+		jsonRPCRep["result"]["tools"].append(tool);
 	}
 
 	void McpToolsCall(const Json::Value &jsonRequest, Json::Value &jsonRPCRep)
@@ -288,6 +301,15 @@ namespace mcp
 			{
 				jsonRPCRep["error"]["code"] = -32602; // Invalid params
 				jsonRPCRep["error"]["message"] = "Error getting sensor value";
+				return;
+			}
+		}
+		else if (sMethodName == "get_logging")
+		{
+			if(!mcp::getLogging(jsonRequest, jsonRPCRep))
+			{
+				jsonRPCRep["error"]["code"] = -32001; // Resource not found
+				jsonRPCRep["error"]["message"] = "Error getting logging";
 				return;
 			}
 		}
@@ -444,6 +466,7 @@ namespace mcp
 		// Prepare the result for the prompts/list method
 		jsonRPCRep["result"]["prompts"] = Json::Value(Json::arrayValue);
 		Json::Value prompt;
+		// House Summary prompt
 		prompt["name"] = "housesummary";
 		prompt["title"] = "Get a status overview";
 		prompt["description"] = "Summarize the current status of all sensors and devices in the house (optionally limited to a specific room)";
@@ -454,6 +477,14 @@ namespace mcp
 		arg["required"] = false;
 		prompt["arguments"].append(arg);
 		jsonRPCRep["result"]["prompts"].append(prompt);
+		// System analysis prompt
+		prompt.clear();
+		prompt["name"] = "systemanalysis";
+		prompt["title"] = "Get a system analysis";
+		prompt["description"] = "Analyze the current status of the system and provide insights";
+		prompt["arguments"] = Json::Value(Json::arrayValue);
+		jsonRPCRep["result"]["prompts"].append(prompt);
+
 	}
 
 	void McpPromptsGet(const Json::Value &jsonRequest, Json::Value &jsonRPCRep)
@@ -471,10 +502,10 @@ namespace mcp
 			message["role"] = "user";
 			message["content"] = Json::Value(Json::objectValue);
 			message["content"]["type"] = "text";
-			std::string sText = "As the friendly butler of the house, please summarize the current status of all sensors and devices preferably grouped by room. Please also include the current state of the switches and sensors in your summary.";
+			std::string sText = "As the friendly butler of the house, please summarize the current status of all sensors and devices preferably grouped by room.";
 			Json::Value jsonDevices;
 			m_webservers.GetJSonDevices(jsonDevices, "", "", "", "", "", "", false, false, false, 0, "", "");
-			sText += "Include the following devices in your summary:";
+			sText += " Include the following devices in your summary:";
 			for(const auto &device : jsonDevices["result"])
 			{
 				if(device.isObject() && device.isMember("Name") && device.isMember("Data") && device.isMember("Type") && device.isMember("SubType"))
@@ -487,6 +518,21 @@ namespace mcp
 				}
 			}
 			// To-do: add all known swtches and sensors to the prompt. Filter if needed by room if specified in the arguments
+			message["content"]["text"] = sText;
+			jsonRPCRep["result"]["messages"].append(message);
+		}
+		else if (sPromptName == "systemanalysis")
+		{
+			std::string sRoom = ((jsonRequest["params"].isMember("arguments") && jsonRequest["params"]["arguments"].isMember("room")) ? jsonRequest["params"]["arguments"]["room"].asString() : "");
+			// Prepare the result for the prompts/get method
+			jsonRPCRep["result"]["description"] = "Analyze the current status of the system and provide insights";
+			jsonRPCRep["result"]["messages"] = Json::Value(Json::arrayValue);
+			Json::Value message;
+			message["role"] = "user";
+			message["content"] = Json::Value(Json::objectValue);
+			message["content"]["type"] = "text";
+			std::string sText = "As the friendly butler of the house, please make an analysis of the current status of the system by analyzing all available log information, and providing suggestions if needed.";
+			sText += "State the time window of the logging you have analyzed. If the latest log entries are older than 3 minutes, make sure to first retrieve the latest log entries before making your analysis.";
 			message["content"]["text"] = sText;
 			jsonRPCRep["result"]["messages"].append(message);
 		}
@@ -571,6 +617,62 @@ namespace mcp
 		jsonRPCRep["result"]["content"].append(tool);
 		jsonRPCRep["result"]["isError"] = !bFound;
 		return true;
+	}
+
+	bool getLogging(const Json::Value &jsonRequest, Json::Value &jsonRPCRep)
+	{
+		bool bFound = false;
+		time_t iSinceUnixtime = 0;
+		if (jsonRequest["params"].isMember("arguments") && jsonRequest["params"]["arguments"].isMember("logdate"))
+		{
+			iSinceUnixtime = (time_t)jsonRequest["params"]["arguments"]["logdate"].asUInt64();
+			_log.Debug(DEBUG_WEBSERVER, "MCP: getLogging: Retrieving logs since Unixtime %ld", (uint64_t)iSinceUnixtime);
+		}
+		// Get the current log levels
+		std::string sResult = "The following loglevel are currently enabled: ";
+		if (_log.IsLogLevelEnabled(LOG_ALL))
+		{
+			bFound = true;
+			sResult += "ALL ";
+		}
+		if (_log.IsLogLevelEnabled(LOG_ERROR))
+		{
+			bFound = true;
+			sResult += "ERROR ";
+		}
+		if (_log.IsLogLevelEnabled(LOG_STATUS))
+		{
+			bFound = true;
+			sResult += "STATUS ";
+		}
+		if (_log.IsLogLevelEnabled(LOG_NORM))
+		{
+			bFound = true;
+			sResult += "NORM ";
+		}
+		if (_log.IsLogLevelEnabled(LOG_DEBUG_INT))
+		{
+			bFound = true;
+			sResult += "DEBUG ";
+		}
+		if (bFound)
+		{
+			sResult += "\nThe last log messages are:\n";
+			std::list<CLogger::_tLogLineStruct> logmessages = _log.GetLog(_eLogLevel::LOG_ALL, iSinceUnixtime);
+			for (const auto& msg : logmessages)
+			{
+				sResult += msg.logmessage + "\n";
+			}
+		}
+		else
+			sResult = "No loglevels are currently enabled!";
+		Json::Value tool;
+		tool["type"] = "text";
+		tool["text"] = sResult;;
+		jsonRPCRep["result"]["content"] = Json::Value(Json::arrayValue);
+		jsonRPCRep["result"]["content"].append(tool);
+		jsonRPCRep["result"]["isError"] = !bFound;
+		return bFound;
 	}
 
 	bool getDeviceByName(const std::string &sDeviceName, Json::Value &device)
