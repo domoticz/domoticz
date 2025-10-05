@@ -25,6 +25,7 @@
 #include "../main/json_helper.h"
 #include "../main/WebServer.h"
 #include "../main/WebServerHelper.h"
+#include "../webserver/Base64.h"
 
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
@@ -260,6 +261,15 @@ namespace mcp		// Model Context Protocol
 		tool["inputSchema"]["properties"]["logdate"]["type"] = "number";
 		tool["inputSchema"]["properties"]["logdate"]["description"] = "The (Unixtimestamp) date and time from which to retrieve the logs (optional, default is 0, which means all logs)";
 		jsonRPCRep["result"]["tools"].append(tool);
+		// Get Floorplan(s) tool
+		tool.clear();
+		tool["name"] = "get_floorplan";
+		tool["title"] = "Get the floorplan";
+		tool["description"] = "Retrieve the specific floorplan within the system";
+		tool["inputSchema"]["type"] = "object";
+		tool["inputSchema"]["properties"]["floorplan"]["type"] = "string";
+		tool["inputSchema"]["properties"]["floorplan"]["description"] = "The name of the floorplan to retrieve";
+		jsonRPCRep["result"]["tools"].append(tool);
 	}
 
 	void McpToolsCall(const Json::Value &jsonRequest, Json::Value &jsonRPCRep)
@@ -277,6 +287,7 @@ namespace mcp		// Model Context Protocol
 
 		_log.Debug(DEBUG_WEBSERVER, "MCP: Handling tools/{%s} request.", sMethodName.c_str());
 
+		// To-Do: rewrite to switch/case statement using djb2hash or similar
 		if (sMethodName == "get_switch_state")
 		{
 			if(!mcp::getSwitchState(jsonRequest, jsonRPCRep))
@@ -313,6 +324,15 @@ namespace mcp		// Model Context Protocol
 				return;
 			}
 		}
+		else if (sMethodName == "get_floorplan")
+		{
+			if(!mcp::getFloorplan(jsonRequest, jsonRPCRep))
+			{
+				jsonRPCRep["error"]["code"] = -32602; // Invalid params
+				jsonRPCRep["error"]["message"] = "Error getting floorplan";
+				return;
+			}
+		}
 		else
 		{
 			_log.Debug(DEBUG_WEBSERVER, "MCP: Unsupported tool name: %s", sMethodName.c_str());
@@ -340,14 +360,15 @@ namespace mcp		// Model Context Protocol
 		jsonRPCRep["result"]["resources"] = Json::Value(Json::arrayValue);
 
 		Json::Value jsonDevices;
-		m_webservers.GetJSonDevices(jsonDevices, "", "", "", "", "", "", false, false, false, 0, "", "");
+		m_webservers.GetJSonDevices(jsonDevices, "", "", "", "", "", "", false, false, false, 0, "", "");	// To-Do: Use Database instead of WebServerHelper
 		if (jsonDevices.isObject() && jsonDevices.isMember("result"))
 		{
 			for (const auto &device : jsonDevices["result"])
 			{
 				//_log.Debug(DEBUG_WEBSERVER, "MCP: ResourcesList: Got device: %s", device.toStyledString().c_str());
 				if (device.isObject() && device.isMember("idx") && device.isMember("HardwareName") && device.isMember("ID") &&
-					device.isMember("Name") && device.isMember("Type") && device.isMember("SubType") && device.isMember("Data"))
+					device.isMember("Name") && device.isMember("Type") && device.isMember("SubType") && device.isMember("Data")	&&
+					device.isMember("Used") && atoi(device["Used"].asString().c_str()) == 1)
 				{
 					Json::Value resource;
 					//resource["uri"] = "dom:///dom.local:8080/" + device["Type"].asString() + "/" + device["SubType"].asString() + "/" + device["idx"].asString();
@@ -377,6 +398,7 @@ namespace mcp		// Model Context Protocol
 				}
 			}
 		}
+		// To-Do: Add floorplans as resources too
 		_log.Debug(DEBUG_WEBSERVER, "McpResourcesList: Following resources offered:\n%s", jsonRPCRep.toStyledString().c_str());
 	}
 
@@ -613,6 +635,50 @@ namespace mcp		// Model Context Protocol
 		Json::Value tool;
 		tool["type"] = "text";
 		tool["text"] = sSensorValue;
+		jsonRPCRep["result"]["content"] = Json::Value(Json::arrayValue);
+		jsonRPCRep["result"]["content"].append(tool);
+		jsonRPCRep["result"]["isError"] = !bFound;
+		return true;
+	}
+
+	bool getFloorplan(const Json::Value &jsonRequest, Json::Value &jsonRPCRep)
+	{
+		if (!jsonRequest["params"].isMember("arguments") || !jsonRequest["params"]["arguments"].isMember("floorplan"))
+		{
+			_log.Debug(DEBUG_WEBSERVER, "MCP: getFloorplan: Missing required parameter 'floorplan'");
+			return false;
+		}
+		std::string sFloorplan = jsonRequest["params"]["arguments"]["floorplan"].asString();
+		std::string sFloorplanValue = "No floorplan exists with the name " + sFloorplan;
+		std::string sMimeType;
+		Json::Value tool;
+		bool bFound = false;
+
+		auto result = m_sql.safe_query("SELECT ID FROM Floorplans WHERE Name='%q'", sFloorplan.c_str());
+		if (!result.empty() && result.size() == 1 )
+		{
+			std::string idx = result[0][0];
+			std::vector<std::vector<std::string>> blob;
+			blob = m_sql.safe_queryBlob("SELECT Image FROM Floorplans WHERE ID=%d", atol(idx.c_str()));
+			if (!blob.empty())
+			{
+				bFound = true;
+				sFloorplanValue = base64_encode(std::string(blob[0][0].begin(), blob[0][0].end()));
+				sMimeType = "image/png";	// To-Do: properly determine the mime type based on the actual image type
+			}
+		}
+
+		if (bFound)
+		{
+			tool["type"] = "image";
+			tool["mimeType"] = sMimeType;
+			tool["data"] = sFloorplanValue;
+		}
+		else
+		{
+			tool["type"] = "text";
+			tool["text"] = sFloorplanValue;
+		}
 		jsonRPCRep["result"]["content"] = Json::Value(Json::arrayValue);
 		jsonRPCRep["result"]["content"].append(tool);
 		jsonRPCRep["result"]["isError"] = !bFound;

@@ -20,6 +20,8 @@ namespace mcp
 	bool toggleSwitchState(const Json::Value &jsonRequest, Json::Value &jsonRPCRep);
 	bool getSwitchState(const Json::Value &jsonRequest, Json::Value &jsonRPCRep);
 	bool getLogging(const Json::Value &jsonRequest, Json::Value &jsonRPCRep);
+	bool getFloorplan(const Json::Value &jsonRequest, Json::Value &jsonRPCRep);
+
 	bool getDeviceByName(const std::string &sDeviceName, Json::Value &device);
 
 	bool validRPC(const std::string &sInput, Json::Value &jsonRequest, std::string &sError);
