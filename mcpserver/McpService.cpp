@@ -398,7 +398,30 @@ namespace mcp		// Model Context Protocol
 				}
 			}
 		}
-		// To-Do: Add floorplans as resources too
+		// Add any available floorplans as resources too
+		auto result = m_sql.safe_query("SELECT ID, Name FROM Floorplans");
+		if (!result.empty())
+		{
+			for (const auto &row : result)
+			{
+				if (row.size() >= 2)
+				{
+					Json::Value resource;
+					std::string idx = row[0];
+					std::string sName = row[1];
+					resource["uri"] = "floorplan:///image/" + idx;
+					resource["name"] = sName;
+					resource["title"] = sName + " (Floorplan)";
+					resource["description"] = "A Floorplan called " + sName + " with IDX " + idx;
+					resource["mimeType"] = "image/*"; // unknown image type
+					Json::Value meta;
+					meta["idx"] = atoi(idx.c_str());
+					resource["_meta"] = meta;
+					jsonRPCRep["result"]["resources"].append(resource);
+				}
+			}
+		}
+
 		_log.Debug(DEBUG_WEBSERVER, "McpResourcesList: Following resources offered:\n%s", jsonRPCRep.toStyledString().c_str());
 	}
 
@@ -662,9 +685,45 @@ namespace mcp		// Model Context Protocol
 			blob = m_sql.safe_queryBlob("SELECT Image FROM Floorplans WHERE ID=%d", atol(idx.c_str()));
 			if (!blob.empty())
 			{
+				// To-Do: refactor code together with CWebServer::GetFloorplanImage code (less duplication)
 				bFound = true;
 				sFloorplanValue = base64_encode(std::string(blob[0][0].begin(), blob[0][0].end()));
-				sMimeType = "image/png";	// To-Do: properly determine the mime type based on the actual image type
+				sMimeType = "image/*"; // unknown image type
+				if (blob[0][0].size() > 10)
+				{
+					// PNG
+					const unsigned char png_signature[8] = {0x89, 'P', 'N', 'G', 0x0D, 0x0A, 0x1A, 0x0A};
+
+					// JPEG
+					const unsigned char jpeg_signature[3] = {0xFF, 0xD8, 0xFF};
+
+					// GIF87a
+					const unsigned char gif87a_signature[6] = {'G', 'I', 'F', '8', '7', 'a'};
+					// GIF89a
+					const unsigned char gif89a_signature[6] = {'G', 'I', 'F', '8', '9', 'a'};
+
+					// BMP
+					const unsigned char bmp_signature[2] = {'B', 'M'};
+
+					// WebP (RIFF....WEBP)
+					const unsigned char webp_riff_signature[4] = {'R', 'I', 'F', 'F'};
+					const unsigned char webp_webp_signature[4] = {'W', 'E', 'B', 'P'};
+
+					if (std::equal(png_signature, png_signature + sizeof(png_signature), reinterpret_cast<const unsigned char*>(&*blob[0][0].begin())))
+						sMimeType = "image/png";
+					else if (std::equal(jpeg_signature, jpeg_signature + sizeof(jpeg_signature), reinterpret_cast<const unsigned char*>(&*blob[0][0].begin())))
+						sMimeType = "image/jpeg";
+					else if (std::equal(bmp_signature, bmp_signature + sizeof(bmp_signature), reinterpret_cast<const unsigned char*>(&*blob[0][0].begin())))
+						sMimeType = "image/bmp";
+					else if (std::equal(gif87a_signature, gif87a_signature + sizeof(gif87a_signature), reinterpret_cast<const unsigned char*>(&*blob[0][0].begin())) ||
+							 std::equal(gif89a_signature, gif89a_signature + sizeof(gif89a_signature), reinterpret_cast<const unsigned char*>(&*blob[0][0].begin())))
+						sMimeType = "image/gif";
+					else if ((blob[0][0][0] == '<') && (blob[0][0][1] == 's') && (blob[0][0][2] == 'v') && (blob[0][0][3] == 'g'))
+						sMimeType = "image/svg+xml";
+					else if (blob[0][0].find("<svg") != std::string::npos) // some SVG's start with <xml
+						sMimeType = "image/svg+xml";
+					//_log.Debug(DEBUG_WEBSERVER, "MCP: getFloorplan: Detected floorplan image header: %.10s (%s)", std::string(blob[0][0].begin(), blob[0][0].begin() + 10).c_str(), sMimeType.c_str());
+				}
 			}
 		}
 
