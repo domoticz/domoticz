@@ -30,6 +30,18 @@
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
 
+#define JSONRPC_PARSE_ERROR -32700
+#define JSONRPC_INVALID_REQUEST -32600
+#define JSONRPC_METHOD_NOT_FOUND -32601
+#define JSONRPC_INVALID_PARAMETER -32602
+#define JSONRPC_INTERNAL_ERROR -32603
+#define MCP_SERVER_ERROR -32000
+#define MCP_TOOL_EXECUTION_FAILED -32000
+#define MCP_RESOURCE_NOT_FOUND -32001
+#define MCP_PERMISSION_DENIED -32002
+#define MCP_RATE_LIMIT_EXCEEDED -32003
+#define MCP_TIMEOUT_OCCURRED -32004
+
 extern http::server::CWebServerHelper m_webservers;
 extern CLogger _log;
 
@@ -37,7 +49,6 @@ namespace http
 {
 	namespace server
 	{
-
 		void CWebServer::PostMcp(WebEmSession &session, const request &req, reply &rep)
 		{
 			_log.Debug(DEBUG_RECEIVED, "MCP: Post (%d): %s (%s)", req.content_length, req.content.c_str(), req.uri.c_str());
@@ -69,12 +80,12 @@ namespace http
 			// Check if the request is a POST request
 			if (req.method != "POST")
 			{
-				_log.Debug(DEBUG_WEBSERVER, "MCP: Invalid method: %s", req.method.c_str());
-				rep = reply::stock_reply(reply::bad_request);
-				// VScode MCP client does sends GET's
+				// VScode MCP client does sends GET's (maybe other do as well?)
 				// It does this to look for asynchronous notifications support
 				// but we don't support that yet, so we return bad request
 				// And the MCP spec does not support GET for requests anyway
+				_log.Debug(DEBUG_WEBSERVER, "MCP: Invalid method: %s", req.method.c_str());
+				rep = reply::stock_reply(reply::bad_request);
 				return;
 			}
 
@@ -83,11 +94,11 @@ namespace http
 			if (!mcp::validRPC(req.content, jsonRequest, sParseErr))
 			{
 				_log.Debug(DEBUG_WEBSERVER, "MCP: Invalid JSON-RPC request: %s", sParseErr.c_str());
-				rep = reply::stock_reply(reply::bad_request);
+				rep = reply::stock_reply(reply::bad_request);	// Or should we send a valid JSON-RPC response with error -32700 (Parse error)?
 				return;
 			}
 
-			_log.Debug(DEBUG_RECEIVED, "MCP: Parsed JSON Request content: %s", jsonRequest.toStyledString().c_str());
+			//_log.Debug(DEBUG_RECEIVED, "MCP: Parsed JSON Request content: %s", jsonRequest.toStyledString().c_str());
 
 			// Check if the method is supported and handle it
 			std::string sReqMethod = jsonRequest["method"].asString();
@@ -105,20 +116,16 @@ namespace http
 			jsonRPCRep["jsonrpc"] = "2.0";
 
 			// Check if the request has an ID
-			std::string sReqID;
-			int iReqID;
 			if (jsonRequest.isMember("id"))
 			{
 				if (jsonRequest["id"].isInt())
 				{
-					iReqID = jsonRequest["id"].asInt();
-					jsonRPCRep["id"] = iReqID;
+					jsonRPCRep["id"] = jsonRequest["id"].asInt();
 
 				}
 				else if (jsonRequest["id"].isString())
 				{
-					sReqID = jsonRequest["id"].asString();
-					jsonRPCRep["id"] = sReqID;
+					jsonRPCRep["id"] = jsonRequest["id"].asString();
 				}
 				else
 				{
@@ -278,7 +285,7 @@ namespace mcp		// Model Context Protocol
 		if (!jsonRequest.isMember("params") || !jsonRequest["params"].isMember("name"))
 		{
 			_log.Debug(DEBUG_WEBSERVER, "MCP: Missing required tool parameter 'name' in tools/{tool} request.");
-			jsonRPCRep["error"]["code"] = -32602; // Invalid params
+			jsonRPCRep["error"]["code"] = JSONRPC_INVALID_PARAMETER;
 			jsonRPCRep["error"]["message"] = "Missing required parameter 'name'";
 			return;
 		}
@@ -292,7 +299,7 @@ namespace mcp		// Model Context Protocol
 		{
 			if(!mcp::getSwitchState(jsonRequest, jsonRPCRep))
 			{
-				jsonRPCRep["error"]["code"] = -32602; // Invalid params
+				jsonRPCRep["error"]["code"] = JSONRPC_INVALID_PARAMETER;
 				jsonRPCRep["error"]["message"] = "Error getting switch state";
 				return;
 			}
@@ -301,7 +308,7 @@ namespace mcp		// Model Context Protocol
 		{
 			if(!mcp::toggleSwitchState(jsonRequest, jsonRPCRep))
 			{
-				jsonRPCRep["error"]["code"] = -32602; // Invalid params
+				jsonRPCRep["error"]["code"] = JSONRPC_INVALID_PARAMETER;
 				jsonRPCRep["error"]["message"] = "Error toggling switch state";
 				return;
 			}
@@ -310,7 +317,7 @@ namespace mcp		// Model Context Protocol
 		{
 			if(!mcp::getSensorValue(jsonRequest, jsonRPCRep))
 			{
-				jsonRPCRep["error"]["code"] = -32602; // Invalid params
+				jsonRPCRep["error"]["code"] = JSONRPC_INVALID_PARAMETER;
 				jsonRPCRep["error"]["message"] = "Error getting sensor value";
 				return;
 			}
@@ -319,7 +326,7 @@ namespace mcp		// Model Context Protocol
 		{
 			if(!mcp::getLogging(jsonRequest, jsonRPCRep))
 			{
-				jsonRPCRep["error"]["code"] = -32001; // Resource not found
+				jsonRPCRep["error"]["code"] = MCP_RESOURCE_NOT_FOUND;
 				jsonRPCRep["error"]["message"] = "Error getting logging";
 				return;
 			}
@@ -328,7 +335,7 @@ namespace mcp		// Model Context Protocol
 		{
 			if(!mcp::getFloorplan(jsonRequest, jsonRPCRep))
 			{
-				jsonRPCRep["error"]["code"] = -32602; // Invalid params
+				jsonRPCRep["error"]["code"] = JSONRPC_INVALID_PARAMETER;
 				jsonRPCRep["error"]["message"] = "Error getting floorplan";
 				return;
 			}
@@ -336,20 +343,11 @@ namespace mcp		// Model Context Protocol
 		else
 		{
 			_log.Debug(DEBUG_WEBSERVER, "MCP: Unsupported tool name: %s", sMethodName.c_str());
-			jsonRPCRep["error"]["code"] = -32601; // Method not found
+			jsonRPCRep["error"]["code"] = JSONRPC_METHOD_NOT_FOUND;
 			jsonRPCRep["error"]["message"] = "Method not found";
 			return;
 		}
-		// std::string sLastMod = (device.isMember("LastUpdate") ? device["LastUpdate"].asString() : "");
-		// if (!sLastMod.empty())
-		// 	stdreplace(sLastMod, " ", "T");
-		// 	annotations["lastModified"] = sLastMod + "Z";	// To-Do: Properly convert to ISO 8601 format
-		// break;
-		// if (annotations.isMember("lastModified"))
-		// {
-		// 	tool["annotations"] = annotations;
-		// }
-		_log.Debug(DEBUG_WEBSERVER, "McpToolsCall: Returning result for method (%s): %s", sMethodName.c_str(), jsonRPCRep.toStyledString().c_str());
+		//_log.Debug(DEBUG_WEBSERVER, "McpToolsCall: Returning result for method (%s): %s", sMethodName.c_str(), jsonRPCRep.toStyledString().c_str());
 	}
 
 	void McpResourcesList(const Json::Value &jsonRequest, Json::Value &jsonRPCRep)
@@ -404,25 +402,23 @@ namespace mcp		// Model Context Protocol
 		{
 			for (const auto &row : result)
 			{
-				if (row.size() >= 2)
-				{
-					Json::Value resource;
-					std::string idx = row[0];
-					std::string sName = row[1];
-					resource["uri"] = "floorplan:///image/" + idx;
-					resource["name"] = sName;
-					resource["title"] = sName + " (Floorplan)";
-					resource["description"] = "A Floorplan called " + sName + " with IDX " + idx;
-					resource["mimeType"] = "image/*"; // unknown image type
-					Json::Value meta;
-					meta["idx"] = atoi(idx.c_str());
-					resource["_meta"] = meta;
-					jsonRPCRep["result"]["resources"].append(resource);
-				}
+				Json::Value resource;
+				std::string idx = row[0];
+				std::string sName = row[1];
+				resource["uri"] = "floorplan:///image/" + idx;
+				resource["name"] = sName;
+				resource["title"] = sName + " (Floorplan)";
+				resource["description"] = "A Floorplan called " + sName + " with IDX " + idx;
+				resource["mimeType"] = "image/*"; // unknown image type
+				Json::Value meta;
+				meta["idx"] = atoi(idx.c_str());
+				resource["_meta"] = meta;
+				jsonRPCRep["result"]["resources"].append(resource);
 			}
 		}
 
-		_log.Debug(DEBUG_WEBSERVER, "McpResourcesList: Following resources offered:\n%s", jsonRPCRep.toStyledString().c_str());
+		//_log.Debug(DEBUG_WEBSERVER, "MCP: ResourcesList: Following resources offered:\n%s", jsonRPCRep.toStyledString().c_str());
+		_log.Debug(DEBUG_WEBSERVER, "MCP: ResourcesList: Number of resources offered: %d", jsonRPCRep["result"]["resources"].size());
 	}
 
 	void McpResourcesTemplatesList(const Json::Value &jsonRequest, Json::Value &jsonRPCRep)
@@ -432,8 +428,7 @@ namespace mcp		// Model Context Protocol
 		// Prepare the result for the resources/templates/list method
 		jsonRPCRep["result"]["resourceTemplates"] = Json::Value(Json::arrayValue);
 		// Currently we do not have any resource templates to offer
-
-		_log.Debug(DEBUG_WEBSERVER, "McpResourcesTemplatesList: Following resource templates offered:\n%s", jsonRPCRep.toStyledString().c_str());
+		_log.Debug(DEBUG_WEBSERVER, "MCP: ResourcesTemplatesList: Following resource templates offered:\n%s", jsonRPCRep.toStyledString().c_str());
 	}
 
 	void McpResourcesRead(const Json::Value &jsonRequest, Json::Value &jsonRPCRep)
@@ -442,7 +437,7 @@ namespace mcp		// Model Context Protocol
 		if (!jsonRequest.isMember("params") || !jsonRequest["params"].isMember("uri"))
 		{
 			_log.Debug(DEBUG_WEBSERVER, "MCP: Missing required resource parameter 'uri' in resources/read request.");
-			jsonRPCRep["error"]["code"] = -32602; // Invalid params
+			jsonRPCRep["error"]["code"] = JSONRPC_INVALID_PARAMETER;
 			jsonRPCRep["error"]["message"] = "Missing required parameter 'uri'";
 			return;
 		}
@@ -459,7 +454,7 @@ namespace mcp		// Model Context Protocol
 		catch (const std::exception &e)
 		{
 			_log.Debug(DEBUG_WEBSERVER, "MCP: resources/read: Invalid resource URI, cannot extract IDX: %s", e.what());
-			jsonRPCRep["error"]["code"] = -32603; // Internal error
+			jsonRPCRep["error"]["code"] = MCP_SERVER_ERROR;
 			jsonRPCRep["error"]["message"] = "Invalid resource URI, cannot extract IDX";
 			return;
 		}
@@ -467,7 +462,7 @@ namespace mcp		// Model Context Protocol
 		if (result.empty() || result.size() != 1)
 		{
 			_log.Debug(DEBUG_WEBSERVER, "MCP: resources/read: No device found with IDX %d", nIdx);
-			jsonRPCRep["error"]["code"] = -32002; // Resource not found
+			jsonRPCRep["error"]["code"] = MCP_RESOURCE_NOT_FOUND;
 			jsonRPCRep["error"]["message"] = "No device found with the specified URI";
 			return;
 		}
@@ -529,7 +524,6 @@ namespace mcp		// Model Context Protocol
 		prompt["description"] = "Analyze the current status of the system and provide insights";
 		prompt["arguments"] = Json::Value(Json::arrayValue);
 		jsonRPCRep["result"]["prompts"].append(prompt);
-
 	}
 
 	void McpPromptsGet(const Json::Value &jsonRequest, Json::Value &jsonRPCRep)
@@ -584,7 +578,7 @@ namespace mcp		// Model Context Protocol
 		else
 		{
 			_log.Debug(DEBUG_WEBSERVER, "MCP: prompts/get: Unsupported prompt name: %s", sPromptName.c_str());
-			jsonRPCRep["error"]["code"] = -32601; // Method not found
+			jsonRPCRep["error"]["code"] = JSONRPC_METHOD_NOT_FOUND;
 			jsonRPCRep["error"]["message"] = "Method not found";
 		}
 	}
