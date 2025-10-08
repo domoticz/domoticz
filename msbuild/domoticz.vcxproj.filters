@@ -3048,7 +3048,7 @@
     </ClCompile>
     <ClCompile Include="..\main\KWHStats.cpp">
       <Filter>Helpers</Filter>
-    </ClInclude>
+    </ClCompile>
     <ClCompile Include="..\mcpserver\McpService.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
