@@ -259,6 +259,19 @@ namespace mcp		// Model Context Protocol
 		tool["inputSchema"]["properties"]["sensorname"]["description"] = "Name of the sensor to query";
 		tool["inputSchema"]["required"].append("sensorname");
 		jsonRPCRep["result"]["tools"].append(tool);
+		// Set Setpoint Value tool
+		tool.clear();
+		tool["name"] = "set_setpoint_value";
+		tool["title"] = "Set the target setpoint of a thermostat in the system";
+		tool["description"] = "Set the target setpoint of a given thermostat in the system";
+		tool["inputSchema"]["type"] = "object";
+		tool["inputSchema"]["properties"]["thermostatname"]["type"] = "string";
+		tool["inputSchema"]["properties"]["thermostatname"]["description"] = "Name of the thermostat to set";
+		tool["inputSchema"]["properties"]["setpoint"]["type"] = "number";
+		tool["inputSchema"]["properties"]["setpoint"]["description"] = "Temperature setpoint as an number";
+		tool["inputSchema"]["required"].append("thermostatname");
+		tool["inputSchema"]["required"].append("setpoint");
+		jsonRPCRep["result"]["tools"].append(tool);
 		// Get logging tool
 		tool.clear();
 		tool["name"] = "get_logging";
@@ -319,6 +332,15 @@ namespace mcp		// Model Context Protocol
 			{
 				jsonRPCRep["error"]["code"] = JSONRPC_INVALID_PARAMETER;
 				jsonRPCRep["error"]["message"] = "Error getting sensor value";
+				return;
+			}
+		}
+		else if (sMethodName == "set_setpoint_value")
+		{
+			if (!mcp::setThermostatSetpoint(jsonRequest, jsonRPCRep))
+			{
+				jsonRPCRep["error"]["code"] = JSONRPC_INVALID_PARAMETER;
+				jsonRPCRep["error"]["message"] = "Error setting thermostat setpoint";
 				return;
 			}
 		}
@@ -458,41 +480,66 @@ namespace mcp		// Model Context Protocol
 			jsonRPCRep["error"]["message"] = "Invalid resource URI, cannot extract IDX";
 			return;
 		}
-		auto result = m_sql.safe_query("SELECT Name, HardwareID, DeviceID, Type, SubType, nValue, sValue, LastUpdate from DeviceStatus WHERE ID=%d", nIdx);
-		if (result.empty() || result.size() != 1)
-		{
-			_log.Debug(DEBUG_WEBSERVER, "MCP: resources/read: No device found with IDX %d", nIdx);
-			jsonRPCRep["error"]["code"] = MCP_RESOURCE_NOT_FOUND;
-			jsonRPCRep["error"]["message"] = "No device found with the specified URI";
-			return;
-		}
-		auto &row = result[0];
-		std::string sName = row[0];
-		int iHardwareID = atoi(row[1].c_str());
-		std::string sDeviceID = row[2];
-		int iType = atoi(row[3].c_str());
-		int iSubType = atoi(row[4].c_str());
-		int nValue = atoi(row[5].c_str());
-		std::string sValue = row[6];
-		std::string sLastUpdate = row[7];
-		jsonRPCRep["result"]["contents"] = Json::Value(Json::arrayValue);
+		std::string sResourceType = sReadURI.substr(0, sReadURI.find(":///"));
 		Json::Value resource;
-		resource["uri"] = sReadURI;
-		resource["name"] = sName;
-		resource["title"] = sName + " (" + std::to_string(iHardwareID) + " - " + std::to_string(iType) + " - " + std::to_string(iSubType) + ")";
-		resource["mimeType"] = "plain/text";
-		resource["text"] = (sValue.empty() ? std::to_string(nValue) : sValue);
-		Json::Value meta;
-		meta["hardwareID"] = iHardwareID;
-		meta["type"] = iType;
-		meta["subtype"] = iSubType;
-		meta["idx"] = nIdx;
-		meta["id"] = sDeviceID;
-		resource["_meta"] = meta;
-		Json::Value annotations;
-		stdreplace(sLastUpdate, " ", "T");
-		annotations["lastModified"] = sLastUpdate + "Z";	// To-Do: Properly convert to ISO 8601 format (adjust for real timezone)
-		resource["annotations"] = annotations;
+		if (sResourceType == "floorplan")
+		{
+			// Read floorplan data from database
+			auto result = m_sql.safe_query("SELECT Name, Scalefactor FROM Floorplans WHERE ID=%d", nIdx);
+			if (result.empty() || result.size() != 1)
+			{
+				_log.Debug(DEBUG_WEBSERVER, "MCP: resources/read: No floorplan found with IDX %d", nIdx);
+				jsonRPCRep["error"]["code"] = MCP_RESOURCE_NOT_FOUND;
+				jsonRPCRep["error"]["message"] = "No floorplan found with the specified URI";
+				return;
+			}
+			auto &row = result[0];
+			jsonRPCRep["result"]["contents"] = Json::Value(Json::arrayValue);
+			resource["uri"] = sReadURI;
+			resource["name"] = row[0];
+			resource["title"] = "Floorplan " + row[0] + " (Scale factor: " + row[1] + ")";
+			Json::Value meta;
+			meta["idx"] = nIdx;
+			meta["type"] = "floorplan";
+			resource["_meta"] = meta;
+		}
+		else
+		{
+			auto result = m_sql.safe_query("SELECT Name, HardwareID, DeviceID, Type, SubType, nValue, sValue, LastUpdate from DeviceStatus WHERE ID=%d", nIdx);
+			if (result.empty() || result.size() != 1)
+			{
+				_log.Debug(DEBUG_WEBSERVER, "MCP: resources/read: No device found with IDX %d", nIdx);
+				jsonRPCRep["error"]["code"] = MCP_RESOURCE_NOT_FOUND;
+				jsonRPCRep["error"]["message"] = "No device found with the specified URI";
+				return;
+			}
+			auto &row = result[0];
+			std::string sName = row[0];
+			int iHardwareID = atoi(row[1].c_str());
+			std::string sDeviceID = row[2];
+			int iType = atoi(row[3].c_str());
+			int iSubType = atoi(row[4].c_str());
+			int nValue = atoi(row[5].c_str());
+			std::string sValue = row[6];
+			std::string sLastUpdate = row[7];
+			jsonRPCRep["result"]["contents"] = Json::Value(Json::arrayValue);
+			resource["uri"] = sReadURI;
+			resource["name"] = sName;
+			resource["title"] = sName + " (" + std::to_string(iHardwareID) + " - " + std::to_string(iType) + " - " + std::to_string(iSubType) + ")";
+			resource["mimeType"] = "plain/text";
+			resource["text"] = (sValue.empty() ? std::to_string(nValue) : sValue);
+			Json::Value meta;
+			meta["hardwareID"] = iHardwareID;
+			meta["type"] = iType;
+			meta["subtype"] = iSubType;
+			meta["idx"] = nIdx;
+			meta["id"] = sDeviceID;
+			resource["_meta"] = meta;
+			Json::Value annotations;
+			stdreplace(sLastUpdate, " ", "T");
+			annotations["lastModified"] = sLastUpdate + "Z";	// To-Do: Properly convert to ISO 8601 format (adjust for real timezone)
+			resource["annotations"] = annotations;
+		}
 
 		jsonRPCRep["result"]["contents"].append(resource);
 
@@ -792,6 +839,33 @@ namespace mcp		// Model Context Protocol
 		jsonRPCRep["result"]["content"].append(tool);
 		jsonRPCRep["result"]["isError"] = !bFound;
 		return bFound;
+	}
+
+	bool setThermostatSetpoint(const Json::Value& jsonRequest, Json::Value& jsonRPCRep)
+	{
+		if (!jsonRequest["params"].isMember("arguments") || !jsonRequest["params"]["arguments"].isMember("thermostatname") || !jsonRequest["params"]["arguments"].isMember("setpoint"))
+		{
+			_log.Debug(DEBUG_WEBSERVER, "MCP: setThermostatSetpoint: Missing required parameter 'thermostatname/setpoint'");
+			return false;
+		}
+		std::string sThermostatName = jsonRequest["params"]["arguments"]["thermostatname"].asString();
+		float fNewSetpoint = (float)atof(jsonRequest["params"]["arguments"]["setpoint"].asString().c_str());
+		std::string sThermostatState = "No thermostat exists with the name " + sThermostatName;
+		Json::Value device;
+		bool bFound = getDeviceByName(sThermostatName, device);
+		if (bFound)
+		{
+			sThermostatState = "The value of thermostat \"" + sThermostatName + "\" before setting was: " + device["Data"].asString() + ". ";
+			bFound = true;
+			sThermostatState += (m_mainworker.SetSetPoint(device["idx"].asString(), fNewSetpoint) == false ? "Error setting the setpoint." : "Setpoint set successfully.");
+		}
+		Json::Value tool;
+		tool["type"] = "text";
+		tool["text"] = sThermostatState;
+		jsonRPCRep["result"]["content"] = Json::Value(Json::arrayValue);
+		jsonRPCRep["result"]["content"].append(tool);
+		jsonRPCRep["result"]["isError"] = !bFound;
+		return true;
 	}
 
 	bool getDeviceByName(const std::string &sDeviceName, Json::Value &device)

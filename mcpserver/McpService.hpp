@@ -17,10 +17,12 @@ namespace mcp
 	void McpPromptsGet(const Json::Value &jsonRequest, Json::Value &jsonRPCRep);
 
 	bool getSensorValue(const Json::Value &jsonRequest, Json::Value &jsonRPCRep);
-	bool toggleSwitchState(const Json::Value &jsonRequest, Json::Value &jsonRPCRep);
 	bool getSwitchState(const Json::Value &jsonRequest, Json::Value &jsonRPCRep);
 	bool getLogging(const Json::Value &jsonRequest, Json::Value &jsonRPCRep);
 	bool getFloorplan(const Json::Value &jsonRequest, Json::Value &jsonRPCRep);
+
+	bool toggleSwitchState(const Json::Value &jsonRequest, Json::Value &jsonRPCRep);
+	bool setThermostatSetpoint(const Json::Value& jsonRequest, Json::Value& jsonRPCRep);
 
 	bool getDeviceByName(const std::string &sDeviceName, Json::Value &device);
 
