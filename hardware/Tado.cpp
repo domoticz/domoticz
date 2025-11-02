@@ -54,11 +54,8 @@ CTado::CTado(const int ID, const int PollInterval)
 	if ((PollInterval > 10) && (PollInterval < 3600))
 	{
 		m_iPollInterval = PollInterval;
-		//Compute new maxloops based on pollinterval, if maxloops < 1, set to 1 to be save
-		//Basically the 500 should be a define I guess, being the refresh intervall
-		m_iTADO_TOKEN_MAXLOOPS = static_cast<int>(m_iTADO_TOKEN_REFRESHTIME / m_iPollInterval);
-		if ( m_iTADO_TOKEN_MAXLOOPS < 1  ) 
-			m_iTADO_TOKEN_MAXLOOPS = 1;
+		//When worker started, maxloops needs to be computed again
+		m_iTADO_TOKEN_REFRESHTIME = 0;
 	}
 }
 
@@ -272,6 +269,14 @@ bool CTado::GetAccessToken()
 
 	m_szAccessToken = root["access_token"].asString();
 	m_szRefreshToken = root["refresh_token"].asString();
+	//If we got an new token, we can safely expect we also got an expire time
+	m_iTokenExpiresIn = std::stoi(root["expires_in"].asString());
+	//In case the expiresin <> previous expires in, new maxloops need to be determined
+	if ( m_iTokenExpiresIn != m_iTADO_TOKEN_REFRESHTIME )
+	{
+		Set_TokenRefresh();
+		m_iTADO_TOKEN_REFRESHTIME = m_iTokenExpiresIn;
+	}	
 
 	//Store refresh_token
 	m_sql.safe_query("UPDATE Hardware SET Extra='%q' WHERE (ID==%d)", m_szRefreshToken.c_str(), m_HwdID);
@@ -611,6 +616,10 @@ bool CTado::Do_Login_Work()
 
 			m_szAccessToken = root["access_token"].asString();
 			m_szRefreshToken = root["refresh_token"].asString();
+			//If we got an new token, we can safely expect we also got an expire time
+			m_iTokenExpiresIn = std::stoi(root["expires_in"].asString());
+			Set_TokenRefresh();
+		        m_iTADO_TOKEN_REFRESHTIME = m_iTokenExpiresIn;
 
 			//Store refresh_token
 			m_sql.safe_query("UPDATE Hardware SET Extra='%q' WHERE (ID==%d)", m_szRefreshToken.c_str(), m_HwdID);
@@ -620,10 +629,24 @@ bool CTado::Do_Login_Work()
 	return false;
 }
 
+//Refresh Expire time when needed
+void CTado::Set_TokenRefresh()
+{
+	//Compute new maxloops based on pollinterval, if maxloops < 1, set to 1 to be save
+	m_iTADO_TOKEN_MAXLOOPS = static_cast<int>(m_iTokenExpiresIn / m_iPollInterval);
+	m_iTADO_TOKEN_MAXLOOPS--; //1 less to be safe
+	if ( m_iTADO_TOKEN_MAXLOOPS < 1  )  //Can only be < 1 when pollinterval >= refreshinterval, should be a problem
+	{
+		m_iTADO_TOKEN_MAXLOOPS = 1;
+	}
+	//Log line should only fire once (or when the expire time changes)
+	Log(LOG_STATUS,"Max loops set to: %d", m_iTADO_TOKEN_MAXLOOPS);
+	//Reset token interval
+}
+
 void CTado::Do_Work()
 {
 	Log(LOG_STATUS, "Worker started. Will poll every %d seconds.", m_iPollInterval);
-	Log(LOG_STATUS,"Max loops set to: %d", m_iTADO_TOKEN_MAXLOOPS);
 	int iSecCounter = m_iPollInterval - 3;
 	int iTokenCycleCount = 0;
 

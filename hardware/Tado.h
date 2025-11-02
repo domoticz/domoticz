@@ -22,6 +22,7 @@ private:
 	bool StartHardware() override;
 	bool StopHardware() override;
 	void Do_Work();
+	void Set_TokenRefresh();
 	bool Do_Login_Work();
 	void Print_Login_URL(const std::string& url);
 
@@ -80,6 +81,7 @@ private:
 private:
 	std::string m_szAccessToken;
 	std::string m_szRefreshToken;
+	int m_iTokenExpiresIn = 0;
 
 	bool m_bDoGetEnvironment = true;
 	bool m_bDoGetHomes = true;
@@ -87,7 +89,7 @@ private:
 
 	int m_iPollInterval = 30;
 	int m_iTADO_TOKEN_MAXLOOPS = 12;
-	int m_iTADO_TOKEN_REFRESHTIME = 500; //Time in seconds for the refresh to take place (600 is the time Tado sets)
+	int m_iTADO_TOKEN_REFRESHTIME = 0; //Time in seconds for the refresh to take place, checked every refresh token cycle
 
 	std::vector<_tTadoHome> m_TadoHomes;
 };
