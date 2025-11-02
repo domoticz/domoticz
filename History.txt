@@ -1,6 +1,7 @@
 Version 2025.xxxx
 - Implemented: MQTT-AD, added support for Climate high/low setpoints
 - Implemented: Support for the Model Context Protocol (/mcp) for use with AI Agents
+- Implemented: PhilipsHue v2 API, just for Door/Window Contacts (state/tamper/battery)
 - Fixed: Chart zoom buttons (notable on iOS devices)
 - Changed: Enever, using v3 API
 - Changed: PhilipsHue, now used HTTP scheme (HTTP/HTTPS) based on port number (80/443)

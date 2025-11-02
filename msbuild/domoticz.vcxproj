@@ -672,6 +672,7 @@
     <ClInclude Include="..\hardware\PanasonicTV.h" />
     <ClInclude Include="..\hardware\PhilipsHue\PhilipsHue.h" />
     <ClInclude Include="..\hardware\PhilipsHue\PhilipsHueSensors.h" />
+    <ClInclude Include="..\hardware\PhilipsHue\PhilipsHueV2Sensors.h" />
     <ClInclude Include="..\hardware\PiFace.h" />
     <ClInclude Include="..\hardware\Pinger.h" />
     <ClInclude Include="..\hardware\plugins\DelayedLink.h" />
@@ -980,6 +981,7 @@
     <ClCompile Include="..\hardware\PhilipsHue\PhilipsHue.cpp" />
     <ClCompile Include="..\hardware\PhilipsHue\PhilipsHueHelper.cpp" />
     <ClCompile Include="..\hardware\PhilipsHue\PhilipsHueSensors.cpp" />
+    <ClCompile Include="..\hardware\PhilipsHue\PhilipsHueV2Sensors.cpp" />
     <ClCompile Include="..\hardware\PiFace.cpp" />
     <ClCompile Include="..\hardware\Pinger.cpp" />
     <ClCompile Include="..\hardware\plugins\DelayedLink.cpp" />
