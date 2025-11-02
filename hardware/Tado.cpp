@@ -619,7 +619,7 @@ bool CTado::Do_Login_Work()
 			//If we got an new token, we can safely expect we also got an expire time
 			m_iTokenExpiresIn = std::stoi(root["expires_in"].asString());
 			Set_TokenRefresh();
-		        m_iTADO_TOKEN_REFRESHTIME = m_iTokenExpiresIn;
+			m_iTADO_TOKEN_REFRESHTIME = m_iTokenExpiresIn;
 
 			//Store refresh_token
 			m_sql.safe_query("UPDATE Hardware SET Extra='%q' WHERE (ID==%d)", m_szRefreshToken.c_str(), m_HwdID);
