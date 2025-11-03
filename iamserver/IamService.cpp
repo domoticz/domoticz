@@ -233,6 +233,35 @@ namespace http
 			std::string code_verifier = request::findValue(&req, "code_verifier");
 			std::string redirect_uri = CURLEncode::URLDecode(request::findValue(&req, "redirect_uri"));
 
+			// Check for client credentials in Basic Auth header (client_secret_basic method)
+			if (request::get_req_header(&req, "Authorization") != nullptr)
+			{
+				std::string auth_header = request::get_req_header(&req, "Authorization");
+				size_t npos = auth_header.find("Basic ");
+				if (npos != std::string::npos)
+				{
+					std::string encoded = auth_header.substr(6);
+					std::string decoded = base64_decode(encoded);
+					npos = decoded.find(':');
+					if (npos != std::string::npos)
+					{
+						std::string basic_client_id = decoded.substr(0, npos);
+						std::string basic_client_secret = decoded.substr(npos + 1);
+						// Use Basic auth credentials if client_id matches or is empty
+						if (client_id.empty() || client_id == basic_client_id)
+						{
+							client_id = basic_client_id;
+							client_secret = basic_client_secret;
+							_log.Debug(DEBUG_AUTH, "[Basic] Found Basic Auth credentials for client '%s'", client_id.c_str());
+						}
+						else
+						{
+							_log.Debug(DEBUG_AUTH, "[Basic] client_id mismatch: body='%s' vs Basic='%s'", client_id.c_str(), basic_client_id.c_str());
+						}
+					}
+				}
+			}
+
 			if (!state.empty())
 			{
 				root["state"] = state;

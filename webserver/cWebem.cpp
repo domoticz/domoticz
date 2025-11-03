@@ -1865,7 +1865,13 @@ namespace http {
 				}
 				else if (_ah.method == "BASIC")
 				{
-					if (req.uri.find("/json.htm?") != std::string::npos)	// Exception for the main API endpoint so scripts can execute them with 'just' Basic AUTH
+					// OAuth2 endpoints handle their own client authentication, don't validate as user here
+					if (req.uri.find("/oauth2/") != std::string::npos)
+					{
+						_log.Debug(DEBUG_AUTH, "[Auth Check] Basic Authorization header found for OAuth2 endpoint, will be validated by OAuth2 handler");
+						// Don't set session, let OAuth2 code handle it
+					}
+					else if (req.uri.find("/json.htm?") != std::string::npos)	// Exception for the main API endpoint so scripts can execute them with 'just' Basic AUTH
 					{
 						if (AllowBasicAuth())	// Check if Basic Auth is allowed either over HTTPS or when explicitly enabled
 						{
