@@ -1263,7 +1263,19 @@ namespace http {
 						// Step 3: Using the (hashed :( ) password of the ClientID as our ClientSecret to verify the JWT signature
 						std::string JWTalgo = decodedJWT.get_algorithm();
 						std::error_code ec;
-						auto JWTverifyer = jwt::verify().with_issuer(myWebem->m_DigistRealm).with_audience(clientid);
+						// Build issuer for verification - use Host header if realm is default
+						std::string expected_issuer = myWebem->m_DigistRealm;
+						if (expected_issuer.find("domoticz.local") != std::string::npos)
+						{
+							const char *host_header = request::get_req_header(&req, "Host");
+							if (host_header != nullptr)
+							{
+								std::string scheme = (expected_issuer.find("https://") == 0) ? "https://" : "http://";
+								expected_issuer = scheme + std::string(host_header) + "/";
+							}
+						}
+
+						auto JWTverifyer = jwt::verify().with_issuer(expected_issuer).with_audience(clientid);
 						if (JWTalgo.compare("HS256") == 0)
 						{
 							JWTverifyer.allow_algorithm(jwt::algorithm::hs256{ clientsecret });
@@ -1352,7 +1364,7 @@ namespace http {
 			return 0;
 		}
 
-		bool cWebem::GenerateJwtToken(std::string &jwttoken, const std::string &clientid, const std::string &clientsecret, const std::string &user, const uint32_t exptime, const Json::Value jwtpayload)
+		bool cWebem::GenerateJwtToken(std::string &jwttoken, const std::string &clientid, const std::string &clientsecret, const std::string &user, const uint32_t exptime, const Json::Value jwtpayload, const std::string &issuer)
 		{
 			bool bOk = false;
 			// Did we get a 'plain' clientsecret or an already MD5Hashed one?
@@ -1371,10 +1383,11 @@ namespace http {
 						if ((my.Password == hashedsecret) || (my.ActiveTabs == 1))	// We 'abuse' the Users ActiveTabs as the Application Public 'boolean'
 						{
 							_log.Debug(DEBUG_AUTH, "[JWT] Generate Token for %s using clientid %s (privKey %d)!", user.c_str(), clientid.c_str(), my.ActiveTabs);
+							std::string jwt_issuer = issuer.empty() ? m_DigistRealm : issuer;
 							auto JWT = jwt::create()
 								.set_type("JWT")
 								.set_key_id(std::to_string(my.ID))
-								.set_issuer(m_DigistRealm)
+								.set_issuer(jwt_issuer)
 								.set_issued_at(std::chrono::system_clock::now())
 								.set_not_before(std::chrono::system_clock::now())
 								.set_expires_at(std::chrono::system_clock::now() + std::chrono::seconds{exptime})

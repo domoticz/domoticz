@@ -27,6 +27,22 @@ namespace http
 	namespace server
 	{
 
+		std::string GetIssuerFromRequest(const request &req, const std::string &configured_realm)
+		{
+			// Only use Host header if the configured realm uses the default 'domoticz.local'
+			if (configured_realm.find("domoticz.local") != std::string::npos)
+			{
+				const char *host_header = request::get_req_header(&req, "Host");
+				if (host_header != nullptr)
+				{
+					// Infer scheme from configured realm or default to http
+					std::string scheme = (configured_realm.find("https://") == 0) ? "https://" : "http://";
+					return scheme + std::string(host_header) + "/";
+				}
+			}
+			return configured_realm;
+		}
+
 		void CWebServer::GetOauth2AuthCode(WebEmSession &session, const request &req, reply &rep)
 		{
 			bool bAuthenticated = false;
@@ -305,7 +321,8 @@ namespace http
 													jwtpayload["name"] = m_users[iUser].Username;
 													jwtpayload["roles"][0] = m_users[iUser].userrights;
 
-													if (m_pWebEm->GenerateJwtToken(jwttoken, client_id, client_secret, m_users[iUser].Username, exptime, jwtpayload))
+													std::string issuer = GetIssuerFromRequest(req, m_pWebEm->m_DigistRealm);
+													if (m_pWebEm->GenerateJwtToken(jwttoken, client_id, client_secret, m_users[iUser].Username, exptime, jwtpayload, issuer))
 													{
 														std::string username = std::to_string(iClient) + ";" + std::to_string(iUser);
 														root["access_token"] = jwttoken;
@@ -398,7 +415,8 @@ namespace http
 												jwtpayload["name"] = m_users[iUser].Username;
 												jwtpayload["roles"][0] = m_users[iUser].userrights;
 
-												if (m_pWebEm->GenerateJwtToken(jwttoken, client_id, m_users[iClient].Password, user, exptime, jwtpayload))
+												std::string issuer = GetIssuerFromRequest(req, m_pWebEm->m_DigistRealm);
+												if (m_pWebEm->GenerateJwtToken(jwttoken, client_id, m_users[iClient].Password, user, exptime, jwtpayload, issuer))
 												{
 													root["access_token"] = jwttoken;
 													root["token_type"] = "Bearer";
@@ -460,7 +478,8 @@ namespace http
 									jwtpayload["name"] = m_users[iUser].Username;
 									jwtpayload["roles"][0] = m_users[iUser].userrights;
 
-									if (m_pWebEm->GenerateJwtToken(jwttoken, m_users[iClient].Username, m_users[iClient].Password, m_users[iUser].Username, exptime, jwtpayload))
+									std::string issuer = GetIssuerFromRequest(req, m_pWebEm->m_DigistRealm);
+									if (m_pWebEm->GenerateJwtToken(jwttoken, m_users[iClient].Username, m_users[iClient].Password, m_users[iUser].Username, exptime, jwtpayload, issuer))
 									{
 										std::string username = std::to_string(iClient) + ";" + std::to_string(iUser);
 										root["access_token"] = jwttoken;
@@ -520,9 +539,10 @@ namespace http
 			reply::add_header_content_type(&rep, "application/json;charset=UTF-8");
 			rep.status = reply::bad_request;
 
-			std::string base_url = m_pWebEm->m_DigistRealm.substr(0, m_pWebEm->m_DigistRealm.size()-1);
+			std::string issuer = GetIssuerFromRequest(req, m_pWebEm->m_DigistRealm);
+			std::string base_url = issuer.substr(0, issuer.size()-1);
 
-			root["issuer"] = m_pWebEm->m_DigistRealm;
+			root["issuer"] = issuer;
 			root["authorization_endpoint"] = base_url + m_iamsettings.auth_url;
 			root["token_endpoint"] = base_url + m_iamsettings.token_url;
 			jaRTS.append("code");
