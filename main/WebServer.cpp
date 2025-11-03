@@ -770,7 +770,7 @@ namespace http
 			}
 			// Add 'Applications' as User with special privilege URIGHTS_CLIENTID
 			result.clear();
-			result = m_sql.safe_query("SELECT ID, Active, Public, Applicationname, Secret, Pemfile FROM Applications");
+			result = m_sql.safe_query("SELECT ID, Active, Public, Applicationname, Secret, Pemfile, RefreshExpire, SigningSecret, AcceptLegacyTokensUntil FROM Applications");
 			if (!result.empty())
 			{
 				for (const auto& sd : result)
@@ -783,9 +783,10 @@ namespace http
 						std::string applicationname = sd[3];
 						std::string secret = sd[4];
 						std::string pemfile = sd[5];
-						if (bPublic && secret.empty())
-							secret = GenerateMD5Hash(pemfile);
-						AddUser(ID, applicationname, secret, "", URIGHTS_CLIENTID, bPublic, pemfile);
+						uint32_t refreshexpire = static_cast<uint32_t>(atol(sd[6].c_str()));
+						std::string signingsecret = sd[7];
+						time_t accept_legacy_until = static_cast<time_t>(atol(sd[8].c_str()));
+						AddUser(ID, applicationname, secret, "", URIGHTS_CLIENTID, bPublic, pemfile, refreshexpire, signingsecret, accept_legacy_until);
 					}
 				}
 			}
@@ -793,7 +794,7 @@ namespace http
 			m_mainworker.LoadSharedUsers();
 		}
 
-		void CWebServer::AddUser(const unsigned long ID, const std::string& username, const std::string& password, const std::string& mfatoken, const int userrights, const int activetabs, const std::string& pemfile)
+		void CWebServer::AddUser(const unsigned long ID, const std::string& username, const std::string& password, const std::string& mfatoken, const int userrights, const int activetabs, const std::string& pemfile, const uint32_t refreshexpire, const std::string& signingsecret, const time_t accept_legacy_until)
 		{
 			if (m_pWebEm == nullptr)
 				return;
@@ -875,6 +876,8 @@ namespace http
 			wtmp.PubKey = pubkey;
 			wtmp.userrights = (_eUserRights)userrights;
 			wtmp.ActiveTabs = activetabs;
+			wtmp.RefreshExpire = refreshexpire;
+			wtmp.SigningSecret = signingsecret.empty() ? password : signingsecret;
 			wtmp.TotSensors = atoi(result[0][0].c_str());
 			m_users.push_back(wtmp);
 
@@ -888,7 +891,7 @@ namespace http
 			utmp.RedirectUri = "";
 			m_accesscodes.push_back(utmp);
 
-			m_pWebEm->AddUserPassword(ID, username, password, mfatoken, (_eUserRights)userrights, activetabs, privkey, pubkey);
+			m_pWebEm->AddUserPassword(ID, username, password, mfatoken, (_eUserRights)userrights, activetabs, privkey, pubkey, refreshexpire, signingsecret, accept_legacy_until);
 		}
 
 		void CWebServer::ClearUserPasswords()

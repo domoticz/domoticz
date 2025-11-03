@@ -366,15 +366,16 @@ namespace http
 											jwtpayload["roles"][0] = m_users[iUser].userrights;
 
 											std::string issuer = GetIssuerFromRequest(req, m_pWebEm->m_DigistRealm);
-											if (m_pWebEm->GenerateJwtToken(jwttoken, client_id, client_secret, m_users[iUser].Username, exptime, jwtpayload, issuer))
+											if (m_pWebEm->GenerateJwtToken(jwttoken, client_id, m_users[iUser].Username, exptime, jwtpayload, issuer))
 											{
 												std::string username = std::to_string(iClient) + ";" + std::to_string(iUser);
 												root["access_token"] = jwttoken;
 												root["token_type"] = "Bearer";
 												root["expires_in"] = exptime;
-												root["refresh_token"] = GenerateOAuth2RefreshToken(username, refreshexptime);
+												uint32_t client_refreshexptime = (m_users[iClient].RefreshExpire > 0) ? m_users[iClient].RefreshExpire : refreshexptime;
+												root["refresh_token"] = GenerateOAuth2RefreshToken(username, client_refreshexptime);
 
-												_log.Debug(DEBUG_AUTH, "OAuth2 Access Token: Succesfully generated a Refresh Token.");
+												_log.Debug(DEBUG_AUTH, "OAuth2 Access Token: Succesfully generated a Refresh Token (lifetime: %u seconds).", client_refreshexptime);
 
 												m_sql.safe_query("UPDATE Applications SET LastSeen=datetime('now') WHERE (Applicationname == '%s')", m_users[iClient].Username.c_str());
 												_log.Debug(DEBUG_AUTH, "OAuth2 Access Token: Succesfully generated an Access Token.");
@@ -435,8 +436,9 @@ namespace http
 										jwtpayload["preferred_username"] = m_users[iUser].Username;
 										jwtpayload["name"] = m_users[iUser].Username;
 										jwtpayload["roles"][0] = m_users[iUser].userrights;
+
 										std::string issuer = GetIssuerFromRequest(req, m_pWebEm->m_DigistRealm);
-										if (m_pWebEm->GenerateJwtToken(jwttoken, client_id, m_users[iClient].Password, username, exptime, jwtpayload, issuer))
+										if (m_pWebEm->GenerateJwtToken(jwttoken, client_id, username, exptime, jwtpayload, issuer))
 										{
 											root["access_token"] = jwttoken;
 											root["token_type"] = "Bearer";
@@ -498,13 +500,15 @@ namespace http
 										jwtpayload["roles"][0] = m_users[iUser].userrights;
 
 										std::string issuer = GetIssuerFromRequest(req, m_pWebEm->m_DigistRealm);
-										if (m_pWebEm->GenerateJwtToken(jwttoken, m_users[iClient].Username, m_users[iClient].Password, m_users[iUser].Username, exptime, jwtpayload, issuer))
+										if (m_pWebEm->GenerateJwtToken(jwttoken, m_users[iClient].Username, m_users[iUser].Username, exptime, jwtpayload, issuer))
 										{
 											std::string username = std::to_string(iClient) + ";" + std::to_string(iUser);
 											root["access_token"] = jwttoken;
 											root["token_type"] = "Bearer";
 											root["expires_in"] = exptime;
-											root["refresh_token"] = GenerateOAuth2RefreshToken(username, refreshexptime);
+											uint32_t client_refreshexptime = (m_users[iClient].RefreshExpire > 0) ? m_users[iClient].RefreshExpire : refreshexptime;
+											root["refresh_token"] = GenerateOAuth2RefreshToken(username, client_refreshexptime);
+											_log.Debug(DEBUG_AUTH, "OAuth2 Access Token: Succesfully generated a Refresh Token (lifetime: %u seconds).", client_refreshexptime);
 											rep.status = reply::ok;
 										}
 										else

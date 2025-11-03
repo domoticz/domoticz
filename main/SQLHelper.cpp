@@ -41,7 +41,7 @@
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
 
-#define DB_VERSION 170
+#define DB_VERSION 171
 
 #define DEFAULT_ADMINUSER "admin"
 #define DEFAULT_ADMINPWD "domoticz"
@@ -620,6 +620,9 @@ constexpr auto sqlCreateApplications =
 "[Applicationname] VARCHAR(100) DEFAULT '',"
 "[Secret] VARCHAR(100) DEFAULT '',"
 "[Pemfile] VARCHAR(100) DEFAULT '',"
+"[SigningSecret] VARCHAR(100) DEFAULT '',"
+"[RefreshExpire] INTEGER DEFAULT 0,"
+"[AcceptLegacyTokensUntil] INTEGER DEFAULT 0,"
 "[LastSeen] DATETIME DEFAULT NULL,"
 "[LastUpdate] DATETIME DEFAULT(datetime('now', 'localtime'))"
 ");";
@@ -3207,6 +3210,27 @@ bool CSQLHelper::OpenDatabase()
 		{
 			// Update Philips Hue to use HTTPS
 			m_sql.safe_query("UPDATE HARDWARE SET Port=443, SerialPort=433 WHERE ([Type]==%d) AND Port=80", HTYPE_Philips_Hue);
+		}
+		if (dbversion < 171)
+		{
+			// Add columns for per-application refresh token lifetime and JWT signing
+			query("ALTER TABLE Applications ADD COLUMN [RefreshExpire] INTEGER DEFAULT 0, "
+			      "ADD COLUMN [SigningSecret] VARCHAR(100) DEFAULT '', "
+			      "ADD COLUMN [AcceptLegacyTokensUntil] INTEGER DEFAULT 0");
+
+			// Accept any existing auth tokens for the hour it takes them to expire,
+			// after which they'll need to have been refreshed anyway.
+			time_t legacy_until = mytime(nullptr) + OAUTH2_AUTHTOKEN_EXPIRETIME;
+
+			result = safe_query("SELECT ID FROM Applications");
+			for (const auto& sd : result)
+			{
+				std::string id = sd[0];
+				std::string signingsecret = GenerateUUID();
+
+				safe_query("UPDATE Applications SET SigningSecret='%q', AcceptLegacyTokensUntil=%ld WHERE ID=%q",
+					signingsecret.c_str(), (long)legacy_until, id.c_str());
+			}
 		}
 	}
 	else if (bNewInstall)

@@ -67,7 +67,7 @@ class CWebServer : public session_store, public std::enable_shared_from_this<CWe
 	void ReloadCustomSwitchIcons();
 
 	void LoadUsers();
-	void AddUser(unsigned long ID, const std::string &username, const std::string &password, const std::string& mfatoken, int userrights, int activetabs, const std::string &pemfile = "");
+	void AddUser(unsigned long ID, const std::string &username, const std::string &password, const std::string& mfatoken, int userrights, int activetabs, const std::string &pemfile = "", uint32_t refreshexpire = 0, const std::string &signingsecret = "", time_t accept_legacy_until = 0);
 	void ClearUserPasswords();
 	bool FindAdminUser();
 	int CountAdminUsers();
