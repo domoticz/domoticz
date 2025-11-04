@@ -4763,20 +4763,22 @@ define(['app'], function (app) {
 		}
 
 		expandScope = function (scopeArray, separator) {
+			//Netatmo Scopes
 			var scopeGroups = { 
-				station_R :			'read_station',
-				thermostat_RW :			'read_thermostat write_thermostat',
-				camera_RWA :			'read_camera write_camera access_camera',
-				doorbell_RA :			'read_doorbell access_doorbell',
-				presence_RWA :			'read_presence write_presence access_presence',
+				station_R :					'read_station',
+				thermostat_RW :				'read_thermostat write_thermostat',
+				camera_RWA :				'read_camera write_camera access_camera',
+				doorbell_RA :				'read_doorbell access_doorbell',
+				presence_RWA :				'read_presence write_presence access_presence',
 				carbonmonoxidedetector_R :	'read_carbonmonoxidedetector',
-				smokedetector_R :		'read_smokedetector',
-				homecoach_R :			'read_homecoach',
-				magellan_RW :			'read_magellan write_magellan',
-				bubendorff_RW :			'read_bubendorff write_bubendorff',
-				smarther_RW :			'read_smarther write_smarther',
-				mx_RW :				'read_mx write_mx',
-				mhs1_RW :			'read_mhs1 write_mhs1'
+				smokedetector_R :			'read_smokedetector',
+				homecoach_R :				'read_homecoach',
+				magellan_RW :				'read_magellan write_magellan',
+				bubendorff_RW :				'read_bubendorff write_bubendorff',
+				smarther_RW :				'read_smarther write_smarther',
+				mx_RW :						'read_mx write_mx',
+				mhs1_RW :					'read_mhs1 write_mhs1',
+				camerapro_RWA :				'read_camerapro write_camerapro access_camerapro'
 			};
 
 			var result = "";

@@ -103,7 +103,7 @@ CNetatmo::CNetatmo(const int ID, const std::string& username, const std::string&
 	m_bPollWeatherData = (m_scopes.find("station_R") != std::string::npos);      //read_station
 	m_bPollHomecoachData = (m_scopes.find("homecoach_R") != std::string::npos);  //read_homecoach
 
-	m_bPollHomeStatus = find_scopes(); //"thermostat_RW","camera_RWA","presence_RWA","carbonmonoxidedetector_R","smokedetector_R","magellan_RW","bubendorff_RW","smarther_RW","mx_RW","mhs1_RW"
+	m_bPollHomeStatus = find_scopes(); //"thermostat_RW","camera_RWA","presence_RWA","carbonmonoxidedetector_R","smokedetector_R","magellan_RW","bubendorff_RW","smarther_RW","mx_RW","mhs1_RW", "camerapro_RWA"
 	m_netatmo_api_uri = std::string(NETATMO_API_URI);
 
 	m_bPollThermostat = true;
@@ -580,7 +580,9 @@ bool CNetatmo::find_scopes()
 		return true;
 	if (m_scopes.find("station_R") != std::string::npos)                //
 		return true;
-	//"thermostat_RW","camera_RWA","presence_RWA","carbonmonoxidedetector_R","smokedetector_R","magellan_RW","bubendorff_RW","smarther_RW","mx_RW","mhs1_RW"
+	if (m_scopes.find("camerapro_RWA") != std::string::npos)                //
+		return true;
+	//"thermostat_RW","camera_RWA","presence_RWA","carbonmonoxidedetector_R","smokedetector_R","magellan_RW","bubendorff_RW","smarther_RW","mx_RW","mhs1_RW","camerapro_RWA"
 	return false;
 }
 
@@ -886,7 +888,7 @@ bool CNetatmo::SetProgramState(const int uid, const int newState)
 		bHaveDevice = true;
 		// Energy        {NAPlug, OTH, BNS}
 		// Home+control  {NLG,    OTH, BNS, NBG,              BNMH}
-		// Home+security {NACamera, NOC, NDB, NSD, NCO, BNCX, BNMH}
+		// Home+security {NACamera, NOC, NDB, NSD, NCO, BNCX, BNMH, NPC}
 
 		// NAPlug = Netatmo Thermostat
 		// BNS = Smarther with Netatmo Thermostat
@@ -922,7 +924,7 @@ bool CNetatmo::SetProgramState(const int uid, const int newState)
 	if(!m_PowerDeviceID[uid].empty())
 	{
 		// Home+control  {NLG,    OTH, BNS, NBG,              BNMH, NLF, NLP, NLPO, NLM}
-		// Home+security {NACamera, NOC, NDB, NSD, NCO, BNCX, BNMH}
+		// Home+security {NACamera, NOC, NDB, NSD, NCO, BNCX, BNMH, NPC}
 		//Debug(DEBUG_HARDWARE, "Set Program State MAC = %s - %d", module_id.c_str(), newState);
 		std::string _data;
 		std::string State;
@@ -2181,10 +2183,11 @@ void CNetatmo::Get_RoomMeasure(std::string& home_id, std::string& room_id, std::
 
 	if (!root["body"].empty())
 	{
-                //if (!root["body"]["home"].empty())
-                //{
-                SaveJson2Disk(root, std::string("./roommeasure " + roomName + "_:_" + home_id + ".txt"));
-
+		//if (!root["body"]["home"].empty())
+		//{
+			//*****************************************************************************//
+				SaveJson2Disk(root, std::string("./roommeasure " + roomName + "_:_" + home_id + ".txt"));
+			//*****************************************************************************//
 	}
 }
 
@@ -2192,7 +2195,7 @@ void CNetatmo::Get_RoomMeasure(std::string& home_id, std::string& room_id, std::
 /// <summary>
 /// Get events
 /// <param name="home_id">ID-number of the NetatmoHome</param>
-/// <param name="device_types">Type of the module {NACamera, NOC, NSD, NCO, NDB, BNCX, BNMH} to retrieve last 30 events</param>
+/// <param name="device_types">Type of the module {NACamera, NOC, NSD, NCO, NDB, BNCX, BNMH, NPC} to retrieve last 30 events</param>
 /// <param name="event_id">identification number of event</param>
 /// <param name="person_id">identification number of detected person</param>
 /// <param name="device_id">MAC-adres of the Netatmo Device</param>
@@ -2259,7 +2262,9 @@ void CNetatmo::Get_Scenarios(std::string& home_id, Json::Value& scenarios)
 	{
 		if (!root["body"]["home"].empty())
 		{
+			//*****************************************************************************//
 			//SaveJson2Disk(root, std::string("./scenario-s " + m_Name + "_:_" + home_id + ".txt"));
+			//*****************************************************************************//
 			scenarios = root["body"]["home"];
 
 			//Selected Scenario ?
@@ -2361,7 +2366,9 @@ bool CNetatmo::ParseStationData(const std::string& sResult, const bool bIsThermo
 			else
 				name = "UNKNOWN NAME";
 
+			//*****************************************************************************//
 			//SaveJson2Disk(device, std::string("./" + name + ".txt"));
+			//*****************************************************************************//
 
 			//get Home ID from Weatherstation
 			if (type == "NAMain")
@@ -2847,7 +2854,9 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 				roomName = m_RoomNames[roomNetatmoID];
 				std::string roomType = m_Types[roomNetatmoID];
 
+				//*****************************************************************************//
 				//SaveJson2Disk(room, std::string("./room_") + roomName.c_str() + ".txt");
+				//*****************************************************************************//
 
 				if (!room["reachable"].empty())
 				{
@@ -3005,7 +3014,9 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 				m_ModuleIDs[Hardware_int] = crcId;
 				std::string type = module["type"].asString();
 				m_Device_types[module_id] = type;
+				//*****************************************************************************//
 				//SaveJson2Disk(module, std::string("./") + moduleName.c_str() + ".txt");
+				//*****************************************************************************//
 
 				nDevice.ID = crcId;
 				nDevice.ModuleName = moduleName;
@@ -3826,7 +3837,7 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 					{
 						continue;
 					}
-					if ((type == "NACamera") || (type == "NCO") || (type == "NDB") || (type == "NOC") || (type == "NSD") || (type == "NIS") || (type == "NDL"))
+					if ((type == "NACamera") || (type == "NCO") || (type == "NDB") || (type == "NOC") || (type == "NSD") || (type == "NIS") || (type == "NDL") || (type == "NPC"))
 					{
 						//Only use Get Events when correct device is presend
 						m_bPollGetEvents = true;
@@ -3860,7 +3871,9 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 				//Find the Person name
 				PersonName = m_PersonsNames[PersonNetatmoID];
 
+				//*****************************************************************************//
 				//SaveJson2Disk(person, std::string("./person_") + PersonName.c_str() + ".txt");
+				//*****************************************************************************//
 
 				std::string PersonLastSeen = person["last_seen"].asString();
 				std::string PersonAway = person["out_of_sight"].asString();
@@ -3909,7 +3922,9 @@ bool CNetatmo::ParseEvents(const std::string& sResult, Json::Value& root )
 			if (!events["id"].empty())
 			{
 				events_ID = events["id"].asString();
+				//*****************************************************************************//
 				//SaveJson2Disk(events, std::string("./events_") + events_ID.c_str() + ".txt");
+				//*****************************************************************************//
 			}
 			// Using Textstatus / Alert for now
 			if (!events["id"].empty())

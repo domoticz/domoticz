@@ -3,6 +3,7 @@ Version 2025.xxxx
 - Implemented: Support for the Model Context Protocol (/mcp) for use with AI Agents
 - Implemented: PhilipsHue v2 API, just for Door/Window Contacts (state/tamper/battery)
 - Fixed: Chart zoom buttons (notable on iOS devices)
+- Fixed: Possible memory leak in Kodi Notification when destination is unreachable
 - Changed: Enever, using v3 API
 - Changed: PhilipsHue, now used HTTP scheme (HTTP/HTTPS) based on port number (80/443)
 
