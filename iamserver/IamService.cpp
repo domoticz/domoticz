@@ -386,69 +386,60 @@ namespace http
 
 						// Maybe we should only allow this when in a safe 'local' network? So check if request comes from local networks?
 						int iUser = -1;
-						int iClient = -1;
-						if (request::get_req_header(&req, "Authorization") != nullptr)
+						int iClient = FindClient(client_id.c_str());
+
+						if (iClient != -1)
 						{
-							std::string auth_header = request::get_req_header(&req, "Authorization");
-							// Basic Auth header
-							size_t npos = auth_header.find("Basic ");
-							if (npos != std::string::npos)
+							std::string username = request::findValue(&req, "username");
+							std::string password = request::findValue(&req, "password");
+							if (!username.empty() && !password.empty())
 							{
-								std::string decoded = base64_decode(auth_header.substr(6));
-								npos = decoded.find(':');
-								if (npos != std::string::npos)
+								_log.Debug(DEBUG_AUTH, "OAuth2 Access Token: Password grant for user (%s)", username.c_str());
+								iUser = FindUser(username.c_str());
+								if(iUser != -1)
 								{
-									std::string user = decoded.substr(0, npos);
-									std::string passwd = decoded.substr(npos + 1);
-									_log.Debug(DEBUG_AUTH, "OAuth2 Access Token: Found a Basic Auth Header for User (%s)", user.c_str());
-
-									iUser = FindUser(user.c_str());
-									if(iUser != -1)
+									if (GenerateMD5Hash(password).compare(m_users[iUser].Password) == 0)
 									{
-										if (GenerateMD5Hash(passwd).compare(m_users[iUser].Password) == 0)
+										Json::Value jwtpayload;
+										jwtpayload["preferred_username"] = m_users[iUser].Username;
+										jwtpayload["name"] = m_users[iUser].Username;
+										jwtpayload["roles"][0] = m_users[iUser].userrights;
+										std::string issuer = GetIssuerFromRequest(req, m_pWebEm->m_DigistRealm);
+										if (m_pWebEm->GenerateJwtToken(jwttoken, client_id, m_users[iClient].Password, username, exptime, jwtpayload, issuer))
 										{
-											iClient = FindClient(client_id.c_str());
-											if (iClient != -1)
-											{
-												Json::Value jwtpayload;
-												jwtpayload["preferred_username"] = m_users[iUser].Username;
-												jwtpayload["name"] = m_users[iUser].Username;
-												jwtpayload["roles"][0] = m_users[iUser].userrights;
-
-												std::string issuer = GetIssuerFromRequest(req, m_pWebEm->m_DigistRealm);
-												if (m_pWebEm->GenerateJwtToken(jwttoken, client_id, m_users[iClient].Password, user, exptime, jwtpayload, issuer))
-												{
-													root["access_token"] = jwttoken;
-													root["token_type"] = "Bearer";
-													root["expires_in"] = exptime;
-													rep.status = reply::ok;
-												}
-												else
-												{
-													root["error"] = "server_error";
-													_log.Debug(DEBUG_AUTH, "OAuth2 Access Token: Something went wrong! Unable to generate Access Token!");
-													iUser = -1;
-												}
-											}
-											else
-											{
-												_log.Debug(DEBUG_AUTH, "OAuth2 Access Token: Invalid client_id (%s)(%d) for user (%s) for Password grant flow!", client_id.c_str(), iClient, user.c_str());
-												iUser = -1;
-											}
+											root["access_token"] = jwttoken;
+											root["token_type"] = "Bearer";
+											root["expires_in"] = exptime;
+											rep.status = reply::ok;
 										}
 										else
 										{
-											_log.Debug(DEBUG_AUTH, "OAuth2 Access Token: Invalid credentials for user (%s) for Password grant flow!", user.c_str());
+											root["error"] = "server_error";
+											_log.Debug(DEBUG_AUTH, "OAuth2 Access Token: Something went wrong! Unable to generate Access Token!");
 											iUser = -1;
 										}
 									}
 									else
 									{
-										_log.Debug(DEBUG_AUTH, "OAuth2 Access Token: Could not find user (%s) for Password grant flow!", user.c_str());
+										_log.Debug(DEBUG_AUTH, "OAuth2 Access Token: Invalid credentials for user (%s) for Password grant flow!", username.c_str());
+										iUser = -1;
 									}
 								}
+								else
+								{
+									_log.Debug(DEBUG_AUTH, "OAuth2 Access Token: Could not find user (%s) for Password grant flow!", username.c_str());
+								}
+							}
+							else
+							{
+								_log.Debug(DEBUG_AUTH, "OAuth2 Access Token: Missing username or password in request body for Password grant flow!");
 							}
 						}
+						else
+						{
+							_log.Debug(DEBUG_AUTH, "OAuth2 Access Token: Invalid client_id (%s) for Password grant flow!", client_id.c_str());
+						}
+
 						if (iUser == -1)
 						{
 							root["error"] = "invalid_client";
