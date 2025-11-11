@@ -105,12 +105,11 @@ namespace clx {
 			this->create();
 		}
 		
-		// End-user needs to call "free" on return object
-		// returns NULL when error, or a pointer to the buffer and file_size
+		//End-user needs to call "free" on return object
+		//returns NULL when error, or a pointer to the buffer and file_size
 		void *Extract(uLong &file_size, const int ExtraAllocBytes=0) {
 			file_size = 0;
-			int err = 0; // placeholder: if you need to open the current file with password, set err accordingly
-			// Example (commented out in original): unzOpenCurrentFilePassword((unzFile)handler_, pass_.c_str());
+			int err = 0;// unzOpenCurrentFilePassword((unzFile)handler_, pass_.c_str());
 			if (err != UNZ_OK)
 			{
 				//printf("error %d with zipfile in unzOpenCurrentFilePassword\n",err);
@@ -125,7 +124,7 @@ namespace clx {
 			unsigned char *buf = (unsigned char*)malloc(file_size + ExtraAllocBytes);
 			if (buf == NULL)
 				return NULL;
-			// Extract into our buffer
+			//Extract into our buffer
 			int offset = 0;
 			int tot_read = 0;
 			do
