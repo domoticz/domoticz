@@ -3380,7 +3380,7 @@ namespace http
 			else
 			{
 				std::vector<std::vector<std::string>> result;
-				result = m_sql.safe_query("SELECT ID, Active, Public, Applicationname, Secret, Pemfile, LastSeen FROM Applications ORDER BY ID ASC");
+				result = m_sql.safe_query("SELECT ID, Active, Public, Applicationname, Secret, Pemfile, RefreshExpire, SigningSecret, LastSeen FROM Applications ORDER BY ID ASC");
 				if (!result.empty())
 				{
 					int ii = 0;
@@ -3392,7 +3392,9 @@ namespace http
 						root["result"][ii]["Applicationname"] = sd[3];
 						root["result"][ii]["Secret"] = sd[4];
 						root["result"][ii]["Pemfile"] = sd[5];
-						root["result"][ii]["LastSeen"] = sd[6];
+						root["result"][ii]["RefreshExpire"] = atoi(sd[6].c_str());
+						root["result"][ii]["SigningSecret"] = sd[7];
+						root["result"][ii]["LastSeen"] = sd[8];
 						ii++;
 					}
 				}
@@ -3414,6 +3416,12 @@ namespace http
 				std::string applicationname = request::findValue(&req, "applicationname");
 				std::string secret = request::findValue(&req, "secret");
 				std::string pemfile = request::findValue(&req, "pemfile");
+				std::string srefreshexpire = request::findValue(&req, "refreshexpire");
+				uint32_t refreshexpire = (srefreshexpire.empty()) ? 0 : static_cast<uint32_t>(atol(srefreshexpire.c_str()));
+				std::string signingsecret = request::findValue(&req, "signingsecret");
+				// Auto-generate signing secret if not provided
+				if (signingsecret.empty())
+					signingsecret = GenerateUUID();
 				if (senabled.empty() || applicationname.empty() || spublic.empty())
 				{
 					session.reply_status = reply::bad_request;
@@ -3439,8 +3447,8 @@ namespace http
 				}
 
 				// Insert the new application
-				m_sql.safe_query("INSERT INTO Applications (Active, Public, Applicationname, Secret, Pemfile) VALUES (%d,%d,'%q','%q','%q')",
-					(senabled == "true") ? 1 : 0, (spublic == "true") ? 1 : 0, applicationname.c_str(), secret.c_str(), pemfile.c_str());
+				m_sql.safe_query("INSERT INTO Applications (Active, Public, Applicationname, Secret, Pemfile, RefreshExpire, SigningSecret) VALUES (%d,%d,'%q','%q','%q',%u,'%q')",
+					(senabled == "true") ? 1 : 0, (spublic == "true") ? 1 : 0, applicationname.c_str(), secret.c_str(), pemfile.c_str(), refreshexpire, signingsecret.c_str());
 
 				// Reload the applications (and users)
 				LoadUsers();
@@ -3463,6 +3471,12 @@ namespace http
 				std::string secret = request::findValue(&req, "secret");
 				std::string pemfile = request::findValue(&req, "pemfile");
 				std::string idx = request::findValue(&req, "idx");
+				std::string srefreshexpire = request::findValue(&req, "refreshexpire");
+				uint32_t refreshexpire = (srefreshexpire.empty()) ? 0 : static_cast<uint32_t>(atol(srefreshexpire.c_str()));
+				std::string signingsecret = request::findValue(&req, "signingsecret");
+				// Auto-generate signing secret if not provided
+				if (signingsecret.empty())
+					signingsecret = GenerateUUID();
 				if (idx.empty() || senabled.empty() || applicationname.empty() || spublic.empty())
 				{
 					session.reply_status = reply::bad_request;
@@ -3492,8 +3506,8 @@ namespace http
 				}
 
 				// Update the application
-				m_sql.safe_query("UPDATE Applications SET Active=%d, Public=%d, Applicationname='%q', Secret='%q', Pemfile='%q' WHERE (ID == '%q')",
-					(senabled == "true") ? 1 : 0, (spublic == "true") ? 1 : 0, applicationname.c_str(), secret.c_str(), pemfile.c_str(), idx.c_str());
+				m_sql.safe_query("UPDATE Applications SET Active=%d, Public=%d, Applicationname='%q', Secret='%q', Pemfile='%q', RefreshExpire=%u, SigningSecret='%q' WHERE (ID == '%q')",
+					(senabled == "true") ? 1 : 0, (spublic == "true") ? 1 : 0, applicationname.c_str(), secret.c_str(), pemfile.c_str(), refreshexpire, signingsecret.c_str(), idx.c_str());
 
 				// Reload the applications (and users)
 				LoadUsers();
@@ -4993,13 +5007,7 @@ namespace http
 			_eSwitchType switchtype = (_eSwitchType)atoi(result[0][2].c_str());
 			std::map<std::string, std::string> options = m_sql.BuildDeviceOptions(result[0][3]);
 
-			if (
-				(dType != pTypeLighting1) && (dType != pTypeLighting2) && (dType != pTypeLighting3) && (dType != pTypeLighting4) && (dType != pTypeLighting5) &&
-				(dType != pTypeLighting6) && (dType != pTypeFan) && (dType != pTypeColorSwitch) && (dType != pTypeSecurity1) && (dType != pTypeSecurity2) && (dType != pTypeEvohome) &&
-				(dType != pTypeEvohomeRelay) && (dType != pTypeCurtain) && (dType != pTypeBlinds) && (dType != pTypeRFY) && (dType != pTypeRego6XXValue) && (dType != pTypeChime) &&
-				(dType != pTypeThermostat2) && (dType != pTypeThermostat3) && (dType != pTypeThermostat4) && (dType != pTypeRemote) && (dType != pTypeGeneralSwitch) &&
-				(dType != pTypeHomeConfort) && (dType != pTypeFS20) && (!((dType == pTypeRadiator1) && (dSubType == sTypeSmartwaresSwitchRadiator))) && (dType != pTypeHunter) && (dType != pTypeDDxxxx) && (dType != pTypeHoneywell_AL)
-				)
+			if (!(IsLightOrSwitch(dType, dSubType) || (dType == pTypeEvohome) || (dType == pTypeEvohomeRelay) || (dType == pTypeRego6XXValue)))
 				return; // no light device! we should not be here!
 
 			root["status"] = "OK";

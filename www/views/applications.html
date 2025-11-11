@@ -38,6 +38,16 @@
                 <td><input type="text" id="applicationpemfile" name="applicationpemfile" style="width: 200px; padding: .2em;" class="text ui-widget-content ui-corner-all"></td>
             </tr>
             <tr>
+                <td align="right" style="width:200px"><label for="refreshexpire"><span data-i18n="Refresh Token Lifetime">Refresh Token Lifetime (seconds, 0=default)</span>:</label></td>
+                <td><input type="number" id="refreshexpire" name="refreshexpire" min="0" value="0" style="width: 200px; padding: .2em;" class="text ui-widget-content ui-corner-all"></td>
+            </tr>
+            <tr>
+                <td align="right" style="width:200px"><label for="signingsecret"><span data-i18n="JWT Signing Secret">JWT Signing Secret (leave blank to auto-generate)</span>:</label></td>
+                <td>
+                    <input type="password" id="signingsecret" name="signingsecret" style="width: 200px; padding: .2em;" class="text ui-widget-content ui-corner-all">
+                </td>
+            </tr>
+            <tr>
                 <td></td>
                 <td>
                     <a class="btn btn-info" onclick="AddApplication();" data-i18n="Add">Add</a>

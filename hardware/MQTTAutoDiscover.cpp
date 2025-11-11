@@ -4143,7 +4143,10 @@ void MQTTAutoDiscover::handle_auto_discovery_climate(_tMQTTASensor* pSensor, con
 					std::string szKey = std::get<0>(itt);
 					std::string szValue = std::get<1>(itt);
 
-					if (szKey == current_mode)
+					if (
+						(szKey == current_mode)
+						|| (szValue == current_mode)
+						)
 						iActualIndex = iValueIndex;
 					if (!tmpOptionString.empty())
 						tmpOptionString += "|";

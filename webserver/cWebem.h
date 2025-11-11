@@ -40,6 +40,9 @@ namespace http
 			_eUserRights userrights = URIGHTS_VIEWER;
 			int TotSensors = 0;
 			int ActiveTabs = 0;
+			uint32_t RefreshExpire = 0;
+			std::string SigningSecret;
+			time_t AcceptLegacyTokensUntil = 0;
 		} WebUserPassword;
 
 		typedef struct _tWebEmSession
@@ -188,11 +191,11 @@ namespace http
 			void SetAuthenticationMethod(_eAuthenticationMethod amethod);
 			void SetWebTheme(const std::string &themename);
 			void SetWebRoot(const std::string &webRoot);
-			void AddUserPassword(unsigned long ID, const std::string &username, const std::string &password, const std::string &mfatoken, _eUserRights userrights, int activetabs, const std::string &privkey = "", const std::string &pubkey = "");
+			void AddUserPassword(unsigned long ID, const std::string &username, const std::string &password, const std::string &mfatoken, _eUserRights userrights, int activetabs, const std::string &privkey = "", const std::string &pubkey = "", uint32_t refreshexpire = 0, const std::string &signingsecret = "", time_t accept_legacy_until = 0);
 			std::string ExtractRequestPath(const std::string &original_request_path);
 			bool IsBadRequestPath(const std::string &original_request_path);
 
-			bool GenerateJwtToken(std::string &jwttoken, const std::string &clientid, const std::string &clientsecret, const std::string &user, const uint32_t exptime, const Json::Value jwtpayload = "");
+			bool GenerateJwtToken(std::string &jwttoken, const std::string &clientid, const std::string &user, const uint32_t exptime, const Json::Value jwtpayload = "", const std::string &issuer = "");
 			bool FindAuthenticatedUser(std::string &user, const request &req, reply &rep);
 			bool CheckVHost(const request &req);
 			bool findRealHostBehindProxies(const request &req, std::string &realhost);

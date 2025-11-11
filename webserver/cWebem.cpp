@@ -630,7 +630,7 @@ namespace http {
 			return false;
 		}
 
-		void cWebem::AddUserPassword(const unsigned long ID, const std::string &username, const std::string &password, const std::string &mfatoken, const _eUserRights userrights, const int activetabs, const std::string &privkey, const std::string &pubkey)
+		void cWebem::AddUserPassword(const unsigned long ID, const std::string &username, const std::string &password, const std::string &mfatoken, const _eUserRights userrights, const int activetabs, const std::string &privkey, const std::string &pubkey, uint32_t refreshexpire, const std::string &signingsecret, time_t accept_legacy_until)
 		{
 			_tWebUserPassword wtmp;
 			wtmp.ID = ID;
@@ -641,6 +641,9 @@ namespace http {
 			wtmp.PubKey = pubkey;
 			wtmp.userrights = userrights;
 			wtmp.ActiveTabs = activetabs;
+			wtmp.SigningSecret = signingsecret;
+			wtmp.RefreshExpire = refreshexpire;
+			wtmp.AcceptLegacyTokensUntil = accept_legacy_until;
 			wtmp.TotSensors = 0;
 			m_userpasswords.push_back(wtmp);
 		}
@@ -1236,7 +1239,9 @@ namespace http {
 						std::string JWTsubject = decodedJWT.get_subject();
 						_log.Debug(DEBUG_AUTH,"[JWT] Token audience : %s", clientid.c_str());
 
-						std::string clientsecret;
+						std::string signingsecret;
+						std::string client_password;
+						time_t accept_legacy_until = 0;
 						std::string clientpubkey;
 						std::string client_key_id;
 						bool clientispublic = false;
@@ -1247,15 +1252,17 @@ namespace http {
 							{
 								if (my.userrights == URIGHTS_CLIENTID || clientid.compare(JWTsubject) == 0)
 								{
-									clientsecret = my.Password;
+									signingsecret = my.SigningSecret;
 									clientpubkey = my.PubKey;
 									client_key_id = std::to_string(my.ID);
+									client_password = my.Password;
+									accept_legacy_until = my.AcceptLegacyTokensUntil;
 									clientispublic = my.ActiveTabs;
 									break;
 								}
 							}
 						}
-						if (client_key_id.empty() || (clientsecret.empty() && clientpubkey.empty()))
+						if (client_key_id.empty() || (signingsecret.empty() && clientpubkey.empty()))
 						{
 							_log.Debug(DEBUG_AUTH, "[JWT] Unable to verify token as no ClientID for the audience has been found!");
 							return 0;
@@ -1263,18 +1270,30 @@ namespace http {
 						// Step 3: Using the (hashed :( ) password of the ClientID as our ClientSecret to verify the JWT signature
 						std::string JWTalgo = decodedJWT.get_algorithm();
 						std::error_code ec;
-						auto JWTverifyer = jwt::verify().with_issuer(myWebem->m_DigistRealm).with_audience(clientid);
+						// Build issuer for verification - use Host header if realm is default
+						std::string expected_issuer = myWebem->m_DigistRealm;
+						if (expected_issuer.find("domoticz.local") != std::string::npos)
+						{
+							const char *host_header = request::get_req_header(&req, "Host");
+							if (host_header != nullptr)
+							{
+								std::string scheme = (expected_issuer.find("https://") == 0) ? "https://" : "http://";
+								expected_issuer = scheme + std::string(host_header) + "/";
+							}
+						}
+
+						auto JWTverifyer = jwt::verify().with_issuer(expected_issuer).with_audience(clientid);
 						if (JWTalgo.compare("HS256") == 0)
 						{
-							JWTverifyer.allow_algorithm(jwt::algorithm::hs256{ clientsecret });
+							JWTverifyer.allow_algorithm(jwt::algorithm::hs256{ signingsecret });
 						}
 						else if (JWTalgo.compare("HS384") == 0)
 						{
-							JWTverifyer.allow_algorithm(jwt::algorithm::hs384{ clientsecret });
+							JWTverifyer.allow_algorithm(jwt::algorithm::hs384{ signingsecret });
 						}
 						else if (JWTalgo.compare("HS512") == 0)
 						{
-							JWTverifyer.allow_algorithm(jwt::algorithm::hs512{ clientsecret });
+							JWTverifyer.allow_algorithm(jwt::algorithm::hs512{ signingsecret });
 						}
 						else if (JWTalgo.compare("RS256") == 0)
 						{
@@ -1293,6 +1312,39 @@ namespace http {
 						JWTverifyer.not_before_leeway(60);
 						JWTverifyer.issued_at_leeway(60);
 						JWTverifyer.verify(decodedJWT, ec);
+						if(ec)
+						{
+							// Try legacy verification with client_password if within acceptance window
+							time_t now = mytime(nullptr);
+							if (accept_legacy_until > 0 && now < accept_legacy_until && !client_password.empty())
+							{
+								_log.Debug(DEBUG_AUTH, "[JWT] Trying legacy verification with client_password");
+								std::error_code legacy_ec;
+								auto LegacyVerifyer = jwt::verify().with_issuer(expected_issuer).with_audience(clientid);
+								if (JWTalgo.compare("HS256") == 0)
+								{
+									LegacyVerifyer.allow_algorithm(jwt::algorithm::hs256{ client_password });
+								}
+								else if (JWTalgo.compare("HS384") == 0)
+								{
+									LegacyVerifyer.allow_algorithm(jwt::algorithm::hs384{ client_password });
+								}
+								else if (JWTalgo.compare("HS512") == 0)
+								{
+									LegacyVerifyer.allow_algorithm(jwt::algorithm::hs512{ client_password });
+								}
+								LegacyVerifyer.expires_at_leeway(60);
+								LegacyVerifyer.not_before_leeway(60);
+								LegacyVerifyer.issued_at_leeway(60);
+								LegacyVerifyer.verify(decodedJWT, legacy_ec);
+								if (!legacy_ec)
+								{
+									_log.Debug(DEBUG_AUTH, "[JWT] Legacy token accepted (expires %ld)", (long)accept_legacy_until);
+									ec.clear();
+								}
+							}
+						}
+
 						if(ec)
 						{
 							_log.Debug(DEBUG_AUTH, "[JWT] Token not valid! (%s)", ec.message().c_str());
@@ -1352,15 +1404,9 @@ namespace http {
 			return 0;
 		}
 
-		bool cWebem::GenerateJwtToken(std::string &jwttoken, const std::string &clientid, const std::string &clientsecret, const std::string &user, const uint32_t exptime, const Json::Value jwtpayload)
+		bool cWebem::GenerateJwtToken(std::string &jwttoken, const std::string &clientid, const std::string &user, const uint32_t exptime, const Json::Value jwtpayload, const std::string &issuer)
 		{
 			bool bOk = false;
-			// Did we get a 'plain' clientsecret or an already MD5Hashed one?
-			std::string hashedsecret = clientsecret;
-			if (!(clientsecret.length() == 32 && isHexRepresentation(clientsecret)))	// 2 * MD5_DIGEST_LENGTH
-			{
-				hashedsecret = GenerateMD5Hash(clientsecret);
-			}
 			// Check if the clientID exists and we have a valid clientSecret for it (used when generating Tokens for registered clients)
 			for (const auto &my : myRequestHandler.Get_myWebem()->m_userpasswords)
 			{
@@ -1368,55 +1414,54 @@ namespace http {
 				{
 					if (my.userrights == URIGHTS_CLIENTID)	// The 'user' should have CLIENTID rights to be a real Client
 					{
-						if ((my.Password == hashedsecret) || (my.ActiveTabs == 1))	// We 'abuse' the Users ActiveTabs as the Application Public 'boolean'
+						// Client already validated by caller
+						_log.Debug(DEBUG_AUTH, "[JWT] Generate Token for %s using clientid %s (privKey %d)!", user.c_str(), clientid.c_str(), my.ActiveTabs);
+						std::string jwt_issuer = issuer.empty() ? m_DigistRealm : issuer;
+						auto JWT = jwt::create()
+							.set_type("JWT")
+							.set_key_id(std::to_string(my.ID))
+							.set_issuer(jwt_issuer)
+							.set_issued_at(std::chrono::system_clock::now())
+							.set_not_before(std::chrono::system_clock::now())
+							.set_expires_at(std::chrono::system_clock::now() + std::chrono::seconds{exptime})
+							.set_audience(clientid)
+							.set_subject(user)
+							.set_id(GenerateUUID());
+						if (!jwtpayload.empty())
 						{
-							_log.Debug(DEBUG_AUTH, "[JWT] Generate Token for %s using clientid %s (privKey %d)!", user.c_str(), clientid.c_str(), my.ActiveTabs);
-							auto JWT = jwt::create()
-								.set_type("JWT")
-								.set_key_id(std::to_string(my.ID))
-								.set_issuer(m_DigistRealm)
-								.set_issued_at(std::chrono::system_clock::now())
-								.set_not_before(std::chrono::system_clock::now())
-								.set_expires_at(std::chrono::system_clock::now() + std::chrono::seconds{exptime})
-								.set_audience(clientid)
-								.set_subject(user)
-								.set_id(GenerateUUID());
-							if (!jwtpayload.empty())
+							for (auto const& id : jwtpayload.getMemberNames())
 							{
-								for (auto const& id : jwtpayload.getMemberNames())
+								if(!(jwtpayload[id].isNull()))
 								{
-									if(!(jwtpayload[id].isNull()))
+									if(jwtpayload[id].isNumeric())
 									{
-										if(jwtpayload[id].isNumeric())
-										{
-											double dVal(jwtpayload[id].asDouble());
-											JWT.set_payload_claim(id, picojson::value(dVal));
-										}
-										else if(jwtpayload[id].isString())
-										{
-											std::string sVal(jwtpayload[id].asString());
-											JWT.set_payload_claim(id, picojson::value(sVal));
-										}
-										else if(jwtpayload[id].isArray())
-										{
-											std::vector<std::string> aStrList;
-											aStrList.reserve(jwtpayload[id].size());
-											std::transform(jwtpayload[id].begin(), jwtpayload[id].end(), std::back_inserter(aStrList),[](const auto& s) { return s.asString(); });
-											JWT.set_payload_claim(id, jwt::claim(aStrList.begin(), aStrList.end()));
-										}
+										double dVal(jwtpayload[id].asDouble());
+										JWT.set_payload_claim(id, picojson::value(dVal));
+									}
+									else if(jwtpayload[id].isString())
+									{
+										std::string sVal(jwtpayload[id].asString());
+										JWT.set_payload_claim(id, picojson::value(sVal));
+									}
+									else if(jwtpayload[id].isArray())
+									{
+										std::vector<std::string> aStrList;
+										aStrList.reserve(jwtpayload[id].size());
+										std::transform(jwtpayload[id].begin(), jwtpayload[id].end(), std::back_inserter(aStrList),[](const auto& s) { return s.asString(); });
+										JWT.set_payload_claim(id, jwt::claim(aStrList.begin(), aStrList.end()));
 									}
 								}
 							}
-							if (my.ActiveTabs)
-							{
-								jwttoken = JWT.sign(jwt::algorithm::ps256{"", my.PrivKey, "", ""}, &base64url_encode);
-							}
-							else
-							{
-								jwttoken = JWT.sign(jwt::algorithm::hs256{my.Password}, &base64url_encode);
-							}
-							bOk = true;
 						}
+						if (my.ActiveTabs)
+						{
+							jwttoken = JWT.sign(jwt::algorithm::ps256{"", my.PrivKey, "", ""}, &base64url_encode);
+						}
+						else
+						{
+							jwttoken = JWT.sign(jwt::algorithm::hs256{my.SigningSecret}, &base64url_encode);
+						}
+						bOk = true;
 					}
 				}
 			}
@@ -1852,7 +1897,13 @@ namespace http {
 				}
 				else if (_ah.method == "BASIC")
 				{
-					if (req.uri.find("/json.htm?") != std::string::npos)	// Exception for the main API endpoint so scripts can execute them with 'just' Basic AUTH
+					// OAuth2 endpoints handle their own client authentication, don't validate as user here
+					if (req.uri.find("/oauth2/") != std::string::npos)
+					{
+						_log.Debug(DEBUG_AUTH, "[Auth Check] Basic Authorization header found for OAuth2 endpoint, will be validated by OAuth2 handler");
+						// Don't set session, let OAuth2 code handle it
+					}
+					else if (req.uri.find("/json.htm?") != std::string::npos)	// Exception for the main API endpoint so scripts can execute them with 'just' Basic AUTH
 					{
 						if (AllowBasicAuth())	// Check if Basic Auth is allowed either over HTTPS or when explicitly enabled
 						{

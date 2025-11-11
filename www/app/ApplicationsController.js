@@ -1,4 +1,5 @@
 define(['app'], function (app) {
+
 	app.controller('ApplicationsController', ['$scope', '$rootScope', '$location', '$http', '$interval', 'md5', function ($scope, $rootScope, $location, $http, $interval, md5) {
 
 		DeleteApplication = function (idx) {
@@ -32,6 +33,8 @@ define(['app'], function (app) {
 			csettings.bPublic = $('#applicationcontent #applicationparamstable #applicationpublic').is(":checked");
 			csettings.secret = $("#applicationcontent #applicationparamstable #applicationsecret").val();
 			csettings.pemfile = $("#applicationcontent #applicationparamstable #applicationpemfile").val();
+			csettings.refreshexpire = parseInt($("#applicationcontent #applicationparamstable #refreshexpire").val()) || 0;
+			csettings.signingsecret = $("#applicationcontent #applicationparamstable #signingsecret").val();
 			if ((csettings.bPublic == false) && (csettings.secret == "")) {
 				ShowNotify($.t('Please enter a Secret!'), 2500, true);
 				return;
@@ -59,7 +62,9 @@ define(['app'], function (app) {
 				"&applicationname=" + csettings.applicationname +
 				"&secret=" + csettings.secret +
 				"&pemfile=" + csettings.pemfile +
-				"&public=" + csettings.bPublic,
+				"&public=" + csettings.bPublic +
+				"&refreshexpire=" + csettings.refreshexpire +
+				"&signingsecret=" + csettings.signingsecret,
 				async: false,
 				dataType: 'json',
 				success: function (data) {
@@ -86,7 +91,9 @@ define(['app'], function (app) {
 				"&applicationname=" + csettings.applicationname +
 				"&secret=" + csettings.secret +
 				"&pemfile=" + csettings.pemfile +
-				"&public=" + csettings.bPublic,
+				"&public=" + csettings.bPublic +
+				"&refreshexpire=" + csettings.refreshexpire +
+				"&signingsecret=" + csettings.signingsecret,
 				async: false,
 				dataType: 'json',
 				success: function (data) {
@@ -134,6 +141,8 @@ define(['app'], function (app) {
 								"Applicationname": item.Applicationname,
 								"Applicationsecret": item.Secret,
 								"Applicationpemfile": item.Pemfile,
+								"RefreshExpire": item.RefreshExpire || 0,
+								"SigningSecret": item.SigningSecret || "",
 								"Public": item.Public,
 								"Last seen": item.LastSeen,
 								"0": enabledstr,
@@ -173,6 +182,8 @@ define(['app'], function (app) {
 						$("#applicationcontent #applicationparamstable #applicationname").val(data["Applicationname"]);
 						$("#applicationcontent #applicationparamstable #applicationsecret").val(data["Applicationsecret"]);
 						$("#applicationcontent #applicationparamstable #applicationpemfile").val(data["Applicationpemfile"]);
+						$("#applicationcontent #applicationparamstable #refreshexpire").val(data["RefreshExpire"] || 0);
+						$("#applicationcontent #applicationparamstable #signingsecret").val(data["SigningSecret"] || "");
 						$('#applicationcontent #applicationparamstable #applicationpublic').prop('checked', (data["Public"] == "true"));
 						togglePublic();
 					}
