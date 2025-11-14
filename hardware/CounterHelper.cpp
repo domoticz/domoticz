@@ -21,10 +21,13 @@ void CounterHelper::Reset()
 	m_sql.safe_query("UPDATE UserVariables SET Value='%q', LastUpdate='%s' WHERE (Name=='%q')", std::to_string(m_CounterOffset).c_str(), TimeToString(nullptr, TF_DateTime).c_str(), m_szUservariableName.c_str());
 }
 
-void CounterHelper::Init(const std::string& szUservariableName, CDomoticzHardwareBase* pHardwareBase)
+void CounterHelper::Init(const std::string& szUservariableName, CDomoticzHardwareBase* pHardwareBase, int NodeID, int ChildID)
 {
 	m_szUservariableName = szUservariableName;
 	m_pHardwareBase = pHardwareBase;
+	m_NodeID = NodeID;
+	m_ChildID = ChildID;
+
 	auto result = m_sql.safe_query("SELECT ID, Value FROM UserVariables WHERE (Name=='%q')", m_szUservariableName.c_str());
 	if (result.empty())
 	{
@@ -34,6 +37,20 @@ void CounterHelper::Init(const std::string& szUservariableName, CDomoticzHardwar
 	if (!result.empty())
 	{
 		m_CounterOffset = std::stod(result[0][1]);
+	}
+
+	// Restore m_nLastCounterValue from the device's last reported total
+	auto device_result = m_sql.safe_query("SELECT sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit==%d)",
+		m_pHardwareBase->m_HwdID, std::to_string(m_NodeID).c_str(), m_ChildID);
+	if (!device_result.empty())
+	{
+		// sValue format for kWh meters is "usage;total" - extract the total
+		std::string sValue = device_result[0][0];
+		size_t pos = sValue.find(';');
+		if (pos != std::string::npos)
+		{
+			m_nLastCounterValue = std::stod(sValue.substr(pos + 1));
+		}
 	}
 }
 

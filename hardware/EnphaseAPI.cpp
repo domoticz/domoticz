@@ -163,7 +163,7 @@ EnphaseAPI::EnphaseAPI(
 	//(We can probably not use them both at the same time)
 
 	//Init Production counter
-	m_ProductionCounter.Init("EnphaseOffset_Production_" + std::to_string(m_HwdID), this);
+	m_ProductionCounter.Init("EnphaseOffset_Production_" + std::to_string(m_HwdID), this, m_HwdID, 1);
 }
 
 bool EnphaseAPI::StartHardware()
