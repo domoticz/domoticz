@@ -41,7 +41,7 @@
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
 
-#define DB_VERSION 171
+#define DB_VERSION 172
 
 #define DEFAULT_ADMINUSER "admin"
 #define DEFAULT_ADMINPWD "domoticz"
@@ -3230,6 +3230,61 @@ bool CSQLHelper::OpenDatabase()
 
 				safe_query("UPDATE Applications SET SigningSecret='%q', AcceptLegacyTokensUntil=%ld WHERE ID=%q",
 					signingsecret.c_str(), (long)legacy_until, id.c_str());
+			}
+		}
+		if (dbversion < 172)
+		{
+			//Upgrade CounterHelper
+
+			//Enphase
+			result = safe_query("SELECT ID, Name, Value FROM UserVariables WHERE Name LIKE \"EnphaseOffset_Production_%%\"");
+			if (!result.empty())
+			{
+				for (const auto& sd : result)
+				{
+					std::string uID = sd[0];
+					std::string szName = sd[1];
+					std::string szValue = sd[2];
+					std::vector<std::string> fields;
+					StringSplit(szName, "_", fields);
+					if (fields.size() >= 2)
+					{
+						const int hwID = std::stoi(fields.at(fields.size() - 1));
+						const int NodeID = hwID;
+						const int ChildID = 1;
+						std::string szID = std_format("%08X", static_cast<unsigned int>((NodeID << 8) | ChildID));
+
+						safe_query("UPDATE DeviceStatus SET LastLevel='%lld' WHERE (HardwareID=%d) AND (DeviceID = '%q') AND (Type=%d) AND (SubType=%d)",
+							static_cast<long long int>(std::stod(szValue) * 1000.0),
+							hwID, szID.c_str(), pTypeGeneral, sTypeKwh);
+						safe_query("DELETE FROM UserVariables WHERE (ID=%q)", uID.c_str());
+					}
+				}
+			}
+			//Mitshubishi
+			result = safe_query("SELECT ID, Name, Value FROM UserVariables WHERE Name LIKE \"MitsubishiWF_kWh_%%\"");
+			if (!result.empty())
+			{
+				for (const auto& sd : result)
+				{
+					std::string uID = sd[0];
+					std::string szName = sd[1];
+					std::string szValue = sd[2];
+					std::vector<std::string> fields;
+					StringSplit(szName, "_", fields);
+					if (fields.size() >= 2)
+					{
+						const int hwID = std::stoi(fields.at(fields.size() - 1));
+						const int NodeID = 1;
+						const int ChildID = 1;
+						std::string szID = std_format("%08X", static_cast<unsigned int>((NodeID << 8) | ChildID));
+
+						safe_query("UPDATE DeviceStatus SET LastLevel='%lld' WHERE (HardwareID=%d) AND (DeviceID = '%q') AND (Type=%d) AND (SubType=%d)",
+							static_cast<long long int>(std::stod(szValue) * 1000.0),
+							hwID, szID.c_str(), pTypeGeneral, sTypeKwh);
+						safe_query("DELETE FROM UserVariables WHERE (ID=%q)", uID.c_str());
+					}
+				}
 			}
 		}
 	}

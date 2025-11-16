@@ -161,9 +161,6 @@ EnphaseAPI::EnphaseAPI(
 		m_szTokenInstaller = result[0][1];
 	}
 	//(We can probably not use them both at the same time)
-
-	//Init Production counter
-	m_ProductionCounter.Init("EnphaseOffset_Production_" + std::to_string(m_HwdID), this);
 }
 
 bool EnphaseAPI::StartHardware()
@@ -850,7 +847,7 @@ void EnphaseAPI::parseProduction(const Json::Value& root)
 	uint64_t mtotal = reading["whLifetime"].asUInt64();
 	if (mtotal != 0)
 	{
-		m_ProductionCounter.SendKwhMeter(m_HwdID, 1, 255, musage, mtotal / 1000.0, "Enphase kWh Production");
+		m_ProductionCounter.SendKwhMeter(this, m_HwdID, 1, 1, 255, musage, mtotal / 1000.0, "Enphase kWh Production");
 	}
 }
 
