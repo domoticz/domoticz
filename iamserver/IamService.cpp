@@ -19,6 +19,8 @@
 #include "../main/WebServer.h"
 #include "../webserver/Base64.h"
 
+extern std::string szWWWFolder;
+
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
 
@@ -29,16 +31,11 @@ namespace http
 
 		std::string GetIssuerFromRequest(const request &req, const std::string &configured_realm)
 		{
-			// Only use Host header if the configured realm uses the default 'domoticz.local'
-			if (configured_realm.find("domoticz.local") != std::string::npos)
+			// Use Host header to determine the issuer
+			const char *host_header = request::get_req_header(&req, "Host");
+			if (host_header != nullptr)
 			{
-				const char *host_header = request::get_req_header(&req, "Host");
-				if (host_header != nullptr)
-				{
-					// Infer scheme from configured realm or default to http
-					std::string scheme = (configured_realm.find("https://") == 0) ? "https://" : "http://";
-					return scheme + std::string(host_header) + "/";
-				}
+				return "https://" + std::string(host_header) + "/";
 			}
 			return configured_realm;
 		}
@@ -95,7 +92,6 @@ namespace http
 								{	// POST request, so maybe we have the data from the Login form
 									std::string sConsent = request::findValue(&req, "consent");
 									std::string sPWD = request::findValue(&req, "psw");
-									std::string sTOTP = request::findValue(&req, "totp");
 									Username = request::findValue(&req, "uname");
 									iUser = FindUser(Username.c_str());
 									bAuthenticated = (iUser != -1 ? (m_users[iUser].Password == GenerateMD5Hash(sPWD)) : false);
@@ -109,12 +105,19 @@ namespace http
 											return;
 										}
 										error = "User credentials do not match!";
+										goto exitfunc;
 									}
 									else
 									{
 										// User/pass matches.. now check TOTP if required
 										if (!m_users[iUser].Mfatoken.empty())
 										{
+											std::string sTOTP = request::findValue(&req, "totp");
+											if (sTOTP.empty())
+											{
+												error = "Enter the One-Time Passcode!";
+												goto exitfunc;
+											}
 											std::string sTotpKey = "";
 											bAuthenticated = false;
 											if(base32_decode(m_users[iUser].Mfatoken, sTotpKey))
@@ -133,11 +136,13 @@ namespace http
 														return;
 													}
 													error = "TOTP Verification for a user has failed!";
+													goto exitfunc;
 												}
 											}
 											else
 											{
 												error = "TOTP key is not valid base32 encoded!";
+												goto exitfunc;
 											}
 										}
 									}
@@ -194,7 +199,7 @@ namespace http
 				error = "missing or wrong redirect_uri";
 				_log.Debug(DEBUG_AUTH, "OAuth2 Auth Code: Wrong/Missing redirect_uri (%s)!", redirect_uri.c_str());
 			}
-
+		exitfunc:
 			// Redirect the User back to origin using the redirect_uri
 			std::stringstream result;
 			if(redirect_uri.find("?") != std::string::npos)
@@ -598,9 +603,19 @@ namespace http
         {
 			std::string sTOTP = "";	// required
 
+			std::string full_path = szWWWFolder + "/views/iam_auth.html";
+			std::ifstream is;
+			is.open(full_path.c_str(), std::ios::in | std::ios::binary);
+			if (!is.is_open())
+			{
+				rep = reply::stock_reply(reply::not_found);
+				return;
+			}
+
 			rep = reply::stock_reply(reply::ok);
 
-            reply::set_content(&rep, m_iamsettings.getAuthPageContent());
+			std::string szContent((std::istreambuf_iterator<char>(is)), (std::istreambuf_iterator<char>()));
+			reply::set_content(&rep, szContent);
 
 			stdreplace(rep.content, "###REPLACE_APP###", sApp);
 			stdreplace(rep.content, "###REPLACE_ERROR###", sError);

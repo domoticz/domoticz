@@ -9,7 +9,7 @@
     background-image: -ms-linear-gradient(top, #fff, #eee);
     background-image: -o-linear-gradient(top, #fff, #eee);
     background-image: linear-gradient(top, #fff, #eee);  
-    height: 240px;
+    height: 295px;
     width: 300px;
     margin: -150px 0 0 -180px;
     padding: 30px;
@@ -88,6 +88,15 @@
     background-image: -o-linear-gradient(right, #777, #fff);
     background-image: linear-gradient(right, #777, #fff);
     left: 0;
+}
+
+.login .logo
+{
+	display: flex;
+	margin-top: -20px;
+	margin-bottom: 5px;
+	width: 57px;
+	height: 57px;
 }
 
 .login fieldset
@@ -210,6 +219,7 @@
 </style>
 <div id="login" class="login">
 <form name="login-form" ng-submit="DoLogin()" form-autofill-fix>
+	<center><img class="logo" src="images/logo/57.png"></center>
     <h1>Domoticz</h1>
     <fieldset id="inputs">
         <input type="text" autocapitalize="none" autocorrect="off" id="username" name="username" placeholder="Username" autofocus ng-required>
@@ -225,6 +235,7 @@
 </div>
 <div id="mfa" class="login" hidden>
 <form name="mfa-form" ng-submit="DoMfaLogin()" form-autofill-fix>
+	<center><img class="logo" src="images/logo/57.png"></center>
     <h1>Domoticz</h1>
     <h2>Enter the 6 digit 2FA code</h2>
     <fieldset id="inputs">

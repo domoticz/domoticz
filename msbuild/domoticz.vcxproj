@@ -1035,6 +1035,7 @@
     <ClCompile Include="..\main\KWHStats.cpp" />
     <ClCompile Include="..\mdns\mdns.cpp" />
     <ClCompile Include="..\mcpserver\McpService.cpp" />
+    <ClCompile Include="..\main\Alexa.cpp" />
     <ClCompile Include="..\main\BaroForecastCalculator.cpp" />
     <ClCompile Include="..\main\Camera.cpp" />
     <ClCompile Include="..\hardware\Rego6XXSerial.cpp" />

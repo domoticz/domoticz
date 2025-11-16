@@ -171,6 +171,16 @@ define(['app', 'livesocket'], function(app) {
                         .then($ctrl.onUpdate);
                 });
 
+                table.on('click', '.js-remove-scene', function() {
+                    var device = table.api().row($(this).closest('tr')).data();
+
+                    bootbox.confirm('Are you sure to delete this Scene?\n\nThis action can not be undone...')
+                        .then(function() {
+                            return deviceApi.removeScene(device.idx);
+                        })
+                        .then($ctrl.onUpdate);
+                });
+
                 table.on('click', '.js-remove-selected', function() {
                     var selected_items = [].map.call(table.api().rows({ selected: true }).data(), function(item) {
                         var obj = {
@@ -348,10 +358,14 @@ define(['app', 'livesocket'], function(app) {
                 } else if (logLink) {
                     actions.push('<a class="btn btn-icon" href="' + logLink + '" title="' + $.t('Log') + '"><img src="images/log.png" /></a>');
                 } else if (isCustomLog) {
-					actions.push('<button class="btn btn-icon js-show-log" title="' + $.t('Log') + '"><img src="images/log.png" /></button>');
+                    actions.push('<button class="btn btn-icon js-show-log" title="' + $.t('Log') + '"><img src="images/log.png" /></button>');
                 }
 
-                actions.push('<button class="btn btn-icon js-remove-device" title="' + $.t('Remove') + '"><img src="images/delete.png" /></button>');
+                if (isScene) {
+                    actions.push('<button class="btn btn-icon js-remove-scene" title="' + $.t('Remove') + '"><img src="images/delete.png" /></button>');
+                } else {
+                    actions.push('<button class="btn btn-icon js-remove-device" title="' + $.t('Remove') + '"><img src="images/delete.png" /></button>');
+                }
 
                 return actions.join('&nbsp;');
             }

@@ -16,7 +16,7 @@ CNotificationKodi::CNotificationKodi() : CNotificationBase(std::string("kodi"), 
 	SetupConfig(std::string("KodiTimeToLive"), &_TTL);
 }
 
-std::string CNotificationKodi::GetCustomIcon(std::string &szCustom)
+std::string CNotificationKodi::GetCustomIcon(std::string& szCustom)
 {
 	int	iIconLine = atoi(szCustom.c_str());
 	std::string szRetVal = "Light48";
@@ -49,15 +49,15 @@ std::string CNotificationKodi::GetCustomIcon(std::string &szCustom)
 	else  // Uploaded icons
 	{
 		std::vector<std::vector<std::string> > result;
-		result = m_sql.safe_query("SELECT Base FROM CustomImages WHERE ID = %d", iIconLine-100);
+		result = m_sql.safe_query("SELECT Base FROM CustomImages WHERE ID = %d", iIconLine - 100);
 		if (result.size() == 1)
 		{
 			std::string sBase = result[0][0];
 			return sBase;
 		}
 	}
-	
-//	_log.Log(LOG_NORM, "Custom Icon look up for %s returned: '%s'", szCustom.c_str(), szRetVal.c_str());
+
+	//	_log.Log(LOG_NORM, "Custom Icon look up for %s returned: '%s'", szCustom.c_str(), szRetVal.c_str());
 	return szRetVal;
 }
 
@@ -72,7 +72,7 @@ std::string CNotificationKodi::GetCustomIcon(std::string &szCustom)
 		o	Look for base image
 	o	If it exists, use the logo as the default image
 */
-std::string CNotificationKodi::GetIconFile(const std::string &ExtraData)
+std::string CNotificationKodi::GetIconFile(const std::string& ExtraData)
 {
 	std::string	szImageFile;
 
@@ -83,154 +83,130 @@ std::string CNotificationKodi::GetIconFile(const std::string &ExtraData)
 
 	if (posImage >= 0)
 	{
-//		_log.Log(LOG_NORM, "Image data found in extra data: %s, %d", ExtraData.c_str(), posImage);
-		posImage+=7;
-#ifdef WIN32
-		szImageFile = szWWWFolder  + "\\images\\" + ExtraData.substr(posImage, ExtraData.find("|", posImage)-posImage) + ".png";
-#else
+		//		_log.Log(LOG_NORM, "Image data found in extra data: %s, %d", ExtraData.c_str(), posImage);
+		posImage += 7;
 		szImageFile = szWWWFolder + "/images/" + ExtraData.substr(posImage, ExtraData.find('|', posImage) - posImage) + ".png";
-#endif
 		if (file_exist(szImageFile.c_str()))
 		{
-//			_log.Log(LOG_NORM, "Icon file to be used: %s", szImageFile.c_str());
+			//			_log.Log(LOG_NORM, "Icon file to be used: %s", szImageFile.c_str());
 			return szImageFile;
 		}
-//		_log.Log(LOG_NORM, "File does not exist:  %s, %d", szImageFile.c_str(), posImage-7);
+		//		_log.Log(LOG_NORM, "File does not exist:  %s, %d", szImageFile.c_str(), posImage-7);
 	}
 
 	std::string	szStatus = "On";
 	if (posStatus >= 0)
 	{
-		posStatus+=8;
+		posStatus += 8;
 		szStatus = ExtraData.substr(posStatus, ExtraData.find('|', posStatus) - posStatus);
 	}
 
 	// if a switch type was supplied try and work out the image
 	if (posType >= 0)
 	{
-		posType+=12;
+		posType += 12;
 		std::string szType = ExtraData.substr(posType, ExtraData.find('|', posType) - posType);
 		std::string	szTypeImage;
-		_eSwitchType switchtype=(_eSwitchType)atoi(szType.c_str());
+		_eSwitchType switchtype = (_eSwitchType)atoi(szType.c_str());
 		switch (switchtype)
 		{
-			case STYPE_OnOff:
-				if (posCustom >= 0)
-				{
-					posCustom+=13;
-					std::string szCustom = ExtraData.substr(posCustom, ExtraData.find('|', posCustom) - posCustom);
-					szTypeImage = GetCustomIcon(szCustom);
-				}
-				else szTypeImage = "Light48";
-				break;
-			case STYPE_Doorbell:
-				szTypeImage = "doorbell48";
-				break;
-			case STYPE_Contact:
-				szTypeImage = "Contact48";
-				break;
-			case STYPE_Blinds:
-			case STYPE_BlindsWithStop:
-			case STYPE_BlindsPercentage:
-			case STYPE_BlindsPercentageWithStop:
-			case STYPE_VenetianBlindsUS:
-			case STYPE_VenetianBlindsEU:
-				szTypeImage = "blinds48";
-				break;
-			case STYPE_X10Siren:
-				szTypeImage = "siren";
-				break;
-			case STYPE_SMOKEDETECTOR:
-				szTypeImage = "smoke48";
-				break;
-			case STYPE_Dimmer:
-				szTypeImage = "Dimmer48";
-				break;
-			case STYPE_Motion:
-				szTypeImage = "motion48";
-				break;
-			case STYPE_PushOn:
-				szTypeImage = "pushon48";
-				break;
-			case STYPE_PushOff:
-				szTypeImage = "pushon48";
-				break;
-			case STYPE_DoorContact:
-				szTypeImage = "Door48";
-				break;
-			case STYPE_DoorLock:
-				szTypeImage = "Door48";
-				break;
-			case STYPE_DoorLockInverted:
-				szTypeImage = "Door48";
-				break;
-			case STYPE_Media:
-				if (posCustom >= 0)
-				{
-					posCustom += 13;
-					std::string szCustom = ExtraData.substr(posCustom, ExtraData.find('|', posCustom) - posCustom);
-					szTypeImage = GetCustomIcon(szCustom);
-				}
-				else szTypeImage = "Media48";
-				break;
-			default:
-				szTypeImage = "logo";
+		case STYPE_OnOff:
+			if (posCustom >= 0)
+			{
+				posCustom += 13;
+				std::string szCustom = ExtraData.substr(posCustom, ExtraData.find('|', posCustom) - posCustom);
+				szTypeImage = GetCustomIcon(szCustom);
+			}
+			else szTypeImage = "Light48";
+			break;
+		case STYPE_Doorbell:
+			szTypeImage = "doorbell48";
+			break;
+		case STYPE_Contact:
+			szTypeImage = "Contact48";
+			break;
+		case STYPE_Blinds:
+		case STYPE_BlindsWithStop:
+		case STYPE_BlindsPercentage:
+		case STYPE_BlindsPercentageWithStop:
+		case STYPE_VenetianBlindsUS:
+		case STYPE_VenetianBlindsEU:
+			szTypeImage = "blinds48";
+			break;
+		case STYPE_X10Siren:
+			szTypeImage = "siren";
+			break;
+		case STYPE_SMOKEDETECTOR:
+			szTypeImage = "smoke48";
+			break;
+		case STYPE_Dimmer:
+			szTypeImage = "Dimmer48";
+			break;
+		case STYPE_Motion:
+			szTypeImage = "motion48";
+			break;
+		case STYPE_PushOn:
+			szTypeImage = "pushon48";
+			break;
+		case STYPE_PushOff:
+			szTypeImage = "pushon48";
+			break;
+		case STYPE_DoorContact:
+			szTypeImage = "Door48";
+			break;
+		case STYPE_DoorLock:
+			szTypeImage = "Door48";
+			break;
+		case STYPE_DoorLockInverted:
+			szTypeImage = "Door48";
+			break;
+		case STYPE_Media:
+			if (posCustom >= 0)
+			{
+				posCustom += 13;
+				std::string szCustom = ExtraData.substr(posCustom, ExtraData.find('|', posCustom) - posCustom);
+				szTypeImage = GetCustomIcon(szCustom);
+			}
+			else szTypeImage = "Media48";
+			break;
+		default:
+			szTypeImage = "logo";
 		}
-#ifdef WIN32
-		szImageFile = szWWWFolder  + "\\images\\" + szTypeImage + "_" + szStatus + ".png";
-#else
-		szImageFile = szWWWFolder  + "/images/" + szTypeImage + "_" + szStatus + ".png";
-#endif
+		szImageFile = szWWWFolder + "/images/" + szTypeImage + "_" + szStatus + ".png";
 		if (file_exist(szImageFile.c_str()))
 		{
-//			_log.Log(LOG_NORM, "Icon file to be used: %s", szImageFile.c_str());
+			//			_log.Log(LOG_NORM, "Icon file to be used: %s", szImageFile.c_str());
 			return szImageFile;
 		}
-//		_log.Log(LOG_NORM, "File does not exist:  %s", szImageFile.c_str());
+		//		_log.Log(LOG_NORM, "File does not exist:  %s", szImageFile.c_str());
 
-#ifdef WIN32
-		szImageFile = szWWWFolder  + "\\images\\" + szTypeImage + ((szStatus=="Off") ? "-off" : "-on") + ".png";
-#else
-		szImageFile = szWWWFolder  + "/images/" + szTypeImage + ((szStatus=="Off") ? "-off" : "-on") + ".png";
-#endif
+		szImageFile = szWWWFolder + "/images/" + szTypeImage + ((szStatus == "Off") ? "-off" : "-on") + ".png";
 		if (file_exist(szImageFile.c_str()))
 		{
-//			_log.Log(LOG_NORM, "Icon file to be used: %s", szImageFile.c_str());
+			//			_log.Log(LOG_NORM, "Icon file to be used: %s", szImageFile.c_str());
 			return szImageFile;
 		}
-//		_log.Log(LOG_NORM, "File does not exist:  %s", szImageFile.c_str());
+		//		_log.Log(LOG_NORM, "File does not exist:  %s", szImageFile.c_str());
 
-#ifdef WIN32
-		szImageFile = szWWWFolder  + "\\images\\" + szTypeImage + ((szStatus=="Off") ? "off" : "on") + ".png";
-#else
-		szImageFile = szWWWFolder  + "/images/" + szTypeImage + ((szStatus=="Off") ? "off" : "on") + ".png";
-#endif
+		szImageFile = szWWWFolder + "/images/" + szTypeImage + ((szStatus == "Off") ? "off" : "on") + ".png";
 		if (file_exist(szImageFile.c_str()))
 		{
-//			_log.Log(LOG_NORM, "Icon file to be used: %s", szImageFile.c_str());
+			//			_log.Log(LOG_NORM, "Icon file to be used: %s", szImageFile.c_str());
 			return szImageFile;
 		}
-//		_log.Log(LOG_NORM, "File does not exist:  %s", szImageFile.c_str());
+		//		_log.Log(LOG_NORM, "File does not exist:  %s", szImageFile.c_str());
 
-#ifdef WIN32
-		szImageFile = szWWWFolder  + "\\images\\" + szTypeImage + ".png";
-#else
-		szImageFile = szWWWFolder  + "/images/" + szTypeImage + ".png";
-#endif
+		szImageFile = szWWWFolder + "/images/" + szTypeImage + ".png";
 		if (file_exist(szImageFile.c_str()))
 		{
-//			_log.Log(LOG_NORM, "Icon file to be used: %s", szImageFile.c_str());
+			//			_log.Log(LOG_NORM, "Icon file to be used: %s", szImageFile.c_str());
 			return szImageFile;
 		}
-//		_log.Log(LOG_NORM, "File does not exist:  %s", szImageFile.c_str());
+		//		_log.Log(LOG_NORM, "File does not exist:  %s", szImageFile.c_str());
 	}
 
 	// Image of last resort is the logo
-#ifdef WIN32
-		szImageFile = szWWWFolder  + "\\images\\logo.png";
-#else
-		szImageFile = szWWWFolder  + "/images/logo.png";
-#endif
+	szImageFile = szWWWFolder + "/images/logo.png";
 	if (!file_exist(szImageFile.c_str()))
 	{
 		_log.Log(LOG_ERROR, "Logo image file does not exist: %s", szImageFile.c_str());
@@ -241,12 +217,12 @@ std::string CNotificationKodi::GetIconFile(const std::string &ExtraData)
 
 bool CNotificationKodi::SendMessageImplementation(
 	const uint64_t Idx,
-	const std::string &Name,
-	const std::string &Subject,
-	const std::string &Text,
-	const std::string &ExtraData,
+	const std::string& Name,
+	const std::string& Subject,
+	const std::string& Text,
+	const std::string& ExtraData,
 	const int Priority,
-	const std::string &Sound,
+	const std::string& Sound,
 	const bool bFromNotification)
 {
 	std::string	sSubject("Domoticz");
@@ -259,7 +235,7 @@ bool CNotificationKodi::SendMessageImplementation(
 		size_t	posDevice = ExtraData.find("|Name=");
 		if (posDevice != std::string::npos)
 		{
-			posDevice+=6;
+			posDevice += 6;
 			sSubject = ExtraData.substr(posDevice, ExtraData.find('|', posDevice) - posDevice);
 		}
 	}
@@ -271,7 +247,7 @@ bool CNotificationKodi::SendMessageImplementation(
 	// Loop through semi-colon separated IP Addresses
 	std::vector<std::string> results;
 	StringSplit(_IPAddress, ";", results);
-	for (auto &IP : results)
+	for (auto& IP : results)
 	{
 		std::stringstream logline;
 		logline << "Kodi Notification (" << IP << ":" << _Port << ", TTL " << _TTL << "): " << sSubject << ", " << Text
@@ -289,12 +265,12 @@ bool CNotificationKodi::SendMessageImplementation(
 			_Sock = static_cast<int>(socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP));
 			setsockopt(_Sock, IPPROTO_IP, IP_MULTICAST_TTL, (const char*)&_TTL, sizeof(_TTL));
 			u_char loop = 1;
-			setsockopt(_Sock, IPPROTO_IP, IP_MULTICAST_LOOP, (const char*) &loop, sizeof(loop));
+			setsockopt(_Sock, IPPROTO_IP, IP_MULTICAST_LOOP, (const char*)&loop, sizeof(loop));
 		}
 		else {
 			_Sock = static_cast<int>(socket(AF_INET, SOCK_DGRAM, 0));
 		}
-		
+
 		if (_Sock < 0)
 		{
 			logline << "Error creating socket for: " << IP << ":" << _Port;

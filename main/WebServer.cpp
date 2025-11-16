@@ -247,6 +247,7 @@ namespace http
 			}
 
 			m_pWebEm->RegisterPageCode("/json.htm", [this](auto&& session, auto&& req, auto&& rep) { GetJSonPage(session, req, rep); });
+			m_pWebEm->RegisterPageCode("/alexa.htm", [this](auto&& session, auto&& req, auto&& rep) { GetAlexaPage(session, req, rep); });
 			// These 'Pages' should probably be 'moved' to become Command codes handled by the 'json.htm API', so we get all API calls through one entry point
 			// And why .php or .cgi while all these commands are NOT handled by a PHP or CGI processor but by Domoticz ?? Legacy? Rename these?
 			m_pWebEm->RegisterPageCode("/backupdatabase.php", [this](auto&& session, auto&& req, auto&& rep) { GetDatabaseBackup(session, req, rep); });

@@ -245,8 +245,12 @@ void CKWHStats::HandleKWHStatsHour()
 	const int hour = last_hour.tm_hour;
 	const int wday = last_hour.tm_wday;
 
-	char szStartTime[30];
-	snprintf(szStartTime, sizeof(szStartTime), "%04d-%02d-%02d %02d:%02d:%02d", last_hour.tm_year + 1900, last_hour.tm_mon + 1, last_hour.tm_mday, last_hour.tm_hour, 0, 0);
+	char szStartTime[32];
+	if (strftime(szStartTime, sizeof(szStartTime), "%Y-%m-%d %H:%M:%S", &last_hour) == 0) {
+    	// fallback (shouldn't normally happen, but keep a sensible default)
+    	strncpy(szStartTime, "1970-01-01 00:00:00", sizeof(szStartTime));
+    	szStartTime[sizeof(szStartTime) - 1] = '\0';
+	}
 
 	//First handle all P1 meters
 	auto result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (Type=%d)", pTypeP1Power);

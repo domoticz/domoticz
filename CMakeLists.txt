@@ -148,6 +148,7 @@ ENDIF()
 set(
 domoticz_SRCS
 main/stdafx.cpp
+main/Alexa.cpp
 main/BaroForecastCalculator.cpp
 main/CmdLine.cpp
 main/Camera.cpp

@@ -1,4 +1,3 @@
-R"(
 <HTML>
 <HEAD>
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -14,7 +13,7 @@ R"(
     background-image: -ms-linear-gradient(top, #fff, #eee);
     background-image: -o-linear-gradient(top, #fff, #eee);
     background-image: linear-gradient(top, #fff, #eee);  
-    height: 380px;
+    height: 424px;
     width: 300px;
     margin: -300px 0 0 -180px;
     padding: 30px;
@@ -42,12 +41,21 @@ R"(
     box-shadow: 0 0 0 1px #fff;
 }
 
+#auth .logo
+{
+	display: flex;
+	margin-top: -16px;
+	margin-bottom: 5px;
+	width: 57px;
+	height: 57px;
+}
+
 #auth h1
 {
     text-transform: uppercase;
     text-align: center;
     color: #666;
-    margin: 0 0 30px 0;
+    margin: 0 0 10px 0;
     letter-spacing: 4px;
     font: normal 26px/1 Verdana, Helvetica;
     position: relative;
@@ -213,11 +221,14 @@ R"(
 
 <div id="auth">
 <form method="post">
+  <center><img class="logo" src="data:image/png;base64, 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"></center>
   <h1>Domoticz</h1>
   <div>Application '<b><i>###REPLACE_APP###</i></b>' is requesting access to your Domoticz system.</div>
   <br>
-  <div><span style="color:darkred">###REPLACE_ERROR###</span></div>
-  <br>
+  <div id="error_div">
+	<div><span id="error_text" style="color:darkred">###REPLACE_ERROR###</span></div>
+	<br>
+  </div>
   <fieldset id="inputs">
     <input type="text" autocapitalize="none" autocorrect="off" id="username" name="uname" placeholder="Username" autofocus required>
     <input type="password" id="password" name="psw" placeholder="Password" required>
@@ -234,6 +245,14 @@ R"(
 </form>
 </div>
 
+<script type="text/javascript" charset="utf-8">
+	const elem = document.getElementById("error_text");
+	if (elem.innerHTML.length == 0) {
+		document.getElementById("error_div").style.display = 'none';
+		
+		let aDiv = document.getElementById("auth");
+		aDiv.style.height = (424 - 36) + 'px';
+	}
+</script>
 </BODY>
 </HTML>
-)"

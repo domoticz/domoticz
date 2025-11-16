@@ -7,6 +7,7 @@ define(['app'], function (app) {
 		$scope.myprofile = {
 			enableMFA: false,
 			totpsecret: '',
+			totpcode: '',
 			oldpwd: '',
 			newpwd: '',
 			vfypwd: '',
@@ -75,7 +76,6 @@ define(['app'], function (app) {
 				fd.append('oldpwd', sOldPwd);
 				fd.append('newpwd', sNewPwd);
 			}
-
 
 			fd.append('enablemfa', $scope.myprofile.enableMFA);
 			if ($scope.myprofile.enableMFA == true) {

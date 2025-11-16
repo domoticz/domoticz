@@ -2586,11 +2586,7 @@ namespace Plugins
 	std::string CPluginNotifier::GetIconFile(const std::string &ExtraData)
 	{
 		std::string szImageFile;
-#ifdef WIN32
-		std::string szImageFolder = szWWWFolder + "\\images\\";
-#else
 		std::string szImageFolder = szWWWFolder + "/images/";
-#endif
 
 		std::string szStatus = "Off";
 		int posStatus = (int)ExtraData.find("|Status=");

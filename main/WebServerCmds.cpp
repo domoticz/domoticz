@@ -1464,7 +1464,7 @@ namespace http
 		{
 			root["status"] = "ERR";
 			root["title"] = "GetMyProfile";
-			if (session.rights == URIGHTS_VIEWER || session.rights == URIGHTS_NONE)	// Viewer cannot change his profile
+			if (session.rights == URIGHTS_NONE)	// Viewer cannot change his profile
 			{
 				return;
 			}
@@ -1485,7 +1485,7 @@ namespace http
 			root["status"] = "ERR";
 			root["title"] = "UpdateMyProfile";
 
-			if (req.method != "POST" || session.rights == URIGHTS_VIEWER || session.rights == URIGHTS_NONE)	// Viewer cannot change his profile
+			if (req.method != "POST" || session.rights == URIGHTS_NONE)	// Viewer cannot change his profile
 			{
 				return;
 			}

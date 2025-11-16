@@ -37,7 +37,14 @@ class CWebServer : public session_store, public std::enable_shared_from_this<CWe
 	void RegisterCommandCode(const char *idname, const webserver_response_function &ResponseFunction, bool bypassAuthentication = false);
 
 	void GetJSonPage(WebEmSession & session, const request& req, reply & rep);
+	void GetAlexaPage(WebEmSession & session, const request& req, reply & rep);
 	void GetCameraSnapshot(WebEmSession & session, const request& req, reply & rep);
+
+	void Alexa_HandleDiscovery(WebEmSession& session, const request& req, Json::Value& root);
+	void Alexa_HandleAcceptGrant(WebEmSession& session, const request& req, Json::Value& root);
+	void Alexa_HandleControl(WebEmSession& session, const request& req, Json::Value& root);
+	bool CheckDeviceAccess(const WebEmSession& session, uint64_t device_idx, bool& bControlPermitted);
+	bool CheckDeviceAccess(const WebEmSession& session, const std::vector<uint64_t>& device_indices, bool& bControlPermitted);
 	void GetInternalCameraSnapshot(WebEmSession & session, const request& req, reply & rep);
 	void GetFloorplanImage(WebEmSession& session, const request& req, reply& rep);
 	void GetServiceWorker(WebEmSession& session, const request& req, reply& rep);

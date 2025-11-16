@@ -32,10 +32,6 @@ public:
 	uint32_t getUserIdxOffset() const {
 		return useridx_offset;
 	}
-	std::string getAuthPageContent() const {
-		std::string sAuthPage(auth_content);
-		return sAuthPage;
-	}
 	/**
 	 * Set relevant values
 	 */
@@ -89,9 +85,6 @@ public:
 private:
 	bool is_enabled_{ false };
 	uint32_t useridx_offset = OAUTH2_USERIDX_OFFSET;
-	const char *auth_content =
-	#include "views/iam_auth.html"
-	;
 };
 
 } // namespace iamserver

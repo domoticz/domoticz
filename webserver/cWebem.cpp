@@ -1270,16 +1270,12 @@ namespace http {
 						// Step 3: Using the (hashed :( ) password of the ClientID as our ClientSecret to verify the JWT signature
 						std::string JWTalgo = decodedJWT.get_algorithm();
 						std::error_code ec;
-						// Build issuer for verification - use Host header if realm is default
+						// Build issuer for verification - use Host header
 						std::string expected_issuer = myWebem->m_DigistRealm;
-						if (expected_issuer.find("domoticz.local") != std::string::npos)
+						const char *host_header = request::get_req_header(&req, "Host");
+						if (host_header != nullptr)
 						{
-							const char *host_header = request::get_req_header(&req, "Host");
-							if (host_header != nullptr)
-							{
-								std::string scheme = (expected_issuer.find("https://") == 0) ? "https://" : "http://";
-								expected_issuer = scheme + std::string(host_header) + "/";
-							}
+							expected_issuer = "https://" + std::string(host_header) + "/";
 						}
 
 						auto JWTverifyer = jwt::verify().with_issuer(expected_issuer).with_audience(clientid);
