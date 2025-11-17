@@ -133,6 +133,13 @@ void CounterHelper::SendKwhMeter(CDomoticzHardwareBase* pHardwareBase, const std
 	}
 }
 
+double CounterHelper::CheckTotalCounter(CDomoticzHardwareBase* pHardwareBase, const int NodeID, const int ChildID, const uint8_t Unit, const double mtotal)
+{
+	if (!m_bInitialized)
+		Init(pHardwareBase, NodeID, ChildID, Unit);
+	return CheckTotalCounter(mtotal);
+}
+
 double CounterHelper::CheckTotalCounter(CDomoticzHardwareBase* pHardwareBase, const std::string& szDeviceID, const uint8_t Unit, const double mtotal)
 {
 	if (!m_bInitialized)
