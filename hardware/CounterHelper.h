@@ -11,6 +11,7 @@ public:
 	~CounterHelper();
 	void SendKwhMeter(CDomoticzHardwareBase* pHardwareBase, const int NodeID, const int ChildID, const uint8_t Unit, const int BatteryLevel, const double musage, const double mtotal, const std::string& defaultname, const int RssiLevel = 12);
 	void SendKwhMeter(CDomoticzHardwareBase* pHardwareBase, const std::string& szDeviceID, const uint8_t Unit, const int BatteryLevel, const double musage, const double mtotal, std::string& defaultname, const int RssiLevel = 12, const int iUsed = 1);
+	double CheckTotalCounter(CDomoticzHardwareBase* pHardwareBase, const std::string& szDeviceID, const uint8_t Unit, const double mtotal);
 	void Reset();
 private:
 	void Init(const CDomoticzHardwareBase* pHardwareBase, const int NodeID, const int ChildID, const uint8_t Unit = 1);

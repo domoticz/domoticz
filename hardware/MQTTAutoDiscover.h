@@ -1,6 +1,7 @@
 #pragma once
 
 #include "MQTT.h"
+#include "CounterHelper.h"
 
 class MQTTAutoDiscover : public MQTT
 {
@@ -153,7 +154,6 @@ class MQTTAutoDiscover : public MQTT
 		bool bOnline = false;
 		time_t last_received = 0;
 		double prev_value = 0;
-		double epoch = 0;
 		std::string last_value;
 		std::string last_topic;
 		bool bIsJSON = false;
@@ -255,4 +255,6 @@ private:
 
 	std::map<std::string, _tMQTTADevice> m_discovered_devices;
 	std::map<std::string, _tMQTTASensor> m_discovered_sensors;
+
+	std::map<std::string, CounterHelper> m_kwh_counter_helper;
 };

@@ -2066,7 +2066,10 @@ bool MQTTAutoDiscover::GuessSensorTypeValue(_tMQTTASensor* pSensor, uint8_t& dev
 
 		if (pkWhSensor)
 		{
-			if (pkWhSensor->last_received != 0)
+			if (
+				(pkWhSensor->last_received != 0)
+				&& (!pkWhSensor->last_value.empty())
+				)
 			{
 				pkWhSensor->sValue = std_format("%.3f;%.3f", fUsage, pkWhSensor->prev_value);
 
@@ -2094,62 +2097,28 @@ bool MQTTAutoDiscover::GuessSensorTypeValue(_tMQTTASensor* pSensor, uint8_t& dev
 		else if (szUnit == "wm")
 			multiply = 1.0 / 60.0;
 
-		double dkWh = atof(pSensor->last_value.c_str()) * multiply;
+		double dkWh = (!pSensor->last_value.empty()) ? (atof(pSensor->last_value.c_str()) * multiply) : pSensor->prev_value;
 
-		if (dkWh < -1000000)
+		if (pSensor->prev_value != 0)
 		{
-			//Way too negative, probably a bug in the sensor
-			return false;
+			if (abs(pSensor->prev_value - dkWh) > 1000000)
+			{
+				//Way too large jump!
+				return false;
+			}
 		}
 
-		// zwavejs2mqtt and ZWave-JS UI lie about 'total_increasing'. Don't trust them.
-		// https://github.com/domoticz/domoticz/issues/6180#issuecomment-3516413840
-		bool bTotalIncreasing = (pSensor->state_class == "total_increasing" &&
-					 !pSensor->unique_id.find("zwave"));
+		// GuessSensorTypeValue() is sometimes invoked with empty sValue to do
+		// only what its name implies, nothing more. Do not bump the epoch when
+		// when that happens; just use the previous value.
 
-		// Zero could be the first ever value received.
-		// Or it could also be that the middleware sends 0 when it has not received it before
-		if (dkWh == 0 || bTotalIncreasing)
+		bool bTotalIncreasing = (pSensor->state_class == "total_increasing");
+		bool bIsZWave = (pSensor->unique_id.find("zwave") == 0);
+
+		//if (bTotalIncreasing && !bIsZWave)
+		if (bTotalIncreasing)
 		{
-			double dPrevkWh = pSensor->prev_value;
-
-			if (pSensor->last_received != 0)
-			{
-				auto result = m_sql.safe_query("SELECT sValue,StrParam1 FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Type==%d) AND (Subtype==%d)",
-					m_HwdID, pSensor->unique_id.c_str(), devType, subType);
-				if (!result.empty()) {
-					std::vector<std::string> strarray;
-					StringSplit(result[0][0], ";", strarray);
-					if (strarray.size() == 2)
-						dPrevkWh = atof(strarray[1].c_str());
-
-					// For total_increasing sensors, the epoch is stored in StrParam1
-					if (!result[0][1].empty())
-						pSensor->epoch = atof(result[0][1].c_str());
-				}
-			}
-
-			// GuessSensorTypeValue() is sometimes invoked with empty sValue to do
-			// only what its name implies, nothing more. Do not bump the epoch when
-			// when that happens; just use the previous value.
-			if (dkWh == 0)
-			{
-				dkWh = dPrevkWh;
-			}
-			else if (bTotalIncreasing)
-			{
-				// If the value resulting from this reading would be lower than the
-				// previous value, the sensor must have reset. Bump its epoch, which
-				// we store in StrParam1.
-				if (dkWh + pSensor->epoch < dPrevkWh)
-				{
-					pSensor->epoch = dPrevkWh;
-					m_sql.safe_query("UPDATE DeviceStatus SET StrParam1='%f' WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Type==%d) AND (Subtype==%d)",
-							 pSensor->epoch, m_HwdID, pSensor->unique_id.c_str(), devType, subType);
-				}
-
-				dkWh += pSensor->epoch;
-			}
+			dkWh = m_kwh_counter_helper[pSensor->unique_id].CheckTotalCounter(this, pSensor->unique_id, 1, dkWh);
 		}
 		pSensor->prev_value = dkWh;
 

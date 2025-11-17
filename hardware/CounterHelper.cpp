@@ -36,7 +36,6 @@ void CounterHelper::Init(const CDomoticzHardwareBase* pHardwareBase, const int N
 
 	m_HwdID = pHardwareBase->m_HwdID;
 	m_Unit = Unit;
-
 	m_szID = std_format("%08X", (unsigned int)(NodeID << 8) | ChildID);
 
 	InitInt();
@@ -47,6 +46,8 @@ void CounterHelper::Init(const CDomoticzHardwareBase* pHardwareBase, const std::
 	if (m_bInitialized)
 		return; //Allready initialized
 
+	m_HwdID = pHardwareBase->m_HwdID;
+	m_Unit = Unit;
 	m_szID = szDeviceID;
 
 	InitInt();
@@ -130,6 +131,13 @@ void CounterHelper::SendKwhMeter(CDomoticzHardwareBase* pHardwareBase, const std
 		UpdateValueInt(pHardwareBase, szDeviceID.c_str(), Unit, pTypeGeneral, sTypeKwh, RssiLevel, BatteryLevel, 0,
 			sValue.c_str(), defaultname);
 	}
+}
+
+double CounterHelper::CheckTotalCounter(CDomoticzHardwareBase* pHardwareBase, const std::string& szDeviceID, const uint8_t Unit, const double mtotal)
+{
+	if (!m_bInitialized)
+		Init(pHardwareBase, szDeviceID, Unit);
+	return CheckTotalCounter(mtotal);
 }
 
 double CounterHelper::CheckTotalCounter(const double mtotal)
