@@ -2108,6 +2108,7 @@ bool MQTTAutoDiscover::GuessSensorTypeValue(_tMQTTASensor* pSensor, uint8_t& dev
 			if (abs(pSensor->prev_value - offset - dkWh) > 1000000)
 			{
 				//Way too large jump!
+				pSensor->prev_value = dkWh + offset;
 				return false;
 			}
 		}
