@@ -2231,9 +2231,6 @@
     <ClInclude Include="..\main\mosquitto_helper.h">
       <Filter>Devices\MQTT</Filter>
     </ClInclude>
-    <ClInclude Include="..\hardware\CounterHelper.h">
-      <Filter>Devices</Filter>
-    </ClInclude>
     <ClInclude Include="..\push\MQTTPush.h">
       <Filter>Pushers\MQTT</Filter>
     </ClInclude>
@@ -2266,6 +2263,9 @@
     </ClInclude>
     <ClInclude Include="..\iamserver\iam_settings.hpp">
       <Filter>Webserver\IamService</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\CounterHelper.h">
+      <Filter>Helpers</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -3034,9 +3034,6 @@
     <ClCompile Include="..\main\mosquitto_helper.cpp">
       <Filter>Devices\MQTT</Filter>
     </ClCompile>
-    <ClCompile Include="..\hardware\CounterHelper.cpp">
-      <Filter>Devices</Filter>
-    </ClCompile>
     <ClCompile Include="..\push\MQTTPush.cpp">
       <Filter>Pushers\MQTT</Filter>
     </ClCompile>
@@ -3066,6 +3063,9 @@
     </ClCompile>
     <ClCompile Include="..\iamserver\IamService.cpp">
       <Filter>Webserver\IamService</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\CounterHelper.cpp">
+      <Filter>Helpers</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
