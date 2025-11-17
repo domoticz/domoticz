@@ -2097,23 +2097,20 @@ bool MQTTAutoDiscover::GuessSensorTypeValue(_tMQTTASensor* pSensor, uint8_t& dev
 		else if (szUnit == "wm")
 			multiply = 1.0 / 60.0;
 
+		bool bTotalIncreasing = (pSensor->state_class == "total_increasing");
+		bool bIsZWave = (pSensor->unique_id.find("zwave") == 0);
+
 		double dkWh = (!pSensor->last_value.empty()) ? (atof(pSensor->last_value.c_str()) * multiply) : pSensor->prev_value;
 
 		if (pSensor->prev_value != 0)
 		{
-			if (abs(pSensor->prev_value - dkWh) > 1000000)
+			double offset = (!bTotalIncreasing)	? 0 : m_kwh_counter_helper[pSensor->unique_id].GetOffset();
+			if (abs(pSensor->prev_value - offset - dkWh) > 1000000)
 			{
 				//Way too large jump!
 				return false;
 			}
 		}
-
-		// GuessSensorTypeValue() is sometimes invoked with empty sValue to do
-		// only what its name implies, nothing more. Do not bump the epoch when
-		// when that happens; just use the previous value.
-
-		bool bTotalIncreasing = (pSensor->state_class == "total_increasing");
-		bool bIsZWave = (pSensor->unique_id.find("zwave") == 0);
 
 		//if (bTotalIncreasing && !bIsZWave)
 		if (bTotalIncreasing)
