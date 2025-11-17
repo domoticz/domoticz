@@ -17,7 +17,7 @@ private:
 	void Init(const CDomoticzHardwareBase* pHardwareBase, const std::string& szDeviceID, const uint8_t Unit = 1);
 	void InitInt();
 	double CheckTotalCounter(const double mtotal);
-	uint64_t CounterHelper::UpdateValueInt(CDomoticzHardwareBase* pHardwareBase, const char* ID, unsigned char unit, unsigned char devType, unsigned char subType, unsigned char signallevel, unsigned char batterylevel, int nValue,
+	uint64_t UpdateValueInt(CDomoticzHardwareBase* pHardwareBase, const char* ID, unsigned char unit, unsigned char devType, unsigned char subType, unsigned char signallevel, unsigned char batterylevel, int nValue,
 		const char* sValue, std::string& devname, bool bUseOnOffAction = true, const std::string& user = "");
 
 	bool m_bInitialized = false;
