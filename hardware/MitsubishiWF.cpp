@@ -982,7 +982,8 @@ void MitsubishiWF::ParseAirconStat(const _tAircoStatus& aircoStatus)
 	
 	if (aircoStatus.bHaveElectric)
 	{
-		m_kWhCounter.SendKwhMeter(this, 1, 1, 1, 255, 0, aircoStatus.Electric_kWh_Used, "Electricity used");
+		double mtotal = m_kWhCounter.CheckTotalCounter(this, 1, 1, 1, aircoStatus.Electric_kWh_Used);
+		SendKwhMeter(1, 1, 255, 0, mtotal, "Electricity used");
 	}
 }
 
