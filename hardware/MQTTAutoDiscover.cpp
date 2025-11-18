@@ -2115,7 +2115,7 @@ bool MQTTAutoDiscover::GuessSensorTypeValue(_tMQTTASensor* pSensor, uint8_t& dev
 		// zwavejs2mqtt and ZWave-JS UI lie about 'total_increasing'. Don't trust them.
 		// https://github.com/domoticz/domoticz/issues/6180#issuecomment-3516413840
 		bool bTotalIncreasing = (pSensor->state_class == "total_increasing" &&
-					 !pSensor->unique_id.find("zwave"));
+					 pSensor->unique_id.find("zwave") == std::string::npos);
 
 		// Zero could be the first ever value received.
 		// Or it could also be that the middleware sends 0 when it has not received it before
