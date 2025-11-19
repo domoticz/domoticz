@@ -2180,8 +2180,10 @@ bool MQTTAutoDiscover::GuessSensorTypeValue(_tMQTTASensor* pSensor, uint8_t& dev
 		{
 			devType = pTypeRFXMeter;
 			subType = sTypeRFXMeterCount;
-			unsigned long counter = (unsigned long)(atof(pSensor->last_value.c_str()) * 1000.0F);
-			sValue = std_format("%lu", counter);
+			double counter = atof(pSensor->last_value.c_str());
+			//gizmocuz: should test and implement the helper function
+			//counter = m_kwh_counter_helper[pSensor->unique_id].CheckTotalCounter(this, pSensor->unique_id, 0, counter);
+			sValue = std_format("%lu", static_cast<int>(counter * 1000.0));
 		}
 	}
 	else if (szUnit == "l/hr")
