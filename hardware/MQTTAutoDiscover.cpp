@@ -2071,11 +2071,9 @@ bool MQTTAutoDiscover::GuessSensorTypeValue(_tMQTTASensor* pSensor, uint8_t& dev
 				&& (!pkWhSensor->last_value.empty())
 				)
 			{
-				pkWhSensor->sValue = std_format("%.3f;%.3f", fUsage, pkWhSensor->prev_value);
-
 				mosquitto_message xmessage;
 				xmessage.retain = false;
-				// Trigger extra update for the kWh sensor with the new W value
+				// Trigger extra update for the kWh sensor with the new Watt value
 				handle_auto_discovery_sensor(pkWhSensor, &xmessage);
 			}
 		}
@@ -2089,7 +2087,6 @@ bool MQTTAutoDiscover::GuessSensorTypeValue(_tMQTTASensor* pSensor, uint8_t& dev
 		devType = pTypeGeneral;
 		subType = sTypeKwh;
 
-		double dUsage = 0;
 		double multiply = 1000.0F;
 
 		if (szUnit == "wh")
@@ -2100,18 +2097,9 @@ bool MQTTAutoDiscover::GuessSensorTypeValue(_tMQTTASensor* pSensor, uint8_t& dev
 		bool bTotalIncreasing = (pSensor->state_class == "total_increasing");
 		bool bIsZWave = (pSensor->unique_id.find("zwave") == 0);
 
-		double dkWh = (!pSensor->last_value.empty()) ? (atof(pSensor->last_value.c_str()) * multiply) : pSensor->prev_value;
+		assert(!pSensor->last_value.empty());
 
-		if (pSensor->prev_value != 0)
-		{
-			double offset = (!bTotalIncreasing)	? 0 : m_kwh_counter_helper[pSensor->unique_id].GetOffset();
-			if (abs(pSensor->prev_value - offset - dkWh) > 1000000)
-			{
-				//Way too large jump!
-				pSensor->prev_value = dkWh + offset;
-				return false;
-			}
-		}
+		double dkWh = atof(pSensor->last_value.c_str());
 
 		//if (bTotalIncreasing && !bIsZWave)
 		if (bTotalIncreasing)
@@ -2120,12 +2108,13 @@ bool MQTTAutoDiscover::GuessSensorTypeValue(_tMQTTASensor* pSensor, uint8_t& dev
 		}
 		pSensor->prev_value = dkWh;
 
+		double dUsage = 0;
 		_tMQTTASensor* pWattSensor = get_auto_discovery_sensor_WATT_unit(pSensor);
 		if (pWattSensor && pWattSensor->last_received != 0)
 		{
 			dUsage = atof(pWattSensor->sValue.c_str());
 		}
-		sValue = std_format("%.3f;%.3f", dUsage, dkWh);
+		sValue = std_format("%.3f;%.3f", dUsage, dkWh * multiply);
 	}
 	else if (
 		(szUnit == "lx")

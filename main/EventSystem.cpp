@@ -1455,7 +1455,7 @@ void CEventSystem::ProcessDevice(
 
 	_eSwitchType switchType = (_eSwitchType)std::stoi(sd[0]);
 	std::string lastUpdate = sd[1];
-	uint8_t lastLevel = (uint8_t)std::stoi(sd[2]);
+	uint8_t lastLevel = (uint8_t)atoi(sd[2].c_str());
 	std::string dev_options = sd[3];
 	std::string devname = sd[4];
 
