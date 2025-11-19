@@ -1065,6 +1065,7 @@
     <ClCompile Include="..\main\Scheduler.cpp" />
     <ClCompile Include="..\main\SignalHandler.cpp" />
     <ClCompile Include="..\main\SQLHelper.cpp" />
+    <ClCompile Include="..\main\StoppableTask.cpp" />
     <ClCompile Include="..\main\Helper.cpp" />
     <ClCompile Include="..\main\mainworker.cpp" />
     <ClCompile Include="..\hardware\RFXComSerial.cpp" />

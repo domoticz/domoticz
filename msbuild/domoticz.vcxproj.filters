@@ -2341,6 +2341,9 @@
     <ClCompile Include="..\main\SQLHelper.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\main\StoppableTask.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="..\main\stdafx.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>

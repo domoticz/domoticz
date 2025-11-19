@@ -176,6 +176,7 @@ main/RFXNames.cpp
 main/Scheduler.cpp
 main/SignalHandler.cpp
 main/SQLHelper.cpp
+main/StoppableTask.cpp
 main/SunRiseSet.cpp
 main/TrendCalculator.cpp
 main/WebServer.cpp
