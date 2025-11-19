@@ -3,6 +3,7 @@
 
 #include "DomoticzHardware.h"
 #include "../main/SQLHelper.h"
+#include "../main/Logger.h"
 
 CounterHelper::CounterHelper()
 {
@@ -73,17 +74,29 @@ double CounterHelper::CheckTotalCounter(CDomoticzHardwareBase* pHardwareBase, co
 {
 	if (!m_bInitialized)
 		Init(pHardwareBase, NodeID, ChildID, Unit);
-	return CheckTotalCounter(mtotal);
+	bool bLooped = false;
+	double ret = CheckTotalCounter(mtotal, bLooped);
+	if (bLooped)
+	{
+		pHardwareBase->Log(LOG_STATUS, "Counter Looped for: NodeID: %d, ChildID: %d, Unit: %d", NodeID, ChildID, Unit);
+	}
+	return ret;
 }
 
 double CounterHelper::CheckTotalCounter(CDomoticzHardwareBase* pHardwareBase, const std::string& szDeviceID, const uint8_t Unit, const double mtotal)
 {
 	if (!m_bInitialized)
 		Init(pHardwareBase, szDeviceID, Unit);
-	return CheckTotalCounter(mtotal);
+	bool bLooped = false;
+	double ret = CheckTotalCounter(mtotal, bLooped);
+	if (bLooped)
+	{
+		pHardwareBase->Log(LOG_STATUS, "Counter Looped for: DeviceID: %s, Unit: %d", szDeviceID.c_str(), Unit);
+	}
+	return ret;
 }
 
-double CounterHelper::CheckTotalCounter(const double mtotal)
+double CounterHelper::CheckTotalCounter(const double mtotal, bool& bLooped)
 {
 	double rTotal = m_CounterOffset + mtotal;
 	if (
@@ -91,6 +104,7 @@ double CounterHelper::CheckTotalCounter(const double mtotal)
 		&& (m_nLastCounterValue != 0)
 		)
 	{
+		bLooped = true;
 		m_CounterOffset = m_nLastCounterValue;
 
 		m_sql.safe_query("UPDATE DeviceStatus SET LastLevel=%lld, LastUpdate='%s' WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit==%d) AND (Type=%d) AND (SubType=%d)",

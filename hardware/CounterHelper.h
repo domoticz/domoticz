@@ -17,7 +17,7 @@ private:
 	void Init(const CDomoticzHardwareBase* pHardwareBase, const int NodeID, const int ChildID, const uint8_t Unit = 1);
 	void Init(const CDomoticzHardwareBase* pHardwareBase, const std::string& szDeviceID, const uint8_t Unit = 1);
 	void InitInt();
-	double CheckTotalCounter(const double mtotal);
+	double CheckTotalCounter(const double mtotal, bool &bLooped);
 
 	bool m_bInitialized = false;
 	int m_HwdID = 0;
