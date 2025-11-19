@@ -6202,9 +6202,12 @@ void MQTTAutoDiscover::Do_Work()
 	while (!IsStopRequested(1000))
 	{
 		std::unique_lock<std::mutex> lock(m_inc_msg_mutex);
+		if (m_incoming_messages.empty())
+			continue;
 		std::list<_tIncommingMsg> mlist;
 		std::copy(m_incoming_messages.begin(), m_incoming_messages.end(), std::back_inserter(mlist));
 		m_incoming_messages.clear();
+		lock.unlock();
 
 		for (const auto& msg : mlist)
 		{
