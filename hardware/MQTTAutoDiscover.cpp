@@ -2106,7 +2106,6 @@ bool MQTTAutoDiscover::GuessSensorTypeValue(_tMQTTASensor* pSensor, uint8_t& dev
 		{
 			dkWh = m_kwh_counter_helper[pSensor->unique_id].CheckTotalCounter(this, pSensor->unique_id, 1, dkWh);
 		}
-		pSensor->prev_value = dkWh;
 
 		double dUsage = 0;
 		_tMQTTASensor* pWattSensor = get_auto_discovery_sensor_WATT_unit(pSensor);
