@@ -75,9 +75,29 @@ MQTTAutoDiscover::MQTTAutoDiscover(const int ID, const std::string& Name, const 
 
 void MQTTAutoDiscover::on_message(const struct mosquitto_message* message)
 {
+	std::lock_guard<std::mutex> lock(m_inc_msg_mutex);
+	if (m_incoming_messages.size() > 1000)
+	{
+		//Prevent flooding
+		return;
+	}
+
 	std::string topic = message->topic;
 	std::string qMessage = std::string((char*)message->payload, (char*)message->payload + message->payloadlen);
+/*
+	//OutputDebugStringA(("MQTTAutoDiscover::on_message - topic: " + topic + "\n").c_str());
+	Log(LOG_STATUS, "topic: %s", topic.c_str());
+*/
+	_tIncommingMsg incmsg;
+	incmsg.mid = message->mid;
+	incmsg.topic = topic;
+	incmsg.payload = qMessage;
+	incmsg.qos = message->qos;
+	incmsg.retain = message->retain;
 
+	m_incoming_messages.push_back(incmsg);
+
+	return;
 	try
 	{
 		Debug(DEBUG_HARDWARE, "topic: %s, message: %s", topic.c_str(), qMessage.c_str());
@@ -2084,6 +2104,9 @@ bool MQTTAutoDiscover::GuessSensorTypeValue(_tMQTTASensor* pSensor, uint8_t& dev
 		|| (szUnit == "wm")
 		)
 	{
+		if (pSensor->last_value.empty())
+			return false;
+
 		devType = pTypeGeneral;
 		subType = sTypeKwh;
 
@@ -2096,8 +2119,6 @@ bool MQTTAutoDiscover::GuessSensorTypeValue(_tMQTTASensor* pSensor, uint8_t& dev
 
 		bool bTotalIncreasing = (pSensor->state_class == "total_increasing");
 		bool bIsZWave = (pSensor->unique_id.find("zwave") == 0);
-
-		assert(!pSensor->last_value.empty());
 
 		double dkWh = atof(pSensor->last_value.c_str());
 
@@ -2614,7 +2635,7 @@ bool MQTTAutoDiscover::HaveSingleTempHumBaro(const std::string& device_identifie
 		int nValue;
 
 		if (!GuessSensorTypeValue(pSensor, devType, subType, szOptions, nValue, sValue))
-			return false;
+			continue;
 
 		if (
 			(devType == pTypeTEMP)
@@ -6153,6 +6174,90 @@ bool MQTTAutoDiscover::UpdateNumber(const std::string& idx, const std::string& s
 		}
 	}
 	return false;
+}
+
+bool MQTTAutoDiscover::StartHardware()
+{
+	MQTT::StartHardware();
+
+	m_worker_thread = std::make_shared<std::thread>([this] { Do_Work(); });
+	SetThreadNameInt(m_worker_thread->native_handle());
+
+	return (m_worker_thread != nullptr);
+}
+
+bool MQTTAutoDiscover::StopHardware()
+{
+	MQTT::StopHardware();
+	if (m_worker_thread)
+	{
+		m_worker_thread->join();
+		m_worker_thread.reset();
+	}
+	return true;
+}
+
+void MQTTAutoDiscover::Do_Work()
+{
+	while (!IsStopRequested(1000))
+	{
+		std::unique_lock<std::mutex> lock(m_inc_msg_mutex);
+		std::list<_tIncommingMsg> mlist;
+		std::copy(m_incoming_messages.begin(), m_incoming_messages.end(), std::back_inserter(mlist));
+		m_incoming_messages.clear();
+
+		for (const auto& msg : mlist)
+		{
+			std::string topic = msg.topic;
+			try
+			{
+				mosquitto_message message;
+				message.topic = (char*)msg.topic.c_str();
+				message.payload = (void*)msg.payload.c_str();
+				message.payloadlen = (int)msg.payload.size();
+				message.mid = msg.mid;
+				message.qos = msg.qos;
+				message.retain = msg.retain;
+
+				Debug(DEBUG_HARDWARE, "topic: %s, message: %s", topic.c_str(), msg.payload.c_str());
+
+				if (msg.payload.empty())
+					continue;
+
+				if (
+					topic.find(m_TopicDiscoveryPrefix) == 0
+					&& (topic.find("/config") != std::string::npos)
+					)
+				{
+					on_auto_discovery_message(&message);
+					continue;
+				}
+
+				std::string DiscoveryWildcard = m_TopicDiscoveryPrefix + "/#";
+
+				for (auto& itt : m_subscribed_topics)
+				{
+					bool result = false;
+					if (
+						(itt.first != DiscoveryWildcard)
+						&& (mosquitto_topic_matches_sub(itt.first.c_str(), topic.c_str(), &result) == MOSQ_ERR_SUCCESS)
+						)
+					{
+						if (result == true)
+						{
+							handle_auto_discovery_sensor_message(&message, itt.first);
+							continue;
+						}
+					}
+				}
+			}
+			catch (const std::exception& e)
+			{
+				Log(LOG_ERROR, "Exception (on_message): %s! (topic: %s, message: %s)", e.what(), topic.c_str(), msg.payload.c_str());
+				continue;
+			}
+		}
+	}
 }
 
 //Webserver helpers
