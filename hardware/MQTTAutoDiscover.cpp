@@ -5055,7 +5055,54 @@ void MQTTAutoDiscover::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 		}
 		sValue = std_format("%d", level);
 
-		if (pSensor->devType != pTypeColorSwitch)
+		// For fans with separate state and percentage topics, only update the relevant value
+		if (pSensor->component_type == "fan")
+		{
+			if (!pSensor->percentage_state_topic.empty() && !pSensor->state_topic.empty())
+			{
+				if (pSensor->last_topic == pSensor->state_topic)
+				{
+					// Keep existing level
+					sValue = result[0][3];
+					level = atoi(sValue.c_str());
+					// If turning on, set nValue based on level
+					if (bOn)
+					{
+						if (level == 100)
+							nValue = gswitch_sOn;
+						else
+							nValue = gswitch_sSetLevel;
+						// Ensure LastLevel gets updated when turning on with a level
+						bHaveLevelChange = true;
+					}
+					else
+					{
+						nValue = gswitch_sOff;
+					}
+				}
+				else if (pSensor->last_topic == pSensor->percentage_state_topic)
+				{
+					// Keep existing on/off state - read current nValue
+					int currentNValue = atoi(result[0][2].c_str());
+					// Preserve whether it's on (1) or off (0), but update level representation
+					if (currentNValue == gswitch_sOff)
+					{
+						nValue = gswitch_sOff;
+					}
+					else
+					{
+						// It's on - set nValue based on level
+						if (level == 100)
+							nValue = gswitch_sOn;
+						else
+							nValue = gswitch_sSetLevel;
+						// Ensure LastLevel gets updated when fan is on
+						bHaveLevelChange = true;
+					}
+				}
+			}
+		}
+		else if (pSensor->devType != pTypeColorSwitch)
 		{
 			if (szSwitchCmd == "Set Level")
 			{
