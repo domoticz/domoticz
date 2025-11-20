@@ -72,31 +72,21 @@ void CounterHelper::InitInt()
 	m_bInitialized = true;
 }
 
-double CounterHelper::CheckTotalCounter(CDomoticzHardwareBase* pHardwareBase, const int NodeID, const int ChildID, const uint8_t Unit, const double mtotal, bool& bLooped)
+double CounterHelper::CheckTotalCounter(CDomoticzHardwareBase* pHardwareBase, const int NodeID, const int ChildID, const uint8_t Unit, const double mtotal, const bool bDoReset, bool& bLooped)
 {
 	if (!m_bInitialized)
 		Init(pHardwareBase, NodeID, ChildID, Unit);
-	double ret = CheckTotalCounter(mtotal, bLooped);
-	if (bLooped)
-	{
-		pHardwareBase->Log(LOG_STATUS, "Counter Looped for: NodeID: %d, ChildID: %d, Unit: %d", NodeID, ChildID, Unit);
-	}
-	return ret;
+	return CheckTotalCounter(mtotal, bDoReset, bLooped);
 }
 
-double CounterHelper::CheckTotalCounter(CDomoticzHardwareBase* pHardwareBase, const std::string& szDeviceID, const uint8_t Unit, const double mtotal, bool& bLooped)
+double CounterHelper::CheckTotalCounter(CDomoticzHardwareBase* pHardwareBase, const std::string& szDeviceID, const uint8_t Unit, const double mtotal, const bool bDoReset, bool& bLooped)
 {
 	if (!m_bInitialized)
 		Init(pHardwareBase, szDeviceID, Unit);
-	double ret = CheckTotalCounter(mtotal, bLooped);
-	if (bLooped)
-	{
-		pHardwareBase->Log(LOG_STATUS, "Counter Looped for: DeviceID: %s, Unit: %d", szDeviceID.c_str(), Unit);
-	}
-	return ret;
+	return CheckTotalCounter(mtotal, bDoReset, bLooped);
 }
 
-double CounterHelper::CheckTotalCounter(const double mtotal, bool& bLooped)
+double CounterHelper::CheckTotalCounter(const double mtotal, const bool bDoReset, bool& bLooped)
 {
 	double rTotal = m_CounterOffset + mtotal;
 	if (
@@ -104,16 +94,21 @@ double CounterHelper::CheckTotalCounter(const double mtotal, bool& bLooped)
 		&& (m_nLastCounterValue != 0)
 		)
 	{
-		bLooped = true;
-		m_CounterOffset = m_nLastCounterValue;
+		if (bDoReset)
+		{
+			bLooped = true;
+			m_CounterOffset = m_nLastCounterValue;
 
-		m_sql.safe_query("UPDATE DeviceStatus SET LastLevel=%lld, LastUpdate='%s' WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit==%d) AND (Type=%d) AND (SubType=%d)",
-			static_cast<long long int>(m_CounterOffset * 1000.0), TimeToString(nullptr, TF_DateTime).c_str(),
-			m_HwdID, m_szID.c_str(), m_Unit,
-			pTypeGeneral, sTypeKwh);
+			m_sql.safe_query("UPDATE DeviceStatus SET LastLevel=%lld, LastUpdate='%s' WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit==%d) AND (Type=%d) AND (SubType=%d)",
+				static_cast<long long int>(m_CounterOffset * 1000.0), TimeToString(nullptr, TF_DateTime).c_str(),
+				m_HwdID, m_szID.c_str(), m_Unit,
+				pTypeGeneral, sTypeKwh);
 
-		rTotal = m_CounterOffset + mtotal;
+			rTotal = m_CounterOffset + mtotal;
+		}
 	}
+	if (!bDoReset && bLooped)
+		return rTotal;
 	m_nLastCounterValue = rTotal;
 	return rTotal;
 }

@@ -155,6 +155,7 @@ class MQTTAutoDiscover : public MQTT
 		bool bOnline = false;
 		time_t last_received = 0;
 		std::string last_value;
+		double prev_value = 0;
 		std::string last_topic;
 		bool bIsJSON = false;
 		bool bIsNull = false;

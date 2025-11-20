@@ -2125,9 +2125,19 @@ bool MQTTAutoDiscover::GuessSensorTypeValue(_tMQTTASensor* pSensor, uint8_t& dev
 		//if (bTotalIncreasing && !bIsZWave)
 		if (bTotalIncreasing)
 		{
-			dkWh = m_kwh_counter_helper[pSensor->unique_id].CheckTotalCounter(this, pSensor->unique_id, 1, dkWh);
+			bool bSuspicious = (pSensor->prev_value == 0);
+			bool bLooped = false;
+			dkWh = m_kwh_counter_helper[pSensor->unique_id].CheckTotalCounter(this, pSensor->unique_id, 1, dkWh, !bSuspicious, bLooped);
+			if (bSuspicious && bLooped)
+			{
+				//There could be an anoying situation with MQTT retained messages
+				//If a user enabled a retained message, and later sends a new value not-retained,
+				//the retained message is still here, and contains a old value.
+				//So if we detect a loop on the first message, we ignore the previous value
+				Log(LOG_STATUS, "Counter Looped detected on first received value for: %s/%s, could be an old retained value?", pSensor->name.c_str(), pSensor->unique_id.c_str());
+			}
 		}
-
+		pSensor->prev_value = dkWh;
 		double dUsage = 0;
 		_tMQTTASensor* pWattSensor = get_auto_discovery_sensor_WATT_unit(pSensor);
 		if (pWattSensor && pWattSensor->last_received != 0)
