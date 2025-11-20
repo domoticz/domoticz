@@ -9,10 +9,12 @@ class CounterHelper
 public:
 	CounterHelper();
 	~CounterHelper();
-	double CheckTotalCounter(CDomoticzHardwareBase* pHardwareBase, const int NodeID, const int ChildID, const uint8_t Unit, const double mtotal);
-	double CheckTotalCounter(CDomoticzHardwareBase* pHardwareBase, const std::string& szDeviceID, const uint8_t Unit, const double mtotal);
+	static bool dummy_looped_boolean;
+	double CheckTotalCounter(CDomoticzHardwareBase* pHardwareBase, const int NodeID, const int ChildID, const uint8_t Unit, const double mtotal, bool &bLooped = dummy_looped_boolean);
+	double CheckTotalCounter(CDomoticzHardwareBase* pHardwareBase, const std::string& szDeviceID, const uint8_t Unit, const double mtotal, bool& bLooped = dummy_looped_boolean);
 	void Reset();
-	double GetOffset() const { return m_CounterOffset; }
+	double GetCounterOffset() const { return m_CounterOffset; }
+	double GetLastCounterValue() const { return m_nLastCounterValue; }
 private:
 	void Init(const CDomoticzHardwareBase* pHardwareBase, const int NodeID, const int ChildID, const uint8_t Unit = 1);
 	void Init(const CDomoticzHardwareBase* pHardwareBase, const std::string& szDeviceID, const uint8_t Unit = 1);

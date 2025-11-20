@@ -5,6 +5,8 @@
 #include "../main/SQLHelper.h"
 #include "../main/Logger.h"
 
+bool CounterHelper::dummy_looped_boolean = false;
+
 CounterHelper::CounterHelper()
 {
 }
@@ -70,11 +72,10 @@ void CounterHelper::InitInt()
 	m_bInitialized = true;
 }
 
-double CounterHelper::CheckTotalCounter(CDomoticzHardwareBase* pHardwareBase, const int NodeID, const int ChildID, const uint8_t Unit, const double mtotal)
+double CounterHelper::CheckTotalCounter(CDomoticzHardwareBase* pHardwareBase, const int NodeID, const int ChildID, const uint8_t Unit, const double mtotal, bool& bLooped)
 {
 	if (!m_bInitialized)
 		Init(pHardwareBase, NodeID, ChildID, Unit);
-	bool bLooped = false;
 	double ret = CheckTotalCounter(mtotal, bLooped);
 	if (bLooped)
 	{
@@ -83,11 +84,10 @@ double CounterHelper::CheckTotalCounter(CDomoticzHardwareBase* pHardwareBase, co
 	return ret;
 }
 
-double CounterHelper::CheckTotalCounter(CDomoticzHardwareBase* pHardwareBase, const std::string& szDeviceID, const uint8_t Unit, const double mtotal)
+double CounterHelper::CheckTotalCounter(CDomoticzHardwareBase* pHardwareBase, const std::string& szDeviceID, const uint8_t Unit, const double mtotal, bool& bLooped)
 {
 	if (!m_bInitialized)
 		Init(pHardwareBase, szDeviceID, Unit);
-	bool bLooped = false;
 	double ret = CheckTotalCounter(mtotal, bLooped);
 	if (bLooped)
 	{
