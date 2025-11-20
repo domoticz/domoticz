@@ -5678,15 +5678,22 @@ bool MQTTAutoDiscover::SendSwitchCommand(const std::string& DeviceID, const std:
 		if (Unit == 1)
 		{
 			if (command == "On")
-				szSendValue = "50";
+				szSendValue = "ON";
 			else if (command == "Off")
-				szSendValue = "0";
+				szSendValue = "OFF";
 			else if (command == "Set Level")
 			{
 				if (level > 100)
 					level = 100;
-				int slevel = (int)round((255 / 100.0F) * level);
-				szSendValue = std::to_string(slevel);
+				// For fans with separate state and percentage topics, send ON if currently off
+				if (!pSensor->percentage_command_topic.empty() && !pSensor->command_topic.empty())
+				{
+					if (pSensor->nValue == gswitch_sOff && level > 0)
+					{
+						SendMessage(pSensor->command_topic, "ON");
+					}
+				}
+				szSendValue = std::to_string(level);
 				command_topic = pSensor->percentage_command_topic;
 			}
 		}
