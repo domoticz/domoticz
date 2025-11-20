@@ -5004,6 +5004,13 @@ void MQTTAutoDiscover::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 					else if (szSwitchCmd == pSensor->state_locked)
 						szSwitchCmd = "on";
 				}
+				else if (pSensor->component_type == "fan")
+				{
+					if (szSwitchCmd == pSensor->payload_off)
+						szSwitchCmd = "off";
+					else if (szSwitchCmd == pSensor->payload_on)
+						szSwitchCmd = "on";
+				}
 			}
 		}
 
