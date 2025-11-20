@@ -715,20 +715,41 @@ bool CScheduler::AdjustScheduleItem(tScheduleItem* pItem, bool bForceAddDay)
 
 void CScheduler::Do_Work()
 {
-	while (!IsStopRequested(1000))
-	{
-		time_t atime = mytime(nullptr);
-		struct tm ltime;
-		localtime_r(&atime, &ltime);
+	time_t atime = mytime(nullptr);
+	struct tm ltime;
+	localtime_r(&atime, &ltime);
+	int _LastMinute = ltime.tm_min;
+	int _LastSecond = ltime.tm_sec;
 
+	while (true)
+	{
+		// Sleep until next second
+		int next_second = ltime.tm_sec + 1;
+		if (next_second >= 60)
+			next_second = 60;
+		int sleep_ms = (next_second - ltime.tm_sec) * 1000;
+		if (sleep_ms < 0)
+			sleep_ms = 0;
+
+		if (IsStopRequested(sleep_ms))
+			break;
+
+		atime = mytime(nullptr);
+		localtime_r(&atime, &ltime);
 
 		if (ltime.tm_sec % 12 == 0) {
 			m_mainworker.HeartbeatUpdate("Scheduler");
 		}
 
-		CheckSchedules();
+		if (ltime.tm_sec != _LastSecond)
+		{
+			_LastSecond = ltime.tm_sec;
+			CheckSchedules();
+		}
 
-		if (ltime.tm_sec == 0) {
+		if (ltime.tm_min != _LastMinute)
+		{
+			_LastMinute = ltime.tm_min;
 			DeleteExpiredTimers();
 		}
 	}
