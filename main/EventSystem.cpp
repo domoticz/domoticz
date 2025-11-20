@@ -316,32 +316,34 @@ void CEventSystem::Do_Work()
 	m_python_Dir = szUserDataFolder + "scripts/python/";
 #endif
 #endif
-	time_t lasttime = mytime(nullptr);
-	struct tm tmptime;
+	time_t atime = mytime(nullptr);
 	struct tm ltime;
 
-	localtime_r(&lasttime, &tmptime);
-	int _LastMinute = tmptime.tm_min;
+	localtime_r(&atime, &ltime);
+	int _LastMinute = ltime.tm_min;
 
 	_log.Log(LOG_STATUS, "EventSystem: Started");
-	while (!IsStopRequested(500))
+	while (true)
 	{
-		time_t atime = mytime(nullptr);
+		// Calculate sleep time until next 12-second heartbeat
+		// Handle leap seconds (tm_sec can be 60 or 61) by clamping to 59
+		int current_sec = (ltime.tm_sec > 59) ? 59 : ltime.tm_sec;
+		int next_wake_sec = ((current_sec / 12) + 1) * 12;
+		int sleep_ms = (next_wake_sec - current_sec) * 1000;
 
-		if (atime != lasttime)
+		if (IsStopRequested(sleep_ms))
+			break;
+
+		atime = mytime(nullptr);
+		localtime_r(&atime, &ltime);
+
+		if (ltime.tm_sec % 12 == 0) {
+			m_mainworker.HeartbeatUpdate("EventSystem");
+		}
+		if (ltime.tm_min != _LastMinute)
 		{
-			lasttime = atime;
-
-			localtime_r(&atime, &ltime);
-
-			if (ltime.tm_sec % 12 == 0) {
-				m_mainworker.HeartbeatUpdate("EventSystem");
-			}
-			if (ltime.tm_min != _LastMinute)
-			{
-				_LastMinute = ltime.tm_min;
-				ProcessMinute();
-			}
+			_LastMinute = ltime.tm_min;
+			ProcessMinute();
 		}
 	}
 	_log.Log(LOG_STATUS, "EventSystem: Stopped...");
