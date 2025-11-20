@@ -94,9 +94,9 @@ double CounterHelper::CheckTotalCounter(const double mtotal, const bool bDoReset
 		&& (m_nLastCounterValue != 0)
 		)
 	{
+		bLooped = true;
 		if (bDoReset)
 		{
-			bLooped = true;
 			m_CounterOffset = m_nLastCounterValue;
 
 			m_sql.safe_query("UPDATE DeviceStatus SET LastLevel=%lld, LastUpdate='%s' WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit==%d) AND (Type=%d) AND (SubType=%d)",
