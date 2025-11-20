@@ -584,6 +584,7 @@ void MQTT::on_disconnect(int rc)
 	{
 		if (!IsStopRequested(0))
 		{
+			disconnect();
 			if (rc == 5)
 			{
 				Log(LOG_ERROR, "Disconnected, Invalid Username/Password (rc=%d)", rc);
@@ -735,14 +736,17 @@ void MQTT::Do_MQTT_Work()
 {
 	while (!IsStopRequested(5))
 	{
-		int rc = loop_forever();
-		if (rc)
+		if (!m_bDoReconnect)
 		{
-			if (rc != MOSQ_ERR_NO_CONN)
+			int rc = loop_forever();
+			if (rc)
 			{
-				if (!IsStopRequested(0))
+				if (rc != MOSQ_ERR_NO_CONN)
 				{
-					m_bDoReconnect = true;
+					if (!IsStopRequested(0))
+					{
+						m_bDoReconnect = true;
+					}
 				}
 			}
 		}
