@@ -2178,6 +2178,9 @@ void MainWorker::ProcessRXMessage(const CDomoticzHardwareBase* pHardware, const 
 		case pTypeSetpoint: //own type
 			decode_Thermostat(pHardware, reinterpret_cast<const tRBUF*>(pRXCommand), procResult);
 			break;
+		case pTypeThermostat6:
+			decode_Thermostat6(pHardware, reinterpret_cast<const tRBUF*>(pRXCommand), procResult);
+			break;
 		case pTypeThermostat1:
 			decode_Thermostat1(pHardware, reinterpret_cast<const tRBUF*>(pRXCommand), procResult);
 			break;
@@ -8372,6 +8375,93 @@ void MainWorker::decode_Thermostat(const CDomoticzHardwareBase* pHardware, const
 	procResult.DeviceRowIdx = DevRowIdx;
 }
 
+void MainWorker::decode_Thermostat6(const CDomoticzHardwareBase* pHardware, const tRBUF* pResponse, _tRxMessageProcessingResult& procResult)
+{
+	const _tThermostat6* pMeter = reinterpret_cast<const _tThermostat6*>(pResponse);
+	uint8_t devType = pMeter->type;
+	uint8_t subType = pMeter->subtype;
+
+	char szTmp[200];
+	sprintf(szTmp, "%X%02X%02X%02X", pMeter->id1, pMeter->id2, pMeter->id3, pMeter->id4);
+	std::string ID = szTmp;
+	uint8_t Unit = pMeter->dunit;
+	uint8_t SignalLevel = 12;
+	uint8_t BatteryLevel = pMeter->battery_level;
+
+	// Get existing values if partial update
+	float temperature = pMeter->temperature;
+	float setpoint = pMeter->setpoint;
+	uint8_t humidity = pMeter->humidity;
+	uint8_t humidity_status = pMeter->humidity_status;
+	uint16_t barometer = pMeter->barometer;
+
+	// Determine expected flags based on subtype
+	uint8_t expected_flags = 0x03; // temp + setpoint for sTypeThermostat6Temp
+	if (subType == sTypeThermostat6TempHum)
+		expected_flags = 0x07; // temp + setpoint + humidity
+	else if (subType == sTypeThermostat6TempBaro)
+		expected_flags = 0x0B; // temp + setpoint + barometer
+	else if (subType == sTypeThermostat6TempHumBaro)
+		expected_flags = 0x0F; // temp + setpoint + humidity + barometer
+
+	if (pMeter->update_flags != expected_flags)
+	{
+		// Partial update - read existing values
+		std::vector<std::vector<std::string>> result;
+		result = m_sql.safe_query("SELECT sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit==%d) AND (Type==%d) AND (SubType==%d)",
+			pHardware->m_HwdID, ID.c_str(), Unit, devType, subType);
+		if (!result.empty())
+		{
+			std::vector<std::string> values;
+			StringSplit(result[0][0], ";", values);
+
+			if (!(pMeter->update_flags & 0x01) && values.size() >= 1)
+				temperature = static_cast<float>(atof(values[0].c_str()));
+			if (!(pMeter->update_flags & 0x02) && values.size() >= 2)
+				setpoint = static_cast<float>(atof(values[1].c_str()));
+			if (!(pMeter->update_flags & 0x04) && values.size() >= 4)
+			{
+				humidity = atoi(values[2].c_str());
+				humidity_status = atoi(values[3].c_str());
+			}
+			if (!(pMeter->update_flags & 0x08))
+			{
+				if (subType == sTypeThermostat6TempBaro && values.size() >= 3)
+					barometer = atoi(values[2].c_str());
+				else if (subType == sTypeThermostat6TempHumBaro && values.size() >= 5)
+					barometer = atoi(values[4].c_str());
+			}
+		}
+	}
+
+	// Build sValue based on subtype
+	switch (subType)
+	{
+	case sTypeThermostat6Temp:
+		sprintf(szTmp, "%.1f;%.1f", temperature, setpoint);
+		break;
+	case sTypeThermostat6TempHum:
+		sprintf(szTmp, "%.1f;%.1f;%d;%d", temperature, setpoint, humidity, humidity_status);
+		break;
+	case sTypeThermostat6TempBaro:
+		sprintf(szTmp, "%.1f;%.1f;%d", temperature, setpoint, barometer);
+		break;
+	case sTypeThermostat6TempHumBaro:
+		sprintf(szTmp, "%.1f;%.1f;%d;%d;%d", temperature, setpoint, humidity, humidity_status, barometer);
+		break;
+	default:
+		sprintf(szTmp, "ERROR: Unknown Sub type for Packet type= %02X:%02X", pMeter->type, pMeter->subtype);
+		WriteMessage(szTmp);
+		return;
+	}
+
+	uint64_t DevRowIdx = m_sql.UpdateValue(pHardware->m_HwdID, 0, ID.c_str(), Unit, devType, subType, SignalLevel, BatteryLevel, 0, szTmp, procResult.DeviceName, true, procResult.Username.c_str());
+	if (DevRowIdx == (uint64_t)-1)
+		return;
+
+	procResult.DeviceRowIdx = DevRowIdx;
+}
+
 void MainWorker::decode_Thermostat1(const CDomoticzHardwareBase* pHardware, const tRBUF* pResponse, _tRxMessageProcessingResult& procResult)
 {
 	char szTmp[100];
@@ -13198,6 +13288,25 @@ bool MainWorker::SetSetPointInt(const std::vector<std::string>& sd, const float 
 		}
 		PushAndWaitRxMessage(pHardware, (const uint8_t*)&lcmd, nullptr, -1, nullptr);
 	}
+	else if (dType == pTypeThermostat6)
+	{
+		// For Thermostat6, construct _tThermostat6 message
+		_tThermostat6 t6meter;
+		t6meter.subtype = dSubType;
+		t6meter.id1 = ID1;
+		t6meter.id2 = ID2;
+		t6meter.id3 = ID3;
+		t6meter.id4 = ID4;
+		t6meter.dunit = Unit;
+		t6meter.setpoint = temp_celsius;
+		t6meter.update_flags = 0x02; // Update setpoint only
+		if (bWriteToHardware)
+		{
+			if (!WriteToHardware(HardwareID, (const char*)&t6meter, sizeof(_tThermostat6)))
+				return false;
+		}
+		PushAndWaitRxMessage(pHardware, (const uint8_t*)&t6meter, nullptr, -1, nullptr);
+	}
 	else
 	{
 		_tSetpoint tmeter;
@@ -14107,6 +14216,125 @@ bool MainWorker::UpdateDevice(const int HardwareID, const int OrgHardwareID, con
 					uint64_t tID = ((uint64_t)(HardwareID & 0x7FFFFFFF) << 32) | (devidx & 0x7FFFFFFF);
 					m_trend_calculator[tID].AddValueAndReturnTendency(static_cast<double>(temp), _tTrendCalculator::TAVERAGE_TEMP);
 				}
+			}
+
+			if (devType == pTypeThermostat6)
+			{
+				std::vector<std::string> strarray;
+				StringSplit(sValue, ";", strarray);
+
+				if (strarray.size() < 2)
+				{
+					_log.Log(LOG_ERROR, "Thermostat6: Invalid sValue - need at least temp;setpoint");
+					g_bUseEventTrigger = true;
+					return false;
+				}
+
+				float temp = 0.0F;
+				float setpoint = 0.0F;
+				std::string hum, hum_status;
+				float fbarometer = 0.0F;
+				float AddjValue = 0.0F;
+				float AddjValue2 = 0.0F;
+				bool bSetpointUpdated = false;
+
+				// Query existing values and adjustment values
+				std::vector<std::vector<std::string>> result;
+				result = m_sql.safe_query("SELECT sValue, AddjValue, AddjValue2 FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit==%d) AND (Type==%d) AND (SubType==%d)",
+					HardwareID, DeviceID.c_str(), unit, devType, subType);
+				if (!result.empty())
+				{
+					std::vector<std::string> values;
+					StringSplit(result[0][0], ";", values);
+
+					if (values.size() >= 1)
+						temp = static_cast<float>(atof(values[0].c_str()));
+					if (values.size() >= 2)
+						setpoint = static_cast<float>(atof(values[1].c_str()));
+
+					if (subType == sTypeThermostat6TempHum || subType == sTypeThermostat6TempHumBaro)
+					{
+						if (values.size() >= 4)
+						{
+							hum = values[2];
+							hum_status = values[3];
+						}
+					}
+
+					if (subType == sTypeThermostat6TempBaro && values.size() >= 3)
+					{
+						fbarometer = static_cast<float>(atof(values[2].c_str()));
+					}
+					else if (subType == sTypeThermostat6TempHumBaro && values.size() >= 5)
+					{
+						fbarometer = static_cast<float>(atof(values[4].c_str()));
+					}
+
+					AddjValue = static_cast<float>(atof(result[0][1].c_str()));
+					AddjValue2 = static_cast<float>(atof(result[0][2].c_str()));
+				}
+
+				// Overwrite with provided non-empty values and apply adjustments
+				if (!strarray[0].empty())
+				{
+					temp = static_cast<float>(atof(strarray[0].c_str()));
+					temp += AddjValue;
+
+					// Calculate temperature trend
+					uint64_t tID = ((uint64_t)(HardwareID & 0x7FFFFFFF) << 32) | (devidx & 0x7FFFFFFF);
+					m_trend_calculator[tID].AddValueAndReturnTendency(static_cast<double>(temp), _tTrendCalculator::TAVERAGE_TEMP);
+				}
+				if (!strarray[1].empty())
+				{
+					setpoint = static_cast<float>(atof(strarray[1].c_str()));
+					bSetpointUpdated = true;
+				}
+
+				if (subType == sTypeThermostat6TempHum || subType == sTypeThermostat6TempHumBaro)
+				{
+					if (strarray.size() >= 4)
+					{
+						if (!strarray[2].empty())
+							hum = strarray[2];
+						if (!strarray[3].empty())
+							hum_status = strarray[3];
+					}
+					if (strarray.size() >= 5 && !strarray[4].empty())
+					{
+						fbarometer = static_cast<float>(atof(strarray[4].c_str()));
+						fbarometer += AddjValue2;
+					}
+				}
+				else if (subType == sTypeThermostat6TempBaro)
+				{
+					if (strarray.size() >= 3 && !strarray[2].empty())
+					{
+						fbarometer = static_cast<float>(atof(strarray[2].c_str()));
+						fbarometer += AddjValue2;
+					}
+				}
+
+				char szTmp[50];
+				sprintf(szTmp, "%.2f;%.2f", temp, setpoint);
+				sValue = szTmp;
+
+				if (subType == sTypeThermostat6TempHum || subType == sTypeThermostat6TempHumBaro)
+				{
+					sValue += ";" + hum + ";" + hum_status;
+				}
+
+				if (subType == sTypeThermostat6TempBaro || subType == sTypeThermostat6TempHumBaro)
+				{
+					sprintf(szTmp, ";%.1f", fbarometer);
+					sValue += szTmp;
+				}
+
+				// Call SetSetPoint to update the physical device if setpoint changed
+				if (bSetpointUpdated)
+				{
+					SetSetPoint(std::to_string(devidx), setpoint);
+				}
+				// Continue to update sensor values in database below
 			}
 		}
 

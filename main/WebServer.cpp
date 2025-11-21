@@ -2210,6 +2210,67 @@ namespace http
 							root["result"][ii]["HaveTimeout"] = bHaveTimeout;
 						}
 					}
+					else if (dType == pTypeThermostat6)
+					{
+						root["result"][ii]["HaveTimeout"] = bHaveTimeout;
+						root["result"][ii]["TypeImg"] = "override_mini";
+						std::vector<std::string> strarray;
+						StringSplit(sValue, ";", strarray);
+						if (strarray.size() >= 2)
+						{
+							double tempCelcius = atof(strarray[0].c_str());
+							double temp = ConvertTemperature(tempCelcius, tempsign);
+							double tempSetPointCelcius = atof(strarray[1].c_str());
+							double tempSetPoint = ConvertTemperature(tempSetPointCelcius, tempsign);
+							root["result"][ii]["Temp"] = temp;
+							root["result"][ii]["SetPoint"] = tempSetPoint;
+
+							_tTrendCalculator::_eTendencyType tstate = _tTrendCalculator::_eTendencyType::TENDENCY_UNKNOWN;
+							uint64_t tID = ((uint64_t)(hardwareID & 0x7FFFFFFF) << 32) | (devIdx & 0x7FFFFFFF);
+							if (m_mainworker.m_trend_calculator.find(tID) != m_mainworker.m_trend_calculator.end())
+							{
+								tstate = m_mainworker.m_trend_calculator[tID].m_state;
+							}
+							root["result"][ii]["trend"] = (int)tstate;
+
+							if (dSubType == sTypeThermostat6TempHum && strarray.size() >= 4)
+							{
+								int humidity = atoi(strarray[2].c_str());
+								root["result"][ii]["Humidity"] = humidity;
+								root["result"][ii]["HumidityStatus"] = RFX_Humidity_Status_Desc(atoi(strarray[3].c_str()));
+
+								// Calculate dew point
+								double dewpoint = ConvertTemperature(CalculateDewPoint(temp, humidity), tempsign);
+								root["result"][ii]["DewPoint"] = dewpoint;
+								sprintf(szData, "%.1f %c, (%.1f %c) / %d%%", temp, tempsign, tempSetPoint, tempsign, humidity);
+							}
+							else if (dSubType == sTypeThermostat6TempBaro && strarray.size() >= 3)
+							{
+								float barometer = static_cast<float>(atof(strarray[2].c_str()));
+								root["result"][ii]["Barometer"] = barometer;
+								sprintf(szData, "%.1f %c, (%.1f %c), %.1f hPa", temp, tempsign, tempSetPoint, tempsign, barometer);
+							}
+							else if (dSubType == sTypeThermostat6TempHumBaro && strarray.size() >= 5)
+							{
+								int humidity = atoi(strarray[2].c_str());
+								root["result"][ii]["Humidity"] = humidity;
+								root["result"][ii]["HumidityStatus"] = RFX_Humidity_Status_Desc(atoi(strarray[3].c_str()));
+
+								// Calculate dew point
+								double dewpoint = ConvertTemperature(CalculateDewPoint(temp, humidity), tempsign);
+								root["result"][ii]["DewPoint"] = dewpoint;
+
+								float barometer = static_cast<float>(atof(strarray[4].c_str()));
+								root["result"][ii]["Barometer"] = barometer;
+								sprintf(szData, "%.1f %c, (%.1f %c), %d%%, %.1f hPa", temp, tempsign, tempSetPoint, tempsign, humidity, barometer);
+							}
+							else
+							{
+								sprintf(szData, "%.1f %c, (%.1f %c)", temp, tempsign, tempSetPoint, tempsign);
+							}
+							root["result"][ii]["Data"] = szData;
+						}
+					}
 					else if ((dType == pTypeTEMP) || (dType == pTypeRego6XXTemp))
 					{
 						double tvalue = ConvertTemperature(atof(sValue.c_str()), tempsign);

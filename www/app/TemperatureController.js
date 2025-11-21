@@ -49,7 +49,7 @@ define(['app', 'livesocket'], function (app) {
 			$("#dialog-editsetpoint #devicedescription").val(unescape(description));
 			$("#dialog-editsetpoint #setpoint").val(setpoint);
 			if (mode.indexOf("Override") == -1)
-				$(":button:contains('Cancel Override')").attr("disabled", "d‌​isabled").addClass('ui-state-disabled');
+				$(":button:contains('Cancel Override')").attr("disabled", "disabled").addClass('ui-state-disabled');
 			else
 				$(":button:contains('Cancel Override')").removeAttr("disabled").removeClass('ui-state-disabled');
 			$("#dialog-editsetpoint #until").datetimepicker({
@@ -565,7 +565,7 @@ define(['app', 'livesocket'], function (app) {
 						return typeof item.Temp != 'undefined';
 					};
 					ctrl.displaySetPoint = function () {
-						return (item.SubType == 'Zone' || item.SubType == 'Hot Water') && typeof item.SetPoint != 'undefined';
+					return (item.SubType == 'Zone' || item.SubType == 'Hot Water' || item.SubType == 'Temp/Setpoint' || item.SubType == 'Temp/Hum/Setpoint' || item.SubType == 'Temp/Baro/Setpoint' || item.SubType == 'Temp/Hum/Baro/Setpoint') && typeof item.SetPoint != 'undefined';
 					};
 					ctrl.isSetPointOn = function () {
 						return item.SetPoint != 325.1;
@@ -671,6 +671,13 @@ define(['app', 'livesocket'], function (app) {
 
 					ctrl.EditSetPoint = function (fn) {
 						return EditSetPoint(item.idx, escape(item.Name), escape(item.Description), item.SetPoint, item.Status, item.Until, fn);
+					};
+					
+					ctrl.ShowSetpointPopup = function (event) {
+						var step = item.step || 0.5;
+						var min = item.min || -200;
+						var max = item.max || 200;
+						ShowSetpointPopup(event, item.idx, item.Protected, item.SetPoint, false, step, min, max);
 					};
 
 					ctrl.EditState = function (fn) {

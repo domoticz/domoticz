@@ -316,7 +316,7 @@ namespace http
 								|| dType == pTypeRFXSensor && dSubType == sTypeRFXSensorTemp
 								|| dType == pTypeGeneral && dSubType == sTypeSystemTemp
 								|| dType == pTypeGeneral && dSubType == sTypeBaro
-								|| dType == pTypeEvohomeZone
+								|| dType == pTypeEvohomeZone || dType == pTypeThermostat6
 								|| dType == pTypeEvohomeWater
 								)
 							{
@@ -328,11 +328,11 @@ namespace http
 								double tvalue = ConvertTemperature(atof(sd[1].c_str()), tempsign);
 								root["result"][ii]["ch"] = tvalue;
 							}
-							if ((dType == pTypeHUM) || (dType == pTypeTEMP_HUM) || (dType == pTypeTEMP_HUM_BARO))
+							if ((dType == pTypeHUM) || (dType == pTypeTEMP_HUM) || (dType == pTypeTEMP_HUM_BARO) || ((dType == pTypeThermostat6) && ((dSubType == sTypeThermostat6TempHum) || (dSubType == sTypeThermostat6TempHumBaro))))
 							{
 								root["result"][ii]["hu"] = sd[2];
 							}
-							if ((dType == pTypeTEMP_HUM_BARO) || (dType == pTypeTEMP_BARO) || ((dType == pTypeGeneral) && (dSubType == sTypeBaro)))
+							if ((dType == pTypeTEMP_HUM_BARO) || (dType == pTypeTEMP_BARO) || ((dType == pTypeGeneral) && (dSubType == sTypeBaro)) || ((dType == pTypeThermostat6) && ((dSubType == sTypeThermostat6TempBaro) || (dSubType == sTypeThermostat6TempHumBaro))))
 							{
 								if (dType == pTypeTEMP_HUM_BARO)
 								{
@@ -354,8 +354,13 @@ namespace http
 									sprintf(szTmp, "%.1f", atof(sd[3].c_str()) / 10.0F);
 									root["result"][ii]["ba"] = szTmp;
 								}
+								else if ((dType == pTypeThermostat6) && ((dSubType == sTypeThermostat6TempBaro) || (dSubType == sTypeThermostat6TempHumBaro)))
+								{
+									sprintf(szTmp, "%.1f", atof(sd[3].c_str()) / 10.0F);
+									root["result"][ii]["ba"] = szTmp;
+								}
 							}
-							if ((dType == pTypeEvohomeZone) || (dType == pTypeEvohomeWater))
+							if ((dType == pTypeEvohomeZone) || (dType == pTypeEvohomeWater) || (dType == pTypeThermostat6))
 							{
 								double se = ConvertTemperature(atof(sd[5].c_str()), tempsign);
 								root["result"][ii]["se"] = se;
@@ -2128,7 +2133,7 @@ namespace http
 								|| ((dType == pTypeRFXSensor) && (dSubType == sTypeRFXSensorTemp))
 								|| ((dType == pTypeUV) && (dSubType == sTypeUV3))
 								|| ((dType == pTypeGeneral) && (dSubType == sTypeSystemTemp))
-								|| (dType == pTypeEvohomeZone)
+								|| (dType == pTypeEvohomeZone) || (dType == pTypeThermostat6)
 								|| (dType == pTypeEvohomeWater)
 								|| ((dType == pTypeGeneral) && (dSubType == sTypeBaro))
 								)
@@ -2182,7 +2187,7 @@ namespace http
 									root["result"][ii]["ba"] = szTmp;
 								}
 							}
-							if ((dType == pTypeEvohomeZone) || (dType == pTypeEvohomeWater))
+							if ((dType == pTypeEvohomeZone) || (dType == pTypeEvohomeWater) || (dType == pTypeThermostat6))
 							{
 								double sm = ConvertTemperature(atof(sd[8].c_str()), tempsign);
 								double sx = ConvertTemperature(atof(sd[9].c_str()), tempsign);
@@ -2244,7 +2249,7 @@ namespace http
 							|| (dType == pTypeRadiator1)
 							|| ((dType == pTypeUV) && (dSubType == sTypeUV3))
 							|| ((dType == pTypeWIND) && (dSubType == sTypeWIND4))
-							|| (dType == pTypeEvohomeZone)
+							|| (dType == pTypeEvohomeZone) || (dType == pTypeThermostat6)
 							|| (dType == pTypeEvohomeWater)
 							)
 						{
@@ -2289,7 +2294,7 @@ namespace http
 								root["result"][ii]["ba"] = szTmp;
 							}
 						}
-						if ((dType == pTypeEvohomeZone) || (dType == pTypeEvohomeWater))
+						if ((dType == pTypeEvohomeZone) || (dType == pTypeEvohomeWater) || (dType == pTypeThermostat6))
 						{
 							double sx = ConvertTemperature(atof(sd[8].c_str()), tempsign);
 							double sm = ConvertTemperature(atof(sd[7].c_str()), tempsign);
@@ -2351,7 +2356,7 @@ namespace http
 								|| ((dType == pTypeRFXSensor) && (dSubType == sTypeRFXSensorTemp))
 								|| ((dType == pTypeUV) && (dSubType == sTypeUV3))
 								|| ((dType == pTypeGeneral) && (dSubType == sTypeSystemTemp))
-								|| (dType == pTypeEvohomeZone)
+								|| (dType == pTypeEvohomeZone) || (dType == pTypeThermostat6)
 								|| (dType == pTypeEvohomeWater)
 								)
 							{
@@ -2404,7 +2409,7 @@ namespace http
 									root["resultprev"][iPrev]["ba"] = szTmp;
 								}
 							}
-							if ((dType == pTypeEvohomeZone) || (dType == pTypeEvohomeWater))
+							if ((dType == pTypeEvohomeZone) || (dType == pTypeEvohomeWater) || (dType == pTypeThermostat6))
 							{
 								double sx = ConvertTemperature(atof(sd[8].c_str()), tempsign);
 								double sm = ConvertTemperature(atof(sd[7].c_str()), tempsign);
@@ -3976,11 +3981,11 @@ namespace http
 						((dType == pTypeRego6XXTemp) || (dType == pTypeTEMP) || (dType == pTypeTEMP_HUM) || (dType == pTypeTEMP_HUM_BARO) || (dType == pTypeTEMP_BARO) ||
 							(dType == pTypeWIND) || (dType == pTypeThermostat1) || (dType == pTypeRadiator1) || ((dType == pTypeUV) && (dSubType == sTypeUV3)) ||
 							((dType == pTypeWIND) && (dSubType == sTypeWIND4)) || ((dType == pTypeRFXSensor) && (dSubType == sTypeRFXSensorTemp)) ||
-							((dType == pTypeSetpoint) && (dSubType == sTypeSetpoint)) || (dType == pTypeEvohomeZone) || (dType == pTypeEvohomeWater)))
+							((dType == pTypeSetpoint) && (dSubType == sTypeSetpoint)) || (dType == pTypeEvohomeZone) || (dType == pTypeThermostat6) || (dType == pTypeEvohomeWater)))
 					{
 						sendTemp = true;
 					}
-					if ((sgraphSet == "true") && ((dType == pTypeEvohomeZone) || (dType == pTypeEvohomeWater))) // FIXME cheat for water setpoint is just on or off
+					if ((sgraphSet == "true") && ((dType == pTypeEvohomeZone) || (dType == pTypeEvohomeWater) || (dType == pTypeThermostat6))) // FIXME cheat for water setpoint is just on or off
 					{
 						sendSet = true;
 					}
@@ -3988,11 +3993,11 @@ namespace http
 					{
 						sendChill = true;
 					}
-					if ((sgraphHum == "true") && ((dType == pTypeHUM) || (dType == pTypeTEMP_HUM) || (dType == pTypeTEMP_HUM_BARO)))
+					if ((sgraphHum == "true") && ((dType == pTypeHUM) || (dType == pTypeTEMP_HUM) || (dType == pTypeTEMP_HUM_BARO) || ((dType == pTypeThermostat6) && ((dSubType == sTypeThermostat6TempHum) || (dSubType == sTypeThermostat6TempHumBaro)))))
 					{
 						sendHum = true;
 					}
-					if ((sgraphBaro == "true") && ((dType == pTypeTEMP_HUM_BARO) || (dType == pTypeTEMP_BARO) || ((dType == pTypeGeneral) && (dSubType == sTypeBaro))))
+					if ((sgraphBaro == "true") && ((dType == pTypeTEMP_HUM_BARO) || (dType == pTypeTEMP_BARO) || ((dType == pTypeGeneral) && (dSubType == sTypeBaro)) || ((dType == pTypeThermostat6) && ((dSubType == sTypeThermostat6TempBaro) || (dSubType == sTypeThermostat6TempHumBaro)))))
 					{
 						sendBaro = true;
 					}
@@ -4051,6 +4056,11 @@ namespace http
 										root["result"][ii]["ba"] = szTmp;
 									}
 									else if ((dType == pTypeGeneral) && (dSubType == sTypeBaro))
+									{
+										sprintf(szTmp, "%.1f", atof(sd[3].c_str()) / 10.0F);
+										root["result"][ii]["ba"] = szTmp;
+									}
+									else if ((dType == pTypeThermostat6) && ((dSubType == sTypeThermostat6TempBaro) || (dSubType == sTypeThermostat6TempHumBaro)))
 									{
 										sprintf(szTmp, "%.1f", atof(sd[3].c_str()) / 10.0F);
 										root["result"][ii]["ba"] = szTmp;

@@ -4758,6 +4758,29 @@ uint64_t CSQLHelper::CreateDevice(const int HardwareID, const int SensorType, co
 		break;
 	}
 
+
+	case pTypeThermostat6:
+	{
+		unsigned char ID1 = (unsigned char)((nid & 0xFF000000) >> 24);
+		unsigned char ID2 = (unsigned char)((nid & 0x00FF0000) >> 16);
+		unsigned char ID3 = (unsigned char)((nid & 0x0000FF00) >> 8);
+		unsigned char ID4 = (unsigned char)((nid & 0x000000FF));
+		sprintf(ID, "%X%02X%02X%02X", ID1, ID2, ID3, ID4);
+
+		std::string sValue;
+		if (SensorSubType == sTypeThermostat6Temp)
+			sValue = "20.0;20.0";
+		else if (SensorSubType == sTypeThermostat6TempHum)
+			sValue = "20.0;20.0;50;1";
+		else if (SensorSubType == sTypeThermostat6TempBaro)
+			sValue = "20.0;20.0;1013";
+		else if (SensorSubType == sTypeThermostat6TempHumBaro)
+			sValue = "20.0;20.0;50;1;1013";
+
+		DeviceRowIdx = UpdateValue(HardwareID, 0, ID, 1, SensorType, SensorSubType, 12, 255, 0, sValue.c_str(), devname, true, userName.c_str());
+		break;
+	}
+
 	case pTypeGeneral:
 	{
 		switch (SensorSubType)
@@ -6220,7 +6243,7 @@ void CSQLHelper::UpdateTemperatureLog()
 	GetPreferencesVar("SensorTimeout", SensorTimeOut);
 
 	std::vector<std::vector<std::string> > result;
-	result = safe_query("SELECT ID,Type,SubType,nValue,sValue,LastUpdate FROM DeviceStatus WHERE (Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR (Type=%d AND SubType=%d) OR (Type=%d AND SubType=%d) OR (Type=%d AND SubType=%d))",
+	result = safe_query("SELECT ID,Type,SubType,nValue,sValue,LastUpdate FROM DeviceStatus WHERE (Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR (Type=%d AND SubType=%d) OR (Type=%d AND SubType=%d) OR (Type=%d AND SubType=%d))",
 		pTypeTEMP,
 		pTypeHUM,
 		pTypeTEMP_HUM,
@@ -6234,6 +6257,7 @@ void CSQLHelper::UpdateTemperatureLog()
 		pTypeEvohomeZone,
 		pTypeEvohomeWater,
 		pTypeRadiator1,
+		pTypeThermostat6,
 		pTypeGeneral, sTypeSystemTemp,
 		pTypeSetpoint, sTypeSetpoint,
 		pTypeGeneral, sTypeBaro
@@ -6307,6 +6331,28 @@ void CSQLHelper::UpdateTemperatureLog()
 				{
 					temp = static_cast<float>(atof(splitresults[0].c_str()));
 					setpoint = static_cast<float>(atof(splitresults[1].c_str()));
+				}
+				break;
+			case pTypeThermostat6:
+				if (splitresults.size() >= 2)
+				{
+					temp = static_cast<float>(atof(splitresults[0].c_str()));
+					setpoint = static_cast<float>(atof(splitresults[1].c_str()));
+					if (dSubType == sTypeThermostat6TempHum && splitresults.size() >= 3)
+					{
+						humidity = ground(atof(splitresults[2].c_str()));
+						dewpoint = (float)CalculateDewPoint(temp, humidity);
+					}
+					else if (dSubType == sTypeThermostat6TempBaro && splitresults.size() >= 3)
+					{
+						barometer = int(atof(splitresults[2].c_str()) * 10.0F);
+					}
+					else if (dSubType == sTypeThermostat6TempHumBaro && splitresults.size() >= 5)
+					{
+						humidity = ground(atof(splitresults[2].c_str()));
+						dewpoint = (float)CalculateDewPoint(temp, humidity);
+						barometer = int(atof(splitresults[4].c_str()) * 10.0F);
+					}
 				}
 				break;
 			case pTypeHUM:

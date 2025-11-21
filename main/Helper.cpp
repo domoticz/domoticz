@@ -1132,6 +1132,7 @@ bool IsTemp(const int dType, const int dSubType)
 		|| (dType == pTypeThermostat1)
 		|| ((dType == pTypeRFXSensor) && (dSubType == sTypeRFXSensorTemp))
 		|| (dType == pTypeRego6XXTemp)
+		|| (dType == pTypeThermostat6)
 		);
 }
 

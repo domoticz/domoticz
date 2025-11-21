@@ -478,6 +478,7 @@ const char* RFX_Type_Desc(const unsigned char i, const unsigned char snum)
 		{ pTypeThermostat2, "Thermostat 2", "temperature" },
 		{ pTypeThermostat3, "Thermostat 3", "temperature" },
 		{ pTypeThermostat4, "Thermostat 4", "temperature" },
+		{ pTypeThermostat6, "Thermostat 6", "temperature" },
 		{ pTypeRadiator1, "Radiator 1", "temperature" },
 		{ pTypeTEMP, "Temp", "temperature" },
 		{ pTypeHUM, "Humidity", "temperature" },
@@ -710,6 +711,11 @@ const char* RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 		{ pTypeThermostat4, sTypeMCZ1, "MCZ 1 fan model" },
 		{ pTypeThermostat4, sTypeMCZ2, "MCZ 2 fan model" },
 		{ pTypeThermostat4, sTypeMCZ3, "MCZ 3 fan model" },
+
+		{ pTypeThermostat6, sTypeThermostat6Temp, "Temp/Setpoint" },
+		{ pTypeThermostat6, sTypeThermostat6TempHum, "Temp/Hum/Setpoint" },
+		{ pTypeThermostat6, sTypeThermostat6TempBaro, "Temp/Baro/Setpoint" },
+		{ pTypeThermostat6, sTypeThermostat6TempHumBaro, "Temp/Hum/Baro/Setpoint" },
 
 		{ pTypeRadiator1, sTypeSmartwares, "Smartwares" },
 		{ pTypeRadiator1, sTypeSmartwaresSwitchRadiator, "Smartwares Mode" },
