@@ -891,6 +891,36 @@ void CWebServer::Alexa_HandleDiscovery(WebEmSession& session, const request& req
 
 			root["event"]["payload"]["endpoints"].append(endpoint);
 		}
+		// Handle pTypeThermostat6 (combined temperature/setpoint devices)
+		else if (device_type == pTypeThermostat6)
+		{
+			Json::Value endpoint = CreateEndpoint("thermostat6_" + device_idx, device_name, "Thermostat", "THERMOSTAT");
+			endpoint["capabilities"] = Json::Value(Json::arrayValue);
+
+			// Add ThermostatController
+			Json::Value thermo_capability = CreateCapabilityWithProperties("Alexa.ThermostatController", "targetSetpoint", false, true, !bControlPermitted);
+			endpoint["capabilities"].append(thermo_capability);
+
+			// Add TemperatureSensor
+			endpoint["capabilities"].append(CreateCapabilityWithProperties("Alexa.TemperatureSensor", "temperature", false, true));
+
+			// Add RangeController for humidity (TempHum and TempHumBaro subtypes)
+			if (device_subtype == sTypeThermostat6TempHum || device_subtype == sTypeThermostat6TempHumBaro)
+			{
+				Json::Value humidity_capability = CreateCapabilityWithProperties("Alexa.RangeController", "rangeValue", false, true);
+				humidity_capability["instance"] = "Humidity.Humidity";
+				endpoint["capabilities"].append(humidity_capability);
+			}
+
+			endpoint["capabilities"].append(CreateCapability("Alexa.EndpointHealth"));
+			endpoint["capabilities"].append(CreateCapability("Alexa"));
+
+			endpoint["cookie"]["WhatAmI"] = "thermostat6";
+			endpoint["cookie"]["deviceName"] = device_name;
+			endpoint["cookie"]["subType"] = device_subtype;
+
+			root["event"]["payload"]["endpoints"].append(endpoint);
+		}
 		// Handle Weight sensors
 		else if (device_type == pTypeWEIGHT)
 		{
@@ -1651,6 +1681,18 @@ static void Alexa_HandleControl_ThermostatController(WebEmSession& session, cons
 			temp_value["scale"] = "CELSIUS";
 			root["context"]["properties"].append(CreateProperty("Alexa.ThermostatController", "targetSetpoint", temp_value));
 		}
+		else if (what_am_i == "thermostat6")
+		{
+			// For thermostat6, use SetSetPoint on the main device
+			std::string idx_str = std::to_string(device_idx);
+			m_mainworker.SetSetPoint(idx_str, static_cast<float>(target_temp));
+
+			// Report updated state
+			Json::Value temp_value;
+			temp_value["value"] = target_temp;
+			temp_value["scale"] = "CELSIUS";
+			root["context"]["properties"].append(CreateProperty("Alexa.ThermostatController", "targetSetpoint", temp_value));
+		}
 		else
 		{
 			// Use regular SetSetPoint for multi-device thermostats
@@ -2085,6 +2127,44 @@ static void Alexa_HandleControl_ReportState(WebEmSession& session, const Json::V
 			setpoint_value["value"] = setpoint;
 			setpoint_value["scale"] = "CELSIUS";
 			root["context"]["properties"].append(CreateProperty("Alexa.ThermostatController", "targetSetpoint", setpoint_value));
+		}
+
+		root["context"]["properties"].append(CreateEndpointHealthProperty());
+		return;
+	}
+
+	// Handle pTypeThermostat6 (combined temperature/setpoint devices)
+	if (dType == pTypeThermostat6)
+	{
+		root["event"]["header"]["name"] = "StateReport";
+
+		// Parse data from sValue based on subtype
+		std::string sValue = result[0][4];
+		std::vector<std::string> values;
+		StringSplit(sValue, ";", values);
+
+		if (values.size() >= 2)
+		{
+			// Report current temperature
+			double temp = atof(values[0].c_str());
+			Json::Value temp_value;
+			temp_value["value"] = temp;
+			temp_value["scale"] = "CELSIUS";
+			root["context"]["properties"].append(CreateProperty("Alexa.TemperatureSensor", "temperature", temp_value));
+
+			// Report target setpoint
+			double setpoint = atof(values[1].c_str());
+			Json::Value setpoint_value;
+			setpoint_value["value"] = setpoint;
+			setpoint_value["scale"] = "CELSIUS";
+			root["context"]["properties"].append(CreateProperty("Alexa.ThermostatController", "targetSetpoint", setpoint_value));
+
+			// Report humidity for TempHum and TempHumBaro subtypes
+			if ((dSubType == sTypeThermostat6TempHum || dSubType == sTypeThermostat6TempHumBaro) && values.size() >= 3)
+			{
+				int humidity = atoi(values[2].c_str());
+				root["context"]["properties"].append(CreateProperty("Alexa.RangeController", "rangeValue", humidity, "Humidity.Humidity"));
+			}
 		}
 
 		root["context"]["properties"].append(CreateEndpointHealthProperty());
