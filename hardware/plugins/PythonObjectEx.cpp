@@ -759,6 +759,25 @@ namespace Plugins {
 			int iSubType = self->SubType;
 			int iSwitchType = self->SwitchType;
 			PyBorrowedRef pOptionsDict = self->Options;
+			std::map<std::string, std::string> mpOptions;
+			std::string sOptionValue;
+
+			if (pOptionsDict && PyBorrowedRef(pOptionsDict).IsDict())
+			{
+				PyBorrowedRef	pKeyDict, pValueDict;
+				Py_ssize_t pos = 0;
+				while (PyDict_Next(pOptionsDict, &pos, &pKeyDict, &pValueDict))
+				{
+					std::string sOptionName = pKeyDict;
+					std::string sOptionValue = pValueDict;
+					mpOptions.insert(std::pair<std::string, std::string>(sOptionName, sOptionValue));
+				}
+				PyBorrowedRef	pValue = PyDict_GetItemString(pOptionsDict, "Custom");
+				if (pValue)
+				{
+					sOptionValue = PyUnicode_AsUTF8(pValue);
+				}
+			}
 
 			// TypeName change - actually derives new Type, SubType and SwitchType values
 			if (TypeName)
@@ -771,10 +790,10 @@ namespace Plugins {
 				sValue = stdsValue;
 			}
 
-			if (bUpdateProperties) {
-				// Grab state in db
-				CUnitEx_refresh(self);
+			// Grab state in db
+			CUnitEx_refresh(self);
 
+			if (bUpdateProperties) {
 				// Then compare to object saved states and change only if different
 				// Name change
 				if (sName.compare(PyBorrowedRef(self->Name)) != 0)
@@ -863,28 +882,12 @@ namespace Plugins {
 				{
 					if (self->SubType != sTypeCustom)
 					{
-						PyBorrowedRef	pKeyDict, pValueDict;
-						Py_ssize_t pos = 0;
-						std::map<std::string, std::string> mpOptions;
-						while (PyDict_Next(pOptionsDict, &pos, &pKeyDict, &pValueDict))
-						{
-							std::string sOptionName = pKeyDict;
-							std::string sOptionValue = pValueDict;
-							mpOptions.insert(std::pair<std::string, std::string>(sOptionName, sOptionValue));
-						}
 						Py_BEGIN_ALLOW_THREADS
 						m_sql.SetDeviceOptions(self->ID, mpOptions);
 						Py_END_ALLOW_THREADS
 					}
 					else
 					{
-						std::string sOptionValue;
-						PyBorrowedRef	pValue = PyDict_GetItemString(pOptionsDict, "Custom");
-						if (pValue)
-						{
-							sOptionValue = PyUnicode_AsUTF8(pValue);
-						}
-
 						std::string sLastUpdate = TimeToString(nullptr, TF_DateTime);
 						Py_BEGIN_ALLOW_THREADS
 						m_sql.UpdateDeviceValue("Options", iUsed, sID);
