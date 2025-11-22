@@ -502,6 +502,25 @@ void CWebServer::Alexa_HandleDiscovery(WebEmSession& session, const request& req
 				}
 			}
 		}
+		// Look for Thermostat6 devices and link their mode selectors
+		else if (device_type == pTypeThermostat6)
+		{
+			// Look for Mode selector with " Mode" suffix
+			std::string mode_name = device_name + " Mode";
+			for (const auto& mode_row : devices_result)
+			{
+				std::string mode_idx = mode_row[0];
+				std::string mode_device_name = mode_row[1];
+				int mode_switch_type = atoi(mode_row[4].c_str());
+
+				if (mode_device_name == mode_name && mode_switch_type == STYPE_Selector)
+				{
+					thermostat_components[device_idx]["mode"] = mode_idx;
+					linked_devices.insert(mode_idx); // Hide mode selector
+					break;
+				}
+			}
+		}
 	}
 
 	for (const auto& device_row : devices_result)
@@ -897,8 +916,30 @@ void CWebServer::Alexa_HandleDiscovery(WebEmSession& session, const request& req
 			Json::Value endpoint = CreateEndpoint("thermostat6_" + device_idx, device_name, "Thermostat", "THERMOSTAT");
 			endpoint["capabilities"] = Json::Value(Json::arrayValue);
 
+			// Check if this Thermostat6 has a linked mode selector
+			std::string mode_idx_str;
+			if (thermostat_components.find(device_idx) != thermostat_components.end())
+			{
+				auto& components = thermostat_components[device_idx];
+				if (components.find("mode") != components.end())
+				{
+					mode_idx_str = components["mode"];
+				}
+			}
+
 			// Add ThermostatController
 			Json::Value thermo_capability = CreateCapabilityWithProperties("Alexa.ThermostatController", "targetSetpoint", false, true, !bControlPermitted);
+			if (!mode_idx_str.empty())
+			{
+				// Add thermostatMode to supported properties
+				thermo_capability["properties"]["supported"].append(Json::Value());
+				thermo_capability["properties"]["supported"][1]["name"] = "thermostatMode";
+
+				thermo_capability["configuration"]["supportsScheduling"] = false;
+				thermo_capability["configuration"]["supportedModes"] = Json::Value(Json::arrayValue);
+				thermo_capability["configuration"]["supportedModes"].append("HEAT");
+				thermo_capability["configuration"]["supportedModes"].append("OFF");
+			}
 			endpoint["capabilities"].append(thermo_capability);
 
 			// Add TemperatureSensor
@@ -918,6 +959,10 @@ void CWebServer::Alexa_HandleDiscovery(WebEmSession& session, const request& req
 			endpoint["cookie"]["WhatAmI"] = "thermostat6";
 			endpoint["cookie"]["deviceName"] = device_name;
 			endpoint["cookie"]["subType"] = device_subtype;
+			if (!mode_idx_str.empty())
+			{
+				endpoint["cookie"]["modeIdx"] = mode_idx_str;
+			}
 
 			root["event"]["payload"]["endpoints"].append(endpoint);
 		}
@@ -1615,8 +1660,10 @@ static void Alexa_HandleControl_ColorTemperatureController(WebEmSession& session
 	CreateErrorResponse(root, request_json, "INVALID_DIRECTIVE", "ColorTemperatureController only supports SetColorTemperature/IncreaseColorTemperature/DecreaseColorTemperature");
 }
 
-// Helper to report thermostat state (setpoint, mode, optional humidity)
-static void ReportThermostatState(Json::Value& root, const Json::Value& cookie, uint64_t setpoint_idx, bool is_evohome_zone, const std::string& setpoint_sValue = "")
+// Helper to report thermostat state (setpoint and mode)
+// Supports overrides for setpoint and mode, for when they're being set and other cases
+// where the caller knows the value already and the database query can be skipped
+static void ReportThermostatState(Json::Value& root, const Json::Value& cookie, uint64_t setpoint_idx, bool is_evohome_zone, const std::string& setpoint_sValue = "", const std::string& mode_sValue = "")
 {
 	// Query and report setpoint
 	std::string sValue = setpoint_sValue;
@@ -1642,17 +1689,21 @@ static void ReportThermostatState(Json::Value& root, const Json::Value& cookie, 
 	// Query and report mode (not for Evohome zones)
 	if (!is_evohome_zone)
 	{
-		std::string mode = "HEAT"; // Default
-		std::string mode_idx_str = cookie.get("modeIdx", "").asString();
-		if (!mode_idx_str.empty())
+		std::string mode = mode_sValue;
+		if (mode.empty())
 		{
-			uint64_t mode_idx = std::stoull(mode_idx_str);
-			std::vector<std::vector<std::string>> mode_result;
-			mode_result = m_sql.safe_query("SELECT nValue FROM DeviceStatus WHERE (ID = %llu)", mode_idx);
-			if (!mode_result.empty())
+			mode = "HEAT"; // Default
+			std::string mode_idx_str = cookie.get("modeIdx", "").asString();
+			if (!mode_idx_str.empty())
 			{
-				int level = atoi(mode_result[0][0].c_str());
-				mode = (level == 0) ? "OFF" : "HEAT";
+				uint64_t mode_idx = std::stoull(mode_idx_str);
+				std::vector<std::vector<std::string>> mode_result;
+				mode_result = m_sql.safe_query("SELECT sValue FROM DeviceStatus WHERE (ID = %llu)", mode_idx);
+				if (!mode_result.empty())
+				{
+					int level = atoi(mode_result[0][0].c_str());
+					mode = (level == 0) ? "OFF" : "HEAT";
+				}
 			}
 		}
 		root["context"]["properties"].append(CreateProperty("Alexa.ThermostatController", "thermostatMode", mode));
@@ -1687,11 +1738,8 @@ static void Alexa_HandleControl_ThermostatController(WebEmSession& session, cons
 			std::string idx_str = std::to_string(device_idx);
 			m_mainworker.SetSetPoint(idx_str, static_cast<float>(target_temp));
 
-			// Report updated state
-			Json::Value temp_value;
-			temp_value["value"] = target_temp;
-			temp_value["scale"] = "CELSIUS";
-			root["context"]["properties"].append(CreateProperty("Alexa.ThermostatController", "targetSetpoint", temp_value));
+			// Report updated state using common function
+			ReportThermostatState(root, cookie, 0, false, std::to_string(target_temp));
 		}
 		else
 		{
@@ -1785,12 +1833,19 @@ static void Alexa_HandleControl_ThermostatController(WebEmSession& session, cons
 			return;
 		}
 
-		// Multi-device thermostat mode control
+		// Check for mode control support
 		std::string mode_idx_str = cookie.get("modeIdx", "").asString();
 
 		if (mode_idx_str.empty())
 		{
 			CreateErrorResponse(root, request_json, "NOT_SUPPORTED_IN_CURRENT_MODE", "Thermostat does not have mode control");
+			return;
+		}
+
+		// Validate mode is supported (only HEAT and OFF)
+		if (mode != "HEAT" && mode != "OFF")
+		{
+			CreateErrorResponse(root, request_json, "INVALID_VALUE", "Unsupported thermostat mode. Supported modes: HEAT, OFF");
 			return;
 		}
 
@@ -1811,9 +1866,28 @@ static void Alexa_HandleControl_ThermostatController(WebEmSession& session, cons
 		}
 
 		// Report updated state
-		std::string setpoint_idx_str = cookie.get("setpointIdx", "").asString();
-		uint64_t setpoint_idx = std::stoull(setpoint_idx_str);
-		ReportThermostatState(root, cookie, setpoint_idx, false);
+		if (what_am_i == "thermostat6")
+		{
+			// For thermostat6, query the device itself to get setpoint
+			std::vector<std::vector<std::string>> result;
+			result = m_sql.safe_query("SELECT sValue FROM DeviceStatus WHERE (ID = %llu)", device_idx);
+			if (!result.empty())
+			{
+				std::vector<std::string> values;
+				StringSplit(result[0][0], ";", values);
+				if (values.size() >= 2)
+				{
+					ReportThermostatState(root, cookie, 0, false, values[1], mode);
+				}
+			}
+		}
+		else
+		{
+			// For multi-device thermostats
+			std::string setpoint_idx_str = cookie.get("setpointIdx", "").asString();
+			uint64_t setpoint_idx = std::stoull(setpoint_idx_str);
+			ReportThermostatState(root, cookie, setpoint_idx, false, "", mode);
+		}
 
 		root["context"]["properties"].append(CreateEndpointHealthProperty());
 		return;
@@ -2152,12 +2226,8 @@ static void Alexa_HandleControl_ReportState(WebEmSession& session, const Json::V
 			temp_value["scale"] = "CELSIUS";
 			root["context"]["properties"].append(CreateProperty("Alexa.TemperatureSensor", "temperature", temp_value));
 
-			// Report target setpoint
-			double setpoint = atof(values[1].c_str());
-			Json::Value setpoint_value;
-			setpoint_value["value"] = setpoint;
-			setpoint_value["scale"] = "CELSIUS";
-			root["context"]["properties"].append(CreateProperty("Alexa.ThermostatController", "targetSetpoint", setpoint_value));
+			// Report target setpoint and mode using common function
+			ReportThermostatState(root, cookie, 0, false, values[1]);
 
 			// Report humidity for TempHum and TempHumBaro subtypes
 			if ((dSubType == sTypeThermostat6TempHum || dSubType == sTypeThermostat6TempHumBaro) && values.size() >= 3)
