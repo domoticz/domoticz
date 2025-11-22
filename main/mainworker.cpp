@@ -13010,6 +13010,7 @@ bool MainWorker::SetSetPointInt(const std::vector<std::string>& sd, const float 
 		return false;
 
 	bool ret = true;
+	bool bWriteToHardware = false;
 
 	unsigned long ID;
 	std::stringstream s_strid;
@@ -13025,13 +13026,7 @@ bool MainWorker::SetSetPointInt(const std::vector<std::string>& sd, const float 
 	uint8_t dSubType = atoi(sd[4].c_str());
 	//_eSwitchType switchtype = (_eSwitchType)atoi(sd[5].c_str());
 
-	_tSetpoint tmeter;
-	tmeter.subtype = sTypeSetpoint;
-	tmeter.id1 = ID1;
-	tmeter.id2 = ID2;
-	tmeter.id3 = ID3;
-	tmeter.id4 = ID4;
-	tmeter.dunit = Unit;
+	float temp_celsius = (m_sql.m_tempsign[0] != 'F') ? TempValue : static_cast<float>(ConvertToCelsius(TempValue));
 
 	if ((dType == pTypeSetpoint) && (dSubType == sTypeSetpoint))
 	{
@@ -13040,23 +13035,18 @@ bool MainWorker::SetSetPointInt(const std::vector<std::string>& sd, const float 
 		std::string value_unit = options["ValueUnit"];
 
 		if (
-			(value_unit.empty())
-			|| (value_unit == "�C")
-			|| (value_unit == "�F")
-			|| (value_unit == "C")
-			|| (value_unit == "F")
-			|| (value_unit.find_last_of("°F") != std::string::npos)
-			|| (value_unit.find_last_of("°C") != std::string::npos)
+			!(value_unit.empty())
+			&& (value_unit != "�C")
+			&& (value_unit != "�F")
+			&& (value_unit != "C")
+			&& (value_unit != "F")
+			&& (value_unit.find_last_of("°F") == std::string::npos)
+			&& (value_unit.find_last_of("°C") == std::string::npos)
 			)
 		{
-			tmeter.value = (m_sql.m_tempsign[0] != 'F') ? TempValue : static_cast<float>(ConvertToCelsius(TempValue));
+			// Non-temperature unit, use raw value
+			temp_celsius = TempValue;
 		}
-		else
-			tmeter.value = TempValue;
-	}
-	else
-	{
-		tmeter.value = (m_sql.m_tempsign[0] != 'F') ? TempValue : static_cast<float>(ConvertToCelsius(TempValue));
 	}
 
 
@@ -13172,43 +13162,60 @@ bool MainWorker::SetSetPointInt(const std::vector<std::string>& sd, const float 
 	}
 	else
 	{
-		if (dType == pTypeRadiator1)
-		{
-			tRBUF lcmd;
-			lcmd.RADIATOR1.packetlength = sizeof(lcmd.RADIATOR1) - 1;
-			lcmd.RADIATOR1.packettype = dType;
-			lcmd.RADIATOR1.subtype = dSubType;
-			lcmd.RADIATOR1.seqnbr = m_hardwaredevices[hindex]->m_SeqNr++;
-			lcmd.RADIATOR1.id1 = ID1;
-			lcmd.RADIATOR1.id2 = ID2;
-			lcmd.RADIATOR1.id3 = ID3;
-			lcmd.RADIATOR1.id4 = ID4;
-			lcmd.RADIATOR1.unitcode = Unit;
-			lcmd.RADIATOR1.filler = 0;
-			lcmd.RADIATOR1.rssi = 12;
-			lcmd.RADIATOR1.cmnd = Radiator1_sSetTemp;
-
-			char szTemp[20];
-			sprintf(szTemp, "%.1f", TempValue);
-			std::vector<std::string> strarray;
-			StringSplit(szTemp, ".", strarray);
-			lcmd.RADIATOR1.temperature = (uint8_t)atoi(strarray[0].c_str());
-			lcmd.RADIATOR1.tempPoint5 = (uint8_t)atoi(strarray[1].c_str());
-			if (!WriteToHardware(HardwareID, (const char*)&lcmd, sizeof(lcmd.RADIATOR1)))
-				return false;
-			PushAndWaitRxMessage(pHardware, (const uint8_t*)&lcmd, nullptr, -1, nullptr);
-			return true;
-		}
-		else
-		{
-			if (!WriteToHardware(HardwareID, (const char*)&tmeter, sizeof(_tSetpoint)))
-				return false;
-		}
+		// For other hardware types we use WriteToHardware(), once the correct type of
+		// message has been created below for the device type.
+		bWriteToHardware = true;
 	}
 	if (!ret)
 		return false;
 	//Also put it in the database, not all devices are awake (battery operated nodes)
-	PushAndWaitRxMessage(pHardware, (const uint8_t*)&tmeter, nullptr, -1, nullptr);
+	if (dType == pTypeRadiator1)
+	{
+		tRBUF lcmd;
+		lcmd.RADIATOR1.packetlength = sizeof(lcmd.RADIATOR1) - 1;
+		lcmd.RADIATOR1.packettype = dType;
+		lcmd.RADIATOR1.subtype = dSubType;
+		lcmd.RADIATOR1.seqnbr = m_hardwaredevices[hindex]->m_SeqNr++;
+		lcmd.RADIATOR1.id1 = ID1;
+		lcmd.RADIATOR1.id2 = ID2;
+		lcmd.RADIATOR1.id3 = ID3;
+		lcmd.RADIATOR1.id4 = ID4;
+		lcmd.RADIATOR1.unitcode = Unit;
+		lcmd.RADIATOR1.filler = 0;
+		lcmd.RADIATOR1.rssi = 12;
+		lcmd.RADIATOR1.cmnd = Radiator1_sSetTemp;
+
+		char szTemp[20];
+		sprintf(szTemp, "%.1f", TempValue);
+		std::vector<std::string> strarray;
+		StringSplit(szTemp, ".", strarray);
+		lcmd.RADIATOR1.temperature = (uint8_t)atoi(strarray[0].c_str());
+		lcmd.RADIATOR1.tempPoint5 = (uint8_t)atoi(strarray[1].c_str());
+		if (bWriteToHardware)
+		{
+			if (!WriteToHardware(HardwareID, (const char*)&lcmd, sizeof(lcmd.RADIATOR1)))
+				return false;
+		}
+		PushAndWaitRxMessage(pHardware, (const uint8_t*)&lcmd, nullptr, -1, nullptr);
+	}
+	else
+	{
+		_tSetpoint tmeter;
+		tmeter.subtype = sTypeSetpoint;
+		tmeter.id1 = ID1;
+		tmeter.id2 = ID2;
+		tmeter.id3 = ID3;
+		tmeter.id4 = ID4;
+		tmeter.dunit = Unit;
+		tmeter.value = temp_celsius;
+
+		if (bWriteToHardware)
+		{
+			if (!WriteToHardware(HardwareID, (const char*)&tmeter, sizeof(_tSetpoint)))
+				return false;
+		}
+		PushAndWaitRxMessage(pHardware, (const uint8_t*)&tmeter, nullptr, -1, nullptr);
+	}
 	return true;
 }
 
