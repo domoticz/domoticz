@@ -759,9 +759,30 @@ namespace Plugins {
 			int iSubType = self->SubType;
 			int iSwitchType = self->SwitchType;
 			PyBorrowedRef pOptionsDict = self->Options;
+			PyObject *OptionsTypeName = PyDict_New();
+			if (OptionsTypeName == nullptr)
+			{
+				pModState->pPlugin->Log(LOG_ERROR, "(%s) Create dict failed.", __func__);
+				pModState->pPlugin->LogPythonException(__func__);
+				Py_RETURN_NONE;
+			}
+
+			// TypeName change - actually derives new Type, SubType and SwitchType values
+			if (TypeName)
+			{
+				std::string stdsValue;
+				maptypename(std::string(TypeName), iType, iSubType, iSwitchType, stdsValue, NULL, OptionsTypeName);
+
+				// Reset nValue and sValue when changing device types
+				nValue = 0;
+				sValue = stdsValue;
+			}
 
 			if (bUpdateOptions) {
 				// Options provided, assume change
+				if (!pOptionsDict || (PyBorrowedRef(pOptionsDict).IsDict() && PyDict_Size(pOptionsDict) < 1)) {
+					pOptionsDict = OptionsTypeName;
+				}
 				if (pOptionsDict && PyBorrowedRef(pOptionsDict).IsDict())
 				{
 					if (self->SubType != sTypeCustom)
@@ -797,17 +818,7 @@ namespace Plugins {
 					}
 				}
 			}
-
-			// TypeName change - actually derives new Type, SubType and SwitchType values
-			if (TypeName)
-			{
-				std::string stdsValue;
-				maptypename(std::string(TypeName), iType, iSubType, iSwitchType, stdsValue, pOptionsDict, pOptionsDict);
-
-				// Reset nValue and sValue when changing device types
-				nValue = 0;
-				sValue = stdsValue;
-			}
+			Py_DECREF(OptionsTypeName);
 
 			// Grab state in db
 			CUnitEx_refresh(self);
