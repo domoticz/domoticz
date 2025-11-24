@@ -797,7 +797,7 @@ namespace Plugins {
 							mpOptions.insert(std::pair<std::string, std::string>(sOptionName, sOptionValue));
 						}
 						Py_BEGIN_ALLOW_THREADS
-						m_sql.SetDeviceOptions(self->ID, mpOptions);
+						m_sql.SetDeviceOptions(sID, mpOptions);
 						Py_END_ALLOW_THREADS
 					}
 					else
@@ -812,8 +812,8 @@ namespace Plugins {
 						std::string sLastUpdate = TimeToString(nullptr, TF_DateTime);
 						Py_BEGIN_ALLOW_THREADS
 						m_sql.UpdateDeviceValue("Options", iUsed, sID);
-						m_sql.safe_query("UPDATE DeviceStatus SET Options='%q', LastUpdate='%q' WHERE (HardwareID==%d) and (Unit==%d)",
-							sOptionValue.c_str(), sLastUpdate.c_str(), pModState->pPlugin->m_HwdID, self->Unit);
+						m_sql.safe_query("UPDATE DeviceStatus SET Options='%q', LastUpdate='%q' WHERE (ID==%s)",
+							sOptionValue.c_str(), sLastUpdate.c_str(), sID);
 						Py_END_ALLOW_THREADS
 					}
 				}
