@@ -74,10 +74,12 @@ private:
 	void SendSceneInfo(uint64_t SceneIdx, const std::string& SceneName);
 	void StopMQTT();
 	void Do_Work();
+	void Do_MQTT_Work();
 	void SubscribeTopic(const std::string& szTopic, int qos = -1);
 	virtual void SendHeartbeat();
 	void WriteInt(const std::string& sendStr) override;
 	std::shared_ptr<std::thread> m_thread;
+	std::shared_ptr<std::thread> m_mqtt_thread;
 	boost::signals2::connection m_sDeviceReceivedConnection;
 	boost::signals2::connection m_sSwitchSceneConnection;
 	_ePublishTopics m_publish_scheme;

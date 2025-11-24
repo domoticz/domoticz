@@ -15,6 +15,7 @@
 #include <json/json.h>
 #include <sstream>
 #include <string>
+#include <set>
 
 extern CLogger _log;
 
@@ -2199,19 +2200,24 @@ bool CWebServer::CheckDeviceAccess(const WebEmSession& session, const std::vecto
 		if (m_users[iUser].TotSensors == 0)
 			return true;
 
+		// Build set of unique device IDs
+		std::set<uint64_t> unique_devices(device_indices.begin(), device_indices.end());
+
 		// Build IN clause for SQL query
 		std::stringstream ss;
 		ss << "SELECT COUNT(*) FROM SharedDevices WHERE (SharedUserID == '" << m_users[iUser].ID << "') AND DeviceRowID IN (";
-		for (size_t i = 0; i < device_indices.size(); i++)
+		bool first = true;
+		for (uint64_t device_id : unique_devices)
 		{
-			if (i > 0) ss << ",";
-			ss << device_indices[i];
+			if (!first) ss << ",";
+			ss << device_id;
+			first = false;
 		}
 		ss << ")";
 
 		std::vector<std::vector<std::string>> result = m_sql.safe_query(ss.str().c_str());
-		// User must have access to ALL devices
-		return (!result.empty() && atoi(result[0][0].c_str()) == (int)device_indices.size());
+		// User must have access to ALL unique devices
+		return (!result.empty() && atoi(result[0][0].c_str()) == (int)unique_devices.size());
 	}
 
 	default:

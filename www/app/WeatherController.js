@@ -80,7 +80,10 @@ define(['app', 'livesocket'], function (app) {
 					oldarray[oldindex] = item;
 					if (!document.hidden) {
 						if ($scope.config.ShowUpdatedEffect == true) {
-							$("#weatherwidgets #" + item.idx + " #name").effect("highlight", { color: '#EEFFEE' }, 1000);
+							setTimeout(function() { 
+								$("#weatherwidgets #" + item.idx + " #name").effect("highlight", { color: '#EEFFEE' }, 1000);
+							}, 500);
+							
 						}
 					}
 				}

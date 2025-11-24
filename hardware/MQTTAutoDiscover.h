@@ -1,6 +1,8 @@
 #pragma once
 
 #include "MQTT.h"
+#include "CounterHelper.h"
+#include <deque>
 
 class MQTTAutoDiscover : public MQTT
 {
@@ -152,9 +154,8 @@ class MQTTAutoDiscover : public MQTT
 
 		bool bOnline = false;
 		time_t last_received = 0;
-		double prev_value = 0;
-		double epoch = 0;
 		std::string last_value;
+		double prev_value = 0;
 		std::string last_topic;
 		bool bIsJSON = false;
 		bool bIsNull = false;
@@ -181,6 +182,15 @@ class MQTTAutoDiscover : public MQTT
 		std::map<std::string, std::string> keys;
 
 		std::map<std::string, bool> sensor_ids;
+	};
+
+	struct _tIncommingMsg
+	{
+		int mid;
+		std::string topic;
+		std::string payload;
+		int qos;
+		bool retain;
 	};
 
 public:
@@ -250,9 +260,20 @@ private:
 	_tMQTTASensor* get_auto_discovery_sensor_unit(const _tMQTTASensor* pSensor, const uint8_t devType, const int subType = -1, const int devUnit = -1);
 	_tMQTTASensor* get_auto_discovery_sensor_WATT_unit(const _tMQTTASensor* pSensor);
 	bool HaveSingleTempHumBaro(const std::string &device_identifiers);
+
+	void Do_Work();
+protected:
+	bool StartHardware() override;
+	bool StopHardware() override;
 private:
 	std::string m_TopicDiscoveryPrefix;
 
 	std::map<std::string, _tMQTTADevice> m_discovered_devices;
 	std::map<std::string, _tMQTTASensor> m_discovered_sensors;
+
+	std::map<std::string, CounterHelper> m_kwh_counter_helper;
+
+	std::deque<_tIncommingMsg> m_incoming_messages;
+	std::mutex m_inc_msg_mutex;
+	std::shared_ptr<std::thread> m_worker_thread;
 };

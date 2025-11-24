@@ -75,9 +75,29 @@ MQTTAutoDiscover::MQTTAutoDiscover(const int ID, const std::string& Name, const 
 
 void MQTTAutoDiscover::on_message(const struct mosquitto_message* message)
 {
+	std::lock_guard<std::mutex> lock(m_inc_msg_mutex);
+	if (m_incoming_messages.size() > 1000)
+	{
+		//Prevent flooding
+		return;
+	}
+
 	std::string topic = message->topic;
 	std::string qMessage = std::string((char*)message->payload, (char*)message->payload + message->payloadlen);
+/*
+	//OutputDebugStringA(("MQTTAutoDiscover::on_message - topic: " + topic + "\n").c_str());
+	Log(LOG_STATUS, "topic: %s", topic.c_str());
+*/
+	_tIncommingMsg incmsg;
+	incmsg.mid = message->mid;
+	incmsg.topic = topic;
+	incmsg.payload = qMessage;
+	incmsg.qos = message->qos;
+	incmsg.retain = message->retain;
 
+	m_incoming_messages.push_back(incmsg);
+
+	return;
 	try
 	{
 		Debug(DEBUG_HARDWARE, "topic: %s, message: %s", topic.c_str(), qMessage.c_str());
@@ -824,6 +844,7 @@ void MQTTAutoDiscover::on_auto_discovery_message(const struct mosquitto_message*
 
 		pDevice->identifiers = device_identifiers;
 
+		// This is the name of the *device* to which this sensor happens to be attached
 		std::string dev_name("");
 		if (!root["device"]["name"].empty())
 		{
@@ -834,31 +855,40 @@ void MQTTAutoDiscover::on_auto_discovery_message(const struct mosquitto_message*
 			dev_name = root["dev"]["name"].asString();
 		}
 
+		// Construct the Domoticz sensor name from the JSON device and entity names.
+		std::string sensor_name = root["name"].asString();
 		if (!dev_name.empty())
 		{
-			if (root["name"].empty())
-			{
-				root["name"] = (dev_name.empty()) ? sensor_unique_id : dev_name;
+			// We have a device name. If the sensor's own name is empty, looks like
+			// a hex string, or matches the device name, then just use the device name.
+			if (sensor_name.empty() || sensor_name.find("0x") != std::string::npos || sensor_name == dev_name) {
+				sensor_name = dev_name;
+			} else {
+				// The sensor name looks good, so use "device (sensor name)".
+				sensor_name = dev_name + " (" + sensor_name + ")";
 			}
-			std::string subname = root["name"].asString();
-			if (subname.find("0x") != 0)
-			{
-				pDevice->name = dev_name;
-				if (dev_name != subname)
-					pDevice->name += " (" + subname + ")";
-			}
-			else
-			{
-				pDevice->name = dev_name;
-			}
-		}
-		else if (!root["name"].empty())
+                }
+		else
 		{
-			pDevice->name = root["name"].asString();
+			// We didn't have a device name. Try the sensor name. And if even *that*
+			// doesn't exist, fall back to the unique_id as the last resort.
+			if (sensor_name.empty()) {
+				sensor_name = sensor_unique_id;
+			}
 		}
 
+
+		// This is the name we store in the pDevice structure for the *device*, not
+		// just this sensor. The same device information can be sent in the JSON of
+		// multiple sensors, and the pDevice we store should only contain information
+		// about the device itself, nothing from any of the sensors that reference it.
 		if (pDevice->name.empty())
-			pDevice->name = pDevice->identifiers;
+		{
+			if (dev_name.empty())
+				pDevice->name = pDevice->identifiers;
+			else
+				pDevice->name = dev_name;
+		}
 
 		if (!root["device"]["sw_version"].empty())
 			pDevice->sw_version = root["device"]["sw_version"].asString();
@@ -941,7 +971,7 @@ void MQTTAutoDiscover::on_auto_discovery_message(const struct mosquitto_message*
 		pSensor->config = qMessage;
 		pSensor->component_type = component;
 		pSensor->device_identifiers = device_identifiers;
-		pSensor->name = pDevice->name;
+		pSensor->name = sensor_name;
 
 		if (!root["enabled_by_default"].empty())
 			pSensor->bEnabled_by_default = root["enabled_by_default"].asBool();
@@ -2066,13 +2096,14 @@ bool MQTTAutoDiscover::GuessSensorTypeValue(_tMQTTASensor* pSensor, uint8_t& dev
 
 		if (pkWhSensor)
 		{
-			if (pkWhSensor->last_received != 0)
+			if (
+				(pkWhSensor->last_received != 0)
+				&& (!pkWhSensor->last_value.empty())
+				)
 			{
-				pkWhSensor->sValue = std_format("%.3f;%.3f", fUsage, pkWhSensor->prev_value);
-
 				mosquitto_message xmessage;
 				xmessage.retain = false;
-				// Trigger extra update for the kWh sensor with the new W value
+				// Trigger extra update for the kWh sensor with the new Watt value
 				handle_auto_discovery_sensor(pkWhSensor, &xmessage);
 			}
 		}
@@ -2083,10 +2114,12 @@ bool MQTTAutoDiscover::GuessSensorTypeValue(_tMQTTASensor* pSensor, uint8_t& dev
 		|| (szUnit == "wm")
 		)
 	{
+		if (pSensor->last_value.empty())
+			return false;
+
 		devType = pTypeGeneral;
 		subType = sTypeKwh;
 
-		double dUsage = 0;
 		double multiply = 1000.0F;
 
 		if (szUnit == "wh")
@@ -2094,71 +2127,34 @@ bool MQTTAutoDiscover::GuessSensorTypeValue(_tMQTTASensor* pSensor, uint8_t& dev
 		else if (szUnit == "wm")
 			multiply = 1.0 / 60.0;
 
-		double dkWh = atof(pSensor->last_value.c_str()) * multiply;
+		bool bTotalIncreasing = (pSensor->state_class == "total_increasing");
+		bool bIsZWave = (pSensor->unique_id.find("zwave") == 0);
 
-		if (dkWh < -1000000)
+		double dkWh = atof(pSensor->last_value.c_str());
+
+		//if (bTotalIncreasing && !bIsZWave)
+		if (bTotalIncreasing)
 		{
-			//Way too negative, probably a bug in the sensor
-			return false;
-		}
-
-		// zwavejs2mqtt and ZWave-JS UI lie about 'total_increasing'. Don't trust them.
-		// https://github.com/domoticz/domoticz/issues/6180#issuecomment-3516413840
-		bool bTotalIncreasing = (pSensor->state_class == "total_increasing" &&
-					 !pSensor->unique_id.find("zwave"));
-
-		// Zero could be the first ever value received.
-		// Or it could also be that the middleware sends 0 when it has not received it before
-		if (dkWh == 0 || bTotalIncreasing)
-		{
-			double dPrevkWh = pSensor->prev_value;
-
-			if (pSensor->last_received != 0)
+			bool bSuspicious = (pSensor->prev_value == 0);
+			bool bLooped = false;
+			dkWh = m_kwh_counter_helper[pSensor->unique_id].CheckTotalCounter(this, pSensor->unique_id, 1, dkWh, !bSuspicious, bLooped);
+			if (bSuspicious && bLooped)
 			{
-				auto result = m_sql.safe_query("SELECT sValue,StrParam1 FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Type==%d) AND (Subtype==%d)",
-					m_HwdID, pSensor->unique_id.c_str(), devType, subType);
-				if (!result.empty()) {
-					std::vector<std::string> strarray;
-					StringSplit(result[0][0], ";", strarray);
-					if (strarray.size() == 2)
-						dPrevkWh = atof(strarray[1].c_str());
-
-					// For total_increasing sensors, the epoch is stored in StrParam1
-					if (!result[0][1].empty())
-						pSensor->epoch = atof(result[0][1].c_str());
-				}
-			}
-
-			// GuessSensorTypeValue() is sometimes invoked with empty sValue to do
-			// only what its name implies, nothing more. Do not bump the epoch when
-			// when that happens; just use the previous value.
-			if (dkWh == 0)
-			{
-				dkWh = dPrevkWh;
-			}
-			else if (bTotalIncreasing)
-			{
-				// If the value resulting from this reading would be lower than the
-				// previous value, the sensor must have reset. Bump its epoch, which
-				// we store in StrParam1.
-				if (dkWh + pSensor->epoch < dPrevkWh)
-				{
-					pSensor->epoch = dPrevkWh;
-					m_sql.safe_query("UPDATE DeviceStatus SET StrParam1='%f' WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Type==%d) AND (Subtype==%d)",
-							 pSensor->epoch, m_HwdID, pSensor->unique_id.c_str(), devType, subType);
-				}
-
-				dkWh += pSensor->epoch;
+				//There could be an anoying situation with MQTT retained messages
+				//If a user enabled a retained message, and later sends a new value not-retained,
+				//the retained message is still here, and contains a old value.
+				//So if we detect a loop on the first message, we ignore the previous value
+				Log(LOG_STATUS, "Counter Looped detected on first received value for: %s/%s, could be an old retained value?", pSensor->name.c_str(), pSensor->unique_id.c_str());
 			}
 		}
 		pSensor->prev_value = dkWh;
-
+		double dUsage = 0;
 		_tMQTTASensor* pWattSensor = get_auto_discovery_sensor_WATT_unit(pSensor);
 		if (pWattSensor && pWattSensor->last_received != 0)
 		{
 			dUsage = atof(pWattSensor->sValue.c_str());
 		}
-		sValue = std_format("%.3f;%.3f", dUsage, dkWh);
+		sValue = std_format("%.3f;%.3f", dUsage, dkWh * multiply);
 	}
 	else if (
 		(szUnit == "lx")
@@ -2204,8 +2200,10 @@ bool MQTTAutoDiscover::GuessSensorTypeValue(_tMQTTASensor* pSensor, uint8_t& dev
 		{
 			devType = pTypeRFXMeter;
 			subType = sTypeRFXMeterCount;
-			unsigned long counter = (unsigned long)(atof(pSensor->last_value.c_str()) * 1000.0F);
-			sValue = std_format("%lu", counter);
+			double counter = atof(pSensor->last_value.c_str());
+			//gizmocuz: should test and implement the helper function
+			//counter = m_kwh_counter_helper[pSensor->unique_id].CheckTotalCounter(this, pSensor->unique_id, 0, counter);
+			sValue = std_format("%lu", static_cast<int>(counter * 1000.0));
 		}
 	}
 	else if (szUnit == "l/hr")
@@ -2659,7 +2657,7 @@ bool MQTTAutoDiscover::HaveSingleTempHumBaro(const std::string& device_identifie
 		int nValue;
 
 		if (!GuessSensorTypeValue(pSensor, devType, subType, szOptions, nValue, sValue))
-			return false;
+			continue;
 
 		if (
 			(devType == pTypeTEMP)
@@ -6198,6 +6196,93 @@ bool MQTTAutoDiscover::UpdateNumber(const std::string& idx, const std::string& s
 		}
 	}
 	return false;
+}
+
+bool MQTTAutoDiscover::StartHardware()
+{
+	MQTT::StartHardware();
+
+	m_worker_thread = std::make_shared<std::thread>([this] { Do_Work(); });
+	SetThreadNameInt(m_worker_thread->native_handle());
+
+	return (m_worker_thread != nullptr);
+}
+
+bool MQTTAutoDiscover::StopHardware()
+{
+	MQTT::StopHardware();
+	if (m_worker_thread)
+	{
+		m_worker_thread->join();
+		m_worker_thread.reset();
+	}
+	return true;
+}
+
+void MQTTAutoDiscover::Do_Work()
+{
+	while (!IsStopRequested(1000))
+	{
+		std::unique_lock<std::mutex> lock(m_inc_msg_mutex);
+		if (m_incoming_messages.empty())
+			continue;
+		std::list<_tIncommingMsg> mlist;
+		std::copy(m_incoming_messages.begin(), m_incoming_messages.end(), std::back_inserter(mlist));
+		m_incoming_messages.clear();
+		lock.unlock();
+
+		for (const auto& msg : mlist)
+		{
+			std::string topic = msg.topic;
+			try
+			{
+				mosquitto_message message;
+				message.topic = (char*)msg.topic.c_str();
+				message.payload = (void*)msg.payload.c_str();
+				message.payloadlen = (int)msg.payload.size();
+				message.mid = msg.mid;
+				message.qos = msg.qos;
+				message.retain = msg.retain;
+
+				Debug(DEBUG_HARDWARE, "topic: %s, message: %s", topic.c_str(), msg.payload.c_str());
+
+				if (msg.payload.empty())
+					continue;
+
+				if (
+					topic.find(m_TopicDiscoveryPrefix) == 0
+					&& (topic.find("/config") != std::string::npos)
+					)
+				{
+					on_auto_discovery_message(&message);
+					continue;
+				}
+
+				std::string DiscoveryWildcard = m_TopicDiscoveryPrefix + "/#";
+
+				for (auto& itt : m_subscribed_topics)
+				{
+					bool result = false;
+					if (
+						(itt.first != DiscoveryWildcard)
+						&& (mosquitto_topic_matches_sub(itt.first.c_str(), topic.c_str(), &result) == MOSQ_ERR_SUCCESS)
+						)
+					{
+						if (result == true)
+						{
+							handle_auto_discovery_sensor_message(&message, itt.first);
+							continue;
+						}
+					}
+				}
+			}
+			catch (const std::exception& e)
+			{
+				Log(LOG_ERROR, "Exception (on_message): %s! (topic: %s, message: %s)", e.what(), topic.c_str(), msg.payload.c_str());
+				continue;
+			}
+		}
+	}
 }
 
 //Webserver helpers

@@ -123,6 +123,11 @@ bool MQTT::StopHardware()
 		m_thread->join();
 		m_thread.reset();
 	}
+	if (m_mqtt_thread)
+	{
+		m_mqtt_thread->join();
+		m_mqtt_thread.reset();
+	}
 	m_IsConnected = false;
 	return true;
 }
@@ -579,6 +584,7 @@ void MQTT::on_disconnect(int rc)
 	{
 		if (!IsStopRequested(0))
 		{
+			disconnect();
 			if (rc == 5)
 			{
 				Log(LOG_ERROR, "Disconnected, Invalid Username/Password (rc=%d)", rc);
@@ -596,6 +602,11 @@ void MQTT::on_disconnect(int rc)
 //called when hardware is stopped
 void MQTT::on_going_down()
 {
+	if (isConnected())
+	{
+		m_IsConnected = false;
+		disconnect();
+	}
 }
 
 bool MQTT::ReconnectNow()
@@ -672,72 +683,39 @@ bool MQTT::ConnectIntEx()
 void MQTT::Do_Work()
 {
 	bool bFirstTime = true;
-	int msec_counter = 0;
 	int sec_counter = 0;
 
 	set_callbacks();
 
-	while (!IsStopRequested(100))
+	time_t last_time = time(nullptr);
+
+	while (!IsStopRequested(1000))
 	{
-		if (!bFirstTime)
+		sec_counter++;
+
+		if (sec_counter % 12 == 0)
 		{
-			try
-			{
-				int rc = loop();
-				if (rc)
-				{
-					if (rc != MOSQ_ERR_NO_CONN)
-					{
-						if (!IsStopRequested(0))
-						{
-							if (!m_bDoReconnect)
-							{
-								reconnect();
-							}
-						}
-					}
-				}
-			}
-			catch (const std::exception &)
-			{
-				if (!IsStopRequested(0))
-				{
-					if (!m_bDoReconnect)
-					{
-						reconnect();
-					}
-				}
-			}
+			m_LastHeartbeat = mytime(nullptr);
 		}
 
-		msec_counter++;
-		if (msec_counter == 10)
+		if (bFirstTime)
 		{
-			msec_counter = 0;
+			bFirstTime = false;
+			ConnectInt();
 
-			sec_counter++;
-
-			if (sec_counter % 12 == 0)
+			m_mqtt_thread = std::make_shared<std::thread>([this] { Do_MQTT_Work(); });
+			SetThreadNameInt(m_mqtt_thread->native_handle());
+		}
+		else
+		{
+			if (sec_counter % 30 == 0)
 			{
-				m_LastHeartbeat = mytime(nullptr);
+				if (m_bDoReconnect)
+					ConnectIntEx();
 			}
-
-			if (bFirstTime)
+			if (isConnected() && sec_counter % 10 == 0)
 			{
-				bFirstTime = false;
-				ConnectInt();
-			}
-			else
-			{
-				if (sec_counter % 30 == 0)
-				{
-					if (m_bDoReconnect)
-						ConnectIntEx();
-				}
-				if (isConnected() && sec_counter % 10 == 0)
-				{
-					SendHeartbeat();
-				}
+				SendHeartbeat();
 			}
 		}
 	}
@@ -752,6 +730,27 @@ void MQTT::Do_Work()
 		m_sSwitchSceneConnection.disconnect();
 
 	Log(LOG_STATUS, "Worker stopped...");
+}
+
+void MQTT::Do_MQTT_Work()
+{
+	while (!IsStopRequested(5))
+	{
+		if (!m_bDoReconnect)
+		{
+			int rc = loop_forever();
+			if (rc)
+			{
+				if (rc != MOSQ_ERR_NO_CONN)
+				{
+					if (!IsStopRequested(0))
+					{
+						m_bDoReconnect = true;
+					}
+				}
+			}
+		}
+	}
 }
 
 void MQTT::SendHeartbeat()

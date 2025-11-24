@@ -102,7 +102,10 @@ define(['app', 'livesocket'], function (app) {
 					oldarray[oldindex] = item;
 					if (!document.hidden) {
 						if ($scope.config.ShowUpdatedEffect == true) {
-							$("#tempwidgets #" + item.idx + " #name").effect("highlight", { color: '#EEFFEE' }, 1000);
+							// Must be delay in another way effect is finished before angular finished to draw the widget
+							setTimeout(function() { 
+								$("#tempwidgets #" + item.idx + " #name").effect("highlight", { color: '#EEFFEE' }, 1000);
+							}, 500);
 						}
 					}
 				}

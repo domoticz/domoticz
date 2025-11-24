@@ -759,22 +759,71 @@ namespace Plugins {
 			int iSubType = self->SubType;
 			int iSwitchType = self->SwitchType;
 			PyBorrowedRef pOptionsDict = self->Options;
+			PyObject *OptionsTypeName = PyDict_New();
+			if (OptionsTypeName == nullptr)
+			{
+				pModState->pPlugin->Log(LOG_ERROR, "(%s) Create dict failed.", __func__);
+				pModState->pPlugin->LogPythonException(__func__);
+				Py_RETURN_NONE;
+			}
 
 			// TypeName change - actually derives new Type, SubType and SwitchType values
 			if (TypeName)
 			{
 				std::string stdsValue;
-				maptypename(std::string(TypeName), iType, iSubType, iSwitchType, stdsValue, pOptionsDict, pOptionsDict);
+				maptypename(std::string(TypeName), iType, iSubType, iSwitchType, stdsValue, NULL, OptionsTypeName);
 
 				// Reset nValue and sValue when changing device types
 				nValue = 0;
 				sValue = stdsValue;
 			}
 
-			if (bUpdateProperties) {
-				// Grab state in db
-				CUnitEx_refresh(self);
+			if (bUpdateOptions) {
+				// Options provided, assume change
+				if (!pOptionsDict || (PyBorrowedRef(pOptionsDict).IsDict() && PyDict_Size(pOptionsDict) < 1)) {
+					pOptionsDict = OptionsTypeName;
+				}
+				if (pOptionsDict && PyBorrowedRef(pOptionsDict).IsDict())
+				{
+					if (self->SubType != sTypeCustom)
+					{
+						PyBorrowedRef	pKeyDict, pValueDict;
+						Py_ssize_t pos = 0;
+						std::map<std::string, std::string> mpOptions;
+						while (PyDict_Next(pOptionsDict, &pos, &pKeyDict, &pValueDict))
+						{
+							std::string sOptionName = pKeyDict;
+							std::string sOptionValue = pValueDict;
+							mpOptions.insert(std::pair<std::string, std::string>(sOptionName, sOptionValue));
+						}
+						Py_BEGIN_ALLOW_THREADS
+						m_sql.SetDeviceOptions(self->ID, mpOptions);
+						Py_END_ALLOW_THREADS
+					}
+					else
+					{
+						std::string sOptionValue;
+						PyBorrowedRef	pValue = PyDict_GetItemString(pOptionsDict, "Custom");
+						if (pValue)
+						{
+							sOptionValue = PyUnicode_AsUTF8(pValue);
+						}
 
+						std::string sLastUpdate = TimeToString(nullptr, TF_DateTime);
+						Py_BEGIN_ALLOW_THREADS
+						m_sql.UpdateDeviceValue("Options", iUsed, sID);
+						m_sql.safe_query("UPDATE DeviceStatus SET Options='%q', LastUpdate='%q' WHERE (HardwareID==%d) and (Unit==%d)",
+							sOptionValue.c_str(), sLastUpdate.c_str(), pModState->pPlugin->m_HwdID, self->Unit);
+						Py_END_ALLOW_THREADS
+					}
+				}
+			}
+			Py_DECREF(OptionsTypeName);
+
+			// Grab state in db
+			CUnitEx_refresh(self);
+
+			if (bUpdateProperties) {
 				// Then compare to object saved states and change only if different
 				// Name change
 				if (sName.compare(PyBorrowedRef(self->Name)) != 0)
@@ -855,44 +904,6 @@ namespace Plugins {
 				Py_BEGIN_ALLOW_THREADS
 				m_sql.UpdateDeviceValue("SwitchType", iSwitchType, sID);
 				Py_END_ALLOW_THREADS
-			}
-
-			if (bUpdateOptions) {
-				// Options provided, assume change
-				if (pOptionsDict && PyBorrowedRef(pOptionsDict).IsDict())
-				{
-					if (self->SubType != sTypeCustom)
-					{
-						PyBorrowedRef	pKeyDict, pValueDict;
-						Py_ssize_t pos = 0;
-						std::map<std::string, std::string> mpOptions;
-						while (PyDict_Next(pOptionsDict, &pos, &pKeyDict, &pValueDict))
-						{
-							std::string sOptionName = pKeyDict;
-							std::string sOptionValue = pValueDict;
-							mpOptions.insert(std::pair<std::string, std::string>(sOptionName, sOptionValue));
-						}
-						Py_BEGIN_ALLOW_THREADS
-						m_sql.SetDeviceOptions(self->ID, mpOptions);
-						Py_END_ALLOW_THREADS
-					}
-					else
-					{
-						std::string sOptionValue;
-						PyBorrowedRef	pValue = PyDict_GetItemString(pOptionsDict, "Custom");
-						if (pValue)
-						{
-							sOptionValue = PyUnicode_AsUTF8(pValue);
-						}
-
-						std::string sLastUpdate = TimeToString(nullptr, TF_DateTime);
-						Py_BEGIN_ALLOW_THREADS
-						m_sql.UpdateDeviceValue("Options", iUsed, sID);
-						m_sql.safe_query("UPDATE DeviceStatus SET Options='%q', LastUpdate='%q' WHERE (HardwareID==%d) and (Unit==%d)",
-							sOptionValue.c_str(), sLastUpdate.c_str(), pModState->pPlugin->m_HwdID, self->Unit);
-						Py_END_ALLOW_THREADS
-					}
-				}
 			}
 
 			if (!bSuppressTriggers) {
