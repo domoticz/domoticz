@@ -95,23 +95,23 @@ void CPhilipsHue::Init()
 {
 	// instantiate V2 sensors helper when Port is 443 (HTTPS) and if enabled
 	if (m_Port == 443) {
-		if (m_use_v2_sensors)
-		{
+		if (m_use_v2_sensors) {
 			// Use m_UserName as hue-application-key for now (same field used for v1 username).
-			try
-			{
+			try {
 				m_v2sensors = std::make_unique<CPhilipsHueV2Sensors>(m_html_schema, m_IPAddress, std::to_string(m_Port), m_UserName);
-				Log(LOG_STATUS, "PhilipsHue: v2 sensors support enabled.");
+				Log(LOG_STATUS, "PhilipsHue: v2 sensors support enabled (Port==443).");
 			}
-			catch (const std::exception& e)
-			{
+			catch (const std::exception& e) {
 				Log(LOG_ERROR, "PhilipsHue: failed to create v2 sensors helper: %s", e.what());
 				m_use_v2_sensors = false;
 			}
+		} else {
+			// no v2 sensors when disabled/false
+			Log(LOG_STATUS, "PhilipsHue: v2 sensors support disabled.");
 		}
 	} else {
 		// no v2 sensors on non-HTTPS connections
-		Log(LOG_STATUS, "PhilipsHue: v2 sensors support disabled.");
+		Log(LOG_STATUS, "PhilipsHue: v2 sensors support disabled (Port<>443).");
 		m_use_v2_sensors = false;
 	}
 }
