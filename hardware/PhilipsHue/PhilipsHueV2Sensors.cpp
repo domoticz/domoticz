@@ -66,7 +66,7 @@ bool CPhilipsHueV2Sensors::FetchDevices()
 	std::string sResult;
 	if (!http_get_with_key(url, m_ApplicationKey, sResult))
 	{
-		_log.Log(LOG_ERROR, "PhilipsHueV2: FetchDevices HTTP GET failed (%s)", url.c_str());
+		_log.Log(LOG_DEBUG_INT, "PhilipsHueV2: FetchDevices HTTP GET failed (%s)", url.c_str());
 		return false;
 	}
 	Json::Value root;
@@ -86,7 +86,7 @@ bool CPhilipsHueV2Sensors::FetchContacts()
 	std::string sResult;
 	if (!http_get_with_key(url, m_ApplicationKey, sResult))
 	{
-		_log.Log(LOG_ERROR, "PhilipsHueV2: FetchContacts HTTP GET failed (%s)", url.c_str());
+		_log.Log(LOG_DEBUG_INT, "PhilipsHueV2: FetchContacts HTTP GET failed (%s)", url.c_str());
 		return false;
 	}
 	Json::Value root;
@@ -106,7 +106,7 @@ bool CPhilipsHueV2Sensors::FetchTamper()
 	std::string sResult;
 	if (!http_get_with_key(url, m_ApplicationKey, sResult))
 	{
-		_log.Log(LOG_ERROR, "PhilipsHueV2: FetchTamper HTTP GET failed (%s)", url.c_str());
+		_log.Log(LOG_DEBUG_INT, "PhilipsHueV2: FetchTamper HTTP GET failed (%s)", url.c_str());
 		return false;
 	}
 	Json::Value root;
@@ -126,7 +126,7 @@ bool CPhilipsHueV2Sensors::FetchDevicePower()
 	std::string sResult;
 	if (!http_get_with_key(url, m_ApplicationKey, sResult))
 	{
-		_log.Log(LOG_ERROR, "PhilipsHueV2: FetchDevicePower HTTP GET failed (%s)", url.c_str());
+		_log.Log(LOG_DEBUG_INT, "PhilipsHueV2: FetchDevicePower HTTP GET failed (%s)", url.c_str());
 		return false;
 	}
 	Json::Value root;

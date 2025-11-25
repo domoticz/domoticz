@@ -838,60 +838,160 @@ void CPhilipsHue::LightStateFromJSON(const Json::Value& lightstate, _tHueLightSt
 
 		LType = HLTYPE_NORMAL;
 
-		if (!lightstate["on"].empty())
+		// if (!lightstate["on"].empty())
+		// {
+		// 	tlight.on = lightstate["on"].asBool();
+		// }
+		// ---- "on" ----
+		if (lightstate.isMember("on") && lightstate["on"].isBool())
 		{
 			tlight.on = lightstate["on"].asBool();
 		}
-		if (!lightstate["colormode"].empty())
+		else
+		{
+			// default safe
+			tlight.on = false;
+		}
+
+		// if (!lightstate["colormode"].empty())
+		// {
+		// 	std::string sMode = lightstate["colormode"].asString();
+		// 	if (sMode == "hs") tlight.mode = HLMODE_HS;
+		// 	if (sMode == "xy") tlight.mode = HLMODE_XY;
+		// 	if (sMode == "ct") tlight.mode = HLMODE_CT;
+		// }
+		// ---- "colormode" ----
+		if (lightstate.isMember("colormode") && lightstate["colormode"].isString())
 		{
 			std::string sMode = lightstate["colormode"].asString();
-			if (sMode == "hs") tlight.mode = HLMODE_HS;
-			if (sMode == "xy") tlight.mode = HLMODE_XY;
-			if (sMode == "ct") tlight.mode = HLMODE_CT;
+			if (sMode == "hs")       tlight.mode = HLMODE_HS;
+			else if (sMode == "xy")  tlight.mode = HLMODE_XY;
+			else if (sMode == "ct")  tlight.mode = HLMODE_CT;
+			else                     tlight.mode = HLMODE_NONE; // Unknown mode (Hue sometimes sends "")
 		}
-		if (!lightstate["bri"].empty())
+		else
 		{
-			//Lamp with brightness control
+			// Some bridges leave colormode out when off or switching
+			tlight.mode = HLMODE_NONE;
+		}
+
+		// if (!lightstate["bri"].empty())
+		// {
+		// 	//Lamp with brightness control
+		// 	hasBri = true;
+		// 	int tbri = lightstate["bri"].asInt();
+		// 	// Clamp to conform to HUE API
+		// 	tbri = std::max(1, tbri);
+		// 	tbri = std::min(254, tbri);
+		// 	tlight.level = int(std::ceil((100.0F / 254.0F) * float(tbri)));
+		// }
+		// ---- "bri" ----
+		if (lightstate.isMember("bri") && lightstate["bri"].isInt())
+		{
 			hasBri = true;
 			int tbri = lightstate["bri"].asInt();
-			// Clamp to conform to HUE API
+
+			// Hue sometimes gives 0 (should be 1..254)
 			tbri = std::max(1, tbri);
 			tbri = std::min(254, tbri);
+
 			tlight.level = int(std::ceil((100.0F / 254.0F) * float(tbri)));
 		}
-		if (!lightstate["sat"].empty())
+		else
 		{
-			//Lamp with color control
-			hasHueSat = true;
-			tlight.sat = lightstate["sat"].asInt();
-			// Clamp to conform to HUE API
-			tlight.sat = std::max(0, tlight.sat);
-			tlight.sat = std::min(254, tlight.sat);
+			// safe fallback
+			hasBri = false;
+			tlight.level = 0;
 		}
-		if (!lightstate["hue"].empty())
+
+
+		// if (!lightstate["sat"].empty())
+		// {
+		// 	//Lamp with color control
+		// 	hasHueSat = true;
+		// 	tlight.sat = lightstate["sat"].asInt();
+		// 	// Clamp to conform to HUE API
+		// 	tlight.sat = std::max(0, tlight.sat);
+		// 	tlight.sat = std::min(254, tlight.sat);
+		// }
+		// ---- "sat" ----
+		if (lightstate.isMember("sat") && lightstate["sat"].isInt())
 		{
-			//Lamp with color control
 			hasHueSat = true;
-			tlight.hue = lightstate["hue"].asInt();
-			// Clamp to conform to HUE API
-			tlight.hue = std::max(0, tlight.hue);
-			tlight.hue = std::min(65535, tlight.hue);
+			int tsat = lightstate["sat"].asInt();
+			tsat = std::max(0, tsat);
+			tsat = std::min(254, tsat);
+			tlight.sat = tsat;
 		}
-		if (!lightstate["ct"].empty())
+		else
 		{
-			//Lamp with color temperature control
+			// some bulbs don't have saturation
+			tlight.sat = 0;
+		}
+
+		// if (!lightstate["hue"].empty())
+		// {
+		// 	//Lamp with color control
+		// 	hasHueSat = true;
+		// 	tlight.hue = lightstate["hue"].asInt();
+		// 	// Clamp to conform to HUE API
+		// 	tlight.hue = std::max(0, tlight.hue);
+		// 	tlight.hue = std::min(65535, tlight.hue);
+		// }
+		// ---- "hue" ----
+		if (lightstate.isMember("hue") && lightstate["hue"].isInt())
+		{
+			hasHueSat = true;
+			int thue = lightstate["hue"].asInt();
+			thue = std::max(0, thue);
+			thue = std::min(65535, thue);
+			tlight.hue = thue;
+		}
+		else
+		{
+			tlight.hue = 0;
+		}
+
+		// if (!lightstate["ct"].empty())
+		// {
+		// 	//Lamp with color temperature control
+		// 	hasTemp = true;
+		// 	tlight.ct = lightstate["ct"].asInt();
+		// 	// Clamp to conform to HUE API
+		// 	tlight.ct = std::max(153, tlight.ct);
+		// 	tlight.ct = std::min(500, tlight.ct);
+		// }
+		// ---- "ct" ----
+		if (lightstate.isMember("ct") && lightstate["ct"].isInt())
+		{
 			hasTemp = true;
-			tlight.ct = lightstate["ct"].asInt();
-			// Clamp to conform to HUE API
-			tlight.ct = std::max(153, tlight.ct);
-			tlight.ct = std::min(500, tlight.ct);
+			int tct = lightstate["ct"].asInt();
+			tct = std::max(153, tct);
+			tct = std::min(500, tct);
+			tlight.ct = tct;
 		}
-		if (!lightstate["xy"].empty())
+		else
 		{
+			tlight.ct = 0;
+		}
+		
+		// if (!lightstate["xy"].empty())
+		// {
+		// 	//Lamp with color control
+		// 	hasHueSat = true;
+		// 	tlight.x = lightstate["xy"][0].asDouble();
+		// 	tlight.y = lightstate["xy"][1].asDouble();
+		// }
+		// new
+		if (lightstate.isMember("xy") && lightstate["xy"].isArray() && lightstate["xy"].size() >= 2) {
 			//Lamp with color control
 			hasHueSat = true;
 			tlight.x = lightstate["xy"][0].asDouble();
 			tlight.y = lightstate["xy"][1].asDouble();
+		} else {
+			// default safe values
+			tlight.x = 0.0;
+			tlight.y = 0.0;
 		}
 
 		if (hasBri) LType = HLTYPE_DIM;
@@ -954,7 +1054,24 @@ bool CPhilipsHue::GetGroups(const Json::Value& root)
 			_tHueLightState tstate;
 			_eHueLightType LType;
 			bool bDoSend = true;
-			LightStateFromJSON(group["action"], tstate, LType); //TODO: Verify there is no crash with "bad" key
+			//LightStateFromJSON(group["action"], tstate, LType); //TODO: Verify there is no crash with "bad" key -> done?!
+			// new
+			Json::Value action = group.get("action", Json::Value());
+			if (!action.isObject()) {
+				Log(LOG_ERROR, "Hue group %d has invalid or missing 'action' object. Skipping.", gID);
+				continue;
+			} else {
+				Log(LOG_DEBUG_INT, "Hue group %d has 'action' object. ", gID);
+			}
+
+			try {
+				LightStateFromJSON(action, tstate, LType);
+			}
+			catch (const std::exception& e) {
+				Log(LOG_ERROR, "Exception while parsing Hue group %d action: %s", gID, e.what());
+				continue;
+			}
+			// /new
 
 			auto myGroup = m_groups.find(gID);
 			if (myGroup != m_groups.end())
@@ -1130,8 +1247,7 @@ bool CPhilipsHue::GetV2Sensors()
 	// call v2 sensors UpdateAll() and map to Domoticz devices (change-aware)
 	if (!m_use_v2_sensors || !m_v2sensors)
 		return false;
-	//if (m_use_v2_sensors && m_v2sensors)
-	//{
+	
 	try
 	{
 		if (m_v2sensors->UpdateAll())
@@ -1316,8 +1432,7 @@ bool CPhilipsHue::GetV2Sensors()
 	{
 		_log.Log(LOG_ERROR, "PhilipsHue: exception in v2 sensor handling: %s", e.what());
 	}
-	//}
-
+	
 	return true;
 }
 
