@@ -97,13 +97,6 @@ define(['app', 'livesocket'], function (app) {
 
 		RefreshItem = function (item) {
 			item.searchText = GenerateLiveSearchTextT(item);
-			var query = $('.jsLiveSearch').val();
-			if (query && query.length > 0) {
-				var match = item.searchText.toLowerCase().indexOf(query.toLowerCase()) !== -1;
-				if (!match) {
-					return; // Don't update items that don't match the filter
-				}
-			}
 			ctrl.temperatures.forEach(function (olditem, oldindex, oldarray) {
 				if (olditem.idx == item.idx) {
 					oldarray[oldindex] = item;
