@@ -65,7 +65,6 @@ CPhilipsHue::CPhilipsHue(const int ID, const std::string& IPAddress, const unsig
 	m_poll_interval = PollInterval;
 	// Force-enable V2 sensors by default by OR-ing the option in here.
 	// This keeps callers unchanged but makes the behavior default-on.
-	//int effectiveOptions = Options | CPhilipsHue::HUE_USE_V2_SENSORS;
 	int effectiveOptions = Options | HUE_USE_V2_SENSORS;
 
 	m_add_groups = (effectiveOptions & HUE_NOT_ADD_GROUPS) != 0;
@@ -94,8 +93,8 @@ CPhilipsHue::CPhilipsHue(const int ID, const std::string& IPAddress, const unsig
 
 void CPhilipsHue::Init()
 {
+	// instantiate V2 sensors helper when Port is 443 (HTTPS) and if enabled
 	if (m_Port == 443) {
-		// instantiate V2 sensors helper if enabled and Port is 443 (HTTPS)
 		if (m_use_v2_sensors)
 		{
 			// Use m_UserName as hue-application-key for now (same field used for v1 username).
@@ -107,7 +106,6 @@ void CPhilipsHue::Init()
 			catch (const std::exception& e)
 			{
 				Log(LOG_ERROR, "PhilipsHue: failed to create v2 sensors helper: %s", e.what());
-				//m_v2sensors.reset();
 				m_use_v2_sensors = false;
 			}
 		}
@@ -1061,7 +1059,6 @@ bool CPhilipsHue::GetGroups(const Json::Value& root)
 			_eHueLightType LType;
 			bool bDoSend = true;
 			//LightStateFromJSON(group["action"], tstate, LType); //TODO: Verify there is no crash with "bad" key -> done?!
-			// new
 			Json::Value action = group.get("action", Json::Value());
 			if (!action.isObject()) {
 				Log(LOG_ERROR, "Hue group %d has invalid or missing 'action' object. Skipping.", gID);
@@ -1077,7 +1074,6 @@ bool CPhilipsHue::GetGroups(const Json::Value& root)
 				Log(LOG_ERROR, "Exception while parsing Hue group %d action: %s", gID, e.what());
 				continue;
 			}
-			// /new
 
 			auto myGroup = m_groups.find(gID);
 			if (myGroup != m_groups.end())

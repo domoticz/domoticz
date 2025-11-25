@@ -1,6 +1,5 @@
 #pragma once
 
-//#include "stdafx.h"
 #include "PhilipsHueSensors.h"
 #include <string>
 #include <vector>
