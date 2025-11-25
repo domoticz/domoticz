@@ -94,21 +94,27 @@ CPhilipsHue::CPhilipsHue(const int ID, const std::string& IPAddress, const unsig
 
 void CPhilipsHue::Init()
 {
-	// instantiate V2 sensors helper if enabled
-	if (m_use_v2_sensors)
-	{
-		// Use m_UserName as hue-application-key for now (same field used for v1 username).
-		try
+	if (m_Port == 443) {
+		// instantiate V2 sensors helper if enabled and Port is 443 (HTTPS)
+		if (m_use_v2_sensors)
 		{
-			m_v2sensors = std::make_unique<CPhilipsHueV2Sensors>(m_html_schema, m_IPAddress, std::to_string(m_Port), m_UserName);
-			Log(LOG_STATUS, "PhilipsHue: v2 sensors support enabled.");
+			// Use m_UserName as hue-application-key for now (same field used for v1 username).
+			try
+			{
+				m_v2sensors = std::make_unique<CPhilipsHueV2Sensors>(m_html_schema, m_IPAddress, std::to_string(m_Port), m_UserName);
+				Log(LOG_STATUS, "PhilipsHue: v2 sensors support enabled.");
+			}
+			catch (const std::exception& e)
+			{
+				Log(LOG_ERROR, "PhilipsHue: failed to create v2 sensors helper: %s", e.what());
+				//m_v2sensors.reset();
+				m_use_v2_sensors = false;
+			}
 		}
-		catch (const std::exception& e)
-		{
-			Log(LOG_ERROR, "PhilipsHue: failed to create v2 sensors helper: %s", e.what());
-			//m_v2sensors.reset();
-			m_use_v2_sensors = false;
-		}
+	} else {
+		// no v2 sensors on non-HTTPS connections
+		Log(LOG_STATUS, "PhilipsHue: v2 sensors support disabled.");
+		m_use_v2_sensors = false;
 	}
 }
 
