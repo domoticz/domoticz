@@ -7,26 +7,90 @@ lowercase(){
     echo "$1" | sed "y/ABCDEFGHIJKLMNOPQRSTUVWXYZ/abcdefghijklmnopqrstuvwxyz/"
 }
 
-OS=`lowercase \`uname -s\``
-MACH=`uname -m`
-ARCH=`dpkg --print-architecture`
+# 1st determine if we run UP2DATE script extracted from update archive or current installed version?
+# Also print CRC to allow check if updated upgrade script differs from current...
+CALLER=$(ps -o args= $PPID)
+CALLEE=$(basename "$0")
+SCRIPTCRC=$(crc32 "$0")
+SCRIPTDIR="$( cd -- "$(dirname "$0")" >/dev/null 2>&1 || exit ; pwd -P )"
+[ "$SCRIPTDIR" != "$PWD" ] && echo "Script must be started from Domoticz directory!" && exit 1
+echo ">> Running '$CALLEE' (from '$SCRIPTDIR', crc32=$SCRIPTCRC)"
+echo ">> Caller: '$CALLER'"
+case "$CALLER" in
+  *"$CALLEE"*)
+    UP2DATE=1
+    ;;
+  *)
+    UP2DATE=0
+    ;;
+esac
+
+OS=$(lowercase \`uname -s\`)
+MACH=$(uname -m)
+ARCH=$(dpkg --print-architecture)
 OPENSSL_VERSION=$(openssl version -v | awk '{print $2}' | sed 's/\..*//')
 
-if [ ${MACH} = "armv6l" ]
+##
+## START : SECTION FOR PRE-UPDATE COMPATIBILITY CHECK ADDITIONS.
+##
+
+if [ "${MACH}" = "armv6l" ]
 then
  echo "ARMv6 is not supported anymore... Please upgrade your hardware"
  exit 1
 fi
 
-if [ ${ARCH} = "armhf" ]
+if [ "${ARCH}" = "armhf" ]
 then
  MACH="armv7l"
 fi
 
-if [  ${OPENSSL_VERSION} -ne 3 ]; then
+if [  "${OPENSSL_VERSION}" -ne 3 ]; then
  echo "OpenSSL version 3 required!"
  exit 1
 fi
+
+##
+## END : SECTION FOR PRE-UPDATE COMPATIBILITY CHECK ADDITIONS.
+##
+
+# Skip downloading again from up to date script restart...
+if [ "$UP2DATE" -eq 0 ]
+    then
+    echo "Downloading latest release version..."
+    wget -4 -q -O domoticz_release.tgz --no-check-certificate "https://www.domoticz.com/download.php?channel=stable&type=release&system=${OS}&machine=${MACH}"
+    if [ $? -ne 0 ]
+    then
+       echo "Problem downloading new Domoticz version!!"
+       exit 1
+    fi
+fi
+
+[ "$UP2DATE" -eq 1 ] && echo -n "Re-"
+echo "Checking file integrity..."
+tar tzf domoticz_release.tgz >/dev/null
+if [ $? -ne 0 ]
+then
+   echo "Problem in downloaded Domoticz archive!!"
+   exit 1
+fi
+
+# Get&Execute up to date script from just downloaded archive to
+# allow pre-update compatibility checks that may have been added
+# since last installed version...
+if [ "$UP2DATE" -eq 0 ]
+then
+    echo "Extracting up to date upgrade script:"
+    tar -zxvf domoticz_release.tgz --no-anchored "$CALLEE"
+    [ $? -ne 0 ] && echo "Error extracting 'up to date' upgrade script." && exit 1
+    echo "Done => Now calling up to date script..."
+    "$0" "$@"
+    exit $?
+fi
+
+##
+## UPDATE PROCESS: ONLY EXECUTED FOR UP2DATE SCRIPT IF COMPATIBILITY CHECKS PASS...
+##
 
 echo "Stopping Domoticz..."
 sudo service domoticz.sh stop
@@ -38,28 +102,13 @@ if [ "$1" != "-nobackup" ]; then
     timestamp=$(date +%Y%m%d_%H%M%S)
     echo "Output file: backups/domoticz_backup_$timestamp.tar.gz"
     mkdir -p backups
-    sudo tar --exclude backups -czf backups/domoticz_backup_$timestamp.tar.gz .
+    sudo tar --exclude backups -czf backups/domoticz_backup_"$timestamp".tar.gz .
     echo "Backup finished..."
 fi
-echo "Downloading latest release version..."
-wget -4 -q -O domoticz_release.tgz --no-check-certificate "https://www.domoticz.com/download.php?channel=stable&type=release&system=${OS}&machine=${MACH}"
-if [ $? -ne 0 ]
-then
- echo "Problem downloading new Domoticz version!!. Restarting current version..."
- sudo service domoticz.sh start
- exit 1
-fi
-echo "Checking file integrity..."
-tar tzf domoticz_release.tgz >/dev/null
-if [ $? -ne 0 ]
-then
- echo "Problem in downloaded Domoticz archive!!. Stopping and restarting current version..."
- sudo service domoticz.sh start
- exit 1
-fi
+
 echo "Installing new version..."
 tar xfz domoticz_release.tgz --checkpoint=.100
 rm domoticz_release.tgz
-echo "\nStarting Domoticz... (please standby...)"
+printf "\nStarting Domoticz... (please standby...)\n"
 sudo service domoticz.sh start
 echo "Done..."
