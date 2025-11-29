@@ -13118,7 +13118,7 @@ bool MainWorker::SetSetPointInt(const std::vector<std::string>& sd, const float 
 
 	float temp_celsius = (m_sql.m_tempsign[0] != 'F') ? TempValue : static_cast<float>(ConvertToCelsius(TempValue));
 
-	if ((dType == pTypeSetpoint) && (dSubType == sTypeSetpoint))
+	if (dType == pTypeThermostat6 || (dType == pTypeSetpoint) && (dSubType == sTypeSetpoint))
 	{
 		std::string sOptions = sd[8].c_str();
 		std::map<std::string, std::string> options = m_sql.BuildDeviceOptions(sOptions);
