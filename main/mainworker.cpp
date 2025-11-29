@@ -13139,7 +13139,6 @@ bool MainWorker::SetSetPointInt(const std::vector<std::string>& sd, const float 
 		}
 	}
 
-
 	if (pHardware->HwdType == HTYPE_PythonPlugin)
 	{
 #ifdef ENABLE_PYTHON
