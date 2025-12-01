@@ -4,7 +4,8 @@ define(['app', 'log/Chart'], function (app) {
         return {
             dataItemsKeysPredicatedSeriesSupplier: dataItemsKeysPredicatedSeriesSupplier,
             summingSeriesSupplier: summingSeriesSupplier,
-            counterCompareSeriesSuppliers: counterCompareSeriesSuppliers
+            counterCompareSeriesSuppliers: counterCompareSeriesSuppliers,
+            fillMissingDays: fillMissingDays
         };
 
         function dataItemsKeysPredicatedSeriesSupplier(dataItemValueKey, dataSeriesItemsKeysPredicate, seriesSupplierTemplate) {
@@ -150,6 +151,54 @@ define(['app', 'log/Chart'], function (app) {
                         []
                     );
             }
+        }
+
+        function fillMissingDays(data) {
+            // Fill in missing days in data.result to spread spikes
+            if (!data || !data.result || !Array.isArray(data.result)) return;
+
+            const result = [];
+            let lastDate = null;
+            let lastItem = null;
+
+            data.result.forEach(function(item) {
+                if (item.d) {
+                    const currentDate = new Date(item.d);
+                    if (lastDate && lastItem) {
+                        const daysDiff = Math.round((currentDate - lastDate) / (1000 * 60 * 60 * 24));
+                        if (daysDiff > 1) {
+                            const avgValue = parseFloat(item.v) / daysDiff;
+                            const avgV2 = item.v2 ? parseFloat(item.v2) / daysDiff : 0;
+                            const startCounter = parseFloat(lastItem.c || 0);
+                            const endCounter = parseFloat(item.c || 0);
+                            const counterIncrement = (endCounter - startCounter) / daysDiff;
+
+                            for (let i = 1; i < daysDiff; i++) {
+                                const fillDate = new Date(lastDate);
+                                fillDate.setDate(fillDate.getDate() + i);
+                                const filledItem = {
+                                    d: fillDate.toISOString().split('T')[0],
+                                    v: avgValue.toFixed(3),
+                                    p: item.p || "0.0000"
+                                };
+                                if (item.c) {
+                                    filledItem.c = (startCounter + (counterIncrement * i)).toFixed(3);
+                                }
+                                if (item.v2) {
+                                    filledItem.v2 = avgV2.toFixed(3);
+                                }
+                                result.push(filledItem);
+                            }
+                            item.v = avgValue.toFixed(3);
+                            if (item.v2) item.v2 = avgV2.toFixed(3);
+                        }
+                    }
+                    result.push(item);
+                    lastDate = currentDate;
+                    lastItem = item;
+                }
+            });
+            data.result = result;
         }
     });
 
