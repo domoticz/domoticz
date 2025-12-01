@@ -1931,8 +1931,20 @@ void MQTTAutoDiscover::handle_auto_discovery_sensor_message(const struct mosquit
 			{
 				szValue = qMessage;
 			}
+			// ESPHome repeatedly sends MQTT updates each time it polls the sensor,
+			// even when the value doesn't change. Discard duplicates if the last
+			// value is the same, and less than ten minutes old.
+			auto now = mytime(nullptr);
+			if (pSensor->last_topic == topic && pSensor->last_value == szValue &&
+			    pSensor->last_received > (now - (m_sql.m_ShortLogInterval * 60)))
+			{
+#ifdef _DEBUG
+				Log(LOG_NORM, "Dropping duplicate MQTT message to %s (%ld seconds old)", topic.c_str(), now - pSensor->last_received);
+#endif
+				return;
+			}
 			pSensor->last_value = szValue;
-			pSensor->last_received = mytime(nullptr);
+			pSensor->last_received = now;
 			pSensor->last_topic = topic;
 			pSensor->bIsJSON = bIsJSON;
 			if (bIsJSON)
