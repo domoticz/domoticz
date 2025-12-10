@@ -1,7 +1,7 @@
 <div id="deviceTimers" class="container js-device-timers">
 	<div class="page-header-small page-header-with-button">
 		<h1><span data-i18n="Timers">Timers</span>: {{ ::vm.itemName }}</h1>
-        <div><a class="btnstyle3" back-button><i class="fa fa-reply" title="Back"></i> {{ ::'Back' | translate }}</a></div>
+        <div><a class="btnstyle3" back-button><i class="fa fa-reply" title="Back"></i>&nbsp;<span data-i18n="Back"></span></a></div>
 	</div>
 
     <div id="tabs">
@@ -36,18 +36,12 @@
                         <tr>
                             <td style="padding: 3px 10px; width: 160px;">&nbsp;</td>
                             <td style="padding: 3px 10px;">
-                                <button class="btnstyle3" ng-click="vm.addTimer()">
-                                    {{:: 'Add' | translate }}
-                                </button>
-                                <button class="btnstyle3" ng-click="vm.updateTimer(vm.selectedTimerIdx)" ng-disabled="!vm.selectedTimerIdx">
-                                    {{:: 'Update' | translate }}
-                                </button>
-                                <button class="btnstyle3" ng-click="vm.deleteTimer(vm.selectedTimerIdx)" ng-disabled="!vm.selectedTimerIdx">
-                                    {{:: 'Delete' | translate }}
-                                </button>
+                                <button class="btnstyle3" data-i18n="Add" ng-click="vm.addTimer()"></button>
+                                <button class="btnstyle3" data-i18n="Update" ng-click="vm.updateTimer(vm.selectedTimerIdx)" ng-disabled="!vm.selectedTimerIdx"></button>
+                                <button class="btnstyle3" data-i18n="Delete" ng-click="vm.deleteTimer(vm.selectedTimerIdx)" ng-disabled="!vm.selectedTimerIdx"></button>
                             </td>
                             <td align="right" style="padding-right: 10px;">
-                                <button class="btnstyle3" ng-click="vm.clearTimers()">{{:: 'Clear' | translate }}</button>
+                                <button class="btnstyle3" data-i18n="Clear" ng-click="vm.clearTimers()"></button>
                             </td>
                         </tr>
                     </table>
@@ -76,7 +70,7 @@
             <table class="display settings-form" id="timerparamstable">
                 <tr>
                     <td style="vertical-align: top; width: 160px;">
-                        <label>{{:: 'Today' | translate }}:</label>
+                        <label data-i18n="Today"></label>
                     </td>
                     <td>
                         <timesun></timesun>
@@ -84,7 +78,7 @@
                 </tr>
                 <tr>
                     <td>
-                        <label for="enabled">{{:: 'Enabled' | translate }}:</label>
+                        <label for="enabled" data-i18n="Enabled"></label>:
                     </td>
                     <td>
                         <input type="checkbox" id="enabled" ng-model="vm.timerSettings.active">
@@ -93,7 +87,7 @@
                 </tr>
                 <tr>
                     <td>
-                        <label for="combotype">{{:: 'Type' | translate }}:</label>
+                        <label for="combotype" data-i18n="Type"></label>:
                     </td>
                     <td>
                         <select id="combotype"
@@ -106,7 +100,7 @@
                 </tr>
                 <tr ng-show="vm.isDateVisible()">
                     <td>
-                        <label for="sdate">{{:: 'Date' | translate }}:</label>
+                        <label for="sdate" data-i18n="Date"></label>:
                     </td>
                     <td>
                         <input id="sdate"
@@ -119,7 +113,7 @@
                 </tr>
                 <tr>
                     <td>
-                        <label for="combotimehour">{{:: 'Time' | translate }}:</label>
+                        <label for="combotimehour" data-i18n="Time"></label>:
                     </td>
                     <td>
                         <select id="combotimehour" style="width:50px" class="combobox ui-corner-all"
@@ -132,12 +126,12 @@
                                 ng-options="item.value as item.label for item in ::vm.minuteOptions">
                         </select>
 
-                        <span>{{:: '(hour/minute)' | translate }}</span>
+                        <span data-i18n="(hour/minute)"></span>
                     </td>
                 </tr>
                 <tr ng-hide="::vm.isSetpointTimers">
                     <td>
-                        <label for="randomness">{{:: 'Randomness' | translate }}:</label>
+                        <label for="randomness" data-i18n="Randomness"></label>:
                     </td>
                     <td>
                         <input id="randomness" type="checkbox" ng-model="vm.timerSettings.randomness">
@@ -146,7 +140,7 @@
                 </tr>
                 <tr>
                     <td>
-                        <label for="persistent">{{:: 'Persistent' | translate }}:</label>
+                        <label for="persistent" data-i18n="Persistent"></label>:
                     </td>
                     <td>
                         <input id="persistent" type="checkbox" ng-model="vm.timerSettings.persistent">
@@ -155,7 +149,7 @@
                 </tr>
                 <tr ng-hide="::vm.isSetpointTimers || vm.isCommandSelectionDisabled">
                     <td>
-                        <label for="combocommand">{{:: 'Command' | translate }}:</label>
+                        <label for="combocommand" data-i18n="Command"></label>:
                     </td>
                     <td ng-hide="::vm.isBlind">
                         <select id="combocommand"
@@ -176,7 +170,7 @@
                 </tr>
                 <tr ng-show="::vm.isSetpointTimers">
                     <td>
-                        <label for="tvalue">{{:: 'Value' | translate }}:</label>
+                        <label for="tvalue" data-i18n="Value"></label>:
                     </td>
                     <td>
                         <input type="text" id="tvalue" style="width: 60px; padding: .2em;"
@@ -190,8 +184,8 @@
                 <tr ng-show="vm.isLevelVisible()">
                     <td>
                         <label for="combolevel">
-                            <span ng-show="::!vm.isSelector">{{:: 'Level' | translate }}</span>
-                            <span ng-show="::vm.isSelector">{{:: 'Level name' | translate }}</span>:
+                            <span ng-show="::!vm.isSelector" data-i18n="Level"></span>
+                            <span ng-show="::vm.isSelector" data-i18n="Level name"></span>:
                         </label>
                     </td>
                     <td>
@@ -204,7 +198,7 @@
 
                 <tr ng-if="::vm.isColorSettingsAvailable">
                     <td>
-                        <label>{{:: 'Color' | translate }}:</label>
+                        <label data-i18n="Color"></label>:
                     </td>
                     <td>
                         <rgbw-picker color="vm.timerSettings.color"
@@ -221,23 +215,23 @@
 
                 <tr ng-show="vm.isDayScheduleVisible()">
                     <td>
-                        <label>{{:: 'When' | translate }}:</label>
+                        <label data-i18n="When"></label>:
                     </td>
                     <td>
                         <input id="when_1" type="radio" name="when" value="Everyday" ng-model="vm.week.type">&nbsp;
-                        <label for="when_1">{{:: 'Everyday' | translate }}</label>
+                        <label for="when_1" data-i18n="Everyday"></label>
                         <br>
                         <br>
                         <input id="when_2" type="radio" name="when" value="Weekdays" ng-model="vm.week.type">&nbsp;
-                        <label for="when_2">{{:: 'Weekdays' | translate }}</label>
+                        <label for="when_2" data-i18n="Weekdays"></label>
                         <br>
                         <br>
                         <input id="when_3" type="radio" name="when" value="Weekends" ng-model="vm.week.type">&nbsp;
-                        <label for="when_3">{{:: 'Weekends' | translate }}</label>
+                        <label for="when_3" data-i18n="Weekends"></label>
                         <br>
                         <br>
                         <input id="when_4" type="radio" name="when" value="SelectedDays" ng-model="vm.week.type">&nbsp;
-                        <label for="when_4">{{:: 'Selected Days' | translate }}</label>
+                        <label for="when_4" data-i18n="Selected Days"></label>
                         <br>
                         <br>
                     </td>
@@ -247,43 +241,43 @@
                 </tr>
                 <tr ng-show="vm.isDayScheduleVisible()">
                     <td>
-                        <label>{{:: 'Days' | translate }}:</label>
+                        <label data-i18n="Days"></label>:
                     </td>
                     <td>
                         <input type="checkbox" id="ChkMon"
                                ng-disabled="!vm.isDaySelectonAvailable()"
                                ng-model="vm.week.days.mon">&nbsp;
-                        <label for="ChkMon">{{:: 'Monday' | translate }}</label>
+                        <label for="ChkMon" data-i18n="Monday"></label>
                         <br>
                         <input type="checkbox" id="ChkTue"
                                ng-disabled="!vm.isDaySelectonAvailable()"
                                ng-model="vm.week.days.tue">&nbsp;
-                        <label for="ChkTue">{{:: 'Tuesday' | translate }}</label>
+                        <label for="ChkTue" data-i18n="Tuesday"></label>
                         <br>
                         <input type="checkbox" id="ChkWed"
                                ng-disabled="!vm.isDaySelectonAvailable()"
                                ng-model="vm.week.days.wed">&nbsp;
-                        <label for="ChkWed">{{:: 'Wednesday' | translate }}</label>
+                        <label for="ChkWed" data-i18n="Wednesday"></label>
                         <br>
                         <input type="checkbox" id="ChkThu"
                                ng-disabled="!vm.isDaySelectonAvailable()"
                                ng-model="vm.week.days.thu">&nbsp;
-                        <label for="ChkThu">{{:: 'Thursday' | translate }}</label>
+                        <label for="ChkThu" data-i18n="Thursday"></label>
                         <br>
                         <input type="checkbox" id="ChkFri"
                                ng-disabled="!vm.isDaySelectonAvailable()"
                                ng-model="vm.week.days.fri">&nbsp;
-                        <label for="ChkFri">{{:: 'Friday' | translate }}</label>
+                        <label for="ChkFri" data-i18n="Friday"></label>
                         <br>
                         <input type="checkbox" id="ChkSat"
                                ng-disabled="!vm.isDaySelectonAvailable()"
                                ng-model="vm.week.days.sat">&nbsp;
-                        <label for="ChkSat">{{:: 'Saturday' | translate }}</label>
+                        <label for="ChkSat" data-i18n="Saturday"></label>
                         <br>
                         <input type="checkbox" id="ChkSun"
                                ng-disabled="!vm.isDaySelectonAvailable()"
                                ng-model="vm.week.days.sun">&nbsp;
-                        <label for="ChkSun">{{:: 'Sunday' | translate }}</label>
+                        <label for="ChkSun" data-i18n="Sunday"></label>
                     </td>
                 </tr>
                 <tr ng-show="vm.isRDaysVisible()">
@@ -291,7 +285,7 @@
                 </tr>
                 <tr ng-show="vm.isRDaysVisible()">
                     <td>
-                        <label for="days">{{:: 'Day' | translate }}:</label>
+                        <label for="days" data-i18n="Day"></label>:
                     </td>
                     <td>
                         <select id="days"
@@ -307,7 +301,7 @@
                 </tr>
                 <tr ng-show="vm.isROccurenceVisible()">
                     <td>
-                        <label for="occurence">{{:: 'Day' | translate }}:</label>
+                        <label for="occurence" data-i18n="Day"></label>:
                     </td>
                     <td>
                         <select id="occurence"
@@ -330,7 +324,7 @@
                 </tr>
                 <tr ng-show="vm.isRMonthsVisible()">
                     <td>
-                        <label for="months">{{:: 'Month' | translate }}:</label>
+                        <label for="months" data-i18n="Month"></label>:
                     </td>
                     <td>
                         <select id="months"

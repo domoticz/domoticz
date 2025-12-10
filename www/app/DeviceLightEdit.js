@@ -179,23 +179,23 @@ define(['app', 'components/rgbw-picker/RgbwPicker'], function (app) {
 
             function refreshTable() {
                 table.api().clear().draw();
-
                 domoticzApi.sendCommand('getsubdevices', {
                     idx: vm.deviceIdx
                 }).then(function (data) {
                     table.api().rows.add(data.result || []).draw();
-                });
+                }).catch(function () {
+                })
+
             }
 
             function addSubDevice() {
                 domoticzApi.sendCommand('addsubdevice', {
                     idx: vm.deviceIdx,
                     subidx: vm.subDeviceIdx
-                })
-                    .then(refreshTable)
-                    .catch(function () {
+                }).then(refreshTable)
+                .catch(function () {
                         ShowNotify($.t('Problem adding Sub/Slave Device!'), 2500, true);
-                    })
+                })
             }
 
             function deleteSubDevice() {

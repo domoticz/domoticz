@@ -767,6 +767,21 @@ define(['app', 'livesocket'], function (app) {
 			var id = "#" + item.idx;
 			var obj = $element.find(id);
 			if (typeof obj != 'undefined') {
+				var bigtext = TranslateStatusShort(item.Status);
+				if (item.UsedByCamera == true) {
+					var streamimg = '<img src="images/webcam.png" title="' + $.t('Stream Video') + '" height="16" width="16">';
+					streamurl = "<a href=\"javascript:ShowCameraLiveStream('" + escape(item.Name) + "'," + item.CameraIdx + "," + item.CameraAspect + ")\">" + streamimg + "</a>";
+					bigtext += "&nbsp;" + streamurl;
+				}
+				var searchText = GenerateLiveSearchTextSG(item, bigtext);
+				var query = $('.jsLiveSearch').val();
+				if (query && query.length > 0) {
+					var match = searchText.toLowerCase().indexOf(query.toLowerCase()) !== -1;
+					if (!match) {
+						return; // Don't update items that don't match the filter
+					}
+				}
+
 				if ($(id + " #name").html() != item.Name) {
 					$(id + " #name").html(item.Name);
 				}
@@ -778,7 +793,7 @@ define(['app', 'livesocket'], function (app) {
 				var img1 = "";
 				var img2 = "";
 
-				var bigtext = TranslateStatusShort(item.Status);
+				bigtext = TranslateStatusShort(item.Status);
 				
 				if (item.UsedByCamera == true) {
 					var streamimg = '<img src="images/webcam.png" title="' + $.t('Stream Video') + '" height="16" width="16">';
@@ -820,7 +835,6 @@ define(['app', 'livesocket'], function (app) {
 					$(id + " #lastupdate").html(item.LastUpdate);
 				}
 				
-				var searchText = GenerateLiveSearchTextSG(item, bigtext);
 				$(id).find('#name').attr('data-search', searchText);
 				
 				if (!document.hidden) {

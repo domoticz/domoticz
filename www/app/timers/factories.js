@@ -45,10 +45,16 @@ define(['app'], function (app) {
         }
 
         function getTimerDefaultConfig() {
+			const currentDate = new Date();
+			const day = String(currentDate.getDate()).padStart(2, '0');
+			const month = String(currentDate.getMonth() + 1).padStart(2, '0');
+			const year = currentDate.getFullYear();
+
+			const dateString = `${year}-${month}-${day}`;			
             return {
                 active: true,
                 timertype: 0,
-                date: '',
+                date: dateString,
                 hour: 0,
                 min: 0,
                 randomness: false,

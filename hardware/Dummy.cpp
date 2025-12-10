@@ -69,7 +69,7 @@ namespace http {
 			int subtype;
 		};
 
-		constexpr std::array<_mappedsensorname, 40> mappedsensorname{ {
+		constexpr std::array<_mappedsensorname, 44> mappedsensorname{ {
 			{ 249, pTypeAirQuality, sTypeVoc },	   // Air Quality
 			{ 7, pTypeGeneral, sTypeAlert },		   // Alert
 			{ 9, pTypeCURRENT, sTypeELEC1 },		   // Ampere (3 Phase)
@@ -109,7 +109,11 @@ namespace http {
 			{ 4, pTypeGeneral, sTypeVoltage },		   // Voltage
 			{ 1000, pTypeGeneral, sTypeWaterflow },		   // Waterflow
 			{ 86, pTypeWIND, sTypeWIND1 },			   // Wind
-			{ 1001, pTypeWIND, sTypeWIND4 }			   // Wind+Temp+Chill
+			{ 1001, pTypeWIND, sTypeWIND4 },			   // Wind+Temp+Chill
+			{ 1006, pTypeThermostat6, sTypeThermostat6Temp },	   // Thermostat (Temperature/Setpoint)
+			{ 1007, pTypeThermostat6, sTypeThermostat6TempHum },	   // Thermostat (Temperature/Humidity/Setpoint)
+			{ 1008, pTypeThermostat6, sTypeThermostat6TempBaro },	   // Thermostat (Temperature/Barometer/Setpoint)
+			{ 1009, pTypeThermostat6, sTypeThermostat6TempHumBaro }	   // Thermostat (Temperature/Humidity/Barometer/Setpoint)
 		} };
 
 		//TODO: Is this function called from anywhere, or can it be removed?

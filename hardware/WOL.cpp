@@ -55,74 +55,121 @@ bool CWOL::StopHardware()
 
 //6 * 255 or(0xff)
 //16 * MAC Address of target PC
-bool GenerateWOLPacket(unsigned char *pPacket, const std::string &MACAddress)
+std::vector<unsigned char> GenerateWOLPacket(const std::string &MACAddress)
 {
-	std::vector<std::string> results;
-	StringSplit(MACAddress, "-", results);
-	if (results.size() != 6)
-	{
-		StringSplit(MACAddress, ":", results);
-		if (results.size() != 6)
-		{
-			return false;
+	std::vector<unsigned char> packet;
+
+	std::vector<unsigned char> mac;
+
+	std::string hex;
+
+	for (char c : MACAddress) {
+		if (c == ':' || c == '-' || c == ' ') {
+			if (hex.size() > 0) {
+				mac.push_back(static_cast<unsigned char>(std::stoul(hex, nullptr, 16)));
+				hex.clear();
+			}
+		}
+		else if (isxdigit(c)) {
+			hex += c;
+			// Process every 2 hex digits
+			if (hex.size() == 2) {
+				mac.push_back(static_cast<unsigned char>(std::stoul(hex, nullptr, 16)));
+				hex.clear();
+			}
 		}
 	}
-
-	unsigned char mac[6];
-	int ii;
-
-	for (ii = 0; ii < 6; ii++)
-	{
-		std::stringstream SS(results[ii]);
-		unsigned int c;
-		SS >> std::hex >> c;
-		mac[ii] = (unsigned char)c;
+	if (hex.size() > 0) {
+		mac.push_back(static_cast<unsigned char>(std::stoul(hex, nullptr, 16)));
 	}
 
-	/** first 6 bytes of 255 **/
-	for (ii = 0; ii < 6; ii++) {
-		pPacket[ii] = 0xFF;
+	if (mac.size() != 6)
+		return packet; //invalid AMC address
+
+	// Add 6 bytes of 0xFF
+	for (int i = 0; i < 6; i++) {
+		packet.push_back(0xFF);
 	}
-	/** append it 16 times to packet **/
-	for (ii = 1; ii <= 16; ii++) {
-		memcpy(&pPacket[ii * 6], &mac, 6 * sizeof(unsigned char));
+
+	// Add MAC address 16 times
+	for (int i = 0; i < 16; i++) {
+		packet.insert(packet.end(), mac.begin(), mac.end());
 	}
-	return true;
+
+	return packet;
 }
 
-bool CWOL::SendWOLPacket(const unsigned char *pPacket)
+// MAC Address could be (AA:BB:CC:DD:EE:FF) or dashed(AA-BB-CC-DD-EE-FF)
+// Broadcast/Multicast Support:
+//  IPv4: Uses broadcast(e.g., 255.255.255.255 or 192.168.0.255)
+//  IPv6: Uses multicast addresses(e.g., ff02::1 for link-local all-nodes)
+bool CWOL::SendWOLPacket(const std::vector<unsigned char>& magic_packet)
 {
-	SOCKET udpSocket;
-	struct sockaddr_in udpClient, udpServer;
-
-	udpSocket = socket(AF_INET, SOCK_DGRAM, 0);
-
-	// this call is what allows broadcast packets to be sent:
-	int broadcast = 1;
-	if (setsockopt(udpSocket, SOL_SOCKET, SO_BROADCAST, (const char*)&broadcast, sizeof(broadcast)) == -1)
+	try
 	{
-		closesocket(udpSocket);
-		return false;
+		// Determine target address
+		std::string targetAddr = m_broadcast_address.empty() ? "255.255.255.255" : m_broadcast_address;
+
+		// Setup address hints for getaddrinfo
+		addrinfo hints = {};
+		hints.ai_family = AF_UNSPEC;      // Support both IPv4 and IPv6
+		hints.ai_socktype = SOCK_DGRAM;   // UDP
+		hints.ai_protocol = IPPROTO_UDP;
+
+		addrinfo* result = nullptr;
+		std::string portStr = std::to_string(m_wol_port);
+
+		if (getaddrinfo(targetAddr.c_str(), portStr.c_str(), &hints, &result) != 0) {
+			return false;
+		}
+
+		bool success = false;
+
+		// Try to send using the resolved address
+		for (addrinfo* ptr = result; ptr != nullptr; ptr = ptr->ai_next) {
+			// Create socket
+			SOCKET sock = socket(ptr->ai_family, ptr->ai_socktype, ptr->ai_protocol);
+			if (sock == INVALID_SOCKET) {
+				continue;
+			}
+
+			if (ptr->ai_family == AF_INET) { // For IPv4 multicast
+				
+				// Enable broadcast
+				int broadcastEnable = 1;
+				setsockopt(sock, SOL_SOCKET, SO_BROADCAST,
+					(const char*)&broadcastEnable, sizeof(broadcastEnable));
+			}
+			else if (ptr->ai_family == AF_INET6) { // For IPv6 multicast
+				// Set multicast hop limit
+				int hopLimit = 1;
+				setsockopt(sock, IPPROTO_IPV6, IPV6_MULTICAST_HOPS,
+					(const char*)&hopLimit, sizeof(hopLimit));
+			}
+
+			// Send the packet
+			int bytesSent = sendto(sock, (const char*)magic_packet.data(),
+				static_cast<int>(magic_packet.size()), 0,
+				ptr->ai_addr, static_cast<int>(ptr->ai_addrlen));
+
+			if (bytesSent > 0) {
+				success = true;
+			}
+
+			closesocket(sock);
+
+			if (success) break;
+		}
+
+		freeaddrinfo(result);
+
+		return success;
 	}
-	udpClient.sin_family = AF_INET;
-	udpClient.sin_addr.s_addr = INADDR_ANY;
-	udpClient.sin_port = 0;
-
-	bind(udpSocket, (struct sockaddr*)&udpClient, sizeof(udpClient));
-
-	/** make the packet as shown above **/
-
-	/** set server end point (the broadcast addres)**/
-	udpServer.sin_family = AF_INET;
-	udpServer.sin_addr.s_addr = inet_addr(m_broadcast_address.c_str());
-	udpServer.sin_port = htons(m_wol_port);
-
-	/** send the packet **/
-	sendto(udpSocket, (const char*)pPacket, 102, 0, (struct sockaddr*)&udpServer, sizeof(udpServer));
-
-	closesocket(udpSocket);
-
-	return true;
+	catch (const std::exception& e)
+	{
+		Log(LOG_ERROR, "WOL Exception: %s", e.what());
+	}
+	return false;
 }
 
 bool CWOL::WriteToHardware(const char *pdata, const unsigned char length)
@@ -147,15 +194,17 @@ bool CWOL::WriteToHardware(const char *pdata, const unsigned char length)
 	if (result.empty())
 		return false; //Not Found
 
-	unsigned char tosend[102];
 	std::string mac_address = result[0][0];
-	if (!GenerateWOLPacket(tosend, mac_address))
+
+	std::vector<unsigned char> magic_packet = GenerateWOLPacket(mac_address);
+
+	if (magic_packet.empty())
 	{
-		Log(LOG_ERROR, "Error creating magic packet");
+		Log(LOG_ERROR, "Error creating magic packet (Check for valid mac-address)");
 		return false;
 	}
 
-	if (SendWOLPacket(tosend))
+	if (SendWOLPacket(magic_packet))
 	{
 		Log(LOG_STATUS, "Wake-up send to: %s", mac_address.c_str());
 	}

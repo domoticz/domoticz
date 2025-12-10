@@ -314,6 +314,21 @@ define(['app', 'livesocket'], function (app) {
 				return; //idx not found
 			}
 
+			var bigtext = TranslateStatusShort(item.Status);
+			if (item.UsedByCamera == true) {
+				var streamimg = '<img src="images/webcam.png" title="' + $.t('Stream Video') + '" height="16" width="16">';
+				var streamurl = "<a href=\"javascript:ShowCameraLiveStream('" + escape(item.Name) + "'," + item.CameraIdx + "," + item.CameraAspect + ")\">" + streamimg + "</a>";
+				bigtext += "&nbsp;" + streamurl;
+			}
+			var searchText = GenerateLiveSearchTextL(item, bigtext);
+			var query = $('.jsLiveSearch').val();
+			if (query && query.length > 0) {
+				var match = searchText.toLowerCase().indexOf(query.toLowerCase()) !== -1;
+				if (!match) {
+					return; // Don't update items that don't match the filter
+				}
+			}
+
 			if ($(id + " #name").html() != item.Name) {
 				$(id + " #name").html(item.Name);
 			}
@@ -323,9 +338,7 @@ define(['app', 'livesocket'], function (app) {
 			var img3 = "";
 			var status = "";
 
-			//console.log(item);
-
-			var bigtext = TranslateStatusShort(item.Status);
+			bigtext = TranslateStatusShort(item.Status);
 			if (item.UsedByCamera == true) {
 				var streamimg = '<img src="images/webcam.png" title="' + $.t('Stream Video') + '" height="16" width="16">';
 				var streamurl = "<a href=\"javascript:ShowCameraLiveStream('" + escape(item.Name) + "'," + item.CameraIdx + "," + item.CameraAspect + ")\">" + streamimg + "</a>";
@@ -695,7 +708,6 @@ define(['app', 'livesocket'], function (app) {
 				$(id + " #lastupdate").html(item.LastUpdate);
 			}
 
-			var searchText = GenerateLiveSearchTextL(item, bigtext);
 			$(id).find('#name').attr('data-search', searchText);
 			
 			if (!document.hidden) {

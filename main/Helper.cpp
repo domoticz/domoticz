@@ -56,6 +56,8 @@
 #endif
 #endif
 
+const std::string WHITESPACE = " \n\r\t\f\v";
+
 namespace
 {
 	constexpr std::array<uint8_t, 256> crc8_tab{
@@ -1132,6 +1134,7 @@ bool IsTemp(const int dType, const int dSubType)
 		|| (dType == pTypeThermostat1)
 		|| ((dType == pTypeRFXSensor) && (dSubType == sTypeRFXSensorTemp))
 		|| (dType == pTypeRego6XXTemp)
+		|| (dType == pTypeThermostat6)
 		);
 }
 
@@ -1940,3 +1943,60 @@ exit_sub:
 	return true;
 }
 
+// Helper function to check and replace illegal characters in filenames
+std::string sanitizeFilename(const std::string& filename) {
+	// Common illegal filename characters across Windows and Unix/Linux, plus dot (.)
+	const std::string illegalChars = "\\/:*?\"<>|%.";
+	std::string cleanedFilename;
+
+	for (char c : filename) {
+		if (illegalChars.find(c) != std::string::npos) {
+			cleanedFilename += '_';
+		}
+		else {
+			cleanedFilename += c;
+		}
+	}
+
+	// Convert to lowercase (for consistency)
+	std::transform(cleanedFilename.begin(), cleanedFilename.end(),
+		cleanedFilename.begin(), ::tolower);
+
+	return cleanedFilename;
+}
+// Helper function in hardware classes to save/load the HTTP respnse
+// Convert URL to a filename and save it to appropriate directory based on OS
+std::string urlToFilename(const std::string& base, const std::string& url)
+{
+	// Detect operating system
+#ifdef _WIN32
+	const std::string basePath = "E:\\";
+#else
+	const std::string basePath = "/tmp/";
+#endif
+	// Strip http:// or https:// from the beginning of the URL if found
+	std::string strippedUrl = url;
+	size_t pos = strippedUrl.find("http://");
+	if (pos == 0) {
+		strippedUrl = strippedUrl.substr(7);
+	}
+	else {
+		pos = strippedUrl.find("https://");
+		if (pos == 0) {
+			strippedUrl = strippedUrl.substr(8);
+		}
+	}
+
+	pos = strippedUrl.find("/");
+	if (pos != std::string::npos) {
+		strippedUrl = strippedUrl.substr(pos + 1);
+	}
+
+	// Sanitize filename and append .txt
+	std::string cleanedFilename = sanitizeFilename(strippedUrl) + ".txt";
+
+	// Combine base path with filename
+	std::string filePath = basePath + base + "_" + cleanedFilename;
+
+	return filePath;
+}

@@ -313,6 +313,25 @@ typedef struct _tSetpoint
 	}
 } tSetpoint;
 
+typedef struct _tThermostat6
+{
+	uint8_t len = sizeof(_tThermostat6) - 1;
+	uint8_t type = pTypeThermostat6;
+	uint8_t subtype = sTypeThermostat6Temp;
+	uint8_t id1 = 1;
+	uint8_t id2 = 0;
+	uint8_t id3 = 0;
+	uint8_t id4 = 0;
+	uint8_t dunit = 1;
+	uint8_t battery_level = 255;
+	float temperature = 0;
+	float setpoint = 0;
+	uint8_t humidity = 0;
+	uint8_t humidity_status = 0;
+	uint16_t barometer = 0;
+	uint8_t update_flags = 0; // Bit flags: 0x01=temp, 0x02=setpoint, 0x04=humidity, 0x08=barometer
+} tThermostat6;
+
 typedef struct _tTempBaro
 {
 	uint8_t len;

@@ -13,8 +13,6 @@ enum _eTimeFormat
 	TF_DateTimeMs	// 3
 };
 
-const std::string WHITESPACE = " \n\r\t\f\v";
-
 uint8_t Crc8(uint8_t crc, const uint8_t* buf, size_t size);
 uint16_t crc16ccitt(const uint8_t* buf, size_t size);
 unsigned int Crc32(unsigned int crc, const uint8_t* buf, size_t size);
@@ -167,3 +165,5 @@ std::string vector_2_string(std::vector<std::string> const& strings, const std::
 
 bool AESEncryptData(const std::string& szInputBuffer, std::string& szOutputBuffer, const uint8_t* pKey16);
 bool AESDecryptData(const std::string& szInputBuffer, std::string& szOutputBuffer, const uint8_t* pKey16);
+
+std::string urlToFilename(const std::string& base, const std::string& url);

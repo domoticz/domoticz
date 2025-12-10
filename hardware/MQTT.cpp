@@ -119,14 +119,8 @@ bool MQTT::StopHardware()
 	StopHeartbeatThread();
 	if (m_thread)
 	{
-		RequestStop();
 		m_thread->join();
 		m_thread.reset();
-	}
-	if (m_mqtt_thread)
-	{
-		m_mqtt_thread->join();
-		m_mqtt_thread.reset();
 	}
 	m_IsConnected = false;
 	return true;
@@ -602,6 +596,7 @@ void MQTT::on_disconnect(int rc)
 //called when hardware is stopped
 void MQTT::on_going_down()
 {
+	RequestStop();
 	if (isConnected())
 	{
 		m_IsConnected = false;
@@ -682,47 +677,21 @@ bool MQTT::ConnectIntEx()
 
 void MQTT::Do_Work()
 {
-	bool bFirstTime = true;
-	int sec_counter = 0;
-
 	set_callbacks();
 
-	time_t last_time = time(nullptr);
+	int wait_time = 5;
 
-	while (!IsStopRequested(1000))
+	while (!IsStopRequested(wait_time))
 	{
-		sec_counter++;
-
-		if (sec_counter % 12 == 0)
+		if (!ConnectInt())
 		{
-			m_LastHeartbeat = mytime(nullptr);
+			continue;
 		}
-
-		if (bFirstTime)
-		{
-			bFirstTime = false;
-			ConnectInt();
-
-			m_mqtt_thread = std::make_shared<std::thread>([this] { Do_MQTT_Work(); });
-			SetThreadNameInt(m_mqtt_thread->native_handle());
-		}
-		else
-		{
-			if (sec_counter % 30 == 0)
-			{
-				if (m_bDoReconnect)
-					ConnectIntEx();
-			}
-			if (isConnected() && sec_counter % 10 == 0)
-			{
-				SendHeartbeat();
-			}
-		}
+		loop_forever();
+		wait_time = 30 * 1000;
 	}
-	clear_callbacks();
 
-	if (isConnected())
-		disconnect();
+	clear_callbacks();
 
 	if (m_sDeviceReceivedConnection.connected())
 		m_sDeviceReceivedConnection.disconnect();
@@ -730,27 +699,6 @@ void MQTT::Do_Work()
 		m_sSwitchSceneConnection.disconnect();
 
 	Log(LOG_STATUS, "Worker stopped...");
-}
-
-void MQTT::Do_MQTT_Work()
-{
-	while (!IsStopRequested(5))
-	{
-		if (!m_bDoReconnect)
-		{
-			int rc = loop_forever();
-			if (rc)
-			{
-				if (rc != MOSQ_ERR_NO_CONN)
-				{
-					if (!IsStopRequested(0))
-					{
-						m_bDoReconnect = true;
-					}
-				}
-			}
-		}
-	}
 }
 
 void MQTT::SendHeartbeat()

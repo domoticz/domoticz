@@ -4428,7 +4428,35 @@ namespace http
 				}
 				sprintf(szTmp, "%.2f", tempcelcius);
 
-				if (dType != pTypeEvohomeZone && dType != pTypeEvohomeWater) // sql update now done in setsetpoint for evohome devices
+				if (dType == pTypeThermostat6)
+				{
+					// For Thermostat6, preserve existing temperature and mode, only update setpoint
+					std::vector<std::vector<std::string>> currentResult;
+					currentResult = m_sql.safe_query("SELECT sValue FROM DeviceStatus WHERE (ID == '%q')", idx.c_str());
+					if (!currentResult.empty())
+					{
+						std::vector<std::string> strarray;
+						StringSplit(currentResult[0][0], ";", strarray);
+						if (dSubType == sTypeThermostat6Temp && strarray.size() >= 2)
+						{
+							sprintf(szTmp, "%s;%.2f", strarray[0].c_str(), tempcelcius);
+						}
+						else if (dSubType == sTypeThermostat6TempHum && strarray.size() >= 4)
+						{
+							sprintf(szTmp, "%s;%.2f;%s;%s", strarray[0].c_str(), tempcelcius, strarray[2].c_str(), strarray[3].c_str());
+						}
+						else if (dSubType == sTypeThermostat6TempBaro && strarray.size() >= 3)
+						{
+							sprintf(szTmp, "%s;%.2f;%s", strarray[0].c_str(), tempcelcius, strarray[2].c_str());
+						}
+						else if (dSubType == sTypeThermostat6TempHumBaro && strarray.size() >= 5)
+						{
+							sprintf(szTmp, "%s;%.2f;%s;%s;%s", strarray[0].c_str(), tempcelcius, strarray[2].c_str(), strarray[3].c_str(), strarray[4].c_str());
+						}
+						m_sql.safe_query("UPDATE DeviceStatus SET Used=%d, sValue='%q' WHERE (ID == '%q')", used, szTmp, idx.c_str());
+					}
+				}
+				else if (dType != pTypeEvohomeZone && dType != pTypeEvohomeWater) // sql update now done in setsetpoint for evohome devices
 				{
 					m_sql.safe_query("UPDATE DeviceStatus SET Used=%d, sValue='%q' WHERE (ID == '%q')", used, szTmp, idx.c_str());
 				}

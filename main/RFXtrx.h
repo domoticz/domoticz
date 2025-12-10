@@ -1278,6 +1278,12 @@ SDK version 4.9
 #define thermostat5_sOnHeaterLow 0x3
 #define thermostat5_sOnHeaterHigh 0x04
 
+#define pTypeThermostat6 0x49
+#define sTypeThermostat6Temp 0x00
+#define sTypeThermostat6TempHum 0x01
+#define sTypeThermostat6TempBaro 0x02
+#define sTypeThermostat6TempHumBaro 0x03
+
 //types for Radiator valve
 #define pTypeRadiator1 0x48
 #define sTypeSmartwares 0x0	//Homewizard smartwares

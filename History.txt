@@ -4,6 +4,9 @@ Version 2025.xxxx
 - Implemented: PhilipsHue v2 API, just for Door/Window Contacts (state/tamper/battery)
 - Fixed: Chart zoom buttons (notable on iOS devices)
 - Fixed: Possible memory leak in Kodi Notification when destination is unreachable
+- Fixed: PhilipsHue v1 API crashes Domoticz in certain cases since Hue Bridge firmware 1.74 (added extra validations)
+- Fixed: Temperature Compare Chart (Min/Max values)
+- Fixed: WOL, Corrected magic packet creation and supporting IPv6 broadcast
 - Changed: Enever, using v3 API
 - Changed: PhilipsHue, now used HTTP scheme (HTTP/HTTPS) based on port number (80/443)
 

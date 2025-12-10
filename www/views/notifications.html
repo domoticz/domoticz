@@ -1,7 +1,7 @@
 <div class="container">
 	<div class="page-header-small page-header-with-button">
 		<h1><span data-i18n="Notifications">Notifications</span>: {{ ::vm.pageName }}</h1>
-        <div><a class="btnstyle3" back-button><i class="fa fa-reply" title="Back"></i> {{ ::'Back' | translate }}</a></div>
+        <div><a class="btnstyle3" back-button><i class="fa fa-reply" title="Back"></i>&nbsp;<span data-i18n="Back"></span></a></div>
 	</div>
 
     <device-notifications-table
@@ -23,18 +23,12 @@
             <tr>
                 <td style="padding: 3px 10px; width: 160px;">&nbsp;</td>
                 <td style="padding: 3px 10px;">
-                    <button class="btnstyle3" ng-click="vm.addNotification()">
-                        {{:: 'Add' | translate }}
-                    </button>
-                    <button class="btnstyle3" ng-click="vm.updateNotification()" ng-disabled="!vm.notification.idx">
-                        {{:: 'Update' | translate }}
-                    </button>
-                    <button class="btnstyle3" ng-click="vm.deleteNotification()" ng-disabled="!vm.notification.idx">
-                        {{:: 'Delete' | translate }}
-                    </button>
+                    <button class="btnstyle3" data-i18n="Add" ng-click="vm.addNotification()"></button>
+                    <button class="btnstyle3" data-i18n="Update" ng-click="vm.updateNotification()" ng-disabled="!vm.notification.idx"></button>
+                    <button class="btnstyle3" data-i18n="Delete" ng-click="vm.deleteNotification()" ng-disabled="!vm.notification.idx"></button>
                 </td>
                 <td align="right" style="padding-right: 10px;">
-                    <button class="btnstyle3" ng-click="vm.clearNotifications()">{{:: 'Clear' | translate }}</button>
+                    <button class="btnstyle3" data-i18n="Clear" ng-click="vm.clearNotifications()"></button>
                 </td>
             </tr>
         </table>
@@ -45,7 +39,7 @@
     <table class="display table-details table-details-lg">
         <tr>
             <td>
-                <label for="checkactive">{{:: 'Enabled' | translate }}:</label>
+                <label for="checkactive" data-i18n="Enabled"></label>:
             </td>
             <td>
                 <div id="id_checkactive">
@@ -61,7 +55,7 @@
 
         <tr>
             <td>
-                <label for="combotype">{{:: 'Type' | translate }}:</label>
+                <label for="combotype" data-i18n="Type"></label>:
             </td>
             <td>
                 <select id="combotype"
@@ -76,7 +70,7 @@
 
         <tr ng-if="::$ctrl.levelOptions" ng-show="$ctrl.notification.type == 'S'">
             <td>
-                <label for="combolevel">{{:: 'Level' | translate }}:</label>
+                <label for="combolevel" data-i18n="Level"></label>:
             </td>
             <td>
                 <select id="combolevel"
@@ -91,7 +85,7 @@
 
         <tr ng-show="$ctrl.isAdditionalOptionsAvailable()">
             <td>
-                <label for="combowhen">{{:: 'When' | translate }}:</label>
+                <label for="combowhen" data-i18n="When"></label>:
             </td>
             <td>
                 <select id="combowhen"
@@ -106,7 +100,7 @@
 
         <tr ng-show="$ctrl.isAdditionalOptionsAvailable()">
             <td>
-                <label for="value">{{:: 'Value' | translate }}:</label>
+                <label for="value" data-i18n="Value"></label>:
             </td>
             <td>
                 <input type="text"
@@ -122,7 +116,7 @@
 
         <tr>
             <td>
-                <label for="combopriority">{{:: 'Priority' | translate }}:</label>
+                <label for="combopriority" data-i18n="Priority"></label>:
             </td>
             <td>
                 <select id="combopriority"
@@ -137,7 +131,7 @@
 
         <tr>
             <td>
-                <label for="checkalways">{{:: 'Ignore Interval' | translate }}:</label>
+                <label for="checkalways" data-i18n="Ignore Interval"></label>:
             </td>
             <td>
                 <div id="id_checkalways">
@@ -153,7 +147,7 @@
 
         <tr ng-show="$ctrl.isAdditionalOptionsAvailable()">
             <td>
-                <label for="checkrecovery">{{:: 'Recovery Notification' | translate}}:</label>
+                <label for="checkrecovery" data-i18n="Recovery Notification"></label>:
             </td>
             <td>
                 <div id="id_checkrecovery">
@@ -169,7 +163,7 @@
 
         <tr>
             <td>
-                <label for="custommessage">{{:: 'Custom Message' | translate }}:</label>
+                <label for="custommessage" data-i18n="Custom Message"></label>:
             </td>
             <td>
                 <input type="text"
@@ -179,12 +173,12 @@
                        ng-model="$ctrl.notification.customMessage"
                        ng-change="$ctrl.updateViewValue()"
                 >&nbsp;
-                <span>{{:: '(Optional)' | translate}}</span>
+                <span data-i18n="(Optional)"></span>
             </td>
         </tr>
         <tr style="vertical-align:top">
             <td>
-                <label for="custommessage">{{:: 'Action' | translate }}:</label>
+                <label for="custommessage" data-i18n="Action"></label>:
             </td>
             <td>
                 <textarea id="customaction"
@@ -194,13 +188,13 @@
                           ng-model="$ctrl.notification.customAction"
                           ng-change="$ctrl.updateViewValue()"
                           >
-                </textarea>&nbsp;<span>{{:: '(Optional)' | translate}}</span><br>
-                <span>{{:: '(Should start with http:// or script://)' | translate}} #MESSAGE</span>
+                </textarea>&nbsp;<span data-i18n="(Optional)"></span><br>
+                <span data-i18n="(Should start with http:// or script://)"><span><span> #MESSAGE</span>
             </td>
         </tr>
         <tr>
             <td>
-                <label>{{:: 'Active Systems' | translate }}:</label>
+                <label data-i18n="Active Systems"></label>:
             </td>
             <td>
                 <div ng-repeat="item in ::$ctrl.notifiers">

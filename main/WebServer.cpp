@@ -2210,6 +2210,96 @@ namespace http
 							root["result"][ii]["HaveTimeout"] = bHaveTimeout;
 						}
 					}
+					else if (dType == pTypeThermostat6)
+					{
+						root["result"][ii]["HaveTimeout"] = bHaveTimeout;
+						root["result"][ii]["TypeImg"] = "override_mini";
+
+						std::string value_step = options["ValueStep"];
+						std::string value_min = options["ValueMin"];
+						std::string value_max = options["ValueMax"];
+						std::string value_unit = options["ValueUnit"];
+
+						double valuestep = (!value_step.empty()) ? atof(value_step.c_str()) : 0.5;
+						double valuemin = (!value_min.empty()) ? atof(value_min.c_str()) : -200.0;
+						double valuemax = (!value_max.empty()) ? atof(value_max.c_str()) : 200.0;
+
+						if (
+							(value_unit.empty())
+							|| (value_unit == "°C")
+							|| (value_unit == "°F")
+							|| (value_unit == "C")
+							|| (value_unit == "F")
+							)
+						{
+							if (tempsign == 'C')
+								value_unit = "°C";
+							else
+								value_unit = "°F";
+						}
+
+						root["result"][ii]["step"] = valuestep;
+						root["result"][ii]["min"] = valuemin;
+						root["result"][ii]["max"] = valuemax;
+						root["result"][ii]["vunit"] = value_unit;
+
+						std::vector<std::string> strarray;
+						StringSplit(sValue, ";", strarray);
+						if (strarray.size() >= 2)
+						{
+							double tempCelcius = atof(strarray[0].c_str());
+							double temp = ConvertTemperature(tempCelcius, tempsign);
+							double tempSetPointCelcius = atof(strarray[1].c_str());
+							double tempSetPoint = ConvertTemperature(tempSetPointCelcius, tempsign);
+							root["result"][ii]["Temp"] = temp;
+							root["result"][ii]["SetPoint"] = tempSetPoint;
+
+							_tTrendCalculator::_eTendencyType tstate = _tTrendCalculator::_eTendencyType::TENDENCY_UNKNOWN;
+							uint64_t tID = ((uint64_t)(hardwareID & 0x7FFFFFFF) << 32) | (devIdx & 0x7FFFFFFF);
+							if (m_mainworker.m_trend_calculator.find(tID) != m_mainworker.m_trend_calculator.end())
+							{
+								tstate = m_mainworker.m_trend_calculator[tID].m_state;
+							}
+							root["result"][ii]["trend"] = (int)tstate;
+
+							if (dSubType == sTypeThermostat6TempHum && strarray.size() >= 4)
+							{
+								int humidity = atoi(strarray[2].c_str());
+								root["result"][ii]["Humidity"] = humidity;
+								root["result"][ii]["HumidityStatus"] = RFX_Humidity_Status_Desc(atoi(strarray[3].c_str()));
+
+								// Calculate dew point
+								double dewpoint = ConvertTemperature(CalculateDewPoint(temp, humidity), tempsign);
+								root["result"][ii]["DewPoint"] = dewpoint;
+								sprintf(szData, "%.1f %c, (%.1f %c) / %d%%", temp, tempsign, tempSetPoint, tempsign, humidity);
+							}
+							else if (dSubType == sTypeThermostat6TempBaro && strarray.size() >= 3)
+							{
+								float barometer = static_cast<float>(atof(strarray[2].c_str()));
+								root["result"][ii]["Barometer"] = barometer;
+								sprintf(szData, "%.1f %c, (%.1f %c), %.1f hPa", temp, tempsign, tempSetPoint, tempsign, barometer);
+							}
+							else if (dSubType == sTypeThermostat6TempHumBaro && strarray.size() >= 5)
+							{
+								int humidity = atoi(strarray[2].c_str());
+								root["result"][ii]["Humidity"] = humidity;
+								root["result"][ii]["HumidityStatus"] = RFX_Humidity_Status_Desc(atoi(strarray[3].c_str()));
+
+								// Calculate dew point
+								double dewpoint = ConvertTemperature(CalculateDewPoint(temp, humidity), tempsign);
+								root["result"][ii]["DewPoint"] = dewpoint;
+
+								float barometer = static_cast<float>(atof(strarray[4].c_str()));
+								root["result"][ii]["Barometer"] = barometer;
+								sprintf(szData, "%.1f %c, (%.1f %c), %d%%, %.1f hPa", temp, tempsign, tempSetPoint, tempsign, humidity, barometer);
+							}
+							else
+							{
+								sprintf(szData, "%.1f %c, (%.1f %c)", temp, tempsign, tempSetPoint, tempsign);
+							}
+							root["result"][ii]["Data"] = szData;
+						}
+					}
 					else if ((dType == pTypeTEMP) || (dType == pTypeRego6XXTemp))
 					{
 						double tvalue = ConvertTemperature(atof(sValue.c_str()), tempsign);
@@ -3830,7 +3920,15 @@ namespace http
 
 			queryString.append(", ");
 			if (!isCounter)
-				queryString.append("AVG(" + dfield + ")");
+			{
+				//probably should add an additional option to select AVG/MIN/MAX
+				if (dfield.find("_Min") != std::string::npos)
+					queryString.append("MIN(" + dfield + ")");
+				else if (dfield.find("_Max") != std::string::npos)
+					queryString.append("MAX(" + dfield + ")");
+				else
+					queryString.append("AVG(" + dfield + ")");
+			}
 			else
 				queryString.append("SUM(" + dfield + ")");
 			queryString.append("/" + std::to_string(divider));

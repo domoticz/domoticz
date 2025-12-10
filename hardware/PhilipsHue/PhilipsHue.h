@@ -30,14 +30,16 @@ class CPhilipsHue : public CDomoticzHardwareBase
 	};
 	struct _tHueLightState
 	{
-		bool on;
-		_eHueColorMode mode;
-		int level;
-		int hue;
-		int sat;
-		int ct;
-		double x;
-		double y;
+		bool on = false;
+		_eHueColorMode mode = HLMODE_NONE;	// Indicates the color mode in which the light is working, this is the last command type it received. Values
+											// are "hs" for Hue and Saturation, "xy" for XY and "ct" for Color Temperature.
+		int level = 0;						// Brightness of the light. This is a scale from the minimum brightness the light is capable of, 1, to the maximum capable brightness, 254.
+		int hue = 0;						// Hue of the light. This is a wrapping value between 0 and 65535.
+		int sat = 0;						// Saturation of the light. 254 is the most saturated (colored) and 0 is the least saturated (white).
+		int ct = 0;							// The Mired Color temperature of the light. 2012 connected lights are capable of 153 (6500K) to 500 (2000K).
+		double x = 0;						// The x and y coordinates of a color in CIE color space.
+		double y = 0;						// The first entry is the x coordinate and the second entry is the y coordinate. Both x and y must be between 0 and 1.
+											// If the specified coordinates are not in the CIE color space, the closest color to the coordinates will be chosen.
 	};
 	struct _tHueGroup
 	{

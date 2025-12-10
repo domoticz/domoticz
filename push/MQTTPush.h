@@ -13,8 +13,6 @@ public:
 public:
 	void on_message(const struct mosquitto_message* message) override;
 	void on_connect(int rc) override;
-	void on_disconnect(int rc) override;
-	void on_going_down() override;
 private:
 	struct _tPushItem
 	{

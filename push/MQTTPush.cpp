@@ -105,16 +105,6 @@ void CMQTTPush::on_connect(int rc)
 	}
 }
 
-void CMQTTPush::on_going_down()
-{
-}
-
-void CMQTTPush::on_disconnect(int rc)
-{
-	MQTT::on_disconnect(rc);
-}
-
-
 void CMQTTPush::UpdateSettings()
 {
 	int fActive = 0;

@@ -364,12 +364,33 @@ define(['app', 'livesocket'], function (app) {
 			id = "#utilitycontent #" + item.idx;
 			var obj = $(id);
 			if (typeof obj != 'undefined') {
+				var bigtext = "";
+				if ((typeof item.Usage != 'undefined') && (typeof item.UsageDeliv == 'undefined')) {
+					bigtext = item.Usage;
+				}
+				if (typeof item.Counter != 'undefined') {
+					if (
+						(item.SubType == "Gas") ||
+						(item.SubType == "RFXMeter counter") ||
+						(item.SubType == "Counter Incremental")
+					) {
+						bigtext = item.CounterToday;
+					}
+				}
+				var searchText = GenerateLiveSearchTextU(item, bigtext);
+				var query = $('.jsLiveSearch').val();
+				if (query && query.length > 0) {
+					var match = searchText.toLowerCase().indexOf(query.toLowerCase()) !== -1;
+					if (!match) {
+						return; // Don't update items that don't match the filter
+					}
+				}
+
 				if ($(id + " #name").html() != item.Name) {
 					$(id + " #name").html(item.Name);
 				}
 				var img = "";
 				var status = "";
-				var bigtext = "";
 
 				if ((typeof item.Usage != 'undefined') && (typeof item.UsageDeliv == 'undefined')) {
 					bigtext = item.Usage;
@@ -519,7 +540,6 @@ define(['app', 'livesocket'], function (app) {
 					}
 				}
 				
-				var searchText = GenerateLiveSearchTextU(item, bigtext);
 				$(id).find('#name').attr('data-search', searchText);
 				
 				if (!document.hidden) {

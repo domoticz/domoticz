@@ -10,13 +10,22 @@ define(['app', 'livesocket'], function (app) {
 			});
 		};
 
-		EditTempDevice = function (idx, name, description, addjvalue) {
+		EditTempDevice = function (idx, name, description, addjvalue, unit, step, min, max) {
 			$.devIdx = idx;
 			$("#dialog-edittempdevice #deviceidx").text(idx);
 			$("#dialog-edittempdevice #devicename").val(unescape(name));
 			$("#dialog-edittempdevice #devicedescription").val(unescape(description));
 			$("#dialog-edittempdevice #adjustment").val(addjvalue);
 			$("#dialog-edittempdevice #tempcf").html($scope.config.TempSign);
+			if (typeof unit !== 'undefined') {
+				$("#dialog-edittempdevice #unit").val(unescape(unit));
+				$("#dialog-edittempdevice #step").val(step);
+				$("#dialog-edittempdevice #min").val(min);
+				$("#dialog-edittempdevice #max").val(max);
+				$("#setpointfields").show();
+			} else {
+				$("#setpointfields").hide();
+			}
 			$("#dialog-edittempdevice").i18n();
 			$("#dialog-edittempdevice").dialog("open");
 		}
@@ -49,7 +58,7 @@ define(['app', 'livesocket'], function (app) {
 			$("#dialog-editsetpoint #devicedescription").val(unescape(description));
 			$("#dialog-editsetpoint #setpoint").val(setpoint);
 			if (mode.indexOf("Override") == -1)
-				$(":button:contains('Cancel Override')").attr("disabled", "d‌​isabled").addClass('ui-state-disabled');
+				$(":button:contains('Cancel Override')").attr("disabled", "disabled").addClass('ui-state-disabled');
 			else
 				$(":button:contains('Cancel Override')").removeAttr("disabled").removeClass('ui-state-disabled');
 			$("#dialog-editsetpoint #until").datetimepicker({
@@ -97,6 +106,13 @@ define(['app', 'livesocket'], function (app) {
 
 		RefreshItem = function (item) {
 			item.searchText = GenerateLiveSearchTextT(item);
+			var query = $('.jsLiveSearch').val();
+			if (query && query.length > 0) {
+				var match = item.searchText.toLowerCase().indexOf(query.toLowerCase()) !== -1;
+				if (!match) {
+					return; // Don't update items that don't match the filter
+				}
+			}
 			ctrl.temperatures.forEach(function (olditem, oldindex, oldarray) {
 				if (olditem.idx == item.idx) {
 					oldarray[oldindex] = item;
@@ -223,14 +239,25 @@ define(['app', 'livesocket'], function (app) {
 				var bValid = true;
 				bValid = bValid && checkLength($("#dialog-edittempdevice #edittable #devicename"), 2, 100);
 				if (bValid) {
-					$(this).dialog("close");
 					var aValue = $("#dialog-edittempdevice #edittable #adjustment").val();
-					$.ajax({
-						url: "json.htm?type=command&param=setused&idx=" + $.devIdx +
+					var url = "json.htm?type=command&param=setused&idx=" + $.devIdx +
 						'&name=' + encodeURIComponent($("#dialog-edittempdevice #devicename").val()) +
 						'&description=' + encodeURIComponent($("#dialog-edittempdevice #devicedescription").val()) +
 						'&addjvalue=' + aValue +
-						'&used=true',
+						'&used=true';
+
+					if ($("#setpointfields").is(":visible")) {
+						var devOptions = [];
+						devOptions.push("ValueStep:" + $("#dialog-edittempdevice #step").val() + ";");
+						devOptions.push("ValueMin:" + $("#dialog-edittempdevice #min").val() + ";");
+						devOptions.push("ValueMax:" + $("#dialog-edittempdevice #max").val() + ";");
+						devOptions.push("ValueUnit:" + $("#dialog-edittempdevice #unit").val() + ";");
+						url += '&options=' + b64EncodeUnicode(devOptions.join(''));
+					}
+
+					$(this).dialog("close");
+					$.ajax({
+						url: url,
 						async: false,
 						dataType: 'json',
 						success: function (data) {
@@ -558,7 +585,7 @@ define(['app', 'livesocket'], function (app) {
 						return typeof item.Temp != 'undefined';
 					};
 					ctrl.displaySetPoint = function () {
-						return (item.SubType == 'Zone' || item.SubType == 'Hot Water') && typeof item.SetPoint != 'undefined';
+					return (item.SubType == 'Zone' || item.SubType == 'Hot Water' || item.SubType == 'Temp/Setpoint' || item.SubType == 'Temp/Hum/Setpoint' || item.SubType == 'Temp/Baro/Setpoint' || item.SubType == 'Temp/Hum/Baro/Setpoint') && typeof item.SetPoint != 'undefined';
 					};
 					ctrl.isSetPointOn = function () {
 						return item.SetPoint != 325.1;
@@ -653,7 +680,11 @@ define(['app', 'livesocket'], function (app) {
 					};
 
 					ctrl.EditTempDevice = function () {
-						return EditTempDevice(item.idx, escape(item.Name), escape(item.Description), item.AddjValue);
+						if (item.Type == 'Thermostat 6') {
+							return EditTempDevice(item.idx, escape(item.Name), escape(item.Description), item.AddjValue, escape(item.vunit), item.step, item.min, item.max);
+						} else {
+							return EditTempDevice(item.idx, escape(item.Name), escape(item.Description), item.AddjValue);
+						}
 					};
 
 					ctrl.ShowForecast = function (divId, fn) {
@@ -664,6 +695,13 @@ define(['app', 'livesocket'], function (app) {
 
 					ctrl.EditSetPoint = function (fn) {
 						return EditSetPoint(item.idx, escape(item.Name), escape(item.Description), item.SetPoint, item.Status, item.Until, fn);
+					};
+					
+					ctrl.ShowSetpointPopup = function (event) {
+						var step = item.step || 0.5;
+						var min = item.min || -200;
+						var max = item.max || 200;
+						ShowSetpointPopup(event, item.idx, item.Protected, item.SetPoint, false, step, min, max);
 					};
 
 					ctrl.EditState = function (fn) {

@@ -401,6 +401,152 @@ void CScheduler::AdjustSunRiseSetSchedules()
 	}
 }
 
+time_t getNthWeekdayOfCurrentMonth(const int weekday, const int nth, const int hour, const int minute, const bool nextMonth = false)
+{
+	std::time_t now = std::time(nullptr);
+	std::tm* localTime = std::localtime(&now);
+
+	int year = localTime->tm_year + 1900;
+	int month = localTime->tm_mon;
+
+	if (nextMonth)
+	{
+		month += 1;
+		if (month > 11) {
+			month = 0;
+			year += 1;
+		}
+	}
+
+	std::tm date = {};
+	date.tm_year = year - 1900;
+	date.tm_mon = month;
+	date.tm_mday = 1;   // start at the first day of the month
+	date.tm_hour = hour;  // noon to avoid DST issues
+
+	std::mktime(&date); // normalize struct tm
+	int first_wday = date.tm_wday; // weekday of the 1st day of month (0=Sunday,...)
+
+	// Calculate days to the first occurrence of desired weekday
+	int days_to_weekday = (weekday - first_wday + 7) % 7;
+	date.tm_mday += days_to_weekday;
+	std::mktime(&date);
+
+	if (nth > 0)
+	{
+		// Move forward (nth-1) weeks to get nth occurrence
+		date.tm_mday += 7 * (nth - 1);
+		std::mktime(&date);
+		if (date.tm_mon != month)
+		{
+			return 0; // nth occurrence does not exist
+		}
+	}
+	else if (nth == -1)
+	{
+		// Find last occurrence of weekday in the month
+
+		// Move to first day of next month
+		std::tm next_month = date;
+		next_month.tm_mon += 1;
+		next_month.tm_mday = 1;
+		std::mktime(&next_month);
+
+		// Move back one day to last day of current month
+		next_month.tm_mday -= 1;
+		std::mktime(&next_month);
+
+		// Calculate difference to last weekday
+		int last_wday = next_month.tm_wday;
+		int diff = (last_wday - weekday + 7) % 7;
+		next_month.tm_mday -= diff;
+		std::mktime(&next_month);
+
+		date = next_month;
+	}
+	else
+	{
+		return 0; // invalid nth value
+	}
+
+	date.tm_hour = hour;
+	date.tm_min = minute;
+	return std::mktime(&date);
+}
+
+// Function to get the Nth weekday of a specific month and year
+// Parameters:
+// - weekday: 0=Sunday, 1=Monday, ..., 6=Saturday
+// - nth: 1=first, 2=second, 3=third, 4=fourth, -1=last
+// - month: 1=January, ... 12=December
+// - nextMonth: if true, calculates for the next month
+time_t getNthWeekdayOfMonth(const int weekday, const int nth, const int month, const int hour, const int minute, const bool nextYear = false)
+{
+	std::time_t now = std::time(nullptr);
+	std::tm* localTime = std::localtime(&now);
+
+	int year = localTime->tm_year + 1900;
+
+	// Adjust month if nextMonth is true
+	if (nextYear)
+	{
+		year += 1;
+	}
+
+	std::tm date = {};
+	date.tm_year = year - 1900;
+	date.tm_mon = month - 1; // tm_mon is 0-based
+	date.tm_mday = 1;        // Start at first day
+	date.tm_hour = 12;       // Noon for safety
+
+	std::mktime(&date); // normalize
+	int first_wday = date.tm_wday; // weekday of the 1st day of the month
+
+	int days_to_weekday = (weekday - first_wday + 7) % 7;
+	date.tm_mday += days_to_weekday;
+
+	if (nth > 0)
+	{
+		date.tm_mday += 7 * (nth - 1);
+		std::mktime(&date);
+		if (date.tm_mon != month - 1)
+		{
+			return 0; // nth occurrence does not exist
+		}
+	}
+	else if (nth == -1)
+	{
+		// Find last occurrence
+		std::tm next_month_date = date;
+		next_month_date.tm_mon += 1;
+		if (next_month_date.tm_mon > 11)
+		{
+			next_month_date.tm_mon = 0;
+			next_month_date.tm_year += 1;
+		}
+		next_month_date.tm_mday = 1;
+		std::mktime(&next_month_date);
+
+		// Move to last day of the current month
+		next_month_date.tm_mday -= 1;
+		std::mktime(&next_month_date);
+
+		int last_wday = next_month_date.tm_wday;
+		int diff = (last_wday - weekday + 7) % 7;
+		next_month_date.tm_mday -= diff;
+		std::mktime(&next_month_date);
+
+		date = next_month_date;
+	}
+	else
+	{
+		return 0; // invalid
+	}
+	date.tm_hour = hour;
+	date.tm_min = minute;
+	return std::mktime(&date);
+}
+
 bool CScheduler::AdjustScheduleItem(tScheduleItem* pItem, bool bForceAddDay)
 {
 	time_t atime = mytime(nullptr);
@@ -599,30 +745,11 @@ bool CScheduler::AdjustScheduleItem(tScheduleItem* pItem, bool bForceAddDay)
 		int daynum = (int)log2(pItem->Days) + 1;
 		if (daynum == 7) daynum = 0;
 
-		boost::gregorian::nth_day_of_the_week_in_month::week_num Occurence = static_cast<boost::gregorian::nth_day_of_the_week_in_month::week_num>(pItem->Occurence);
-		boost::gregorian::greg_weekday::weekday_enum Day = static_cast<boost::gregorian::greg_weekday::weekday_enum>(daynum);
-		boost::gregorian::months_of_year Month = static_cast<boost::gregorian::months_of_year>(ltime.tm_mon + 1);
-
-		typedef boost::gregorian::nth_day_of_the_week_in_month nth_dow;
-		nth_dow ndm(Occurence, Day, Month);
-		boost::gregorian::date d = ndm.get_date(ltime.tm_year + 1900);
-
-		constructTime(rtime, tm1, ltime.tm_year + 1900, ltime.tm_mon + 1, d.day(), pItem->startHour, pItem->startMin, 0, isdst);
+		rtime = getNthWeekdayOfCurrentMonth(daynum, (pItem->Occurence != 5) ? pItem->Occurence : -1, pItem->startHour, pItem->startMin, false);
 
 		if (rtime < atime) //past date/time
 		{
-			//schedule for next month
-			ltime.tm_mon++;
-			if (ltime.tm_mon == 12) // fix for roll over to next year
-			{
-				ltime.tm_mon = 0;
-				ltime.tm_year++;
-			}
-			Month = static_cast<boost::gregorian::months_of_year>(ltime.tm_mon + 1);
-			nth_dow ndm(Occurence, Day, Month);
-			boost::gregorian::date d = ndm.get_date(ltime.tm_year + 1900);
-
-			constructTime(rtime, tm1, ltime.tm_year + 1900, ltime.tm_mon, d.day(), pItem->startHour, pItem->startMin, 0, isdst);
+			rtime = getNthWeekdayOfCurrentMonth(daynum, (pItem->Occurence != 5) ? pItem->Occurence : -1, pItem->startHour, pItem->startMin, true);
 		}
 
 		rtime += roffset * 60; // add randomness
@@ -651,21 +778,12 @@ bool CScheduler::AdjustScheduleItem(tScheduleItem* pItem, bool bForceAddDay)
 		int daynum = (int)log2(pItem->Days) + 1;
 		if (daynum == 7) daynum = 0;
 
-		boost::gregorian::nth_day_of_the_week_in_month::week_num Occurence = static_cast<boost::gregorian::nth_day_of_the_week_in_month::week_num>(pItem->Occurence);
-		boost::gregorian::greg_weekday::weekday_enum Day = static_cast<boost::gregorian::greg_weekday::weekday_enum>(daynum);
-		boost::gregorian::months_of_year Month = static_cast<boost::gregorian::months_of_year>(ltime.tm_mon + 1);
-
-		typedef boost::gregorian::nth_day_of_the_week_in_month nth_dow;
-		nth_dow ndm(Occurence, Day, Month);
-		boost::gregorian::date d = ndm.get_date(ltime.tm_year + 1900);
-
-		constructTime(rtime, tm1, ltime.tm_year + 1900, pItem->Month, d.day(), pItem->startHour, pItem->startMin, 0, isdst);
+		rtime = getNthWeekdayOfMonth(daynum, (pItem->Occurence != 5) ? pItem->Occurence : -1, pItem->Month, pItem->startHour, pItem->startMin, false);
 
 		if (rtime < atime) //past date/time
 		{
 			//schedule for next year
-			ltime.tm_year++;
-			constructTime(rtime, tm1, ltime.tm_year + 1900, pItem->Month, d.day(), pItem->startHour, pItem->startMin, 0, isdst);
+			rtime = getNthWeekdayOfMonth(daynum, (pItem->Occurence != 5) ? pItem->Occurence : -1, pItem->Month, pItem->startHour, pItem->startMin, true);
 		}
 
 		rtime += roffset * 60; // add randomness

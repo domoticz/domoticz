@@ -179,7 +179,11 @@ void MQTTAutoDiscover::on_connect(int rc)
 
 void MQTTAutoDiscover::on_going_down()
 {
-	SendMessageEx(m_TopicDiscoveryPrefix + std::string("/status"), "offline", 0, m_bRetain);
+	if (isConnected())
+	{
+		SendMessageEx(m_TopicDiscoveryPrefix + std::string("/status"), "offline", 0, m_bRetain);
+	}
+	MQTT::on_going_down();
 }
 
 void MQTTAutoDiscover::on_disconnect(int rc)
@@ -1237,6 +1241,20 @@ void MQTTAutoDiscover::on_auto_discovery_message(const struct mosquitto_message*
 			pSensor->percentage_value_template = root["pct_val_tpl"].asString();
 		CleanValueTemplate(pSensor->percentage_value_template);
 
+		if (!root["speed_range_max"].empty())
+			pSensor->speed_range_max = root["speed_range_max"].asInt();
+		if (!root["spd_rng_max"].empty())
+			pSensor->speed_range_max = root["spd_rng_max"].asInt();
+		if (!root["speed_range_min"].empty())
+			pSensor->speed_range_min = root["speed_range_min"].asInt();
+		if (!root["spd_rng_min"].empty())
+			pSensor->speed_range_min = root["spd_rng_min"].asInt();
+		if (pSensor->speed_range_max > 100)
+			pSensor->speed_range_max = 100;
+		if (pSensor->speed_range_min < 1)
+			pSensor->speed_range_min = 1;
+		pSensor->speed_range_min--; //include off
+
 		if (!root["brightness"].empty())
 		{
 			pSensor->bBrightness = (root["brightness"].asString() == "true");
@@ -1501,6 +1519,14 @@ void MQTTAutoDiscover::on_auto_discovery_message(const struct mosquitto_message*
 			pSensor->current_temperature_template = root["current_temperature_template"].asString();
 		if (!root["curr_temp_tpl"].empty())
 			pSensor->current_temperature_template = root["curr_temp_tpl"].asString();
+		if (!root["current_humidity_topic"].empty())
+			pSensor->current_humidity_topic = root["current_humidity_topic"].asString();
+		if (!root["curr_hum_t"].empty())
+			pSensor->current_humidity_topic = root["curr_hum_t"].asString();
+		if (!root["current_humidity_template"].empty())
+			pSensor->current_humidity_template = root["current_humidity_template"].asString();
+		if (!root["curr_hum_tpl"].empty())
+			pSensor->current_humidity_template = root["curr_hum_tpl"].asString();
 		if (!root["preset_modes"].empty())
 		{
 			for (const auto& ittMode : root["preset_modes"])
@@ -2206,12 +2232,18 @@ bool MQTTAutoDiscover::GuessSensorTypeValue(_tMQTTASensor* pSensor, uint8_t& dev
 			sValue = std_format("%lu", static_cast<int>(counter * 1000.0));
 		}
 	}
-	else if (szUnit == "l/hr")
+	else if (
+		(szUnit == "l/hr")
+		|| (szUnit == "l/min")
+		)
 	{
-		//our sensor is in Liters / minute
 		devType = pTypeGeneral;
 		subType = sTypeWaterflow;
-		sValue = std_format("%.2f", static_cast<float>(atof(pSensor->last_value.c_str())) / 60.0F);
+
+		float fDivision = 1; //our sensor is in Liters / minute
+		if (szUnit == "l/hr")
+			fDivision = 60.0F;
+		sValue = std_format("%.2f", static_cast<float>(atof(pSensor->last_value.c_str())) / fDivision);
 	}
 	else if (
 		(szUnit == "db")
@@ -2902,7 +2934,7 @@ void MQTTAutoDiscover::handle_auto_discovery_sensor(_tMQTTASensor* pSensor, cons
 			sValue = pSensor->sValue;
 		}
 		std::vector<std::vector<std::string>> result;
-		result = m_sql.safe_query("SELECT Name,nValue,sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit == %d) AND (Type==%d) AND (Subtype==%d)",
+		result = m_sql.safe_query("SELECT ID, Name, nValue, sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit == %d) AND (Type==%d) AND (Subtype==%d)",
 			m_HwdID, szDeviceID.c_str(), 1, devType, subType);
 		if (result.empty())
 		{
@@ -2922,7 +2954,14 @@ void MQTTAutoDiscover::handle_auto_discovery_sensor(_tMQTTASensor* pSensor, cons
 			// Update
 			if (message->retain)
 				return; // only update when a new value is received
-			UpdateValueInt(m_HwdID, szDeviceID.c_str(), 1, devType, subType, pSensor->SignalLevel, pSensor->BatteryLevel, nValue, sValue.c_str(), result[0][0]);
+			UpdateValueInt(m_HwdID, szDeviceID.c_str(), 1, devType, subType, pSensor->SignalLevel, pSensor->BatteryLevel, nValue, sValue.c_str(), result[0][1]);
+
+			if (pTempSensor)
+			{
+				uint64_t DevRowIdx = std::stoull(result[0][0]);
+				uint64_t tID = ((uint64_t)(m_HwdID & 0x7FFFFFFF) << 32) | (DevRowIdx & 0x7FFFFFFF);
+				m_mainworker.m_trend_calculator[tID].AddValueAndReturnTendency(static_cast<double>(temp), _tTrendCalculator::TAVERAGE_TEMP);
+			}
 		}
 	}
 	else
@@ -3455,6 +3494,24 @@ void MQTTAutoDiscover::handle_auto_discovery_climate(_tMQTTASensor* pSensor, con
 	if (ret)
 	{
 		bIsJSON = root.isObject();
+	}
+
+	// Check for legacy devices once on first message
+	if (pSensor->devType == 0)
+	{
+		// If both topics exist, check database for old devices
+		if (!pSensor->temperature_command_topic.empty() && !pSensor->current_temperature_topic.empty())
+		{
+			std::vector<std::vector<std::string>> old_dev;
+			old_dev = m_sql.safe_query("SELECT COUNT(*) FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit==%d) AND (Type==%d OR Type==%d)",
+				m_HwdID, pSensor->unique_id.c_str(), CLIMATE_TEMP_SETPOINT_UNIT, pTypeTEMP, pTypeSetpoint);
+			pSensor->bUseLegacyClimate = !old_dev.empty() && atoi(old_dev[0][0].c_str()) > 0;
+		}
+		else
+		{
+			// Without both topics, always use legacy standalone handlers
+			pSensor->bUseLegacyClimate = true;
+		}
 	}
 
 	// Create/update Selector device for config and update payloads 
@@ -4222,15 +4279,6 @@ void MQTTAutoDiscover::handle_auto_discovery_climate(_tMQTTASensor* pSensor, con
 		}
 	}
 
-	// Create/update SetPoint Thermostat for config and update payloads 
-	bValid = InsertUpdateSetpoint(
-		pSensor,
-		pSensor->temperature_command_topic,
-		pSensor->temperature_state_topic,
-		pSensor->temperature_state_template,
-		CLIMATE_TEMP_SETPOINT_UNIT,
-		message);
-
 	// Create/update SetPoint High Thermostat for config and update payloads 
 	bValid = InsertUpdateSetpoint(
 		pSensor,
@@ -4249,7 +4297,187 @@ void MQTTAutoDiscover::handle_auto_discovery_climate(_tMQTTASensor* pSensor, con
 		CLIMATE_LOW_TEMP_SETPOINT_UNIT,
 		message);
 
-	// Create/update Temp device for config and update payloads
+	// Create/update combined Thermostat6 device for temp+setpoint
+	if (!pSensor->bUseLegacyClimate)
+	{
+		// Use new combined Thermostat6 device
+		double temp_current = 0;
+		double temp_setpoint = 18;
+		int humidity = 50;
+		int humidity_status = 1;
+		bool bHaveTemp = false;
+		bool bHaveSetpoint = false;
+		bool bHaveHumidity = false;
+
+		// Parse current temperature
+		if (pSensor->current_temperature_topic == topic)
+		{
+			if (bIsJSON && !pSensor->current_temperature_template.empty())
+			{
+				std::string tstring = GetValueFromTemplate(root, pSensor->current_temperature_template, isNull);
+				if (!tstring.empty())
+				{
+					temp_current = atof(tstring.c_str());
+					bHaveTemp = true;
+				}
+			}
+			else if (!bIsJSON)
+			{
+				temp_current = atof(qMessage.c_str());
+				bHaveTemp = true;
+			}
+		}
+
+		// Parse setpoint temperature
+		if (pSensor->temperature_state_topic == topic)
+		{
+			if (bIsJSON && !pSensor->temperature_state_template.empty())
+			{
+				std::string tstring = GetValueFromTemplate(root, pSensor->temperature_state_template, isNull);
+				if (!tstring.empty())
+				{
+					temp_setpoint = atof(tstring.c_str());
+					bHaveSetpoint = true;
+				}
+			}
+			else if (!bIsJSON)
+			{
+				temp_setpoint = atof(qMessage.c_str());
+				bHaveSetpoint = true;
+			}
+		}
+
+		// Parse current humidity
+		if (!pSensor->current_humidity_topic.empty() && pSensor->current_humidity_topic == topic)
+		{
+			if (bIsJSON && !pSensor->current_humidity_template.empty())
+			{
+				std::string hstring = GetValueFromTemplate(root, pSensor->current_humidity_template, isNull);
+				if (!hstring.empty())
+				{
+					humidity = atoi(hstring.c_str());
+					bHaveHumidity = true;
+				}
+			}
+			else if (!bIsJSON)
+			{
+				humidity = atoi(qMessage.c_str());
+				bHaveHumidity = true;
+			}
+		}
+
+		// Convert from Fahrenheit if needed
+		std::string szUnit = pSensor->temperature_unit;
+		stdlower(szUnit);
+		if (szUnit == "°f" || szUnit == "\xB0" "f" || szUnit == "f" || szUnit == "?f")
+		{
+			if (bHaveTemp)
+				temp_current = ConvertToCelsius(temp_current);
+			if (bHaveSetpoint)
+				temp_setpoint = ConvertToCelsius(temp_setpoint);
+		}
+
+		if (bHaveTemp || bHaveSetpoint || bHaveHumidity)
+		{
+			int Unit = CLIMATE_TEMP_SETPOINT_UNIT;
+			pSensor->devType = pTypeThermostat6;
+
+			// Determine subtype based on available data
+			bool bHasHumidity = !pSensor->current_humidity_topic.empty();
+			pSensor->subType = bHasHumidity ? sTypeThermostat6TempHum : sTypeThermostat6Temp;
+
+			// Query existing device to get current values
+			std::vector<std::vector<std::string>> result;
+			result = m_sql.safe_query("SELECT ID, Name, sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit==%d) AND (Type==%d) AND (Subtype==%d)",
+				m_HwdID, pSensor->unique_id.c_str(), Unit, pSensor->devType, pSensor->subType);
+
+			if (!result.empty())
+			{
+				// Parse existing values
+				std::vector<std::string> fields;
+				StringSplit(result[0][2], ";", fields);
+				if (bHasHumidity && fields.size() >= 4)
+				{
+					if (!bHaveTemp)
+						temp_current = atof(fields[0].c_str());
+					if (!bHaveSetpoint)
+						temp_setpoint = atof(fields[1].c_str());
+					if (!bHaveHumidity)
+					{
+						humidity = atoi(fields[2].c_str());
+						humidity_status = atoi(fields[3].c_str());
+					}
+				}
+				else if (!bHasHumidity && fields.size() >= 2)
+				{
+					if (!bHaveTemp)
+						temp_current = atof(fields[0].c_str());
+					if (!bHaveSetpoint)
+						temp_setpoint = atof(fields[1].c_str());
+				}
+			}
+
+			// Calculate humidity status
+			if (bHaveHumidity)
+				humidity_status = Get_Humidity_Level(humidity);
+
+			pSensor->nValue = 0;
+			if (bHasHumidity)
+				pSensor->sValue = std_format("%.1f;%.1f;%d;%d", temp_current, temp_setpoint, humidity, humidity_status);
+			else
+				pSensor->sValue = std_format("%.1f;%.1f", temp_current, temp_setpoint);
+
+			if (result.empty())
+			{
+				// Insert new device
+				if (!m_sql.m_bAcceptNewHardware)
+				{
+					Log(LOG_NORM, "Accept new hardware disabled. Ignoring new sensor %s", pSensor->name.c_str());
+					return;
+				}
+				int iUsed = (pSensor->bEnabled_by_default) ? 1 : 0;
+				m_sql.safe_query("INSERT INTO DeviceStatus (HardwareID, OrgHardwareID, DeviceID, Unit, Type, SubType, SignalLevel, BatteryLevel, Name, Used, nValue, sValue) "
+					"VALUES (%d, %d, '%q', %d, %d, %d, %d, %d, '%q', %d, %d, '%q')",
+					m_HwdID, 0, pSensor->unique_id.c_str(), Unit, pSensor->devType, pSensor->subType, pSensor->SignalLevel, pSensor->BatteryLevel, pSensor->name.c_str(), iUsed,
+					pSensor->nValue, pSensor->sValue.c_str());
+				result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit == %d) AND (Type==%d) AND (Subtype==%d)", m_HwdID,
+					pSensor->unique_id.c_str(), Unit, pSensor->devType, pSensor->subType);
+				//Set options
+				std::string new_options = std_format("ValueStep:%g;ValueMin:%g;ValueMax:%g;ValueUnit:%s;", pSensor->temp_step, pSensor->temp_min, pSensor->temp_max, pSensor->temperature_unit.c_str());
+				uint64_t ullidx = std::stoull(result[0][0]);
+				m_sql.SetDeviceOptions(ullidx, m_sql.BuildDeviceOptions(new_options, false));
+			}
+			else
+			{
+				// Update
+				UpdateValueInt(m_HwdID, pSensor->unique_id.c_str(), Unit, pSensor->devType, pSensor->subType, pSensor->SignalLevel, pSensor->BatteryLevel, pSensor->nValue,
+					pSensor->sValue.c_str(), result[0][1]);
+
+				if (bHaveTemp)
+				{
+					uint64_t DevRowIdx = std::stoull(result[0][0]);
+					uint64_t tID = ((uint64_t)(m_HwdID & 0x7FFFFFFF) << 32) | (DevRowIdx & 0x7FFFFFFF);
+					m_mainworker.m_trend_calculator[tID].AddValueAndReturnTendency(static_cast<double>(temp_current), _tTrendCalculator::TAVERAGE_TEMP);
+				}
+			}
+		}
+
+			return; // Don't fall through to legacy handlers
+	}
+
+	// Standalone setpoint device (when no temp topic, or legacy mode with both topics)
+	if (!pSensor->temperature_command_topic.empty())
+	{
+		bValid = InsertUpdateSetpoint(
+			pSensor,
+			pSensor->temperature_command_topic,
+			pSensor->temperature_state_topic,
+			pSensor->temperature_state_template,
+			CLIMATE_TEMP_SETPOINT_UNIT,
+			message);
+	}
+
+	// Standalone temp device (when no setpoint topic, or legacy mode with both topics)
 	bValid = true;
 	if (pSensor->current_temperature_topic == topic)
 	{
@@ -4304,7 +4532,7 @@ void MQTTAutoDiscover::handle_auto_discovery_climate(_tMQTTASensor* pSensor, con
 			int Unit = CLIMATE_TEMP_SETPOINT_UNIT;
 
 			std::vector<std::vector<std::string>> result;
-			result = m_sql.safe_query("SELECT Name,nValue,sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit == %d) AND (Type==%d) AND (Subtype==%d)", m_HwdID,
+			result = m_sql.safe_query("SELECT ID, Name, nValue, sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit == %d) AND (Type==%d) AND (Subtype==%d)", m_HwdID,
 				pSensor->unique_id.c_str(), Unit, pSensor->devType, pSensor->subType);
 			if (result.empty())
 			{
@@ -4324,7 +4552,11 @@ void MQTTAutoDiscover::handle_auto_discovery_climate(_tMQTTASensor* pSensor, con
 			{
 				// Update
 				UpdateValueInt(m_HwdID, pSensor->unique_id.c_str(), Unit, pSensor->devType, pSensor->subType, pSensor->SignalLevel, pSensor->BatteryLevel, pSensor->nValue,
-					pSensor->sValue.c_str(), result[0][0]);
+					pSensor->sValue.c_str(), result[0][1]);
+
+				uint64_t DevRowIdx = std::stoull(result[0][0]);
+				uint64_t tID = ((uint64_t)(m_HwdID & 0x7FFFFFFF) << 32) | (DevRowIdx & 0x7FFFFFFF);
+				m_mainworker.m_trend_calculator[tID].AddValueAndReturnTendency(static_cast<double>(temp_current), _tTrendCalculator::TAVERAGE_TEMP);
 			}
 		}
 	}
@@ -4967,7 +5199,10 @@ void MQTTAutoDiscover::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 						szSwitchCmd = "off";
 					else {
 						szSwitchCmd = "Set Level";
-						if (pSensor->bHave_brightness_scale)
+
+						if (pSensor->component_type == "fan")
+							level = (int)round(level * (100.0 / (pSensor->speed_range_max - pSensor->speed_range_min)));
+						else if (pSensor->bHave_brightness_scale)
 							level = (int)round((100.0 / pSensor->brightness_scale) * level);
 						else if (!pSensor->percentage_value_template.empty())
 						{
@@ -4990,6 +5225,13 @@ void MQTTAutoDiscover::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 					if (szSwitchCmd == pSensor->state_unlocked)
 						szSwitchCmd = "off";
 					else if (szSwitchCmd == pSensor->state_locked)
+						szSwitchCmd = "on";
+				}
+				else if (pSensor->component_type == "fan")
+				{
+					if (szSwitchCmd == pSensor->payload_off)
+						szSwitchCmd = "off";
+					else if (szSwitchCmd == pSensor->payload_on)
 						szSwitchCmd = "on";
 				}
 			}
@@ -5036,7 +5278,51 @@ void MQTTAutoDiscover::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 		}
 		sValue = std_format("%d", level);
 
-		if (pSensor->devType != pTypeColorSwitch)
+		// For fans with separate state and percentage topics, only update the relevant value
+		if (pSensor->component_type == "fan")
+		{
+			if (pSensor->last_topic == pSensor->state_topic)
+			{
+				// Keep existing level
+				sValue = result[0][3];
+				level = atoi(sValue.c_str());
+				// If turning on, set nValue based on level
+				if (bOn)
+				{
+					if (level == 100)
+						nValue = gswitch_sOn;
+					else
+						nValue = gswitch_sSetLevel;
+					// Ensure LastLevel gets updated when turning on with a level
+					bHaveLevelChange = true;
+				}
+				else
+				{
+					nValue = gswitch_sOff;
+				}
+			}
+			else if (pSensor->last_topic == pSensor->percentage_state_topic)
+			{
+				// Keep existing on/off state - read current nValue
+				int currentNValue = atoi(result[0][2].c_str());
+				// Preserve whether it's on (1) or off (0), but update level representation
+				if (currentNValue == gswitch_sOff)
+				{
+					nValue = gswitch_sOff;
+				}
+				else
+				{
+					// It's on - set nValue based on level
+					if (level == 100)
+						nValue = gswitch_sOn;
+					else
+						nValue = gswitch_sSetLevel;
+					// Ensure LastLevel gets updated when fan is on
+					bHaveLevelChange = true;
+				}
+			}
+		}
+		else if (pSensor->devType != pTypeColorSwitch)
 		{
 			if (szSwitchCmd == "Set Level")
 			{
@@ -5263,15 +5549,15 @@ bool MQTTAutoDiscover::SendSwitchCommand(const std::string& DeviceID, const std:
 			{
 				root["brightness"] = slevel;
 
-				//This seems to cause issues for Tuya 2 gang dimmers... not sure why
-				//not sure if this is needed for other devices
-				if (
-					(m_discovered_devices[pSensor->device_identifiers].manufacturer == "TuYa")
-					|| (m_discovered_devices[pSensor->device_identifiers].manufacturer == "Tuya")
-					|| (m_discovered_devices[pSensor->device_identifiers].manufacturer == "AVATTO")
-					)
+				// Only include state if the device supports ON/OFF payloads
+				// (some devices handle brightness without needing explicit ON/OFF commands)
+				if (!pSensor->payload_on.empty() && (slevel > 0))
 				{
-					root["state"] = (slevel > 0) ? pSensor->payload_on : pSensor->payload_off;
+					root["state"] = pSensor->payload_on;
+				}
+				else if (!pSensor->payload_off.empty() && (slevel == 0))
+				{
+					root["state"] = pSensor->payload_off;
 				}
 			}
 			else
@@ -5617,16 +5903,29 @@ bool MQTTAutoDiscover::SendSwitchCommand(const std::string& DeviceID, const std:
 		if (Unit == 1)
 		{
 			if (command == "On")
-				szSendValue = "50";
+				szSendValue = pSensor->payload_on;
 			else if (command == "Off")
-				szSendValue = "0";
+				szSendValue = pSensor->payload_off;
 			else if (command == "Set Level")
 			{
 				if (level > 100)
 					level = 100;
-				int slevel = (int)round((255 / 100.0F) * level);
+				double elevel = (level / 100.0) * (pSensor->speed_range_max - pSensor->speed_range_min);
+				int slevel = (int)round(elevel);
 				szSendValue = std::to_string(slevel);
 				command_topic = pSensor->percentage_command_topic;
+				// For fans with separate state and percentage topics, send ON if currently off, and OFF when it is set to 0
+				if (!pSensor->command_topic.empty())
+				{
+					if (pSensor->nValue == gswitch_sOff && level > 0)
+					{
+						SendMessage(pSensor->command_topic, pSensor->payload_on);
+					}
+					else if (pSensor->nValue == gswitch_sOn && level < 1)
+					{
+						SendMessage(pSensor->command_topic, pSensor->payload_off);
+					}
+				}
 			}
 		}
 		else if ((!pSensor->preset_modes.empty()) && (Unit == FAN_PRESET_UNIT))
@@ -5984,8 +6283,29 @@ bool MQTTAutoDiscover::SetSetpoint(const std::string& DeviceID, const uint8_t Un
 	}
 
 	std::vector<std::vector<std::string>> result;
-	result = m_sql.safe_query("SELECT Name FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit==%d) AND (Type==%d) AND (Subtype==%d)",
-		m_HwdID, pSensor->unique_id.c_str(), Unit, pTypeSetpoint, sTypeSetpoint);
+
+	// Use the flag to determine device type
+	bool bIsTempHum = false;
+	if (!pSensor->bUseLegacyClimate)
+	{
+		// Check for Thermostat6 device (combined temp+setpoint or temp+hum+setpoint)
+		result = m_sql.safe_query("SELECT Name,sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit==%d) AND (Type==%d) AND (Subtype==%d)",
+			m_HwdID, pSensor->unique_id.c_str(), Unit, pTypeThermostat6, sTypeThermostat6Temp);
+
+		if (result.empty())
+		{
+			result = m_sql.safe_query("SELECT Name,sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit==%d) AND (Type==%d) AND (Subtype==%d)",
+				m_HwdID, pSensor->unique_id.c_str(), Unit, pTypeThermostat6, sTypeThermostat6TempHum);
+			bIsTempHum = !result.empty();
+		}
+	}
+	else
+	{
+		// Legacy pTypeSetpoint device
+		result = m_sql.safe_query("SELECT Name,sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit==%d) AND (Type==%d) AND (Subtype==%d)",
+			m_HwdID, pSensor->unique_id.c_str(), Unit, pTypeSetpoint, sTypeSetpoint);
+	}
+
 	if (result.empty())
 		return false; //?? That's impossible
 
@@ -6032,11 +6352,34 @@ bool MQTTAutoDiscover::SetSetpoint(const std::string& DeviceID, const uint8_t Un
 	//Because thermostats could be battery operated and not listening 24/7
 	//we force a value update internally in Domoticz so the user sees the just set SetPoint
 
-	pSensor->sValue = std_format("%.2f", Temp);
-	// Update
-	UpdateValueInt(m_HwdID, pSensor->unique_id.c_str(), Unit, pTypeSetpoint, sTypeSetpoint, pSensor->SignalLevel, pSensor->BatteryLevel,
-		pSensor->nValue, pSensor->sValue.c_str(),
-		result[0][0]);
+	if (!pSensor->bUseLegacyClimate)
+	{
+		// Update Thermostat6 device - preserve current temp and humidity, update setpoint
+		std::vector<std::string> fields;
+		StringSplit(result[0][1], ";", fields);
+		double temp_current = (fields.size() >= 1) ? atof(fields[0].c_str()) : 20.0;
+		if (bIsTempHum && fields.size() >= 4)
+		{
+			int humidity = atoi(fields[2].c_str());
+			int humidity_status = atoi(fields[3].c_str());
+			pSensor->sValue = std_format("%.1f;%.1f;%d;%d", temp_current, Temp, humidity, humidity_status);
+			UpdateValueInt(m_HwdID, pSensor->unique_id.c_str(), Unit, pTypeThermostat6, sTypeThermostat6TempHum, pSensor->SignalLevel, pSensor->BatteryLevel,
+				pSensor->nValue, pSensor->sValue.c_str(), result[0][0]);
+		}
+		else
+		{
+			pSensor->sValue = std_format("%.1f;%.1f", temp_current, Temp);
+			UpdateValueInt(m_HwdID, pSensor->unique_id.c_str(), Unit, pTypeThermostat6, sTypeThermostat6Temp, pSensor->SignalLevel, pSensor->BatteryLevel,
+				pSensor->nValue, pSensor->sValue.c_str(), result[0][0]);
+		}
+	}
+	else
+	{
+		// Update old pTypeSetpoint device
+		pSensor->sValue = std_format("%.2f", Temp);
+		UpdateValueInt(m_HwdID, pSensor->unique_id.c_str(), Unit, pTypeSetpoint, sTypeSetpoint, pSensor->SignalLevel, pSensor->BatteryLevel,
+			pSensor->nValue, pSensor->sValue.c_str(), result[0][0]);
+	}
 
 	return true;
 }

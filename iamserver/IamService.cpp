@@ -18,6 +18,7 @@
 #include "../httpclient/UrlEncode.h"
 #include "../main/WebServer.h"
 #include "../webserver/Base64.h"
+#include "../webserver/GZipHelper.h"
 
 extern std::string szWWWFolder;
 
@@ -605,8 +606,23 @@ namespace http
 
 			std::string full_path = szWWWFolder + "/views/iam_auth.html";
 			std::ifstream is;
-			is.open(full_path.c_str(), std::ios::in | std::ios::binary);
-			if (!is.is_open())
+			std::string szContent;
+			std::string full_path_withgz = full_path + ".gz";
+			is.open(full_path_withgz.c_str(), std::ios::in | std::ios::binary);
+			if (is.is_open())
+			{
+				std::string gzcontent((std::istreambuf_iterator<char>(is)), (std::istreambuf_iterator<char>()));
+				CGZIP2AT<> decompress((LPGZIP)gzcontent.c_str(), static_cast<int>(gzcontent.size()));
+				szContent.assign(decompress.psz, decompress.Length);
+			}
+			else
+			{
+				is.open(full_path.c_str(), std::ios::in | std::ios::binary);
+				if (is.is_open())
+					szContent.assign((std::istreambuf_iterator<char>(is)), (std::istreambuf_iterator<char>()));
+			}
+
+			if (szContent.empty())
 			{
 				rep = reply::stock_reply(reply::not_found);
 				return;
@@ -614,7 +630,6 @@ namespace http
 
 			rep = reply::stock_reply(reply::ok);
 
-			std::string szContent((std::istreambuf_iterator<char>(is)), (std::istreambuf_iterator<char>()));
 			reply::set_content(&rep, szContent);
 
 			stdreplace(rep.content, "###REPLACE_APP###", sApp);

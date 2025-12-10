@@ -281,6 +281,7 @@ private:
 	void decode_GeneralSwitch(const CDomoticzHardwareBase *pHardware, const tRBUF *pResponse, _tRxMessageProcessingResult & procResult);
 	void decode_HomeConfort(const CDomoticzHardwareBase *pHardware, const tRBUF *pResponse, _tRxMessageProcessingResult & procResult);
 	void decode_Thermostat(const CDomoticzHardwareBase *pHardware, const tRBUF *pResponse, _tRxMessageProcessingResult & procResult);
+	void decode_Thermostat6(const CDomoticzHardwareBase *pHardware, const tRBUF *pResponse, _tRxMessageProcessingResult & procResult);
 	void decode_Chime(const CDomoticzHardwareBase *pHardware, const tRBUF *pResponse, _tRxMessageProcessingResult & procResult);
 	void decode_BBQ(const CDomoticzHardwareBase *pHardware, const tRBUF *pResponse, _tRxMessageProcessingResult & procResult);
 	void decode_Power(const CDomoticzHardwareBase *pHardware, const tRBUF *pResponse, _tRxMessageProcessingResult & procResult);

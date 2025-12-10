@@ -17,7 +17,7 @@ class CWOL : public CDomoticzHardwareBase
 	void Init();
 	bool StartHardware() override;
 	bool StopHardware() override;
-	bool SendWOLPacket(const unsigned char *pPacket);
+	bool SendWOLPacket(const std::vector<unsigned char> &magic_packet);
 
       private:
 	std::string m_broadcast_address;

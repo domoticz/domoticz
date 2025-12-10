@@ -485,6 +485,7 @@ bool CNotificationHelper::CheckAndHandleNotification(const uint64_t DevRowIdx, c
 		case pTypeEvohomeRelay:
 		case pTypeEvohomeWater:
 		case pTypeEvohomeZone:
+		case pTypeThermostat6:
 			//not handled
 			return false;
 			break;

@@ -40,6 +40,9 @@ class MQTTAutoDiscover : public MQTT
 		std::string percentage_state_topic;
 		std::string percentage_value_template;
 
+		int speed_range_max = 100; //The maximum of numeric output range (representing 100 %). The percentage_step is defined by 100 / the number of speeds within the speed range.
+		int speed_range_min = 1; //The minimum of numeric output range (off not included, so speed_range_min - 1 represents 0 %). The percentage_step is defined by 100 / the number of speeds within the speed range.
+
 		std::string unit_of_measurement;
 
 		std::string state_value_template;
@@ -103,6 +106,8 @@ class MQTTAutoDiscover : public MQTT
 		std::string temperature_unit = "C";
 		std::string current_temperature_topic;
 		std::string current_temperature_template;
+		std::string current_humidity_topic;
+		std::string current_humidity_template;
 
 		std::string temperature_high_command_topic;
 		std::string temperature_high_command_template;
@@ -153,6 +158,7 @@ class MQTTAutoDiscover : public MQTT
 		std::map<std::string, std::string> keys;
 
 		bool bOnline = false;
+		bool bUseLegacyClimate = false;
 		time_t last_received = 0;
 		std::string last_value;
 		double prev_value = 0;
