@@ -148,6 +148,8 @@ return {
 			device.levelNames = device.levelNames and utils.stringSplit(device.levelNames, '|') or {}
 			device.level = tonumber(device.rawData[1])
 			device.levelName = device.state
+			if device.level == 0 then device.active=false else device.active=true end
+			if device.active then device.inActive = false else device.inActive = true end
 		end
 
 	end
