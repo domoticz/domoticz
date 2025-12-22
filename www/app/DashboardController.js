@@ -995,7 +995,17 @@ define(['app', 'livesocket'], function (app) {
 					if (($scope.config.DashboardType == 2) || (window.myglobals.ismobile == true)) {
 						var status = "";
 						var bHaveBefore = false;
+						if (typeof item.SetPoint != 'undefined') {
+							var step = item.step || 0.5;
+							var min = item.min || -200;
+							var max = item.max || 200;
+							status += '<button class="btn btn-mini btn-info" type="button" onclick="ShowSetpointPopup(event, ' + item.idx + ', ' + item.Protected + ', ' + item.SetPoint + ',true, ' + step + ', ' + min + ', ' + max +');">' + item.SetPoint + '&deg; ' + $scope.config.TempSign + '</button> ';
+							bHaveBefore = true;
+						}
 						if (typeof item.Temp != 'undefined') {
+							if (bHaveBefore) {
+								status += ', ';
+							}
 							if ($rootScope.DisplayTrend(item.trend))
 							{
 								status += '<img src="images/arrow_' + $rootScope.TrendState(item.trend) + '.png" width="14" height="15">';
@@ -1044,11 +1054,30 @@ define(['app', 'livesocket'], function (app) {
 						if ($(id + " #img").html() != img) {
 							$(id + " #img").html(img);
 						}
+						var img2 = '';
+						if (typeof item.SetPoint != 'undefined') {
+							var step = item.step || 0.5;
+							var min = item.min || -200;
+							var max = item.max || 200;
+							img2 = '<img src="images/override.png" class="lcursor" onclick="ShowSetpointPopup(event, ' + item.idx + ', ' + item.Protected + ', ' + item.SetPoint + ', false, ' + step + ', ' + min + ', ' + max + ');" height="36" width="40" title="Adjust Setpoint">';
+						}
+						if ($(id + " #img2").length > 0) {
+							if ($(id + " #img2").html() != img2) {
+								$(id + " #img2").html(img2);
+							}
+						}
 						var status = "";
 						var bigtext = "";
 						var bHaveBefore = false;
+						if (typeof item.SetPoint != 'undefined') {
+							bigtext = item.SetPoint + '\u00B0 ' + $scope.config.TempSign;
+							bHaveBefore = true;
+						}
 						if (typeof item.Temp != 'undefined') {
-							bigtext = item.Temp + '\u00B0 ' + $scope.config.TempSign;
+							if (bHaveBefore) {
+								bigtext += ' / ';
+							}
+							bigtext += item.Temp + '\u00B0 ' + $scope.config.TempSign;
 						}
 						if (typeof item.Chill != 'undefined') {
 							if (bigtext != "") {
@@ -2652,7 +2681,17 @@ define(['app', 'livesocket'], function (app) {
 											'\t      <td id="name" class="name item-name" data-idx="'+item.idx+'" data-desc="'+item.Description.replace('"',"'")+'">' + vname + '</td>\n';
 										var status = "";
 										var bHaveBefore = false;
+										if (typeof item.SetPoint != 'undefined') {
+											var step = item.step || 0.5;
+											var min = item.min || -200;
+											var max = item.max || 200;
+											status += '<button class="btn btn-mini btn-info" type="button" onclick="ShowSetpointPopup(event, ' + item.idx + ', ' + item.Protected + ', ' + item.SetPoint + ',true, ' + step + ', ' + min + ', ' + max +');">' + item.SetPoint + '&deg; ' + $scope.config.TempSign + '</button> ';
+											bHaveBefore = true;
+										}
 										if (typeof item.Temp != 'undefined') {
+											if (bHaveBefore) {
+												status += ', ';
+											}
 											if ($rootScope.DisplayTrend(item.trend))
 											{
 												status += '<img src="images/arrow_' + $rootScope.TrendState(item.trend) + '.png" width="14" height="15">';
@@ -2691,12 +2730,24 @@ define(['app', 'livesocket'], function (app) {
 											xhtm = '\t<div class="span3 movable" id="temp_' + item.idx + '">\n';
 										}
 										xhtm += '\t  <div id="bstatus" class="item itemBlock ' + backgroundClass + '">\n';
-										xhtm += '\t    <table id="itemtablesmall" class="itemtablesmall" border="0" cellpadding="0" cellspacing="0">\n';
+										if (typeof item.SetPoint != 'undefined') {
+											xhtm += '\t    <table id="itemtablesmalldoubleicon" class="itemtablesmalldoubleicon" border="0" cellpadding="0" cellspacing="0">\n';
+										} else {
+											xhtm += '\t    <table id="itemtablesmall" class="itemtablesmall" border="0" cellpadding="0" cellspacing="0">\n';
+										}
 										xhtm += '\t    <tr>\n';
 										xhtm += '\t      <td id="name" class="name item-name" data-idx="'+item.idx+'" data-desc="'+item.Description.replace('"',"'")+'">' + item.Name + '</td>\n';
 										xhtm += '\t      <td id="bigtext" class="bigtext"><span>';
 										var bigtext = "";
+										var bHaveBefore = false;
+										if (typeof item.SetPoint != 'undefined') {
+											bigtext = item.SetPoint + '\u00B0 ' + $scope.config.TempSign;
+											bHaveBefore = true;
+										}
 										if (typeof item.Temp != 'undefined') {
+											if (bHaveBefore) {
+												bigtext += ' / ';
+											}
 											if ($rootScope.DisplayTrend(item.trend))
 											{
 												bigtext += '<img src="images/arrow_' + $rootScope.TrendState(item.trend) + '.png" width="14" height="15">';
@@ -2728,8 +2779,14 @@ define(['app', 'livesocket'], function (app) {
 												xhtm += GetTemp48Item(item.Chill);
 											}
 										}
-										xhtm += '" class="lcursor" height="40" width="40"></a></td>\n' +
-											'\t      <td id="status" class="status">';
+										xhtm += '" class="lcursor" height="40" width="40"></a></td>\n';
+										if (typeof item.SetPoint != 'undefined') {
+											var step = item.step || 0.5;
+											var min = item.min || -200;
+											var max = item.max || 200;
+											xhtm += '\t      <td id="img2" class="img2"><img src="images/override.png" class="lcursor" onclick="ShowSetpointPopup(event, ' + item.idx + ', ' + item.Protected + ', ' + item.SetPoint + ', false, ' + step + ', ' + min + ', ' + max + ');" height="36" width="40" title="Adjust Setpoint"></td>\n';
+										}
+										xhtm += '\t      <td id="status" class="status">';
 										var bHaveBefore = false;
 										if (typeof item.HumidityStatus != 'undefined') {
 											xhtm += $.t(item.HumidityStatus);
