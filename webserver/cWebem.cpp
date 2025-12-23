@@ -48,7 +48,7 @@ namespace http {
 			// Rene, make sure we initialize m_sessions first, before starting a server
 			, myServer(server_factory::create(settings, myRequestHandler))
 			, m_io_context()
-			, m_session_clean_timer(m_io_context, boost::posix_time::minutes(1))
+			, m_session_clean_timer(m_io_context, std::chrono::minutes(1))
 		{
 			// associate handler to timer and schedule the first iteration
 			m_session_clean_timer.async_wait([this](auto &&) { CleanSessions(); });
@@ -894,7 +894,7 @@ namespace http {
 				mySessionStore->CleanSessions();
 			}
 			// Schedule next cleanup
-			m_session_clean_timer.expires_from_now(boost::posix_time::minutes(15));
+			m_session_clean_timer.expires_after(std::chrono::minutes(15));
 			m_session_clean_timer.async_wait([this](auto &&) { CleanSessions(); });
 		}
 
