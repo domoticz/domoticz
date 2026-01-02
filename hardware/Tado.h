@@ -21,6 +21,7 @@ public:
 private:
 	bool StartHardware() override;
 	bool StopHardware() override;
+	bool RefreshAccessToken();
 	void Do_Work();
 	void Set_TokenRefresh();
 	bool Do_Login_Work();

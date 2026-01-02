@@ -203,15 +203,16 @@ void CTado::SetSetpoint(const int id2, const int id3, const int id4, const float
 // Check for refresh of Access token
 bool CTado::RefreshAccessToken()
 {
-	//set token expire time in epoch - 10 secs, shouldn't the 10sec not be at the intervaltime - 10?
+	//set token expire time in epoch - pollinterval - 10 secs
 	//Also check if the m_token_expire_time is in the future, otherwise the poll interval is to big.
+
 	m_token_expire_time = time(nullptr) + (m_iTokenExpiresIn) - m_iPollInterval - 10;
 	if ( 
-		(m_token_expire_time < time(nullptr)
-		)
+		(m_token_expire_time <= time(nullptr))
+           )
 	{
 		//Token refresh time is in the past, most  likely pollinterval is too big
-		//Log error en exit
+		//Log error and exit
 		Log(LOG_ERROR, "Pollinterval > token expire time.", m_iPollInterval);
 		return false;
 	}
@@ -286,7 +287,13 @@ bool CTado::GetAccessToken()
 	m_szRefreshToken = root["refresh_token"].asString();
 	//If we got a new token, we can safely expect we also got an expire time
 	m_iTokenExpiresIn = std::stoi(root["expires_in"].asString());
-	RefreshAccessToken();
+	if (
+	    (!RefreshAccessToken())
+           )
+	{
+	   //Problem with refreshing access token
+	   return false;
+	}
 	
 	//Store refresh_token
 	m_sql.safe_query("UPDATE Hardware SET Extra='%q' WHERE (ID==%d)", m_szRefreshToken.c_str(), m_HwdID);
@@ -628,7 +635,12 @@ bool CTado::Do_Login_Work()
 			m_szRefreshToken = root["refresh_token"].asString();
 			//If we got a new token, we can safely expect we also got an expire time
 			m_iTokenExpiresIn = std::stoi(root["expires_in"].asString());
-			RefreshAccessToken();
+			if (
+                             (!RefreshAccessToken())
+                           )
+                        {
+                           return false;
+                        }
 			//Store refresh_token
 			m_sql.safe_query("UPDATE Hardware SET Extra='%q' WHERE (ID==%d)", m_szRefreshToken.c_str(), m_HwdID);
 			return true;
@@ -676,11 +688,11 @@ void CTado::Do_Work()
 			}
 		}
 		//Get present time (epoch) for token refresh check
-		time_t atime=time(nullptr)
+		time_t atime=time(nullptr);
 		if (
 			(m_szAccessToken.empty())
 			|| (atime >= m_token_expire_time)
-			)
+		   )
 		{
 			GetAccessToken();
 		}
