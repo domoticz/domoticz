@@ -25,10 +25,10 @@ namespace http {
 		connection::connection(boost::asio::io_context &io_context, connection_manager &manager, request_handler &handler, int read_timeout)
 			: send_buffer_(nullptr)
 			, read_timeout_(read_timeout)
-			, read_timer_(io_context, boost::posix_time::seconds(read_timeout))
+			, read_timer_(io_context, std::chrono::seconds(read_timeout))
 			, default_abandoned_timeout_(20 * 60)
 			// 20mn before stopping abandoned connection
-			, abandoned_timer_(io_context, boost::posix_time::seconds(default_abandoned_timeout_))
+			, abandoned_timer_(io_context, std::chrono::seconds(default_abandoned_timeout_))
 			, connection_manager_(manager)
 			, request_handler_(handler)
 			, status_(INITIALIZING)
@@ -47,10 +47,10 @@ namespace http {
 		connection::connection(boost::asio::io_context &io_context, connection_manager &manager, request_handler &handler, int read_timeout, boost::asio::ssl::context &context)
 			: send_buffer_(nullptr)
 			, read_timeout_(read_timeout)
-			, read_timer_(io_context, boost::posix_time::seconds(read_timeout))
+			, read_timer_(io_context, std::chrono::seconds(read_timeout))
 			, default_abandoned_timeout_(20 * 60)
 			// 20mn before stopping abandoned connection
-			, abandoned_timer_(io_context, boost::posix_time::seconds(default_abandoned_timeout_))
+			, abandoned_timer_(io_context, std::chrono::seconds(default_abandoned_timeout_))
 			, connection_manager_(manager)
 			, request_handler_(handler)
 			, status_(INITIALIZING)
@@ -597,18 +597,14 @@ namespace http {
 
 		// schedule read timeout timer
 		void connection::set_read_timeout() {
-			read_timer_.expires_from_now(boost::posix_time::seconds(read_timeout_));
+			read_timer_.expires_after(std::chrono::seconds(read_timeout_));
 			read_timer_.async_wait([self = shared_from_this()](auto &&err) { self->handle_read_timeout(err); });
 		}
 
 		/// simply cancel read timeout timer
 		void connection::cancel_read_timeout() {
 			try {
-				boost::system::error_code ignored_ec;
-				read_timer_.cancel(ignored_ec);
-				if (ignored_ec) {
-					_log.Log(LOG_ERROR, "%s -> exception thrown while canceling read timeout : %s", host_remote_endpoint_address_.c_str(), ignored_ec.message().c_str());
-				}
+				read_timer_.cancel();
 			}
 			catch (...) {
 				_log.Log(LOG_ERROR, "%s -> exception thrown while canceling read timeout", host_remote_endpoint_address_.c_str());
@@ -640,18 +636,14 @@ namespace http {
 
 		/// schedule abandoned timeout timer
 		void connection::set_abandoned_timeout() {
-			abandoned_timer_.expires_from_now(boost::posix_time::seconds(default_abandoned_timeout_));
+			abandoned_timer_.expires_after(std::chrono::seconds(default_abandoned_timeout_));
 			abandoned_timer_.async_wait([self = shared_from_this()](auto &&err) { self->handle_abandoned_timeout(err); });
 		}
 
 		/// simply cancel abandoned timeout timer
 		void connection::cancel_abandoned_timeout() {
 			try {
-				boost::system::error_code ignored_ec;
-				abandoned_timer_.cancel(ignored_ec);
-				if (ignored_ec) {
-					_log.Log(LOG_ERROR, "%s -> exception thrown while canceling abandoned timeout : %s", host_remote_endpoint_address_.c_str(), ignored_ec.message().c_str());
-				}
+				abandoned_timer_.cancel();
 			}
 			catch (...) {
 				_log.Log(LOG_ERROR, "%s -> exception thrown while canceling abandoned timeout", host_remote_endpoint_address_.c_str());

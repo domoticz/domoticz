@@ -24,9 +24,9 @@ namespace Plugins {
 			// Set up timeout if one was requested
 			if (!m_Timer)
 			{
-				m_Timer = new boost::asio::deadline_timer(ios);
+				m_Timer = new boost::asio::steady_timer(ios);
 			}
-			m_Timer->expires_from_now(boost::posix_time::milliseconds(m_pConnection->Timeout));
+			m_Timer->expires_after(std::chrono::milliseconds(m_pConnection->Timeout));
 			m_Timer->async_wait([this](const boost::system::error_code &ec) { handleTimeout(ec); });
 		}
 		else
@@ -989,9 +989,9 @@ namespace Plugins {
 		// Reset timeout if one is set or set one
 		if (!m_Timer)
 		{
-			m_Timer = new boost::asio::deadline_timer(ios);
+			m_Timer = new boost::asio::steady_timer(ios);
 		}
-		m_Timer->expires_from_now(boost::posix_time::seconds(5));
+		m_Timer->expires_after(std::chrono::seconds(5));
 		m_Timer->async_wait([this](auto &&err) { handleTimeout(err); });
 
 		// Create an ICMP header for an echo request.
