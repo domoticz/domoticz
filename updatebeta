@@ -1,14 +1,9 @@
 #!/bin/bash
 set -euo pipefail
 
-# Domoticz Update Script (BRUTE FORCE VERSION)
+# Domoticz Update Script
 # Created by GizMoCuz, 2025, version 2.2
 # Usage: ./update_domoticz [--no-backup]
-
-# Changes:
-# - Removed "service_exists" checks that were failing.
-# - Forces "systemctl stop/start" commands blindly (safer and more reliable).
-# - Self-update disabled.
 
 readonly SCRIPT_NAME="$(basename "$0")"
 readonly SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
@@ -18,155 +13,265 @@ readonly DOWNLOAD_URL="https://www.domoticz.com/download.php"
 readonly ARCHIVE_NAME="domoticz_update.tgz"
 readonly CHANNEL_KEYWORD="beta"
 
-readonly REQUIRED_PACKAGES=()
+# List of required packages (can be extended as needed)
+readonly REQUIRED_PACKAGES=(
+    # Add more packages here as needed
+    #"libusb-0.1"
+    #"libcurl4"
+    #"libssl3"
+)
+
+# Color output for better readability
 readonly RED='\033[0;31m'
 readonly GREEN='\033[0;32m'
 readonly YELLOW='\033[1;33m'
-readonly NC='\033[0m' 
+readonly NC='\033[0m' # No Color
 
+# Logging functions
 log_info() { echo -e "${GREEN}>>${NC} $*"; }
 log_warn() { echo -e "${YELLOW}>>${NC} $*"; }
 log_error() { echo -e "${RED}>>${NC} $*" >&2; }
 die() { log_error "$*"; exit 1; }
 
+# Returns 0 (true) if script has been updated and re-executed, 1 (false) otherwise
+is_reexecuted() {
+    [[ "${DOMOTICZ_UPDATE_REEXEC:-}" == "1" ]]
+}
+
+# Check and install required package dependencies
 check_dependencies() {
     log_info "Checking package dependencies..."
+    
     local missing_packages=()
     local pkg
+    
+    # Check each required package
     for pkg in "${REQUIRED_PACKAGES[@]}"; do
         if ! dpkg -l | grep -q "^ii  $pkg"; then
+            log_warn "Package '$pkg' is not installed"
             missing_packages+=("$pkg")
+        else
+            log_info "Package '$pkg' is already installed"
         fi
     done
+    
+    # Install missing packages if any
     if [[ ${#missing_packages[@]} -gt 0 ]]; then
         log_info "Installing missing packages: ${missing_packages[*]}"
-        sudo apt-get update -qq
-        sudo apt-get install -y "${missing_packages[@]}"
+        
+        # Update package list first
+        log_info "Updating package list..."
+        if ! sudo apt-get update -qq; then
+            log_warn "Failed to update package list, continuing anyway..."
+        fi
+        
+        # Install missing packages
+        if ! sudo apt-get install -y "${missing_packages[@]}"; then
+            die "Failed to install required packages: ${missing_packages[*]}"
+        fi
+        
+        log_info "Successfully installed: ${missing_packages[*]}"
+    else
+        log_info "All required packages are already installed"
     fi
 }
 
+# Validate prerequisites
 validate_environment() {
     log_info "Validating environment..."
+    
+    # Check we're in the correct directory
     [[ "$SCRIPT_DIR" == "$PWD" ]] || die "Script must be run from Domoticz directory!"
+    
+    # Check required commands
     local required_cmds=(wget tar sudo openssl dpkg uname)
     for cmd in "${required_cmds[@]}"; do
         command -v "$cmd" >/dev/null 2>&1 || die "Required command '$cmd' not found!"
     done
+    
+    # Architecture checks
     local mach arch openssl_ver
     mach=$(uname -m)
     arch=$(dpkg --print-architecture)
     openssl_ver=$(openssl version | awk '{print $2}' | cut -d. -f1)
-    [[ "$mach" == "armv6l" ]] && die "ARMv6 is not supported."
+    
+    [[ "$mach" == "armv6l" ]] && die "ARMv6 is not supported. Please upgrade your hardware."
     [[ "$arch" == "armhf" ]] && mach="armv7l"
     [[ "$openssl_ver" -eq 3 ]] || die "OpenSSL version 3 required! (Found version $openssl_ver)"
+    
+    # Export for use in download
     export DETECTED_MACH="$mach"
     export DETECTED_OS="$(uname -s | tr '[:upper:]' '[:lower:]')"
+    
     log_info "Environment validation passed (arch: $DETECTED_MACH, OS: $DETECTED_OS)"
 }
 
+# Download latest version
 download_update() {
     log_info "Downloading latest $CHANNEL_KEYWORD version..."
+    
     if ! wget -4 -q --show-progress --progress=bar:force -O "$ARCHIVE_NAME" --no-check-certificate \
         "${DOWNLOAD_URL}?channel=${CHANNEL_KEYWORD}&type=release&system=${DETECTED_OS}&machine=${DETECTED_MACH}"; then
-        die "Failed to download Domoticz version!"
+        die "Failed to download Domoticz $CHANNEL_KEYWORD version!"
     fi
+    
+    log_info "Download complete. Verifying archive integrity..."
+    
     if ! tar tzf "$ARCHIVE_NAME" >/dev/null 2>&1; then
         rm -f "$ARCHIVE_NAME"
         die "Downloaded archive is corrupted!"
     fi
+    
+    log_info "Archive integrity verified."
 }
 
+# Extract and re-execute updated script if needed
+reexec_if_outdated() {
+    if is_reexecuted; then
+        return 0
+    fi
+    
+    log_info "Checking for updated upgrade script..."
+    
+    # Try to extract the script - use --no-anchored to match filename anywhere in archive
+    local updated_script
+    if ! updated_script=$(tar -zxf "$ARCHIVE_NAME" --no-anchored "$SCRIPT_NAME" -O 2>/dev/null); then
+        log_warn "Could not extract updated script from archive (may not exist)"
+        log_info "Continuing with current script..."
+        return 0
+    fi
+    
+    # Compare the extracted script with the current one
+    if diff -q <(cat "$0") <(echo "$updated_script") >/dev/null 2>&1; then
+        log_info "Script is already up-to-date, continuing with current version..."
+        return 0
+    fi
+    
+    log_info "Found updated script, re-executing..."
+    
+    # Execute the new script with environment variable set
+    export DOMOTICZ_UPDATE_REEXEC=1
+    exec bash -c "$updated_script" "$SCRIPT_NAME" "$@"
+}
+
+# Create backup of current installation
 create_backup() {
     local timestamp
     timestamp=$(date +%Y%m%d_%H%M%S)
     local backup_file="$BACKUP_DIR/domoticz_backup_$timestamp.tar.gz"
+    
     log_info "Creating backup: $backup_file"
+    
     mkdir -p "$BACKUP_DIR"
-    # We suppress errors here because if the service didn't stop, tar might complain about changed files.
-    # We want it to proceed anyway.
-    if ! sudo tar --exclude="$BACKUP_DIR" --warning=no-file-changed -czf "$backup_file" .; then
-        log_warn "Backup reported issues (likely file changes), but proceeding."
+    
+    if ! sudo tar --exclude="$BACKUP_DIR" -czf "$backup_file" .; then
+        die "Backup creation failed!"
     fi
+    
+    # Cleanup old backups (keep only MAX_BACKUPS)
     local old_backups
     old_backups=$(find "$BACKUP_DIR" -name "domoticz_backup_*.tar.gz" -type f | sort -r | tail -n +$((MAX_BACKUPS + 1)))
+    
     if [[ -n "$old_backups" ]]; then
+        log_info "Removing old backups..."
         echo "$old_backups" | xargs rm -f
     fi
+    
     log_info "Backup complete."
 }
 
-# FORCE STOP - No checks, just do it.
+# (Check if Domoticz service exists, NO just stop the service)
+
+# Stop Domoticz service
+
 stop_service() {
-    log_info "Stopping Domoticz service..."
-    
-    # Try systemd first
-    sudo systemctl stop domoticz || true
-    
-    # Just in case, try init.d
-    if [[ -f /etc/init.d/domoticz.sh ]]; then
-        sudo service domoticz.sh stop || true
-    fi
-    
-    # Wait a moment to ensure file locks are released
-    sleep 2
+    log_info "Stopping Domoticz Service..."
+    # We try both common service names. One should work.
+    sudo service domoticz.sh stop || sudo systemctl stop domoticz || log_warn "Could not stop service (it might already be stopped)"
 }
 
+# Start Domoticz service
+
+start_service() {
+    log_info "Starting Domoticz service (please wait)..."
+    # We try both common service names.
+    sudo service domoticz.sh start || sudo systemctl start domoticz || die "Failed to start Domoticz service!"
+    
+    sleep 2
+    log_info "Service start command issued."
+}
+
+# --- END SERVICE MANAGEMENT SECTION ---
+
+# Install new version
 install_update() {
     log_info "Installing new version..."
+    
     if ! tar xfz "$ARCHIVE_NAME" --checkpoint=.100; then
         die "Failed to extract update archive!"
     fi
+    
     rm -f "$ARCHIVE_NAME"
     log_info "Installation complete."
 }
 
-# FORCE START - No checks.
-start_service() {
-    log_info "Starting Domoticz service..."
-    
-    if ! sudo systemctl start domoticz; then
-         # Fallback
-         if [[ -f /etc/init.d/domoticz.sh ]]; then
-             sudo service domoticz.sh start
-         else
-             die "Failed to start service!"
-         fi
-    fi
-    
-    sleep 2
-    log_info "Service started successfully."
-}
-
+# Main execution
 main() {
     local skip_backup=false
+    
+    # Parse arguments
     while [[ $# -gt 0 ]]; do
         case "$1" in
-            --no-backup|-nobackup) skip_backup=true; shift ;;
-            *) die "Unknown option: $1" ;;
+            --no-backup|-nobackup)
+                skip_backup=true
+                shift
+                ;;
+            *)
+                die "Unknown option: $1"
+                ;;
         esac
     done
     
-    log_info "Starting Domoticz $CHANNEL_KEYWORD Update (Brute Force Mode)"
+    log_info "Starting Domoticz $CHANNEL_KEYWORD Update"
+    log_info "Script: $SCRIPT_NAME (Directory: $SCRIPT_DIR)"
     
+    # Validate environment first
     validate_environment
+    
+    # Check and install dependencies
     check_dependencies
     
-    # NO SELF UPDATE CHECK HERE
+    # Download and re-execute with updated script if needed (only on first run)
+    if ! is_reexecuted; then
+        download_update
+        reexec_if_outdated "$@"
+        # If we reach here, script is up-to-date, continue with installation
+    else
+        log_info "Running updated script - proceeding with installation..."
+    fi
     
-    download_update
+    # Ensure archive exists for installation
+    if [[ ! -f "$ARCHIVE_NAME" ]]; then
+        log_info "Archive not found, downloading..."
+        download_update
+    fi
     
+    # Stop service
     stop_service
     
+    # Create backup unless skipped
     if [[ "$skip_backup" == false ]]; then
         create_backup
     else
         log_warn "Skipping backup as requested"
     fi
     
+    # Install and start
     install_update
     start_service
     
     log_info "Update completed successfully!"
 }
 
+# Run main function
 main "$@"
