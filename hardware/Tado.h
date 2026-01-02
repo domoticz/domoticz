@@ -90,6 +90,7 @@ private:
 	int m_iPollInterval = 30;
 	int m_iTADO_TOKEN_MAXLOOPS = 12;
 	int m_iTADO_TOKEN_REFRESHTIME = 0; //Time in seconds for the refresh to take place, checked every refresh token cycle
+	time_t m_token_expire_time = 0;
 
 	std::vector<_tTadoHome> m_TadoHomes;
 };
