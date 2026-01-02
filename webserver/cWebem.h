@@ -1,7 +1,6 @@
 #pragma once
 
 #include <boost/asio.hpp>
-#include <boost/asio/deadline_timer.hpp>
 #include <boost/thread.hpp>
 #include "server.hpp"
 #include "session_store.hpp"
@@ -260,7 +259,7 @@ namespace http
 			/// sessions management
 			std::mutex m_sessionsMutex;
 			boost::asio::io_context m_io_context;
-			boost::asio::deadline_timer m_session_clean_timer;
+			boost::asio::steady_timer m_session_clean_timer;
 			std::shared_ptr<std::thread> m_io_context_thread;
 		};
 

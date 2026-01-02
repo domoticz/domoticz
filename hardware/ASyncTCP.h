@@ -2,7 +2,6 @@
 
 #include <stddef.h>
 #include <deque>
-#include <boost/asio/deadline_timer.hpp>
 #include <boost/asio/io_context.hpp>
 #include <boost/asio/strand.hpp>
 #include <boost/asio/ip/tcp.hpp>
@@ -76,8 +75,8 @@ private:
 
 	int m_iReconnectDelay = DEFAULT_RECONNECT_TIME;
 	int m_iTimeoutDelay = 0;
-	boost::asio::deadline_timer m_ReconnectTimer;
-	boost::asio::deadline_timer m_TimeoutTimer;
+	boost::asio::steady_timer m_ReconnectTimer;
+	boost::asio::steady_timer m_TimeoutTimer;
 
 	std::shared_ptr<std::thread> m_Tcpthread;
 	std::optional<boost::asio::executor_work_guard<boost::asio::io_context::executor_type>> m_Tcpwork;
