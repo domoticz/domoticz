@@ -12353,6 +12353,7 @@ MainWorker::eSwitchLightReturnCode MainWorker::SwitchLightInt(const std::vector<
 	case pTypeFan:
 	{
 		// Handle selector switch level to command conversion
+		std::string slevel;
 		if ((switchtype == STYPE_Selector) && ((switchcmd == "Set Level") || (switchcmd == "Set Group Level")))
 		{
 			std::map<std::string, std::string> statuses;
@@ -12368,7 +12369,7 @@ MainWorker::eSwitchLightReturnCode MainWorker::SwitchLightInt(const std::vector<
 			// Convert level to command name
 			std::stringstream ss;
 			ss << level;
-			std::string slevel = ss.str();
+			slevel = ss.str();
 			auto itt = statuses.find(slevel);
 			if (itt != statuses.end())
 			{
@@ -12396,7 +12397,8 @@ MainWorker::eSwitchLightReturnCode MainWorker::SwitchLightInt(const std::vector<
 			lcmd.FAN2.id1 = ID2;
 			lcmd.FAN2.id1 = ID3;
 			lcmd.FAN2.id1 = ID4;
-			lcmd.FAN2.cmnd = level;
+			//lcmd.FAN2.cmnd = level;
+			unsigned char slevel = static_cast<unsigned char>(level);
 			std::string SourceID;
 			// Source ID = StrParam1 from Database
 			// Retrieve destination ID from StrParam1
@@ -12438,7 +12440,7 @@ MainWorker::eSwitchLightReturnCode MainWorker::SwitchLightInt(const std::vector<
 
 			if (!GetLightCommand(dType, dSubType, switchtype, switchcmd, lcmd.FAN2.cmnd, options))
 				return SL_ERROR;
-			if (!WriteToHardware(HardwareID, (const char*)&lcmd, lcmd.FAN2.packetlength + 1))
+			if (!WriteToHardware(HardwareID, (const char*)&lcmd, sizeof(lcmd.FAN2)))
 				return SL_ERROR;
 			if (!IsTesting) {
 				//send to internal for now (later we use the ACK)
@@ -12456,7 +12458,7 @@ MainWorker::eSwitchLightReturnCode MainWorker::SwitchLightInt(const std::vector<
 			lcmd.FAN.id1 = ID2;
 			lcmd.FAN.id2 = ID3;
 			lcmd.FAN.id3 = ID4;
-			lcmd.FAN.cmnd = level;
+			//lcmd.FAN.cmnd = level;
 			lcmd.FAN.filler = 0;
 			lcmd.FAN.rssi = 12;
 
