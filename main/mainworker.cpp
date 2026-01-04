@@ -5711,9 +5711,9 @@ void MainWorker::decode_Fan(const CDomoticzHardwareBase* pHardware, const tRBUF*
 		//Orcon Device based on Destination ID
 		sprintf(szTmp, "%02X%02X%02X", pResponse->FAN2.did1, pResponse->FAN2.did2, pResponse->FAN2.did3);
 		sprintf(SzTemp, "%02X%02X%02X", pResponse->FAN2.id1, pResponse->FAN2.id2, pResponse->FAN2.id3);
-		_log.Debug(DEBUG_HARDWARE, "subtype Orcon detected, DestinationID (DeviceID) = %s, SourceID (RemoteID) = %s", std::string(szTmp).c_str(), std::string(SzTemp).c_str());
+		_log.Debug(DEBUG_HARDWARE, "subtype Orcon detected, DestinationID (DeviceID) = %s, SourceID (RemoteID) = %s Command = %02X", std::string(szTmp).c_str(), std::string(SzTemp).c_str(), cmnd);
 
-		// If destination ID is not set (0), use source ID from StrParam1
+		// If destination ID is not set (0), use source ID from Description
 		std::vector<std::vector<std::string>> result;
 		std::map<std::string, std::string> statuses; // level → command name
 		if (pResponse->FAN2.did1 == 0)
@@ -5725,7 +5725,7 @@ void MainWorker::decode_Fan(const CDomoticzHardwareBase* pHardware, const tRBUF*
 			ID = szTmp;
 			SourceID = SzTemp;
 		}
-		result = m_sql.safe_query("SELECT Name, SwitchType, Options, LastLevel, StrParam1 FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit==%d) AND (Type==%d) AND (SubType==%d)",
+		result = m_sql.safe_query("SELECT Name, SwitchType, Options, LastLevel, Description FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit==%d) AND (Type==%d) AND (SubType==%d)",
 			pHardware->m_HwdID, ID.c_str(), Unit, devType, subType);
 		if (!result.empty())
 		{
@@ -5805,7 +5805,7 @@ void MainWorker::decode_Fan(const CDomoticzHardwareBase* pHardware, const tRBUF*
 		// Store the source ID (remote) for reference
 		if ((pResponse->FAN2.did1 != 0) && (ID != SourceID))
 		{
-			m_sql.UpdateDeviceValue("StrParam1", SourceID, std::to_string(DevRowIdx));
+			m_sql.UpdateDeviceValue("Description", SourceID, std::to_string(DevRowIdx));
 			if (switchType == STYPE_Selector)
 				m_sql.UpdateDeviceValue("LastLevel", sValue, std::to_string(DevRowIdx));
 			_log.Debug(DEBUG_HARDWARE, "Orcon: Stored SourceID (RemoteID)=%s for device IDX=%" PRIu64, SourceID.c_str(), DevRowIdx);
@@ -12396,6 +12396,7 @@ MainWorker::eSwitchLightReturnCode MainWorker::SwitchLightInt(const std::vector<
 			lcmd.FAN2.id1 = ID2;
 			lcmd.FAN2.id1 = ID3;
 			lcmd.FAN2.id1 = ID4;
+			lcmd.FAN2.cmnd = level;
 			std::string SourceID;
 			// Source ID = StrParam1 from Database
 			// Retrieve destination ID from StrParam1
@@ -12455,6 +12456,7 @@ MainWorker::eSwitchLightReturnCode MainWorker::SwitchLightInt(const std::vector<
 			lcmd.FAN.id1 = ID2;
 			lcmd.FAN.id2 = ID3;
 			lcmd.FAN.id3 = ID4;
+			lcmd.FAN.cmnd = level;
 			lcmd.FAN.filler = 0;
 			lcmd.FAN.rssi = 12;
 
