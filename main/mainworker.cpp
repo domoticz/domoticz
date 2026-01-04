@@ -5706,7 +5706,7 @@ void MainWorker::decode_Fan(const CDomoticzHardwareBase* pHardware, const tRBUF*
 	std::string lstatus;
 
 	// For Orcon devices with selector switches, convert command code to level
-	if (pResponse->ICMND.subtype == sTypeOrcon) 
+	if (pResponse->ICMND.subtype == sTypeOrcon)
 	{
 		//Orcon Device based on Destination ID
 		sprintf(szTmp, "%02X%02X%02X", pResponse->FAN2.did1, pResponse->FAN2.did2, pResponse->FAN2.did3);
@@ -5751,7 +5751,8 @@ void MainWorker::decode_Fan(const CDomoticzHardwareBase* pHardware, const tRBUF*
 				bool bHaveDimmer = false;
 				int maxDimLevel = 0;
 				bool bHaveGroupCmd = false;
-				GetLightStatus(devType, subType, (const _eSwitchType)switchType, cmnd, "", lstatus, llevel, bHaveDimmer, maxDimLevel, bHaveGroupCmd);
+				sValue = std::to_string(cmnd);
+				GetLightStatus(devType, subType, (const _eSwitchType)switchType, cmnd, sValue, lstatus, llevel, bHaveDimmer, maxDimLevel, bHaveGroupCmd);
 				GetSelectorSwitchStatuses(options, statuses);
 			}
 		}
