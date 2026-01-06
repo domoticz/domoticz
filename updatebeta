@@ -191,10 +191,10 @@ service_exists() {
 
 # Stop Domoticz service
 stop_service() {
-    if ! service_exists; then
-        log_warn "Domoticz service does not exist - skipping service stop"
-        return 0
-    fi
+#    if ! service_exists; then
+#        log_warn "Domoticz service does not exist - skipping service stop"
+#        return 0
+#    fi
     
     log_info "Stopping Domoticz service..."
     if ! sudo service domoticz.sh stop; then
