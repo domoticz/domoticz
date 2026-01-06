@@ -287,13 +287,9 @@ bool CTado::GetAccessToken()
 	m_szRefreshToken = root["refresh_token"].asString();
 	//If we got a new token, we can safely expect we also got an expire time
 	m_iTokenExpiresIn = std::stoi(root["expires_in"].asString());
-	if (
-	    (!RefreshAccessToken())
-           )
-	{
-	   //Problem with refreshing access token
+	
+	if (!RefreshAccessToken())
 	   return false;
-	}
 	
 	//Store refresh_token
 	m_sql.safe_query("UPDATE Hardware SET Extra='%q' WHERE (ID==%d)", m_szRefreshToken.c_str(), m_HwdID);
@@ -635,12 +631,10 @@ bool CTado::Do_Login_Work()
 			m_szRefreshToken = root["refresh_token"].asString();
 			//If we got a new token, we can safely expect we also got an expire time
 			m_iTokenExpiresIn = std::stoi(root["expires_in"].asString());
-			if (
-                             (!RefreshAccessToken())
-                           )
-                        {
-                           return false;
-                        }
+
+			if (!RefreshAccessToken())
+                 return false;
+
 			//Store refresh_token
 			m_sql.safe_query("UPDATE Hardware SET Extra='%q' WHERE (ID==%d)", m_szRefreshToken.c_str(), m_HwdID);
 			return true;
