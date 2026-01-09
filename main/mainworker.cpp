@@ -5780,6 +5780,10 @@ void MainWorker::decode_Fan(const CDomoticzHardwareBase* pHardware, const tRBUF*
 			_log.Debug(DEBUG_HARDWARE, "Orcon Number Found %s", lstatus.c_str());
 			llevel = atoi(lstatus.c_str()) * 10;
 		}
+		else if (commandToLevel.find(lstatus) != commandToLevel.end())
+		{
+			llevel = commandToLevel[lstatus];
+		}
 		std::string answer = "speed";
 		if (LevelToCommand.find(llevel) != LevelToCommand.end() && lstatus != answer)
 		{
