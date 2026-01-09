@@ -5685,7 +5685,8 @@ void MainWorker::decode_Lighting6(const CDomoticzHardwareBase* pHardware, const 
 
 void MainWorker::decode_Fan(const CDomoticzHardwareBase* pHardware, const tRBUF* pResponse, _tRxMessageProcessingResult& procResult)
 {
-	char IDTmp[100]; IDTmp;
+	char szTmp[100];
+	char IDTmp[100];
 	char DIDTmp[100];
 	uint8_t devType = pTypeFan;
 	uint8_t subType = pResponse->FAN.subtype;
@@ -5796,13 +5797,13 @@ void MainWorker::decode_Fan(const CDomoticzHardwareBase* pHardware, const tRBUF*
 	else
 	{
 		// Standard FAN structure for non-Orcon devices
-		sprintf(szTmp, "%02X%02X%02X", pResponse->FAN.id1, pResponse->FAN.id2, pResponse->FAN.id3);
-		ID = szTmp;
+		sprintf(IDTmp, "%02X%02X%02X", pResponse->FAN.id1, pResponse->FAN.id2, pResponse->FAN.id3);
+		ID = IDTmp;
 	}
 	uint64_t DevRowIdx = m_sql.UpdateValue(pHardware->m_HwdID, 0, ID.c_str(), Unit, devType, subType, SignalLevel, -1, nValue, sValue.c_str(), Name, true, procResult.Username.c_str());
 	if (DevRowIdx == (uint64_t)-1)
 		return;
-	CheckSceneCode(DevRowIdx, devType, subType, cmnd, szTmp, procResult.DeviceName);
+	CheckSceneCode(DevRowIdx, devType, subType, cmnd, ID.c_str(), procResult.DeviceName);
 	//Update switch for Orcon Device
 	if (pResponse->ICMND.subtype == sTypeOrcon)
 	{
