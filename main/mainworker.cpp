@@ -5685,8 +5685,8 @@ void MainWorker::decode_Lighting6(const CDomoticzHardwareBase* pHardware, const 
 
 void MainWorker::decode_Fan(const CDomoticzHardwareBase* pHardware, const tRBUF* pResponse, _tRxMessageProcessingResult& procResult)
 {
-	std::string IDTmp;
-	std::string DIDTmp;
+	char IDTmp[100]; IDTmp;
+	char DIDTmp[100];
 	uint8_t devType = pTypeFan;
 	uint8_t subType = pResponse->FAN.subtype;
 	uint8_t Unit = 0;
@@ -5713,7 +5713,7 @@ void MainWorker::decode_Fan(const CDomoticzHardwareBase* pHardware, const tRBUF*
 		//Orcon Device based on Destination ID
 		sprintf(DIDTmp, "%02X%02X%02X", pResponse->FAN2.did1, pResponse->FAN2.did2, pResponse->FAN2.did3);
 		sprintf(IDTmp, "%02X%02X%02X", pResponse->FAN2.id1, pResponse->FAN2.id2, pResponse->FAN2.id3);
-		_log.Debug(DEBUG_HARDWARE, "subtype Orcon detected, DestinationID (DeviceID) = %s, SourceID (RemoteID) = %s Command = %02X", DIDTmp.c_str(), IDTmp.c_str(), cmnd);
+		_log.Debug(DEBUG_HARDWARE, "subtype Orcon detected, DestinationID (DeviceID) = %s, SourceID (RemoteID) = %s Command = %02X", std::string(DIDTmp).c_str(), std::string(IDTmp).c_str(), cmnd);
 
 		// If destination ID is not set (0), use source ID from Description
 		std::vector<std::vector<std::string>> result;
