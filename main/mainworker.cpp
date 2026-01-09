@@ -5736,7 +5736,7 @@ void MainWorker::decode_Fan(const CDomoticzHardwareBase* pHardware, const tRBUF*
 			Name = result[0][0];
 			switchType = atoi(result[0][1].c_str());
 			std::string optionsStr = result[0][2];
-			int LastLevel = atoi(result[0][3].c_str());
+			LastLevel = atoi(result[0][3].c_str());
 			if(SourceID.empty()) {
 				SourceID = result[0][4];
 			}
