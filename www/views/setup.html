@@ -713,6 +713,14 @@
 												<td><input type="checkbox" id="FCMEnabled" name="FCMEnabled"><label for="FCMEnabled"></label></td>
 												<td><button data-i18n="Test" class="btn btn-info" ng-click="TestNotification('fcm')">Test</button></td>
 											</tr>
+											<!-- FCM: Upload JSON helper row -->
+											<tr>
+												<td align="right" style="width:120px; vertical-align:top; padding-top:8px;"><label>Upload JSON File:</label></td>
+												<td colspan="2">
+													<input type="file" id="FCMServiceAccountJSONFile" accept=".json" style="display:inline-block; margin-right:8px;" />
+													<span style="font-size:11px; color:#666;">Select your Firebase Service Account JSON to auto-fill the fields below (client_email, private_key, project_id).</span>
+												</td>
+											</tr>
 											<tr>
 												<td align="right" style="width:120px; vertical-align:top; padding-top:8px;"><label>Client Email:</label></td>
 												<td colspan="2">
