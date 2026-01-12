@@ -561,6 +561,9 @@ define(['app'], function (app) {
 					if (typeof data.FCMEnabled != 'undefined') {
 						$("#gcmtable #FCMEnabled").prop('checked', data.FCMEnabled == 1);
 					}
+					if (typeof data.FCMServiceAccountJSON != 'undefined') {
+						$("#gcmtable #FCMServiceAccountJSON").val(atob(data.FCMServiceAccountJSON));
+					}
 					if (typeof data.LightHistoryDays != 'undefined') {
 						$("#lightlogtable #LightHistoryDays").val(data.LightHistoryDays);
 					}
@@ -1027,6 +1030,34 @@ define(['app'], function (app) {
 					$(this).dialog("close");
 				}
 			});
+			
+			// Handle FCM Service Account JSON file upload
+			$('#FCMServiceAccountJSONFile').on('change', function(event) {
+				var file = event.target.files[0];
+				if (file) {
+					if (file.type !== 'application/json' && !file.name.endsWith('.json')) {
+						ShowNotify($.t('Please select a valid JSON file'), 2500, true);
+						return;
+					}
+					var reader = new FileReader();
+					reader.onload = function(e) {
+						try {
+							// Validate it's valid JSON
+							var jsonContent = e.target.result;
+							JSON.parse(jsonContent);
+							$('#gcmtable #FCMServiceAccountJSON').val(jsonContent);
+							ShowNotify($.t('Firebase Service Account JSON file loaded successfully'), 2500);
+						} catch (error) {
+							ShowNotify($.t('Invalid JSON file format'), 2500, true);
+						}
+					};
+					reader.onerror = function() {
+						ShowNotify($.t('Error reading file'), 2500, true);
+					};
+					reader.readAsText(file);
+				}
+			});
+			
 			$("#maindiv").i18n();
 			$scope.ShowSettings();
 		};
