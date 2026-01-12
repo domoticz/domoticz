@@ -58,41 +58,38 @@ CNotificationFCM::CNotificationFCM() : CNotificationBase(std::string("fcm"), OPT
 	m_slAccessToken_exp_time = std::chrono::duration_cast<std::chrono::seconds>(std::chrono::time_point_cast<std::chrono::seconds>(std::chrono::system_clock::now()).time_since_epoch()).count();
 
 	SetupConfig(std::string("FCMEnabled"), &m_IsEnabled);
-	SetupConfigBase64(std::string("FCMServiceAccountJSON"), m_FCMServiceAccountJSON);
+	SetupConfig(std::string("FCMClientEmail"), m_FCMClientEmail);
+	SetupConfigBase64(std::string("FCMPrivateKey"), m_FCMPrivateKey);
+	SetupConfig(std::string("FCMProjectId"), m_FCMProjectId);
 }
 
 bool CNotificationFCM::IsConfigured()
 {
-	// Check if user has provided a service account JSON
-	if (m_FCMServiceAccountJSON.empty())
+	// Check if user has provided FCM configuration fields
+	if (m_FCMClientEmail.empty() || m_FCMPrivateKey.empty() || m_FCMProjectId.empty())
 	{
-		_log.Log(LOG_STATUS, "FCM: Service Account JSON not configured. Please configure your Firebase Admin SDK service account key in Settings > Notifications.");
+		if (m_FCMClientEmail.empty())
+			_log.Log(LOG_STATUS, "FCM: Client Email not configured. Please configure in Settings > Notifications.");
+		if (m_FCMPrivateKey.empty())
+			_log.Log(LOG_STATUS, "FCM: Private Key not configured. Please configure in Settings > Notifications.");
+		if (m_FCMProjectId.empty())
+			_log.Log(LOG_STATUS, "FCM: Project ID not configured. Please configure in Settings > Notifications.");
 		return false;
 	}
 
-	Json::Value root;
+	m_GAPI_FCM_issuer = m_FCMClientEmail;
+	m_GAPI_FCM_privkey = m_FCMPrivateKey;
 
-	if (ParseJSon(m_FCMServiceAccountJSON, root))
+	if (m_GAPI_FCM_issuer.empty() || m_GAPI_FCM_privkey.empty() || m_FCMProjectId.empty())
 	{
-		std::string sGAPI_FCM_ProjectID;
-
-		m_GAPI_FCM_issuer = root["client_email"].asString();
-		m_GAPI_FCM_privkey = root["private_key"].asString();
-		sGAPI_FCM_ProjectID = root["project_id"].asString();
-
-		if (m_GAPI_FCM_issuer.empty() || m_GAPI_FCM_privkey.empty() || sGAPI_FCM_ProjectID.empty())
-		{
-			_log.Log(LOG_ERROR, "FCM: Invalid Service Account JSON - missing required fields (client_email, private_key, or project_id)");
-			return false;
-		}
-
-		m_GAPI_FCM_PostURL = GAPI_FCM_POST_URL_BASE;
-		stdreplace(m_GAPI_FCM_PostURL, "##PROJECTID##", sGAPI_FCM_ProjectID);
-
-		return true;
+		_log.Log(LOG_ERROR, "FCM: Invalid configuration - missing required fields (client_email, private_key, or project_id)");
+		return false;
 	}
 
-	_log.Log(LOG_ERROR, "FCM: Invalid Service Account JSON format");
+	m_GAPI_FCM_PostURL = GAPI_FCM_POST_URL_BASE;
+	stdreplace(m_GAPI_FCM_PostURL, "##PROJECTID##", m_FCMProjectId);
+
+	return true;
 	return false;
 }
 
