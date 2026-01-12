@@ -12454,7 +12454,6 @@ MainWorker::eSwitchLightReturnCode MainWorker::SwitchLightInt(const std::vector<
 			if (!IsTesting) {
 				//send to internal for now (later we use the ACK)
 				PushAndWaitRxMessage(m_hardwaredevices[hindex], (const uint8_t*)&lcmd, nullptr, -1, User.c_str());
-				_log.Debug(DEBUG_HARDWARE, "Orcon: PushAndWaitRxMessage completed");
 			}
 		}
 		else
