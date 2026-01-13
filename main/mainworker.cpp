@@ -12410,9 +12410,9 @@ MainWorker::eSwitchLightReturnCode MainWorker::SwitchLightInt(const std::vector<
 			unsigned char slevel = static_cast<unsigned char>(level);
 			std::string SourceID;
 			// Source ID = StrParam1 from Database
-			// Retrieve destination ID from StrParam1
+			// Retrieve destination ID from Description
 			std::vector<std::vector<std::string> > result;
-			result = m_sql.safe_query("SELECT SwitchType, Options, StrParam1, StrParam2 FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit==%d) AND (Type==%d) AND (SubType==%d)",
+			result = m_sql.safe_query("SELECT SwitchType, Options, Description FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit==%d) AND (Type==%d) AND (SubType==%d)",
 				pHardware->m_HwdID, deviceID.c_str(), Unit, dType, dSubType);
 
 			if (!result.empty())
