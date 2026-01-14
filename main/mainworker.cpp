@@ -13222,7 +13222,7 @@ MainWorker::eSwitchLightReturnCode MainWorker::SwitchLight(const uint64_t idx, c
 	if (subtype == sTypeOrcon) {
 		_log.Debug(DEBUG_HARDWARE, "Sub type Orcon detected %d", level);
 		result = m_sql.safe_query(
-			"SELECT HardwareID,DeviceID,Unit,Type,SubType,SwitchType,AddjValue2,nValue,sValue,Name,Options,OrgHardwareID,LastLevel,StrParam2 FROM DeviceStatus WHERE (ID == %" PRIu64 ")",
+			"SELECT HardwareID,DeviceID,Unit,Type,SubType,SwitchType,AddjValue2,nValue,sValue,Name,Options,OrgHardwareID,LastLevel,Description FROM DeviceStatus WHERE (ID == %" PRIu64 ")",
 			idx);
 		sd = result[0];
 		sd[7] = std::to_string(level); // Change nValue to current level
