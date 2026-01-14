@@ -52,6 +52,7 @@ bool CRFXBase::CheckValidRFXData(const uint8_t *pData)
 {
 	uint8_t pLen = pData[0];
 	uint8_t pType = pData[1];
+
 	if (pLen < 1)
 		return false;
 	switch (pType)
@@ -79,7 +80,7 @@ bool CRFXBase::CheckValidRFXData(const uint8_t *pData)
 	case pTypeChime:
 		return (pLen >= 0x07);
 	case pTypeFan:
-		return (pLen == 0x08);
+		return (pLen == 0x08 || pLen == 0x11 || pLen == 0x31);
 	case pTypeCurtain:
 		return (pLen == 0x07);
 	case pTypeBlinds:

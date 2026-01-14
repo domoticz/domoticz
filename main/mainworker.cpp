@@ -5686,18 +5686,141 @@ void MainWorker::decode_Lighting6(const CDomoticzHardwareBase* pHardware, const 
 void MainWorker::decode_Fan(const CDomoticzHardwareBase* pHardware, const tRBUF* pResponse, _tRxMessageProcessingResult& procResult)
 {
 	char szTmp[100];
+	char IDTmp[100];
+	char DIDTmp[100];
 	uint8_t devType = pTypeFan;
 	uint8_t subType = pResponse->FAN.subtype;
-	sprintf(szTmp, "%02X%02X%02X", pResponse->FAN.id1, pResponse->FAN.id2, pResponse->FAN.id3);
-	std::string ID = szTmp;
 	uint8_t Unit = 0;
 	uint8_t cmnd = pResponse->FAN.cmnd;
 	uint8_t SignalLevel = pResponse->FAN.rssi;
+	std::string switchcmd;
+	std::string ID;
+	uint8_t OID1;
+	uint8_t OID2;
+	uint8_t OID3;
+	uint8_t OID4;
+	int LastLevel = 0;
+	int llevel = 0;
+	int switchType;
+	int nValue;
+	std::string sValue;
+	std::string SourceID;
+	std::string lstatus;
+	std::string Name;
 
-	uint64_t DevRowIdx = m_sql.UpdateValue(pHardware->m_HwdID, 0, ID.c_str(), Unit, devType, subType, SignalLevel, -1, cmnd, procResult.DeviceName, true, procResult.Username.c_str());
+	// For Orcon devices with selector switches, convert command code to level
+	if (pResponse->ICMND.subtype == sTypeOrcon)
+	{
+		//Orcon Device based on Destination ID
+		sprintf(DIDTmp, "%02X%02X%02X", pResponse->FAN2.did1, pResponse->FAN2.did2, pResponse->FAN2.did3);
+		sprintf(IDTmp, "%02X%02X%02X", pResponse->FAN2.id1, pResponse->FAN2.id2, pResponse->FAN2.id3);
+		_log.Debug(DEBUG_HARDWARE, "subtype Orcon detected, DestinationID (DeviceID) = %s, SourceID (RemoteID) = %s Command = %02X", DIDTmp, IDTmp, cmnd);
+
+		// If destination ID is not set (0), use source ID from Description
+		std::vector<std::vector<std::string>> result;
+		std::map<std::string, std::string> statuses; // level → command name
+		if (pResponse->FAN2.did1 == 0)
+		{
+			ID = IDTmp;
+		}
+		else
+		{
+			ID = DIDTmp;
+			SourceID = IDTmp;
+		}
+		result = m_sql.safe_query("SELECT Name, SwitchType, Options, LastLevel, Description FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit==%d) AND (Type==%d) AND (SubType==%d)",
+			pHardware->m_HwdID, ID.c_str(), Unit, devType, subType);
+		if (!result.empty())
+		{
+			procResult.DeviceName = result[0][0];
+			Name = result[0][0];
+			switchType = atoi(result[0][1].c_str());
+			std::string optionsStr = result[0][2];
+			LastLevel = atoi(result[0][3].c_str());
+			if(SourceID.empty()) {
+				SourceID = result[0][4];
+			}
+			unsigned long OID;
+			std::stringstream s_strid;
+			s_strid << std::hex << SourceID;
+			s_strid >> OID;
+			OID1 = (uint8_t)((OID & 0xFF000000) >> 24);
+			OID2 = (uint8_t)((OID & 0x00FF0000) >> 16);
+			OID3 = (uint8_t)((OID & 0x0000FF00) >> 8);
+			OID4 = (uint8_t)((OID & 0x000000FF));
+			std::map<std::string, std::string> options = m_sql.BuildDeviceOptions(optionsStr);
+			if (switchType == STYPE_Selector && !options.empty())
+			{
+				// Use GetLightStatus to get the proper status string for this command code
+				bool bHaveDimmer = false;
+				int maxDimLevel = 0;
+				bool bHaveGroupCmd = false;
+				sValue = std::to_string(cmnd);
+				GetLightStatus(devType, subType, (const _eSwitchType)switchType, cmnd, sValue, lstatus, llevel, bHaveDimmer, maxDimLevel, bHaveGroupCmd);
+				GetSelectorSwitchStatuses(options, statuses);
+			}
+		}
+		// Build reverse map: command name → level
+		std::map<std::string, int> commandToLevel;
+		// Build map level → command name
+		std::map<int, std::string> LevelToCommand;
+		for (const auto& status : statuses)
+		{
+			int levelValue = atoi(status.first.c_str());
+			commandToLevel[status.second] = levelValue;
+			LevelToCommand[levelValue] = status.second;
+		}
+
+		// lstatus from GetLightStatus is a position index string for selectors ("0", "1", "2", ...)
+		// Find matching selector level by checking if lstatus matches a level value
+		bool isNumeric = !lstatus.empty() && lstatus.find_first_not_of("0123456789") == std::string::npos;
+
+		if (isNumeric)
+		{
+			_log.Debug(DEBUG_HARDWARE, "Orcon Number Found %s", lstatus.c_str());
+			llevel = atoi(lstatus.c_str()) * 10;
+		}
+		else if (commandToLevel.find(lstatus) != commandToLevel.end())
+		{
+			llevel = commandToLevel[lstatus];
+		}
+		std::string answer = "speed";
+		if (LevelToCommand.find(llevel) != LevelToCommand.end() && lstatus != answer)
+		{
+					_log.Debug(DEBUG_HARDWARE, "Orcon Llevel %s for number %d", LevelToCommand[llevel].c_str(), llevel);
+					nValue = llevel;
+					sValue = std::to_string(llevel);
+		}
+		else
+		{
+					nValue = LastLevel;
+					sValue = std::to_string(LastLevel);
+					_log.Debug(DEBUG_HARDWARE, "Orcon: Status '%s' for command %02X not found in selector configuration, using LastLevel=%d", lstatus.c_str(), cmnd, LastLevel);
+		}
+	}
+	else
+	{
+		// Standard FAN structure for non-Orcon devices
+		sprintf(IDTmp, "%02X%02X%02X", pResponse->FAN.id1, pResponse->FAN.id2, pResponse->FAN.id3);
+		ID = IDTmp;
+	}
+	uint64_t DevRowIdx = m_sql.UpdateValue(pHardware->m_HwdID, 0, ID.c_str(), Unit, devType, subType, SignalLevel, -1, nValue, sValue.c_str(), Name, true, procResult.Username.c_str());
 	if (DevRowIdx == (uint64_t)-1)
 		return;
-	CheckSceneCode(DevRowIdx, devType, subType, cmnd, szTmp, procResult.DeviceName);
+	CheckSceneCode(DevRowIdx, devType, subType, cmnd, ID.c_str(), procResult.DeviceName);
+	//Update switch for Orcon Device
+	if (pResponse->ICMND.subtype == sTypeOrcon)
+	{
+		// Store the source ID (remote) for reference
+		if ((pResponse->FAN2.did1 != 0) && (ID != SourceID))
+		{
+			m_sql.UpdateDeviceValue("Description", SourceID, std::to_string(DevRowIdx));
+			if (switchType == STYPE_Selector)
+				m_sql.UpdateDeviceValue("LastLevel", sValue, std::to_string(DevRowIdx));
+			_log.Debug(DEBUG_HARDWARE, "Orcon: Stored SourceID (RemoteID)=%s for device IDX=%" PRIu64, SourceID.c_str(), DevRowIdx);
+		}
+		m_sql.UpdateDeviceValue("CustomImage", 7, std::to_string(DevRowIdx));
+	}
 
 	if (_log.IsDebugLevelEnabled(DEBUG_RECEIVED))
 	{
@@ -5803,6 +5926,71 @@ void MainWorker::decode_Fan(const CDomoticzHardwareBase* pHardware, const tRBUF*
 			break;
 		case sTypeOrcon:
 			WriteMessage("subtype       = Orcon");
+			sprintf(szTmp, "ID            = %02X%02X%02X", pResponse->FAN2.id1, pResponse->FAN2.id2, pResponse->FAN2.id3);
+			WriteMessage(szTmp);
+			sprintf(szTmp, "Destination   = %02X%02X%02X", pResponse->FAN2.did1, pResponse->FAN2.did2, pResponse->FAN2.did3);
+			WriteMessage(szTmp);
+			WriteMessage("Command       = ", false);
+			switch (pResponse->FAN2.cmnd)
+			{
+				case fan_Orconlow:
+					WriteMessage("Low");
+					break;
+				case fan_Orconmedium:
+					WriteMessage("Medium");
+					break;
+				case fan_Orconhigh:
+					WriteMessage("High");
+					break;
+				case fan_Orcontimer1:
+					WriteMessage("Timer 1");
+					break;
+				case fan_Orcontimer2:
+					WriteMessage("Timer 2");
+					break;
+				case fan_Orcontimer3:
+					WriteMessage("Timer 3");
+					break;
+				case fan_Orconauto:
+					WriteMessage("Auto");
+					break;
+				case fan_Orconaway:
+					WriteMessage("Away");
+					break;
+				case fan_Orconjoin:
+					WriteMessage("Join");
+					break;
+				case fan_Orconleave:
+					WriteMessage("Leave");
+					break;
+				case fan_Orconstate:
+					WriteMessage("State");
+					break;
+				case fan_Orcontemp:
+					WriteMessage("Temperature");
+					break;
+				case fan_Orconco2:
+					WriteMessage("CO2");
+					break;
+				case fan_Orconbattery:
+					WriteMessage("Battery");
+					break;
+				case fan_Orconfilter:
+					WriteMessage("Filter");
+					break;
+				case fan_Orconpresence:
+					WriteMessage("Presence");
+					break;
+				case fan_Orconspeed:
+					WriteMessage("Speed");
+					break;
+				case fan_Orconstatus:
+					WriteMessage("Status");
+					break;
+				default:
+					WriteMessage("UNKNOWN");
+					break;
+			}
 			break;
 		case sTypeIthoHRU400:
 			WriteMessage("subtype       = Itho HRU400");
@@ -12173,24 +12361,123 @@ MainWorker::eSwitchLightReturnCode MainWorker::SwitchLightInt(const std::vector<
 	break;
 	case pTypeFan:
 	{
-		tRBUF lcmd;
-		lcmd.FAN.packetlength = sizeof(lcmd.FAN) - 1;
-		lcmd.FAN.packettype = dType;
-		lcmd.FAN.subtype = dSubType;
-		lcmd.FAN.seqnbr = m_hardwaredevices[hindex]->m_SeqNr++;
-		lcmd.FAN.id1 = ID2;
-		lcmd.FAN.id2 = ID3;
-		lcmd.FAN.id3 = ID4;
-		lcmd.FAN.filler = 0;
-		lcmd.FAN.rssi = 12;
+		// Handle selector switch level to command conversion
+		std::string slevel;
+		if ((switchtype == STYPE_Selector) && ((switchcmd == "Set Level") || (switchcmd == "Set Group Level")))
+		{
+			std::map<std::string, std::string> statuses;
+			GetSelectorSwitchStatuses(options, statuses);
+			int maxLevel = static_cast<int>(statuses.size() - 1) * 10;
 
-		if (!GetLightCommand(dType, dSubType, switchtype, switchcmd, lcmd.FAN.cmnd, options))
-			return SL_ERROR;
-		if (!WriteToHardware(HardwareID, (const char*)&lcmd, sizeof(lcmd.FAN)))
-			return SL_ERROR;
-		if (!IsTesting) {
-			//send to internal for now (later we use the ACK)
-			PushAndWaitRxMessage(m_hardwaredevices[hindex], (const uint8_t*)&lcmd, nullptr, -1, User.c_str());
+			if ((level < 0) || (level > maxLevel))
+			{
+				_log.Log(LOG_ERROR, "Setting a wrong level value %d to Fan Selector device %s", level, deviceID.c_str());
+				return SL_ERROR;
+			}
+
+			// Convert level to command name
+			std::stringstream ss;
+			ss << level;
+			slevel = ss.str();
+			auto itt = statuses.find(slevel);
+			if (itt != statuses.end())
+			{
+				switchcmd = itt->second;
+				_log.Debug(DEBUG_NORM, "Fan Selector: level=%d mapped to command='%s'", level, switchcmd.c_str());
+			}
+			else
+			{
+				_log.Log(LOG_ERROR, "Fan Selector: level=%d not found in configured level names", level);
+				return SL_ERROR;
+			}
+		}
+		tRBUF lcmd;
+		// For Orcon devices, use FAN2 structure with destination ID
+		if (dSubType == sTypeOrcon)
+		{
+			uint8_t OID1;
+			uint8_t OID2;
+			uint8_t OID3;
+			uint8_t OID4;
+			lcmd.FAN2.packetlength = sizeof(lcmd.FAN2) - 1;
+			lcmd.FAN2.packettype = dType;
+			lcmd.FAN2.subtype = dSubType;
+			lcmd.FAN2.seqnbr = m_hardwaredevices[hindex]->m_SeqNr++;
+			lcmd.FAN2.id1 = ID2;
+			lcmd.FAN2.id1 = ID3;
+			lcmd.FAN2.id1 = ID4;
+			//lcmd.FAN2.cmnd = level;
+			unsigned char slevel = static_cast<unsigned char>(level);
+			std::string SourceID;
+			// Source ID = StrParam1 from Database
+			// Retrieve destination ID from Description
+			std::vector<std::vector<std::string> > result;
+			result = m_sql.safe_query("SELECT SwitchType, Options, Description FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit==%d) AND (Type==%d) AND (SubType==%d)",
+				pHardware->m_HwdID, deviceID.c_str(), Unit, dType, dSubType);
+
+			if (!result.empty())
+			{
+				int switchType = atoi(result[0][0].c_str());
+				SourceID = result[0][2].c_str();
+				unsigned long OID;
+				std::stringstream s_strid;
+				s_strid << std::hex << SourceID;
+				s_strid >> OID;
+				OID1 = (uint8_t)((OID & 0xFF000000) >> 24);
+				OID2 = (uint8_t)((OID & 0x00FF0000) >> 16);
+				OID3 = (uint8_t)((OID & 0x0000FF00) >> 8);
+				OID4 = (uint8_t)((OID & 0x000000FF));
+
+				lcmd.FAN2.id1 = OID2;
+				lcmd.FAN2.id2 = OID3;
+				lcmd.FAN2.id3 = OID4;
+			}
+
+			// Destination ID = Fan ID Domoticz - we're sending TO the fan
+			lcmd.FAN2.did1 = ID2;
+			lcmd.FAN2.did2 = ID3;
+			lcmd.FAN2.did3 = ID4;
+			lcmd.FAN2.filler = 0;
+			lcmd.FAN2.rssi = 12;
+			// Initialize ext fields
+			lcmd.FAN2.ext1 = 0;
+			lcmd.FAN2.ext2 = 0;
+			lcmd.FAN2.ext3 = 0;
+			lcmd.FAN2.ext4 = 0;
+			lcmd.FAN2.ext5 = 0;
+			lcmd.FAN2.ext6 = 0;
+
+			if (!GetLightCommand(dType, dSubType, switchtype, switchcmd, lcmd.FAN2.cmnd, options))
+				return SL_ERROR;
+			if (!WriteToHardware(HardwareID, (const char*)&lcmd, sizeof(lcmd.FAN2)))
+				return SL_ERROR;
+			if (!IsTesting) {
+				//send to internal for now (later we use the ACK)
+				PushAndWaitRxMessage(m_hardwaredevices[hindex], (const uint8_t*)&lcmd, nullptr, -1, User.c_str());
+			}
+		}
+		else
+		{
+			// Standard FAN structure for non-Orcon devices
+			lcmd.FAN.packetlength = sizeof(lcmd.FAN) - 1;
+			lcmd.FAN.packettype = dType;
+			lcmd.FAN.subtype = dSubType;
+			lcmd.FAN.seqnbr = m_hardwaredevices[hindex]->m_SeqNr++;
+			lcmd.FAN.id1 = ID2;
+			lcmd.FAN.id2 = ID3;
+			lcmd.FAN.id3 = ID4;
+			//lcmd.FAN.cmnd = level;
+			lcmd.FAN.filler = 0;
+			lcmd.FAN.rssi = 12;
+
+			if (!GetLightCommand(dType, dSubType, switchtype, switchcmd, lcmd.FAN.cmnd, options))
+				return SL_ERROR;
+			if (!WriteToHardware(HardwareID, (const char*)&lcmd, sizeof(lcmd.FAN)))
+				return SL_ERROR;
+			if (!IsTesting) {
+				//send to internal for now (later we use the ACK)
+				PushAndWaitRxMessage(m_hardwaredevices[hindex], (const uint8_t*)&lcmd, nullptr, -1, User.c_str());
+			}
 		}
 		return SL_OK;
 	}
@@ -12931,6 +13218,14 @@ MainWorker::eSwitchLightReturnCode MainWorker::SwitchLight(const uint64_t idx, c
 			sd[3] = std::to_string(dtype);
 			sd[4] = std::to_string(subtype);
 		}
+	}
+	if (subtype == sTypeOrcon) {
+		_log.Debug(DEBUG_HARDWARE, "Sub type Orcon detected %d", level);
+		result = m_sql.safe_query(
+			"SELECT HardwareID,DeviceID,Unit,Type,SubType,SwitchType,AddjValue2,nValue,sValue,Name,Options,OrgHardwareID,LastLevel,Description FROM DeviceStatus WHERE (ID == %" PRIu64 ")",
+			idx);
+		sd = result[0];
+		sd[7] = std::to_string(level); // Change nValue to current level
 	}
 	bool bIsOn = IsLightSwitchOn(switchcmd);
 	if (ooc)//Only on change
