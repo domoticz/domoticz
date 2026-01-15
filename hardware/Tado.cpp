@@ -211,7 +211,7 @@ bool CTado::RefreshAccessToken()
 	{
 		//Token refresh time is in the past, most  likely pollinterval is too big
 		//Log error and exit
-		Log(LOG_ERROR, "Pollinterval > token expire time.", m_iPollInterval);
+		Log(LOG_ERROR, "Pollinterval (%d sec) > token expire time.", m_iPollInterval);
 		return false;
 	}
 
