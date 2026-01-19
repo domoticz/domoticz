@@ -561,8 +561,14 @@ define(['app'], function (app) {
 					if (typeof data.FCMEnabled != 'undefined') {
 						$("#gcmtable #FCMEnabled").prop('checked', data.FCMEnabled == 1);
 					}
-					if (typeof data.FCMServiceAccountJSON != 'undefined') {
-						$("#gcmtable #FCMServiceAccountJSON").val(atob(data.FCMServiceAccountJSON));
+					if (typeof data.FCMClientEmail != 'undefined') {
+						$("#gcmtable #FCMClientEmail").val(data.FCMClientEmail);
+					}
+					if (typeof data.FCMPrivateKey != 'undefined') {
+						$("#gcmtable #FCMPrivateKey").val(atob(data.FCMPrivateKey));
+					}
+					if (typeof data.FCMProjectId != 'undefined') {
+						$("#gcmtable #FCMProjectId").val(data.FCMProjectId);
 					}
 					if (typeof data.LightHistoryDays != 'undefined') {
 						$("#lightlogtable #LightHistoryDays").val(data.LightHistoryDays);
@@ -1042,21 +1048,16 @@ define(['app'], function (app) {
 					var reader = new FileReader();
 					reader.onload = function(e) {
 						try {
-							// Validate it's valid JSON
-							var jsonContent = e.target.result;
-							JSON.parse(jsonContent);
-							$('#gcmtable #FCMServiceAccountJSON').val(jsonContent);
-							ShowNotify($.t('Firebase Service Account JSON file loaded successfully'), 2500);
-						} catch (error) {
-							ShowNotify($.t('Invalid JSON file format'), 2500, true);
+						// Parse JSON and extract required fields
+						var jsonContent = e.target.result;
+						var jsonObj = JSON.parse(jsonContent);
+						if (!jsonObj.client_email || !jsonObj.private_key || !jsonObj.project_id) {
+							ShowNotify($.t('Invalid Firebase JSON - missing required fields (client_email, private_key, project_id)'), 2500, true);
+							return;
 						}
-					};
-					reader.onerror = function() {
-						ShowNotify($.t('Error reading file'), 2500, true);
-					};
-					reader.readAsText(file);
-				}
-			});
+						$('#gcmtable #FCMClientEmail').val(jsonObj.client_email);
+						$('#gcmtable #FCMPrivateKey').val(jsonObj.private_key);
+						$('#gcmtable #FCMProjectId').val(jsonObj.project_id);
 			
 			$("#maindiv").i18n();
 			$scope.ShowSettings();

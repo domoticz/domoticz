@@ -713,20 +713,35 @@
 												<td><input type="checkbox" id="FCMEnabled" name="FCMEnabled"><label for="FCMEnabled"></label></td>
 												<td><button data-i18n="Test" class="btn btn-info" ng-click="TestNotification('fcm')">Test</button></td>
 											</tr>
+											<!-- FCM: Upload JSON helper row -->
 											<tr>
-												<td align="right" style="width:120px; vertical-align:top; padding-top:8px;"><label>Service Account JSON:</label></td>
+												<td align="right" style="width:120px; vertical-align:top; padding-top:8px;"><label>Upload JSON File:</label></td>
 												<td colspan="2">
-													<div style="margin-bottom:5px;">
-														<input type="file" id="FCMServiceAccountJSONFile" accept=".json" style="display:none;" />
-														<button type="button" class="btn btn-small" onclick="document.getElementById('FCMServiceAccountJSONFile').click();">
-															<i class="fa fa-upload"></i> Upload JSON File
-														</button>
-														<span style="margin-left:10px; font-size:11px; color:#999;">or paste JSON below</span>
-													</div>
-													<textarea id="FCMServiceAccountJSON" name="FCMServiceAccountJSON" rows="8" style="width:95%; font-family:monospace; font-size:11px;" placeholder='Paste your Firebase Admin SDK Service Account JSON here&#10;{&#10;  "type": "service_account",&#10;  "project_id": "your-project-id",&#10;  "private_key_id": "...",&#10;  "private_key": "...",&#10;  "client_email": "...",&#10;  ...&#10;}'></textarea>
+													<input type="file" id="FCMServiceAccountJSONFile" accept=".json" style="display:inline-block; margin-right:8px;" />
+													<span style="font-size:11px; color:#666;">Select your Firebase Service Account JSON to auto-fill the fields below (client_email, private_key, project_id).</span>
+												</td>
+											</tr>
+											<tr>
+												<td align="right" style="width:120px; vertical-align:top; padding-top:8px;"><label>Client Email:</label></td>
+												<td colspan="2">
+													<input type="text" id="FCMClientEmail" name="FCMClientEmail" style="width:95%; padding:5px;" class="text ui-widget-content ui-corner-all" placeholder="firebase-adminsdk-xxxxx@project-id.iam.gserviceaccount.com">
+													<div style="margin-top:5px; font-size:11px; color:#666;">From your Firebase Service Account JSON</div>
+												</td>
+											</tr>
+											<tr>
+												<td align="right" style="width:120px; vertical-align:top; padding-top:8px;"><label>Private Key:</label></td>
+												<td colspan="2">
+													<textarea id="FCMPrivateKey" name="FCMPrivateKey" rows="6" style="width:95%; font-family:monospace; font-size:11px;" placeholder='-----BEGIN PRIVATE KEY-----&#10;MIIEvQIBA...&#10;-----END PRIVATE KEY-----'></textarea>
+													<div style="margin-top:5px; font-size:11px; color:#666;">The private_key from your Firebase Service Account JSON</div>
+												</td>
+											</tr>
+											<tr>
+												<td align="right" style="width:120px; vertical-align:top; padding-top:8px;"><label>Project ID:</label></td>
+												<td colspan="2">
+													<input type="text" id="FCMProjectId" name="FCMProjectId" style="width:95%; padding:5px;" class="text ui-widget-content ui-corner-all" placeholder="domoticz-notifications">
 													<div style="margin-top:5px; font-size:12px; color:#666;">
-														<strong>Note:</strong> Generate this from Firebase Console > Project Settings > Service Accounts > Generate New Private Key. 
-														<a href="https://console.firebase.google.com/" target="_blank">Open Firebase Console</a>
+														<strong>Note:</strong> Enter only the required fields from your Firebase Service Account JSON.<br>
+														Get it from <a href="https://console.firebase.google.com/" target="_blank">Firebase Console</a> > Project Settings > Service Accounts > Generate New Private Key
 													</div>
 												</td>
 											</tr>
