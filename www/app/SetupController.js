@@ -159,6 +159,14 @@ define(['app'], function (app) {
 					extraparams = 'LmsPlayerMac=' + $("#lmstable #LmsPlayerMac").val() + '&LmsDuration=' + $("#lmstable #LmsDuration").val();
 					break;
 				case "fcm":
+					var FCMClientEmail = encodeURIComponent($("#gcmtable #FCMClientEmail").val());
+					var FCMPrivateKey = encodeURIComponent($("#gcmtable #FCMPrivateKey").val());
+					var FCMProjectId = encodeURIComponent($("#gcmtable #FCMProjectId").val());
+					if (FCMClientEmail == "" || FCMPrivateKey == "" || FCMProjectId == "") {
+						ShowNotify($.t('All Firebase fields are required!...'), 3500, true);
+						return;
+					}
+					extraparams = "FCMClientEmail=" + FCMClientEmail + "&FCMPrivateKey=" + FCMPrivateKey + "&FCMProjectId=" + FCMProjectId;
 					break;
 				default:
 					return;
