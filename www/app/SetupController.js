@@ -1048,16 +1048,26 @@ define(['app'], function (app) {
 					var reader = new FileReader();
 					reader.onload = function(e) {
 						try {
-						// Parse JSON and extract required fields
-						var jsonContent = e.target.result;
-						var jsonObj = JSON.parse(jsonContent);
-						if (!jsonObj.client_email || !jsonObj.private_key || !jsonObj.project_id) {
-							ShowNotify($.t('Invalid Firebase JSON - missing required fields (client_email, private_key, project_id)'), 2500, true);
-							return;
+							// Parse JSON and extract required fields
+							var jsonContent = e.target.result;
+							var jsonObj = JSON.parse(jsonContent);
+							if (!jsonObj.client_email || !jsonObj.private_key || !jsonObj.project_id) {
+								ShowNotify($.t('Invalid Firebase JSON - missing required fields (client_email, private_key, project_id)'), 2500, true);
+								return;
+							}
+							$('#gcmtable #FCMClientEmail').val(jsonObj.client_email);
+							$('#gcmtable #FCMPrivateKey').val(jsonObj.private_key);
+							$('#gcmtable #FCMProjectId').val(jsonObj.project_id);
+						} catch (error) {
+							ShowNotify($.t('Invalid JSON file format'), 2500, true);							
 						}
-						$('#gcmtable #FCMClientEmail').val(jsonObj.client_email);
-						$('#gcmtable #FCMPrivateKey').val(jsonObj.private_key);
-						$('#gcmtable #FCMProjectId').val(jsonObj.project_id);
+					}
+					reader.onerror = function() {
+						ShowNotify($.t('Error reading file'), 2500, true);
+					};
+					reader.readAsText(file);
+				}
+			});
 			
 			$("#maindiv").i18n();
 			$scope.ShowSettings();
