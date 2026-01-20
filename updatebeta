@@ -184,7 +184,7 @@ create_backup() {
 
 # Check if Domoticz service exists
 service_exists() {
-    if [[ -f /etc/init.d/domoticz.sh ]] || systemctl list-unit-files | grep -q domoticz; then
+    if sudo systemctl is-enabled --quiet domoticz.service || sudo systemctl is-active --quiet domoticz.service; then
         return 0
     else
         return 1
@@ -204,18 +204,6 @@ stop_service() {
     fi
 }
 
-# Install new version
-install_update() {
-    log_info "Installing new version..."
-    
-    if ! tar xfz "$ARCHIVE_NAME" --checkpoint=.100; then
-        die "Failed to extract update archive!"
-    fi
-    
-    rm -f "$ARCHIVE_NAME"
-    log_info "Installation complete."
-}
-
 # Start Domoticz service
 start_service() {
     if ! service_exists; then
@@ -232,6 +220,18 @@ start_service() {
     
     sleep 2
     log_info "Service started successfully."
+}
+
+# Install new version
+install_update() {
+    log_info "Installing new version..."
+    
+    if ! tar xfz "$ARCHIVE_NAME" --checkpoint=.100; then
+        die "Failed to extract update archive!"
+    fi
+    
+    rm -f "$ARCHIVE_NAME"
+    log_info "Installation complete."
 }
 
 # Main execution
