@@ -182,22 +182,8 @@ create_backup() {
     log_info "Backup complete."
 }
 
-# Check if Domoticz service exists
-service_exists() {
-    if sudo systemctl is-enabled --quiet domoticz.service || sudo systemctl is-active --quiet domoticz.service; then
-        return 0
-    else
-        return 1
-    fi
-}
-
 # Stop Domoticz service
 stop_service() {
-#    if ! service_exists; then
-#        log_warn "Domoticz service does not exist - skipping service stop"
-#        return 0
-#    fi
-    
     log_info "Stopping Domoticz service..."
     if ! sudo service domoticz.sh stop; then
         log_warn "Failed to stop service (may not be running)"
@@ -206,14 +192,7 @@ stop_service() {
 
 # Start Domoticz service
 start_service() {
-    if ! service_exists; then
-        log_warn "Domoticz service does not exist - skipping service start"
-        log_warn "You will need to start Domoticz manually"
-        return 0
-    fi
-    
     log_info "Starting Domoticz service (please wait)..."
-    
     if ! sudo service domoticz.sh start; then
         die "Failed to start Domoticz service!"
     fi
