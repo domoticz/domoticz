@@ -164,9 +164,11 @@ create_backup() {
     
     mkdir -p "$BACKUP_DIR"
     
-    if ! sudo tar --exclude="$BACKUP_DIR" -czf "$backup_file" .; then
+    if ! sudo tar --exclude="$BACKUP_DIR" --exclude='*.tgz' --exclude='*.gz' -czf "$backup_file" .; then
         die "Backup creation failed!"
     fi
+	
+	chmod 644 "$backup_file"
     
     # Cleanup old backups (keep only MAX_BACKUPS)
     local old_backups
