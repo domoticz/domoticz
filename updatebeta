@@ -168,7 +168,7 @@ create_backup() {
         die "Backup creation failed!"
     fi
 	
-	chmod 644 "$backup_file"
+	sudo chmod 644 "$backup_file"
     
     # Cleanup old backups (keep only MAX_BACKUPS)
     local old_backups
