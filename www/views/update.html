@@ -19,6 +19,17 @@
 		</div>
 		<br>
 		<span ng-bind-html="bottomText"></span>
-		</center>
 	</div>
+
+	<!-- Live output box -->
+	<style>
+		.log-red { color: #ff6b6b; }
+		.log-green { color: #00ff00; }
+		.log-yellow { color: #ffdd57; }
+	</style>
+	<div ng-show="showOutput" style="margin-top: 20px;">
+		<h4>Update Progress:</h4>
+		<pre id="updateconsole" style="height: 200px; overflow-y: auto; background: rgba(30, 30, 30, 0.5); color: #cccccc; padding: 10px; font-family: 'Courier New', monospace; font-size: 12px; border: 1px solid #444; text-align: left;"><div ng-repeat="line in outputLines track by $index" ng-bind-html="line"></div></pre>
+	</div>
+	</center>
 </div>

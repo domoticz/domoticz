@@ -1,8 +1,7 @@
 #!/bin/bash
-set -euo pipefail
 
 # Domoticz Update Script
-# Created by GizMoCuz, 2025, version 2.2
+# Created by GizMoCuz, 2026, version 2.3
 # Usage: ./update_domoticz [--no-backup]
 
 readonly SCRIPT_NAME="$(basename "$0")"
@@ -31,7 +30,11 @@ readonly NC='\033[0m' # No Color
 log_info() { echo -e "${GREEN}>>${NC} $*"; }
 log_warn() { echo -e "${YELLOW}>>${NC} $*"; }
 log_error() { echo -e "${RED}>>${NC} $*" >&2; }
-die() { log_error "$*"; exit 1; }
+die() {
+    local error_msg="$*"
+    log_error "$error_msg"
+    exit 1
+}
 
 # Returns 0 (true) if script has been updated and re-executed, 1 (false) otherwise
 is_reexecuted() {
@@ -164,7 +167,7 @@ create_backup() {
     
     mkdir -p "$BACKUP_DIR"
     
-    if ! sudo tar --exclude="$BACKUP_DIR" --exclude='*.tgz' --exclude='*.gz' -czf "$backup_file" .; then
+    if ! sudo tar --exclude="$BACKUP_DIR" --exclude='*.tgz' --exclude='*.gz' --exclude='update.log' -czf "$backup_file" .; then
         die "Backup creation failed!"
     fi
 	
@@ -190,14 +193,30 @@ stop_service() {
     fi
 }
 
+# Check if Domoticz service is running
+is_service_running() {
+    # Check if domoticz process is running
+    if pgrep -x domoticz > /dev/null 2>&1; then
+        return 0
+    fi
+    # Also check via systemctl if available
+    if command -v systemctl > /dev/null 2>&1; then
+        local status
+        status=$(systemctl is-active domoticz.sh 2>/dev/null)
+        if [ "$status" = "active" ]; then
+            # Double-check it's not "active (exited)" by verifying process exists
+            if pgrep -x domoticz > /dev/null 2>&1; then
+                return 0
+            fi
+        fi
+    fi
+    return 1
+}
+
 # Start Domoticz service
 start_service() {
     log_info "Starting Domoticz service (please wait)..."
-    if ! sudo service domoticz.sh start; then
-        die "Failed to start Domoticz service!"
-    fi
-    
-    sleep 2
+    sudo service domoticz.sh start
     log_info "Service started successfully."
 }
 
@@ -232,7 +251,7 @@ main() {
     
     log_info "Starting Domoticz $CHANNEL_KEYWORD Update"
     log_info "Script: $SCRIPT_NAME (Directory: $SCRIPT_DIR)"
-    
+
     # Validate environment first
     validate_environment
     

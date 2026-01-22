@@ -1,5 +1,5 @@
 define(['app'], function (app) {
-	app.controller('UpdateController', ['$scope', '$rootScope', '$location', '$http', '$interval', '$window', function ($scope, $rootScope, $location, $http, $interval, $window) {
+	app.controller('UpdateController', ['$scope', '$rootScope', '$location', '$http', '$interval', '$window', '$sce', function ($scope, $rootScope, $location, $http, $interval, $window, $sce) {
 
 		$scope.appVersion = 0;
 		$scope.newVersion = 0;
@@ -7,6 +7,8 @@ define(['app'], function (app) {
 		$scope.bottomText = "";
 		$scope.updateReady = false;
 		$scope.statusText = "";
+		$scope.outputLines = [];  // Store last 10 lines of output
+		$scope.showOutput = false;  // Toggle output box visibility
 
 		$scope.ProgressData = {
 			label: 0,
@@ -54,6 +56,71 @@ define(['app'], function (app) {
 				});
 		}
 
+		$scope.UpdateOutputLog = function() {
+			$http({
+				method: "GET",
+				url: "json.htm?type=command&param=getupdatelog",
+				timeout: 2000
+			}).then(
+				function mySuccess(response) {
+					var data = response.data;
+					$scope.serviceRestarting = false;
+					if (data.status == "OK" && data.result) {
+						// Take last 10 lines from result array (already HTML formatted)
+						// Trust HTML content for ng-bind-html
+						$scope.outputLines = data.result.slice(-10).map(function(line) {
+							return $sce.trustAsHtml(line);
+						});
+						$scope.showOutput = true;
+
+						// Scroll console to bottom
+						setTimeout(function() {
+							var consoleEl = document.getElementById('updateconsole');
+							if (consoleEl) {
+								var lastChild = consoleEl.lastElementChild;
+								if (lastChild) {
+									lastChild.scrollIntoView(false);
+								}
+							}
+						}, 100);
+
+						// Check status derived from log
+						if (data.updatestatus === "error") {
+							var errorMsg = data.errormessage || "Unknown error";
+							$scope.topText = $.t("Update failed: ") + errorMsg;
+
+							// Stop all polling
+							if (typeof $scope.mytimer != 'undefined') {
+								$interval.cancel($scope.mytimer);
+								$scope.mytimer = undefined;
+							}
+							if (typeof $scope.mytimer2 != 'undefined') {
+								$interval.cancel($scope.mytimer2);
+								$scope.mytimer2 = undefined;
+							}
+							if (typeof $scope.mytimer3 != 'undefined') {
+								$interval.cancel($scope.mytimer3);
+								$scope.mytimer3 = undefined;
+							}
+
+							$("#updatecontent #divprogress").hide();
+						} else if (data.updatestatus === "complete") {
+							// Update completed successfully
+							$scope.CheckUpdateReader();
+						}
+					}
+				},
+				function myError(response) {
+					// Service is likely restarting - hide console and show message
+					if (!$scope.serviceRestarting) {
+						$scope.serviceRestarting = true;
+						$scope.showOutput = false;
+						$scope.statusText = $.t("Service is restarting, please wait...");
+					}
+				}
+			);
+		};
+
 		$scope.progressupdatesystem = function () {
 			var val = $scope.ProgressData.label;
 			$scope.ProgressData.label = val + 1;
@@ -65,6 +132,10 @@ define(['app'], function (app) {
 				if (typeof $scope.mytimer2 != 'undefined') {
 					$interval.cancel($scope.mytimer2);
 					$scope.mytimer2 = undefined;
+				}
+				if (typeof $scope.mytimer3 != 'undefined') {
+					$interval.cancel($scope.mytimer3);
+					$scope.mytimer3 = undefined;
 				}
 				if ($scope.updateReady == false) {
 					$("#updatecontent #divprogress").hide();
@@ -82,6 +153,7 @@ define(['app'], function (app) {
 				$scope.mytimer = undefined;
 			}
 			$scope.ProgressData.label = 0;
+			$scope.showOutput = true;
 			$("#updatecontent #divprogress").show();
 
 			$http({
@@ -97,8 +169,16 @@ define(['app'], function (app) {
 						$scope.mytimer2 = $interval(function () {
 							$scope.CheckUpdateReader();
 						}, 1000);
+
+						// Poll output log every second (includes status detection)
+						$scope.mytimer3 = $interval(function () {
+							$scope.UpdateOutputLog();
+						}, 1000);
+
+						// Initial call to show output immediately
+						$scope.UpdateOutputLog();
 					} else {
-						$scope.topText = $.t("Could not start download,<br>check your internet connection or try again later !...");					
+						$scope.topText = $.t("Could not start download,<br>check your internet connection or try again later !...");
 					}
 				},
 				function myError(response)   {
@@ -122,6 +202,7 @@ define(['app'], function (app) {
 						}, 400);
 					} else {
 						$scope.topText = $.t("No Update Available !...");
+						$scope.showOutput = false;
 					}
 				},
 				function myError(response)   {
@@ -152,6 +233,10 @@ define(['app'], function (app) {
 			if (typeof $scope.mytimer2 != 'undefined') {
 				$interval.cancel($scope.mytimer2);
 				$scope.mytimer2 = undefined;
+			}
+			if (typeof $scope.mytimer3 != 'undefined') {
+				$interval.cancel($scope.mytimer3);
+				$scope.mytimer3 = undefined;
 			}
 		});
 	}]);

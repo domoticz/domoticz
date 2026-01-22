@@ -2231,9 +2231,11 @@ namespace http
 
 			std::string scriptname(szStartupFolder);
 			scriptname += (bIsBetaChannel) ? "updatebeta" : "updaterelease";
-			// run script in background
-			std::string lscript = scriptname + " &";
+			// run script in new session with setsid + nohup for complete detachment from parent
+			// Use fixed log filename for frontend display (both scripts write to same file)
+			std::string lscript = "setsid nohup " + scriptname + " > " + std::string(szStartupFolder) + "update.log 2>&1 &";
 			int ret = system(lscript.c_str());
+			_log.Log(LOG_STATUS, "Update script started: %s (log: update.log)", scriptname.c_str());
 			root["title"] = "UpdateApplication";
 			root["status"] = "OK";
 		}
@@ -5289,6 +5291,202 @@ namespace http
 			CKWHStats::ResetJSONStats(idx);
 			root["status"] = "OK";
 			root["title"] = "ResetkWhStats";
+		}
+
+		// Helper function to convert ANSI color codes to HTML spans
+		// Also handles progress indicators (dots, ===>, percentages) from tar/wget
+		static std::string ConvertAnsiToHtml(const std::string& input)
+		{
+			// First, handle carriage returns - only keep content after last \r per segment
+			std::string processed;
+			size_t lastCR = 0;
+			bool hasCR = false;
+			for (size_t j = 0; j < input.size(); j++)
+			{
+				if (input[j] == '\r')
+				{
+					lastCR = j + 1;
+					hasCR = true;
+				}
+			}
+			if (hasCR && lastCR < input.size())
+				processed = input.substr(lastCR);
+			else
+				processed = input;
+
+			std::string result;
+			result.reserve(processed.size() * 2);
+
+			size_t i = 0;
+			bool inSpan = false;
+			int progressCharCount = 0;
+			const int maxProgressCharsPerLine = 50;
+
+			while (i < processed.size())
+			{
+				// Check for ANSI escape sequence: \033[ or \x1b[
+				if (i + 1 < processed.size() && processed[i] == '\033' && processed[i + 1] == '[')
+				{
+					// Find the end of the escape sequence (ends with 'm')
+					size_t start = i + 2;
+					size_t end = start;
+					while (end < processed.size() && processed[end] != 'm')
+						end++;
+
+					if (end < processed.size())
+					{
+						std::string code = processed.substr(start, end - start);
+
+						// Close previous span if open
+						if (inSpan)
+						{
+							result += "</span>";
+							inSpan = false;
+						}
+
+						// Map ANSI codes to CSS classes
+						if (code == "0;31" || code == "31")  // Red
+						{
+							result += "<span class=\"log-red\">";
+							inSpan = true;
+						}
+						else if (code == "0;32" || code == "32")  // Green
+						{
+							result += "<span class=\"log-green\">";
+							inSpan = true;
+						}
+						else if (code == "1;33" || code == "33")  // Yellow
+						{
+							result += "<span class=\"log-yellow\">";
+							inSpan = true;
+						}
+						// code == "0" is reset, just close span (already done above)
+
+						i = end + 1;
+						progressCharCount = 0;
+						continue;
+					}
+				}
+
+				// Handle progress characters (dots, equals signs) - break into lines
+				if (processed[i] == '.' || processed[i] == '=')
+				{
+					progressCharCount++;
+					result += processed[i];
+					if (progressCharCount >= maxProgressCharsPerLine)
+					{
+						result += "<br>";
+						progressCharCount = 0;
+					}
+				}
+				// HTML escape special characters
+				else if (processed[i] == '<')
+				{
+					result += "&lt;";
+					progressCharCount = 0;
+				}
+				else if (processed[i] == '>')
+				{
+					result += "&gt;";
+					progressCharCount = 0;
+				}
+				else if (processed[i] == '&')
+				{
+					result += "&amp;";
+					progressCharCount = 0;
+				}
+				else if (processed[i] != '\r')  // Skip any remaining CR
+				{
+					result += processed[i];
+					progressCharCount = 0;
+				}
+
+				i++;
+			}
+
+			// Close any remaining open span
+			if (inSpan)
+				result += "</span>";
+
+			return result;
+		}
+
+		void CWebServer::Cmd_GetUpdateLog(WebEmSession& session, const request& req, Json::Value& root)
+		{
+			if (session.rights != URIGHTS_ADMIN)
+			{
+				session.reply_status = reply::forbidden;
+				return; // Only admin user allowed
+			}
+
+			root["status"] = "OK";
+			root["title"] = "GetUpdateLog";
+			root["version"] = szAppVersion;
+
+			std::string logfile = szStartupFolder + "update.log";
+			std::ifstream infile;
+			infile.open(logfile.c_str());
+
+			bool hasError = false;
+			bool hasCompleted = false;
+			std::string lastErrorLine;
+
+			if (infile.is_open())
+			{
+				std::string sLine;
+				int ii = 0;
+				while (!infile.eof())
+				{
+					std::getline(infile, sLine);
+					if (!sLine.empty())
+					{
+						// Check for error (red color code \033[0;31m)
+						if (sLine.find("\033[0;31m") != std::string::npos)
+						{
+							hasError = true;
+							// Extract error message (strip ANSI codes for the message)
+							lastErrorLine = sLine;
+							// Remove ANSI codes for plain text error message
+							size_t pos;
+							while ((pos = lastErrorLine.find("\033[")) != std::string::npos)
+							{
+								size_t endPos = lastErrorLine.find('m', pos);
+								if (endPos != std::string::npos)
+									lastErrorLine.erase(pos, endPos - pos + 1);
+								else
+									break;
+							}
+							// Remove the >> prefix if present
+							if (lastErrorLine.substr(0, 3) == ">> ")
+								lastErrorLine = lastErrorLine.substr(3);
+						}
+
+						// Check for successful completion
+						if (sLine.find("Update completed successfully") != std::string::npos)
+							hasCompleted = true;
+
+						// Convert ANSI to HTML and store
+						root["result"][ii] = ConvertAnsiToHtml(sLine);
+						ii++;
+					}
+				}
+				infile.close();
+			}
+
+			// Derive status from log content
+			if (hasError)
+			{
+				root["updatestatus"] = "error";
+				root["errormessage"] = lastErrorLine;
+			}
+			else if (hasCompleted)
+			{
+				root["updatestatus"] = "complete";
+			}
+			else
+			{
+				root["updatestatus"] = "running";
+			}
 		}
 
 	} // namespace server
