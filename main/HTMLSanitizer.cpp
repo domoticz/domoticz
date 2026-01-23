@@ -7,8 +7,10 @@
 //Maybe the way we search for 'safe' words is to safe, but better safe than sorry
 std::string HTMLSanitizer::Sanitize(const std::string& szText)
 {
+	if (szText.empty())
+		return szText;
 	// https://html5sec.org/
-	const auto szForbiddenContent = std::array<std::string, 27>{
+	const auto szForbiddenContent = std::array<std::string, 28>{
 		"a",
 		"span",
 		"script",
@@ -35,7 +37,8 @@ std::string HTMLSanitizer::Sanitize(const std::string& szText)
 		"iframe",
 		"meta",
 		"link",
-		"style"
+		"style",
+		"xss"
 	};
 
 	std::string result = szText;
@@ -50,6 +53,8 @@ std::string HTMLSanitizer::Sanitize(const std::string& szText)
 		std::regex tagRegex(pattern, std::regex::icase);
 		result = std::regex_replace(result, tagRegex, "");
 	}
+	if (result.empty())
+		return "Invalid!?";
 
 	// Also remove on* event handlers (onclick, onerror, etc.)
 	std::regex eventRegex("\\s+on\\w+\\s*=\\s*[\"'][^\"']*[\"']",

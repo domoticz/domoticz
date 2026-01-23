@@ -67,6 +67,12 @@ define(['app', 'livesocket'], function(app) {
                         className: 'row_selected',
                         selector: '.js-select-row'
                     },
+					columnDefs: [
+						{
+						targets: 6, // first column (0-based index)
+						render: $.fn.dataTable.render.text()
+						}
+					],
                     order: [[13, 'desc']],
                     columns: [
                         {
