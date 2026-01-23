@@ -1,14 +1,39 @@
-Version 2025.xxxx
-- Implemented: MQTT-AD, added support for Climate high/low setpoints
+Version 2026.xxxx
+- Implemented: Add basic Alexa Smart Home v3 API endpoint (see ALEXA.md)
+- Implemented: Blinds + Stop type
+- Implemented: Enever, updated providers and API v3
+- Implemented: MQTT-AD, added support for Climate high/low set points
+- Implemented: MQTT-AD: Added support for flow meter reported in l/min (Fixes #6450)
+- Implemented: MQTT-AD: Calculate temperature trends for climate devices
+- Implemented: MQTT-AD: Fan, make it possible to send separate ON/OFF commands
+- Implemented: MQTT-AD: handling FAN on/off status commands
+- Implemented: MQTT-AD: Implemented Fan speed-range
+- Implemented: MQTT-AD: Reinstate 'total_increasing' support for kWh sensors
+- Implemented: New update scripts that are able to check if system meets requirements
+- Implemented: New update scripts that are able to check if system meets requirements
+- Implemented: Philips Hue v2 API, just for Door/Window Contacts (state/tamper/battery)
+- Implemented: PV Output, added consumption
+- Implemented: RFXCom, Support Orcon FAN device (#6500)
 - Implemented: Support for the Model Context Protocol (/mcp) for use with AI Agents
-- Implemented: PhilipsHue v2 API, just for Door/Window Contacts (state/tamper/battery)
+- Implemented: Web Interface, Better XSS prevention
 - Fixed: Chart zoom buttons (notable on iOS devices)
+- Fixed: Kodi, Possible memory leak in Kodi Notification when destination is unreachable
+- Fixed: Philips Hue v1 API crashes Domoticz in certain cases since Hue Bridge firmware 1.74 (added extra validations)
 - Fixed: Possible memory leak in Kodi Notification when destination is unreachable
-- Fixed: PhilipsHue v1 API crashes Domoticz in certain cases since Hue Bridge firmware 1.74 (added extra validations)
 - Fixed: Temperature Compare Chart (Min/Max values)
 - Fixed: WOL, Corrected magic packet creation and supporting IPv6 broadcast
-- Changed: Enever, using v3 API
-- Changed: PhilipsHue, now used HTTP scheme (HTTP/HTTPS) based on port number (80/443)
+- Changed: Domoticz Remote, Do not force re-enable RemoteSharedPort on startup
+- Changed: Enphase, default to new firmware info request
+- Changed: FCM/Google Cloud Messaging Notifications, now needed to enter private API from console in settings
+- Changed: In-service/Oauth2, Added Logo to login form
+- Changed: Internal code cleanup/enhancements
+- Changed: MQTT-AD: better initial device naming
+- Changed: MQTT, huge speed improvements
+- Changed: Netatmo, using new API scopes/code
+- Changed: Philips Hue, Added extra validations since Hue Bridge firmware 1.74.1974063020 crashes Domoticz in certain cases
+- Changed: Philips Hue, now used HTTP scheme (HTTP/HTTPS) based on port number (80/443)
+- Changed: Tado, token now refreshed with correct refresh token interval
+- Updated: Translations
 
 Version 2025.2 (October 13th 2025)
 - Implemented: EnergyDashboard, add option for (Outside) Temperature Sensor
@@ -27,6 +52,8 @@ Version 2025.2 (October 13th 2025)
 - Fixed: MQTT-AD, fix issue where brightness and RGB command topic are different
 - Fixed: MQTT-AD, preserve select options when updating a device
 - Fixed: Replace device now also copies 'Options' field
+- Fixed: mDNS, possible crash when web server (non) SSL was disabled, or a invalid port was specified
+- Fixed: Charts, after deleting a datapoint, the browser was not correctly refreshed
 - Changed: Enphase query Token method
 - Changed: mDNS, hostname now lowercase
 - Changed: MQTT-AD, added support for color_temp_command_template
@@ -34,8 +61,6 @@ Version 2025.2 (October 13th 2025)
 - Changed: TADO, Add poll interval option
 - Changed: MQTT, not publishing devices that are not used
 - Changed: Philips Hue now uses HTTPS to be compliant with new Hue Bridge
-- Fixed: mDNS, possible crash when web server (non) SSL was disabled, or a invalid port was specified
-- Fixed: Charts, after deleting a datapoint, the browser was not correctly refreshed
 - Updated: Windows libraries
 
 Version 2025.1 (May 5th 2025)
