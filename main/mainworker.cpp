@@ -240,9 +240,6 @@ MainWorker::MainWorker()
 	m_LastSunriseSet = "";
 	m_DayLength = "";
 
-	m_bHaveDownloadedDomoticzUpdate = false;
-	m_bHaveDownloadedDomoticzUpdateSuccessFull = false;
-	m_bDoDownloadDomoticzUpdate = false;
 	m_LastUpdateCheck = 0;
 	m_bHaveUpdate = false;
 	m_iRevision = 0;
@@ -1382,23 +1379,6 @@ bool MainWorker::IsUpdateAvailable(const bool bIsForced)
 	return m_bHaveUpdate;
 }
 
-bool MainWorker::StartDownloadUpdate()
-{
-#ifndef DEBUG_DOWNLOAD
-#ifdef WIN32
-	return false; //managed by web gui
-#endif
-#endif
-
-	if (!IsUpdateAvailable(true))
-		return false; //no new version available
-
-	m_bHaveDownloadedDomoticzUpdate = false;
-	m_bHaveDownloadedDomoticzUpdateSuccessFull = false;
-	m_bDoDownloadDomoticzUpdate = true;
-	return true;
-}
-
 void MainWorker::HandleAutomaticBackups()
 {
 	int nValue = 0;
@@ -1637,47 +1617,6 @@ void MainWorker::Do_Work()
 
 	while (!IsStopRequested(500))
 	{
-		if (m_bDoDownloadDomoticzUpdate)
-		{
-			m_bDoDownloadDomoticzUpdate = false;
-
-			_log.Log(LOG_STATUS, "Starting Upgrade progress...");
-#ifdef WIN32
-			std::string outfile;
-
-			//First download the checksum file
-			outfile = szStartupFolder + "update.tgz.sha256sum";
-			bool bHaveDownloadedChecksum = HTTPClient::GETBinaryToFile(m_szDomoticzUpdateChecksumURL.c_str(), outfile.c_str());
-			if (bHaveDownloadedChecksum)
-			{
-				//Next download the actual update
-				outfile = szStartupFolder + "update.tgz";
-				m_bHaveDownloadedDomoticzUpdateSuccessFull = HTTPClient::GETBinaryToFile(m_szDomoticzUpdateURL.c_str(), outfile.c_str());
-				if (!m_bHaveDownloadedDomoticzUpdateSuccessFull)
-				{
-					m_UpdateStatusMessage = "Problem downloading update file!";
-				}
-			}
-			else
-				m_UpdateStatusMessage = "Problem downloading checksum file!";
-#else
-			int nValue;
-			m_sql.GetPreferencesVar("ReleaseChannel", nValue);
-			bool bIsBetaChannel = (nValue != 0);
-
-			std::string scriptname = szUserDataFolder + "scripts/download_update.sh";
-			std::string strparm = szUserDataFolder;
-			if (bIsBetaChannel)
-				strparm += " /beta";
-
-			std::string lscript = scriptname + " " + strparm;
-			_log.Log(LOG_STATUS, "Starting: %s", lscript.c_str());
-			int ret = system(lscript.c_str());
-			m_bHaveDownloadedDomoticzUpdateSuccessFull = (ret == 0);
-#endif
-			m_bHaveDownloadedDomoticzUpdate = true;
-		}
-
 		second_counter++;
 		if (second_counter < 2)
 			continue;

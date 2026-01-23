@@ -2370,23 +2370,6 @@ namespace http
 			root["Revision"] = m_mainworker.m_iRevision;
 		}
 
-		void CWebServer::Cmd_DownloadUpdate(WebEmSession& session, const request& req, Json::Value& root)
-		{
-			if (!m_mainworker.StartDownloadUpdate())
-				return;
-			root["status"] = "OK";
-			root["title"] = "DownloadUpdate";
-		}
-
-		void CWebServer::Cmd_DownloadReady(WebEmSession& session, const request& req, Json::Value& root)
-		{
-			if (!m_mainworker.m_bHaveDownloadedDomoticzUpdate)
-				return;
-			root["status"] = "OK";
-			root["title"] = "DownloadReady";
-			root["downloadok"] = (m_mainworker.m_bHaveDownloadedDomoticzUpdateSuccessFull) ? true : false;
-		}
-
 		void CWebServer::Cmd_DeleteDateRange(WebEmSession& session, const request& req, Json::Value& root)
 		{
 			if (session.rights != URIGHTS_ADMIN)

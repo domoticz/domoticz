@@ -438,8 +438,6 @@ namespace http
 			RegisterCommandCode("execute_script", [this](auto&& session, auto&& req, auto&& root) { Cmd_ExcecuteScript(session, req, root); });
 			RegisterCommandCode("getcosts", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetCosts(session, req, root); });
 			RegisterCommandCode("checkforupdate", [this](auto&& session, auto&& req, auto&& root) { Cmd_CheckForUpdate(session, req, root); });
-			RegisterCommandCode("downloadupdate", [this](auto&& session, auto&& req, auto&& root) { Cmd_DownloadUpdate(session, req, root); });
-			RegisterCommandCode("downloadready", [this](auto&& session, auto&& req, auto&& root) { Cmd_DownloadReady(session, req, root); });
 			RegisterCommandCode("update_application", [this](auto&& session, auto&& req, auto&& root) { Cmd_ApplicationUpdate(session, req, root); });
 			RegisterCommandCode("getupdatelog", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetUpdateLog(session, req, root); });
 			RegisterCommandCode("deletedatapoint", [this](auto&& session, auto&& req, auto&& root) { Cmd_DeleteDataPoint(session, req, root); });

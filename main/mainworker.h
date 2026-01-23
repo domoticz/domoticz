@@ -120,10 +120,6 @@ public:
 	std::string m_szDomoticzUpdateURL;
 
 	bool IsUpdateAvailable(bool bIsForced = false);
-	bool StartDownloadUpdate();
-	bool m_bHaveDownloadedDomoticzUpdate;
-	bool m_bHaveDownloadedDomoticzUpdateSuccessFull;
-	std::string m_UpdateStatusMessage;
 
 	void GetAvailableWebThemes();
 
@@ -165,7 +161,6 @@ private:
 	std::mutex m_devicemutex;
 
 	std::string m_szDomoticzUpdateChecksumURL;
-	bool m_bDoDownloadDomoticzUpdate;
 	bool m_bStartHardware;
 	uint8_t m_hardwareStartCounter;
 
