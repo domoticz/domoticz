@@ -5412,6 +5412,12 @@ define(['app'], function (app) {
 				"oTableTools": {
 					"sRowSelect": "single",
 				},
+				columnDefs: [
+					{
+					targets: 1, // first column (0-based index)
+					render: $.fn.dataTable.render.text()
+					}
+				],
 				"aaSorting": [[0, "desc"]],
 				"bSortClasses": false,
 				"bProcessing": true,
