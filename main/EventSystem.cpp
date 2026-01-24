@@ -1398,10 +1398,11 @@ void CEventSystem::EventQueueThread()
 {
 	_log.Log(LOG_STATUS, "EventSystem: Queue thread started...");
 
+	std::vector<_tEventQueue> items;
+
 	while (!m_TaskQueue.IsStopRequested(0))
 	{
 		_tEventQueue item;
-		std::vector<_tEventQueue> items;
 		bool hasPopped = m_eventqueue.timed_wait_and_pop<std::chrono::duration<int> >(item, std::chrono::duration<int>(5)); // timeout after 5 sec
 		if (!hasPopped)
 			continue;
