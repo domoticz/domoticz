@@ -236,7 +236,7 @@ bool CNotificationFCM::SendMessageImplementation(
 				if (!root["error"].empty())
 				{
 					Json::Value jsonError = root["error"];
-					_log.Log(LOG_ERROR, "FCM: Could not send message! Errorcode %d (%s)", jsonError["code"].asInt(), jsonError["message"].asCString());
+					_log.Log(LOG_ERROR, "FCM: Could not send message for device (%s)! Errorcode %d (%s)", mobileDevice[2].c_str(), jsonError["code"].asInt(), jsonError["message"].asCString());
 				}
 				else
 				{
