@@ -850,10 +850,12 @@ void EnphaseAPI::parseProduction(const Json::Value& root)
 		musage = 0; //seems sometimes the production value is negative??
 
 	double mtotal = reading["whLifetime"].asDouble();
-	if (mtotal != 0)
+	double adjustedTotal = m_ProductionCounter.CheckTotalCounter(this, m_HwdID, 1, 1, mtotal / 1000.0);
+
+	// Only send the meter update if we have a valid total (not initial 0)
+	if (adjustedTotal > 0 || mtotal > 0)
 	{
-		mtotal = m_ProductionCounter.CheckTotalCounter(this, m_HwdID, 1, 1, mtotal / 1000.0);
-		SendKwhMeter(m_HwdID, 1, 255, musage, mtotal, "Enphase kWh Production");
+		SendKwhMeter(m_HwdID, 1, 255, musage, adjustedTotal, "Enphase kWh Production");
 	}
 }
 
@@ -873,13 +875,21 @@ void EnphaseAPI::parseConsumption(const Json::Value& root)
 
 		m_bHaveConsumption = true;
 
-		std::string szName = "Enphase " + itt["measurementType"].asString();
+		std::string measurementType = itt["measurementType"].asString();
+		std::string szName = "Enphase " + measurementType;
 		int musage = itt["wNow"].asInt();
-		int mtotal = itt["whLifetime"].asInt();
-		if (mtotal != 0)
+		double mtotal = itt["whLifetime"].asDouble();
+
+		// Get or create a counter helper for this consumption type
+		auto& counterHelper = m_ConsumptionCounters[measurementType];
+		double adjustedTotal = counterHelper.CheckTotalCounter(this, m_HwdID, iIndex, 1, mtotal / 1000.0);
+
+		// Only send the meter update if we have a valid total (not initial 0)
+		if (adjustedTotal > 0 || mtotal > 0)
 		{
-			SendKwhMeter(m_HwdID, iIndex++, 255, musage, mtotal / 1000.0, szName);
+			SendKwhMeter(m_HwdID, iIndex, 255, musage, adjustedTotal, szName);
 		}
+		iIndex++;
 	}
 }
 
