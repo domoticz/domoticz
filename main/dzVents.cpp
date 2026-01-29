@@ -517,6 +517,7 @@ bool CdzVents::UpdateDevice(lua_State* lua_state, const std::vector<_tLuaTableVa
 	int idx = -1;
 	float delayTime = 0;
 	std::string sValue;
+	std::string scriptName;
 
 	for (const auto& item : vLuaTable)
 	{
@@ -534,15 +535,22 @@ bool CdzVents::UpdateDevice(lua_State* lua_state, const std::vector<_tLuaTableVa
 
 		else if ((item.type == TYPE_FLOAT) && (item.name == "_after"))
 			delayTime = item.fValue;
-		else if (item.type == TYPE_STRING && item.name == "sValue")
-			sValue = item.sValue;
+		else if (item.type == TYPE_STRING)
+		{
+			if (item.name == "sValue")
+				sValue = item.sValue;
+			else if (item.name == "_scriptName")
+				scriptName = item.sValue;
+		}
 		else if (item.type == TYPE_BOOLEAN && item.name == "_trigger")
 			bEventTrigger = true;
 	}
 	if (idx == -1)
 		return false;
 
-	m_sql.AddTaskItem(_tTaskItem::UpdateDevice(delayTime, idx, nValue, sValue, Protected, bEventTrigger, "dzVents/" + eventName), false);
+	// Use the actual script name if available, otherwise fall back to eventName
+	std::string userName = scriptName.empty() ? ("dzVents/" + eventName) : ("dzVents/" + scriptName);
+	m_sql.AddTaskItem(_tTaskItem::UpdateDevice(delayTime, idx, nValue, sValue, Protected, bEventTrigger, userName), false);
 	return true;
 }
 
@@ -631,13 +639,19 @@ bool CdzVents::CancelItem(lua_State* lua_state, const std::vector<_tLuaTableValu
 {
 	int idx = 0;
 	std::string type;
+	std::string scriptName;
 
 	for (const auto& item : vLuaTable)
 	{
 		if (item.type == TYPE_INTEGER && item.name == "idx")
 			idx = item.iValue;
-		else if (item.type == TYPE_STRING && item.name == "type")
-			type = item.sValue;
+		else if (item.type == TYPE_STRING)
+		{
+			if (item.name == "type")
+				type = item.sValue;
+			else if (item.name == "_scriptName")
+				scriptName = item.sValue;
+		}
 	}
 
 	if (idx == 0)
@@ -646,7 +660,8 @@ bool CdzVents::CancelItem(lua_State* lua_state, const std::vector<_tLuaTableValu
 	_tTaskItem tItem;
 	tItem._idx = idx;
 	tItem._DelayTime = 0;
-	tItem._sUser = "dzVents/" + eventName;
+	// Use the actual script name if available, otherwise fall back to eventName
+	tItem._sUser = scriptName.empty() ? ("dzVents/" + eventName) : ("dzVents/" + scriptName);
 	if (type == "device")
 	{
 		tItem._ItemType = TITEM_SWITCHCMD_EVENT;
@@ -685,6 +700,39 @@ bool CdzVents::processLuaCommand(lua_State* lua_state, const std::string& filena
 			scriptTrue = TriggerIFTTT(lua_state, vLuaTable);
 		else if (lCommand == "CustomEvent")
 			scriptTrue = TriggerCustomEvent(lua_state, vLuaTable);
+		else
+		{
+			// Check if this is a wrapped string command (device switch command)
+			// Format: { _value = "On", _scriptName = "MyScript" }
+			std::string wrappedValue;
+			std::string scriptName;
+			bool isWrappedCommand = false;
+
+			for (const auto& item : vLuaTable)
+			{
+				if (item.type == TYPE_STRING && item.name == "_value")
+				{
+					wrappedValue = item.sValue;
+					isWrappedCommand = true;
+				}
+				else if (item.type == TYPE_STRING && item.name == "_scriptName")
+				{
+					scriptName = item.sValue;
+				}
+			}
+
+			if (isWrappedCommand)
+			{
+				// This is a device command wrapped with script name
+				// Pass it to EventSystem with "dzVents/" prefix so it appears correctly in logs
+				std::string useScriptName;
+				if (!scriptName.empty())
+					useScriptName = "dzVents/" + scriptName;
+				else
+					useScriptName = filename; // fallback to full path if no script name
+				scriptTrue = m_mainworker.m_eventsystem.ScheduleEvent(lCommand, wrappedValue, useScriptName);
+			}
+		}
 	}
 	return scriptTrue;
 }
