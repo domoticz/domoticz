@@ -3,7 +3,6 @@
 #include "DomoticzHardware.h"
 #include "hardwaretypes.h"
 #include "CounterHelper.h"
-#include <map>
 
 namespace Json
 {
@@ -93,7 +92,8 @@ private:
 	bool m_bHaveLiveData = true;
 
 	CounterHelper m_ProductionCounter;
-	std::map<std::string, CounterHelper> m_ConsumptionCounters; // Map consumption type to counter helper
+	CounterHelper m_ConsumptionTotalCounter;
+	CounterHelper m_ConsumptionNetCounter;
 
 	std::shared_ptr<std::thread> m_thread;
 };

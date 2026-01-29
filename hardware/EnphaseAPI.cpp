@@ -866,7 +866,6 @@ void EnphaseAPI::parseConsumption(const Json::Value& root)
 		return;
 	}
 
-	int iIndex = 2;
 	for (const auto& itt : root["consumption"])
 	{
 		int activeCount = itt["activeCount"].asInt();
@@ -880,16 +879,23 @@ void EnphaseAPI::parseConsumption(const Json::Value& root)
 		int musage = itt["wNow"].asInt();
 		double mtotal = itt["whLifetime"].asDouble();
 
-		// Get or create a counter helper for this consumption type
-		auto& counterHelper = m_ConsumptionCounters[measurementType];
-		double adjustedTotal = counterHelper.CheckTotalCounter(this, m_HwdID, iIndex, 1, mtotal / 1000.0);
-
-		// Only send the meter update if we have a valid total (not initial 0)
-		if (adjustedTotal > 0 || mtotal > 0)
+		// Use fixed indices and dedicated counter helpers for each consumption type
+		if (measurementType == "total-consumption")
 		{
-			SendKwhMeter(m_HwdID, iIndex, 255, musage, adjustedTotal, szName);
+			double adjustedTotal = m_ConsumptionTotalCounter.CheckTotalCounter(this, m_HwdID, 2, 1, mtotal / 1000.0);
+			if (adjustedTotal > 0 || mtotal > 0)
+			{
+				SendKwhMeter(m_HwdID, 2, 255, musage, adjustedTotal, szName);
+			}
 		}
-		iIndex++;
+		else if (measurementType == "net-consumption")
+		{
+			double adjustedTotal = m_ConsumptionNetCounter.CheckTotalCounter(this, m_HwdID, 3, 1, mtotal / 1000.0);
+			if (adjustedTotal > 0 || mtotal > 0)
+			{
+				SendKwhMeter(m_HwdID, 3, 255, musage, adjustedTotal, szName);
+			}
+		}
 	}
 }
 
