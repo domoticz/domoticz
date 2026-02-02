@@ -2996,7 +2996,12 @@ void CEventSystem::EvaluateLua(const std::vector<_tEventQueue> &items, const std
 	lua_pushcfunction(lua_state, l_domoticz_applyXPath);
 	lua_setglobal(lua_state, "domoticz_applyXPath");
 
-	_log.Debug(DEBUG_EVENTSYSTEM, "EventSystem: script %s trigger (%s)", m_szReason[items[0].reason].c_str(), filename.c_str());
+	// For dzVents, log the runtime entry point; actual script names will be logged during execution
+	std::string displayName = filename;
+	CdzVents* dzventsCheck = CdzVents::GetInstance();
+	if (!m_sql.m_bDisableDzVentsSystem && filename == dzventsCheck->m_runtimeDir + "dzVents.lua")
+		displayName = "dzVents runtime";
+	_log.Debug(DEBUG_EVENTSYSTEM, "EventSystem: script %s trigger (%s)", m_szReason[items[0].reason].c_str(), displayName.c_str());
 
 	int sunTimers[10];
 	if (m_mainworker.m_SunRiseSetMins.size() == 10)
@@ -3075,7 +3080,13 @@ void CEventSystem::EvaluateLua(const std::vector<_tEventQueue> &items, const std
 
 		if (!aluaThread.timed_join(boost::posix_time::seconds(10)))
 		{
-			_log.Log(LOG_ERROR, "EventSystem: Warning!, lua script %s has been running for more than 10 seconds", filename.c_str());
+			// For dzVents scripts, we can't safely determine which specific script is running
+			// from outside the Lua thread, so indicate it's a dzVents script generically
+			std::string displayName = filename;
+			CdzVents* dzventsCheck = CdzVents::GetInstance();
+			if (!m_sql.m_bDisableDzVentsSystem && filename == dzventsCheck->m_runtimeDir + "dzVents.lua")
+				displayName = "dzVents script (unknown - still executing)";
+			_log.Log(LOG_ERROR, "EventSystem: Warning!, lua script %s has been running for more than 10 seconds", displayName.c_str());
 		}
 	}
 	else
@@ -3103,14 +3114,36 @@ void CEventSystem::luaThread(lua_State *lua_state, const std::string &filename)
 	{
 		if (status == 0)
 		{
-			_log.Log(LOG_ERROR, "EventSystem: Lua script %s did not return a commandArray", filename.c_str());
+			// Try to get actual dzVents script name for better error message
+			std::string displayName = filename;
+			lua_getglobal(lua_state, "currentDzVentsScriptName");
+			if (lua_isstring(lua_state, -1))
+			{
+				const char* scriptNamePtr = lua_tostring(lua_state, -1);
+				if (scriptNamePtr != nullptr)
+					displayName = "dzVents/" + std::string(scriptNamePtr);
+			}
+			lua_pop(lua_state, 1);
+			_log.Log(LOG_ERROR, "EventSystem: Lua script %s did not return a commandArray", displayName.c_str());
 		}
 	}
 
 	if (scriptTrue)
 	{
 		if (m_sql.m_bLogEventScriptTrigger)
-			_log.Log(LOG_STATUS, "EventSystem: Script event triggered: %s", filename.c_str());
+		{
+			// Try to get actual dzVents script name for better log message
+			std::string displayName = filename;
+			lua_getglobal(lua_state, "currentDzVentsScriptName");
+			if (lua_isstring(lua_state, -1))
+			{
+				const char* scriptNamePtr = lua_tostring(lua_state, -1);
+				if (scriptNamePtr != nullptr)
+					displayName = "dzVents/" + std::string(scriptNamePtr);
+			}
+			lua_pop(lua_state, 1);
+			_log.Log(LOG_STATUS, "EventSystem: Script event triggered: %s", displayName.c_str());
+		}
 	}
 
 	lua_close(lua_state);
@@ -3149,7 +3182,17 @@ bool CEventSystem::iterateLuaTable(lua_State *lua_state, const int tIndex, const
 		}
 		else
 		{
-			_log.Log(LOG_ERROR, "EventSystem: commandArray in script %s should only return ['string']='actionstring' or [integer]={['string']='actionstring'}", filename.c_str());
+			// Try to get actual dzVents script name for better error message
+			std::string displayName = filename;
+			lua_getglobal(lua_state, "currentDzVentsScriptName");
+			if (lua_isstring(lua_state, -1))
+			{
+				const char* scriptNamePtr = lua_tostring(lua_state, -1);
+				if (scriptNamePtr != nullptr)
+					displayName = "dzVents/" + std::string(scriptNamePtr);
+			}
+			lua_pop(lua_state, 1);
+			_log.Log(LOG_ERROR, "EventSystem: commandArray in script %s should only return ['string']='actionstring' or [integer]={['string']='actionstring'}", displayName.c_str());
 		}
 		// removes 'value'; keeps 'key' for next iteration
 		lua_pop(lua_state, 1);
@@ -3163,6 +3206,17 @@ bool CEventSystem::processLuaCommand(lua_State *lua_state, const std::string &fi
 {
 	bool scriptTrue = false;
 	std::string lCommand = std::string(lua_tostring(lua_state, -2));
+
+	// Try to get the actual dzVents script name from the global variable
+	std::string scriptName = filename;
+	lua_getglobal(lua_state, "currentDzVentsScriptName");
+	if (lua_isstring(lua_state, -1))
+	{
+		const char* scriptNamePtr = lua_tostring(lua_state, -1);
+		if (scriptNamePtr != nullptr)
+			scriptName = std::string(scriptNamePtr);
+	}
+	lua_pop(lua_state, 1); // pop the global variable
 	if (lCommand == "SendNotification") {
 		std::string luaString = lua_tostring(lua_state, -1);
 		std::string subject, body, priority("0"), sound, subsystem;
@@ -3275,7 +3329,7 @@ bool CEventSystem::processLuaCommand(lua_State *lua_state, const std::string &fi
 		//if (strarray.size() > 3 && !strarray[3].empty())
 			//Protected = atoi(strarray[3].c_str()); //GizMoCuz: this should not be able to be changed via events!
 
-		m_mainworker.UpdateDevice(idx, nValue, sValue, "EventSystem/" + filename, 12, 255, false);
+		m_mainworker.UpdateDevice(idx, nValue, sValue, "EventSystem/" + scriptName, 12, 255, false);
 		scriptTrue = true;
 	}
 	else if (lCommand.find("Variable:") == 0)
@@ -3347,7 +3401,7 @@ bool CEventSystem::processLuaCommand(lua_State *lua_state, const std::string &fi
 	}
 	else
 	{
-		if (ScheduleEvent(lua_tostring(lua_state, -2), lua_tostring(lua_state, -1), filename)) {
+		if (ScheduleEvent(lua_tostring(lua_state, -2), lua_tostring(lua_state, -1), scriptName)) {
 			scriptTrue = true;
 		}
 	}
@@ -3357,7 +3411,18 @@ bool CEventSystem::processLuaCommand(lua_State *lua_state, const std::string &fi
 void CEventSystem::report_errors(lua_State *L, int status, const std::string &filename)
 {
 	if (status != 0) {
-		_log.Log(LOG_ERROR, "EventSystem: in %s: %s", filename.c_str(), lua_tostring(L, -1));
+		// Try to get actual dzVents script name for better error message
+		std::string displayName = filename;
+		lua_getglobal(L, "currentDzVentsScriptName");
+		if (lua_isstring(L, -1))
+		{
+			const char* scriptNamePtr = lua_tostring(L, -1);
+			if (scriptNamePtr != nullptr)
+				displayName = "dzVents/" + std::string(scriptNamePtr);
+		}
+		lua_pop(L, 1); // pop the global variable
+
+		_log.Log(LOG_ERROR, "EventSystem: in %s: %s", displayName.c_str(), lua_tostring(L, -1));
 		lua_pop(L, 1); // remove error message
 	}
 }
@@ -3635,13 +3700,16 @@ bool CEventSystem::ScheduleEvent(int deviceID, const std::string &Action, bool i
 		if (!oParseResults.bEventTrigger)
 			SetEventTrigger(deviceID, (!isScene ? REASON_DEVICE : REASON_SCENEGROUP), fDelayTime);
 
+		// If eventName doesn't already have a prefix (e.g., "dzVents/..."), add "EventSystem/"
+		std::string userString = (eventName.find('/') != std::string::npos) ? eventName : ("EventSystem/" + eventName);
+
 		if (isScene) {
 
 			if (
 				oParseResults.sCommand == "On"
 				|| oParseResults.sCommand == "Off"
 				) {
-				tItem = _tTaskItem::SwitchSceneEvent(fDelayTime, deviceID, oParseResults.sCommand, eventName, "EventSystem/" + eventName);
+				tItem = _tTaskItem::SwitchSceneEvent(fDelayTime, deviceID, oParseResults.sCommand, eventName, userString);
 			}
 			else if (oParseResults.sCommand == "Active") {
 				std::vector<std::vector<std::string> > result;
@@ -3658,7 +3726,7 @@ bool CEventSystem::ScheduleEvent(int deviceID, const std::string &Action, bool i
 		else {
 			if (oParseResults.sCommand == "Closed")
 				oParseResults.sCommand = "Close";
-			tItem = _tTaskItem::SwitchLightEvent(fDelayTime, deviceID, oParseResults.sCommand, level, NoColor, eventName, "EventSystem/" + eventName);
+			tItem = _tTaskItem::SwitchLightEvent(fDelayTime, deviceID, oParseResults.sCommand, level, NoColor, eventName, userString);
 		}
 		m_sql.AddTaskItem(tItem);
 		_log.Debug(DEBUG_EVENTSYSTEM, "EventSystem: Scheduled %s after %0.2f.", tItem._command.c_str(), tItem._DelayTime);
@@ -3678,14 +3746,14 @@ bool CEventSystem::ScheduleEvent(int deviceID, const std::string &Action, bool i
 			_tTaskItem tDelayedtItem;
 			if (isScene) {
 				if (oParseResults.sCommand == "On") {
-					tDelayedtItem = _tTaskItem::SwitchSceneEvent(fDelayTime, deviceID, "Off", eventName, "EventSystem/" + eventName);
+					tDelayedtItem = _tTaskItem::SwitchSceneEvent(fDelayTime, deviceID, "Off", eventName, userString);
 				}
 				else if (oParseResults.sCommand == "Off") {
-					tDelayedtItem = _tTaskItem::SwitchSceneEvent(fDelayTime, deviceID, "On", eventName, "EventSystem/" + eventName);
+					tDelayedtItem = _tTaskItem::SwitchSceneEvent(fDelayTime, deviceID, "On", eventName, userString);
 				}
 			}
 			else {
-				tDelayedtItem = _tTaskItem::SwitchLightEvent(fDelayTime, deviceID, previousState, previousLevel, NoColor, eventName, "EventSystem/" + eventName);
+				tDelayedtItem = _tTaskItem::SwitchLightEvent(fDelayTime, deviceID, previousState, previousLevel, NoColor, eventName, userString);
 			}
 			m_sql.AddTaskItem(tDelayedtItem);
 
