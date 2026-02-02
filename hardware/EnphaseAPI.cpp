@@ -866,6 +866,28 @@ void EnphaseAPI::parseConsumption(const Json::Value& root)
 		return;
 	}
 
+	int iIndex = 2;
+	for (const auto& itt : root["consumption"])
+	{
+		int activeCount = itt["activeCount"].asInt();
+		if (activeCount == 0)
+			continue;
+
+		m_bHaveConsumption = true;
+
+		std::string szName = "Enphase " + itt["measurementType"].asString();
+		int musage = itt["wNow"].asInt();
+		int mtotal = itt["whLifetime"].asInt();
+		if (mtotal != 0)
+		{
+			SendKwhMeter(m_HwdID, iIndex++, 255, musage, mtotal / 1000.0, szName);
+		}
+	}
+/*
+* New method with dedicated counters for total and net consumption
+* to avoid issues with resets
+* But does not seem to work!
+* So keeping the old method above
 	for (const auto& itt : root["consumption"])
 	{
 		int activeCount = itt["activeCount"].asInt();
@@ -897,6 +919,7 @@ void EnphaseAPI::parseConsumption(const Json::Value& root)
 			}
 		}
 	}
+*/
 }
 
 bool EnphaseAPI::getInventoryDetails(Json::Value& result)
