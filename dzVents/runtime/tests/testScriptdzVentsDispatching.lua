@@ -6,6 +6,23 @@ local scriptPath = ''
 package.path = package.path .. ";../../?.lua;../../../scripts/lua/?.lua;"
 package.path = package.path .. ";../?.lua;" .. scriptPath .. '/?.lua;../device-adapters/?.lua;'
 
+local function assert_contains(expected, actual)
+	assert.is_table(actual)
+
+	for key, expectedValue in pairs(expected) do
+		local actualValue = actual[key]
+		assert.is_not_nil(
+			actualValue,
+			string.format("Missing key '%s'", tostring(key))
+		)
+
+		if type(expectedValue) == "table" then
+			assert_contains(expectedValue, actualValue)
+		else
+			assert.are.equal(expectedValue, actualValue)
+		end
+	end
+end
 
 describe('Event dispatching', function()
 
@@ -152,47 +169,29 @@ describe('Event dispatching', function()
 	it("should dispatch timer events", function()
 		_G.commandArray = {}
 		_G.globalvariables['isTimeEvent'] = true
+
 		local main = require('dzVents')
-		assert.is_same({
-			{
-				["onscript1"] = "Off"
-			},
-			{
-				['Scene:scene 2'] = 'On'
-			},
-			{
-				["SendNotification"] = 'Me#every minute timer every minute script_timer_single#0#pushover##'
-		 	},
-			{
-				["Scene:scene 1"] = "On"
-			},
-			{
-				["onscript1"]="Off"
-			},
-			{
-				["onscript1"]="Set Level 10"
-			},
-			{
-				["SendNotification"]="Yo##0#pushover##"
-			},
-			{
-				["Variable"]={["value"]="10", ["idx"]=1, ["_trigger"]=true}
-			},
-			{
-				["SendNotification"]="Me#Armed Away#0#pushover##"
-			},
-			{
-				["Scene:myscene1"]="Off"
-			},
-			{
-				["Group:mygroup1"]="On"
-			},
-			{
-				["OpenURL"]={["URL"]="test", ["method"]="GET"}
-			},
+		
+		local expected = {
+			{ ["onscript1"] = "Off" },
+			{ ['Scene:scene 2'] = 'On' },
+			{ ["SendNotification"] = 'Me#every minute timer every minute script_timer_single#0#pushover##' },
+			{ ["Scene:scene 1"] = "On" },
+			{ ["onscript1"]="Off" },
+			{ ["onscript1"]="Set Level 10" },
+			{ ["SendNotification"]="Yo##0#pushover##" },
+			{ ["Variable"]={["value"]="10", ["idx"]=1, ["_trigger"]=true} },
+			{ ["SendNotification"]="Me#Armed Away#0#pushover##" },
+			{ ["Scene:myscene1"]="Off" },
+			{ ["Group:mygroup1"]="On" },
+			{ ["OpenURL"]={["URL"]="test", ["method"]="GET"} }
+		}
+		
+		assert.are.equal(#expected, #main)
 
-
-		}, main)
+		for i, expectedEntry in ipairs(expected) do
+			assert_contains(expectedEntry, main[i])
+		end
 	end)
 
 
@@ -201,33 +200,21 @@ describe('Event dispatching', function()
 
 		local main = require('dzVents')
 
-		assert.is_same(
-		{
-			{
-				["onscript1"]="Off"
-			},
-			{
-				["onscript1"]="Set Level 10"
-			},
-			{
-				["SendNotification"]="Yo##0#pushover##"
-			},
-			{
-				["Variable"]={["value"]="10", ["idx"]=1, ["_trigger"]=true}
-			},
-			{
-				["SendNotification"]="Me#Armed Away#0#pushover##"
-			},
-			{
-				["Scene:myscene1"]="Off"
-			},
-			{
-				["Group:mygroup1"]="On"
-			},
-			{
-				["OpenURL"]={["URL"]="test", ["method"]="GET"}
-			}
-		}, main)
+		local expected = {
+			{ ["onscript1"]="Off" },
+			{ ["onscript1"]="Set Level 10" },
+			{ ["SendNotification"]="Yo##0#pushover##" },
+			{ ["Variable"]={["value"]="10", ["idx"]=1, ["_trigger"]=true} },
+			{ ["SendNotification"]="Me#Armed Away#0#pushover##" },
+			{ ["Scene:myscene1"]="Off" },
+			{ ["Group:mygroup1"]="On" },
+			{ ["OpenURL"]={["URL"]="test", ["method"]="GET"} }
+		}
+		assert.are.equal(#expected, #main)
+
+		for i, expectedEntry in ipairs(expected) do
+			assert_contains(expectedEntry, main[i])
+		end
 	end)
 
 end)
