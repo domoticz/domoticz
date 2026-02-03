@@ -866,28 +866,12 @@ void EnphaseAPI::parseConsumption(const Json::Value& root)
 		return;
 	}
 
-	int iIndex = 2;
-	for (const auto& itt : root["consumption"])
-	{
-		int activeCount = itt["activeCount"].asInt();
-		if (activeCount == 0)
-			continue;
-
-		m_bHaveConsumption = true;
-
-		std::string szName = "Enphase " + itt["measurementType"].asString();
-		int musage = itt["wNow"].asInt();
-		int mtotal = itt["whLifetime"].asInt();
-		if (mtotal != 0)
-		{
-			SendKwhMeter(m_HwdID, iIndex++, 255, musage, mtotal / 1000.0, szName);
-		}
-	}
 /*
 * New method with dedicated counters for total and net consumption
 * to avoid issues with resets
 * But does not seem to work!
 * So keeping the old method above
+*/
 	for (const auto& itt : root["consumption"])
 	{
 		int activeCount = itt["activeCount"].asInt();
@@ -900,26 +884,21 @@ void EnphaseAPI::parseConsumption(const Json::Value& root)
 		std::string szName = "Enphase " + measurementType;
 		int musage = itt["wNow"].asInt();
 		double mtotal = itt["whLifetime"].asDouble();
-
-		// Use fixed indices and dedicated counter helpers for each consumption type
-		if (measurementType == "total-consumption")
+		if (mtotal != 0)
 		{
-			double adjustedTotal = m_ConsumptionTotalCounter.CheckTotalCounter(this, m_HwdID, 2, 1, mtotal / 1000.0);
-			if (adjustedTotal > 0 || mtotal > 0)
+			// Use fixed indices and dedicated counter helpers for each consumption type
+			if (measurementType == "total-consumption")
 			{
+				double adjustedTotal = m_ConsumptionTotalCounter.CheckTotalCounter(this, m_HwdID, 2, 1, mtotal / 1000.0);
 				SendKwhMeter(m_HwdID, 2, 255, musage, adjustedTotal, szName);
 			}
-		}
-		else if (measurementType == "net-consumption")
-		{
-			double adjustedTotal = m_ConsumptionNetCounter.CheckTotalCounter(this, m_HwdID, 3, 1, mtotal / 1000.0);
-			if (adjustedTotal > 0 || mtotal > 0)
+			else if (measurementType == "net-consumption")
 			{
+				double adjustedTotal = m_ConsumptionNetCounter.CheckTotalCounter(this, m_HwdID, 3, 1, mtotal / 1000.0);
 				SendKwhMeter(m_HwdID, 3, 255, musage, adjustedTotal, szName);
 			}
 		}
 	}
-*/
 }
 
 bool EnphaseAPI::getInventoryDetails(Json::Value& result)

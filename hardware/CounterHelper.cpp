@@ -19,6 +19,8 @@ void CounterHelper::Reset()
 {
 	m_nLastCounterValue = 0;
 	m_CounterOffset = 0;
+	m_bPendingReset = false;
+	m_pendingOffset = 0;
 	if (!m_bInitialized)
 		return;
 	m_sql.safe_query("UPDATE DeviceStatus SET LastLevel=0, LastUpdate='%s' WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit==%d) AND (Type=%d) AND (SubType=%d)",
@@ -72,32 +74,37 @@ void CounterHelper::InitInt()
 	m_bInitialized = true;
 }
 
-double CounterHelper::CheckTotalCounter(CDomoticzHardwareBase* pHardwareBase, const int NodeID, const int ChildID, const uint8_t Unit, const double mtotal, const bool bDoReset, bool& bLooped)
+double CounterHelper::CheckTotalCounter(CDomoticzHardwareBase* pHardwareBase, const int NodeID, const int ChildID, const uint8_t Unit, const double mtotal, bool& bLooped)
 {
 	if (!m_bInitialized)
 		Init(pHardwareBase, NodeID, ChildID, Unit);
-	return CheckTotalCounter(mtotal, bDoReset, bLooped);
+	return CheckTotalCounter(mtotal, bLooped);
 }
 
-double CounterHelper::CheckTotalCounter(CDomoticzHardwareBase* pHardwareBase, const std::string& szDeviceID, const uint8_t Unit, const double mtotal, const bool bDoReset, bool& bLooped)
+double CounterHelper::CheckTotalCounter(CDomoticzHardwareBase* pHardwareBase, const std::string& szDeviceID, const uint8_t Unit, const double mtotal, bool& bLooped)
 {
 	if (!m_bInitialized)
 		Init(pHardwareBase, szDeviceID, Unit);
-	return CheckTotalCounter(mtotal, bDoReset, bLooped);
+	return CheckTotalCounter(mtotal, bLooped);
 }
 
-double CounterHelper::CheckTotalCounter(const double mtotal, const bool bDoReset, bool& bLooped)
+double CounterHelper::CheckTotalCounter(const double mtotal, bool& bLooped)
 {
+	if (mtotal == 0)
+		return 0; //ignore 0 readings
+
 	double rTotal = m_CounterOffset + mtotal;
-	if (
-		(rTotal < m_nLastCounterValue)
-		&& (m_nLastCounterValue != 0)
-		)
+
+	if (m_bPendingReset)
 	{
-		bLooped = true;
-		if (bDoReset)
+		m_bPendingReset = false;
+
+		if ((rTotal < m_nLastCounterValue) && (m_nLastCounterValue != 0))
 		{
-			m_CounterOffset = m_nLastCounterValue;
+			// Counter is still below the expected value on second consecutive reading
+			// This confirms a genuine counter reset
+			bLooped = true;
+			m_CounterOffset = m_pendingOffset;
 
 			m_sql.safe_query("UPDATE DeviceStatus SET LastLevel=%lld, LastUpdate='%s' WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit==%d) AND (Type=%d) AND (SubType=%d)",
 				static_cast<long long int>(m_CounterOffset * 1000.0), TimeToString(nullptr, TF_DateTime).c_str(),
@@ -106,9 +113,18 @@ double CounterHelper::CheckTotalCounter(const double mtotal, const bool bDoReset
 
 			rTotal = m_CounterOffset + mtotal;
 		}
+		// else: counter recovered to expected value, the drop was temporary - no offset needed
 	}
-	if (!bDoReset && bLooped)
-		return rTotal;
+	else if ((rTotal < m_nLastCounterValue) && (m_nLastCounterValue != 0))
+	{
+		// Counter value decreased - potential reset, but wait for next reading to confirm
+		m_bPendingReset = true;
+		m_pendingOffset = m_nLastCounterValue;
+
+		// Return last known good value while waiting for confirmation
+		return m_nLastCounterValue;
+	}
+
 	m_nLastCounterValue = rTotal;
 	return rTotal;
 }
