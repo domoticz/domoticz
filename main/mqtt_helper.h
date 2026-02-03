@@ -5,7 +5,7 @@
 
 #include <mosquitto.h>
 
-namespace mosqdz {
+namespace mdz {
 	const char* strerror(int mosq_errno);
 	const char* connack_string(int connack_code);
 	int sub_topic_tokenise(const char* subtopic, char*** topics, int* count);
@@ -24,17 +24,17 @@ namespace mosqdz {
 			       const char *password = nullptr, const struct libmosquitto_will *will = nullptr, const struct libmosquitto_tls *tls = nullptr);
 
 	/*
-	 * Class: mosquittodz
+	 * Class: mqttdz
 	 *
-	 * A mosquitto client class. This is a C++ wrapper class for the mosquitto C
-	 * library. Please see mosquitto.h for details of the functions.
+	 * A mosquitto client class. This is a C++ wrapper class for the Boost MQTT5
+	 * library.
 	 */
-	class mosquittodz {
+	class mqttdz {
 	public:
 		struct mosquitto* m_mosq;
 	public:
-	  mosquittodz(const char *id = nullptr, bool clean_session = true);
-	  virtual ~mosquittodz();
+	  mqttdz(const char *id = nullptr, bool clean_session = true);
+	  virtual ~mqttdz();
 
 	  int reinitialise(const char *id, bool clean_session);
 	  void set_callbacks();

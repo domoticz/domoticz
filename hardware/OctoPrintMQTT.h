@@ -9,7 +9,7 @@ namespace Json
 	class Value;
 } // namespace Json
 
-class COctoPrintMQTT : public MySensorsBase, mosqdz::mosquittodz
+class COctoPrintMQTT : public MySensorsBase, mdz::mqttdz
 {
       public:
 	COctoPrintMQTT(int ID, const std::string &IPAddress, unsigned short usIPPort, const std::string &Username, const std::string &Password, const std::string &CAFile);

@@ -52,7 +52,7 @@ std::string ReadFile(std::string filename)
 
 
 COctoPrintMQTT::COctoPrintMQTT(const int ID, const std::string &IPAddress, const unsigned short usIPPort, const std::string &Username, const std::string &Password, const std::string &CAfilename) :
-	mosqdz::mosquittodz((std::string("Domoticz-OCTO") +  std::string(GenerateUUID())).c_str()),
+	mdz::mqttdz((std::string("Domoticz-OCTO") +  std::string(GenerateUUID())).c_str()),
 	m_szIPAddress(IPAddress),
 	m_UserName(Username),
 	m_Password(Password),
@@ -65,12 +65,12 @@ COctoPrintMQTT::COctoPrintMQTT(const int ID, const std::string &IPAddress, const
 	m_usIPPort = usIPPort;
 	m_TopicIn = std::string(OCTOPRINT_MQTT_TOPIC) + "/#";
 
-	mosqdz::lib_init();
+	mdz::lib_init();
 }
 
 COctoPrintMQTT::~COctoPrintMQTT()
 {
-	mosqdz::lib_cleanup();
+	mdz::lib_cleanup();
 }
 
 bool COctoPrintMQTT::StartHardware()

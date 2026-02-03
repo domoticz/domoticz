@@ -32,21 +32,21 @@ namespace
 
 MQTT::MQTT()
 {
-	mosqdz::lib_init();
+	mdz::lib_init();
 	threaded_set(true);
 	m_bPreventLoop = true;
 }
 
 MQTT::MQTT(const int ID, const std::string &IPAddress, const unsigned short usIPPort, const std::string &Username, const std::string &Password, const std::string &CAfilenameExtra,
 	   const int TLS_Version, const int PublishScheme, const std::string &MQTTClientID, const bool PreventLoop)
-	: mosqdz::mosquittodz(MQTTClientID.c_str())
+	: mdz::mqttdz(MQTTClientID.c_str())
 	, m_szIPAddress(IPAddress)
 	, m_UserName(Username)
 	, m_Password(Password)
 	, m_CAFilename(CAfilenameExtra)
 {
 	m_HwdID = ID;
-	mosqdz::lib_init();
+	mdz::lib_init();
 
 	m_usIPPort = usIPPort;
 	m_bRetain = (PublishScheme & RETAIN_BIT);
@@ -80,7 +80,7 @@ MQTT::MQTT(const int ID, const std::string &IPAddress, const unsigned short usIP
 
 MQTT::~MQTT()
 {
-	mosqdz::lib_cleanup();
+	mdz::lib_cleanup();
 }
 
 bool MQTT::StartHardware()

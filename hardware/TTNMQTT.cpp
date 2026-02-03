@@ -51,7 +51,7 @@ std::string ReadFile(std::string filename)
 
 
 CTTNMQTT::CTTNMQTT(const int ID, const std::string &IPAddress, const unsigned short usIPPort, const std::string &Username, const std::string &Password, const std::string &CAfilename) :
-	mosqdz::mosquittodz((std::string("Domoticz-TTN") +  std::string(GenerateUUID())).c_str()),
+	mdz::mqttdz((std::string("Domoticz-TTN") +  std::string(GenerateUUID())).c_str()),
 	m_szIPAddress(IPAddress),
 	m_UserName(Username),
 	m_Password(Password),
@@ -69,12 +69,12 @@ CTTNMQTT::CTTNMQTT(const int ID, const std::string &IPAddress, const unsigned sh
 
 	m_AliassesFile = TTNMQTT_ALIASSES_FILE;
 
-	mosqdz::lib_init();
+	mdz::lib_init();
 }
 
 CTTNMQTT::~CTTNMQTT()
 {
-	mosqdz::lib_cleanup();
+	mdz::lib_cleanup();
 }
 
 bool CTTNMQTT::StartHardware()
