@@ -1,9 +1,5 @@
 #pragma once
 
-/*
-based on the work of Roger Light <roger@atchoo.org>
-*/
-
 #ifndef MOSQUITTO_HELPER_H
 #define MOSQUITTO_HELPER_H
 

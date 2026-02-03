@@ -23,7 +23,6 @@ SET(DOMO_MIN_LIBBOOST_VERSION 1.69.0)
 # Bundled libraries
 option(USE_BUILTIN_JSONCPP "Use builtin JSonCPP" YES)
 option(USE_BUILTIN_MINIZIP "Use builtin Minizip" YES)
-option(USE_BUILTIN_MQTT "Use builtin Mosquitto library" YES)
 option(USE_BUILTIN_SQLITE "Use builtin sqlite library" NO)
 option(USE_BUILTIN_JWTCPP "Use builtin JWT-CPP" YES)
 
@@ -136,9 +135,6 @@ ENDIF()
 IF(USE_BUILTIN_MINIZIP AND NOT EXISTS "${PROJECT_SOURCE_DIR}/extern/minizip/CMakeLists.txt")
   message(FATAL_ERROR "The submodules were not downloaded! GIT_SUBMODULE was turned off or failed. Please update submodules and try again.")
 ENDIF()
-IF(USE_BUILTIN_MQTT AND NOT EXISTS "${PROJECT_SOURCE_DIR}/extern/mosquitto/CMakeLists.txt")
-  message(FATAL_ERROR "The submodules were not downloaded! GIT_SUBMODULE was turned off or failed. Please update submodules and try again.")
-ENDIF()
 IF(USE_BUILTIN_SQLITE AND NOT EXISTS "${PROJECT_SOURCE_DIR}/extern/sqlite-amalgamation/CMakeLists.txt")
   message(FATAL_ERROR "The submodules were not downloaded! GIT_SUBMODULE was turned off or failed. Please update submodules and try again.")
 ENDIF()
@@ -171,7 +167,7 @@ main/LuaCommon.cpp
 main/LuaHandler.cpp
 main/LuaTable.cpp
 main/mainworker.cpp
-main/mosquitto_helper.cpp
+main/mqtt_helper.cpp
 main/NotificationObserver.cpp
 main/NotificationSystem.cpp
 main/RFXNames.cpp
@@ -579,27 +575,6 @@ ELSE(USE_BUILTIN_JSONCPP)
   ENDIF(JSONCPP_FOUND)
 ENDIF(USE_BUILTIN_JSONCPP)
  
-# mosquitto
-IF(USE_BUILTIN_MQTT)
-  MESSAGE(STATUS "Using builtin Mosquitto library")
-  option(WITH_STATIC_LIBRARIES "Build static versions of the libmosquitto/pp libraries?" ON)
-  option(DOCUMENTATION "Build documentation?" OFF)
-  add_subdirectory (extern/mosquitto EXCLUDE_FROM_ALL)
-  target_link_libraries(domoticz libmosquitto_static)
-  target_link_libraries(domoticztester libmosquitto_static)
-  INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/extern/mosquitto/include)
-  INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/extern/mosquitto/lib)
-ELSE(USE_BUILTIN_MQTT)
-  find_library(MQTT_LIBRARIES NAMES libmosquitto.so)
-  find_path(MQTT_INCLUDE_DIRS NAMES mosquitto.h)
-  IF(MQTT_LIBRARIES AND MQTT_INCLUDE_DIRS)
-    MESSAGE(STATUS "MQTT includes found at: ${MQTT_INCLUDE_DIRS}")
-    INCLUDE_DIRECTORIES(${MQTT_INCLUDE_DIRS})
-  ELSE(MQTT_LIBRARIES AND MQTT_INCLUDE_DIRS)
-    MESSAGE(FATAL_ERROR "Mosquitto library not found on your system, see install.txt how to get them installed. (for example 'sudo apt-get install libmosquitto-dev')")
-  ENDIF(MQTT_LIBRARIES AND MQTT_INCLUDE_DIRS)
-ENDIF(USE_BUILTIN_MQTT)
-
 # sqlite3
 IF(USE_BUILTIN_SQLITE)
   MESSAGE(STATUS "Using builtin SQLite library")

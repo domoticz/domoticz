@@ -1,7 +1,7 @@
 #pragma once
 
 #include "MySensorsBase.h"
-#include "../main/mosquitto_helper.h"
+#include "../main/mqtt_helper.h"
 #include "../main/BaroForecastCalculator.h"
 
 namespace Json

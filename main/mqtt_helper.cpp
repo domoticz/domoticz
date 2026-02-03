@@ -2,7 +2,7 @@
 Based on the work of Roger Light <roger@atchoo.org>
 */
 #include "stdafx.h"
-#include "mosquitto_helper.h"
+#include "mqtt_helper.h"
 #include "Logger.h"
 
 #define UNUSED(A) (void)(A)

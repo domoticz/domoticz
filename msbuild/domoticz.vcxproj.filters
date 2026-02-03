@@ -2225,7 +2225,7 @@
     <ClInclude Include="..\hardware\MitsubishiWF.h">
       <Filter>Devices\Mitsubishi_WF_RAC</Filter>
     </ClInclude>
-    <ClInclude Include="..\main\mosquitto_helper.h">
+    <ClInclude Include="..\main\mqtt_helper.h">
       <Filter>Devices\MQTT</Filter>
     </ClInclude>
     <ClInclude Include="..\push\MQTTPush.h">
@@ -3028,7 +3028,7 @@
     <ClCompile Include="..\hardware\MitsubishiWF.cpp">
       <Filter>Devices\Mitsubishi_WF_RAC</Filter>
     </ClCompile>
-    <ClCompile Include="..\main\mosquitto_helper.cpp">
+    <ClCompile Include="..\main\mqtt_helper.cpp">
       <Filter>Devices\MQTT</Filter>
     </ClCompile>
     <ClCompile Include="..\push\MQTTPush.cpp">

@@ -72,33 +72,33 @@
     <LinkIncremental>true</LinkIncremental>
     <IntDir>$(Configuration)_Build\</IntDir>
     <PreBuildEventUseInBuild>true</PreBuildEventUseInBuild>
-    <IncludePath>$(IncludePath);S:\boost\include</IncludePath>
+    <IncludePath>$(IncludePath);S:\boost</IncludePath>
     <CodeAnalysisRuleSet>C:\Program Files (x86)\Microsoft Visual Studio\2017\Professional\Team Tools\Static Analysis Tools\Rule Sets\NativeRecommendedRules.ruleset</CodeAnalysisRuleSet>
     <RunCodeAnalysis>false</RunCodeAnalysis>
-    <LibraryPath>$(LibraryPath);S:\boost\lib</LibraryPath>
+    <LibraryPath>$(LibraryPath);S:\boost\lib32-msvc-14.3</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <PreBuildEventUseInBuild>true</PreBuildEventUseInBuild>
-    <IncludePath>S:\boost\include;$(IncludePath)</IncludePath>
+    <IncludePath>S:\boost\;$(IncludePath)</IncludePath>
     <CodeAnalysisRuleSet>C:\Program Files (x86)\Microsoft Visual Studio\2017\Professional\Team Tools\Static Analysis Tools\Rule Sets\NativeRecommendedRules.ruleset</CodeAnalysisRuleSet>
     <RunCodeAnalysis>false</RunCodeAnalysis>
     <LinkIncremental>true</LinkIncremental>
     <IntDir>$(Platform)\$(Configuration)_Build\</IntDir>
-    <LibraryPath>S:\boost\lib;$(LibraryPath)</LibraryPath>
+    <LibraryPath>S:\boost\lib64-msvc-14.3;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
     <IntDir>$(Configuration)_Build\</IntDir>
     <PreBuildEventUseInBuild>true</PreBuildEventUseInBuild>
-    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);S:\boost\include</IncludePath>
-    <LibraryPath>$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86);S:\boost\lib</LibraryPath>
+    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);S:\boost</IncludePath>
+    <LibraryPath>$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86);S:\boost\lib32-msvc-14.3</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <PreBuildEventUseInBuild>true</PreBuildEventUseInBuild>
     <LinkIncremental>false</LinkIncremental>
     <IntDir>$(Platform)\$(Configuration)_Build\</IntDir>
-    <IncludePath>S:\boost\include;$(IncludePath)</IncludePath>
-    <LibraryPath>S:\boost\lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>S:\boost\;$(IncludePath)</IncludePath>
+    <LibraryPath>S:\boost\lib64-msvc-14.3;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -760,7 +760,7 @@
     <ClInclude Include="..\main\LuaHandler.h" />
     <ClInclude Include="..\main\LuaTable.h" />
     <ClInclude Include="..\main\mainstructs.h" />
-    <ClInclude Include="..\main\mosquitto_helper.h" />
+    <ClInclude Include="..\main\mqtt_helper.h" />
     <ClInclude Include="..\main\Noncopyable.h" />
     <ClInclude Include="..\main\NotificationObserver.h" />
     <ClInclude Include="..\main\NotificationSystem.h" />
@@ -1059,7 +1059,7 @@
     <ClCompile Include="..\main\LuaCommon.cpp" />
     <ClCompile Include="..\main\LuaHandler.cpp" />
     <ClCompile Include="..\main\LuaTable.cpp" />
-    <ClCompile Include="..\main\mosquitto_helper.cpp" />
+    <ClCompile Include="..\main\mqtt_helper.cpp" />
     <ClCompile Include="..\main\NotificationObserver.cpp" />
     <ClCompile Include="..\main\NotificationSystem.cpp" />
     <ClCompile Include="..\main\Scheduler.cpp" />

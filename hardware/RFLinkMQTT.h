@@ -1,17 +1,7 @@
 #pragma once
 
 #include "RFLinkBase.h"
-#include "../main/mosquitto_helper.h"
-
-// #ifdef BUILTIN_MQTT
-// #include "../MQTT/mosquittopp.h"
-// #else
-// #ifdef WIN32
-// #include "../MQTT/mosquittopp.h"
-// #else
-// #include <mosquittopp.h>
-// #endif
-// #endif
+#include "../main/mqtt_helper.h"
 
 class CRFLinkMQTT: public CRFLinkBase, mosqdz::mosquittodz
 {
