@@ -14,6 +14,7 @@ readonly CHANNEL_KEYWORD="release"
 
 # List of required packages (can be extended as needed)
 readonly REQUIRED_PACKAGES=(
+    "libmosquitto1"
     # Add more packages here as needed
     #"libusb-0.1"
     #"libcurl4"
