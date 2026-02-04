@@ -575,6 +575,16 @@ ELSE(USE_BUILTIN_JSONCPP)
   ENDIF(JSONCPP_FOUND)
 ENDIF(USE_BUILTIN_JSONCPP)
  
+# mosquitto
+find_library(MQTT_LIBRARIES NAMES libmosquitto.so)
+find_path(MQTT_INCLUDE_DIRS NAMES mosquitto.h)
+IF(MQTT_LIBRARIES AND MQTT_INCLUDE_DIRS)
+  MESSAGE(STATUS "MQTT includes found at: ${MQTT_INCLUDE_DIRS}")
+  INCLUDE_DIRECTORIES(${MQTT_INCLUDE_DIRS})
+ELSE(MQTT_LIBRARIES AND MQTT_INCLUDE_DIRS)
+  MESSAGE(FATAL_ERROR "Mosquitto library not found on your system, see install.txt how to get them installed. (for example 'sudo apt-get install libmosquitto-dev')")
+ENDIF(MQTT_LIBRARIES AND MQTT_INCLUDE_DIRS)
+ 
 # sqlite3
 IF(USE_BUILTIN_SQLITE)
   MESSAGE(STATUS "Using builtin SQLite library")
