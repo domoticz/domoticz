@@ -664,7 +664,7 @@ ELSE(USE_STATIC_BOOST)
    message(STATUS "Linking against boost dynamic libraries")
 ENDIF(USE_STATIC_BOOST)
 
-find_package(Boost REQUIRED COMPONENTS thread)
+find_package(Boost CONFIG REQUIRED COMPONENTS thread)
 IF(Boost_FOUND)
     MESSAGE(STATUS "BOOST ${Boost_VERSION} includes found at: ${Boost_INCLUDE_DIR}")
 ELSE(Boost_FOUND)
