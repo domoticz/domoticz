@@ -69,6 +69,21 @@ void CounterHelper::InitInt()
 		{
 			m_nLastCounterValue = std::stod(sValue.substr(pos + 1)) / 1000.0;
 		}
+
+		// Sanity check: The offset should always be less than the combined total.
+		// If offset >= total, the data is corrupted (e.g., LastLevel was incorrectly
+		// set to the total value instead of the offset). In this case, reset the offset
+		// to 0 to prevent counter values from doubling after restart.
+		if ((m_CounterOffset > 0) && (m_nLastCounterValue > 0) && (m_CounterOffset >= m_nLastCounterValue))
+		{
+			_log.Log(LOG_ERROR, "CounterHelper: Detected corrupted counter data (offset %.3f >= total %.3f). Resetting offset to 0.",
+				m_CounterOffset, m_nLastCounterValue);
+			m_CounterOffset = 0;
+			m_sql.safe_query("UPDATE DeviceStatus SET LastLevel=0, LastUpdate='%s' WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit==%d) AND (Type=%d) AND (SubType=%d)",
+				TimeToString(nullptr, TF_DateTime).c_str(),
+				m_HwdID, m_szID.c_str(), m_Unit,
+				pTypeGeneral, sTypeKwh);
+		}
 	}
 
 	m_bInitialized = true;
