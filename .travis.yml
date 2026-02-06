@@ -50,6 +50,7 @@ matrix:
           - python3-dev
           - liblua5.3-dev
           - uthash-dev
+          - libmosquitto-dev
     script:
       - (cd open-zwave-read-only; make)
 
