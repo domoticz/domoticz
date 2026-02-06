@@ -1,4 +1,5 @@
 Version 2026.xxxx
+- Breaking Change: Added system dependency: libmosquitto1. You need to update twice.
 - Implemented: Add basic Alexa Smart Home v3 API endpoint (see ALEXA.md)
 - Implemented: Blinds + Stop type
 - Implemented: Enever, updated providers and API v3
