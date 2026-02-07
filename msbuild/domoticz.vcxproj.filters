@@ -1452,6 +1452,7 @@
     <None Include="..\www\css\planning.css">
       <Filter>www\css</Filter>
     </None>
+    <None Include="Plans\EventSystem_LuaThreadOptimization.md" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\webserver\Base64.h">

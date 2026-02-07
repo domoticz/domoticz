@@ -532,6 +532,7 @@
     <None Include="..\www\views\weather_widget.html" />
     <None Include="domoticz.ico" />
     <None Include="packages.config" />
+    <None Include="Plans\EventSystem_LuaThreadOptimization.md" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\hardware\1Wire.h">

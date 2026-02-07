@@ -13,6 +13,8 @@
 #include <set>
 #include <regex>
 
+#define PENDING_USER_TIMEOUT_SECONDS 120
+
 std::set<std::string> allowed_components = {
 		"binary_sensor",
 		"button",
@@ -1988,7 +1990,21 @@ void MQTTAutoDiscover::handle_auto_discovery_sensor_message(const struct mosquit
 uint64_t MQTTAutoDiscover::UpdateValueInt(int HardwareID, const char* ID, unsigned char unit, unsigned char devType, unsigned char subType, unsigned char signallevel, unsigned char batterylevel, int nValue,
 	const char* sValue, std::string& devname, bool bUseOnOffAction, const std::string& user)
 {
-	uint64_t DeviceRowIdx = m_sql.UpdateValue(HardwareID, 0, ID, unit, devType, subType, signallevel, batterylevel, nValue, sValue, devname, bUseOnOffAction, (!user.empty()) ? user.c_str() : m_Name.c_str());
+	std::string effectiveUser = user;
+	if (effectiveUser.empty())
+	{
+		auto it = m_discovered_sensors.find(ID);
+		if (it != m_discovered_sensors.end() && !it->second.pending_user.empty())
+		{
+			if (time(nullptr) - it->second.pending_user_time <= PENDING_USER_TIMEOUT_SECONDS)
+			{
+				effectiveUser = it->second.pending_user;
+			}
+			it->second.pending_user.clear();
+			it->second.pending_user_time = 0;
+		}
+	}
+	uint64_t DeviceRowIdx = m_sql.UpdateValue(HardwareID, 0, ID, unit, devType, subType, signallevel, batterylevel, nValue, sValue, devname, bUseOnOffAction, (!effectiveUser.empty()) ? effectiveUser.c_str() : m_Name.c_str());
 	if (DeviceRowIdx == (uint64_t)-1)
 		return -1;
 	if (m_bOutputLog)
@@ -5366,6 +5382,11 @@ bool MQTTAutoDiscover::SendSwitchCommand(const std::string& DeviceID, const std:
 		return false;
 	}
 	_tMQTTASensor* pSensor = &m_discovered_sensors[DeviceID];
+	if (!user.empty())
+	{
+		pSensor->pending_user = user;
+		pSensor->pending_user_time = time(nullptr);
+	}
 
 	if (pSensor->component_type == "cover")
 		return SendCoverCommand(pSensor, DeviceName, command, level, user);
@@ -6143,6 +6164,12 @@ bool MQTTAutoDiscover::SendCoverCommand(_tMQTTASensor* pSensor, const std::strin
 	Json::Value root;
 	std::string szValue;
 
+	if (!user.empty())
+	{
+		pSensor->pending_user = user;
+		pSensor->pending_user_time = time(nullptr);
+	}
+
 	if (command == "Open")
 	{
 		szValue = pSensor->payload_open;
@@ -6258,13 +6285,18 @@ bool MQTTAutoDiscover::SendCoverCommand(_tMQTTASensor* pSensor, const std::strin
 	return true;
 }
 
-bool MQTTAutoDiscover::SetSetpoint(const std::string& DeviceID, const uint8_t Unit, float Temp)
+bool MQTTAutoDiscover::SetSetpoint(const std::string& DeviceID, const uint8_t Unit, float Temp, const std::string& user)
 {
 	if (m_discovered_sensors.find(DeviceID) == m_discovered_sensors.end())
 	{
 		return false;
 	}
 	_tMQTTASensor* pSensor = &m_discovered_sensors[DeviceID];
+	if (!user.empty())
+	{
+		pSensor->pending_user = user;
+		pSensor->pending_user_time = time(nullptr);
+	}
 	if (pSensor->component_type != "climate")
 	{
 		return false;
@@ -6352,13 +6384,13 @@ bool MQTTAutoDiscover::SetSetpoint(const std::string& DeviceID, const uint8_t Un
 			int humidity_status = atoi(fields[3].c_str());
 			pSensor->sValue = std_format("%.1f;%.1f;%d;%d", temp_current, Temp, humidity, humidity_status);
 			UpdateValueInt(m_HwdID, pSensor->unique_id.c_str(), Unit, pTypeThermostat6, sTypeThermostat6TempHum, pSensor->SignalLevel, pSensor->BatteryLevel,
-				pSensor->nValue, pSensor->sValue.c_str(), result[0][0]);
+				pSensor->nValue, pSensor->sValue.c_str(), result[0][0], true, user);
 		}
 		else
 		{
 			pSensor->sValue = std_format("%.1f;%.1f", temp_current, Temp);
 			UpdateValueInt(m_HwdID, pSensor->unique_id.c_str(), Unit, pTypeThermostat6, sTypeThermostat6Temp, pSensor->SignalLevel, pSensor->BatteryLevel,
-				pSensor->nValue, pSensor->sValue.c_str(), result[0][0]);
+				pSensor->nValue, pSensor->sValue.c_str(), result[0][0], true, user);
 		}
 	}
 	else
@@ -6366,7 +6398,7 @@ bool MQTTAutoDiscover::SetSetpoint(const std::string& DeviceID, const uint8_t Un
 		// Update old pTypeSetpoint device
 		pSensor->sValue = std_format("%.2f", Temp);
 		UpdateValueInt(m_HwdID, pSensor->unique_id.c_str(), Unit, pTypeSetpoint, sTypeSetpoint, pSensor->SignalLevel, pSensor->BatteryLevel,
-			pSensor->nValue, pSensor->sValue.c_str(), result[0][0]);
+			pSensor->nValue, pSensor->sValue.c_str(), result[0][0], true, user);
 	}
 
 	return true;

@@ -995,7 +995,7 @@ void CScheduler::CheckSchedules()
 					{
 						std::stringstream sstr;
 						sstr << item.RowID;
-						if (!m_mainworker.SetSetPoint(sstr.str(), item.Temperature))
+						if (!m_mainworker.SetSetPoint(sstr.str(), item.Temperature, "timer"))
 						{
 							_log.Log(LOG_ERROR,
 								"Error setting thermostat setpoint, ThermostatID: %" PRIu64 ", Time: %s",

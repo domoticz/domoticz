@@ -857,7 +857,7 @@ namespace mcp		// Model Context Protocol
 		{
 			sThermostatState = "The value of thermostat \"" + sThermostatName + "\" before setting was: " + device["Data"].asString() + ". ";
 			bFound = true;
-			sThermostatState += (m_mainworker.SetSetPoint(device["idx"].asString(), fNewSetpoint) == false ? "Error setting the setpoint." : "Setpoint set successfully.");
+			sThermostatState += (m_mainworker.SetSetPoint(device["idx"].asString(), fNewSetpoint, "MCP") == false ? "Error setting the setpoint." : "Setpoint set successfully.");
 		}
 		Json::Value tool;
 		tool["type"] = "text";

@@ -2328,7 +2328,7 @@ bool CEventSystem::parseBlocklyActions(const _tEventItem &item)
 				mode = ParseBlocklyString(aParam[1]);
 			case 1:
 				temp = ParseBlocklyString(aParam[0]);
-				m_sql.AddTaskItem(_tTaskItem::SetSetPoint(0.5F, idx, temp, mode, until));
+				m_sql.AddTaskItem(_tTaskItem::SetSetPoint(0.5F, idx, temp, mode, until, "Blockly/" + item.Name));
 				actionsDone = true;
 				break;
 
@@ -2630,7 +2630,7 @@ bool CEventSystem::PythonScheduleEvent(const std::string &ID, const std::string 
 			mode = aParam[1];
 		case 1:
 			temp = aParam[0];
-			m_sql.AddTaskItem(_tTaskItem::SetSetPoint(0.5F, idx, temp, mode, until));
+			m_sql.AddTaskItem(_tTaskItem::SetSetPoint(0.5F, idx, temp, mode, until, "Python/" + eventName));
 			break;
 
 		default:
@@ -3477,7 +3477,7 @@ bool CEventSystem::processLuaCommand(lua_State *lua_state, const std::string &fi
 		case 1:
 			idx = atoi(SetPointIdx.c_str());
 			temp = aParam[0];
-			m_sql.AddTaskItem(_tTaskItem::SetSetPoint(0.5F, idx, temp, mode, until));
+			m_sql.AddTaskItem(_tTaskItem::SetSetPoint(0.5F, idx, temp, mode, until, "Script/" + scriptName));
 			break;
 
 		default:

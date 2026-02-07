@@ -1748,7 +1748,7 @@ static void Alexa_HandleControl_ThermostatController(WebEmSession& session, cons
 		{
 			// Use SetSetPointEvo for Evohome zones
 			std::string idx_str = std::to_string(device_idx);
-			m_mainworker.SetSetPointEvo(idx_str, static_cast<float>(target_temp), "", "");
+			m_mainworker.SetSetPointEvo(idx_str, static_cast<float>(target_temp), "", "", "Alexa");
 
 			// For Evohome, just report the new setpoint (no mode)
 			Json::Value temp_value;
@@ -1760,7 +1760,7 @@ static void Alexa_HandleControl_ThermostatController(WebEmSession& session, cons
 		{
 			// For thermostat6, use SetSetPoint on the main device
 			std::string idx_str = std::to_string(device_idx);
-			m_mainworker.SetSetPoint(idx_str, static_cast<float>(target_temp));
+			m_mainworker.SetSetPoint(idx_str, static_cast<float>(target_temp), "Alexa");
 
 			// Report updated state using common function
 			ReportThermostatState(root, cookie, 0, false, std::to_string(target_temp));
@@ -1770,7 +1770,7 @@ static void Alexa_HandleControl_ThermostatController(WebEmSession& session, cons
 			// Use regular SetSetPoint for multi-device thermostats
 			std::string setpoint_idx_str = cookie.get("setpointIdx", "").asString();
 			uint64_t setpoint_idx = std::stoull(setpoint_idx_str);
-			m_mainworker.SetSetPoint(setpoint_idx_str, static_cast<float>(target_temp));
+			m_mainworker.SetSetPoint(setpoint_idx_str, static_cast<float>(target_temp), "Alexa");
 
 			// Report updated state (pass known setpoint to avoid redundant query)
 			ReportThermostatState(root, cookie, setpoint_idx, is_evohome_zone, std::to_string(target_temp));
@@ -1847,7 +1847,7 @@ static void Alexa_HandleControl_ThermostatController(WebEmSession& session, cons
 		if (is_evohome_zone)
 		{
 			std::string idx_str = std::to_string(device_idx);
-			m_mainworker.SetSetPointEvo(idx_str, static_cast<float>(new_temp), "", "");
+			m_mainworker.SetSetPointEvo(idx_str, static_cast<float>(new_temp), "", "", "Alexa");
 
 			// For Evohome, just report the new setpoint
 			Json::Value temp_value;
@@ -1859,7 +1859,7 @@ static void Alexa_HandleControl_ThermostatController(WebEmSession& session, cons
 		{
 			// For thermostat6, use SetSetPoint on the main device
 			std::string idx_str = std::to_string(device_idx);
-			m_mainworker.SetSetPoint(idx_str, static_cast<float>(new_temp));
+			m_mainworker.SetSetPoint(idx_str, static_cast<float>(new_temp), "Alexa");
 
 			// Report updated state using common function
 			ReportThermostatState(root, cookie, 0, false, std::to_string(new_temp));
@@ -1868,7 +1868,7 @@ static void Alexa_HandleControl_ThermostatController(WebEmSession& session, cons
 		{
 			std::string setpoint_idx_str = cookie.get("setpointIdx", "").asString();
 			uint64_t setpoint_idx = std::stoull(setpoint_idx_str);
-			m_mainworker.SetSetPoint(setpoint_idx_str, static_cast<float>(new_temp));
+			m_mainworker.SetSetPoint(setpoint_idx_str, static_cast<float>(new_temp), "Alexa");
 
 			// Report updated state (pass known setpoint to avoid redundant query)
 			ReportThermostatState(root, cookie, setpoint_idx, is_evohome_zone, std::to_string(new_temp));

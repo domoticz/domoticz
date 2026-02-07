@@ -4386,9 +4386,9 @@ void CSQLHelper::Do_Work()
 				{
 					_eHardwareTypes HwdType = (_eHardwareTypes)atoi(result[0][0].c_str());
 					if (HwdType == HTYPE_EVOHOME_SCRIPT || HwdType == HTYPE_EVOHOME_SERIAL || HwdType == HTYPE_EVOHOME_WEB || HwdType == HTYPE_EVOHOME_TCP)
-						m_mainworker.SetSetPointEvo(idx, fValue, itt._command, itt._sUntil);
+						m_mainworker.SetSetPointEvo(idx, fValue, itt._command, itt._sUntil, itt._sUser);
 					else
-						m_mainworker.SetSetPoint(idx, fValue);
+						m_mainworker.SetSetPoint(idx, fValue, itt._sUser);
 				}
 			}
 			else if (itt._ItemType == TITEM_SEND_NOTIFICATION)
