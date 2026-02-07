@@ -13,6 +13,8 @@
 #include <set>
 #include <regex>
 
+#define PENDING_USER_TIMEOUT_SECONDS 120
+
 std::set<std::string> allowed_components = {
 		"binary_sensor",
 		"button",
@@ -1994,8 +1996,12 @@ uint64_t MQTTAutoDiscover::UpdateValueInt(int HardwareID, const char* ID, unsign
 		auto it = m_discovered_sensors.find(ID);
 		if (it != m_discovered_sensors.end() && !it->second.pending_user.empty())
 		{
-			effectiveUser = it->second.pending_user;
+			if (time(nullptr) - it->second.pending_user_time <= PENDING_USER_TIMEOUT_SECONDS)
+			{
+				effectiveUser = it->second.pending_user;
+			}
 			it->second.pending_user.clear();
+			it->second.pending_user_time = 0;
 		}
 	}
 	uint64_t DeviceRowIdx = m_sql.UpdateValue(HardwareID, 0, ID, unit, devType, subType, signallevel, batterylevel, nValue, sValue, devname, bUseOnOffAction, (!effectiveUser.empty()) ? effectiveUser.c_str() : m_Name.c_str());
@@ -5377,7 +5383,10 @@ bool MQTTAutoDiscover::SendSwitchCommand(const std::string& DeviceID, const std:
 	}
 	_tMQTTASensor* pSensor = &m_discovered_sensors[DeviceID];
 	if (!user.empty())
+	{
 		pSensor->pending_user = user;
+		pSensor->pending_user_time = time(nullptr);
+	}
 
 	if (pSensor->component_type == "cover")
 		return SendCoverCommand(pSensor, DeviceName, command, level, user);
@@ -6156,7 +6165,10 @@ bool MQTTAutoDiscover::SendCoverCommand(_tMQTTASensor* pSensor, const std::strin
 	std::string szValue;
 
 	if (!user.empty())
+	{
 		pSensor->pending_user = user;
+		pSensor->pending_user_time = time(nullptr);
+	}
 
 	if (command == "Open")
 	{
@@ -6281,7 +6293,10 @@ bool MQTTAutoDiscover::SetSetpoint(const std::string& DeviceID, const uint8_t Un
 	}
 	_tMQTTASensor* pSensor = &m_discovered_sensors[DeviceID];
 	if (!user.empty())
+	{
 		pSensor->pending_user = user;
+		pSensor->pending_user_time = time(nullptr);
+	}
 	if (pSensor->component_type != "climate")
 	{
 		return false;

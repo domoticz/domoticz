@@ -172,6 +172,7 @@ class MQTTAutoDiscover : public MQTT
 		int nValue = 0;
 		std::string sValue;
 		std::string pending_user;
+		time_t pending_user_time = 0;
 		std::string szOptions;
 		int SignalLevel = 12;
 		int BatteryLevel = 255;
