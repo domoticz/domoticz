@@ -505,7 +505,7 @@ void SolarEdgeAPI::GetBatteryDetails()
 	if (!root["PV"].empty())
 	{
 		status = root["PV"]["status"].asString();
-		if (status == "Active")
+		if (status == "Active" || status == "Idle")
 		{
 			power = root["PV"]["currentPower"].asFloat();
 			SendWattMeter(200, SE_PV, 255, power * 1000, "PV Power");
