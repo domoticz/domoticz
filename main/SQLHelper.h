@@ -277,7 +277,7 @@ struct _tTaskItem
 			getclock(&tItem._DelayTimeBegin);
 		return tItem;
 	}
-	static _tTaskItem SetSetPoint(const float DelayTime, const uint64_t idx, const std::string &varvalue, const std::string &mode = std::string(), const std::string &until = std::string())
+	static _tTaskItem SetSetPoint(const float DelayTime, const uint64_t idx, const std::string &varvalue, const std::string &mode = std::string(), const std::string &until = std::string(), const std::string& User = std::string())
 	{
 		_tTaskItem tItem;
 		tItem._ItemType = TITEM_SET_SETPOINT;
@@ -286,6 +286,7 @@ struct _tTaskItem
 		tItem._sValue = varvalue;
 		tItem._command = mode;
 		tItem._sUntil = until;
+		tItem._sUser = User;
 
 		if (DelayTime)
 			getclock(&tItem._DelayTimeBegin);

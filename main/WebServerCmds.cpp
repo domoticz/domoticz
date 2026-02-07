@@ -3581,11 +3581,13 @@ namespace http
 				return;
 			root["status"] = "OK";
 			root["title"] = "SetSetpoint";
+			std::string szSwitchUser;
 			if (iUser != -1)
 			{
+				szSwitchUser = m_users[iUser].Username + " (IP: " + session.remote_host + ")";
 				_log.Log(LOG_STATUS, "User: %s initiated a SetPoint command", m_users[iUser].Username.c_str());
 			}
-			m_mainworker.SetSetPoint(idx, static_cast<float>(atof(setpoint.c_str())));
+			m_mainworker.SetSetPoint(idx, static_cast<float>(atof(setpoint.c_str())), szSwitchUser);
 		}
 
 		void CWebServer::Cmd_GetSceneActivations(WebEmSession& session, const request& req, Json::Value& root)
@@ -4484,23 +4486,25 @@ namespace http
 			if (!setPoint.empty() || !state.empty())
 			{
 				int urights = 3;
+				std::string szSwitchUser;
 				if (bHaveUser)
 				{
 					int iUser = FindUser(session.username.c_str());
 					if (iUser != -1)
 					{
 						urights = static_cast<int>(m_users[iUser].userrights);
+						szSwitchUser = m_users[iUser].Username + " (IP: " + session.remote_host + ")";
 						_log.Log(LOG_STATUS, "User: %s initiated a SetPoint command", m_users[iUser].Username.c_str());
 					}
 				}
 				if (urights < 1)
 					return;
 				if (dType == pTypeEvohomeWater)
-					m_mainworker.SetSetPointEvo(idx, (state == "On") ? 1.0F : 0.0F, mode, until); // FIXME float not guaranteed precise?
+					m_mainworker.SetSetPointEvo(idx, (state == "On") ? 1.0F : 0.0F, mode, until, szSwitchUser); // FIXME float not guaranteed precise?
 				else if (dType == pTypeEvohomeZone)
-					m_mainworker.SetSetPointEvo(idx, static_cast<float>(atof(setPoint.c_str())), mode, until);
+					m_mainworker.SetSetPointEvo(idx, static_cast<float>(atof(setPoint.c_str())), mode, until, szSwitchUser);
 				else
-					m_mainworker.SetSetPoint(idx, static_cast<float>(atof(setPoint.c_str())));
+					m_mainworker.SetSetPoint(idx, static_cast<float>(atof(setPoint.c_str())), szSwitchUser);
 			}
 
 			if (!strunit.empty())

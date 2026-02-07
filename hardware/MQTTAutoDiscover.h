@@ -171,6 +171,7 @@ class MQTTAutoDiscover : public MQTT
 		uint8_t devUnit = 1;
 		int nValue = 0;
 		std::string sValue;
+		std::string pending_user;
 		std::string szOptions;
 		int SignalLevel = 12;
 		int BatteryLevel = 255;
@@ -208,7 +209,7 @@ public:
 		const char* sValue, std::string& devname, bool bUseOnOffAction = true, const std::string& user = "");
 	bool SendSwitchCommand(const std::string& DeviceID, const std::string& DeviceName, int Unit, std::string command, int level, _tColor color, const std::string& user);
 	bool SendIRCommand(const std::string& DeviceID, const std::string& DeviceName, int Unit, std::string command, int level, _tColor color, const std::string& user);
-	bool SetSetpoint(const std::string& DeviceID, const uint8_t Unit, const float Temp);
+	bool SetSetpoint(const std::string& DeviceID, const uint8_t Unit, const float Temp, const std::string& user = "");
 	bool SetTextDevice(const std::string& DeviceID, const std::string& text);
 
 	void GetConfig(Json::Value& root);

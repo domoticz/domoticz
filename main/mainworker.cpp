@@ -13210,7 +13210,7 @@ MainWorker::eSwitchLightReturnCode MainWorker::SwitchLight(const uint64_t idx, c
 
 //Seems this is only called for EvoHome, so this function needs to be moved to the EvoHome (base)class!
 //(and modify Scheduler scripts)
-bool MainWorker::SetSetPointEvo(const std::string& idx, const float TempValue, const std::string& newMode, const std::string& until)
+bool MainWorker::SetSetPointEvo(const std::string& idx, const float TempValue, const std::string& newMode, const std::string& until, const std::string& User)
 {
 	//Get Device details
 	std::vector<std::vector<std::string> > result;
@@ -13236,7 +13236,7 @@ bool MainWorker::SetSetPointEvo(const std::string& idx, const float TempValue, c
 	if (pHardware->HwdType == HTYPE_Domoticz)
 	{
 		DomoticzTCP* pDomoticz = static_cast<DomoticzTCP*>(pHardware);
-		return pDomoticz->SetSetPointEvo(idx, TempValue, newMode, until);
+		return pDomoticz->SetSetPointEvo(idx, TempValue, newMode, until, User);
 	}
 
 	int nEvoMode = 0;
@@ -13292,7 +13292,7 @@ bool MainWorker::SetSetPointEvo(const std::string& idx, const float TempValue, c
 	return true;
 }
 
-bool MainWorker::SetSetPoint(const std::string& idx, const float TempValue)
+bool MainWorker::SetSetPoint(const std::string& idx, const float TempValue, const std::string& User)
 {
 	//Get Device details
 	std::vector<std::vector<std::string> > result;
@@ -13316,13 +13316,13 @@ bool MainWorker::SetSetPoint(const std::string& idx, const float TempValue)
 	if (pHardware->HwdType == HTYPE_Domoticz)
 	{
 		DomoticzTCP* pDomoticz = static_cast<DomoticzTCP*>(pHardware);
-		return pDomoticz->SetSetPoint(idx, TempValue);
+		return pDomoticz->SetSetPoint(idx, TempValue, User);
 	}
 
-	return SetSetPointInt(sd, TempValue);
+	return SetSetPointInt(sd, TempValue, User);
 }
 
-bool MainWorker::SetSetPointInt(const std::vector<std::string>& sd, const float TempValue)
+bool MainWorker::SetSetPointInt(const std::vector<std::string>& sd, const float TempValue, const std::string& User)
 {
 	int HardwareID = atoi(sd[0].c_str());
 	int hindex = FindDomoticzHardware(HardwareID);
@@ -13460,7 +13460,7 @@ bool MainWorker::SetSetPointInt(const std::vector<std::string>& sd, const float 
 		}
 		else if (pHardware->HwdType == HTYPE_EVOHOME_SCRIPT || pHardware->HwdType == HTYPE_EVOHOME_SERIAL || pHardware->HwdType == HTYPE_EVOHOME_WEB || pHardware->HwdType == HTYPE_EVOHOME_TCP)
 		{
-			return SetSetPointEvo(sd[7], TempValue, "PermanentOverride", "");
+			return SetSetPointEvo(sd[7], TempValue, "PermanentOverride", "", User);
 		}
 		else if (pHardware->HwdType == HTYPE_IntergasInComfortLAN2RF)
 		{
@@ -13475,7 +13475,7 @@ bool MainWorker::SetSetPointInt(const std::vector<std::string>& sd, const float 
 		else if (pHardware->HwdType == HTYPE_MQTTAutoDiscovery)
 		{
 			MQTTAutoDiscover* pGateway = dynamic_cast<MQTTAutoDiscover*>(pHardware);
-			return pGateway->SetSetpoint(sd[1], Unit, TempValue);
+			return pGateway->SetSetpoint(sd[1], Unit, TempValue, User);
 		}
 		else if (pHardware->HwdType == HTYPE_AlfenEveCharger)
 		{
