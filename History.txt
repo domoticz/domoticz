@@ -9,6 +9,7 @@ Version 2026.xxxx
 - Added: MQTT-AD: handling FAN on/off status commands
 - Added: MQTT-AD: Added Fan speed-range
 - Added: MQTT-AD: Reinstate 'total_increasing' support for kWh sensors
+- Added: MQTT-AD: Thermostat 6, add setpoint timer/schedule support (Fixes #6530)
 - Added: New update scripts that are able to check if system meets requirements
 - Added: New update scripts that are able to check if system meets requirements
 - Added: Philips Hue v2 API, just for Door/Window Contacts (state/tamper/battery)
@@ -34,6 +35,9 @@ Version 2026.xxxx
 - Changed: Philips Hue, now used HTTP scheme (HTTP/HTTPS) based on port number (80/443)
 - Changed: Tado, token now refreshed with correct refresh token interval
 - Updated: Translations
+
+### Breaking Changes
+- Added system dependency: `libmosquitto1`. You might need to the updaterelease/updatebeta commandline twice **twice** to ensure proper installation, or run the setup curl command again.
 
 Version 2025.2 (October 13th 2025)
 - Added: EnergyDashboard, add option for (Outside) Temperature Sensor
