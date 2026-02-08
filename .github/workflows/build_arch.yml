@@ -42,7 +42,7 @@ jobs:
       run: |
         sudo timedatectl set-timezone Europe/Amsterdam
         sudo apt-get update && sudo apt-get --autoremove upgrade
-        sudo apt-get install make gcc g++ libssl-dev git libcurl4-gnutls-dev libusb-dev python3-dev zlib1g-dev liblua5.3-dev uthash-dev python3-pytest python3-pytest-bdd lua5.3 luarocks
+        sudo apt-get install make gcc g++ libssl-dev git libcurl4-gnutls-dev libusb-dev libmosquitto-dev python3-dev zlib1g-dev liblua5.3-dev uthash-dev python3-pytest python3-pytest-bdd lua5.3 luarocks
         sudo luarocks install busted
         sudo luarocks install luacov
         curl -sSL https://github.com/Kitware/CMake/releases/download/v${Vcmake}/cmake-${Vcmake}-linux-x86_64.tar.gz -o cmake.tar.gz;
