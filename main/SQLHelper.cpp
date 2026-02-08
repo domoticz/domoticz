@@ -10198,39 +10198,33 @@ bool CSQLHelper::CalcMeterPrice(const uint64_t idx, const float divider, const c
 {
 	if (divider == 0)
 		return false;
-	//Calculate the total price for today
-	auto result = safe_query("SELECT strftime('%%Y-%%m-%%d %%H:00:00', Date) as ymd, MIN(Value) as Cntr, Price FROM Meter WHERE (DeviceRowID='%" PRIu64 "' AND Date>='%q' AND Date<='%q 00:00:00') GROUP BY ymd",
+
+	auto result = safe_query("SELECT Value, Price FROM Meter WHERE (DeviceRowID='%" PRIu64 "' AND Date>='%q' AND Date<='%q 00:00:00') ORDER BY Date ASC",
 		idx, szDateStart, szDateEnd);
 	if (result.empty())
 		return false;
 
-	//Add last value
-	auto result2 = m_sql.safe_query("SELECT Date, Value, Price FROM Meter WHERE (DeviceRowID=%" PRIu64 " AND Date>='%q' AND Date<='%q 00:00:00') ORDER BY ROWID DESC LIMIT 1",
-		idx, szDateStart, szDateEnd);
-	if (!result2.empty())
-	{
-		result.push_back(result2.at(0));
-	}
-
 	bool bResult = false;
-
 	int64_t last_cntr = INT64_MAX;
-	float last_price = 0;
 	float total_price = 0;
+
 	for (const auto& itt : result)
 	{
-		const int64_t cntr = std::stoull(itt.at(1));
-		const float price = std::stof(itt.at(2));
+		const int64_t cntr = std::stoull(itt.at(0));
+		const float rec_price = std::stof(itt.at(1));
 
 		if (last_cntr != INT64_MAX)
 		{
 			const int64_t total = cntr - last_cntr;
-			total_price += ((static_cast<float>(total) / divider) * last_price);
-			bResult = true;
+			if (total >= 0)
+			{
+				total_price += ((static_cast<float>(total) / divider) * rec_price);
+				bResult = true;
+			}
 		}
 		last_cntr = cntr;
-		last_price = price;
 	}
+
 	if ((total_price > 100000) || (total_price < -100000))
 		return false;
 	price = total_price;
@@ -10242,42 +10236,31 @@ bool CSQLHelper::CalcMultiMeterPrice(const uint64_t idx, const float divider, co
 	if (divider == 0)
 		return false;
 
-	//Calculate the total price for today
-	auto result = safe_query("SELECT strftime('%%Y-%%m-%%d %%H:00:00', Date) as ymd, MIN(Value1), MIN(Value2), MIN(Value3), MIN(Value4), MIN(Value5), MIN(Value6), Price FROM MultiMeter WHERE (DeviceRowID='%" PRIu64 "' AND Date>='%q' AND Date<='%q 00:00:00') GROUP BY ymd",
+	auto result = safe_query("SELECT Value1, Value2, Value3, Value4, Value5, Value6, Price FROM MultiMeter WHERE (DeviceRowID='%" PRIu64 "' AND Date>='%q' AND Date<='%q 00:00:00') ORDER BY Date ASC",
 		idx, szDateStart, szDateEnd);
 	if (result.empty())
 		return false;
 
-	//Add last value
-	auto result2 = m_sql.safe_query("SELECT Date, Value1, Value2, Value3, Value4, Value5, Value6, Price FROM MultiMeter WHERE (DeviceRowID=%" PRIu64 " AND Date>='%q' AND Date<='%q 00:00:00') ORDER BY ROWID DESC LIMIT 1",
-		idx, szDateStart, szDateEnd);
-	if (!result2.empty())
-	{
-		result.push_back(result2.at(0));
-	}
-
 	bool bResult = false;
-
 	uint64_t last_cntrs[6] = { (uint64_t)-1,(uint64_t)-1,(uint64_t)-1,(uint64_t)-1,(uint64_t)-1,(uint64_t)-1 };
-	float last_price = 0;
 	float total_price[6] = { 0,0,0,0,0,0 };
+
 	for (const auto& itt : result)
 	{
-		float price = std::stof(itt[7]);
+		float rec_price = std::stof(itt[6]);
 
 		uint64_t cntrs[6];
 		for (int ii = 0; ii < 6; ii++)
 		{
-			cntrs[ii] = std::stoull(itt[1 + ii]);
+			cntrs[ii] = std::stoull(itt[ii]);
 			if (last_cntrs[ii] != (uint64_t)-1)
 			{
 				uint64_t total = cntrs[ii] - last_cntrs[ii];
-				total_price[ii] += ((static_cast<float>(total) / divider) * last_price);
+				total_price[ii] += ((static_cast<float>(total) / divider) * rec_price);
 				bResult = true;
 			}
 			last_cntrs[ii] = cntrs[ii];
 		}
-		last_price = price;
 	}
 
 	float price_usage = total_price[0] + total_price[4];

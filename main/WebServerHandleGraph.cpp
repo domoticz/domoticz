@@ -190,7 +190,7 @@ namespace http
 					{
 						root["status"] = "OK";
 						root["title"] = "Graph " + sensor + " " + srange;
-/*
+
 						char szDateStart[40];
 						char szDateEnd[40];
 						sprintf(szDateEnd, "%04d-%02d-%02d %02d:%02d:%02d", tm1.tm_year + 1900, tm1.tm_mon + 1, tm1.tm_mday, tm1.tm_hour, tm1.tm_min, tm1.tm_sec);
@@ -198,15 +198,11 @@ namespace http
 						// Subtract a day
 						time_t daybefore;
 						struct tm tm2;
-						getNoon(daybefore, tm2, tm1.tm_year + 1900, tm1.tm_mon + 1, tm1.tm_mday - 1); // We only want one day
+						getNoon(daybefore, tm2, tm1.tm_year + 1900, tm1.tm_mon + 1, tm1.tm_mday - 1);
 						sprintf(szDateStart, "%04d-%02d-%02d %02d:%02d:%02d", tm2.tm_year + 1900, tm2.tm_mon + 1, tm2.tm_mday, tm1.tm_hour, tm1.tm_min, tm1.tm_sec);
 
-						result = m_sql.safe_query("SELECT strftime('%%Y-%%m-%%d %%H:00:00', Date) as ymd, MIN(Value1) as u1, MIN(Value5) as u2, MIN(Value2) as d1, MIN(Value6) as d2 FROM %s WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q' AND Date<='%q') GROUP BY ymd",
+						result = m_sql.safe_query("SELECT strftime('%%Y-%%m-%%d %%H:00:00', Date) as ymd, MIN(Value1) as u1, MIN(Value5) as u2, MIN(Value2) as d1, MIN(Value6) as d2, MIN(Price) as price FROM %s WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q' AND Date<='%q') GROUP BY ymd",
 							dbasetable.c_str(), idx, szDateStart, szDateEnd);
-*/
-
-						result = m_sql.safe_query("SELECT strftime('%%Y-%%m-%%d %%H:00:00', Date) as ymd, MIN(Value1) as u1, MIN(Value5) as u2, MIN(Value2) as d1, MIN(Value6) as d2, Price FROM %s WHERE (DeviceRowID==%" PRIu64 ") GROUP BY ymd",
-							dbasetable.c_str(), idx);
 						if (!result.empty())
 						{
 							int ii = 0;
@@ -214,6 +210,7 @@ namespace http
 							bool bHaveFirstValue = false;
 							int64_t lastUsage, lastDeliv;
 							time_t lastTime = 0;
+							float lastPrice = 0;
 
 							int lastDay = 0;
 
@@ -228,6 +225,7 @@ namespace http
 
 								int64_t actUsage = actUsage1 + actUsage2;
 								int64_t actDeliv = actDeliv1 + actDeliv2;
+								float actPrice = std::stof(sd[5]);
 
 								std::string stime = sd[0];
 								struct tm ntime;
@@ -250,6 +248,7 @@ namespace http
 										lastUsage = actUsage;
 										lastDeliv = actDeliv;
 										lastTime = atime;
+										lastPrice = actPrice;
 										continue;
 									}
 
@@ -268,7 +267,7 @@ namespace http
 									root["result"][ii]["r"] = szTmp;
 
 									float total = (curUsage - curDeliv) / 1000.0F;
-									float fPrice = std::stof(sd[5]) * total;
+									float fPrice = lastPrice * total;
 									sprintf(szTmp, "%.4f", fPrice);
 									root["result"][ii]["p"] = szTmp;
 									ii++;
@@ -280,6 +279,7 @@ namespace http
 								lastUsage = actUsage;
 								lastDeliv = actDeliv;
 								lastTime = atime;
+								lastPrice = actPrice;
 							}
 							if (bHaveDeliverd)
 							{
