@@ -460,6 +460,7 @@ void CLogitechMediaServer::GetPlayerInfo()
 						(model == "iPengiPad") ||			//iPeng iPad App
 						(model == "squeezelite") ||			//Max2Play SqueezePlug
 						(model == "daphile")				//Audiophile Music Server & Player OS
+						(model == "squeezeesp32") ||		//Squeezelite ESP32
 						)
 					{
 						UpsertPlayer(name, ip, macaddress);
