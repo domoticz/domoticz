@@ -1,21 +1,21 @@
 Version 2026.xxxx
-- Implemented: Add basic Alexa Smart Home v3 API endpoint (see ALEXA.md)
-- Implemented: Blinds + Stop type
-- Implemented: Enever, updated providers and API v3
-- Implemented: MQTT-AD, added support for Climate high/low set points
-- Implemented: MQTT-AD: Added support for flow meter reported in l/min (Fixes #6450)
-- Implemented: MQTT-AD: Calculate temperature trends for climate devices
-- Implemented: MQTT-AD: Fan, make it possible to send separate ON/OFF commands
-- Implemented: MQTT-AD: handling FAN on/off status commands
-- Implemented: MQTT-AD: Implemented Fan speed-range
-- Implemented: MQTT-AD: Reinstate 'total_increasing' support for kWh sensors
-- Implemented: New update scripts that are able to check if system meets requirements
-- Implemented: New update scripts that are able to check if system meets requirements
-- Implemented: Philips Hue v2 API, just for Door/Window Contacts (state/tamper/battery)
-- Implemented: PV Output, added consumption
-- Implemented: RFXCom, Support Orcon FAN device (#6500)
-- Implemented: Support for the Model Context Protocol (/mcp) for use with AI Agents
-- Implemented: Web Interface, Better XSS prevention
+- Added: Add basic Alexa Smart Home v3 API endpoint (see ALEXA.md)
+- Added: Blinds + Stop type
+- Added: Enever, updated providers and API v3
+- Added: MQTT-AD, added support for Climate high/low set points
+- Added: MQTT-AD: Added support for flow meter reported in l/min (Fixes #6450)
+- Added: MQTT-AD: Calculate temperature trends for climate devices
+- Added: MQTT-AD: Fan, make it possible to send separate ON/OFF commands
+- Added: MQTT-AD: handling FAN on/off status commands
+- Added: MQTT-AD: Added Fan speed-range
+- Added: MQTT-AD: Reinstate 'total_increasing' support for kWh sensors
+- Added: New update scripts that are able to check if system meets requirements
+- Added: New update scripts that are able to check if system meets requirements
+- Added: Philips Hue v2 API, just for Door/Window Contacts (state/tamper/battery)
+- Added: PV Output, added consumption
+- Added: RFXCom, Support Orcon FAN device (#6500)
+- Added: Support for the Model Context Protocol (/mcp) for use with AI Agents
+- Added: Web Interface, Better XSS prevention
 - Fixed: Chart zoom buttons (notable on iOS devices)
 - Fixed: Kodi, Possible memory leak in Kodi Notification when destination is unreachable
 - Fixed: Philips Hue v1 API crashes Domoticz in certain cases since Hue Bridge firmware 1.74 (added extra validations)
@@ -36,19 +36,19 @@ Version 2026.xxxx
 - Updated: Translations
 
 Version 2025.2 (October 13th 2025)
-- Implemented: EnergyDashboard, add option for (Outside) Temperature Sensor
-- Implemented: Enever, Added Pure Energy, removed obsolete providers
-- Implemented: Enphase, display a error is a IQ inverter has not been received for more then a day
-- Implemented: Kodi, support for 'tvshow' type
-- Implemented: MQTT-AD, added support for Climate action_template/state
-- Implemented: MQTT-AD, added support for IR Blaster (Tuya iH-F8260)
-- Implemented: MQTT-AD, support for disabling cover stop button
-- Implemented: New Blinds type "Blinds + Stop"
-- Implemented: MQTT-AD, handling battery low boolean sensors
-- Implemented: MQTT-AD, allow publishing messages
-- Implemented: P1 Chart, Report: Added Total Column (Usage-Return)
-- Implemented: Rain Rate notification
-- Implemented: Support for Humidity only graph
+- Added: EnergyDashboard, add option for (Outside) Temperature Sensor
+- Added: Enever, Added Pure Energy, removed obsolete providers
+- Added: Enphase, display a error is a IQ inverter has not been received for more then a day
+- Added: Kodi, support for 'tvshow' type
+- Added: MQTT-AD, added support for Climate action_template/state
+- Added: MQTT-AD, added support for IR Blaster (Tuya iH-F8260)
+- Added: MQTT-AD, support for disabling cover stop button
+- Added: New Blinds type "Blinds + Stop"
+- Added: MQTT-AD, handling battery low boolean sensors
+- Added: MQTT-AD, allow publishing messages
+- Added: P1 Chart, Report: Added Total Column (Usage-Return)
+- Added: Rain Rate notification
+- Added: Support for Humidity only graph
 - Fixed: MQTT-AD, fix issue where brightness and RGB command topic are different
 - Fixed: MQTT-AD, preserve select options when updating a device
 - Fixed: Replace device now also copies 'Options' field
@@ -64,29 +64,29 @@ Version 2025.2 (October 13th 2025)
 - Updated: Windows libraries
 
 Version 2025.1 (May 5th 2025)
-- Implemented: Battery level for Setpoint sensors
-- Implemented: Charts, zoom option for 'Day' view
-- Implemented: Data Pushers, added P1 actual value
-- Implemented: EnOcean, now able to choose an optional base_id as sender_id instead of the chip_id (#6213)
-- Implemented: Floorplan, Add support for stop button (Ventation blinds)
-- Implemented: RFXCom, Updated SDK
-- Implemented: Support for Honeywell Series 5/PIR
-- Implemented: Text sensor, now posible to edit direct from the GUI
-- Implemented: YouLess, added Water meter
-- Implemented: More default icons
-- Implemented: MQTT-AD, added support for Gas device class
-- Implemented: MQTT-AD, added support for Text device class
-- Implemented: MQTT-AD, better precision for kWh sensors
-- Implemented: MQTT-AD, enabled 'device_automation' component to be compatible with upcoming (2025) Zigbee2MQTT version
-- Implemented: MQTT-AD, handling single onoff color mode as a normal light/switch
-- Implemented: MQTT-AD, power sensors for the Tuya SPM02
-- Implemented: MQTT-AD, support sensors that report humidity but sends 'null' values
-- Implemented: MQTT-AD, support for string field state objects
-- Implemented: MQTT Push 'Retained' mode option
-- Implemented: Rain devices can now be replacement with different types of rain devices
-- Implemented: RFXCom, Falmec Support
-- Implemented: RTL433, Support Generic Switch (Door) sensor
-- Implemented: Tado, oauth2 support
+- Added: Battery level for Setpoint sensors
+- Added: Charts, zoom option for 'Day' view
+- Added: Data Pushers, added P1 actual value
+- Added: EnOcean, now able to choose an optional base_id as sender_id instead of the chip_id (#6213)
+- Added: Floorplan, Add support for stop button (Ventation blinds)
+- Added: RFXCom, Updated SDK
+- Added: Support for Honeywell Series 5/PIR
+- Added: Text sensor, now posible to edit direct from the GUI
+- Added: YouLess, added Water meter
+- Added: More default icons
+- Added: MQTT-AD, added support for Gas device class
+- Added: MQTT-AD, added support for Text device class
+- Added: MQTT-AD, better precision for kWh sensors
+- Added: MQTT-AD, enabled 'device_automation' component to be compatible with upcoming (2025) Zigbee2MQTT version
+- Added: MQTT-AD, handling single onoff color mode as a normal light/switch
+- Added: MQTT-AD, power sensors for the Tuya SPM02
+- Added: MQTT-AD, support sensors that report humidity but sends 'null' values
+- Added: MQTT-AD, support for string field state objects
+- Added: MQTT Push 'Retained' mode option
+- Added: Rain devices can now be replacement with different types of rain devices
+- Added: RFXCom, Falmec Support
+- Added: RTL433, Support Generic Switch (Door) sensor
+- Added: Tado, oauth2 support
 - Changed: dzVents, possible to pass a Domoticz device ID in notify() through the extra parameter
 - Changed: Energy Dashboard now also available for non-admin users
 - Changed: Energy Dashboard, Text object clipping rectangle
@@ -117,7 +117,7 @@ Version 2025.1 (May 5th 2025)
 - Updated: Translations
 
 Version 2024.7 (July 13th 2024)
-- Implemented: P1 Meter, Report, Header now also supports simple mode (No T1/T2/R1/R2 but just total)
+- Added: P1 Meter, Report, Header now also supports simple mode (No T1/T2/R1/R2 but just total)
 - Fixed: Google Cloud Messaging (GCM/FCM) possible crash when notification needed to be send
 
 Version 2024.6 (July 8th 2024)
@@ -125,22 +125,22 @@ Version 2024.6 (July 8th 2024)
 - Changed: Google Cloud Messaging (GCM) now uses the new v1 API of Google's Firebase Cloud Messaging (FCM)
 
 Version 2024.5 (July 7th 2024)
-- Implemented: Currency Symbol in Location Settings
-- Implemented: dzVents, Added historical data helper 'med' to calculate the median value
-- Implemented: dzVents, Improved logging
-- Implemented: Energy Dashboard
-- Implemented: Enever, Added Budget Energy and Eneco
-- Implemented: Enphase, Live storage data
-- Implemented: Enphase, Option for more Inverter details (ac/dc voltage, temperature, lastupdate)
-- Implemented: Event Editor, Close/Close All menu dropdown
-- Implemented: Event Editor, Storing/Loading opened events
-- Implemented: Hour chart for P1 log
-- Implemented: MQTT-AD Climate Fan Mode
-- Implemented: MQTT-AD Climate Swing Mode
-- Implemented: OpenWeatherMap, API 3.0 support
-- Implemented: P1 Meter, option to specify view (low/high tariff or simple (dynamic contract))
-- Implemented: Possible to query a range of device states via JSON
-- Implemented: SolarEdge, polling Storage devices
+- Added: Currency Symbol in Location Settings
+- Added: dzVents, Added historical data helper 'med' to calculate the median value
+- Added: dzVents, Improved logging
+- Added: Energy Dashboard
+- Added: Enever, Added Budget Energy and Eneco
+- Added: Enphase, Live storage data
+- Added: Enphase, Option for more Inverter details (ac/dc voltage, temperature, lastupdate)
+- Added: Event Editor, Close/Close All menu dropdown
+- Added: Event Editor, Storing/Loading opened events
+- Added: Hour chart for P1 log
+- Added: MQTT-AD Climate Fan Mode
+- Added: MQTT-AD Climate Swing Mode
+- Added: OpenWeatherMap, API 3.0 support
+- Added: P1 Meter, option to specify view (low/high tariff or simple (dynamic contract))
+- Added: Possible to query a range of device states via JSON
+- Added: SolarEdge, polling Storage devices
 - Fixed: Data Pushers, Forecast for Weather Station subtypes
 - Fixed: Floorplan, better detection of switches
 - Fixed: Hardware Setup, hiding extra parameters when selecting a python plugin
@@ -160,16 +160,16 @@ Version 2024.4 (January 30th 2024)
 - Fixed: Temperature compare chart for Fahrenheit
 
 Version 2024.3 (January 24th 2024)
-- Implemented: Domoticz Remote Server, added better error message if remote Domoticz device could not be created because accepting new devices is disabled under settings
-- Implemented: InfluxDB Data push, add error message when return status code is forbidden
+- Added: Domoticz Remote Server, added better error message if remote Domoticz device could not be created because accepting new devices is disabled under settings
+- Added: InfluxDB Data push, add error message when return status code is forbidden
 - Fixed: Alert sensor notification
 - Fixed: Scripts/Lua/Blockly, setting a setPoint
 
 Version 2024.2 (January 15th 2024)
-- Implemented: Compare chart for most sensor types
-- Implemented: Email, Splitting mime attachments over multiple lines
-- Implemented: Notifications, Option to enable/disable
-- Implemented: OpenZwave is back.... (No Support)
+- Added: Compare chart for most sensor types
+- Added: Email, Splitting mime attachments over multiple lines
+- Added: Notifications, Option to enable/disable
+- Added: OpenZwave is back.... (No Support)
 - Updated: Translations
 - Changed: Comparing charts now uses correct Y-Axis label
 - Changed: Internal, Last received is now handled differently, should solve possible hardware timeout issues
@@ -178,32 +178,32 @@ Version 2024.2 (January 15th 2024)
 - Fixed: Timer Plans, now also duplicates scenes
 
 Version 2024.1 (January 1th 2024)
-- Implemented: AlfenEve, added charging indication switch
-- Implemented: AlfenEve, added option to specify charge current (or disable this)
-- Implemented: AlfenEve, added Solar charging mode and settings
-- Implemented: Counter report, now possible to remove data point (via shift click) from month chart
-- Implemented: Devices overview, Setpoint log button
-- Implemented: Enever, added support for providers Atoom Alliantie, Energie van Ons, Vandebron, Wout Energie
-- Implemented: Enever, option to specify different providers for Gas/Electricity
-- Implemented: Enever: added two user variables for average gas/electricity price
-- Implemented: Enphase, counter helper to prevent turnover caused by powerloss, reboot or other envoy issues
-- Implemented: Enphase, Initial support for Encharge battery status (needs more work)
-- Implemented: Livesearch, included hardware name and optimized search algorithm to search all entered strings
-- Implemented: Managed Counters, now possible to use negative values
-- Implemented: Mitsubishi WF RAC Airconditioning
-- Implemented: MQTT-AD, added support for climate min_temp/max_temp and temp_step
-- Implemented: MQTT-AD, added support for number voc type
-- Implemented: MQTT-AD, added support for Wh and Wm sensors
-- Implemented: MQTT-AD, don't add new devices when this is disabled in the system
-- Implemented: MQTT-AD: Fan percentage_command_template merged with preset_modes
-- Implemented: MQTT, added option to specify devices to be published to MQTT
-- Implemented: P1 Meter report, now possible to remove data point (via shift click) from month chart
-- Implemented: Persistent Timers (will work in all timer plans)
-- Implemented: SetPoint devices can now be configured with a custom unit, min/max and step size and have a custom icon
-- Implemented: Support for Python 3.12
-- Implemented: TeleInfo, added Tempo field
-- Implemented: Temp/Hum/Baro or combination can be replaced by any other Temp/Hum/Baro or combination
-- Implemented: Temperature report, now possible to remove data point (via shift click) from variation chart
+- Added: AlfenEve, added charging indication switch
+- Added: AlfenEve, added option to specify charge current (or disable this)
+- Added: AlfenEve, added Solar charging mode and settings
+- Added: Counter report, now possible to remove data point (via shift click) from month chart
+- Added: Devices overview, Setpoint log button
+- Added: Enever, added support for providers Atoom Alliantie, Energie van Ons, Vandebron, Wout Energie
+- Added: Enever, option to specify different providers for Gas/Electricity
+- Added: Enever: added two user variables for average gas/electricity price
+- Added: Enphase, counter helper to prevent turnover caused by powerloss, reboot or other envoy issues
+- Added: Enphase, Initial support for Encharge battery status (needs more work)
+- Added: Livesearch, included hardware name and optimized search algorithm to search all entered strings
+- Added: Managed Counters, now possible to use negative values
+- Added: Mitsubishi WF RAC Airconditioning
+- Added: MQTT-AD, added support for climate min_temp/max_temp and temp_step
+- Added: MQTT-AD, added support for number voc type
+- Added: MQTT-AD, added support for Wh and Wm sensors
+- Added: MQTT-AD, don't add new devices when this is disabled in the system
+- Added: MQTT-AD: Fan percentage_command_template merged with preset_modes
+- Added: MQTT, added option to specify devices to be published to MQTT
+- Added: P1 Meter report, now possible to remove data point (via shift click) from month chart
+- Added: Persistent Timers (will work in all timer plans)
+- Added: SetPoint devices can now be configured with a custom unit, min/max and step size and have a custom icon
+- Added: Support for Python 3.12
+- Added: TeleInfo, added Tempo field
+- Added: Temp/Hum/Baro or combination can be replaced by any other Temp/Hum/Baro or combination
+- Added: Temperature report, now possible to remove data point (via shift click) from variation chart
 - Changed: Floorplan, better display of current state for counter devices
 - Changed: Floorplan, Sound Icon state (0 dB = Off else On)
 - Changed: MQTT-AD: better device name generation
@@ -223,26 +223,26 @@ Version 2024.1 (January 1th 2024)
 - Removed: RFXCom, firmware update via web interface (use RFXFlash instead)
 
 Version 2023.2 (July 21 2023)
-- Implemented: 2FA/TOTP (Time-based One-Time Password) and HOTP (HMAC-based One-Time Password)
-- Implemented: Alfen Eve Charger hardware
-- Implemented: Allow a 'user' with shared devices to set it's own favorite devices
-- Implemented: Custom pages, new Angular template examples
-- Implemented: Custom pages, now need at least a user with Viewer rights
-- Implemented: Enever hardware (Live Dutch Gas/Electricity prices for various providers)
-- Implemented: Enphase, (V7 firmware) added support for enabling/disabling power production
-- Implemented: Device reordering for Users with devices
-- Implemented: Libre Hardware Monitor (Windows System monitor replacement for Open Hardware Monitor)
-- Implemented: LUA: Added name state to devicechanged_ext table
-- Implemented: RFXCom, Updated SDK
-- Implemented: RTL433, Added support for volume_m3 meter
-- Implemented: MQTT-AD, added support for number (config) types
-- Implemented: P1 Meter, added Actual Usage/Delivery (total of L1 + L2 + L3)
-- Implemented: P1 Meter, added calculated kWh devices per phase for usage and delivery
-- Implemented: P1 Meter, new way of displaying returned energy
-- Implemented: Users with admin rights and selected devices will now see only those devices
-- Implemented: Users devices editor, option to remove all nodes/devices
-- Implemented: Visual Crossing (replacement for Darksky/Forecast)
-- Implemented: -nocache command line option (ask browser not to cache pages)
+- Added: 2FA/TOTP (Time-based One-Time Password) and HOTP (HMAC-based One-Time Password)
+- Added: Alfen Eve Charger hardware
+- Added: Allow a 'user' with shared devices to set it's own favorite devices
+- Added: Custom pages, new Angular template examples
+- Added: Custom pages, now need at least a user with Viewer rights
+- Added: Enever hardware (Live Dutch Gas/Electricity prices for various providers)
+- Added: Enphase, (V7 firmware) added support for enabling/disabling power production
+- Added: Device reordering for Users with devices
+- Added: Libre Hardware Monitor (Windows System monitor replacement for Open Hardware Monitor)
+- Added: LUA: Added name state to devicechanged_ext table
+- Added: RFXCom, Updated SDK
+- Added: RTL433, Added support for volume_m3 meter
+- Added: MQTT-AD, added support for number (config) types
+- Added: P1 Meter, added Actual Usage/Delivery (total of L1 + L2 + L3)
+- Added: P1 Meter, added calculated kWh devices per phase for usage and delivery
+- Added: P1 Meter, new way of displaying returned energy
+- Added: Users with admin rights and selected devices will now see only those devices
+- Added: Users devices editor, option to remove all nodes/devices
+- Added: Visual Crossing (replacement for Darksky/Forecast)
+- Added: -nocache command line option (ask browser not to cache pages)
 - Fixed: Blinds percentage timers
 - Fixed: Chime structure check
 - Fixed: Counter day charts, better hourly bars and usage
@@ -259,23 +259,23 @@ Version 2023.2 (July 21 2023)
 
 Version 2023.1 (February 14 2023)
 - For a full overview visit: https://www.domoticz.com/wiki/Domoticz_versions_-_Commits for details
-- Implemented: Accept JWT tokens as authentication and Authorization Bearer tokens (either from internal or external IAM service)
-- Implemented: Blinds, added option to schedule 0%
-- Implemented: dzVents, OpenURL PATCH method
-- Implemented: Enphase, redesign and added battery readings (Supports firmware V7)
-- Implemented: Internal OAuth2/OIDC IAM service supporting 4 different flows (OAuth2 (RFC6749), PKCE extension (RFC7636) and JWT Tokens (RFC7519))
-- Implemented: MQTT, added support for Lock status
-- Implemented: MQTT, added support for wildcards in discovery topics
-- Implemented: MQTT, climate preset mode
-- Implemented: New 'auth' debug flag to see IAM related messages
-- Implemented: Now 'Applications' can be registered to get secure access to Domoticz, see 'setup' menu (standard DomoticzUI app is registered by default)
-- Implemented: P1 Meter, added number of (long) power failures, voltage sags/swells
-- Implemented: SECURITY_SETUP.md describing the new/improved security setup
-- Implemented: Support for basic OpenID Connect Discovery ('https://<DOMOTICZURL>/.well-known/openid-configuration')
-- Implemented: Search option in Switches/Scenes/Temperature/Utility and Weather tab
-- Implemented: The Security realm can be configured using the 'vhostname' option (default domoticz.com)
-- Implemented: Timer, Grid option for selected switches and thermostat. Big thanks to syrhus/labelette91580 and xbeaudouin
-- Implemented: User device selection now displays type/subtype
+- Added: Accept JWT tokens as authentication and Authorization Bearer tokens (either from internal or external IAM service)
+- Added: Blinds, added option to schedule 0%
+- Added: dzVents, OpenURL PATCH method
+- Added: Enphase, redesign and added battery readings (Supports firmware V7)
+- Added: Internal OAuth2/OIDC IAM service supporting 4 different flows (OAuth2 (RFC6749), PKCE extension (RFC7636) and JWT Tokens (RFC7519))
+- Added: MQTT, added support for Lock status
+- Added: MQTT, added support for wildcards in discovery topics
+- Added: MQTT, climate preset mode
+- Added: New 'auth' debug flag to see IAM related messages
+- Added: Now 'Applications' can be registered to get secure access to Domoticz, see 'setup' menu (standard DomoticzUI app is registered by default)
+- Added: P1 Meter, added number of (long) power failures, voltage sags/swells
+- Added: SECURITY_SETUP.md describing the new/improved security setup
+- Added: Support for basic OpenID Connect Discovery ('https://<DOMOTICZURL>/.well-known/openid-configuration')
+- Added: Search option in Switches/Scenes/Temperature/Utility and Weather tab
+- Added: The Security realm can be configured using the 'vhostname' option (default domoticz.com)
+- Added: Timer, Grid option for selected switches and thermostat. Big thanks to syrhus/labelette91580 and xbeaudouin
+- Added: User device selection now displays type/subtype
 - Changed: All security related setting are now in 1 settings tab
 - Changed: By default prompt for login to only allow secure access
 - Changed: Default 'admin' user is generated with standard password (see Users)
@@ -299,22 +299,22 @@ Version 2023.1 (February 14 2023)
 - Fixed: Setpoint popup when using protection
 
 Version 2022.2 (November 5 2022)
-- Implemented: Blockly,	added 'Toggle' set command
-- Implemented: Camera, camera Aspect Ratio
-- Implemented: Commandline option '-weblog <weblogfile>' which creates Apache Combined Logformat logs containg all webrequests
-- Implemented: Counters, support for larger counter values/usage
-- Implemented: Dashboard, temperature Trend indication
-- Implemented: Docker	startup script (for instance to install additional packages)
-- Implemented: EcoDevices, complete support for EcoDevices RT2 with firmware 3.00.xx
-- Implemented: FritzBox, more statistics
-- Implemented: Fritzbox, up/download statistics
-- Implemented: MQTT Auto Discovery Protocol (Zigbee2MQTT/ Z-Wave JS UI)
-- Implemented: P1 Meter, added Current L1/L2/L3 sensor for delivered
-- Implemented: Philips Hue, support color change on some vendors bulb (like LIDL)
-- Implemented: RFXCom, added internal support for Novy Mood, Level Sensor
-- Implemented: SolarEdge, more sensors support
-- Implemented: UVI device, added multiply field to widget
-- Implemented: Xiaomi Gateway, new model for wired single key switch
+- Added: Blockly,	added 'Toggle' set command
+- Added: Camera, camera Aspect Ratio
+- Added: Commandline option '-weblog <weblogfile>' which creates Apache Combined Logformat logs containg all webrequests
+- Added: Counters, support for larger counter values/usage
+- Added: Dashboard, temperature Trend indication
+- Added: Docker	startup script (for instance to install additional packages)
+- Added: EcoDevices, complete support for EcoDevices RT2 with firmware 3.00.xx
+- Added: FritzBox, more statistics
+- Added: Fritzbox, up/download statistics
+- Added: MQTT Auto Discovery Protocol (Zigbee2MQTT/ Z-Wave JS UI)
+- Added: P1 Meter, added Current L1/L2/L3 sensor for delivered
+- Added: Philips Hue, support color change on some vendors bulb (like LIDL)
+- Added: RFXCom, added internal support for Novy Mood, Level Sensor
+- Added: SolarEdge, more sensors support
+- Added: UVI device, added multiply field to widget
+- Added: Xiaomi Gateway, new model for wired single key switch
 - Updated: Mercedes EV, new Token URL (changed November 2022)
 - Changed: All inverted Blinds types should not be used anymore, instead use the regular blinds and set the needed Reverse option
 - Changed: Blinds working (see https://www.domoticz.com/wiki/Blinds)
@@ -343,27 +343,27 @@ Version 2022.2 (November 5 2022)
 - Deprecated: OpenZWave, please move to MQTT Auto Discovery and ZWave JS UI (Project stopped a long time ago!)
 
 Version 2022.1 (January 31 2022)
-- Implemented: Added Irrigation icon (also thanks to dbemowsk)
-- Implemented: Build system, implemented unit tests
-- Implemented: Device support for Xiaomi Aqara Wireless Relay Controller (2 Channels) | LLKZMK11LM | relay.c2acn01
-- Implemented: EnOcean, added more hardware support
-- Implemented: EvoHome, Now supports the latest version of the OT Bridge messages
-- Implemented: InfluxDB Data push, Influx 2.0 support
-- Implemented: InfluxDB, Alert and Current devices data push to influxdb
-- Implemented: MQTT Auto Discovery hardware (for Zigbee2MQTT/ZWaveJS2MQTT and others)
-- Implemented: New widgets for Blinds (percentage) + Stop and Blinds (percentage) Inverted + Stop
-- Implemented: Notifications, Extra security checks for HTTP actions
-- Implemented: Notifications, Optional action to execute (http/script) per notificaton
-- Implemented: Replace device for setpoint types
-- Implemented: RTL433, add support for light_klx field (SendLuxSensor)
-- Implemented: Scenes, Implemented 'Toggle' for switch actions
-- Implemented: Teleinfo, Add support for EAIT/SINSTI/STGE (Linky standard mode)
-- Implemented: Teleinfo. more permissive detection between historic/standard mode
-- Implemented: The Things Network (TTN), Switch to new V3 stack
-- Implemented: Webserver, Increased range of www/ssl port to 49151
-- Implemented: Webserver, Improve webserver security
-- Implemented: Webserver, Improved robustness of processing Settings update
-- Implemented: Wind Meter, Angle rotation
+- Added: Added Irrigation icon (also thanks to dbemowsk)
+- Added: Build system, Added unit tests
+- Added: Device support for Xiaomi Aqara Wireless Relay Controller (2 Channels) | LLKZMK11LM | relay.c2acn01
+- Added: EnOcean, added more hardware support
+- Added: EvoHome, Now supports the latest version of the OT Bridge messages
+- Added: InfluxDB Data push, Influx 2.0 support
+- Added: InfluxDB, Alert and Current devices data push to influxdb
+- Added: MQTT Auto Discovery hardware (for Zigbee2MQTT/ZWaveJS2MQTT and others)
+- Added: New widgets for Blinds (percentage) + Stop and Blinds (percentage) Inverted + Stop
+- Added: Notifications, Extra security checks for HTTP actions
+- Added: Notifications, Optional action to execute (http/script) per notificaton
+- Added: Replace device for setpoint types
+- Added: RTL433, add support for light_klx field (SendLuxSensor)
+- Added: Scenes, Added 'Toggle' for switch actions
+- Added: Teleinfo, Add support for EAIT/SINSTI/STGE (Linky standard mode)
+- Added: Teleinfo. more permissive detection between historic/standard mode
+- Added: The Things Network (TTN), Switch to new V3 stack
+- Added: Webserver, Increased range of www/ssl port to 49151
+- Added: Webserver, Improve webserver security
+- Added: Webserver, Improved robustness of processing Settings update
+- Added: Wind Meter, Angle rotation
 - Updated: dzVents ( https://www.domoticz.com/wiki/DzVents:_next_generation_LUA_scripting )
 - Updated: Denkovi, Improved http communication
 - Updated: OpenZWave; Added support for Electric pulse sensor, Heatit ZM Single Relay ZW164 Indoor Siren 6+
@@ -378,35 +378,35 @@ Version 2022.1 (January 31 2022)
 - Fixed: OpenWeatherMap, Fix to resolve OWM City for default location. Used by OWM based forecast screen
 
 Version 2021.1 (April 17 2021)
-- Implemented: Added option to set loglevel per hardware device
-- Implemented: Added optional parameter 'level' to addlogmessage JSON
-- Implemented: AirconWithMe wifi module
-- Implemented: Allow complete IPv6 address in local network setting
-- Implemented: Allow custom icons for thermostat setpoints on floorplan
-- Implemented: Allow custom icons for utility sensors
-- Implemented: Build systems for linux based on github actions
-- Implemented: Build system for docker
-- Implemented: Counter meter type now supports a divider
-- Implemented: Custom icons for RGB/W
-- Implemented: GUI; Auto refresh feature for graphical logs
-- Implemented: Hardware Monitor, Add clock speeds for Raspberry Pi
-- Implemented: Honeywell, Add cooling control and Fahrenheit support
-- Implemented: Internal light commands for Fan types Casafan, FT1211R, Falmec, LucciAirDCII, IthoECO and Novy
-- Implemented: Inverted energy icon colors in report
-- Implemented: Max. Watt settings for power devices (defaults to 6000W)
-- Implemented: Mercedes Me API's (BYOCAR) as an (e)Vehicle supporting lock/open, odo, fuellevel
-- Implemented: Meteorologisk (Meteorologisk institutt Norway) hardware support
-- Implemented: P1 Meter, added support for Encryption
-- Implemented: RFXCom Byron BY doorbell
-- Implemented: RSSI support for Distance Sensor, Moisture Sensor, Watt Meter, kWh Meter
-- Implemented: RTL433, Added RF Signal Strength in device tab based on reported SNR
-- Implemented: RTL433, Added Pressure (PSI) type
-- Implemented: RTL433, Added UV type
-- Implemented: RTL433, Added X-10 Security support
-- Implemented: RTL433, Switched to Json input
-- Implemented: Teleinfo over TCP
-- Implemented: Websocket notification for secondary/sub devices
-- Implemented: ZWave, Legend and tooltips in Neighbors overview
+- Added: Added option to set loglevel per hardware device
+- Added: Added optional parameter 'level' to addlogmessage JSON
+- Added: AirconWithMe wifi module
+- Added: Allow complete IPv6 address in local network setting
+- Added: Allow custom icons for thermostat setpoints on floorplan
+- Added: Allow custom icons for utility sensors
+- Added: Build systems for linux based on github actions
+- Added: Build system for docker
+- Added: Counter meter type now supports a divider
+- Added: Custom icons for RGB/W
+- Added: GUI; Auto refresh feature for graphical logs
+- Added: Hardware Monitor, Add clock speeds for Raspberry Pi
+- Added: Honeywell, Add cooling control and Fahrenheit support
+- Added: Internal light commands for Fan types Casafan, FT1211R, Falmec, LucciAirDCII, IthoECO and Novy
+- Added: Inverted energy icon colors in report
+- Added: Max. Watt settings for power devices (defaults to 6000W)
+- Added: Mercedes Me API's (BYOCAR) as an (e)Vehicle supporting lock/open, odo, fuellevel
+- Added: Meteorologisk (Meteorologisk institutt Norway) hardware support
+- Added: P1 Meter, added support for Encryption
+- Added: RFXCom Byron BY doorbell
+- Added: RSSI support for Distance Sensor, Moisture Sensor, Watt Meter, kWh Meter
+- Added: RTL433, Added RF Signal Strength in device tab based on reported SNR
+- Added: RTL433, Added Pressure (PSI) type
+- Added: RTL433, Added UV type
+- Added: RTL433, Added X-10 Security support
+- Added: RTL433, Switched to Json input
+- Added: Teleinfo over TCP
+- Added: Websocket notification for secondary/sub devices
+- Added: ZWave, Legend and tooltips in Neighbors overview
 - Updated: API/JSON: added API to delete daterange in history logs for one ID
 - Updated: Blebox; use of the latest SwitchBox APIthe latest SwitchBox API
 - Updated: dzVents; version 3.1.7 ( https://www.domoticz.com/wiki/DzVents:_next_generation_LUA_scripting )
@@ -415,7 +415,7 @@ Version 2021.1 (April 17 2021)
 - Updated: EvoHome; decode, display and store hotwater setpoint
 - Updated: GUI; Lay-out of notifications tab
 - Updated: MQTT; added option to choose notification subsystem
-- Updated: MQTT; added publish schemes: device index, device name and implemented custom topics for in- and outbound messages
+- Updated: MQTT; added publish schemes: device index, device name and Added custom topics for in- and outbound messages
 - Updated: OpenZWave; configuration files
 - Updated: OpenZWave; Added Volatile Organic Compound sensor
 - Updated: Openweathermap; use latest API and overall improvements
@@ -454,8 +454,8 @@ Version 2021.1 (April 17 2021)
 - Fixed: Zwave various issues
 
 Version 2020.2 (April 26th 2020)
-- Implemented: GUI: New Update controller code
-- Implemented: GUI: Real-time updates of history-logs on device / scene changes
+- Added: GUI: New Update controller code
+- Added: GUI: Real-time updates of history-logs on device / scene changes
 - Fixed: Battery level Real-time updates
 - Fixed: Daikin wifi adaptor module
 - Fixed: Delete device now propagates to all relevant tables
@@ -472,29 +472,29 @@ Version 2020.2 (April 26th 2020)
 - Updated: TTNMQTT, improved handling CayenneLPP channels
 
 Version 2020.1 (March 22th 2020)
-- Implemented: BuienRadar
-- Implemented: DarkSky CloudCover sensor
-- Implemented: eVehicles framework, with Tesla as first hardware module
-- Implemented: EventSystem, option in Settings to enable/disable URL call logging containing full URL path
-- Implemented: Floorplan, add support for SVG
-- Implemented: GUI, OpenZWave added Refresh Node Information button, styling
-- Implemented: GUI: real-time updates on Devices tab (Websockets)
-- Implemented: GUI: Sun/Rain icons
-- Implemented: Hue, Add Support for Geo fence sensor, dimmer switches and Hue LCG002 GU10 spot
-- Implemented: Octoprint hardware module
-- Implemented: OpenZWave, JSON call to retrieve current battery levels for all nodes
-- Implemented: OpenZWave, Support for Loudness sensor
-- Implemented: OpenZWave, Support for Particulate_Mater_2_5 (Dust) sensor (ug/m3)
-- Implemented: OpenZWave, Support for Smoke density (%)
-- Implemented: OpenZWave, Support for Volatile_Organic_Compound (CO2, ppm)
-- Implemented: OpenZWave, Support for Frequency sensor
-- Implemented: Option to replace switch with another (same type)
-- Implemented: Per User favorites (with viewer rights)
-- Implemented: RFXCom implemented datatimeout for external P1 sensor
-- Implemented: RTL433, added Power (Watt) type
-- Implemented: RTL433, added rainfall_mm type
-- Implemented: Xiaomi, added Wireless Single Wall Switch
-- Implemented: DisableLogAutoUpdate and AddDBLogEntry device options for counters, to be enabled from plugins
+- Added: BuienRadar
+- Added: DarkSky CloudCover sensor
+- Added: eVehicles framework, with Tesla as first hardware module
+- Added: EventSystem, option in Settings to enable/disable URL call logging containing full URL path
+- Added: Floorplan, add support for SVG
+- Added: GUI, OpenZWave added Refresh Node Information button, styling
+- Added: GUI: real-time updates on Devices tab (Websockets)
+- Added: GUI: Sun/Rain icons
+- Added: Hue, Add Support for Geo fence sensor, dimmer switches and Hue LCG002 GU10 spot
+- Added: Octoprint hardware module
+- Added: OpenZWave, JSON call to retrieve current battery levels for all nodes
+- Added: OpenZWave, Support for Loudness sensor
+- Added: OpenZWave, Support for Particulate_Mater_2_5 (Dust) sensor (ug/m3)
+- Added: OpenZWave, Support for Smoke density (%)
+- Added: OpenZWave, Support for Volatile_Organic_Compound (CO2, ppm)
+- Added: OpenZWave, Support for Frequency sensor
+- Added: Option to replace switch with another (same type)
+- Added: Per User favorites (with viewer rights)
+- Added: RFXCom Added datatimeout for external P1 sensor
+- Added: RTL433, added Power (Watt) type
+- Added: RTL433, added rainfall_mm type
+- Added: Xiaomi, added Wireless Single Wall Switch
+- Added: DisableLogAutoUpdate and AddDBLogEntry device options for counters, to be enabled from plugins
 - Fixed: API, allow variabletype to be entered as text or integer in adduservariable and updateuservariable (#3320)
 - Fixed: GUI, Choosing Icon for ARC type switches
 - Fixed: GUI, Dashboard icon incremental counter (energy generated) not correct (#3231)
@@ -532,57 +532,57 @@ Version 4.10717 (May 9th 2019)
 - Updated: dzVents (version 2.4.19, See dzVents/documentation/history.md)
 
 Version 4.10658 (May 5th 2019)
-- Implemented: [BleBox] Add support for airSensor and use the newest api for shutterBox
-- Implemented: Alecto WS5500 implemented (pTypeWeather)
-- Implemented: Anna Thermostat Added ability to select presets on the Anna via selector switch. Added ability to update the state of the proximity switch in the Anna thermostat.
-- Implemented: Better graph display for thermostat devices
-- Implemented: Blinds T14/R15/T16 to lights.html
-- Implemented: CayenneLPP, added initial support for LPP_UNIXTIME
-- Implemented: Cereal Proxy
-- Implemented: Custom icons for: Contact Door Contact Push On Push Off Door Lock Door Lock Inverted
-- Implemented: Devices Tab, Scene/Group log icon added
-- Implemented: EnOcean3 implemented EPP D2-03-0A
-- Implemented: EventSystem logging name when issuing thermostat SetPoint/Mode/Fan command
-- Implemented: EvoHome radiator Valve Value to Pushers InfluxDB worker
-- Implemented: Experimental support for WebSockets protocol
-- Implemented: Hardware setup, support /dev/serial/by-id on Linux
-- Implemented: InfluxDB Data push, support for Username/Password
-- Implemented: InfluxDB: added option for remote proxy path
-- Implemented: Logitech Media Server, added 'daphile' to the list of supported models
-- Implemented: Make Telegram notification silent when priority is negative
-- Implemented: Maverick 773 BBQ Temperature meter now using fixed ID as there is a new id generated between transmitter and controller every 15 minutes
-- Implemented: New Aqara Wireless Mini Switch
-- Implemented: New Hardware, The Things Network with CayenneLPP application(s)
-- Implemented: On/Off chart to Lights log
-- Implemented: OpenZWave, controller options for RetryTimeout, AssumeAwake and PerformReturnRoutes can now be set
-- Implemented: OpenZWave, handling 'kVAh' unit
-- Implemented: OpenZWave, support for Seismic Intensity sensor
-- Implemented: Report for Counter Incremental devices
-- Implemented: RFLink support for Blyss type (with high unit number)
-- Implemented: RFXCom Implemented Noise Level for Pro firmware
-- Implemented: RFXCom Lucci Fan DC
-- Implemented: RFXCom ProXL implementation
-- Implemented: RFXCom Supporting detection of Pro2, Pro XL1
-- Implemented: RFXMeter, Option to specify meter divider
-- Implemented: RFXMeter, Option to specify meter divider
-- Implemented: RTL433, Add support for wind_speed wind_gust wind_direction
-- Implemented: RTL433, added support for WGR800,PCR800
-- Implemented: RTL433, implemented Moisture sensor
-- Implemented: RTL433, support for sensors reporting in Fahrenheit
-- Implemented: Serial port for Freescale imx6 devices
-- Implemented: Support Aqara Vibration Sensor (v1)
-- Implemented: Support double click and long press feature for "Xiaomi Wireless Dual Wall Switch"
-- Implemented: Support for NodeOn Soft Button TSB-2-1-01
-- Implemented: Support for Westinghouse FAN
-- Implemented: Taiwanese language (big thanks to berry lin!)
-- Implemented: The Things Network, add GPS coordinate in Uservariable
-- Implemented: Time/Sun set/rise to events frame
-- Implemented: Timer Plan, duplicate option
-- Implemented: Touch Device unction
-- Implemented: Trend calculator (only for temperatures at the moment)
-- Implemented: Using MapQuest Geo API in settings
-- Implemented: Wind sensor without Temp and Chill
-- Implemented: Xiaomi Gateway Aqara Cube report battery status
+- Added: [BleBox] Add support for airSensor and use the newest api for shutterBox
+- Added: Alecto WS5500 Added (pTypeWeather)
+- Added: Anna Thermostat Added ability to select presets on the Anna via selector switch. Added ability to update the state of the proximity switch in the Anna thermostat.
+- Added: Better graph display for thermostat devices
+- Added: Blinds T14/R15/T16 to lights.html
+- Added: CayenneLPP, added initial support for LPP_UNIXTIME
+- Added: Cereal Proxy
+- Added: Custom icons for: Contact Door Contact Push On Push Off Door Lock Door Lock Inverted
+- Added: Devices Tab, Scene/Group log icon added
+- Added: EnOcean3 Added EPP D2-03-0A
+- Added: EventSystem logging name when issuing thermostat SetPoint/Mode/Fan command
+- Added: EvoHome radiator Valve Value to Pushers InfluxDB worker
+- Added: Experimental support for WebSockets protocol
+- Added: Hardware setup, support /dev/serial/by-id on Linux
+- Added: InfluxDB Data push, support for Username/Password
+- Added: InfluxDB: added option for remote proxy path
+- Added: Logitech Media Server, added 'daphile' to the list of supported models
+- Added: Make Telegram notification silent when priority is negative
+- Added: Maverick 773 BBQ Temperature meter now using fixed ID as there is a new id generated between transmitter and controller every 15 minutes
+- Added: New Aqara Wireless Mini Switch
+- Added: New Hardware, The Things Network with CayenneLPP application(s)
+- Added: On/Off chart to Lights log
+- Added: OpenZWave, controller options for RetryTimeout, AssumeAwake and PerformReturnRoutes can now be set
+- Added: OpenZWave, handling 'kVAh' unit
+- Added: OpenZWave, support for Seismic Intensity sensor
+- Added: Report for Counter Incremental devices
+- Added: RFLink support for Blyss type (with high unit number)
+- Added: RFXCom Added Noise Level for Pro firmware
+- Added: RFXCom Lucci Fan DC
+- Added: RFXCom ProXL implementation
+- Added: RFXCom Supporting detection of Pro2, Pro XL1
+- Added: RFXMeter, Option to specify meter divider
+- Added: RFXMeter, Option to specify meter divider
+- Added: RTL433, Add support for wind_speed wind_gust wind_direction
+- Added: RTL433, added support for WGR800,PCR800
+- Added: RTL433, Added Moisture sensor
+- Added: RTL433, support for sensors reporting in Fahrenheit
+- Added: Serial port for Freescale imx6 devices
+- Added: Support Aqara Vibration Sensor (v1)
+- Added: Support double click and long press feature for "Xiaomi Wireless Dual Wall Switch"
+- Added: Support for NodeOn Soft Button TSB-2-1-01
+- Added: Support for Westinghouse FAN
+- Added: Taiwanese language (big thanks to berry lin!)
+- Added: The Things Network, add GPS coordinate in Uservariable
+- Added: Time/Sun set/rise to events frame
+- Added: Timer Plan, duplicate option
+- Added: Touch Device unction
+- Added: Trend calculator (only for temperatures at the moment)
+- Added: Using MapQuest Geo API in settings
+- Added: Wind sensor without Temp and Chill
+- Added: Xiaomi Gateway Aqara Cube report battery status
 - Removed: LogitechMediaServer: HTTP timeout as a configurable option
 - Fixed: [Satel Integra] fix for Inetgra256 and allow to change names
 - Fixed: Anna to work with both firmwares
@@ -633,45 +633,45 @@ Version 4.10658 (May 5th 2019)
 - Updated: Winddelen, using new API URL now, and including some more sensors
 
 Version 4.9700 (June 23th 2018)
-- Implemented: Blockly, now possible to directly add/update Text devices
-- Implemented: Blockly: now possible to use expressions in debug messages like "My temperature is {{temperaturedevice[1234]}} degrees" (see http://www.domoticz.com/wiki/Events)
-- Implemented: Camera: support for HTTPS url's
-- Implemented: Comm5 SM-xxxx sensors support
-- Implemented: Command line option '-noupdates' to stop using the internal update functionality Corrected 'Proxy' settings in the settings page (missing element closing tag)
-- Implemented: Denkovi Smartden IP In (32) with LAN Interface
-- Implemented: Disabling the option to downgrade Domoticz and use a newer database (because of database migrations)
-- Implemented: Door Lock Inverted
-- Implemented: EcoCompteur device
-- Implemented: eHouse BMS / Home Automation System Integration
-- Implemented: Forcing appcache to be refreshed on every new build
-- Implemented: Functionality to allow Python Plugins to integrate with the Domoticz Security Panel
-- Implemented: HardwareMonitor monitor own process memory usage
-- Implemented: Honeywell Lyric thermostat
-- Implemented: I2C: support for MCP23017 (16bit I2C GPIO expander)
-- Implemented: Initial support for FS20
-- Implemented: KMTronic TCP Temperature hardware
-- Implemented: Langiage "Persian" (Big tankgs to "foademadi", "maziar.hafezi" and "reza.hadipour2002")
-- Implemented: Language "Albanian" (Big thanks to "arbenik")
-- Implemented: Language "Bosnian" (Big thanks to "Vedran")
-- Implemented: Language "Catalan" (Big thanks to "delfisastre")
-- Implemented: Logitech Media Server: Added option to remove unused nodes
-- Implemented: RFXtrx Lucci Fan DC implemented
-- Implemented: MQTT Push message on scene/group switch event
-- Implemented: MySensors: handling of I_INCLUSION_MODE message.
-- Implemented: MySensors: support for SmartSleep option (gateway 2.x)
-- Implemented: Netatmo: rssi support
-- Implemented: New Managed meter type
-- Implemented: OnkyoAVTCP: Add source selection, detection via NRIQSTN
-- Implemented: OpenWeatherMap: cloud sensor
-- Implemented: RFXCom: support for WIND7, RAIN7/RAIN8/RAIN9
-- Implemented: Rtl_433: support for wind sensors, HH and LL humidity values
-- Implemented: Selector Switch: correcting display for all UTF8 characters now
-- Implemented: Styles folder can have its own images folder to overwrite stock images
-- Implemented: Telegram notifications
-- Implemented: Voltage/Current for Armbian Kernal 4.14+
-- Implemented: Webserver: automatically reload SSL certificates and DH params3
-- Implemented: Xiaomi Aqara Cube
-- Implemented: ZWave node ID to log
+- Added: Blockly, now possible to directly add/update Text devices
+- Added: Blockly: now possible to use expressions in debug messages like "My temperature is {{temperaturedevice[1234]}} degrees" (see http://www.domoticz.com/wiki/Events)
+- Added: Camera: support for HTTPS url's
+- Added: Comm5 SM-xxxx sensors support
+- Added: Command line option '-noupdates' to stop using the internal update functionality Corrected 'Proxy' settings in the settings page (missing element closing tag)
+- Added: Denkovi Smartden IP In (32) with LAN Interface
+- Added: Disabling the option to downgrade Domoticz and use a newer database (because of database migrations)
+- Added: Door Lock Inverted
+- Added: EcoCompteur device
+- Added: eHouse BMS / Home Automation System Integration
+- Added: Forcing appcache to be refreshed on every new build
+- Added: Functionality to allow Python Plugins to integrate with the Domoticz Security Panel
+- Added: HardwareMonitor monitor own process memory usage
+- Added: Honeywell Lyric thermostat
+- Added: I2C: support for MCP23017 (16bit I2C GPIO expander)
+- Added: Initial support for FS20
+- Added: KMTronic TCP Temperature hardware
+- Added: Langiage "Persian" (Big tankgs to "foademadi", "maziar.hafezi" and "reza.hadipour2002")
+- Added: Language "Albanian" (Big thanks to "arbenik")
+- Added: Language "Bosnian" (Big thanks to "Vedran")
+- Added: Language "Catalan" (Big thanks to "delfisastre")
+- Added: Logitech Media Server: Added option to remove unused nodes
+- Added: RFXtrx Lucci Fan DC Added
+- Added: MQTT Push message on scene/group switch event
+- Added: MySensors: handling of I_INCLUSION_MODE message.
+- Added: MySensors: support for SmartSleep option (gateway 2.x)
+- Added: Netatmo: rssi support
+- Added: New Managed meter type
+- Added: OnkyoAVTCP: Add source selection, detection via NRIQSTN
+- Added: OpenWeatherMap: cloud sensor
+- Added: RFXCom: support for WIND7, RAIN7/RAIN8/RAIN9
+- Added: Rtl_433: support for wind sensors, HH and LL humidity values
+- Added: Selector Switch: correcting display for all UTF8 characters now
+- Added: Styles folder can have its own images folder to overwrite stock images
+- Added: Telegram notifications
+- Added: Voltage/Current for Armbian Kernal 4.14+
+- Added: Webserver: automatically reload SSL certificates and DH params3
+- Added: Xiaomi Aqara Cube
+- Added: ZWave node ID to log
 - Removed: NMA Notification system (the service has stopped)
 - Updated: Dzvents (version 2.4.6, See dzVents/documentation/history.md)
 - Updated: OenZWave driver and configuration files
@@ -698,44 +698,44 @@ Version 3.8153 (July 30th 2017)
 - Changed: Temperature Only charts will not display the Humidity axis
 - Changed: Wind Direction Graph, if sensor does not supports 'Gust', the 'Speed' value is used
 - Changed: Updated OpenZWave (and configuration files)
-- Implemented: Added a new parameter to disable the logging of event script triggers 'Script event triggered: ...'
-- Implemented: AppLamp/LimitLess bridge V6.0 RGBW/RGBWW
-- Implemented: Blinds T1 till T13 new supports the Stop button
-- Implemented: Blockly/Lua Set SetPoint option
-- Implemented: Devices, Log icon for Blinds
-- Implemented: Dummy Hardware, Temp+Baro
-- Implemented: Estonian Language support (big thanks to Kuido)
-- Implemented: EvohomeWeb support (Thanks to Gordon3!)
-- Implemented: General/Text sensor now able to be shared
-- Implemented: I2C BME280 sensor (temp+hum+baro)
-- Implemented: I2C for non arm systems
-- Implemented: InfluxDB Data push
-- Implemented: Latvian Language support (big thanks to Edgars)
-- Implemented: Netatmo Home Coach support
-- Implemented: Notification for Dummy Soil/Moisture sensor
-- Implemented: Notification for Dummy Temp/Hum/Baro sensor
-- Implemented: Notification for Alert Sensor via udevice JSON call
-- Implemented: Onkyo AV Receiver (Thanks to dwmw2!)
-- Implemented: Option to replace an Meter device
-- Implemented: OZW, Added support for Atmospheric Pressure sensor
-- Implemented: Python Plugin System
-- Implemented: RFXtrx Lucci Fan implemented
-- Implemented: RFXtrx RFY2 protocol implemented
-- Implemented: RFXtrx Kangtai / Cotech implemented
-- Implemented: RTL433 (Thanks to Petri Ahone!)
-- Implemented: SolarEdgeAPI, support for multiple inverters
-- Implemented: Support for Ble Box hardware
-- Implemented: Support for different usage/return costs for electricity
-- Implemented: Support for Intergas InComfort LAN2RF Gateway
-- Implemented: Support for Open Weather Map
-- Implemented: Support for Open Web Net
-- Implemented: Support for XiaomiGateway Gateway
-- Implemented: Support for YeeLight
-- Implemented: Support for Youless LS120
-- Implemented: Switch type 'Door Lock'
-- Implemented: SysFS GPIO (Thanks to hvbommel/jvandenbroek!)
-- Implemented: Teleinfo : Added a switch indicating the current cost slot
-- Implemented: Timer Plan editor
+- Added: Added a new parameter to disable the logging of event script triggers 'Script event triggered: ...'
+- Added: AppLamp/LimitLess bridge V6.0 RGBW/RGBWW
+- Added: Blinds T1 till T13 new supports the Stop button
+- Added: Blockly/Lua Set SetPoint option
+- Added: Devices, Log icon for Blinds
+- Added: Dummy Hardware, Temp+Baro
+- Added: Estonian Language support (big thanks to Kuido)
+- Added: EvohomeWeb support (Thanks to Gordon3!)
+- Added: General/Text sensor now able to be shared
+- Added: I2C BME280 sensor (temp+hum+baro)
+- Added: I2C for non arm systems
+- Added: InfluxDB Data push
+- Added: Latvian Language support (big thanks to Edgars)
+- Added: Netatmo Home Coach support
+- Added: Notification for Dummy Soil/Moisture sensor
+- Added: Notification for Dummy Temp/Hum/Baro sensor
+- Added: Notification for Alert Sensor via udevice JSON call
+- Added: Onkyo AV Receiver (Thanks to dwmw2!)
+- Added: Option to replace an Meter device
+- Added: OZW, Added support for Atmospheric Pressure sensor
+- Added: Python Plugin System
+- Added: RFXtrx Lucci Fan Added
+- Added: RFXtrx RFY2 protocol Added
+- Added: RFXtrx Kangtai / Cotech Added
+- Added: RTL433 (Thanks to Petri Ahone!)
+- Added: SolarEdgeAPI, support for multiple inverters
+- Added: Support for Ble Box hardware
+- Added: Support for different usage/return costs for electricity
+- Added: Support for Intergas InComfort LAN2RF Gateway
+- Added: Support for Open Weather Map
+- Added: Support for Open Web Net
+- Added: Support for XiaomiGateway Gateway
+- Added: Support for YeeLight
+- Added: Support for Youless LS120
+- Added: Switch type 'Door Lock'
+- Added: SysFS GPIO (Thanks to hvbommel/jvandenbroek!)
+- Added: Teleinfo : Added a switch indicating the current cost slot
+- Added: Timer Plan editor
 - Removed: Razberry ZWave handling method. Existing users need to migrate to OpenZWave
 - Integrated dzVents 2.0.0: See dzVents/documentation/history.md
 
@@ -748,36 +748,36 @@ Version 3.5837 (October 30th 2016)
 - Changed: Lua/Blockly, Notifications are now not blocking
 
 Version 3.5834 (October 29th 2016)
-- Implemented: TSL2561 illuminance I2C sensor (ldrolez)
-- Implemented: AccuWeather support
-- Implemented: Air Quality graph, Avarage and Previous month/year
-- Implemented: Atag One Thermostat support
-- Implemented: Blockly/Lua Camera device, to send camera snapshots with subject after xx seconds
-- Implemented: Blockly upgraded to latest version (fixed and cleaned some code as well), this fixes problem with long sensor lists
-- Implemented: Blockly, option to excecute a script in the DO statement
-- Implemented: Custom Sensor
-- Implemented: Denkovi Smartden with LAN Interface
-- Implemented: Devices Tab, Log icon for Pressure
-- Implemented: Dust Sensor (ug/m3)
-- Implemented: Error Log, option to send error logs by email
-- Implemented: Hourly rainrate for all rain sensors
-- Implemented: MySensors, Implemented Acknowledge Timeout per Child sensor
-- Implemented: MySensors, S_WATER_QUALITY, water PH
-- Implemented: MySensors, S_WATER_QUALITY, water ORP redox potential in mV
-- Implemented: MySensors, S_WATER_QUALITY, water electric conductivity S/cm (microSiemens/cm)
-- Implemented: MySensors, S_POWER, Reactive power: volt-ampere reactive (var)
-- Implemented: MySensors, S_POWER, Apparent power: volt-ampere (VA)
-- Implemented: MySensors, S_POWER, Ratio of real power to apparent power: floating point value in the range [-1,..,1]
-- Implemented: Nefit Easy, User Mode (as switch, On=Clock, Off=Manual), Flow Temperature, Hot Water Mode
-- Implemented: Notifications, custom notification text helpers $name and $value
-- Implemented: OpenZWave, Aeotec ZWave+ USB Controller, Enable/Disable blinking mode (@Schmart, Thanks for the magic codes!)
-- Implemented: OpenZWave, Node table, now also displays Manufacturer, Product ID and Product Type
-- Implemented: OpenZWave, When including Thermostat Setpoints, the zwave Label will be used as Name by default
-- Implemented: RFXMeter, Option to specify meter offset
-- Implemented: P1 Electra Report, Now also displaying the counters for Return
-- Implemented: RFLink: Displaying firmware version in the hardware setup
-- Implemented: RFXCom, Blinds T12 (Confexx)
-- Implemented: S0 Meter TCP
+- Added: TSL2561 illuminance I2C sensor (ldrolez)
+- Added: AccuWeather support
+- Added: Air Quality graph, Avarage and Previous month/year
+- Added: Atag One Thermostat support
+- Added: Blockly/Lua Camera device, to send camera snapshots with subject after xx seconds
+- Added: Blockly upgraded to latest version (fixed and cleaned some code as well), this fixes problem with long sensor lists
+- Added: Blockly, option to excecute a script in the DO statement
+- Added: Custom Sensor
+- Added: Denkovi Smartden with LAN Interface
+- Added: Devices Tab, Log icon for Pressure
+- Added: Dust Sensor (ug/m3)
+- Added: Error Log, option to send error logs by email
+- Added: Hourly rainrate for all rain sensors
+- Added: MySensors, Added Acknowledge Timeout per Child sensor
+- Added: MySensors, S_WATER_QUALITY, water PH
+- Added: MySensors, S_WATER_QUALITY, water ORP redox potential in mV
+- Added: MySensors, S_WATER_QUALITY, water electric conductivity S/cm (microSiemens/cm)
+- Added: MySensors, S_POWER, Reactive power: volt-ampere reactive (var)
+- Added: MySensors, S_POWER, Apparent power: volt-ampere (VA)
+- Added: MySensors, S_POWER, Ratio of real power to apparent power: floating point value in the range [-1,..,1]
+- Added: Nefit Easy, User Mode (as switch, On=Clock, Off=Manual), Flow Temperature, Hot Water Mode
+- Added: Notifications, custom notification text helpers $name and $value
+- Added: OpenZWave, Aeotec ZWave+ USB Controller, Enable/Disable blinking mode (@Schmart, Thanks for the magic codes!)
+- Added: OpenZWave, Node table, now also displays Manufacturer, Product ID and Product Type
+- Added: OpenZWave, When including Thermostat Setpoints, the zwave Label will be used as Name by default
+- Added: RFXMeter, Option to specify meter offset
+- Added: P1 Electra Report, Now also displaying the counters for Return
+- Added: RFLink: Displaying firmware version in the hardware setup
+- Added: RFXCom, Blinds T12 (Confexx)
+- Added: S0 Meter TCP
 - Changed: I2C sensors grouping (ldrolez)
 - Changed: ETH-8020, ignoring return message as it always returns (no more Success message)
 - Changed: EventSystem, weather/rain value is now the rain-rate
@@ -805,48 +805,48 @@ Version 3.5834 (October 29th 2016)
 - Updated: SQLite3 v3.13.0
 
 Version 3.4834 (March 2nd 2016)
-- Implemented: Blockly, now possible to use expressions in notifications/email/SMS like "My temperature is {{temperaturedevice[1234]}} degrees" (see http://www.domoticz.com/wiki/Events)
-- Implemented: Blockly, now possible to send a notification with a user variable/device as subject/body
-- Implemented: Chinese language support, big thanks to wxws!!
-- Implemented: Custom Templates, now possible to directly call custom template pages (http://127.0.0.1:8080/#/Custom/mypage)
-- Implemented: Day display in energy/gas/water/temp report
-- Implemented: Dummy Hardware, Option to supply name, sensor is now also directly added to the system
-- Implemented: Dummy Hardware, Wind+Temp+Chill
-- Implemented: Dummy Hardware, option to create an RGBW switch
-- Implemented: Extra timer-schedules: Odd/Even Days, Odd/Even Weeks, Monthly & Yearly
-- Implemented: Hardware Monitor for FreeBSD (but it needs the libsysinfo package to work)
-- Implemented: HTU21D(F)/SI702x Humidity+Temp I2C sensor (jvandenb)
-- Implemented: Icelandic language support, big thanks to Magnus!!
-- Implemented: Log View, added options to display All/Status/Error
-- Implemented: Lua Editor
-- Implemented: Macedonian translation (Big thanks to jocogvg!!!)
-- Implemented: MySensors Ethernet gateway will now request the gateway version on startup
-- Implemented: MySensors, Implemented V_CUSTOM
-- Implemented: MySensors, Option to Enable/Disable using ACK per Child sensor from the MySensors hardware setup page
-- Implemented: MySensors, Option to Name a node
-- Implemented: Nest Protect
-- Implemented: Nest Thermostat, support for multiple thermostats
-- Implemented: Netatmo, support for multiple Thermostats
-- Implemented: Netatmo, support for multiple weather stations (from the weathermap) and multiple rain sensors
-- Implemented: New switch type 'Selector' (big thanks to cgaudry)
-- Implemented: OpenZWave, added COMMAND_CLASS_PROTECTION in configuration options
-- Implemented: OTGW, added firmware version number in hardware setup page
-- Implemented: Option to transfer old Percentage sensors to new Percentage sensors
-- Implemented: Philips Hue, support for Groups (create them with an external app like HueMote)
-- Implemented: Philips Hue, support for stored Scenes (create them with an external app like Hue Pro)
-- Implemented: RFLink: Added various sensors/devices (stuntteam)
-- Implemented: RFXCom support for Legrand CAD
-- Implemented: RFXCom support for Lighting5 IT (Intertek,FA500,PROmax,...)
-- Implemented: Romanian Language translation (Thanks to Adrian!)
-- Implemented: SBFSpot, support for multiple inverter instances
-- Implemented: Scene Log
-- Implemented: SolarEdge via Web API
-- Implemented: Temperature Tab room selector
-- Implemented: Thermosmart option to set specify outside temperature sensor
-- Implemented: Waterflow sensor
-- Implemented: Wind Beaufort scale
-- Implemented: Wind Graph, option to delete a short-log data point
-- Implemented: Panasonic TV support (Viera TV's after 2011 should work)
+- Added: Blockly, now possible to use expressions in notifications/email/SMS like "My temperature is {{temperaturedevice[1234]}} degrees" (see http://www.domoticz.com/wiki/Events)
+- Added: Blockly, now possible to send a notification with a user variable/device as subject/body
+- Added: Chinese language support, big thanks to wxws!!
+- Added: Custom Templates, now possible to directly call custom template pages (http://127.0.0.1:8080/#/Custom/mypage)
+- Added: Day display in energy/gas/water/temp report
+- Added: Dummy Hardware, Option to supply name, sensor is now also directly added to the system
+- Added: Dummy Hardware, Wind+Temp+Chill
+- Added: Dummy Hardware, option to create an RGBW switch
+- Added: Extra timer-schedules: Odd/Even Days, Odd/Even Weeks, Monthly & Yearly
+- Added: Hardware Monitor for FreeBSD (but it needs the libsysinfo package to work)
+- Added: HTU21D(F)/SI702x Humidity+Temp I2C sensor (jvandenb)
+- Added: Icelandic language support, big thanks to Magnus!!
+- Added: Log View, added options to display All/Status/Error
+- Added: Lua Editor
+- Added: Macedonian translation (Big thanks to jocogvg!!!)
+- Added: MySensors Ethernet gateway will now request the gateway version on startup
+- Added: MySensors, Added V_CUSTOM
+- Added: MySensors, Option to Enable/Disable using ACK per Child sensor from the MySensors hardware setup page
+- Added: MySensors, Option to Name a node
+- Added: Nest Protect
+- Added: Nest Thermostat, support for multiple thermostats
+- Added: Netatmo, support for multiple Thermostats
+- Added: Netatmo, support for multiple weather stations (from the weathermap) and multiple rain sensors
+- Added: New switch type 'Selector' (big thanks to cgaudry)
+- Added: OpenZWave, added COMMAND_CLASS_PROTECTION in configuration options
+- Added: OTGW, added firmware version number in hardware setup page
+- Added: Option to transfer old Percentage sensors to new Percentage sensors
+- Added: Philips Hue, support for Groups (create them with an external app like HueMote)
+- Added: Philips Hue, support for stored Scenes (create them with an external app like Hue Pro)
+- Added: RFLink: Added various sensors/devices (stuntteam)
+- Added: RFXCom support for Legrand CAD
+- Added: RFXCom support for Lighting5 IT (Intertek,FA500,PROmax,...)
+- Added: Romanian Language translation (Thanks to Adrian!)
+- Added: SBFSpot, support for multiple inverter instances
+- Added: Scene Log
+- Added: SolarEdge via Web API
+- Added: Temperature Tab room selector
+- Added: Thermosmart option to set specify outside temperature sensor
+- Added: Waterflow sensor
+- Added: Wind Beaufort scale
+- Added: Wind Graph, option to delete a short-log data point
+- Added: Panasonic TV support (Viera TV's after 2011 should work)
 - Changed: Alert sensor, removed level notation in user interface
 - Changed: EventSystem, don't process unused devices
 - Changed: Fritzbox, Now updating text sensor on connect/disconnect
@@ -896,82 +896,82 @@ Version 3.4834 (March 2nd 2016)
 - Updated: SQLite3 v3.11.1.
 
 Version 2.3530 (November 1th 2015)
-- Implemented: Degree Days in Temperature report
-- Implemented: RFXCom, support for Home Confort TEL-010
+- Added: Degree Days in Temperature report
+- Added: RFXCom, support for Home Confort TEL-010
 - Fixed: Segmentation fault while cleaning timed out sessions (#180)
 
 Version 2.3521 (October 31th 2015)
-- Implemented "Stop" state in blockly in switch states
-- Implemented: Ability to parse data coming from an HTTP POST data with a lua script (seb)
-- Implemented: Added Logitech Media Server support (thanks to EddyK69!!)
-- Implemented: Added pushbullet notifications (thanks to tofra!!)
-- Implemented: Arabic translation (big thanks to Mo7sen!!)
-- Implemented: Blockly, Option to compare sensor value against another sensor value
-- Implemented: Blockly, Split Utility Sensors into multiple groups
-- Implemented: Blockly/Lua SendSMS
-- Implemented: Catch SIGHUP signal for log rotation (LarsForum)
-- Implemented: Danish translation (big thanks to jokkemokke!!)
-- Implemented: Devices Tab, now displaying scenes/groups
-- Implemented: Dummy Hardware, Ampere Single (single ampere value, other ampere sensor expects 3 values)
-- Implemented: EventSystem, now also reacts on master switches when a slave switch state changes
-- Implemented: EventSystem, now supports Weather sensors: UV/Distance, Wind Gust (or speed when gust is not available), Solar Radiation and Rain
-- Implemented: EventSystem, optimized Blockly calls (saves a lot of calls and cpu)
-- Implemented: Hebrew translation (big thanks to mickeyv!!)
-- Implemented: HTTP Data push, new types for Type/SubType/Hostname/Device Name
-- Implemented: HTTPS support for On/Off actions
-- Implemented: Icon Uploader, now possible to edit name and description
-- Implemented: Icon Uploader, now possible to upload zip files with multiple folders
-- Implemented: Icons for RFXMeter Gas/Water
-- Implemented: Kodi Hardware device (Big thanks to dnpwwo!)
-- Implemented: Logwindow, Added option to filter text
-- Implemented: Mochad secure support (thanks to Simon)
-- Implemented: MySensors added support for S_SCENE_CONTROLLER, V_SCENE_ON, V_SCENE_OFF
-- Implemented: MySensors added support for S_SMOKE/S_DIMMER
-- Implemented: MySensors added support for V_IMPEDANCE
-- Implemented: MySensors, now using ACK for node commands (and fails if no ACK is received)
-- Implemented: MySensors, renamed V_LIGHT to V_STATUS and V_DIMMER to V_PERCENTAGE to be compliant to the 1.5 API
-- Implemented: MySensors, some more default naming of sensors if they where presented with a name
-- Implemented: MySensors, V_IR_RECEIVE and V_IR_SEND
-- Implemented: MySensors, V_TEXT, V_HVAC_SETPOINT_COOL and V_HVAC_SETPOINT_HEAT
-- Implemented: Netatmo Weather Station (Big thanks to Sebastien!)
-- Implemented: Notifications, new option "Ignore Interval"
-- Implemented: OpenZWave, added Ultraviolet sensor type support
-- Implemented: OpenZWave, Include/Exclude progress dialog-
-- Implemented: OpenZWave, multi instance association support (thanks to xs4!!!)
-- Implemented: Option for Dummy device to create Soil Moisture,Leaf Wetness, RGB Switch
-- Implemented: Option how to display the kWh day graph (Power or (k)W/h)
-- Implemented: Option to add a log message via the json api (see wiki)
-- Implemented: Option to enter a description for each sensor/switch/scene
-- Implemented: Option to flash sensors when an update is received (enable in the settings page)
-- Implemented: Option to hide scenes/groups (placing a $ in front of the name)
-- Implemented: Option to rename unused devices
-- Implemented: Option to replace an Energy device
-- Implemented: Rain Report
-- Implemented: Revolt, added support for Voltage/PowerFactor/Frequency
-- Implemented: RFLink SmokeDetector support
-- Implemented: RFLink: Added various sensors/devices (stuntteam)
-- Implemented: RFXCom (Serial) option to update the firmware via the web interface
-- Implemented: RFXtrx ASA protocol implemented
-- Implemented: RGB Popup to select color/on/off
-- Implemented: Satel Integra hardware support (big thanks to Fantom)
-- Implemented: Scene codes now handles again seperate status (on/off)
-- Implemented: Scene, option for 'stop'
-- Implemented: Serbian language support, big thanks to siklosi!!
-- Implemented: Settings/Backup/Restore, when performing a database backup/restore the database is cleaned
-- Implemented: Settings/Log, option to clear all short-log data
-- Implemented: Slovenian language support, big thanks to eden86!!
-- Implemented: smartwares thermostat, Logging of Day/Night switch
-- Implemented: smartwares thermostat, Logging of setpoint value
-- Implemented: smartwares thermostat, Setpoint popup
-- Implemented: smartwares thermostat, Setpoint, now always logged
-- Implemented: Support for browsers that do not support gzip compression (thanks to ash77)
-- Implemented: Support for multiple scene/group codes
-- Implemented: Support for the Plugwise Anna Thermostat (NEM)
-- Implemented: Temperature Report
-- Implemented: Text/Alert Sensor logging (when called from json api)
-- Implemented: Thermosmart Thermostat
-- Implemented: Web Server can now be bind to specific address (-wwwbind) (seb)
-- Implemented: When clicking on the log button, browser page now always go to the top
+- Added "Stop" state in blockly in switch states
+- Added: Ability to parse data coming from an HTTP POST data with a lua script (seb)
+- Added: Added Logitech Media Server support (thanks to EddyK69!!)
+- Added: Added pushbullet notifications (thanks to tofra!!)
+- Added: Arabic translation (big thanks to Mo7sen!!)
+- Added: Blockly, Option to compare sensor value against another sensor value
+- Added: Blockly, Split Utility Sensors into multiple groups
+- Added: Blockly/Lua SendSMS
+- Added: Catch SIGHUP signal for log rotation (LarsForum)
+- Added: Danish translation (big thanks to jokkemokke!!)
+- Added: Devices Tab, now displaying scenes/groups
+- Added: Dummy Hardware, Ampere Single (single ampere value, other ampere sensor expects 3 values)
+- Added: EventSystem, now also reacts on master switches when a slave switch state changes
+- Added: EventSystem, now supports Weather sensors: UV/Distance, Wind Gust (or speed when gust is not available), Solar Radiation and Rain
+- Added: EventSystem, optimized Blockly calls (saves a lot of calls and cpu)
+- Added: Hebrew translation (big thanks to mickeyv!!)
+- Added: HTTP Data push, new types for Type/SubType/Hostname/Device Name
+- Added: HTTPS support for On/Off actions
+- Added: Icon Uploader, now possible to edit name and description
+- Added: Icon Uploader, now possible to upload zip files with multiple folders
+- Added: Icons for RFXMeter Gas/Water
+- Added: Kodi Hardware device (Big thanks to dnpwwo!)
+- Added: Logwindow, Added option to filter text
+- Added: Mochad secure support (thanks to Simon)
+- Added: MySensors added support for S_SCENE_CONTROLLER, V_SCENE_ON, V_SCENE_OFF
+- Added: MySensors added support for S_SMOKE/S_DIMMER
+- Added: MySensors added support for V_IMPEDANCE
+- Added: MySensors, now using ACK for node commands (and fails if no ACK is received)
+- Added: MySensors, renamed V_LIGHT to V_STATUS and V_DIMMER to V_PERCENTAGE to be compliant to the 1.5 API
+- Added: MySensors, some more default naming of sensors if they where presented with a name
+- Added: MySensors, V_IR_RECEIVE and V_IR_SEND
+- Added: MySensors, V_TEXT, V_HVAC_SETPOINT_COOL and V_HVAC_SETPOINT_HEAT
+- Added: Netatmo Weather Station (Big thanks to Sebastien!)
+- Added: Notifications, new option "Ignore Interval"
+- Added: OpenZWave, added Ultraviolet sensor type support
+- Added: OpenZWave, Include/Exclude progress dialog-
+- Added: OpenZWave, multi instance association support (thanks to xs4!!!)
+- Added: Option for Dummy device to create Soil Moisture,Leaf Wetness, RGB Switch
+- Added: Option how to display the kWh day graph (Power or (k)W/h)
+- Added: Option to add a log message via the json api (see wiki)
+- Added: Option to enter a description for each sensor/switch/scene
+- Added: Option to flash sensors when an update is received (enable in the settings page)
+- Added: Option to hide scenes/groups (placing a $ in front of the name)
+- Added: Option to rename unused devices
+- Added: Option to replace an Energy device
+- Added: Rain Report
+- Added: Revolt, added support for Voltage/PowerFactor/Frequency
+- Added: RFLink SmokeDetector support
+- Added: RFLink: Added various sensors/devices (stuntteam)
+- Added: RFXCom (Serial) option to update the firmware via the web interface
+- Added: RFXtrx ASA protocol Added
+- Added: RGB Popup to select color/on/off
+- Added: Satel Integra hardware support (big thanks to Fantom)
+- Added: Scene codes now handles again seperate status (on/off)
+- Added: Scene, option for 'stop'
+- Added: Serbian language support, big thanks to siklosi!!
+- Added: Settings/Backup/Restore, when performing a database backup/restore the database is cleaned
+- Added: Settings/Log, option to clear all short-log data
+- Added: Slovenian language support, big thanks to eden86!!
+- Added: smartwares thermostat, Logging of Day/Night switch
+- Added: smartwares thermostat, Logging of setpoint value
+- Added: smartwares thermostat, Setpoint popup
+- Added: smartwares thermostat, Setpoint, now always logged
+- Added: Support for browsers that do not support gzip compression (thanks to ash77)
+- Added: Support for multiple scene/group codes
+- Added: Support for the Plugwise Anna Thermostat (NEM)
+- Added: Temperature Report
+- Added: Text/Alert Sensor logging (when called from json api)
+- Added: Thermosmart Thermostat
+- Added: Web Server can now be bind to specific address (-wwwbind) (seb)
+- Added: When clicking on the log button, browser page now always go to the top
 - Changed: Air Quality chart will now not begin at 0
 - Changed: All Energy sensors have been transfered to General kWh sensors (more accurate)
 - Changed: BMP085, when forecast is unknown, its calculated directly based on the pressure
@@ -1030,62 +1030,62 @@ Version 2.3521 (October 31th 2015)
 - Fixed: Weather tab, notifications
 
 Version 2.2563 (June 14th 2015)
-- Implemented: WebServer, native SSL and keep-alive, big thanks to chimit!!!!
-- Implemented: RFXCom, support for Blinds T9/T10
-- Implemented: RFXCom, mode6 (Keeloq protocol) support
-- Implemented: RFXCom pTypeInterfaceControl messages
-- Implemented: RFXCom, sTypeTH13/sTypeTH14
-- Implemented: MQTT support
-- Implemented: Native 'Ping' (System Alive Checker) hardware
-- Implemented: KMTronic USB/WEB/RS485 relay hardware
-- Implemented: 'SMS' notification system
-- Implemented: 'Kodi' notification system (thanks to dnpwwo)
-- Implemented: 'Custom HTTP' notification system
-- Implemented: Fritzbox Hardware type for caller ID
-- Implemented: JSON API, option to 'Toggle' a switch state between On/Off
-- Implemented: Sound Level sensor (dB)
-- Implemented: Support for the ETH8020 relay board
-- Implemented: Lithuanian language support (thanks to our translators!)
-- Implemented: Hungarian language support (big thanks to Isty1974!)
-- Implemented: Greek language support, big thanks to George!!
-- Implemented: Distance Sensor (cm/inches)
-- Implemented: Mertik (Thermostat 3) added Second Up/Second Down option in the popup
-- Implemented: BMP085/MySensors forecast Cloudy/Rain when pressure is <1010 hPa and original forecast was Cloudy
-- Implemented: Devices tab, Barometer/Text log option
-- Implemented: 'Toon' zwave switches support
-- Implemented: Mertik (Thermostat 3) Up/Down popup
-- Implemented: P1 Meter, Energy Used/Generated in graph
-- Implemented: Option to specify sensor timeout (default 60 minutes)
-- Implemented: Option to Enable/Disable notification systems
-- Implemented: Option to supply custom notification messages
-- Implemented: notifications, option to send to specific systems
-- Implemented: Basic Auth, log message when a wrong username/password is provided (thanks to pj-r)
-- Implemented: Scene/Group, now possible to add same device multiple times, as long as the ondelay is different
-- Implemented: Scene devices now supports both on and off delays (off = ondelay + offdelay)
-- Implemented: CORS browser support
-- Implemented: Settings, Battery Low check
-- Implemented: Counters in P1 Electra/Gas month reports per day
-- Implemented: OTGW, MsgID=14 and MsgID=17 (if reported)
-- Implemented: OTGW, CH_Enable/DHW_Enable are now switchable (Thanks to Rob K)
-- Implemented: OTGW, support for GPIO A/B switches (Thanks to Rob K)
-- Implemented: Devices Tab, option to rename device
-- Implemented: Events/Lua, User Variable can now be set after XX seconds
-- Implemented: OpenZWave, Sanity check for Network Key Length
-- Implemented: Openzwave, Now using security branch
-- Implemented: OpenZWave, option to include device secure (only use for ZWave+ devices)
-- Implemented: OpenZWave security, added support for the Philio PST02-1A door contact
-- Implemented: OpenZWave velocity sensor (wind)
-- Implemented: Uservariables, display Idx value (thanks to ikkemaniac)
-- Implemented: Incremental Counter sensor (thanks to ikkemaniac)
-- Implemented: SolarMax inverter with Lan interface
-- Implemented: Current sensors now also display actual state in caption
-- Implemented: Extra check in short-log cleanup
-- Implemented: Mobile Phone icon
-- Implemented: Set Blinds Percentage level from blockly (Ticket #437)
-- Implemented: 'Nest Thermostat' hardware support
-- Implemented: Option to Enable/Disable the Custom tab for non-users (admin)
-- Implemented: Warning when deleting a Blockly event
-- Implemented: Blind status "Stopped" now also displayed on dashboard
+- Added: WebServer, native SSL and keep-alive, big thanks to chimit!!!!
+- Added: RFXCom, support for Blinds T9/T10
+- Added: RFXCom, mode6 (Keeloq protocol) support
+- Added: RFXCom pTypeInterfaceControl messages
+- Added: RFXCom, sTypeTH13/sTypeTH14
+- Added: MQTT support
+- Added: Native 'Ping' (System Alive Checker) hardware
+- Added: KMTronic USB/WEB/RS485 relay hardware
+- Added: 'SMS' notification system
+- Added: 'Kodi' notification system (thanks to dnpwwo)
+- Added: 'Custom HTTP' notification system
+- Added: Fritzbox Hardware type for caller ID
+- Added: JSON API, option to 'Toggle' a switch state between On/Off
+- Added: Sound Level sensor (dB)
+- Added: Support for the ETH8020 relay board
+- Added: Lithuanian language support (thanks to our translators!)
+- Added: Hungarian language support (big thanks to Isty1974!)
+- Added: Greek language support, big thanks to George!!
+- Added: Distance Sensor (cm/inches)
+- Added: Mertik (Thermostat 3) added Second Up/Second Down option in the popup
+- Added: BMP085/MySensors forecast Cloudy/Rain when pressure is <1010 hPa and original forecast was Cloudy
+- Added: Devices tab, Barometer/Text log option
+- Added: 'Toon' zwave switches support
+- Added: Mertik (Thermostat 3) Up/Down popup
+- Added: P1 Meter, Energy Used/Generated in graph
+- Added: Option to specify sensor timeout (default 60 minutes)
+- Added: Option to Enable/Disable notification systems
+- Added: Option to supply custom notification messages
+- Added: notifications, option to send to specific systems
+- Added: Basic Auth, log message when a wrong username/password is provided (thanks to pj-r)
+- Added: Scene/Group, now possible to add same device multiple times, as long as the ondelay is different
+- Added: Scene devices now supports both on and off delays (off = ondelay + offdelay)
+- Added: CORS browser support
+- Added: Settings, Battery Low check
+- Added: Counters in P1 Electra/Gas month reports per day
+- Added: OTGW, MsgID=14 and MsgID=17 (if reported)
+- Added: OTGW, CH_Enable/DHW_Enable are now switchable (Thanks to Rob K)
+- Added: OTGW, support for GPIO A/B switches (Thanks to Rob K)
+- Added: Devices Tab, option to rename device
+- Added: Events/Lua, User Variable can now be set after XX seconds
+- Added: OpenZWave, Sanity check for Network Key Length
+- Added: Openzwave, Now using security branch
+- Added: OpenZWave, option to include device secure (only use for ZWave+ devices)
+- Added: OpenZWave security, added support for the Philio PST02-1A door contact
+- Added: OpenZWave velocity sensor (wind)
+- Added: Uservariables, display Idx value (thanks to ikkemaniac)
+- Added: Incremental Counter sensor (thanks to ikkemaniac)
+- Added: SolarMax inverter with Lan interface
+- Added: Current sensors now also display actual state in caption
+- Added: Extra check in short-log cleanup
+- Added: Mobile Phone icon
+- Added: Set Blinds Percentage level from blockly (Ticket #437)
+- Added: 'Nest Thermostat' hardware support
+- Added: Option to Enable/Disable the Custom tab for non-users (admin)
+- Added: Warning when deleting a Blockly event
+- Added: Blind status "Stopped" now also displayed on dashboard
 - Improved: MySensors support
 - Improved: Logitech Harmoney Hub
 - Changed: Avoiding possible RTC/NTP clock drifts
@@ -1152,64 +1152,64 @@ Version 2.2284 (February 22th 2015)
 - Fixed: Firefox, RGBW/Setpoint popup
 
 Version 2.2283 (February 21th 2015)
-- Implemented: Alert Sensor (update via udevice json call)
-- Implemented: Automatic OpenZWave heal network command at 04:00am
-- Implemented: Blinds1, T7 Forest
-- Implemented: Blockly/Lua Thermostat/Setpoint utility device
-- Implemented: Changing color in scene/groups will now also change it on actual device (for preview)
-- Implemented: Cubie internal Voltage/Current sensors
-- Implemented: Devices tab, CM180 log option
-- Implemented: Dewpoint devices in Blockly
-- Implemented: Dimmer, on/off actions
-- Implemented: Displaying OpenZWave version
-- Implemented: EnOcean, added support for TempHum.02
-- Implemented: EnOcean3, added support for door level
-- Implemented: Evohome support (Thanks to Will!)
-- Implemented: GUI Theme selection
-- Implemented: Icon scaling setting per floorplan
-- Implemented: Logging counter values for P1 meter (not displayed yet)
-- Implemented: Logging when a script is executed
-- Implemented: Manual add Blinds T6 type (DC106, YOOHA, Rohrmotor24 RMF)
-- Implemented: Manual add Smartwares Radiator switch/device (will be visible afterwards at Utilities)
-- Implemented: Manual add Thermostat2 switch (type HE105)
-- Implemented: native HTTPS support
-- Implemented: Native Mochad hardware support (thanks to kaashoek)
-- Implemented: OpenZWave Node Queried status, last seen in Node table
-- Implemented: OpenZWave, Added NorthQ nq9121.xml config file
-- Implemented: OpenZWave, Added Qubino ZMNHJA2.xml config file
-- Implemented: OpenZWave, Blinds Percentage Inverted (Thanks to PIM)
-- Implemented: OpenZWave, COMMAND_CLASS_COLOR_CONTROL (for o.a. Zipato RGBW) (needs to be accepted by openzwave yet)
-- Implemented: OpenZWave, Controller Node, option for Nightly Network Heal (disabled by default)
-- Implemented: OpenZWave, polling all multi_sensor values now (if polling enabled)
-- Implemented: OpenZWave, support for COMMAND_CLASS_THERMOSTAT_MODE and COMMAND_CLASS_THERMOSTAT_FAN_MODE
-- Implemented: OpenZWave, when doing an Inclusion, "allow new hardware" is enabled for 5 minutes if disabled
-- Implemented: Option for Dummy device to create Ampere Sensor
-- Implemented: Option for Dummy device to create Switch Sensor
-- Implemented: Option for Dummy device to create Usage (Electric) Sensor
-- Implemented: Option to upload/use Custom Icons for On/Off switches (See updated manual)
-- Implemented: OTGW sending current time/day
-- Implemented: OTGW, added support for setting the Control Setpoint
-- Implemented: P1 SmartMeter, support for the Gyr E350 (Gas reading)
-- Implemented: Philips Hue native support
-- Implemented: Previous Baro meter to month/year graph
-- Implemented: PushAlot notification system (Thanks to Toni!)
-- Implemented: Raspberry Pi 2 Internal CPU Temperature
-- Implemented: RGBW Popup to select color/on/off
-- Implemented: Roomplan selector on switches/utility tab
-- Implemented: S0 Meter, settings for meter 3,4 and 5
-- Implemented: SBFSpot compatible now
-- Implemented: Scene/Group, Blinds Percentage (+Inverted) can now set the percentage level
-- Implemented: Scenes/Groups, additional On/Off delay option
-- Implemented: Setpoint Popup
-- Implemented: sha256sum checksum checksum checking while downloading a new beta/stable
-- Implemented: Support for device-type Usage/Electric in Blockly/Lua
-- Implemented: Support for MySensors
-- Implemented: Text Sensor (update via udevice json call)
-- Implemented: Thermostat Setpoint timers
-- Implemented: Trend Lines in various charts
-- Implemented: ttyACM serial ports if available
-- Implemented: Wind Gust chart
-- Implemented: ZWave battery values for all sensor types that reports this
+- Added: Alert Sensor (update via udevice json call)
+- Added: Automatic OpenZWave heal network command at 04:00am
+- Added: Blinds1, T7 Forest
+- Added: Blockly/Lua Thermostat/Setpoint utility device
+- Added: Changing color in scene/groups will now also change it on actual device (for preview)
+- Added: Cubie internal Voltage/Current sensors
+- Added: Devices tab, CM180 log option
+- Added: Dewpoint devices in Blockly
+- Added: Dimmer, on/off actions
+- Added: Displaying OpenZWave version
+- Added: EnOcean, added support for TempHum.02
+- Added: EnOcean3, added support for door level
+- Added: Evohome support (Thanks to Will!)
+- Added: GUI Theme selection
+- Added: Icon scaling setting per floorplan
+- Added: Logging counter values for P1 meter (not displayed yet)
+- Added: Logging when a script is executed
+- Added: Manual add Blinds T6 type (DC106, YOOHA, Rohrmotor24 RMF)
+- Added: Manual add Smartwares Radiator switch/device (will be visible afterwards at Utilities)
+- Added: Manual add Thermostat2 switch (type HE105)
+- Added: native HTTPS support
+- Added: Native Mochad hardware support (thanks to kaashoek)
+- Added: OpenZWave Node Queried status, last seen in Node table
+- Added: OpenZWave, Added NorthQ nq9121.xml config file
+- Added: OpenZWave, Added Qubino ZMNHJA2.xml config file
+- Added: OpenZWave, Blinds Percentage Inverted (Thanks to PIM)
+- Added: OpenZWave, COMMAND_CLASS_COLOR_CONTROL (for o.a. Zipato RGBW) (needs to be accepted by openzwave yet)
+- Added: OpenZWave, Controller Node, option for Nightly Network Heal (disabled by default)
+- Added: OpenZWave, polling all multi_sensor values now (if polling enabled)
+- Added: OpenZWave, support for COMMAND_CLASS_THERMOSTAT_MODE and COMMAND_CLASS_THERMOSTAT_FAN_MODE
+- Added: OpenZWave, when doing an Inclusion, "allow new hardware" is enabled for 5 minutes if disabled
+- Added: Option for Dummy device to create Ampere Sensor
+- Added: Option for Dummy device to create Switch Sensor
+- Added: Option for Dummy device to create Usage (Electric) Sensor
+- Added: Option to upload/use Custom Icons for On/Off switches (See updated manual)
+- Added: OTGW sending current time/day
+- Added: OTGW, added support for setting the Control Setpoint
+- Added: P1 SmartMeter, support for the Gyr E350 (Gas reading)
+- Added: Philips Hue native support
+- Added: Previous Baro meter to month/year graph
+- Added: PushAlot notification system (Thanks to Toni!)
+- Added: Raspberry Pi 2 Internal CPU Temperature
+- Added: RGBW Popup to select color/on/off
+- Added: Roomplan selector on switches/utility tab
+- Added: S0 Meter, settings for meter 3,4 and 5
+- Added: SBFSpot compatible now
+- Added: Scene/Group, Blinds Percentage (+Inverted) can now set the percentage level
+- Added: Scenes/Groups, additional On/Off delay option
+- Added: Setpoint Popup
+- Added: sha256sum checksum checksum checking while downloading a new beta/stable
+- Added: Support for device-type Usage/Electric in Blockly/Lua
+- Added: Support for MySensors
+- Added: Text Sensor (update via udevice json call)
+- Added: Thermostat Setpoint timers
+- Added: Trend Lines in various charts
+- Added: ttyACM serial ports if available
+- Added: Wind Gust chart
+- Added: ZWave battery values for all sensor types that reports this
 - Changed: 1Wire, better temperature checking
 - Changed: Better/Correct appcache handling of themes
 - Changed: Date/Time notation in log to ISO-8601 (thanks to Ugo)
@@ -1260,71 +1260,71 @@ Version 2.2283 (February 21th 2015)
 - Updated: WindowsLibraries on server
 
 Version 2.2025 (September 28th 2014)
-- Implemented: 'Toon' hardware support
-- Implemented: 1wire : add support of DS2438 (family 26h) on OWFS and Windows
-- Implemented: A-OK Blinds now displays a stop button
-- Implemented: Added Fibaro Motion Sensor (0800/1001) to the openzwave manufacturer file
-- Implemented: additional dparam replacement for the json command option (can be used where &param is translated to ParaCharacterEntity (PHP for example)
-- Implemented: AppLamp now remembers last dim level in the widgets
-- Implemented: Application Settings, option to allow receiving of new sensors for 5 minutes (button)
-- Implemented: Blockly, switch light on/off after xxx seconds
-- Implemented: catching SIGHUB, it will recreate the log file (could be usefull for logrotate functions)
-- Implemented: Dashboard, clicking on the 'contact' switch icon now displays the switch log
-- Implemented: Delete short log value P1 SmartLog (Shift-Left click)
-- Implemented: Device Name now displayed for the Scene/Group learn code
-- Implemented: Devices Over, added log icon for Chime and Thermostat
-- Implemented: EventSystem can now use the utility values for Percentage/Voltage/Lux
-- Implemented: Fibaro Link data pusher
-- Implemented: Forecast button in temperature/weather tab
-- Implemented: Hardware device auto restart option
-- Implemented: It is now logged which user issued a switch/security reset/setpoint/thermostat state change command
-- Implemented: JSon parameter=udevice now will set the SetPoint if it applies
-- Implemented: Latest RFXCOM SDK (6.24)
-- Implemented: Latest RFXCOM SDK (6.25)
-- Implemented: Light/Scene/Group timer with fixed Date/Time
-- Implemented: Lighting2 scene activation support for GroupOn/Off devices
-- Implemented: Lighting5, Aoke
-- Implemented: Meteostick USB
-- Implemented: Native Logitech Harmony support (thanks to CodeItAway!)
-- Implemented: Navigation toolbar for mobile devices
-- Implemented: New internal website system
-- Implemented: On/Off switches, On Delay option
-- Implemented: openzwave added support for Vision Battery Operated Siren (ZM1601EU)
-- Implemented: OpenZWave configuration of 'Wake-up Interval' (COMMAND_CLASS_WAKE_UP)
-- Implemented: OpenZWave Tag Reader support
-- Implemented: OpenZWave, Fibaro RGBW color wheel/timer support
-- Implemented: Option for custom pages, see www/templates folder
-- Implemented: Option for Dummy device to create Gas Sensor
-- Implemented: Option for Dummy device to create Lux Sensor
-- Implemented: Option for SMASpot device to import old month data (SMASpot month files)
-- Implemented: Option for SMASpot device to import old month data (SMASpot website export)
-- Implemented: Option in Login form to remember username/password (1 year)
-- Implemented: Option in settings to choose default or holiday timer plan (maybe custom plans later)
-- Implemented: Option to delete data point from sensor by Shift-Left click on short log for counter graphs
-- Implemented: Option to enable/disable eventsystem (lua/blockly/scripts)
-- Implemented: Option to hide devices (placing a $ in front of the name, or the new special roomplan)
-- Implemented: Option to hide Sensor's from whom it's hardware is disabled
-- Implemented: Option to log to syslog
-- Implemented: Option to run as daemon (see new domoticz.sh startup script)
-- Implemented: Rasberry Pi GPIO (WiringPi) support, thanks to Vicne!
-- Implemented: RFXCom over LAN setup button
-- Implemented: RFXtrx RFY protocol implemented
-- Implemented: RFXtrx TH12 soil sensor (Imagintronix)
-- Implemented: RFY Off Delay (Stop)
-- Implemented: RFY, Venetian Blinds support (EU/US)
-- Implemented: RGB light timer now shows actual color on device when selected
-- Implemented: Room Plan editor, hardware name infront of sensors to add
-- Implemented: Scene On/Off actions
-- Implemented: Sensor type CM119/160 can now display previous year data
-- Implemented: setting signal/battery level from udevice json call
-- Implemented: Splash screen for iPhone5 retina
-- Implemented: Support ENI provider in ICY hardware
-- Implemented: Switch icon Alarm
-- Implemented: Switch Scene/Group behaviour with learn codes enabled
-- Implemented: today value for Energy devices in Utility tab
-- Implemented: Toon Flame State
-- Implemented: web traffic reduced when refreshing widgets
-- Implemented: Web Update now also supported for linux_x86_64 systems (Ubuntu)
+- Added: 'Toon' hardware support
+- Added: 1wire : add support of DS2438 (family 26h) on OWFS and Windows
+- Added: A-OK Blinds now displays a stop button
+- Added: Added Fibaro Motion Sensor (0800/1001) to the openzwave manufacturer file
+- Added: additional dparam replacement for the json command option (can be used where &param is translated to ParaCharacterEntity (PHP for example)
+- Added: AppLamp now remembers last dim level in the widgets
+- Added: Application Settings, option to allow receiving of new sensors for 5 minutes (button)
+- Added: Blockly, switch light on/off after xxx seconds
+- Added: catching SIGHUB, it will recreate the log file (could be usefull for logrotate functions)
+- Added: Dashboard, clicking on the 'contact' switch icon now displays the switch log
+- Added: Delete short log value P1 SmartLog (Shift-Left click)
+- Added: Device Name now displayed for the Scene/Group learn code
+- Added: Devices Over, added log icon for Chime and Thermostat
+- Added: EventSystem can now use the utility values for Percentage/Voltage/Lux
+- Added: Fibaro Link data pusher
+- Added: Forecast button in temperature/weather tab
+- Added: Hardware device auto restart option
+- Added: It is now logged which user issued a switch/security reset/setpoint/thermostat state change command
+- Added: JSon parameter=udevice now will set the SetPoint if it applies
+- Added: Latest RFXCOM SDK (6.24)
+- Added: Latest RFXCOM SDK (6.25)
+- Added: Light/Scene/Group timer with fixed Date/Time
+- Added: Lighting2 scene activation support for GroupOn/Off devices
+- Added: Lighting5, Aoke
+- Added: Meteostick USB
+- Added: Native Logitech Harmony support (thanks to CodeItAway!)
+- Added: Navigation toolbar for mobile devices
+- Added: New internal website system
+- Added: On/Off switches, On Delay option
+- Added: openzwave added support for Vision Battery Operated Siren (ZM1601EU)
+- Added: OpenZWave configuration of 'Wake-up Interval' (COMMAND_CLASS_WAKE_UP)
+- Added: OpenZWave Tag Reader support
+- Added: OpenZWave, Fibaro RGBW color wheel/timer support
+- Added: Option for custom pages, see www/templates folder
+- Added: Option for Dummy device to create Gas Sensor
+- Added: Option for Dummy device to create Lux Sensor
+- Added: Option for SMASpot device to import old month data (SMASpot month files)
+- Added: Option for SMASpot device to import old month data (SMASpot website export)
+- Added: Option in Login form to remember username/password (1 year)
+- Added: Option in settings to choose default or holiday timer plan (maybe custom plans later)
+- Added: Option to delete data point from sensor by Shift-Left click on short log for counter graphs
+- Added: Option to enable/disable eventsystem (lua/blockly/scripts)
+- Added: Option to hide devices (placing a $ in front of the name, or the new special roomplan)
+- Added: Option to hide Sensor's from whom it's hardware is disabled
+- Added: Option to log to syslog
+- Added: Option to run as daemon (see new domoticz.sh startup script)
+- Added: Rasberry Pi GPIO (WiringPi) support, thanks to Vicne!
+- Added: RFXCom over LAN setup button
+- Added: RFXtrx RFY protocol Added
+- Added: RFXtrx TH12 soil sensor (Imagintronix)
+- Added: RFY Off Delay (Stop)
+- Added: RFY, Venetian Blinds support (EU/US)
+- Added: RGB light timer now shows actual color on device when selected
+- Added: Room Plan editor, hardware name infront of sensors to add
+- Added: Scene On/Off actions
+- Added: Sensor type CM119/160 can now display previous year data
+- Added: setting signal/battery level from udevice json call
+- Added: Splash screen for iPhone5 retina
+- Added: Support ENI provider in ICY hardware
+- Added: Switch icon Alarm
+- Added: Switch Scene/Group behaviour with learn codes enabled
+- Added: today value for Energy devices in Utility tab
+- Added: Toon Flame State
+- Added: web traffic reduced when refreshing widgets
+- Added: Web Update now also supported for linux_x86_64 systems (Ubuntu)
 - Changed: appcache file
 - Changed: AppLamp more support for RGB lamps (not sold anymore)
 - Changed: AppLamp more support for White lamps
@@ -1371,68 +1371,68 @@ Version 2.2025 (September 28th 2014)
 - Updated: OpenZWave library
 
 Version 1.1680 (April 21th 2014)
-- Implemented: Allow interactive emulation of X10 sensors
-- Implemented: Blinds Percentage switch type (Fibaro roller shutter)
-- Implemented: BlindsT7 (Forest)
-- Implemented: Bulgarian translation (Thanks to Tommit!)
-- Implemented: Charts have now a dropdown option, export to CVS
-- Implemented: Dashboard tiles can now be ordered for room-plans
-- Implemented: Dashboard, clicking on a Visibility/Radiation sensor icon will display the log
-- Implemented: Device Tab, option to display chart for sensors with Current/Percentage/Volt/Humidity
-- Implemented: Energenie5/COCO GDR2-2000R
-- Implemented: EnOcean ESP2 (TCM-120) support for On/Off/Dimmer, Temperature, Humidity and Light Sensors
-- Implemented: FreeBSD compatibility
-- Implemented: jsonp support
-- Implemented: Latest RFXCOM SDK (#74)
-- Implemented: Light Log, Arm/Disarm/Motion/No Motion now also visible in graph
-- Implemented: New General Voltage devices with 3 decimals
-- Implemented: Norwegian translation (Thanks to Sungrazer!)
-- Implemented: openzwave Voltage/Ampere
-- Implemented: OpenZWave, configuration is now written to disk every hour
-- Implemented: OpenZWave, option to configure node list settings
-- Implemented: OpenZWave, option to delete failed nodes
-- Implemented: OpenZWave, option to include/exclude nodes, support for windows COM port numbers greater then 9
-- Implemented: OpenZWave, Receive/Send Configuration, Transfer Primary Role
-- Implemented: OpenZWave/Razberry, Power Factor sensor
-- Implemented: Option for Dummy device to create Air Quality Sensor
-- Implemented: Option to control Meiantech security status
-- Implemented: Option to display temperature in Fahrenheit
-- Implemented: Option to Enable/Disable Widget Re-Ordering (settings page)
-- Implemented: Option to specify S0 Meter serial baudrate
-- Implemented: OTGW, CH Water Pressure (if available)
-- Implemented: OTGW, option to specify outside temperature sensor (hardware setup)
-- Implemented: OTGW, status switches
-- Implemented: P1/Counter log, Previous year in charts
-- Implemented: P1/Gas/Counter log, report charts
-- Implemented: Portuguese translation (Thanks to Maluku!)
-- Implemented: Pressure Sensor (Bar)
-- Implemented: protection option for light/switches/scenes/set points
-- Implemented: Pushover notification support
-- Implemented: Razberry COMMAND_CLASS_SCENE_ACTIVATION (push on button) on Instance_0
-- Implemented: Razberry COMMAND_CLASS_THERMOSTAT_MODE (0/1)
-- Implemented: Razberry Voltage/Ampere
-- Implemented: Report for RFXMeter Water
-- Implemented: Script parameters for Light On/Off actions
-- Implemented: Slovak translation (Thanks to marek786!)
-- Implemented: SMASpot, accepting windows edited configuration lines!?!!...
-- Implemented: SMASpot, Temperature
-- Implemented: SMASpot, voltages, efficiency, Hz and Bluetooth signal strength
-- Implemented: Support for Forecast.io
-- Implemented: Support for ICY (Essent) Thermostats
-- Implemented: Support for P1 Cables with baudrate 115200
-- Implemented: Support for Remote Control buttons (On action Only!)
-- Implemented: Support for SMASpot compatible solar Inverters
-- Implemented: Support for SolarEdge Inverters (SE5000 and similar with TCP/IP interface)
-- Implemented: Switch On/Off actions can now also be used from outside Domoticz (for instance using them to an actual remote control)
-- Implemented: Temperature Month/Year graphs now display min/max as a range
-- Implemented: Temperature Month/Year graphs now displays Average Temperature
-- Implemented: Temperature/Weather widgets forecast button if hardware is WU/Forecast.io
-- Implemented: Thermostat 3 (Mertik) now visible on dashboard
-- Implemented: Thermostat3 Support (Mertik)
-- Implemented: unix hardware monitor for Memory/CPU and Disk usage
-- Implemented: Web Frontpage Example
-- Implemented: Weight Scale now includes a digit in the graphs
-- Implemented: Widgets now turn yellow (if no timeout) if the battery level is <= 10 percent
+- Added: Allow interactive emulation of X10 sensors
+- Added: Blinds Percentage switch type (Fibaro roller shutter)
+- Added: BlindsT7 (Forest)
+- Added: Bulgarian translation (Thanks to Tommit!)
+- Added: Charts have now a dropdown option, export to CVS
+- Added: Dashboard tiles can now be ordered for room-plans
+- Added: Dashboard, clicking on a Visibility/Radiation sensor icon will display the log
+- Added: Device Tab, option to display chart for sensors with Current/Percentage/Volt/Humidity
+- Added: Energenie5/COCO GDR2-2000R
+- Added: EnOcean ESP2 (TCM-120) support for On/Off/Dimmer, Temperature, Humidity and Light Sensors
+- Added: FreeBSD compatibility
+- Added: jsonp support
+- Added: Latest RFXCOM SDK (#74)
+- Added: Light Log, Arm/Disarm/Motion/No Motion now also visible in graph
+- Added: New General Voltage devices with 3 decimals
+- Added: Norwegian translation (Thanks to Sungrazer!)
+- Added: openzwave Voltage/Ampere
+- Added: OpenZWave, configuration is now written to disk every hour
+- Added: OpenZWave, option to configure node list settings
+- Added: OpenZWave, option to delete failed nodes
+- Added: OpenZWave, option to include/exclude nodes, support for windows COM port numbers greater then 9
+- Added: OpenZWave, Receive/Send Configuration, Transfer Primary Role
+- Added: OpenZWave/Razberry, Power Factor sensor
+- Added: Option for Dummy device to create Air Quality Sensor
+- Added: Option to control Meiantech security status
+- Added: Option to display temperature in Fahrenheit
+- Added: Option to Enable/Disable Widget Re-Ordering (settings page)
+- Added: Option to specify S0 Meter serial baudrate
+- Added: OTGW, CH Water Pressure (if available)
+- Added: OTGW, option to specify outside temperature sensor (hardware setup)
+- Added: OTGW, status switches
+- Added: P1/Counter log, Previous year in charts
+- Added: P1/Gas/Counter log, report charts
+- Added: Portuguese translation (Thanks to Maluku!)
+- Added: Pressure Sensor (Bar)
+- Added: protection option for light/switches/scenes/set points
+- Added: Pushover notification support
+- Added: Razberry COMMAND_CLASS_SCENE_ACTIVATION (push on button) on Instance_0
+- Added: Razberry COMMAND_CLASS_THERMOSTAT_MODE (0/1)
+- Added: Razberry Voltage/Ampere
+- Added: Report for RFXMeter Water
+- Added: Script parameters for Light On/Off actions
+- Added: Slovak translation (Thanks to marek786!)
+- Added: SMASpot, accepting windows edited configuration lines!?!!...
+- Added: SMASpot, Temperature
+- Added: SMASpot, voltages, efficiency, Hz and Bluetooth signal strength
+- Added: Support for Forecast.io
+- Added: Support for ICY (Essent) Thermostats
+- Added: Support for P1 Cables with baudrate 115200
+- Added: Support for Remote Control buttons (On action Only!)
+- Added: Support for SMASpot compatible solar Inverters
+- Added: Support for SolarEdge Inverters (SE5000 and similar with TCP/IP interface)
+- Added: Switch On/Off actions can now also be used from outside Domoticz (for instance using them to an actual remote control)
+- Added: Temperature Month/Year graphs now display min/max as a range
+- Added: Temperature Month/Year graphs now displays Average Temperature
+- Added: Temperature/Weather widgets forecast button if hardware is WU/Forecast.io
+- Added: Thermostat 3 (Mertik) now visible on dashboard
+- Added: Thermostat3 Support (Mertik)
+- Added: unix hardware monitor for Memory/CPU and Disk usage
+- Added: Web Frontpage Example
+- Added: Weight Scale now includes a digit in the graphs
+- Added: Widgets now turn yellow (if no timeout) if the battery level is <= 10 percent
 - Changed: All external hardware sensors without RF now reports rssi level 12
 - Changed: HTML code for manual light
 - Changed: Lots of work on charts plotting
@@ -1467,41 +1467,41 @@ Version 1.1680 (April 21th 2014)
 - Updated: Highcharts 3.0.10
 
 Version 1.1396 (January 18th 2014)
-- Implemented: Add Manual Light/Switch for Meiantech
-- Implemented: Application Settings, option to enable/disable adding of new hardware/devices (For example to disable newly received RF hardware)
-- Implemented: Blockly/Lua, Send Email notification to
-- Implemented: Creation of 2 new database parameters in DeviceStatus
-- Implemented: Creation of auto backup folders
-- Implemented: Dashboard, clicking on a Motion/Dusk/Rain sensor icon will display the log
-- Implemented: day & nighttime boolean variables in Lua
-- Implemented: Dummy hardware, option to add counter/electric sensors
-- Implemented: gzip compression for web traffic
-- Implemented: Ignoring negative WU rain/uv/visibility values
-- Implemented: Implemented RisingSun manual add light/switch option
-- Implemented: Initial support for EnOcean hardware (Only ESP2, protocol V2) at the moment, and switches only
-- Implemented: Initial support for RGB driver TRC02
-- Implemented: Limitless/AppLamp, can now also be used as 'Dimmer'
-- Implemented: Limitless/AppLamp, can now be set to a defined color in scenes/groups/timers
-- Implemented: Limitless/AppLamp, option to set Hue/Brightness in the Edit option
-- Implemented: New 1-Wire system (Thanks to Sebastien!), Kernel users have to transfer old sensors to new ones (device id is swapped in hex)
-- Implemented: New 1-Wire system (thanks to Sebastien)
-- Implemented: new commandline option to specify www root folder (-wwwroot)
-- Implemented: Notification Priority in Lua/Blockly
-- Implemented: OpenZWave Controller node configuration (PollInterval)
-- Implemented: OpenZWave, now possible to set Node configuration settings
-- Implemented: OpenZWave, option to download configuration file via Node dropdown menu
-- Implemented: Option to delete data point from sensor by Shift-Left click on short log for temp/uv/lux/usage graphs
-- Implemented: Option to specify On/Off actions for lights/switches (http/script)
-- Implemented: P1 Smart meter, counter values in report
-- Implemented: Polish translation (Thanks to Jastrzi !)
-- Implemented: Prevent multiple windows instances from running
-- Implemented: Prowl/NMA notification priority (not in Lua/Blockly yet)
-- Implemented: Russian translation (Thanks to kur1977)
-- Implemented: Security Panel delay
-- Implemented: various improvements to have Domoticz compile in VS2010 straight from the repository
-- Implemented: Windows installer option to install as service (for server implementations, no icons will be installed)
-- Implemented: Windows, Support for OpenHardwareMonitor supplied sensor data in Windows version of Domoticz. See wiki for info. If you see a hardware device "Internal sensors", please delete it. The correct one to use is "Motherboard".
-- Implemented: www port can be specified in windows installer
+- Added: Add Manual Light/Switch for Meiantech
+- Added: Application Settings, option to enable/disable adding of new hardware/devices (For example to disable newly received RF hardware)
+- Added: Blockly/Lua, Send Email notification to
+- Added: Creation of 2 new database parameters in DeviceStatus
+- Added: Creation of auto backup folders
+- Added: Dashboard, clicking on a Motion/Dusk/Rain sensor icon will display the log
+- Added: day & nighttime boolean variables in Lua
+- Added: Dummy hardware, option to add counter/electric sensors
+- Added: gzip compression for web traffic
+- Added: Ignoring negative WU rain/uv/visibility values
+- Added: Added RisingSun manual add light/switch option
+- Added: Initial support for EnOcean hardware (Only ESP2, protocol V2) at the moment, and switches only
+- Added: Initial support for RGB driver TRC02
+- Added: Limitless/AppLamp, can now also be used as 'Dimmer'
+- Added: Limitless/AppLamp, can now be set to a defined color in scenes/groups/timers
+- Added: Limitless/AppLamp, option to set Hue/Brightness in the Edit option
+- Added: New 1-Wire system (Thanks to Sebastien!), Kernel users have to transfer old sensors to new ones (device id is swapped in hex)
+- Added: New 1-Wire system (thanks to Sebastien)
+- Added: new commandline option to specify www root folder (-wwwroot)
+- Added: Notification Priority in Lua/Blockly
+- Added: OpenZWave Controller node configuration (PollInterval)
+- Added: OpenZWave, now possible to set Node configuration settings
+- Added: OpenZWave, option to download configuration file via Node dropdown menu
+- Added: Option to delete data point from sensor by Shift-Left click on short log for temp/uv/lux/usage graphs
+- Added: Option to specify On/Off actions for lights/switches (http/script)
+- Added: P1 Smart meter, counter values in report
+- Added: Polish translation (Thanks to Jastrzi !)
+- Added: Prevent multiple windows instances from running
+- Added: Prowl/NMA notification priority (not in Lua/Blockly yet)
+- Added: Russian translation (Thanks to kur1977)
+- Added: Security Panel delay
+- Added: various improvements to have Domoticz compile in VS2010 straight from the repository
+- Added: Windows installer option to install as service (for server implementations, no icons will be installed)
+- Added: Windows, Support for OpenHardwareMonitor supplied sensor data in Windows version of Domoticz. See wiki for info. If you see a hardware device "Internal sensors", please delete it. The correct one to use is "Motherboard".
+- Added: www port can be specified in windows installer
 - Changed: Contact notifications now says 'Open/Closed' instead of 'On/Off'
 - Changed: devices tab, ID of Energy devices now displayed in Hexadecimal
 - Changed: Door Lock/Contact switch type now also handles 'Set Group Level'
@@ -1537,45 +1537,45 @@ Version 1.1396 (January 18th 2014)
 - Updated: Highcharts 3.0.9, JQuery and JQueryUI
 
 Version 1.1186 (November 16th 2013)
-- Implemented/Changed: Scenes 'Learn' command will now listen to the status (pressing On/Off/Mood)
-- Implemented: Added more log buttons to the devices tab
-- Implemented: Added otherdevices_dewpoint to Lua scripts
-- Implemented: Added otherdevices_rain to Lua scripts
-- Implemented: Added otherdevices_rain_lasthour to Lua scripts
-- Implemented: Added otherdevices_uv to Lua scripts
-- Implemented: Added otherdevices_winddir to Lua scripts
-- Implemented: Added otherdevices_windgust to Lua scripts
-- Implemented: Added otherdevices_windspeed to Lua scripts
-- Implemented: Added Visibility/Solar Radiation to Lua scripts
-- Implemented: Alecto SA30 smoke detector hardware support
-- Implemented: BBQ hardware supported (Maverick ET-732)
-- Implemented: Camera Setup, Streaming Icon
-- Implemented: Clicking on the security-panel icon in the dashboard/switch tab brings you to the actual security panel
-- Implemented: CM180i, now also displaying total usage
-- Implemented: Counterlog, Week chart, legend values
-- Implemented: Dashboard, clicking on Energy/P1 Smart Meter/Lux icons displays the log
-- Implemented: Dashboard/Lights/Scenes now displays a webcam icon when used in a Camera Setup
-- Implemented: Dim levels in steps of 5%
-- Implemented: Hardware type list is now sorted
-- Implemented: Limitless/AppLamp/WifiLedLamp (with Wifi Hub) hardware support
-- Implemented: Livolo hardware supported (switches/dimmers)
-- Implemented: New Version notification with version info, and option to review the latest changes
-- Implemented: OpenZWave initial support (Aeon USB Stick V2), with Temp/Hum/Lux/Power/Energy/Switches
-- Implemented: Option for each timer type to enable 'Randomness'
-- Implemented: Option to enable/disable menu tabs per user
-- Implemented: Option to manual add a ByronSX doorbell
-- Implemented: Oregon EW109 Temp+Humidity sensor support
-- Implemented: Rain, Short Log in graph
-- Implemented: Razberry Smoke Alarm
-- Implemented: Razberry, support for switch only devices (will be reported to controller NodeID)
-- Implemented: Revolt Power meter hardware support
-- Implemented: Rollertrol now displays a stop button
-- Implemented: Room Plan editor, dashboard room selector
-- Implemented: Room Plan editor, now possible to add Scenes/Groups
-- Implemented: Room Selector now also vissible on mobile devices
-- Implemented: Solar Radiation for Davis
-- Implemented: Teleinfo UDF French power meter
-- Implemented: Transfer Temp/Temp+Hum now possible between different subtypes
+- Added/Changed: Scenes 'Learn' command will now listen to the status (pressing On/Off/Mood)
+- Added: Added more log buttons to the devices tab
+- Added: Added otherdevices_dewpoint to Lua scripts
+- Added: Added otherdevices_rain to Lua scripts
+- Added: Added otherdevices_rain_lasthour to Lua scripts
+- Added: Added otherdevices_uv to Lua scripts
+- Added: Added otherdevices_winddir to Lua scripts
+- Added: Added otherdevices_windgust to Lua scripts
+- Added: Added otherdevices_windspeed to Lua scripts
+- Added: Added Visibility/Solar Radiation to Lua scripts
+- Added: Alecto SA30 smoke detector hardware support
+- Added: BBQ hardware supported (Maverick ET-732)
+- Added: Camera Setup, Streaming Icon
+- Added: Clicking on the security-panel icon in the dashboard/switch tab brings you to the actual security panel
+- Added: CM180i, now also displaying total usage
+- Added: Counterlog, Week chart, legend values
+- Added: Dashboard, clicking on Energy/P1 Smart Meter/Lux icons displays the log
+- Added: Dashboard/Lights/Scenes now displays a webcam icon when used in a Camera Setup
+- Added: Dim levels in steps of 5%
+- Added: Hardware type list is now sorted
+- Added: Limitless/AppLamp/WifiLedLamp (with Wifi Hub) hardware support
+- Added: Livolo hardware supported (switches/dimmers)
+- Added: New Version notification with version info, and option to review the latest changes
+- Added: OpenZWave initial support (Aeon USB Stick V2), with Temp/Hum/Lux/Power/Energy/Switches
+- Added: Option for each timer type to enable 'Randomness'
+- Added: Option to enable/disable menu tabs per user
+- Added: Option to manual add a ByronSX doorbell
+- Added: Oregon EW109 Temp+Humidity sensor support
+- Added: Rain, Short Log in graph
+- Added: Razberry Smoke Alarm
+- Added: Razberry, support for switch only devices (will be reported to controller NodeID)
+- Added: Revolt Power meter hardware support
+- Added: Rollertrol now displays a stop button
+- Added: Room Plan editor, dashboard room selector
+- Added: Room Plan editor, now possible to add Scenes/Groups
+- Added: Room Selector now also vissible on mobile devices
+- Added: Solar Radiation for Davis
+- Added: Teleinfo UDF French power meter
+- Added: Transfer Temp/Temp+Hum now possible between different subtypes
 - Changed: Added leading zero's in the Power/Gas reports for the months (work around)
 - Changed: ByronSX now uses the sound type as Unit ID
 - Changed: Lua example scripts now in UTF8
@@ -1592,40 +1592,40 @@ Version 1.1186 (November 16th 2013)
 - Fixed: Siren Switch type can now be switched on/off
 
 Version 1.1087 (Oktober 16th 2013)
-- Implemented/Fixed: HTML5, New Alert/Confirmation system to solve iOS issue
-- Implemented: 1Wire Voltage support on Utility/Dashboard
-- Implemented: Alecto WS1200 (Temp+Rain sensor)
-- Implemented: Chime Byron SX
-- Implemented: Dashboard, clicking on the Temperature/UV/Wind/Rain/Baro/Lux icons displays the log
-- Implemented: Eventsystem, Comma now supported in event OpenURL
-- Implemented: Eventsystem, Events now triggered by security state change implemented script_security_name.lua for sec panel triggers in lua.
-- Implemented: Eventsystem, Utility Device support for Energy,Gas,AirQuality,RFXSensor(Volt/AD),RFXMeter
-- Implemented: Leaf Wetness sensor
-- Implemented: Local hostname now automatically included in Local Network setup
-- Implemented: Logging RFXSensor AD/Volt
-- Implemented: Login page (solves the caching problems)
-- Implemented: Notification intervals extended
-- Implemented: OpenZWave, support for Sensor_Binary Motion/Tamper/Door sensor (for example the Philio 3In1)
-- Implemented: option in settings for basic-auth login type
-- Implemented: Option to create virtual sensors for dummy hardware (hardware tab)
-- Implemented: Option to Restart/Shutdown the system
-- Implemented: Option to specify local networks with mask (192.168.0.0/24, 192.168.0.10/32)
-- Implemented: Option to update to Stable or Beta versions
-- Implemented: P1 Smart Meter electra, Report view
-- Implemented: Raspberry Pi camera parameters
-- Implemented: Report view for: P1 Smart Gas electra, CM119/160
-- Implemented: RFXSensor Voltage, Log/Notifications
-- Implemented: S0 Meter USB
-- Implemented: Scenes/Groups device ordering
-- Implemented: Security Panel status now in device list
-- Implemented: Started with custom icons for On/Off switches
-- Implemented: Swedish language support (thanks to the community!)
-- Implemented: Temperature Average is now being logged, needed later for Degree Days
-- Implemented: Temperature Dewpoint in custom graph
-- Implemented: time safeguard (for systems without RTC)
-- Implemented: Wake-up On Lan support
-- Implemented: Web Update now also supported for armv7l systems (cubieboard2)
-- Implemented: WU, extra protection for wind speed/gust
+- Added/Fixed: HTML5, New Alert/Confirmation system to solve iOS issue
+- Added: 1Wire Voltage support on Utility/Dashboard
+- Added: Alecto WS1200 (Temp+Rain sensor)
+- Added: Chime Byron SX
+- Added: Dashboard, clicking on the Temperature/UV/Wind/Rain/Baro/Lux icons displays the log
+- Added: Eventsystem, Comma now supported in event OpenURL
+- Added: Eventsystem, Events now triggered by security state change Added script_security_name.lua for sec panel triggers in lua.
+- Added: Eventsystem, Utility Device support for Energy,Gas,AirQuality,RFXSensor(Volt/AD),RFXMeter
+- Added: Leaf Wetness sensor
+- Added: Local hostname now automatically included in Local Network setup
+- Added: Logging RFXSensor AD/Volt
+- Added: Login page (solves the caching problems)
+- Added: Notification intervals extended
+- Added: OpenZWave, support for Sensor_Binary Motion/Tamper/Door sensor (for example the Philio 3In1)
+- Added: option in settings for basic-auth login type
+- Added: Option to create virtual sensors for dummy hardware (hardware tab)
+- Added: Option to Restart/Shutdown the system
+- Added: Option to specify local networks with mask (192.168.0.0/24, 192.168.0.10/32)
+- Added: Option to update to Stable or Beta versions
+- Added: P1 Smart Meter electra, Report view
+- Added: Raspberry Pi camera parameters
+- Added: Report view for: P1 Smart Gas electra, CM119/160
+- Added: RFXSensor Voltage, Log/Notifications
+- Added: S0 Meter USB
+- Added: Scenes/Groups device ordering
+- Added: Security Panel status now in device list
+- Added: Started with custom icons for On/Off switches
+- Added: Swedish language support (thanks to the community!)
+- Added: Temperature Average is now being logged, needed later for Degree Days
+- Added: Temperature Dewpoint in custom graph
+- Added: time safeguard (for systems without RTC)
+- Added: Wake-up On Lan support
+- Added: Web Update now also supported for armv7l systems (cubieboard2)
+- Added: WU, extra protection for wind speed/gust
 - Changed: Dashboard Smart meter display in mobile mode
 - Changed: Dutch translation, and added extra TO field
 - Changed: Dutch translation, now UTF8 based
@@ -1660,30 +1660,30 @@ Version 1.1087 (Oktober 16th 2013)
 - Fixed: Typo's in SQLHelper.cpp
 
 Version 1.940 (July 31th 2013)
-- Implemented: Add manual switch support for Lighting1/Energenie
-- Implemented: Application settings, mobile view (mobile, or as normal dashboard), iPhone will always be mobile theme
-- Implemented: device name in scripts calls (6th parameter)
-- Implemented: Dew Point calculation for sensors with Temperature + Humidity
-- Implemented: Dew Point logging (not visible yet!)
-- Implemented: Dew Point notifications
-- Implemented: Dummy hardware device, that does nothing, but can be used for virtual switches
-- Implemented: Graph tooltips day of week translation
-- Implemented: Initial Support for Weather Underground sensors
-- Implemented: JSon, updating device based on idx (json.htm?type=command&param=udevice&idx=123&nvalue=1&svalue=2)
-- Implemented: Lighting2, when a Group On/Off is received, all switched with the same ID will be set to 'On' or 'Off' (internally)
-- Implemented: Moisture Sensor (for example from Davis)
-- Implemented: New Scene/Group functionality
-- Implemented: Raspberry Pi camera
-- Implemented: Razberry (Z-Wave), thermostat/light/temp/hum battery status
-- Implemented: Scenes, Dimmer Level
-- Implemented: Scenes, now have an On/Off button
-- Implemented: Security Panel
-- Implemented: Solar Radiation Sensor (for example from Weather Underground)
-- Implemented: Spanish language support (thanks to the community!)
-- Implemented: Temperature tab, translated speed,gust and chill
-- Implemented: Visibility Sensor (for example from Weather Underground)
-- Implemented: Wind Speed Unit option (m/s, km/h, mph, knots)
-- Implemented: Z-Wave, thermostat SetPoint
+- Added: Add manual switch support for Lighting1/Energenie
+- Added: Application settings, mobile view (mobile, or as normal dashboard), iPhone will always be mobile theme
+- Added: device name in scripts calls (6th parameter)
+- Added: Dew Point calculation for sensors with Temperature + Humidity
+- Added: Dew Point logging (not visible yet!)
+- Added: Dew Point notifications
+- Added: Dummy hardware device, that does nothing, but can be used for virtual switches
+- Added: Graph tooltips day of week translation
+- Added: Initial Support for Weather Underground sensors
+- Added: JSon, updating device based on idx (json.htm?type=command&param=udevice&idx=123&nvalue=1&svalue=2)
+- Added: Lighting2, when a Group On/Off is received, all switched with the same ID will be set to 'On' or 'Off' (internally)
+- Added: Moisture Sensor (for example from Davis)
+- Added: New Scene/Group functionality
+- Added: Raspberry Pi camera
+- Added: Razberry (Z-Wave), thermostat/light/temp/hum battery status
+- Added: Scenes, Dimmer Level
+- Added: Scenes, now have an On/Off button
+- Added: Security Panel
+- Added: Solar Radiation Sensor (for example from Weather Underground)
+- Added: Spanish language support (thanks to the community!)
+- Added: Temperature tab, translated speed,gust and chill
+- Added: Visibility Sensor (for example from Weather Underground)
+- Added: Wind Speed Unit option (m/s, km/h, mph, knots)
+- Added: Z-Wave, thermostat SetPoint
 - Changed: Dim Slider for mobile items now smaller
 - Changed: Last xx hours/days graph, Only Gas/Electricity sensors with same previous value will be ignored
 - Changed: Weather Underground updates now every 10 minutes
@@ -1721,50 +1721,50 @@ Version 1.762 (July 1th 2013)
 - Fixed: Setup dropdown, users/notifications selection highlight
 - Fixed: Sharing of Voltcraft,Razberry,BMP085
 - Fixed: Some RFXCOM protocols could not be set in the hardware setup (Meiantech,Visonic,FS20,RSL)
-- Implemented: Blinds Stop button
-- Implemented: BMP085 altitude display
-- Implemented: BMP085 I2C sensor (Rasberry Pi/arm only)
-- Implemented: BMP085 Possible forecast, still need exact method
-- Implemented: Dimmer devices keep there dim value when not setting the level (on/off)
-- Implemented: French language support (thanks to the community!)
-- Implemented: German language support (thanks to the community!)
-- Implemented: Global hardware sharing system (application settings, user manager)
-- Implemented: Initial language translation
-- Implemented: Italian language support (thanks to the community!)
-- Implemented: Latest RFXCOM SDK (#67)
-- Implemented: Lighting2, when a Group Off is received, all switched with the same ID will be set to 'Off' (internally)
-- Implemented: Lux Meter Type (Currently used by Z-Wave hardware)
-- Implemented: Now possible to switch remote hardware
-- Implemented: On/Off switches, Off Delay option
-- Implemented: Scenes can now be re-ordered (dashboard/scenes tab)
-- Implemented: Shared clients can now control switches
-- Implemented: User now sees only allowed devices
-- Implemented: X10 Security Arm/Disarm from dashboard/switches tab
-- Implemented: X10 Security Remote Arm Home/Arm Away prompt
-- Implemented: X10 Security Remote, When status is 'Panic' the alarm can now be disarmed
-- Implemented: Z-Wave Temp/Humidity sensor
+- Added: Blinds Stop button
+- Added: BMP085 altitude display
+- Added: BMP085 I2C sensor (Rasberry Pi/arm only)
+- Added: BMP085 Possible forecast, still need exact method
+- Added: Dimmer devices keep there dim value when not setting the level (on/off)
+- Added: French language support (thanks to the community!)
+- Added: German language support (thanks to the community!)
+- Added: Global hardware sharing system (application settings, user manager)
+- Added: Initial language translation
+- Added: Italian language support (thanks to the community!)
+- Added: Latest RFXCOM SDK (#67)
+- Added: Lighting2, when a Group Off is received, all switched with the same ID will be set to 'Off' (internally)
+- Added: Lux Meter Type (Currently used by Z-Wave hardware)
+- Added: Now possible to switch remote hardware
+- Added: On/Off switches, Off Delay option
+- Added: Scenes can now be re-ordered (dashboard/scenes tab)
+- Added: Shared clients can now control switches
+- Added: User now sees only allowed devices
+- Added: X10 Security Arm/Disarm from dashboard/switches tab
+- Added: X10 Security Remote Arm Home/Arm Away prompt
+- Added: X10 Security Remote, When status is 'Panic' the alarm can now be disarmed
+- Added: Z-Wave Temp/Humidity sensor
 - Removed: Altitude from BMP085 sensor
 
 Version 1.666 (May 28th 2013)
-- Implemented: 1-Wire aux sub-folders
-- Implemented: 1-Wire Humidity sensors
-- Implemented: 1-Wire OWFS sensor support, see Wiki pages
-- Implemented: 1-Wire sensor support (temperature at the moment, w1-gpio, w1-therm) see Wiki pages
-- Implemented: 1-Wire startup delay
-- Implemented: Application Settings, Notification Interval for Sensors/Switches
-- Implemented: Blinds now always have open/close buttons
-- Implemented: Clicking on the version number now displays the history file
-- Implemented: Devices Overview, added device Idx
-- Implemented: Enabled Timer support for Push On/Off light/switch devices
-- Implemented: Option to backup database (Setup -> Application Settings left menu)
-- Implemented: Option to enable/disable menus from application settings
-- Implemented: Option to request list of all timers via JSON (gettimerlist)
-- Implemented: Option to send Notifications (Setup -> More options)
-- Implemented: Settings Email, option to send camera snapshots as attachment
-- Implemented: Settings, Doorbell could be send as 'Group On' or 'On' command
-- Implemented: Settings, Option to specify P1 Smart Meter Type (with/without Decimals)
-- Implemented: support for 1-Wire with hubs
-- Implemented: User Editor
+- Added: 1-Wire aux sub-folders
+- Added: 1-Wire Humidity sensors
+- Added: 1-Wire OWFS sensor support, see Wiki pages
+- Added: 1-Wire sensor support (temperature at the moment, w1-gpio, w1-therm) see Wiki pages
+- Added: 1-Wire startup delay
+- Added: Application Settings, Notification Interval for Sensors/Switches
+- Added: Blinds now always have open/close buttons
+- Added: Clicking on the version number now displays the history file
+- Added: Devices Overview, added device Idx
+- Added: Enabled Timer support for Push On/Off light/switch devices
+- Added: Option to backup database (Setup -> Application Settings left menu)
+- Added: Option to enable/disable menus from application settings
+- Added: Option to request list of all timers via JSON (gettimerlist)
+- Added: Option to send Notifications (Setup -> More options)
+- Added: Settings Email, option to send camera snapshots as attachment
+- Added: Settings, Doorbell could be send as 'Group On' or 'On' command
+- Added: Settings, Option to specify P1 Smart Meter Type (with/without Decimals)
+- Added: support for 1-Wire with hubs
+- Added: User Editor
 - Changed: 1-Wire OWFS, ignoring ID=0 when temp is also 0
 - Changed: command line parameter -logfile is not -log (do not enable logging, only if needed, use the application log viewer)
 - Changed: Door bells do not display a status message anymore
@@ -1783,30 +1783,30 @@ Version 1.666 (May 28th 2013)
 - Fixed: Windows installer now includes scripts folder
 
 Version 1.607 (May 11th 2013)
-- Implemented: 5th parameter for light/switch script (full status descriptor)
-- Implemented: Date/Time/SunSet/SunRise on every page (except mobile browsers will have only SunSet/SunRise)
-- Implemented: Device type Blinds (Safy / RollerTrol / Hasta / A-OK RF01,AC114 / RAEX / Media Mount)
-- Implemented: Email connection timeout (10 seconds)
-- Implemented: Email Notifications
-- Implemented: Email notifications now send in background
-- Implemented: Email now via Curl library
-- Implemented: Email setup test button
-- Implemented: Experimental Light Log graph
-- Implemented: IP-Camera setup, and option to send email for light/switch/scene (email setup via application settings)
-- Implemented: Latest RFXCOM SDK (#66)
-- Implemented: Light/Switch notification On/Off type
-- Implemented: Light/Switch type "Door Lock"
-- Implemented: Option to enable/disable sending Emails in Notification Alerts
-- Implemented: P1 Smart meter Power, logging of day/night tariff separately (!note: next day value will be low)
-- Implemented: Push On switch type On/Off icon
-- Implemented: Raspberry Pi, is ttyAMA0 is free (GPIO/cmdline.txt) it can be used
-- Implemented: Razberry (Z-Wave) switch support
-- Implemented: Razberry (Z-Wave) usage meter sensor
-- Implemented: Support for multiple Email recipients
-- Implemented: Temp+Baro sensor, subType BMP085 I2C
-- Implemented: Volcraft CO-20 Air Quality hardware device (Unix only!)
-- Implemented: Website security, forbidden result after to many attempts
-- Implemented: when a light/switch is pressed an optional script can be started (see scripts/readme.txt)
+- Added: 5th parameter for light/switch script (full status descriptor)
+- Added: Date/Time/SunSet/SunRise on every page (except mobile browsers will have only SunSet/SunRise)
+- Added: Device type Blinds (Safy / RollerTrol / Hasta / A-OK RF01,AC114 / RAEX / Media Mount)
+- Added: Email connection timeout (10 seconds)
+- Added: Email Notifications
+- Added: Email notifications now send in background
+- Added: Email now via Curl library
+- Added: Email setup test button
+- Added: Experimental Light Log graph
+- Added: IP-Camera setup, and option to send email for light/switch/scene (email setup via application settings)
+- Added: Latest RFXCOM SDK (#66)
+- Added: Light/Switch notification On/Off type
+- Added: Light/Switch type "Door Lock"
+- Added: Option to enable/disable sending Emails in Notification Alerts
+- Added: P1 Smart meter Power, logging of day/night tariff separately (!note: next day value will be low)
+- Added: Push On switch type On/Off icon
+- Added: Raspberry Pi, is ttyAMA0 is free (GPIO/cmdline.txt) it can be used
+- Added: Razberry (Z-Wave) switch support
+- Added: Razberry (Z-Wave) usage meter sensor
+- Added: Support for multiple Email recipients
+- Added: Temp+Baro sensor, subType BMP085 I2C
+- Added: Volcraft CO-20 Air Quality hardware device (Unix only!)
+- Added: Website security, forbidden result after to many attempts
+- Added: when a light/switch is pressed an optional script can be started (see scripts/readme.txt)
 - Changed: Email setup now includes Port number
 - Changed: ignoring illegal Raspberry temperature (85/-273)
 - Changed: LightwaveRF inline relay, "Open inline relay" now seen as "On"
@@ -1830,23 +1830,23 @@ Version 1.607 (May 11th 2013)
 - Removed: patch for 'Better day value calculation' for multimeter devices (Like P1 Smart Meter electra), not needed
 
 Version 1.484 (April 28th 2013)
-- Implemented/Fixed: web update now not available for ArchLinux raspberry pi
-- Implemented: Add support for Lighting6 (Blyss)
-- Implemented: Added support for short term data in the custom temperature graph
-- Implemented: Browser cache is not automatically refresh (with a standby notification)
-- Implemented: Multi language support for sensors/switch names
-- Implemented: New wind rose icons
-- Implemented: Notifications for new updates are now send once in every 12 hours, unless checked by hand
-- Implemented: Option to delete data point from sensor by Shift-Left click on month/year graph point
-- Implemented: Option to display update check
-- Implemented: Push On Button switch type (sends an OFF command)
-- Implemented: Push On Button switch type (sends an ON command, with option to specify Off delay)
-- Implemented: Raspberry Pi onboard temperature sensor
-- Implemented: Raspberry Pi, updating via the web browser (Settings Tab)
-- Implemented: Support for the heat pump controller Rego600-Rego637 (Rego6XX)
-- Implemented: Utility sensors now display their usage value in large font
-- Implemented: Version number now read with json call
-- Implemented: Web Gui, sticky Notification (now only used when there is an update for the Raspberry Pi)
+- Added/Fixed: web update now not available for ArchLinux raspberry pi
+- Added: Add support for Lighting6 (Blyss)
+- Added: Added support for short term data in the custom temperature graph
+- Added: Browser cache is not automatically refresh (with a standby notification)
+- Added: Multi language support for sensors/switch names
+- Added: New wind rose icons
+- Added: Notifications for new updates are now send once in every 12 hours, unless checked by hand
+- Added: Option to delete data point from sensor by Shift-Left click on month/year graph point
+- Added: Option to display update check
+- Added: Push On Button switch type (sends an OFF command)
+- Added: Push On Button switch type (sends an ON command, with option to specify Off delay)
+- Added: Raspberry Pi onboard temperature sensor
+- Added: Raspberry Pi, updating via the web browser (Settings Tab)
+- Added: Support for the heat pump controller Rego600-Rego637 (Rego6XX)
+- Added: Utility sensors now display their usage value in large font
+- Added: Version number now read with json call
+- Added: Web Gui, sticky Notification (now only used when there is an update for the Raspberry Pi)
 - Changed: Application Settings
 - Changed: Better day value calculation for meter devices
 - Changed: Negative wind direction to positive
@@ -1864,39 +1864,39 @@ Version 1.484 (April 28th 2013)
 - Updated: HighCharts Library
 
 Version 1.412 (April 1th 2013)
-- Implemented: Ability to change page / bookmark page using # on url
-- Implemented: Added SVN revision number to version string
-- Implemented: Adjustment value for barometer sensors
-- Implemented: Adjustment value for temperature sensors
-- Implemented: Chart tooltip now includes weekday
-- Implemented: Checking for invalid sensor values
-- Implemented: Combined LaCrosse TX3 Temp + Humidity sensor as one new device
-- Implemented: command line option '-logfile'
-- Implemented: Displaying of RFXCOM Firmware
-- Implemented: Log now includes sensor name (if known)
-- Implemented: Log Window
-- Implemented: Minimized log traffic from server to client
-- Implemented: Mobile desktop, shortcuts for actual tab page
-- Implemented: Motion Sensor Off Delay
-- Implemented: multiply value for rain sensors
-- Implemented: New layout, dropdown menu, hardware moved to setting dropdown
-- Implemented: New Log mechanism (needed later for log viewer)
-- Implemented: Option to set RFXCOM Mode (enable/disable protocols)
-- Implemented: Scenes
-- Implemented: Scenes can now be added to the dashboard
-- Implemented: Sensors that are not received within xx minutes are highlighted
-- Implemented: Sensors that are not received within xx minutes are not logged any more (one hour now, will be in the settings)
-- Implemented: SQLite faster journal/update mode on non-windows systems
-- Implemented: Started working on support for the CM180i
-- Implemented: TE932Tool (USB 433MHz Weather Station, Hideki weather station like IROX Pro X, Mebus TE923 or TFA Nexus)
-- Implemented: Temperature (large) icons now represents global temperature index
-- Implemented: Temperature/Weather sensors now display their main value in large font
-- Implemented: Unix update script
-- Implemented: Weather Station barometer now more precise (xxxx.x hPa), and displaying device forecast
-- Implemented: Wind Direction Icons
-- Implemented: Wind meter direction is now averaged ( ~10 minutes )
-- Implemented: Windows, if user has NO admin rights, the Domoticz database will be created in %ProgramData%\Domoticz folder
-- Implemented: Windows, no longer need admin rights
+- Added: Ability to change page / bookmark page using # on url
+- Added: Added SVN revision number to version string
+- Added: Adjustment value for barometer sensors
+- Added: Adjustment value for temperature sensors
+- Added: Chart tooltip now includes weekday
+- Added: Checking for invalid sensor values
+- Added: Combined LaCrosse TX3 Temp + Humidity sensor as one new device
+- Added: command line option '-logfile'
+- Added: Displaying of RFXCOM Firmware
+- Added: Log now includes sensor name (if known)
+- Added: Log Window
+- Added: Minimized log traffic from server to client
+- Added: Mobile desktop, shortcuts for actual tab page
+- Added: Motion Sensor Off Delay
+- Added: multiply value for rain sensors
+- Added: New layout, dropdown menu, hardware moved to setting dropdown
+- Added: New Log mechanism (needed later for log viewer)
+- Added: Option to set RFXCOM Mode (enable/disable protocols)
+- Added: Scenes
+- Added: Scenes can now be added to the dashboard
+- Added: Sensors that are not received within xx minutes are highlighted
+- Added: Sensors that are not received within xx minutes are not logged any more (one hour now, will be in the settings)
+- Added: SQLite faster journal/update mode on non-windows systems
+- Added: Started working on support for the CM180i
+- Added: TE932Tool (USB 433MHz Weather Station, Hideki weather station like IROX Pro X, Mebus TE923 or TFA Nexus)
+- Added: Temperature (large) icons now represents global temperature index
+- Added: Temperature/Weather sensors now display their main value in large font
+- Added: Unix update script
+- Added: Weather Station barometer now more precise (xxxx.x hPa), and displaying device forecast
+- Added: Wind Direction Icons
+- Added: Wind meter direction is now averaged ( ~10 minutes )
+- Added: Windows, if user has NO admin rights, the Domoticz database will be created in %ProgramData%\Domoticz folder
+- Added: Windows, no longer need admin rights
 - Changed: Drag/Dropping sensors now inserts instead of swapping items
 - Changed: Error log now contains date/time
 - Changed: Excluded TE293 for windows systems
@@ -1920,19 +1920,19 @@ Version 1.412 (April 1th 2013)
 - Fixed: Weather Station Rain meter
 
 Version 1.0.9 (February 17th 2013)
-- Implemented: 'Delay Off' for Motion detectors
-- Implemented: Dimmer change now directly updates the user interface status
-- Implemented: dimmer timer support
-- Implemented: Latest RFXCOM SDK
-- Implemented: Motion Detector
-- Implemented: Option to enlarge the short-log (5 minutes) till 7 days
-- Implemented: OWL 160/180/190 logging/graphs
-- Implemented: OWL113 option to display in Ampere/Usage
-- Implemented: P1 smart meter will update once a minute, or when usage difference is greater than 40 Watt
-- Implemented: P1 Smart meter, Gas value now send when changed, or every 5 minutes
-- Implemented: Serial port auto reconnect option
-- Implemented: Smoke Detector Off image
-- Implemented: temp_hum Rubicson/IW008T/TX95
+- Added: 'Delay Off' for Motion detectors
+- Added: Dimmer change now directly updates the user interface status
+- Added: dimmer timer support
+- Added: Latest RFXCOM SDK
+- Added: Motion Detector
+- Added: Option to enlarge the short-log (5 minutes) till 7 days
+- Added: OWL 160/180/190 logging/graphs
+- Added: OWL113 option to display in Ampere/Usage
+- Added: P1 smart meter will update once a minute, or when usage difference is greater than 40 Watt
+- Added: P1 Smart meter, Gas value now send when changed, or every 5 minutes
+- Added: Serial port auto reconnect option
+- Added: Smoke Detector Off image
+- Added: temp_hum Rubicson/IW008T/TX95
 - Changed: Manual Add light switch types are now complete
 - Fixed: 'Dimmer' on the dashboard on mobile devices
 - Fixed: Day display for Month/Year utility graph
@@ -1954,29 +1954,29 @@ Version 1.0.8 (February 3th 2013)
 - Changed: When setting switch level = 0, the switch is turned Off now
 - Fixed: Hardware Enabled/Disabled option
 - Fixed: Light/Switches timer, time dropdown combobox
-- Implemented: Alternative webpage username/password reset (resetpwd file)
-- Implemented: Inverted blinds switch type
-- Implemented: New (Windows) command line argument (-nobrowser) do not start web browser
-- Implemented: OWL113 Ampere Notifications
-- Implemented: OWL113 current logging/chart
-- Implemented: P1 Energy Meter, today notification
-- Implemented: P1 Energy Meter/P1 Gas Meter/YouLess, usage notification
-- Implemented: P1 Gas Meter/YouLess/RFXMeter, today notification
-- Implemented: Switchtype 'Dimmer'
+- Added: Alternative webpage username/password reset (resetpwd file)
+- Added: Inverted blinds switch type
+- Added: New (Windows) command line argument (-nobrowser) do not start web browser
+- Added: OWL113 Ampere Notifications
+- Added: OWL113 current logging/chart
+- Added: P1 Energy Meter, today notification
+- Added: P1 Energy Meter/P1 Gas Meter/YouLess, usage notification
+- Added: P1 Gas Meter/YouLess/RFXMeter, today notification
+- Added: Switchtype 'Dimmer'
 - Removed: SQLite MFC runtime dependency
 
 Version 1.0.7 (January 18th 2013)
-- Implemented: Added jwsmtp class
-- Implemented: Clicking Top Left (Domoticz) will show dashboard
-- Implemented: Dashboard now includes server date
-- Implemented: Error message when serial port gets disconnected
-- Implemented: Hardware can now be Enabled/Disabled
-- Implemented: Lights/Switches, Contact Open/Closed icon
-- Implemented: Option to transfer old device logs/settings to a new device (for example when the device battery is replaced and received a new ID)
-- Implemented: Support for MAC serial ports
-- Implemented: Temperature Custom Graph
-- Implemented: utility graph 'last 24 hours usage'
-- Implemented: Youless Pulse Counter Meter hardware
+- Added: Added jwsmtp class
+- Added: Clicking Top Left (Domoticz) will show dashboard
+- Added: Dashboard now includes server date
+- Added: Error message when serial port gets disconnected
+- Added: Hardware can now be Enabled/Disabled
+- Added: Lights/Switches, Contact Open/Closed icon
+- Added: Option to transfer old device logs/settings to a new device (for example when the device battery is replaced and received a new ID)
+- Added: Support for MAC serial ports
+- Added: Temperature Custom Graph
+- Added: utility graph 'last 24 hours usage'
+- Added: Youless Pulse Counter Meter hardware
 - Changed: Barometer graph values now displays as whole number
 - Changed: Dashboard: P1 Smart Meter Energy does not show the retour values if not used
 - Changed: Devices Tab: Check if any device is selected to delete
@@ -1987,12 +1987,12 @@ Version 1.0.7 (January 18th 2013)
 - Changed: updated to RFCOM SDK version 6.01
 
 Version 1.0.6 (January 9th 2013)
-- Implemented: Option to add a manual LightwaveRF switch
-- Implemented: P1 Smart Meter Serial hardware
-- Implemented: P1 Smart Meter TCP hardware
-- Implemented: Random Timer (On Time timer with +/- xxx minutes offset)
-- Implemented: RFXCOM Lan will now keep retrying to connect when it does not succeed on the first time
-- Implemented: Web Protection, option to ignore (local) networks
+- Added: Option to add a manual LightwaveRF switch
+- Added: P1 Smart Meter Serial hardware
+- Added: P1 Smart Meter TCP hardware
+- Added: Random Timer (On Time timer with +/- xxx minutes offset)
+- Added: RFXCOM Lan will now keep retrying to connect when it does not succeed on the first time
+- Added: Web Protection, option to ignore (local) networks
 - Changed: Chime light/switch status will now also trigger a notification
 - Changed: P1 Smart Meter updates its information to shared clients now once every 60 seconds (reduces network traffic)
 - Changed: P1 Smart Meter, Gas value now only send/update when the value is changing (once every 1 a 2 hours)
