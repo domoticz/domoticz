@@ -488,28 +488,28 @@ void SolarEdgeAPI::GetBatteryDetails()
 	{
 		status = root["GRID"]["status"].asString();
 		if (status == "Active")
-		{
 			power = root["GRID"]["currentPower"].asFloat();
-			SendWattMeter(200, SE_GRID, 255, power * 1000, "Grid Power");
-		}
+		else
+			power = 0;
+		SendWattMeter(200, SE_GRID, 255, power * 1000, "Grid Power");
 	}
 	if (!root["LOAD"].empty())
 	{
 		status = root["LOAD"]["status"].asString();
 		if (status == "Active")
-		{
 			power = root["LOAD"]["currentPower"].asFloat();
-			SendWattMeter(200, SE_LOAD, 255, power * 1000, "Load Power");
-		}
+		else
+			power = 0;
+		SendWattMeter(200, SE_LOAD, 255, power * 1000, "Load Power");
 	}
 	if (!root["PV"].empty())
 	{
 		status = root["PV"]["status"].asString();
 		if (status == "Active")
-		{
 			power = root["PV"]["currentPower"].asFloat();
-			SendWattMeter(200, SE_PV, 255, power * 1000, "PV Power");
-		}
+		else
+			power = 0;
+		SendWattMeter(200, SE_PV, 255, power * 1000, "PV Power");
 	}
 	if (!root["STORAGE"].empty())
 	{
