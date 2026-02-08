@@ -18,6 +18,8 @@ Version 2026.xxxx
 - Added: RTL433, Support UV sensors names 'uvi'
 - Added: Support for the Model Context Protocol (/mcp) for use with AI Agents
 - Added: Web Interface, Better XSS prevention
+- Fixed: CalcMeterPrice/CalcMultiMeterPrice off-by-one price error with dynamic tariffs (Fixes #6181)
+- Fixed: P1Power hourly graph using wrong price and missing date range filter (Fixes #6181)
 - Fixed: Chart zoom buttons (notable on iOS devices)
 - Fixed: Kodi, Possible memory leak in Kodi Notification when destination is unreachable
 - Fixed: Philips Hue v1 API crashes Domoticz in certain cases since Hue Bridge firmware 1.74 (added extra validations)
