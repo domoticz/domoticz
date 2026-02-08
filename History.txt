@@ -15,6 +15,7 @@ Version 2026.xxxx
 - Added: Philips Hue v2 API, just for Door/Window Contacts (state/tamper/battery)
 - Added: PV Output, added consumption
 - Added: RFXCom, Support Orcon FAN device (#6500)
+- Added: RTL433, Support UV sensors names 'uvi'
 - Added: Support for the Model Context Protocol (/mcp) for use with AI Agents
 - Added: Web Interface, Better XSS prevention
 - Fixed: Chart zoom buttons (notable on iOS devices)

@@ -290,6 +290,11 @@ bool CRtl433::ParseData(std::map<std::string, std::string>& data)
 		uvi = (float)atof(data["uv"].c_str());
 		haveUV = true;
 	}
+	if (FindField(data, "uvi"))
+	{
+		uvi = (float)atof(data["uvi"].c_str());
+		haveUV = true;
+	}
 	if (FindField(data, "light_klx"))
 	{
 		lux = ((float)atof(data["light_klx"].c_str())) * 1000;
