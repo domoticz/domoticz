@@ -2211,6 +2211,7 @@ namespace http
 					}
 					else if (dType == pTypeThermostat6)
 					{
+						bHasTimers = m_sql.HasTimers(sd[0]);
 						root["result"][ii]["HaveTimeout"] = bHaveTimeout;
 						root["result"][ii]["TypeImg"] = "override_mini";
 

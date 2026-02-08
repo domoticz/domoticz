@@ -56,6 +56,9 @@
                         <a data-i18n="Notifications" ng-href="#/Devices/{{:: item.idx}}/Notifications"
                            ng-class="::{'btnsmall-sel': item.Notifications=='true', 'btnsmall': item.Notifications!='true'}"
                         ></a>
+                    <a ng-show="item.Type=='Thermostat 6'" data-i18n="Timers" ng-href="#/Devices/{{:: item.idx}}/Timers"
+                       ng-class="{'btnsmall-sel': item.Timers=='true', 'btnsmall': item.Timers!='true'}"
+                    ></a>
                     </span>
 
                     <a ng-show="item.forecast_url" class="btnsmall" ng-click="ctrl.ShowForecast('#tempcontent', 'ShowTemps')" data-i18n="Forecast">Forecast</a>
