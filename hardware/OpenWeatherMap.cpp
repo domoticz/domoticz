@@ -741,8 +741,12 @@ void COpenWeatherMap::GetMeterDetails()
 
 void COpenWeatherMap::ProcessOneCallAPI(const Json::Value& root)
 {
-// Process current
-if (root["current"].empty())
+	// This method processes the OneCall API response format (both 2.5 and 3.0)
+	// which includes current weather data and optional forecast data (hourly/daily)
+	// The data structure has current weather in root["current"]
+	
+	// Process current
+	if (root["current"].empty())
 {
 Log(LOG_ERROR, "Invalid data received, could not find current weather data!");
 return;
@@ -875,14 +879,14 @@ float clouds = current["clouds"].asFloat();
 SendPercentageSensor(7, 1, 255, clouds, "Clouds %");
 }
 
-//Rain (only present if their is rain)
+//Rain (only present if there is rain)
 float precipitation = 0;
 if (!current["rain"].empty() && !current["rain"]["1h"].empty())
 {
 precipitation = current["rain"]["1h"].asFloat();
 }
 
-//Snow (only present if their is snow), add together with rain as precipitation
+//Snow (only present if there is snow), add together with rain as precipitation
 if (!current["snow"].empty() && !current["snow"]["1h"].empty())
 {
 precipitation += current["snow"]["1h"].asFloat();
