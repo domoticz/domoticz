@@ -59,7 +59,7 @@ COpenWeatherMap::COpenWeatherMap(
 	const int addhourforecast,
 	const int adddescdev,
 	const int owmforecastscreen,
-	const bool bUseAPIv3) :
+	const int apiMode) :
 	m_APIKey(APIKey),
 	m_Location(Location),
 	m_Language("en"),
@@ -67,7 +67,7 @@ COpenWeatherMap::COpenWeatherMap(
 	m_add_hourforecast(addhourforecast),
 	m_add_descriptiondevices(adddescdev),
 	m_use_owminforecastscreen(owmforecastscreen),
-	m_bUseAPIv3(bUseAPIv3)
+	m_apiMode(apiMode)
 {
 	m_HwdID=ID;
 
@@ -671,14 +671,27 @@ void COpenWeatherMap::GetMeterDetails()
 	std::string sResult;
 	std::stringstream sURL;
 
-	if (!m_bUseAPIv3)
-		sURL << OWM_v2_onecall_URL;
+	// Mode 0: 2.5 OneCall (Paid), Mode 1: 3.0 OneCall (Paid), Mode 2: 2.5 Current Weather (Free)
+	if (m_apiMode == 2)
+	{
+		// Use basic current weather endpoint (free API)
+		sURL << OWM_Get_City_Details;
+		sURL << "lat=" << m_Lat << "&lon=" << m_Lon;
+		sURL << "&appid=" << m_APIKey;
+		sURL << "&units=metric" << "&lang=" << m_Language;
+	}
 	else
-		sURL << OWM_v3_onecall_URL;
-	sURL << "lat=" << m_Lat << "&lon=" << m_Lon;
-	sURL << "&exclude=minutely";
-	sURL << "&appid=" << m_APIKey;
-	sURL << "&units=metric" << "&lang=" << m_Language;
+	{
+		// Use OneCall API (requires paid plan)
+		if (m_apiMode == 0)
+			sURL << OWM_v2_onecall_URL;
+		else
+			sURL << OWM_v3_onecall_URL;
+		sURL << "lat=" << m_Lat << "&lon=" << m_Lon;
+		sURL << "&exclude=minutely";
+		sURL << "&appid=" << m_APIKey;
+		sURL << "&units=metric" << "&lang=" << m_Language;
+	}
 
 	Debug(DEBUG_HARDWARE, "Get data from %s", sURL.str().c_str());
 
@@ -714,221 +727,382 @@ void COpenWeatherMap::GetMeterDetails()
 		return;
 	}
 
-	// Process current
-	if (root["current"].empty())
+	if (m_apiMode == 2)
 	{
-		Log(LOG_ERROR, "Invalid data received, could not find current weather data!");
-		return;
-	}
-
-	//Current values
-	Json::Value current;
-	float temp = -999.9F;
-	float fltemp = -999.9F;
-
-	current = root["current"];
-	int humidity = 0;
-	float barometric = 0;
-	int barometric_forecast = 0;
-	if (!current["temp"].empty())
-	{
-		temp = current["temp"].asFloat();
-	}
-	if (!current["feels_like"].empty())
-	{
-		fltemp = current["feels_like"].asFloat();
-	}
-	if (!current["humidity"].empty())
-	{
-		humidity = current["humidity"].asInt();
-	}
-	if (!current["pressure"].empty())
-	{
-		barometric = current["pressure"].asFloat();
-		barometric_forecast = GetForecastFromBarometricPressure(barometric, temp);
-		if (!current["weather"].empty())
-		{
-			if (!current["weather"][0].empty())
-			{
-				if (!current["weather"][0]["id"].empty())
-				{
-					int condition = current["weather"][0]["id"].asInt();
-					/* We do not use it at the moment, does not feel ok
-					if ((condition == 801) || (condition == 802))
-						barometric_forecast = baroForecastPartlyCloudy;
-					else if (condition == 803)
-						barometric_forecast = baroForecastCloudy;
-					else if ((condition == 800))
-						barometric_forecast = baroForecastSunny;
-					else if ((condition >= 300) && (condition < 700))
-						barometric_forecast = baroForecastRain;
-					*/
-				}
-				if (!current["weather"][0]["description"].empty())
-				{
-					std::string weatherdescription = current["weather"][0]["description"].asString();
-					SendTextSensor(2, 1, 255, weatherdescription, "Weather Description");
-				}
-			}
-		}
-	}
-	if ((temp != -999.9F) && (humidity != 0) && (barometric != 0))
-	{
-		SendTempHumBaroSensorFloat(1, 255, temp, humidity, barometric, barometric_forecast, "TempHumBaro");
-	}
-	else if ((temp != -999.9F) && (humidity != 0))
-	{
-		SendTempHumSensor(1, 255, temp, humidity, "TempHum");
+		// Process basic current weather API response
+		ProcessCurrentWeatherAPI(root);
 	}
 	else
 	{
-		if (temp != -999.9F)
-			SendTempSensor(1, 255, temp, "Temperature");
-		if (humidity != 0)
-			SendHumiditySensor(1, 255, humidity, "Humidity");
+		// Process OneCall API response
+		ProcessOneCallAPI(root);
 	}
+}
 
-	// Feel temperature
-	if (fltemp != -999.9F)
-	{
-		SendTempSensor(3, 255, fltemp, "Feel Temperature");
-	}
+void COpenWeatherMap::ProcessOneCallAPI(const Json::Value& root)
+{
+// Process current
+if (root["current"].empty())
+{
+Log(LOG_ERROR, "Invalid data received, could not find current weather data!");
+return;
+}
 
-	//Wind
-	if (!current["wind_speed"].empty())
-	{
-		int16_t wind_degrees = -1;
-		float windgust_ms = 0;
+//Current values
+Json::Value current;
+float temp = -999.9F;
+float fltemp = -999.9F;
 
-		float windspeed_ms = current["wind_speed"].asFloat();
+current = root["current"];
+int humidity = 0;
+float barometric = 0;
+int barometric_forecast = 0;
+if (!current["temp"].empty())
+{
+temp = current["temp"].asFloat();
+}
+if (!current["feels_like"].empty())
+{
+fltemp = current["feels_like"].asFloat();
+}
+if (!current["humidity"].empty())
+{
+humidity = current["humidity"].asInt();
+}
+if (!current["pressure"].empty())
+{
+barometric = current["pressure"].asFloat();
+barometric_forecast = GetForecastFromBarometricPressure(barometric, temp);
+if (!current["weather"].empty())
+{
+if (!current["weather"][0].empty())
+{
+if (!current["weather"][0]["id"].empty())
+{
+int condition = current["weather"][0]["id"].asInt();
+/* We do not use it at the moment, does not feel ok
+if ((condition == 801) || (condition == 802))
+barometric_forecast = baroForecastPartlyCloudy;
+else if (condition == 803)
+barometric_forecast = baroForecastCloudy;
+else if ((condition == 800))
+barometric_forecast = baroForecastSunny;
+else if ((condition >= 300) && (condition < 700))
+barometric_forecast = baroForecastRain;
+*/
+}
+if (!current["weather"][0]["description"].empty())
+{
+std::string weatherdescription = current["weather"][0]["description"].asString();
+SendTextSensor(2, 1, 255, weatherdescription, "Weather Description");
+}
+}
+}
+}
+if ((temp != -999.9F) && (humidity != 0) && (barometric != 0))
+{
+SendTempHumBaroSensorFloat(1, 255, temp, humidity, barometric, barometric_forecast, "TempHumBaro");
+}
+else if ((temp != -999.9F) && (humidity != 0))
+{
+SendTempHumSensor(1, 255, temp, humidity, "TempHum");
+}
+else
+{
+if (temp != -999.9F)
+SendTempSensor(1, 255, temp, "Temperature");
+if (humidity != 0)
+SendHumiditySensor(1, 255, humidity, "Humidity");
+}
 
-		if (!current["wind_gust"].empty())
-		{
-			windgust_ms = current["wind_gust"].asFloat();
-		}
+// Feel temperature
+if (fltemp != -999.9F)
+{
+SendTempSensor(3, 255, fltemp, "Feel Temperature");
+}
 
-		if (!current["wind_deg"].empty())
-		{
-			wind_degrees = current["wind_deg"].asInt();
+//Wind
+if (!current["wind_speed"].empty())
+{
+int16_t wind_degrees = -1;
+float windgust_ms = 0;
 
-			//we need to assume temp and chill temperatures are availabe to define subtype of wind device. 
-			//It is possible that sometimes in the API a temperature is missing, but it should not change a device type.
-			//Therefor set that temp to 0
-			float wind_temp = (temp != -999.9F ? temp : 0);
-			float wind_chill = (fltemp != -999.9F ? fltemp : 0); // Wind_chill is same as feels like temperature
+float windspeed_ms = current["wind_speed"].asFloat();
 
-			SendWind(4, 255, wind_degrees, windspeed_ms, windgust_ms, wind_temp, wind_chill, true, true, "Wind");
-		}
-	}
+if (!current["wind_gust"].empty())
+{
+windgust_ms = current["wind_gust"].asFloat();
+}
 
-	//UV
-	if (!current["uvi"].empty())
-	{
-		float uvi = current["uvi"].asFloat();
-		if ((uvi < 16) && (uvi >= 0))
-		{
-			SendUVSensor(5, 1, 255, uvi, "UV Index");
-		}
-	}
+if (!current["wind_deg"].empty())
+{
+wind_degrees = current["wind_deg"].asInt();
 
-	//Visibility
-	if (!current["visibility"].empty() && current["visibility"].isInt())
-	{
-		float visibility = ((float)current["visibility"].asInt()) / 1000.0F;
-		if (visibility >= 0)
-		{
-			SendVisibilitySensor(6, 1, 255, visibility, "Visibility");
-		}
-	}
+//we need to assume temp and chill temperatures are availabe to define subtype of wind device. 
+//It is possible that sometimes in the API a temperature is missing, but it should not change a device type.
+//Therefor set that temp to 0
+float wind_temp = (temp != -999.9F ? temp : 0);
+float wind_chill = (fltemp != -999.9F ? fltemp : 0); // Wind_chill is same as feels like temperature
 
-	//clouds
-	if (!current["clouds"].empty())
-	{
-		float clouds = current["clouds"].asFloat();
-		SendPercentageSensor(7, 1, 255, clouds, "Clouds %");
-	}
+SendWind(4, 255, wind_degrees, windspeed_ms, windgust_ms, wind_temp, wind_chill, true, true, "Wind");
+}
+}
 
-	//Rain (only present if their is rain)
-	float precipitation = 0;
-	if (!current["rain"].empty() && !current["rain"]["1h"].empty())
-	{
-		precipitation = current["rain"]["1h"].asFloat();
-	}
+//UV
+if (!current["uvi"].empty())
+{
+float uvi = current["uvi"].asFloat();
+if ((uvi < 16) && (uvi >= 0))
+{
+SendUVSensor(5, 1, 255, uvi, "UV Index");
+}
+}
 
-	//Snow (only present if their is snow), add together with rain as precipitation
-	if (!current["snow"].empty() && !current["snow"]["1h"].empty())
-	{
-		precipitation += current["snow"]["1h"].asFloat();
-	}
-	SendRainRateSensor(8, 255, precipitation, "Precipitation");
-	m_itIsRaining = precipitation > 0;
-	SendSwitch(9, 1, 255, m_itIsRaining, 0, "Is it raining/snowing", m_Name);
+//Visibility
+if (!current["visibility"].empty() && current["visibility"].isInt())
+{
+float visibility = ((float)current["visibility"].asInt()) / 1000.0F;
+if (visibility >= 0)
+{
+SendVisibilitySensor(6, 1, 255, visibility, "Visibility");
+}
+}
 
-	// Process daily forecast data if available
-	if (root["daily"].empty())
-	{
-		if (m_add_dayforecast)
-			Log(LOG_STATUS, "Could not find daily weather forecast data!");
-	}
-	else if (m_add_dayforecast)
-	{
-		Json::Value dailyfc;
-		uint8_t iDay = 0;
+//clouds
+if (!current["clouds"].empty())
+{
+float clouds = current["clouds"].asFloat();
+SendPercentageSensor(7, 1, 255, clouds, "Clouds %");
+}
 
-		dailyfc = root["daily"];
-		do
-		{
-			if (dailyfc[iDay]["dt"].empty())
-			{
-				Log(LOG_STATUS, "Processing daily forecast failed (unexpected structure)!");
-				break;
-			}
-			std::string sDay = GetDayFromUTCtimestamp(iDay, dailyfc[iDay]["dt"].asString());
-			Debug(DEBUG_HARDWARE, "Processing daily forecast for %s (%s)", dailyfc[iDay]["dt"].asString().c_str(), sDay.c_str());
+//Rain (only present if their is rain)
+float precipitation = 0;
+if (!current["rain"].empty() && !current["rain"]["1h"].empty())
+{
+precipitation = current["rain"]["1h"].asFloat();
+}
 
-			Json::Value curday = dailyfc[iDay];
+//Snow (only present if their is snow), add together with rain as precipitation
+if (!current["snow"].empty() && !current["snow"]["1h"].empty())
+{
+precipitation += current["snow"]["1h"].asFloat();
+}
+SendRainRateSensor(8, 255, precipitation, "Precipitation");
+m_itIsRaining = precipitation > 0;
+SendSwitch(9, 1, 255, m_itIsRaining, 0, "Is it raining/snowing", m_Name);
 
-			if (!ProcessForecast(curday, "Day", sDay, iDay, 17))
-			{
-				Log(LOG_STATUS, "Processing daily forecast for day %d failed!", iDay);
-			}
-			iDay++;
-		}
-		while (!dailyfc[iDay].empty());
-		Debug(DEBUG_HARDWARE, "Processed %d daily forecasts",iDay);
-	}
+// Process daily forecast data if available
+if (root["daily"].empty())
+{
+if (m_add_dayforecast)
+Log(LOG_STATUS, "Could not find daily weather forecast data!");
+}
+else if (m_add_dayforecast)
+{
+Json::Value dailyfc;
+uint8_t iDay = 0;
 
-	// Process hourly forecast data if available
-	if (root["hourly"].empty())
-	{
-		if (m_add_hourforecast)
-			Log(LOG_STATUS, "Could not find hourly weather forecast data!");
-	}
-	else if (m_add_hourforecast)
-	{
-		Json::Value hourlyfc;
-		uint8_t iHour = 0;
+dailyfc = root["daily"];
+do
+{
+if (dailyfc[iDay]["dt"].empty())
+{
+Log(LOG_STATUS, "Processing daily forecast failed (unexpected structure)!");
+break;
+}
+std::string sDay = GetDayFromUTCtimestamp(iDay, dailyfc[iDay]["dt"].asString());
+Debug(DEBUG_HARDWARE, "Processing daily forecast for %s (%s)", dailyfc[iDay]["dt"].asString().c_str(), sDay.c_str());
 
-		hourlyfc = root["hourly"];
-		do
-		{
-			if (hourlyfc[iHour]["dt"].empty())
-			{
-				Log(LOG_STATUS, "Processing hourly forecast failed (unexpected structure)!");
-				break;
-			}
-			std::string sHour = GetHourFromUTCtimestamp(iHour, hourlyfc[iHour]["dt"].asString());
-			Debug(DEBUG_HARDWARE, "Processing hourly forecast for %s (%s)", hourlyfc[iHour]["dt"].asString().c_str(), sHour.c_str());
+Json::Value curday = dailyfc[iDay];
 
-			Json::Value curhour = hourlyfc[iHour];
+if (!ProcessForecast(curday, "Day", sDay, iDay, 17))
+{
+Log(LOG_STATUS, "Processing daily forecast for day %d failed!", iDay);
+}
+iDay++;
+}
+while (!dailyfc[iDay].empty());
+Debug(DEBUG_HARDWARE, "Processed %d daily forecasts",iDay);
+}
 
-			if (!ProcessForecast(curhour, "Hour", sHour, iHour, 257))
-			{
-				Log(LOG_STATUS, "Processing hourly forecast for hour %d failed!", iHour);
-			}
-			iHour++;
-		}
-		while (!hourlyfc[iHour].empty());
-		Debug(DEBUG_HARDWARE, "Processed %d hourly forecasts",iHour);
-	}
+// Process hourly forecast data if available
+if (root["hourly"].empty())
+{
+if (m_add_hourforecast)
+Log(LOG_STATUS, "Could not find hourly weather forecast data!");
+}
+else if (m_add_hourforecast)
+{
+Json::Value hourlyfc;
+uint8_t iHour = 0;
+
+hourlyfc = root["hourly"];
+do
+{
+if (hourlyfc[iHour]["dt"].empty())
+{
+Log(LOG_STATUS, "Processing hourly forecast failed (unexpected structure)!");
+break;
+}
+std::string sHour = GetHourFromUTCtimestamp(iHour, hourlyfc[iHour]["dt"].asString());
+Debug(DEBUG_HARDWARE, "Processing hourly forecast for %s (%s)", hourlyfc[iHour]["dt"].asString().c_str(), sHour.c_str());
+
+Json::Value curhour = hourlyfc[iHour];
+
+if (!ProcessForecast(curhour, "Hour", sHour, iHour, 257))
+{
+Log(LOG_STATUS, "Processing hourly forecast for hour %d failed!", iHour);
+}
+iHour++;
+}
+while (!hourlyfc[iHour].empty());
+Debug(DEBUG_HARDWARE, "Processed %d hourly forecasts",iHour);
+}
+}
+
+void COpenWeatherMap::ProcessCurrentWeatherAPI(const Json::Value& root)
+{
+// Check for valid response
+if (root["cod"].empty() || root["main"].empty())
+{
+Log(LOG_ERROR, "Invalid data received from current weather API!");
+return;
+}
+
+if (root["cod"].asString() != "200")
+{
+Log(LOG_ERROR, "Error code received from API: %s", root["cod"].asString().c_str());
+return;
+}
+
+// Extract current weather data from the basic API response
+// The structure is different from OneCall API - data is at root level
+float temp = -999.9F;
+float fltemp = -999.9F;
+int humidity = 0;
+float barometric = 0;
+int barometric_forecast = 0;
+
+// Temperature and humidity are in "main" object
+if (!root["main"]["temp"].empty())
+{
+temp = root["main"]["temp"].asFloat();
+}
+if (!root["main"]["feels_like"].empty())
+{
+fltemp = root["main"]["feels_like"].asFloat();
+}
+if (!root["main"]["humidity"].empty())
+{
+humidity = root["main"]["humidity"].asInt();
+}
+if (!root["main"]["pressure"].empty())
+{
+barometric = root["main"]["pressure"].asFloat();
+barometric_forecast = GetForecastFromBarometricPressure(barometric, temp);
+}
+
+// Weather description
+if (!root["weather"].empty() && !root["weather"][0].empty())
+{
+if (!root["weather"][0]["description"].empty())
+{
+std::string weatherdescription = root["weather"][0]["description"].asString();
+SendTextSensor(2, 1, 255, weatherdescription, "Weather Description");
+}
+}
+
+// Send temperature/humidity/barometric sensors
+if ((temp != -999.9F) && (humidity != 0) && (barometric != 0))
+{
+SendTempHumBaroSensorFloat(1, 255, temp, humidity, barometric, barometric_forecast, "TempHumBaro");
+}
+else if ((temp != -999.9F) && (humidity != 0))
+{
+SendTempHumSensor(1, 255, temp, humidity, "TempHum");
+}
+else
+{
+if (temp != -999.9F)
+SendTempSensor(1, 255, temp, "Temperature");
+if (humidity != 0)
+SendHumiditySensor(1, 255, humidity, "Humidity");
+}
+
+// Feel temperature
+if (fltemp != -999.9F)
+{
+SendTempSensor(3, 255, fltemp, "Feel Temperature");
+}
+
+// Wind data is at root level
+if (!root["wind"].empty())
+{
+int16_t wind_degrees = -1;
+float windgust_ms = 0;
+float windspeed_ms = 0;
+
+if (!root["wind"]["speed"].empty())
+{
+windspeed_ms = root["wind"]["speed"].asFloat();
+}
+
+if (!root["wind"]["gust"].empty())
+{
+windgust_ms = root["wind"]["gust"].asFloat();
+}
+
+if (!root["wind"]["deg"].empty())
+{
+wind_degrees = root["wind"]["deg"].asInt();
+}
+
+if (wind_degrees != -1)
+{
+float wind_temp = (temp != -999.9F ? temp : 0);
+float wind_chill = (fltemp != -999.9F ? fltemp : 0);
+SendWind(4, 255, wind_degrees, windspeed_ms, windgust_ms, wind_temp, wind_chill, true, true, "Wind");
+}
+}
+
+// UV Index is not available in the free current weather API
+// Visibility
+if (!root["visibility"].empty() && root["visibility"].isInt())
+{
+float visibility = ((float)root["visibility"].asInt()) / 1000.0F;
+if (visibility >= 0)
+{
+SendVisibilitySensor(6, 1, 255, visibility, "Visibility");
+}
+}
+
+// Clouds
+if (!root["clouds"].empty() && !root["clouds"]["all"].empty())
+{
+float clouds = root["clouds"]["all"].asFloat();
+SendPercentageSensor(7, 1, 255, clouds, "Clouds %");
+}
+
+// Rain (only present if there is rain)
+float precipitation = 0;
+if (!root["rain"].empty() && !root["rain"]["1h"].empty())
+{
+precipitation = root["rain"]["1h"].asFloat();
+}
+
+// Snow (only present if there is snow)
+if (!root["snow"].empty() && !root["snow"]["1h"].empty())
+{
+precipitation += root["snow"]["1h"].asFloat();
+}
+
+SendRainRateSensor(8, 255, precipitation, "Precipitation");
+m_itIsRaining = precipitation > 0;
+SendSwitch(9, 1, 255, m_itIsRaining, 0, "Is it raining/snowing", m_Name);
+
+// No forecast data available in the free current weather API
+if (m_add_dayforecast || m_add_hourforecast)
+{
+Log(LOG_STATUS, "Forecast data is not available with the Current Weather API (Free plan). Please use OneCall API with a paid subscription for forecast data.");
+}
 }
