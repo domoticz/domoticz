@@ -1,5 +1,6 @@
 #pragma once
 
+#include <atomic>
 #include <string>
 #include "RFXNames.h"
 #include "../hardware/hardwaretypes.h"
@@ -480,6 +481,7 @@ public:
 	bool m_bEnableEventSystemFullURLLog;
 	int m_ShortLogInterval;
 	bool m_bShortLogAddOnlyNewValues;
+	std::atomic<int> m_PriceResolution;
 	bool m_bLogEventScriptTrigger;
 	bool m_bDisableDzVentsSystem;
 	double m_max_kwh_usage;

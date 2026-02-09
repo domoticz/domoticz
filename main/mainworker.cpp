@@ -14698,7 +14698,22 @@ void MainWorker::HandleHourPrice()
 					{
 						//Make sure the prices are actual
 						Enever* pEnever = dynamic_cast<Enever*>(const_cast<CDomoticzHardwareBase*>(pHardware));
-						pEnever->ActualizePrices();
+						if (pEnever != nullptr)
+						{
+							// Sync Enever resolution with global PriceResolution setting
+							// Enever currently only supports 15 and 60 minute resolution
+							bool bWantQuarterPrices = (m_sql.m_PriceResolution < 60);
+							if (pEnever->m_bUseQuarterPrices != bWantQuarterPrices)
+							{
+								int res = m_sql.m_PriceResolution.load();
+								if (res < 60)
+									_log.Log(LOG_STATUS, "Enever: Syncing price resolution to %d minutes", res);
+								else
+									_log.Log(LOG_STATUS, "Enever: Syncing price resolution to hourly");
+								pEnever->m_bUseQuarterPrices = bWantQuarterPrices;
+							}
+							pEnever->ActualizePrices();
+						}
 						result = m_sql.safe_query("SELECT HardwareID, Type, SubType, sValue, LastUpdate, AddjValue2 FROM DeviceStatus WHERE (ID==%d)", iHP_E_Idx);
 					}
 				}

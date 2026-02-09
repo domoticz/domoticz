@@ -78,8 +78,8 @@ define(['app', 'log/Chart'], function (app) {
                     highchartTemplate: {
                         xAxis: {
                             dateTimeLabelFormats: {
-                                hour: '%H:00',
-                                day: '%H:00'
+                                hour: ($.myglobals && $.myglobals.PriceResolution < 60) ? '%H:%M' : '%H:00',
+                                day: ($.myglobals && $.myglobals.PriceResolution < 60) ? '%H:%M' : '%H:00'
                             },
 							events: {
 								afterSetExtremes: function (event) {
@@ -94,7 +94,7 @@ define(['app', 'log/Chart'], function (app) {
 */
 								}
 							},
-                            tickInterval: 1 * 3600 * 1000
+                            tickInterval: ($.myglobals && $.myglobals.PriceResolution < 60) ? ($.myglobals.PriceResolution * 60 * 1000) : (1 * 3600 * 1000)
                         },
                         tooltip: {
                             crosshairs: false
@@ -111,7 +111,7 @@ define(['app', 'log/Chart'], function (app) {
                     range: ctrl.range,
                     device: ctrl.device,
                     sensorType: 'counter',
-                    chartName: $.t('Usage') + ' / ' + $.t('Hour'),
+                    chartName: $.t('Usage') + ' / ' + (($.myglobals && $.myglobals.PriceResolution < 60) ? $.myglobals.PriceResolution + ' ' + $.t('Minutes') : $.t('Hour')),
                     autoRefreshIsEnabled: function () {
                         return ctrl.logCtrl.autoRefresh;
                     },

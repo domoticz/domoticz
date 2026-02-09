@@ -201,8 +201,18 @@ namespace http
 						getNoon(daybefore, tm2, tm1.tm_year + 1900, tm1.tm_mon + 1, tm1.tm_mday - 1);
 						sprintf(szDateStart, "%04d-%02d-%02d %02d:%02d:%02d", tm2.tm_year + 1900, tm2.tm_mon + 1, tm2.tm_mday, tm1.tm_hour, tm1.tm_min, tm1.tm_sec);
 
-						result = m_sql.safe_query("SELECT strftime('%%Y-%%m-%%d %%H:00:00', Date) as ymd, MIN(Value1) as u1, MIN(Value5) as u2, MIN(Value2) as d1, MIN(Value6) as d2, MIN(Price) as price FROM %s WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q' AND Date<='%q') GROUP BY ymd",
-							dbasetable.c_str(), idx, szDateStart, szDateEnd);
+						std::string szGroupBy;
+						int resolution = m_sql.m_PriceResolution.load();
+						if (resolution < 60) {
+							// Group by sub-hourly slots using the configured resolution (e.g. 15 or 30 minutes)
+							szGroupBy = "strftime('%%Y-%%m-%%d %%H:', Date) || printf('%%02d', (CAST(strftime('%%M', Date) AS INTEGER) / " + std::to_string(resolution) + ") * " + std::to_string(resolution) + ") || ':00'";
+						} else {
+							// Group by hour (original behavior)
+							szGroupBy = "strftime('%%Y-%%m-%%d %%H:00:00', Date)";
+						}
+
+						result = m_sql.safe_query("SELECT %s as ymd, MIN(Value1) as u1, MIN(Value5) as u2, MIN(Value2) as d1, MIN(Value6) as d2, MIN(Price) as price FROM %s WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q' AND Date<='%q') GROUP BY ymd",
+							szGroupBy.c_str(), dbasetable.c_str(), idx, szDateStart, szDateEnd);
 						if (!result.empty())
 						{
 							int ii = 0;
@@ -285,6 +295,7 @@ namespace http
 							{
 								root["delivered"] = true;
 							}
+							root["PriceResolution"] = m_sql.m_PriceResolution.load();
 						}
 					}
 				}
@@ -1047,6 +1058,7 @@ namespace http
 						root["ValueQuantity"] = options["ValueQuantity"];
 						root["ValueUnits"] = options["ValueUnits"];
 						root["Divider"] = divider;
+						root["PriceResolution"] = m_sql.m_PriceResolution.load();
 
 						int ii = 0;
 
@@ -1062,6 +1074,11 @@ namespace http
 
 						int lastHour = 0;
 						time_t lastTime = 0;
+
+						// Sub-hourly slot grouping for kWh meters
+						bool bUseSubHourSlots = (m_sql.m_PriceResolution < 60);
+						int lastSlot = -1;  // replaces lastHour for 15-min mode
+						int currentSlot = 0;
 
 						int method = 0;
 						std::string sMethod = request::findValue(&req, "method");
@@ -1091,11 +1108,23 @@ namespace http
 									// bars / hour
 									int64_t actValue = std::stoll(sd[0]);
 									szlastDateTime = sd[1].substr(0, 16);
-									szActDateTimeHour = sd[1].substr(0, 13) + ":00";
 
 									struct tm ntime;
 									time_t atime;
 									ParseSQLdatetime(atime, ntime, sd[1], -1);
+
+									// Format timestamp for 15-min or hourly slots
+									if (bUseSubHourSlots)
+									{
+										int slotMin = (ntime.tm_min / m_sql.m_PriceResolution) * m_sql.m_PriceResolution;
+										char szSlot[32];
+										snprintf(szSlot, sizeof(szSlot), "%s%02d", sd[1].substr(0, 14).c_str(), slotMin);
+										szActDateTimeHour = szSlot;
+									}
+									else
+									{
+										szActDateTimeHour = sd[1].substr(0, 13) + ":00";
+									}
 
 									if (actValue < ulFirstValue)
 									{
@@ -1103,11 +1132,14 @@ namespace http
 										{
 											//Assume ,eter/counter turnover
 											ulFirstValue = ulRealFirstValue = actValue;
+											currentSlot = bUseSubHourSlots ? (ntime.tm_hour * (60 / m_sql.m_PriceResolution) + ntime.tm_min / m_sql.m_PriceResolution) : ntime.tm_hour;
+											lastSlot = currentSlot;
 											lastHour = ntime.tm_hour;
 										}
 									}
 
-									if (lastHour != ntime.tm_hour)
+									currentSlot = bUseSubHourSlots ? (ntime.tm_hour * (60 / m_sql.m_PriceResolution) + ntime.tm_min / m_sql.m_PriceResolution) : ntime.tm_hour;
+									if (lastSlot != currentSlot)
 									{
 										if (lastDay != ntime.tm_mday)
 										{
@@ -1178,12 +1210,15 @@ namespace http
 										{
 											ulFirstValue = actValue;
 										}
+										lastSlot = currentSlot;
 										lastHour = ntime.tm_hour;
 									}
 
 									if (!bHaveFirstValue)
 									{
 										bHaveFirstValue = true;
+										currentSlot = bUseSubHourSlots ? (ntime.tm_hour * (60 / m_sql.m_PriceResolution) + ntime.tm_min / m_sql.m_PriceResolution) : ntime.tm_hour;
+										lastSlot = currentSlot;
 										lastHour = ntime.tm_hour;
 										ulFirstValue = actValue;
 										ulRealFirstValue = actValue;

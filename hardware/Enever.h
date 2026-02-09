@@ -1,5 +1,6 @@
 #pragma once
 
+#include <atomic>
 #include "DomoticzHardware.h"
 #include "hardwaretypes.h"
 
@@ -16,6 +17,7 @@ public:
 	void ActualizePrices();
 	bool WriteToHardware(const char* pdata, unsigned char length) override;
 	std::string m_szSoftwareVersion;
+	std::atomic<bool> m_bUseQuarterPrices = false;
 private:
 	bool StartHardware() override;
 	bool StopHardware() override;
@@ -36,8 +38,6 @@ private:
 	std::string m_szToken;
 	std::string m_szProviderElectricity;
 	std::string m_szProviderGas;
-
-	bool m_bUseQuarterPrices = false;
 
 	std::string m_szCurrentElectricityPrices;
 	std::string m_szCurrentElectricityPrices_Tomorrow;

@@ -648,6 +648,7 @@ CSQLHelper::CSQLHelper()
 	m_bDisableDzVentsSystem = false;
 	m_ShortLogInterval = 5;
 	m_bShortLogAddOnlyNewValues = false;
+	m_PriceResolution = 60;
 	m_bPreviousAcceptNewHardware = false;
 	m_bLogEventScriptTrigger = false;
 
@@ -3707,6 +3708,18 @@ bool CSQLHelper::OpenDatabase()
 		UpdatePreferencesVar("ShortLogAddOnlyNewValues", nValue);
 	}
 	m_bShortLogAddOnlyNewValues = (nValue != 0);
+
+	nValue = 60;
+	if (!GetPreferencesVar("PriceResolution", nValue))
+	{
+		UpdatePreferencesVar("PriceResolution", 60);
+	}
+	if (nValue != 15 && nValue != 30 && nValue != 60)
+	{
+		nValue = 60;
+		UpdatePreferencesVar("PriceResolution", 60);
+	}
+	m_PriceResolution = nValue;
 
 	if (!GetPreferencesVar("SendErrorsAsNotification", nValue))
 	{

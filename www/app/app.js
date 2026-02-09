@@ -329,6 +329,11 @@ define(['angularAMD', 'app.routes', 'app.constants', 'app.notifications', 'app.p
 			if (typeof $rootScope.config.DegreeDaysBaseTemperature != 'undefined') {
 				$.myglobals.DegreeDaysBaseTemperature = $rootScope.config.DegreeDaysBaseTemperature;
 			}
+			if (typeof $rootScope.config.PriceResolution != 'undefined') {
+				$.myglobals.PriceResolution = parseInt($rootScope.config.PriceResolution) || 60;
+			} else {
+				$.myglobals.PriceResolution = 60;
+			}
 			if (typeof $rootScope.config.CurrencySign != 'undefined') {
 				$.myglobals.currencysign = $rootScope.config.CurrencySign;
 			}
@@ -349,6 +354,7 @@ define(['angularAMD', 'app.routes', 'app.constants', 'app.notifications', 'app.p
 			MobileType: 0,
 			TempScale: 1.0,
 			DegreeDaysBaseTemperature: 18.0,
+			PriceResolution: 60,
 			TempSign: "C",
 			WindScale: 3.600000143051148,
 			WindSign: "km/h",
@@ -386,6 +392,7 @@ define(['angularAMD', 'app.routes', 'app.constants', 'app.notifications', 'app.p
 						$rootScope.config.language = data.language;
 						$rootScope.config.CurrencySign = data.CurrencySign;
 						$rootScope.config.DegreeDaysBaseTemperature = data.DegreeDaysBaseTemperature;
+						$rootScope.config.PriceResolution = data.PriceResolution;
 						$rootScope.config.EnableTabDashboard = data.result.EnableTabDashboard,
 						$rootScope.config.EnableTabFloorplans = data.result.EnableTabFloorplans;
 						$rootScope.config.EnableTabLights = data.result.EnableTabLights;

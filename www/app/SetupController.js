@@ -588,7 +588,7 @@ define(['app'], function (app) {
 						$("#shortlogtable #ShortLogAddOnlyNewValues").prop('checked', data.ShortLogAddOnlyNewValues == 1);
 					}
 					if (typeof data.ShortLogInterval != 'undefined') {
-						$("#shortlogtable #comboshortloginterval").val(data.ShortLogInterval);
+						$scope.ShortLogInterval = data.ShortLogInterval;
 					}
 					if (typeof data.DashboardType != 'undefined') {
 						$("#settingscontent #combosdashtype").val(data.DashboardType);
@@ -833,7 +833,10 @@ define(['app'], function (app) {
 					}
 					if (typeof data.P1DisplayType != 'undefined') {
 						$("#dpricetable #comboP1DisplayType").val(data.P1DisplayType);
-					}					
+					}
+					if (typeof data.PriceResolution != 'undefined') {
+						$("#dpricetable #comboPriceResolution").val(data.PriceResolution);
+					}
 
 					if (typeof data.ESettings != 'undefined') {
 						$("#comboEP1").val(data.ESettings.idP1);
@@ -916,6 +919,13 @@ define(['app'], function (app) {
 					ShowNotify($.t('Popup Delay can only contain numbers...'), 2000, true);
 					return;
 				}
+			}
+
+			// Check ShortLogInterval vs PriceResolution compatibility
+			var priceRes = parseInt($("#dpricetable #comboPriceResolution").val());
+			var shortLogInterval = $scope.ShortLogInterval || 5;
+			if (!isNaN(priceRes) && !isNaN(shortLogInterval) && priceRes < 60 && shortLogInterval > priceRes) {
+				ShowNotify($.t('Warning: ShortLog Interval is greater than the selected pricing resolution. For accurate pricing, the ShortLog Interval should be ' + priceRes + ' minutes or less.'), 5000, true);
 			}
 
 			$http.post('json.htm?type=command&param=storesettings', new FormData(document.querySelector("#settings")), {

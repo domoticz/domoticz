@@ -1,6 +1,7 @@
 Version 2026.xxxx
 - Added: Add basic Alexa Smart Home v3 API endpoint (see ALEXA.md)
 - Added: Blinds + Stop type
+- Added: Configurable pricing resolution (15/30/60 minutes) for dynamic energy contracts (with adapted P1 and kWh graphs)
 - Added: Enever, updated providers and API v3
 - Added: MQTT-AD, added support for Climate high/low set points
 - Added: MQTT-AD: Added support for flow meter reported in l/min (Fixes #6450)

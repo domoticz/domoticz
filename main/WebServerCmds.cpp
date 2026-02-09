@@ -1706,6 +1706,7 @@ namespace http
 			root["TempScale"] = m_sql.m_tempscale;
 			root["TempSign"] = m_sql.m_tempsign;
 			root["CurrencySign"] = m_sql.m_currencysign;
+			root["PriceResolution"] = m_sql.m_PriceResolution.load();
 
 			int iUser = -1;
 			if (!session.username.empty() && (iUser = FindUser(session.username.c_str())) != -1)
@@ -2462,6 +2463,11 @@ namespace http
 				m_sql.UpdatePreferencesVar("HourIdxElectricityDevice", atoi(request::findValue(&req, "HourIdxElectricityDevice").c_str())); cntSettings++;
 				m_sql.UpdatePreferencesVar("HourIdxGasDevice", atoi(request::findValue(&req, "HourIdxGasDevice").c_str())); cntSettings++;
 				m_sql.UpdatePreferencesVar("P1DisplayType", atoi(request::findValue(&req, "P1DisplayType").c_str())); cntSettings++;
+			int iPriceResolution = atoi(request::findValue(&req, "PriceResolution").c_str());
+			if (iPriceResolution != 15 && iPriceResolution != 30 && iPriceResolution != 60)
+				iPriceResolution = 60;
+			m_sql.m_PriceResolution = iPriceResolution;
+			m_sql.UpdatePreferencesVar("PriceResolution", iPriceResolution); cntSettings++;
 
 
 				/* More complex ones that need additional processing */
@@ -5002,6 +5008,10 @@ namespace http
 				else if (Key == "P1DisplayType")
 				{
 					root["P1DisplayType"] = nValue;
+				}
+				else if (Key == "PriceResolution")
+				{
+					root["PriceResolution"] = nValue;
 				}
 			}
 		}
