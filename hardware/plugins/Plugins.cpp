@@ -2450,6 +2450,35 @@ namespace Plugins
 		MessagePlugin(new onCommandCallback(DeviceID, Unit, command, level));
 	}
 
+	void CPlugin::SetPendingUser(const std::string& user)
+	{
+		if (!user.empty())
+		{
+			std::lock_guard<std::mutex> lock(m_pending_user_mutex);
+			m_pending_user = user;
+			m_pending_user_time = time(nullptr);
+		}
+	}
+
+	std::string CPlugin::ConsumePendingUser()
+	{
+		std::lock_guard<std::mutex> lock(m_pending_user_mutex);
+		if (!m_pending_user.empty())
+		{
+			if (time(nullptr) - m_pending_user_time <= PENDING_USER_TIMEOUT_SECONDS)
+			{
+				std::string user = std::move(m_pending_user);
+				m_pending_user.clear();
+				m_pending_user_time = 0;
+				return user;
+			}
+			// Stale entry, discard
+			m_pending_user.clear();
+			m_pending_user_time = 0;
+		}
+		return "";
+	}
+
 	bool CPlugin::HasNodeFailed(const std::string DeviceID, const int Unit)
 	{
 		if (!m_DeviceDict)

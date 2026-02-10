@@ -11928,7 +11928,9 @@ MainWorker::eSwitchLightReturnCode MainWorker::SwitchLightInt(const std::vector<
 				switchcmd = "Set Color";
 			}
 		}
-		((Plugins::CPlugin*)m_hardwaredevices[hindex])->SendCommand(sd[1], Unit, switchcmd, level, color);
+		Plugins::CPlugin* pPlugin = (Plugins::CPlugin*)m_hardwaredevices[hindex];
+		pPlugin->SetPendingUser(User);
+		pPlugin->SendCommand(sd[1], Unit, switchcmd, level, color);
 #endif
 		return SL_OK;
 	}
@@ -13376,7 +13378,9 @@ bool MainWorker::SetSetPointInt(const std::vector<std::string>& sd, const float 
 	if (pHardware->HwdType == HTYPE_PythonPlugin)
 	{
 #ifdef ENABLE_PYTHON
-		((Plugins::CPlugin*)pHardware)->SendCommand(sd[1], Unit, "Set Level", TempValue);
+		Plugins::CPlugin* pPlugin = (Plugins::CPlugin*)pHardware;
+		pPlugin->SetPendingUser(User);
+		pPlugin->SendCommand(sd[1], Unit, "Set Level", TempValue);
 		return true;
 #endif
 	}

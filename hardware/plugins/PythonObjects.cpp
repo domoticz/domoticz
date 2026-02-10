@@ -991,6 +991,11 @@ namespace Plugins {
 				self->TimedOut = iTimedOut;
 			}
 
+			// Always consume pending_user to prevent leaking to later updates
+			std::string effectiveUser = self->pPlugin->ConsumePendingUser();
+			if (effectiveUser.empty())
+				effectiveUser = self->pPlugin->m_Name;
+
 			// Suppress Triggers updates non-key fields only (specifically NOT nValue or sValue)
 			if (!SuppressTriggers)
 			{
@@ -999,7 +1004,7 @@ namespace Plugins {
 					_log.Log(LOG_NORM, "(%s) Updating device from %d:'%s' to have values %d:'%s'.", sName.c_str(), self->nValue, PyUnicode_AsUTF8(self->sValue), nValue, sValue);
 				}
 				Py_BEGIN_ALLOW_THREADS
-				DevRowIdx = m_sql.UpdateValue(self->HwdID, 0, sDeviceID.c_str(), (const unsigned char)self->Unit, (const unsigned char)iType, (const unsigned char)iSubType, iSignalLevel, iBatteryLevel, nValue, sValue, sName, true);
+				DevRowIdx = m_sql.UpdateValue(self->HwdID, 0, sDeviceID.c_str(), (const unsigned char)self->Unit, (const unsigned char)iType, (const unsigned char)iSubType, iSignalLevel, iBatteryLevel, nValue, sValue, sName, true, effectiveUser.c_str());
 				Py_END_ALLOW_THREADS
 				// if this is an internal Security Panel then there are some extra updates required if state has changed
 				if ((self->Type == pTypeSecurity1) && (self->SubType == sTypeDomoticzSecurity) && (self->nValue != nValue))

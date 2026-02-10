@@ -24,6 +24,7 @@ Version 2026.xxxx
 - Fixed: Chart zoom buttons (notable on iOS devices)
 - Fixed: Kodi, Possible memory leak in Kodi Notification when destination is unreachable
 - Fixed: Philips Hue v1 API crashes Domoticz in certain cases since Hue Bridge firmware 1.74 (added extra validations)
+- Fixed: Plugin devices, LightingLog User field now shows actual user instead of hardware name (Fixes #6538)
 - Fixed: Possible memory leak in Kodi Notification when destination is unreachable
 - Fixed: Temperature Compare Chart (Min/Max values)
 - Fixed: WOL, Corrected magic packet creation and supporting IPv6 broadcast

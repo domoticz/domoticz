@@ -126,6 +126,16 @@ namespace Plugins {
 	  std::string m_HomeFolder;
 	  PluginDebugMask m_bDebug;
 	  bool m_bTracing;
+
+	  // User tracking for LightingLog
+	  void SetPendingUser(const std::string& user);
+	  std::string ConsumePendingUser();
+
+	private:
+	  std::string m_pending_user;
+	  time_t m_pending_user_time = 0;
+	  std::mutex m_pending_user_mutex;
+	  static constexpr int PENDING_USER_TIMEOUT_SECONDS = 120;
 	};
 
 	class CPluginNotifier : public CNotificationBase

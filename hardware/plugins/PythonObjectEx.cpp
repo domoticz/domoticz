@@ -906,6 +906,11 @@ namespace Plugins {
 				Py_END_ALLOW_THREADS
 			}
 
+			// Always consume pending_user to prevent leaking to later updates
+			std::string effectiveUser = pModState->pPlugin->ConsumePendingUser();
+			if (effectiveUser.empty())
+				effectiveUser = pModState->pPlugin->m_Name;
+
 			if (!bSuppressTriggers) {
 				uint64_t DevRowIdx = -1;
 
@@ -925,7 +930,7 @@ namespace Plugins {
 					sValue.c_str(),
 					devname,
 					true,
-					pModState->pPlugin->m_Name.c_str()
+					effectiveUser.c_str()
 				);
 				Py_END_ALLOW_THREADS
 
