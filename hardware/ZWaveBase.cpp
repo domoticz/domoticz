@@ -732,7 +732,7 @@ void ZWaveBase::SendDevice2Domoticz(_tZWaveDevice* pDevice)
 	else if (pDevice->devType == ZDTYPE_SENSOR_SETPOINT)
 	{
 		_tSetpoint tmeter;
-		tmeter.subtype = sTypeSetPoint;
+		tmeter.subtype = sTypeSetpoint;
 		tmeter.id1 = ID1;
 		tmeter.id2 = ID2;
 		tmeter.id3 = ID3;
@@ -896,7 +896,7 @@ bool ZWaveBase::WriteToHardware(const char* pdata, const unsigned char length)
 		Log(LOG_ERROR, "ZWave: Node not found! (NodeID: %d, 0x%02x)", nodeID, nodeID);
 		return false;
 	}
-	if ((packettype == pTypeSetpoint) && (subtype == sTypeSetPoint))
+	if ((packettype == pTypeSetpoint) && (subtype == sTypeSetpoint))
 	{
 		//Set Point
 		const _tSetpoint* pMeter = reinterpret_cast<const _tSetpoint*>(pdata);
