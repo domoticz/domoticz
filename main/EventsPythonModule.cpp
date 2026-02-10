@@ -467,8 +467,8 @@ namespace Plugins
 			for (auto it_var = userVariables.begin(); it_var != userVariables.end(); ++it_var)
 			{
 				CEventSystem::_tUserVariable uvitem = it_var->second;
-				PyDict_SetItemString(userVariablesDict, uvitem.variableName.c_str(),
-					PyUnicode_FromString(uvitem.variableValue.c_str()));
+				PyNewRef pyValue = PyUnicode_FromString(uvitem.variableValue.c_str());
+				PyDict_SetItemString(userVariablesDict, uvitem.variableName.c_str(), pyValue);
 			}
 
 			// Add __main__ module
