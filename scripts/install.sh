@@ -392,30 +392,57 @@ Proceed with installation?" ${r} ${c}
 }
 
 stop_service() {
-	# Stop service passed in as argument.
-	if [ -x "$(command -v service)" ]; then
-		service "${1}" stop &> /dev/null & spinner $! "Stopping ${1} service..."
+	# Stop service passed in as argument
+	if systemctl is-active --quiet "${1}" 2>/dev/null; then
+		systemctl stop "${1}" &> /dev/null & spinner $! "Stopping ${1} service..."
 	else
-		msg_ok "Stopping ${1} service... done"
+		msg_ok "Service ${1} is not running"
 	fi
 }
 
 start_service() {
 	# Start/Restart service passed in as argument
-	if [ -x "$(command -v service)" ]; then
-		service "${1}" restart &> /dev/null & spinner $! "Starting ${1} service..."
-	else
-		msg_ok "Starting ${1} service... done"
-	fi
+	systemctl restart "${1}" &> /dev/null & spinner $! "Starting ${1} service..."
 }
 
 enable_service() {
 	# Enable service so that it will start with next reboot
-	if [ -x "$(command -v service)" ]; then
-		update-rc.d "${1}" defaults &> /dev/null & spinner $! "Enabling ${1} to start on boot..."
-	else
-		msg_ok "Enabling ${1} to start on boot... done"
+	systemctl enable "${1}" &> /dev/null & spinner $! "Enabling ${1} to start on boot..."
+}
+
+migrate_from_sysv() {
+	# Migrate from legacy SysV init script to systemd service
+	local sysv_script="/etc/init.d/domoticz.sh"
+
+	if [[ ! -f "${sysv_script}" ]]; then
+		return 0
 	fi
+
+	msg_info "Legacy SysV init script detected, migrating to systemd..."
+
+	# Stop the old SysV service if running
+	if service domoticz.sh status &> /dev/null; then
+		service domoticz.sh stop &> /dev/null & spinner $! "Stopping legacy SysV service..."
+	fi
+
+	# Remove SysV boot links (Debian/Ubuntu)
+	if [ -x "$(command -v update-rc.d)" ]; then
+		update-rc.d -f domoticz.sh remove &> /dev/null || true
+	fi
+
+	# Remove SysV boot links (RPM-based: CentOS, Fedora, RHEL)
+	if [ -x "$(command -v chkconfig)" ]; then
+		chkconfig domoticz.sh off &> /dev/null || true
+		chkconfig --del domoticz.sh &> /dev/null || true
+	fi
+
+	# Remove the old init script
+	rm -f "${sysv_script}"
+	msg_ok "Legacy SysV init script removed"
+
+	# Reload systemd so it picks up the removal
+	systemctl daemon-reload &> /dev/null || true
+	msg_ok "Migrated to systemd service"
 }
 
 update_package_cache() {
@@ -510,17 +537,9 @@ downloadDomoticzWeb() {
 	fi
 }
 
-makeStartupScript() {
-	local tmp1=$(mktemp)
-	local tmp2=$(mktemp)
-
-	cp "${Dest_folder}/domoticz.sh" "$tmp1"
-
-    #configure the script
-    sed -e "s/USERNAME=pi/USERNAME=${Current_user}/" "$tmp1" > "$tmp2"
-
-    local http_port="${HTTP_port}"
-    local https_port="${HTTPS_port}"
+install_systemd_service() {
+	local http_port="${HTTP_port}"
+	local https_port="${HTTPS_port}"
 	if [ "$Enable_http" = false ] ; then
 		http_port="0"
 	fi
@@ -528,22 +547,40 @@ makeStartupScript() {
 		https_port="0"
 	fi
 
-    sed -e "s/-www 8080/-www ${http_port}/" "$tmp2" > "$tmp1"
-    sed -e "s/-sslwww 443/-sslwww ${https_port}/" "$tmp1" > "$tmp2"
-    sed -e "s%/home/\$USERNAME/domoticz%${Dest_folder}%" "$tmp2" > "$tmp1"
+	local service_file="/etc/systemd/system/domoticz.service"
 
-    mv "$tmp1" /etc/init.d/domoticz.sh
-    rm -f "$tmp2"
-	chmod +x /etc/init.d/domoticz.sh
-	update-rc.d domoticz.sh defaults
+	cat > "${service_file}" << EOF
+[Unit]
+Description=Domoticz Home Automation System
+Documentation=https://www.domoticz.com/wiki
+After=network-online.target time-sync.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=${Current_user}
+Group=${Current_user}
+WorkingDirectory=${Dest_folder}
+ExecStart=${Dest_folder}/domoticz -www ${http_port} -sslwww ${https_port}
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+	chmod 644 "${service_file}"
+	systemctl daemon-reload
 }
 
 installdomoticz() {
 	msg_header "Installing Domoticz"
 	# Install base files
 	downloadDomoticzWeb
-	makeStartupScript
-	msg_ok "Startup script created"
+	# Migrate from SysV init if upgrading from an older installation
+	migrate_from_sysv
+	install_systemd_service
+	msg_ok "Systemd service installed"
 	finalExports
 	msg_ok "Configuration saved"
 }
@@ -552,8 +589,15 @@ updatedomoticz() {
 	# Source ${setupVars} for use in the rest of the functions.
 	. ${setupVars}
 	msg_header "Updating Domoticz"
+	# Stop service before updating files
+	stop_service domoticz.service
+	# Migrate from SysV init if present from a previous installation
+	migrate_from_sysv
 	# Install base files
 	downloadDomoticzWeb
+	# Ensure systemd service is installed and up to date
+	install_systemd_service
+	msg_ok "Systemd service updated"
 }
 
 uninstall_domoticz() {
@@ -578,18 +622,28 @@ This action cannot be undone!" ${r} ${c}; then
 		. ${setupVars}
 	fi
 
-	# Stop the service
-	if [ -x "$(command -v service)" ]; then
+	# Stop and remove systemd service
+	if [[ -f /etc/systemd/system/domoticz.service ]]; then
 		msg_info "Stopping domoticz service..."
-		service domoticz.sh stop &> /dev/null || true
-		msg_ok "Service stopped"
+		systemctl stop domoticz.service &> /dev/null || true
+		systemctl disable domoticz.service &> /dev/null || true
+		rm -f /etc/systemd/system/domoticz.service
+		systemctl daemon-reload &> /dev/null || true
+		msg_ok "Systemd service removed"
 	fi
 
-	# Remove init.d script
+	# Remove legacy SysV init script if present
 	if [[ -f /etc/init.d/domoticz.sh ]]; then
-		update-rc.d domoticz.sh remove &> /dev/null || true
+		service domoticz.sh stop &> /dev/null || true
+		if [ -x "$(command -v update-rc.d)" ]; then
+			update-rc.d -f domoticz.sh remove &> /dev/null || true
+		fi
+		if [ -x "$(command -v chkconfig)" ]; then
+			chkconfig domoticz.sh off &> /dev/null || true
+			chkconfig --del domoticz.sh &> /dev/null || true
+		fi
 		rm -f /etc/init.d/domoticz.sh
-		msg_ok "Startup script removed"
+		msg_ok "Legacy init script removed"
 	fi
 
 	# Remove install folder
@@ -735,8 +789,8 @@ main() {
 
 	msg_header "Finalizing"
 	# Start services
-	enable_service domoticz.sh
-	start_service domoticz.sh
+	enable_service domoticz.service
+	start_service domoticz.service
 
 	if [[ "${useUpdateVars}" == false ]]; then
 		msg_ok "Installation complete!"

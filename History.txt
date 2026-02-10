@@ -29,6 +29,7 @@ Version 2026.xxxx
 - Fixed: Temperature Compare Chart (Min/Max values)
 - Fixed: WOL, Corrected magic packet creation and supporting IPv6 broadcast
 - Changed: Domoticz Remote, Do not force re-enable RemoteSharedPort on startup
+- Changed: Installer, replaced SysV init script with native systemd service (auto-migrates on update)
 - Changed: Enphase, default to new firmware info request
 - Changed: FCM/Google Cloud Messaging Notifications, now needed to enter private API from console in settings
 - Changed: In-service/Oauth2, Added Logo to login form
