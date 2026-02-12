@@ -19,7 +19,7 @@ define(['app', 'log/Chart', 'log/CounterLogParams', 'log/CounterLogEnergySeriesS
                     plotOptions: {
                     },
                     tooltip: {
-						headerFormat: '{point.x:%A, %B %d, %Y %H:00}<br/>',
+						headerFormat: '{point.x:%A, %B %d, %Y %H:%M}<br/>',
                         outside: true,
 						crosshairs: true,
 						shared: true,
