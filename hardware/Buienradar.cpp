@@ -258,8 +258,43 @@ bool CBuienRadar::GetStationDetails()
 	}
 	if (root["actual"]["stationmeasurements"].empty() == true)
 	{
-		Log(LOG_ERROR, "Invalid data received (station measurement empty), or no data returned!");
-		return false;
+		// Main feed has empty stationmeasurements (known Buienradar server-side issue).
+		// If we already have a station ID, try the individual station API as fallback.
+		if (m_iStationID != 0)
+		{
+			Log(LOG_STATUS, "Main feed stationmeasurements empty, trying individual station API for station %d...", m_iStationID);
+
+			std::string szStationUrl = std::string(BUIENRADAR_ACTUAL_URL) + std::to_string(m_iStationID);
+			std::string sStationResult;
+
+			if (HTTPClient::GET(szStationUrl, sStationResult))
+			{
+				Json::Value stationRoot;
+				if (ParseJSon(sStationResult, stationRoot) && stationRoot.isObject() && !stationRoot["temperature"].empty())
+				{
+					if (m_sStationName.empty())
+					{
+						m_sStationName = stationRoot["stationname"].asString();
+						m_sStationRegion = stationRoot["regio"].asString();
+						m_szMyLatitude = std::to_string(stationRoot["lat"].asDouble());
+						m_szMyLongitude = std::to_string(stationRoot["lon"].asDouble());
+						Log(LOG_STATUS, "Using Station: %s (%s), ID: %d, Lat/Lon: %g,%g",
+							m_sStationName.c_str(), m_sStationRegion.c_str(), m_iStationID,
+							atof(m_szMyLatitude.c_str()), atof(m_szMyLongitude.c_str()));
+					}
+					Log(LOG_STATUS, "Successfully retrieved data from individual station API (fallback)");
+					ParseMeterDetails(stationRoot);
+					return true;
+				}
+			}
+			Log(LOG_ERROR, "Fallback to individual station API also failed for station %d", m_iStationID);
+			return false;
+		}
+		else
+		{
+			Log(LOG_ERROR, "Main feed stationmeasurements empty and no station ID known yet - cannot fall back!");
+			return false;
+		}
 	}
 
 	if (m_iStationID == 0)

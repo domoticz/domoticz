@@ -56,3 +56,4 @@ __pycache__
 /.vs/
 /tools/token.txt
 /tools/tx.exe
+_codeql_detected_source_root
