@@ -23,6 +23,7 @@ Version 2026.xxxx
 - Fixed: dzVents Lua table corruption when exception occurs during notification or device data export (Fixes #6030)
 - Fixed: P1Power hourly graph empty due to incorrect SQL format escaping in pricing resolution grouping
 - Fixed: P1Power hourly graph using wrong price and missing date range filter (Fixes #6181)
+- Fixed: Counter Statistics Chart tooltip showing incorrect day name (Fixes #6542)
 - Fixed: Chart zoom buttons (notable on iOS devices)
 - Fixed: Kodi, Possible memory leak in Kodi Notification when destination is unreachable
 - Fixed: Philips Hue v1 API crashes Domoticz in certain cases since Hue Bridge firmware 1.74 (added extra validations)

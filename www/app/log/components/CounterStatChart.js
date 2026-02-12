@@ -78,6 +78,9 @@ define(['app', 'luxon'], function (app, luxon) {
 				},
 				minRange: 23 * 3600 * 1000
 			},
+			tooltip: {
+				headerFormat: '<span style="font-size: 10px">{point.x:%H:%M}</span><br/>'
+			},
 			yAxis: [{
 				labels: {
 					format: '{value} Watt',
@@ -171,12 +174,15 @@ define(['app', 'luxon'], function (app, luxon) {
 		$scope.setWeekdayInt = function(actDay) {
 			$scope.actDay = actDay;
 			if ($scope.actDay >= 0) {
-				$scope.chartDefinitionDay.title.text = $scope.chartDefinitionWeek.series[0].data[actDay][0] + ' ' + 'Hourly Energy Usage';
+				var dayName = $scope.chartDefinitionWeek.series[0].data[actDay][0];
+				$scope.chartDefinitionDay.title.text = dayName + ' ' + 'Hourly Energy Usage';
+				$scope.chartDefinitionDay.tooltip.headerFormat = '<span style="font-size: 10px">' + dayName + ' {point.x:%H:%M}</span><br/>';
 				$scope.chart_weekday_hour_kwh = JSON.parse(JSON.stringify($scope.weekday_hour_kwh[actDay]));
 				$scope.chartDefinitionDay.series[0].data = $scope.chart_weekday_hour_kwh;
 			} else {
 				if ($scope.actDay == -1) {
 					$scope.chartDefinitionDay.title.text = 'Hourly Energy Usage';
+					$scope.chartDefinitionDay.tooltip.headerFormat = '<span style="font-size: 10px">{point.x:%H:%M}</span><br/>';
 					$scope.chart_weekday_hour_kwh = JSON.parse(JSON.stringify($scope.daily_hour_kwh));
 					$scope.chartDefinitionDay.series[0].data = $scope.chart_weekday_hour_kwh;
 				}
