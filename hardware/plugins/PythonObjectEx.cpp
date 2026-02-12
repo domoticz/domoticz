@@ -411,6 +411,17 @@ namespace Plugins {
 					self->SubType = SubType;
 				if (SwitchType != -1)
 					self->SwitchType = SwitchType;
+				// Set default sValue for device types that require non-empty initial values
+				// when created by numeric Type/SubType (bypassing maptypename)
+				if (self->Type == pTypeGeneral && self->SubType == sTypeKwh)
+				{
+					std::string currentSValue = PyBorrowedRef(self->sValue);
+					if (currentSValue.empty())
+					{
+						Py_DECREF(self->sValue);
+						self->sValue = PyUnicode_FromString("0;0.0");
+					}
+				}
 				if (Image != -1)
 					self->Image = Image;
 				if (Used == 1)

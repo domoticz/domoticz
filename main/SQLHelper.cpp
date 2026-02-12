@@ -5497,31 +5497,32 @@ uint64_t CSQLHelper::UpdateValueInt(
 
             std::vector<std::string> powerAndEnergyBeforeUpdate;
 			StringSplit(sValueBeforeUpdate, ";", powerAndEnergyBeforeUpdate);
-			if (powerAndEnergyBeforeUpdate.size() == 2)
+			if (powerAndEnergyBeforeUpdate.size() != 2)
 			{
-				//we need to use atof here because some users seem to have a illegal sValue in the database that causes std::stof to crash
-				double powerDuringInterval = atof(powerAndEnergyBeforeUpdate[0].c_str());
-				double energyUpToInterval = atof(powerAndEnergyBeforeUpdate[1].c_str());
-				double energyDuringInterval = powerDuringInterval * intervalSeconds / 3600;
-				double energyAfterInterval = energyUpToInterval + energyDuringInterval;
-				std::vector<std::string> powerAndEnergyUpdate;
-				StringSplit(sValue, ";", powerAndEnergyUpdate);
-				if (!powerAndEnergyUpdate.empty())
-				{
-					const char* powerUpdate = powerAndEnergyUpdate[0].c_str();
-                    char sValueUpdate[100];
-                    sprintf(sValueUpdate, "%s;%.4f", powerUpdate, energyAfterInterval);
-					sValue = sValueUpdate;
-				}
-				else
-				{
-                    sValue = sValueBeforeUpdate.c_str();
-				}
+				// Invalid or empty sValue - initialize to safe defaults so the device can recover
+				_log.Log(LOG_STATUS, "Device %" PRIu64 " has invalid sValue '%s' for EnergyMeterMode=1, initializing to '0;0.0'", ulID, sValueBeforeUpdate.c_str());
+				sValueBeforeUpdate = "0;0.0";
+				StringSplit(sValueBeforeUpdate, ";", powerAndEnergyBeforeUpdate);
+			}
+
+			//we need to use atof here because some users seem to have a illegal sValue in the database that causes std::stof to crash
+			double powerDuringInterval = atof(powerAndEnergyBeforeUpdate[0].c_str());
+			double energyUpToInterval = atof(powerAndEnergyBeforeUpdate[1].c_str());
+			double energyDuringInterval = powerDuringInterval * intervalSeconds / 3600;
+			double energyAfterInterval = energyUpToInterval + energyDuringInterval;
+			std::vector<std::string> powerAndEnergyUpdate;
+			StringSplit(sValue, ";", powerAndEnergyUpdate);
+			if (!powerAndEnergyUpdate.empty())
+			{
+				const char* powerUpdate = powerAndEnergyUpdate[0].c_str();
+				char sValueUpdate[100];
+				sprintf(sValueUpdate, "%s;%.4f", powerUpdate, energyAfterInterval);
+				sValue = sValueUpdate;
 			}
 			else
-            {
-                sValue = sValueBeforeUpdate.c_str();
-            }
+			{
+				sValue = sValueBeforeUpdate.c_str();
+			}
 		}
 		//~ use different update queries based on the device type
 		if (devType == pTypeGeneral && subType == sTypeCounterIncremental)
