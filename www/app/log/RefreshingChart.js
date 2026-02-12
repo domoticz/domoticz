@@ -696,6 +696,7 @@ define(['lodash', 'Base', 'DomoticzBase', 'DataLoader', 'ChartLoader', 'ChartZoo
                     }
                 }, false);
                 self.chartName = $.t('Usage') + ' / ' + (isSubHour ? minutes + ' ' + $.t('Minutes') : $.t('Hour'));
+                self.$scope.chartTitle = chartTitle();
                 refreshChartData();
             };
 
