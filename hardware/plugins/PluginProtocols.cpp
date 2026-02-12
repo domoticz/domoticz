@@ -2544,14 +2544,21 @@ namespace Plugins {
 			{
 				retVal.push_back((bMaskBit | lPayloadLength) & 0xFF); // Short length
 			}
-			else
+			else if (lPayloadLength <= 0xFFFF)
 			{
 				retVal.push_back(bMaskBit | 126);
-				uint32_t dwPL = static_cast<uint32_t>(lPayloadLength);
-				retVal.push_back(dwPL >> 24);
-				retVal.push_back((dwPL >> 16) & 0xFF);
-				retVal.push_back((dwPL >> 8) & 0xFF);
-				retVal.push_back(dwPL & 0xFF); // Longer length
+				uint16_t wPL = static_cast<uint16_t>(lPayloadLength);
+				retVal.push_back((wPL >> 8) & 0xFF);
+				retVal.push_back(wPL & 0xFF); // 16-bit extended length (RFC 6455)
+			}
+			else
+			{
+				retVal.push_back(bMaskBit | 127);
+				uint64_t qwPL = static_cast<uint64_t>(lPayloadLength);
+				for (int i = 7; i >= 0; i--)
+				{
+					retVal.push_back((qwPL >> (i * 8)) & 0xFF); // 64-bit extended length (RFC 6455)
+				}
 			}
 
 			byte* pbMask = nullptr;
