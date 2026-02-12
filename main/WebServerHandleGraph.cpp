@@ -205,10 +205,12 @@ namespace http
 						int resolution = m_sql.m_PriceResolution.load();
 						if (resolution < 60) {
 							// Group by sub-hourly slots using the configured resolution (e.g. 15 or 30 minutes)
-							szGroupBy = "strftime('%%Y-%%m-%%d %%H:', Date) || printf('%%02d', (CAST(strftime('%%M', Date) AS INTEGER) / " + std::to_string(resolution) + ") * " + std::to_string(resolution) + ") || ':00'";
+							// Note: single % here because szGroupBy is passed via %s substitution in safe_query,
+							// so its content is not processed by sqlite3_vmprintf's format parser
+							szGroupBy = "strftime('%Y-%m-%d %H:', Date) || printf('%02d', (CAST(strftime('%M', Date) AS INTEGER) / " + std::to_string(resolution) + ") * " + std::to_string(resolution) + ") || ':00'";
 						} else {
 							// Group by hour (original behavior)
-							szGroupBy = "strftime('%%Y-%%m-%%d %%H:00:00', Date)";
+							szGroupBy = "strftime('%Y-%m-%d %H:00:00', Date)";
 						}
 
 						result = m_sql.safe_query("SELECT %s as ymd, MIN(Value1) as u1, MIN(Value5) as u2, MIN(Value2) as d1, MIN(Value6) as d2, MIN(Price) as price FROM %s WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q' AND Date<='%q') GROUP BY ymd",

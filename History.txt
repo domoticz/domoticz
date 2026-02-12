@@ -21,6 +21,7 @@ Version 2026.xxxx
 - Added: Web Interface, Better XSS prevention
 - Fixed: CalcMeterPrice/CalcMultiMeterPrice off-by-one price error with dynamic tariffs (Fixes #6181)
 - Fixed: dzVents Lua table corruption when exception occurs during notification or device data export (Fixes #6030)
+- Fixed: P1Power hourly graph empty due to incorrect SQL format escaping in pricing resolution grouping
 - Fixed: P1Power hourly graph using wrong price and missing date range filter (Fixes #6181)
 - Fixed: Chart zoom buttons (notable on iOS devices)
 - Fixed: Kodi, Possible memory leak in Kodi Notification when destination is unreachable
