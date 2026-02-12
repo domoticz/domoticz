@@ -679,6 +679,31 @@ define(['lodash', 'Base', 'DomoticzBase', 'DataLoader', 'ChartLoader', 'ChartZoo
                 refreshChartData();
             };
 
+            self.$scope.priceResolution = (self.ctrl && self.ctrl.priceResolution) || 60;
+            self.$scope.resolution = (self.ctrl && self.ctrl.resolution) || 60;
+
+            self.$scope.setResolution = function (minutes) {
+                self.ctrl.resolution = minutes;
+                self.$scope.resolution = minutes;
+                var isSubHour = (minutes < 60);
+                self.chart.update({
+                    xAxis: {
+                        dateTimeLabelFormats: {
+                            hour: isSubHour ? '%H:%M' : '%H:00',
+                            day: isSubHour ? '%H:%M' : '%H:00'
+                        },
+                        tickInterval: isSubHour ? (minutes * 60 * 1000) : 3600000
+                    }
+                }, false);
+                self.chartName = $.t('Usage') + ' / ' + (isSubHour ? minutes + ' ' + $.t('Minutes') : $.t('Hour'));
+                refreshChartData();
+            };
+
+            self.$scope.resolutionLabel = function (minutes) {
+                if (minutes >= 60) return '1' + $.t('Hour').substring(0, 1).toLowerCase();
+                return minutes + $.t('Minute').substring(0, 1).toLowerCase();
+            };
+
             self.$element.find('.chart-title-container').on('click', function (e) {
                 debugMouseAction('Click on title', e);
                 if (self.ctrl !== undefined && self.ctrl.toggleTitleState !== undefined) {

@@ -203,6 +203,12 @@ namespace http
 
 						std::string szGroupBy;
 						int resolution = m_sql.m_PriceResolution.load();
+						std::string sResolution = request::findValue(&req, "resolution");
+						if (!sResolution.empty()) {
+							int reqResolution = atoi(sResolution.c_str());
+							if (reqResolution == 15 || reqResolution == 30 || reqResolution == 60)
+								resolution = reqResolution;
+						}
 						if (resolution < 60) {
 							// Group by sub-hourly slots using the configured resolution (e.g. 15 or 30 minutes)
 							// Note: single % here because szGroupBy is passed via %s substitution in safe_query,
@@ -1078,7 +1084,14 @@ namespace http
 						time_t lastTime = 0;
 
 						// Sub-hourly slot grouping for kWh meters
-						bool bUseSubHourSlots = (m_sql.m_PriceResolution < 60);
+						int resolution = m_sql.m_PriceResolution.load();
+						std::string sResolution = request::findValue(&req, "resolution");
+						if (!sResolution.empty()) {
+							int reqResolution = atoi(sResolution.c_str());
+							if (reqResolution == 15 || reqResolution == 30 || reqResolution == 60)
+								resolution = reqResolution;
+						}
+						bool bUseSubHourSlots = (resolution < 60);
 						int lastSlot = -1;  // replaces lastHour for 15-min mode
 						int currentSlot = 0;
 
@@ -1118,7 +1131,7 @@ namespace http
 									// Format timestamp for 15-min or hourly slots
 									if (bUseSubHourSlots)
 									{
-										int slotMin = (ntime.tm_min / m_sql.m_PriceResolution) * m_sql.m_PriceResolution;
+										int slotMin = (ntime.tm_min / resolution) * resolution;
 										char szSlot[32];
 										snprintf(szSlot, sizeof(szSlot), "%s%02d", sd[1].substr(0, 14).c_str(), slotMin);
 										szActDateTimeHour = szSlot;
@@ -1134,13 +1147,13 @@ namespace http
 										{
 											//Assume ,eter/counter turnover
 											ulFirstValue = ulRealFirstValue = actValue;
-											currentSlot = bUseSubHourSlots ? (ntime.tm_hour * (60 / m_sql.m_PriceResolution) + ntime.tm_min / m_sql.m_PriceResolution) : ntime.tm_hour;
+											currentSlot = bUseSubHourSlots ? (ntime.tm_hour * (60 / resolution) + ntime.tm_min / resolution) : ntime.tm_hour;
 											lastSlot = currentSlot;
 											lastHour = ntime.tm_hour;
 										}
 									}
 
-									currentSlot = bUseSubHourSlots ? (ntime.tm_hour * (60 / m_sql.m_PriceResolution) + ntime.tm_min / m_sql.m_PriceResolution) : ntime.tm_hour;
+									currentSlot = bUseSubHourSlots ? (ntime.tm_hour * (60 / resolution) + ntime.tm_min / resolution) : ntime.tm_hour;
 									if (lastSlot != currentSlot)
 									{
 										if (lastDay != ntime.tm_mday)
@@ -1219,7 +1232,7 @@ namespace http
 									if (!bHaveFirstValue)
 									{
 										bHaveFirstValue = true;
-										currentSlot = bUseSubHourSlots ? (ntime.tm_hour * (60 / m_sql.m_PriceResolution) + ntime.tm_min / m_sql.m_PriceResolution) : ntime.tm_hour;
+										currentSlot = bUseSubHourSlots ? (ntime.tm_hour * (60 / resolution) + ntime.tm_min / resolution) : ntime.tm_hour;
 										lastSlot = currentSlot;
 										lastHour = ntime.tm_hour;
 										ulFirstValue = actValue;
