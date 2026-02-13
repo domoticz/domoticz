@@ -2242,6 +2242,7 @@ namespace http
 						root["result"][ii]["min"] = valuemin;
 						root["result"][ii]["max"] = valuemax;
 						root["result"][ii]["vunit"] = value_unit;
+						root["result"][ii]["HaveSetPoint"] = true;
 
 						std::vector<std::string> strarray;
 						StringSplit(sValue, ";", strarray);
@@ -3247,6 +3248,7 @@ namespace http
 							root["result"][ii]["min"] = valuemin;
 							root["result"][ii]["max"] = valuemax;
 							root["result"][ii]["vunit"] = value_unit;
+							root["result"][ii]["HaveSetPoint"] = true;
 							root["result"][ii]["TypeImg"] = "override_mini";
 						}
 					}

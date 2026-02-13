@@ -29,6 +29,8 @@ return {
 
 	process = function (device, data, domoticz, utils, adapterManager)
 
+		local TimedCommand = require('TimedCommand')
+
 		-- from data: temperature, setPoint
 		-- optional: humidity, humidityStatus, barometer, forecast
 
@@ -39,7 +41,7 @@ return {
 		end
 
 		function device.updateSetPoint(setPoint)
-			return device.update(0, ';' .. setPoint)
+			return TimedCommand(domoticz, 'SetSetPoint:' .. tostring(device.id), tostring(setPoint), 'setpoint')
 		end
 
 		function device.updateThermostat(temperature, setPoint, humidity, humidityStatus, barometer, forecast)

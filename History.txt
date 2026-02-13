@@ -3,6 +3,8 @@ Version 2026.xxxx
 - Added: Blinds + Stop type
 - Added: Configurable pricing resolution (15/30/60 minutes) for dynamic energy contracts (with adapted P1 and kWh graphs)
 - Added: Counter hourly chart resolution toggle (1h/15m/30m) when sub-hourly pricing is configured
+- Added: EventSystem support for Thermostat 6 devices (Blockly/Lua/Python event triggers)
+- Added: HaveSetPoint JSON API flag for Thermostat 6 and Setpoint devices (third-party app compatibility)
 - Added: Enever, updated providers and API v3
 - Added: MQTT-AD, added support for Climate high/low set points
 - Added: MQTT-AD: Added support for flow meter reported in l/min (Fixes #6450)
@@ -14,6 +16,7 @@ Version 2026.xxxx
 - Added: MQTT-AD: Thermostat 6, add setpoint timer/schedule support (Fixes #6530)
 - Added: New update scripts that are able to check if system meets requirements
 - Added: New update scripts that are able to check if system meets requirements
+- Added: Notification support for Thermostat 6 devices (temperature, humidity, barometer thresholds)
 - Added: Philips Hue v2 API, just for Door/Window Contacts (state/tamper/battery)
 - Added: PV Output, added consumption
 - Added: RFXCom, Support Orcon FAN device (#6500)
@@ -21,6 +24,7 @@ Version 2026.xxxx
 - Added: Support for the Model Context Protocol (/mcp) for use with AI Agents
 - Added: Web Interface, Better XSS prevention
 - Fixed: CalcMeterPrice/CalcMultiMeterPrice off-by-one price error with dynamic tariffs (Fixes #6181)
+- Fixed: dzVents Thermostat 6 updateSetPoint() now uses proper SetSetPoint command path for correct event propagation
 - Fixed: dzVents Lua table corruption when exception occurs during notification or device data export (Fixes #6030)
 - Fixed: P1Power hourly graph empty due to incorrect SQL format escaping in pricing resolution grouping
 - Fixed: P1Power hourly graph using wrong price and missing date range filter (Fixes #6181)

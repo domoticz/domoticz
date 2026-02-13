@@ -729,6 +729,66 @@ void CEventSystem::GetCurrentMeasurementStates()
 				isTemp = true;
 			}
 			break;
+		case pTypeThermostat6:
+			// Thermostat 6 combines temperature + setpoint (+ optional humidity/baro)
+			// sValue formats:
+			//   sTypeThermostat6Temp (0x00): "temp;setpoint"
+			//   sTypeThermostat6TempHum (0x01): "temp;setpoint;humidity;humidity_status"
+			//   sTypeThermostat6TempBaro (0x02): "temp;setpoint;barometer"
+			//   sTypeThermostat6TempHumBaro (0x03): "temp;setpoint;humidity;humidity_status;barometer"
+			if (sitem.subType == sTypeThermostat6Temp)
+			{
+				if (splitresults.size() >= 2)
+				{
+					temp = static_cast<float>(atof(splitresults[0].c_str()));
+					utilityval = static_cast<float>(atof(splitresults[1].c_str())); // setpoint
+					isTemp = true;
+					isUtility = true;
+				}
+			}
+			else if (sitem.subType == sTypeThermostat6TempHum)
+			{
+				if (splitresults.size() >= 4)
+				{
+					temp = static_cast<float>(atof(splitresults[0].c_str()));
+					utilityval = static_cast<float>(atof(splitresults[1].c_str())); // setpoint
+					humidity = ground(atof(splitresults[2].c_str()));
+					dewpoint = (float)CalculateDewPoint(temp, humidity);
+					isTemp = true;
+					isUtility = true;
+					isHum = true;
+					isDew = true;
+				}
+			}
+			else if (sitem.subType == sTypeThermostat6TempBaro)
+			{
+				if (splitresults.size() >= 3)
+				{
+					temp = static_cast<float>(atof(splitresults[0].c_str()));
+					utilityval = static_cast<float>(atof(splitresults[1].c_str())); // setpoint
+					barometer = static_cast<float>(atof(splitresults[2].c_str()));
+					isTemp = true;
+					isUtility = true;
+					isBaro = true;
+				}
+			}
+			else if (sitem.subType == sTypeThermostat6TempHumBaro)
+			{
+				if (splitresults.size() >= 5)
+				{
+					temp = static_cast<float>(atof(splitresults[0].c_str()));
+					utilityval = static_cast<float>(atof(splitresults[1].c_str())); // setpoint
+					humidity = ground(atof(splitresults[2].c_str()));
+					barometer = static_cast<float>(atof(splitresults[4].c_str()));
+					dewpoint = (float)CalculateDewPoint(temp, humidity);
+					isTemp = true;
+					isUtility = true;
+					isHum = true;
+					isBaro = true;
+					isDew = true;
+				}
+			}
+			break;
 		case pTypeHUM:
 			humidity = sitem.nValue;
 			isHum = true;
