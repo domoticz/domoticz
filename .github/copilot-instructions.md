@@ -87,7 +87,7 @@ Always run relevant tests before submitting changes.
 ## Hardware Development
 
 When adding new hardware support:
-- Consult http://wiki.domoticz.com/Developing_a_hardware_plugin
+- Consult https://wiki.domoticz.com/Developing_a_hardware_plugin
 - Place implementation in `hardware/` directory
 - Follow existing hardware plugin patterns
 
@@ -111,7 +111,7 @@ Key configuration options:
 ## Common Dependencies
 
 When suggesting dependencies:
-- Prefer existing bundled libraries (JSonCPP, Minizip, JWT-CPP)
+- Prefer existing bundled libraries (JsonCPP, Minizip, JWT-CPP)
 - Use Boost libraries already in use (chrono, system, thread)
 - Consider multi-platform compatibility (Linux, Windows, embedded)
 
