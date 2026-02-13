@@ -710,7 +710,7 @@ bool CdzVents::processLuaCommand(lua_State* lua_state, const std::string& filena
 			scriptTrue = TriggerCustomEvent(lua_state, vLuaTable);
 		else
 		{
-			// Check if this is a wrapped string command (device switch command, notification, email)
+			// Check if this is a wrapped string command (device switch command, notification, email, SMS)
 			// Format: { _value = "On", _scriptName = "MyScript" }
 			std::string wrappedValue;
 			std::string scriptName;
@@ -731,7 +731,7 @@ bool CdzVents::processLuaCommand(lua_State* lua_state, const std::string& filena
 
 			if (isWrappedCommand)
 			{
-				// Handle wrapped commands: device commands, SendNotification, SendEmail
+				// Handle wrapped commands: device commands, SendNotification, SendEmail, SendSMS
 				if (lCommand == "SendNotification")
 				{
 					// Parse the notification string format: subject#message#priority#sound#extra#subsystem
@@ -783,6 +783,18 @@ bool CdzVents::processLuaCommand(lua_State* lua_state, const std::string& filena
 					stdreplace(body, "\\n", "<br>");
 					to = aParam[2];
 					m_sql.AddTaskItem(_tTaskItem::SendEmailTo(1, subject, body, to));
+					scriptTrue = true;
+				}
+				else if (lCommand == "SendSMS")
+				{
+					// SMS message is just a plain string
+					if (wrappedValue.empty())
+					{
+						//Invalid
+						_log.Log(LOG_ERROR, "EventSystem: SendSMS, not enough parameters!");
+						return false;
+					}
+					m_sql.AddTaskItem(_tTaskItem::SendSMS(1, wrappedValue));
 					scriptTrue = true;
 				}
 				else
