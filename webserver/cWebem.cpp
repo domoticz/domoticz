@@ -1912,16 +1912,24 @@ namespace http {
 								session.rights = static_cast<_eUserRights>(std::atoi(_ah.qop.c_str()));
 								return true;
 							}
-							else
-							{	// Clear the session as we could be in a Trusted Network BUT have invalid Basic Auth
+							else if (!session.istrustednetwork)
+							{	// Invalid Basic Auth from an untrusted network: deny access
 								_log.Debug(DEBUG_AUTH, "[Auth Check] Invalid Basic Authorization for API call!");
 								session.username = "";
 								session.rights = URIGHTS_NONE;
 								return false;
 							}
+							else
+							{	// Invalid Basic Auth from a trusted network: ignore the bad credentials
+								// This happens when plugins use Domoticz.Connection(Protocol="HTTP") to call
+								// the local JSON API — the framework auto-injects the plugin's Parameters
+								// Username/Password as Basic auth, which are meant for the external device,
+								// not for Domoticz. The trusted network session established earlier is kept.
+								_log.Debug(DEBUG_AUTH, "[Auth Check] Invalid Basic Authorization from trusted network, ignoring credentials");
+							}
 						}
-						else
-						{	// Clear the session as we could be in a Trusted Network BUT rejected Basic Auth
+						else if (!session.istrustednetwork)
+						{	// Basic Auth not allowed and not from a trusted network: deny access
 							_log.Debug(DEBUG_AUTH, "[Auth Check] Basic Authorization rejected as it is not done over HTTPS or not explicitly allowed over HTTP!");
 							session.username = "";
 							session.rights = URIGHTS_NONE;
