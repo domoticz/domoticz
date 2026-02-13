@@ -740,9 +740,8 @@ bool CdzVents::processLuaCommand(lua_State* lua_state, const std::string& filena
 					std::vector<std::string> aParam;
 					StringSplit(wrappedValue, "#", aParam);
 					subject = body = aParam[0];
-					if (aParam.size() > 1) {
-						if (!aParam[1].empty())
-							body = aParam[1];
+					if (aParam.size() > 1 && !aParam[1].empty()) {
+						body = aParam[1];
 					}
 					if (aParam.size() > 2) {
 						priority = aParam[2];
@@ -774,8 +773,8 @@ bool CdzVents::processLuaCommand(lua_State* lua_state, const std::string& filena
 					StringSplit(wrappedValue, "#", aParam);
 					if (aParam.size() != 3)
 					{
-						//Invalid
-						_log.Log(LOG_ERROR, "EventSystem: SendEmail, not enough parameters!");
+						// Email requires exactly 3 parameters: subject, body, and recipient
+						_log.Log(LOG_ERROR, "EventSystem: SendEmail, expected exactly 3 parameters!");
 						return false;
 					}
 					subject = aParam[0];
@@ -790,8 +789,8 @@ bool CdzVents::processLuaCommand(lua_State* lua_state, const std::string& filena
 					// SMS message is just a plain string
 					if (wrappedValue.empty())
 					{
-						//Invalid
-						_log.Log(LOG_ERROR, "EventSystem: SendSMS, not enough parameters!");
+						// SMS message cannot be empty
+						_log.Log(LOG_ERROR, "EventSystem: SendSMS, message cannot be empty!");
 						return false;
 					}
 					m_sql.AddTaskItem(_tTaskItem::SendSMS(1, wrappedValue));
