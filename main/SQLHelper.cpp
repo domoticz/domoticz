@@ -10256,20 +10256,20 @@ bool CSQLHelper::CalcMultiMeterPrice(const uint64_t idx, const float divider, co
 		return false;
 
 	bool bResult = false;
-	uint64_t last_cntrs[6] = { (uint64_t)-1,(uint64_t)-1,(uint64_t)-1,(uint64_t)-1,(uint64_t)-1,(uint64_t)-1 };
+	int64_t last_cntrs[6] = { (int64_t)-1,(int64_t)-1,(int64_t)-1,(int64_t)-1,(int64_t)-1,(int64_t)-1 };
 	float total_price[6] = { 0,0,0,0,0,0 };
 
 	for (const auto& itt : result)
 	{
 		float rec_price = std::stof(itt[6]);
 
-		uint64_t cntrs[6];
+		int64_t cntrs[6];
 		for (int ii = 0; ii < 6; ii++)
 		{
-			cntrs[ii] = std::stoull(itt[ii]);
-			if (last_cntrs[ii] != (uint64_t)-1)
+			cntrs[ii] = std::stoll(itt[ii]);
+			if (last_cntrs[ii] != (int64_t)-1)
 			{
-				uint64_t total = cntrs[ii] - last_cntrs[ii];
+				int64_t total = cntrs[ii] - last_cntrs[ii];
 				total_price[ii] += ((static_cast<float>(total) / divider) * rec_price);
 				bResult = true;
 			}
