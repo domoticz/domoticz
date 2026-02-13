@@ -7292,24 +7292,24 @@ void CSQLHelper::UpdateMultiMeter()
 			std::vector<std::string> splitresults;
 			StringSplit(sValue, ";", splitresults);
 
-			uint64_t value1 = 0;
-			uint64_t value2 = 0;
-			uint64_t value3 = 0;
-			uint64_t value4 = 0;
-			uint64_t value5 = 0;
-			uint64_t value6 = 0;
+			int64_t value1 = 0;
+			int64_t value2 = 0;
+			int64_t value3 = 0;
+			int64_t value4 = 0;
+			int64_t value5 = 0;
+			int64_t value6 = 0;
 
 			if (dType == pTypeP1Power)
 			{
 				if (splitresults.size() != 6)
 					continue; //impossible
 
-				uint64_t powerusage1 = 0;
-				uint64_t powerusage2 = 0;
-				uint64_t powerdeliv1 = 0;
-				uint64_t powerdeliv2 = 0;
-				uint64_t usagecurrent = 0;
-				uint64_t delivcurrent = 0;
+				int64_t powerusage1 = 0;
+				int64_t powerusage2 = 0;
+				int64_t powerdeliv1 = 0;
+				int64_t powerdeliv2 = 0;
+				int64_t usagecurrent = 0;
+				int64_t delivcurrent = 0;
 
 				try
 				{
@@ -7339,9 +7339,13 @@ void CSQLHelper::UpdateMultiMeter()
 				if (splitresults.size() != 3)
 					continue; //impossible
 
-				value1 = (unsigned long)(atof(splitresults[0].c_str()) * 10.0F);
-				value2 = (unsigned long)(atof(splitresults[1].c_str()) * 10.0F);
-				value3 = (unsigned long)(atof(splitresults[2].c_str()) * 10.0F);
+				double val1 = std::stod(splitresults[0]);
+				double val2 = std::stod(splitresults[1]);
+				double val3 = std::stod(splitresults[2]);
+
+				value1 = std::llround(val1 * 10.0);
+				value2 = std::llround(val2 * 10.0);
+				value3 = std::llround(val3 * 10.0);
 				price = PriceE;
 			}
 			else if ((dType == pTypeCURRENTENERGY) && (dSubType == sTypeELEC4))
@@ -7349,10 +7353,15 @@ void CSQLHelper::UpdateMultiMeter()
 				if (splitresults.size() != 4)
 					continue; //impossible
 
-				value1 = (unsigned long)(atof(splitresults[0].c_str()) * 10.0F);
-				value2 = (unsigned long)(atof(splitresults[1].c_str()) * 10.0F);
-				value3 = (unsigned long)(atof(splitresults[2].c_str()) * 10.0F);
-				value4 = (uint64_t)(atof(splitresults[3].c_str()) * 1000.0F);
+				double val1 = std::stod(splitresults[0]);
+				double val2 = std::stod(splitresults[1]);
+				double val3 = std::stod(splitresults[2]);
+				double val4 = std::stod(splitresults[3]);
+
+				value1 = std::llround(val1 * 10.0);
+				value2 = std::llround(val2 * 10.0);
+				value3 = std::llround(val3 * 10.0);
+				value4 = std::llround(val4 * 1000.0);
 				price = PriceE;
 			}
 			else
@@ -7361,7 +7370,7 @@ void CSQLHelper::UpdateMultiMeter()
 			//insert record
 			safe_query(
 				"INSERT INTO MultiMeter (DeviceRowID, Value1, Value2, Value3, Value4, Value5, Value6, Price) "
-				"VALUES ('%" PRIu64 "', '%" PRIu64 "', '%" PRIu64 "', '%" PRIu64 "', '%" PRIu64 "', '%" PRIu64 "', '%" PRIu64 "', '%.4f')",
+				"VALUES ('%" PRIu64 "', '%" PRId64 "', '%" PRId64 "', '%" PRId64 "', '%" PRId64 "', '%" PRId64 "', '%" PRId64 "', '%.4f')",
 				ID,
 				value1,
 				value2,
@@ -9359,26 +9368,26 @@ void CSQLHelper::FixDaylightSaving()
 		std::stringstream sstr;
 		unsigned long ID1;
 		unsigned long ID2;
-		uint64_t tValue1;
-		uint64_t tValue2;
-		uint64_t tValue3;
-		uint64_t tValue4;
-		uint64_t tValue5;
-		uint64_t tValue6;
+		int64_t tValue1;
+		int64_t tValue2;
+		int64_t tValue3;
+		int64_t tValue4;
+		int64_t tValue5;
+		int64_t tValue6;
 
-		uint64_t uValue1;
-		uint64_t uValue2;
-		uint64_t uValue3;
-		uint64_t uValue4;
-		uint64_t uValue5;
-		uint64_t uValue6;
+		int64_t uValue1;
+		int64_t uValue2;
+		int64_t uValue3;
+		int64_t uValue4;
+		int64_t uValue5;
+		int64_t uValue6;
 
-		uint64_t ValueDest1;
-		uint64_t ValueDest2;
-		uint64_t ValueDest3;
-		uint64_t ValueDest4;
-		uint64_t ValueDest5;
-		uint64_t ValueDest6;
+		int64_t ValueDest1;
+		int64_t ValueDest2;
+		int64_t ValueDest3;
+		int64_t ValueDest4;
+		int64_t ValueDest5;
+		int64_t ValueDest6;
 		for (const auto &sd1 : result)
 		{
 			sstr.clear();
@@ -9483,7 +9492,7 @@ void CSQLHelper::FixDaylightSaving()
 				else
 				{
 					//Update row with new Date
-					safe_query("UPDATE MultiMeter_Calendar SET Date='%q', Value1=%" PRIu64 ", Value2=%" PRIu64 ", Value3=%" PRIu64 ", Value4=%" PRIu64 ", Value5=%" PRIu64 ", Value6=%" PRIu64 " WHERE (RowID=='%q')",
+					safe_query("UPDATE MultiMeter_Calendar SET Date='%q', Value1=%" PRId64 ", Value2=%" PRId64 ", Value3=%" PRId64 ", Value4=%" PRId64 ", Value5=%" PRId64 ", Value6=%" PRId64 " WHERE (RowID=='%q')",
 						szDateNew.c_str(), ValueDest1, ValueDest2, ValueDest3, ValueDest4, ValueDest5, ValueDest6, sd1[1].c_str());
 				}
 			}
