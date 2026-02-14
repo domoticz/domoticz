@@ -188,6 +188,7 @@ void COpenMeteo::Do_Work()
 	Log(LOG_STATUS, "Started...");
 
 	int sec_counter = OpenMeteo_Poll_Interval - 5;
+	int mark_used_countdown = -1;
 	while (!IsStopRequested(1000))
 	{
 		sec_counter++;
@@ -202,6 +203,8 @@ void COpenMeteo::Do_Work()
 				try
 				{
 					GetMeterDetails();
+					if (!m_bDevicesUsed)
+						mark_used_countdown = 5;
 				}
 				catch (...)
 				{
@@ -212,6 +215,18 @@ void COpenMeteo::Do_Work()
 			{
 				Log(LOG_STATUS, "Unable to run due to missing or incorrect Location parameters!");
 			}
+		}
+
+		if (mark_used_countdown > 0)
+		{
+			mark_used_countdown--;
+		}
+		else if (mark_used_countdown == 0)
+		{
+			m_sql.safe_query("UPDATE DeviceStatus SET Used=1 WHERE (HardwareID==%d) AND (Used==0)", m_HwdID);
+			m_sql.safe_query("UPDATE DeviceStatus SET CustomImage=20 WHERE (HardwareID==%d) AND (DeviceID=='0000008') AND (CustomImage==0)", m_HwdID);
+			m_bDevicesUsed = true;
+			mark_used_countdown = -1;
 		}
 	}
 	Log(LOG_STATUS, "Worker stopped...");

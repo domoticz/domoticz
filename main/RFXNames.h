@@ -148,7 +148,7 @@ enum _eHardwareTypes {
 	HTYPE_KMTronic433,			//50
 	HTYPE_Pinger,				//51
 	HTYPE_NEST,					//52
-	HTYPE_NOT_USED,				//53
+	HTYPE_OpenMeteo,			//53
 	HTYPE_Netatmo,				//54
 	HTYPE_Kodi,					//55
 	HTYPE_ANNATHERMOSTAT,		//56
@@ -224,7 +224,6 @@ enum _eHardwareTypes {
 	HTYPE_RFLINKMQTT,			//126
 	HTYPE_VisualCrossing,		//127
 	HTYPE_MitsubishiWF,			//128
-	HTYPE_OpenMeteo,			//129
 	HTYPE_END
 };
 

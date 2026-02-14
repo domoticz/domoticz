@@ -21,5 +21,6 @@ class COpenMeteo : public CDomoticzHardwareBase
 	std::string m_ForecastURL;
 	double m_Lat = 0;
 	double m_Lon = 0;
+	bool m_bDevicesUsed = false;
 	std::shared_ptr<std::thread> m_thread;
 };
