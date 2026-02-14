@@ -409,48 +409,30 @@ namespace Plugins {
 		}
 
 		m_tLastSeen = time(nullptr);
-		bool bWasConnecting = m_bConnecting;
-		bool bWasConnected = m_bConnected;
+
+		if (m_Timer)
+		{
+			m_Timer->cancel();
+		}
+
+		if (m_Socket && m_bConnecting)
+		{
+			m_Socket->close();
+		}
+
+		if (m_Socket && m_bConnected)
+		{
+			boost::system::error_code e;
+			m_Socket->shutdown(boost::asio::ip::tcp::socket::shutdown_both, e);
+			m_Socket->close();
+		}
+
+		if (m_Acceptor)
+		{
+			m_Acceptor->cancel();
+		}
+
 		m_bConnected = false;
-		m_bConnecting = false;
-
-		// Post socket operations to the ASIO service thread.
-		// Socket objects are not thread-safe, so shutdown/close must be
-		// serialized on the thread that runs ios.run() to avoid racing
-		// with pending async_read_some/async_connect operations.
-		boost::asio::post(ios, [this, bWasConnecting, bWasConnected]() {
-			if (m_Timer)
-			{
-				m_Timer->cancel();
-			}
-
-			m_Resolver.cancel();
-
-			if (m_Socket && bWasConnecting)
-			{
-				m_Socket->close();
-			}
-
-			if (m_Socket && bWasConnected)
-			{
-				boost::system::error_code e;
-				m_Socket->shutdown(boost::asio::ip::tcp::socket::shutdown_both, e);
-				if (!e)
-				{
-					m_Socket->close();
-				}
-				else
-				{
-					// Shutdown failed (e.g. not connected), force close
-					m_Socket->close();
-				}
-			}
-
-			if (m_Acceptor)
-			{
-				m_Acceptor->cancel();
-			}
-		});
 
 		return true;
 	}
