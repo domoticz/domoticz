@@ -415,6 +415,8 @@ namespace Plugins {
 			m_Timer->cancel();
 		}
 
+		m_Resolver.cancel();
+
 		if (m_Socket && m_bConnecting)
 		{
 			m_Socket->close();
@@ -433,6 +435,7 @@ namespace Plugins {
 		}
 
 		m_bConnected = false;
+		m_bConnecting = false;
 
 		return true;
 	}
