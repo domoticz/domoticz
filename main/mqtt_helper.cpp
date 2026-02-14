@@ -40,6 +40,8 @@ static void on_message_wrapper(struct mosquitto *mosq, void *userdata, const str
 {
 	class mqttdz *m = (class mqttdz *)userdata;
 	UNUSED(mosq);
+	if (message == nullptr || (message->payload == nullptr && message->payloadlen > 0))
+		return;
 	m->on_message(message);
 }
 

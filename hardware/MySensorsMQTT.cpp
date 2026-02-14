@@ -102,7 +102,9 @@ bool MySensorsMQTT::StopHardware()
 void MySensorsMQTT::on_message(const struct mosquitto_message *message)
 {
 	std::string topic = message->topic;
-	std::string qMessage = std::string((char*)message->payload, (char*)message->payload + message->payloadlen);
+	std::string qMessage;
+	if (message->payload != nullptr && message->payloadlen > 0)
+		qMessage = std::string((char*)message->payload, (char*)message->payload + message->payloadlen);
 
 	Log(LOG_NORM, "Topic: %s, Message: %s", topic.c_str(), qMessage.c_str());
 

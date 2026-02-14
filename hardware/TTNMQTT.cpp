@@ -649,7 +649,9 @@ void CTTNMQTT::on_message(const struct mosquitto_message *message)
 	if (topic.find("/up/") != std::string::npos)
 		return; //not interested in sub-topics
 
-	std::string qMessage = std::string((char*)message->payload, (char*)message->payload + message->payloadlen);
+	std::string qMessage;
+	if (message->payload != nullptr && message->payloadlen > 0)
+		qMessage = std::string((char*)message->payload, (char*)message->payload + message->payloadlen);
 
 #ifdef DEBUG_TTN_W
 	SaveString2Disk(qMessage, "ttn_mqtt.json");

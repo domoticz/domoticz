@@ -325,7 +325,9 @@ void COctoPrintMQTT::on_message(const struct mosquitto_message *message)
 		return; //not interested in the last will
 	std::string topic = message->topic;
 
-	std::string qMessage = std::string((char*)message->payload, (char*)message->payload + message->payloadlen);
+	std::string qMessage;
+	if (message->payload != nullptr && message->payloadlen > 0)
+		qMessage = std::string((char*)message->payload, (char*)message->payload + message->payloadlen);
 
 #ifdef DEBUG_OCTO_W
 	SaveString2Disk(qMessage, "E:\\OCTO_mqtt.json");
