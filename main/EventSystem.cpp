@@ -23,9 +23,7 @@
 #include "../main/LuaTable.h"
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
-#include <mutex>
-#include <condition_variable>
-
+#include <future>
 extern "C" {
 #include <lua.h>
 #include <lualib.h>
@@ -33,43 +31,6 @@ extern "C" {
 }
 
 bool g_bUseEventTrigger = true;
-
-// Simple counting semaphore implementation using C++11 features
-class CountingSemaphore {
-private:
-	std::mutex mtx;
-	std::condition_variable cv;
-	int count;
-	const int max_count;
-
-public:
-	explicit CountingSemaphore(int initial_count)
-		: count(initial_count), max_count(initial_count) {
-	}
-
-	void acquire() {
-		std::unique_lock<std::mutex> lock(mtx);
-		cv.wait(lock, [this] { return count > 0; });
-		--count;
-	}
-
-	void release() {
-		std::lock_guard<std::mutex> lock(mtx);
-		if (count < max_count) {
-			++count;
-			cv.notify_one();
-		}
-	}
-
-	int available() const {
-		std::lock_guard<std::mutex> lock(const_cast<std::mutex&>(mtx));
-		return count;
-	}
-};
-
-// Global semaphore to limit concurrent Lua thread execution
-// Limit to 4 concurrent threads to prevent resource exhaustion
-static CountingSemaphore g_lua_thread_semaphore(4);
 
 extern time_t m_StartTime;
 extern std::string szUserDataFolder, szStartupFolder;
@@ -1438,64 +1399,32 @@ void CEventSystem::EventQueueThread()
 	_log.Log(LOG_STATUS, "EventSystem: Queue thread started...");
 
 	std::vector<_tEventQueue> items;
-	auto last_process_time = std::chrono::steady_clock::now();
-	const auto min_batch_interval = std::chrono::milliseconds(100); // Batch events for at least 100ms
 
 	while (!m_TaskQueue.IsStopRequested(0))
 	{
 		_tEventQueue item;
-		bool hasPopped = m_eventqueue.timed_wait_and_pop<std::chrono::duration<int> >(item, std::chrono::duration<int>(5));
+		bool hasPopped = m_eventqueue.timed_wait_and_pop<std::chrono::duration<int> >(item, std::chrono::duration<int>(5)); // timeout after 5 sec
 		if (!hasPopped)
-		{
-			// Timeout - process any pending items
-			if (!items.empty())
-			{
-				_log.Debug(DEBUG_EVENTSYSTEM, "EventSystem: Processing %d batched event(s)", (int)items.size());
-				EvaluateEvent(items);
-				items.clear();
-				last_process_time = std::chrono::steady_clock::now();
-			}
 			continue;
-		}
 
 		if (m_TaskQueue.IsStopRequested(0))
 			break;
 
-		// Check for duplicate events (same id and reason)
-		bool is_duplicate = false;
-		for (const auto& i : items)
+		for (const auto &i : items)
 		{
 			if (i.id == item.id && i.reason <= REASON_SCENEGROUP && i.reason == item.reason)
 			{
-				is_duplicate = true;
-				_log.Debug(DEBUG_EVENTSYSTEM, "EventSystem: Skipping duplicate event for device %" PRIu64, item.id);
+				EvaluateEvent(items);
+				items.clear();
 				break;
 			}
 		}
+		items.push_back(item);
+		if (!m_eventqueue.empty())
+			continue;
 
-		if (!is_duplicate)
-			items.push_back(item);
-
-		// Process batch if: queue is empty OR enough time has passed OR duplicate found
-		auto now = std::chrono::steady_clock::now();
-		bool should_process = m_eventqueue.empty() ||
-			is_duplicate ||
-			(now - last_process_time) >= min_batch_interval;
-
-		if (should_process && !items.empty())
-		{
-			_log.Debug(DEBUG_EVENTSYSTEM, "EventSystem: Processing %d batched event(s)", (int)items.size());
-			EvaluateEvent(items);
-			items.clear();
-			last_process_time = now;
-		}
-	}
-
-	// Process any remaining items before exit
-	if (!items.empty())
-	{
-		_log.Debug(DEBUG_EVENTSYSTEM, "EventSystem: Processing %d remaining event(s) on shutdown", (int)items.size());
 		EvaluateEvent(items);
+		items.clear();
 	}
 	m_eventqueue.clear();
 
@@ -3146,28 +3075,17 @@ void CEventSystem::EvaluateLua(const std::vector<_tEventQueue> &items, const std
 	{
 		lua_sethook(lua_state, luaStop, LUA_MASKCOUNT, 10000000);
 
-		// Acquire semaphore to limit concurrent Lua threads
-		// This prevents resource exhaustion from too many simultaneous script executions
-		//_log.Debug(DEBUG_EVENTSYSTEM, "EventSystem: Waiting for Lua thread slot (available: %d)", g_lua_thread_semaphore.available());
-		g_lua_thread_semaphore.acquire();
-
-		// Use promise/future for timeout detection with std::thread
 		std::promise<void> completion_promise;
 		std::future<void> completion_future = completion_promise.get_future();
 
 		std::thread aluaThread([this, lua_state, filename, promise = std::move(completion_promise)]() mutable {
 			luaThread(lua_state, filename);
-			// Release semaphore when thread completes
-			g_lua_thread_semaphore.release();
-			//_log.Debug(DEBUG_EVENTSYSTEM, "EventSystem: Lua thread completed, released slot");
 			promise.set_value();
-			});
+		});
 		SetThreadName(aluaThread.native_handle(), "luaThread");
 
-		// Wait for thread completion with 10 second timeout
 		if (completion_future.wait_for(std::chrono::seconds(10)) == std::future_status::timeout)
 		{
-			// Timeout occurred - detach the thread and let it complete on its own
 			aluaThread.detach();
 
 			// For dzVents scripts, we can't safely determine which specific script is running
@@ -3177,11 +3095,9 @@ void CEventSystem::EvaluateLua(const std::vector<_tEventQueue> &items, const std
 			if (!m_sql.m_bDisableDzVentsSystem && filename == dzventsCheck->m_runtimeDir + "dzVents.lua")
 				displayName = "dzVents script (unknown - still executing)";
 			_log.Log(LOG_ERROR, "EventSystem: Warning!, lua script %s has been running for more than 10 seconds", displayName.c_str());
-			// Note: Semaphore will be released when thread eventually completes
 		}
 		else
 		{
-			// Thread completed within timeout - join it
 			aluaThread.join();
 		}
 	}
