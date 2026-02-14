@@ -24,10 +24,25 @@
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
 #include <future>
+#include <memory>
 extern "C" {
 #include <lua.h>
 #include <lualib.h>
 #include <lauxlib.h>
+}
+
+struct ScriptNameReport {
+	std::mutex mtx;
+	std::string name;
+};
+
+static int l_reportScriptName(lua_State *L)
+{
+	auto *report = static_cast<ScriptNameReport *>(lua_touserdata(L, lua_upvalueindex(1)));
+	const char *name = luaL_checkstring(L, 1);
+	std::lock_guard<std::mutex> lock(report->mtx);
+	report->name = name;
+	return 0;
 }
 
 bool g_bUseEventTrigger = true;
@@ -3092,10 +3107,19 @@ void CEventSystem::EvaluateLua(const std::vector<_tEventQueue> &items, const std
 	{
 		lua_sethook(lua_state, luaStop, LUA_MASKCOUNT, 10000000);
 
+		auto scriptNameReport = std::make_shared<ScriptNameReport>();
+		bool isDzVents = !m_sql.m_bDisableDzVentsSystem && filename == dzvents->m_runtimeDir + "dzVents.lua";
+		if (isDzVents)
+		{
+			lua_pushlightuserdata(lua_state, scriptNameReport.get());
+			lua_pushcclosure(lua_state, l_reportScriptName, 1);
+			lua_setglobal(lua_state, "dz_reportScriptName");
+		}
+
 		std::promise<void> completion_promise;
 		std::future<void> completion_future = completion_promise.get_future();
 
-		std::thread aluaThread([this, lua_state, filename, promise = std::move(completion_promise)]() mutable {
+		std::thread aluaThread([this, lua_state, filename, promise = std::move(completion_promise), scriptNameReport]() mutable {
 			luaThread(lua_state, filename);
 			promise.set_value();
 		});
@@ -3105,12 +3129,15 @@ void CEventSystem::EvaluateLua(const std::vector<_tEventQueue> &items, const std
 		{
 			aluaThread.detach();
 
-			// For dzVents scripts, we can't safely determine which specific script is running
-			// from outside the Lua thread, so indicate it's a dzVents script generically
 			std::string displayName = filename;
-			CdzVents* dzventsCheck = CdzVents::GetInstance();
-			if (!m_sql.m_bDisableDzVentsSystem && filename == dzventsCheck->m_runtimeDir + "dzVents.lua")
-				displayName = "dzVents script (unknown - still executing)";
+			if (isDzVents)
+			{
+				std::lock_guard<std::mutex> lock(scriptNameReport->mtx);
+				if (!scriptNameReport->name.empty())
+					displayName = "dzVents/" + scriptNameReport->name;
+				else
+					displayName = "dzVents script (unknown - still executing)";
+			}
 			_log.Log(LOG_ERROR, "EventSystem: Warning!, lua script %s has been running for more than 10 seconds", displayName.c_str());
 		}
 		else

@@ -479,6 +479,7 @@ local function EventHelpers(domoticz, mainMethod)
 
 			-- Store current script name globally so C++ can read it for log attribution
 			_G.currentDzVentsScriptName = eventHandler.name
+			if dz_reportScriptName then dz_reportScriptName(eventHandler.name) end
 
 			self.callEventHandler(eventHandler, subject)
 
