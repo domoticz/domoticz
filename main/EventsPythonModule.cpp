@@ -211,7 +211,12 @@ namespace Plugins
 				Py_EndInterpreter((PyThreadState *)m_PyInterpreter);
 			m_PyInterpreter = nullptr;
 			PyThreadState_Swap((PyThreadState *)m_mainworker.m_pluginsystem.PythonThread());
-			PyEval_ReleaseLock();
+			// PyEval_ReleaseLock was removed in Python 3.13 (deprecated since 3.2)
+			// Fall back to PyEval_SaveThread which also releases the GIL
+			if (PyEval_ReleaseLock)
+				PyEval_ReleaseLock();
+			else
+				(void)PyEval_SaveThread();
 			_log.Log(LOG_STATUS, "EventSystem - Python stopped...");
 			return true;
 		}
