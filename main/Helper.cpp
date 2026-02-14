@@ -1118,6 +1118,19 @@ bool IsLightOrSwitch(const int dType, const int dSubType)
 	return bIsLightSwitch;
 }
 
+bool IsEventSwitchLike(const int dType, const int dSubType)
+{
+	if (IsLightOrSwitch(dType, dSubType))
+		return true;
+	if ((dType == pTypeEvohome) || (dType == pTypeEvohomeRelay))
+		return true;
+	if ((dType == pTypeGeneral) && ((dSubType == sTypeTextStatus) || (dSubType == sTypeAlert)))
+		return true;
+	if ((dType == pTypeRego6XXValue) && (dSubType == sTypeRego6XXStatus))
+		return true;
+	return false;
+}
+
 bool IsTemp(const int dType, const int dSubType)
 {
 	return (

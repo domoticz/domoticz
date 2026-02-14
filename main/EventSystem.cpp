@@ -1466,7 +1466,7 @@ void CEventSystem::ProcessDevice(
 	if (!m_bEnabled)
 		return;
 
-	if (!IsLightOrSwitch(devType, subType))
+	if (!IsEventSwitchLike(devType, subType))
 	{
 		//Check for duplicates (faulty sensors could send 10+ messages a second)
 		boost::shared_lock<boost::shared_mutex> devicestatesMutexLock(m_devicestatesMutex);
