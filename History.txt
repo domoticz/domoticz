@@ -13,7 +13,6 @@ Version 2026.xxxx
 - Added: MQTT-AD: Reinstate 'total_increasing' support for kWh sensors
 - Added: MQTT-AD: Thermostat 6, add setpoint timer/schedule support (Fixes #6530)
 - Added: New update scripts that are able to check if system meets requirements
-- Added: New update scripts that are able to check if system meets requirements
 - Added: Philips Hue v2 API, just for Door/Window Contacts (state/tamper/battery)
 - Added: PV Output, added consumption
 - Added: RFXCom, Support Orcon FAN device (#6500)
@@ -22,6 +21,8 @@ Version 2026.xxxx
 - Added: Web Interface, Better XSS prevention
 - Fixed: CalcMeterPrice/CalcMultiMeterPrice off-by-one price error with dynamic tariffs (Fixes #6181)
 - Fixed: dzVents Lua table corruption when exception occurs during notification or device data export (Fixes #6030)
+- Fixed: Event system not processing events when device update rate is high (e.g. faulty sensors)
+- Fixed: Event system thread could silently stop on unhandled exceptions, causing all scripts to stop working
 - Fixed: P1Power hourly graph empty due to incorrect SQL format escaping in pricing resolution grouping
 - Fixed: P1Power hourly graph using wrong price and missing date range filter (Fixes #6181)
 - Fixed: Counter Statistics Chart tooltip showing incorrect day name (Fixes #6542)
@@ -31,7 +32,6 @@ Version 2026.xxxx
 - Fixed: Philips Hue v1 API crashes Domoticz in certain cases since Hue Bridge firmware 1.74 (added extra validations)
 - Fixed: Memory leak in Python event scripts caused by missing reference count decrement in user variables (Fixes #5091)
 - Fixed: Plugin devices, LightingLog User field now shows actual user instead of hardware name (Fixes #6538)
-- Fixed: Possible memory leak in Kodi Notification when destination is unreachable
 - Fixed: Temperature Compare Chart (Min/Max values)
 - Fixed: WOL, Corrected magic packet creation and supporting IPv6 broadcast
 - Changed: Domoticz Remote, Do not force re-enable RemoteSharedPort on startup

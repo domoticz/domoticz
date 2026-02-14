@@ -525,7 +525,6 @@ bool CdzVents::UpdateDevice(lua_State* lua_state, const std::vector<_tLuaTableVa
 	int idx = -1;
 	float delayTime = 0;
 	std::string sValue;
-	std::string scriptName;
 
 	for (const auto& item : vLuaTable)
 	{
@@ -543,22 +542,15 @@ bool CdzVents::UpdateDevice(lua_State* lua_state, const std::vector<_tLuaTableVa
 
 		else if ((item.type == TYPE_FLOAT) && (item.name == "_after"))
 			delayTime = item.fValue;
-		else if (item.type == TYPE_STRING)
-		{
-			if (item.name == "sValue")
-				sValue = item.sValue;
-			else if (item.name == "_scriptName")
-				scriptName = item.sValue;
-		}
+		else if (item.type == TYPE_STRING && item.name == "sValue")
+			sValue = item.sValue;
 		else if (item.type == TYPE_BOOLEAN && item.name == "_trigger")
 			bEventTrigger = true;
 	}
 	if (idx == -1)
 		return false;
 
-	// Use the actual script name if available, otherwise fall back to eventName
-	std::string userName = scriptName.empty() ? ("dzVents/" + eventName) : ("dzVents/" + scriptName);
-	m_sql.AddTaskItem(_tTaskItem::UpdateDevice(delayTime, idx, nValue, sValue, Protected, bEventTrigger, userName), false);
+	m_sql.AddTaskItem(_tTaskItem::UpdateDevice(delayTime, idx, nValue, sValue, Protected, bEventTrigger, "dzVents/" + eventName), false);
 	return true;
 }
 
@@ -647,19 +639,13 @@ bool CdzVents::CancelItem(lua_State* lua_state, const std::vector<_tLuaTableValu
 {
 	int idx = 0;
 	std::string type;
-	std::string scriptName;
 
 	for (const auto& item : vLuaTable)
 	{
 		if (item.type == TYPE_INTEGER && item.name == "idx")
 			idx = item.iValue;
-		else if (item.type == TYPE_STRING)
-		{
-			if (item.name == "type")
-				type = item.sValue;
-			else if (item.name == "_scriptName")
-				scriptName = item.sValue;
-		}
+		else if (item.type == TYPE_STRING && item.name == "type")
+			type = item.sValue;
 	}
 
 	if (idx == 0)
@@ -668,8 +654,7 @@ bool CdzVents::CancelItem(lua_State* lua_state, const std::vector<_tLuaTableValu
 	_tTaskItem tItem;
 	tItem._idx = idx;
 	tItem._DelayTime = 0;
-	// Use the actual script name if available, otherwise fall back to eventName
-	tItem._sUser = scriptName.empty() ? ("dzVents/" + eventName) : ("dzVents/" + scriptName);
+	tItem._sUser = "dzVents/" + eventName;
 	if (type == "device")
 	{
 		tItem._ItemType = TITEM_SWITCHCMD_EVENT;
@@ -708,107 +693,6 @@ bool CdzVents::processLuaCommand(lua_State* lua_state, const std::string& filena
 			scriptTrue = TriggerIFTTT(lua_state, vLuaTable);
 		else if (lCommand == "CustomEvent")
 			scriptTrue = TriggerCustomEvent(lua_state, vLuaTable);
-		else
-		{
-			// Check if this is a wrapped string command (device switch command, notification, email, SMS)
-			// Format: { _value = "On", _scriptName = "MyScript" }
-			std::string wrappedValue;
-			std::string scriptName;
-			bool isWrappedCommand = false;
-
-			for (const auto& item : vLuaTable)
-			{
-				if (item.type == TYPE_STRING && item.name == "_value")
-				{
-					wrappedValue = item.sValue;
-					isWrappedCommand = true;
-				}
-				else if (item.type == TYPE_STRING && item.name == "_scriptName")
-				{
-					scriptName = item.sValue;
-				}
-			}
-
-			if (isWrappedCommand)
-			{
-				// Handle wrapped commands: device commands, SendNotification, SendEmail, SendSMS
-				if (lCommand == "SendNotification")
-				{
-					// Parse the notification string format: subject#message#priority#sound#extra#subsystem
-					std::string subject, body, priority("0"), sound, subsystem;
-					std::string extraData;
-					std::vector<std::string> aParam;
-					StringSplit(wrappedValue, "#", aParam);
-					subject = body = aParam[0];
-					if (aParam.size() > 1 && !aParam[1].empty()) {
-						body = aParam[1];
-					}
-					if (aParam.size() > 2) {
-						priority = aParam[2];
-					}
-					if (aParam.size() > 3) {
-						sound = aParam[3];
-					}
-					if (aParam.size() > 4 && !aParam[4].empty()) {
-						if (isInt(aParam[4]) && aParam.size() > 5 && !aParam[5].empty() && aParam[5] == "fcm") {
-							// Only FCM notification Subsystem handles extraData "|Device=<deviceIdx>"
-							extraData = "|Device=" + aParam[4];
-						}
-						else {
-							extraData = aParam[4];
-						}
-					}
-					if (aParam.size() > 5) {
-						subsystem = aParam[5];
-					}
-
-					m_sql.AddTaskItem(_tTaskItem::SendNotification(0, subject, body, extraData, atoi(priority.c_str()), sound, subsystem));
-					scriptTrue = true;
-				}
-				else if (lCommand == "SendEmail")
-				{
-					// Parse the email string format: subject#body#to
-					std::string subject, body, to;
-					std::vector<std::string> aParam;
-					StringSplit(wrappedValue, "#", aParam);
-					if (aParam.size() != 3)
-					{
-						// Email requires exactly 3 parameters: subject, body, and recipient
-						_log.Log(LOG_ERROR, "EventSystem: SendEmail, expected exactly 3 parameters!");
-						return false;
-					}
-					subject = aParam[0];
-					body = aParam[1];
-					stdreplace(body, "\\n", "<br>");
-					to = aParam[2];
-					m_sql.AddTaskItem(_tTaskItem::SendEmailTo(1, subject, body, to));
-					scriptTrue = true;
-				}
-				else if (lCommand == "SendSMS")
-				{
-					// SMS message is just a plain string
-					if (wrappedValue.empty())
-					{
-						// SMS message cannot be empty
-						_log.Log(LOG_ERROR, "EventSystem: SendSMS, message cannot be empty!");
-						return false;
-					}
-					m_sql.AddTaskItem(_tTaskItem::SendSMS(1, wrappedValue));
-					scriptTrue = true;
-				}
-				else
-				{
-					// This is a device command wrapped with script name
-					// Pass it to EventSystem with "dzVents/" prefix so it appears correctly in logs
-					std::string useScriptName;
-					if (!scriptName.empty())
-						useScriptName = "dzVents/" + scriptName;
-					else
-						useScriptName = filename; // fallback to full path if no script name
-					scriptTrue = m_mainworker.m_eventsystem.ScheduleEvent(lCommand, wrappedValue, useScriptName);
-				}
-			}
-		}
 	}
 	return scriptTrue;
 }

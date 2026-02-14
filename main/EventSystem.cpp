@@ -1402,29 +1402,35 @@ void CEventSystem::EventQueueThread()
 
 	while (!m_TaskQueue.IsStopRequested(0))
 	{
+		// Block until at least one event arrives (or 5 sec timeout)
 		_tEventQueue item;
-		bool hasPopped = m_eventqueue.timed_wait_and_pop<std::chrono::duration<int> >(item, std::chrono::duration<int>(5)); // timeout after 5 sec
-		if (!hasPopped)
+		if (!m_eventqueue.timed_wait_and_pop<std::chrono::duration<int>>(item, std::chrono::duration<int>(5)))
 			continue;
 
 		if (m_TaskQueue.IsStopRequested(0))
 			break;
 
-		for (const auto &i : items)
+		try
 		{
-			if (i.id == item.id && i.reason <= REASON_SCENEGROUP && i.reason == item.reason)
-			{
-				EvaluateEvent(items);
-				items.clear();
-				break;
-			}
-		}
-		items.push_back(item);
-		if (!m_eventqueue.empty())
-			continue;
+			items.push_back(item);
 
-		EvaluateEvent(items);
-		items.clear();
+			// Drain all remaining queued events into the batch
+			while (m_eventqueue.try_pop(item))
+				items.push_back(item);
+
+			EvaluateEvent(items);
+			items.clear();
+		}
+		catch (const std::exception &e)
+		{
+			_log.Log(LOG_ERROR, "EventSystem: Exception during event processing: %s", e.what());
+			items.clear();
+		}
+		catch (...)
+		{
+			_log.Log(LOG_ERROR, "EventSystem: Unknown exception during event processing");
+			items.clear();
+		}
 	}
 	m_eventqueue.clear();
 
@@ -1444,6 +1450,17 @@ void CEventSystem::ProcessDevice(
 {
 	if (!m_bEnabled)
 		return;
+
+	//Check for duplicates (faulty sensors could send 10+ messages a second)
+	boost::shared_lock<boost::shared_mutex> devicestatesMutexLock(m_devicestatesMutex);
+	auto itt = m_devicestates.find(ulDevID);
+	if (sValue && itt != m_devicestates.end()
+		&& itt->second.nValue == nValue
+		&& itt->second.sValue == sValue)
+	{
+		return; // Nothing changed, skip everything
+	}
+	devicestatesMutexLock.unlock();
 
 	std::vector<std::vector<std::string> > result;
 	result = m_sql.safe_query("SELECT SwitchType, LastUpdate, LastLevel, Options, Name FROM DeviceStatus WHERE (ID==%" PRIu64 ")", ulDevID);
