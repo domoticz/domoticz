@@ -361,7 +361,48 @@ bool CBuienRadar::GetStationDetails()
 			return true;
 		}
 	}
-	Log(LOG_ERROR, "Configured StationID (%d) not found at Buienradar site (or does not contain a temperature sensor), please check Hardware setup!", m_iStationID);
+	// Station not found in main feed, try individual station API as fallback
+	Log(LOG_STATUS, "Station %d not found in main feed, trying individual station API...", m_iStationID);
+	{
+		std::string szStationUrl = std::string(BUIENRADAR_ACTUAL_URL) + std::to_string(m_iStationID);
+		std::string sStationResult;
+
+		if (HTTPClient::GET(szStationUrl, sStationResult))
+		{
+			Json::Value stationRoot;
+			if (ParseJSon(sStationResult, stationRoot) && stationRoot.isObject() && !stationRoot["temperature"].empty())
+			{
+				if (m_sStationName.empty())
+				{
+					m_sStationName = stationRoot["stationname"].asString();
+					m_sStationRegion = stationRoot["regio"].asString();
+					m_szMyLatitude = std::to_string(stationRoot["lat"].asDouble());
+					m_szMyLongitude = std::to_string(stationRoot["lon"].asDouble());
+					Log(LOG_STATUS, "Using Station: %s (%s), ID: %d, Lat/Lon: %g,%g",
+						m_sStationName.c_str(), m_sStationRegion.c_str(), m_iStationID,
+						atof(m_szMyLatitude.c_str()), atof(m_szMyLongitude.c_str()));
+				}
+				Log(LOG_STATUS, "Successfully retrieved data from individual station API (fallback)");
+				ParseMeterDetails(stationRoot);
+				return true;
+			}
+		}
+	}
+
+	// Individual station API also failed
+	if (m_stationidprovided)
+	{
+		Log(LOG_ERROR, "Configured StationID (%d) not found at Buienradar site (or does not contain a temperature sensor), please check Hardware setup!", m_iStationID);
+	}
+	else
+	{
+		// Station was auto-detected, reset so next cycle re-discovers nearest available station
+		Log(LOG_ERROR, "Auto-detected station %d (%s) temporarily unavailable, will re-detect nearest station on next cycle",
+			m_iStationID, m_sStationName.c_str());
+		m_iStationID = 0;
+		m_sStationName.clear();
+		m_sStationRegion.clear();
+	}
 	return false;
 }
 
