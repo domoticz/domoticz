@@ -43,7 +43,7 @@ void CHttpPush::UpdateActive()
 	m_bLinkActive = (fActive == 1);
 }
 
-void CHttpPush::OnDeviceReceived(const int m_HwdID, const uint64_t DeviceRowIdx, const std::string &DeviceName, const unsigned char *pRXCommand)
+void CHttpPush::OnDeviceReceived(const int HwdID, const uint64_t DeviceRowIdx, const std::string &DeviceName, const unsigned char *pRXCommand)
 {
 	if (m_bLinkActive)
 	{

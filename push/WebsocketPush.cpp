@@ -52,7 +52,7 @@ void CWebSocketPush::Stop()
 	m_sLogMessage.disconnect();
 }
 
-void CWebSocketPush::OnDeviceReceived(const int m_HwdID, const uint64_t DeviceRowIdx, const std::string &DeviceName, const unsigned char *pRXCommand)
+void CWebSocketPush::OnDeviceReceived(const int HwdID, const uint64_t DeviceRowIdx, const std::string &DeviceName, const unsigned char *pRXCommand)
 {
 	std::unique_lock<std::mutex> lock(handlerMutex);
 	if (!isStarted) {

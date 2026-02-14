@@ -18,7 +18,7 @@ private:
 		time_t stimestamp;
 		std::string svalue;
 	};
-	void OnDeviceReceived(int m_HwdID, uint64_t DeviceRowIdx, const std::string& DeviceName, const unsigned char* pRXCommand);
+	void OnDeviceReceived(int HwdID, uint64_t DeviceRowIdx, const std::string& DeviceName, const unsigned char* pRXCommand);
 
 	std::shared_ptr<std::thread> m_thread;
 	std::mutex m_background_task_mutex;
