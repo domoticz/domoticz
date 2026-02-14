@@ -1466,16 +1466,19 @@ void CEventSystem::ProcessDevice(
 	if (!m_bEnabled)
 		return;
 
-	//Check for duplicates (faulty sensors could send 10+ messages a second)
-	boost::shared_lock<boost::shared_mutex> devicestatesMutexLock(m_devicestatesMutex);
-	auto itt = m_devicestates.find(ulDevID);
-	if (sValue && itt != m_devicestates.end()
-		&& itt->second.nValue == nValue
-		&& itt->second.sValue == sValue)
+	if (!IsLightOrSwitch(devType, subType))
 	{
-		return; // Nothing changed, skip everything
+		//Check for duplicates (faulty sensors could send 10+ messages a second)
+		boost::shared_lock<boost::shared_mutex> devicestatesMutexLock(m_devicestatesMutex);
+		auto itt = m_devicestates.find(ulDevID);
+		if (sValue && itt != m_devicestates.end()
+			&& itt->second.nValue == nValue
+			&& itt->second.sValue == sValue)
+		{
+			return; // Nothing changed, skip everything
+		}
+		devicestatesMutexLock.unlock();
 	}
-	devicestatesMutexLock.unlock();
 
 	std::vector<std::vector<std::string> > result;
 	result = m_sql.safe_query("SELECT SwitchType, LastUpdate, LastLevel, Options, Name FROM DeviceStatus WHERE (ID==%" PRIu64 ")", ulDevID);
