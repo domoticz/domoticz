@@ -17,32 +17,49 @@ Version 2026.xxxx
 - Added: PV Output, added consumption
 - Added: RFXCom, Support Orcon FAN device (#6500)
 - Added: RTL433, Support UV sensors names 'uvi'
+- Added: Dashboard, setpoint display and editing for all setpoint devices
+- Added: Logitech Media Server, SqueezeLite ESP32 support
+- Added: OpenWeatherMap, support for free API plan
 - Added: Support for the Model Context Protocol (/mcp) for use with AI Agents
+- Added: Thermostat, combined Temperature/Setpoint display
 - Added: Web Interface, Better XSS prevention
+- Fixed: Buienradar, fallback when station measurements are empty
 - Fixed: CalcMeterPrice/CalcMultiMeterPrice off-by-one price error with dynamic tariffs (Fixes #6181)
+- Fixed: Deleting a scene/group could accidentally delete a device
 - Fixed: dzVents Lua table corruption when exception occurs during notification or device data export (Fixes #6030)
+- Fixed: dzVents SendNotification, SendEmail, and SendSMS command handling
+- Fixed: Chart zoom buttons (notable on iOS devices)
+- Fixed: Counter Statistics Chart tooltip showing incorrect day name (Fixes #6542)
 - Fixed: Event system not processing events when device update rate is high (e.g. faulty sensors)
 - Fixed: Event system thread could silently stop on unhandled exceptions, causing all scripts to stop working
+- Fixed: Flash of unfiltered devices on live updates in web interface
+- Fixed: General/kWh device with EnergyMeterMode=1 could never be updated when created from Python plugin with numeric Type/SubType (Fixes #6194)
+- Fixed: Kodi, Possible memory leak in Kodi Notification when destination is unreachable
+- Fixed: Memory leak in Python event scripts caused by missing reference count decrement in user variables (Fixes #5091)
+- Fixed: MQTT, crashes and race conditions in message handling
+- Fixed: OpenZWave setpoint devices
 - Fixed: P1Power hourly graph empty due to incorrect SQL format escaping in pricing resolution grouping
 - Fixed: P1Power hourly graph using wrong price and missing date range filter (Fixes #6181)
-- Fixed: Counter Statistics Chart tooltip showing incorrect day name (Fixes #6542)
-- Fixed: General/kWh device with EnergyMeterMode=1 could never be updated when created from Python plugin with numeric Type/SubType (Fixes #6194)
-- Fixed: Chart zoom buttons (notable on iOS devices)
-- Fixed: Kodi, Possible memory leak in Kodi Notification when destination is unreachable
 - Fixed: Philips Hue v1 API crashes Domoticz in certain cases since Hue Bridge firmware 1.74 (added extra validations)
-- Fixed: Memory leak in Python event scripts caused by missing reference count decrement in user variables (Fixes #5091)
 - Fixed: Plugin devices, LightingLog User field now shows actual user instead of hardware name (Fixes #6538)
+- Fixed: Python plugin custom device option updates not saved to database (#6454)
+- Fixed: Python plugin TCP/TLS connection stability issues
+- Fixed: Scheduler Monthly_Weekday and Yearly_Weekday (Fixes #6452)
+- Fixed: Scene triggering delay caused by event system thread pool saturation
+- Fixed: SolarEdge API, power readings persisting stale values when idle
 - Fixed: Temperature Compare Chart (Min/Max values)
 - Fixed: WOL, Corrected magic packet creation and supporting IPv6 broadcast
 - Changed: Domoticz Remote, Do not force re-enable RemoteSharedPort on startup
-- Changed: Installer, replaced SysV init script with native systemd service (auto-migrates on update)
 - Changed: Enphase, default to new firmware info request
+- Changed: Enphase, start working with correct values from the beginning
 - Changed: FCM/Google Cloud Messaging Notifications, now needed to enter private API from console in settings
 - Changed: In-service/Oauth2, Added Logo to login form
+- Changed: Installer, replaced SysV init script with native systemd service (auto-migrates on update)
 - Changed: Internal code cleanup/enhancements
 - Changed: MQTT-AD: better initial device naming
 - Changed: MQTT, huge speed improvements
 - Changed: Netatmo, using new API scopes/code
+- Changed: Viewer users can now change their profile settings
 - Changed: Philips Hue, Added extra validations since Hue Bridge firmware 1.74.1974063020 crashes Domoticz in certain cases
 - Changed: Philips Hue, now used HTTP scheme (HTTP/HTTPS) based on port number (80/443)
 - Changed: Tado, token now refreshed with correct refresh token interval
