@@ -1120,8 +1120,7 @@ $("#dialog-editutilitydevice #enablebarwidget").closest('tr').show();
 													xhtm += '</td></tr><tr><td colspan="6" style="padding:5px 10px;">' + renderBarWidget(utilValue, barOptions) + '</td></tr><tr><td colspan="6">';
 												}
 											}
-											xhtm +=
-							xhtm +=
+								xhtm +=
 								'</td>\n' +
 								'\t    </tr>\n' +
 								'\t    </table>\n' +
