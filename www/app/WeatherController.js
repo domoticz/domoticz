@@ -681,16 +681,16 @@ define(['app', 'livesocket'], function (app) {
 					$('#weatherwidgets').hide(); // TODO delete when multiple views implemented
 					$('#weathertophtm').hide();
 					if (typeof item.Barometer != 'undefined') {
-						return ShowBaroLog('#weathercontent', 'ShowWeathers', item.idx, escape(item.Name));
+						return $location.path('/Devices/' + item.idx + '/Log');
 					}
 					else if (typeof item.Rain != 'undefined') {
-						return ShowRainLog('#weathercontent', 'ShowWeathers', item.idx, escape(item.Name));
+						return $location.path('/Devices/' + item.idx + '/Log');
 					}
 					else if (typeof item.UVI != 'undefined') {
-						return ShowUVLog('#weathercontent', 'ShowWeathers', item.idx, escape(item.Name));
+						return $location.path('/Devices/' + item.idx + '/Log');
 					}
 					else if (typeof item.Direction != 'undefined') {
-						return ShowWindLog('#weathercontent', 'ShowWeathers', item.idx, escape(item.Name));
+						return $location.path('/Devices/' + item.idx + '/Log');
 					}
 					else if (typeof item.Visibility != 'undefined') {
 						return $location.path('/Devices/' + item.idx + '/Log');

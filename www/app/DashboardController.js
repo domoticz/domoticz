@@ -1210,7 +1210,7 @@ define(['app', 'livesocket'], function (app) {
 						var status = "";
 						var bigtext = "";
 						if (typeof item.Rain != 'undefined') {
-							img = '<img src="images/Rain48_On.png" class="lcursor" onclick="ShowRainLog(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + escape(item.Name) + '\');" height="40" width="40">';
+							img = '<a href="#/Devices/' + item.idx + '/Log"><img src="images/Rain48_On.png" class="lcursor" height="40" width="40"></a>';
 							status = '';
 							bigtext = item.Rain + ' mm';
 							if (typeof item.RainRate != 'undefined') {
@@ -1223,7 +1223,7 @@ define(['app', 'livesocket'], function (app) {
 							bigtext = item.Data;
 						}
 						else if (typeof item.UVI != 'undefined') {
-							img = '<img src="images/uv48.png" class="lcursor" onclick="ShowUVLog(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + escape(item.Name) + '\');" height="40" width="40">';
+							img = '<a href="#/Devices/' + item.idx + '/Log"><img src="images/uv48.png" class="lcursor" height="40" width="40"></a>';
 							status = "";
 							bigtext = item.UVI + ' UVI';
 						}
@@ -1233,7 +1233,7 @@ define(['app', 'livesocket'], function (app) {
 							bigtext = item.Data;
 						}
 						else if (typeof item.Direction != 'undefined') {
-							img = '<img src="images/Wind' + item.DirectionStr + '.png" class="lcursor" onclick="ShowWindLog(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + escape(item.Name) + '\');" height="40" width="40">';
+							img = '<a href="#/Devices/' + item.idx + '/Log"><img src="images/Wind' + item.DirectionStr + '.png" class="lcursor" height="40" width="40"></a>';
 							status = item.Direction + ' ' + item.DirectionStr;
 							if (typeof item.Speed != 'undefined') {
 								status += ', ' + $.t('Speed') + ': ' + item.Speed + ' ' + $scope.config.WindSign;
@@ -1260,7 +1260,7 @@ define(['app', 'livesocket'], function (app) {
 							}
 						}
 						else if (typeof item.Barometer != 'undefined') {
-							img = '<img src="images/baro48.png" class="lcursor" onclick="ShowBaroLog(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + escape(item.Name) + '\');" height="40" width="40">';
+							img = '<a href="#/Devices/' + item.idx + '/Log"><img src="images/baro48.png" class="lcursor" height="40" width="40"></a>';
 							bigtext = item.Barometer + ' hPa';
 							if (typeof item.ForecastStr != 'undefined') {
 								status = $.t('Prediction') + ': ' + $.t(item.ForecastStr);
@@ -2866,19 +2866,19 @@ define(['app', 'livesocket'], function (app) {
 									if (($scope.config.DashboardType == 2) || (window.myglobals.ismobile == true)) {
 										var vname = item.Name;
 										if (typeof item.UVI != 'undefined') {
-											vname = '<img src="images/next.png" onclick="ShowUVLog(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + escape(item.Name) + '\');" height="16" width="16">' + " " + item.Name;
+											vname = '<a href="#/Devices/' + item.idx + '/Log"><img src="images/next.png" height="16" width="16"></a>' + " " + item.Name;
 										}
 										else if (typeof item.Visibility != 'undefined' || typeof item.Radiation != 'undefined') {
 											vname = '<a href="#/Devices/' + item.idx + '/Log"><img src="images/next.png" height="16" width="16"></a>' + " " + item.Name;
 										}
 										else if (typeof item.Direction != 'undefined') {
-											vname = '<img src="images/next.png" onclick="ShowWindLog(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + escape(item.Name) + '\');" height="16" width="16">' + " " + item.Name;
+											vname = '<a href="#/Devices/' + item.idx + '/Log"><img src="images/next.png" height="16" width="16"></a>' + " " + item.Name;
 										}
 										else if (typeof item.Rain != 'undefined') {
-											vname = '<img src="images/next.png" onclick="ShowRainLog(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + escape(item.Name) + '\');" height="16" width="16">' + " " + item.Name;
+											vname = '<a href="#/Devices/' + item.idx + '/Log"><img src="images/next.png" height="16" width="16"></a>' + " " + item.Name;
 										}
 										else if (typeof item.Barometer != 'undefined') {
-											vname = '<img src="images/next.png" onclick="ShowBaroLog(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + escape(item.Name) + '\');" height="16" width="16">' + " " + item.Name;
+											vname = '<a href="#/Devices/' + item.idx + '/Log"><img src="images/next.png" height="16" width="16"></a>' + " " + item.Name;
 										}
 										xhtm +=
 											'\t    <tr id="weather_' + item.idx + '">\n' +
@@ -2962,7 +2962,7 @@ define(['app', 'livesocket'], function (app) {
 										xhtm += '</span></td>\n';
 										xhtm += '\t      ';
 										if (typeof item.Rain != 'undefined') {
-											xhtm += '<td id="img" class="img img1"><img src="images/Rain48_On.png" class="lcursor" onclick="ShowRainLog(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + escape(item.Name) + '\');" height="40" width="40"></td>\n' +
+											xhtm += '<td id="img" class="img img1"><a href="#/Devices/' + item.idx + '/Log"><img src="images/Rain48_On.png" class="lcursor" height="40" width="40"></a></td>\n' +
 												'\t      <td id="status" class="status">';
 											if (typeof item.RainRate != 'undefined') {
 												xhtm += 'Rate: ' + item.RainRate + ' mm/h';
@@ -2973,7 +2973,7 @@ define(['app', 'livesocket'], function (app) {
 												'\t      <td id="status" class="status">';
 										}
 										else if (typeof item.UVI != 'undefined') {
-											xhtm += '<td id="img" class="img img1"><img src="images/uv48.png" class="lcursor" onclick="ShowUVLog(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + escape(item.Name) + '\');" height="40" width="40"></td>\n' +
+											xhtm += '<td id="img" class="img img1"><a href="#/Devices/' + item.idx + '/Log"><img src="images/uv48.png" class="lcursor" height="40" width="40"></a></td>\n' +
 												'\t      <td id="status" class="status">';
 										}
 										else if (typeof item.Radiation != 'undefined') {
@@ -2981,7 +2981,7 @@ define(['app', 'livesocket'], function (app) {
 												'\t      <td id="status" class="status">';
 										}
 										else if (typeof item.Direction != 'undefined') {
-											xhtm += '<td id="img" class="img img1"><img src="images/Wind' + item.DirectionStr + '.png" class="lcursor" onclick="ShowWindLog(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + escape(item.Name) + '\');" height="40" width="40"></td>\n' +
+											xhtm += '<td id="img" class="img img1"><a href="#/Devices/' + item.idx + '/Log"><img src="images/Wind' + item.DirectionStr + '.png" class="lcursor" height="40" width="40"></a></td>\n' +
 												'\t      <td id="status" class="status">' + item.Direction + ' ' + item.DirectionStr;
 											if (typeof item.Speed != 'undefined') {
 												xhtm += ', ' + $.t('Speed') + ': ' + item.Speed + ' ' + $scope.config.WindSign;
@@ -3001,7 +3001,7 @@ define(['app', 'livesocket'], function (app) {
 											}
 										}
 										else if (typeof item.Barometer != 'undefined') {
-											xhtm += '<td id="img" class="img img1"><img src="images/baro48.png" class="lcursor" onclick="ShowBaroLog(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + escape(item.Name) + '\');" height="40" width="40"></td>\n' +
+											xhtm += '<td id="img" class="img img1"><a href="#/Devices/' + item.idx + '/Log"><img src="images/baro48.png" class="lcursor" height="40" width="40"></a></td>\n' +
 												'\t      <td id="status" class="status">';
 											if (typeof item.ForecastStr != 'undefined') {
 												xhtm += $.t('Prediction') + ': ' + $.t(item.ForecastStr);
@@ -3264,13 +3264,13 @@ define(['app', 'livesocket'], function (app) {
 											vname = '<a href="#/Devices/' + item.idx + '/Log"><img src="images/next.png" height="16" width="16"></a>' + " " + item.Name;
 										}
 										else if ((item.Type == "Current") || (item.Type == "Current/Energy")) {
-											vname = '<img src="images/next.png" onclick="ShowCurrentLog(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + escape(item.Name) + '\', ' + item.displaytype + ');" height="16" width="16">' + " " + item.Name;
+											vname = '<a href="#/Devices/' + item.idx + '/Log"><img src="images/next.png" height="16" width="16"></a>' + " " + item.Name;
 										}
 										else if ((item.Type == "Energy") || (item.SubType == "kWh") || (item.SubType == "Power")) {
 											vname = '<a href="#/Devices/' + item.idx + '/Log"><img src="images/next.png" height="16" width="16"></a>' + " " + item.Name;
 										}
 										else if (item.Type == "Air Quality") {
-											vname = '<img src="images/next.png" onclick="ShowAirQualityLog(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + escape(item.Name) + '\');" height="16" width="16">' + " " + item.Name;
+											vname = '<a href="#/Devices/' + item.idx + '/Log"><img src="images/next.png" height="16" width="16"></a>' + " " + item.Name;
 										}
 										else if (item.SubType == "Percentage") {
 											vname = '<a href="#/Devices/' + item.idx + '/Log"><img src="images/next.png" height="16" width="16"></a>' + " " + item.Name;
@@ -3279,7 +3279,7 @@ define(['app', 'livesocket'], function (app) {
 											vname = '<a href="#/Devices/' + item.idx + '/Log"><img src="images/' + item.Image + '48_On.png" height="16" width="16"></a>' + " " + item.Name;
 										}
 										else if (item.SubType == "Fan") {
-											vname = '<img src="images/next.png" class="fanicon" onclick="ShowFanLog(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + escape(item.Name) + '\');" height="16" width="16">' + " " + item.Name;
+											vname = '<a href="#/Devices/' + item.idx + '/Log"><img src="images/next.png" class="fanicon" height="16" width="16"></a>' + " " + item.Name;
 										}
 										else if (item.Type == "Lux") {
 											vname = '<a href="#/Devices/' + item.idx + '/Log"><img src="images/next.png" height="16" width="16"></a>' + " " + item.Name;
@@ -3596,12 +3596,12 @@ define(['app', 'livesocket'], function (app) {
 										}
 										else if ((item.Type == "Current") || (item.Type == "Current/Energy")) {
 											item.Image = (item.CustomImage == 0) ? 'current48.png' : item.Image + '48_On.png';
-											imagehtml += item.Image + '" class="lcursor" onclick="ShowCurrentLog(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + escape(item.Name) + '\', ' + item.displaytype + ');" height="40" width="40"></td>\n';
+											imagehtml = '<a href="#/Devices/' + item.idx + '/Log"><img src="images/' + item.Image + '" class="lcursor" height="40" width="40"></a></td>\n';
 											statushtml = "";
 										}
 										else if (item.Type == "Air Quality") {
 											item.Image = (item.CustomImage == 0) ? 'air48.png' : item.Image + '48_On.png';
-											imagehtml += item.Image + '" class="lcursor" onclick="ShowAirQualityLog(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + escape(item.Name) + '\');" height="40" width="40"></td>\n';
+											imagehtml = '<a href="#/Devices/' + item.idx + '/Log"><img src="images/' + item.Image + '" class="lcursor" height="40" width="40"></a></td>\n';
 											statushtml = item.Quality;
 										}
 										else if (item.SubType == "Percentage") {
@@ -3610,7 +3610,7 @@ define(['app', 'livesocket'], function (app) {
 											statushtml = "";
 										}
 										else if (item.SubType == "Fan") {
-											imagehtml += 'Fan48_On.png" class="lcursor fanicon" onclick="ShowFanLog(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + escape(item.Name) + '\');" height="40" width="40"></td>\n';
+											imagehtml = '<a href="#/Devices/' + item.idx + '/Log"><img src="images/Fan48_On.png" class="lcursor fanicon" height="40" width="40"></a></td>\n';
 											statushtml = "";
 										}
 										else if (item.Type == "Lux") {
