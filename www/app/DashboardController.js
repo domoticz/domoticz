@@ -2718,6 +2718,13 @@ define(['app', 'livesocket'], function (app) {
 										if (typeof item.DewPoint != 'undefined') {
 											status += "<br>" + $.t("Dew Point") + ": " + item.DewPoint + '&deg; ' + $scope.config.TempSign;
 										}
+										// Add bar widget if enabled
+										var barOptions = parseBarWidgetOptions(item);
+										if (barOptions.enabled && typeof item.Temp != 'undefined') {
+											status += '<br>' + renderBarWidget(item.Temp, barOptions);
+										}
+										
+										xhtm +=
 										xhtm +=
 											'\t      <td id="status" class="status">' + status + '</td>\n' +
 											'\t    </tr>\n';
@@ -2798,8 +2805,17 @@ define(['app', 'livesocket'], function (app) {
 											}
 											xhtm += $.t("Dew Point") + ": " + item.DewPoint + '&deg; ' + $scope.config.TempSign;
 										}
-										xhtm +=
-											'</td>\n' +
+											xhtm += '</td>\n';
+											
+											// Add bar widget if enabled
+											var barOptions = parseBarWidgetOptions(item);
+											if (barOptions.enabled && typeof item.Temp != 'undefined') {
+												xhtm += '\t      <td id="barwidget" colspan="5">' + renderBarWidget(item.Temp, barOptions) + '</td>\n';
+												xhtm += '\t    </tr>\n' +
+													'\t    <tr>\n';
+											}
+											
+											xhtm += '\t      <td id="lastupdate" class="lastupdate"><span>' + item.LastUpdate + '</span></td>\n' +
 											'\t      <td id="lastupdate" class="lastupdate"><span>' + item.LastUpdate + '</span></td>\n' +
 											'\t    </tr>\n' +
 											'\t    </table>\n' +
@@ -3445,6 +3461,19 @@ define(['app', 'livesocket'], function (app) {
 												}
 											}
 										}
+										// Add bar widget if enabled for utility sensors
+										var barOptions = parseBarWidgetOptions(item);
+										var utilValue = null;
+										if (item.Data) {
+											// Try to extract numeric value from Data field
+											var match = item.Data.match(/([+-]?\d+\.?\d*)/);
+											if (match) utilValue = parseFloat(match[1]);
+										}
+										if (barOptions.enabled && utilValue !== null) {
+											status += '<br>' + renderBarWidget(utilValue, barOptions);
+										}
+										
+										xhtm +=
 										xhtm +=
 											'\t    <tr id="utility_' + item.idx + '">\n' +
 											'\t      <td id="name" class="name item-name" data-idx="'+item.idx+'" data-desc="'+item.Description.replace('"',"'")+'">' + vname + '</td>\n' +
@@ -3732,6 +3761,22 @@ define(['app', 'livesocket'], function (app) {
 										xhtm += '\t      <td id="bigtext" class="bigtext"><span class="wrapper">' + bigtexthtml + '</span></td>\n';
 										xhtm += '\t      <td id="img" class="img img1">' + imagehtml + '</td>';
 										xhtm += '\t      <td id="status" class="status"><span class="wrapper">' + statushtml + '</span></td>\n' +
+										
+										// Add bar widget if enabled for utility sensors
+										var barOptions = parseBarWidgetOptions(item);
+										var utilValue = null;
+										if (bigtexthtml) {
+											// Try to extract numeric value from bigtexthtml
+											var match = bigtexthtml.match(/([+-]?\d+\.?\d*)/);
+											if (match) utilValue = parseFloat(match[1]);
+										}
+										if (barOptions.enabled && utilValue !== null) {
+											xhtm += '\t      <td id="barwidget" colspan="5">' + renderBarWidget(utilValue, barOptions) + '</td>\n';
+											xhtm += '\t    </tr>\n' +
+												'\t    <tr>\n';
+										}
+										
+										xhtm +=
 											'\t      <td id="lastupdate" class="lastupdate"><span>' + item.LastUpdate + '</span></td>\n' +
 											'\t    </tr>\n' +
 											'\t    </table>\n' +
