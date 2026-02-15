@@ -147,6 +147,7 @@ When adding new hardware support:
 - Ensure changes align with project direction
 - Update documentation if relevant
 - Test thoroughly before submitting
+- **Never include the `extern/` folder in pull requests** - it contains bundled external libraries that should not be modified
 
 ## Running Domoticz Locally
 
@@ -238,3 +239,4 @@ When suggesting dependencies:
 - Forum: https://forum.domoticz.com/ for support
 - Wiki: https://wiki.domoticz.com/ for documentation
 - GitHub issues are for bugs/features, not end-user support
+- **Do not modify or include `extern/` folder in PRs** - contains bundled external libraries (JsonCPP, Minizip, JWT-CPP, fmtlib, SQLite)
