@@ -6,23 +6,29 @@ Domoticz is a Home Automation System designed to monitor and configure various d
 
 ## Technology Stack
 
-- **Primary Language:** C++ (main application logic)
-- **Build System:** CMake (minimum version 3.16.0)
+- **Primary Language:** C++ (C++17 standard)
+- **Build System:** CMake (minimum version 3.16.0, CI uses 3.31.3)
 - **Scripting:** Python (plugins and event scripts), Lua (dzVents)
 - **Frontend:** HTML5, JavaScript
 - **Testing:** pytest-3 (Gherkin/BDD), mocha (JavaScript), busted (Lua)
-- **Dependencies:** Boost (>=1.69.0), OpenSSL, libcurl, SQLite, Lua 5.3
+- **Dependencies:** Boost (>=1.69.0, CI uses 1.86.0), OpenSSL, libcurl, SQLite, Lua 5.3, OpenZWave, libusb, mosquitto, zlib, uthash
 
 ## Code Style and Formatting
 
 ### C++ Code Style
 - Use the clang-format configuration defined in `clang-format.txt`
+- **C++ Standard:** C++17 (required)
 - **Indentation:** Tabs (8-space width)
 - **Column Limit:** 200 characters
 - **Braces:** Custom style with braces on new lines after classes, functions, control statements
 - **Pointer Alignment:** Right (`int *ptr`)
 - **No short functions on single line**
 - **Include sorting:** Disabled (preserve existing order)
+
+### Platform-Specific Compiler Flags
+- **Linux (GCC):** `-Wno-psabi -rdynamic`
+- **macOS (Darwin):** Warnings disabled for switch, deprecated declarations, etc.
+- **OpenBSD/NetBSD:** `-pthread` required
 
 ### Key Formatting Rules
 ```cpp
@@ -64,17 +70,60 @@ class ClassName
 - New features: discuss on forum first, then branch from `development`
 
 ### Building
+
+#### Local Development Dependencies (Ubuntu/Debian)
+```bash
+sudo apt-get install make gcc g++ libssl-dev git libcurl4-gnutls-dev \
+  libusb-dev libmosquitto-dev python3-dev zlib1g-dev liblua5.3-dev \
+  uthash-dev libsqlite3-dev python3-pytest python3-pytest-bdd
+```
+
+#### OpenZWave (required for Z-Wave support)
+```bash
+git clone https://github.com/domoticz/open-zwave.git open-zwave-read-only
+cd open-zwave-read-only
+make
+sudo make install
+```
+
+#### Build Domoticz
 ```bash
 cmake -DCMAKE_BUILD_TYPE=Release CMakeLists.txt
 make
 ```
 
-### Testing
-- **Functional Tests:** `pytest-3 -rA --tb=no test/gherkin/` (Gherkin/BDD style)
-- **dzVents Tests:** `busted --coverage` in `dzVents/runtime/tests/`
-- **WWW Tests:** JavaScript tests in `test/www-test/`
+The build uses C++17 standard with compiler-specific flags (e.g., `-rdynamic` for GCC).
 
-Always run relevant tests before submitting changes.
+### Testing
+
+#### Functional Tests (Gherkin/BDD)
+```bash
+# Link test web content (required)
+ln -s ../test/gherkin/resources/testwebcontent www/test
+
+# Start Domoticz in background
+./domoticz -sslwww 0 -wwwroot www &
+
+# Run tests
+pytest-3 -rA --tb=no test/gherkin/
+```
+
+#### dzVents Tests (Lua)
+```bash
+cd dzVents/runtime/tests/
+# Requires: luarocks, busted, luacov (install with luarocks)
+busted --coverage
+```
+
+#### WWW Tests (JavaScript)
+```bash
+cd test/www-test/
+# Requires: Node.js, npm, mocha
+npm install
+npm test
+```
+
+Always run relevant tests before submitting changes. The CI system requires tests to pass before merging.
 
 ## Security Considerations
 
@@ -99,14 +148,76 @@ When adding new hardware support:
 - Update documentation if relevant
 - Test thoroughly before submitting
 
+## Running Domoticz Locally
+
+Start the application for development and testing:
+```bash
+# Basic start (port 8080, no SSL)
+./domoticz
+
+# Custom port
+./domoticz -www 81
+
+# With debug output
+./domoticz -verbose 1
+
+# For testing (disable SSL on web port)
+./domoticz -sslwww 0 -wwwroot www
+```
+
+Access via browser: `http://localhost:8080/`
+Stop with: Ctrl-C in the application terminal
+
+**Note:** Ports below 1024 on Linux require root (e.g., `sudo ./domoticz` for port 80)
+
+## CI/CD Workflows
+
+**Pull Request Checks:**
+- PRs are checked against `development` and `master` branches
+- Build runs on Ubuntu 24.04
+- Must pass build and basic validation
+- Build artifacts retained for 7 days
+- Automated tests currently disabled in CI (but should be run locally)
+
+**Build Process in CI:**
+1. Install dependencies
+2. Build Boost 1.86.0 from source (static linking)
+3. Build OpenZWave from source
+4. Build Domoticz with CMake + make
+
+**Paths Ignored by CI:**
+- `msbuild/**`
+- `.github/**`
+- `tools/**`
+- `**.md` and `**.txt` files
+
 ## Build Options (CMakeLists.txt)
 
 Key configuration options:
-- `USE_PYTHON` - Enable Python plugins (default: YES)
+
+**Bundled Libraries:**
 - `USE_BUILTIN_JSONCPP` - Use bundled JsonCPP (default: YES)
-- `USE_STATIC_BOOST` - Static link Boost libraries (default: YES)
+- `USE_BUILTIN_MINIZIP` - Use bundled Minizip (default: YES)
+- `USE_BUILTIN_SQLITE` - Use bundled SQLite (default: NO)
+- `USE_BUILTIN_JWTCPP` - Use bundled JWT-CPP (default: YES)
+
+**Optional Features:**
+- `USE_PYTHON` - Enable Python plugins (default: YES)
 - `INCLUDE_LINUX_I2C` - I2C support (default: YES)
+- `INCLUDE_SPI` - SPI support (default: YES)
 - `WITH_LIBUSB` - USB support (default: YES)
+- `WITH_TELLDUSCORE` - Telldus support (default: NO)
+- `DISABLE_UPDATER` - Disable updater functionality (default: NO)
+
+**Linking Options:**
+- `USE_STATIC_BOOST` - Static link Boost libraries (default: YES)
+- `USE_LUA_STATIC` - Static link Lua (default: YES)
+- `USE_OPENSSL_STATIC` - Static link OpenSSL (default: NO)
+- `USE_STATIC_OPENZWAVE` - Static link OpenZwave (default: YES)
+
+**Developer Options:**
+- `USE_PRECOMPILED_HEADER` - Speed up build time (default: YES)
+- `GIT_SUBMODULE` - Check submodules during build (default: ON)
 
 ## Common Dependencies
 
