@@ -1109,7 +1109,7 @@ void MySensorsBase::UpdateSwitchLastUpdate(const unsigned char NodeID, const int
 void MySensorsBase::UpdateBlindSensorLastUpdate(const int NodeID, const int ChildID)
 {
 	char szIdx[10];
-	sprintf(szIdx, "%02X%02X%02X", 0, 0, NodeID);
+	sprintf(szIdx, "%02X%02X%02X%02X", 0, 0, NodeID, 0);
 	std::vector<std::vector<std::string> > result;
 	result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit==%d)", m_HwdID, szIdx, ChildID);
 	if (result.empty())
@@ -1123,7 +1123,7 @@ void MySensorsBase::UpdateRGBWSwitchLastUpdate(const int NodeID, const int Child
 	if (NodeID == 1)
 		sprintf(szIdx, "%d", 1);
 	else
-		sprintf(szIdx, "%08x", (unsigned int)NodeID);
+		sprintf(szIdx, "%08X", (unsigned int)NodeID);
 
 	std::vector<std::vector<std::string> > result;
 	result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit==%d)", m_HwdID, szIdx, ChildID);
