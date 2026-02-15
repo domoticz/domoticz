@@ -176,12 +176,12 @@ define(function () {
                 var deviceType = this.Type;
                 var logLink = '#/Devices/' + this.idx + '/Log';
 
-                var deviceTypes = ['Light', 'Color Switch', 'Chime', 'Security', 'RFY', 'ASA', 'Usage', 'Energy', 'Heating'];
+                var deviceTypes = ['Light', 'Color Switch', 'Chime', 'Security', 'RFY', 'ASA', 'Usage', 'Energy', 'Heating', 'Air Quality', 'Rain', 'Wind'];
                 var deviceSubTypes = [
                     'Voltage', 'Current', 'Pressure', 'Custom Sensor', 'kWh',
                     'Sound Level', 'Solar Radiation', 'Visibility', 'Distance',
                     'Soil Moisture', 'Leaf Wetness', 'Waterflow', 'Lux', 'Percentage',
-                    'Text', 'Alert', 'Temperature', 'SetPoint'
+                    'Text', 'Alert', 'Temperature', 'SetPoint', 'Barometer'
                 ];
 
                 if (deviceTypes.some(function(item) {
@@ -204,8 +204,8 @@ define(function () {
             };
 
             this.isCustomLog = function () {
-				var deviceTypes = ['Air Quality','UV','Rain','Current','Wind'];
-				var deviceSubTypes = ['Barometer'];
+				var deviceTypes = ['UV', 'Current'];
+				var deviceSubTypes = [];
 
 				if (deviceTypes.includes(this.Type)) {
 					return true;
@@ -219,18 +219,10 @@ define(function () {
             this.openCustomLog = function (container, backFn) {
                 GlobalBackFn = backFn;
 
-                if (this.Direction !== undefined) {
-                    ShowWindLog(container, 'GlobalBackFn', this.idx, this.Name);
-                } else if (this.UVI !== undefined) {
+                if (this.UVI !== undefined) {
                     ShowUVLog(container, 'GlobalBackFn', this.idx, this.Name);
-                } else if (this.Rain !== undefined) {
-                    ShowRainLog(container, 'GlobalBackFn', this.idx, this.Name);
                 } else if (this.Type.indexOf('Current') === 0) {
                     ShowCurrentLog(container, 'GlobalBackFn', this.idx, this.Name);
-                } else if (this.Type === 'Air Quality') {
-                    ShowAirQualityLog(container, 'GlobalBackFn', this.idx, this.Name);
-                } else if (this.SubType === 'Barometer') {
-                    ShowBaroLog(container, 'GlobalBackFn', this.idx, this.Name);
                 }
             };
 
