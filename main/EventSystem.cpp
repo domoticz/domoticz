@@ -734,8 +734,8 @@ void CEventSystem::GetCurrentMeasurementStates()
 			// sValue formats:
 			//   sTypeThermostat6Temp (0x00): "temp;setpoint"
 			//   sTypeThermostat6TempHum (0x01): "temp;setpoint;humidity;humidity_status"
-			//   sTypeThermostat6TempBaro (0x02): "temp;setpoint;barometer"
-			//   sTypeThermostat6TempHumBaro (0x03): "temp;setpoint;humidity;humidity_status;barometer"
+			//   sTypeThermostat6TempBaro (0x02): "temp;setpoint;barometer;forecast"
+			//   sTypeThermostat6TempHumBaro (0x03): "temp;setpoint;humidity;humidity_status;barometer;forecast"
 			if (sitem.subType == sTypeThermostat6Temp)
 			{
 				if (splitresults.size() >= 2)

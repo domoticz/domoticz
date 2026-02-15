@@ -4786,9 +4786,9 @@ uint64_t CSQLHelper::CreateDevice(const int HardwareID, const int SensorType, co
 		else if (SensorSubType == sTypeThermostat6TempHum)
 			sValue = "20.0;20.0;50;1";
 		else if (SensorSubType == sTypeThermostat6TempBaro)
-			sValue = "20.0;20.0;1013";
+			sValue = "20.0;20.0;1013;0";
 		else if (SensorSubType == sTypeThermostat6TempHumBaro)
-			sValue = "20.0;20.0;50;1;1013";
+			sValue = "20.0;20.0;50;1;1013;0";
 
 		DeviceRowIdx = UpdateValue(HardwareID, 0, ID, 1, SensorType, SensorSubType, 12, 255, 0, sValue.c_str(), devname, true, userName.c_str());
 		break;

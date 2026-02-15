@@ -4438,13 +4438,13 @@ namespace http
 						{
 							sprintf(szTmp, "%s;%.2f;%s;%s", strarray[0].c_str(), tempcelcius, strarray[2].c_str(), strarray[3].c_str());
 						}
-						else if (dSubType == sTypeThermostat6TempBaro && strarray.size() >= 3)
+						else if (dSubType == sTypeThermostat6TempBaro && strarray.size() >= 4)
 						{
-							sprintf(szTmp, "%s;%.2f;%s", strarray[0].c_str(), tempcelcius, strarray[2].c_str());
+							sprintf(szTmp, "%s;%.2f;%s;%s", strarray[0].c_str(), tempcelcius, strarray[2].c_str(), strarray[3].c_str());
 						}
-						else if (dSubType == sTypeThermostat6TempHumBaro && strarray.size() >= 5)
+						else if (dSubType == sTypeThermostat6TempHumBaro && strarray.size() >= 6)
 						{
-							sprintf(szTmp, "%s;%.2f;%s;%s;%s", strarray[0].c_str(), tempcelcius, strarray[2].c_str(), strarray[3].c_str(), strarray[4].c_str());
+							sprintf(szTmp, "%s;%.2f;%s;%s;%s;%s", strarray[0].c_str(), tempcelcius, strarray[2].c_str(), strarray[3].c_str(), strarray[4].c_str(), strarray[5].c_str());
 						}
 						m_sql.safe_query("UPDATE DeviceStatus SET Used=%d, sValue='%q' WHERE (ID == '%q')", used, szTmp, idx.c_str());
 					}
