@@ -326,6 +326,7 @@ namespace Plugins {
 		int Used = -1;
 		char *Description = nullptr;
 		static char *kwlist[] = { "Name", "DeviceID", "Unit", "TypeName", "Type", "Subtype", "Switchtype", "Image", "Options", "Used", "Description", nullptr };
+		static char *kwlist_alt[] = { "Name", "DeviceID", "Unit", "TypeName", "Type", "SubType", "SwitchType", "Image", "Options", "Used", "Description", nullptr };
 
 		try
 		{
@@ -350,7 +351,15 @@ namespace Plugins {
 			}
 
 				// otherwise a new Unit is being created
-			if (PyArg_ParseTupleAndKeywords(args, kwds, "ssi|siiiiOis", kwlist, &Name, &DeviceID, &Unit, &TypeName, &Type, &SubType, &SwitchType, &Image, &Options, &Used, &Description))
+			// Try parsing with lowercase 't' first (backward compatibility), then with capital 'T'
+			bool parsed = PyArg_ParseTupleAndKeywords(args, kwds, "ssi|siiiiOis", kwlist, &Name, &DeviceID, &Unit, &TypeName, &Type, &SubType, &SwitchType, &Image, &Options, &Used, &Description);
+			if (!parsed)
+			{
+				PyErr_Clear();
+				parsed = PyArg_ParseTupleAndKeywords(args, kwds, "ssi|siiiiOis", kwlist_alt, &Name, &DeviceID, &Unit, &TypeName, &Type, &SubType, &SwitchType, &Image, &Options, &Used, &Description);
+			}
+
+			if (parsed)
 			{
 				char szID[40];
 				if (Name)
@@ -458,7 +467,7 @@ namespace Plugins {
 			}
 			else
 			{
-				pModState->pPlugin->Log(LOG_ERROR, R"(Expected: myVar = DomoticzEx.Unit(Name="myDevice", DeviceID="", Unit=0, TypeName="", Type=0, Subtype=0, Switchtype=0, Image=0, Options={}, Used=1, Description=""))");
+				pModState->pPlugin->Log(LOG_ERROR, R"(Expected: myVar = DomoticzEx.Unit(Name="myDevice", DeviceID="", Unit=0, TypeName="", Type=0, Subtype=0, Switchtype=0, Image=0, Options={}, Used=1, Description="") - Note: Both 'Subtype'/'SubType' and 'Switchtype'/'SwitchType' are accepted)");
 				pModState->pPlugin->LogPythonException(__func__);
 			}
 		}

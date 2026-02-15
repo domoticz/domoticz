@@ -654,6 +654,8 @@ namespace Plugins {
 		char *Description = nullptr;
 		static char *kwlist[] = { "Name",  "Unit",    "TypeName", "Type",     "Subtype",     "Switchtype",
 					  "Image", "Options", "Used",	  "DeviceID", "Description", nullptr };
+		static char *kwlist_alt[] = { "Name",  "Unit",    "TypeName", "Type",     "SubType",     "SwitchType",
+					  "Image", "Options", "Used",	  "DeviceID", "Description", nullptr };
 
 		try
 		{
@@ -677,7 +679,15 @@ namespace Plugins {
 				return 0;
 			}
 
-			if (PyArg_ParseTupleAndKeywords(args, kwds, "si|siiiiOiss", kwlist, &Name, &Unit, &TypeName, &Type, &SubType, &SwitchType, &Image, &Options, &Used, &DeviceID, &Description))
+			// Try parsing with lowercase 't' first (backward compatibility), then with capital 'T'
+			bool parsed = PyArg_ParseTupleAndKeywords(args, kwds, "si|siiiiOiss", kwlist, &Name, &Unit, &TypeName, &Type, &SubType, &SwitchType, &Image, &Options, &Used, &DeviceID, &Description);
+			if (!parsed)
+			{
+				PyErr_Clear();
+				parsed = PyArg_ParseTupleAndKeywords(args, kwds, "si|siiiiOiss", kwlist_alt, &Name, &Unit, &TypeName, &Type, &SubType, &SwitchType, &Image, &Options, &Used, &DeviceID, &Description);
+			}
+			
+			if (parsed)
 			{
 				self->pPlugin = pModState->pPlugin;
 				self->PluginKey = PyUnicode_FromString(pModState->pPlugin->m_PluginKey.c_str());
@@ -762,7 +772,7 @@ namespace Plugins {
 			}
 			else
 			{
-				pModState->pPlugin->Log(LOG_ERROR, R"(Expected: myVar = Domoticz.Device(Name="myDevice", Unit=0, TypeName="", Type=0, Subtype=0, Switchtype=0, Image=0, Options={}, Used=1))");
+				pModState->pPlugin->Log(LOG_ERROR, R"(Expected: myVar = Domoticz.Device(Name="myDevice", Unit=0, TypeName="", Type=0, Subtype=0, Switchtype=0, Image=0, Options={}, Used=1) - Note: Both 'Subtype'/'SubType' and 'Switchtype'/'SwitchType' are accepted)");
 				pModState->pPlugin->LogPythonException(__func__);
 			}
 		}
