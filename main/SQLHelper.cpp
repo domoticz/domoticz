@@ -3291,12 +3291,10 @@ bool CSQLHelper::OpenDatabase()
 		if (dbversion < 173)
 		{
 			// Add forecast field to existing Thermostat 6 devices with barometer
-			// Old format: TempBaro had 3 values (temp;setpoint;barometer)
-			//             TempHumBaro had 5 values (temp;setpoint;humidity;humidity_status;barometer)
-			// New format: TempBaro has 4 values (temp;setpoint;barometer;forecast)
-			//             TempHumBaro has 6 values (temp;setpoint;humidity;humidity_status;barometer;forecast)
+			// Since this is a new field being added in this version, all existing devices
+			// are guaranteed not to have it yet, so we can simply append it
 			
-			result = safe_query("SELECT ID, sValue, SubType FROM DeviceStatus WHERE (Type=%d) AND (SubType IN (%d, %d))",
+			result = safe_query("SELECT ID, sValue FROM DeviceStatus WHERE (Type=%d) AND (SubType IN (%d, %d))",
 				pTypeThermostat6, sTypeThermostat6TempBaro, sTypeThermostat6TempHumBaro);
 			
 			if (!result.empty())
@@ -3305,31 +3303,10 @@ bool CSQLHelper::OpenDatabase()
 				{
 					std::string deviceID = sd[0];
 					std::string sValue = sd[1];
-					int subType = atoi(sd[2].c_str());
 					
-					std::vector<std::string> values;
-					StringSplit(sValue, ";", values);
-					
-					bool needsUpdate = false;
-					std::string newSValue = sValue;
-					
-					// TempBaro: needs forecast if only 3 values present
-					if (subType == sTypeThermostat6TempBaro && values.size() == 3)
-					{
-						newSValue = sValue + ";0";  // Add forecast=0
-						needsUpdate = true;
-					}
-					// TempHumBaro: needs forecast if only 5 values present
-					else if (subType == sTypeThermostat6TempHumBaro && values.size() == 5)
-					{
-						newSValue = sValue + ";0";  // Add forecast=0
-						needsUpdate = true;
-					}
-					
-					if (needsUpdate)
-					{
-						safe_query("UPDATE DeviceStatus SET sValue='%q' WHERE (ID=%q)", newSValue.c_str(), deviceID.c_str());
-					}
+					// Append forecast field with default value 0
+					std::string newSValue = sValue + ";0";
+					safe_query("UPDATE DeviceStatus SET sValue='%q' WHERE (ID=%q)", newSValue.c_str(), deviceID.c_str());
 				}
 			}
 		}
