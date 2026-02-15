@@ -167,6 +167,8 @@ define(function () {
                     return this.SwitchTypeVal === 0 ? 'kg' : 'lbs';
                 } else if (this.Type === 'Rain') {
                     return 'mm';
+                } else if (this.Direction !== undefined && /Wind/i.test(this.Type)) {
+                    return (typeof $.myglobals !== 'undefined' && $.myglobals.windsign) ? $.myglobals.windsign : 'm/s';
                 } else {
                     return '?';
                 }
