@@ -431,7 +431,9 @@ define(['app', 'livesocket'], function (app) {
 					$scope.floorPlans = data.result;
 					
 					// Ensure saved index is valid (in case floorplans were added/removed)
-					if (savedFloorplanIdx >= data.result.length) {
+					if (data.result.length === 0) {
+						savedFloorplanIdx = undefined;
+					} else if (savedFloorplanIdx >= data.result.length) {
 						savedFloorplanIdx = 0;
 					}
 					$scope.actFloorplan = savedFloorplanIdx;
@@ -440,7 +442,7 @@ define(['app', 'livesocket'], function (app) {
 						$scope.browser = "unknown";
 					}
 					
-					if ($scope.debug > 0 && savedFloorplanIdx > 0) {
+					if ($scope.debug > 0 && typeof $scope.actFloorplan != "undefined" && $scope.actFloorplan > 0) {
 						$.cachenoty = generate_noty('info', '<b>Floorplan already set to: ' + $scope.actFloorplan + '</b>', 5000);
 					}
 
