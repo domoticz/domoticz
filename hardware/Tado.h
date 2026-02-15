@@ -88,7 +88,7 @@ private:
 	bool m_bDoGetHomes = true;
 	bool m_bDoGetZones = false;
 
-	int m_iPollInterval = 30;
+	int m_iPollInterval = 900; // Default 15 minutes to respect Tado API rate limits (100 requests/day without subscription)
 	int m_iTADO_TOKEN_REFRESHTIME = 0; //Time in seconds for the refresh to take place, checked every refresh token cycle
 	time_t m_token_expire_time = 0;
 

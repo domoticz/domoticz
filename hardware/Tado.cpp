@@ -644,6 +644,10 @@ bool CTado::Do_Login_Work()
 void CTado::Do_Work()
 {
 	Log(LOG_STATUS, "Worker started. Will poll every %d seconds.", m_iPollInterval);
+	if (m_iPollInterval < 180)
+	{
+		Log(LOG_WARNING, "Tado API has rate limits: 100 requests/day (basic) or 20,000/day (AutoAssist). Each poll makes multiple API calls. Consider increasing poll interval to avoid hitting limits.");
+	}
 	int iSecCounter = m_iPollInterval - 3;
 	int iTokenCycleCount = 0;
 

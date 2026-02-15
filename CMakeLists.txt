@@ -333,7 +333,7 @@ hardware/SolarEdgeAPI.cpp
 hardware/SolarMaxTCP.cpp
 hardware/Sterbox.cpp
 hardware/SysfsGpio.cpp
-# hardware/Tado.cpp # Deprecated due to Tado API rate limits
+hardware/Tado.cpp
 hardware/TE923.cpp
 hardware/TE923Tool.cpp
 hardware/TeleinfoBase.cpp

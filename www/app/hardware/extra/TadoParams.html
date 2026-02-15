@@ -5,8 +5,9 @@
 			<label id="lblupdfreqtado"><span data-i18n="Poll Interval">Poll Interval</span>: </label>
 		</td>
 		<td>
-			<input type="text" id="updatefrequencytado" style="width: 50px; padding: .2em;" class="text ui-widget-content ui-corner-all" value="30">&nbsp;<span data-i18n="(Seconds)">(Seconds)</span><br>
+			<input type="text" id="updatefrequencytado" style="width: 50px; padding: .2em;" class="text ui-widget-content ui-corner-all" value="900">&nbsp;<span data-i18n="(Seconds)">(Seconds)</span><br>
 			<span data-i18n="This sets the polling interval for status updates.">This sets the polling interval for status updates.</span><br>
+			<span style="color: #ff6600;"><strong>Note:</strong> Tado API limits: 100 requests/day (basic) or 20,000/day (AutoAssist subscription). With 1 home and 3 zones, each poll = ~4 API calls. Recommended: 900s (15 min) for basic, 180s (3 min) minimum for subscription.</span>
 		</td>
 	</tr>
 </table>

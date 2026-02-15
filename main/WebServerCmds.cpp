@@ -432,7 +432,7 @@ namespace http
 					|| (htype == HTYPE_Arilux) || (htype == HTYPE_USBtinGateway) || (htype == HTYPE_BuienRadar) || (htype == HTYPE_Honeywell) ||(htype == HTYPE_RaspberryGPIO)
 					|| (htype == HTYPE_SysfsGpio) || (htype == HTYPE_OpenWebNetTCP) || (htype == HTYPE_Daikin) || (htype == HTYPE_PythonPlugin) || (htype == HTYPE_RaspberryPCF8574)
 					|| (htype == HTYPE_OpenWebNetUSB) || (htype == HTYPE_IntergasInComfortLAN2RF) || (htype == HTYPE_EnphaseAPI) || (htype == HTYPE_EcoCompteur) || (htype == HTYPE_Meteorologisk)
-					|| (htype == HTYPE_AirconWithMe) || (htype == HTYPE_EneverPriceFeeds)) // || (htype == HTYPE_Tado_NOTUSED)) // Tado deprecated
+					|| (htype == HTYPE_AirconWithMe) || (htype == HTYPE_EneverPriceFeeds) || (htype == HTYPE_Tado))
 			{
 				return true;
 			}
