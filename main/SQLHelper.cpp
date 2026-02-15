@@ -7780,7 +7780,7 @@ void CSQLHelper::AddCalendarUpdateMeter()
 			break;
 		}
 
-		result = safe_query("SELECT MIN(Value), MAX(Value), AVG(Value) FROM Meter WHERE (DeviceRowID='%" PRIu64 "' AND Date>='%q' AND Date<='%q 00:00:00')",
+		result = safe_query("SELECT MIN(Value), MAX(Value), AVG(Value) FROM Meter WHERE (DeviceRowID='%" PRIu64 "' AND Date>='%q' AND Date<'%q')",
 			ID,
 			szDateStart,
 			szDateEnd
@@ -7798,7 +7798,7 @@ void CSQLHelper::AddCalendarUpdateMeter()
 			// because last value can be lower than first value when consumed energy is negative (e.g. photovoltaic produces more than building usage)
 			if (((devType == pTypeGeneral) && ((subType == sTypeKwh) || (subType == sTypeCounterIncremental))) || ((devType == pTypeRFXMeter) && (subType == sTypeRFXMeterCount)))
 			{
-				result = safe_query("SELECT Value FROM Meter WHERE (DeviceRowID='%" PRIu64 "' AND Date>='%q' AND Date<='%q 00:00:00') ORDER BY Date ASC LIMIT 1",
+				result = safe_query("SELECT Value FROM Meter WHERE (DeviceRowID='%" PRIu64 "' AND Date>='%q' AND Date<'%q') ORDER BY Date ASC LIMIT 1",
 						ID, szDateStart, szDateEnd );
 				if (!result.empty())
 				{
@@ -7806,7 +7806,7 @@ void CSQLHelper::AddCalendarUpdateMeter()
 					total_min = (double)atof(sd[0].c_str());
 					total_max = total_min;
 				}
-				result = safe_query("SELECT Value FROM Meter WHERE (DeviceRowID='%" PRIu64 "' AND Date>='%q' AND Date<='%q 00:00:00') ORDER BY Date DESC LIMIT 1",
+				result = safe_query("SELECT Value FROM Meter WHERE (DeviceRowID='%" PRIu64 "' AND Date>='%q' AND Date<'%q') ORDER BY Date DESC LIMIT 1",
 						ID, szDateStart, szDateEnd );
 				if (!result.empty())
 				{
@@ -7988,7 +7988,7 @@ void CSQLHelper::AddCalendarUpdateMultiMeter()
 		}
 
 		result = safe_query(
-			"SELECT MIN(Value1), MAX(Value1), MIN(Value2), MAX(Value2), MIN(Value3), MAX(Value3), MIN(Value4), MAX(Value4), MIN(Value5), MAX(Value5), MIN(Value6), MAX(Value6) FROM MultiMeter WHERE (DeviceRowID='%" PRIu64 "' AND Date>='%q' AND Date<='%q 00:00:00')",
+			"SELECT MIN(Value1), MAX(Value1), MIN(Value2), MAX(Value2), MIN(Value3), MAX(Value3), MIN(Value4), MAX(Value4), MIN(Value5), MAX(Value5), MIN(Value6), MAX(Value6) FROM MultiMeter WHERE (DeviceRowID='%" PRIu64 "' AND Date>='%q' AND Date<'%q')",
 			ID,
 			szDateStart,
 			szDateEnd
@@ -10222,7 +10222,7 @@ bool CSQLHelper::CalcMeterPrice(const uint64_t idx, const float divider, const c
 	if (divider == 0)
 		return false;
 
-	auto result = safe_query("SELECT Value, Price FROM Meter WHERE (DeviceRowID='%" PRIu64 "' AND Date>='%q' AND Date<='%q 00:00:00') ORDER BY Date ASC",
+	auto result = safe_query("SELECT Value, Price FROM Meter WHERE (DeviceRowID='%" PRIu64 "' AND Date>='%q' AND Date<'%q') ORDER BY Date ASC",
 		idx, szDateStart, szDateEnd);
 	if (result.empty())
 		return false;
@@ -10259,7 +10259,7 @@ bool CSQLHelper::CalcMultiMeterPrice(const uint64_t idx, const float divider, co
 	if (divider == 0)
 		return false;
 
-	auto result = safe_query("SELECT Value1, Value2, Value3, Value4, Value5, Value6, Price FROM MultiMeter WHERE (DeviceRowID='%" PRIu64 "' AND Date>='%q' AND Date<='%q 00:00:00') ORDER BY Date ASC",
+	auto result = safe_query("SELECT Value1, Value2, Value3, Value4, Value5, Value6, Price FROM MultiMeter WHERE (DeviceRowID='%" PRIu64 "' AND Date>='%q' AND Date<'%q') ORDER BY Date ASC",
 		idx, szDateStart, szDateEnd);
 	if (result.empty())
 		return false;
