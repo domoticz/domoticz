@@ -11,7 +11,7 @@ Domoticz is a Home Automation System designed to monitor and configure various d
 - **Scripting:** Python (plugins and event scripts), Lua (dzVents)
 - **Frontend:** HTML5, JavaScript
 - **Testing:** pytest-3 (Gherkin/BDD), mocha (JavaScript), busted (Lua)
-- **Dependencies:** Boost (>=1.69.0, CI uses 1.86.0), OpenSSL, libcurl, SQLite, Lua 5.3, OpenZWave, libusb, mosquitto, zlib, uthash
+- **Dependencies:** Boost (>=1.69.0, CI uses 1.86.0), OpenSSL, libcurl, SQLite, Lua 5.3, libusb, mosquitto, zlib, uthash
 
 ## Code Style and Formatting
 
@@ -76,14 +76,6 @@ class ClassName
 sudo apt-get install make gcc g++ libssl-dev git libcurl4-gnutls-dev \
   libusb-dev libmosquitto-dev python3-dev zlib1g-dev liblua5.3-dev \
   uthash-dev libsqlite3-dev python3-pytest python3-pytest-bdd
-```
-
-#### OpenZWave (required for Z-Wave support)
-```bash
-git clone https://github.com/domoticz/open-zwave.git open-zwave-read-only
-cd open-zwave-read-only
-make
-sudo make install
 ```
 
 #### Build Domoticz
@@ -183,8 +175,7 @@ Stop with: Ctrl-C in the application terminal
 **Build Process in CI:**
 1. Install dependencies
 2. Build Boost 1.86.0 from source (static linking)
-3. Build OpenZWave from source
-4. Build Domoticz with CMake + make
+3. Build Domoticz with CMake + make
 
 **Paths Ignored by CI:**
 - `msbuild/**`
@@ -214,7 +205,7 @@ Key configuration options:
 - `USE_STATIC_BOOST` - Static link Boost libraries (default: YES)
 - `USE_LUA_STATIC` - Static link Lua (default: YES)
 - `USE_OPENSSL_STATIC` - Static link OpenSSL (default: NO)
-- `USE_STATIC_OPENZWAVE` - Static link OpenZwave (default: YES)
+- `USE_STATIC_OPENZWAVE` - Static link OpenZwave (default: YES, **deprecated**)
 
 **Developer Options:**
 - `USE_PRECOMPILED_HEADER` - Speed up build time (default: YES)
