@@ -164,11 +164,17 @@ define(['app', 'events/factories', 'events/EventViewer', 'events/CurrentStates']
         function deleteFolder(folder) {
             hideContextMenu();
             var eventsInFolder = getEventsInFolder(folder.id);
-            var message = 'Are you sure you want to delete this folder?';
+            var message;
             if (eventsInFolder.length > 0) {
-                message = 'This folder contains ' + eventsInFolder.length + ' script(s). Deleting the folder will also delete all scripts in it.\n\nAre you sure?';
+                message = $.t('This folder contains') + ' ' + eventsInFolder.length + ' ' + $.t('script(s). Deleting the folder will also delete all scripts in it.') + '\n\n' + $.t('Are you sure?');
+            } else {
+                message = $.t('Are you sure you want to delete this folder?');
             }
-            bootbox.confirm(message).then(function () {
+            $q(function(resolve, reject) {
+                window.bootbox.confirm(message, function (result) {
+                    result === true ? resolve() : reject();
+                });
+            }).then(function () {
                 // Close any open events that are in this folder
                 eventsInFolder.forEach(function (evt) {
                     var openedEvent = vm.openedEvents.find(function (item) {
