@@ -13393,7 +13393,7 @@ bool MainWorker::SetSetPointInt(const std::vector<std::string>& sd, const float 
 		|| (pHardware->HwdType == HTYPE_NEST)
 		|| (pHardware->HwdType == HTYPE_Nest_OAuthAPI)
 		|| (pHardware->HwdType == HTYPE_ANNATHERMOSTAT)
-		|| (pHardware->HwdType == HTYPE_Tado)
+		// || (pHardware->HwdType == HTYPE_Tado_NOTUSED) // Deprecated due to Tado API rate limits
 		|| (pHardware->HwdType == HTYPE_EVOHOME_SCRIPT)
 		|| (pHardware->HwdType == HTYPE_EVOHOME_SERIAL)
 		|| (pHardware->HwdType == HTYPE_EVOHOME_TCP)
@@ -13447,11 +13447,11 @@ bool MainWorker::SetSetPointInt(const std::vector<std::string>& sd, const float 
 			CAnnaThermostat* pGateway = dynamic_cast<CAnnaThermostat*>(pHardware);
 			pGateway->SetSetpoint(ID4, TempValue);
 		}
-		else if (pHardware->HwdType == HTYPE_Tado)
-		{
-			CTado* pGateway = dynamic_cast<CTado*>(pHardware);
-			pGateway->SetSetpoint(ID2, ID3, ID4, TempValue);
-		}
+		// else if (pHardware->HwdType == HTYPE_Tado_NOTUSED) // Deprecated due to Tado API rate limits
+		// {
+		//	CTado* pGateway = dynamic_cast<CTado*>(pHardware);
+		//	pGateway->SetSetpoint(ID2, ID3, ID4, TempValue);
+		// }
 		else if (pHardware->HwdType == HTYPE_Netatmo)
 		{
 			CNetatmo* pGateway = dynamic_cast<CNetatmo*>(pHardware);
