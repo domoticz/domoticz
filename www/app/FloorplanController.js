@@ -424,13 +424,25 @@ define(['app', 'livesocket'], function (app) {
 			}).then(function successCallback(response) {
 				var data = response.data;
 				if (typeof data.result != 'undefined') {
-					if (typeof $scope.actFloorplan == "undefined") {
-						$scope.FloorplanCount = data.result.length;
-						$scope.floorPlans = data.result;
-						$scope.actFloorplan = 0;
+					// Preserve the current floorplan index if it's already set
+					var savedFloorplanIdx = (typeof $scope.actFloorplan != "undefined") ? $scope.actFloorplan : 0;
+					var wasPreviouslySet = (typeof $scope.actFloorplan != "undefined");
+					
+					$scope.FloorplanCount = data.result.length;
+					$scope.floorPlans = data.result;
+					
+					// Ensure saved index is valid (in case floorplans were added/removed)
+					if (savedFloorplanIdx < 0 || data.result.length === 0 || savedFloorplanIdx >= data.result.length) {
+						savedFloorplanIdx = 0;
+					}
+					$scope.actFloorplan = savedFloorplanIdx;
+					
+					if (typeof $scope.browser == "undefined") {
 						$scope.browser = "unknown";
-					} else {
-						if ($scope.debug > 0) $.cachenoty = generate_noty('info', '<b>Floorplan already set to: ' + $scope.actFloorplan + '</b>', 5000);
+					}
+					
+					if ($scope.debug > 0 && wasPreviouslySet) {
+						$.cachenoty = generate_noty('info', '<b>Floorplan already set to: ' + $scope.actFloorplan + '</b>', 5000);
 					}
 
 					// handle settings
