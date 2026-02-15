@@ -2,15 +2,9 @@
 	<span id="tbFilters" ng-show="tb.hideFilters != true">
 		<span id="tbFiltSearch" 	class="jsTbFiltSearch" ng-show="tb.hideSearch != true">
 			<span id="tbSearch"		class="tbIcon jsTbSearch"><i class="fa fa-search"></i> </span>
-			<span id="tbResults"	class="tbIcon jsTbResults" title="Clear Search Results"><i class="fa fa-circle-xmark"></i> <span class="tbResultsCount jsTbResultsCount"></span> </span>
+			<span id="tbResults"	class="tbIcon jsTbResults" ng-show="ctrl.searchQuery.length > 0" ng-click="ctrl.searchQuery = ''" title="Clear Search Results"><i class="fa fa-circle-xmark"></i> <span class="tbResultsCount jsTbResultsCount">{{ctrl.getFilteredCount()}}</span> </span>
 			<!-- <span data-i18n="Search"></span>&nbsp; -->
-			<input data-i18n="[placeholder]Name, Desc, Idx, Status" placeholder="Name, Desc, Idx, Status" type="search" class="livesearch jsLiveSearch">
-			<!-- 
-			This JS call should certainly be moved to the Angular controller, 
-			but because of the 2 different stuctures of Weather and Temperatures, VS Dashboard, Lights, Scenes, Utility pages, 
-			this is the easiest way to get it working in both of theses 2 cases, ATM... 
-			-->
-			<script>WatchLiveSearch();</script>
+			<input data-i18n="[placeholder]Name, Desc, Idx, Status" placeholder="Name, Desc, Idx, Status" type="search" class="livesearch jsLiveSearch" ng-model="ctrl.searchQuery">
 		</span> 
 		<span id="tbFiltRooms" ng-show="ctrl.RoomPlans.length > 0">
 			<span id="tbIconRoom" class="tbIcon"><i class="fa fa-house-laptop" title="Room"></i> </span>

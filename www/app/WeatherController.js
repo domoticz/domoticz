@@ -2,6 +2,32 @@ define(['app', 'livesocket'], function (app) {
 	app.controller('WeatherController', function ($scope, $rootScope, $location, $http, $interval, $route, $routeParams, deviceApi, permissions, livesocket) {
 
 		var ctrl = this;
+		
+		// Angular-native search filter
+		ctrl.searchQuery = '';
+		
+		// Filter function - Angular will call this for each item
+		ctrl.matchesFilter = function(item) {
+			if (!ctrl.searchQuery || ctrl.searchQuery.length === 0) {
+				return true; // No filter, show all
+			}
+			
+			var searchText = item.searchText || '';
+			var query = ctrl.searchQuery.toLowerCase();
+			
+			// Support multi-word search with AND logic
+			var searchTerms = query.split(/\,|\s/).filter(function(term) { return term.length > 0; });
+			
+			return searchTerms.every(function(term) {
+				return searchText.toLowerCase().indexOf(term) !== -1;
+			});
+		};
+		
+		// Get count of filtered items
+		ctrl.getFilteredCount = function() {
+			if (!ctrl.items) return 0;
+			return ctrl.items.filter(ctrl.matchesFilter).length;
+		};
 
 		MakeFavorite = function (id, isfavorite) {
 			deviceApi.makeFavorite(id, isfavorite).then(function() {
@@ -75,13 +101,8 @@ define(['app', 'livesocket'], function (app) {
 
 		RefreshItem = function (item) {
 			item.searchText = GenerateLiveSearchTextW(item);
-			var query = $('.jsLiveSearch').val();
-			if (query && query.length > 0) {
-				var match = item.searchText.toLowerCase().indexOf(query.toLowerCase()) !== -1;
-				if (!match) {
-					return; // Don't update items that don't match the filter
-				}
-			}
+			
+			// No need to check filter here - Angular handles it via ng-show
 			ctrl.items.forEach(function (olditem, oldindex, oldarray) {
 				if (olditem.idx == item.idx) {
 					oldarray[oldindex] = item;
@@ -95,10 +116,7 @@ define(['app', 'livesocket'], function (app) {
 					}
 				}
 			});
-			// Defer RefreshLiveSearch to ensure it runs after Angular's DOM update
-			setTimeout(function() {
-				RefreshLiveSearch();
-			}, 0);
+			// No need for RefreshLiveSearch - Angular's digest handles filtering
 		}
 
 		//We only call this once. After this the widgets are being updated automatically by used of the 'jsonupdate' broadcast event.
