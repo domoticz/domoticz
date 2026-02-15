@@ -64,6 +64,43 @@ define(['app', 'livesocket'], function (app) {
 			$("#dialog-editutilitydevice #deviceidx").text(idx);
 			$("#dialog-editutilitydevice #devicename").val(unescape(name));
 			$("#dialog-editutilitydevice #devicedescription").val(unescape(description));
+			
+			// Load bar widget settings from device options
+			$.ajax({
+				url: "json.htm?type=command&param=getdevices&rid=" + idx,
+				async: false,
+				dataType: 'json',
+				success: function (data) {
+					if (typeof data.result != 'undefined' && data.result.length > 0) {
+						var device = data.result[0];
+						var options = {};
+						if (device.Options) {
+							var optPairs = device.Options.split(';');
+							for (var i = 0; i < optPairs.length; i++) {
+								var pair = optPairs[i].split(':');
+								if (pair.length == 2) {
+									options[pair[0]] = pair[1] ? b64DecodeUnicode(pair[1]) : '';
+								}
+							}
+						}
+						
+						if (options.BarWidget === 'true') {
+							$("#dialog-editutilitydevice #enablebarwidget").prop('checked', true);
+							$("#dialog-editutilitydevice #barwidgetfields").show();
+							$("#dialog-editutilitydevice #barmin").val(options.BarMin || '0');
+							$("#dialog-editutilitydevice #barmax").val(options.BarMax || '100');
+							$("#dialog-editutilitydevice #barranges").val(options.BarRanges || '');
+						} else {
+							$("#dialog-editutilitydevice #enablebarwidget").prop('checked', false);
+							$("#dialog-editutilitydevice #barwidgetfields").hide();
+							$("#dialog-editutilitydevice #barmin").val('0');
+							$("#dialog-editutilitydevice #barmax").val('100');
+							$("#dialog-editutilitydevice #barranges").val('');
+						}
+					}
+				}
+			});
+			
 			$('#dialog-editutilitydevice #combosensoricon').ddslick({
 				data: $.ddData,
 				width: 260,
@@ -1179,13 +1216,31 @@ define(['app', 'livesocket'], function (app) {
 				if (bValid) {
 					var cval = $('#dialog-editutilitydevice #combosensoricon').data('ddslick').selectedIndex;
 					var CustomImage = $.ddData[cval].value;
-					$(this).dialog("close");
-					$.ajax({
-						url: "json.htm?type=command&param=setused&idx=" + $.devIdx +
+					
+					// Build device options including bar widget settings
+					var devOptions = [];
+					if ($("#dialog-editutilitydevice #enablebarwidget").is(":checked")) {
+						devOptions.push("BarWidget:true;");
+						devOptions.push("BarMin:" + $("#dialog-editutilitydevice #barmin").val() + ";");
+						devOptions.push("BarMax:" + $("#dialog-editutilitydevice #barmax").val() + ";");
+						devOptions.push("BarRanges:" + $("#dialog-editutilitydevice #barranges").val() + ";");
+					} else {
+						devOptions.push("BarWidget:false;");
+					}
+					
+					var url = "json.htm?type=command&param=setused&idx=" + $.devIdx +
 						'&name=' + encodeURIComponent($("#dialog-editutilitydevice #devicename").val()) +
 						'&customimage=' + CustomImage +
 						'&description=' + encodeURIComponent($("#dialog-editutilitydevice #devicedescription").val()) +
-						'&used=true',
+						'&used=true';
+					
+					if (devOptions.length > 0) {
+						url += '&options=' + b64EncodeUnicode(devOptions.join(''));
+					}
+					
+					$(this).dialog("close");
+					$.ajax({
+						url: url,
 						async: false,
 						dataType: 'json',
 						success: function (data) {
@@ -1231,6 +1286,16 @@ define(['app', 'livesocket'], function (app) {
 				buttons: dialog_editutilitydevice_buttons,
 				close: function () {
 					$(this).dialog("close");
+				},
+				open: function () {
+					// Handle bar widget checkbox toggle
+					$("#dialog-editutilitydevice #enablebarwidget").off('change').on('change', function() {
+						if ($(this).is(':checked')) {
+							$("#dialog-editutilitydevice #barwidgetfields").show();
+						} else {
+							$("#dialog-editutilitydevice #barwidgetfields").hide();
+						}
+					});
 				}
 			});
 

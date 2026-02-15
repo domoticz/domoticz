@@ -20,6 +20,31 @@
 			<td align="right"><label for="devicedescription"><span data-i18n="Description"></span>: </label></td>
 			<td><textarea id="devicedescription" name="devicedescription" rows="4" style="width: 356px; padding: .2em;" class="text ui-widget-content ui-corner-all"></textarea></td>
 		</tr>
+		<tr>
+			<td align="right"><label for="enablebarwidget"><span data-i18n="Enable Bar Widget">Enable Bar Widget</span>: </label></td>
+			<td><input type="checkbox" id="enablebarwidget" class="text ui-widget-content ui-corner-all"></td>
+		</tr>
+		<tr id="barwidgetfields" style="display:none">
+			<td colspan="2">
+				<table class="display" border="0" cellpadding="0" cellspacing="0" style="margin-left:20px;">
+					<tr>
+						<td align="right" style="width:100px"><label for="barmin"><span data-i18n="Min Value">Min Value</span>: </label></td>
+						<td><input type="text" id="barmin" style="width: 60px; padding: .2em;" class="text ui-widget-content ui-corner-all" value="0"></td>
+					</tr>
+					<tr>
+						<td align="right"><label for="barmax"><span data-i18n="Max Value">Max Value</span>: </label></td>
+						<td><input type="text" id="barmax" style="width: 60px; padding: .2em;" class="text ui-widget-content ui-corner-all" value="100"></td>
+					</tr>
+					<tr>
+						<td align="right" style="vertical-align:top"><label for="barranges"><span data-i18n="Ranges">Ranges</span>: </label></td>
+						<td>
+							<textarea id="barranges" rows="3" style="width: 250px; padding: .2em;" class="text ui-widget-content ui-corner-all" placeholder="0-30:red|30-70:yellow|70-100:green"></textarea>
+							<br><small><span data-i18n="Format: min-max:color|min-max:color">Format: min-max:color|min-max:color</span></small>
+						</td>
+					</tr>
+				</table>
+			</td>
+		</tr>
 		</table>
 	</form>
 </div>

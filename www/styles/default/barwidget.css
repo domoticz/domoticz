@@ -1,0 +1,35 @@
+/* Bar Widget Styles for Temperature and Utility Sensors */
+
+.bar-widget-container {
+	margin: 5px 0;
+	padding: 2px 0;
+}
+
+.bar-widget-track {
+	position: relative;
+	height: 20px;
+	width: 100%;
+	border-radius: 10px;
+	overflow: hidden;
+	box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+.bar-widget-segment {
+	position: absolute;
+	top: 0;
+	height: 100%;
+	transition: all 0.3s ease;
+}
+
+.bar-widget-indicator {
+	position: absolute;
+	top: -2px;
+	width: 4px;
+	height: 24px;
+	background-color: #333;
+	border: 2px solid #fff;
+	border-radius: 2px;
+	transform: translateX(-50%);
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+	z-index: 10;
+}

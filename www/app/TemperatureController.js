@@ -17,6 +17,43 @@ define(['app', 'livesocket'], function (app) {
 			$("#dialog-edittempdevice #devicedescription").val(unescape(description));
 			$("#dialog-edittempdevice #adjustment").val(addjvalue);
 			$("#dialog-edittempdevice #tempcf").html($scope.config.TempSign);
+			
+			// Load bar widget settings from device options
+			$.ajax({
+				url: "json.htm?type=command&param=getdevices&rid=" + idx,
+				async: false,
+				dataType: 'json',
+				success: function (data) {
+					if (typeof data.result != 'undefined' && data.result.length > 0) {
+						var device = data.result[0];
+						var options = {};
+						if (device.Options) {
+							var optPairs = device.Options.split(';');
+							for (var i = 0; i < optPairs.length; i++) {
+								var pair = optPairs[i].split(':');
+								if (pair.length == 2) {
+									options[pair[0]] = pair[1] ? b64DecodeUnicode(pair[1]) : '';
+								}
+							}
+						}
+						
+						if (options.BarWidget === 'true') {
+							$("#dialog-edittempdevice #enablebarwidget").prop('checked', true);
+							$("#dialog-edittempdevice #barwidgetfields").show();
+							$("#dialog-edittempdevice #barmin").val(options.BarMin || '0');
+							$("#dialog-edittempdevice #barmax").val(options.BarMax || '40');
+							$("#dialog-edittempdevice #barranges").val(options.BarRanges || '');
+						} else {
+							$("#dialog-edittempdevice #enablebarwidget").prop('checked', false);
+							$("#dialog-edittempdevice #barwidgetfields").hide();
+							$("#dialog-edittempdevice #barmin").val('0');
+							$("#dialog-edittempdevice #barmax").val('40');
+							$("#dialog-edittempdevice #barranges").val('');
+						}
+					}
+				}
+			});
+			
 			if (typeof unit !== 'undefined') {
 				$("#dialog-edittempdevice #unit").val(unescape(unit));
 				$("#dialog-edittempdevice #step").val(step);
@@ -240,18 +277,32 @@ define(['app', 'livesocket'], function (app) {
 				bValid = bValid && checkLength($("#dialog-edittempdevice #edittable #devicename"), 2, 100);
 				if (bValid) {
 					var aValue = $("#dialog-edittempdevice #edittable #adjustment").val();
+					var devOptions = [];
+					
+					if ($("#setpointfields").is(":visible")) {
+						devOptions.push("ValueStep:" + $("#dialog-edittempdevice #step").val() + ";");
+						devOptions.push("ValueMin:" + $("#dialog-edittempdevice #min").val() + ";");
+						devOptions.push("ValueMax:" + $("#dialog-edittempdevice #max").val() + ";");
+						devOptions.push("ValueUnit:" + $("#dialog-edittempdevice #unit").val() + ";");
+					}
+					
+					// Add bar widget options
+					if ($("#dialog-edittempdevice #enablebarwidget").is(":checked")) {
+						devOptions.push("BarWidget:true;");
+						devOptions.push("BarMin:" + $("#dialog-edittempdevice #barmin").val() + ";");
+						devOptions.push("BarMax:" + $("#dialog-edittempdevice #barmax").val() + ";");
+						devOptions.push("BarRanges:" + $("#dialog-edittempdevice #barranges").val() + ";");
+					} else {
+						devOptions.push("BarWidget:false;");
+					}
+					
 					var url = "json.htm?type=command&param=setused&idx=" + $.devIdx +
 						'&name=' + encodeURIComponent($("#dialog-edittempdevice #devicename").val()) +
 						'&description=' + encodeURIComponent($("#dialog-edittempdevice #devicedescription").val()) +
 						'&addjvalue=' + aValue +
 						'&used=true';
 
-					if ($("#setpointfields").is(":visible")) {
-						var devOptions = [];
-						devOptions.push("ValueStep:" + $("#dialog-edittempdevice #step").val() + ";");
-						devOptions.push("ValueMin:" + $("#dialog-edittempdevice #min").val() + ";");
-						devOptions.push("ValueMax:" + $("#dialog-edittempdevice #max").val() + ";");
-						devOptions.push("ValueUnit:" + $("#dialog-edittempdevice #unit").val() + ";");
+					if (devOptions.length > 0) {
 						url += '&options=' + b64EncodeUnicode(devOptions.join(''));
 					}
 
@@ -302,6 +353,16 @@ define(['app', 'livesocket'], function (app) {
 				buttons: dialog_edittempdevice_buttons,
 				close: function () {
 					$(this).dialog("close");
+				},
+				open: function () {
+					// Handle bar widget checkbox toggle
+					$("#dialog-edittempdevice #enablebarwidget").off('change').on('change', function() {
+						if ($(this).is(':checked')) {
+							$("#dialog-edittempdevice #barwidgetfields").show();
+						} else {
+							$("#dialog-edittempdevice #barwidgetfields").hide();
+						}
+					});
 				}
 			});
 
