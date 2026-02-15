@@ -268,7 +268,7 @@ static const STR_TABLE_SINGLE HardwareTypeTable[] = {
 	{ HTYPE_eHouseTCP, "eHouse UDP+TCP with LAN interface", "eHouse" },
 	{ HTYPE_EcoCompteur, "EcoCompteur Legrand with LAN interface", "EcoCompteur" },
 	{ HTYPE_Honeywell, "Honeywell Thermostat", "Honeywell" },
-	{ HTYPE_Tado, "Tado Thermostat", "Tado" },
+	// { HTYPE_Tado_NOTUSED, "Tado Thermostat (Deprecated - API rate limits)", "Tado" }, // Deprecated due to Tado API rate limits
 	{ HTYPE_DenkoviHTTPDevices, "Denkovi Modules with LAN (HTTP) Interface", "Denkovi" },
 	{ HTYPE_DenkoviUSBDevices, "Denkovi Modules with USB Interface", "Denkovi" },
 	{ HTYPE_DenkoviTCPDevices, "Denkovi Modules with LAN (TCP) Interface", "Denkovi" },

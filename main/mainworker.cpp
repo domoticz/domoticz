@@ -92,7 +92,7 @@
 #include "../hardware/Pinger.h"
 #include "../hardware/Nest.h"
 #include "../hardware/NestOAuthAPI.h"
-#include "../hardware/Tado.h"
+// #include "../hardware/Tado.h" // Deprecated due to Tado API rate limits
 #include "../hardware/eVehicles/eVehicle.h"
 #include "../hardware/Kodi.h"
 #include "../hardware/Netatmo.h"
@@ -934,9 +934,9 @@ bool MainWorker::AddHardwareFromParams(
 	case HTYPE_ANNATHERMOSTAT:
 		pHardware = new CAnnaThermostat(ID, Address, Port, Username, Password);
 		break;
-	case HTYPE_Tado:
-		pHardware = new CTado(ID, Mode1);
-		break;
+	// case HTYPE_Tado_NOTUSED: // Deprecated due to Tado API rate limits
+	//	pHardware = new CTado(ID, Mode1);
+	//	break;
 	case HTYPE_Tesla:
 		pHardware = new CeVehicle(ID, CeVehicle::Tesla, Username, Password, Mode1, Mode2, Mode3, Extra);
 		break;
