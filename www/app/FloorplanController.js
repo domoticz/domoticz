@@ -429,6 +429,11 @@ define(['app', 'livesocket'], function (app) {
 					
 					$scope.FloorplanCount = data.result.length;
 					$scope.floorPlans = data.result;
+					
+					// Ensure saved index is valid (in case floorplans were added/removed)
+					if (savedFloorplanIdx >= data.result.length) {
+						savedFloorplanIdx = 0;
+					}
 					$scope.actFloorplan = savedFloorplanIdx;
 					
 					if (typeof $scope.browser == "undefined") {
