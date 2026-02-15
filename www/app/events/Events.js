@@ -13,6 +13,21 @@ define(['app', 'events/factories', 'events/EventViewer', 'events/CurrentStates']
 		vm.loadRecentEvents = loadRecentEvents;
         vm.setActiveEventId = setActiveEventId;
         vm.isInterpreterSupported = isInterpreterSupported;
+        vm.toggleFolder = toggleFolder;
+        vm.isFolderExpanded = isFolderExpanded;
+        vm.showContextMenu = showContextMenu;
+        vm.hideContextMenu = hideContextMenu;
+        vm.createFolder = createFolder;
+        vm.renameFolder = renameFolder;
+        vm.deleteFolder = deleteFolder;
+        vm.onDragStart = onDragStart;
+        vm.onDragOver = onDragOver;
+        vm.onDrop = onDrop;
+        vm.onDragEnd = onDragEnd;
+        vm.toggleEventSelection = toggleEventSelection;
+        vm.isEventSelected = isEventSelected;
+        vm.getEventsInFolder = getEventsInFolder;
+        vm.getRootEvents = getRootEvents;
 		
 		vm.storeRecents = true;
 
@@ -23,6 +38,12 @@ define(['app', 'events/factories', 'events/EventViewer', 'events/CurrentStates']
             vm.activeEventId = 'states';
 
             vm.openedEvents = [];
+            vm.folders = [];
+            vm.expandedFolders = {};
+            vm.contextMenu = { visible: false, x: 0, y: 0, target: null, targetType: null };
+            vm.selectedEvents = {};
+            vm.dragState = { dragging: false };
+
             vm.dzVentsTemplates = [
                 { id: 'All', name: 'All (commented)' },
                 { id: 'Bare', name: 'Minimal' },
@@ -49,6 +70,14 @@ define(['app', 'events/factories', 'events/EventViewer', 'events/CurrentStates']
             ];
 
             listEvents();
+
+            // Hide context menu on click elsewhere
+            $(document).on('click.eventsContextMenu', function () {
+                if (vm.contextMenu.visible) {
+                    vm.contextMenu.visible = false;
+                    $rootScope.$applyAsync();
+                }
+            });
         }
 
         function isInterpreterSupported(interpreter) {
@@ -65,11 +94,153 @@ define(['app', 'events/factories', 'events/EventViewer', 'events/CurrentStates']
             return domoticzEventsApi.listEvents().then(function (data) {
                 vm.events = data.events;
                 vm.interpreters = data.interpreters;
+                vm.folders = data.folders || [];
 
                 if (vm.events.length > 0 && vm.openedEvents.length === 0) {
 					loadRecentEvents();
                 }
             })
+        }
+
+        function getEventsInFolder(folderId) {
+            return (vm.events || []).filter(function (event) {
+                return event.folderid === String(folderId);
+            });
+        }
+
+        function getRootEvents() {
+            return (vm.events || []).filter(function (event) {
+                return !event.folderid || event.folderid === '0';
+            });
+        }
+
+        function toggleFolder(folder) {
+            vm.expandedFolders[folder.id] = !vm.expandedFolders[folder.id];
+        }
+
+        function isFolderExpanded(folder) {
+            return !!vm.expandedFolders[folder.id];
+        }
+
+        // Context menu
+        function showContextMenu(event, target, targetType) {
+            event.preventDefault();
+            event.stopPropagation();
+            vm.contextMenu = {
+                visible: true,
+                x: event.clientX,
+                y: event.clientY,
+                target: target,
+                targetType: targetType
+            };
+        }
+
+        function hideContextMenu() {
+            vm.contextMenu.visible = false;
+        }
+
+        function createFolder() {
+            hideContextMenu();
+            bootbox.prompt($.t('Enter folder name') + ':').then(function (name) {
+                if (name && name.trim()) {
+                    domoticzEventsApi.createFolder(name.trim()).then(function () {
+                        listEvents();
+                    });
+                }
+            });
+        }
+
+        function renameFolder(folder) {
+            hideContextMenu();
+            bootbox.prompt($.t('Enter new folder name') + ':', folder.name).then(function (name) {
+                if (name && name.trim()) {
+                    domoticzEventsApi.renameFolder(folder.id, name.trim()).then(function () {
+                        listEvents();
+                    });
+                }
+            });
+        }
+
+        function deleteFolder(folder) {
+            hideContextMenu();
+            var eventsInFolder = getEventsInFolder(folder.id);
+            var message = 'Are you sure you want to delete this folder?';
+            if (eventsInFolder.length > 0) {
+                message = 'This folder contains ' + eventsInFolder.length + ' script(s). Deleting the folder will also delete all scripts in it.\n\nAre you sure?';
+            }
+            bootbox.confirm(message).then(function () {
+                // Close any open events that are in this folder
+                eventsInFolder.forEach(function (evt) {
+                    var openedEvent = vm.openedEvents.find(function (item) {
+                        return item.id === evt.id;
+                    });
+                    if (openedEvent) {
+                        closeEvent(openedEvent, true);
+                    }
+                });
+                domoticzEventsApi.deleteFolder(folder.id).then(function () {
+                    listEvents();
+                });
+            });
+        }
+
+        // Multi-select
+        function toggleEventSelection(event, $event) {
+            if ($event && ($event.ctrlKey || $event.metaKey)) {
+                vm.selectedEvents[event.id] = !vm.selectedEvents[event.id];
+            } else {
+                vm.selectedEvents = {};
+                vm.selectedEvents[event.id] = true;
+            }
+        }
+
+        function isEventSelected(event) {
+            return !!vm.selectedEvents[event.id];
+        }
+
+        // Drag and drop
+        function onDragStart(event, $event) {
+            if (!vm.selectedEvents[event.id]) {
+                vm.selectedEvents = {};
+                vm.selectedEvents[event.id] = true;
+            }
+            vm.dragState = { dragging: true };
+
+            var selectedIds = Object.keys(vm.selectedEvents).filter(function (id) {
+                return vm.selectedEvents[id];
+            });
+
+            $event.dataTransfer.setData('text/plain', JSON.stringify(selectedIds));
+            $event.dataTransfer.effectAllowed = 'move';
+        }
+
+        function onDragOver($event) {
+            $event.preventDefault();
+            $event.dataTransfer.dropEffect = 'move';
+        }
+
+        function onDrop(targetFolderId, $event) {
+            $event.preventDefault();
+            $event.stopPropagation();
+            vm.dragState = { dragging: false };
+
+            try {
+                var selectedIds = JSON.parse($event.dataTransfer.getData('text/plain'));
+                var promises = selectedIds.map(function (eventId) {
+                    return domoticzEventsApi.moveEvent(eventId, targetFolderId);
+                });
+
+                $q.all(promises).then(function () {
+                    vm.selectedEvents = {};
+                    listEvents();
+                });
+            } catch (e) {
+                // Ignore invalid drag data
+            }
+        }
+
+        function onDragEnd() {
+            vm.dragState = { dragging: false };
         }
 
         function createEvent(interpreter, eventtype) {

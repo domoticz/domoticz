@@ -450,7 +450,14 @@ constexpr auto sqlCreateEventMaster =
 "[Interpreter] VARCHAR(10) DEFAULT 'Blockly', "
 "[Type] VARCHAR(10) DEFAULT 'All', "
 "[XMLStatement] TEXT NOT NULL, "
-"[Status] INTEGER DEFAULT 0);";
+"[Status] INTEGER DEFAULT 0, "
+"[FolderID] INTEGER DEFAULT 0);";
+
+constexpr auto sqlCreateEventFolder =
+"CREATE TABLE IF NOT EXISTS [EventFolder] ("
+"[ID] INTEGER PRIMARY KEY, "
+"[Name] VARCHAR(200) NOT NULL, "
+"[Order] INTEGER DEFAULT 0);";
 
 constexpr auto sqlCreateEventRules =
 "CREATE TABLE IF NOT EXISTS [EventRules] ("
@@ -737,6 +744,7 @@ bool CSQLHelper::OpenDatabase()
 	query(sqlCreateSharedDevicesTrigger);
 	query(sqlCreateEventMaster);
 	query(sqlCreateEventRules);
+	query(sqlCreateEventFolder);
 	query(sqlCreateWOLNodes);
 	query(sqlCreatePercentage);
 	query(sqlCreatePercentage_Calendar);
@@ -3292,6 +3300,7 @@ bool CSQLHelper::OpenDatabase()
 		{
 			// Add Passkeys column to Users table for WebAuthn/passkey support
 			query("ALTER TABLE Users ADD COLUMN [Passkeys] TEXT DEFAULT NULL");
+			query("ALTER TABLE EventMaster ADD COLUMN [FolderID] INTEGER DEFAULT 0");
 		}
 	}
 	else if (bNewInstall)

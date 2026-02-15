@@ -4133,6 +4133,7 @@ namespace http {
 		{
 			std::string ID;
 			std::string eventstatus;
+			std::string folderid;
 		};
 
 		void CWebServer::Cmd_Events(WebEmSession & session, const request& req, Json::Value &root)
@@ -4158,7 +4159,7 @@ namespace http {
 				root["interpreters"] = "Blockly:Lua:dzVents";
 #endif
 
-				result = m_sql.safe_query("SELECT ID, Name, XMLStatement, Status FROM EventMaster ORDER BY ID ASC");
+				result = m_sql.safe_query("SELECT ID, Name, XMLStatement, Status, FolderID FROM EventMaster ORDER BY ID ASC");
 				if (!result.empty())
 				{
 					std::map<std::string, _tSortedEventsInt> _levents;
@@ -4167,9 +4168,11 @@ namespace http {
 						std::string ID = sd[0];
 						std::string Name = sd[1];
 						std::string eventStatus = sd[3];
+						std::string folderID = sd[4];
 						_tSortedEventsInt eitem;
 						eitem.ID = ID;
 						eitem.eventstatus = eventStatus;
+						eitem.folderid = folderID;
 						if (_levents.find(Name) != _levents.end())
 						{
 							//Duplicate event name, add the ID
@@ -4186,6 +4189,21 @@ namespace http {
 						root["result"][ii]["name"] = event.first;
 						root["result"][ii]["id"] = event.second.ID;
 						root["result"][ii]["eventstatus"] = event.second.eventstatus;
+						root["result"][ii]["folderid"] = event.second.folderid;
+						ii++;
+					}
+				}
+
+				// Also return folders
+				result = m_sql.safe_query("SELECT ID, Name, [Order] FROM EventFolder ORDER BY [Order] ASC, Name ASC");
+				if (!result.empty())
+				{
+					int ii = 0;
+					for (const auto &sd : result)
+					{
+						root["folders"][ii]["id"] = sd[0];
+						root["folders"][ii]["name"] = sd[1];
+						root["folders"][ii]["order"] = atoi(sd[2].c_str());
 						ii++;
 					}
 				}
@@ -4399,6 +4417,53 @@ namespace http {
 				root["title"] = "StoreRecentEvents";
 				std::string recent_list = request::findValue(&req, "recent_list");
 				m_sql.UpdatePreferencesVar("events_recent_list", recent_list);
+				root["status"] = "OK";
+			}
+			else if (cparam == "create_folder")
+			{
+				root["title"] = "CreateEventFolder";
+				std::string foldername = HTMLSanitizer::Sanitize(request::findValue(&req, "name"));
+				if (foldername.empty())
+					return;
+				m_sql.safe_query("INSERT INTO EventFolder (Name, [Order]) VALUES ('%q', 0)", foldername.c_str());
+				root["status"] = "OK";
+			}
+			else if (cparam == "rename_folder")
+			{
+				root["title"] = "RenameEventFolder";
+				std::string idx = request::findValue(&req, "folder");
+				if (idx.empty())
+					return;
+				std::string foldername = HTMLSanitizer::Sanitize(request::findValue(&req, "name"));
+				if (foldername.empty())
+					return;
+				m_sql.safe_query("UPDATE EventFolder SET Name='%q' WHERE (ID == '%q')", foldername.c_str(), idx.c_str());
+				root["status"] = "OK";
+			}
+			else if (cparam == "delete_folder")
+			{
+				root["title"] = "DeleteEventFolder";
+				std::string idx = request::findValue(&req, "folder");
+				if (idx.empty())
+					return;
+				// Delete all events in the folder
+				result = m_sql.safe_query("SELECT ID FROM EventMaster WHERE (FolderID == '%q')", idx.c_str());
+				for (const auto &sd : result)
+				{
+					m_sql.DeleteEvent(sd[0]);
+				}
+				m_sql.safe_query("DELETE FROM EventFolder WHERE (ID == '%q')", idx.c_str());
+				m_mainworker.m_eventsystem.LoadEvents();
+				root["status"] = "OK";
+			}
+			else if (cparam == "move_event")
+			{
+				root["title"] = "MoveEvent";
+				std::string idx = request::findValue(&req, "event");
+				if (idx.empty())
+					return;
+				std::string folderid = request::findValue(&req, "folder");
+				m_sql.safe_query("UPDATE EventMaster SET FolderID='%q' WHERE (ID == '%q')", folderid.c_str(), idx.c_str());
 				root["status"] = "OK";
 			}
 			else if (cparam == "currentstates")
