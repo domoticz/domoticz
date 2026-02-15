@@ -881,7 +881,7 @@ define(['app', 'livesocket'], function (app) {
 								}
 							}
 							else if (item.Type == "Air Quality") {
-								xhtm += '<a class="btnsmall" onclick="ShowAirQualityLog(\'#utilitycontent\',\'ShowUtilities\',' + item.idx + ',\'' + escape(item.Name) + '\');" data-i18n="Log">Log</a> ';
+								xhtm += '<a class="btnsmall" href="' + graphLogLink + '" data-i18n="Log">Log</a> ';
 								if (permissions.hasPermission("Admin")) {
 									xhtm += '<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\', ' + item.CustomImage + ');" data-i18n="Edit">Edit</a> ';
 								}
@@ -899,7 +899,7 @@ define(['app', 'livesocket'], function (app) {
 								}
 							}
 							else if (item.SubType == "Fan") {
-								xhtm += '<a class="btnsmall" onclick="ShowFanLog(\'#utilitycontent\',\'ShowUtilities\',' + item.idx + ',\'' + escape(item.Name) + '\');" data-i18n="Log">Log</a> ';
+								xhtm += '<a class="btnsmall" href="' + graphLogLink + '" data-i18n="Log">Log</a> ';
 								if (permissions.hasPermission("Admin")) {
 									xhtm += '<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\', ' + item.CustomImage + ');" data-i18n="Edit">Edit</a> ';
 								}
@@ -942,7 +942,7 @@ define(['app', 'livesocket'], function (app) {
 								}
 							}
 							else if ((item.Type == "Current") || (item.Type == "Current/Energy")) {
-								xhtm += '<a class="btnsmall" onclick="ShowCurrentLog(\'#utilitycontent\',\'ShowUtilities\',' + item.idx + ',\'' + escape(item.Name) + '\', ' + item.displaytype + ');" data-i18n="Log">Log</a> ';
+								xhtm += '<a class="btnsmall" href="' + graphLogLink + '" data-i18n="Log">Log</a> ';
 								if (permissions.hasPermission("Admin")) {
 									xhtm += '<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\', ' + item.CustomImage + ');" data-i18n="Edit">Edit</a> ';
 								}
