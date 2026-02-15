@@ -995,11 +995,23 @@ namespace Plugins {
 				= { "nValue", "sValue",		  "Image", "SignalLevel", "BatteryLevel", "Options", "TimedOut",
 				    "Name",   "TypeName",	  "Type",  "Subtype",	  "Switchtype",	  "Used",    "Description",
 				    "Color",  "SuppressTriggers", nullptr };
+			static char *kwlist_alt[]
+				= { "nValue", "sValue",		  "Image", "SignalLevel", "BatteryLevel", "Options", "TimedOut",
+				    "Name",   "TypeName",	  "Type",  "SubType",	  "SwitchType",	  "Used",    "Description",
+				    "Color",  "SuppressTriggers", nullptr };
 
 			// Try to extract parameters needed to update device settings
-			if (!PyArg_ParseTupleAndKeywords(args, kwds,   "is|iiiOissiiiissp", kwlist, &nValue, &sValue, &iImage, &iSignalLevel, &iBatteryLevel, &pOptionsDict, &iTimedOut, &Name, &TypeName, &iType, &iSubType, &iSwitchType, &iUsed, &Description, &Color, &SuppressTriggers))
+			// Try parsing with lowercase 't' first (backward compatibility), then with capital 'T'
+			bool parsed = PyArg_ParseTupleAndKeywords(args, kwds, "is|iiiOissiiiissp", kwlist, &nValue, &sValue, &iImage, &iSignalLevel, &iBatteryLevel, &pOptionsDict, &iTimedOut, &Name, &TypeName, &iType, &iSubType, &iSwitchType, &iUsed, &Description, &Color, &SuppressTriggers);
+			if (!parsed)
 			{
-				self->pPlugin->Log(LOG_ERROR, "(%s) %s: Failed to parse parameters: 'nValue', 'sValue', 'Image', 'SignalLevel', 'BatteryLevel', 'Options', 'TimedOut', 'Name', 'TypeName', 'Type', 'Subtype', 'Switchtype', 'Used', 'Description', 'Color' or 'SuppressTriggers' expected.", __func__, sName.c_str());
+				PyErr_Clear();
+				parsed = PyArg_ParseTupleAndKeywords(args, kwds, "is|iiiOissiiiissp", kwlist_alt, &nValue, &sValue, &iImage, &iSignalLevel, &iBatteryLevel, &pOptionsDict, &iTimedOut, &Name, &TypeName, &iType, &iSubType, &iSwitchType, &iUsed, &Description, &Color, &SuppressTriggers);
+			}
+
+			if (!parsed)
+			{
+				self->pPlugin->Log(LOG_ERROR, "(%s) %s: Failed to parse parameters: 'nValue', 'sValue', 'Image', 'SignalLevel', 'BatteryLevel', 'Options', 'TimedOut', 'Name', 'TypeName', 'Type', 'Subtype', 'Switchtype', 'Used', 'Description', 'Color' or 'SuppressTriggers' expected. Note: Both 'Subtype'/'SubType' and 'Switchtype'/'SwitchType' are accepted.", __func__, sName.c_str());
 				self->pPlugin->LogPythonException(__func__);
 				Py_RETURN_NONE;
 			}
