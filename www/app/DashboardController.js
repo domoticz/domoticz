@@ -2724,7 +2724,7 @@ define(['app', 'livesocket'], function (app) {
 											status += '<br>' + renderBarWidget(item.Temp, barOptions);
 										}
 										
-										xhtm +=
+										// xhtm += // REMOVED: erroneous concatenation
 										xhtm +=
 											'\t      <td id="status" class="status">' + status + '</td>\n' +
 											'\t    </tr>\n';
@@ -2816,7 +2816,6 @@ define(['app', 'livesocket'], function (app) {
 											}
 											
 											xhtm += '\t      <td id="lastupdate" class="lastupdate"><span>' + item.LastUpdate + '</span></td>\n' +
-											'\t      <td id="lastupdate" class="lastupdate"><span>' + item.LastUpdate + '</span></td>\n' +
 											'\t    </tr>\n' +
 											'\t    </table>\n' +
 											'\t  </div><!--item end-->\n' +
@@ -3473,7 +3472,7 @@ define(['app', 'livesocket'], function (app) {
 											status += '<br>' + renderBarWidget(utilValue, barOptions);
 										}
 										
-										xhtm +=
+										// xhtm += // REMOVED: erroneous concatenation
 										xhtm +=
 											'\t    <tr id="utility_' + item.idx + '">\n' +
 											'\t      <td id="name" class="name item-name" data-idx="'+item.idx+'" data-desc="'+item.Description.replace('"',"'")+'">' + vname + '</td>\n' +

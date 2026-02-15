@@ -289,9 +289,9 @@ define(['app', 'livesocket'], function (app) {
 					// Add bar widget options
 					if ($("#dialog-edittempdevice #enablebarwidget").is(":checked")) {
 						devOptions.push("BarWidget:true;");
-						devOptions.push("BarMin:" + $("#dialog-edittempdevice #barmin").val() + ";");
-						devOptions.push("BarMax:" + $("#dialog-edittempdevice #barmax").val() + ";");
-						devOptions.push("BarRanges:" + $("#dialog-edittempdevice #barranges").val() + ";");
+						devOptions.push("BarMin:" + b64EncodeUnicode($("#dialog-edittempdevice #barmin").val()) + ";");
+						devOptions.push("BarMax:" + b64EncodeUnicode($("#dialog-edittempdevice #barmax").val()) + ";");
+						devOptions.push("BarRanges:" + b64EncodeUnicode($("#dialog-edittempdevice #barranges").val()) + ";");
 					} else {
 						devOptions.push("BarWidget:false;");
 					}

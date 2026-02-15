@@ -1221,9 +1221,9 @@ define(['app', 'livesocket'], function (app) {
 					var devOptions = [];
 					if ($("#dialog-editutilitydevice #enablebarwidget").is(":checked")) {
 						devOptions.push("BarWidget:true;");
-						devOptions.push("BarMin:" + $("#dialog-editutilitydevice #barmin").val() + ";");
-						devOptions.push("BarMax:" + $("#dialog-editutilitydevice #barmax").val() + ";");
-						devOptions.push("BarRanges:" + $("#dialog-editutilitydevice #barranges").val() + ";");
+						devOptions.push("BarMin:" + b64EncodeUnicode($("#dialog-editutilitydevice #barmin").val()) + ";");
+						devOptions.push("BarMax:" + b64EncodeUnicode($("#dialog-editutilitydevice #barmax").val()) + ";");
+						devOptions.push("BarRanges:" + b64EncodeUnicode($("#dialog-editutilitydevice #barranges").val()) + ";");
 					} else {
 						devOptions.push("BarWidget:false;");
 					}
