@@ -144,7 +144,7 @@
 	function load_testcam_video() {
 		if ((typeof $.testcamfeed == 'undefined') || ($.testcamfeed == ""))
 			return;
-		setTimeout("reload_testcam_image()", 100);
+		setTimeout(reload_testcam_image, 100);
 	}
 
 	function reload_testcam_image() {
