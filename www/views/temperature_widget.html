@@ -67,6 +67,11 @@
                     <a ng-show="(item.State || item.SubType == 'Hot Water')" id="set" class="btnsmall" ng-click="ctrl.EditState('ShowTemps')" data-i18n="Set">Set</a>                    
                 </td>
             </tr>
+            <tr ng-if="ctrl.hasBarWidget()">
+                <td colspan="6" style="padding:5px 10px;">
+                    <div ng-bind-html="ctrl.renderBarWidget()"></div>
+                </td>
+            </tr>
         </table>
     </section>
 </div>

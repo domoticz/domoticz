@@ -607,7 +607,7 @@ define(['app', 'livesocket'], function (app) {
 				templateUrl: 'views/temperature_widget.html',
 				require: 'permissions',
 				controllerAs: 'ctrl',
-				controller: function ($scope, $element, $attrs, permissions) {
+				controller: function ($scope, $element, $attrs, permissions, $sce) {
 					var ctrl = this;
 					var item = $scope.item;
 
@@ -767,6 +767,19 @@ define(['app', 'livesocket'], function (app) {
 
 					ctrl.EditState = function (fn) {
 						return EditState(item.idx, escape(item.Name), escape(item.Description), item.State, item.Status, item.Until, fn);
+					};
+
+					ctrl.hasBarWidget = function () {
+						var barOptions = parseBarWidgetOptions(item);
+						return barOptions.enabled && typeof item.Temp != 'undefined';
+					};
+
+					ctrl.renderBarWidget = function () {
+						var barOptions = parseBarWidgetOptions(item);
+						if (barOptions.enabled && typeof item.Temp != 'undefined') {
+							return $sce.trustAsHtml(renderBarWidget(item.Temp, barOptions));
+						}
+						return '';
 					};
 
 					$element.i18n();

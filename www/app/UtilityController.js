@@ -59,7 +59,7 @@ define(['app', 'livesocket'], function (app) {
 			});
 		}
 
-		EditUtilityDevice = function (idx, name, description, customimage) {
+		EditUtilityDevice = function (idx, name, description, customimage, sensorType, sensorSubType) {
 			$.devIdx = idx;
 			$("#dialog-editutilitydevice #deviceidx").text(idx);
 			$("#dialog-editutilitydevice #devicename").val(unescape(name));
@@ -100,6 +100,15 @@ define(['app', 'livesocket'], function (app) {
 					}
 				}
 			});
+
+// Hide bar widget option for text and alert sensors
+if (sensorSubType === 'Text' || sensorSubType === 'Alert') {
+$("#dialog-editutilitydevice #enablebarwidget").closest('tr').hide();
+$("#dialog-editutilitydevice #barwidgetfields").hide();
+} else {
+$("#dialog-editutilitydevice #enablebarwidget").closest('tr').show();
+}
+
 			
 			$('#dialog-editutilitydevice #combosensoricon').ddslick({
 				data: $.ddData,
@@ -910,7 +919,7 @@ define(['app', 'livesocket'], function (app) {
 
 								if (permissions.hasPermission("Admin")) {
 									if (item.Type == "P1 Smart Meter") {
-										xhtm += '<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\', ' + item.CustomImage + ');" data-i18n="Edit">Edit</a> ';
+										xhtm += '<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\', ' + item.CustomImage + ', \'' + escape(item.Type) + '\', \'' + escape(item.SubType) + '\');" data-i18n="Edit">Edit</a> ';
 									}
 									else {
 										xhtm += '<a class="btnsmall" onclick="EditMeterDevice(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\', ' + item.SwitchTypeVal + ',' + item.AddjValue + ',' + item.AddjValue2 + ',\'' + escape(item.ValueQuantity) + '\',\'' + escape(item.ValueUnits) + '\', '+ item.CustomImage + ');" data-i18n="Edit">Edit</a> ';
@@ -920,7 +929,7 @@ define(['app', 'livesocket'], function (app) {
 							else if (item.Type == "Air Quality") {
 								xhtm += '<a class="btnsmall" href="' + graphLogLink + '" data-i18n="Log">Log</a> ';
 								if (permissions.hasPermission("Admin")) {
-									xhtm += '<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\', ' + item.CustomImage + ');" data-i18n="Edit">Edit</a> ';
+									xhtm += '<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\', ' + item.CustomImage + ', \'' + escape(item.Type) + '\', \'' + escape(item.SubType) + '\');" data-i18n="Edit">Edit</a> ';
 								}
 							}
 							else if (item.SubType == "Custom Sensor") {
@@ -932,37 +941,37 @@ define(['app', 'livesocket'], function (app) {
 							else if (item.SubType == "Percentage") {
 								xhtm += '<a class="btnsmall" href="' + graphLogLink + '" data-i18n="Log">Log</a> ';
 								if (permissions.hasPermission("Admin")) {
-									xhtm += '<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\', ' + item.CustomImage + ');" data-i18n="Edit">Edit</a> ';
+									xhtm += '<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\', ' + item.CustomImage + ', \'' + escape(item.Type) + '\', \'' + escape(item.SubType) + '\');" data-i18n="Edit">Edit</a> ';
 								}
 							}
 							else if (item.SubType == "Fan") {
 								xhtm += '<a class="btnsmall" href="' + graphLogLink + '" data-i18n="Log">Log</a> ';
 								if (permissions.hasPermission("Admin")) {
-									xhtm += '<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\', ' + item.CustomImage + ');" data-i18n="Edit">Edit</a> ';
+									xhtm += '<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\', ' + item.CustomImage + ', \'' + escape(item.Type) + '\', \'' + escape(item.SubType) + '\');" data-i18n="Edit">Edit</a> ';
 								}
 							}
 							else if ((item.SubType == "Soil Moisture") || (item.SubType == "Leaf Wetness") || (item.SubType == "Waterflow")) {
 								xhtm += '<a class="btnsmall" href="' + graphLogLink + '" data-i18n="Log">Log</a> ';
 								if (permissions.hasPermission("Admin")) {
-									xhtm += '<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\', ' + item.CustomImage + ');" data-i18n="Edit">Edit</a> ';
+									xhtm += '<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\', ' + item.CustomImage + ', \'' + escape(item.Type) + '\', \'' + escape(item.SubType) + '\');" data-i18n="Edit">Edit</a> ';
 								}
 							}
 							else if (item.Type == "Lux") {
 								xhtm += '<a class="btnsmall" href="' + graphLogLink + '" data-i18n="Log">Log</a> ';
 								if (permissions.hasPermission("Admin")) {
-									xhtm += '<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\', ' + item.CustomImage + ');" data-i18n="Edit">Edit</a> ';
+									xhtm += '<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\', ' + item.CustomImage + ', \'' + escape(item.Type) + '\', \'' + escape(item.SubType) + '\');" data-i18n="Edit">Edit</a> ';
 								}
 							}
 							else if (item.Type == "Weight") {
 								xhtm += '<a class="btnsmall" href="' + graphLogLink + '" data-i18n="Log">Log</a> ';
 								if (permissions.hasPermission("Admin")) {
-									xhtm += '<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\', ' + item.CustomImage + ');" data-i18n="Edit">Edit</a> ';
+									xhtm += '<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\', ' + item.CustomImage + ', \'' + escape(item.Type) + '\', \'' + escape(item.SubType) + '\');" data-i18n="Edit">Edit</a> ';
 								}
 							}
 							else if (item.Type == "Usage") {
 								xhtm += '<a class="btnsmall" href="' + graphLogLink + '" data-i18n="Log">Log</a> ';
 								if (permissions.hasPermission("Admin")) {
-									xhtm += '<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\', ' + item.CustomImage + ');" data-i18n="Edit">Edit</a> ';
+									xhtm += '<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\', ' + item.CustomImage + ', \'' + escape(item.Type) + '\', \'' + escape(item.SubType) + '\');" data-i18n="Edit">Edit</a> ';
 								}
 							}
 							else if ((item.Type == "Energy") || (item.SubType == "kWh") || (item.Type == "Power")) {
@@ -974,14 +983,14 @@ define(['app', 'livesocket'], function (app) {
 										xhtm += '<a class="btnsmall" onclick="EditEnergyDevice(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\', ';
 										xhtm += item.SwitchTypeVal + ',' + item.EnergyMeterMode + ', ' + item.CustomImage + ');" data-i18n="Edit">Edit</a> ';
 									} else {
-										xhtm += '<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\', ' + item.CustomImage + ');" data-i18n="Edit">Edit</a> ';
+										xhtm += '<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\', ' + item.CustomImage + ', \'' + escape(item.Type) + '\', \'' + escape(item.SubType) + '\');" data-i18n="Edit">Edit</a> ';
 									}
 								}
 							}
 							else if ((item.Type == "Current") || (item.Type == "Current/Energy")) {
 								xhtm += '<a class="btnsmall" href="' + graphLogLink + '" data-i18n="Log">Log</a> ';
 								if (permissions.hasPermission("Admin")) {
-									xhtm += '<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\', ' + item.CustomImage + ');" data-i18n="Edit">Edit</a> ';
+									xhtm += '<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\', ' + item.CustomImage + ', \'' + escape(item.Type) + '\', \'' + escape(item.SubType) + '\');" data-i18n="Edit">Edit</a> ';
 								}
 							}
 							else if ((item.Type == "Setpoint") && (item.SubType == "SetPoint")) {
@@ -1041,7 +1050,7 @@ define(['app', 'livesocket'], function (app) {
 							else if ((item.Type == "General") && (item.SubType == "Voltage")) {
 								xhtm += '<a class="btnsmall" href="' + graphLogLink + '" data-i18n="Log">Log</a> ';
 								if (permissions.hasPermission("Admin")) {
-									xhtm += '<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\', ' + item.CustomImage + ');" data-i18n="Edit">Edit</a> ';
+									xhtm += '<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\', ' + item.CustomImage + ', \'' + escape(item.Type) + '\', \'' + escape(item.SubType) + '\');" data-i18n="Edit">Edit</a> ';
 								}
 							}
 							else if ((item.Type == "General") && (item.SubType == "Distance")) {
@@ -1053,25 +1062,25 @@ define(['app', 'livesocket'], function (app) {
 							else if ((item.Type == "General") && (item.SubType == "Current")) {
 								xhtm += '<a class="btnsmall" href="' + graphLogLink + '" data-i18n="Log">Log</a> ';
 								if (permissions.hasPermission("Admin")) {
-									xhtm += '<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\', ' + item.CustomImage + ');" data-i18n="Edit">Edit</a> ';
+									xhtm += '<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\', ' + item.CustomImage + ', \'' + escape(item.Type) + '\', \'' + escape(item.SubType) + '\');" data-i18n="Edit">Edit</a> ';
 								}
 							}
 							else if ((item.Type == "General") && (item.SubType == "Pressure")) {
 								xhtm += '<a class="btnsmall" href="' + graphLogLink + '" data-i18n="Log">Log</a> ';
 								if (permissions.hasPermission("Admin")) {
-									xhtm += '<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\', ' + item.CustomImage + ');" data-i18n="Edit">Edit</a> ';
+									xhtm += '<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\', ' + item.CustomImage + ', \'' + escape(item.Type) + '\', \'' + escape(item.SubType) + '\');" data-i18n="Edit">Edit</a> ';
 								}
 							}
 							else if ((item.SubType == "Voltage") || (item.SubType == "Current") || (item.SubType == "A/D")) {
 								xhtm += '<a class="btnsmall" href="' + graphLogLink + '" data-i18n="Log">Log</a> ';
 								if (permissions.hasPermission("Admin")) {
-									xhtm += '<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\', ' + item.CustomImage + ');" data-i18n="Edit">Edit</a> ';
+									xhtm += '<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\', ' + item.CustomImage + ', \'' + escape(item.Type) + '\', \'' + escape(item.SubType) + '\');" data-i18n="Edit">Edit</a> ';
 								}
 							}
 							else if ((item.Type == "General") && (item.SubType == "Sound Level")) {
 								xhtm += '<a class="btnsmall" href="' + graphLogLink + '" data-i18n="Log">Log</a> ';
 								if (permissions.hasPermission("Admin")) {
-									xhtm += '<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\', ' + item.CustomImage + ');" data-i18n="Edit">Edit</a> ';
+									xhtm += '<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\', ' + item.CustomImage + ', \'' + escape(item.Type) + '\', \'' + escape(item.SubType) + '\');" data-i18n="Edit">Edit</a> ';
 								}
 							}
 							else if ((item.Type == "General") && (item.SubType == "Alert")) {
@@ -1079,12 +1088,12 @@ define(['app', 'livesocket'], function (app) {
 
 								xhtm += '<a class="btnsmall" href="' + logLink + '" data-i18n="Log">Log</a> ';
 								if (permissions.hasPermission("Admin")) {
-									xhtm += '<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\', ' + item.CustomImage + ');" data-i18n="Edit">Edit</a> ';
+									xhtm += '<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\', ' + item.CustomImage + ', \'' + escape(item.Type) + '\', \'' + escape(item.SubType) + '\');" data-i18n="Edit">Edit</a> ';
 								}
 							}
 							else {
 								if (permissions.hasPermission("Admin")) {
-									xhtm += '<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\', ' + item.CustomImage + ');" data-i18n="Edit">Edit</a> ';
+									xhtm += '<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\', ' + item.CustomImage + ', \'' + escape(item.Type) + '\', \'' + escape(item.SubType) + '\');" data-i18n="Edit">Edit</a> ';
 								}
 							}
 							if (item.ShowNotifications == true) {
@@ -1097,6 +1106,21 @@ define(['app', 'livesocket'], function (app) {
 										xhtm += '<a class="btnsmall" href="' + notificationLink + '" data-i18n="Notifications">Notifications</a>';
 								}
 							}
+											
+											// Add bar widget if enabled for utility sensors
+											var barOptions = parseBarWidgetOptions(item);
+											if (barOptions.enabled && item.SubType !== 'Text' && item.SubType !== 'Alert') {
+												var utilValue = null;
+												if (bigtext) {
+													// Extract numeric value from bigtext
+													var match = bigtext.match(/([+-]?\d+\.?\d*)/);
+													if (match) utilValue = parseFloat(match[1]);
+												}
+												if (utilValue !== null) {
+													xhtm += '</td></tr><tr><td colspan="6" style="padding:5px 10px;">' + renderBarWidget(utilValue, barOptions) + '</td></tr><tr><td colspan="6">';
+												}
+											}
+											xhtm +=
 							xhtm +=
 								'</td>\n' +
 								'\t    </tr>\n' +
