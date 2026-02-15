@@ -1,0 +1,38 @@
+version: "3"
+
+services:
+    domoticz:
+        container_name: domoticz
+        build:
+            context: .
+            args:
+                CMAKE_VERSION: ${CMAKE_VERSION:-3.24.2}
+                BOOST_VERSION: ${BOOST_VERSION:-1.80.0}
+        volumes:
+            - ..:/opt/dev-domoticz
+            - build:/opt/build
+        ports:
+            - ${HTTP_PORT:-8080}:8080
+            - ${HTTPS_PORT:-443}:443
+        environment:
+            # Enable CACHE_BIND_MOUNTS on macOS and probably Windows for faster compilation
+            CACHE_BIND_MOUNTS: ${CACHE_BIND_MOUNTS:-NO}
+
+            USE_BUILTIN_JSONCPP: ${USE_BUILTIN_JSONCPP:-}
+            USE_BUILTIN_MINIZIP: ${USE_BUILTIN_MINIZIP:-}
+            USE_BUILTIN_MQTT: ${USE_BUILTIN_MQTT:-}
+            USE_BUILTIN_SQLITE: ${USE_BUILTIN_SQLITE:-}
+
+            USE_PYTHON: ${USE_PYTHON:-}
+            INCLUDE_LINUX_I2C: ${INCLUDE_LINUX_I2C:-}
+            INCLUDE_SPI: ${INCLUDE_SPI:-}
+            WITH_LIBUSB: ${WITH_LIBUSB:-}
+
+            USE_LUA_STATIC: ${USE_LUA_STATIC:-}
+            USE_OPENSSL_STATIC: ${USE_OPENSSL_STATIC:-}
+
+            USE_PRECOMPILED_HEADER: ${USE_PRECOMPILED_HEADER:-}
+            GIT_SUBMODULE: ${GIT_SUBMODULE:-}
+
+volumes:
+    build: {}
