@@ -851,12 +851,7 @@ void EnphaseAPI::parseProduction(const Json::Value& root)
 
 	double mtotal = reading["whLifetime"].asDouble() / 1000.0;
 
-	// Only send the meter update if we have a valid total (not initial 0)
-	if (mtotal > 0)
-	{
-		double adjustedTotal = m_ProductionCounter.CheckTotalCounter(this, m_HwdID, 1, 1, mtotal);
-		SendKwhMeter(m_HwdID, 1, 255, musage, adjustedTotal, "Enphase kWh Production");
-	}
+	SendKwhMeter(m_HwdID, 1, 255, musage, mtotal, "Enphase kWh Production");
 }
 
 void EnphaseAPI::parseConsumption(const Json::Value& root)
@@ -866,12 +861,6 @@ void EnphaseAPI::parseConsumption(const Json::Value& root)
 		return;
 	}
 
-/*
-* New method with dedicated counters for total and net consumption
-* to avoid issues with resets
-* But does not seem to work!
-* So keeping the old method above
-*/
 	for (const auto& itt : root["consumption"])
 	{
 		int activeCount = itt["activeCount"].asInt();
@@ -884,17 +873,16 @@ void EnphaseAPI::parseConsumption(const Json::Value& root)
 		std::string szName = "Enphase " + measurementType;
 		int musage = itt["wNow"].asInt();
 		double mtotal = itt["whLifetime"].asDouble() / 1000.0;
-		if (mtotal != 0)
+
+		// Use fixed indices for each consumption type
+		if (measurementType == "total-consumption")
 		{
-			// Use fixed indices and dedicated counter helpers for each consumption type
-			if (measurementType == "total-consumption")
-			{
-				SendKwhMeter(m_HwdID, 2, 255, musage, mtotal, szName);
-			}
-			else if (measurementType == "net-consumption")
-			{
-				SendKwhMeter(m_HwdID, 3, 255, musage, mtotal, szName);
-			}
+			SendKwhMeter(m_HwdID, 2, 255, musage, mtotal, szName);
+		}
+		else if (measurementType == "net-consumption")
+		{
+			m_bHaveNetConsumption = true;
+			SendKwhMeter(m_HwdID, 3, 255, musage, mtotal, szName);
 		}
 	}
 }

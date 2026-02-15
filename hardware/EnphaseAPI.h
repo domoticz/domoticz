@@ -2,7 +2,6 @@
 
 #include "DomoticzHardware.h"
 #include "hardwaretypes.h"
-#include "CounterHelper.h"
 
 namespace Json
 {
@@ -90,8 +89,6 @@ private:
 	bool m_bHaveDevStatus = false;
 
 	bool m_bHaveLiveData = true;
-
-	CounterHelper m_ProductionCounter;
 
 	std::shared_ptr<std::thread> m_thread;
 };
