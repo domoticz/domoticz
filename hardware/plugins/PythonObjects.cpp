@@ -640,6 +640,8 @@ namespace Plugins {
 	}
 
 	// Helper function to normalize keyword argument names to lowercase for case-insensitive matching
+	// Returns a new reference to a normalized dictionary, or a borrowed reference if kwds is NULL/not a dict
+	// Caller must check if returned value != kwds and call Py_DECREF on the normalized dict when done
 	static PyObject* NormalizeKeywords(PyObject *kwds)
 	{
 		if (!kwds || !PyDict_Check(kwds))
@@ -647,7 +649,11 @@ namespace Plugins {
 
 		PyObject *normalized = PyDict_New();
 		if (!normalized)
+		{
+			// Return original kwds on allocation failure
+			// Don't increment ref count - return borrowed reference
 			return kwds;
+		}
 
 		PyObject *key, *value;
 		Py_ssize_t pos = 0;
@@ -665,7 +671,8 @@ namespace Plugins {
 				}
 				else
 				{
-					// If lowercasing fails, use original key
+					// If lowercasing fails, clear the error and use original key
+					PyErr_Clear();
 					PyDict_SetItem(normalized, key, value);
 				}
 			}
