@@ -686,7 +686,7 @@ namespace Plugins {
 				PyErr_Clear();
 				parsed = PyArg_ParseTupleAndKeywords(args, kwds, "si|siiiiOiss", kwlist_alt, &Name, &Unit, &TypeName, &Type, &SubType, &SwitchType, &Image, &Options, &Used, &DeviceID, &Description);
 			}
-			
+
 			if (parsed)
 			{
 				self->pPlugin = pModState->pPlugin;
