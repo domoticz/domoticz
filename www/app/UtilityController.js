@@ -101,13 +101,22 @@ define(['app', 'livesocket'], function (app) {
 				}
 			});
 
-// Hide bar widget option for text and alert sensors
-if (sensorSubType === 'Text' || sensorSubType === 'Alert') {
-$("#dialog-editutilitydevice #enablebarwidget").closest('tr').hide();
-$("#dialog-editutilitydevice #barwidgetfields").hide();
-} else {
-$("#dialog-editutilitydevice #enablebarwidget").closest('tr').show();
-}
+			
+			// Hide bar widget option for sensor types where it doesn't make sense
+			var excludedTypes = ['Setpoint', 'Radiator 1'];
+			var excludedSubTypes = ['Text', 'Alert', 'Thermostat Clock', 'Thermostat Mode', 
+			                         'Thermostat Operating State', 'Thermostat Fan Mode'];
+			
+			var shouldHideBarWidget = excludedSubTypes.indexOf(sensorSubType) !== -1 || 
+			                          (sensorType === 'Setpoint' && sensorSubType === 'SetPoint') ||
+			                          excludedTypes.indexOf(sensorType) !== -1;
+			
+			if (shouldHideBarWidget) {
+				$("#dialog-editutilitydevice #enablebarwidget").closest('tr').hide();
+				$("#dialog-editutilitydevice #barwidgetfields").hide();
+			} else {
+				$("#dialog-editutilitydevice #enablebarwidget").closest('tr').show();
+			}
 
 			
 			$('#dialog-editutilitydevice #combosensoricon').ddslick({
@@ -1109,7 +1118,7 @@ $("#dialog-editutilitydevice #enablebarwidget").closest('tr').show();
 											
 											// Add bar widget if enabled for utility sensors
 											var barOptions = parseBarWidgetOptions(item);
-											if (barOptions.enabled && item.SubType !== 'Text' && item.SubType !== 'Alert') {
+											var excludedSubTypes = ['Text', 'Alert', 'Thermostat Clock', 'Thermostat Mode', 'Thermostat Operating State', 'Thermostat Fan Mode'];
 												var utilValue = null;
 												if (bigtext) {
 													// Extract numeric value from bigtext
