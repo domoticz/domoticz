@@ -190,22 +190,211 @@ Similar approach:
 - [ ] Testing and validation
 
 ### Phase 5: Dashboard Migration (Weeks 9-11)
-**Goal:** Convert Dashboard to Angular
+**Goal:** Convert Dashboard to Angular with separate mobile and desktop implementations
 
-**Note:** Dashboard is the most complex (4,093 lines)
+**Note:** Dashboard is the most complex (4,093 lines). It currently mixes mobile and desktop logic throughout with conditional checks.
 
-#### Approach
-1. Create dashboard card components for each widget type
-2. Use Angular's ng-repeat for favorites
-3. Implement mobile detection in Angular way
-4. Migrate complex Evohome integration
+#### Strategy: Separate Controllers and Templates
+
+The Dashboard currently uses a single controller with extensive mobile detection:
+- `MobilePhoneDetection()` sets body ID to `onMobile` or `notMobile`
+- Throughout the code: `if (DashboardType == 2 || window.myglobals.ismobile)`
+- Different HTML generation for mobile vs desktop
+- Mixed rendering logic makes code hard to maintain
+
+**New Approach:** Create two separate implementations:
+
+#### 5.1 Create Shared Dashboard Service
+```javascript
+// www/app/services/dashboardService.js
+app.service('dashboardService', function(livesocket, deviceApi) {
+    var service = this;
+    
+    // Common data fetching
+    service.loadFavorites = function() {
+        return livesocket.getJson('json.htm?type=command&param=getfavorites');
+    };
+    
+    // Common device actions
+    service.toggleDevice = function(idx) {
+        return deviceApi.switchDevice(idx);
+    };
+    
+    // Evohome integration (shared)
+    service.switchModal = function(idx, status) { ... };
+});
+```
+
+#### 5.2 Create Desktop Dashboard Controller
+```javascript
+// www/app/DashboardDesktopController.js
+app.controller('DashboardDesktopController', 
+    function($scope, dashboardService) {
+    
+    var ctrl = this;
+    ctrl.favorites = [];
+    ctrl.searchQuery = '';
+    
+    // Desktop-specific layout (cards, grid)
+    ctrl.layoutType = 'grid'; // or 'list'
+    
+    ctrl.matchesFilter = function(item) { ... };
+    
+    function loadFavorites() {
+        dashboardService.loadFavorites().then(function(data) {
+            ctrl.favorites = data.result || [];
+        });
+    }
+    
+    init();
+});
+```
+
+#### 5.3 Create Mobile Dashboard Controller
+```javascript
+// www/app/DashboardMobileController.js
+app.controller('DashboardMobileController', 
+    function($scope, dashboardService) {
+    
+    var ctrl = this;
+    ctrl.favorites = [];
+    
+    // Mobile-specific: simplified, list-based
+    ctrl.layoutType = 'mobile-list';
+    
+    // Simpler interface for mobile
+    ctrl.toggleDevice = function(device) {
+        dashboardService.toggleDevice(device.idx);
+    };
+    
+    function loadFavorites() {
+        dashboardService.loadFavorites().then(function(data) {
+            // Filter or format for mobile if needed
+            ctrl.favorites = data.result || [];
+        });
+    }
+    
+    init();
+});
+```
+
+#### 5.4 Create Separate Templates
+
+**Desktop Template (views/dashboard_desktop.html):**
+```html
+<div class="container dashboard-desktop">
+    <div ng-include="'views/inc_topbar.html'"></div>
+    
+    <div class="dashboard-grid">
+        <dz-dashboard-card ng-repeat="item in ctrl.favorites"
+                          ng-show="ctrl.matchesFilter(item)"
+                          class="dashboard-card"
+                          item="item"
+                          layout="grid">
+        </dz-dashboard-card>
+    </div>
+</div>
+```
+
+**Mobile Template (views/dashboard_mobile.html):**
+```html
+<div class="container dashboard-mobile">
+    <!-- Mobile-optimized header (no search by default) -->
+    <div class="mobile-header">
+        <h1>Dashboard</h1>
+    </div>
+    
+    <!-- Simple list layout for mobile -->
+    <div class="dashboard-list">
+        <dz-dashboard-card-mobile ng-repeat="item in ctrl.favorites"
+                                 class="mobile-card"
+                                 item="item"
+                                 layout="list">
+        </dz-dashboard-card-mobile>
+    </div>
+</div>
+```
+
+#### 5.5 Routing with Device Detection
+```javascript
+// In app.js routing configuration
+app.config(function($routeProvider) {
+    $routeProvider.when('/Dashboard', {
+        templateUrl: function() {
+            // Detect device type
+            if (window.myglobals.ismobile || isMobileDevice()) {
+                return 'views/dashboard_mobile.html';
+            } else {
+                return 'views/dashboard_desktop.html';
+            }
+        },
+        controller: function() {
+            if (window.myglobals.ismobile || isMobileDevice()) {
+                return 'DashboardMobileController';
+            } else {
+                return 'DashboardDesktopController';
+            }
+        },
+        controllerAs: 'ctrl'
+    });
+});
+
+// Helper function
+function isMobileDevice() {
+    return /(android|bb\d+|meego).+mobile|avantgo|bada\/|blackberry|.../i
+        .test(navigator.userAgent);
+}
+```
+
+#### 5.6 Create Dashboard Card Components
+
+**Desktop Card:**
+```javascript
+app.directive('dzDashboardCard', function() {
+    return {
+        restrict: 'E',
+        scope: { item: '=', layout: '@' },
+        templateUrl: 'views/widgets/dashboard_card_desktop.html',
+        controller: 'DashboardCardController',
+        controllerAs: 'ctrl'
+    };
+});
+```
+
+**Mobile Card:**
+```javascript
+app.directive('dzDashboardCardMobile', function() {
+    return {
+        restrict: 'E',
+        scope: { item: '=' },
+        templateUrl: 'views/widgets/dashboard_card_mobile.html',
+        controller: 'DashboardCardMobileController',
+        controllerAs: 'ctrl'
+    };
+});
+```
 
 **Deliverables:**
-- [ ] New DashboardController
-- [ ] dashboard.html template
-- [ ] Dashboard card components
-- [ ] Mobile vs desktop templates
-- [ ] Testing on both mobile and desktop
+- [ ] Create dashboardService (shared logic)
+- [ ] Create DashboardDesktopController
+- [ ] Create DashboardMobileController
+- [ ] Create dashboard_desktop.html template
+- [ ] Create dashboard_mobile.html template
+- [ ] Create desktop dashboard card components
+- [ ] Create mobile dashboard card components
+- [ ] Implement routing with device detection
+- [ ] Migrate Evohome integration to service
+- [ ] Test on desktop browsers
+- [ ] Test on mobile devices
+- [ ] Test on tablets (decide which version to use)
+
+**Benefits of Separate Pages:**
+- ✅ Cleaner code - no mixed mobile/desktop logic
+- ✅ Easier to optimize - each view optimized separately
+- ✅ Better performance - load only what's needed
+- ✅ Easier testing - test mobile and desktop independently
+- ✅ Future flexibility - can evolve differently
+- ✅ Simpler maintenance - clear separation of concerns
 
 ### Phase 6: Cleanup and Polish (Weeks 12-13)
 **Goal:** Remove legacy code and optimize
