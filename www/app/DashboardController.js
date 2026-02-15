@@ -1623,7 +1623,10 @@ define(['app', 'livesocket'], function (app) {
 					}
 				}
 			} //Utility Sensors
-			RefreshLiveSearch();
+			// Defer RefreshLiveSearch to ensure it runs after DOM updates
+			setTimeout(function() {
+				RefreshLiveSearch();
+			}, 0);
 		}
 
 		RefreshFavorites = function () {

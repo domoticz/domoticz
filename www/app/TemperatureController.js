@@ -126,7 +126,10 @@ define(['app', 'livesocket'], function (app) {
 					}
 				}
 			});
-			RefreshLiveSearch();
+			// Defer RefreshLiveSearch to ensure it runs after Angular's DOM update
+			setTimeout(function() {
+				RefreshLiveSearch();
+			}, 0);
 		}
 
 		//We only call this once. After this the widgets are being updated automatically by used of the 'jsonupdate' broadcast event.

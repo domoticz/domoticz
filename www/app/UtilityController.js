@@ -547,7 +547,10 @@ define(['app', 'livesocket'], function (app) {
 						$(id + " #name").effect("highlight", { color: '#EEFFEE' }, 1000);
 					}
 				}
-				RefreshLiveSearch();
+				// Defer RefreshLiveSearch to ensure it runs after DOM updates
+				setTimeout(function() {
+					RefreshLiveSearch();
+				}, 0);
 			}
 		};
 
