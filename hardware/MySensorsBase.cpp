@@ -492,7 +492,8 @@ void MySensorsBase::UpdateNodeHeartbeat(const uint8_t nodeID)
 					if (child.GetValue(vType, intValue))
 						UpdateRGBWSwitchLastUpdate(nodeID, child.childID);
 					break;
-				// Add support for temperature and other sensor types
+				// Temperature, humidity, and other sensor types use (NodeID << 8) | ChildID format for DeviceID
+				// Unlike switches which use hex-formatted NodeID, these sensors need special handling
 				case V_TEMP:
 				case V_HUM:
 				case V_PRESSURE:
@@ -514,8 +515,6 @@ void MySensorsBase::UpdateNodeHeartbeat(const uint8_t nodeID)
 				case V_LEVEL:
 				case V_VOLTAGE:
 				case V_CURRENT:
-				case V_ID:
-				case V_UNIT_PREFIX:
 				case V_TEXT:
 				case V_CUSTOM:
 				case V_POSITION:
@@ -1133,14 +1132,14 @@ void MySensorsBase::UpdateRGBWSwitchLastUpdate(const int NodeID, const int Child
 	m_sql.UpdateLastUpdate(result[0][0]);
 }
 
-void MySensorsBase::UpdateSensorLastUpdate(const int NodeID, const int ChildID)
+void MySensorsBase::UpdateSensorLastUpdate(int NodeID, int ChildID)
 {
 	// For temperature and other sensors, DeviceID is stored as decimal: (NodeID << 8) | ChildID
-	int cNode = (NodeID << 8) | ChildID;
-	char szIdx[10];
-	sprintf(szIdx, "%d", cNode);
+	int deviceID = (NodeID << 8) | ChildID;
+	char szIdx[16];
+	sprintf(szIdx, "%d", deviceID);
 	std::vector<std::vector<std::string> > result;
-	result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q')", m_HwdID, szIdx);
+	result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit==%d)", m_HwdID, szIdx, ChildID);
 	if (result.empty())
 		return;
 	m_sql.UpdateLastUpdate(result[0][0]);
