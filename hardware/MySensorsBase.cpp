@@ -492,6 +492,41 @@ void MySensorsBase::UpdateNodeHeartbeat(const uint8_t nodeID)
 					if (child.GetValue(vType, intValue))
 						UpdateRGBWSwitchLastUpdate(nodeID, child.childID);
 					break;
+				// Add support for temperature and other sensor types
+				case V_TEMP:
+				case V_HUM:
+				case V_PRESSURE:
+				case V_FORECAST:
+				case V_RAIN:
+				case V_RAINRATE:
+				case V_WIND:
+				case V_GUST:
+				case V_DIRECTION:
+				case V_UV:
+				case V_WEIGHT:
+				case V_DISTANCE:
+				case V_IMPEDANCE:
+				case V_WATT:
+				case V_KWH:
+				case V_LIGHT_LEVEL:
+				case V_FLOW:
+				case V_VOLUME:
+				case V_LEVEL:
+				case V_VOLTAGE:
+				case V_CURRENT:
+				case V_ID:
+				case V_UNIT_PREFIX:
+				case V_TEXT:
+				case V_CUSTOM:
+				case V_POSITION:
+				case V_PH:
+				case V_ORP:
+				case V_EC:
+				case V_VAR:
+				case V_VA:
+				case V_POWER_FACTOR:
+					UpdateSensorLastUpdate(nodeID, child.childID);
+					break;
 				}
 			}
 		}
@@ -1093,6 +1128,19 @@ void MySensorsBase::UpdateRGBWSwitchLastUpdate(const int NodeID, const int Child
 
 	std::vector<std::vector<std::string> > result;
 	result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit==%d)", m_HwdID, szIdx, ChildID);
+	if (result.empty())
+		return;
+	m_sql.UpdateLastUpdate(result[0][0]);
+}
+
+void MySensorsBase::UpdateSensorLastUpdate(const int NodeID, const int ChildID)
+{
+	// For temperature and other sensors, DeviceID is stored as decimal: (NodeID << 8) | ChildID
+	int cNode = (NodeID << 8) | ChildID;
+	char szIdx[10];
+	sprintf(szIdx, "%d", cNode);
+	std::vector<std::vector<std::string> > result;
+	result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q')", m_HwdID, szIdx);
 	if (result.empty())
 		return;
 	m_sql.UpdateLastUpdate(result[0][0]);

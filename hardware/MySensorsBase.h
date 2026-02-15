@@ -433,6 +433,7 @@ class MySensorsBase : public CDomoticzHardwareBase
 	void UpdateSwitchLastUpdate(unsigned char NodeID, int ChildID);
 	void UpdateBlindSensorLastUpdate(int NodeID, int ChildID);
 	void UpdateRGBWSwitchLastUpdate(int NodeID, int ChildID);
+	void UpdateSensorLastUpdate(int NodeID, int ChildID);
 
 	bool GetSwitchValue(int Idx, int SubUnit, int sub_type, std::string &sSwitchValue);
 
