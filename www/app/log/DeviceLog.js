@@ -1,4 +1,4 @@
-define(['app', 'log/Chart', 'log/TextLog', 'log/TemperatureLog', 'log/LightLog', 'log/GraphLog', 'log/CounterLog', 'log/CounterLogCounter', 'log/CounterLogInstantAndCounter', 'log/CounterLogP1Energy', 'log/RainLog', 'log/SetpointLog', 'log/AirQualityLog', 'log/BarometerLog', 'log/WindLog'], function (app) {
+define(['app', 'log/Chart', 'log/TextLog', 'log/TemperatureLog', 'log/LightLog', 'log/GraphLog', 'log/CounterLog', 'log/CounterLogCounter', 'log/CounterLogInstantAndCounter', 'log/CounterLogP1Energy', 'log/RainLog', 'log/SetpointLog', 'log/AirQualityLog', 'log/BarometerLog', 'log/WindLog', 'log/UVLog', 'log/FanLog'], function (app) {
     app.controller('DeviceLogController', function ($location, $routeParams, domoticzApi, deviceApi, chart) {
         var vm = this;
 
@@ -11,6 +11,8 @@ define(['app', 'log/Chart', 'log/TextLog', 'log/TemperatureLog', 'log/LightLog',
 		vm.isAirQualityLog = isAirQualityLog;
 		vm.isBarometerLog = isBarometerLog;
 		vm.isWindLog = isWindLog;
+		vm.isUvLog = isUvLog;
+		vm.isFanLog = isFanLog;
         vm.isReportAvailable = isReportAvailable;
         vm.isInstantAndCounterLog = isInstantAndCounterLog;
         vm.isP1EnergyLog = isP1EnergyLog;
@@ -131,6 +133,21 @@ define(['app', 'log/Chart', 'log/TextLog', 'log/TemperatureLog', 'log/LightLog',
 			}
 			// Wind devices have a Direction property
 			return (vm.device.Direction !== undefined && /Wind/i.test(vm.device.Type));
+		}
+
+		function isUvLog() {
+			if (!vm.device) {
+				return undefined;
+			}
+			// UV devices have a UVI property
+			return (vm.device.UVI !== undefined);
+		}
+
+		function isFanLog() {
+			if (!vm.device) {
+				return undefined;
+			}
+			return (vm.device.SubType === 'Fan');
 		}
 
         function isP1EnergyLog() {

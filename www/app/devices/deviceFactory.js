@@ -178,12 +178,12 @@ define(function () {
                 var deviceType = this.Type;
                 var logLink = '#/Devices/' + this.idx + '/Log';
 
-                var deviceTypes = ['Light', 'Color Switch', 'Chime', 'Security', 'RFY', 'ASA', 'Usage', 'Energy', 'Heating', 'Air Quality', 'Rain', 'Wind'];
+                var deviceTypes = ['Light', 'Color Switch', 'Chime', 'Security', 'RFY', 'ASA', 'Usage', 'Energy', 'Heating', 'Air Quality', 'Rain', 'Wind', 'UV', 'Current'];
                 var deviceSubTypes = [
                     'Voltage', 'Current', 'Pressure', 'Custom Sensor', 'kWh',
                     'Sound Level', 'Solar Radiation', 'Visibility', 'Distance',
                     'Soil Moisture', 'Leaf Wetness', 'Waterflow', 'Lux', 'Percentage',
-                    'Text', 'Alert', 'Temperature', 'SetPoint', 'Barometer'
+                    'Text', 'Alert', 'Temperature', 'SetPoint', 'Barometer', 'Fan'
                 ];
 
                 if (deviceTypes.some(function(item) {
@@ -206,7 +206,7 @@ define(function () {
             };
 
             this.isCustomLog = function () {
-				var deviceTypes = ['UV', 'Current'];
+				var deviceTypes = [];
 				var deviceSubTypes = [];
 
 				if (deviceTypes.includes(this.Type)) {
@@ -220,12 +220,7 @@ define(function () {
 
             this.openCustomLog = function (container, backFn) {
                 GlobalBackFn = backFn;
-
-                if (this.UVI !== undefined) {
-                    ShowUVLog(container, 'GlobalBackFn', this.idx, this.Name);
-                } else if (this.Type.indexOf('Current') === 0) {
-                    ShowCurrentLog(container, 'GlobalBackFn', this.idx, this.Name);
-                }
+                // All sensors now use Angular log components
             };
 
         }

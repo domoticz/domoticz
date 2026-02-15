@@ -20,6 +20,8 @@
 	<device-airquality-log ng-if="::vm.isAirQualityLog()" device="::vm.device"></device-airquality-log>
 	<device-barometer-log ng-if="::vm.isBarometerLog()" device="::vm.device"></device-barometer-log>
 	<device-wind-log ng-if="::vm.isWindLog()" device="::vm.device"></device-wind-log>
+	<device-uv-log ng-if="::vm.isUvLog()" device="::vm.device"></device-uv-log>
+	<device-fan-log ng-if="::vm.isFanLog()" device="::vm.device"></device-fan-log>
     <device-counter-log ng-if="::vm.isInstantAndCounterLog()" device="::vm.device" subtype="'instantAndCounter'"></device-counter-log>
     <device-counter-log ng-if="::vm.isP1EnergyLog()" device="::vm.device" subtype="'p1Energy'"></device-counter-log>
     <device-counter-log ng-if="::vm.isCounterLog() && vm.isEnergyUsedDevice()" device="::vm.device" subtype="'energy-used'"></device-counter-log>
