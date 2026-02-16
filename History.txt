@@ -19,6 +19,7 @@ Version 2026.xxxx
 - Added: RTL433, Support UV sensors names 'uvi'
 - Added: Dashboard, setpoint display and editing for all setpoint devices
 - Added: Logitech Media Server, SqueezeLite ESP32 support
+- Added: Open-Meteo, native weather hardware plugin (no API key required)
 - Added: OpenWeatherMap, support for free API plan
 - Added: Support for the Model Context Protocol (/mcp) for use with AI Agents
 - Added: Thermostat, combined Temperature/Setpoint display

@@ -45,7 +45,6 @@ std::string ReadFile(std::string filename)
 #endif
 
 #define OpenMeteo_API_URL "https://api.open-meteo.com/v1/forecast"
-#define OpenMeteo_forecast_URL "https://open-meteo.com/"
 #define OpenMeteo_Poll_Interval 300
 
 // WMO Weather interpretation codes to text description
@@ -81,15 +80,14 @@ static const std::map<int, std::string> WMO_Descriptions = {
 };
 
 // WMO Weather code to barometric forecast mapping
-// 0=Heavy Snow, 1=Snow, 2=Heavy Rain, 3=Rain, 4=Cloudy, 5=Some Clouds, 6=Sunny, 7=Unknown, 8=Unstable, 9=Stable
 static const std::map<int, uint8_t> WMO_To_Forecast = {
-	{ 0, 6 }, { 1, 6 }, { 2, 5 }, { 3, 4 },
-	{ 45, 4 }, { 48, 4 },
-	{ 51, 3 }, { 53, 3 }, { 55, 3 }, { 56, 3 }, { 57, 3 },
-	{ 61, 3 }, { 63, 3 }, { 65, 2 }, { 66, 3 }, { 67, 2 },
-	{ 71, 1 }, { 73, 1 }, { 75, 0 }, { 77, 1 },
-	{ 80, 3 }, { 81, 3 }, { 82, 2 }, { 85, 1 }, { 86, 0 },
-	{ 95, 8 }, { 96, 8 }, { 99, 8 },
+	{ 0, wsbaroforecast_sunny }, { 1, wsbaroforecast_sunny }, { 2, wsbaroforecast_some_clouds }, { 3, wsbaroforecast_cloudy },
+	{ 45, wsbaroforecast_cloudy }, { 48, wsbaroforecast_cloudy },
+	{ 51, wsbaroforecast_rain }, { 53, wsbaroforecast_rain }, { 55, wsbaroforecast_rain }, { 56, wsbaroforecast_rain }, { 57, wsbaroforecast_rain },
+	{ 61, wsbaroforecast_rain }, { 63, wsbaroforecast_rain }, { 65, wsbaroforecast_heavy_rain }, { 66, wsbaroforecast_rain }, { 67, wsbaroforecast_heavy_rain },
+	{ 71, wsbaroforecast_snow }, { 73, wsbaroforecast_snow }, { 75, wsbaroforecast_heavy_snow }, { 77, wsbaroforecast_snow },
+	{ 80, wsbaroforecast_rain }, { 81, wsbaroforecast_rain }, { 82, wsbaroforecast_heavy_rain }, { 85, wsbaroforecast_snow }, { 86, wsbaroforecast_heavy_snow },
+	{ 95, wsbaroforecast_unstable }, { 96, wsbaroforecast_unstable }, { 99, wsbaroforecast_unstable },
 };
 
 static std::string GetWMODescription(int code)
@@ -105,7 +103,7 @@ static uint8_t GetWMOForecast(int code)
 	auto it = WMO_To_Forecast.find(code);
 	if (it != WMO_To_Forecast.end())
 		return it->second;
-	return 7; // Unknown
+	return wsbaroforecast_unknown;
 }
 
 COpenMeteo::COpenMeteo(const int ID)
@@ -148,11 +146,9 @@ void COpenMeteo::Init()
 	sURL << OpenMeteo_API_URL
 	     << "?latitude=" << m_Lat
 	     << "&longitude=" << m_Lon
-	     << "&current=temperature_2m,relative_humidity_2m,apparent_temperature,precipitation,rain,weather_code,cloud_cover,surface_pressure,wind_speed_10m,wind_direction_10m,wind_gusts_10m,visibility"
+	     << "&current=temperature_2m,relative_humidity_2m,apparent_temperature,precipitation,rain,weather_code,cloud_cover,surface_pressure,wind_speed_10m,wind_direction_10m,wind_gusts_10m,visibility,soil_temperature_0cm,soil_moisture_0_to_1cm,uv_index,direct_radiation_instant"
 	     << "&wind_speed_unit=ms";
 	m_URL = sURL.str();
-
-	m_ForecastURL = OpenMeteo_forecast_URL;
 
 	Log(LOG_STATUS, "Using Domoticz location: lat=%f, lon=%f", m_Lat, m_Lon);
 }
@@ -188,7 +184,6 @@ void COpenMeteo::Do_Work()
 	Log(LOG_STATUS, "Started...");
 
 	int sec_counter = OpenMeteo_Poll_Interval - 5;
-	int mark_used_countdown = -1;
 	while (!IsStopRequested(1000))
 	{
 		sec_counter++;
@@ -203,8 +198,6 @@ void COpenMeteo::Do_Work()
 				try
 				{
 					GetMeterDetails();
-					if (!m_bDevicesUsed)
-						mark_used_countdown = 5;
 				}
 				catch (...)
 				{
@@ -216,18 +209,6 @@ void COpenMeteo::Do_Work()
 				Log(LOG_STATUS, "Unable to run due to missing or incorrect Location parameters!");
 			}
 		}
-
-		if (mark_used_countdown > 0)
-		{
-			mark_used_countdown--;
-		}
-		else if (mark_used_countdown == 0)
-		{
-			m_sql.safe_query("UPDATE DeviceStatus SET Used=1 WHERE (HardwareID==%d) AND (Used==0)", m_HwdID);
-			m_sql.safe_query("UPDATE DeviceStatus SET CustomImage=20 WHERE (HardwareID==%d) AND (DeviceID=='0000008') AND (CustomImage==0)", m_HwdID);
-			m_bDevicesUsed = true;
-			mark_used_countdown = -1;
-		}
 	}
 	Log(LOG_STATUS, "Worker stopped...");
 }
@@ -235,11 +216,6 @@ void COpenMeteo::Do_Work()
 bool COpenMeteo::WriteToHardware(const char * /*pdata*/, const unsigned char /*length*/)
 {
 	return false;
-}
-
-std::string COpenMeteo::GetForecastURL()
-{
-	return m_ForecastURL;
 }
 
 void COpenMeteo::GetMeterDetails()
@@ -336,4 +312,35 @@ void COpenMeteo::GetMeterDetails()
 	// Node 8: Is it raining switch
 	bool is_raining = (rain > 0.0F) || (precipitation > 0.0F);
 	SendSwitch(8, 1, 255, is_raining, 0, "Is It Raining", m_Name);
+
+	// Node 9: UV Index
+	if (!current["uv_index"].empty())
+	{
+		float uv_index = current["uv_index"].asFloat();
+		if ((uv_index >= 0) && (uv_index < 16))
+		{
+			SendUVSensor(9, 1, 255, uv_index, "UV Index");
+		}
+	}
+
+	// Node 10: Solar Radiation (W/m²)
+	if (!current["direct_radiation_instant"].empty())
+	{
+		float solar_radiation = current["direct_radiation_instant"].asFloat();
+		SendSolarRadiationSensor(10, 255, solar_radiation, "Solar Radiation");
+	}
+
+	// Node 11: Soil Temperature (0 cm surface)
+	if (!current["soil_temperature_0cm"].empty())
+	{
+		float soil_temp = current["soil_temperature_0cm"].asFloat();
+		SendTempSensor(11, 255, soil_temp, "Soil Temperature");
+	}
+
+	// Node 12: Soil Moisture (0-1 cm, volumetric m³/m³ converted to %)
+	if (!current["soil_moisture_0_to_1cm"].empty())
+	{
+		float soil_moisture = current["soil_moisture_0_to_1cm"].asFloat() * 100.0F;
+		SendPercentageSensor(12, 1, 255, soil_moisture, "Soil Moisture");
+	}
 }

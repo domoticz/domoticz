@@ -43,7 +43,6 @@
 #include "../hardware/DarkSky.h"
 #include "../hardware/VisualCrossing.h"
 #include "../hardware/Meteorologisk.h"
-#include "../hardware/OpenMeteo.h"
 #include "../hardware/OpenWeatherMap.h"
 #include "../hardware/Wunderground.h"
 #ifdef WITH_OPENZWAVE
@@ -1778,15 +1777,6 @@ namespace http
 						else if (pHardware->HwdType == HTYPE_Meteorologisk)
 						{
 							CMeteorologisk* pWHardware = dynamic_cast<CMeteorologisk*>(pHardware);
-							std::string forecast_url = pWHardware->GetForecastURL();
-							if (!forecast_url.empty())
-							{
-								root["result"][ii]["forecast_url"] = base64_encode(forecast_url);
-							}
-						}
-						else if (pHardware->HwdType == HTYPE_OpenMeteo)
-						{
-							COpenMeteo *pWHardware = dynamic_cast<COpenMeteo *>(pHardware);
 							std::string forecast_url = pWHardware->GetForecastURL();
 							if (!forecast_url.empty())
 							{
