@@ -640,30 +640,28 @@ namespace Plugins {
 	}
 
 	// Helper function to normalize keyword argument names to lowercase for case-insensitive matching
-	// Returns a new reference to a normalized dictionary, or a borrowed reference if kwds is NULL/not a dict
+	// Returns a new reference to a normalized dictionary, or a borrowed reference if kwds is NULL
 	// Caller must check if returned value != kwds and call Py_DECREF on the normalized dict when done
 	static PyObject* NormalizeKeywords(PyObject *kwds)
 	{
-		if (!kwds || !PyDict_Check(kwds))
+		if (!kwds)
 			return kwds;
 
 		PyObject *normalized = PyDict_New();
 		if (!normalized)
-		{
-			// Return original kwds on allocation failure
-			// Don't increment ref count - return borrowed reference
 			return kwds;
-		}
 
 		PyObject *key, *value;
 		Py_ssize_t pos = 0;
 
 		while (PyDict_Next(kwds, &pos, &key, &value))
 		{
-			if (PyUnicode_Check(key))
+			const char *key_str = PyUnicode_AsUTF8(key);
+			if (key_str)
 			{
-				// Convert key to lowercase
-				PyObject *lower_key = PyObject_CallMethod(key, "lower", nullptr);
+				std::string lower_str(key_str);
+				std::transform(lower_str.begin(), lower_str.end(), lower_str.begin(), ::tolower);
+				PyObject *lower_key = PyUnicode_FromString(lower_str.c_str());
 				if (lower_key)
 				{
 					PyDict_SetItem(normalized, lower_key, value);
@@ -671,14 +669,12 @@ namespace Plugins {
 				}
 				else
 				{
-					// If lowercasing fails, clear the error and use original key
-					PyErr_Clear();
 					PyDict_SetItem(normalized, key, value);
 				}
 			}
 			else
 			{
-				// Non-string key, keep as-is
+				PyErr_Clear();
 				PyDict_SetItem(normalized, key, value);
 			}
 		}
