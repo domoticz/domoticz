@@ -639,6 +639,53 @@ namespace Plugins {
 		}
 	}
 
+	// Helper function to normalize keyword argument names to lowercase for case-insensitive matching
+	// Returns a new reference to a normalized dictionary, or a borrowed reference if kwds is NULL/not a dict
+	// Caller must check if returned value != kwds and call Py_DECREF on the normalized dict when done
+	static PyObject* NormalizeKeywords(PyObject *kwds)
+	{
+		if (!kwds || !PyDict_Check(kwds))
+			return kwds;
+
+		PyObject *normalized = PyDict_New();
+		if (!normalized)
+		{
+			// Return original kwds on allocation failure
+			// Don't increment ref count - return borrowed reference
+			return kwds;
+		}
+
+		PyObject *key, *value;
+		Py_ssize_t pos = 0;
+
+		while (PyDict_Next(kwds, &pos, &key, &value))
+		{
+			if (PyUnicode_Check(key))
+			{
+				// Convert key to lowercase
+				PyObject *lower_key = PyObject_CallMethod(key, "lower", nullptr);
+				if (lower_key)
+				{
+					PyDict_SetItem(normalized, lower_key, value);
+					Py_DECREF(lower_key);
+				}
+				else
+				{
+					// If lowercasing fails, clear the error and use original key
+					PyErr_Clear();
+					PyDict_SetItem(normalized, key, value);
+				}
+			}
+			else
+			{
+				// Non-string key, keep as-is
+				PyDict_SetItem(normalized, key, value);
+			}
+		}
+
+		return normalized;
+	}
+
 	int CDevice_init(CDevice *self, PyObject *args, PyObject *kwds)
 	{
 		char *Name = nullptr;
@@ -652,8 +699,9 @@ namespace Plugins {
 		PyObject *Options = nullptr;
 		int			Used = -1;
 		char *Description = nullptr;
-		static char *kwlist[] = { "Name",  "Unit",    "TypeName", "Type",     "Subtype",     "Switchtype",
-					  "Image", "Options", "Used",	  "DeviceID", "Description", nullptr };
+		// All parameter names in lowercase for case-insensitive matching
+		static char *kwlist[] = { "name",  "unit",    "typename", "type",     "subtype",     "switchtype",
+					  "image", "options", "used",	  "deviceid", "description", nullptr };
 
 		try
 		{
@@ -677,7 +725,10 @@ namespace Plugins {
 				return 0;
 			}
 
-			if (PyArg_ParseTupleAndKeywords(args, kwds, "si|siiiiOiss", kwlist, &Name, &Unit, &TypeName, &Type, &SubType, &SwitchType, &Image, &Options, &Used, &DeviceID, &Description))
+			// Normalize keyword arguments to lowercase for case-insensitive matching
+			PyObject *normalized_kwds = NormalizeKeywords(kwds);
+
+			if (PyArg_ParseTupleAndKeywords(args, normalized_kwds, "si|siiiiOiss", kwlist, &Name, &Unit, &TypeName, &Type, &SubType, &SwitchType, &Image, &Options, &Used, &DeviceID, &Description))
 			{
 				self->pPlugin = pModState->pPlugin;
 				self->PluginKey = PyUnicode_FromString(pModState->pPlugin->m_PluginKey.c_str());
@@ -762,8 +813,14 @@ namespace Plugins {
 			}
 			else
 			{
-				pModState->pPlugin->Log(LOG_ERROR, R"(Expected: myVar = Domoticz.Device(Name="myDevice", Unit=0, TypeName="", Type=0, Subtype=0, Switchtype=0, Image=0, Options={}, Used=1))");
+				pModState->pPlugin->Log(LOG_ERROR, R"(Expected: myVar = Domoticz.Device(Name="myDevice", Unit=0, TypeName="", Type=0, SubType=0, SwitchType=0, Image=0, Options={}, Used=1). Note: Parameter names are case-insensitive.)");
 				pModState->pPlugin->LogPythonException(__func__);
+			}
+
+			// Clean up normalized keywords dictionary if we created one
+			if (normalized_kwds != kwds)
+			{
+				Py_DECREF(normalized_kwds);
 			}
 		}
 		catch (std::exception *e)
@@ -981,16 +1038,25 @@ namespace Plugins {
 			std::string	sName = PyUnicode_AsUTF8(self->Name);
 			std::string	sDeviceID = PyUnicode_AsUTF8(self->DeviceID);
 			std::string	sDescription = PyUnicode_AsUTF8(self->Description);
+			// All parameter names in lowercase for case-insensitive matching
 			static char *kwlist[]
-				= { "nValue", "sValue",		  "Image", "SignalLevel", "BatteryLevel", "Options", "TimedOut",
-				    "Name",   "TypeName",	  "Type",  "Subtype",	  "Switchtype",	  "Used",    "Description",
-				    "Color",  "SuppressTriggers", nullptr };
+				= { "nvalue", "svalue",		  "image", "signallevel", "batterylevel", "options", "timedout",
+				    "name",   "typename",	  "type",  "subtype",	  "switchtype",	  "used",    "description",
+				    "color",  "suppresstriggers", nullptr };
+
+			// Normalize keyword arguments to lowercase for case-insensitive matching
+			PyObject *normalized_kwds = NormalizeKeywords(kwds);
 
 			// Try to extract parameters needed to update device settings
-			if (!PyArg_ParseTupleAndKeywords(args, kwds,   "is|iiiOissiiiissp", kwlist, &nValue, &sValue, &iImage, &iSignalLevel, &iBatteryLevel, &pOptionsDict, &iTimedOut, &Name, &TypeName, &iType, &iSubType, &iSwitchType, &iUsed, &Description, &Color, &SuppressTriggers))
+			if (!PyArg_ParseTupleAndKeywords(args, normalized_kwds, "is|iiiOissiiiissp", kwlist, &nValue, &sValue, &iImage, &iSignalLevel, &iBatteryLevel, &pOptionsDict, &iTimedOut, &Name, &TypeName, &iType, &iSubType, &iSwitchType, &iUsed, &Description, &Color, &SuppressTriggers))
 			{
-				self->pPlugin->Log(LOG_ERROR, "(%s) %s: Failed to parse parameters: 'nValue', 'sValue', 'Image', 'SignalLevel', 'BatteryLevel', 'Options', 'TimedOut', 'Name', 'TypeName', 'Type', 'Subtype', 'Switchtype', 'Used', 'Description', 'Color' or 'SuppressTriggers' expected.", __func__, sName.c_str());
+				self->pPlugin->Log(LOG_ERROR, "(%s) %s: Failed to parse parameters: 'nValue', 'sValue', 'Image', 'SignalLevel', 'BatteryLevel', 'Options', 'TimedOut', 'Name', 'TypeName', 'Type', 'SubType', 'SwitchType', 'Used', 'Description', 'Color' or 'SuppressTriggers' expected. Note: Parameter names are case-insensitive.", __func__, sName.c_str());
 				self->pPlugin->LogPythonException(__func__);
+				// Clean up normalized keywords dictionary if we created one
+				if (normalized_kwds != kwds)
+				{
+					Py_DECREF(normalized_kwds);
+				}
 				Py_RETURN_NONE;
 			}
 
@@ -1196,6 +1262,12 @@ namespace Plugins {
 
 
 			CDevice_refresh(self);
+
+			// Clean up normalized keywords dictionary if we created one
+			if (normalized_kwds != kwds)
+			{
+				Py_DECREF(normalized_kwds);
+			}
 		}
 		else
 		{
