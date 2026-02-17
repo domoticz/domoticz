@@ -201,6 +201,13 @@ namespace http {
 		{
 			if (strstr(pContent_Type, "multipart/form-data") != nullptr)
 			{
+				// Reject excessively large uploads (100 MB max)
+				constexpr size_t MAX_UPLOAD_SIZE = 100 * 1024 * 1024;
+				if (req.content.size() > MAX_UPLOAD_SIZE)
+				{
+					_log.Log(LOG_ERROR, "WebServer: Upload too large (%zu bytes, max %zu bytes)", req.content.size(), MAX_UPLOAD_SIZE);
+					return false;
+				}
 				std::string szContent = req.content;
 				size_t pos;
 				std::string szVariable, szContentType, szValue;

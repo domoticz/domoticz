@@ -3,11 +3,22 @@
 <br>
 <form ng-submit="onSubmit()">
 	<label for="dbasefile" data-i18n="Select Database File:">Select Database File:</label>
-	<input type="file" file="file" name="dbasefile" accept=".db"><br>
+	<input type="file" file="file" name="dbasefile" accept=".db" ng-disabled="uploading"><br>
 	<br>
-	<input type="submit" value="Upload">
+	<input type="submit" value="Upload" data-i18n="[value]Upload" ng-disabled="uploading || !file">
 	<br><br>
-	<span data-i18n="Upload might take some time, depending on your network connection.">Upload might take some time, depending on your network connection.</span><br>
-	<font class="warning-text"><span data-i18n="Wait until you will see the dashboard again!">Wait until you will see the dashboard again!</span></font>
+	<div ng-show="uploading" style="margin-bottom: 10px;">
+		<div class="progress" style="height: 20px; margin-bottom: 5px;">
+			<div class="progress-bar progress-bar-info progress-bar-striped active" role="progressbar" style="min-width: 2em; width: {{uploadProgress}}%;">
+				{{uploadProgress}}%
+			</div>
+		</div>
+		<span data-i18n="Uploading and restoring database, please wait...">Uploading and restoring database, please wait...</span>
+	</div>
+	<div ng-show="errorMessage" class="alert alert-danger" style="margin-top: 10px;">
+		{{errorMessage}}
+	</div>
+	<span ng-hide="uploading" data-i18n="Upload might take some time, depending on your network connection.">Upload might take some time, depending on your network connection.</span><br>
+	<font class="warning-text" ng-hide="uploading"><span data-i18n="Wait until you will see the dashboard again!">Wait until you will see the dashboard again!</span></font>
 </form>
 </div>

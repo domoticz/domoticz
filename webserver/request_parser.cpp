@@ -300,6 +300,12 @@ boost::tribool request_parser::consume(request& req, const char* &pInput, const 
 			  if (hname == "content-length")
 			  {
 				  req.content_length = atoi(ph.value.c_str());
+				  // Reject excessively large requests early (100 MB max)
+				  constexpr int MAX_CONTENT_LENGTH = 100 * 1024 * 1024;
+				  if (req.content_length > MAX_CONTENT_LENGTH)
+				  {
+					  return false; // Request rejected - too large
+				  }
 				  break;
 			  }
 		  }
