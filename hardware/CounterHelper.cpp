@@ -4,8 +4,11 @@
 #include "DomoticzHardware.h"
 #include "../main/SQLHelper.h"
 #include "../main/Logger.h"
+#include <ctime>
 
-bool CounterHelper::dummy_looped_boolean = false;
+// Maximum time (in seconds) a pending reset confirmation remains valid.
+// If no confirming reading arrives within this window, the pending reset is discarded.
+constexpr int PENDING_RESET_TIMEOUT_SECONDS = 300;
 
 CounterHelper::CounterHelper()
 {
@@ -33,7 +36,13 @@ void CounterHelper::Reset()
 void CounterHelper::Init(const CDomoticzHardwareBase* pHardwareBase, const int NodeID, const int ChildID, const uint8_t Unit)
 {
 	if (m_bInitialized)
-		return; //Allready initialized
+		return; // Already initialized
+
+	if (pHardwareBase == nullptr)
+	{
+		_log.Log(LOG_ERROR, "CounterHelper: Init called with null hardware base pointer");
+		return;
+	}
 
 	m_HwdID = pHardwareBase->m_HwdID;
 	m_Unit = Unit;
@@ -45,7 +54,13 @@ void CounterHelper::Init(const CDomoticzHardwareBase* pHardwareBase, const int N
 void CounterHelper::Init(const CDomoticzHardwareBase* pHardwareBase, const std::string& szDeviceID, const uint8_t Unit)
 {
 	if (m_bInitialized)
-		return; //Allready initialized
+		return; // Already initialized
+
+	if (pHardwareBase == nullptr)
+	{
+		_log.Log(LOG_ERROR, "CounterHelper: Init called with null hardware base pointer");
+		return;
+	}
 
 	m_HwdID = pHardwareBase->m_HwdID;
 	m_Unit = Unit;
@@ -62,12 +77,29 @@ void CounterHelper::InitInt()
 	if (!result.empty())
 	{
 		std::string sValue = result[0][0];
-		m_CounterOffset = std::stod(result[0][1]) / 1000.0;
+
+		try
+		{
+			m_CounterOffset = std::stod(result[0][1]) / 1000.0;
+		}
+		catch (const std::exception& e)
+		{
+			_log.Log(LOG_ERROR, "CounterHelper: Failed to parse counter offset from DB value '%s': %s", result[0][1].c_str(), e.what());
+			m_CounterOffset = 0;
+		}
 
 		size_t pos = sValue.find(';');
 		if (pos != std::string::npos)
 		{
-			m_nLastCounterValue = std::stod(sValue.substr(pos + 1)) / 1000.0;
+			try
+			{
+				m_nLastCounterValue = std::stod(sValue.substr(pos + 1)) / 1000.0;
+			}
+			catch (const std::exception& e)
+			{
+				_log.Log(LOG_ERROR, "CounterHelper: Failed to parse last counter value from DB value '%s': %s", sValue.c_str(), e.what());
+				m_nLastCounterValue = 0;
+			}
 		}
 
 		// Sanity check: The offset should always be less than the combined total.
@@ -91,6 +123,8 @@ void CounterHelper::InitInt()
 
 double CounterHelper::CheckTotalCounter(CDomoticzHardwareBase* pHardwareBase, const int NodeID, const int ChildID, const uint8_t Unit, const double mtotal, bool& bLooped)
 {
+	if (pHardwareBase == nullptr)
+		return 0;
 	if (!m_bInitialized)
 		Init(pHardwareBase, NodeID, ChildID, Unit);
 	return CheckTotalCounter(mtotal, bLooped);
@@ -98,9 +132,23 @@ double CounterHelper::CheckTotalCounter(CDomoticzHardwareBase* pHardwareBase, co
 
 double CounterHelper::CheckTotalCounter(CDomoticzHardwareBase* pHardwareBase, const std::string& szDeviceID, const uint8_t Unit, const double mtotal, bool& bLooped)
 {
+	if (pHardwareBase == nullptr)
+		return 0;
 	if (!m_bInitialized)
 		Init(pHardwareBase, szDeviceID, Unit);
 	return CheckTotalCounter(mtotal, bLooped);
+}
+
+double CounterHelper::CheckTotalCounter(CDomoticzHardwareBase* pHardwareBase, const int NodeID, const int ChildID, const uint8_t Unit, const double mtotal)
+{
+	bool bDummyLooped = false;
+	return CheckTotalCounter(pHardwareBase, NodeID, ChildID, Unit, mtotal, bDummyLooped);
+}
+
+double CounterHelper::CheckTotalCounter(CDomoticzHardwareBase* pHardwareBase, const std::string& szDeviceID, const uint8_t Unit, const double mtotal)
+{
+	bool bDummyLooped = false;
+	return CheckTotalCounter(pHardwareBase, szDeviceID, Unit, mtotal, bDummyLooped);
 }
 
 double CounterHelper::CheckTotalCounter(const double mtotal, bool& bLooped)
@@ -114,7 +162,16 @@ double CounterHelper::CheckTotalCounter(const double mtotal, bool& bLooped)
 	{
 		m_bPendingReset = false;
 
-		if ((rTotal < m_nLastCounterValue) && (m_nLastCounterValue != 0))
+		// Check if the pending reset has expired
+		time_t now = time(nullptr);
+		bool bExpired = (now - m_pendingResetTime) > PENDING_RESET_TIMEOUT_SECONDS;
+
+		if (bExpired)
+		{
+			// Pending reset timed out, discard it and treat current reading normally
+			_log.Log(LOG_STATUS, "CounterHelper: Pending counter reset expired after %d seconds, discarding", static_cast<int>(now - m_pendingResetTime));
+		}
+		else if ((rTotal < m_nLastCounterValue) && (m_nLastCounterValue != 0))
 		{
 			// Counter is still below the expected value on second consecutive reading
 			// This confirms a genuine counter reset
@@ -135,6 +192,7 @@ double CounterHelper::CheckTotalCounter(const double mtotal, bool& bLooped)
 		// Counter value decreased - potential reset, but wait for next reading to confirm
 		m_bPendingReset = true;
 		m_pendingOffset = m_nLastCounterValue;
+		m_pendingResetTime = time(nullptr);
 
 		// Return last known good value while waiting for confirmation
 		return m_nLastCounterValue;

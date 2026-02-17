@@ -144,10 +144,13 @@ namespace Plugins {
 
 			Py_Initialize();
 
-			// Initialise threads. Python 3.7+ does this inside Py_Initialize so done here for compatibility
-			if (!PyEval_ThreadsInitialized())
+			// Initialise threads. Python 3.7+ does this inside Py_Initialize.
+			// PyEval_ThreadsInitialized/PyEval_InitThreads were removed in Python 3.13,
+			// so only call them if the function pointers were resolved.
+			if (PyEval_ThreadsInitialized && !PyEval_ThreadsInitialized())
 			{
-				PyEval_InitThreads();
+				if (PyEval_InitThreads)
+					PyEval_InitThreads();
 			}
 
 			m_InitialPythonThread = PyEval_SaveThread();
@@ -176,13 +179,12 @@ namespace Plugins {
 
 		m_pPlugins.clear();
 
-		if (Py_LoadLibrary() && m_InitialPythonThread)
-		{
-			if (Py_IsInitialized()) {
-				PyEval_RestoreThread((PyThreadState*)m_InitialPythonThread);
-				Py_Finalize();
-			}
-		}
+		// Skip Py_Finalize() - the process is shutting down and the OS will
+		// reclaim all resources. Calling Py_Finalize() after sub-interpreters
+		// have been destroyed via Py_EndInterpreter() + PyThreadState_Swap()
+		// leaves the thread state in an inconsistent status that causes
+		// PyEval_RestoreThread() to trigger Py_FatalError/abort() in Python 3.12+.
+		m_InitialPythonThread = nullptr;
 
 		_log.Log(LOG_STATUS, "PluginSystem: Stopped.");
 		return true;

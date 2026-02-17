@@ -42,7 +42,7 @@ void CFibaroPush::UpdateActive()
 	m_bLinkActive = (fActive == 1);
 }
 
-void CFibaroPush::OnDeviceReceived(const int m_HwdID, const uint64_t DeviceRowIdx, const std::string &DeviceName, const unsigned char *pRXCommand)
+void CFibaroPush::OnDeviceReceived(const int HwdID, const uint64_t DeviceRowIdx, const std::string &DeviceName, const unsigned char *pRXCommand)
 {
 	if (m_bLinkActive)
 	{

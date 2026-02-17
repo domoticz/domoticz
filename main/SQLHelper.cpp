@@ -7292,24 +7292,24 @@ void CSQLHelper::UpdateMultiMeter()
 			std::vector<std::string> splitresults;
 			StringSplit(sValue, ";", splitresults);
 
-			uint64_t value1 = 0;
-			uint64_t value2 = 0;
-			uint64_t value3 = 0;
-			uint64_t value4 = 0;
-			uint64_t value5 = 0;
-			uint64_t value6 = 0;
+			int64_t value1 = 0;
+			int64_t value2 = 0;
+			int64_t value3 = 0;
+			int64_t value4 = 0;
+			int64_t value5 = 0;
+			int64_t value6 = 0;
 
 			if (dType == pTypeP1Power)
 			{
 				if (splitresults.size() != 6)
 					continue; //impossible
 
-				uint64_t powerusage1 = 0;
-				uint64_t powerusage2 = 0;
-				uint64_t powerdeliv1 = 0;
-				uint64_t powerdeliv2 = 0;
-				uint64_t usagecurrent = 0;
-				uint64_t delivcurrent = 0;
+				int64_t powerusage1 = 0;
+				int64_t powerusage2 = 0;
+				int64_t powerdeliv1 = 0;
+				int64_t powerdeliv2 = 0;
+				int64_t usagecurrent = 0;
+				int64_t delivcurrent = 0;
 
 				try
 				{
@@ -7339,9 +7339,13 @@ void CSQLHelper::UpdateMultiMeter()
 				if (splitresults.size() != 3)
 					continue; //impossible
 
-				value1 = (unsigned long)(atof(splitresults[0].c_str()) * 10.0F);
-				value2 = (unsigned long)(atof(splitresults[1].c_str()) * 10.0F);
-				value3 = (unsigned long)(atof(splitresults[2].c_str()) * 10.0F);
+				double val1 = std::stod(splitresults[0]);
+				double val2 = std::stod(splitresults[1]);
+				double val3 = std::stod(splitresults[2]);
+
+				value1 = std::llround(val1 * 10.0);
+				value2 = std::llround(val2 * 10.0);
+				value3 = std::llround(val3 * 10.0);
 				price = PriceE;
 			}
 			else if ((dType == pTypeCURRENTENERGY) && (dSubType == sTypeELEC4))
@@ -7349,10 +7353,15 @@ void CSQLHelper::UpdateMultiMeter()
 				if (splitresults.size() != 4)
 					continue; //impossible
 
-				value1 = (unsigned long)(atof(splitresults[0].c_str()) * 10.0F);
-				value2 = (unsigned long)(atof(splitresults[1].c_str()) * 10.0F);
-				value3 = (unsigned long)(atof(splitresults[2].c_str()) * 10.0F);
-				value4 = (uint64_t)(atof(splitresults[3].c_str()) * 1000.0F);
+				double val1 = std::stod(splitresults[0]);
+				double val2 = std::stod(splitresults[1]);
+				double val3 = std::stod(splitresults[2]);
+				double val4 = std::stod(splitresults[3]);
+
+				value1 = std::llround(val1 * 10.0);
+				value2 = std::llround(val2 * 10.0);
+				value3 = std::llround(val3 * 10.0);
+				value4 = std::llround(val4 * 1000.0);
 				price = PriceE;
 			}
 			else
@@ -7361,7 +7370,7 @@ void CSQLHelper::UpdateMultiMeter()
 			//insert record
 			safe_query(
 				"INSERT INTO MultiMeter (DeviceRowID, Value1, Value2, Value3, Value4, Value5, Value6, Price) "
-				"VALUES ('%" PRIu64 "', '%" PRIu64 "', '%" PRIu64 "', '%" PRIu64 "', '%" PRIu64 "', '%" PRIu64 "', '%" PRIu64 "', '%.4f')",
+				"VALUES ('%" PRIu64 "', '%" PRId64 "', '%" PRId64 "', '%" PRId64 "', '%" PRId64 "', '%" PRId64 "', '%" PRId64 "', '%.4f')",
 				ID,
 				value1,
 				value2,
@@ -7605,9 +7614,11 @@ void CSQLHelper::AddCalendarUpdateRain()
 
 		unsigned char subType = atoi(sd[0].c_str());
 
+		// Use Date < '%q' (not Date <= '%q 00:00:00') to exclude the midnight record
+		// which belongs to today's cumulative counter, not yesterday's rainfall total
 		if (subType == sTypeRAINWU || subType == sTypeRAINByRate)
 		{
-			result = safe_query("SELECT Total, Total, Rate FROM Rain WHERE (DeviceRowID='%" PRIu64 "' AND Date>='%q' AND Date<='%q 00:00:00') ORDER BY ROWID DESC LIMIT 1",
+			result = safe_query("SELECT Total, Total, Rate FROM Rain WHERE (DeviceRowID='%" PRIu64 "' AND Date>='%q' AND Date<'%q') ORDER BY ROWID DESC LIMIT 1",
 				ID,
 				szDateStart,
 				szDateEnd
@@ -7615,7 +7626,7 @@ void CSQLHelper::AddCalendarUpdateRain()
 		}
 		else
 		{
-			result = safe_query("SELECT MIN(Total), MAX(Total), MAX(Rate) FROM Rain WHERE (DeviceRowID='%" PRIu64 "' AND Date>='%q' AND Date<='%q 00:00:00')",
+			result = safe_query("SELECT MIN(Total), MAX(Total), MAX(Rate) FROM Rain WHERE (DeviceRowID='%" PRIu64 "' AND Date>='%q' AND Date<'%q')",
 				ID,
 				szDateStart,
 				szDateEnd
@@ -7637,7 +7648,7 @@ void CSQLHelper::AddCalendarUpdateRain()
 			}
 			else
 			{
-				total_real = total_max - total_min;
+				total_real = std::max(0.0F, total_max - total_min);
 			}
 
 			if (total_real < 1000)
@@ -9359,26 +9370,26 @@ void CSQLHelper::FixDaylightSaving()
 		std::stringstream sstr;
 		unsigned long ID1;
 		unsigned long ID2;
-		uint64_t tValue1;
-		uint64_t tValue2;
-		uint64_t tValue3;
-		uint64_t tValue4;
-		uint64_t tValue5;
-		uint64_t tValue6;
+		int64_t tValue1;
+		int64_t tValue2;
+		int64_t tValue3;
+		int64_t tValue4;
+		int64_t tValue5;
+		int64_t tValue6;
 
-		uint64_t uValue1;
-		uint64_t uValue2;
-		uint64_t uValue3;
-		uint64_t uValue4;
-		uint64_t uValue5;
-		uint64_t uValue6;
+		int64_t uValue1;
+		int64_t uValue2;
+		int64_t uValue3;
+		int64_t uValue4;
+		int64_t uValue5;
+		int64_t uValue6;
 
-		uint64_t ValueDest1;
-		uint64_t ValueDest2;
-		uint64_t ValueDest3;
-		uint64_t ValueDest4;
-		uint64_t ValueDest5;
-		uint64_t ValueDest6;
+		int64_t ValueDest1;
+		int64_t ValueDest2;
+		int64_t ValueDest3;
+		int64_t ValueDest4;
+		int64_t ValueDest5;
+		int64_t ValueDest6;
 		for (const auto &sd1 : result)
 		{
 			sstr.clear();
@@ -9483,7 +9494,7 @@ void CSQLHelper::FixDaylightSaving()
 				else
 				{
 					//Update row with new Date
-					safe_query("UPDATE MultiMeter_Calendar SET Date='%q', Value1=%" PRIu64 ", Value2=%" PRIu64 ", Value3=%" PRIu64 ", Value4=%" PRIu64 ", Value5=%" PRIu64 ", Value6=%" PRIu64 " WHERE (RowID=='%q')",
+					safe_query("UPDATE MultiMeter_Calendar SET Date='%q', Value1=%" PRId64 ", Value2=%" PRId64 ", Value3=%" PRId64 ", Value4=%" PRId64 ", Value5=%" PRId64 ", Value6=%" PRId64 " WHERE (RowID=='%q')",
 						szDateNew.c_str(), ValueDest1, ValueDest2, ValueDest3, ValueDest4, ValueDest5, ValueDest6, sd1[1].c_str());
 				}
 			}
@@ -10256,20 +10267,20 @@ bool CSQLHelper::CalcMultiMeterPrice(const uint64_t idx, const float divider, co
 		return false;
 
 	bool bResult = false;
-	uint64_t last_cntrs[6] = { (uint64_t)-1,(uint64_t)-1,(uint64_t)-1,(uint64_t)-1,(uint64_t)-1,(uint64_t)-1 };
+	int64_t last_cntrs[6] = { (int64_t)-1,(int64_t)-1,(int64_t)-1,(int64_t)-1,(int64_t)-1,(int64_t)-1 };
 	float total_price[6] = { 0,0,0,0,0,0 };
 
 	for (const auto& itt : result)
 	{
 		float rec_price = std::stof(itt[6]);
 
-		uint64_t cntrs[6];
+		int64_t cntrs[6];
 		for (int ii = 0; ii < 6; ii++)
 		{
-			cntrs[ii] = std::stoull(itt[ii]);
-			if (last_cntrs[ii] != (uint64_t)-1)
+			cntrs[ii] = std::stoll(itt[ii]);
+			if (last_cntrs[ii] != (int64_t)-1)
 			{
-				uint64_t total = cntrs[ii] - last_cntrs[ii];
+				int64_t total = cntrs[ii] - last_cntrs[ii];
 				total_price[ii] += ((static_cast<float>(total) / divider) * rec_price);
 				bResult = true;
 			}

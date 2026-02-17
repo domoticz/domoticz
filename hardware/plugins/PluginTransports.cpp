@@ -364,29 +364,37 @@ namespace Plugins {
 
 	void CPluginTransportTCP::handleWrite(const std::vector<byte>& pMessage)
 	{
-		if (m_Socket)
+		if (!m_Socket)
 		{
+			_log.Log(LOG_ERROR, "%s: Data not sent to NULL socket.", __func__);
+			return;
+		}
+
+		// Post write to the ASIO service thread.
+		// Socket objects are not thread-safe, so all I/O must be serialized
+		// on the thread that runs ios.run() to avoid racing with pending
+		// async_read_some operations.
+		auto pData = std::make_shared<std::vector<byte>>(pMessage);
+		boost::asio::post(ios, [this, pData]() {
+			if (!m_Socket)
+				return;
 			try
 			{
-				size_t iSentBytes = boost::asio::write(*m_Socket, boost::asio::buffer(pMessage, pMessage.size()));
+				size_t iSentBytes = boost::asio::write(*m_Socket, boost::asio::buffer(*pData, pData->size()));
 				m_iTotalBytes += iSentBytes;
-				if (iSentBytes != pMessage.size())
+				if (iSentBytes != pData->size())
 				{
-					CPlugin* pPlugin = ((CConnection*)m_pConnection)->pPlugin;
-					if (!pPlugin)
-						return;
-					pPlugin->Log(LOG_ERROR, "Not all data written to socket (%s:%s). %d expected, %d written", m_IP.c_str(), m_Port.c_str(), int(pMessage.size()), int(iSentBytes));
+					CPlugin *pPlugin = ((CConnection *)m_pConnection)->pPlugin;
+					if (pPlugin)
+						pPlugin->Log(LOG_ERROR, "Not all data written to socket (%s:%s). %d expected, %d written", m_IP.c_str(), m_Port.c_str(),
+							     int(pData->size()), int(iSentBytes));
 				}
 			}
-			catch (std::exception & e)
+			catch (std::exception &e)
 			{
 				_log.Log(LOG_ERROR, "%s: Exception thrown: '%s'", __func__, std::string(e.what()).c_str());
 			}
-		}
-		else
-		{
-			_log.Log(LOG_ERROR, "%s: Data not sent to NULL socket.", __func__);
-		}
+		});
 	}
 
 	bool CPluginTransportTCP::handleDisconnect()
@@ -407,6 +415,8 @@ namespace Plugins {
 			m_Timer->cancel();
 		}
 
+		m_Resolver.cancel();
+
 		if (m_Socket && m_bConnecting)
 		{
 			m_Socket->close();
@@ -416,14 +426,7 @@ namespace Plugins {
 		{
 			boost::system::error_code e;
 			m_Socket->shutdown(boost::asio::ip::tcp::socket::shutdown_both, e);
-			if (e)
-			{
-				pPlugin->Log(LOG_ERROR, "Socket Shutdown Error: %d, %s", e.value(), e.message().c_str());
-			}
-			else
-			{
-				m_Socket->close();
-			}
+			m_Socket->close();
 		}
 
 		if (m_Acceptor)
@@ -432,36 +435,41 @@ namespace Plugins {
 		}
 
 		m_bConnected = false;
+		m_bConnecting = false;
 
 		return true;
 	}
 
 	void CPluginTransportTCPSecure::handleWrite(const std::vector<byte>& pMessage)
 	{
-		if (m_TLSSock && m_Socket)
+		if (!m_TLSSock || !m_Socket)
 		{
+			_log.Log(LOG_ERROR, "%s: Data not sent to NULL socket.", __func__);
+			return;
+		}
+
+		// Post write to the ASIO service thread (see CPluginTransportTCP::handleWrite)
+		auto pData = std::make_shared<std::vector<byte>>(pMessage);
+		boost::asio::post(ios, [this, pData]() {
+			if (!m_TLSSock || !m_Socket)
+				return;
 			try
 			{
-				size_t iSentBytes = boost::asio::write(*m_TLSSock, boost::asio::buffer(pMessage, pMessage.size()));
+				size_t iSentBytes = boost::asio::write(*m_TLSSock, boost::asio::buffer(*pData, pData->size()));
 				m_iTotalBytes += iSentBytes;
-				if (iSentBytes != pMessage.size())
+				if (iSentBytes != pData->size())
 				{
-					CPlugin* pPlugin = ((CConnection*)m_pConnection)->pPlugin;
-					if (!pPlugin)
-						return;
-					pPlugin->Log(LOG_ERROR, "Not all data written to secure socket (%s:%s). %d expected, %d written", m_IP.c_str(), m_Port.c_str(), int(pMessage.size()),
-						     int(iSentBytes));
+					CPlugin *pPlugin = ((CConnection *)m_pConnection)->pPlugin;
+					if (pPlugin)
+						pPlugin->Log(LOG_ERROR, "Not all data written to secure socket (%s:%s). %d expected, %d written", m_IP.c_str(), m_Port.c_str(),
+							     int(pData->size()), int(iSentBytes));
 				}
 			}
-			catch (std::exception & e)
+			catch (std::exception &e)
 			{
 				_log.Log(LOG_ERROR, "%s: Exception thrown: '%s'", __func__, std::string(e.what()).c_str());
 			}
-		}
-		else
-		{
-			_log.Log(LOG_ERROR, "%s: Data not sent to NULL socket.", __func__);
-		}
+		});
 	}
 
 	CPluginTransportTCP::~CPluginTransportTCP()

@@ -477,16 +477,11 @@ local function EventHelpers(domoticz, mainMethod)
 				utils.log('------ Start ' .. scriptType .. moduleLabel ..':' .. moduleLabelInfo .. triggerInfo, utils.LOG_MODULE_EXEC_INFO)
 			end
 
-			-- Store the current script name globally for commandArray entries
+			-- Store current script name globally so C++ can read it for log attribution
 			_G.currentDzVentsScriptName = eventHandler.name
+			if dz_reportScriptName then dz_reportScriptName(eventHandler.name) end
 
 			self.callEventHandler(eventHandler, subject)
-
-			-- Note: We don't clear currentDzVentsScriptName here because:
-			-- 1. Table-based commands already have _scriptName embedded in them
-			-- 2. String-based commands (like switchOn) need this global to still be set
-			--    when C++ processes the commandArray after all scripts have finished
-			-- 3. It will be overwritten by the next script that runs anyway
 
 			local clockTimeSpend = os.clock() - clockTimeStampAtStart
 			local realTimeSpend = os.time() - timeStampAtStart

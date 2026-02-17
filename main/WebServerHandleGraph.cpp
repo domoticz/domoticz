@@ -1435,7 +1435,7 @@ namespace http
 								{
 									//Finish current hour
 									root["result"][ii]["d"] = WorkingHourDate.substr(0, 14) + "00";
-									double mmval = ActTotal - WorkingHourStartValue;
+									double mmval = std::max(0.0, static_cast<double>(ActTotal - WorkingHourStartValue));
 									mmval *= AddjMulti;
 									sprintf(szTmp, "%.1f", mmval);
 									root["result"][ii]["mm"] = szTmp;
@@ -1462,7 +1462,7 @@ namespace http
 									LastValue = ActTotal;
 							}
 						}
-						double mmval = LastValue - WorkingHourStartValue;
+						double mmval = std::max(0.0, static_cast<double>(LastValue - WorkingHourStartValue));
 						if (mmval != 0)
 						{
 							root["result"][ii]["d"] = WorkingHourDate.substr(0, 14) + "00";
@@ -1811,7 +1811,7 @@ namespace http
 						}
 						else
 						{
-							total_real = total_max - total_min;
+							total_real = std::max(0.0, static_cast<double>(total_max - total_min));
 						}
 						total_real *= AddjMulti;
 						sprintf(szTmp, "%.1f", total_real);
@@ -1949,16 +1949,16 @@ namespace http
 						{
 							std::vector<std::string> sd = result[0];
 
-							uint64_t total_min_usage_1 = std::stoull(sd[0]);
-							uint64_t total_max_usage_1 = std::stoull(sd[1]);
-							uint64_t total_min_usage_2 = std::stoull(sd[4]);
-							uint64_t total_max_usage_2 = std::stoull(sd[5]);
-							uint64_t total_real_usage_1, total_real_usage_2;
-							uint64_t total_min_deliv_1 = std::stoull(sd[2]);
-							uint64_t total_max_deliv_1 = std::stoull(sd[3]);
-							uint64_t total_min_deliv_2 = std::stoull(sd[6]);
-							uint64_t total_max_deliv_2 = std::stoull(sd[7]);
-							uint64_t total_real_deliv_1, total_real_deliv_2;
+							int64_t total_min_usage_1 = std::stoll(sd[0]);
+							int64_t total_max_usage_1 = std::stoll(sd[1]);
+							int64_t total_min_usage_2 = std::stoll(sd[4]);
+							int64_t total_max_usage_2 = std::stoll(sd[5]);
+							int64_t total_real_usage_1, total_real_usage_2;
+							int64_t total_min_deliv_1 = std::stoll(sd[2]);
+							int64_t total_max_deliv_1 = std::stoll(sd[3]);
+							int64_t total_min_deliv_2 = std::stoll(sd[6]);
+							int64_t total_max_deliv_2 = std::stoll(sd[7]);
+							int64_t total_real_deliv_1, total_real_deliv_2;
 
 							bool bHaveDeliverd = false;
 
@@ -1972,22 +1972,22 @@ namespace http
 
 							root["result"][ii]["d"] = szDateStart;
 
-							sprintf(szTmp, "%" PRIu64, total_real_usage_1);
+							sprintf(szTmp, "%" PRId64, total_real_usage_1);
 							std::string szValue = szTmp;
 							sprintf(szTmp, "%.3f", atof(szValue.c_str()) / divider);
 							root["result"][ii]["v1"] = szTmp;
 
-							sprintf(szTmp, "%" PRIu64, total_real_usage_2);
+							sprintf(szTmp, "%" PRId64, total_real_usage_2);
 							szValue = szTmp;
 							sprintf(szTmp, "%.3f", atof(szValue.c_str()) / divider);
 							root["result"][ii]["v2"] = szTmp;
 
-							sprintf(szTmp, "%" PRIu64, total_real_deliv_1);
+							sprintf(szTmp, "%" PRId64, total_real_deliv_1);
 							szValue = szTmp;
 							sprintf(szTmp, "%.3f", atof(szValue.c_str()) / divider);
 							root["result"][ii]["r1"] = szTmp;
 
-							sprintf(szTmp, "%" PRIu64, total_real_deliv_2);
+							sprintf(szTmp, "%" PRId64, total_real_deliv_2);
 							szValue = szTmp;
 							sprintf(szTmp, "%.3f", atof(szValue.c_str()) / divider);
 							root["result"][ii]["r2"] = szTmp;
@@ -2678,7 +2678,7 @@ namespace http
 						}
 						else
 						{
-							total_real = total_max - total_min;
+							total_real = std::max(0.0, static_cast<double>(total_max - total_min));
 						}
 						total_real *= AddjMulti;
 						sprintf(szTmp, "%.1f", total_real);
@@ -3588,16 +3588,16 @@ namespace http
 						if (!result.empty())
 						{
 							std::vector<std::string> sd = result[0];
-							uint64_t total_min_usage_1 = std::stoull(sd[0]);
-							uint64_t total_max_usage_1 = std::stoull(sd[1]);
-							uint64_t total_min_usage_2 = std::stoull(sd[4]);
-							uint64_t total_max_usage_2 = std::stoull(sd[5]);
-							uint64_t total_real_usage_1, total_real_usage_2;
-							uint64_t total_min_deliv_1 = std::stoull(sd[2]);
-							uint64_t total_max_deliv_1 = std::stoull(sd[3]);
-							uint64_t total_min_deliv_2 = std::stoull(sd[6]);
-							uint64_t total_max_deliv_2 = std::stoull(sd[7]);
-							uint64_t total_real_deliv_1, total_real_deliv_2;
+							int64_t total_min_usage_1 = std::stoll(sd[0]);
+							int64_t total_max_usage_1 = std::stoll(sd[1]);
+							int64_t total_min_usage_2 = std::stoll(sd[4]);
+							int64_t total_max_usage_2 = std::stoll(sd[5]);
+							int64_t total_real_usage_1, total_real_usage_2;
+							int64_t total_min_deliv_1 = std::stoll(sd[2]);
+							int64_t total_max_deliv_1 = std::stoll(sd[3]);
+							int64_t total_min_deliv_2 = std::stoll(sd[6]);
+							int64_t total_max_deliv_2 = std::stoll(sd[7]);
+							int64_t total_real_deliv_1, total_real_deliv_2;
 
 							total_real_usage_1 = total_max_usage_1 - total_min_usage_1;
 							total_real_usage_2 = total_max_usage_2 - total_min_usage_2;
@@ -4358,7 +4358,7 @@ namespace http
 						}
 						else
 						{
-							total_real = total_max - total_min;
+							total_real = std::max(0.0F, total_max - total_min);
 						}
 						sprintf(szTmp, "%.1f", total_real);
 						root["result"][ii]["d"] = szDateEnd;
@@ -4463,17 +4463,17 @@ namespace http
 						{
 							std::vector<std::string> sd = result[0];
 
-							uint64_t total_min_usage_1 = std::stoull(sd[0]);
-							uint64_t total_max_usage_1 = std::stoull(sd[1]);
-							uint64_t total_min_usage_2 = std::stoull(sd[4]);
-							uint64_t total_max_usage_2 = std::stoull(sd[5]);
-							uint64_t total_real_usage;
+							int64_t total_min_usage_1 = std::stoll(sd[0]);
+							int64_t total_max_usage_1 = std::stoll(sd[1]);
+							int64_t total_min_usage_2 = std::stoll(sd[4]);
+							int64_t total_max_usage_2 = std::stoll(sd[5]);
+							int64_t total_real_usage;
 
-							uint64_t total_min_deliv_1 = std::stoull(sd[2]);
-							uint64_t total_max_deliv_1 = std::stoull(sd[3]);
-							uint64_t total_min_deliv_2 = std::stoull(sd[6]);
-							uint64_t total_max_deliv_2 = std::stoull(sd[7]);
-							uint64_t total_real_deliv;
+							int64_t total_min_deliv_1 = std::stoll(sd[2]);
+							int64_t total_max_deliv_1 = std::stoll(sd[3]);
+							int64_t total_min_deliv_2 = std::stoll(sd[6]);
+							int64_t total_max_deliv_2 = std::stoll(sd[7]);
+							int64_t total_real_deliv;
 
 							total_real_usage = (total_max_usage_1 + total_max_usage_2) - (total_min_usage_1 + total_min_usage_2);
 							total_real_deliv = (total_max_deliv_1 + total_max_deliv_2) - (total_min_deliv_1 + total_min_deliv_2);
@@ -4483,12 +4483,12 @@ namespace http
 
 							root["result"][ii]["d"] = szDateEnd;
 
-							sprintf(szTmp, "%" PRIu64, total_real_usage);
+							sprintf(szTmp, "%" PRId64, total_real_usage);
 							std::string szValue = szTmp;
 							sprintf(szTmp, "%.3f", atof(szValue.c_str()) / divider);
 							root["result"][ii]["v1"] = szTmp;
 
-							sprintf(szTmp, "%" PRIu64, total_real_deliv);
+							sprintf(szTmp, "%" PRId64, total_real_deliv);
 							szValue = szTmp;
 							sprintf(szTmp, "%.3f", atof(szValue.c_str()) / divider);
 							root["result"][ii]["v2"] = szTmp;

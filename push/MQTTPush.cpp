@@ -12,10 +12,7 @@
 #include "../main/WebServer.h"
 #include "../webserver/Base64.h"
 #include "../webserver/cWebem.h"
-#define __STDC_FORMAT_MACROS
 #include <inttypes.h>
-
-extern CMQTTPush m_mqttpush;
 
 CMQTTPush::CMQTTPush() : MQTT(0, "", 0, "", "", "", 2, 0, std::string("Domoticz-MQTT-Push") + GenerateUUID(), true)
 {
@@ -39,7 +36,7 @@ bool CMQTTPush::Start()
 
 	m_sConnection = m_mainworker.sOnDeviceReceived.connect([this](auto id, auto idx, const auto& name, auto rx) { OnDeviceReceived(id, idx, name, rx); });
 
-	return (m_thread != nullptr);
+	return true;
 }
 
 void CMQTTPush::Stop()
@@ -62,18 +59,7 @@ void CMQTTPush::on_message(const struct mosquitto_message* message)
 	std::string topic = message->topic;
 	std::string qMessage = std::string((char*)message->payload, (char*)message->payload + message->payloadlen);
 
-	try
-	{
-		Debug(DEBUG_HARDWARE, "topic: %s, message: %s", topic.c_str(), qMessage.c_str());
-
-		if (qMessage.empty())
-			return;
-	}
-	catch (const std::exception& e)
-	{
-		Log(LOG_ERROR, "Exception (on_message): %s! (topic: %s, message: %s)", e.what(), topic.c_str(), qMessage.c_str());
-		return;
-	}
+	Debug(DEBUG_HARDWARE, "topic: %s, message: %s", topic.c_str(), qMessage.c_str());
 }
 
 void CMQTTPush::on_connect(int rc)
@@ -125,17 +111,12 @@ void CMQTTPush::UpdateSettings()
 	m_sql.GetPreferencesVar("MQTTPushRetain", nValue);
 	m_RetainedMode = (nValue != 0);
 
-
 	if (m_bLinkActive)
 	{
 		if (isStarted())
-		{
 			ReconnectNow();
-		}
 		else
-		{
 			StartHardware();
-		}
 	}
 	else
 	{
@@ -143,7 +124,7 @@ void CMQTTPush::UpdateSettings()
 	}
 }
 
-void CMQTTPush::OnDeviceReceived(int m_HwdID, uint64_t DeviceRowIdx, const std::string& DeviceName, const unsigned char* pRXCommand)
+void CMQTTPush::OnDeviceReceived(int HwdID, uint64_t DeviceRowIdx, const std::string& DeviceName, const unsigned char* pRXCommand)
 {
 	DoMQTTPush(DeviceRowIdx);
 }
@@ -175,6 +156,9 @@ void CMQTTPush::DoMQTTPush(const uint64_t DeviceRowIdx, const bool bForced)
 	std::string name = result[0][9];
 	int metertype = atoi(result[0][10].c_str());
 
+	std::string sanitizedName = name;
+	stdreplace(sanitizedName, " ", "_");
+
 	for (const auto& sd : result)
 	{
 		std::string sendValue;
@@ -198,32 +182,34 @@ void CMQTTPush::DoMQTTPush(const uint64_t DeviceRowIdx, const bool bForced)
 		if (sendValue.empty())
 			continue;
 
-		std::string szKey;
 		std::string vType = CBasePush::DropdownOptionsValue(dType, dSubType, delpos);
 		stdreplace(vType, " ", "_");
 		stdlower(vType);
-		stdreplace(name, " ", "_");
-		szKey = vType + ",idx=" + sd[0] + ",name=" + name;
+		std::string szKey = vType + ",idx=" + sd[0] + ",name=" + sanitizedName;
 
 		if (is_number(sendValue))
-		{
 			root[vType] = std::stod(sendValue);
-		}
 		else
 			root[vType] = sendValue;
 
 		if ((targetType == 0) && (!bForced))
 		{
 			// Only send on change
+			std::lock_guard<std::mutex> l(m_pushed_items_mutex);
 			auto itt = m_PushedItems.find(szKey);
 			if (itt != m_PushedItems.end())
 			{
 				if (sendValue == itt->second)
 					continue;
 			}
+			m_PushedItems[szKey] = sendValue;
+		}
+		else
+		{
+			std::lock_guard<std::mutex> l(m_pushed_items_mutex);
+			m_PushedItems[szKey] = sendValue;
 		}
 		bHaveChanges = true;
-		m_PushedItems[szKey] = sendValue;
 	}
 
 	if (!bHaveChanges)
@@ -238,35 +224,36 @@ void CMQTTPush::DoMQTTPush(const uint64_t DeviceRowIdx, const bool bForced)
 	std::lock_guard<std::mutex> l(m_background_task_mutex);
 	if (m_background_task_queue.size() < 50)
 		m_background_task_queue.push_back(pItem);
+	else
+		Log(LOG_ERROR, "MQTT Push queue full, dropping message for device %" PRIu64, DeviceRowIdx);
 }
 
 void CMQTTPush::Do_Work()
 {
-	std::vector<_tPushItem> _items2do;
-
 	while (!m_Task.IsStopRequested(500))
 	{
-		{ // additional scope for lock (accessing size should be within lock too)
+		std::vector<_tPushItem> items2do;
+		{ // additional scope for lock
 			std::lock_guard<std::mutex> l(m_background_task_mutex);
 			if (m_background_task_queue.empty())
 				continue;
-			_items2do = m_background_task_queue;
-			m_background_task_queue.clear();
+			items2do.swap(m_background_task_queue);
 		}
 
 		if (!m_IsConnected)
+		{
+			// Re-queue items so they are not lost during a disconnect
+			std::lock_guard<std::mutex> l(m_background_task_mutex);
+			m_background_task_queue.insert(m_background_task_queue.begin(), items2do.begin(), items2do.end());
 			continue;
+		}
 
-		std::string sSendData;
-
-		for (const auto& item : _items2do)
+		for (const auto& item : items2do)
 		{
 			std::string sTopic = m_TopicOut + "/" + std::to_string(item.idx) + "/state";
-			//SendMessage(sTopic, item.json);
 			SendMessageEx(sTopic, item.json, 0, m_RetainedMode);
 		}
 	}
-	while (1 == 0);
 }
 
 // Webserver helpers
@@ -322,7 +309,6 @@ namespace http
 				session.reply_status = reply::forbidden;
 				return; // Only admin user allowed
 			}
-			std::string sValue;
 			int nValue = 0;
 			if (m_sql.GetPreferencesVar("MQTTPushActive", nValue))
 			{

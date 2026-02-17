@@ -75,31 +75,13 @@ local function Domoticz(settings)
 
 	-- add domoticz commands to the commandArray or delay
 	function self.sendCommand(command, value, delay)
-		-- Add script name to command for proper attribution in logs
-		local finalValue = value
-
-		if _G.currentDzVentsScriptName then
-			if type(value) == 'table' then
-				-- For table values, add _scriptName field directly
-				value['_scriptName'] = _G.currentDzVentsScriptName
-				finalValue = value
-			elseif type(value) == 'string' then
-				-- For string values (like 'On', 'Off'), convert to table format
-				-- that C++ can process while preserving the script name
-				finalValue = {
-					_value = value,
-					_scriptName = _G.currentDzVentsScriptName
-				}
-			end
-		end
-
 		if delay and tonumber(delay) then
-			self.emitEvent('___' .. command .. '__' , finalValue ).afterSec(delay)
+			self.emitEvent('___' .. command .. '__' , value ).afterSec(delay)
 		else
-			table.insert(self.commandArray, { [command] = finalValue })
+			table.insert(self.commandArray, { [command] = value })
 		end
 		-- return a reference to the newly added item
-		return self.commandArray[#self.commandArray], command, finalValue, delay
+		return self.commandArray[#self.commandArray], command, value, delay
 	end
 
 	-- have domoticz send a push notification

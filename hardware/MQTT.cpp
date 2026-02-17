@@ -190,10 +190,12 @@ void MQTT::on_connect(int rc)
 void MQTT::on_message(const struct mosquitto_message *message)
 {
 	std::string topic = message->topic;
-	std::string qMessage = std::string((char*)message->payload, (char*)message->payload + message->payloadlen);
+	std::string qMessage;
+	if (message->payload != nullptr && message->payloadlen > 0)
+		qMessage = std::string((char*)message->payload, (char*)message->payload + message->payloadlen);
 
 	Debug(DEBUG_HARDWARE, "Topic: %s, Message: %s", topic.c_str(), qMessage.c_str());
-	
+
 	if (qMessage.empty())
 		return;
 

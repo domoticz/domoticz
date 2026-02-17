@@ -2588,7 +2588,7 @@ namespace http
 								{
 									double total_min = atof(sd2[0].c_str());
 									double total_max = atof(strarray[1].c_str());
-									total_real = total_max - total_min;
+									total_real = std::max(0.0, total_max - total_min);
 								}
 
 								total_real *= AddjMulti;
@@ -2913,18 +2913,18 @@ namespace http
 								EnergyDivider = float(tValue);
 							}
 
-							uint64_t powerusage1 = std::stoull(splitresults[0]);
-							uint64_t powerusage2 = std::stoull(splitresults[1]);
-							uint64_t powerdeliv1 = std::stoull(splitresults[2]);
-							uint64_t powerdeliv2 = std::stoull(splitresults[3]);
-							uint64_t usagecurrent = std::stoull(splitresults[4]);
-							uint64_t delivcurrent = std::stoull(splitresults[5]);
+							int64_t powerusage1 = std::stoll(splitresults[0]);
+							int64_t powerusage2 = std::stoll(splitresults[1]);
+							int64_t powerdeliv1 = std::stoll(splitresults[2]);
+							int64_t powerdeliv2 = std::stoll(splitresults[3]);
+							int64_t usagecurrent = std::stoll(splitresults[4]);
+							int64_t delivcurrent = std::stoll(splitresults[5]);
 
 							powerdeliv1 = (powerdeliv1 < 10) ? 0 : powerdeliv1;
 							powerdeliv2 = (powerdeliv2 < 10) ? 0 : powerdeliv2;
 
-							uint64_t powerusage = powerusage1 + powerusage2;
-							uint64_t powerdeliv = powerdeliv1 + powerdeliv2;
+							int64_t powerusage = powerusage1 + powerusage2;
+							int64_t powerdeliv = powerdeliv1 + powerdeliv2;
 							if (powerdeliv < 2)
 								powerdeliv = 0;
 
@@ -2943,9 +2943,9 @@ namespace http
 								usagecurrent = 0;
 								delivcurrent = 0;
 							}
-							sprintf(szTmp, "%" PRIu64 " Watt", usagecurrent);
+							sprintf(szTmp, "%" PRId64 " Watt", usagecurrent);
 							root["result"][ii]["Usage"] = szTmp;
-							sprintf(szTmp, "%" PRIu64 " Watt", delivcurrent);
+							sprintf(szTmp, "%" PRId64 " Watt", delivcurrent);
 							root["result"][ii]["UsageDeliv"] = szTmp;
 							root["result"][ii]["Data"] = sValue;
 							root["result"][ii]["HaveTimeout"] = bHaveTimeout;
@@ -2968,11 +2968,11 @@ namespace http
 							{
 								std::vector<std::string> sd2 = result2[0];
 
-								uint64_t total_min_usage_1 = std::stoull(sd2[0]);
-								uint64_t total_min_deliv_1 = std::stoull(sd2[1]);
-								uint64_t total_min_usage_2 = std::stoull(sd2[2]);
-								uint64_t total_min_deliv_2 = std::stoull(sd2[3]);
-								uint64_t total_real_usage, total_real_deliv;
+								int64_t total_min_usage_1 = std::stoll(sd2[0]);
+								int64_t total_min_deliv_1 = std::stoll(sd2[1]);
+								int64_t total_min_usage_2 = std::stoll(sd2[2]);
+								int64_t total_min_deliv_2 = std::stoll(sd2[3]);
+								int64_t total_real_usage, total_real_deliv;
 
 								total_min_deliv_1 = (total_min_deliv_1 < 10) ? 0 : total_min_deliv_1;
 								total_min_deliv_2 = (total_min_deliv_2 < 10) ? 0 : total_min_deliv_2;

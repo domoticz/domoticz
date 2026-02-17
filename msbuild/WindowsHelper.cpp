@@ -183,6 +183,22 @@ BOOL TrayMessage(DWORD dwMessage, const char *szInfo)
 	return Shell_NotifyIcon(dwMessage, &tnd);
 }
 
+BOOL WINAPI ConsoleCtrlHandler(DWORD dwCtrlType)
+{
+	switch (dwCtrlType)
+	{
+	case CTRL_C_EVENT:
+	case CTRL_BREAK_EVENT:
+	case CTRL_CLOSE_EVENT:
+	case CTRL_LOGOFF_EVENT:
+	case CTRL_SHUTDOWN_EVENT:
+		g_bStopApplication = true;
+		return TRUE;
+	default:
+		return FALSE;
+	}
+}
+
 void ShowContextMenu(HWND hWnd)
 {
 	POINT pt;
@@ -253,6 +269,8 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
 bool InitWindowsHelper(HINSTANCE hInstance, HINSTANCE hPrevInstance, int nShowCmd, const std::string& webserveraddress, int iWebPort, const bool bStartWebBrowser)
 {
+	SetConsoleCtrlHandler(ConsoleCtrlHandler, TRUE);
+
 	g_hInstance=hInstance;
 	WNDCLASSEX wc;
 

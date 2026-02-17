@@ -23,53 +23,29 @@
 #include "../main/LuaTable.h"
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
-#include <mutex>
-#include <condition_variable>
-
+#include <future>
+#include <memory>
 extern "C" {
 #include <lua.h>
 #include <lualib.h>
 #include <lauxlib.h>
 }
 
-bool g_bUseEventTrigger = true;
-
-// Simple counting semaphore implementation using C++11 features
-class CountingSemaphore {
-private:
+struct ScriptNameReport {
 	std::mutex mtx;
-	std::condition_variable cv;
-	int count;
-	const int max_count;
-
-public:
-	explicit CountingSemaphore(int initial_count)
-		: count(initial_count), max_count(initial_count) {
-	}
-
-	void acquire() {
-		std::unique_lock<std::mutex> lock(mtx);
-		cv.wait(lock, [this] { return count > 0; });
-		--count;
-	}
-
-	void release() {
-		std::lock_guard<std::mutex> lock(mtx);
-		if (count < max_count) {
-			++count;
-			cv.notify_one();
-		}
-	}
-
-	int available() const {
-		std::lock_guard<std::mutex> lock(const_cast<std::mutex&>(mtx));
-		return count;
-	}
+	std::string name;
 };
 
-// Global semaphore to limit concurrent Lua thread execution
-// Limit to 4 concurrent threads to prevent resource exhaustion
-static CountingSemaphore g_lua_thread_semaphore(4);
+static int l_reportScriptName(lua_State *L)
+{
+	auto *report = static_cast<ScriptNameReport *>(lua_touserdata(L, lua_upvalueindex(1)));
+	const char *name = luaL_checkstring(L, 1);
+	std::lock_guard<std::mutex> lock(report->mtx);
+	report->name = name;
+	return 0;
+}
+
+bool g_bUseEventTrigger = true;
 
 extern time_t m_StartTime;
 extern std::string szUserDataFolder, szStartupFolder;
@@ -999,7 +975,7 @@ void CEventSystem::GetCurrentMeasurementStates()
 					{
 						float total_min = static_cast<float>(atof(sd2[0].c_str()));
 						float total_max = static_cast<float>(atof(splitresults[1].c_str()));
-						total_real = total_max - total_min;
+						total_real = std::max(0.0, static_cast<double>(total_max - total_min));
 					}
 					rainmm = float(total_real);
 				}
@@ -1438,64 +1414,38 @@ void CEventSystem::EventQueueThread()
 	_log.Log(LOG_STATUS, "EventSystem: Queue thread started...");
 
 	std::vector<_tEventQueue> items;
-	auto last_process_time = std::chrono::steady_clock::now();
-	const auto min_batch_interval = std::chrono::milliseconds(100); // Batch events for at least 100ms
 
 	while (!m_TaskQueue.IsStopRequested(0))
 	{
+		// Block until at least one event arrives (or 5 sec timeout)
 		_tEventQueue item;
-		bool hasPopped = m_eventqueue.timed_wait_and_pop<std::chrono::duration<int> >(item, std::chrono::duration<int>(5));
-		if (!hasPopped)
-		{
-			// Timeout - process any pending items
-			if (!items.empty())
-			{
-				_log.Debug(DEBUG_EVENTSYSTEM, "EventSystem: Processing %d batched event(s)", (int)items.size());
-				EvaluateEvent(items);
-				items.clear();
-				last_process_time = std::chrono::steady_clock::now();
-			}
+		if (!m_eventqueue.timed_wait_and_pop<std::chrono::duration<int>>(item, std::chrono::duration<int>(5)))
 			continue;
-		}
 
 		if (m_TaskQueue.IsStopRequested(0))
 			break;
 
-		// Check for duplicate events (same id and reason)
-		bool is_duplicate = false;
-		for (const auto& i : items)
+		try
 		{
-			if (i.id == item.id && i.reason <= REASON_SCENEGROUP && i.reason == item.reason)
-			{
-				is_duplicate = true;
-				_log.Debug(DEBUG_EVENTSYSTEM, "EventSystem: Skipping duplicate event for device %" PRIu64, item.id);
-				break;
-			}
-		}
-
-		if (!is_duplicate)
 			items.push_back(item);
 
-		// Process batch if: queue is empty OR enough time has passed OR duplicate found
-		auto now = std::chrono::steady_clock::now();
-		bool should_process = m_eventqueue.empty() ||
-			is_duplicate ||
-			(now - last_process_time) >= min_batch_interval;
+			// Drain all remaining queued events into the batch
+			while (m_eventqueue.try_pop(item))
+				items.push_back(item);
 
-		if (should_process && !items.empty())
-		{
-			_log.Debug(DEBUG_EVENTSYSTEM, "EventSystem: Processing %d batched event(s)", (int)items.size());
 			EvaluateEvent(items);
 			items.clear();
-			last_process_time = now;
 		}
-	}
-
-	// Process any remaining items before exit
-	if (!items.empty())
-	{
-		_log.Debug(DEBUG_EVENTSYSTEM, "EventSystem: Processing %d remaining event(s) on shutdown", (int)items.size());
-		EvaluateEvent(items);
+		catch (const std::exception &e)
+		{
+			_log.Log(LOG_ERROR, "EventSystem: Exception during event processing: %s", e.what());
+			items.clear();
+		}
+		catch (...)
+		{
+			_log.Log(LOG_ERROR, "EventSystem: Unknown exception during event processing");
+			items.clear();
+		}
 	}
 	m_eventqueue.clear();
 
@@ -1515,6 +1465,20 @@ void CEventSystem::ProcessDevice(
 {
 	if (!m_bEnabled)
 		return;
+
+	if (!IsEventSwitchLike(devType, subType))
+	{
+		//Check for duplicates (faulty sensors could send 10+ messages a second)
+		boost::shared_lock<boost::shared_mutex> devicestatesMutexLock(m_devicestatesMutex);
+		auto itt = m_devicestates.find(ulDevID);
+		if (sValue && itt != m_devicestates.end()
+			&& itt->second.nValue == nValue
+			&& itt->second.sValue == sValue)
+		{
+			return; // Nothing changed, skip everything
+		}
+		devicestatesMutexLock.unlock();
+	}
 
 	std::vector<std::vector<std::string> > result;
 	result = m_sql.safe_query("SELECT SwitchType, LastUpdate, LastLevel, Options, Name FROM DeviceStatus WHERE (ID==%" PRIu64 ")", ulDevID);
@@ -3146,42 +3110,41 @@ void CEventSystem::EvaluateLua(const std::vector<_tEventQueue> &items, const std
 	{
 		lua_sethook(lua_state, luaStop, LUA_MASKCOUNT, 10000000);
 
-		// Acquire semaphore to limit concurrent Lua threads
-		// This prevents resource exhaustion from too many simultaneous script executions
-		//_log.Debug(DEBUG_EVENTSYSTEM, "EventSystem: Waiting for Lua thread slot (available: %d)", g_lua_thread_semaphore.available());
-		g_lua_thread_semaphore.acquire();
+		auto scriptNameReport = std::make_shared<ScriptNameReport>();
+		bool isDzVents = !m_sql.m_bDisableDzVentsSystem && filename == dzvents->m_runtimeDir + "dzVents.lua";
+		if (isDzVents)
+		{
+			lua_pushlightuserdata(lua_state, scriptNameReport.get());
+			lua_pushcclosure(lua_state, l_reportScriptName, 1);
+			lua_setglobal(lua_state, "dz_reportScriptName");
+		}
 
-		// Use promise/future for timeout detection with std::thread
 		std::promise<void> completion_promise;
 		std::future<void> completion_future = completion_promise.get_future();
 
-		std::thread aluaThread([this, lua_state, filename, promise = std::move(completion_promise)]() mutable {
+		std::thread aluaThread([this, lua_state, filename, promise = std::move(completion_promise), scriptNameReport]() mutable {
 			luaThread(lua_state, filename);
-			// Release semaphore when thread completes
-			g_lua_thread_semaphore.release();
-			//_log.Debug(DEBUG_EVENTSYSTEM, "EventSystem: Lua thread completed, released slot");
 			promise.set_value();
-			});
+		});
 		SetThreadName(aluaThread.native_handle(), "luaThread");
 
-		// Wait for thread completion with 10 second timeout
 		if (completion_future.wait_for(std::chrono::seconds(10)) == std::future_status::timeout)
 		{
-			// Timeout occurred - detach the thread and let it complete on its own
 			aluaThread.detach();
 
-			// For dzVents scripts, we can't safely determine which specific script is running
-			// from outside the Lua thread, so indicate it's a dzVents script generically
 			std::string displayName = filename;
-			CdzVents* dzventsCheck = CdzVents::GetInstance();
-			if (!m_sql.m_bDisableDzVentsSystem && filename == dzventsCheck->m_runtimeDir + "dzVents.lua")
-				displayName = "dzVents script (unknown - still executing)";
+			if (isDzVents)
+			{
+				std::lock_guard<std::mutex> lock(scriptNameReport->mtx);
+				if (!scriptNameReport->name.empty())
+					displayName = "dzVents/" + scriptNameReport->name;
+				else
+					displayName = "dzVents script (unknown - still executing)";
+			}
 			_log.Log(LOG_ERROR, "EventSystem: Warning!, lua script %s has been running for more than 10 seconds", displayName.c_str());
-			// Note: Semaphore will be released when thread eventually completes
 		}
 		else
 		{
-			// Thread completed within timeout - join it
 			aluaThread.join();
 		}
 	}

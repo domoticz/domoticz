@@ -21,7 +21,7 @@ private:
 		std::string json;
 		time_t stimestamp;
 	};
-	void OnDeviceReceived(int m_HwdID, uint64_t DeviceRowIdx, const std::string& DeviceName, const unsigned char* pRXCommand);
+	void OnDeviceReceived(int HwdID, uint64_t DeviceRowIdx, const std::string& DeviceName, const unsigned char* pRXCommand);
 	void DoMQTTPush(const uint64_t DeviceRowIdx, const bool bForced = false);
 
 	std::shared_ptr<std::thread> m_thread;
@@ -29,6 +29,7 @@ private:
 	void Do_Work();
 
 	StoppableTask m_Task;
+	std::mutex m_pushed_items_mutex;
 	std::map<std::string, std::string> m_PushedItems;
 	std::vector<_tPushItem> m_background_task_queue;
 
