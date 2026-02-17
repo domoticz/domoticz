@@ -312,6 +312,49 @@ namespace Plugins {
 		return (PyObject *)self;
 	}
 
+	// Helper function to normalize keyword argument names to lowercase for case-insensitive matching
+	// Returns a new reference to a normalized dictionary, or a borrowed reference if kwds is NULL
+	// Caller must check if returned value != kwds and call Py_DECREF on the normalized dict when done
+	static PyObject* NormalizeKeywords(PyObject *kwds)
+	{
+		if (!kwds)
+			return kwds;
+
+		PyObject *normalized = PyDict_New();
+		if (!normalized)
+			return kwds;
+
+		PyObject *key, *value;
+		Py_ssize_t pos = 0;
+
+		while (PyDict_Next(kwds, &pos, &key, &value))
+		{
+			const char *key_str = PyUnicode_AsUTF8(key);
+			if (key_str)
+			{
+				std::string lower_str(key_str);
+				std::transform(lower_str.begin(), lower_str.end(), lower_str.begin(), ::tolower);
+				PyObject *lower_key = PyUnicode_FromString(lower_str.c_str());
+				if (lower_key)
+				{
+					PyDict_SetItem(normalized, lower_key, value);
+					Py_DECREF(lower_key);
+				}
+				else
+				{
+					PyDict_SetItem(normalized, key, value);
+				}
+			}
+			else
+			{
+				PyErr_Clear();
+				PyDict_SetItem(normalized, key, value);
+			}
+		}
+
+		return normalized;
+	}
+
 	int CUnitEx_init(CUnitEx *self, PyObject *args, PyObject *kwds)
 	{
 		char *Name = nullptr;
@@ -325,7 +368,8 @@ namespace Plugins {
 		PyObject *Options = nullptr;
 		int Used = -1;
 		char *Description = nullptr;
-		static char *kwlist[] = { "Name", "DeviceID", "Unit", "TypeName", "Type", "Subtype", "Switchtype", "Image", "Options", "Used", "Description", nullptr };
+		// All parameter names in lowercase for case-insensitive matching
+		static char *kwlist[] = { "name", "deviceid", "unit", "typename", "type", "subtype", "switchtype", "image", "options", "used", "description", nullptr };
 
 		try
 		{
@@ -350,7 +394,10 @@ namespace Plugins {
 			}
 
 				// otherwise a new Unit is being created
-			if (PyArg_ParseTupleAndKeywords(args, kwds, "ssi|siiiiOis", kwlist, &Name, &DeviceID, &Unit, &TypeName, &Type, &SubType, &SwitchType, &Image, &Options, &Used, &Description))
+			// Normalize keyword arguments to lowercase for case-insensitive matching
+			PyObject *normalized_kwds = NormalizeKeywords(kwds);
+
+			if (PyArg_ParseTupleAndKeywords(args, normalized_kwds, "ssi|siiiiOis", kwlist, &Name, &DeviceID, &Unit, &TypeName, &Type, &SubType, &SwitchType, &Image, &Options, &Used, &Description))
 			{
 				char szID[40];
 				if (Name)
@@ -458,8 +505,14 @@ namespace Plugins {
 			}
 			else
 			{
-				pModState->pPlugin->Log(LOG_ERROR, R"(Expected: myVar = DomoticzEx.Unit(Name="myDevice", DeviceID="", Unit=0, TypeName="", Type=0, Subtype=0, Switchtype=0, Image=0, Options={}, Used=1, Description=""))");
+				pModState->pPlugin->Log(LOG_ERROR, R"(Expected: myVar = DomoticzEx.Unit(Name="myDevice", DeviceID="", Unit=0, TypeName="", Type=0, SubType=0, SwitchType=0, Image=0, Options={}, Used=1, Description=""). Note: Parameter names are case-insensitive.)");
 				pModState->pPlugin->LogPythonException(__func__);
+			}
+
+			// Clean up normalized keywords dictionary if we created one
+			if (normalized_kwds != kwds)
+			{
+				Py_DECREF(normalized_kwds);
 			}
 		}
 		catch (std::exception *e)
