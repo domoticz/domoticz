@@ -92,8 +92,6 @@ private:
 	bool m_bHaveLiveData = true;
 
 	CounterHelper m_ProductionCounter;
-	CounterHelper m_ConsumptionTotalCounter;
-	CounterHelper m_ConsumptionNetCounter;
 
 	std::shared_ptr<std::thread> m_thread;
 };

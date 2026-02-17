@@ -889,13 +889,11 @@ void EnphaseAPI::parseConsumption(const Json::Value& root)
 			// Use fixed indices and dedicated counter helpers for each consumption type
 			if (measurementType == "total-consumption")
 			{
-				double adjustedTotal = m_ConsumptionTotalCounter.CheckTotalCounter(this, m_HwdID, 2, 1, mtotal);
-				SendKwhMeter(m_HwdID, 2, 255, musage, adjustedTotal, szName);
+				SendKwhMeter(m_HwdID, 2, 255, musage, mtotal, szName);
 			}
 			else if (measurementType == "net-consumption")
 			{
-				double adjustedTotal = m_ConsumptionNetCounter.CheckTotalCounter(this, m_HwdID, 3, 1, mtotal);
-				SendKwhMeter(m_HwdID, 3, 255, musage, adjustedTotal, szName);
+				SendKwhMeter(m_HwdID, 3, 255, musage, mtotal, szName);
 			}
 		}
 	}
