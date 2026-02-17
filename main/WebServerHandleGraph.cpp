@@ -1435,7 +1435,7 @@ namespace http
 								{
 									//Finish current hour
 									root["result"][ii]["d"] = WorkingHourDate.substr(0, 14) + "00";
-									double mmval = ActTotal - WorkingHourStartValue;
+									double mmval = std::max(0.0, static_cast<double>(ActTotal - WorkingHourStartValue));
 									mmval *= AddjMulti;
 									sprintf(szTmp, "%.1f", mmval);
 									root["result"][ii]["mm"] = szTmp;
@@ -1462,7 +1462,7 @@ namespace http
 									LastValue = ActTotal;
 							}
 						}
-						double mmval = LastValue - WorkingHourStartValue;
+						double mmval = std::max(0.0, static_cast<double>(LastValue - WorkingHourStartValue));
 						if (mmval != 0)
 						{
 							root["result"][ii]["d"] = WorkingHourDate.substr(0, 14) + "00";
@@ -1811,7 +1811,7 @@ namespace http
 						}
 						else
 						{
-							total_real = total_max - total_min;
+							total_real = std::max(0.0, static_cast<double>(total_max - total_min));
 						}
 						total_real *= AddjMulti;
 						sprintf(szTmp, "%.1f", total_real);
@@ -2678,7 +2678,7 @@ namespace http
 						}
 						else
 						{
-							total_real = total_max - total_min;
+							total_real = std::max(0.0, static_cast<double>(total_max - total_min));
 						}
 						total_real *= AddjMulti;
 						sprintf(szTmp, "%.1f", total_real);
@@ -4358,7 +4358,7 @@ namespace http
 						}
 						else
 						{
-							total_real = total_max - total_min;
+							total_real = std::max(0.0F, total_max - total_min);
 						}
 						sprintf(szTmp, "%.1f", total_real);
 						root["result"][ii]["d"] = szDateEnd;

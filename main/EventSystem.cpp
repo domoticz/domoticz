@@ -975,7 +975,7 @@ void CEventSystem::GetCurrentMeasurementStates()
 					{
 						float total_min = static_cast<float>(atof(sd2[0].c_str()));
 						float total_max = static_cast<float>(atof(splitresults[1].c_str()));
-						total_real = total_max - total_min;
+						total_real = std::max(0.0, static_cast<double>(total_max - total_min));
 					}
 					rainmm = float(total_real);
 				}

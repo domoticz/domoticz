@@ -2588,7 +2588,7 @@ namespace http
 								{
 									double total_min = atof(sd2[0].c_str());
 									double total_max = atof(strarray[1].c_str());
-									total_real = total_max - total_min;
+									total_real = std::max(0.0, total_max - total_min);
 								}
 
 								total_real *= AddjMulti;
