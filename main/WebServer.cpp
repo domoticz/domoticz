@@ -4602,6 +4602,8 @@ namespace http
 			dbasefile.shrink_to_fit();
 
 			m_mainworker.StopDomoticzHardware();
+			m_mainworker.m_eventsystem.StopEventSystem();
+			m_mainworker.m_notificationsystem.Stop();
 
 			bool bOK = m_sql.RestoreDatabaseFromFile(tempPath);
 
