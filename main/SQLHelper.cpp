@@ -8937,8 +8937,7 @@ bool CSQLHelper::RestoreDatabaseFromFile(const std::string& sourceFilePath)
 		// Try to restore the original database from the pre-restore backup
 		if (!CopyFileBinary(backupPath, m_dbase_name))
 			_log.Log(LOG_ERROR, "Restore Database: Rollback copy failed - database may be in an inconsistent state!");
-		OpenDatabase();
-		StartThread();
+		OpenDatabase(); // Also restarts background thread
 		std::remove(backupPath.c_str());
 		return false;
 	}
@@ -8961,20 +8960,19 @@ bool CSQLHelper::RestoreDatabaseFromFile(const std::string& sourceFilePath)
 		// Try to restore the original database from the pre-restore backup
 		if (!CopyFileBinary(backupPath, m_dbase_name))
 			_log.Log(LOG_ERROR, "Restore Database: Rollback copy failed - database may be in an inconsistent state!");
-		if (!OpenDatabase())
+		if (!OpenDatabase()) // Also restarts background thread
 		{
 			_log.Log(LOG_ERROR, "Restore Database: CRITICAL - Cannot recover database!");
 			std::remove(backupPath.c_str());
 			return false;
 		}
-		StartThread();
 		std::remove(backupPath.c_str());
 		return false;
 	}
 
-	// 9. Compact the restored database, restart the background worker, and clean up
+	// 9. Compact the restored database and clean up
+	// Note: OpenDatabase() already restarted the background worker thread
 	VacuumDatabase();
-	StartThread();
 	std::remove(backupPath.c_str());
 	_log.Log(LOG_STATUS, "Restore Database: Succeeded!");
 	return true;
