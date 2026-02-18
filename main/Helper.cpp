@@ -1872,8 +1872,6 @@ bool AESEncryptData(const std::string& szInputBuffer, std::string& szOutputBuffe
 	if (!ctx)
 		return false;
 
-	EVP_CIPHER_CTX_init(ctx);
-
 	fOk = EVP_EncryptInit_ex(ctx, EVP_aes_128_cbc(), NULL, aes_key, iv_enc);
 	if (!fOk)
 	{
@@ -1896,7 +1894,6 @@ bool AESEncryptData(const std::string& szInputBuffer, std::string& szOutputBuffe
 		goto exit_sub;
 	}
 exit_sub:
-	EVP_CIPHER_CTX_cleanup(ctx);
 	EVP_CIPHER_CTX_free(ctx);
 
 	if (!fOk)

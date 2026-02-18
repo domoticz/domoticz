@@ -16,12 +16,11 @@
 #include <json/json.h>
 #include <algorithm>
 #include <openssl/sha.h>
-#include <openssl/ec.h>
 #include <openssl/evp.h>
-#include <openssl/ecdsa.h>
 #include <openssl/rand.h>
 #include <openssl/bn.h>
-#include <openssl/rsa.h>
+#include <openssl/param_build.h>
+#include <openssl/core_names.h>
 #include "WebServer.h"
 #include "WebServerHelper.h"
 #include "mainworker.h"
@@ -1182,38 +1181,48 @@ namespace http
 					return;
 				}
 
-				EC_KEY* ecKey = EC_KEY_new_by_curve_name(NID_X9_62_prime256v1);
-				if (!ecKey)
+				// Build uncompressed EC point: 0x04 || X || Y
+				std::vector<uint8_t> pubPoint;
+				pubPoint.reserve(65);
+				pubPoint.push_back(0x04);
+				pubPoint.insert(pubPoint.end(), coseKey.x.begin(), coseKey.x.end());
+				pubPoint.insert(pubPoint.end(), coseKey.y.begin(), coseKey.y.end());
+
+				OSSL_PARAM_BLD* bld = OSSL_PARAM_BLD_new();
+				if (!bld)
 				{
 					root["status"]  = "ERR";
 					root["message"] = "Failed to create EC key";
 					return;
 				}
+				OSSL_PARAM_BLD_push_utf8_string(bld, OSSL_PKEY_PARAM_GROUP_NAME, "prime256v1", 0);
+				OSSL_PARAM_BLD_push_octet_string(bld, OSSL_PKEY_PARAM_PUB_KEY, pubPoint.data(), pubPoint.size());
+				OSSL_PARAM* params = OSSL_PARAM_BLD_to_param(bld);
+				OSSL_PARAM_BLD_free(bld);
 
-				BIGNUM* bnX = BN_bin2bn(coseKey.x.data(), (int)coseKey.x.size(), nullptr);
-				BIGNUM* bnY = BN_bin2bn(coseKey.y.data(), (int)coseKey.y.size(), nullptr);
-				if (!bnX || !bnY || !EC_KEY_set_public_key_affine_coordinates(ecKey, bnX, bnY))
+				EVP_PKEY_CTX* pctx = EVP_PKEY_CTX_new_from_name(nullptr, "EC", nullptr);
+				EVP_PKEY* pkey = nullptr;
+				if (!pctx || EVP_PKEY_fromdata_init(pctx) != 1 || EVP_PKEY_fromdata(pctx, &pkey, EVP_PKEY_PUBLIC_KEY, params) != 1)
 				{
-					BN_free(bnX);
-					BN_free(bnY);
-					EC_KEY_free(ecKey);
+					EVP_PKEY_CTX_free(pctx);
+					OSSL_PARAM_free(params);
 					root["status"]  = "ERR";
 					root["message"] = "Failed to set EC public key";
 					return;
 				}
-				BN_free(bnX);
-				BN_free(bnY);
+				EVP_PKEY_CTX_free(pctx);
+				OSSL_PARAM_free(params);
 
-				// Compute SHA-256 of signedData
-				uint8_t digest[SHA256_DIGEST_LENGTH];
-				SHA256(signedData.data(), signedData.size(), digest);
-
-				int ret = ECDSA_verify(0,
-				                       digest, SHA256_DIGEST_LENGTH,
-				                       reinterpret_cast<const uint8_t*>(sigRaw.data()), (int)sigRaw.size(),
-				                       ecKey);
-				EC_KEY_free(ecKey);
-				sigValid = (ret == 1);
+				EVP_MD_CTX* mdCtx = EVP_MD_CTX_new();
+				if (mdCtx &&
+				    EVP_DigestVerifyInit(mdCtx, nullptr, EVP_sha256(), nullptr, pkey) == 1 &&
+				    EVP_DigestVerifyUpdate(mdCtx, signedData.data(), signedData.size()) == 1 &&
+				    EVP_DigestVerifyFinal(mdCtx, reinterpret_cast<const uint8_t*>(sigRaw.data()), sigRaw.size()) == 1)
+				{
+					sigValid = true;
+				}
+				EVP_MD_CTX_free(mdCtx);
+				EVP_PKEY_free(pkey);
 			}
 			else if (coseKey.alg == -257) // RS256 – RSASSA-PKCS1-v1_5-SHA256
 			{
@@ -1224,41 +1233,45 @@ namespace http
 					return;
 				}
 
-				RSA* rsa = RSA_new();
-				if (!rsa)
-				{
-					root["status"]  = "ERR";
-					root["message"] = "Failed to create RSA key";
-					return;
-				}
-
 				BIGNUM* bnN = BN_bin2bn(coseKey.n.data(), (int)coseKey.n.size(), nullptr);
 				BIGNUM* bnE = BN_bin2bn(coseKey.e.data(), (int)coseKey.e.size(), nullptr);
 				if (!bnN || !bnE)
 				{
 					BN_free(bnN);
 					BN_free(bnE);
-					RSA_free(rsa);
 					root["status"]  = "ERR";
 					root["message"] = "Failed to create RSA BIGNUMs";
 					return;
 				}
-#if OPENSSL_VERSION_NUMBER >= 0x10100000L
-				RSA_set0_key(rsa, bnN, bnE, nullptr);
-#else
-				rsa->n = bnN;
-				rsa->e = bnE;
-				rsa->d = nullptr;
-#endif
-				EVP_PKEY* pkey = EVP_PKEY_new();
-				if (!pkey || EVP_PKEY_assign_RSA(pkey, rsa) != 1)
+
+				OSSL_PARAM_BLD* bld = OSSL_PARAM_BLD_new();
+				if (!bld)
 				{
-					EVP_PKEY_free(pkey);
-					RSA_free(rsa);
+					BN_free(bnN);
+					BN_free(bnE);
 					root["status"]  = "ERR";
-					root["message"] = "Failed to assign RSA key";
+					root["message"] = "Failed to create RSA key";
 					return;
 				}
+				OSSL_PARAM_BLD_push_BN(bld, OSSL_PKEY_PARAM_RSA_N, bnN);
+				OSSL_PARAM_BLD_push_BN(bld, OSSL_PKEY_PARAM_RSA_E, bnE);
+				OSSL_PARAM* params = OSSL_PARAM_BLD_to_param(bld);
+				OSSL_PARAM_BLD_free(bld);
+				BN_free(bnN);
+				BN_free(bnE);
+
+				EVP_PKEY_CTX* pctx = EVP_PKEY_CTX_new_from_name(nullptr, "RSA", nullptr);
+				EVP_PKEY* pkey = nullptr;
+				if (!pctx || EVP_PKEY_fromdata_init(pctx) != 1 || EVP_PKEY_fromdata(pctx, &pkey, EVP_PKEY_PUBLIC_KEY, params) != 1)
+				{
+					EVP_PKEY_CTX_free(pctx);
+					OSSL_PARAM_free(params);
+					root["status"]  = "ERR";
+					root["message"] = "Failed to create RSA key";
+					return;
+				}
+				EVP_PKEY_CTX_free(pctx);
+				OSSL_PARAM_free(params);
 
 				EVP_MD_CTX* mdCtx = EVP_MD_CTX_new();
 				if (!mdCtx)

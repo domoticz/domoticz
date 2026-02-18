@@ -19,6 +19,8 @@
 #include "../main/WebServer.h"
 #include "../webserver/Base64.h"
 #include "../webserver/GZipHelper.h"
+#include <openssl/evp.h>
+#include <openssl/core_names.h>
 
 extern std::string szWWWFolder;
 
@@ -698,9 +700,29 @@ namespace http
 				std::reverse((uint8_t*)&intCounter, (uint8_t*)&intCounter + sizeof(intCounter));
 			}
 
-			char md[20];
-			unsigned int mdLen;
-			HMAC(EVP_sha1(), key.c_str(), static_cast<int>(key.size()), (const unsigned char*)&intCounter, sizeof(intCounter), (unsigned char*)&md, &mdLen);
+			unsigned char md[20];
+			size_t mdLen = 0;
+			EVP_MAC* mac = EVP_MAC_fetch(nullptr, "HMAC", nullptr);
+			EVP_MAC_CTX* mctx = mac ? EVP_MAC_CTX_new(mac) : nullptr;
+			if (!mctx)
+			{
+				EVP_MAC_free(mac);
+				return false;
+			}
+			OSSL_PARAM macParams[] = {
+				OSSL_PARAM_construct_utf8_string(OSSL_MAC_PARAM_DIGEST, const_cast<char*>("SHA1"), 0),
+				OSSL_PARAM_construct_end()
+			};
+			if (EVP_MAC_init(mctx, reinterpret_cast<const unsigned char*>(key.c_str()), key.size(), macParams) != 1 ||
+			    EVP_MAC_update(mctx, reinterpret_cast<const unsigned char*>(&intCounter), sizeof(intCounter)) != 1 ||
+			    EVP_MAC_final(mctx, md, &mdLen, sizeof(md)) != 1)
+			{
+				EVP_MAC_CTX_free(mctx);
+				EVP_MAC_free(mac);
+				return false;
+			}
+			EVP_MAC_CTX_free(mctx);
+			EVP_MAC_free(mac);
 
 			int offset = md[19] & 0x0f;
 			int bin_code = (md[offset] & 0x7f) << 24
