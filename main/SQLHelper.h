@@ -331,6 +331,7 @@ public:
 
 	bool BackupDatabase(const std::string &OutputFile);
 	bool RestoreDatabase(const std::string &dbase);
+	bool RestoreDatabaseFromFile(const std::string &sourceFilePath);
 
 	// Returns DeviceRowID
 	uint64_t UpdateValue(int HardwareID, int OrgHardwareID, const char *ID, unsigned char unit, unsigned char devType, unsigned char subType, unsigned char signallevel, unsigned char batterylevel, int nValue,
@@ -506,6 +507,7 @@ private:
 	bool StartThread();
 	void StopThread();
 	void Do_Work();
+	bool CopyFileBinary(const std::string &src, const std::string &dst);
 #ifndef WIN32
 	void ManageExecuteScriptTimeout(std::string szCommand, int pid, int timeout, bool *stillRunning, bool *timeoutOccurred);
 #endif

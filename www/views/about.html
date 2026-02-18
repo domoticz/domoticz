@@ -12,37 +12,7 @@
 			background: none;
 		}
 
-		/* Glassmorphism card */
-		.glass-card {
-			background: rgba(255, 255, 255, 0.08);
-			backdrop-filter: blur(12px);
-			-webkit-backdrop-filter: blur(12px);
-			border-radius: 20px;
-			border: 1px solid rgba(255, 255, 255, 0.1);
-			padding: 30px 40px;
-			margin: 20px auto;
-			max-width: 600px;
-			box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-			animation: fadeInUp 0.8s ease-out forwards;
-			opacity: 0;
-		}
-
-		.glass-card:nth-child(2) { animation-delay: 0.1s; }
-		.glass-card:nth-child(3) { animation-delay: 0.2s; }
-		.glass-card:nth-child(4) { animation-delay: 0.3s; }
-
-		@keyframes fadeInUp {
-			from {
-				opacity: 0;
-				transform: translateY(30px);
-			}
-			to {
-				opacity: 1;
-				transform: translateY(0);
-			}
-		}
-
-		/* Title styling */
+		/* About-specific styles (shared glass styles are in css/style.css) */
 		.about-title {
 			font-size: 2.5em;
 			font-weight: 300;
@@ -52,16 +22,6 @@
 			letter-spacing: 3px;
 		}
 
-		.section-title {
-			font-size: 1.4em;
-			font-weight: 400;
-			color: rgba(255, 255, 255, 0.9);
-			margin-bottom: 20px;
-			padding-bottom: 10px;
-			border-bottom: 1px solid rgba(100, 200, 255, 0.3);
-		}
-
-		/* Info items */
 		.info-item {
 			display: flex;
 			justify-content: space-between;
@@ -87,7 +47,6 @@
 			text-align: right;
 		}
 
-		/* Version badge */
 		.version-badge {
 			display: inline-block;
 			background: linear-gradient(135deg, rgba(100, 200, 255, 0.3), rgba(100, 150, 255, 0.2));
@@ -105,31 +64,6 @@
 			50% { box-shadow: 0 0 25px rgba(100, 200, 255, 0.6); }
 		}
 
-		/* Buttons */
-		.btn-modern {
-			background: linear-gradient(135deg, rgba(100, 200, 255, 0.2), rgba(100, 150, 255, 0.1));
-			border: 1px solid rgba(100, 200, 255, 0.4);
-			color: #fff;
-			padding: 12px 24px;
-			border-radius: 12px;
-			margin: 8px;
-			font-size: 0.95em;
-			text-decoration: none;
-			display: inline-block;
-			transition: all 0.3s ease;
-			backdrop-filter: blur(5px);
-		}
-
-		.btn-modern:hover {
-			background: linear-gradient(135deg, rgba(100, 200, 255, 0.4), rgba(100, 150, 255, 0.3));
-			border-color: rgba(100, 200, 255, 0.7);
-			transform: translateY(-3px);
-			box-shadow: 0 10px 30px rgba(100, 200, 255, 0.3);
-			color: #fff;
-			text-decoration: none;
-		}
-
-		/* Donation section */
 		.donation-text {
 			color: rgba(255, 255, 255, 0.75);
 			font-size: 0.9em;
@@ -137,22 +71,16 @@
 			margin-bottom: 20px;
 		}
 
-		/* Uptime special styling */
 		.uptime-value {
 			font-size: 1.1em;
 			color: rgba(100, 255, 180, 0.95);
 			font-weight: 500;
 		}
-
-		/* Container */
-		.about-container {
-			padding: 40px 20px;
-		}
 	</style>
 
 	<canvas id="canvas2"></canvas>
 
-	<div class="about-container">
+	<div class="glass-container">
 		<center>
 			<!-- Header -->
 			<div class="glass-card" style="animation-delay: 0s;">

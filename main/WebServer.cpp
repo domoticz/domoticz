@@ -4436,6 +4436,11 @@ namespace http
 				backupInfo["duration"] = difftime(mytime(nullptr), now);
 				m_mainworker.m_notificationsystem.Notify(Notification::DZ_BACKUP_DONE, Notification::STATUS_INFO, JSonToRawString(backupInfo));
 			}
+			else
+			{
+				_log.Log(LOG_ERROR, "WebServer: Database backup failed!");
+				rep = reply::stock_reply(reply::internal_server_error);
+			}
 		}
 
 		void CWebServer::RestoreDatabase(WebEmSession& session, const request& req, std::string& redirect_uri)
@@ -4453,9 +4458,34 @@ namespace http
 				return;
 			}
 
+			// Write the uploaded content to a temp file immediately so the in-memory
+			// string can be released before we invoke the restore, reducing peak RAM usage.
+#ifdef WIN32
+			std::string tempPath = szUserDataFolder + "restore.db";
+#else
+			std::string tempPath = "/tmp/restore.db";
+#endif
+			{
+				std::ofstream outfile(tempPath, std::ios::binary | std::ios::trunc);
+				if (!outfile.is_open())
+				{
+					_log.Log(LOG_ERROR, "Restore Database: Could not write temp file!");
+					return;
+				}
+				outfile.write(dbasefile.data(), static_cast<std::streamsize>(dbasefile.size()));
+			}
+			// Release the in-memory copy of the uploaded file before the restore runs
+			dbasefile.clear();
+			dbasefile.shrink_to_fit();
+
 			m_mainworker.StopDomoticzHardware();
 
-			m_sql.RestoreDatabase(dbasefile);
+			bool bOK = m_sql.RestoreDatabaseFromFile(tempPath);
+
+			std::remove(tempPath.c_str());
+
+			if (!bOK)
+				_log.Log(LOG_ERROR, "Restore Database: Restore failed, restarting hardware with existing database");
 			m_mainworker.AddAllDomoticzHardware();
 		}
 
