@@ -24,9 +24,7 @@ define(['app'], function (app) {
 				uploadEventHandlers: {
 					progress: function (e) {
 						if (e.lengthComputable) {
-							$scope.$apply(function () {
-								$scope.uploadProgress = Math.round(100 * e.loaded / e.total);
-							});
+							$scope.uploadProgress = Math.round(100 * e.loaded / e.total);
 						}
 					}
 				},
