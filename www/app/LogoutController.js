@@ -19,7 +19,7 @@ define(['app'], function (app) {
 						dataType: 'json',
 						success: function (data) {
 							if (data.status === "OK") {
-								if (data.user !== "") {
+								if (data.user && data.user !== "") {
 									permissionList.isloggedin = true;
 									permissionList.user = data.user;
 									permissionList.rights = parseInt(data.rights);

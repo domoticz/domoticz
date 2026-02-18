@@ -1,252 +1,199 @@
 <style>
-.login
-{
-    background-color: #fff;
-    color: #000;
-    background-image: -webkit-gradient(linear, left top, left bottom, from(#fff), to(#eee));
-    background-image: -webkit-linear-gradient(top, #fff, #eee);
-    background-image: -moz-linear-gradient(top, #fff, #eee);
-    background-image: -ms-linear-gradient(top, #fff, #eee);
-    background-image: -o-linear-gradient(top, #fff, #eee);
-    background-image: linear-gradient(top, #fff, #eee);  
-    height: 295px;
-    width: 300px;
-    margin: -150px 0 0 -180px;
-    padding: 30px;
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    z-index: 0;
-    -moz-border-radius: 3px;
-    -webkit-border-radius: 3px;
-    border-radius: 3px;  
-}
+	#canvas-login {
+		position: fixed;
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: 100%;
+		z-index: -1;
+	}
+	body, #foreground, #midground {
+		background: none;
+	}
 
-.login:before
-{
-    content: '';
-    position: absolute;
-    z-index: -1;
-    border: 1px dashed #ccc;
-    top: 5px;
-    bottom: 5px;
-    left: 5px;
-    right: 5px;
-    -moz-box-shadow: 0 0 0 1px #fff;
-    -webkit-box-shadow: 0 0 0 1px #fff;
-    box-shadow: 0 0 0 1px #fff;
-}
+	/* Login-specific styles (shared glass styles are in css/style.css) */
+	.login-title {
+		font-size: 2em;
+		font-weight: 300;
+		color: #fff;
+		text-shadow: 0 0 30px rgba(100, 200, 255, 0.5);
+		margin-bottom: 6px;
+		letter-spacing: 3px;
+	}
 
-.login h1
-{
-    text-transform: uppercase;
-    text-align: center;
-    color: #666;
-    margin: 0 0 30px 0;
-    letter-spacing: 4px;
-    font: normal 26px/1 Verdana, Helvetica;
-    position: relative;
-}
+	.login-logo {
+		width: 57px;
+		height: 57px;
+		margin-bottom: 10px;
+	}
 
-.login h2
-{
-    text-align: center;
-    color: #666;
-    margin: 0 0 30px 0;
-    letter-spacing: 2px;
-    font: normal 14px/1 Verdana, Helvetica;
-    position: relative;
-}
+	.auth-tabs {
+		display: flex;
+		gap: 8px;
+		margin-bottom: 20px;
+		border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+		padding-bottom: 12px;
+	}
 
-.login h1:after, .login h1:before
-{
-    background-color: #777;
-    content: "";
-    height: 1px;
-    position: absolute;
-    top: 15px;
-    width: 60px;   
-}
+	.auth-tab {
+		flex: 1;
+		padding: 8px 12px;
+		background: rgba(255, 255, 255, 0.05);
+		border: 1px solid rgba(255, 255, 255, 0.1);
+		border-radius: 8px;
+		color: rgba(255, 255, 255, 0.6);
+		font-size: 0.9em;
+		cursor: pointer;
+		transition: all 0.3s ease;
+		text-align: center;
+	}
 
-.login h1:after
-{ 
-    background-image: -webkit-gradient(linear, left top, right top, from(#777), to(#fff));
-    background-image: -webkit-linear-gradient(left, #777, #fff);
-    background-image: -moz-linear-gradient(left, #777, #fff);
-    background-image: -ms-linear-gradient(left, #777, #fff);
-    background-image: -o-linear-gradient(left, #777, #fff);
-    background-image: linear-gradient(left, #777, #fff);      
-    right: 0;
-}
+	.auth-tab.active {
+		background: rgba(100, 200, 255, 0.2);
+		border-color: rgba(100, 200, 255, 0.5);
+		color: #fff;
+	}
 
-.login h1:before
-{
-    background-image: -webkit-gradient(linear, right top, left top, from(#777), to(#fff));
-    background-image: -webkit-linear-gradient(right, #777, #fff);
-    background-image: -moz-linear-gradient(right, #777, #fff);
-    background-image: -ms-linear-gradient(right, #777, #fff);
-    background-image: -o-linear-gradient(right, #777, #fff);
-    background-image: linear-gradient(right, #777, #fff);
-    left: 0;
-}
+	.auth-tab:hover:not(.active) {
+		background: rgba(255, 255, 255, 0.1);
+		color: rgba(255, 255, 255, 0.85);
+	}
 
-.login .logo
-{
-	display: flex;
-	margin-top: -20px;
-	margin-bottom: 5px;
-	width: 57px;
-	height: 57px;
-}
+	.remember-row {
+		display: flex;
+		align-items: center;
+		gap: 8px;
+		margin-bottom: 16px;
+		color: rgba(255, 255, 255, 0.7);
+		font-size: 0.9em;
+	}
 
-.login fieldset
-{
-    border: 0;
-    padding: 0;
-    margin: 0;
-}
+	.remember-row input[type="checkbox"] {
+		accent-color: rgba(100, 200, 255, 0.8);
+		width: 16px;
+		height: 16px;
+		cursor: pointer;
+	}
 
-#inputs input[type=text], input[type=password]
-{
-    background: #f1f1f1 url(images/login-sprite.png) no-repeat;
-    padding: 15px 15px 15px 30px;
-    margin: 0 0 10px 0;
-    width: 253px;
-    border: 1px solid #ccc;
-    -moz-border-radius: 5px;
-    -webkit-border-radius: 5px;
-    border-radius: 5px;
-    -moz-box-shadow: 0 1px 1px #ccc inset, 0 1px 0 #fff;
-    -webkit-box-shadow: 0 1px 1px #ccc inset, 0 1px 0 #fff;
-    box-shadow: 0 1px 1px #ccc inset, 0 1px 0 #fff;
-}
+	.remember-row label {
+		cursor: pointer;
+	}
 
-#username
-{
-    background-position: 5px -2px !important;
-}
+	.totp-input {
+		text-align: center;
+		letter-spacing: 0.5em;
+		font-size: 1.4em;
+		font-family: 'Courier New', monospace;
+	}
 
-#password
-{
-    background-position: 5px -52px !important;
-}
+	@keyframes shake {
+		0%, 100% { transform: translateX(0); }
+		20%, 60% { transform: translateX(-8px); }
+		40%, 80% { transform: translateX(8px); }
+	}
 
-#totp
-{
-    background-position: 5px -52px !important;
-}
+	.shake {
+		animation: shake 0.4s ease-in-out;
+	}
 
-#inputs input[type=text]:focus, input[type=password]:focus
-{
-    background-color: #fff;
-    border-color: #e8c291;
-    outline: none;
-    -moz-box-shadow: 0 0 0 1px #e8c291 inset;
-    -webkit-box-shadow: 0 0 0 1px #e8c291 inset;
-    box-shadow: 0 0 0 1px #e8c291 inset;
-}
+	.back-link {
+		display: block;
+		text-align: center;
+		margin-top: 12px;
+		color: rgba(100, 200, 255, 0.8);
+		font-size: 0.9em;
+		cursor: pointer;
+		text-decoration: none;
+		transition: color 0.2s ease;
+	}
 
-#actions
-{
-    margin: 25px 0 0 0;
-}
+	.back-link:hover {
+		color: rgba(100, 200, 255, 1);
+		text-decoration: underline;
+	}
 
-#submit
-{		
-    background-color: #ffb94b;
-    background-image: -webkit-gradient(linear, left top, left bottom, from(#fddb6f), to(#ffb94b));
-    background-image: -webkit-linear-gradient(top, #fddb6f, #ffb94b);
-    background-image: -moz-linear-gradient(top, #fddb6f, #ffb94b);
-    background-image: -ms-linear-gradient(top, #fddb6f, #ffb94b);
-    background-image: -o-linear-gradient(top, #fddb6f, #ffb94b);
-    background-image: linear-gradient(top, #fddb6f, #ffb94b);
-    
-    -moz-border-radius: 3px;
-    -webkit-border-radius: 3px;
-    border-radius: 3px;
-    
-    text-shadow: 0 1px 0 rgba(255,255,255,0.5);
-    
-     -moz-box-shadow: 0 0 1px rgba(0, 0, 0, 0.3), 0 1px 0 rgba(255, 255, 255, 0.3) inset;
-     -webkit-box-shadow: 0 0 1px rgba(0, 0, 0, 0.3), 0 1px 0 rgba(255, 255, 255, 0.3) inset;
-     box-shadow: 0 0 1px rgba(0, 0, 0, 0.3), 0 1px 0 rgba(255, 255, 255, 0.3) inset;    
-    
-    border-width: 1px;
-    border-style: solid;
-    border-color: #d69e31 #e3a037 #d5982d #e3a037;
+	.passkey-icon {
+		font-size: 2em;
+		margin-bottom: 10px;
+		color: rgba(100, 200, 255, 0.8);
+	}
 
-    float: left;
-    height: 35px;
-    padding: 0;
-    width: 120px;
-    cursor: pointer;
-    font: bold 15px Arial, Helvetica;
-    color: #8f5a0a;
-}
+	.passkey-desc {
+		color: rgba(255, 255, 255, 0.65);
+		font-size: 0.9em;
+		margin-bottom: 16px;
+		line-height: 1.5;
+	}
 
-#submit:hover,#submit:focus
-{		
-    background-color: #fddb6f;
-    background-image: -webkit-gradient(linear, left top, left bottom, from(#ffb94b), to(#fddb6f));
-    background-image: -webkit-linear-gradient(top, #ffb94b, #fddb6f);
-    background-image: -moz-linear-gradient(top, #ffb94b, #fddb6f);
-    background-image: -ms-linear-gradient(top, #ffb94b, #fddb6f);
-    background-image: -o-linear-gradient(top, #ffb94b, #fddb6f);
-    background-image: linear-gradient(top, #ffb94b, #fddb6f);
-}	
+	.domoticz-link {
+		display: block;
+		text-align: center;
+		margin-top: 16px;
+		color: rgba(100, 200, 255, 0.6);
+		font-size: 0.85em;
+		text-decoration: none;
+	}
 
-#submit:active
-{		
-    outline: none;
-   
-     -moz-box-shadow: 0 1px 4px rgba(0, 0, 0, 0.5) inset;
-     -webkit-box-shadow: 0 1px 4px rgba(0, 0, 0, 0.5) inset;
-     box-shadow: 0 1px 4px rgba(0, 0, 0, 0.5) inset;		
-}
+	.domoticz-link:hover {
+		color: rgba(100, 200, 255, 0.9);
+	}
 
-#submit::-moz-focus-inner
-{
-  border: none;
-}
-
-#actions a
-{
-    color: #3151A2;    
-    float: right;
-    line-height: 35px;
-    margin-left: 10px;
-}
+	/* Instant hide when switching views - prevent ngAnimate from
+	   waiting for the fadeInUp animation to finish before hiding */
+	.glass-card.ng-hide-add {
+		animation: none !important;
+	}
 </style>
-<div id="login" class="login">
-<form name="login-form" ng-submit="DoLogin()" form-autofill-fix>
-	<center><img class="logo" src="images/logo/57.png"></center>
-    <h1>Domoticz</h1>
-    <fieldset id="inputs">
-        <input type="text" autocapitalize="none" autocorrect="off" id="username" name="username" placeholder="Username" autofocus ng-required>
-        <input type="password" id="password" name="password" placeholder="Password" ng-required>
-        <br>
-        <input type="checkbox" id="rememberme"> <label for="rememberme" id="remembermelbl"></label><br>
-    </fieldset>
-    <fieldset id="actions">
-		<input type="submit" id="submit" value="Login">
-        <a href="http://www.domoticz.com">www.domoticz.com</a>
-    </fieldset>
-</form>
-</div>
-<div id="mfa" class="login" hidden>
-<form name="mfa-form" ng-submit="DoMfaLogin()" form-autofill-fix>
-	<center><img class="logo" src="images/logo/57.png"></center>
-    <h1>Domoticz</h1>
-    <h2>Enter the 6 digit 2FA code</h2>
-    <fieldset id="inputs">
-        <input type="text" id="totp" name="totp" autocomplete="off" placeholder="One-Time Passcode" maxlength="6" class="digit6" ng-required>
-        <br>
-        <br>
-        <br>
-    </fieldset>
-    <fieldset id="actions">
-		<input type="submit" id="submit" value="Login">
-        <a href="http://www.domoticz.com">www.domoticz.com</a>
-    </fieldset>
-</form>
+
+<canvas id="canvas-login"></canvas>
+
+<div class="glass-container">
+	<center>
+
+		<!-- Login view -->
+		<div ng-show="authView === 'login'" class="glass-card" style="max-width: 380px; animation-delay: 0s;">
+			<img class="login-logo" src="images/logo/57.png" alt="Domoticz">
+			<h1 class="login-title">Domoticz</h1>
+
+			<!-- Auth method tabs (shown only when passkeys are available) -->
+			<div class="auth-tabs" ng-show="passkeyAvailable">
+				<div class="auth-tab" ng-class="{'active': authMethod === 'password'}" ng-click="setAuthMethod('password')" data-i18n="Password">Password</div>
+				<div class="auth-tab" ng-class="{'active': authMethod === 'passkey'}" ng-click="setAuthMethod('passkey')" data-i18n="Passkey">Passkey</div>
+			</div>
+
+			<!-- Password login form -->
+			<form name="login-form" ng-show="authMethod === 'password'" ng-submit="DoLogin()" form-autofill-fix>
+				<input type="text" id="username" name="username" class="glass-input" autocapitalize="none" autocorrect="off" placeholder="Username" autofocus ng-required>
+				<input type="password" id="password" name="password" class="glass-input" placeholder="Password" ng-required>
+				<div class="remember-row">
+					<input type="checkbox" id="rememberme">
+					<label for="rememberme" id="remembermelbl" data-i18n="Remember me">Remember me</label>
+				</div>
+				<button type="submit" class="btn-modern" style="width: 100%; padding: 12px;" data-i18n="Login">Login</button>
+			</form>
+
+			<!-- Passkey login -->
+			<div ng-show="authMethod === 'passkey'">
+				<div class="passkey-icon">&#128273;</div>
+				<p class="passkey-desc" data-i18n="Use your device passkey to sign in securely without a password.">Use your device passkey to sign in securely without a password.</p>
+				<button class="btn-modern" style="width: 100%; padding: 12px;" ng-click="DoPasskeyLogin()" data-i18n="Sign in with Passkey">Sign in with Passkey</button>
+			</div>
+
+			<a class="domoticz-link" href="http://www.domoticz.com">www.domoticz.com</a>
+		</div>
+
+		<!-- 2FA view -->
+		<div id="2fa-card" ng-show="authView === '2fa'" class="glass-card" style="max-width: 380px; animation-delay: 0s;">
+			<i class="fas fa-shield-alt passkey-icon"></i>
+			<h3 class="section-title" data-i18n="Two-Factor Authentication">Two-Factor Authentication</h3>
+			<p class="glass-text" data-i18n="Enter the 6 digit 2FA code">Enter the 6 digit 2FA code</p>
+			<form name="mfa-form" ng-submit="DoMfaLogin()" form-autofill-fix>
+				<input type="text" id="totp" name="totp" class="glass-input totp-input" autocomplete="one-time-code" inputmode="numeric" placeholder="000000" maxlength="6" ng-keyup="watchTotp()" ng-required>
+				<button type="submit" class="btn-modern" style="width: 100%; padding: 12px;" data-i18n="Verify">Verify</button>
+			</form>
+			<a class="back-link" ng-click="backToLogin()"><i class="fas fa-arrow-left" style="margin-right: 6px;"></i><span data-i18n="Back to Login">Back to Login</span></a>
+			<a class="domoticz-link" href="http://www.domoticz.com">www.domoticz.com</a>
+		</div>
+
+	</center>
 </div>

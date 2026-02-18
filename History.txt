@@ -23,6 +23,8 @@ Version 2026.xxxx
 - Added: Support for the Model Context Protocol (/mcp) for use with AI Agents
 - Added: Thermostat, combined Temperature/Setpoint display
 - Added: Web Interface, Better XSS prevention
+- Added: Web Interface, Passkey (WebAuthn/FIDO2) authentication support - register and sign in with Windows Hello, Touch ID, or security keys
+- Added: Web Interface, Passkey management in My Profile (register, view device info, delete)
 - Fixed: Buienradar, fallback when station measurements are empty
 - Fixed: CalcMeterPrice/CalcMultiMeterPrice off-by-one price error with dynamic tariffs (Fixes #6181)
 - Fixed: Deleting a scene/group could accidentally delete a device
