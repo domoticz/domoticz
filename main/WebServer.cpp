@@ -4484,9 +4484,6 @@ namespace http
 
 			std::remove(tempPath.c_str());
 
-			// Always restart hardware — RestoreDatabaseFromFile rolls back to the
-			// pre-restore database on failure, so there is always a valid (old or new)
-			// database open by the time we reach this point.
 			if (!bOK)
 				_log.Log(LOG_ERROR, "Restore Database: Restore failed, restarting hardware with existing database");
 			m_mainworker.AddAllDomoticzHardware();

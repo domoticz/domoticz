@@ -8,16 +8,16 @@
 	<input type="submit" value="Upload" data-i18n="[value]Upload" ng-disabled="uploading || !file">
 	<br><br>
 	<div ng-show="uploading && !restoring" style="margin-bottom: 10px;">
-		<div class="progress" style="height: 20px; margin-bottom: 5px;">
-			<div class="progress-bar progress-bar-info progress-bar-striped active" role="progressbar" style="min-width: 2em; width: {{uploadProgress}}%;">
+		<div class="progress progress-striped active" style="height: 20px; margin-bottom: 5px;">
+			<div class="bar bar-info" style="min-width: 2em; width: {{uploadProgress}}%;">
 				{{uploadProgress}}%
 			</div>
 		</div>
 		<span data-i18n="Uploading database...">Uploading database...</span>
 	</div>
 	<div ng-show="restoring" style="margin-bottom: 10px;">
-		<div class="progress" style="height: 20px; margin-bottom: 5px;">
-			<div class="progress-bar progress-bar-warning progress-bar-striped active" role="progressbar" style="width: 100%;">
+		<div class="progress progress-striped active" style="height: 20px; margin-bottom: 5px;">
+			<div class="bar bar-warning" style="width: 100%;">
 				<span data-i18n="Restoring...">Restoring...</span>
 			</div>
 		</div>

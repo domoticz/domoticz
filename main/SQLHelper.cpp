@@ -8970,9 +8970,11 @@ bool CSQLHelper::RestoreDatabaseFromFile(const std::string& sourceFilePath)
 		return false;
 	}
 
-	// 9. Compact the restored database and clean up
-	// Note: OpenDatabase() already restarted the background worker thread
-	VacuumDatabase();
+	// 9. Clean up — skip VACUUM here as it rewrites the entire database file
+	//    and can take a very long time for large databases. The next scheduled
+	//    backup will produce a compacted copy anyway.
+	//VacuumDatabase();
+
 	std::remove(backupPath.c_str());
 	_log.Log(LOG_STATUS, "Restore Database: Succeeded!");
 	return true;

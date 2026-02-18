@@ -7,6 +7,9 @@ define(['app'], function (app) {
 		$scope.uploadProgress = 0;
 		$scope.errorMessage = "";
 
+		var restoreHandled = false;
+		var pollTimer = null;
+
 		init();
 
 		$scope.uploadFile = function () {
@@ -14,6 +17,7 @@ define(['app'], function (app) {
 			$scope.restoring = false;
 			$scope.uploadProgress = 0;
 			$scope.errorMessage = "";
+			restoreHandled = false;
 
 			var formData = new FormData();
 			formData.append('dbasefile', $scope.file);
@@ -27,20 +31,24 @@ define(['app'], function (app) {
 					progress: function (e) {
 						if (e.lengthComputable) {
 							$scope.uploadProgress = Math.round(100 * e.loaded / e.total);
-							if ($scope.uploadProgress >= 100) {
+							if ($scope.uploadProgress >= 100 && !$scope.restoring) {
 								$scope.restoring = true;
+								// Upload complete - server is now restoring the database.
+								// The POST response is delayed while hardware reinitializes.
+								// Poll server readiness instead of waiting for the response.
+								startServerPoll();
 							}
 						}
 					}
 				},
 				timeout: 600000
 			}).then(function successCallback(response) {
-				$scope.uploading = false;
-				$scope.restoring = false;
-				bootbox.alert($.t('Database restored successfully. The system will now reload.'), function () {
-					$window.location = '/#Dashboard';
-				});
+				handleRestoreComplete();
 			}, function errorCallback(response) {
+				if (restoreHandled) return;
+				// If polling and connection was lost, let poll handle recovery
+				if (pollTimer && response.status === 0) return;
+				cancelPoll();
 				$scope.uploading = false;
 				$scope.restoring = false;
 				if (response.status === 413) {
@@ -52,6 +60,49 @@ define(['app'], function (app) {
 				}
 			});
 		};
+
+		function handleRestoreComplete() {
+			if (restoreHandled) return;
+			restoreHandled = true;
+			cancelPoll();
+			$scope.uploading = false;
+			$scope.restoring = false;
+			bootbox.alert($.t('Database restored successfully. The system will now reload.'), function () {
+				$window.location = '/#Dashboard';
+			});
+		}
+
+		function cancelPoll() {
+			if (pollTimer) {
+				$interval.cancel(pollTimer);
+				pollTimer = null;
+			}
+		}
+
+		function startServerPoll() {
+			var checkCount = 0;
+			pollTimer = $interval(function () {
+				checkCount++;
+				// Skip first tick to give the server time to start restoring
+				if (checkCount < 2) return;
+				// Timeout after 2 minutes
+				if (checkCount > 60) {
+					cancelPoll();
+					$scope.uploading = false;
+					$scope.restoring = false;
+					$scope.errorMessage = $.t('Server did not respond in time. Please check the system and reload the page.');
+					return;
+				}
+				$http.get('json.htm?type=command&param=getversion', { timeout: 3000 })
+					.then(function (resp) {
+						if (resp.data && resp.data.status === 'OK') {
+							handleRestoreComplete();
+						}
+					}, function () {
+						// Server not ready yet, keep polling
+					});
+			}, 2000);
+		}
 
 		$scope.onSubmit = function () {
 			if (typeof $scope.file == 'undefined') {
@@ -65,6 +116,10 @@ define(['app'], function (app) {
 				}
 			});
 		};
+
+		$scope.$on('$destroy', function () {
+			cancelPoll();
+		});
 
 		function init() {
 			$('#maincontent').i18n();
