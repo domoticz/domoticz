@@ -3,6 +3,7 @@ define(['app'], function (app) {
 
 		$scope.selected_file = "";
 		$scope.uploading = false;
+		$scope.restoring = false;
 		$scope.uploadProgress = 0;
 		$scope.errorMessage = "";
 
@@ -10,6 +11,7 @@ define(['app'], function (app) {
 
 		$scope.uploadFile = function () {
 			$scope.uploading = true;
+			$scope.restoring = false;
 			$scope.uploadProgress = 0;
 			$scope.errorMessage = "";
 
@@ -25,17 +27,22 @@ define(['app'], function (app) {
 					progress: function (e) {
 						if (e.lengthComputable) {
 							$scope.uploadProgress = Math.round(100 * e.loaded / e.total);
+							if ($scope.uploadProgress >= 100) {
+								$scope.restoring = true;
+							}
 						}
 					}
 				},
 				timeout: 600000
 			}).then(function successCallback(response) {
 				$scope.uploading = false;
+				$scope.restoring = false;
 				bootbox.alert($.t('Database restored successfully. The system will now reload.'), function () {
 					$window.location = '/#Dashboard';
 				});
 			}, function errorCallback(response) {
 				$scope.uploading = false;
+				$scope.restoring = false;
 				if (response.status === 413) {
 					$scope.errorMessage = $.t('Database file is too large.');
 				} else if (response.status === 0) {

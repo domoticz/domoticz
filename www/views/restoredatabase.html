@@ -7,13 +7,21 @@
 	<br>
 	<input type="submit" value="Upload" data-i18n="[value]Upload" ng-disabled="uploading || !file">
 	<br><br>
-	<div ng-show="uploading" style="margin-bottom: 10px;">
+	<div ng-show="uploading && !restoring" style="margin-bottom: 10px;">
 		<div class="progress" style="height: 20px; margin-bottom: 5px;">
 			<div class="progress-bar progress-bar-info progress-bar-striped active" role="progressbar" style="min-width: 2em; width: {{uploadProgress}}%;">
 				{{uploadProgress}}%
 			</div>
 		</div>
-		<span data-i18n="Uploading and restoring database, please wait...">Uploading and restoring database, please wait...</span>
+		<span data-i18n="Uploading database...">Uploading database...</span>
+	</div>
+	<div ng-show="restoring" style="margin-bottom: 10px;">
+		<div class="progress" style="height: 20px; margin-bottom: 5px;">
+			<div class="progress-bar progress-bar-warning progress-bar-striped active" role="progressbar" style="width: 100%;">
+				<span data-i18n="Restoring...">Restoring...</span>
+			</div>
+		</div>
+		<span data-i18n="Database uploaded. Restoring and restarting, please wait...">Database uploaded. Restoring and restarting, please wait...</span>
 	</div>
 	<div ng-show="errorMessage" class="alert alert-danger" style="margin-top: 10px;">
 		{{errorMessage}}
