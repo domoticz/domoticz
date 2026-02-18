@@ -122,7 +122,7 @@ define(['app'], function (app) {
 		});
 
 		function init() {
-			$('#maincontent').i18n();
+			$('#restorecontent').i18n();
 		};
 	}]);
 });

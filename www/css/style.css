@@ -2528,3 +2528,171 @@ table.display thead th.sorting_disabled div.DataTables_sort_wrapper {
 .digit6 {
 	font-size: 200% !important;
 }
+
+/*********************************************************************************/
+/* Glassmorphism Design System                                                   */
+/*********************************************************************************/
+
+.glass-container {
+	padding: 40px 20px;
+}
+
+.glass-card {
+	background: rgba(255, 255, 255, 0.08);
+	backdrop-filter: blur(12px);
+	-webkit-backdrop-filter: blur(12px);
+	border-radius: 20px;
+	border: 1px solid rgba(255, 255, 255, 0.1);
+	padding: 30px 40px;
+	margin: 20px auto;
+	max-width: 600px;
+	box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+	animation: fadeInUp 0.8s ease-out forwards;
+	opacity: 0;
+}
+
+@keyframes fadeInUp {
+	from {
+		opacity: 0;
+		transform: translateY(30px);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
+
+.section-title {
+	font-size: 1.4em;
+	font-weight: 400;
+	color: rgba(255, 255, 255, 0.9);
+	margin-bottom: 20px;
+	padding-bottom: 10px;
+	border-bottom: 1px solid rgba(100, 200, 255, 0.3);
+}
+
+.section-title-warning {
+	border-bottom-color: rgba(255, 180, 100, 0.3);
+}
+
+.glass-text {
+	color: rgba(255, 255, 255, 0.75);
+	line-height: 1.6;
+	margin: 0;
+}
+
+.btn-modern {
+	background: linear-gradient(135deg, rgba(100, 200, 255, 0.2), rgba(100, 150, 255, 0.1));
+	border: 1px solid rgba(100, 200, 255, 0.4);
+	color: #fff;
+	padding: 12px 24px;
+	border-radius: 12px;
+	margin: 8px;
+	font-size: 0.95em;
+	text-decoration: none;
+	display: inline-block;
+	transition: all 0.3s ease;
+	backdrop-filter: blur(5px);
+	cursor: pointer;
+}
+
+.btn-modern:hover {
+	background: linear-gradient(135deg, rgba(100, 200, 255, 0.4), rgba(100, 150, 255, 0.3));
+	border-color: rgba(100, 200, 255, 0.7);
+	transform: translateY(-3px);
+	box-shadow: 0 10px 30px rgba(100, 200, 255, 0.3);
+	color: #fff;
+	text-decoration: none;
+}
+
+.btn-modern:disabled {
+	opacity: 0.4;
+	cursor: not-allowed;
+	transform: none !important;
+	box-shadow: none !important;
+}
+
+.btn-modern-warning {
+	background: linear-gradient(135deg, rgba(255, 180, 100, 0.2), rgba(255, 150, 50, 0.1));
+	border-color: rgba(255, 180, 100, 0.4);
+}
+
+.btn-modern-warning:hover:not(:disabled) {
+	background: linear-gradient(135deg, rgba(255, 180, 100, 0.4), rgba(255, 150, 50, 0.3));
+	border-color: rgba(255, 180, 100, 0.7);
+	box-shadow: 0 10px 30px rgba(255, 180, 100, 0.3);
+}
+
+/* Glass progress bar */
+.glass-progress {
+	height: 24px;
+	background: rgba(0, 0, 0, 0.3);
+	border-radius: 12px;
+	overflow: hidden;
+	margin: 15px 0 8px;
+	border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.glass-progress-bar {
+	height: 100%;
+	border-radius: 12px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 0.85em;
+	font-weight: 500;
+	color: #fff;
+	transition: width 0.3s ease;
+	min-width: 2em;
+}
+
+.glass-progress-info {
+	background: linear-gradient(135deg, rgba(100, 200, 255, 0.6), rgba(70, 150, 255, 0.4));
+	box-shadow: 0 0 10px rgba(100, 200, 255, 0.3);
+}
+
+.glass-progress-warning {
+	background: linear-gradient(135deg, rgba(255, 180, 100, 0.6), rgba(255, 150, 50, 0.4));
+	box-shadow: 0 0 10px rgba(255, 180, 100, 0.3);
+	animation: glassPulse 2s ease-in-out infinite;
+}
+
+@keyframes glassPulse {
+	0%, 100% { opacity: 0.8; }
+	50% { opacity: 1; }
+}
+
+/* Glass alert */
+.glass-alert-danger {
+	background: rgba(255, 80, 80, 0.15);
+	border: 1px solid rgba(255, 80, 80, 0.3);
+	border-radius: 12px;
+	padding: 12px 20px;
+	margin-top: 15px;
+	color: rgba(255, 150, 150, 0.95);
+}
+
+/* Glass file input area */
+.glass-file-input {
+	margin: 15px 0;
+	padding: 20px;
+	border: 2px dashed rgba(255, 255, 255, 0.15);
+	border-radius: 12px;
+	text-align: center;
+	transition: border-color 0.3s ease;
+}
+
+.glass-file-input:hover {
+	border-color: rgba(100, 200, 255, 0.3);
+}
+
+.glass-file-input label {
+	color: rgba(255, 255, 255, 0.7);
+	margin-bottom: 10px;
+	display: block;
+	font-size: 0.95em;
+}
+
+.glass-file-input input[type="file"] {
+	color: rgba(255, 255, 255, 0.8);
+}
