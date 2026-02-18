@@ -225,7 +225,7 @@ namespace http
 
 				if (m_users.empty())
 				{
-					AddUser(99999, "tmpadmin", "tmpadmin", "", (_eUserRights)URIGHTS_ADMIN, 0x1F);
+					AddUser(99999, "tmpadmin", "tmpadmin", "", "", (_eUserRights)URIGHTS_ADMIN, 0x1F);
 					_log.Debug(DEBUG_AUTH, "[Start server] Added tmpadmin User as no active Users where found!");
 				}
 			}
@@ -272,6 +272,17 @@ namespace http
 			m_pWebEm->RegisterActionCode("reloadpiface", [this](auto&& session, auto&& req, auto&& redirect_uri) { ReloadPiFace(session, req, redirect_uri); });
 			m_pWebEm->RegisterActionCode("restoredatabase", [this](auto&& session, auto&& req, auto&& redirect_uri) { RestoreDatabase(session, req, redirect_uri); });
 			m_pWebEm->RegisterActionCode("sbfspotimportolddata", [this](auto&& session, auto&& req, auto&& redirect_uri) { SBFSpotImportOldData(session, req, redirect_uri); });
+
+			// Passkey/WebAuthn commands (bypass authentication - needed during login)
+			RegisterCommandCode("passkeylogin-begin", [this](auto&& session, auto&& req, auto&& root) { Cmd_PasskeyLoginBegin(session, req, root); }, true);
+			RegisterCommandCode("passkeylogin-complete", [this](auto&& session, auto&& req, auto&& root) { Cmd_PasskeyLoginComplete(session, req, root); }, true);
+			RegisterCommandCode("haspasskeys", [this](auto&& session, auto&& req, auto&& root) { Cmd_HasPasskeys(session, req, root); }, true);
+
+			// Passkey/WebAuthn commands (require authentication)
+			RegisterCommandCode("registerpasskey-begin", [this](auto&& session, auto&& req, auto&& root) { Cmd_RegisterPasskeyBegin(session, req, root); });
+			RegisterCommandCode("registerpasskey-complete", [this](auto&& session, auto&& req, auto&& root) { Cmd_RegisterPasskeyComplete(session, req, root); });
+			RegisterCommandCode("getmypasskeys", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetMyPasskeys(session, req, root); });
+			RegisterCommandCode("deletepasskey", [this](auto&& session, auto&& req, auto&& root) { Cmd_DeletePasskey(session, req, root); });
 
 			// Commands that do NOT require authentication
 			RegisterCommandCode("gettimertypes", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetTimerTypes(session, req, root); }, true);
@@ -747,7 +758,7 @@ namespace http
 			ClearUserPasswords();
 			// Add Users
 			std::vector<std::vector<std::string>> result;
-			result = m_sql.safe_query("SELECT ID, Active, Username, Password, MFAsecret, Rights, TabsEnabled FROM Users");
+			result = m_sql.safe_query("SELECT ID, Active, Username, Password, MFAsecret, Rights, TabsEnabled, Passkeys FROM Users");
 			if (!result.empty())
 			{
 				for (const auto& sd : result)
@@ -763,8 +774,9 @@ namespace http
 
 						_eUserRights rights = (_eUserRights)atoi(sd[5].c_str());
 						int activetabs = atoi(sd[6].c_str());
+						std::string passkeys = sd[7];
 
-						AddUser(ID, username, password, mfatoken, rights, activetabs);
+						AddUser(ID, username, password, mfatoken, passkeys, rights, activetabs);
 					}
 				}
 			}
@@ -786,7 +798,7 @@ namespace http
 						uint32_t refreshexpire = static_cast<uint32_t>(atol(sd[6].c_str()));
 						std::string signingsecret = sd[7];
 						time_t accept_legacy_until = static_cast<time_t>(atol(sd[8].c_str()));
-						AddUser(ID, applicationname, secret, "", URIGHTS_CLIENTID, bPublic, pemfile, refreshexpire, signingsecret, accept_legacy_until);
+						AddUser(ID, applicationname, secret, "", "", URIGHTS_CLIENTID, bPublic, pemfile, refreshexpire, signingsecret, accept_legacy_until);
 					}
 				}
 			}
@@ -794,7 +806,7 @@ namespace http
 			m_mainworker.LoadSharedUsers();
 		}
 
-		void CWebServer::AddUser(const unsigned long ID, const std::string& username, const std::string& password, const std::string& mfatoken, const int userrights, const int activetabs, const std::string& pemfile, const uint32_t refreshexpire, const std::string& signingsecret, const time_t accept_legacy_until)
+		void CWebServer::AddUser(const unsigned long ID, const std::string& username, const std::string& password, const std::string& mfatoken, const std::string& passkeys, const int userrights, const int activetabs, const std::string& pemfile, const uint32_t refreshexpire, const std::string& signingsecret, const time_t accept_legacy_until)
 		{
 			if (m_pWebEm == nullptr)
 				return;
@@ -872,6 +884,7 @@ namespace http
 			wtmp.Username = username;
 			wtmp.Password = password;
 			wtmp.Mfatoken = mfatoken;
+			wtmp.Passkeys = passkeys;
 			wtmp.PrivKey = privkey;
 			wtmp.PubKey = pubkey;
 			wtmp.userrights = (_eUserRights)userrights;
@@ -891,7 +904,7 @@ namespace http
 			utmp.RedirectUri = "";
 			m_accesscodes.push_back(utmp);
 
-			m_pWebEm->AddUserPassword(ID, username, password, mfatoken, (_eUserRights)userrights, activetabs, privkey, pubkey, refreshexpire, signingsecret, accept_legacy_until);
+			m_pWebEm->AddUserPassword(ID, username, password, mfatoken, passkeys, (_eUserRights)userrights, activetabs, privkey, pubkey, refreshexpire, signingsecret, accept_legacy_until);
 		}
 
 		void CWebServer::ClearUserPasswords()
@@ -900,6 +913,116 @@ namespace http
 			m_accesscodes.clear();
 			if (m_pWebEm)
 				m_pWebEm->ClearUserPasswords();
+		}
+
+		Json::Value CWebServer::ParsePasskeys(const std::string& passkeysJson)
+		{
+			Json::Value result(Json::arrayValue);
+			if (passkeysJson.empty())
+				return result;
+			Json::Reader reader;
+			if (!reader.parse(passkeysJson, result) || !result.isArray())
+				return Json::Value(Json::arrayValue);
+			return result;
+		}
+
+		std::string CWebServer::SerializePasskeys(const Json::Value& passkeys)
+		{
+			Json::FastWriter writer;
+			return writer.write(passkeys);
+		}
+
+		bool CWebServer::AddPasskeyToUser(unsigned long userID, const std::string& credentialID, const std::string& publicKey, const std::string& credentialName, const std::string& deviceInfo)
+		{
+			int iUser = -1;
+			for (size_t i = 0; i < m_users.size(); i++) {
+				if (m_users[i].ID == userID) { iUser = (int)i; break; }
+			}
+			if (iUser == -1) return false;
+
+			Json::Value passkeys = ParsePasskeys(m_users[iUser].Passkeys);
+			Json::Value newPasskey;
+			newPasskey["id"] = credentialID;
+			newPasskey["key"] = publicKey;
+			newPasskey["cnt"] = 0;
+			newPasskey["name"] = credentialName;
+			if (!deviceInfo.empty())
+				newPasskey["device"] = deviceInfo;
+
+			time_t now = mytime(nullptr);
+			struct tm ltime;
+			localtime_r(&now, &ltime);
+			char szTmp[50];
+			strftime(szTmp, sizeof(szTmp), "%Y-%m-%dT%H:%M:%S", &ltime);
+			newPasskey["created"] = std::string(szTmp);
+
+			passkeys.append(newPasskey);
+			return SaveUserPasskeys(userID, SerializePasskeys(passkeys));
+		}
+
+		bool CWebServer::RemovePasskeyFromUser(unsigned long userID, const std::string& credentialID)
+		{
+			int iUser = -1;
+			for (size_t i = 0; i < m_users.size(); i++) {
+				if (m_users[i].ID == userID) { iUser = (int)i; break; }
+			}
+			if (iUser == -1) return false;
+
+			Json::Value passkeys = ParsePasskeys(m_users[iUser].Passkeys);
+			Json::Value newPasskeys(Json::arrayValue);
+			for (Json::ArrayIndex i = 0; i < passkeys.size(); i++) {
+				if (passkeys[i]["id"].asString() != credentialID)
+					newPasskeys.append(passkeys[i]);
+			}
+			return SaveUserPasskeys(userID, SerializePasskeys(newPasskeys));
+		}
+
+		int CWebServer::FindUserByPasskeyCredentialID(const std::string& credentialID)
+		{
+			for (size_t i = 0; i < m_users.size(); i++) {
+				if (m_users[i].Passkeys.empty()) continue;
+				Json::Value passkeys = ParsePasskeys(m_users[i].Passkeys);
+				for (Json::ArrayIndex j = 0; j < passkeys.size(); j++) {
+					if (passkeys[j]["id"].asString() == credentialID)
+						return (int)i;
+				}
+			}
+			return -1;
+		}
+
+		bool CWebServer::UpdatePasskeySignCount(unsigned long userID, const std::string& credentialID, uint32_t newSignCount)
+		{
+			int iUser = -1;
+			for (size_t i = 0; i < m_users.size(); i++) {
+				if (m_users[i].ID == userID) { iUser = (int)i; break; }
+			}
+			if (iUser == -1) return false;
+
+			Json::Value passkeys = ParsePasskeys(m_users[iUser].Passkeys);
+			for (Json::ArrayIndex i = 0; i < passkeys.size(); i++) {
+				if (passkeys[i]["id"].asString() == credentialID) {
+					passkeys[i]["cnt"] = newSignCount;
+					return SaveUserPasskeys(userID, SerializePasskeys(passkeys));
+				}
+			}
+			return false;
+		}
+
+		bool CWebServer::HasAnyPasskeys()
+		{
+			for (const auto& user : m_users) {
+				if (user.Passkeys.empty()) continue;
+				Json::Value passkeys = ParsePasskeys(user.Passkeys);
+				if (passkeys.size() > 0) return true;
+			}
+			return false;
+		}
+
+		bool CWebServer::SaveUserPasskeys(unsigned long userID, const std::string& passkeysJson)
+		{
+			m_sql.safe_query("UPDATE Users SET Passkeys='%q' WHERE (ID==%lu)", passkeysJson.c_str(), userID);
+			LoadUsers();
+			return true;
 		}
 
 		int CWebServer::FindClient(const char* szClientName)

@@ -637,13 +637,14 @@ namespace http {
 			return false;
 		}
 
-		void cWebem::AddUserPassword(const unsigned long ID, const std::string &username, const std::string &password, const std::string &mfatoken, const _eUserRights userrights, const int activetabs, const std::string &privkey, const std::string &pubkey, uint32_t refreshexpire, const std::string &signingsecret, time_t accept_legacy_until)
+		void cWebem::AddUserPassword(const unsigned long ID, const std::string &username, const std::string &password, const std::string &mfatoken, const std::string &passkeys, const _eUserRights userrights, const int activetabs, const std::string &privkey, const std::string &pubkey, uint32_t refreshexpire, const std::string &signingsecret, time_t accept_legacy_until)
 		{
 			_tWebUserPassword wtmp;
 			wtmp.ID = ID;
 			wtmp.Username = username;
 			wtmp.Password = password;
 			wtmp.Mfatoken = mfatoken;
+			wtmp.Passkeys = passkeys;
 			wtmp.PrivKey = privkey;
 			wtmp.PubKey = pubkey;
 			wtmp.userrights = userrights;
@@ -2194,7 +2195,7 @@ namespace http {
 
 			bool isAPI = (isPage && (req.uri.find("/json.htm?") != std::string::npos));
 			bool isLogout = (isAPI && (req.uri.find("param=dologout") != std::string::npos));
-			bool isLogin = (isAPI && (req.uri.find("param=logincheck") != std::string::npos));
+			bool isLogin = (isAPI && (req.uri.find("param=logincheck") != std::string::npos || req.uri.find("param=passkeylogin-complete") != std::string::npos));
 
 			// 7) If the LogOut API is called, we will remove the session and the cookie
 			if (isLogout)

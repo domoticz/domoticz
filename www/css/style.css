@@ -2696,3 +2696,28 @@ table.display thead th.sorting_disabled div.DataTables_sort_wrapper {
 .glass-file-input input[type="file"] {
 	color: rgba(255, 255, 255, 0.8);
 }
+
+/* Glass form inputs */
+.glass-input {
+    width: 100%;
+    padding: 12px 16px;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 10px;
+    color: #fff;
+    font-size: 0.95em;
+    outline: none;
+    transition: all 0.3s ease;
+    box-sizing: border-box;
+    margin-bottom: 12px;
+}
+
+.glass-input:focus {
+    border-color: rgba(100, 200, 255, 0.5);
+    box-shadow: 0 0 15px rgba(100, 200, 255, 0.15);
+    background: rgba(255, 255, 255, 0.12);
+}
+
+.glass-input::placeholder {
+    color: rgba(255, 255, 255, 0.4);
+}
