@@ -1,52 +1,45 @@
-<div id="logcontent" class="logcontent container force-select">
-	<div class="page-header-small">
-		<h1 data-i18n="Log">Protokoll</h1>
-	</div>
-	<table style="width: 100%;" border="0" cellpadding="0" cellspacing="0">
-		<tr>
-			<td align="left">
-				<ul id="tabs" class="nav nav-tabs sub-tabs" data-tabs="tabs">
-					<li class="active"><a data-target="#taball" data-toggle="tab" data-i18n="All">All</a></li>
-					<li><a data-target="#tabstatus" data-toggle="tab" data-i18n="Status">Status</a></li>
-					<li ng-show="logitems_error.length>0"><a data-target="#taberror" data-toggle="tab" data-i18n="Error">Error</a></li>
-					<li ng-show="logitems_debug.length>0"><a data-target="#tabdebug" data-toggle="tab" data-i18n="Debug">Debug</a></li>
-				</ul>
-			</td>
-			<td align="right" valign="bottom">
-				<span data-i18n="Filter">Filter</span>: <input ng-model='filterExpr'>
-				<a class="lcursor" style="color: red;font-weight: bold;" ng-click="ClearLog()"><b>X</b></a>
-			</td>
-		</tr>
-	</table>
-	<div id="my-tab-content" class="tab-content">
-		<div class="tab-pane active" id="taball">
-			<div id="logdata" class="log" scroll-glue>
-				<div ng-repeat='item in filtered = (logitems | filter:filterExpr) track by $index'>
-					<span class="{{item.mclass}}">{{item.text}}</span>
-				</div>
-			</div>
-		</div>
-		<div class="tab-pane" id="tabstatus">
-			<div id="logdata_status" class="log" scroll-glue>
-				<div ng-repeat='item in filtered = (logitems_status | filter:filterExpr) track by $index'>
-					<span class="{{item.mclass}}">{{item.text}}</span>
-				</div>
-			</div>
-		</div>
-		<div class="tab-pane" id="taberror">
-			<div id="logdata_error" class="log" scroll-glue>
-				<div ng-repeat='item in filtered = (logitems_error | filter:filterExpr) track by $index'>
-					<span class="{{item.mclass}}">{{item.text}}</span>
-				</div>
-			</div>
-		</div>
-		<div class="tab-pane" id="tabdebug">
-			<!--style="display:none;"-->
-			<div id="logdata_debug" class="log" scroll-glue>
-				<div ng-repeat='item in filtered = (logitems_debug | filter:filterExpr) track by $index'>
-					<span class="{{item.mclass}}">{{item.text}}</span>
-				</div>
-			</div>
-		</div>
-	</div>
+<div id="logcontent" class="log-console-container force-select">
+  <div class="log-toolbar">
+    <div class="log-level-toggles">
+      <span class="log-toggle" ng-class="{'log-toggle-active': levelFilters.norm}">
+        <input type="checkbox" id="logfilter_norm" ng-model="levelFilters.norm"><label for="logfilter_norm"></label>
+        <span class="log-toggle-label log-level-norm" ng-click="levelFilters.norm = !levelFilters.norm">Normal</span>
+        <span class="log-toggle-count">{{counts.norm}}</span>
+      </span>
+      <span class="log-toggle" ng-class="{'log-toggle-active': levelFilters.status}">
+        <input type="checkbox" id="logfilter_status" ng-model="levelFilters.status"><label for="logfilter_status"></label>
+        <span class="log-toggle-label log-level-status" ng-click="levelFilters.status = !levelFilters.status">Status</span>
+        <span class="log-toggle-count">{{counts.status}}</span>
+      </span>
+      <span class="log-toggle" ng-class="{'log-toggle-active': levelFilters.error}">
+        <input type="checkbox" id="logfilter_error" ng-model="levelFilters.error"><label for="logfilter_error"></label>
+        <span class="log-toggle-label log-level-error" ng-click="levelFilters.error = !levelFilters.error">Error</span>
+        <span class="log-toggle-count">{{counts.error}}</span>
+      </span>
+    </div>
+    <div class="log-search">
+      <input type="text" class="log-search-input" ng-model="searchText" ng-model-options="{ debounce: 150 }" placeholder="Filter logs... (use /regex/ for regex)">
+      <span class="log-search-count" ng-show="searchText">{{filteredItems.length}} matches</span>
+      <a class="btnstyle3" ng-show="searchText" ng-click="searchText = ''">&times;</a>
+    </div>
+    <div class="log-actions">
+      <a class="btnstyle3" ng-click="copyToClipboard()">
+        <span ng-hide="copyFeedback" data-i18n="Copy">Copy</span>
+        <span ng-show="copyFeedback" style="color: #4ec9b0;">Copied!</span>
+      </a>
+      <a class="btnstyle3" ng-click="downloadLog()" data-i18n="Download">Download</a>
+    </div>
+    <a class="btn btn-danger" ng-click="ClearLog()" data-i18n="Clear">Clear</a>
+  </div>
+  <div id="logdata" class="log-console">
+    <div class="log-line" ng-class="item.levelClass" ng-repeat="item in filteredItems track by $index">{{item.raw}}</div>
+  </div>
+  <div class="log-scroll-indicator" ng-show="!autoScroll" ng-click="scrollToBottom()">
+    &#x2193; New messages below
+  </div>
+  <div class="log-statusbar">
+    <span>{{filteredItems.length}} / {{logitems.length}} lines</span>
+    <span ng-show="!autoScroll" class="log-statusbar-paused">PAUSED</span>
+    <span ng-show="autoScroll" class="log-statusbar-following">Following</span>
+  </div>
 </div>
