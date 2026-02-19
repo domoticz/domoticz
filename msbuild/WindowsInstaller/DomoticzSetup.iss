@@ -10,7 +10,7 @@
 #define SetupBaseName   "DomoticzSetup_"
 #define SetupName   "DomoticzSetup"
 #dim Version[4]
-#expr ParseVersion("..\Release\domoticz.exe", Version[0], Version[1], Version[2], Version[3])
+#expr GetVersionComponents("..\Release\domoticz.exe", Version[0], Version[1], Version[2], Version[3])
 #define AppVersion Str(Version[0]) + "." + Str(Version[1]) + "." + Str(Version[2]) + "." + Str(Version[3])
 #define ShortAppVersion Str(Version[0]) + "." + Str(Version[1]) + "." + Str(Version[3])
 #define ShortAppVersionUnderscore Str(Version[0]) + "_" + Str(Version[1]) + "." + Str(Version[3])
