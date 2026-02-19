@@ -4611,7 +4611,24 @@ namespace http
 
 			if (!bOK)
 				_log.Log(LOG_ERROR, "Restore Database: Restore failed, restarting hardware with existing database");
-			m_mainworker.AddAllDomoticzHardware();
+			// Pass false to skip setting m_bStartHardware so Do_Work does
+			// not race with the explicit startup sequence below.
+			m_mainworker.AddAllDomoticzHardware(false);
+
+			// Perform the full startup sequence here on the same thread that
+			// called StopEventSystem/PythonEventsStop above.  Python 3.13
+			// tracks per-thread GIL state in thread-local storage; if
+			// PythonEventsInitialize runs on a different OS thread (e.g. the
+			// main worker via Do_Work / m_bStartHardware) the stale TLS
+			// causes a write-access violation inside Py_NewInterpreter.
+			m_mainworker.StartDomoticzHardware();
+#ifdef ENABLE_PYTHON
+			m_mainworker.m_pluginsystem.AllPluginsStarted();
+#endif
+			m_mainworker.m_notificationsystem.Start();
+			m_mainworker.m_eventsystem.SetEnabled(m_sql.m_bEnableEventSystem);
+			m_mainworker.m_eventsystem.StartEventSystem();
+			m_mainworker.m_notificationsystem.Notify(Notification::DZ_START, Notification::STATUS_INFO);
 		}
 
 		/**

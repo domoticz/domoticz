@@ -1427,14 +1427,21 @@ void CEventSystem::EventQueueThread()
 
 		try
 		{
-			items.push_back(item);
+			if (item.id == -1)
+				break; //need to stop
 
 			// Drain all remaining queued events into the batch
 			while (m_eventqueue.try_pop(item))
+			{
+				if (item.id == -1)
+					break; //need to stop
 				items.push_back(item);
-
-			EvaluateEvent(items);
-			items.clear();
+			}
+			if (!items.empty())
+			{
+				EvaluateEvent(items);
+				items.clear();
+			}
 		}
 		catch (const std::exception &e)
 		{
