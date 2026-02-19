@@ -39,6 +39,12 @@ SolidCompression=yes
 UsePreviousAppDir=yes
 DirExistsWarning=no
 UninstallDisplayIcon={app}\{#MyAppExeName}
+MinVersion=10.0
+WizardStyle=modern
+WizardSizePercent=120,120
+WizardImageFile=WizardImage.bmp
+WizardSmallImageFile=WizardSmallImage.bmp
+WizardImageBackColor=$170F0A
 
 [Tasks]
 Name: RunAsApp; Description: "Run as application "; Flags: exclusive;
@@ -124,6 +130,18 @@ begin
   LogConfigPage.Buttons[0].Enabled := LogUseLogButton.Checked;
 end;
 
+procedure ApplyDomoticzTheme;
+begin
+  { Match sidebar background color for any uncovered areas }
+  WizardForm.WizardBitmapImage.BackColor := $170F0A;
+  WizardForm.WizardBitmapImage2.BackColor := $170F0A;
+
+  { Style the header panel on inner pages to match dark theme }
+  WizardForm.MainPanel.Color := $2E1A16; { #161A2E }
+  WizardForm.PageNameLabel.Font.Color := clWhite;
+  WizardForm.PageDescriptionLabel.Font.Color := $D0D0D0;
+end;
+
 procedure InitializeWizard;
 begin
   // Create the page
@@ -179,6 +197,8 @@ begin
   UseLogButtonClick(nil);
 
   LogConfigPage.Values[0] := WizardDirValue+'\log';
+
+  ApplyDomoticzTheme;
 end;
 
 procedure CurStepChanged(CurStep: TSetupStep);
