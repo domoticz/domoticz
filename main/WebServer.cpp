@@ -4602,7 +4602,10 @@ namespace http
 			dbasefile.shrink_to_fit();
 
 			m_mainworker.StopDomoticzHardware();
-			m_mainworker.m_eventsystem.StopEventSystem();
+			// Pass false to preserve the Python event sub-interpreter.
+			// Destroying and recreating it crashes on Python 3.13 due to
+			// stale per-thread GIL state left by Py_EndInterpreter.
+			m_mainworker.m_eventsystem.StopEventSystem(false);
 			m_mainworker.m_notificationsystem.Stop();
 
 			bool bOK = m_sql.RestoreDatabaseFromFile(tempPath);
@@ -4615,12 +4618,9 @@ namespace http
 			// not race with the explicit startup sequence below.
 			m_mainworker.AddAllDomoticzHardware(false);
 
-			// Perform the full startup sequence here on the same thread that
-			// called StopEventSystem/PythonEventsStop above.  Python 3.13
-			// tracks per-thread GIL state in thread-local storage; if
-			// PythonEventsInitialize runs on a different OS thread (e.g. the
-			// main worker via Do_Work / m_bStartHardware) the stale TLS
-			// causes a write-access violation inside Py_NewInterpreter.
+			// Perform the full startup sequence here rather than relying on
+			// the deferred Do_Work / m_bStartHardware path, which would
+			// race with the stop above.
 			m_mainworker.StartDomoticzHardware();
 #ifdef ENABLE_PYTHON
 			m_mainworker.m_pluginsystem.AllPluginsStarted();

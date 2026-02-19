@@ -106,7 +106,7 @@ public:
 	~CEventSystem();
 
 	void StartEventSystem();
-	void StopEventSystem();
+	void StopEventSystem(bool bDestroyPythonInterpreter = true);
 
 	void LoadEvents();
 	void ProcessDevice(int HardwareID, uint64_t ulDevID, unsigned char unit, unsigned char devType, unsigned char subType, unsigned char signallevel, unsigned char batterylevel, int nValue,

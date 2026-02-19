@@ -14,7 +14,7 @@
 
 	PyObject *PythonEventsGetModule();
 	bool PythonEventsInitialize(const std::string &szUserDataFolder);
-	bool PythonEventsStop();
+	bool PythonEventsStop(bool bDestroyInterpreter = true);
 	void PythonEventsProcessPython(const std::string &reason, const std::string &filename, const std::string &PyString, uint64_t DeviceID,
 				       std::map<uint64_t, CEventSystem::_tDeviceStatus> m_devicestates, std::map<uint64_t, CEventSystem::_tUserVariable> m_uservariables, int intSunRise,
 				       int intSunSet);

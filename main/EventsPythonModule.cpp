@@ -155,6 +155,18 @@ namespace Plugins
 
 	bool PythonEventsInitialize(const std::string &szUserDataFolder)
 	{
+		// Reuse the existing sub-interpreter when restarting (e.g. after
+		// database restore).  Creating a new sub-interpreter with
+		// Py_NewInterpreter after a previous Py_EndInterpreter triggers a
+		// write-access violation inside bind_gilstate_tstate on Python 3.13
+		// due to stale per-thread GIL state in thread-local storage.
+		if (m_PyInterpreter)
+		{
+			_log.Debug(DEBUG_EVENTSYSTEM, "EventSystem - Python: Reusing existing sub-interpreter (%p)", m_PyInterpreter);
+			PythonEventsInitialized = 1;
+			m_ModuleInitialized = true;
+			return true;
+		}
 
 		if (!Plugins::Py_LoadLibrary())
 		{
@@ -211,10 +223,23 @@ namespace Plugins
             return true;
 	}
 
-	bool PythonEventsStop()
+	bool PythonEventsStop(bool bDestroyInterpreter /*= true*/)
 	{
 		if (m_PyInterpreter)
 		{
+			PythonEventsInitialized = 0;
+			m_ModuleInitialized = false;
+
+			if (!bDestroyInterpreter)
+			{
+				// Keep the sub-interpreter alive so it can be reused on
+				// restart.  This avoids the Py_EndInterpreter /
+				// Py_NewInterpreter cycle that crashes on Python 3.13
+				// due to stale per-thread GIL state in TLS.
+				_log.Log(LOG_STATUS, "EventSystem - Python stopped (interpreter preserved)...");
+				return true;
+			}
+
 			_log.Debug(DEBUG_EVENTSYSTEM, "EventSystem - Python: Restoring event interpreter (%p) for shutdown", m_PyInterpreter);
 			PyEval_RestoreThread((PyThreadState *)m_PyInterpreter);
 			if (Plugins::Py_IsInitialized())
@@ -223,8 +248,6 @@ namespace Plugins
 				Py_EndInterpreter((PyThreadState *)m_PyInterpreter);
 			}
 			m_PyInterpreter = nullptr;
-			PythonEventsInitialized = 0;
-			m_ModuleInitialized = false;
 			PyThreadState *pMainThread = (PyThreadState *)m_mainworker.m_pluginsystem.PythonThread();
 			if (!pMainThread)
 			{

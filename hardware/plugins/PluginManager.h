@@ -38,9 +38,6 @@ namespace Plugins {
 		static void LoadSettings();
 		void	DeviceModified(uint64_t DevIdx);
 		void*	PythonThread() { return m_InitialPythonThread; };
-		bool	IsPythonThreadValid() const;
-		bool	AcquireGIL();
-		void	ReleaseGIL();
 	};
 };
 

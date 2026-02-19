@@ -148,7 +148,9 @@ CEventSystem::~CEventSystem()
 
 void CEventSystem::StartEventSystem()
 {
-	StopEventSystem();
+	// Preserve the Python sub-interpreter across restarts to avoid the
+	// Py_EndInterpreter / Py_NewInterpreter cycle that crashes on Python 3.13.
+	StopEventSystem(false);
 	m_mainworker.m_notificationsystem.Register(this);
 
 	if (!m_bEnabled)
@@ -174,7 +176,7 @@ void CEventSystem::StartEventSystem()
 	m_szStartTime = TimeToString(&m_StartTime, TF_DateTime);
 }
 
-void CEventSystem::StopEventSystem()
+void CEventSystem::StopEventSystem(bool bDestroyPythonInterpreter /*= true*/)
 {
 	RequestStop();
 	m_TaskQueue.RequestStop();
@@ -193,7 +195,7 @@ void CEventSystem::StopEventSystem()
 	}
 
 #ifdef ENABLE_PYTHON
-	Plugins::PythonEventsStop();
+	Plugins::PythonEventsStop(bDestroyPythonInterpreter);
 #endif
 }
 

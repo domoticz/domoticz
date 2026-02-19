@@ -190,27 +190,6 @@ namespace Plugins {
 		return true;
 	}
 
-	bool CPluginSystem::IsPythonThreadValid() const
-	{
-		return m_InitialPythonThread != nullptr && Py_IsInitialized();
-	}
-
-	bool CPluginSystem::AcquireGIL()
-	{
-		if (!IsPythonThreadValid())
-			return false;
-		PyEval_RestoreThread((PyThreadState *)m_InitialPythonThread);
-		return true;
-	}
-
-	void CPluginSystem::ReleaseGIL()
-	{
-		if (PyEval_ReleaseLock)
-			PyEval_ReleaseLock();
-		else
-			(void)PyEval_SaveThread();
-	}
-
 	void CPluginSystem::LoadSettings()
 	{
 		//	Add command to message queue for every plugin
