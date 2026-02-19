@@ -1602,7 +1602,7 @@ bool CSQLHelper::OpenDatabase()
 			result = safe_query("SELECT ID FROM Hardware WHERE (Type==%d)", HTYPE_System);
 			if (result.empty())
 			{
-				safe_query("INSERT INTO Hardware (Name, Enabled, Type, Address, Port, Username, Password, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6) VALUES ('Motherboard',1, %d,'',1,'','',0,0,0,0,0,0)", HTYPE_System);
+				safe_query("INSERT INTO Hardware (Name, Enabled, Type, Address, Port, Username, Password, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6) VALUES ('Motherboard',1, %d,'127.0.0.1',8085,'','',0,0,0,0,0,0)", HTYPE_System);
 			}
 		}
 		if (dbversion < 85)
