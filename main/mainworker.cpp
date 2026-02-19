@@ -259,7 +259,7 @@ MainWorker::~MainWorker()
 	Stop();
 }
 
-void MainWorker::AddAllDomoticzHardware()
+void MainWorker::AddAllDomoticzHardware(bool bScheduleStart /*= true*/)
 {
 	//Add Hardware devices
 	std::vector<std::vector<std::string> > result;
@@ -291,8 +291,11 @@ void MainWorker::AddAllDomoticzHardware()
 			AddHardwareFromParams(ID, Name, Enabled, Type, LogLevelEnabled, Address, Port, SerialPort, Username, Password, Extra, mode1, mode2, mode3, mode4, mode5, mode6, DataTimeout,
 				false);
 		}
-		m_hardwareStartCounter = 0;
-		m_bStartHardware = true;
+		if (bScheduleStart)
+		{
+			m_hardwareStartCounter = 0;
+			m_bStartHardware = true;
+		}
 	}
 }
 
