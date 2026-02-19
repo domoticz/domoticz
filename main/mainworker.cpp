@@ -43,6 +43,10 @@
 #include "../hardware/DarkSky.h"
 #include "../hardware/VisualCrossing.h"
 #include "../hardware/HardwareMonitor.h"
+#include "../hardware/HardwareMonitorLHM.h"
+#if defined(__linux__) || defined(__CYGWIN32__) || defined(__FreeBSD__) || defined(__OpenBSD__)
+#include "../hardware/HardwareMonitorUnix.h"
+#endif
 #include "../hardware/Dummy.h"
 #include "../hardware/Tellstick.h"
 #include "../hardware/PiFace.h"
@@ -973,7 +977,18 @@ bool MainWorker::AddHardwareFromParams(
 		pHardware = new CPiFace(ID);
 		break;
 	case HTYPE_System:
-		pHardware = new CHardwareMonitor(ID);
+		if (Mode1 == 1)
+			pHardware = new CHardwareMonitorLHM(ID, Address, Port, Username, Password, Mode2 == 1);
+#if defined(__linux__) || defined(__CYGWIN32__) || defined(__FreeBSD__) || defined(__OpenBSD__)
+		else
+			pHardware = new CHardwareMonitorUnix(ID);
+#else
+		else
+		{
+			_log.Log(LOG_ERROR, "Local system sensors are only supported on Linux/BSD. Use Libre Hardware Monitor mode.");
+			return false;
+		}
+#endif
 		break;
 	case HTYPE_RaspberryGPIO:
 		//Raspberry Pi GPIO port access
