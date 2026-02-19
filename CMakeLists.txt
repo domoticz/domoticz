@@ -258,6 +258,8 @@ hardware/FritzboxTCP.cpp
 hardware/Gpio.cpp
 hardware/GpioPin.cpp
 hardware/HardwareMonitor.cpp
+hardware/HardwareMonitorUnix.cpp
+hardware/HardwareMonitorLHM.cpp
 hardware/HarmonyHub.cpp
 hardware/Honeywell.cpp
 hardware/HEOS.cpp

@@ -38,6 +38,13 @@ PrivilegesRequired=admin
 SolidCompression=yes
 UsePreviousAppDir=yes
 DirExistsWarning=no
+UninstallDisplayIcon={app}\{#MyAppExeName}
+MinVersion=10.0
+WizardStyle=modern
+WizardSizePercent=120,120
+WizardImageFile=WizardImage.bmp
+WizardSmallImageFile=WizardSmallImage.bmp
+WizardImageBackColor=$170F0A
 
 [Tasks]
 Name: RunAsApp; Description: "Run as application "; Flags: exclusive;
@@ -72,9 +79,6 @@ Name: "{commonstartup}\Domoticz"; Filename: "{app}\{#MyAppExeName}"; Parameters:
 Name: "{commondesktop}\Domoticz"; Filename: "{app}\{#MyAppExeName}"; Parameters: "{code:GetParams}" ; Tasks: RunAsApp\desktopicon
 Name: "{userappdata}\Microsoft\Internet Explorer\Quick Launch\Domoticz"; Filename: "{app}\{#MyAppExeName}"; Tasks: RunAsApp\quicklaunchicon
 
-[Setup]
-UninstallDisplayIcon={app}\{#MyAppExeName}
-
 [Run]
 ;Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, "&", "&&")}}"; Flags: nowait postinstall skipifsilent runascurrentuser; Tasks: RunAsApp
 Filename: "{app}\{#NSSM}"; Parameters: "install {#MyAppName} ""{app}\{#MyAppExeName}"" ""{code:GetParams}"""; Flags: runhidden; Tasks: RunAsService
@@ -85,7 +89,7 @@ Filename: "{sys}\net.exe"; Parameters: "start {#MyAppName}"; Flags: runhidden; T
 Name: "{app}\backups\hourly"
 Name: "{app}\backups\daily"
 Name: "{app}\backups\monthly"
-Name: "{app}\log"; Permissions: everyone-full
+Name: "{app}\log"; Permissions: users-full
 
 [PostCompile]
 Name: "S:\Domoticz\msbuild\WindowsInstaller\makedist.bat"; Flags: cmdprompt redirectoutput
@@ -101,7 +105,6 @@ var
   LogConfigPage: TInputDirWizardPage;
   LogNoLogButton: TRadioButton;
   LogUseLogButton: TRadioButton;
-  LogOldNextButtonOnClick: TNotifyEvent;
  
 function GetParams(Value: string): string;
 begin
@@ -127,6 +130,18 @@ begin
   LogConfigPage.Buttons[0].Enabled := LogUseLogButton.Checked;
 end;
 
+procedure ApplyDomoticzTheme;
+begin
+  { Match sidebar background color for any uncovered areas }
+  WizardForm.WizardBitmapImage.BackColor := $170F0A;
+  WizardForm.WizardBitmapImage2.BackColor := $170F0A;
+
+  { Style the header panel on inner pages to match dark theme }
+  WizardForm.MainPanel.Color := $2E1A16; { #161A2E }
+  WizardForm.PageNameLabel.Font.Color := clWhite;
+  WizardForm.PageDescriptionLabel.Font.Color := $D0D0D0;
+end;
+
 procedure InitializeWizard;
 begin
   // Create the page
@@ -135,11 +150,11 @@ begin
   // Add items (False means it's not a password edit)
   ConfigPage.Add('HTTP Port number:', False);
   // Set initial values (optional)
-  ConfigPage.Values[0] := ExpandConstant('8080');
+  ConfigPage.Values[0] := '8080';
 
   ConfigPage.Add('HTTPS Port number:', False);
   // Set initial values (optional)
-  ConfigPage.Values[1] := ExpandConstant('443');
+  ConfigPage.Values[1] := '443';
 
   LogConfigPage := CreateInputDirPage(wpSelectComponents,
     'Select Log File Location', 'Where should the log file be stored?',
@@ -154,6 +169,7 @@ begin
   LogNoLogButton.Caption := 'No external Log';
   LogNoLogButton.Checked := True;
   LogNoLogButton.Parent :=LogConfigPage.Surface;
+  LogNoLogButton.Width := LogConfigPage.Surface.Width;
   LogNoLogButton.Top := LogConfigPage.Edits[0].Top;
   LogNoLogButton.OnClick := @UseLogButtonClick;
   ScaleFixedHeightControl(LogNoLogButton);
@@ -161,10 +177,11 @@ begin
   LogUseLogButton := TRadioButton.Create(WizardForm);
   LogUseLogButton.Caption := 'Use external Log';
   LogUseLogButton.Parent := LogConfigPage.Surface;
+  LogUseLogButton.Width := LogConfigPage.Surface.Width;
   LogUseLogButton.Top :=
     LogNoLogButton.Top + LogNoLogButton.Height + ScaleY(8);
   LogUseLogButton.OnClick := @UseLogButtonClick;
-  ScaleFixedHeightControl(LogNoLogButton);
+  ScaleFixedHeightControl(LogUseLogButton);
 
   LogConfigPage.Buttons[0].Top :=
     LogConfigPage.Buttons[0].Top +
@@ -180,6 +197,8 @@ begin
   UseLogButtonClick(nil);
 
   LogConfigPage.Values[0] := WizardDirValue+'\log';
+
+  ApplyDomoticzTheme;
 end;
 
 procedure CurStepChanged(CurStep: TSetupStep);
