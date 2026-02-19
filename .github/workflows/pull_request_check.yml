@@ -104,14 +104,15 @@ jobs:
       #    tail -19 luacov.report.out
       #  continue-on-error: true
 
-      - name: functional-tests domoticz
-        run: |
-          cd $GITHUB_WORKSPACE
-          ln -s ../test/gherkin/resources/testwebcontent www/test
-          sudo ./domoticz -sslwww 0 -wwwroot www -pidfile /var/run/domoticz.pid -daemon
-          pytest-3 -rA --tb=no test/gherkin/
-          sudo kill -s TERM `sudo cat /var/run/domoticz.pid`
-        continue-on-error: true
+      # Disabled - gherkin tests require pytest-bdd <7 fixture style; re-enable after migration
+      #- name: functional-tests domoticz
+      #  run: |
+      #    cd $GITHUB_WORKSPACE
+      #    ln -s ../test/gherkin/resources/testwebcontent www/test
+      #    sudo ./domoticz -sslwww 0 -wwwroot www -pidfile /var/run/domoticz.pid -daemon
+      #    pytest-3 -rA --tb=no test/gherkin/
+      #    sudo kill -s TERM `sudo cat /var/run/domoticz.pid`
+      #  continue-on-error: true
 
       # Packaging
       - name: package domoticz

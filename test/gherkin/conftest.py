@@ -1,4 +1,5 @@
 from pytest_bdd import scenario, given, when, then, parsers
+import pytest
 import requests, subprocess
 import re
 
@@ -14,10 +15,13 @@ class Domoticz:
     sTestInput = ""
     sTestOutput = ""
 
-@given('Domoticz is running')
+@pytest.fixture
 def test_domoticz():
-    Domoticz.sBaseURI = "http://localhost"
     return Domoticz()
+
+@given('Domoticz is running')
+def domoticz_running(test_domoticz):
+    test_domoticz.sBaseURI = "http://localhost"
 
 @given(parsers.parse('accessible on port {port:d}'))
 def check_domoticz_port(test_domoticz,port):
@@ -30,9 +34,8 @@ def check_domoticz_port(test_domoticz,port):
     assert oResult.status_code == 200
 
 @given(parsers.parse('Command {command} is available'))
-def test_command(command):
-    Domoticz.sCommand = "./" + command
-    return Domoticz()
+def command_available(test_domoticz, command):
+    test_domoticz.sCommand = "./" + command
 
 @given('can be executed on the commandline')
 def check_command_exec(test_domoticz):
@@ -52,7 +55,7 @@ def request_uri(test_domoticz,uri):
     test_domoticz.oResponse = oResult
 
 @when(parsers.parse('I request the "{method}"'))
-def request_uri(test_domoticz,method):
+def request_method(test_domoticz,method):
     if method == "Configuration Settings":
         uri = '/json.htm?type=command&param=getsettings'
     elif method == "Version Information":
@@ -87,7 +90,7 @@ def check_header(test_domoticz,headername, headervalue):
         assert False
 
 @then(parsers.parse('the HTTP-header "{headername}" should comply to pattern "{headerpattern}"'))
-def check_header(test_domoticz,headername, headerpattern):
+def check_header_pattern(test_domoticz,headername, headerpattern):
     bExists = headername in test_domoticz.oResponse.headers
     if bExists:
         headervalue = test_domoticz.oResponse.headers[headername]
