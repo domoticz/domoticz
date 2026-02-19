@@ -86,37 +86,6 @@ make
 
 The build uses C++17 standard with compiler-specific flags (e.g., `-rdynamic` for GCC).
 
-### Testing
-
-#### Functional Tests (Gherkin/BDD)
-```bash
-# Link test web content (required)
-ln -s ../test/gherkin/resources/testwebcontent www/test
-
-# Start Domoticz in background
-./domoticz -sslwww 0 -wwwroot www &
-
-# Run tests
-pytest-3 -rA --tb=no test/gherkin/
-```
-
-#### dzVents Tests (Lua)
-```bash
-cd dzVents/runtime/tests/
-# Requires: luarocks, busted, luacov (install with luarocks)
-busted --coverage
-```
-
-#### WWW Tests (JavaScript)
-```bash
-cd test/www-test/
-# Requires: Node.js, npm, mocha
-npm install
-npm test
-```
-
-Always run relevant tests before submitting changes. The CI system requires tests to pass before merging.
-
 ## Security Considerations
 
 - **Authentication:** Default credentials are admin/domoticz - must be changed
