@@ -1,21 +1,18 @@
 <div id="logcontent" class="log-console-container force-select">
   <div class="log-toolbar">
     <div class="log-level-toggles">
-      <span class="log-toggle" ng-class="{'log-toggle-active': levelFilters.norm}">
-        <input type="checkbox" id="logfilter_norm" ng-model="levelFilters.norm"><label for="logfilter_norm"></label>
-        <span class="log-toggle-label log-level-norm" ng-click="levelFilters.norm = !levelFilters.norm">Normal</span>
+      <a class="btnstyle3 log-filter-btn" ng-class="{'log-filter-btn-active': levelFilters.norm}" ng-click="levelFilters.norm = !levelFilters.norm">
+        <span class="log-level-norm">Normal</span>
         <span class="log-toggle-count">{{counts.norm}}</span>
-      </span>
-      <span class="log-toggle" ng-class="{'log-toggle-active': levelFilters.status}">
-        <input type="checkbox" id="logfilter_status" ng-model="levelFilters.status"><label for="logfilter_status"></label>
-        <span class="log-toggle-label log-level-status" ng-click="levelFilters.status = !levelFilters.status">Status</span>
+      </a>
+      <a class="btnstyle3 log-filter-btn" ng-class="{'log-filter-btn-active': levelFilters.status}" ng-click="levelFilters.status = !levelFilters.status">
+        <span class="log-level-status">Status</span>
         <span class="log-toggle-count">{{counts.status}}</span>
-      </span>
-      <span class="log-toggle" ng-class="{'log-toggle-active': levelFilters.error}">
-        <input type="checkbox" id="logfilter_error" ng-model="levelFilters.error"><label for="logfilter_error"></label>
-        <span class="log-toggle-label log-level-error" ng-click="levelFilters.error = !levelFilters.error">Error</span>
+      </a>
+      <a class="btnstyle3 log-filter-btn" ng-class="{'log-filter-btn-active': levelFilters.error}" ng-click="levelFilters.error = !levelFilters.error">
+        <span class="log-level-error">Error</span>
         <span class="log-toggle-count">{{counts.error}}</span>
-      </span>
+      </a>
     </div>
     <div class="log-search">
       <input type="text" class="log-search-input" ng-model="searchText" ng-model-options="{ debounce: 150 }" placeholder="Filter logs... (use /regex/ for regex)">

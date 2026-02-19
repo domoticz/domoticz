@@ -1035,11 +1035,11 @@ div.log {
 .log-console-container {
 	display: flex;
 	flex-direction: column;
-	height: calc(100vh - 80px);
+	height: calc(100vh - 110px);
 	border: 1px solid var(--accent-color, #283750);
 	border-radius: 5px;
 	position: relative;
-	font-size: 12px;
+	font-size: 14px;
 }
 
 .log-toolbar {
@@ -1061,10 +1061,10 @@ div.log {
 }
 
 .log-line {
-	padding: 1px 0;
+	padding: 0;
 	white-space: pre-wrap;
 	word-break: break-all;
-	line-height: 1.6;
+	line-height: 1.4;
 	color: #ccc;
 }
 
@@ -1136,32 +1136,33 @@ mark.log-highlight {
 	gap: 4px;
 }
 
-.log-toggle {
+.log-filter-btn {
 	display: inline-flex;
 	align-items: center;
 	gap: 4px;
-	cursor: pointer;
-	font-size: 11px;
-	opacity: 0.5;
+	background: rgba(0, 0, 0, 0.3) !important;
+	border: 1px solid rgba(255, 255, 255, 0.15) !important;
+	opacity: 0.45;
 	transition: opacity 0.15s;
-	user-select: none;
 }
 
-.log-toggle-active {
+.log-filter-btn-active {
 	opacity: 1;
+	border-color: rgba(255, 255, 255, 0.3) !important;
 }
 
-.log-toggle-label {
+.log-filter-btn span:first-child {
 	font-weight: 600;
 }
 
 .log-toggle-count {
-	background: rgba(255, 255, 255, 0.08);
-	padding: 0 5px;
+	background: rgba(255, 255, 255, 0.12);
+	padding: 1px 5px;
 	border-radius: 8px;
-	font-size: 10px;
+	font-size: 11px;
 	min-width: 18px;
 	text-align: center;
+	line-height: 1.4;
 }
 
 .log-actions {

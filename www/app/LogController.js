@@ -202,10 +202,25 @@ define(['app'], function (app) {
 			}
 		}
 
+		// Get text selected by the user in the log console, if any
+		function getSelectedLogText() {
+			var selection = window.getSelection();
+			if (!selection || selection.isCollapsed) return '';
+			var logContainer = document.getElementById('logdata');
+			if (!logContainer) return '';
+			// Check if selection is within the log container
+			var range = selection.getRangeAt(0);
+			if (logContainer.contains(range.commonAncestorContainer)) {
+				return selection.toString().trim();
+			}
+			return '';
+		}
+
 		// Copy filtered log to clipboard
 		$scope.copyFeedback = false;
 		$scope.copyToClipboard = function () {
-			var text = formatLogText($scope.filteredItems);
+			var selectedText = getSelectedLogText();
+			var text = selectedText || formatLogText($scope.filteredItems);
 			if (!text) return;
 
 			if (navigator.clipboard && navigator.clipboard.writeText) {
