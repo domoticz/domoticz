@@ -2,19 +2,15 @@
 	path = extern/jsoncpp
 	url = https://github.com/open-source-parsers/jsoncpp.git
 	ignore = dirty
-[submodule "extern/sqlite-amalgamation"]
-	path = extern/sqlite-amalgamation
-	url = https://github.com/azadkuh/sqlite-amalgamation.git
-	ignore = dirty
 [submodule "minizip"]
 	path = extern/minizip
 	url = https://github.com/domoticz/minizip.git
 	ignore = dirty
-[submodule "extern/fmtlib"]
-	path = extern/fmtlib
-	url = https://github.com/fmtlib/fmt.git
-	ignore = dirty
 [submodule "extern/jwtcpp"]
 	path = extern/jwtcpp
 	url = https://github.com/Thalhammer/jwt-cpp
+	ignore = dirty
+[submodule "extern/sqlite-amalgamation"]
+	path = extern/sqlite-amalgamation
+	url = https://github.com/algoritnl/sqlite-amalgamation.git
 	ignore = dirty

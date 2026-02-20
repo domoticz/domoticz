@@ -199,4 +199,4 @@ When suggesting dependencies:
 - Forum: https://forum.domoticz.com/ for support
 - Wiki: https://wiki.domoticz.com/ for documentation
 - GitHub issues are for bugs/features, not end-user support
-- **Do not modify or include `extern/` folder in PRs** - defined in git submodules and externally managed (contains JsonCPP, Minizip, JWT-CPP, fmtlib, SQLite)
+- **Do not modify or include `extern/` folder in PRs** - defined in git submodules and externally managed (contains JsonCPP, Minizip, JWT-CPP, SQLite)
