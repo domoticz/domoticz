@@ -1,10 +1,11 @@
-define(['app', 'report/CounterReport', 'report/TemperatureReport', 'report/EnergyMultiCounterReport'], function (app) {
+define(['app', 'report/CounterReport', 'report/TemperatureReport', 'report/EnergyMultiCounterReport', 'report/RainReport'], function (app) {
     app.controller('DeviceReportController', function ($route, $routeParams, $location, deviceApi) {
         var vm = this;
         vm.isTemperatureReport = isTemperatureReport;
         vm.isCounterReport = isCounterReport;
         vm.isOnlyUsage = isOnlyUsage;
         vm.isEnergyMultiCounterReport = isEnergyMultiCounterReport;
+        vm.isRainReport = isRainReport;
         vm.isNoReport = isNoReport;
         vm.getYearsOptions = getYearsOptions;
         vm.selectYear = selectYear;
@@ -88,12 +89,19 @@ define(['app', 'report/CounterReport', 'report/TemperatureReport', 'report/Energ
             return (vm.device.Type === 'P1 Smart Meter' && vm.device.SubType === 'Energy')
         }
 
+        function isRainReport() {
+            if (!vm.device) {
+                return undefined;
+            }
+            return vm.device.Type === 'Rain';
+        }
+
         function isNoReport() {
             if (!vm.device) {
                 return undefined;
             }
 
-            return !isTemperatureReport() && !isCounterReport() && !isEnergyMultiCounterReport()
+            return !isTemperatureReport() && !isCounterReport() && !isEnergyMultiCounterReport() && !isRainReport();
         }
     });
 });
