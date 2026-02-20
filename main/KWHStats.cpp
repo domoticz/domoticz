@@ -35,6 +35,7 @@ void CKWHStats::ExitGlobal()
 		g_kwhstats_task.RequestStop();
 		g_kwhstats_saver_thread.join();
 	}
+	g_kwhstats.clear();
 }
 
 void CKWHStats::PeriodicSaveKWHStats(const int interval_seconds) // default: every 5 minutes
