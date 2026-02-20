@@ -1136,198 +1136,215 @@ namespace Plugins
 
 		try
 		{
-			// Only initialise one plugin at a time to prevent issues with module creation
-			PyEval_RestoreThread((PyThreadState *)m_mainworker.m_pluginsystem.PythonThread());
-			m_PyInterpreter = Py_NewInterpreter();
-			if (!m_PyInterpreter)
-			{
-				Log(LOG_ERROR, "(%s) failed to create interpreter.", m_PluginKey.c_str());
-				goto Error;
-			}
-
-			// Ensure sys.stdin/stdout/stderr are set immediately after interpreter creation
-			// Python 3.13+ sub-interpreters may not inherit stdio from the main interpreter,
-			// causing "RuntimeError: sys.stderr is None" during any subsequent import.
-			// Plugins use Domoticz.Log() not print(), so a NullStream is sufficient.
-			try
-			{
-				PyNewRef	pCode = Py_CompileString(
-					"class _NullStream:\n"
-					"    encoding = 'utf-8'\n"
-					"    errors = 'strict'\n"
-					"    def write(self, data): return len(data) if isinstance(data, str) else 0\n"
-					"    def writelines(self, lines): pass\n"
-					"    def read(self, n=-1): return ''\n"
-					"    def readline(self, n=-1): return ''\n"
-					"    def readlines(self): return []\n"
-					"    def flush(self): pass\n"
-					"    def close(self): pass\n"
-					"    def fileno(self): return 2\n"
-					"    def isatty(self): return False\n"
-					"    def readable(self): return False\n"
-					"    def writable(self): return True\n"
-					"    def seekable(self): return False\n"
-					"_null = _NullStream()\n",
-					"<domoticz>", Py_file_input);
-				if (pCode)
-				{
-					PyNewRef	global_dict = PyDict_New();
-					PyNewRef	local_dict = PyDict_New();
-					PyNewRef	pEval = PyEval_EvalCode(pCode, global_dict, local_dict);
-					if (pEval)
-					{
-						PyBorrowedRef pNull = PyDict_GetItemString(local_dict, "_null");
-						if (pNull)
-						{
-							PySys_SetObject("stderr", pNull);
-							PySys_SetObject("stdout", pNull);
-							PySys_SetObject("stdin", pNull);
-							Debug(DEBUG_PYTHON, "(%s) sys.stderr/stdout/stdin initialized.", m_PluginKey.c_str());
-						}
-					}
-					else
-					{
-						Log(LOG_ERROR, "(%s) failed to create NullStream for stdio.", m_PluginKey.c_str());
-					}
-				}
-				else
-				{
-					Log(LOG_ERROR, "(%s) failed to compile NullStream code.", m_PluginKey.c_str());
-				}
-				if (PyErr_Occurred()) PyErr_Clear();
-			}
-			catch (...)
-			{
-				Log(LOG_ERROR, "(%s) exception initializing stdio streams, continuing.", m_PluginKey.c_str());
-				if (PyErr_Occurred()) PyErr_Clear();
-			}
-
-			// Prepend plugin directory to path so that python will search it early when importing
-#ifdef WIN32
-			std::wstring sSeparator = L";";
-#else
-			std::wstring sSeparator = L":";
-#endif
-			std::wstringstream ssPath;
+			// Look up plugin XML manifest (needed for version/author parsing later)
 			std::string sFind = "key=\"" + m_PluginKey + "\"";
-			CPluginSystem Plugins;
-			std::map<std::string, std::string> *mPluginXml = Plugins.GetManifest();
+			CPluginSystem PluginMgr;
+			std::map<std::string, std::string> *mPluginXml = PluginMgr.GetManifest();
 			std::string sPluginXML;
 			for (const auto &type : *mPluginXml)
 			{
 				if (type.second.find(sFind) != std::string::npos)
 				{
 					m_HomeFolder = type.first;
-					ssPath << m_HomeFolder.c_str();
 					sPluginXML = type.second;
 					break;
 				}
 			}
 
-			std::wstring sPath = ssPath.str() + sSeparator;
-			sPath += Py_GetPath();
-
-			try
+			void* pPreserved = CPluginSystem::GetPreservedInterpreter(m_PluginKey);
+			if (pPreserved)
 			{
-				//
-				//	Python loads the 'site' module automatically and adds extra search directories for module loading
-				//	This code makes the plugin framework function the same way
-				//
-				PyNewRef	pSiteModule = PyImport_ImportModule("site");
-				if (!pSiteModule)
+				// Reuse preserved interpreter from previous run
+				m_PyInterpreter = (PyThreadState *)pPreserved;
+				Debug(DEBUG_PYTHON, "(%s) reusing preserved interpreter (%p).",
+				      m_PluginKey.c_str(), m_PyInterpreter);
+				PyEval_RestoreThread(m_PyInterpreter);
+				// stdio, path, Py_None, faulthandler are all still set from previous run
+			}
+			else
+			{
+				// Fresh interpreter (first start)
+				// Only initialise one plugin at a time to prevent issues with module creation
+				PyEval_RestoreThread((PyThreadState *)m_mainworker.m_pluginsystem.PythonThread());
+				m_PyInterpreter = Py_NewInterpreter();
+				if (!m_PyInterpreter)
 				{
-					Log(LOG_ERROR, "(%s) failed to load 'site' module, continuing.", m_PluginKey.c_str());
+					Log(LOG_ERROR, "(%s) failed to create interpreter.", m_PluginKey.c_str());
+					goto Error;
 				}
-				else
+
+				// Ensure sys.stdin/stdout/stderr are set immediately after interpreter creation
+				// Python 3.13+ sub-interpreters may not inherit stdio from the main interpreter,
+				// causing "RuntimeError: sys.stderr is None" during any subsequent import.
+				// Plugins use Domoticz.Log() not print(), so a NullStream is sufficient.
+				try
 				{
-					PyNewRef	pFunc = PyObject_GetAttrString((PyObject *)pSiteModule, "getsitepackages");
-					if (pFunc && PyCallable_Check(pFunc))
+					PyNewRef	pCode = Py_CompileString(
+						"class _NullStream:\n"
+						"    encoding = 'utf-8'\n"
+						"    errors = 'strict'\n"
+						"    def write(self, data): return len(data) if isinstance(data, str) else 0\n"
+						"    def writelines(self, lines): pass\n"
+						"    def read(self, n=-1): return ''\n"
+						"    def readline(self, n=-1): return ''\n"
+						"    def readlines(self): return []\n"
+						"    def flush(self): pass\n"
+						"    def close(self): pass\n"
+						"    def fileno(self): return 2\n"
+						"    def isatty(self): return False\n"
+						"    def readable(self): return False\n"
+						"    def writable(self): return True\n"
+						"    def seekable(self): return False\n"
+						"_null = _NullStream()\n",
+						"<domoticz>", Py_file_input);
+					if (pCode)
 					{
-						PyNewRef	pSites = PyObject_CallObject(pFunc, nullptr);
-						if (!pSites)
+						PyNewRef	global_dict = PyDict_New();
+						PyNewRef	local_dict = PyDict_New();
+						PyNewRef	pEval = PyEval_EvalCode(pCode, global_dict, local_dict);
+						if (pEval)
 						{
-							LogPythonException("getsitepackages");
+							PyBorrowedRef pNull = PyDict_GetItemString(local_dict, "_null");
+							if (pNull)
+							{
+								PySys_SetObject("stderr", pNull);
+								PySys_SetObject("stdout", pNull);
+								PySys_SetObject("stdin", pNull);
+								Debug(DEBUG_PYTHON, "(%s) sys.stderr/stdout/stdin initialized.", m_PluginKey.c_str());
+							}
 						}
 						else
-							for (Py_ssize_t i = 0; i < PyList_Size(pSites); i++)
+						{
+							Log(LOG_ERROR, "(%s) failed to create NullStream for stdio.", m_PluginKey.c_str());
+						}
+					}
+					else
+					{
+						Log(LOG_ERROR, "(%s) failed to compile NullStream code.", m_PluginKey.c_str());
+					}
+					if (PyErr_Occurred()) PyErr_Clear();
+				}
+				catch (...)
+				{
+					Log(LOG_ERROR, "(%s) exception initializing stdio streams, continuing.", m_PluginKey.c_str());
+					if (PyErr_Occurred()) PyErr_Clear();
+				}
+
+				// Prepend plugin directory to path so that python will search it early when importing
+#ifdef WIN32
+				std::wstring sSeparator = L";";
+#else
+				std::wstring sSeparator = L":";
+#endif
+				std::wstringstream ssPath;
+				ssPath << m_HomeFolder.c_str();
+
+				std::wstring sPath = ssPath.str() + sSeparator;
+				sPath += Py_GetPath();
+
+				try
+				{
+					//
+					//	Python loads the 'site' module automatically and adds extra search directories for module loading
+					//	This code makes the plugin framework function the same way
+					//
+					PyNewRef	pSiteModule = PyImport_ImportModule("site");
+					if (!pSiteModule)
+					{
+						Log(LOG_ERROR, "(%s) failed to load 'site' module, continuing.", m_PluginKey.c_str());
+					}
+					else
+					{
+						PyNewRef	pFunc = PyObject_GetAttrString((PyObject *)pSiteModule, "getsitepackages");
+						if (pFunc && PyCallable_Check(pFunc))
+						{
+							PyNewRef	pSites = PyObject_CallObject(pFunc, nullptr);
+							if (!pSites)
 							{
-								PyBorrowedRef	pSite = PyList_GetItem(pSites, i);
-								if (pSite.IsString())
-								{
-									std::wstringstream ssPath;
-									ssPath << ((std::string)PyBorrowedRef(pSite)).c_str();
-									sPath += sSeparator + ssPath.str();
-								}
+								LogPythonException("getsitepackages");
 							}
+							else
+								for (Py_ssize_t i = 0; i < PyList_Size(pSites); i++)
+								{
+									PyBorrowedRef	pSite = PyList_GetItem(pSites, i);
+									if (pSite.IsString())
+									{
+										std::wstringstream ssPath;
+										ssPath << ((std::string)PyBorrowedRef(pSite)).c_str();
+										sPath += sSeparator + ssPath.str();
+									}
+								}
+						}
 					}
 				}
-			}
-			catch (...)
-			{
-				Log(LOG_ERROR, "(%s) exception loading 'site' module, continuing.", m_PluginKey.c_str());
-				PyErr_Clear();
-			}
-
-			// Update the path itself
-			PySys_SetPath((wchar_t *)sPath.c_str());
-
-			// Get reference to global 'Py_None' instance for comparisons
-			if (!Py_None)
-			{
-				PyNewRef		global_dict = PyDict_New();
-				PyNewRef		local_dict = PyDict_New();
-				PyNewRef		pCode = Py_CompileString("# Eval will return 'None'\n", "<domoticz>", Py_file_input);
-				if (pCode)
+				catch (...)
 				{
-					PyNewRef	pEval = PyEval_EvalCode(pCode, global_dict, local_dict);
-					Py_None = pEval;
-					Py_INCREF(Py_None);
+					Log(LOG_ERROR, "(%s) exception loading 'site' module, continuing.", m_PluginKey.c_str());
+					PyErr_Clear();
 				}
-				else
-				{
-					Log(LOG_ERROR, "Failed to compile script to set global Py_None");
-				}
-			}
 
-			try
-			{
-				//
-				//	Load the 'faulthandler' module to get a python stackdump during a segfault
-				//
-				PyNewRef	pFaultModule = PyImport_ImportModule("faulthandler");
-				if (!pFaultModule)
+				// Update the path itself
+				PySys_SetPath((wchar_t *)sPath.c_str());
+
+				// Get reference to global 'Py_None' instance for comparisons
+				if (!Py_None)
 				{
-					Log(LOG_ERROR, "(%s) failed to load 'faulthandler' module, continuing.", m_PluginKey.c_str());
-				}
-				else
-				{
-					PyNewRef	pFunc = PyObject_GetAttrString((PyObject*)pFaultModule, "is_enabled");
-					if (pFunc && PyCallable_Check(pFunc))
+					PyNewRef		global_dict = PyDict_New();
+					PyNewRef		local_dict = PyDict_New();
+					PyNewRef		pCode = Py_CompileString("# Eval will return 'None'\n", "<domoticz>", Py_file_input);
+					if (pCode)
 					{
-						PyNewRef	pRetObj = PyObject_CallObject(pFunc, nullptr);
-						if (!pRetObj.IsTrue())
+						PyNewRef	pEval = PyEval_EvalCode(pCode, global_dict, local_dict);
+						Py_None = pEval;
+						Py_INCREF(Py_None);
+					}
+					else
+					{
+						Log(LOG_ERROR, "Failed to compile script to set global Py_None");
+					}
+				}
+
+				try
+				{
+					//
+					//	Load the 'faulthandler' module to get a python stackdump during a segfault
+					//
+					PyNewRef	pFaultModule = PyImport_ImportModule("faulthandler");
+					if (!pFaultModule)
+					{
+						Log(LOG_ERROR, "(%s) failed to load 'faulthandler' module, continuing.", m_PluginKey.c_str());
+					}
+					else
+					{
+						PyNewRef	pFunc = PyObject_GetAttrString((PyObject*)pFaultModule, "is_enabled");
+						if (pFunc && PyCallable_Check(pFunc))
 						{
-							PyNewRef	pFunc = PyObject_GetAttrString((PyObject*)pFaultModule, "enable");
-							if (pFunc && PyCallable_Check(pFunc))
+							PyNewRef	pRetObj = PyObject_CallObject(pFunc, nullptr);
+							if (!pRetObj.IsTrue())
 							{
-								PyNewRef pRetObj = PyObject_CallObject(pFunc, nullptr);
+								PyNewRef	pFunc = PyObject_GetAttrString((PyObject*)pFaultModule, "enable");
+								if (pFunc && PyCallable_Check(pFunc))
+								{
+									PyNewRef pRetObj = PyObject_CallObject(pFunc, nullptr);
+								}
 							}
 						}
 					}
 				}
-			}
-			catch (...)
-			{
-				Log(LOG_ERROR, "(%s) exception loading 'faulthandler' module, continuing.", m_PluginKey.c_str());
-				PyErr_Clear();
+				catch (...)
+				{
+					Log(LOG_ERROR, "(%s) exception loading 'faulthandler' module, continuing.", m_PluginKey.c_str());
+					PyErr_Clear();
+				}
 			}
 
+			// Common path: import plugin module (both fresh and recycled interpreters)
 			try
 			{
 				m_PyModule = PyImport_ImportModule("plugin");
 				if (!m_PyModule)
 				{
-					Log(LOG_ERROR, "(%s) failed to load 'plugin.py', Python Path used was '%S'.", m_PluginKey.c_str(), sPath.c_str());
+					Log(LOG_ERROR, "(%s) failed to load 'plugin.py'.", m_PluginKey.c_str());
 					if (PyErr_Occurred())
 					{
 						LogPythonException();
@@ -1341,7 +1358,7 @@ namespace Plugins
 			}
 			catch (...)
 			{
-				Log(LOG_ERROR, "(%s) exception loading 'plugin.py', Python Path used was '%S'.", m_PluginKey.c_str(), sPath.c_str());
+				Log(LOG_ERROR, "(%s) exception loading 'plugin.py'.", m_PluginKey.c_str());
 				if (PyErr_Occurred())
 				{
 					LogPythonException();
@@ -2400,18 +2417,28 @@ namespace Plugins
 				Py_XDECREF(m_ImageDict);
 			if (m_SettingsDict)
 				Py_XDECREF(m_SettingsDict);
+
+			// Preserve interpreter for potential reuse to avoid C extension crash
+			// (stale pointers after Py_EndInterpreter - GitHub issue #6586).
+			// During full shutdown the process exits and OS reclaims all resources,
+			// consistent with StopPluginSystem() already skipping Py_Finalize().
 			if (m_PyInterpreter)
-				Py_EndInterpreter(m_PyInterpreter);
-			// To release the GIL there must be a valid thread state so use
-			// the one created during start up of the plugin system because it will always exist
-			CPluginSystem pManager;
-			PyThreadState_Swap((PyThreadState *)pManager.PythonThread());
-			// PyEval_ReleaseLock was removed in Python 3.13 (deprecated since 3.2)
-			// Fall back to PyEval_SaveThread which also releases the GIL
-			if (PyEval_ReleaseLock)
-				PyEval_ReleaseLock();
-			else
+			{
+				PyObject* pSysModules = PyImport_GetModuleDict();
+				if (pSysModules)
+				{
+					PyDict_DelItemString(pSysModules, "plugin");
+					PyErr_Clear();
+				}
+				Debug(DEBUG_PYTHON, "(%s) interpreter preserved (%p).",
+				      m_PluginKey.c_str(), m_PyInterpreter);
+				// Release GIL before storing - Initialise() will reacquire it
 				(void)PyEval_SaveThread();
+				// Store in static map so it survives CPlugin object destruction
+				CPluginSystem::SetPreservedInterpreter(m_PluginKey, m_PyInterpreter);
+				// m_PyInterpreter will be set to nullptr in state reset below,
+				// which also prevents the AccessPython guard from double-releasing
+			}
 		}
 		catch (std::exception *e)
 		{
@@ -2511,14 +2538,14 @@ namespace Plugins
 		Py_ssize_t moduleCount = PyDict_Size(sysModules);
 		_log.Debug(DEBUG_PYTHON, "%s:   sys.modules contains %zd modules", m_Name.c_str(), moduleCount);
 
-		PyObject *key, *value;
+		PyBorrowedRef key, value;
 		Py_ssize_t pos = 0;
 		int cExtCount = 0;
 		while (PyDict_Next(sysModules, &pos, &key, &value))
 		{
 			if (value == Py_None) continue;
 			PyObject* fileAttr = PyObject_GetAttrString(value, "__file__");
-			if (!fileAttr || !PyUnicode_Check(fileAttr))
+			if (!fileAttr || !PyBorrowedRef(fileAttr).IsString())
 			{
 				Py_XDECREF(fileAttr);
 				PyErr_Clear();
@@ -2528,7 +2555,7 @@ namespace Plugins
 			if (filepath && IsCExtensionPath(filepath))
 			{
 				const char* modName = "?";
-				if (PyUnicode_Check(key))
+				if (key.IsString())
 				{
 					const char* temp = PyUnicode_AsUTF8(key);
 					if (temp) modName = temp;
