@@ -221,7 +221,7 @@ namespace Plugins {
 #endif
 		if (!createdir(plugin_BaseDir.c_str(), 0755))
 		{
-			_log.Log(LOG_NORM, "%s: Created directory %s", __func__, plugin_BaseDir.c_str());
+			_log.Debug(DEBUG_PYTHON, "%s: Created directory %s", __func__, plugin_BaseDir.c_str());
 		}
 
 		std::vector<std::string> DirEntries, FileEntries;

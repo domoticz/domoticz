@@ -101,6 +101,7 @@ namespace Plugins {
 	  void Stop();
 
 	  void WriteDebugBuffer(const std::vector<byte> &Buffer, bool Incoming);
+	  void LogInterpreterState(const char* context);
 
 	  bool WriteToHardware(const char *pdata, unsigned char length) override;
 	  void SendCommand(const std::string &DeviceID, int Unit, const std::string &command, int level, _tColor color);

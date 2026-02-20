@@ -641,7 +641,7 @@ namespace Plugins {
 			{
 				if (pModState->pPlugin->m_bDebug & PDM_DEVICE)
 				{
-					pModState->pPlugin->Log(LOG_NORM, "(%s) Creating Unit '%s'.", pModState->pPlugin->m_Name.c_str(), sName.c_str());
+					pModState->pPlugin->Debug(DEBUG_PYTHON, "(%s) Creating Unit '%s'.", pModState->pPlugin->m_Name.c_str(), sName.c_str());
 				}
 
 				if (!m_sql.m_bAcceptNewHardware)
@@ -1072,7 +1072,7 @@ namespace Plugins {
 			{
 				if (pModState->pPlugin->m_bDebug & PDM_DEVICE)
 				{
-					pModState->pPlugin->Log(LOG_NORM, "(%s) Deleting unit '%s'.", pModState->pPlugin->m_Name.c_str(), sName.c_str());
+					pModState->pPlugin->Debug(DEBUG_PYTHON, "(%s) Deleting unit '%s'.", pModState->pPlugin->m_Name.c_str(), sName.c_str());
 				}
 
 				// Make sure the entry to delete exists and is for the correct hardware

@@ -165,7 +165,7 @@ namespace Plugins {
 				{
 					if (self->pPlugin->m_bDebug & PDM_IMAGE)
 					{
-						_log.Log(LOG_NORM, "(%s) Creating images from file '%s'.", self->pPlugin->m_Name.c_str(), sFilename.c_str());
+						_log.Debug(DEBUG_PYTHON, "(%s) Creating images from file '%s'.", self->pPlugin->m_Name.c_str(), sFilename.c_str());
 					}
 
 					//
@@ -233,7 +233,7 @@ namespace Plugins {
 			{
 				if (self->pPlugin->m_bDebug & PDM_IMAGE)
 				{
-					_log.Log(LOG_NORM, "Deleting Image '%s'.", sName.c_str());
+					_log.Debug(DEBUG_PYTHON, "Deleting Image '%s'.", sName.c_str());
 				}
 
 				std::vector<std::vector<std::string> > result;
@@ -913,7 +913,7 @@ namespace Plugins {
 			{
 				if (self->pPlugin->m_bDebug & PDM_DEVICE)
 				{
-					self->pPlugin->Log(LOG_NORM, "Creating device '%s'.", sName.c_str());
+					self->pPlugin->Debug(DEBUG_PYTHON, "Creating device '%s'.", sName.c_str());
 				}
 
 				if (!m_sql.m_bAcceptNewHardware)
@@ -1074,7 +1074,7 @@ namespace Plugins {
 			{
 				if (self->pPlugin->m_bDebug & PDM_DEVICE)
 				{
-					_log.Log(LOG_NORM, "(%s) Updating device from %d:'%s' to have values %d:'%s'.", sName.c_str(), self->nValue, PyUnicode_AsUTF8(self->sValue), nValue, sValue);
+					_log.Debug(DEBUG_PYTHON, "(%s) Updating device from %d:'%s' to have values %d:'%s'.", sName.c_str(), self->nValue, PyUnicode_AsUTF8(self->sValue), nValue, sValue);
 				}
 				Py_BEGIN_ALLOW_THREADS
 				DevRowIdx = m_sql.UpdateValue(self->HwdID, 0, sDeviceID.c_str(), (const unsigned char)self->Unit, (const unsigned char)iType, (const unsigned char)iSubType, iSignalLevel, iBatteryLevel, nValue, sValue, sName, true, effectiveUser.c_str());
@@ -1282,7 +1282,7 @@ namespace Plugins {
 			{
 				if (self->pPlugin->m_bDebug & PDM_DEVICE)
 				{
-					self->pPlugin->Log(LOG_NORM, "Deleting device '%s'.", sName.c_str());
+					self->pPlugin->Debug(DEBUG_PYTHON, "Deleting device '%s'.", sName.c_str());
 				}
 
 				std::vector<std::vector<std::string> > result;
@@ -1348,7 +1348,7 @@ namespace Plugins {
 		}
 		if (pPlugin && (pPlugin->m_bDebug & PDM_CONNECTION))
 		{
-			pPlugin->Log(LOG_NORM, "Deallocating connection object '%s' (%s:%s).", PyUnicode_AsUTF8(self->Name), PyUnicode_AsUTF8(self->Address), PyUnicode_AsUTF8(self->Port));
+			pPlugin->Debug(DEBUG_PYTHON, "Deallocating connection object '%s' (%s:%s).", PyUnicode_AsUTF8(self->Name), PyUnicode_AsUTF8(self->Address), PyUnicode_AsUTF8(self->Port));
 		}
 
 		Py_XDECREF(self->Name);
@@ -1518,7 +1518,7 @@ namespace Plugins {
 		//	Add connect command to message queue unless already connected
 		if (pPlugin->IsStopRequested(0))
 		{
-			pPlugin->Log(LOG_NORM, "%s, connect request from '%s' ignored. Plugin is stopping.", __func__, self->pPlugin->m_Name.c_str());
+			pPlugin->Debug(DEBUG_PYTHON, "%s, connect request from '%s' ignored. Plugin is stopping.", __func__, self->pPlugin->m_Name.c_str());
 			Py_RETURN_NONE;
 		}
 
@@ -1583,7 +1583,7 @@ namespace Plugins {
 		//	Add connect command to message queue unless already connected
 		if (pPlugin->IsStopRequested(0))
 		{
-			pPlugin->Log(LOG_NORM, "%s, listen request from '%s' ignored. Plugin is stopping.", __func__, self->pPlugin->m_Name.c_str());
+			pPlugin->Debug(DEBUG_PYTHON, "%s, listen request from '%s' ignored. Plugin is stopping.", __func__, self->pPlugin->m_Name.c_str());
 			Py_RETURN_NONE;
 		}
 
@@ -1631,7 +1631,7 @@ namespace Plugins {
 		
 		if (pPlugin->IsStopRequested(0))
 		{
-			pPlugin->Log(LOG_NORM, "%s, send request from '%s' ignored. Plugin is stopping.", __func__, pPlugin->m_Name.c_str());
+			pPlugin->Debug(DEBUG_PYTHON, "%s, send request from '%s' ignored. Plugin is stopping.", __func__, pPlugin->m_Name.c_str());
 		}
 		else
 		{

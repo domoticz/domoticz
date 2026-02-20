@@ -64,6 +64,7 @@ namespace Plugins {
 		DECLARE_PYTHON_SYMBOL(wchar_t*, Py_GetPath, );
 		DECLARE_PYTHON_SYMBOL(void, Py_SetPath, const wchar_t*);
 		DECLARE_PYTHON_SYMBOL(void, PySys_SetPath, const wchar_t*);
+		DECLARE_PYTHON_SYMBOL(int, PySys_SetObject, const char* COMMA PyObject*);
 		DECLARE_PYTHON_SYMBOL(void, Py_SetProgramName, wchar_t*);
 		DECLARE_PYTHON_SYMBOL(wchar_t*, Py_GetProgramFullPath, );
 		DECLARE_PYTHON_SYMBOL(int, PyImport_AppendInittab, const char *COMMA PyObject *(*initfunc)());
@@ -110,6 +111,7 @@ namespace Plugins {
 		DECLARE_PYTHON_SYMBOL(void, PyErr_Fetch, PyObject** COMMA PyObject** COMMA PyObject**);
 		DECLARE_PYTHON_SYMBOL(void, PyErr_NormalizeException, PyObject **COMMA PyObject **COMMA PyObject **);
 		DECLARE_PYTHON_SYMBOL(PyObject *, PyImport_ImportModule, const char *);
+		DECLARE_PYTHON_SYMBOL(PyObject *, PyImport_GetModuleDict, );
 		DECLARE_PYTHON_SYMBOL(int, PyObject_RichCompareBool, PyObject* COMMA PyObject* COMMA int);
 		DECLARE_PYTHON_SYMBOL(PyObject *, PyObject_CallObject, PyObject *COMMA PyObject *);
 		DECLARE_PYTHON_SYMBOL(void, PyEval_InitThreads, );
@@ -195,6 +197,7 @@ namespace Plugins {
 					RESOLVE_PYTHON_SYMBOL(Py_GetPath);
 					RESOLVE_PYTHON_SYMBOL(Py_SetPath);
 					RESOLVE_PYTHON_SYMBOL(PySys_SetPath);
+					RESOLVE_PYTHON_SYMBOL(PySys_SetObject);
 					RESOLVE_PYTHON_SYMBOL(Py_SetProgramName);
 					RESOLVE_PYTHON_SYMBOL(Py_GetProgramFullPath);
 					RESOLVE_PYTHON_SYMBOL(PyImport_AppendInittab);
@@ -241,6 +244,7 @@ namespace Plugins {
 					RESOLVE_PYTHON_SYMBOL(PyErr_Fetch);
 					RESOLVE_PYTHON_SYMBOL(PyErr_NormalizeException);
 					RESOLVE_PYTHON_SYMBOL(PyImport_ImportModule);
+					RESOLVE_PYTHON_SYMBOL(PyImport_GetModuleDict);
 					RESOLVE_PYTHON_SYMBOL(PyObject_RichCompareBool);
 					RESOLVE_PYTHON_SYMBOL(PyObject_CallObject);
 					RESOLVE_PYTHON_SYMBOL(PyEval_InitThreads);
@@ -417,6 +421,7 @@ extern	SharedLibraryProxy* pythonLib;
 #define	Py_EndInterpreter		pythonLib->Py_EndInterpreter
 #define	Py_SetPath				pythonLib->Py_SetPath
 #define	PySys_SetPath			pythonLib->PySys_SetPath
+#define	PySys_SetObject			pythonLib->PySys_SetObject
 #define	Py_GetPath				pythonLib->Py_GetPath
 #define	Py_SetProgramName		pythonLib->Py_SetProgramName
 #define	Py_GetProgramFullPath	pythonLib->Py_GetProgramFullPath
@@ -465,6 +470,7 @@ extern	SharedLibraryProxy* pythonLib;
 #define PyErr_Fetch				pythonLib->PyErr_Fetch
 #define PyErr_NormalizeException pythonLib->PyErr_NormalizeException
 #define PyImport_ImportModule	pythonLib->PyImport_ImportModule
+#define PyImport_GetModuleDict	pythonLib->PyImport_GetModuleDict
 #define PyObject_RichCompareBool pythonLib->PyObject_RichCompareBool
 #define PyObject_CallObject		pythonLib->PyObject_CallObject
 #define	PyEval_InitThreads		pythonLib->PyEval_InitThreads
