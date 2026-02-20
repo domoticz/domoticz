@@ -67,7 +67,8 @@ const std::string CEventSystem::m_szReason[] =
 	"time",				// 3
 	"security",			// 4
 	"url",				// 5
-	"notification"			// 6
+	"notification",			// 6
+	"shellcommand"			// 7
 };
 
 // Security status
@@ -3043,7 +3044,7 @@ void CEventSystem::EvaluateLua(const std::vector<_tEventQueue> &items, const std
 	CdzVents* dzventsCheck = CdzVents::GetInstance();
 	if (!m_sql.m_bDisableDzVentsSystem && filename == dzventsCheck->m_runtimeDir + "dzVents.lua")
 		displayName = "dzVents runtime";
-	_log.Debug(DEBUG_EVENTSYSTEM, "EventSystem: script %s trigger (%s)", m_szReason[items[0].reason].c_str(), displayName.c_str());
+	_log.Debug(DEBUG_EVENTSYSTEM, "EventSystem: script %s trigger (%s) [%d event(s)]", m_szReason[items[0].reason].c_str(), displayName.c_str(), (int)items.size());
 
 	int sunTimers[10];
 	if (m_mainworker.m_SunRiseSetMins.size() == 10)
