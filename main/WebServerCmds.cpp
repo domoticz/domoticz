@@ -2515,6 +2515,7 @@ namespace http
 		{
 			root["status"] = "OK";
 			root["title"] = "GetAuth";
+			root["canlogout"] = !session.istrustednetwork;
 			if (session.rights != URIGHTS_NONE)
 			{
 				root["user"] = session.username;

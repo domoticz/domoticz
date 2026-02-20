@@ -290,7 +290,8 @@ define(['angularAMD', 'app.routes', 'app.constants', 'app.notifications', 'app.p
 		var permissionList = {
 			isloggedin: false,
 			rights: -1,
-			user: ''
+			user: '',
+			canlogout: true
 		};
 		permissions.setPermissions(permissionList);
 
@@ -533,6 +534,7 @@ define(['angularAMD', 'app.routes', 'app.constants', 'app.notifications', 'app.p
 			success: function (data) {
 				isOnline = true;
 				if (data.status == "OK") {
+					permissionList.canlogout = data.canlogout;
 					if (data.user && data.user !== "") {
 						permissionList.isloggedin = true;
 						permissionList.rights = parseInt(data.rights);
