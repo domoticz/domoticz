@@ -197,6 +197,7 @@ void CEventSystem::StopEventSystem(bool bDestroyPythonInterpreter /*= true*/)
 #ifdef ENABLE_PYTHON
 	Plugins::PythonEventsStop(bDestroyPythonInterpreter);
 #endif
+	m_eventqueue.clear();
 }
 
 void CEventSystem::SetEnabled(const bool bEnabled)
@@ -1431,6 +1432,8 @@ void CEventSystem::EventQueueThread()
 		{
 			if (item.id == -1)
 				break; //need to stop
+
+			items.push_back(item); // push the first event in the batch
 
 			// Drain all remaining queued events into the batch
 			while (m_eventqueue.try_pop(item))
