@@ -795,14 +795,11 @@ namespace http
 				return;
 			}
 			Json::Value clientData;
+			if (!ParseJSon(clientDataJSONraw, clientData))
 			{
-				Json::Reader reader;
-				if (!reader.parse(clientDataJSONraw, clientData))
-				{
-					root["status"]  = "ERR";
-					root["message"] = "Failed to parse clientDataJSON";
-					return;
-				}
+				root["status"]  = "ERR";
+				root["message"] = "Failed to parse clientDataJSON";
+				return;
 			}
 			if (clientData["type"].asString() != "webauthn.create")
 			{
@@ -1067,14 +1064,11 @@ namespace http
 				return;
 			}
 			Json::Value clientData;
+			if (!ParseJSon(clientDataJSONraw, clientData))
 			{
-				Json::Reader reader;
-				if (!reader.parse(clientDataJSONraw, clientData))
-				{
-					root["status"]  = "ERR";
-					root["message"] = "Failed to parse clientDataJSON";
-					return;
-				}
+				root["status"]  = "ERR";
+				root["message"] = "Failed to parse clientDataJSON";
+				return;
 			}
 			if (clientData["type"].asString() != "webauthn.get")
 			{

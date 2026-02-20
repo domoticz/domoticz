@@ -920,16 +920,14 @@ namespace http
 			Json::Value result(Json::arrayValue);
 			if (passkeysJson.empty())
 				return result;
-			Json::Reader reader;
-			if (!reader.parse(passkeysJson, result) || !result.isArray())
+			if (!ParseJSon(passkeysJson, result) || !result.isArray())
 				return Json::Value(Json::arrayValue);
 			return result;
 		}
 
 		std::string CWebServer::SerializePasskeys(const Json::Value& passkeys)
 		{
-			Json::FastWriter writer;
-			return writer.write(passkeys);
+			return JSonToRawString(passkeys);
 		}
 
 		bool CWebServer::AddPasskeyToUser(unsigned long userID, const std::string& credentialID, const std::string& publicKey, const std::string& credentialName, const std::string& deviceInfo)
