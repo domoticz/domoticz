@@ -197,7 +197,6 @@ void CEventSystem::StopEventSystem(bool bDestroyPythonInterpreter /*= true*/)
 #ifdef ENABLE_PYTHON
 	Plugins::PythonEventsStop(bDestroyPythonInterpreter);
 #endif
-	m_eventqueue.clear();
 }
 
 void CEventSystem::SetEnabled(const bool bEnabled)
@@ -1416,10 +1415,10 @@ void CEventSystem::EventQueueThread()
 {
 	_log.Log(LOG_STATUS, "EventSystem: Queue thread started...");
 
-	std::vector<_tEventQueue> items;
-
 	while (!m_TaskQueue.IsStopRequested(0))
 	{
+		std::vector<_tEventQueue> items;
+
 		// Block until at least one event arrives (or 5 sec timeout)
 		_tEventQueue item;
 		if (!m_eventqueue.timed_wait_and_pop<std::chrono::duration<int>>(item, std::chrono::duration<int>(5)))
@@ -1428,37 +1427,33 @@ void CEventSystem::EventQueueThread()
 		if (m_TaskQueue.IsStopRequested(0))
 			break;
 
+		items.push_back(item); // push the first event in the batch
+
 		try
 		{
-			if (item.id == -1)
-				break; //need to stop
-
-			items.push_back(item); // push the first event in the batch
-
 			// Drain all remaining queued events into the batch
 			while (m_eventqueue.try_pop(item))
 			{
-				if (item.id == -1)
-					break; //need to stop
+				if (m_TaskQueue.IsStopRequested(0))
+					break;
 				items.push_back(item);
 			}
+
 			if (!items.empty())
 			{
 				EvaluateEvent(items);
-				items.clear();
 			}
 		}
 		catch (const std::exception &e)
 		{
 			_log.Log(LOG_ERROR, "EventSystem: Exception during event processing: %s", e.what());
-			items.clear();
 		}
 		catch (...)
 		{
 			_log.Log(LOG_ERROR, "EventSystem: Unknown exception during event processing");
-			items.clear();
 		}
 	}
+
 	m_eventqueue.clear();
 
 	_log.Log(LOG_STATUS, "EventSystem: Queue thread stopped...");
