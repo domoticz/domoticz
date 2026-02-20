@@ -1,5 +1,6 @@
 Version 2026.xxxx
 - Added: Add basic Alexa Smart Home v3 API endpoint (see ALEXA.md)
+- Added: Re-added wind-rose direction chart to Wind sensor log
 - Added: Blinds + Stop type
 - Added: Configurable pricing resolution (15/30/60 minutes) for dynamic energy contracts (with adapted P1 and kWh graphs)
 - Added: Counter hourly chart resolution toggle (1h/15m/30m) when sub-hourly pricing is configured

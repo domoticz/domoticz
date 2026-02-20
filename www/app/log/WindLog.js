@@ -62,6 +62,111 @@ define(['app', 'lodash', 'RefreshingChart', 'DataLoader', 'ChartLoader', 'log/Ch
 			}
 		});
 
+		var wind_directions = ['N', 'NNE', 'NE', 'ENE', 'E', 'ESE', 'SE', 'SSE', 'S', 'SSW', 'SW', 'WSW', 'W', 'WNW', 'NW', 'NNW'];
+
+		app.component('windDirectionChart', {
+			require: {
+				logCtrl: '^deviceWindLog'
+			},
+			bindings: {
+				device: '<'
+			},
+			template: '<h2 data-i18n="Wind Direction"></h2><div id="winddirectiongraph" style="height: 400px;"></div>',
+			controllerAs: 'vm',
+			controller: function ($element, domoticzApi) {
+				const self = this;
+
+				self.$onInit = function () {
+					var chartElement = $element.find('#winddirectiongraph');
+
+					chartElement.highcharts({
+						chart: {
+							polar: true,
+							type: 'column'
+						},
+						title: {
+							text: $.t('Wind') + ' ' + $.t('Direction') + ' ' + Get5MinuteHistoryDaysGraphTitle()
+						},
+						pane: {
+							size: '85%'
+						},
+						xAxis: {
+							tickmarkPlacement: 'on',
+							tickWidth: 1,
+							tickPosition: 'outside',
+							tickLength: 5,
+							tickColor: '#999',
+							tickInterval: 1,
+							categories: wind_directions,
+							labels: {
+								formatter: function () {
+									return this.value;
+								}
+							}
+						},
+						yAxis: {
+							min: 0,
+							showLastLabel: true,
+							title: {
+								text: $.t('Frequency') + ' (%)'
+							},
+							labels: {
+								formatter: function () {
+									return this.value + '%';
+								}
+							},
+							reversedStacks: false
+						},
+						tooltip: {
+							formatter: function () {
+								return this.x + ': ' + this.y + ' %';
+							}
+						},
+						plotOptions: {
+							series: {
+								stacking: 'normal',
+								shadow: false,
+								groupPadding: 0,
+								pointPlacement: 'on'
+							}
+						},
+						legend: {
+							align: 'right',
+							verticalAlign: 'top',
+							y: 100,
+							layout: 'vertical'
+						},
+						series: []
+					});
+
+					domoticzApi.sendCommand('graph', {
+						sensor: 'winddir',
+						idx: self.device.idx,
+						range: 'day'
+					}).then(function (data) {
+						if (typeof data.result_speed === 'undefined') {
+							return;
+						}
+
+						var hchart = chartElement.highcharts();
+
+						data.result_speed.forEach(function (item, i) {
+							var seriesData = [];
+							for (var j = 0; j < 16; j++) {
+								seriesData.push(parseFloat(item.sp[j]));
+							}
+							hchart.addSeries({
+								name: item.label,
+								data: seriesData
+							}, false);
+						});
+
+						hchart.redraw();
+					});
+				};
+			}
+		});
+
 		app.component('windLongChart', {
 			require: {
 				logCtrl: '^deviceWindLog'
