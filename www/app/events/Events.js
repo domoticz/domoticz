@@ -371,23 +371,39 @@ define(['app', 'events/factories', 'events/EventViewer', 'events/CurrentStates']
         }
 
         function closeEvent(event, forceClose) {
-			if (event == -1) {
-				//close all events
+            if (event === -1) {
+                // Close all events (keep unsaved)
+                var hadUnsaved = vm.openedEvents.some(function (item) { return item.isChanged; });
                 vm.openedEvents = vm.openedEvents.filter(function (item) {
                     return item.isChanged;
                 });
-				setActiveEventId('states');
-				storeRecentEvents();
-				return;
-			}
+                if (hadUnsaved && vm.openedEvents.length > 0) {
+                    setActiveEventId(vm.openedEvents[0].id);
+                } else {
+                    setActiveEventId('states');
+                }
+                storeRecentEvents();
+                return;
+            }
 
-			if (event == 0) {
-				for (let i = 0; i < vm.openedEvents.length; i++) {
-					if (vm.openedEvents[i].id == vm.activeEventId) {
-						event = vm.openedEvents[i];
-					}
-				}				
-			}
+            if (event === -2) {
+                // Close other events (keep active + unsaved)
+                vm.openedEvents = vm.openedEvents.filter(function (item) {
+                    return item.id === vm.activeEventId || item.isChanged;
+                });
+                storeRecentEvents();
+                return;
+            }
+
+            if (event === 0) {
+                // Close current active event
+                var found = vm.openedEvents.find(function (item) {
+                    return item.id === vm.activeEventId;
+                });
+                if (!found) return;
+                event = found;
+            }
+
             $q.resolve(event.isChanged && !forceClose
                 ? bootbox.confirm($.t('This script has unsaved changes.\n\nAre you sure you want to close it?'))
                 : true
@@ -407,7 +423,7 @@ define(['app', 'events/factories', 'events/EventViewer', 'events/CurrentStates']
                 vm.openedEvents = vm.openedEvents.filter(function (item) {
                     return item.id !== event.id
                 });
-				storeRecentEvents();
+                storeRecentEvents();
 
                 event.isChanged = false;
             });
@@ -466,13 +482,14 @@ define(['app', 'events/factories', 'events/EventViewer', 'events/CurrentStates']
 
 			domoticzEventsApi.loadRecents().then(function (data) {
 				if (data.length > 0) {
-					const recentEvents = data.split(',');
-					for (id of recentEvents) {
-						vm.events.map(function (item) {
-							if (item.id == id) {
-								openEvent(item);
-							}
+					var recentIds = data.split(',');
+					for (var i = 0; i < recentIds.length; i++) {
+						var match = vm.events.find(function (item) {
+							return String(item.id) === recentIds[i];
 						});
+						if (match) {
+							openEvent(match);
+						}
 					}
 				} else {
 					//open first event
@@ -481,14 +498,13 @@ define(['app', 'events/factories', 'events/EventViewer', 'events/CurrentStates']
 				vm.storeRecents = true;
 			});
 		}
-		
+
 		function storeRecentEvents() {
-			if (vm.storeRecents == false) {
+			if (vm.storeRecents === false) {
 				return;
 			}
-			var recentEvents = [];
-			vm.openedEvents.map(function (item) {
-				recentEvents.push(item.id);
+			var recentEvents = vm.openedEvents.map(function (item) {
+				return item.id;
 			});
 			domoticzEventsApi.storeRecents(recentEvents);
 		}

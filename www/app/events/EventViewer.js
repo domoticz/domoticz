@@ -141,6 +141,10 @@ define(['app', 'events/factories'], function (app) {
                         aceEditor.destroy();
                         aceEditor = null;
                     }
+                    if (blocklyWorkspace) {
+                        blocklyWorkspace.dispose();
+                        blocklyWorkspace = null;
+                    }
                     if (statusBarEl && statusBarEl.parentNode) {
                         statusBarEl.parentNode.removeChild(statusBarEl);
                         statusBarEl = null;
@@ -316,6 +320,7 @@ define(['app', 'events/factories'], function (app) {
                         blocklyWorkspace = Blockly.inject(container, {
                             path: './',
                             toolbox: toolbox,
+                            sounds: false,
                             zoom: {
                                 controls: true,
                                 wheel: true,
