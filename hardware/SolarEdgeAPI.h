@@ -23,6 +23,7 @@ private:
 	bool StopHardware() override;
 	void Do_Work();
 	bool GetSite();
+	void GetBatteryFromInventory();
 	void GetInverters();
 	void GetMeterDetails();
 	void GetInverterDetails(const _tInverterSettings* pInverterSettings, int iInverterNumber);
