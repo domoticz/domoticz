@@ -1,3 +1,39 @@
+<script type="text/ng-template" id="app/events/folderNameModal.html">
+    <div class="modal-header">
+        <h3 class="modal-title">{{:: 'Folder Name' | translate }}</h3>
+    </div>
+    <div class="modal-body">
+        <form class="form-horizontal" name="modalForm" ng-submit="modalForm.$valid && $close(folder.name)">
+            <div class="control-group">
+                <label class="control-label" for="folder-name">{{:: 'Name' | translate }}:</label>
+                <div class="controls">
+                    <input type="text"
+                           id="folder-name"
+                           class="form-control"
+                           autofocus
+                           required
+                           minlength="1"
+                           maxlength="100"
+                           ng-model="folder.name">
+                </div>
+            </div>
+        </form>
+    </div>
+    <div class="modal-footer">
+        <button type="button"
+                class="btn btn-primary"
+                ng-disabled="modalForm.$invalid"
+                ng-click="$close(folder.name)">
+            {{:: 'OK' | translate }}
+        </button>
+        <button type="button"
+                class="btn btn-default"
+                ng-click="$dismiss()">
+            {{:: 'Cancel' | translate }}
+        </button>
+    </div>
+</script>
+
 <div class="row" style="margin: -8px 0 0 -8px;">
 	<timesun></timesun>
 </div>
@@ -5,18 +41,72 @@
 	<div class="events-editor">
 		<section class="events-editor__tree" ng-show="$ctrl.isListExpanded">
 			<h2>{{:: 'My automation scripts' | translate }}</h2>
-			<input class="events-editor__search" type="search" ng-model="$ctrl.search.name" placeholder="{{:: 'Filter' | translate }}">
-			<nav class="events-editor-tree">
+			<div class="events-editor__toolbar">
+				<input class="events-editor__search" type="search" ng-model="$ctrl.search.name" placeholder="{{:: 'Filter' | translate }}">
+				<button class="events-editor__toolbar-btn" ng-click="$ctrl.expandAllFolders()" title="{{:: 'Expand All' | translate }}"><i class="icon-plus-sign"></i></button>
+				<button class="events-editor__toolbar-btn" ng-click="$ctrl.collapseAllFolders()" title="{{:: 'Collapse All' | translate }}"><i class="icon-minus-sign"></i></button>
+			</div>
+			<nav class="events-editor-tree"
+				 ng-on-contextmenu="$ctrl.showContextMenu($event, null, 'root')"
+				 events-drop-target="$ctrl.onDrop('0')"
+			>
+				<!-- Folders -->
+				<ul class="events-editor-folder-list">
+					<li class="events-editor-folder"
+						ng-repeat="folder in $ctrl.folders track by folder.id"
+						ng-show="!$ctrl.search.name || ($ctrl.getEventsInFolder(folder.id) | filter:$ctrl.search).length > 0"
+						ng-on-contextmenu="$ctrl.showContextMenu($event, folder, 'folder')"
+						events-drop-target="$ctrl.onDrop(folder.id)"
+					>
+						<a class="events-editor-folder__header"
+						   href="javascript:void(0)"
+						   ng-click="$ctrl.toggleFolder(folder)"
+						   draggable="false"
+						>
+							<i ng-class="{'icon-folder-open': $ctrl.isFolderExpanded(folder), 'icon-folder-close': !$ctrl.isFolderExpanded(folder)}"></i>
+							{{ folder.name }}
+							<span class="badge events-editor-folder__count">{{ $ctrl.getEventsInFolder(folder.id).length }}</span>
+						</a>
+						<ul class="events-editor-folder__children" ng-show="$ctrl.isFolderExpanded(folder) || $ctrl.search.name">
+							<li class="events-editor-tree-item"
+								ng-class="{
+									'events-editor-tree-item_disabled': event.eventstatus === '0',
+									'events-editor-tree-item_active': event.id === $ctrl.activeEventId,
+									'events-editor-tree-item_selected': $ctrl.isEventSelected(event)
+								}"
+								ng-repeat="event in $ctrl.getEventsInFolder(folder.id) | filter:$ctrl.search track by event.id"
+								events-drag-source="$ctrl.onDragStart(event)"
+								events-drag-end="$ctrl.onDragEnd()"
+							>
+								<a class="events-editor-tree-item__file"
+								   href="javascript:void(0)"
+								   ng-click="$ctrl.openEvent(event)"
+								   ng-on-mousedown="$ctrl.toggleEventSelection(event, $event)"
+								>
+									<span class="label label-important" ng-if="event.eventstatus === '0'">{{:: 'Disabled' | translate }}</span>
+									<span class="label label-warning" ng-if="event.eventstatus === '2'">{{:: 'Error' | translate }}</span>
+									{{ event.name }}
+								</a>
+							</li>
+						</ul>
+					</li>
+				</ul>
+
+				<!-- Root-level events (no folder) -->
 				<li class="events-editor-tree-item"
 					ng-class="{
 						'events-editor-tree-item_disabled': event.eventstatus === '0',
-						'events-editor-tree-item_active': event.id === $ctrl.activeEventId
+						'events-editor-tree-item_active': event.id === $ctrl.activeEventId,
+						'events-editor-tree-item_selected': $ctrl.isEventSelected(event)
 					}"
-					ng-repeat="event in $ctrl.events | filter:$ctrl.search track by event.id"
+					ng-repeat="event in $ctrl.getRootEvents() | filter:$ctrl.search track by event.id"
+					events-drag-source="$ctrl.onDragStart(event)"
+					events-drag-end="$ctrl.onDragEnd()"
 				>
 					<a class="events-editor-tree-item__file"
 					   href="javascript:void(0)"
 					   ng-click="$ctrl.openEvent(event)"
+					   ng-on-mousedown="$ctrl.toggleEventSelection(event, $event)"
 					>
 						<span class="label label-important" ng-if="event.eventstatus === '0'">{{:: 'Disabled' | translate }}</span>
 						<span class="label label-warning" ng-if="event.eventstatus === '2'">{{:: 'Error' | translate }}</span>
@@ -25,6 +115,32 @@
 				</li>
 			</nav>
 		</section>
+
+		<!-- Context Menu -->
+		<div class="events-context-menu"
+			 ng-show="$ctrl.contextMenu.visible"
+			 ng-style="{'left': $ctrl.contextMenu.x + 'px', 'top': $ctrl.contextMenu.y + 'px'}"
+			 ng-click="$event.stopPropagation()"
+		>
+			<ul class="dropdown-menu events-context-menu__list" style="display: block; position: static;">
+				<li>
+					<a href="javascript:void(0)" ng-click="$ctrl.createFolder()">
+						<i class="icon-plus"></i> {{:: 'New Folder' | translate }}
+					</a>
+				</li>
+				<li ng-if="$ctrl.contextMenu.targetType === 'folder'">
+					<a href="javascript:void(0)" ng-click="$ctrl.renameFolder($ctrl.contextMenu.target)">
+						<i class="icon-pencil"></i> {{:: 'Rename Folder' | translate }}
+					</a>
+				</li>
+				<li ng-if="$ctrl.contextMenu.targetType === 'folder'" class="divider"></li>
+				<li ng-if="$ctrl.contextMenu.targetType === 'folder'">
+					<a href="javascript:void(0)" ng-click="$ctrl.deleteFolder($ctrl.contextMenu.target)">
+						<i class="icon-trash"></i> {{:: 'Delete Folder' | translate }}
+					</a>
+				</li>
+			</ul>
+		</div>
 
 		<button type="button"
 				class="events-editor__splitter"
@@ -120,4 +236,3 @@
 		</section>
 	</div>
 </div>
-
