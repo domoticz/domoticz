@@ -41,7 +41,7 @@
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
 
-#define DB_VERSION 175
+#define DB_VERSION 174
 
 #define DEFAULT_ADMINUSER "admin"
 #define DEFAULT_ADMINPWD "domoticz"
@@ -3301,7 +3301,7 @@ bool CSQLHelper::OpenDatabase()
 			// Add Passkeys column to Users table for WebAuthn/passkey support
 			query("ALTER TABLE Users ADD COLUMN [Passkeys] TEXT DEFAULT NULL");
 		}
-		if (dbversion < 175)
+		if (dbversion < 174)
 		{
 			if (!DoesColumnExistsInTable("FolderID", "EventMaster"))
 			{
