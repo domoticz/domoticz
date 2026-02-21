@@ -29,13 +29,14 @@
     <a class="btn btn-danger" ng-click="ClearLog()" data-i18n="Clear">Clear</a>
   </div>
   <div id="logdata" class="log-console">
-    <div class="log-line" ng-class="item.levelClass" ng-repeat="item in filteredItems track by $index">{{item.raw}}</div>
+    <div class="log-show-older" ng-show="hasOlderMessages" ng-click="showOlderMessages()">&#x25B2; Show older messages ({{filteredItems.length - renderItems.length}} hidden)</div>
+    <div class="log-line" ng-class="::item.levelClass" ng-repeat="item in renderItems track by item.id">{{::item.raw}}</div>
   </div>
   <div class="log-scroll-indicator" ng-show="!autoScroll" ng-click="scrollToBottom()">
     &#x2193; New messages below
   </div>
   <div class="log-statusbar">
-    <span>{{filteredItems.length}} / {{logitems.length}} lines</span>
+    <span>{{renderItems.length}} of {{filteredItems.length}} / {{logitems.length}} lines</span>
     <span ng-show="!autoScroll" class="log-statusbar-paused">PAUSED</span>
     <span ng-show="autoScroll" class="log-statusbar-following">Following</span>
   </div>

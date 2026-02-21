@@ -1106,7 +1106,7 @@ div.log {
 	padding: 4px 8px;
 	border-radius: 3px;
 	font-family: inherit;
-	font-size: 11px;
+	font-size: 14px;
 }
 
 .log-search-input:focus {
@@ -1189,6 +1189,21 @@ mark.log-highlight {
 
 .log-scroll-indicator:hover {
 	background: rgba(100, 200, 255, 0.15);
+}
+
+.log-show-older {
+	text-align: center;
+	padding: 6px;
+	color: #889;
+	font-size: 11px;
+	cursor: pointer;
+	border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+	transition: color 0.15s, background 0.15s;
+}
+
+.log-show-older:hover {
+	color: #ddd;
+	background: rgba(100, 200, 255, 0.08);
 }
 
 .log-statusbar-paused {

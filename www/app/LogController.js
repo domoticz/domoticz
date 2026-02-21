@@ -1,5 +1,5 @@
 define(['app'], function (app) {
-	app.controller('LogController', ['$scope', '$rootScope', '$http', 'livesocket', 'bootbox', function ($scope, $rootScope, $http, livesocket, bootbox) {
+	app.controller('LogController', ['$scope', '$rootScope', '$http', '$timeout', 'livesocket', 'bootbox', function ($scope, $rootScope, $http, $timeout, livesocket, bootbox) {
 
 		// Constants
 		var LOG_NORM = 0x0000001;
@@ -8,10 +8,17 @@ define(['app'], function (app) {
 		var LOG_DEBUG = 0x0000008;
 		var LOG_ALL = 0xFFFFFFF;
 		var MAX_LOG_LINES = 1000;
+		var RENDER_LIMIT_STEP = 200;
+		var BATCH_INTERVAL = 100;
 
 		// State
+		var nextId = 0;
+		var logVersion = 0;
 		$scope.logitems = [];
 		$scope.filteredItems = [];
+		$scope.renderItems = [];
+		$scope.renderLimit = RENDER_LIMIT_STEP;
+		$scope.hasOlderMessages = false;
 		$scope.LastLogTime = 0;
 		$scope.searchText = '';
 
@@ -63,6 +70,22 @@ define(['app'], function (app) {
 			}
 		}
 
+		// Tiered retention: remove oldest normal/debug entries first
+		function trimLogBuffer() {
+			while ($scope.logitems.length > MAX_LOG_LINES) {
+				var idx = -1;
+				for (var i = 0; i < $scope.logitems.length; i++) {
+					if ($scope.logitems[i].level !== LOG_ERROR && $scope.logitems[i].level !== LOG_STATUS) {
+						idx = i;
+						break;
+					}
+				}
+				if (idx === -1) idx = 0;
+				var removed = $scope.logitems.splice(idx, 1)[0];
+				updateCounts(removed.level, -1);
+			}
+		}
+
 		// Add a log entry (handles multiline messages)
 		$scope.addLogEntry = function (level, message) {
 			var lines = message.replace(/\n/g, '\n').split('\n');
@@ -84,6 +107,7 @@ define(['app'], function (app) {
 				var text = match ? match[2] : lineMsg;
 
 				$scope.logitems.push({
+					id: nextId++,
 					timestamp: timestamp,
 					level: level,
 					levelClass: getLevelClass(level),
@@ -95,11 +119,8 @@ define(['app'], function (app) {
 				updateCounts(level, 1);
 			}
 
-			// Enforce max buffer
-			while ($scope.logitems.length > MAX_LOG_LINES) {
-				var removed = $scope.logitems.shift();
-				updateCounts(removed.level, -1);
-			}
+			trimLogBuffer();
+			logVersion++;
 		};
 
 		// Compute filtered items
@@ -131,18 +152,36 @@ define(['app'], function (app) {
 				}
 				return true;
 			});
+
+			updateRenderItems();
 		}
 
-		// Watch for filter changes
+		// Render cap: only put last N filtered items into the DOM
+		function updateRenderItems() {
+			var total = $scope.filteredItems.length;
+			var start = Math.max(0, total - $scope.renderLimit);
+			$scope.renderItems = $scope.filteredItems.slice(start);
+			$scope.hasOlderMessages = start > 0;
+		}
+
+		$scope.showOlderMessages = function () {
+			$scope.renderLimit += RENDER_LIMIT_STEP;
+			updateRenderItems();
+		};
+
+		// Watch for filter changes — reset render window
 		$scope.$watchGroup(['searchText', 'levelFilters.norm', 'levelFilters.status',
 			'levelFilters.error', 'levelFilters.debug'], function () {
+			$scope.renderLimit = RENDER_LIMIT_STEP;
 			updateFilteredItems();
 		});
 
-		// Also update when new items are added (watch array length)
-		$scope.$watch('logitems.length', function () {
-			updateFilteredItems();
-			scrollIfNeeded();
+		// Update when new items are added (version changes even when length stays the same at capacity)
+		$scope.$watch(function () { return logVersion; }, function (newVal, oldVal) {
+			if (newVal !== oldVal) {
+				updateFilteredItems();
+				scrollIfNeeded();
+			}
 		});
 
 		// Initial load via HTTP
@@ -171,6 +210,9 @@ define(['app'], function (app) {
 				}).then(function () {
 					$scope.logitems = [];
 					$scope.filteredItems = [];
+					$scope.renderItems = [];
+					$scope.hasOlderMessages = false;
+					$scope.renderLimit = RENDER_LIMIT_STEP;
 					$scope.counts = { norm: 0, status: 0, error: 0, debug: 0 };
 					$scope.LastLogTime = 0;
 					livesocket.subscribeTo('log');
@@ -180,10 +222,21 @@ define(['app'], function (app) {
 			}, angular.noop);
 		};
 
-		// WebSocket listener
+		// Batched WebSocket listener
+		var pendingMessages = [];
+		var batchTimer = null;
+
 		var unsubLog = $scope.$on('log', function (event, data) {
-			$scope.addLogEntry(data.level, data.message);
-			$scope.$digest();
+			pendingMessages.push({ level: data.level, message: data.message });
+			if (!batchTimer) {
+				batchTimer = $timeout(function () {
+					pendingMessages.forEach(function (msg) {
+						$scope.addLogEntry(msg.level, msg.message);
+					});
+					pendingMessages = [];
+					batchTimer = null;
+				}, BATCH_INTERVAL);
+			}
 		});
 
 		// Format log items as plain text
@@ -206,11 +259,10 @@ define(['app'], function (app) {
 		function getSelectedLogText() {
 			var selection = window.getSelection();
 			if (!selection || selection.isCollapsed) return '';
-			var logContainer = document.getElementById('logdata');
-			if (!logContainer) return '';
-			// Check if selection is within the log container
+			var logEl = document.getElementById('logdata');
+			if (!logEl) return '';
 			var range = selection.getRangeAt(0);
-			if (logContainer.contains(range.commonAncestorContainer)) {
+			if (logEl.contains(range.commonAncestorContainer)) {
 				return selection.toString().trim();
 			}
 			return '';
@@ -271,6 +323,7 @@ define(['app'], function (app) {
 			if (!logContainer) return;
 
 			logContainer.addEventListener('scroll', function () {
+				if (ignoreScrollEvents) return;
 				var atBottom = (logContainer.scrollHeight - logContainer.scrollTop - logContainer.clientHeight) < 20;
 				if ($scope.autoScroll !== atBottom) {
 					$scope.autoScroll = atBottom;
@@ -279,27 +332,42 @@ define(['app'], function (app) {
 			});
 		}
 
+		var ignoreScrollEvents = false;
+
 		$scope.scrollToBottom = function () {
 			if (!logContainer) return;
+			ignoreScrollEvents = true;
+			$scope.renderLimit = RENDER_LIMIT_STEP;
+			updateRenderItems();
 			logContainer.scrollTop = logContainer.scrollHeight;
 			$scope.autoScroll = true;
+			$timeout(function () {
+				ignoreScrollEvents = false;
+			});
 		};
 
 		function scrollIfNeeded() {
 			if ($scope.autoScroll && logContainer) {
+				ignoreScrollEvents = true;
 				requestAnimationFrame(function () {
-					logContainer.scrollTop = logContainer.scrollHeight;
+					if (logContainer) {
+						logContainer.scrollTop = logContainer.scrollHeight;
+					}
+					ignoreScrollEvents = false;
 				});
 			}
 		}
 
-		// Init
-		initScrollHandler();
-		loadInitialLogs();
-		livesocket.subscribeTo('log');
+		// Init - defer to allow DOM to render
+		$timeout(function () {
+			initScrollHandler();
+			loadInitialLogs();
+			livesocket.subscribeTo('log');
+		});
 
 		// Cleanup
 		$scope.$on('$destroy', function () {
+			if (batchTimer) $timeout.cancel(batchTimer);
 			unsubLog();
 			livesocket.unsubscribeFrom('log');
 		});
