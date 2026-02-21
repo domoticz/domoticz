@@ -31,6 +31,8 @@ platform: x86
 #- cd %APPVEYOR_BUILD_FOLDER%
 
 before_build:
+- cmd: git submodule update --init extern/jwtcpp
+
 - ps: >-
     nuget install Tools.InnoSetup
 
