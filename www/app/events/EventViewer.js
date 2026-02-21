@@ -11,6 +11,30 @@ define(['app', 'events/factories'], function (app) {
             var vm = this;
             var aceEditor;
             var blocklyWorkspace;
+            var debounceTimer;
+            var statusBarEl;
+
+            var ACE_SETTINGS_KEY = 'domoticz_ace_settings';
+            var DEFAULT_SETTINGS = {
+                theme: 'ace/theme/xcode',
+                fontSize: 14,
+                wordWrap: false
+            };
+
+            var THEMES = [
+                { id: 'ace/theme/chrome', name: 'Chrome', dark: false },
+                { id: 'ace/theme/eclipse', name: 'Eclipse', dark: false },
+                { id: 'ace/theme/github', name: 'GitHub', dark: false },
+                { id: 'ace/theme/solarized_light', name: 'Solarized Light', dark: false },
+                { id: 'ace/theme/tomorrow', name: 'Tomorrow', dark: false },
+                { id: 'ace/theme/xcode', name: 'XCode', dark: false },
+                { id: 'ace/theme/monokai', name: 'Monokai', dark: true },
+                { id: 'ace/theme/cobalt', name: 'Cobalt', dark: true },
+                { id: 'ace/theme/solarized_dark', name: 'Solarized Dark', dark: true },
+                { id: 'ace/theme/tomorrow_night', name: 'Tomorrow Night', dark: true },
+                { id: 'ace/theme/twilight', name: 'Twilight', dark: true },
+                { id: 'ace/theme/terminal', name: 'Terminal', dark: true }
+            ];
 
             vm.$onInit = init;
             vm.setEventState = setEventState;
@@ -20,8 +44,60 @@ define(['app', 'events/factories'], function (app) {
             vm.exportEvent = exportEvent;
             vm.markEventAsUpdated = markEventAsUpdated;
             vm.isTriggerAvailable = isTriggerAvailable;
+            vm.themes = THEMES;
+            vm.setTheme = setTheme;
+            vm.increaseFontSize = increaseFontSize;
+            vm.decreaseFontSize = decreaseFontSize;
+            vm.toggleWordWrap = toggleWordWrap;
+
+            function loadSettings() {
+                try {
+                    var stored = localStorage.getItem(ACE_SETTINGS_KEY);
+                    return stored ? angular.extend({}, DEFAULT_SETTINGS, JSON.parse(stored)) : angular.copy(DEFAULT_SETTINGS);
+                } catch (e) {
+                    return angular.copy(DEFAULT_SETTINGS);
+                }
+            }
+
+            function saveSettings(settings) {
+                try {
+                    localStorage.setItem(ACE_SETTINGS_KEY, JSON.stringify(settings));
+                } catch (e) {
+                    // localStorage not available
+                }
+            }
+
+            function setTheme(themeId) {
+                if (!aceEditor) return;
+                vm.aceSettings.theme = themeId;
+                aceEditor.setTheme(themeId);
+                saveSettings(vm.aceSettings);
+            }
+
+            function increaseFontSize() {
+                if (!aceEditor) return;
+                vm.aceSettings.fontSize = Math.min(vm.aceSettings.fontSize + 1, 32);
+                aceEditor.setFontSize(vm.aceSettings.fontSize);
+                saveSettings(vm.aceSettings);
+            }
+
+            function decreaseFontSize() {
+                if (!aceEditor) return;
+                vm.aceSettings.fontSize = Math.max(vm.aceSettings.fontSize - 1, 8);
+                aceEditor.setFontSize(vm.aceSettings.fontSize);
+                saveSettings(vm.aceSettings);
+            }
+
+            function toggleWordWrap() {
+                if (!aceEditor) return;
+                vm.aceSettings.wordWrap = !vm.aceSettings.wordWrap;
+                aceEditor.getSession().setUseWrapMode(vm.aceSettings.wordWrap);
+                saveSettings(vm.aceSettings);
+            }
 
             function init() {
+                vm.aceSettings = loadSettings();
+
                 vm.eventTypes = [
                     { value: 'All', label: 'All' },
                     { value: 'Device', label: 'Device' },
@@ -56,6 +132,25 @@ define(['app', 'events/factories'], function (app) {
                             }
                         });
                     });
+
+                $scope.$on('$destroy', function () {
+                    if (debounceTimer) {
+                        $timeout.cancel(debounceTimer);
+                    }
+                    if (aceEditor) {
+                        aceEditor.destroy();
+                        aceEditor = null;
+                    }
+                    if (blocklyWorkspace) {
+                        blocklyWorkspace.dispose();
+                        blocklyWorkspace = null;
+                    }
+                    if (statusBarEl && statusBarEl.parentNode) {
+                        statusBarEl.parentNode.removeChild(statusBarEl);
+                        statusBarEl = null;
+                    }
+                    $element.off('keydown');
+                });
             }
 
             function isTriggerAvailable() {
@@ -169,7 +264,8 @@ define(['app', 'events/factories'], function (app) {
             }
 
             function initAce(eventData) {
-                require(['ace', 'ace-language-tools'], function () {
+                require(['ace', 'ace-language-tools', 'ace-searchbox', 'ace-statusbar'], function () {
+                    ace.config.set('workerPath', '../js/ace');
                     var element = $element.find('.js-script-content')[0];
 
                     aceEditor = ace.edit(element);
@@ -183,15 +279,33 @@ define(['app', 'events/factories'], function (app) {
                         enableLiveAutocompletion: true
                     });
 
-                    aceEditor.setTheme('ace/theme/xcode');
+                    // Apply persisted settings
+                    aceEditor.setTheme(vm.aceSettings.theme);
+                    aceEditor.setFontSize(vm.aceSettings.fontSize);
+                    aceEditor.getSession().setUseWrapMode(vm.aceSettings.wordWrap);
+
                     aceEditor.setValue(eventData.xmlstatement);
                     aceEditor.getSession().setMode('ace/mode/' + interpreter.toLowerCase());
                     aceEditor.gotoLine(1);
                     aceEditor.scrollToLine(1, true, true);
 
-                    aceEditor.on('change', function (event) {
+                    // Status bar
+                    var StatusBar = ace.require('ace/ext/statusbar').StatusBar;
+                    statusBarEl = document.createElement('div');
+                    statusBarEl.className = 'ace-statusbar';
+                    element.parentNode.appendChild(statusBarEl);
+                    element.style.bottom = '21px';
+                    new StatusBar(aceEditor, statusBarEl);
+
+                    // Debounced change handler
+                    aceEditor.on('change', function () {
                         markEventAsUpdated();
-                        $scope.$apply();
+                        if (debounceTimer) {
+                            $timeout.cancel(debounceTimer);
+                        }
+                        debounceTimer = $timeout(function () {
+                            // digest cycle runs automatically via $timeout
+                        }, 300);
                     });
 
                     $scope.$apply();
@@ -206,6 +320,7 @@ define(['app', 'events/factories'], function (app) {
                         blocklyWorkspace = Blockly.inject(container, {
                             path: './',
                             toolbox: toolbox,
+                            sounds: false,
                             zoom: {
                                 controls: true,
                                 wheel: true,

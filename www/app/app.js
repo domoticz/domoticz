@@ -132,7 +132,8 @@ define(['angularAMD', 'app.routes', 'app.constants', 'app.notifications', 'app.p
     	return {
     		confirm: confirm,
             confirmDecorator: confirmDecorator,
-            alert: alert
+            alert: alert,
+            prompt: prompt
 		};
 
 		function confirm(message) {
@@ -159,6 +160,22 @@ define(['angularAMD', 'app.routes', 'app.constants', 'app.notifications', 'app.p
 		function alert(message) {
 			return bootbox.alert($.t(message));
         }
+
+		function prompt(message, defaultValue) {
+			return $q(function(resolve, reject) {
+				bootbox.prompt({
+					title: message,
+					value: defaultValue || '',
+					callback: function (result) {
+						if (result === null) {
+							reject();
+						} else {
+							resolve(result);
+						}
+					}
+				});
+			});
+		}
 	});
 
     app.factory('dzNotification', function($q) {
