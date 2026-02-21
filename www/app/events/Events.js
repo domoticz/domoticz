@@ -1,7 +1,7 @@
 define(['app', 'events/factories', 'events/EventViewer', 'events/CurrentStates'], function (app) {
     app.controller('EventsController', EventsController);
 
-    function EventsController($q, $rootScope, $uibModal, domoticzApi, domoticzEventsApi, bootbox) {
+    function EventsController($scope, $q, $rootScope, $uibModal, domoticzApi, domoticzEventsApi, bootbox) {
         var vm = this;
         vm.createEvent = createEvent;
         vm.openEvent = openEvent;
@@ -78,6 +78,11 @@ define(['app', 'events/factories', 'events/EventViewer', 'events/CurrentStates']
                     vm.contextMenu.visible = false;
                     $rootScope.$applyAsync();
                 }
+            });
+
+            $scope.$on('$destroy', function () {
+                $(document).off('click.eventsContextMenu');
+                $(document).off('mouseup.eventsDeselect');
             });
         }
 
@@ -168,7 +173,11 @@ define(['app', 'events/factories', 'events/EventViewer', 'events/CurrentStates']
                 .then(function (name) {
                     if (name && name.trim()) {
                         domoticzEventsApi.createFolder(name.trim()).then(function () {
-                            listEvents();
+                            return listEvents();
+                        }).then(function () {
+                            ShowNotify($.t('Folder created'), 2500);
+                        }).catch(function () {
+                            ShowNotify($.t('Failed to create folder'), 2500, true);
                         });
                     }
                 });
@@ -187,7 +196,11 @@ define(['app', 'events/factories', 'events/EventViewer', 'events/CurrentStates']
                 .then(function (name) {
                     if (name && name.trim()) {
                         domoticzEventsApi.renameFolder(folder.id, name.trim()).then(function () {
-                            listEvents();
+                            return listEvents();
+                        }).then(function () {
+                            ShowNotify($.t('Folder renamed'), 2500);
+                        }).catch(function () {
+                            ShowNotify($.t('Failed to rename folder'), 2500, true);
                         });
                     }
                 });
@@ -217,7 +230,11 @@ define(['app', 'events/factories', 'events/EventViewer', 'events/CurrentStates']
                     }
                 });
                 domoticzEventsApi.deleteFolder(folder.id).then(function () {
-                    listEvents();
+                    return listEvents();
+                }).then(function () {
+                    ShowNotify($.t('Folder deleted'), 2500);
+                }).catch(function () {
+                    ShowNotify($.t('Failed to delete folder'), 2500, true);
                 });
             });
         }
@@ -233,6 +250,7 @@ define(['app', 'events/factories', 'events/EventViewer', 'events/CurrentStates']
                 if (isSelected) {
                     // Defer deselection to mouseup in case user is starting a drag
                     vm._pendingDeselect = event.id;
+                    $(document).off('mouseup.eventsDeselect');
                     $(document).one('mouseup.eventsDeselect', function () {
                         if (vm._pendingDeselect === event.id) {
                             vm._pendingDeselect = null;
@@ -247,6 +265,7 @@ define(['app', 'events/factories', 'events/EventViewer', 'events/CurrentStates']
                 // Clicked on an already-selected item in a multi-selection:
                 // defer narrowing to mouseup so drag can use the full selection
                 vm._pendingDeselect = 'narrow:' + event.id;
+                $(document).off('mouseup.eventsDeselect');
                 $(document).one('mouseup.eventsDeselect', function () {
                     if (vm._pendingDeselect === 'narrow:' + event.id) {
                         vm._pendingDeselect = null;
@@ -482,7 +501,7 @@ define(['app', 'events/factories', 'events/EventViewer', 'events/CurrentStates']
                 var el = element[0];
                 el.draggable = true;
 
-                el.addEventListener('dragstart', function (e) {
+                function handleDragStart(e) {
                     e.dataTransfer.setData('text/plain', '');
                     e.dataTransfer.effectAllowed = 'move';
                     scope.$apply(function () {
@@ -493,18 +512,26 @@ define(['app', 'events/factories', 'events/EventViewer', 'events/CurrentStates']
                     var dragState = scope.$ctrl && scope.$ctrl.dragState;
                     if (dragState && dragState.eventIds && dragState.eventIds.length > 1) {
                         var badge = document.createElement('div');
-                        badge.textContent = dragState.eventIds.length + ' scripts';
+                        badge.textContent = dragState.eventIds.length + ' ' + $.t('scripts');
                         badge.style.cssText = 'position:absolute;top:-9999px;left:-9999px;padding:4px 10px;background:#0078d7;color:#fff;border-radius:3px;font-size:12px;white-space:nowrap;';
                         document.body.appendChild(badge);
                         e.dataTransfer.setDragImage(badge, 0, 0);
                         setTimeout(function () { document.body.removeChild(badge); }, 0);
                     }
-                });
+                }
 
-                el.addEventListener('dragend', function () {
+                function handleDragEnd() {
                     scope.$apply(function () {
                         scope.$eval(attrs.eventsDragEnd);
                     });
+                }
+
+                el.addEventListener('dragstart', handleDragStart);
+                el.addEventListener('dragend', handleDragEnd);
+
+                scope.$on('$destroy', function () {
+                    el.removeEventListener('dragstart', handleDragStart);
+                    el.removeEventListener('dragend', handleDragEnd);
                 });
             }
         };
@@ -517,25 +544,25 @@ define(['app', 'events/factories', 'events/EventViewer', 'events/CurrentStates']
                 var el = element[0];
                 var dragCounter = 0;
 
-                el.addEventListener('dragover', function (e) {
+                function handleDragOver(e) {
                     e.preventDefault();
                     e.dataTransfer.dropEffect = 'move';
-                });
+                }
 
-                el.addEventListener('dragenter', function (e) {
+                function handleDragEnter(e) {
                     e.preventDefault();
                     dragCounter++;
                     element.addClass('drag-over');
-                });
+                }
 
-                el.addEventListener('dragleave', function () {
+                function handleDragLeave() {
                     dragCounter--;
                     if (dragCounter === 0) {
                         element.removeClass('drag-over');
                     }
-                });
+                }
 
-                el.addEventListener('drop', function (e) {
+                function handleDrop(e) {
                     e.preventDefault();
                     e.stopPropagation();
                     dragCounter = 0;
@@ -543,6 +570,18 @@ define(['app', 'events/factories', 'events/EventViewer', 'events/CurrentStates']
                     scope.$apply(function () {
                         scope.$eval(attrs.eventsDropTarget);
                     });
+                }
+
+                el.addEventListener('dragover', handleDragOver);
+                el.addEventListener('dragenter', handleDragEnter);
+                el.addEventListener('dragleave', handleDragLeave);
+                el.addEventListener('drop', handleDrop);
+
+                scope.$on('$destroy', function () {
+                    el.removeEventListener('dragover', handleDragOver);
+                    el.removeEventListener('dragenter', handleDragEnter);
+                    el.removeEventListener('dragleave', handleDragLeave);
+                    el.removeEventListener('drop', handleDrop);
                 });
             }
         };

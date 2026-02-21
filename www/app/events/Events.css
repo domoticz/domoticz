@@ -300,3 +300,49 @@
 .blocklyTreeLabel {
     color: black;
 }
+
+/* ACE Editor Settings */
+
+.ace-settings {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    margin-right: 8px;
+    vertical-align: middle;
+}
+
+.ace-settings__theme {
+    height: 26px;
+    font-size: 12px;
+    padding: 2px 4px;
+    border: 1px solid #ccc;
+    border-radius: 2px;
+    background-color: #fff;
+    color: #333;
+}
+
+.ace-settings__font-size {
+    display: inline-block;
+    min-width: 20px;
+    text-align: center;
+    font-size: 12px;
+    color: #333;
+}
+
+/* ACE Status Bar */
+
+.ace-statusbar {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 20px;
+    padding: 0 8px;
+    background-color: #e8e8e8;
+    border-top: 1px solid #ccc;
+    font-size: 11px;
+    line-height: 20px;
+    color: #666;
+    text-align: right;
+    z-index: 1;
+}
