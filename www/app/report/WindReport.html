@@ -1,0 +1,26 @@
+<div ng-if="$ctrl.highestGustDay">
+    <span>{{ 'Highest Gust' | translate }}:</span>
+    <span>{{ $ctrl.highestGustDay.date }}, {{ $ctrl.highestGustDay.value }} {{ $ctrl.windUnit }}</span>
+</div>
+<div ng-if="$ctrl.windiestDay">
+    <span>{{ 'Windiest Day' | translate }}:</span>
+    <span>{{ $ctrl.windiestDay.date }}, {{ $ctrl.windiestDay.value }} {{ $ctrl.windUnit }}</span>
+</div>
+<div ng-if="$ctrl.windiestMonth && !$ctrl.isMonthView">
+    <span>{{ 'Windiest Month' | translate }}:</span>
+    <span>{{ $ctrl.windiestMonth.name }}, {{ $ctrl.windiestMonth.value }} {{ $ctrl.windUnit }}</span>
+</div>
+<div ng-if="$ctrl.calmestMonth && !$ctrl.isMonthView">
+    <span>{{ 'Calmest Month' | translate }}:</span>
+    <span>{{ $ctrl.calmestMonth.name }}, {{ $ctrl.calmestMonth.value }} {{ $ctrl.windUnit }}</span>
+</div>
+<br>
+<div ng-if="$ctrl.noDataAvailable" class="no-data">
+    {{ 'No data available' | translate}}
+</div>
+
+<table class="display myrighttable" id="reporttable"></table>
+<br>
+<div id="windgraph" class="device-log-chart"></div>
+<br>
+<div id="gustgraph" class="device-log-chart" ng-if="$ctrl.isMonthView"></div>
