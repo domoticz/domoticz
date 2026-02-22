@@ -485,9 +485,75 @@ bool CNotificationHelper::CheckAndHandleNotification(const uint64_t DevRowIdx, c
 		case pTypeEvohomeRelay:
 		case pTypeEvohomeWater:
 		case pTypeEvohomeZone:
-		case pTypeThermostat6:
 			//not handled
 			return false;
+			break;
+		case pTypeThermostat6:
+			// Handle Thermostat 6 notifications
+			// sValue formats by subtype:
+			// sTypeThermostat6Temp (0x00): "temp;setpoint"
+			// sTypeThermostat6TempHum (0x01): "temp;setpoint;humidity;humidity_status"
+			// sTypeThermostat6TempBaro (0x02): "temp;setpoint;barometer;forecast"
+			// sTypeThermostat6TempHumBaro (0x03): "temp;setpoint;humidity;humidity_status;barometer;forecast"
+			if (cSubType == sTypeThermostat6TempHumBaro)
+			{
+				// SubType 0x03: temp;setpoint;humidity;humidity_status;barometer;forecast
+				nexpected = 6;
+				if (nsize >= nexpected)
+				{
+					float Temp = (float)atof(strarray[0].c_str());
+					// strarray[1] is setpoint - not used for notifications
+					int Hum = atoi(strarray[2].c_str());
+					// strarray[3] is humidity_status - not used directly
+					float Baro = (float)atof(strarray[4].c_str());
+					float dewpoint = (float)CalculateDewPoint(Temp, Hum);
+					r1 = CheckAndHandleTempHumidityNotification(DevRowIdx, sName, Temp, Hum, true, true);
+					r2 = CheckAndHandleDewPointNotification(DevRowIdx, sName, Temp, dewpoint);
+					r3 = CheckAndHandleNotification(DevRowIdx, sName, cType, cSubType, NTYPE_BARO, Baro);
+					return r1 && r2 && r3;
+				}
+			}
+			else if (cSubType == sTypeThermostat6TempHum)
+			{
+				// SubType 0x01: temp;setpoint;humidity;humidity_status
+				nexpected = 4;
+				if (nsize >= nexpected)
+				{
+					float Temp = (float)atof(strarray[0].c_str());
+					// strarray[1] is setpoint - not used for notifications
+					int Hum = atoi(strarray[2].c_str());
+					// strarray[3] is humidity_status - not used directly
+					float dewpoint = (float)CalculateDewPoint(Temp, Hum);
+					r1 = CheckAndHandleTempHumidityNotification(DevRowIdx, sName, Temp, Hum, true, true);
+					r2 = CheckAndHandleDewPointNotification(DevRowIdx, sName, Temp, dewpoint);
+					return r1 && r2;
+				}
+			}
+			else if (cSubType == sTypeThermostat6TempBaro)
+			{
+				// SubType 0x02: temp;setpoint;barometer;forecast
+				nexpected = 4;
+				if (nsize >= nexpected)
+				{
+					float Temp = (float)atof(strarray[0].c_str());
+					// strarray[1] is setpoint - not used for notifications
+					float Baro = (float)atof(strarray[2].c_str());
+					r1 = CheckAndHandleTempHumidityNotification(DevRowIdx, sName, Temp, 0, true, false);
+					r2 = CheckAndHandleNotification(DevRowIdx, sName, cType, cSubType, NTYPE_BARO, Baro);
+					return r1 && r2;
+				}
+			}
+			else if (cSubType == sTypeThermostat6Temp)
+			{
+				// SubType 0x00: temp;setpoint
+				nexpected = 2;
+				if (nsize >= nexpected)
+				{
+					float Temp = (float)atof(strarray[0].c_str());
+					// strarray[1] is setpoint - not used for notifications
+					return CheckAndHandleTempHumidityNotification(DevRowIdx, sName, Temp, 0, true, false);
+				}
+			}
 			break;
 		default:
 			break;

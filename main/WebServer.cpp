@@ -2363,6 +2363,7 @@ namespace http
 						root["result"][ii]["min"] = valuemin;
 						root["result"][ii]["max"] = valuemax;
 						root["result"][ii]["vunit"] = value_unit;
+						root["result"][ii]["HaveSetPoint"] = true;
 
 						std::vector<std::string> strarray;
 						StringSplit(sValue, ";", strarray);
@@ -2394,13 +2395,16 @@ namespace http
 								root["result"][ii]["DewPoint"] = dewpoint;
 								sprintf(szData, "%.1f %c, (%.1f %c) / %d%%", temp, tempsign, tempSetPoint, tempsign, humidity);
 							}
-							else if (dSubType == sTypeThermostat6TempBaro && strarray.size() >= 3)
+							else if (dSubType == sTypeThermostat6TempBaro && strarray.size() >= 4)
 							{
 								float barometer = static_cast<float>(atof(strarray[2].c_str()));
+								int forecast = atoi(strarray[3].c_str());
 								root["result"][ii]["Barometer"] = barometer;
+								root["result"][ii]["Forecast"] = forecast;
+								root["result"][ii]["ForecastStr"] = RFX_WSForecast_Desc(forecast);
 								sprintf(szData, "%.1f %c, (%.1f %c), %.1f hPa", temp, tempsign, tempSetPoint, tempsign, barometer);
 							}
-							else if (dSubType == sTypeThermostat6TempHumBaro && strarray.size() >= 5)
+							else if (dSubType == sTypeThermostat6TempHumBaro && strarray.size() >= 6)
 							{
 								int humidity = atoi(strarray[2].c_str());
 								root["result"][ii]["Humidity"] = humidity;
@@ -2411,7 +2415,10 @@ namespace http
 								root["result"][ii]["DewPoint"] = dewpoint;
 
 								float barometer = static_cast<float>(atof(strarray[4].c_str()));
+								int forecast = atoi(strarray[5].c_str());
 								root["result"][ii]["Barometer"] = barometer;
+								root["result"][ii]["Forecast"] = forecast;
+								root["result"][ii]["ForecastStr"] = RFX_WSForecast_Desc(forecast);
 								sprintf(szData, "%.1f %c, (%.1f %c), %d%%, %.1f hPa", temp, tempsign, tempSetPoint, tempsign, humidity, barometer);
 							}
 							else
@@ -3368,6 +3375,7 @@ namespace http
 							root["result"][ii]["min"] = valuemin;
 							root["result"][ii]["max"] = valuemax;
 							root["result"][ii]["vunit"] = value_unit;
+							root["result"][ii]["HaveSetPoint"] = true;
 							root["result"][ii]["TypeImg"] = "override_mini";
 						}
 					}

@@ -5,6 +5,8 @@ Version 2026.xxxx
 - Added: Configurable pricing resolution (15/30/60 minutes) for dynamic energy contracts (with adapted P1 and kWh graphs)
 - Added: Counter hourly chart resolution toggle (1h/15m/30m) when sub-hourly pricing is configured
 - Added: Dashboard, setpoint display and editing for all setpoint devices
+- Added: EventSystem support for Thermostat 6 devices (Blockly/Lua/Python event triggers)
+- Added: HaveSetPoint JSON API flag for Thermostat 6 and Setpoint devices (third-party app compatibility)
 - Added: Enever, updated providers and API v3
 - Added: LibreHardwareMonitor, cross-platform HTTP support with mode selector and extended sensors
 - Added: Logitech Media Server, SqueezeLite ESP32 support
@@ -17,6 +19,7 @@ Version 2026.xxxx
 - Added: MQTT-AD: Reinstate 'total_increasing' support for kWh sensors
 - Added: MQTT-AD: Thermostat 6, add setpoint timer/schedule support (Fixes #6530)
 - Added: New update scripts that are able to check if system meets requirements
+- Added: Notification support for Thermostat 6 devices (temperature, humidity, barometer thresholds)
 - Added: OpenWeatherMap, support for free API plan
 - Added: Philips Hue v2 API, just for Door/Window Contacts (state/tamper/battery)
 - Added: PV Output, added consumption
@@ -39,6 +42,7 @@ Version 2026.xxxx
 - Fixed: Counter Statistics Chart tooltip showing incorrect day name (Fixes #6542)
 - Fixed: Database backup/restore stability (#6577)
 - Fixed: Deleting a scene/group could accidentally delete a device
+- Fixed: dzVents Thermostat 6 updateSetPoint() now uses proper SetSetPoint command path for correct event propagation
 - Fixed: dzVents Lua table corruption when exception occurs during notification or device data export (Fixes #6030)
 - Fixed: dzVents SendNotification, SendEmail, and SendSMS command handling
 - Fixed: Event system not processing events when device update rate is high (e.g. faulty sensors)

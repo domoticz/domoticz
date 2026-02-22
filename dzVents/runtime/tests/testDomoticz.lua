@@ -276,7 +276,7 @@ describe('Domoticz', function()
 				domoticz.NSS_PUSHSAFER,
 				domoticz.NSS_TELEGRAM
 			})
-			assert.is_same({ { ['SendNotification'] = 'sub##0#pushover##clickatell;fcm;fcm;fcm;Google_Devices;http;kodi;lms;nma;prowl;pushalot;pushbullet;pushover;pushsafer;telegram' } }, domoticz.commandArray)
+			assert.is_same({ { ['SendNotification'] = 'sub##0#pushover##clickatell;fcm;fcm;gcm;Google_Devices;http;kodi;lms;nma;prowl;pushalot;pushbullet;pushover;pushsafer;telegram' } }, domoticz.commandArray)
 		end)
 
 		it('should notify with All subsystems', function()
@@ -566,7 +566,7 @@ describe('Domoticz', function()
 			local level
 
 			utils.log = function(_msg, _level)
-				if (_level == 1) then
+				if (_level == 5) then
 					msg = _msg
 					level = _level
 					logged = true
@@ -576,7 +576,7 @@ describe('Domoticz', function()
 			assert.is_same(9, domoticz.devices('device9').id)
 			assert.is_true(logged)
 			assert.is_same('Multiple items found for device9 (device). Please make sure your names are unique or use ids instead.', msg)
-			assert.is_same(1, level)
+			assert.is_same(5, level)
 			utils.log = _log
 
 		end)

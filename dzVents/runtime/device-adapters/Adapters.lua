@@ -42,6 +42,7 @@ local deviceAdapters = {
 	'temperature_humidity_barometer_device',
 	'temperature_humidity_device',
 	'text_device',
+	'thermostat6_device',
 	'thermostat_operating_state_device',
 	'thermostat_setpoint_device',
 	'thermostat_type_3_device',
