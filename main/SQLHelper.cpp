@@ -2,6 +2,7 @@
 #include "SQLHelper.h"
 #include <iostream>	 /* standard I/O functions						 */
 #include <string>
+#include <cstdlib>
 #ifdef WIN32
 #include <tchar.h>
 #else
@@ -3324,11 +3325,41 @@ bool CSQLHelper::OpenDatabase()
 		query("INSERT INTO Plans (Name) VALUES ('$Hidden Devices')");
 		// Add hardware for internal use
 		safe_query("INSERT INTO Hardware (Name, Enabled, Type, Address, Port, Username, Password, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6) VALUES ('Domoticz Internal',1, %d,'',1,'','',0,0,0,0,0,0)", HTYPE_DomoticzInternal);
-		safe_query("INSERT INTO Users (Active, Username, Password, Rights, TabsEnabled) VALUES (1, '%s', '%s', %d, 0x1F)", base64_encode(DEFAULT_ADMINUSER).c_str(), GenerateMD5Hash(DEFAULT_ADMINPWD).c_str(), http::server::URIGHTS_ADMIN);
+		// Admin user is no longer created here - created via setup wizard or Docker env vars
 		safe_query("INSERT INTO Applications (Active, Public, Applicationname) VALUES (1, 1, 'domoticzUI')");
 		safe_query("INSERT INTO Applications (Active, Public, Applicationname) VALUES (0, 0, 'domoticzMobileApp')");
 	}
 	UpdatePreferencesVar("DB_Version", DB_VERSION);
+
+	// Check for Docker environment variable provisioning
+	// Only applies when no admin user exists (fresh install or admin was deleted)
+	{
+		auto adminResult = safe_query("SELECT ID FROM Users WHERE Rights=%d", http::server::URIGHTS_ADMIN);
+		if (adminResult.empty())
+		{
+			const char *envPassword = std::getenv("DOMOTICZ_ADMIN_PASSWORD");
+			if (envPassword != nullptr && strlen(envPassword) > 0)
+			{
+				const char *envUsername = std::getenv("DOMOTICZ_ADMIN_USERNAME");
+				std::string username = (envUsername != nullptr && strlen(envUsername) > 0) ? envUsername : DEFAULT_ADMINUSER;
+				std::string password = envPassword;
+
+				safe_query("INSERT INTO Users (Active, Username, Password, Rights, TabsEnabled) VALUES (1, '%q', '%q', %d, 0x1F)",
+					base64_encode(username).c_str(), GenerateMD5Hash(password).c_str(), http::server::URIGHTS_ADMIN);
+
+				_log.Log(LOG_STATUS, "Admin user '%s' created from environment variables", username.c_str());
+			}
+		}
+		else
+		{
+			// Admin already exists - ignore env vars if set
+			const char *envPassword = std::getenv("DOMOTICZ_ADMIN_PASSWORD");
+			if (envPassword != nullptr && strlen(envPassword) > 0)
+			{
+				_log.Log(LOG_STATUS, "Admin account already exists, ignoring DOMOTICZ_ADMIN_PASSWORD environment variable");
+			}
+		}
+	}
 
 	//Check preferences table for extreme sized sValues
 	result = safe_query("SELECT Key FROM Preferences WHERE LENGTH(sValue) > 2500");

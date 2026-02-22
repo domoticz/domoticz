@@ -1,0 +1,138 @@
+<style>
+	#canvas-login {
+		position: fixed;
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: 100%;
+		z-index: -1;
+	}
+	body, #foreground, #midground {
+		background: none;
+	}
+
+	/* Setup wizard styles (shared glass styles are in css/style.css) */
+	.login-title {
+		font-size: 2em;
+		font-weight: 300;
+		color: #fff;
+		text-shadow: 0 0 30px rgba(100, 200, 255, 0.5);
+		margin-bottom: 6px;
+		letter-spacing: 3px;
+	}
+
+	.login-logo {
+		width: 57px;
+		height: 57px;
+		margin-bottom: 10px;
+	}
+
+	.setup-subtitle {
+		color: rgba(255, 255, 255, 0.65);
+		font-size: 0.9em;
+		margin-bottom: 20px;
+		line-height: 1.5;
+	}
+
+	.password-strength-bar {
+		height: 4px;
+		border-radius: 2px;
+		background: rgba(255, 255, 255, 0.1);
+		margin: -4px 0 12px 0;
+		overflow: hidden;
+	}
+
+	.password-strength-fill {
+		height: 100%;
+		border-radius: 2px;
+		transition: width 0.3s ease, background 0.3s ease;
+	}
+
+	.password-strength-fill.strength-weak {
+		background: rgba(255, 80, 80, 0.8);
+	}
+
+	.password-strength-fill.strength-medium {
+		background: rgba(255, 200, 50, 0.8);
+	}
+
+	.password-strength-fill.strength-strong {
+		background: rgba(80, 220, 100, 0.8);
+	}
+
+	.password-strength-label {
+		font-size: 0.8em;
+		margin: -8px 0 12px 0;
+		text-align: right;
+	}
+
+	.password-strength-label.strength-weak { color: rgba(255, 80, 80, 0.8); }
+	.password-strength-label.strength-medium { color: rgba(255, 200, 50, 0.8); }
+	.password-strength-label.strength-strong { color: rgba(80, 220, 100, 0.8); }
+
+	.setup-error {
+		color: rgba(255, 100, 100, 0.9);
+		background: rgba(255, 50, 50, 0.1);
+		border: 1px solid rgba(255, 100, 100, 0.3);
+		border-radius: 10px;
+		padding: 10px 14px;
+		margin-bottom: 12px;
+		font-size: 0.9em;
+	}
+
+	.domoticz-link {
+		display: block;
+		text-align: center;
+		margin-top: 16px;
+		color: rgba(100, 200, 255, 0.6);
+		font-size: 0.85em;
+		text-decoration: none;
+	}
+
+	.domoticz-link:hover {
+		color: rgba(100, 200, 255, 0.9);
+	}
+</style>
+
+<canvas id="canvas-login"></canvas>
+
+<div class="glass-container">
+	<center>
+		<div class="glass-card" style="max-width: 380px;">
+			<img class="login-logo" src="images/logo/57.png" alt="Domoticz">
+			<h1 class="login-title">Domoticz</h1>
+			<p class="setup-subtitle">Create your admin account to get started</p>
+
+			<form name="setupForm" ng-submit="DoSetup()" novalidate>
+				<input type="text" id="username" name="username" class="glass-input"
+				       autocapitalize="none" autocorrect="off"
+				       placeholder="Username" ng-model="setup.username" required autofocus>
+				<input type="password" id="password" name="password" class="glass-input"
+				       placeholder="Password" ng-model="setup.password" ng-change="checkPasswordStrength()" required>
+				<div ng-show="passwordStrength">
+					<div class="password-strength-bar">
+						<div class="password-strength-fill" ng-class="'strength-' + passwordStrength.level"
+						     ng-style="{'width': passwordStrength.percent + '%'}"></div>
+					</div>
+					<div class="password-strength-label" ng-class="'strength-' + passwordStrength.level">
+						{{ passwordStrength.label }}
+					</div>
+				</div>
+				<input type="password" id="confirmPassword" name="confirmPassword" class="glass-input"
+				       placeholder="Confirm Password" ng-model="setup.confirmPassword" required>
+
+				<div class="setup-error" ng-show="errorMessage">
+					{{ errorMessage }}
+				</div>
+
+				<button type="submit" class="btn-modern" style="width: 100%; padding: 12px;"
+				        ng-disabled="setupForm.$invalid || setup.password !== setup.confirmPassword || isSubmitting">
+					<span ng-if="!isSubmitting">Create Account</span>
+					<span ng-if="isSubmitting">Creating...</span>
+				</button>
+			</form>
+
+			<a class="domoticz-link" href="http://www.domoticz.com">www.domoticz.com</a>
+		</div>
+	</center>
+</div>

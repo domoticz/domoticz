@@ -33,6 +33,8 @@ Version 2026.xxxx
 - Added: Web Interface, Modernized log viewer with WebSocket live streaming, level filtering, search/regex, render cap, and performance optimizations
 - Added: Web Interface, Passkey (WebAuthn/FIDO2) authentication support - register and sign in with Windows Hello, Touch ID, or security keys
 - Added: Web Interface, Passkey management in My Profile (register, view device info, delete)
+- Added: Web Interface, First-run setup wizard for admin account creation, replacing default credentials
+- Added: Docker environment variable support for admin provisioning (DOMOTICZ_ADMIN_PASSWORD, DOMOTICZ_ADMIN_USERNAME)
 - Fixed: Buienradar, fallback when station measurements are empty
 - Fixed: CalcMeterPrice/CalcMultiMeterPrice off-by-one price error with dynamic tariffs (Fixes #6181)
 - Fixed: Chart zoom buttons (notable on iOS devices)
@@ -49,6 +51,7 @@ Version 2026.xxxx
 - Fixed: Memory leak in Python event scripts caused by missing reference count decrement in user variables (Fixes #5091)
 - Fixed: MQTT, crashes and race conditions in message handling
 - Fixed: MQTTPush/InfluxPush crash on shutdown (#6600)
+- Fixed: Missing Passkeys column on fresh Docker installs causing SQL errors (#6601)
 - Fixed: Negative rain values at midnight when counter resets (Fixes #6571)
 - Fixed: OpenZWave setpoint devices
 - Fixed: P1Power hourly graph empty due to incorrect SQL format escaping in pricing resolution grouping
