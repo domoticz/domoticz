@@ -25,7 +25,7 @@ public:
 	bool Start();
 	bool Stop();
 
-	void AddAllDomoticzHardware();
+	void AddAllDomoticzHardware(bool bScheduleStart = true);
 	void StopDomoticzHardware();
 	void StartDomoticzHardware();
 	void AddDomoticzHardware(CDomoticzHardwareBase *pHardware);

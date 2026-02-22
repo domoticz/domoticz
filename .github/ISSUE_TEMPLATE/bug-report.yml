@@ -1,0 +1,140 @@
+name: Bug Report
+description: Report a bug to help us improve Domoticz
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        **This issue tracker is ONLY for reporting bugs in Domoticz.**
+
+        Before opening an issue:
+        1. Search [existing issues](https://github.com/domoticz/domoticz/issues) to avoid duplicates
+        2. Search the [Domoticz Forum](https://forum.domoticz.com/) for a solution
+        3. Make sure you are running the **latest beta version**
+        4. Clear your browser cache **and** AppCache
+
+        For MQTT Auto Discovery issues, also follow [this guide](https://wiki.domoticz.com/MQTT_AD_Report_Problems).
+
+  - type: checkboxes
+    id: prerequisites
+    attributes:
+      label: Prerequisites
+      options:
+        - label: I have searched existing issues and the forum for this problem
+          required: true
+        - label: I am running the latest beta version
+          required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: Domoticz Version
+      description: "Found in Setup > Settings, e.g. 2024.7 (build 16388)"
+      placeholder: "2024.7 (build 16388)"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: platform
+    attributes:
+      label: Platform
+      description: What platform is Domoticz running on?
+      options:
+        - Linux (x86_64)
+        - Raspberry Pi
+        - Docker
+        - Windows
+        - macOS
+        - Other ARM/embedded
+        - Other (specify in description)
+    validations:
+      required: true
+
+  - type: input
+    id: os-version
+    attributes:
+      label: OS Version
+      description: "e.g. Ubuntu 24.04, Raspberry Pi OS Bookworm, Windows 11"
+      placeholder: "Ubuntu 24.04"
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Describe the Bug
+      description: A clear and concise description of what the bug is.
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to Reproduce
+      description: Steps to reproduce the behavior.
+      value: |
+        1. Go to '...'
+        2. Click on '...'
+        3. See error
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected Behavior
+      description: A clear and concise description of what you expected to happen.
+    validations:
+      required: true
+
+  - type: input
+    id: hardware-type
+    attributes:
+      label: Hardware/Plugin Type
+      description: "If related to a specific hardware driver or plugin, specify which one (e.g. Z-Wave, Zigbee, MQTT, Philips Hue)"
+      placeholder: "e.g. Z-Wave, MQTT, Philips Hue"
+    validations:
+      required: false
+
+  - type: input
+    id: browser
+    attributes:
+      label: Browser
+      description: "If this is a frontend/UI issue, which browser are you using?"
+      placeholder: "e.g. Chrome 120, Firefox 121, Safari 17"
+    validations:
+      required: false
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Log Output
+      description: "Paste relevant log output (Setup > Log). Use verbose logging if possible (`-verbose 1`)."
+      render: text
+    validations:
+      required: false
+
+  - type: textarea
+    id: screenshots
+    attributes:
+      label: Screenshots
+      description: If applicable, add screenshots to help explain the problem.
+    validations:
+      required: false
+
+  - type: input
+    id: forum-link
+    attributes:
+      label: Forum Post
+      description: "If you also created a forum topic, paste the link here."
+      placeholder: "https://forum.domoticz.com/..."
+    validations:
+      required: false
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: Additional Context
+      description: Add any other context about the problem here, including possible implementation ideas.
+    validations:
+      required: false

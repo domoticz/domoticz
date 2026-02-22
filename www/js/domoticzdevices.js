@@ -1217,17 +1217,7 @@ function Sensor(item) {
         
         var sensorType = this.type.replace(/\s/g, '');
 
-        if (
-			(sensorType === 'General')
-			|| (sensorType === 'Lux')
-		) {
-            this.LogLink = "window.location.href = '#/Devices/" + this.index + "/Log'";
-        } else {
-            if (sensorType === 'RFXMeter')	
-	        this.LogLink = this.onClick = "window.location.href = '#/Devices/" + this.index + "/Log'";
-	    else
-                this.LogLink = this.onClick = "Show" + sensorType + "Log('#" + Device.contentTag + "','" + Device.backFunction + "','" + this.index + "','" + this.name + "', '" + this.switchTypeVal + "');";
-        }
+        this.LogLink = this.onClick = "window.location.href = '#/Devices/" + this.index + "/Log'";
 
         this.imagetext = "Show graph";
         this.NotifyLink = "window.location.href = '#/Devices/" + this.index + "/Notifications'";
@@ -1367,7 +1357,7 @@ function Baro(item) {
         this.parent.constructor(item);
         if (this.name == 'Baro') this.name = 'Barometer';
         this.image = "images/baro48.png";
-        this.LogLink = this.onClick = "ShowBaroLog('#" + Device.contentTag + "','" + Device.backFunction + "','" + this.index + "','" + this.name + "');";
+        this.LogLink = this.onClick = "window.location.href = '#/Devices/" + this.index + "/Log'";
         if (typeof item.Barometer != 'undefined') {
             this.data = this.smallStatus = item.Barometer + ' hPa';
             if (typeof item.ForecastStr != 'undefined') {
@@ -1549,12 +1539,12 @@ function Current(item) {
                         this.smallStatus = this.data;
                         break;
                     default:
-                        this.LogLink = this.onClick = "ShowCurrentLog('#" + Device.contentTag + "','" + Device.backFunction + "','" + this.index + "','" + this.name + "', '" + this.switchTypeVal + "');";
+                        this.LogLink = this.onClick = "window.location.href = '#/Devices/" + this.index + "/Log'";
                         break;
                 }
                 break;
             default:
-                this.LogLink = this.onClick = "ShowCurrentLog('#" + Device.contentTag + "','" + Device.backFunction + "','" + this.index + "','" + this.name + "', '" + this.switchTypeVal + "');";
+                this.LogLink = this.onClick = "window.location.href = '#/Devices/" + this.index + "/Log'";
                 break;
         }
     }
@@ -1656,11 +1646,7 @@ Group.inheritsFrom(Switch);
 function Hardware(item) {
     if (arguments.length != 0) {
         this.parent.constructor(item);
-        if (this.subtype === 'General') {
-            this.LogLink = "window.location.href = '#/Devices/" + this.index + "/Log'";
-        } else {
-            this.LogLink = this.onClick = "Show" + this.subtype + "Log('#" + Device.contentTag + "','" + Device.backFunction + "','" + this.index + "','" + this.name + "', '" + this.switchTypeVal + "');";
-        }
+        this.LogLink = this.onClick = "window.location.href = '#/Devices/" + this.index + "/Log'";
 
         if (item.CustomImage == 0) {
 			//?

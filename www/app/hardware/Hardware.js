@@ -329,7 +329,6 @@ define(['app'], function (app) {
 				(text.indexOf("System Alive") >= 0) ||
 				(text.indexOf("PiFace") >= 0) ||
 				(text.indexOf("I2C ") >= 0) ||
-				(text.indexOf("Motherboard") >= 0) ||
 				(text.indexOf("Kodi Media") >= 0) ||
 				(text.indexOf("Evohome") >= 0 && text.indexOf("script") >= 0) ||
 				(text.indexOf("YeeLight") >= 0) ||
@@ -520,6 +519,49 @@ define(['app'], function (app) {
 						} else {
 							RefreshHardwareTable();
 						}
+					},
+					error: function () {
+						ShowNotify($.t('Problem updating hardware!'), 2500, true);
+					}
+				});
+			}
+			else if (text.indexOf("Motherboard") >= 0) {
+				var mbMode = $("#hardwarecontent #divmotherboardmode #combomotherboardmode").val();
+				var mbExtended = $("#hardwarecontent #divlhmextendedsensors #combolhmextendedsensors").val();
+				var address = "";
+				var port = "";
+				var username = "";
+				var password = "";
+				if (mbMode == "1") {
+					address = $("#hardwarecontent #divremote #tcpaddress").val();
+					if (address == "") {
+						ShowNotify($.t('Please enter an Address!'), 2500, true);
+						return;
+					}
+					port = $("#hardwarecontent #divremote #tcpport").val();
+					if (port == "") {
+						ShowNotify($.t('Please enter a Port!'), 2500, true);
+						return;
+					}
+					username = $("#hardwarecontent #divlogin #username").val();
+					password = $("#hardwarecontent #divlogin #password").val();
+				}
+				$.ajax({
+					url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype +
+					"&loglevel=" + logLevel +
+					"&address=" + encodeURIComponent(address) +
+					"&port=" + encodeURIComponent(port) +
+					"&username=" + encodeURIComponent(username) +
+					"&password=" + encodeURIComponent(password) +
+					"&name=" + encodeURIComponent(name) +
+					"&enabled=" + bEnabled +
+					"&idx=" + idx +
+					"&datatimeout=" + datatimeout +
+					"&Mode1=" + mbMode + "&Mode2=" + mbExtended + "&Mode3=0&Mode4=0&Mode5=0&Mode6=0",
+					async: false,
+					dataType: 'json',
+					success: function (data) {
+						RefreshHardwareTable();
 					},
 					error: function () {
 						ShowNotify($.t('Problem updating hardware!'), 2500, true);
@@ -1914,6 +1956,48 @@ define(['app'], function (app) {
 					}
 				});
 			}
+			else if (text.indexOf("Motherboard") >= 0) {
+				var mbMode = $("#hardwarecontent #divmotherboardmode #combomotherboardmode").val();
+				var mbExtended = $("#hardwarecontent #divlhmextendedsensors #combolhmextendedsensors").val();
+				var address = "";
+				var port = "";
+				var username = "";
+				var password = "";
+				if (mbMode == "1") {
+					address = $("#hardwarecontent #divremote #tcpaddress").val();
+					if (address == "") {
+						ShowNotify($.t('Please enter an Address!'), 2500, true);
+						return;
+					}
+					port = $("#hardwarecontent #divremote #tcpport").val();
+					if (port == "") {
+						ShowNotify($.t('Please enter a Port!'), 2500, true);
+						return;
+					}
+					username = $("#hardwarecontent #divlogin #username").val();
+					password = $("#hardwarecontent #divlogin #password").val();
+				}
+				$.ajax({
+					url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype +
+					"&loglevel=" + logLevel +
+					"&address=" + encodeURIComponent(address) +
+					"&port=" + encodeURIComponent(port) +
+					"&username=" + encodeURIComponent(username) +
+					"&password=" + encodeURIComponent(password) +
+					"&name=" + encodeURIComponent(name) +
+					"&enabled=" + bEnabled +
+					"&datatimeout=" + datatimeout +
+					"&Mode1=" + mbMode + "&Mode2=" + mbExtended,
+					async: false,
+					dataType: 'json',
+					success: function (data) {
+						RefreshHardwareTable();
+					},
+					error: function () {
+						ShowNotify($.t('Problem adding hardware!'), 2500, true);
+					}
+				});
+			}
 			else if (
 				(text.indexOf("Panasonic") >= 0) ||
 				(text.indexOf("BleBox") >= 0) ||
@@ -1925,7 +2009,6 @@ define(['app'], function (app) {
 				(text.indexOf("PiFace") >= 0) ||
 				(text.indexOf("Evohome") >= 0 && text.indexOf("script") >= 0) ||
 				(text.indexOf("Tellstick") >= 0) ||
-				(text.indexOf("Motherboard") >= 0) ||
 				(text.indexOf("YeeLight") >= 0) ||
 				(text.indexOf("Arilux AL-LC0x") >= 0) ||
 				(text.indexOf("Open-Meteo") >= 0)
@@ -3993,7 +4076,11 @@ define(['app'], function (app) {
 							else if ((item.Type == 14) || (item.Type == 25) || (item.Type == 28) || (item.Type == 30) || (item.Type == 34)) {
 								SerialName = "WWW";
 							}
-							else if ((item.Type == 15) || (item.Type == 23) || (item.Type == 26) || (item.Type == 27) || (item.Type == 51) || (item.Type == 54)) {
+							else if (item.Type == 23) {
+								// Motherboard/System: show port for LHM mode, WWW for local
+								SerialName = (item.Mode1 == 1) ? item.Port : "WWW";
+							}
+							else if ((item.Type == 15) || (item.Type == 26) || (item.Type == 27) || (item.Type == 51) || (item.Type == 54)) {
 								SerialName = "";
 							}
 							else if ((item.Type == 16) || (item.Type == 32)) {
@@ -4483,6 +4570,17 @@ define(['app'], function (app) {
 									}
 								}
 							}
+						}
+						else if (data["Type"].indexOf("Motherboard") >= 0) {
+							$("#hardwarecontent #divmotherboardmode #combomotherboardmode").val(data["Mode1"]);
+							$("#hardwarecontent #divlhmextendedsensors #combolhmextendedsensors").val(data["Mode2"]);
+							if (data["Mode1"] == 1) {
+								$("#hardwarecontent #hardwareparamsremote #tcpaddress").val(data["Address"]);
+								$("#hardwarecontent #hardwareparamsremote #tcpport").val(data["Port"]);
+								$("#hardwarecontent #divlogin #username").val(data["Username"]);
+								$("#hardwarecontent #divlogin #password").val(data["Password"]);
+							}
+							$("#hardwarecontent #divmotherboardmode #combomotherboardmode").trigger("change");
 						}
 						else if ((data["Type"].indexOf("Underground") >= 0) || (data["Type"].indexOf("DarkSky") >= 0) || (data["Type"].indexOf("Visual Crossing") >= 0) || (data["Type"].indexOf("AccuWeather") >= 0)) {
 							$("#hardwarecontent #hardwareparamsunderground #apikey").val(data["Username"]);
@@ -5072,6 +5170,8 @@ define(['app'], function (app) {
 			$("#hardwarecontent #divbuienradar").hide();
 			$("#hardwarecontent #divmeteorologisk").hide();
 			$("#hardwarecontent #divserial").hide();
+			$("#hardwarecontent #divmotherboardmode").hide();
+			$("#hardwarecontent #divlhmextendedsensors").hide();
 			$("#hardwarecontent #divremote").hide();
 			$("#hardwarecontent #divlogin").hide();
 			$("#hardwarecontent #divhttppoller").hide();
@@ -5260,6 +5360,26 @@ define(['app'], function (app) {
 							$("#hardwarecontent #username").hide();
 							$("#hardwarecontent #lblusername").hide();
 						}
+			}
+			else if (text.indexOf("Motherboard") >= 0) {
+				$("#hardwarecontent #divmotherboardmode").show();
+				$("#hardwarecontent #divmotherboardmode #combomotherboardmode").off("change").on("change", function () {
+					var mode = $(this).val();
+					if (mode == "1") {
+						$("#hardwarecontent #divremote").show();
+						$("#hardwarecontent #divlogin").show();
+						$("#hardwarecontent #divlhmextendedsensors").show();
+						if ($("#hardwarecontent #hardwareparamsremote #tcpaddress").val() == "")
+							$("#hardwarecontent #hardwareparamsremote #tcpaddress").val("127.0.0.1");
+						if ($("#hardwarecontent #hardwareparamsremote #tcpport").val() == "")
+							$("#hardwarecontent #hardwareparamsremote #tcpport").val(8085);
+					} else {
+						$("#hardwarecontent #divremote").hide();
+						$("#hardwarecontent #divlogin").hide();
+						$("#hardwarecontent #divlhmextendedsensors").hide();
+					}
+				});
+				$("#hardwarecontent #divmotherboardmode #combomotherboardmode").trigger("change");
 			}
 			else if (text.indexOf("Domoticz") >= 0) {
 				$("#hardwarecontent #divremote").show();

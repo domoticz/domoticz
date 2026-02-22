@@ -7,6 +7,7 @@ class CMQTTPush : public CBasePush, MQTT
 {
 public:
 	CMQTTPush();
+	~CMQTTPush();
 	bool Start();
 	void Stop();
 	void UpdateSettings();

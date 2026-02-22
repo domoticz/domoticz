@@ -1,0 +1,59 @@
+name: Feature Request
+description: Suggest a new feature or enhancement for Domoticz
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        **Please discuss new features on the [Domoticz Forum](https://forum.domoticz.com/) first.**
+
+        Feature requests with prior forum discussion are more likely to be considered.
+
+  - type: checkboxes
+    id: prerequisites
+    attributes:
+      label: Prerequisites
+      options:
+        - label: I have searched existing issues for this feature request
+          required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: A clear and concise description of the feature you'd like.
+    validations:
+      required: true
+
+  - type: textarea
+    id: use-case
+    attributes:
+      label: Use Case
+      description: Describe the problem this feature would solve or the scenario where it would be useful.
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposed-solution
+    attributes:
+      label: Proposed Solution
+      description: If you have an idea for how this could be implemented, describe it here.
+    validations:
+      required: false
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives Considered
+      description: Describe any alternative solutions or workarounds you've considered.
+    validations:
+      required: false
+
+  - type: input
+    id: forum-link
+    attributes:
+      label: Forum Discussion
+      description: "Link to the forum topic where this was discussed."
+      placeholder: "https://forum.domoticz.com/..."
+    validations:
+      required: false

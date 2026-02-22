@@ -51,7 +51,7 @@ namespace Plugins {
 		{
 			if (pPlugin->m_bDebug & PDM_CONNECTION)
 			{
-				pPlugin->Log(LOG_NORM, "Timeout for port '%s'", m_Port.c_str());
+				pPlugin->Debug(DEBUG_PYTHON, "Timeout for port '%s'", m_Port.c_str());
 			}
 			pPlugin->MessagePlugin(new onTimeoutCallback(m_pConnection));
 			configureTimeout();
@@ -62,7 +62,7 @@ namespace Plugins {
 		}
 		else if ((pPlugin->m_bDebug & PDM_CONNECTION) && (ec == boost::asio::error::operation_aborted))
 		{
-			pPlugin->Log(LOG_NORM, "Timer aborted (%s).", m_Port.c_str());
+			pPlugin->Debug(DEBUG_PYTHON, "Timer aborted (%s).", m_Port.c_str());
 		}
 	}
 
@@ -91,9 +91,9 @@ namespace Plugins {
 			std::string	sAddress = PyUnicode_AsUTF8(pConnection->Address);
 			std::string	sPort = PyUnicode_AsUTF8(pConnection->Port);
 			if ((sTransport == "Serial") || (!sPort.length()))
-				pPlugin->Log(LOG_NORM, "Connection '%s' released by Python, reference count is %d.", sAddress.c_str(), (int)m_pConnection->ob_base.ob_refcnt);
+				pPlugin->Debug(DEBUG_PYTHON, "Connection '%s' released by Python, reference count is %d.", sAddress.c_str(), (int)m_pConnection->ob_base.ob_refcnt);
 			else
-				pPlugin->Log(LOG_NORM, "Connection '%s:%s' released by Python, reference count is %d.", sAddress.c_str(), sPort.c_str(), (int)m_pConnection->ob_base.ob_refcnt);
+				pPlugin->Debug(DEBUG_PYTHON, "Connection '%s:%s' released by Python, reference count is %d.", sAddress.c_str(), sPort.c_str(), (int)m_pConnection->ob_base.ob_refcnt);
 		}
 		if (!m_bDisconnectQueued && m_pConnection && (m_pConnection->ob_base.ob_refcnt <= 1))
 		{
@@ -158,7 +158,7 @@ namespace Plugins {
 				pPlugin->MessagePlugin(new DisconnectedEvent(m_pConnection));
 
 				if ((pPlugin->m_bDebug & PDM_CONNECTION) && (err == boost::asio::error::operation_aborted))
-					pPlugin->Log(LOG_NORM, "Asynchronous resolve aborted (%s:%s).", m_IP.c_str(), m_Port.c_str());
+					pPlugin->Debug(DEBUG_PYTHON, "Asynchronous resolve aborted (%s:%s).", m_IP.c_str(), m_Port.c_str());
 			}
 			else
 			{
@@ -187,7 +187,7 @@ namespace Plugins {
 		{
 			m_bConnected = false;
 			if ((pPlugin->m_bDebug & PDM_CONNECTION) && (err == boost::asio::error::operation_aborted))
-				pPlugin->Log(LOG_NORM, "Asynchronous connect aborted (%s:%s).", m_IP.c_str(), m_Port.c_str());
+				pPlugin->Debug(DEBUG_PYTHON, "Asynchronous connect aborted (%s:%s).", m_IP.c_str(), m_Port.c_str());
 			pPlugin->MessagePlugin(new DisconnectedEvent(m_pConnection));
 		}
 
@@ -333,7 +333,7 @@ namespace Plugins {
 			    )
 			)
 			{
-				_log.Log(LOG_NORM, "Queued asynchronous read aborted (%s:%s), [%d] %s.", m_IP.c_str(), m_Port.c_str(), e.value(), e.message().c_str());
+				_log.Debug(DEBUG_PYTHON, "Queued asynchronous read aborted (%s:%s), [%d] %s.", m_IP.c_str(), m_Port.c_str(), e.value(), e.message().c_str());
 			}
 			else
 			{
@@ -405,7 +405,7 @@ namespace Plugins {
 
 		if (pPlugin->m_bDebug & PDM_CONNECTION)
 		{
-			pPlugin->Log(LOG_NORM, "Handling TCP disconnect, socket (%s:%s) is %sconnected", m_IP.c_str(), m_Port.c_str(), (m_bConnected ? "" : "not "));
+			pPlugin->Debug(DEBUG_PYTHON, "Handling TCP disconnect, socket (%s:%s) is %sconnected", m_IP.c_str(), m_Port.c_str(), (m_bConnected ? "" : "not "));
 		}
 
 		m_tLastSeen = time(nullptr);
@@ -530,7 +530,7 @@ namespace Plugins {
 		{
 			m_bConnected = false;
 			if ((pPlugin->m_bDebug & PDM_CONNECTION) && (err == boost::asio::error::operation_aborted))
-				_log.Log(LOG_NORM, "Asynchronous secure connect aborted (%s:%s).", m_IP.c_str(), m_Port.c_str());
+				_log.Debug(DEBUG_PYTHON, "Asynchronous secure connect aborted (%s:%s).", m_IP.c_str(), m_Port.c_str());
 			pPlugin->MessagePlugin(new onConnectCallback(m_pConnection, err.value(), err.message()));
 			pPlugin->MessagePlugin(new DisconnectedEvent(m_pConnection));
 		}
@@ -557,7 +557,7 @@ namespace Plugins {
 
 		if (m_pConnection && pPlugin->m_bDebug & PDM_CONNECTION)
 		{
-			pPlugin->Log(LOG_NORM, "TLS Certificate found '%s'", subject_name);
+			pPlugin->Debug(DEBUG_PYTHON, "TLS Certificate found '%s'", subject_name);
 		}
 
 		// TODO: Add some certificate checking
@@ -590,7 +590,7 @@ namespace Plugins {
 			if ((pPlugin->m_bDebug & PDM_CONNECTION) &&
 				((e == boost::asio::error::operation_aborted) || (e == boost::asio::error::eof)))
 			{
-				pPlugin->Log(LOG_NORM, "Queued asynchronous secure read aborted.");
+				pPlugin->Debug(DEBUG_PYTHON, "Queued asynchronous secure read aborted.");
 			}
 			else
 			{
@@ -733,7 +733,7 @@ namespace Plugins {
 			if (!pPlugin)
 				return;
 			if (pPlugin->m_bDebug & PDM_CONNECTION)
-				pPlugin->Log(LOG_NORM, "Queued asynchronous UDP read aborted (%s:%s).", m_IP.c_str(), m_Port.c_str());
+				pPlugin->Debug(DEBUG_PYTHON, "Queued asynchronous UDP read aborted (%s:%s).", m_IP.c_str(), m_Port.c_str());
 			else
 			{
 				if ((ec.value() != boost::asio::error::eof) &&
@@ -792,7 +792,7 @@ namespace Plugins {
 
 		if (pPlugin->m_bDebug & PDM_CONNECTION)
 		{
-			pPlugin->Log(LOG_NORM, "Handling UDP disconnect, socket (%s:%s) is %sconnected", m_IP.c_str(), m_Port.c_str(), (m_bConnected ? "" : "not "));
+			pPlugin->Debug(DEBUG_PYTHON, "Handling UDP disconnect, socket (%s:%s) is %sconnected", m_IP.c_str(), m_Port.c_str(), (m_bConnected ? "" : "not "));
 		}
 
 		m_tLastSeen = time(nullptr);
@@ -899,7 +899,7 @@ namespace Plugins {
 		{
 			if (pPlugin->m_bDebug & PDM_CONNECTION)
 			{
-				pPlugin->Log(LOG_NORM, "ICMP timeout for address '%s'", m_IP.c_str());
+				pPlugin->Debug(DEBUG_PYTHON, "ICMP timeout for address '%s'", m_IP.c_str());
 			}
 
 			CPlugin*	pPlugin = ((CConnection*)m_pConnection)->pPlugin;
@@ -912,7 +912,7 @@ namespace Plugins {
 		}
 		else if ((pPlugin->m_bDebug & PDM_CONNECTION) && (ec == boost::asio::error::operation_aborted))
 		{
-			pPlugin->Log(LOG_NORM, "ICMP timer aborted (%s).", m_IP.c_str());
+			pPlugin->Debug(DEBUG_PYTHON, "ICMP timer aborted (%s).", m_IP.c_str());
 		}
 	}
 
@@ -963,7 +963,7 @@ namespace Plugins {
 		{
 			if ((pPlugin->m_bDebug & PDM_CONNECTION) &&
 				((ec == boost::asio::error::operation_aborted) || (ec == boost::asio::error::eof)))
-				pPlugin->Log(LOG_NORM, "Queued asynchronous ICMP read aborted (%s).", m_IP.c_str());
+				pPlugin->Debug(DEBUG_PYTHON, "Queued asynchronous ICMP read aborted (%s).", m_IP.c_str());
 			else
 			{
 				if ((ec.value() != boost::asio::error::eof) && (ec.value() != 121) && // Semaphore timeout expiry or end of file aka 'lost contact'
@@ -1033,7 +1033,7 @@ namespace Plugins {
 
 		if (pPlugin->m_bDebug & PDM_CONNECTION)
 		{
-			pPlugin->Log(LOG_NORM, "Handling ICMP disconnect, socket (%s) is %sconnected", m_IP.c_str(), (m_bConnected ? "" : "not "));
+			pPlugin->Debug(DEBUG_PYTHON, "Handling ICMP disconnect, socket (%s) is %sconnected", m_IP.c_str(), (m_bConnected ? "" : "not "));
 		}
 
 		m_tLastSeen = time(nullptr);

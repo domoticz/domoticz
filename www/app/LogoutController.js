@@ -5,7 +5,8 @@ define(['app'], function (app) {
 			var permissionList = {
 				isloggedin: false,
 				rights: -1,
-				user: ''
+				user: '',
+				canlogout: true
 			};
 			permissions.setPermissions(permissionList);
 			$.ajax({
@@ -19,6 +20,7 @@ define(['app'], function (app) {
 						dataType: 'json',
 						success: function (data) {
 							if (data.status === "OK") {
+								permissionList.canlogout = data.canlogout;
 								if (data.user && data.user !== "") {
 									permissionList.isloggedin = true;
 									permissionList.user = data.user;

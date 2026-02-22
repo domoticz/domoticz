@@ -7,6 +7,7 @@ class CInfluxPush : public CBasePush, public StoppableTask
 {
 public:
 	CInfluxPush();
+	~CInfluxPush();
 	bool Start();
 	void Stop();
 	void UpdateSettings();

@@ -8,7 +8,7 @@ local self = {
 	LOG_STATUS = 4,
 	LOG_ERROR = 5,
 	LOG_FORCE = 6,
-	DZVERSION = '3.1.10',
+	DZVERSION = '3.1.11',
 }
 
 function jsonParser:unsupportedTypeEncoder(value_of_unsupported_type)
@@ -27,10 +27,11 @@ end
 function self.cloneTable(original)
 	local copy = {}
 	for k, v in pairs(original) do
-		if type(v) == 'table' then
-			v = self.cloneTable(v)
+		local val = v
+		if type(val) == 'table' then
+			val = self.cloneTable(val)
 		end
-		copy[k] = v
+		copy[k] = val
 	end
 	return copy
 end
@@ -55,11 +56,11 @@ self.toStr = function (value)
 	elseif _.isTable(value) then
 		str = '{'
 		for k, v in pairs(value) do
-			v = ( _.isString(v) and dblQuote(v) ) or self.toStr(v)
+			local val = ( _.isString(v) and dblQuote(v) ) or self.toStr(v)
 			if _.isNumber(k) then
-				str = str .. v .. ', '
+				str = str .. val .. ', '
 			else
-				str = str .. '[' .. dblQuote(k) .. ']=' .. v .. ', '
+				str = str .. '[' .. dblQuote(k) .. ']=' .. val .. ', '
 			end
 		end
 		str = str:sub(0, ( #str - 2 ) ) .. '}'
@@ -140,8 +141,9 @@ function self.stringSplit(text, sep, convertNumber, convertNil)
 	if convertNil then include = '*' end
 	local t = {}
 	for str in string.gmatch(text, "([^" ..sep.. "]" .. include .. ")" ) do
-		if convertNil and str == '' then str = convertNil end
-		table.insert(t, ( convertNumber and tonumber(str) ) or str)
+		local value = str
+		if convertNil and value == '' then value = convertNil end
+		table.insert(t, ( convertNumber and tonumber(value) ) or value)
 	end
 	return t
 end

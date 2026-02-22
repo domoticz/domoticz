@@ -1003,32 +1003,216 @@ table.mobileitem {
 	filter: none;
 }
 
+/* Legacy log classes (used by DeviceLog, SceneLog, etc.) */
 div.log {
-	background-color: #FAFAFA;
 	height: 300px;
 	overflow: auto;
-	border: 1px dotted #AAAAAA;
+	border: 1px solid var(--accent-color, #283750);
 	padding: 4px;
-	font-family: "Courier New", monospace;
-	color: #666666;
+	font-family: 'Courier New', Consolas, monospace;
+	color: #ccc;
 	font-size: 11px;
 	word-wrap: break-word;
 	text-align: left;
 }
 
 .lognorm {
-	color: #000000;
+	color: #ccc;
 }
 
 .logerror {
-	color: #860016;
+	color: #ff6b6b;
 	font-weight: 600;
 }
 
 .logstatus {
-	color: #067676;
+	color: #4ec9b0;
 	font-size: 11px;
 	font-weight: 600;
+}
+
+/* Modern log console */
+.log-console-container {
+	display: flex;
+	flex-direction: column;
+	height: calc(100vh - 110px);
+	border: 1px solid var(--accent-color, #283750);
+	border-radius: 5px;
+	position: relative;
+	font-size: 14px;
+}
+
+.log-toolbar {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	padding: 8px 12px;
+	background: var(--accent-color, #283750);
+	border-bottom: 1px solid var(--accent-color, #283750);
+	flex-shrink: 0;
+	flex-wrap: wrap;
+}
+
+.log-console {
+	flex: 1;
+	overflow-y: auto;
+	padding: 4px 12px;
+	font-family: 'Courier New', Consolas, monospace;
+}
+
+.log-line {
+	padding: 0;
+	white-space: pre-wrap;
+	word-break: break-all;
+	line-height: 1.4;
+	color: #ccc;
+}
+
+.log-line:hover {
+	background: rgba(255, 255, 255, 0.04);
+}
+
+.log-level-norm { color: #ccc; }
+.log-level-status { color: #4ec9b0; }
+.log-level-error { color: #ff6b6b; font-weight: 600; }
+.log-level-debug { color: #9cdcfe; }
+
+.log-statusbar {
+	padding: 4px 12px;
+	background: var(--accent-color, #283750);
+	color: #aac;
+	font-size: 11px;
+	flex-shrink: 0;
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Toolbar components */
+.log-search {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	flex: 1;
+	max-width: 400px;
+}
+
+.log-search-input {
+	flex: 1;
+	background: rgba(0, 0, 0, 0.3);
+	border: 1px solid rgba(255, 255, 255, 0.15);
+	color: #ddd;
+	padding: 4px 8px;
+	border-radius: 3px;
+	font-family: inherit;
+	font-size: 14px;
+}
+
+.log-search-input:focus {
+	border-color: rgba(100, 200, 255, 0.5);
+	outline: none;
+}
+
+.log-search-input::placeholder {
+	color: #667;
+}
+
+.log-search-count {
+	color: #889;
+	font-size: 10px;
+	white-space: nowrap;
+}
+
+mark.log-highlight {
+	background: rgba(100, 200, 255, 0.2);
+	color: #fff;
+	padding: 0 2px;
+	border-radius: 2px;
+}
+
+.log-level-toggles {
+	display: flex;
+	gap: 4px;
+}
+
+.log-filter-btn {
+	display: inline-flex;
+	align-items: center;
+	gap: 4px;
+	background: rgba(0, 0, 0, 0.3) !important;
+	border: 1px solid rgba(255, 255, 255, 0.15) !important;
+	opacity: 0.45;
+	transition: opacity 0.15s;
+}
+
+.log-filter-btn-active {
+	opacity: 1;
+	border-color: rgba(255, 255, 255, 0.3) !important;
+}
+
+.log-filter-btn span:first-child {
+	font-weight: 600;
+}
+
+.log-toggle-count {
+	background: rgba(255, 255, 255, 0.12);
+	padding: 1px 5px;
+	border-radius: 8px;
+	font-size: 11px;
+	min-width: 18px;
+	text-align: center;
+	line-height: 1.4;
+}
+
+.log-actions {
+	display: flex;
+	gap: 4px;
+}
+
+.log-scroll-indicator {
+	position: absolute;
+	bottom: 32px;
+	left: 50%;
+	transform: translateX(-50%);
+	background: var(--accent-color, #283750);
+	color: #ddd;
+	padding: 6px 16px;
+	border-radius: 20px;
+	border: 1px solid rgba(100, 200, 255, 0.3);
+	cursor: pointer;
+	font-size: 11px;
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+	z-index: 10;
+	transition: background 0.2s;
+}
+
+.log-scroll-indicator:hover {
+	background: rgba(100, 200, 255, 0.15);
+}
+
+.log-show-older {
+	text-align: center;
+	padding: 6px;
+	color: #889;
+	font-size: 11px;
+	cursor: pointer;
+	border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+	transition: color 0.15s, background 0.15s;
+}
+
+.log-show-older:hover {
+	color: #ddd;
+	background: rgba(100, 200, 255, 0.08);
+}
+
+.log-statusbar-paused {
+	color: #ffdd57;
+	font-weight: 600;
+}
+
+.log-statusbar-following {
+	color: #4ec9b0;
 }
 
 .obtext {

@@ -106,7 +106,7 @@ public:
 	~CEventSystem();
 
 	void StartEventSystem();
-	void StopEventSystem();
+	void StopEventSystem(bool bDestroyPythonInterpreter = true);
 
 	void LoadEvents();
 	void ProcessDevice(int HardwareID, uint64_t ulDevID, unsigned char unit, unsigned char devType, unsigned char subType, unsigned char signallevel, unsigned char batterylevel, int nValue,
@@ -157,16 +157,16 @@ private:
 
 	struct _tEventQueue
 	{
-		_eReason reason;
-		uint64_t id;
+		_eReason reason = REASON_DEVICE;
+		uint64_t id = 0;
 		std::string devname;
-		int nValue;
+		int nValue = 0;
 		std::string sValue;
 		std::string nValueWording;
 		std::string lastUpdate;
 		std::string errorText;
-		bool timeoutOccurred;
-		uint8_t lastLevel;
+		bool timeoutOccurred = false;
+		uint8_t lastLevel = 0;
 		std::vector<std::string> vData;
 		std::map<uint8_t, int> JsonMapInt;
 		std::map<uint8_t, float> JsonMapFloat;

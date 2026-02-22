@@ -120,7 +120,7 @@ IF(GIT_FOUND AND EXISTS "${PROJECT_SOURCE_DIR}/.git")
 # Update submodules as needed
     IF(GIT_SUBMODULE)
         message(STATUS "Submodule update")
-    execute_process(COMMAND ${GIT_EXECUTABLE} submodule update --init --remote --recursive
+    execute_process(COMMAND ${GIT_EXECUTABLE} submodule update --init --recursive
                         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
                         RESULT_VARIABLE GIT_SUBMOD_RESULT)
         IF(NOT GIT_SUBMOD_RESULT EQUAL "0")
@@ -258,6 +258,8 @@ hardware/FritzboxTCP.cpp
 hardware/Gpio.cpp
 hardware/GpioPin.cpp
 hardware/HardwareMonitor.cpp
+hardware/HardwareMonitorUnix.cpp
+hardware/HardwareMonitorLHM.cpp
 hardware/HarmonyHub.cpp
 hardware/Honeywell.cpp
 hardware/HEOS.cpp
@@ -418,26 +420,6 @@ add_executable(domoticz ${domoticz_SRCS})
 set(EXECUTABLE_OUTPUT_PATH ${CMAKE_BINARY_DIR})
 #SET(EXECUTABLE_OUTPUT_PATH "" CACHE INTERNAL "Where to put the executables for Domoticz")
 
-# Target
-set(
-domoticztester_SRCS
-main/stdafx.cpp
-main/Helper.cpp
-main/CmdLine.cpp
-main/domoticz_tester.cpp
-main/BaroForecastCalculator.cpp
-main/HTMLSanitizer.cpp
-main/localtime_r.cpp
-main/SunRiseSet.cpp
-main/TrendCalculator.cpp
-main/WindCalculation.cpp
-main/json_helper.cpp
-hardware/ColorSwitch.cpp
-)
-
-#main/IFTTT.cpp
-
-add_executable(domoticztester ${domoticztester_SRCS})
 set(EXECUTABLE_OUTPUT_PATH ${CMAKE_BINARY_DIR})
 
 #
@@ -538,7 +520,6 @@ set (domoticz_VERSION_PATCH ${ProjectRevision})
 
 # explicitly say that the executable depends on the revisiontag
 add_dependencies(domoticz revisiontag)
-add_dependencies(domoticztester revisiontag)
 
 TEST_BIG_ENDIAN(BIGENDIAN)
 IF(${BIGENDIAN})
@@ -556,9 +537,11 @@ IF(USE_BUILTIN_JSONCPP)
   set(JSONCPP_WITH_TESTS OFF CACHE BOOL "Enable jsoncpp tests" FORCE)
   set(JSONCPP_WITH_POST_BUILD_UNITTEST OFF CACHE BOOL "Enable jsoncpp post build unit tests" FORCE)
   set(JSONCPP_WITH_PKGCONFIG_SUPPORT OFF CACHE BOOL "Enable jsoncpp pkgconfig support" FORCE)
-  add_subdirectory (extern/jsoncpp EXCLUDE_FROM_ALL)
+  add_subdirectory (extern/jsoncpp ${CMAKE_CURRENT_BINARY_DIR}/jsoncpp_build EXCLUDE_FROM_ALL)
+  if(NOT MSVC)
+    target_compile_options(jsoncpp_static PRIVATE -Wno-deprecated-declarations)
+  endif()
   target_link_libraries(domoticz jsoncpp_static)
-  target_link_libraries(domoticztester jsoncpp_static)
   INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/extern/jsoncpp/include)
 ELSE(USE_BUILTIN_JSONCPP)
   find_package(PkgConfig)
@@ -568,9 +551,6 @@ ELSE(USE_BUILTIN_JSONCPP)
     target_include_directories(domoticz PRIVATE ${JSONCPP_INCLUDE_DIRS})
     target_link_directories(domoticz PRIVATE ${JSONCPP_LIBRARY_DIRS})
     target_link_libraries(domoticz ${JSONCPP_LIBRARIES})
-    target_include_directories(domoticztester PRIVATE ${JSONCPP_INCLUDE_DIRS})
-    target_link_directories(domoticztester PRIVATE ${JSONCPP_LIBRARY_DIRS})
-    target_link_libraries(domoticztester ${JSONCPP_LIBRARIES})
   ELSE(JSONCPP_FOUND)
     MESSAGE(FATAL_ERROR "JSONCPP not found on your system! try 'sudo apt-get install jsoncpp-dev'")
   ENDIF(JSONCPP_FOUND)
@@ -590,9 +570,7 @@ ENDIF(MQTT_LIBRARIES AND MQTT_INCLUDE_DIRS)
 IF(USE_BUILTIN_SQLITE)
   MESSAGE(STATUS "Using builtin SQLite library")
   add_subdirectory (extern/sqlite-amalgamation EXCLUDE_FROM_ALL)
-  target_link_libraries(domoticz SQLite3)
-  target_link_libraries(domoticztester SQLite3)
-  INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/extern/sqlite-amalgamation)
+  target_link_libraries(domoticz SQLite::SQLite3)
 ELSE(USE_BUILTIN_SQLITE)
   find_package(SQLite3)
   IF(SQLite3_FOUND)
@@ -600,7 +578,6 @@ ELSE(USE_BUILTIN_SQLITE)
     MESSAGE(STATUS "SQLite includes found at: ${SQLite3_INCLUDE_DIRS}")
     INCLUDE_DIRECTORIES(${SQLite3_INCLUDE_DIRS})
     target_link_libraries(domoticz ${SQLite3_LIBRARIES})
-    target_link_libraries(domoticztester ${SQLite3_LIBRARIES})
   ELSE(SQLite3_FOUND)
     MESSAGE(FATAL_ERROR "SQLite3 not found on your system! try 'sudo apt-get install libsqlite3-dev'")
   ENDIF(SQLite3_FOUND)
@@ -610,7 +587,6 @@ ENDIF(USE_BUILTIN_SQLITE)
 IF(USE_BUILTIN_MINIZIP)
   add_subdirectory (extern/minizip EXCLUDE_FROM_ALL)
   target_link_libraries(domoticz minizip)
-  target_link_libraries(domoticztester minizip)
   INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/extern/minizip)
 ELSE(USE_BUILTIN_MINIZIP)
   find_package(PkgConfig)
@@ -620,9 +596,6 @@ ELSE(USE_BUILTIN_MINIZIP)
     target_include_directories(domoticz PRIVATE ${MINIZIP_INCLUDE_DIRS})
     target_link_directories(domoticz PRIVATE ${MINIZIP_LIBRARY_DIRS})
     target_link_libraries(domoticz ${MINIZIP_LIBRARIES})
-    target_include_directories(domoticztester PRIVATE ${MINIZIP_INCLUDE_DIRS})
-    target_link_directories(domoticztester PRIVATE ${MINIZIP_LIBRARY_DIRS})
-    target_link_libraries(domoticztester ${MINIZIP_LIBRARIES})
   ELSE(MINIZIP_FOUND)
     MESSAGE(FATAL_ERROR "MINIZIP not found on your system! try 'sudo apt-get install minizip-dev'")
   ENDIF(MINIZIP_FOUND)
@@ -650,7 +623,6 @@ IF(NOT OPENSSL_FOUND)
   find_library(MD_LIBRARY NAMES md)
   IF(MD_LIBRARY)
     target_link_libraries(domoticz ${MD_LIBRARY})
-    target_link_libraries(domoticztester ${MD_LIBRARY})
   ENDIF(MD_LIBRARY)
 ELSE()
   message(STATUS "OPENSSL library found at: ${OPENSSL_LIBRARIES}")
@@ -658,7 +630,6 @@ ELSE()
   add_definitions(-DWITH_TLS)
   include_directories(${OPENSSL_INCLUDE_DIR})
   target_link_libraries(domoticz ${OPENSSL_LIBRARIES})
-  target_link_libraries(domoticztester ${OPENSSL_LIBRARIES})
 ENDIF()
 
 #
@@ -798,7 +769,6 @@ else()
 endif()
 
 target_link_libraries(domoticz ${Boost_LIBRARIES} ${ZLIB_LIBRARIES} ${MINIZIP_LIBRARIES} ${RESOLV_LIBRARIES} ${CURL_LIBRARIES} pthread ${MQTT_LIBRARIES} ${LUA_LIBRARIES} ${CMAKE_DL_LIBS} ${TELLDUS_LIBRARIES})
-target_link_libraries(domoticztester ${Boost_LIBRARIES} ${ZLIB_LIBRARIES} ${MINIZIP_LIBRARIES} ${RESOLV_LIBRARIES} ${CURL_LIBRARIES} pthread ${MQTT_LIBRARIES} ${LUA_LIBRARIES} ${CMAKE_DL_LIBS} ${TELLDUS_LIBRARIES})
 
 IF(EXECINFO_LIBRARIES)
   target_link_libraries(domoticz ${EXECINFO_LIBRARIES})
@@ -807,13 +777,11 @@ ENDIF(EXECINFO_LIBRARIES)
 find_library(LIBRT rt)
 if(LIBRT)
   target_link_libraries(domoticz -lrt)
-  target_link_libraries(domoticztester -lrt)
 endif()
 
 IF(USE_PRECOMPILED_HEADER)
   message(STATUS "Using precompiled headers")
   target_precompile_headers(domoticz PRIVATE "main/stdafx.h")
-  target_precompile_headers(domoticztester PRIVATE "main/stdafx.h")
 ENDIF(USE_PRECOMPILED_HEADER)
 
 IF(CMAKE_COMPILER_IS_GNUCXX)

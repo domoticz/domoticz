@@ -350,39 +350,27 @@ local function EventHelpers(domoticz, mainMethod)
 
 	function self.scandir(directory, type)
 		local pos, len
-		local i, t, popen = 0, {}, io.popen
-		local cmd
 		local namesLookup = {}
 
 		if (directory == nil) then
 			return {}
 		end
 
-		if (sep == '/') then
-			cmd = 'ls -a "' .. directory .. '"'
-		else
-			-- assume windows for now
-			cmd = 'dir "' .. directory .. '" /B'
-		end
+		local t = {}
+		local files = dz_scandir(directory)
 
-		t = {}
-		local pfile = popen(cmd)
-		for filename in pfile:lines() do
+		for _, filename in ipairs(files) do
 			pos, len = string.find(filename, '.lua', 1, true)
 			if (pos and pos > 0 and filename:sub(1, 1) ~= '.' and len == string.len(filename)) then
-
 				local name = string.sub(filename, 1, pos - 1)
 				table.insert(t, {
 					['type'] = type,
 					['name'] = name
 				})
-
-				namesLookup[name] = true -- for quick lookup for filename
-
-				--utils.log('Found module in ' .. directory .. ' folder: ' .. t[#t].name, utils.LOG_DEBUG)
+				namesLookup[name] = true
 			end
 		end
-		pfile:close()
+
 		return t, namesLookup
 	end
 
@@ -926,14 +914,14 @@ local function EventHelpers(domoticz, mainMethod)
 				utils.log('Script name: ' .. scripts[1].name  .. '.lua, has a malformed on = section. The trigger = ' .. utils.toStr(scriptTrigger) , utils.LOG_ERROR)
 				allEventScripts[scriptTrigger] = ''
 			elseif res then -- a wild-card was used
-				scriptTrigger = ('^' .. scriptTrigger:gsub("[%^$]","."):gsub("*", ".*") .. '$')
+				local triggerPattern = ('^' .. scriptTrigger:gsub("[%^$]","."):gsub("*", ".*") .. '$')
 
 				local function sMatch(text, match) -- specialized sanitized match function to allow combination of Lua magic chars in wildcards
 					local sanitizedMatch = match:gsub("([%%%(%)%[%]%+%-%?])", "%%%1") -- escaping all 'magic' chars except *, ., ^ and $
 					return text:match(sanitizedMatch)
 				end
 
-				if sMatch(target, scriptTrigger) then
+				if sMatch(target, triggerPattern) then
 					if modules == nil then modules = {} end
 
 					for i, mod in pairs(scripts) do

@@ -201,6 +201,8 @@ private:
 	void Cmd_ChangePlanDeviceOrder(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_GetVersion(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_GetAuth(WebEmSession & session, const request& req, Json::Value &root);
+	void Cmd_GetSetupRequired(WebEmSession & session, const request& req, Json::Value &root);
+	void Cmd_SetupWizardCreateAdmin(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_GetMyProfile(WebEmSession& session, const request& req, Json::Value& root);
 	void Cmd_UpdateMyProfile(WebEmSession& session, const request& req, Json::Value& root);
 	void Cmd_GetUptime(WebEmSession & session, const request& req, Json::Value &root);

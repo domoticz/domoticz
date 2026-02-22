@@ -1,0 +1,24 @@
+<div ng-if="$ctrl.totalRain !== undefined">
+    <span>{{ 'Total' | translate }}:</span>
+    <span>{{ $ctrl.totalRain }} mm</span>
+</div>
+<div ng-if="$ctrl.highestDay">
+    <span>{{ 'Wettest Day' | translate }}:</span>
+    <span>{{ $ctrl.highestDay.date }}, {{ $ctrl.highestDay.value }} mm</span>
+</div>
+<div ng-if="$ctrl.highestMonth && !$ctrl.isMonthView">
+    <span>{{ 'Wettest Month' | translate }}:</span>
+    <span>{{ $ctrl.highestMonth.name }}, {{ $ctrl.highestMonth.value }} mm</span>
+</div>
+<div ng-if="$ctrl.lowestMonth && !$ctrl.isMonthView">
+    <span>{{ 'Driest Month' | translate }}:</span>
+    <span>{{ $ctrl.lowestMonth.name }}, {{ $ctrl.lowestMonth.value }} mm</span>
+</div>
+<br>
+<div ng-if="$ctrl.noDataAvailable" class="no-data">
+    {{ 'No data available' | translate}}
+</div>
+
+<table class="display myrighttable" id="reporttable"></table>
+<br>
+<div id="raingraph" class="device-log-chart"></div>

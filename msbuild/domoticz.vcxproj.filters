@@ -1648,6 +1648,12 @@
     <ClInclude Include="..\hardware\HardwareMonitor.h">
       <Filter>Devices\HardwareMonitor</Filter>
     </ClInclude>
+    <ClInclude Include="..\hardware\HardwareMonitorLHM.h">
+      <Filter>Devices\HardwareMonitor</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\HardwareMonitorUnix.h">
+      <Filter>Devices\HardwareMonitor</Filter>
+    </ClInclude>
     <ClInclude Include="..\hardware\WOL.h">
       <Filter>Devices\WOL</Filter>
     </ClInclude>
@@ -2182,6 +2188,9 @@
     <ClInclude Include="..\hardware\plugins\PythonObjects.h">
       <Filter>Plugin Framework</Filter>
     </ClInclude>
+    <ClInclude Include="..\hardware\plugins\PythonPluginUtils.h">
+      <Filter>Plugin Framework</Filter>
+    </ClInclude>
     <ClInclude Include="..\hardware\plugins\PythonObjectEx.h">
       <Filter>Plugin Framework</Filter>
     </ClInclude>
@@ -2440,6 +2449,12 @@
       <Filter>Devices\ICY Thermostat</Filter>
     </ClCompile>
     <ClCompile Include="..\hardware\HardwareMonitor.cpp">
+      <Filter>Devices\HardwareMonitor</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\HardwareMonitorLHM.cpp">
+      <Filter>Devices\HardwareMonitor</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\HardwareMonitorUnix.cpp">
       <Filter>Devices\HardwareMonitor</Filter>
     </ClCompile>
     <ClCompile Include="..\hardware\WOL.cpp">

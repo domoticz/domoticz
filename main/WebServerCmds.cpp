@@ -795,14 +795,11 @@ namespace http
 				return;
 			}
 			Json::Value clientData;
+			if (!ParseJSon(clientDataJSONraw, clientData))
 			{
-				Json::Reader reader;
-				if (!reader.parse(clientDataJSONraw, clientData))
-				{
-					root["status"]  = "ERR";
-					root["message"] = "Failed to parse clientDataJSON";
-					return;
-				}
+				root["status"]  = "ERR";
+				root["message"] = "Failed to parse clientDataJSON";
+				return;
 			}
 			if (clientData["type"].asString() != "webauthn.create")
 			{
@@ -1067,14 +1064,11 @@ namespace http
 				return;
 			}
 			Json::Value clientData;
+			if (!ParseJSon(clientDataJSONraw, clientData))
 			{
-				Json::Reader reader;
-				if (!reader.parse(clientDataJSONraw, clientData))
-				{
-					root["status"]  = "ERR";
-					root["message"] = "Failed to parse clientDataJSON";
-					return;
-				}
+				root["status"]  = "ERR";
+				root["message"] = "Failed to parse clientDataJSON";
+				return;
 			}
 			if (clientData["type"].asString() != "webauthn.get")
 			{
@@ -2521,12 +2515,67 @@ namespace http
 		{
 			root["status"] = "OK";
 			root["title"] = "GetAuth";
+			root["canlogout"] = !session.istrustednetwork || !session.id.empty();
 			if (session.rights != URIGHTS_NONE)
 			{
 				root["user"] = session.username;
 				root["rights"] = session.rights;
 				root["version"] = szAppVersion;
 			}
+		}
+
+		void CWebServer::Cmd_GetSetupRequired(WebEmSession& session, const request& req, Json::Value& root)
+		{
+			root["status"] = "OK";
+			root["title"] = "GetSetupRequired";
+			root["SetupRequired"] = !FindAdminUser();
+		}
+
+		void CWebServer::Cmd_SetupWizardCreateAdmin(WebEmSession& session, const request& req, Json::Value& root)
+		{
+			root["title"] = "SetupWizardCreateAdmin";
+
+			static std::mutex setupMutex;
+			std::lock_guard<std::mutex> lock(setupMutex);
+
+			// Security: only allow when no admin user exists
+			if (FindAdminUser())
+			{
+				_log.Log(LOG_ERROR, "Setup wizard attempt blocked: admin account already exists (IP: %s)", session.remote_host.c_str());
+				root["status"] = "ERR";
+				root["message"] = "Setup has already been completed";
+				return;
+			}
+
+			std::string username = CURLEncode::URLDecode(request::findValue(&req, "username"));
+			std::string password = CURLEncode::URLDecode(request::findValue(&req, "password"));
+
+			if (username.empty() || password.empty())
+			{
+				root["status"] = "ERR";
+				root["message"] = "Username and password are required";
+				return;
+			}
+
+			if (username.length() > 128)
+			{
+				root["status"] = "ERR";
+				root["message"] = "Username is too long";
+				return;
+			}
+
+			// Username is sent as plaintext, we base64 encode for storage
+			// Password is sent as MD5 hash from the frontend (same as login flow)
+			m_sql.safe_query(
+				"INSERT INTO Users (Active, Username, Password, Rights, TabsEnabled) VALUES (1, '%q', '%q', %d, 0x1F)",
+				base64_encode(username).c_str(), password.c_str(), http::server::URIGHTS_ADMIN);
+
+			_log.Log(LOG_STATUS, "Admin user '%s' created via setup wizard", username.c_str());
+
+			// Reload users so the new admin is immediately available for login
+			LoadUsers();
+
+			root["status"] = "OK";
 		}
 
 		void CWebServer::Cmd_GetMyProfile(WebEmSession& session, const request& req, Json::Value& root)
@@ -5507,13 +5556,13 @@ namespace http
 						{
 							sprintf(szTmp, "%s;%.2f;%s;%s", strarray[0].c_str(), tempcelcius, strarray[2].c_str(), strarray[3].c_str());
 						}
-						else if (dSubType == sTypeThermostat6TempBaro && strarray.size() >= 3)
+						else if (dSubType == sTypeThermostat6TempBaro && strarray.size() >= 4)
 						{
-							sprintf(szTmp, "%s;%.2f;%s", strarray[0].c_str(), tempcelcius, strarray[2].c_str());
+							sprintf(szTmp, "%s;%.2f;%s;%s", strarray[0].c_str(), tempcelcius, strarray[2].c_str(), strarray[3].c_str());
 						}
-						else if (dSubType == sTypeThermostat6TempHumBaro && strarray.size() >= 5)
+						else if (dSubType == sTypeThermostat6TempHumBaro && strarray.size() >= 6)
 						{
-							sprintf(szTmp, "%s;%.2f;%s;%s;%s", strarray[0].c_str(), tempcelcius, strarray[2].c_str(), strarray[3].c_str(), strarray[4].c_str());
+							sprintf(szTmp, "%s;%.2f;%s;%s;%s;%s", strarray[0].c_str(), tempcelcius, strarray[2].c_str(), strarray[3].c_str(), strarray[4].c_str(), strarray[5].c_str());
 						}
 						m_sql.safe_query("UPDATE DeviceStatus SET Used=%d, sValue='%q' WHERE (ID == '%q')", used, szTmp, idx.c_str());
 					}

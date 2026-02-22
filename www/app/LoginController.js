@@ -45,7 +45,8 @@ define(['app'], function (app) {
 			var permissionList = {
 				isloggedin: false,
 				rights: -1,
-				user: ''
+				user: '',
+				canlogout: true
 			};
 			if (data.user != "") {
 				permissionList.isloggedin = true;
@@ -56,6 +57,14 @@ define(['app'], function (app) {
 				$rootScope.GetGlobalConfig();
 
 				$location.path('/Dashboard');
+
+				// Show security recommendation only after initial setup wizard completion
+				if (parseInt(data.rights) === 2 && sessionStorage.getItem('setupJustCompleted')) {
+					sessionStorage.removeItem('setupJustCompleted');
+					setTimeout(function() {
+						ShowNotify($.t('Consider enabling 2FA or passkeys for your admin account in User Settings'), 8000);
+					}, 2000);
+				}
 			}
 		}
 

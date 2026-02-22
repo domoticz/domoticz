@@ -155,6 +155,18 @@ namespace Plugins
 
 	bool PythonEventsInitialize(const std::string &szUserDataFolder)
 	{
+		// Reuse the existing sub-interpreter when restarting (e.g. after
+		// database restore).  Creating a new sub-interpreter with
+		// Py_NewInterpreter after a previous Py_EndInterpreter triggers a
+		// write-access violation inside bind_gilstate_tstate on Python 3.13
+		// due to stale per-thread GIL state in thread-local storage.
+		if (m_PyInterpreter)
+		{
+			_log.Debug(DEBUG_EVENTSYSTEM, "EventSystem - Python: Reusing existing sub-interpreter (%p)", m_PyInterpreter);
+			PythonEventsInitialized = 1;
+			m_ModuleInitialized = true;
+			return true;
+		}
 
 		if (!Plugins::Py_LoadLibrary())
 		{
@@ -165,16 +177,24 @@ namespace Plugins
 
 		if (!Plugins::Py_IsInitialized())
 		{
-			_log.Log(LOG_STATUS, "EventSystem - Python: Failed dynamic library load, install the latest libpython3.x library "
-					     "that is available for your platform.");
+			_log.Log(LOG_STATUS, "EventSystem - Python: Python is not initialized.");
 			return false;
 		}
 
-		PyEval_RestoreThread((PyThreadState *)m_mainworker.m_pluginsystem.PythonThread());
+		PyThreadState *pMainThread = (PyThreadState *)m_mainworker.m_pluginsystem.PythonThread();
+		if (!pMainThread)
+		{
+			_log.Log(LOG_ERROR, "EventSystem - Python: Main thread state is not available.");
+			return false;
+		}
+		_log.Debug(DEBUG_EVENTSYSTEM, "EventSystem - Python: Acquiring GIL for event interpreter initialization (thread=%p)", pMainThread);
+		PyEval_RestoreThread(pMainThread);
+		_log.Debug(DEBUG_EVENTSYSTEM, "EventSystem - Python: Creating new sub-interpreter");
 		m_PyInterpreter = Py_NewInterpreter();
 		if (!m_PyInterpreter)
 		{
 			_log.Log(LOG_ERROR, "EventSystem - Python: Failed to create interpreter.");
+			PyEval_SaveThread();
 			return false;
 		}
 
@@ -193,6 +213,7 @@ namespace Plugins
             PythonEventsInitialized = 1;
 
             PyObject* pModule = Plugins::PythonEventsGetModule();
+			_log.Debug(DEBUG_EVENTSYSTEM, "EventSystem - Python: Sub-interpreter created (%p), releasing GIL", m_PyInterpreter);
 			PyEval_SaveThread();
 			if (!pModule) {
                 _log.Log(LOG_ERROR, "EventSystem - Python: Failed to initialize module.");
@@ -202,15 +223,39 @@ namespace Plugins
             return true;
 	}
 
-	bool PythonEventsStop()
+	bool PythonEventsStop(bool bDestroyInterpreter /*= true*/)
 	{
 		if (m_PyInterpreter)
 		{
+			PythonEventsInitialized = 0;
+			m_ModuleInitialized = false;
+
+			if (!bDestroyInterpreter)
+			{
+				// Keep the sub-interpreter alive so it can be reused on
+				// restart.  This avoids the Py_EndInterpreter /
+				// Py_NewInterpreter cycle that crashes on Python 3.13
+				// due to stale per-thread GIL state in TLS.
+				_log.Log(LOG_STATUS, "EventSystem - Python stopped (interpreter preserved)...");
+				return true;
+			}
+
+			_log.Debug(DEBUG_EVENTSYSTEM, "EventSystem - Python: Restoring event interpreter (%p) for shutdown", m_PyInterpreter);
 			PyEval_RestoreThread((PyThreadState *)m_PyInterpreter);
 			if (Plugins::Py_IsInitialized())
+			{
+				_log.Debug(DEBUG_EVENTSYSTEM, "EventSystem - Python: Destroying sub-interpreter (%p)", m_PyInterpreter);
 				Py_EndInterpreter((PyThreadState *)m_PyInterpreter);
+			}
 			m_PyInterpreter = nullptr;
-			PyThreadState_Swap((PyThreadState *)m_mainworker.m_pluginsystem.PythonThread());
+			PyThreadState *pMainThread = (PyThreadState *)m_mainworker.m_pluginsystem.PythonThread();
+			if (!pMainThread)
+			{
+				_log.Log(LOG_STATUS, "EventSystem - Python stopped...");
+				return true;
+			}
+			_log.Debug(DEBUG_EVENTSYSTEM, "EventSystem - Python: Swapping to main thread (%p) and releasing GIL", pMainThread);
+			PyThreadState_Swap(pMainThread);
 			// PyEval_ReleaseLock was removed in Python 3.13 (deprecated since 3.2)
 			// Fall back to PyEval_SaveThread which also releases the GIL
 			if (PyEval_ReleaseLock)

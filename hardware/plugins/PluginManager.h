@@ -19,6 +19,7 @@ namespace Plugins {
 
 		static	std::map<int, CDomoticzHardwareBase*>	m_pPlugins;
 		static	std::map<std::string, std::string>		m_PluginXml;
+		static	std::map<std::string, void*>			m_PreservedInterpreters;  // plugin key -> PyThreadState*
 
 		std::shared_ptr<std::thread> m_thread;
 
@@ -38,6 +39,8 @@ namespace Plugins {
 		static void LoadSettings();
 		void	DeviceModified(uint64_t DevIdx);
 		void*	PythonThread() { return m_InitialPythonThread; };
+		static void*	GetPreservedInterpreter(const std::string& pluginKey);
+		static void	SetPreservedInterpreter(const std::string& pluginKey, void* pInterpreter);
 	};
 };
 

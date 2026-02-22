@@ -17,6 +17,8 @@ require.config({
 		'angular-websocket': '../js/angular-websocket',
 		'ace': '../js/ace/ace',
 		'ace-language-tools': '../js/ace/ext-language_tools',
+		'ace-searchbox': '../js/ace/ext-searchbox',
+		'ace-statusbar': '../js/ace/ext-statusbar',
 		'blockly': '../js/blockly/blockly_compressed',
 		'blockly-blocks': '../js/blockly/blocks_compressed',
 		'blockly-msg-en': '../js/blockly/msg/en',
@@ -45,6 +47,8 @@ require.config({
 		'angular.scrollglue': ['angular'],
 		'angular-websocket': ['angular'],
 		'ace-language-tools': ['ace'],
+		'ace-searchbox': ['ace'],
+		'ace-statusbar': ['ace'],
 		'blockly-blocks': ['blockly'],
 		'blockly-msg-en': ['blockly']
 	},

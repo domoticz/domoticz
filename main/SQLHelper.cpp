@@ -2,6 +2,7 @@
 #include "SQLHelper.h"
 #include <iostream>	 /* standard I/O functions						 */
 #include <string>
+#include <cstdlib>
 #ifdef WIN32
 #include <tchar.h>
 #else
@@ -41,7 +42,7 @@
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
 
-#define DB_VERSION 173
+#define DB_VERSION 175
 
 #define DEFAULT_ADMINUSER "admin"
 #define DEFAULT_ADMINPWD "domoticz"
@@ -277,7 +278,8 @@ constexpr auto sqlCreateUsers =
 "[MFAsecret] VARCHAR(200) NULL, "
 "[Rights] INTEGER DEFAULT 255, "
 "[TabsEnabled] INTEGER DEFAULT 255, "
-"[RemoteSharing] INTEGER DEFAULT 0);";
+"[RemoteSharing] INTEGER DEFAULT 0, "
+"[Passkeys] TEXT DEFAULT NULL);";
 
 constexpr auto sqlCreateMeter =
 "CREATE TABLE IF NOT EXISTS [Meter] ("
@@ -450,7 +452,14 @@ constexpr auto sqlCreateEventMaster =
 "[Interpreter] VARCHAR(10) DEFAULT 'Blockly', "
 "[Type] VARCHAR(10) DEFAULT 'All', "
 "[XMLStatement] TEXT NOT NULL, "
-"[Status] INTEGER DEFAULT 0);";
+"[Status] INTEGER DEFAULT 0, "
+"[FolderID] INTEGER DEFAULT 0);";
+
+constexpr auto sqlCreateEventFolder =
+"CREATE TABLE IF NOT EXISTS [EventFolder] ("
+"[ID] INTEGER PRIMARY KEY, "
+"[Name] VARCHAR(200) NOT NULL, "
+"[Order] INTEGER DEFAULT 0);";
 
 constexpr auto sqlCreateEventRules =
 "CREATE TABLE IF NOT EXISTS [EventRules] ("
@@ -737,6 +746,7 @@ bool CSQLHelper::OpenDatabase()
 	query(sqlCreateSharedDevicesTrigger);
 	query(sqlCreateEventMaster);
 	query(sqlCreateEventRules);
+	query(sqlCreateEventFolder);
 	query(sqlCreateWOLNodes);
 	query(sqlCreatePercentage);
 	query(sqlCreatePercentage_Calendar);
@@ -1602,7 +1612,7 @@ bool CSQLHelper::OpenDatabase()
 			result = safe_query("SELECT ID FROM Hardware WHERE (Type==%d)", HTYPE_System);
 			if (result.empty())
 			{
-				safe_query("INSERT INTO Hardware (Name, Enabled, Type, Address, Port, Username, Password, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6) VALUES ('Motherboard',1, %d,'',1,'','',0,0,0,0,0,0)", HTYPE_System);
+				safe_query("INSERT INTO Hardware (Name, Enabled, Type, Address, Port, Username, Password, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6) VALUES ('Motherboard',1, %d,'127.0.0.1',8085,'','',0,0,0,0,0,0)", HTYPE_System);
 			}
 		}
 		if (dbversion < 85)
@@ -3292,6 +3302,41 @@ bool CSQLHelper::OpenDatabase()
 		{
 			// Add Passkeys column to Users table for WebAuthn/passkey support
 			query("ALTER TABLE Users ADD COLUMN [Passkeys] TEXT DEFAULT NULL");
+
+			// Add forecast field to existing Thermostat 6 devices with barometer
+			// Since this is a new field being added in this version, all existing devices
+			// are guaranteed not to have it yet, so we can simply append it
+
+			result = safe_query("SELECT ID, sValue FROM DeviceStatus WHERE (Type=%d) AND (SubType IN (%d, %d))",
+				pTypeThermostat6, sTypeThermostat6TempBaro, sTypeThermostat6TempHumBaro);
+
+			if (!result.empty())
+			{
+				for (const auto& sd : result)
+				{
+					std::string deviceID = sd[0];
+					std::string sValue = sd[1];
+
+					// Append forecast field with default value 0
+					std::string newSValue = sValue + ";0";
+					safe_query("UPDATE DeviceStatus SET sValue='%q' WHERE (ID=%q)", newSValue.c_str(), deviceID.c_str());
+				}
+			}
+		}
+		if (dbversion < 174)
+		{
+			if (!DoesColumnExistsInTable("FolderID", "EventMaster"))
+			{
+				query("ALTER TABLE EventMaster ADD COLUMN [FolderID] INTEGER DEFAULT 0");
+			}
+		}
+		if (dbversion < 175)
+		{
+			// Fix for fresh installs that were missing the Passkeys column (GitHub #6601)
+			if (!DoesColumnExistsInTable("Passkeys", "Users"))
+			{
+				query("ALTER TABLE Users ADD COLUMN [Passkeys] TEXT DEFAULT NULL");
+			}
 		}
 	}
 	else if (bNewInstall)
@@ -3300,11 +3345,41 @@ bool CSQLHelper::OpenDatabase()
 		query("INSERT INTO Plans (Name) VALUES ('$Hidden Devices')");
 		// Add hardware for internal use
 		safe_query("INSERT INTO Hardware (Name, Enabled, Type, Address, Port, Username, Password, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6) VALUES ('Domoticz Internal',1, %d,'',1,'','',0,0,0,0,0,0)", HTYPE_DomoticzInternal);
-		safe_query("INSERT INTO Users (Active, Username, Password, Rights, TabsEnabled) VALUES (1, '%s', '%s', %d, 0x1F)", base64_encode(DEFAULT_ADMINUSER).c_str(), GenerateMD5Hash(DEFAULT_ADMINPWD).c_str(), http::server::URIGHTS_ADMIN);
+		// Admin user is no longer created here - created via setup wizard or Docker env vars
 		safe_query("INSERT INTO Applications (Active, Public, Applicationname) VALUES (1, 1, 'domoticzUI')");
 		safe_query("INSERT INTO Applications (Active, Public, Applicationname) VALUES (0, 0, 'domoticzMobileApp')");
 	}
 	UpdatePreferencesVar("DB_Version", DB_VERSION);
+
+	// Check for Docker environment variable provisioning
+	// Only applies when no admin user exists (fresh install or admin was deleted)
+	{
+		auto adminResult = safe_query("SELECT ID FROM Users WHERE Rights=%d", http::server::URIGHTS_ADMIN);
+		if (adminResult.empty())
+		{
+			const char *envPassword = std::getenv("DOMOTICZ_ADMIN_PASSWORD");
+			if (envPassword != nullptr && strlen(envPassword) > 0)
+			{
+				const char *envUsername = std::getenv("DOMOTICZ_ADMIN_USERNAME");
+				std::string username = (envUsername != nullptr && strlen(envUsername) > 0) ? envUsername : DEFAULT_ADMINUSER;
+				std::string password = envPassword;
+
+				safe_query("INSERT INTO Users (Active, Username, Password, Rights, TabsEnabled) VALUES (1, '%q', '%q', %d, 0x1F)",
+					base64_encode(username).c_str(), GenerateMD5Hash(password).c_str(), http::server::URIGHTS_ADMIN);
+
+				_log.Log(LOG_STATUS, "Admin user '%s' created from environment variables", username.c_str());
+			}
+		}
+		else
+		{
+			// Admin already exists - ignore env vars if set
+			const char *envPassword = std::getenv("DOMOTICZ_ADMIN_PASSWORD");
+			if (envPassword != nullptr && strlen(envPassword) > 0)
+			{
+				_log.Log(LOG_STATUS, "Admin account already exists, ignoring DOMOTICZ_ADMIN_PASSWORD environment variable");
+			}
+		}
+	}
 
 	//Check preferences table for extreme sized sValues
 	result = safe_query("SELECT Key FROM Preferences WHERE LENGTH(sValue) > 2500");
@@ -4791,9 +4866,9 @@ uint64_t CSQLHelper::CreateDevice(const int HardwareID, const int SensorType, co
 		else if (SensorSubType == sTypeThermostat6TempHum)
 			sValue = "20.0;20.0;50;1";
 		else if (SensorSubType == sTypeThermostat6TempBaro)
-			sValue = "20.0;20.0;1013";
+			sValue = "20.0;20.0;1013;0";
 		else if (SensorSubType == sTypeThermostat6TempHumBaro)
-			sValue = "20.0;20.0;50;1;1013";
+			sValue = "20.0;20.0;50;1;1013;0";
 
 		DeviceRowIdx = UpdateValue(HardwareID, 0, ID, 1, SensorType, SensorSubType, 12, 255, 0, sValue.c_str(), devname, true, userName.c_str());
 		break;

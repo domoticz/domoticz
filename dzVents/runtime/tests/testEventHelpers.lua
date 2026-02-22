@@ -263,7 +263,7 @@ describe('event helpers', function()
 		it('should detect erroneous modules', function()
 			local err = false
 			utils.log = function(msg,level)
-				if (level == 1) then
+				if (level == 5) then
 					err = true
 				end
 			end
@@ -579,7 +579,7 @@ describe('event helpers', function()
 
 			local err = false
 			utils.log = function(msg,level)
-				if (level == 1) then
+				if (level == 5) then
 					err = true
 				end
 			end
@@ -614,7 +614,7 @@ describe('event helpers', function()
 			end
 
 			helpers.handleEvents(loggingstuff)
-			assert.is_same(4, moduleLevel)
+			assert.is_same(1, moduleLevel)
 			assert.is_same('Hey you', moduleMarker)
 			assert.is_same(1, _G.logLevel)
 			assert.is_same(nil, _G.logMarker)

@@ -43,6 +43,10 @@
 #include "../hardware/DarkSky.h"
 #include "../hardware/VisualCrossing.h"
 #include "../hardware/HardwareMonitor.h"
+#include "../hardware/HardwareMonitorLHM.h"
+#if defined(__linux__) || defined(__CYGWIN32__) || defined(__FreeBSD__) || defined(__OpenBSD__)
+#include "../hardware/HardwareMonitorUnix.h"
+#endif
 #include "../hardware/Dummy.h"
 #include "../hardware/Tellstick.h"
 #include "../hardware/PiFace.h"
@@ -256,7 +260,7 @@ MainWorker::~MainWorker()
 	Stop();
 }
 
-void MainWorker::AddAllDomoticzHardware()
+void MainWorker::AddAllDomoticzHardware(bool bScheduleStart /*= true*/)
 {
 	//Add Hardware devices
 	std::vector<std::vector<std::string> > result;
@@ -288,8 +292,11 @@ void MainWorker::AddAllDomoticzHardware()
 			AddHardwareFromParams(ID, Name, Enabled, Type, LogLevelEnabled, Address, Port, SerialPort, Username, Password, Extra, mode1, mode2, mode3, mode4, mode5, mode6, DataTimeout,
 				false);
 		}
-		m_hardwareStartCounter = 0;
-		m_bStartHardware = true;
+		if (bScheduleStart)
+		{
+			m_hardwareStartCounter = 0;
+			m_bStartHardware = true;
+		}
 	}
 }
 
@@ -974,7 +981,18 @@ bool MainWorker::AddHardwareFromParams(
 		pHardware = new CPiFace(ID);
 		break;
 	case HTYPE_System:
-		pHardware = new CHardwareMonitor(ID);
+		if (Mode1 == 1)
+			pHardware = new CHardwareMonitorLHM(ID, Address, Port, Username, Password, Mode2 == 1);
+#if defined(__linux__) || defined(__CYGWIN32__) || defined(__FreeBSD__) || defined(__OpenBSD__)
+		else
+			pHardware = new CHardwareMonitorUnix(ID);
+#else
+		else
+		{
+			_log.Log(LOG_ERROR, "Local system sensors are only supported on Linux/BSD. Use Libre Hardware Monitor mode.");
+			return false;
+		}
+#endif
 		break;
 	case HTYPE_RaspberryGPIO:
 		//Raspberry Pi GPIO port access
@@ -8525,6 +8543,7 @@ void MainWorker::decode_Thermostat6(const CDomoticzHardwareBase* pHardware, cons
 	uint8_t humidity = pMeter->humidity;
 	uint8_t humidity_status = pMeter->humidity_status;
 	uint16_t barometer = pMeter->barometer;
+	uint8_t forecast = pMeter->forecast;
 
 	// Determine expected flags based on subtype
 	uint8_t expected_flags = 0x03; // temp + setpoint for sTypeThermostat6Temp
@@ -8558,9 +8577,17 @@ void MainWorker::decode_Thermostat6(const CDomoticzHardwareBase* pHardware, cons
 			if (!(pMeter->update_flags & 0x08))
 			{
 				if (subType == sTypeThermostat6TempBaro && values.size() >= 3)
+				{
 					barometer = atoi(values[2].c_str());
+					if (values.size() >= 4)
+						forecast = atoi(values[3].c_str());
+				}
 				else if (subType == sTypeThermostat6TempHumBaro && values.size() >= 5)
+				{
 					barometer = atoi(values[4].c_str());
+					if (values.size() >= 6)
+						forecast = atoi(values[5].c_str());
+				}
 			}
 		}
 	}
@@ -8575,10 +8602,10 @@ void MainWorker::decode_Thermostat6(const CDomoticzHardwareBase* pHardware, cons
 		sprintf(szTmp, "%.1f;%.1f;%d;%d", temperature, setpoint, humidity, humidity_status);
 		break;
 	case sTypeThermostat6TempBaro:
-		sprintf(szTmp, "%.1f;%.1f;%d", temperature, setpoint, barometer);
+		sprintf(szTmp, "%.1f;%.1f;%d;%d", temperature, setpoint, barometer, forecast);
 		break;
 	case sTypeThermostat6TempHumBaro:
-		sprintf(szTmp, "%.1f;%.1f;%d;%d;%d", temperature, setpoint, humidity, humidity_status, barometer);
+		sprintf(szTmp, "%.1f;%.1f;%d;%d;%d;%d", temperature, setpoint, humidity, humidity_status, barometer, forecast);
 		break;
 	default:
 		sprintf(szTmp, "ERROR: Unknown Sub type for Packet type= %02X:%02X", pMeter->type, pMeter->subtype);

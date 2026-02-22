@@ -1,38 +1,53 @@
 Version 2026.xxxx
-- Added: Add basic Alexa Smart Home v3 API endpoint (see ALEXA.md)
+- Added: Alexa Smart Home v3 API endpoint (see ALEXA.md)
 - Added: Blinds + Stop type
+- Added: Comparing charts, show average across years in tooltip for month/quarter grouping
 - Added: Configurable pricing resolution (15/30/60 minutes) for dynamic energy contracts (with adapted P1 and kWh graphs)
 - Added: Counter hourly chart resolution toggle (1h/15m/30m) when sub-hourly pricing is configured
+- Added: Dashboard, setpoint display and editing for all setpoint devices
+- Added: EventSystem support for Thermostat 6 devices (Blockly/Lua/Python event triggers)
+- Added: HaveSetPoint JSON API flag for Thermostat 6 and Setpoint devices (third-party app compatibility)
 - Added: Enever, updated providers and API v3
+- Added: LibreHardwareMonitor, cross-platform HTTP support with mode selector and extended sensors
+- Added: Logitech Media Server, SqueezeLite ESP32 support
 - Added: MQTT-AD, added support for Climate high/low set points
+- Added: MQTT-AD: Added Fan speed-range
 - Added: MQTT-AD: Added support for flow meter reported in l/min (Fixes #6450)
 - Added: MQTT-AD: Calculate temperature trends for climate devices
 - Added: MQTT-AD: Fan, make it possible to send separate ON/OFF commands
 - Added: MQTT-AD: handling FAN on/off status commands
-- Added: MQTT-AD: Added Fan speed-range
 - Added: MQTT-AD: Reinstate 'total_increasing' support for kWh sensors
 - Added: MQTT-AD: Thermostat 6, add setpoint timer/schedule support (Fixes #6530)
 - Added: New update scripts that are able to check if system meets requirements
+- Added: Notification support for Thermostat 6 devices (temperature, humidity, barometer thresholds)
+- Added: OpenWeatherMap, support for free API plan
 - Added: Philips Hue v2 API, just for Door/Window Contacts (state/tamper/battery)
 - Added: PV Output, added consumption
+- Added: Re-added rain report
+- Added: Re-added wind-rose direction chart to Wind sensor log
 - Added: RFXCom, Support Orcon FAN device (#6500)
-- Added: RTL433, Support UV sensors names 'uvi'
-- Added: Dashboard, setpoint display and editing for all setpoint devices
-- Added: Logitech Media Server, SqueezeLite ESP32 support
 - Added: Open-Meteo, native weather hardware plugin (no API key required)
-- Added: OpenWeatherMap, support for free API plan
+- Added: RTL433, Support UV sensors named 'uvi'
+- Added: SolarEdge API, battery detection (#6593)
 - Added: Support for the Model Context Protocol (/mcp) for use with AI Agents
 - Added: Thermostat, combined Temperature/Setpoint display
 - Added: Web Interface, Better XSS prevention
+- Added: Web Interface, Close other menu option
+- Added: Web Interface, Event folders with multi-select drag-and-drop organization
+- Added: Web Interface, Modernized log viewer with WebSocket live streaming, level filtering, search/regex, render cap, and performance optimizations
 - Added: Web Interface, Passkey (WebAuthn/FIDO2) authentication support - register and sign in with Windows Hello, Touch ID, or security keys
 - Added: Web Interface, Passkey management in My Profile (register, view device info, delete)
+- Added: Web Interface, First-run setup wizard for admin account creation, replacing default credentials
+- Added: Docker environment variable support for admin provisioning (DOMOTICZ_ADMIN_PASSWORD, DOMOTICZ_ADMIN_USERNAME)
 - Fixed: Buienradar, fallback when station measurements are empty
 - Fixed: CalcMeterPrice/CalcMultiMeterPrice off-by-one price error with dynamic tariffs (Fixes #6181)
-- Fixed: Deleting a scene/group could accidentally delete a device
-- Fixed: dzVents Lua table corruption when exception occurs during notification or device data export (Fixes #6030)
-- Fixed: dzVents SendNotification, SendEmail, and SendSMS command handling
 - Fixed: Chart zoom buttons (notable on iOS devices)
 - Fixed: Counter Statistics Chart tooltip showing incorrect day name (Fixes #6542)
+- Fixed: Database backup/restore stability (#6577)
+- Fixed: Deleting a scene/group could accidentally delete a device
+- Fixed: dzVents Thermostat 6 updateSetPoint() now uses proper SetSetPoint command path for correct event propagation
+- Fixed: dzVents Lua table corruption when exception occurs during notification or device data export (Fixes #6030)
+- Fixed: dzVents SendNotification, SendEmail, and SendSMS command handling
 - Fixed: Event system not processing events when device update rate is high (e.g. faulty sensors)
 - Fixed: Event system thread could silently stop on unhandled exceptions, causing all scripts to stop working
 - Fixed: Flash of unfiltered devices on live updates in web interface
@@ -40,13 +55,18 @@ Version 2026.xxxx
 - Fixed: Kodi, Possible memory leak in Kodi Notification when destination is unreachable
 - Fixed: Memory leak in Python event scripts caused by missing reference count decrement in user variables (Fixes #5091)
 - Fixed: MQTT, crashes and race conditions in message handling
+- Fixed: MQTTPush/InfluxPush crash on shutdown (#6600)
+- Fixed: Missing Passkeys column on fresh Docker installs causing SQL errors (#6601)
+- Fixed: Negative rain values at midnight when counter resets (Fixes #6571)
 - Fixed: OpenZWave setpoint devices
 - Fixed: P1Power hourly graph empty due to incorrect SQL format escaping in pricing resolution grouping
 - Fixed: P1Power hourly graph using wrong price and missing date range filter (Fixes #6181)
 - Fixed: Philips Hue v1 API crashes Domoticz in certain cases since Hue Bridge firmware 1.74 (added extra validations)
 - Fixed: Plugin devices, LightingLog User field now shows actual user instead of hardware name (Fixes #6538)
+- Fixed: Python plugin C extension crash on plugin restart
 - Fixed: Python plugin custom device option updates not saved to database (#6454)
 - Fixed: Python plugin TCP/TLS connection stability issues
+- Fixed: RTL433 hangs on stop/update (#6597)
 - Fixed: Scheduler Monthly_Weekday and Yearly_Weekday (Fixes #6452)
 - Fixed: Scene triggering delay caused by event system thread pool saturation
 - Fixed: SolarEdge API, power readings persisting stale values when idle
@@ -59,13 +79,14 @@ Version 2026.xxxx
 - Changed: In-service/Oauth2, Added Logo to login form
 - Changed: Installer, replaced SysV init script with native systemd service (auto-migrates on update)
 - Changed: Internal code cleanup/enhancements
-- Changed: MQTT-AD: better initial device naming
 - Changed: MQTT, huge speed improvements
+- Changed: MQTT-AD: better initial device naming
 - Changed: Netatmo, using new API scopes/code
-- Changed: Viewer users can now change their profile settings
 - Changed: Philips Hue, Added extra validations since Hue Bridge firmware 1.74.1974063020 crashes Domoticz in certain cases
 - Changed: Philips Hue, now used HTTP scheme (HTTP/HTTPS) based on port number (80/443)
+- Changed: Python plugin framework, case-insensitive keyword arguments (#6048)
 - Changed: Tado, token now refreshed with correct refresh token interval
+- Changed: Viewer users can now change their profile settings
 - Updated: Translations
 
 ### Breaking Changes

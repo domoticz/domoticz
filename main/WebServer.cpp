@@ -297,6 +297,8 @@ namespace http
 			RegisterCommandCode("getauth", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetAuth(session, req, root); }, true);
 			RegisterCommandCode("getuptime", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetUptime(session, req, root); }, true);
 			RegisterCommandCode("getconfig", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetConfig(session, req, root); }, true);
+			RegisterCommandCode("getsetuprequired", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetSetupRequired(session, req, root); }, true);
+			RegisterCommandCode("setupwizardcreateadmin", [this](auto&& session, auto&& req, auto&& root) { Cmd_SetupWizardCreateAdmin(session, req, root); }, true);
 
 			// Commands that require authentication
 			RegisterCommandCode("sendopenthermcommand", [this](auto&& session, auto&& req, auto&& root) { Cmd_SendOpenThermCommand(session, req, root); });
@@ -920,16 +922,14 @@ namespace http
 			Json::Value result(Json::arrayValue);
 			if (passkeysJson.empty())
 				return result;
-			Json::Reader reader;
-			if (!reader.parse(passkeysJson, result) || !result.isArray())
+			if (!ParseJSon(passkeysJson, result) || !result.isArray())
 				return Json::Value(Json::arrayValue);
 			return result;
 		}
 
 		std::string CWebServer::SerializePasskeys(const Json::Value& passkeys)
 		{
-			Json::FastWriter writer;
-			return writer.write(passkeys);
+			return JSonToRawString(passkeys);
 		}
 
 		bool CWebServer::AddPasskeyToUser(unsigned long userID, const std::string& credentialID, const std::string& publicKey, const std::string& credentialName, const std::string& deviceInfo)
@@ -2365,6 +2365,7 @@ namespace http
 						root["result"][ii]["min"] = valuemin;
 						root["result"][ii]["max"] = valuemax;
 						root["result"][ii]["vunit"] = value_unit;
+						root["result"][ii]["HaveSetPoint"] = true;
 
 						std::vector<std::string> strarray;
 						StringSplit(sValue, ";", strarray);
@@ -2396,13 +2397,16 @@ namespace http
 								root["result"][ii]["DewPoint"] = dewpoint;
 								sprintf(szData, "%.1f %c, (%.1f %c) / %d%%", temp, tempsign, tempSetPoint, tempsign, humidity);
 							}
-							else if (dSubType == sTypeThermostat6TempBaro && strarray.size() >= 3)
+							else if (dSubType == sTypeThermostat6TempBaro && strarray.size() >= 4)
 							{
 								float barometer = static_cast<float>(atof(strarray[2].c_str()));
+								int forecast = atoi(strarray[3].c_str());
 								root["result"][ii]["Barometer"] = barometer;
+								root["result"][ii]["Forecast"] = forecast;
+								root["result"][ii]["ForecastStr"] = RFX_WSForecast_Desc(forecast);
 								sprintf(szData, "%.1f %c, (%.1f %c), %.1f hPa", temp, tempsign, tempSetPoint, tempsign, barometer);
 							}
-							else if (dSubType == sTypeThermostat6TempHumBaro && strarray.size() >= 5)
+							else if (dSubType == sTypeThermostat6TempHumBaro && strarray.size() >= 6)
 							{
 								int humidity = atoi(strarray[2].c_str());
 								root["result"][ii]["Humidity"] = humidity;
@@ -2413,7 +2417,10 @@ namespace http
 								root["result"][ii]["DewPoint"] = dewpoint;
 
 								float barometer = static_cast<float>(atof(strarray[4].c_str()));
+								int forecast = atoi(strarray[5].c_str());
 								root["result"][ii]["Barometer"] = barometer;
+								root["result"][ii]["Forecast"] = forecast;
+								root["result"][ii]["ForecastStr"] = RFX_WSForecast_Desc(forecast);
 								sprintf(szData, "%.1f %c, (%.1f %c), %d%%, %.1f hPa", temp, tempsign, tempSetPoint, tempsign, humidity, barometer);
 							}
 							else
@@ -3370,6 +3377,7 @@ namespace http
 							root["result"][ii]["min"] = valuemin;
 							root["result"][ii]["max"] = valuemax;
 							root["result"][ii]["vunit"] = value_unit;
+							root["result"][ii]["HaveSetPoint"] = true;
 							root["result"][ii]["TypeImg"] = "override_mini";
 						}
 					}
@@ -4602,6 +4610,11 @@ namespace http
 			dbasefile.shrink_to_fit();
 
 			m_mainworker.StopDomoticzHardware();
+			// Pass false to preserve the Python event sub-interpreter.
+			// Destroying and recreating it crashes on Python 3.13 due to
+			// stale per-thread GIL state left by Py_EndInterpreter.
+			m_mainworker.m_eventsystem.StopEventSystem(false);
+			m_mainworker.m_notificationsystem.Stop();
 
 			bool bOK = m_sql.RestoreDatabaseFromFile(tempPath);
 
@@ -4609,7 +4622,21 @@ namespace http
 
 			if (!bOK)
 				_log.Log(LOG_ERROR, "Restore Database: Restore failed, restarting hardware with existing database");
-			m_mainworker.AddAllDomoticzHardware();
+			// Pass false to skip setting m_bStartHardware so Do_Work does
+			// not race with the explicit startup sequence below.
+			m_mainworker.AddAllDomoticzHardware(false);
+
+			// Perform the full startup sequence here rather than relying on
+			// the deferred Do_Work / m_bStartHardware path, which would
+			// race with the stop above.
+			m_mainworker.StartDomoticzHardware();
+#ifdef ENABLE_PYTHON
+			m_mainworker.m_pluginsystem.AllPluginsStarted();
+#endif
+			m_mainworker.m_notificationsystem.Start();
+			m_mainworker.m_eventsystem.SetEnabled(m_sql.m_bEnableEventSystem);
+			m_mainworker.m_eventsystem.StartEventSystem();
+			m_mainworker.m_notificationsystem.Notify(Notification::DZ_START, Notification::STATUS_INFO);
 		}
 
 		/**

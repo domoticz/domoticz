@@ -19,9 +19,7 @@ Some Information
 
 ## Support
 
-By default Domoticz is protected by a username (admin) and password (domoticz).
-
-Please either change the password as soon as possible or create a different admin user and remove the default (admin) user.
+On first run, Domoticz will present a setup wizard to create your admin account. For Docker deployments, you can set the `DOMOTICZ_ADMIN_PASSWORD` and optionally `DOMOTICZ_ADMIN_USERNAME` environment variables to provision the admin account automatically.
 
 More information on securing your Domoticz setup can be found in the [SECURITY SETUP](SECURITY_SETUP.md) documentation.
 
@@ -48,6 +46,6 @@ If you like the product or encourage the development, please use the link:
 
 Status | Operating system
 ------------ | -------------
-![Status Linux](https://github.com/domoticz/domoticz/actions/workflows/development.yml/badge.svg) | Linux x86_64
+[![Status Linux](https://github.com/domoticz/domoticz/actions/workflows/development.yml/badge.svg)](https://github.com/domoticz/domoticz/actions/workflows/development.yml) | Linux x86_64
 [![Status Windows](https://ci.appveyor.com/api/projects/status/fskiwvjs1q7svwq9?svg=true)](https://ci.appveyor.com/project/gizmocuz/domoticz) | Windows
 

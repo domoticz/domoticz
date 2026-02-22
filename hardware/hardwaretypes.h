@@ -329,6 +329,7 @@ typedef struct _tThermostat6
 	uint8_t humidity = 0;
 	uint8_t humidity_status = 0;
 	uint16_t barometer = 0;
+	uint8_t forecast = 0;
 	uint8_t update_flags = 0; // Bit flags: 0x01=temp, 0x02=setpoint, 0x04=humidity, 0x08=barometer
 } tThermostat6;
 

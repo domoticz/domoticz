@@ -110,6 +110,7 @@ void SolarEdgeAPI::Do_Work()
 			{
 				if (!GetSite())
 					continue;
+				GetBatteryFromInventory();
 				GetInverters();
 			}
 			if (!m_inverters.empty())
@@ -201,6 +202,38 @@ bool SolarEdgeAPI::GetSite()
 	}
 	m_SiteID = reading["id"].asInt();
 	return true;
+}
+
+void SolarEdgeAPI::GetBatteryFromInventory()
+{
+	std::string sResult;
+
+	std::vector<std::string> ExtraHeaders;
+	ExtraHeaders.push_back("Accept: application/json");
+
+	std::stringstream sURL;
+	sURL << "https://monitoringapi.solaredge.com/site/" << m_SiteID << "/inventory.json?api_key=" << m_APIKey;
+
+	if (!HTTPClient::GET(sURL.str(), ExtraHeaders, sResult))
+	{
+		Log(LOG_ERROR, "Error getting http data (Inventory)!");
+		return;
+	}
+
+	Json::Value root;
+
+	bool ret = ParseJSon(sResult, root);
+	if ((!ret) || (!root.isObject()))
+	{
+		Log(LOG_ERROR, "Invalid data received!");
+		return;
+	}
+	if (root["Inventory"]["batteries"].empty() == true)
+		m_bPollBattery = false;
+	else
+		m_bPollBattery = true;
+
+	return;
 }
 
 void SolarEdgeAPI::GetInverters()
@@ -475,7 +508,7 @@ void SolarEdgeAPI::GetBatteryDetails()
 	}
 	if (root["siteCurrentPowerFlow"].empty() == true)
 	{
-		m_bPollBattery = false;
+		// m_bPollBattery = false;
 		//Log(LOG_ERROR, "Invalid data received, or invalid APIKey");
 		return;
 	}

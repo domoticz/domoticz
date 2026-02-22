@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Forum (Questions & How-To)
+    url: https://forum.domoticz.com/
+    about: Please use the forum for general questions, how-to, and support requests.
+  - name: Wiki
+    url: https://wiki.domoticz.com/
+    about: Check the wiki for documentation, guides, and hardware compatibility.
+  - name: MQTT-AD Troubleshooting
+    url: https://wiki.domoticz.com/MQTT_AD_Report_Problems
+    about: Follow this guide before reporting MQTT Auto Discovery issues.

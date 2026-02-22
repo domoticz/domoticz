@@ -23,6 +23,11 @@ CInfluxPush::CInfluxPush()
 	m_bLinkActive = false;
 }
 
+CInfluxPush::~CInfluxPush()
+{
+	Stop();
+}
+
 bool CInfluxPush::Start()
 {
 	Stop();

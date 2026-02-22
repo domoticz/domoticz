@@ -1,10 +1,12 @@
-define(['app', 'report/CounterReport', 'report/TemperatureReport', 'report/EnergyMultiCounterReport'], function (app) {
+define(['app', 'report/CounterReport', 'report/TemperatureReport', 'report/EnergyMultiCounterReport', 'report/RainReport', 'report/WindReport'], function (app) {
     app.controller('DeviceReportController', function ($route, $routeParams, $location, deviceApi) {
         var vm = this;
         vm.isTemperatureReport = isTemperatureReport;
         vm.isCounterReport = isCounterReport;
         vm.isOnlyUsage = isOnlyUsage;
         vm.isEnergyMultiCounterReport = isEnergyMultiCounterReport;
+        vm.isRainReport = isRainReport;
+        vm.isWindReport = isWindReport;
         vm.isNoReport = isNoReport;
         vm.getYearsOptions = getYearsOptions;
         vm.selectYear = selectYear;
@@ -55,10 +57,12 @@ define(['app', 'report/CounterReport', 'report/TemperatureReport', 'report/Energ
                 return (vm.device.SubType === 'Zone');
             }
 
-            //This goes wrong (when we also use this log call from the weather tab), for wind sensors
-            //as this is placed in weather and temperature, we might have to set a parameter in the url
-            //for now, we assume it is a temperature
-            return (/Temp|Thermostat|Humidity|Radiator|Wind/i).test(vm.device.Type)
+            // Exclude pure Wind sensors (no Temp data) as they have their own report
+            if (isWindReport() && vm.device.Temp === undefined) {
+                return false;
+            }
+
+            return (/Temp|Thermostat|Humidity|Radiator/i).test(vm.device.Type)
         }
 
         function isCounterReport() {
@@ -88,12 +92,26 @@ define(['app', 'report/CounterReport', 'report/TemperatureReport', 'report/Energ
             return (vm.device.Type === 'P1 Smart Meter' && vm.device.SubType === 'Energy')
         }
 
+        function isRainReport() {
+            if (!vm.device) {
+                return undefined;
+            }
+            return vm.device.Type === 'Rain';
+        }
+
+        function isWindReport() {
+            if (!vm.device) {
+                return undefined;
+            }
+            return (vm.device.Direction !== undefined && /Wind/i.test(vm.device.Type));
+        }
+
         function isNoReport() {
             if (!vm.device) {
                 return undefined;
             }
 
-            return !isTemperatureReport() && !isCounterReport() && !isEnergyMultiCounterReport()
+            return !isTemperatureReport() && !isCounterReport() && !isEnergyMultiCounterReport() && !isRainReport() && !isWindReport();
         }
     });
 });

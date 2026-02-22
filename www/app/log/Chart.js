@@ -284,9 +284,18 @@ define(['app'], function (app) {
 				tooltip: {
 					useHTML: true,
 					formatter: function () {
+						var averageHtml = '';
+						if (ctrl.groupingBy !== 'year' && this.points.length > 0) {
+							var validPoints = this.points.filter(function (p) { return p.y !== null && p.y !== undefined; });
+							if (validPoints.length > 0) {
+								var sum = validPoints.reduce(function (acc, p) { return acc + p.y; }, 0);
+								var avg = sum / validPoints.length;
+								averageHtml = ' (' + $.t('Average') + ': ' + Highcharts.numberFormat(avg) + (deviceUnit ? '&nbsp;' + deviceUnit : '') + ')';
+							}
+						}
 						return ''
 							+ '<table>'
-							+ '<tr><td colspan="2"><b>' + categoryKeyToStringEx(this.x) + '</b></td></tr>'
+							+ '<tr><td colspan="4"><b>' + categoryKeyToStringEx(this.x) + averageHtml + '</b></td></tr>'
 							+ this.points.reduce(
 								function (rowsHtml, point) {
 									return rowsHtml
