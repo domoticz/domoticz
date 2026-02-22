@@ -128,6 +128,11 @@ define(['angularAMD', 'angular', 'angular-route'], function (angularAMD) {
                 templateUrl: 'views/login.html',
                 controller: 'LoginController'
             }))
+            .when('/SetupWizard', angularAMD.route({
+                templateUrl: 'views/setup-wizard.html',
+                controller: 'SetupWizardController',
+                controllerUrl: 'app/SetupWizardController.js'
+            }))
             .when('/Logout', angularAMD.route({
                 templateUrl: 'views/logout.html',
                 controller: 'LogoutController'

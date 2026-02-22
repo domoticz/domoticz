@@ -2524,6 +2524,60 @@ namespace http
 			}
 		}
 
+		void CWebServer::Cmd_GetSetupRequired(WebEmSession& session, const request& req, Json::Value& root)
+		{
+			root["status"] = "OK";
+			root["title"] = "GetSetupRequired";
+			root["SetupRequired"] = !FindAdminUser();
+		}
+
+		void CWebServer::Cmd_SetupWizardCreateAdmin(WebEmSession& session, const request& req, Json::Value& root)
+		{
+			root["title"] = "SetupWizardCreateAdmin";
+
+			static std::mutex setupMutex;
+			std::lock_guard<std::mutex> lock(setupMutex);
+
+			// Security: only allow when no admin user exists
+			if (FindAdminUser())
+			{
+				_log.Log(LOG_ERROR, "Setup wizard attempt blocked: admin account already exists (IP: %s)", session.remote_host.c_str());
+				root["status"] = "ERR";
+				root["message"] = "Setup has already been completed";
+				return;
+			}
+
+			std::string username = CURLEncode::URLDecode(request::findValue(&req, "username"));
+			std::string password = CURLEncode::URLDecode(request::findValue(&req, "password"));
+
+			if (username.empty() || password.empty())
+			{
+				root["status"] = "ERR";
+				root["message"] = "Username and password are required";
+				return;
+			}
+
+			if (username.length() > 128)
+			{
+				root["status"] = "ERR";
+				root["message"] = "Username is too long";
+				return;
+			}
+
+			// Username is sent as plaintext, we base64 encode for storage
+			// Password is sent as MD5 hash from the frontend (same as login flow)
+			m_sql.safe_query(
+				"INSERT INTO Users (Active, Username, Password, Rights, TabsEnabled) VALUES (1, '%q', '%q', %d, 0x1F)",
+				base64_encode(username).c_str(), password.c_str(), http::server::URIGHTS_ADMIN);
+
+			_log.Log(LOG_STATUS, "Admin user '%s' created via setup wizard", username.c_str());
+
+			// Reload users so the new admin is immediately available for login
+			LoadUsers();
+
+			root["status"] = "OK";
+		}
+
 		void CWebServer::Cmd_GetMyProfile(WebEmSession& session, const request& req, Json::Value& root)
 		{
 			root["status"] = "ERR";

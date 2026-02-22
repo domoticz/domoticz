@@ -19,9 +19,7 @@ Some Information
 
 ## Support
 
-By default Domoticz is protected by a username (admin) and password (domoticz).
-
-Please either change the password as soon as possible or create a different admin user and remove the default (admin) user.
+On first run, Domoticz will present a setup wizard to create your admin account. For Docker deployments, you can set the `DOMOTICZ_ADMIN_PASSWORD` and optionally `DOMOTICZ_ADMIN_USERNAME` environment variables to provision the admin account automatically.
 
 More information on securing your Domoticz setup can be found in the [SECURITY SETUP](SECURITY_SETUP.md) documentation.
 

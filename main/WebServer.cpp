@@ -297,6 +297,8 @@ namespace http
 			RegisterCommandCode("getauth", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetAuth(session, req, root); }, true);
 			RegisterCommandCode("getuptime", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetUptime(session, req, root); }, true);
 			RegisterCommandCode("getconfig", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetConfig(session, req, root); }, true);
+			RegisterCommandCode("getsetuprequired", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetSetupRequired(session, req, root); }, true);
+			RegisterCommandCode("setupwizardcreateadmin", [this](auto&& session, auto&& req, auto&& root) { Cmd_SetupWizardCreateAdmin(session, req, root); }, true);
 
 			// Commands that require authentication
 			RegisterCommandCode("sendopenthermcommand", [this](auto&& session, auto&& req, auto&& root) { Cmd_SendOpenThermCommand(session, req, root); });
