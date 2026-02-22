@@ -41,7 +41,7 @@
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
 
-#define DB_VERSION 174
+#define DB_VERSION 175
 
 #define DEFAULT_ADMINUSER "admin"
 #define DEFAULT_ADMINPWD "domoticz"
@@ -277,7 +277,8 @@ constexpr auto sqlCreateUsers =
 "[MFAsecret] VARCHAR(200) NULL, "
 "[Rights] INTEGER DEFAULT 255, "
 "[TabsEnabled] INTEGER DEFAULT 255, "
-"[RemoteSharing] INTEGER DEFAULT 0);";
+"[RemoteSharing] INTEGER DEFAULT 0, "
+"[Passkeys] TEXT DEFAULT NULL);";
 
 constexpr auto sqlCreateMeter =
 "CREATE TABLE IF NOT EXISTS [Meter] ("
@@ -3306,6 +3307,14 @@ bool CSQLHelper::OpenDatabase()
 			if (!DoesColumnExistsInTable("FolderID", "EventMaster"))
 			{
 				query("ALTER TABLE EventMaster ADD COLUMN [FolderID] INTEGER DEFAULT 0");
+			}
+		}
+		if (dbversion < 175)
+		{
+			// Fix for fresh installs that were missing the Passkeys column (GitHub #6601)
+			if (!DoesColumnExistsInTable("Passkeys", "Users"))
+			{
+				query("ALTER TABLE Users ADD COLUMN [Passkeys] TEXT DEFAULT NULL");
 			}
 		}
 	}
