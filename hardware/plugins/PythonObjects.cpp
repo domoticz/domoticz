@@ -28,6 +28,49 @@ namespace Plugins {
 	extern struct PyModuleDef DomoticzModuleDef;
 	extern struct PyModuleDef DomoticzExModuleDef;
 
+	// Helper function to normalize keyword argument names to lowercase for case-insensitive matching
+	// Returns a new reference to a normalized dictionary, or a borrowed reference if kwds is NULL
+	// Caller must check if returned value != kwds and call Py_DECREF on the normalized dict when done
+	static PyObject* NormalizeKeywords(PyObject* kwds)
+	{
+		if (!kwds)
+			return kwds;
+
+		PyObject* normalized = PyDict_New();
+		if (!normalized)
+			return kwds;
+
+		PyObject* key, * value;
+		Py_ssize_t pos = 0;
+
+		while (PyDict_Next(kwds, &pos, &key, &value))
+		{
+			const char* key_str = PyUnicode_AsUTF8(key);
+			if (key_str)
+			{
+				std::string lower_str(key_str);
+				std::transform(lower_str.begin(), lower_str.end(), lower_str.begin(), ::tolower);
+				PyObject* lower_key = PyUnicode_FromString(lower_str.c_str());
+				if (lower_key)
+				{
+					PyDict_SetItem(normalized, lower_key, value);
+					Py_DECREF(lower_key);
+				}
+				else
+				{
+					PyDict_SetItem(normalized, key, value);
+				}
+			}
+			else
+			{
+				PyErr_Clear();
+				PyDict_SetItem(normalized, key, value);
+			}
+		}
+
+		return normalized;
+	}
+
 	void CImage_dealloc(CImage* self)
 	{
 		Py_XDECREF(self->Base);
@@ -95,7 +138,7 @@ namespace Plugins {
 	int CImage_init(CImage *self, PyObject *args, PyObject *kwds)
 	{
 		char *szFileName = nullptr;
-		static char *kwlist[] = { "Filename", nullptr };
+		static char *kwlist[] = { "filename", nullptr };
 
 		try
 		{
@@ -123,7 +166,10 @@ namespace Plugins {
 				return 0;
 			}
 
-			if (PyArg_ParseTupleAndKeywords(args, kwds, "|s", kwlist, &szFileName))
+			// Normalize keyword arguments to lowercase for case-insensitive matching
+			PyObject *normalized_kwds = NormalizeKeywords(kwds);
+
+			if (PyArg_ParseTupleAndKeywords(args, normalized_kwds, "|s", kwlist, &szFileName))
 			{
 				std::string	sFileName = szFileName ? szFileName : "";
 
@@ -137,8 +183,14 @@ namespace Plugins {
 			}
 			else
 			{
-				pModState->pPlugin->Log(LOG_ERROR, "Expected: myVar = Domoticz.Image(Filename=\"MyImages.zip\")");
+				pModState->pPlugin->Log(LOG_ERROR, "Expected: myVar = Domoticz.Image(Filename=\"MyImages.zip\"). Note: Parameter names are case-insensitive.");
 				pModState->pPlugin->LogPythonException(__func__);
+			}
+
+			// Clean up normalized keywords dictionary if we created one
+			if (normalized_kwds != kwds)
+			{
+				Py_DECREF(normalized_kwds);
 			}
 		}
 		catch (std::exception *e)
@@ -376,113 +428,116 @@ namespace Plugins {
 	{
 		Type = pTypeGeneral;
 
-		if (sTypeName == "Pressure")					SubType = sTypePressure;
-		else if (sTypeName == "Percentage")				SubType = sTypePercentage;
-		else if (sTypeName == "Fan")					SubType = sTypeFan;
-		else if (sTypeName == "Gas")
+		std::string sTypeNameLower = sTypeName;
+		std::transform(sTypeNameLower.begin(), sTypeNameLower.end(), sTypeNameLower.begin(), ::tolower);
+
+		if (sTypeNameLower == "pressure")					SubType = sTypePressure;
+		else if (sTypeNameLower == "percentage")			SubType = sTypePercentage;
+		else if (sTypeNameLower == "fan")					SubType = sTypeFan;
+		else if (sTypeNameLower == "gas")
 		{
 			Type = pTypeP1Gas;
 			SubType = sTypeP1Gas;
 		}
-		else if (sTypeName == "Voltage")				SubType = sTypeVoltage;
-		else if (sTypeName == "Text")					SubType = sTypeTextStatus;
-		else if (sTypeName == "Switch")
+		else if (sTypeNameLower == "voltage")				SubType = sTypeVoltage;
+		else if (sTypeNameLower == "text")					SubType = sTypeTextStatus;
+		else if (sTypeNameLower == "switch")
 		{
 			Type = pTypeGeneralSwitch;
 			SubType = sSwitchGeneralSwitch;
 		}
-		else if (sTypeName == "Alert")
+		else if (sTypeNameLower == "alert")
 		{
 			sValue = "No Alert!";
 			SubType = sTypeAlert;
 		}
-		else if (sTypeName == "Current/Ampere")
+		else if (sTypeNameLower == "current/ampere")
 		{
 			sValue = "0.0;0.0;0.0";
 			Type = pTypeCURRENT;
 			SubType = sTypeELEC1;
 		}
-		else if (sTypeName == "Sound Level")			SubType = sTypeSoundLevel;
-		else if (sTypeName == "Barometer")
+		else if (sTypeNameLower == "sound level")			SubType = sTypeSoundLevel;
+		else if (sTypeNameLower == "barometer")
 		{
 			sValue = "1021.34;0";
 			SubType = sTypeBaro;
 		}
-		else if (sTypeName == "Visibility")				SubType = sTypeVisibility;
-		else if (sTypeName == "Distance")				SubType = sTypeDistance;
-		else if (sTypeName == "Counter Incremental")	SubType = sTypeCounterIncremental;
-		else if (sTypeName == "Soil Moisture")			SubType = sTypeSoilMoisture;
-		else if (sTypeName == "Leaf Wetness")			SubType = sTypeLeafWetness;
-		else if (sTypeName == "kWh")
+		else if (sTypeNameLower == "visibility")			SubType = sTypeVisibility;
+		else if (sTypeNameLower == "distance")				SubType = sTypeDistance;
+		else if (sTypeNameLower == "counter incremental")	SubType = sTypeCounterIncremental;
+		else if (sTypeNameLower == "soil moisture")			SubType = sTypeSoilMoisture;
+		else if (sTypeNameLower == "leaf wetness")			SubType = sTypeLeafWetness;
+		else if (sTypeNameLower == "kwh")
 		{
 			sValue = "0;0.0";
 			SubType = sTypeKwh;
 		}
-		else if (sTypeName == "Current (Single)")		SubType = sTypeCurrent;
-		else if (sTypeName == "Solar Radiation")		SubType = sTypeSolarRadiation;
-		else if (sTypeName == "Temperature")
+		else if (sTypeNameLower == "current (single)")		SubType = sTypeCurrent;
+		else if (sTypeNameLower == "solar radiation")		SubType = sTypeSolarRadiation;
+		else if (sTypeNameLower == "temperature")
 		{
 			Type = pTypeTEMP;
 			SubType = sTypeTEMP5;
 		}
-		else if (sTypeName == "Humidity")
+		else if (sTypeNameLower == "humidity")
 		{
 			Type = pTypeHUM;
 			SubType = sTypeHUM1;
 		}
-		else if (sTypeName == "Temp+Hum")
+		else if (sTypeNameLower == "temp+hum")
 		{
 			sValue = "0.0;50;1";
 			Type = pTypeTEMP_HUM;
 			SubType = sTypeTH1;
 		}
-		else if (sTypeName == "Temp+Hum+Baro")
+		else if (sTypeNameLower == "temp+hum+baro")
 		{
 			sValue = "0.0;50;1;1010;1";
 			Type = pTypeTEMP_HUM_BARO;
 			SubType = sTypeTHB1;
 		}
-		else if (sTypeName == "Wind")
+		else if (sTypeNameLower == "wind")
 		{
 			sValue = "0;N;0;0;0;0";
 			Type = pTypeWIND;
 			SubType = sTypeWIND1;
 		}
-		else if (sTypeName == "Rain")
+		else if (sTypeNameLower == "rain")
 		{
 			sValue = "0;0";
 			Type = pTypeRAIN;
 			SubType = sTypeRAIN3;
 		}
-		else if (sTypeName == "UV")
+		else if (sTypeNameLower == "uv")
 		{
 			sValue = "0;0";
 			Type = pTypeUV;
 			SubType = sTypeUV1;
 		}
-		else if (sTypeName == "Air Quality")
+		else if (sTypeNameLower == "air quality")
 		{
 			Type = pTypeAirQuality;
 			SubType = sTypeVoc;
 		}
-		else if (sTypeName == "Usage")
+		else if (sTypeNameLower == "usage")
 		{
 			Type = pTypeUsage;
 			SubType = sTypeElectric;
 		}
-		else if (sTypeName == "Illumination")
+		else if (sTypeNameLower == "illumination")
 		{
 			Type = pTypeLux;
 			SubType = sTypeLux;
 		}
-		else if (sTypeName == "Waterflow")				SubType = sTypeWaterflow;
-		else if (sTypeName == "Wind+Temp+Chill")
+		else if (sTypeNameLower == "waterflow")				SubType = sTypeWaterflow;
+		else if (sTypeNameLower == "wind+temp+chill")
 		{
 			sValue = "0;N;0;0;0;0";
 			Type = pTypeWIND;
 			SubType = sTypeWIND4;
 		}
-		else if (sTypeName == "Selector Switch")
+		else if (sTypeNameLower == "selector switch")
 		{
 			if (!OptionsIn || !PyBorrowedRef(OptionsIn).IsDict()) {
 				PyDict_Clear(OptionsOut);
@@ -495,43 +550,43 @@ namespace Plugins {
 			SubType = sSwitchTypeSelector;
 			SwitchType = STYPE_Selector;
 		}
-		else if (sTypeName == "On/Off")
+		else if (sTypeNameLower == "on/off")
 		{
 			Type = pTypeGeneralSwitch;
 			SubType = sSwitchGeneralSwitch;
 			SwitchType = STYPE_OnOff;
 		}
-		else if (sTypeName == "Push On")
+		else if (sTypeNameLower == "push on")
 		{
 			Type = pTypeGeneralSwitch;
 			SubType = sSwitchGeneralSwitch;
 			SwitchType = STYPE_PushOn;
 		}
-		else if (sTypeName == "Push Off")
+		else if (sTypeNameLower == "push off")
 		{
 			Type = pTypeGeneralSwitch;
 			SubType = sSwitchGeneralSwitch;
 			SwitchType = STYPE_PushOff;
 		}
-		else if (sTypeName == "Contact")
+		else if (sTypeNameLower == "contact")
 		{
 			Type = pTypeGeneralSwitch;
 			SubType = sSwitchGeneralSwitch;
 			SwitchType = STYPE_Contact;
 		}
-		else if (sTypeName == "Dimmer")
+		else if (sTypeNameLower == "dimmer")
 		{
 			Type = pTypeGeneralSwitch;
 			SubType = sSwitchGeneralSwitch;
 			SwitchType = STYPE_Dimmer;
 		}
-		else if (sTypeName == "Motion")
+		else if (sTypeNameLower == "motion")
 		{
 			Type = pTypeGeneralSwitch;
 			SubType = sSwitchGeneralSwitch;
 			SwitchType = STYPE_Motion;
 		}
-		else if (sTypeName == "Custom")
+		else if (sTypeNameLower == "custom")
 		{
 			SubType = sTypeCustom;
 			if (!OptionsIn || !PyBorrowedRef(OptionsIn).IsDict()) {
@@ -539,49 +594,49 @@ namespace Plugins {
 				PyDict_SetItemString(OptionsOut, "Custom", PyUnicode_FromString("1"));
 			}
 		}
-		else if (sTypeName == "Security Panel")
+		else if (sTypeNameLower == "security panel")
 		{
 			Type = pTypeSecurity1;
 			SubType = sTypeDomoticzSecurity;
 		}
-		else if (sTypeName == "Set Point" || sTypeName == "Setpoint" || sTypeName == "Thermostat")
+		else if (sTypeNameLower == "set point" || sTypeNameLower == "setpoint" || sTypeNameLower == "thermostat")
 		{
 			Type = pTypeSetpoint;
 			SubType = sTypeSetpoint;
 		}
 
 		// Venetian and Blinds
-		else if (sTypeName == "Blinds")
+		else if (sTypeNameLower == "blinds")
 		{
 			Type = pTypeGeneralSwitch;
 			SubType = sSwitchGeneralSwitch;
 			SwitchType = STYPE_Blinds;
 		}
-		else if (sTypeName == "BlindsWithStop")
+		else if (sTypeNameLower == "blindswithstop")
 		{
 			Type = pTypeGeneralSwitch;
 			SubType = sSwitchGeneralSwitch;
 			SwitchType = STYPE_BlindsWithStop;
 			}
-		else if (sTypeName == "BlindsPercentage")
+		else if (sTypeNameLower == "blindspercentage")
 		{
 			Type = pTypeGeneralSwitch;
 			SubType = sSwitchGeneralSwitch;
 			SwitchType = STYPE_BlindsPercentage;
 		}
-		else if (sTypeName == "VenetianBlindsUS")
+		else if (sTypeNameLower == "venetianblindsus")
 		{
 			Type = pTypeGeneralSwitch;
 			SubType = sSwitchGeneralSwitch;
 			SwitchType = STYPE_VenetianBlindsUS;
 		}
-		else if (sTypeName == "VenetianBlindsEU")
+		else if (sTypeNameLower == "venetianblindseu")
 		{
 			Type = pTypeGeneralSwitch;
 			SubType = sSwitchGeneralSwitch;
 			SwitchType = STYPE_VenetianBlindsEU;
 		}
-		else if (sTypeName == "BlindsPercentageWithStop")
+		else if (sTypeNameLower == "blindspercentagewithstop")
 		{
 			Type = pTypeGeneralSwitch;
 			SubType = sSwitchGeneralSwitch;
@@ -589,97 +644,54 @@ namespace Plugins {
 		}
 
 		// Color Switch
-		else if (sTypeName == "WW")
+		else if (sTypeNameLower == "ww")
 		{
 			Type = pTypeColorSwitch;
 			SubType = sTypeColor_RGB_W; // RGB + white, either RGB or white can be lit
 			SwitchType = 7;
 		}
-		else if (sTypeName == "RGB")
+		else if (sTypeNameLower == "rgb")
 		{
 			Type = pTypeColorSwitch;
 			SubType = sTypeColor_RGB; // RGB
 			SwitchType = 7;
 		}
-		else if (sTypeName == "White")
+		else if (sTypeNameLower == "white")
 		{
 			Type = pTypeColorSwitch;
 			SubType = sTypeColor_White; // Monochrome white
 			SwitchType = 7;
 		}
-		else if (sTypeName == "RGB_CW_WW")
+		else if (sTypeNameLower == "rgb_cw_ww")
 		{
 			Type = pTypeColorSwitch;
 			SubType = sTypeColor_RGB_CW_WW; // RGB + cold white + warm white, either RGB or white can be lit
 			SwitchType = 7;
 		}
-		else if (sTypeName == "LivCol")
+		else if (sTypeNameLower == "livcol")
 		{
 			Type = pTypeColorSwitch;
 			SubType = sTypeColor_LivCol;
 			SwitchType = 7;
 		}
-		else if (sTypeName == "RGB_W_Z")
+		else if (sTypeNameLower == "rgb_w_z")
 		{
 			Type = pTypeColorSwitch;
 			SubType = sTypeColor_RGB_W_Z; // Like RGBW, but allows combining RGB and white
 			SwitchType = 7;
 		}
-		else if (sTypeName == "RGB_CW_WW_Z")
+		else if (sTypeNameLower == "rgb_cw_ww_z")
 		{
 			Type = pTypeColorSwitch;
 			SubType = sTypeColor_RGB_CW_WW_Z; // Like RGBWW, but allows combining RGB and white
 			SwitchType = 7;
 		}
-		else if (sTypeName == "CW_WW")
+		else if (sTypeNameLower == "cw_ww")
 		{
 			Type = pTypeColorSwitch;
 			SubType = sTypeColor_CW_WW; // Cold white + Warm white
 			SwitchType = 7;
 		}
-	}
-
-	// Helper function to normalize keyword argument names to lowercase for case-insensitive matching
-	// Returns a new reference to a normalized dictionary, or a borrowed reference if kwds is NULL
-	// Caller must check if returned value != kwds and call Py_DECREF on the normalized dict when done
-	static PyObject* NormalizeKeywords(PyObject *kwds)
-	{
-		if (!kwds)
-			return kwds;
-
-		PyObject *normalized = PyDict_New();
-		if (!normalized)
-			return kwds;
-
-		PyObject *key, *value;
-		Py_ssize_t pos = 0;
-
-		while (PyDict_Next(kwds, &pos, &key, &value))
-		{
-			const char *key_str = PyUnicode_AsUTF8(key);
-			if (key_str)
-			{
-				std::string lower_str(key_str);
-				std::transform(lower_str.begin(), lower_str.end(), lower_str.begin(), ::tolower);
-				PyObject *lower_key = PyUnicode_FromString(lower_str.c_str());
-				if (lower_key)
-				{
-					PyDict_SetItem(normalized, lower_key, value);
-					Py_DECREF(lower_key);
-				}
-				else
-				{
-					PyDict_SetItem(normalized, key, value);
-				}
-			}
-			else
-			{
-				PyErr_Clear();
-				PyDict_SetItem(normalized, key, value);
-			}
-		}
-
-		return normalized;
 	}
 
 	int CDevice_init(CDevice *self, PyObject *args, PyObject *kwds)
@@ -1454,11 +1466,14 @@ namespace Plugins {
 		char *pAddress = nullptr;
 		char *pPort = nullptr;
 		int			iBaud = -1;
-		static char *kwlist[] = { "Name", "Transport", "Protocol", "Address", "Port", "Baud", nullptr };
+		static char *kwlist[] = { "name", "transport", "protocol", "address", "port", "baud", nullptr };
 
 		try
 		{
-			if (PyArg_ParseTupleAndKeywords(args, kwds, "ss|sssi", kwlist, &pName, &pTransport, &pProtocol, &pAddress, &pPort, &iBaud))
+			// Normalize keyword arguments to lowercase for case-insensitive matching
+			PyObject *normalized_kwds = NormalizeKeywords(kwds);
+
+			if (PyArg_ParseTupleAndKeywords(args, normalized_kwds, "ss|sssi", kwlist, &pName, &pTransport, &pProtocol, &pAddress, &pPort, &iBaud))
 			{
 				if (pName) {
 					Py_XDECREF(self->Name);
@@ -1487,7 +1502,13 @@ namespace Plugins {
 			else
 			{
 				_log.Log(LOG_ERROR,
-					 R"(Expected: myVar = Domoticz.Connection(Name="<Name>", Transport="<Transport>", Protocol="<Protocol>", Address="<IP-Address>", Port="<Port>", Baud=0))");
+					 R"(Expected: myVar = Domoticz.Connection(Name="<Name>", Transport="<Transport>", Protocol="<Protocol>", Address="<IP-Address>", Port="<Port>", Baud=0). Note: Parameter names are case-insensitive.)");
+			}
+
+			// Clean up normalized keywords dictionary if we created one
+			if (normalized_kwds != kwds)
+			{
+				Py_DECREF(normalized_kwds);
 			}
 		}
 		catch (std::exception *e)
@@ -1536,8 +1557,10 @@ namespace Plugins {
 
 		PyObject *pTarget = NULL;
 		int iTimeout = 0;
-		static char *kwlist[] = { "Target", "Timeout", NULL };
-		if (PyArg_ParseTupleAndKeywords(args, kwds, "|OI", kwlist, &pTarget, &iTimeout))
+		static char *kwlist[] = { "target", "timeout", NULL };
+		// Normalize keyword arguments to lowercase for case-insensitive matching
+		PyObject *normalized_kwds = NormalizeKeywords(kwds);
+		if (PyArg_ParseTupleAndKeywords(args, normalized_kwds, "|OI", kwlist, &pTarget, &iTimeout))
 		{
 			if (pTarget)
 			{
@@ -1566,6 +1589,10 @@ namespace Plugins {
 			{
 				pPlugin->Log(LOG_ERROR, "Timeout parameter ignored, must be zero or greater than 250 milliseconds.");
 			}
+		}
+		if (normalized_kwds != kwds)
+		{
+			Py_DECREF(normalized_kwds);
 		}
 
 		Py_RETURN_NONE;
@@ -1600,14 +1627,20 @@ namespace Plugins {
 		}
 
 		PyObject *pTarget = NULL;
-		static char *kwlist[] = { "Target", NULL };
-		if (PyArg_ParseTupleAndKeywords(args, kwds, "|O", kwlist, &pTarget))
+		static char *kwlist[] = { "target", NULL };
+		// Normalize keyword arguments to lowercase for case-insensitive matching
+		PyObject *normalized_kwds = NormalizeKeywords(kwds);
+		if (PyArg_ParseTupleAndKeywords(args, normalized_kwds, "|O", kwlist, &pTarget))
 		{
 			if (pTarget)
 			{
 				Py_INCREF(pTarget);
 				self->Target = pTarget;
 			}
+		}
+		if (normalized_kwds != kwds)
+		{
+			Py_DECREF(normalized_kwds);
 		}
 
 		pPlugin->MessagePlugin(new ListenDirective(self));
@@ -1637,9 +1670,15 @@ namespace Plugins {
 		{
 			PyObject *pData = nullptr;
 			int			iDelay = 0;
-			static char *kwlist[] = { "Message", "Delay", nullptr };
-			if (!PyArg_ParseTupleAndKeywords(args, kwds, "O|i", kwlist, &pData, &iDelay))
+			static char *kwlist[] = { "message", "delay", nullptr };
+			// Normalize keyword arguments to lowercase for case-insensitive matching
+			PyObject *normalized_kwds = NormalizeKeywords(kwds);
+			if (!PyArg_ParseTupleAndKeywords(args, normalized_kwds, "O|i", kwlist, &pData, &iDelay))
 			{
+				if (normalized_kwds != kwds)
+				{
+					Py_DECREF(normalized_kwds);
+				}
 				pPlugin->Log(LOG_ERROR, "(%s) failed to parse parameters, Message or Message, Delay expected.", pPlugin->m_Name.c_str());
 				pPlugin->LogPythonException(__func__);
 			}
@@ -1647,6 +1686,10 @@ namespace Plugins {
 			{
 				//	Add start command to message queue
 				pPlugin->MessagePlugin(new WriteDirective(self, pData, iDelay));
+				if (normalized_kwds != kwds)
+				{
+					Py_DECREF(normalized_kwds);
+				}
 			}
 		}
 

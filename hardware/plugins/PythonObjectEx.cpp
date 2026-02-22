@@ -66,9 +66,13 @@ namespace Plugins {
 		return (PyObject *)self;
 	}
 
+	// Forward declaration - defined in CUnitEx section below
+	static PyObject* NormalizeKeywords(PyObject *kwds);
+
 	int CDeviceEx_init(CDeviceEx *self, PyObject *args, PyObject *kwds)
 	{
 		const char *DeviceID = nullptr;
+		PyObject *normalized_kwds = nullptr;
 
 		try
 		{
@@ -93,15 +97,21 @@ namespace Plugins {
 			}
 
 			// Normal case of DeviceEx creation by DeviceID
-			static char *kwlist[] = { "DeviceID", nullptr };
+			// All parameter names in lowercase for case-insensitive matching
+			static char *kwlist[] = { "deviceid", nullptr };
 
-			if (!PyArg_ParseTupleAndKeywords(args, kwds, "s", kwlist, &DeviceID))
+			// Normalize keyword arguments to lowercase for case-insensitive matching
+			normalized_kwds = NormalizeKeywords(kwds);
+
+			if (!PyArg_ParseTupleAndKeywords(args, normalized_kwds, "s", kwlist, &DeviceID))
 			{
-				pModState->pPlugin->Log(LOG_ERROR, R"(Expected: myVar = Domoticz.DeviceEx(DeviceID='xxxx'))");
+				pModState->pPlugin->Log(LOG_ERROR, R"(Expected: myVar = Domoticz.DeviceEx(DeviceID='xxxx'). Note: Parameter names are case-insensitive.)");
+				if (normalized_kwds != kwds) Py_DECREF(normalized_kwds);
 				pModState->pPlugin->LogPythonException(__func__);
 			}
 			else
 			{
+				if (normalized_kwds != kwds) Py_DECREF(normalized_kwds);
 				Py_DECREF(self->DeviceID);
 				if (DeviceID)
 				{
@@ -115,10 +125,12 @@ namespace Plugins {
 		catch (std::exception *e)
 		{
 			_log.Log(LOG_ERROR, "%s: Execption thrown: %s", __func__, e->what());
+			if (normalized_kwds && normalized_kwds != kwds) Py_DECREF(normalized_kwds);
 		}
 		catch (...)
 		{
 			_log.Log(LOG_ERROR, "%s: Unknown execption thrown", __func__);
+			if (normalized_kwds && normalized_kwds != kwds) Py_DECREF(normalized_kwds);
 		}
 
 		return false;
@@ -370,6 +382,7 @@ namespace Plugins {
 		char *Description = nullptr;
 		// All parameter names in lowercase for case-insensitive matching
 		static char *kwlist[] = { "name", "deviceid", "unit", "typename", "type", "subtype", "switchtype", "image", "options", "used", "description", nullptr };
+		PyObject *normalized_kwds = nullptr;
 
 		try
 		{
@@ -395,7 +408,7 @@ namespace Plugins {
 
 				// otherwise a new Unit is being created
 			// Normalize keyword arguments to lowercase for case-insensitive matching
-			PyObject *normalized_kwds = NormalizeKeywords(kwds);
+			normalized_kwds = NormalizeKeywords(kwds);
 
 			if (PyArg_ParseTupleAndKeywords(args, normalized_kwds, "ssi|siiiiOis", kwlist, &Name, &DeviceID, &Unit, &TypeName, &Type, &SubType, &SwitchType, &Image, &Options, &Used, &Description))
 			{
@@ -417,6 +430,7 @@ namespace Plugins {
 				else
 				{
 					_log.Log(LOG_ERROR, "(%s) Illegal Unit number (%d), valid values range from 1 to 255.", __func__, Unit);
+					if (normalized_kwds && normalized_kwds != kwds) Py_DECREF(normalized_kwds);
 					return 0;
 				}
 				if (!DeviceID)
@@ -436,12 +450,14 @@ namespace Plugins {
 					if (!nrArgList)
 					{
 						_log.Log(LOG_ERROR, "Building device argument list failed for key '%s'.", DeviceID);
+						if (normalized_kwds && normalized_kwds != kwds) Py_DECREF(normalized_kwds);
 						return 0;
 					}
 					self->Parent = PyObject_CallObject((PyObject *)pModState->pDeviceClass, nrArgList);
 					if (!self->Parent)
 					{
 						_log.Log(LOG_ERROR, "Device object creation failed for key '%s'.", DeviceID);
+						if (normalized_kwds && normalized_kwds != kwds) Py_DECREF(normalized_kwds);
 						return 0;
 					}
 				}
@@ -518,10 +534,12 @@ namespace Plugins {
 		catch (std::exception *e)
 		{
 			_log.Log(LOG_ERROR, "%s: Execption thrown: %s", __func__, e->what());
+			if (normalized_kwds && normalized_kwds != kwds) Py_DECREF(normalized_kwds);
 		}
 		catch (...)
 		{
 			_log.Log(LOG_ERROR, "%s: Unknown execption thrown", __func__);
+			if (normalized_kwds && normalized_kwds != kwds) Py_DECREF(normalized_kwds);
 		}
 
 		return 0;
@@ -794,15 +812,20 @@ namespace Plugins {
 			int bUpdateOptions = false;
 			int bSuppressTriggers = false;
 
-			static char *kwlist[] = { "Log", "TypeName", "UpdateProperties", "UpdateOptions", "SuppressTriggers", nullptr };
+			static char *kwlist[] = { "log", "typename", "updateproperties", "updateoptions", "suppresstriggers", nullptr };
+
+			// Normalize keyword arguments to lowercase for case-insensitive matching
+			PyObject *normalized_kwds = NormalizeKeywords(kwds);
 
 			// Try to extract parameters needed to update device settings
-			if (!PyArg_ParseTupleAndKeywords(args, kwds, "|psppp", kwlist, &bWriteLog, &TypeName, &bUpdateProperties, &bUpdateOptions, &bSuppressTriggers))
+			if (!PyArg_ParseTupleAndKeywords(args, normalized_kwds, "|psppp", kwlist, &bWriteLog, &TypeName, &bUpdateProperties, &bUpdateOptions, &bSuppressTriggers))
 			{
-				pModState->pPlugin->Log(LOG_ERROR, "(%s) Failed to parse parameters: 'Log' and/or 'TypeName' and/or 'UpdateProperties' and/or 'UpdateOptions' and/or 'SuppressTriggers' expected.", __func__);
+				if (normalized_kwds != kwds) Py_DECREF(normalized_kwds);
+				pModState->pPlugin->Log(LOG_ERROR, "(%s) Failed to parse parameters: 'Log' and/or 'TypeName' and/or 'UpdateProperties' and/or 'UpdateOptions' and/or 'SuppressTriggers' expected. Note: Parameter names are case-insensitive.", __func__);
 				pModState->pPlugin->LogPythonException(__func__);
 				Py_RETURN_NONE;
 			}
+			if (normalized_kwds != kwds) Py_DECREF(normalized_kwds);
 
 			CDeviceEx *pDevice = (CDeviceEx *)self->Parent;
 			std::string sDeviceID = PyBorrowedRef(pDevice->DeviceID);
