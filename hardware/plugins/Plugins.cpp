@@ -753,11 +753,13 @@ namespace Plugins
 		, m_ImageDict(nullptr)
 		, m_SettingsDict(nullptr)
 		, m_bDebug(PDM_NONE)
+		, m_bShared(false)
 	{
 		m_HwdID = HwdID;
 		m_Name = sName;
 		m_bIsStarted = false;
 		m_bIsStarting = false;
+		m_bIsStopped = false;
 		m_bTracing = false;
 	}
 
@@ -1012,6 +1014,10 @@ namespace Plugins
 
 			Log(LOG_STATUS, "Stopping threads.");
 
+			// Ensure Do_Work loop can exit even if Stop() was never called
+			// (e.g. plugin failed to initialise or start)
+			m_bIsStopped = true;
+
 			if (m_thread)
 			{
 				m_thread->join();
@@ -1151,8 +1157,31 @@ namespace Plugins
 				}
 			}
 
+			// Parse 'shared' attribute early - needed to decide interpreter type
+			if (!sPluginXML.empty())
+			{
+				TiXmlDocument XmlDocEarly;
+				XmlDocEarly.Parse(sPluginXML.c_str());
+				if (!XmlDocEarly.Error())
+				{
+					TiXmlNode *pXmlNode = XmlDocEarly.FirstChild("plugin");
+					if (pXmlNode)
+					{
+						TiXmlElement *pXmlEle = pXmlNode->ToElement();
+						if (pXmlEle)
+						{
+							const char *pAttributeValue = pXmlEle->Attribute("shared");
+							if (pAttributeValue)
+							{
+								m_bShared = (std::string(pAttributeValue) == "true");
+							}
+						}
+					}
+				}
+			}
+
 			void* pPreserved = CPluginSystem::GetPreservedInterpreter(m_PluginKey);
-			if (pPreserved)
+			if (pPreserved && !m_bShared)
 			{
 				// Reuse preserved interpreter from previous run
 				m_PyInterpreter = (PyThreadState *)pPreserved;
@@ -1160,6 +1189,64 @@ namespace Plugins
 				      m_PluginKey.c_str(), m_PyInterpreter);
 				PyEval_RestoreThread(m_PyInterpreter);
 				// stdio, path, Py_None, faulthandler are all still set from previous run
+			}
+			else if (m_bShared)
+			{
+				// Use the main interpreter for shared plugins (PyO3 compatibility)
+				PyEval_RestoreThread((PyThreadState*)m_mainworker.m_pluginsystem.PythonThread());
+				m_PyInterpreter = (PyThreadState*)m_mainworker.m_pluginsystem.PythonThread();
+				Debug(DEBUG_PYTHON, "(%s) using shared (main) interpreter (%p).",
+				      m_PluginKey.c_str(), m_PyInterpreter);
+
+				// Remove any cached 'plugin' module so we get a fresh import
+				PyDict_DelItemString(PyImport_GetModuleDict(), "plugin");
+				PyErr_Clear();
+
+				// Prepend plugin directory to sys.path (insert, don't replace,
+				// so other shared plugins' directories are preserved)
+				{
+					// Escape backslashes for Python string literal
+					std::string sEscaped;
+					for (char c : m_HomeFolder)
+					{
+						if (c == '\\') sEscaped += "\\\\";
+						else sEscaped += c;
+					}
+					std::string sPython = "import sys\n"
+						"p = '" + sEscaped + "'\n"
+						"if p in sys.path: sys.path.remove(p)\n"
+						"sys.path.insert(0, p)\n";
+					PyNewRef pCode = Py_CompileString(sPython.c_str(), "<domoticz>", Py_file_input);
+					if (pCode)
+					{
+						PyNewRef global_dict = PyDict_New();
+						PyNewRef local_dict = PyDict_New();
+						PyNewRef pEval = PyEval_EvalCode(pCode, global_dict, local_dict);
+						if (!pEval)
+						{
+							Log(LOG_ERROR, "(%s) failed to prepend plugin directory to sys.path.", m_PluginKey.c_str());
+							if (PyErr_Occurred()) PyErr_Clear();
+						}
+					}
+				}
+
+				// Get reference to global 'Py_None' instance for comparisons
+				if (!Py_None)
+				{
+					PyNewRef		global_dict = PyDict_New();
+					PyNewRef		local_dict = PyDict_New();
+					PyNewRef		pCode = Py_CompileString("# Eval will return 'None'\n", "<domoticz>", Py_file_input);
+					if (pCode)
+					{
+						PyNewRef	pEval = PyEval_EvalCode(pCode, global_dict, local_dict);
+						Py_None = pEval;
+						Py_INCREF(Py_None);
+					}
+					else
+					{
+						Log(LOG_ERROR, "Failed to compile script to set global Py_None");
+					}
+				}
 			}
 			else
 			{
@@ -2130,6 +2217,14 @@ namespace Plugins
 		if (m_PyInterpreter)
 		{
 			PyEval_RestoreThread((PyThreadState*)m_PyInterpreter);
+			if (m_bShared)
+			{
+				// Shared plugins all use the main interpreter's Domoticz module.
+				// Update pPlugin so Domoticz.Log() etc. route to the correct plugin.
+				module_state* pModState = FindModule();
+				if (pModState)
+					pModState->pPlugin = this;
+			}
 		}
 		else
 		{
@@ -2297,25 +2392,27 @@ namespace Plugins
 				if (!brModule)
 				{
 					brModule = PyState_FindModule(&DomoticzExModuleDef);
-					if (!brModule)
-					{
-						Log(LOG_ERROR, "(%s) %s failed, Domoticz/DomoticzEx modules not found in interpreter.", __func__, m_PluginKey.c_str());
-						return;
-					}
 				}
 
-				module_state *pModState = ((struct module_state *)PyModule_GetState(brModule));
-				if (!pModState)
+				module_state *pModState = nullptr;
+				if (!brModule)
 				{
-					Log(LOG_ERROR, "%s, unable to obtain module state.", __func__);
-					return;
+					Log(LOG_ERROR, "(%s) %s failed, Domoticz/DomoticzEx modules not found in interpreter.", __func__, m_PluginKey.c_str());
+				}
+				else
+				{
+					pModState = ((struct module_state *)PyModule_GetState(brModule));
+					if (!pModState)
+					{
+						Log(LOG_ERROR, "%s, unable to obtain module state.", __func__);
+					}
 				}
 
 				PyBorrowedRef	key;
 				PyBorrowedRef	pDevice;
 				Py_ssize_t pos = 0;
 				// Sanity check to make sure the reference counting is all good.
-				while (PyDict_Next((PyObject*)m_DeviceDict, &pos, &key, &pDevice))
+				while (pModState && PyDict_Next((PyObject*)m_DeviceDict, &pos, &key, &pDevice))
 				{
 					// Dictionary should be full of Devices but Python script can make this assumption false, log warning if this has happened
 					int isDevice = PyObject_IsInstance(pDevice, (PyObject *)pModState->pDeviceClass);
@@ -2391,12 +2488,17 @@ namespace Plugins
 			}
 
 			// if threading module is running then check no threads are still running
-			for (int i=10; PythonThreadCount() && i; i--)
+			// Skip for shared plugins: the main interpreter's threads belong to the
+			// system, not the plugin, so active_count() is misleading
+			if (!m_bShared)
 			{
-				sleep_milliseconds(1000);
+				for (int i=10; PythonThreadCount() && i; i--)
+				{
+					sleep_milliseconds(1000);
+				}
+				if (PythonThreadCount())
+					Log(LOG_ERROR, "Abandoning wait for Plugin thread shutdown, hang or crash may result.");
 			}
-			if (PythonThreadCount())
-				Log(LOG_ERROR, "Abandoning wait for Plugin thread shutdown, hang or crash may result.");
 			if (m_PyInterpreter)
 			{
 				if (PyErr_Occurred()) // get the errors occured during onStopCallback message handling
@@ -2430,14 +2532,20 @@ namespace Plugins
 					PyDict_DelItemString(pSysModules, "plugin");
 					PyErr_Clear();
 				}
-				Debug(DEBUG_PYTHON, "(%s) interpreter preserved (%p).",
-				      m_PluginKey.c_str(), m_PyInterpreter);
-				// Release GIL before storing - Initialise() will reacquire it
-				(void)PyEval_SaveThread();
-				// Store in static map so it survives CPlugin object destruction
-				CPluginSystem::SetPreservedInterpreter(m_PluginKey, m_PyInterpreter);
-				// m_PyInterpreter will be set to nullptr in state reset below,
-				// which also prevents the AccessPython guard from double-releasing
+				if (!m_bShared)
+				{
+					// Only preserve sub-interpreters, not the main interpreter
+					Debug(DEBUG_PYTHON, "(%s) interpreter preserved (%p).",
+					      m_PluginKey.c_str(), m_PyInterpreter);
+					(void)PyEval_SaveThread();
+					CPluginSystem::SetPreservedInterpreter(m_PluginKey, m_PyInterpreter);
+				}
+				else
+				{
+					Debug(DEBUG_PYTHON, "(%s) shared interpreter, releasing GIL.",
+					      m_PluginKey.c_str());
+					(void)PyEval_SaveThread();
+				}
 			}
 		}
 		catch (std::exception *e)

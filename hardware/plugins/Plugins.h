@@ -61,6 +61,7 @@ namespace Plugins {
 
 		bool m_bIsStarting;
 		bool m_bIsStopped;
+		bool m_bShared;
 
 		void Do_Work();
 
