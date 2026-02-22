@@ -8,7 +8,7 @@ local self = {
 	LOG_STATUS = 4,
 	LOG_ERROR = 5,
 	LOG_FORCE = 6,
-	DZVERSION = '3.1.10',
+	DZVERSION = '3.1.11',
 }
 
 function jsonParser:unsupportedTypeEncoder(value_of_unsupported_type)

@@ -3302,6 +3302,26 @@ bool CSQLHelper::OpenDatabase()
 		{
 			// Add Passkeys column to Users table for WebAuthn/passkey support
 			query("ALTER TABLE Users ADD COLUMN [Passkeys] TEXT DEFAULT NULL");
+
+			// Add forecast field to existing Thermostat 6 devices with barometer
+			// Since this is a new field being added in this version, all existing devices
+			// are guaranteed not to have it yet, so we can simply append it
+
+			result = safe_query("SELECT ID, sValue FROM DeviceStatus WHERE (Type=%d) AND (SubType IN (%d, %d))",
+				pTypeThermostat6, sTypeThermostat6TempBaro, sTypeThermostat6TempHumBaro);
+
+			if (!result.empty())
+			{
+				for (const auto& sd : result)
+				{
+					std::string deviceID = sd[0];
+					std::string sValue = sd[1];
+
+					// Append forecast field with default value 0
+					std::string newSValue = sValue + ";0";
+					safe_query("UPDATE DeviceStatus SET sValue='%q' WHERE (ID=%q)", newSValue.c_str(), deviceID.c_str());
+				}
+			}
 		}
 		if (dbversion < 174)
 		{
@@ -4846,9 +4866,9 @@ uint64_t CSQLHelper::CreateDevice(const int HardwareID, const int SensorType, co
 		else if (SensorSubType == sTypeThermostat6TempHum)
 			sValue = "20.0;20.0;50;1";
 		else if (SensorSubType == sTypeThermostat6TempBaro)
-			sValue = "20.0;20.0;1013";
+			sValue = "20.0;20.0;1013;0";
 		else if (SensorSubType == sTypeThermostat6TempHumBaro)
-			sValue = "20.0;20.0;50;1;1013";
+			sValue = "20.0;20.0;50;1;1013;0";
 
 		DeviceRowIdx = UpdateValue(HardwareID, 0, ID, 1, SensorType, SensorSubType, 12, 255, 0, sValue.c_str(), devname, true, userName.c_str());
 		break;
