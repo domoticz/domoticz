@@ -2182,6 +2182,9 @@
     <ClInclude Include="..\hardware\plugins\PythonObjects.h">
       <Filter>Plugin Framework</Filter>
     </ClInclude>
+    <ClInclude Include="..\hardware\plugins\PythonPluginUtils.h">
+      <Filter>Plugin Framework</Filter>
+    </ClInclude>
     <ClInclude Include="..\hardware\plugins\PythonObjectEx.h">
       <Filter>Plugin Framework</Filter>
     </ClInclude>

@@ -367,6 +367,42 @@ namespace Plugins {
 		~AccessPython();
 	};
 
+	// Copy a Python dict's entries as stringified key/value pairs into a target dict.
+	// Clears the target dict first. Returns true on success, false if OptionsIn is null/not a dict/empty or on error.
+	static bool CopyPythonDictOptions(PyObject *OptionsIn, PyObject *OptionsOut, CPlugin *pPlugin, int Unit)
+	{
+		if (!OptionsIn || !PyBorrowedRef(OptionsIn).IsDict() || PyDict_Size(OptionsIn) <= 0)
+			return false;
+
+		PyObject *pKey, *pValue;
+		Py_ssize_t pos = 0;
+		PyDict_Clear(OptionsOut);
+		while (PyDict_Next(OptionsIn, &pos, &pKey, &pValue))
+		{
+			PyNewRef	pKeyDict = PyObject_Str(pKey);
+			PyNewRef	pValueDict = PyObject_Str(pValue);
+
+			if (pKeyDict && pValueDict)
+			{
+				if (PyDict_SetItem(OptionsOut, pKeyDict, pValueDict) == -1)
+				{
+					pPlugin->Log(LOG_ERROR, "(%s) Failed to initialize Options dictionary for Hardware/Unit combination (%d:%d).",
+						pPlugin->m_Name.c_str(), pPlugin->m_HwdID, Unit);
+					return false;
+				}
+			}
+			else
+			{
+				pPlugin->Log(
+					LOG_ERROR,
+					"(%s) Failed to initialize Options dictionary for Hardware / Unit combination(%d:%d): Unable to convert to string.)",
+					pPlugin->m_Name.c_str(), pPlugin->m_HwdID, Unit);
+			}
+		}
+
+		return true;
+	}
+
 } // namespace Plugins
 
 #endif //#ifdef ENABLE_PYTHON

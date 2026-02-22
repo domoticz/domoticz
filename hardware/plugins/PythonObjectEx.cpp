@@ -18,11 +18,11 @@
 #include "PluginProtocols.h"
 #include "PluginTransports.h"
 #include <datetime.h>
+#include "PythonPluginUtils.h"
 
 namespace Plugins {
 
 	extern struct PyModuleDef DomoticzExModuleDef;
-	extern void maptypename(const std::string &sTypeName, int &Type, int &SubType, int &SwitchType, std::string &sValue, PyObject *OptionsIn, PyObject *OptionsOut);
 
 	void CDeviceEx_dealloc(CDeviceEx *self)
 	{
@@ -65,9 +65,6 @@ namespace Plugins {
 		}
 		return (PyObject *)self;
 	}
-
-	// Forward declaration - defined in CUnitEx section below
-	static PyObject* NormalizeKeywords(PyObject *kwds);
 
 	int CDeviceEx_init(CDeviceEx *self, PyObject *args, PyObject *kwds)
 	{
@@ -324,49 +321,6 @@ namespace Plugins {
 		return (PyObject *)self;
 	}
 
-	// Helper function to normalize keyword argument names to lowercase for case-insensitive matching
-	// Returns a new reference to a normalized dictionary, or a borrowed reference if kwds is NULL
-	// Caller must check if returned value != kwds and call Py_DECREF on the normalized dict when done
-	static PyObject* NormalizeKeywords(PyObject *kwds)
-	{
-		if (!kwds)
-			return kwds;
-
-		PyObject *normalized = PyDict_New();
-		if (!normalized)
-			return kwds;
-
-		PyObject *key, *value;
-		Py_ssize_t pos = 0;
-
-		while (PyDict_Next(kwds, &pos, &key, &value))
-		{
-			const char *key_str = PyUnicode_AsUTF8(key);
-			if (key_str)
-			{
-				std::string lower_str(key_str);
-				std::transform(lower_str.begin(), lower_str.end(), lower_str.begin(), ::tolower);
-				PyObject *lower_key = PyUnicode_FromString(lower_str.c_str());
-				if (lower_key)
-				{
-					PyDict_SetItem(normalized, lower_key, value);
-					Py_DECREF(lower_key);
-				}
-				else
-				{
-					PyDict_SetItem(normalized, key, value);
-				}
-			}
-			else
-			{
-				PyErr_Clear();
-				PyDict_SetItem(normalized, key, value);
-			}
-		}
-
-		return normalized;
-	}
-
 	int CUnitEx_init(CUnitEx *self, PyObject *args, PyObject *kwds)
 	{
 		char *Name = nullptr;
@@ -489,35 +443,7 @@ namespace Plugins {
 					self->Image = Image;
 				if (Used == 1)
 					self->Used = Used;
-				if (Options && PyBorrowedRef(Options).IsDict() && PyDict_Size(Options) > 0)
-				{
-					PyObject *pKey, *pValue;
-					Py_ssize_t pos = 0;
-					PyDict_Clear(self->Options);
-					while (PyDict_Next(Options, &pos, &pKey, &pValue))
-					{
-						PyNewRef	pKeyDict = PyObject_Str(pKey);
-						PyNewRef	pValueDict = PyObject_Str(pValue);
-
-						if (pKeyDict && pValueDict)
-						{
-							if (PyDict_SetItem(self->Options, pKeyDict, pValueDict) == -1)
-							{
-								pModState->pPlugin->Log(LOG_ERROR, "(%s) Failed to initialize Options dictionary for Hardware/Unit combination (%d:%d).",
-									pModState->pPlugin->m_Name.c_str(), pModState->pPlugin->m_HwdID, self->Unit);
-								break;
-							}
-						}
-						else
-						{
-							PyNewRef	pName = PyObject_GetAttrString((PyObject*)pValue->ob_type, "__name__");
-							pModState->pPlugin->Log(
-								LOG_ERROR,
-								"(%s) Failed to initialize Options dictionary for Hardware / Unit combination(%d:%d): Unable to convert to string.)",
-								pModState->pPlugin->m_Name.c_str(), pModState->pPlugin->m_HwdID, self->Unit);
-						}
-					}
-				}
+				CopyPythonDictOptions(Options, self->Options, pModState->pPlugin, self->Unit);
 			}
 			else
 			{
