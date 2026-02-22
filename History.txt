@@ -26,6 +26,7 @@ Version 2026.xxxx
 - Added: Re-added rain report
 - Added: Re-added wind-rose direction chart to Wind sensor log
 - Added: RFXCom, Support Orcon FAN device (#6500)
+- Added: Open-Meteo, native weather hardware plugin (no API key required)
 - Added: RTL433, Support UV sensors named 'uvi'
 - Added: SolarEdge API, battery detection (#6593)
 - Added: Support for the Model Context Protocol (/mcp) for use with AI Agents

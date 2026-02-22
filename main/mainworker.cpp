@@ -152,6 +152,7 @@
 #include "../hardware/Buienradar.h"
 #include "../hardware/OctoPrintMQTT.h"
 #include "../hardware/Meteorologisk.h"
+#include "../hardware/OpenMeteo.h"
 #include "../hardware/AirconWithMe.h"
 #include "../hardware/AlfenEve.h"
 #include "../hardware/Enever.h"
@@ -1079,6 +1080,9 @@ bool MainWorker::AddHardwareFromParams(
 		break;
 	case HTYPE_Meteorologisk:
 		pHardware = new CMeteorologisk(ID, Password); //Password is location here.
+		break;
+	case HTYPE_OpenMeteo:
+		pHardware = new COpenMeteo(ID);
 		break;
 	case HTYPE_AirconWithMe:
 		pHardware = new CAirconWithMe(ID, Address, Port, Username, Password);

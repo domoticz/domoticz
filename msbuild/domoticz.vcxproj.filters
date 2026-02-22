@@ -489,6 +489,9 @@
     <Filter Include="Devices\Meteorologisk">
       <UniqueIdentifier>{54d3120a-1deb-4a3c-959d-7f89f33a1fd3}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Devices\OpenMeteo">
+      <UniqueIdentifier>{a1b2c3d4-e5f6-7890-abcd-ef1234567890}</UniqueIdentifier>
+    </Filter>
     <Filter Include="Plugin Framework">
       <UniqueIdentifier>{343e8e43-c7ac-4839-a9a2-6b5f78f95b6d}</UniqueIdentifier>
     </Filter>
@@ -2173,6 +2176,9 @@
     <ClInclude Include="..\hardware\Meteorologisk.h">
       <Filter>Devices\Meteorologisk</Filter>
     </ClInclude>
+    <ClInclude Include="..\hardware\OpenMeteo.h">
+      <Filter>Devices\OpenMeteo</Filter>
+    </ClInclude>
     <ClInclude Include="..\hardware\serial\impl\win.h">
       <Filter>Devices\SerialTCP\Serial\impl</Filter>
     </ClInclude>
@@ -2990,6 +2996,9 @@
     </ClCompile>
     <ClCompile Include="..\hardware\Meteorologisk.cpp">
       <Filter>Devices\Meteorologisk</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\OpenMeteo.cpp">
+      <Filter>Devices\OpenMeteo</Filter>
     </ClCompile>
     <ClCompile Include="..\hardware\eVehicles\TestcarApi.cpp">
       <Filter>Devices\eVehicles</Filter>

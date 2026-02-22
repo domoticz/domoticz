@@ -333,7 +333,8 @@ define(['app'], function (app) {
 				(text.indexOf("Evohome") >= 0 && text.indexOf("script") >= 0) ||
 				(text.indexOf("YeeLight") >= 0) ||
 				(text.indexOf("Arilux AL-LC0x") >= 0) ||
-				(text.indexOf("sysfs GPIO") >= 0)
+				(text.indexOf("sysfs GPIO") >= 0) ||
+				(text.indexOf("Open-Meteo") >= 0)
 				)
 			 {
 				// if hardwaretype == 1000 => I2C sensors grouping
@@ -2009,7 +2010,8 @@ define(['app'], function (app) {
 				(text.indexOf("Evohome") >= 0 && text.indexOf("script") >= 0) ||
 				(text.indexOf("Tellstick") >= 0) ||
 				(text.indexOf("YeeLight") >= 0) ||
-				(text.indexOf("Arilux AL-LC0x") >= 0)
+				(text.indexOf("Arilux AL-LC0x") >= 0) ||
+				(text.indexOf("Open-Meteo") >= 0)
 			) {
 				$.ajax({
 					url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype +
@@ -4389,7 +4391,8 @@ define(['app'], function (app) {
 							(data["Type"].indexOf("PiFace") >= 0) ||
 							(data["Type"].indexOf("Tellstick") >= 0) ||
 							(data["Type"].indexOf("Yeelight") >= 0) ||
-							(data["Type"].indexOf("Arilux AL-LC0x") >= 0)
+							(data["Type"].indexOf("Arilux AL-LC0x") >= 0) ||
+							(data["Type"].indexOf("Open-Meteo") >= 0)
 						) {
 							//nothing to be set
 						}
