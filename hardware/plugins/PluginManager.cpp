@@ -415,6 +415,7 @@ namespace http {
 							ATTRIBUTE_VALUE(pXmlEle, "author", root[iPluginCnt]["author"]);
 							ATTRIBUTE_VALUE(pXmlEle, "wikilink", root[iPluginCnt]["wikiURL"]);
 							ATTRIBUTE_VALUE(pXmlEle, "externallink", root[iPluginCnt]["externalURL"]);
+							ATTRIBUTE_VALUE(pXmlEle, "shared", root[iPluginCnt]["shared"]);
 
 							TiXmlElement* pXmlDescNode = (TiXmlElement*)pXmlEle->FirstChild("description");
 							std::string		sDescription;
