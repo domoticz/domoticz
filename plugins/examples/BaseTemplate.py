@@ -49,6 +49,7 @@ class BasePlugin:
             Domoticz.Debugging(int(Parameters["Mode6"]))
             DumpConfigToLog()
 
+        # Note: keyword argument names are case-insensitive (e.g. TypeName="Dimmer" and typename="dimmer" are both valid).
         #if (not "Dimmer" in Devices):
         #    Domoticz.Unit(Name="Dimmer", Unit=2, TypeName="Dimmer", DeviceID="Dimmer").Create()
 

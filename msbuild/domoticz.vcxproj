@@ -683,6 +683,7 @@
     <ClInclude Include="..\hardware\plugins\Plugins.h" />
     <ClInclude Include="..\hardware\plugins\PluginTransports.h" />
     <ClInclude Include="..\hardware\plugins\PythonObjects.h" />
+    <ClInclude Include="..\hardware\plugins\PythonPluginUtils.h" />
     <ClInclude Include="..\hardware\PVOutput_Input.h" />
     <ClInclude Include="..\hardware\RAVEn.h" />
     <ClInclude Include="..\hardware\Rego6XXSerial.h" />
