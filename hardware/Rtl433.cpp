@@ -12,17 +12,29 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <stdio.h>
+#ifndef WIN32
+#include <signal.h>
+#include <sys/wait.h>
+#include <unistd.h>
+#endif
 #include "Rtl433.h"
 
-void removeCharsFromString(std::string& str, const char* charsToRemove) {
-	for (unsigned int i = 0; i < strlen(charsToRemove); ++i) {
+void removeCharsFromString(std::string &str, const char *charsToRemove)
+{
+	for (unsigned int i = 0; i < strlen(charsToRemove); ++i)
+	{
 		str.erase(remove(str.begin(), str.end(), charsToRemove[i]), str.end());
 	}
 }
 
-CRtl433::CRtl433(const int ID, const std::string& cmdline) :
-	m_pipe(nullptr),
-	m_cmdline(cmdline)
+CRtl433::CRtl433(const int ID, const std::string &cmdline)
+#ifdef WIN32
+	: m_pipe(nullptr)
+#else
+	: m_pipe_fd(-1)
+	, m_pid(0)
+#endif
+	, m_cmdline(cmdline)
 {
 	// Basic protection from malicious command line
 	removeCharsFromString(m_cmdline, ";/$()`<>|&");
@@ -58,20 +70,27 @@ bool CRtl433::StopHardware()
 	{
 		RequestStop();
 
-		// Terminate the child process so the blocking fgets() in Do_Work
-		// returns and the thread can observe the stop request.
+#ifdef WIN32
+		// On Windows, close the pipe to unblock fgets in Do_Work
 		{
 			std::lock_guard<std::mutex> l(m_pipe_mutex);
 			if (m_pipe)
 			{
-#ifdef WIN32
 				_pclose(m_pipe);
-#else
-				pclose(m_pipe);
-#endif
 				m_pipe = nullptr;
 			}
 		}
+#else
+		// Send SIGTERM to the child process so it exits and fgets returns EOF.
+		// Do not waitpid here - the worker thread handles that after fgets returns.
+		{
+			std::lock_guard<std::mutex> l(m_pipe_mutex);
+			if (m_pid > 0)
+			{
+				kill(m_pid, SIGTERM);
+			}
+		}
+#endif
 
 		m_thread->join();
 		m_thread.reset();
@@ -82,7 +101,7 @@ bool CRtl433::StopHardware()
 	return true;
 }
 
-bool CRtl433::ParseJsonLine(const std::string& sLine)
+bool CRtl433::ParseJsonLine(const std::string &sLine)
 {
 	std::map<std::string, std::string> _Fields;
 	Json::Value root;
@@ -93,10 +112,7 @@ bool CRtl433::ParseJsonLine(const std::string& sLine)
 		size_t totFields = root.size();
 		for (size_t ii = 0; ii < totFields; ii++)
 		{
-			if (
-				(!root[root.getMemberNames()[ii]].isObject())
-				&& (!root[root.getMemberNames()[ii]].isArray())
-				)
+			if ((!root[root.getMemberNames()[ii]].isObject()) && (!root[root.getMemberNames()[ii]].isArray()))
 			{
 				std::string vname = root.getMemberNames()[ii];
 				std::string vvalue = root[root.getMemberNames()[ii]].asString();
@@ -108,12 +124,12 @@ bool CRtl433::ParseJsonLine(const std::string& sLine)
 	return false;
 }
 
-bool CRtl433::FindField(const std::map<std::string, std::string>& data, const std::string& field)
+bool CRtl433::FindField(const std::map<std::string, std::string> &data, const std::string &field)
 {
 	return (data.find(field) != data.end());
 }
 
-bool CRtl433::ParseData(std::map<std::string, std::string>& data)
+bool CRtl433::ParseData(std::map<std::string, std::string> &data)
 {
 	int id = 0;
 
@@ -174,7 +190,7 @@ bool CRtl433::ParseData(std::map<std::string, std::string>& data)
 	bool haveMeter = false;
 	float meter = 0;
 
-	int snr = 12;  // Set to show "-" if no snr is received. rtl_433 uses automatic gain, better to use SNR instead of RSSI to report received RF Signal quality
+	int snr = 12; // Set to show "-" if no snr is received. rtl_433 uses automatic gain, better to use SNR instead of RSSI to report received RF Signal quality
 
 	int code = 0;
 
@@ -200,11 +216,13 @@ bool CRtl433::ParseData(std::map<std::string, std::string>& data)
 	}
 	if (FindField(data, "battery_ok"))
 	{
-		if (data["battery_ok"] == "0") {
+		if (data["battery_ok"] == "0")
+		{
 			batterylevel = 10;
 			haveBattery = true;
 		}
-		else if (data["battery_ok"] == "1") {
+		else if (data["battery_ok"] == "1")
+		{
 			batterylevel = 100;
 			haveBattery = true;
 		}
@@ -257,7 +275,7 @@ bool CRtl433::ParseData(std::map<std::string, std::string>& data)
 		depth = (float)atof(data["depth_cm"].c_str());
 		haveDepth = true;
 	}
-	if (FindField(data, "wind_avg_km_h")) // wind speed average (converting into m/s note that internal storage if 10.0f*m/s) 
+	if (FindField(data, "wind_avg_km_h")) // wind speed average (converting into m/s note that internal storage if 10.0f*m/s)
 	{
 		wind_speed = ((float)atof(data["wind_avg_km_h"].c_str())) / 3.6F;
 		haveWind_Speed = true;
@@ -337,7 +355,7 @@ bool CRtl433::ParseData(std::map<std::string, std::string>& data)
 
 		if (snr > 5) snr -= (int)(snr - 5) / 2;
 		if (snr > 11) snr = 11; // Domoticz RSSI field can only be 0-11, 12 is used for non-RF received devices
-		if (snr < 0) snr = 0; // In case snr actually was below 4 dB
+		if (snr < 0) snr = 0;   // In case snr actually was below 4 dB
 	}
 	if (FindField(data, "code"))
 	{
@@ -356,11 +374,7 @@ bool CRtl433::ParseData(std::map<std::string, std::string>& data)
 		else if (FindField(data, "command"))
 			bOn = data["command"] == "On";
 		unsigned int switchidx = (id & 0xfffffff) | ((channel & 0xf) << 28);
-		SendSwitch(switchidx,
-			(const uint8_t)unit,
-			batterylevel,
-			bOn,
-			0, model, m_Name, snr);
+		SendSwitch(switchidx, (const uint8_t)unit, batterylevel, bOn, 0, model, m_Name, snr);
 		bDone = true;
 	}
 	else if (FindField(data, "switch1") && FindField(data, "id"))
@@ -377,11 +391,7 @@ bool CRtl433::ParseData(std::map<std::string, std::string>& data)
 			{
 				bool bOn = (data[szSwitch] == "CLOSED");
 				unsigned int switchidx = ((idx & 0xffffff) << 8) | (iSwitch + 1);
-				SendSwitch(switchidx,
-					(const uint8_t)unit,
-					batterylevel,
-					bOn,
-					0, model, m_Name, snr);
+				SendSwitch(switchidx, (const uint8_t)unit, batterylevel, bOn, 0, model, m_Name, snr);
 			}
 			bDone = true;
 		}
@@ -396,11 +406,7 @@ bool CRtl433::ParseData(std::map<std::string, std::string>& data)
 			int cmd = atoi(data["cmd"].c_str());
 			bool bOn = (cmd != 10);
 			unsigned int switchidx = (id & 0xfffffff) | ((channel & 0xf) << 28);
-			SendSwitch(switchidx,
-				(const uint8_t)unit,
-				batterylevel,
-				bOn,
-				0, model, m_Name, snr);
+			SendSwitch(switchidx, (const uint8_t)unit, batterylevel, bOn, 0, model, m_Name, snr);
 			bDone = true;
 		}
 	}
@@ -410,7 +416,8 @@ bool CRtl433::ParseData(std::map<std::string, std::string>& data)
 
 
 	unsigned int sensoridx = (id & 0xff) | ((channel & 0xff) << 8);
-	if (model == "TFA-Drop") {
+	if (model == "TFA-Drop")
+	{
 		sensoridx = id;
 	}
 
@@ -465,7 +472,7 @@ bool CRtl433::ParseData(std::map<std::string, std::string>& data)
 	if (haveMoisture)
 	{
 		//moisture is in percentage
-		if (haveChannel)	// Channel is used to identify each sensor
+		if (haveChannel) // Channel is used to identify each sensor
 		{
 			SendCustomSensor((uint8_t)sensoridx, (uint8_t)channel, batterylevel, static_cast<float>(moisture), model, "%", snr);
 		}
@@ -525,7 +532,7 @@ bool CRtl433::ParseData(std::map<std::string, std::string>& data)
 			x10_device = sTypeSecX10;
 			break;
 		case 0x04:
-			x10_status = sStatusAlarm;  // Door open, Delay switch set to MIN on DS18
+			x10_status = sStatusAlarm; // Door open, Delay switch set to MIN on DS18
 			x10_device = sTypeSecX10;
 			break;
 		case 0x40:
@@ -610,7 +617,7 @@ bool CRtl433::ParseData(std::map<std::string, std::string>& data)
 	return bHandled; //not handled (Yet!)
 }
 
-char* fgetline(FILE* stream, char* line, size_t bufsize)
+char *fgetline(FILE *stream, char *line, size_t bufsize)
 {
 	size_t idx = 0;
 	int c;
@@ -648,21 +655,12 @@ void CRtl433::Do_Work()
 		std::string szFlags = "-F json -M newmodel -C si -M level " + m_cmdline; // newmodel used (-M newmodel) and international system used (-C si) -f 433.92e6 -f 868.24e6 -H 60 -d 0
 #ifdef WIN32
 		std::string szCommand = "C:\\rtl_433.exe " + szFlags;
-		FILE* hPipe = _popen(szCommand.c_str(), "r");
-#else
-		std::string szCommand = "rtl_433 " + szFlags + " 2>/dev/null";
-		FILE* hPipe = popen(szCommand.c_str(), "r");
-#endif
+		FILE *hPipe = _popen(szCommand.c_str(), "r");
 		if (hPipe == nullptr)
 		{
 			if (!IsStopRequested(0))
 			{
-				// sleep 30 seconds before retrying
-#ifdef WIN32
 				Log(LOG_STATUS, "rtl_433 startup failed. Make sure it's properly installed. (%s)  https://cognito.me.uk/computers/rtl_433-windows-binary-32-bit)", szCommand.c_str());
-#else
-				Log(LOG_STATUS, "rtl_433 startup failed. Make sure it's properly installed (%s). https://github.com/merbanan/rtl_433", szCommand.c_str());
-#endif
 				for (int i = 0; i < 30; i++)
 				{
 					if (IsStopRequested(1000))
@@ -678,14 +676,106 @@ void CRtl433::Do_Work()
 			m_pipe = hPipe;
 		}
 
-#ifndef WIN32
-		//Set to non-blocking mode
-		int fd = fileno(hPipe);
-		int flags;
-		flags = fcntl(fd, F_GETFL, 0);
-		flags |= O_NONBLOCK;
-		fcntl(fd, F_SETFL, flags);
-#endif
+		// localFile is an alias for hPipe on Windows; must be closed with
+		// _pclose, not fclose, so we skip the generic fclose block below.
+		FILE *localFile = hPipe;
+#else
+		// On Linux/macOS use fork/exec so we can kill the child independently
+		// of the pipe, avoiding the pclose() deadlock.
+		std::string szCommand = "rtl_433 " + szFlags;
+
+		int pipefd[2];
+		if (pipe(pipefd) == -1)
+		{
+			if (!IsStopRequested(0))
+			{
+				Log(LOG_STATUS, "rtl_433 pipe() failed (%s). https://github.com/merbanan/rtl_433", szCommand.c_str());
+				for (int i = 0; i < 30; i++)
+				{
+					if (IsStopRequested(1000))
+						break;
+				}
+			}
+			continue;
+		}
+
+		pid_t pid = fork();
+		if (pid == -1)
+		{
+			close(pipefd[0]);
+			close(pipefd[1]);
+			if (!IsStopRequested(0))
+			{
+				Log(LOG_STATUS, "rtl_433 fork() failed (%s). https://github.com/merbanan/rtl_433", szCommand.c_str());
+				for (int i = 0; i < 30; i++)
+				{
+					if (IsStopRequested(1000))
+						break;
+				}
+			}
+			continue;
+		}
+
+		if (pid == 0)
+		{
+			// Child process: wire stdout to the write end of the pipe,
+			// redirect stderr to /dev/null, then exec rtl_433.
+			close(pipefd[0]);
+			dup2(pipefd[1], STDOUT_FILENO);
+			close(pipefd[1]);
+			int devnull = open("/dev/null", O_WRONLY);
+			if (devnull != -1)
+			{
+				dup2(devnull, STDERR_FILENO);
+				close(devnull);
+			}
+			execl("/bin/sh", "sh", "-c", szCommand.c_str(), (char *)nullptr);
+			_exit(127);
+		}
+
+		// Parent process: close the write end and keep the read end.
+		close(pipefd[1]);
+
+		// Store fd and pid under the mutex so StopHardware can signal the child.
+		{
+			std::lock_guard<std::mutex> l(m_pipe_mutex);
+			m_pipe_fd = pipefd[0];
+			m_pid = pid;
+		}
+
+		// Set non-blocking mode so fgets polls instead of sleeping forever.
+		{
+			int flags = fcntl(pipefd[0], F_GETFL, 0);
+			flags |= O_NONBLOCK;
+			fcntl(pipefd[0], F_SETFL, flags);
+		}
+
+		// Wrap the raw fd in a FILE* for fgets - local variable only, never
+		// shared between threads.
+		FILE *localFile = fdopen(pipefd[0], "r");
+		if (localFile == nullptr)
+		{
+			close(pipefd[0]);
+			{
+				std::lock_guard<std::mutex> l(m_pipe_mutex);
+				m_pipe_fd = -1;
+				m_pid = 0;
+			}
+			kill(pid, SIGTERM);
+			waitpid(pid, nullptr, 0);
+			if (!IsStopRequested(0))
+			{
+				Log(LOG_STATUS, "rtl_433 fdopen() failed (%s). https://github.com/merbanan/rtl_433", szCommand.c_str());
+				for (int i = 0; i < 30; i++)
+				{
+					if (IsStopRequested(1000))
+						break;
+				}
+			}
+			continue;
+		}
+#endif // WIN32
+
 		char line[2048];
 #define RTL433_USE_fgets
 #ifdef RTL433_USE_fgets
@@ -693,14 +783,16 @@ void CRtl433::Do_Work()
 #endif
 		while (!IsStopRequested(100))
 		{
+#ifdef WIN32
 			// Check if pipe was closed by StopHardware
 			{
 				std::lock_guard<std::mutex> l(m_pipe_mutex);
 				if (!m_pipe)
 					break;
 			}
+#endif
 #ifndef RTL433_USE_fgets
-			if (fgetline(hPipe, (char*)&line, sizeof(line)) != nullptr)
+			if (fgetline(localFile, (char *)&line, sizeof(line)) != nullptr)
 			{
 				std::string sLine(line);
 				stdreplace(sLine, "\n", "");
@@ -716,7 +808,7 @@ void CRtl433::Do_Work()
 			}
 #else
 			line[line_offset] = 0;
-			if (fgets(line + line_offset, static_cast<int>(sizeof(line) - 1 - line_offset), hPipe) != nullptr)
+			if (fgets(line + line_offset, static_cast<int>(sizeof(line) - 1 - line_offset), localFile) != nullptr)
 			{
 				if ((line[strlen(line) - 1] != '\n') && (line[strlen(line) - 1] != '\r'))
 				{
@@ -747,8 +839,10 @@ void CRtl433::Do_Work()
 				}
 				line_offset = 0;
 			}
-			else { //fgets
-				if ((errno == EWOULDBLOCK) || (errno == EAGAIN)) {
+			else
+			{ //fgets
+				if ((errno == EWOULDBLOCK) || (errno == EAGAIN))
+				{
 					continue;
 				}
 				break; // bail out, subprocess has failed
@@ -756,19 +850,42 @@ void CRtl433::Do_Work()
 #endif
 		} // while !IsStopRequested()
 
-		// Close pipe if not already closed by StopHardware
+#ifdef WIN32
+		// On Windows localFile == hPipe which must be closed with _pclose.
+		// StopHardware may have already called _pclose under the mutex; only
+		// call it here if it has not been closed yet.
 		{
 			std::lock_guard<std::mutex> l(m_pipe_mutex);
 			if (m_pipe)
 			{
-#ifdef WIN32
 				_pclose(m_pipe);
-#else
-				pclose(m_pipe);
-#endif
 				m_pipe = nullptr;
+				localFile = nullptr;
 			}
 		}
+#else
+		// Close the FILE* (also closes the underlying fd).
+		if (localFile)
+		{
+			fclose(localFile);
+			localFile = nullptr;
+		}
+		// Snapshot and clear pid under the mutex, then reap outside
+		// to avoid holding the mutex across a blocking waitpid().
+		pid_t childPid = 0;
+		{
+			std::lock_guard<std::mutex> l(m_pipe_mutex);
+			m_pipe_fd = -1;
+			childPid = m_pid;
+			m_pid = 0;
+		}
+		if (childPid > 0)
+		{
+			// Reap the child to avoid zombies.
+			waitpid(childPid, nullptr, 0);
+		}
+#endif
+
 		for (int ii = 0; ii < 10; ii++)
 		{
 			if (IsStopRequested(1000))
@@ -778,7 +895,7 @@ void CRtl433::Do_Work()
 	Log(LOG_STATUS, "Worker stopped...");
 }
 
-bool CRtl433::WriteToHardware(const char* /*pdata*/, const unsigned char /*length*/)
+bool CRtl433::WriteToHardware(const char * /*pdata*/, const unsigned char /*length*/)
 {
 	//const tRBUF *pSen = reinterpret_cast<const tRBUF*>(pdata);
 	return false;
