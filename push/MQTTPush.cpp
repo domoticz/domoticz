@@ -22,6 +22,11 @@ CMQTTPush::CMQTTPush() : MQTT(0, "", 0, "", "", "", 2, 0, std::string("Domoticz-
 	m_bLinkActive = false;
 }
 
+CMQTTPush::~CMQTTPush()
+{
+	Stop();
+}
+
 bool CMQTTPush::Start()
 {
 	Stop();
