@@ -20,6 +20,7 @@ class CRtl433 : public CDomoticzHardwareBase
       private:
 	std::shared_ptr<std::thread> m_thread;
 	std::mutex m_pipe_mutex;
+	FILE* m_pipe;
 	std::string m_cmdline;
 	std::string m_sLastLine;
 };

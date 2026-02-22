@@ -21,6 +21,7 @@ void removeCharsFromString(std::string& str, const char* charsToRemove) {
 }
 
 CRtl433::CRtl433(const int ID, const std::string& cmdline) :
+	m_pipe(nullptr),
 	m_cmdline(cmdline)
 {
 	// Basic protection from malicious command line
@@ -56,6 +57,22 @@ bool CRtl433::StopHardware()
 	if (m_thread)
 	{
 		RequestStop();
+
+		// Terminate the child process so the blocking fgets() in Do_Work
+		// returns and the thread can observe the stop request.
+		{
+			std::lock_guard<std::mutex> l(m_pipe_mutex);
+			if (m_pipe)
+			{
+#ifdef WIN32
+				_pclose(m_pipe);
+#else
+				pclose(m_pipe);
+#endif
+				m_pipe = nullptr;
+			}
+		}
+
 		m_thread->join();
 		m_thread.reset();
 	}
@@ -625,19 +642,18 @@ void CRtl433::Do_Work()
 		Log(LOG_STATUS, "Worker started...");
 
 	std::string szLastLine;
-	FILE* _hPipe = nullptr;
 
 	while (!IsStopRequested(0))
 	{
 		std::string szFlags = "-F json -M newmodel -C si -M level " + m_cmdline; // newmodel used (-M newmodel) and international system used (-C si) -f 433.92e6 -f 868.24e6 -H 60 -d 0
 #ifdef WIN32
 		std::string szCommand = "C:\\rtl_433.exe " + szFlags;
-		_hPipe = _popen(szCommand.c_str(), "r");
+		FILE* hPipe = _popen(szCommand.c_str(), "r");
 #else
 		std::string szCommand = "rtl_433 " + szFlags + " 2>/dev/null";
-		_hPipe = popen(szCommand.c_str(), "r");
+		FILE* hPipe = popen(szCommand.c_str(), "r");
 #endif
-		if (_hPipe == nullptr)
+		if (hPipe == nullptr)
 		{
 			if (!IsStopRequested(0))
 			{
@@ -655,11 +671,16 @@ void CRtl433::Do_Work()
 			}
 			continue;
 		}
-		if (_hPipe == nullptr)
-			return;
+
+		// Store pipe handle so StopHardware can close it to unblock fgets
+		{
+			std::lock_guard<std::mutex> l(m_pipe_mutex);
+			m_pipe = hPipe;
+		}
+
 #ifndef WIN32
 		//Set to non-blocking mode
-		int fd = fileno(_hPipe);
+		int fd = fileno(hPipe);
 		int flags;
 		flags = fcntl(fd, F_GETFL, 0);
 		flags |= O_NONBLOCK;
@@ -672,8 +693,14 @@ void CRtl433::Do_Work()
 #endif
 		while (!IsStopRequested(100))
 		{
+			// Check if pipe was closed by StopHardware
+			{
+				std::lock_guard<std::mutex> l(m_pipe_mutex);
+				if (!m_pipe)
+					break;
+			}
 #ifndef RTL433_USE_fgets
-			if (fgetline(_hPipe, (char*)&line, sizeof(line)) != nullptr)
+			if (fgetline(hPipe, (char*)&line, sizeof(line)) != nullptr)
 			{
 				std::string sLine(line);
 				stdreplace(sLine, "\n", "");
@@ -689,7 +716,7 @@ void CRtl433::Do_Work()
 			}
 #else
 			line[line_offset] = 0;
-			if (fgets(line + line_offset, static_cast<int>(sizeof(line) - 1 - line_offset), _hPipe) != nullptr)
+			if (fgets(line + line_offset, static_cast<int>(sizeof(line) - 1 - line_offset), hPipe) != nullptr)
 			{
 				if ((line[strlen(line) - 1] != '\n') && (line[strlen(line) - 1] != '\r'))
 				{
@@ -728,13 +755,19 @@ void CRtl433::Do_Work()
 			}
 #endif
 		} // while !IsStopRequested()
-		if (_hPipe)
+
+		// Close pipe if not already closed by StopHardware
 		{
+			std::lock_guard<std::mutex> l(m_pipe_mutex);
+			if (m_pipe)
+			{
 #ifdef WIN32
-			_pclose(_hPipe);
+				_pclose(m_pipe);
 #else
-			pclose(_hPipe);
+				pclose(m_pipe);
 #endif
+				m_pipe = nullptr;
+			}
 		}
 		for (int ii = 0; ii < 10; ii++)
 		{
