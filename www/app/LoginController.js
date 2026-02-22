@@ -45,7 +45,8 @@ define(['app'], function (app) {
 			var permissionList = {
 				isloggedin: false,
 				rights: -1,
-				user: ''
+				user: '',
+				canlogout: true
 			};
 			if (data.user != "") {
 				permissionList.isloggedin = true;
