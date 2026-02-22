@@ -1905,11 +1905,11 @@ _.str = function (value, ...)
     elseif _.isTable(value) then
         str = '{'
         for k, v in pairs(value) do
-            v = _.isString(v) and dblQuote(v) or _.str(v, ...)
+            local val = _.isString(v) and dblQuote(v) or _.str(v, ...)
             if _.isNumber(k) then
-                str = str .. v .. ', '
+                str = str .. val .. ', '
             else
-                str = str .. '[' .. dblQuote(k) .. ']=' .. v .. ', '
+                str = str .. '[' .. dblQuote(k) .. ']=' .. val .. ', '
             end
         end
         str = str:sub(0, #str - 2) .. '}'
