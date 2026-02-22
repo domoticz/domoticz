@@ -124,10 +124,7 @@ namespace Plugins {
 				return 0;
 			}
 
-			// Normalize keyword arguments to lowercase for case-insensitive matching
-			PyObject *normalized_kwds = NormalizeKeywords(kwds);
-
-			if (PyArg_ParseTupleAndKeywords(args, normalized_kwds, "|s", kwlist, &szFileName))
+			if (PyArg_ParseTupleAndNormalizedKeywords(args, kwds, "|s", kwlist, &szFileName))
 			{
 				std::string	sFileName = szFileName ? szFileName : "";
 
@@ -143,12 +140,6 @@ namespace Plugins {
 			{
 				pModState->pPlugin->Log(LOG_ERROR, "Expected: myVar = Domoticz.Image(Filename=\"MyImages.zip\"). Note: Parameter names are case-insensitive.");
 				pModState->pPlugin->LogPythonException(__func__);
-			}
-
-			// Clean up normalized keywords dictionary if we created one
-			if (normalized_kwds != kwds)
-			{
-				Py_DECREF(normalized_kwds);
 			}
 		}
 		catch (std::exception *e)
@@ -691,10 +682,7 @@ namespace Plugins {
 				return 0;
 			}
 
-			// Normalize keyword arguments to lowercase for case-insensitive matching
-			PyObject *normalized_kwds = NormalizeKeywords(kwds);
-
-			if (PyArg_ParseTupleAndKeywords(args, normalized_kwds, "si|siiiiOiss", kwlist, &Name, &Unit, &TypeName, &Type, &SubType, &SwitchType, &Image, &Options, &Used, &DeviceID, &Description))
+			if (PyArg_ParseTupleAndNormalizedKeywords(args, kwds, "si|siiiiOiss", kwlist, &Name, &Unit, &TypeName, &Type, &SubType, &SwitchType, &Image, &Options, &Used, &DeviceID, &Description))
 			{
 				self->pPlugin = pModState->pPlugin;
 				self->PluginKey = PyUnicode_FromString(pModState->pPlugin->m_PluginKey.c_str());
@@ -754,12 +742,6 @@ namespace Plugins {
 			{
 				pModState->pPlugin->Log(LOG_ERROR, R"(Expected: myVar = Domoticz.Device(Name="myDevice", Unit=0, TypeName="", Type=0, SubType=0, SwitchType=0, Image=0, Options={}, Used=1). Note: Parameter names are case-insensitive.)");
 				pModState->pPlugin->LogPythonException(__func__);
-			}
-
-			// Clean up normalized keywords dictionary if we created one
-			if (normalized_kwds != kwds)
-			{
-				Py_DECREF(normalized_kwds);
 			}
 		}
 		catch (std::exception *e)
@@ -983,19 +965,11 @@ namespace Plugins {
 				    "name",   "typename",	  "type",  "subtype",	  "switchtype",	  "used",    "description",
 				    "color",  "suppresstriggers", nullptr };
 
-			// Normalize keyword arguments to lowercase for case-insensitive matching
-			PyObject *normalized_kwds = NormalizeKeywords(kwds);
-
 			// Try to extract parameters needed to update device settings
-			if (!PyArg_ParseTupleAndKeywords(args, normalized_kwds, "is|iiiOissiiiissp", kwlist, &nValue, &sValue, &iImage, &iSignalLevel, &iBatteryLevel, &pOptionsDict, &iTimedOut, &Name, &TypeName, &iType, &iSubType, &iSwitchType, &iUsed, &Description, &Color, &SuppressTriggers))
+			if (!PyArg_ParseTupleAndNormalizedKeywords(args, kwds, "is|iiiOissiiiissp", kwlist, &nValue, &sValue, &iImage, &iSignalLevel, &iBatteryLevel, &pOptionsDict, &iTimedOut, &Name, &TypeName, &iType, &iSubType, &iSwitchType, &iUsed, &Description, &Color, &SuppressTriggers))
 			{
 				self->pPlugin->Log(LOG_ERROR, "(%s) %s: Failed to parse parameters: 'nValue', 'sValue', 'Image', 'SignalLevel', 'BatteryLevel', 'Options', 'TimedOut', 'Name', 'TypeName', 'Type', 'SubType', 'SwitchType', 'Used', 'Description', 'Color' or 'SuppressTriggers' expected. Note: Parameter names are case-insensitive.", __func__, sName.c_str());
 				self->pPlugin->LogPythonException(__func__);
-				// Clean up normalized keywords dictionary if we created one
-				if (normalized_kwds != kwds)
-				{
-					Py_DECREF(normalized_kwds);
-				}
 				Py_RETURN_NONE;
 			}
 
@@ -1201,12 +1175,6 @@ namespace Plugins {
 
 
 			CDevice_refresh(self);
-
-			// Clean up normalized keywords dictionary if we created one
-			if (normalized_kwds != kwds)
-			{
-				Py_DECREF(normalized_kwds);
-			}
 		}
 		else
 		{
@@ -1401,10 +1369,7 @@ namespace Plugins {
 
 		try
 		{
-			// Normalize keyword arguments to lowercase for case-insensitive matching
-			PyObject *normalized_kwds = NormalizeKeywords(kwds);
-
-			if (PyArg_ParseTupleAndKeywords(args, normalized_kwds, "ss|sssi", kwlist, &pName, &pTransport, &pProtocol, &pAddress, &pPort, &iBaud))
+				if (PyArg_ParseTupleAndNormalizedKeywords(args, kwds, "ss|sssi", kwlist, &pName, &pTransport, &pProtocol, &pAddress, &pPort, &iBaud))
 			{
 				if (pName) {
 					Py_XDECREF(self->Name);
@@ -1434,12 +1399,6 @@ namespace Plugins {
 			{
 				_log.Log(LOG_ERROR,
 					 R"(Expected: myVar = Domoticz.Connection(Name="<Name>", Transport="<Transport>", Protocol="<Protocol>", Address="<IP-Address>", Port="<Port>", Baud=0). Note: Parameter names are case-insensitive.)");
-			}
-
-			// Clean up normalized keywords dictionary if we created one
-			if (normalized_kwds != kwds)
-			{
-				Py_DECREF(normalized_kwds);
 			}
 		}
 		catch (std::exception *e)
@@ -1489,9 +1448,7 @@ namespace Plugins {
 		PyObject *pTarget = NULL;
 		int iTimeout = 0;
 		static char *kwlist[] = { "target", "timeout", NULL };
-		// Normalize keyword arguments to lowercase for case-insensitive matching
-		PyObject *normalized_kwds = NormalizeKeywords(kwds);
-		if (PyArg_ParseTupleAndKeywords(args, normalized_kwds, "|OI", kwlist, &pTarget, &iTimeout))
+		if (PyArg_ParseTupleAndNormalizedKeywords(args, kwds, "|OI", kwlist, &pTarget, &iTimeout))
 		{
 			if (pTarget)
 			{
@@ -1520,10 +1477,6 @@ namespace Plugins {
 			{
 				pPlugin->Log(LOG_ERROR, "Timeout parameter ignored, must be zero or greater than 250 milliseconds.");
 			}
-		}
-		if (normalized_kwds != kwds)
-		{
-			Py_DECREF(normalized_kwds);
 		}
 
 		Py_RETURN_NONE;
@@ -1559,19 +1512,13 @@ namespace Plugins {
 
 		PyObject *pTarget = NULL;
 		static char *kwlist[] = { "target", NULL };
-		// Normalize keyword arguments to lowercase for case-insensitive matching
-		PyObject *normalized_kwds = NormalizeKeywords(kwds);
-		if (PyArg_ParseTupleAndKeywords(args, normalized_kwds, "|O", kwlist, &pTarget))
+		if (PyArg_ParseTupleAndNormalizedKeywords(args, kwds, "|O", kwlist, &pTarget))
 		{
 			if (pTarget)
 			{
 				Py_INCREF(pTarget);
 				self->Target = pTarget;
 			}
-		}
-		if (normalized_kwds != kwds)
-		{
-			Py_DECREF(normalized_kwds);
 		}
 
 		pPlugin->MessagePlugin(new ListenDirective(self));
@@ -1602,14 +1549,8 @@ namespace Plugins {
 			PyObject *pData = nullptr;
 			int			iDelay = 0;
 			static char *kwlist[] = { "message", "delay", nullptr };
-			// Normalize keyword arguments to lowercase for case-insensitive matching
-			PyObject *normalized_kwds = NormalizeKeywords(kwds);
-			if (!PyArg_ParseTupleAndKeywords(args, normalized_kwds, "O|i", kwlist, &pData, &iDelay))
+			if (!PyArg_ParseTupleAndNormalizedKeywords(args, kwds, "O|i", kwlist, &pData, &iDelay))
 			{
-				if (normalized_kwds != kwds)
-				{
-					Py_DECREF(normalized_kwds);
-				}
 				pPlugin->Log(LOG_ERROR, "(%s) failed to parse parameters, Message or Message, Delay expected.", pPlugin->m_Name.c_str());
 				pPlugin->LogPythonException(__func__);
 			}
@@ -1617,10 +1558,6 @@ namespace Plugins {
 			{
 				//	Add start command to message queue
 				pPlugin->MessagePlugin(new WriteDirective(self, pData, iDelay));
-				if (normalized_kwds != kwds)
-				{
-					Py_DECREF(normalized_kwds);
-				}
 			}
 		}
 

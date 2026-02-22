@@ -12,6 +12,7 @@
 #include "PluginProtocols.h"
 #include "PluginTransports.h"
 #include "PythonObjects.h"
+#include "PythonPluginUtils.h"
 
 #include "../../main/Helper.h"
 #include "../../main/Logger.h"
@@ -408,8 +409,8 @@ namespace Plugins
 		{
 			CPluginProtocolJSON jsonProtocol;
 			PyObject *pNewConfig = nullptr;
-			static char *kwlist[] = { "Config", nullptr };
-			if (PyArg_ParseTupleAndKeywords(args, kwds, "O", kwlist, &pNewConfig))
+			static char *kwlist[] = { "config", nullptr };
+			if (PyArg_ParseTupleAndNormalizedKeywords(args, kwds, "O", kwlist, &pNewConfig))
 			{
 				// Python object supplied if it is not a dictionary
 				if (!PyBorrowedRef(pNewConfig).IsDict())
@@ -446,13 +447,13 @@ namespace Plugins
 
 	static PyObject *PyDomoticz_Register(PyObject *self, PyObject *args, PyObject *kwds)
 	{
-		static char *kwlist[] = { "Device", "Unit", NULL };
+		static char *kwlist[] = { "device", "unit", NULL };
 		module_state *pModState = CPlugin::FindModule();
 		if (pModState)
 		{
 			PyTypeObject *pDeviceClass = NULL;
 			PyTypeObject *pUnitClass = NULL;
-			if (!PyArg_ParseTupleAndKeywords(args, kwds, "O|O", kwlist, &pDeviceClass, &pUnitClass))
+			if (!PyArg_ParseTupleAndNormalizedKeywords(args, kwds, "O|O", kwlist, &pDeviceClass, &pUnitClass))
 			{
 				// Module import will not have finished so plugin pointer in module state will not have been initiialised
 				pModState->pPlugin->Log(LOG_ERROR, "%s failed to parse parameters: Python class name expected.", __func__);
@@ -491,7 +492,7 @@ namespace Plugins
 
 	static PyObject *PyDomoticz_Dump(PyObject *self, PyObject *args, PyObject *kwds)
 	{
-		static char *kwlist[] = { "Object", NULL };
+		static char *kwlist[] = { "object", NULL };
 		module_state *pModState = CPlugin::FindModule();
 		if (!pModState)
 		{
@@ -504,7 +505,7 @@ namespace Plugins
 		else
 		{
 			PyObject *pTarget = NULL; // Object reference count not increased
-			if (!PyArg_ParseTupleAndKeywords(args, kwds, "|O", kwlist, &pTarget))
+			if (!PyArg_ParseTupleAndNormalizedKeywords(args, kwds, "|O", kwlist, &pTarget))
 			{
 				pModState->pPlugin->Log(LOG_ERROR, "%s failed to parse parameters: Object expected (Optional).", __func__);
 				pModState->pPlugin->LogPythonException(std::string(__func__));

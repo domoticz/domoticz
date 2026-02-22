@@ -50,6 +50,26 @@ namespace Plugins {
 		return normalized;
 	}
 
+	// Wrapper for PyArg_ParseTupleAndKeywords that normalizes keywords to lowercase
+	// before parsing, providing case-insensitive keyword argument matching.
+	// Usage is identical to PyArg_ParseTupleAndKeywords.
+	static int PyArg_ParseTupleAndNormalizedKeywords(PyObject *args, PyObject *kwds, const char *format, char *kwlist[], ...)
+	{
+		PyObject *normalized_kwds = NormalizeKeywords(kwds);
+
+		va_list va;
+		va_start(va, kwlist);
+		int result = PyArg_VaParseTupleAndKeywords(args, normalized_kwds, format, kwlist, va);
+		va_end(va);
+
+		if (normalized_kwds != kwds)
+		{
+			Py_DECREF(normalized_kwds);
+		}
+
+		return result;
+	}
+
 	// maptypename declaration (defined in PythonObjects.cpp)
 	extern void maptypename(const std::string &sTypeName, int &Type, int &SubType, int &SwitchType, std::string &sValue, PyObject *OptionsIn, PyObject *OptionsOut);
 

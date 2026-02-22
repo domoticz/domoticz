@@ -132,6 +132,7 @@ namespace Plugins {
 		DECLARE_PYTHON_SYMBOL(int, PyModule_AddObject, PyObject* COMMA const char* COMMA PyObject*);
 		DECLARE_PYTHON_SYMBOL(int, PyArg_ParseTuple, PyObject* COMMA const char* COMMA ...);
 		DECLARE_PYTHON_SYMBOL(int, PyArg_ParseTupleAndKeywords, PyObject* COMMA PyObject* COMMA const char* COMMA char*[] COMMA ...);
+		DECLARE_PYTHON_SYMBOL(int, PyArg_VaParseTupleAndKeywords, PyObject* COMMA PyObject* COMMA const char* COMMA char*[] COMMA va_list);
 		DECLARE_PYTHON_SYMBOL(PyObject*, PyUnicode_FromFormat, const char* COMMA ...);
 		DECLARE_PYTHON_SYMBOL(PyObject*, Py_BuildValue, const char* COMMA ...);
 		DECLARE_PYTHON_SYMBOL(void, PyMem_Free, void*);
@@ -265,6 +266,7 @@ namespace Plugins {
 					RESOLVE_PYTHON_SYMBOL(PyModule_AddObject);
 					RESOLVE_PYTHON_SYMBOL(PyArg_ParseTuple);
 					RESOLVE_PYTHON_SYMBOL(PyArg_ParseTupleAndKeywords);
+					RESOLVE_PYTHON_SYMBOL(PyArg_VaParseTupleAndKeywords);
 					RESOLVE_PYTHON_SYMBOL(PyUnicode_FromFormat);
 					RESOLVE_PYTHON_SYMBOL(Py_BuildValue);
 					RESOLVE_PYTHON_SYMBOL(PyMem_Free);
@@ -493,6 +495,7 @@ extern	SharedLibraryProxy* pythonLib;
 #define PyModule_Create2		pythonLib->PyModule_Create2
 #define PyModule_AddObject		pythonLib->PyModule_AddObject
 #define PyArg_ParseTupleAndKeywords pythonLib->PyArg_ParseTupleAndKeywords
+#define PyArg_VaParseTupleAndKeywords pythonLib->PyArg_VaParseTupleAndKeywords
 #define _Py_RefTotal			pythonLib->_Py_RefTotal
 #define PyBool_FromLong			pythonLib->PyBool_FromLong
 #define PyCapsule_Import		pythonLib->PyCapsule_Import
