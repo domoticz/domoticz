@@ -20,12 +20,12 @@ jobs:
   build:
     # The type of runner that the job will run on
     #runs-on: ubuntu-latest
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
           submodules: true
@@ -46,7 +46,6 @@ jobs:
           echo 'APT::Get::Always-Include-Phased-Updates "false";' | sudo tee /etc/apt/apt.conf.d/99-phased-updates
           sudo apt-mark hold grub-efi-amd64-signed
           sudo apt-get update --fix-missing
-          sudo apt-get update || true
           sudo apt-get install make gcc cmake g++ libssl-dev git libcurl4-gnutls-dev libusb-dev libmosquitto-dev python3-dev zlib1g-dev liblua5.3-dev uthash-dev libsqlite3-dev
           sudo apt-get install libboost-chrono-dev libboost-system-dev libboost-thread-dev
           sudo apt-get install python3-pytest python3-pytest-bdd
@@ -66,7 +65,7 @@ jobs:
         run: |
           cd $GITHUB_WORKSPACE
           cmake -DCMAKE_BUILD_TYPE=Release CMakeLists.txt
-          make
+          make -j$(nproc)
 
       # Packaging
       - name: package domoticz
