@@ -8,6 +8,8 @@
 #include "../main/RFXtrx.h"
 #include "../main/mainworker.h"
 #include "../main/SQLHelper.h"
+#include <cerrno>
+#include <iomanip>
 
 #ifdef _DEBUG
 //#define DEBUG_OpenMeteoR
@@ -133,16 +135,31 @@ void COpenMeteo::Init()
 		return;
 	}
 
-	m_Lat = strtod(strarray[0].c_str(), nullptr);
-	m_Lon = strtod(strarray[1].c_str(), nullptr);
+	char *endLat = nullptr, *endLon = nullptr;
+	errno = 0;
+	m_Lat = strtod(strarray[0].c_str(), &endLat);
+	m_Lon = strtod(strarray[1].c_str(), &endLon);
 
-	if (m_Lat == 0 && m_Lon == 0)
+	if (errno != 0 || (endLat && *endLat != '\0') || (endLon && *endLon != '\0'))
+	{
+		Log(LOG_ERROR, "Invalid Location coordinates! Could not parse '%s;%s' as numbers", strarray[0].c_str(), strarray[1].c_str());
+		return;
+	}
+
+	if ((m_Lat < -90.0 || m_Lat > 90.0) || (m_Lon < -180.0 || m_Lon > 180.0))
+	{
+		Log(LOG_ERROR, "Location coordinates out of range (lat=%.6f, lon=%.6f)! Configure in Settings > System > Location", m_Lat, m_Lon);
+		return;
+	}
+
+	if (m_Lat == 0.0 && m_Lon == 0.0)
 	{
 		Log(LOG_ERROR, "Location coordinates are 0,0! Configure in Settings > System > Location");
 		return;
 	}
 
 	std::stringstream sURL;
+	sURL << std::fixed << std::setprecision(6);
 	sURL << OpenMeteo_API_URL
 	     << "?latitude=" << m_Lat
 	     << "&longitude=" << m_Lon
@@ -261,6 +278,21 @@ void COpenMeteo::GetMeterDetails()
 	}
 
 	Json::Value current = root["current"];
+
+	// Validate mandatory fields
+	static const char *requiredFields[] = {
+		"temperature_2m", "relative_humidity_2m", "apparent_temperature", "precipitation",
+		"rain", "weather_code", "cloud_cover", "surface_pressure",
+		"wind_speed_10m", "wind_direction_10m", "wind_gusts_10m", "visibility"
+	};
+	for (const auto &field : requiredFields)
+	{
+		if (current[field].isNull())
+		{
+			Log(LOG_ERROR, "Missing required field '%s' in API response", field);
+			return;
+		}
+	}
 
 	float temperature = current["temperature_2m"].asFloat();
 	int humidity = current["relative_humidity_2m"].asInt();
