@@ -112,6 +112,7 @@ define(['app', 'events/factories'], function (app) {
                         : domoticzEventsApi.loadEvent(vm.event.id)
                     )
                     .then(function (eventData) {
+                        eventData.eventstatus = String(eventData.eventstatus);
                         vm.eventData = eventData;
 
                         if (eventData.interpreter === 'Blockly') {
