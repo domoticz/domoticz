@@ -562,6 +562,7 @@ User=${Current_user}
 Group=${Current_user}
 WorkingDirectory=${Dest_folder}
 ExecStart=${Dest_folder}/domoticz -www ${http_port} -sslwww ${https_port}
+ExecReload=/bin/kill -HUP \$MAINPID
 Restart=on-failure
 RestartSec=5
 
