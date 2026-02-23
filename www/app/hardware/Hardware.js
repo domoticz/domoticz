@@ -2449,13 +2449,20 @@ define(['app'], function (app) {
 					ShowNotify($.t('Please enter a username!'), 2500, true);
 					return;
 				}
+				var pollinterval = $("#hardwarecontent #hardwareparamsphilipshue #pollinterval").val();
+				if (pollinterval == "") {
+					ShowNotify($.t('Please enter poll interval!'), 2500, true);
+					return;
+				}
+				Mode1 = pollinterval;
 				$.ajax({
 					url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype +
 					"&loglevel=" + logLevel +
 					"&address=" + address +
 					"&port=" + port +
 					"&username=" + encodeURIComponent(username) +
-					"&name=" + encodeURIComponent(name) + "&enabled=" + bEnabled + "&datatimeout=" + datatimeout,
+					"&name=" + encodeURIComponent(name) + "&enabled=" + bEnabled + "&datatimeout=" + datatimeout +
+					"&Mode1=" + Mode1,
 					async: false,
 					dataType: 'json',
 					success: function (data) {
