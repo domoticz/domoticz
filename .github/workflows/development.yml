@@ -87,5 +87,5 @@ jobs:
         with:
           name: domoticz_linux_x86_64-${{ env.BUILDNR }}
           path: package/
-          retention-days: 7
+          retention-days: 400
           if-no-files-found: error
