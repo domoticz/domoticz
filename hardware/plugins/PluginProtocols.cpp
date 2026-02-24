@@ -11,7 +11,7 @@
 #include "../../main/Helper.h"
 #include "../../main/json_helper.h"
 #include "../../main/Logger.h"
-#include "../../webserver/Base64.h"
+#include <libwebem/Base64.h>
 #include "icmp_header.hpp"
 #include "ipv4_header.hpp"
 

@@ -19,7 +19,7 @@
 #include "../httpclient/UrlEncode.h"
 #include "../main/mainworker.h"
 #include "../main/json_helper.h"
-#include "../webserver/Base64.h"
+#include <libwebem/Base64.h>
 #include "Tado.h"
 
 #define TADO_CLIENT_ID "1bb50063-6b0c-4d11-bd99-387f4a91cc46"

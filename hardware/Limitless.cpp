@@ -6,7 +6,7 @@
 #include "hardwaretypes.h"
 #include "../main/mainworker.h"
 #include "../main/WebServer.h"
-#include "../webserver/cWebem.h"
+#include <libwebem/cWebem.h>
 
 // This hardware goes under a few different names, i was told the original name was AppLamp
 

@@ -5,7 +5,7 @@
 #include <string.h>
 
 #include "../main/Logger.h"
-#include "../webserver/Base64.h"
+#include <libwebem/Base64.h>
 
 // Part of the Message Construction is taken from jwSMTP library
 // http://johnwiggins.net

@@ -1,0 +1,46 @@
+name: PR Check
+
+concurrency:
+  group: windows-pr-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+on:
+  pull_request:
+    branches:
+      - development
+      - master
+    paths-ignore:
+      - 'tools/**'
+      - '**.md'
+      - '**.txt'
+
+jobs:
+  windows:
+    runs-on: windows-2022
+
+    if: github.repository == 'domoticz/domoticz'
+
+    env:
+      CONFIGURATION: Release
+      PLATFORM: x86
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup MSBuild
+        uses: microsoft/setup-msbuild@v1.3
+
+      - name: Download WindowsLibraries
+        shell: powershell
+        run: |
+          cd msbuild
+          Invoke-WebRequest `
+            -Uri "https://raw.githubusercontent.com/domoticz/win32-libraries/master/WindowsLibraries.7z" `
+            -OutFile "WindowsLibraries.7z"
+          7z x WindowsLibraries.7z | Out-Null
+          cd ..
+
+      - name: Build Domoticz
+        shell: cmd
+        run: msbuild msbuild\domoticz.sln /m /p:Configuration=${{ env.CONFIGURATION }} /p:Platform=${{ env.PLATFORM }} /verbosity:minimal

@@ -25,7 +25,7 @@
 #include "../main/json_helper.h"
 #include "../main/WebServer.h"
 #include "../main/WebServerHelper.h"
-#include "../webserver/Base64.h"
+#include <libwebem/Base64.h>
 
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>

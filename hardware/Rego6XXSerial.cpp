@@ -5,7 +5,7 @@
 #include "../main/mainworker.h"
 #include "../main/WebServer.h"
 #include "../main/SQLHelper.h"
-#include "../webserver/cWebem.h"
+#include <libwebem/cWebem.h>
 
 // This code is inspired by the Rago600 project:
 // http://rago600.sourceforge.net/

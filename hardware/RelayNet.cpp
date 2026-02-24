@@ -98,7 +98,7 @@
 #include "../main/Logger.h"
 #include "../main/mainworker.h"
 #include "../main/SQLHelper.h"
-#include "../webserver/Base64.h"
+#include <libwebem/Base64.h>
 #include "../httpclient/HTTPClient.h"
 #include <sstream>
 

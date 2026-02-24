@@ -106,7 +106,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;NOMINMAX;ENABLE_PYTHON;WITH_OPENZWAVE;OPENZWAVE_USEDLL;_DEBUG;PTW32_STATIC_LIB;WWW_ENABLE_SSL;HAVE_SNPRINTF;JSON_DLL;WITH_TLS;_CONSOLE;BOOST_CONFIG_SUPPRESS_OUTDATED_MESSAGE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>../msbuild/Windows Libraries/openzwave/openzwave;../hardware/plugins/Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../msbuild/Windows Libraries/openzwave/openzwave;../hardware/plugins/Include;$(ProjectDir)..\extern\libwebem\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <EnablePREfast>false</EnablePREfast>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
@@ -118,7 +118,8 @@
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>Setupapi.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;dnsapi.lib;IPHLPAPI.lib;../msbuild/Windows Libraries/openzwave/OpenZWaveD.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>webem_d.lib;Setupapi.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;dnsapi.lib;IPHLPAPI.lib;../msbuild/Windows Libraries/openzwave/OpenZWaveD.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>../extern/libwebem/build/Win32/Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <UACExecutionLevel>AsInvoker</UACExecutionLevel>
       <Profile>false</Profile>
     </Link>
@@ -135,7 +136,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;NOMINMAX;ENABLE_PYTHON;_DEBUG;PTW32_STATIC_LIB;WITH_OPENZWAVE;OPENZWAVE_USEDLL;WWW_ENABLE_SSL;WITH_TLS;JSON_DLL;_CONSOLE;BOOST_CONFIG_SUPPRESS_OUTDATED_MESSAGE;HAVE_SNPRINTF;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>../msbuild/Windows Libraries/openzwave/openzwave;../hardware/plugins/Include;../extern/jwtcpp/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../msbuild/Windows Libraries/openzwave/openzwave;../hardware/plugins/Include;../extern/jwtcpp/include;$(ProjectDir)..\extern\libwebem\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <EnablePREfast>false</EnablePREfast>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
@@ -147,7 +148,8 @@
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>Setupapi.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;dnsapi.lib;IPHLPAPI.lib;../msbuild/Windows Libraries/openzwave/x64/OpenZWaved.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>webem_d_x64.lib;Setupapi.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;dnsapi.lib;IPHLPAPI.lib;../msbuild/Windows Libraries/openzwave/x64/OpenZWaved.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>../extern/libwebem/build/x64/Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <UACExecutionLevel>AsInvoker</UACExecutionLevel>
       <Profile>false</Profile>
     </Link>
@@ -166,7 +168,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;NOMINMAX;ENABLE_PYTHON;WITH_OPENZWAVE;OPENZWAVE_USEDLL;NDEBUG;_CONSOLE;JSON_DLL;WWW_ENABLE_SSL;HAVE_SNPRINTF;WITH_TLS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>../msbuild/Windows Libraries/openzwave/openzwave;../msbuild/Windows Libraries/include;../hardware/plugins/Include;../extern/jwtcpp/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../msbuild/Windows Libraries/openzwave/openzwave;../msbuild/Windows Libraries/include;../hardware/plugins/Include;../extern/jwtcpp/include;$(ProjectDir)..\extern\libwebem\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <AdditionalOptions>/d2guardspecload %(AdditionalOptions)</AdditionalOptions>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
@@ -177,8 +179,8 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>false</EnableCOMDATFolding>
       <OptimizeReferences>false</OptimizeReferences>
-      <AdditionalLibraryDirectories>./Windows Libraries/lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>lua.lib;libcurl.lib;minizip.lib;jsoncpp.lib;libcrypto.lib;libssl.lib;Wldap32.lib;zlib.lib;pthreadVC3.lib;sqlite3.lib;mosquitto.lib;Crypt32.lib;Setupapi.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;dnsapi.lib;IPHLPAPI.lib;../msbuild/Windows Libraries/openzwave/OpenZWave.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>./Windows Libraries/lib;../extern/libwebem/build/Win32/Release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>webem.lib;lua.lib;libcurl.lib;minizip.lib;jsoncpp.lib;libcrypto.lib;libssl.lib;Wldap32.lib;zlib.lib;pthreadVC3.lib;sqlite3.lib;mosquitto.lib;Crypt32.lib;Setupapi.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;dnsapi.lib;IPHLPAPI.lib;../msbuild/Windows Libraries/openzwave/OpenZWave.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <UACExecutionLevel>AsInvoker</UACExecutionLevel>
       <IgnoreSpecificDefaultLibraries>MSVCRT</IgnoreSpecificDefaultLibraries>
       <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
@@ -196,7 +198,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;NOMINMAX;ENABLE_PYTHON;NDEBUG;PTW32_STATIC_LIB;WITH_OPENZWAVE;OPENZWAVE_USEDLL;_CONSOLE;WWW_ENABLE_SSL;WITH_TLS;JSON_DLL;HAVE_SNPRINTF;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>../msbuild/Windows Libraries/openzwave/openzwave;../hardware/plugins/Include;../extern/jwtcpp/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../msbuild/Windows Libraries/openzwave/openzwave;../hardware/plugins/Include;../extern/jwtcpp/include;$(ProjectDir)..\extern\libwebem\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <AdditionalOptions>/d2guardspecload %(AdditionalOptions)</AdditionalOptions>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
@@ -208,7 +210,8 @@
       <EnableCOMDATFolding>false</EnableCOMDATFolding>
       <OptimizeReferences>false</OptimizeReferences>
       <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>Setupapi.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;dnsapi.lib;IPHLPAPI.lib;../msbuild/Windows Libraries/openzwave/x64/OpenZWave.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>webem_x64.lib;Setupapi.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;dnsapi.lib;IPHLPAPI.lib;../msbuild/Windows Libraries/openzwave/x64/OpenZWave.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>../extern/libwebem/build/x64/Release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <UACExecutionLevel>AsInvoker</UACExecutionLevel>
       <IgnoreSpecificDefaultLibraries>
       </IgnoreSpecificDefaultLibraries>
@@ -794,10 +797,8 @@
     <ClInclude Include="..\push\WebsocketPush.h" />
     <ClInclude Include="..\push\InfluxPush.h" />
     <ClInclude Include="..\push\BasePush.h" />
-    <ClInclude Include="..\webserver\fastcgi.hpp" />
-    <ClInclude Include="..\webserver\GZipHelper.h" />
-    <ClInclude Include="..\webserver\WebsocketHandler.h" />
-    <ClInclude Include="..\webserver\Websockets.hpp" />
+    <ClInclude Include="..\main\DomoticzWebsocketHandler.h" />
+    <ClInclude Include="..\main\WebServerLoggerAdapter.h" />
     <ClInclude Include="..\hardware\BleBox.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="..\main\Scheduler.h" />
@@ -820,19 +821,6 @@
     <ClInclude Include="..\tcpserver\TCPServer.h" />
     <ClInclude Include="..\httpclient\UrlEncode.h" />
     <ClInclude Include="..\main\WebServer.h" />
-    <ClInclude Include="..\webserver\Base64.h" />
-    <ClInclude Include="..\webserver\connection.hpp" />
-    <ClInclude Include="..\webserver\connection_manager.hpp" />
-    <ClInclude Include="..\webserver\cWebem.h" />
-    <ClInclude Include="..\webserver\header.hpp" />
-    <ClInclude Include="..\webserver\mime_types.hpp" />
-    <ClInclude Include="..\webserver\reply.hpp" />
-    <ClInclude Include="..\webserver\request.hpp" />
-    <ClInclude Include="..\webserver\request_handler.hpp" />
-    <ClInclude Include="..\webserver\request_parser.hpp" />
-    <ClInclude Include="..\webserver\server.hpp" />
-    <ClInclude Include="..\webserver\server_settings.hpp" />
-    <ClInclude Include="..\webserver\utf.hpp" />
     <ClInclude Include="WindowsHelper.h" />
     <ClInclude Include="..\hardware\YouLess.h" />
     <ClInclude Include="..\hardware\XiaomiGateway.h" />
@@ -1134,18 +1122,7 @@
     <ClCompile Include="..\tinyxpath\xpath_static.cpp" />
     <ClCompile Include="..\tinyxpath\xpath_stream.cpp" />
     <ClCompile Include="..\tinyxpath\xpath_syntax.cpp" />
-    <ClCompile Include="..\webserver\Base64.cpp" />
-    <ClCompile Include="..\webserver\connection.cpp" />
-    <ClCompile Include="..\webserver\connection_manager.cpp" />
-    <ClCompile Include="..\webserver\cWebem.cpp" />
-    <ClCompile Include="..\webserver\fastcgi.cpp" />
-    <ClCompile Include="..\webserver\mime_types.cpp" />
-    <ClCompile Include="..\webserver\reply.cpp" />
-    <ClCompile Include="..\webserver\request_handler.cpp" />
-    <ClCompile Include="..\webserver\request_parser.cpp" />
-    <ClCompile Include="..\webserver\server.cpp" />
-    <ClCompile Include="..\webserver\WebsocketHandler.cpp" />
-    <ClCompile Include="..\webserver\Websockets.cpp" />
+    <ClCompile Include="..\main\DomoticzWebsocketHandler.cpp" />
     <ClCompile Include="..\hardware\BleBox.cpp" />
     <ClCompile Include="WindowsHelper.cpp" />
     <ClCompile Include="..\hardware\YouLess.cpp" />

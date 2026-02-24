@@ -1,9 +1,9 @@
 #pragma once
 
 #include <string>
-#include "../webserver/cWebem.h"
-#include "../webserver/request.hpp"
-#include "../webserver/session_store.hpp"
+#include <libwebem/cWebem.h>
+#include <libwebem/request.h>
+#include <libwebem/session_store.h>
 #include "../iamserver/iam_settings.hpp"
 
 struct lua_State;

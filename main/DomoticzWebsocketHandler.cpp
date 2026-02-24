@@ -1,31 +1,31 @@
 #include "stdafx.h"
-#include "WebsocketHandler.h"
+#include "DomoticzWebsocketHandler.h"
 
 #include <utility>
-#include "../main/mainworker.h"
-#include "../main/Helper.h"
-#include "../main/json_helper.h"
-#include "cWebem.h"
-#include "../main/Logger.h"
+#include "mainworker.h"
+#include "Helper.h"
+#include "json_helper.h"
+#include <libwebem/cWebem.h>
+#include "Logger.h"
 
 #define WEBSOCKET_SESSION_TIMEOUT 86400 // 1 day
 
 namespace http {
 	namespace server {
 
-		CWebsocketHandler::CWebsocketHandler(cWebem* pWebem, std::function<void(const std::string& packet_data)> _MyWrite)
+		CDomoticzWebsocketHandler::CDomoticzWebsocketHandler(cWebem* pWebem, std::function<void(const std::string& packet_data)> _MyWrite)
 			: MyWrite(std::move(_MyWrite))
 			, myWebem(pWebem)
 			, m_Push(this)
 		{
 		}
 
-		CWebsocketHandler::~CWebsocketHandler()
+		CDomoticzWebsocketHandler::~CDomoticzWebsocketHandler()
 		{
 			Stop();
 		}
 
-		void CWebsocketHandler::Start()
+		void CDomoticzWebsocketHandler::Start()
 		{
 			RequestStart();
 
@@ -35,7 +35,7 @@ namespace http {
 			m_thread = std::make_shared<std::thread>([this] { Do_Work(); });
 		}
 
-		void CWebsocketHandler::Stop()
+		void CDomoticzWebsocketHandler::Stop()
 		{
 			m_Push.Stop();
 			if (m_thread)
@@ -46,7 +46,7 @@ namespace http {
 			}
 		}
 
-		void CWebsocketHandler::Do_Work()
+		void CDomoticzWebsocketHandler::Do_Work()
 		{
 			while (!IsStopRequested(1000))
 			{
@@ -59,7 +59,7 @@ namespace http {
 			}
 		}
 
-		bool CWebsocketHandler::Handle(const std::string& packet_data, bool outbound)
+		bool CDomoticzWebsocketHandler::Handle(const std::string& packet_data, bool outbound)
 		{
 			try
 			{
@@ -99,7 +99,7 @@ namespace http {
 			return true;
 		}
 
-		bool CWebsocketHandler::HandleRequest(const std::string& szEvent, const Json::Value& value, const bool outbound)
+		bool CDomoticzWebsocketHandler::HandleRequest(const std::string& szEvent, const Json::Value& value, const bool outbound)
 		{
 			// WebSockets only do security during set up so keep pushing the expiry out to stop it being cleaned up
 			WebEmSession session;
@@ -174,7 +174,7 @@ namespace http {
 			return false;
 		}
 
-		bool CWebsocketHandler::HandleSubscribe(const std::string& szEvent, const Json::Value& value, const bool outbound)
+		bool CDomoticzWebsocketHandler::HandleSubscribe(const std::string& szEvent, const Json::Value& value, const bool outbound)
 		{
 			// WebSockets only do security during set up so keep pushing the expiry out to stop it being cleaned up
 			WebEmSession session;
@@ -213,7 +213,7 @@ namespace http {
 			return false;
 		}
 
-		bool CWebsocketHandler::HandleUnsubscribe(const std::string& szEvent, const Json::Value& value, const bool outbound)
+		bool CDomoticzWebsocketHandler::HandleUnsubscribe(const std::string& szEvent, const Json::Value& value, const bool outbound)
 		{
 			// WebSockets only do security during set up so keep pushing the expiry out to stop it being cleaned up
 			WebEmSession session;
@@ -253,8 +253,7 @@ namespace http {
 		}
 
 
-		// todo: not sure 
-		void CWebsocketHandler::store_session_id(const request& req, const reply& rep)
+		void CDomoticzWebsocketHandler::store_session_id(const request& req, const reply& rep)
 		{
 			//Check cookie if still valid
 			const char* cookie_header = request::get_req_header(&req, "Cookie");
@@ -282,7 +281,6 @@ namespace http {
 				if ((fpos != std::string::npos) && (upos != std::string::npos) && (ppos != std::string::npos))
 				{
 					sSID = scookie.substr(fpos + 7, upos - fpos - 7);
-					//std::string sAuthToken = scookie.substr(upos + 1, ppos - upos - 1);
 					szTime = scookie.substr(ppos + 1);
 
 					time_t stime;
@@ -298,17 +296,16 @@ namespace http {
 			}
 		}
 
-		bool CWebsocketHandler::subscribeTo(const std::string& szTopic)
+		bool CDomoticzWebsocketHandler::subscribeTo(const std::string& szTopic)
 		{
 			std::unique_lock<std::mutex> lock(m_subscribe_mutex);
 			m_subscribed_topics[szTopic] = true;
 			return true;
 		}
 
-		bool CWebsocketHandler::unsubscribeFrom(const std::string& szTopic)
+		bool CDomoticzWebsocketHandler::unsubscribeFrom(const std::string& szTopic)
 		{
 			std::unique_lock<std::mutex> lock(m_subscribe_mutex);
-			//check if we are already subscribed;
 			if (m_subscribed_topics.find(szTopic) != m_subscribed_topics.end())
 			{
 				m_subscribed_topics.erase(m_subscribed_topics.find(szTopic));
@@ -317,13 +314,13 @@ namespace http {
 			return false;
 		}
 
-		bool CWebsocketHandler::isSubscribed(const std::string& szTopic)
+		bool CDomoticzWebsocketHandler::isSubscribed(const std::string& szTopic)
 		{
 			std::unique_lock<std::mutex> lock(m_subscribe_mutex);
 			return (m_subscribed_topics.find(szTopic) != m_subscribed_topics.end());
 		}
 
-		void CWebsocketHandler::OnDeviceChanged(const uint64_t DeviceRowIdx)
+		void CDomoticzWebsocketHandler::OnDeviceChanged(const uint64_t DeviceRowIdx)
 		{
 			try
 			{
@@ -331,7 +328,7 @@ namespace http {
 				{
 					if (m_subscribed_devices.find(DeviceRowIdx) == m_subscribed_devices.end())
 					{
-						return; //not interested in you
+						return;
 					}
 				}
 				std::string query = "type=command&param=getdevices&rid=" + std::to_string(DeviceRowIdx);
@@ -349,7 +346,7 @@ namespace http {
 			}
 		}
 
-		void CWebsocketHandler::OnSceneChanged(const uint64_t SceneRowIdx)
+		void CDomoticzWebsocketHandler::OnSceneChanged(const uint64_t SceneRowIdx)
 		{
 			try
 			{
@@ -368,7 +365,7 @@ namespace http {
 			}
 		}
 
-		void CWebsocketHandler::SendNotification(const std::string& Subject, const std::string& Text, const std::string& ExtraData, const int Priority, const std::string& Sound, const bool bFromNotification)
+		void CDomoticzWebsocketHandler::SendNotification(const std::string& Subject, const std::string& Text, const std::string& ExtraData, const int Priority, const std::string& Sound, const bool bFromNotification)
 		{
 			Json::Value json;
 			json["event"] = "notification";
@@ -382,7 +379,7 @@ namespace http {
 			MyWrite(response);
 		}
 
-		void CWebsocketHandler::SendDateTime()
+		void CDomoticzWebsocketHandler::SendDateTime()
 		{
 			if (!m_mainworker.m_LastSunriseSet.empty())
 			{
@@ -409,7 +406,7 @@ namespace http {
 			}
 		}
 
-		void CWebsocketHandler::SendLogMessage(const int iLevel, const std::string& szMessage)
+		void CDomoticzWebsocketHandler::SendLogMessage(const int iLevel, const std::string& szMessage)
 		{
 			if (!isSubscribed("log"))
 				return;

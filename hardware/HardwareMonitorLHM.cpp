@@ -4,7 +4,7 @@
 #include "../main/Helper.h"
 #include "../main/Logger.h"
 #include "../httpclient/HTTPClient.h"
-#include "../webserver/Base64.h"
+#include <libwebem/Base64.h>
 
 static bool IsValidLHMAddress(const std::string& addr)
 {

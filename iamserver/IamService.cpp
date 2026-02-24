@@ -17,8 +17,8 @@
 #include "../main/SQLHelper.h"
 #include "../httpclient/UrlEncode.h"
 #include "../main/WebServer.h"
-#include "../webserver/Base64.h"
-#include "../webserver/GZipHelper.h"
+#include <libwebem/Base64.h>
+#include "../main/GZipHelper.h"
 #include <openssl/evp.h>
 #include <openssl/core_names.h>
 

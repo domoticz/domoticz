@@ -13,7 +13,7 @@
 #include <sstream>
 #include <algorithm>
 #include <iostream>
-#include "../webserver/cWebem.h"
+#include <libwebem/cWebem.h>
 #include <json/json.h>
 
 #define MAX_PAYLOAD_LENGTH 25 //https://www.mysensors.org/download/serial_api_20

@@ -16,7 +16,7 @@ License: Public domain
 #include "../../main/Helper.h"
 #include "../../httpclient/UrlEncode.h"
 #include "../../httpclient/HTTPClient.h"
-#include "../../webserver/Base64.h"
+#include <libwebem/Base64.h>
 #include "../../main/json_helper.h"
 #include <sstream>
 #include <iomanip>

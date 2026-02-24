@@ -17,10 +17,13 @@
 #include "SQLHelper.h"
 #include "../httpclient/HTTPClient.h"
 #include "../hardware/hardwaretypes.h"
-#include "../webserver/Base64.h"
+#include <libwebem/Base64.h>
 #include "../smtpclient/SMTPClient.h"
 #include "../push/BasePush.h"
 #include "../notifications/NotificationHelper.h"
+
+#include "WebServerLoggerAdapter.h"
+#include "DomoticzWebsocketHandler.h"
 
 #ifdef ENABLE_PYTHON
 #include "../hardware/plugins/Plugins.h"
@@ -171,7 +174,14 @@ namespace http
 				try
 				{
 					exception = false;
-					m_pWebEm = new http::server::cWebem(settings, serverpath);
+					auto logger = std::make_shared<WebServerLoggerAdapter>();
+				settings.on_heartbeat = [](const std::string& name) {
+					m_mainworker.HeartbeatUpdate(name);
+				};
+				settings.on_heartbeat_remove = [](const std::string& name) {
+					m_mainworker.HeartbeatRemove(name);
+				};
+				m_pWebEm = new http::server::cWebem(settings, serverpath, logger);
 				}
 				catch (std::exception& e)
 				{
@@ -203,6 +213,14 @@ namespace http
 			} while (exception);
 
 			_log.Log(LOG_STATUS, "WebServer(%s) started on address: %s with port %s", m_server_alias.c_str(), settings.listening_address.c_str(), settings.listening_port.c_str());
+
+			m_pWebEm->RegisterWebsocketEndpoint(
+				"/",
+				[](http::server::cWebem* webem, std::function<void(const std::string&)> writer) {
+					return std::make_shared<CDomoticzWebsocketHandler>(webem, std::move(writer));
+				},
+				"domoticz"
+			);
 
 			m_pWebEm->SetDigistRealm(sRealm);
 			m_pWebEm->SetSessionStore(this);

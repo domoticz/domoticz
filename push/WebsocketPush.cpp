@@ -1,12 +1,12 @@
 #include "stdafx.h"
 #include "WebsocketPush.h"
-#include "../webserver/WebsocketHandler.h"
+#include "../main/DomoticzWebsocketHandler.h"
 #include "../main/mainworker.h"
 #include "../main/Logger.h"
 
 extern boost::signals2::signal<void(const std::string &Subject, const std::string &Text, const std::string &ExtraData, const int Priority, const std::string & Sound, const bool bFromNotification)> sOnNotificationReceived;
 
-CWebSocketPush::CWebSocketPush(http::server::CWebsocketHandler *sock)
+CWebSocketPush::CWebSocketPush(http::server::CDomoticzWebsocketHandler *sock)
 {
 	m_PushType = PushType::PUSHTYPE_WEBSOCKET;
 	m_sock = sock;
