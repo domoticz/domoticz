@@ -28,7 +28,7 @@ local function EventHelpers(domoticz, mainMethod)
 			package.path
 	end
 
-	local validEventTypes = 'devices,timer,security,customEvents,system,httpResponses,shellCommandResponses,scenes,groups,variables'
+	local validEventTypes = 'devices,timer,security,customEvents,system,httpResponses,shellCommandResponses,scenes,groups,variables,at_startup'
 	local inValidEventTypes = 'on,logging,active,data,execute'
 
 	-- defaults
@@ -705,6 +705,7 @@ local function EventHelpers(domoticz, mainMethod)
 		local bindings = {}
 		local ok, i, event, j, device, err
 		local modules = {}
+		local timerBound = {} -- track scripts already bound to prevent at_startup/timer duplicates
 
 		if not self.scripts then
 			self.scripts, self.errModules = loadEventScripts()
@@ -717,7 +718,7 @@ local function EventHelpers(domoticz, mainMethod)
 			local logScript = (module.type == 'external' and 'Script ' or 'Internal script ')
 
 			for j, event in pairs(module.on) do
-				if type(j) ~= 'string' or type(event) ~= 'table' or validEventTypes:find(j) == nil then
+				if type(j) ~= 'string' or validEventTypes:find(j) == nil or (j == 'at_startup' and type(event) ~= 'boolean') or (j ~= 'at_startup' and type(event) ~= 'table') then
 					if not self.scripts[i].invalidOnSection then
 						self.scripts[i].invalidOnSection = true
 						if type(j) == "string" and validEventTypes:find(j) == nil then
@@ -744,10 +745,11 @@ local function EventHelpers(domoticz, mainMethod)
 						end
 
 						local triggered, def = self.processTimeRules(event)
-						if (triggered) then
-							-- this one can be executed
+						if (triggered and not timerBound[module.name]) then
+							-- this one can be executed (skip if already triggered via at_startup)
 							module.trigger = def
 							event.type = 'timer'
+							timerBound[module.name] = true
 							table.insert(bindings, module)
 						end
 					elseif (mode == 'device' and j == 'devices') then
@@ -833,6 +835,15 @@ local function EventHelpers(domoticz, mainMethod)
 								-- a single custom event
 								addBindingEvent(bindings, customEventName, module)
 							end
+						end
+					elseif (mode == 'timer' and j == 'at_startup' and event == true) then
+						-- at_startup fires on the first timer tick after Domoticz starts
+						-- Uses 2-minute window because timer ticks occur once per minute
+						-- and startup may take time before the first tick
+						if (self.domoticz.startTime.minutesAgo >= 0 and self.domoticz.startTime.minutesAgo < 2 and not timerBound[module.name]) then
+							module.trigger = 'at_startup'
+							timerBound[module.name] = true
+							table.insert(bindings, module)
 						end
 					end
 				end

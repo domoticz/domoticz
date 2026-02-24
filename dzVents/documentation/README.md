@@ -588,6 +588,26 @@ return {
 }
 ```
 
+### At startup trigger
+You can add `at_startup = true` to the `on` section to have your script execute once when Domoticz starts, in addition to any other triggers. This is useful when combined with interval-based rules to avoid waiting for the first interval to pass:
+
+```Lua
+return {
+    on = {
+        at_startup = true,
+        timer = { 'every hour' },
+    },
+    execute = function(domoticz, item)
+        -- Runs immediately when Domoticz starts, then every hour
+        domoticz.devices('myThermostat').setPoint(21)
+    end
+}
+```
+
+The `at_startup` trigger fires on the first timer tick after Domoticz starts (within 2 minutes of startup). It can be combined with any other trigger types (timer, devices, httpResponses, etc.).
+
+**Note:** This is different from `system = { 'start' }` which is a system event trigger. `at_startup` is simpler - just add the flag and your existing script will also run at startup without needing to check `item.isSystemEvent`.
+
 ## *timer* trigger rules
 There are several options for time triggers. It is important to know that Domoticz timer events only trigger once every minute, so one minute is the smallest interval for your timer scripts. However, dzVents gives you many options to have full control over when and how often your timer scripts are called (all times are in 24hr format and all dates in dd/mm):
 Keywords recognized are "at, between, every, except, in, on, or" ( except supported from version <sup>3.0.16</sup>, or supported from version <sup>3.1.8</sup> ).
@@ -667,6 +687,8 @@ The timer events are triggered every minute. If such a trigger occurs, dzVents w
 Be mindful of the logic if using multiple types of timer triggers. It may not make sense to combine a trigger for a specific or instantaneous time with a trigger for a span or sequence of times (like 'at sunset' with 'every 6 minutes') in the same construct. Similarly, `'between aa and bb'` only makes sense with instantaneous times for `aa` and `bb`.
 
 **One important note: if Domoticz, for whatever reason, skips a timer event then you may miss the trigger! Therefore, you should build in some fail-safe checks or some redundancy if you have critical time-based stuff to control. There is nothing dzVents can do about it**
+
+**Tip:** If you want your timer script to also run at Domoticz startup (instead of waiting for the first timer match), add `at_startup = true` to your `on` section. See [At startup trigger](#at-startup-trigger).
 
 Another important issue: the way it is implemented right now, the `every xx minutes` and `every xx hours` is a bit limited. The interval resets at every \*:00 (for minutes) or 00:* for hours. You need an interval that is an integer divider of 60 (or 24 for the hours). So you can do every 1, 2, 3, 4, 5, 6, 10, 12, 15, 20 and 30 minutes only.
 
@@ -1279,6 +1301,19 @@ There are many switch-like devices. Not all methods are applicable for all switc
  - **modes**: *String*. List of all modes
  - **modeString**: *String*. Current mode
  - **updateMode(mode)**:*Function*. Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
+
+#### Thermostat 6 <sup>3.1.11</sup>
+Thermostat 6 devices come in several subtypes: Temp/Setpoint, Temp/Hum/Setpoint, Temp/Baro/Setpoint and Temp/Hum/Baro/Setpoint.
+ - **setPoint**: *Number*. The current set point.
+ - **humidityStatusValue**: *Number*. Mapped humidity status value (only for subtypes with humidity).
+ - **updateSetPoint(setPoint)**: *Function*. Update the set point. Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
+ - **updateThermostat(temperature, setPoint, humidity, humidityStatus, barometer, forecast)**: *Function*. Update thermostat values. Parameters depend on the subtype:
+   - *Temp/Setpoint*: `updateThermostat(temperature, setPoint)`
+   - *Temp/Hum/Setpoint*: `updateThermostat(temperature, setPoint, humidity, humidityStatus)`
+   - *Temp/Baro/Setpoint*: `updateThermostat(temperature, setPoint, nil, nil, barometer, forecast)`
+   - *Temp/Hum/Baro/Setpoint*: `updateThermostat(temperature, setPoint, humidity, humidityStatus, barometer, forecast)`
+   - `forecast` can be a string: `'noinfo'`, `'sunny'`, `'partlycloudy'`, `'cloudy'`, `'rain'` or a numeric value.
+   - `humidityStatus` can be a string: `'dry'`, `'normal'`, `'comfortable'`, `'wet'` or a numeric value. If omitted with humidity provided, it is auto-calculated.
 
 #### UV sensor
  - **uv**: *Number*. UV index.
