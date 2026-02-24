@@ -77,7 +77,7 @@ jobs:
           host: ${{ secrets.FTP_HOST }}
           username: ${{ secrets.FTP_USER }}
           password: ${{ secrets.FTP_PASSWORD }}
-          port: 22
+          port: 10222
           source: |
             domoticz_windows_x86.zip
             version_windows_x86.h
