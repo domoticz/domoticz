@@ -18,7 +18,7 @@ License: Public domain
 #include "../../main/json_helper.h"
 #include "../../main/Helper.h"
 #include "../../main/SQLHelper.h"
-#include "../../webserver/Base64.h"
+#include <libwebem/Base64.h>
 #include <sstream>
 #include <iomanip>
 

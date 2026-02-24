@@ -1,7 +1,7 @@
 /* version: 1.0, Feb, 2003
    Author : Gao Dasheng
    Copyright (C) 1995-2002 Gao Dasheng(dsgao@hotmail.com)
-   
+
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
   arising from the use of this software.
@@ -19,11 +19,11 @@
   3. This notice may not be removed or altered from any source distribution.
 //////////////////////////////////////////////////////////////////////////////
   Introduce:
-     This file includes two classes CA2GZIP and CGZIP2A which do compressing and 
+     This file includes two classes CA2GZIP and CGZIP2A which do compressing and
 	 uncompressing in memory. and It 's very easy to use for small data compressing.
-	 Some compress and uncompress codes came from gzip  unzip function of zlib 1.1.x. 
+	 Some compress and uncompress codes came from gzip  unzip function of zlib 1.1.x.
 
-  Usage: 
+  Usage:
      these two classes work used with zlib 1.1.x (http://www.gzip.org/zlib/).
 	 They were tested in Window OS.
   Exmaple:
@@ -43,6 +43,8 @@
 //////////////////////////////////////////////////////////////////////////////
 */
 
+
+#ifndef WEBEM_NO_GZIP
 
 #ifndef __GZipHelper__
 #define __GZipHelper__
@@ -135,7 +137,7 @@ class CA2GZIPT
 	m_crc = crc32(m_crc, (const Bytef *)lpsz, len);
 	if (finish() != Z_OK) { destroy(); return ;}
     putLong(m_crc);
-    putLong (m_zstream.total_in);  
+    putLong (m_zstream.total_in);
 	destroy();
  }
  private:
@@ -145,7 +147,7 @@ class CA2GZIPT
    int      m_z_err;   /* error code for last stream operation */
    Byte     *m_outbuf; /* output buffer */
    uLong    m_crc;     /* crc32 of uncompressed data */
-   
+
    int write(LPGZIP buf,int count)
    {
 	   if (buf == nullptr)
@@ -170,7 +172,7 @@ class CA2GZIPT
   int finish()
   {
     int done = 0;
-    m_zstream.avail_in = 0; 
+    m_zstream.avail_in = 0;
     for (;;)
 	{
 		uInt len = Z_BUFSIZE - m_zstream.avail_out;
@@ -183,7 +185,7 @@ class CA2GZIPT
         if (done) break;
         m_z_err = deflate(&(m_zstream), Z_FINISH);
 		if (len == 0 && m_z_err == Z_BUF_ERROR) m_z_err = Z_OK;
-        
+
 		done = (m_zstream.avail_out != 0 || m_z_err == Z_STREAM_END);
          if (m_z_err != Z_OK && m_z_err != Z_STREAM_END) break;
     }
@@ -230,7 +232,7 @@ class CGZIP2AT
    }
   ~CGZIP2AT()
   {
-    if(psz!=m_buffer) TRYFREE(psz);  
+    if(psz!=m_buffer) TRYFREE(psz);
   }
   void Init()
   {
@@ -254,7 +256,7 @@ class CGZIP2AT
 	m_z_eof = 0;
 	m_transparent = 0;
     m_crc = crc32(0L, Z_NULL, 0);
-    
+
 	m_zstream.next_in  =m_inbuf = (Byte*)ALLOC(Z_BUFSIZE);
     int  err = inflateInit2(&(m_zstream), -MAX_WBITS);
 	if (err != Z_OK || m_inbuf == Z_NULL)
@@ -286,7 +288,7 @@ class CGZIP2AT
    int      m_pos;
    LPGZIP   m_gzip;
    int      m_gziplen;
-   
+
   void check_header()
   {
     int method; /* method byte */
@@ -337,7 +339,7 @@ class CGZIP2AT
   int get_byte()
   {
     if (m_z_eof) return EOF;
-    if (m_zstream.avail_in == 0) 
+    if (m_zstream.avail_in == 0)
 	{
 	 errno = 0;
 	 m_zstream.avail_in =read(m_inbuf,Z_BUFSIZE);
@@ -369,7 +371,7 @@ class CGZIP2AT
     Bytef *start = (Bytef*)buf; /* starting point for crc computation */
     Byte  *next_out; /* == stream.next_out but not forced far (for MSDOS) */
 
-     
+
 	if (m_z_err == Z_DATA_ERROR || m_z_err == Z_ERRNO) return -1;
     if (m_z_err == Z_STREAM_END) return 0;  /* EOF */
 
@@ -382,7 +384,7 @@ class CGZIP2AT
 	    /* Copy first the lookahead bytes: */
 	    uInt n = m_zstream.avail_in;
 	    if (n > m_zstream.avail_out) n = m_zstream.avail_out;
-	    if (n > 0) 
+	    if (n > 0)
 		{
 		memcpy(m_zstream.next_out,m_zstream.next_in, n);
 		next_out += n;
@@ -483,4 +485,6 @@ class CGZIP2AT
 
 };
 typedef CGZIP2AT<> CGZIP2A;
-#endif
+#endif // __GZipHelper__
+
+#endif // WEBEM_NO_GZIP

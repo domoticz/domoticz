@@ -47,7 +47,7 @@ History:
 #include "../main/RFXtrx.h"
 #include "../main/SQLHelper.h"
 #include "../main/mainworker.h"
-#include "../webserver/Base64.h"
+#include <libwebem/Base64.h>
 #include "csocket.h"
 #include "../main/json_helper.h"
 

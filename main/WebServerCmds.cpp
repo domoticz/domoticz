@@ -35,7 +35,7 @@
 #include "KWHStats.h"
 #include "../httpclient/HTTPClient.h"
 #include "../hardware/hardwaretypes.h"
-#include "../webserver/Base64.h"
+#include <libwebem/Base64.h>
 #include "../smtpclient/SMTPClient.h"
 #include "../push/BasePush.h"
 #include "../notifications/NotificationHelper.h"

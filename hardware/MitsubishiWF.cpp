@@ -10,7 +10,7 @@
 #include "../main/SQLHelper.h"
 #include "../notifications/NotificationHelper.h"
 #include "../tinyxpath/tinyxml.h"
-#include "../webserver/Base64.h"
+#include <libwebem/Base64.h>
 #include "hardwaretypes.h"
 #include <iostream>
 

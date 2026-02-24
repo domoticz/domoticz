@@ -38,7 +38,7 @@
 #include "../hardware/SysfsGpio.h"
 #include "../hardware/EnOceanESP2.h"
 #include "../hardware/EnOceanESP3.h"
-#include "../webserver/Base64.h"
+#include <libwebem/Base64.h>
 #ifdef WITH_GPIO
 #include "../hardware/Gpio.h"
 #include "../hardware/GpioPin.h"

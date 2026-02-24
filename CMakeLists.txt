@@ -177,6 +177,7 @@ main/SQLHelper.cpp
 main/StoppableTask.cpp
 main/SunRiseSet.cpp
 main/TrendCalculator.cpp
+main/DomoticzWebsocketHandler.cpp
 main/WebServer.cpp
 main/WebServerCmds.cpp
 main/WebServerCommands.cpp
@@ -386,18 +387,6 @@ notifications/NotificationTelegram.cpp
 smtpclient/SMTPClient.cpp
 tcpserver/TCPClient.cpp
 tcpserver/TCPServer.cpp
-webserver/Base64.cpp
-webserver/connection.cpp
-webserver/connection_manager.cpp
-webserver/cWebem.cpp
-webserver/fastcgi.cpp
-webserver/mime_types.cpp
-webserver/reply.cpp
-webserver/request_handler.cpp
-webserver/request_parser.cpp
-webserver/server.cpp
-webserver/Websockets.cpp
-webserver/WebsocketHandler.cpp
 tinyxpath/action_store.cpp
 tinyxpath/htmlutil.cpp
 tinyxpath/lex_util.cpp
@@ -416,7 +405,36 @@ tinyxpath/xpath_static.cpp
 tinyxpath/xpath_syntax.cpp
 )
 
+# Create dependency targets BEFORE libwebem so it finds them via parent scope
+# (jsoncpp, minizip, jwt-cpp are also linked to domoticz later in this file)
+IF(USE_BUILTIN_JSONCPP)
+  set(BUILD_SHARED_LIBS OFF CACHE BOOL "Build jsoncpp_lib as a shared library." FORCE)
+  set(BUILD_STATIC_LIBS ON CACHE BOOL "Build jsoncpp_lib as a static library." FORCE)
+  set(JSONCPP_WITH_TESTS OFF CACHE BOOL "Enable jsoncpp tests" FORCE)
+  set(JSONCPP_WITH_POST_BUILD_UNITTEST OFF CACHE BOOL "Enable jsoncpp post build unit tests" FORCE)
+  set(JSONCPP_WITH_PKGCONFIG_SUPPORT OFF CACHE BOOL "Enable jsoncpp pkgconfig support" FORCE)
+  add_subdirectory(extern/jsoncpp ${CMAKE_CURRENT_BINARY_DIR}/jsoncpp_build EXCLUDE_FROM_ALL)
+  if(NOT MSVC)
+    target_compile_options(jsoncpp_static PRIVATE -Wno-deprecated-declarations)
+  endif()
+  INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/extern/jsoncpp/include)
+ENDIF()
+IF(USE_BUILTIN_MINIZIP)
+  add_subdirectory(extern/minizip EXCLUDE_FROM_ALL)
+  INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/extern/minizip)
+ENDIF()
+IF(USE_BUILTIN_JWTCPP)
+  if(NOT TARGET jwt-cpp::jwt-cpp)
+    add_library(jwt-cpp_bundled INTERFACE)
+    target_include_directories(jwt-cpp_bundled INTERFACE ${CMAKE_SOURCE_DIR}/extern/jwtcpp/include)
+    add_library(jwt-cpp::jwt-cpp ALIAS jwt-cpp_bundled)
+  endif()
+ENDIF()
+
+add_subdirectory(extern/libwebem)
+
 add_executable(domoticz ${domoticz_SRCS})
+target_link_libraries(domoticz webem)
 set(EXECUTABLE_OUTPUT_PATH ${CMAKE_BINARY_DIR})
 #SET(EXECUTABLE_OUTPUT_PATH "" CACHE INTERNAL "Where to put the executables for Domoticz")
 
@@ -531,18 +549,8 @@ ENDIF(${BIGENDIAN})
 # jsoncpp
 IF(USE_BUILTIN_JSONCPP)
   MESSAGE(STATUS "Using builtin jsoncpp library")
-#  set(JSONCPP_LIB_BUILD_SHARED OFF CACHE BOOL "Enable jsoncpp shared library" FORCE)
-  set(BUILD_SHARED_LIBS OFF CACHE BOOL "Build jsoncpp_lib as a shared library." FORCE)
-  set(BUILD_STATIC_LIBS ON CACHE BOOL "Build jsoncpp_lib as a static library." FORCE)
-  set(JSONCPP_WITH_TESTS OFF CACHE BOOL "Enable jsoncpp tests" FORCE)
-  set(JSONCPP_WITH_POST_BUILD_UNITTEST OFF CACHE BOOL "Enable jsoncpp post build unit tests" FORCE)
-  set(JSONCPP_WITH_PKGCONFIG_SUPPORT OFF CACHE BOOL "Enable jsoncpp pkgconfig support" FORCE)
-  add_subdirectory (extern/jsoncpp ${CMAKE_CURRENT_BINARY_DIR}/jsoncpp_build EXCLUDE_FROM_ALL)
-  if(NOT MSVC)
-    target_compile_options(jsoncpp_static PRIVATE -Wno-deprecated-declarations)
-  endif()
+  # add_subdirectory already called above (before libwebem)
   target_link_libraries(domoticz jsoncpp_static)
-  INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/extern/jsoncpp/include)
 ELSE(USE_BUILTIN_JSONCPP)
   find_package(PkgConfig)
   pkg_check_modules(JSONCPP REQUIRED jsoncpp)
@@ -585,9 +593,8 @@ ENDIF(USE_BUILTIN_SQLITE)
 
 # minizip
 IF(USE_BUILTIN_MINIZIP)
-  add_subdirectory (extern/minizip EXCLUDE_FROM_ALL)
+  # add_subdirectory already called above (before libwebem)
   target_link_libraries(domoticz minizip)
-  INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/extern/minizip)
 ELSE(USE_BUILTIN_MINIZIP)
   find_package(PkgConfig)
   pkg_check_modules(MINIZIP REQUIRED minizip)
@@ -601,11 +608,11 @@ ELSE(USE_BUILTIN_MINIZIP)
   ENDIF(MINIZIP_FOUND)
 ENDIF(USE_BUILTIN_MINIZIP)
 
-# jwtcpp
-IF(USE_BUILTIN_JWTCPP)
-  MESSAGE(STATUS "Using builtin jwt-cpp library")
-  target_include_directories(domoticz PRIVATE ${CMAKE_SOURCE_DIR}/extern/jwtcpp/include)
-ENDIF(USE_BUILTIN_JWTCPP)
+# jwtcpp - target already created above (before libwebem)
+# domoticz also needs jwt-cpp includes directly (NotificationFCM.cpp)
+IF(TARGET jwt-cpp::jwt-cpp)
+  target_link_libraries(domoticz jwt-cpp::jwt-cpp)
+ENDIF()
 
 #
 # Find MD5/RMD160/SHA library

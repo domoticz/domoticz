@@ -6,7 +6,7 @@
 #include "../main/SQLHelper.h"
 #include "../main/mainworker.h"
 #include "../main/WebServer.h"
-#include "../webserver/cWebem.h"
+#include <libwebem/cWebem.h>
 #include <json/json.h>
 
 CTellstick::CTellstick(const TelldusFunctions& functions, const int ID, int repeats, int repeatInterval)

@@ -5,14 +5,14 @@
 #include "../main/Logger.h"
 #include "../main/RFXNames.h"
 #include "../main/WebServerHelper.h"
-#include "../webserver/server_settings.hpp"
+#include <libwebem/server_settings.h>
 #include "../main/LuaTable.h"
 #include "../main/json_helper.h"
 #include "dzVents.h"
 #include "Helper.h"
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
-#include "../webserver/Base64.h"
+#include <libwebem/Base64.h>
 #ifdef WIN32
 #include "../main/dirent_windows.h"
 #else

@@ -6,7 +6,7 @@ enum _eLogLevel : uint32_t;
 
 namespace http {
 	namespace server {
-		class CWebsocketHandler;
+		class CDomoticzWebsocketHandler;
 	} // namespace server
 } // namespace http
 
@@ -15,7 +15,7 @@ namespace http {
 class CWebSocketPush : public CBasePush, public StoppableTask
 {
 public:
-	explicit CWebSocketPush(http::server::CWebsocketHandler *sock);
+	explicit CWebSocketPush(http::server::CDomoticzWebsocketHandler *sock);
 	void Start();
 	void Stop();
 	void onDeviceTableChanged(); // device added, or deleted
@@ -28,7 +28,7 @@ private:
 
 	std::mutex handlerMutex;
 	std::mutex logMutex;
-	http::server::CWebsocketHandler *m_sock;
+	http::server::CDomoticzWebsocketHandler *m_sock;
 	bool isStarted;
 
 	lsignal::slot m_sLogMessage;

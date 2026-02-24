@@ -1,4 +1,8 @@
-name: Domoticz PR Check
+name: PR Check
+
+concurrency:
+  group: linux-pr-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 
 on:
   pull_request:
@@ -19,7 +23,7 @@ env:
   PR_NR: ${{ github.event.pull_request.number }}
 
 jobs:
-  build:
+  linux:
     runs-on: ubuntu-24.04
 
     steps:

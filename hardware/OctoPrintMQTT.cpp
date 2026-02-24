@@ -6,7 +6,7 @@
 #include "../main/mainworker.h"
 #include "../main/SQLHelper.h"
 #include "../main/json_helper.h"
-#include "../webserver/Base64.h"
+#include <libwebem/Base64.h>
 #include <sstream>
 
 #define RETRY_DELAY 30

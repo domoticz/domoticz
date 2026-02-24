@@ -6,9 +6,9 @@
 #include "Logger.h"
 #include "Helper.h"
 #include "RFXNames.h"
-#include "../webserver/cWebem.h"
-#include "../webserver/request.hpp"
-#include "../webserver/reply.hpp"
+#include <libwebem/cWebem.h>
+#include <libwebem/request.h>
+#include <libwebem/reply.h>
 #include "../httpclient/HTTPClient.h"
 #include "../hardware/hardwaretypes.h"
 #include "../hardware/ColorSwitch.h"

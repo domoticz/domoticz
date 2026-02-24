@@ -4,7 +4,7 @@
 #include "../main/Logger.h"
 #include "../main/Helper.h"
 #include "../httpclient/UrlEncode.h"
-#include "../webserver/Base64.h"
+#include <libwebem/Base64.h>
 
 using namespace http::server;
 

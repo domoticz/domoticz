@@ -47,5 +47,6 @@ If you like the product or encourage the development, please use the link:
 Status | Operating system
 ------------ | -------------
 [![Status Linux](https://github.com/domoticz/domoticz/actions/workflows/development.yml/badge.svg)](https://github.com/domoticz/domoticz/actions/workflows/development.yml) | Linux x86_64
-[![Status Windows](https://ci.appveyor.com/api/projects/status/fskiwvjs1q7svwq9?svg=true)](https://ci.appveyor.com/project/gizmocuz/domoticz) | Windows
+[![Status Windows](https://github.com/domoticz/domoticz/actions/workflows/windows-development-build.yml/badge.svg)](https://github.com/domoticz/domoticz/actions/workflows/windows-development-build.yml) | Windows x86
+[![Status Windows (Appveyor)](https://ci.appveyor.com/api/projects/status/fskiwvjs1q7svwq9?svg=true)](https://ci.appveyor.com/project/gizmocuz/domoticz) | Windows (Appveyor)
 

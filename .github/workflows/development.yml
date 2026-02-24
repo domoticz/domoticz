@@ -1,5 +1,9 @@
 name: Domoticz Development (Beta)
 
+concurrency:
+  group: linux-dev-${{ github.ref }}
+  cancel-in-progress: true
+
 on:
   push:
     branches: 

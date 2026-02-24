@@ -7,10 +7,10 @@
 #include "mainworker.h"
 #include "../httpclient/HTTPClient.h"
 #include "../smtpclient/SMTPClient.h"
-#include "../webserver/Base64.h"
+#include <libwebem/Base64.h>
 #include "SQLHelper.h"
 #include "WebServer.h"
-#include "../webserver/cWebem.h"
+#include <libwebem/cWebem.h>
 #include <json/json.h>
 
 #define CAMERA_POLL_INTERVAL 30
