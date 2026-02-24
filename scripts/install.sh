@@ -563,6 +563,7 @@ Group=${Current_user}
 WorkingDirectory=${Dest_folder}
 ExecStart=${Dest_folder}/domoticz -www ${http_port} -sslwww ${https_port}
 ExecReload=/bin/kill -HUP \$MAINPID
+AmbientCapabilities=CAP_NET_BIND_SERVICE CAP_NET_RAW
 Restart=on-failure
 RestartSec=5
 
