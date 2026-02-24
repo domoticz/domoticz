@@ -1,4 +1,4 @@
-name: Domoticz Development (Beta)
+name: Domoticz Development (Beta) Unix
 
 concurrency:
   group: linux-dev-${{ github.ref }}

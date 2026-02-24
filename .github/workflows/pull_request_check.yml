@@ -1,4 +1,4 @@
-name: PR Check
+name: PR Check (Unix)
 
 concurrency:
   group: linux-pr-${{ github.event.pull_request.number || github.ref }}

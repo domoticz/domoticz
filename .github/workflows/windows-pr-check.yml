@@ -1,4 +1,4 @@
-name: PR Check
+name: PR Check (Windows)
 
 concurrency:
   group: windows-pr-${{ github.event.pull_request.number || github.ref }}
