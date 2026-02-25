@@ -11,6 +11,7 @@ readonly MAX_BACKUPS=5
 readonly DOWNLOAD_URL="https://www.domoticz.com/download.php"
 readonly ARCHIVE_NAME="domoticz_update.tgz"
 readonly CHANNEL_KEYWORD="release"
+readonly STOP_TIMEOUT=60
 
 # List of required packages (can be extended as needed)
 readonly REQUIRED_PACKAGES=(
@@ -186,14 +187,6 @@ create_backup() {
     log_info "Backup complete."
 }
 
-# Stop Domoticz service
-stop_service() {
-    log_info "Stopping Domoticz service..."
-    if ! sudo service domoticz.sh stop; then
-        log_warn "Failed to stop service (may not be running)"
-    fi
-}
-
 # Check if Domoticz service is running
 is_service_running() {
     # Check if domoticz process is running
@@ -212,6 +205,35 @@ is_service_running() {
         fi
     fi
     return 1
+}
+
+# Stop Domoticz service
+stop_service() {
+    log_info "Stopping Domoticz service..."
+    if ! sudo service domoticz.sh stop; then
+        log_warn "Failed to stop service (may not be running)"
+    fi
+
+    # Wait for process to actually exit (up to STOP_TIMEOUT seconds)
+    local wait_count=0
+    while is_service_running; do
+        if [[ $wait_count -ge $STOP_TIMEOUT ]]; then
+            log_warn "Domoticz process still running after ${STOP_TIMEOUT}s, force killing..."
+            sudo killall -9 domoticz 2>/dev/null || true
+            sleep 2
+            if is_service_running; then
+                log_warn "Domoticz process still running after force kill - continuing with update anyway"
+            fi
+            break
+        fi
+        if [[ $((wait_count % 10)) -eq 0 ]] && [[ $wait_count -gt 0 ]]; then
+            log_info "Still waiting for Domoticz to stop... (${wait_count}s)"
+        fi
+        sleep 1
+        ((wait_count++))
+    done
+
+    log_info "Domoticz process stopped."
 }
 
 # Start Domoticz service
@@ -276,7 +298,7 @@ main() {
     
     # Stop service
     stop_service
-    
+
     # Create backup unless skipped
     if [[ "$skip_backup" == false ]]; then
         create_backup

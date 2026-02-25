@@ -1,3 +1,5 @@
 {
-	"Consider enabling 2FA or passkeys for your admin account in User Settings": "Consider enabling 2FA or passkeys for your admin account in User Settings"
+	"Consider enabling 2FA or passkeys for your admin account in User Settings": "Consider enabling 2FA or passkeys for your admin account in User Settings",
+	"Service is restarting, please wait...": "Service is restarting, please wait...",
+	"Waiting for service to restart, please wait...": "Waiting for service to restart, please wait..."
 }

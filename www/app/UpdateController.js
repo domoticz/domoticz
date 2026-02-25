@@ -9,6 +9,7 @@ define(['app'], function (app) {
 		$scope.statusText = "";
 		$scope.outputLines = [];  // Store last 10 lines of output
 		$scope.showOutput = false;  // Toggle output box visibility
+		$scope.updateElapsed = 0;
 
 		$scope.ProgressData = {
 			label: 0,
@@ -116,15 +117,21 @@ define(['app'], function (app) {
 						$scope.serviceRestarting = true;
 						$scope.showOutput = false;
 						$scope.statusText = $.t("Service is restarting, please wait...");
+						$scope.topText = $.t("Service is restarting, please wait...");
 					}
 				}
 			);
 		};
 
 		$scope.progressupdatesystem = function () {
-			var val = $scope.ProgressData.label;
-			$scope.ProgressData.label = val + 1;
-			if ((val == 100)||($scope.updateReady)) {
+			$scope.updateElapsed = ($scope.updateElapsed || 0) + 1;
+			if ($scope.ProgressData.label < 100) {
+				$scope.ProgressData.label = $scope.ProgressData.label + 1;
+				if ($scope.ProgressData.label == 100 && !$scope.updateReady) {
+					$scope.topText = $.t("Waiting for service to restart, please wait...");
+				}
+			}
+			if (($scope.updateElapsed == 300)||($scope.updateReady)) {
 				if (typeof $scope.mytimer != 'undefined') {
 					$interval.cancel($scope.mytimer);
 					$scope.mytimer = undefined;
