@@ -658,7 +658,7 @@ bool ParseConfigFile(const std::string &szConfigFile)
 
 void DisplayAppVersion()
 {
-	_log.Log(LOG_STATUS, "Domoticz V%s (c)2012-%d GizMoCuz", szAppVersion.c_str(), ActYear);
+	_log.Log(LOG_STATUS, "Domoticz V%s-%s (c)2012-%d GizMoCuz", szAppVersion.c_str(), VERSION_CHANNEL, ActYear);
 	_log.Log(LOG_STATUS, "Build Hash: %s, Date: %s", szAppHash.c_str(), szAppDate.c_str());
 }
 
