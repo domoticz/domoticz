@@ -729,7 +729,21 @@ void CRtl433::Do_Work()
 				dup2(devnull, STDERR_FILENO);
 				close(devnull);
 			}
-			execl("/bin/sh", "sh", "-c", szCommand.c_str(), (char *)nullptr);
+			// Build argv directly from szFlags so execvp() replaces this
+			// process image with rtl_433 itself (no shell wrapper).  That
+			// way SIGTERM sent to m_pid always kills the actual rtl_433
+			// process and never leaves an orphan.
+			std::vector<std::string> tokens;
+			std::istringstream iss(szFlags);
+			std::string tok;
+			while (iss >> tok)
+				tokens.push_back(tok);
+			std::vector<char *> argv;
+			argv.push_back(const_cast<char *>("rtl_433")); // argv[0]
+			for (auto &t : tokens)
+				argv.push_back(const_cast<char *>(t.c_str()));
+			argv.push_back(nullptr);
+			execvp("rtl_433", argv.data());
 			_exit(127);
 		}
 
