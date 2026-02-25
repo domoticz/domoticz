@@ -4139,8 +4139,7 @@ namespace http
 			std::vector<std::vector<std::string>> result;
 			bool bUseValues = false;
 
-			/* if bUseValuesOrCounter is true, then find out if there are any Counter values in the table, if not: use Value instead of Counter */
-			if (bUseValuesOrCounter)
+			/* find out if there are any Counter values in the table, if not: use Value instead of Counter */
 			{
 				queryString = "select count(*) from " + dbasetable + " where DeviceRowID = " + std::to_string(idx) + " and " + counter("") + " != 0 ";
 				result = m_sql.safe_query(queryString.c_str(), idx, idx, idx, idx, idx);

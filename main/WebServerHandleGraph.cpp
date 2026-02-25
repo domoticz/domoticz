@@ -2633,6 +2633,11 @@ namespace http
 					{
 						root["title"] = "Comparing " + sensor;
 						MakeCompareDataSensor(root, sgroupby, dbasetable, idx, "Total", 1, true);
+						if (AddjMulti != 1.0)
+						{
+							for (auto& itt : root["result"])
+								itt["s"] = itt["s"].asDouble() * AddjMulti;
+						}
 						return;
 					}
 
@@ -2910,7 +2915,14 @@ namespace http
 						if (!sgroupby.empty())
 						{
 							root["title"] = "Comparing " + sensor;
-							MakeCompareDataSensor(root, sgroupby, dbasetable, idx, "Value3");
+							MakeCompareDataSensor(root, sgroupby, dbasetable, idx, "Value3", 10.0);
+							if (m_sql.m_weightscale != 1.0)
+							{
+								for (auto& itt : root["result"])
+								{
+									itt["s"] = itt["s"].asDouble() * m_sql.m_weightscale;
+								}
+							}
 							return;
 						}
 
@@ -3080,7 +3092,14 @@ namespace http
 						if (!sgroupby.empty())
 						{
 							root["title"] = "Comparing " + sensor;
-							MakeCompareDataSensor(root, sgroupby, dbasetable, idx, "Value3");
+							MakeCompareDataSensor(root, sgroupby, dbasetable, idx, "Value3", 10.0);
+							if (m_sql.m_weightscale != 1.0)
+							{
+								for (auto& itt : root["result"])
+								{
+									itt["s"] = itt["s"].asDouble() * m_sql.m_weightscale;
+								}
+							}
 							return;
 						}
 
@@ -3109,7 +3128,7 @@ namespace http
 						if (!sgroupby.empty())
 						{
 							root["title"] = "Comparing " + sensor;
-							MakeCompareDataSensor(root, sgroupby, dbasetable, idx, "Value2");
+							MakeCompareDataSensor(root, sgroupby, dbasetable, idx, "Value2", 10.0);
 							return;
 						}
 						root["title"] = "Graph " + sensor + " " + srange;
@@ -3894,6 +3913,13 @@ namespace http
 					{
 						root["title"] = "Comparing " + sensor;
 						MakeCompareDataSensor(root, sgroupby, dbasetable, idx, "Speed_Max");
+						for (auto& itt : root["result"])
+						{
+							if (m_sql.m_windunit != WINDUNIT_Beaufort)
+								itt["s"] = itt["s"].asDouble() * m_sql.m_windscale;
+							else
+								itt["s"] = MStoBeaufort(static_cast<float>(itt["s"].asDouble() * 0.1F));
+						}
 						return;
 					}
 
