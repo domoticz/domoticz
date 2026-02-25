@@ -691,16 +691,17 @@ namespace http
 			m_bDoStop = true;
 			try
 			{
-				if (m_pWebEm == nullptr)
-					return;
-				m_pWebEm->Stop();
+				if (m_pWebEm != nullptr)
+				{
+					m_pWebEm->Stop();
+					delete m_pWebEm;
+					m_pWebEm = nullptr;
+				}
 				if (m_thread)
 				{
 					m_thread->join();
 					m_thread.reset();
 				}
-				delete m_pWebEm;
-				m_pWebEm = nullptr;
 			}
 			catch (...)
 			{

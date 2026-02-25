@@ -39,9 +39,13 @@ namespace http {
 				secureServer_.reset(new CWebServer());
 				if (iam_settings.is_enabled())
 					secureServer_->SetIamSettings(iam_settings);
-				bRet |= secureServer_->StartServer(secure_web_settings, serverpath, bIgnoreUsernamePassword);
-				if (bRet) {
+				bool bRetSSL = secureServer_->StartServer(secure_web_settings, serverpath, bIgnoreUsernamePassword);
+				if (bRetSSL) {
 					serverCollection.push_back(secureServer_);
+					bRet |= true;
+				}
+				else {
+					secureServer_.reset();
 				}
 			}
 #endif
