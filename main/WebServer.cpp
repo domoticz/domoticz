@@ -4729,6 +4729,19 @@ namespace http
 			}
 		}
 
+		void CWebServer::RenewSessionExpiration(const std::string& sessionId, time_t expires)
+		{
+			if (sessionId.empty())
+				return;
+			char szExpires[30];
+			struct tm ltime;
+			localtime_r(&expires, &ltime);
+			strftime(szExpires, sizeof(szExpires), "%Y-%m-%d %H:%M:%S", &ltime);
+			m_sql.safe_query(
+				"UPDATE UserSessions SET ExpirationDate = '%q', LastUpdate = datetime('now', 'localtime') WHERE SessionID = '%q'",
+				szExpires, sessionId.c_str());
+		}
+
 		/**
 		 * Remove user session and expired sessions.
 		 */

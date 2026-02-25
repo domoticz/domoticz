@@ -106,6 +106,7 @@ class CWebServer : public session_store, public std::enable_shared_from_this<CWe
 	// SessionStore interface
 	WebEmStoredSession GetSession(const std::string &sessionId) override;
 	void StoreSession(const WebEmStoredSession & session) override;
+	void RenewSessionExpiration(const std::string & sessionId, time_t expires) override;
 	void RemoveSession(const std::string & sessionId) override;
 	void CleanSessions() override;
 	void RemoveUsersSessions(const std::string& username, const WebEmSession & exceptSession);
