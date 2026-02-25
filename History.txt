@@ -71,6 +71,7 @@ Version 2026.xxxx
 - Fixed: Scene triggering delay caused by event system thread pool saturation
 - Fixed: SolarEdge API, power readings persisting stale values when idle
 - Fixed: Temperature Compare Chart (Min/Max values)
+- Fixed: Web update not restarting properly when Python plugins are active (#6602)
 - Fixed: WOL, Corrected magic packet creation and supporting IPv6 broadcast
 - Changed: Domoticz Remote, Do not force re-enable RemoteSharedPort on startup
 - Changed: Enphase, default to new firmware info request
