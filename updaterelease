@@ -29,9 +29,9 @@ readonly YELLOW='\033[1;33m'
 readonly NC='\033[0m' # No Color
 
 # Logging functions
-log_info() { echo -e "${GREEN}>>${NC} $*"; }
-log_warn() { echo -e "${YELLOW}>>${NC} $*"; }
-log_error() { echo -e "${RED}>>${NC} $*" >&2; }
+log_info() { echo -e "$(date '+%Y-%m-%d %H:%M:%S.%3N') ${GREEN}>>${NC} $*"; }
+log_warn() { echo -e "$(date '+%Y-%m-%d %H:%M:%S.%3N') ${YELLOW}>>${NC} $*"; }
+log_error() { echo -e "$(date '+%Y-%m-%d %H:%M:%S.%3N') ${RED}>>${NC} $*" >&2; }
 die() {
     local error_msg="$*"
     log_error "$error_msg"
