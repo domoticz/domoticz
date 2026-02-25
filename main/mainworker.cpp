@@ -1255,6 +1255,10 @@ bool MainWorker::Start()
 
 bool MainWorker::Stop()
 {
+	if (m_bStopped)
+		return true;
+	m_bStopped = true;
+
 	if (m_thread)
 	{
 		m_notificationsystem.NotifyWait(Notification::DZ_STOP, Notification::STATUS_INFO); // blocking call
@@ -1267,30 +1271,35 @@ bool MainWorker::Stop()
 		m_rxMessageThread->join();
 		m_rxMessageThread.reset();
 	}
+
+	// Stop all subsystems that may have been started before the main thread.
+	// These must be cleaned up even if Start() failed partway through
+	// (e.g. webserver bind failure), otherwise their threads are destroyed
+	// without being joined, causing 'terminate called without an active exception'.
+	_log.Log(LOG_STATUS, "Stopping all hardware...");
+	StopDomoticzHardware();
+	m_webservers.StopServers();
+	m_sharedserver.StopServer();
+	m_scheduler.StopScheduler();
+	m_eventsystem.StopEventSystem();
+	m_notificationsystem.Stop();
+	m_fibaropush.Stop();
+	m_httppush.Stop();
+	m_influxpush.Stop();
+	m_mqttpush.Stop();
+	m_googlepubsubpush.Stop();
+#ifdef ENABLE_PYTHON
+	m_pluginsystem.StopPluginSystem();
+#endif
+	if (m_mdns.isServiceRunning())	// Stop mDNS service
+		m_mdns.stopService();
+
+	//    m_cameras.StopCameraGrabber();
+
+	HTTPClient::Cleanup();
+
 	if (m_thread)
 	{
-		_log.Log(LOG_STATUS, "Stopping all hardware...");
-		StopDomoticzHardware();
-		m_webservers.StopServers();
-		m_sharedserver.StopServer();
-		m_scheduler.StopScheduler();
-		m_eventsystem.StopEventSystem();
-		m_notificationsystem.Stop();
-		m_fibaropush.Stop();
-		m_httppush.Stop();
-		m_influxpush.Stop();
-		m_mqttpush.Stop();
-		m_googlepubsubpush.Stop();
-#ifdef ENABLE_PYTHON
-		m_pluginsystem.StopPluginSystem();
-#endif
-		if (m_mdns.isServiceRunning())	// Stop mDNS service
-			m_mdns.stopService();
-
-		//    m_cameras.StopCameraGrabber();
-
-		HTTPClient::Cleanup();
-
 		RequestStop();
 		m_thread->join();
 		m_thread.reset();

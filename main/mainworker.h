@@ -162,6 +162,7 @@ private:
 
 	std::string m_szDomoticzUpdateChecksumURL;
 	bool m_bStartHardware;
+	bool m_bStopped{ false };
 	uint8_t m_hardwareStartCounter;
 
 	std::vector<CDomoticzHardwareBase*> m_hardwaredevices;
