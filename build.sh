@@ -80,14 +80,15 @@ if [ "$BUILD_ONLY" = false ]; then
     fi
 fi
 
-printf '\033[1;32m'; cat appversion.h; printf '\033[0m'
-
 cmake -DCMAKE_BUILD_TYPE=Release .
 if [ $? -ne 0 ]
 then
 	echo "CMake failed!";
 	exit 1
 fi
+
+printf '\033[1;32m'; cat appversion.h; printf '\033[0m'
+
 make -j$(nproc)
 if [ $? -ne 0 ]
 then
