@@ -692,15 +692,16 @@ namespace http
 			try
 			{
 				if (m_pWebEm != nullptr)
-				{
 					m_pWebEm->Stop();
-					delete m_pWebEm;
-					m_pWebEm = nullptr;
-				}
 				if (m_thread)
 				{
 					m_thread->join();
 					m_thread.reset();
+				}
+				if (m_pWebEm != nullptr)
+				{
+					delete m_pWebEm;
+					m_pWebEm = nullptr;
 				}
 			}
 			catch (...)
