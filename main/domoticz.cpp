@@ -1215,6 +1215,7 @@ int main(int argc, char**argv)
 		sigaction(SIGILL, &newSigAction, nullptr);  // catch invalid program image
 		sigaction(SIGFPE, &newSigAction, nullptr);  // catch floating point error
 		sigaction(SIGUSR1, &newSigAction, nullptr); // catch SIGUSR1 (used by watchdog)
+		sigaction(SIGHUP, &newSigAction, nullptr);  // catch HUP, for log rotation
 #else
 		signal(SIGINT, signal_handler);
 		signal(SIGTERM, signal_handler);
@@ -1260,6 +1261,13 @@ int main(int argc, char**argv)
 	{
 		sleep_seconds(1);
 		m_LastHeartbeat = mytime(nullptr);
+
+		// Deferred SIGHUP processing: reopen log file in safe thread context
+		if (g_bReopenLogFile.exchange(false, std::memory_order_acq_rel))
+		{
+			if (!logfile.empty())
+				_log.SetOutputFile(logfile.c_str());
+		}
 	}
 #endif
 	_log.Log(LOG_STATUS, "Closing application!...");

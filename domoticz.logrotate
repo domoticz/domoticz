@@ -1,0 +1,11 @@
+/home/*/domoticz/domoticz.log {
+    daily
+    rotate 7
+    compress
+    delaycompress
+    missingok
+    notifempty
+    postrotate
+        systemctl reload domoticz > /dev/null 2>&1 || true
+    endscript
+}
