@@ -28,6 +28,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          submodules: true
 
       - name: Setup MSBuild
         uses: microsoft/setup-msbuild@v1.3
@@ -49,9 +50,23 @@ jobs:
           7z x WindowsLibraries.7z | Out-Null
           cd ..
 
+      - name: Configure libwebem build paths
+        shell: powershell
+        run: |
+          $propsContent = @"
+          <Project>
+            <ItemDefinitionGroup>
+              <ClCompile>
+                <AdditionalIncludeDirectories>${{ github.workspace }}\msbuild\Windows Libraries\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+              </ClCompile>
+            </ItemDefinitionGroup>
+          </Project>
+          "@
+          $propsContent | Out-File -FilePath "extern\libwebem\Directory.Build.props" -Encoding utf8
+
       - name: Build Domoticz
         shell: cmd
-        run: msbuild msbuild\domoticz.sln /m /p:Configuration=${{ env.CONFIGURATION }} /p:Platform=${{ env.PLATFORM }} /verbosity:minimal
+        run: msbuild msbuild\domoticz.sln /m /p:Configuration=%CONFIGURATION% /p:Platform=%PLATFORM% /verbosity:minimal
 
       - name: Create installer and package
         shell: cmd
