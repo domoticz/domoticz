@@ -223,6 +223,9 @@ namespace http
 			);
 
 			m_pWebEm->SetDigistRealm(sRealm);
+			// Maintain backward compatibility: libwebem defaults to "SID" but Domoticz
+			// uses "DMZSID" to preserve existing session cookies from before the libwebem extraction
+			m_pWebEm->SetSessionCookieName("DMZSID");
 			m_pWebEm->SetSessionStore(this);
 
 			LoadUsers();
