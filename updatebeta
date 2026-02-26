@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Domoticz Update Script
-# Created by GizMoCuz, 2026, version 2.3
+# Created by GizMoCuz, 2026, version 2.4
 # Usage: ./update_domoticz [--no-backup]
 
 readonly SCRIPT_NAME="$(basename "$0")"
@@ -12,6 +12,10 @@ readonly DOWNLOAD_URL="https://www.domoticz.com/download.php"
 readonly ARCHIVE_NAME="domoticz_update.tgz"
 readonly CHANNEL_KEYWORD="beta"
 readonly STOP_TIMEOUT=60
+
+# Default service name; updated by detect_service_name()
+DETECTED_SERVICE="domoticz.sh"
+SERVICE_DETECTED=false
 
 # List of required packages (can be extended as needed)
 readonly REQUIRED_PACKAGES=(
@@ -187,6 +191,24 @@ create_backup() {
     log_info "Backup complete."
 }
 
+# Detect whether to use native domoticz.service or legacy domoticz.sh
+# The installer (scripts/install.sh) places a native unit at /etc/systemd/system/domoticz.service
+# Result is cached in DETECTED_SERVICE
+detect_service_name() {
+    # Only run detection once
+    if [[ "$SERVICE_DETECTED" == "true" ]]; then
+        return 0
+    fi
+    SERVICE_DETECTED=true
+    if [[ -f /etc/systemd/system/domoticz.service ]]; then
+        DETECTED_SERVICE="domoticz"
+        log_info "Detected native systemd unit: /etc/systemd/system/domoticz.service"
+    else
+        DETECTED_SERVICE="domoticz.sh"
+        log_info "Using SysV init service: domoticz.sh"
+    fi
+}
+
 # Check if Domoticz service is running
 is_service_running() {
     # Check if domoticz process is running
@@ -196,7 +218,7 @@ is_service_running() {
     # Also check via systemctl if available
     if command -v systemctl > /dev/null 2>&1; then
         local status
-        status=$(systemctl is-active domoticz.sh 2>/dev/null)
+        status=$(systemctl is-active "$DETECTED_SERVICE" 2>/dev/null)
         if [ "$status" = "active" ]; then
             # Double-check it's not "active (exited)" by verifying process exists
             if pgrep -x domoticz > /dev/null 2>&1; then
@@ -209,8 +231,12 @@ is_service_running() {
 
 # Stop Domoticz service
 stop_service() {
+    # Detect service name and the user running domoticz (for fallback direct start)
+    detect_service_name
+    DOMOTICZ_USER=$(ps -o user= -p "$(pgrep -x domoticz 2>/dev/null | head -1)" 2>/dev/null || echo "")
+
     log_info "Stopping Domoticz service..."
-    if ! sudo service domoticz.sh stop; then
+    if ! sudo service "$DETECTED_SERVICE" stop; then
         log_warn "Failed to stop service (may not be running)"
     fi
 
@@ -238,9 +264,58 @@ stop_service() {
 
 # Start Domoticz service
 start_service() {
+    local start_timeout=30
+    local fallback_timeout=10
+    local wait_count
+
     log_info "Starting Domoticz service (please wait)..."
-    sudo service domoticz.sh start
-    log_info "Service started successfully."
+
+    # Attempt to start via service manager; capture stderr for diagnostics
+    local start_err
+    if ! start_err=$(sudo service "$DETECTED_SERVICE" start 2>&1); then
+        log_warn "Service start command returned non-zero exit code."
+        if [[ -n "$start_err" ]]; then
+            log_warn "Service manager output: $start_err"
+        fi
+    fi
+
+    # Wait up to start_timeout seconds for the process to appear, regardless of
+    # whether the service command succeeded (systemd may timeout but the process
+    # can still be starting up).
+    log_info "Waiting up to ${start_timeout}s for Domoticz to start..."
+    wait_count=0
+    while [[ $wait_count -lt $start_timeout ]]; do
+        if is_service_running; then
+            log_info "Service started successfully."
+            return 0
+        fi
+        sleep 1
+        ((wait_count++))
+    done
+
+    # Service didn't come up via the service manager - try a direct fallback
+    local run_user="${DOMOTICZ_USER:-}"
+    if [[ -z "$run_user" ]]; then
+        run_user="$(whoami)"
+    fi
+    log_warn "Domoticz did not start within ${start_timeout}s via service manager."
+    log_warn "Attempting direct fallback start as user '$run_user'..."
+    if [[ ! -x "$SCRIPT_DIR/domoticz" ]]; then
+        die "Domoticz binary not found or not executable at: $SCRIPT_DIR/domoticz"
+    fi
+    sudo -u "$run_user" "$SCRIPT_DIR/domoticz" -daemon
+
+    wait_count=0
+    while [[ $wait_count -lt $fallback_timeout ]]; do
+        if is_service_running; then
+            log_info "Service started successfully via direct fallback."
+            return 0
+        fi
+        sleep 1
+        ((wait_count++))
+    done
+
+    die "Failed to start Domoticz! Please start manually with: sudo service $DETECTED_SERVICE start"
 }
 
 # Install new version
