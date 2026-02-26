@@ -17,3 +17,4 @@
 [submodule "extern/libwebem"]
 	path = extern/libwebem
 	url = https://github.com/domoticz/libwebem.git
+	branch = master
