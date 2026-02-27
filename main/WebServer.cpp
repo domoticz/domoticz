@@ -216,8 +216,11 @@ namespace http
 
 			m_pWebEm->RegisterWebsocketEndpoint(
 				"/",
-				[](http::server::cWebem* webem, std::function<void(const std::string&)> writer) {
-					return std::make_shared<CDomoticzWebsocketHandler>(webem, std::move(writer));
+				[](http::server::cWebem* webem,
+				   std::function<void(const std::string&)> writer,
+				   std::function<void(const std::string&)> /*binary_writer*/,
+				   const http::server::WebEmSession& session) {
+					return std::make_shared<CDomoticzWebsocketHandler>(webem, std::move(writer), session);
 				},
 				"domoticz"
 			);

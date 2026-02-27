@@ -13,8 +13,9 @@
 namespace http {
 	namespace server {
 
-		CDomoticzWebsocketHandler::CDomoticzWebsocketHandler(cWebem* pWebem, std::function<void(const std::string& packet_data)> _MyWrite)
+		CDomoticzWebsocketHandler::CDomoticzWebsocketHandler(cWebem* pWebem, std::function<void(const std::string& packet_data)> _MyWrite, const WebEmSession& session)
 			: MyWrite(std::move(_MyWrite))
+			, m_session(session)
 			, myWebem(pWebem)
 			, m_Push(this)
 		{
@@ -103,7 +104,7 @@ namespace http {
 		{
 			// WebSockets only do security during set up so keep pushing the expiry out to stop it being cleaned up
 			WebEmSession session;
-			auto itt = myWebem->m_sessions.find(sessionid);
+			auto itt = myWebem->m_sessions.find(m_session.id);
 			if (itt != myWebem->m_sessions.end())
 			{
 				session = itt->second;
@@ -178,7 +179,7 @@ namespace http {
 		{
 			// WebSockets only do security during set up so keep pushing the expiry out to stop it being cleaned up
 			WebEmSession session;
-			auto itt = myWebem->m_sessions.find(sessionid);
+			auto itt = myWebem->m_sessions.find(m_session.id);
 			if (itt != myWebem->m_sessions.end())
 			{
 				session = itt->second;
@@ -217,7 +218,7 @@ namespace http {
 		{
 			// WebSockets only do security during set up so keep pushing the expiry out to stop it being cleaned up
 			WebEmSession session;
-			auto itt = myWebem->m_sessions.find(sessionid);
+			auto itt = myWebem->m_sessions.find(m_session.id);
 			if (itt != myWebem->m_sessions.end())
 			{
 				session = itt->second;
@@ -252,49 +253,6 @@ namespace http {
 			return false;
 		}
 
-
-		void CDomoticzWebsocketHandler::store_session_id(const request& req, const reply& rep)
-		{
-			//Check cookie if still valid
-			const char* cookie_header = request::get_req_header(&req, "Cookie");
-			if (cookie_header != nullptr)
-			{
-				std::string sSID;
-				std::string szTime;
-
-				// Parse session id and its expiration date
-				std::string scookie = cookie_header;
-				size_t fpos = scookie.find("DMZSID=");
-				if (fpos != std::string::npos)
-				{
-					scookie = scookie.substr(fpos);
-					fpos = 0;
-					size_t epos = scookie.find(';');
-					if (epos != std::string::npos)
-					{
-						scookie = scookie.substr(0, epos);
-					}
-				}
-				size_t upos = scookie.find('_', fpos);
-				size_t ppos = scookie.find('.', upos);
-				time_t now = mytime(nullptr);
-				if ((fpos != std::string::npos) && (upos != std::string::npos) && (ppos != std::string::npos))
-				{
-					sSID = scookie.substr(fpos + 7, upos - fpos - 7);
-					szTime = scookie.substr(ppos + 1);
-
-					time_t stime;
-					std::stringstream sstr;
-					sstr << szTime;
-					sstr >> stime;
-
-					bool expired = stime < now;
-					if (!expired) {
-						sessionid = sSID;
-					}
-				}
-			}
-		}
 
 		bool CDomoticzWebsocketHandler::subscribeTo(const std::string& szTopic)
 		{

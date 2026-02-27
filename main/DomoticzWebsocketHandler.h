@@ -1,8 +1,7 @@
 #pragma once
 
 #include <libwebem/IWebsocketHandler.h>
-#include <libwebem/request.h>
-#include <libwebem/reply.h>
+#include <libwebem/session.h>
 #include "../push/WebsocketPush.h"
 #include "StoppableTask.h"
 #include <thread>
@@ -26,7 +25,7 @@ namespace http
 		class CDomoticzWebsocketHandler : public IWebsocketHandler, public StoppableTask
 		{
 		public:
-			CDomoticzWebsocketHandler(cWebem* pWebem, std::function<void(const std::string& packet_data)> _MyWrite);
+			CDomoticzWebsocketHandler(cWebem* pWebem, std::function<void(const std::string& packet_data)> _MyWrite, const WebEmSession& session);
 			~CDomoticzWebsocketHandler() override;
 			bool Handle(const std::string& packet_data, bool outbound) override;
 			void Start() override;
@@ -35,14 +34,13 @@ namespace http
 			void OnSceneChanged(uint64_t SceneRowIdx);
 			void SendNotification(const std::string& Subject, const std::string& Text, const std::string& ExtraData, int Priority, const std::string& Sound, bool bFromNotification);
 			void SendLogMessage(int iLevel, const std::string& szMessage);
-			void store_session_id(const request& req, const reply& rep) override;
 
 			bool subscribeTo(const std::string& szTopic);
 			bool unsubscribeFrom(const std::string& szTopic);
 
 		protected:
 			std::function<void(const std::string& packet_data)> MyWrite;
-			std::string sessionid;
+			WebEmSession m_session;
 			cWebem* myWebem;
 			CWebSocketPush m_Push;
 
