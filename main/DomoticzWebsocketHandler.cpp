@@ -8,7 +8,6 @@
 #include <libwebem/cWebem.h>
 #include "Logger.h"
 
-#define WEBSOCKET_SESSION_TIMEOUT 86400 // 1 day
 
 namespace http {
 	namespace server {
@@ -102,27 +101,6 @@ namespace http {
 
 		bool CDomoticzWebsocketHandler::HandleRequest(const std::string& szEvent, const Json::Value& value, const bool outbound)
 		{
-			// WebSockets only do security during set up so keep pushing the expiry out to stop it being cleaned up
-			WebEmSession session;
-			auto itt = myWebem->m_sessions.find(m_session.id);
-			if (itt != myWebem->m_sessions.end())
-			{
-				session = itt->second;
-			}
-			else
-			{
-				// for outbound messages create a temporary session if required
-				// todo: Add the username and rights from the original connection
-				if (outbound)
-				{
-					time_t nowAnd1Day = ((time_t)mytime(nullptr)) + WEBSOCKET_SESSION_TIMEOUT;
-					session.expires = nowAnd1Day;
-					session.isnew = false;
-					session.rememberme = false;
-					session.reply_status = 200;
-				}
-			}
-
 			request req;
 			req.method = "GET";
 			std::string querystring = value["query"].asString();
@@ -132,7 +110,7 @@ namespace http {
 			req.headers.resize(0); // todo: do we need any headers?
 			req.content.clear();
 			reply rep;
-			if (myWebem->CheckForPageOverride(session, req, rep)) {
+			if (myWebem->CheckForPageOverride(m_session, req, rep)) {
 				if (rep.status == reply::ok) {
 
 					bool bInternal = false;
@@ -177,27 +155,6 @@ namespace http {
 
 		bool CDomoticzWebsocketHandler::HandleSubscribe(const std::string& szEvent, const Json::Value& value, const bool outbound)
 		{
-			// WebSockets only do security during set up so keep pushing the expiry out to stop it being cleaned up
-			WebEmSession session;
-			auto itt = myWebem->m_sessions.find(m_session.id);
-			if (itt != myWebem->m_sessions.end())
-			{
-				session = itt->second;
-			}
-			else
-			{
-				// for outbound messages create a temporary session if required
-				// todo: Add the username and rights from the original connection
-				if (outbound)
-				{
-					time_t nowAnd1Day = ((time_t)mytime(nullptr)) + WEBSOCKET_SESSION_TIMEOUT;
-					session.expires = nowAnd1Day;
-					session.isnew = false;
-					session.rememberme = false;
-					session.reply_status = 200;
-				}
-			}
-
 			std::string szTopic = value["topic"].asString();
 			if (szTopic.empty())
 				return false;
@@ -216,27 +173,6 @@ namespace http {
 
 		bool CDomoticzWebsocketHandler::HandleUnsubscribe(const std::string& szEvent, const Json::Value& value, const bool outbound)
 		{
-			// WebSockets only do security during set up so keep pushing the expiry out to stop it being cleaned up
-			WebEmSession session;
-			auto itt = myWebem->m_sessions.find(m_session.id);
-			if (itt != myWebem->m_sessions.end())
-			{
-				session = itt->second;
-			}
-			else
-			{
-				// for outbound messages create a temporary session if required
-				// todo: Add the username and rights from the original connection
-				if (outbound)
-				{
-					time_t nowAnd1Day = ((time_t)mytime(nullptr)) + WEBSOCKET_SESSION_TIMEOUT;
-					session.expires = nowAnd1Day;
-					session.isnew = false;
-					session.rememberme = false;
-					session.reply_status = 200;
-				}
-			}
-
 			std::string szTopic = value["topic"].asString();
 			if (szTopic.empty())
 				return false;
