@@ -10,7 +10,7 @@
 #include "resource.h"
 #include <setupapi.h>
 
-extern bool g_bStopApplication;
+#include "../main/SignalHandler.h"
 
 #include <comdef.h>
 #include <WbemCli.h>
