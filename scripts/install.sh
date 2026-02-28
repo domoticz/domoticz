@@ -561,11 +561,14 @@ Type=simple
 User=${Current_user}
 Group=${Current_user}
 WorkingDirectory=${Dest_folder}
+# Do NOT add -daemon here. Type=simple requires the process to stay in the foreground.
+# Adding -daemon causes a fork that prevents clean shutdown via systemctl stop.
 ExecStart=${Dest_folder}/domoticz -www ${http_port} -sslwww ${https_port}
 ExecReload=/bin/kill -HUP \$MAINPID
 AmbientCapabilities=CAP_NET_BIND_SERVICE CAP_NET_RAW
 Restart=on-failure
 RestartSec=5
+TimeoutStopSec=30
 
 [Install]
 WantedBy=multi-user.target

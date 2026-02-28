@@ -154,9 +154,10 @@ domoticz_mdns::mDNS m_mdns;
 
 std::string logfile;
 std::string weblogfile;
-bool g_bStopApplication = false;
+std::atomic<bool> g_bStopApplication{false};
 bool g_bUseSyslog = false;
 bool g_bRunAsDaemon = false;
+bool g_bWritePidFile = false;  // true when -pidfile is explicitly requested (with or without -daemon)
 http::server::_eWebCompressionMode g_wwwCompressMode = http::server::WWW_USE_GZIP;
 bool g_bUseUpdater = true;
 http::server::server_settings webserver_settings;
@@ -1146,6 +1147,7 @@ int main(int argc, char**argv)
 		if (cmdLine.HasSwitch("-pidfile"))
 		{
 			pidfile = cmdLine.GetSafeArgument("-pidfile", 0, PID_FILE);
+			g_bWritePidFile = true;
 		}
 
 		if (cmdLine.HasSwitch("-syslog"))
@@ -1235,6 +1237,23 @@ int main(int argc, char**argv)
 
 	m_StartTime = time(nullptr);
 
+#ifndef WIN32
+	// Write PID file in non-daemon mode when explicitly requested via -pidfile
+	if (!g_bRunAsDaemon && g_bWritePidFile)
+	{
+		FILE *f = fopen(pidfile.c_str(), "w");
+		if (f)
+		{
+			fprintf(f, "%d\n", getpid());
+			fclose(f);
+		}
+		else
+		{
+			_log.Log(LOG_ERROR, "Could not write PID file: %s", pidfile.c_str());
+		}
+	}
+#endif
+
 	/* now, lets get into an infinite loop of doing nothing. */
 #if defined WIN32
 #ifndef _DEBUG
@@ -1273,6 +1292,12 @@ int main(int argc, char**argv)
 #endif
 	_log.Log(LOG_STATUS, "Closing application!...");
 	fflush(stdout);
+
+	// Stop watchdog before stopping workers so it cannot interfere
+	// with the shutdown by detecting stale heartbeats while workers wind down.
+	g_stop_watchdog = true;
+	thread_watchdog.join();
+
 	_log.Log(LOG_STATUS, "Stopping worker...");
 	try
 	{
@@ -1292,13 +1317,16 @@ int main(int argc, char**argv)
 		// Delete PID file
 		remove(pidfile.c_str());
 	}
+	else if (g_bWritePidFile)
+	{
+		// Non-daemon mode with explicit -pidfile: clean up PID file
+		remove(pidfile.c_str());
+	}
 #else
 	// Release WinSock
 	WSACleanup();
 	CoUninitialize();
 #endif
-	g_stop_watchdog = true;
-	thread_watchdog.join();
 	return 0;
 }
 

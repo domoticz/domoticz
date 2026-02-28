@@ -30,7 +30,7 @@
 extern MainWorker m_mainworker;
 
 extern std::string logfile;
-extern bool g_bStopApplication;
+extern std::atomic<bool> g_bStopApplication;
 extern bool g_bUseSyslog;
 extern bool g_bRunAsDaemon;
 
@@ -536,6 +536,8 @@ void Do_Watchdog_Work()
 	while(!g_stop_watchdog)
 	{
 		sleep_milliseconds(1000);
+		if (g_stop_watchdog)
+			break;
 		heartbeat_check();
 	}
 }

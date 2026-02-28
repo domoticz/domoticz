@@ -3,6 +3,7 @@
 
 extern bool g_stop_watchdog;
 extern std::atomic<bool> g_bReopenLogFile;
+extern std::atomic<bool> g_bStopApplication;
 
 void signal_handler(int sig_num
 #ifndef WIN32
