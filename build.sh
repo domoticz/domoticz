@@ -66,7 +66,7 @@ if [ "$BUILD_ONLY" = false ]; then
 
     # Make sure we are on latest commit
     echo "Updating to server revision..."
-    git fetch --all
+    git fetch --all --recurse-submodules=no
 
     git reset --hard ${BRANCH}
     git submodule update --init --recursive --force
