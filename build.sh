@@ -1,10 +1,10 @@
 #!/bin/sh
 
-# Usage: ./build.sh <arch> [beta|release] [force]   — full build + upload (CI)
-#        ./build.sh [beta|release]                   — build only, no upload (developer)
+# Usage: ./build.sh <arch> [beta|release] [force]   - full build + upload (CI)
+#        ./build.sh [beta|release]                   - build only, no upload (developer)
 # Example: ./build.sh armv7l
 #          ./build.sh aarch64 release
-#          ./build.sh beta              — developer build, no upload
+#          ./build.sh beta              - developer build, no upload
 
 set -e
 
