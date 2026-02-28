@@ -27,7 +27,6 @@ private:
 	void OnLogMessage(const _eLogLevel level, const std::string& sLogline);
 
 	std::mutex handlerMutex;
-	std::mutex logMutex;
 	http::server::CDomoticzWebsocketHandler *m_sock;
 	bool isStarted;
 

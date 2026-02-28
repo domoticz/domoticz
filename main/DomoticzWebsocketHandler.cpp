@@ -101,6 +101,7 @@ namespace http {
 
 		bool CDomoticzWebsocketHandler::HandleRequest(const std::string& szEvent, const Json::Value& value, const bool outbound)
 		{
+			WebEmSession session = m_session; // local copy — thread-safe
 			request req;
 			req.method = "GET";
 			std::string querystring = value["query"].asString();
@@ -110,7 +111,7 @@ namespace http {
 			req.headers.resize(0); // todo: do we need any headers?
 			req.content.clear();
 			reply rep;
-			if (myWebem->CheckForPageOverride(m_session, req, rep)) {
+			if (myWebem->CheckForPageOverride(session, req, rep)) {
 				if (rep.status == reply::ok) {
 
 					bool bInternal = false;

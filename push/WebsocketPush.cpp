@@ -94,9 +94,12 @@ void CWebSocketPush::OnNotificationReceived(const std::string & Subject, const s
 
 void CWebSocketPush::OnLogMessage(const _eLogLevel level, const std::string& sLogline)
 {
-	//std::unique_lock<std::mutex> lock(logMutex);
-	if (!isStarted) {
-		return;
+	{
+		std::unique_lock<std::mutex> lock(handlerMutex);
+		if (!isStarted)
+			return;
 	}
+	// SendLogMessage is called outside the lock so that MyWrite cannot
+	// block Stop() from acquiring handlerMutex during connection teardown.
 	m_sock->SendLogMessage(static_cast<int>(level), sLogline);
 }
