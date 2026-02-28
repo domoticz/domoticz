@@ -88,8 +88,6 @@ then
 	exit 1
 fi
 
-printf '\033[1;32m'; cat appversion.h; printf '\033[0m'
-
 make -j$(nproc)
 if [ $? -ne 0 ]
 then
