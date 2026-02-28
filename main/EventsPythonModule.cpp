@@ -236,7 +236,10 @@ namespace Plugins
 				// restart.  This avoids the Py_EndInterpreter /
 				// Py_NewInterpreter cycle that crashes on Python 3.13
 				// due to stale per-thread GIL state in TLS.
-				_log.Log(LOG_STATUS, "EventSystem - Python stopped (interpreter preserved)...");
+				// Do NOT call _log.Log() here: during final shutdown the
+				// logger's sOnLogMessage signal fires callbacks that may
+				// already be partially torn down, causing a deadlock on
+				// lsignal's internal mutex.
 				return true;
 			}
 

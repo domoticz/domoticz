@@ -1281,16 +1281,25 @@ bool MainWorker::Stop()
 	m_webservers.StopServers();
 	m_sharedserver.StopServer();
 	m_scheduler.StopScheduler();
-	m_eventsystem.StopEventSystem();
+#ifdef ENABLE_PYTHON
+	// Stop the plugin system before the event system so that Plugin_ASIO
+	// and other plugin threads release the GIL before PythonEventsStop()
+	// calls PyEval_RestoreThread() + Py_EndInterpreter().  If the plugin
+	// system is still running at that point it may hold the GIL, causing
+	// Py_EndInterpreter to block forever.
+	m_pluginsystem.StopPluginSystem();
+#endif
+	// Pass false: skip Py_EndInterpreter on final shutdown.
+	// PyEval_RestoreThread() blocks indefinitely if any Python thread is
+	// still holding the GIL (e.g. a plugin callback in flight).  The OS
+	// will release all Python resources when the process exits.
+	m_eventsystem.StopEventSystem(false);
 	m_notificationsystem.Stop();
 	m_fibaropush.Stop();
 	m_httppush.Stop();
 	m_influxpush.Stop();
 	m_mqttpush.Stop();
 	m_googlepubsubpush.Stop();
-#ifdef ENABLE_PYTHON
-	m_pluginsystem.StopPluginSystem();
-#endif
 	if (m_mdns.isServiceRunning())	// Stop mDNS service
 		m_mdns.stopService();
 

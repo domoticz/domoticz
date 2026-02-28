@@ -144,7 +144,11 @@ CEventSystem::CEventSystem()
 
 CEventSystem::~CEventSystem()
 {
-	StopEventSystem();
+	// Pass false: never call Py_EndInterpreter from the destructor.
+	// Py_EndInterpreter blocks if any Python thread still holds the GIL
+	// (e.g. a plugin callback in flight during shutdown), causing a hang.
+	// The OS releases all Python resources when the process exits.
+	StopEventSystem(false);
 }
 
 void CEventSystem::StartEventSystem()
