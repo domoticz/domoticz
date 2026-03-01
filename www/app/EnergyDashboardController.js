@@ -97,7 +97,7 @@ define(['app'], function (app) {
 			let dash_height = (bSmallHeight && ($scope.idBattWatt == -1)) ? 40 : ($scope.idBattWatt != -1) ? 60 : 55;
 			let dash_width = (($scope.idItemH1!=-1)||($scope.idItemH2!=-1)||($scope.idItemH3!=-1)) ? 71.5 : 60;
 
-			$scope.viewBox = "0 0 " + dash_width + " " + dash_height;
+			$scope.viewBox = "-1.5 -1.5 " + (dash_width + 3) + " " + (dash_height + 3);
 
 			$scope.bDisplayRT1 = ($scope.idGas != -1) || (($scope.idGas == -1)&&($scope.idWater != -1));
 			$scope.bDisplayRB1 = ($scope.idWater != -1) && (!(($scope.idGas == -1)&&($scope.idWater != -1)));
@@ -623,7 +623,8 @@ define(['app'], function (app) {
 		$scope.makeTextLines = function() {
 			let ltext = document.getElementById('ltext');
 			if (ltext) {
-				ltext.innerHTML = $scope.lightenDarkColors($scope.txtObjText.replace(/\n/g, '<br>'));
+				let txt = $scope.txtObjText.replace(/<br\s*\/?>/gi, '\n').replace(/\r\n/g, '\n').replace(/\r/g, '\n').replace(/\n/g, '<br>');
+				ltext.innerHTML = $scope.lightenDarkColors(txt);
 			}
 		}
 
