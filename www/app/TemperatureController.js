@@ -115,11 +115,11 @@ define(['app', 'livesocket'], function (app) {
 			}
 			ctrl.temperatures.forEach(function (olditem, oldindex, oldarray) {
 				if (olditem.idx == item.idx) {
-					oldarray[oldindex] = item;
+					angular.extend(oldarray[oldindex], item);
 					if (!document.hidden) {
 						if ($scope.config.ShowUpdatedEffect == true) {
 							// Must be delay in another way effect is finished before angular finished to draw the widget
-							setTimeout(function() { 
+							setTimeout(function() {
 								$("#tempwidgets #" + item.idx + " #name").effect("highlight", { color: '#EEFFEE' }, 1000);
 							}, 500);
 						}
@@ -168,7 +168,6 @@ define(['app', 'livesocket'], function (app) {
 
 			$.ajax({
 				url: "json.htm?type=command&param=getdevices&filter=temp&used=true&order=[Order]&plan=" + roomPlanId,
-				async: false,
 				dataType: 'json',
 				success: function (data) {
 					if (typeof data.result != 'undefined') {
@@ -182,18 +181,28 @@ define(['app', 'livesocket'], function (app) {
 					} else {
 						ctrl.temperatures = [];
 					}
+
+					$scope.loading = false;
+
+					if (!$scope.$$phase) {
+						$scope.$apply();
+					}
+
+					$('#modal').hide();
+					$('#temptophtm').show();
+					$('#temptophtm').i18n();
+					$('#tempwidgets').show();
+					$('#tempwidgets').i18n();
+					$element.html("");
+					$element.i18n();
+
+					$rootScope.RefreshTimeAndSun();
+					RefreshTemps();
+				},
+				error: function () {
+					$('#modal').hide();
 				}
 			});
-			$('#modal').hide();
-			$('#temptophtm').show();
-			$('#temptophtm').i18n();
-			$('#tempwidgets').show();
-			$('#tempwidgets').i18n();
-			$element.html("");
-			$element.i18n();
-
-			$rootScope.RefreshTimeAndSun();
-			RefreshTemps();
 			return false;
 		};
 
@@ -205,7 +214,6 @@ define(['app', 'livesocket'], function (app) {
 			var roomid = window.myglobals.LastPlanSelected;
 			$.ajax({
 				url: "json.htm?type=command&param=switchdeviceorder&idx1=" + myid + "&idx2=" + $.devIdx + "&roomid=" + roomid,
-				async: false,
 				dataType: 'json',
 				success: function (data) {
 					ShowTemps();
@@ -491,6 +499,8 @@ define(['app', 'livesocket'], function (app) {
 				}
 			});
 
+			ctrl.temperatures = [];
+			$scope.loading = true;
 			ShowTemps();
 			////WatchLiveSearch();
 
@@ -716,11 +726,15 @@ define(['app', 'livesocket'], function (app) {
 						if (permissions.hasPermission("User")) {
 							if (window.myglobals.ismobileint == false) {
 								$element.draggable({
+									helper: 'clone',
+									opacity: 0.7,
+									zIndex: 1000,
+									revert: 'invalid',
+									scrollSensitivity: 40,
+									scrollSpeed: 20,
 									drag: function () {
 										$scope.dragwidget({ idx: item.idx });
-										$element.css("z-index", 2);
-									},
-									revert: true
+									}
 								});
 								$element.droppable({
 									drop: function () {

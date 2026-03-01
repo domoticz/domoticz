@@ -1,0 +1,64 @@
+<div class="item" ng-class="ctrl.getBackgroundClass()">
+	<section>
+		<table border="0" cellpadding="0" cellspacing="0" style="width: 100%;">
+			<tr>
+				<td id="name" class="item-name" data-idx="{{ctrl.scene.idx}}" data-desc="{{ctrl.scene.Description}}" ng-bind="ctrl.scene.Name" colspan="2"></td>
+			</tr>
+			<tr>
+				<td id="bigtext" ng-bind-html="ctrl.getStatusText()" style="padding: 5px 0;"></td>
+				<td id="lastupdate" class="lastupdate" ng-bind="ctrl.scene.LastUpdate" style="text-align: right;"></td>
+			</tr>
+			<tr>
+				<td colspan="2" style="text-align: center; padding: 10px 0;">
+					<button ng-if="ctrl.isScene()"
+							class="btn btn-large btn-primary"
+							type="button"
+							ng-click="ctrl.switchOn()"
+							data-i18n="On"
+							style="min-width: 120px; min-height: 44px;">
+						On
+					</button>
+					<div ng-if="ctrl.isGroup()" style="display: inline-block;">
+						<button ng-class="{'btn': true, 'btn-large': true, 'btn-primary': ctrl.isOff(), 'btn-info': ctrl.isOn()}"
+								type="button"
+								ng-click="ctrl.switchOn()"
+								data-i18n="On"
+								style="min-width: 100px; min-height: 44px; margin-right: 10px;">
+							On
+						</button>
+						<button ng-class="{'btn': true, 'btn-large': true, 'btn-primary': ctrl.isOn(), 'btn-info': ctrl.isOff()}"
+								type="button"
+								ng-click="ctrl.switchOff()"
+								data-i18n="Off"
+								style="min-width: 100px; min-height: 44px;">
+							Off
+						</button>
+					</div>
+				</td>
+			</tr>
+			<tr>
+				<td colspan="2" class="options" style="padding-top: 10px;">
+					<img ng-if="ctrl.scene.Favorite == 0"
+						 src="images/nofavorite.png"
+						 data-i18n="[title]Add to Dashboard"
+						 title="Add to Dashboard"
+						 ng-click="ctrl.makeFavorite(1)"
+						 class="favorite favoriteOff lcursor">
+					<img ng-if="ctrl.scene.Favorite != 0"
+						 src="images/favorite.png"
+						 data-i18n="[title]Remove from Dashboard"
+						 title="Remove from Dashboard"
+						 ng-click="ctrl.makeFavorite(0)"
+						 class="favorite favoriteOn lcursor">
+					&nbsp;&nbsp;
+					<a class="btnsmall" ng-href="#/Scenes/{{ctrl.scene.idx}}/Log" data-i18n="Log">Log</a>
+					<span has-permission="Admin">
+						<a class="btnsmall" ng-click="ctrl.editScene()" data-i18n="Edit">Edit</a>
+						<a ng-if="ctrl.hasTimers()" class="btnsmall-sel" ng-href="#/Scenes/{{ctrl.scene.idx}}/Timers" data-i18n="Timers">Timers</a>
+						<a ng-if="!ctrl.hasTimers()" class="btnsmall" ng-href="#/Scenes/{{ctrl.scene.idx}}/Timers" data-i18n="Timers">Timers</a>
+					</span>
+				</td>
+			</tr>
+		</table>
+	</section>
+</div>

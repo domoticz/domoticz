@@ -446,7 +446,7 @@ define(['app'], function (app) {
 
 			Device.useSVGtags = true;
 			Device.backFunction = 'ShowFloorplans';
-			Device.switchFunction = 'RefreshDevices';
+			Device.switchFunction = function() { RefreshDevices(); };
 			Device.contentTag = 'floorplaneditcontent';
 
 			var htmlcontent = "";
@@ -759,8 +759,10 @@ define(['app'], function (app) {
 									}
 									var Scale = Device.xImageSize / $("#floorplaneditor").width();
 									var offset = $("#floorplanimage").offset();
+									if (!offset) return;
 									var xoffset = Math.round((event.pageX - offset.left - (Device.iconSize / 2)) * Scale);
 									var yoffset = Math.round((event.pageY - offset.top - (Device.iconSize / 2)) * Scale);
+									if (isNaN(xoffset) || isNaN(yoffset)) return;
 									if (xoffset < 0) xoffset = 0;
 									if (yoffset < 0) yoffset = 0;
 									if (xoffset > (Device.xImageSize - Device.iconSize)) xoffset = Device.xImageSize - Device.iconSize;
@@ -768,7 +770,7 @@ define(['app'], function (app) {
 									parent.setAttribute("xoffset", xoffset);
 									parent.setAttribute("yoffset", yoffset);
 									parent.setAttribute("transform", 'translate(' + xoffset + ',' + yoffset + ') scale(' + $("#floorplangroup").attr("scalefactor") + ')');
-									var objData = $('#DeviceDetails #' + event.target.parentNode.id)[0];
+									var objData = document.querySelector('#DeviceDetails').querySelector('[id="' + event.target.parentNode.id + '"]');
 									if (objData != undefined) {
 										objData.setAttribute("xoffset", xoffset);
 										objData.setAttribute("yoffset", yoffset);

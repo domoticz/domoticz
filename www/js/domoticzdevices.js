@@ -326,7 +326,7 @@ function Slider(event) {
                 async: true,
                 dataType: 'json'
             });
-            setTimeout(function () { eval(Device.switchFunction + "();"); }, 250);
+            setTimeout(function () { Device.switchFunction(); }, 250);
         }
     };
     this.Drag = function (event) {
@@ -801,7 +801,7 @@ Device.count = 0;
 Device.notPositioned = 0;
 Device.useSVGtags = false;
 Device.backFunction = 'DoNothing';
-Device.switchFunction = 'DoNothing';
+Device.switchFunction = DoNothing;
 Device.contentTag = '';
 Device.xImageSize = 1280;
 Device.yImageSize = 720;
@@ -1205,7 +1205,7 @@ Device.MakeFavorite = function (id, isfavorite) {
         dataType: 'json',
         success: function (data) {
             window.myglobals.LastUpdate = 0;
-            eval(Device.switchFunction + "();");
+            Device.switchFunction();
         }
     });
 }

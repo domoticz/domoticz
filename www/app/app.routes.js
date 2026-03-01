@@ -6,8 +6,16 @@ define(['angularAMD', 'angular', 'angular-route'], function (angularAMD) {
 
         $routeProvider
             .when('/Dashboard', angularAMD.route({
-                templateUrl: 'views/dashboard.html',
-                controller: 'DashboardController'
+                templateUrl: function() {
+                    var dt = (window.myglobals && window.myglobals.DashboardType) || 0;
+                    var isMobile = window.myglobals && window.myglobals.ismobile;
+                    if (dt == 2 || isMobile) {
+                        return 'views/dashboard_mobile.html';
+                    }
+                    return 'views/dashboard_desktop.html';
+                },
+                controllerUrl: 'dashboard/DashboardDesktopController',
+                controller: 'DashboardDesktopController'
             }))
             .when('/Devices', angularAMD.route({
                 templateUrl: 'app/devices/Devices.html',

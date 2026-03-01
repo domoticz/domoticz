@@ -740,6 +740,19 @@ define(['angularAMD', 'app.routes', 'app.constants', 'app.notifications', 'app.p
 			}
 			return backgroundClass;
 		}
+		$rootScope.GetTempIcon = function (device) {
+			if (device.CustomImage != 0) {
+				return 'images/' + device.Image + '48_On.png';
+			}
+			if (device.Type == 'Humidity') {
+				return 'images/gauge48.png';
+			}
+			var temp = (typeof device.Temp != 'undefined') ? device.Temp : device.Chill;
+			if (typeof temp == 'undefined') {
+				return 'images/temp48.png';
+			}
+			return 'images/' + GetTemp48Item(temp);
+		};
 		$rootScope.DisplayTrend = function (trend) {
 			//0=Unknown, 1=Stable, 2=Up, 3=Down
 			if (typeof trend != 'undefined') {

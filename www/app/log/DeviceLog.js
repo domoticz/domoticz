@@ -33,11 +33,6 @@ define(['app', 'log/Chart', 'log/TextLog', 'log/TemperatureLog', 'log/LightLog',
             deviceApi.getDeviceInfo(vm.deviceIdx).then(function (device) {
                 vm.device = device;
                 vm.pageName = device.Name;
-
-                // TODO REMOVE THIS false
-                if (false && isCounterLog()) {
-                    ShowCounterLog('.js-device-log-content', 'ShowUtilities', device.idx, device.Name, device.SwitchTypeVal);
-                }
             });
         }
 
@@ -81,9 +76,9 @@ define(['app', 'log/Chart', 'log/TextLog', 'log/TemperatureLog', 'log/LightLog',
             if (vm.device.Type === 'Heating') {
                 return ((vm.device.SubType === 'Zone') || (vm.device.SubType === 'Hot Water'));
             }
-            // For Wind devices with temp data, only show temp log when navigating from the temperature tab
-            if (isWindDevice()) {
-                return vm.device.Temp !== undefined && $location.search().sensor === 'temp';
+            // Exclude Wind sensors as they now have their own log
+            if (isWindLog()) {
+                return false;
             }
             return (/Temp|Thermostat|Humidity|RFXSensor|Radiator/i).test(vm.device.Type)
         }
@@ -128,16 +123,12 @@ define(['app', 'log/Chart', 'log/TextLog', 'log/TemperatureLog', 'log/LightLog',
 			return (vm.device.SubType === 'Barometer');
 		}
 
-		function isWindDevice() {
-			return vm.device && vm.device.Direction !== undefined && /Wind/i.test(vm.device.Type);
-		}
-
 		function isWindLog() {
 			if (!vm.device) {
 				return undefined;
 			}
-			// When navigating from the temperature tab, show temp log instead
-			return isWindDevice() && $location.search().sensor !== 'temp';
+			// Wind devices have a Direction property
+			return (vm.device.Direction !== undefined && /Wind/i.test(vm.device.Type));
 		}
 
 		function isUvLog() {
@@ -229,8 +220,6 @@ define(['app', 'log/Chart', 'log/TextLog', 'log/TemperatureLog', 'log/LightLog',
             }
 
             return isTemperatureLog()
-                || isRainLog()
-                || isWindLog()
                 || ((isInstantAndCounterLog() || isCounterLog() || isP1EnergyLog()) && [0, 1, 2, 3, 4].includes(vm.device.SwitchTypeVal));
         }
     });
