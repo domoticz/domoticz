@@ -5782,6 +5782,8 @@ void MainWorker::decode_Fan(const CDomoticzHardwareBase* pHardware, const tRBUF*
 		// Standard FAN structure for non-Orcon devices
 		sprintf(IDTmp, "%02X%02X%02X", pResponse->FAN.id1, pResponse->FAN.id2, pResponse->FAN.id3);
 		ID = IDTmp;
+		nValue = cmnd;
+		sValue = std::to_string(cmnd);
 	}
 	uint64_t DevRowIdx = m_sql.UpdateValue(pHardware->m_HwdID, 0, ID.c_str(), Unit, devType, subType, SignalLevel, -1, nValue, sValue.c_str(), Name, true, procResult.Username.c_str());
 	if (DevRowIdx == (uint64_t)-1)
