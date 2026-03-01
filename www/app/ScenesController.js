@@ -1,5 +1,5 @@
-define(['app', 'livesocket'], function (app) {
-	app.controller('ScenesController', function ($scope, $rootScope, $location, $http, $interval, permissions, livesocket) {
+define(['app', 'livesocket', 'widgets/dzSceneWidget'], function (app) {
+	app.controller('ScenesController', function ($scope, $rootScope, $location, $http, $interval, $timeout, permissions, livesocket) {
 		var $element = $('#main-view #scenecontent').last();
 
 		var SceneIdx = 0;
@@ -612,8 +612,12 @@ define(['app', 'livesocket'], function (app) {
 
 			var htmlcontent = '';
 			htmlcontent += $('#editscene').html();
-			$('#scenecontent').html(GetBackbuttonHTMLTable('ShowScenes') + htmlcontent);
-			$('#scenecontent').i18n();
+			$scope.showSceneList = false;
+			if (!$scope.$$phase) {
+				$scope.$apply();
+			}
+			$('#sceneeditcontent').html(GetBackbuttonHTMLTable('ShowScenes') + htmlcontent);
+			$('#sceneeditcontent').i18n();
 			$element.find("#LevelDiv").hide();
 			$("#ScenesLedColor").hide();
 
@@ -764,85 +768,22 @@ define(['app', 'livesocket'], function (app) {
 		};
 
 		RefreshItem = function (item) {
-			var id = "#" + item.idx;
-			var obj = $element.find(id);
-			if (typeof obj != 'undefined') {
-				var bigtext = TranslateStatusShort(item.Status);
-				if (item.UsedByCamera == true) {
-					var streamimg = '<img src="images/webcam.png" title="' + $.t('Stream Video') + '" height="16" width="16">';
-					streamurl = "<a href=\"javascript:ShowCameraLiveStream('" + escape(item.Name) + "'," + item.CameraIdx + "," + item.CameraAspect + ")\">" + streamimg + "</a>";
-					bigtext += "&nbsp;" + streamurl;
-				}
-				var searchText = GenerateLiveSearchTextSG(item, bigtext);
-				var query = $('.jsLiveSearch').val();
-				if (query && query.length > 0) {
-					var match = searchText.toLowerCase().indexOf(query.toLowerCase()) !== -1;
-					if (!match) {
-						return; // Don't update items that don't match the filter
+			if (!$scope.scenes) return;
+
+			for (var i = 0; i < $scope.scenes.length; i++) {
+				if ($scope.scenes[i].idx == item.idx) {
+					// Update the scene object properties
+					angular.extend($scope.scenes[i], item);
+
+					if (!document.hidden) {
+						if ($scope.config.ShowUpdatedEffect == true) {
+							var id = "#" + item.idx;
+							$(id + " #name").effect("highlight", { color: '#EEFFEE' }, 1000);
+						}
 					}
+					RefreshLiveSearch();
+					return;
 				}
-
-				if ($(id + " #name").html() != item.Name) {
-					$(id + " #name").html(item.Name);
-				}
-
-				var backgroundClass = $rootScope.GetItemBackgroundStatus(item);
-				obj.removeClass('statusNormal').removeClass('statusProtected').removeClass('statusTimeout').removeClass('statusLowBattery').removeClass('statusDisabled');
-				obj.addClass(backgroundClass);
-
-				var img1 = "";
-				var img2 = "";
-
-				bigtext = TranslateStatusShort(item.Status);
-				
-				if (item.UsedByCamera == true) {
-					var streamimg = '<img src="images/webcam.png" title="' + $.t('Stream Video') + '" height="16" width="16">';
-					streamurl = "<a href=\"javascript:ShowCameraLiveStream('" + escape(item.Name) + "'," + item.CameraIdx + "," + item.CameraAspect + ")\">" + streamimg + "</a>";
-					bigtext += "&nbsp;" + streamurl;
-				}
-
-				if (item.Type == "Scene") {
-					img1 = '<img src="images/Push48_On.png" title="' + $.t('Activate scene') + '" onclick="SwitchScene(' + item.idx + ',\'On\',' + item.Protected + ');" class="lcursor" height="48" width="48">';
-				}
-				else {
-					var onclass = "";
-					var offclass = "";
-					if (item.Status == 'On') {
-						onclass = "transimg";
-						offclass = "";
-					}
-					else if (item.Status == 'Off') {
-						onclass = "";
-						offclass = "transimg";
-					}
-
-					img1 = '<img class="lcursor ' + onclass + '" src="images/Push48_On.png" title="' + $.t('Turn On') + '" onclick="SwitchScene(' + item.idx + ',\'On\', ' + item.Protected + ');" height="48" width="48">';
-					img2 = '<img class="lcursor ' + offclass + '"src="images/Push48_Off.png" title="' + $.t('Turn Off') + '" onclick="SwitchScene(' + item.idx + ',\'Off\', ' + item.Protected + ');" height="48" width="48">';
-					if ($(id + " #img2").html() != img2) {
-						$(id + " #img2").html(img2);
-					}
-
-					if ($(id + " #bigtext").html() != bigtext) {
-						$(id + " #bigtext").html(bigtext);
-					}
-				}
-
-				if ($(id + " #img1").html() != img1) {
-					$(id + " #img1").html(img1);
-				}
-
-				if ($(id + " #lastupdate").html() != item.LastUpdate) {
-					$(id + " #lastupdate").html(item.LastUpdate);
-				}
-				
-				$(id).find('#name').attr('data-search', searchText);
-				
-				if (!document.hidden) {
-					if ($scope.config.ShowUpdatedEffect == true) {
-						$(id + " #name").effect("highlight", { color: '#EEFFEE' }, 1000);
-					}
-				}
-				RefreshLiveSearch();
 			}
 		}
 
@@ -863,6 +804,9 @@ define(['app', 'livesocket'], function (app) {
 					$.each(data.result, function (i, item) {
 						RefreshItem(item);
 					});
+					if (!$scope.$$phase) {
+						$scope.$apply();
+					}
 				}
 			});
 		}
@@ -870,160 +814,78 @@ define(['app', 'livesocket'], function (app) {
 		ShowScenes = function () {
 			RefreshLightSwitchesComboArray();
 
-			var htmlcontent = '';
-			var bHaveAddedDivider = false;
-			var bAllowWidgetReorder = true;
-
-			var tophtm = "";
-
-			var i = 0;
-			var j = 0;
+			$scope.showSceneList = true;
+			$('#sceneeditcontent').empty();
 
 			$.ajax({
 				url: "json.htm?type=command&param=getscenes",
-				async: false,
 				dataType: 'json',
 				success: function (data) {
 					if (typeof data.result != 'undefined') {
-						bAllowWidgetReorder = data.AllowWidgetOrdering;
+						$scope.bAllowWidgetReorder = data.AllowWidgetOrdering;
 						if (typeof data.ActTime != 'undefined') {
 							$.LastUpdateTime = parseInt(data.ActTime);
 						}
 
-						$.each(data.result, function (i, item) {
-							if (j % 3 == 0) {
-								//add divider
-								if (bHaveAddedDivider == true) {
-									//close previous divider
-									htmlcontent += '</div>\n';
-								}
-								htmlcontent += '<div class="row divider">\n';
-								bHaveAddedDivider = true;
-							}
+						$scope.scenes = data.result;
 
-							var backgroundClass = $rootScope.GetItemBackgroundStatus(item);
-							var bAddTimer = true;
-							var xhtm =
-								'\t<div class="item span4 itemBlock ' + backgroundClass + '" id="' + item.idx + '">\n' +
-								'\t  <section>\n';
-							if (item.Type == "Scene") {
-								xhtm += '\t    <table id="itemtablenostatus" border="0" cellpadding="0" cellspacing="0">\n';
-							}
-							else {
-								xhtm += '\t    <table id="itemtabledoubleicon" border="0" cellpadding="0" cellspacing="0">\n';
-							}
-							var bigtext = TranslateStatusShort(item.Status);
-							
-							var searchText = GenerateLiveSearchTextSG(item, bigtext);
-							
-							xhtm +=
-								'\t    <tr>\n' +
-								'\t      <td id="name" class="item-name" data-idx="'+item.idx+'" data-desc="'+item.Description.replace('"',"'")+'" data-search="'+searchText+'">' + item.Name +'</td>\n' +
-								'\t      <td id="bigtext">';
-							if (item.UsedByCamera == true) {
-								var streamimg = '<img src="images/webcam.png" title="' + $.t('Stream Video') + '" height="16" width="16">';
-								streamurl = "<a href=\"javascript:ShowCameraLiveStream('" + escape(item.Name) + "'," + item.CameraIdx + "," + item.CameraAspect + ")\">" + streamimg + "</a>";
-								bigtext += "&nbsp;" + streamurl;
-							}
-							xhtm += bigtext + '</td>\n';
-
-							if (item.Type == "Scene") {
-								xhtm += '<td id="img1" class="img img1"><img src="images/Push48_On.png" title="' + $.t('Activate scene') + '" onclick="SwitchScene(' + item.idx + ',\'On\', ' + item.Protected + ');" class="lcursor" height="48" width="48"></td>\n';
-								xhtm += '\t      <td id="status"><span>&nbsp;</span></td>\n';
-							}
-							else {
-								var onclass = "";
-								var offclass = "";
-								if (item.Status == 'On') {
-									onclass = "transimg";
-									offclass = "";
-								}
-								else if (item.Status == 'Off') {
-									onclass = "";
-									offclass = "transimg";
-								}
-
-								xhtm += '<td id="img1" class="img img1"><img class="lcursor ' + onclass + '" src="images/Push48_On.png" title="' + $.t('Turn On') + '" onclick="SwitchScene(' + item.idx + ',\'On\', ' + item.Protected + ');" height="48" width="48"></td>\n';
-								xhtm += '<td id="img2" class="img img2"><img class="lcursor ' + offclass + '"src="images/Push48_Off.png" title="' + $.t('Turn Off') + '" onclick="SwitchScene(' + item.idx + ',\'Off\', ' + item.Protected + ');" height="48" width="48"></td>\n';
-								xhtm += '\t      <td id="status">&nbsp;</td>\n';
-							}
-							xhtm +=
-								'\t      <td id="lastupdate" class="lastupdate">' + item.LastUpdate + '</td>\n' +
-								'\t      <td id="type">' + $.t(item.Type) + '</td>\n';
-							xhtm += '\t      <td class="options">';
-							if (item.Favorite == 0) {
-								xhtm +=
-									'<img src="images/nofavorite.png" title="' + $.t('Add to Dashboard') + '" onclick="MakeFavorite(' + item.idx + ',1);" class="favorite favoriteOff lcursor">&nbsp;&nbsp;&nbsp;&nbsp;';
-							}
-							else {
-								xhtm +=
-									'<img src="images/favorite.png" title="' + $.t('Remove from Dashboard') + '" onclick="MakeFavorite(' + item.idx + ',0);" class="favorite favoriteOn lcursor">&nbsp;&nbsp;&nbsp;&nbsp;';
-							}
-							xhtm += '<a class="btnsmall" href="#/Scenes/' + item.idx + '/Log" data-i18n="Log">Log</a> ';
-
-							if (permissions.hasPermission("Admin")) {
-								xhtm += '<a class="btnsmall" onclick="EditSceneDevice(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\',' + item.HardwareID + ',\'' + item.Type + '\', ' + item.Protected + ',\'' + item.OnAction + '\', \'' + item.OffAction + '\');" data-i18n="Edit">Edit</a> ';
-								if (bAddTimer == true) {
-									if (item.Timers == "true") {
-										xhtm += '<a class="btnsmall-sel" href="#/Scenes/' + item.idx + '/Timers" data-i18n="Timers">Timers</a> ';
-									}
-									else {
-										xhtm += '<a class="btnsmall" href="#/Scenes/' + item.idx + '/Timers" data-i18n="Timers">Timers</a> ';
-									}
-								}
-							}
-							xhtm +=
-								'</td>\n' +
-								'\t    </tr>\n' +
-								'\t    </table>\n' +
-								'\t  </section>\n' +
-								'\t</div>\n';
-							htmlcontent += xhtm;
-							j += 1;
-						});
+						// Group scenes into rows of 3
+						$scope.sceneRows = [];
+						for (var i = 0; i < $scope.scenes.length; i += 3) {
+							$scope.sceneRows.push($scope.scenes.slice(i, i + 3));
+						}
+					} else {
+						$scope.scenes = [];
+						$scope.sceneRows = [];
 					}
+
+					$scope.loading = false;
+
+					if (!$scope.$$phase) {
+						$scope.$apply();
+					}
+
+					$rootScope.RefreshTimeAndSun();
+
+					// Set up drag/drop after Angular renders
+					$timeout(function() {
+						if ($scope.bAllowWidgetReorder == true) {
+							if (permissions.hasPermission("Admin")) {
+								if (window.myglobals.ismobileint == false) {
+									$element.find(".span4").draggable({
+										helper: 'clone',
+										opacity: 0.7,
+										zIndex: 1000,
+										revert: 'invalid',
+										scrollSensitivity: 40,
+										scrollSpeed: 20,
+										drag: function () {
+											SceneIdx = $(this).attr("id");
+										}
+									});
+									$element.find(".span4").droppable({
+										drop: function () {
+											var myid = $(this).attr("id");
+											$.ajax({
+												url: "json.htm?type=command&param=switchsceneorder&idx1=" + myid + "&idx2=" + SceneIdx,
+												dataType: 'json',
+												success: function (data) {
+													ShowScenes();
+												}
+											});
+										}
+									});
+								}
+							}
+						}
+						$element.i18n();
+						RefreshLiveSearch();
+					}, 100);
+
+					RefreshScenes();
 				}
 			});
 
-			if (bHaveAddedDivider == true) {
-				//close previous divider
-				htmlcontent += '</div>\n';
-			}
-			if (htmlcontent == '') {
-				htmlcontent = '<h2>' + $.t('No Scenes defined yet...') + '</h2>';
-			}
-			$element.html(tophtm + htmlcontent);
-			$element.i18n();
-
-			$rootScope.RefreshTimeAndSun();
-
-			if (bAllowWidgetReorder == true) {
-				if (permissions.hasPermission("Admin")) {
-					if (window.myglobals.ismobileint == false) {
-						$element.find(".span4").draggable({
-							drag: function () {
-								SceneIdx = $(this).attr("id");
-								$(this).css("z-index", 2);
-							},
-							revert: true
-						});
-						$element.find(".span4").droppable({
-							drop: function () {
-								var myid = $(this).attr("id");
-								$.ajax({
-									url: "json.htm?type=command&param=switchsceneorder&idx1=" + myid + "&idx2=" + SceneIdx,
-									async: false,
-									dataType: 'json',
-									success: function (data) {
-										ShowScenes();
-									}
-								});
-							}
-						});
-					}
-				}
-			}
-			RefreshScenes();
 			return false;
 		}
 
@@ -1127,13 +989,35 @@ define(['app', 'livesocket'], function (app) {
 			if (permissions.hasPermission("Admin")) {
 				$scope.tblinks = [
 					{
-						onclick:"AddScene", 
-						text:"Add Scene", 
-						i18n: "Add Scene", 
+						onclick:"AddScene",
+						text:"Add Scene",
+						i18n: "Add Scene",
 						icon: "plus-circle"
 					}
 				];
 			}
+
+			$scope.scenes = [];
+			$scope.sceneRows = [];
+			$scope.showSceneList = true;
+			$scope.loading = true;
+
+			$scope.refreshScenes = function() {
+				ShowScenes();
+			};
+
+			$scope.editScene = function(scene) {
+				EditSceneDevice(
+					scene.idx,
+					escape(scene.Name),
+					escape(scene.Description),
+					scene.HardwareID,
+					scene.Type,
+					scene.Protected,
+					scene.OnAction,
+					scene.OffAction
+				);
+			};
 
 			ShowScenes();
 			WatchLiveSearch();

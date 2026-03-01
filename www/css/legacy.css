@@ -1015,6 +1015,13 @@ div.item.statusEvoSetPointMin td#name{
     background-color:#6ca5fd;
 }
 
+/* Widget directive elements - ensure they don't break grid layout */
+dz-light-widget,
+dz-scene-widget,
+dz-utility-widget {
+	display: contents;
+}
+
 .selectorlevels {
 	font-size: 1em;
 }

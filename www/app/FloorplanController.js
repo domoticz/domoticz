@@ -10,6 +10,9 @@ define(['app', 'livesocket'], function (app) {
 		$scope.isScrolling = false;		// used on tablets & phones
 		$scope.pendingScroll = false;	// used on tablets & phones
 		$scope.lastTouch = 0;			// used on tablets & phones
+		$scope.lastTouchX = 0;			// used on tablets & phones
+		$scope.lastTouchY = 0;			// used on tablets & phones
+		var refreshDebounceTimer = null;
 
 		$scope.makeHTMLnode = function (tag, attrs) {
 			var el = document.createElement(tag);
@@ -51,13 +54,21 @@ define(['app', 'livesocket'], function (app) {
 				}
 				else  // if not scrolling look for double tap
 				{
+					var touch = e.changedTouches ? e.changedTouches[0] : null;
+					var touchX = touch ? touch.pageX : 0;
+					var touchY = touch ? touch.pageY : 0;
 					var delta = (new Date()).getTime() - $scope.lastTouch;
 					var delay = 500;
-					if ($scope.debug > 0) $.cachenoty = generate_noty('info', '<b>Tap Delta: ' + delta + '</b>', 1000);
-					if (delta < delay && delta > 0) {
+					var dx = touchX - $scope.lastTouchX;
+					var dy = touchY - $scope.lastTouchY;
+					var distance = Math.sqrt(dx * dx + dy * dy);
+					if ($scope.debug > 0) $.cachenoty = generate_noty('info', '<b>Tap Delta: ' + delta + ', Dist: ' + Math.round(distance) + '</b>', 1000);
+					if (delta < delay && delta > 0 && distance < 50) {
 						$scope.doubleClick();
 					}
 					$scope.lastTouch = (new Date()).getTime();
+					$scope.lastTouchX = touchX;
+					$scope.lastTouchY = touchY;
 				}
 			}
 		};
@@ -85,11 +96,29 @@ define(['app', 'livesocket'], function (app) {
 							bullet.setAttribute('class', 'bulletSelected');
 						}
 						$scope.actFloorplan = i;
+						updateNavArrows();
 						break;
 					}
 				}
 			}
 			$("#copyright").attr("style", "position:fixed");
+		}
+
+		function updateNavArrows() {
+			if ($scope.FloorplanCount <= 1) return;
+			$("#fpNavLeft").css('display', $scope.actFloorplan > 0 ? 'flex' : 'none');
+			$("#fpNavRight").css('display', $scope.actFloorplan < $scope.FloorplanCount - 1 ? 'flex' : 'none');
+		}
+
+		function FPkeydown(e) {
+			if ($scope.FloorplanCount <= 1) return;
+			if (e.keyCode === 37 && $scope.actFloorplan > 0) {
+				$scope.actFloorplan--;
+				ScrollFloorplans($scope.floorPlans[$scope.actFloorplan].tagName);
+			} else if (e.keyCode === 39 && $scope.actFloorplan < $scope.FloorplanCount - 1) {
+				$scope.actFloorplan++;
+				ScrollFloorplans($scope.floorPlans[$scope.actFloorplan].tagName);
+			}
 		}
 
 		ImgLoaded = function (tagName) {
@@ -289,6 +318,16 @@ define(['app', 'livesocket'], function (app) {
 			});
 		}
 
+		DebouncedRefreshFPDevices = function () {
+			if (refreshDebounceTimer) {
+				clearTimeout(refreshDebounceTimer);
+			}
+			refreshDebounceTimer = setTimeout(function () {
+				refreshDebounceTimer = null;
+				RefreshFPDevices();
+			}, 100);
+		};
+
 		RefreshFPDevices = function () {
 			if (typeof $scope.mytimer != 'undefined') {
 				$interval.cancel($scope.mytimer);
@@ -412,7 +451,7 @@ define(['app', 'livesocket'], function (app) {
 
 			Device.useSVGtags = true;
 			Device.backFunction = 'ShowFloorplans';
-			Device.switchFunction = 'RefreshFPDevices';
+			Device.switchFunction = DebouncedRefreshFPDevices;
 			Device.contentTag = 'floorplancontent';
 			Device.xImageSize = 1280;
 			Device.yImageSize = 720;
@@ -498,6 +537,29 @@ define(['app', 'livesocket'], function (app) {
 					});
 
 					RefreshFPDevices();
+
+					if ($scope.FloorplanCount > 1) {
+						document.addEventListener('keydown', FPkeydown, false);
+						$("#fpNavLeft").click(function () {
+							if ($scope.actFloorplan > 0) {
+								$scope.actFloorplan--;
+								ScrollFloorplans($scope.floorPlans[$scope.actFloorplan].tagName);
+							}
+						});
+						$("#fpNavRight").click(function () {
+							if ($scope.actFloorplan < $scope.FloorplanCount - 1) {
+								$scope.actFloorplan++;
+								ScrollFloorplans($scope.floorPlans[$scope.actFloorplan].tagName);
+							}
+						});
+						$("#fpwrapper").on('mouseenter', function () {
+							updateNavArrows();
+							$(".fp-nav-arrow").addClass("fp-nav-visible");
+						}).on('mouseleave', function () {
+							$(".fp-nav-arrow").removeClass("fp-nav-visible");
+						});
+						updateNavArrows();
+					}
 				}
 
 				$(".bulletcell").hover(function () {
@@ -541,6 +603,8 @@ define(['app', 'livesocket'], function (app) {
 					document.removeEventListener('touchstart', FPtouchstart);
 					document.removeEventListener('touchmove', FPtouchmove);
 					document.removeEventListener('touchend', FPtouchend);
+					document.removeEventListener('keydown', FPkeydown);
+					$(".fp-nav-arrow").hide();
 					$(window).off('resize');
 					$("body").off('pageexit').css('overflow', '');
 
@@ -587,6 +651,10 @@ define(['app', 'livesocket'], function (app) {
 		$scope.$on('$destroy', function () {
 			$interval.cancel($scope.mytimer);
 			$scope.mytimer = undefined;
+			if (refreshDebounceTimer) {
+				clearTimeout(refreshDebounceTimer);
+				refreshDebounceTimer = null;
+			}
 			document.getElementById("cFloorplans").removeEventListener("mouseover", $scope.debugOn);
 			document.getElementById("cFloorplans").removeEventListener("mouseout", $scope.debugOff);
 			$("body").trigger("pageexit");

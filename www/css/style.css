@@ -781,6 +781,18 @@ table.mobileitem {
 	white-space: normal;
 }
 
+.mobileitem .selectorlevels-mobile-wrap {
+	display: inline-block;
+	vertical-align: middle;
+}
+
+.mobileitem .selectorlevels-mobile {
+	display: inline-block;
+	vertical-align: middle;
+	min-width: 150px;
+	margin: 0;
+}
+
 .borderbot {
 	padding-bottom: 6px;
 	padding-top: 6px;

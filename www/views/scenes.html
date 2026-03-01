@@ -1,7 +1,20 @@
 <div class="container">
 	<gz-back-to-top></gz-back-to-top>
 	<div ng-include="'views/inc_topbar.html'"></div>
-	<div id="scenecontent" class="devicesList"></div>
+	<div id="scenecontent" class="devicesList">
+		<div id="scenelist" ng-show="showSceneList">
+			<div class="row divider" ng-repeat="row in sceneRows track by $index">
+				<dz-scene-widget ng-repeat="scene in row track by scene.idx"
+					scene="scene"
+					view-mode="tab"
+					on-update="refreshScenes()"
+					on-edit="editScene(scene)">
+				</dz-scene-widget>
+			</div>
+			<h2 ng-if="!loading && scenes.length === 0" data-i18n="No Scenes defined yet...">No Scenes defined yet...</h2>
+		</div>
+		<div id="sceneeditcontent" ng-show="!showSceneList"></div>
+	</div>
 </div>
 <div id="dialog-addscene">
     <form>
