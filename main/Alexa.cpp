@@ -390,9 +390,9 @@ void CWebServer::Alexa_HandleDiscovery(WebEmSession& session, const request& req
 	// Determine if user has control permissions (only SWITCHER and ADMIN can control)
 	bool bControlPermitted = (session.rights == URIGHTS_SWITCHER || session.rights == URIGHTS_ADMIN);
 
-	// Get devices - all devices for admin, shared devices for regular users
+	// Get devices - all devices if admin or no shared devices assigned, otherwise only shared devices
 	std::vector<std::vector<std::string>> devices_result;
-	if (m_users[iUser].userrights == URIGHTS_ADMIN)
+	if (m_users[iUser].userrights == URIGHTS_ADMIN || m_users[iUser].TotSensors == 0)
 	{
 		devices_result = m_sql.safe_query(
 			"SELECT DISTINCT d.ID, d.Name, d.Type, d.SubType, d.SwitchType, d.Options, d.sValue "

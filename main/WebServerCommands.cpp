@@ -2925,10 +2925,7 @@ namespace http
 						bool bIsUser = false;
 						if (iUser != -1)
 						{
-							if (m_users[iUser].userrights != URIGHTS_ADMIN)
-								bIsUser = true;
-							else
-								bIsUser = (m_users[iUser].TotSensors > 0); //admin users with devices are also allowed
+							bIsUser = (m_users[iUser].TotSensors > 0);
 						}
 						if (bIsUser)
 						{
@@ -3390,10 +3387,7 @@ namespace http
 					bool bIsUser = false;
 					if (iUser != -1)
 					{
-						if (m_users[iUser].userrights != URIGHTS_ADMIN)
-							bIsUser = true;
-						else
-							bIsUser = (m_users[iUser].TotSensors > 0); //admin users with devices are also allowed
+						bIsUser = (m_users[iUser].TotSensors > 0);
 					}
 					root["status"] = "OK";
 					if ((bIsUser) && (m_users[iUser].ID != 0xFFFF))
