@@ -162,6 +162,7 @@ private:
 
 	std::string m_szDomoticzUpdateChecksumURL;
 	bool m_bStartHardware;
+	bool m_bStarted{ false };
 	bool m_bStopped{ false };
 	uint8_t m_hardwareStartCounter;
 

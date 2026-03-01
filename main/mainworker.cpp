@@ -1123,6 +1123,8 @@ bool MainWorker::AddHardwareFromParams(
 
 bool MainWorker::Start()
 {
+	m_bStarted = true;
+
 	utsname my_uname;
 	if (uname(&my_uname) == 0)
 	{
@@ -1258,6 +1260,11 @@ bool MainWorker::Stop()
 	if (m_bStopped)
 		return true;
 	m_bStopped = true;
+
+	// If Start() was never called (e.g. --help, --version, or parameter error),
+	// there is nothing to stop.
+	if (!m_bStarted)
+		return true;
 
 	if (m_thread)
 	{
