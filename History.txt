@@ -32,6 +32,7 @@ Version 2026.xxxx
 - Added: Re-added wind-rose direction chart to Wind sensor log
 - Added: RFXCom, Support Orcon FAN device (#6500)
 - Added: RTL433, Support UV sensors named 'uvi'
+- Added: Search filter on selected (right) side of user shared devices selector (Fixes #6613)
 - Added: SolarEdge API, battery detection (#6593)
 - Added: Support -pidfile without -daemon for process managers like monit under systemd
 - Added: Support for the Model Context Protocol (/mcp) for use with AI Agents

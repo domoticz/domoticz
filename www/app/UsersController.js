@@ -140,12 +140,66 @@ define(['app'], function (app) {
 			var defaultOptions = {
 				availableListPosition: 'left',
 				splitRatio: 0.5,
+				filterSelected: true,
 				moveEffect: 'blind',
 				moveEffectOptions: { direction: 'vertical' },
 				moveEffectSpeed: 'fast'
 			};
 
 			$("#usercontent .multiselect").multiselect(defaultOptions);
+
+			// Add search filter to the selected (right) side
+			var $selectedHeader = $("#usercontent .multiselect-selected-list .ui-widget-header");
+			var $selectedHeaderText = $selectedHeader.find(".header-text");
+			var $selectedList = $("#usercontent .multiselect-selected-list .uix-list-container");
+
+			var $searchField = $('<input type="text" />')
+				.addClass("uix-search ui-widget-content ui-corner-left")
+				.hide()
+				.insertBefore($selectedHeaderText)
+				.focus(function () { $(this).select(); })
+				.on("keydown", function (e) {
+					if (e.keyCode == 13) { e.preventDefault(); }
+				})
+				.keyup(function () {
+					var val = $(this).val().trim().toLowerCase();
+					$selectedList.find(".option-element").each(function () {
+						var $el = $(this);
+						if (!val || $el.text().toLowerCase().indexOf(val) > -1) {
+							$el.show();
+						} else {
+							$el.hide();
+						}
+					});
+				});
+
+			$('<button type="button"></button>')
+				.addClass("uix-control-right")
+				.attr("title", $.t("Search"))
+				.button({ icons: { primary: "ui-icon-search" }, text: false })
+				.click(function (e) {
+					e.preventDefault();
+					e.stopPropagation();
+					var $btn = $(this);
+					if ($searchField.is(":visible")) {
+						$selectedHeaderText.stop().css("visibility", "visible").fadeTo("fast", 1);
+						$searchField.hide("slide", { direction: "right" }, 200, function () {
+							$btn.removeClass("ui-corner-right ui-state-active").addClass("ui-corner-all");
+						});
+						$searchField.val("");
+						$selectedList.find(".option-element").show();
+					} else {
+						$selectedHeaderText.stop().fadeTo("fast", 0.1, function () { $(this).css("visibility", "hidden"); });
+						$btn.removeClass("ui-corner-all").addClass("ui-corner-right ui-state-active");
+						$searchField.show("slide", { direction: "right" }, 200, function () { $(this).focus(); });
+					}
+					return false;
+				})
+				.insertBefore($selectedHeaderText);
+
+			// Set search field width to match the header
+			var btnWidth = $selectedHeader.find(".uix-control-right").first().outerWidth(true) || 20;
+			$searchField.width($selectedHeader.width() - btnWidth - 4);
 
 			$.ajax({
 				url: "json.htm?type=command&param=getshareduserdevices&idx=" + idx,
