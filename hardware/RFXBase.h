@@ -3,8 +3,22 @@
 #include "ASyncSerial.h"
 #include "DomoticzHardware.h"
 #include "P1MeterBase.h"
+#include "TeleinfoBase.h"
 
 #define RX_BUFFER_SIZE 512
+
+// Lightweight helper that provides Teleinfo parsing for CRFXBase via composition
+class CRFXTeleinfoHelper : public CTeleinfoBase
+{
+public:
+	CRFXTeleinfoHelper();
+	~CRFXTeleinfoHelper() override = default;
+	void SetHwdID(int HwdID);
+	void ProcessData(const char* pData, int Len) { ParseTeleinfoData(pData, Len); }
+	bool StartHardware() override { return true; }
+	bool StopHardware() override { return true; }
+	bool WriteToHardware(const char* /*pdata*/, unsigned char /*length*/) override { return true; }
+};
 
 class CRFXBase : public P1MeterBase
 {
@@ -44,6 +58,7 @@ class CRFXBase : public P1MeterBase
 	std::mutex readQueueMutex;
 	unsigned char m_rxbuffer[RX_BUFFER_SIZE] = { 0 };
 	uint16_t m_rxbufferpos = { 0 };
+	CRFXTeleinfoHelper m_teleinfoHelper;
 
       private:
 	static bool CheckValidRFXData(const uint8_t *pData);

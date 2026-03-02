@@ -1,5 +1,6 @@
 Version 2026.xxxx
 - Added: Alexa Smart Home v3 API endpoint (see ALEXA.md)
+- Added: RFXCOM, Teleinfo 1200/19200 async mode support (Fixes #6495)
 - Added: Blinds + Stop type
 - Added: Comparing charts, show average across years in tooltip for month/quarter grouping
 - Added: Configurable pricing resolution (15/30/60 minutes) for dynamic energy contracts (with adapted P1 and kWh graphs)
