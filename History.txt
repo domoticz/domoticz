@@ -47,6 +47,7 @@ Version 2026.xxxx
 - Added: Web Interface, Passkey (WebAuthn/FIDO2) authentication support - register and sign in with Windows Hello, Touch ID, or security keys
 - Added: Web Interface, Passkey management in My Profile (register, view device info, delete)
 - Fixed: Application hang on shutdown when Python event scripts are active
+- Fixed: dzVents, counterToday/counterDeliveredToday returning stale values after midnight for idle devices (Fixes #6221)
 - Fixed: Buienradar, fallback when station measurements are empty
 - Fixed: CalcMeterPrice/CalcMultiMeterPrice off-by-one price error with dynamic tariffs (Fixes #6181)
 - Fixed: Chart zoom buttons (notable on iOS devices)

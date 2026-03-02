@@ -189,6 +189,7 @@ private:
 	std::shared_ptr<std::thread> m_eventqueuethread;
 	StoppableTask m_TaskQueue;
 	int m_SecStatus;
+	int m_LastRefreshDay = -1;
 	std::string m_lua_Dir;
 	std::string m_szStartTime;
 
@@ -225,6 +226,7 @@ private:
 	std::string ParseBlocklyString(const std::string &oString);
 	void ParseActionString( const std::string &oAction_, _tActionParseResults &oResults_ );
 	void UpdateJsonMap(_tDeviceStatus &item, uint64_t ulDevID);
+	void RefreshCounterJsonMaps();
 	void EventQueueThread();
 	void UnlockEventQueueThread();
 	void ExportDeviceStatesToLua(lua_State *lua_state, const _tEventQueue &item);
