@@ -3149,6 +3149,13 @@ namespace http
 					}
 					else if (dType == pTypeCURRENT)
 					{
+						if (!sgroupby.empty())
+						{
+							root["status"] = "OK";
+							root["title"] = "Comparing " + sensor;
+							MakeCompareDataSensor(root, sgroupby, dbasetable, idx, "(Value2+Value4+Value6)/3", 10.0);
+							return;
+						}
 						result = m_sql.safe_query("SELECT Value1,Value2,Value3,Value4,Value5,Value6, Date FROM %s WHERE (DeviceRowID==%" PRIu64
 							" AND Date>='%q' AND Date<='%q') ORDER BY Date ASC",
 							dbasetable.c_str(), idx, szDateStart, szDateEnd);

@@ -1,4 +1,4 @@
-define(['app', 'log/Chart', 'log/TextLog', 'log/TemperatureLog', 'log/LightLog', 'log/GraphLog', 'log/CounterLog', 'log/CounterLogCounter', 'log/CounterLogInstantAndCounter', 'log/CounterLogP1Energy', 'log/RainLog', 'log/SetpointLog', 'log/AirQualityLog', 'log/BarometerLog', 'log/WindLog', 'log/UVLog', 'log/FanLog'], function (app) {
+define(['app', 'log/Chart', 'log/TextLog', 'log/TemperatureLog', 'log/LightLog', 'log/GraphLog', 'log/CounterLog', 'log/CounterLogCounter', 'log/CounterLogInstantAndCounter', 'log/CounterLogP1Energy', 'log/RainLog', 'log/SetpointLog', 'log/AirQualityLog', 'log/BarometerLog', 'log/WindLog', 'log/UVLog', 'log/FanLog', 'log/CurrentLog'], function (app) {
     app.controller('DeviceLogController', function ($location, $routeParams, domoticzApi, deviceApi, chart) {
         var vm = this;
 
@@ -13,6 +13,7 @@ define(['app', 'log/Chart', 'log/TextLog', 'log/TemperatureLog', 'log/LightLog',
 		vm.isWindLog = isWindLog;
 		vm.isUvLog = isUvLog;
 		vm.isFanLog = isFanLog;
+		vm.isCurrentLog = isCurrentLog;
         vm.isReportAvailable = isReportAvailable;
         vm.isInstantAndCounterLog = isInstantAndCounterLog;
         vm.isP1EnergyLog = isP1EnergyLog;
@@ -152,6 +153,13 @@ define(['app', 'log/Chart', 'log/TextLog', 'log/TemperatureLog', 'log/LightLog',
 				return undefined;
 			}
 			return (vm.device.SubType === 'Fan');
+		}
+
+		function isCurrentLog() {
+			if (!vm.device) {
+				return undefined;
+			}
+			return (vm.device.Type === 'Current');
 		}
 
         function isP1EnergyLog() {
