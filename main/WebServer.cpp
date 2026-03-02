@@ -65,6 +65,7 @@ extern std::string szAppDate;
 extern std::string szPyVersion;
 
 extern bool g_bLlmMCPSupport;
+extern bool bDoCachePages;
 
 namespace http
 {
@@ -4502,7 +4503,23 @@ namespace http
 
 		void CWebServer::GetServiceWorker(WebEmSession& session, const request& req, reply& rep)
 		{
-			// Return the appcache file (dynamically generated)
+			if (!bDoCachePages)
+			{
+				// No-cache mode: return a service worker that unregisters itself and clears all caches
+				std::string response =
+					"self.addEventListener('install', function() { self.skipWaiting(); });\n"
+					"self.addEventListener('activate', function(event) {\n"
+					"  event.waitUntil(\n"
+					"    caches.keys().then(function(keys) {\n"
+					"      return Promise.all(keys.map(function(k) { return caches.delete(k); }));\n"
+					"    }).then(function() { return self.registration.unregister(); })\n"
+					"  );\n"
+					"});\n";
+				reply::set_content(&rep, response);
+				return;
+			}
+
+			// Return the service worker file (dynamically generated)
 			std::string sLine;
 			std::string filename = szWWWFolder + "/service-worker.js";
 
