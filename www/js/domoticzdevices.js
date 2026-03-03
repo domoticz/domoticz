@@ -143,6 +143,17 @@ function getMaxSpanWidth(elText) {
     return iMaxSpan;
 }
 
+function stripHTMLTags(text) {
+    if (typeof text !== 'string') return text;
+    return text.replace(/<[^>]*>/g, '');
+}
+
+function sanitizeHTML(text) {
+    if (typeof text !== 'string') return text;
+    // Allow only safe formatting tags, strip everything else
+    return text.replace(/<\/?(?!(?:br|b|i|u|em|strong|font|span)\b)[a-zA-Z][^>]*>/gi, '');
+}
+
 function Transform(tag) {
     this.scale = 1.0;
     this.rotation = 0;
@@ -455,12 +466,14 @@ function Device(item) {
                 nbackcolor = "#DF2D3A";
             }
             if (Device.useSVGtags == true) {
+                var tileMaxWidth = this.hasHTMLContent ? Device.iconSize * 5 : Device.iconSize * 3;
+                var tileFontSize = this.hasHTMLContent ? '65%' : '80%';
                 if (this.hasNewLine) {
                     var oText = makeSVGmultiline(
-                        { transform: 'translate(' + Device.iconSize / 2 + ',' + (Device.iconSize + (Device.elementPadding * 1.5) + 1) + ')', 'text-anchor': 'middle', 'font-weight': 'bold', 'font-size': '80%' },
+                        { transform: 'translate(' + Device.iconSize / 2 + ',' + (Device.iconSize + (Device.elementPadding * 1.5) + 1) + ')', 'text-anchor': 'middle', 'font-weight': 'bold', 'font-size': tileFontSize },
                         $.t(this.smallStatus.replace('Watt', 'W')),
                         '',
-                        Device.iconSize * 3,
+                        tileMaxWidth,
                         0,
                         Device.elementPadding * 2.5 + 1,
                         "<br />"
@@ -468,10 +481,10 @@ function Device(item) {
                 }
                 else {
                     var oText = makeSVGmultiline(
-                        { transform: 'translate(' + Device.iconSize / 2 + ',' + (Device.iconSize + (Device.elementPadding * 1.5) + 1) + ')', 'text-anchor': 'middle', 'font-weight': 'bold', 'font-size': '80%' },
+                        { transform: 'translate(' + Device.iconSize / 2 + ',' + (Device.iconSize + (Device.elementPadding * 1.5) + 1) + ')', 'text-anchor': 'middle', 'font-weight': 'bold', 'font-size': tileFontSize },
                         $.t(this.smallStatus.replace('Watt', 'W')),
                         '',
-                        Device.iconSize * 3,
+                        tileMaxWidth,
                         0,
                         Device.elementPadding * 2.5 + 1
                     );
@@ -594,7 +607,27 @@ function Device(item) {
                 gStatusGroup.appendChild(makeSVGnode('rect', { id: "slider", 'class': "Slider", x: 0, y: Device.elementPadding * 3, width: (Device.elementPadding * 35) * (this.level / this.levelMax), height: Device.elementPadding * 2, rx: Device.elementPadding, ry: Device.elementPadding, fill: 'url(#SliderGradient)', stroke: 'black', 'stroke-width': '0.5', 'pointer-events': 'all' }, '', $.t('Adjust level')));
                 gStatusGroup.appendChild(makeSVGnode('image', { id: "sliderhandle", 'class': "SliderHandle", x: ((Device.elementPadding * 35) * (this.level / this.levelMax)) - (Device.elementPadding * 2), y: Device.elementPadding * 2, level: this.level, maxlevel: this.levelMax, devindex: this.index, 'xlink:href': 'images/handle.png', width: Device.elementPadding * 4, height: Device.elementPadding * 4, 'pointer-events': 'all', onmouseover: "cursorhand()", onmouseout: "cursordefault()" }, '', $.t('Slide to adjust level')));
             } else {
-                if (this.hasNewLine) {
+                if (this.hasHTMLContent) {
+                    var foWidth = this.width - iOffset - Device.elementPadding * 2;
+                    var foHeight = this.height - Device.elementPadding * 8;
+                    var oStatus = document.createElementNS('http://www.w3.org/2000/svg', 'foreignObject');
+                    oStatus.setAttribute('id', 'status');
+                    oStatus.setAttribute('x', 0);
+                    oStatus.setAttribute('y', Device.elementPadding * 0.5);
+                    oStatus.setAttribute('width', foWidth);
+                    oStatus.setAttribute('height', foHeight);
+                    var div = document.createElement('div');
+                    div.setAttribute('xmlns', 'http://www.w3.org/1999/xhtml');
+                    div.style.fontWeight = 'bold';
+                    div.style.fontSize = '75%';
+                    div.style.overflow = 'hidden';
+                    div.style.maxHeight = foHeight + 'px';
+                    div.style.lineHeight = '1.3';
+                    div.style.color = '#000000';
+                    div.innerHTML = sanitizeHTML(TranslateStatus(this.status));
+                    oStatus.appendChild(div);
+                }
+                else if (this.hasNewLine) {
                     var oStatus = makeSVGmultiline({ id: "status", transform: 'translate(0,' + Device.elementPadding * 3 + ')', 'font-weight': 'bold', 'font-size': '90%' }, TranslateStatus(this.status), '', ((this.image2 == '') ? Device.elementPadding * 37 : Device.elementPadding * 32), Device.elementPadding * -1.5, Device.elementPadding * 3, "<br />");
                 }
                 else {
@@ -609,7 +642,8 @@ function Device(item) {
 
                 gStatusGroup.appendChild(oStatus);
             }
-            var gText = makeSVGnode('text', { id: "lastseen", x: 0, y: Device.elementPadding * 7.5, 'font-size': '80%' }, '');
+            var lastSeenY = this.hasHTMLContent ? (this.height - Device.elementPadding * 7) : Device.elementPadding * 7.5;
+            var gText = makeSVGnode('text', { id: "lastseen", x: 0, y: lastSeenY, 'font-size': '80%' }, '');
             gStatusGroup.appendChild(gText);
             gText.appendChild(makeSVGnode('tspan', { id: "lastlabel", 'font-style': 'italic', 'font-size': '80%' }, $.t('Last Seen')));
             gText.appendChild(makeSVGnode('tspan', { id: "lastlabel", 'font-style': 'italic', 'font-size': '80%' }, ':'));
@@ -1869,16 +1903,24 @@ Percentage.inheritsFrom(PercentageSensor);
 
 function Text(item) {
     if (arguments.length != 0) {
-        this.ignoreClick=true;
         this.parent.constructor(item);
         this.imagetext = "";
-        this.NotifyLink = this.LogLink = this.onClick = "";
+        this.NotifyLink = "";
+        this.LogLink = this.onClick = "window.location.href = '#/Devices/" + this.index + "/Log'";
         this.data = item.Data.replace(/([^>\r\n]?)(\r\n|\n\r|\r|\n)/g, '$1<br />$2');
         if (this.data.indexOf("<br />") != -1) {
             this.hasNewLine = true;
-        }       
+        }
+        this.hasHTMLContent = /<(?!br\s*\/?)[a-zA-Z][^>]*>/i.test(this.data);
         this.status = this.data;
+        this.smallStatus = stripHTMLTags(this.data.replace(/<br\s*\/?>/gi, ', '));
         this.data = "";
+        // Increase popup size for text sensors with multiline/HTML content
+        if (this.hasNewLine || this.hasHTMLContent) {
+            var lineCount = (this.status.match(/<br\s*\/?>/gi) || []).length + 1;
+            this.width = Device.elementPadding * 55;
+            this.height = Math.max(Device.elementPadding * 15, Device.elementPadding * (10 + lineCount * 3));
+        }
     }
 }
 Text.inheritsFrom(Sensor);
