@@ -193,30 +193,6 @@ History:
 			</g>
 			<text class="etext" x="56" y="6" opacity="1.0" font-size="2.0px" text-anchor="right" dy="0" style="font-weight: normal; white-space: pre;" ng-show="txtOutsideTemp">{{ txtOutsideTemp }}&deg; {{ config.TempSign }}</text>
 			<g id="groupBatt" ng-show="idBattWatt != -1">
-				<circle class="ecircle ecircle-batt" r="7" cx="30" cy="50" fill="rgba(144,224,144,0.06)" stroke="#90e090" stroke-width=".5" filter="url(#glowBatt)" ng-class="{'circle-active': fActualBattWatt != 0}"/>
-				<g class="eicon" ng-show="!customIconBatt">
-					<g transform="matrix(0.010083, 0, 0, 0.008335, 27.65, 45.2)">
-						<path d="m 319.089 27.221 h -36.475 v -27.221 h -95.27 v 27.221 h -34.607 c -22.517 0 -40.829 18.317 -40.829 40.832 v 362.946 c 0 22.51 18.317 40.83 40.829 40.83 h 166.352 c 22.524 0 40.832 -18.32 40.832 -40.83 v -362.947 c 0 -22.514 -18.308 -40.831 -40.832 -40.831 z m 13.616 403.781 c 0 7.501 -6.108 13.607 -13.616 13.607 h -166.352 c -7.501 0 -13.608 -6.095 -13.608 -13.607 v -362.95 c 0 -7.501 6.107 -13.611 13.608 -13.611 h 166.352 c 7.508 0 13.616 6.109 13.616 13.611 v 362.95 z"/>
-					</g>
-					<g id="batt_5" transform="matrix(0.010083, 0, 0, 0.008335, 31, 46.3)" ng-show="fBattSoc>=85">
-						<path d="m -14.843 -2.502 h -163.896 v -59.719 h 163.896 v 59.719 z"/>
-					</g>
-					<g id="batt_4" transform="matrix(0.010083, 0, 0, 0.008335, 31, 46.92)" ng-show="fBattSoc>=65">
-						<path d="m -14.843 -2.502 h -163.896 v -59.719 h 163.896 v 59.719 z"/>
-					</g>
-					<g id="batt_3" transform="matrix(0.010083, 0, 0, 0.008335, 31, 47.55)" ng-show="fBattSoc>=45">
-						<path d="m -14.843 -2.502 h -163.896 v -59.719 h 163.896 v 59.719 z"/>
-					</g>
-					<g id="batt_2" transform="matrix(0.010083, 0, 0, 0.008335, 31, 48.18)" ng-show="fBattSoc>=25">
-						<path d="m -14.843 -2.502 h -163.896 v -59.719 h 163.896 v 59.719 z"/>
-					</g>
-					<g id="batt_1" transform="matrix(0.010083, 0, 0, 0.008335, 31, 48.8)" ng-show="fBattSoc>5">
-						<path d="m -14.843 -2.502 h -163.896 v -59.719 h 163.896 v 59.719 z"/>
-					</g>
-				</g>
-				<g transform="matrix(0.075, 0, 0, 0.075, 28.2, 45)" ng-show="customIconBatt">
-					<image width="48" height="48" xlink:href="{{customIconBatt}}" />
-				</g>
 				<line id="SolarToBatt" x1="30" y1="17" x2="30" y2="43" style="stroke:#ffd050;stroke-width:{{flowStrokeBack}}" ng-show="idSolar != -1"/>
 				<g ng-show="fSolarToBatt>0">
 					<line id="SolarToBatt-flow" x1="30" y1="17" x2="30" y2="43" style="stroke:red;stroke-width:0.2" ng-show="flowAsLines"/>
@@ -279,33 +255,34 @@ History:
 							repeatCount="indefinite" />
 					</ellipse>
 				</g>
-				
+				<circle class="ecircle ecircle-batt" r="7" cx="30" cy="50" fill="rgba(144,224,144,0.06)" stroke="#90e090" stroke-width=".5" filter="url(#glowBatt)" ng-class="{'circle-active': fActualBattWatt != 0}"/>
+				<g class="eicon" ng-show="!customIconBatt">
+					<g transform="matrix(0.010083, 0, 0, 0.008335, 27.65, 45.2)">
+						<path d="m 319.089 27.221 h -36.475 v -27.221 h -95.27 v 27.221 h -34.607 c -22.517 0 -40.829 18.317 -40.829 40.832 v 362.946 c 0 22.51 18.317 40.83 40.829 40.83 h 166.352 c 22.524 0 40.832 -18.32 40.832 -40.83 v -362.947 c 0 -22.514 -18.308 -40.831 -40.832 -40.831 z m 13.616 403.781 c 0 7.501 -6.108 13.607 -13.616 13.607 h -166.352 c -7.501 0 -13.608 -6.095 -13.608 -13.607 v -362.95 c 0 -7.501 6.107 -13.611 13.608 -13.611 h 166.352 c 7.508 0 13.616 6.109 13.616 13.611 v 362.95 z"/>
+					</g>
+					<g id="batt_5" transform="matrix(0.010083, 0, 0, 0.008335, 31, 46.3)" ng-show="fBattSoc>=85">
+						<path d="m -14.843 -2.502 h -163.896 v -59.719 h 163.896 v 59.719 z"/>
+					</g>
+					<g id="batt_4" transform="matrix(0.010083, 0, 0, 0.008335, 31, 46.92)" ng-show="fBattSoc>=65">
+						<path d="m -14.843 -2.502 h -163.896 v -59.719 h 163.896 v 59.719 z"/>
+					</g>
+					<g id="batt_3" transform="matrix(0.010083, 0, 0, 0.008335, 31, 47.55)" ng-show="fBattSoc>=45">
+						<path d="m -14.843 -2.502 h -163.896 v -59.719 h 163.896 v 59.719 z"/>
+					</g>
+					<g id="batt_2" transform="matrix(0.010083, 0, 0, 0.008335, 31, 48.18)" ng-show="fBattSoc>=25">
+						<path d="m -14.843 -2.502 h -163.896 v -59.719 h 163.896 v 59.719 z"/>
+					</g>
+					<g id="batt_1" transform="matrix(0.010083, 0, 0, 0.008335, 31, 48.8)" ng-show="fBattSoc>5">
+						<path d="m -14.843 -2.502 h -163.896 v -59.719 h 163.896 v 59.719 z"/>
+					</g>
+				</g>
+				<g transform="matrix(0.075, 0, 0, 0.075, 28.2, 45)" ng-show="customIconBatt">
+					<image width="48" height="48" xlink:href="{{customIconBatt}}" />
+				</g>
 				<text class="etext" x="30" y="51.7" font-size="2.1px" text-anchor="middle" style="font-variant-caps: normal; font-variant-east-asian: normal; font-variant-ligatures: normal; font-variant-numeric: normal; font-weight: bold; white-space: pre;">{{ fBattSoc }}%</text>
 				<text class="etext" x="30" y="54" font-size="1.7px" text-anchor="middle" style="font-variant-caps: normal; font-variant-east-asian: normal; font-variant-ligatures: normal; font-variant-numeric: normal; font-weight: bold; white-space: pre;">{{ fActualBattWatt }} Watt</text>
 			</g>
 			<g id="groupSolar" ng-show="idSolar != -1">
-				<circle class="ecircle ecircle-solar" r="7" cx="30" cy="10" fill="rgba(255,208,0,0.06)" stroke="#ffd000" stroke-width=".5" filter="url(#glowSolar)" ng-class="{'circle-active': fActualSolar > 0}"/>
-				<g class="eicon" transform="matrix(0.0095, 0, 0, 0.0095, 27, 4.5)" ng-show="!customIconSolar">
-					<path d="M77.604,241.753l10.047-41.623c-21.697-9.842-38.879-39.91-38.879-65.383c0-40.4,32.761-73.162,73.162-73.162
-						c31.978,0,59.097,20.563,69.049,49.153h28.136c4.574-7.435,17.672-17.408,15.484-22.67c-2.766-6.681-27.566-1.566-31.546-7.515
-						c-4.003-5.979,10.172-26.951,5.1-32.022c-5.078-5.078-26.05,9.104-32.029,5.093c-5.941-3.973-0.834-28.788-7.508-31.553
-						c-6.572-2.722-20.497,18.396-27.639,16.984c-6.922-1.368-11.723-26.241-19.048-26.241c-7.325,0-12.126,24.873-19.048,26.241
-						c-7.134,1.412-21.06-19.706-27.631-16.977c-6.681,2.766-1.566,27.566-7.515,31.546c-5.979,4.003-26.951-10.171-32.022-5.1
-						c-5.078,5.078,9.104,26.05,5.101,32.029c-3.98,5.942-28.788,0.834-31.561,7.508c-2.722,6.572,18.397,20.504,16.984,27.639
-						C24.873,122.622,0,127.423,0,134.747c0,7.325,24.873,12.126,26.242,19.048c1.412,7.134-19.707,21.06-16.977,27.631
-						c2.766,6.681,27.565,1.566,31.546,7.515c4.003,5.979-10.171,26.951-5.1,32.022c5.078,5.078,26.05-9.104,32.029-5.101
-						C71.464,218.358,76.938,233.447,77.604,241.753z"/>
-					<path d="M66.144,349.022H512l-52.453-217.304h-340.95L66.144,349.022z M473.934,319.049H367.579L361.3,251.61h96.351
-						L473.934,319.049z M435.948,161.691l16.282,67.439h-93.022l-6.271-67.439H435.948z M247.644,161.691h82.718l6.278,67.439h-95.275
-						L247.644,161.691z M239.272,251.61h99.46l6.271,67.439H233.001L239.272,251.61z M142.204,161.691h82.865l-6.271,67.439h-92.876
-						L142.204,161.691z M216.705,251.61l-6.279,67.439H104.218L120.5,251.61H216.705z"/>
-					<polygon points="83.634,394.479 494.511,394.479 512,359.508 66.144,359.508 	"/>
-					<polygon points="311.702,408.668 266.449,408.668 264.02,448.271 218.358,470.897 218.358,499.187 359.794,499.187 
-						359.794,470.897 314.131,448.271 	"/>
-				</g>
-				<g transform="matrix(0.075, 0, 0, 0.075, 28.2, 5)" ng-show="customIconSolar">
-					<image width="48" height="48" xlink:href="{{customIconSolar}}" />
-				</g>
 				<text x="10" y="31" fill="#ba88ff" opacity="0.7" font-size="1.6px" text-anchor="middle" style="font-variant-caps: normal; font-variant-east-asian: normal; font-variant-ligatures: normal; font-variant-numeric: normal; white-space: pre;" ng-show="!P1InkWh">⇦ {{ fDayNetDeliv | number:3 }} kWh</text>
 				<path id="SolarToGrid" fill="none" d="m29 17c0 9-2 11-12 12" stroke="#ffd050" stroke-width="{{flowStrokeBack}}"/>
 				<g ng-show="fSolarToGrid>0">
@@ -348,6 +325,28 @@ History:
 							repeatCount="indefinite" />
 					</ellipse>
 				</g>
+				<circle class="ecircle ecircle-solar" r="7" cx="30" cy="10" fill="rgba(255,208,0,0.06)" stroke="#ffd000" stroke-width=".5" filter="url(#glowSolar)" ng-class="{'circle-active': fActualSolar > 0}"/>
+				<g class="eicon" transform="matrix(0.0095, 0, 0, 0.0095, 27, 4.5)" ng-show="!customIconSolar">
+					<path d="M77.604,241.753l10.047-41.623c-21.697-9.842-38.879-39.91-38.879-65.383c0-40.4,32.761-73.162,73.162-73.162
+						c31.978,0,59.097,20.563,69.049,49.153h28.136c4.574-7.435,17.672-17.408,15.484-22.67c-2.766-6.681-27.566-1.566-31.546-7.515
+						c-4.003-5.979,10.172-26.951,5.1-32.022c-5.078-5.078-26.05,9.104-32.029,5.093c-5.941-3.973-0.834-28.788-7.508-31.553
+						c-6.572-2.722-20.497,18.396-27.639,16.984c-6.922-1.368-11.723-26.241-19.048-26.241c-7.325,0-12.126,24.873-19.048,26.241
+						c-7.134,1.412-21.06-19.706-27.631-16.977c-6.681,2.766-1.566,27.566-7.515,31.546c-5.979,4.003-26.951-10.171-32.022-5.1
+						c-5.078,5.078,9.104,26.05,5.101,32.029c-3.98,5.942-28.788,0.834-31.561,7.508c-2.722,6.572,18.397,20.504,16.984,27.639
+						C24.873,122.622,0,127.423,0,134.747c0,7.325,24.873,12.126,26.242,19.048c1.412,7.134-19.707,21.06-16.977,27.631
+						c2.766,6.681,27.565,1.566,31.546,7.515c4.003,5.979-10.171,26.951-5.1,32.022c5.078,5.078,26.05-9.104,32.029-5.101
+						C71.464,218.358,76.938,233.447,77.604,241.753z"/>
+					<path d="M66.144,349.022H512l-52.453-217.304h-340.95L66.144,349.022z M473.934,319.049H367.579L361.3,251.61h96.351
+						L473.934,319.049z M435.948,161.691l16.282,67.439h-93.022l-6.271-67.439H435.948z M247.644,161.691h82.718l6.278,67.439h-95.275
+						L247.644,161.691z M239.272,251.61h99.46l6.271,67.439H233.001L239.272,251.61z M142.204,161.691h82.865l-6.271,67.439h-92.876
+						L142.204,161.691z M216.705,251.61l-6.279,67.439H104.218L120.5,251.61H216.705z"/>
+					<polygon points="83.634,394.479 494.511,394.479 512,359.508 66.144,359.508 	"/>
+					<polygon points="311.702,408.668 266.449,408.668 264.02,448.271 218.358,470.897 218.358,499.187 359.794,499.187
+						359.794,470.897 314.131,448.271 	"/>
+				</g>
+				<g transform="matrix(0.075, 0, 0, 0.075, 28.2, 5)" ng-show="customIconSolar">
+					<image width="48" height="48" xlink:href="{{customIconSolar}}" />
+				</g>
 				<g>
 					<text class="etext" x="30" y="11.5" opacity="0.7" font-size="1.6px" text-anchor="middle" style="font-variant-caps: normal; font-variant-east-asian: normal; font-variant-ligatures: normal; font-variant-numeric: normal; white-space: pre;">{{ fDaySolar | number:3 }} kWh</text>
 					<text class="etext" x="30" y="14" font-size="1.7px" text-anchor="middle" style="font-variant-caps: normal; font-variant-east-asian: normal; font-variant-ligatures: normal; font-variant-numeric: normal; font-weight: bold; white-space: pre;">{{ fActualSolar }} Watt</text>
@@ -355,8 +354,8 @@ History:
 				</g>
 
 			</g>
-			<line id="lineRT1" x1="50" y1="19" x2="50" y2="24" style="stroke:#777;stroke-width:0.2" ng-show="bDisplayRT1"/>
-			<line id="lineRB1" x1="50" y1="36" x2="50" y2="41" style="stroke:#777;stroke-width:0.2" ng-show="bDisplayRB1"/>
+			<line id="lineRT1" x1="50" y1="19" x2="50" y2="22.85" style="stroke:#777;stroke-width:0.2" ng-show="bDisplayRT1"/>
+			<line id="lineRB1" x1="50" y1="37" x2="50" y2="41" style="stroke:#777;stroke-width:0.2" ng-show="bDisplayRB1"/>
 			<g id="groupGas" ng-show="idGas != -1">
 				<circle class="ecircle ecircle-gas" r="5" cx="50" cy="14" fill="rgba(224,96,64,0.06)" stroke="#e06040" stroke-width=".4" filter="url(#glowGas)"/>
 				<g transform="matrix(0.12, 0, 0, 0.12, 48, 10.5)" ng-show="!customIconGas">
@@ -387,7 +386,7 @@ History:
 				<g transform="matrix(0.075, 0, 0, 0.075, 3.3, 1)" ng-show="customIconH1">
 					<image width="48" height="48" xlink:href="{{customIconH1}}" />
 				</g>
-				<line x1="0" y1="9.7" x2="1.5" y2="8.4" style="stroke:#777;stroke-width:0.2"/>
+				<line x1="0.1" y1="9.7" x2="1.5" y2="8.4" style="stroke:#777;stroke-width:0.2"/>
 				
 				<text class="etext" x="5" y="5.7" opacity="0.7" font-size="1.0px" text-anchor="middle" style="font-variant-caps: normal; font-variant-east-asian: normal; font-variant-ligatures: normal; font-variant-numeric: normal; white-space: pre; font-weight: bold;" ng-show="txtKwhItemH1">{{ txtKwhItemH1 }}</text>
 				<text class="etext" x="5" y="7.2" font-size="1.5px" text-anchor="middle" style="font-variant-caps: normal; font-variant-east-asian: normal; font-variant-ligatures: normal; font-variant-numeric: normal; white-space: pre; font-weight: bold;">{{ txtItemH1 }}</text>
@@ -414,19 +413,12 @@ History:
 				<g transform="matrix(0.075, 0, 0, 0.075, 3.3, 1)" ng-show="customIconH3">
 					<image width="48" height="48" xlink:href="{{customIconH3}}" />
 				</g>
-				<line x1="0" y1="0.2" x2="1.3" y2="1.4" style="stroke:#777;stroke-width:0.2"/>
+				<line x1="0.3" y1="0.4" x2="1.3" y2="1.4" style="stroke:#777;stroke-width:0.2"/>
 				<text class="etext" x="5" y="5.7" opacity="0.7" font-size="1.0px" text-anchor="middle" style="font-variant-caps: normal; font-variant-east-asian: normal; font-variant-ligatures: normal; font-variant-numeric: normal; white-space: pre; font-weight: bold;" ng-show="txtKwhItemH3">{{ txtKwhItemH3 }}</text>
 				<text class="etext" x="5" y="7.2" font-size="1.5px" text-anchor="middle" style="font-variant-caps: normal; font-variant-east-asian: normal; font-variant-ligatures: normal; font-variant-numeric: normal; white-space: pre; font-weight: bold;">{{ txtItemH3 }}</text>
 				<text class="etext" x="5" y="8.7" opacity="0.55" font-size="1.2px" text-anchor="middle" style="white-space: pre;" ng-show="h3Price!=1000">{{ h3Price | number:2 }} {{ config.CurrencySign }}</text>
 			</g>
 			<g id="groupHome">
-				<circle class="ecircle ecircle-home" r="7" cx="50" cy="30" fill="rgba(255,123,255,0.06)" stroke="#ff7bff" stroke-width=".5" filter="url(#glowHome)" ng-class="{'circle-active': finalHomeUsage > 0}"/>
-				<g class="eicon" transform="matrix(0.07, 0, 0, 0.07, 48, 24.5)" ng-show="!useCustomIcons">
-					<path id="pathIconHome" d="M 12.6251 52.6445 L 43.3986 52.6445 C 46.7267 52.6445 48.6722 50.7695 48.6722 47.4648 L 48.6722 26.0664 L 51.6952 28.8320 C 52.1877 29.3008 52.7267 29.6289 53.3829 29.6289 C 54.4845 29.6289 55.3749 28.9492 55.3749 27.8242 C 55.3749 27.1211 55.1171 26.6758 54.6722 26.2774 L 46.5391 18.8476 L 46.5391 5.0430 C 46.5391 4.0117 45.8829 3.3555 44.8519 3.3555 L 41.7813 3.3555 C 40.7735 3.3555 40.0704 4.0117 40.0704 5.0430 L 40.0704 12.9648 L 30.8126 4.5274 C 29.9923 3.7774 29.0079 3.3555 28.0001 3.3555 C 26.9923 3.3555 26.0079 3.7774 25.1876 4.5274 L 1.3282 26.2774 C .9064 26.6758 .6251 27.1211 .6251 27.8242 C .6251 28.9492 1.5157 29.6289 2.6173 29.6289 C 3.2970 29.6289 3.8360 29.3008 4.3048 28.8320 L 7.3282 26.0898 L 7.3282 47.4648 C 7.3282 50.7695 9.2735 52.6445 12.6251 52.6445 Z M 34.7501 33.3086 C 34.7501 32.2305 34.0470 31.5508 32.9689 31.5508 L 23.0313 31.5508 C 21.9532 31.5508 21.2267 32.2305 21.2267 33.3086 L 21.2267 48.8711 L 13.4220 48.8711 C 11.9220 48.8711 11.1017 48.0508 11.1017 46.5273 L 11.1017 22.6445 L 27.1798 7.9961 C 27.4142 7.7617 27.6954 7.6211 28.0001 7.6211 C 28.3048 7.6211 28.5860 7.7383 28.8439 7.9961 L 44.8984 22.6445 L 44.8984 46.5273 C 44.8984 48.0508 44.0781 48.8711 42.6017 48.8711 L 34.7501 48.8711 Z"/>
-				</g>
-				<g transform="matrix(0.075, 0, 0, 0.075, 48.3, 24.6)" ng-show="useCustomIcons">
-					<image width="48" height="48" xlink:href="images/EHome48.png" />
-				</g>
 				<line id="GridToHome" x1="17" y1="30" x2="43" y2="30" style="stroke:#10d6ea;stroke-width:{{flowStrokeBack}}"/>
 				<g ng-show="fGridToHome>0">
 					<line id="GridToHome-flow" x1="17" y1="30" x2="43" y2="30" style="stroke:red;stroke-width:0.2" ng-show="flowAsLines"/>
@@ -445,8 +437,15 @@ History:
 							path="m 17 30 L 43 30"
 							repeatCount="indefinite" />
 					</ellipse>
-					
+
 					<text class="etext" x="30.5" y="31.5" opacity="0.7" font-size="1.1px" text-anchor="start" style="font-variant-caps: normal; font-variant-east-asian: normal; font-variant-ligatures: normal; font-variant-numeric: normal; white-space: pre;">{{ fGridToHome }} Watt</text>
+				</g>
+				<circle class="ecircle ecircle-home" r="7" cx="50" cy="30" fill="rgba(255,123,255,0.06)" stroke="#ff7bff" stroke-width=".5" filter="url(#glowHome)" ng-class="{'circle-active': finalHomeUsage > 0}"/>
+				<g class="eicon" transform="matrix(0.07, 0, 0, 0.07, 48, 24.5)" ng-show="!useCustomIcons">
+					<path id="pathIconHome" d="M 12.6251 52.6445 L 43.3986 52.6445 C 46.7267 52.6445 48.6722 50.7695 48.6722 47.4648 L 48.6722 26.0664 L 51.6952 28.8320 C 52.1877 29.3008 52.7267 29.6289 53.3829 29.6289 C 54.4845 29.6289 55.3749 28.9492 55.3749 27.8242 C 55.3749 27.1211 55.1171 26.6758 54.6722 26.2774 L 46.5391 18.8476 L 46.5391 5.0430 C 46.5391 4.0117 45.8829 3.3555 44.8519 3.3555 L 41.7813 3.3555 C 40.7735 3.3555 40.0704 4.0117 40.0704 5.0430 L 40.0704 12.9648 L 30.8126 4.5274 C 29.9923 3.7774 29.0079 3.3555 28.0001 3.3555 C 26.9923 3.3555 26.0079 3.7774 25.1876 4.5274 L 1.3282 26.2774 C .9064 26.6758 .6251 27.1211 .6251 27.8242 C .6251 28.9492 1.5157 29.6289 2.6173 29.6289 C 3.2970 29.6289 3.8360 29.3008 4.3048 28.8320 L 7.3282 26.0898 L 7.3282 47.4648 C 7.3282 50.7695 9.2735 52.6445 12.6251 52.6445 Z M 34.7501 33.3086 C 34.7501 32.2305 34.0470 31.5508 32.9689 31.5508 L 23.0313 31.5508 C 21.9532 31.5508 21.2267 32.2305 21.2267 33.3086 L 21.2267 48.8711 L 13.4220 48.8711 C 11.9220 48.8711 11.1017 48.0508 11.1017 46.5273 L 11.1017 22.6445 L 27.1798 7.9961 C 27.4142 7.7617 27.6954 7.6211 28.0001 7.6211 C 28.3048 7.6211 28.5860 7.7383 28.8439 7.9961 L 44.8984 22.6445 L 44.8984 46.5273 C 44.8984 48.0508 44.0781 48.8711 42.6017 48.8711 L 34.7501 48.8711 Z"/>
+				</g>
+				<g transform="matrix(0.075, 0, 0, 0.075, 48.3, 24.6)" ng-show="useCustomIcons">
+					<image width="48" height="48" xlink:href="images/EHome48.png" />
 				</g>
 				<text class="etext" x="50" y="30.5" opacity="0.7" font-size="1.6px" text-anchor="middle" style="font-variant-caps: normal; font-variant-east-asian: normal; font-variant-ligatures: normal; font-variant-numeric: normal; white-space: pre;">{{ fTotalHomeUsage | number:3 }} kWh</text>
 				<text class="etext" x="50" y="33" font-size="1.7px" text-anchor="middle" style="font-variant-caps: normal; font-variant-east-asian: normal; font-variant-ligatures: normal; font-variant-numeric: normal; font-weight: bold; white-space: pre;">{{ finalHomeUsage }} Watt</text>
