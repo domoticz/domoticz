@@ -376,6 +376,10 @@ define(['app'], function (app) {
 										listBatterySoc.push({"idx": item.idx, "name": item.Name});
 										listExtra.push({"idx": item.idx, "name": item.Name});
 									}
+									else if (item.SubType == "Voltage") {
+										listBatterySoc.push({"idx": item.idx, "name": item.Name});
+										listExtra.push({"idx": item.idx, "name": item.Name});
+									}
 									else if (item.SubType == "Text") {
 										listText.push({"idx": item.idx, "name": item.Name});
 										listExtra.push({"idx": item.idx, "name": item.Name});
@@ -845,6 +849,8 @@ define(['app'], function (app) {
 						$("#comboESolar").val(data.ESettings.idSolar);
 						$("#comboEBatteryWatt").val(data.ESettings.idBatteryWatt);
 						$("#comboEBatterySoc").val(data.ESettings.idBatterySoc);
+						if (typeof data.ESettings.BatterySocMode != 'undefined') {
+							$("#comboEBatterySocMode").val(data.ESettings.BatterySocMode); }
 						$("#comboETextSensor").val(data.ESettings.idTextSensor);
 						$("#comboEExtra1").val(data.ESettings.idExtra1);
 						$("#comboEExtra2").val(data.ESettings.idExtra2);

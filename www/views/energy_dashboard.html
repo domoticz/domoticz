@@ -260,26 +260,27 @@ History:
 					<g transform="matrix(0.010083, 0, 0, 0.008335, 27.65, 45.2)">
 						<path d="m 319.089 27.221 h -36.475 v -27.221 h -95.27 v 27.221 h -34.607 c -22.517 0 -40.829 18.317 -40.829 40.832 v 362.946 c 0 22.51 18.317 40.83 40.829 40.83 h 166.352 c 22.524 0 40.832 -18.32 40.832 -40.83 v -362.947 c 0 -22.514 -18.308 -40.831 -40.832 -40.831 z m 13.616 403.781 c 0 7.501 -6.108 13.607 -13.616 13.607 h -166.352 c -7.501 0 -13.608 -6.095 -13.608 -13.607 v -362.95 c 0 -7.501 6.107 -13.611 13.608 -13.611 h 166.352 c 7.508 0 13.616 6.109 13.616 13.611 v 362.95 z"/>
 					</g>
-					<g id="batt_5" transform="matrix(0.010083, 0, 0, 0.008335, 31, 46.3)" ng-show="fBattSoc>=85">
+					<g id="batt_5" transform="matrix(0.010083, 0, 0, 0.008335, 31, 46.3)" ng-show="fBattSoc>=85 && idBattSocMode==='soc'">
 						<path d="m -14.843 -2.502 h -163.896 v -59.719 h 163.896 v 59.719 z"/>
 					</g>
-					<g id="batt_4" transform="matrix(0.010083, 0, 0, 0.008335, 31, 46.92)" ng-show="fBattSoc>=65">
+					<g id="batt_4" transform="matrix(0.010083, 0, 0, 0.008335, 31, 46.92)" ng-show="fBattSoc>=65 && idBattSocMode==='soc'">
 						<path d="m -14.843 -2.502 h -163.896 v -59.719 h 163.896 v 59.719 z"/>
 					</g>
-					<g id="batt_3" transform="matrix(0.010083, 0, 0, 0.008335, 31, 47.55)" ng-show="fBattSoc>=45">
+					<g id="batt_3" transform="matrix(0.010083, 0, 0, 0.008335, 31, 47.55)" ng-show="fBattSoc>=45 && idBattSocMode==='soc'">
 						<path d="m -14.843 -2.502 h -163.896 v -59.719 h 163.896 v 59.719 z"/>
 					</g>
-					<g id="batt_2" transform="matrix(0.010083, 0, 0, 0.008335, 31, 48.18)" ng-show="fBattSoc>=25">
+					<g id="batt_2" transform="matrix(0.010083, 0, 0, 0.008335, 31, 48.18)" ng-show="fBattSoc>=25 && idBattSocMode==='soc'">
 						<path d="m -14.843 -2.502 h -163.896 v -59.719 h 163.896 v 59.719 z"/>
 					</g>
-					<g id="batt_1" transform="matrix(0.010083, 0, 0, 0.008335, 31, 48.8)" ng-show="fBattSoc>5">
+					<g id="batt_1" transform="matrix(0.010083, 0, 0, 0.008335, 31, 48.8)" ng-show="fBattSoc>5 && idBattSocMode==='soc'">
 						<path d="m -14.843 -2.502 h -163.896 v -59.719 h 163.896 v 59.719 z"/>
 					</g>
 				</g>
 				<g transform="matrix(0.075, 0, 0, 0.075, 28.2, 45)" ng-show="customIconBatt">
 					<image width="48" height="48" xlink:href="{{customIconBatt}}" />
 				</g>
-				<text class="etext" x="30" y="51.7" font-size="2.1px" text-anchor="middle" style="font-variant-caps: normal; font-variant-east-asian: normal; font-variant-ligatures: normal; font-variant-numeric: normal; font-weight: bold; white-space: pre;">{{ fBattSoc }}%</text>
+				<text class="etext" x="30" y="51.7" font-size="2.1px" text-anchor="middle" style="font-variant-caps: normal; font-variant-east-asian: normal; font-variant-ligatures: normal; font-variant-numeric: normal; font-weight: bold; white-space: pre;" ng-show="idBattSocMode==='soc'">{{ fBattSoc }}%</text>
+				<text class="etext" x="30" y="51.7" font-size="2.1px" text-anchor="middle" style="font-variant-caps: normal; font-variant-east-asian: normal; font-variant-ligatures: normal; font-variant-numeric: normal; font-weight: bold; white-space: pre;" ng-show="idBattSocMode==='volt'">{{ fBattVolt | number:1 }} V</text>
 				<text class="etext" x="30" y="54" font-size="1.7px" text-anchor="middle" style="font-variant-caps: normal; font-variant-east-asian: normal; font-variant-ligatures: normal; font-variant-numeric: normal; font-weight: bold; white-space: pre;">{{ fActualBattWatt }} Watt</text>
 			</g>
 			<g id="groupSolar" ng-show="idSolar != -1">
