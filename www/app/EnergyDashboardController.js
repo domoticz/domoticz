@@ -569,6 +569,12 @@ define(['app'], function (app) {
 			} else {
 				dElement.setAttribute('keyPoints','1;0');
 			}
+			// Sync fade animation duration
+			let fadeId = item.replace('-sphere', '-fade');
+			let fadeElement = document.getElementById(fadeId);
+			if (fadeElement) {
+				fadeElement.setAttribute('dur', fSec);
+			}
 		}
 
 		$scope.lightenDarkColors = function(html) {
