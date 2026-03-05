@@ -1,5 +1,14 @@
 {
+	"Authentication": "Authentication",
 	"Consider enabling 2FA or passkeys for your admin account in User Settings": "Consider enabling 2FA or passkeys for your admin account in User Settings",
+	"Debug Levels": "Debug Levels",
+	"DebugLevelsDescription": "Enable debug logging for specific subsystems. These can also be set via the -debuglevel command line argument.",
+	"Event System": "Event System",
+	"Log": "Log",
+	"Received": "Received",
+	"SQL": "SQL",
 	"Service is restarting, please wait...": "Service is restarting, please wait...",
-	"Waiting for service to restart, please wait...": "Waiting for service to restart, please wait..."
+	"Thread IDs": "Thread IDs",
+	"Waiting for service to restart, please wait...": "Waiting for service to restart, please wait...",
+	"Web Server": "Web Server"
 }

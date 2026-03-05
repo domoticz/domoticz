@@ -590,6 +590,18 @@ define(['app'], function (app) {
 					if (typeof data.ShortLogInterval != 'undefined') {
 						$scope.ShortLogInterval = data.ShortLogInterval;
 					}
+					if (typeof data.DebugLevel != 'undefined') {
+						var dl = data.DebugLevel;
+						$("#debugleveltable #DebugNormal").prop('checked', (dl & 0x01) != 0);
+						$("#debugleveltable #DebugHardware").prop('checked', (dl & 0x02) != 0);
+						$("#debugleveltable #DebugReceived").prop('checked', (dl & 0x04) != 0);
+						$("#debugleveltable #DebugWebServer").prop('checked', (dl & 0x08) != 0);
+						$("#debugleveltable #DebugEventSystem").prop('checked', (dl & 0x10) != 0);
+						$("#debugleveltable #DebugPython").prop('checked', (dl & 0x20) != 0);
+						$("#debugleveltable #DebugThreadIDs").prop('checked', (dl & 0x40) != 0);
+						$("#debugleveltable #DebugSQL").prop('checked', (dl & 0x80) != 0);
+						$("#debugleveltable #DebugAuth").prop('checked', (dl & 0x100) != 0);
+					}
 					if (typeof data.DashboardType != 'undefined') {
 						$("#settingscontent #combosdashtype").val(data.DashboardType);
 					}
@@ -927,6 +939,18 @@ define(['app'], function (app) {
 			if (!isNaN(priceRes) && !isNaN(shortLogInterval) && priceRes < 60 && shortLogInterval > priceRes) {
 				ShowNotify($.t('Warning: ShortLog Interval is greater than the selected pricing resolution. For accurate pricing, the ShortLog Interval should be ' + priceRes + ' minutes or less.'), 5000, true);
 			}
+
+			var debugLevel = 0;
+			if ($("#debugleveltable #DebugNormal").prop("checked")) debugLevel |= 0x01;
+			if ($("#debugleveltable #DebugHardware").prop("checked")) debugLevel |= 0x02;
+			if ($("#debugleveltable #DebugReceived").prop("checked")) debugLevel |= 0x04;
+			if ($("#debugleveltable #DebugWebServer").prop("checked")) debugLevel |= 0x08;
+			if ($("#debugleveltable #DebugEventSystem").prop("checked")) debugLevel |= 0x10;
+			if ($("#debugleveltable #DebugPython").prop("checked")) debugLevel |= 0x20;
+			if ($("#debugleveltable #DebugThreadIDs").prop("checked")) debugLevel |= 0x40;
+			if ($("#debugleveltable #DebugSQL").prop("checked")) debugLevel |= 0x80;
+			if ($("#debugleveltable #DebugAuth").prop("checked")) debugLevel |= 0x100;
+			$("#settings #DebugLevel").val(debugLevel);
 
 			$http.post('json.htm?type=command&param=storesettings', new FormData(document.querySelector("#settings")), {
 				transformRequest: angular.identity,

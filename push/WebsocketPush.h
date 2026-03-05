@@ -16,6 +16,7 @@ class CWebSocketPush : public CBasePush, public StoppableTask
 {
 public:
 	explicit CWebSocketPush(http::server::CDomoticzWebsocketHandler *sock);
+	~CWebSocketPush();
 	void Start();
 	void Stop();
 	void onDeviceTableChanged(); // device added, or deleted

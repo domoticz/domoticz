@@ -13,6 +13,11 @@ CWebSocketPush::CWebSocketPush(http::server::CDomoticzWebsocketHandler *sock)
 	isStarted = false;
 }
 
+CWebSocketPush::~CWebSocketPush()
+{
+	Stop();
+}
+
 void CWebSocketPush::Start()
 {
 	if (isStarted) {
@@ -54,41 +59,42 @@ void CWebSocketPush::Stop()
 
 void CWebSocketPush::OnDeviceReceived(const int HwdID, const uint64_t DeviceRowIdx, const std::string &DeviceName, const unsigned char *pRXCommand)
 {
-	std::unique_lock<std::mutex> lock(handlerMutex);
-	if (!isStarted) {
-		return;
+	{
+		std::unique_lock<std::mutex> lock(handlerMutex);
+		if (!isStarted)
+			return;
 	}
-
+	// Called outside the lock to prevent deadlock: OnDeviceChanged -> Handle -> Log -> sOnLogMessage -> OnLogMessage -> handlerMutex
 	m_sock->OnDeviceChanged(DeviceRowIdx);
 }
 
 void CWebSocketPush::OnDeviceUpdate(const int m_HwdID, const uint64_t DeviceRowIdx)
 {
-	std::unique_lock<std::mutex> lock(handlerMutex);
-	if (!isStarted) {
-		return;
+	{
+		std::unique_lock<std::mutex> lock(handlerMutex);
+		if (!isStarted)
+			return;
 	}
-
 	m_sock->OnDeviceChanged(DeviceRowIdx);
 }
 
 void CWebSocketPush::OnSceneChange(const uint64_t SceneRowIdx, const std::string& SceneName)
 {
-	std::unique_lock<std::mutex> lock(handlerMutex);
-	if (!isStarted) {
-		return;
+	{
+		std::unique_lock<std::mutex> lock(handlerMutex);
+		if (!isStarted)
+			return;
 	}
 	m_sock->OnSceneChanged(SceneRowIdx);
 }
 
 void CWebSocketPush::OnNotificationReceived(const std::string & Subject, const std::string & Text, const std::string & ExtraData, const int Priority, const std::string & Sound, const bool bFromNotification)
 {
-	std::unique_lock<std::mutex> lock(handlerMutex);
-	if (!isStarted) {
-		return;
+	{
+		std::unique_lock<std::mutex> lock(handlerMutex);
+		if (!isStarted)
+			return;
 	}
-
-	// push message to websocket
 	m_sock->SendNotification(Subject, Text, ExtraData, Priority, Sound, bFromNotification);
 }
 

@@ -1,5 +1,6 @@
 #pragma once
 
+#include <atomic>
 #include <deque>
 #include <list>
 #include <string>
@@ -53,10 +54,12 @@ public:
 
 	bool SetLogFlags(const std::string& sFlags);
 	void SetLogFlags(const uint32_t iFlags);
+	uint32_t GetLogFlags() const;
 	bool IsLogLevelEnabled(const _eLogLevel level);
 
 	bool SetDebugFlags(const std::string& sFlags);
 	void SetDebugFlags(const uint32_t iFlags);
+	uint32_t GetDebugFlags() const;
 	bool IsDebugLevelEnabled(const _eDebugLevel level);
 
 	void SetACLFlogFlags(const uint8_t iFlags);
@@ -100,8 +103,8 @@ public:
 	bool NotificationLogsEnabled();
 
 private:
-	uint32_t m_log_flags = 0;
-	uint32_t m_debug_flags = 0;
+	std::atomic<uint32_t> m_log_flags{0};
+	std::atomic<uint32_t> m_debug_flags{0};
 	uint8_t m_aclf_flags = 0;
 	uint32_t m_aclf_loggedlinescnt = 0;
 

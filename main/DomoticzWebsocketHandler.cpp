@@ -22,6 +22,7 @@ namespace http {
 
 		CDomoticzWebsocketHandler::~CDomoticzWebsocketHandler()
 		{
+			_log.Debug(DEBUG_WEBSERVER, "WebSocket: handler destroyed");
 			Stop();
 		}
 
@@ -33,10 +34,12 @@ namespace http {
 
 			//Start worker thread
 			m_thread = std::make_shared<std::thread>([this] { Do_Work(); });
+			_log.Debug(DEBUG_WEBSERVER, "WebSocket: handler started");
 		}
 
 		void CDomoticzWebsocketHandler::Stop()
 		{
+			_log.Debug(DEBUG_WEBSERVER, "WebSocket: handler stopping");
 			m_Push.Stop();
 			if (m_thread)
 			{
@@ -44,6 +47,7 @@ namespace http {
 				m_thread->join();
 				m_thread.reset();
 			}
+			_log.Debug(DEBUG_WEBSERVER, "WebSocket: handler stopped");
 		}
 
 		void CDomoticzWebsocketHandler::Do_Work()
