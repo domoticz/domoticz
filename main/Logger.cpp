@@ -40,7 +40,7 @@ CLogger::CLogger()
 	m_bEnableErrorsToNotificationSystem = false;
 	m_LastLogNotificationsSend = 0;
 	SetLogFlags(LOG_NORM | LOG_STATUS | LOG_ERROR);
-	SetDebugFlags(DEBUG_NORM);
+	SetDebugFlags(0);
 }
 
 CLogger::~CLogger()
@@ -89,7 +89,12 @@ bool CLogger::SetLogFlags(const std::string &sFlags)
 
 void CLogger::SetLogFlags(const uint32_t iFlags)
 {
-	m_log_flags = iFlags;
+	m_log_flags.store(iFlags, std::memory_order_relaxed);
+}
+
+uint32_t CLogger::GetLogFlags() const
+{
+	return m_log_flags.load(std::memory_order_relaxed);
 }
 
 // Supported flags: all,normal,hardware,received,webserver,eventsystem,python,thread_id,sql,auth
@@ -137,7 +142,7 @@ bool CLogger::SetDebugFlags(const std::string &sFlags)
 	SetDebugFlags(iFlags);
 	if (iFlags && !IsLogLevelEnabled(LOG_DEBUG_INT))
 	{
-		m_log_flags |= LOG_DEBUG_INT;
+		m_log_flags.store(m_log_flags.load(std::memory_order_relaxed) | LOG_DEBUG_INT, std::memory_order_relaxed);
 		Log(LOG_STATUS, "Enabling Debug logging!");
 	}
 	if(IsDebugLevelEnabled(DEBUG_WEBSERVER))
@@ -147,7 +152,12 @@ bool CLogger::SetDebugFlags(const std::string &sFlags)
 
 void CLogger::SetDebugFlags(const uint32_t iFlags)
 {
-	m_debug_flags = iFlags;
+	m_debug_flags.store(iFlags, std::memory_order_relaxed);
+}
+
+uint32_t CLogger::GetDebugFlags() const
+{
+	return m_debug_flags.load(std::memory_order_relaxed);
 }
 
 void CLogger::SetACLFlogFlags(const uint8_t iFlags)
@@ -157,14 +167,14 @@ void CLogger::SetACLFlogFlags(const uint8_t iFlags)
 
 bool CLogger::IsLogLevelEnabled(const _eLogLevel level)
 {
-	return (m_log_flags & level);
+	return (m_log_flags.load(std::memory_order_relaxed) & level);
 }
 
 bool CLogger::IsDebugLevelEnabled(const _eDebugLevel level)
 {
-	if (!(m_log_flags & LOG_DEBUG_INT))
+	if (!(m_log_flags.load(std::memory_order_relaxed) & LOG_DEBUG_INT))
 		return false;
-	return (m_debug_flags & level);
+	return (m_debug_flags.load(std::memory_order_relaxed) & level);
 }
 
 bool CLogger::IsACLFlogEnabled()
@@ -255,7 +265,7 @@ void CLogger::Log(const _eLogLevel level, const std::string &sLogline)
 
 void CLogger::Log(const _eLogLevel level, const char *logline, ...)
 {
-	if (!(m_log_flags & level))
+	if (!(m_log_flags.load(std::memory_order_relaxed) & level))
 		return; // This log level is not enabled!
 
 	va_list argList;
@@ -281,7 +291,7 @@ void CLogger::Log(const _eLogLevel level, const char *logline, ...)
 	if (m_bEnableLogTimestamps)
 		sstr << TimeToString(nullptr, TF_DateTimeMs) << "  ";
 
-	if ((m_log_flags & LOG_DEBUG_INT) && (m_debug_flags & DEBUG_THREADIDS))
+	if ((m_log_flags.load(std::memory_order_relaxed) & LOG_DEBUG_INT) && (m_debug_flags.load(std::memory_order_relaxed) & DEBUG_THREADIDS))
 	{
 #ifdef WIN32
 		sstr << "[" << std::setfill('0') << std::setw(4) << std::hex << ::GetCurrentThreadId() << "] ";

@@ -4358,7 +4358,7 @@ void CSQLHelper::Do_Work()
 
 		for (const auto &itt : _items2do)
 		{
-			_log.Debug(DEBUG_NORM, "SQLH: Do Task ItemType: %d Cmd: %s Value: %s", itt._ItemType, itt._command.c_str(), itt._sValue.c_str());
+			_log.Debug(DEBUG_SQL, "SQLH: Do Task ItemType: %d Cmd: %s Value: %s", itt._ItemType, itt._command.c_str(), itt._sValue.c_str());
 
 			if (itt._ItemType == TITEM_SWITCHCMD)
 			{
@@ -5541,7 +5541,7 @@ uint64_t CSQLHelper::UpdateValueInt(
 		//TODO: Plugins should perhaps be blocked from implicitly adding a device by update? It's most likely a bug due to updating a removed device..
 		if (pHardware != nullptr && pHardware->HwdType == HTYPE_PythonPlugin)
 		{
-			_log.Debug(DEBUG_NORM, "CSQLHelper::UpdateValueInt: Notifying plugin %u about creation of device %u", HardwareID, unit);
+			_log.Debug(DEBUG_SQL, "CSQLHelper::UpdateValueInt: Notifying plugin %u about creation of device %u", HardwareID, unit);
 			Plugins::CPlugin* pPlugin = (Plugins::CPlugin*)pHardware;
 			pPlugin->DeviceAdded(ID, unit);
 		}
@@ -5957,7 +5957,7 @@ uint64_t CSQLHelper::UpdateValueInt(
 		break;
 	}
 
-	_log.Debug(DEBUG_NORM, "SQLH UpdateValueInt %s HwID:%d  DevID:%s Type:%d  sType:%d nValue:%d sValue:%s IDX: %" PRIu64, devname.c_str(), HardwareID, ID, devType, subType, nValue, sValue, ulID);
+	_log.Debug(DEBUG_SQL, "SQLH UpdateValueInt %s HwID:%d  DevID:%s Type:%d  sType:%d nValue:%d sValue:%s IDX: %" PRIu64, devname.c_str(), HardwareID, ID, devType, subType, nValue, sValue, ulID);
 
 	if (bDeviceUsed)
 	{
@@ -8477,7 +8477,7 @@ void CSQLHelper::DeleteDevices(const std::string& idx)
 #ifdef ENABLE_PYTHON
 	for (const auto &str : _idx)
 	{
-		_log.Debug(DEBUG_NORM, "CSQLHelper::DeleteDevices: ID: %s", str.c_str());
+		_log.Debug(DEBUG_SQL, "CSQLHelper::DeleteDevices: ID: %s", str.c_str());
 		std::vector<std::vector<std::string> > result;
 		result = safe_query("SELECT HardwareID, DeviceID, Unit FROM DeviceStatus WHERE (ID == '%q')", str.c_str());
 		if (!result.empty())
@@ -8550,7 +8550,7 @@ void CSQLHelper::DeleteDevices(const std::string& idx)
 		CDomoticzHardwareBase* pHardware = m_mainworker.GetHardware(HwID);
 		if (pHardware != nullptr && pHardware->HwdType == HTYPE_PythonPlugin)
 		{
-			_log.Debug(DEBUG_NORM, "CSQLHelper::DeleteDevices: Notifying plugin %u about deletion of device %u", HwID, Unit);
+			_log.Debug(DEBUG_SQL, "CSQLHelper::DeleteDevices: Notifying plugin %u about deletion of device %u", HwID, Unit);
 			Plugins::CPlugin* pPlugin = (Plugins::CPlugin*)pHardware;
 			pPlugin->DeviceRemoved(DeviceID, Unit);
 		}
@@ -8762,7 +8762,7 @@ void CSQLHelper::DeleteDateRange(const char *ID, const std::string &fromDate, co
 	for (const auto &historyTable : historyTables)
 	{
 		safe_query("DELETE FROM %q WHERE (DeviceRowID=='%q') AND (Date>='%q') AND (Date<='%q')", historyTable.c_str(), ID, fromDate.c_str(), toDate.c_str() );
-		_log.Debug(DEBUG_NORM, "CSQLHelper::DeleteDateRange; delete from %s with idx: %s and Date >= %s and date <= %s" , historyTable.c_str(), std::string(ID).c_str(), fromDate.c_str(), toDate.c_str() );
+		_log.Debug(DEBUG_SQL, "CSQLHelper::DeleteDateRange; delete from %s with idx: %s and Date >= %s and date <= %s" , historyTable.c_str(), std::string(ID).c_str(), fromDate.c_str(), toDate.c_str() );
 	}
 }
 
@@ -8788,7 +8788,7 @@ void CSQLHelper::AddTaskItem(const _tTaskItem& tItem, const bool cancelItem)
 	std::lock_guard<std::mutex> l(m_background_task_mutex);
 
 	// Check if an event for the same device is already in queue, and if so, replace it
-	_log.Debug(DEBUG_NORM, "SQLH AddTask: Request to add task: idx=%" PRIu64 ", DelayTime=%f, Command='%s', Level=%d, Color='%s', RelatedEvent='%s'", tItem._idx, tItem._DelayTime, tItem._command.c_str(), tItem._level, tItem._Color.toString().c_str(), tItem._relatedEvent.c_str());
+	_log.Debug(DEBUG_SQL, "SQLH AddTask: Request to add task: idx=%" PRIu64 ", DelayTime=%f, Command='%s', Level=%d, Color='%s', RelatedEvent='%s'", tItem._idx, tItem._DelayTime, tItem._command.c_str(), tItem._level, tItem._Color.toString().c_str(), tItem._relatedEvent.c_str());
 	// Remove any previous task linked to the same device
 
 	if (
@@ -8801,13 +8801,13 @@ void CSQLHelper::AddTaskItem(const _tTaskItem& tItem, const bool cancelItem)
 		auto itt = m_background_task_queue.begin();
 		while (itt != m_background_task_queue.end())
 		{
-			_log.Debug(DEBUG_NORM, "SQLH AddTask: Comparing with item in queue: idx=%" PRIu64 ", DelayTime=%f, Command='%s', Level=%d, Color='%s', RelatedEvent='%s'", itt->_idx, itt->_DelayTime, itt->_command.c_str(), itt->_level, itt->_Color.toString().c_str(), itt->_relatedEvent.c_str());
+			_log.Debug(DEBUG_SQL, "SQLH AddTask: Comparing with item in queue: idx=%" PRIu64 ", DelayTime=%f, Command='%s', Level=%d, Color='%s', RelatedEvent='%s'", itt->_idx, itt->_DelayTime, itt->_command.c_str(), itt->_level, itt->_Color.toString().c_str(), itt->_relatedEvent.c_str());
 			if (itt->_idx == tItem._idx && itt->_ItemType == tItem._ItemType)
 			{
 				float iDelayDiff = tItem._DelayTime - itt->_DelayTime;
 				if (iDelayDiff < (1. / timer_resolution_hz / 2))
 				{
-					_log.Debug(DEBUG_NORM, "SQLH AddTask: => Already present. Cancelling previous task item");
+					_log.Debug(DEBUG_SQL, "SQLH AddTask: => Already present. Cancelling previous task item");
 					itt = m_background_task_queue.erase(itt);
 				}
 				else
@@ -9280,9 +9280,9 @@ void CSQLHelper::SetUnitsAndScale()
 bool CSQLHelper::HandleOnOffAction(const bool bIsOn, const std::string& OnAction, const std::string& OffAction)
 {
 	if (bIsOn)
-		_log.Debug(DEBUG_NORM, "SQLH HandleOnOffAction: OnAction:%s", OnAction.c_str());
+		_log.Debug(DEBUG_SQL, "SQLH HandleOnOffAction: OnAction:%s", OnAction.c_str());
 	else
-		_log.Debug(DEBUG_NORM, "SQLH HandleOnOffAction: OffAction:%s", OffAction.c_str());
+		_log.Debug(DEBUG_SQL, "SQLH HandleOnOffAction: OffAction:%s", OffAction.c_str());
 
 	if (bIsOn)
 	{

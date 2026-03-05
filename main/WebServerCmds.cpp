@@ -3908,6 +3908,25 @@ namespace http
 				// Signal plugins to update Settings dictionary
 				PluginLoadConfig();
 #endif
+
+				std::string sDebugLevel = request::findValue(&req, "DebugLevel");
+				if (!sDebugLevel.empty())
+				{
+					uint32_t iDebugLevel = static_cast<uint32_t>(atoi(sDebugLevel.c_str()));
+					_log.SetDebugFlags(iDebugLevel);
+					if (iDebugLevel != 0)
+					{
+						// Enable debug log level when any debug flags are set
+						_log.SetLogFlags(_log.GetLogFlags() | LOG_DEBUG_INT);
+					}
+					else
+					{
+						// Disable debug log level when no debug flags are set
+						_log.SetLogFlags(_log.GetLogFlags() & ~LOG_DEBUG_INT);
+					}
+					cntSettings++;
+				}
+
 				root["status"] = "OK";
 			}
 			catch (const std::exception& e)
@@ -6132,6 +6151,7 @@ namespace http
 					root["PriceResolution"] = nValue;
 				}
 			}
+			root["DebugLevel"] = static_cast<int>(_log.GetDebugFlags());
 		}
 
 		void CWebServer::Cmd_GetLightLog(WebEmSession& session, const request& req, Json::Value& root)
