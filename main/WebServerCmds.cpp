@@ -3852,8 +3852,7 @@ namespace http
 				int ESolar = atoi(request::findValue(&req, "ESolar").c_str());
 				int EBatteryWatt = atoi(request::findValue(&req, "EBatteryWatt").c_str());
 				int EBatterySoc = atoi(request::findValue(&req, "EBatterySoc").c_str());
-				std::string EBatterySocMode = request::findValue(&req, "EBatterySocMode");
-				if (EBatterySocMode != "volt") EBatterySocMode = "soc";
+				int EBatteryVolt = atoi(request::findValue(&req, "EBatteryVolt").c_str());
 				int ETextSensor = atoi(request::findValue(&req, "ETextSensor").c_str());
 				int EOutsideTempSensor = atoi(request::findValue(&req, "EOutsideTempSensor").c_str());
 				int EExtra1 = atoi(request::findValue(&req, "EExtra1").c_str());
@@ -3879,7 +3878,7 @@ namespace http
 				ESettings["idSolar"] = ESolar;
 				ESettings["idBatteryWatt"] = EBatteryWatt;
 				ESettings["idBatterySoc"] = EBatterySoc;
-				ESettings["BatterySocMode"] = EBatterySocMode;
+				ESettings["idBatteryVolt"] = EBatteryVolt;
 				ESettings["idTextSensor"] = ETextSensor;
 				ESettings["idOutsideTempSensor"] = EOutsideTempSensor;
 				ESettings["idExtra1"] = EExtra1;

@@ -7,7 +7,7 @@ define(['app'], function (app) {
 		$scope.idSolar = -1;
 		$scope.idBattWatt = -1;
 		$scope.idBattSoc = -1;
-		$scope.idBattSocMode = "soc";   // "soc" = [%], "volt" = [V]
+		$scope.idBattVolt = -1;
 		$scope.fBattVolt = 0;
 		$scope.idTextObj = -1;
 		$scope.idOutsideTemp = -1;
@@ -116,6 +116,7 @@ define(['app'], function (app) {
 			if ($scope.idSolar != -1) devArray.push($scope.idSolar);
 			if ($scope.idBattWatt != -1) devArray.push($scope.idBattWatt);
 			if ($scope.idBattSoc != -1) devArray.push($scope.idBattSoc);
+			if ($scope.idBattVolt != -1) devArray.push($scope.idBattVolt);
 			if ($scope.idTextObj != -1) devArray.push($scope.idTextObj);
 			if ($scope.idOutsideTemp != -1) devArray.push($scope.idOutsideTemp);
 			if ($scope.idItemH1 != -1) devArray.push($scope.idItemH1);
@@ -162,9 +163,9 @@ define(['app'], function (app) {
 					$scope.idSolar = data.result.ESettings.idSolar;
 					$scope.idBattWatt = data.result.ESettings.idBatteryWatt;
 					$scope.idBattSoc = data.result.ESettings.idBatterySoc;
-					if (typeof data.result.ESettings.BatterySocMode != 'undefined') {
-						$scope.idBattSocMode = data.result.ESettings.BatterySocMode;
-					}
+					if (typeof data.result.ESettings.idBatteryVolt != 'undefined') {
+     					$scope.idBattVolt = data.result.ESettings.idBatteryVolt;
+ 					}
 					$scope.idTextObj = data.result.ESettings.idTextSensor;
 					if (typeof data.result.ESettings.idOutsideTempSensor != 'undefined') {
 						$scope.idOutsideTemp = data.result.ESettings.idOutsideTempSensor;
@@ -240,6 +241,9 @@ define(['app'], function (app) {
 				case $scope.idBattSoc:
 					bHandledData = $scope.handleBattSoc(item);
 					break;
+				case $scope.idBattVolt:
+     				bHandledData = $scope.handleBattVolt(item);
+     				break;
 				case $scope.idTextObj:
 					bHandledData = $scope.handleTextObj(item);
 					break;
@@ -441,14 +445,13 @@ define(['app'], function (app) {
 		}
 		
 		$scope.handleBattSoc = function(item) {
-			if ($scope.idBattSocMode === "volt") {
-				$scope.fBattVolt = parseFloat(item["Data"]) || 0;
-				$scope.fBattSoc = -1;
-			} else {
-				$scope.fBattSoc = parseFloat(item["Data"].replace('%','')) || 0;
-				$scope.fBattVolt = -1;
-			}
+			$scope.fBattSoc = parseFloat(item["Data"].replace('%','')) || 0;
 			$scope.customIconBatt = $scope.GetIconForItem(item);
+			return true;
+		}
+		
+		$scope.handleBattVolt = function(item) {
+			$scope.fBattVolt = parseFloat(item["Data"]) || 0;
 			return true;
 		}
 
@@ -714,7 +717,7 @@ define(['app'], function (app) {
 					//We have a problem!!! Not enough power to charge the battery!!
 					//The reason is likely that the Solar Wattage is not accurate
 					//Or that the battery is fully charged and not taking any power
-					if ($scope.idBattSocMode === "soc" && $scope.fBattSoc==100) {
+					if ($scope.fBattSoc==100) {
 						fActualBattWatt = 0;
 						fSolarToHome += fSolarToBatt;
 						fActualHomeUsage += fSolarToBatt;
