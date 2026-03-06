@@ -3357,13 +3357,12 @@ namespace http
 			// Use systemd-run to launch the update in a separate transient unit so it survives.
 			// Falls back to setsid/nohup for non-systemd systems or if systemd-run fails.
 			std::string lscript =
-				"if [ -d /run/systemd/system ] && command -v systemd-run >/dev/null 2>&1 && "
-				"systemd-run --no-block --working-directory=\"" + szStartupFolder + "\" --description=\"Domoticz Update\" "
-				"/bin/bash -c \"" + scriptname + " > " + logfile + " 2>&1\" 2>/dev/null; then "
-				"true; "
-				"else "
-				"setsid nohup " + scriptname + " > " + logfile + " 2>&1 & "
-				"fi";
+				"{ [ -d /run/systemd/system ] && command -v systemd-run >/dev/null 2>&1 && "
+				"systemd-run "
+				"--working-directory=\"" + szStartupFolder + "\" "
+				"--description=\"Domoticz Update\" "
+				"-- /bin/bash -c \"" + scriptname + " > " + logfile + " 2>&1\" 2>/dev/null || "
+				"setsid nohup " + scriptname + " > " + logfile + " 2>&1; } &";
 			int ret = system(lscript.c_str());
 			_log.Log(LOG_STATUS, "Update script started: %s (log: update.log)", scriptname.c_str());
 			root["title"] = "UpdateApplication";
