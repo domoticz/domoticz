@@ -71,7 +71,7 @@ define(['app', 'lodash', 'RefreshingChart', 'DataLoader', 'ChartLoader', 'log/Ch
 			bindings: {
 				device: '<'
 			},
-			template: '<h2 data-i18n="Wind Direction"></h2><div id="winddirectiongraph" style="height: 400px;"></div>',
+			template: '<div id="winddirectiongraph" style="height: 400px;"></div>',
 			controllerAs: 'vm',
 			controller: function ($element, domoticzApi) {
 				const self = this;
@@ -164,6 +164,155 @@ define(['app', 'lodash', 'RefreshingChart', 'DataLoader', 'ChartLoader', 'log/Ch
 						hchart.redraw();
 					});
 				};
+			}
+		});
+
+		app.component('windSpeedFrequencyChart', {
+			require: {
+				logCtrl: '^deviceWindLog'
+			},
+			bindings: {
+				device: '<'
+			},
+			template: '<div id="windspeedfreqgraph" style="height: 400px;"></div>',
+			controllerAs: 'vm',
+			controller: function ($element, domoticzApi) {
+				const self = this;
+
+				self.$onInit = function () {
+					var chartElement = $element.find('#windspeedfreqgraph');
+					var unit = self.device.getUnit();
+
+					domoticzApi.sendCommand('graph', {
+						sensor: 'wind',
+						idx: self.device.idx,
+						range: 'day'
+					}).then(function (data) {
+						if (typeof data.result === 'undefined' || data.result.length === 0) {
+							return;
+						}
+
+						var speeds = data.result.map(function (item) {
+							return parseFloat(item.sp);
+						}).filter(function (v) { return !isNaN(v); });
+
+						if (speeds.length === 0) return;
+
+						var maxSpeed = Math.max.apply(null, speeds);
+						var numBins = Math.max(10, Math.min(30, Math.round(Math.sqrt(speeds.length))));
+						var binWidth = maxSpeed > 0 ? maxSpeed / numBins : 1;
+						// Round binWidth to a nice number
+						var magnitude = Math.pow(10, Math.floor(Math.log10(binWidth)));
+						binWidth = Math.ceil(binWidth / magnitude) * magnitude;
+						if (binWidth === 0) binWidth = 1;
+						numBins = Math.ceil(maxSpeed / binWidth) + 1;
+
+						var bins = new Array(numBins).fill(0);
+						speeds.forEach(function (speed) {
+							var bin = Math.floor(speed / binWidth);
+							if (bin >= numBins) bin = numBins - 1;
+							bins[bin]++;
+						});
+
+						var categories = [];
+						var histData = [];
+						for (var i = 0; i < numBins; i++) {
+							categories.push(Math.round(i * binWidth * 10) / 10);
+							histData.push(Math.round(bins[i] / speeds.length * 10000) / 100);
+						}
+
+						// Calculate Weibull distribution fit
+						var mean = speeds.reduce(function (a, b) { return a + b; }, 0) / speeds.length;
+						var variance = speeds.reduce(function (a, b) { return a + (b - mean) * (b - mean); }, 0) / speeds.length;
+						var stddev = Math.sqrt(variance);
+
+						// Estimate Weibull parameters using method of moments
+						var cv = stddev / mean; // coefficient of variation
+						var k = Math.pow(cv, -1.086); // shape parameter approximation
+						var c = mean / gamma(1 + 1 / k); // scale parameter
+
+						var weibullData = [];
+						for (var j = 0; j < numBins; j++) {
+							var x = (j + 0.5) * binWidth;
+							var pdf = (k / c) * Math.pow(x / c, k - 1) * Math.exp(-Math.pow(x / c, k));
+							weibullData.push(Math.round(pdf * binWidth * 10000) / 100);
+						}
+
+						chartElement.highcharts({
+							chart: {
+								type: 'column'
+							},
+							title: {
+								text: $.t('Wind Speed Frequency') + ' ' + Get5MinuteHistoryDaysGraphTitle()
+							},
+							xAxis: {
+								categories: categories,
+								title: {
+									text: $.t('Wind Speed') + ' (' + unit + ')'
+								},
+								crosshair: true
+							},
+							yAxis: {
+								min: 0,
+								title: {
+									text: $.t('Frequency') + ' (%)'
+								}
+							},
+							tooltip: {
+								shared: true
+							},
+							plotOptions: {
+								column: {
+									groupPadding: 0,
+									pointPadding: 0,
+									borderWidth: 1
+								}
+							},
+							legend: {
+								align: 'right',
+								verticalAlign: 'top',
+								y: 40,
+								layout: 'vertical'
+							},
+							series: [{
+								type: 'column',
+								name: $.t('Histogram'),
+								data: histData,
+								color: 'rgba(3,190,252,0.8)'
+							}, {
+								type: 'spline',
+								name: 'Weibull',
+								data: weibullData,
+								color: 'rgba(255,80,80,0.9)',
+								lineWidth: 2,
+								marker: { enabled: false },
+								tooltip: {
+									valueSuffix: ' %'
+								}
+							}]
+						});
+					});
+				};
+
+				// Gamma function approximation (Lanczos)
+				function gamma(z) {
+					if (z < 0.5) {
+						return Math.PI / (Math.sin(Math.PI * z) * gamma(1 - z));
+					}
+					z -= 1;
+					var g = 7;
+					var coef = [
+						0.99999999999980993, 676.5203681218851, -1259.1392167224028,
+						771.32342877765313, -176.61502916214059, 12.507343278686905,
+						-0.13857109526572012, 9.9843695780195716e-6, 1.5056327351493116e-7
+					];
+					var x = coef[0];
+					for (var i = 1; i < g + 2; i++) {
+						x += coef[i] / (z + i);
+					}
+					var t = z + g + 0.5;
+					return Math.sqrt(2 * Math.PI) * Math.pow(t, z + 0.5) * Math.exp(-t) * x;
+				}
 			}
 		});
 

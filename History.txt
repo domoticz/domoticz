@@ -1,6 +1,7 @@
 Version 2026.xxxx
 - Added: Alexa Smart Home v3 API endpoint (see ALEXA.md)
 - Added: Angular Current sensor log with 3-phase support and compare chart (Fixes #6560)
+- Added: Angular Wind log, wind speed frequency histogram with Weibull distribution curve
 - Added: RFXCOM, Teleinfo 1200/19200 async mode support (Fixes #6495)
 - Added: Blinds + Stop type
 - Added: Comparing charts, show average across years in tooltip for month/quarter grouping

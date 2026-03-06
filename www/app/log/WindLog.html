@@ -2,8 +2,16 @@
         class="device-log-chart"
         device="::$ctrl.device"></wind-short-chart>
 <br/>
-<wind-direction-chart
-        device="::$ctrl.device"></wind-direction-chart>
+<div class="row-fluid">
+    <div class="span6">
+        <wind-direction-chart
+                device="::$ctrl.device"></wind-direction-chart>
+    </div>
+    <div class="span6">
+        <wind-speed-frequency-chart
+                device="::$ctrl.device"></wind-speed-frequency-chart>
+    </div>
+</div>
 <br/>
 <wind-long-chart
         class="device-log-chart"
