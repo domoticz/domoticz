@@ -155,8 +155,7 @@ private:
 	boost::asio::streambuf reply_buffer_;
 };
 
-CPinger::CPinger(const int ID, const int PollIntervalsec, const int PingTimeoutms) :
-	m_iThreadsRunning(0)
+CPinger::CPinger(const int ID, const int PollIntervalsec, const int PingTimeoutms)
 {
 	m_HwdID = ID;
 	m_bSkipReceiveCheck = true;
@@ -176,8 +175,6 @@ bool CPinger::StartHardware()
 
 	m_bIsStarted = true;
 	sOnConnected(this);
-	m_iThreadsRunning = 0;
-
 	StartHeartbeatThread();
 
 	ReloadNodes();
@@ -352,18 +349,12 @@ void CPinger::Do_Ping_Worker(const PingNode &Node)
 		bPingOK = false;
 	}
 	UpdateNodeStatus(Node, bPingOK);
-	if (m_iThreadsRunning > 0) m_iThreadsRunning--;
 }
 
 void CPinger::UpdateNodeStatus(const PingNode &Node, const bool bPingOK)
 {
-	//Log(LOG_STATUS, "%s = %s", Node.Name.c_str(), (bPingOK == true) ? "OK" : "Error");
-	if (!bPingOK)
-	{
-		//Log(LOG_STATUS, "Could not ping host: %s", Node.Name.c_str());
-	}
-
 	//Find out node, and update it's status
+	std::lock_guard<std::mutex> l(m_mutex);
 	for (auto &node : m_nodes)
 	{
 		if (node.ID == Node.ID)
@@ -390,18 +381,16 @@ void CPinger::UpdateNodeStatus(const PingNode &Node, const bool bPingOK)
 
 void CPinger::DoPingHosts()
 {
-	std::lock_guard<std::mutex> l(m_mutex);
-	for (const auto &node : m_nodes)
+	std::vector<PingNode> nodes;
+	{
+		std::lock_guard<std::mutex> l(m_mutex);
+		nodes = m_nodes;
+	}
+	for (const auto &node : nodes)
 	{
 		if (IsStopRequested(0))
 			return;
-		if (m_iThreadsRunning < 1000)
-		{
-			//m_iThreadsRunning++;
-			boost::thread t([this, node] { Do_Ping_Worker(node); });
-			SetThreadName(t.native_handle(), "PingerWorker");
-			t.join();
-		}
+		Do_Ping_Worker(node);
 	}
 }
 
@@ -425,11 +414,6 @@ void CPinger::Do_Work()
 				DoPingHosts();
 			}
 		}
-	}
-	//Make sure all our background workers are stopped
-	while (m_iThreadsRunning > 0)
-	{
-		sleep_milliseconds(150);
 	}
 	Log(LOG_STATUS, "Worker stopped...");
 }
