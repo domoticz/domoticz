@@ -311,6 +311,7 @@ define(['app'], function (app) {
 						let listSolar = [];
 						let listBatteryWatt = [];
 						let listBatterySoc = [];
+						let listBatteryVolt = [];
 						let listText = [];
 						let listExtra = [];
 						let listTemperatureSensors = [];
@@ -323,6 +324,7 @@ define(['app'], function (app) {
 
 						let $comboEBatteryWatt = $("#comboEBatteryWatt");
 						let $comboEBatterySoc = $("#comboEBatterySoc");
+						let $comboEBatteryVolt = $("#comboEBatteryVolt");
 
 						let $comboEText = $("#comboETextSensor");
 						let $comboEExtra1 = $("#comboEExtra1");
@@ -376,6 +378,10 @@ define(['app'], function (app) {
 										listBatterySoc.push({"idx": item.idx, "name": item.Name});
 										listExtra.push({"idx": item.idx, "name": item.Name});
 									}
+									else if (item.SubType == "Voltage") {
+										listBatterySoc.push({"idx": item.idx, "name": item.Name});
+										listExtra.push({"idx": item.idx, "name": item.Name});
+									}
 									else if (item.SubType == "Text") {
 										listText.push({"idx": item.idx, "name": item.Name});
 										listExtra.push({"idx": item.idx, "name": item.Name});
@@ -425,6 +431,9 @@ define(['app'], function (app) {
 						});
 						$.each(listBatterySoc, function (i, item) {
 							$comboEBatterySoc.append($("<option />").val(item.idx).text(item.name));
+						});
+						$.each(listBatteryVolt, function (i, item) {
+							$comboEBatteryVolt.append($("<option />").val(item.idx).text(item.name));
 						});
 						$.each(listText, function (i, item) {
 							$comboEText.append($("<option />").val(item.idx).text(item.name));
@@ -857,6 +866,9 @@ define(['app'], function (app) {
 						$("#comboESolar").val(data.ESettings.idSolar);
 						$("#comboEBatteryWatt").val(data.ESettings.idBatteryWatt);
 						$("#comboEBatterySoc").val(data.ESettings.idBatterySoc);
+						if (typeof data.ESettings.idBatteryVolt != 'undefined') {
+							$("#comboEBatteryVolt").val(data.ESettings.idBatteryVolt);
+						}
 						$("#comboETextSensor").val(data.ESettings.idTextSensor);
 						$("#comboEExtra1").val(data.ESettings.idExtra1);
 						$("#comboEExtra2").val(data.ESettings.idExtra2);
