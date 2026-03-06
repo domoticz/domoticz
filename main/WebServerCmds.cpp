@@ -3350,19 +3350,9 @@ namespace http
 
 			std::string scriptname(szStartupFolder);
 			scriptname += (bIsBetaChannel) ? "updatebeta" : "updaterelease";
+			// run script in new session with setsid + nohup for complete detachment from parent
 			// Use fixed log filename for frontend display (both scripts write to same file)
-			std::string logfile = std::string(szStartupFolder) + "update.log";
-			// When running under systemd, the default KillMode=control-group kills ALL processes
-			// in the service cgroup when domoticz stops, including the update script.
-			// Use systemd-run to launch the update in a separate transient unit so it survives.
-			// Falls back to setsid/nohup for non-systemd systems or if systemd-run fails.
-			std::string lscript =
-				"{ [ -d /run/systemd/system ] && command -v systemd-run >/dev/null 2>&1 && "
-				"systemd-run "
-				"--working-directory=\"" + szStartupFolder + "\" "
-				"--description=\"Domoticz Update\" "
-				"-- /bin/bash -c \"" + scriptname + " > " + logfile + " 2>&1\" 2>/dev/null || "
-				"setsid nohup " + scriptname + " > " + logfile + " 2>&1; } &";
+			std::string lscript = "setsid nohup " + scriptname + " > " + std::string(szStartupFolder) + "update.log 2>&1 &";
 			int ret = system(lscript.c_str());
 			_log.Log(LOG_STATUS, "Update script started: %s (log: update.log)", scriptname.c_str());
 			root["title"] = "UpdateApplication";
