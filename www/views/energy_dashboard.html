@@ -285,7 +285,8 @@ History:
 				<g transform="matrix(0.075, 0, 0, 0.075, 28.2, 45)" ng-show="customIconBatt">
 					<image width="48" height="48" xlink:href="{{customIconBatt}}" />
 				</g>
-				<text class="etext" x="30" y="51.7" font-size="2.1px" text-anchor="middle" style="font-variant-caps: normal; font-variant-east-asian: normal; font-variant-ligatures: normal; font-variant-numeric: normal; font-weight: bold; white-space: pre;">{{ fBattSoc }}%</text>
+				<text class="etext" y="51.7" font-size="2.1px" text-anchor="middle" style="... font-weight: bold; white-space: pre;" ng-show="idBattSoc != -1" ng-attr-x="{{idBattVolt != -1 ? '27' : '30'}}">{{ fBattSoc }}%</text>
+				<text class="etext" x="33.5" y="51.7" font-size="1.5px" text-anchor="middle" style="... font-weight: normal; white-space: pre;" ng-show="idBattVolt != -1">{{ fBattVolt | number:1 }}V</text>
 				<text class="etext" x="30" y="54" font-size="1.7px" text-anchor="middle" style="font-variant-caps: normal; font-variant-east-asian: normal; font-variant-ligatures: normal; font-variant-numeric: normal; font-weight: bold; white-space: pre;">{{ fActualBattWatt }} Watt</text>
 			</g>
 			<g id="groupSolar" ng-show="idSolar != -1">
