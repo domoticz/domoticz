@@ -3350,9 +3350,13 @@ namespace http
 
 			std::string scriptname(szStartupFolder);
 			scriptname += (bIsBetaChannel) ? "updatebeta" : "updaterelease";
-			// run script in new session with setsid + nohup for complete detachment from parent
+			// Use systemd-run --scope to run the update script in a separate cgroup scope.
+			// This ensures the script survives when 'service domoticz stop' kills the service cgroup.
 			// Use fixed log filename for frontend display (both scripts write to same file)
-			std::string lscript = "setsid nohup " + scriptname + " > " + std::string(szStartupFolder) + "update.log 2>&1 &";
+			std::string lscript = "sudo systemd-run --scope "
+				"--working-directory=\"" + szStartupFolder + "\" "
+				"--description=\"Domoticz Update\" "
+				"-- " + scriptname + " > " + std::string(szStartupFolder) + "update.log 2>&1 &";
 			int ret = system(lscript.c_str());
 			_log.Log(LOG_STATUS, "Update script started: %s (log: update.log)", scriptname.c_str());
 			root["title"] = "UpdateApplication";
