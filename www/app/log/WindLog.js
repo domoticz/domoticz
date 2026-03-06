@@ -584,6 +584,63 @@ define(['app', 'lodash', 'RefreshingChart', 'DataLoader', 'ChartLoader', 'log/Ch
 			}
 		});
 
+		function getWindScales() {
+			var lscales = [];
+			if ($.myglobals.windsign === 'bf') {
+				lscales.push({ from: 0, to: 1 });
+				lscales.push({ from: 1, to: 2 });
+				lscales.push({ from: 2, to: 3 });
+				lscales.push({ from: 3, to: 4 });
+				lscales.push({ from: 4, to: 5 });
+				lscales.push({ from: 5, to: 6 });
+				lscales.push({ from: 6, to: 7 });
+				lscales.push({ from: 7, to: 8 });
+				lscales.push({ from: 8, to: 9 });
+				lscales.push({ from: 9, to: 10 });
+				lscales.push({ from: 10, to: 11 });
+				lscales.push({ from: 11, to: 12 });
+				lscales.push({ from: 12, to: 100 });
+			} else {
+				var s = $.myglobals.windscale;
+				lscales.push({ from: 0.3 * s, to: 1.5 * s });
+				lscales.push({ from: 1.5 * s, to: 3.3 * s });
+				lscales.push({ from: 3.3 * s, to: 5.5 * s });
+				lscales.push({ from: 5.5 * s, to: 8 * s });
+				lscales.push({ from: 8.0 * s, to: 10.8 * s });
+				lscales.push({ from: 10.8 * s, to: 13.9 * s });
+				lscales.push({ from: 13.9 * s, to: 17.2 * s });
+				lscales.push({ from: 17.2 * s, to: 20.8 * s });
+				lscales.push({ from: 20.8 * s, to: 24.5 * s });
+				lscales.push({ from: 24.5 * s, to: 28.5 * s });
+				lscales.push({ from: 28.5 * s, to: 32.7 * s });
+				lscales.push({ from: 32.7 * s, to: 100 * s });
+				lscales.push({ from: 32.7 * s, to: 100 * s });
+			}
+			return lscales;
+		}
+
+		function getWindPlotBands() {
+			var lscales = getWindScales();
+			var labels = [
+				'Light air', 'Light breeze', 'Gentle breeze', 'Moderate breeze',
+				'Fresh breeze', 'Strong breeze', 'High wind', 'Fresh gale',
+				'Strong gale', 'Storm', 'Violent storm', 'Hurricane'
+			];
+			return labels.map(function (label, i) {
+				return {
+					from: lscales[i].from,
+					to: lscales[i].to,
+					color: i % 2 === 0 ? 'rgba(68, 170, 213, 0.1)' : 'rgba(68, 170, 213, 0.2)',
+					label: {
+						text: $.t(label),
+						style: {
+							color: '#CCCCCC'
+						}
+					}
+				};
+			});
+		}
+
 		function chartParams(domoticzGlobals, ctrl, isShortLogChart, timestampFromDataItem, seriesSuppliers) {
 			return {
 				ctrl: ctrl,
@@ -598,6 +655,11 @@ define(['app', 'lodash', 'RefreshingChart', 'DataLoader', 'ChartLoader', 'log/Ch
 							title: {
 								text: $.t('Speed') + ' (' + ctrl.device.getUnit() + ')'
 							},
+							min: 0,
+							minorGridLineWidth: 0,
+							gridLineWidth: 0,
+							alternateGridColor: null,
+							plotBands: getWindPlotBands(),
 							labels: {
 								formatter: function () {
 									return this.value;

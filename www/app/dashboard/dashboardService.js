@@ -99,15 +99,7 @@ define(['app', 'domoticz.api', 'livesocket'], function(app) {
                     ) {
                         categorized.lights.push(item);
                     }
-                    // Temperature sensors
-                    else if (
-                        typeof item.Temp !== 'undefined' ||
-                        typeof item.Humidity !== 'undefined' ||
-                        typeof item.Chill !== 'undefined'
-                    ) {
-                        categorized.temperature.push(item);
-                    }
-                    // Weather sensors
+                    // Weather sensors (check before temperature, as wind devices can have Temp/Chill)
                     else if (
                         typeof item.Rain !== 'undefined' ||
                         typeof item.Visibility !== 'undefined' ||
@@ -117,6 +109,14 @@ define(['app', 'domoticz.api', 'livesocket'], function(app) {
                         typeof item.Barometer !== 'undefined'
                     ) {
                         categorized.weather.push(item);
+                    }
+                    // Temperature sensors
+                    else if (
+                        typeof item.Temp !== 'undefined' ||
+                        typeof item.Humidity !== 'undefined' ||
+                        typeof item.Chill !== 'undefined'
+                    ) {
+                        categorized.temperature.push(item);
                     }
                     // Utility sensors (everything else that matches utility criteria)
                     else if (
