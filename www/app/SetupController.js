@@ -379,8 +379,7 @@ define(['app'], function (app) {
 										listExtra.push({"idx": item.idx, "name": item.Name});
 									}
 									else if (item.SubType == "Voltage") {
-										listBatterySoc.push({"idx": item.idx, "name": item.Name});
-										listExtra.push({"idx": item.idx, "name": item.Name});
+										listBatteryVolt.push({"idx": item.idx, "name": item.Name});
 									}
 									else if (item.SubType == "Text") {
 										listText.push({"idx": item.idx, "name": item.Name});
@@ -410,6 +409,7 @@ define(['app'], function (app) {
 						listSolar.sort((a,b) => (a.name.toLowerCase() > b.name.toLowerCase()) ? 1 : ((b.name.toLowerCase() > a.name.toLowerCase()) ? -1 : 0));
 						listBatteryWatt.sort((a,b) => (a.name.toLowerCase() > b.name.toLowerCase()) ? 1 : ((b.name.toLowerCase() > a.name.toLowerCase()) ? -1 : 0));
 						listBatterySoc.sort((a,b) => (a.name.toLowerCase() > b.name.toLowerCase()) ? 1 : ((b.name.toLowerCase() > a.name.toLowerCase()) ? -1 : 0));
+						listBatteryVolt.sort((a,b) => (a.name.toLowerCase() > b.name.toLowerCase()) ? 1 : ((b.name.toLowerCase() > a.name.toLowerCase()) ? -1 : 0));
 						listText.sort((a,b) => (a.name.toLowerCase() > b.name.toLowerCase()) ? 1 : ((b.name.toLowerCase() > a.name.toLowerCase()) ? -1 : 0));
 						listExtra.sort((a,b) => (a.name.toLowerCase() > b.name.toLowerCase()) ? 1 : ((b.name.toLowerCase() > a.name.toLowerCase()) ? -1 : 0));
 						listTemperatureSensors.sort((a,b) => (a.name.toLowerCase() > b.name.toLowerCase()) ? 1 : ((b.name.toLowerCase() > a.name.toLowerCase()) ? -1 : 0));
