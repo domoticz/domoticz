@@ -120,7 +120,7 @@ History:
 					}
 				}
 				@keyframes pulse-glow {
-					0%, 100% { opacity: 1; }
+					0%, 100% { opacity: 1.0; }
 					50% { opacity: 0.82; }
 				}
 				.circle-active {
@@ -193,9 +193,9 @@ History:
 			</g>
 			<text class="etext" x="56" y="6" opacity="1.0" font-size="2.0px" text-anchor="right" dy="0" style="font-weight: normal; white-space: pre;" ng-show="txtOutsideTemp">{{ txtOutsideTemp }}&deg; {{ config.TempSign }}</text>
 			<g id="groupBatt" ng-show="idBattWatt != -1">
-				<line id="SolarToBatt" x1="30" y1="17.2" x2="30" y2="43" style="stroke:#ffd050;stroke-width:{{flowStrokeBack}}" ng-show="idSolar != -1"/>
+				<line id="SolarToBatt" x1="30" y1="17.25" x2="30" y2="42.75" style="stroke:#ffd050;stroke-width:{{flowStrokeBack}}" ng-show="idSolar != -1"/>
 				<g ng-show="fSolarToBatt>0">
-					<line id="SolarToBatt-flow" x1="30" y1="17.2" x2="30" y2="43" style="stroke:red;stroke-width:0.2" ng-show="flowAsLines"/>
+					<line id="SolarToBatt-flow" x1="30" y1="17.25" x2="30" y2="42.75" style="stroke:red;stroke-width:0.2" ng-show="flowAsLines"/>
 					<ellipse
 						ng-show="!flowAsLines"
 						style="fill:#efc040;fill-opacity:1"
@@ -217,9 +217,9 @@ History:
 						<text class="etext" opacity="0.7" font-size="1.1px" text-anchor="end" transform="rotate(90)" style="font-variant-caps: normal; font-variant-east-asian: normal; font-variant-ligatures: normal; font-variant-numeric: normal; white-space: pre;">{{ fSolarToBatt }} Watt</text>
 					</g>
 				</g>
-				<path id="BattNet" fill="none" d="m29 43c0 -9 -2 -11 -12 -12" stroke="#a0f0a0" stroke-width="{{flowStrokeBack}}"/>
+				<path id="BattNet" fill="none" d="m29 42.87c0 -9 -2 -11 -11.8 -12" stroke="#a0f0a0" stroke-width="{{flowStrokeBack}}"/>
 				<g ng-show="fBattToNet!=0">
-					<path id="BattNet-flow" fill="none" d="m29 43c0 -9 -2 -11 -12 -12" stroke="#f00" stroke-linecap="round" stroke-width=".2" ng-show="flowAsLines"/>
+					<path id="BattNet-flow" fill="none" d="m29 42.83c0 -9 -2 -11 -11.8 -12" stroke="#f00" stroke-linecap="round" stroke-width=".2" ng-show="flowAsLines"/>
 					<ellipse
 						ng-show="!flowAsLines"
 						style="fill:#90e090;fill-opacity:1"
@@ -239,10 +239,9 @@ History:
 					</ellipse>
 					<text class="etext" x="26" y="35" opacity="0.7" font-size="1.1px" text-align="end" text-anchor="end" style="font-variant-caps: normal; font-variant-east-asian: normal; font-variant-ligatures: normal; font-variant-numeric: normal; white-space: pre;">{{ fBattToNet }} Watt</text>
 				</g>
-				<path id="BattHome" fill="none" d="m31 43c0 -9 2 -11 12 -12" stroke="#a0f0a0" stroke-width="{{flowStrokeBack}}"/>
+				<path id="BattHome" fill="none" d="m31 42.87c0 -9 2 -11 11.8 -12" stroke="#a0f0a0" stroke-width="{{flowStrokeBack}}"/>
 				<g ng-show="fBattToHome>0">
-					<text class="etext" x="34" y="35" opacity="0.7" font-size="1.1px" style="font-variant-caps: normal; font-variant-east-asian: normal; font-variant-ligatures: normal; font-variant-numeric: normal; white-space: pre;">{{ fBattToHome }} Watt</text>
-					<path id="BattHome-flow" fill="none" d="m31 43c0 -9 2 -11 12 -12" stroke="#f00" stroke-linecap="round" stroke-width=".2" ng-show="flowAsLines"/>
+					<path id="BattHome-flow" fill="none" d="m31 42.83c0 -9 2 -11 11.8 -12" stroke="#f00" stroke-linecap="round" stroke-width=".2" ng-show="flowAsLines"/>
 					<ellipse
 						ng-show="!flowAsLines"
 						style="fill:#90e090;fill-opacity:1"
@@ -260,6 +259,7 @@ History:
 							repeatCount="indefinite" />
 						<animate id="BattHome-fade" attributeName="opacity" values="0;1;1;0" keyTimes="0;0.08;0.92;1" dur="2s" repeatCount="indefinite" />
 					</ellipse>
+					<text class="etext" x="34" y="35" opacity="0.7" font-size="1.1px" style="font-variant-caps: normal; font-variant-east-asian: normal; font-variant-ligatures: normal; font-variant-numeric: normal; white-space: pre;">{{ fBattToHome }} Watt</text>
 				</g>
 				<circle class="ecircle ecircle-batt" r="7" cx="30" cy="50" fill="rgba(144,224,144,0.06)" stroke="#90e090" stroke-width=".5" filter="url(#glowBatt)" ng-class="{'circle-active': fActualBattWatt != 0}"/>
 				<g class="eicon" ng-show="!customIconBatt">
@@ -290,9 +290,9 @@ History:
 			</g>
 			<g id="groupSolar" ng-show="idSolar != -1">
 				<text x="10" y="31" fill="#ba88ff" opacity="0.7" font-size="1.6px" text-anchor="middle" style="font-variant-caps: normal; font-variant-east-asian: normal; font-variant-ligatures: normal; font-variant-numeric: normal; white-space: pre;" ng-show="!P1InkWh">⇦ {{ fDayNetDeliv | number:3 }} kWh</text>
-				<path id="SolarToGrid" fill="none" d="m29 17.1c0 9-2 11-12 12" stroke="#ffd050" stroke-width="{{flowStrokeBack}}"/>
+				<path id="SolarToGrid" fill="none" d="m29 17.1c0 9-2 11-11.84 12" stroke="#ffd050" stroke-width="{{flowStrokeBack}}"/>
 				<g ng-show="fSolarToGrid>0">
-					<path id="SolarToGrid-flow" fill="none" d="m29 17.1c0 9-2 11-12 12" stroke="#f00" stroke-linecap="round" stroke-width=".2" ng-show="flowAsLines"/>
+					<path id="SolarToGrid-flow" fill="none" d="m29 17.15c0 9-2 11-12 12" stroke="#f00" stroke-linecap="round" stroke-width=".2" ng-show="flowAsLines"/>
 					<ellipse
 						ng-show="!flowAsLines"
 						style="fill:#efc040;fill-opacity:1"
@@ -313,10 +313,10 @@ History:
 					<text class="etext" x="26" y="25.5" opacity="0.7" font-size="1.1px" text-align="end" text-anchor="end" style="font-variant-caps: normal; font-variant-east-asian: normal; font-variant-ligatures: normal; font-variant-numeric: normal; white-space: pre;">{{ fSolarToGrid }} Watt</text>
 				</g>
 
-				<path id="SolarToHome" fill="none" d="m31 17.1c0 9 2 11 12 12" stroke="#ffd050" stroke-width="{{flowStrokeBack}}"/>
+				<path id="SolarToHome" fill="none" d="m31 17.15c0 9 2 11 11.8 12" stroke="#ffd050" stroke-width="{{flowStrokeBack}}"/>
 				<g ng-show="fSolarToHome>0">
 					<text class="etext" x="34" y="25.5" opacity="0.7" font-size="1.1px" style="font-variant-caps: normal; font-variant-east-asian: normal; font-variant-ligatures: normal; font-variant-numeric: normal; white-space: pre;">{{ fSolarToHome }} Watt</text>
-					<path id="SolarToHome-flow" fill="none" d="m31 17.1c0 9 2 11 12 12" stroke="#f00" stroke-linecap="round" stroke-width=".2" ng-show="flowAsLines"/>
+					<path id="SolarToHome-flow" fill="none" d="m31 17.15c0 9 2 11 12 12" stroke="#f00" stroke-linecap="round" stroke-width=".2" ng-show="flowAsLines"/>
 					<ellipse
 						ng-show="!flowAsLines"
 						style="fill:#efc040;fill-opacity:1"
@@ -365,7 +365,6 @@ History:
 
 			</g>
 			<line id="lineRT1" x1="50" y1="19" x2="50" y2="22.75" style="stroke:#777;stroke-width:0.2" ng-show="bDisplayRT1"/>
-			<line id="lineRB1" x1="50" y1="37.2" x2="50" y2="41" style="stroke:#777;stroke-width:0.2" ng-show="bDisplayRB1"/>
 			<g id="groupGas" ng-show="idGas != -1">
 				<circle class="ecircle ecircle-gas" r="5" cx="50" cy="14" fill="rgba(224,96,64,0.06)" stroke="#e06040" stroke-width=".4" filter="url(#glowGas)"/>
 				<g transform="matrix(0.12, 0, 0, 0.12, 48, 10.5)" ng-show="!customIconGas">
@@ -377,6 +376,7 @@ History:
 				<text class="etext" x="50" y="16.4" font-size="1.6px" text-anchor="middle" style="font-variant-caps: normal; font-variant-east-asian: normal; font-variant-ligatures: normal; font-variant-numeric: normal; white-space: pre; font-weight: bold;">{{ txtDayGasUsage }}</text>
 				<text class="etext" x="50" y="17.9" opacity="0.55" font-size="1.2px" text-anchor="middle" style="white-space: pre;" ng-show="gasPrice!=1000">{{ gasPrice | number:2 }} {{ config.CurrencySign }}</text>
 			</g>
+			<line id="lineRB1" x1="50" y1="37.25" x2="50" y2="41" style="stroke:#777;stroke-width:0.2" ng-show="bDisplayRB1"/>
 			<g id="groupWater" ng-attr-transform="{{ water_transform }}" ng-show="idWater!=-1">
 				<circle class="ecircle ecircle-water" r="5" cx="50" cy="46" fill="rgba(128,192,240,0.06)" stroke="#80c0f0" stroke-width=".4" filter="url(#glowWater)"/>
 				<g class="eicon" transform="matrix(0.25, 0, 0, 0.25, 48.55, 42.5)" ng-show="!customIconWater">
@@ -396,7 +396,7 @@ History:
 				<g transform="matrix(0.075, 0, 0, 0.075, 3.3, 1)" ng-show="customIconH1">
 					<image width="48" height="48" xlink:href="{{customIconH1}}" />
 				</g>
-				<line x1="0.1" y1="9.7" x2="1.3" y2="8.6" style="stroke:#777;stroke-width:0.2"/>
+				<line x1="0.25" y1="9.55" x2="1.3" y2="8.6" style="stroke:#777;stroke-width:0.2"/>
 				
 				<text class="etext" x="5" y="5.7" opacity="0.7" font-size="1.0px" text-anchor="middle" style="font-variant-caps: normal; font-variant-east-asian: normal; font-variant-ligatures: normal; font-variant-numeric: normal; white-space: pre; font-weight: bold;" ng-show="txtKwhItemH1">{{ txtKwhItemH1 }}</text>
 				<text class="etext" x="5" y="7.2" font-size="1.5px" text-anchor="middle" style="font-variant-caps: normal; font-variant-east-asian: normal; font-variant-ligatures: normal; font-variant-numeric: normal; white-space: pre; font-weight: bold;">{{ txtItemH1 }}</text>
@@ -410,7 +410,7 @@ History:
 				<g transform="matrix(0.075, 0, 0, 0.075, 3.3, 1)" ng-show="customIconH2">
 					<image width="48" height="48" xlink:href="{{customIconH2}}" />
 				</g>
-				<line x1="-2" y1="5" x2="-0.2" y2="5" style="stroke:#777;stroke-width:0.2"/>
+				<line x1="-1.8" y1="5" x2="-0.2" y2="5" style="stroke:#777;stroke-width:0.2"/>
 				<text class="etext" x="5" y="5.7" opacity="0.7" font-size="1.0px" text-anchor="middle" style="font-variant-caps: normal; font-variant-east-asian: normal; font-variant-ligatures: normal; font-variant-numeric: normal; white-space: pre; font-weight: bold;" ng-show="txtKwhItemH2">{{ txtKwhItemH2 }}</text>
 				<text class="etext" x="5" y="7.2" font-size="1.5px" text-anchor="middle" style="font-variant-caps: normal; font-variant-east-asian: normal; font-variant-ligatures: normal; font-variant-numeric: normal; white-space: pre; font-weight: bold;">{{ txtItemH2 }}</text>
 				<text class="etext" x="5" y="8.7" opacity="0.55" font-size="1.2px" text-anchor="middle" style="white-space: pre;" ng-show="h2Price!=1000">{{ h2Price | number:2 }} {{ config.CurrencySign }}</text>

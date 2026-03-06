@@ -1,6 +1,7 @@
 define(['app'], function (app) {
 	app.controller('EnergyDashboardController', ['$scope', '$rootScope', '$location', '$http', '$interval', 'livesocket', function ($scope, $rootScope, $location, $http, $interval, livesocket) {
 
+		$scope.debug = false;
 		$scope.idP1 = -1;
 		$scope.idGas = -1;
 		$scope.idWater = -1;
@@ -367,7 +368,7 @@ define(['app'], function (app) {
 			$scope.customIconGrid = $scope.GetIconForItem(item);
 			return true;
 		}
-		
+
 		$scope.handleGas = function(item) {
 			if (item.hasOwnProperty("CounterToday")) {
 				$scope.txtDayGasUsage = item["CounterToday"];
@@ -636,12 +637,18 @@ define(['app'], function (app) {
 
 		$scope.UpdateScreen = function () {
 			//for debugging purposes
-			//$scope.fActualNet = 545;
-			//$scope.fActualSolar = 4146;
-			//$scope.fActualBattWatt = -2294;
-			//$scope.fBattSoc = 62.4;
-			//$scope.txtDayGasUsage = '0.417 m3';
-			//$scope.txtDayWaterUsage = '294 L';
+			if ($scope.debug == true) {
+				$scope.fActualNet = 1545;
+				$scope.fActualSolar = 340;
+				$scope.fActualBattWatt = 200;
+				$scope.fBattSoc = 62.4;
+				$scope.txtDayGasUsage = '0.417 m3';
+				$scope.txtDayWaterUsage = '294 L';
+				$scope.p1Price = 2.34;
+				$scope.solarPrice = 3.21;
+				$scope.gasPrice = 1.23;
+				$scope.waterPrice = 2.34;
+			}
 			
 			// Total Home usage: Calculated
 			$scope.fTotalHomeUsage = $scope.fDayNetUsage + $scope.fDaySolar - $scope.fDayNetDeliv;
