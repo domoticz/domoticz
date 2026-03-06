@@ -2,7 +2,7 @@ Version 2026.xxxx
 - Added: Alexa Smart Home v3 API endpoint (see ALEXA.md)
 - Added: Angular Current sensor log with 3-phase support and compare chart (Fixes #6560)
 - Added: Angular Wind log, wind speed frequency histogram with Weibull distribution curve
-- Added: RFXCOM, Teleinfo 1200/19200 async mode support (Fixes #6495)
+- Added: Battery SOC mode selection for Energy Dashboard with voltage display
 - Added: Blinds + Stop type
 - Added: Comparing charts, show average across years in tooltip for month/quarter grouping
 - Added: Configurable pricing resolution (15/30/60 minutes) for dynamic energy contracts (with adapted P1 and kWh graphs)
@@ -34,6 +34,7 @@ Version 2026.xxxx
 - Added: Re-added wind report
 - Added: Re-added wind-rose direction chart to Wind sensor log
 - Added: RFXCom, Support Orcon FAN device (#6500)
+- Added: RFXCOM, Teleinfo 1200/19200 async mode support (Fixes #6495)
 - Added: RTL433, Support UV sensors named 'uvi'
 - Added: Search filter on selected (right) side of user shared devices selector (Fixes #6613)
 - Added: SolarEdge API, battery detection (#6593)
@@ -47,8 +48,8 @@ Version 2026.xxxx
 - Added: Web Interface, Modernized log viewer with WebSocket live streaming, level filtering, search/regex, render cap, and performance optimizations
 - Added: Web Interface, Passkey (WebAuthn/FIDO2) authentication support - register and sign in with Windows Hello, Touch ID, or security keys
 - Added: Web Interface, Passkey management in My Profile (register, view device info, delete)
+- Fixed: Access denied for non-admin users with no shared devices configured
 - Fixed: Application hang on shutdown when Python event scripts are active
-- Fixed: dzVents, counterToday/counterDeliveredToday returning stale values after midnight for idle devices (Fixes #6221)
 - Fixed: Buienradar, fallback when station measurements are empty
 - Fixed: CalcMeterPrice/CalcMultiMeterPrice off-by-one price error with dynamic tariffs (Fixes #6181)
 - Fixed: Chart zoom buttons (notable on iOS devices)
@@ -56,12 +57,15 @@ Version 2026.xxxx
 - Fixed: Counter Statistics Chart tooltip showing incorrect day name (Fixes #6542)
 - Fixed: Database backup/restore stability (#6577)
 - Fixed: Deleting a scene/group could accidentally delete a device
+- Fixed: dzVents, counterToday/counterDeliveredToday returning stale values after midnight for idle devices (Fixes #6221)
 - Fixed: dzVents Lua table corruption when exception occurs during notification or device data export (Fixes #6030)
 - Fixed: dzVents SendNotification, SendEmail, and SendSMS command handling
 - Fixed: dzVents Thermostat 6 updateSetPoint() now uses proper SetSetPoint command path for correct event propagation
+- Fixed: Energy Dashboard layout order and positioning (Fixes #6625)
 - Fixed: Event system not processing events when device update rate is high (e.g. faulty sensors)
 - Fixed: Event system thread could silently stop on unhandled exceptions, causing all scripts to stop working
 - Fixed: Flash of unfiltered devices on live updates in web interface
+- Fixed: Floorplan, Text Sensor display
 - Fixed: General/kWh device with EnergyMeterMode=1 could never be updated when created from Python plugin with numeric Type/SubType (Fixes #6194)
 - Fixed: Kodi, Possible memory leak in Kodi Notification when destination is unreachable
 - Fixed: Log rotation via SIGHUP broken under systemd (non-daemon mode)
@@ -75,10 +79,12 @@ Version 2026.xxxx
 - Fixed: P1Power hourly graph empty due to incorrect SQL format escaping in pricing resolution grouping
 - Fixed: P1Power hourly graph using wrong price and missing date range filter (Fixes #6181)
 - Fixed: Philips Hue v1 API crashes Domoticz in certain cases since Hue Bridge firmware 1.74 (added extra validations)
+- Fixed: Pinger blocking webserver thread during ping operations
 - Fixed: Plugin devices, LightingLog User field now shows actual user instead of hardware name (Fixes #6538)
 - Fixed: Python plugin C extension crash on plugin restart
 - Fixed: Python plugin custom device option updates not saved to database (#6454)
 - Fixed: Python plugin TCP/TLS connection stability issues
+- Fixed: RFXCom, uninitialized value in decode_Fan for non-Orcon devices
 - Fixed: RTL433 hangs on stop/update (#6597)
 - Fixed: Scheduler Monthly_Weekday and Yearly_Weekday (Fixes #6452)
 - Fixed: Scene triggering delay caused by event system thread pool saturation
@@ -87,9 +93,12 @@ Version 2026.xxxx
 - Fixed: SolarEdge API, power readings persisting stale values when idle
 - Fixed: Temperature Compare Chart (Min/Max values)
 - Fixed: Web update not restarting properly when Python plugins are active (#6602)
+- Fixed: Web update script not starting due to systemd-run failure (#6622)
 - Fixed: WebSocket thread-safety races in session and log callbacks
 - Fixed: WOL, Corrected magic packet creation and supporting IPv6 broadcast
+- Changed: -nocache command line option now also uninstalls the service-worker
 - Changed: Domoticz Remote, Do not force re-enable RemoteSharedPort on startup
+- Changed: Energy Dashboard restyled with dark glass-morphism theme and neon glow effects
 - Changed: Enphase, default to new firmware info request
 - Changed: Enphase, start working with correct values from the beginning
 - Changed: FCM/Google Cloud Messaging Notifications, now needed to enter private API from console in settings
