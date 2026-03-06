@@ -3358,7 +3358,7 @@ namespace http
 			// Falls back to setsid/nohup for non-systemd systems or if systemd-run fails.
 			std::string lscript =
 				"if [ -d /run/systemd/system ] && command -v systemd-run >/dev/null 2>&1 && "
-				"systemd-run --no-block --description=\"Domoticz Update\" "
+				"systemd-run --no-block --working-directory=\"" + szStartupFolder + "\" --description=\"Domoticz Update\" "
 				"/bin/bash -c \"" + scriptname + " > " + logfile + " 2>&1\" 2>/dev/null; then "
 				"true; "
 				"else "
