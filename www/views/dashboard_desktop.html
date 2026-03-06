@@ -114,15 +114,22 @@
 							<tr>
 								<td id="name" class="item-name" data-idx="{{device.idx}}">{{device.Name}}</td>
 								<td id="bigtext">
-									<span ng-if="device.Rain != undefined">{{device.Rain}} mm</span>
-									<span ng-if="device.Direction != undefined">{{device.DirectionStr}} {{device.Speed}} {{config.WindSign}}</span>
 									<span ng-if="device.Barometer != undefined">{{device.Barometer}} hPa</span>
+									<span ng-if="device.Rain != undefined">{{device.Rain}} mm</span>
+									<span ng-if="device.Visibility != undefined">{{device.Data}}</span>
 									<span ng-if="device.UVI != undefined">UVI: {{device.UVI}}</span>
+									<span ng-if="device.Radiation != undefined">{{device.Data}}</span>
+									<span ng-if="device.Direction != undefined">{{device.DirectionStr}} {{device.Speed}} {{config.WindSign}}</span>
 								</td>
 								<td id="img">
 									<a ng-href="#/Devices/{{device.idx}}/Log">
 										<img ng-if="device.CustomImage != 0" ng-src="images/{{device.Image}}48_On.png" height="40" width="40" class="lcursor">
-										<img ng-if="device.CustomImage == 0" ng-src="images/{{device.TypeImg}}48_On.png" height="40" width="40" class="lcursor">
+										<img ng-if="device.CustomImage == 0 && device.Barometer != undefined" ng-src="images/baro48.png" height="40" width="40" class="lcursor">
+										<img ng-if="device.CustomImage == 0 && device.Rain != undefined" ng-src="images/Rain48_On.png" height="40" width="40" class="lcursor">
+										<img ng-if="device.CustomImage == 0 && device.Visibility != undefined" ng-src="images/visibility48.png" height="40" width="40" class="lcursor">
+										<img ng-if="device.CustomImage == 0 && device.UVI != undefined" ng-src="images/uv48.png" height="40" width="40" class="lcursor">
+										<img ng-if="device.CustomImage == 0 && device.Radiation != undefined" ng-src="images/radiation48.png" height="40" width="40" class="lcursor">
+										<img ng-if="device.CustomImage == 0 && device.Direction != undefined" ng-src="images/Wind{{device.DirectionStr}}.png" height="40" width="40" class="lcursor">
 									</a>
 								</td>
 								<td id="status"></td>
