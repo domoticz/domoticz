@@ -99,7 +99,15 @@ define(['app', 'domoticz.api', 'livesocket'], function(app) {
                     ) {
                         categorized.lights.push(item);
                     }
-                    // Weather sensors (check before temperature, as wind devices can have Temp/Chill)
+                    // Temperature sensors (check before weather, as Temp+Hum+Baro devices should appear here)
+                    else if (
+                        typeof item.Temp !== 'undefined' ||
+                        typeof item.Humidity !== 'undefined' ||
+                        typeof item.Chill !== 'undefined'
+                    ) {
+                        categorized.temperature.push(item);
+                    }
+                    // Weather sensors
                     else if (
                         typeof item.Rain !== 'undefined' ||
                         typeof item.Visibility !== 'undefined' ||
@@ -109,14 +117,6 @@ define(['app', 'domoticz.api', 'livesocket'], function(app) {
                         typeof item.Barometer !== 'undefined'
                     ) {
                         categorized.weather.push(item);
-                    }
-                    // Temperature sensors
-                    else if (
-                        typeof item.Temp !== 'undefined' ||
-                        typeof item.Humidity !== 'undefined' ||
-                        typeof item.Chill !== 'undefined'
-                    ) {
-                        categorized.temperature.push(item);
                     }
                     // Utility sensors (everything else that matches utility criteria)
                     else if (
@@ -149,8 +149,7 @@ define(['app', 'domoticz.api', 'livesocket'], function(app) {
                         item.SubType === 'Sound Level' ||
                         item.SubType === 'Custom Sensor' ||
                         item.SubType === 'Thermostat Clock' ||
-                        item.Type === 'Radiator 1' ||
-                        item.Type === 'Thermostat 6'
+                        item.Type === 'Radiator 1'
                     ) {
                         categorized.utility.push(item);
                     }
