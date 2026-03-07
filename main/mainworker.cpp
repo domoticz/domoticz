@@ -5805,8 +5805,10 @@ void MainWorker::decode_Fan(const CDomoticzHardwareBase* pHardware, const tRBUF*
 			m_sql.UpdateDeviceValue("Description", SourceID, std::to_string(DevRowIdx));
 			if (switchType == STYPE_Selector)
 				m_sql.UpdateDeviceValue("LastLevel", sValue, std::to_string(DevRowIdx));
-			_log.Debug(DEBUG_HARDWARE, "Orcon: Stored SourceID (RemoteID)=%s for device IDX=%" PRIu64, SourceID.c_str(), DevRowIdx);
+			_log.Log(LOG_STATUS, "Orcon: Stored SourceID (RemoteID)=%s for device IDX=%" PRIu64, SourceID.c_str(), DevRowIdx);
 		}
+		else
+			_log.Log(LOG_STATUS, "Decode Fan for device IDX=%" PRIu64, DevRowIdx);
 		m_sql.UpdateDeviceValue("CustomImage", 7, std::to_string(DevRowIdx));
 	}
 
