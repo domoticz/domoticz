@@ -35,12 +35,12 @@ void CWebSocketPush::Start()
 
 void CWebSocketPush::Stop()
 {
-	if (!isStarted) 
+	std::unique_lock<std::recursive_mutex> lock(handlerMutex);
+
+	if (!isStarted)
 		return;
 
 	isStarted = false;
-
-	std::unique_lock<std::mutex> lock(handlerMutex);
 
 	if (m_sConnection.connected())
 		m_sConnection.disconnect();
@@ -59,53 +59,40 @@ void CWebSocketPush::Stop()
 
 void CWebSocketPush::OnDeviceReceived(const int HwdID, const uint64_t DeviceRowIdx, const std::string &DeviceName, const unsigned char *pRXCommand)
 {
-	{
-		std::unique_lock<std::mutex> lock(handlerMutex);
-		if (!isStarted)
-			return;
-	}
-	// Called outside the lock to prevent deadlock: OnDeviceChanged -> Handle -> Log -> sOnLogMessage -> OnLogMessage -> handlerMutex
+	std::unique_lock<std::recursive_mutex> lock(handlerMutex);
+	if (!isStarted)
+		return;
 	m_sock->OnDeviceChanged(DeviceRowIdx);
 }
 
 void CWebSocketPush::OnDeviceUpdate(const int m_HwdID, const uint64_t DeviceRowIdx)
 {
-	{
-		std::unique_lock<std::mutex> lock(handlerMutex);
-		if (!isStarted)
-			return;
-	}
+	std::unique_lock<std::recursive_mutex> lock(handlerMutex);
+	if (!isStarted)
+		return;
 	m_sock->OnDeviceChanged(DeviceRowIdx);
 }
 
 void CWebSocketPush::OnSceneChange(const uint64_t SceneRowIdx, const std::string& SceneName)
 {
-	{
-		std::unique_lock<std::mutex> lock(handlerMutex);
-		if (!isStarted)
-			return;
-	}
+	std::unique_lock<std::recursive_mutex> lock(handlerMutex);
+	if (!isStarted)
+		return;
 	m_sock->OnSceneChanged(SceneRowIdx);
 }
 
 void CWebSocketPush::OnNotificationReceived(const std::string & Subject, const std::string & Text, const std::string & ExtraData, const int Priority, const std::string & Sound, const bool bFromNotification)
 {
-	{
-		std::unique_lock<std::mutex> lock(handlerMutex);
-		if (!isStarted)
-			return;
-	}
+	std::unique_lock<std::recursive_mutex> lock(handlerMutex);
+	if (!isStarted)
+		return;
 	m_sock->SendNotification(Subject, Text, ExtraData, Priority, Sound, bFromNotification);
 }
 
 void CWebSocketPush::OnLogMessage(const _eLogLevel level, const std::string& sLogline)
 {
-	{
-		std::unique_lock<std::mutex> lock(handlerMutex);
-		if (!isStarted)
-			return;
-	}
-	// SendLogMessage is called outside the lock so that MyWrite cannot
-	// block Stop() from acquiring handlerMutex during connection teardown.
+	std::unique_lock<std::recursive_mutex> lock(handlerMutex);
+	if (!isStarted)
+		return;
 	m_sock->SendLogMessage(static_cast<int>(level), sLogline);
 }

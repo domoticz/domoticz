@@ -27,7 +27,7 @@ private:
 	void OnSceneChange(uint64_t SceneRowIdx, const std::string &SceneName);
 	void OnLogMessage(const _eLogLevel level, const std::string& sLogline);
 
-	std::mutex handlerMutex;
+	std::recursive_mutex handlerMutex;
 	http::server::CDomoticzWebsocketHandler *m_sock;
 	bool isStarted;
 
