@@ -73,25 +73,31 @@
 			<div class="row divider">
 				<div ng-repeat="device in temperature | filter:filterDevices track by device.idx"
 					 ng-class="[dashboardType == 1 ? 'span3' : 'span4']" id="temp_{{device.idx}}" class="movable">
-					<div class="item itemBlock" ng-class="$root.GetItemBackgroundStatus(device)">
-						<table id="itemtablesmall" border="0" cellpadding="0" cellspacing="0">
+					<div class="item itemBlock" ng-class="$root.GetTempBackgroundStatus(device)">
+						<table ng-attr-id="{{device.SetPoint != undefined ? 'itemtablesmalldoubleicon' : 'itemtablesmall'}}" ng-class="{'itemtablesmalldoubleicon': device.SetPoint != undefined, 'itemtablesmall': device.SetPoint == undefined}" border="0" cellpadding="0" cellspacing="0">
 							<tr>
 								<td id="name" class="item-name" data-idx="{{device.idx}}">{{device.Name}}</td>
-								<td id="bigtext">
+								<td id="bigtext"><span>
+									<span ng-if="device.SetPoint != undefined">{{device.SetPoint}}&deg; {{config.TempSign}}</span>
+									<span ng-if="device.SetPoint != undefined && device.Temp != undefined"> / </span>
 									<span ng-if="device.Temp != undefined">{{device.Temp}}&deg; {{config.TempSign}}</span>
-									<span ng-if="device.Humidity != undefined"> {{device.Humidity}}%</span>
-								</td>
-								<td id="img">
+									<span ng-if="device.Humidity != undefined"> / {{device.Humidity}}%</span>
+									<span ng-if="device.Barometer != undefined"> / {{device.Barometer}} hPa</span>
+								</span></td>
+								<td id="img" class="img img1">
 									<a ng-href="#/Devices/{{device.idx}}/Log">
 										<img ng-src="{{$root.GetTempIcon(device)}}" height="40" width="40" class="lcursor">
 									</a>
 								</td>
-								<td id="status">
-									<span ng-if="device.HumidityStatus">{{device.HumidityStatus}}</span>
-									<span ng-if="device.DewPoint != undefined">Dew: {{device.DewPoint}}&deg;</span>
-									<span ng-if="device.Chill != undefined">Chill: {{device.Chill}}&deg;</span>
+								<td ng-if="device.SetPoint != undefined" id="img2" class="img2">
+									<img src="images/override.png" class="lcursor" ng-click="showSetpointPopup($event, device.idx, device.Protected, device.SetPoint, false, device.step || 0.5, device.min || -200, device.max || 200)" height="36" width="40" title="Adjust Setpoint">
 								</td>
-								<td id="lastupdate">{{device.LastUpdate}}</td>
+								<td id="status" class="status"><span>
+									<span ng-if="device.HumidityStatus">{{device.HumidityStatus}}</span>
+									<span ng-if="device.DewPoint != undefined"><span ng-if="device.HumidityStatus">, </span>Dew: {{device.DewPoint}}&deg;</span>
+									<span ng-if="device.ForecastStr != undefined"><br>{{device.ForecastStr}}</span>
+								</span></td>
+								<td id="lastupdate" class="lastupdate"><span>{{device.LastUpdate}}</span></td>
 							</tr>
 						</table>
 					</div>
