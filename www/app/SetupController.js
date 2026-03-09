@@ -380,6 +380,7 @@ define(['app'], function (app) {
 									}
 									else if (item.SubType == "Voltage") {
 										listBatteryVolt.push({"idx": item.idx, "name": item.Name});
+										listExtra.push({"idx": item.idx, "name": item.Name});
 									}
 									else if (item.SubType == "Text") {
 										listText.push({"idx": item.idx, "name": item.Name});

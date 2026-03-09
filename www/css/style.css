@@ -2371,6 +2371,11 @@ device-light-log, .device-log-chart:first-child {
 	height: 200px;
 }
 
+.wind-chart-container {
+	background-color: transparent !important;
+	padding: 0 !important;
+}
+
 .no-data {
 	background-color: rgba(0, 0, 0, 0.25);
 	padding: 10px;

@@ -23,6 +23,7 @@ namespace mcp
 
 	bool toggleSwitchState(const Json::Value &jsonRequest, Json::Value &jsonRPCRep);
 	bool setThermostatSetpoint(const Json::Value& jsonRequest, Json::Value& jsonRPCRep);
+	bool getStatus(const Json::Value &jsonRequest, Json::Value &jsonRPCRep);
 
 	bool getDeviceByName(const std::string &sDeviceName, Json::Value &device);
 

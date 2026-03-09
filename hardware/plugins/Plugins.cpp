@@ -107,7 +107,7 @@ namespace Plugins
 					if (PyArg_ParseTuple(args, "O", &pObject))
 					{
 						std::string	sMessage = PyBorrowedRef(pObject);
-						pPlugin->Debug(DEBUG_PYTHON, "%s", sMessage.c_str());
+						pPlugin->Log(LOG_NORM, sMessage);
 					}
 					else
 					{
@@ -117,7 +117,7 @@ namespace Plugins
 				}
 				else
 				{
-					pPlugin->Debug(DEBUG_PYTHON, "%s", msg);
+					pPlugin->Log(LOG_NORM, (std::string)msg);
 				}
 			}
 		}
@@ -156,7 +156,7 @@ namespace Plugins
 				if (PyArg_ParseTuple(args, "O", &pObject))
 				{
 					std::string	sMessage = PyBorrowedRef(pObject);
-					pPlugin->Debug(DEBUG_PYTHON, "%s", sMessage.c_str());
+					pPlugin->Log(LOG_NORM, sMessage);
 				}
 				else
 				{
@@ -375,6 +375,55 @@ namespace Plugins
 		Py_RETURN_NONE;
 	}
 
+	static PyObject *PyDomoticz_SendNotification(PyObject *self, PyObject *args, PyObject *kwds)
+	{
+		module_state *pModState = CPlugin::FindModule();
+		if (!pModState)
+		{
+			Py_RETURN_NONE;
+		}
+		else if (!pModState->pPlugin)
+		{
+			_log.Log(LOG_ERROR, "CPlugin:%s, illegal operation, Plugin has not started yet.", __func__);
+			Py_RETURN_NONE;
+		}
+
+		const char *Subject = nullptr;
+		const char *Body = nullptr;
+		int Priority = 0;
+		const char *Sound = "";
+		const char *ExtraData = "";
+		const char *SubSystem = "";
+		int Delay = 0;
+		static char *kwlist[] = { "subject", "body", "priority", "sound", "extradata", "subsystem", "delay", nullptr };
+
+		if (!PyArg_ParseTupleAndNormalizedKeywords(args, kwds, "s|sisssi", kwlist, &Subject, &Body, &Priority, &Sound, &ExtraData, &SubSystem, &Delay))
+		{
+			pModState->pPlugin->Log(LOG_ERROR, "%s: Failed to parse parameters, expected subject and optional body/priority/sound/extradata/subsystem/delay.", __func__);
+			pModState->pPlugin->LogPythonException(std::string(__func__));
+			Py_RETURN_NONE;
+		}
+
+		if (!Subject || !Subject[0])
+		{
+			pModState->pPlugin->Log(LOG_ERROR, "%s: Empty subject is not allowed.", __func__);
+			Py_RETURN_NONE;
+		}
+
+		if (Delay < 0)
+		{
+			pModState->pPlugin->Log(LOG_ERROR, "%s: Negative delay (%d) is not supported, using 0 seconds.", __func__, Delay);
+			Delay = 0;
+		}
+
+		std::string sSubject = Subject;
+		std::string sBody = (Body && Body[0]) ? Body : sSubject;
+
+		m_sql.AddTaskItem(_tTaskItem::SendNotification(static_cast<float>(Delay), sSubject, sBody, ExtraData, Priority, Sound, SubSystem));
+
+		Py_RETURN_NONE;
+	}
+
 	static PyObject *PyDomoticz_Trace(PyObject *self, PyObject *args)
 	{
 		module_state *pModState = CPlugin::FindModule();
@@ -586,6 +635,8 @@ namespace Plugins
 						 { "Debugging", PyDomoticz_Debugging, METH_VARARGS, "Set logging level. 1 set verbose logging, all other values use default level" },
 						 { "Heartbeat", PyDomoticz_Heartbeat, METH_VARARGS, "Set the heartbeat interval, default 10 seconds." },
 						 { "Notifier", PyDomoticz_Notifier, METH_VARARGS, "Enable notification handling with supplied name." },
+						 { "SendNotification", (PyCFunction)PyDomoticz_SendNotification, METH_VARARGS | METH_KEYWORDS,
+										   "Send a notification: Subject, optional Body/Priority/Sound/ExtraData/SubSystem/Delay." },
 						 { "Trace", PyDomoticz_Trace, METH_VARARGS, "Enable/Disable line level Python tracing." },
 						 { "Configuration", (PyCFunction)PyDomoticz_Configuration, METH_VARARGS | METH_KEYWORDS, "Retrieve and Store structured plugin configuration." },
 						 { "Register", (PyCFunction)PyDomoticz_Register, METH_VARARGS | METH_KEYWORDS, "Register Device override class." },

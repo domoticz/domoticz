@@ -44,6 +44,10 @@
 
 extern http::server::CWebServerHelper m_webservers;
 extern CLogger _log;
+extern std::string szAppVersion;
+extern std::string szAppHash;
+extern std::string szAppDate;
+extern time_t m_StartTime;
 
 namespace http
 {
@@ -290,6 +294,13 @@ namespace mcp		// Model Context Protocol
 		tool["inputSchema"]["properties"]["floorplan"]["type"] = "string";
 		tool["inputSchema"]["properties"]["floorplan"]["description"] = "The name of the floorplan to retrieve";
 		jsonRPCRep["result"]["tools"].append(tool);
+		// Get Status tool
+		tool.clear();
+		tool["name"] = "get_status";
+		tool["title"] = "Get the system status of Domoticz";
+		tool["description"] = "Retrieve the current system status including version, uptime, sunrise/sunset times and device/hardware counts. Use this tool to check if the Domoticz instance is running and healthy.";
+		tool["inputSchema"]["type"] = "object";
+		jsonRPCRep["result"]["tools"].append(tool);
 	}
 
 	void McpToolsCall(const Json::Value &jsonRequest, Json::Value &jsonRPCRep)
@@ -359,6 +370,15 @@ namespace mcp		// Model Context Protocol
 			{
 				jsonRPCRep["error"]["code"] = JSONRPC_INVALID_PARAMETER;
 				jsonRPCRep["error"]["message"] = "Error getting floorplan";
+				return;
+			}
+		}
+		else if (sMethodName == "get_status")
+		{
+			if(!mcp::getStatus(jsonRequest, jsonRPCRep))
+			{
+				jsonRPCRep["error"]["code"] = JSONRPC_INTERNAL_ERROR;
+				jsonRPCRep["error"]["message"] = "Error getting system status";
 				return;
 			}
 		}
@@ -865,6 +885,72 @@ namespace mcp		// Model Context Protocol
 		jsonRPCRep["result"]["content"] = Json::Value(Json::arrayValue);
 		jsonRPCRep["result"]["content"].append(tool);
 		jsonRPCRep["result"]["isError"] = !bFound;
+		return true;
+	}
+
+	bool getStatus(const Json::Value &jsonRequest, Json::Value &jsonRPCRep)
+	{
+		std::string sResult = "Domoticz System Status\n";
+		sResult += "======================\n";
+
+		// Version info
+		sResult += "Version: " + szAppVersion + "\n";
+		sResult += "Build hash: " + szAppHash + "\n";
+		sResult += "Build time: " + szAppDate + "\n";
+
+		// Server time
+		time_t now = mytime(nullptr);
+		sResult += "Server time: " + TimeToString(&now, TF_DateTime) + "\n";
+
+		// Uptime
+		time_t tuptime = now - m_StartTime;
+		int days = (int)(tuptime / 86400);
+		tuptime -= (days * 86400);
+		int hours = (int)(tuptime / 3600);
+		tuptime -= (hours * 3600);
+		int minutes = (int)(tuptime / 60);
+		tuptime -= (minutes * 60);
+		int seconds = (int)tuptime;
+		sResult += "Uptime: " + std::to_string(days) + "d " + std::to_string(hours) + "h " + std::to_string(minutes) + "m " + std::to_string(seconds) + "s\n";
+
+		// Sunrise/Sunset
+		if (!m_mainworker.m_LastSunriseSet.empty())
+		{
+			std::vector<std::string> strarray;
+			StringSplit(m_mainworker.m_LastSunriseSet, ";", strarray);
+			if (strarray.size() >= 10)
+			{
+				sResult += "Sunrise: " + strarray[0] + "\n";
+				sResult += "Sunset: " + strarray[1] + "\n";
+				sResult += "Day length: " + strarray[9] + "\n";
+			}
+		}
+
+		// Device counts
+		Json::Value jsonDevices;
+		std::string sUsed = "true";
+		m_webservers.GetJSonDevices(jsonDevices, sUsed, "", "", "", "", "", false, false, false, 0, "", "");
+		int iDeviceCount = 0;
+		if (jsonDevices.isObject() && jsonDevices.isMember("result"))
+			iDeviceCount = jsonDevices["result"].size();
+		sResult += "Active devices: " + std::to_string(iDeviceCount) + "\n";
+
+		// Hardware count
+		auto hwResult = m_sql.safe_query("SELECT COUNT(*) FROM Hardware WHERE Enabled=1");
+		if (!hwResult.empty())
+			sResult += "Active hardware: " + hwResult[0][0] + "\n";
+
+		// Scenes count
+		auto scResult = m_sql.safe_query("SELECT COUNT(*) FROM Scenes");
+		if (!scResult.empty())
+			sResult += "Scenes/groups: " + scResult[0][0] + "\n";
+
+		Json::Value tool;
+		tool["type"] = "text";
+		tool["text"] = sResult;
+		jsonRPCRep["result"]["content"] = Json::Value(Json::arrayValue);
+		jsonRPCRep["result"]["content"].append(tool);
+		jsonRPCRep["result"]["isError"] = false;
 		return true;
 	}
 
