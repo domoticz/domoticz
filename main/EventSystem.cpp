@@ -1562,15 +1562,16 @@ void CEventSystem::EventQueueThread()
 }
 
 void CEventSystem::ProcessDevice(
-	const int HardwareID, 
-	const uint64_t ulDevID, 
-	const unsigned char unit, 
-	const unsigned char devType, 
-	const unsigned char subType, 
-	const unsigned char signallevel, 
-	const unsigned char batterylevel, 
-	const int nValue, 
-	const char* sValue)
+	const int HardwareID,
+	const uint64_t ulDevID,
+	const unsigned char unit,
+	const unsigned char devType,
+	const unsigned char subType,
+	const unsigned char signallevel,
+	const unsigned char batterylevel,
+	const int nValue,
+	const char* sValue,
+	const std::string& lastUpdate)
 {
 	if (!m_bEnabled)
 		return;
@@ -1578,33 +1579,34 @@ void CEventSystem::ProcessDevice(
 	if (!IsEventSwitchLike(devType, subType))
 	{
 		//Check for duplicates (faulty sensors could send 10+ messages a second)
-		boost::shared_lock<boost::shared_mutex> devicestatesMutexLock(m_devicestatesMutex);
+		// unique_lock required: we write lastUpdate to m_devicestates on duplicate detection
+		boost::unique_lock<boost::shared_mutex> devicestatesMutexLock(m_devicestatesMutex);
 		auto itt = m_devicestates.find(ulDevID);
 		if (sValue && itt != m_devicestates.end()
 			&& itt->second.nValue == nValue
 			&& itt->second.sValue == sValue)
 		{
-			return; // Nothing changed, skip everything
+			// Value unchanged: still update lastUpdate so scripts can detect last received time
+			itt->second.lastUpdate = lastUpdate;
+			return; // Nothing changed, skip event triggering
 		}
-		devicestatesMutexLock.unlock();
 	}
 
 	std::vector<std::vector<std::string> > result;
-	result = m_sql.safe_query("SELECT SwitchType, LastUpdate, LastLevel, Options, Name FROM DeviceStatus WHERE (ID==%" PRIu64 ")", ulDevID);
+	result = m_sql.safe_query("SELECT SwitchType, LastLevel, Options, Name FROM DeviceStatus WHERE (ID==%" PRIu64 ")", ulDevID);
 	if (result.empty())
 	{
 		//impossible as we just updated it
 		_log.Log(LOG_ERROR, "EventSystem: Could not find device in system: (idx %" PRIu64 ")",  ulDevID);
-		return; 
+		return;
 	}
 
 	std::vector<std::string> sd = result[0];
 
 	_eSwitchType switchType = (_eSwitchType)std::stoi(sd[0]);
-	std::string lastUpdate = sd[1];
-	uint8_t lastLevel = (uint8_t)atoi(sd[2].c_str());
-	std::string dev_options = sd[3];
-	std::string devname = sd[4];
+	uint8_t lastLevel = (uint8_t)atoi(sd[1].c_str());
+	std::string dev_options = sd[2];
+	std::string devname = sd[3];
 
 	std::map<std::string, std::string> options = m_sql.BuildDeviceOptions(dev_options);
 

@@ -249,7 +249,7 @@ void CLogitechMediaServer::UpdateNodeStatus(const LogitechMediaServerNode &Node,
 				{
 					m_notifications.CheckAndHandleNotification(node.ID, sDevName, NotificationType(nStatus), sStatus);
 					m_mainworker.m_eventsystem.ProcessDevice(m_HwdID, node.ID, 1, int(pTypeLighting2), int(sTypeAC), 12,
-										 100, int(nStatus), sStatus.c_str());
+										 100, int(nStatus), sStatus.c_str(), sLastUpdate);
 				}
 
 				node.nStatus = nStatus;
