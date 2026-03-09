@@ -882,10 +882,9 @@ is_package_installed() {
 }
 
 find_missing_packages() {
-	# Given an array name, output the list of packages that are not installed
-	declare -n _pkg_array=$1
+	# Output the list of packages (passed as arguments) that are not installed
 	local missing=()
-	for pkg in "${_pkg_array[@]}"; do
+	for pkg in "$@"; do
 		if ! is_package_installed "${pkg}"; then
 			missing+=("${pkg}")
 		fi
@@ -896,13 +895,10 @@ find_missing_packages() {
 install_packages() {
 	msg_header "Package Installation"
 
-	# Combine all required packages
-	local all_deps=("${INSTALLER_DEPS[@]}" "${domoticz_DEPS[@]}")
-
 	# Check which packages are missing before touching the network
 	msg_info "Checking installed packages..."
 	local missing
-	missing=$(find_missing_packages all_deps)
+	missing=$(find_missing_packages "${INSTALLER_DEPS[@]}" "${domoticz_DEPS[@]}")
 
 	if [[ -z "${missing}" ]]; then
 		msg_ok "All required packages are already installed"
