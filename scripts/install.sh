@@ -31,6 +31,8 @@ HTTPS_port="443"
 Current_user=""
 # Service management method: "sysv" or "systemd"
 SERVICE_METHOD="sysv"
+# Download channel: "release" or "beta"
+DOWNLOAD_CHANNEL="release"
 
 ######## COLORS & FORMATTING #########
 if [[ -t 1 ]]; then
@@ -178,10 +180,6 @@ if [ -x "$(command -v apt-get)" ]; then
 		exit 1
 	fi
 	domoticz_DEPS=( ${domoticz_DEPS[@]} libcurl4 libusb-0.1)
-
-	package_check_install() {
-		dpkg-query -W -f='${Status}' "${1}" 2>/dev/null | grep -c "ok installed" || ${PKG_INSTALL} "${1}"
-	}
 elif [ -x "$(command -v rpm)" ]; then
 	# Fedora Family
 	if [ -x "$(command -v dnf)" ]; then
@@ -200,9 +198,6 @@ elif [ -x "$(command -v rpm)" ]; then
 		remove_deps=(epel-release);
 		domoticz_DEPS=( ${domoticz_DEPS[@]/$remove_deps} );
 	fi
-	package_check_install() {
-		rpm -qa | grep ^"${1}"- > /dev/null || ${PKG_INSTALL} "${1}"
-	}
 else
 	msg_error "OS distribution not supported"
 	exit 1
@@ -442,6 +437,42 @@ enable_service() {
 	fi
 }
 
+detect_current_channel() {
+	# Detect if the currently installed Domoticz is beta or stable
+	# by running ./domoticz --version and checking for "-beta" in the output.
+	# Returns 0 if beta was positively detected, 1 otherwise (unknown/stable).
+	# Does NOT set DOWNLOAD_CHANNEL — caller is responsible for that.
+	local domoticz_bin="${Dest_folder}/domoticz"
+	if [[ -x "${domoticz_bin}" ]]; then
+		local version_output
+		version_output=$("${domoticz_bin}" --version 2>&1 || true)
+		if [[ "${version_output}" == *"-beta"* ]]; then
+			return 0
+		fi
+	fi
+	return 1
+}
+
+chooseChannel() {
+	# Ask the user which download channel they want
+	local choice
+	choice=$(whiptail --title "Update Channel" --radiolist \
+		"Select the download channel:" ${r} ${c} 2 \
+		"Stable" "Latest stable release (recommended)" "ON" \
+		"Beta" "Latest beta release (development)" "OFF" \
+		3>&1 1>&2 2>&3)
+
+	if [[ $? -ne 0 ]]; then
+		msg_warn "Cancel selected. Exiting..."
+		exit 1
+	fi
+
+	case "${choice}" in
+		Stable) DOWNLOAD_CHANNEL="release" ;;
+		Beta)   DOWNLOAD_CHANNEL="beta" ;;
+	esac
+}
+
 migrate_from_sysv() {
 	# Migrate from legacy SysV init script to systemd service
 	local sysv_script="/etc/init.d/domoticz.sh"
@@ -580,27 +611,6 @@ notify_package_updates_available() {
 	fi
 }
 
-install_dependent_packages() {
-	# Install packages passed in via argument array
-	declare -a argArray1=("${!1}")
-	local total=${#argArray1[@]}
-	local current=0
-
-	{
-	for i in "${argArray1[@]}"; do
-		current=$((current + 1))
-		local pct=$(( current * 100 / total ))
-		echo "XXX"
-		echo "${pct}"
-		echo "Checking / installing: ${i}"
-		echo "XXX"
-		package_check_install "${i}" &> /dev/null
-	done
-	} | whiptail --title "Installing Packages" --gauge "Preparing..." ${r} ${c} 0
-
-	msg_ok "All required packages installed"
-}
-
 finalExports() {
 	#If it already exists, lets overwrite it with the new values.
 	if [[ -f ${setupVars} ]]; then
@@ -625,7 +635,7 @@ downloadDomoticzWeb() {
 	fi
 	cd "$Dest_folder"
 	msg_info "Downloading Domoticz release..."
-	wget -q -O domoticz_release.tgz "https://www.domoticz.com/download.php?channel=release&type=release&system=${OS}&machine=${MACH}"
+	wget -q -O domoticz_release.tgz "https://www.domoticz.com/download.php?channel=${DOWNLOAD_CHANNEL}&type=release&system=${OS}&machine=${MACH}"
 	msg_ok "Download complete"
 	msg_info "Unpacking Domoticz..."
 	tar xfz domoticz_release.tgz
@@ -705,6 +715,20 @@ updatedomoticz() {
 	# Source ${setupVars} for use in the rest of the functions.
 	. ${setupVars}
 	msg_header "Updating Domoticz"
+
+	# Detect current channel (beta/stable) before stopping.
+	# If beta is positively detected, use it automatically (can't downgrade).
+	# If not detected (old version without -beta tag), ask the user.
+	if detect_current_channel; then
+		DOWNLOAD_CHANNEL="beta"
+		msg_ok "Beta version detected, updating from beta channel"
+	elif [[ "${runUnattended}" == true ]]; then
+		DOWNLOAD_CHANNEL="release"
+		msg_ok "Unattended mode, defaulting to stable channel"
+	else
+		chooseChannel
+	fi
+	msg_ok "Download channel: ${DOWNLOAD_CHANNEL}"
 
 	# Stop both possible services to ensure clean update regardless of
 	# which method was previously used
@@ -844,20 +868,71 @@ Choose an option:" ${r} ${c} 3 \
 
 }
 
+is_package_installed() {
+	# Check if a package is installed without installing it
+	if [ -x "$(command -v dpkg-query)" ]; then
+		dpkg-query -W -f='${Status}' "${1}" 2>/dev/null | grep -q "ok installed" && return 0
+		return 1
+	elif [ -x "$(command -v rpm)" ]; then
+		rpm -q "${1}" &> /dev/null && return 0
+		return 1
+	else
+		return 1
+	fi
+}
+
+find_missing_packages() {
+	# Given an array name, output the list of packages that are not installed
+	declare -n _pkg_array=$1
+	local missing=()
+	for pkg in "${_pkg_array[@]}"; do
+		if ! is_package_installed "${pkg}"; then
+			missing+=("${pkg}")
+		fi
+	done
+	echo "${missing[@]}"
+}
+
 install_packages() {
 	msg_header "Package Installation"
 
-	# Update package cache
-	update_package_cache
+	# Combine all required packages
+	local all_deps=("${INSTALLER_DEPS[@]}" "${domoticz_DEPS[@]}")
 
-	# Notify user of package availability
+	# Check which packages are missing before touching the network
+	msg_info "Checking installed packages..."
+	local missing
+	missing=$(find_missing_packages all_deps)
+
+	if [[ -z "${missing}" ]]; then
+		msg_ok "All required packages are already installed"
+		return
+	fi
+
+	msg_info "Missing packages: ${missing}"
+
+	# Only update cache and install if there are missing packages
+	update_package_cache
 	notify_package_updates_available
 
-	# Install packages used by this installation script
-	install_dependent_packages INSTALLER_DEPS[@]
+	# Install only the missing packages
+	local missing_array=(${missing})
+	local total=${#missing_array[@]}
+	local current=0
 
-	# Install packages used by the Domoticz
-	install_dependent_packages domoticz_DEPS[@]
+	{
+	for pkg in "${missing_array[@]}"; do
+		current=$((current + 1))
+		local pct=$(( current * 100 / total ))
+		echo "XXX"
+		echo "${pct}"
+		echo "Installing: ${pkg}"
+		echo "XXX"
+		${PKG_INSTALL} "${pkg}" &> /dev/null
+	done
+	} | whiptail --title "Installing Packages" --gauge "Preparing..." ${r} ${c} 0
+
+	msg_ok "All required packages installed"
 }
 
 main() {
