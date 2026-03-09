@@ -694,6 +694,17 @@ EOF
 
 installdomoticz() {
 	msg_header "Installing Domoticz"
+	# Detect current channel if an existing binary is present (reconfigure case).
+	# Fresh installs have no binary, so detect_current_channel returns 1
+	# and DOWNLOAD_CHANNEL stays at the default "release".
+	if detect_current_channel; then
+		DOWNLOAD_CHANNEL="beta"
+		msg_ok "Beta version detected, using beta channel"
+	elif [[ -x "${Dest_folder}/domoticz" ]]; then
+		# Existing install but can't detect beta (old version) — ask user
+		chooseChannel
+	fi
+	msg_ok "Download channel: ${DOWNLOAD_CHANNEL}"
 	# Install base files
 	downloadDomoticzWeb
 	if [[ "${SERVICE_METHOD}" == "systemd" ]]; then
