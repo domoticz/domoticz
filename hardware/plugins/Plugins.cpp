@@ -107,7 +107,7 @@ namespace Plugins
 					if (PyArg_ParseTuple(args, "O", &pObject))
 					{
 						std::string	sMessage = PyBorrowedRef(pObject);
-						pPlugin->Debug(DEBUG_PYTHON, "%s", sMessage.c_str());
+						pPlugin->Log(LOG_NORM, sMessage);
 					}
 					else
 					{
@@ -117,7 +117,7 @@ namespace Plugins
 				}
 				else
 				{
-					pPlugin->Debug(DEBUG_PYTHON, "%s", msg);
+					pPlugin->Log(LOG_NORM, (std::string)msg);
 				}
 			}
 		}
@@ -156,7 +156,7 @@ namespace Plugins
 				if (PyArg_ParseTuple(args, "O", &pObject))
 				{
 					std::string	sMessage = PyBorrowedRef(pObject);
-					pPlugin->Debug(DEBUG_PYTHON, "%s", sMessage.c_str());
+					pPlugin->Log(LOG_NORM, sMessage);
 				}
 				else
 				{
