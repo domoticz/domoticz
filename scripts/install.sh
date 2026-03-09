@@ -870,10 +870,13 @@ Choose an option:" ${r} ${c} 3 \
 
 is_package_installed() {
 	# Check if a package is installed without installing it.
-	# Uses wildcard matching to handle virtual/transitional packages
-	# (e.g. libusb-0.1 is provided by libusb-0.1-4).
+	# Tries exact match first, then checks for versioned transitional
+	# packages (e.g. libusb-0.1 provided by libusb-0.1-4).
 	if [ -x "$(command -v dpkg-query)" ]; then
-		dpkg-query -W -f='${Status}\n' "${1}*" 2>/dev/null | grep -q "ok installed" && return 0
+		# Exact match
+		dpkg-query -W -f='${Status}\n' "${1}" 2>/dev/null | grep -q "ok installed" && return 0
+		# Versioned transitional match (name-<version> pattern)
+		dpkg-query -W -f='${Status}\n' "${1}-*" 2>/dev/null | grep -q "ok installed" && return 0
 		return 1
 	elif [ -x "$(command -v rpm)" ]; then
 		rpm -q "${1}" &> /dev/null && return 0
