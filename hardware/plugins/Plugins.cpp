@@ -1312,10 +1312,12 @@ namespace Plugins
 					goto Error;
 				}
 
-				// Ensure sys.stdin/stdout/stderr are set immediately after interpreter creation
-				// Python 3.13+ sub-interpreters may not inherit stdio from the main interpreter,
+				// Ensure sys.stdin/stdout/stderr are set immediately after interpreter creation.
+				// Python 3.13+ sub-interpreters don't inherit stdio from the main interpreter,
 				// causing "RuntimeError: sys.stderr is None" during any subsequent import.
 				// Plugins use Domoticz.Log() not print(), so a NullStream is sufficient.
+				// Explicitly inject __builtins__ before PyEval_EvalCode so the class definition
+				// works in fresh sub-interpreters where auto-injection may fail.
 				try
 				{
 					PyNewRef	pCode = Py_CompileString(
@@ -1339,6 +1341,18 @@ namespace Plugins
 					if (pCode)
 					{
 						PyNewRef	global_dict = PyDict_New();
+						// Explicitly inject __builtins__ so the class definition works in fresh
+						// sub-interpreters where auto-injection via interp->builtins may fail.
+						PyNewRef	pBuiltins = PyImport_ImportModule("builtins");
+						if (pBuiltins)
+						{
+							PyDict_SetItemString(global_dict, "__builtins__", pBuiltins);
+						}
+						else
+						{
+							Log(LOG_ERROR, "(%s) failed to import builtins module for NullStream init.", m_PluginKey.c_str());
+							if (PyErr_Occurred()) PyErr_Clear();
+						}
 						PyNewRef	local_dict = PyDict_New();
 						PyNewRef	pEval = PyEval_EvalCode(pCode, global_dict, local_dict);
 						if (pEval)
@@ -1351,15 +1365,21 @@ namespace Plugins
 								PySys_SetObject("stdin", pNull);
 								Debug(DEBUG_PYTHON, "(%s) sys.stderr/stdout/stdin initialized.", m_PluginKey.c_str());
 							}
+							else
+							{
+								Log(LOG_ERROR, "(%s) _NullStream instance not found after eval; sys.stderr/stdout/stdin not set.", m_PluginKey.c_str());
+							}
 						}
 						else
 						{
 							Log(LOG_ERROR, "(%s) failed to create NullStream for stdio.", m_PluginKey.c_str());
+							if (PyErr_Occurred()) LogPythonException("NullStream stdio init");
 						}
 					}
 					else
 					{
 						Log(LOG_ERROR, "(%s) failed to compile NullStream code.", m_PluginKey.c_str());
+						if (PyErr_Occurred()) LogPythonException("NullStream compile");
 					}
 					if (PyErr_Occurred()) PyErr_Clear();
 				}
