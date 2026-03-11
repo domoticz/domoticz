@@ -99,15 +99,27 @@ define(['app', 'domoticz.api', 'livesocket'], function(app) {
                     ) {
                         categorized.lights.push(item);
                     }
-                    // Temperature sensors (check before weather, as Temp+Hum+Baro devices should appear here)
+                    // Temperature sensors
                     else if (
                         typeof item.Temp !== 'undefined' ||
                         typeof item.Humidity !== 'undefined' ||
                         typeof item.Chill !== 'undefined'
                     ) {
                         categorized.temperature.push(item);
+                        // Some temperature devices also have weather properties (e.g. Temp+Hum+Baro,
+                        // Temp+Baro, Wind with temp, UV with temp) - show them in both sections
+                        if (
+                            typeof item.Rain !== 'undefined' ||
+                            typeof item.Visibility !== 'undefined' ||
+                            typeof item.UVI !== 'undefined' ||
+                            typeof item.Radiation !== 'undefined' ||
+                            typeof item.Direction !== 'undefined' ||
+                            typeof item.Barometer !== 'undefined'
+                        ) {
+                            categorized.weather.push(item);
+                        }
                     }
-                    // Weather sensors
+                    // Weather sensors (without temperature properties)
                     else if (
                         typeof item.Rain !== 'undefined' ||
                         typeof item.Visibility !== 'undefined' ||
