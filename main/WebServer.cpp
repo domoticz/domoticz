@@ -4090,7 +4090,10 @@ namespace http
 			else
 				queryString.append("SUM(" + dfield + ")");
 			queryString.append("/" + std::to_string(divider));
-			queryString.append(" as s FROM " + dbasetable + " WHERE DeviceRowID == " + std::to_string(deviceidx) + " GROUP BY strftime('%Y', Date), ");
+			queryString.append(" as s FROM " + dbasetable + " WHERE DeviceRowID == " + std::to_string(deviceidx));
+			if (dfield == "Barometer")
+				queryString.append(" AND " + dfield + " > 0");
+			queryString.append(" GROUP BY strftime('%Y', Date), ");
 			if ((sgroupby == "month") || (sgroupby == "year"))
 				queryString.append("strftime('%m', Date)");
 			else if (sgroupby == "quarter")

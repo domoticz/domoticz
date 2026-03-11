@@ -133,6 +133,7 @@ define(['app', 'lodash', 'RefreshingChart', 'DataLoader', 'ChartLoader', 'log/Ch
 									}],
 									extendDataRequest: function (dataRequest) {
 										dataRequest['groupby'] = self.groupingBy;
+										dataRequest['var_name'] = 'Barometer';
 										return dataRequest;
 									},
 									preprocessData: function (data) {

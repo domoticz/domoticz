@@ -2144,7 +2144,24 @@ namespace http
 
 						if (sensor == "temp")
 						{
-							if (tempsign == 'F')
+							if (var_name == "Barometer")
+							{
+								// Barometer values are stored *10 for certain device types,
+								// apply the same /10.0 correction as the regular graph does
+								bool bDivideBarometer =
+									(dType == pTypeTEMP_BARO)
+									|| ((dType == pTypeTEMP_HUM_BARO) && (dSubType == sTypeTHBFloat))
+									|| ((dType == pTypeGeneral) && (dSubType == sTypeBaro))
+									|| ((dType == pTypeThermostat6) && ((dSubType == sTypeThermostat6TempBaro) || (dSubType == sTypeThermostat6TempHumBaro)));
+								if (bDivideBarometer)
+								{
+									for (auto& itt : root["result"])
+									{
+										itt["s"] = itt["s"].asDouble() / 10.0;
+									}
+								}
+							}
+							else if (tempsign == 'F')
 							{
 								for (auto& itt : root["result"])
 								{

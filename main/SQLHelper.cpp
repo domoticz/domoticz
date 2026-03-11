@@ -42,7 +42,7 @@
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
 
-#define DB_VERSION 175
+#define DB_VERSION 176
 
 #define DEFAULT_ADMINUSER "admin"
 #define DEFAULT_ADMINPWD "domoticz"
@@ -3337,6 +3337,14 @@ bool CSQLHelper::OpenDatabase()
 			{
 				query("ALTER TABLE Users ADD COLUMN [Passkeys] TEXT DEFAULT NULL");
 			}
+		}
+		if (dbversion < 176)
+		{
+			// Normalize Barometer values in Temperature_Calendar.
+			// Before Sept 2023, barometer was stored as actual hPa (e.g., 1013).
+			// Now stored as *10 (e.g., 10130). Patch old data to match.
+			query("UPDATE Temperature_Calendar SET Barometer = Barometer * 10 "
+				"WHERE Barometer > 0 AND Barometer < 8500");
 		}
 	}
 	else if (bNewInstall)
