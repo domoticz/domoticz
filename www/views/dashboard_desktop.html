@@ -128,7 +128,7 @@
 									<span ng-if="device.Direction != undefined">{{device.DirectionStr}} {{device.Speed}} {{config.WindSign}}</span>
 								</td>
 								<td id="img">
-									<a ng-href="#/Devices/{{device.idx}}/Log">
+									<a ng-href="#/Devices/{{device.idx}}/Log{{device.Barometer != undefined ? '?sensor=baro' : ''}}">
 										<img ng-if="device.CustomImage != 0" ng-src="images/{{device.Image}}48_On.png" height="40" width="40" class="lcursor">
 										<img ng-if="device.CustomImage == 0 && device.Barometer != undefined" ng-src="images/baro48.png" height="40" width="40" class="lcursor">
 										<img ng-if="device.CustomImage == 0 && device.Rain != undefined" ng-src="images/Rain48_On.png" height="40" width="40" class="lcursor">
