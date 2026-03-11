@@ -30,6 +30,8 @@ private:
 	int getSunRiseSunSetMinutes(bool bGetSunRise);
 
 	void GetBatteryDetails();
+	void GetOverview();
+	void GetEnergyDetails();
 
 private:
 	int m_SiteID;

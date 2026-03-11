@@ -18,12 +18,24 @@
 #define SE_DATE 25
 
 #define SE_GRID 30
-#define SE_LOAD 31	
+#define SE_LOAD 31
 #define SE_PV 32
 #define SE_STORAGE_STATUS 33
 #define SE_STORAGE_POWER 34
 #define SE_STORAGE_CHARGELEVEL 35
 #define SE_STORAGE_CRITITAL 36
+
+#define SE_OVERVIEW_CURRENT 40
+#define SE_OVERVIEW_TODAY 41
+#define SE_OVERVIEW_MONTH 42
+#define SE_OVERVIEW_YEAR 43
+#define SE_OVERVIEW_LIFETIME 44
+
+#define SE_ENERGY_PRODUCTION 50
+#define SE_ENERGY_CONSUMPTION 51
+#define SE_ENERGY_SELFCONSUMPTION 52
+#define SE_ENERGY_FEEDIN 53
+#define SE_ENERGY_PURCHASED 54
 
 
 #ifdef _DEBUG
@@ -97,14 +109,14 @@ bool SolarEdgeAPI::StopHardware()
 void SolarEdgeAPI::Do_Work()
 {
 	Log(LOG_STATUS, "Worker started...");
-	int sec_counter = 295;
+	int sec_counter = 895;
 	while (!IsStopRequested(1000))
 	{
 		sec_counter++;
 		if (sec_counter % 12 == 0) {
 			m_LastHeartbeat = mytime(nullptr);
 		}
-		if (sec_counter % 300 == 0)
+		if (sec_counter % 900 == 0)
 		{
 			if (m_SiteID == 0)
 			{
@@ -115,6 +127,8 @@ void SolarEdgeAPI::Do_Work()
 			}
 			if (!m_inverters.empty())
 				GetMeterDetails();
+			GetOverview();
+			GetEnergyDetails();
 			if (m_bPollBattery)
 				GetBatteryDetails();
 		}
@@ -514,6 +528,28 @@ void SolarEdgeAPI::GetBatteryDetails()
 	}
 	root = root["siteCurrentPowerFlow"];
 
+	// Parse connections to determine power flow direction
+	std::vector<std::string> power_from;
+	std::vector<std::string> power_to;
+	if (!root["connections"].empty())
+	{
+		for (const auto& conn : root["connections"])
+		{
+			if (!conn["from"].empty())
+			{
+				std::string from = conn["from"].asString();
+				std::transform(from.begin(), from.end(), from.begin(), ::tolower);
+				power_from.push_back(from);
+			}
+			if (!conn["to"].empty())
+			{
+				std::string to = conn["to"].asString();
+				std::transform(to.begin(), to.end(), to.begin(), ::tolower);
+				power_to.push_back(to);
+			}
+		}
+	}
+
 	std::string status;
 	float power;
 
@@ -524,6 +560,9 @@ void SolarEdgeAPI::GetBatteryDetails()
 			power = root["GRID"]["currentPower"].asFloat();
 		else
 			power = 0;
+		// If grid is in power_to, we are exporting — negate
+		if (std::find(power_to.begin(), power_to.end(), "grid") != power_to.end())
+			power = -power;
 		SendWattMeter(200, SE_GRID, 255, power * 1000, "Grid Power");
 	}
 	if (!root["LOAD"].empty())
@@ -551,7 +590,8 @@ void SolarEdgeAPI::GetBatteryDetails()
 
 		power = root["STORAGE"]["currentPower"].asFloat();
 
-		if (status == "Discharging")
+		// If storage is in power_to, it is charging — negate
+		if (std::find(power_to.begin(), power_to.end(), "storage") != power_to.end())
 		{
 			if (power > 0)
 				power = -power;
@@ -562,8 +602,150 @@ void SolarEdgeAPI::GetBatteryDetails()
 		float chargeLevel = root["STORAGE"]["chargeLevel"].asFloat();
 		SendPercentageSensor(200, SE_STORAGE_CHARGELEVEL, 255, chargeLevel, "Battery Charge Level");
 
-		bool battertCritical = root["STORAGE"]["critical"].asFloat();
-		SendSwitch(200, SE_STORAGE_CRITITAL, 255, battertCritical, 0, "Battery Critical", "SolarEdge");
+		bool batteryCritical = root["STORAGE"]["critical"].asBool();
+		SendSwitch(200, SE_STORAGE_CRITITAL, 255, batteryCritical, 0, "Battery Critical", "SolarEdge");
+	}
+}
+
+void SolarEdgeAPI::GetOverview()
+{
+	std::string sResult;
+#ifdef DEBUG_SolarEdgeAPIR
+	sResult = ReadFile("E:\\SolarEdge_overview.json");
+#else
+
+	std::vector<std::string> ExtraHeaders;
+	ExtraHeaders.push_back("Accept: application/json");
+
+	std::stringstream sURL;
+	sURL << "https://monitoringapi.solaredge.com/site/" << m_SiteID << "/overview.json?api_key=" << m_APIKey;
+	if (!HTTPClient::GET(sURL.str(), ExtraHeaders, sResult))
+	{
+		Log(LOG_ERROR, "Error getting http data (Overview)!");
+		return;
+	}
+#ifdef DEBUG_SolarEdgeAPIW
+	SaveString2Disk(sResult, "E:\\SolarEdge_overview.json");
+#endif
+#endif
+	Json::Value root;
+
+	bool ret = ParseJSon(sResult, root);
+	if ((!ret) || (!root.isObject()))
+	{
+		Log(LOG_ERROR, "Invalid data received!");
+		return;
+	}
+	if (root["overview"].empty() == true)
+	{
+		Log(LOG_ERROR, "Invalid data received, or invalid APIKey");
+		return;
+	}
+	const Json::Value& overview = root["overview"];
+
+	if (!overview["currentPower"].empty())
+	{
+		float power = overview["currentPower"]["power"].asFloat();
+		SendWattMeter(200, SE_OVERVIEW_CURRENT, 255, power, "Site Current Power");
+	}
+	if (!overview["lastDayData"].empty())
+	{
+		double energy = overview["lastDayData"]["energy"].asDouble();
+		SendKwhMeter(200, SE_OVERVIEW_TODAY, 255, 0, energy / 1000.0, "Energy Today");
+	}
+	if (!overview["lastMonthData"].empty())
+	{
+		double energy = overview["lastMonthData"]["energy"].asDouble();
+		SendKwhMeter(200, SE_OVERVIEW_MONTH, 255, 0, energy / 1000.0, "Energy This Month");
+	}
+	if (!overview["lastYearData"].empty())
+	{
+		double energy = overview["lastYearData"]["energy"].asDouble();
+		SendKwhMeter(200, SE_OVERVIEW_YEAR, 255, 0, energy / 1000.0, "Energy This Year");
+	}
+	if (!overview["lifeTimeData"].empty())
+	{
+		double energy = overview["lifeTimeData"]["energy"].asDouble();
+		SendKwhMeter(200, SE_OVERVIEW_LIFETIME, 255, 0, energy / 1000.0, "Lifetime Energy");
+	}
+}
+
+void SolarEdgeAPI::GetEnergyDetails()
+{
+	std::string sResult;
+#ifdef DEBUG_SolarEdgeAPIR
+	sResult = ReadFile("E:\\SolarEdge_energyDetails.json");
+#else
+	time_t atime = mytime(nullptr);
+	struct tm ltime;
+	localtime_r(&atime, &ltime);
+
+	// Midnight today
+	struct tm ltime_midnight;
+	time_t atime_midnight;
+	constructTime(atime_midnight, ltime_midnight, ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday, 0, 0, 0, ltime.tm_isdst);
+
+	char szTmp[200];
+	sprintf(szTmp, "%04d-%02d-%02d %02d:%02d:%02d", ltime_midnight.tm_year + 1900, ltime_midnight.tm_mon + 1, ltime_midnight.tm_mday, 0, 0, 0);
+	std::string startDate = CURLEncode::URLEncode(szTmp);
+
+	sprintf(szTmp, "%04d-%02d-%02d %02d:%02d:%02d", ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, ltime.tm_sec);
+	std::string endDate = CURLEncode::URLEncode(szTmp);
+
+	std::vector<std::string> ExtraHeaders;
+	ExtraHeaders.push_back("Accept: application/json");
+
+	std::stringstream sURL;
+	sURL << "https://monitoringapi.solaredge.com/site/" << m_SiteID << "/energyDetails.json?startTime=" << startDate << "&endTime=" << endDate << "&timeUnit=DAY&api_key=" << m_APIKey;
+	if (!HTTPClient::GET(sURL.str(), ExtraHeaders, sResult))
+	{
+		Log(LOG_ERROR, "Error getting http data (EnergyDetails)!");
+		return;
+	}
+#ifdef DEBUG_SolarEdgeAPIW
+	SaveString2Disk(sResult, "E:\\SolarEdge_energyDetails.json");
+#endif
+#endif
+	Json::Value root;
+
+	bool ret = ParseJSon(sResult, root);
+	if ((!ret) || (!root.isObject()))
+	{
+		Log(LOG_ERROR, "Invalid data received!");
+		return;
+	}
+	if (root["energyDetails"].empty() == true)
+	{
+		Log(LOG_ERROR, "Invalid data received, or invalid APIKey");
+		return;
+	}
+	if (root["energyDetails"]["meters"].empty() == true)
+		return;
+
+	const Json::Value& meters = root["energyDetails"]["meters"];
+	for (const auto& meter : meters)
+	{
+		if (meter["type"].empty() || meter["values"].empty())
+			continue;
+		const std::string meterType = meter["type"].asString();
+		const Json::Value& values = meter["values"];
+		if (values.empty())
+			continue;
+		const Json::Value& first = values[0];
+		if (first["value"].empty())
+			continue;
+		double energy = first["value"].asDouble();
+
+		if (meterType == "Production")
+			SendKwhMeter(201, SE_ENERGY_PRODUCTION, 255, 0, energy / 1000.0, "Energy Production");
+		else if (meterType == "Consumption")
+			SendKwhMeter(201, SE_ENERGY_CONSUMPTION, 255, 0, energy / 1000.0, "Energy Consumption");
+		else if (meterType == "SelfConsumption")
+			SendKwhMeter(201, SE_ENERGY_SELFCONSUMPTION, 255, 0, energy / 1000.0, "Energy Self Consumption");
+		else if (meterType == "FeedIn")
+			SendKwhMeter(201, SE_ENERGY_FEEDIN, 255, 0, energy / 1000.0, "Energy Feed In");
+		else if (meterType == "Purchased")
+			SendKwhMeter(201, SE_ENERGY_PURCHASED, 255, 0, energy / 1000.0, "Energy Purchased");
 	}
 }
 
