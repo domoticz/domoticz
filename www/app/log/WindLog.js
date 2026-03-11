@@ -32,90 +32,92 @@ define(['app', 'lodash', 'RefreshingChart', 'DataLoader', 'ChartLoader', 'log/Ch
 					'</div>' +
 				'</div>',
 			controllerAs: 'vm',
-			controller: function ($element, domoticzApi) {
+			controller: function ($element, $scope) {
 				const self = this;
 				self.cards = [];
 
 				self.$onInit = function () {
-					domoticzApi.sendCommand('graph', {
-						sensor: 'wind', idx: self.device.idx, range: 'day'
-					}).then(function (data) {
-						if (!data || !data.result || data.result.length < 2) {
-							$element.hide();
-							return;
-						}
+					var device = self.device;
 
-						var items = data.result;
+					function formatDelta(current, previous, suffix, decimals) {
+						if (isNaN(current) || isNaN(previous)) return '';
+						var d = current - previous;
+						var sign = d >= 0 ? '+' : '';
+						return sign + d.toFixed(decimals) + ' ' + suffix;
+					}
+
+					function deltaColor(current, previous) {
+						if (isNaN(current) || isNaN(previous)) return '';
+						var d = current - previous;
+						if (Math.abs(d) < 0.1) return '#aaa';
+						return d > 0 ? '#ff6b6b' : '#4ecdc4';
+					}
+
+					function find24hAgo(items) {
 						var latest = items[items.length - 1];
-						var latestTs = GetLocalDateTimeFromString(latest.d);
-						var target24h = latestTs - 24 * 3600000;
-
-						var closest24h = items[0];
+						var target24h = GetLocalDateTimeFromString(latest.d) - 24 * 3600000;
+						var closest = items[0];
 						var closestDiff = Math.abs(GetLocalDateTimeFromString(items[0].d) - target24h);
 						for (var i = 1; i < items.length; i++) {
 							var diff = Math.abs(GetLocalDateTimeFromString(items[i].d) - target24h);
 							if (diff < closestDiff) {
 								closestDiff = diff;
-								closest24h = items[i];
+								closest = items[i];
+							}
+						}
+						return closest;
+					}
+
+					function rebuildCards() {
+						self.cards.length = 0;
+						var items = self.logCtrl.dayGraphData;
+						var closest24h = (items && items.length >= 2) ? find24hAgo(items) : null;
+						var unit = device.getUnit();
+
+						// Wind Speed card
+						if (device.Speed !== undefined) {
+							var sp = parseFloat(device.Speed);
+							var sp24 = closest24h ? parseFloat(closest24h.sp) : NaN;
+							if (!isNaN(sp)) {
+								self.cards.push({
+									label: $.t('Speed'),
+									value: sp.toFixed(1) + ' ' + unit,
+									delta: formatDelta(sp, sp24, unit, 1),
+									deltaColor: deltaColor(sp, sp24)
+								});
 							}
 						}
 
-						function formatDelta(current, previous, suffix, decimals) {
-							if (isNaN(current) || isNaN(previous)) return '';
-							var d = current - previous;
-							var sign = d >= 0 ? '+' : '';
-							return sign + d.toFixed(decimals) + ' ' + suffix;
-						}
-
-						function deltaColor(current, previous) {
-							if (isNaN(current) || isNaN(previous)) return '';
-							var d = current - previous;
-							if (Math.abs(d) < 0.1) return '#aaa';
-							return d > 0 ? '#ff6b6b' : '#4ecdc4';
-						}
-
-						var unit = self.device.getUnit();
-
-						// Wind Speed card
-						var sp = parseFloat(latest.sp);
-						var sp24 = parseFloat(closest24h.sp);
-						if (!isNaN(sp)) {
-							self.cards.push({
-								label: $.t('Speed'),
-								value: sp.toFixed(1) + ' ' + unit,
-								delta: formatDelta(sp, sp24, unit, 1),
-								deltaColor: deltaColor(sp, sp24)
-							});
-						}
-
 						// Wind Gust card
-						var gu = parseFloat(latest.gu);
-						var gu24 = parseFloat(closest24h.gu);
-						if (!isNaN(gu)) {
-							self.cards.push({
-								label: $.t('Gust'),
-								value: gu.toFixed(1) + ' ' + unit,
-								delta: formatDelta(gu, gu24, unit, 1),
-								deltaColor: deltaColor(gu, gu24)
-							});
+						if (device.Gust !== undefined) {
+							var gu = parseFloat(device.Gust);
+							var gu24 = closest24h ? parseFloat(closest24h.gu) : NaN;
+							if (!isNaN(gu)) {
+								self.cards.push({
+									label: $.t('Gust'),
+									value: gu.toFixed(1) + ' ' + unit,
+									delta: formatDelta(gu, gu24, unit, 1),
+									deltaColor: deltaColor(gu, gu24)
+								});
+							}
 						}
 
-						// Direction card (from device object, no delta)
-						if (self.device.Direction !== undefined) {
+						// Direction card
+						if (device.Direction !== undefined) {
 							self.cards.push({
 								label: $.t('Direction'),
-								value: self.device.DirectionStr + ' (' + self.device.Direction + '°)',
+								value: device.DirectionStr + ' (' + device.Direction + '°)',
 								delta: '',
 								deltaColor: ''
 							});
 						}
 
-						// Wind Chill card (from device object, no delta from graph)
-						if (self.device.Chill !== undefined) {
+						// Wind Chill card
+						if (device.Chill !== undefined) {
 							var degreeSuffix = $.myglobals.tempsign;
 							self.cards.push({
 								label: $.t('Chill'),
-								value: self.device.Chill.toFixed(1) + ' ' + degreeSuffix,
+								value: device.Chill.toFixed(1) + ' ' + degreeSuffix,
 								delta: '',
 								deltaColor: ''
 							});
@@ -123,6 +125,24 @@ define(['app', 'lodash', 'RefreshingChart', 'DataLoader', 'ChartLoader', 'log/Ch
 
 						if (self.cards.length === 0) {
 							$element.hide();
+						}
+					}
+
+					// Rebuild when chart data refreshes (updates deltas)
+					$scope.$watch(function () {
+						return self.logCtrl.dayGraphData;
+					}, function (result) {
+						if (result && result.length >= 2) {
+							rebuildCards();
+						}
+					});
+
+					// Rebuild on live device update
+					$scope.$on('device_update', function (event, updatedDevice) {
+						if (updatedDevice.idx === device.idx) {
+							device = updatedDevice;
+							self.device = updatedDevice;
+							rebuildCards();
 						}
 					});
 				};
@@ -143,11 +163,7 @@ define(['app', 'lodash', 'RefreshingChart', 'DataLoader', 'ChartLoader', 'log/Ch
 				self.range = 'day';
 
 				self.$onInit = function () {
-					new RefreshingChart(
-						chart.baseParams($),
-						chart.angularParams($location, $route, $scope, $timeout, $element),
-						chart.domoticzParams(domoticzGlobals, domoticzApi, domoticzDataPointApi),
-						chartParams(
+					var params = chartParams(
 							domoticzGlobals,
 							self,
 							true,
@@ -172,7 +188,15 @@ define(['app', 'lodash', 'RefreshingChart', 'DataLoader', 'ChartLoader', 'log/Ch
 									}
 								}
 							]
-						)
+						);
+					params.dataSupplier.preprocessData = function (data) {
+						self.logCtrl.dayGraphData = data.result;
+					};
+					new RefreshingChart(
+						chart.baseParams($),
+						chart.angularParams($location, $route, $scope, $timeout, $element),
+						chart.domoticzParams(domoticzGlobals, domoticzApi, domoticzDataPointApi),
+						params
 					);
 				}
 			}

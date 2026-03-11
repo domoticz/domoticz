@@ -36,71 +36,80 @@ define(['app', 'lodash', 'RefreshingChart', 'DataLoader', 'ChartLoader', 'log/Ch
                     '</div>' +
                 '</div>',
             controllerAs: 'vm',
-            controller: function ($element, domoticzApi, domoticzGlobals) {
+            controller: function ($element, $scope, domoticzGlobals) {
                 const self = this;
                 self.cards = [];
 
                 self.$onInit = function () {
-                    var unit = self.device.getUnit();
+                    var device = self.device;
+                    var unit = device.getUnit();
+                    var valueKey = domoticzGlobals.valueKeyForDevice(device);
 
-                    // Rain Rate card (from device object)
-                    if (self.device.RainRate !== undefined) {
-                        var rainRate = parseFloat(self.device.RainRate);
-                        if (!isNaN(rainRate)) {
-                            self.cards.push({
-                                label: $.t('Rain rate'),
-                                value: rainRate.toFixed(1) + ' ' + unit + '/h',
-                                delta: '',
-                                deltaColor: ''
-                            });
-                        }
-                    }
+                    function rebuildCards() {
+                        self.cards.length = 0;
 
-                    // Total Rain card (from device object - "Rain" property is total)
-                    if (self.device.Rain !== undefined) {
-                        var rain = parseFloat(self.device.Rain);
-                        if (!isNaN(rain)) {
-                            self.cards.push({
-                                label: $.t('Total'),
-                                value: rain.toFixed(1) + ' ' + unit,
-                                delta: '',
-                                deltaColor: ''
-                            });
-                        }
-                    }
-
-                    // Also fetch graph data to calculate today's total and show a delta
-                    domoticzApi.sendCommand('graph', {
-                        sensor: domoticzGlobals.sensorTypeForDevice(self.device),
-                        idx: self.device.idx,
-                        range: 'day'
-                    }).then(function (data) {
-                        if (!data || !data.result || data.result.length === 0) {
-                            if (self.cards.length === 0) {
-                                $element.hide();
+                        // Rain Rate card
+                        if (device.RainRate !== undefined) {
+                            var rainRate = parseFloat(device.RainRate);
+                            if (!isNaN(rainRate)) {
+                                self.cards.push({
+                                    label: $.t('Rain rate'),
+                                    value: rainRate.toFixed(1) + ' ' + unit + '/h',
+                                    delta: '',
+                                    deltaColor: ''
+                                });
                             }
-                            return;
                         }
 
-                        var items = data.result;
-                        var valueKey = domoticzGlobals.valueKeyForDevice(self.device);
+                        // Total Rain card
+                        if (device.Rain !== undefined) {
+                            var rain = parseFloat(device.Rain);
+                            if (!isNaN(rain)) {
+                                self.cards.push({
+                                    label: $.t('Total'),
+                                    value: rain.toFixed(1) + ' ' + unit,
+                                    delta: '',
+                                    deltaColor: ''
+                                });
+                            }
+                        }
 
                         // Calculate today's total from graph data
-                        var todayTotal = 0;
-                        for (var i = 0; i < items.length; i++) {
-                            var val = parseFloat(items[i][valueKey]);
-                            if (!isNaN(val)) todayTotal += val;
+                        var result = self.logCtrl.dayGraphData;
+                        if (result && result.length > 0) {
+                            var todayTotal = 0;
+                            for (var i = 0; i < result.length; i++) {
+                                var val = parseFloat(result[i][valueKey]);
+                                if (!isNaN(val)) todayTotal += val;
+                            }
+                            self.cards.push({
+                                label: $.t('Today'),
+                                value: todayTotal.toFixed(1) + ' ' + unit,
+                                delta: '',
+                                deltaColor: ''
+                            });
                         }
-
-                        self.cards.push({
-                            label: $.t('Today'),
-                            value: todayTotal.toFixed(1) + ' ' + unit,
-                            delta: '',
-                            deltaColor: ''
-                        });
 
                         if (self.cards.length === 0) {
                             $element.hide();
+                        }
+                    }
+
+                    // Rebuild when chart data refreshes (updates today total)
+                    $scope.$watch(function () {
+                        return self.logCtrl.dayGraphData;
+                    }, function (result) {
+                        if (result && result.length > 0) {
+                            rebuildCards();
+                        }
+                    });
+
+                    // Rebuild on live device update
+                    $scope.$on('device_update', function (event, updatedDevice) {
+                        if (updatedDevice.idx === device.idx) {
+                            device = updatedDevice;
+                            self.device = updatedDevice;
+                            rebuildCards();
                         }
                     });
                 };
@@ -121,11 +130,7 @@ define(['app', 'lodash', 'RefreshingChart', 'DataLoader', 'ChartLoader', 'log/Ch
                 self.range = 'day';
 
                 self.$onInit = function () {
-                    new RefreshingChart(
-                        chart.baseParams($),
-                        chart.angularParams($location, $route, $scope, $timeout, $element),
-                        chart.domoticzParams(domoticzGlobals, domoticzApi, domoticzDataPointApi),
-                        chartParamsCol(
+                    var params = chartParamsCol(
                             domoticzGlobals,
                             self,
                             true,
@@ -143,7 +148,15 @@ define(['app', 'lodash', 'RefreshingChart', 'DataLoader', 'ChartLoader', 'log/Ch
                                     }
                                 }
                             ]
-                        )
+                        );
+                    params.dataSupplier.preprocessData = function (data) {
+                        self.logCtrl.dayGraphData = data.result;
+                    };
+                    new RefreshingChart(
+                        chart.baseParams($),
+                        chart.angularParams($location, $route, $scope, $timeout, $element),
+                        chart.domoticzParams(domoticzGlobals, domoticzApi, domoticzDataPointApi),
+                        params
                     );
                 }
             }

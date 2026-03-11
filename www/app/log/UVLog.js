@@ -32,81 +32,81 @@ define(['app', 'lodash', 'RefreshingChart', 'DataLoader', 'ChartLoader', 'log/Ch
 					'</div>' +
 				'</div>',
 			controllerAs: 'vm',
-			controller: function ($element, domoticzApi) {
+			controller: function ($element, $scope) {
 				const self = this;
 				self.cards = [];
 
 				self.$onInit = function () {
-					domoticzApi.sendCommand('graph', {
-						sensor: 'uv', idx: self.device.idx, range: 'day'
-					}).then(function (data) {
-						if (!data || !data.result || data.result.length < 2) {
-							$element.hide();
-							return;
-						}
+					var device = self.device;
 
-						var items = data.result;
+					function formatDelta(current, previous, suffix, decimals) {
+						if (isNaN(current) || isNaN(previous)) return '';
+						var d = current - previous;
+						var sign = d >= 0 ? '+' : '';
+						return sign + d.toFixed(decimals) + ' ' + suffix;
+					}
+
+					function deltaColor(current, previous) {
+						if (isNaN(current) || isNaN(previous)) return '';
+						var d = current - previous;
+						if (Math.abs(d) < 0.1) return '#aaa';
+						return d > 0 ? '#ff6b6b' : '#4ecdc4';
+					}
+
+					function find24hAgo(items) {
 						var latest = items[items.length - 1];
-						var latestTs = GetLocalDateTimeFromString(latest.d);
-						var target24h = latestTs - 24 * 3600000;
-
-						var closest24h = items[0];
+						var target24h = GetLocalDateTimeFromString(latest.d) - 24 * 3600000;
+						var closest = items[0];
 						var closestDiff = Math.abs(GetLocalDateTimeFromString(items[0].d) - target24h);
 						for (var i = 1; i < items.length; i++) {
 							var diff = Math.abs(GetLocalDateTimeFromString(items[i].d) - target24h);
 							if (diff < closestDiff) {
 								closestDiff = diff;
-								closest24h = items[i];
+								closest = items[i];
+							}
+						}
+						return closest;
+					}
+
+					function rebuildCards() {
+						self.cards.length = 0;
+						var items = self.logCtrl.dayGraphData;
+						var closest24h = (items && items.length >= 2) ? find24hAgo(items) : null;
+
+						// UV Index card
+						if (device.UVI !== undefined) {
+							var uvi = parseFloat(device.UVI);
+							var uvi24 = closest24h ? parseFloat(closest24h.uvi) : NaN;
+							if (!isNaN(uvi)) {
+								var level = '';
+								if (uvi <= 2) level = 'Low';
+								else if (uvi <= 5) level = 'Moderate';
+								else if (uvi <= 7) level = 'High';
+								else if (uvi <= 10) level = 'Very High';
+								else level = 'Extreme';
+
+								self.cards.push({
+									label: $.t('UV Index'),
+									value: uvi.toFixed(1),
+									delta: formatDelta(uvi, uvi24, 'UVI', 1),
+									deltaColor: deltaColor(uvi, uvi24)
+								});
+
+								self.cards.push({
+									label: $.t('Exposure Level'),
+									value: $.t(level),
+									delta: '',
+									deltaColor: ''
+								});
 							}
 						}
 
-						function formatDelta(current, previous, suffix, decimals) {
-							if (isNaN(current) || isNaN(previous)) return '';
-							var d = current - previous;
-							var sign = d >= 0 ? '+' : '';
-							return sign + d.toFixed(decimals) + ' ' + suffix;
-						}
-
-						function deltaColor(current, previous) {
-							if (isNaN(current) || isNaN(previous)) return '';
-							var d = current - previous;
-							if (Math.abs(d) < 0.1) return '#aaa';
-							return d > 0 ? '#ff6b6b' : '#4ecdc4';
-						}
-
-						// UV Index card
-						var uvi = parseFloat(latest.uvi);
-						var uvi24 = parseFloat(closest24h.uvi);
-						if (!isNaN(uvi)) {
-							// Add UV exposure level text
-							var level = '';
-							if (uvi <= 2) level = 'Low';
-							else if (uvi <= 5) level = 'Moderate';
-							else if (uvi <= 7) level = 'High';
-							else if (uvi <= 10) level = 'Very High';
-							else level = 'Extreme';
-
-							self.cards.push({
-								label: $.t('UV Index'),
-								value: uvi.toFixed(1),
-								delta: formatDelta(uvi, uvi24, 'UVI', 1),
-								deltaColor: deltaColor(uvi, uvi24)
-							});
-
-							self.cards.push({
-								label: $.t('Exposure Level'),
-								value: $.t(level),
-								delta: '',
-								deltaColor: ''
-							});
-						}
-
-						// Temperature card (if device has Temp)
-						if (self.device.Temp !== undefined) {
+						// Temperature card
+						if (device.Temp !== undefined) {
 							var degreeSuffix = $.myglobals.tempsign;
 							self.cards.push({
 								label: $.t('Temperature'),
-								value: self.device.Temp.toFixed(1) + ' ' + degreeSuffix,
+								value: device.Temp.toFixed(1) + ' ' + degreeSuffix,
 								delta: '',
 								deltaColor: ''
 							});
@@ -114,6 +114,24 @@ define(['app', 'lodash', 'RefreshingChart', 'DataLoader', 'ChartLoader', 'log/Ch
 
 						if (self.cards.length === 0) {
 							$element.hide();
+						}
+					}
+
+					// Rebuild when chart data refreshes (updates deltas)
+					$scope.$watch(function () {
+						return self.logCtrl.dayGraphData;
+					}, function (result) {
+						if (result && result.length >= 2) {
+							rebuildCards();
+						}
+					});
+
+					// Rebuild on live device update
+					$scope.$on('device_update', function (event, updatedDevice) {
+						if (updatedDevice.idx === device.idx) {
+							device = updatedDevice;
+							self.device = updatedDevice;
+							rebuildCards();
 						}
 					});
 				};
@@ -134,11 +152,7 @@ define(['app', 'lodash', 'RefreshingChart', 'DataLoader', 'ChartLoader', 'log/Ch
 				self.range = 'day';
 
 				self.$onInit = function () {
-					new RefreshingChart(
-						chart.baseParams($),
-						chart.angularParams($location, $route, $scope, $timeout, $element),
-						chart.domoticzParams(domoticzGlobals, domoticzApi, domoticzDataPointApi),
-						chartParams(
+					var params = chartParams(
 							domoticzGlobals,
 							self,
 							true,
@@ -156,7 +170,15 @@ define(['app', 'lodash', 'RefreshingChart', 'DataLoader', 'ChartLoader', 'log/Ch
 									}
 								}
 							]
-						)
+						);
+					params.dataSupplier.preprocessData = function (data) {
+						self.logCtrl.dayGraphData = data.result;
+					};
+					new RefreshingChart(
+						chart.baseParams($),
+						chart.angularParams($location, $route, $scope, $timeout, $element),
+						chart.domoticzParams(domoticzGlobals, domoticzApi, domoticzDataPointApi),
+						params
 					);
 				}
 			}

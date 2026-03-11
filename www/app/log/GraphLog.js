@@ -40,57 +40,71 @@ define(['app', 'lodash', 'RefreshingChart', 'DataLoader', 'ChartLoader'],
                     var device = self.device;
                     var valueKey = domoticzGlobals.valueKeyForDevice(device);
 
-                    // Current value from Data property
-                    if (device.Data !== undefined && device.Data !== null && device.Data !== '') {
-                        self.cards.push({
-                            label: $.t('Current'),
-                            value: String(device.Data),
-                            delta: '',
-                            deltaColor: ''
-                        });
-                    }
+                    function rebuildCards() {
+                        self.cards.length = 0;
 
-                    // Watch for day chart data to compute Min/Max
-                    var unwatch = $scope.$watch(function () {
-                        return self.logCtrl.dayGraphData;
-                    }, function (result) {
-                        if (!result || result.length === 0) {
-                            return;
+                        // Current value from device.Data
+                        if (device.Data !== undefined && device.Data !== null && device.Data !== '') {
+                            self.cards.push({
+                                label: $.t('Current'),
+                                value: String(device.Data),
+                                delta: '',
+                                deltaColor: ''
+                            });
                         }
-                        unwatch();
 
-                        var min = Infinity, max = -Infinity;
-                        result.forEach(function (item) {
-                            var v = parseFloat(item[valueKey]);
-                            if (!isNaN(v)) {
-                                if (v < min) min = v;
-                                if (v > max) max = v;
+                        // Min/Max from chart data
+                        var result = self.logCtrl.dayGraphData;
+                        if (result && result.length > 0) {
+                            var min = Infinity, max = -Infinity;
+                            result.forEach(function (item) {
+                                var v = parseFloat(item[valueKey]);
+                                if (!isNaN(v)) {
+                                    if (v < min) min = v;
+                                    if (v > max) max = v;
+                                }
+                            });
+
+                            if (min !== Infinity) {
+                                var dataStr = String(device.Data);
+                                var dataMatch = dataStr.match(/[\d.\-]+\s*(.*)/);
+                                var unit = (dataMatch && dataMatch[1]) ? dataMatch[1] : device.getUnit();
+                                var decimals = (min % 1 === 0 && max % 1 === 0) ? 0 : 1;
+                                self.cards.push({
+                                    label: $.t('Minimum'),
+                                    value: min.toFixed(decimals) + ' ' + unit,
+                                    delta: '',
+                                    deltaColor: ''
+                                });
+                                self.cards.push({
+                                    label: $.t('Maximum'),
+                                    value: max.toFixed(decimals) + ' ' + unit,
+                                    delta: '',
+                                    deltaColor: ''
+                                });
                             }
-                        });
-
-                        if (min !== Infinity) {
-                            // Extract unit from device.Data for consistency (e.g. "5500 Lux" -> "Lux")
-                            var dataStr = String(device.Data);
-                            var dataMatch = dataStr.match(/[\d.\-]+\s*(.*)/);
-                            var unit = (dataMatch && dataMatch[1]) ? dataMatch[1] : device.getUnit();
-                            // Use integer formatting when values have no fractional part
-                            var decimals = (min % 1 === 0 && max % 1 === 0) ? 0 : 1;
-                            self.cards.push({
-                                label: $.t('Minimum'),
-                                value: min.toFixed(decimals) + ' ' + unit,
-                                delta: '',
-                                deltaColor: ''
-                            });
-                            self.cards.push({
-                                label: $.t('Maximum'),
-                                value: max.toFixed(decimals) + ' ' + unit,
-                                delta: '',
-                                deltaColor: ''
-                            });
                         }
 
                         if (self.cards.length === 0) {
                             $element.hide();
+                        }
+                    }
+
+                    // Rebuild when chart data refreshes (every 5 min)
+                    $scope.$watch(function () {
+                        return self.logCtrl.dayGraphData;
+                    }, function (result) {
+                        if (result && result.length > 0) {
+                            rebuildCards();
+                        }
+                    });
+
+                    // Rebuild on live device update
+                    $scope.$on('device_update', function (event, updatedDevice) {
+                        if (updatedDevice.idx === device.idx) {
+                            device = updatedDevice;
+                            self.device = updatedDevice;
+                            rebuildCards();
                         }
                     });
                 };

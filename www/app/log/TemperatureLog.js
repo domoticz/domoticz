@@ -43,24 +43,28 @@ define(['app', 'RefreshingChart', 'DataLoader', 'ChartLoader', 'log/Chart', 'log
                 self.sensorType = 'temp';
 
                 self.$onInit = function() {
+                    var params = chartParams(
+                        domoticzGlobals,
+                        self,
+                        true,
+                        function (dataItem, yearOffset = 0) {
+                            return GetLocalDateTimeFromString(dataItem.d, yearOffset);
+                        },
+                        [
+                            humiditySeriesSupplier(),
+                            chillSeriesSupplier(),
+                            setpointSeriesSupplier(),
+                            temperatureSeriesSupplier(self.device.Type)
+                        ]
+                    );
+                    params.dataSupplier.preprocessData = function (data) {
+                        self.logCtrl.dayGraphData = data.result;
+                    };
                     self.chart = new RefreshingChart(
                         baseParams($),
                         angularParams($location, $route, $scope, $timeout, $element),
                         domoticzParams(domoticzGlobals, domoticzApi, domoticzDataPointApi),
-                        chartParams(
-                            domoticzGlobals,
-                            self,
-                            true,
-                            function (dataItem, yearOffset = 0) {
-                                return GetLocalDateTimeFromString(dataItem.d, yearOffset);
-                            },
-                            [
-                                humiditySeriesSupplier(),
-                                chillSeriesSupplier(),
-                                setpointSeriesSupplier(),
-                                temperatureSeriesSupplier(self.device.Type)
-                            ]
-                        )
+                        params
                     );
                 };
             }
@@ -524,65 +528,65 @@ define(['app', 'RefreshingChart', 'DataLoader', 'ChartLoader', 'log/Chart', 'log
                 '</div>' +
             '</div>',
         controllerAs: 'vm',
-        controller: function ($element, domoticzApi) {
+        controller: function ($element, $scope) {
             const self = this;
             self.cards = [];
 
             self.$onInit = function () {
-                domoticzApi.sendCommand('graph', {
-                    sensor: 'temp', idx: self.device.idx, range: 'day'
-                }).then(function (data) {
-                    if (!data || !data.result || data.result.length < 2) {
-                        $element.hide();
-                        return;
-                    }
+                var device = self.device;
 
-                    var items = data.result;
+                function formatDelta(current, previous, suffix, decimals) {
+                    if (isNaN(current) || isNaN(previous)) return '';
+                    var d = current - previous;
+                    var sign = d >= 0 ? '+' : '';
+                    return sign + d.toFixed(decimals) + ' ' + suffix;
+                }
+
+                function deltaColor(current, previous) {
+                    if (isNaN(current) || isNaN(previous)) return '';
+                    var d = current - previous;
+                    if (Math.abs(d) < 0.1) return '#aaa';
+                    return d > 0 ? '#ff6b6b' : '#4ecdc4';
+                }
+
+                function find24hAgo(items) {
                     var latest = items[items.length - 1];
-                    var latestTs = GetLocalDateTimeFromString(latest.d);
-                    var target24h = latestTs - 24 * 3600000;
-
-                    // Find closest item to 24h ago
-                    var closest24h = items[0];
+                    var target24h = GetLocalDateTimeFromString(latest.d) - 24 * 3600000;
+                    var closest = items[0];
                     var closestDiff = Math.abs(GetLocalDateTimeFromString(items[0].d) - target24h);
                     for (var i = 1; i < items.length; i++) {
                         var diff = Math.abs(GetLocalDateTimeFromString(items[i].d) - target24h);
                         if (diff < closestDiff) {
                             closestDiff = diff;
-                            closest24h = items[i];
+                            closest = items[i];
+                        }
+                    }
+                    return closest;
+                }
+
+                function rebuildCards() {
+                    self.cards.length = 0;
+                    var items = self.logCtrl.dayGraphData;
+                    var closest24h = (items && items.length >= 2) ? find24hAgo(items) : null;
+
+                    // Temperature card
+                    if (device.Temp !== undefined) {
+                        var te = parseFloat(device.Temp);
+                        var te24 = closest24h ? parseFloat(closest24h.te) : NaN;
+                        if (!isNaN(te)) {
+                            self.cards.push({
+                                label: $.t('Temperature'),
+                                value: te.toFixed(1) + ' ' + degreeSuffix,
+                                delta: formatDelta(te, te24, degreeSuffix, 1),
+                                deltaColor: deltaColor(te, te24)
+                            });
                         }
                     }
 
-                    function formatDelta(current, previous, suffix, decimals) {
-                        if (isNaN(current) || isNaN(previous)) return '';
-                        var d = current - previous;
-                        var sign = d >= 0 ? '+' : '';
-                        return sign + d.toFixed(decimals) + ' ' + suffix;
-                    }
-
-                    function deltaColor(current, previous) {
-                        if (isNaN(current) || isNaN(previous)) return '';
-                        var d = current - previous;
-                        if (Math.abs(d) < 0.1) return '#aaa';
-                        return d > 0 ? '#ff6b6b' : '#4ecdc4';
-                    }
-
-                    // Temperature card
-                    var te = parseFloat(latest.te);
-                    var te24 = parseFloat(closest24h.te);
-                    if (!isNaN(te)) {
-                        self.cards.push({
-                            label: $.t('Temperature'),
-                            value: te.toFixed(1) + ' ' + degreeSuffix,
-                            delta: formatDelta(te, te24, degreeSuffix, 1),
-                            deltaColor: deltaColor(te, te24)
-                        });
-                    }
-
                     // Humidity card
-                    if (self.device.Humidity !== undefined && latest.hu !== undefined) {
-                        var hu = parseInt(latest.hu, 10);
-                        var hu24 = parseInt(closest24h.hu, 10);
+                    if (device.Humidity !== undefined) {
+                        var hu = parseInt(device.Humidity, 10);
+                        var hu24 = closest24h ? parseInt(closest24h.hu, 10) : NaN;
                         self.cards.push({
                             label: $.t('Humidity'),
                             value: hu + ' %',
@@ -592,9 +596,9 @@ define(['app', 'RefreshingChart', 'DataLoader', 'ChartLoader', 'log/Chart', 'log
                     }
 
                     // Barometer card
-                    if (self.device.Barometer !== undefined && latest.ba !== undefined) {
-                        var ba = parseFloat(latest.ba);
-                        var ba24 = parseFloat(closest24h.ba);
+                    if (device.Barometer !== undefined) {
+                        var ba = parseFloat(device.Barometer);
+                        var ba24 = closest24h ? parseFloat(closest24h.ba) : NaN;
                         self.cards.push({
                             label: $.t('Barometer'),
                             value: ba.toFixed(1) + ' hPa',
@@ -605,6 +609,24 @@ define(['app', 'RefreshingChart', 'DataLoader', 'ChartLoader', 'log/Chart', 'log
 
                     if (self.cards.length === 0) {
                         $element.hide();
+                    }
+                }
+
+                // Rebuild when chart data refreshes (updates deltas)
+                $scope.$watch(function () {
+                    return self.logCtrl.dayGraphData;
+                }, function (result) {
+                    if (result && result.length >= 2) {
+                        rebuildCards();
+                    }
+                });
+
+                // Rebuild on live device update
+                $scope.$on('device_update', function (event, updatedDevice) {
+                    if (updatedDevice.idx === device.idx) {
+                        device = updatedDevice;
+                        self.device = updatedDevice;
+                        rebuildCards();
                     }
                 });
             };
