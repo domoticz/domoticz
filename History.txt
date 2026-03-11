@@ -1,6 +1,7 @@
 Version 2026.xxxx
 - Added: Alexa Smart Home v3 API endpoint (see ALEXA.md)
 - Added: Angular Current sensor log with 3-phase support and compare chart (Fixes #6560)
+- Added: Angular log pages, current conditions KPI cards and advanced charts
 - Added: Angular Wind log, wind speed frequency histogram with Weibull distribution curve
 - Added: Battery SOC mode selection for Energy Dashboard with voltage display
 - Added: Blinds + Stop type
@@ -10,6 +11,9 @@ Version 2026.xxxx
 - Added: Dashboard, setpoint display and editing for all setpoint devices
 - Added: Docker environment variable support for admin provisioning (DOMOTICZ_ADMIN_PASSWORD, DOMOTICZ_ADMIN_USERNAME)
 - Added: dzVents, at_startup trigger for scripts that should run once at Domoticz startup
+- Added: Enphase, battery storage sensors (reserve SOC, available energy, max capacity, storage mode, charge from grid control)
+- Added: Enphase, Encharge battery temperature sensor
+- Added: Enphase, grid status reporting for battery systems
 - Added: Enever, updated providers and API v3
 - Added: EventSystem support for Thermostat 6 devices (Blockly/Lua/Python event triggers)
 - Added: HaveSetPoint JSON API flag for Thermostat 6 and Setpoint devices (third-party app compatibility)
@@ -38,6 +42,8 @@ Version 2026.xxxx
 - Added: RTL433, Support UV sensors named 'uvi'
 - Added: Search filter on selected (right) side of user shared devices selector (Fixes #6613)
 - Added: SolarEdge API, battery detection (#6593)
+- Added: SolarEdge API, site overview sensors (current power, energy today/month/year/lifetime)
+- Added: SolarEdge API, energy details sensors (production, consumption, self-consumption, feed-in, purchased)
 - Added: Support -pidfile without -daemon for process managers like monit under systemd
 - Added: Support for the Model Context Protocol (/mcp) for use with AI Agents
 - Added: Thermostat, combined Temperature/Setpoint display
@@ -53,7 +59,10 @@ Version 2026.xxxx
 - Fixed: Buienradar, fallback when station measurements are empty
 - Fixed: CalcMeterPrice/CalcMultiMeterPrice off-by-one price error with dynamic tariffs (Fixes #6181)
 - Fixed: Chart zoom buttons (notable on iOS devices)
+- Fixed: Barometer compare chart and database normalization
+- Fixed: Chart logs now using real time values
 - Fixed: Compare chart values displayed incorrectly for multiple sensor types (#6591)
+- Fixed: Crash after device_update when getUnit() returned stale data
 - Fixed: Counter Statistics Chart tooltip showing incorrect day name (Fixes #6542)
 - Fixed: Database backup/restore stability (#6577)
 - Fixed: Deleting a scene/group could accidentally delete a device
@@ -81,6 +90,7 @@ Version 2026.xxxx
 - Fixed: Philips Hue v1 API crashes Domoticz in certain cases since Hue Bridge firmware 1.74 (added extra validations)
 - Fixed: Pinger blocking webserver thread during ping operations
 - Fixed: Plugin devices, LightingLog User field now shows actual user instead of hardware name (Fixes #6538)
+- Fixed: Python 3.13+ sub-interpreter crash due to missing __builtins__ injection
 - Fixed: Python plugin C extension crash on plugin restart
 - Fixed: Python plugin custom device option updates not saved to database (#6454)
 - Fixed: Python plugin TCP/TLS connection stability issues
@@ -90,6 +100,8 @@ Version 2026.xxxx
 - Fixed: Scene triggering delay caused by event system thread pool saturation
 - Fixed: Segfault when running --help or --version (#6618)
 - Fixed: Session invalidation race condition during web session renewal
+- Fixed: Python/Lua scripts last_update_string not updating for unchanged-value devices (Fixes #6638)
+- Fixed: SolarEdge API, battery critical sensor using wrong type and grid/storage power direction detection
 - Fixed: SolarEdge API, power readings persisting stale values when idle
 - Fixed: Temperature Compare Chart (Min/Max values)
 - Fixed: Web update not restarting properly when Python plugins are active (#6602)
@@ -104,6 +116,7 @@ Version 2026.xxxx
 - Changed: FCM/Google Cloud Messaging Notifications, now needed to enter private API from console in settings
 - Changed: In-service/Oauth2, Added Logo to login form
 - Changed: Installer, replaced SysV init script with native systemd service (auto-migrates on update)
+- Changed: Installer, improved package detection and channel reconfigure path
 - Changed: Internal code cleanup/enhancements
 - Changed: MQTT, huge speed improvements
 - Changed: MQTT-AD: better initial device naming
