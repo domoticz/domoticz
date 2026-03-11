@@ -473,7 +473,7 @@
 				</thead>
 				<tr ng-repeat="item in weather track by item.idx" id="weather_{{item.idx}}">
 					<td id="name" class="name item-name" data-idx="{{item.idx}}" data-desc="{{item.Description}}">
-						<a href="#/Devices/{{item.idx}}/Log"><img src="images/next.png" height="16" width="16"></a> {{item.Name}}
+						<a href="#/Devices/{{item.idx}}/Log{{item.Barometer != undefined ? '?sensor=baro' : ''}}"><img src="images/next.png" height="16" width="16"></a> {{item.Name}}
 					</td>
 					<td id="status" class="status">
 						<!-- Rain -->

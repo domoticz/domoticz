@@ -691,7 +691,7 @@ define(['app', 'livesocket'], function (app) {
 					$('#weatherwidgets').hide(); // TODO delete when multiple views implemented
 					$('#weathertophtm').hide();
 					if (typeof item.Barometer != 'undefined') {
-						return $location.path('/Devices/' + item.idx + '/Log');
+						return $location.path('/Devices/' + item.idx + '/Log').search('sensor', 'baro');
 					}
 					else if (typeof item.Rain != 'undefined') {
 						return $location.path('/Devices/' + item.idx + '/Log');

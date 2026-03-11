@@ -80,6 +80,10 @@ define(['app', 'log/Chart', 'log/TextLog', 'log/TemperatureLog', 'log/LightLog',
             if (isWindLog()) {
                 return false;
             }
+            // Exclude when explicitly requesting barometer log (e.g. from weather section)
+            if ($location.search().sensor === 'baro') {
+                return false;
+            }
             return (/Temp|Thermostat|Humidity|RFXSensor|Radiator/i).test(vm.device.Type)
         }
 
@@ -119,6 +123,9 @@ define(['app', 'log/Chart', 'log/TextLog', 'log/TemperatureLog', 'log/LightLog',
 		function isBarometerLog() {
 			if (!vm.device) {
 				return undefined;
+			}
+			if ($location.search().sensor === 'baro') {
+				return true;
 			}
 			return (vm.device.SubType === 'Barometer');
 		}
