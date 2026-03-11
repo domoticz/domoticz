@@ -1,9 +1,43 @@
+<temperature-current-conditions
+        device="::$ctrl.device">
+</temperature-current-conditions>
 <temperature-short-chart
         class="device-log-chart"
         device="::$ctrl.device"
         degree-type="::$ctrl.degreeType">
 </temperature-short-chart>
-
+<br/>
+<temperature-dewpoint-chart
+        class="device-log-chart"
+        device="::$ctrl.device">
+</temperature-dewpoint-chart>
+<br/>
+<temperature-vs-humidity-chart
+        class="device-log-chart"
+        device="::$ctrl.device">
+</temperature-vs-humidity-chart>
+<br/>
+<div style="text-align:center; margin: 10px 0;">
+    <a class="btnstyle3" ng-click="$ctrl.toggleAdvancedCharts()">
+        <span ng-hide="$ctrl.showAdvancedCharts" data-i18n="Show Advanced Charts">Show Advanced Charts</span>
+        <span ng-show="$ctrl.showAdvancedCharts" data-i18n="Hide Advanced Charts">Hide Advanced Charts</span>
+        &nbsp;<i class="fa" ng-class="$ctrl.showAdvancedCharts ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
+    </a>
+</div>
+<div ng-show="$ctrl.showAdvancedCharts">
+    <temperature-diurnal-chart
+            class="device-log-chart"
+            device="::$ctrl.device"></temperature-diurnal-chart>
+    <br/>
+    <temperature-distribution-chart
+            class="device-log-chart"
+            device="::$ctrl.device"></temperature-distribution-chart>
+    <br/>
+    <temperature-comfort-chart
+            class="device-log-chart"
+            device="::$ctrl.device"></temperature-comfort-chart>
+</div>
+<br/>
 <temperature-long-chart
         class="device-log-chart"
         device="::$ctrl.device"

@@ -1,6 +1,30 @@
+<rain-current-conditions
+        device="::$ctrl.device">
+</rain-current-conditions>
 <rain-day-chart
         class="rain-log-chart"
         device="::$ctrl.device"></rain-day-chart>
+<br/>
+<div style="text-align:center; margin: 10px 0;">
+    <a class="btnstyle3" ng-click="$ctrl.toggleAdvancedCharts()">
+        <span ng-hide="$ctrl.showAdvancedCharts" data-i18n="Show Advanced Charts">Show Advanced Charts</span>
+        <span ng-show="$ctrl.showAdvancedCharts" data-i18n="Hide Advanced Charts">Hide Advanced Charts</span>
+        &nbsp;<i class="fa" ng-class="$ctrl.showAdvancedCharts ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
+    </a>
+</div>
+<div ng-show="$ctrl.showAdvancedCharts">
+    <rain-cumulative-chart
+            class="device-log-chart"
+            device="::$ctrl.device"></rain-cumulative-chart>
+    <br/>
+    <rain-rate-chart
+            class="device-log-chart"
+            device="::$ctrl.device"></rain-rate-chart>
+    <br/>
+    <rain-intensity-chart
+            class="device-log-chart"
+            device="::$ctrl.device"></rain-intensity-chart>
+</div>
 <br/>
 <rain-week-chart
         class="rain-log-chart"

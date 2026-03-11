@@ -1,6 +1,50 @@
+<barometer-current-conditions
+        device="::$ctrl.device">
+</barometer-current-conditions>
 <barometer-short-chart
         class="device-log-chart"
         device="::$ctrl.device"></barometer-short-chart>
+<br/>
+<barometer-change-rate-chart
+        class="device-log-chart"
+        device="::$ctrl.device"></barometer-change-rate-chart>
+<br/>
+<barometer-weather-overview-chart
+        class="device-log-chart"
+        device="::$ctrl.device"></barometer-weather-overview-chart>
+<br/>
+<barometer-vs-temperature-chart
+        class="device-log-chart"
+        device="::$ctrl.device"></barometer-vs-temperature-chart>
+<br/>
+<barometer-vs-humidity-chart
+        class="device-log-chart"
+        device="::$ctrl.device"></barometer-vs-humidity-chart>
+<br/>
+<div style="text-align:center; margin: 10px 0;">
+    <a class="btnstyle3" ng-click="$ctrl.toggleAdvancedCharts()">
+        <span ng-hide="$ctrl.showAdvancedCharts" data-i18n="Show Advanced Charts">Show Advanced Charts</span>
+        <span ng-show="$ctrl.showAdvancedCharts" data-i18n="Hide Advanced Charts">Hide Advanced Charts</span>
+        &nbsp;<i class="fa" ng-class="$ctrl.showAdvancedCharts ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
+    </a>
+</div>
+<div ng-show="$ctrl.showAdvancedCharts">
+    <barometer-rolling-averages-chart
+            class="device-log-chart"
+            device="::$ctrl.device"></barometer-rolling-averages-chart>
+    <br/>
+    <barometer-volatility-chart
+            class="device-log-chart"
+            device="::$ctrl.device"></barometer-volatility-chart>
+    <br/>
+    <barometer-dewpoint-chart
+            class="device-log-chart"
+            device="::$ctrl.device"></barometer-dewpoint-chart>
+    <br/>
+    <barometer-heatindex-chart
+            class="device-log-chart"
+            device="::$ctrl.device"></barometer-heatindex-chart>
+</div>
 <br/>
 <barometer-long-chart
         class="device-log-chart"

@@ -13,6 +13,113 @@ define(['app', 'lodash', 'RefreshingChart', 'DataLoader', 'ChartLoader', 'log/Ch
 			}
 		});
 
+		app.component('uvCurrentConditions', {
+			require: {
+				logCtrl: '^deviceUvLog'
+			},
+			bindings: {
+				device: '<'
+			},
+			template:
+				'<div class="chart noselect current-conditions" style="padding: 10px 0;">' +
+					'<div style="display:flex; justify-content:center; flex-wrap:wrap; gap:20px;">' +
+						'<div ng-repeat="card in vm.cards" style="text-align:center; min-width:140px; padding:12px 20px; ' +
+							'background:rgba(255,255,255,0.05); border-radius:8px;">' +
+							'<div style="font-size:0.85em; opacity:0.7;">{{card.label}}</div>' +
+							'<div style="font-size:1.8em; font-weight:bold;">{{card.value}}</div>' +
+							'<div style="font-size:0.85em;" ng-style="{color: card.deltaColor}">{{card.delta}}</div>' +
+						'</div>' +
+					'</div>' +
+				'</div>',
+			controllerAs: 'vm',
+			controller: function ($element, domoticzApi) {
+				const self = this;
+				self.cards = [];
+
+				self.$onInit = function () {
+					domoticzApi.sendCommand('graph', {
+						sensor: 'uv', idx: self.device.idx, range: 'day'
+					}).then(function (data) {
+						if (!data || !data.result || data.result.length < 2) {
+							$element.hide();
+							return;
+						}
+
+						var items = data.result;
+						var latest = items[items.length - 1];
+						var latestTs = GetLocalDateTimeFromString(latest.d);
+						var target24h = latestTs - 24 * 3600000;
+
+						var closest24h = items[0];
+						var closestDiff = Math.abs(GetLocalDateTimeFromString(items[0].d) - target24h);
+						for (var i = 1; i < items.length; i++) {
+							var diff = Math.abs(GetLocalDateTimeFromString(items[i].d) - target24h);
+							if (diff < closestDiff) {
+								closestDiff = diff;
+								closest24h = items[i];
+							}
+						}
+
+						function formatDelta(current, previous, suffix, decimals) {
+							if (isNaN(current) || isNaN(previous)) return '';
+							var d = current - previous;
+							var sign = d >= 0 ? '+' : '';
+							return sign + d.toFixed(decimals) + ' ' + suffix;
+						}
+
+						function deltaColor(current, previous) {
+							if (isNaN(current) || isNaN(previous)) return '';
+							var d = current - previous;
+							if (Math.abs(d) < 0.1) return '#aaa';
+							return d > 0 ? '#ff6b6b' : '#4ecdc4';
+						}
+
+						// UV Index card
+						var uvi = parseFloat(latest.uvi);
+						var uvi24 = parseFloat(closest24h.uvi);
+						if (!isNaN(uvi)) {
+							// Add UV exposure level text
+							var level = '';
+							if (uvi <= 2) level = 'Low';
+							else if (uvi <= 5) level = 'Moderate';
+							else if (uvi <= 7) level = 'High';
+							else if (uvi <= 10) level = 'Very High';
+							else level = 'Extreme';
+
+							self.cards.push({
+								label: $.t('UV Index'),
+								value: uvi.toFixed(1),
+								delta: formatDelta(uvi, uvi24, 'UVI', 1),
+								deltaColor: deltaColor(uvi, uvi24)
+							});
+
+							self.cards.push({
+								label: $.t('Exposure Level'),
+								value: $.t(level),
+								delta: '',
+								deltaColor: ''
+							});
+						}
+
+						// Temperature card (if device has Temp)
+						if (self.device.Temp !== undefined) {
+							var degreeSuffix = $.myglobals.tempsign;
+							self.cards.push({
+								label: $.t('Temperature'),
+								value: self.device.Temp.toFixed(1) + ' ' + degreeSuffix,
+								delta: '',
+								deltaColor: ''
+							});
+						}
+
+						if (self.cards.length === 0) {
+							$element.hide();
+						}
+					});
+				};
+			}
+		});
+
 		app.component('uvShortChart', {
 			require: {
 				logCtrl: '^deviceUvLog'

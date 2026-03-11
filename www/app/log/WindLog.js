@@ -13,6 +13,122 @@ define(['app', 'lodash', 'RefreshingChart', 'DataLoader', 'ChartLoader', 'log/Ch
 			}
 		});
 
+		app.component('windCurrentConditions', {
+			require: {
+				logCtrl: '^deviceWindLog'
+			},
+			bindings: {
+				device: '<'
+			},
+			template:
+				'<div class="chart noselect current-conditions" style="padding: 10px 0;">' +
+					'<div style="display:flex; justify-content:center; flex-wrap:wrap; gap:20px;">' +
+						'<div ng-repeat="card in vm.cards" style="text-align:center; min-width:140px; padding:12px 20px; ' +
+							'background:rgba(255,255,255,0.05); border-radius:8px;">' +
+							'<div style="font-size:0.85em; opacity:0.7;">{{card.label}}</div>' +
+							'<div style="font-size:1.8em; font-weight:bold;">{{card.value}}</div>' +
+							'<div style="font-size:0.85em;" ng-style="{color: card.deltaColor}">{{card.delta}}</div>' +
+						'</div>' +
+					'</div>' +
+				'</div>',
+			controllerAs: 'vm',
+			controller: function ($element, domoticzApi) {
+				const self = this;
+				self.cards = [];
+
+				self.$onInit = function () {
+					domoticzApi.sendCommand('graph', {
+						sensor: 'wind', idx: self.device.idx, range: 'day'
+					}).then(function (data) {
+						if (!data || !data.result || data.result.length < 2) {
+							$element.hide();
+							return;
+						}
+
+						var items = data.result;
+						var latest = items[items.length - 1];
+						var latestTs = GetLocalDateTimeFromString(latest.d);
+						var target24h = latestTs - 24 * 3600000;
+
+						var closest24h = items[0];
+						var closestDiff = Math.abs(GetLocalDateTimeFromString(items[0].d) - target24h);
+						for (var i = 1; i < items.length; i++) {
+							var diff = Math.abs(GetLocalDateTimeFromString(items[i].d) - target24h);
+							if (diff < closestDiff) {
+								closestDiff = diff;
+								closest24h = items[i];
+							}
+						}
+
+						function formatDelta(current, previous, suffix, decimals) {
+							if (isNaN(current) || isNaN(previous)) return '';
+							var d = current - previous;
+							var sign = d >= 0 ? '+' : '';
+							return sign + d.toFixed(decimals) + ' ' + suffix;
+						}
+
+						function deltaColor(current, previous) {
+							if (isNaN(current) || isNaN(previous)) return '';
+							var d = current - previous;
+							if (Math.abs(d) < 0.1) return '#aaa';
+							return d > 0 ? '#ff6b6b' : '#4ecdc4';
+						}
+
+						var unit = self.device.getUnit();
+
+						// Wind Speed card
+						var sp = parseFloat(latest.sp);
+						var sp24 = parseFloat(closest24h.sp);
+						if (!isNaN(sp)) {
+							self.cards.push({
+								label: $.t('Speed'),
+								value: sp.toFixed(1) + ' ' + unit,
+								delta: formatDelta(sp, sp24, unit, 1),
+								deltaColor: deltaColor(sp, sp24)
+							});
+						}
+
+						// Wind Gust card
+						var gu = parseFloat(latest.gu);
+						var gu24 = parseFloat(closest24h.gu);
+						if (!isNaN(gu)) {
+							self.cards.push({
+								label: $.t('Gust'),
+								value: gu.toFixed(1) + ' ' + unit,
+								delta: formatDelta(gu, gu24, unit, 1),
+								deltaColor: deltaColor(gu, gu24)
+							});
+						}
+
+						// Direction card (from device object, no delta)
+						if (self.device.Direction !== undefined) {
+							self.cards.push({
+								label: $.t('Direction'),
+								value: self.device.DirectionStr + ' (' + self.device.Direction + '°)',
+								delta: '',
+								deltaColor: ''
+							});
+						}
+
+						// Wind Chill card (from device object, no delta from graph)
+						if (self.device.Chill !== undefined) {
+							var degreeSuffix = $.myglobals.tempsign;
+							self.cards.push({
+								label: $.t('Chill'),
+								value: self.device.Chill.toFixed(1) + ' ' + degreeSuffix,
+								delta: '',
+								deltaColor: ''
+							});
+						}
+
+						if (self.cards.length === 0) {
+							$element.hide();
+						}
+					});
+				};
+			}
+		});
+
 		app.component('windShortChart', {
 			require: {
 				logCtrl: '^deviceWindLog'
