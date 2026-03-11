@@ -126,8 +126,6 @@ define(['app', 'lodash', 'RefreshingChart', 'DataLoader', 'ChartLoader', 'log/Ch
                         var now = new Date();
                         var currentYear = String(now.getFullYear());
                         var currentMonth = currentYear + '-' + ('0' + (now.getMonth() + 1)).slice(-2);
-                        var unit = device.getUnit();
-
                         if (isP1) {
                             var monthUsage = 0, monthReturn = 0;
                             var yearUsage = 0, yearReturn = 0;

@@ -39,6 +39,7 @@ define(['app', 'lodash', 'RefreshingChart', 'DataLoader', 'ChartLoader'],
                 self.$onInit = function () {
                     var device = self.device;
                     var valueKey = domoticzGlobals.valueKeyForDevice(device);
+                    var deviceUnit = device.getUnit();
 
                     function rebuildCards() {
                         self.cards.length = 0;
@@ -68,7 +69,7 @@ define(['app', 'lodash', 'RefreshingChart', 'DataLoader', 'ChartLoader'],
                             if (min !== Infinity) {
                                 var dataStr = String(device.Data);
                                 var dataMatch = dataStr.match(/[\d.\-]+\s*(.*)/);
-                                var unit = (dataMatch && dataMatch[1]) ? dataMatch[1] : device.getUnit();
+                                var unit = (dataMatch && dataMatch[1]) ? dataMatch[1] : deviceUnit;
                                 var decimals = (min % 1 === 0 && max % 1 === 0) ? 0 : 1;
                                 self.cards.push({
                                     label: $.t('Minimum'),

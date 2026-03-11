@@ -68,11 +68,12 @@ define(['app', 'lodash', 'RefreshingChart', 'DataLoader', 'ChartLoader', 'log/Ch
 						return closest;
 					}
 
+					var unit = device.getUnit();
+
 					function rebuildCards() {
 						self.cards.length = 0;
 						var items = self.logCtrl.dayGraphData;
 						var closest24h = (items && items.length >= 2) ? find24hAgo(items) : null;
-						var unit = device.getUnit();
 
 						// Wind Speed card
 						if (device.Speed !== undefined) {
