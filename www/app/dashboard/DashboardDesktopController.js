@@ -702,15 +702,6 @@ define([
 					onDeviceUpdate: onDeviceUpdate,
 					onSceneUpdate: onSceneUpdate
 				});
-
-				// Legacy event handlers (for backward compatibility)
-				$scope.$on('device_update', function (event, deviceData) {
-					onDeviceUpdate(deviceData);
-				});
-
-				$scope.$on('scene_update', function (event, sceneData) {
-					onSceneUpdate(sceneData);
-				});
 			}
 
 			// Cleanup on destroy
