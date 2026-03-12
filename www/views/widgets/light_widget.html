@@ -103,7 +103,7 @@
 
                 <!-- Dimmer slider (in separate td, dashboard style) -->
                 <td ng-if="ctrl.isDimmer() && !ctrl.isBlinds() && ctrl.device.DimmerType != 'rel'" class="input">
-                    <div style="margin-left:50px; margin-top: 7px;" class="dimslider dimslidernorm" id="slider"
+                    <div style="margin-left:50px; margin-top: 7px; visibility:hidden;" class="dimslider dimslidernorm" id="slider"
                          data-idx="{{ctrl.device.idx}}" data-type="norm"
                          data-maxlevel="{{ctrl.device.MaxDimLevel}}"
                          data-isprotected="{{ctrl.device.Protected}}"
@@ -113,7 +113,7 @@
                 </td>
                 <!-- Blinds Percentage slider -->
                 <td ng-if="ctrl.device.SwitchType == 'Blinds Percentage'" class="input">
-                    <div style="margin-left:94px; margin-top: 7px;" class="dimslider dimslidersmalldouble"
+                    <div style="margin-left:94px; margin-top: 7px; visibility:hidden;" class="dimslider dimslidersmalldouble"
                          id="slider" data-idx="{{ctrl.device.idx}}" data-type="blinds"
                          data-maxlevel="{{ctrl.device.MaxDimLevel}}"
                          data-isprotected="{{ctrl.device.Protected}}"
@@ -122,7 +122,7 @@
                 </td>
                 <!-- Blinds % + Stop slider -->
                 <td ng-if="ctrl.device.SwitchType == 'Blinds % + Stop'" class="input">
-                    <div style="margin-left:124px; margin-top: 7px;" class="dimslider dimslidersmalltripple"
+                    <div style="margin-left:124px; margin-top: 7px; visibility:hidden;" class="dimslider dimslidersmalltripple"
                          id="slider" data-idx="{{ctrl.device.idx}}" data-type="blinds"
                          data-maxlevel="{{ctrl.device.MaxDimLevel}}"
                          data-isprotected="{{ctrl.device.Protected}}"
