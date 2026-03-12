@@ -1316,7 +1316,7 @@ std::string GenerateUserAgent()
 	int mversion = distrib_FFFF(gen) % 3;
 	int sversion = distrib_FFFF(gen) % 3;
 	std::stringstream sstr;
-	sstr << "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/" << (601 + sversion) << "." << (36 + mversion) << " (KHTML, like Gecko) Chrome/" << (53 + mversion) << ".0." << cversion << ".0 Safari/" << (601 + sversion) << "." << (36 + sversion);
+	sstr << "Mozilla/5.0 (Windows NT 10.0; WOW64; x64) AppleWebKit/" << (605 + sversion) << "." << (36 + mversion) << " (KHTML, like Gecko) Chrome/" << (26 + mversion) << ".0." << cversion << ".0 Safari/" << (604 + sversion) << "." << (36 + sversion);
 	return sstr.str();
 }
 
