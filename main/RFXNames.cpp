@@ -180,7 +180,6 @@ static const STR_TABLE_SINGLE HardwareTypeTable[] = {
 	{ HTYPE_LimitlessLights, "Limitless/AppLamp/Mi Light with LAN/WiFi interface", "Limitless" },
 	{ HTYPE_System, "Motherboard sensors", "HardwareMonitor" },
 	{ HTYPE_EnOceanESP2, "EnOcean USB (ESP2)", "EnOcean" },
-	{ HTYPE_SolarEdgeTCP, "SolarEdge via LAN interface", "SolarEdge" },
 	{ HTYPE_SBFSpot, "SBFSpot (SMA)", "SBFSpot" },
 	{ HTYPE_ICYTHERMOSTAT, "ICY Thermostat", "ICY" },
 	{ HTYPE_WOL, "Wake-on-LAN", "WOL" },
@@ -4015,7 +4014,6 @@ bool IsNetworkDevice(const _eHardwareTypes htype)
 	case HTYPE_YouLess:
 	case HTYPE_OpenThermGatewayTCP:
 	case HTYPE_LimitlessLights:
-	case HTYPE_SolarEdgeTCP:
 	case HTYPE_WOL:
 	case HTYPE_ECODEVICES:
 	case HTYPE_Mochad:

@@ -1907,7 +1907,6 @@ bool CSQLHelper::OpenDatabase()
 				<< "([Type] = " << HTYPE_Meteostick << ") OR "
 				<< "([Type] = " << HTYPE_PVOUTPUT_INPUT << ") OR "
 				<< "([Type] = " << HTYPE_SBFSpot << ") OR "
-				<< "([Type] = " << HTYPE_SolarEdgeTCP << ") OR "
 				<< "([Type] = " << HTYPE_TE923 << ") OR "
 				<< "([Type] = " << HTYPE_TOONTHERMOSTAT << ") OR "
 				<< "([Type] = " << HTYPE_Wunderground << ") OR "
