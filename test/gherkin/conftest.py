@@ -1,0 +1,104 @@
+from pytest_bdd import scenario, given, when, then, parsers
+import pytest
+import requests, subprocess
+import re
+
+class Domoticz:
+    sBaseURI = ""
+    sCommand = ""
+    iPort = ""
+    sVersion = ""
+    oResponse = ""
+    oReqHeaders = ""
+    sTestModule = ""
+    sTestFunction = ""
+    sTestInput = ""
+    sTestOutput = ""
+
+@pytest.fixture
+def test_domoticz():
+    return Domoticz()
+
+@given('Domoticz is running')
+def domoticz_running(test_domoticz):
+    test_domoticz.sBaseURI = "http://localhost"
+
+@given(parsers.parse('accessible on port {port:d}'))
+def check_domoticz_port(test_domoticz,port):
+    oResult = requests.get(test_domoticz.sBaseURI + ":" + str(port) + "/json.htm?type=command&param=getversion")
+    if oResult.status_code == 200:
+        test_domoticz.iPort = port
+        test_domoticz.sBaseURI += ":" + str(port)
+        #oJSON = oResult.json()
+        #test_domoticz.sVersion = oJSON["version"]
+    assert oResult.status_code == 200
+
+@given(parsers.parse('Command {command} is available'))
+def command_available(test_domoticz, command):
+    test_domoticz.sCommand = "./" + command
+
+@given('can be executed on the commandline')
+def check_command_exec(test_domoticz):
+    if test_domoticz.sCommand == "":
+        assert False
+    sOut = subprocess.run([test_domoticz.sCommand, "-version"], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    if sOut.returncode != 0:
+        assert False
+
+@given('I am a normal Domoticz user')
+def setup_user():
+    pass
+
+@when(parsers.parse('I request the URI "{uri}"'))
+def request_uri(test_domoticz,uri):
+    oResult = requests.get(test_domoticz.sBaseURI + uri, headers=test_domoticz.oReqHeaders)
+    test_domoticz.oResponse = oResult
+
+@when(parsers.parse('I request the "{method}"'))
+def request_method(test_domoticz,method):
+    if method == "Configuration Settings":
+        uri = '/json.htm?type=command&param=getsettings'
+    elif method == "Version Information":
+        uri = '/json.htm?type=command&param=getversion'
+    else:
+        uri = '/idonotexist'
+
+    oResult = requests.get(test_domoticz.sBaseURI + uri, headers=test_domoticz.oReqHeaders)
+    test_domoticz.oResponse = oResult
+
+@when('I submit wrong credentials to the loginpage')
+def submit_wrongcredentials(test_domoticz):
+    oResult = requests.post(test_domoticz.sBaseURI + '/json.htm?type=command&param=logincheck', headers=test_domoticz.oReqHeaders, data={'username': 'd3Jvbmc=', 'password': 'd3Jvbmd0b28='})
+    test_domoticz.oResponse = oResult
+
+@when('I submit correct credentials to the loginpage')
+def submit_credentials(test_domoticz):
+    oResult = requests.post(test_domoticz.sBaseURI + '/json.htm?type=command&param=logincheck', headers=test_domoticz.oReqHeaders, data={'username': 'YWRtaW4=', 'password': '59515f6b193071e263f14bfa94bef645'})
+    test_domoticz.oResponse = oResult
+
+@then(parsers.parse('the HTTP-return code should be "{returncode:d}"'))
+def check_returncode(test_domoticz,returncode):
+    assert test_domoticz.oResponse.status_code == returncode
+
+@then(parsers.parse('the HTTP-header "{headername}" should contain "{headervalue}"'))
+def check_header(test_domoticz,headername, headervalue):
+    bExists = headername in test_domoticz.oResponse.headers
+    if bExists:
+        assert test_domoticz.oResponse.headers[headername] == headervalue
+    else:
+        print(test_domoticz.oResponse.headers)
+        assert False
+
+@then(parsers.parse('the HTTP-header "{headername}" should comply to pattern "{headerpattern}"'))
+def check_header_pattern(test_domoticz,headername, headerpattern):
+    bExists = headername in test_domoticz.oResponse.headers
+    if bExists:
+        headervalue = test_domoticz.oResponse.headers[headername]
+        assert re.match(headerpattern, headervalue)
+    else:
+        print(test_domoticz.oResponse.headers)
+        assert False
+
+@then(parsers.parse('the HTTP-header "{headername}" should be absent'))
+def check_noheader(test_domoticz,headername):
+    assert not headername in test_domoticz.oResponse.headers
