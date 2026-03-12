@@ -89,7 +89,13 @@ define(['app', 'lodash', 'RefreshingChart', 'DataLoader', 'ChartLoader', 'log/Ch
 
                         // Today card
                         if (device.CounterToday !== undefined && device.CounterToday !== null && String(device.CounterToday) !== '') {
-                            self.cards.push({ label: $.t('Today'), value: String(device.CounterToday) });
+                            var todayValue = String(device.CounterToday);
+                            // Water: backend sends m3, convert to chart unit (Liter) to match charts
+                            if (device.SwitchTypeVal === chart.deviceTypes.Water && todayValue.indexOf('Liter') === -1) {
+                                var numVal = parseFloat(todayValue) * 1000;
+                                todayValue = Math.round(numVal) + ' ' + chartUnit;
+                            }
+                            self.cards.push({ label: $.t('Today'), value: todayValue });
                         }
                     }
 
