@@ -76,7 +76,7 @@ define(['app'], function (app) {
                     } else if (device.SwitchType === "Selector") {
                         return b64DecodeUnicode(device.LevelNames).split('|')[(device.LevelInt / 10)];
                     } else {
-                        return device.Status;
+                        return TranslateStatusShort(device.Status);
                     }
                 };
 
@@ -826,6 +826,18 @@ define(['app'], function (app) {
                         $timeout(function() {
                             initWidgets();
                         }, 50);
+                    }
+                });
+
+                // Update slider value when device.LevelInt changes (e.g. WebSocket updates)
+                scope.$watch('device.LevelInt', function(newVal) {
+                    if (typeof newVal !== 'undefined') {
+                        element.find('.dimslider').each(function() {
+                            var $slider = $(this);
+                            if ($slider.hasClass('ui-slider')) {
+                                $slider.slider('value', newVal);
+                            }
+                        });
                     }
                 });
 
