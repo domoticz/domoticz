@@ -735,6 +735,7 @@ define(['app'], function (app) {
                     element.find('.dimslider').each(function() {
                         var $slider = $(this);
                         if (!$slider.hasClass('ui-slider')) {
+                            $slider.css('visibility', 'hidden');
                             $slider.slider({
                                 range: "min",
                                 min: 0,
@@ -789,6 +790,7 @@ define(['app'], function (app) {
                                         SetDimValue(idx, ui.value);
                                 }
                             });
+                            $slider.css('visibility', 'visible');
                         }
                     });
                 }
