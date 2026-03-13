@@ -1178,11 +1178,19 @@ define(['app'], function (app) {
 					ShowNotify($.t('Please enter an API Key!'), 2500, true);
 					return;
 				}
+				var webusername = $("#hardwarecontent #divsolaredgeapi #webusername").val();
+				var webpassword = $("#hardwarecontent #divsolaredgeapi #webpassword").val();
+				var siteid = $("#hardwarecontent #divsolaredgeapi #siteid").val();
+				var polloptimizers = $("#hardwarecontent #divsolaredgeapi #polloptimizers").prop("checked") ? 1 : 0;
+				var extra = encodeURIComponent(webusername + "|" + siteid);
 
 				$.ajax({
 					url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype +
 					"&loglevel=" + logLevel +
 					"&username=" + encodeURIComponent(apikey) +
+					"&password=" + encodeURIComponent(webpassword) +
+					"&extra=" + extra +
+					"&Mode1=" + polloptimizers +
 					"&name=" + encodeURIComponent(name) +
 					"&enabled=" + bEnabled +
 					"&idx=" + idx +
@@ -2889,11 +2897,20 @@ define(['app'], function (app) {
 					ShowNotify($.t('Please enter an API Key!'), 2500, true);
 					return;
 				}
+				var webusername = $("#hardwarecontent #divsolaredgeapi #webusername").val();
+				var webpassword = $("#hardwarecontent #divsolaredgeapi #webpassword").val();
+				var siteid = $("#hardwarecontent #divsolaredgeapi #siteid").val();
+				var polloptimizers = $("#hardwarecontent #divsolaredgeapi #polloptimizers").prop("checked") ? 1 : 0;
+				var extra = encodeURIComponent(webusername + "|" + siteid);
+
 				$.ajax({
 					url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype +
 					"&loglevel=" + logLevel +
 					"&name=" + encodeURIComponent(name) +
 					"&username=" + encodeURIComponent(apikey) +
+					"&password=" + encodeURIComponent(webpassword) +
+					"&extra=" + extra +
+					"&Mode1=" + polloptimizers +
 					"&enabled=" + bEnabled +
 					"&idx=" + idx +
 					"&datatimeout=" + datatimeout,
@@ -4642,6 +4659,16 @@ define(['app'], function (app) {
 						}
 						else if (data["Type"].indexOf("SolarEdge via") >= 0) {
 							$("#hardwarecontent #hardwareparamssolaredgeapi #apikey").val(data["Username"]);
+							$("#hardwarecontent #hardwareparamssolaredgeapi #webpassword").val(data["Password"]);
+							$("#hardwarecontent #hardwareparamssolaredgeapi #polloptimizers").prop('checked', parseInt(data["Mode1"]) != 0);
+							var extra = data["Extra"] || "";
+							var parts = extra.split("|");
+							if (parts.length >= 1) {
+								$("#hardwarecontent #hardwareparamssolaredgeapi #webusername").val(parts[0]);
+							}
+							if (parts.length >= 2) {
+								$("#hardwarecontent #hardwareparamssolaredgeapi #siteid").val(parts[1]);
+							}
 						}
 						else if (data["Type"].indexOf("Nest Th") >= 0 && data["Type"].indexOf("OAuth") >= 0) {
 							$("#hardwarecontent #hardwareparamsnestoauthapi #apikey").val(data["Username"]);
