@@ -1098,8 +1098,48 @@
             <br>
             <table class="display" id="hardwareparamssolaredgeapi" border="0" cellpadding="0" cellspacing="20">
                 <tr>
+                    <td align="right" style="width:110px"></td>
+                    <td>
+                        <b>Monitoring API</b><br>
+                        <span>Provides: inverter telemetry, site overview (current power, today/month/year/lifetime energy), energy details (production/consumption/feed-in), battery status and power flow.</span>
+                    </td>
+                </tr>
+                <tr>
                     <td align="right" style="width:110px"><label><span data-i18n="API Key"></span>:</label></td>
                     <td><input type="text" id="apikey" style="width: 280px; padding: .2em;" class="text ui-widget-content ui-corner-all"></td>
+                </tr>
+                <tr>
+                    <td></td>
+                    <td>&nbsp;</td>
+                </tr>
+                <tr>
+                    <td align="right" style="width:110px"></td>
+                    <td>
+                        <b>Web Portal</b> (optional)<br>
+                        <span>Provides: per-optimizer, per-string and per-inverter energy data from the SolarEdge monitoring portal. Uses your monitoring.solaredge.com login credentials.</span>
+                    </td>
+                </tr>
+                <tr>
+                    <td align="right" style="width:110px"><label><span data-i18n="Site ID">Site ID</span>:</label></td>
+                    <td>
+                        <input type="text" id="siteid" style="width: 280px; padding: .2em;" class="text ui-widget-content ui-corner-all"><br>
+                        <span>Leave empty to auto-detect from API or web portal.</span>
+                    </td>
+                </tr>
+                <tr>
+                    <td align="right" style="width:110px"><label><span data-i18n="Web Username">Web Username</span>:</label></td>
+                    <td><input type="text" id="webusername" style="width: 280px; padding: .2em;" class="text ui-widget-content ui-corner-all"></td>
+                </tr>
+                <tr>
+                    <td align="right" style="width:110px"><label><span data-i18n="Web Password">Web Password</span>:</label></td>
+                    <td><input type="password" id="webpassword" style="width: 280px; padding: .2em;" class="text ui-widget-content ui-corner-all"></td>
+                </tr>
+                <tr>
+                    <td align="right" style="vertical-align:top;"><span data-i18n="Poll Optimizers">Poll Optimizers</span>:</td>
+                    <td>
+                        <input type="checkbox" id="polloptimizers" name="polloptimizers"><label for="polloptimizers"></label><br>
+                        <span>Additionally polls real-time power, voltage and current per optimizer (1 request per optimizer every 10 minutes, only between sunrise and sunset).</span>
+                    </td>
                 </tr>
             </table>
         </div>

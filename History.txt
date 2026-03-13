@@ -12,6 +12,7 @@ Version 2026.xxxx
 - Added: Docker environment variable support for admin provisioning (DOMOTICZ_ADMIN_PASSWORD, DOMOTICZ_ADMIN_USERNAME)
 - Added: dzVents, at_startup trigger for scripts that should run once at Domoticz startup
 - Added: Enphase, battery storage sensors (reserve SOC, available energy, max capacity, storage mode, charge from grid control)
+- Added: SolarEdge, web portal polling for per-optimizer, per-string and per-inverter energy and real-time data
 - Added: Enphase, Encharge battery temperature sensor
 - Added: Enphase, grid status reporting for battery systems
 - Added: Enever, updated providers and API v3
