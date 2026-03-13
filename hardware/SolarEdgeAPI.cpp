@@ -1,3 +1,13 @@
+/**
+ * SolarEdge API & Web Portal Hardware Driver v2.0
+ *
+ * Author: GizMoCuz
+ *
+ * Credits for Web API:
+ *   - AndrewTapp / solaredgeoptimizers
+ *   - Claude (Anthropic) - AI-assisted development
+ */
+
 #include "stdafx.h"
 #include "SolarEdgeAPI.h"
 #include "../main/Helper.h"
@@ -8,7 +18,7 @@
 #include "../main/json_helper.h"
 #include "../main/RFXtrx.h"
 #include "../main/mainworker.h"
-#include <iostream>
+#include <libwebem/Base64.h>
 
 #define SE_VOLT_DC 20
 #define SE_POWERLIMIT 21
@@ -36,6 +46,21 @@
 #define SE_ENERGY_SELFCONSUMPTION 52
 #define SE_ENERGY_FEEDIN 53
 #define SE_ENERGY_PURCHASED 54
+
+// Optimizer web-portal sensor sub-IDs (per optimizer node, base node 300+)
+#define SE_OPT_POWER 1
+#define SE_OPT_VOLTAGE 2
+#define SE_OPT_OPTIMIZER_VOLTAGE 3
+#define SE_OPT_CURRENT 4
+#define SE_OPT_LIFETIME_ENERGY 5
+
+// Web portal node ID bases for inverters and strings
+#define SE_WEB_INVERTER_BASE 250
+#define SE_WEB_STRING_BASE 260
+
+// Web portal energy sub-IDs (for inverter/string nodes)
+#define SE_WEB_ENERGY_TODAY 1
+#define SE_WEB_ENERGY_LIFETIME 2
 
 
 #ifdef _DEBUG
@@ -73,13 +98,27 @@ std::string ReadFile(std::string filename)
 }
 #endif
 
-SolarEdgeAPI::SolarEdgeAPI(const int ID, const std::string& APIKey) :
+SolarEdgeAPI::SolarEdgeAPI(const int ID, const std::string& APIKey, const std::string& Password, const std::string& Extra, const int Mode1) :
 	m_APIKey(APIKey)
 {
 	m_SiteID = 0;
 	m_HwdID = ID;
 	m_totalActivePower = 0;
 	m_totalEnergy = 0;
+
+	// Parse Extra: "web_username|site_id"
+	size_t pipePos = Extra.find('|');
+	if (pipePos != std::string::npos)
+	{
+		m_WebUsername = Extra.substr(0, pipePos);
+		m_WebSiteID = Extra.substr(pipePos + 1);
+	}
+	else
+	{
+		m_WebUsername = Extra; // No pipe, treat entire string as username
+	}
+	m_WebPassword = Password;
+	m_bPollOptimizers = (Mode1 != 0);
 }
 
 bool SolarEdgeAPI::StartHardware()
@@ -109,13 +148,32 @@ bool SolarEdgeAPI::StopHardware()
 void SolarEdgeAPI::Do_Work()
 {
 	Log(LOG_STATUS, "Worker started...");
-	int sec_counter = 895;
+
+	// Polling intervals (seconds)
+	// Layout: every 2 hours (also provides site/inverter/string/optimizer energy data)
+	// Optimizer systemData: every 10 minutes (20 calls per cycle, daylight only)
+	//
+	// With 20 optimizers at 10-min intervals during ~14h daylight:
+	//   Layout: ~12 calls/day
+	//   systemData: ~84 cycles × 20 = ~1680 calls/day (web portal, no strict daily limit)
+	constexpr int LAYOUT_INTERVAL = 7200;         // 2 hours
+	constexpr int OPTIMIZER_DATA_INTERVAL = 600;   // 10 minutes
+
+	// Start counters so layout runs ~5s after startup, optimizer data ~15s after
+	int sec_counter = 295;
+	int layout_timer = LAYOUT_INTERVAL - 5;
+	int optimizer_data_timer = OPTIMIZER_DATA_INTERVAL - 15;
+
 	while (!IsStopRequested(1000))
 	{
 		sec_counter++;
-		if (sec_counter % 12 == 0) {
+		layout_timer++;
+		optimizer_data_timer++;
+
+		if (sec_counter % 12 == 0)
 			m_LastHeartbeat = mytime(nullptr);
-		}
+
+		// API-key polling (site overview, inverter telemetry, energy details, battery)
 		if (sec_counter % 300 == 0)
 		{
 			if (m_SiteID == 0)
@@ -125,12 +183,32 @@ void SolarEdgeAPI::Do_Work()
 				GetBatteryFromInventory();
 				GetInverters();
 			}
+
 			if (!m_inverters.empty())
 				GetMeterDetails();
 			GetOverview();
 			GetEnergyDetails();
 			if (m_bPollBattery)
 				GetBatteryDetails();
+		}
+
+		// Web portal polling (requires web credentials)
+		bool bWebCredentials = !m_WebUsername.empty() && !m_WebPassword.empty();
+
+		// Web portal: refresh site layout + energy every 2 hours (site/inverter/string/optimizer energy)
+		// Need either a configured Web Site ID or an API-discovered m_SiteID
+		if (bWebCredentials && !m_WebSiteID.empty() && (m_optimizers.empty() || layout_timer >= LAYOUT_INTERVAL))
+		{
+			layout_timer = 0;
+			GetSiteLayout();
+		}
+
+		// Web portal: poll optimizer real-time data (power/voltage/current) every 10 minutes
+		// This makes 1 HTTP call per optimizer, so gated by the Poll Optimizers setting
+		if (bWebCredentials && m_bPollOptimizers && !m_optimizers.empty() && optimizer_data_timer >= OPTIMIZER_DATA_INTERVAL)
+		{
+			optimizer_data_timer = 0;
+			GetOptimizerData();
 		}
 	}
 	Log(LOG_STATUS, "Worker stopped...");
@@ -215,6 +293,8 @@ bool SolarEdgeAPI::GetSite()
 		return false;
 	}
 	m_SiteID = reading["id"].asInt();
+	if (m_WebSiteID.empty())
+		m_WebSiteID = std::to_string(m_SiteID);
 	return true;
 }
 
@@ -749,3 +829,371 @@ void SolarEdgeAPI::GetEnergyDetails()
 	}
 }
 
+
+bool SolarEdgeAPI::GetSiteLayout()
+{
+	std::string sResult;
+
+#ifdef DEBUG_SolarEdgeAPIR
+	sResult = ReadFile("E:\\SolarEdge_web_layout.json");
+#else
+	// Determine site ID for URL
+	if (m_WebSiteID.empty())
+	{
+		Log(LOG_ERROR, "Web portal: No Site ID available! Configure Site ID or enable API polling.");
+		return false;
+	}
+
+	// Build Basic Auth header
+	std::string credentials = m_WebUsername + ":" + m_WebPassword;
+	std::string basicAuth = "Authorization: Basic " + base64_encode(credentials);
+
+	std::vector<std::string> ExtraHeaders;
+	ExtraHeaders.push_back(basicAuth);
+	ExtraHeaders.push_back("Accept: */*");
+	ExtraHeaders.push_back("Content-Type: application/json");
+	ExtraHeaders.push_back("X-Requested-With: XMLHttpRequest");
+
+	std::stringstream sURL;
+	sURL << "https://monitoring.solaredge.com/solaredge-apigw/api/sites/" << m_WebSiteID << "/layout/logical";
+
+	if (!HTTPClient::GET(sURL.str(), ExtraHeaders, sResult))
+	{
+		Log(LOG_ERROR, "Web portal: Error getting site layout!");
+		return false;
+	}
+#ifdef DEBUG_SolarEdgeAPIW
+	SaveString2Disk(sResult, "E:\\SolarEdge_web_layout.json");
+#endif
+#endif
+
+	Json::Value root;
+	if (!ParseJSon(sResult, root) || !root.isObject())
+	{
+		Log(LOG_ERROR, "Web portal: Invalid JSON in site layout response!");
+		return false;
+	}
+	if (root["logicalTree"].empty())
+	{
+		Log(LOG_ERROR, "Web portal: No logicalTree in site layout response!");
+		return false;
+	}
+
+	m_optimizers.clear();
+	m_webInverters.clear();
+	m_webStrings.clear();
+	int optimizerNodeBase = 300;
+	int inverterIndex = 0;
+	int stringIndex = 0;
+
+	const Json::Value& tree = root["logicalTree"];
+	const Json::Value& inverterChildren = tree["children"];
+	if (inverterChildren.empty())
+		return true;
+
+	for (const auto& inverterNode : inverterChildren)
+	{
+		const Json::Value& invData = inverterNode["data"];
+		if (invData.empty())
+			continue;
+
+		std::string inverterName = invData.get("displayName", invData.get("name", "").asString()).asString();
+
+		// Collect inverter info
+		int invId = invData.get("id", 0).asInt();
+		if (invId != 0)
+		{
+			_tWebNodeInfo invInfo;
+			invInfo.reporterId = invId;
+			invInfo.displayName = inverterName;
+			invInfo.nodeId = SE_WEB_INVERTER_BASE + inverterIndex++;
+			m_webInverters.push_back(invInfo);
+		}
+
+		const Json::Value& strings = inverterNode["children"];
+		if (strings.empty())
+			continue;
+
+		for (const auto& stringNode : strings)
+		{
+			const Json::Value& strData = stringNode["data"];
+
+			// Collect string info
+			if (!strData.empty())
+			{
+				int strId = strData.get("id", 0).asInt();
+				if (strId != 0)
+				{
+					_tWebNodeInfo strInfo;
+					strInfo.reporterId = strId;
+					strInfo.displayName = "String " + strData.get("displayName", strData.get("name", "").asString()).asString();
+					strInfo.nodeId = SE_WEB_STRING_BASE + stringIndex++;
+					m_webStrings.push_back(strInfo);
+				}
+			}
+
+			const Json::Value& panels = stringNode["children"];
+			if (panels.empty())
+				continue;
+
+			for (const auto& panelNode : panels)
+			{
+				const Json::Value& data = panelNode["data"];
+				if (data.empty())
+					continue;
+
+				// Only pick up POWER_BOX (optimizer) nodes
+				std::string nodeType = data.get("type", "").asString();
+				if (nodeType != "POWER_BOX")
+					continue;
+
+				int id = data.get("id", 0).asInt();
+				if (id == 0)
+					continue;
+
+				_tOptimizerInfo info;
+				info.reporterId = id;
+				info.serialNumber = data.get("serialNumber", "").asString();
+				info.displayName = data.get("displayName", data.get("name", "").asString()).asString();
+				info.inverterName = inverterName;
+				info.nodeId = optimizerNodeBase++;
+				m_optimizers.push_back(info);
+			}
+		}
+	}
+
+	Log(LOG_STATUS, "Web portal: Discovered %d inverters, %d strings, %d optimizers",
+		(int)m_webInverters.size(), (int)m_webStrings.size(), (int)m_optimizers.size());
+	GetEnergyFromLayout(root["reportersData"]);
+	return true;
+}
+
+void SolarEdgeAPI::GetOptimizerData()
+{
+	if (m_optimizers.empty())
+		return;
+
+	// Check daylight window
+	time_t atime = mytime(nullptr);
+	struct tm ltime;
+	localtime_r(&atime, &ltime);
+	int ActHourMin = (ltime.tm_hour * 60) + ltime.tm_min;
+	int sunRise = getSunRiseSunSetMinutes(true);
+	int sunSet = getSunRiseSunSetMinutes(false);
+	if (ActHourMin + 60 < sunRise)
+		return;
+	if (ActHourMin - 60 > sunSet)
+		return;
+
+#ifndef DEBUG_SolarEdgeAPIR
+	std::string basicAuth = "Authorization: Basic " + base64_encode(m_WebUsername + ":" + m_WebPassword);
+#endif
+
+	for (const auto& opt : m_optimizers)
+	{
+		std::string sResult;
+#ifdef DEBUG_SolarEdgeAPIR
+		sResult = ReadFile("E:\\SolarEdge_web_optimizer_" + std::to_string(opt.reporterId) + ".html");
+#else
+		time_t now = mytime(nullptr);
+		std::stringstream sURL;
+		sURL << "https://monitoring.solaredge.com/solaredge-web/p/systemData?reporterId=" << opt.reporterId
+			<< "&type=panel&activeTab=0&fieldId=" << m_WebSiteID
+			<< "&isPublic=false&locale=en_US&v=" << (long long)now * 1000;
+
+		std::vector<std::string> ExtraHeaders;
+		ExtraHeaders.push_back(basicAuth);
+		ExtraHeaders.push_back("Accept: */*");
+		ExtraHeaders.push_back("X-Requested-With: XMLHttpRequest");
+
+		// Use bStartNewSession=true to avoid stale cookie jar interfering with Basic Auth
+		if (!HTTPClient::GET(sURL.str(), ExtraHeaders, sResult, true, true))
+		{
+			Log(LOG_ERROR, "Web portal: Error getting data for optimizer %d (%s)!", opt.reporterId, opt.displayName.c_str());
+			return;
+		}
+#ifdef DEBUG_SolarEdgeAPIW
+		SaveString2Disk(sResult, "E:\\SolarEdge_web_optimizer_" + std::to_string(opt.reporterId) + ".html");
+#endif
+#endif
+
+		// The response is HTML containing SE.systemData = { ... }
+		// Extract the JSON block after "SE.systemData = "
+		const std::string marker = "SE.systemData = ";
+		size_t pos = sResult.find(marker);
+		if (pos == std::string::npos)
+		{
+			Log(LOG_ERROR, "Web portal: systemData marker not found for optimizer %d!", opt.reporterId);
+			continue;
+		}
+		pos += marker.size();
+		// Find the opening brace
+		size_t braceStart = sResult.find('{', pos);
+		if (braceStart == std::string::npos)
+			continue;
+
+		// Find the matching closing brace
+		int depth = 0;
+		size_t braceEnd = braceStart;
+		for (size_t i = braceStart; i < sResult.size(); i++)
+		{
+			if (sResult[i] == '{')
+				depth++;
+			else if (sResult[i] == '}')
+			{
+				depth--;
+				if (depth == 0)
+				{
+					braceEnd = i;
+					break;
+				}
+			}
+		}
+		if (depth != 0)
+			continue;
+
+		std::string jsonStr = sResult.substr(braceStart, braceEnd - braceStart + 1);
+		Json::Value dataRoot;
+		if (!ParseJSon(jsonStr, dataRoot) || !dataRoot.isObject())
+		{
+			Log(LOG_ERROR, "Web portal: Invalid systemData JSON for optimizer %d!", opt.reporterId);
+			continue;
+		}
+
+		// Response is per-optimizer: measurements are directly on root object with string values
+		const Json::Value& measurements = dataRoot["measurements"];
+		if (measurements.empty())
+			continue;
+
+		char szTmp[200];
+
+		if (!measurements["Power [W]"].empty())
+		{
+			float power = static_cast<float>(atof(measurements["Power [W]"].asString().c_str()));
+			snprintf(szTmp, sizeof(szTmp), "Power %s", opt.displayName.c_str());
+			SendWattMeter(opt.nodeId, SE_OPT_POWER, 255, power, szTmp);
+		}
+		if (!measurements["Voltage [V]"].empty())
+		{
+			float voltage = static_cast<float>(atof(measurements["Voltage [V]"].asString().c_str()));
+			snprintf(szTmp, sizeof(szTmp), "Voltage %s", opt.displayName.c_str());
+			SendVoltageSensor(opt.nodeId, SE_OPT_VOLTAGE, 255, voltage, szTmp);
+		}
+		if (!measurements["Optimizer Voltage [V]"].empty())
+		{
+			float optVoltage = static_cast<float>(atof(measurements["Optimizer Voltage [V]"].asString().c_str()));
+			snprintf(szTmp, sizeof(szTmp), "Optimizer Voltage %s", opt.displayName.c_str());
+			SendVoltageSensor(opt.nodeId, SE_OPT_OPTIMIZER_VOLTAGE, 255, optVoltage, szTmp);
+		}
+		if (!measurements["Current [A]"].empty())
+		{
+			float current = static_cast<float>(atof(measurements["Current [A]"].asString().c_str()));
+			snprintf(szTmp, sizeof(szTmp), "Current %s", opt.displayName.c_str());
+			SendCustomSensor(opt.nodeId, SE_OPT_CURRENT, 255, current, szTmp, "A");
+		}
+	}
+}
+
+void SolarEdgeAPI::GetEnergyFromLayout(const Json::Value& reportersData)
+{
+	if (reportersData.empty())
+		return;
+
+	char szTmp[200];
+
+	// Site-level energy (uses same device IDs as GetOverview for backward compatibility)
+	if (m_SiteID != 0)
+	{
+		std::string siteKey = std::to_string(m_SiteID);
+		if (!reportersData[siteKey].empty() && !reportersData[siteKey]["energy"].empty())
+		{
+			double energyKwh = reportersData[siteKey]["energy"].asDouble();
+			std::string units = reportersData[siteKey].get("units", "kWh").asString();
+			if (units == "Wh")
+				energyKwh /= 1000.0;
+
+			if (energyKwh > 0)
+			{
+				SendKwhMeter(200, SE_OVERVIEW_TODAY, 255, 0, energyKwh, "Energy Today");
+
+				double totalKwh = m_counterHelpers[m_SiteID].CheckTotalCounter(this, 200, SE_OVERVIEW_LIFETIME, 1, energyKwh);
+				if (totalKwh > 0)
+					SendKwhMeter(200, SE_OVERVIEW_LIFETIME, 255, 0, totalKwh, "Lifetime Energy");
+			}
+		}
+	}
+
+	// Inverter-level energy
+	for (const auto& inv : m_webInverters)
+	{
+		std::string key = std::to_string(inv.reporterId);
+		if (reportersData[key].empty() || reportersData[key]["energy"].empty())
+			continue;
+
+		double energyKwh = reportersData[key]["energy"].asDouble();
+		std::string units = reportersData[key].get("units", "kWh").asString();
+		if (units == "Wh")
+			energyKwh /= 1000.0;
+
+		if (energyKwh <= 0)
+			continue;
+
+		snprintf(szTmp, sizeof(szTmp), "Energy Today Inverter %s", inv.displayName.c_str());
+		SendKwhMeter(inv.nodeId, SE_WEB_ENERGY_TODAY, 255, 0, energyKwh, szTmp);
+
+		double totalKwh = m_counterHelpers[inv.reporterId].CheckTotalCounter(this, inv.nodeId, SE_WEB_ENERGY_LIFETIME, 1, energyKwh);
+		if (totalKwh > 0)
+		{
+			snprintf(szTmp, sizeof(szTmp), "Lifetime Energy Inverter %s", inv.displayName.c_str());
+			SendKwhMeter(inv.nodeId, SE_WEB_ENERGY_LIFETIME, 255, 0, totalKwh, szTmp);
+		}
+	}
+
+	// String-level energy
+	for (const auto& str : m_webStrings)
+	{
+		std::string key = std::to_string(str.reporterId);
+		if (reportersData[key].empty() || reportersData[key]["energy"].empty())
+			continue;
+
+		double energyKwh = reportersData[key]["energy"].asDouble();
+		std::string units = reportersData[key].get("units", "kWh").asString();
+		if (units == "Wh")
+			energyKwh /= 1000.0;
+
+		if (energyKwh <= 0)
+			continue;
+
+		snprintf(szTmp, sizeof(szTmp), "Energy Today %s", str.displayName.c_str());
+		SendKwhMeter(str.nodeId, SE_WEB_ENERGY_TODAY, 255, 0, energyKwh, szTmp);
+
+		double totalKwh = m_counterHelpers[str.reporterId].CheckTotalCounter(this, str.nodeId, SE_WEB_ENERGY_LIFETIME, 1, energyKwh);
+		if (totalKwh > 0)
+		{
+			snprintf(szTmp, sizeof(szTmp), "Lifetime Energy %s", str.displayName.c_str());
+			SendKwhMeter(str.nodeId, SE_WEB_ENERGY_LIFETIME, 255, 0, totalKwh, szTmp);
+		}
+	}
+
+	// Optimizer-level energy
+	for (const auto& opt : m_optimizers)
+	{
+		std::string key = std::to_string(opt.reporterId);
+		if (reportersData[key].empty() || reportersData[key]["energy"].empty())
+			continue;
+
+		double energyWh = reportersData[key]["energy"].asDouble();
+		double energyKwh = energyWh / 1000.0;
+
+		if (energyKwh <= 0)
+			continue;
+
+		// Use CounterHelper to accumulate daily energy into lifetime total
+		double totalKwh = m_counterHelpers[opt.reporterId].CheckTotalCounter(this, opt.nodeId, SE_OPT_LIFETIME_ENERGY, 1, energyKwh);
+		if (totalKwh > 0)
+		{
+			snprintf(szTmp, sizeof(szTmp), "Lifetime Energy %s", opt.displayName.c_str());
+			SendKwhMeter(opt.nodeId, SE_OPT_LIFETIME_ENERGY, 255, 0, totalKwh, szTmp);
+		}
+	}
+}
