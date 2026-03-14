@@ -434,7 +434,7 @@ define([
 
 				dashboardService.switchModal(idx, status, 1)
 					.then(function () {
-						setTimeout(function () {
+						$timeout(function () {
 							HideNotify();
 						}, 1000);
 					})

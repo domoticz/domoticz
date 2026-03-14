@@ -445,7 +445,7 @@
 						<span ng-if="item.Temp !== undefined">{{item.Temp}}&deg; {{$parent.config.TempSign}}</span>
 						<!-- Chill -->
 						<span ng-if="(item.SetPoint !== undefined || item.Temp !== undefined) && item.Chill !== undefined">, </span>
-						<span ng-if="item.Chill !== undefined">Chill: {{item.Chill}}&deg; {{$parent.config.TempSign}}</span>
+						<span ng-if="item.Chill !== undefined"><span data-i18n="Chill">Chill</span>: {{item.Chill}}&deg; {{$parent.config.TempSign}}</span>
 						<!-- Humidity -->
 						<span ng-if="(item.SetPoint !== undefined || item.Temp !== undefined || item.Chill !== undefined) && item.Humidity !== undefined">, </span>
 						<span ng-if="item.Humidity !== undefined">{{item.Humidity}} %</span>
@@ -455,7 +455,7 @@
 						<span ng-if="item.Barometer !== undefined">{{item.Barometer}} hPa</span>
 						<span ng-if="item.ForecastStr !== undefined"> ({{item.ForecastStr}})</span>
 						<!-- Dew Point -->
-						<span ng-if="item.DewPoint !== undefined"><br>Dew Point: {{item.DewPoint}}&deg; {{$parent.config.TempSign}}</span>
+						<span ng-if="item.DewPoint !== undefined"><br><span data-i18n="Dew Point">Dew Point</span>: {{item.DewPoint | number:2}}&deg; {{$parent.config.TempSign}}</span>
 					</td>
 				</tr>
 			</table>
@@ -478,7 +478,7 @@
 					<td id="status" class="status">
 						<!-- Rain -->
 						<span ng-if="item.Rain !== undefined">
-							{{item.Rain}} mm<span ng-if="item.RainRate !== undefined">, Rate: {{item.RainRate}} mm/h</span>
+							{{item.Rain}} mm<span ng-if="item.RainRate !== undefined">, <span data-i18n="Rain rate">Rain rate</span>: {{item.RainRate}} mm/h</span>
 						</span>
 						<!-- Visibility -->
 						<span ng-if="item.Rain === undefined && item.Visibility !== undefined">{{item.Data}}</span>
@@ -488,11 +488,11 @@
 						<span ng-if="item.Rain === undefined && item.Visibility === undefined && item.UVI === undefined && item.Radiation !== undefined">{{item.Data}}</span>
 						<!-- Wind/Direction -->
 						<span ng-if="item.Rain === undefined && item.Visibility === undefined && item.UVI === undefined && item.Radiation === undefined && item.Direction !== undefined">
-							{{item.Direction}} {{item.DirectionStr}}<span ng-if="item.Speed !== undefined">, Speed: {{item.Speed}} {{$parent.config.WindSign}}</span><span ng-if="item.Gust !== undefined">, Gust: {{item.Gust}} {{$parent.config.WindSign}}</span>
+							{{item.Direction}} {{item.DirectionStr}}<span ng-if="item.Speed !== undefined">, <span data-i18n="Speed">Speed</span>: {{item.Speed}} {{$parent.config.WindSign}}</span><span ng-if="item.Gust !== undefined">, <span data-i18n="Gust">Gust</span>: {{item.Gust}} {{$parent.config.WindSign}}</span>
 						</span>
 						<!-- Barometer -->
 						<span ng-if="item.Rain === undefined && item.Visibility === undefined && item.UVI === undefined && item.Radiation === undefined && item.Direction === undefined && item.Barometer !== undefined">
-							{{item.Barometer}} hPa<span ng-if="item.ForecastStr !== undefined">, Prediction: {{item.ForecastStr}}</span>
+							{{item.Barometer}} hPa<span ng-if="item.ForecastStr !== undefined">, <span data-i18n="Prediction">Prediction</span>: {{item.ForecastStr}}</span>
 						</span>
 					</td>
 				</tr>

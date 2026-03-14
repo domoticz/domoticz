@@ -13,7 +13,7 @@ define(['app'], function (app) {
                             HideNotify();
                             bootbox.alert($.t('Problem sending switch command'));
                         }
-                        setTimeout(function () { HideNotify(); }, 1000);
+                        $timeout(function () { HideNotify(); }, 1000);
                     },
                     error: function () {
                         HideNotify();
@@ -247,8 +247,8 @@ define(['app'], function (app) {
                         if ($scope.onUpdate) {
                             $scope.onUpdate();
                         }
-                    }).catch(function () {
-                        ShowNotify($.t('Problem sending switch command'), 2500, true);
+                    }).catch(function (result) {
+                        bootbox.alert(result.message || $.t('Problem sending switch command'));
                     });
                 };
 
@@ -282,8 +282,8 @@ define(['app'], function (app) {
                         if ($scope.onUpdate) {
                             $scope.onUpdate();
                         }
-                    }).catch(function () {
-                        ShowNotify($.t('Problem sending switch command'), 2500, true);
+                    }).catch(function (result) {
+                        bootbox.alert(result.message || $.t('Problem sending switch command'));
                     });
                 };
 
@@ -755,7 +755,7 @@ define(['app'], function (app) {
                                         $(this).slider("option", "disabled", true);
                                 },
                                 slide: function (event, ui) {
-                                    clearInterval($.setDimValue);
+                                    clearTimeout($.setDimValue);
                                     var maxValue = $(this).slider("option", "max");
                                     var dtype = $(this).slider("option", "type");
                                     var isled = $(this).data('isled');
@@ -785,14 +785,13 @@ define(['app'], function (app) {
                                             }
                                         }
                                     }
-                                    if (dtype != "relay" && typeof SetDimValue !== 'undefined')
-                                        $.setDimValue = setInterval(function () { SetDimValue(idx, ui.value); }, 500);
+                                    if (dtype != "relay")
+                                        $.setDimValue = setTimeout(function () { scope.ctrl.setDimLevel(ui.value); }, 500);
                                 },
                                 stop: function (event, ui) {
-                                    var idx = $(this).data('idx');
                                     var dtype = $(this).slider("option", "type");
-                                    if (dtype == "relay" && typeof SetDimValue !== 'undefined')
-                                        SetDimValue(idx, ui.value);
+                                    if (dtype == "relay")
+                                        scope.ctrl.setDimLevel(ui.value);
                                 }
                             });
                             $slider.css('visibility', 'visible');
@@ -817,8 +816,27 @@ define(['app'], function (app) {
                         var $select = $(this);
                         if (!$select.data('ui-selectmenu')) {
                             $select.selectmenu({
-                                width: false
+                                width: false,
+                                change: function (event, ui) {
+                                    var idx = $select[0].selectedIndex;
+                                    var levels = scope.ctrl.getSelectorLevels();
+                                    if (idx >= 0 && idx < levels.length) {
+                                        var selected = levels[idx];
+                                        scope.$apply(function () {
+                                            scope.ctrl.setSelectorLevel(selected.value, selected.name);
+                                        });
+                                    }
+                                }
                             });
+                            // Set initial selected index based on active level
+                            var initLevels = scope.ctrl.getSelectorLevels();
+                            for (var k = 0; k < initLevels.length; k++) {
+                                if (initLevels[k].isActive) {
+                                    $select[0].selectedIndex = k;
+                                    break;
+                                }
+                            }
+                            $select.selectmenu('refresh');
                         }
                     });
 
@@ -836,13 +854,26 @@ define(['app'], function (app) {
                     }
                 });
 
-                // Update slider value when device.LevelInt changes (e.g. WebSocket updates)
+                // Update slider/selectmenu value when device.LevelInt changes (e.g. WebSocket updates)
                 scope.$watch('device.LevelInt', function(newVal) {
                     if (typeof newVal !== 'undefined') {
                         element.find('.dimslider').each(function() {
                             var $slider = $(this);
                             if ($slider.hasClass('ui-slider')) {
                                 $slider.slider('value', newVal);
+                            }
+                        });
+                        element.find('.selectorlevels select').each(function() {
+                            var $select = $(this);
+                            if ($select.data('ui-selectmenu')) {
+                                var levels = scope.ctrl.getSelectorLevels();
+                                for (var k = 0; k < levels.length; k++) {
+                                    if (levels[k].value === newVal) {
+                                        $select[0].selectedIndex = k;
+                                        $select.selectmenu('refresh');
+                                        break;
+                                    }
+                                }
                             }
                         });
                     }

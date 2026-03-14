@@ -106,7 +106,7 @@
 								</td>
 								<td id="status" class="status"><span>
 									<span ng-if="device.HumidityStatus">{{device.HumidityStatus}}</span>
-									<span ng-if="device.DewPoint != undefined"><span ng-if="device.HumidityStatus">, </span>Dew: {{device.DewPoint}}&deg;</span>
+									<span ng-if="device.DewPoint != undefined"><span ng-if="device.HumidityStatus">, </span><span data-i18n="Dew Point">Dew Point</span>: {{device.DewPoint | number:2}}&deg;</span>
 									<span ng-if="device.ForecastStr != undefined"><br>{{device.ForecastStr}}</span>
 								</span></td>
 								<td id="lastupdate" class="lastupdate"><span data-i18n="Last Seen" style="font-style: italic">Last Seen</span>: <span>{{device.LastUpdate}}</span></td>
