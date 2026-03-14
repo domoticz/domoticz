@@ -407,7 +407,9 @@ define(['app'], function (app) {
                     // Door Lock / Door Lock Inverted use InternalState (not Status) to pick icon
                     if (device.SwitchType == 'Door Lock' || device.SwitchType == 'Door Lock Inverted') {
                         var lockImage = device.Image || 'Light';
-                        lockImage = lockImage.charAt(0).toUpperCase() + lockImage.slice(1);
+                        if (device.CustomImage == 0) {
+                            lockImage = lockImage.charAt(0).toUpperCase() + lockImage.slice(1);
+                        }
                         var isUnlocked = device.InternalState == 'Unlocked';
                         return 'images/' + lockImage + '48_' + (isUnlocked ? 'On' : 'Off') + '.png';
                     }
@@ -418,8 +420,10 @@ define(['app'], function (app) {
                     if (!image) {
                         image = 'Light';
                     }
-                    // Capitalize first letter to match file naming convention
-                    image = image.charAt(0).toUpperCase() + image.slice(1);
+                    // Only capitalize for built-in icons; custom icons must preserve their original casing
+                    if (device.CustomImage == 0) {
+                        image = image.charAt(0).toUpperCase() + image.slice(1);
+                    }
 
                     // RGB/LED dimmers with default image use RGB icon
                     if (ctrl.isDimmer() && ctrl.isRGB() && device.CustomImage == 0) {
@@ -583,7 +587,9 @@ define(['app'], function (app) {
                 ctrl.getMediaPlayerIcon = function () {
                     var image = device.CustomImage == 0 ? device.TypeImg : device.Image;
                     if (!image) image = 'Light';
-                    image = image.charAt(0).toUpperCase() + image.slice(1);
+                    if (device.CustomImage == 0) {
+                        image = image.charAt(0).toUpperCase() + image.slice(1);
+                    }
                     if (device.Status !== 'Off' && device.Status !== '0' && device.Status !== 'Disconnected') {
                         return 'images/' + image + '48_On.png';
                     }
