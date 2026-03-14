@@ -42,7 +42,7 @@
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
 
-#define DB_VERSION 176
+#define DB_VERSION 177
 
 #define DEFAULT_ADMINUSER "admin"
 #define DEFAULT_ADMINPWD "domoticz"
@@ -267,7 +267,8 @@ constexpr auto sqlCreateHardware =
 "[Mode5] CHAR DEFAULT 0, "
 "[Mode6] CHAR DEFAULT 0, "
 "[DataTimeout] INTEGER DEFAULT 0, "
-"[Configuration] TEXT DEFAULT (''));";
+"[Configuration] TEXT DEFAULT (''), "
+"[Settings] TEXT DEFAULT (''));";
 
 constexpr auto sqlCreateUsers =
 "CREATE TABLE IF NOT EXISTS [Users] ("
@@ -3344,6 +3345,13 @@ bool CSQLHelper::OpenDatabase()
 			// Now stored as *10 (e.g., 10130). Patch old data to match.
 			query("UPDATE Temperature_Calendar SET Barometer = Barometer * 10 "
 				"WHERE Barometer > 0 AND Barometer < 8500");
+		}
+		if (dbversion < 177)
+		{
+			if (!DoesColumnExistsInTable("Settings", "Hardware"))
+			{
+				query("ALTER TABLE Hardware ADD COLUMN [Settings] TEXT DEFAULT ''");
+			}
 		}
 	}
 	else if (bNewInstall)
