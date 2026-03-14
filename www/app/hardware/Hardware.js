@@ -5761,43 +5761,20 @@ define(['app'], function (app) {
 								if (item.description.length > 0) {
 									PluginParams += '<tr><td></td><td>' + item.description + '</td></tr>';
 								}
-								$.each(item.parameters, function (i, param) {
+								var currentGroup = "";
+								var renderParam = function (param) {
 									if (typeof (param.description) != "undefined") {
 										PluginParams += '<tr><td></td><td>' + param.description + '</td></tr>';
 									}
-									PluginParams += '<tr><td align="right" style="width:110px"><label id="lbl' + param.field + '"><span data-i18n="' + param.label + '">' + param.label + '</span>:</label></td>';
-									if (typeof (param.options) == "undefined") {
-										if (param.field == "SerialPort") {
-											PluginParams += '<td><select id="' + param.field + '" style="width:' + param.width + '" class="combobox ui-corner-all">';
-											$.each($("#hardwareparamsserial #comboserialport > option"), function (i, option) {
-												PluginParams += '<option data-i18n="' + option.innerText + '" value="' + option.innerText + '"';
-												PluginParams += '>' + option.innerText + '</option>';
-											});
-											PluginParams += '</select></td>';
-										} else {
-											PluginParams += '<td>'
-											var nbRows=parseInt(param.rows);
-											if (nbRows >= 0) {
-												PluginParams += '<textarea id="' + param.field + '" style="width:' + param.width + '; padding: .2em;" class="text ui-widget-content ui-corner-all" rows="' + nbRows + '" ';
-												if ((typeof (param.required) != "undefined") && (param.required == "true")) PluginParams += 'required';
-												PluginParams += '>';
-												if (typeof (param.default) != "undefined") PluginParams += param.default;
-												PluginParams +='</textarea>';
-											} else {
-												if ((typeof (param.password) != "undefined") && (param.password == "true"))
-													PluginParams += '<input type="password" ';
-												else
-													PluginParams += '<input type="text" ';
-												PluginParams += 'id="' + param.field + '" style="width:' + param.width + '; padding: .2em;" class="text ui-widget-content ui-corner-all" '
-												if (typeof (param.default) != "undefined") PluginParams += 'value="' + param.default + '"';
-												if ((typeof (param.required) != "undefined") && (param.required == "true")) PluginParams += ' required';
-												PluginParams += ' />';
-											}
-											PluginParams += '</td>';
-										}
-									}
-									else {
-										PluginParams += '<td><select id="' + param.field + '" style="width:' + param.width + '" class="combobox ui-corner-all">';
+									var visibleWhen = (typeof (param.visible_when) != "undefined") ? param.visible_when : "";
+									var trStyle = visibleWhen ? ' style="display:none"' : '';
+									var trAttr = visibleWhen ? ' data-visible-when="' + param.visible_when + '"' : '';
+									PluginParams += '<tr' + trStyle + trAttr + '><td align="right" style="width:110px"><label id="lbl' + param.field + '"><span data-i18n="' + param.label + '">' + param.label + '</span>:</label></td>';
+									var paramType = (typeof (param.type) != "undefined") ? param.type : "";
+									var paramWidth = (typeof (param.width) != "undefined") ? param.width : "200px";
+									if (typeof (param.options) != "undefined") {
+										// Select dropdown
+										PluginParams += '<td><select id="' + param.field + '" style="width:' + paramWidth + '" class="combobox ui-corner-all">';
 										$.each(param.options, function (i, option) {
 											PluginParams += '<option data-i18n="' + option.label + '" value="' + option.value + '"';
 											if ((typeof (option.default) != "undefined") && (option.default == "true")) PluginParams += ' selected';
@@ -5805,10 +5782,130 @@ define(['app'], function (app) {
 										});
 										PluginParams += '</select></td>';
 									}
+									else if (paramType === "boolean") {
+										var checked = (typeof (param.default) != "undefined" && param.default === "true") ? ' checked' : '';
+										PluginParams += '<td><input type="checkbox" id="' + param.field + '"' + checked + ' /></td>';
+									}
+									else if (paramType === "number") {
+										var minAttr = (typeof (param.min) != "undefined") ? ' min="' + param.min + '"' : '';
+										var maxAttr = (typeof (param.max) != "undefined") ? ' max="' + param.max + '"' : '';
+										var stepAttr = (typeof (param.step) != "undefined") ? ' step="' + param.step + '"' : '';
+										var defaultVal = (typeof (param.default) != "undefined") ? param.default : '';
+										PluginParams += '<td><input type="number" id="' + param.field + '" style="width:' + paramWidth + '; padding: .2em;" class="text ui-widget-content ui-corner-all"' +
+											minAttr + maxAttr + stepAttr + ' value="' + defaultVal + '"';
+										if ((typeof (param.required) != "undefined") && (param.required == "true")) PluginParams += ' required';
+										PluginParams += ' /></td>';
+									}
+									else if (paramType === "slider") {
+										var sliderMin = (typeof (param.min) != "undefined") ? parseInt(param.min) : 0;
+										var sliderMax = (typeof (param.max) != "undefined") ? parseInt(param.max) : 100;
+										var sliderDefault = (typeof (param.default) != "undefined") ? parseInt(param.default) : sliderMin;
+										PluginParams += '<td>' +
+											'<div class="dimslider" id="slider_' + param.field + '" data-min="' + sliderMin + '" data-max="' + sliderMax + '" data-field="' + param.field + '" style="width:' + paramWidth + '; display:inline-block; margin-right:10px;"></div>' +
+											'<input type="hidden" id="' + param.field + '" class="slider-value" value="' + sliderDefault + '" />' +
+											'<span id="sliderval_' + param.field + '">' + sliderDefault + '</span>' +
+											'</td>';
+									}
+									else if (param.field == "SerialPort") {
+										PluginParams += '<td><select id="' + param.field + '" style="width:' + paramWidth + '" class="combobox ui-corner-all">';
+										$.each($("#hardwareparamsserial #comboserialport > option"), function (i, option) {
+											PluginParams += '<option data-i18n="' + option.innerText + '" value="' + option.innerText + '"';
+											PluginParams += '>' + option.innerText + '</option>';
+										});
+										PluginParams += '</select></td>';
+									}
+									else {
+										PluginParams += '<td>';
+										var nbRows = parseInt(param.rows);
+										if (nbRows >= 0) {
+											PluginParams += '<textarea id="' + param.field + '" style="width:' + paramWidth + '; padding: .2em;" class="text ui-widget-content ui-corner-all" rows="' + nbRows + '" ';
+											if ((typeof (param.required) != "undefined") && (param.required == "true")) PluginParams += 'required';
+											PluginParams += '>';
+											if (typeof (param.default) != "undefined") PluginParams += param.default;
+											PluginParams += '</textarea>';
+										} else {
+											if ((typeof (param.password) != "undefined") && (param.password == "true"))
+												PluginParams += '<input type="password" ';
+											else
+												PluginParams += '<input type="text" ';
+											PluginParams += 'id="' + param.field + '" style="width:' + paramWidth + '; padding: .2em;" class="text ui-widget-content ui-corner-all" ';
+											if (typeof (param.default) != "undefined") PluginParams += 'value="' + param.default + '"';
+											if ((typeof (param.required) != "undefined") && (param.required == "true")) PluginParams += ' required';
+											PluginParams += ' />';
+										}
+										PluginParams += '</td>';
+									}
 									PluginParams += '</tr>';
+								};
+
+								$.each(item.parameters, function (i, param) {
+									var paramGroup = (typeof (param.group) != "undefined") ? param.group : "";
+									if (paramGroup !== currentGroup) {
+										if (currentGroup !== "") {
+											// Close previous group table
+											PluginParams += '</table></div></td></tr>';
+										}
+										if (paramGroup !== "") {
+											// Open new collapsible group
+											PluginParams += '<tr><td colspan="2">' +
+												'<div class="plugin-group" style="margin:5px 0; cursor:pointer;" onclick="var t=$(this).next(); t.toggle(); $(this).find(\'.fa\').toggleClass(\'fa-chevron-right fa-chevron-down\');">' +
+												'<i class="fa fa-chevron-right" style="margin-right:5px;"></i><b>' + paramGroup + '</b></div>' +
+												'<div style="display:none;"><table class="display" border="0" cellpadding="0" cellspacing="5">';
+										}
+										currentGroup = paramGroup;
+									}
+									renderParam(param);
 								});
+								if (currentGroup !== "") {
+									// Close last group table
+									PluginParams += '</table></div></td></tr>';
+								}
 								PluginParams += '</table>';
 								$("#divpythonplugin").append(PluginParams);
+
+								// Initialize jQuery UI sliders
+								$("#divpythonplugin #" + item.key + " .dimslider").each(function () {
+									var $slider = $(this);
+									var fieldId = $slider.data("field");
+									var sliderMin = $slider.data("min");
+									var sliderMax = $slider.data("max");
+									var $input = $("#divpythonplugin #" + item.key + " #" + fieldId);
+									var $label = $("#divpythonplugin #" + item.key + " #sliderval_" + fieldId);
+									$slider.slider({
+										range: "min",
+										min: sliderMin,
+										max: sliderMax,
+										value: parseInt($input.val()),
+										slide: function (event, ui) {
+											$input.val(ui.value);
+											$label.text(ui.value);
+										}
+									});
+								});
+
+								// Set up conditional visibility
+								$("#divpythonplugin #" + item.key + " tr[data-visible-when]").each(function () {
+									var $row = $(this);
+									var condition = $row.data("visible-when");
+									var parts = condition.split("=");
+									if (parts.length !== 2)
+										return;
+									var depField = parts[0];
+									var depValue = parts[1];
+									var $depInput = $("#divpythonplugin #" + item.key + " #" + depField);
+									if ($depInput.length === 0)
+										return;
+									var updateVisibility = function () {
+										var currentVal = $depInput.is(":checkbox") ? ($depInput.prop("checked") ? "true" : "false") : $depInput.val();
+										if (currentVal === depValue) {
+											$row.show();
+										} else {
+											$row.hide();
+										}
+									};
+									$depInput.on("change", updateVisibility);
+									updateVisibility();
+								});
 							}
 							$("#hardwareparamstable #combotype").append(option);
 							idx++;
