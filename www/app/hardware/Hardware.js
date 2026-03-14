@@ -265,6 +265,24 @@ define(['app'], function (app) {
 					return bIsOK;
 				});
 				if (bIsOK) {
+					// Collect non-reserved plugin settings into JSON
+					var reservedFields = ["address", "port", "serialport", "username", "password", "extra", "mode1", "mode2", "mode3", "mode4", "mode5", "mode6"];
+					var pluginSettings = {};
+					$(selector + " input, " + selector + " select, " + selector + " textarea").each(function () {
+						var fieldId = this.id;
+						if (!fieldId || reservedFields.indexOf(fieldId.toLowerCase()) !== -1)
+							return;
+						var $row = $(this).closest("tr");
+						if ($row.length > 0 && $row.css("display") === "none")
+							return;
+						if ($(this).is(":checkbox")) {
+							pluginSettings[fieldId] = this.checked ? "true" : "false";
+						} else if ($(this).is("input[type='hidden']") && $(this).hasClass("slider-value")) {
+							pluginSettings[fieldId] = $(this).val();
+						} else if (!$(this).is("input[type='hidden']")) {
+							pluginSettings[fieldId] = $(this).val();
+						}
+					});
 					$.ajax({
 						url: "json.htm?type=command&param=updatehardware&htype=94" +
 						"&loglevel=" + logLevel +
@@ -283,7 +301,8 @@ define(['app'], function (app) {
 						"&Mode6=" + encodeURIComponent(($(selector + " #Mode6").length == 0) ? "" : $(selector + " #Mode6").val()) +
 						"&extra=" + encodeURIComponent(hardwaretype) +
 						"&enabled=" + bEnabled +
-						"&datatimeout=" + datatimeout,
+						"&datatimeout=" + datatimeout +
+						"&settings=" + encodeURIComponent(JSON.stringify(pluginSettings)),
 						async: false,
 						dataType: 'json',
 						success: function (data) {
@@ -1759,6 +1778,24 @@ define(['app'], function (app) {
 					return bIsOK;
 				});
 				if (bIsOK) {
+					// Collect non-reserved plugin settings into JSON
+					var reservedFields = ["address", "port", "serialport", "username", "password", "extra", "mode1", "mode2", "mode3", "mode4", "mode5", "mode6"];
+					var pluginSettings = {};
+					$(selector + " input, " + selector + " select, " + selector + " textarea").each(function () {
+						var fieldId = this.id;
+						if (!fieldId || reservedFields.indexOf(fieldId.toLowerCase()) !== -1)
+							return;
+						var $row = $(this).closest("tr");
+						if ($row.length > 0 && $row.css("display") === "none")
+							return;
+						if ($(this).is(":checkbox")) {
+							pluginSettings[fieldId] = this.checked ? "true" : "false";
+						} else if ($(this).is("input[type='hidden']") && $(this).hasClass("slider-value")) {
+							pluginSettings[fieldId] = $(this).val();
+						} else if (!$(this).is("input[type='hidden']")) {
+							pluginSettings[fieldId] = $(this).val();
+						}
+					});
 					$.ajax({
 						url: "json.htm?type=command&param=addhardware&htype=94" +
 						"&loglevel=" + logLevel +
@@ -1776,7 +1813,8 @@ define(['app'], function (app) {
 						"&Mode6=" + encodeURIComponent(($(selector + " #Mode6").length == 0) ? "" : $(selector + " #Mode6").val()) +
 						"&extra=" + encodeURIComponent(hardwaretype) +
 						"&enabled=" + bEnabled +
-						"&datatimeout=" + datatimeout,
+						"&datatimeout=" + datatimeout +
+						"&settings=" + encodeURIComponent(JSON.stringify(pluginSettings)),
 						async: false,
 						dataType: 'json',
 						success: function (data) {
@@ -4389,6 +4427,26 @@ define(['app'], function (app) {
 							$("#hardwarecontent #divpythonplugin #" + data["Extra"] + " #Mode4").val(data["Mode4"]);
 							$("#hardwarecontent #divpythonplugin #" + data["Extra"] + " #Mode5").val(data["Mode5"]);
 							$("#hardwarecontent #divpythonplugin #" + data["Extra"] + " #Mode6").val(data["Mode6"]);
+							// Restore extended Settings fields
+							if (data["Settings"] && typeof data["Settings"] === "object") {
+								var pluginSelector = "#hardwarecontent #divpythonplugin #" + data["Extra"];
+								$.each(data["Settings"], function (key, value) {
+									var $field = $(pluginSelector + " #" + key);
+									if ($field.length === 0)
+										return;
+									if ($field.is(":checkbox")) {
+										$field.prop("checked", value === "true");
+									} else if ($field.hasClass("slider-value")) {
+										$field.val(value);
+										var $slider = $field.prev(".dimslider");
+										if ($slider.length > 0) {
+											$slider.slider("value", parseInt(value));
+										}
+									} else {
+										$field.val(value);
+									}
+								});
+							}
 							$("#hardwarecontent #divpythonplugin #" + data["Extra"] + " #Extra").val(data["Extra"]);
 							UpdateHardwareParamControls();
 							$('#hardwarecontent #hardwareparamstable #loglevelInfo').prop('checked', ((data["LogLevel"] & 1)!=0));
