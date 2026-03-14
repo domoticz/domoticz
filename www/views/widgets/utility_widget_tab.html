@@ -16,7 +16,7 @@
                          ng-click="ctrl.showSetpointPopup($event)" height="48" width="48">
                 </td>
                 <td id="status" ng-bind-html="ctrl.getStatusText()"></td>
-                <td id="lastupdate">{{ctrl.device.LastUpdate}}</td>
+                <td id="lastupdate"><span data-i18n="Last Seen" style="font-style: italic">Last Seen</span>: {{ctrl.device.LastUpdate}}</td>
                 <td id="type">{{ctrl.getTypeSubTypeText()}}</td>
                 <td class="options">
                     <span ng-show="ctrl.device.Favorite == 0"><img src="images/nofavorite.png" data-i18n="[title]Add to Dashboard" ng-click="ctrl.makeFavorite(1)" class="lcursor">&nbsp;&nbsp;&nbsp;&nbsp;</span>

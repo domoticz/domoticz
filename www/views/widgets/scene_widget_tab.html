@@ -22,7 +22,7 @@
                     <img src="images/Push48_Off.png" ng-click="ctrl.switchOff()" class="lcursor" ng-class="{'transimg': ctrl.scene.Status === 'Off' || ctrl.scene.Status === 'Group Off'}" height="48" width="48" data-i18n="[title]Turn Off" title="Turn Off">
                 </td>
                 <td id="status">&nbsp;</td>
-                <td id="lastupdate" class="lastupdate">{{ctrl.scene.LastUpdate}}</td>
+                <td id="lastupdate" class="lastupdate"><span data-i18n="Last Seen" style="font-style: italic">Last Seen</span>: {{ctrl.scene.LastUpdate}}</td>
                 <td id="type">{{ctrl.getTypeText()}}</td>
                 <td class="options">
                     <span ng-show="ctrl.scene.Favorite == 0"><img src="images/nofavorite.png" data-i18n="[title]Add to Dashboard" ng-click="ctrl.makeFavorite(1)" class="lcursor">&nbsp;&nbsp;&nbsp;&nbsp;</span>

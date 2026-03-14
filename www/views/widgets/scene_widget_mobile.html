@@ -6,7 +6,7 @@
 			</tr>
 			<tr>
 				<td id="bigtext" ng-bind-html="ctrl.getStatusText()" style="padding: 5px 0;"></td>
-				<td id="lastupdate" class="lastupdate" ng-bind="ctrl.scene.LastUpdate" style="text-align: right;"></td>
+				<td id="lastupdate" class="lastupdate" style="text-align: right;"><span data-i18n="Last Seen" style="font-style: italic">Last Seen</span>: <span ng-bind="ctrl.scene.LastUpdate"></span></td>
 			</tr>
 			<tr>
 				<td colspan="2" style="text-align: center; padding: 10px 0;">
