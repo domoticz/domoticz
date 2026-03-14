@@ -5197,6 +5197,62 @@ define(['app'], function (app) {
 			}, 200);
 		}
 
+		InitPluginWidgets = function ($table) {
+			// Initialize jQuery UI sliders within this plugin table
+			$table.find(".dimslider").each(function () {
+				var $slider = $(this);
+				// Skip if widget already initialized (check jQuery UI data, not CSS class)
+				if ($slider.data("ui-slider"))
+					return;
+				var fieldId = $slider.data("field");
+				var sliderMin = $slider.data("min");
+				var sliderMax = $slider.data("max");
+				var $input = $table.find("#" + fieldId);
+				var $label = $table.find("#sliderval_" + fieldId);
+				// Remove stale CSS classes from Angular.js DOM cloning
+				$slider.removeClass("ui-slider ui-corner-all ui-slider-horizontal ui-widget ui-widget-content");
+				$slider.empty(); // Remove any stale slider handle elements
+				$slider.slider({
+					range: "min",
+					min: sliderMin,
+					max: sliderMax,
+					value: parseInt($input.val()),
+					slide: function (event, ui) {
+						$input.val(ui.value);
+						$label.text(ui.value);
+					}
+				});
+			});
+
+			// Set up conditional visibility within this plugin table
+			$table.find("tr[data-visible-when]").each(function () {
+				var $row = $(this);
+				// Skip if already set up
+				if ($row.data("visibility-bound"))
+					return;
+				$row.data("visibility-bound", true);
+				var condition = $row.data("visible-when");
+				var parts = condition.split("=");
+				if (parts.length !== 2)
+					return;
+				var depField = parts[0];
+				var depValue = parts[1];
+				var $depInput = $table.find("#" + depField);
+				if ($depInput.length === 0)
+					return;
+				var updateVisibility = function () {
+					var currentVal = $depInput.is(":checkbox") ? ($depInput.prop("checked") ? "true" : "false") : $depInput.val();
+					if (currentVal === depValue) {
+						$row.show();
+					} else {
+						$row.hide();
+					}
+				};
+				$depInput.on("change", updateVisibility);
+				updateVisibility();
+			});
+		}
+
 		UpdateHardwareParamControls = function () {
 			var oTable = $('#hardwaretable').dataTable();
 			var anSelected = fnGetSelected(oTable);
@@ -5277,7 +5333,13 @@ define(['app'], function (app) {
 				$("#hardwarecontent #divextrahwparams").hide();
 				$("#hardwarecontent #divpythonplugin .plugin").hide();
 				var plugin = $("#hardwarecontent #hardwareparamstable #combotype option:selected").attr("id");
-				$("#hardwarecontent #divpythonplugin .plugin").each(function () { if ($(this).attr("id") === plugin) $(this).show(); });
+				$("#hardwarecontent #divpythonplugin .plugin").each(function () {
+					if ($(this).attr("id") === plugin) {
+						$(this).show();
+						// Initialize sliders and conditional visibility on the visible table
+						InitPluginWidgets($(this));
+					}
+				});
 				$("#hardwarecontent #divpythonplugin").show();
 				return;
 			}
@@ -5862,58 +5924,6 @@ define(['app'], function (app) {
 								}
 								PluginParams += '</table>';
 								$("#divpythonplugin").append(PluginParams);
-
-								// Initialize jQuery UI sliders and conditional visibility
-							// for ALL tables with this plugin key (handles DOM duplication)
-								$("#divpythonplugin #" + item.key).each(function () {
-									var $table = $(this);
-
-									// Initialize sliders within this specific table
-									$table.find(".dimslider").each(function () {
-										var $slider = $(this);
-										if ($slider.hasClass("ui-slider"))
-											return; // Already initialized
-										var fieldId = $slider.data("field");
-										var sliderMin = $slider.data("min");
-										var sliderMax = $slider.data("max");
-										var $input = $table.find("#" + fieldId);
-										var $label = $table.find("#sliderval_" + fieldId);
-										$slider.slider({
-											range: "min",
-											min: sliderMin,
-											max: sliderMax,
-											value: parseInt($input.val()),
-											slide: function (event, ui) {
-												$input.val(ui.value);
-												$label.text(ui.value);
-											}
-										});
-									});
-
-									// Set up conditional visibility within this specific table
-									$table.find("tr[data-visible-when]").each(function () {
-										var $row = $(this);
-										var condition = $row.data("visible-when");
-										var parts = condition.split("=");
-										if (parts.length !== 2)
-											return;
-										var depField = parts[0];
-										var depValue = parts[1];
-										var $depInput = $table.find("#" + depField);
-										if ($depInput.length === 0)
-											return;
-										var updateVisibility = function () {
-											var currentVal = $depInput.is(":checkbox") ? ($depInput.prop("checked") ? "true" : "false") : $depInput.val();
-											if (currentVal === depValue) {
-												$row.show();
-											} else {
-												$row.hide();
-											}
-										};
-										$depInput.on("change", updateVisibility);
-										updateVisibility();
-									});
-								});
 							}
 							$("#hardwareparamstable #combotype").append(option);
 							idx++;
