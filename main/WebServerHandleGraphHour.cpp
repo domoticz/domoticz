@@ -35,10 +35,51 @@ void HandleGraphHour(const GraphContext& ctx, const request& req,
 		if (ctx.dType == pTypeP1Power)
 		{
 			std::string dbasetable = CalcDbasetableHour(ctx);
-			const struct tm& tm1 = ctx.tmNow;
+			struct tm tm1 = ctx.tmNow;
 			root["status"] = "OK";
 			root["title"] = "Graph " + ctx.sensor + " " + ctx.srange;
 
+			// We extract the most recent data, ideally from current time, otherwise we go back to yesterday at midnight
+			// get date of last data
+			std::vector<std::vector<std::string>> result;
+			result = sql.safe_query("SELECT MAX(Date) FROM %s WHERE DeviceRowID==%" PRIu64, dbasetable.c_str(), ctx.idx);
+
+			time_t now = mktime(&tm1);
+			time_t sqlTime;
+
+			if (!result.empty() && !result[0][0].empty())
+			{
+				ParseSQLdatetime(sqlTime, tm1, result[0][0], -1);
+			}
+			else
+			{
+				sqlTime = now;
+			}
+
+			// calculate date of yesterday midnight
+			struct tm tm_limit;
+			localtime_r(&now, &tm_limit);
+			tm_limit.tm_hour = 0;
+			tm_limit.tm_min  = 0;
+			tm_limit.tm_sec  = 0;
+			tm_limit.tm_mday -= 1;
+
+			time_t limit = mktime(&tm_limit);
+
+			// limit date to yesterday midnight
+			if (sqlTime < limit)
+			{
+				sqlTime = limit;
+			}
+
+			localtime_r(&sqlTime, &tm1);
+
+			// check if data are from yesterday or before
+			if (tm1.tm_mday != (tm_limit.tm_mday+1))
+			{
+				root["warningmessage"] = "Warning: data are from yesterday or older";
+			}
+				
 			std::string szDateEnd = FormatDateTime(tm1.tm_year + 1900, tm1.tm_mon + 1, tm1.tm_mday, tm1.tm_hour, tm1.tm_min, tm1.tm_sec);
 
 			// Subtract a day
@@ -65,7 +106,6 @@ void HandleGraphHour(const GraphContext& ctx, const request& req,
 				szGroupBy = "strftime('%Y-%m-%d %H:00:00', Date)";
 			}
 
-			std::vector<std::vector<std::string>> result;
 			result = sql.safe_query("SELECT %s as ymd, MIN(Value1) as u1, MIN(Value5) as u2, MIN(Value2) as d1, MIN(Value6) as d2, MIN(Price) as price FROM %s WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q' AND Date<='%q') GROUP BY ymd",
 				szGroupBy.c_str(), dbasetable.c_str(), ctx.idx, szDateStart.c_str(), szDateEnd.c_str());
 			if (!result.empty())
