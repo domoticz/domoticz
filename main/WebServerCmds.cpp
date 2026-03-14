@@ -2704,6 +2704,10 @@ namespace http
 			root["title"] = "GetActualHistory";
 
 			std::string historyfile = szUserDataFolder + "History.txt";
+			if (szStartupFolder != szUserDataFolder)
+			{
+				historyfile = szStartupFolder + "History.txt";
+			}
 
 			std::ifstream infile;
 			int ii = 0;
