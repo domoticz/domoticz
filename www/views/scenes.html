@@ -3,8 +3,8 @@
 	<div ng-include="'views/inc_topbar.html'"></div>
 	<div id="scenecontent" class="devicesList">
 		<div id="scenelist" ng-show="showSceneList">
-			<div class="row divider" ng-repeat="row in sceneRows track by $index">
-				<dz-scene-widget ng-repeat="scene in row track by scene.idx"
+			<div class="row">
+				<dz-scene-widget ng-repeat="scene in scenes track by scene.idx"
 					scene="scene"
 					view-mode="tab"
 					on-update="refreshScenes()"

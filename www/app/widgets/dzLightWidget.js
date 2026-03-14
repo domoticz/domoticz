@@ -58,6 +58,7 @@ define(['app'], function (app) {
                         device = newVal;
                         ctrl.device = newVal;
                         ctrl.updateSelectorLevels();
+                        ctrl.updateSearchText();
                     }
                 });
 
@@ -225,10 +226,11 @@ define(['app'], function (app) {
                     if (device.Protected) {
                         bootbox.prompt($.t("Please enter Password") + ":", function (result) {
                             if (result === null || result === "") return;
-                            $.ajax({
-                                url: "json.htm?type=command&param=switchlight&idx=" + device.idx + "&switchcmd=Set%20Level&level=" + level + "&passcode=" + result,
-                                async: false,
-                                dataType: 'json'
+                            domoticzApi.sendCommand('switchlight', {
+                                idx: device.idx,
+                                switchcmd: 'Set Level',
+                                level: level,
+                                passcode: result
                             });
                         });
                     } else {
@@ -237,15 +239,16 @@ define(['app'], function (app) {
                 };
 
                 ctrl.executeSetLevel = function (level) {
-                    $.ajax({
-                        url: "json.htm?type=command&param=switchlight&idx=" + device.idx + "&switchcmd=Set%20Level&level=" + level,
-                        async: false,
-                        dataType: 'json',
-                        success: function () {
-                            if ($scope.onUpdate) {
-                                $scope.onUpdate();
-                            }
+                    domoticzApi.sendCommand('switchlight', {
+                        idx: device.idx,
+                        switchcmd: 'Set Level',
+                        level: level
+                    }).then(function () {
+                        if ($scope.onUpdate) {
+                            $scope.onUpdate();
                         }
+                    }).catch(function () {
+                        ShowNotify($.t('Problem sending switch command'), 2500, true);
                     });
                 };
 
@@ -258,10 +261,11 @@ define(['app'], function (app) {
                     if (device.Protected) {
                         bootbox.prompt($.t("Please enter Password") + ":", function (result) {
                             if (result === null || result === "") return;
-                            $.ajax({
-                                url: "json.htm?type=command&param=switchlight&idx=" + device.idx + "&switchcmd=Set%20Level&level=" + level + "&passcode=" + result,
-                                async: false,
-                                dataType: 'json'
+                            domoticzApi.sendCommand('switchlight', {
+                                idx: device.idx,
+                                switchcmd: 'Set Level',
+                                level: level,
+                                passcode: result
                             });
                         });
                     } else {
@@ -270,15 +274,16 @@ define(['app'], function (app) {
                 };
 
                 ctrl.executeSetSelectorLevel = function (level, levelName) {
-                    $.ajax({
-                        url: "json.htm?type=command&param=switchlight&idx=" + device.idx + "&switchcmd=Set%20Level&level=" + level,
-                        async: false,
-                        dataType: 'json',
-                        success: function () {
-                            if ($scope.onUpdate) {
-                                $scope.onUpdate();
-                            }
+                    domoticzApi.sendCommand('switchlight', {
+                        idx: device.idx,
+                        switchcmd: 'Set Level',
+                        level: level
+                    }).then(function () {
+                        if ($scope.onUpdate) {
+                            $scope.onUpdate();
                         }
+                    }).catch(function () {
+                        ShowNotify($.t('Problem sending switch command'), 2500, true);
                     });
                 };
 
@@ -706,9 +711,9 @@ define(['app'], function (app) {
                     $location.path('/Devices/' + device.idx + '/LightEdit');
                 };
 
-                $scope.$watch('ctrl.device', function () {
+                $scope.$watch('device.Status', function () {
                     ctrl.updateSearchText();
-                }, true);
+                });
 
                 $element.i18n();
             },

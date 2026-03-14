@@ -343,8 +343,8 @@
 
 	<div id="lightcontent" class="devicesList">
 		<div id="lightlist" ng-show="showLightList">
-			<div class="row divider" ng-repeat="row in deviceRows track by $index">
-				<dz-light-widget ng-repeat="device in row track by device.idx"
+			<div class="row">
+				<dz-light-widget ng-repeat="device in devices track by device.idx"
 					device="device"
 					view-mode="tab"
 					on-update="refreshLights()">

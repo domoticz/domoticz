@@ -338,8 +338,8 @@
 
 	<div id="utilitycontent" class="devicesList">
 		<div id="utilitylist" ng-show="showUtilityList">
-			<div class="row divider" ng-repeat="row in deviceRows track by $index">
-				<dz-utility-widget ng-repeat="device in row track by device.idx"
+			<div class="row">
+				<dz-utility-widget ng-repeat="device in devices track by device.idx"
 					device="device"
 					view-mode="tab"
 					on-update="refreshUtilities()">

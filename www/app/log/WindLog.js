@@ -614,7 +614,6 @@ define(['app', 'lodash', 'RefreshingChart', 'DataLoader', 'ChartLoader', 'log/Ch
 				lscales.push({ from: 24.5 * s, to: 28.5 * s });
 				lscales.push({ from: 28.5 * s, to: 32.7 * s });
 				lscales.push({ from: 32.7 * s, to: 100 * s });
-				lscales.push({ from: 32.7 * s, to: 100 * s });
 			}
 			return lscales;
 		}
