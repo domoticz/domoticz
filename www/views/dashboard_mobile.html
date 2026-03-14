@@ -450,9 +450,6 @@
 						<span ng-if="(item.SetPoint !== undefined || item.Temp !== undefined || item.Chill !== undefined) && item.Humidity !== undefined">, </span>
 						<span ng-if="item.Humidity !== undefined">{{item.Humidity}} %</span>
 						<span ng-if="item.HumidityStatus !== undefined"> ({{item.HumidityStatus}})</span>
-						<!-- Barometer -->
-						<span ng-if="(item.SetPoint !== undefined || item.Temp !== undefined || item.Chill !== undefined || item.Humidity !== undefined) && item.Barometer !== undefined">, </span>
-						<span ng-if="item.Barometer !== undefined">{{item.Barometer}} hPa</span>
 						<span ng-if="item.ForecastStr !== undefined"> ({{item.ForecastStr}})</span>
 						<!-- Dew Point -->
 						<span ng-if="item.DewPoint !== undefined"><br><span data-i18n="Dew Point">Dew Point</span>: {{item.DewPoint | number:2}}&deg; {{$parent.config.TempSign}}</span>
