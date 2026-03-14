@@ -17,8 +17,12 @@
 #include "../../main/Helper.h"
 #include "../../main/Logger.h"
 #include "../../main/SQLHelper.h"
+#include "../../main/json_helper.h"
 #include "../../main/mainworker.h"
 #include "../../tinyxpath/tinyxml.h"
+
+#include <algorithm>
+#include <set>
 
 #include "../../notifications/NotificationHelper.h"
 
@@ -43,6 +47,17 @@ extern MainWorker m_mainworker;
 
 namespace Plugins
 {
+	static bool IsReservedFieldName(const std::string &field)
+	{
+		static const std::set<std::string> reserved = {
+			"mode1", "mode2", "mode3", "mode4", "mode5", "mode6",
+			"address", "port", "serialport", "username", "password", "extra"
+		};
+		std::string lower = field;
+		std::transform(lower.begin(), lower.end(), lower.begin(), ::tolower);
+		return reserved.count(lower) > 0;
+	}
+
 	extern PyTypeObject* CDeviceType;
 	extern PyTypeObject* CConnectionType;
 	extern PyTypeObject* CImageType;
@@ -1610,7 +1625,7 @@ namespace Plugins
 			m_sql.GetPreferencesVar("Language", sLanguage);
 
 			std::vector<std::vector<std::string>> result;
-			result = m_sql.safe_query("SELECT Name, Address, Port, SerialPort, Username, Password, Extra, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6 FROM Hardware WHERE (ID==%d)", m_HwdID);
+			result = m_sql.safe_query("SELECT Name, Address, Port, SerialPort, Username, Password, Extra, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6, Settings FROM Hardware WHERE (ID==%d)", m_HwdID);
 			if (!result.empty())
 			{
 				for (const auto &sd : result)
@@ -1636,6 +1651,130 @@ namespace Plugins
 					ADD_STRING_TO_DICT(this, pParamsDict, "Mode4", sd[10]);
 					ADD_STRING_TO_DICT(this, pParamsDict, "Mode5", sd[11]);
 					ADD_STRING_TO_DICT(this, pParamsDict, "Mode6", sd[12]);
+
+					// Load Settings JSON into Parameters dict
+					std::string sSettings = sd[13];
+					Json::Value settingsJson(Json::objectValue);
+					if (!sSettings.empty())
+					{
+						if (!ParseJSon(sSettings, settingsJson) || !settingsJson.isObject())
+						{
+							Log(LOG_ERROR, "(%s) Settings JSON is corrupted, using defaults", m_PluginKey.c_str());
+							settingsJson = Json::Value(Json::objectValue);
+						}
+					}
+
+					// Build set of XML-defined non-reserved field names and apply defaults
+					std::set<std::string> xmlFields;
+					std::string sFind = "key=\"" + m_PluginKey + "\"";
+					CPluginSystem PluginMgr;
+					std::map<std::string, std::string> *mPluginXml = PluginMgr.GetManifest();
+					std::string sSettingsPluginXML;
+					for (const auto &type : *mPluginXml)
+					{
+						if (type.second.find(sFind) != std::string::npos)
+						{
+							sSettingsPluginXML = type.second;
+							break;
+						}
+					}
+					TiXmlDocument settingsXmlDoc;
+					settingsXmlDoc.Parse(sSettingsPluginXML.c_str());
+					if (!settingsXmlDoc.Error())
+					{
+						TiXmlNode *pXmlPluginNode = settingsXmlDoc.FirstChild("plugin");
+						if (pXmlPluginNode)
+						{
+							TiXmlNode *pXmlParamsNode = pXmlPluginNode->FirstChild("params");
+							if (pXmlParamsNode)
+							{
+								// Iterate all children to handle both <param> and <group> elements
+								for (TiXmlNode *pChild = pXmlParamsNode->FirstChild(); pChild; pChild = pChild->NextSibling())
+								{
+									TiXmlElement *pEle = pChild->ToElement();
+									if (!pEle)
+										continue;
+
+									std::string tagName = pEle->Value();
+									if (tagName == "param")
+									{
+										const char *pField = pEle->Attribute("field");
+										if (pField && !IsReservedFieldName(pField))
+										{
+											xmlFields.insert(pField);
+											if (!settingsJson.isMember(pField))
+											{
+												const char *pDefault = pEle->Attribute("default");
+												std::string defaultVal = pDefault ? pDefault : "";
+												settingsJson[pField] = defaultVal;
+											}
+										}
+									}
+									else if (tagName == "group")
+									{
+										for (TiXmlNode *pGroupChild = pEle->FirstChild("param"); pGroupChild; pGroupChild = pGroupChild->NextSibling("param"))
+										{
+											TiXmlElement *pGroupEle = pGroupChild->ToElement();
+											if (!pGroupEle)
+												continue;
+											const char *pField = pGroupEle->Attribute("field");
+											if (pField && !IsReservedFieldName(pField))
+											{
+												xmlFields.insert(pField);
+												if (!settingsJson.isMember(pField))
+												{
+													const char *pDefault = pGroupEle->Attribute("default");
+													std::string defaultVal = pDefault ? pDefault : "";
+													settingsJson[pField] = defaultVal;
+												}
+											}
+										}
+									}
+								}
+							}
+						}
+					}
+
+					// Orphaned key cleanup: remove keys not in XML definition
+					bool bSettingsChanged = false;
+					if (!xmlFields.empty())
+					{
+						Json::Value cleanedSettings(Json::objectValue);
+						for (const auto &key : settingsJson.getMemberNames())
+						{
+							if (xmlFields.count(key) > 0)
+							{
+								cleanedSettings[key] = settingsJson[key];
+							}
+							else
+							{
+								bSettingsChanged = true;
+							}
+						}
+						// Check if defaults were added
+						for (const auto &field : xmlFields)
+						{
+							if (!settingsJson.isMember(field))
+								bSettingsChanged = true;
+						}
+						settingsJson = cleanedSettings;
+					}
+
+					// Add all Settings values to Parameters dict
+					for (const auto &key : settingsJson.getMemberNames())
+					{
+						std::string value = settingsJson[key].asString();
+						ADD_STRING_TO_DICT(this, pParamsDict, key.c_str(), value);
+					}
+
+					// Write cleaned Settings back to database if changed
+					if (bSettingsChanged)
+					{
+						Json::StreamWriterBuilder builder;
+						builder["indentation"] = "";
+						std::string sCleaned = Json::writeString(builder, settingsJson);
+						m_sql.safe_query("UPDATE Hardware SET Settings='%q' WHERE (ID==%d)", sCleaned.c_str(), m_HwdID);
+					}
 
 					ADD_STRING_TO_DICT(this, pParamsDict, "DomoticzVersion", szAppVersion);
 					ADD_STRING_TO_DICT(this, pParamsDict, "DomoticzHash", szAppHash);
