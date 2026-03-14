@@ -2176,6 +2176,14 @@ SECTION.dashCategory{
 	display: block;
 	overflow: hidden;
 }
+SECTION.dashCategory .row,
+.devicesList .row,
+#tempwidgets,
+#weatherwidgets {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: flex-start;
+}
 SECTION.dashCategory .liveSearchShown{
 	margin: 0;
 }
